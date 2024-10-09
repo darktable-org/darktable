@@ -131,14 +131,7 @@ typedef enum dt_iop_module_state_t
   IOP_STATE_LAST
 } dt_iop_module_state_t;
 
-typedef struct dt_iop_gui_data_t
-{
-  // "base type" for all dt_iop_XXXX_gui_data_t types used by iops to
-  // avoid compiler error about different sizes of empty structs
-  // between C and C++, we need at least one member
-  int dummy;
-} dt_iop_gui_data_t;
-
+typedef void dt_iop_gui_data_t;
 typedef void dt_iop_data_t;
 typedef void dt_iop_global_data_t;
 

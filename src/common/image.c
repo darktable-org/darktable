@@ -218,8 +218,7 @@ static void _image_set_monochrome_flag(const dt_imgid_t imgid,
 
       if(undo_on)
       {
-        dt_undo_monochrome_t *undomono =
-          (dt_undo_monochrome_t *)malloc(sizeof(dt_undo_monochrome_t));
+        dt_undo_monochrome_t *undomono = malloc(sizeof(dt_undo_monochrome_t));
         undomono->imgid = imgid;
         undomono->before = mask_bw;
         undomono->after = mask;
@@ -645,7 +644,7 @@ static void _pop_undo(gpointer user_data,
 
     for(GList *list = (GList *)data; list; list = g_list_next(list))
     {
-      dt_undo_geotag_t *undogeotag = (dt_undo_geotag_t *)list->data;
+      dt_undo_geotag_t *undogeotag = list->data;
       const dt_image_geoloc_t *geoloc =
         (action == DT_ACTION_UNDO) ? &undogeotag->before : &undogeotag->after;
 
@@ -671,7 +670,7 @@ static void _pop_undo(gpointer user_data,
 
     for(GList *list = (GList *)data; list; list = g_list_next(list))
     {
-      dt_undo_datetime_t *undodatetime = (dt_undo_datetime_t *)list->data;
+      dt_undo_datetime_t *undodatetime = list->data;
 
       _set_datetime(undodatetime->imgid, (action == DT_ACTION_UNDO)
                                          ? undodatetime->before : undodatetime->after);
@@ -1449,8 +1448,7 @@ static dt_imgid_t _image_duplicate_with_version(const dt_imgid_t imgid,
   {
     if(undo)
     {
-      dt_undo_duplicate_t *dupundo =
-        (dt_undo_duplicate_t *)malloc(sizeof(dt_undo_duplicate_t));
+      dt_undo_duplicate_t *dupundo = malloc(sizeof(dt_undo_duplicate_t));
       dupundo->orig_imgid = imgid;
       dupundo->version = newversion;
       dupundo->new_imgid = newid;
@@ -2974,8 +2972,7 @@ static void _image_set_datetimes(const GList *img,
     const _datetime_t *datetime = &g_array_index(dtime, _datetime_t, i);
     if(undo_on)
     {
-      dt_undo_datetime_t *undodatetime =
-        (dt_undo_datetime_t *)malloc(sizeof(dt_undo_datetime_t));
+      dt_undo_datetime_t *undodatetime = malloc(sizeof(dt_undo_datetime_t));
       undodatetime->imgid = imgid;
       dt_image_get_datetime(imgid, undodatetime->before);
 
@@ -3018,8 +3015,7 @@ static void _image_set_datetime(const GList *img,
     const dt_imgid_t imgid = GPOINTER_TO_INT(imgs->data);
     if(undo_on)
     {
-      dt_undo_datetime_t *undodatetime =
-        (dt_undo_datetime_t *)malloc(sizeof(dt_undo_datetime_t));
+      dt_undo_datetime_t *undodatetime = malloc(sizeof(dt_undo_datetime_t));
       undodatetime->imgid = imgid;
       dt_image_get_datetime(imgid, undodatetime->before);
 

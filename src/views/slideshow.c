@@ -403,14 +403,14 @@ uint32_t view(const dt_view_t *self)
 void init(dt_view_t *self)
 {
   self->data = calloc(1, sizeof(dt_slideshow_t));
-  dt_slideshow_t *lib = (dt_slideshow_t *)self->data;
+  dt_slideshow_t *lib = self->data;
   dt_pthread_mutex_init(&lib->lock, 0);
 }
 
 
 void cleanup(dt_view_t *self)
 {
-  dt_slideshow_t *lib = (dt_slideshow_t *)self->data;
+  dt_slideshow_t *lib = self->data;
   dt_pthread_mutex_destroy(&lib->lock);
   free(self->data);
 }
@@ -431,7 +431,7 @@ gboolean try_enter(dt_view_t *self)
 
 void enter(dt_view_t *self)
 {
-  dt_slideshow_t *d = (dt_slideshow_t *)self->data;
+  dt_slideshow_t *d = self->data;
 
   dt_control_change_cursor(GDK_BLANK_CURSOR);
   d->mouse_timeout = 0;
@@ -516,7 +516,7 @@ void enter(dt_view_t *self)
 
 void leave(dt_view_t *self)
 {
-  dt_slideshow_t *d = (dt_slideshow_t *)self->data;
+  dt_slideshow_t *d = self->data;
 
   if(d->mouse_timeout > 0) g_source_remove(d->mouse_timeout);
   d->mouse_timeout = 0;
@@ -548,7 +548,7 @@ void expose(dt_view_t *self,
             const int32_t pointery)
 {
   // draw front buffer.
-  dt_slideshow_t *d = (dt_slideshow_t *)self->data;
+  dt_slideshow_t *d = self->data;
 
   dt_pthread_mutex_lock(&d->lock);
   dt_slideshow_buf_t *slot = &(d->buf[S_CURRENT]);
@@ -616,7 +616,7 @@ void expose(dt_view_t *self,
 static gboolean _hide_mouse(gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
-  dt_slideshow_t *d = (dt_slideshow_t *)self->data;
+  dt_slideshow_t *d = self->data;
   d->mouse_timeout = 0;
   dt_control_change_cursor(GDK_BLANK_CURSOR);
   return FALSE;
@@ -629,7 +629,7 @@ void mouse_moved(dt_view_t *self,
                  const double pressure,
                  const int which)
 {
-  dt_slideshow_t *d = (dt_slideshow_t *)self->data;
+  dt_slideshow_t *d = self->data;
 
   if(d->mouse_timeout > 0)
     g_source_remove(d->mouse_timeout);
@@ -657,7 +657,7 @@ int button_pressed(dt_view_t *self,
                    const int type,
                    const uint32_t state)
 {
-  dt_slideshow_t *d = (dt_slideshow_t *)self->data;
+  dt_slideshow_t *d = self->data;
 
   if(which == 1)
     _step_state(d, S_REQUEST_STEP);

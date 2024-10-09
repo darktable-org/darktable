@@ -623,7 +623,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
 
 int button_released(struct dt_lib_module_t *self, double x, double y, int which, uint32_t state)
 {
-  dt_lib_live_view_t *d = (dt_lib_live_view_t *)self->data;
+  dt_lib_live_view_t *d = self->data;
   if(d->splitline_dragging == TRUE)
   {
     d->splitline_dragging = FALSE;
@@ -635,7 +635,7 @@ int button_released(struct dt_lib_module_t *self, double x, double y, int which,
 int button_pressed(struct dt_lib_module_t *self, double x, double y, double pressure, int which, int type,
                    uint32_t state)
 {
-  dt_lib_live_view_t *lib = (dt_lib_live_view_t *)self->data;
+  dt_lib_live_view_t *lib = self->data;
   int result = 0;
 
   dt_imgid_t imgid = NO_IMGID;
@@ -684,7 +684,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
 
 int mouse_moved(dt_lib_module_t *self, double x, double y, double pressure, int which)
 {
-  dt_lib_live_view_t *lib = (dt_lib_live_view_t *)self->data;
+  dt_lib_live_view_t *lib = self->data;
   int result = 0;
 
   if(lib->splitline_dragging)

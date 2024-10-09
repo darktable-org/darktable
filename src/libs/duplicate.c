@@ -129,7 +129,7 @@ static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget,
 
 static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
 {
-  dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
+  dt_lib_duplicate_t *d = self->data;
   const dt_imgid_t imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "imgid"));
 
   if(imgid == darktable.develop->image_storage.id)
@@ -137,14 +137,14 @@ static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
     // we find the duplicate image to show now
     for(GList *l = d->thumbs; l; l = g_list_next(l))
     {
-      dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
+      dt_thumbnail_t *thumb = l->data;
       if(thumb->imgid == imgid)
       {
         GList *l2 = g_list_next(l);
         if(!l2) l2 = g_list_previous(l);
         if(l2)
         {
-          dt_thumbnail_t *th2 = (dt_thumbnail_t *)l2->data;
+          dt_thumbnail_t *th2 = l2->data;
           DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
                                         DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
                                         th2->imgid);
@@ -165,7 +165,7 @@ static void _lib_duplicate_thumb_press_callback(GtkWidget *widget,
                                                 GdkEventButton *event,
                                                 dt_lib_module_t *self)
 {
-  dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
+  dt_lib_duplicate_t *d = self->data;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_object_get_data(G_OBJECT(widget), "thumb");
   const dt_imgid_t imgid = thumb->imgid;
 
@@ -189,7 +189,7 @@ static void _lib_duplicate_thumb_release_callback(GtkWidget *widget,
                                                   GdkEventButton *event,
                                                   dt_lib_module_t *self)
 {
-  dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
+  dt_lib_duplicate_t *d = self->data;
 
   d->imgid = NO_IMGID;
   dt_control_queue_redraw_center();
@@ -200,7 +200,7 @@ void view_leave(struct dt_lib_module_t *self,
                 struct dt_view_t *new_view)
 {
   // we leave the view. Let's destroy preview surf if any
-  dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
+  dt_lib_duplicate_t *d = self->data;
   if(d->buf)
   {
     dt_free_align(d->buf);
@@ -214,7 +214,7 @@ void gui_post_expose(dt_lib_module_t *self,
                      const int32_t pointerx,
                      const int32_t pointery)
 {
-  dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
+  dt_lib_duplicate_t *d = self->data;
 
   if(!dt_is_valid_imgid(d->imgid))
     return;
@@ -254,7 +254,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
   dt_control_signal_block_by_func(darktable.signals,
                                   G_CALLBACK(_lib_duplicate_init_callback), self);
 
-  dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
+  dt_lib_duplicate_t *d = self->data;
 
   d->imgid = NO_IMGID;
   // we drop the preview if any
@@ -376,7 +376,7 @@ static void _lib_duplicate_mipmap_updated_callback(gpointer instance,
                                                    const dt_imgid_t imgid,
                                                    dt_lib_module_t *self)
 {
-  dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
+  dt_lib_duplicate_t *d = self->data;
 
   gtk_widget_queue_draw(d->duplicate_box);
   dt_control_queue_redraw_center();
@@ -384,7 +384,7 @@ static void _lib_duplicate_mipmap_updated_callback(gpointer instance,
 static void _lib_duplicate_preview_updated_callback(gpointer instance,
                                                     dt_lib_module_t *self)
 {
-  dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
+  dt_lib_duplicate_t *d = self->data;
 
   gtk_widget_queue_draw (d->duplicate_box);
   dt_control_queue_redraw_center();

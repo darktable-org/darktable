@@ -188,10 +188,8 @@ int legacy_params(dt_iop_module_t *self,
       float blue[7];
     } dt_iop_channelmixer_params_v1_t;
 
-    const dt_iop_channelmixer_params_v1_t *o =
-      (dt_iop_channelmixer_params_v1_t *)old_params;
-    dt_iop_channelmixer_params_v2_t *n =
-      (dt_iop_channelmixer_params_v2_t *)malloc(sizeof(dt_iop_channelmixer_params_v2_t));
+    const dt_iop_channelmixer_params_v1_t *o = old_params;
+    dt_iop_channelmixer_params_v2_t *n = malloc(sizeof(dt_iop_channelmixer_params_v2_t));
 
     memset(n, 0, sizeof(dt_iop_channelmixer_params_v2_t));
 
@@ -234,7 +232,7 @@ int legacy_params(dt_iop_module_t *self,
 static void process_hsl_v1(dt_dev_pixelpipe_iop_t *piece, const float *const restrict in,
                            float *const restrict out, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_channelmixer_data_t *data = (dt_iop_channelmixer_data_t *)piece->data;
+  const dt_iop_channelmixer_data_t *data = piece->data;
   const float *const restrict hsl_matrix = data->hsl_matrix;
   const float *const restrict rgb_matrix = data->rgb_matrix;
   const int ch = piece->colors;
@@ -279,7 +277,7 @@ static void process_hsl_v1(dt_dev_pixelpipe_iop_t *piece, const float *const res
 static void process_hsl_v2(dt_dev_pixelpipe_iop_t *piece, const float *const restrict in,
                            float *const restrict out, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_channelmixer_data_t *data = (dt_iop_channelmixer_data_t *)piece->data;
+  const dt_iop_channelmixer_data_t *data = piece->data;
   const float *const restrict hsl_matrix = data->hsl_matrix;
   const float *const restrict rgb_matrix = data->rgb_matrix;
   const int ch = piece->colors;
@@ -329,7 +327,7 @@ static void process_hsl_v2(dt_dev_pixelpipe_iop_t *piece, const float *const res
 static void process_rgb(dt_dev_pixelpipe_iop_t *piece, const float *const restrict in,
                         float *const restrict out, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_channelmixer_data_t *data = (dt_iop_channelmixer_data_t *)piece->data;
+  const dt_iop_channelmixer_data_t *data = piece->data;
   const float *const restrict rgb_matrix = data->rgb_matrix;
   const int ch = piece->colors;
   const size_t pixel_count = (size_t)ch * roi_out->width * roi_out->height;
@@ -349,7 +347,7 @@ static void process_rgb(dt_dev_pixelpipe_iop_t *piece, const float *const restri
 static void process_gray(dt_dev_pixelpipe_iop_t *piece, const float *const restrict in,
                          float *const restrict out, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_channelmixer_data_t *data = (dt_iop_channelmixer_data_t *)piece->data;
+  const dt_iop_channelmixer_data_t *data = piece->data;
   const float *const restrict rgb_matrix = data->rgb_matrix;
   const int ch = piece->colors;
   const size_t pixel_count = (size_t)ch * roi_out->width * roi_out->height;
@@ -369,7 +367,7 @@ static void process_gray(dt_dev_pixelpipe_iop_t *piece, const float *const restr
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_channelmixer_data_t *data = (dt_iop_channelmixer_data_t *)piece->data;
+  const dt_iop_channelmixer_data_t *data = piece->data;
   switch(data->operation_mode)
   {
     case OPERATION_MODE_RGB:
@@ -393,8 +391,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_channelmixer_data_t *data = (dt_iop_channelmixer_data_t *)piece->data;
-  dt_iop_channelmixer_global_data_t *gd = (dt_iop_channelmixer_global_data_t *)self->global_data;
+  dt_iop_channelmixer_data_t *data = piece->data;
+  dt_iop_channelmixer_global_data_t *gd = self->global_data;
 
   cl_mem dev_hsl_matrix = NULL;
   cl_mem dev_rgb_matrix = NULL;
@@ -435,18 +433,17 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_channelmixer_global_data_t *gd = (dt_iop_channelmixer_global_data_t *)module->data;
+  dt_iop_channelmixer_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_channelmixer);
   free(module->data);
   module->data = NULL;
 }
 
-static void red_callback(GtkWidget *slider, gpointer user_data)
+static void red_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
-  dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
+  dt_iop_channelmixer_params_t *p = self->params;
+  dt_iop_channelmixer_gui_data_t *g = self->gui_data;
   const int output_channel_index = dt_bauhaus_combobox_get(g->output_channel);
   const float value = dt_bauhaus_slider_get(slider);
   if(output_channel_index >= 0 && value != p->red[output_channel_index])
@@ -456,12 +453,11 @@ static void red_callback(GtkWidget *slider, gpointer user_data)
   }
 }
 
-static void green_callback(GtkWidget *slider, gpointer user_data)
+static void green_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
-  dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
+  dt_iop_channelmixer_params_t *p = self->params;
+  dt_iop_channelmixer_gui_data_t *g = self->gui_data;
   const int output_channel_index = dt_bauhaus_combobox_get(g->output_channel);
   const float value = dt_bauhaus_slider_get(slider);
   if(output_channel_index >= 0 && value != p->green[output_channel_index])
@@ -471,12 +467,11 @@ static void green_callback(GtkWidget *slider, gpointer user_data)
   }
 }
 
-static void blue_callback(GtkWidget *slider, gpointer user_data)
+static void blue_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
-  dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
+  dt_iop_channelmixer_params_t *p = self->params;
+  dt_iop_channelmixer_gui_data_t *g = self->gui_data;
   const int output_channel_index = dt_bauhaus_combobox_get(g->output_channel);
   const float value = dt_bauhaus_slider_get(slider);
   if(output_channel_index >= 0 && value != p->blue[output_channel_index])
@@ -486,12 +481,11 @@ static void blue_callback(GtkWidget *slider, gpointer user_data)
   }
 }
 
-static void output_callback(GtkComboBox *combo, gpointer user_data)
+static void output_callback(GtkComboBox *combo, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
-  dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
+  dt_iop_channelmixer_params_t *p = self->params;
+  dt_iop_channelmixer_gui_data_t *g = self->gui_data;
 
   const int output_channel_index = dt_bauhaus_combobox_get(g->output_channel);
   if(output_channel_index >= 0)
@@ -509,7 +503,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)p1;
-  dt_iop_channelmixer_data_t *d = (dt_iop_channelmixer_data_t *)piece->data;
+  dt_iop_channelmixer_data_t *d = piece->data;
 
   // HSL mixer matrix
   gboolean hsl_mix_mode = FALSE;
@@ -583,8 +577,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
-  dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
+  dt_iop_channelmixer_gui_data_t *g = self->gui_data;
+  dt_iop_channelmixer_params_t *p = self->params;
 
   const int output_channel_index = dt_bauhaus_combobox_get(g->output_channel);
   if(output_channel_index >= 0)
@@ -608,7 +602,7 @@ void init(dt_iop_module_t *module)
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_channelmixer_gui_data_t *g = IOP_GUI_ALLOC(channelmixer);
-  const dt_iop_channelmixer_params_t *const p = (dt_iop_channelmixer_params_t *)self->default_params;
+  const dt_iop_channelmixer_params_t *const p = self->default_params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 

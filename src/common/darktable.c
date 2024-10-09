@@ -1214,8 +1214,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         if(*c == '=' && *(c + 1) != '\0')
         {
           *c++ = '\0';
-          dt_conf_string_entry_t *entry =
-            (dt_conf_string_entry_t *)g_malloc(sizeof(dt_conf_string_entry_t));
+          dt_conf_string_entry_t *entry = g_malloc(sizeof(dt_conf_string_entry_t));
           entry->key = g_strdup(keyval);
           entry->value = g_strdup(c);
           config_override = g_slist_append(config_override, entry);

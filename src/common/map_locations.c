@@ -626,7 +626,7 @@ GList *dt_map_location_convert_polygons(void *polygons, dt_map_box_t *bbox, int 
 
   for(GList *pol = polygons; pol; pol = g_list_next(pol), p++)
   {
-    dt_geo_map_display_point_t *pt = (dt_geo_map_display_point_t *)pol->data;
+    dt_geo_map_display_point_t *pt = pol->data;
     p->lat = pt->lat;
     p->lon = pt->lon;
     npol = g_list_prepend(npol, p);

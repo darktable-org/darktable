@@ -207,10 +207,8 @@ int legacy_params(dt_iop_module_t *self,
       float lift[CHANNEL_SIZE], gamma[CHANNEL_SIZE], gain[CHANNEL_SIZE];
     } dt_iop_colorbalance_params_v1_t;
 
-    const dt_iop_colorbalance_params_v1_t *o =
-      (dt_iop_colorbalance_params_v1_t *)old_params;
-    dt_iop_colorbalance_params_v3_t *n =
-      (dt_iop_colorbalance_params_v3_t *)malloc(sizeof(dt_iop_colorbalance_params_v3_t));
+    const dt_iop_colorbalance_params_v1_t *o = old_params;
+    dt_iop_colorbalance_params_v3_t *n = malloc(sizeof(dt_iop_colorbalance_params_v3_t));
 
     for(int i = 0; i < CHANNEL_SIZE; i++)
     {
@@ -239,10 +237,8 @@ int legacy_params(dt_iop_module_t *self,
       float saturation, contrast, grey;
     } dt_iop_colorbalance_params_v2_t;
 
-    const dt_iop_colorbalance_params_v2_t *o =
-      (dt_iop_colorbalance_params_v2_t *)old_params;
-    dt_iop_colorbalance_params_v3_t *n =
-      (dt_iop_colorbalance_params_v3_t *)malloc(sizeof(dt_iop_colorbalance_params_v3_t));
+    const dt_iop_colorbalance_params_v2_t *o = old_params;
+    dt_iop_colorbalance_params_v3_t *n = malloc(sizeof(dt_iop_colorbalance_params_v3_t));
 
     for(int i = 0; i < CHANNEL_SIZE; i++)
     {
@@ -689,7 +685,7 @@ void process(struct dt_iop_module_t *self,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
 
-  dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)piece->data;
+  dt_iop_colorbalance_data_t *d = piece->data;
   const float contrast = (d->contrast != 0.0f) ? 1.0f / d->contrast : 1000000.0f,
               grey = d->grey / 100.0f;
   const float saturation = d->saturation;
@@ -769,8 +765,8 @@ void process(struct dt_iop_module_t *self,
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)piece->data;
-  dt_iop_colorbalance_global_data_t *gd = (dt_iop_colorbalance_global_data_t *)self->global_data;
+  dt_iop_colorbalance_data_t *d = piece->data;
+  dt_iop_colorbalance_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
@@ -931,7 +927,7 @@ static inline void set_HSL_sliders(GtkWidget *hue, GtkWidget *sat, float RGB[4])
 
 static inline void _check_tuner_picker_labels(dt_iop_module_t *self)
 {
-  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+  dt_iop_colorbalance_gui_data_t *g = self->gui_data;
 
   if(g->luma_patches_flags[GAIN] == USER_SELECTED && g->luma_patches_flags[GAMMA] == USER_SELECTED
      && g->luma_patches_flags[LIFT] == USER_SELECTED)
@@ -950,8 +946,8 @@ static inline void _check_tuner_picker_labels(dt_iop_module_t *self)
 static void apply_autogrey(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
-  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+  dt_iop_colorbalance_params_t *p = self->params;
+  dt_iop_colorbalance_gui_data_t *g = self->gui_data;
 
   dt_aligned_pixel_t XYZ = { 0.0f };
   dt_aligned_pixel_t rgb = { 0.0f };
@@ -989,8 +985,8 @@ static void apply_autogrey(dt_iop_module_t *self)
 static void apply_lift_neutralize(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
-  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+  dt_iop_colorbalance_params_t *p = self->params;
+  dt_iop_colorbalance_gui_data_t *g = self->gui_data;
 
   dt_aligned_pixel_t XYZ = { 0.0f };
   dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
@@ -1029,8 +1025,8 @@ static void apply_lift_neutralize(dt_iop_module_t *self)
 static void apply_gamma_neutralize(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
-  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+  dt_iop_colorbalance_params_t *p = self->params;
+  dt_iop_colorbalance_gui_data_t *g = self->gui_data;
 
   dt_aligned_pixel_t XYZ = { 0.0f };
   dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
@@ -1068,8 +1064,8 @@ static void apply_gamma_neutralize(dt_iop_module_t *self)
 static void apply_gain_neutralize(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
-  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+  dt_iop_colorbalance_params_t *p = self->params;
+  dt_iop_colorbalance_gui_data_t *g = self->gui_data;
 
   dt_aligned_pixel_t XYZ = { 0.0f };
   dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
@@ -1108,8 +1104,8 @@ static void apply_gain_neutralize(dt_iop_module_t *self)
 static void apply_lift_auto(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
-  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+  dt_iop_colorbalance_params_t *p = self->params;
+  dt_iop_colorbalance_gui_data_t *g = self->gui_data;
 
   dt_aligned_pixel_t XYZ = { 0.0f };
   dt_Lab_to_XYZ((const float *)self->picked_color_min, XYZ);
@@ -1132,8 +1128,8 @@ static void apply_lift_auto(dt_iop_module_t *self)
 static void apply_gamma_auto(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
-  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+  dt_iop_colorbalance_params_t *p = self->params;
+  dt_iop_colorbalance_gui_data_t *g = self->gui_data;
 
   dt_aligned_pixel_t XYZ = { 0.0f };
   dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
@@ -1157,8 +1153,8 @@ static void apply_gamma_auto(dt_iop_module_t *self)
 static void apply_gain_auto(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
-  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+  dt_iop_colorbalance_params_t *p = self->params;
+  dt_iop_colorbalance_gui_data_t *g = self->gui_data;
 
   dt_aligned_pixel_t XYZ = { 0.0f };
   dt_Lab_to_XYZ((const float *)self->picked_color_max, XYZ);
@@ -1180,8 +1176,8 @@ static void apply_gain_auto(dt_iop_module_t *self)
 
 static void apply_autocolor(dt_iop_module_t *self)
 {
-  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
-  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+  dt_iop_colorbalance_params_t *p = self->params;
+  dt_iop_colorbalance_gui_data_t *g = self->gui_data;
 
   if(g->color_patches_flags[GAIN] == INVALID || g->color_patches_flags[GAMMA] == INVALID
      || g->color_patches_flags[LIFT] == INVALID)
@@ -1301,8 +1297,8 @@ static void apply_autocolor(dt_iop_module_t *self)
 
 static void apply_autoluma(dt_iop_module_t *self)
 {
-  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
-  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+  dt_iop_colorbalance_params_t *p = self->params;
+  dt_iop_colorbalance_gui_data_t *g = self->gui_data;
 
   /*
    * If some luma patches were not picked by the user, take a
@@ -1354,7 +1350,7 @@ static void apply_autoluma(dt_iop_module_t *self)
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+  dt_iop_colorbalance_gui_data_t *g = self->gui_data;
   if     (picker == g->hue_lift)
     apply_lift_neutralize(self);
   else if(picker == g->hue_gamma)
@@ -1392,7 +1388,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_colorbalance_global_data_t *gd = (dt_iop_colorbalance_global_data_t *)module->data;
+  dt_iop_colorbalance_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_colorbalance);
   dt_opencl_free_kernel(gd->kernel_colorbalance_lgg);
   dt_opencl_free_kernel(gd->kernel_colorbalance_cdl);
@@ -1403,7 +1399,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)(piece->data);
+  dt_iop_colorbalance_data_t *d = piece->data;
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)p1;
 
   d->mode = p->mode;
@@ -1540,7 +1536,7 @@ void gui_update(dt_iop_module_t *self)
 
 void gui_reset(dt_iop_module_t *self)
 {
-  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+  dt_iop_colorbalance_gui_data_t *g = self->gui_data;
 
   for(int k=0; k<LEVELS; k++)
   {
@@ -1560,8 +1556,8 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self);
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
-  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+  dt_iop_colorbalance_params_t *p = self->params;
+  dt_iop_colorbalance_gui_data_t *g = self->gui_data;
 
   if(!w || w == g->mode)
   {
@@ -1585,7 +1581,7 @@ static void controls_callback(GtkWidget *combo, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
-  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+  dt_iop_colorbalance_gui_data_t *g = self->gui_data;
 
   set_visible_widgets(g);
 
@@ -1715,8 +1711,8 @@ static gboolean dt_iop_area_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t
 
 static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
 {
-  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
-  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
+  dt_iop_colorbalance_params_t *p = self->params;
+  dt_iop_colorbalance_gui_data_t *g = self->gui_data;
 
   GtkWidget *new_container = NULL;
   GtkWidget *old_container = gtk_bin_get_child(GTK_BIN(g->main_box));
@@ -1816,11 +1812,10 @@ static void _cycle_layout_callback(GtkWidget *label, GdkEventButton *event, dt_i
 }
 
 #define HSL_CALLBACK(which)                                                             \
-static void which##_callback(GtkWidget *slider, gpointer user_data)                     \
+static void which##_callback(GtkWidget *slider, dt_iop_module_t *self)                  \
 {                                                                                       \
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;                                 \
-  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;       \
-  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data; \
+  dt_iop_colorbalance_params_t *p = self->params;       \
+  dt_iop_colorbalance_gui_data_t *g = self->gui_data; \
                                                                                         \
   if(darktable.gui->reset) return;                                                      \
                                                                                         \

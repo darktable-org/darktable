@@ -349,7 +349,7 @@ gboolean dt_lib_presets_apply(const gchar *preset,
     {
       for(const GList *it = darktable.lib->plugins; it; it = g_list_next(it))
       {
-        dt_lib_module_t *module = (dt_lib_module_t *)it->data;
+        dt_lib_module_t *module = it->data;
         if(!strncmp(module->plugin_name, module_name, 128))
         {
           gchar *tx = g_strdup_printf("plugins/darkroom/%s/last_preset", module_name);
@@ -901,8 +901,7 @@ static void dt_lib_gui_reset_callback(GtkButton *button,
 static void presets_popup_callback(GtkButton *button,
                                    dt_lib_module_t *module)
 {
-  dt_lib_module_info_t *mi =
-    (dt_lib_module_info_t *)calloc(1, sizeof(dt_lib_module_info_t));
+  dt_lib_module_info_t *mi = calloc(1, sizeof(dt_lib_module_info_t));
 
   mi->plugin_name = g_strdup(module->plugin_name);
   mi->version = module->version();
@@ -982,7 +981,7 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w,
       gboolean all_other_closed = TRUE;
       for(const GList *it = darktable.lib->plugins; it; it = g_list_next(it))
       {
-        dt_lib_module_t *m = (dt_lib_module_t *)it->data;
+        dt_lib_module_t *m = it->data;
 
         if(m != module
            && module->container(module) == m->container(m)
@@ -1034,7 +1033,7 @@ static void show_module_callback(dt_lib_module_t *module)
     gboolean all_other_closed = TRUE;
     for(const GList *it = darktable.lib->plugins; it; it = g_list_next(it))
     {
-      dt_lib_module_t *m = (dt_lib_module_t *)it->data;
+      dt_lib_module_t *m = it->data;
 
       if(m != module
          && module->container(module) == m->container(m)
@@ -1332,7 +1331,7 @@ static void _preferences_changed(gpointer instance, gpointer self)
 
   while(p)
   {
-    dt_lib_module_t *lmod = (dt_lib_module_t *)p->data;
+    dt_lib_module_t *lmod = p->data;
 
     if(lmod->pref_based_presets)
       dt_lib_init_presets(lmod);
@@ -1361,7 +1360,7 @@ void dt_lib_cleanup(dt_lib_t *lib)
                                      G_CALLBACK(_preferences_changed), lib);
   while(lib->plugins)
   {
-    dt_lib_module_t *module = (dt_lib_module_t *)(lib->plugins->data);
+    dt_lib_module_t *module = lib->plugins->data;
     if(module)
     {
       if(module->data != NULL)
@@ -1480,7 +1479,7 @@ gchar *dt_lib_get_localized_name(const gchar *plugin_name)
     module_names = g_hash_table_new(g_str_hash, g_str_equal);
     for(const GList *lib = darktable.lib->plugins; lib; lib = g_list_next(lib))
     {
-      dt_lib_module_t *module = (dt_lib_module_t *)lib->data;
+      dt_lib_module_t *module = lib->data;
       g_hash_table_insert(module_names, module->plugin_name,
                           g_strdup(module->name(module)));
     }
@@ -1519,7 +1518,7 @@ dt_lib_module_t *dt_lib_get_module(const char *name)
   /* hide/show modules as last config */
   for(GList *iter = darktable.lib->plugins; iter; iter = g_list_next(iter))
   {
-    dt_lib_module_t *plugin = (dt_lib_module_t *)(iter->data);
+    dt_lib_module_t *plugin = iter->data;
     if(strcmp(plugin->plugin_name, name) == 0)
       return plugin;
   }

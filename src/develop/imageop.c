@@ -502,7 +502,7 @@ static void _gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
   gboolean find = FALSE;
   while(modules)
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+    dt_iop_module_t *mod = modules->data;
     if(mod == module)
     {
       find = TRUE;
@@ -550,7 +550,7 @@ static void _gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
     GList *history = dev->history;
     while(history)
     {
-      dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+      dt_dev_history_item_t *hist = history->data;
       if(hist->module->instance == module->instance && hist->module != module)
       {
         first = hist->module;
@@ -566,7 +566,7 @@ static void _gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
     // we change this in the history stack too
     for(history = dev->history; history; history = g_list_next(history))
     {
-      dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+      dt_dev_history_item_t *hist = history->data;
       if(hist->module == first) hist->multi_priority = 0;
     }
   }
@@ -599,7 +599,7 @@ dt_iop_module_t *dt_iop_gui_get_previous_visible_module(dt_iop_module_t *module)
       modules;
       modules = g_list_next(modules))
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+    dt_iop_module_t *mod = modules->data;
     if(mod == module)
     {
       break;
@@ -625,7 +625,7 @@ dt_iop_module_t *dt_iop_gui_get_next_visible_module(dt_iop_module_t *module)
       modules;
       modules = g_list_previous(modules))
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+    dt_iop_module_t *mod = modules->data;
     if(mod == module)
     {
       break;
@@ -734,7 +734,7 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base,
 
   while(modules)
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+    dt_iop_module_t *mod = modules->data;
     if(mod == module)
       pos_module = pos;
     else if(mod == base)
@@ -964,7 +964,7 @@ void _get_multi_show(struct dt_iop_module_t *module,
   int nb_instances = 0;
   for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+    dt_iop_module_t *mod = modules->data;
 
     if(mod->instance == module->instance) nb_instances++;
   }
@@ -1634,7 +1634,7 @@ static void _iop_preferences_changed(gpointer instance, gpointer self)
 
   while(iop)
   {
-    dt_iop_module_so_t *mod = (dt_iop_module_so_t *)iop->data;
+    dt_iop_module_so_t *mod = iop->data;
 
     if(mod->pref_based_presets)
     {
@@ -1693,8 +1693,7 @@ static void _init_module_so(void *m)
     _init_presets_actions(module);
 
     // create a gui and have the widgets register their accelerators
-    dt_iop_module_t *module_instance =
-      (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
+    dt_iop_module_t *module_instance = calloc(1, sizeof(dt_iop_module_t));
 
     if(module->gui_init
        && !dt_iop_load_module_by_so(module_instance, module, NULL))
@@ -1823,7 +1822,7 @@ void dt_iop_unload_modules_so()
 
   while(darktable.iop)
   {
-    dt_iop_module_so_t *module = (dt_iop_module_so_t *)darktable.iop->data;
+    dt_iop_module_so_t *module = darktable.iop->data;
     if(module->cleanup_global)
       module->cleanup_global(module);
     if(module->module)
@@ -1887,7 +1886,7 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
 
   for(GList *iter = module->dev->iop; iter; iter = g_list_next(iter))
   {
-    dt_iop_module_t *candidate = (dt_iop_module_t *)iter->data;
+    dt_iop_module_t *candidate = iter->data;
     if(dt_iop_module_is(candidate->so, blendop_params->raster_mask_source))
     {
       if(candidate->multi_priority == blendop_params->raster_mask_instance)
@@ -1931,7 +1930,7 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
                               const gboolean report,
                               const char *name)
 {
-  dt_iop_params_t *p = (dt_iop_params_t *)((uint8_t *)params + field->header.offset);
+  dt_iop_params_t *p = ((uint8_t *)params + field->header.offset);
 
   gboolean all_ok = TRUE;
   gchar *values = NULL;
@@ -2473,7 +2472,7 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module,
     gboolean all_other_closed = TRUE;
     while(iop)
     {
-      dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
+      dt_iop_module_t *m = iop->data;
       if(m != module && (dt_iop_shown_in_group(m, current_group) || !group_only))
       {
         all_other_closed = all_other_closed && !m->expanded;
@@ -2742,7 +2741,7 @@ static void _display_mask_indicator_callback(GtkToggleButton *bt, dt_iop_module_
   if(darktable.gui->reset) return;
 
   const gboolean is_active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bt));
-  const dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
+  const dt_iop_gui_blend_data_t *bd = module->blend_data;
 
   module->request_mask_display &= ~DT_DEV_PIXELPIPE_DISPLAY_MASK;
   module->request_mask_display |= (is_active ? DT_DEV_PIXELPIPE_DISPLAY_MASK : DT_DEV_PIXELPIPE_DISPLAY_NONE);
@@ -3270,7 +3269,7 @@ dt_iop_module_t *dt_iop_get_module_from_list(GList *iop_list, const char *op)
 
   for(GList *modules = iop_list; modules; modules = g_list_next(modules))
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+    dt_iop_module_t *mod = modules->data;
     if(dt_iop_module_is(mod->so, op))
     {
       result = mod;
@@ -3292,7 +3291,7 @@ dt_iop_module_so_t *dt_iop_get_module_so(const char *op)
 
   for(GList *modules = darktable.iop; modules; modules = g_list_next(modules))
   {
-    dt_iop_module_so_t *mod = (dt_iop_module_so_t *)modules->data;
+    dt_iop_module_so_t *mod = modules->data;
     if(dt_iop_module_is(mod, op))
     {
       result = mod;
@@ -3308,7 +3307,7 @@ int dt_iop_get_module_flags(const char *op)
   GList *modules = darktable.iop;
   while(modules)
   {
-    dt_iop_module_so_t *module = (dt_iop_module_so_t *)modules->data;
+    dt_iop_module_so_t *module = modules->data;
     if(dt_iop_module_is(module, op))
       return module->flags();
     modules = g_list_next(modules);
@@ -3366,7 +3365,7 @@ void dt_iop_set_darktable_iop_table()
   gchar *module_list = NULL;
   for(GList *iop = darktable.iop; iop; iop = g_list_next(iop))
   {
-    dt_iop_module_so_t *module = (dt_iop_module_so_t *)iop->data;
+    dt_iop_module_so_t *module = iop->data;
     module_list = dt_util_dstrcat(module_list, "(\"%s\",\"%s\"),",
                                   module->op, module->name());
   }
@@ -3394,7 +3393,7 @@ const gchar *dt_iop_get_localized_name(const gchar *op)
     module_names = g_hash_table_new(g_str_hash, g_str_equal);
     for(GList *iop = darktable.iop; iop; iop = g_list_next(iop))
     {
-      dt_iop_module_so_t *module = (dt_iop_module_so_t *)iop->data;
+      dt_iop_module_so_t *module = iop->data;
       g_hash_table_insert(module_names, module->op, g_strdup(module->name()));
     }
   }
@@ -3416,7 +3415,7 @@ const gchar *dt_iop_get_localized_aliases(const gchar *op)
     module_aliases = g_hash_table_new(g_str_hash, g_str_equal);
     for(GList *iop = darktable.iop; iop; iop = g_list_next(iop))
     {
-      dt_iop_module_so_t *module = (dt_iop_module_so_t *)iop->data;
+      dt_iop_module_so_t *module = iop->data;
       g_hash_table_insert(module_aliases, module->op, g_strdup(module->aliases()));
     }
   }
@@ -3439,7 +3438,7 @@ void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t s
   {
     for(mods = darktable.develop->iop; mods; mods = g_list_next(mods))
     {
-      dt_iop_module_t *mod = (dt_iop_module_t *)mods->data;
+      dt_iop_module_t *mod = mods->data;
       if(mod->so == module && mod->expander) gtk_widget_hide(GTK_WIDGET(mod->expander));
     }
 
@@ -3456,7 +3455,7 @@ void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t s
 
       for(mods = darktable.develop->iop; mods; mods = g_list_next(mods))
       {
-        dt_iop_module_t *mod = (dt_iop_module_t *)mods->data;
+        dt_iop_module_t *mod = mods->data;
         if(mod->so == module && mod->expander)
         {
           gtk_widget_show(GTK_WIDGET(mod->expander));
@@ -3479,7 +3478,7 @@ void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t s
   {
     for(mods = darktable.develop->iop; mods; mods = g_list_next(mods))
     {
-      dt_iop_module_t *mod = (dt_iop_module_t *)mods->data;
+      dt_iop_module_t *mod = mods->data;
       if(mod->so == module && mod->expander) gtk_widget_show(GTK_WIDGET(mod->expander));
     }
 
@@ -3511,7 +3510,7 @@ void dt_iop_update_multi_priority(dt_iop_module_t *module, const int new_priorit
     // also fix history entries
     for(GList *hiter = module->dev->history; hiter; hiter = g_list_next(hiter))
     {
-      dt_dev_history_item_t *hist = (dt_dev_history_item_t *)hiter->data;
+      dt_dev_history_item_t *hist = hiter->data;
       if(hist->module == sink_module)
         hist->blend_params->raster_mask_instance = new_priority;
     }
@@ -3542,7 +3541,7 @@ dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules,
 
   for(GList *m = modules; m; m = g_list_next(m))
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)m->data;
+    dt_iop_module_t *mod = m->data;
 
     if(dt_iop_module_is(mod->so, operation)
        && (mod->multi_priority == multi_priority || multi_priority == -1))
@@ -3601,7 +3600,7 @@ dt_iop_module_t *dt_iop_get_module_preferred_instance(dt_iop_module_so_t *module
         iop_mods;
         iop_mods = g_list_previous(iop_mods))
     {
-      dt_iop_module_t *mod = (dt_iop_module_t *)iop_mods->data;
+      dt_iop_module_t *mod = iop_mods->data;
 
       if(mod->so == module && mod->iop_order != INT_MAX)
       {
@@ -3648,7 +3647,7 @@ void dt_iop_connect_accels_all(void)
       iop_mods;
       iop_mods = g_list_previous(iop_mods))
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)iop_mods->data;
+    dt_iop_module_t *mod = iop_mods->data;
     dt_iop_connect_accels_multi(mod->so);
   }
 }
@@ -3661,7 +3660,7 @@ dt_iop_module_t *dt_iop_get_module_by_instance_name(GList *modules,
 
   for(GList *m = modules; m; m = g_list_next(m))
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)m->data;
+    dt_iop_module_t *mod = m->data;
 
     if((dt_iop_module_is(mod->so, operation))
        && ((multi_name == NULL) || (strcmp(mod->multi_name, multi_name) == 0)))
@@ -3682,7 +3681,7 @@ int dt_iop_count_instances(dt_iop_module_so_t *module)
       iop_mods;
       iop_mods = g_list_previous(iop_mods))
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)iop_mods->data;
+    dt_iop_module_t *mod = iop_mods->data;
     if(mod->so == module && mod->iop_order != INT_MAX)
     {
       inst_count++;
@@ -3697,7 +3696,7 @@ gboolean dt_iop_is_first_instance(GList *modules, dt_iop_module_t *module)
   GList *iop = modules;
   while(iop)
   {
-    dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
+    dt_iop_module_t *m = iop->data;
     if(dt_iop_module_is(m->so, module->op))
     {
       is_first = (m == module);

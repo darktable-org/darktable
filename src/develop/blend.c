@@ -1535,8 +1535,7 @@ error:
 dt_blendop_cl_global_t *dt_develop_blend_init_cl_global(void)
 {
 #ifdef HAVE_OPENCL
-  dt_blendop_cl_global_t *b =
-    (dt_blendop_cl_global_t *)calloc(1, sizeof(dt_blendop_cl_global_t));
+  dt_blendop_cl_global_t *b = calloc(1, sizeof(dt_blendop_cl_global_t));
 
   const int program = 3; // blendop.cl, from programs.conf
   b->kernel_blendop_mask_Lab =

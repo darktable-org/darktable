@@ -250,7 +250,7 @@ static int color_smoothing_cl(
         const dt_iop_roi_t *const roi_out,
         const int passes)
 {
-  dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
+  dt_iop_demosaic_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_out->width;
@@ -312,8 +312,8 @@ static int green_equilibration_cl(
         cl_mem dev_out,
         const dt_iop_roi_t *const roi_in)
 {
-  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
-  dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
+  dt_iop_demosaic_data_t *data = piece->data;
+  dt_iop_demosaic_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -489,8 +489,8 @@ static int process_default_cl(
         const dt_iop_roi_t *const roi_out,
         const int demosaicing_method)
 {
-  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
-  dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
+  dt_iop_demosaic_data_t *data = piece->data;
+  dt_iop_demosaic_global_data_t *gd = self->global_data;
   const dt_image_t *img = &self->dev->image_storage;
 
   const int devid = piece->pipe->devid;

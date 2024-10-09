@@ -457,8 +457,8 @@ static inline void _update_saturation_slider_end_color(GtkWidget *slider, float 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
-  dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
+  dt_iop_graduatednd_gui_data_t *g = self->gui_data;
+  dt_iop_graduatednd_params_t *p = self->params;
 
   // convert picker RGB 2 HSL
   float H = .0f, S = .0f, L = .0f;
@@ -495,8 +495,8 @@ void gui_post_expose(dt_iop_module_t *self,
                      const float pointery,
                      const float zoom_scale)
 {
-  dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
-  dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
+  dt_iop_graduatednd_gui_data_t *g = self->gui_data;
+  dt_iop_graduatednd_params_t *p = self->params;
 
   // we get the extremities of the line
   if(g->define == 0)
@@ -586,7 +586,7 @@ int mouse_moved(dt_iop_module_t *self,
                 const int which,
                 const float zoom_scale)
 {
-  dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
+  dt_iop_graduatednd_gui_data_t *g = self->gui_data;
   gboolean handled = FALSE;
 
   // are we dragging something ?
@@ -646,7 +646,7 @@ int button_pressed(dt_iop_module_t *self,
                    const uint32_t state,
                    const float zoom_scale)
 {
-  dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
+  dt_iop_graduatednd_gui_data_t *g = self->gui_data;
 
   if(which == 3)
   {
@@ -678,8 +678,8 @@ int button_released(dt_iop_module_t *self,
                     const uint32_t state,
                     const float zoom_scale)
 {
-  dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
-  dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
+  dt_iop_graduatednd_gui_data_t *g = self->gui_data;
+  dt_iop_graduatednd_params_t *p = self->params;
   if(g->dragging > 0)
   {
     float r = 0.0, o = 0.0;
@@ -716,8 +716,8 @@ int scrolled(
         int up,
         uint32_t state)
 {
-  dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
-  dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
+  dt_iop_graduatednd_gui_data_t *g = self->gui_data;
+  dt_iop_graduatednd_params_t *p = self->params;
   if(dt_modifier_is(state, GDK_CONTROL_MASK))
   {
     float dens;
@@ -934,8 +934,8 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_graduatednd_data_t *data = (dt_iop_graduatednd_data_t *)piece->data;
-  dt_iop_graduatednd_global_data_t *gd = (dt_iop_graduatednd_global_data_t *)self->global_data;
+  dt_iop_graduatednd_data_t *data = piece->data;
+  dt_iop_graduatednd_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -991,7 +991,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_graduatednd_global_data_t *gd = (dt_iop_graduatednd_global_data_t *)module->data;
+  dt_iop_graduatednd_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_graduatedndp);
   dt_opencl_free_kernel(gd->kernel_graduatedndm);
   free(module->data);
@@ -1000,8 +1000,8 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
-  dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
+  dt_iop_graduatednd_params_t *p = self->params;
+  dt_iop_graduatednd_gui_data_t *g = self->gui_data;
   if(w == g->rotation)
   {
     _set_points_from_grad(self, &g->xa, &g->ya, &g->xb, &g->yb, p->rotation, p->offset);
@@ -1019,7 +1019,7 @@ void commit_params(struct dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)p1;
-  dt_iop_graduatednd_data_t *d = (dt_iop_graduatednd_data_t *)piece->data;
+  dt_iop_graduatednd_data_t *d = piece->data;
 
   d->density = p->density;
   d->hardness = p->hardness;
@@ -1052,8 +1052,8 @@ void cleanup_pipe(struct dt_iop_module_t *self,
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
-  dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
+  dt_iop_graduatednd_gui_data_t *g = self->gui_data;
+  dt_iop_graduatednd_params_t *p = self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
 

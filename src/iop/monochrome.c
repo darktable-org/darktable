@@ -128,8 +128,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_monochrome_params_v1_t;
 
     const dt_iop_monochrome_params_v1_t *o = (dt_iop_monochrome_params_v1_t *)old_params;
-    dt_iop_monochrome_params_v2_t *n =
-      (dt_iop_monochrome_params_v2_t *)malloc(sizeof(dt_iop_monochrome_params_v2_t));
+    dt_iop_monochrome_params_v2_t *n = malloc(sizeof(dt_iop_monochrome_params_v2_t));
     memcpy(n, o, sizeof(dt_iop_monochrome_params_v1_t));
     n->highlights = 0.0f;
 
@@ -202,7 +201,7 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
+  dt_iop_monochrome_data_t *d = piece->data;
   const float sigma2 = 2.0f * (d->size * 128.0f) * (d->size * 128.0f);
 // first pass: evaluate color filter:
   const size_t npixels = (size_t)roi_out->height * roi_out->width;
@@ -247,8 +246,8 @@ int process_cl(struct dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
-  dt_iop_monochrome_global_data_t *gd = (dt_iop_monochrome_global_data_t *)self->global_data;
+  dt_iop_monochrome_data_t *d = piece->data;
+  dt_iop_monochrome_global_data_t *gd = self->global_data;
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   const int devid = piece->pipe->devid;
@@ -323,7 +322,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)p1;
-  dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
+  dt_iop_monochrome_data_t *d = piece->data;
   d->a = p->a;
   d->b = p->b;
   d->size = p->size;
@@ -348,7 +347,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_monochrome_global_data_t *gd = (dt_iop_monochrome_global_data_t *)module->data;
+  dt_iop_monochrome_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_monochrome_filter);
   dt_opencl_free_kernel(gd->kernel_monochrome);
   free(module->data);
@@ -357,7 +356,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
+  dt_iop_monochrome_gui_data_t *g = self->gui_data;
   g->dragging = FALSE;
 }
 
@@ -372,12 +371,11 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-static gboolean _monochrome_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean _monochrome_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
-  dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
+  dt_iop_monochrome_gui_data_t *g = self->gui_data;
+  dt_iop_monochrome_params_t *p = self->params;
 
   const int inset = DT_COLORCORRECTION_INSET;
   GtkAllocation allocation;
@@ -435,7 +433,7 @@ static gboolean _monochrome_draw(GtkWidget *widget, cairo_t *crf, gpointer user_
 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
+  dt_iop_monochrome_params_t *p = self->params;
 
   if(fabsf(p->a - self->picked_color[1]) < 0.0001f
      && fabsf(p->b - self->picked_color[2]) < 0.0001f)
@@ -454,11 +452,10 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   dt_control_queue_redraw_widget(self->widget);
 }
 
-static gboolean _monochrome_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+static gboolean _monochrome_motion_notify(GtkWidget *widget, GdkEventMotion *event, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
-  dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
+  dt_iop_monochrome_gui_data_t *g = self->gui_data;
+  dt_iop_monochrome_params_t *p = self->params;
   if(g->dragging)
   {
     const float old_a = p->a, old_b = p->b;
@@ -477,18 +474,17 @@ static gboolean _monochrome_motion_notify(GtkWidget *widget, GdkEventMotion *eve
   return TRUE;
 }
 
-static gboolean _monochrome_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean _monochrome_button_press(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
   if(event->button == 1)
   {
-    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-    dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
-    dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
+    dt_iop_monochrome_gui_data_t *g = self->gui_data;
+    dt_iop_monochrome_params_t *p = self->params;
     dt_iop_color_picker_reset(self, TRUE);
     if(event->type == GDK_2BUTTON_PRESS)
     {
       // reset
-      const dt_iop_monochrome_params_t *const p0 = (dt_iop_monochrome_params_t *)self->default_params;
+      const dt_iop_monochrome_params_t *const p0 = self->default_params;
       p->a = p0->a;
       p->b = p0->b;
       p->size = p0->size;
@@ -512,12 +508,11 @@ static gboolean _monochrome_button_press(GtkWidget *widget, GdkEventButton *even
   return FALSE;
 }
 
-static gboolean _monochrome_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean _monochrome_button_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
   if(event->button == 1)
   {
-    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-    dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
+    dt_iop_monochrome_gui_data_t *g = self->gui_data;
     dt_iop_color_picker_reset(self, TRUE);
     g->dragging = 0;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -527,19 +522,17 @@ static gboolean _monochrome_button_release(GtkWidget *widget, GdkEventButton *ev
   return FALSE;
 }
 
-static gboolean _monochrome_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean _monochrome_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
+  dt_iop_monochrome_gui_data_t *g = self->gui_data;
   g->dragging = 0;
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
   return TRUE;
 }
 
-static gboolean _monochrome_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+static gboolean _monochrome_scrolled(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
+  dt_iop_monochrome_params_t *p = self->params;
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
@@ -594,7 +587,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
+  dt_iop_monochrome_gui_data_t *g = self->gui_data;
   cmsDeleteTransform(g->xform);
 
   IOP_GUI_FREE;

@@ -1646,8 +1646,8 @@ static int process_markesteijn_cl(
         const dt_iop_roi_t *const roi_out,
         const gboolean smooth)
 {
-  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
-  dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
+  dt_iop_demosaic_data_t *data = piece->data;
+  dt_iop_demosaic_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;

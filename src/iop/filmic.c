@@ -230,8 +230,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_filmic_params_v1_t;
 
     const dt_iop_filmic_params_v1_t *o = (dt_iop_filmic_params_v1_t *)old_params;
-    dt_iop_filmic_params_v3_t *n =
-      (dt_iop_filmic_params_v3_t *)malloc(sizeof(dt_iop_filmic_params_v3_t));
+    dt_iop_filmic_params_v3_t *n = malloc(sizeof(dt_iop_filmic_params_v3_t));
 
     n->grey_point_source = o->grey_point_source;
     n->white_point_source = o->white_point_source;
@@ -276,8 +275,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_filmic_params_v2_t;
 
     const dt_iop_filmic_params_v2_t *o = (dt_iop_filmic_params_v2_t *)old_params;
-    dt_iop_filmic_params_v3_t *n =
-      (dt_iop_filmic_params_v3_t *)malloc(sizeof(dt_iop_filmic_params_v3_t));
+    dt_iop_filmic_params_v3_t *n = malloc(sizeof(dt_iop_filmic_params_v3_t));
 
     n->grey_point_source = o->grey_point_source;
     n->white_point_source = o->white_point_source;
@@ -516,7 +514,7 @@ void process(dt_iop_module_t *self,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
 
-  dt_iop_filmic_data_t *const data = (dt_iop_filmic_data_t *)piece->data;
+  dt_iop_filmic_data_t *const data = piece->data;
 
   /** The log2(x) -> -INF when x -> 0
   * thus very low values (noise) will get even lower, resulting in noise negative amplification,
@@ -557,8 +555,8 @@ void process(dt_iop_module_t *self,
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_filmic_data_t *d = (dt_iop_filmic_data_t *)piece->data;
-  dt_iop_filmic_global_data_t *gd = (dt_iop_filmic_global_data_t *)self->global_data;
+  dt_iop_filmic_data_t *d = piece->data;
+  dt_iop_filmic_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
@@ -611,8 +609,8 @@ static void sanitize_latitude(dt_iop_filmic_params_t *p, dt_iop_filmic_gui_data_
 static void apply_auto_grey(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
+  dt_iop_filmic_params_t *p = self->params;
+  dt_iop_filmic_gui_data_t *g = self->gui_data;
 
   dt_aligned_pixel_t XYZ = { 0.0f };
   dt_Lab_to_XYZ(self->picked_color, XYZ);
@@ -637,8 +635,8 @@ static void apply_auto_grey(dt_iop_module_t *self)
 static void apply_auto_black(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
+  dt_iop_filmic_params_t *p = self->params;
+  dt_iop_filmic_gui_data_t *g = self->gui_data;
 
   const float noise = powf(2.0f, -16.0f);
   dt_aligned_pixel_t XYZ = { 0.0f };
@@ -665,8 +663,8 @@ static void apply_auto_black(dt_iop_module_t *self)
 static void apply_auto_white_point_source(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
+  dt_iop_filmic_params_t *p = self->params;
+  dt_iop_filmic_gui_data_t *g = self->gui_data;
 
   const float noise = powf(2.0f, -16.0f);
   dt_aligned_pixel_t XYZ = { 0.0f };
@@ -689,12 +687,11 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
   gtk_widget_queue_draw(self->widget);
 }
 
-static void security_threshold_callback(GtkWidget *slider, gpointer user_data)
+static void security_threshold_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
+  dt_iop_filmic_params_t *p = self->params;
+  dt_iop_filmic_gui_data_t *g = self->gui_data;
 
   float previous = p->security_factor;
   p->security_factor = dt_bauhaus_slider_get(slider);
@@ -724,8 +721,8 @@ static void security_threshold_callback(GtkWidget *slider, gpointer user_data)
 
 static void apply_autotune(dt_iop_module_t *self)
 {
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
+  dt_iop_filmic_gui_data_t *g = self->gui_data;
+  dt_iop_filmic_params_t *p = self->params;
 
   const float noise = powf(2.0f, -16.0f);
   dt_aligned_pixel_t XYZ = { 0.0f };
@@ -765,7 +762,7 @@ static void apply_autotune(dt_iop_module_t *self)
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
+  dt_iop_filmic_gui_data_t *g = self->gui_data;
   if     (picker == g->grey_point_source)
     apply_auto_grey(self);
   else if(picker == g->black_point_source)
@@ -778,12 +775,11 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
     dt_print(DT_DEBUG_ALWAYS, "[filmic] unknown color picker\n");
 }
 
-static void grey_point_source_callback(GtkWidget *slider, gpointer user_data)
+static void grey_point_source_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
+  dt_iop_filmic_gui_data_t *g = self->gui_data;
+  dt_iop_filmic_params_t *p = self->params;
   float prev_grey = p->grey_point_source;
   p->grey_point_source = dt_bauhaus_slider_get(slider);
 
@@ -802,12 +798,11 @@ static void grey_point_source_callback(GtkWidget *slider, gpointer user_data)
   gtk_widget_queue_draw(self->widget);
 }
 
-static void white_point_source_callback(GtkWidget *slider, gpointer user_data)
+static void white_point_source_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
+  dt_iop_filmic_params_t *p = self->params;
+  dt_iop_filmic_gui_data_t *g = self->gui_data;
   p->white_point_source = dt_bauhaus_slider_get(slider);
 
   sanitize_latitude(p, g);
@@ -818,12 +813,11 @@ static void white_point_source_callback(GtkWidget *slider, gpointer user_data)
   gtk_widget_queue_draw(self->widget);
 }
 
-static void black_point_source_callback(GtkWidget *slider, gpointer user_data)
+static void black_point_source_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
+  dt_iop_filmic_params_t *p = self->params;
+  dt_iop_filmic_gui_data_t *g = self->gui_data;
   p->black_point_source = dt_bauhaus_slider_get(slider);
 
   sanitize_latitude(p, g);
@@ -834,23 +828,21 @@ static void black_point_source_callback(GtkWidget *slider, gpointer user_data)
   gtk_widget_queue_draw(self->widget);
 }
 
-static void grey_point_target_callback(GtkWidget *slider, gpointer user_data)
+static void grey_point_target_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
+  dt_iop_filmic_params_t *p = self->params;
   p->grey_point_target = dt_bauhaus_slider_get(slider);
   dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
 
-static void latitude_stops_callback(GtkWidget *slider, gpointer user_data)
+static void latitude_stops_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
+  dt_iop_filmic_params_t *p = self->params;
+  dt_iop_filmic_gui_data_t *g = self->gui_data;
 
   p->latitude_stops = dt_bauhaus_slider_get(slider);
 
@@ -861,75 +853,68 @@ static void latitude_stops_callback(GtkWidget *slider, gpointer user_data)
   gtk_widget_queue_draw(self->widget);
 }
 
-static void contrast_callback(GtkWidget *slider, gpointer user_data)
+static void contrast_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
+  dt_iop_filmic_params_t *p = self->params;
   p->contrast = dt_bauhaus_slider_get(slider);
   dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
 
-static void saturation_callback(GtkWidget *slider, gpointer user_data)
+static void saturation_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
+  dt_iop_filmic_params_t *p = self->params;
   p->saturation = logf(9.0f * dt_bauhaus_slider_get(slider)/100.0 + 1.0f) / logf(10.0f) * 100.0f;
   dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void global_saturation_callback(GtkWidget *slider, gpointer user_data)
+static void global_saturation_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
+  dt_iop_filmic_params_t *p = self->params;
   p->global_saturation = dt_bauhaus_slider_get(slider);
   dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void white_point_target_callback(GtkWidget *slider, gpointer user_data)
+static void white_point_target_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
+  dt_iop_filmic_params_t *p = self->params;
   p->white_point_target = dt_bauhaus_slider_get(slider);
   dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
 
-static void black_point_target_callback(GtkWidget *slider, gpointer user_data)
+static void black_point_target_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
+  dt_iop_filmic_params_t *p = self->params;
   p->black_point_target = dt_bauhaus_slider_get(slider);
   dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
 
-static void output_power_callback(GtkWidget *slider, gpointer user_data)
+static void output_power_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
+  dt_iop_filmic_params_t *p = self->params;
   p->output_power = dt_bauhaus_slider_get(slider);
   dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
 
-static void balance_callback(GtkWidget *slider, gpointer user_data)
+static void balance_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
+  dt_iop_filmic_params_t *p = self->params;
   p->balance = dt_bauhaus_slider_get(slider);
   dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -939,7 +924,7 @@ static void balance_callback(GtkWidget *slider, gpointer user_data)
 static void interpolator_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
+  dt_iop_filmic_params_t *p = self->params;
   dt_iop_color_picker_reset(self, TRUE);
   const int combo = dt_bauhaus_combobox_get(widget);
 
@@ -979,7 +964,7 @@ static void interpolator_callback(GtkWidget *widget, dt_iop_module_t *self)
 static void preserve_color_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
+  dt_iop_filmic_params_t *p = self->params;
   p->preserve_color = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1199,7 +1184,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)p1;
-  dt_iop_filmic_data_t *d = (dt_iop_filmic_data_t *)piece->data;
+  dt_iop_filmic_data_t *d = piece->data;
 
   d->preserve_color = p->preserve_color;
 
@@ -1275,9 +1260,8 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)module->params;
+  dt_iop_filmic_gui_data_t *g = self->gui_data;
+  dt_iop_filmic_params_t *p = self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
 
@@ -1353,7 +1337,7 @@ void cleanup(dt_iop_module_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_filmic_global_data_t *gd = (dt_iop_filmic_global_data_t *)module->data;
+  dt_iop_filmic_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_filmic);
   free(module->data);
   module->data = NULL;
@@ -1361,7 +1345,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void gui_reset(dt_iop_module_t *self)
 {
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
+  dt_iop_filmic_gui_data_t *g = self->gui_data;
   dt_iop_color_picker_reset(self, TRUE);
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->extra_expander), FALSE);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->extra_toggle), dtgtk_cairo_paint_solid_arrow,
@@ -1369,13 +1353,12 @@ void gui_reset(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->extra_toggle), FALSE);
 }
 
-static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_filmic_gui_data_t *c = (dt_iop_filmic_gui_data_t *)self->gui_data;
-  dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
+  dt_iop_filmic_gui_data_t *g = self->gui_data;
+  dt_iop_filmic_params_t *p = self->params;
   dt_iop_filmic_nodes_t *nodes_data = (dt_iop_filmic_nodes_t *)malloc(sizeof(dt_iop_filmic_nodes_t));
-  compute_curve_lut(p, c->table, c->table_temp, 256, NULL, nodes_data);
+  compute_curve_lut(p, g->table, g->table_temp, 256, NULL, nodes_data);
 
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
@@ -1451,7 +1434,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   // draw curve
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
   cairo_set_source_rgb(cr, .9, .9, .9);
-  cairo_move_to(cr, 0, height * (1.0 - c->table[0]));
+  cairo_move_to(cr, 0, height * (1.0 - g->table[0]));
 
   for(int k = 1; k < 256; k++)
   {
@@ -1460,7 +1443,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
      * the "+ d" operation.
      */
     const float x = (rescale) ? powf(2.0f, (double)a * k / 255.0f + b) + d : k / 255.0f;
-    const float y = powf(c->table[k], 1.0f / gamma);
+    const float y = powf(g->table[k], 1.0f / gamma);
     cairo_line_to(cr, x * width, (double)height * (1.0 - y));
   }
   cairo_stroke(cr);
@@ -1471,10 +1454,9 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   return TRUE;
 }
 
-static void _extra_options_button_changed(GtkDarktableToggleButton *widget, gpointer user_data)
+static void _extra_options_button_changed(GtkDarktableToggleButton *widget, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
+  dt_iop_filmic_gui_data_t *g = self->gui_data;
   const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->extra_toggle));
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->extra_expander), active);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->extra_toggle), dtgtk_cairo_paint_solid_arrow,
@@ -1484,7 +1466,7 @@ static void _extra_options_button_changed(GtkDarktableToggleButton *widget, gpoi
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_filmic_gui_data_t *g = IOP_GUI_ALLOC(filmic);
-  const dt_iop_filmic_params_t *const p = (dt_iop_filmic_params_t *)self->default_params;
+  const dt_iop_filmic_params_t *const p = self->default_params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 

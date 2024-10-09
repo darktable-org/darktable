@@ -108,7 +108,7 @@ static void transform(const dt_dev_pixelpipe_iop_t *const piece,
                       const float *const x,
                       float *o)
 {
-  dt_iop_rotatepixels_data_t *d = (dt_iop_rotatepixels_data_t *)piece->data;
+  dt_iop_rotatepixels_data_t *d = piece->data;
 
   float pi[2] = { x[0] - d->rx * scale, x[1] - d->ry * scale };
 
@@ -122,7 +122,7 @@ static void backtransform(const dt_dev_pixelpipe_iop_t *const piece,
                           const float *const x,
                           float *o)
 {
-  dt_iop_rotatepixels_data_t *d = (dt_iop_rotatepixels_data_t *)piece->data;
+  dt_iop_rotatepixels_data_t *d = piece->data;
 
   float rt[] = { d->m[0], -d->m[1], -d->m[2], d->m[3] };
   mul_mat_vec_2(rt, x, o);
@@ -194,7 +194,7 @@ void distort_mask(struct dt_iop_module_t *self,
 void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *const roi_in)
 {
-  dt_iop_rotatepixels_data_t *d = (dt_iop_rotatepixels_data_t *)piece->data;
+  dt_iop_rotatepixels_data_t *d = piece->data;
 
   *roi_out = *roi_in;
 
@@ -317,7 +317,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_rotatepixels_params_t *p = (dt_iop_rotatepixels_params_t *)p1;
-  dt_iop_rotatepixels_data_t *d = (dt_iop_rotatepixels_data_t *)piece->data;
+  dt_iop_rotatepixels_data_t *d = piece->data;
 
   d->rx = p->rx;
   d->ry = p->ry;

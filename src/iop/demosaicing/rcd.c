@@ -572,8 +572,8 @@ static int process_rcd_cl(
         const dt_iop_roi_t *const roi_out,
         const gboolean smooth)
 {
-  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
-  dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
+  dt_iop_demosaic_data_t *data = piece->data;
+  dt_iop_demosaic_global_data_t *gd = self->global_data;
   const dt_image_t *img = &self->dev->image_storage;
 
   const int devid = piece->pipe->devid;

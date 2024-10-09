@@ -785,7 +785,7 @@ dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev,
 
   for(GList *profiles = dev->allprofile_info; profiles; profiles = g_list_next(profiles))
   {
-    dt_iop_order_iccprofile_info_t *prof = (dt_iop_order_iccprofile_info_t *)(profiles->data);
+    dt_iop_order_iccprofile_info_t *prof = profiles->data;
     if(prof->type == profile_type && strcmp(prof->filename, profile_filename) == 0)
     {
       profile_info = prof;
@@ -831,7 +831,7 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_iop
 
   for(GList *modules = iop_list; modules; modules = g_list_next(modules))
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
+    dt_iop_module_t *mod = modules->data;
 
     // we reach the module, that's it
     if(dt_iop_module_is(mod->so, module->op)) break;
@@ -1012,7 +1012,7 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,
   dt_iop_module_t *colorin = NULL;
   for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
   {
-    dt_iop_module_so_t *module_so = (dt_iop_module_so_t *)(modules->data);
+    dt_iop_module_so_t *module_so = modules->data;
     if(dt_iop_module_is(module_so, "colorin"))
     {
       colorin_so = module_so;
@@ -1023,7 +1023,7 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,
   {
     for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
-      dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+      dt_iop_module_t *module = modules->data;
       if(dt_iop_module_is(module->so, "colorin"))
       {
         colorin = module;
@@ -1064,7 +1064,7 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
       modules;
       modules = g_list_previous(modules))
   {
-    dt_iop_module_so_t *module_so = (dt_iop_module_so_t *)(modules->data);
+    dt_iop_module_so_t *module_so = modules->data;
     if(dt_iop_module_is(module_so, "colorout"))
     {
       colorout_so = module_so;
@@ -1075,7 +1075,7 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
   {
     for(const GList *modules = g_list_last(dev->iop); modules; modules = g_list_previous(modules))
     {
-      dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+      dt_iop_module_t *module = modules->data;
       if(dt_iop_module_is(module->so, "colorout"))
       {
         colorout = module;
@@ -1291,8 +1291,7 @@ void dt_ioppr_transform_image_colorspace_rgb
 #ifdef HAVE_OPENCL
 dt_colorspaces_cl_global_t *dt_colorspaces_init_cl_global()
 {
-  dt_colorspaces_cl_global_t *g =
-    (dt_colorspaces_cl_global_t *)malloc(sizeof(dt_colorspaces_cl_global_t));
+  dt_colorspaces_cl_global_t *g = malloc(sizeof(dt_colorspaces_cl_global_t));
 
   const int program = 23; // colorspaces.cl, from programs.conf
   g->kernel_colorspaces_transform_lab_to_rgb_matrix =

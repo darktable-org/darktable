@@ -126,7 +126,7 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(
   GList *pieces = pipe->nodes;
   for(int k = 0; k < position && pieces; k++)
   {
-    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
+    dt_dev_pixelpipe_iop_t *piece = pieces->data;
     dt_develop_t *dev = piece->module->dev;
 
     // don't take skipped modules into account

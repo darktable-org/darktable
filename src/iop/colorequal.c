@@ -347,7 +347,7 @@ void tiling_callback(struct dt_iop_module_t *self,
                      const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
 {
-  dt_iop_colorequal_data_t *data = (dt_iop_colorequal_data_t *)piece->data;
+  dt_iop_colorequal_data_t *data = piece->data;
 
   tiling->maxbuf = 1.0f;
   tiling->xalign = 1;
@@ -378,10 +378,8 @@ int legacy_params(dt_iop_module_t *self,
 {
   if(old_version == 1)
   {
-    const dt_iop_colorequal_params_t *o =
-      (dt_iop_colorequal_params_t *)old_params;
-    dt_iop_colorequal_params_t *n =
-      (dt_iop_colorequal_params_t *)malloc(sizeof(dt_iop_colorequal_params_t));
+    const dt_iop_colorequal_params_t *o = old_params;
+    dt_iop_colorequal_params_t *n = malloc(sizeof(dt_iop_colorequal_params_t));
 
     memcpy(n, o, sizeof(dt_iop_colorequal_params_t) - sizeof(float));
     n->hue_shift = 0.0f;
@@ -393,10 +391,8 @@ int legacy_params(dt_iop_module_t *self,
 
   if(old_version == 2)
   {
-    const dt_iop_colorequal_params_t *o =
-      (dt_iop_colorequal_params_t *)old_params;
-    dt_iop_colorequal_params_t *n =
-      (dt_iop_colorequal_params_t *)malloc(sizeof(dt_iop_colorequal_params_t));
+    const dt_iop_colorequal_params_t *o = old_params;
+    dt_iop_colorequal_params_t *n = malloc(sizeof(dt_iop_colorequal_params_t));
 
     memcpy(n, o, sizeof(dt_iop_colorequal_params_t) - sizeof(float));
     n->threshold = 0.024f;  // in v1/2 we had an inflection point of 0.1
@@ -420,10 +416,8 @@ int legacy_params(dt_iop_module_t *self,
 
   if(old_version == 3)
   {
-    const dt_iop_colorequal_params_t *o =
-      (dt_iop_colorequal_params_t *)old_params;
-    dt_iop_colorequal_params_t *n =
-      (dt_iop_colorequal_params_t *)malloc(sizeof(dt_iop_colorequal_params_t));
+    const dt_iop_colorequal_params_t *o = old_params;
+    dt_iop_colorequal_params_t *n = malloc(sizeof(dt_iop_colorequal_params_t));
 
     memcpy(n, o, sizeof(dt_iop_colorequal_params_t) - sizeof(float));
     n->threshold = o->threshold + 0.1f;
@@ -1011,8 +1005,8 @@ void process(struct dt_iop_module_t *self,
     dt_iop_copy_image_roi(o, i, piece->colors, roi_in, roi_out);
     return;
   }
-  dt_iop_colorequal_data_t *d = (dt_iop_colorequal_data_t *)piece->data;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_data_t *d = piece->data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   const int mask_mode = g && fullpipe ? g->mask_mode : 0;
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
@@ -1755,7 +1749,7 @@ void init_pipe(struct dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = dt_calloc_aligned(sizeof(dt_iop_colorequal_data_t));
-  dt_iop_colorequal_data_t *d = (dt_iop_colorequal_data_t *)piece->data;
+  dt_iop_colorequal_data_t *d = piece->data;
   d->LUT_saturation = dt_alloc_align_float(LUT_ELEM);
   d->LUT_hue = dt_alloc_align_float(LUT_ELEM);
   d->LUT_brightness = dt_alloc_align_float(LUT_ELEM);
@@ -1769,7 +1763,7 @@ void cleanup_pipe(struct dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_colorequal_data_t *d = (dt_iop_colorequal_data_t *)piece->data;
+  dt_iop_colorequal_data_t *d = piece->data;
   dt_free_align(d->LUT_saturation);
   dt_free_align(d->LUT_hue);
   dt_free_align(d->LUT_brightness);
@@ -1827,7 +1821,7 @@ void commit_params(struct dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorequal_params_t *p = (dt_iop_colorequal_params_t *)p1;
-  dt_iop_colorequal_data_t *d = (dt_iop_colorequal_data_t *)piece->data;
+  dt_iop_colorequal_data_t *d = piece->data;
 
   d->white_level = exp2f(p->white_level);
   d->chroma_size = p->chroma_size;
@@ -1988,8 +1982,8 @@ static inline void _draw_sliders_brightness_gradient
 
 static inline void _init_sliders(dt_iop_module_t *self)
 {
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
-  dt_iop_colorequal_params_t *p = (dt_iop_colorequal_params_t *)self->params;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
+  dt_iop_colorequal_params_t *p = self->params;
 
   // Saturation sliders
   for(int k = 0; k < NODES; k++)
@@ -2086,7 +2080,7 @@ void reload_defaults(dt_iop_module_t *self)
   // we might be called from presets update infrastructure => there is no image
   if(!self->dev || !dt_is_valid_imgid(self->dev->image_storage.id)) return;
 
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
   if(g)
   {
     // reset masking
@@ -2277,7 +2271,7 @@ void init_presets(dt_iop_module_so_t *self)
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
   if(!in)
   {
     dt_iop_color_picker_reset(self, FALSE);
@@ -2355,11 +2349,10 @@ static void _draw_color_picker(dt_iop_module_t *self,
 
 static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
                                          cairo_t *crf,
-                                         gpointer user_data)
+                                         dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
-  dt_iop_colorequal_params_t *p = (dt_iop_colorequal_params_t *)self->params;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
+  dt_iop_colorequal_params_t *p = self->params;
 
   // Cache the graph objects to avoid recomputing all the view at each redraw
   GtkAllocation allocation;
@@ -2590,8 +2583,8 @@ void color_picker_apply(dt_iop_module_t *self,
                         GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
-  dt_iop_colorequal_params_t *p = (dt_iop_colorequal_params_t *)self->params;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
+  dt_iop_colorequal_params_t *p = self->params;
 
   if(picker == g->white_level)
   {
@@ -2610,32 +2603,29 @@ void color_picker_apply(dt_iop_module_t *self,
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-static void _picker_callback(GtkWidget *quad, gpointer user_data)
+static void _picker_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
   g->picking = dt_bauhaus_widget_get_quad_active(quad);
 
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-static void _masking_callback_p(GtkWidget *quad, gpointer user_data)
+static void _masking_callback_p(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
   dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
   g->mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? g->channel + 1 : 0;
   dt_dev_reprocess_center(self->dev);
 }
 
-static void _masking_callback_t(GtkWidget *quad, gpointer user_data)
+static void _masking_callback_t(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
   dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
   g->mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? GRAD_SWITCH + g->channel + 1 : 0;
   dt_dev_reprocess_center(self->dev);
@@ -2647,7 +2637,7 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
                                           dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
   // The 4th tab is options, in which case we do nothing
   // For the first 3 tabs, update color channel and redraw the graph
@@ -2759,10 +2749,9 @@ static void _area_reset_nodes(dt_iop_colorequal_gui_data_t *g)
 
 static gboolean _area_scrolled_callback(GtkWidget *widget,
                                         GdkEventScroll *event,
-                                        gpointer user_data)
+                                        dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
   GtkWidget *w = dt_modifier_is(event->state, GDK_MOD1_MASK)
                ? GTK_WIDGET(g->notebook)
@@ -2772,10 +2761,9 @@ static gboolean _area_scrolled_callback(GtkWidget *widget,
 
 static gboolean _area_motion_notify_callback(GtkWidget *widget,
                                              GdkEventMotion *event,
-                                             gpointer user_data)
+                                             dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
   if(g->dragging && g->on_node)
     _area_set_pos(g, event->y);
@@ -2798,10 +2786,9 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
 
 static gboolean _area_button_press_callback(GtkWidget *widget,
                                             GdkEventButton *event,
-                                            gpointer user_data)
+                                            dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
   if(event->button == 2
      || (event->button == 1 // Ctrl+Click alias for macOS
@@ -2831,10 +2818,9 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
 
 static gboolean _area_button_release_callback(GtkWidget *widget,
                                               GdkEventButton *event,
-                                              gpointer user_data)
+                                              dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
   if(event->button == 1)
   {
@@ -2847,18 +2833,17 @@ static gboolean _area_button_release_callback(GtkWidget *widget,
 
 static gboolean _area_size_callback(GtkWidget *widget,
                                     GdkEventButton *event,
-                                    gpointer user_data)
+                                    dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
   g->gradients_cached = FALSE;
   return FALSE;
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
-  dt_iop_colorequal_params_t *p = (dt_iop_colorequal_params_t *)self->params;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
+  dt_iop_colorequal_params_t *p = self->params;
 
   // Get the current display profile
   struct dt_iop_order_iccprofile_info_t *work_profile =
@@ -2908,7 +2893,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
   if(g->white_adapted_profile)
@@ -2936,8 +2921,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_colorequal_params_t *p = (dt_iop_colorequal_params_t *)self->params;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_params_t *p = self->params;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_filter), p->use_filter);
   gui_changed(self, NULL, NULL);
 
@@ -2976,7 +2961,7 @@ static float _action_process_colorequal(gpointer target,
                                         float move_size)
 {
   dt_iop_module_t *self = g_object_get_data(G_OBJECT(target), "iop-instance");
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
   GtkWidget *w = _get_slider(g, element);
   const int index = dt_action_widget(w)->type - DT_ACTION_TYPE_WIDGET - 1;

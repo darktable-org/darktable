@@ -1252,7 +1252,7 @@ static void _update_display_profile(guchar *tmp_data,
   {
     for(GList *iter = darktable.color_profiles->profiles; iter; iter = g_list_next(iter))
     {
-      dt_colorspaces_color_profile_t *p = (dt_colorspaces_color_profile_t *)iter->data;
+      dt_colorspaces_color_profile_t *p = iter->data;
       if(p->type == DT_COLORSPACE_DISPLAY)
       {
         if(p->profile) dt_colorspaces_cleanup_profile(p->profile);
@@ -1283,7 +1283,7 @@ static void _update_display2_profile(guchar *tmp_data,
   {
     for(GList *iter = darktable.color_profiles->profiles; iter; iter = g_list_next(iter))
     {
-      dt_colorspaces_color_profile_t *p = (dt_colorspaces_color_profile_t *)iter->data;
+      dt_colorspaces_color_profile_t *p = iter->data;
       if(p->type == DT_COLORSPACE_DISPLAY2)
       {
         if(p->profile) dt_colorspaces_cleanup_profile(p->profile);
@@ -1605,7 +1605,7 @@ dt_colorspaces_t *dt_colorspaces_init()
   temp_profiles = load_profile_from_dir("in");
   for(GList *iter = temp_profiles; iter; iter = g_list_next(iter))
   {
-    dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)iter->data;
+    dt_colorspaces_color_profile_t *prof = iter->data;
     prof->in_pos = ++in_pos;
   }
   res->profiles = g_list_concat(res->profiles, temp_profiles);
@@ -1614,7 +1614,7 @@ dt_colorspaces_t *dt_colorspaces_init()
   temp_profiles = load_profile_from_dir("out");
   for(GList *iter = temp_profiles; iter; iter = g_list_next(iter))
   {
-    dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)iter->data;
+    dt_colorspaces_color_profile_t *prof = iter->data;
     // FIXME: do want to filter out non-RGB profiles for cases besides
     // histogram profile? colorin is OK with RGB or XYZ, print is OK
     // with anything which LCMS likes, otherwise things are more
@@ -1712,7 +1712,7 @@ void dt_colorspaces_cleanup(dt_colorspaces_t *self)
 
   for(GList *iter = self->profiles; iter; iter = g_list_next(iter))
   {
-    dt_colorspaces_color_profile_t *p = (dt_colorspaces_color_profile_t *)iter->data;
+    dt_colorspaces_color_profile_t *p = iter->data;
     dt_colorspaces_cleanup_profile(p->profile);
   }
   g_list_free_full(self->profiles, free);
@@ -2228,7 +2228,7 @@ static const dt_colorspaces_color_profile_t *_get_profile
 {
   for(GList *iter = self->profiles; iter; iter = g_list_next(iter))
   {
-    dt_colorspaces_color_profile_t *p = (dt_colorspaces_color_profile_t *)iter->data;
+    dt_colorspaces_color_profile_t *p = iter->data;
     if(((direction & DT_PROFILE_DIRECTION_IN && p->in_pos > -1)
         || (direction & DT_PROFILE_DIRECTION_OUT && p->out_pos > -1)
         || (direction & DT_PROFILE_DIRECTION_WORK && p->work_pos > -1)

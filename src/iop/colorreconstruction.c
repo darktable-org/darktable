@@ -168,8 +168,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorreconstruct_params_v1_t;
 
     const dt_iop_colorreconstruct_params_v1_t *old = old_params;
-    dt_iop_colorreconstruct_params_v3_t *new =
-      (dt_iop_colorreconstruct_params_v3_t *)malloc(sizeof(dt_iop_colorreconstruct_params_v3_t));
+    dt_iop_colorreconstruct_params_v3_t *new = malloc(sizeof(dt_iop_colorreconstruct_params_v3_t));
     new->threshold = old->threshold;
     new->spatial = old->spatial;
     new->range = old->range;
@@ -192,8 +191,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorreconstruct_params_v2_t;
 
     const dt_iop_colorreconstruct_params_v2_t *old = old_params;
-    dt_iop_colorreconstruct_params_v3_t *new =
-      (dt_iop_colorreconstruct_params_v3_t *)malloc(sizeof(dt_iop_colorreconstruct_params_v3_t));
+    dt_iop_colorreconstruct_params_v3_t *new = malloc(sizeof(dt_iop_colorreconstruct_params_v3_t));
     new->threshold = old->threshold;
     new->spatial = old->spatial;
     new->range = old->range;
@@ -604,8 +602,8 @@ static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruc
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorreconstruct_data_t *data = (dt_iop_colorreconstruct_data_t *)piece->data;
-  dt_iop_colorreconstruct_gui_data_t *g = (dt_iop_colorreconstruct_gui_data_t *)self->gui_data;
+  dt_iop_colorreconstruct_data_t *data = piece->data;
+  dt_iop_colorreconstruct_gui_data_t *g = self->gui_data;
   float *in = (float *)ivoid;
   float *out = (float *)ovoid;
 
@@ -1014,9 +1012,9 @@ static cl_int dt_iop_colorreconstruct_bilateral_slice_cl(dt_iop_colorreconstruct
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorreconstruct_data_t *d = (dt_iop_colorreconstruct_data_t *)piece->data;
-  dt_iop_colorreconstruct_global_data_t *gd = (dt_iop_colorreconstruct_global_data_t *)self->global_data;
-  dt_iop_colorreconstruct_gui_data_t *g = (dt_iop_colorreconstruct_gui_data_t *)self->gui_data;
+  dt_iop_colorreconstruct_data_t *d = piece->data;
+  dt_iop_colorreconstruct_global_data_t *gd = self->global_data;
+  dt_iop_colorreconstruct_gui_data_t *g = self->gui_data;
 
   const float scale = piece->iscale / roi_in->scale;
   const float sigma_r = fmax(d->range, 0.1f); // does not depend on scale
@@ -1118,7 +1116,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
 {
-  dt_iop_colorreconstruct_data_t *d = (dt_iop_colorreconstruct_data_t *)piece->data;
+  dt_iop_colorreconstruct_data_t *d = piece->data;
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
   const float scale = piece->iscale / roi_in->scale;
@@ -1144,8 +1142,8 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_colorreconstruct_params_t *p = (dt_iop_colorreconstruct_params_t *)self->params;
-  dt_iop_colorreconstruct_gui_data_t *g = (dt_iop_colorreconstruct_gui_data_t *)self->gui_data;
+  dt_iop_colorreconstruct_params_t *p = self->params;
+  dt_iop_colorreconstruct_gui_data_t *g = self->gui_data;
   if(w == g->precedence)
   {
     gtk_widget_set_visible(g->hue, p->precedence == COLORRECONSTRUCT_PRECEDENCE_HUE);
@@ -1156,7 +1154,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorreconstruct_params_t *p = (dt_iop_colorreconstruct_params_t *)p1;
-  dt_iop_colorreconstruct_data_t *d = (dt_iop_colorreconstruct_data_t *)piece->data;
+  dt_iop_colorreconstruct_data_t *d = piece->data;
 
   d->threshold = p->threshold;
   d->spatial = p->spatial;
@@ -1184,8 +1182,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 void gui_update(struct dt_iop_module_t *self)
 {
   const gboolean monochrome = dt_image_is_monochrome(&self->dev->image_storage);
-  dt_iop_colorreconstruct_gui_data_t *g = (dt_iop_colorreconstruct_gui_data_t *)self->gui_data;
-  dt_iop_colorreconstruct_params_t *p = (dt_iop_colorreconstruct_params_t *)self->params;
+  dt_iop_colorreconstruct_gui_data_t *g = self->gui_data;
+  dt_iop_colorreconstruct_params_t *p = self->params;
 
   self->hide_enable_button = monochrome;
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), !monochrome ? "default" : "monochrome");
@@ -1213,7 +1211,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_colorreconstruct_global_data_t *gd = (dt_iop_colorreconstruct_global_data_t *)module->data;
+  dt_iop_colorreconstruct_global_data_t *gd = module->data;
   dt_opencl_free_kernel(gd->kernel_colorreconstruct_zero);
   dt_opencl_free_kernel(gd->kernel_colorreconstruct_splat);
   dt_opencl_free_kernel(gd->kernel_colorreconstruct_blur_line);
@@ -1268,7 +1266,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_iop_colorreconstruct_gui_data_t *g = (dt_iop_colorreconstruct_gui_data_t *)self->gui_data;
+  dt_iop_colorreconstruct_gui_data_t *g = self->gui_data;
   dt_iop_colorreconstruct_bilateral_dump(g->can);
 
   IOP_GUI_FREE;

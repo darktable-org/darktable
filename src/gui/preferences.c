@@ -231,7 +231,7 @@ static void usercss_dialog_callback(GtkDialog *dialog, gint response_id, gpointe
 static void language_callback(GtkWidget *widget, gpointer user_data)
 {
   int selected = dt_bauhaus_combobox_get(widget);
-  dt_l10n_language_t *language = (dt_l10n_language_t *)g_list_nth_data(darktable.l10n->languages, selected);
+  dt_l10n_language_t *language = g_list_nth_data(darktable.l10n->languages, selected);
   if(darktable.l10n->sys_default == selected)
   {
     dt_conf_set_string("ui_last/gui_language", "");

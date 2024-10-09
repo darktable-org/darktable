@@ -332,7 +332,7 @@ gboolean dt_presets_module_can_autoapply(const gchar *operation)
       lib_modules;
       lib_modules = g_list_next(lib_modules))
   {
-    dt_lib_module_t *lib_module = (dt_lib_module_t *)lib_modules->data;
+    dt_lib_module_t *lib_module = lib_modules->data;
     if(!strcmp(lib_module->plugin_name, operation))
     {
       return dt_lib_presets_can_autoapply(lib_module);

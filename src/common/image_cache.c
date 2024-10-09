@@ -201,7 +201,7 @@ static void _image_cache_allocate(void *data,
 
 static void _image_cache_deallocate(void *data, dt_cache_entry_t *entry)
 {
-  dt_image_t *img = (dt_image_t *)entry->data;
+  dt_image_t *img = entry->data;
   g_free(img->profile);
   g_list_free_full(img->dng_gain_maps, g_free);
   g_free(img);
@@ -245,7 +245,7 @@ dt_image_t *dt_image_cache_get(dt_image_cache_t *cache,
   if(!dt_is_valid_imgid(imgid)) return NULL;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, mode);
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
-  dt_image_t *img = (dt_image_t *)entry->data;
+  dt_image_t *img = entry->data;
   img->cache_entry = entry;
   return img;
 }
@@ -258,7 +258,7 @@ dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache,
   dt_cache_entry_t *entry = dt_cache_testget(&cache->cache, imgid, mode);
   if(!entry) return 0;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
-  dt_image_t *img = (dt_image_t *)entry->data;
+  dt_image_t *img = entry->data;
   img->cache_entry = entry;
   return img;
 }
@@ -431,7 +431,7 @@ void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache,
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'w');
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
-  dt_image_t *img = (dt_image_t *)entry->data;
+  dt_image_t *img = entry->data;
   img->cache_entry = entry;
   img->change_timestamp = dt_datetime_now_to_gtimespan();
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
@@ -451,7 +451,7 @@ void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache,
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'w');
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
-  dt_image_t *img = (dt_image_t *)entry->data;
+  dt_image_t *img = entry->data;
   img->cache_entry = entry;
   img->change_timestamp = change_timestamp;
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
@@ -464,7 +464,7 @@ void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache,
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'w');
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
-  dt_image_t *img = (dt_image_t *)entry->data;
+  dt_image_t *img = entry->data;
   img->cache_entry = entry;
   img->change_timestamp = 0;
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
@@ -477,7 +477,7 @@ void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache,
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'w');
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
-  dt_image_t *img = (dt_image_t *)entry->data;
+  dt_image_t *img = entry->data;
   img->cache_entry = entry;
   img->export_timestamp = dt_datetime_now_to_gtimespan();
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
@@ -490,7 +490,7 @@ void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache,
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'w');
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
-  dt_image_t *img = (dt_image_t *)entry->data;
+  dt_image_t *img = entry->data;
   img->cache_entry = entry;
   img->print_timestamp = dt_datetime_now_to_gtimespan();
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);

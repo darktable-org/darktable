@@ -83,7 +83,7 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_module_toolbox_t *d = (dt_lib_module_toolbox_t *)self->data;
+  dt_lib_module_toolbox_t *d = self->data;
   g_list_free_full(d->child_views,free);
   g_free(self->data);
   self->data = NULL;
@@ -91,7 +91,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
 void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
 {
-  dt_lib_module_toolbox_t *d = (dt_lib_module_toolbox_t *)self->data;
+  dt_lib_module_toolbox_t *d = self->data;
   dt_view_type_flags_t nv= new_view->view(new_view);
   for(const GList *child_elt = d->child_views; child_elt; child_elt = g_list_next(child_elt))
   {
@@ -109,7 +109,7 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
 
 static void _lib_module_toolbox_add(dt_lib_module_t *self, GtkWidget *widget, dt_view_type_flags_t views)
 {
-  dt_lib_module_toolbox_t *d = (dt_lib_module_toolbox_t *)self->data;
+  dt_lib_module_toolbox_t *d = self->data;
   gtk_box_pack_start(GTK_BOX(d->container), widget, TRUE, FALSE, 0);
   gtk_widget_show_all(widget);
 

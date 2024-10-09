@@ -599,7 +599,7 @@ int set_params(dt_imageio_module_format_t *self,
 {
   if(size != self->params_size(self)) return 1;
   const dt_imageio_png_t *d = (dt_imageio_png_t *)params;
-  const dt_imageio_png_gui_t *g = (dt_imageio_png_gui_t *)self->gui_data;
+  const dt_imageio_png_gui_t *g = self->gui_data;
   if(d->bpp < 12)
     dt_bauhaus_combobox_set(g->bit_depth, 0);
   else
@@ -712,7 +712,7 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
-  dt_imageio_png_gui_t *gui = (dt_imageio_png_gui_t *)self->gui_data;
+  dt_imageio_png_gui_t *gui = self->gui_data;
   dt_bauhaus_combobox_set(gui->bit_depth, 0); // 8bpp
   dt_bauhaus_slider_set(gui->compression,
                         dt_confgen_get_int("plugins/imageio/format/png/compression",
