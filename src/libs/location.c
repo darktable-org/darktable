@@ -22,7 +22,6 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
-#include "dtgtk/icon.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"

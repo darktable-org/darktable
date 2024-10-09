@@ -39,7 +39,6 @@
 #include "dtgtk/button.h"
 #include "dtgtk/expander.h"
 #include "dtgtk/gradientslider.h"
-#include "dtgtk/icon.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/drag_and_drop.h"
