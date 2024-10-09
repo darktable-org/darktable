@@ -689,7 +689,8 @@ static void _lib_history_module_remove_callback(gpointer instance,
   dt_undo_iterate(darktable.undo, DT_UNDO_HISTORY, module, &_history_invalidate_cb);
 }
 
-static void _lib_history_will_change_callback(gpointer instance, dt_lib_module_t *self)
+static void _lib_history_will_change_callback(gpointer instance,
+                                              dt_lib_module_t *self)
 {
   dt_lib_history_t *lib = self->data;
 
@@ -1117,7 +1118,8 @@ static gchar *_lib_history_button_label(const dt_dev_history_item_t *item)
   return label;
 }
 
-static void _lib_history_change_callback(gpointer instance, dt_lib_module_t *self)
+static void _lib_history_change_callback(gpointer instance,
+                                         dt_lib_module_t *self)
 {
   dt_lib_history_t *d = self->data;
 
