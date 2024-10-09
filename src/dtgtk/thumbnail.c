@@ -33,7 +33,6 @@
 #include "common/variables.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
-#include "dtgtk/icon.h"
 #include "dtgtk/thumbnail_btn.h"
 #include "gui/drag_and_drop.h"
 #include "gui/accelerators.h"

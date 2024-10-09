@@ -25,7 +25,6 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "dtgtk/button.h"
-#include "dtgtk/icon.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
