@@ -120,6 +120,24 @@ typedef enum dt_masks_source_pos_type_t
   DT_MASKS_SOURCE_POS_ABSOLUTE = 2
 } dt_masks_source_pos_type_t;
 
+/* selected Bézier control point for path*/
+typedef enum dt_masks_path_ctrl_t
+{
+  DT_MASKS_PATH_CRTL_NONE = 0,
+  DT_MASKS_PATH_CTRL1 = 1,
+  DT_MASKS_PATH_CTRL2 = 2
+
+} dt_masks_path_ctrl_t;
+
+/* restrictions on moving Bézier control points */
+typedef enum dt_masks_path_edit_mode_t
+{
+  DT_MASKS_BEZIER_NONE = 0,        // preserve angle & scale
+  DT_MASKS_BEZIER_SINGLE = 1,      // no restriction
+  DT_MASKS_BEZIER_SYMMETRIC = 2,   // force full symmetry
+  DT_MASKS_BEZIER_SING_SYMM = 3    // SINGLE && SYMMETRIC => force angle symmetry only
+} dt_masks_path_edit_mode_t;
+
 /** structure used to store 1 point for a circle */
 typedef struct dt_masks_point_circle_t
 {
@@ -345,6 +363,14 @@ typedef struct dt_masks_dynbuf_t
   size_t size;
 } dt_masks_dynbuf_t;
 
+typedef struct dt_masks_intbuf_t
+{
+  int *buffer;
+  char tag[128];
+  size_t pos;
+  size_t size;
+} dt_masks_intbuf_t;
+
 
 /** structure used to display a form */
 typedef struct dt_masks_form_gui_t
@@ -367,6 +393,7 @@ typedef struct dt_masks_form_gui_t
   int point_selected;
   int point_edited;
   int feather_selected;
+  dt_masks_path_ctrl_t bezier_ctrl; // For paths, this selects a Bézier control point.
   int seg_selected;
   int point_border_selected;
   int source_pos_type;
@@ -380,6 +407,10 @@ typedef struct dt_masks_form_gui_t
   int feather_dragging;
   int seg_dragging;
   int point_border_dragging;
+
+  dt_masks_path_edit_mode_t bezier_mode;  // Bézier editing with shift or ctrl
+  float bezier_ctrl_angle;  // angle between ctrl1 and ctrl2
+  float bezier_ctrl_scale;  // length of ctrl2 relative to ctrl1
 
   int group_edited;
   int group_selected;
@@ -682,7 +713,11 @@ void dt_group_events_post_expose(cairo_t *cr,
                                  dt_masks_form_t *form,
                                  dt_masks_form_gui_t *gui);
 
-/** code for dynamic handling of intermediate buffers */
+
+/******************************************************
+ * code for dynamic handling of intermediate buffers
+ * buffer for floats
+ */
 static inline gboolean _dt_masks_dynbuf_growto(dt_masks_dynbuf_t *a,
                                                const size_t newsize)
 {
@@ -816,6 +851,15 @@ float dt_masks_dynbuf_get(dt_masks_dynbuf_t *a, const int offset)
 }
 
 static inline
+float dt_masks_dynbuf_get_absolute(dt_masks_dynbuf_t *a, const int position)
+{
+  assert(a != NULL);
+  assert(position >= 0);
+  assert((long)a->pos > position);
+  return (a->buffer[position]);
+}
+
+static inline
 void dt_masks_dynbuf_set(dt_masks_dynbuf_t *a, const int offset, const float value)
 {
   assert(a != NULL);
@@ -823,6 +867,15 @@ void dt_masks_dynbuf_set(dt_masks_dynbuf_t *a, const int offset, const float val
   assert(offset < 0);
   assert((long)a->pos + offset >= 0);
   a->buffer[a->pos + offset] = value;
+}
+
+static inline
+void dt_masks_dynbuf_set_absolute(dt_masks_dynbuf_t *a, const int position, const float value)
+{
+  assert(a != NULL);
+  assert(position >= 0);
+  assert((long)a->pos > position);
+  a->buffer[position] = value;
 }
 
 static inline
@@ -837,6 +890,14 @@ size_t dt_masks_dynbuf_position(dt_masks_dynbuf_t *a)
 {
   assert(a != NULL);
   return a->pos;
+}
+
+static inline
+void dt_masks_dynbuf_reset_position(dt_masks_dynbuf_t *a, const size_t newpos)
+{
+  assert(a != NULL);
+  assert(newpos <= a->pos);
+  a->pos = newpos;
 }
 
 static inline
@@ -866,6 +927,138 @@ void dt_masks_dynbuf_free(dt_masks_dynbuf_t *a)
   dt_free_align(a->buffer);
   free(a);
 }
+
+// Dump buffer to file for debugging.
+static inline
+void dt_masks_dynbuf_debug_print(dt_masks_dynbuf_t *a, gboolean to_stdout)
+{
+  if(a == NULL) return;
+  if (to_stdout)
+  {
+    printf("'%s' buffer: ", a->tag);
+    for (size_t i = 0; i < a->pos; i += 2)
+    {
+      printf("(%f %f), ", a->buffer[i], a->buffer[i+1]);
+    }
+    printf("\n");
+  }
+  else
+  {
+    FILE *f;
+    char filename[255] = { 0 };
+    sprintf(filename, "debug-%ld-%s", time(NULL), a->tag);
+    f = g_fopen(filename, "w");
+    for (size_t i = 0; i < a->pos; i += 2)
+    {
+      fprintf(f, "%f %f\n", a->buffer[i], a->buffer[i+1]);
+    }
+    fclose(f);
+  }
+}
+
+/******************************************************
+ * code for dynamic handling of intermediate buffers
+ * buffer for ints
+ */
+static inline gboolean _dt_masks_intbuf_growto(dt_masks_intbuf_t *a,
+                                               const size_t newsize)
+{
+  int *newbuf = dt_alloc_align_int(newsize);
+  if (!newbuf)
+  {
+    // not much we can do here except emit an error message
+    dt_print(DT_DEBUG_ALWAYS,
+             "critical: out of memory for intbuf '%s' with size request %zu!\n",
+             a->tag, newsize);
+    return FALSE;
+  }
+  if (a->buffer)
+  {
+    memcpy(newbuf, a->buffer, a->size * sizeof(int));
+    dt_print(DT_DEBUG_MASKS, "[masks intbuf '%s'] grows to size %lu (is %p, was %p)\n",
+             a->tag,
+             (unsigned long)a->size, newbuf, a->buffer);
+    dt_free_align(a->buffer);
+  }
+  a->size = newsize;
+  a->buffer = newbuf;
+  return TRUE;
+}
+
+
+static inline
+dt_masks_intbuf_t *dt_masks_intbuf_init(const size_t size, const char *tag)
+{
+  assert(size > 0);
+  dt_masks_intbuf_t *a = (dt_masks_intbuf_t *)calloc(1, sizeof(dt_masks_intbuf_t));
+
+  if(a != NULL)
+  {
+    g_strlcpy(a->tag, tag, sizeof(a->tag)); //only for debugging purposes
+    a->pos = 0;
+    if(_dt_masks_intbuf_growto(a, size))
+      dt_print(DT_DEBUG_MASKS, "[masks intbuf '%s'] with initial size %lu (is %p)\n",
+               a->tag,
+               (unsigned long)a->size, a->buffer);
+    if(a->buffer == NULL)
+    {
+      free(a);
+      a = NULL;
+    }
+  }
+  return a;
+}
+
+
+static inline
+void dt_masks_intbuf_add2(dt_masks_intbuf_t *a, const float value1, const float value2)
+{
+  assert(a != NULL);
+  assert(a->pos <= a->size);
+  if(__builtin_expect(a->pos + 2 >= a->size, 0))
+  {
+    if (a->size == 0 || !_dt_masks_intbuf_growto(a, 2 * (a->size+1)))
+      return;
+  }
+  a->buffer[a->pos++] = value1;
+  a->buffer[a->pos++] = value2;
+}
+
+static inline
+size_t dt_masks_intbuf_position(dt_masks_intbuf_t *a)
+{
+  assert(a != NULL);
+  return a->pos;
+}
+
+static inline
+void dt_masks_intbuf_free(dt_masks_intbuf_t *a)
+{
+  if(a == NULL) return;
+  dt_print(DT_DEBUG_MASKS, "[masks intbuf '%s'] freed (was %p)\n", a->tag,
+          a->buffer);
+  dt_free_align(a->buffer);
+  free(a);
+}
+
+// Dump buffer to file for debugging.
+static inline
+void dt_masks_intnbuf_debug_print(dt_masks_intbuf_t *a)
+{
+  if(a == NULL) return;
+  FILE *f;
+  char filename[255] = { 0 };
+  sprintf(filename, "debug-%ld-%s", time(NULL), a->tag);
+  f = g_fopen(filename, "w");
+  for (size_t i = 0; i < a->pos; i += 2)
+  {
+    fprintf(f, "%d %d\n", a->buffer[i], a->buffer[i+1]);
+  }
+  fclose(f);
+}
+
+/* End of dynamic buffer code
+ ******************************************************/
 
 static inline
 int dt_masks_roundup(const int num, const int mult)
