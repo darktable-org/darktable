@@ -1068,7 +1068,6 @@ void *dt_update_cameras_thread(void *ptr)
   }
   while(dt_control_running())
   {
-    g_usleep(250000);  // 1/4 second
     dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
 
     if(camctl)
@@ -1091,6 +1090,7 @@ void *dt_update_cameras_thread(void *ptr)
         camctl->tickmask = 3; // want to be responsive right after
                               // other modes are done - scan in one
                               // second
+    g_usleep(250000);  // 1/4 second
     }
   }
   return 0;

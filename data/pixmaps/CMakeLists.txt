@@ -20,7 +20,7 @@ install(FILES ${DARKROOM_PLUGIN_PIXMAPS} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR
 # Need to copy to have themes, icons, etc all in one path like after installing
 file(COPY ${DARKROOM_PLUGIN_PIXMAPS} DESTINATION ${DARKTABLE_DATADIR}/pixmaps/plugins/darkroom)
 
-FILE(GLOB OTHER_PIXMAPS "*.png" "*.svg")
+FILE(GLOB OTHER_PIXMAPS "*.jpg" "*.png" "*.svg")
 install(FILES ${OTHER_PIXMAPS} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/pixmaps COMPONENT DTApplication)
 # Need to copy to have themes, icons, etc all in one path like after installing
 file(COPY ${OTHER_PIXMAPS} DESTINATION ${DARKTABLE_DATADIR}/pixmaps)

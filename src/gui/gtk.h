@@ -197,6 +197,7 @@ void dt_gui_add_class(GtkWidget *widget, const gchar *class_name);
 void dt_gui_remove_class(GtkWidget *widget, const gchar *class_name);
 
 void dt_open_url(const char *url);
+int dt_gui_theme_init(dt_gui_gtk_t *gui);
 int dt_gui_gtk_init(dt_gui_gtk_t *gui);
 void dt_gui_gtk_run(dt_gui_gtk_t *gui);
 void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui);
@@ -457,7 +458,8 @@ void dt_gui_dialog_add_help(GtkDialog *dialog,
 void dt_gui_show_help(GtkWidget *widget);
 
 // load a CSS theme
-void dt_gui_load_theme(const char *theme);
+void dt_gui_load_theme(const char *theme); // read them and add user tweaks
+void dt_gui_apply_theme();                 // apply the loaded theme to darktable's windows
 
 // reload GUI scalings
 void dt_configure_ppd_dpi(dt_gui_gtk_t *gui);

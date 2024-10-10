@@ -31,6 +31,7 @@
 #include "control/control.h"
 #include "crawler.h"
 #include "gui/gtk.h"
+#include "gui/splash.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -111,6 +112,17 @@ GList *dt_control_crawler_run(void)
   GList *result = NULL;
   gboolean look_for_xmp = (dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER);
 
+  int total_images = 1;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT COUNT(*) FROM main.images", -1, &stmt, 0);
+  // clang-format on
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    total_images = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+  }
+
   // clang-format off
   sqlite3_prepare_v2(dt_database_get(darktable.db),
                      "SELECT i.id, write_timestamp, version,"
@@ -119,13 +131,17 @@ GList *dt_control_crawler_run(void)
                      " ON i.film_id = f.id"
                      " ORDER BY f.id, filename",
                      -1, &stmt, NULL);
-  // clang-format on
   sqlite3_prepare_v2(dt_database_get(darktable.db),
                      "UPDATE main.images SET flags = ?1 WHERE id = ?2", -1,
                      &inner_stmt, NULL);
+  // clang-format on
 
   // let's wrap this into a transaction, it might make it a little faster.
   dt_database_start_transaction(darktable.db);
+
+  int image_count = 0;
+  double start_time = dt_get_wtime();
+  double last_time = start_time - 0.99; // wait 10ms before first update to ensure visibility
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -134,6 +150,17 @@ GList *dt_control_crawler_run(void)
     const int version = sqlite3_column_int(stmt, 2);
     const gchar *image_path = (char *)sqlite3_column_text(stmt, 3);
     int flags = sqlite3_column_int(stmt, 4);
+
+    // update the progress message once per second
+    double fraction = (++image_count) / (double)total_images;
+    double curr_time = dt_get_wtime();
+    if(curr_time >= last_time + 1.0)
+    {
+      darktable_splash_screen_set_progress_percent(_("checking for updated sidecar files (%d%%)"),
+                                                   fraction,
+                                                   curr_time - start_time);
+      last_time = curr_time;
+    }
 
     // if the image is missing we ignore it.
     if(!g_file_test(image_path, G_FILE_TEST_EXISTS))
