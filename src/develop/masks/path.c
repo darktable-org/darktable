@@ -209,7 +209,7 @@ void set_ctrl_angle(const float x_ref, const float y_ref,
   const float x2a = *x2 * aspect_ratio;
   const float x_refa = x_ref * aspect_ratio;
 
-  if (!move_p2) // move p1
+  if(!move_p2) // move p1
   {
     const float length1 = sqrt((x1a - x_refa) * (x1a - x_refa) + (*y1 - y_ref) * (*y1 - y_ref));
     const float angle2 = angle_2d(x2a, *y2, x_refa, y_ref);
@@ -283,7 +283,7 @@ void set_ctrl_scale(const float x_ref, const float y_ref,
   const float x2a = *x2 * aspect_ratio;
   const float x_refa = x_ref * aspect_ratio;
 
-  if (!move_p2) // move p1
+  if(!move_p2) // move p1
   {
     const float length2 = sqrt((x2a - x_refa) * (x2a - x_refa) + (*y2 - y_ref) * (*y2 - y_ref));
     const float angle1 = angle_2d(x1a, *y1, x_refa, y_ref);
@@ -320,7 +320,7 @@ void set_ctrl_symmetric(const float x_ref, const float y_ref,
                         float *x1, float *y1,
                         float *x2, float *y2)
 {
-  if (!move_p2) // move p1
+  if(!move_p2) // move p1
   {
     *x1 = x_ref - (*x2 - x_ref);
     *y1 = y_ref - (*y2 - y_ref);
@@ -770,11 +770,11 @@ int _find_closer_point(const float* const border,
   int neighbors[] = { _border_index_wrap_around(border_first, border_last, idx_optimize - 1),
                       _border_index_wrap_around(border_first, border_last, idx_optimize + 1) };
 
-  for (int i = 0; i < 2; i++)
+  for(int i = 0; i < 2; i++)
   {
     const float dist = _dist_squared_2d(border[neighbors[i] * 2], border[neighbors[i] * 2 + 1],
                                   border[idx_fixed * 2], border[idx_fixed * 2 + 1]);
-    if (dist < min_dist)
+    if(dist < min_dist)
     {
       min_dist = dist;
       min_idx = neighbors[i];
@@ -822,29 +822,29 @@ static void _optimize_intersection_points(const float* const border,
   // Don't optimize segments that are very short.
   // Also make sure the resulting intersection is not length <= 0.
   // (We move at most by 1 point per iteration on each side.)
-  if (idx1_ord + 2 * (MAX_ITER + 1) > idx2_ord) return;
+  if(idx1_ord + 2 * (MAX_ITER + 1) > idx2_ord) return;
 
   // In the optimization loop, we take turns, trying to move point 1
   // and then point 2. We stop, if we make no progress during an
   // iteration, or when we have reached MAX_ITER.
-  while (iter < MAX_ITER)
+  while(iter < MAX_ITER)
   {
 
     // Optimize point 1
     new_idx1 = _find_closer_point(border, border_first, border_last, *idx2, *idx1);
 
-    if ((*idx1 >= border_wrap) != (new_idx1 >= border_wrap))
+    if((*idx1 >= border_wrap) != (new_idx1 >= border_wrap))
     {
       new_idx1 = *idx1; // revert, don't move a point across border_wrap
     }
 
     new_idx1_ord = _border_index_order(new_idx1, border_wrap, nb_border_p);
-    if ((new_idx1_ord < idx1_min_ord) || (new_idx1_ord > idx1_max_ord))
+    if((new_idx1_ord < idx1_min_ord) || (new_idx1_ord > idx1_max_ord))
     {
       new_idx1 = *idx1; // revert, don't move a point out of bounds
     }
 
-    if (new_idx1 != *idx1)
+    if(new_idx1 != *idx1)
     {
       *idx1 = new_idx1;
       idx1_updated = TRUE;
@@ -857,24 +857,24 @@ static void _optimize_intersection_points(const float* const border,
     // Optimize point 2
     new_idx2 = _find_closer_point(border, border_first, border_last, *idx1, *idx2);
 
-    if ((*idx2 >= border_wrap) != (new_idx2 >= border_wrap))
+    if((*idx2 >= border_wrap) != (new_idx2 >= border_wrap))
     {
       new_idx2 = *idx2; // revert, don't move a point across border_wrap
     }
 
     new_idx2_ord = _border_index_order(new_idx2, border_wrap, nb_border_p);
-    if ((new_idx2_ord < idx2_min_ord) || (new_idx2_ord > idx2_max_ord))
+    if((new_idx2_ord < idx2_min_ord) || (new_idx2_ord > idx2_max_ord))
     {
       new_idx2 = *idx2; // revert, don't move a point out of bounds
     }
 
-    if (new_idx2 != *idx2)
+    if(new_idx2 != *idx2)
     {
       *idx2 = new_idx2;
     }
     else
     {
-      if (!idx1_updated) break; // Optimization tried both sides and did not find an improvement.
+      if(!idx1_updated) break; // Optimization tried both sides and did not find an improvement.
     };
 
     iter++;
@@ -909,26 +909,26 @@ static bool _check_cutable(const int seg_start, const int seg_end,
   const float seg_len = seg_end - seg_start;
   float fill_len = 0;
 
-  for (int i=0; i < gap_fill_segments->pos; i+=2)
+  for(int i=0; i < gap_fill_segments->pos; i+=2)
   {
     const int fill_start = gap_fill_segments->buffer[i];
     const int fill_end   = gap_fill_segments->buffer[i+1];
 
-    if (fill_end >= seg_start && fill_start <= seg_end)
+    if(fill_end >= seg_start && fill_start <= seg_end)
     {
       fill_len += MIN(seg_end, fill_end) - MAX(seg_start, fill_start);
     }
   }
-  if ((fill_len / seg_len) > FILL_POINT_CUT_RATIO)
+  if((fill_len / seg_len) > FILL_POINT_CUT_RATIO)
   {
     return true;
   }
 
   // This is not a segment that mostly consists of fill points, but it
   // can still be cut, if it does not contain an extremum.
-  for (int i=0; i<4; i++)
+  for(int i=0; i<4; i++)
   {
-    if (seg_start < extrema_ord[i] && extrema_ord[i] < seg_end)
+    if(seg_start < extrema_ord[i] && extrema_ord[i] < seg_end)
     {
       return false;
     }
@@ -957,8 +957,10 @@ static inline int _nb_wctrl_points(const int nb_point)
  *
  * \return number of self-intersections found
  */
-static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, const dt_masks_intbuf_t* const gap_fill_segments,
-                                        const int nb_corners, float* const border, const int border_len)
+static int _path_find_self_intersection(dt_masks_dynbuf_t *inter,
+                                        const dt_masks_intbuf_t* const gap_fill_segments,
+                                        const int nb_corners,
+                                        float* const border, const int border_len)
 {
   if(nb_corners == 0 || border_len == 0) return 0;
 
@@ -1276,8 +1278,8 @@ static int _path_get_pts_border(dt_develop_t *dev,
     dt_masks_dynbuf_free(dpoints);
     dt_masks_dynbuf_free(dborder);
 
-    if (intersections) dt_masks_dynbuf_free(intersections);
-    if (gap_fill_segs) dt_masks_intbuf_free(gap_fill_segs);
+    if(intersections) dt_masks_dynbuf_free(intersections);
+    if(gap_fill_segs) dt_masks_intbuf_free(gap_fill_segs);
     return 0;
   }
 
@@ -2134,11 +2136,11 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module,
       gui->feather_dragging = gui->feather_selected;
 
       gui->bezier_mode = DT_MASKS_BEZIER_NONE;
-      if (dt_modifier_is(state, GDK_SHIFT_MASK))
+      if(dt_modifier_is(state, GDK_SHIFT_MASK))
         gui->bezier_mode = DT_MASKS_BEZIER_SINGLE;
-      else if (dt_modifier_is(state, GDK_CONTROL_MASK))
+      else if(dt_modifier_is(state, GDK_CONTROL_MASK))
         gui->bezier_mode = DT_MASKS_BEZIER_SYMMETRIC;
-      else if (dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK))
+      else if(dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK))
         gui->bezier_mode = DT_MASKS_BEZIER_SING_SYMM;
 
       dt_masks_point_path_t *point
@@ -2865,7 +2867,7 @@ static void _path_events_post_expose(cairo_t *cr,
     // we draw the path segment by segment
     for(int k = 0; k < nb; k++)
     {
-      if (gui->point_border_selected == k)
+      if(gui->point_border_selected == k)
       {
         // visually connect the selected border control point to the original point
         cairo_move_to(cr, gpt->points[k * 6 + 2], gpt->points[k * 6 + 3]);
