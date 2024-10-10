@@ -176,11 +176,11 @@ static inline
 float get_ctrl_angle(const float x_ref, const float y_ref,
                      const float x1, const float y1,
                      const float x2, const float y2,
-                     float aspect_ratio)
+                     const float aspect_ratio)
 {
-  float x1a = x1 * aspect_ratio;
-  float x2a = x2 * aspect_ratio;
-  float x_refa = x_ref * aspect_ratio;
+  const float x1a = x1 * aspect_ratio;
+  const float x2a = x2 * aspect_ratio;
+  const float x_refa = x_ref * aspect_ratio;
   return angle_2d(x2a, y2, x_refa, y_ref) - angle_2d(x1a, y1, x_refa, y_ref);
 }
 
@@ -205,24 +205,24 @@ void set_ctrl_angle(const float x_ref, const float y_ref,
                     const float aspect_ratio)
 {
 
-  float x1a = *x1 * aspect_ratio;
-  float x2a = *x2 * aspect_ratio;
-  float x_refa = x_ref * aspect_ratio;
+  const float x1a = *x1 * aspect_ratio;
+  const float x2a = *x2 * aspect_ratio;
+  const float x_refa = x_ref * aspect_ratio;
 
   if (!move_p2) // move p1
   {
-    float length1 = sqrt((x1a - x_refa) * (x1a - x_refa) + (*y1 - y_ref) * (*y1 - y_ref));
-    float angle2 = angle_2d(x2a, *y2, x_refa, y_ref);
-    float angle1 = angle2 - angle;
+    const float length1 = sqrt((x1a - x_refa) * (x1a - x_refa) + (*y1 - y_ref) * (*y1 - y_ref));
+    const float angle2 = angle_2d(x2a, *y2, x_refa, y_ref);
+    const float angle1 = angle2 - angle;
 
     *x1 = (x_refa + length1 * cos(angle1)) / aspect_ratio;
     *y1 = y_ref + length1 * sin(angle1);
   }
   else // move p2
 {
-    float length2 = sqrt((x2a - x_refa) * (x2a - x_refa) + (*y2 - y_ref) * (*y2 - y_ref));
-    float angle1 = angle_2d(x1a, *y1, x_refa, y_ref);
-    float angle2 = angle1 + angle;
+    const float length2 = sqrt((x2a - x_refa) * (x2a - x_refa) + (*y2 - y_ref) * (*y2 - y_ref));
+    const float angle1 = angle_2d(x1a, *y1, x_refa, y_ref);
+    const float angle2 = angle1 + angle;
 
     *x2 = (x_refa + length2 * cos(angle2)) / aspect_ratio;
     *y2 = y_ref + length2 * sin(angle2);
@@ -248,12 +248,12 @@ float get_ctrl_scale(const float x_ref, const float y_ref,
                      const float x2, const float y2,
                      const float aspect_ratio)
 {
-  float x1a = x1 * aspect_ratio;
-  float x2a = x2 * aspect_ratio;
-  float x_refa = x_ref * aspect_ratio;
+  const float x1a = x1 * aspect_ratio;
+  const float x2a = x2 * aspect_ratio;
+  const float x_refa = x_ref * aspect_ratio;
 
-  float length1 = sqrt((x1a - x_refa) * (x1a - x_refa) + (y1 - y_ref) * (y1 - y_ref));
-  float length2 = sqrt((x2a - x_refa) * (x2a - x_refa) + (y2 - y_ref) * (y2 - y_ref));
+  const float length1 = sqrt((x1a - x_refa) * (x1a - x_refa) + (y1 - y_ref) * (y1 - y_ref));
+  const float length2 = sqrt((x2a - x_refa) * (x2a - x_refa) + (y2 - y_ref) * (y2 - y_ref));
   return length1 / length2;
 }
 
@@ -279,24 +279,24 @@ void set_ctrl_scale(const float x_ref, const float y_ref,
 {
   // x,y coordinates are in a 0..1 range, but the image is not square.
   // Therefore use the x coordinate to correct.
-  float x1a = *x1 * aspect_ratio;
-  float x2a = *x2 * aspect_ratio;
-  float x_refa = x_ref * aspect_ratio;
+  const float x1a = *x1 * aspect_ratio;
+  const float x2a = *x2 * aspect_ratio;
+  const float x_refa = x_ref * aspect_ratio;
 
   if (!move_p2) // move p1
   {
-    float length2 = sqrt((x2a - x_refa) * (x2a - x_refa) + (*y2 - y_ref) * (*y2 - y_ref));
-    float angle1 = angle_2d(x1a, *y1, x_refa, y_ref);
-    float length1 = length2 * scale;
+    const float length2 = sqrt((x2a - x_refa) * (x2a - x_refa) + (*y2 - y_ref) * (*y2 - y_ref));
+    const float angle1 = angle_2d(x1a, *y1, x_refa, y_ref);
+    const float length1 = length2 * scale;
 
     *x1 = (x_refa + length1 * cos(angle1)) / aspect_ratio;
     *y1 = y_ref + length1 * sin(angle1);
   }
   else // move p2
   {
-    float length1 = sqrt((x1a - x_refa) * (x1a - x_refa) + (*y1 - y_ref) * (*y1 - y_ref));
-    float angle2 = angle_2d(x2a, *y2, x_refa, y_ref);
-    float length2 = length1 / scale;
+    const float length1 = sqrt((x1a - x_refa) * (x1a - x_refa) + (*y1 - y_ref) * (*y1 - y_ref));
+    const float angle2 = angle_2d(x2a, *y2, x_refa, y_ref);
+    const float length2 = length1 / scale;
 
     *x2 = (x_refa + length2 * cos(angle2)) / aspect_ratio;
     *y2 = y_ref + length2 * sin(angle2);
@@ -335,8 +335,8 @@ void set_ctrl_symmetric(const float x_ref, const float y_ref,
 
 
 /**
- * Update the bezier control points of a corner, when the user drags the other 
- * controlpoint.
+ * Update the bezier control points of a corner, when the user drags the other
+ * control point.
  *
  * @param[in] point the path point to update
  * @param[in] new_x the new x coordinate of the control point to update
@@ -347,8 +347,8 @@ void set_ctrl_symmetric(const float x_ref, const float y_ref,
  * @param[in] ctrl_scale the distance ratio to preserve, if required by the edit mode
  * @param[in] aspect_ratio the aspect ratio of the image
  */
-void _update_bezier_ctrl_points(dt_masks_point_path_t *point, const float new_x, const float new_y,
-                                dt_masks_path_ctrl_t ctrl_select, dt_masks_path_edit_mode_t ctrl_mode,
+void _update_bezier_ctrl_points(dt_masks_point_path_t* point, const float new_x, const float new_y,
+                                const dt_masks_path_ctrl_t ctrl_select, const dt_masks_path_edit_mode_t ctrl_mode,
                                 const float ctrl_angle, const float ctrl_scale, const float aspect_ratio)
 {
   gboolean move_p2; // is p2 the dependend node that is moved if restrictions apply?
@@ -358,14 +358,17 @@ void _update_bezier_ctrl_points(dt_masks_point_path_t *point, const float new_x,
     point->ctrl1[0] = new_x;
     point->ctrl1[1] = new_y;
     move_p2 = TRUE;
-  } else {
+  }
+  else
+  {
     assert(ctrl_select == DT_MASKS_PATH_CTRL2);
     point->ctrl2[0] = new_x;
     point->ctrl2[1] = new_y;
     move_p2 = FALSE;
   }
 
-  switch (ctrl_mode) {
+  switch (ctrl_mode)
+  {
     case DT_MASKS_BEZIER_NONE:
       set_ctrl_scale(point->corner[0], point->corner[1],
                      ctrl_scale, move_p2,
@@ -616,7 +619,7 @@ static void _path_points_fill_border_gaps(float *cmax,
   float aa = a1 + incra;
 
   // remember the indexes of the points we add
-  int start_pt_index = dt_masks_dynbuf_position(dpoints)/2;
+  const int start_pt_index = dt_masks_dynbuf_position(dpoints)/2;
   dt_masks_intbuf_add2(fill_seg_indexes, start_pt_index, start_pt_index + 2*(l-1));
 
   // allocate entries in the dynbufs
@@ -643,7 +646,7 @@ static void _path_points_fill_border_gaps(float *cmax,
 }
 
 static inline
-float smoothstep(float p1, float p2, float t)
+float smoothstep(const float p1, const float p2, const float t)
 {
   return p1 + (p2 - p1) * t * t * (3.0 - 2.0 * t);
 }
@@ -719,7 +722,7 @@ static void _path_points_recurs(float *p1,
 
 
 static inline
-float _dist_squared_2d(float x1, float y1, float x2, float y2)
+float _dist_squared_2d(const float x1, const float y1, const float x2, const float y2)
 {
   return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
 }
@@ -727,7 +730,7 @@ float _dist_squared_2d(float x1, float y1, float x2, float y2)
 /* Border point indexes are in range [min, max), indexes >= max are
    wrapped around */
 static inline
-int _border_index_wrap_around(int const min, const int max, const int idx)
+int _border_index_wrap_around(const int min, const int max, const int idx)
 {
   return ((idx - min) % (max - min)) + min;
 }
@@ -735,7 +738,7 @@ int _border_index_wrap_around(int const min, const int max, const int idx)
 /* Bring border point indexes into a consistent order for comparison,
    despite the wrap-around. */
 static inline
-int _border_index_order(int const index, int const wrap_index, int const offset)
+int _border_index_order(const int index, const int wrap_index, const int offset)
 {
   return index >= wrap_index ? index : index + offset;
 }
@@ -757,10 +760,9 @@ int _border_index_order(int const index, int const wrap_index, int const offset)
  */
 static inline
 int _find_closer_point(const float* const border,
-                      const int border_first, const int border_last,
-                      const int idx_fixed, const int idx_optimize)
+                       const int border_first, const int border_last,
+                       const int idx_fixed, const int idx_optimize)
 {
-
   float min_dist = _dist_squared_2d(border[idx_fixed * 2], border[idx_fixed * 2 + 1],
                                    border[idx_optimize * 2], border[idx_optimize * 2 + 1]);
   int min_idx = idx_optimize;
@@ -768,11 +770,12 @@ int _find_closer_point(const float* const border,
   int neighbors[] = { _border_index_wrap_around(border_first, border_last, idx_optimize - 1),
                       _border_index_wrap_around(border_first, border_last, idx_optimize + 1) };
 
-
-  for (int i = 0; i < 2; i++) {
-    float dist = _dist_squared_2d(border[neighbors[i] * 2], border[neighbors[i] * 2 + 1],
-                                 border[idx_fixed * 2], border[idx_fixed * 2 + 1]);
-    if (dist < min_dist) {
+  for (int i = 0; i < 2; i++)
+  {
+    const float dist = _dist_squared_2d(border[neighbors[i] * 2], border[neighbors[i] * 2 + 1],
+                                  border[idx_fixed * 2], border[idx_fixed * 2 + 1]);
+    if (dist < min_dist)
+    {
       min_dist = dist;
       min_idx = neighbors[i];
     }
@@ -803,18 +806,18 @@ int _find_closer_point(const float* const border,
 static void _optimize_intersection_points(const float* const border,
                                           const int border_first, const int border_wrap, const int border_last,
                                           int *idx1, int *idx2,
-                                          int idx1_min_ord, int idx1_max_ord, int idx2_min_ord, int idx2_max_ord)
+                                          const int idx1_min_ord, const int idx1_max_ord, const int idx2_min_ord, const int idx2_max_ord)
 {
   const int MAX_ITER = 20;
   int iter = 0;
   int new_idx1, new_idx2, new_idx1_ord, new_idx2_ord;
   gboolean idx1_updated;
 
-  int nb_border_p = border_last - border_first;
+  const int nb_border_p = border_last - border_first;
 
   // idx1, idx2 may have been wrapped around, ensure correct order
-  int idx1_ord = _border_index_order(*idx1, border_wrap, nb_border_p);
-  int idx2_ord = _border_index_order(*idx2, border_wrap, nb_border_p);
+  const int idx1_ord = _border_index_order(*idx1, border_wrap, nb_border_p);
+  const int idx2_ord = _border_index_order(*idx2, border_wrap, nb_border_p);
 
   // Don't optimize segments that are very short.
   // Also make sure the resulting intersection is not length <= 0.
@@ -824,42 +827,53 @@ static void _optimize_intersection_points(const float* const border,
   // In the optimization loop, we take turns, trying to move point 1
   // and then point 2. We stop, if we make no progress during an
   // iteration, or when we have reached MAX_ITER.
-  while (iter < MAX_ITER) {
+  while (iter < MAX_ITER)
+  {
 
     // Optimize point 1
     new_idx1 = _find_closer_point(border, border_first, border_last, *idx2, *idx1);
 
-    if ((*idx1 >= border_wrap) != (new_idx1 >= border_wrap)) {
+    if ((*idx1 >= border_wrap) != (new_idx1 >= border_wrap))
+    {
       new_idx1 = *idx1; // revert, don't move a point across border_wrap
     }
 
     new_idx1_ord = _border_index_order(new_idx1, border_wrap, nb_border_p);
-    if ((new_idx1_ord < idx1_min_ord) || (new_idx1_ord > idx1_max_ord)) {
+    if ((new_idx1_ord < idx1_min_ord) || (new_idx1_ord > idx1_max_ord))
+    {
       new_idx1 = *idx1; // revert, don't move a point out of bounds
     }
 
-    if (new_idx1 != *idx1) {
+    if (new_idx1 != *idx1)
+    {
       *idx1 = new_idx1;
       idx1_updated = TRUE;
-    } else {
+    }
+    else
+    {
       idx1_updated = FALSE;
     }
 
     // Optimize point 2
     new_idx2 = _find_closer_point(border, border_first, border_last, *idx1, *idx2);
 
-    if ((*idx2 >= border_wrap) != (new_idx2 >= border_wrap)) {
+    if ((*idx2 >= border_wrap) != (new_idx2 >= border_wrap))
+    {
       new_idx2 = *idx2; // revert, don't move a point across border_wrap
     }
 
     new_idx2_ord = _border_index_order(new_idx2, border_wrap, nb_border_p);
-    if ((new_idx2_ord < idx2_min_ord) || (new_idx2_ord > idx2_max_ord)) {
+    if ((new_idx2_ord < idx2_min_ord) || (new_idx2_ord > idx2_max_ord))
+    {
       new_idx2 = *idx2; // revert, don't move a point out of bounds
     }
 
-    if (new_idx2 != *idx2) {
+    if (new_idx2 != *idx2)
+    {
       *idx2 = new_idx2;
-    } else {
+    }
+    else
+    {
       if (!idx1_updated) break; // Optimization tried both sides and did not find an improvement.
     };
 
@@ -885,7 +899,9 @@ static void _optimize_intersection_points(const float* const border,
  *
  * @return true if the segment can be cut out
  */
-static bool _check_cutable(int seg_start, int seg_end, int* extrema_ord, dt_masks_intbuf_t *gap_fill_segments) {
+static bool _check_cutable(const int seg_start, const int seg_end,
+                           const int* const extrema_ord, const dt_masks_intbuf_t* const gap_fill_segments)
+{
 
   // Relative amount of fill points that make it acceptable
   // to cut out the segment. This parameter can be tweaked.
@@ -893,22 +909,27 @@ static bool _check_cutable(int seg_start, int seg_end, int* extrema_ord, dt_mask
   const float seg_len = seg_end - seg_start;
   float fill_len = 0;
 
-  for (int i=0; i < gap_fill_segments->pos; i+=2) {
-    int fill_start = gap_fill_segments->buffer[i];
-    int fill_end   = gap_fill_segments->buffer[i+1];
+  for (int i=0; i < gap_fill_segments->pos; i+=2)
+  {
+    const int fill_start = gap_fill_segments->buffer[i];
+    const int fill_end   = gap_fill_segments->buffer[i+1];
 
-    if (fill_end >= seg_start && fill_start <= seg_end) {
+    if (fill_end >= seg_start && fill_start <= seg_end)
+    {
       fill_len += MIN(seg_end, fill_end) - MAX(seg_start, fill_start);
     }
   }
-  if ((fill_len / seg_len) > FILL_POINT_CUT_RATIO) {
+  if ((fill_len / seg_len) > FILL_POINT_CUT_RATIO)
+  {
     return true;
   }
 
   // This is not a segment that mostly consists of fill points, but it
   // can still be cut, if it does not contain an extremum.
-  for (int i=0; i<4; i++) {
-    if (seg_start < extrema_ord[i] && extrema_ord[i] < seg_end) {
+  for (int i=0; i<4; i++)
+  {
+    if (seg_start < extrema_ord[i] && extrema_ord[i] < seg_end)
+    {
       return false;
     }
   }
@@ -936,15 +957,15 @@ static inline int _nb_wctrl_points(const int nb_point)
  *
  * \return number of self-intersections found
  */
-static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, dt_masks_intbuf_t *gap_fill_segments,
+static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, const dt_masks_intbuf_t* const gap_fill_segments,
                                         const int nb_corners, float* const border, const int border_len)
 {
   if(nb_corners == 0 || border_len == 0) return 0;
 
   int inter_count = 0;
 
-  int border_first = _nb_wctrl_points(nb_corners); // index of the first non-control point
-  int nb_border_p = border_len - border_first;     // number of bp without control points
+  const int border_first = _nb_wctrl_points(nb_corners); // index of the first non-control point
+  const int nb_border_p = border_len - border_first;     // number of bp without control points
 
   // we search extrema of the shape in x and y
   int xmin = INT_MAX, xmax = INT_MIN, ymin = INT_MAX, ymax = INT_MIN;
@@ -989,7 +1010,7 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, dt_masks_intbu
     posextr_ord[i] = _border_index_order(posextr[i], posextr[1], nb_border_p);
   }
 
-  int border_last_ord = posextr_ord[1] + nb_border_p - 1;
+  const int border_last_ord = posextr_ord[1] + nb_border_p - 1;
 
   // *binter is a bitmap that can fit the the shape and stores ome
   // index of a point from *border per pixel. It is used to find pixels
@@ -1016,7 +1037,7 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, dt_masks_intbu
 
   // We'll iterate through all border points, but we can't start at
   // border[border_first] because it may be in a self-intersected
-  // section so we choose a point where we are sure there's no intersection: 
+  // section so we choose a point where we are sure there's no intersection:
   // one from border shape extrema (here x_max).
   int lastx = border[(posextr[1] - 1) * 2];
   int lasty = border[(posextr[1] - 1) * 2 + 1];
@@ -1080,11 +1101,11 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, dt_masks_intbu
         // there's already a border point "registered" at this
         // coordinate.  so we've potentially found a
         // self-intersection portion between v[k] and i
-        int curr_start = v[k];
-        int curr_end = i;
+        const int curr_start = v[k];
+        const int curr_end = i;
 
-        int curr_start_ord = _border_index_order(curr_start, posextr[1], nb_border_p);
-        int curr_end_ord = _border_index_order(curr_end, posextr[1], nb_border_p);
+        const int curr_start_ord = _border_index_order(curr_start, posextr[1], nb_border_p);
+        const int curr_end_ord = _border_index_order(curr_end, posextr[1], nb_border_p);
 
         assert(curr_start != curr_end);
         assert(curr_start_ord < curr_end_ord);
@@ -1100,15 +1121,17 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, dt_masks_intbu
           {
             // we have found the first self-intersection portion
 
+            int opt_start = curr_start;
+            int opt_end = curr_end;
             // Invariant limits to keep inter consistent
             // idx1_min_ord: posextr[1] - dummy, minimum ordered index
             // idx1_max_ord: border_last_ord - dummy, maximum ordered index
             // idx2_min_ord: posextr[1] - dummy, minimum ordered index
             // idx2_max_ord: curr_end_ord - don't go beyond the current loop index
-            _optimize_intersection_points(border, border_first, posextr[1], border_len, &curr_start, &curr_end,
+            _optimize_intersection_points(border, border_first, posextr[1], border_len, &opt_start, &opt_end,
                                           posextr[1], border_last_ord, posextr[1], curr_end_ord);
 
-            dt_masks_dynbuf_add_2(inter, curr_start, curr_end);
+            dt_masks_dynbuf_add_2(inter, opt_start, opt_end);
             inter_count++;
             continue;
           }
@@ -1193,7 +1216,6 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, dt_masks_intbu
             dt_masks_dynbuf_add_2(inter, opt_start, opt_end);
 
             inter_count++;
-
           }
         }
       }

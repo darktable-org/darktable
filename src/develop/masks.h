@@ -405,7 +405,7 @@ typedef struct dt_masks_form_gui_t
   gboolean gradient_toggling;
   int point_dragging;
   int feather_dragging;
-    int seg_dragging;
+  int seg_dragging;
   int point_border_dragging;
 
   dt_masks_path_edit_mode_t bezier_mode;  // Bézier editing with shift or ctrl
@@ -945,9 +945,11 @@ static inline
 void dt_masks_dynbuf_debug_print(dt_masks_dynbuf_t *a, gboolean to_stdout)
 {
   if(a == NULL) return;
-  if (to_stdout) {
+  if (to_stdout)
+  {
     printf("'%s' buffer: ", a->tag);
-    for (size_t i = 0; i < a->pos; i += 2) {
+    for (size_t i = 0; i < a->pos; i += 2)
+    {
       printf("(%f %f), ", a->buffer[i], a->buffer[i+1]);
     }
     printf("\n");
@@ -958,7 +960,8 @@ void dt_masks_dynbuf_debug_print(dt_masks_dynbuf_t *a, gboolean to_stdout)
     char filename[255] = { 0 };
     sprintf(filename, "debug-%ld-%s", time(NULL), a->tag);
     f = g_fopen(filename, "w");
-    for (size_t i = 0; i < a->pos; i += 2) {
+    for (size_t i = 0; i < a->pos; i += 2)
+    {
       fprintf(f, "%f %f\n", a->buffer[i], a->buffer[i+1]);
     }
     fclose(f);
@@ -1059,7 +1062,8 @@ void dt_masks_intnbuf_debug_print(dt_masks_intbuf_t *a)
   char filename[255] = { 0 };
   sprintf(filename, "debug-%ld-%s", time(NULL), a->tag);
   f = g_fopen(filename, "w");
-  for (size_t i = 0; i < a->pos; i += 2) {
+  for (size_t i = 0; i < a->pos; i += 2)
+  {
     fprintf(f, "%d %d\n", a->buffer[i], a->buffer[i+1]);
   }
   fclose(f);
