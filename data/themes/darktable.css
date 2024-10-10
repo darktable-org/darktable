@@ -2320,6 +2320,80 @@ Details :
   margin: 0.07em 0.28em;
 }
 
+/* splash screen */
+#splashscreen
+{
+    background-color: @grey_10;
+    border: 5px solid @grey_60;
+}
+#splashscreen-header
+{
+    padding: 0;
+    margin: 0;
+}
+/* make the (nonexistent) title text very small to avoid an obvious bar at top */
+#splashscreen-header label
+{
+    font-size: 1%;
+    padding: 0;
+    margin: 0;
+}
+/* style the darktable logo */
+#splashscreen-logo
+{
+}
+/* position the darktable version number next to the logo */
+#splashscreen-version
+{
+    margin-top: -35pt;
+    margin-right: -110pt;
+    font-size: 15pt;
+}
+/* style the darktable program name */
+#splashscreen-program
+{
+    font-size: 48pt;
+    margin: 2pt;
+}
+/* style the darktable program description */
+#splashscreen-description
+{
+    font-size: 16pt;
+    font-family: DejaVu Serif, serif;
+    padding: 1em;
+    margin: 1em;
+}
+/* style the "get ready" message */
+#splashscreen-prepare
+{
+    font-size: 14pt;
+    font-family: DejaVu Serif, serif;
+}
+/* style the separating bar - without a style, it won't appear or take space! */
+#splashscreen-separator
+{
+    border: 2px solid @grey_80;
+    margin-top: 15pt;
+    margin-bottom: 15pt;
+}
+/* style the progress message */
+#splashscreen-progress
+{
+}
+/* style the time remaining */
+#splashscreen-remaining
+{
+    color: yellow;
+    font-size: 150%;
+}
+
+/* style the message on the exit screen */
+#exitscreen-message
+{
+    font-size: 15pt;
+    margin-bottom: 10pt;
+}
+
 /* ??? TO BE REMOVED ON DT 5.0 : script_manager power button */
 button#pb_off
 {
