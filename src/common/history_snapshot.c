@@ -167,7 +167,7 @@ static void _history_snapshot_restore(const dt_imgid_t imgid,
   dt_database_start_transaction(darktable.db);
 
   dt_history_delete_on_image_ext(imgid, FALSE, FALSE);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
 
   // if no history end it means the image history was discarded,
   // nothing more to restore

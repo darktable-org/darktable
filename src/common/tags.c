@@ -143,7 +143,7 @@ static void _pop_undo(gpointer user_data,
       *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undotags->imgid));
     }
 
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
   }
 }
 
@@ -220,7 +220,7 @@ gboolean dt_tag_new_from_gui(const char *name,
   const gboolean ret = dt_tag_new(name, tagid);
   /* if everything went fine, raise signal of tags change to refresh
    * keywords module in GUI */
-  if(ret) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  if(ret) DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
   return ret;
 }
 
@@ -1770,7 +1770,7 @@ ssize_t dt_tag_import(const char *filename)
   g_list_free_full(hierarchy, g_free);
   fclose(fd);
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
 
   return count;
 }

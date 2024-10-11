@@ -159,16 +159,14 @@ void gui_init(dt_lib_module_t *self)
   if(model) g_object_unref(model);
 
   /* connect callback to view change signal */
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
-                            G_CALLBACK(_lib_viewswitcher_view_changed_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CANNOT_CHANGE,
-                                  G_CALLBACK(_lib_viewswitcher_view_cannot_change_callback), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, _lib_viewswitcher_view_changed_callback, self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_VIEWMANAGER_VIEW_CANNOT_CHANGE, _lib_viewswitcher_view_cannot_change_callback, self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_viewswitcher_view_changed_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_viewswitcher_view_cannot_change_callback), self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_lib_viewswitcher_view_changed_callback, self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_lib_viewswitcher_view_cannot_change_callback, self);
   g_free(self->data);
   self->data = NULL;
 }

@@ -922,7 +922,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
       }
       tagNode = tagNode->next;
     }
-    if(tag_change) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+    if(tag_change) DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
   }
   else if(dev != NULL && !xmlStrcmp(name, (const xmlChar *)"RetouchInfo"))
   {
@@ -1592,7 +1592,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
     dt_image_set_location(imgid, &geoloc, FALSE, FALSE);
     GList *imgs = NULL;
     imgs = g_list_prepend(imgs, GINT_TO_POINTER(imgid));
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
 
     if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
     g_strlcat(imported, _("geotagging"), sizeof(imported));
@@ -1619,7 +1619,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
       dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
       /* update xmp file */
       dt_image_synch_xmp(imgid);
-      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
     }
   }
   return TRUE;

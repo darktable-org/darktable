@@ -2223,8 +2223,7 @@ void gui_init(struct dt_iop_module_t *self)
                    G_CALLBACK(_preset_tune_callback), self);
 
   // update the gui when the preferences changed (i.e. colored sliders stuff)
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
-                                  G_CALLBACK(_preference_changed), (gpointer)self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE, _preference_changed, self);
 
   // start building top level widget
   self->widget = gtk_stack_new();
@@ -2241,8 +2240,7 @@ void gui_init(struct dt_iop_module_t *self)
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_preference_changed), self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_preference_changed, self);
 
   IOP_GUI_FREE;
 }

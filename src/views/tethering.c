@@ -581,16 +581,13 @@ void enter(dt_view_t *self)
   }
 
   /* connect signal for mipmap update for a redraw */
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-                                  G_CALLBACK(_capture_mipmaps_updated_signal_callback),
-                                  (gpointer)self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
+                            _capture_mipmaps_updated_signal_callback, self);
 
 
   /* connect signal for fimlstrip image activate */
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
-                                  DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
-                                  G_CALLBACK(_view_capture_filmstrip_activate_callback),
-                                  self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
+                            _view_capture_filmstrip_activate_callback, self);
 
   // register listener
   lib->listener = g_malloc0(sizeof(dt_camctl_listener_t));
@@ -616,14 +613,10 @@ void leave(dt_view_t *self)
   dt_import_session_destroy(cv->session);
 
   /* disconnect from mipmap updated signal */
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_capture_mipmaps_updated_signal_callback),
-                                     (gpointer)self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_capture_mipmaps_updated_signal_callback, self);
 
   /* disconnect from filmstrip image activate */
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_view_capture_filmstrip_activate_callback),
-                                     (gpointer)self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_view_capture_filmstrip_activate_callback, self);
 }
 
 void reset(dt_view_t *self)

@@ -38,7 +38,7 @@ void dt_grouping_add_to_group(const dt_imgid_t group_id,
                                     DT_IMAGE_CACHE_SAFE, "dt_grouping_add_to_group");
   GList *imgs = NULL;
   imgs = g_list_prepend(imgs, GINT_TO_POINTER(image_id));
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
 }
 
 /** remove an image from a group */
@@ -105,7 +105,7 @@ dt_imgid_t dt_grouping_remove_from_group(const dt_imgid_t image_id)
     // refresh also the group leader which may be alone now
     imgs = g_list_prepend(imgs, GINT_TO_POINTER(img_group_id));
   }
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
 
   return new_group_id;
 }
@@ -134,7 +134,7 @@ dt_imgid_t dt_grouping_change_representative(const dt_imgid_t image_id)
     imgs = g_list_prepend(imgs, GINT_TO_POINTER(other_id));
   }
   sqlite3_finalize(stmt);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
 
   return image_id;
 }

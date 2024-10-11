@@ -2944,16 +2944,13 @@ void gui_init(dt_lib_module_t *self)
   darktable.develop->proxy.modulegroups.basics_module_toggle = _lib_modulegroups_basics_module_toggle;
 
   // check for autoapplypresets on image change
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
-                                  G_CALLBACK(_dt_dev_image_changed_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE,
-                                  G_CALLBACK(_dt_dev_image_changed_callback), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _dt_dev_image_changed_callback, self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_INITIALIZE, _dt_dev_image_changed_callback, self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_dt_dev_image_changed_callback), self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_dt_dev_image_changed_callback, self);
 
   darktable.develop->proxy.modulegroups.module = NULL;
   darktable.develop->proxy.modulegroups.set = NULL;

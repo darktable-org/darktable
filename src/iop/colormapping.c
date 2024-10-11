@@ -1035,8 +1035,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->equalization, "%");
 
   /* add signal handler for preview pipe finished: process clusters if requested */
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-                            G_CALLBACK(process_clusters), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, process_clusters, self);
 
   FILE *f = g_fopen("/tmp/dt_colormapping_loaded", "rb");
   if(f)
@@ -1050,7 +1049,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_colormapping_gui_data_t *g = self->gui_data;
 
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(process_clusters), self);
+  DT_CONTROL_SIGNAL_DISCONNECT(process_clusters, self);
 
   cmsDeleteTransform(g->xform);
   dt_free_align(g->buffer);

@@ -373,25 +373,15 @@ static void _color_picker_proxy_preview_pipe_callback(gpointer instance,
 void dt_iop_color_picker_init(void)
 {
   // we have incoming iop picker data
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
-                                  DT_SIGNAL_CONTROL_PICKERDATA_READY,
-                                  G_CALLBACK(_iop_color_picker_pickerdata_ready_callback),
-                                  NULL);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PICKERDATA_READY, _iop_color_picker_pickerdata_ready_callback, NULL);
   // we have new primary picker data as preview pipe has run to conclusion
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
-                                  DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-                                  G_CALLBACK(_color_picker_proxy_preview_pipe_callback),
-                                  NULL);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _color_picker_proxy_preview_pipe_callback, NULL);
 }
 
 void dt_iop_color_picker_cleanup(void)
 {
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT
-    (darktable.signals,
-     G_CALLBACK(_iop_color_picker_pickerdata_ready_callback), NULL);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT
-    (darktable.signals,
-     G_CALLBACK(_color_picker_proxy_preview_pipe_callback), NULL);
+  DT_CONTROL_SIGNAL_DISCONNECT(_iop_color_picker_pickerdata_ready_callback, NULL);
+  DT_CONTROL_SIGNAL_DISCONNECT(_color_picker_proxy_preview_pipe_callback, NULL);
 }
 
 static GtkWidget *_color_picker_new(dt_iop_module_t *module,

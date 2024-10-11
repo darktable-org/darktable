@@ -163,16 +163,14 @@ void gui_init(dt_lib_module_t *self)
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->select_none_button))), PANGO_ELLIPSIZE_START);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->select_film_roll_button))), PANGO_ELLIPSIZE_START);
 
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
-                            G_CALLBACK(_image_selection_changed_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
-                            G_CALLBACK(_collection_updated_callback), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_SELECTION_CHANGED, _image_selection_changed_callback, self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _collection_updated_callback, self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_image_selection_changed_callback, self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_collection_updated_callback, self);
   free(self->data);
   self->data = NULL;
 }

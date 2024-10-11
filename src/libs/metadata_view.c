@@ -1438,28 +1438,22 @@ void gui_init(dt_lib_module_t *self)
   _apply_preferences(pref, self);
 
   /* lets signup for mouse over image change signals */
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
-                            G_CALLBACK(_mouse_over_image_callback), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _mouse_over_image_callback, self);
 
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
-                                  G_CALLBACK(_mouse_over_image_callback), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_SELECTION_CHANGED, _mouse_over_image_callback, self);
 
   /* lets signup for develop image changed signals */
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
-                            G_CALLBACK(_mouse_over_image_callback), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _mouse_over_image_callback, self);
 
   /* signup for develop initialize to update info of current
      image in darkroom when enter */
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE,
-                            G_CALLBACK(_mouse_over_image_callback), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_INITIALIZE, _mouse_over_image_callback, self);
 
   /* signup for tags changes */
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_TAG_CHANGED,
-                            G_CALLBACK(_mouse_over_image_callback), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_TAG_CHANGED, _mouse_over_image_callback, self);
 
   /* signup for metadata changes */
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_METADATA_UPDATE,
-                            G_CALLBACK(_mouse_over_image_callback), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_METADATA_UPDATE, _mouse_over_image_callback, self);
 
   dt_action_register(DT_ACTION(self), N_("jump to film roll"), _jump_to_accel, GDK_KEY_j, GDK_CONTROL_MASK);
 }
@@ -1473,8 +1467,8 @@ static void _free_metadata_queue(dt_lib_metadata_info_t *m)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
   dt_lib_metadata_view_t *d = self->data;
+  DT_CONTROL_SIGNAL_DISCONNECT(_mouse_over_image_callback, self);
   g_list_free_full(d->metadata,  (GDestroyNotify)_free_metadata_queue);
   g_free(self->data);
   self->data = NULL;

@@ -1365,19 +1365,12 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
                      G_CALLBACK(_event_main_drag_motion), thumb);
 
     g_object_set_data(G_OBJECT(thumb->w_main), "thumb", thumb);
-    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
-                              G_CALLBACK(_dt_active_images_callback), thumb);
-    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
-                              G_CALLBACK(_dt_selection_changed_callback), thumb);
-    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-                              G_CALLBACK(_dt_mipmaps_updated_callback), thumb);
-    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
-                                    DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-                              G_CALLBACK(_dt_preview_updated_callback), thumb);
-    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED,
-                              G_CALLBACK(_dt_image_info_changed_callback), thumb);
-    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
-                              G_CALLBACK(_dt_collection_changed_callback), thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_ACTIVE_IMAGES_CHANGE, _dt_active_images_callback, thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_SELECTION_CHANGED, _dt_selection_changed_callback, thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, _dt_mipmaps_updated_callback, thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _dt_preview_updated_callback, thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_IMAGE_INFO_CHANGED, _dt_image_info_changed_callback, thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _dt_collection_changed_callback, thumb);
 
     // the background
     thumb->w_back = gtk_event_box_new();
@@ -1721,18 +1714,12 @@ void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
   if(thumb->expose_again_timeout_id != 0)
     g_source_remove(thumb->expose_again_timeout_id);
 
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_dt_selection_changed_callback), thumb);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_dt_active_images_callback), thumb);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_dt_mipmaps_updated_callback), thumb);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_dt_preview_updated_callback), thumb);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_dt_image_info_changed_callback), thumb);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_dt_collection_changed_callback), thumb);
+  DT_CONTROL_SIGNAL_DISCONNECT(_dt_selection_changed_callback, thumb);
+  DT_CONTROL_SIGNAL_DISCONNECT(_dt_active_images_callback, thumb);
+  DT_CONTROL_SIGNAL_DISCONNECT(_dt_mipmaps_updated_callback, thumb);
+  DT_CONTROL_SIGNAL_DISCONNECT(_dt_preview_updated_callback, thumb);
+  DT_CONTROL_SIGNAL_DISCONNECT(_dt_image_info_changed_callback, thumb);
+  DT_CONTROL_SIGNAL_DISCONNECT(_dt_collection_changed_callback, thumb);
   dt_thumbnail_surface_destroy(thumb);
   if(thumb->w_main) gtk_widget_destroy(thumb->w_main);
   if(thumb->filename) g_free(thumb->filename);

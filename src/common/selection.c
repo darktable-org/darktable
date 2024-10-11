@@ -45,7 +45,7 @@ static void _selection_raise_signal()
   dt_act_on_reset_cache(TRUE);
   dt_act_on_reset_cache(FALSE);
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_SELECTION_CHANGED);
 }
 
 /* updates the internal collection of an selection */
@@ -147,8 +147,7 @@ const dt_selection_t *dt_selection_new()
   //TODO: check whether this is actually necessary, since
   //  dt_collection_update_query calls dt_collection_update before
   //  raising the signal
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
-                            G_CALLBACK(_selection_update_collection), (gpointer)s);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _selection_update_collection, s);
 
   return s;
 }

@@ -808,12 +808,9 @@ void gui_init(dt_lib_module_t *self)
   dt_action_register(DT_ACTION(self), N_("toggle last snapshot"),
                      _lib_snapshots_toggle_last, 0, 0);
 
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
-                                  G_CALLBACK(_signal_profile_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
-                                  G_CALLBACK(_signal_image_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGE_REMOVED,
-                                  G_CALLBACK(_signal_image_removed), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, _signal_profile_changed, self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _signal_image_changed, self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_IMAGE_REMOVED, _signal_image_removed, self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)

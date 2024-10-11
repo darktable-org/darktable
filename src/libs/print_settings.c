@@ -609,7 +609,7 @@ static int _print_job_run(dt_job_t *job)
   {
     if(dt_is_valid_imgid(params->imgs.box[k].imgid))
       if(dt_tag_attach(tagid, params->imgs.box[k].imgid, FALSE, FALSE))
-        DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+        DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
 
     /* register print timestamp in cache */
     dt_image_cache_set_print_timestamp(darktable.image_cache, params->imgs.box[k].imgid);
@@ -1429,17 +1429,11 @@ void view_enter(struct dt_lib_module_t *self,
 
   // user activated a new image via the filmstrip or user entered view
   // mode which activates an image: get image_id and orientation
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
-                                  DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
-                                  G_CALLBACK(_print_settings_activate_callback),
-                                  self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, _print_settings_activate_callback, self);
 
   // when an updated mipmap, we may have new orientation information
   // about the current image.
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
-                                  DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-                                  G_CALLBACK(_print_settings_update_callback),
-                                  self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, _print_settings_update_callback, self);
 
   // NOTE: it would be proper to set image_id here to -1, but this
   // seems to make no difference
@@ -1449,12 +1443,8 @@ void view_leave(struct dt_lib_module_t *self,
                 struct dt_view_t *old_view,
                 struct dt_view_t *new_view)
 {
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_print_settings_activate_callback),
-                                     self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_print_settings_update_callback),
-                                     self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_print_settings_activate_callback, self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_print_settings_update_callback, self);
 }
 
 static gboolean _expose_again(gpointer user_data)

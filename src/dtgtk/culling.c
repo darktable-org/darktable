@@ -936,21 +936,11 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
                    G_CALLBACK(_event_button_release), table);
 
   // we register globals signals
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
-                                  DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
-                                  G_CALLBACK(_dt_mouse_over_image_callback), table);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
-                                  DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
-                                  G_CALLBACK(_dt_profile_change_callback), table);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
-                                  DT_SIGNAL_PREFERENCES_CHANGE,
-                                  G_CALLBACK(_dt_pref_change_callback),
-                                  table);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
-                                  DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
-                                  G_CALLBACK(_dt_filmstrip_change), table);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
-                                  G_CALLBACK(_dt_selection_changed_callback), table);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _dt_mouse_over_image_callback, table);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, _dt_profile_change_callback, table);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE, _dt_pref_change_callback, table);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, _dt_filmstrip_change, table);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_SELECTION_CHANGED, _dt_selection_changed_callback, table);
 
   g_object_ref(table->widget);
 
@@ -1762,7 +1752,7 @@ void dt_culling_update_active_images_list(dt_culling_t *table)
                      GINT_TO_POINTER(thumb->imgid));
   }
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 }
 
 // recreate the list of thumbs if needed and recomputes sizes and positions if needed
@@ -1829,7 +1819,7 @@ void dt_culling_full_redraw(dt_culling_t *table, const gboolean force)
                          GINT_TO_POINTER(thumb->imgid));
   }
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 
   // if the selection should follow active images
   if(table->selection_sync)

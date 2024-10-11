@@ -6167,9 +6167,7 @@ void gui_init(struct dt_iop_module_t *self)
                        N_("auto"), g->structure_auto, &dt_action_def_toggle);
 
   /* add signal handler for preview pipe finish to redraw the overlay */
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
-                                  DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-                                  G_CALLBACK(_event_process_after_preview_callback), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _event_process_after_preview_callback, self);
 
   darktable.develop->proxy.rotate = self;
 }
@@ -6179,9 +6177,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   if(darktable.develop->proxy.rotate == self)
     darktable.develop->proxy.rotate = NULL;
 
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_event_process_after_preview_callback),
-                                     self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_event_process_after_preview_callback, self);
 
   dt_iop_ashift_gui_data_t *g = self->gui_data;
   if(g->lines) free(g->lines);
