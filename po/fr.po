@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-11 18:17+0200\n"
-"PO-Revision-Date: 2024-10-11 18:30+0200\n"
+"POT-Creation-Date: 2024-10-11 23:23+0200\n"
+"PO-Revision-Date: 2024-10-11 23:27+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -12480,6 +12480,51 @@ msgstr "Nouveau préréglage"
 #: ../src/gui/presets.c:1800 ../src/libs/lib.c:570
 msgid "update preset"
 msgstr "Mettre à jour le préréglage"
+
+#: ../src/gui/splash.c:131
+msgid "darktable starting"
+msgstr "Lancement de Darktable"
+
+#: ../src/gui/splash.c:136
+msgid "initializing"
+msgstr "Initialisation"
+
+#: ../src/gui/splash.c:167
+msgid ""
+"Photography workflow\n"
+"application and\n"
+"RAW developer"
+msgstr ""
+"Application de flux\n"
+"photographique et\n"
+"développement de RAW"
+
+#. put the darktable wordmark and description in a vertical stack
+#: ../src/gui/splash.c:188
+msgid ""
+"Photography workflow application\n"
+"and RAW developer"
+msgstr ""
+"Application de flux photographique\n"
+"et développement de RAW"
+
+#. ensure that text is vertically centered
+#. with respect to logo
+#: ../src/gui/splash.c:198
+msgid "get ready to unleash your creativity"
+msgstr "Soyez prêt pour libérer votre créativité"
+
+#: ../src/gui/splash.c:307
+msgid "darktable shutdown"
+msgstr "Arrêt de Darktable"
+
+#: ../src/gui/splash.c:321
+msgid "darktable is now shutting down"
+msgstr "Darktable va maintenant s'arrêter"
+
+#: ../src/gui/splash.c:323
+msgid "please wait while background jobs finish"
+msgstr "Merci d'attendre que les actions d'arrière plan terminent"
 
 #: ../src/gui/styles_dialog.c:232 ../src/libs/styles.c:489
 #: ../src/libs/styles.c:645
@@ -28459,10 +28504,6 @@ msgstr "Actions de la souris"
 
 #~ msgid "module order filter"
 #~ msgstr "Filtre ordre des modules"
-
-#, c-format
-#~ msgid "darktable » %s"
-#~ msgstr "darktable » %s"
 
 #~ msgid "<h1>Sorry,</h1><p>something went wrong. Please try again.</p>"
 #~ msgstr ""
