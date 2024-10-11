@@ -425,8 +425,7 @@ void dt_film_remove_empty()
     }
   }
   sqlite3_finalize(stmt);
-  if(raise_signal) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                                 DT_SIGNAL_FILMROLLS_REMOVED);
+  if(raise_signal) DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_FILMROLLS_REMOVED);
 
   // dispatch asking for deletion (and subsequent deletion) to the gui thread
   if(empty_dirs)
@@ -503,7 +502,7 @@ void dt_film_remove(const dt_filmid_t id)
   sqlite3_finalize(stmt);
   // dt_control_update_recent_films();
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_FILMROLLS_CHANGED);
 }
 
 GList *dt_film_get_image_ids(const dt_filmid_t filmid)

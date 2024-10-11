@@ -500,20 +500,17 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
   _apply_metadata_toggled(metadata->apply_metadata, grid);
 
   // connect changed signal
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
-                            G_CALLBACK(_metadata_prefs_changed), metadata);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_METADATA_CHANGED,
-                            G_CALLBACK(_metadata_list_changed), metadata);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PRESETS_CHANGED,
-                            G_CALLBACK(_metadata_presets_changed), metadata);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE, _metadata_prefs_changed, metadata);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_METADATA_CHANGED, _metadata_list_changed, metadata);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PRESETS_CHANGED, _metadata_presets_changed, metadata);
   _update_layout(metadata);
 }
 
 void dt_import_metadata_cleanup(dt_import_metadata_t *metadata)
 {
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_metadata_prefs_changed), metadata);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_metadata_list_changed), metadata);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_metadata_presets_changed), metadata);
+  DT_CONTROL_SIGNAL_DISCONNECT(_metadata_prefs_changed, metadata);
+  DT_CONTROL_SIGNAL_DISCONNECT(_metadata_list_changed, metadata);
+  DT_CONTROL_SIGNAL_DISCONNECT(_metadata_presets_changed, metadata);
 }
 
 void dt_import_metadata_update(dt_import_metadata_t *metadata)

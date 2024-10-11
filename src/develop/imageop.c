@@ -518,7 +518,7 @@ static void _gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
   if(!next) return; // what happened ???
 
   if(dev->gui_attached)
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE);
 
   // we must pay attention if priority is 0
   const gboolean is_zero = (module->multi_priority == 0);
@@ -573,7 +573,7 @@ static void _gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
 
   // we save the current state of history (with the new multi_priorities)
   if(dev->gui_attached)
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
 
   // rebuild the accelerators (to point to an extant module)
   dt_iop_connect_accels_multi(module->so);
@@ -675,7 +675,7 @@ static void _gui_movedown_callback(GtkButton *button, dt_iop_module_t *module)
 
   dt_dev_pixelpipe_rebuild(module->dev);
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MODULE_MOVED);
 }
 
 static void _gui_moveup_callback(GtkButton *button, dt_iop_module_t *module)
@@ -711,7 +711,7 @@ static void _gui_moveup_callback(GtkButton *button, dt_iop_module_t *module)
 
   dt_dev_pixelpipe_rebuild(next->dev);
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MODULE_MOVED);
 }
 
 dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base,
@@ -1074,7 +1074,7 @@ static gboolean _gui_off_button_press(GtkButton *w,
 {
   if(module->operation_tags() & IOP_TAG_DISTORT)
   {
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_DISTORT);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_DISTORT);
   }
 
   if(!darktable.gui->reset && dt_modifier_is(e->state, GDK_CONTROL_MASK))
@@ -1291,8 +1291,8 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
   if(!dt_iop_is_hidden(module)
      && module->gui_data
      && dt_conf_get_bool("plugins/darkroom/show_warnings"))
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TROUBLE_MESSAGE,
-                                  module, trouble_msg, trouble_tooltip);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TROUBLE_MESSAGE,
+                            module, trouble_msg, trouble_tooltip);
 }
 
 void dt_iop_gui_init(dt_iop_module_t *module)
@@ -1735,9 +1735,7 @@ void dt_iop_load_modules_so(void)
     ("/plugins", sizeof(dt_iop_module_so_t),
      dt_iop_load_module_so, _init_module_so, NULL);
 
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
-                                  G_CALLBACK(_iop_preferences_changed),
-                                  (gpointer)(darktable.iop));
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE, _iop_preferences_changed, darktable.iop);
 }
 
 gboolean dt_iop_load_module(dt_iop_module_t *module,
@@ -1816,9 +1814,7 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
 
 void dt_iop_unload_modules_so()
 {
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_iop_preferences_changed),
-                                     (gpointer)(darktable.iop));
+  DT_CONTROL_SIGNAL_DISCONNECT(_iop_preferences_changed, darktable.iop);
 
   while(darktable.iop)
   {
@@ -2238,7 +2234,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
        && !darktable.develop->gui_synch
        && module->operation_tags() & IOP_TAG_DISTORT)
     {
-      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_DISTORT);
+      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_DISTORT);
     }
   }
   --darktable.gui->reset;
@@ -3048,7 +3044,7 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
 
     dt_dev_pixelpipe_rebuild(src->dev);
 
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MODULE_MOVED);
   }
 
   return TRUE;

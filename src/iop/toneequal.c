@@ -2540,10 +2540,7 @@ static void _set_distort_signal(dt_iop_module_t *self)
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   if(self->enabled && !g->distort_signal_actif)
   {
-    DT_DEBUG_CONTROL_SIGNAL_CONNECT
-      (darktable.signals,
-       DT_SIGNAL_DEVELOP_DISTORT,
-       G_CALLBACK(_develop_distort_callback), self);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_DISTORT, _develop_distort_callback, self);
     g->distort_signal_actif = TRUE;
   }
 }
@@ -2553,9 +2550,7 @@ static void _unset_distort_signal(dt_iop_module_t *self)
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   if(g->distort_signal_actif)
   {
-    DT_DEBUG_CONTROL_SIGNAL_DISCONNECT
-      (darktable.signals,
-       G_CALLBACK(_develop_distort_callback), self);
+    DT_CONTROL_SIGNAL_DISCONNECT(_develop_distort_callback, self);
     g->distort_signal_actif = FALSE;
   }
 }
@@ -3530,20 +3525,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 
   // Force UI redraws when pipe starts/finishes computing and switch cursors
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT
-    (darktable.signals,
-     DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-     G_CALLBACK(_develop_preview_pipe_finished_callback), self);
-
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT
-    (darktable.signals,
-     DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
-     G_CALLBACK(_develop_ui_pipe_finished_callback), self);
-
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT
-    (darktable.signals,
-     DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
-     G_CALLBACK(_develop_ui_pipe_started_callback), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _develop_preview_pipe_finished_callback, self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _develop_ui_pipe_finished_callback, self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _develop_ui_pipe_started_callback, self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -3554,15 +3538,9 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_conf_set_int("plugins/darkroom/toneequal/gui_page",
                   gtk_notebook_get_current_page (g->notebook));
 
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_develop_ui_pipe_finished_callback),
-                                     self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_develop_ui_pipe_started_callback),
-                                     self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_develop_preview_pipe_finished_callback),
-                                     self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_develop_ui_pipe_finished_callback, self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_develop_ui_pipe_started_callback, self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_develop_preview_pipe_finished_callback, self);
   _unset_distort_signal(self);
 
   dt_free_align(g->thumb_preview_buf);

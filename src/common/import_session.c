@@ -192,7 +192,7 @@ void dt_import_session_import(struct dt_import_session_t *self)
   const dt_imgid_t imgid = dt_image_import(self->film->id, self->current_filename, TRUE, TRUE);
   if(dt_is_valid_imgid(imgid))
   {
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, imgid);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, imgid);
     dt_control_queue_redraw();
   }
 }

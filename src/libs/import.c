@@ -2465,9 +2465,7 @@ void gui_init(dt_lib_module_t *self)
 
   _lib_import_ui_devices_update(self);
 
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
-                                  DT_SIGNAL_CAMERA_DETECTED, G_CALLBACK(_camera_detected),
-                                  self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CAMERA_DETECTED, _camera_detected, self);
 #endif
 
   // collapsible section
@@ -2506,8 +2504,7 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_import_t *d = self->data;
 #ifdef HAVE_GPHOTO2
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_camera_detected), self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_camera_detected, self);
 #endif
 #ifdef USE_LUA
   detach_lua_widgets(d->extra_lua_widgets);

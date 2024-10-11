@@ -96,119 +96,119 @@ static void _image_geotag_destroy_callback(gpointer instance, gpointer imgs, con
 
 static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
   /* Global signals */
-  { "dt-global-mouse-over-image-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE
-  { "dt-global-active-images-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_ACTIVE_IMAGES_CHANGE
+  [DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE] = { "dt-global-mouse-over-image-change",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
+  [DT_SIGNAL_ACTIVE_IMAGES_CHANGE] = { "dt-global-active-images-change",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
 
-  { "dt-control-redraw-all", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_CONTROL_REDRAW_ALL
-  { "dt-control-redraw-center", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_CONTROL_REDRAW_CENTER
+  [DT_SIGNAL_CONTROL_REDRAW_ALL] = { "dt-control-redraw-all",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
+  [DT_SIGNAL_CONTROL_REDRAW_CENTER] = { "dt-control-redraw-center",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
 
-  { "dt-viewmanager-view-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2, pointer_2arg, NULL,
-    FALSE }, // DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED
-  { "dt-viewmanager-view-cannot-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2, pointer_2arg,
-    NULL, FALSE }, // DT_SIGNAL_VIEWMANAGER_VIEW_CANNOT_CHANGE
-  { "dt-viewmanager-thumbtable-activate", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg,
-    NULL, FALSE }, // DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE
-
-  { "dt-collection-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 4, collection_args,
-    G_CALLBACK(_collection_changed_destroy_callback), FALSE }, // DT_SIGNAL_COLLECTION_CHANGED
-  { "dt-selection-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_SELECTION_CHANGED
-  { "dt-tag-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_TAG_CHANGED
-  { "dt-geotag-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2, geotag_arg,
-    G_CALLBACK(_image_geotag_destroy_callback), FALSE }, // DT_SIGNAL_GEOTAG_CHANGED
-  { "dt-metadata-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg, NULL,
-    FALSE }, // DT_SIGNAL_METADATA_CHANGED
-  { "dt-image-info-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg,
-    G_CALLBACK(_image_info_changed_destroy_callback), FALSE }, // DT_SIGNAL_IMAGE_INFO_CHANGED
-  { "dt-style-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_STYLE_CHANGED
-  { "dt-images-order-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg, NULL,
-    FALSE }, // DT_SIGNAL_IMAGES_ORDER_CHANGE
-  { "dt-filmrolls-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_FILMROLLS_CHANGED
-  { "dt-filmrolls-imported", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg, NULL,
-    FALSE }, // DT_SIGNAL_FILMROLLS_IMPORTED
-  { "dt-filmrolls-removed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_FILMROLLS_REMOVED
-  { "dt-presets-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg,
-    G_CALLBACK(_presets_changed_destroy_callback), FALSE }, // DT_SIGNAL_PRESETS_CHANGED
+  [DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED] = { "dt-viewmanager-view-changed",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2, pointer_2arg, NULL, FALSE },
+  [DT_SIGNAL_VIEWMANAGER_VIEW_CANNOT_CHANGE] = { "dt-viewmanager-view-cannot-change",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2, pointer_2arg, NULL, FALSE },
+  [DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE] = { "dt-viewmanager-thumbtable-activate",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg, NULL,  FALSE },
+  [DT_SIGNAL_COLLECTION_CHANGED] = { "dt-collection-changed",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 4, collection_args,
+    G_CALLBACK(_collection_changed_destroy_callback), FALSE },
+  [DT_SIGNAL_SELECTION_CHANGED] = { "dt-selection-changed",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
+  [DT_SIGNAL_TAG_CHANGED] = { "dt-tag-changed",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
+  [DT_SIGNAL_GEOTAG_CHANGED] = { "dt-geotag-changed",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2, geotag_arg,
+    G_CALLBACK(_image_geotag_destroy_callback), FALSE },
+  [DT_SIGNAL_METADATA_CHANGED] = { "dt-metadata-changed",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg, NULL, FALSE },
+  [DT_SIGNAL_IMAGE_INFO_CHANGED] = { "dt-image-info-changed",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg,
+    G_CALLBACK(_image_info_changed_destroy_callback), FALSE },
+  [DT_SIGNAL_STYLE_CHANGED] = { "dt-style-changed",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
+  [DT_SIGNAL_IMAGES_ORDER_CHANGE] = { "dt-images-order-change",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg, NULL, FALSE },
+  [DT_SIGNAL_FILMROLLS_CHANGED] = { "dt-filmrolls-changed",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
+  [DT_SIGNAL_FILMROLLS_IMPORTED] = { "dt-filmrolls-imported",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg, NULL, FALSE },
+  [DT_SIGNAL_FILMROLLS_REMOVED] = { "dt-filmrolls-removed",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
+  [DT_SIGNAL_PRESETS_CHANGED] = { "dt-presets-changed",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg,
+    G_CALLBACK(_presets_changed_destroy_callback), FALSE },
 
   /* Develop related signals */
-  { "dt-develop-initialized", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_DEVELOP_INITIALIZED
-  { "dt-develop-mipmap-updated", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg, NULL,
-    FALSE }, // DT_SIGNAL_DEVELOP_MIPMAP_UPDATED
-  { "dt-develop-preview-pipe-finished", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED
-  { "dt-develop-preview2-pipe-finished", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED
-  { "dt-develop-ui-pipe-finished", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED
-  { "dt-develop-history-will-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE
-  { "dt-develop-history-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_DEVELOP_HISTORY_CHANGE
-  { "dt-develop-history-invalidated", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_DEVELOP_HISTORY_INVALIDATED
-  { "dt-develop-module-remove", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg, NULL,
-    TRUE }, // DT_SIGNAL_MODULE_REMOVE
-  { "dt-develop-module-moved", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_DEVELOP_MODULE_MOVED
-  { "dt-develop-image-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_DEVELOP_IMAGE_CHANGE
-  { "dt-develop-distort", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_DEVELOP_DISTORT
+  [DT_SIGNAL_DEVELOP_INITIALIZE] = { "dt-develop-initialized",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
+  [DT_SIGNAL_DEVELOP_MIPMAP_UPDATED] = { "dt-develop-mipmap-updated",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg, NULL, FALSE },
+  [DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED] = { "dt-develop-preview-pipe-finished",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
+  [DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED] = { "dt-develop-preview2-pipe-finished",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
+  [DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED] = { "dt-develop-ui-pipe-finished",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
+  [DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE] = { "dt-develop-history-will-change",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
+  [DT_SIGNAL_DEVELOP_HISTORY_CHANGE] = { "dt-develop-history-change",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
+  [DT_SIGNAL_DEVELOP_HISTORY_INVALIDATED] = { "dt-develop-history-invalidated",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
+  [DT_SIGNAL_DEVELOP_MODULE_REMOVE] = { "dt-develop-module-remove",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg, NULL, TRUE },
+  [DT_SIGNAL_DEVELOP_MODULE_MOVED] = { "dt-develop-module-moved",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
+  [DT_SIGNAL_DEVELOP_IMAGE_CHANGED] = { "dt-develop-image-changed",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
+  [DT_SIGNAL_DEVELOP_DISTORT] = { "dt-develop-distort",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
 
-  { "dt-image-removed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg, NULL,
-    FALSE }, // DT_SIGNAL_IMAGE_REMOVED
-  { "dt-control-profile-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_CONTROL_PROFILE_CHANGED
-  { "dt-control-profile-user-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg, NULL,
-    FALSE }, // DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED
-  { "dt-image-import", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg, NULL,
-    FALSE }, // DT_SIGNAL_IMAGE_IMPORT
-  { "dt-image-export-tmpfile", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 6, image_export_arg, NULL,
-    TRUE }, // DT_SIGNAL_IMAGE_EXPORT_TMPFILE
-  { "dt-imageio-storage-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_IMAGEIO_STORAGE_CHANGE
+  [DT_SIGNAL_IMAGE_REMOVED] = { "dt-image-removed",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg, NULL, FALSE },
+  [DT_SIGNAL_CONTROL_PROFILE_CHANGED] = { "dt-control-profile-changed",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
+  [DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED] = { "dt-control-profile-user-changed",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg, NULL, FALSE },
+  [DT_SIGNAL_IMAGE_IMPORT] = { "dt-image-import",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg, NULL, FALSE },
+  [DT_SIGNAL_IMAGE_EXPORT_TMPFILE] = { "dt-image-export-tmpfile",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 6, image_export_arg, NULL, TRUE },
+  [DT_SIGNAL_IMAGEIO_STORAGE_CHANGE] = { "dt-imageio-storage-change",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
 
+  [DT_SIGNAL_PREFERENCES_CHANGE] = { "dt-preferences-changed",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
 
-  { "dt-preferences-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_PREFERENCES_CHANGE
+  [DT_SIGNAL_CAMERA_DETECTED] = { "dt-camera-detected",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
 
+  [DT_SIGNAL_CONTROL_NAVIGATION_REDRAW] = { "dt-control-navigation-redraw",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
 
-  { "dt-camera-detected", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_CAMERA_DETECTED,
+  [DT_SIGNAL_CONTROL_LOG_REDRAW] = { "dt-control-log-redraw",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
 
-  { "dt-control-navigation-redraw", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_CONTROL_NAVIGATION_REDRAW
+  [DT_SIGNAL_CONTROL_TOAST_REDRAW] = { "dt-control-toast-redraw",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
 
-  { "dt-control-log-redraw", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_CONTROL_LOG_REDRAW
+  [DT_SIGNAL_CONTROL_PICKERDATA_READY] = { "dt-control-pickerdata-ready",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2, pointer_2arg, NULL, FALSE },
 
-  { "dt-control-toast-redraw", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_CONTROL_TOAST_REDRAW
+  [DT_SIGNAL_METADATA_UPDATE] = { "dt-metadata-update",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
 
-  { "dt-control-pickerdata-ready", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2, pointer_2arg, NULL,
-    FALSE }, // DT_SIGNAL_CONTROL_PICKERDATA_REAEDY
+  [DT_SIGNAL_TROUBLE_MESSAGE] = { "dt-trouble-message",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 3, pointer_trouble, NULL, FALSE },
 
-  { "dt-metadata-update", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_METADATA_UPDATE
+  [DT_SIGNAL_LOCATION_CHANGED] = { "dt-location-changed",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg, NULL, TRUE },
 
-  { "dt-trouble-message", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 3, pointer_trouble, NULL,
-    FALSE }, // DT_SIGNAL_TROUBLE_MESSAGE
-
-  { "dt-location-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg, NULL,
-    TRUE }, // DT_SIGNAL_LOCATION_CHANGED
-
- { "dt-imageio-storage-export-enable", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_IMAGEIO_STORAGE_EXPORT_ENABLE
-
+  [DT_SIGNAL_IMAGEIO_STORAGE_EXPORT_ENABLE] = { "dt-imageio-storage-export-enable",
+    NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL, FALSE },
 };
 
 static GType _signal_type;
