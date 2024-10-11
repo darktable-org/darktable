@@ -1260,6 +1260,7 @@ static void _pop_menu_attached_find(GtkWidget *menuitem, dt_lib_module_t *self)
                      DT_LIB_TAGGING_COL_TAG, &name, -1);
 
   gtk_entry_set_text(d->entry, name);
+  g_free(name);
 }
 
 static void _pop_menu_attached_clipboard(GtkWidget *menuitem, dt_lib_module_t *self)
