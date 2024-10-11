@@ -134,6 +134,8 @@ void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
   /* remove darktable|style|* tags */
   dt_tag_detach_by_string("darktable|style|%", imgid, FALSE, FALSE);
   dt_tag_detach_by_string("darktable|changed", imgid, FALSE, FALSE);
+  /* signal that the tags may have changed */
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   /* unset change timestamp */
   dt_image_cache_unset_change_timestamp(darktable.image_cache, imgid);
