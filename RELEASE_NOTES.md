@@ -192,6 +192,17 @@ changes (where available).
 
 - Fix preset handling in the export module not saving all parameters.
 
+- Fix an issue in FilmicRGB where one of the parameter could be above
+  the maximum allowed range making the validation failing and the
+  whole set of parameters reset to default.
+
+- Fix overlay recording to work in all cases (discarding history or
+  copy/paste history for example) ensuring that an image not
+  referenced anymore as overlay in a composite module can be removed.
+
+- Properly reset darktable internal tag darktable|style|<name> and
+  darktable|changed when resetting history.
+
 ## Lua
 
 ### API Version
