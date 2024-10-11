@@ -1262,6 +1262,22 @@ static void _pop_menu_attached_find(GtkWidget *menuitem, dt_lib_module_t *self)
   gtk_entry_set_text(d->entry, name);
 }
 
+static void _pop_menu_attached_clipboard(GtkWidget *menuitem, dt_lib_module_t *self)
+{
+  dt_lib_tagging_t *d = self->data;
+  gchar *path;
+  GtkTreeIter iter;
+  GtkTreeModel *model = NULL;
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(d->attached_view);
+  if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
+
+  gtk_tree_model_get(model, &iter,
+                     DT_LIB_TAGGING_COL_PATH, &path, -1);
+
+  gtk_clipboard_set_text(gtk_clipboard_get_default(gdk_display_get_default()), path, -1);
+  g_free(path);
+}
+
 static void _pop_menu_attached(GtkWidget *treeview, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = self->data;
@@ -1292,6 +1308,10 @@ static void _pop_menu_attached(GtkWidget *treeview, GdkEventButton *event, dt_li
   menuitem = gtk_menu_item_new_with_label(_("find tag"));
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
   g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_attached_find, self);
+
+  menuitem = gtk_menu_item_new_with_label(_("copy to clipboard"));
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+  g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_attached_clipboard, self);
 
   gtk_widget_show_all(GTK_WIDGET(menu));
 
@@ -2227,6 +2247,21 @@ static void _pop_menu_dictionary_copy_tag(GtkWidget *menuitem, dt_lib_module_t *
   }
 }
 
+static void _pop_menu_dictionary_clipboard(GtkWidget *menuitem, dt_lib_module_t *self)
+{
+  dt_lib_tagging_t *d = self->data;
+  GtkTreeIter iter;
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->dictionary_view));
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->dictionary_view));
+  if(gtk_tree_selection_get_selected(selection, &model, &iter))
+  {
+    char *tag;
+    gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_PATH, &tag, -1);
+    gtk_clipboard_set_text(gtk_clipboard_get_default(gdk_display_get_default()), tag, -1);
+    g_free(tag);
+  }
+}
+
 static void _pop_menu_dictionary_attach_tag(GtkWidget *menuitem, dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = self->data;
@@ -2314,7 +2349,6 @@ static void _pop_menu_dictionary(GtkWidget *treeview, GdkEventButton *event, dt_
       menuitem = gtk_menu_item_new_with_label(_("edit..."));
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
       g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_dictionary_edit_tag, self);
-
     }
 
     if(d->tree_flag)
@@ -2343,6 +2377,10 @@ static void _pop_menu_dictionary(GtkWidget *treeview, GdkEventButton *event, dt_
     menuitem = gtk_menu_item_new_with_label(_("copy to entry"));
     g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_dictionary_copy_tag, self);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+    menuitem = gtk_menu_item_new_with_label(_("copy to clipboard"));
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+    g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_dictionary_clipboard, self);
 
     if(d->collection[0])
     {
