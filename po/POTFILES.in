@@ -197,6 +197,7 @@ src/gui/hist_dialog.c
 src/gui/import_metadata.c
 src/gui/preferences.c
 src/gui/presets.c
+src/gui/splash.c
 src/gui/styles_dialog.c
 src/imageio/format/avif.c
 src/imageio/format/copy.c
