@@ -291,10 +291,8 @@ static void _write_metadata(dt_lib_module_t *self)
     for(GList *l = key_value; l; l = l->next->next) g_free(l->next->data);
     g_list_free(key_value);
 
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                  DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                  DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
 
     dt_image_synch_xmps(d->last_act_on);
     dt_gui_cursor_clear_busy();
@@ -609,10 +607,10 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
       valid = gtk_tree_model_iter_next(model, &iter);
     }
     if(meta_signal)
-      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_CHANGED,
+      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED,
                               meta_remove
-                                    ? DT_METADATA_SIGNAL_HIDDEN
-                                    : DT_METADATA_SIGNAL_SHOWN);
+                              ? DT_METADATA_SIGNAL_HIDDEN
+                              : DT_METADATA_SIGNAL_SHOWN);
   }
   _update_layout(self);
   gtk_widget_destroy(dialog);
@@ -751,14 +749,11 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, d->button_box, 0, DT_METADATA_NUMBER, 2, 1);
 
   /* lets signup for mouse over image change signals */
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
-                                  G_CALLBACK(_image_selection_changed_callback), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _image_selection_changed_callback, self);
 
   // and 2 other interesting signals:
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
-                                  G_CALLBACK(_image_selection_changed_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
-                                  G_CALLBACK(_collection_updated_callback), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_SELECTION_CHANGED, _image_selection_changed_callback, self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _collection_updated_callback, self);
 
   gtk_widget_show_all(self->widget);
   gtk_widget_set_no_show_all(self->widget, TRUE);
@@ -768,9 +763,9 @@ void gui_init(dt_lib_module_t *self)
 void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = self->data;
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_image_selection_changed_callback, self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_image_selection_changed_callback, self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_collection_updated_callback, self);
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
@@ -969,7 +964,7 @@ int set_params(dt_lib_module_t *self,
 
   g_list_free(key_value);
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   dt_image_synch_xmps(imgs);
   g_list_free(imgs);
   // force the ui refresh to update the info from preset

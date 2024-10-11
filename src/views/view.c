@@ -303,9 +303,8 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
     const gboolean error = new_view->try_enter(new_view);
     if(error)
     {
-      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                    DT_SIGNAL_VIEWMANAGER_VIEW_CANNOT_CHANGE,
-                                    old_view, new_view);
+      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_VIEW_CANNOT_CHANGE,
+                              old_view, new_view);
       return error;
     }
   }
@@ -433,14 +432,13 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
   if(vm->accels_window.window && vm->accels_window.sticky) dt_view_accels_refresh(vm);
 
   /* raise view changed signal */
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, old_view, new_view);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, old_view, new_view);
 
   // update log visibility
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_LOG_REDRAW);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_LOG_REDRAW);
 
   // update toast visibility
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_TOAST_REDRAW);
   return FALSE;
 }
 
@@ -1091,14 +1089,14 @@ void dt_view_active_images_reset(const gboolean raise)
   darktable.view_manager->active_images = NULL;
 
   if(raise)
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 }
 void dt_view_active_images_add(dt_imgid_t imgid, gboolean raise)
 {
   darktable.view_manager->active_images =
     g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(imgid));
   if(raise)
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 }
 GSList *dt_view_active_images_get()
 {

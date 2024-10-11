@@ -264,7 +264,7 @@ int dt_lua_style_apply(lua_State *L)
   else
   {
     dt_styles_apply_to_image(style.name, FALSE, FALSE, imgid);
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
   }
   return 1;
 }

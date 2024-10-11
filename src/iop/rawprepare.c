@@ -750,7 +750,7 @@ void commit_params(
     d->apply_gainmaps = FALSE;
 
   if(_image_set_rawcrops(self, pipe->image.id, d->left, d->right, d->top, d->bottom))
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_UPDATE);
 
   if(!(dt_image_is_rawprepare_supported(&piece->pipe->image))
      || _image_is_normalized(&piece->pipe->image))

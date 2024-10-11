@@ -460,7 +460,7 @@ static void _view_map_location_changed(gpointer instance, GList *polygons, dt_li
 static void _signal_location_change(dt_lib_module_t *self)
 {
   dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_view_map_geotag_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, (GList *)NULL, 0);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_GEOTAG_CHANGED, (GList *)NULL, 0);
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_view_map_geotag_changed), self);
 }
 
@@ -976,11 +976,9 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(_selection_changed), self);
 
   // connect geotag changed signal
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED,
-                                  G_CALLBACK(_view_map_geotag_changed), (gpointer)self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_GEOTAG_CHANGED, _view_map_geotag_changed, self);
   // connect location changed signal
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_LOCATION_CHANGED,
-                                  G_CALLBACK(_view_map_location_changed), (gpointer)self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_LOCATION_CHANGED, _view_map_location_changed, self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -988,8 +986,8 @@ void gui_cleanup(dt_lib_module_t *self)
   free(self->data);
   self->data = NULL;
 
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_view_map_geotag_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_view_map_location_changed), self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_view_map_geotag_changed, self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_view_map_location_changed, self);
 }
 
 // clang-format off
