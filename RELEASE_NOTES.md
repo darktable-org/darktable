@@ -167,6 +167,12 @@ changes (where available).
 - Expose encoding speed control for AVIF export: trades off export
   time for file size and quality.
 
+- Tag names can now easily be copied to the clipboard via popup
+  context menu in the tagging module.
+
+- The piwigo export storage now supports to specify a file name
+  pattern for the exported file.
+
 ## Bug Fixes
 
 - Fixed a performance regression for redrawing mipmaps.
@@ -202,6 +208,15 @@ changes (where available).
 
 - Properly reset darktable internal tag darktable|style|<name> and
   darktable|changed when resetting history.
+
+- Fixed crash in the piwigo export storage when not logged in to the
+  piwigo server.
+
+- Fixed a bug in the export module where it was impossible to export a
+  file again if "on conflict: overwrite if changed" was selected.
+
+- Fixed a bug where double clicking on a label in darkroom modules
+  does not reset the control.
 
 ## Lua
 
