@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-11 18:17+0200\n"
+"POT-Creation-Date: 2024-10-11 23:23+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -11627,6 +11627,46 @@ msgstr ""
 
 #: ../src/gui/presets.c:1800 ../src/libs/lib.c:570
 msgid "update preset"
+msgstr ""
+
+#: ../src/gui/splash.c:131
+msgid "darktable starting"
+msgstr ""
+
+#: ../src/gui/splash.c:136
+msgid "initializing"
+msgstr ""
+
+#: ../src/gui/splash.c:167
+msgid ""
+"Photography workflow\n"
+"application and\n"
+"RAW developer"
+msgstr ""
+
+#. put the darktable wordmark and description in a vertical stack
+#: ../src/gui/splash.c:188
+msgid ""
+"Photography workflow application\n"
+"and RAW developer"
+msgstr ""
+
+#. ensure that text is vertically centered
+#. with respect to logo
+#: ../src/gui/splash.c:198
+msgid "get ready to unleash your creativity"
+msgstr ""
+
+#: ../src/gui/splash.c:307
+msgid "darktable shutdown"
+msgstr ""
+
+#: ../src/gui/splash.c:321
+msgid "darktable is now shutting down"
+msgstr ""
+
+#: ../src/gui/splash.c:323
+msgid "please wait while background jobs finish"
 msgstr ""
 
 #: ../src/gui/styles_dialog.c:232 ../src/libs/styles.c:489
