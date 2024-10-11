@@ -2296,10 +2296,8 @@ void gui_init(dt_lib_module_t *self)
   // otherwise, the filter toolbar module will do it in it's gui_init()
   if(darktable.view_manager->proxy.filter.module) _filtering_gui_update(self);
 
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
-                                  G_CALLBACK(_dt_collection_updated), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE,
-                                  G_CALLBACK(_dt_images_order_change), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _dt_collection_updated, self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_IMAGES_ORDER_CHANGE, _dt_images_order_change, self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -2311,7 +2309,7 @@ void gui_cleanup(dt_lib_module_t *self)
     d->rule[i].cleaning = TRUE;
   }
 
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_collection_updated), self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_dt_collection_updated, self);
   darktable.view_manager->proxy.module_filtering.module = NULL;
   free(d->params);
 

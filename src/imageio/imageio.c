@@ -1500,9 +1500,8 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
     dt_lua_unlock();
 #endif
 
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                  DT_SIGNAL_IMAGE_EXPORT_TMPFILE, imgid, filename, format,
-                                  format_params, storage, storage_params);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_EXPORT_TMPFILE, imgid, filename, format,
+                            format_params, storage, storage_params);
   }
 
   if(!thumbnail_export)
@@ -1550,7 +1549,7 @@ void dt_imageio_update_monochrome_workflow_tag(const int32_t id, const int mask)
   else
     dt_tag_detach_by_string("darktable|mode|monochrome", id, FALSE, FALSE);
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
 }
 
 void dt_imageio_set_hdr_tag(dt_image_t *img)

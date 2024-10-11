@@ -329,10 +329,10 @@ static void _show_location(dt_lib_location_t *lib,
   lib->marker_type = p->marker_type;
   lib->selected_location = p;
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_LOCATION_CHANGED,
-                                p->marker_type == MAP_DISPLAY_POLYGON
-                                ? p->marker_points
-                                : NULL);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_LOCATION_CHANGED,
+                          p->marker_type == MAP_DISPLAY_POLYGON
+                          ? p->marker_points
+                          : NULL);
 }
 
 /* called when search job has been processed and

@@ -178,13 +178,10 @@ void gui_init(dt_lib_module_t *self)
                      GDK_KEY_N, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
   /* connect a redraw callback to control draw all and preview pipe finish signals */
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
-                                  DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-                                  G_CALLBACK(_lib_navigation_control_redraw_callback),
-                                  self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_NAVIGATION_REDRAW,
-                                  G_CALLBACK(_lib_navigation_control_redraw_callback),
-                                  self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                            _lib_navigation_control_redraw_callback, self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_NAVIGATION_REDRAW, 
+                            _lib_navigation_control_redraw_callback, self);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->zoom, darktable.view_manager->proxy.darkroom.view,
                                NULL, N_("zoom"), _("image zoom level"),
@@ -223,9 +220,7 @@ void gui_init(dt_lib_module_t *self)
 void gui_cleanup(dt_lib_module_t *self)
 {
   /* disconnect from signal */
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_lib_navigation_control_redraw_callback),
-                                     self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_lib_navigation_control_redraw_callback, self);
 
   g_free(self->data);
   self->data = NULL;

@@ -456,8 +456,7 @@ static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *
   dt_iop_crop_gui_data_t *g = self->gui_data;
   if(!g) return; // seems that sometimes, g can be undefined for some reason...
   g->preview_ready = TRUE;
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_event_preview_updated_callback), self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_event_preview_updated_callback, self);
 
   // force max size to be recomputed
   g->clip_max_pipe_hash = 0;
@@ -473,9 +472,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   if(self->enabled)
   {
     // once the pipe is recomputed, we want to update final sizes
-    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
-                                    DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-                                    G_CALLBACK(_event_preview_updated_callback), self);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _event_preview_updated_callback, self);
     if(in)
     {
       // got focus, grab stuff to gui:

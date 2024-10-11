@@ -135,14 +135,13 @@ void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
   dt_tag_detach_by_string("darktable|style|%", imgid, FALSE, FALSE);
   dt_tag_detach_by_string("darktable|changed", imgid, FALSE, FALSE);
   /* signal that the tags may have changed */
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
 
   /* unset change timestamp */
   dt_image_cache_unset_change_timestamp(darktable.image_cache, imgid);
 
   // signal that the mipmap need to be updated
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
 
   dt_unlock_image(imgid);
 
@@ -165,7 +164,7 @@ void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
 void dt_history_delete_on_image(const dt_imgid_t imgid)
 {
   dt_history_delete_on_image_ext(imgid, TRUE, TRUE);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
 }
 
 gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
@@ -211,7 +210,7 @@ gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
   }
   dt_unlock_image(imgid);
   // signal that the mipmap need to be updated
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
   return FALSE;
 }
 
@@ -1005,8 +1004,7 @@ gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
     dt_image_synch_xmp(dest_imgid);
 
   // signal that the mipmap need to be updated
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, dest_imgid);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, dest_imgid);
 
   dt_unlock_image_pair(imgid, dest_imgid);
 
@@ -1318,8 +1316,7 @@ void dt_history_compress_on_image(const dt_imgid_t imgid)
 
   dt_database_release_transaction(darktable.db);
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
 }
 
 /* Please note: dt_history_truncate_on_image
@@ -1374,8 +1371,7 @@ void dt_history_truncate_on_image(const dt_imgid_t imgid,
 
   dt_database_release_transaction(darktable.db);
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
 }
 
 gboolean dt_history_compress(const dt_imgid_t imgid)

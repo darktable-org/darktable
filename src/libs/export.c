@@ -1223,8 +1223,7 @@ void gui_init(dt_lib_module_t *self)
   }
 
   // postponed so we can do the two steps in one loop
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE,
-                            G_CALLBACK(_on_storage_list_changed), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_IMAGEIO_STORAGE_CHANGE, _on_storage_list_changed, self);
   g_signal_connect(G_OBJECT(d->storage), "value-changed",
                    G_CALLBACK(_storage_changed), self);
 
@@ -1547,28 +1546,20 @@ void gui_init(dt_lib_module_t *self)
   // export metadata presets
   d->metadata_export = dt_lib_export_metadata_get_conf();
 
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
-                            G_CALLBACK(_image_selection_changed_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
-                            G_CALLBACK(_mouse_over_image_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
-                            G_CALLBACK(_collection_updated_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_EXPORT_ENABLE,
-                            G_CALLBACK(_export_enable_callback), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_SELECTION_CHANGED, _image_selection_changed_callback, self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _mouse_over_image_callback, self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _collection_updated_callback, self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_IMAGEIO_STORAGE_EXPORT_ENABLE, _export_enable_callback, self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_export_t *d = self->data;
 
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_on_storage_list_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_image_selection_changed_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_mouse_over_image_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_collection_updated_callback), self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_on_storage_list_changed, self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_image_selection_changed_callback, self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_mouse_over_image_callback, self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_collection_updated_callback, self);
 
   for(const GList *it = darktable.imageio->plugins_storage; it; it = g_list_next(it))
   {

@@ -1047,9 +1047,9 @@ void dt_thumbtable_zoom_changed(dt_thumbtable_t *table,
 static gboolean _event_scroll_compressed(gpointer user_data)
 {
   if (!user_data) return FALSE;
-  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+  dt_thumbtable_t *table = user_data;
 
-  if (table->scroll_value != 0)
+  if(table->scroll_value != 0)
   {
     float delta = table->scroll_value;
 
@@ -1103,10 +1103,9 @@ static gboolean _event_scroll_compressed(gpointer user_data)
 
 static gboolean _event_scroll(GtkWidget *widget,
                               GdkEvent *event,
-                              gpointer user_data)
+                              dt_thumbtable_t *table)
 {
   GdkEventScroll *e = (GdkEventScroll *)event;
-  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   int delta_x, delta_y;
 
   // file manager can either scroll fractionally and smoothly for precision
@@ -1318,7 +1317,7 @@ static void _lighttable_expose_empty(cairo_t *cr,
 
 static gboolean _event_draw(GtkWidget *widget,
                             cairo_t *cr,
-                            gpointer user_data)
+                            dt_thumbtable_t *table)
 {
   if(!GTK_IS_CONTAINER(gtk_widget_get_parent(widget)))
     return TRUE;
@@ -1330,7 +1329,6 @@ static gboolean _event_draw(GtkWidget *widget,
 
   // but we don't really want to draw something, this is just to know
   // when the widget is really ready
-  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   table->manual_button.width = -1;
   if(!darktable.collection
      || (dt_collection_get_count(darktable.collection) == 0))
@@ -1348,9 +1346,8 @@ static gboolean _event_draw(GtkWidget *widget,
 
 static gboolean _event_leave_notify(GtkWidget *widget,
                                     GdkEventCrossing *event,
-                                    gpointer user_data)
+                                    dt_thumbtable_t *table)
 {
-  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   // if the leaving cause is the hide of the widget, no mouseover change
   if(!gtk_widget_is_visible(widget))
   {
@@ -1373,7 +1370,7 @@ static gboolean _event_leave_notify(GtkWidget *widget,
 
 static gboolean _event_enter_notify(GtkWidget *widget,
                                     GdkEventCrossing *event,
-                                    gpointer user_data)
+                                    dt_thumbtable_t *table)
 {
   dt_set_backthumb_time(0.0);
 
@@ -1388,7 +1385,7 @@ static gboolean _event_enter_notify(GtkWidget *widget,
 
 static gboolean _do_select_single(gpointer user_data)
 {
-  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+  dt_thumbtable_t *table = user_data;
 
   // always keep the edited picture selected
   dt_selection_clear(darktable.selection);
@@ -1401,11 +1398,10 @@ static gboolean _do_select_single(gpointer user_data)
 
 static gboolean _event_button_press(GtkWidget *widget,
                                     GdkEventButton *event,
-                                    gpointer user_data)
+                                    dt_thumbtable_t *table)
 {
   dt_set_backthumb_time(0.0);
 
-  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   const dt_imgid_t id = dt_control_get_mouse_over_id();
 
   if(dt_is_valid_imgid(id)
@@ -1435,8 +1431,7 @@ static gboolean _event_button_press(GtkWidget *widget,
             dt_selection_deselect(darktable.selection,
                                   darktable.develop->image_storage.id);
             dt_selection_select(darktable.selection, id);
-            DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                          DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
+            DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
             return FALSE;
           }
         default:
@@ -1490,11 +1485,10 @@ static gboolean _event_button_press(GtkWidget *widget,
 
 static gboolean _event_motion_notify(GtkWidget *widget,
                                      GdkEventMotion *event,
-                                     gpointer user_data)
+                                     dt_thumbtable_t *table)
 {
   dt_set_backthumb_time(0.0);
 
-  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   table->mouse_inside = TRUE;
 
   gboolean ret = FALSE;
@@ -1522,7 +1516,7 @@ static gboolean _event_motion_notify(GtkWidget *widget,
 
 static gboolean _event_button_release(GtkWidget *widget,
                                       GdkEventButton *event,
-                                      gpointer user_data)
+                                      dt_thumbtable_t *table)
 {
   // we select only in LIGHTTABLE, DARKROOM & MAP mode
   const dt_view_type_flags_t cv = dt_view_get_current();
@@ -1534,8 +1528,6 @@ static gboolean _event_button_release(GtkWidget *widget,
 
   dt_set_backthumb_time(0.0);
   const dt_imgid_t id = dt_control_get_mouse_over_id();
-
-  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
   if(dt_is_valid_imgid(id)
      && event->button == 1
@@ -1731,15 +1723,14 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
 }
 
 // called each time the preference change, to update specific parts
-static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
+static void _dt_pref_change_callback(gpointer instance, dt_thumbtable_t *table)
 {
-  if(!user_data)
+  if(!table)
     return;
 
   dt_get_sysresource_level();
   dt_opencl_update_settings();
   dt_configure_ppd_dpi(darktable.gui);
-  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
   /* let's idle the backthumb crawler now to avoid fighting
       updating vs removal of thumbs
@@ -1769,12 +1760,10 @@ static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
 
 static void _dt_profile_change_callback(gpointer instance,
                                         const int type,
-                                        gpointer user_data)
+                                        dt_thumbtable_t *table)
 {
-  if(!user_data)
+  if(!table)
     return;
-
-  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
   for(const GList *l = table->list; l; l = g_list_next(l))
   {
@@ -1784,14 +1773,12 @@ static void _dt_profile_change_callback(gpointer instance,
 }
 
 // this is called each time the list of active images change
-static void _dt_active_images_callback(gpointer instance, gpointer user_data)
+static void _dt_active_images_callback(gpointer instance, dt_thumbtable_t *table)
 {
   // we only ensure here that the active image is the offset one
   // everything else (css, etc...) is handled in dt_thumbnail_t
-  if(!user_data)
+  if(!table)
     return;
-
-  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
   if(!darktable.view_manager->active_images) return;
   const int activeid = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
@@ -1799,12 +1786,10 @@ static void _dt_active_images_callback(gpointer instance, gpointer user_data)
 }
 
 // this is called each time mouse_over id change
-static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
+static void _dt_mouse_over_image_callback(gpointer instance, dt_thumbtable_t *table)
 {
-  if(!user_data)
+  if(!table)
     return;
-
-  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
   const dt_imgid_t imgid = dt_control_get_mouse_over_id();
 
@@ -1939,12 +1924,10 @@ static void _dt_collection_changed_callback(gpointer instance,
                                             dt_collection_properties_t changed_property,
                                             gpointer imgs,
                                             const dt_imgid_t next,
-                                            gpointer user_data)
+                                            dt_thumbtable_t *table)
 {
-  if(!user_data)
+  if(!table)
     return;
-
-  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
   dt_collection_history_save();
 
@@ -2171,9 +2154,8 @@ static void _event_dnd_get(GtkWidget *widget,
                            GtkSelectionData *selection_data,
                            const guint target_type,
                            const guint time,
-                           gpointer user_data)
+                           dt_thumbtable_t *table)
 {
-  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   g_assert(selection_data != NULL);
 
   switch(target_type)
@@ -2264,11 +2246,9 @@ static void _event_dnd_get(GtkWidget *widget,
 
 static void _event_dnd_begin(GtkWidget *widget,
                              GdkDragContext *context,
-                             gpointer user_data)
+                             dt_thumbtable_t *table)
 {
   const int ts = DT_PIXEL_APPLY_DPI(128);
-
-  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
   darktable.control->last_clicked_filmstrip_id =
     dt_control_get_mouse_over_id();
@@ -2342,7 +2322,7 @@ void dt_thumbtable_event_dnd_received(GtkWidget *widget,
                                       GtkSelectionData *selection_data,
                                       guint target_type,
                                       guint time,
-                                      gpointer user_data)
+                                      dt_thumbtable_t *table)
 {
   gboolean success = FALSE;
 
@@ -2373,7 +2353,6 @@ void dt_thumbtable_event_dnd_received(GtkWidget *widget,
           && (selection_data != NULL)
           && (gtk_selection_data_get_length(selection_data) >= 0))
   {
-    dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
     if(table->drag_list)
     {
       if(darktable.collection->params.sorts[DT_COLLECTION_SORT_CUSTOM_ORDER]
@@ -2399,9 +2378,8 @@ void dt_thumbtable_event_dnd_received(GtkWidget *widget,
 
 static void _event_dnd_end(GtkWidget *widget,
                            GdkDragContext *context,
-                           gpointer user_data)
+                           dt_thumbtable_t *table)
 {
-  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   if(table->drag_list)
   {
     g_list_free(table->drag_list);
@@ -2479,16 +2457,11 @@ dt_thumbtable_t *dt_thumbtable_new()
                    G_CALLBACK(_event_button_release), table);
 
   // we register globals signals
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
-                            G_CALLBACK(_dt_collection_changed_callback), table);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
-                            G_CALLBACK(_dt_mouse_over_image_callback), table);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
-                            G_CALLBACK(_dt_active_images_callback), table);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
-                            G_CALLBACK(_dt_profile_change_callback), table);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
-                            G_CALLBACK(_dt_pref_change_callback), table);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _dt_collection_changed_callback, table);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _dt_mouse_over_image_callback, table);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_ACTIVE_IMAGES_CHANGE, _dt_active_images_callback, table);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, _dt_profile_change_callback, table);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE, _dt_pref_change_callback, table);
   gtk_widget_show(table->widget);
 
   g_object_ref(table->widget);
@@ -2726,7 +2699,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
       }
       g_slist_free(darktable.view_manager->active_images);
       darktable.view_manager->active_images = NULL;
-      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
     }
 
     dt_print(DT_DEBUG_LIGHTTABLE,
@@ -2924,7 +2897,7 @@ static void _accel_duplicate(dt_action_t *action)
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_RELOAD,
                              DT_COLLECTION_PROP_UNDEF, NULL);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
 }
 
 static void _accel_select_all(dt_action_t *action)

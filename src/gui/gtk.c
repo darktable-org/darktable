@@ -220,7 +220,7 @@ static void _focuspeaking_switch_button_callback(GtkWidget *button,
   dt_dev_reprocess_center(darktable.develop);
 
   // we inform that all thumbnails need to be redraw
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, -1);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, -1);
 }
 
 static gchar *_panels_get_view_path(char *suffix)
@@ -1650,8 +1650,7 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   gtk_container_add(GTK_CONTAINER(container), widget);
 
   /* connect to signal redraw all */
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_ALL,
-                            G_CALLBACK(_ui_widget_redraw_callback), gui->ui->main_window);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_REDRAW_ALL, _ui_widget_redraw_callback, gui->ui->main_window);
 
   container = widget;
 
@@ -1809,19 +1808,16 @@ static void _init_main_table(GtkWidget *container)
   gtk_overlay_add_overlay(GTK_OVERLAY(ocda), eb);
 
   /* center should redraw when signal redraw center is raised*/
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_CENTER,
-                                  G_CALLBACK(_ui_widget_redraw_callback),
-                                  darktable.gui->ui->center);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_REDRAW_CENTER, _ui_widget_redraw_callback,
+                            darktable.gui->ui->center);
 
   /* update log message label */
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_LOG_REDRAW,
-                                  G_CALLBACK(_ui_log_redraw_callback),
-                                  darktable.gui->ui->log_msg);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_LOG_REDRAW, _ui_log_redraw_callback,
+                            darktable.gui->ui->log_msg);
 
   /* update toast message label */
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW,
-                                  G_CALLBACK(_ui_toast_redraw_callback),
-                                  darktable.gui->ui->toast_msg);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_TOAST_REDRAW, _ui_toast_redraw_callback,
+                            darktable.gui->ui->toast_msg);
 
   // Adding the scrollbars
   GtkWidget *vscrollBar = gtk_scrollbar_new(GTK_ORIENTATION_VERTICAL, NULL);

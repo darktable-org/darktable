@@ -355,9 +355,8 @@ void enter(dt_view_t *self)
     dt_view_active_images_add(prt->imgs->imgid_to_load, TRUE);
   }
 
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-                            G_CALLBACK(_print_mipmaps_updated_signal_callback),
-                            (gpointer)self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
+                            _print_mipmaps_updated_signal_callback, self);
 
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 
@@ -377,9 +376,7 @@ void leave(dt_view_t *self)
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
 
   /* disconnect from mipmap updated signal */
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_print_mipmaps_updated_signal_callback),
-                                     (gpointer)self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_print_mipmaps_updated_signal_callback, self);
 
   dt_printing_clear_boxes(prt->imgs);
 

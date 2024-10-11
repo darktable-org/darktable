@@ -149,7 +149,7 @@ static void _range_select_destroy(GtkWidget *widget)
 
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(widget);
 
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_pref_changed), range);
+  DT_CONTROL_SIGNAL_DISCONNECT(_dt_pref_changed, range);
 
   if(!g_list_is_empty(range->markers))
     g_list_free_full(range->markers, g_free);
@@ -1749,8 +1749,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
 
   if(type == DT_RANGE_TYPE_DATETIME) _popup_date_init(range);
 
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(_dt_pref_changed),
-                                  range);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE, _dt_pref_changed, range);
   gtk_widget_set_name((GtkWidget *)range, "dt-range");
 
   return (GtkWidget *)range;

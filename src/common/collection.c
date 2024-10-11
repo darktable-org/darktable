@@ -95,34 +95,21 @@ const dt_collection_t *dt_collection_new(const dt_collection_t *clone)
   /* connect to all the signals that might indicate that the count of
      images matching the collection changed
    */
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_TAG_CHANGED,
-                            G_CALLBACK(_dt_collection_recount_callback_tag), collection);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED,
-                            G_CALLBACK(_dt_collection_recount_callback_filmroll), collection);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_FILMROLLS_REMOVED,
-                            G_CALLBACK(_dt_collection_recount_callback_filmroll), collection);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_TAG_CHANGED, _dt_collection_recount_callback_tag, collection);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_FILMROLLS_CHANGED, _dt_collection_recount_callback_filmroll, collection);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_FILMROLLS_REMOVED, _dt_collection_recount_callback_filmroll, collection);
 
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGE_IMPORT,
-                            G_CALLBACK(_dt_collection_recount_callback_2), collection);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED,
-                            G_CALLBACK(_dt_collection_filmroll_imported_callback), collection);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_IMAGE_IMPORT, _dt_collection_recount_callback_2, collection);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_FILMROLLS_IMPORTED, _dt_collection_filmroll_imported_callback, collection);
   return collection;
 }
 
 void dt_collection_free(const dt_collection_t *collection)
 {
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_dt_collection_recount_callback_tag),
-                               (gpointer)collection);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_dt_collection_recount_callback_filmroll),
-                               (gpointer)collection);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_dt_collection_recount_callback_2),
-                               (gpointer)collection);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_dt_collection_filmroll_imported_callback),
-                               (gpointer)collection);
+  DT_CONTROL_SIGNAL_DISCONNECT(_dt_collection_recount_callback_tag, (gpointer)collection);
+  DT_CONTROL_SIGNAL_DISCONNECT(_dt_collection_recount_callback_filmroll, (gpointer)collection);
+  DT_CONTROL_SIGNAL_DISCONNECT(_dt_collection_recount_callback_2, (gpointer)collection);
+  DT_CONTROL_SIGNAL_DISCONNECT(_dt_collection_filmroll_imported_callback, (gpointer)collection);
 
   g_free(collection->query);
   g_free(collection->query_no_group);
@@ -2709,7 +2696,7 @@ void dt_collection_update_query(const dt_collection_t *collection,
     // if we have remove something from selection, we need to raise a signal
     if(sqlite3_changes(dt_database_get(darktable.db)) > 0)
     {
-      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_SELECTION_CHANGED);
     }
 
     /* free allocated strings */
@@ -2720,10 +2707,9 @@ void dt_collection_update_query(const dt_collection_t *collection,
   if(!collection->clone)
   {
     dt_collection_memory_update();
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                  DT_SIGNAL_COLLECTION_CHANGED,
-                                  query_change, changed_property,
-                                  list, next);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_COLLECTION_CHANGED,
+                            query_change, changed_property,
+                            list, next);
   }
 }
 
@@ -2850,9 +2836,8 @@ static void _collection_recount_callback(gpointer instance,
   if(!collection->clone)
   {
     if(old_count != collection->count_no_group) dt_collection_hint_message(collection);
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                  DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_RELOAD,
-                                  DT_COLLECTION_PROP_UNDEF, (GList *)NULL, -1);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_RELOAD,
+                            DT_COLLECTION_PROP_UNDEF, (GList *)NULL, -1);
   }
 }
 

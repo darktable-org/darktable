@@ -1357,7 +1357,7 @@ static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *
   dt_iop_clipping_gui_data_t *g = self->gui_data;
   g->preview_ready = TRUE;
 
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_event_preview_updated_callback), self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_event_preview_updated_callback, self);
   // force max size to be recomputed
   g->clip_max_pipe_hash = 0;
 }
@@ -1371,8 +1371,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   {
     if(in)
     {
-      DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-                                      G_CALLBACK(_event_preview_updated_callback), self);
+      DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _event_preview_updated_callback, self);
 
       // got focus, grab stuff to gui:
       // need to get gui stuff for the first time for this image,
@@ -1383,8 +1382,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
     }
     else
     {
-      DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-                                      G_CALLBACK(_event_preview_updated_callback), self);
+      DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _event_preview_updated_callback, self);
 
       // lost focus, commit current params:
       // if the keystone setting is not finished, we discard it

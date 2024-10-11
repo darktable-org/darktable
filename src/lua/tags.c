@@ -181,7 +181,7 @@ static int tag_delete(lua_State *L)
   sqlite3_finalize(stmt);
 
   if(dt_tag_remove(tagid, TRUE))
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
 
   for(const GList *list_iter = tagged_images; list_iter; list_iter = g_list_next(list_iter))
   {
@@ -209,7 +209,7 @@ int dt_lua_tag_attach(lua_State *L)
   }
   if(dt_tag_attach(tagid, imgid, TRUE, TRUE))
   {
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
     dt_image_synch_xmp(imgid);
   }
   return 0;
@@ -232,7 +232,7 @@ int dt_lua_tag_detach(lua_State *L)
   if(dt_tag_detach(tagid, imgid, TRUE, TRUE))
   {
     dt_image_synch_xmp(imgid);
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
   }
   return 0;
 }
