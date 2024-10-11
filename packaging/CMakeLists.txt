@@ -5,7 +5,7 @@ if(WIN32 AND NOT BUILD_MSYS2_INSTALL)
   get_filename_component(MINGW_PATH ${CMAKE_CXX_COMPILER} PATH)
 
   find_program(cygcheck_BIN cygcheck)
-  if(${cygcheck_BIN} STREQUAL "cygcheck_BIN-NOTFOUND")
+  if(CMAKE_SYSTEM_PROCESSOR MATCHES "ARM64" OR ${cygcheck_BIN} STREQUAL "cygcheck_BIN-NOTFOUND")
 
     # use the slower fixup_bundle
 
