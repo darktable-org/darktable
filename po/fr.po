@@ -12512,7 +12512,7 @@ msgstr ""
 #. with respect to logo
 #: ../src/gui/splash.c:198
 msgid "get ready to unleash your creativity"
-msgstr "Soyez prêt pour libérer votre créativité"
+msgstr "Soyez prêt à libérer votre créativité"
 
 #: ../src/gui/splash.c:307
 msgid "darktable shutdown"
