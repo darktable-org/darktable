@@ -105,8 +105,8 @@
 */
 
 gboolean dt_masks_calc_scharr_mask(dt_dev_detail_mask_t *details,
-                                      float *const restrict src,
-                                      const dt_aligned_pixel_t wb)
+                                   float *const restrict src,
+                                   const dt_aligned_pixel_t wb)
 {
   const int width = details->roi.width;
   const int height = details->roi.height;
@@ -151,9 +151,9 @@ static inline float _calcBlendFactor(float val, float ithreshold)
     return 1.0f / (1.0f + dt_fast_expf(16.0f - ithreshold * val));
 }
 
-float *dt_masks_calc_detail_mask(struct dt_dev_pixelpipe_iop_t *piece,
-                               const float threshold,
-                               const gboolean detail)
+float *dt_masks_calc_detail_mask(dt_dev_pixelpipe_iop_t *piece,
+                                 const float threshold,
+                                 const gboolean detail)
 {
   dt_dev_pixelpipe_t *pipe = piece->pipe;
   dt_dev_detail_mask_t *details = &pipe->scharr;

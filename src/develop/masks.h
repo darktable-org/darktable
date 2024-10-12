@@ -219,7 +219,7 @@ typedef struct dt_masks_functions_t
                           int *count,
                           float *min,
                           float *max);
-  void (*duplicate_points)(struct dt_develop_t *const dev,
+  void (*duplicate_points)(dt_develop_t *const dev,
                            struct dt_masks_form_t *base,
                            struct dt_masks_form_t *dest);
   void (*initial_source_pos)(const float iwd,
@@ -280,7 +280,7 @@ typedef struct dt_masks_functions_t
                          int *height,
                          int *posx,
                          int *posy);
-  int (*mouse_moved)(struct dt_iop_module_t *module,
+  int (*mouse_moved)(dt_iop_module_t *module,
                      float pzx,
                      float pzy,
                      const double pressure,
@@ -290,7 +290,7 @@ typedef struct dt_masks_functions_t
                      const dt_imgid_t parentid,
                      struct dt_masks_form_gui_t *gui,
                      const int index);
-  int (*mouse_scrolled)(struct dt_iop_module_t *module,
+  int (*mouse_scrolled)(dt_iop_module_t *module,
                         float pzx,
                         float pzy,
                         const gboolean up,
@@ -299,7 +299,7 @@ typedef struct dt_masks_functions_t
                         const dt_imgid_t parentid,
                         struct dt_masks_form_gui_t *gui,
                         const int index);
-  int (*button_pressed)(struct dt_iop_module_t *module,
+  int (*button_pressed)(dt_iop_module_t *module,
                         float pzx,
                         float pzy,
                         const double pressure,
@@ -310,7 +310,7 @@ typedef struct dt_masks_functions_t
                         const dt_imgid_t parentid,
                         struct dt_masks_form_gui_t *gui,
                         const int index);
-  int (*button_released)(struct dt_iop_module_t *module,
+  int (*button_released)(dt_iop_module_t *module,
                          float pzx,
                          float pzy,
                          const int which,

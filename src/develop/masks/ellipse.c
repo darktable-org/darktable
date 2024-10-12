@@ -109,7 +109,8 @@ static int _ellipse_point_in_polygon(const float x,
 static void _ellipse_get_distance(const float x,
                                   const float y,
                                   const float as,
-                                  dt_masks_form_gui_t *gui, int index,
+                                  dt_masks_form_gui_t *gui,
+                                  int index,
                                   const int num_points,
                                   gboolean *inside,
                                   gboolean *inside_border,
@@ -377,7 +378,7 @@ static int _ellipse_get_points(dt_develop_t *dev,
 }
 
 static int _ellipse_get_points_border(dt_develop_t *dev,
-                                      struct dt_masks_form_t *form,
+                                      dt_masks_form_t *form,
                                       float **points,
                                       int *points_count,
                                       float **border,
@@ -554,7 +555,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module,
   return 0;
 }
 
-static int _ellipse_events_button_pressed(struct dt_iop_module_t *module,
+static int _ellipse_events_button_pressed(dt_iop_module_t *module,
                                           const float pzx,
                                           const float pzy,
                                           const double pressure,
@@ -752,7 +753,7 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module,
   return 0;
 }
 
-static int _ellipse_events_button_released(struct dt_iop_module_t *module,
+static int _ellipse_events_button_released(dt_iop_module_t *module,
                                            const float pzx,
                                            const float pzy,
                                            const int which,
@@ -970,7 +971,7 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module,
   return 0;
 }
 
-static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module,
+static int _ellipse_events_mouse_moved(dt_iop_module_t *module,
                                        const float pzx,
                                        const float pzy,
                                        const double pressure,
