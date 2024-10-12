@@ -218,7 +218,9 @@ static void save_usercss_callback(GtkWidget *widget, gpointer user_data)
   }
 }
 
-static void usercss_dialog_callback(GtkDialog *dialog, gint response_id, gpointer user_data)
+static void usercss_dialog_callback(GtkDialog *dialog,
+                                    gint response_id,
+                                    gpointer user_data)
 {
   //just save the latest css but don't reload the theme
   dt_gui_themetweak_widgets_t *tw = (dt_gui_themetweak_widgets_t *)user_data;
@@ -230,7 +232,7 @@ static void usercss_dialog_callback(GtkDialog *dialog, gint response_id, gpointe
 
 static void language_callback(GtkWidget *widget, gpointer user_data)
 {
-  int selected = dt_bauhaus_combobox_get(widget);
+  const int selected = dt_bauhaus_combobox_get(widget);
   dt_l10n_language_t *language = g_list_nth_data(darktable.l10n->languages, selected);
   if(darktable.l10n->sys_default == selected)
   {
@@ -245,7 +247,9 @@ static void language_callback(GtkWidget *widget, gpointer user_data)
   restart_required = TRUE;
 }
 
-static gboolean reset_language_widget(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
+static gboolean reset_language_widget(GtkWidget *label,
+                                      GdkEventButton *event,
+                                      GtkWidget *widget)
 {
   if(event->type == GDK_2BUTTON_PRESS)
   {
@@ -1362,4 +1366,3 @@ GtkWidget *dt_gui_preferences_string(GtkGrid *grid, const char *key, const guint
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

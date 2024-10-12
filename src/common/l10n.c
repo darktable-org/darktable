@@ -356,7 +356,6 @@ dt_l10n_t *dt_l10n_init(const gchar *filename, const gboolean init_list)
   }
 #endif // defined (_WIN32)
 
-
   // prepare the list of available gui translations from which the
   // user can pick in prefs
   if(init_list)
