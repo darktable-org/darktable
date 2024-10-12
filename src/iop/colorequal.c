@@ -3210,7 +3210,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->param_size), "quad-pressed", G_CALLBACK(_masking_callback_p), self);
   dt_bauhaus_widget_set_quad_tooltip(g->param_size,
     _("visualize changed output for the selected tab.\n"
-    "red shows increased data, blue decreased."));
+      "red shows increased values, blue decreased."));
 
   _init_sliders(self);
 
