@@ -834,7 +834,8 @@ static void _pixelpipe_picker(dt_iop_module_t *module,
     const dt_iop_order_iccprofile_info_t *const profile =
       dt_ioppr_get_pipe_current_profile_info(module, piece->pipe);
 
-    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER, "pixelpipe picker",
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER,
+      picker_source == PIXELPIPE_PICKER_INPUT ? "pixelpipe IN picker" : "pixelpipe OUT picker",
       piece->pipe, module, DT_DEVICE_CPU, roi, NULL, " %s -> %s, %sbox %i/%i -- %i/%i\n",
       dt_iop_colorspace_to_name(image_cst),
       dt_iop_colorspace_to_name(dt_iop_color_picker_get_active_cst(module)),
@@ -920,7 +921,8 @@ static void _pixelpipe_picker_cl(const int devid,
 
   if(err != CL_SUCCESS) goto error;
 
-  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER, "pixelpipe picker CL",
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER,
+    picker_source == PIXELPIPE_PICKER_INPUT ? "pixelpipe IN picker CL" : "pixelpipe OUT picker CL",
     piece->pipe, module, devid, roi, NULL, " %s -> %s, %sbox %i/%i -- %i/%i\n",
     dt_iop_colorspace_to_name(image_cst),
     dt_iop_colorspace_to_name(dt_iop_color_picker_get_active_cst(module)),
@@ -1243,8 +1245,12 @@ static gboolean _pixelpipe_process_on_CPU(
   if(dt_atomic_get_int(&pipe->shutdown))
     return TRUE;
 
+  dt_iop_colorspace_type_t blend_cst = dt_develop_blend_colorspace(piece, pipe->dsc.cst);
+  const gboolean blend_picking = _request_color_pick(pipe, dev, module)
+                                && _transform_for_blend(module, piece)
+                                && blend_cst != cst_to;
   // color picking for module
-  if(_request_color_pick(pipe, dev, module))
+  if(_request_color_pick(pipe, dev, module) && !blend_picking)
   {
     _pixelpipe_picker(module, piece, &piece->dsc_in, (float *)input, roi_in,
                       module->picked_color,
@@ -1267,8 +1273,6 @@ static gboolean _pixelpipe_process_on_CPU(
   // blend needs input/output images with default colorspace
   if(_transform_for_blend(module, piece))
   {
-    const dt_iop_colorspace_type_t blend_cst =
-      dt_develop_blend_colorspace(piece, pipe->dsc.cst);
     dt_ioppr_transform_image_colorspace(module, input, input, roi_in->width, roi_in->height,
                                         input_format->cst, blend_cst, &input_format->cst,
                                         work_profile);
@@ -1276,6 +1280,21 @@ static gboolean _pixelpipe_process_on_CPU(
                                         roi_out->width, roi_out->height,
                                         pipe->dsc.cst, blend_cst, &pipe->dsc.cst,
                                         work_profile);
+    if(blend_picking)
+    {
+      _pixelpipe_picker(module, piece, &piece->dsc_in, (float *)input, roi_in,
+                        module->picked_color,
+                        module->picked_color_min,
+                        module->picked_color_max,
+                        blend_cst, PIXELPIPE_PICKER_INPUT);
+
+      _pixelpipe_picker(module, piece, &pipe->dsc, (float *)(*output), roi_out,
+                        module->picked_output_color,
+                        module->picked_output_color_min,
+                        module->picked_output_color_max,
+                        blend_cst, PIXELPIPE_PICKER_OUTPUT);
+      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PICKERDATA_READY, module, pipe);
+    }
   }
 
   if(dt_atomic_get_int(&pipe->shutdown))
@@ -1937,13 +1956,17 @@ static gboolean _dev_pixelpipe_process_rec(
           return TRUE;
         }
 
+        dt_iop_colorspace_type_t blend_cst = dt_develop_blend_colorspace(piece, pipe->dsc.cst);
+        const gboolean blend_picking = _request_color_pick(pipe, dev, module)
+                                    && _transform_for_blend(module, piece)
+                                    && blend_cst != cst_to;
+        const size_t outbufsize = bpp * roi_out->width * roi_out->height;
+
         // color picking for module
-        if(success_opencl && _request_color_pick(pipe, dev, module))
+        if(success_opencl && !blend_picking && _request_color_pick(pipe, dev, module))
         {
           // we abuse the empty output buffer on host for intermediate storage of data in
           // pixelpipe_picker_cl()
-          const size_t outbufsize = bpp * roi_out->width * roi_out->height;
-
           _pixelpipe_picker_cl(pipe->devid, module, piece, &piece->dsc_in,
                                cl_mem_input, &roi_in,
                                module->picked_color, module->picked_color_min,
@@ -1957,7 +1980,6 @@ static gboolean _dev_pixelpipe_process_rec(
                                module->picked_output_color_max,
                                *output, outbufsize, pipe->dsc.cst,
                                PIXELPIPE_PICKER_OUTPUT);
-
           DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PICKERDATA_READY, module, pipe);
         }
 
@@ -1967,8 +1989,6 @@ static gboolean _dev_pixelpipe_process_rec(
         // blend needs input/output images with default colorspace
         if(success_opencl && _transform_for_blend(module, piece))
         {
-          dt_iop_colorspace_type_t blend_cst =
-            dt_develop_blend_colorspace(piece, pipe->dsc.cst);
 
           success_opencl = dt_ioppr_transform_image_colorspace_cl
             (module, piece->pipe->devid, cl_mem_input, cl_mem_input,
@@ -1979,6 +1999,24 @@ static gboolean _dev_pixelpipe_process_rec(
             (module, piece->pipe->devid, *cl_mem_output, *cl_mem_output,
              roi_out->width, roi_out->height,
              pipe->dsc.cst, blend_cst, &pipe->dsc.cst, work_profile);
+
+          if(success_opencl && blend_picking)
+          {
+            _pixelpipe_picker_cl(pipe->devid, module, piece, &piece->dsc_in,
+                               cl_mem_input, &roi_in,
+                               module->picked_color, module->picked_color_min,
+                               module->picked_color_max,
+                               *output, outbufsize, blend_cst,
+                               PIXELPIPE_PICKER_INPUT);
+            _pixelpipe_picker_cl(pipe->devid, module, piece, &pipe->dsc,
+                               *cl_mem_output, roi_out,
+                               module->picked_output_color,
+                               module->picked_output_color_min,
+                               module->picked_output_color_max,
+                               *output, outbufsize, blend_cst,
+                               PIXELPIPE_PICKER_OUTPUT);
+            DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PICKERDATA_READY, module, pipe);
+          }
         }
 
         /* process blending */
@@ -2093,8 +2131,12 @@ static gboolean _dev_pixelpipe_process_rec(
         if(dt_atomic_get_int(&pipe->shutdown))
           return TRUE;
 
+        dt_iop_colorspace_type_t blend_cst = dt_develop_blend_colorspace(piece, pipe->dsc.cst);
+        const gboolean blend_picking = _request_color_pick(pipe, dev, module)
+                                    && _transform_for_blend(module, piece)
+                                    && blend_cst != cst_to;
         // color picking for module
-        if(success_opencl && _request_color_pick(pipe, dev, module))
+        if(success_opencl && !blend_picking && _request_color_pick(pipe, dev, module))
         {
           _pixelpipe_picker(module, piece, &piece->dsc_in, (float *)input,
                             &roi_in, module->picked_color,
@@ -2108,7 +2150,6 @@ static gboolean _dev_pixelpipe_process_rec(
                             module->picked_output_color_max,
                             pipe->dsc.cst,
                             PIXELPIPE_PICKER_OUTPUT);
-
           DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PICKERDATA_READY, module, pipe);
         }
 
@@ -2118,9 +2159,6 @@ static gboolean _dev_pixelpipe_process_rec(
         // blend needs input/output images with default colorspace
         if(success_opencl && _transform_for_blend(module, piece))
         {
-          const dt_iop_colorspace_type_t blend_cst =
-            dt_develop_blend_colorspace(piece, pipe->dsc.cst);
-
           dt_ioppr_transform_image_colorspace(module, input, input,
                                               roi_in.width, roi_in.height,
                                               input_format->cst, blend_cst,
@@ -2130,6 +2168,22 @@ static gboolean _dev_pixelpipe_process_rec(
                                               roi_out->width, roi_out->height,
                                               pipe->dsc.cst, blend_cst, &pipe->dsc.cst,
                                               work_profile);
+          if(blend_picking)
+          {
+            _pixelpipe_picker(module, piece, &piece->dsc_in, (float *)input,
+                              &roi_in, module->picked_color,
+                              module->picked_color_min,
+                              module->picked_color_max,
+                              blend_cst,
+                              PIXELPIPE_PICKER_INPUT);
+            _pixelpipe_picker(module, piece, &pipe->dsc, (float *)(*output),
+                              roi_out, module->picked_output_color,
+                              module->picked_output_color_min,
+                              module->picked_output_color_max,
+                              blend_cst,
+                              PIXELPIPE_PICKER_OUTPUT);
+            DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PICKERDATA_READY, module, pipe);
+          }
         }
 
         if(dt_atomic_get_int(&pipe->shutdown))
