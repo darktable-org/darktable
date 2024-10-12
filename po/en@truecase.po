@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-11 18:17+0200\n"
-"PO-Revision-Date: 2024-10-11 20:27+0300\n"
+"POT-Creation-Date: 2024-10-11 23:23+0200\n"
+"PO-Revision-Date: 2024-10-12 11:29+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -12281,6 +12281,51 @@ msgstr "Store new preset.."
 #: ../src/gui/presets.c:1800 ../src/libs/lib.c:570
 msgid "update preset"
 msgstr "Update preset"
+
+#: ../src/gui/splash.c:131
+msgid "darktable starting"
+msgstr "Darktable starting"
+
+#: ../src/gui/splash.c:136
+msgid "initializing"
+msgstr "Initializing"
+
+#: ../src/gui/splash.c:167
+msgid ""
+"Photography workflow\n"
+"application and\n"
+"RAW developer"
+msgstr ""
+"Photography workflow\n"
+"application and\n"
+"RAW developer"
+
+#. put the darktable wordmark and description in a vertical stack
+#: ../src/gui/splash.c:188
+msgid ""
+"Photography workflow application\n"
+"and RAW developer"
+msgstr ""
+"Photography workflow application\n"
+"and RAW developer"
+
+#. ensure that text is vertically centered
+#. with respect to logo
+#: ../src/gui/splash.c:198
+msgid "get ready to unleash your creativity"
+msgstr "Get ready to unleash your creativity"
+
+#: ../src/gui/splash.c:307
+msgid "darktable shutdown"
+msgstr "Darktable shutdown"
+
+#: ../src/gui/splash.c:321
+msgid "darktable is now shutting down"
+msgstr "Darktable is now shutting down"
+
+#: ../src/gui/splash.c:323
+msgid "please wait while background jobs finish"
+msgstr "Please wait while background jobs finish"
 
 #: ../src/gui/styles_dialog.c:232 ../src/libs/styles.c:489
 #: ../src/libs/styles.c:645
@@ -27882,10 +27927,6 @@ msgstr "Mouse actions"
 
 #~ msgid "later"
 #~ msgstr "Later"
-
-#, c-format
-#~ msgid "darktable » %s"
-#~ msgstr "Darktable » %s"
 
 #~ msgid "<h1>Sorry,</h1><p>something went wrong. Please try again.</p>"
 #~ msgstr "<h1>Sorry,</h1><p>something went wrong. Please try again.</p>"
