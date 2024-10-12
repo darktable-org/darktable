@@ -110,8 +110,6 @@ typedef struct dt_dev_histogram_stats_t
 typedef void dt_iop_params_t;
 #endif
 
-const char *dt_pixelpipe_name(dt_dev_pixelpipe_type_t pipe);
-
 #ifdef __cplusplus
 } // extern "C"
 #endif /* __cplusplus */

@@ -200,7 +200,7 @@ typedef struct dt_dev_pixelpipe_t
 struct dt_develop_t;
 
 // report pipe->type as textual string
-const char *dt_dev_pixelpipe_type_to_str(int pipe_type);
+const char *dt_dev_pixelpipe_type_to_str(dt_dev_pixelpipe_type_t pipe_type);
 
 // inits the pixelpipe with plain passthrough input/output and empty input and default caching settings.
 gboolean dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe);
@@ -296,7 +296,7 @@ void dt_dev_pixelpipe_disable_after(dt_dev_pixelpipe_t *pipe, const char *op);
 void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op);
 
 // helper function to pass a raster mask through a (so far) processed pipe
-float *dt_dev_get_raster_mask(struct dt_dev_pixelpipe_iop_t *piece,
+float *dt_dev_get_raster_mask(dt_dev_pixelpipe_iop_t *piece,
                               const struct dt_iop_module_t *raster_mask_source,
                               const dt_mask_id_t raster_mask_id,
                               const struct dt_iop_module_t *target_module,

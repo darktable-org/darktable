@@ -173,10 +173,13 @@ float angle_2d(const float x1, const float y1, const float x_ref, const float y_
  * @return The angle in radians between the two lines.
  */
 static inline
-float get_ctrl_angle(const float x_ref, const float y_ref,
-                     const float x1, const float y1,
-                     const float x2, const float y2,
-                     const float aspect_ratio)
+float _get_ctrl_angle(const float x_ref,
+                      const float y_ref,
+                      const float x1,
+                      const float y1,
+                      const float x2,
+                      const float y2,
+                      const float aspect_ratio)
 {
   const float x1a = x1 * aspect_ratio;
   const float x2a = x2 * aspect_ratio;
@@ -198,11 +201,15 @@ float get_ctrl_angle(const float x_ref, const float y_ref,
  * @param[in] aspect_ratio aspect ratio of the image
  */
 static
-void set_ctrl_angle(const float x_ref, const float y_ref,
-                    const float angle, const gboolean move_p2,
-                    float *x1, float *y1,
-                    float *x2, float *y2,
-                    const float aspect_ratio)
+void _set_ctrl_angle(const float x_ref,
+                     const float y_ref,
+                     const float angle,
+                     const gboolean move_p2,
+                     float *x1,
+                     float *y1,
+                     float *x2,
+                     float *y2,
+                     const float aspect_ratio)
 {
 
   const float x1a = *x1 * aspect_ratio;
@@ -243,10 +250,13 @@ void set_ctrl_angle(const float x_ref, const float y_ref,
  * @return The length ratio between the two points.
  */
 static inline
-float get_ctrl_scale(const float x_ref, const float y_ref,
-                     const float x1, const float y1,
-                     const float x2, const float y2,
-                     const float aspect_ratio)
+float _get_ctrl_scale(const float x_ref,
+                      const float y_ref,
+                      const float x1,
+                      const float y1,
+                      const float x2,
+                      const float y2,
+                      const float aspect_ratio)
 {
   const float x1a = x1 * aspect_ratio;
   const float x2a = x2 * aspect_ratio;
@@ -271,11 +281,15 @@ float get_ctrl_scale(const float x_ref, const float y_ref,
  * @param[in] aspect_ratio aspect ratio of the image
  */
 static
-void set_ctrl_scale(const float x_ref, const float y_ref,
-                    const float scale, const gboolean move_p2,
-                    float *x1, float *y1,
-                    float *x2, float *y2,
-                    const float aspect_ratio)
+void _set_ctrl_scale(const float x_ref,
+                     const float y_ref,
+                     const float scale,
+                     const gboolean move_p2,
+                     float *x1,
+                     float *y1,
+                     float *x2,
+                     float *y2,
+                     const float aspect_ratio)
 {
   // x,y coordinates are in a 0..1 range, but the image is not square.
   // Therefore use the x coordinate to correct.
@@ -315,10 +329,13 @@ void set_ctrl_scale(const float x_ref, const float y_ref,
  * @param[in,out] y2 y coordinate of the second point
  */
 static
-void set_ctrl_symmetric(const float x_ref, const float y_ref,
-                        const gboolean move_p2,
-                        float *x1, float *y1,
-                        float *x2, float *y2)
+void _set_ctrl_symmetric(const float x_ref,
+                         const float y_ref,
+                         const gboolean move_p2,
+                         float *x1,
+                         float *y1,
+                         float *x2,
+                         float *y2)
 {
   if(!move_p2) // move p1
   {
@@ -347,9 +364,14 @@ void set_ctrl_symmetric(const float x_ref, const float y_ref,
  * @param[in] ctrl_scale the distance ratio to preserve, if required by the edit mode
  * @param[in] aspect_ratio the aspect ratio of the image
  */
-void _update_bezier_ctrl_points(dt_masks_point_path_t* point, const float new_x, const float new_y,
-                                const dt_masks_path_ctrl_t ctrl_select, const dt_masks_path_edit_mode_t ctrl_mode,
-                                const float ctrl_angle, const float ctrl_scale, const float aspect_ratio)
+void _update_bezier_ctrl_points(dt_masks_point_path_t* point,
+                                const float new_x,
+                                const float new_y,
+                                const dt_masks_path_ctrl_t ctrl_select,
+                                const dt_masks_path_edit_mode_t ctrl_mode,
+                                const float ctrl_angle,
+                                const float ctrl_scale,
+                                const float aspect_ratio)
 {
   gboolean move_p2; // is p2 the dependend node that is moved if restrictions apply?
 
@@ -370,12 +392,12 @@ void _update_bezier_ctrl_points(dt_masks_point_path_t* point, const float new_x,
   switch (ctrl_mode)
   {
     case DT_MASKS_BEZIER_NONE:
-      set_ctrl_scale(point->corner[0], point->corner[1],
+      _set_ctrl_scale(point->corner[0], point->corner[1],
                      ctrl_scale, move_p2,
                      &point->ctrl1[0], &point->ctrl1[1],
                      &point->ctrl2[0], &point->ctrl2[1],
                      aspect_ratio);
-      set_ctrl_angle(point->corner[0], point->corner[1],
+      _set_ctrl_angle(point->corner[0], point->corner[1],
                      ctrl_angle, move_p2,
                      &point->ctrl1[0], &point->ctrl1[1],
                      &point->ctrl2[0], &point->ctrl2[1],
@@ -384,13 +406,13 @@ void _update_bezier_ctrl_points(dt_masks_point_path_t* point, const float new_x,
     case DT_MASKS_BEZIER_SINGLE:
       break;
     case DT_MASKS_BEZIER_SYMMETRIC:
-      set_ctrl_symmetric(point->corner[0], point->corner[1],
+      _set_ctrl_symmetric(point->corner[0], point->corner[1],
                          move_p2,
                          &point->ctrl1[0], &point->ctrl1[1],
                          &point->ctrl2[0], &point->ctrl2[1]);
       break;
     case DT_MASKS_BEZIER_SING_SYMM:
-      set_ctrl_angle(point->corner[0], point->corner[1],
+      _set_ctrl_angle(point->corner[0], point->corner[1],
                      ctrl_angle, move_p2,
                      &point->ctrl1[0], &point->ctrl1[1],
                      &point->ctrl2[0], &point->ctrl2[1],
@@ -646,7 +668,7 @@ static void _path_points_fill_border_gaps(float *cmax,
 }
 
 static inline
-float smoothstep(const float p1, const float p2, const float t)
+float _smoothstep(const float p1, const float p2, const float t)
 {
   return p1 + (p2 - p1) * t * t * (3.0 - 2.0 * t);
 }
@@ -673,14 +695,14 @@ static void _path_points_recurs(float *p1,
   if(path_min[0] == DT_INVALID_COORDINATE)
   {
     _path_border_get_XY(p1[0], p1[1], p1[2], p1[3], p2[2], p2[3], p2[0], p2[1], tmin,
-                        smoothstep(p1[4], p2[4], tmin),
+                        _smoothstep(p1[4], p2[4], tmin),
                         path_min, path_min + 1,
                         border_min, border_min + 1);
   }
   if(path_max[0] == DT_INVALID_COORDINATE)
   {
     _path_border_get_XY(p1[0], p1[1], p1[2], p1[3], p2[2], p2[3], p2[0], p2[1], tmax,
-                        smoothstep(p1[4], p2[4], tmax),
+                        _smoothstep(p1[4], p2[4], tmax),
                         path_max, path_max + 1,
                         border_max, border_max + 1);
   }
@@ -760,8 +782,10 @@ int _border_index_order(const int index, const int wrap_index, const int offset)
  */
 static inline
 int _find_closer_point(const float* const border,
-                       const int border_first, const int border_last,
-                       const int idx_fixed, const int idx_optimize)
+                       const int border_first,
+                       const int border_last,
+                       const int idx_fixed,
+                       const int idx_optimize)
 {
   float min_dist = _dist_squared_2d(border[idx_fixed * 2], border[idx_fixed * 2 + 1],
                                    border[idx_optimize * 2], border[idx_optimize * 2 + 1]);
@@ -804,9 +828,15 @@ int _find_closer_point(const float* const border,
  * @param idx2_max_ord the ordered maximum index for the second intersection point
  */
 static void _optimize_intersection_points(const float* const border,
-                                          const int border_first, const int border_wrap, const int border_last,
-                                          int *idx1, int *idx2,
-                                          const int idx1_min_ord, const int idx1_max_ord, const int idx2_min_ord, const int idx2_max_ord)
+                                          const int border_first,
+                                          const int border_wrap,
+                                          const int border_last,
+                                          int *idx1,
+                                          int *idx2,
+                                          const int idx1_min_ord,
+                                          const int idx1_max_ord,
+                                          const int idx2_min_ord,
+                                          const int idx2_max_ord)
 {
   const int MAX_ITER = 20;
   int iter = 0;
@@ -899,15 +929,17 @@ static void _optimize_intersection_points(const float* const border,
  *
  * @return true if the segment can be cut out
  */
-static bool _check_cutable(const int seg_start, const int seg_end,
-                           const int* const extrema_ord, const dt_masks_intbuf_t* const gap_fill_segments)
+static gboolean _check_cutable(const int seg_start,
+                               const int seg_end,
+                               const int* const extrema_ord,
+                               const dt_masks_intbuf_t* const gap_fill_segments)
 {
 
   // Relative amount of fill points that make it acceptable
   // to cut out the segment. This parameter can be tweaked.
-  const float FILL_POINT_CUT_RATIO = 0.5;
+  const float FILL_POINT_CUT_RATIO = 0.5f;
   const float seg_len = seg_end - seg_start;
-  float fill_len = 0;
+  float fill_len = 0.0f;
 
   for(int i=0; i < gap_fill_segments->pos; i+=2)
   {
@@ -921,7 +953,7 @@ static bool _check_cutable(const int seg_start, const int seg_end,
   }
   if((fill_len / seg_len) > FILL_POINT_CUT_RATIO)
   {
-    return true;
+    return TRUE;
   }
 
   // This is not a segment that mostly consists of fill points, but it
@@ -930,11 +962,11 @@ static bool _check_cutable(const int seg_start, const int seg_end,
   {
     if(seg_start < extrema_ord[i] && extrema_ord[i] < seg_end)
     {
-      return false;
+      return FALSE;
     }
   }
 
-  return true;
+  return TRUE;
 }
 
 
@@ -960,7 +992,8 @@ static inline int _nb_wctrl_points(const int nb_point)
 static int _path_find_self_intersection(dt_masks_dynbuf_t *inter,
                                         const dt_masks_intbuf_t* const gap_fill_segments,
                                         const int nb_corners,
-                                        float* const border, const int border_len)
+                                        float* const border,
+                                        const int border_len)
 {
   if(nb_corners == 0 || border_len == 0) return 0;
 
@@ -1714,7 +1747,7 @@ static int _path_get_points_border(dt_develop_t *dev,
                               points_count, border, border_count, source);
 }
 
-static int _path_events_mouse_scrolled(struct dt_iop_module_t *module,
+static int _path_events_mouse_scrolled(dt_iop_module_t *module,
                                        const float pzx,
                                        const float pzy,
                                        const int up,
@@ -1866,7 +1899,7 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module,
   return 0;
 }
 
-static int _path_events_button_pressed(struct dt_iop_module_t *module,
+static int _path_events_button_pressed(dt_iop_module_t *module,
                                        const float pzx,
                                        const float pzy,
                                        const double pressure,
@@ -2145,11 +2178,11 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module,
 
       dt_masks_point_path_t *point
           = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->feather_selected);
-      gui->bezier_ctrl_angle = get_ctrl_angle(point->corner[0], point->corner[1],
+      gui->bezier_ctrl_angle = _get_ctrl_angle(point->corner[0], point->corner[1],
                                              point->ctrl1[0], point->ctrl1[1],
                                              point->ctrl2[0], point->ctrl2[1],
                                              iwidth/iheight);
-      gui->bezier_ctrl_scale = get_ctrl_scale(point->corner[0], point->corner[1],
+      gui->bezier_ctrl_scale = _get_ctrl_scale(point->corner[0], point->corner[1],
                                              point->ctrl1[0], point->ctrl1[1],
                                              point->ctrl2[0], point->ctrl2[1],
                                              iwidth/iheight);
@@ -2321,7 +2354,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module,
   return 0;
 }
 
-static int _path_events_button_released(struct dt_iop_module_t *module,
+static int _path_events_button_released(dt_iop_module_t *module,
                                         const float pzx,
                                         const float pzy,
                                         const int which,
@@ -2465,7 +2498,7 @@ static int _path_events_button_released(struct dt_iop_module_t *module,
   return 0;
 }
 
-static int _path_events_mouse_moved(struct dt_iop_module_t *module,
+static int _path_events_mouse_moved(dt_iop_module_t *module,
                                     float pzx,
                                     float pzy,
                                     const double pressure,
@@ -3903,7 +3936,7 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
   return 1;
 }
 
-static GSList *_path_setup_mouse_actions(const struct dt_masks_form_t *const form)
+static GSList *_path_setup_mouse_actions(const dt_masks_form_t *const form)
 {
   GSList *lm = NULL;
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, 0,
@@ -3934,7 +3967,7 @@ static void _path_sanitize_config(dt_masks_type_t type)
   // nothing to do (yet?)
 }
 
-static void _path_set_form_name(struct dt_masks_form_t *const form,
+static void _path_set_form_name(dt_masks_form_t *const form,
                                 const size_t nb)
 {
   snprintf(form->name, sizeof(form->name), _("path #%d"), (int)nb);

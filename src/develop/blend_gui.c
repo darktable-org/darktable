@@ -478,7 +478,7 @@ static void _blendif_cook(const dt_iop_colorspace_type_t cst,
   }
 }
 
-static inline int _blendif_print_digits_default(float value)
+static inline int _blendif_print_digits_default(const float value)
 {
   int digits;
   if(value < 0.0001f) digits = 0;
@@ -489,7 +489,7 @@ static inline int _blendif_print_digits_default(float value)
   return digits;
 }
 
-static inline int _blendif_print_digits_ab(float value)
+static inline int _blendif_print_digits_ab(const float value)
 {
   int digits;
   if(fabsf(value) < 10.0f) digits = 1;
@@ -1001,12 +1001,11 @@ static float magnifier_scale_callback(GtkWidget *self,
   return outval;
 }
 
-static int _blendop_blendif_disp_alternative_worker
-  (GtkWidget *widget,
-   dt_iop_module_t *module,
-   const int mode,
-   float (*scale_callback)(GtkWidget*, float, int),
-   const char *label)
+static int _blendop_blendif_disp_alternative_worker(GtkWidget *widget,
+                                                    dt_iop_module_t *module,
+                                                    const int mode,
+                                                    float (*scale_callback)(GtkWidget*, float, int),
+                                                    const char *label)
 {
   dt_iop_gui_blend_data_t *data = module->blend_data;
   GtkDarktableGradientSlider *slider = (GtkDarktableGradientSlider *)widget;
@@ -2870,7 +2869,7 @@ typedef struct raster_combo_entry_t
 } raster_combo_entry_t;
 
 static void _raster_combo_populate(GtkWidget *w,
-                                   struct dt_iop_module_t **m)
+                                   dt_iop_module_t **m)
 {
   dt_iop_module_t *module = *m;
   dt_iop_request_focus(module);
@@ -2913,7 +2912,7 @@ static void _raster_combo_populate(GtkWidget *w,
 }
 
 static void _raster_value_changed_callback(GtkWidget *widget,
-                                           struct dt_iop_module_t *module)
+                                           dt_iop_module_t *module)
 {
   raster_combo_entry_t *entry = dt_bauhaus_combobox_get_data(widget);
 

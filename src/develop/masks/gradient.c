@@ -106,7 +106,7 @@ static void _gradient_get_distance(const float x,
 }
 
 
-static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module,
+static int _gradient_events_mouse_scrolled(dt_iop_module_t *module,
                                            const float pzx,
                                            const float pzy,
                                            const int up,
@@ -188,7 +188,7 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module,
   return 0;
 }
 
-static int _gradient_events_button_pressed(struct dt_iop_module_t *module,
+static int _gradient_events_button_pressed(dt_iop_module_t *module,
                                            const float pzx,
                                            const float pzy,
                                            const double pressure,
@@ -327,7 +327,7 @@ static void _gradient_init_values(const float zoom_scale,
                               dt_conf_get_float(DT_MASKS_CONF(0, gradient, curvature))));
 }
 
-static int _gradient_events_button_released(struct dt_iop_module_t *module,
+static int _gradient_events_button_released(dt_iop_module_t *module,
                                             const float pzx,
                                             const float pzy,
                                             const int which,
@@ -530,7 +530,7 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module,
   return 0;
 }
 
-static int _gradient_events_mouse_moved(struct dt_iop_module_t *module,
+static int _gradient_events_mouse_moved(dt_iop_module_t *module,
                                         const float pzx,
                                         const float pzy,
                                         const double pressure,
@@ -1408,7 +1408,7 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
   return 1;
 }
 
-static GSList *_gradient_setup_mouse_actions(const struct dt_masks_form_t *const form)
+static GSList *_gradient_setup_mouse_actions(const dt_masks_form_t *const form)
 {
   GSList *lm = NULL;
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG,

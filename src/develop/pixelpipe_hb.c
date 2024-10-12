@@ -61,7 +61,7 @@ typedef enum dt_pixelpipe_flow_t
 
 #include "develop/pixelpipe_cache.c"
 
-const char *dt_dev_pixelpipe_type_to_str(const int pipe_type)
+const char *dt_dev_pixelpipe_type_to_str(const dt_dev_pixelpipe_type_t pipe_type)
 {
   const gboolean fast = pipe_type & DT_DEV_PIXELPIPE_FAST;
   const gboolean dev = pipe_type & DT_DEV_PIXELPIPE_IMAGE;
@@ -538,8 +538,7 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
 
       if(piece->enabled && piece->blendop_data)
       {
-        const dt_develop_blend_params_t *const bp =
-          (const dt_develop_blend_params_t *)piece->blendop_data;
+        const dt_develop_blend_params_t *const bp = piece->blendop_data;
         const gboolean valid_mask = bp->mask_mode > DEVELOP_MASK_ENABLED
                                 &&  bp->mask_mode != DEVELOP_MASK_RASTER;
 
@@ -1024,8 +1023,7 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev,
 static gboolean _transform_for_blend(const dt_iop_module_t *const self,
                                      const dt_dev_pixelpipe_iop_t *const piece)
 {
-  const dt_develop_blend_params_t *const d =
-    (const dt_develop_blend_params_t *)piece->blendop_data;
+  const dt_develop_blend_params_t *const d = piece->blendop_data;
   if(d)
   {
     // check only if blend is active
@@ -1536,7 +1534,7 @@ static gboolean _dev_pixelpipe_process_rec(
   dt_iop_buffer_dsc_t _input_format = { 0 };
   dt_iop_buffer_dsc_t *input_format = &_input_format;
 
-  piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
+  piece = pieces->data;
 
   piece->processed_roi_in = roi_in;
   piece->processed_roi_out = *roi_out;
@@ -1621,8 +1619,7 @@ static gboolean _dev_pixelpipe_process_rec(
 
   /* does this module involve blending? */
   if(piece->blendop_data
-     && ((dt_develop_blend_params_t *)piece->blendop_data)->mask_mode
-     != DEVELOP_MASK_DISABLED)
+     && ((dt_develop_blend_params_t *)piece->blendop_data)->mask_mode != DEVELOP_MASK_DISABLED)
   {
     /* get specific memory requirement for blending */
     dt_develop_tiling_t tiling_blendop = { 0 };
@@ -1973,8 +1970,8 @@ static gboolean _dev_pixelpipe_process_rec(
                                module->picked_color_max,
                                *output, outbufsize, input_cst_cl,
                                PIXELPIPE_PICKER_INPUT);
-          _pixelpipe_picker_cl(pipe->devid, module, piece, &pipe->dsc, (*cl_mem_output),
-                               roi_out,
+          _pixelpipe_picker_cl(pipe->devid, module, piece, &pipe->dsc,
+                               *cl_mem_output, roi_out,
                                module->picked_output_color,
                                module->picked_output_color_min,
                                module->picked_output_color_max,
@@ -2936,7 +2933,7 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
    all callers must check this flag and de-allocate after usage (dt_free_align).
 */
 
-float *dt_dev_get_raster_mask(struct dt_dev_pixelpipe_iop_t *piece,
+float *dt_dev_get_raster_mask(dt_dev_pixelpipe_iop_t *piece,
                               const dt_iop_module_t *raster_mask_source,
                               const dt_mask_id_t raster_mask_id,
                               const dt_iop_module_t *target_module,
@@ -3135,9 +3132,9 @@ void dt_dev_clear_scharr_mask(dt_dev_pixelpipe_t *pipe)
 }
 
 gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
-                                     float *const rgb,
-                                     const dt_iop_roi_t *const roi_in,
-                                     const gboolean rawmode)
+                                  float *const rgb,
+                                  const dt_iop_roi_t *const roi_in,
+                                  const gboolean rawmode)
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
   dt_dev_clear_scharr_mask(p);
