@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-11 18:17+0200\n"
-"PO-Revision-Date: 2024-10-11 21:00+0300\n"
+"POT-Creation-Date: 2024-10-11 23:23+0200\n"
+"PO-Revision-Date: 2024-10-12 11:39+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -12449,6 +12449,51 @@ msgstr "Зберегти новий пресет..."
 #: ../src/gui/presets.c:1800 ../src/libs/lib.c:570
 msgid "update preset"
 msgstr "Оновити пресет"
+
+#: ../src/gui/splash.c:131
+msgid "darktable starting"
+msgstr "Запуск Darktable"
+
+#: ../src/gui/splash.c:136
+msgid "initializing"
+msgstr "Ініціалізація"
+
+#: ../src/gui/splash.c:167
+msgid ""
+"Photography workflow\n"
+"application and\n"
+"RAW developer"
+msgstr ""
+"Програма обробки\n"
+"фотографій та\n"
+"конвертер Raw"
+
+#. put the darktable wordmark and description in a vertical stack
+#: ../src/gui/splash.c:188
+msgid ""
+"Photography workflow application\n"
+"and RAW developer"
+msgstr ""
+"Програма обробки фотографій\n"
+"та конвертер Raw"
+
+#. ensure that text is vertically centered
+#. with respect to logo
+#: ../src/gui/splash.c:198
+msgid "get ready to unleash your creativity"
+msgstr "Будьте готові дати волю своїй творчості"
+
+#: ../src/gui/splash.c:307
+msgid "darktable shutdown"
+msgstr "Закриття Darktable"
+
+#: ../src/gui/splash.c:321
+msgid "darktable is now shutting down"
+msgstr "Darktable зараз припиняє роботу"
+
+#: ../src/gui/splash.c:323
+msgid "please wait while background jobs finish"
+msgstr "Зачекайте, доки завершаться фонові завдання"
 
 #: ../src/gui/styles_dialog.c:232 ../src/libs/styles.c:489
 #: ../src/libs/styles.c:645
@@ -28205,10 +28250,6 @@ msgstr "Дії за допомогою миші"
 
 #~ msgid "module order filter"
 #~ msgstr "фільтр порядку застосування модулів"
-
-#, c-format
-#~ msgid "darktable » %s"
-#~ msgstr "darktable » %s"
 
 #~ msgid "<h1>Sorry,</h1><p>something went wrong. Please try again.</p>"
 #~ msgstr "<h1>Вибачте,</h1><p>щось пішло не так. Спробуйте знову.</p>"
