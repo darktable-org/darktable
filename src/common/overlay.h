@@ -53,7 +53,7 @@ GList *dt_overlay_get_imgs(const dt_imgid_t imgid);
 GList *dt_overlay_get_used_in_imgs(const dt_imgid_t overlay_id,
                                    const gboolean except_self);
 
-/* Return TRUE is overlay_id is used by imgid */
+/* Return TRUE if overlay_id appears in the overlay tree of (is used by) imgid */
 gboolean dt_overlay_used_by(const dt_imgid_t imgid, const dt_imgid_t overlay_id);
 
 /* Add overlay references for the imgid history */
