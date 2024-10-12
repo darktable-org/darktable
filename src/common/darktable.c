@@ -1352,12 +1352,16 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     g_strfreev(myoptions);
   }
 
-  if(darktable.dump_pfm_module || darktable.dump_pfm_pipe || darktable.dump_pfm_pipe || darktable.dump_diff_pipe)
+  if(darktable.dump_pfm_module
+     || darktable.dump_pfm_pipe
+     || darktable.dump_pfm_pipe
+     || darktable.dump_diff_pipe)
   {
     if(darktable.tmp_directory == NULL)
       darktable.tmp_directory = g_dir_make_tmp("darktable_XXXXXX", NULL);
-    dt_print(DT_DEBUG_ALWAYS, "[init] darktable dump directory is '%s'\n",
-      (darktable.tmp_directory) ? darktable.tmp_directory : "NOT AVAILABLE");
+    dt_print(DT_DEBUG_ALWAYS,
+             "[init] darktable dump directory is '%s'\n",
+             (darktable.tmp_directory) ? darktable.tmp_directory : "NOT AVAILABLE");
   }
 
   // get valid directories
@@ -1569,6 +1573,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   {
     if(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"))
       dt_gui_presets_init(); // init preset db schema.
+
     darktable.control->running = FALSE;
     dt_pthread_mutex_init(&darktable.control->run_mutex, NULL);
     dt_pthread_mutex_init(&darktable.control->log_mutex, NULL);
@@ -1645,7 +1650,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   char *config_info = calloc(1, DT_PERF_INFOSIZE);
   if(last_configure_version != DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION
     && !darktable.gimp.mode)
+  {
     dt_configure_runtime_performance(last_configure_version, config_info);
+  }
 
   dt_get_sysresource_level();
   res->mipmap_memory = _get_mipmap_size();
