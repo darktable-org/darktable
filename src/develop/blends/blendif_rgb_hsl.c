@@ -37,8 +37,11 @@
 #define DT_BLENDIF_RGB_BCH 3
 
 
-typedef void(_blend_row_func)(const float *const a, const float *const b,
-                              float *const out, const float *const restrict mask, const size_t stride);
+typedef void(_blend_row_func)(const float *const a,
+                              const float *const b,
+                              float *const out,
+                              const float *const restrict mask,
+                              const size_t stride);
 #define _BLEND_FUNC _BLEND_FUNC_PROTO((a, b, out: 16), (stride))
 
 DT_OMP_DECLARE_SIMD(aligned(XYZ: 16))
@@ -49,7 +52,8 @@ static inline void _CLAMP_XYZ(float *const restrict XYZ)
 }
 
 DT_OMP_DECLARE_SIMD(uniform(parameters, invert_mask))
-static inline float _blendif_compute_factor(const float value, const unsigned int invert_mask,
+static inline float _blendif_compute_factor(const float value,
+                                            const unsigned int invert_mask,
                                             const float *const restrict parameters)
 {
   float factor = 0.0f;
@@ -82,8 +86,10 @@ static inline float _blendif_compute_factor(const float value, const unsigned in
 }
 
 DT_OMP_DECLARE_SIMD(aligned(pixels: 16) uniform(parameters, invert_mask, stride, profile))
-static inline void _blendif_gray(const float *const restrict pixels, float *const restrict mask,
-                                 const size_t stride, const float *const restrict parameters,
+static inline void _blendif_gray(const float *const restrict pixels,
+                                 float *const restrict mask,
+                                 const size_t stride,
+                                 const float *const restrict parameters,
                                  const unsigned int invert_mask,
                                  const dt_iop_order_iccprofile_info_t *const restrict profile)
 {
@@ -97,8 +103,10 @@ static inline void _blendif_gray(const float *const restrict pixels, float *cons
 }
 
 DT_OMP_DECLARE_SIMD(aligned(pixels: 16) uniform(parameters, invert_mask, stride))
-static inline void _blendif_gray_fb(const float *const restrict pixels, float *const restrict mask,
-                                    const size_t stride, const float *const restrict parameters,
+static inline void _blendif_gray_fb(const float *const restrict pixels,
+                                    float *const restrict mask,
+                                    const size_t stride,
+                                    const float *const restrict parameters,
                                     const unsigned int invert_mask)
 {
   for(size_t x = 0, j = 0; x < stride; x++, j += DT_BLENDIF_RGB_CH)
@@ -109,8 +117,10 @@ static inline void _blendif_gray_fb(const float *const restrict pixels, float *c
 }
 
 DT_OMP_DECLARE_SIMD(aligned(pixels: 16) uniform(parameters, invert_mask, stride))
-static inline void _blendif_rgb_red(const float *const restrict pixels, float *const restrict mask,
-                                    const size_t stride, const float *const restrict parameters,
+static inline void _blendif_rgb_red(const float *const restrict pixels,
+                                    float *const restrict mask,
+                                    const size_t stride,
+                                    const float *const restrict parameters,
                                     const unsigned int invert_mask)
 {
   for(size_t x = 0, j = 0; x < stride; x++, j += DT_BLENDIF_RGB_CH)
@@ -120,8 +130,10 @@ static inline void _blendif_rgb_red(const float *const restrict pixels, float *c
 }
 
 DT_OMP_DECLARE_SIMD(aligned(pixels: 16) uniform(parameters, invert_mask, stride))
-static inline void _blendif_rgb_green(const float *const restrict pixels, float *const restrict mask,
-                                      const size_t stride, const float *const restrict parameters,
+static inline void _blendif_rgb_green(const float *const restrict pixels,
+                                      float *const restrict mask,
+                                      const size_t stride,
+                                      const float *const restrict parameters,
                                       const unsigned int invert_mask)
 {
   for(size_t x = 0, j = 0; x < stride; x++, j += DT_BLENDIF_RGB_CH)
@@ -131,8 +143,10 @@ static inline void _blendif_rgb_green(const float *const restrict pixels, float 
 }
 
 DT_OMP_DECLARE_SIMD(aligned(pixels: 16) uniform(parameters, invert_mask, stride))
-static inline void _blendif_rgb_blue(const float *const restrict pixels, float *const restrict mask,
-                                     const size_t stride, const float *const restrict parameters,
+static inline void _blendif_rgb_blue(const float *const restrict pixels,
+                                     float *const restrict mask,
+                                     const size_t stride,
+                                     const float *const restrict parameters,
                                      const unsigned int invert_mask)
 {
   for(size_t x = 0, j = 0; x < stride; x++, j += DT_BLENDIF_RGB_CH)
@@ -142,8 +156,10 @@ static inline void _blendif_rgb_blue(const float *const restrict pixels, float *
 }
 
 DT_OMP_DECLARE_SIMD(aligned(pixels, invert_mask: 16) uniform(parameters, invert_mask, stride))
-static inline void _blendif_hsl(const float *const restrict pixels, float *const restrict mask,
-                                const size_t stride, const float *const restrict parameters,
+static inline void _blendif_hsl(const float *const restrict pixels,
+                                float *const restrict mask,
+                                const size_t stride,
+                                const float *const restrict parameters,
                                 const unsigned int *const restrict invert_mask)
 {
   for(size_t x = 0, j = 0; x < stride; x++, j += DT_BLENDIF_RGB_CH)
@@ -158,8 +174,10 @@ static inline void _blendif_hsl(const float *const restrict pixels, float *const
 }
 
 DT_OMP_DECLARE_SIMD(aligned(pixels: 16) uniform(stride, blendif, parameters, profile))
-static void _blendif_combine_channels(const float *const restrict pixels, float *const restrict mask,
-                                      const size_t stride, const unsigned int blendif,
+static void _blendif_combine_channels(const float *const restrict pixels,
+                                      float *const restrict mask,
+                                      const size_t stride,
+                                      const unsigned int blendif,
                                       const float *const restrict parameters,
                                       const dt_iop_order_iccprofile_info_t *const restrict profile)
 {
@@ -211,11 +229,14 @@ static void _blendif_combine_channels(const float *const restrict pixels, float 
   }
 }
 
-void dt_develop_blendif_rgb_hsl_make_mask(struct dt_dev_pixelpipe_iop_t *piece, const float *const restrict a,
-                                          const float *const restrict b, const struct dt_iop_roi_t *const roi_in,
-                                          const struct dt_iop_roi_t *const roi_out, float *const restrict mask)
+void dt_develop_blendif_rgb_hsl_make_mask(dt_dev_pixelpipe_iop_t *piece,
+                                          const float *const restrict a,
+                                          const float *const restrict b,
+                                          const dt_iop_roi_t *const roi_in,
+                                          const dt_iop_roi_t *const roi_out,
+                                          float *const restrict mask)
 {
-  const dt_develop_blend_params_t *const d = (const dt_develop_blend_params_t *const)piece->blendop_data;
+  const dt_develop_blend_params_t *const d = piece->blendop_data;
 
   if(piece->colors != DT_BLENDIF_RGB_CH) return;
 
@@ -1075,8 +1096,11 @@ static inline float _rgb_luminance(const float *const restrict rgb,
 }
 
 DT_OMP_DECLARE_SIMD(aligned(a, b:16) uniform(channel, profile, stride))
-static void _display_channel(const float *const restrict a, float *const restrict b,
-                             const float *const restrict mask, const size_t stride, const int channel,
+static void _display_channel(const float *const restrict a,
+                             float *const restrict b,
+                             const float *const restrict mask,
+                             const size_t stride,
+                             const int channel,
                              const float *const restrict boost_factors,
                              const dt_iop_order_iccprofile_info_t *const profile)
 {
@@ -1254,14 +1278,15 @@ static inline void _copy_mask(const float *const restrict a, float *const restri
   for(size_t x = DT_BLENDIF_RGB_BCH; x < stride; x += DT_BLENDIF_RGB_CH) b[x] = a[x];
 }
 
-void dt_develop_blendif_rgb_hsl_blend(struct dt_dev_pixelpipe_iop_t *piece,
-                                      const float *const restrict a, float *const restrict b,
-                                      const struct dt_iop_roi_t *const roi_in,
-                                      const struct dt_iop_roi_t *const roi_out,
+void dt_develop_blendif_rgb_hsl_blend(dt_dev_pixelpipe_iop_t *piece,
+                                      const float *const restrict a,
+                                      float *const restrict b,
+                                      const dt_iop_roi_t *const roi_in,
+                                      const dt_iop_roi_t *const roi_out,
                                       const float *const restrict mask,
                                       const dt_dev_pixelpipe_display_mask_t request_mask_display)
 {
-  const dt_develop_blend_params_t *const d = (const dt_develop_blend_params_t *const)piece->blendop_data;
+  const dt_develop_blend_params_t *const d = piece->blendop_data;
 
   if(piece->colors != DT_BLENDIF_RGB_CH) return;
 

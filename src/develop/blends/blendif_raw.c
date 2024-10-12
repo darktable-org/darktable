@@ -37,11 +37,14 @@ typedef void(_blend_row_func)(const float *const restrict a, const float *const 
                               float *const restrict out, const float *const restrict mask, const size_t stride);
 #define _BLEND_FUNC _BLEND_FUNC_PROTO((a, b, out: 16), (stride))
 
-void dt_develop_blendif_raw_make_mask(struct dt_dev_pixelpipe_iop_t *piece, const float *const restrict a,
-                                      const float *const restrict b, const struct dt_iop_roi_t *const roi_in,
-                                      const struct dt_iop_roi_t *const roi_out, float *const restrict mask)
+void dt_develop_blendif_raw_make_mask(dt_dev_pixelpipe_iop_t *piece,
+                                      const float *const restrict a,
+                                      const float *const restrict b,
+                                      const dt_iop_roi_t *const roi_in,
+                                      const dt_iop_roi_t *const roi_out,
+                                      float *const restrict mask)
 {
-  const dt_develop_blend_params_t *const d = (const dt_develop_blend_params_t *const)piece->blendop_data;
+  const dt_develop_blend_params_t *const d = piece->blendop_data;
 
   if(piece->colors != 1) return;
 
@@ -67,8 +70,11 @@ void dt_develop_blendif_raw_make_mask(struct dt_dev_pixelpipe_iop_t *piece, cons
 
 
 /* normal blend with clamping */
-_BLEND_FUNC _blend_normal_bounded(const float *const restrict a, const float *const restrict b,
-                                  float *const restrict out, const float *const restrict mask, const size_t stride)
+_BLEND_FUNC _blend_normal_bounded(const float *const restrict a,
+                                  const float *const restrict b,
+                                  float *const restrict out,
+                                  const float *const restrict mask,
+                                  const size_t stride)
 {
   for(size_t j = 0; j < stride; j++)
   {
@@ -78,8 +84,10 @@ _BLEND_FUNC _blend_normal_bounded(const float *const restrict a, const float *co
 }
 
 /* normal blend without any clamping */
-_BLEND_FUNC _blend_normal_unbounded(const float *const restrict a, const float *const restrict b,
-                                    float *const restrict out, const float *const restrict mask,
+_BLEND_FUNC _blend_normal_unbounded(const float *const restrict a,
+                                    const float *const restrict b,
+                                    float *const restrict out,
+                                    const float *const restrict mask,
                                     const size_t stride)
 {
   for(size_t j = 0; j < stride; j++)
@@ -90,8 +98,11 @@ _BLEND_FUNC _blend_normal_unbounded(const float *const restrict a, const float *
 }
 
 /* lighten */
-_BLEND_FUNC _blend_lighten(const float *const restrict a, const float *const restrict b,
-                           float *const restrict out, const float *const restrict mask, const size_t stride)
+_BLEND_FUNC _blend_lighten(const float *const restrict a,
+                           const float *const restrict b,
+                           float *const restrict out,
+                           const float *const restrict mask,
+                           const size_t stride)
 {
   for(size_t j = 0; j < stride; j++)
   {
@@ -101,8 +112,11 @@ _BLEND_FUNC _blend_lighten(const float *const restrict a, const float *const res
 }
 
 /* darken */
-_BLEND_FUNC _blend_darken(const float *const restrict a, const float *const restrict b,
-                          float *const restrict out, const float *const restrict mask, const size_t stride)
+_BLEND_FUNC _blend_darken(const float *const restrict a,
+                          const float *const restrict b,
+                          float *const restrict out,
+                          const float *const restrict mask,
+                          const size_t stride)
 {
   for(size_t j = 0; j < stride; j++)
   {
@@ -112,8 +126,11 @@ _BLEND_FUNC _blend_darken(const float *const restrict a, const float *const rest
 }
 
 /* multiply */
-_BLEND_FUNC _blend_multiply(const float *const restrict a, const float *const restrict b,
-                            float *const restrict out, const float *const restrict mask, const size_t stride)
+_BLEND_FUNC _blend_multiply(const float *const restrict a,
+                            const float *const restrict b,
+                            float *const restrict out,
+                            const float *const restrict mask,
+                            const size_t stride)
 {
   for(size_t j = 0; j < stride; j++)
   {
@@ -123,8 +140,11 @@ _BLEND_FUNC _blend_multiply(const float *const restrict a, const float *const re
 }
 
 /* average */
-_BLEND_FUNC _blend_average(const float *const restrict a, const float *const restrict b,
-                           float *const restrict out, const float *const restrict mask, const size_t stride)
+_BLEND_FUNC _blend_average(const float *const restrict a,
+                           const float *const restrict b,
+                           float *const restrict out,
+                           const float *const restrict mask,
+                           const size_t stride)
 {
   for(size_t j = 0; j < stride; j++)
   {
@@ -134,8 +154,11 @@ _BLEND_FUNC _blend_average(const float *const restrict a, const float *const res
 }
 
 /* add */
-_BLEND_FUNC _blend_add(const float *const restrict a, const float *const restrict b,
-                       float *const restrict out, const float *const restrict mask, const size_t stride)
+_BLEND_FUNC _blend_add(const float *const restrict a,
+                       const float *const restrict b,
+                       float *const restrict out,
+                       const float *const restrict mask,
+                       const size_t stride)
 {
   for(size_t j = 0; j < stride; j++)
   {
@@ -145,8 +168,11 @@ _BLEND_FUNC _blend_add(const float *const restrict a, const float *const restric
 }
 
 /* subtract */
-_BLEND_FUNC _blend_subtract(const float *const restrict a, const float *const restrict b,
-                            float *const restrict out, const float *const restrict mask, const size_t stride)
+_BLEND_FUNC _blend_subtract(const float *const restrict a,
+                            const float *const restrict b,
+                            float *const restrict out,
+                            const float *const restrict mask,
+                            const size_t stride)
 {
   for(size_t j = 0; j < stride; j++)
   {
@@ -156,8 +182,11 @@ _BLEND_FUNC _blend_subtract(const float *const restrict a, const float *const re
 }
 
 /* difference */
-_BLEND_FUNC _blend_difference(const float *const restrict a, const float *const restrict b,
-                              float *const restrict out, const float *const restrict mask, const size_t stride)
+_BLEND_FUNC _blend_difference(const float *const restrict a,
+                              const float *const restrict b,
+                              float *const restrict out,
+                              const float *const restrict mask,
+                              const size_t stride)
 {
   for(size_t j = 0; j < stride; j++)
   {
@@ -167,8 +196,11 @@ _BLEND_FUNC _blend_difference(const float *const restrict a, const float *const 
 }
 
 /* screen */
-_BLEND_FUNC _blend_screen(const float *const restrict a, const float *const restrict b,
-                          float *const restrict out, const float *const restrict mask, const size_t stride)
+_BLEND_FUNC _blend_screen(const float *const restrict a,
+                          const float *const restrict b,
+                          float *const restrict out,
+                          const float *const restrict mask,
+                          const size_t stride)
 {
   for(size_t j = 0; j < stride; j++)
   {
@@ -180,8 +212,11 @@ _BLEND_FUNC _blend_screen(const float *const restrict a, const float *const rest
 }
 
 /* overlay */
-_BLEND_FUNC _blend_overlay(const float *const restrict a, const float *const restrict b,
-                           float *const restrict out, const float *const restrict mask, const size_t stride)
+_BLEND_FUNC _blend_overlay(const float *const restrict a,
+                           const float *const restrict b,
+                           float *const restrict out,
+                           const float *const restrict mask,
+                           const size_t stride)
 {
   for(size_t j = 0; j < stride; j++)
   {
@@ -196,8 +231,11 @@ _BLEND_FUNC _blend_overlay(const float *const restrict a, const float *const res
 }
 
 /* softlight */
-_BLEND_FUNC _blend_softlight(const float *const restrict a, const float *const restrict b,
-                             float *const restrict out, const float *const restrict mask, const size_t stride)
+_BLEND_FUNC _blend_softlight(const float *const restrict a,
+                             const float *const restrict b,
+                             float *const restrict out,
+                             const float *const restrict mask,
+                             const size_t stride)
 {
   for(size_t j = 0; j < stride; j++)
   {
@@ -212,8 +250,11 @@ _BLEND_FUNC _blend_softlight(const float *const restrict a, const float *const r
 }
 
 /* hardlight */
-_BLEND_FUNC _blend_hardlight(const float *const restrict a, const float *const restrict b,
-                             float *const restrict out, const float *const restrict mask, const size_t stride)
+_BLEND_FUNC _blend_hardlight(const float *const restrict a,
+                             const float *const restrict b,
+                             float *const restrict out,
+                             const float *const restrict mask,
+                             const size_t stride)
 {
   for(size_t j = 0; j < stride; j++)
   {
@@ -228,8 +269,11 @@ _BLEND_FUNC _blend_hardlight(const float *const restrict a, const float *const r
 }
 
 /* vividlight */
-_BLEND_FUNC _blend_vividlight(const float *const restrict a, const float *const restrict b,
-                              float *const restrict out, const float *const restrict mask, const size_t stride)
+_BLEND_FUNC _blend_vividlight(const float *const restrict a,
+                              const float *const restrict b,
+                              float *const restrict out,
+                              const float *const restrict mask,
+                              const size_t stride)
 {
   for(size_t j = 0; j < stride; j++)
   {
@@ -246,8 +290,11 @@ _BLEND_FUNC _blend_vividlight(const float *const restrict a, const float *const 
 }
 
 /* linearlight */
-_BLEND_FUNC _blend_linearlight(const float *const restrict a, const float *const restrict b,
-                               float *const restrict out, const float *const restrict mask, const size_t stride)
+_BLEND_FUNC _blend_linearlight(const float *const restrict a,
+                               const float *const restrict b,
+                               float *const restrict out,
+                               const float *const restrict mask,
+                               const size_t stride)
 {
   for(size_t j = 0; j < stride; j++)
   {
@@ -260,8 +307,11 @@ _BLEND_FUNC _blend_linearlight(const float *const restrict a, const float *const
 }
 
 /* pinlight */
-_BLEND_FUNC _blend_pinlight(const float *const restrict a, const float *const restrict b,
-                            float *const restrict out, const float *const restrict mask, const size_t stride)
+_BLEND_FUNC _blend_pinlight(const float *const restrict a,
+                            const float *const restrict b,
+                            float *const restrict out,
+                            const float *const restrict mask,
+                            const size_t stride)
 {
   for(size_t j = 0; j < stride; j++)
   {
@@ -341,14 +391,15 @@ static _blend_row_func *_choose_blend_func(const unsigned int blend_mode)
 }
 
 
-void dt_develop_blendif_raw_blend(struct dt_dev_pixelpipe_iop_t *piece,
-                                  const float *const restrict a, float *const restrict b,
-                                  const struct dt_iop_roi_t *const roi_in,
-                                  const struct dt_iop_roi_t *const roi_out,
+void dt_develop_blendif_raw_blend(dt_dev_pixelpipe_iop_t *piece,
+                                  const float *const restrict a,
+                                  float *const restrict b,
+                                  const dt_iop_roi_t *const roi_in,
+                                  const dt_iop_roi_t *const roi_out,
                                   const float *const restrict mask,
                                   const dt_dev_pixelpipe_display_mask_t request_mask_display)
 {
-  const dt_develop_blend_params_t *const d = (const dt_develop_blend_params_t *const)piece->blendop_data;
+  const dt_develop_blend_params_t *const d = piece->blendop_data;
 
   if(piece->colors != 1) return;
 
