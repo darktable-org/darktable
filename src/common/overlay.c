@@ -133,10 +133,17 @@ gboolean dt_overlay_used_by(const dt_imgid_t imgid, const dt_imgid_t overlay_id)
   sqlite3_stmt *stmt;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT 1"
-                              " FROM overlay"
-                              " WHERE imgid = ?1"
-                              "   AND overlay_id = ?2",
+                              "WITH RECURSIVE cte_overlay (imgid, overlay_id) AS ("
+                              " SELECT imgid, overlay_id"
+                              " FROM overlay o"
+                              " WHERE o.imgid = ?1" // ID of the image we want to use as an overlay; we want to query its overlay tree
+                              " UNION"
+                              " SELECT o.imgid, o.overlay_id"
+                              " FROM overlay o"
+                              " JOIN cte_overlay c ON c.overlay_id = o.imgid" // the overlays of the image
+                              ")"
+                              " SELECT 1 FROM cte_overlay"
+                              " WHERE overlay_id = ?2", // ID of the image for which we want to set the other as overlay; it must not appear in the overlay tree
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, overlay_id);
