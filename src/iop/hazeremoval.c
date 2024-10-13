@@ -61,7 +61,7 @@
 // implement the module api
 //----------------------------------------------------------------------
 
-DT_MODULE_INTROSPECTION(1, dt_iop_hazeremoval_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_hazeremoval_params_t)
 
 typedef dt_aligned_pixel_t rgb_pixel;
 
@@ -69,6 +69,7 @@ typedef struct dt_iop_hazeremoval_params_t
 {
   float strength; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.2
   float distance; // $MIN:  0.0 $MAX: 1.0 $DEFAULT: 0.2
+  gboolean compatibility_mode; // $DEFAULT: FALSE
 } dt_iop_hazeremoval_params_t;
 
 // types  dt_iop_hazeremoval_params_t and dt_iop_hazeremoval_data_t are
@@ -151,6 +152,34 @@ void cleanup_pipe(dt_iop_module_t *self,
   piece->data = NULL;
 }
 
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
+{
+  if(old_version == 1)
+  {
+    typedef struct dt_iop_hazeremoval_params_v1_t
+    {
+      float strength;
+      float distance;
+    } dt_iop_hazeremoval_params_v1_t;
+    const dt_iop_hazeremoval_params_v1_t *o = old_params;
+
+    dt_iop_hazeremoval_params_t *n = malloc(sizeof(dt_iop_hazeremoval_params_t));
+    memcpy(n, o, sizeof(dt_iop_hazeremoval_params_v1_t));
+
+    n->compatibility_mode = TRUE;
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_hazeremoval_params_t);
+    *new_version = 2;
+    return 0;
+  }
+
+  return 1;
+}
 
 void init_global(dt_iop_module_so_t *self)
 {
@@ -199,6 +228,14 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_gui_leave_critical_section(self);
 }
 
+void gui_changed(dt_iop_module_t *self,
+                 GtkWidget *w,
+                 void *previous)
+{
+  dt_iop_hazeremoval_params_t *p = self->params;
+  if(w)
+    p->compatibility_mode = FALSE;
+}
 
 void gui_init(dt_iop_module_t *self)
 {
@@ -505,9 +542,7 @@ void process(dt_iop_module_t *self,
   const float strength = d->strength; // strength of haze removal
   const float distance = d->distance; // maximal distance from camera to remove haze
   const float eps = sqrtf(0.025f);    // regularization parameter for guided filter
-  const gboolean compatibility_mode = TRUE; //TODO: read from updated
-                                            //params in 'd' after
-                                            //version bump
+  const gboolean compatibility_mode = d->compatibility_mode;
 
   const float *const restrict in = (float*)ivoid;
   float *const restrict out = (float*)ovoid;
@@ -768,9 +803,7 @@ int process_cl(struct dt_iop_module_t *self,
   const float strength = d->strength; // strength of haze removal
   const float distance = d->distance; // maximal distance from camera to remove haze
   const float eps = sqrtf(0.025f);    // regularization parameter for guided filter
-  const gboolean compatibility_mode = TRUE; //TODO: read from updated
-                                            //params in 'd' after
-                                            //version bump
+  const gboolean compatibility_mode = d->compatibility_mode;
 
   // estimate diffusive ambient light and image depth
   rgb_pixel A0 = { NAN, NAN, NAN, 0.0f };
