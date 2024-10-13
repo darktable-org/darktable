@@ -2221,11 +2221,11 @@ Details :
 
 .dt_group_right #thumb-localcopy
 {
-  border-right: 0.14em solid rgb(255, 187, 0); /* to not overlay thumb borders */
+  border-right: 0.07em solid rgb(255, 187, 0); /* to not overlay thumb borders */
 }
 .dt_group_top #thumb-localcopy
 {
-  border-top: 0.14em solid rgb(255, 187, 0); /* to not overlay thumb borders */
+  border-top: 0.07em solid rgb(255, 187, 0); /* to not overlay thumb borders */
 }
 
 /*---------------------------------------------------------
