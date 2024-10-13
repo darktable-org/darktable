@@ -61,7 +61,7 @@
 // implement the module api
 //----------------------------------------------------------------------
 
-DT_MODULE_INTROSPECTION(1, dt_iop_hazeremoval_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_hazeremoval_params_t)
 
 typedef dt_aligned_pixel_t rgb_pixel;
 
@@ -69,6 +69,7 @@ typedef struct dt_iop_hazeremoval_params_t
 {
   float strength; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.2
   float distance; // $MIN:  0.0 $MAX: 1.0 $DEFAULT: 0.2
+  gboolean compatibility_mode; // $DEFAULT: FALSE
 } dt_iop_hazeremoval_params_t;
 
 // types  dt_iop_hazeremoval_params_t and dt_iop_hazeremoval_data_t are
@@ -135,7 +136,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 }
 
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
@@ -143,7 +144,7 @@ void init_pipe(struct dt_iop_module_t *self,
 }
 
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -151,6 +152,34 @@ void cleanup_pipe(struct dt_iop_module_t *self,
   piece->data = NULL;
 }
 
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
+{
+  if(old_version == 1)
+  {
+    typedef struct dt_iop_hazeremoval_params_v1_t
+    {
+      float strength;
+      float distance;
+    } dt_iop_hazeremoval_params_v1_t;
+    const dt_iop_hazeremoval_params_v1_t *o = old_params;
+
+    dt_iop_hazeremoval_params_t *n = malloc(sizeof(dt_iop_hazeremoval_params_t));
+    memcpy(n, o, sizeof(dt_iop_hazeremoval_params_v1_t));
+
+    n->compatibility_mode = TRUE;
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_hazeremoval_params_t);
+    *new_version = 2;
+    return 0;
+  }
+
+  return 1;
+}
 
 void init_global(dt_iop_module_so_t *self)
 {
@@ -186,7 +215,7 @@ void cleanup_global(dt_iop_module_so_t *self)
 }
 
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   dt_iop_hazeremoval_gui_data_t *g = self->gui_data;
 
@@ -199,6 +228,14 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_gui_leave_critical_section(self);
 }
 
+void gui_changed(dt_iop_module_t *self,
+                 GtkWidget *w,
+                 void *previous)
+{
+  dt_iop_hazeremoval_params_t *p = self->params;
+  if(w)
+    p->compatibility_mode = FALSE;
+}
 
 void gui_init(dt_iop_module_t *self)
 {
@@ -480,7 +517,7 @@ static float _ambient_light(const const_rgb_image img,
 }
 
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -491,7 +528,7 @@ void process(struct dt_iop_module_t *self,
                                         self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return;
-  dt_iop_hazeremoval_gui_data_t *const g = (dt_iop_hazeremoval_gui_data_t*)self->gui_data;
+  dt_iop_hazeremoval_gui_data_t *const g = self->gui_data;
   dt_iop_hazeremoval_params_t *d = piece->data;
 
   const int width = roi_in->width;
@@ -505,9 +542,7 @@ void process(struct dt_iop_module_t *self,
   const float strength = d->strength; // strength of haze removal
   const float distance = d->distance; // maximal distance from camera to remove haze
   const float eps = sqrtf(0.025f);    // regularization parameter for guided filter
-  const gboolean compatibility_mode = TRUE; //TODO: read from updated
-                                            //params in 'd' after
-                                            //version bump
+  const gboolean compatibility_mode = d->compatibility_mode;
 
   const float *const restrict in = (float*)ivoid;
   float *const restrict out = (float*)ovoid;
@@ -612,7 +647,7 @@ void process(struct dt_iop_module_t *self,
 // reduced by the factor exp(-1)
 // some parts of the calculation are not suitable for a parallel implementation,
 // thus we copy data to host memory fall back to a cpu routine
-static float _ambient_light_cl(struct dt_iop_module_t *self,
+static float _ambient_light_cl(dt_iop_module_t *self,
                                const int devid,
                                cl_mem img,
                                const int w1,
@@ -637,7 +672,7 @@ error:
   return 0.f;
 }
 
-static int _box_min_cl(struct dt_iop_module_t *self,
+static int _box_min_cl(dt_iop_module_t *self,
                        int devid,
                        cl_mem in,
                        cl_mem out,
@@ -648,24 +683,15 @@ static int _box_min_cl(struct dt_iop_module_t *self,
   const int height = dt_opencl_get_image_height(in);
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
-  cl_mem temp = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
+  cl_mem temp = dt_opencl_alloc_device(devid, width, height, sizeof(float));
   if(temp == NULL) goto error;
 
-  const int kernel_x = gd->kernel_hazeremoval_box_min_x;
-
-  dt_opencl_set_kernel_args(devid, kernel_x, 0,
-                            CLARG(width), CLARG(height), CLARG(in), CLARG(temp),
-                            CLARG(w));
-  const size_t sizes_x[] = { 1, ROUNDUPDHT(height, devid) };
-  err = dt_opencl_enqueue_kernel_2d(devid, kernel_x, sizes_x);
+  err = dt_opencl_enqueue_kernel_1d_args(devid, gd->kernel_hazeremoval_box_min_x, height,
+              CLARG(width), CLARG(height), CLARG(in), CLARG(temp), CLARG(w));
   if(err != CL_SUCCESS) goto error;
 
-  const int kernel_y = gd->kernel_hazeremoval_box_min_y;
-  dt_opencl_set_kernel_args(devid, kernel_y, 0,
-                            CLARG(width), CLARG(height), CLARG(temp), CLARG(out),
-                            CLARG(w));
-  const size_t sizes_y[] = { ROUNDUPDWD(width, devid), 1 };
-  err = dt_opencl_enqueue_kernel_2d(devid, kernel_y, sizes_y);
+  err = dt_opencl_enqueue_kernel_1d_args(devid, gd->kernel_hazeremoval_box_min_y, width,
+              CLARG(width), CLARG(height), CLARG(temp), CLARG(out), CLARG(w));
 
 error:
   dt_opencl_release_mem_object(temp);
@@ -685,21 +711,12 @@ static int _box_max_cl(struct dt_iop_module_t *self,
   cl_mem temp = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
   if(temp == NULL) goto error;
 
-  const int kernel_x = gd->kernel_hazeremoval_box_max_x;
-  dt_opencl_set_kernel_args(devid, kernel_x, 0, CLARG(width),
-                            CLARG(height), CLARG(in), CLARG(temp),
-                            CLARG(w));
-  const size_t sizes_x[] = { 1, ROUNDUPDHT(height, devid) };
-  err = dt_opencl_enqueue_kernel_2d(devid, kernel_x, sizes_x);
+  err = dt_opencl_enqueue_kernel_1d_args(devid, gd->kernel_hazeremoval_box_max_x, height,
+            CLARG(width), CLARG(height), CLARG(in), CLARG(temp), CLARG(w));
   if(err != CL_SUCCESS) goto error;
 
-  const int kernel_y = gd->kernel_hazeremoval_box_max_y;
-  dt_opencl_set_kernel_args(devid, kernel_y, 0,
-                            CLARG(width), CLARG(height), CLARG(temp), CLARG(out),
-                            CLARG(w));
-  const size_t sizes_y[] = { ROUNDUPDWD(width, devid), 1 };
-  err = dt_opencl_enqueue_kernel_2d(devid, kernel_y, sizes_y);
-
+  err = dt_opencl_enqueue_kernel_1d_args(devid, gd->kernel_hazeremoval_box_max_y, width,
+            CLARG(width), CLARG(height), CLARG(temp), CLARG(out), CLARG(w));
 error:
   dt_opencl_release_mem_object(temp);
   return err;
@@ -718,8 +735,7 @@ static int _transition_map_cl(struct dt_iop_module_t *self,
   const int width = dt_opencl_get_image_width(img1);
   const int height = dt_opencl_get_image_height(img1);
 
-  const int kernel = gd->kernel_hazeremoval_transision_map;
-  cl_int err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+  cl_int err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_hazeremoval_transision_map, width, height,
                                                 CLARG(width), CLARG(height),
                                                 CLARG(img1), CLARG(img2), CLARG(strength),
                                                 CLARG(A0[0]), CLARG(A0[1]), CLARG(A0[2]));
@@ -742,8 +758,7 @@ static int _dehaze_cl(struct dt_iop_module_t *self,
   const int width = dt_opencl_get_image_width(img_in);
   const int height = dt_opencl_get_image_height(img_in);
 
-  const int kernel = gd->kernel_hazeremoval_dehaze;
-  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+  return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_hazeremoval_dehaze, width, height,
                                           CLARG(width), CLARG(height),
                                           CLARG(img_in), CLARG(trans_map),
                                           CLARG(img_out), CLARG(t_min),
@@ -788,9 +803,7 @@ int process_cl(struct dt_iop_module_t *self,
   const float strength = d->strength; // strength of haze removal
   const float distance = d->distance; // maximal distance from camera to remove haze
   const float eps = sqrtf(0.025f);    // regularization parameter for guided filter
-  const gboolean compatibility_mode = TRUE; //TODO: read from updated
-                                            //params in 'd' after
-                                            //version bump
+  const gboolean compatibility_mode = d->compatibility_mode;
 
   // estimate diffusive ambient light and image depth
   rgb_pixel A0 = { NAN, NAN, NAN, 0.0f };
@@ -870,7 +883,11 @@ int process_cl(struct dt_iop_module_t *self,
   if(err != CL_SUCCESS) goto error;
 
   trans_map_filtered = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
-  if(trans_map_filtered == NULL) goto error;
+  if(trans_map_filtered == NULL)
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    goto error;
+  }
 
   // apply guided filter with no clipping
   err = guided_filter_cl(devid, img_in, trans_map, trans_map_filtered,

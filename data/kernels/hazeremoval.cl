@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2019 Heiko Bauke
+    copyright (c) 2019-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,9 +22,8 @@
 kernel void hazeremoval_box_min_x(const int width, const int height, read_only image2d_t in,
                                   write_only image2d_t out, const int w)
 {
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  if(x >= 1 || y >= height) return;
+  const int y = get_global_id(0);
+  if(y >= height) return;
 
   float m = INFINITY;
   for(int i = 0, i_end = min(w + 1, width); i < i_end; ++i) m = min(read_imagef(in, sampleri, (int2)(i, y)).x, m);
@@ -46,8 +45,7 @@ kernel void hazeremoval_box_min_y(const int width, const int height, read_only i
                                   write_only image2d_t out, const int w)
 {
   const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  if(x >= width || y >= 1) return;
+  if(x >= width) return;
 
   float m = INFINITY;
   for(int i = 0, i_end = min(w + 1, height); i < i_end; ++i) m = min(read_imagef(in, sampleri, (int2)(x, i)).x, m);
@@ -68,9 +66,8 @@ kernel void hazeremoval_box_min_y(const int width, const int height, read_only i
 kernel void hazeremoval_box_max_x(const int width, const int height, read_only image2d_t in,
                                   write_only image2d_t out, const int w)
 {
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  if(x >= 1 || y >= height) return;
+  const int y = get_global_id(0);
+  if(y >= height) return;
 
   float m = -(INFINITY);
   for(int i = 0, i_end = min(w + 1, width); i < i_end; ++i) m = max(read_imagef(in, sampleri, (int2)(i, y)).x, m);
@@ -92,8 +89,7 @@ kernel void hazeremoval_box_max_y(const int width, const int height, read_only i
                                   write_only image2d_t out, const int w)
 {
   const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  if(x >= width || y >= 1) return;
+  if(x >= width) return;
 
   float m = -(INFINITY);
   for(int i = 0, i_end = min(w + 1, height); i < i_end; ++i) m = max(read_imagef(in, sampleri, (int2)(x, i)).x, m);
