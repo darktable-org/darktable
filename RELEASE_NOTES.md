@@ -61,6 +61,10 @@ changes (where available).
   cursor (such as a stopwatch or spinner) or a progress bar with
   option to cancel the remainder of the operation.
 
+- Paths for drawn masks now display two Bézier handles per control point,
+  which can be moved individually. This allows for more precise control
+  of the paths.
+
 - Added a high-contrast theme with bright white text on a dark gray
   background.
 
