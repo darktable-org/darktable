@@ -1677,9 +1677,15 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   }
   else
   {
+    // the main window peeks out behind the splash screen so we reduce the dimensions
+    if(splash_h > 80 && splash_w > 50)
+    {
+      splash_x += 20;
+      splash_y += 50;
+      splash_w -= 40;
+      splash_h -= 70;
+    }
     gtk_window_move(GTK_WINDOW(dt_ui_main_window(gui->ui)), splash_x, splash_y);
-    // the main window peeks out behind the splash screen unless we reduce the height
-    splash_h = splash_h > 50 ? splash_h - 25 : splash_h; 
     gtk_window_resize(GTK_WINDOW(dt_ui_main_window(gui->ui)), splash_w, splash_h);
   }
   dt_gui_apply_theme();
