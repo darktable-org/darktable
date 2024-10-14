@@ -978,7 +978,7 @@
     <name>ui_last/import_select_new</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>select only new pictures</shortdescription>
+    <shortdescription>select only new images</shortdescription>
     <longdescription>only select images that have not already been imported</longdescription>
   </dtconfig>
   <dtconfig ui="yes">
