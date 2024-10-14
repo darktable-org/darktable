@@ -1832,7 +1832,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
 /* init lua last, since it's user made stuff it must be in the real environment */
 #ifdef USE_LUA
-  darktable_splash_screen_set_progress(_("initializing LUA"));
+  darktable_splash_screen_set_progress(_("initializing Lua"));
   dt_lua_init(darktable.lua_state.state, lua_command);
 #else
   darktable_splash_screen_set_progress(_(""));
