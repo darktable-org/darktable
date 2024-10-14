@@ -3839,7 +3839,7 @@ void gui_init(dt_iop_module_t *self)
                                 "is quite big."));
   gtk_widget_set_tooltip_text(g->strength, _("finetune denoising strength"));
   gtk_widget_set_tooltip_text(g->overshooting,
-                              _("controls the way parameters are autoset\n"
+                              _("controls the way parameters are autoset.\n"
                                 "increase if shadows are not denoised enough\n"
                                 "or if chroma noise remains.\n"
                                 "this can happen if your image is underexposed."));
