@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2015-2022 darktable developers.
+    Copyright (C) 2015-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -224,9 +224,9 @@ int main(int argc, char *arg[])
 
   if(!dt_conf_get_bool("cache_disk_backend"))
   {
-    fprintf(stderr, _("warning: disk backend for thumbnail cache is disabled (cache_disk_backend)\nif you want "
+    fprintf(stderr, _("warning: disk backend for thumbnail cache is disabled (cache_disk_backend).\nif you want "
                       "to pre-generate thumbnails and for darktable to use them, you need to enable disk backend "
-                      "for thumbnail cache\nno thumbnails to be generated, done.\n"));
+                      "for thumbnail cache.\nno thumbnails to be generated, done.\n"));
     dt_cleanup();
     free(m_arg);
     exit(EXIT_FAILURE);
@@ -235,9 +235,9 @@ int main(int argc, char *arg[])
   if(max_mip == 8 && !dt_conf_get_bool("cache_disk_backend_full"))
   {
     fprintf(stderr,
-            _("warning: disk backend for full preview cache is disabled (cache_disk_backend_full)\nif you want "
+            _("warning: disk backend for full preview cache is disabled (cache_disk_backend_full).\nif you want "
               "to pre-generate full previews and for darktable to use them, you need to enable disk backend "
-              "for full preview cache\nno full previews to be generated, done.\n"));
+              "for full preview cache.\nno full previews to be generated, done.\n"));
     dt_cleanup();
     free(m_arg);
     exit(EXIT_FAILURE);
