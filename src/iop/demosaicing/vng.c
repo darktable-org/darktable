@@ -316,15 +316,15 @@ static void vng_interpolate(
 }
 
 #ifdef HAVE_OPENCL
-static int process_vng_cl(
-        struct dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        cl_mem dev_in,
-        cl_mem dev_out,
-        const dt_iop_roi_t *const roi_in,
-        const dt_iop_roi_t *const roi_out,
-        const gboolean smooth,
-        const gboolean only_vng_linear)
+static int process_vng_cl(dt_iop_module_t *self,
+                          dt_dev_pixelpipe_iop_t *piece,
+                          cl_mem dev_in,
+                          cl_mem dev_out,
+                          const dt_iop_roi_t *const roi_in,
+                          const dt_iop_roi_t *const roi_out,
+                          const gboolean smooth,
+                          const gboolean only_vng_linear,
+                          const gboolean write_scharr)
 {
   dt_iop_demosaic_data_t *data = piece->data;
   dt_iop_demosaic_global_data_t *gd = self->global_data;
@@ -530,15 +530,12 @@ static int process_vng_cl(
     dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
     if(dev_tmp == NULL) goto finish;
 
-    {
-      // manage borders for linear interpolation part
-      const int border = 1;
-
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
+    // manage borders for linear interpolation part
+    int border = 1;
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
         CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(border), CLARG(roi_in->x), CLARG(roi_in->y),
         CLARG(filters4), CLARG(dev_xtrans));
-      if(err != CL_SUCCESS) goto finish;
-    }
+    if(err != CL_SUCCESS) goto finish;
 
     {
       // do linear interpolation
@@ -593,15 +590,12 @@ static int process_vng_cl(
       if(err != CL_SUCCESS) goto finish;
     }
 
-    {
-      // manage borders
-      const int border = 2;
-
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
+    // manage borders
+    border = 2;
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
         CLARG(dev_in), CLARG(dev_aux), CLARG(width), CLARG(height), CLARG(border), CLARG(roi_in->x), CLARG(roi_in->y),
         CLARG(filters4), CLARG(dev_xtrans));
-      if(err != CL_SUCCESS) goto finish;
-    }
+    if(err != CL_SUCCESS) goto finish;
 
     if(filters4 != 9)
     {
@@ -616,9 +610,11 @@ static int process_vng_cl(
       if(err != CL_SUCCESS) goto finish;
     }
 
-    if(piece->pipe->want_detail_mask && !(data->demosaicing_method & DT_DEMOSAIC_DUAL))
+    if(piece->pipe->want_detail_mask && !(data->demosaicing_method & DT_DEMOSAIC_DUAL) && write_scharr)
+    {
       err = dt_dev_write_scharr_mask_cl(piece, dev_aux, roi_in, TRUE);
-    if(err != CL_SUCCESS) goto finish;
+      if(err != CL_SUCCESS) goto finish;
+    }
 
     if(scaled)
     {
@@ -632,16 +628,14 @@ static int process_vng_cl(
   else
   {
     const int zero = 0;
-    const int width = roi_out->width;
-    const int height = roi_out->height;
     // sample half-size or third-size image
     if(piece->pipe->dsc.filters == 9u)
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_third_size, width, height,
-        CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(roi_in->x), CLARG(roi_in->y),
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_third_size, roi_out->width, roi_out->height,
+        CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height), CLARG(roi_in->x), CLARG(roi_in->y),
         CLARG(roi_in->width), CLARG(roi_in->height), CLARG(roi_out->scale), CLARG(dev_xtrans));
     else
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_half_size, width, height,
-        CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(zero), CLARG(zero), CLARG(roi_in->width),
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_half_size, roi_out->width, roi_out->height,
+        CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height), CLARG(zero), CLARG(zero), CLARG(roi_in->width),
         CLARG(roi_in->height), CLARG(roi_out->scale), CLARG(piece->pipe->dsc.filters));
     if(err != CL_SUCCESS) goto finish;
   }

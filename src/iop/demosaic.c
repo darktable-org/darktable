@@ -393,34 +393,31 @@ dt_iop_colorspace_type_t output_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-void distort_mask(
-        struct dt_iop_module_t *self,
-        struct dt_dev_pixelpipe_iop_t *piece,
-        const float *const in,
-        float *const out,
-        const dt_iop_roi_t *const roi_in,
-        const dt_iop_roi_t *const roi_out)
+void distort_mask(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
+                  const float *const in,
+                  float *const out,
+                  const dt_iop_roi_t *const roi_in,
+                  const dt_iop_roi_t *const roi_out)
 {
   const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
   dt_interpolation_resample_roi_1c(itor, out, roi_out, in, roi_in);
 }
 
-void modify_roi_out(
-        struct dt_iop_module_t *self,
-        struct dt_dev_pixelpipe_iop_t *piece,
-        dt_iop_roi_t *roi_out,
-        const dt_iop_roi_t *const roi_in)
+void modify_roi_out(dt_iop_module_t *self,
+                    dt_dev_pixelpipe_iop_t *piece,
+                    dt_iop_roi_t *roi_out,
+                    const dt_iop_roi_t *const roi_in)
 {
   *roi_out = *roi_in;
   roi_out->x = 0;
   roi_out->y = 0;
 }
 
-void modify_roi_in(
-        struct dt_iop_module_t *self,
-        struct dt_dev_pixelpipe_iop_t *piece,
-        const dt_iop_roi_t *roi_out,
-        dt_iop_roi_t *roi_in)
+void modify_roi_in(dt_iop_module_t *self,
+                   dt_dev_pixelpipe_iop_t *piece,
+                   const dt_iop_roi_t *roi_out,
+                   dt_iop_roi_t *roi_in)
 {
   *roi_in = *roi_out;
   // need 1:1, demosaic and then sub-sample. or directly sample half-size
@@ -465,12 +462,11 @@ void modify_roi_in(
   roi_in->height = MIN(roi_in->height, piece->buf_in.height);
 }
 
-void tiling_callback(
-        struct dt_iop_module_t *self,
-        struct dt_dev_pixelpipe_iop_t *piece,
-        const dt_iop_roi_t *roi_in,
-        const dt_iop_roi_t *roi_out,
-        struct dt_develop_tiling_t *tiling)
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
+                     dt_develop_tiling_t *tiling)
 {
   dt_iop_demosaic_data_t *data = piece->data;
 
@@ -486,7 +482,7 @@ void tiling_callback(
   // check if output buffer has same dimension as input buffer (thus avoiding one
   // additional temporary buffer)
   const gboolean unscaled = (roi_out->width == roi_in->width && roi_out->height == roi_in->height);
-
+  const gboolean is_opencl = piece->pipe->devid >= 0;
   // define aligners
   tiling->xalign = is_xtrans ? DT_XTRANS_SNAPPER : DT_BAYER_SNAPPER;
   tiling->yalign = is_xtrans ? DT_XTRANS_SNAPPER : DT_BAYER_SNAPPER;
@@ -545,7 +541,7 @@ void tiling_callback(
     else
       tiling->factor += smooth;                        // + smooth
 
-    tiling->overhead = sizeof(float) * DT_RCD_TILESIZE * DT_RCD_TILESIZE * 8 * dt_get_num_threads();
+    tiling->overhead = is_opencl ? 0 : sizeof(float) * DT_RCD_TILESIZE * DT_RCD_TILESIZE * 8 * dt_get_num_threads();
     tiling->overlap = 10;
     tiling->factor_cl = tiling->factor + 3.0f;
   }
@@ -575,6 +571,7 @@ void tiling_callback(
 
     tiling->overlap = 6;
   }
+
   if(data->demosaicing_method & DT_DEMOSAIC_DUAL)
   {
     // make sure VNG4 is also possible
@@ -584,13 +581,12 @@ void tiling_callback(
   return;
 }
 
-void process(
-        struct dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        const void *const i,
-        void *const o,
-        const dt_iop_roi_t *const roi_in,
-        const dt_iop_roi_t *const roi_out)
+void process(dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const i,
+             void *const o,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   const dt_image_t *img = &self->dev->image_storage;
 
@@ -758,13 +754,12 @@ void process(
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(
-        struct dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        cl_mem dev_in,
-        cl_mem dev_out,
-        const dt_iop_roi_t *const roi_in,
-        const dt_iop_roi_t *const roi_out)
+int process_cl(dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
 {
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
@@ -831,13 +826,13 @@ int process_cl(
   }
   else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || demosaicing_method == DT_IOP_DEMOSAIC_VNG)
   {
-    err = process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE, FALSE);
+    err = process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE, FALSE, TRUE);
     if(err != CL_SUCCESS) return err;
   }
   else if((demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN || demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) &&
     !(qual_flags & DT_DEMOSAIC_FULL_SCALE))
   {
-    err = process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE, qual_flags & DT_DEMOSAIC_ONLY_VNG_LINEAR);
+    err = process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE, qual_flags & DT_DEMOSAIC_ONLY_VNG_LINEAR, TRUE);
     if(err != CL_SUCCESS) return err;
   }
   else if(((demosaicing_method & ~DT_DEMOSAIC_DUAL) == DT_IOP_DEMOSAIC_MARKESTEIJN ) ||
@@ -866,7 +861,7 @@ int process_cl(
   low_image = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
   if(low_image == NULL) goto finish;
 
-  err = process_vng_cl(self, piece, dev_in, low_image, roi_in, roi_in, FALSE, FALSE);
+  err = process_vng_cl(self, piece, dev_in, low_image, roi_in, roi_in, FALSE, FALSE, FALSE);
   if(err == CL_SUCCESS)
   {
     err = color_smoothing_cl(self, piece, low_image, low_image, roi_in, 2);
@@ -1010,7 +1005,9 @@ void cleanup_global(dt_iop_module_so_t *module)
   _cleanup_lmmse_gamma();
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self,
+                   dt_iop_params_t *params,
+                   dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)params;
