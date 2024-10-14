@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2023 darktable developers.
+    Copyright (C) 2012-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3842,7 +3842,7 @@ void gui_init(dt_iop_module_t *self)
                               _("controls the way parameters are autoset\n"
                                 "increase if shadows are not denoised enough\n"
                                 "or if chroma noise remains.\n"
-                                "this can happen if your picture is underexposed."));
+                                "this can happen if your image is underexposed."));
   gtk_widget_set_tooltip_text(g->shadows,
                               _("finetune shadows denoising.\n"
                                 "decrease to denoise more aggressively\n"

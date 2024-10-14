@@ -414,7 +414,7 @@ const char *name()
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("overlay an SVG watermark like a signature on the picture"),
+  return dt_iop_set_description(self, _("overlay an SVG watermark like a signature on the image"),
                                       _("creative"),
                                       _("non-linear, RGB, display-referred"),
                                       _("non-linear, RGB"),

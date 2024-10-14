@@ -316,7 +316,7 @@ const char *aliases()
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("add solid borders or margins around the picture"),
+  return dt_iop_set_description(self, _("add solid borders or margins around the image"),
                                       _("creative"),
                                       _("linear or non-linear, RGB, display-referred"),
                                       _("geometric, RGB"),
@@ -1000,7 +1000,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->frame_offset, 4);
   dt_bauhaus_slider_set_format(g->frame_offset, "%");
   gtk_widget_set_tooltip_text(g->frame_offset,
-                              _("offset of the frame line beginning on picture side"));
+                              _("offset of the frame line beginning on image side"));
 
   GdkRGBA color = (GdkRGBA){.red   = dp->color[0],
                             .green = dp->color[1],
