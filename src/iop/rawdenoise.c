@@ -139,7 +139,7 @@ const char *name()
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("denoise the raw picture early in the pipeline"),
+  return dt_iop_set_description(self, _("denoise the raw image early in the pipeline"),
                                       _("corrective"),
                                       _("linear, raw, scene-referred"),
                                       _("linear, raw"),
