@@ -4430,8 +4430,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->auto_button, NULL, N_("auto tune levels"));
   gtk_widget_set_tooltip_text(g->auto_button, _("try to optimize the settings with some statistical assumptions.\n"
                                                 "this will fit the luminance range inside the histogram bounds.\n"
-                                                "works better for landscapes and evenly-lit pictures\n"
-                                                "but fails for high-keys, low-keys and high-ISO pictures.\n"
+                                                "works better for landscapes and evenly-lit images\n"
+                                                "but fails for high-keys, low-keys and high-ISO images.\n"
                                                 "this is not an artificial intelligence, but a simple guess.\n"
                                                 "ensure you understand its assumptions before using it."));
   gtk_box_pack_start(GTK_BOX(self->widget), g->auto_button, FALSE, FALSE, 0);
@@ -4623,8 +4623,8 @@ void gui_init(dt_iop_module_t *self)
   g->noise_level = dt_bauhaus_slider_from_params(self, "noise_level");
   gtk_widget_set_tooltip_text(g->noise_level, _("add statistical noise in reconstructed highlights.\n"
                                                 "this avoids highlights to look too smooth\n"
-                                                "when the picture is noisy overall,\n"
-                                                "so they blend with the rest of the picture."));
+                                                "when the image is noisy overall,\n"
+                                                "so they blend with the rest of the image."));
 
   // Noise distribution
   g->noise_distribution = dt_bauhaus_combobox_from_params(self, "noise_distribution");
