@@ -222,6 +222,12 @@ changes (where available).
 - Fixed a bug where double clicking on a label in darkroom modules
   does not reset the control.
 
+- The composite module now prevents assigning an overlay that would
+  lead to a loop. Previously, only direct references
+  (image #1 <-> image #2) were checked; this has now been extended
+  to also cover chains (image #1 -> image #2 -> image #3 -> image #1)
+  of arbitrary length.
+
 ## Lua
 
 ### API Version
