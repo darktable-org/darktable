@@ -40,13 +40,12 @@ static inline const short *_hexmap(
 /*
    Frank Markesteijn's algorithm for Fuji X-Trans sensors
 */
-static void xtrans_markesteijn_interpolate(
-        float *out,
-        const float *const in,
-        const dt_iop_roi_t *const roi_out,
-        const dt_iop_roi_t *const roi_in,
-        const uint8_t (*const xtrans)[6],
-        const int passes)
+static void xtrans_markesteijn_interpolate(float *out,
+                                           const float *const in,
+                                           const dt_iop_roi_t *const roi_out,
+                                           const dt_iop_roi_t *const roi_in,
+                                           const uint8_t (*const xtrans)[6],
+                                           const int passes)
 {
   static const short orth[12] = { 1, 0, 0, 1, -1, 0, 0, -1, 1, 0, 0, 1 },
                      patt[2][16] = { { 0, 1, 0, -1, 2, 0, -1, 0, 1, 1, 1, -1, 0, 0, 0, 0 },
@@ -517,13 +516,12 @@ static void xtrans_markesteijn_interpolate(
 #undef TS
 
 #define TS 122
-static void xtrans_fdc_interpolate(
-        struct dt_iop_module_t *self,
-        float *out,
-        const float *const in,
-        const dt_iop_roi_t *const roi_out,
-        const dt_iop_roi_t *const roi_in,
-        const uint8_t (*const xtrans)[6])
+static void xtrans_fdc_interpolate(dt_iop_module_t *self,
+                                   float *out,
+                                   const float *const in,
+                                   const dt_iop_roi_t *const roi_out,
+                                   const dt_iop_roi_t *const roi_in,
+                                   const uint8_t (*const xtrans)[6])
 {
   static const short orth[12] = { 1, 0, 0, 1, -1, 0, 0, -1, 1, 0, 0, 1 },
                      patt[2][16] = { { 0, 1, 0, -1, 2, 0, -1, 0, 1, 1, 1, -1, 0, 0, 0, 0 },
@@ -1637,14 +1635,13 @@ static void xtrans_fdc_interpolate(
 #undef TS
 
 #ifdef HAVE_OPENCL
-static int process_markesteijn_cl(
-        struct dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        cl_mem dev_in,
-        cl_mem dev_out,
-        const dt_iop_roi_t *const roi_in,
-        const dt_iop_roi_t *const roi_out,
-        const gboolean smooth)
+static int process_markesteijn_cl(dt_iop_module_t *self,
+                                  dt_dev_pixelpipe_iop_t *piece,
+                                  cl_mem dev_in,
+                                  cl_mem dev_out,
+                                  const dt_iop_roi_t *const roi_in,
+                                  const dt_iop_roi_t *const roi_out,
+                                  const gboolean smooth)
 {
   dt_iop_demosaic_data_t *data = piece->data;
   dt_iop_demosaic_global_data_t *gd = self->global_data;
@@ -2047,12 +2044,10 @@ static int process_markesteijn_cl(
       if(err != CL_SUCCESS) goto error;
     }
 
-    {
-      // adjust maximum value
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_markesteijn_homo_max_corr, width, height,
+    // adjust maximum value
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_markesteijn_homo_max_corr, width, height,
         CLARG(dev_aux), CLARG(width), CLARG(height), CLARG(pad_tile));
-      if(err != CL_SUCCESS) goto error;
-    }
+    if(err != CL_SUCCESS) goto error;
 
     // for Markesteijn-3: use only one of two directions if there is a difference in homogeneity
     for(int d = 0; d < ndir - 4; d++)
@@ -2062,16 +2057,14 @@ static int process_markesteijn_cl(
       if(err != CL_SUCCESS) goto error;
     }
 
-    {
-      // initialize output buffer to zero
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_markesteijn_zero, width, height,
+    // initialize output buffer to zero
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_markesteijn_zero, width, height,
         CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(pad_tile));
-      if(err != CL_SUCCESS) goto error;
-    }
+    if(err != CL_SUCCESS) goto error;
 
-    // need to get another temp buffer for the output image (may use the space of dev_drv[] freed earlier)
+    // need to get another temp image for the output image
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-    dev_tmptmp = dt_opencl_alloc_device(devid, (size_t)width, height, sizeof(float) * 4);
+    dev_tmptmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
     if(dev_tmptmp == NULL) goto error;
 
     cl_mem dev_t1 = dev_tmp;
@@ -2111,16 +2104,8 @@ static int process_markesteijn_cl(
     {
       dt_opencl_release_mem_object(dev_rgbv[n]);
       dev_rgbv[n] = NULL;
-    }
-
-    for(int n = 0; n < 8; n++)
-    {
       dt_opencl_release_mem_object(dev_homo[n]);
       dev_homo[n] = NULL;
-    }
-
-    for(int n = 0; n < 8; n++)
-    {
       dt_opencl_release_mem_object(dev_homosum[n]);
       dev_homosum[n] = NULL;
     }
@@ -2181,7 +2166,7 @@ static int process_markesteijn_cl(
       if(err != CL_SUCCESS) goto error;
 
       // VNG processing
-      err = process_vng_cl(self, piece, dev_edge_in, dev_edge_out, &roi, &roi, smooth, qual_flags & DT_DEMOSAIC_ONLY_VNG_LINEAR);
+      err = process_vng_cl(self, piece, dev_edge_in, dev_edge_out, &roi, &roi, smooth, qual_flags & DT_DEMOSAIC_ONLY_VNG_LINEAR, FALSE);
       if(err != CL_SUCCESS) goto error;
 
       // adjust for "good" part, dropping linear border where possible
@@ -2203,8 +2188,10 @@ static int process_markesteijn_cl(
     }
 
     if(piece->pipe->want_detail_mask)
+    {
       err = dt_dev_write_scharr_mask_cl(piece, dev_tmp, roi_in, TRUE);
-    if(err != CL_SUCCESS) goto error;
+      if(err != CL_SUCCESS) goto error;
+    }
 
     if(scaled)
     {

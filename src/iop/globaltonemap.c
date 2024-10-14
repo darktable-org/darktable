@@ -153,7 +153,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_global_tonemap_params_v1_t;
 
     const dt_iop_global_tonemap_params_v1_t *o = old_params;
-    dt_iop_global_tonemap_params_v3_t *n = 
+    dt_iop_global_tonemap_params_v3_t *n =
       malloc(sizeof(dt_iop_global_tonemap_params_v3_t));
 
     // only appended detail, 0 is no-op
@@ -336,7 +336,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_global_tonemap_gui_data_t *g = self->gui_data;
   dt_bilateral_cl_t *b = NULL;
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   cl_mem dev_m = NULL;
   cl_mem dev_r = NULL;
   float *maximum = NULL;
@@ -387,7 +387,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                                       .sizex = 1 << 4, .sizey = 1 << 4 };
 
       if(!dt_opencl_local_buffer_opt(devid, gd->kernel_pixelmax_first, &flocopt))
+      {
+        err = CL_INVALID_WORK_DIMENSION;
         goto finally;
+      }
 
       const size_t bwidth = ROUNDUP(width, flocopt.sizex);
       const size_t bheight = ROUNDUP(height, flocopt.sizey);
@@ -400,7 +403,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                                       .sizex = 1 << 16, .sizey = 1 };
 
       if(!dt_opencl_local_buffer_opt(devid, gd->kernel_pixelmax_second, &slocopt))
+      {
+        err = CL_INVALID_WORK_DIMENSION;
         goto finally;
+      }
 
       const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, slocopt.sizex) / slocopt.sizex);
 
@@ -436,6 +442,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       if(err != CL_SUCCESS) goto finally;
 
       maximum = dt_alloc_align_float((size_t)reducesize);
+      if(!maximum)
+      {
+        err = DT_OPENCL_SYSMEM_ALLOCATION;
+        goto finally;
+      }
       err = dt_opencl_read_buffer_from_device(devid, (void *)maximum, dev_r, 0,
                                             sizeof(float) * reducesize, CL_TRUE);
       if(err != CL_SUCCESS) goto finally;

@@ -267,7 +267,10 @@ static int color_smoothing_cl(
                                   .sizex = 1 << 8, .sizey = 1 << 8 };
 
   if(!dt_opencl_local_buffer_opt(devid, gd->kernel_color_smoothing, &locopt))
+  {
+    err = CL_INVALID_WORK_DIMENSION;
     goto error;
+  }
 
   // two buffer references for our ping-pong
   cl_mem dev_t1 = dev_out;
@@ -642,8 +645,10 @@ static int process_default_cl(
     }
 
     if(piece->pipe->want_detail_mask)
+    {
       err = dt_dev_write_scharr_mask_cl(piece, dev_aux, roi_in, TRUE);
-    if(err != CL_SUCCESS) goto error;
+      if(err != CL_SUCCESS) goto error;
+    }
 
     if(scaled)
     {

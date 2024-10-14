@@ -295,7 +295,8 @@ void dt_iop_clip_and_zoom_mosaic_half_size(uint16_t *const out,
   }
 }
 
-void dt_iop_clip_and_zoom_mosaic_half_size_f(float *const out, const float *const in,
+void dt_iop_clip_and_zoom_mosaic_half_size_f(float *const out,
+                                             const float *const in,
                                              const dt_iop_roi_t *const roi_out,
                                              const dt_iop_roi_t *const roi_in,
                                              const int32_t out_stride,
@@ -485,10 +486,13 @@ void dt_iop_clip_and_zoom_mosaic_half_size_f(float *const out, const float *cons
  * downscales and clips a Fujifilm X-Trans mosaiced buffer (in) to the given region of interest (r_*)
  * and writes it to out.
  */
-void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const uint16_t *const in,
+void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out,
+                                                   const uint16_t *const in,
                                                    const dt_iop_roi_t *const roi_out,
-                                                   const dt_iop_roi_t *const roi_in, const int32_t out_stride,
-                                                   const int32_t in_stride, const uint8_t (*const xtrans)[6])
+                                                   const dt_iop_roi_t *const roi_in,
+                                                   const int32_t out_stride,
+                                                   const int32_t in_stride,
+                                                   const uint8_t (*const xtrans)[6])
 {
   const float px_footprint = 1.f / roi_out->scale;
   // Use box filter of width px_footprint*2+1 centered on the current
@@ -565,13 +569,12 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(float *const out,
   }
 }
 
-void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f
-  (float *out,
-   const float *const in,
-   const dt_iop_roi_t *const roi_out,
-   const dt_iop_roi_t *const roi_in,
-   const int32_t out_stride,
-   const int32_t in_stride)
+void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out,
+                                                            const float *const in,
+                                                            const dt_iop_roi_t *const roi_out,
+                                                            const dt_iop_roi_t *const roi_in,
+                                                            const int32_t out_stride,
+                                                            const int32_t in_stride)
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
@@ -706,7 +709,8 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f
   }
 }
 
-void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
+void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out,
+                                               const float *const in,
                                                const dt_iop_roi_t *const roi_out,
                                                const dt_iop_roi_t *const roi_in,
                                                const int32_t out_stride,
@@ -883,7 +887,8 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in
 }
 
 
-void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out, const float *const in,
+void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out,
+                                                       const float *const in,
                                                        const dt_iop_roi_t *const roi_out,
                                                        const dt_iop_roi_t *const roi_in,
                                                        const int32_t out_stride,
