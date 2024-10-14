@@ -222,7 +222,7 @@
     <name>slideshow_delay</name>
     <type>int</type>
     <default>5</default>
-    <shortdescription>waiting time between each picture in slideshow</shortdescription>
+    <shortdescription>waiting time between each image in slideshow</shortdescription>
   </dtconfig>
 <!-- be sure to keep the code in sync when changing this enum, see common/darktable.c void dt_get_sysresource_level() -->
   <dtconfig prefs="processing" section="cpugpu">
@@ -978,7 +978,7 @@
     <name>ui_last/import_select_new</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>select only new pictures</shortdescription>
+    <shortdescription>select only new images</shortdescription>
     <longdescription>only select images that have not already been imported</longdescription>
   </dtconfig>
   <dtconfig ui="yes">
