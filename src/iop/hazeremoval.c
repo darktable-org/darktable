@@ -109,7 +109,7 @@ const char *aliases()
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("remove fog and atmospheric hazing from pictures"),
+  return dt_iop_set_description(self, _("remove fog and atmospheric hazing from images"),
                                       _("corrective"),
                                       _("linear, RGB, scene-referred"),
                                       _("frequential, RGB"),
