@@ -2315,7 +2315,10 @@ static int process_wavelets_cl(struct dt_iop_module_t *self,
                                   .sizey = 1u << 4 };
 
   if(!dt_opencl_local_buffer_opt(devid, gd->kernel_denoiseprofile_reduce_first, &flocopt))
+  {
+    err = CL_INVALID_WORK_DIMENSION;
     goto error;
+  }
 
   const size_t bwidth = ROUNDUP(width, flocopt.sizex);
   const size_t bheight = ROUNDUP(height, flocopt.sizey);
@@ -2333,7 +2336,10 @@ static int process_wavelets_cl(struct dt_iop_module_t *self,
                                   .sizey = 1 };
 
   if(!dt_opencl_local_buffer_opt(devid, gd->kernel_denoiseprofile_reduce_first, &slocopt))
+  {
+    err = CL_INVALID_WORK_DIMENSION;
     goto error;
+  }
 
   const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, slocopt.sizex) / slocopt.sizex);
   err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
@@ -2870,7 +2876,7 @@ void reload_defaults(dt_iop_module_t *module)
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 11; // denoiseprofile.cl, from programs.conf
-  dt_iop_denoiseprofile_global_data_t *gd = 
+  dt_iop_denoiseprofile_global_data_t *gd =
       malloc(sizeof(dt_iop_denoiseprofile_global_data_t));
 
   module->data = gd;

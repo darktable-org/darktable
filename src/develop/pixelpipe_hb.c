@@ -578,7 +578,11 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   dt_dev_clear_scharr_mask(pipe);
   pipe->want_detail_mask = FALSE;
 
-  // go through all history items and adjust params
+  /* go through all history items and adjust params
+     We might call dt_dev_pixelpipe_usedetails() with want_detail_mask == FALSE
+     here resulting in a pipecache invalidation.
+     Can this somehow be avoided?
+  */
   GList *history = dev->history;
   for(int k = 0; k < dev->history_end && history; k++)
   {
@@ -2878,7 +2882,7 @@ restart:
 }
 
 void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
-                                     struct dt_develop_t *dev,
+                                     dt_develop_t *dev,
                                      const int width_in,
                                      const int height_in,
                                      int *width,
@@ -3133,7 +3137,7 @@ void dt_dev_clear_scharr_mask(dt_dev_pixelpipe_t *pipe)
 
 gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
                                   float *const rgb,
-                                  const dt_iop_roi_t *const roi_in,
+                                  const dt_iop_roi_t *const roi,
                                   const gboolean rawmode)
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
@@ -3141,13 +3145,13 @@ gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
   if(piece->pipe->tiling)
     goto error;
 
-  const int width = roi_in->width;
-  const int height = roi_in->height;
+  const int width = roi->width;
+  const int height = roi->height;
   float *mask = dt_alloc_align_float((size_t)width * height);
   if(!mask) goto error;
 
   p->scharr.data = mask;
-  memcpy(&p->scharr.roi, roi_in, sizeof(dt_iop_roi_t));
+  memcpy(&p->scharr.roi, roi, sizeof(dt_iop_roi_t));
 
   const gboolean wboff = !p->dsc.temperature.enabled || !rawmode;
   const dt_aligned_pixel_t wb = { wboff ? 1.0f : p->dsc.temperature.coeffs[0],
@@ -3158,7 +3162,7 @@ gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
 
   p->scharr.hash = dt_hash(DT_INITHASH, &p->scharr.roi, sizeof(dt_iop_roi_t));
 
-  dt_print_pipe(DT_DEBUG_PIPE, "write scharr mask", p, NULL, DT_DEVICE_CPU, NULL, NULL, "%p (%ix%i)\n",
+  dt_print_pipe(DT_DEBUG_PIPE, "write scharr mask CPU", p, NULL, DT_DEVICE_CPU, NULL, NULL, "%p (%ix%i)\n",
     mask, width, height);
 
   if(darktable.dump_pfm_module && (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT))
@@ -3168,8 +3172,7 @@ gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
 
   error:
   dt_print_pipe(DT_DEBUG_ALWAYS,
-           "write scharr mask", p, NULL, DT_DEVICE_CPU, NULL, NULL,
-           "couldn't write detail mask\n");
+           "couldn't write scharr mask CPU", p, NULL, DT_DEVICE_CPU, NULL, NULL, "\n");
   dt_dev_clear_scharr_mask(p);
   return TRUE;
 }
@@ -3177,7 +3180,7 @@ gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
 #ifdef HAVE_OPENCL
 int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
                                 cl_mem in,
-                                const dt_iop_roi_t *const roi_in,
+                                const dt_iop_roi_t *const roi,
                                 const gboolean rawmode)
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
@@ -3186,8 +3189,8 @@ int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
   if(piece->pipe->tiling)
     return DT_OPENCL_PROCESS_CL;
 
-  const int width = roi_in->width;
-  const int height = roi_in->height;
+  const int width = roi->width;
+  const int height = roi->height;
   const int devid = p->devid;
 
   cl_mem out = NULL;
@@ -3207,14 +3210,12 @@ int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
         wboff ? 1.0f : p->dsc.temperature.coeffs[1],
         wboff ? 1.0f : p->dsc.temperature.coeffs[2]};
 
-  err = dt_opencl_enqueue_kernel_2d_args
-      (devid, darktable.opencl->blendop->kernel_calc_Y0_mask, width, height,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_calc_Y0_mask, width, height,
        CLARG(tmp), CLARG(in), CLARG(width), CLARG(height),
        CLARG(wb[0]), CLARG(wb[1]), CLARG(wb[2]));
   if(err != CL_SUCCESS) goto error;
 
-  err = dt_opencl_enqueue_kernel_2d_args
-      (devid, darktable.opencl->blendop->kernel_calc_scharr_mask, width, height,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_calc_scharr_mask, width, height,
        CLARG(tmp), CLARG(out), CLARG(width), CLARG(height));
   if(err != CL_SUCCESS) goto error;
 
@@ -3222,11 +3223,11 @@ int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
   if(err != CL_SUCCESS) goto error;
 
   p->scharr.data = mask;
-  memcpy(&p->scharr.roi, roi_in, sizeof(dt_iop_roi_t));
+  memcpy(&p->scharr.roi, roi, sizeof(dt_iop_roi_t));
 
   p->scharr.hash = dt_hash(DT_INITHASH, &p->scharr.roi, sizeof(dt_iop_roi_t));
 
-  dt_print_pipe(DT_DEBUG_PIPE, "write scharr mask", p, NULL, piece->pipe->devid, NULL, NULL, "%p (%ix%i)\n",
+  dt_print_pipe(DT_DEBUG_PIPE, "write scharr mask CL", p, NULL, piece->pipe->devid, NULL, NULL, "%p (%ix%i)\n",
     mask, width, height);
 
   if(darktable.dump_pfm_module && (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT))
@@ -3236,8 +3237,8 @@ int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
   if(err != CL_SUCCESS)
   {
     dt_print_pipe(DT_DEBUG_ALWAYS,
-           "write scharr mask", p, NULL, piece->pipe->devid, NULL, NULL,
-           "couldn't write scharr mask: %s\n", cl_errstr(err));
+           "couldn't write scharr mask CL", p, NULL, piece->pipe->devid, NULL, NULL,
+           "%s\n", cl_errstr(err));
     dt_dev_clear_scharr_mask(p);
   }
   dt_opencl_release_mem_object(out);
