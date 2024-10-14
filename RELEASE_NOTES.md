@@ -228,6 +228,10 @@ changes (where available).
   to also cover chains (image #1 -> image #2 -> image #3 -> image #1)
   of arbitrary length.
 
+- Fix a bug in overlay module which incorrectly apply a color profile
+  and so creating an unwanted and wrong color cast. This bug was a
+  regression added just before the 4.8 release.
+
 ## Lua
 
 ### API Version
