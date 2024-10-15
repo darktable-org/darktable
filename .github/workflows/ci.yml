@@ -93,15 +93,15 @@ jobs:
         run: |
           set -xe
           rm -rf /var/lib/apt/lists/*
-          apt-get update
-          apt-get install eatmydata
-          eatmydata apt-get upgrade
+          apt-get --yes update
+          apt-get --yes install eatmydata
+          eatmydata apt-get --yes upgrade
       - name: Install compiler ${{ matrix.compiler.compiler }}
         run: |
-          eatmydata apt-get -y install ${{ matrix.compiler.packages }}
+          eatmydata apt-get --yes install ${{ matrix.compiler.packages }}
       - name: Install Base Dependencies
         run: |
-          eatmydata apt-get -y install \
+          eatmydata apt-get --yes install \
             build-essential \
             cmake \
             appstream-util \
