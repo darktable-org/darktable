@@ -336,6 +336,9 @@ typedef struct dt_image_t
   uint32_t fuji_rotation_pos;
   float pixel_aspect_ratio;
 
+  /* might help to improve highlights reconstruction module */
+  float linear_response_limit;
+
   /* White balance coeffs from the raw */
   dt_aligned_pixel_t wb_coeffs;
 

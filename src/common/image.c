@@ -2132,6 +2132,7 @@ void dt_image_init(dt_image_t *img)
   img->colorspace = DT_IMAGE_COLORSPACE_NONE;
   img->fuji_rotation_pos = 0;
   img->pixel_aspect_ratio = 1.0f;
+  img->linear_response_limit = 1.0f;
   img->wb_coeffs[0] = NAN;
   img->wb_coeffs[1] = NAN;
   img->wb_coeffs[2] = NAN;
