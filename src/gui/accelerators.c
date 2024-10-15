@@ -1860,13 +1860,15 @@ static void _effect_editing_started(GtkCellRenderer *renderer,
 
       for(; values->name; values++)
       {
-        gtk_list_store_insert_with_values
-          (store, NULL, -1,
-           DT_ACTION_EFFECT_COLUMN_NAME,
-           Q_(values->description ? values->description : values->name),
-           DT_ACTION_EFFECT_COLUMN_WEIGHT,
-           PANGO_WEIGHT_NORMAL,
-           -1);
+        const char *text = values->description ?: values->name;
+        if(*text)
+          gtk_list_store_insert_with_values
+            (store, NULL, -1,
+            DT_ACTION_EFFECT_COLUMN_NAME,
+            Q_(text),
+            DT_ACTION_EFFECT_COLUMN_WEIGHT,
+            PANGO_WEIGHT_NORMAL,
+            -1);
       }
     }
     else

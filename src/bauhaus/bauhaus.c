@@ -102,6 +102,11 @@ static float _widget_get_quad_width(dt_bauhaus_widget_t *w)
     return .0f;
 }
 
+static dt_bauhaus_combobox_entry_t *_combobox_entry(const dt_bauhaus_combobox_data_t *d, int pos)
+{
+  return g_ptr_array_index(d->entries, pos);
+}
+
 static void _combobox_next_sensitive(dt_bauhaus_widget_t *w,
                                      int delta,
                                      guint state,
@@ -117,7 +122,7 @@ static void _combobox_next_sensitive(dt_bauhaus_widget_t *w,
 
   while(delta && cur >= 0 && cur < d->entries->len)
   {
-    dt_bauhaus_combobox_entry_t *entry = g_ptr_array_index(d->entries, cur);
+    dt_bauhaus_combobox_entry_t *entry = _combobox_entry(d, cur);
     gchar *text_cmp = g_utf8_casefold(entry->label, -1);
     if(entry->sensitive && strstr(text_cmp, keys))
     {
@@ -501,9 +506,6 @@ static gboolean _window_motion_notify(GtkWidget *widget,
   gtk_widget_get_allocation(widget, &allocation);
 
   const GtkBorder *padding = &pop->padding;
-  const int width = allocation.width - padding->left - padding->right;
-  const int height = allocation.height - padding->top - padding->bottom;
-  const int ht = bh->line_height + INNER_PADDING * 2.0f;
 
   // recalculate event coords so we get useful values outside window
   GdkWindow *window = gtk_widget_get_window(pop->area);
@@ -544,9 +546,11 @@ static gboolean _window_motion_notify(GtkWidget *widget,
   if(w->type == DT_BAUHAUS_SLIDER)
   {
     const dt_bauhaus_slider_data_t *d = &w->data.slider;
+    const float width = allocation.width - padding->left - padding->right;
+    const float ht = bh->line_height + INNER_PADDING * 2.0f;
     const float mouse_off = _slider_get_line_offset
       (d->oldpos, 5.0 * powf(10.0f, -d->digits) / (d->max - d->min) / d->factor,
-       bh->mouse_x / width, bh->mouse_y / height, ht / (float)height, allocation.width, w);
+       bh->mouse_x / width, bh->mouse_y / width, ht / width, allocation.width, w);
     if(!bh->change_active)
     {
       if((bh->mouse_line_distance < 0 && mouse_off >= 0)
@@ -564,8 +568,7 @@ static gboolean _window_motion_notify(GtkWidget *widget,
     const int active = (bh->mouse_y - w->top_gap) / bh->line_height;
     if(active >= 0 && active < d->entries->len)
     {
-      const dt_bauhaus_combobox_entry_t *entry = g_ptr_array_index(d->entries, active);
-      if(entry->sensitive && event->state & GDK_BUTTON1_MASK)
+      if(_combobox_entry(d, active)->sensitive && event->state & GDK_BUTTON1_MASK)
       {
         if(active != d->active)
           _combobox_set(w, active, w->data.combobox.mute_scrolling);
@@ -1490,11 +1493,8 @@ void dt_bauhaus_combobox_add_list(GtkWidget *widget,
   if(action)
     g_hash_table_insert(darktable.bauhaus->combo_list, action, texts);
 
-  int item = 0;
   while(texts && *texts)
-    dt_bauhaus_combobox_add_full(widget, Q_(*(texts++)),
-                                 DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
-                                 GINT_TO_POINTER(item++), NULL, TRUE);
+    dt_bauhaus_combobox_add(widget, Q_(*(texts++)));
 }
 
 gboolean dt_bauhaus_combobox_add_introspection
@@ -1556,12 +1556,14 @@ void dt_bauhaus_combobox_add_full(GtkWidget *widget,
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  if(!data && d->entries->len > 0 && !_combobox_entry(d, 0)->data)
+    data =_combobox_entry(d, d->entries->len - 1)->data + 1;
   dt_bauhaus_combobox_entry_t *entry = _new_combobox_entry(text, align,
                                                            sensitive, data, free_func);
   g_ptr_array_add(d->entries, entry);
   if(d->active < 0)
     d->active = 0;
-  if(d->defpos < 0 && sensitive)
+  if(d->defpos == -1 && sensitive)
     d->defpos = GPOINTER_TO_INT(data);
 }
 
@@ -1576,7 +1578,7 @@ gboolean dt_bauhaus_combobox_set_entry_label(GtkWidget *widget,
   if(w->type != DT_BAUHAUS_COMBOBOX) return FALSE;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   if(!d || pos < 0 || pos >= d->entries->len) return FALSE;
-  dt_bauhaus_combobox_entry_t *entry = g_ptr_array_index(d->entries, pos);
+  dt_bauhaus_combobox_entry_t *entry = _combobox_entry(d, pos);
   g_free(entry->label);
   entry->label = g_strdup(label);
   return TRUE;
@@ -1678,14 +1680,9 @@ const char *dt_bauhaus_combobox_get_text(GtkWidget *widget)
   if(!d) return NULL;
 
   if(d->active < 0)
-  {
     return d->editable ? d->text : NULL;
-  }
   else
-  {
-    const dt_bauhaus_combobox_entry_t *entry = g_ptr_array_index(d->entries, d->active);
-    return entry->label;
-  }
+    return _combobox_entry(d, d->active)->label;
 }
 
 gpointer dt_bauhaus_combobox_get_data(GtkWidget *widget)
@@ -1693,8 +1690,7 @@ gpointer dt_bauhaus_combobox_get_data(GtkWidget *widget)
   const dt_bauhaus_combobox_data_t *d = _combobox_data(widget);
   if(!d || d->active < 0) return NULL;
 
-  const dt_bauhaus_combobox_entry_t *entry = g_ptr_array_index(d->entries, d->active);
-  return entry->data;
+  return _combobox_entry(d, d->active)->data;
 }
 
 void dt_bauhaus_combobox_clear(GtkWidget *widget)
@@ -1712,8 +1708,7 @@ const char *dt_bauhaus_combobox_get_entry(GtkWidget *widget,
   const dt_bauhaus_combobox_data_t *d = _combobox_data(widget);
   if(!d || pos < 0 || pos >= d->entries->len) return NULL;
 
-  const dt_bauhaus_combobox_entry_t *entry = g_ptr_array_index(d->entries, pos);
-  return entry->label;
+  return _combobox_entry(d, pos)->label;
 }
 
 void dt_bauhaus_combobox_set_text(GtkWidget *widget,
@@ -1756,9 +1751,8 @@ static void _combobox_set(dt_bauhaus_widget_t *w,
         case DT_INTROSPECTION_TYPE_ENUM:;
           if(d->active >= 0)
           {
-            const dt_bauhaus_combobox_entry_t *entry =
-              g_ptr_array_index(d->entries, d->active);
-            int *e = w->field, preve = *e; *e = GPOINTER_TO_INT(entry->data);
+            int *e = w->field, preve = *e;
+            *e = GPOINTER_TO_INT(_combobox_entry(d, d->active)->data);
             if(*e != preve) dt_iop_gui_changed(w->module, GTK_WIDGET(w), &preve);
           }
           break;
@@ -1801,8 +1795,7 @@ gboolean dt_bauhaus_combobox_set_from_text(GtkWidget *widget,
 
   for(int i = 0; d && i < d->entries->len; i++)
   {
-    const dt_bauhaus_combobox_entry_t *entry = g_ptr_array_index(d->entries, i);
-    if(!g_strcmp0(entry->label, text))
+    if(!g_strcmp0(_combobox_entry(d, i)->label, text))
     {
       dt_bauhaus_combobox_set(widget, i);
       return TRUE;
@@ -1818,8 +1811,7 @@ int dt_bauhaus_combobox_get_from_value(GtkWidget *widget,
 
   for(int i = 0; d && i < d->entries->len; i++)
   {
-    const dt_bauhaus_combobox_entry_t *entry = g_ptr_array_index(d->entries, i);
-    if(GPOINTER_TO_INT(entry->data) == value)
+    if(GPOINTER_TO_INT(_combobox_entry(d, i)->data) == value)
     {
       return i;
     }
@@ -1864,8 +1856,7 @@ void dt_bauhaus_combobox_entry_set_sensitive(GtkWidget *widget,
   const dt_bauhaus_combobox_data_t *d = _combobox_data(widget);
   if(!d || pos < 0 || pos >= d->entries->len) return;
 
-  dt_bauhaus_combobox_entry_t *entry = g_ptr_array_index(d->entries, pos);
-  entry->sensitive = sensitive;
+  _combobox_entry(d, pos)->sensitive = sensitive;
 }
 
 void dt_bauhaus_slider_clear_stops(GtkWidget *widget)
@@ -2278,7 +2269,7 @@ static gboolean _popup_draw(GtkWidget *widget,
       bh->unique_match = -1;
       for(int j = 0; j < d->entries->len; j++)
       {
-        const dt_bauhaus_combobox_entry_t *entry = g_ptr_array_index(d->entries, j);
+        const dt_bauhaus_combobox_entry_t *entry = _combobox_entry(d, j);
         gchar *text_cmp = g_utf8_casefold(entry->label, -1);
         gchar *search_found = strstr(text_cmp, keys);
         gchar *entry_found = entry->label + (search_found - text_cmp);
@@ -2483,8 +2474,7 @@ static gboolean _widget_draw(GtkWidget *widget,
       const gchar *text = d->text;
       if(d->active >= 0 && d->active < d->entries->len)
       {
-        const dt_bauhaus_combobox_entry_t *entry = g_ptr_array_index(d->entries, d->active);
-        text = entry->label;
+        text = _combobox_entry(d, d->active)->label;
       }
       set_color(cr, *text_color);
 
@@ -2647,7 +2637,7 @@ static gint _natural_width(GtkWidget *widget,
 
     for(int i = 0; i < d->entries->len; i++)
     {
-      const dt_bauhaus_combobox_entry_t *entry = g_ptr_array_index(d->entries, i);
+      const dt_bauhaus_combobox_entry_t *entry = _combobox_entry(d, i);
 
       if(popup && (i || entry->alignment != DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT))
         label_width = 0;
@@ -3820,8 +3810,7 @@ static float _action_process_combo(gpointer target,
   int value = dt_bauhaus_combobox_get(widget);
   for(int i = value; i >= 0; i--)
   {
-    dt_bauhaus_combobox_entry_t *entry = g_ptr_array_index(w->data.combobox.entries, i);
-    if(!entry->sensitive) value--; // don't count unselectable combo items in value
+    if(!_combobox_entry(&w->data.combobox, i)->sensitive) value--; // don't count unselectable combo items in value
   }
   return - 1 - value
     + (value == effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1
