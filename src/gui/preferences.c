@@ -317,6 +317,7 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   }
 
   dt_bauhaus_combobox_set(widget, darktable.l10n->selected);
+  dt_bauhaus_combobox_set_default(widget, darktable.l10n->sys_default);
   g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(language_callback), 0);
   gtk_widget_set_tooltip_text(labelev,  _("double-click to reset to the system language"));
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
