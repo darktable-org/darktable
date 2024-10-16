@@ -344,6 +344,22 @@ static gboolean _is_number(char *str)
   return TRUE;
 }
 
+static uint8_t _get_var_parameter(char **variable, int default_value)
+{
+  uint8_t val = default_value;
+  if(*variable[0] == '[')
+  {
+    char *parameters[1] = { NULL };
+    const int num = _get_parameters(variable, parameters, 1);
+    if(num == 1 && _is_number(parameters[0]))
+    {
+      val = (uint8_t)strtol(parameters[0], NULL, 10);
+    }
+    g_free(parameters[0]);
+  }
+  return val;
+}
+
 static char *_get_base_value(dt_variables_params_t *params, char **variable)
 {
   char *result = NULL;
@@ -558,8 +574,28 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup(params->data->camera_alias);
   else if(_has_prefix(variable, "EXIF.LENS") || _has_prefix(variable, "LENS"))
     result = g_strdup(params->data->exif_lens);
+  else if(_has_prefix(variable, "IMAGE.ID.NEXT"))
+  {
+    dt_imgid_t highest_id = 0;
+    sqlite3_stmt *stmt;
+    // clang-format off
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT MAX(id) FROM main.images",
+                                -1, &stmt, NULL);
+    // clang-format on
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      highest_id = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+    // determine how many zero-padded digits to use with an optional parameter: $(IMAGE.ID.NEXT[n]), default n=1
+    uint8_t nb_digit = _get_var_parameter(variable, 1);
+    result = g_strdup_printf("%0*u", nb_digit, highest_id + 1);
+  }
   else if(_has_prefix(variable, "ID") || _has_prefix(variable, "IMAGE.ID"))
-    result = g_strdup_printf("%u", params->imgid);
+  {
+    // determine how many zero-padded digits to use with an optional parameter: $(IMAGE.ID[n]), default n=1
+    uint8_t nb_digit = _get_var_parameter(variable, 1);
+    result = g_strdup_printf("%0*u", nb_digit, params->imgid);
+  }
   else if(_has_prefix(variable, "IMAGE.EXIF"))
   {
     gchar buffer[1024];
@@ -667,7 +703,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
       (*variable) ++;
     }
     // new $(SEQUENCE[n,m]) syntax
-    // allows \[[0-9]+,[0-9]+] (PCER)
+    // allows \[[0-9]+,[0-9]+] (PCRE)
     // everything else will be ignored
     else if(*variable[0] == '[')
     {
@@ -681,6 +717,8 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
           shift = (gint) strtol(parameters[1], NULL, 10);
         }
       }
+      if(num == 2)
+        g_free(parameters[1]);
       g_free(parameters[0]);
     }
     result = g_strdup_printf("%.*u", nb_digit,
