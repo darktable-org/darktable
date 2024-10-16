@@ -54,7 +54,7 @@ jobs:
       fail-fast: true
       matrix:
         distro:
-          - "debian:unstable-slim"
+          - "ubuntu:24.10"
         compiler:
           - { compiler: GNU13,  CC: gcc-13,   CXX: g++-13,     packages: gcc-13 g++-13 }
           - { compiler: LLVM18, CC: clang-18, CXX: clang++-18, packages: clang-18 libomp-18-dev llvm-18-dev libc++-18-dev libc++abi1-18 lld-18 clang-tools-18 mlir-18-tools libmlir-18-dev}
@@ -67,7 +67,7 @@ jobs:
         eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
         include:
           # We want one run in CI to be Debug to make sure the Debug build isn't broken
-          - distro: "debian:unstable-slim"
+          - distro: "ubuntu:24.10"
             btype: Debug
             compiler: { compiler: GNU13, CC: gcc-13, CXX: g++-13, packages: gcc-13 g++-13 }
             target: skiptest
@@ -86,53 +86,6 @@ jobs:
       TARGET: ${{ matrix.target }}
       DARKTABLE_CLI: ${{ github.workspace }}/install/bin/darktable-cli
     steps:
-      - name: Configure APT
-        timeout-minutes: 1
-        run: |
-          set -xe
-          tee /etc/dpkg/dpkg.cfg.d/force-unsafe-io > /dev/null <<EOT
-          force-unsafe-io
-          EOT
-          tee /etc/apt/apt.conf.d/tmpfs > /dev/null <<EOT
-          Dir::Cache::Archives "/tmp/apt/archives";
-          APT::ExtractTemplates::TempDir "/tmp/apt/temp";
-          EOT
-          mkdir -p /tmp/apt/archives
-          tee /etc/apt/apt.conf.d/80retry > /dev/null <<EOT
-          Acquire::Retries "10";
-          EOT
-          tee /etc/apt/apt.conf.d/80recommends > /dev/null <<EOT
-          APT::Install-Recommends "false";
-          EOT
-          tee /etc/apt/apt.conf.d/80suggests > /dev/null <<EOT
-          APT::Install-Suggests "false";
-          EOT
-          tee /etc/apt/apt.conf.d/80forceyes > /dev/null <<EOT
-          APT::Get::Assume-Yes "true";
-          EOT
-          tee /etc/apt/apt.conf.d/80fixmissing > /dev/null <<EOT
-          APT::Get::Fix-Missing "true";
-          EOT
-          rm -rf /etc/apt/sources.list*
-          if [ "${DISTRO}" = "debian:unstable-slim" ]; then
-          tee /etc/apt/sources.list > /dev/null <<EOT
-          deb http://debian-archive.trafficmanager.net/debian unstable main
-          EOT
-          elif [ "${DISTRO}" = "debian:trixie-slim" ]; then
-          tee /etc/apt/sources.list > /dev/null <<EOT
-          deb http://debian-archive.trafficmanager.net/debian trixie main
-          deb http://debian-archive.trafficmanager.net/debian trixie-updates main
-          deb http://debian-archive.trafficmanager.net/debian-security trixie-security main
-          deb http://debian-archive.trafficmanager.net/debian trixie-backports main
-          EOT
-          elif [ "${DISTRO}" = "debian:bookworm-slim" ]; then
-          tee /etc/apt/sources.list > /dev/null <<EOT
-          deb http://debian-archive.trafficmanager.net/debian bookworm main
-          deb http://debian-archive.trafficmanager.net/debian bookworm-updates main
-          deb http://debian-archive.trafficmanager.net/debian-security bookworm-security main
-          deb http://debian-archive.trafficmanager.net/debian bookworm-backports main
-          EOT
-          fi
       - name: Update base packages
         timeout-minutes: 1
         env:
@@ -140,15 +93,15 @@ jobs:
         run: |
           set -xe
           rm -rf /var/lib/apt/lists/*
-          apt-get update
-          apt-get install eatmydata
-          eatmydata apt-get upgrade
+          apt-get --yes update
+          apt-get --yes install eatmydata
+          eatmydata apt-get --yes upgrade
       - name: Install compiler ${{ matrix.compiler.compiler }}
         run: |
-          eatmydata apt-get -y install ${{ matrix.compiler.packages }}
+          eatmydata apt-get --yes install ${{ matrix.compiler.packages }}
       - name: Install Base Dependencies
         run: |
-          eatmydata apt-get -y install \
+          eatmydata apt-get --yes install \
             build-essential \
             cmake \
             appstream-util \
