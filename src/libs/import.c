@@ -922,9 +922,12 @@ void _import_enum_callback(GObject* source_object,
 
   if(error)
   {
-    dt_print(DT_DEBUG_ALWAYS,
-             "[_import_enum_callback] unable to create iterator,"
-             " error: %s\n", error->message);
+    if(error->code != G_IO_ERROR_CANCELLED)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[_import_enum_callback] unable to create iterator,"
+               " code: %d, error: %s\n", error->code, error->message);
+    }
     g_error_free(error);
     return;
   }
