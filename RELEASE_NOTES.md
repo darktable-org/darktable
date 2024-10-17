@@ -177,6 +177,16 @@ changes (where available).
 - The piwigo export storage now supports to specify a file name
   pattern for the exported file.
 
+- The directory where darktable will write the log file under Windows
+  has been changed to %USERPROFILE%\Documents\Darktable. This allows
+  the user to easily see where the log file is located without even
+  having to search for it in the documentation or FAQ. The previous
+  location was deep in the system subdirectories of the user profile,
+  and also under a hidden directory (so it was impossible to click to
+  it in File Explorer with default system settings).
+
+- Allow import of JPEG 2000 files with .jpf and .jpx file extensions.
+
 ## Bug Fixes
 
 - Fixed a performance regression for redrawing mipmaps.
