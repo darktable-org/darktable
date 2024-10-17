@@ -196,6 +196,10 @@ changes (where available).
   to be assigned to the image being imported, allowing the image ID to
   be part of the filename generated during a copy&import operation.
 
+- Exporting to floating-point JPEG XL with a quality of 100 will try
+  to do it as losslessly as possible. That is now consistent with the
+  behavior of integral JPEG XL formats.
+
 ## Bug Fixes
 
 - Fixed a performance regression for redrawing mipmaps.
