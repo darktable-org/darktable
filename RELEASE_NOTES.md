@@ -187,6 +187,10 @@ changes (where available).
 
 - Allow import of JPEG 2000 files with .jpf and .jpx file extensions.
 
+- Exporting to floating-point JPEG XL with a quality of 100 will try
+  to do it as losslessly as possible. That is now consistent with the
+  behavior of integral JPEG XL formats.
+
 ## Bug Fixes
 
 - Fixed a performance regression for redrawing mipmaps.
