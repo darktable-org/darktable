@@ -80,28 +80,44 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
   float *buf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!buf) goto error_cache_full;
 
+  const size_t npixels = (size_t)img->width * img->height;
+
+  float *readbuf = dt_alloc_align_float(npixels * 4);
+  if(!readbuf)
+    goto error_cache_full;
+
+  union { float f; guint32 i; } value;
+
   if(cols == 3)
   {
-    ret = fread(buf, 3 * sizeof(float), (size_t)img->width * img->height, f);
-    for(size_t i = (size_t)img->width * img->height; i > 0; i--)
-      for(int c = 0; c < 3; c++)
-      {
-        union { float f; guint32 i; } v;
-        v.f = buf[3 * (i - 1) + c];
-        if(swap_byte_order) v.i = GUINT32_SWAP_LE_BE(v.i);
-        buf[4 * (i - 1) + c] = v.f;
-      }
-  }
-  else
+    ret = fread(readbuf, 3 * sizeof(float), npixels, f);
+
     for(size_t j = 0; j < img->height; j++)
       for(size_t i = 0; i < img->width; i++)
       {
-        union { float f; guint32 i; } v;
-        ret = fread(&v.f, sizeof(float), 1, f);
-        if(swap_byte_order) v.i = GUINT32_SWAP_LE_BE(v.i);
-        buf[4 * (img->width * j + i) + 2] = buf[4 * (img->width * j + i) + 1]
-            = buf[4 * (img->width * j + i) + 0] = v.f;
+        dt_aligned_pixel_t pix = {0.0f, 0.0f, 0.0f, 0.0f};
+        for_three_channels(c)
+        {
+        value.f = readbuf[3 * (j * img->width + i) + c];
+        if(swap_byte_order) value.i = GUINT32_SWAP_LE_BE(value.i);
+        pix[c] = value.f;
+        }
+        copy_pixel_nontemporal(&buf[4 * (img->width * j + i)], pix);
       }
+  }
+  else
+  {
+    ret = fread(readbuf, sizeof(float), npixels, f);
+
+    for(size_t j = 0; j < img->height; j++)
+      for(size_t i = 0; i < img->width; i++)
+      {
+        value.f = readbuf[(j * img->width + i)];
+        if(swap_byte_order) value.i = GUINT32_SWAP_LE_BE(value.i);
+        buf[4 * (img->width * j + i) + 2] = buf[4 * (img->width * j + i) + 1]
+            = buf[4 * (img->width * j + i) + 0] = value.f;
+      }
+  }
 
   float *line = (float *)calloc(4 * img->width, sizeof(float));
   if(line == NULL) goto error_cache_full;
@@ -116,6 +132,7 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
 
   free(line);
   fclose(f);
+  dt_free_align(readbuf);
 
   img->buf_dsc.cst = IOP_CS_RGB;
   img->buf_dsc.filters = 0u;
