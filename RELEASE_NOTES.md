@@ -242,6 +242,9 @@ changes (where available).
   and so creating an unwanted and wrong color cast. This bug was a
   regression added just before the 4.8 release.
 
+- Fixed a bug in color calibration module where switching between
+  various illuminants could lead to unpredictable settings.
+
 ## Lua
 
 ### API Version
