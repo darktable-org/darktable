@@ -187,6 +187,15 @@ changes (where available).
 
 - Allow import of JPEG 2000 files with .jpf and .jpx file extensions.
 
+- Add a visible indicator to the color calibration module when its
+  color mapping section has non-neutral settings which will affect
+  color rendition..
+
+- Added new substitution variables $(IMAGE.TAGS.HIERARCHY) to insert
+  tags with full hierarchy and $(IMAGE.ID.NEXT) to insert the image ID
+  to be assigned to the image being imported, allowing the image ID to
+  be part of the filename generated during a copy&import operation.
+
 ## Bug Fixes
 
 - Fixed a performance regression for redrawing mipmaps.
