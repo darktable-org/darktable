@@ -453,14 +453,15 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
                                   float *const output,
                                   const dt_iop_roi_t *const roi_in,
                                   const dt_iop_roi_t *const roi_out,
-                                  dt_iop_highlights_data_t *data,
+                                  dt_iop_highlights_data_t *d,
                                   const int vmode,
                                   float *tmpout)
 {
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   const uint32_t filters = piece->pipe->dsc.filters;
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-  const float clipval = fmaxf(0.1f, 0.987f * data->clip);
+  const float clipval = MAX(0.1f, highlights_clip_magics[DT_IOP_HIGHLIGHTS_SEGMENTS] * d->clip);
+
   const dt_aligned_pixel_t icoeffs = { piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2]};
   const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2]};
   const dt_aligned_pixel_t cube_coeffs = { powf(clips[0], 1.0f / HL_POWERF), powf(clips[1], 1.0f / HL_POWERF), powf(clips[2], 1.0f / HL_POWERF)};
@@ -471,8 +472,8 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
                                           late ? (float)(chr->D65coeffs[1] / chr->as_shot[1]) : 1.0f,
                                           late ? (float)(chr->D65coeffs[2] / chr->as_shot[2]) : 1.0f,
                                           1.0f };
-  const int recovery_mode = data->recovery;
-  const float strength = data->strength;
+  const int recovery_mode = d->recovery;
+  const float strength = d->strength;
 
   const int recovery_closing[NUM_RECOVERY_MODES] = { 0, 0, 0, 2, 2, 0, 2};
   const int recovery_close = recovery_closing[recovery_mode];
@@ -574,7 +575,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
     _masks_extend_border(plane[i], pwidth, pheight, HL_BORDER);
 
   for(int p = 0; p < HL_RGB_PLANES; p++)
-    dt_segments_combine(&isegments[p], data->combine);
+    dt_segments_combine(&isegments[p], d->combine);
 
   if(dt_get_num_threads() >= HL_RGB_PLANES)
   {
@@ -590,7 +591,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   }
 
   for(int p = 0; p < HL_RGB_PLANES; p++)
-    _calc_plane_candidates(plane[p], refavg[p], &isegments[p], cube_coeffs[p], data->candidating);
+    _calc_plane_candidates(plane[p], refavg[p], &isegments[p], cube_coeffs[p], d->candidating);
 
   DT_OMP_FOR(collapse(2))
   for(int row = 1; row < roi_in->height-1; row++)
@@ -670,7 +671,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
 
       dt_gaussian_fast_blur(recout, gradient, pwidth, pheight, 1.2f, 0.0f, 20.0f, 1);
       // possibly add some noise
-      const float noise_level = data->noise_level;
+      const float noise_level = d->noise_level;
       if(noise_level > 0.0f)
       {
         for(uint32_t id = 2; id < segall->nr; id++)
