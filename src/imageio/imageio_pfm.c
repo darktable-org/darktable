@@ -34,21 +34,32 @@
 #include <time.h>
 #include <unistd.h>
 
-dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
+dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img,
+                                        const char *filename,
+                                        dt_mipmap_buffer_t *mbuf)
 {
   const char *ext = filename + strlen(filename);
-  while(*ext != '.' && ext > filename) ext--;
-  if(strcasecmp(ext, ".pfm")) return DT_IMAGEIO_LOAD_FAILED;
+
+  while(*ext != '.' && ext > filename)
+    ext--;
+
+  if(strcasecmp(ext, ".pfm"))
+    return DT_IMAGEIO_LOAD_FAILED;
 
   FILE *f = g_fopen(filename, "rb");
-  if(!f) return DT_IMAGEIO_FILE_NOT_FOUND;
+  if(!f)
+    return DT_IMAGEIO_FILE_NOT_FOUND;
 
   int ret = 0;
   int cols = 3;
   float scale_factor;
   char head[2] = { 'X', 'X' };
+
   ret = fscanf(f, "%c%c\n", head, head + 1);
-  if(ret != 2 || head[0] != 'P') goto error_corrupt;
+
+  if(ret != 2 || head[0] != 'P')
+    goto error_corrupt;
+
   if(head[1] == 'F')
     cols = 3;
   else if(head[1] == 'f')
@@ -59,18 +70,25 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
   char width_string[10] = { 0 };
   char height_string[10] = { 0 };
   char scale_factor_string[64] = { 0 };
+
   ret = fscanf(f, "%9s %9s %63s%*[^\n]", width_string, height_string, scale_factor_string);
-  if(ret != 3) goto error_corrupt;
+
+  if(ret != 3)
+    goto error_corrupt;
 
   errno = 0;
   img->width = strtol(width_string, NULL, 0);
   img->height = strtol(height_string, NULL, 0);
   scale_factor = g_ascii_strtod(scale_factor_string, NULL);
-  if(errno != 0) goto error_corrupt;
-  if(img->width <= 0 || img->height <= 0 ) goto error_corrupt;
+
+  if(errno != 0)
+    goto error_corrupt;
+  if(img->width <= 0 || img->height <= 0 )
+    goto error_corrupt;
 
   ret = fread(&ret, sizeof(char), 1, f);
-  if(ret != 1) goto error_corrupt;
+  if(ret != 1)
+    goto error_corrupt;
   ret = 0;
 
   int swap_byte_order = (scale_factor >= 0.0) ^ (G_BYTE_ORDER == G_BIG_ENDIAN);
@@ -78,7 +96,8 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
   float *buf = (float *)dt_mipmap_cache_alloc(mbuf, img);
-  if(!buf) goto error_cache_full;
+  if(!buf)
+    goto error_cache_full;
 
   const size_t npixels = (size_t)img->width * img->height;
 
