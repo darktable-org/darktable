@@ -99,7 +99,7 @@ DT_OMP_FOR(collapse(2))
         dt_aligned_pixel_t pix = {0.0f, 0.0f, 0.0f, 0.0f};
         for_three_channels(c)
         {
-        value.f = readbuf[3 * (j * img->width + i) + c];
+        value.f = readbuf[3 * ((img->height - 1 - j) * img->width + i) + c];
         if(swap_byte_order) value.i = GUINT32_SWAP_LE_BE(value.i);
         pix[c] = value.f;
         }
@@ -114,25 +114,13 @@ DT_OMP_FOR(collapse(2))
     for(size_t j = 0; j < img->height; j++)
       for(size_t i = 0; i < img->width; i++)
       {
-        value.f = readbuf[(j * img->width + i)];
+        value.f = readbuf[((img->height - 1 - j) * img->width + i)];
         if(swap_byte_order) value.i = GUINT32_SWAP_LE_BE(value.i);
         buf[4 * (img->width * j + i) + 2] = buf[4 * (img->width * j + i) + 1]
             = buf[4 * (img->width * j + i) + 0] = value.f;
       }
   }
 
-  float *line = (float *)calloc(4 * img->width, sizeof(float));
-  if(line == NULL) goto error_cache_full;
-
-  for(size_t j = 0; j < img->height / 2; j++)
-  {
-    memcpy(line, buf + img->width * j * 4, sizeof(float) * 4 * img->width);
-    memcpy(buf + img->width * j * 4, buf + img->width * (img->height - 1 - j) * 4,
-           sizeof(float) * 4 * img->width);
-    memcpy(buf + img->width * (img->height - 1 - j) * 4, line, sizeof(float) * 4 * img->width);
-  }
-
-  free(line);
   fclose(f);
   dt_free_align(readbuf);
 
