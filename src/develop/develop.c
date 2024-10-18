@@ -2803,17 +2803,10 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
      && old_closeup == port->closeup)
     return;
 
+  if(port->widget)
+    dt_control_queue_redraw_widget(port->widget);
   if(port == &dev->full)
-  {
-    dt_dev_invalidate(dev); // FIXME not needed? redraw should determines if needs new calculation
-    dt_control_queue_redraw_center();
     dt_control_navigation_redraw();
-  }
-  else if(port == &dev->preview2 && dev->second_wnd)
-  {
-    dev->preview2.pipe->status = DT_DEV_PIXELPIPE_DIRTY;
-    dt_control_queue_redraw_widget(dev->second_wnd);
-  }
 }
 
 void dt_dev_get_pointer_zoom_pos(dt_dev_viewport_t *port,
