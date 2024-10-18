@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-14 18:24-0300\n"
-"PO-Revision-Date: 2024-10-14 18:24-0300\n"
+"POT-Creation-Date: 2024-10-18 18:04-0300\n"
+"PO-Revision-Date: 2024-10-18 18:04-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -859,9 +859,9 @@ msgstr "esta predefinição foi modificada"
 #: ../build/bin/preferences_gen.h:4279 ../build/bin/preferences_gen.h:4462
 #: ../build/bin/preferences_gen.h:5101 ../build/bin/preferences_gen.h:5841
 #: ../build/bin/preferences_gen.h:6677 ../build/bin/preferences_gen.h:7170
-#: ../build/bin/preferences_gen.h:7436 ../src/gui/accelerators.c:3006
-#: ../src/gui/gtk.c:3148 ../src/gui/preferences.c:460
-#: ../src/gui/preferences.c:891 ../src/libs/modulegroups.c:4084
+#: ../build/bin/preferences_gen.h:7436 ../src/gui/accelerators.c:3008
+#: ../src/gui/gtk.c:3149 ../src/gui/preferences.c:461
+#: ../src/gui/preferences.c:892 ../src/libs/modulegroups.c:4084
 msgid "?"
 msgstr "?"
 
@@ -985,7 +985,7 @@ msgid "file naming pattern used for a import session"
 msgstr "padrão de nomeação de arquivos utilizado para a sessão de importação"
 
 #: ../build/bin/preferences_gen.h:4472 ../src/gui/gtk.c:1371
-#: ../src/gui/preferences.c:561 ../src/libs/tools/lighttable.c:66
+#: ../src/gui/preferences.c:562 ../src/libs/tools/lighttable.c:66
 #: ../src/views/lighttable.c:91
 msgid "lighttable"
 msgstr "mesa de luz"
@@ -1245,7 +1245,7 @@ msgid "pattern for the thumbnail tooltip (empty to disable)"
 msgstr "padrão para a dica da miniatura (vazio desabilita)"
 
 #: ../build/bin/preferences_gen.h:5111 ../src/gui/gtk.c:1373
-#: ../src/gui/preferences.c:561 ../src/views/darkroom.c:94
+#: ../src/gui/preferences.c:562 ../src/views/darkroom.c:94
 msgid "darkroom"
 msgstr "sala escura"
 
@@ -1521,7 +1521,7 @@ msgid "LUT 3D root folder"
 msgstr "pasta raiz do LUT 3D"
 
 #: ../build/bin/preferences_gen.h:5982 ../src/control/jobs/control_jobs.c:2155
-#: ../src/control/jobs/control_jobs.c:2211 ../src/gui/preferences.c:1097
+#: ../src/control/jobs/control_jobs.c:2211 ../src/gui/preferences.c:1098
 #: ../src/gui/presets.c:422 ../src/imageio/storage/disk.c:196
 #: ../src/imageio/storage/disk.c:276 ../src/imageio/storage/gallery.c:148
 #: ../src/imageio/storage/gallery.c:212 ../src/imageio/storage/latex.c:144
@@ -2424,16 +2424,14 @@ msgstr "inclinação diagonal"
 #. focal length
 #: ../build/lib/darktable/plugins/introspection_ashift.c:148
 #: ../build/lib/darktable/plugins/introspection_ashift.c:291
-#: ../src/common/collection.c:625
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:885
-#: ../src/gui/preferences.c:859 ../src/gui/presets.c:733
-#: ../src/libs/camera.c:548 ../src/libs/metadata_view.c:157
+#: ../src/common/collection.c:625 ../src/gui/preferences.c:860
+#: ../src/gui/presets.c:733 ../src/libs/camera.c:548
+#: ../src/libs/metadata_view.c:157
 msgid "focal length"
 msgstr "distância focal"
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:154
 #: ../build/lib/darktable/plugins/introspection_ashift.c:295
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:884
 #: ../src/libs/metadata_view.c:159
 msgid "crop factor"
 msgstr "fator de corte (crop)"
@@ -2479,7 +2477,7 @@ msgstr "específico"
 #: ../src/develop/blend_gui.c:153 ../src/develop/blend_gui.c:182
 #: ../src/develop/blend_gui.c:3465 ../src/gui/accelerators.c:152
 #: ../src/gui/accelerators.c:162 ../src/gui/accelerators.c:250
-#: ../src/imageio/format/avif.c:947 ../src/imageio/format/j2k.c:681
+#: ../src/imageio/format/avif.c:949 ../src/imageio/format/j2k.c:681
 #: ../src/libs/live_view.c:361
 msgid "off"
 msgstr "desligado"
@@ -2504,9 +2502,7 @@ msgstr "deslocamento de exposição"
 
 #: ../build/lib/darktable/plugins/introspection_basecurve.c:146
 #: ../build/lib/darktable/plugins/introspection_basecurve.c:239
-#: ../src/common/collection.c:633
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:882
-#: ../src/libs/metadata_view.c:152
+#: ../src/common/collection.c:633 ../src/libs/metadata_view.c:152
 msgid "exposure bias"
 msgstr "viés de exposição"
 
@@ -2691,10 +2687,8 @@ msgid "offset"
 msgstr "deslocamento"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:220
-#: ../src/common/collection.c:623
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:899
-#: ../src/gui/preferences.c:843 ../src/gui/presets.c:675
-#: ../src/libs/metadata_view.c:149
+#: ../src/common/collection.c:623 ../src/gui/preferences.c:844
+#: ../src/gui/presets.c:675 ../src/libs/metadata_view.c:149
 msgid "lens"
 msgstr "lente"
 
@@ -2771,7 +2765,7 @@ msgstr "base"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:349
 #: ../build/lib/darktable/plugins/introspection_borders.c:355
-#: ../src/gui/preferences.c:864 ../src/imageio/format/jpeg.c:603
+#: ../src/gui/preferences.c:865 ../src/imageio/format/jpeg.c:603
 #: ../src/iop/ashift.c:6167 ../src/iop/basicadj.c:659 ../src/iop/flip.c:458
 #: ../src/iop/flip.c:460 ../src/iop/levels.c:654 ../src/iop/rgblevels.c:1106
 msgid "auto"
@@ -2898,7 +2892,7 @@ msgstr "aberração cromática muito grande"
 #: ../src/common/collection.c:1475 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:380 ../src/develop/blend_gui.c:2382
 #: ../src/develop/blend_gui.c:2430 ../src/develop/lightroom.c:887
-#: ../src/gui/gtk.c:3748 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:372
+#: ../src/gui/gtk.c:3749 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:372
 #: ../src/iop/channelmixer.c:615 ../src/iop/channelmixer.c:625
 #: ../src/iop/channelmixerrgb.c:4665 ../src/iop/colorequal.c:2974
 #: ../src/iop/colorzones.c:2488 ../src/iop/temperature.c:2014
@@ -2918,7 +2912,7 @@ msgstr "vermelho"
 #: ../src/common/collection.c:1479 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:382 ../src/develop/blend_gui.c:2388
 #: ../src/develop/blend_gui.c:2436 ../src/develop/lightroom.c:891
-#: ../src/gui/gtk.c:3749 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:377
+#: ../src/gui/gtk.c:3750 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:377
 #: ../src/iop/channelmixer.c:616 ../src/iop/channelmixer.c:631
 #: ../src/iop/channelmixerrgb.c:4666 ../src/iop/colorequal.c:2977
 #: ../src/iop/colorzones.c:2491 ../src/iop/temperature.c:1998
@@ -2939,7 +2933,7 @@ msgstr "verde"
 #: ../src/common/collection.c:1481 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:383 ../src/develop/blend_gui.c:2394
 #: ../src/develop/blend_gui.c:2442 ../src/develop/lightroom.c:893
-#: ../src/gui/gtk.c:3750 ../src/iop/bilateral.cc:382
+#: ../src/gui/gtk.c:3751 ../src/iop/bilateral.cc:382
 #: ../src/iop/channelmixer.c:617 ../src/iop/channelmixer.c:637
 #: ../src/iop/channelmixerrgb.c:4667 ../src/iop/colorequal.c:2979
 #: ../src/iop/colorzones.c:2493 ../src/iop/temperature.c:2018
@@ -3055,7 +3049,7 @@ msgstr "Planckiano (corpo negro)"
 msgid "custom"
 msgstr "personalizado"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:517
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:515
 msgid "as shot in camera"
 msgstr "como ao tirar a foto"
 
@@ -4210,8 +4204,8 @@ msgstr "habilitar reconstrução de realces"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:549
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
-#: ../src/common/variables.c:184 ../src/common/variables.c:837
-#: ../src/develop/imageop_gui.c:209 ../src/imageio/format/avif.c:932
+#: ../src/common/variables.c:184 ../src/common/variables.c:877
+#: ../src/develop/imageop_gui.c:209 ../src/imageio/format/avif.c:934
 #: ../src/imageio/format/pdf.c:653 ../src/imageio/format/pdf.c:672
 #: ../src/imageio/format/tiff.c:928 ../src/libs/export.c:1355
 #: ../src/libs/export.c:1364 ../src/libs/export.c:1373
@@ -4618,8 +4612,8 @@ msgstr "apenas vinheta manual"
 #. get nice text for bounds
 #. Side-border hide/show
 #: ../build/lib/darktable/plugins/introspection_lens.cc:534
-#: ../src/dtgtk/range.c:1761 ../src/gui/accelerators.c:2602
-#: ../src/gui/accelerators.c:2684 ../src/gui/gtk.c:1394 ../src/gui/gtk.c:3747
+#: ../src/dtgtk/range.c:1761 ../src/gui/accelerators.c:2604
+#: ../src/gui/accelerators.c:2686 ../src/gui/gtk.c:1394 ../src/gui/gtk.c:3748
 #: ../src/imageio/format/pdf.c:662 ../src/iop/denoiseprofile.c:3674
 #: ../src/iop/rawdenoise.c:885 ../src/libs/collect.c:3558
 #: ../src/libs/filtering.c:1544 ../src/libs/filters/colors.c:157
@@ -5023,10 +5017,8 @@ msgstr "GainMap embutido"
 #. exposure
 #: ../build/lib/darktable/plugins/introspection_relight.c:43
 #: ../build/lib/darktable/plugins/introspection_relight.c:98
-#: ../src/common/collection.c:631
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:881
-#: ../src/gui/preferences.c:851 ../src/gui/presets.c:699
-#: ../src/iop/basicadj.c:625 ../src/iop/exposure.c:122
+#: ../src/common/collection.c:631 ../src/gui/preferences.c:852
+#: ../src/gui/presets.c:699 ../src/iop/basicadj.c:625 ../src/iop/exposure.c:122
 #: ../src/iop/exposure.c:1127 ../src/libs/metadata_view.c:151
 msgid "exposure"
 msgstr "exposição"
@@ -5442,84 +5434,80 @@ msgstr "Mostrar imagens em um mapa"
 msgid "Print your images"
 msgstr "Imprimir suas imagens"
 
-#: ../src/bauhaus/bauhaus.c:878 ../src/bauhaus/bauhaus.c:3969
+#: ../src/bauhaus/bauhaus.c:881 ../src/bauhaus/bauhaus.c:3958
 #: ../src/iop/colorequal.c:3076
 msgid "sliders"
 msgstr "controles deslizantes"
 
-#: ../src/bauhaus/bauhaus.c:880 ../src/bauhaus/bauhaus.c:3974
+#: ../src/bauhaus/bauhaus.c:883 ../src/bauhaus/bauhaus.c:3963
 msgid "dropdowns"
 msgstr "menus flutuantes"
 
-#: ../src/bauhaus/bauhaus.c:882 ../src/bauhaus/bauhaus.c:3979
+#: ../src/bauhaus/bauhaus.c:885 ../src/bauhaus/bauhaus.c:3968
 msgid "buttons"
 msgstr "botões"
 
-#: ../src/bauhaus/bauhaus.c:3635
+#: ../src/bauhaus/bauhaus.c:3625
 msgid "button on"
 msgstr "botão ligado"
 
-#: ../src/bauhaus/bauhaus.c:3635
+#: ../src/bauhaus/bauhaus.c:3625
 msgid "button off"
 msgstr "botão desligado"
 
-#: ../src/bauhaus/bauhaus.c:3636
+#: ../src/bauhaus/bauhaus.c:3626
 msgid "button pressed"
 msgstr "botão pressionado"
 
-#: ../src/bauhaus/bauhaus.c:3874
+#: ../src/bauhaus/bauhaus.c:3863
 msgid "not that many sliders"
 msgstr "nem tantos controles deslizantes"
 
-#: ../src/bauhaus/bauhaus.c:3888
+#: ../src/bauhaus/bauhaus.c:3877
 msgid "not that many dropdowns"
 msgstr "nem tantos menus flutuantes"
 
-#: ../src/bauhaus/bauhaus.c:3907
+#: ../src/bauhaus/bauhaus.c:3896
 msgid "not that many buttons"
 msgstr "nem tantos botões"
 
-#. string.format("$(EXIF.DATE.REGIONAL) - %s\n", _("")) ..       -- Not Implemented
-#. string.format("$(EXIF.TIME.REGIONAL) - %s\n", _("")) ..       -- Not Implemented
-#: ../src/bauhaus/bauhaus.c:3912
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:880
-#: ../src/gui/accelerators.c:396
+#: ../src/bauhaus/bauhaus.c:3901 ../src/gui/accelerators.c:396
 msgid "value"
 msgstr "valor"
 
-#: ../src/bauhaus/bauhaus.c:3913 ../src/bauhaus/bauhaus.c:3919
+#: ../src/bauhaus/bauhaus.c:3902 ../src/bauhaus/bauhaus.c:3908
 #: ../src/gui/accelerators.c:375
 msgid "button"
 msgstr "botão"
 
-#: ../src/bauhaus/bauhaus.c:3914
+#: ../src/bauhaus/bauhaus.c:3903
 msgid "force"
 msgstr "força"
 
-#: ../src/bauhaus/bauhaus.c:3915 ../src/libs/navigation.c:187
+#: ../src/bauhaus/bauhaus.c:3904 ../src/libs/navigation.c:187
 #: ../src/libs/navigation.c:199
 msgid "zoom"
 msgstr "zoom"
 
-#: ../src/bauhaus/bauhaus.c:3918 ../src/libs/select.c:40
+#: ../src/bauhaus/bauhaus.c:3907 ../src/libs/select.c:40
 msgid "selection"
 msgstr "seleção"
 
-#: ../src/bauhaus/bauhaus.c:3958
+#: ../src/bauhaus/bauhaus.c:3947
 msgid "slider"
 msgstr "controle deslizante"
 
-#: ../src/bauhaus/bauhaus.c:3963
+#: ../src/bauhaus/bauhaus.c:3952
 msgid "dropdown"
 msgstr "menu flutuante"
 
 #: ../src/chart/main.c:504 ../src/common/database.c:3734
 #: ../src/control/jobs/control_jobs.c:2156
-#: ../src/control/jobs/control_jobs.c:2214 ../src/gui/accelerators.c:2507
-#: ../src/gui/accelerators.c:2589 ../src/gui/accelerators.c:2642
-#: ../src/gui/accelerators.c:2671 ../src/gui/accelerators.c:2733
-#: ../src/gui/hist_dialog.c:228 ../src/gui/preferences.c:1059
-#: ../src/gui/preferences.c:1098 ../src/gui/presets.c:423
+#: ../src/control/jobs/control_jobs.c:2214 ../src/gui/accelerators.c:2509
+#: ../src/gui/accelerators.c:2591 ../src/gui/accelerators.c:2644
+#: ../src/gui/accelerators.c:2673 ../src/gui/accelerators.c:2735
+#: ../src/gui/hist_dialog.c:228 ../src/gui/preferences.c:1060
+#: ../src/gui/preferences.c:1099 ../src/gui/presets.c:423
 #: ../src/gui/presets.c:566 ../src/gui/styles_dialog.c:555
 #: ../src/imageio/storage/disk.c:197 ../src/imageio/storage/gallery.c:149
 #: ../src/imageio/storage/latex.c:145 ../src/iop/lut3d.c:1556
@@ -5538,7 +5526,7 @@ msgstr "menu flutuante"
 msgid "_cancel"
 msgstr "_cancelar"
 
-#: ../src/chart/main.c:504 ../src/gui/preferences.c:1098
+#: ../src/chart/main.c:504 ../src/gui/preferences.c:1099
 #: ../src/gui/styles_dialog.c:556 ../src/libs/collect.c:3390
 #: ../src/libs/export_metadata.c:277 ../src/libs/metadata.c:469
 #: ../src/libs/metadata_view.c:1264 ../src/libs/recentcollect.c:233
@@ -5793,17 +5781,15 @@ msgid "color label"
 msgstr "etiqueta de cor"
 
 #. iso
-#: ../src/common/collection.c:627 ../src/gui/preferences.c:847
+#: ../src/common/collection.c:627 ../src/gui/preferences.c:848
 #: ../src/gui/presets.c:681 ../src/libs/camera.c:556
 #: ../src/libs/metadata_view.c:161
 msgid "ISO"
 msgstr "ISO"
 
 #. aperture
-#: ../src/common/collection.c:629
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:883
-#: ../src/gui/preferences.c:855 ../src/gui/presets.c:716
-#: ../src/libs/camera.c:543 ../src/libs/camera.c:545
+#: ../src/common/collection.c:629 ../src/gui/preferences.c:856
+#: ../src/gui/presets.c:716 ../src/libs/camera.c:543 ../src/libs/camera.c:545
 #: ../src/libs/metadata_view.c:150
 msgid "aperture"
 msgstr "abertura"
@@ -5828,7 +5814,7 @@ msgstr "grupo"
 msgid "local copy"
 msgstr "cópia local"
 
-#: ../src/common/collection.c:645 ../src/gui/preferences.c:823
+#: ../src/common/collection.c:645 ../src/gui/preferences.c:824
 msgid "module"
 msgstr "módulo"
 
@@ -6689,11 +6675,11 @@ msgstr ""
 "\n"
 "você realmente deseja excluir os arquivos de trava?\n"
 
-#: ../src/common/database.c:3741 ../src/gui/gtk.c:3099
+#: ../src/common/database.c:3741 ../src/gui/gtk.c:3100
 msgid "_no"
 msgstr "_não"
 
-#: ../src/common/database.c:3741 ../src/gui/gtk.c:3098
+#: ../src/common/database.c:3741 ../src/gui/gtk.c:3099
 msgid "_yes"
 msgstr "_sim"
 
@@ -6712,7 +6698,7 @@ msgstr ""
 "você agora pode reiniciar o darktable\n"
 
 #: ../src/common/database.c:3759 ../src/common/database.c:3766
-#: ../src/gui/accelerators.c:2590 ../src/gui/accelerators.c:2672
+#: ../src/gui/accelerators.c:2592 ../src/gui/accelerators.c:2674
 #: ../src/gui/hist_dialog.c:229 ../src/gui/presets.c:567
 msgid "_ok"
 msgstr "_ok"
@@ -6913,7 +6899,7 @@ msgid_plural "remove empty directories?"
 msgstr[0] "remover pasta vazia?"
 msgstr[1] "remover pastas vazias?"
 
-#: ../src/common/film.c:368 ../src/gui/preferences.c:831
+#: ../src/common/film.c:368 ../src/gui/preferences.c:832
 #: ../src/gui/styles_dialog.c:586 ../src/libs/geotagging.c:841
 #: ../src/libs/import.c:1907
 msgid "name"
@@ -7091,7 +7077,7 @@ msgstr "RawSpeed"
 msgid "Netpbm"
 msgstr "Netpbm"
 
-#: ../src/common/image.h:234 ../src/imageio/format/avif.c:832
+#: ../src/common/image.h:234 ../src/imageio/format/avif.c:834
 msgid "AVIF"
 msgstr "AVIF"
 
@@ -7476,8 +7462,8 @@ msgstr "abaixo do nível do mar"
 msgid "m"
 msgstr "m"
 
-#: ../src/common/variables.c:184 ../src/common/variables.c:835
-#: ../src/develop/imageop_gui.c:210 ../src/imageio/format/avif.c:932
+#: ../src/common/variables.c:184 ../src/common/variables.c:875
+#: ../src/develop/imageop_gui.c:210 ../src/imageio/format/avif.c:934
 #: ../src/imageio/format/pdf.c:653 ../src/imageio/format/pdf.c:672
 #: ../src/imageio/format/tiff.c:928 ../src/libs/export.c:1355
 #: ../src/libs/export.c:1364 ../src/libs/export.c:1373
@@ -8721,7 +8707,7 @@ msgstr "entrada depois do desfoque"
 
 #: ../src/develop/blend_gui.c:183 ../src/gui/accelerators.c:151
 #: ../src/gui/accelerators.c:161 ../src/gui/accelerators.c:250
-#: ../src/imageio/format/avif.c:947 ../src/libs/live_view.c:362
+#: ../src/imageio/format/avif.c:949 ../src/libs/live_view.c:362
 msgid "on"
 msgstr "ligado"
 
@@ -9304,7 +9290,7 @@ msgstr ""
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: módulo `%s' versão incompatível: %d != %d"
 
-#: ../src/develop/develop.c:3116
+#: ../src/develop/develop.c:3109
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr ""
 "duplicação de módulos, não é possível mover a nova instância para depois da "
@@ -9448,7 +9434,7 @@ msgstr "duplicar"
 #: ../src/develop/imageop.c:3979
 #: ../src/external/lua-scripts/tools/executable_manager.lua:222
 #: ../src/gui/accelerators.c:134 ../src/gui/accelerators.c:144
-#: ../src/gui/gtk.c:3595 ../src/gui/gtk.c:3650 ../src/gui/hist_dialog.c:272
+#: ../src/gui/gtk.c:3596 ../src/gui/gtk.c:3651 ../src/gui/hist_dialog.c:272
 #: ../src/gui/styles_dialog.c:646 ../src/gui/styles_dialog.c:668
 #: ../src/iop/atrous.c:1615 ../src/libs/lib.c:1561
 #: ../src/libs/modulegroups.c:4079
@@ -9456,7 +9442,7 @@ msgid "reset"
 msgstr "redefinir"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3980 ../src/gui/preferences.c:813
+#: ../src/develop/imageop.c:3980 ../src/gui/preferences.c:814
 #: ../src/libs/lib.c:1562
 msgid "presets"
 msgstr "predefinições"
@@ -9469,7 +9455,7 @@ msgstr "ativar"
 msgid "focus"
 msgstr "foco"
 
-#: ../src/develop/imageop.c:3983 ../src/gui/accelerators.c:2884
+#: ../src/develop/imageop.c:3983 ../src/gui/accelerators.c:2886
 msgid "instance"
 msgstr "instância"
 
@@ -10338,7 +10324,6 @@ msgstr "selecionar não modificadas"
 #. The actual content of the module
 #. vim: shiftwidth=2 expandtab tabstop=2 cindent
 #. kate: tab-indents: off; indent-width 2; replace-tabs on; remove-trailing-space on;
-#. Tell gettext where to find the .mo file translating messages for a particular domain
 #.
 #. local function to run a test command on windows and return a true if it succeeds
 #. instead of returning true if it runs
@@ -10452,6 +10437,16 @@ msgstr "selecionar não modificadas"
 #. Not Implemented
 #. Not Implemented
 #. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
 #. find the $CATEGORYn and $CATEGORY[n,m] requests and add them to the substitute list
 #. grab each complete variable
 #. strip of the leading $( and trailing )
@@ -10489,6 +10484,7 @@ msgstr "selecionar não modificadas"
 #. MONTH.SHORT
 #. DAY
 #. HOUR
+#. HOUR.AMPM
 #. MINUTE
 #. SECOND
 #. MSEC
@@ -10499,6 +10495,7 @@ msgstr "selecionar não modificadas"
 #. EXIF.MONTH.SHORT
 #. EXIF.DAY
 #. EXIF.HOUR
+#. EXIF.HOUR.AMPM
 #. EXIF.MINUTE
 #. EXIF.SECOND
 #. EXIF.MSEC
@@ -10507,12 +10504,23 @@ msgstr "selecionar não modificadas"
 #. EXIF.ISO
 #. EXIF.EXPOSURE
 #. EXIF.EXPOSURE.BIAS
+#. EXIF.EXPOSURE.PROGRAM
 #. EXIF.APERTURE
 #. EXIF.CROP_FACTOR
 #. EXIF.FOCAL.LENGTH
 #. EXIF.FOCAL.LENGTH.EQUIV
 #. EXIF.FOCUS.DISTANCE
-#. IMAGE.EXIF
+#. EXIF.MAKER
+#. EXIF.MODEL
+#. EXIF.WHITEBALANCE
+#. EXIF.METERING
+#. LENS
+#. EXIF.FLASH.ICON
+#. EXIF.FLASH
+#. GPS.LONGITUDE
+#. GPS.LATITUDE
+#. GPS.ELEVATION
+#. GPS.LOCATION.ICON
 #. LONGITUDE
 #. LATITUDE
 #. ELEVATION
@@ -10521,9 +10529,6 @@ msgstr "selecionar não modificadas"
 #. RATING.ICONS - wont be implemented
 #. LABELS
 #. LABELS.ICONS - wont be implemented
-#. MAKER
-#. MODEL
-#. LENS
 #. TITLE
 #. DESCRIPTION
 #. CREATOR
@@ -10540,273 +10545,383 @@ msgstr "selecionar não modificadas"
 #. JOBCODE - wont be implemented
 #. populate the substitution list
 #. do category substitutions separately
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:837
-msgid "film roll of the input image"
-msgstr "rolo de filme da imagem de entrada"
-
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:838
-msgid "folder containing the input image"
-msgstr "pasta contendo a imagem de entrada"
-
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:839
-msgid "basename of the input image"
-msgstr "nome base do arquivo de entrada"
-
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:840
-msgid "extension of the input image"
-msgstr "extensão do arquivo de entrada"
-
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:841
-msgid "the image id"
-msgstr "id da imagem"
-
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:842
-msgid "the duplicate version number"
-msgstr "o número duplicado de versão"
-
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:843
-msgid "same as $(VERSION) but null string if only one version exists"
-msgstr "mesmo que $(VERSION) mas é string nula quando só uma versão existe"
-
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:844
-msgid "version name from metadata"
-msgstr "nome de versão nos metadados"
-
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:845
-msgid "the version of the running darktable instance"
-msgstr "a versão da instância do darktable executando"
-
-#. string.format("$(DARKTABLE.NAME) - %s\n", _("")) ..           -- Not Implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:847
-msgid ""
-"a sequence number within an export job with n digits and starting with m\n"
-"parameters are optional, default is [4,1]"
-msgstr ""
-"um númer de sequência em uma tarefa de exportação com n dígitos e começando "
-"com m\n"
-"parametros são opcionais, o padrão é [4,1]"
-
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:848
-msgid "width of RAW data in pixels before RAW crop"
-msgstr "largura dos dados RAW em pixels antes do corte RAW"
-
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:849
-msgid "height of RAW data in pixels before RAW crop"
-msgstr "altura dos dados RAW em pixels antes do corte RAW"
-
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:850
-msgid "width of RAW data in pixels after RAW crop"
-msgstr "largura dos dados RAW em pixels depois do corte RAW"
-
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:851
-msgid "height of RAW data in pixels after RAW crop"
-msgstr "altura dos dados RAW em pixels depois do corte RAW"
-
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:852
-msgid ""
-"image width in pixels at the end of the pixelpipe, but before export resize"
-msgstr ""
-"largura em pixels no final da pixelpipe, mas antes de mudar o tamanho para "
-"exportação"
-
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:853
-msgid ""
-"image height in pixels at the end of the pixelpipe, but before export resize"
-msgstr ""
-"altura em pixels no final da pixelpipe, mas antes de mudar o tamanho para "
-"exportação"
-
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:854
-msgid ""
-"image width in pixels at the end of the pixelpipe and after export resize"
-msgstr ""
-"largura em pixels no final da pixelpipe, depois da mudança de tamanho para "
-"exportação"
-
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:855
-msgid ""
-"image height in pixels at the end of the pixelpipe and after export resize"
-msgstr ""
-"altura em pixels no final da pixelpipe, depois da mudança de tamanho para "
-"exportação"
-
-#. string.format("$(WIDTH.MAX) - %s\n", _("")) ..                -- Not Implemented
-#. string.format("$(HEIGHT.MAX) - %s\n", _("")) ..               -- Not Implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:858
-msgid "current year"
-msgstr "ano atual"
-
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:859
-msgid "current two digit year"
-msgstr "ano atual com dois dígitos"
-
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:860
-msgid "current numeric (1-12) month"
-msgstr "mês numérico (1-12) atual"
-
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:861
-msgid "full current month name"
-msgstr "nome completo do mês atual"
-
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:862
-msgid "abbreviated current month name"
-msgstr "nome abreviado do mês atual"
+#: ../src/gui/gtkentry.c:173
+msgid "$(ROLL.NAME) - roll of the input image"
+msgstr "$(ROLL.NAME) - rolo da imagem de entrada"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:863
-msgid "current day"
-msgstr "dia atual"
+#: ../src/gui/gtkentry.c:174
+msgid "$(FILE.FOLDER) - folder containing the input image"
+msgstr "$(FILE.FOLDER) - pasta contendo a imagem de entrada"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:864
-msgid "current hour"
-msgstr "hora atual"
+#: ../src/gui/gtkentry.c:175
+msgid "$(FILE.NAME) - basename of the input image"
+msgstr "$(FILE.NAME) - nome base do arquivo de entrada"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:865
-msgid "current minute"
-msgstr "minuto atual"
+#: ../src/gui/gtkentry.c:176
+msgid "$(FILE.EXTENSION) - extension of the input image"
+msgstr "$(FILE.EXTENSION) - extensão do arquivo de entrada"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:866
-msgid "current second"
-msgstr "segundo atual"
+#: ../src/gui/gtkentry.c:247
+msgid "$(ID) - image ID"
+msgstr "$(ID) - ID da imagem"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:867
-msgid "current millisecond"
-msgstr "milissegundo atual"
+#: ../src/gui/gtkentry.c:177
+msgid "$(VERSION) - duplicate version"
+msgstr "$(VERSION) - versão duplicada"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:868
-msgid "year"
-msgstr "ano"
+#: ../src/gui/gtkentry.c:178
+msgid ""
+"$(VERSION.IF_MULTI) - same as $(VERSION) but null string if only one version "
+"exists"
+msgstr ""
+"$(VERSION.IF_MULTI) - mesmo que $(VERSION) mas é string nula quando só uma "
+"versão existe"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:869
-msgid "year, two-digit version"
-msgstr "ano, versão dois dígitos"
+#: ../src/gui/gtkentry.c:179
+msgid "$(VERSION.NAME) - version name from metadata"
+msgstr "$(VERSION.NAME) - nome de versão nos metadados"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:870
-msgid "month, numeric"
-msgstr "mês, numérico"
+#: ../src/gui/gtkentry.c:261
+msgid "$(DARKTABLE.VERSION) - current darktable version"
+msgstr "$(DARKTABLE.VERSION) - versão atual do darktable"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:871
-msgid "month, full name"
-msgstr "mês, nome completo"
-
+#. _("$(DARKTABLE.NAME) - darktable name"),  -- not implemented
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:872
-msgid "month, abbreviated name"
-msgstr "mês, nome abreviado"
+#: ../src/gui/gtkentry.c:181
+msgid ""
+"$(SEQUENCE[n,m]) - sequence number, n: number of digits, m: start number"
+msgstr ""
+"$(SEQUENCE[n,m]) - número de sequência, n: número de dígitos, m: número "
+"inicial"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:873
-msgid "day"
-msgstr "dia"
+#: ../src/gui/gtkentry.c:183
+msgid "$(WIDTH.SENSOR) - image sensor width"
+msgstr "$(WIDTH.SENSOR) - largura do sensor de imagem"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:874
-msgid "hour"
-msgstr "hora"
+#: ../src/gui/gtkentry.c:188
+msgid "$(HEIGHT.SENSOR) - image sensor height"
+msgstr "$(HEIGHT.SENSOR) - altura do sensor de imagem"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:875
-msgid "minute"
-msgstr "minuto"
+#: ../src/gui/gtkentry.c:184
+msgid "$(WIDTH.RAW) - RAW image width"
+msgstr "$(WIDTH.RAW) - largura da imagem RAW"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:876
-#: ../src/gui/accelerators.c:1609
-msgid "second"
-msgstr "segundo"
+#: ../src/gui/gtkentry.c:189
+msgid "$(HEIGHT.RAW) - RAW image height"
+msgstr "$(HEIGHT.RAW) - altura da imagem RAW"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:877
-msgid "millisecond"
-msgstr "milissegundo"
+#: ../src/gui/gtkentry.c:185
+msgid "$(WIDTH.CROP) - image width after crop"
+msgstr "$(WIDTH.CROP) - largura da imagem após o recorte"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:878
+#: ../src/gui/gtkentry.c:190
+msgid "$(HEIGHT.CROP) - image height after crop"
+msgstr "$(HEIGHT.CROP) - altura da imagem após o recorte"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:879
+#: ../src/gui/gtkentry.c:186
+msgid "$(WIDTH.EXPORT) - exported image width"
+msgstr "$(WIDTH.EXPORT) - largura da imagem exportada"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:880
+#: ../src/gui/gtkentry.c:191
+msgid "$(HEIGHT.EXPORT) - exported image height"
+msgstr "$(HEIGHT.EXPORT) - altura da imagem exportada"
+
+#. _("$(WIDTH.MAX) - maximum image export width"),  -- not implemented
+#. _("$(HEIGHT.MAX) - maximum image export height"),  -- not implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:883
+#: ../src/gui/gtkentry.c:192
+msgid "$(YEAR) - year"
+msgstr "$(YEAR) - ano"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:884
+#: ../src/gui/gtkentry.c:193
+msgid "$(YEAR.SHORT) - year without century"
+msgstr "$(YEAR.SHORT) - ano sem século"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:885
+#: ../src/gui/gtkentry.c:194
+msgid "$(MONTH) - month"
+msgstr "$(MONTH) - mês"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:886
-msgid "equivalent focal length"
-msgstr "distância focal equivalente"
+#: ../src/gui/gtkentry.c:196
+msgid "$(MONTH.LONG) - full month name according to the current locale"
+msgstr "$(MONTH.LONG) - nome completo do mês, de acordo com o locale atual"
 
-#. Not Implemented
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:887
-#: ../src/libs/metadata_view.c:160
-msgid "focus distance"
-msgstr "distância de foco"
+#: ../src/gui/gtkentry.c:195
+msgid "$(MONTH.SHORT) - abbreviated month name according to the current locale"
+msgstr "$(MONTH.SHORT) - nome abreviado do mês, de acordo com o locale atual"
 
-#. string.format("$(IMAGE.EXIF) - %s\n", _("")) ..               -- Not Implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:888
+#: ../src/gui/gtkentry.c:197
+msgid "$(DAY) - day"
+msgstr "$(DAY) - dia"
+
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:889
-#: ../src/libs/metadata_view.c:174
-msgid "longitude"
-msgstr "longitude"
+#: ../src/gui/gtkentry.c:198
+msgid "$(HOUR) - hour"
+msgstr "$(HOUR) - hora"
 
-#. geotagging
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:890
-#: ../src/iop/filmic.c:1552 ../src/iop/filmicrgb.c:4526
-#: ../src/libs/metadata_view.c:173
-msgid "latitude"
-msgstr "latitude"
-
+#. _("$(HOUR.AMPM) - hour, 12-hour clock"),  -- not implemented
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:891
-#: ../src/libs/metadata_view.c:175
-msgid "elevation"
-msgstr "elevação"
+#: ../src/gui/gtkentry.c:200
+msgid "$(MINUTE) - minute"
+msgstr "$(MINUTE) - minuto"
 
-#. string.format("$(GPS.LOCATION) - %s\n", _("")) ..             -- Not Implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:892
+#: ../src/gui/gtkentry.c:201
+msgid "$(SECOND) - second"
+msgstr "$(SECOND) - segundo"
+
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:893
-msgid "star rating"
-msgstr "classificação em estrelas"
+#: ../src/gui/gtkentry.c:202
+msgid "$(MSEC) - millisecond"
+msgstr "$(MSEC) - milisegundo"
 
-#. string.format("$(RATING.ICONS) - %s\n", _("")) ..             -- Not Implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:894
+#: ../src/gui/gtkentry.c:205
+msgid "$(EXIF.YEAR) - EXIF year"
+msgstr "$(EXIF.YEAR) - ano no EXIF"
+
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:895
-#: ../src/libs/tools/colorlabels.c:61
-msgid "colorlabels"
-msgstr "etiquetas coloridas"
+#: ../src/gui/gtkentry.c:206
+msgid "$(EXIF.YEAR.SHORT) - EXIF year without century"
+msgstr "$(EXIF.YEAR.SHORT) - ano no EXIF, sem século"
 
-#. string.format("$(LABELS.ICONS) - %s\n", _("")) ..             -- Not Implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:896
+#: ../src/gui/gtkentry.c:207
+msgid "$(EXIF.MONTH) - EXIF month"
+msgstr "$(EXIF.MONTH) - mês no EXIF"
+
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:897
-msgid "camera maker"
-msgstr "fabricante da câmera"
+#: ../src/gui/gtkentry.c:209
+msgid ""
+"$(EXIF.MONTH.LONG) - full EXIF month name according to the current locale"
+msgstr ""
+"$(EXIF.MONTH.LONG) - nome completo do mês no EXIF, de acordo com o locale "
+"atual"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:898
-#: ../src/iop/lens.cc:4461
-msgid "camera model"
-msgstr "modelo da câmera"
+#: ../src/gui/gtkentry.c:208
+msgid ""
+"$(EXIF.MONTH.SHORT) - abbreviated EXIF month name according to the current "
+"locale"
+msgstr ""
+"$(EXIF.MONTH.SHORT) - nome abreviado do mês no EXIF, de acordo com o locale "
+"atual"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:899
+#: ../src/gui/gtkentry.c:210
+msgid "$(EXIF.DAY) - EXIF day"
+msgstr "$(EXIF.DAY) - dia no EXIF"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:900
-msgid "title from metadata"
-msgstr "título dos metadados"
+#: ../src/gui/gtkentry.c:211
+msgid "$(EXIF.HOUR) - EXIF hour"
+msgstr "$(EXIF.HOUR) - hora no EXIF"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:901
-msgid "description from metadata"
-msgstr "descrição nos metadados"
-
+#. _("$(EXIF.HOUR.AMPM) - EXIF hour, 12-hour clock") ..  "\n" .. -- not implemented
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:902
-msgid "creator from metadata"
-msgstr "criador nos metadados"
+#: ../src/gui/gtkentry.c:213
+msgid "$(EXIF.MINUTE) - EXIF minute"
+msgstr "$(EXIF.MINUTE) - minuto no EXIF"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:903
-msgid "publisher from metadata"
-msgstr "editor dos metadados"
+#: ../src/gui/gtkentry.c:214
+msgid "$(EXIF.SECOND) - EXIF second"
+msgstr "$(EXIF.SECOND) - segundo no EXIF"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:904
-msgid "rights from metadata"
-msgstr "direitos dos metadados"
+#: ../src/gui/gtkentry.c:215
+msgid "$(EXIF.MSEC) - EXIF millisecond"
+msgstr "$(EXIF.MSEC) - milisegundo no EXIF"
 
-#. string.format("$(TAGS) - %s\n", _("")) ..                     -- Not Implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:906
-msgid "tag name of level n [0,9] of selected category (or tag)"
-msgstr "nome de rótulo de nível n [0-9] da categoria (ou rótulo) selecionada"
+#. _("$(EXIF.DATE.REGIONAL) - localized EXIF date"),  -- not implemented
+#. _("$(EXIF.TIME.REGIONAL) - localized EXIF time"),  -- not implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:907
+#: ../src/gui/gtkentry.c:216
+msgid "$(EXIF.ISO) - ISO value"
+msgstr "$(EXIF.ISO) - valor ISO"
 
-#. string.format("$(SIDECAR.TXT) - %s\n", _("")) ..              -- Not Implemented
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:908
-msgid "pictures folder"
-msgstr "pasta de imagens"
+#: ../src/gui/gtkentry.c:219
+msgid "$(EXIF.EXPOSURE) - EXIF exposure"
+msgstr "$(EXIF.EXPOSURE) - exposição no EXIF"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:909
-msgid "home folder"
-msgstr "pasta pessoal"
+#: ../src/gui/gtkentry.c:217
+msgid "$(EXIF.EXPOSURE.BIAS) - EXIF exposure bias"
+msgstr "$(EXIF.EXPOSURE.BIAS) - viés de exposição no EXIF"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:910
-msgid "desktop folder"
-msgstr "pasta da área de trabalho"
+#. _("$(EXIF.EXPOSURE.PROGRAM) - EXIF exposure program"),  -- not implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:911
+#: ../src/gui/gtkentry.c:220
+msgid "$(EXIF.APERTURE) - EXIF aperture"
+msgstr "$(EXIF.APERTURE) - abertura no EXIF"
 
-#. string.format("$(OPENCL.ACTIVATED) - %s\n", _("")) ..         -- Not Implemented
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:912
-msgid "user name defined by OS"
-msgstr "nome de usuário definido pelo SO"
+#: ../src/gui/gtkentry.c:221
+msgid "$(EXIF.CROP_FACTOR) - EXIF crop factor"
+msgstr "$(EXIF.CROP_FACTOR) - EXIF fator de crop"
 
-#. string.format("$(NL) - %s\n", _("")) ..                       -- Not Implemented
-#. string.format("$(JOBCODE) - %s", _(""))                   -- Not Implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:913
+#: ../src/gui/gtkentry.c:222
+msgid "$(EXIF.FOCAL.LENGTH) - EXIF focal length"
+msgstr "$(EXIT.FOCAL.LENGTH) - distância focal no EXIF"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:914
+#: ../src/gui/gtkentry.c:223
+msgid "$(EXIF.FOCAL.LENGTH.EQUIV) - EXIF 35 mm equivalent focal length"
+msgstr "$(EXIF.FOCAL.LENGTH.EQUIV) - EXIF distância focal equivalente 35 mm"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:915
+#: ../src/gui/gtkentry.c:224
+msgid "$(EXIF.FOCUS.DISTANCE) - EXIF focal distance"
+msgstr "$(EXIF.FOCUS.DISTANCE) - distância focal no EXIF"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:916
+#: ../src/gui/gtkentry.c:225
+msgid "$(EXIF.MAKER) - camera maker"
+msgstr "$(EXIF.MAKER) - fabricante da câmera"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:917
+#: ../src/gui/gtkentry.c:226
+msgid "$(EXIF.MODEL) - camera model"
+msgstr "$(EXIF.MODEL) - modelo da câmera"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:918
+#: ../src/gui/gtkentry.c:227
+msgid "$(EXIF.WHITEBALANCE) - EXIF selected white balance"
+msgstr "$(EXIF.WHITEBALANCE) - balanço de branco selecionado no EXIF"
+
+#. not implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:919
+#: ../src/gui/gtkentry.c:228
+msgid "$(EXIF.METERING) - EXIF exposure metering mode"
+msgstr "$(EXIF.METERING) - modo de medição de exposição no EXIF"
+
+#. not implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:920
+#: ../src/gui/gtkentry.c:229
+msgid "$(EXIF.LENS) - lens"
+msgstr "$(EXIF.LENS) - lente"
+
+#. _("$(EXIF.FLASH.ICON) - icon indicating whether flash was used") ..  -- not implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:922
+#: ../src/gui/gtkentry.c:231
+msgid "$(EXIF.FLASH) - was flash used (yes/no/--)"
+msgstr "$(EXIF.FLASH) - flash foi usado (sim/não/--)"
+
+#. not implemented
+#. _("$(GPS.LONGITUDE) - longitude"),-- not implemented
+#. _("$(GPS.LATITUDE) - latitude"),-- not implemented
+#. _("$(GPS.ELEVATION) - elevation"),-- not implemented
+#. _("$(GPS.LOCATION.ICON) - icon indicating whether GPS location is known"),-- not implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:927
+#: ../src/gui/gtkentry.c:236
+msgid "$(LONGITUDE) - longitude"
+msgstr "$(LONGITUDE) - longitude"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:928
+#: ../src/gui/gtkentry.c:237
+msgid "$(LATITUDE) - latitude"
+msgstr "$(LATITUDE) - latitude"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:929
+#: ../src/gui/gtkentry.c:238
+msgid "$(ELEVATION) - elevation"
+msgstr "$(ELEVATION) - elevação"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:930
+#: ../src/gui/gtkentry.c:239
+msgid "$(STARS) - star rating as number (-1 for rejected)"
+msgstr "$(STARS) - classificação em estrelas como número (-1 para rejeitado)"
+
+#. _("$(RATING.ICONS) - star/reject rating in icon form"),-- not implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:932
+#: ../src/gui/gtkentry.c:241
+msgid "$(LABELS) - color labels as text"
+msgstr "$(LABELS) - etiquetas coloridas como texto"
+
+#. _("$(LABELS.ICONS) - color labels as icons"),-- not implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:934
+#: ../src/gui/gtkentry.c:248
+msgid "$(TITLE) - title from metadata"
+msgstr "$(TITLE) - título dos metadados"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:935
+#: ../src/gui/gtkentry.c:249
+msgid "$(DESCRIPTION) - description from metadata"
+msgstr "$(DESCRIPTION) - descrição nos metadados"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:936
+#: ../src/gui/gtkentry.c:250
+msgid "$(CREATOR) - creator from metadata"
+msgstr "$(CREATOR) - criador nos metadados"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:937
+#: ../src/gui/gtkentry.c:251
+msgid "$(PUBLISHER) - publisher from metadata"
+msgstr "$(PUBLISHER) - editor dos metadados"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:938
+#: ../src/gui/gtkentry.c:252
+msgid "$(RIGHTS) - rights from metadata"
+msgstr "$(RIGHTS) - direitos dos metadados"
+
+#. _("$(TAGS) - tags as set in metadata settings"),
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:940
+#: ../src/gui/gtkentry.c:258
+msgid "$(CATEGORY[n,category]) - subtag of level n in hierarchical tags"
+msgstr ""
+"$(CATEGORY[n,category]) - subetiqueta de nível n em etiquetas hierárquicas"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:941
+#: ../src/gui/gtkentry.c:262
+msgid "$(SIDECAR_TXT) - contents of .txt sidecar file, if present"
+msgstr "$(SIDECAR_TXT) - conteúdo do arquivo auxiliar .txt, se presente"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:942
+#: ../src/gui/gtkentry.c:254
+msgid "$(FOLDER.PICTURES) - pictures folder"
+msgstr "$(FOLDER.PICTURES) - pasta de imagens"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:943
+#: ../src/gui/gtkentry.c:255
+msgid "$(FOLDER.HOME) - home folder"
+msgstr "$(FOLDER.HOME) - pasta home"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:944
+#: ../src/gui/gtkentry.c:256
+msgid "$(FOLDER.DESKTOP) - desktop folder"
+msgstr "$(FOLDER.DESKTOP) - pasta desktop"
+
+#. _("$(OPENCL.ACTIVATED) - whether OpenCL is activated"),
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:946
+#: ../src/gui/gtkentry.c:253
+msgid "$(USERNAME) - login name"
+msgstr "$(USERNAME) - nome de login"
+
+#. _("$(NL) - newline"),
+#. _("$(JOBCODE) - job code for import"),
 #. handle different versions of names
 #. get the substitution and do any string manipulations requested
 #. remove the var from the string
@@ -12020,7 +12135,7 @@ msgstr "configuração"
 #. stack for the options
 #. main menu
 #: ../src/external/lua-scripts/tools/script_manager.lua:1491
-#: ../src/gui/accelerators.c:2850 ../src/gui/accelerators.c:2952
+#: ../src/gui/accelerators.c:2852 ../src/gui/accelerators.c:2954
 #: ../src/views/view.c:1576
 msgid "action"
 msgstr "ação"
@@ -12233,12 +12348,12 @@ msgid "popup"
 msgstr "popup"
 
 #: ../src/gui/accelerators.c:142 ../src/gui/accelerators.c:175
-#: ../src/gui/gtk.c:3648 ../src/views/lighttable.c:760
+#: ../src/gui/gtk.c:3649 ../src/views/lighttable.c:760
 msgid "next"
 msgstr "próxima"
 
 #: ../src/gui/accelerators.c:143 ../src/gui/accelerators.c:174
-#: ../src/gui/gtk.c:3649 ../src/views/lighttable.c:761
+#: ../src/gui/gtk.c:3650 ../src/views/lighttable.c:761
 msgid "previous"
 msgstr "anterior"
 
@@ -12273,7 +12388,7 @@ msgstr "alternar-direita"
 msgid "right-on"
 msgstr "à direita"
 
-#: ../src/gui/accelerators.c:167 ../src/gui/gtk.c:3647
+#: ../src/gui/accelerators.c:167 ../src/gui/gtk.c:3648
 msgid "activate"
 msgstr "ativar"
 
@@ -12392,8 +12507,8 @@ msgstr "última instância"
 msgid "relative instance"
 msgstr "instância relativa"
 
-#: ../src/gui/accelerators.c:787 ../src/gui/accelerators.c:2874
-#: ../src/gui/accelerators.c:3821
+#: ../src/gui/accelerators.c:787 ../src/gui/accelerators.c:2876
+#: ../src/gui/accelerators.c:3823
 msgid "speed"
 msgstr "velocidade"
 
@@ -12575,6 +12690,10 @@ msgstr "remover estes atalhos existentes?"
 msgid "preferred"
 msgstr "preferido"
 
+#: ../src/gui/accelerators.c:1609
+msgid "second"
+msgstr "segundo"
+
 #: ../src/gui/accelerators.c:1610
 msgid "last but one"
 msgstr "penúltimo"
@@ -12583,7 +12702,7 @@ msgstr "penúltimo"
 msgid "(unchanged)"
 msgstr "(não modificado)"
 
-#: ../src/gui/accelerators.c:1951
+#: ../src/gui/accelerators.c:1953
 msgid ""
 "define a shortcut by pressing a key, optionally combined with modifier keys "
 "(ctrl/shift/alt)\n"
@@ -12608,47 +12727,47 @@ msgstr ""
 "\n"
 "clique-direito para cancelar"
 
-#: ../src/gui/accelerators.c:2024
+#: ../src/gui/accelerators.c:2026
 msgid "removing shortcut"
 msgstr "removendo atalho"
 
-#: ../src/gui/accelerators.c:2026
+#: ../src/gui/accelerators.c:2028
 msgid "disable the selected default shortcut?"
 msgstr "excluir os atalhos default selecionados?"
 
-#: ../src/gui/accelerators.c:2027
+#: ../src/gui/accelerators.c:2029
 msgid "restore the selected default shortcut?"
 msgstr "restaurar os atalhos efault selecionados?"
 
-#: ../src/gui/accelerators.c:2028
+#: ../src/gui/accelerators.c:2030
 msgid "remove the selected shortcut?"
 msgstr "excluir os atalhos selecionados?"
 
-#: ../src/gui/accelerators.c:2117
+#: ../src/gui/accelerators.c:2119
 msgid "command"
 msgstr "comando"
 
-#: ../src/gui/accelerators.c:2118
+#: ../src/gui/accelerators.c:2120
 msgid "preset"
 msgstr "predefinição"
 
-#: ../src/gui/accelerators.c:2501
+#: ../src/gui/accelerators.c:2503
 msgid "restore shortcuts"
 msgstr "restaurar atalhos"
 
-#: ../src/gui/accelerators.c:2504
+#: ../src/gui/accelerators.c:2506
 msgid "_defaults"
 msgstr "_padrões"
 
-#: ../src/gui/accelerators.c:2505
+#: ../src/gui/accelerators.c:2507
 msgid "_startup"
 msgstr "_ao iniciar"
 
-#: ../src/gui/accelerators.c:2506
+#: ../src/gui/accelerators.c:2508
 msgid "_edits"
 msgstr "_antes do diálogo"
 
-#: ../src/gui/accelerators.c:2513
+#: ../src/gui/accelerators.c:2515
 msgid ""
 "restore shortcuts from one of these states:\n"
 "  - default\n"
@@ -12660,7 +12779,7 @@ msgstr ""
 "  - como ao iniciar\n"
 "  - como quando este diálogo foi aberto\n"
 
-#: ../src/gui/accelerators.c:2520
+#: ../src/gui/accelerators.c:2522
 msgid ""
 "clear all newer shortcuts\n"
 "(instead of just restoring changed ones)"
@@ -12668,17 +12787,17 @@ msgstr ""
 "limpar todos os atalhos novos criados\n"
 "(ao invés de simplesmente restaurar os modificados)"
 
-#: ../src/gui/accelerators.c:2577 ../src/gui/preferences.c:922
+#: ../src/gui/accelerators.c:2579 ../src/gui/preferences.c:923
 #: ../src/libs/tools/global_toolbox.c:491
 #: ../src/libs/tools/global_toolbox.c:662
 msgid "shortcuts"
 msgstr "atalhos"
 
-#: ../src/gui/accelerators.c:2587
+#: ../src/gui/accelerators.c:2589
 msgid "export shortcuts"
 msgstr "exportar atalhos"
 
-#: ../src/gui/accelerators.c:2596
+#: ../src/gui/accelerators.c:2598
 msgid ""
 "export all shortcuts to a file\n"
 "or just for one selected device\n"
@@ -12686,27 +12805,27 @@ msgstr ""
 "exportar todos os atalhos para um arquivo\n"
 "ou somente para um dispositivo selecionado\n"
 
-#: ../src/gui/accelerators.c:2603 ../src/gui/accelerators.c:2685
+#: ../src/gui/accelerators.c:2605 ../src/gui/accelerators.c:2687
 msgid "keyboard"
 msgstr "teclado"
 
-#: ../src/gui/accelerators.c:2615
+#: ../src/gui/accelerators.c:2617
 msgid "device id"
 msgstr "id do dispositivo"
 
-#: ../src/gui/accelerators.c:2641
+#: ../src/gui/accelerators.c:2643
 msgid "select file to export"
 msgstr "selecione arquivo para exportar"
 
-#: ../src/gui/accelerators.c:2642 ../src/libs/tagging.c:2629
+#: ../src/gui/accelerators.c:2644 ../src/libs/tagging.c:2629
 msgid "_export"
 msgstr "_exportar"
 
-#: ../src/gui/accelerators.c:2669
+#: ../src/gui/accelerators.c:2671
 msgid "import shortcuts"
 msgstr "importar atalhos"
 
-#: ../src/gui/accelerators.c:2678
+#: ../src/gui/accelerators.c:2680
 msgid ""
 "import all shortcuts from a file\n"
 "or just for one selected device\n"
@@ -12714,31 +12833,31 @@ msgstr ""
 "importar todos os atalhos de um arquivo\n"
 "ou somente para um dispositivo selecionado\n"
 
-#: ../src/gui/accelerators.c:2697
+#: ../src/gui/accelerators.c:2699
 msgid "id in file"
 msgstr "id no arquivo"
 
-#: ../src/gui/accelerators.c:2703
+#: ../src/gui/accelerators.c:2705
 msgid "id when loaded"
 msgstr "id quando carregado"
 
-#: ../src/gui/accelerators.c:2707
+#: ../src/gui/accelerators.c:2709
 msgid "clear device first"
 msgstr "limpar o dispositivo primeiro"
 
-#: ../src/gui/accelerators.c:2732
+#: ../src/gui/accelerators.c:2734
 msgid "select file to import"
 msgstr "selecione arquivo para importar"
 
-#: ../src/gui/accelerators.c:2733 ../src/libs/tagging.c:2593
+#: ../src/gui/accelerators.c:2735 ../src/libs/tagging.c:2593
 msgid "_import"
 msgstr "_importar"
 
-#: ../src/gui/accelerators.c:2825
+#: ../src/gui/accelerators.c:2827
 msgid "search shortcuts list"
 msgstr "buscar na lista de atalhos"
 
-#: ../src/gui/accelerators.c:2827
+#: ../src/gui/accelerators.c:2829
 msgid ""
 "incrementally search the list of shortcuts\n"
 "press up or down keys to cycle through matches"
@@ -12747,23 +12866,23 @@ msgstr ""
 "pressione as teclas para cima e para baixo para percorrer ciclicamente os "
 "resultados"
 
-#: ../src/gui/accelerators.c:2847 ../src/views/view.c:1574
+#: ../src/gui/accelerators.c:2849 ../src/views/view.c:1574
 msgid "shortcut"
 msgstr "atalho"
 
-#: ../src/gui/accelerators.c:2860
+#: ../src/gui/accelerators.c:2862
 msgid "element"
 msgstr "elemento"
 
-#: ../src/gui/accelerators.c:2868
+#: ../src/gui/accelerators.c:2870
 msgid "effect"
 msgstr "efeito"
 
-#: ../src/gui/accelerators.c:2928
+#: ../src/gui/accelerators.c:2930
 msgid "search actions list"
 msgstr "buscar na lista de ações"
 
-#: ../src/gui/accelerators.c:2930
+#: ../src/gui/accelerators.c:2932
 msgid ""
 "incrementally search the list of actions\n"
 "press up or down keys to cycle through matches"
@@ -12772,16 +12891,16 @@ msgstr ""
 "pressione as teclas para cima e para baixo para percorrer ciclicamente os "
 "resultados"
 
-#: ../src/gui/accelerators.c:2960 ../src/gui/guides.c:719
+#: ../src/gui/accelerators.c:2962 ../src/gui/guides.c:719
 #: ../src/libs/export_metadata.c:179
 msgid "type"
 msgstr "tipo"
 
-#: ../src/gui/accelerators.c:2998
+#: ../src/gui/accelerators.c:3000
 msgid "enable fallbacks"
 msgstr "ativar alternativos"
 
-#: ../src/gui/accelerators.c:2999
+#: ../src/gui/accelerators.c:3001
 msgid ""
 "enables default meanings for additional buttons, modifiers or moves\n"
 "when used in combination with a base shortcut"
@@ -12790,37 +12909,37 @@ msgstr ""
 "adicionais,\n"
 "quando usados em combinação com um atalho base"
 
-#: ../src/gui/accelerators.c:3007
+#: ../src/gui/accelerators.c:3009
 msgid "open help page for shortcuts"
 msgstr "abrir página de ajuda para atalhos"
 
-#: ../src/gui/accelerators.c:3012
+#: ../src/gui/accelerators.c:3014
 msgid "restore..."
 msgstr "restaurar..."
 
-#: ../src/gui/accelerators.c:3013
+#: ../src/gui/accelerators.c:3015
 msgid "restore default shortcuts or previous state"
 msgstr "restaurar atalhos padrão ou estado anterior"
 
-#: ../src/gui/accelerators.c:3017 ../src/libs/styles.c:912
+#: ../src/gui/accelerators.c:3019 ../src/libs/styles.c:912
 #: ../src/libs/tagging.c:3369
 msgid "import..."
 msgstr "importar..."
 
-#: ../src/gui/accelerators.c:3018
+#: ../src/gui/accelerators.c:3020
 msgid "fully or partially import shortcuts from file"
 msgstr "importar atalhos completamente ou parcialmente de um arquivo"
 
-#: ../src/gui/accelerators.c:3022 ../src/libs/styles.c:919
+#: ../src/gui/accelerators.c:3024 ../src/libs/styles.c:919
 #: ../src/libs/tagging.c:3372
 msgid "export..."
 msgstr "exportar..."
 
-#: ../src/gui/accelerators.c:3023
+#: ../src/gui/accelerators.c:3025
 msgid "fully or partially export shortcuts to file"
 msgstr "exportar atalhos completamente ou parcialmente para um arquivo"
 
-#: ../src/gui/accelerators.c:3031
+#: ../src/gui/accelerators.c:3033
 msgid ""
 "the recommended way to assign shortcuts to visual elements is the <b>visual "
 "shortcut mapping</b> mode.\n"
@@ -12854,33 +12973,33 @@ msgstr ""
 "<i>clique <b> três vezes </b> para desabilitar esta mensagem "
 "permanentemente</i>"
 
-#: ../src/gui/accelerators.c:3462
+#: ../src/gui/accelerators.c:3464
 msgid "reinitialising input devices"
 msgstr "reiniciando os dispositivos de entrada"
 
-#: ../src/gui/accelerators.c:3604
+#: ../src/gui/accelerators.c:3606
 msgid "down move"
 msgstr "movimento para baixo"
 
-#: ../src/gui/accelerators.c:3604
+#: ../src/gui/accelerators.c:3606
 msgid "flip top/bottom first/last"
 msgstr "espelhar topo/base primeiro/último"
 
-#: ../src/gui/accelerators.c:3689
+#: ../src/gui/accelerators.c:3691
 msgid "fallback to move"
 msgstr "alternativo para mover"
 
-#: ../src/gui/accelerators.c:3940
+#: ../src/gui/accelerators.c:3942
 #, c-format
 msgid "%s not assigned"
 msgstr "%s não associado"
 
-#: ../src/gui/accelerators.c:4121
+#: ../src/gui/accelerators.c:4123
 #, c-format
 msgid "%s assigned to %s"
 msgstr "%s associado a %s"
 
-#: ../src/gui/accelerators.c:4340
+#: ../src/gui/accelerators.c:4342
 msgid "short key press resets stuck keys"
 msgstr "pressionamento curto de tecla reinicializa teclas bloqueadas"
 
@@ -13045,8 +13164,8 @@ msgstr "alterna foco máximo"
 msgid "toggle focus peaking"
 msgstr "alternar foco máximo"
 
-#: ../src/gui/gtk.c:1853 ../src/gui/gtk.c:3754 ../src/gui/gtk.c:3759
-#: ../src/gui/gtk.c:3764 ../src/gui/gtk.c:3769
+#: ../src/gui/gtk.c:1853 ../src/gui/gtk.c:3755 ../src/gui/gtk.c:3760
+#: ../src/gui/gtk.c:3765 ../src/gui/gtk.c:3770
 msgid "tabs"
 msgstr "abas"
 
@@ -13088,166 +13207,55 @@ msgid "show/hide modules"
 msgstr "mostrar/ocultar módulos"
 
 #. ask the user if darktable.org may be accessed
-#: ../src/gui/gtk.c:3215
+#: ../src/gui/gtk.c:3216
 msgid "access the online user manual?"
 msgstr "acessar o manual do usuário online?"
 
-#: ../src/gui/gtk.c:3216
+#: ../src/gui/gtk.c:3217
 #, c-format
 msgid "do you want to access `%s'?"
 msgstr "você deseja acessar `%s'?"
 
-#: ../src/gui/gtk.c:3289
+#: ../src/gui/gtk.c:3290
 msgid "there is no help available for this element"
 msgstr "não há ajuda disponível para este elemento"
 
 #. font name can only use period as decimal separator
 #. but printf format strings use comma for some locales, so replace comma with period
-#: ../src/gui/gtk.c:3309 ../src/libs/metadata_view.c:804
+#: ../src/gui/gtk.c:3310 ../src/libs/metadata_view.c:804
 #, c-format
 msgid "%.1f"
 msgstr "%.1f"
 
-#: ../src/gui/gtk.c:3311
+#: ../src/gui/gtk.c:3312
 #, c-format
 msgid "Sans %s"
 msgstr "Sans %s"
 
-#: ../src/gui/gtk.c:3642
+#: ../src/gui/gtk.c:3643
 msgid "does not contain pages"
 msgstr "não contém páginas"
 
-#: ../src/gui/gtk.c:3891
+#: ../src/gui/gtk.c:3892
 #, c-format
 msgid "never show more than %d lines"
 msgstr "nunca mostrar mais que %d linhas"
-
-#: ../src/gui/gtkentry.c:173
-msgid "$(ROLL.NAME) - roll of the input image"
-msgstr "$(ROLL.NAME) - rolo da imagem de entrada"
-
-#: ../src/gui/gtkentry.c:174
-msgid "$(FILE.FOLDER) - folder containing the input image"
-msgstr "$(FILE.FOLDER) - pasta contendo a imagem de entrada"
-
-#: ../src/gui/gtkentry.c:175
-msgid "$(FILE.NAME) - basename of the input image"
-msgstr "$(FILE.NAME) - nome base do arquivo de entrada"
-
-#: ../src/gui/gtkentry.c:176
-msgid "$(FILE.EXTENSION) - extension of the input image"
-msgstr "$(FILE.EXTENSION) - extensão do arquivo de entrada"
-
-#: ../src/gui/gtkentry.c:177
-msgid "$(VERSION) - duplicate version"
-msgstr "$(VERSION) - versão duplicada"
-
-#: ../src/gui/gtkentry.c:178
-msgid ""
-"$(VERSION.IF_MULTI) - same as $(VERSION) but null string if only one version "
-"exists"
-msgstr ""
-"$(VERSION.IF_MULTI) - mesmo que $(VERSION) mas é string nula quando só uma "
-"versão existe"
-
-#: ../src/gui/gtkentry.c:179
-msgid "$(VERSION.NAME) - version name from metadata"
-msgstr "$(VERSION.NAME) - nome de versão nos metadados"
 
 #: ../src/gui/gtkentry.c:180
 msgid "$(JOBCODE) - job code for import"
 msgstr "$(JOBCODE) - código da tarefa para importação"
 
-#: ../src/gui/gtkentry.c:181
-msgid ""
-"$(SEQUENCE[n,m]) - sequence number, n: number of digits, m: start number"
-msgstr ""
-"$(SEQUENCE[n,m]) - número de sequência, n: número de dígitos, m: número "
-"inicial"
-
 #: ../src/gui/gtkentry.c:182
 msgid "$(WIDTH.MAX) - maximum image export width"
 msgstr "$(WIDTH.MAX) - largura máxima de imagem exportada"
-
-#: ../src/gui/gtkentry.c:183
-msgid "$(WIDTH.SENSOR) - image sensor width"
-msgstr "$(WIDTH.SENSOR) - largura do sensor de imagem"
-
-#: ../src/gui/gtkentry.c:184
-msgid "$(WIDTH.RAW) - RAW image width"
-msgstr "$(WIDTH.RAW) - largura da imagem RAW"
-
-#: ../src/gui/gtkentry.c:185
-msgid "$(WIDTH.CROP) - image width after crop"
-msgstr "$(WIDTH.CROP) - largura da imagem após o recorte"
-
-#: ../src/gui/gtkentry.c:186
-msgid "$(WIDTH.EXPORT) - exported image width"
-msgstr "$(WIDTH.EXPORT) - largura da imagem exportada"
 
 #: ../src/gui/gtkentry.c:187
 msgid "$(HEIGHT.MAX) - maximum image export height"
 msgstr "$(HEIGHT.MAX) - altura máxima de imagem exportada"
 
-#: ../src/gui/gtkentry.c:188
-msgid "$(HEIGHT.SENSOR) - image sensor height"
-msgstr "$(HEIGHT.SENSOR) - altura do sensor de imagem"
-
-#: ../src/gui/gtkentry.c:189
-msgid "$(HEIGHT.RAW) - RAW image height"
-msgstr "$(HEIGHT.RAW) - altura da imagem RAW"
-
-#: ../src/gui/gtkentry.c:190
-msgid "$(HEIGHT.CROP) - image height after crop"
-msgstr "$(HEIGHT.CROP) - altura da imagem após o recorte"
-
-#: ../src/gui/gtkentry.c:191
-msgid "$(HEIGHT.EXPORT) - exported image height"
-msgstr "$(HEIGHT.EXPORT) - altura da imagem exportada"
-
-#: ../src/gui/gtkentry.c:192
-msgid "$(YEAR) - year"
-msgstr "$(YEAR) - ano"
-
-#: ../src/gui/gtkentry.c:193
-msgid "$(YEAR.SHORT) - year without century"
-msgstr "$(YEAR.SHORT) - ano sem século"
-
-#: ../src/gui/gtkentry.c:194
-msgid "$(MONTH) - month"
-msgstr "$(MONTH) - mês"
-
-#: ../src/gui/gtkentry.c:195
-msgid "$(MONTH.SHORT) - abbreviated month name according to the current locale"
-msgstr "$(MONTH.SHORT) - nome abreviado do mês, de acordo com o locale atual"
-
-#: ../src/gui/gtkentry.c:196
-msgid "$(MONTH.LONG) - full month name according to the current locale"
-msgstr "$(MONTH.LONG) - nome completo do mês, de acordo com o locale atual"
-
-#: ../src/gui/gtkentry.c:197
-msgid "$(DAY) - day"
-msgstr "$(DAY) - dia"
-
-#: ../src/gui/gtkentry.c:198
-msgid "$(HOUR) - hour"
-msgstr "$(HOUR) - hora"
-
 #: ../src/gui/gtkentry.c:199
 msgid "$(HOUR.AMPM) - hour, 12-hour clock"
 msgstr "$(HOUR.AMPM) - hora, relógio de 12 horas"
-
-#: ../src/gui/gtkentry.c:200
-msgid "$(MINUTE) - minute"
-msgstr "$(MINUTE) - minuto"
-
-#: ../src/gui/gtkentry.c:201
-msgid "$(SECOND) - second"
-msgstr "$(SECOND) - segundo"
-
-#: ../src/gui/gtkentry.c:202
-msgid "$(MSEC) - millisecond"
-msgstr "$(MSEC) - milisegundo"
 
 #: ../src/gui/gtkentry.c:203
 msgid "$(EXIF.DATE.REGIONAL) - localized EXIF date"
@@ -13257,120 +13265,17 @@ msgstr "$(EXIF.DATE.REGIONAL) - data EXIF localizada"
 msgid "$(EXIF.TIME.REGIONAL) - localized EXIF time"
 msgstr "$(EXIF.TIME.REGIONAL) - horário EXIF localizado"
 
-#: ../src/gui/gtkentry.c:205
-msgid "$(EXIF.YEAR) - EXIF year"
-msgstr "$(EXIF.YEAR) - ano no EXIF"
-
-#: ../src/gui/gtkentry.c:206
-msgid "$(EXIF.YEAR.SHORT) - EXIF year without century"
-msgstr "$(EXIF.YEAR.SHORT) - ano no EXIF, sem século"
-
-#: ../src/gui/gtkentry.c:207
-msgid "$(EXIF.MONTH) - EXIF month"
-msgstr "$(EXIF.MONTH) - mês no EXIF"
-
-#: ../src/gui/gtkentry.c:208
-msgid ""
-"$(EXIF.MONTH.SHORT) - abbreviated EXIF month name according to the current "
-"locale"
-msgstr ""
-"$(EXIF.MONTH.SHORT) - nome abreviado do mês no EXIF, de acordo com o locale "
-"atual"
-
-#: ../src/gui/gtkentry.c:209
-msgid ""
-"$(EXIF.MONTH.LONG) - full EXIF month name according to the current locale"
-msgstr ""
-"$(EXIF.MONTH.LONG) - nome completo do mês no EXIF, de acordo com o locale "
-"atual"
-
-#: ../src/gui/gtkentry.c:210
-msgid "$(EXIF.DAY) - EXIF day"
-msgstr "$(EXIF.DAY) - dia no EXIF"
-
-#: ../src/gui/gtkentry.c:211
-msgid "$(EXIF.HOUR) - EXIF hour"
-msgstr "$(EXIF.HOUR) - hora no EXIF"
-
 #: ../src/gui/gtkentry.c:212
 msgid "$(EXIF.HOUR.AMPM) - EXIF hour, 12-hour clock"
 msgstr "$(EXIF.HOUR.AMPM) - hora no EXIF, relógio de 12 horas"
-
-#: ../src/gui/gtkentry.c:213
-msgid "$(EXIF.MINUTE) - EXIF minute"
-msgstr "$(EXIF.MINUTE) - minuto no EXIF"
-
-#: ../src/gui/gtkentry.c:214
-msgid "$(EXIF.SECOND) - EXIF second"
-msgstr "$(EXIF.SECOND) - segundo no EXIF"
-
-#: ../src/gui/gtkentry.c:215
-msgid "$(EXIF.MSEC) - EXIF millisecond"
-msgstr "$(EXIF.MSEC) - milisegundo no EXIF"
-
-#: ../src/gui/gtkentry.c:216
-msgid "$(EXIF.ISO) - ISO value"
-msgstr "$(EXIF.ISO) - valor ISO"
-
-#: ../src/gui/gtkentry.c:217
-msgid "$(EXIF.EXPOSURE.BIAS) - EXIF exposure bias"
-msgstr "$(EXIF.EXPOSURE.BIAS) - viés de exposição no EXIF"
 
 #: ../src/gui/gtkentry.c:218
 msgid "$(EXIF.EXPOSURE.PROGRAM) - EXIF exposure program"
 msgstr "$(EXIF.EXPOSURE.PROGRAM) - programa de exposição no EXIF"
 
-#: ../src/gui/gtkentry.c:219
-msgid "$(EXIF.EXPOSURE) - EXIF exposure"
-msgstr "$(EXIF.EXPOSURE) - exposição no EXIF"
-
-#: ../src/gui/gtkentry.c:220
-msgid "$(EXIF.APERTURE) - EXIF aperture"
-msgstr "$(EXIF.APERTURE) - abertura no EXIF"
-
-#: ../src/gui/gtkentry.c:221
-msgid "$(EXIF.CROP_FACTOR) - EXIF crop factor"
-msgstr "$(EXIF.CROP_FACTOR) - EXIF fator de crop"
-
-#: ../src/gui/gtkentry.c:222
-msgid "$(EXIF.FOCAL.LENGTH) - EXIF focal length"
-msgstr "$(EXIT.FOCAL.LENGTH) - distância focal no EXIF"
-
-#: ../src/gui/gtkentry.c:223
-msgid "$(EXIF.FOCAL.LENGTH.EQUIV) - EXIF 35 mm equivalent focal length"
-msgstr "$(EXIF.FOCAL.LENGTH.EQUIV) - EXIF distância focal equivalente 35 mm"
-
-#: ../src/gui/gtkentry.c:224
-msgid "$(EXIF.FOCUS.DISTANCE) - EXIF focal distance"
-msgstr "$(EXIF.FOCUS.DISTANCE) - distância focal no EXIF"
-
-#: ../src/gui/gtkentry.c:225
-msgid "$(EXIF.MAKER) - camera maker"
-msgstr "$(EXIF.MAKER) - fabricante da câmera"
-
-#: ../src/gui/gtkentry.c:226
-msgid "$(EXIF.MODEL) - camera model"
-msgstr "$(EXIF.MODEL) - modelo da câmera"
-
-#: ../src/gui/gtkentry.c:227
-msgid "$(EXIF.WHITEBALANCE) - EXIF selected white balance"
-msgstr "$(EXIF.WHITEBALANCE) - balanço de branco selecionado no EXIF"
-
-#: ../src/gui/gtkentry.c:228
-msgid "$(EXIF.METERING) - EXIF exposure metering mode"
-msgstr "$(EXIF.METERING) - modo de medição de exposição no EXIF"
-
-#: ../src/gui/gtkentry.c:229
-msgid "$(EXIF.LENS) - lens"
-msgstr "$(EXIF.LENS) - lente"
-
 #: ../src/gui/gtkentry.c:230
 msgid "$(EXIF.FLASH.ICON) - icon indicating whether flash was used"
 msgstr "$(EXIF.FLASH.ICON) - ícone indicando se o flash foi usado"
-
-#: ../src/gui/gtkentry.c:231
-msgid "$(EXIF.FLASH) - was flash used (yes/no/--)"
-msgstr "$(EXIF.FLASH) - flash foi usado (sim/não/--)"
 
 #: ../src/gui/gtkentry.c:232
 msgid "$(GPS.LONGITUDE) - longitude"
@@ -13389,29 +13294,9 @@ msgid "$(GPS.LOCATION.ICON) - icon indicating whether GPS location is known"
 msgstr ""
 "$(GPS.LOCATION.ICON) - ícone indicando se a localização GPS é conhecida"
 
-#: ../src/gui/gtkentry.c:236
-msgid "$(LONGITUDE) - longitude"
-msgstr "$(LONGITUDE) - longitude"
-
-#: ../src/gui/gtkentry.c:237
-msgid "$(LATITUDE) - latitude"
-msgstr "$(LATITUDE) - latitude"
-
-#: ../src/gui/gtkentry.c:238
-msgid "$(ELEVATION) - elevation"
-msgstr "$(ELEVATION) - elevação"
-
-#: ../src/gui/gtkentry.c:239
-msgid "$(STARS) - star rating as number (-1 for rejected)"
-msgstr "$(STARS) - classificação em estrelas como número (-1 para rejeitado)"
-
 #: ../src/gui/gtkentry.c:240
 msgid "$(RATING.ICONS) - star/reject rating in icon form"
 msgstr "$(RATING.ICONS) - classificar com estrela/rejeitar em forma de ícone"
-
-#: ../src/gui/gtkentry.c:241
-msgid "$(LABELS) - color labels as text"
-msgstr "$(LABELS) - etiquetas coloridas como texto"
 
 #: ../src/gui/gtkentry.c:242
 msgid "$(LABELS.ICONS) - color labels as icons"
@@ -13431,70 +13316,25 @@ msgstr ""
 "$(IMAGE.TAGS) - etiquetas estabelecidas na configuração de metadados, com "
 "hierarquia colapsada"
 
-#: ../src/gui/gtkentry.c:245 ../src/gui/gtkentry.c:246
-msgid "$(ID) - image ID"
-msgstr "$(ID) - ID da imagem"
+#: ../src/gui/gtkentry.c:245
+msgid "$(IMAGE.ID) - image ID"
+msgstr "$(IMAGE.ID) - ID da imagem"
 
-#: ../src/gui/gtkentry.c:247
-msgid "$(TITLE) - title from metadata"
-msgstr "$(TITLE) - título dos metadados"
+#: ../src/gui/gtkentry.c:246
+msgid "$(IMAGE.ID.NEXT) - next image ID to be assigned on import"
+msgstr "$(IMAGE.ID.NEXT) - próximo ID de mensagem a ser usada ao importar"
 
-#: ../src/gui/gtkentry.c:248
-msgid "$(DESCRIPTION) - description from metadata"
-msgstr "$(DESCRIPTION) - descrição nos metadados"
-
-#: ../src/gui/gtkentry.c:249
-msgid "$(CREATOR) - creator from metadata"
-msgstr "$(CREATOR) - criador nos metadados"
-
-#: ../src/gui/gtkentry.c:250
-msgid "$(PUBLISHER) - publisher from metadata"
-msgstr "$(PUBLISHER) - editor dos metadados"
-
-#: ../src/gui/gtkentry.c:251
-msgid "$(RIGHTS) - rights from metadata"
-msgstr "$(RIGHTS) - direitos dos metadados"
-
-#: ../src/gui/gtkentry.c:252
-msgid "$(USERNAME) - login name"
-msgstr "$(USERNAME) - nome de login"
-
-#: ../src/gui/gtkentry.c:253
-msgid "$(FOLDER.PICTURES) - pictures folder"
-msgstr "$(FOLDER.PICTURES) - pasta de imagens"
-
-#: ../src/gui/gtkentry.c:254
-msgid "$(FOLDER.HOME) - home folder"
-msgstr "$(FOLDER.HOME) - pasta home"
-
-#: ../src/gui/gtkentry.c:255
-msgid "$(FOLDER.DESKTOP) - desktop folder"
-msgstr "$(FOLDER.DESKTOP) - pasta desktop"
-
-#: ../src/gui/gtkentry.c:256
+#: ../src/gui/gtkentry.c:257
 msgid "$(OPENCL.ACTIVATED) - whether OpenCL is activated"
 msgstr "$(OPENCL.ACTIVATED) - se OpenCL é ativado"
 
-#: ../src/gui/gtkentry.c:257
-msgid "$(CATEGORY[n,category]) - subtag of level n in hierarchical tags"
-msgstr ""
-"$(CATEGORY[n,category]) - subetiqueta de nível n em etiquetas hierárquicas"
-
-#: ../src/gui/gtkentry.c:258
+#: ../src/gui/gtkentry.c:259
 msgid "$(TAGS) - tags as set in metadata settings"
 msgstr "$(TAGS) - etiquetas estabelecidas na configuração de metadados"
 
-#: ../src/gui/gtkentry.c:259
+#: ../src/gui/gtkentry.c:260
 msgid "$(DARKTABLE.NAME) - darktable name"
 msgstr "$(DARKTABLE.NAME) - nome do darktable"
-
-#: ../src/gui/gtkentry.c:260
-msgid "$(DARKTABLE.VERSION) - current darktable version"
-msgstr "$(DARKTABLE.VERSION) - versão atual do darktable"
-
-#: ../src/gui/gtkentry.c:261
-msgid "$(SIDECAR_TXT) - contents of .txt sidecar file, if present"
-msgstr "$(SIDECAR_TXT) - conteúdo do arquivo auxiliar .txt, se presente"
 
 #: ../src/gui/guides.c:30 ../src/iop/colorcorrection.c:247
 #: ../src/iop/monochrome.c:564
@@ -13725,11 +13565,11 @@ msgstr ""
 msgid "interface language"
 msgstr "idioma da interface"
 
-#: ../src/gui/preferences.c:321
+#: ../src/gui/preferences.c:322
 msgid "double-click to reset to the system language"
 msgstr "clique-duplo para voltar para a linguagem do sistema"
 
-#: ../src/gui/preferences.c:323
+#: ../src/gui/preferences.c:324
 msgid ""
 "set the language of the user interface. the system default is marked with an "
 "* \n"
@@ -13739,27 +13579,27 @@ msgstr ""
 "marcado com * \n"
 "(necessário reiniciar)"
 
-#: ../src/gui/preferences.c:332
+#: ../src/gui/preferences.c:333
 msgid "theme"
 msgstr "tema"
 
-#: ../src/gui/preferences.c:362
+#: ../src/gui/preferences.c:363
 msgid "set the theme for the user interface"
 msgstr "define o tema para a interface de usuário"
 
-#: ../src/gui/preferences.c:375 ../src/gui/preferences.c:382
+#: ../src/gui/preferences.c:376 ../src/gui/preferences.c:383
 msgid "use system font size"
 msgstr "usar o tamanho de fonte do sistema"
 
-#: ../src/gui/preferences.c:391 ../src/gui/preferences.c:398
+#: ../src/gui/preferences.c:392 ../src/gui/preferences.c:399
 msgid "font size in points"
 msgstr "tamanho da fonte em pontos"
 
-#: ../src/gui/preferences.c:403
+#: ../src/gui/preferences.c:404
 msgid "GUI controls and text DPI"
 msgstr "controles da interface gráfica e resolução (DPI) do texto"
 
-#: ../src/gui/preferences.c:410
+#: ../src/gui/preferences.c:411
 msgid ""
 "adjust the global GUI resolution to rescale controls, buttons, labels, etc.\n"
 "increase for a magnified GUI, decrease to fit more content in window.\n"
@@ -13775,72 +13615,72 @@ msgstr ""
 "o padrão é 96 DPI na maioria dos sistemas.\n"
 "(é necessário reiniciar)"
 
-#: ../src/gui/preferences.c:418
+#: ../src/gui/preferences.c:419
 msgid "reset view panels"
 msgstr "redefinir painéis da vista"
 
-#: ../src/gui/preferences.c:419
+#: ../src/gui/preferences.c:420
 msgid "reset hidden panels, their sizes and selected modules in all views"
 msgstr ""
 "redefinir painéis escondidos, seus tamanhos e módulos selecionados em todas "
 "as vistas"
 
 #. checkbox to allow user to modify theme with user.css
-#: ../src/gui/preferences.c:424
+#: ../src/gui/preferences.c:425
 msgid "modify selected theme with CSS tweaks below"
 msgstr "modificar o tema selecionado com os ajustes CSS abaixo"
 
-#: ../src/gui/preferences.c:432
+#: ../src/gui/preferences.c:433
 msgid "modify theme with CSS keyed below (saved to user.css)"
 msgstr "modificar o tema com o CSS abaixo (gravado no arquivo user.css)"
 
-#: ../src/gui/preferences.c:454
+#: ../src/gui/preferences.c:455
 msgctxt "usercss"
 msgid "save CSS and apply"
 msgstr "salvar CSS e aplicar"
 
-#: ../src/gui/preferences.c:459
+#: ../src/gui/preferences.c:460
 msgid "click to save and apply the CSS tweaks entered in this editor"
 msgstr "clique para salvar e aplicar os ajustes CSS inseridos neste editor"
 
-#: ../src/gui/preferences.c:461
+#: ../src/gui/preferences.c:462
 msgid "open help page for CSS tweaks"
 msgstr "abrir pátina de ajuda para ajustes de CSS"
 
 #. load default text with some pointers
-#: ../src/gui/preferences.c:482
+#: ../src/gui/preferences.c:483
 msgid "ERROR Loading user.css"
 msgstr "ERRO Carregando user.css"
 
 #. load default text
-#: ../src/gui/preferences.c:491
+#: ../src/gui/preferences.c:492
 msgid "Enter CSS theme tweaks here"
 msgstr "Entre ajustes ao tema CSS aqui"
 
-#: ../src/gui/preferences.c:512
+#: ../src/gui/preferences.c:513
 msgid "darktable preferences"
 msgstr "preferências do darktable"
 
-#: ../src/gui/preferences.c:576
+#: ../src/gui/preferences.c:577
 msgid "darktable needs to be restarted for settings to take effect"
 msgstr "O darktable precisa ser reiniciado para as configurações terem efeito"
 
 #. exif
-#: ../src/gui/preferences.c:835 ../src/gui/presets.c:659
+#: ../src/gui/preferences.c:836 ../src/gui/presets.c:659
 #: ../src/libs/metadata_view.c:147
 msgid "model"
 msgstr "modelo"
 
-#: ../src/gui/preferences.c:839 ../src/gui/presets.c:667
+#: ../src/gui/preferences.c:840 ../src/gui/presets.c:667
 #: ../src/libs/metadata_view.c:148
 msgid "maker"
 msgstr "fabricante"
 
-#: ../src/gui/preferences.c:876
+#: ../src/gui/preferences.c:877
 msgid "search presets list"
 msgstr "buscar na lista de predefinições"
 
-#: ../src/gui/preferences.c:877
+#: ../src/gui/preferences.c:878
 msgid ""
 "incrementally search the list of presets\n"
 "press up or down keys to cycle through matches"
@@ -13849,36 +13689,36 @@ msgstr ""
 "pressione as teclas para cima e para baixo para percorrer ciclicamente os "
 "resultados"
 
-#: ../src/gui/preferences.c:883
+#: ../src/gui/preferences.c:884
 msgctxt "preferences"
 msgid "import..."
 msgstr "importar..."
 
-#: ../src/gui/preferences.c:887
+#: ../src/gui/preferences.c:888
 msgctxt "preferences"
 msgid "export..."
 msgstr "exportar..."
 
-#: ../src/gui/preferences.c:1047
+#: ../src/gui/preferences.c:1048
 #, c-format
 msgid "failed to import preset %s"
 msgstr "falha ao importar predefinição %s"
 
-#: ../src/gui/preferences.c:1058
+#: ../src/gui/preferences.c:1059
 msgid "select preset(s) to import"
 msgstr "selecione predefinições para importar"
 
-#: ../src/gui/preferences.c:1059 ../src/libs/collect.c:435
+#: ../src/gui/preferences.c:1060 ../src/libs/collect.c:435
 #: ../src/libs/copy_history.c:122 ../src/libs/geotagging.c:945
 #: ../src/libs/import.c:1858 ../src/libs/import.c:1971 ../src/libs/styles.c:584
 msgid "_open"
 msgstr "_abrir"
 
-#: ../src/gui/preferences.c:1068
+#: ../src/gui/preferences.c:1069
 msgid "darktable preset files"
 msgstr "arquivos de predefinição do darktable"
 
-#: ../src/gui/preferences.c:1073 ../src/iop/lut3d.c:1587
+#: ../src/gui/preferences.c:1074 ../src/iop/lut3d.c:1587
 #: ../src/libs/copy_history.c:161 ../src/libs/geotagging.c:961
 #: ../src/libs/styles.c:598
 msgid "all files"
@@ -14294,14 +14134,14 @@ msgid "lossy"
 msgstr "com perdas"
 
 #. Bit depth combo box
-#: ../src/imageio/format/avif.c:910 ../src/imageio/format/exr.cc:591
+#: ../src/imageio/format/avif.c:912 ../src/imageio/format/exr.cc:591
 #: ../src/imageio/format/jxl.c:579 ../src/imageio/format/pdf.c:678
 #: ../src/imageio/format/png.c:686 ../src/imageio/format/tiff.c:882
 #: ../src/imageio/format/xcf.c:360
 msgid "bit depth"
 msgstr "profundidade de bits"
 
-#: ../src/imageio/format/avif.c:923
+#: ../src/imageio/format/avif.c:925
 msgid "color information stored in an image, higher is better"
 msgstr "informação de cores guardada na imagem, mais alto é melhor"
 
@@ -14309,11 +14149,11 @@ msgstr "informação de cores guardada na imagem, mais alto é melhor"
 #. * Color mode combo box
 #.
 #. shortfile option combo box
-#: ../src/imageio/format/avif.c:930 ../src/imageio/format/tiff.c:926
+#: ../src/imageio/format/avif.c:932 ../src/imageio/format/tiff.c:926
 msgid "B&W as grayscale"
 msgstr "P&B como escala de cinza"
 
-#: ../src/imageio/format/avif.c:931 ../src/imageio/format/tiff.c:927
+#: ../src/imageio/format/avif.c:933 ../src/imageio/format/tiff.c:927
 msgid "saving as grayscale will reduce the size for black & white images"
 msgstr ""
 "gravar como tons de cinza reduzirá o tamanho para imagens em preto e branco"
@@ -14321,11 +14161,11 @@ msgstr ""
 #.
 #. * Tiling combo box
 #.
-#: ../src/imageio/format/avif.c:942
+#: ../src/imageio/format/avif.c:944
 msgid "tiling"
 msgstr "ladrilhamento"
 
-#: ../src/imageio/format/avif.c:943
+#: ../src/imageio/format/avif.c:945
 msgid ""
 "tile an image into segments.\n"
 "\n"
@@ -14339,14 +14179,14 @@ msgstr ""
 
 #. compression
 #. Compression method combo box
-#: ../src/imageio/format/avif.c:960 ../src/imageio/format/exr.cc:601
+#: ../src/imageio/format/avif.c:962 ../src/imageio/format/exr.cc:601
 #: ../src/imageio/format/pdf.c:693 ../src/imageio/format/png.c:701
 #: ../src/imageio/format/tiff.c:905 ../src/imageio/format/webp.c:414
 #: ../src/libs/masks.c:117
 msgid "compression"
 msgstr "compressão"
 
-#: ../src/imageio/format/avif.c:968
+#: ../src/imageio/format/avif.c:970
 msgid "the compression for the image"
 msgstr "a compressão para a imagem"
 
@@ -14355,13 +14195,13 @@ msgstr "a compressão para a imagem"
 #. step
 #. default
 #. digits
-#: ../src/imageio/format/avif.c:988 ../src/imageio/format/j2k.c:674
+#: ../src/imageio/format/avif.c:990 ../src/imageio/format/j2k.c:674
 #: ../src/imageio/format/jpeg.c:583 ../src/imageio/format/jxl.c:607
 #: ../src/imageio/format/webp.c:425 ../src/libs/camera.c:562
 msgid "quality"
 msgstr "qualidade"
 
-#: ../src/imageio/format/avif.c:991
+#: ../src/imageio/format/avif.c:993
 msgid ""
 "the quality of an image, less quality means fewer details.\n"
 "\n"
@@ -14380,11 +14220,11 @@ msgstr ""
 #. step
 #. default
 #. digits
-#: ../src/imageio/format/avif.c:1013
+#: ../src/imageio/format/avif.c:1015
 msgid "encoding speed"
 msgstr "velocidade de codificação"
 
-#: ../src/imageio/format/avif.c:1016
+#: ../src/imageio/format/avif.c:1018
 msgid "trades off quality and file size for quicker encoding time"
 msgstr "sacrifica qualidade e tamanho do arquiv por mais rapidez ao codificar"
 
@@ -19801,6 +19641,12 @@ msgstr ""
 "inclinação da parte linear da curva\n"
 "afeta principalmente os meios-tons"
 
+#. geotagging
+#: ../src/iop/filmic.c:1552 ../src/iop/filmicrgb.c:4526
+#: ../src/libs/metadata_view.c:173
+msgid "latitude"
+msgstr "latitude"
+
 #: ../src/iop/filmic.c:1555
 msgid ""
 "width of the linear domain in the middle of the curve.\n"
@@ -20896,6 +20742,10 @@ msgstr ""
 "você pode querer também cerificar se sua base de dados Lensfun está "
 "atualizada\n"
 "executando lensfun-update-data"
+
+#: ../src/iop/lens.cc:4461
+msgid "camera model"
+msgstr "modelo da câmera"
 
 #: ../src/iop/lens.cc:4466
 msgid "find camera"
@@ -26326,6 +26176,10 @@ msgstr "flags"
 msgid "35mm equiv focal length"
 msgstr "distância focal equiv 35mm"
 
+#: ../src/libs/metadata_view.c:160
+msgid "focus distance"
+msgstr "distância de foco"
+
 #: ../src/libs/metadata_view.c:162
 msgid "datetime"
 msgstr "data/hora"
@@ -26337,6 +26191,14 @@ msgstr "largura exportada"
 #: ../src/libs/metadata_view.c:166
 msgid "export height"
 msgstr "altura exportada"
+
+#: ../src/libs/metadata_view.c:174
+msgid "longitude"
+msgstr "longitude"
+
+#: ../src/libs/metadata_view.c:175
+msgid "elevation"
+msgstr "elevação"
 
 #: ../src/libs/metadata_view.c:179
 msgid "categories"
@@ -27693,6 +27555,10 @@ msgstr ""
 msgid "tagging settings"
 msgstr "configurações de etiquetagem"
 
+#: ../src/libs/tools/colorlabels.c:61
+msgid "colorlabels"
+msgstr "etiquetas coloridas"
+
 #: ../src/libs/tools/colorlabels.c:103
 #, c-format
 msgid ""
@@ -28162,7 +28028,7 @@ msgstr "clique-duplo para redefinir para `%f'"
 msgid "Lua options"
 msgstr "opções do Lua"
 
-#: ../src/views/darkroom.c:521
+#: ../src/views/darkroom.c:517
 #, c-format
 msgid ""
 "file `%s' is not available, switching to lighttable now.\n"
@@ -28178,7 +28044,7 @@ msgstr ""
 "arquivos podem ser acessados no mesmo local que estavam quando você importou "
 "a imagem."
 
-#: ../src/views/darkroom.c:528
+#: ../src/views/darkroom.c:524
 #, c-format
 msgid ""
 "file `%s' appears corrupt, switching to lighttable now.\n"
@@ -28190,14 +28056,14 @@ msgstr ""
 "por favor verifique se ele foi corretamente e completamente copiado da "
 "camera."
 
-#: ../src/views/darkroom.c:534
+#: ../src/views/darkroom.c:530
 #, c-format
 msgid "file `%s' is not in any recognized format, switching to lighttable now."
 msgstr ""
 "o arquivo `%s` não está em qualquer formato reconhecido, mudando para a mesa "
 "de luz agora."
 
-#: ../src/views/darkroom.c:539
+#: ../src/views/darkroom.c:535
 #, c-format
 msgid ""
 "file `%s' is from an unsupported camera model, switching to lighttable now."
@@ -28205,7 +28071,7 @@ msgstr ""
 "msgstr \"o arquivo `%s` é de um modelo de camera não suportado, mudando para "
 "a mesa de luz agora."
 
-#: ../src/views/darkroom.c:544
+#: ../src/views/darkroom.c:540
 #, c-format
 msgid ""
 "file `%s' uses an unsupported feature, switching to lighttable now.\n"
@@ -28225,7 +28091,7 @@ msgstr ""
 "resources/camera-support/\n"
 "e as release notes para esta versão do darktable"
 
-#: ../src/views/darkroom.c:552
+#: ../src/views/darkroom.c:548
 #, c-format
 msgid ""
 "error while reading file `%s', switching to lighttable now.\n"
@@ -28236,7 +28102,7 @@ msgstr ""
 "\n"
 "por favor, verifique se o arquivo não foi truncado."
 
-#: ../src/views/darkroom.c:558
+#: ../src/views/darkroom.c:554
 #, c-format
 msgid ""
 "darktable could not load `%s', switching to lighttable now.\n"
@@ -28258,7 +28124,7 @@ msgstr ""
 "se você está certo de que o modelo da câmera é suportado, por favor "
 "considere abrir um issue em https://github.com/darktable-org/darktable"
 
-#: ../src/views/darkroom.c:585
+#: ../src/views/darkroom.c:581
 #, c-format
 msgctxt "darkroom"
 msgid "loading `%s' ..."
@@ -29011,6 +28877,176 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 #: ../src/views/view.c:1534
 msgid "mouse actions"
 msgstr "ações com mouse"
+
+#~ msgid "film roll of the input image"
+#~ msgstr "rolo de filme da imagem de entrada"
+
+#~ msgid "folder containing the input image"
+#~ msgstr "pasta contendo a imagem de entrada"
+
+#~ msgid "basename of the input image"
+#~ msgstr "nome base do arquivo de entrada"
+
+#~ msgid "extension of the input image"
+#~ msgstr "extensão do arquivo de entrada"
+
+#~ msgid "the image id"
+#~ msgstr "id da imagem"
+
+#~ msgid "the duplicate version number"
+#~ msgstr "o número duplicado de versão"
+
+#~ msgid "same as $(VERSION) but null string if only one version exists"
+#~ msgstr "mesmo que $(VERSION) mas é string nula quando só uma versão existe"
+
+#~ msgid "version name from metadata"
+#~ msgstr "nome de versão nos metadados"
+
+#~ msgid "the version of the running darktable instance"
+#~ msgstr "a versão da instância do darktable executando"
+
+#~ msgid ""
+#~ "a sequence number within an export job with n digits and starting with m\n"
+#~ "parameters are optional, default is [4,1]"
+#~ msgstr ""
+#~ "um númer de sequência em uma tarefa de exportação com n dígitos e "
+#~ "começando com m\n"
+#~ "parametros são opcionais, o padrão é [4,1]"
+
+#~ msgid "width of RAW data in pixels before RAW crop"
+#~ msgstr "largura dos dados RAW em pixels antes do corte RAW"
+
+#~ msgid "height of RAW data in pixels before RAW crop"
+#~ msgstr "altura dos dados RAW em pixels antes do corte RAW"
+
+#~ msgid "width of RAW data in pixels after RAW crop"
+#~ msgstr "largura dos dados RAW em pixels depois do corte RAW"
+
+#~ msgid "height of RAW data in pixels after RAW crop"
+#~ msgstr "altura dos dados RAW em pixels depois do corte RAW"
+
+#~ msgid ""
+#~ "image width in pixels at the end of the pixelpipe, but before export "
+#~ "resize"
+#~ msgstr ""
+#~ "largura em pixels no final da pixelpipe, mas antes de mudar o tamanho "
+#~ "para exportação"
+
+#~ msgid ""
+#~ "image height in pixels at the end of the pixelpipe, but before export "
+#~ "resize"
+#~ msgstr ""
+#~ "altura em pixels no final da pixelpipe, mas antes de mudar o tamanho para "
+#~ "exportação"
+
+#~ msgid ""
+#~ "image width in pixels at the end of the pixelpipe and after export resize"
+#~ msgstr ""
+#~ "largura em pixels no final da pixelpipe, depois da mudança de tamanho "
+#~ "para exportação"
+
+#~ msgid ""
+#~ "image height in pixels at the end of the pixelpipe and after export resize"
+#~ msgstr ""
+#~ "altura em pixels no final da pixelpipe, depois da mudança de tamanho para "
+#~ "exportação"
+
+#~ msgid "current year"
+#~ msgstr "ano atual"
+
+#~ msgid "current two digit year"
+#~ msgstr "ano atual com dois dígitos"
+
+#~ msgid "current numeric (1-12) month"
+#~ msgstr "mês numérico (1-12) atual"
+
+#~ msgid "full current month name"
+#~ msgstr "nome completo do mês atual"
+
+#~ msgid "abbreviated current month name"
+#~ msgstr "nome abreviado do mês atual"
+
+#~ msgid "current day"
+#~ msgstr "dia atual"
+
+#~ msgid "current hour"
+#~ msgstr "hora atual"
+
+#~ msgid "current minute"
+#~ msgstr "minuto atual"
+
+#~ msgid "current second"
+#~ msgstr "segundo atual"
+
+#~ msgid "current millisecond"
+#~ msgstr "milissegundo atual"
+
+#~ msgid "year"
+#~ msgstr "ano"
+
+#~ msgid "year, two-digit version"
+#~ msgstr "ano, versão dois dígitos"
+
+#~ msgid "month, numeric"
+#~ msgstr "mês, numérico"
+
+#~ msgid "month, full name"
+#~ msgstr "mês, nome completo"
+
+#~ msgid "month, abbreviated name"
+#~ msgstr "mês, nome abreviado"
+
+#~ msgid "day"
+#~ msgstr "dia"
+
+#~ msgid "hour"
+#~ msgstr "hora"
+
+#~ msgid "minute"
+#~ msgstr "minuto"
+
+#~ msgid "millisecond"
+#~ msgstr "milissegundo"
+
+#~ msgid "equivalent focal length"
+#~ msgstr "distância focal equivalente"
+
+#~ msgid "star rating"
+#~ msgstr "classificação em estrelas"
+
+#~ msgid "camera maker"
+#~ msgstr "fabricante da câmera"
+
+#~ msgid "title from metadata"
+#~ msgstr "título dos metadados"
+
+#~ msgid "description from metadata"
+#~ msgstr "descrição nos metadados"
+
+#~ msgid "creator from metadata"
+#~ msgstr "criador nos metadados"
+
+#~ msgid "publisher from metadata"
+#~ msgstr "editor dos metadados"
+
+#~ msgid "rights from metadata"
+#~ msgstr "direitos dos metadados"
+
+#~ msgid "tag name of level n [0,9] of selected category (or tag)"
+#~ msgstr ""
+#~ "nome de rótulo de nível n [0-9] da categoria (ou rótulo) selecionada"
+
+#~ msgid "pictures folder"
+#~ msgstr "pasta de imagens"
+
+#~ msgid "home folder"
+#~ msgstr "pasta pessoal"
+
+#~ msgid "desktop folder"
+#~ msgstr "pasta da área de trabalho"
+
+#~ msgid "user name defined by OS"
+#~ msgstr "nome de usuário definido pelo SO"
 
 #~ msgid "export_pdf"
 #~ msgstr "exportar_pdf"
