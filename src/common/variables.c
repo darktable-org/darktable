@@ -344,7 +344,7 @@ static gboolean _is_number(char *str)
   return TRUE;
 }
 
-static uint8_t _get_var_parameter(char **variable, int default_value)
+static uint8_t _get_var_parameter(char **variable, const int default_value)
 {
   uint8_t val = default_value;
   if(*variable[0] == '[')
@@ -586,13 +586,15 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     if(sqlite3_step(stmt) == SQLITE_ROW)
       highest_id = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
-    // determine how many zero-padded digits to use with an optional parameter: $(IMAGE.ID.NEXT[n]), default n=1
+    // determine how many zero-padded digits to use with an optional
+    // parameter: $(IMAGE.ID.NEXT[n]), default n=1
     uint8_t nb_digit = _get_var_parameter(variable, 1);
     result = g_strdup_printf("%0*u", nb_digit, highest_id + 1);
   }
   else if(_has_prefix(variable, "ID") || _has_prefix(variable, "IMAGE.ID"))
   {
-    // determine how many zero-padded digits to use with an optional parameter: $(IMAGE.ID[n]), default n=1
+    // determine how many zero-padded digits to use with an optional
+    // parameter: $(IMAGE.ID[n]), default n=1
     uint8_t nb_digit = _get_var_parameter(variable, 1);
     result = g_strdup_printf("%0*u", nb_digit, params->imgid);
   }
