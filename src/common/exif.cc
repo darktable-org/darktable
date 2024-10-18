@@ -863,6 +863,8 @@ static void _check_linear_response_limit(Exiv2::ExifData &exifData,
 {
   bool found_one = false;
 
+  // currently this only reads the dng tag, could also be used for other raws
+
   Exiv2::ExifData::const_iterator linr =
     exifData.findKey(Exiv2::ExifKey("Exif.Image.LinearResponseLimit"));
   if(linr != exifData.end() && linr->count() == 1)
@@ -871,7 +873,6 @@ static void _check_linear_response_limit(Exiv2::ExifData &exifData,
     found_one = true;
   }
 
-  // currently this only reads the dng tag, could also be used for other raws
   if(found_one)
     dt_print(DT_DEBUG_IMAGEIO, "[exif] `%s` has LinearResponseLimit %.4f",
       img->filename, img->linear_response_limit);
