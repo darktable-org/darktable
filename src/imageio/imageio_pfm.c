@@ -92,6 +92,7 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
   {
     ret = fread(readbuf, 3 * sizeof(float), npixels, f);
 
+DT_OMP_FOR(collapse(2))
     for(size_t j = 0; j < img->height; j++)
       for(size_t i = 0; i < img->width; i++)
       {
@@ -109,6 +110,7 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
   {
     ret = fread(readbuf, sizeof(float), npixels, f);
 
+DT_OMP_FOR(collapse(2))
     for(size_t j = 0; j < img->height; j++)
       for(size_t i = 0; i < img->width; i++)
       {
