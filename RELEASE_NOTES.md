@@ -131,6 +131,10 @@ changes (where available).
   into a background task, allowing the user to proceed before the
   writes complete.
 
+- Significantly accelerated loading of PFM files due to loops
+  parallelization and optimization that eliminated additional
+  processing.
+
 ## Other Changes
 
 - Switched default scope for new installations from histogram to
