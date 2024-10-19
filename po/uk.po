@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-10-18 19:15+0200\n"
-"PO-Revision-Date: 2024-10-18 23:01+0300\n"
+"PO-Revision-Date: 2024-10-19 13:41+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -11116,14 +11116,8 @@ msgid "copy metadata"
 msgstr "Копіювати метадані"
 
 #: ../src/external/lua-scripts/official/copy_paste_metadata.lua:138
-#, fuzzy
-#| msgid ""
-#| "copy history stack of\n"
-#| "first selected image"
 msgid "copy metadata of the first selected image"
-msgstr ""
-"Копіювати історію змін\n"
-"першого вибраного зображення"
+msgstr "Копіювати метадані першого вибраного зображення"
 
 #: ../src/external/lua-scripts/official/copy_paste_metadata.lua:144
 #: ../src/external/lua-scripts/official/copy_paste_metadata.lua:160
@@ -11131,10 +11125,8 @@ msgid "paste metadata"
 msgstr "Вставити метадані"
 
 #: ../src/external/lua-scripts/official/copy_paste_metadata.lua:146
-#, fuzzy
-#| msgid "write metadata for selected images"
 msgid "paste metadata to the selected images"
-msgstr "Записати метадані для вибраних зображень"
+msgstr "Вставити метадані у вибрані зображення"
 
 #.
 #. This file is part of darktable,
@@ -11249,10 +11241,8 @@ msgstr "Видалити невикористані теги"
 #.
 #. return data structure for script_manager
 #: ../src/external/lua-scripts/official/enfuse.lua:56
-#, fuzzy
-#| msgid "exposure bias"
 msgid "exposure blend images"
-msgstr "Зміщення експозиції"
+msgstr "Злиття експозицій"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -11277,18 +11267,20 @@ msgid ""
 "center also known as mean of gaussian weighting function (0 <= mean <= 1); "
 "default: 0.5"
 msgstr ""
+"Центр, також відомий як середнє значення вагової функції Гауса (0 <= середнє "
+"<= 1); за замовчуванням: 0,5"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:148
 msgid ""
 "optimum exposure value, usually the maximum of the weighting function (0 <= "
 "optimum <=1); default 0.5"
 msgstr ""
+"Оптимальне значення експозиції, як правило, максимум вагової функції (0 <= "
+"оптимум <=1); за замовчуванням 0,5"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:158
-#, fuzzy
-#| msgid "bits per channel of the embedded images"
 msgid "the number of bits per channel of the output image"
-msgstr "Кількість біт на канал у вбудованих зображеннях"
+msgstr "Кількість біт на канал вихідного зображення"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:167
 #, fuzzy
@@ -11297,10 +11289,8 @@ msgid "force blending in selected colorspace"
 msgstr "Скинути до кольорового простору змішування за замовчуванням"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:174
-#, fuzzy
-#| msgid "run autofocus"
 msgid "run enfuse"
-msgstr "Запустити автофокус"
+msgstr "Запустити Enfuse"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:174
 msgid "enfuse not installed"
@@ -11311,10 +11301,9 @@ msgstr "Enfuse не встановлено"
 #. create a temp response file
 #. windows os.tmpname() defaults to root directory
 #: ../src/external/lua-scripts/official/enfuse.lua:192
-#, fuzzy, lua-format
-#| msgid "error while printing `%s' on `%s'"
+#, lua-format
 msgid "error writing to '%s'"
-msgstr "Помилка під час друку `%s' на `%s'"
+msgstr "Помилка запису в '%s'"
 
 #. add all filenames to the response file
 #. only use ldr files as enfuse can't open raws
@@ -11327,11 +11316,9 @@ msgstr "Конвертація raw файлу '%s' у TIFF..."
 
 #. other images will be skipped
 #: ../src/external/lua-scripts/official/enfuse.lua:225
-#, fuzzy, lua-format
-#| msgid "%d/%d skipping `%s'"
-#| msgid_plural "%d/%d skipping `%s'"
+#, lua-format
 msgid "skipping %s..."
-msgstr "%d/%d пропущено `%s'"
+msgstr "Пропуск %s..."
 
 #. bail out if there is nothing to do
 #: ../src/external/lua-scripts/official/enfuse.lua:232
@@ -11347,27 +11334,27 @@ msgstr "Пропущено зображень: %d"
 #. TODO: find something nicer
 #: ../src/external/lua-scripts/official/enfuse.lua:258
 msgid "enfuse failed, see terminal output for details"
-msgstr ""
+msgstr "Невдача Enfuse, подробиці дивіться в термінальній видачі"
 
 #. remove the response file
 #. import resulting tiff
 #. tell the user that everything worked
 #: ../src/external/lua-scripts/official/enfuse.lua:270
-#, fuzzy
-#| msgid "style %s was successfully imported"
 msgid "enfuse was successful, resulting image has been imported"
-msgstr "Стиль %s було успішно імпортовано"
+msgstr "Успішний запуск Enfuse, отримане зображення було імпортовано"
 
 #. normally printing to stdout is bad, but we allow enfuse to show its output, so adding one extra line is ok
 #: ../src/external/lua-scripts/official/enfuse.lua:272
 #, lua-format
 msgid "enfuse: done, resulting image '%s' has been imported with id %d"
-msgstr ""
+msgstr "Enfuse: зроблено, отримане зображення '%s' було імпортовано з id %d"
 
 #. ... and tell dt about it all
 #: ../src/external/lua-scripts/official/enfuse.lua:306
 msgid "could not find enfuse executable, not loading enfuse exporter..."
 msgstr ""
+"Не вдалося знайти виконуваний файл Enfuse, не завантажується експортер "
+"Enfuse..."
 
 #. vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
 #. kate: hl Lua;
@@ -11418,7 +11405,7 @@ msgstr "Очистити вибрані метадані у вибраних з�
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:68
 msgid "create txt sidecars to display with images"
-msgstr ""
+msgstr "Створити txt файли для відображення разом із зображеннями"
 
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:69
 msgid ""
@@ -11428,17 +11415,20 @@ msgstr ""
 
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:75
 msgid "command to generate the txt sidecar"
-msgstr ""
+msgstr "Команда для створення txt файлу"
 
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:76
 msgid ""
 "the output of this command gets written to the txt file. use $(FILE_NAME) "
 "for the image file"
 msgstr ""
+"Видача цієї команди записується в txt файл. Використовуйте $(FILE_NAME) для "
+"файлу зображення"
 
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:82
 msgid "the command for txt sidecars looks bad. better check the preferences"
 msgstr ""
+"Команда для створення txt файлів виглядає некоректно. Перевірте налаштування"
 
 #. no need to waste processing time if the image has a txt file already
 #. there should be at least one "$(FILE_NAME)" in the command. warn if not, but only once
@@ -11482,10 +11472,8 @@ msgstr ""
 #.
 #. return data structure for script_manager
 #: ../src/external/lua-scripts/official/image_path_in_ui.lua:48
-#, fuzzy
-#| msgid "pretty print the image location"
 msgid "print the image path in the UI"
-msgstr "Геокоординати в форматі градуси і хвилини"
+msgstr "Друкувати шлях зображення в інтерфейсі користувача"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -11525,10 +11513,8 @@ msgstr "Геокоординати в форматі градуси і хвил�
 #. it is important to add them AFTER this one!
 #.
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:45
-#, fuzzy
-#| msgid "import folder"
 msgid "manage import filters"
-msgstr "імпортувати каталог"
+msgstr "Керування фільтрами імпорту"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -11538,20 +11524,16 @@ msgstr "імпортувати каталог"
 #. the dropdown to select the active filter from the import dialog
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:60
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:66
-#, fuzzy
-#| msgid "import folder"
 msgid "import filter"
-msgstr "імпортувати каталог"
+msgstr "Фільтр імпорту"
 
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:60
-#, fuzzy
-#| msgid "file naming pattern used for a import session"
 msgid "the name of the filter used for importing images"
-msgstr "Шаблон іменування файлів, який використовується для сеансу імпорту."
+msgstr "Ім'я фільтра, який використовується для імпорту зображень"
 
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:68
 msgid "import filters are applied after completion of the import dialog"
-msgstr ""
+msgstr "Фільтри імпорту застосовуються після завершення діалогу імпорту"
 
 #. the first entry in the list is hard coded to "" so it's possible to have no filter
 #. this is just a wrapper which calls the active import filter
@@ -11589,10 +11571,8 @@ msgstr ""
 #. * require this script from your main lua file AFTER import_filter_manager.lua
 #.
 #: ../src/external/lua-scripts/official/import_filters.lua:43
-#, fuzzy
-#| msgid "import folder"
 msgid "import filtering"
-msgstr "імпортувати каталог"
+msgstr "Фільтрація імпорту"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -11659,16 +11639,16 @@ msgstr "Клавіатурні прискорювачі з кількома ек
 #: ../src/external/lua-scripts/official/save_selection.lua:77
 #, lua-format
 msgid "save to buffer %d"
-msgstr ""
+msgstr "Збереження в буфер %d"
 
 #: ../src/external/lua-scripts/official/save_selection.lua:80
 #, lua-format
 msgid "restore from buffer %d"
-msgstr ""
+msgstr "Відновлення з буфера %d"
 
 #: ../src/external/lua-scripts/official/save_selection.lua:86
 msgid "switch selection with temporary buffer"
-msgstr ""
+msgstr "Обмін вибору з тимчасовим буфером"
 
 #.
 #. vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
@@ -11709,10 +11689,8 @@ msgstr ""
 #.
 #. return data structure for script_manager
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:53
-#, fuzzy
-#| msgid "write metadata for selected images"
 msgid "generate a pdf file of selected images"
-msgstr "Записати метадані для вибраних зображень"
+msgstr "Створити PDF-файл із вибраних зображень"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -11724,13 +11702,11 @@ msgstr "Переглядач PDF"
 
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:66
 msgid "can be an absolute pathname or the tool may be in the PATH"
-msgstr ""
+msgstr "Може бути абсолютним шляхом або інструмент може бути в PATH"
 
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:74
-#, fuzzy
-#| msgid "timeline"
 msgid "thumbs per line"
-msgstr "Шкала часу"
+msgstr "Мініатюр на рядок"
 
 #. The soft minimum value for the slider, the slider can't go beyond this point
 #. The soft maximum value for the slider, the slider can't go beyond this point
@@ -11738,36 +11714,30 @@ msgstr "Шкала часу"
 #. The hard maximum value for the slider, the user can't manually enter a value beyond this point
 #. The current value of the slider
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:83
-#, fuzzy
-#| msgid "title"
 msgid "title:"
-msgstr "Заголовок"
+msgstr "Заголовок:"
 
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:85
-#, fuzzy
-#| msgid "thumbnails"
 msgid "thumbnails per row:"
-msgstr "Мініатюри"
+msgstr "Мініатюр на рядок:"
 
 #. fact is that latex will get confused if the filename has multiple dots.
 #. so \includegraphics{file.01.jpg} wont work. We need to output the filename
 #. and extention separated, e.g: \includegraphics{{file.01}.jpg}
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:132
-#, fuzzy
-#| msgid "export timestamp"
 msgid "export thumbnails to pdf"
-msgstr "Час експорту"
+msgstr "Експорт мініатюр у PDF"
 
 #. convert to PDF
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:179
 msgid "problem running pdflatex"
-msgstr ""
+msgstr "Проблема під час запуску pdflatex"
 
 #. this one is probably usefull to the user
 #. open the PDF
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:189
 msgid "problem running pdf viewer"
-msgstr ""
+msgstr "Проблема під час запуску програми перегляду PDF"
 
 #. this one is probably usefull to the user
 #. finally do some clean-up
@@ -11806,6 +11776,8 @@ msgstr ""
 #: ../src/external/lua-scripts/tools/executable_manager.lua:50
 msgid "manage the list of external executables used by the lua scripts"
 msgstr ""
+"Керування списком зовнішніх виконуваних файлів, які використовуються "
+"сценаріями Lua"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -11821,7 +11793,7 @@ msgstr ""
 #. Module name
 #: ../src/external/lua-scripts/tools/executable_manager.lua:118
 msgid "executables"
-msgstr ""
+msgstr "Виконувані файли"
 
 #. Visible name
 #. expandable
@@ -11837,27 +11809,23 @@ msgstr ""
 #. check if we have something to manage and exit if not
 #: ../src/external/lua-scripts/tools/executable_manager.lua:157
 msgid "no executable paths found, exiting..."
-msgstr ""
+msgstr "Не знайдено шляхи до виконуваних файлів, вихід..."
 
 #. build a table of the path preferences
 #. preferences are stored with forward slashes
 #: ../src/external/lua-scripts/tools/executable_manager.lua:173
-#, fuzzy
-#| msgid "select an image"
 msgid "select an executable"
-msgstr "Вибрати зображення"
+msgstr "Вибрати виконуваний файл"
 
 #: ../src/external/lua-scripts/tools/executable_manager.lua:173
 msgid "search path for executable"
-msgstr ""
+msgstr "Шлях пошуку виконуваного файлу"
 
 #. create a stack widget to hold the executable path widgets
 #. create a combobox to for indexing into the stack of widgets
 #: ../src/external/lua-scripts/tools/executable_manager.lua:202
-#, fuzzy
-#| msgid "enable"
 msgid "executable"
-msgstr "Вмикаючий елемент"
+msgstr "Виконуваний файл"
 
 #: ../src/external/lua-scripts/tools/executable_manager.lua:203
 #, fuzzy
@@ -11961,16 +11929,12 @@ msgstr ""
 #. P R E F E R E N C E S
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/tools/script_manager.lua:104
-#, fuzzy
-#| msgid "look for updated XMP files on startup"
 msgid "check for updated scripts on start up"
-msgstr "Шукати оновлення файлів XMP при запуску"
+msgstr "Перевірка наявності оновлених сценаріїв під час запуску"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:105
-#, fuzzy
-#| msgid "automatically update module name"
 msgid "automatically update scripts to correct version"
-msgstr "Автоматично оновлювати ім'я модуля"
+msgstr "Автоматично оновлювати сценарії до правильної версії"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. L O G  L E V E L
@@ -12042,10 +12006,8 @@ msgstr "Автоматично оновлювати ім'я модуля"
 #. slurp the file
 #. assume that the second block comment is the documentation
 #: ../src/external/lua-scripts/tools/script_manager.lua:468
-#, fuzzy
-#| msgid "not available"
 msgid "no documentation available"
-msgstr "Недоступно"
+msgstr "Документація відсутня"
 
 #. status of start function
 #. error message returned if module doesn't start
@@ -12088,20 +12050,20 @@ msgstr "Недоступно"
 msgid ""
 "ERROR: git not found.  Install or specify the location of the git executable."
 msgstr ""
+"ПОМИЛКА: git не знайдено. Встановіть або вкажіть розташування виконуваного "
+"файлу git."
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:712
-#, fuzzy
-#| msgid "style %s was successfully imported"
 msgid "lua scripts successfully updated"
-msgstr "Стиль %s було успішно імпортовано"
+msgstr "Сценарії Lua успішно оновлено"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:852
 msgid "no scripts found to install"
-msgstr ""
+msgstr "Не знайдено сценаріїв для встановлення"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:857
 msgid "failed to download scripts"
-msgstr ""
+msgstr "Не вдалося завантажити сценарії"
 
 #. no change
 #. force the buttons to repopulate
@@ -12114,11 +12076,8 @@ msgstr ""
 #. Module name
 #: ../src/external/lua-scripts/tools/script_manager.lua:1164
 #: ../src/external/lua-scripts/tools/script_manager.lua:1438
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "Lua scripts"
 msgid "scripts"
-msgstr "Сценарії Lua"
+msgstr "Сценарії"
 
 #. Visible name
 #. expandable
@@ -12135,7 +12094,7 @@ msgstr "Сценарії Lua"
 #. to use the latest version of script_manager to get the proper API
 #: ../src/external/lua-scripts/tools/script_manager.lua:1209
 msgid "lua API version reset, please restart darktable"
-msgstr ""
+msgstr "Скидання версії Lua API, перезапустіть Darktable"
 
 #. do nothing, we are fine
 #. we are on a dev API version, so checkout the dev
@@ -12146,97 +12105,76 @@ msgstr ""
 msgid ""
 "you must restart darktable to use the correct version of the lua scripts"
 msgstr ""
+"Вам потрібно перезапустити Darktable, щоб використовувати правильну версію "
+"сценаріїв Lua"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. U S E R  I N T E R F A C E
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. update the scripts
 #: ../src/external/lua-scripts/tools/script_manager.lua:1282
-#, fuzzy
-#| msgid "select parts to paste"
 msgid "scripts to update"
-msgstr "Виберіть частини для вставки"
+msgstr "Сценарії для оновлення"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1283
-#, fuzzy
-#| msgid "select the interpolation method"
 msgid "select the scripts installation to update"
-msgstr "Виберіть метод інтерполяції"
+msgstr "Вибрати інсталяцію сценаріїв для оновлення"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1292
 #: ../src/external/lua-scripts/tools/script_manager.lua:1354
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "Lua scripts"
 msgid "update scripts"
-msgstr "Сценарії Lua"
+msgstr "Оновити сценарії"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1293
-#, fuzzy
-#| msgid "attenuate the purity of the red primary"
 msgid "update the lua scripts from the repository"
-msgstr "Послабити чистоту основного червоного"
+msgstr "Оновити сценарії Lua з репозиторію"
 
 #. add additional scripts
 #: ../src/external/lua-scripts/tools/script_manager.lua:1304
 msgid ""
 "enter the URL of the git repository containing the scripts you wish to add"
-msgstr ""
+msgstr "Введіть URL репозиторію git, що містить сценарії, які ви хочете додати"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1309
-#, fuzzy
-#| msgid "move to other folder"
 msgid "name of new folder"
-msgstr "Перемістити в інший каталог"
+msgstr "Ім'я нового каталогу"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1310
-#, fuzzy
-#| msgid "enter a name for the new style"
 msgid "enter a folder name for the additional scripts"
-msgstr "Вкажіть ім'я для нового стилю"
+msgstr "Введіть назву каталогу для додаткових сценаріїв"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1315
 msgid "URL to download additional scripts from"
-msgstr ""
+msgstr "URL для завантаження додаткових сценаріїв"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1317
 msgid "new folder to place scripts in"
-msgstr ""
+msgstr "Новий каталог для розміщення сценаріїв"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1320
-#, fuzzy
-#| msgctxt "section"
-#| msgid "additional properties"
 msgid "install additional scripts"
-msgstr "Додаткові параметри"
+msgstr "Встановити додаткові сценарії"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1328
 msgid "enable \"disable scripts\" button"
-msgstr ""
+msgstr "Увімкнути кнопку \"Вимкнути сценарії\""
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1340
 #: ../src/external/lua-scripts/tools/script_manager.lua:1365
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "Lua scripts"
 msgid "disable scripts"
-msgstr "Сценарії Lua"
+msgstr "Вимкнути сценарії"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1346
 msgid "lua scripts will not run the next time darktable is started"
-msgstr ""
+msgstr "Сценарії Lua не запускатимуться під час наступного запуску Darktable"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1360
-#, fuzzy
-#| msgid "add more images"
 msgid "add more scripts"
-msgstr "Фільтр типу 'АБО' (додати до колекції)"
+msgstr "Додати більше сценаріїв"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1376
-#, fuzzy
-#| msgid "select the saturation of filter"
 msgid "select the script folder"
-msgstr "Виберіть насиченість фільтра"
+msgstr "Вибрати каталог сценаріїв"
 
 #. a script "button" consists of:
 #. a button to start and stop the script
@@ -12254,23 +12192,19 @@ msgstr "Сторінка"
 #. configure options
 #: ../src/external/lua-scripts/tools/script_manager.lua:1447
 msgid "scripts per page"
-msgstr ""
+msgstr "Сценаріїв на сторінку"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1448
 msgid "select number of start/stop buttons to display"
-msgstr ""
+msgstr "Вибрати кількість кнопок запуску/зупинки на сторінку"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1459
-#, fuzzy
-#| msgid "change number of images per row"
 msgid "change number of buttons"
-msgstr "Змінити кількість зображень на рядок"
+msgstr "Змінити кількість кнопок"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1469
-#, fuzzy
-#| msgid "navigation"
 msgid "configuration"
-msgstr "Навігація"
+msgstr "Конфігурація"
 
 #. stack for the options
 #. main menu
@@ -12281,22 +12215,16 @@ msgid "action"
 msgstr "Дія"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1497
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "Lua scripts"
 msgid "install/update scripts"
-msgstr "Сценарії Lua"
+msgstr "Встановлення/оновлення сценаріїв"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1497
 msgid "configure"
-msgstr ""
+msgstr "Конфігурування"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1497
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "Lua scripts"
 msgid "start/stop scripts"
-msgstr "Сценарії Lua"
+msgstr "Запуск/зупинка сценаріїв"
 
 #: ../src/generate-cache/main.c:50
 #, c-format
