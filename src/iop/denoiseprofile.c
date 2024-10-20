@@ -2613,7 +2613,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self,
                                       adjt[1] * sb2 / std_x[1],
                                       adjt[2] * sb2 / std_x[2],
                                       0.0f };
-    // dt_print(DT_DEBUG_ALWAYS, "scale %d thrs %f %f %f\n", s, thrs[0], thrs[1], thrs[2]);
+    // dt_print(DT_DEBUG_ALWAYS, "scale %d thrs %f %f %f", s, thrs[0], thrs[1], thrs[2]);
 
     const dt_aligned_pixel_t boost = { 1.0f, 1.0f, 1.0f, 1.0f };
 
@@ -2720,7 +2720,7 @@ int process_cl(struct dt_iop_module_t *self,
   else
   {
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl_denoiseprofile] compute variance not yet supported by opencl code\n");
+             "[opencl_denoiseprofile] compute variance not yet supported by opencl code");
     return DT_OPENCL_PROCESS_CL;
   }
 }

@@ -175,7 +175,7 @@ static void _auto_focus_button_clicked(GtkWidget *widget, gpointer user_data)
   CameraWidgetType property_type;
   if(dt_camctl_camera_get_property_type(darktable.camctl, NULL, property, &property_type))
   {
-    dt_print(DT_DEBUG_CAMCTL, "[camera control] unable to get property type for %s\n", property);
+    dt_print(DT_DEBUG_CAMCTL, "[camera control] unable to get property type for %s", property);
   }
   else
   {
@@ -186,7 +186,7 @@ static void _auto_focus_button_clicked(GtkWidget *widget, gpointer user_data)
     else
     {
       // TODO evaluate if this is the right thing to do in default scenario
-      dt_print(DT_DEBUG_CAMCTL, "[camera control] unable to set %s for property type %d\n", property, property_type);
+      dt_print(DT_DEBUG_CAMCTL, "[camera control] unable to set %s for property type %d", property, property_type);
     }
   }
 }
@@ -515,7 +515,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
             y1 = buf.height;
             break;
           default:
-            dt_print(DT_DEBUG_ALWAYS, "OMFG, the world will collapse, this shouldn't be reachable!\n");
+            dt_print(DT_DEBUG_ALWAYS, "OMFG, the world will collapse, this shouldn't be reachable!");
             dt_pthread_mutex_unlock(&cam->live_view_buffer_mutex);
             return;
         }

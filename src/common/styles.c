@@ -678,7 +678,7 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
     {
       module = NULL;
       dt_print(DT_DEBUG_ALWAYS,
-               "[dt_styles_apply_style_item] can't load module %s %s\n",
+               "[dt_styles_apply_style_item] can't load module %s %s",
                style_item->operation,
                style_item->multi_name);
     }
@@ -734,7 +734,7 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
         {
           dt_print(DT_DEBUG_ALWAYS,
                    "[dt_styles_apply_style_item] module `%s' version mismatch:"
-                   " history is %d, darktable is %d.\n",
+                   " history is %d, darktable is %d",
                    module->op, style_item->module_version, module->version());
           dt_control_log(_("module `%s' version mismatch: %d != %d"), module->op,
                          module->version(), style_item->module_version);
@@ -1209,7 +1209,7 @@ char *dt_styles_get_item_list_as_string(const char *name)
   }
   names = g_list_reverse(names);  // list was built in reverse order, so un-reverse it
 
-  char *result = dt_util_glist_to_str("\n", names);
+  char *result = dt_util_glist_to_str("", names);
   g_list_free_full(names, g_free);
   g_list_free_full(items, dt_style_item_free);
   return result;
@@ -1744,7 +1744,7 @@ gchar *dt_get_style_name(const char *filename)
   if(document == NULL || root == NULL || xmlStrcmp(root->name, BAD_CAST "darktable_style"))
   {
     dt_print(DT_DEBUG_CONTROL,
-             "[styles] file %s is not a style file\n", filename);
+             "[styles] file %s is not a style file", filename);
     if(document)
       xmlFreeDoc(document);
     return bname;
@@ -1769,7 +1769,7 @@ gchar *dt_get_style_name(const char *filename)
 
   if(!bname){
     dt_print(DT_DEBUG_CONTROL,
-             "[styles] file %s is a malformed style file\n", filename);
+             "[styles] file %s is a malformed style file", filename);
   }
   return bname;
 }
@@ -1800,7 +1800,7 @@ void dt_import_default_styles(const char *folder)
     {
       if(darktable.gui)
         dt_print(DT_DEBUG_ALWAYS,
-                 "[styles] importing default style '%s'\n", filename);
+                 "[styles] importing default style '%s'", filename);
       dt_styles_import_from_file(filename);
     }
     g_free(bname);

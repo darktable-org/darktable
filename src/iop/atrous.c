@@ -1701,7 +1701,7 @@ static float _action_process_equalizer(gpointer target,
       default:
         dt_print(DT_DEBUG_ALWAYS,
                  "[_action_process_equalizer] unknown shortcut effect (%d)"
-                 " for contrast equalizer node\n",
+                 " for contrast equalizer node",
                  effect);
         break;
       }
@@ -1729,7 +1729,7 @@ static float _action_process_equalizer(gpointer target,
       default:
         dt_print(DT_DEBUG_ALWAYS,
                  "[_action_process_equalizer] unknown shortcut effect (%d)"
-                 " for contrast equalizer radius\n", effect);
+                 " for contrast equalizer radius", effect);
         break;
       }
 

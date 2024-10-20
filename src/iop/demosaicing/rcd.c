@@ -764,7 +764,7 @@ static int process_rcd_cl(
     if(scaled)
     {
       dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi",
-        piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "\n");
+        piece->pipe, self, piece->pipe->devid, roi_in, roi_out);
       // scale aux buffer to output buffer
       err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_aux, roi_out, roi_in);
     }
@@ -802,7 +802,7 @@ error:
   dt_opencl_release_mem_object(HQ_diff);
 
   if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] rcd problem '%s'\n", cl_errstr(err));
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] rcd problem '%s'", cl_errstr(err));
   return err;
 }
 

@@ -226,7 +226,7 @@ void dt_dev_process_image(dt_develop_t *dev)
   const gboolean err
       = dt_control_add_job_res(darktable.control,
                                dt_dev_process_image_job_create(dev), DT_CTL_WORKER_ZOOM_1);
-  if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_image] job queue exceeded!\n");
+  if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_image] job queue exceeded!");
 }
 
 void dt_dev_process_preview(dt_develop_t *dev)
@@ -235,7 +235,7 @@ void dt_dev_process_preview(dt_develop_t *dev)
   const gboolean err = dt_control_add_job_res(darktable.control,
                                          dt_dev_process_preview_job_create(dev),
                                          DT_CTL_WORKER_ZOOM_FILL);
-  if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_preview] job queue exceeded!\n");
+  if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_preview] job queue exceeded!");
 }
 
 void dt_dev_process_preview2(dt_develop_t *dev)
@@ -243,7 +243,7 @@ void dt_dev_process_preview2(dt_develop_t *dev)
   const gboolean err = dt_control_add_job_res(darktable.control,
                                          dt_dev_process_preview2_job_create(dev),
                                          DT_CTL_WORKER_ZOOM_2);
-  if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_preview2] job queue exceeded!\n");
+  if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_preview2] job queue exceeded!");
 }
 
 void dt_dev_invalidate(dt_develop_t *dev)
@@ -739,7 +739,7 @@ static void _dev_auto_save(dt_develop_t *dev)
     if((after - start) > 0.5)
     {
       dev->autosaving = FALSE;
-      dt_print(DT_DEBUG_DEV, "autosave history disabled, took %.3fs\n", after - start);
+      dt_print(DT_DEBUG_DEV, "autosave history disabled, took %.3fs", after - start);
 
       dt_control_log(_("autosaving history has been disabled for this image"
                        " because of a very large history or a slow drive being used"));
@@ -1087,7 +1087,7 @@ void dt_dev_add_masks_history_item_ext(dt_develop_t *dev,
   }
   else
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_dev_add_masks_history_item_ext] can't find mask manager module\n");
+             "[dt_dev_add_masks_history_item_ext] can't find mask manager module");
 }
 
 void dt_dev_add_masks_history_item(
@@ -1373,14 +1373,14 @@ void dt_dev_write_history_ext(dt_develop_t *dev,
 
   GList *history = dev->history;
   dt_print(DT_DEBUG_IOPORDER,
-           "[dt_dev_write_history_ext] Writing history image id=%d `%s', iop version: %i\n",
+           "[dt_dev_write_history_ext] Writing history image id=%d `%s', iop version: %i",
            imgid, dev->image_storage.filename, dev->iop_order_version);
   for(int i = 0; history; i++)
   {
     dt_dev_history_item_t *hist = history->data;
     _dev_write_history_item(imgid, hist, i);
 
-    dt_print(DT_DEBUG_IOPORDER, "%20s, num %2i, order %2d, v(%i), multiprio %i%s\n",
+    dt_print(DT_DEBUG_IOPORDER, "%20s, num %2i, order %2d, v(%i), multiprio %i%s",
       hist->module->op, i, hist->iop_order, hist->module->version(), hist->multi_priority,
       (hist->enabled) ? ", enabled" : "");
 
@@ -1446,7 +1446,7 @@ static void _dev_insert_module(dt_develop_t *dev,
 
   g_free(preset_name);
 
-  dt_print(DT_DEBUG_PARAMS, "[dev_insert_module] `%s' inserted to history\n", module->op);
+  dt_print(DT_DEBUG_PARAMS, "[dev_insert_module] `%s' inserted to history", module->op);
 }
 
 static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
@@ -1497,7 +1497,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
         {
           dt_print(DT_DEBUG_PARAMS,
                    "[_dev_auto_apply_presets] missing mandatory module %s"
-                   " for image id=%d `%s'\n",
+                   " for image id=%d `%s'",
                    module->op, imgid, dev->image_storage.filename);
 
           // If the module is white-balance and we are dealing with a
@@ -1902,7 +1902,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                           "DELETE FROM memory.history", NULL, NULL, NULL);
 
-    dt_print(DT_DEBUG_PARAMS, "[dt_dev_read_history_ext] temporary history deleted\n");
+    dt_print(DT_DEBUG_PARAMS, "[dt_dev_read_history_ext] temporary history deleted");
 
     // Make sure all modules default params are loaded to init
     // history. This is important as some modules have specific
@@ -1928,7 +1928,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     _dev_merge_history(dev, imgid);
 
     dt_print(DT_DEBUG_PARAMS,
-             "[dt_dev_read_history_ext] temporary history merged with image history\n");
+             "[dt_dev_read_history_ext] temporary history merged with image history");
 
     //  first time we are loading the image, try to import lightroom .xmp if any
     if(dev->full.pipe && dev->full.pipe->loading && first_run)
@@ -2038,7 +2038,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     {
       dt_print(DT_DEBUG_ALWAYS,
                "[dev_read_history_ext] database history for image"
-               " id=%d `%s' seems to be corrupted!\n",
+               " id=%d `%s' seems to be corrupted!",
                imgid, dev->image_storage.filename);
       continue;
     }
@@ -2049,7 +2049,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     {
       dt_print(DT_DEBUG_PIPE | DT_DEBUG_UNDO,
                "[dev_read_history_ext] illegal iop_order for module `%s.%i' in history for image"
-               " id=%d `%s'!\n",
+               " id=%d `%s'!",
                module_name, multi_priority, imgid, dev->image_storage.filename);
       continue;
     }
@@ -2110,7 +2110,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     {
       dt_print(DT_DEBUG_ALWAYS,
                "[dev_read_history] the module `%s' requested by image"
-               " id=%d `%s' is not installed on this computer!\n",
+               " id=%d `%s' is not installed on this computer!",
                module_name, imgid, dev->image_storage.filename);
       free(hist);
       continue;
@@ -2146,7 +2146,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     dt_print(DT_DEBUG_PARAMS,
              "[history] successfully loaded module %s from history\n"
              "\t\t\tblendop v. %i:\tversion %s\tparams %s\n"
-             "\t\t\tparams v. %i:\tversion %s\tparams %s\n",
+             "\t\t\tparams v. %i:\tversion %s\tparams %s",
              module_name,
              blendop_version, _print_validity(is_valid_blendop_version),
              _print_validity(is_valid_blendop_size),
@@ -2211,7 +2211,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
       {
         dt_print(DT_DEBUG_ALWAYS,
                  "[dev_read_history] module `%s' version mismatch: history"
-                 " is %d, darktable is %d, image id=%d `%s'\n",
+                 " is %d, darktable is %d, image id=%d `%s'",
                  hist->module->op, modversion, hist->module->version(),
                  imgid, dev->image_storage.filename);
 
@@ -2268,7 +2268,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
   if(temperature && channelmixerrgb)
   {
     dt_print(DT_DEBUG_PARAMS,
-             "[dt_dev_read_history_ext] reset defaults for workflow none\n");
+             "[dt_dev_read_history_ext] reset defaults for workflow none");
     temperature->reload_defaults(temperature);
   }
 
@@ -3105,7 +3105,7 @@ dt_iop_module_t *dt_dev_module_duplicate_ext(dt_develop_t *dev,
   if(reorder_iop && !dt_ioppr_move_iop_after(base->dev, module, base))
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_dev_module_duplicate] can't move new instance after the base one\n");
+             "[dt_dev_module_duplicate] can't move new instance after the base one");
     dt_control_log(_("duplicate module, can't move new instance after the base one\n"));
   }
 

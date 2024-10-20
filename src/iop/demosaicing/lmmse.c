@@ -83,7 +83,7 @@ static void _init_lmmse_gamma()
   if(!lmmse_gamma_in || !lmmse_gamma_out)
   {
     _cleanup_lmmse_gamma();
-    dt_print(DT_DEBUG_ALWAYS, "[demosaic lmmse] Can't allocate gamma memory\n");
+    dt_print(DT_DEBUG_ALWAYS, "[demosaic lmmse] Can't allocate gamma memory");
     return;
   }
   DT_OMP_PRAGMA(for)

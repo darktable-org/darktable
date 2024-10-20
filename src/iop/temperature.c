@@ -1388,7 +1388,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_print_pipe(DT_DEBUG_PIPE,
     "used preset", NULL, self, DT_DEVICE_NONE, NULL, NULL,
-    "preset='%s': D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f\n",
+    "preset='%s': D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f",
     _preset_to_str(p->preset),
     chr->D65coeffs[0], chr->D65coeffs[1], chr->D65coeffs[2], chr->as_shot[0], chr->as_shot[1], chr->as_shot[2]);
 
@@ -1457,7 +1457,7 @@ static void _prepare_matrices(dt_iop_module_t *module)
     if(module->dev->image_storage.load_status == DT_IMAGEIO_OK)  // suppress spurious error messages
     {
       char *camera = module->dev->image_storage.camera_makermodel;
-      dt_print(DT_DEBUG_ALWAYS, "[temperature] `%s' color matrix not found for image\n", camera);
+      dt_print(DT_DEBUG_ALWAYS, "[temperature] `%s' color matrix not found for image", camera);
       dt_control_log(_("`%s' color matrix not found for image"), camera);
     }
   }
@@ -1517,7 +1517,7 @@ static void _find_coeffs(dt_iop_module_t *module, double coeffs[4])
       dt_control_log(_("failed to read camera white balance information from `%s'!"),
                      img->filename);
     dt_print(DT_DEBUG_ALWAYS,
-             "[temperature] failed to read camera white balance information from `%s'!\n",
+             "[temperature] failed to read camera white balance information from `%s'!",
              img->filename);
   }
 
@@ -1612,7 +1612,7 @@ void reload_defaults(dt_iop_module_t *module)
   }
 
   dt_print(DT_DEBUG_PARAMS,
-    "[dt_iop_reload_defaults] scene=%s, modern=%s, CAT=%s. D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f\n",
+    "[dt_iop_reload_defaults] scene=%s, modern=%s, CAT=%s. D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f",
     dt_is_scene_referred() ? "YES" : "NO",
     is_modern ? "YES" : "NO",
     another_cat_defined ? "YES" : "NO",
@@ -1792,7 +1792,7 @@ static gboolean _btn_toggled(GtkWidget *togglebutton,
   const dt_dev_chroma_t *chr = &self->dev->chroma;
   dt_print_pipe(DT_DEBUG_PIPE,
     "toggled preset", NULL, self, DT_DEVICE_NONE, NULL, NULL,
-    "preset='%s': D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f\n",
+    "preset='%s': D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f",
     _preset_to_str(preset),
     chr->D65coeffs[0], chr->D65coeffs[1], chr->D65coeffs[2], chr->as_shot[0], chr->as_shot[1], chr->as_shot[2]);
   return TRUE;

@@ -155,7 +155,7 @@ static inline int pseudo_solve_gaussian(double *const restrict A,
 
   if(m < n)
   {
-    dt_print(DT_DEBUG_ALWAYS, "pseudo solve: cannot cast %zu x %zu matrix\n", m, n);
+    dt_print(DT_DEBUG_ALWAYS, "pseudo solve: cannot cast %zu x %zu matrix", m, n);
     return 0;
   }
 

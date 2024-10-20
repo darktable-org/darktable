@@ -144,7 +144,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                             work_profile, self->op);
   else
   {
-    dt_print(DT_DEBUG_ALWAYS, "[overexposed process] can't create transform profile\n");
+    dt_print(DT_DEBUG_ALWAYS, "[overexposed process] can't create transform profile");
     dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out);
     dt_control_log(_("module overexposed failed in color conversion"));
     goto process_finish;
@@ -338,7 +338,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                                                current_profile, work_profile, self->op);
   else
   {
-    dt_print(DT_DEBUG_ALWAYS, "[overexposed process_cl] can't create transform profile\n");
+    dt_print(DT_DEBUG_ALWAYS, "[overexposed process_cl] can't create transform profile");
     dt_control_log(_("module overexposed failed in color conversion"));
     goto error;
   }

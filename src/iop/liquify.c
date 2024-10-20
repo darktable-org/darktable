@@ -939,7 +939,7 @@ static void apply_round_stamp(const dt_liquify_warp_t *const restrict warp,
   if(!lookup_table)
   {
     dt_free_align((void*)lookup_table);
-    dt_print(DT_DEBUG_ALWAYS,"[liquify] out of memory, round stamp skipped\n");
+    dt_print(DT_DEBUG_ALWAYS,"[liquify] out of memory, round stamp skipped");
     return;
   }
 

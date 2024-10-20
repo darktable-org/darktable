@@ -179,7 +179,7 @@ int process_cl(struct dt_iop_module_t *self,
   cl_mem dev_matrix = dt_opencl_copy_host_to_device_constant(devid, sizeof(matrix), matrix);
   if(dev_matrix == NULL)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_primaries] couldn't allocate memory!\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_primaries] couldn't allocate memory!");
     return DT_OPENCL_DEFAULT_ERROR;
   }
 

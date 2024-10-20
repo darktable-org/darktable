@@ -969,10 +969,10 @@ void gui_update(dt_lib_module_t *self)
               // tags - just keywords
               length = length + strlen(tagname) + 2u;
               if(length < 45u)
-                tagstring = dt_util_dstrcat(tagstring, "%s, ", tagname);
+                dt_util_str_cat(&tagstring, "%s, ", tagname);
               else
               {
-                tagstring = dt_util_dstrcat(tagstring, "\n%s, ", tagname);
+                dt_util_str_cat(&tagstring, "\n%s, ", tagname);
                 length = strlen(tagname) + 2u;
               }
             }
@@ -986,11 +986,11 @@ void gui_update(dt_lib_module_t *self)
                 catend[0] = '\0';
                 char *catstart = g_strrstr(category, "|");
                 catstart = catstart ? catstart + 1 : category;
-                categoriesstring = dt_util_dstrcat(categoriesstring, categoriesstring ? "\n%s: %s " : "%s: %s ",
+                dt_util_str_cat(&categoriesstring, categoriesstring ? "\n%s: %s " : "%s: %s ",
                                                    catstart, ((dt_tag_t *)taglist->data)->leave);
               }
               else
-                categoriesstring = dt_util_dstrcat(categoriesstring, categoriesstring ? "\n%s" : "%s",
+                dt_util_str_cat(&categoriesstring, categoriesstring ? "\n%s" : "%s",
                                                    ((dt_tag_t *)taglist->data)->leave);
               g_free(category);
             }
@@ -1115,7 +1115,7 @@ static char *_get_current_configuration(dt_lib_module_t *self)
   {
     dt_lib_metadata_info_t *m = meta->data;
     if(_is_metadata_ui(m->index))
-      pref = dt_util_dstrcat(pref, "%s%s,", m->visible ? "" : "|", m->name);
+      dt_util_str_cat(&pref, "%s%s,", m->visible ? "" : "|", m->name);
   }
   if(pref)
   {

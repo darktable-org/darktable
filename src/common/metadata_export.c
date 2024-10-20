@@ -55,7 +55,7 @@ char *dt_lib_export_metadata_get_conf(void)
         {
           formula[0] = '\0';
           formula ++;
-          metadata_presets = dt_util_dstrcat(metadata_presets,"\1%s\1%s", nameformula, formula);
+          dt_util_str_cat(&metadata_presets,"\1%s\1%s", nameformula, formula);
         }
       }
       g_free(nameformula);

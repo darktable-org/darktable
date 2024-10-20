@@ -231,7 +231,7 @@ static GList *_get_disabled_modules(const dt_iop_module_t *self,
     }
     dt_print_pipe(DT_DEBUG_PARAMS | DT_DEBUG_PIPE, "module_filter_out",
           NULL, self, DT_DEVICE_NONE, NULL, NULL,
-          "%s\n", buf);
+          "%s", buf);
     g_free(buf);
   }
 
@@ -408,7 +408,7 @@ void process(struct dt_iop_module_t *self,
   const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, roi_out->width);
   if(stride == -1)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[overlay] cairo stride error\n");
+    dt_print(DT_DEBUG_ALWAYS, "[overlay] cairo stride error");
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
@@ -423,7 +423,7 @@ void process(struct dt_iop_module_t *self,
 
   if((cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) || (image == NULL))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[overlay] cairo surface error: %s\n",
+    dt_print(DT_DEBUG_ALWAYS, "[overlay] cairo surface error: %s",
              cairo_status_to_string(cairo_surface_status(surface)));
     g_free(image);
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
@@ -453,7 +453,7 @@ void process(struct dt_iop_module_t *self,
 
   if((cairo_surface_status(surface_two) != CAIRO_STATUS_SUCCESS))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[overlay] cairo png surface 2 error: %s\n",
+    dt_print(DT_DEBUG_ALWAYS, "[overlay] cairo png surface 2 error: %s",
              cairo_status_to_string(cairo_surface_status(surface_two)));
     cairo_surface_destroy(surface);
     g_free(image);

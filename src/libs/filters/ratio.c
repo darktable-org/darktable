@@ -117,11 +117,11 @@ static gchar *_ratio_print_func(const double value, const gboolean detailled)
   if(detailled)
   {
     if(value < 1.0)
-      return dt_util_dstrcat(txt, " %s", _("portrait"));
+      dt_util_str_cat(&txt, " %s", _("portrait"));
     else if(value > 1.0)
-      return dt_util_dstrcat(txt, " %s", _("landscape"));
+      dt_util_str_cat(&txt, " %s", _("landscape"));
     else if(value == 1.0)
-      return dt_util_dstrcat(txt, " %s", _("square"));
+      dt_util_str_cat(&txt, " %s", _("square"));
   }
   return txt;
 }

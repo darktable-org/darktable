@@ -82,7 +82,7 @@ static void PNGwriteRawProfile(png_struct *ping,
   text = png_malloc(ping, sizeof(png_text));
   if(!text)
   {
-    dt_print(DT_DEBUG_ALWAYS,"[png] out of memory adding profile to image\n");
+    dt_print(DT_DEBUG_ALWAYS,"[png] out of memory adding profile to image");
     return;
   }
   description_length = strlen(profile_type);
@@ -94,7 +94,7 @@ static void PNGwriteRawProfile(png_struct *ping,
   if(!text[0].text || !text[0].key)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[png] out of memory adding profile to image\n");
+             "[png] out of memory adding profile to image");
     goto cleanup;
   }
 
@@ -333,7 +333,7 @@ int write_image(dt_imageio_module_data_t *p_tmp,
   }
   else
   {
-    dt_print(DT_DEBUG_ALWAYS, "[png] out of memory writing %s\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[png] out of memory writing %s", filename);
   }
   png_write_end(png_ptr, info_ptr);
   png_destroy_write_struct(&png_ptr, &info_ptr);

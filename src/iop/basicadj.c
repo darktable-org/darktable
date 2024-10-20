@@ -1172,32 +1172,32 @@ cleanup:
   if(dt_isnan(expcomp))
   {
     expcomp = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] expcomp is NaN!!!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] expcomp is NaN!!!");
   }
   if(dt_isnan(black))
   {
     black = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] black is NaN!!!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] black is NaN!!!");
   }
   if(dt_isnan(bright))
   {
     bright = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] bright is NaN!!!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] bright is NaN!!!");
   }
   if(dt_isnan(contr))
   {
     contr = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] contr is NaN!!!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] contr is NaN!!!");
   }
   if(dt_isnan(hlcompr))
   {
     hlcompr = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] hlcompr is NaN!!!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] hlcompr is NaN!!!");
   }
   if(dt_isnan(hlcomprthresh))
   {
     hlcomprthresh = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] hlcomprthresh is NaN!!!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] hlcomprthresh is NaN!!!");
   }
 
   *_expcomp = expcomp;
@@ -1322,7 +1322,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       src_buffer = dt_alloc_align_float((size_t)ch * width * height);
       if(src_buffer == NULL)
       {
-        dt_print(DT_DEBUG_ALWAYS, "[basicadj process_cl] error allocating memory for color transformation 1\n");
+        dt_print(DT_DEBUG_ALWAYS, "[basicadj process_cl] error allocating memory for color transformation 1");
         err = DT_OPENCL_SYSMEM_ALLOCATION;
         goto cleanup;
       }
@@ -1330,7 +1330,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       err = dt_opencl_copy_device_to_host(devid, src_buffer, dev_in, width, height, ch * sizeof(float));
       if(err != CL_SUCCESS)
       {
-        dt_print(DT_DEBUG_ALWAYS, "[basicadj process_cl] error allocating memory for color transformation 2\n");
+        dt_print(DT_DEBUG_ALWAYS, "[basicadj process_cl] error allocating memory for color transformation 2");
         goto cleanup;
       }
 
@@ -1387,7 +1387,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_gamma = dt_opencl_copy_host_to_device(devid, d->lut_gamma, 256, 256, sizeof(float));
   if(dev_gamma == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[basicadj process_cl] error allocating memory 3\n");
+    dt_print(DT_DEBUG_ALWAYS, "[basicadj process_cl] error allocating memory 3");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1395,7 +1395,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_contrast = dt_opencl_copy_host_to_device(devid, d->lut_contrast, 256, 256, sizeof(float));
   if(dev_contrast == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[basicadj process_cl] error allocating memory 4\n");
+    dt_print(DT_DEBUG_ALWAYS, "[basicadj process_cl] error allocating memory 4");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }

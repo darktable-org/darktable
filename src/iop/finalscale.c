@@ -158,7 +158,7 @@ int process_cl(struct dt_iop_module_t *self,
   if(roi_out->scale > 1.0f) // trust cl code for 1:1 copy here or downscale
   {
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl_finalscale] upscaling not yet supported by opencl code\n");
+             "[opencl_finalscale] upscaling not yet supported by opencl code");
     return DT_OPENCL_PROCESS_CL;
   }
 
@@ -167,7 +167,7 @@ int process_cl(struct dt_iop_module_t *self,
 
   dt_print_pipe(DT_DEBUG_IMAGEIO,
                 exporting ? "clip_and_zoom_roi" : "clip_and_zoom",
-                piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "device=%i\n", devid);
+                piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "device=%i", devid);
   if(exporting)
     return dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
   else
@@ -185,7 +185,7 @@ void process(dt_iop_module_t *self,
   const gboolean exporting = piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT;
   dt_print_pipe(DT_DEBUG_IMAGEIO,
                 exporting ? "clip_and_zoom_roi" : "clip_and_zoom",
-                piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "\n");
+                piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out);
 
   if(exporting)
     dt_iop_clip_and_zoom_roi((float *)ovoid, (float *)ivoid, roi_out, roi_in);

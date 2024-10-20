@@ -196,7 +196,7 @@ void dt_overlay_add_from_history(const dt_imgid_t imgid)
 
       dt_print(DT_DEBUG_PARAMS,
                "[dt_overlay_add_from_history] "
-               "add overlay %d to imgid %d\n",
+               "add overlay %d to imgid %d",
                *overlay_id, imgid);
     }
   }
@@ -238,7 +238,7 @@ void dt_overlay_remove_from_history(const dt_imgid_t imgid,
 
       dt_print(DT_DEBUG_PARAMS,
                "[dt_overlay_remove_from_history] "
-               "remove overlay %d from imgid %d\n",
+               "remove overlay %d from imgid %d",
                *overlay_id, imgid);
     }
   }

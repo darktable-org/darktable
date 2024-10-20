@@ -234,7 +234,7 @@ static gchar *_get_tb_removed_metadata_string_values(GList *before, GList *after
     }
     if(!same_key || different_value || !value[0])
     {
-      metadata_list = dt_util_dstrcat(metadata_list, "%d,", atoi(b->data));
+      dt_util_str_cat(&metadata_list, "%d,", atoi(b->data));
     }
     b = g_list_next(b);
     b = g_list_next(b);
@@ -265,7 +265,7 @@ static gchar *_get_tb_added_metadata_string_values(const dt_imgid_t imgid,
     if((!same_key || different_value) && value[0])
     {
       char *escaped_text = sqlite3_mprintf("%q", value);
-      metadata_list = dt_util_dstrcat(metadata_list, "(%d,%d,'%s'),", GPOINTER_TO_INT(imgid), atoi(a->data), escaped_text);
+      dt_util_str_cat(&metadata_list, "(%d,%d,'%s'),", GPOINTER_TO_INT(imgid), atoi(a->data), escaped_text);
       sqlite3_free(escaped_text);
     }
     a = g_list_next(a);

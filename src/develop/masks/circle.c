@@ -1084,7 +1084,7 @@ static int _circle_get_mask(const dt_iop_module_t *const restrict module,
   if(!_circle_get_area(module, piece, form, width, height, posx, posy)) return 0;
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] circle area took %0.04f sec\n",
+           "[masks %s] circle area took %0.04f sec",
            form->name, dt_get_lap_time(&start2));
 
   // we get the circle values
@@ -1111,7 +1111,7 @@ static int _circle_get_mask(const dt_iop_module_t *const restrict module,
     }
   }
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] circle draw took %0.04f sec\n", form->name, dt_get_lap_time(&start2));
+           "[masks %s] circle draw took %0.04f sec", form->name, dt_get_lap_time(&start2));
 
   // we back transform all this points
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, module->iop_order,
@@ -1123,7 +1123,7 @@ static int _circle_get_mask(const dt_iop_module_t *const restrict module,
   }
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] circle transform took %0.04f sec\n", form->name,
+           "[masks %s] circle transform took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   // we allocate the buffer
@@ -1161,7 +1161,7 @@ static int _circle_get_mask(const dt_iop_module_t *const restrict module,
   dt_free_align(points);
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] circle fill took %0.04f sec\n",
+           "[masks %s] circle fill took %0.04f sec",
            form->name, dt_get_lap_time(&start2));
 
   return 1;
@@ -1205,7 +1205,7 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
   memset(buffer, 0, sizeof(float) * w * h);
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] circle init took %0.04f sec\n",
+           "[masks %s] circle init took %0.04f sec",
            form->name, dt_get_lap_time(&start2));
 
   // we look at the outer circle of the shape - no effects outside of
@@ -1254,7 +1254,7 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
   }
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] circle outline took %0.04f sec\n",
+           "[masks %s] circle outline took %0.04f sec",
            form->name, dt_get_lap_time(&start2));
 
   // we get the min/max values ...
@@ -1292,7 +1292,7 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
   dt_free_align(circ);
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] circle bounding box took %0.04f sec\n",
+           "[masks %s] circle bounding box took %0.04f sec",
            form->name, dt_get_lap_time(&start2));
 
   // check if there is anything to do at all; only if width and height
@@ -1315,7 +1315,7 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
     }
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] circle grid took %0.04f sec\n", form->name, dt_get_lap_time(&start2));
+           "[masks %s] circle grid took %0.04f sec", form->name, dt_get_lap_time(&start2));
 
   // we back transform all these points to the input image coordinates
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, module->iop_order,
@@ -1327,7 +1327,7 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
   }
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] circle transform took %0.04f sec\n", form->name,
+           "[masks %s] circle transform took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   // we calculate the mask values at the transformed points;
@@ -1349,7 +1349,7 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
     }
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] circle draw took %0.04f sec\n", form->name,
+           "[masks %s] circle draw took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   // we fill the pre-initialized output buffer by interpolation;
@@ -1378,10 +1378,10 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
   dt_free_align(points);
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] circle fill took %0.04f sec\n",
+           "[masks %s] circle fill took %0.04f sec",
            form->name, dt_get_lap_time(&start2));
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] circle total render took %0.04f sec\n", form->name,
+           "[masks %s] circle total render took %0.04f sec", form->name,
            dt_get_lap_time(&start1));
 
   return 1;

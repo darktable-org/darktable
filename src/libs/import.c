@@ -746,7 +746,7 @@ static void _import_add_file_callback(GObject *direnum,
     g_object_unref(direnum);
     g_list_free_full(file_list, g_object_unref);
     dt_print(DT_DEBUG_ALWAYS,
-             "[_import_add_file_callback] error: %s\n", error->message);
+             "[_import_add_file_callback] error: %s", error->message);
     g_error_free(error);
     return;
   }
@@ -846,7 +846,7 @@ static void _import_add_file_callback(GObject *direnum,
       {
         if(g_file_test(fullname, G_FILE_TEST_IS_SYMLINK))
         {
-          dt_print(DT_DEBUG_CONTROL, "[import] skip symlink %s\n", fullname);
+          dt_print(DT_DEBUG_CONTROL, "[import] skip symlink %s", fullname);
         }
         else
         {
@@ -2317,7 +2317,7 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
       if(d->import_case == DT_IMPORT_INPLACE)
       {
         if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->recursive)))
-          folder = dt_util_dstrcat(folder, "%%");
+          dt_util_str_cat(&folder, "%%");
         _import_set_collection(folder);
         const dt_imgid_t imgid = dt_conf_get_int("ui_last/import_last_image");
         if(unique && dt_is_valid_imgid(imgid))
@@ -2598,18 +2598,18 @@ static char *_get_current_configuration(dt_lib_module_t *self)
   {
     if(_pref[i].type == DT_BOOL)
     {
-      pref = dt_util_dstrcat(pref, "%s=%d,", _pref[i].name,
+      dt_util_str_cat(&pref, "%s=%d,", _pref[i].name,
                              dt_conf_get_bool(_pref[i].key) ? 1 : 0);
     }
     else if(_pref[i].type == DT_INT)
     {
-      pref = dt_util_dstrcat(pref, "%s=%d,", _pref[i].name,
+      dt_util_str_cat(&pref, "%s=%d,", _pref[i].name,
                              dt_conf_get_int(_pref[i].key));
     }
     else if(_pref[i].type == DT_STRING)
     {
       const char *s = dt_conf_get_string_const(_pref[i].key);
-      pref = dt_util_dstrcat(pref, "%s=%s,", _pref[i].name, s);
+      dt_util_str_cat(&pref, "%s=%s,", _pref[i].name, s);
     }
   }
 
@@ -2625,7 +2625,7 @@ static char *_get_current_configuration(dt_lib_module_t *self)
 
       setting = g_strdup_printf("ui_last/import_last_%s", metadata_name);
       const char *metadata_value = dt_conf_get_string_const(setting);
-      pref = dt_util_dstrcat(pref, "%s=%d%s,", metadata_name,
+      dt_util_str_cat(&pref, "%s=%d%s,", metadata_name,
                              imported ? 1 : 0, metadata_value);
       g_free(setting);
     }
@@ -2633,7 +2633,7 @@ static char *_get_current_configuration(dt_lib_module_t *self)
   // must be the last (comma separated list)
   const gboolean imported = dt_conf_get_bool("ui_last/import_last_tags_imported");
   const char *tags_value = dt_conf_get_string_const("ui_last/import_last_tags");
-  pref = dt_util_dstrcat(pref, "%s=%d%s,", "tags", imported ? 1 : 0, tags_value);
+  dt_util_str_cat(&pref, "%s=%d%s,", "tags", imported ? 1 : 0, tags_value);
   if(pref && *pref)
     pref[strlen(pref) - 1] = '\0';
 
@@ -2703,7 +2703,7 @@ static void _apply_preferences(const char *pref,
       for(GList *iter2 = g_list_next(iter); iter2; iter2 = g_list_next(iter2))
       {
         if(strlen((char *)iter2->data))
-          tags = dt_util_dstrcat(tags, ",%s", (char *)iter2->data);
+          dt_util_str_cat(&tags, ",%s", (char *)iter2->data);
       }
       dt_conf_set_string("ui_last/import_last_tags", tags);
       g_free(tags);

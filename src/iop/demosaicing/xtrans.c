@@ -66,7 +66,7 @@ static void xtrans_markesteijn_interpolate(float *out,
   char *const all_buffers = (char *)dt_alloc_perthread(buffer_size, sizeof(char), &padded_buffer_size);
   if(!all_buffers)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[demosaic] not able to allocate Markesteijn buffers\n");
+    dt_print(DT_DEBUG_ALWAYS, "[demosaic] not able to allocate Markesteijn buffers");
     return;
   }
 
@@ -1069,7 +1069,7 @@ static void xtrans_fdc_interpolate(dt_iop_module_t *self,
   char *const all_buffers = (char *)dt_alloc_perthread(buffer_size, sizeof(char), &padded_buffer_size);
   if(!all_buffers)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[demosaic] not able to allocate FDC base buffers\n");
+    dt_print(DT_DEBUG_ALWAYS, "[demosaic] not able to allocate FDC base buffers");
     return;
   }
 
@@ -2196,7 +2196,7 @@ static int process_markesteijn_cl(dt_iop_module_t *self,
     if(scaled)
     {
       dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi",
-        piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "\n");
+        piece->pipe, self, piece->pipe->devid, roi_in, roi_out);
       // scale temp buffer to output buffer
       err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_tmp, roi_out, roi_in);
       if(err != CL_SUCCESS) goto error;
@@ -2247,7 +2247,7 @@ error:
   dt_opencl_release_mem_object(dev_aux);
   dt_opencl_release_mem_object(dev_edge_in);
   dt_opencl_release_mem_object(dev_edge_out);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] markesteijn problem '%s'\n", cl_errstr(err));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] markesteijn problem '%s'", cl_errstr(err));
   return err;
 }
 

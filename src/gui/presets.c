@@ -1349,7 +1349,7 @@ static gboolean _menuitem_manage_quick_presets_traverse(GtkTreeModel *model,
 
   if(active && preset && iop_name)
   {
-    *txt = dt_util_dstrcat(*txt, "ꬹ%s|%sꬹ", iop_name, preset);
+    dt_util_str_cat(&*txt, "ꬹ%s|%sꬹ", iop_name, preset);
   }
   g_free(iop_name);
   g_free(preset);
@@ -1568,7 +1568,7 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w)
           gchar *key = g_strdup_printf("plugins/darkroom/%s/favorite", iop->so->op);
           const gboolean fav = dt_conf_get_bool(key);
           g_free(key);
-          if(fav) config = dt_util_dstrcat(config, "ꬹ%s|%sꬹ", iop->so->op, name);
+          if(fav) dt_util_str_cat(&config, "ꬹ%s|%sꬹ", iop->so->op, name);
         }
 
         // check that this preset is in the config list

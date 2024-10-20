@@ -485,7 +485,7 @@ static void toggle_stock_controls(dt_iop_module_t *const self)
   else
   {
     // We shouldn't be there
-    dt_print(DT_DEBUG_ALWAYS, "negadoctor film stock: undefined behavior\n");
+    dt_print(DT_DEBUG_ALWAYS, "negadoctor film stock: undefined behavior");
   }
 }
 
@@ -830,7 +830,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   else if(picker == g->black)
     apply_auto_black(self);
   else
-    dt_print(DT_DEBUG_ALWAYS, "[negadoctor] unknown color picker\n");
+    dt_print(DT_DEBUG_ALWAYS, "[negadoctor] unknown color picker");
 }
 
 void gui_init(dt_iop_module_t *self)

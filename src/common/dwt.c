@@ -248,7 +248,7 @@ static void dwt_wavelet_decompose(float *img,
                                   0, NULL))
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[dwt] unable to alloc working memory, skipping wavelet decomposition\n");
+             "[dwt] unable to alloc working memory, skipping wavelet decomposition");
     return;
   }
 
@@ -497,7 +497,7 @@ void dwt_denoise(float *const img,
   float *const details = dt_alloc_align_float((size_t)2 * width * height);
   if(!details)
   {
-    dt_print(DT_DEBUG_ALWAYS,"[dwt_denoise] unable to alloc working memory, skipping denoise\n");
+    dt_print(DT_DEBUG_ALWAYS,"[dwt_denoise] unable to alloc working memory, skipping denoise");
     return;
   }
   float *const interm = details + width * height;	// temporary storage for use during each pass

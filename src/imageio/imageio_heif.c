@@ -55,7 +55,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   if(!ctx)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "Unable to allocate HEIF context\n");
+             "Unable to allocate HEIF context");
     return DT_IMAGEIO_CACHE_FULL;
   }
 
@@ -68,14 +68,14 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
       /* we want to feedback this to the user, so output to stderr */
       dt_print(DT_DEBUG_ALWAYS,
                "[imageio_heif] Unsupported codec for `%s'. "
-               "Check if your libheif is built with HEVC and/or AV1 decoding support.\n",
+               "Check if your libheif is built with HEVC and/or AV1 decoding support",
                filename);
       ret = DT_IMAGEIO_UNSUPPORTED_FEATURE;
     }
     else if(err.code != heif_error_Unsupported_filetype && err.subcode != heif_suberror_No_ftyp_box)
     {
       /* print debug info only if genuine HEIF */
-      dt_print(DT_DEBUG_IMAGEIO, "Failed to read HEIF file [%s]: %s\n", filename, err.message);
+      dt_print(DT_DEBUG_IMAGEIO, "Failed to read HEIF file [%s]: %s", filename, err.message);
       ret = DT_IMAGEIO_UNSUPPORTED_FORMAT;
     }
     goto out;
@@ -86,7 +86,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   if(num_images == 0)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "No images found in HEIF file [%s]\n",
+             "No images found in HEIF file [%s]",
              filename);
     ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto out;
@@ -97,7 +97,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   if(err.code != heif_error_Ok)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "Failed to read primary image from HEIF file [%s]\n",
+             "Failed to read primary image from HEIF file [%s]",
              filename);
     ret = DT_IMAGEIO_UNSUPPORTED_FEATURE;
     goto out;
@@ -177,7 +177,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   if(err.code != heif_error_Ok)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "Failed to decode HEIF file [%s]\n",
+             "Failed to decode HEIF file [%s]",
              filename);
     ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto out;
@@ -208,7 +208,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   if(mipbuf == NULL)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "Failed to allocate mipmap buffer for HEIF image [%s]\n",
+             "Failed to allocate mipmap buffer for HEIF image [%s]",
              filename);
     ret = DT_IMAGEIO_CACHE_FULL;
     goto out;
@@ -226,7 +226,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   const int original_values_bit_depth = heif_image_handle_get_luma_bits_per_pixel(handle);
 
   dt_print(DT_DEBUG_IMAGEIO,
-             "Bit depth: '%d' for HEIF image [%s]\n",
+             "Bit depth: '%d' for HEIF image [%s]",
              original_values_bit_depth,
              filename);
 
@@ -309,7 +309,7 @@ int dt_imageio_heif_read_profile(const char *filename,
   if(!ctx)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "Unable to allocate HEIF context\n");
+             "Unable to allocate HEIF context");
     goto out;
   }
 
@@ -317,7 +317,7 @@ int dt_imageio_heif_read_profile(const char *filename,
   if(err.code != heif_error_Ok)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "Failed to read HEIF file [%s]\n",
+             "Failed to read HEIF file [%s]",
              filename);
     goto out;
   }
@@ -327,7 +327,7 @@ int dt_imageio_heif_read_profile(const char *filename,
   if(num_images == 0)
   {
         dt_print(DT_DEBUG_IMAGEIO,
-             "No images found in HEIF file [%s]\n",
+             "No images found in HEIF file [%s]",
              filename);
     goto out;
   }
@@ -337,7 +337,7 @@ int dt_imageio_heif_read_profile(const char *filename,
   if(err.code != heif_error_Ok)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "Failed to read primary image from HEIF file [%s]\n",
+             "Failed to read primary image from HEIF file [%s]",
              filename);
     goto out;
   }
@@ -349,13 +349,13 @@ int dt_imageio_heif_read_profile(const char *filename,
   {
     case heif_color_profile_type_nclx:
       dt_print(DT_DEBUG_IMAGEIO,
-             "Found NCLX color profile for HEIF file [%s]\n",
+             "Found NCLX color profile for HEIF file [%s]",
              filename);
       err = heif_image_handle_get_nclx_color_profile(handle, &profile_info_nclx);
       if(err.code != heif_error_Ok)
       {
         dt_print(DT_DEBUG_IMAGEIO,
-                "Failed to get NCLX color profile data from HEIF file [%s]\n",
+                "Failed to get NCLX color profile data from HEIF file [%s]",
                 filename);
         goto out;
       }
@@ -378,7 +378,7 @@ int dt_imageio_heif_read_profile(const char *filename,
 
         if(over)
         {
-          dt_print(DT_DEBUG_IMAGEIO, "Overriding nclx color profile for HEIF file `%s': 1/%d/%d to 1/%d/%d\n",
+          dt_print(DT_DEBUG_IMAGEIO, "Overriding nclx color profile for HEIF file `%s': 1/%d/%d to 1/%d/%d",
                    filename, profile_info_nclx->transfer_characteristics, profile_info_nclx->matrix_coefficients,
                    cicp->transfer_characteristics, cicp->matrix_coefficients);
         }
@@ -402,7 +402,7 @@ int dt_imageio_heif_read_profile(const char *filename,
       if(err.code != heif_error_Ok)
       {
         dt_print(DT_DEBUG_IMAGEIO,
-                "Failed to read embedded ICC profile from HEIF image [%s]\n",
+                "Failed to read embedded ICC profile from HEIF image [%s]",
                 filename);
         g_free(icc_data);
         goto out;
@@ -413,13 +413,13 @@ int dt_imageio_heif_read_profile(const char *filename,
 
     case heif_color_profile_type_not_present:
       dt_print(DT_DEBUG_IMAGEIO,
-             "No color profile for HEIF file [%s]\n",
+             "No color profile for HEIF file [%s]",
              filename);
       break; /* heif_color_profile_type_not_present */
 
     default:
       dt_print(DT_DEBUG_IMAGEIO,
-                "Unknown color profile data from HEIF file [%s]\n",
+                "Unknown color profile data from HEIF file [%s]",
                 filename);
       break;
   }

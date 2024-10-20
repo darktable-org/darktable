@@ -49,7 +49,7 @@ static int save_password(lua_State *L)
 
   if(!dt_pwstorage_set(application, table))
   {
-    dt_print(DT_DEBUG_PWSTORAGE, "[%s] cannot store username/token\n", application);
+    dt_print(DT_DEBUG_PWSTORAGE, "[%s] cannot store username/token", application);
     result = FALSE;
   }
 
