@@ -186,47 +186,66 @@ static void _get_xmp_tags(const char *prefix,
   }
 }
 
-static int _illu_to_temp(const dt_dng_illuminant_t illu)
+/*
+  The correction matrices are taken from http://www.brucelindbloom.com - chromatic Adaption.
+  using Bradford method: found Illuminant -> D65
+
+  ISOStudioTungsten, DaylightFluorescent, DayWhiteFluorescent, CoolWhiteFluorescent,
+  WhiteFluorescent and WarmWhiteFluorescent were calculated with xy coord from DNG SDK as reference -> XYZ -> D65
+
+  xy coord and temperatures are the same as in DNG SDK and habe not been changed in dt.
+*/
+
+static const struct dt_dng_illuminant_data_t illuminant_data[DT_LS_Other + 1] =
 {
-  switch(illu)
-  {
-    case DT_LS_StandardLightA:
-    case DT_LS_Tungsten:
-      return 2850;
-    case DT_LS_ISOStudioTungsten:
-      return 3200;
-    case DT_LS_StandardLightB:
-      return 4871;
-    case DT_LS_StandardLightC:
-      return 6774;
-    case DT_LS_D50:
-      return 5000;
-    case DT_LS_D55:
-    case DT_LS_Daylight:
-    case DT_LS_FineWeather:
-    case DT_LS_Flash:
-      return 5500;
-    case DT_LS_D65:
-    case DT_LS_CloudyWeather:
-      return 6500;
-    case DT_LS_D75:
-    case DT_LS_Shade:
-      return 7500;
-    case DT_LS_DaylightFluorescent:
-      return 6430;
-    case DT_LS_DayWhiteFluorescent:
-      return 5000;
-    case DT_LS_CoolWhiteFluorescent:
-      return 4150;
-    case DT_LS_Fluorescent:
-      return 4230;
-    case DT_LS_WhiteFluorescent:
-      return 3450;
-    case DT_LS_WarmWhiteFluorescent:
-      return 2940;
-    default:
-      return 0;
-  }
+  { 0,    "Unknown Illuminant",   {0.0, 0.0},           {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}},
+  { 5500, "Daylight",             {0.3324, 0.3474},     {0.9726856, -0.0135482, 0.0361731, -0.0167463, 1.0049102, 0.0120598, 0.0070026, -0.0116372, 1.1869548}},
+  { 4230, "Fluorescent",          {0.37208, 0.37529},   {0.9212269, -0.0449128, 0.1211620, -0.0553723, 1.0277243, 0.0403563, 0.0235086, -0.0391019, 1.6390644}},
+  { 2850, "Tungsten",             {0.4476, 0.4074},     {0.8446965, -0.1179225, 0.3948108, -0.1366303, 1.1041226, 0.1291718, 0.0798489, -0.1348999, 3.1924009}},
+  { 5500, "Flash",                {0.3324, 0.3474},     {0.9726856, -0.0135482, 0.0361731, -0.0167463, 1.0049102, 0.0120598, 0.0070026, -0.0116372, 1.1869548}},
+  { 0,    "Unknown Illuminant5",  {0.0, 0.0},           {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}},
+  { 0,    "Unknown Illuminant6",  {0.0, 0.0},           {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}},
+  { 0,    "Unknown Illuminant7",  {0.0, 0.0},           {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}},
+  { 0,    "Unknown Illuminant8",  {0.0, 0.0},           {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}},
+  { 5500, "FineWeather",          {0.3324, 0.3474},     {0.9726856, -0.0135482, 0.0361731, -0.0167463, 1.0049102, 0.0120598, 0.0070026, -0.0116372, 1.1869548}},
+  { 6500, "CloudyWeather",        {0.3127, 0.3290},     {1.0, 0.0, 0.0,   0.0, 1.0, 0.0,   0.0, 0.0, 1.0}},
+  { 7500, "Shade",                {0.2990, 0.3149},     {1.0206905, 0.0091588, -0.0228796, 0.0115005, 0.9984917, -0.0076762, -0.0043619, 0.0072053, 0.8853432}},
+  { 6430, "DaylightFluorescent",  {0.31310, 0.33727},   {1.0096114, 0.0061501, 0.0068113, 0.0102539, 0.9888663, 0.0015575, 0.0023119, -0.0044823, 1.0525915}},
+  { 5000, "DayWhiteFluorescent",  {0.34588, 0.35875},   {0.9554129, -0.0231280, 0.0637169, -0.0283629, 1.0099053, 0.0211824, 0.0124188, -0.0206922, 1.3330592}},
+  { 4150, "CoolWhiteFluorescent", {0.37417, 0.37281},   {0.9147843, -0.0492842, 0.1202810, -0.0622085, 1.034984, 0.0404480, 0.0228014, -0.0375807, 1.6259804}},
+  { 3450, "WhiteFluorescent",     {0.40910, 0.39430},   {0.8805388, -0.0774890, 0.2293784, -0.0932136, 1.0589267, 0.0757827, 0.0453660, -0.0760107, 2.2417979}},
+  { 2940, "WarmWhiteFluorescent", {0.44018, 0.40329},   {0.8488316, -0.1107439, 0.3471428, -0.1310107, 1.0986874, 0.1141548, 0.0694025, -0.1167541, 2.9109462}},
+  { 2850, "StandardLightA",       {0.4476, 0.4074},     {0.8446965, -0.1179225, 0.3948108, -0.1366303, 1.1041226, 0.1291718, 0.0798489, -0.1348999, 3.1924009}},
+  { 4871, "StandardLightB",       {0.348483, 0.351747}, {0.9415037, -0.0321240, 0.0584672, -0.0428238, 1.0250998, 0.0203309, 0.0101511, -0.0161170, 1.2847354}},
+  { 6774, "StandardLightC",       {0.310061, 0.316150}, {0.9904476, -0.0071683, -0.0116156, -0.0123712, 1.0155950, -0.0029282, -0.0035635, 0.0067697, 0.9181569}},
+  { 5500, "D55",                  {0.3324, 0.3474},     {0.9726856, -0.0135482, 0.0361731, -0.0167463, 1.0049102, 0.0120598, 0.0070026, -0.0116372, 1.1869548}},
+  { 6500, "D65",                  {0.3127, 0.3290},     {1.0, 0.0, 0.0,   0.0, 1.0, 0.0,   0.0, 0.0, 1.0}},
+  { 7500, "D75",                  {0.2990, 0.3149},     {1.0206905, 0.0091588, -0.0228796, 0.0115005, 0.9984917, -0.0076762, -0.0043619, 0.0072053, 0.8853432}},
+  { 5000, "D50",                  {0.3457, 0.3585},     {0.9555766, -0.0230393, 0.0631636, -0.0282895, 1.0099416, 0.0210077, 0.0122982, -0.0204830, 1.3299098}},
+  { 3200, "ISOStudioTungsten",    {0.40910, 0.39430},   {0.8663030, -0.0913083, 0.2771784, -0.1090504, 1.0746895, 0.0913841, 0.0550856, -0.0924636, 2.5119387}},
+  { 6500, "Other illuminant",     {0.3127, 0.3290},     {1.0, 0.0, 0.0,   0.0, 1.0, 0.0,   0.0, 0.0, 1.0}}
+};
+
+
+static inline const char *_illu_to_str(const dt_dng_illuminant_t illu)
+{
+  return illuminant_data[illu].name;
+}
+
+static inline int _illu_to_temp(const dt_dng_illuminant_t illu)
+{
+  return illuminant_data[illu].temp;
+}
+
+// we append i immediately after the title only if it's in the range 1-3
+static inline void _print_matrix_data(const char *title, const int i, float *M)
+{
+  dt_print(DT_DEBUG_IMAGEIO, "%s%s%s%s = %.4f %.4f %.4f | %.4f %.4f %.4f | %.4f %.4f %.4f",
+    title,
+    i == 1 ? "1" : "",
+    i == 2 ? "2" : "",
+    i == 3 ? "3" : "",
+    M[0], M[1], M[2], M[3], M[4], M[5], M[6], M[7], M[8]);
 }
 
 void dt_exif_set_exiv2_taglist()
@@ -1780,125 +1799,166 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         dt_image_set_xmp_rating(img, -2);
     }
 
-    // Read embedded color matrix as used in DNGs.
+    // Read embedded color matrix and DNG related tags.
+    if(FIND_EXIF_TAG("Exif.Image.DNGVersion"))
     {
-      float colmatrix[3][12];
-      dt_mark_colormatrix_invalid(&colmatrix[0][0]);
-      dt_mark_colormatrix_invalid(&colmatrix[1][0]);
-      dt_mark_colormatrix_invalid(&colmatrix[2][0]);
+      // initialize matrixes and data with noop / defaults
+      float CM[3][9];
+      float FM[3][9];
+      float CC[3][9];
+      float AB[9];
+
+      for(int k = 0; k < 3; k++)    // found illuminants
+        for(int y = 0; y < 3; y++)
+          for(int x = 0; x < 3; x++)
+          {
+            const int i = 3 * y + x;
+            CM[k][i] = FM[k][i] = CC[k][i] = AB[i] = x == y ? 1.0f : 0.0f;
+          }
+
+      // flags about what we got as exif tags
+      gboolean has_CM[3] = { FALSE, FALSE, FALSE };
+      gboolean has_FM[3] = { FALSE, FALSE, FALSE };
+      gboolean has_CC[3] = { FALSE, FALSE, FALSE };
+      gboolean has_AB = FALSE;
+
       dt_dng_illuminant_t illu[3] = { DT_LS_Unknown, DT_LS_Unknown, DT_LS_Unknown };
-      dt_mark_colormatrix_invalid(&img->d65_color_matrix[0]);
+
       // make sure for later testing fallback later via
-      // `find_temperature_from_raw_coeffs` if there is no valid
-      // illuminant
+      // `find_temperature_from_raw_coeffs` if there is no valid illuminant
+      dt_mark_colormatrix_invalid(&img->d65_color_matrix[0]);
 
-      // The correction matrices are taken from
-      // http://www.brucelindbloom.com - chromatic Adaption.
-      // using Bradford method: found Illuminant -> D65
-      const float correctmat[13][9] = {
-        { 0.9555766, -0.0230393, 0.0631636, -0.0282895, 1.0099416, 0.0210077, 0.0122982, -0.0204830,
-          1.3299098 }, // D50
-        { 0.9726856, -0.0135482, 0.0361731, -0.0167463, 1.0049102, 0.0120598, 0.0070026, -0.0116372,
-          1.1869548 }, // D55
-        { 1.0206905, 0.0091588, -0.0228796, 0.0115005, 0.9984917, -0.0076762, -0.0043619, 0.0072053,
-          0.8853432 }, // D75
-        { 0.8446965, -0.1179225, 0.3948108, -0.1366303, 1.1041226, 0.1291718, 0.0798489, -0.1348999,
-          3.1924009 }, // Standard light A
-        { 0.9415037, -0.0321240, 0.0584672, -0.0428238, 1.0250998, 0.0203309, 0.0101511, -0.0161170,
-          1.2847354 }, // Standard light B
-        { 0.9904476, -0.0071683, -0.0116156, -0.0123712, 1.0155950, -0.0029282, -0.0035635, 0.0067697,
-          0.9181569 }, //  Standard light C
-        { 0.9212269, -0.0449128, 0.1211620, -0.0553723, 1.0277243, 0.0403563, 0.0235086, -0.0391019,
-          1.6390644 }, // Fluorescent (F2)
+#if EXIV2_TEST_VERSION(0,27,4)
+      Exiv2::ExifData::const_iterator ab_pos =
+        exifData.findKey(Exiv2::ExifKey("Exif.Image.AnalogBalance"));
+      if(ab_pos != exifData.end() && ab_pos->count() == 3)
+      {
+        AB[0] = ab_pos->toFloat(0);
+        AB[4] = ab_pos->toFloat(1);
+        AB[8] = ab_pos->toFloat(2);
+        has_AB = TRUE;
+      }
+#endif
 
-        // The following are calculated using the same Bradford method,
-        // with xy coord from DNG SDK as reference -> XYZ -> D65
-        { 0.8663030, -0.0913083, 0.2771784, -0.1090504, 1.0746895, 0.0913841, 0.0550856, -0.0924636,
-          2.5119387 }, // ISO Studio Tungsten (3200K first converted to xy as DNG SDK does)
-        { 1.0096114, 0.0061501, 0.0068113, 0.0102539, 0.9888663, 0.0015575, 0.0023119, -0.0044823,
-          1.0525915 }, // DaylightFluorescent (F1)
-        { 0.9554129, -0.0231280, 0.0637169, -0.0283629, 1.0099053, 0.0211824, 0.0124188, -0.0206922,
-          1.3330592 }, // DayWhiteFluorescent (F8)
-        { 0.9147843, -0.0492842, 0.1202810, -0.0622085, 1.034984, 0.0404480, 0.0228014, -0.0375807,
-          1.6259804 }, // CoolWhiteFluorescent (F9)
-        { 0.8805388, -0.0774890, 0.2293784, -0.0932136, 1.0589267, 0.0757827, 0.0453660, -0.0760107,
-          2.2417979 }, // WhiteFluorescent (F3)
-        { 0.8488316, -0.1107439, 0.3471428, -0.1310107, 1.0986874, 0.1141548, 0.0694025, -0.1167541,
-          2.9109462 }  // WarmWhiteFluorescent (F4)
-      };
+      if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant1"))
+        illu[0] = MIN(DT_LS_Other, (dt_dng_illuminant_t) pos->toLong());
+
+      if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant2"))
+        illu[1] = MIN(DT_LS_Other, (dt_dng_illuminant_t) pos->toLong());
+
+#if EXIV2_TEST_VERSION(0,27,4)
+      if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant3"))
+        illu[2] = MIN(DT_LS_Other, (dt_dng_illuminant_t) pos->toLong());
+#endif
 
       Exiv2::ExifData::const_iterator cm1_pos =
         exifData.findKey(Exiv2::ExifKey("Exif.Image.ColorMatrix1"));
-      if((cm1_pos != exifData.end())
-         && (cm1_pos->count() == 9))
+      if(cm1_pos != exifData.end() && cm1_pos->count() == 9)
       {
-        for(int i = 0; i < 9; i++) colmatrix[0][i] = cm1_pos->toFloat(i);
-
-        if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant1"))
-          illu[0] = (dt_dng_illuminant_t) pos->toLong();
+        for(int i = 0; i < 9; i++) CM[0][i] = cm1_pos->toFloat(i);
+        has_CM[0] = TRUE;
 
         Exiv2::ExifData::const_iterator cc1_pos =
           exifData.findKey(Exiv2::ExifKey("Exif.Image.CameraCalibration1"));
-        if((cc1_pos != exifData.end()) && (cc1_pos->count() == 9))
+        if(cc1_pos != exifData.end() && cc1_pos->count() == 9)
         {
-          float camera_matrix[12] = { 0.0f };
-          float tmp[12] = { 0.0f };
-          for(int i = 0; i < 9; i++) camera_matrix[i] = cc1_pos->toFloat(i);
-          mat3mul(tmp, camera_matrix, colmatrix[0]);
-          for(int i = 0; i < 9; i++) colmatrix[0][i] = tmp[i];
+          for(int i = 0; i < 9; i++) CC[0][i] = cc1_pos->toFloat(i);
+          has_CC[0] = TRUE;
+        }
+
+        Exiv2::ExifData::const_iterator fm1_pos =
+          exifData.findKey(Exiv2::ExifKey("Exif.Image.ForwardMatrix1"));
+        if(fm1_pos != exifData.end() && fm1_pos->count() == 9)
+        {
+          for(int i = 0; i < 9; i++) FM[0][i] = fm1_pos->toFloat(i);
+          has_FM[0] = TRUE;
         }
       }
 
       Exiv2::ExifData::const_iterator cm2_pos =
         exifData.findKey(Exiv2::ExifKey("Exif.Image.ColorMatrix2"));
-      if((cm2_pos != exifData.end())
-         && (cm2_pos->count() == 9))
+      if(cm2_pos != exifData.end() && cm2_pos->count() == 9)
       {
-        for(int i = 0; i < 9; i++) colmatrix[1][i] = cm2_pos->toFloat(i);
-
-        if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant2"))
-          illu[1] = (dt_dng_illuminant_t) pos->toLong();
+        for(int i = 0; i < 9; i++) CM[1][i] = cm2_pos->toFloat(i);
+        has_CM[1] = TRUE;
 
         Exiv2::ExifData::const_iterator cc2_pos =
           exifData.findKey(Exiv2::ExifKey("Exif.Image.CameraCalibration2"));
-        if((cc2_pos != exifData.end()) && (cc2_pos->count() == 9))
+        if(cc2_pos != exifData.end() && cc2_pos->count() == 9)
         {
-          float camera_matrix[12] = { 0.0f };
-          float tmp[12] = { 0.0f };
-          for(int i = 0; i < 9; i++) camera_matrix[i] = cc2_pos->toFloat(i);
-          mat3mul(tmp, camera_matrix, colmatrix[1]);
-          for(int i = 0; i < 9; i++) colmatrix[1][i] = tmp[i];
+          for(int i = 0; i < 9; i++) CC[1][i] = cc2_pos->toFloat(i);
+          has_CC[1] = TRUE;
+        }
+
+        Exiv2::ExifData::const_iterator fm2_pos =
+          exifData.findKey(Exiv2::ExifKey("Exif.Image.ForwardMatrix2"));
+        if(fm2_pos != exifData.end() && fm2_pos->count() == 9)
+        {
+          for(int i = 0; i < 9; i++) FM[1][i] = fm2_pos->toFloat(i);
+          has_FM[1] = TRUE;
         }
       }
 
-      // So far the Exif.Image.CalibrationIlluminant3 tag and friends
-      // have not been implemented and there are no images to test.
 #if EXIV2_TEST_VERSION(0,27,4)
       Exiv2::ExifData::const_iterator cm3_pos =
         exifData.findKey(Exiv2::ExifKey("Exif.Image.ColorMatrix3"));
-      if((cm3_pos != exifData.end())
-         && (cm3_pos->count() == 9))
+      if(cm3_pos != exifData.end() && cm3_pos->count() == 9)
       {
-        for(int i = 0; i < 9; i++) colmatrix[2][i] = cm3_pos->toFloat(i);
-
-        if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant3"))
-          illu[2] = (dt_dng_illuminant_t) pos->toLong();
+        for(int i = 0; i < 9; i++) CM[2][i] = cm3_pos->toFloat(i);
+        has_CM[2] = TRUE;
 
         Exiv2::ExifData::const_iterator cc3_pos =
           exifData.findKey(Exiv2::ExifKey("Exif.Image.CameraCalibration3"));
-        if((cc3_pos != exifData.end()) && (cc3_pos->count() == 9))
+        if(cc3_pos != exifData.end() && cc3_pos->count() == 9)
         {
-          float camera_matrix[12] = { 0.0f };
-          float tmp[12] = { 0.0f };
-          for(int i = 0; i < 9; i++) camera_matrix[i] = cc3_pos->toFloat(i);
-          mat3mul(tmp, camera_matrix, colmatrix[2]);
-          for(int i = 0; i < 9; i++) colmatrix[2][i] = tmp[i];
+          for(int i = 0; i < 9; i++) CC[2][i] = cc3_pos->toFloat(i);
+          has_CC[2] = TRUE;
+        }
+
+        Exiv2::ExifData::const_iterator fm3_pos =
+          exifData.findKey(Exiv2::ExifKey("Exif.Image.ForwardMatrix3"));
+        if(fm3_pos != exifData.end() && fm3_pos->count() == 9)
+        {
+          for(int i = 0; i < 9; i++) FM[2][i] = fm3_pos->toFloat(i);
+          has_FM[2] = TRUE;
         }
       }
 #endif
 
+      dt_print(DT_DEBUG_IMAGEIO, "[exif] check dng exif data in `%s`", img->filename);
+      if(has_AB)
+        dt_print(DT_DEBUG_IMAGEIO, "has AnalogBalance %.4f %.4f %.4f", AB[0], AB[4], AB[8]);
+
+      for(int k = 0; k < 3; k++)
+      {
+        const gboolean anymat = has_CM[k] || has_CC[k] || has_FM[k];
+
+        // Currently dt does not support DT_LS_Other so we do a fallback but backreport and request a github issue
+        if(illu[k] == DT_LS_Other)
+        {
+          dt_control_log(_("detected OtherIlluminant in `%s`, please report via darktable github"), img->filename);
+          dt_print(DT_DEBUG_IMAGEIO, "detected not-implemented OtherIlluminant in `%s`, please report via darktable github", img->filename);
+          illu[k] = DT_LS_D65;
+        }
+
+        if(illu[k] != DT_LS_Unknown)
+          dt_print(DT_DEBUG_IMAGEIO, "has CalibrationIlluminant%i = %s", k+1, _illu_to_str(illu[k]));
+        else if(anymat)
+          dt_print(DT_DEBUG_IMAGEIO, "undefined CalibrationIlluminant%i", k+1);
+
+        if(has_CM[k]) _print_matrix_data("has ColorMatrix", k+1, CM[k]);
+        if(has_CC[k]) _print_matrix_data("has CameraCalibration", k+1, CC[k]);
+        if(has_FM[k]) _print_matrix_data("has ForwardMatrix", k+1, FM[k]);
+      }
+
+      // Find the best illuminant
+      // Prepare checks for required interpolation
+      // FIXME interpolate the matrixes
       int sel_illu = -1;
+
       int sel_temp = 0;
+      int found_illus = 0;
+      int min_temp = 100000;
       const int D65temp = _illu_to_temp(DT_LS_D65);
       int delta_min = D65temp;
 
@@ -1906,109 +1966,70 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       // We first try to find D65 or take the next higher.
       for(int i = 0; i < 3; ++i)
       {
-        int temp_cur = _illu_to_temp(illu[i]);
-        int delta_cur = abs(temp_cur - D65temp);
-        if((temp_cur > sel_temp) && (delta_cur <= delta_min))
+        if(illu[i] != DT_LS_Unknown)
         {
-          sel_illu = i;
-          sel_temp = temp_cur;
-          delta_min = delta_cur;
+          const int temp_cur = _illu_to_temp(illu[i]);
+          min_temp = MIN(min_temp, temp_cur);
+          const int delta_cur = abs(temp_cur - D65temp);
+          if(temp_cur > sel_temp && delta_cur <= delta_min)
+          {
+            sel_illu = i;
+            sel_temp = temp_cur;
+            delta_min = delta_cur;
+          }
+          found_illus++;
         }
       }
-      // If there is none defined we'll use the first valid color matrix
-      // without correction, i.e. assume D65 (keep dt < 3.8 behavior).
-      // TODO: "Other" illuminant is currently unsupported.
+
+      const gboolean interpolate = found_illus > 1 && sel_temp > D65temp && min_temp < D65temp && min_temp > 0;
+      if(interpolate)
+      {
+        dt_control_log(_("special exif illuminants in `%s`, please report via darktable github"), img->filename);
+        dt_print(DT_DEBUG_ALWAYS, "special exif illuminants in `%s`, please report via darktable github", img->filename);
+      }
+
+
+      // If there is none defined we'll use the first valid color matrix assuming it's D65 (keep dt < 3.8 behavior).
       if(sel_illu == -1)
       {
-        for(int i = 0; i < 3; ++i)
+        for(int i = 0; i < 3; i++)
         {
-          if((illu[i] == DT_LS_Unknown) && dt_is_valid_colormatrix(colmatrix[i][0]))
+          if(illu[i] == DT_LS_Unknown && has_CM[i])
           {
             sel_illu = i;
             sel_temp = D65temp;
+            dt_print(DT_DEBUG_IMAGEIO, "[exif] Unknown Illuminant fallback to D65");
+            illu[i] = DT_LS_D65;
             break;
           }
         }
       }
-      if(sel_illu > -1)
-        dt_print(DT_DEBUG_IMAGEIO,
-                 "[exif] `%s` dng illuminant %i (%iK) selected from"
-                 "  [1] %i (%iK), [2] %i (%iK), [3] %i (%iK)",
-                 img->filename, illu[sel_illu], sel_temp,
-                 illu[0], _illu_to_temp(illu[0]),
-                 illu[1], _illu_to_temp(illu[1]),
-                 illu[2], _illu_to_temp(illu[2]));
 
-      // Take the found CalibrationIlluminant / ColorMatrix pair.
-      // D65: just copy. Otherwise multiply by the specific correction matrix.
-      if(sel_illu > -1)
+      if(sel_illu > -1 && sel_illu < 3)
       {
-       // If no supported Illuminant is found/assumed it's better NOT to use any matrix.
-       // The colorin module will write an error message and use a fallback matrix
-       // instead of showing wrong colors.
-        switch(illu[sel_illu])
+        const dt_dng_illuminant_t illuminant = illu[sel_illu];
+        const gboolean forward_suggested = has_FM[sel_illu];
+        if(forward_suggested)
         {
-          case DT_LS_D50:
-            mat3mul(img->d65_color_matrix, correctmat[0], colmatrix[sel_illu]);
-            break;
-          case DT_LS_D55:
-          case DT_LS_Daylight:
-          case DT_LS_FineWeather:
-          case DT_LS_Flash:
-            mat3mul(img->d65_color_matrix, correctmat[1], colmatrix[sel_illu]);
-            break;
-          case DT_LS_D75:
-          case DT_LS_Shade:
-            mat3mul(img->d65_color_matrix, correctmat[2], colmatrix[sel_illu]);
-            break;
-          case DT_LS_Tungsten:
-          case DT_LS_StandardLightA:
-            mat3mul(img->d65_color_matrix, correctmat[3], colmatrix[sel_illu]);
-            break;
-          case DT_LS_StandardLightB:
-            mat3mul(img->d65_color_matrix, correctmat[4], colmatrix[sel_illu]);
-            break;
-          case DT_LS_StandardLightC:
-            mat3mul(img->d65_color_matrix, correctmat[5], colmatrix[sel_illu]);
-            break;
-          case DT_LS_Fluorescent:
-            mat3mul(img->d65_color_matrix, correctmat[6], colmatrix[sel_illu]);
-            break;
-          case DT_LS_ISOStudioTungsten:
-            mat3mul(img->d65_color_matrix, correctmat[7], colmatrix[sel_illu]);
-            break;
-          case DT_LS_DaylightFluorescent:
-            mat3mul(img->d65_color_matrix, correctmat[8], colmatrix[sel_illu]);
-            break;
-          case DT_LS_DayWhiteFluorescent:
-            mat3mul(img->d65_color_matrix, correctmat[9], colmatrix[sel_illu]);
-            break;
-          case DT_LS_CoolWhiteFluorescent:
-            mat3mul(img->d65_color_matrix, correctmat[10], colmatrix[sel_illu]);
-            break;
-          case DT_LS_WhiteFluorescent:
-            mat3mul(img->d65_color_matrix, correctmat[11], colmatrix[sel_illu]);
-            break;
-          case DT_LS_WarmWhiteFluorescent:
-            mat3mul(img->d65_color_matrix, correctmat[12], colmatrix[sel_illu]);
-            break;
-          case DT_LS_D65:
-          case DT_LS_CloudyWeather:
-          case DT_LS_Unknown: // exceptional fallback to keep dt < 3.8 behavior
-            for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = colmatrix[sel_illu][i];
-            break;
-
-          default:
-            dt_print(DT_DEBUG_ALWAYS,
-                     "[exif] did not find a proper DNG correction matrix"
-                     " for illuminant %i",
-                     illu[sel_illu]);
-            break;
+          dt_control_log(_("forward matrix in `%s`, please report via darktable github"), img->filename);
         }
-        dt_print(DT_DEBUG_IMAGEIO, "[exif] d65 matrix: %.4f %.4f %.4f | %.4f %.4f %.4f | %.4f %.4f %.4f",
-           img->d65_color_matrix[0], img->d65_color_matrix[1], img->d65_color_matrix[2],
-           img->d65_color_matrix[3], img->d65_color_matrix[4], img->d65_color_matrix[5],
-           img->d65_color_matrix[6], img->d65_color_matrix[7], img->d65_color_matrix[8]);
+        dt_print(DT_DEBUG_IMAGEIO,
+          "[exif] %s%s%s: selected from  [1] %s (%iK), [2] %s (%iK), [3] %s (%iK)",
+                 _illu_to_str(illuminant),
+                interpolate ? " (should be interpolated)" : "",
+                forward_suggested ? " (forward)" : "",
+                 _illu_to_str(illu[0]), _illu_to_temp(illu[0]),
+                 _illu_to_str(illu[1]), _illu_to_temp(illu[1]),
+                 _illu_to_str(illu[2]), _illu_to_temp(illu[2]));
+
+        float DT_ALIGNED_ARRAY cameratoXYZ[9];
+        float DT_ALIGNED_ARRAY ABxCC[9];
+
+        mat3mul(ABxCC, AB, CC[sel_illu]);
+        mat3mul(cameratoXYZ, ABxCC, CM[sel_illu]);
+
+        mat3mul(img->d65_color_matrix, illuminant_data[illuminant].CA, cameratoXYZ);
+        _print_matrix_data("dt_image_t d65_color_matrix", 0, img->d65_color_matrix);
       }
     }
 
@@ -2057,6 +2078,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       img->flags |= DT_IMAGE_MONOCHROME;
       dt_imageio_update_monochrome_workflow_tag(img->id, DT_IMAGE_MONOCHROME);
     }
+
     // Some files have the colorspace explicitly set. Try to read that.
     // is_ldr -> none
     // 0x01   -> sRGB
@@ -2606,7 +2628,19 @@ int dt_exif_read_blob(uint8_t **buf,
       "Exif.Image.ProfileLookTableDims",
       "Exif.Image.ProfileLookTableData",
       "Exif.Image.ProfileLookTableEncoding",
+
+#if EXIV2_TEST_VERSION(0,27,4)
+      "Exif.Image.ProfileHueSatMapEncoding",
+      "Exif.Image.ColorMatrix3",
+      "Exif.Image.CameraCalibration3",
+      "Exif.Image.CalibrationIlluminant3",
+      "Exif.Image.ReductionMatrix3",
+      "Exif.Image.ProfileHueSatMapData3",
+      "Exif.Image.ForwardMatrix3"
+#else
       "Exif.Image.ProfileHueSatMapEncoding"
+#endif
+
     };
     static const guint n_dngkeys = G_N_ELEMENTS(dngkeys);
     _remove_exif_keys(exifData, dngkeys, n_dngkeys);
