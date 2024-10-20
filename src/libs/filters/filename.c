@@ -313,7 +313,7 @@ static void _filename_tree_selection_change(GtkTreeSelection *sel, _widgets_file
     {
       gchar *val = NULL;
       gtk_tree_model_get(model, &iter, TREE_COL_PATH, &val, -1);
-      if(val) txt = dt_util_dstrcat(txt, "%s%s", (txt == NULL) ? "" : ",", val);
+      if(val) dt_util_str_cat(&txt, "%s%s", (txt == NULL) ? "" : ",", val);
     }
   }
   g_list_free_full(list, (GDestroyNotify)gtk_tree_path_free);

@@ -1095,19 +1095,19 @@ static dt_lib_modulegroup_iop_visibility_type_t _preset_retrieve_old_search_pref
   if(strcmp(show_text_entry, "show search text") == 0)
   {
     // we only show the search box. no groups
-    *ret = dt_util_dstrcat(*ret, "1ꬹ1");
+    dt_util_str_cat(&*ret, "1ꬹ1");
     val = DT_MODULEGROUP_SEARCH_IOP_TEXT_VISIBLE;
   }
   else if(strcmp(show_text_entry, "show groups") == 0)
   {
     // we don't show the search box
-    *ret = dt_util_dstrcat(*ret, "0");
+    dt_util_str_cat(&*ret, "0");
     val = DT_MODULEGROUP_SEARCH_IOP_GROUPS_VISIBLE;
   }
   else
   {
     // we show both
-    *ret = dt_util_dstrcat(*ret, "1");
+    dt_util_str_cat(&*ret, "1");
     val = DT_MODULEGROUP_SEARCH_IOP_TEXT_GROUPS_VISIBLE;
   }
   return val;
@@ -1135,19 +1135,19 @@ static gchar *_preset_retrieve_old_layout_updated()
     // group name and icon
     if(i == 0)
     {
-      ret = dt_util_dstrcat(
-          ret, "1|0ꬹ1|||%s",
+      dt_util_str_cat(&ret,
+          "1|0ꬹ1|||%s",
           "exposure/exposure|temperature/temperature|temperature/tint|colorbalancergb/contrast"
           "|colorbalancergb/global vibrance|colorbalancergb/global chroma|colorbalancergb/global saturation"
           "|ashift/rotation|denoiseprofile|lens|bilat");
-      ret = dt_util_dstrcat(ret, "ꬹfavorites|favorites|");
+      dt_util_str_cat(&ret, "ꬹfavorites|favorites|");
     }
     else if(i == 1)
-      ret = dt_util_dstrcat(ret, "ꬹtechnical|technical|");
+      dt_util_str_cat(&ret, "ꬹtechnical|technical|");
     else if(i == 2)
-      ret = dt_util_dstrcat(ret, "ꬹgrading|grading|");
+      dt_util_str_cat(&ret, "ꬹgrading|grading|");
     else if(i == 3)
-      ret = dt_util_dstrcat(ret, "ꬹeffects|effect|");
+      dt_util_str_cat(&ret, "ꬹeffects|effect|");
 
     // list of modules
     for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
@@ -1168,7 +1168,7 @@ static gchar *_preset_retrieve_old_layout_updated()
         if((i == 0 && fav && visi) || (i == 1 && (group & IOP_GROUP_TECHNICAL) && visi)
            || (i == 2 && (group & IOP_GROUP_GRADING) && visi) || (i == 3 && (group & IOP_GROUP_EFFECTS) && visi))
         {
-          ret = dt_util_dstrcat(ret, "|%s", module->op);
+          dt_util_str_cat(&ret, "|%s", module->op);
         }
       }
     }
@@ -1190,23 +1190,23 @@ static gchar *_preset_retrieve_old_layout(const char *list, const char *list_fav
     if(i == 0)
     {
       // we don't have to care about "modern" workflow for temperature as it's more recent than this layout
-      ret = dt_util_dstrcat(
-          ret, "1|0ꬹ1|||%s",
+      dt_util_str_cat(&ret,
+          "1|0ꬹ1|||%s",
           "exposure/exposure|temperature/temperature|temperature/tint|colorbalancergb/contrast"
           "|colorbalancergb/global vibrance|colorbalancergb/global chroma|colorbalancergb/global saturation"
           "|ashift/rotation|denoiseprofile|lens|bilat");
-      ret = dt_util_dstrcat(ret, "ꬹfavorites|favorites|");
+      dt_util_str_cat(&ret, "ꬹfavorites|favorites|");
     }
     else if(i == 1)
-      ret = dt_util_dstrcat(ret, "ꬹbase|basic|");
+      dt_util_str_cat(&ret, "ꬹbase|basic|");
     else if(i == 2)
-      ret = dt_util_dstrcat(ret, "ꬹtone|tone|");
+      dt_util_str_cat(&ret, "ꬹtone|tone|");
     else if(i == 3)
-      ret = dt_util_dstrcat(ret, "ꬹcolor|color|");
+      dt_util_str_cat(&ret, "ꬹcolor|color|");
     else if(i == 4)
-      ret = dt_util_dstrcat(ret, "ꬹcorrect|correct|");
+      dt_util_str_cat(&ret, "ꬹcorrect|correct|");
     else if(i == 5)
-      ret = dt_util_dstrcat(ret, "ꬹeffect|effect|");
+      dt_util_str_cat(&ret, "ꬹeffect|effect|");
 
     // list of modules
     for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
@@ -1264,7 +1264,7 @@ static gchar *_preset_retrieve_old_layout(const char *list, const char *list_fav
 
         if((i == 0 && fav && visi) || (i == group && visi))
         {
-          ret = dt_util_dstrcat(ret, "|%s", module->op);
+          dt_util_str_cat(&ret, "|%s", module->op);
         }
 
         g_free(search);
@@ -1302,16 +1302,16 @@ static void _preset_retrieve_old_presets(dt_lib_module_t *self)
       dt_iop_module_state_t state = p[pos + op_len + 1];
 
       if(state == IOP_STATE_ACTIVE)
-        list = dt_util_dstrcat(list, "|%s", op);
+        dt_util_str_cat(&list, "|%s", op);
       else if(state == IOP_STATE_FAVORITE)
       {
-        fav = dt_util_dstrcat(fav, "|%s", op);
-        list = dt_util_dstrcat(list, "|%s", op);
+        dt_util_str_cat(&fav, "|%s", op);
+        dt_util_str_cat(&list, "|%s", op);
       }
       pos += op_len + 2;
     }
-    list = dt_util_dstrcat(list, "|");
-    fav = dt_util_dstrcat(fav, "|");
+    dt_util_str_cat(&list, "|");
+    dt_util_str_cat(&fav, "|");
 
     gchar *tx = _preset_retrieve_old_layout(list, fav);
     dt_lib_presets_add(pname, self->plugin_name, self->version(), tx, strlen(tx), FALSE, 0);
@@ -1334,28 +1334,28 @@ static gchar *_preset_to_string(dt_lib_module_t *self, gboolean edition)
   gchar *res = NULL;
   const gboolean show_search = edition ? d->edit_show_search : d->show_search;
   const gboolean full_active = edition ? d->edit_full_active : d->full_active;
-  res = dt_util_dstrcat(res, "%d|%d", show_search ? 1 : 0, full_active ? 1 : 0);
+  dt_util_str_cat(&res, "%d|%d", show_search ? 1 : 0, full_active ? 1 : 0);
 
   const gboolean basics_show = edition ? d->edit_basics_show : d->basics_show;
   GList *basics = edition ? d->edit_basics : d->basics;
   GList *groups = edition ? d->edit_groups : d->groups;
 
   // basics widgets
-  res = dt_util_dstrcat(res, "ꬹ%d||", basics_show ? 1 : 0);
+  dt_util_str_cat(&res, "ꬹ%d||", basics_show ? 1 : 0);
   for(const GList *l = basics; l; l = g_list_next(l))
   {
     dt_lib_modulegroups_basic_item_t *item = l->data;
-    res = dt_util_dstrcat(res, "|%s", item->id);
+    dt_util_str_cat(&res, "|%s", item->id);
   }
 
   for(const GList *l = groups; l; l = g_list_next(l))
   {
     dt_lib_modulegroups_group_t *g = l->data;
-    res = dt_util_dstrcat(res, "ꬹ%s|%s|", g->name, g->icon);
+    dt_util_str_cat(&res, "ꬹ%s|%s|", g->name, g->icon);
     for(const GList *ll = g->modules; ll; ll = g_list_next(ll))
     {
       gchar *m = (gchar *)ll->data;
-      res = dt_util_dstrcat(res, "|%s", m);
+      dt_util_str_cat(&res, "|%s", m);
     }
   }
 
@@ -1515,10 +1515,10 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
   }
 
 // start module group
-#define SMG(g,n) tx = dt_util_dstrcat(tx, "ꬹ%s|%s|", g, n)
+#define SMG(g,n) dt_util_str_cat(&tx, "ꬹ%s|%s|", g, n)
 
 // add module
-#define AM(n)    tx = dt_util_dstrcat(tx, "|%s", n)
+#define AM(n)    dt_util_str_cat(&tx, "|%s", n)
 
 void init_presets(dt_lib_module_t *self)
 {
@@ -2549,7 +2549,7 @@ static GtkWidget *_build_menu_from_actions(dt_action_t *actions,
         {
           gtk_check_menu_item_set_inconsistent(GTK_CHECK_MENU_ITEM(item), TRUE);
           gchar *toolmark = gtk_widget_get_tooltip_text(item);
-          toolmark = dt_util_dstrcat(toolmark, " <i>(%s)</i>", _("currently invisible"));
+          dt_util_str_cat(&toolmark, " <i>(%s)</i>", _("currently invisible"));
           gtk_widget_set_tooltip_markup(item, toolmark);
           if(item_top)
             gtk_widget_set_tooltip_markup(item_top, toolmark);

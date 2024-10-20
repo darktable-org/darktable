@@ -1112,7 +1112,7 @@ static GtkWidget *_popup_get_numeric_menu(GtkDarktableRangeSelect *range, GtkWid
       continue;
 
     gchar *txt = (blo->txt) ? g_strdup(blo->txt) : range->print(blo->value_r, TRUE);
-    if(blo->nb > 0) txt = dt_util_dstrcat(txt, " (%d)", blo->nb);
+    if(blo->nb > 0) dt_util_str_cat(&txt, " (%d)", blo->nb);
     GtkWidget *smt = gtk_menu_item_new_with_label(txt);
     g_free(txt);
     g_object_set_data(G_OBJECT(smt), "range_block", blo);
@@ -1139,7 +1139,7 @@ static GtkWidget *_popup_get_numeric_menu(GtkDarktableRangeSelect *range, GtkWid
       continue;
 
     gchar *txt = (blo->txt) ? g_strdup(blo->txt) : range->print(blo->value_r, TRUE);
-    if(blo->nb > 0) txt = dt_util_dstrcat(txt, " (%d)", blo->nb);
+    if(blo->nb > 0) dt_util_str_cat(&txt, " (%d)", blo->nb);
     GtkWidget *smt = gtk_menu_item_new_with_label(txt);
     g_free(txt);
     g_object_set_data(G_OBJECT(smt), "range_block", blo);
@@ -1772,19 +1772,19 @@ gchar *dtgtk_range_select_get_bounds_pretty(GtkDarktableRangeSelect *range)
   else
     txt = range->print(range->select_min_r, TRUE);
 
-  txt = dt_util_dstrcat(txt, " → ");
+  dt_util_str_cat(&txt, " → ");
 
   if(range->bounds & DT_RANGE_BOUND_MAX)
-    txt = dt_util_dstrcat(txt, _("max"));
+    dt_util_str_cat(&txt, _("max"));
   else if(range->bounds & DT_RANGE_BOUND_MAX_RELATIVE)
-    txt = dt_util_dstrcat(txt, "+%04d:%02d:%02d %02d:%02d:%02d", range->select_relative_date_r.year,
+    dt_util_str_cat(&txt, "+%04d:%02d:%02d %02d:%02d:%02d", range->select_relative_date_r.year,
                           range->select_relative_date_r.month, range->select_relative_date_r.day,
                           range->select_relative_date_r.hour, range->select_relative_date_r.minute,
                           range->select_relative_date_r.second);
   else if(range->bounds & DT_RANGE_BOUND_MAX_NOW)
-    txt = dt_util_dstrcat(txt, _("now"));
+    dt_util_str_cat(&txt, _("now"));
   else
-    txt = dt_util_dstrcat(txt, "%s", range->print(range->select_max_r, TRUE));
+    dt_util_str_cat(&txt, "%s", range->print(range->select_max_r, TRUE));
 
   return txt;
 }

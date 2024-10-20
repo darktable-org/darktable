@@ -252,13 +252,12 @@ gboolean _cache_update(const gboolean only_visible,
   // if needed, we show the list of cached images in terminal
   if((darktable.unmuted & DT_DEBUG_ACT_ON) == DT_DEBUG_ACT_ON)
   {
-    gchar *tx = dt_util_dstrcat
-      (NULL,
-       "[images to act on] new cache (%s) : ", only_visible ? "visible" : "all");
+    gchar *tx = g_strdup_printf
+      ("[images to act on] new cache (%s) : ", only_visible ? "visible" : "all");
 
     for(GList *ll = l;
         ll;
-        ll = g_list_next(ll)) tx = dt_util_dstrcat(tx, "%d ", GPOINTER_TO_INT(ll->data));
+        ll = g_list_next(ll)) dt_util_str_cat(&tx, "%d ", GPOINTER_TO_INT(ll->data));
     dt_print(DT_DEBUG_ACT_ON, "%s\n", tx);
     g_free(tx);
   }
@@ -382,7 +381,7 @@ gchar *dt_act_on_get_query(const gboolean only_visible)
   gchar *images = NULL;
   for(; l; l = g_list_next(l))
   {
-    images = dt_util_dstrcat(images, "%d,", GPOINTER_TO_INT(l->data));
+    dt_util_str_cat(&images, "%d,", GPOINTER_TO_INT(l->data));
   }
   if(images)
   {

@@ -480,7 +480,7 @@ void dt_selection_select_list(struct dt_selection_t *selection, GList *list)
       imgid = GPOINTER_TO_INT(list->data);
       count++;
       selection->last_single_id = imgid;
-      query = dt_util_dstrcat(query, ",(%d)", imgid);
+      dt_util_str_cat(&query, ",(%d)", imgid);
       list = g_list_next(list);
     }
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);

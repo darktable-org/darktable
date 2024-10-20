@@ -99,9 +99,9 @@ static gchar *_conf_get_path(gchar *module_name, gchar *property_1, gchar *prope
   }
 
   if(property_2)
-    return dt_util_dstrcat(NULL, "guides/%s/%s%s/%s/%s", cv->module_name, lay, module_name, property_1, property_2);
+    return g_strdup_printf("guides/%s/%s%s/%s/%s", cv->module_name, lay, module_name, property_1, property_2);
   else
-    return dt_util_dstrcat(NULL, "guides/%s/%s%s/%s", cv->module_name, lay, module_name, property_1);
+    return g_strdup_printf("guides/%s/%s%s/%s", cv->module_name, lay, module_name, property_1);
 }
 
 static dt_guides_t *_conf_get_guide(gchar *module_name)

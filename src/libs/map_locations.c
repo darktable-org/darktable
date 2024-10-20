@@ -166,11 +166,11 @@ static void _locations_tree_update(dt_lib_module_t *self, const guint locid)
         // insert everything from tokens past the common part
         char *pth = NULL;
         for(int i = 0; i < common_length; i++)
-          pth = dt_util_dstrcat(pth, "%s|", tokens[i]);
+          dt_util_str_cat(&pth, "%s|", tokens[i]);
 
         for(char **token = &tokens[common_length]; *token; token++)
         {
-          pth = dt_util_dstrcat(pth, "%s|", *token);
+          dt_util_str_cat(&pth, "%s|", *token);
           gchar *pth2 = g_strdup(pth);
           pth2[strlen(pth2) - 1] = '\0';
           gtk_tree_store_insert(GTK_TREE_STORE(model), &iter, common_length > 0 ? &parent : NULL, -1);
@@ -283,7 +283,7 @@ static void _new_button_clicked(GtkButton *button, dt_lib_module_t *self)
   name = path ? g_strconcat(path, "|", NULL) : g_strdup("");
   const int base_len = strlen(name);
   int i = 1;
-  name = dt_util_dstrcat(name, "%s", _("new location"));
+  dt_util_str_cat(&name, "%s", _("new location"));
   char *new_name = g_strdup(name);
   while(dt_map_location_name_exists(new_name))
   {

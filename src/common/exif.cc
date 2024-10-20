@@ -179,7 +179,7 @@ static void _get_xmp_tags(const char *prefix,
   {
     for(int i = 0; pl[i].name_ != 0; ++i)
     {
-      char *tag = dt_util_dstrcat(NULL, "Xmp.%s.%s,%s",
+      char *tag = g_strdup_printf("Xmp.%s.%s,%s",
                                   prefix, pl[i].name_, _get_exiv2_type(pl[i].typeId_));
       *taglist = g_list_prepend(*taglist, tag);
     }
@@ -251,7 +251,7 @@ void dt_exif_set_exiv2_taglist()
           const Exiv2::TagInfo *tagInfo = groupList->tagList_();
           while(tagInfo->tag_ != 0xFFFF)
           {
-            char *tag = dt_util_dstrcat(NULL, "Exif.%s.%s,%s",
+            char *tag = g_strdup_printf("Exif.%s.%s,%s",
                                         groupList->groupName_,
                                         tagInfo->name_,
                                         _get_exiv2_type(tagInfo->typeId_));
@@ -266,7 +266,7 @@ void dt_exif_set_exiv2_taglist()
     const Exiv2::DataSet *iptcEnvelopeList = Exiv2::IptcDataSets::envelopeRecordList();
     while(iptcEnvelopeList->number_ != 0xFFFF)
     {
-      char *tag = dt_util_dstrcat(NULL, "Iptc.Envelope.%s,%s%s",
+      char *tag = g_strdup_printf("Iptc.Envelope.%s,%s%s",
                                   iptcEnvelopeList->name_,
                                   _get_exiv2_type(iptcEnvelopeList->type_),
                                   iptcEnvelopeList->repeatable_ ? "-R" : "");
@@ -278,7 +278,7 @@ void dt_exif_set_exiv2_taglist()
       Exiv2::IptcDataSets::application2RecordList();
     while(iptcApplication2List->number_ != 0xFFFF)
     {
-      char *tag = dt_util_dstrcat(NULL, "Iptc.Application2.%s,%s%s",
+      char *tag = g_strdup_printf("Iptc.Application2.%s,%s%s",
                                   iptcApplication2List->name_,
                                   _get_exiv2_type(iptcApplication2List->type_),
                                   iptcApplication2List->repeatable_ ? "-R" : "");
@@ -2109,13 +2109,13 @@ void dt_exif_apply_default_metadata(dt_image_t *img)
       if(dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
       {
         const char *name = dt_metadata_get_name(i);
-        char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+        char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
         const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
         g_free(setting);
         // don't import hidden stuff
         if(!hidden)
         {
-          setting = dt_util_dstrcat(NULL, "ui_last/import_last_%s", name);
+          setting = g_strdup_printf("ui_last/import_last_%s", name);
           str = dt_conf_get_string(setting);
           if(str && str[0])
           {
@@ -4709,7 +4709,7 @@ static void _set_xmp_dt_metadata(Exiv2::XmpData &xmpData,
        && (dt_metadata_get_type(keyid) != DT_METADATA_TYPE_INTERNAL))
     {
       const gchar *name = dt_metadata_get_name(keyid);
-      gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+      gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
       const uint32_t flag =  dt_conf_get_int(setting);
       g_free(setting);
       if(!(flag & (DT_METADATA_FLAG_PRIVATE | DT_METADATA_FLAG_HIDDEN)))

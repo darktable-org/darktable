@@ -189,7 +189,7 @@ static gboolean _set_matching_tag_visibility(GtkTreeModel *model, GtkTreePath *p
     visible = TRUE;
   else
   {
-    if(synonyms && synonyms[0]) tagname = dt_util_dstrcat(tagname, ", %s", synonyms);
+    if(synonyms && synonyms[0]) dt_util_str_cat(&tagname, ", %s", synonyms);
     gchar *haystack = g_utf8_strdown(tagname, -1);
     gchar *needle = g_utf8_strdown(d->keyword, -1);
     visible = (g_strrstr(haystack, needle) != NULL);
@@ -444,11 +444,11 @@ static void _init_treeview(dt_lib_module_t *self, const int which)
           // insert everything from tokens past the common part
           char *pth = NULL;
           for(int i = 0; i < common_length; i++)
-            pth = dt_util_dstrcat(pth, "%s|", tokens[i]);
+            dt_util_str_cat(&pth, "%s|", tokens[i]);
 
           for(char **token = &tokens[common_length]; *token; token++)
           {
-            pth = dt_util_dstrcat(pth, "%s|", *token);
+            dt_util_str_cat(&pth, "%s|", *token);
             gchar *pth2 = g_strdup(pth);
             pth2[strlen(pth2) - 1] = '\0';
             gtk_tree_store_insert(GTK_TREE_STORE(store), &iter, common_length > 0 ? &parent : NULL, -1);
@@ -1008,7 +1008,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   {
     for(GList *taglist = tags; taglist; taglist = g_list_next(taglist))
     {
-      params = dt_util_dstrcat(params, "%d,", ((dt_tag_t *)taglist->data)->id);
+      dt_util_str_cat(&params, "%d,", ((dt_tag_t *)taglist->data)->id);
     }
     dt_tag_free_result(&tags);
     if(params == NULL)
@@ -1778,7 +1778,7 @@ static void _pop_menu_dictionary_create_tag(GtkWidget *menuitem, dt_lib_module_t
     if(!root)
     {
       new_tagname = g_strdup(path);
-      new_tagname = dt_util_dstrcat(new_tagname, "|%s", newtag);
+      dt_util_str_cat(&new_tagname, "|%s", newtag);
     }
     else new_tagname = g_strdup(newtag);
 
@@ -2563,8 +2563,8 @@ static gboolean _row_tooltip_setup(GtkWidget *treeview, gint x, gint y, gboolean
         if((flags & DT_TF_PRIVATE) || (synonyms && synonyms[0]))
         {
           gchar *text = g_strdup_printf(_("%s"), tagname);
-          text = dt_util_dstrcat(text, " %s\n", (flags & DT_TF_PRIVATE) ? _("(private)") : "");
-          text = dt_util_dstrcat(text, "synonyms: %s", (synonyms && synonyms[0]) ? synonyms : " - ");
+          dt_util_str_cat(&text, " %s\n", (flags & DT_TF_PRIVATE) ? _("(private)") : "");
+          dt_util_str_cat(&text, "synonyms: %s", (synonyms && synonyms[0]) ? synonyms : " - ");
           gtk_tooltip_set_text(tooltip, text);
           g_free(text);
           res = TRUE;
@@ -3012,7 +3012,7 @@ static void _event_dnd_received(GtkWidget *widget, GdkDragContext *context, gint
       const gboolean root = (name && name[0] == '\0');
       char *leave = g_strrstr(d->drag.tagname, "|");
       if(leave) leave++;
-      name = dt_util_dstrcat(name, "%s%s", root ? "" : "|", leave ? leave : d->drag.tagname);
+      dt_util_str_cat(&name, "%s%s", root ? "" : "|", leave ? leave : d->drag.tagname);
       _apply_rename_path(NULL, d->drag.tagname, name, self);
 
       g_free(name);
