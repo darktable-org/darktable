@@ -309,25 +309,25 @@ static inline gboolean _solve_hermitian(const float *const restrict A,
   // LU decomposition
   valid = (checks) ? _choleski_decompose_safe(A, L, n) :
                      _choleski_decompose_fast(A, L, n) ;
-  if(!valid) dt_print(DT_DEBUG_ALWAYS, "Cholesky decomposition returned NaNs\n");
+  if(!valid) dt_print(DT_DEBUG_ALWAYS, "Cholesky decomposition returned NaNs");
 
   // Triangular descent
   if(valid)
     valid = (checks) ? _triangular_descent_safe(L, y, x, n) :
                        _triangular_descent_fast(L, y, x, n) ;
-  if(!valid) dt_print(DT_DEBUG_ALWAYS, "Cholesky LU triangular descent returned NaNs\n");
+  if(!valid) dt_print(DT_DEBUG_ALWAYS, "Cholesky LU triangular descent returned NaNs");
 
   // Triangular ascent
   if(valid)
     valid = (checks) ? _triangular_ascent_safe(L, x, y, n) :
                        _triangular_ascent_fast(L, x, y, n);
-  if(!valid) dt_print(DT_DEBUG_ALWAYS, "Cholesky LU triangular ascent returned NaNs\n");
+  if(!valid) dt_print(DT_DEBUG_ALWAYS, "Cholesky LU triangular ascent returned NaNs");
 
   dt_free_align(x);
   dt_free_align(L);
 
   //clock_t end = clock();
-  //dt_print(DT_DEBUG_ALWAYS, "hermitian matrix solving took : %f s\n", ((float) (end - start)) / CLOCKS_PER_SEC);
+  //dt_print(DT_DEBUG_ALWAYS, "hermitian matrix solving took : %f s", ((float) (end - start)) / CLOCKS_PER_SEC);
 
   return valid;
 }
@@ -394,7 +394,7 @@ static inline gboolean pseudo_solve(float *const restrict A,
   gboolean valid = TRUE;
   if(m < n)
   {
-    dt_print(DT_DEBUG_ALWAYS, "Pseudo solve: cannot cast %zu × %zu matrice\n", m, n);
+    dt_print(DT_DEBUG_ALWAYS, "Pseudo solve: cannot cast %zu × %zu matrice", m, n);
     return FALSE;
   }
 
@@ -433,7 +433,7 @@ static inline gboolean pseudo_solve(float *const restrict A,
   dt_free_align(A_square);
 
   //clock_t end = clock();
-  //dt_print(DT_DEBUG_ALWAYS, "hermitian matrix solving took : %f s\n", ((float) (end - start)) / CLOCKS_PER_SEC);
+  //dt_print(DT_DEBUG_ALWAYS, "hermitian matrix solving took : %f s", ((float) (end - start)) / CLOCKS_PER_SEC);
 
   return valid;
 }

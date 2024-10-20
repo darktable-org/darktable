@@ -1118,7 +1118,7 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
   if(!_gradient_get_area(module, piece, form, width, height, posx, posy)) return 0;
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] gradient area took %0.04f sec\n", form->name,
+           "[masks %s] gradient area took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   // we get the gradient values
@@ -1146,7 +1146,7 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
     }
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] gradient draw took %0.04f sec\n", form->name,
+           "[masks %s] gradient draw took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   // we backtransform all these points
@@ -1160,7 +1160,7 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
   }
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] gradient transform took %0.04f sec\n", form->name,
+           "[masks %s] gradient transform took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   // we calculate the mask at grid points and recycle point buffer to store results
@@ -1255,7 +1255,7 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
   dt_free_align(points);
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] gradient fill took %0.04f sec\n", form->name,
+           "[masks %s] gradient fill took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   return 1;
@@ -1298,7 +1298,7 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
     }
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] gradient draw took %0.04f sec\n", form->name,
+           "[masks %s] gradient draw took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   // we backtransform all these points
@@ -1312,7 +1312,7 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
   }
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] gradient transform took %0.04f sec\n", form->name,
+           "[masks %s] gradient transform took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   // we calculate the mask at grid points and recycle point buffer to store results
@@ -1402,7 +1402,7 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
   dt_free_align(points);
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] gradient fill took %0.04f sec\n", form->name,
+           "[masks %s] gradient fill took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   return 1;

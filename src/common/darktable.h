@@ -449,9 +449,10 @@ void dt_cleanup();
          && !(DT_DEBUG_RESTRICT & (thread) & ~darktable.unmuted)) \
         func(__VA_ARGS__); } while(0)
 
-#define dt_print_pipe(thread, ...) dt_debug_if(thread, dt_print_pipe_ext, __VA_ARGS__)
 #define dt_print(thread, ...) dt_debug_if(thread, dt_print_ext, __VA_ARGS__)
 #define dt_print_nts(thread, ...) dt_debug_if(thread, dt_print_nts_ext, __VA_ARGS__)
+#define dt_print_pipe(thread, title, pipe, module, device, roi_in, roi_out, ...) \
+  dt_debug_if(thread, dt_print_pipe_ext, title, pipe, module, device, roi_in, roi_out, " " __VA_ARGS__)
 
 void dt_print_ext(const char *msg, ...)
   __attribute__((format(printf, 1, 2)));
@@ -907,7 +908,7 @@ static inline void dt_unreachable_codepath_with_caller(const char *description,
 {
   dt_print(DT_DEBUG_ALWAYS,
            "[dt_unreachable_codepath] {%s} %s:%d (%s) - we should not be here."
-           " please report this to the developers.",
+           " please report this to the developers",
            description, file, line, function);
   __builtin_unreachable();
 }

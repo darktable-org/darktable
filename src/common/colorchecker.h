@@ -497,7 +497,7 @@ static inline const dt_color_checker_patch* dt_color_checker_get_patch_by_name(c
     }
 
   if(patch == NULL)
-    dt_print(DT_DEBUG_ALWAYS, "No patch matching name `%s` was found in %s\n",
+    dt_print(DT_DEBUG_ALWAYS, "No patch matching name `%s` was found in %s",
              name, target_checker->name);
 
   if(index ) *index = idx;

@@ -251,7 +251,7 @@ icc_end:
     out_image = dt_alloc_aligned(stride * width * height);
     if(out_image == NULL)
     {
-      dt_print(DT_DEBUG_ALWAYS, "[exr export] error allocating image conversion buffer\n");
+      dt_print(DT_DEBUG_ALWAYS, "[exr export] error allocating image conversion buffer");
       return 1;
     }
 
@@ -327,7 +327,7 @@ icc_end:
           void *out_mask = dt_alloc_aligned(stride * width * height);
           if(out_mask == NULL)
           {
-            dt_print(DT_DEBUG_ALWAYS, "[exr export] error allocating mask conversion buffer\n");
+            dt_print(DT_DEBUG_ALWAYS, "[exr export] error allocating mask conversion buffer");
             return 1;
           }
 

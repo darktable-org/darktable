@@ -679,7 +679,7 @@ static void _show_gpx_tracks(dt_lib_module_t *self)
   if(!d->map.tracks)
   {
     d->map.nb_tracks = 0;
-    dt_print(DT_DEBUG_ALWAYS, "[geotagging] unable to allocate storage for tracks\n");
+    dt_print(DT_DEBUG_ALWAYS, "[geotagging] unable to allocate storage for tracks");
   }
 
   _remove_images_from_map(self);

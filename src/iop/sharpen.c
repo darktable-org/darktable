@@ -297,7 +297,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *const mat = init_gaussian_kernel(rad, mat_size, sigma2);
   if(!mat)
   {
-    dt_print(DT_DEBUG_ALWAYS,"[sharpen] out of memory\n");
+    dt_print(DT_DEBUG_ALWAYS,"[sharpen] out of memory");
     dt_iop_copy_image_roi(ovoid, ivoid, 4, roi_in, roi_out);
     return;
   }

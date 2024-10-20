@@ -428,7 +428,7 @@ static gboolean _lib_location_search(dt_lib_module_t *self)
 bail_out:
   if(err)
   {
-    dt_print(DT_DEBUG_ALWAYS, "location search: %s\n", err->message);
+    dt_print(DT_DEBUG_ALWAYS, "location search: %s", err->message);
     g_error_free(err);
   }
 
@@ -660,7 +660,7 @@ broken_bbox:
         else
         {
           gchar *s = g_strndup(*avalue, 100);
-          dt_print(DT_DEBUG_ALWAYS, "unsupported outline: %s%s\n",
+          dt_print(DT_DEBUG_ALWAYS, "unsupported outline: %s%s",
                    s, strlen(s) == strlen(*avalue) ? "" : " ...");
           g_free(s);
         }
@@ -781,7 +781,7 @@ int set_params(dt_lib_module_t *self,
   _lib_location_result_t *location = malloc(sizeof(_lib_location_result_t));
   if(!location)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[location] out of memory\n");
+    dt_print(DT_DEBUG_ALWAYS, "[location] out of memory");
     return 1;
   }
 

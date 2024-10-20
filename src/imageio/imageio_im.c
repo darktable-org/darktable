@@ -79,11 +79,11 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
 
   ret = MagickReadImage(image, filename);
   if(ret != MagickTrue) {
-    dt_print(DT_DEBUG_ALWAYS, "[ImageMagick_open] cannot open `%s'\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[ImageMagick_open] cannot open `%s'", img->filename);
     err = DT_IMAGEIO_FILE_NOT_FOUND;
     goto error;
   }
-  dt_print(DT_DEBUG_IMAGEIO, "[ImageMagick_open] image `%s' loading\n", img->filename);
+  dt_print(DT_DEBUG_IMAGEIO, "[ImageMagick_open] image `%s' loading", img->filename);
 
   ColorspaceType colorspace;
 
@@ -91,7 +91,7 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
 
   if((colorspace == CMYColorspace) || (colorspace == CMYKColorspace))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[ImageMagick_open] error: CMY(K) images are not supported.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[ImageMagick_open] error: CMY(K) images are not supported.");
     err =  DT_IMAGEIO_LOAD_FAILED;
     goto error;
   }
@@ -105,7 +105,7 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
   float *mipbuf = dt_mipmap_cache_alloc(mbuf, img);
   if(mipbuf == NULL) {
     dt_print(DT_DEBUG_ALWAYS,
-        "[ImageMagick_open] could not alloc full buffer for image `%s'\n",
+        "[ImageMagick_open] could not alloc full buffer for image `%s'",
         img->filename);
     err = DT_IMAGEIO_CACHE_FULL;
     goto error;
@@ -114,7 +114,7 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
   ret = MagickExportImagePixels(image, 0, 0, img->width, img->height, "RGBP", FloatPixel, mipbuf);
   if(ret != MagickTrue) {
     dt_print(DT_DEBUG_ALWAYS,
-        "[ImageMagick_open] error reading image `%s'\n", img->filename);
+        "[ImageMagick_open] error reading image `%s'", img->filename);
     goto error;
   }
 

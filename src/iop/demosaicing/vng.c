@@ -196,7 +196,7 @@ static void vng_interpolate(
   char *buffer = (char *)dt_alloc_aligned(sizeof(**brow) * width * 3 + sizeof(*ip) * prow * pcol * 320);
   if(!buffer)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[demosaic] not able to allocate VNG buffer\n");
+    dt_print(DT_DEBUG_ALWAYS, "[demosaic] not able to allocate VNG buffer");
     return;
   }
   for(int row = 0; row < 3; row++) brow[row] = (float(*)[4])buffer + row * width;
@@ -619,7 +619,7 @@ static int process_vng_cl(dt_iop_module_t *self,
     if(scaled)
     {
       dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi",
-        piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "\n");
+        piece->pipe, self, piece->pipe->devid, roi_in, roi_out);
       // scale temp buffer to output buffer
       err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_aux, roi_out, roi_in);
       if(err != CL_SUCCESS) goto finish;
@@ -655,7 +655,7 @@ finish:
     err = color_smoothing_cl(self, piece, dev_out, dev_out, roi_out, data->color_smoothing);
 
   if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] vng problem '%s'\n", cl_errstr(err));
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] vng problem '%s'", cl_errstr(err));
   return err;
 }
 

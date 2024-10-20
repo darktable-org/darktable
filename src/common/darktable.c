@@ -539,7 +539,7 @@ static inline size_t _get_total_memory()
   return memInfo.ullTotalPhys / (uint64_t)1024;
 #else
   // assume 2GB until we have a better solution.
-  dt_print(DT_DEBUG_ALWAYS, "[get_total_memory] Unknown memory size. Assuming 2GB\n");
+  dt_print(DT_DEBUG_ALWAYS, "[get_total_memory] Unknown memory size. Assuming 2GB");
   return 2097152;
 #endif
 }
@@ -593,7 +593,7 @@ void dt_dump_pfm_file(
   {
     if(g_mkdir_with_parents(path, 0750))
     {
-      dt_print(DT_DEBUG_ALWAYS, "%20s can't create directory '%s'\n", head, path);
+      dt_print(DT_DEBUG_ALWAYS, "%20s can't create directory '%s'", head, path);
       return;
     }
   }
@@ -614,7 +614,7 @@ void dt_dump_pfm_file(
   FILE *f = g_fopen(fname, "wb");
   if(f == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "%20s can't write file '%s' in wb mode\n", head, fname);
+    dt_print(DT_DEBUG_ALWAYS, "%20s can't write file '%s' in wb mode", head, fname);
     return;
   }
 
@@ -632,7 +632,7 @@ void dt_dump_pfm_file(
     }
   }
 
-  dt_print(DT_DEBUG_ALWAYS, "%-20s %s,  %dx%d, bpp=%d\n", head, fname, width, height, bpp);
+  dt_print(DT_DEBUG_ALWAYS, "%-20s %s,  %dx%d, bpp=%d", head, fname, width, height, bpp);
   fclose(f);
   written += 1;
 }
@@ -884,7 +884,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #ifndef _WIN32
   if(getuid() == 0 || geteuid() == 0)
     dt_print(DT_DEBUG_ALWAYS,
-        "WARNING: either your user id or the effective user id are 0. are you running darktable as root?\n");
+        "WARNING: either your user id or the effective user id are 0. are you running darktable as root?");
 #endif
 
   // make everything go a lot faster.
@@ -1113,7 +1113,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #ifdef DT_HAVE_SIGNAL_TRACE
           darktable.unmuted_signal_dbg_acts |= DT_DEBUG_SIGNAL_ACT_PRINT_TRACE; // enable printing of signal tracing
 #else
-          dt_print(DT_DEBUG_ALWAYS, "[signal] print-trace not available, skipping\n");
+          dt_print(DT_DEBUG_ALWAYS, "[signal] print-trace not available, skipping");
 #endif
         }
         else
@@ -1177,7 +1177,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         {
           dt_print(DT_DEBUG_SIGNAL,
                    "[dt_init] unknown signal name: '%s'. use 'ALL'"
-                   " to enable debug for all or use full signal name\n", str);
+                   " to enable debug for all or use full signal name", str);
           g_strfreev(myoptions);
           return usage(argv[0]);
         }
@@ -1196,10 +1196,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         darktable.num_openmp_threads = CLAMP(desired, 1, possible);
         if(desired > possible)
           dt_print(DT_DEBUG_ALWAYS,
-                   "[dt_init --threads] requested %d ompthreads restricted to %d\n",
+                   "[dt_init --threads] requested %d ompthreads restricted to %d",
             desired, possible);
         dt_print(DT_DEBUG_ALWAYS,
-                 "[dt_init --threads] using %d threads for openmp parallel sections\n",
+                 "[dt_init --threads] using %d threads for openmp parallel sections",
           darktable.num_openmp_threads);
         k++;
         argv[k-1] = NULL;
@@ -1360,8 +1360,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     if(darktable.tmp_directory == NULL)
       darktable.tmp_directory = g_dir_make_tmp("darktable_XXXXXX", NULL);
     dt_print(DT_DEBUG_ALWAYS,
-             "[init] darktable dump directory is '%s'\n",
-             (darktable.tmp_directory) ? darktable.tmp_directory : "NOT AVAILABLE");
+             "[init] darktable dump directory is '%s'",
+             (darktable.tmp_directory) ?: "NOT AVAILABLE");
   }
 
   // get valid directories
@@ -1372,7 +1372,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
               cachedir_from_command,
               tmpdir_from_command);
 
-  dt_print(DT_DEBUG_MEMORY, "[memory] at startup\n");
+  dt_print(DT_DEBUG_MEMORY, "[memory] at startup");
   dt_print_mem_usage();
 
   char sharedir[PATH_MAX] = { 0 };
@@ -1423,7 +1423,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     }
 
     if(set_env) g_setenv("XDG_DATA_DIRS", new_xdg_data_dirs, 1);
-    dt_print(DT_DEBUG_DEV, "new_xdg_data_dirs: %s\n", new_xdg_data_dirs);
+    dt_print(DT_DEBUG_DEV, "new_xdg_data_dirs: %s", new_xdg_data_dirs);
     g_free(new_xdg_data_dirs);
   }
 
@@ -1512,7 +1512,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.db = dt_database_init(dbfilename_from_command, load_data, init_gui);
   if(darktable.db == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "ERROR : cannot open database\n");
+    dt_print(DT_DEBUG_ALWAYS, "ERROR : cannot open database");
     darktable_splash_screen_destroy();
     return 1;
   }
@@ -1525,7 +1525,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #ifndef MAC_INTEGRATION
       // send the images to the other instance via dbus
       dt_print(DT_DEBUG_ALWAYS,
-               "[dt_init] trying to open the images in the running instance\n");
+               "[dt_init] trying to open the images in the running instance");
 
       GDBusConnection *connection = NULL;
       for(int i = 1; i < argc; i++)
@@ -1549,7 +1549,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     darktable_splash_screen_destroy(); // dismiss splash screen before potentially showing error dialog
     if(!image_loaded_elsewhere) dt_database_show_error(darktable.db);
 
-    dt_print(DT_DEBUG_ALWAYS, "ERROR: can't acquire database lock, aborting.\n");
+    dt_print(DT_DEBUG_ALWAYS, "ERROR: can't acquire database lock, aborting.");
     return 1;
   }
 
@@ -1745,7 +1745,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     darktable_splash_screen_set_progress(_("initializing GUI"));
     if(dt_gui_gtk_init(darktable.gui))
     {
-      dt_print(DT_DEBUG_ALWAYS, "[dt_init] ERROR: can't init gui, aborting.\n");
+      dt_print(DT_DEBUG_ALWAYS, "[dt_init] ERROR: can't init gui, aborting.");
       darktable_splash_screen_destroy();
       return 1;
     }
@@ -1761,7 +1761,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // we'll crash everywhere later on.
   if(!darktable.develop)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[dt_init] ERROR: can't init develop system, aborting.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[dt_init] ERROR: can't init develop system, aborting.");
     darktable_splash_screen_destroy();
     return 1;
   }
@@ -1779,24 +1779,24 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // check if all modules have a iop order assigned
   if(dt_ioppr_check_so_iop_order(darktable.iop, darktable.iop_order_list))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[dt_init] ERROR: iop order looks bad, aborting.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[dt_init] ERROR: iop order looks bad, aborting.");
     darktable_splash_screen_destroy();
     return 1;
   }
 
   if(darktable.dump_pfm_module)
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_init] writing intermediate pfm files for module '%s'\n",
+             "[dt_init] writing intermediate pfm files for module '%s'",
       darktable.dump_pfm_module);
 
   if(darktable.dump_pfm_pipe)
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_init] writing pfm files for module '%s' processing the pipeline\n",
+             "[dt_init] writing pfm files for module '%s' processing the pipeline",
       darktable.dump_pfm_pipe);
 
   if(darktable.dump_diff_pipe)
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_init] writing CPU/GPU diff pfm files for module '%s' processing the pipeline\n",
+             "[dt_init] writing CPU/GPU diff pfm files for module '%s' processing the pipeline",
       darktable.dump_diff_pipe);
 
   if(init_gui)
@@ -1827,7 +1827,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_gui_process_events();
   }
 
-  dt_print(DT_DEBUG_MEMORY, "[memory] after successful startup\n");
+  dt_print(DT_DEBUG_MEMORY, "[memory] after successful startup");
   dt_print_mem_usage();
 
 /* init lua last, since it's user made stuff it must be in the real environment */
@@ -1915,7 +1915,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   }
 
   dt_print(DT_DEBUG_CONTROL,
-           "[dt_init] startup took %f seconds\n", dt_get_wtime() - start_wtime);
+           "[dt_init] startup took %f seconds", dt_get_wtime() - start_wtime);
   return 0;
 }
 
@@ -1956,19 +1956,19 @@ void dt_get_sysresource_level()
     const int oldgrp = res->group;
     res->group = 4 * level;
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_get_sysresource_level] switched to %i as `%s'\n",
+             "[dt_get_sysresource_level] switched to %i as `%s'",
              level, config);
     dt_print(DT_DEBUG_ALWAYS,
-             "  total mem:       %luMB\n",
+             "  total mem:       %luMB",
              res->total_memory / 1024lu / 1024lu);
     dt_print(DT_DEBUG_ALWAYS,
-             "  mipmap cache:    %luMB\n",
+             "  mipmap cache:    %luMB",
              _get_mipmap_size() / 1024lu / 1024lu);
     dt_print(DT_DEBUG_ALWAYS,
-             "  available mem:   %luMB\n",
+             "  available mem:   %luMB",
              dt_get_available_mem() / 1024lu / 1024lu);
     dt_print(DT_DEBUG_ALWAYS,
-             "  singlebuff:      %luMB\n",
+             "  singlebuff:      %luMB",
              dt_get_singlebuffer_mem() / 1024lu / 1024lu);
 
     res->group = oldgrp;
@@ -2100,7 +2100,7 @@ void dt_cleanup()
 
         dt_print(DT_DEBUG_SQL, "[db backup] removing old snap: %s... ", snaps_to_remove[i]);
         const int retunlink = g_remove(snaps_to_remove[i++]);
-        dt_print(DT_DEBUG_SQL, "%s\n", retunlink == 0 ? "success" : "failed!");
+        dt_print(DT_DEBUG_SQL, "%s", retunlink == 0 ? "success" : "failed!");
       }
     }
   }
@@ -2157,7 +2157,7 @@ void dt_print_ext(const char *msg, ...)
   vsnprintf(vbuf, sizeof(vbuf), msg, ap);
   va_end(ap);
 
-  printf("%11.4f %s", dt_get_wtime() - darktable.start_wtime, vbuf);
+  printf("%11.4f %s\n", dt_get_wtime() - darktable.start_wtime, vbuf);
   fflush(stdout);
 }
 
@@ -2231,7 +2231,7 @@ void dt_show_times(const dt_times_t *start, const char *prefix)
              "%s took %.3f secs (%.3f CPU)",
              prefix, end.clock - start->clock,
              end.user - start->user);
-    dt_print(DT_DEBUG_PERF, "%s\n", buf);
+    dt_print(DT_DEBUG_PERF, "%s", buf);
   }
 }
 
@@ -2258,14 +2258,14 @@ void dt_show_times_f(const dt_times_t *start,
       vsnprintf(buf + n, sizeof(buf) - n, suffix, ap);
       va_end(ap);
     }
-    dt_print(DT_DEBUG_PERF, "%s\n", buf);
+    dt_print(DT_DEBUG_PERF, "%s", buf);
   }
 }
 
 int dt_worker_threads()
 {
   const int wthreads = (_get_total_memory() >> 19) >= 15 && dt_get_num_threads() >= 4 ? 7 : 4;
-  dt_print(DT_DEBUG_DEV, "[dt_worker_threads] using %i worker threads\n", wthreads);
+  dt_print(DT_DEBUG_DEV, "[dt_worker_threads] using %i worker threads", wthreads);
   return wthreads;
 }
 
@@ -2302,7 +2302,7 @@ void dt_configure_runtime_performance(const int old, char *info)
 
   dt_print(DT_DEBUG_DEV,
            "[dt_configure_runtime_performance] found a %s %zu-bit"
-           " system with %zu Mb ram and %zu cores\n",
+           " system with %zu Mb ram and %zu cores",
            (sufficient) ? "sufficient" : "low performance",
            bits, mem, threads);
 
@@ -2312,7 +2312,7 @@ void dt_configure_runtime_performance(const int old, char *info)
   {
     dt_conf_set_bool("ui/performance", !sufficient);
     dt_print(DT_DEBUG_DEV,
-             "[dt_configure_runtime_performance] ui/performance=%s\n",
+             "[dt_configure_runtime_performance] ui/performance=%s",
              (sufficient) ? "FALSE" : "TRUE");
   }
 
@@ -2320,7 +2320,7 @@ void dt_configure_runtime_performance(const int old, char *info)
   {
     dt_conf_set_string("resourcelevel", (sufficient) ? "default" : "small");
     dt_print(DT_DEBUG_DEV,
-             "[dt_configure_runtime_performance] resourcelevel=%s\n",
+             "[dt_configure_runtime_performance] resourcelevel=%s",
              (sufficient) ? "default" : "small");
   }
 
@@ -2341,7 +2341,7 @@ void dt_configure_runtime_performance(const int old, char *info)
     // enable cache_disk_backend_full when user has over 8gb free diskspace
     dt_conf_set_bool("cache_disk_backend_full", largedisk);
     dt_print(DT_DEBUG_DEV,
-             "[dt_configure_runtime_performance] cache_disk_backend_full=%s\n",
+             "[dt_configure_runtime_performance] cache_disk_backend_full=%s",
              (largedisk) ? "TRUE" : "FALSE");
   }
 
@@ -2529,7 +2529,7 @@ void dt_print_mem_usage()
 
   if(KERN_SUCCESS != task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&t_info, &t_info_count))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[memory] task memory info unknown.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[memory] task memory info unknown.");
     return;
   }
 
@@ -2538,7 +2538,7 @@ void dt_print_mem_usage()
                   "[memory] max address space (vmpeak): %15s\n"
                   "            [memory] cur address space (vmsize): %12llu kB\n"
                   "            [memory] max used memory   (vmhwm ): %15s\n"
-                  "            [memory] cur used memory   (vmrss ): %12llu kB\n",
+                  "            [memory] cur used memory   (vmrss ): %12llu kB",
           "unknown", (uint64_t)t_info.virtual_size / 1024, "unknown", (uint64_t)t_info.resident_size / 1024);
 #elif defined (_WIN32)
   //Based on: http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
@@ -2564,12 +2564,12 @@ void dt_print_mem_usage()
                   "[memory] max address space (vmpeak): %12llu kB\n"
                   "            [memory] cur address space (vmsize): %12llu kB\n"
                   "            [memory] max used memory   (vmhwm ): %12llu kB\n"
-                  "            [memory] cur used memory   (vmrss ): %12llu Kb\n",
+                  "            [memory] cur used memory   (vmrss ): %12llu Kb",
           virtualMemUsedByMeMax / 1024, virtualMemUsedByMe / 1024, physMemUsedByMeMax / 1024,
           physMemUsedByMe / 1024);
 
 #else
-  dt_print(DT_DEBUG_ALWAYS, "dt_print_mem_usage() currently unsupported on this platform\n");
+  dt_print(DT_DEBUG_ALWAYS, "dt_print_mem_usage() currently unsupported on this platform");
 #endif
 }
 

@@ -62,7 +62,7 @@ gboolean dt_pwstorage_apple_keychain_set(const backend_apple_keychain_context_t 
 
   while(g_hash_table_iter_next(&iter, &key, &value))
   {
-    dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_apple_keychain_set] storing (%s, %s)\n", (gchar *) key, (gchar *) value);
+    dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_apple_keychain_set] storing (%s, %s)", (gchar *) key, (gchar *) value);
 
     gchar *lbl = g_strconcat("darktable - ", slot, NULL);
     const CFStringRef label = CFStringCreateWithCString(NULL, lbl, kCFStringEncodingUTF8);
@@ -74,7 +74,7 @@ gboolean dt_pwstorage_apple_keychain_set(const backend_apple_keychain_context_t 
 
     if(json_parser_load_from_data(json_parser, value, -1, NULL) == FALSE)
     {
-      dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_apple_keychain_set] unable to parse JSON from value (%s)\n", (gchar *) value);
+      dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_apple_keychain_set] unable to parse JSON from value (%s)", (gchar *) value);
       g_object_unref(json_parser);
       return FALSE;
     }
@@ -231,7 +231,7 @@ GHashTable *dt_pwstorage_apple_keychain_get(const backend_apple_keychain_context
         g_object_unref(json_generator);
         g_object_unref(json_builder);
 
-        dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_apple_keychain_get] reading (%s, %s)\n", server, json_data);
+        dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_apple_keychain_get] reading (%s, %s)", server, json_data);
 
         g_hash_table_insert(table, g_strdup(server), g_strdup(json_data));
 

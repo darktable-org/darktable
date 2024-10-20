@@ -1331,7 +1331,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
     dt_bauhaus_slider_set(g->grey_fulcrum, p->grey_fulcrum);
   }
   else
-    dt_print(DT_DEBUG_ALWAYS, "[colorbalancergb] unknown color picker\n");
+    dt_print(DT_DEBUG_ALWAYS, "[colorbalancergb] unknown color picker");
   --darktable.gui->reset;
 
   gui_changed(self, picker, NULL);

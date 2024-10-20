@@ -322,7 +322,7 @@ static void _iop_color_picker_pickerdata_ready_callback(gpointer instance,
         dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER,
                       "color picker apply",
                       pipe, module, DT_DEVICE_NONE, NULL, NULL,
-                      "%s%s.%s%s. point=%.3f - %.3f. area=%.3f - %.3f / %.3f - %.3f\n",
+                      "%s%s.%s%s. point=%.3f - %.3f. area=%.3f - %.3f / %.3f - %.3f",
                       picker->flags & DT_COLOR_PICKER_POINT ? " point" : "",
                       picker->flags & DT_COLOR_PICKER_AREA  ? " area" : "",
                       picker->flags & DT_COLOR_PICKER_DENOISE ? " denoise" : "",
@@ -355,7 +355,7 @@ static void _color_picker_proxy_preview_pipe_callback(gpointer instance,
   {
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER | DT_DEBUG_VERBOSE,
                   "picker update callback",
-                  NULL, NULL, DT_DEVICE_NONE, NULL, NULL, "\n");
+                  NULL, NULL, DT_DEVICE_NONE, NULL, NULL);
 
     // pixelpipe may have run because sample area changed or an iop,
     // regardless we want to the colorpicker lib, which also can

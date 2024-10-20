@@ -270,7 +270,7 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_in
   dt_iop_colorreconstruct_bilateral_t *b = (dt_iop_colorreconstruct_bilateral_t *)malloc(sizeof(dt_iop_colorreconstruct_bilateral_t));
   if(!b)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[color reconstruction] not able to allocate buffer (a)\n");
+    dt_print(DT_DEBUG_ALWAYS, "[color reconstruction] not able to allocate buffer (a)");
     return NULL;
   }
   float _x = roundf(roi->width / sigma_s);
@@ -289,7 +289,7 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_in
   b->buf = dt_alloc_align_type(dt_iop_colorreconstruct_Lab_t, b->size_x * b->size_y * b->size_z);
   if(!b->buf)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[color reconstruction] not able to allocate buffer (b)\n");
+    dt_print(DT_DEBUG_ALWAYS, "[color reconstruction] not able to allocate buffer (b)");
     dt_iop_colorreconstruct_bilateral_free(b);
     return NULL;
   }
@@ -310,7 +310,7 @@ static dt_iop_colorreconstruct_bilateral_frozen_t *dt_iop_colorreconstruct_bilat
   dt_iop_colorreconstruct_bilateral_frozen_t *bf = (dt_iop_colorreconstruct_bilateral_frozen_t *)malloc(sizeof(dt_iop_colorreconstruct_bilateral_frozen_t));
   if(!bf)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[color reconstruction] not able to allocate buffer (c)\n");
+    dt_print(DT_DEBUG_ALWAYS, "[color reconstruction] not able to allocate buffer (c)");
     return NULL;
   }
 
@@ -331,7 +331,7 @@ static dt_iop_colorreconstruct_bilateral_frozen_t *dt_iop_colorreconstruct_bilat
   }
   else
   {
-    dt_print(DT_DEBUG_ALWAYS, "[color reconstruction] not able to allocate buffer (d)\n");
+    dt_print(DT_DEBUG_ALWAYS, "[color reconstruction] not able to allocate buffer (d)");
     dt_iop_colorreconstruct_bilateral_dump(bf);
     return NULL;
   }
@@ -346,7 +346,7 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_th
   dt_iop_colorreconstruct_bilateral_t *b = (dt_iop_colorreconstruct_bilateral_t *)malloc(sizeof(dt_iop_colorreconstruct_bilateral_t));
   if(!b)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[color reconstruction] not able to allocate buffer (e)\n");
+    dt_print(DT_DEBUG_ALWAYS, "[color reconstruction] not able to allocate buffer (e)");
     return NULL;
   }
 
@@ -367,7 +367,7 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_th
   }
   else
   {
-    dt_print(DT_DEBUG_ALWAYS, "[color reconstruction] not able to allocate buffer (f)\n");
+    dt_print(DT_DEBUG_ALWAYS, "[color reconstruction] not able to allocate buffer (f)");
     dt_iop_colorreconstruct_bilateral_free(b);
     return NULL;
   }
@@ -726,7 +726,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
   if(blocksizex * blocksizey < 16 * 16)
   {
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl_colorreconstruction] device %d does not offer sufficient resources to run bilateral grid\n",
+             "[opencl_colorreconstruction] device %d does not offer sufficient resources to run bilateral grid",
              devid);
     return NULL;
   }
@@ -734,7 +734,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
   dt_iop_colorreconstruct_bilateral_cl_t *b = (dt_iop_colorreconstruct_bilateral_cl_t *)malloc(sizeof(dt_iop_colorreconstruct_bilateral_cl_t));
   if(!b)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate host buffer (a)\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate host buffer (a)");
     return NULL;
   }
 
@@ -763,7 +763,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
       = dt_opencl_alloc_device_buffer(b->devid, sizeof(float) * 4 * b->size_x * b->size_y * b->size_z);
   if(!b->dev_grid)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate device buffer (b)\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate device buffer (b)");
     dt_iop_colorreconstruct_bilateral_free_cl(b);
     return NULL;
   }
@@ -773,7 +773,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
       = dt_opencl_alloc_device_buffer(b->devid, sizeof(float) * 4 * b->size_x * b->size_y * b->size_z);
   if(!b->dev_grid_tmp)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate device buffer (c)\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate device buffer (c)");
     dt_iop_colorreconstruct_bilateral_free_cl(b);
     return NULL;
   }
@@ -784,7 +784,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
     CLARG(b->dev_grid), CLARG(wd), CLARG(ht));
   if(err != CL_SUCCESS)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] error running kernel colorreconstruct_zero: %d\n", err);
+    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] error running kernel colorreconstruct_zero: %d", err);
     dt_iop_colorreconstruct_bilateral_free_cl(b);
     return NULL;
   }
@@ -804,7 +804,7 @@ static dt_iop_colorreconstruct_bilateral_frozen_t *dt_iop_colorreconstruct_bilat
   dt_iop_colorreconstruct_bilateral_frozen_t *bf = (dt_iop_colorreconstruct_bilateral_frozen_t *)malloc(sizeof(dt_iop_colorreconstruct_bilateral_frozen_t));
   if(!bf)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate host buffer (d)\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate host buffer (d)");
     return NULL;
   }
 
@@ -827,14 +827,14 @@ static dt_iop_colorreconstruct_bilateral_frozen_t *dt_iop_colorreconstruct_bilat
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL,
-           "[opencl_colorreconstruction] can not read bilateral grid from device %d\n", b->devid);
+           "[opencl_colorreconstruction] can not read bilateral grid from device %d", b->devid);
       dt_iop_colorreconstruct_bilateral_dump(bf);
       return NULL;
     }
   }
   else
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate host buffer (e)\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate host buffer (e)");
     dt_iop_colorreconstruct_bilateral_dump(bf);
     return NULL;
   }
@@ -866,7 +866,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
   if(blocksizex * blocksizey < 16 * 16)
   {
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl_colorreconstruction] device %d does not offer sufficient resources to run bilateral grid\n",
+             "[opencl_colorreconstruction] device %d does not offer sufficient resources to run bilateral grid",
              devid);
     return NULL;
   }
@@ -874,7 +874,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
   dt_iop_colorreconstruct_bilateral_cl_t *b = (dt_iop_colorreconstruct_bilateral_cl_t *)malloc(sizeof(dt_iop_colorreconstruct_bilateral_cl_t));
   if(!b)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate host buffer (f)\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate host buffer (f)");
     return NULL;
   }
 
@@ -900,7 +900,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
       = dt_opencl_alloc_device_buffer(b->devid, sizeof(float) * 4 * b->size_x * b->size_y * b->size_z);
   if(!b->dev_grid)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate device buffer (g)\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate device buffer (g)");
     dt_iop_colorreconstruct_bilateral_free_cl(b);
     return NULL;
   }
@@ -910,7 +910,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
       = dt_opencl_alloc_device_buffer(b->devid, sizeof(float) * 4 * b->size_x * b->size_y * b->size_z);
   if(!b->dev_grid_tmp)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate device buffer (h)\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate device buffer (h)");
     dt_iop_colorreconstruct_bilateral_free_cl(b);
     return NULL;
   }
@@ -923,7 +923,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL,
-           "[opencl_colorreconstruction] can not write bilateral grid to device %d\n", b->devid);
+           "[opencl_colorreconstruction] can not write bilateral grid to device %d", b->devid);
       dt_iop_colorreconstruct_bilateral_free_cl(b);
       return NULL;
     }

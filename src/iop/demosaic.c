@@ -728,7 +728,7 @@ void process(dt_iop_module_t *self,
     {
       roi = *roi_out;
       dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi",
-        piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "\n");
+        piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out);
       dt_iop_clip_and_zoom_roi((float *)o, tmp, &roi, &roo);
       dt_free_align(tmp);
     }
@@ -851,7 +851,7 @@ int process_cl(dt_iop_module_t *self,
   }
   else
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] demosaicing method %d not yet supported by opencl code\n", demosaicing_method);
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] demosaicing method %d not yet supported by opencl code", demosaicing_method);
     return DT_OPENCL_PROCESS_CL;
   }
 
@@ -1126,7 +1126,7 @@ void commit_params(dt_iop_module_t *self,
                                                self->dev->image_storage.d65_color_matrix, NULL))
     {
       const char *camera = self->dev->image_storage.camera_makermodel;
-      dt_print(DT_DEBUG_ALWAYS, "[colorspaces] `%s' color matrix not found for 4bayer image!\n", camera);
+      dt_print(DT_DEBUG_ALWAYS, "[colorspaces] `%s' color matrix not found for 4bayer image!", camera);
       dt_control_log(_("`%s' color matrix not found for 4bayer image!"), camera);
     }
   }

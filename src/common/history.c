@@ -325,7 +325,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
     {
       dt_print(DT_DEBUG_ALWAYS,
                "[dt_history_merge_module_into_history]"
-               " can't find single instance module %s\n",
+               " can't find single instance module %s",
                mod_src->op);
       module_added = FALSE;
     }
@@ -412,7 +412,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
       {
         dt_print(DT_DEBUG_ALWAYS,
                  "[dt_history_merge_module_into_history]"
-                 " can't load module %s\n", mod_src->op);
+                 " can't load module %s", mod_src->op);
         module_added = FALSE;
       }
       else
@@ -479,7 +479,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
     if(mod_src->iop_order <= 0.0 || mod_src->iop_order == INT_MAX)
       dt_print(DT_DEBUG_ALWAYS,
                "[dt_history_merge_module_into_history]"
-               " invalid source module %s %s(%d)(%i)\n",
+               " invalid source module %s %s(%d)(%i)",
                mod_src->op, mod_src->multi_name,
                mod_src->iop_order, mod_src->multi_priority);
 
@@ -488,14 +488,14 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
            || module_duplicate->iop_order == INT_MAX))
       dt_print(DT_DEBUG_ALWAYS,
                "[dt_history_merge_module_into_history]"
-               " invalid duplicate module module %s %s(%d)(%i)\n",
+               " invalid duplicate module module %s %s(%d)(%i)",
                module_duplicate->op, module_duplicate->multi_name,
                module_duplicate->iop_order, module_duplicate->multi_priority);
 
     if(module->iop_order <= 0.0 || module->iop_order == INT_MAX)
       dt_print(DT_DEBUG_ALWAYS,
                "[dt_history_merge_module_into_history]"
-               " invalid iop_order for module %s %s(%d)(%i)\n",
+               " invalid iop_order for module %s %s(%d)(%i)",
                module->op, module->multi_name, module->iop_order,
                module->multi_priority);
 
@@ -549,7 +549,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
           else
             dt_print(DT_DEBUG_ALWAYS,
                      "[dt_history_merge_module_into_history]"
-                     " form %i not found in source image\n",
+                     " form %i not found in source image",
                      forms_used_replace[i]);
         }
       }
@@ -620,7 +620,7 @@ static gboolean _history_copy_and_paste_on_image_merge(const dt_imgid_t imgid,
   if(ops)
   {
     dt_print(DT_DEBUG_IOPORDER,
-             "[history_copy_and_paste_on_image_merge] selected modules\n");
+             "[history_copy_and_paste_on_image_merge] selected modules");
     // copy only selected history entries
     for(const GList *l = g_list_last(ops); l; l = g_list_previous(l))
     {
@@ -655,7 +655,7 @@ static gboolean _history_copy_and_paste_on_image_merge(const dt_imgid_t imgid,
       {
         if(!dt_iop_is_hidden(hist->module))
         {
-          dt_print(DT_DEBUG_IOPORDER, "  module %20s, multiprio %i, num %d\n",
+          dt_print(DT_DEBUG_IOPORDER, "  module %20s, multiprio %i, num %d",
                    hist->module->op, hist->module->multi_priority, num);
 
           // make sure we use the proper params/blend as the module is set with the
@@ -673,7 +673,7 @@ static gboolean _history_copy_and_paste_on_image_merge(const dt_imgid_t imgid,
   }
   else
   {
-    dt_print(DT_DEBUG_IOPORDER, "[history_copy_and_paste_on_image_merge] all modules\n");
+    dt_print(DT_DEBUG_IOPORDER, "[history_copy_and_paste_on_image_merge] all modules");
     // we will copy all modules
     for(GList *modules_src = dev_src->iop;
         modules_src;
@@ -1123,7 +1123,7 @@ char *dt_history_get_items_as_string(const dt_imgid_t imgid)
   }
   sqlite3_finalize(stmt);
   items = g_list_reverse(items); // list was built in reverse order, so un-reverse it
-  char *result = dt_util_glist_to_str("\n", items);
+  char *result = dt_util_glist_to_str("", items);
   g_list_free_full(items, g_free);
   return result;
 }

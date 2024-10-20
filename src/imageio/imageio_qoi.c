@@ -43,7 +43,7 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
   FILE *f = g_fopen(filename, "rb");
   if(!f)
   {
-    dt_print(DT_DEBUG_ALWAYS,"[qoi_open] cannot open file for read: %s\n", filename);
+    dt_print(DT_DEBUG_ALWAYS,"[qoi_open] cannot open file for read: %s", filename);
     return DT_IMAGEIO_FILE_NOT_FOUND;
   }
 
@@ -55,7 +55,7 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
   if(!read_buffer)
   {
     fclose(f);
-    dt_print(DT_DEBUG_ALWAYS, "[qoi_open] failed to allocate buffer for %s\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[qoi_open] failed to allocate buffer for %s", filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
@@ -66,7 +66,7 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
   {
     fclose(f);
     g_free(read_buffer);
-    dt_print(DT_DEBUG_ALWAYS, "[qoi_open] failed to read from %s\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[qoi_open] failed to read from %s", filename);
     // if we can't read even first 4 bytes, it's more like file disappeared
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
@@ -76,7 +76,7 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
     fclose(f);
     g_free(read_buffer);
     dt_print(DT_DEBUG_ALWAYS,
-             "[qoi_open] no proper file header in %s\n", filename);
+             "[qoi_open] no proper file header in %s", filename);
     return DT_IMAGEIO_UNSUPPORTED_FORMAT;
   }
 
@@ -85,7 +85,7 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
     fclose(f);
     g_free(read_buffer);
     dt_print(DT_DEBUG_ALWAYS,
-             "[qoi_open] failed to read %zu bytes from %s\n",
+             "[qoi_open] failed to read %zu bytes from %s",
              filesize, filename);
     return DT_IMAGEIO_IOERROR;
   }
@@ -97,7 +97,7 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
   if(!int_RGBA_buf)
   {
     g_free(read_buffer);
-    dt_print(DT_DEBUG_ALWAYS,"[qoi_open] failed to decode file: %s\n", filename);
+    dt_print(DT_DEBUG_ALWAYS,"[qoi_open] failed to decode file: %s", filename);
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
@@ -111,7 +111,7 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
   {
     g_free(read_buffer);
     dt_print(DT_DEBUG_ALWAYS,
-             "[qoi_open] could not alloc full buffer for image: %s\n",
+             "[qoi_open] could not alloc full buffer for image: %s",
              img->filename);
     return DT_IMAGEIO_CACHE_FULL;
   }

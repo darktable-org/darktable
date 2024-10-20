@@ -102,7 +102,7 @@ gboolean dt_rawspeed_lookup_makermodel(const char *maker,
   }
   catch(const std::exception &exc)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] %s\n", exc.what());
+    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] %s", exc.what());
   }
 
   if(!got_it_done)
@@ -146,7 +146,7 @@ static gboolean _ignore_image(const gchar *filename)
     extensions_whitelist = g_strdup(always_by_libraw);
 
   dt_print(DT_DEBUG_IMAGEIO,
-           "[rawspeed_open] extensions list to ignore: `%s'\n",
+           "[rawspeed_open] extensions list to ignore: `%s'",
            extensions_whitelist);
 
   gchar *ext_lowercased = g_ascii_strdown(ext,-1);
@@ -196,7 +196,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img,
 
     const auto errors = r->getErrors();
     for(const auto &error : errors)
-      dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) %s\n", img->filename, error.c_str());
+      dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) %s", img->filename, error.c_str());
 
     g_strlcpy(img->camera_maker,
               r->metadata.canonical_make.c_str(),
@@ -413,12 +413,12 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img,
   }
   catch(const rawspeed::IOException &exc)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) I/O error: %s\n", img->filename, exc.what());
+    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) I/O error: %s", img->filename, exc.what());
     return DT_IMAGEIO_IOERROR;
   }
   catch(const rawspeed::FileIOException &exc)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) File I/O error: %s\n", img->filename, exc.what());
+    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) File I/O error: %s", img->filename, exc.what());
     return DT_IMAGEIO_IOERROR;
   }
   catch(const rawspeed::RawDecoderException &exc)
@@ -431,33 +431,33 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img,
     // or unsupported feature (e.g. bit depth, compression, aspect ratio mode, ...)
     if(msg && (strstr(msg, "Camera not supported") || strstr(msg, "not supported, and not allowed to guess")))
     {
-      dt_print(DT_DEBUG_ALWAYS, "[rawspeed] Unsupported camera model for %s\n", img->filename);
+      dt_print(DT_DEBUG_ALWAYS, "[rawspeed] Unsupported camera model for %s", img->filename);
       return DT_IMAGEIO_UNSUPPORTED_CAMERA;
     }
     else if (msg && strstr(msg, "supported"))
     {
-      dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) %s\n", img->filename, msg);
+      dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) %s", img->filename, msg);
       return DT_IMAGEIO_UNSUPPORTED_FEATURE;
     }
     else
     {
-      dt_print(DT_DEBUG_ALWAYS, "[rawspeed] %s corrupt: %s\n", img->filename, exc.what());
+      dt_print(DT_DEBUG_ALWAYS, "[rawspeed] %s corrupt: %s", img->filename, exc.what());
       return DT_IMAGEIO_FILE_CORRUPTED;
     }
   }
   catch(const rawspeed::RawParserException &exc)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) CIFF/FIFF error: %s\n", img->filename, exc.what());
+    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) CIFF/FIFF error: %s", img->filename, exc.what());
     return DT_IMAGEIO_UNSUPPORTED_FORMAT;
   }
   catch(const rawspeed::CameraMetadataException &exc)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) metadata error: %s\n", img->filename, exc.what());
+    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) metadata error: %s", img->filename, exc.what());
     return DT_IMAGEIO_UNSUPPORTED_FEATURE;
   }
   catch(const std::exception &exc)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) %s\n", img->filename, exc.what());
+    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) %s", img->filename, exc.what());
 
     /* if an exception is raised lets not retry or handle the
      specific ones, consider the file as corrupted */
@@ -465,7 +465,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img,
   }
   catch(...)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] unhandled exception in imageio_rawspeed\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] unhandled exception in imageio_rawspeed");
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
 

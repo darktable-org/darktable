@@ -726,14 +726,14 @@ static inline gboolean _dt_masks_dynbuf_growto(dt_masks_dynbuf_t *a,
   {
     // not much we can do here except emit an error message
     dt_print(DT_DEBUG_ALWAYS,
-             "critical: out of memory for dynbuf '%s' with size request %zu!\n",
+             "critical: out of memory for dynbuf '%s' with size request %zu!",
              a->tag, newsize);
     return FALSE;
   }
   if (a->buffer)
   {
     memcpy(newbuf, a->buffer, a->size * sizeof(float));
-    dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] grows to size %lu (is %p, was %p)\n",
+    dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] grows to size %lu (is %p, was %p)",
              a->tag,
              (unsigned long)a->size, newbuf, a->buffer);
     dt_free_align(a->buffer);
@@ -754,7 +754,7 @@ dt_masks_dynbuf_t *dt_masks_dynbuf_init(const size_t size, const char *tag)
     g_strlcpy(a->tag, tag, sizeof(a->tag)); //only for debugging purposes
     a->pos = 0;
     if(_dt_masks_dynbuf_growto(a, size))
-      dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] with initial size %lu (is %p)\n",
+      dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] with initial size %lu (is %p)",
                a->tag,
                (unsigned long)a->size, a->buffer);
     if(a->buffer == NULL)
@@ -922,7 +922,7 @@ static inline
 void dt_masks_dynbuf_free(dt_masks_dynbuf_t *a)
 {
   if(a == NULL) return;
-  dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] freed (was %p)\n", a->tag,
+  dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] freed (was %p)", a->tag,
           a->buffer);
   dt_free_align(a->buffer);
   free(a);

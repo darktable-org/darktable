@@ -335,7 +335,7 @@ static float *_process_opposed(
 
       dt_print_pipe(DT_DEBUG_PIPE,
           "opposed chroma", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out,
-          "RGB %3.4f %3.4f %3.4f hash=%" PRIx64 "%s%s\n",
+          "RGB %3.4f %3.4f %3.4f hash=%" PRIx64 "%s%s",
           chrominance[0], chrominance[1], chrominance[2],
           _opposed_parhash(piece),
           piece->pipe->type == DT_DEV_PIXELPIPE_FULL ? ", saved" : "",
@@ -534,7 +534,7 @@ static cl_int process_opposed_cl(
 
     dt_print_pipe(DT_DEBUG_PIPE,
         "opposed chroma", piece->pipe, self, piece->pipe->devid, roi_in, roi_out,
-        "RGB %3.4f %3.4f %3.4f hash=%" PRIx64 "%s%s\n",
+        "RGB %3.4f %3.4f %3.4f hash=%" PRIx64 "%s%s",
         chrominance[0], chrominance[1], chrominance[2],
         _opposed_parhash(piece),
         piece->pipe->type == DT_DEV_PIXELPIPE_FULL ? ", saved" : "",

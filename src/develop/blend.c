@@ -289,7 +289,7 @@ static void _refine_with_detail_mask(dt_iop_module_t *self,
 
   dt_print_pipe(DT_DEBUG_PIPE,
        "refine with detail mask",
-       piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "\n");
+       piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out);
 
   const size_t msize = (size_t)roi_out->width * roi_out->height;
   DT_OMP_FOR_SIMD(aligned(mask, warp_mask : 64))
@@ -302,7 +302,7 @@ static void _refine_with_detail_mask(dt_iop_module_t *self,
   error:
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
        "refine with detail mask",
-       piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "no mask data available\n");
+       piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "no mask data available");
   dt_control_log(_("detail mask blending error"));
   dt_free_align(warp_mask);
   dt_free_align(lum);
@@ -541,7 +541,7 @@ void dt_develop_blend_process(dt_iop_module_t *self,
     dt_print_pipe(DT_DEBUG_PIPE,
                   "dt_develop_blend",
                   piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out,
-                  "skip blending, work area mismatch\n");
+                  "skip blending, work area mismatch");
     return;
   }
 
@@ -586,7 +586,7 @@ void dt_develop_blend_process(dt_iop_module_t *self,
     dt_print_pipe(DT_DEBUG_PIPE,
        "dt_develop_blend",
        piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out,
-       "could not allocate buffer for blending\n");
+       "could not allocate buffer for blending");
     return;
   }
 
@@ -610,7 +610,7 @@ void dt_develop_blend_process(dt_iop_module_t *self,
                                                 self, &free_mask);
     dt_print_pipe(DT_DEBUG_PIPE,
        "blend raster",
-       piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "%s %s %s at %p\n",
+       piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "%s %s %s at %p",
        dt_iop_colorspace_to_name(cst),
        free_mask ? "temp" : "permanent",
        d->raster_mask_invert ? "inverted" : "",
@@ -675,7 +675,7 @@ void dt_develop_blend_process(dt_iop_module_t *self,
 
     dt_print_pipe(DT_DEBUG_PIPE,
        form && form_ok ? "blend with form" : "blend without form",
-       piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "%s, %s%s%s\n",
+       piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "%s, %s%s%s",
        dt_iop_colorspace_to_name(cst),
        _develop_blend_colorspace_to_str(blend_csp),
        inverted ? ", inverted" : "",
@@ -819,7 +819,7 @@ void dt_develop_blend_process(dt_iop_module_t *self,
     const gboolean new = g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID), _mask);
     dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order);
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
-       "write raster mask", piece->pipe, self, DT_DEVICE_CPU, NULL, NULL, "%s at %p (%ix%i)\n",
+       "write raster mask", piece->pipe, self, DT_DEVICE_CPU, NULL, NULL, "%s at %p (%ix%i)",
        new ? "new" : "replaced",
        _mask, roi_out->width, roi_out->height);
   }
@@ -828,7 +828,7 @@ void dt_develop_blend_process(dt_iop_module_t *self,
     dt_free_align(_mask);
     if(g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID)))
       dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
-        "delete raster mask", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, " not requested\n");
+        "delete raster mask", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, " not requested");
   }
 }
 
@@ -856,7 +856,7 @@ static void _refine_with_detail_mask_cl(dt_iop_module_t *self,
   {
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
        "refine with detail mask",
-       piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "no detail data available\n");
+       piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "no detail data available");
     return;
   }
   const int iwidth  = p->scharr.roi.width;
@@ -898,7 +898,7 @@ static void _refine_with_detail_mask_cl(dt_iop_module_t *self,
 
   dt_print_pipe(DT_DEBUG_PIPE,
        "refine with detail mask",
-       piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "\n");
+       piece->pipe, self, piece->pipe->devid, roi_in, roi_out);
 
   const size_t msize = (size_t)roi_out->width * roi_out->height;
   DT_OMP_FOR_SIMD(aligned(mask, warp_mask : 64))
@@ -912,7 +912,7 @@ static void _refine_with_detail_mask_cl(dt_iop_module_t *self,
   dt_control_log(_("detail mask CL blending problem"));
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_OPENCL,
        "refine with detail_mask",
-        piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "OpenCL error: %s\n", cl_errstr(err));
+        piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "OpenCL error: %s", cl_errstr(err));
 
   dt_free_align(lum);
   dt_opencl_release_mem_object(tmp);
@@ -965,7 +965,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     dt_print_pipe(DT_DEBUG_PIPE,
                   "dt_develop_blend",
                   piece->pipe, self, piece->pipe->devid, roi_in, roi_out,
-                  "skip OpenCL blending, work area mismatch\n");
+                  "skip OpenCL blending, work area mismatch");
     return TRUE;
   }
   // only non-zero if mask_display was set by an _earlier_ module
@@ -1012,7 +1012,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     dt_print_pipe(DT_DEBUG_PIPE,
        "dt_develop_blend",
        piece->pipe, self, piece->pipe->devid, roi_in, roi_out,
-       "could not allocate buffer for blending\n");
+       "could not allocate buffer for blending");
    return FALSE;
   }
 
@@ -1099,7 +1099,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
   if(err != CL_SUCCESS)
   {
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl_blendop] profile_info_cl: %s\n", cl_errstr(err));
+             "[opencl_blendop] profile_info_cl: %s", cl_errstr(err));
     goto error;
   }
   if(mask_mode == DEVELOP_MASK_ENABLED || suppress_mask)
@@ -1115,7 +1115,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL,
-               "[opencl_blendop] kernel_set_mask: %s\n", cl_errstr(err));
+               "[opencl_blendop] kernel_set_mask: %s", cl_errstr(err));
       goto error;
     }
   }
@@ -1132,7 +1132,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
                                                 self, &free_mask);
     dt_print_pipe(DT_DEBUG_PIPE,
        "blend raster",
-       piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "%s %s %s at %p\n",
+       piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "%s %s %s at %p",
        dt_iop_colorspace_to_name(cst),
        d->raster_mask_invert ? "inverted" : "",
        free_mask ? "temp" : "permanent",
@@ -1164,7 +1164,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL,
-               "[opencl_blendop] write raster mask dev_mask_1: %s\n",
+               "[opencl_blendop] write raster mask dev_mask_1: %s",
                cl_errstr(err));
       goto error;
     }
@@ -1206,7 +1206,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
 
     dt_print_pipe(DT_DEBUG_PIPE,
        form && form_ok ? "blend with form" : "blend without form",
-       piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "%s, %s%s%s\n",
+       piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "%s, %s%s%s",
        dt_iop_colorspace_to_name(cst),
        _develop_blend_colorspace_to_str(blend_csp),
        inverted ? ", inverted" : "",
@@ -1223,7 +1223,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL,
-               "[opencl_blendop] write drawn mask dev_mask_1: %s\n", cl_errstr(err));
+               "[opencl_blendop] write drawn mask dev_mask_1: %s", cl_errstr(err));
       goto error;
     }
     // The following call to clFinish() works around a bug in some OpenCL
@@ -1251,7 +1251,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL,
-               "[opencl_blendop] apply global opacity: %s\n", cl_errstr(err));
+               "[opencl_blendop] apply global opacity: %s", cl_errstr(err));
       goto error;
     }
 
@@ -1321,7 +1321,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
         if(err != CL_SUCCESS)
         {
           dt_print(DT_DEBUG_OPENCL,
-                   "[opencl_blendop] DEVELOP_MASK_POST_BLUR: %s\n", cl_errstr(err));
+                   "[opencl_blendop] DEVELOP_MASK_POST_BLUR: %s", cl_errstr(err));
           goto error;
         }
         _blend_process_cl_exchange(&dev_mask_1, &dev_mask_2);
@@ -1338,7 +1338,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
         if(err != CL_SUCCESS)
         {
           dt_print(DT_DEBUG_OPENCL,
-                   "[opencl_blendop] DEVELOP_MASK_POST_TONE_CURVE: %s\n", cl_errstr(err));
+                   "[opencl_blendop] DEVELOP_MASK_POST_TONE_CURVE: %s", cl_errstr(err));
           goto error;
         }
         _blend_process_cl_exchange(&dev_mask_1, &dev_mask_2);
@@ -1385,7 +1385,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL,
-               "[opencl_blendop] work_profile_info_cl: %s\n", cl_errstr(err));
+               "[opencl_blendop] work_profile_info_cl: %s", cl_errstr(err));
       goto error;
     }
     // let us display a specific channel
@@ -1400,7 +1400,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL,
-               "[opencl_blendop] kernel_display_channel: %s\n", cl_errstr(err));
+               "[opencl_blendop] kernel_display_channel: %s", cl_errstr(err));
       goto error;
     }
   }
@@ -1416,7 +1416,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL,
-               "[opencl_blendop] blend_parameter: %s\n", cl_errstr(err));
+               "[opencl_blendop] blend_parameter: %s", cl_errstr(err));
       goto error;
     }
   }
@@ -1475,7 +1475,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     const gboolean new = g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID), _mask);
     dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order);
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
-       "write raster mask", piece->pipe, self, piece->pipe->devid, NULL, NULL, "%s at %p (%ix%i)\n",
+       "write raster mask", piece->pipe, self, piece->pipe->devid, NULL, NULL, "%s at %p (%ix%i)",
        new ? "new" : "replaced",
        _mask, roi_out->width, roi_out->height);
   }
@@ -1484,7 +1484,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     dt_free_align(_mask);
     if(g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID)))
       dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
-        "delete raster mask", piece->pipe, self, piece->pipe->devid, roi_in, roi_out, " not requested\n");
+        "delete raster mask", piece->pipe, self, piece->pipe->devid, roi_in, roi_out, " not requested");
   }
 
   dt_opencl_release_mem_object(dev_blendif_params);
@@ -1505,7 +1505,7 @@ error:
   {
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
       "delete raster mask", piece->pipe, self, piece->pipe->devid, roi_in, roi_out,
-      "OpenCL error: %s\n", cl_errstr(err));
+      "OpenCL error: %s", cl_errstr(err));
     dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order);
   }
   dt_free_align(_mask);
@@ -1519,7 +1519,7 @@ error:
   dt_ioppr_free_iccprofile_params_cl(&work_profile_info_cl, &work_profile_lut_cl,
                                      &dev_work_profile_info,
                                      &dev_work_profile_lut);
-  dt_print(DT_DEBUG_OPENCL | DT_DEBUG_PIPE, "[opencl_blendop] error: %s\n", cl_errstr(err));
+  dt_print(DT_DEBUG_OPENCL | DT_DEBUG_PIPE, "[opencl_blendop] error: %s", cl_errstr(err));
   return FALSE;
 }
 #endif

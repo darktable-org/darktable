@@ -485,7 +485,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   float *fbuffer = dt_alloc_align_float(HL_FLOAT_PLANES * p_size);
   if(!fbuffer)
   {
-    dt_print(DT_DEBUG_PIPE, "[process segmentation] can't allocate intermediate buffers\n");
+    dt_print(DT_DEBUG_PIPE, "[process segmentation] can't allocate intermediate buffers");
     return;
   }
 
@@ -505,7 +505,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
 
   if(segerror)
   {
-    dt_print(DT_DEBUG_PIPE, "[process segmentation] can't allocate segmentation buffers\n");
+    dt_print(DT_DEBUG_PIPE, "[process segmentation] can't allocate segmentation buffers");
     for(int i = 0; i < HL_SEGMENT_PLANES; i++)
       dt_segmentation_free_struct(&isegments[i]);
 
@@ -745,7 +745,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
     }
   }
 
-  dt_print(DT_DEBUG_PERF, "[segmentation report %-12s] %5.1fMpix, segments: %3i red, %3i green, %3i blue, %3i all, %4i allowed.\n",
+  dt_print(DT_DEBUG_PERF, "[segmentation report %-12s] %5.1fMpix, segments: %3i red, %3i green, %3i blue, %3i all, %4i allowed",
       dt_dev_pixelpipe_type_to_str(piece->pipe->type),
       (float) (roi_in->width * roi_in->height) / 1.0e6f, isegments[0].nr -2, isegments[1].nr-2, isegments[2].nr-2, isegments[3].nr-2,
       segmentation_limit-2);

@@ -561,7 +561,7 @@ static void *_control_work_res(void *ptr)
   int32_t threadid_res = _control_get_threadid_res();
   while(dt_control_running())
   {
-    // dt_print(DT_DEBUG_CONTROL, "[control_work] %d\n", threadid_res);
+    // dt_print(DT_DEBUG_CONTROL, "[control_work] %d", threadid_res);
     if(_control_run_job_res(s, threadid_res))
     {
       // wait for a new job.
@@ -606,7 +606,7 @@ static void *_control_work(void *ptr)
   // int32_t threadid = dt_control_get_threadid();
   while(dt_control_running())
   {
-    // dt_print(DT_DEBUG_CONTROL, "[control_work] %d\n", threadid);
+    // dt_print(DT_DEBUG_CONTROL, "[control_work] %d", threadid);
     if(_control_run_job(control))
     {
       // wait for a new job.

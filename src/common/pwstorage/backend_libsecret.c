@@ -66,7 +66,7 @@ const backend_libsecret_context_t *dt_pwstorage_libsecret_new()
   SecretService *secret_service = secret_service_get_sync(SECRET_SERVICE_LOAD_COLLECTIONS, NULL, &error);
   if(error)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[pwstorage_libsecret] error connecting to Secret Service: %s\n", error->message);
+    dt_print(DT_DEBUG_ALWAYS, "[pwstorage_libsecret] error connecting to Secret Service: %s", error->message);
     g_error_free(error);
     if(secret_service) g_object_unref(secret_service);
     dt_pwstorage_libsecret_destroy(context);
@@ -118,7 +118,7 @@ gboolean dt_pwstorage_libsecret_set(const backend_libsecret_context_t *context, 
                                             NULL);
   if(!res)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[pwstorage_libsecret] error storing password: %s\n", error->message);
+    dt_print(DT_DEBUG_ALWAYS, "[pwstorage_libsecret] error storing password: %s", error->message);
     g_error_free(error);
   }
 
@@ -147,7 +147,7 @@ GHashTable *dt_pwstorage_libsecret_get(const backend_libsecret_context_t *contex
                                              NULL);
   if(error)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[pwstorage_libsecret] error retrieving password: %s\n", error->message);
+    dt_print(DT_DEBUG_ALWAYS, "[pwstorage_libsecret] error retrieving password: %s", error->message);
     g_error_free(error);
     goto error;
   }

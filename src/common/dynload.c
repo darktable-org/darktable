@@ -76,7 +76,7 @@ gboolean dt_gmodule_symbol(dt_gmodule_t *module, const char *name, void (**point
   const gboolean symbol = g_module_symbol(module->gmodule, name, (gpointer)pointer);
   const gboolean valid = *pointer != NULL;
   if(!(symbol && valid))
-    dt_print(DT_DEBUG_OPENCL, "[opencl init] missing symbol `%s` in library`\n", name);
+    dt_print(DT_DEBUG_OPENCL, "[opencl init] missing symbol `%s` in library`", name);
   return symbol && valid ? TRUE : FALSE;
 }
 #else //!__APPLE__
@@ -109,7 +109,7 @@ gboolean dt_gmodule_symbol(dt_gmodule_t *module, const char *name, void (**point
   *pointer = dlsym(module->gmodule, name);
   const gboolean valid = *pointer != NULL;
   if(!valid)
-    dt_print(DT_DEBUG_OPENCL, "[opencl init] missing symbol `%s` in library`\n", name);
+    dt_print(DT_DEBUG_OPENCL, "[opencl init] missing symbol `%s` in library`", name);
 
   return valid;
 }

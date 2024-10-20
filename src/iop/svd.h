@@ -65,7 +65,7 @@ static inline int dsvd(
 {
   if (m < n)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[svd] #rows must be >= #cols \n");
+    dt_print(DT_DEBUG_ALWAYS, "[svd] #rows must be >= #cols ");
     return 0;
   }
 
@@ -267,7 +267,7 @@ static inline int dsvd(
         break;
       }
       if (its >= max_its) {
-        dt_print(DT_DEBUG_ALWAYS, "[svd] no convergence after %d iterations\n", its);
+        dt_print(DT_DEBUG_ALWAYS, "[svd] no convergence after %d iterations", its);
         free(rv1);
         return 0;
       }

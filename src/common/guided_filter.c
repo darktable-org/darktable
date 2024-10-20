@@ -638,13 +638,13 @@ int guided_filter_cl(int devid,
   {
     err = _guided_filter_cl_impl(devid, guide, in, out, width, height, ch, w, sqrt_eps, guide_weight, min, max);
     if(err != CL_SUCCESS)
-      dt_print(DT_DEBUG_OPENCL, "[guided filter] opencl error %s\n", cl_errstr(err));
+      dt_print(DT_DEBUG_OPENCL, "[guided filter] opencl error %s", cl_errstr(err));
   }
   if(err != CL_SUCCESS)
   {
     err = _guided_filter_cl_fallback(devid, guide, in, out, width, height, ch, w, sqrt_eps, guide_weight, min, max);
     if(err != CL_SUCCESS)
-      dt_print(DT_DEBUG_OPENCL, "[guided filter] opencl cpu fallback error %s\n", cl_errstr(err));
+      dt_print(DT_DEBUG_OPENCL, "[guided filter] opencl cpu fallback error %s", cl_errstr(err));
   }
   return err;
 }

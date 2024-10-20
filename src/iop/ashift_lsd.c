@@ -191,7 +191,7 @@ struct point {int x,y;};
  */
 static void error(char * msg)
 {
-  dt_print(DT_DEBUG_ALWAYS,"LSD Error: %s\n",msg);
+  dt_print(DT_DEBUG_ALWAYS,"LSD Error: %s",msg);
   exit(EXIT_FAILURE);
 }
 

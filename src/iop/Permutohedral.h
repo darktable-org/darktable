@@ -672,7 +672,7 @@ public:
     }
     dt_print(DT_DEBUG_MEMORY,
       "[permutohedral] hash tables %lu bytes (%lu initially), %lu entries, [permutohedral] tables grew %lu times, "
-      "replay using %lu bytes for %lu pixels, [permutohedral] fill factor %f%%, remap using %lu bytes\n",
+      "replay using %lu bytes for %lu pixels, [permutohedral] fill factor %f%%, remap using %lu bytes",
       total_bytes, init_bytes, total_entries, total_grows,
       (sizeof(ReplayEntry)*nData), nData, (float)100.0f * total_entries / alloc_entries, remap_bytes);
 
@@ -718,7 +718,7 @@ public:
     const Value *const zeroPtr = &zero;
 
     dt_print(DT_DEBUG_MEMORY,
-      "[permutohedral] blur using %lu bytes for newValue\n",
+      "[permutohedral] blur using %lu bytes for newValue",
       (sizeof(Value)*hashTables[0].size()));
 
     // For each of d+1 axes,

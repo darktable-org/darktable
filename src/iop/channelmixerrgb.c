@@ -1199,7 +1199,7 @@ static void _declare_cat_on_pipe(struct dt_iop_module_t *self, const gboolean pr
   }
 
   if(origcat != chr->adaptation)
-    dt_print(DT_DEBUG_PIPE, "changed CAT for %s%s from %p to %p\n",
+    dt_print(DT_DEBUG_PIPE, "changed CAT for %s%s from %p to %p",
       self->op, dt_iop_get_instance_id(self), origcat, chr->adaptation);
 }
 
@@ -1985,7 +1985,7 @@ static void _set_trouble_messages(struct dt_iop_module_t *self)
   const dt_develop_t *dev = self->dev;
   const dt_dev_chroma_t *chr = &dev->chroma;
 
-  dt_print(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "trouble message for %s%s : temp=%p adapt=%p\n",
+  dt_print(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "trouble message for %s%s : temp=%p adapt=%p",
     self->op, dt_iop_get_instance_id(self), chr->temperature, chr->adaptation);
 
   // in temperature module we make sure this is only presented if temperature is enabled
@@ -2038,7 +2038,7 @@ static void _set_trouble_messages(struct dt_iop_module_t *self)
   const dt_image_t *img = &dev->image_storage;
   dt_print_pipe(DT_DEBUG_PIPE, anyproblem ? "chroma trouble" : "chroma data",
       NULL, self, DT_DEVICE_NONE, NULL, NULL,
-      "%s%s%sD65=%s.  NOW %.3f %.3f %.3f, D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f File `%s' ID=%i\n",
+      "%s%s%sD65=%s.  NOW %.3f %.3f %.3f, D65 %.3f %.3f %.3f, AS-SHOT %.3f %.3f %.3f File `%s' ID=%i",
       problem1 ? "white balance applied twice, " : "",
       problem2 ? "double CAT applied, " : "",
       problem3 ? "white balance missing, " : "",
@@ -3118,7 +3118,7 @@ void commit_params(struct dt_iop_module_t *self,
   const gboolean run_validation = preview && g && g->run_validation;
 
   dt_print(DT_DEBUG_PARAMS,
-    "[commit color calibration]%s%s  temp=%i  xy=%.4f %.4f - XYZ=%.4f %.4f %.4f - LMS=%.4f %.4f %.4f  %s\n",
+    "[commit color calibration]%s%s  temp=%i  xy=%.4f %.4f - XYZ=%.4f %.4f %.4f - LMS=%.4f %.4f %.4f  %s",
      run_profile ? " [profile]" : "",
      run_validation ? " [validation]" : "",
      (int)p->temperature, x, y, XYZ[0], XYZ[1], XYZ[2],

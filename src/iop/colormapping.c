@@ -968,7 +968,7 @@ static void process_clusters(gpointer instance, dt_iop_module_t *self)
     {
       if(fwrite(&g->flowback, sizeof(g->flowback), 1, f) < 1)
         dt_print(DT_DEBUG_ALWAYS,
-                 "[colormapping] could not write flowback file /tmp/dt_colormapping_loaded\n");
+                 "[colormapping] could not write flowback file /tmp/dt_colormapping_loaded");
       fclose(f);
     }
   }

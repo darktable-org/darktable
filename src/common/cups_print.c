@@ -158,10 +158,10 @@ static int _dest_cb(void *user_data, unsigned flags, cups_dest_t *dest)
     memset(&pr, 0, sizeof(pr));
     dt_get_printer_info(dest->name, &pr);
     if(pctl->cb) pctl->cb(&pr, pctl->user_data);
-    dt_print(DT_DEBUG_PRINT, "[print] new printer %s found\n", dest->name);
+    dt_print(DT_DEBUG_PRINT, "[print] new printer %s found", dest->name);
   }
   else
-    dt_print(DT_DEBUG_PRINT, "[print] skip printer %s as stopped\n", dest->name);
+    dt_print(DT_DEBUG_PRINT, "[print] skip printer %s as stopped", dest->name);
 
   return 1;
 }
@@ -307,7 +307,7 @@ GList *dt_get_papers(const dt_printer_info_t *printer)
               result = g_list_append (result, paper);
 
               dt_print(DT_DEBUG_PRINT,
-                       "[print] new media paper %4d %6.2f x %6.2f (%s) (%s)\n",
+                       "[print] new media paper %4d %6.2f x %6.2f (%s) (%s)",
                        k, paper->width, paper->height, paper->name, paper->common_name);
             }
           }
@@ -317,7 +317,7 @@ GList *dt_get_papers(const dt_printer_info_t *printer)
         httpClose(hcon);
       }
       else
-        dt_print(DT_DEBUG_PRINT, "[print] cannot connect to printer %s (cancel=%d)\n", printer_name, cancel);
+        dt_print(DT_DEBUG_PRINT, "[print] cannot connect to printer %s (cancel=%d)", printer_name, cancel);
     }
 
     cupsFreeDests(num_dests, dests);
@@ -345,7 +345,7 @@ GList *dt_get_papers(const dt_printer_info_t *printer)
         result = g_list_append (result, paper);
 
         dt_print(DT_DEBUG_PRINT,
-                 "[print] new ppd paper %4d %6.2f x %6.2f (%s) (%s)\n",
+                 "[print] new ppd paper %4d %6.2f x %6.2f (%s) (%s)",
                  k, paper->width, paper->height, paper->name, paper->common_name);
       }
       size++;
@@ -384,7 +384,7 @@ GList *dt_get_media_type(const dt_printer_info_t *printer)
           g_strlcpy(media->common_name, choice->text, MAX_NAME);
           result = g_list_prepend (result, media);
 
-          dt_print(DT_DEBUG_PRINT, "[print] new media %2d (%s) (%s)\n", k, media->name, media->common_name);
+          dt_print(DT_DEBUG_PRINT, "[print] new media %2d (%s) (%s)", k, media->name, media->common_name);
           choice++;
         }
       }
@@ -438,7 +438,7 @@ void dt_print_file(const dt_imgid_t imgid, const char *filename, const char *job
     if(fd == -1)
     {
       dt_control_log(_("failed to create temporary file for printing options"));
-      dt_print(DT_DEBUG_ALWAYS, "failed to create temporary PDF for printing options\n");
+      dt_print(DT_DEBUG_ALWAYS, "failed to create temporary PDF for printing options");
       return;
     }
     close(fd);
@@ -507,7 +507,7 @@ void dt_print_file(const dt_imgid_t imgid, const char *filename, const char *job
     else
     {
       dt_control_log(_("printing on `%s' cancelled"), pinfo->printer.name);
-      dt_print(DT_DEBUG_PRINT, "[print]   command fails with %d, cancel printing\n", exit_status);
+      dt_print(DT_DEBUG_PRINT, "[print]   command fails with %d, cancel printing", exit_status);
       return;
     }
   }
@@ -563,9 +563,9 @@ void dt_print_file(const dt_imgid_t imgid, const char *filename, const char *job
 
   // print lp options
 
-  dt_print(DT_DEBUG_PRINT, "[print] printer options (%d)\n", num_options);
+  dt_print(DT_DEBUG_PRINT, "[print] printer options (%d)", num_options);
   for(int k=0; k<num_options; k++)
-    dt_print(DT_DEBUG_PRINT, "[print]   %2d  %s=%s\n", k+1, options[k].name, options[k].value);
+    dt_print(DT_DEBUG_PRINT, "[print]   %2d  %s=%s", k+1, options[k].name, options[k].value);
 
   const int job_id = cupsPrintFile(pinfo->printer.name, filename, job_title, num_options, options);
 

@@ -287,7 +287,7 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
 
   dt_print(DT_DEBUG_PERF,
             "histogram calculation %u bins %d -> %d"
-            " compensate %d %u channels %u pixels took %.3f secs (%.3f CPU)\n",
+            " compensate %d %u channels %u pixels took %.3f secs (%.3f CPU)",
             histogram_params->bins_count, cst, cst_to,
             compensate_middle_grey && profile_info, histogram_stats->ch,
             histogram_stats->pixels,

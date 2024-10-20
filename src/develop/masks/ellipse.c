@@ -1654,7 +1654,7 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module,
   if(!_ellipse_get_area(module, piece, form, width, height, posx, posy)) return 0;
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] ellipse area took %0.04f sec\n",
+           "[masks %s] ellipse area took %0.04f sec",
            form->name, dt_get_lap_time(&start2));
 
   // we get the ellipse values
@@ -1674,7 +1674,7 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module,
     }
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] ellipse draw took %0.04f sec\n",
+           "[masks %s] ellipse draw took %0.04f sec",
            form->name, dt_get_lap_time(&start2));
 
   // we back transform all this points
@@ -1687,7 +1687,7 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module,
   }
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] ellipse transform took %0.04f sec\n", form->name,
+           "[masks %s] ellipse transform took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   // we allocate the buffer
@@ -1737,7 +1737,7 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module,
   dt_free_align(points);
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] ellipse fill took %0.04f sec\n",
+           "[masks %s] ellipse fill took %0.04f sec",
            form->name, dt_get_lap_time(&start2));
 
   return 1;
@@ -1787,7 +1787,7 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   const int gh = (h + grid - 1) / grid + 1;  // grid dimension of total roi
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] ellipse init took %0.04f sec\n",
+           "[masks %s] ellipse init took %0.04f sec",
            form->name, dt_get_lap_time(&start2));
 
   // we look at the outer line of the shape - no effects outside of
@@ -1812,7 +1812,7 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   }
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] ellipse outline took %0.04f sec\n",
+           "[masks %s] ellipse outline took %0.04f sec",
            form->name, dt_get_lap_time(&start2));
 
   // we transform the outline from input image coordinates to current position in pixelpipe
@@ -1825,7 +1825,7 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   }
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] ellipse outline transform took %0.04f sec\n",
+           "[masks %s] ellipse outline transform took %0.04f sec",
            form->name, dt_get_lap_time(&start2));
 
   // we get the min/max values ...
@@ -1863,7 +1863,7 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   dt_free_align(ell);
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] ellipse bounding box took %0.04f sec\n",
+           "[masks %s] ellipse bounding box took %0.04f sec",
            form->name, dt_get_lap_time(&start2));
 
   // check if there is anything to do at all; only if width and height
@@ -1886,7 +1886,7 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
     }
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] ellipse grid took %0.04f sec\n",
+           "[masks %s] ellipse grid took %0.04f sec",
            form->name, dt_get_lap_time(&start2));
 
   // we back transform all these points to the input image coordinates
@@ -1899,7 +1899,7 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   }
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] ellipse transform took %0.04f sec\n", form->name,
+           "[masks %s] ellipse transform took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   // we calculate the mask values at the transformed points; re-use
@@ -1908,7 +1908,7 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   _fill_mask((size_t)(bbh)*bbw, points, points, center, a, b, ta, tb, alpha, 1);
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] ellipse draw took %0.04f sec\n", form->name,
+           "[masks %s] ellipse draw took %0.04f sec", form->name,
            dt_get_wtime() - start2);
 
   // we fill the pre-initialized output buffer by interpolation;
@@ -1937,10 +1937,10 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   dt_free_align(points);
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] ellipse fill took %0.04f sec\n",
+           "[masks %s] ellipse fill took %0.04f sec",
            form->name, dt_get_lap_time(&start2));
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] ellipse total render took %0.04f sec\n", form->name,
+           "[masks %s] ellipse total render took %0.04f sec", form->name,
            dt_get_lap_time(&start1));
 
   return 1;

@@ -359,7 +359,7 @@ void modify_roi_out(struct dt_iop_module_t *self,
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
     "crop aspects", piece->pipe, self, DT_DEVICE_NONE, roi_in, NULL,
-    " %s%s%sAspect=%.5f. odx: %.4f ody: %.4f --> dx: %.4f dy: %.4f\n",
+    " %s%s%sAspect=%.5f. odx: %.4f ody: %.4f --> dx: %.4f dy: %.4f",
     d->aspect < 0.0f ? "toggled " : "",
     keep_aspect ? "fixed " : "",
     landscape ? "landscape " : "portrait ",
@@ -1182,7 +1182,7 @@ void gui_init(struct dt_iop_module_t *self)
       if(n == 0 || d == 0)
       {
         dt_print(DT_DEBUG_ALWAYS,
-                 "invalid ratio format for `%s'. it should be \"number:number\"\n",
+                 "invalid ratio format for `%s'. it should be \"number:number\"",
                  nv->key);
         dt_control_log
           (_("invalid ratio format for `%s'. it should be \"number:number\""),
@@ -1199,7 +1199,7 @@ void gui_init(struct dt_iop_module_t *self)
     else
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "invalid ratio format for `%s'. it should be \"number:number\"\n",
+               "invalid ratio format for `%s'. it should be \"number:number\"",
                nv->key);
       dt_control_log
         (_("invalid ratio format for `%s'. it should be \"number:number\""),

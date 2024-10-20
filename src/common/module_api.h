@@ -35,7 +35,7 @@
       if(!g_module_symbol(module->module, #function_name, (gpointer) & (module->function_name))) \
           module->function_name = default_ ## function_name
 
-  dt_print(DT_DEBUG_CONTROL, "[" INCLUDE_API_FROM_MODULE_LOAD "] loading `%s' from %s\n", module_name, libname);
+  dt_print(DT_DEBUG_CONTROL, "[" INCLUDE_API_FROM_MODULE_LOAD "] loading `%s' from %s", module_name, libname);
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
   if(!module->module) goto api_h_error;
   int (*version)();
@@ -43,7 +43,7 @@
   if(version() != dt_version())
   {
     dt_print(DT_DEBUG_ALWAYS,
-            "[" INCLUDE_API_FROM_MODULE_LOAD "] `%s' is compiled for another version of dt (module %d (%s) != dt %d (%s)) !\n",
+            "[" INCLUDE_API_FROM_MODULE_LOAD "] `%s' is compiled for another version of dt (module %d (%s) != dt %d (%s)) !",
             libname, abs(version()), version() < 0 ? "debug" : "opt", abs(dt_version()),
             dt_version() < 0 ? "debug" : "opt");
     goto api_h_error;
@@ -52,7 +52,7 @@
 
   goto skip_error;
 api_h_error:
-  dt_print(DT_DEBUG_ALWAYS, "[" INCLUDE_API_FROM_MODULE_LOAD "] failed to open `%s': %s\n", module_name, g_module_error());
+  dt_print(DT_DEBUG_ALWAYS, "[" INCLUDE_API_FROM_MODULE_LOAD "] failed to open `%s': %s", module_name, g_module_error());
   if(module->module) g_module_close(module->module);
   module->module = NULL;
   return 1;
