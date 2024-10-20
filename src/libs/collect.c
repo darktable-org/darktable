@@ -1434,8 +1434,8 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
           // clang-format on
 
         // clang-format off
-        query = dt_util_dstrcat
-          (query, " UNION ALL "
+        dt_util_str_cat
+          (&query, " UNION ALL "
            "SELECT '%s' AS name, 0 as id, COUNT(*) AS count "
            "FROM main.images AS mi "
            "WHERE mi.id NOT IN"
@@ -1680,13 +1680,13 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
           if(property == DT_COLLECTION_PROP_FOLDERS) pth = g_strdup("/");
 #endif
           for(int i = 0; i < common_length; i++)
-            pth = dt_util_dstrcat(pth, format_separator, tokens[i]);
+            dt_util_str_cat(&pth, format_separator, tokens[i]);
 
           for(char **token = &tokens[common_length]; *token; token++)
           {
             GtkTreeIter iter;
 
-            pth = dt_util_dstrcat(pth, format_separator, *token);
+            dt_util_str_cat(&pth, format_separator, *token);
             if(_is_time_property(property) && !*(token + 1)) pth[10] = ' ';
 
             gchar *pth2 = g_strdup(pth);
@@ -2139,10 +2139,10 @@ static void _list_view(dt_lib_collect_rule_t *dr)
           char *orders = NULL;
           for(int i = 0; i < DT_IOP_ORDER_LAST; i++)
           {
-            orders = dt_util_dstrcat(orders, "WHEN mo.version = %d THEN '%s' ",
+            dt_util_str_cat(&orders, "WHEN mo.version = %d THEN '%s' ",
                                      i, _(dt_iop_order_string(i)));
           }
-          orders = dt_util_dstrcat(orders, "ELSE '%s' ", _("none"));
+          dt_util_str_cat(&orders, "ELSE '%s' ", _("none"));
           // clang-format off
           snprintf(query, sizeof(query),
                    "SELECT CASE %s END as ver, 1, COUNT(*) AS count"

@@ -45,7 +45,7 @@ static gchar *_get_tb_removed_tag_string_values(GList *before,
   {
     if(!g_list_find(a, b->data))
     {
-      tag_list = dt_util_dstrcat(tag_list, "%d,", GPOINTER_TO_INT(b->data));
+      dt_util_str_cat(&tag_list, "%d,", GPOINTER_TO_INT(b->data));
     }
   }
   if(tag_list) tag_list[strlen(tag_list) - 1] = '\0';
@@ -63,8 +63,8 @@ static gchar *_get_tb_added_tag_string_values(const dt_imgid_t img,
     if(!g_list_find(b, a->data))
     {
       // clang-format off
-      tag_list = dt_util_dstrcat
-        (tag_list,
+      dt_util_str_cat
+        (&tag_list,
          "(%d,%d,"
          "  (SELECT (IFNULL(MAX(position),0) & 0xFFFFFFFF00000000) + (1 << 32)"
          "    FROM main.tagged_images)"
@@ -297,7 +297,7 @@ guint dt_tag_remove_list(GList *tag_list)
   for(GList *taglist = tag_list; taglist ; taglist = g_list_next(taglist))
   {
     const guint tagid = ((dt_tag_t *)taglist->data)->id;
-    flatlist = dt_util_dstrcat(flatlist, "%u,", tagid);
+    dt_util_str_cat(&flatlist, "%u,", tagid);
     count++;
     if(flatlist && count > 1000)
     {
@@ -1161,7 +1161,7 @@ GList *dt_tag_get_images_from_list(const GList *img, const gint tagid)
   char *images = NULL;
   for(GList *imgs = (GList *)img; imgs; imgs = g_list_next(imgs))
   {
-    images = dt_util_dstrcat(images, "%d,",GPOINTER_TO_INT(imgs->data));
+    dt_util_str_cat(&images, "%d,",GPOINTER_TO_INT(imgs->data));
   }
   if(images)
   {
@@ -1528,7 +1528,7 @@ static gchar *dt_cleanup_synonyms(gchar *synonyms_entry)
       char *e = g_strstrip(*entry);
       if(*e)
       {
-        synonyms = dt_util_dstrcat(synonyms, "%s, ", e);
+        dt_util_str_cat(&synonyms, "%s, ", e);
       }
       entry++;
     }
@@ -1612,7 +1612,7 @@ void dt_tag_add_synonym(const gint tagid,
   char *synonyms = dt_tag_get_synonyms(tagid);
   if(synonyms)
   {
-    synonyms = dt_util_dstrcat(synonyms, ", %s", synonym);
+    dt_util_str_cat(&synonyms, ", %s", synonym);
   }
   else
   {
@@ -1912,7 +1912,7 @@ char *dt_tag_get_subtags(const dt_imgid_t imgid,
           valid = FALSE;
       }
       if(valid)
-        tags = dt_util_dstrcat(tags, "%s,", subtag);
+        dt_util_str_cat(&tags, "%s,", subtag);
       g_strfreev(pch);
     }
   }

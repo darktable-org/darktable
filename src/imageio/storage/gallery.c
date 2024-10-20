@@ -320,7 +320,7 @@ int store(dt_imageio_module_storage_t *self,
   if(g_mkdir_with_parents(dirname, 0755))
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[imageio_storage_gallery] could not create directory: `%s'!\n", dirname);
+             "[imageio_storage_gallery] could not create directory: `%s'!", dirname);
     dt_control_log(_("could not create directory `%s'!"), dirname);
     return 1;
   }
@@ -403,7 +403,7 @@ int store(dt_imageio_module_storage_t *self,
                        icc_filename, icc_intent, self, sdata, num, total, metadata) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
+             "[imageio_storage_gallery] could not export to file: `%s'!", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
     free(pair);
     g_free(esc_relfilename);
@@ -444,7 +444,7 @@ int store(dt_imageio_module_storage_t *self,
                        icc_intent, self, sdata, num, total, NULL) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
+             "[imageio_storage_gallery] could not export to file: `%s'!", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
     return 1;
   }
@@ -452,7 +452,7 @@ int store(dt_imageio_module_storage_t *self,
   fdata->max_width = save_max_width;
   fdata->max_height = save_max_height;
 
-  dt_print(DT_DEBUG_ALWAYS, "[export_job] exported to `%s'\n", filename);
+  dt_print(DT_DEBUG_ALWAYS, "[export_job] exported to `%s'", filename);
   dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
                  num, total, filename);
   return 0;

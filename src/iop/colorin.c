@@ -185,7 +185,7 @@ static void _resolve_work_profile(dt_colorspaces_color_profile_type_t *work_type
 
   dt_print(DT_DEBUG_ALWAYS,
            "[colorin] profile `%s' not suitable for work profile."
-           " it has been replaced by linear Rec2020 RGB!\n",
+           " it has been replaced by linear Rec2020 RGB!",
            dt_colorspaces_get_name(*work_type, work_filename));
   *work_type = DT_COLORSPACE_LIN_REC2020;
   work_filename[0] = '\0';
@@ -527,7 +527,7 @@ static void _profile_changed(GtkWidget *widget, dt_iop_module_t *self)
   }
   // should really never happen.
   dt_print(DT_DEBUG_ALWAYS,
-           "[colorin] color profile %s seems to have disappeared!\n",
+           "[colorin] color profile %s seems to have disappeared!",
            dt_colorspaces_get_name(p->type, p->filename));
 }
 
@@ -569,7 +569,7 @@ static void _workicc_changed(GtkWidget *widget, dt_iop_module_t *self)
     {
       dt_print(DT_DEBUG_ALWAYS,
                "[colorin] can't extract matrix from colorspace `%s',"
-               " it will be replaced by Rec2020 RGB!\n", p->filename_work);
+               " it will be replaced by Rec2020 RGB!", p->filename_work);
       dt_control_log(_("can't extract matrix from colorspace `%s'"
                        ", it will be replaced by Rec2020 RGB!"), p->filename_work);
 
@@ -585,7 +585,7 @@ static void _workicc_changed(GtkWidget *widget, dt_iop_module_t *self)
   {
     // should really never happen.
     dt_print(DT_DEBUG_ALWAYS,
-             "[colorin] color profile %s seems to have disappeared!\n",
+             "[colorin] color profile %s seems to have disappeared!",
              dt_colorspaces_get_name(p->type_work, p->filename_work));
   }
 }
@@ -667,7 +667,7 @@ int process_cl(struct dt_iop_module_t *self,
 
   dt_print_pipe(DT_DEBUG_PARAMS,
     "matrix conversion",
-    piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "`%s', %s: %.3f %.3f %.3f\n",
+    piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "`%s', %s: %.3f %.3f %.3f",
     dt_colorspaces_get_name(d->type, NULL),
     corrected ? "corrected by" : "",
     coeffs[0], coeffs[1], coeffs[2]);
@@ -788,7 +788,7 @@ static void _process_cmatrix_bm(struct dt_iop_module_t *self,
   transpose_3xSSE(d->lmatrix, lmatrix);
 
   const size_t npixels = (size_t)roi_out->height * roi_out->width;
-  // dt_print(DT_DEBUG_ALWAYS, "Using cmatrix codepath\n");
+  // dt_print(DT_DEBUG_ALWAYS, "Using cmatrix codepath");
   // only color matrix. use our optimized fast path!
   DT_OMP_FOR(shared(cmatrix, nmatrix, lmatrix))
   for(int j = 0; j < npixels; j++)
@@ -1233,7 +1233,7 @@ void process(struct dt_iop_module_t *self,
 
   dt_print_pipe(DT_DEBUG_PARAMS,
     "matrix conversion",
-    piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "`%s', %s: %.3f %.3f %.3f\n",
+    piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "`%s', %s: %.3f %.3f %.3f",
       dt_colorspaces_get_name(d->type, NULL),
       corrected ? "corrected by" : "",
       coeffs[0], coeffs[1], coeffs[2]);
@@ -1405,7 +1405,7 @@ void commit_params(struct dt_iop_module_t *self,
     {
       if(dt_image_is_matrix_correction_supported(&pipe->image))
       {
-        dt_print(DT_DEBUG_ALWAYS, "[colorin] `%s' color matrix not found!\n",
+        dt_print(DT_DEBUG_ALWAYS, "[colorin] `%s' color matrix not found!",
                  pipe->image.camera_makermodel);
         dt_control_log(_("`%s' color matrix not found!"), pipe->image.camera_makermodel);
       }
@@ -1445,7 +1445,7 @@ void commit_params(struct dt_iop_module_t *self,
   // should never happen, but catch that case to avoid a crash
   if(!d->input)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[colorin] input profile could not be generated!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[colorin] input profile could not be generated!");
     dt_control_log(_("input profile could not be generated!"));
     piece->enabled = FALSE;
     return;
@@ -1466,7 +1466,7 @@ void commit_params(struct dt_iop_module_t *self,
       break;
     default:
       dt_print(DT_DEBUG_ALWAYS,
-               "[colorin] input profile color space `%c%c%c%c' not supported\n",
+               "[colorin] input profile color space `%c%c%c%c' not supported",
                (char)(input_color_space>>24),
                (char)(input_color_space>>16),
                (char)(input_color_space>>8),
@@ -1658,7 +1658,7 @@ void gui_update(struct dt_iop_module_t *self)
   {
     idx = 0;
     dt_print(DT_DEBUG_ALWAYS,
-             "[gui colorin] could not find requested working profile `%s'!\n",
+             "[gui colorin] could not find requested working profile `%s'!",
              dt_colorspaces_get_name(p->type_work, p->filename_work));
   }
   dt_bauhaus_combobox_set(g->work_combobox, idx);
@@ -1693,7 +1693,7 @@ void gui_update(struct dt_iop_module_t *self)
   }
   dt_bauhaus_combobox_set(g->profile_combobox, 0);
 
-  dt_print(DT_DEBUG_PIPE, "[gui colorin] using default instead of `%s'\n",
+  dt_print(DT_DEBUG_PIPE, "[gui colorin] using default instead of `%s'",
              dt_colorspaces_get_name(p->type, p->filename));
 }
 

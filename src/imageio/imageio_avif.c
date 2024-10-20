@@ -51,7 +51,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
 
   if(decoder == NULL || avif_image == NULL)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to create decoder or image struct for `%s'\n", filename);
+    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to create decoder or image struct for `%s'", filename);
     ret = DT_IMAGEIO_LOAD_FAILED;
     goto out;
   }
@@ -62,7 +62,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   result = avifDecoderReadFile(decoder, avif_image, filename);
   if(result != AVIF_RESULT_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to parse `%s': %s\n", filename, avifResultToString(result));
+    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to parse `%s': %s", filename, avifResultToString(result));
     ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto out;
   }
@@ -84,7 +84,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
       result = avifGetExifTiffHeaderOffset(exif->data, exif->size, &offset);
       if(result != AVIF_RESULT_OK)
       {
-        dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to read tiff header `%s': %s\n",
+        dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to read tiff header `%s': %s",
           filename, avifResultToString(result));
         ret = DT_IMAGEIO_LOAD_FAILED;
         goto out;
@@ -115,7 +115,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   result = avifRGBImageAllocatePixels(&rgb);
   if(result != AVIF_RESULT_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to allocate pixels `%s' : %s\n",
+    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to allocate pixels `%s' : %s",
       filename, avifResultToString(result));
     ret = DT_IMAGEIO_LOAD_FAILED;
     goto out;
@@ -127,7 +127,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   result = avifImageYUVToRGB(avif_image, &rgb);
   if(result != AVIF_RESULT_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to convert `%s' from YUV to RGB: %s\n",
+    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to convert `%s' from YUV to RGB: %s",
       filename, avifResultToString(result));
     ret = DT_IMAGEIO_LOAD_FAILED;
     goto out;
@@ -149,7 +149,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(mipbuf == NULL)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to allocate mipmap buffer for `%s'\n", filename);
+    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to allocate mipmap buffer for `%s'", filename);
     ret = DT_IMAGEIO_CACHE_FULL;
     goto out;
   }
@@ -208,7 +208,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
     break;
   }
   default:
-    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] invalid bit depth for `%s'\n", filename);
+    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] invalid bit depth for `%s'", filename);
     ret = DT_IMAGEIO_CACHE_FULL;
     goto out;
   }
@@ -251,14 +251,14 @@ int dt_imageio_avif_read_profile(const char *filename, uint8_t **out, dt_colorsp
 
   if(decoder == NULL || avif_image == NULL)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "[avif read profile] failed to create decoder or image struct for `%s'\n", filename);
+    dt_print(DT_DEBUG_IMAGEIO, "[avif read profile] failed to create decoder or image struct for `%s'", filename);
     goto out;
   }
 
   result = avifDecoderReadFile(decoder, avif_image, filename);
   if(result != AVIF_RESULT_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "[avif read profile] failed to parse `%s': %s\n", filename, avifResultToString(result));
+    dt_print(DT_DEBUG_IMAGEIO, "[avif read profile] failed to parse `%s': %s", filename, avifResultToString(result));
     goto out;
   }
 
@@ -293,7 +293,7 @@ int dt_imageio_avif_read_profile(const char *filename, uint8_t **out, dt_colorsp
 
       if(over)
       {
-        dt_print(DT_DEBUG_IMAGEIO, "[avif_open] overriding nclx color profile for `%s': 1/%d/%d to 1/%d/%d\n",
+        dt_print(DT_DEBUG_IMAGEIO, "[avif_open] overriding nclx color profile for `%s': 1/%d/%d to 1/%d/%d",
                  filename, avif_image->transferCharacteristics, avif_image->matrixCoefficients,
                  cicp->transfer_characteristics, cicp->matrix_coefficients);
       }

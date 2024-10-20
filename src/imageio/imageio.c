@@ -650,7 +650,7 @@ gboolean dt_imageio_large_thumbnail(const char *filename,
     if(!image)
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "[dt_imageio_large_thumbnail GM] thumbnail not found?\n");
+               "[dt_imageio_large_thumbnail GM] thumbnail not found?");
       goto error_gm;
     }
 
@@ -674,7 +674,7 @@ gboolean dt_imageio_large_thumbnail(const char *filename,
       if(gm_ret != MagickPass)
       {
         dt_print(DT_DEBUG_ALWAYS,
-                 "[dt_imageio_large_thumbnail GM] error_gm reading thumbnail\n");
+                 "[dt_imageio_large_thumbnail GM] error_gm reading thumbnail");
         dt_free_align(*buffer);
         *buffer = NULL;
         goto error_gm;
@@ -698,7 +698,7 @@ gboolean dt_imageio_large_thumbnail(const char *filename,
     if(mret != MagickTrue)
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "[dt_imageio_large_thumbnail IM] thumbnail not found?\n");
+               "[dt_imageio_large_thumbnail IM] thumbnail not found?");
       goto error_im;
     }
 
@@ -728,7 +728,7 @@ gboolean dt_imageio_large_thumbnail(const char *filename,
       free(*buffer);
       *buffer = NULL;
       dt_print(DT_DEBUG_ALWAYS,
-          "[dt_imageio_large_thumbnail IM] error while reading thumbnail\n");
+          "[dt_imageio_large_thumbnail IM] error while reading thumbnail");
       goto error_im;
     }
 
@@ -750,7 +750,7 @@ error_im:
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[dt_imageio_large_thumbnail] error: Not a supported thumbnail "
-             "image format or broken thumbnail: %s\n",
+             "image format or broken thumbnail: %s",
              mime_type);
     goto error;
   }
@@ -791,7 +791,7 @@ gboolean dt_imageio_has_mono_preview(const char *filename)
   cleanup:
 
   dt_print(DT_DEBUG_IMAGEIO,
-           "[dt_imageio_has_mono_preview] testing `%s', monochrome=%s, %ix%i\n",
+           "[dt_imageio_has_mono_preview] testing `%s', monochrome=%s, %ix%i",
            filename, mono ? "YES" : "FALSE", thumb_width, thumb_height);
   dt_free_align(tmp);
   return mono;
@@ -1053,7 +1053,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   if(!buf.buf || !buf.width || !buf.height)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_imageio_export_with_flags] mipmap allocation for `%s' failed (status %d)\n",
+             "[dt_imageio_export_with_flags] mipmap allocation for `%s' failed (status %d)",
              filename,img->load_status);
     if(img->load_status == DT_IMAGEIO_FILE_NOT_FOUND)
       dt_control_log(_("image `%s' is not available!"), img->filename);
@@ -1095,7 +1095,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
     if(!style_items)
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "[imageio] cannot find the style '%s' to apply during export\n",
+               "[imageio] cannot find the style '%s' to apply during export",
                format_params->style);
       if(darktable.gui)
         dt_control_log(_("cannot find the style '%s' to apply during export"),
@@ -1136,7 +1136,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
         else
         {
           dt_print(DT_DEBUG_ALWAYS,
-                  "[dt_imageio_export_with_flags] cannot find module %s for style\n",
+                  "[dt_imageio_export_with_flags] cannot find module %s for style",
                   st_item->operation);
           ok = FALSE;
         }
@@ -1177,7 +1177,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
     }
 
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_imageio_export_with_flags] %s%s%s%s%s modules:%s\n",
+             "[dt_imageio_export_with_flags] %s%s%s%s%s modules:%s",
              use_style && appending      ? "append style history " : "",
              use_style && !appending     ? "replace style history " : "",
              use_style                   ? "`" : "",
@@ -1269,7 +1269,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   const gboolean size_warning = processed_width < 1 || processed_height < 1;
   dt_print(DT_DEBUG_IMAGEIO,
            "[dt_imageio_export] %s%s imgid %d, %ix%i --> %ix%i (scale=%.4f, maxscale=%.4f)."
-           " upscale=%s, hq=%s\n",
+           " upscale=%s, hq=%s",
            size_warning ? "**missing size** " : "",
            thumbnail_export ? "thumbnail" : "export", imgid,
            pipe.processed_width, pipe.processed_height,
@@ -1334,7 +1334,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   if(outbuf == NULL)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "[dt_imageio_export_with_flags] no valid output buffer\n");
+             "[dt_imageio_export_with_flags] no valid output buffer");
     goto error;
   }
 

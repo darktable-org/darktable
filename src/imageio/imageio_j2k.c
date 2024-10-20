@@ -98,14 +98,14 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img,
   if(!fsrc)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[j2k_open] Error: failed to open '%s' for reading\n", filename);
+             "[j2k_open] Error: failed to open '%s' for reading", filename);
     return DT_IMAGEIO_FILE_NOT_FOUND;
   }
   if(fread(src_header, 1, 12, fsrc) != 12)
   {
     fclose(fsrc);
     dt_print(DT_DEBUG_ALWAYS,
-             "[j2k_open] Error: fread returned a number of elements different from the expected.\n");
+             "[j2k_open] Error: fread returned a number of elements different from the expected.");
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
   fclose(fsrc);
@@ -122,7 +122,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img,
   else // this will also reject jpt files.
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[j2k_open] Error: '%s' has unsupported file format.\n", filename);
+             "[j2k_open] Error: '%s' has unsupported file format", filename);
     return DT_IMAGEIO_UNSUPPORTED_FORMAT;
   }
 
@@ -143,7 +143,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img,
   d_codec = opj_create_decompress(codec);
   if(!d_codec)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to create the decoder\n");
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to create the decoder");
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
@@ -159,7 +159,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img,
     // the threads is a sign of major resource exhaustion, better to fail
     // as soon as possible to save overall stability.
     dt_print(DT_DEBUG_ALWAYS,
-             "[j2k_open] Error: failed to setup the threads for decoder %s\n",
+             "[j2k_open] Error: failed to setup the threads for decoder %s",
              parameters.infile);
     opj_destroy_codec(d_codec);
     return DT_IMAGEIO_LOAD_FAILED;
@@ -169,7 +169,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img,
   if(!opj_setup_decoder(d_codec, &parameters))
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[j2k_open] Error: failed to setup the decoder %s\n",
+             "[j2k_open] Error: failed to setup the decoder %s",
              parameters.infile);
     opj_destroy_codec(d_codec);
     return DT_IMAGEIO_LOAD_FAILED;
@@ -179,7 +179,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img,
   if(!d_stream)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[j2k_open] Error: failed to create the stream from the file %s\n",
+             "[j2k_open] Error: failed to create the stream from the file %s",
              parameters.infile);
     opj_destroy_codec(d_codec);
     return DT_IMAGEIO_LOAD_FAILED;
@@ -188,7 +188,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img,
   /* Read the main header of the codestream and if necessary the JP2 boxes*/
   if(!opj_read_header(d_stream, d_codec, &image))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to read the header\n");
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to read the header");
     opj_stream_destroy(d_stream);
     opj_destroy_codec(d_codec);
     opj_image_destroy(image);
@@ -198,7 +198,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img,
   /* Get the decoded image */
   if(!(opj_decode(d_codec, d_stream, image) && opj_end_decompress(d_codec, d_stream)))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to decode image!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to decode image!");
     opj_destroy_codec(d_codec);
     opj_stream_destroy(d_stream);
     opj_image_destroy(image);
@@ -211,7 +211,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img,
   if(!image)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[j2k_open] Error: failed to decode image '%s'\n",
+             "[j2k_open] Error: failed to decode image '%s'",
              filename);
     ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto end_of_the_world;
@@ -243,7 +243,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img,
   if(image->numcomps == 0 || image->x1 == 0 || image->y1 == 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[j2k_open] Error: invalid raw image parameters in '%s'\n",
+             "[j2k_open] Error: invalid raw image parameters in '%s'",
              filename);
     ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto end_of_the_world;
@@ -254,7 +254,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img,
     if(image->comps[i].w != image->x1 || image->comps[i].h != image->y1)
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "[j2k_open] Error: some component has different size in '%s'\n",
+               "[j2k_open] Error: some component has different size in '%s'",
                filename);
       ret = DT_IMAGEIO_FILE_CORRUPTED;
       goto end_of_the_world;
@@ -262,7 +262,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img,
     if(image->comps[i].prec > 16)
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "[j2k_open] Error: precision %d is larger than 16 in '%s'\n",
+               "[j2k_open] Error: precision %d is larger than 16 in '%s'",
                image->comps[1].prec,
                filename);
       ret = DT_IMAGEIO_UNSUPPORTED_FEATURE;
@@ -557,7 +557,7 @@ static void color_sycc_to_rgb(opj_image_t *img)
   else
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "%s:%d:color_sycc_to_rgb\n\tCAN NOT CONVERT\n", __FILE__, __LINE__);
+             "%s:%d:color_sycc_to_rgb\n\tCAN NOT CONVERT", __FILE__, __LINE__);
     return;
   }
   img->color_space = OPJ_CLRSPC_SRGB;

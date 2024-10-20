@@ -589,7 +589,7 @@ static void _piwigo_authenticate(dt_storage_piwigo_gui_data_t *ui)
       const gchar *errormessage =
         json_object_get_string_member(ui->api->response, "message");
       dt_print(DT_DEBUG_ALWAYS,
-               "[imageio_storage_piwigo] could not authenticate: `%s'!\n",
+               "[imageio_storage_piwigo] could not authenticate: `%s'!",
                errormessage);
       _piwigo_set_status(ui, _("not authenticated"), "#e07f7f");
       _piwigo_ctx_destroy(&ui->api);
@@ -1279,7 +1279,7 @@ int store(dt_imageio_module_storage_t *self,
   if(p->api == NULL)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[imageio_storage_piwigo] not logged in to Piwigo server!\n");
+             "[imageio_storage_piwigo] not logged in to Piwigo server!");
     dt_control_log(_("not logged in to Piwigo server!"));
     return 1;
   }
@@ -1353,7 +1353,7 @@ int store(dt_imageio_module_storage_t *self,
                        icc_intent, self, sdata, num, total, metadata) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[imageio_storage_piwigo] could not export to file: `%s'!\n",
+             "[imageio_storage_piwigo] could not export to file: `%s'!",
              fname);
     dt_control_log(_("could not export to file `%s'!"), fname);
     result = 1;
@@ -1391,7 +1391,7 @@ int store(dt_imageio_module_storage_t *self,
         if(!status)
         {
           dt_print(DT_DEBUG_ALWAYS,
-                   "[imageio_storage_piwigo] could not update to Piwigo!\n");
+                   "[imageio_storage_piwigo] could not update to Piwigo!");
           dt_control_log(_("could not update to Piwigo!"));
           result = 1;
         }
@@ -1407,7 +1407,7 @@ int store(dt_imageio_module_storage_t *self,
         if(!status)
         {
           dt_print(DT_DEBUG_ALWAYS,
-                   "[imageio_storage_piwigo] could not upload to Piwigo!\n");
+                   "[imageio_storage_piwigo] could not upload to Piwigo!");
           dt_control_log(_("could not upload to Piwigo!"));
           result = 1;
         }
@@ -1537,7 +1537,7 @@ void *get_params(dt_imageio_module_storage_t *self)
           {
             // Something went wrong...
             dt_print(DT_DEBUG_ALWAYS,
-                     "Something went wrong.. album index %d = NULL\n", index - 2);
+                     "Something went wrong.. album index %d = NULL", index - 2);
           }
           else
           {
@@ -1547,7 +1547,7 @@ void *get_params(dt_imageio_module_storage_t *self)
           if(!p->album_id)
           {
             dt_print(DT_DEBUG_ALWAYS,
-                     "[imageio_storage_piwigo] cannot find album `%s'!\n", p->album);
+                     "[imageio_storage_piwigo] cannot find album `%s'!", p->album);
           }
           break;
       }

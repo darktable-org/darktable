@@ -107,7 +107,7 @@ float dt_image_distance_transform(float *const src,
       break;
     default:
       dt_iop_image_fill(out, 0.0f, width, height, 1);
-      dt_print(DT_DEBUG_ALWAYS,"[dt_image_distance_transform] called with unsupported mode %i\n", mode);
+      dt_print(DT_DEBUG_ALWAYS,"[dt_image_distance_transform] called with unsupported mode %i", mode);
       return 0.0f;
   }
 

@@ -274,7 +274,7 @@ static void output_profile_changed(GtkWidget *widget, dt_iop_module_t *self)
   }
 
   dt_print(DT_DEBUG_ALWAYS,
-           "[colorout] color profile %s seems to have disappeared!\n",
+           "[colorout] color profile %s seems to have disappeared!",
            dt_colorspaces_get_name(p->type, p->filename));
 }
 
@@ -652,7 +652,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                                         | DT_PROFILE_DIRECTION_DISPLAY2)
                  ->profile;
     dt_control_log(_("missing output profile has been replaced by sRGB!"));
-    dt_print(DT_DEBUG_ALWAYS, "missing output profile `%s' has been replaced by sRGB!\n",
+    dt_print(DT_DEBUG_ALWAYS, "missing output profile `%s' has been replaced by sRGB!",
              dt_colorspaces_get_name(out_type, out_filename));
   }
 
@@ -674,7 +674,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                                              | DT_PROFILE_DIRECTION_DISPLAY2)
                       ->profile;
       dt_control_log(_("missing softproof profile has been replaced by sRGB!"));
-      dt_print(DT_DEBUG_ALWAYS, "missing softproof profile `%s' has been replaced by sRGB!\n",
+      dt_print(DT_DEBUG_ALWAYS, "missing softproof profile `%s' has been replaced by sRGB!",
                dt_colorspaces_get_name(darktable.color_profiles->softproof_type,
                                        darktable.color_profiles->softproof_filename));
     }
@@ -718,7 +718,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   {
     dt_control_log(_("unsupported output profile has been replaced by sRGB!"));
     dt_print(DT_DEBUG_ALWAYS,
-             "unsupported output profile `%s' has been replaced by sRGB!\n",
+             "unsupported output profile `%s' has been replaced by sRGB!",
              out_profile->name);
     output = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_OUT)->profile;
 
@@ -803,7 +803,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->output_profile, 0);
   dt_print(DT_DEBUG_ALWAYS,
-           "[colorout] could not find requested profile `%s'!\n",
+           "[colorout] could not find requested profile `%s'!",
            dt_colorspaces_get_name(p->type, p->filename));
 }
 

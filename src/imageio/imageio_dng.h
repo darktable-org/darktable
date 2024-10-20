@@ -212,19 +212,19 @@ static inline void _imageio_dng_write_tiff_header(
 
   if(buf[8] != cnt)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[dng_write_header] can't write valid header, unexpected number of entries!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[dng_write_header] can't write valid header, unexpected number of entries!");
     return;
   }
 
   if(data >= HEADBUFFSIZE)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[dng_write_header] can't write valid header as it exceeds buffer size!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[dng_write_header] can't write valid header as it exceeds buffer size!");
     return;
   }
 
   // exif is written later, by exiv2:
   const int written = fwrite(buf, 1, data, fp);
-  if(written != data) dt_print(DT_DEBUG_ALWAYS, "[dng_write_header] failed to write image header!\n");
+  if(written != data) dt_print(DT_DEBUG_ALWAYS, "[dng_write_header] failed to write image header!");
 }
 
 
@@ -242,7 +242,7 @@ static inline void dt_imageio_write_dng(
     _imageio_dng_write_tiff_header(f, wd, ht, 1.0f / 100.0f, 1.0f / 4.0f, 50.0f, 100.0f,
                                      filter, xtrans, whitelevel, wb_coeffs, adobe_XYZ_to_CAM);
     const int k = fwrite(pixel, sizeof(float), (size_t)wd * ht, f);
-    if(k != wd * ht) dt_print(DT_DEBUG_ALWAYS, "[dng_write] Error writing image data to %s\n", filename);
+    if(k != wd * ht) dt_print(DT_DEBUG_ALWAYS, "[dng_write] Error writing image data to %s", filename);
     fclose(f);
     if(exif) dt_exif_write_blob(exif, exif_len, filename, 0);
   }

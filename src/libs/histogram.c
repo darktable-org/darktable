@@ -1011,7 +1011,7 @@ static void dt_lib_histogram_process
   if(!profile_info_to)
   {
     dt_print(DT_DEBUG_ALWAYS,
-       "[histogram] no histogram profile, replaced with linear Rec2020\n");
+       "[histogram] no histogram profile, replaced with linear Rec2020");
     dt_control_log(_("unsupported profile selected for histogram,"
                      " it will be replaced with linear Rec2020"));
   }
@@ -1685,7 +1685,7 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget,
 
     // FIXME: make just one tooltip for the widget depending on
     // whether it is draggable or not, and set it when enter the view
-    gchar *tip = g_strdup_printf("%s\n(%s)\n%s\n%s\n",
+    gchar *tip = g_strdup_printf("%s\n(%s)\n%s\n%s",
                                  _(dt_lib_histogram_scope_type_names[d->scope_type]),
                                  _("use buttons at top of graph to change type"),
                                  _("click on ❓ and then graph for documentation"),
@@ -1696,7 +1696,7 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget,
       if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE &&
               d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_RYB &&
               d->harmony_guide.type != DT_COLOR_HARMONY_NONE)
-        tip = dt_util_dstrcat(tip, "\n%s\n%s\n%s\n%s",
+        dt_util_str_cat(&tip, "\n%s\n%s\n%s\n%s",
                               _("scroll to coarse-rotate"),
                               _("ctrl+scroll to fine rotate"),
                               _("shift+scroll to change width"),
@@ -1713,14 +1713,14 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget,
                      && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_VERT))))
       {
         d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
-        tip = dt_util_dstrcat(tip, "\n%s\n%s",
+        dt_util_str_cat(&tip, "\n%s\n%s",
                               _("drag to change black point"),
                               _("double-click resets"));
       }
       else
       {
         d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE;
-        tip = dt_util_dstrcat(tip, "\n%s\n%s",
+        dt_util_str_cat(&tip, "\n%s\n%s",
                               _("drag to change exposure"),
                               _("double-click resets"));
       }

@@ -327,7 +327,7 @@ static int _group_get_mask(const dt_iop_module_t *const module,
         double start = dt_get_wtime();
         _inverse_mask(module, piece, sel, &bufs[pos], &w[pos], &h[pos], &px[pos], &py[pos]);
         dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-                 "[masks %s] inverse took %0.04f sec\n",
+                 "[masks %s] inverse took %0.04f sec",
                  sel->name, dt_get_lap_time(&start));
       }
       op[pos] = fpt->opacity;
@@ -440,7 +440,7 @@ static int _group_get_mask(const dt_iop_module_t *const module,
     }
 
     dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-             "[masks %d] combine took %0.04f sec\n",
+             "[masks %d] combine took %0.04f sec",
              i, dt_get_lap_time(&start));
   }
 
@@ -694,7 +694,7 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
         }
 
         dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-                 "[masks %d] combine took %0.04f sec\n",
+                 "[masks %d] combine took %0.04f sec",
                  nb_ok, dt_get_lap_time(&start));
 
         nb_ok++;
@@ -731,7 +731,7 @@ int dt_masks_group_render_roi(dt_iop_module_t *module,
   const int ok = dt_masks_get_mask_roi(module, piece, form, roi, buffer);
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks] render all masks took %0.04f sec\n",
+           "[masks] render all masks took %0.04f sec",
            dt_get_lap_time(&start));
   return ok;
 }

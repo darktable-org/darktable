@@ -284,7 +284,7 @@ static inline void build_gui_kernel(unsigned char *const buffer, const size_t wi
   float *const restrict kernel_2 = dt_alloc_align_float(width * height);
   if(!kernel_1 || !kernel_2)
   {
-    dt_print(DT_DEBUG_ALWAYS,"[blurs] out of memory, skipping build_gui_kernel\n");
+    dt_print(DT_DEBUG_ALWAYS,"[blurs] out of memory, skipping build_gui_kernel");
     goto cleanup;
   }
 
@@ -350,7 +350,7 @@ static inline void build_pixel_kernel(float *const buffer, const size_t width, c
   float *const restrict kernel_1 = dt_alloc_align_float(width * height);
   if(!kernel_1)
   {
-    dt_print(DT_DEBUG_ALWAYS,"[blurs] out of memory, skippping build_pixel_kernel\n");
+    dt_print(DT_DEBUG_ALWAYS,"[blurs] out of memory, skippping build_pixel_kernel");
     return;
   }
 
@@ -411,7 +411,7 @@ static void process_fft(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   float *const restrict padded_out = dt_alloc_align_float(padded_width * padded_height * 4);
   if(!padded_in || !padded_out)
   {
-    dt_print(DT_DEBUG_ALWAYS,"[blurs] out of memory, skipping process_fft\n");
+    dt_print(DT_DEBUG_ALWAYS,"[blurs] out of memory, skipping process_fft");
     goto cleanup;
   }
 

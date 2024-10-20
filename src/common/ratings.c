@@ -263,7 +263,7 @@ static float _action_process_rating(gpointer target,
         break;
       default:
         dt_print(DT_DEBUG_ALWAYS,
-                 "[_action_process_rating] unknown shortcut effect (%d) for rating\n", effect);
+                 "[_action_process_rating] unknown shortcut effect (%d) for rating", effect);
         break;
       }
     }

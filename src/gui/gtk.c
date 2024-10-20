@@ -256,7 +256,8 @@ static gchar *_panels_get_panel_path(dt_ui_panel_t panel,
 {
   gchar *v = _panels_get_view_path("");
   if(!v) return NULL;
-  return dt_util_dstrcat(v, "%s%s", _ui_panel_config_names[panel], suffix);
+  dt_util_str_cat(&v, "%s%s", _ui_panel_config_names[panel], suffix);
+  return v;
 }
 
 static gboolean _panel_is_visible(dt_ui_panel_t panel)
@@ -1105,7 +1106,7 @@ void dt_open_url(const char* url)
     dt_control_log(_("error while opening URL in web browser"));
     if(error != NULL)
     {
-      dt_print(DT_DEBUG_ALWAYS, "unable to read file: %s\n", error->message);
+      dt_print(DT_DEBUG_ALWAYS, "unable to read file: %s", error->message);
       g_error_free(error);
     }
   }
@@ -1414,7 +1415,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   darktable.gui->reset = 0;
 
   // let's try to support pressure sensitive input devices like tablets for mask drawing
-  dt_print(DT_DEBUG_INPUT, "[input device] Input devices found:\n\n");
+  dt_print(DT_DEBUG_INPUT, "[input device] Input devices found:\n");
 
   GList *input_devices
       = gdk_seat_get_slaves(gdk_display_get_default_seat(gdk_display_get_default()),
@@ -1427,7 +1428,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
     const gint n_axes = (source == GDK_SOURCE_KEYBOARD ? 0 : gdk_device_get_n_axes(device));
 
     dt_print(DT_DEBUG_INPUT,
-             "%s (%s), source: %s, mode: %s, %d axes, %d keys\n",
+             "%s (%s), source: %s, mode: %s, %d axes, %d keys",
              gdk_device_get_name(device),
              (source != GDK_SOURCE_KEYBOARD) && gdk_device_get_has_cursor(device)
              ? "with cursor"
@@ -1438,10 +1439,9 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
     for(int i = 0; i < n_axes; i++)
     {
-      dt_print(DT_DEBUG_INPUT, "  %s\n",
+      dt_print(DT_DEBUG_INPUT, "  %s",
                _get_axis_name(gdk_device_get_axis_use(device, i)));
     }
-    dt_print(DT_DEBUG_INPUT, "\n");
   }
   g_list_free(input_devices);
 
@@ -1510,10 +1510,10 @@ double dt_get_system_gui_ppd(GtkWidget *widget)
 #endif
   if((res < 1.0f) || (res > 4.0f))
   {
-    dt_print(DT_DEBUG_CONTROL, "[dt_get_system_gui_ppd] can't detect system ppd\n");
+    dt_print(DT_DEBUG_CONTROL, "[dt_get_system_gui_ppd] can't detect system ppd");
     return 1.0f;
   }
-  dt_print(DT_DEBUG_CONTROL, "[dt_get_system_gui_ppd] system ppd is %f\n", res);
+  dt_print(DT_DEBUG_CONTROL, "[dt_get_system_gui_ppd] system ppd is %f", res);
   return res;
 }
 
@@ -1526,7 +1526,7 @@ double dt_get_screen_resolution(GtkWidget *widget)
     gdk_screen_set_resolution(gtk_widget_get_screen(widget), screen_dpi);
     dt_print(DT_DEBUG_CONTROL,
              "[screen resolution] setting the screen resolution to %f dpi as specified in "
-             "the configuration file\n",
+             "the configuration file",
              screen_dpi);
   }
   else
@@ -1537,11 +1537,11 @@ double dt_get_screen_resolution(GtkWidget *widget)
       screen_dpi = 96.0;
       gdk_screen_set_resolution(gtk_widget_get_screen(widget), 96.0);
       dt_print(DT_DEBUG_CONTROL,
-               "[screen resolution] setting the screen resolution to the default 96 dpi\n");
+               "[screen resolution] setting the screen resolution to the default 96 dpi");
     }
     else
       dt_print(DT_DEBUG_CONTROL,
-               "[screen resolution] setting the screen resolution to %f dpi\n",
+               "[screen resolution] setting the screen resolution to %f dpi",
                screen_dpi);
   }
   return screen_dpi;
@@ -3179,7 +3179,7 @@ void dt_gui_show_help(GtkWidget *widget)
   gchar *help_url = dt_gui_get_help_url(widget);
   if(help_url && *help_url)
   {
-    dt_print(DT_DEBUG_CONTROL, "[context help] opening `%s'\n", help_url);
+    dt_print(DT_DEBUG_CONTROL, "[context help] opening `%s'", help_url);
     char *base_url = _get_base_url();
 
     // The base_url is: docs.darktable.org/usermanual
@@ -3192,12 +3192,12 @@ void dt_gui_show_help(GtkWidget *widget)
     // in case of a standard release, append the dt version to the url
     if(dt_is_dev_version())
     {
-      base_url = dt_util_dstrcat(base_url, "development/");
+      dt_util_str_cat(&base_url, "development/");
     }
     else
     {
       char *ver = dt_version_major_minor();
-      base_url = dt_util_dstrcat(base_url, "%s/", ver);
+      dt_util_str_cat(&base_url, "%s/", ver);
       g_free(ver);
     }
 
@@ -3353,13 +3353,13 @@ void dt_gui_load_theme(const char *theme)
   gchar *path_uri = g_filename_to_uri(path, NULL, &error);
   if(path_uri == NULL)
     dt_print(DT_DEBUG_ALWAYS,
-             "%s: could not convert path %s to URI. Error: %s\n",
+             "%s: could not convert path %s to URI. Error: %s",
              G_STRFUNC, path, error->message);
 
   gchar *usercsspath_uri = g_filename_to_uri(usercsspath, NULL, &error);
   if(usercsspath_uri == NULL)
     dt_print(DT_DEBUG_ALWAYS,
-             "%s: could not convert path %s to URI. Error: %s\n",
+             "%s: could not convert path %s to URI. Error: %s",
              G_STRFUNC, usercsspath, error->message);
 
   gchar *themecss = NULL;
@@ -3392,7 +3392,7 @@ void dt_gui_load_theme(const char *theme)
                                       themecss, -1, &error))
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "%s: error parsing combined CSS %s: %s\n",
+             "%s: error parsing combined CSS %s: %s",
              G_STRFUNC, themecss, error->message);
     g_clear_error(&error);
   }
@@ -3597,7 +3597,7 @@ static float _action_process_tabs(gpointer target,
       break;
     default:
       dt_print(DT_DEBUG_ALWAYS,
-               "[_action_process_tabs] unknown shortcut effect (%d) for tabs\n",
+               "[_action_process_tabs] unknown shortcut effect (%d) for tabs",
                effect);
       break;
     }

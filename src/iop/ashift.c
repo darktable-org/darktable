@@ -1205,7 +1205,7 @@ void modify_roi_out(struct dt_iop_module_t *self,
   if(roi_out->width < 4 || roi_out->height < 4)
   {
     dt_print_pipe(DT_DEBUG_PIPE,
-                  "safety check", piece->pipe, self, DT_DEVICE_NONE, roi_in, roi_out, "\n");
+                  "safety check", piece->pipe, self, DT_DEVICE_NONE, roi_in, roi_out);
 
     roi_out->width = roi_in->width;
     roi_out->height = roi_in->height;
@@ -2804,7 +2804,7 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
 
   dt_print(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
     "margins after crop fitting: iter=%d x=%.4f y=%.4f angle=%.4f"
-    " crop area (%.4f %.4f %.4f %.4f) wd=%i ht=%i\n",
+    " crop area (%.4f %.4f %.4f %.4f) wd=%i ht=%i",
     iter, cropfit.x, cropfit.y, cropfit.alpha,
     g->cl, g->cr, g->ct, g->cb, cropfit.width, cropfit.height);
   dt_control_queue_redraw_center();
@@ -2949,7 +2949,7 @@ static void crop_adjust(dt_iop_module_t *module,
 
   dt_print(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
     "margins after crop adjustment: x=%.3f y=%.3f angle=%.3f"
-    " crop area (%.3f %.3f %.3f %.3f) width=%i height=%i\n",
+    " crop area (%.3f %.3f %.3f %.3f) width=%i height=%i",
     0.5f * (g->cl + g->cr), 0.5f * (g->ct + g->cb), alpha,
     g->cl, g->cr, g->ct, g->cb, (int)wd, (int)ht);
   return;

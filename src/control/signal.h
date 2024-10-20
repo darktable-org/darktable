@@ -312,7 +312,7 @@ void dt_control_signal_unblock_by_func(const struct dt_control_signal_t *ctlsig,
   {                                                                                                                        \
     if((darktable.unmuted_signal_dbg_acts & DT_DEBUG_SIGNAL_ACT_RAISE) && darktable.unmuted_signal_dbg[signal])            \
     {                                                                                                                      \
-      dt_print(DT_DEBUG_SIGNAL, "[signal] raise %s; %s:%d, function %s()\n", #signal, __FILE__, __LINE__, __FUNCTION__);   \
+      dt_print(DT_DEBUG_SIGNAL, "[signal] raise %s; %s:%d, function %s()", #signal, __FILE__, __LINE__, __FUNCTION__);   \
     }                                                                                                                      \
     dt_control_signal_raise(darktable.signals, signal, ##__VA_ARGS__);                                                     \
   } while (0)
@@ -322,7 +322,7 @@ void dt_control_signal_unblock_by_func(const struct dt_control_signal_t *ctlsig,
   {                                                                                                                        \
     if((darktable.unmuted_signal_dbg_acts & DT_DEBUG_SIGNAL_ACT_CONNECT) && darktable.unmuted_signal_dbg[signal])          \
     {                                                                                                                      \
-      dt_print(DT_DEBUG_SIGNAL, "[signal] connect    %s to %s; %s:%d, function: %s()\n", #cb, #signal,                        \
+      dt_print(DT_DEBUG_SIGNAL, "[signal] connect    %s to %s; %s:%d, function: %s()", #cb, #signal,                        \
                                 __FILE__, __LINE__, __FUNCTION__);                                                         \
     }                                                                                                                      \
     dt_control_signal_connect(darktable.signals, signal, G_CALLBACK(cb), user_data);                                       \
@@ -333,7 +333,7 @@ void dt_control_signal_unblock_by_func(const struct dt_control_signal_t *ctlsig,
   {                                                                                                                        \
     if(darktable.unmuted_signal_dbg_acts & DT_DEBUG_SIGNAL_ACT_DISCONNECT)                                                 \
     {                                                                                                                      \
-      dt_print(DT_DEBUG_SIGNAL, "[signal] disconnect %s; %s:%d, function: %s()\n", #cb, __FILE__, __LINE__, __FUNCTION__); \
+      dt_print(DT_DEBUG_SIGNAL, "[signal] disconnect %s; %s:%d, function: %s()", #cb, __FILE__, __LINE__, __FUNCTION__); \
     }                                                                                                                      \
     dt_control_signal_disconnect(darktable.signals, G_CALLBACK(cb), user_data);                                            \
   } while (0)

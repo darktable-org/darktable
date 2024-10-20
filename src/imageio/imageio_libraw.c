@@ -296,7 +296,7 @@ static gboolean _supported_image(const gchar *filename)
     extensions_whitelist = g_strdup(always_by_libraw);
 
   dt_print(DT_DEBUG_IMAGEIO,
-           "[libraw_open] extensions whitelist: '%s'\n", extensions_whitelist);
+           "[libraw_open] extensions whitelist: '%s'", extensions_whitelist);
 
   gchar *ext_lowercased = g_ascii_strdown(ext, -1);
   if(g_strstr_len(extensions_whitelist, -1, ext_lowercased))
@@ -397,7 +397,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
      || !raw->rawdata.raw_image)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[libraw_open] detected unsupported image `%s'\n", img->filename);
+             "[libraw_open] detected unsupported image `%s'", img->filename);
     err = DT_IMAGEIO_UNSUPPORTED_FEATURE;
     goto error;
   }
@@ -477,7 +477,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img,
   if(!buf)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[libraw_open] could not alloc full buffer for image `%s'\n",
+             "[libraw_open] could not alloc full buffer for image `%s'",
              img->filename);
     err = DT_IMAGEIO_CACHE_FULL;
     goto error;
@@ -530,7 +530,7 @@ error:
   if(libraw_err != LIBRAW_SUCCESS)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[libraw_open] `%s': %s\n",
+             "[libraw_open] `%s': %s",
              img->filename, libraw_strerror(libraw_err));
     switch(libraw_err)
     {

@@ -2543,7 +2543,7 @@ static float _action_process_zones(gpointer target,
       break;
     default:
       dt_print(DT_DEBUG_ALWAYS,
-               "[_action_process_zones] unknown shortcut effect (%d) for color zones\n",
+               "[_action_process_zones] unknown shortcut effect (%d) for color zones",
                effect);
       break;
     }

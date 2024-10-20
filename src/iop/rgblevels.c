@@ -1004,7 +1004,7 @@ static float _action_process(gpointer target,
       _rgblevels_move_handle(self, element, new_position, p->levels[g->channel], g->drag_start_percentage);
     default:
       dt_print(DT_DEBUG_ALWAYS,
-               "[_action_process_tabs] unknown shortcut effect (%d) for levels\n", effect);
+               "[_action_process_tabs] unknown shortcut effect (%d) for levels", effect);
       break;
     }
 
@@ -1469,7 +1469,7 @@ int process_cl(dt_iop_module_t *self,
       if(src_buffer == NULL)
       {
         dt_print(DT_DEBUG_ALWAYS,
-                 "[rgblevels process_cl] error allocating memory for temp table 1\n");
+                 "[rgblevels process_cl] error allocating memory for temp table 1");
         err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
         goto cleanup;
       }
@@ -1479,7 +1479,7 @@ int process_cl(dt_iop_module_t *self,
       if(err != CL_SUCCESS)
       {
         dt_print(DT_DEBUG_ALWAYS,
-                 "[rgblevels process_cl] error allocating memory for temp table 2\n");
+                 "[rgblevels process_cl] error allocating memory for temp table 2");
         goto cleanup;
       }
 

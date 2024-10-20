@@ -149,7 +149,7 @@ static gchar *_colors_pretty_print(const gchar *raw_txt)
         col = g_strdup(_("P"));
         break;
     }
-    txt = dt_util_dstrcat(txt, "%s%s%s%s", (i == 0) ? "" : " ", (incl) ? "" : "<s>", col, (incl) ? "" : "</s>");
+    dt_util_str_cat(&txt, "%s%s%s%s", (i == 0) ? "" : " ", (incl) ? "" : "<s>", col, (incl) ? "" : "</s>");
     g_free(col);
   }
   if(nb == 0)

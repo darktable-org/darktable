@@ -824,7 +824,7 @@ int process_cl(struct dt_iop_module_t *self,
       = dt_opencl_copy_host_to_device_constant(devid, sizeof(rendering_to_pipe), rendering_to_pipe);
   if(dev_pipe_to_base == NULL || dev_base_to_rendering == NULL || dev_rendering_to_pipe == NULL)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_sigmoid] couldn't allocate memory!\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_sigmoid] couldn't allocate memory!");
     goto cleanup;
   }
 

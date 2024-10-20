@@ -734,7 +734,7 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
   const int32_t buf_ht = buf.height;
 
   dt_print(DT_DEBUG_LIGHTTABLE,
-      "dt_view_image_get_surface  id %i, dots %ix%i -> mip %ix%i, found %ix%i\n",
+      "dt_view_image_get_surface  id %i, dots %ix%i -> mip %ix%i, found %ix%i",
       imgid, mipwidth, mipheight, cache->max_width[mip], cache->max_height[mip], buf_wd, buf_ht);
 
   // no image is available at the moment as we didn't get buffer data
@@ -793,7 +793,7 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
         {
           dt_print(DT_DEBUG_ALWAYS,
                   "oops, there seems to be a code path setting an"
-                  " unhandled color space of thumbnails (%s)!\n",
+                  " unhandled color space of thumbnails (%s)!",
                   dt_colorspaces_get_name(buf.color_space, "from file"));
         }
       }
@@ -886,13 +886,13 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
   // logs
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF,
-             "got surface  %ix%i created in %0.04f sec\n",
+             "got surface  %ix%i created in %0.04f sec",
              img_width, img_height, dt_get_wtime() - tt);
 
   // we consider skull as ok as the image hasn't to be reload
   if(ret != DT_VIEW_SURFACE_OK)
     dt_print(DT_DEBUG_LIGHTTABLE,
-      "dt_view_image_get_surface  ID=%i with surface problem %s%s%s\n",
+      "dt_view_image_get_surface  ID=%i with surface problem %s%s%s",
       imgid,
       tmp_surface ? "" : "no tmp_surface, ",
       ret == DT_VIEW_SURFACE_SMALLER ? "DT_VIEW_SURFACE_SMALLER" : "",
@@ -1356,44 +1356,44 @@ static gchar *_mouse_action_get_string(dt_mouse_action_t *ma)
 {
   gchar *atxt = NULL;
   if(ma->mods & GDK_SHIFT_MASK  )
-    atxt = dt_util_dstrcat(atxt, "%s+", _("shift"));
+    dt_util_str_cat(&atxt, "%s+", _("shift"));
   if(ma->mods & GDK_CONTROL_MASK)
-    atxt = dt_util_dstrcat(atxt, "%s+", _("ctrl"));
+    dt_util_str_cat(&atxt, "%s+", _("ctrl"));
   if(ma->mods & GDK_MOD1_MASK   )
 #ifdef __APPLE__
-    atxt = dt_util_dstrcat(atxt, "%s+", _("option"));
+    dt_util_str_cat(&atxt, "%s+", _("option"));
 #else
-    atxt = dt_util_dstrcat(atxt, "%s+", _("alt"));
+    dt_util_str_cat(&atxt, "%s+", _("alt"));
 #endif
 
   switch(ma->action)
   {
     case DT_MOUSE_ACTION_LEFT:
-      atxt = dt_util_dstrcat(atxt, _("left click"));
+      dt_util_str_cat(&atxt, _("left click"));
       break;
     case DT_MOUSE_ACTION_RIGHT:
-      atxt = dt_util_dstrcat(atxt, _("right click"));
+      dt_util_str_cat(&atxt, _("right click"));
       break;
     case DT_MOUSE_ACTION_MIDDLE:
-      atxt = dt_util_dstrcat(atxt, _("middle click"));
+      dt_util_str_cat(&atxt, _("middle click"));
       break;
     case DT_MOUSE_ACTION_SCROLL:
-      atxt = dt_util_dstrcat(atxt, _("scroll"));
+      dt_util_str_cat(&atxt, _("scroll"));
       break;
     case DT_MOUSE_ACTION_DOUBLE_LEFT:
-      atxt = dt_util_dstrcat(atxt, _("left double-click"));
+      dt_util_str_cat(&atxt, _("left double-click"));
       break;
     case DT_MOUSE_ACTION_DOUBLE_RIGHT:
-      atxt = dt_util_dstrcat(atxt, _("right double-click"));
+      dt_util_str_cat(&atxt, _("right double-click"));
       break;
     case DT_MOUSE_ACTION_DRAG_DROP:
-      atxt = dt_util_dstrcat(atxt, _("drag and drop"));
+      dt_util_str_cat(&atxt, _("drag and drop"));
       break;
     case DT_MOUSE_ACTION_LEFT_DRAG:
-      atxt = dt_util_dstrcat(atxt, _("left click+drag"));
+      dt_util_str_cat(&atxt, _("left click+drag"));
       break;
     case DT_MOUSE_ACTION_RIGHT_DRAG:
-      atxt = dt_util_dstrcat(atxt, _("right click+drag"));
+      dt_util_str_cat(&atxt, _("right click+drag"));
       break;
   }
 
@@ -1694,7 +1694,7 @@ void dt_view_paint_surface(cairo_t *cr,
       "dt_view_paint_surface",
         port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
         "viewport zoom_scale %6.3f backbuf_scale %6.3f "
-        "(x=%6.2f y=%6.2f) -> (x=%+.3f y=%+.3f)\n",
+        "(x=%6.2f y=%6.2f) -> (x=%+.3f y=%+.3f)",
         zoom_scale, backbuf_scale,
         port->zoom_x, port->zoom_y, zoom_x, zoom_y);
 
@@ -1769,7 +1769,7 @@ void dt_view_paint_surface(cairo_t *cr,
          dev->preview_pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
          "size %4lux%-4lu processed %4.0fx%-4.0f "
          "buf %4dx%-4d scale=%.3f "
-         "zoom (x=%6.2f y=%6.2f) -> offset (x=%+.3f y=%+.3f)\n",
+         "zoom (x=%6.2f y=%6.2f) -> offset (x=%+.3f y=%+.3f)",
          width, height, wd, ht,
          dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height, zoom_scale,
          dev->preview_pipe->backbuf_zoom_x, dev->preview_pipe->backbuf_zoom_y,
@@ -1787,7 +1787,7 @@ void dt_view_paint_surface(cairo_t *cr,
          port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
          "size %4lux%-4lu processed %4dx%-4d "
          "buf %4dx%-4d scale=%.3f "
-         "zoom (x=%6.2f y=%6.2f) -> offset (x=%+.3f y=%+.3f)\n",
+         "zoom (x=%6.2f y=%6.2f) -> offset (x=%+.3f y=%+.3f)",
          width, height, processed_width, processed_height,
          buf_width, buf_height, buf_scale,
          buf_zoom_x, buf_zoom_y,

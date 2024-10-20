@@ -297,7 +297,7 @@ static void _print_trace(int signal, dt_debug_signal_action_t action, const char
     strings = backtrace_symbols (array, size);
 
     for(i = 0; i < size; i++)
-      dt_print(DT_DEBUG_SIGNAL, "[signal-trace-%s]: %s\n", op, strings[i]);
+      dt_print(DT_DEBUG_SIGNAL, "[signal-trace-%s]: %s", op, strings[i]);
 
     free (strings);
   }
@@ -346,7 +346,7 @@ void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t sign
         g_value_set_pointer(&instance_and_params[i], va_arg(extra_args, void *));
         break;
       default:
-        dt_print(DT_DEBUG_ALWAYS, "error: unsupported parameter type `%s' for signal `%s'\n",
+        dt_print(DT_DEBUG_ALWAYS, "error: unsupported parameter type `%s' for signal `%s'",
                 g_type_name(type), signal_description->name);
         va_end(extra_args);
         for(int j = 0; j <= i; j++) g_value_unset(&instance_and_params[j]);

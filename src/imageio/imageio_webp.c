@@ -28,7 +28,7 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   FILE *f = g_fopen(filename, "rb");
   if(!f)
   {
-    dt_print(DT_DEBUG_ALWAYS,"[webp_open] cannot open file for read: %s\n", filename);
+    dt_print(DT_DEBUG_ALWAYS,"[webp_open] cannot open file for read: %s", filename);
     return DT_IMAGEIO_FILE_NOT_FOUND;
   }
 
@@ -40,14 +40,14 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   if(!read_buffer)
   {
     fclose(f);
-    dt_print(DT_DEBUG_ALWAYS,"[webp_open] failed to allocate buffer for %s\n", filename);
+    dt_print(DT_DEBUG_ALWAYS,"[webp_open] failed to allocate buffer for %s", filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
   if(fread(read_buffer, 1, filesize, f) != filesize)
   {
     fclose(f);
     g_free(read_buffer);
-    dt_print(DT_DEBUG_ALWAYS,"[webp_open] failed to read %zu bytes from %s\n", filesize, filename);
+    dt_print(DT_DEBUG_ALWAYS,"[webp_open] failed to read %zu bytes from %s", filesize, filename);
     return DT_IMAGEIO_IOERROR;
   }
   fclose(f);
@@ -73,7 +73,7 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   if(!int_RGBA_buffer)
   {
     g_free(read_buffer);
-    dt_print(DT_DEBUG_ALWAYS,"[webp_open] failed to alloc RGBA buffer for %s\n", filename);
+    dt_print(DT_DEBUG_ALWAYS,"[webp_open] failed to alloc RGBA buffer for %s", filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
   uint8_t *int_RGBA_buf = WebPDecodeRGBAInto(read_buffer, filesize, int_RGBA_buffer, npixels * 4, width * 4);
@@ -81,7 +81,7 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   {
     g_free(read_buffer);
     dt_free_align(int_RGBA_buffer);
-    dt_print(DT_DEBUG_ALWAYS,"[webp_open] failed to decode file: %s\n", filename);
+    dt_print(DT_DEBUG_ALWAYS,"[webp_open] failed to decode file: %s", filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
@@ -118,7 +118,7 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   {
     g_free(read_buffer);
     dt_free_align(int_RGBA_buffer);
-    dt_print(DT_DEBUG_ALWAYS, "[webp_open] could not alloc full buffer for image: %s\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[webp_open] could not alloc full buffer for image: %s", img->filename);
     return DT_IMAGEIO_CACHE_FULL;
   }
 

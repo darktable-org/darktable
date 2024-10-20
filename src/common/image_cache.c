@@ -190,7 +190,7 @@ static void _image_cache_allocate(void *data,
   {
     img->id = NO_IMGID;
     dt_print(DT_DEBUG_ALWAYS,
-             "[image_cache_allocate] failed to open image %" PRIu32 " from database: %s\n",
+             "[image_cache_allocate] failed to open image %" PRIu32 " from database: %s",
              entry->key, sqlite3_errmsg(dt_database_get(darktable.db)));
   }
   sqlite3_finalize(stmt);
@@ -221,7 +221,7 @@ void dt_image_cache_init(dt_image_cache_t *cache)
   dt_cache_set_allocate_callback(&cache->cache, &_image_cache_allocate, cache);
   dt_cache_set_cleanup_callback(&cache->cache, &_image_cache_deallocate, cache);
 
-  dt_print(DT_DEBUG_CACHE, "[image_cache] has %d entries\n", num);
+  dt_print(DT_DEBUG_CACHE, "[image_cache] has %d entries", num);
 }
 
 void dt_image_cache_cleanup(dt_image_cache_t *cache)
@@ -232,7 +232,7 @@ void dt_image_cache_cleanup(dt_image_cache_t *cache)
 void dt_image_cache_print(dt_image_cache_t *cache)
 {
   dt_print(DT_DEBUG_ALWAYS,
-           "[image cache] fill %.2f/%.2f MB (%.2f%%)\n",
+           "[image cache] fill %.2f/%.2f MB (%.2f%%)",
            cache->cache.cost / (1024.0 * 1024.0),
            cache->cache.cost_quota / (1024.0 * 1024.0),
            (float)cache->cache.cost / (float)cache->cache.cost_quota);
@@ -297,7 +297,7 @@ void dt_image_cache_write_release_info(dt_image_cache_t *cache,
   if(!dt_is_valid_imgid(img->id))
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[image_cache_write_release] from `%s`. FATAL invalid image id %d\n",
+             "[image_cache_write_release] from `%s`. FATAL invalid image id %d",
              info, img->id);
     return;
   }
@@ -388,7 +388,7 @@ void dt_image_cache_write_release_info(dt_image_cache_t *cache,
   const int rc = sqlite3_step(stmt);
   if(rc != SQLITE_DONE)
     dt_print(DT_DEBUG_ALWAYS,
-             "[image_cache_write_release] from `%s' sqlite3 error %d (%s) for imgid %d\n",
+             "[image_cache_write_release] from `%s' sqlite3 error %d (%s) for imgid %d",
              info,
              rc,
              sqlite3_errmsg(dt_database_get(darktable.db)),
@@ -402,7 +402,7 @@ void dt_image_cache_write_release_info(dt_image_cache_t *cache,
     {
       const double spent = dt_get_debug_wtime() - start;
       dt_print(DT_DEBUG_CACHE,
-               "[image_cache_write_release] from `%s', imgid=%i took %.3fs\n",
+               "[image_cache_write_release] from `%s', imgid=%i took %.3fs",
                info, img->id, spent);
     }
   }

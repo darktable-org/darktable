@@ -1212,7 +1212,7 @@ static inline void gauss_reduce(
   else
   {
     blurred = (float*)input;
-    dt_print(DT_DEBUG_ALWAYS,"[basecurve] gauss_reduce out of memory, skipping blurring\n");
+    dt_print(DT_DEBUG_ALWAYS,"[basecurve] gauss_reduce out of memory, skipping blurring");
   }
   for(size_t j=0;j<ch;j++)
     for(size_t i=0;i<cw;i++)
@@ -1260,7 +1260,7 @@ void process_fusion(struct dt_iop_module_t *self,
     if(!col[k] || !comb[k])
     {
       dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out);
-      dt_print(DT_DEBUG_ALWAYS,"[basecurve] process_fusion out of memory, skipping\n");
+      dt_print(DT_DEBUG_ALWAYS,"[basecurve] process_fusion out of memory, skipping");
       goto cleanup;
     }
     dt_iop_image_fill(comb[k],  0.0f, w, h, 4);

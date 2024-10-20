@@ -672,7 +672,7 @@ static inline void dt_opencl_init(dt_opencl_t *cl,
   cl->error_count = 0;
   dt_conf_set_bool("opencl", FALSE);
   dt_print(DT_DEBUG_OPENCL,
-           "[opencl_init] this version of darktable was built without opencl support\n");
+           "[opencl_init] this version of darktable was built without opencl support");
 }
 static inline void dt_opencl_cleanup(dt_opencl_t *cl)
 {

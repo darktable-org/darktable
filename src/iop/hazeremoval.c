@@ -667,7 +667,7 @@ static float _ambient_light_cl(dt_iop_module_t *self,
   dt_free_align(in);
   return max_depth;
 error:
-  dt_print(DT_DEBUG_OPENCL, "[hazeremoval, ambient_light_cl] unknown error: %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[hazeremoval, ambient_light_cl] unknown error: %d", err);
   dt_free_align(in);
   return 0.f;
 }

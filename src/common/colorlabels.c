@@ -346,11 +346,11 @@ static float _action_process_color_label(gpointer target,
         for(GList *res_iter = res; res_iter; res_iter = g_list_next(res_iter))
         {
           const GdkRGBA c = darktable.bauhaus->colorlabels[GPOINTER_TO_INT(res_iter->data)];
-          result = dt_util_dstrcat(result,
-                                  "<span foreground='#%02x%02x%02x'>⬤ </span>",
-                                  (guint)(c.red*255),
-                                   (guint)(c.green*255),
-                                   (guint)(c.blue*255));
+          dt_util_str_cat(&result,
+                          "<span foreground='#%02x%02x%02x'>⬤ </span>",
+                          (guint)(c.red*255),
+                          (guint)(c.green*255),
+                          (guint)(c.blue*255));
         }
         g_list_free(res);
         if(result)

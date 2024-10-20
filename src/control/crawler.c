@@ -165,7 +165,7 @@ GList *dt_control_crawler_run(void)
     // if the image is missing we ignore it.
     if(!g_file_test(image_path, G_FILE_TEST_EXISTS))
     {
-      dt_print(DT_DEBUG_CONTROL, "[crawler] `%s' (id: %d) is missing.\n", image_path, id);
+      dt_print(DT_DEBUG_CONTROL, "[crawler] `%s' (id: %d) is missing", image_path, id);
       continue;
     }
 
@@ -217,7 +217,7 @@ GList *dt_control_crawler_run(void)
 
         result = g_list_prepend(result, item);
         dt_print(DT_DEBUG_CONTROL,
-                 "[crawler] `%s' (id: %d) is a newer XMP file.\n", xmp_path, id);
+                 "[crawler] `%s' (id: %d) is a newer XMP file", xmp_path, id);
       }
       // older timestamps are the case for all images after the db
       // upgrade. better not report these
@@ -529,7 +529,7 @@ static void sync_newest_to_oldest(GtkTreeModel *model,
     error = dt_image_write_sidecar_file(entry.id);
     _set_modification_time(entry.xmp_path, entry.timestamp_db);
 
-    dt_print(DT_DEBUG_ALWAYS, "%s synced DB (new) → XMP (old)\n", entry.image_path);
+    dt_print(DT_DEBUG_ALWAYS, "%s synced DB (new) → XMP (old)", entry.image_path);
     if(error)
     {
       _log_synchronization
@@ -955,14 +955,14 @@ static int _update_all_thumbs(const dt_mipmap_size_t max_mip)
     else
     {
       missed++;
-      dt_print(DT_DEBUG_CACHE, "[thumb crawler] '%s' ID=%d NOT available\n", path, imgid);
+      dt_print(DT_DEBUG_CACHE, "[thumb crawler] '%s' ID=%d NOT available", path, imgid);
     }
   }
   sqlite3_finalize(stmt);
 
   if(updated)
     dt_print(DT_DEBUG_CACHE,
-      "[thumb crawler] max_mip=%d, %d thumbs updated, %d not found, %s.\n",
+      "[thumb crawler] max_mip=%d, %d thumbs updated, %d not found, %s",
       max_mip, updated, missed,
       _still_thumbing() ? "all done" : "interrupted by user activity");
 
@@ -973,7 +973,7 @@ static void _reinitialize_thumbs_database(void)
 {
   dt_conf_set_bool("backthumbs_initialize", FALSE);
 
-  dt_print(DT_DEBUG_CACHE, "[thumb crawler] initialize database\n");
+  dt_print(DT_DEBUG_CACHE, "[thumb crawler] initialize database");
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -999,7 +999,7 @@ void dt_set_backthumb_time(const double next)
 void dt_update_thumbs_thread(void *p)
 {
   dt_pthread_setname("thumbs_update");
-  dt_print(DT_DEBUG_CACHE, "[thumb crawler] started\n");
+  dt_print(DT_DEBUG_CACHE, "[thumb crawler] started");
   dt_backthumb_t *bt = &darktable.backthumbs;
 
   bt->idle = (double)dt_conf_get_float("backthumbs_inactivity");
@@ -1009,7 +1009,7 @@ void dt_update_thumbs_thread(void *p)
   if(!dwriting || !_valid_mip(bt->mipsize) || !darktable.view_manager)
   {
     bt->running = FALSE;
-    dt_print(DT_DEBUG_CACHE, "[thumb crawler] closing due to preferences setting\n");
+    dt_print(DT_DEBUG_CACHE, "[thumb crawler] closing due to preferences setting");
     return;
   }
   bt->running = TRUE;
@@ -1023,7 +1023,7 @@ void dt_update_thumbs_thread(void *p)
     snprintf(dirname, sizeof(dirname), "%s.d/%d", darktable.mipmap_cache->cachedir, k);
     if(g_mkdir_with_parents(dirname, 0750))
     {
-      dt_print(DT_DEBUG_CACHE, "[thumb crawler] can't create mipmap dir '%s'\n", dirname);
+      dt_print(DT_DEBUG_CACHE, "[thumb crawler] can't create mipmap dir '%s'", dirname);
       return;
     }
   }
@@ -1046,7 +1046,7 @@ void dt_update_thumbs_thread(void *p)
     if(!_valid_mip(bt->mipsize))
       bt->running = FALSE;
   }
-  dt_print(DT_DEBUG_CACHE, "[thumb crawler] closing, %d mipmaps updated\n", updated);
+  dt_print(DT_DEBUG_CACHE, "[thumb crawler] closing, %d mipmaps updated", updated);
 }
 
 // clang-format off

@@ -2866,7 +2866,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     if(g->white_adapted_profile != NULL)
       memcpy(input_matrix, g->white_adapted_profile->matrix_in, sizeof(dt_colormatrix_t));
     else
-      dt_print(DT_DEBUG_PIPE, "[colorequal] display color space falls back to sRGB\n");
+      dt_print(DT_DEBUG_PIPE, "[colorequal] display color space falls back to sRGB");
 
     dt_UCS_22_build_gamut_LUT(input_matrix, g->gamut_LUT);
     g->max_saturation = get_minimum_saturation(g->gamut_LUT, 0.2f, 1.f);

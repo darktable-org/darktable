@@ -466,7 +466,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
       gtk_tree_model_get(GTK_TREE_MODEL(d->liststore), &iter, DT_LIB_EXPORT_METADATA_COL_XMP, &tagname,
           DT_LIB_EXPORT_METADATA_COL_FORMULA, &formula, -1);
       // metadata presets are stored into a single string with '\1' as a separator
-      newlist = dt_util_dstrcat(newlist,"\1%s\1%s", tagname, formula);
+      dt_util_str_cat(&newlist,"\1%s\1%s", tagname, formula);
       g_free(tagname);
       g_free(formula);
       valid = gtk_tree_model_iter_next (GTK_TREE_MODEL(d->liststore), &iter);

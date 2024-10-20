@@ -1123,7 +1123,7 @@ void dt_bauhaus_widget_set_field(GtkWidget *widget,
   if(*w->label)
     dt_print(DT_DEBUG_ALWAYS,
              "[dt_bauhaus_widget_set_field] bauhaus label '%s'"
-             " set before field (needs to be after)\n",
+             " set before field (needs to be after)",
              w->label);
   w->field = field;
   w->field_type = field_type;
@@ -1213,7 +1213,7 @@ void dt_bauhaus_update_from_field(dt_iop_module_t *module,
             break;
           default:
             dt_print(DT_DEBUG_ALWAYS,
-                     "[dt_bauhaus_update_from_field] unsupported slider data type\n");
+                     "[dt_bauhaus_update_from_field] unsupported slider data type");
         }
         break;
       case DT_BAUHAUS_COMBOBOX:
@@ -1233,7 +1233,7 @@ void dt_bauhaus_update_from_field(dt_iop_module_t *module,
             break;
           default:
             dt_print(DT_DEBUG_ALWAYS,
-                     "[dt_bauhaus_update_from_field] unsupported combo data type\n");
+                     "[dt_bauhaus_update_from_field] unsupported combo data type");
         }
         break;
       default:
@@ -1769,7 +1769,7 @@ static void _combobox_set(dt_bauhaus_widget_t *w,
           if(*b != prevb) dt_iop_gui_changed(w->module, GTK_WIDGET(w), &prevb);
           break;
         default:
-          dt_print(DT_DEBUG_ALWAYS, "[_combobox_set] unsupported combo data type\n");
+          dt_print(DT_DEBUG_ALWAYS, "[_combobox_set] unsupported combo data type");
       }
     }
     _highlight_changed_notebook_tab(GTK_WIDGET(w),
@@ -1905,7 +1905,7 @@ void dt_bauhaus_slider_set_stop(GtkWidget *widget,
   else
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[bauhaus_slider_set_stop] only %d stops allowed.\n",
+             "[bauhaus_slider_set_stop] only %d stops allowed",
              DT_BAUHAUS_SLIDER_MAX_STOPS);
   }
 }
@@ -3230,7 +3230,7 @@ static void _slider_value_change(dt_bauhaus_widget_t *w)
           break;
         default:
           dt_print(DT_DEBUG_ALWAYS,
-                   "[_slider_value_change] unsupported slider data type\n");
+                   "[_slider_value_change] unsupported slider data type");
       }
     }
 
@@ -3554,7 +3554,7 @@ void dt_bauhaus_vimkey_exec(const char *input)
     case DT_BAUHAUS_SLIDER:
       old_value = dt_bauhaus_slider_get(w);
       new_value = dt_calculator_solve(old_value, input);
-      dt_print(DT_DEBUG_ALWAYS, " = %f\n", new_value);
+      dt_print(DT_DEBUG_ALWAYS, " = %f", new_value);
       if(dt_isfinite(new_value))
         dt_bauhaus_slider_set(w, new_value);
       break;
@@ -3562,7 +3562,7 @@ void dt_bauhaus_vimkey_exec(const char *input)
       // TODO: what about text as entry?
       old_value = dt_bauhaus_combobox_get(w);
       new_value = dt_calculator_solve(old_value, input);
-      dt_print(DT_DEBUG_ALWAYS, " = %f\n", new_value);
+      dt_print(DT_DEBUG_ALWAYS, " = %f", new_value);
       if(dt_isfinite(new_value))
         dt_bauhaus_combobox_set(w, new_value);
       break;
@@ -3673,7 +3673,7 @@ static float _action_process_slider(gpointer target,
         break;
       default:
         dt_print(DT_DEBUG_ALWAYS,
-                 "[_action_process_slider] unknown shortcut effect (%d) for slider\n",
+                 "[_action_process_slider] unknown shortcut effect (%d) for slider",
                  effect);
         break;
       }
@@ -3710,7 +3710,7 @@ static float _action_process_slider(gpointer target,
         break;
       default:
         dt_print(DT_DEBUG_ALWAYS,
-                 "[_action_process_slider] unknown shortcut effect (%d) for slider\n",
+                 "[_action_process_slider] unknown shortcut effect (%d) for slider",
                  effect);
         break;
       }
@@ -3719,7 +3719,7 @@ static float _action_process_slider(gpointer target,
       break;
     default:
       dt_print(DT_DEBUG_ALWAYS,
-               "[_action_process_slider] unknown shortcut element (%d) for slider\n",
+               "[_action_process_slider] unknown shortcut element (%d) for slider",
                element);
       break;
     }

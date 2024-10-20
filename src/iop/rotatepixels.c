@@ -188,7 +188,7 @@ void distort_mask(struct dt_iop_module_t *self,
 {
   // TODO
   memset(out, 0, sizeof(float) * roi_out->width * roi_out->height);
-  dt_print(DT_DEBUG_ALWAYS, "TODO: implement %s() in %s\n", __FUNCTION__, __FILE__);
+  dt_print(DT_DEBUG_ALWAYS, "TODO: implement %s() in %s", __FUNCTION__, __FILE__);
 }
 
 void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,

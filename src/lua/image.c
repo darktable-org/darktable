@@ -121,7 +121,7 @@ static int generate_cache(lua_State *L)
       {
         if(g_mkdir_with_parents(dirname, 0750))
         {
-          dt_print(DT_DEBUG_ALWAYS, "[lua] could not create directory '%s'!\n", dirname);
+          dt_print(DT_DEBUG_ALWAYS, "[lua] could not create directory '%s'!", dirname);
           return 1;
         }
       }

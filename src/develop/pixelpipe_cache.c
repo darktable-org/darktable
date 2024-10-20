@@ -88,7 +88,7 @@ void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_t *pipe)
 
   if(pipe->type == DT_DEV_PIXELPIPE_FULL)
   {
-    dt_print(DT_DEBUG_PIPE, "Session fullpipe cache report. hits/run=%.2f, hits/test=%.3f\n",
+    dt_print(DT_DEBUG_PIPE, "Session fullpipe cache report. hits/run=%.2f, hits/test=%.3f",
     (double)(cache->hits) / fmax(1.0, pipe->runs),
     (double)(cache->hits) / fmax(1.0, cache->tests));
   }
@@ -259,7 +259,7 @@ static gboolean _get_by_hash(dt_dev_pixelpipe_t *pipe,
         */
         cache->hash[k] = INVALID_CACHEHASH;
         dt_print_pipe(DT_DEBUG_ALWAYS, "CACHELINE_SIZE ERROR",
-          pipe, module, DT_DEVICE_NONE, NULL, NULL, "\n");
+          pipe, module, DT_DEVICE_NONE, NULL, NULL);
       }
       else if(pipe->mask_display || pipe->nocache)
       {
@@ -301,7 +301,7 @@ gboolean dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_t *pipe,
     const dt_iop_buffer_dsc_t *cdsc = *dsc;
     dt_print_pipe(DT_DEBUG_PIPE, "cache HIT",
           pipe, module, DT_DEVICE_NONE, NULL, NULL,
-          "%s, hash=%" PRIx64 "\n",
+          "%s, hash=%" PRIx64,
           dt_iop_colorspace_to_name(cdsc->cst), hash);
     return FALSE;
   }
@@ -343,7 +343,7 @@ gboolean dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_t *pipe,
   const dt_iop_buffer_dsc_t *cdsc = *dsc;
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pipe cache get",
     pipe, module, DT_DEVICE_NONE, NULL, NULL,
-    "%s %sline%3i(%2i) at %p. hash=%" PRIx64 "%s\n",
+    "%s %sline%3i(%2i) at %p. hash=%" PRIx64 "%s",
      dt_iop_colorspace_to_name(cdsc->cst),
      important ? "important " : "",
      cline, cache->used[cline], cache->data[cline], cache->hash[cline],
@@ -378,7 +378,7 @@ void dt_dev_pixelpipe_cache_invalidate_later(const dt_dev_pixelpipe_t *pipe,
     dt_print_pipe(DT_DEBUG_PIPE,
     order ? "pipecache invalidate" : "pipecache flush",
     pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
-    "%i cachelines after ioporder=%i\n", invalidated, order);
+    "%i cachelines after ioporder=%i", invalidated, order);
 }
 
 void dt_dev_pixelpipe_cache_flush(const dt_dev_pixelpipe_t *pipe)
@@ -460,7 +460,7 @@ void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe)
 
   _cline_stats(cache);
   dt_print_pipe(DT_DEBUG_PIPE, "pipe cache check", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
-    "%i lines (important=%i, used=%i). Freed %iMB. Using using %iMB, limit=%iMB\n",
+    "%i lines (important=%i, used=%i). Freed %iMB. Using using %iMB, limit=%iMB",
     cache->entries, cache->limportant, cache->lused,
     _to_mb(freed), _to_mb(cache->allmem), _to_mb(cache->memlimit));
 }
@@ -471,7 +471,7 @@ void dt_dev_pixelpipe_cache_report(dt_dev_pixelpipe_t *pipe)
 
   _cline_stats(cache);
   dt_print_pipe(DT_DEBUG_PIPE, "cache report", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
-    "%i lines (important=%i, used=%i, invalid=%i). Using %iMB, limit=%iMB. Hits/run=%.2f. Hits/test=%.3f\n",
+    "%i lines (important=%i, used=%i, invalid=%i). Using %iMB, limit=%iMB. Hits/run=%.2f. Hits/test=%.3f",
     cache->entries, cache->limportant, cache->lused, cache->linvalid,
     _to_mb(cache->allmem), _to_mb(cache->memlimit),
     (double)(cache->hits) / fmax(1.0, pipe->runs),

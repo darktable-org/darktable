@@ -386,14 +386,14 @@ static gboolean _check_deleted_instances(dt_develop_t *dev,
             if(mod_in_history && mod_next_in_history)
               dt_print(DT_DEBUG_ALWAYS,
                   "[_check_deleted_instances] found duplicate module"
-                  " %s %s (%i) and %s %s (%i) both in history\n",
+                  " %s %s (%i) and %s %s (%i) both in history",
                   mod->op, mod->multi_name, mod->multi_priority,
                   mod_next->op, mod_next->multi_name,
                   mod_next->multi_priority);
             else
               dt_print(DT_DEBUG_ALWAYS,
                   "[_check_deleted_instances] found duplicate module"
-                  " %s %s (%i) and %s %s (%i) none in history\n",
+                  " %s %s (%i) and %s %s (%i) none in history",
                   mod->op, mod->multi_name, mod->multi_priority,
                   mod_next->op, mod_next->multi_name,
                   mod_next->multi_priority);
@@ -517,7 +517,7 @@ static gboolean _create_deleted_modules(GList **_iop_list, GList *history_list)
       if(base_module == NULL)
       {
         dt_print(DT_DEBUG_ALWAYS,
-                 "[_create_deleted_modules] can't find base module for %s\n",
+                 "[_create_deleted_modules] can't find base module for %s",
                  hitem->op_name);
         return changed;
       }

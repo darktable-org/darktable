@@ -1619,7 +1619,7 @@ void init_presets(dt_lib_module_t *self)
       // before calling this
       dt_print(DT_DEBUG_ALWAYS,
                "[export_init_presets] found export preset '%s' with version %d,"
-               " version %d was expected. dropping preset.\n",
+               " version %d was expected. dropping preset",
                name, op_version, version);
       sqlite3_stmt *innerstmt;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1756,7 +1756,7 @@ void init_presets(dt_lib_module_t *self)
         // write the updated preset back to db
         dt_print(DT_DEBUG_ALWAYS,
                  "[export_init_presets] updating export preset '%s'"
-                 " from versions %d/%d to versions %d/%d\n",
+                 " from versions %d/%d to versions %d/%d",
                  name, fversion, sversion, new_fversion, new_sversion);
         sqlite3_stmt *innerstmt;
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1782,7 +1782,7 @@ void init_presets(dt_lib_module_t *self)
       free(new_sdata);
       dt_print(DT_DEBUG_ALWAYS,
                "[export_init_presets] export preset '%s' can't be updated"
-               " from versions %d/%d to versions %d/%d. dropping preset\n",
+               " from versions %d/%d to versions %d/%d. dropping preset",
                name, fversion, sversion, new_fversion, new_sversion);
       sqlite3_stmt *innerstmt;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -2028,8 +2028,8 @@ void *legacy_params(dt_lib_module_t *self,
     const int scale_size = strlen(scale) + 1;
     const int print_dpi = dt_confgen_get_int("plugins/lighttable/export/print_dpi", DT_DEFAULT);
 
-    const size_t new_params_size = old_params_size 
-                                   + sizeof(int32_t) * 2 
+    const size_t new_params_size = old_params_size
+                                   + sizeof(int32_t) * 2
                                    + scale_size;
     void *new_params = calloc(1, new_params_size);
 

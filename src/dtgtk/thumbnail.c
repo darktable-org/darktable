@@ -176,12 +176,12 @@ static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
     if(id != thumb->groupid)
     {
       if(id == thumb->imgid)
-        tt = dt_util_dstrcat(tt, "\n\u2022 %s", _("current"));
+        dt_util_str_cat(&tt, "\n\u2022 %s", _("current"));
       else
       {
-        tt = dt_util_dstrcat(tt, "\n\u2022 %s", sqlite3_column_text(stmt, 2));
+        dt_util_str_cat(&tt, "\n\u2022 %s", sqlite3_column_text(stmt, 2));
         if(v > 0)
-          tt = dt_util_dstrcat(tt, " v%d", v);
+          dt_util_str_cat(&tt, " v%d", v);
       }
     }
   }

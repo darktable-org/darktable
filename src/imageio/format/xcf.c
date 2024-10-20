@@ -63,7 +63,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     profile = malloc(profile_len);
     if(!profile)
     {
-      dt_print(DT_DEBUG_ALWAYS, "[xcf] error: can't allocate %u bytes of memory\n", profile_len);
+      dt_print(DT_DEBUG_ALWAYS, "[xcf] error: can't allocate %u bytes of memory", profile_len);
       return 1;
     }
     cmsSaveProfileToMem(out_profile, profile, &profile_len);
@@ -86,7 +86,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
 
   if(!xcf)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[xcf] error: can't open `%s'\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[xcf] error: can't open `%s'", filename);
     goto exit;
   }
 
@@ -102,7 +102,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     xcf_set(xcf, XCF_PRECISION, profile_is_linear ? XCF_PRECISION_F_32_L : XCF_PRECISION_F_32_G);
   else
   {
-    dt_print(DT_DEBUG_ALWAYS, "[xcf] error: bpp of %d is not supported\n", d->bpp);
+    dt_print(DT_DEBUG_ALWAYS, "[xcf] error: bpp of %d is not supported", d->bpp);
     goto exit;
   }
 
@@ -132,7 +132,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     uint8_t *exif_buf = g_malloc0(exif_len + 6);
     if(!exif_buf)
     {
-      dt_print(DT_DEBUG_ALWAYS, "[xcf] error: can't allocate %d bytes of memory\n", exif_len + 6);
+      dt_print(DT_DEBUG_ALWAYS, "[xcf] error: can't allocate %d bytes of memory", exif_len + 6);
       goto exit;
     }
     memcpy(exif_buf, "Exif\0\0", 6);
@@ -224,7 +224,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
         if(channel_data)
           xcf_add_data(xcf, channel_data, 1);
         else
-          dt_print(DT_DEBUG_ALWAYS, "[xcf] out of memory writing image data to %s\n", filename);
+          dt_print(DT_DEBUG_ALWAYS, "[xcf] out of memory writing image data to %s", filename);
 
         if(free_channel_data)
           free(channel_data);
