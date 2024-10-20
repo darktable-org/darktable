@@ -788,9 +788,9 @@ static gboolean _history_copy_and_paste_on_image_overwrite(const dt_imgid_t imgi
         if(dt_history_module_skip_copy(module->flags()))
         {
           if(skip_modules)
-            skip_modules = dt_util_dstrcat(skip_modules, ",");
+            dt_util_str_cat(&skip_modules, ",");
 
-          skip_modules = dt_util_dstrcat(skip_modules, "'%s'", module->op);
+          dt_util_str_cat(&skip_modules, "'%s'", module->op);
         }
       }
     }
@@ -1651,15 +1651,15 @@ void dt_history_hash_write_from_history(const dt_imgid_t imgid,
     }
     if(type & DT_HISTORY_HASH_AUTO)
     {
-      fields = dt_util_dstrcat(fields, "%s,", "auto_hash");
-      values = dt_util_dstrcat(values, "?2,");
-      conflict = dt_util_dstrcat(conflict, "auto_hash=?2,");
+      dt_util_str_cat(&fields, "%s,", "auto_hash");
+      dt_util_str_cat(&values, "?2,");
+      dt_util_str_cat(&conflict, "auto_hash=?2,");
     }
     if(type & DT_HISTORY_HASH_CURRENT)
     {
-      fields = dt_util_dstrcat(fields, "%s,", "current_hash");
-      values = dt_util_dstrcat(values, "?2,");
-      conflict = dt_util_dstrcat(conflict, "current_hash=?2,");
+      dt_util_str_cat(&fields, "%s,", "current_hash");
+      dt_util_str_cat(&values, "?2,");
+      dt_util_str_cat(&conflict, "current_hash=?2,");
     }
     // remove the useless last comma
     if(fields) fields[strlen(fields) - 1] = '\0';

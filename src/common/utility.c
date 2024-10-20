@@ -89,28 +89,26 @@ gchar *dt_util_localize_segmented_name(const char *s)
   return localized;
 }
 
-gchar *dt_util_dstrcat(gchar *str, const gchar *format, ...)
+void dt_util_str_cat(gchar **str, const gchar *format, ...)
 {
+  if(!str) return;
+
   va_list args;
-  gchar *ns;
   va_start(args, format);
-  const size_t clen = str ? strlen(str) : 0;
+  const size_t clen = *str ? strlen(*str) : 0;
   const int alen = g_vsnprintf(NULL, 0, format, args);
+  va_end(args);
   const int nsize = alen + clen + 1;
 
   /* realloc for new string */
-  ns = g_realloc(str, nsize);
-  if(str == NULL) ns[0] = '\0';
-  va_end(args);
+  *str = g_realloc(*str, nsize);
 
   /* append string */
   va_start(args, format);
-  g_vsnprintf(ns + clen, alen + 1, format, args);
+  g_vsnprintf(*str + clen, alen + 1, format, args);
   va_end(args);
 
-  ns[nsize - 1] = '\0';
-
-  return ns;
+  (*str)[nsize - 1] = '\0';
 }
 
 guint dt_util_str_occurence(const gchar *haystack, const gchar *needle)

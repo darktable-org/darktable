@@ -631,7 +631,7 @@ static gchar *_shortcut_key_move_name(dt_input_device_t id,
         gchar *key_name = gtk_accelerator_get_label(key_or_move, 0);
         post_name = g_utf8_strdown(key_name, -1);
         if(strlen(post_name) == 1 && _is_kp_key(key_or_move))
-          post_name = dt_util_dstrcat(post_name, " %s", _("(keypad)"));
+          dt_util_str_cat(&post_name, " %s", _("(keypad)"));
         g_free(key_name);
       }
       else
@@ -1087,7 +1087,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
   else
   {
     if(g_object_get_data(G_OBJECT(widget), "scroll-resize-tooltip"))
-      original_markup = dt_util_dstrcat(original_markup, "%s%s",
+      dt_util_str_cat(&original_markup, "%s%s",
                                         original_markup ? "\n" : "", _("shift+alt+scroll to change height"));
     action = dt_action_widget(widget);
     if(!action)
@@ -1124,8 +1124,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
       if(dt_bauhaus_slider_get_soft_min(widget) != hard_min ||
          dt_bauhaus_slider_get_soft_max(widget) != hard_max)
       {
-        original_markup = dt_util_dstrcat
-          (original_markup,
+        dt_util_str_cat(&original_markup,
            _("%sright-click to type a specific value between <b>%s</b> and <b>%s</b>"
              "\nor hold ctrl+shift while dragging to ignore soft limits."),
            original_markup ? "\n\n" : "",
@@ -1171,9 +1170,9 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
       gchar *sc_escaped = g_markup_escape_text(_shortcut_description(s), -1);
       const int components = (show_element > 0 || s->element != darktable.control->element) ? 1 : 0;
       gchar *ac_escaped = g_markup_escape_text(_action_description(s, components), -1);
-      description = dt_util_dstrcat(description, "%s<b><big>%s</big></b><i>%s</i>",
-                                                 description ? "\n" : "",
-                                                 sc_escaped, ac_escaped);
+      dt_util_str_cat(&description, "%s<b><big>%s</big></b><i>%s</i>",
+                                    description ? "\n" : "",
+                                    sc_escaped, ac_escaped);
       g_free(sc_escaped);
       g_free(ac_escaped);
     }
@@ -1191,7 +1190,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
     {
       gchar *lua_escaped = g_markup_printf_escaped("\n\nLua: <tt>%s</tt>%s %s", lua_command,
                                     show_element == 1 ? _("ctrl+v") : _("right long click") , _("to copy Lua command"));
-      markup_text = dt_util_dstrcat(markup_text, "%s", lua_escaped);
+      dt_util_str_cat(&markup_text, "%s", lua_escaped);
       g_free(lua_escaped);
       g_free(lua_command);
     }
@@ -1200,8 +1199,8 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
 
   if(description || original_markup || markup_text)
   {
-    if(original_markup) markup_text = dt_util_dstrcat(markup_text, markup_text ? "\n\n%s" : "%s", original_markup);
-    if(description    ) markup_text = dt_util_dstrcat(markup_text, markup_text ? "\n\n%s" : "%s", description);
+    if(original_markup) dt_util_str_cat(&markup_text, markup_text ? "\n\n%s" : "%s", original_markup);
+    if(description    ) dt_util_str_cat(&markup_text, markup_text ? "\n\n%s" : "%s", description);
 
     GtkWidget *label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(label), markup_text);
@@ -3527,7 +3526,7 @@ gboolean dt_action_widget_invisible(GtkWidget *w)
 }
 
 #define ADD_EXPLANATION(cause, effect, extra, ...) if(*fb_log) \
-      *fb_log = dt_util_dstrcat(*fb_log, "\n%s \u2192 %s" extra, cause, effect, ##__VA_ARGS__)
+      dt_util_str_cat(&*fb_log, "\n%s \u2192 %s" extra, cause, effect, ##__VA_ARGS__)
 
 static gboolean _shortcut_closest_match(GSequenceIter **current,
                                         dt_shortcut_t *s,

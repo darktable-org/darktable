@@ -256,7 +256,8 @@ static gchar *_panels_get_panel_path(dt_ui_panel_t panel,
 {
   gchar *v = _panels_get_view_path("");
   if(!v) return NULL;
-  return dt_util_dstrcat(v, "%s%s", _ui_panel_config_names[panel], suffix);
+  dt_util_str_cat(&v, "%s%s", _ui_panel_config_names[panel], suffix);
+  return v;
 }
 
 static gboolean _panel_is_visible(dt_ui_panel_t panel)
@@ -3192,12 +3193,12 @@ void dt_gui_show_help(GtkWidget *widget)
     // in case of a standard release, append the dt version to the url
     if(dt_is_dev_version())
     {
-      base_url = dt_util_dstrcat(base_url, "development/");
+      dt_util_str_cat(&base_url, "development/");
     }
     else
     {
       char *ver = dt_version_major_minor();
-      base_url = dt_util_dstrcat(base_url, "%s/", ver);
+      dt_util_str_cat(&base_url, "%s/", ver);
       g_free(ver);
     }
 

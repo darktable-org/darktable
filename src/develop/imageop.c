@@ -3362,7 +3362,7 @@ void dt_iop_set_darktable_iop_table()
   for(GList *iop = darktable.iop; iop; iop = g_list_next(iop))
   {
     dt_iop_module_so_t *module = iop->data;
-    module_list = dt_util_dstrcat(module_list, "(\"%s\",\"%s\"),",
+    dt_util_str_cat(&module_list, "(\"%s\",\"%s\"),",
                                   module->op, module->name());
   }
 

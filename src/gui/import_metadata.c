@@ -316,7 +316,7 @@ static void _import_tags_presets_update(dt_import_metadata_t *metadata)
         {
           const guint tagid = strtoul(*entry, NULL, 0);
           char *tag = dt_tag_get_name(tagid);
-          tags = dt_util_dstrcat(tags, "%s,", tag);
+          dt_util_str_cat(&tags, "%s,", tag);
           g_free(tag);
           entry++;
         }

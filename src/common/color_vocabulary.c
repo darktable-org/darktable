@@ -199,7 +199,7 @@ const char *Lch_to_color_name(dt_aligned_pixel_t color)
   // Write all matching ethnicities
   for(int elem = 0; elem < ETHNIE_END; ++elem)
     if(matches[elem])
-      out = dt_util_dstrcat(out, _("average %s skin tone\n"), ethnies[elem].name);
+      dt_util_str_cat(&out, _("average %s skin tone\n"), ethnies[elem].name);
 
   if(is_skin) return out;
 
