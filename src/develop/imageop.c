@@ -307,7 +307,7 @@ void dt_iop_default_init(dt_iop_module_t *module)
       dt_print(DT_DEBUG_PARAMS,
                "[dt_iop_default_init] in `%s' unsupported introspection"
                " type \"%s\" encountered"
-               " in (field %s)\n",
+               " in (field %s)",
                module->op, i->header.type_name, i->header.field_name);
       break;
     }
@@ -353,7 +353,7 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *module_name)
     }
     else
       dt_print(DT_DEBUG_ALWAYS,
-               "[iop_load_module] failed to initialize introspection for operation `%s'\n",
+               "[iop_load_module] failed to initialize introspection for operation `%s'",
                module_name);
   }
 
@@ -447,7 +447,7 @@ gboolean dt_iop_load_module_by_so(dt_iop_module_t *module,
   if(module->params_size == 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[iop_load_module] `%s' needs to have a params size > 0!\n", so->op);
+             "[iop_load_module] `%s' needs to have a params size > 0!", so->op);
     return TRUE; // empty params hurt us in many places, just add a dummy value
   }
   module->enabled = module->default_enabled; // apply (possibly new) default.
@@ -1281,7 +1281,7 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
     const dt_image_t *img = module ? &module->dev->image_storage : NULL;
     const char *name = module ? module->name() : "?";
 
-    dt_print(DT_DEBUG_ALWAYS, "Trouble: [%s] %s (%s %d)\n",
+    dt_print(DT_DEBUG_ALWAYS, "Trouble: [%s] %s (%s %d)",
              name,
              stderr_message,
              img ? img->filename : "?",
@@ -1320,11 +1320,11 @@ void dt_iop_reload_defaults(dt_iop_module_t *module)
     {
       module->reload_defaults(module);
       dt_print(DT_DEBUG_PARAMS,
-               "[dt_iop_reload_defaults] defaults reloaded for %s\n", module->op);
+               "[dt_iop_reload_defaults] defaults reloaded for %s", module->op);
     }
     else
       dt_print(DT_DEBUG_PARAMS,
-               "[dt_iop_reload_defaults] should not be called without image.\n");
+               "[dt_iop_reload_defaults] should not be called without image.");
   }
 
   dt_iop_load_default_params(module);
@@ -1453,7 +1453,7 @@ static void _init_presets(dt_iop_module_so_t *module_so)
           (DT_DEBUG_ALWAYS,
            "[imageop_init_presets] WARNING: Could not find versioning information for '%s' "
            "preset '%s'\nUntil some is found, the preset will be unavailable.\n(To make it "
-           "return, please load an image that uses the preset.)\n",
+           "return, please load an image that uses the preset.)",
            module_so->op, name);
         sqlite3_finalize(stmt2);
         continue;
@@ -1464,7 +1464,7 @@ static void _init_presets(dt_iop_module_so_t *module_so)
       // we found an old params version.  Update the database with it.
 
       dt_print(DT_DEBUG_PARAMS,
-               "[imageop_init_presets] found version %d for '%s' preset '%s'\n",
+               "[imageop_init_presets] found version %d for '%s' preset '%s'",
                old_params_version, module_so->op, name);
 
       DT_DEBUG_SQLITE3_PREPARE_V2
@@ -1554,7 +1554,7 @@ static void _init_presets(dt_iop_module_so_t *module_so)
     {
       dt_print(DT_DEBUG_ALWAYS,
                "[imageop_init_presets] Can't upgrade '%s' preset '%s' "
-               "from version %d to %d, no legacy_params() implemented \n",
+               "from version %d to %d, no legacy_params() implemented ",
                module_so->op, name, old_params_version, module_version);
     }
 
@@ -1562,7 +1562,7 @@ static void _init_presets(dt_iop_module_so_t *module_so)
     {
       dt_print(DT_DEBUG_ALWAYS,
               "[imageop_init_presets] updating '%s' preset '%s' from blendop"
-               " version %d to version %d\n",
+               " version %d to version %d",
                module_so->op, name, old_blend_params_version, dt_develop_blend_version());
 
       // we need a dt_iop_module_t for dt_develop_blend_legacy_params()
@@ -1838,7 +1838,7 @@ void dt_iop_advertise_rastermask(dt_iop_module_t *module, const int mask_mode)
     if(g_hash_table_insert(module->raster_mask.source.masks, GINT_TO_POINTER(key), modulename))
     {
       dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS | DT_DEBUG_VERBOSE,
-        "raster mask advertised", NULL, module, DT_DEVICE_NONE, NULL, NULL, "\n");
+        "raster mask advertised", NULL, module, DT_DEVICE_NONE, NULL, NULL);
     }
   }
   else
@@ -1846,7 +1846,7 @@ void dt_iop_advertise_rastermask(dt_iop_module_t *module, const int mask_mode)
     if(g_hash_table_remove(module->raster_mask.source.masks, GINT_TO_POINTER(key)))
     {
       dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS | DT_DEBUG_VERBOSE,
-        "NO raster mask support", NULL, module, DT_DEVICE_NONE, NULL, NULL, "\n");
+        "NO raster mask support", NULL, module, DT_DEVICE_NONE, NULL, NULL);
     }
   }
 }
@@ -1894,7 +1894,7 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
         module->raster_mask.sink.id = blendop_params->raster_mask_id;
         dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
                       "request raster mask",
-                      NULL, module, DT_DEVICE_NONE, NULL, NULL, "from '%s%s' %s\n",
+                      NULL, module, DT_DEVICE_NONE, NULL, NULL, "from '%s%s' %s",
                       candidate->op, dt_iop_get_instance_id(candidate),
                       new ? "new" : "replaced");
 
@@ -1913,7 +1913,7 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
     if(g_hash_table_remove(module->raster_mask.sink.source->raster_mask.source.users, module))
       dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
                   "clear as raster user",
-                  NULL, module, DT_DEVICE_NONE, NULL, NULL, "from '%s%s'\n",
+                  NULL, module, DT_DEVICE_NONE, NULL, NULL, "from '%s%s'",
                   sink_source->op, dt_iop_get_instance_id(sink_source));
   }
   module->raster_mask.sink.source = NULL;
@@ -1962,7 +1962,7 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
         if(report)
           dt_print(DT_DEBUG_ALWAYS,
              "[iop_validate_params] `%s' failed for not null terminated type string"
-             " \"%s\";\n",
+             " \"%s\";",
                name, field->header.type_name);
         all_ok = FALSE;
       }
@@ -2081,7 +2081,7 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
   default:
     dt_print(DT_DEBUG_ALWAYS,
              "[iop_validate_params] `%s' unsupported introspection type \"%s\" encountered,"
-             " (field %s)\n",
+             " (field %s)",
              name, field->header.type_name, field->header.name);
     all_ok = FALSE;
     break;
@@ -2090,7 +2090,7 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
   if(all_ok)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[iop_validate_params] `%s' validated data for type \"%s\"%s%s%s\n",
+             "[iop_validate_params] `%s' validated data for type \"%s\"%s%s%s",
              name, field->header.type_name,
              *field->header.name ? ", field: " : "",
              field->header.name, values ? values : "");
@@ -2098,7 +2098,7 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
   else if(report)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[iop_validate_params] `%s' failed for type \"%s\"%s%s%s\n",
+             "[iop_validate_params] `%s' failed for type \"%s\"%s%s%s",
              name, field->header.type_name,
              *field->header.name ? ", field: " : "",
              field->header.name, values ? values : "");
@@ -2622,7 +2622,7 @@ static void _header_size_callback(GtkWidget *widget,
         {
           dt_print(DT_DEBUG_ALWAYS,
                    "[header size callback] unknown darkroom/ui/hide_header_buttons"
-                   " option %s\n", config);
+                   " option %s", config);
         }
       }
     }
@@ -2773,7 +2773,7 @@ static gboolean _mask_indicator_tooltip(GtkWidget *treeview,
     else if(mm & DEVELOP_MASK_RASTER)
       type=_("raster mask");
     else
-      dt_print(DT_DEBUG_PARAMS, "unknown mask mode '%u' in module '%s'\n", mm, module->op);
+      dt_print(DT_DEBUG_PARAMS, "unknown mask mode '%u' in module '%s'", mm, module->op);
     gchar *part1 = g_strdup_printf(_("this module has a `%s'"), type);
     gchar *part2 = NULL;
     if(raster && module->raster_mask.sink.source)
@@ -3835,12 +3835,12 @@ gboolean dt_iop_have_required_input_format(const int req_ch,
            "the data format does not match\n"
            "its requirements."), NULL);
       dt_print_pipe(DT_DEBUG_ALWAYS,
-        "unsupported data format", NULL, module, DT_DEVICE_NONE, roi_in, roi_out, "\n");
+        "unsupported data format", NULL, module, DT_DEVICE_NONE, roi_in, roi_out);
     }
     else
     {
       dt_print_pipe(DT_DEBUG_ALWAYS,
-        "unsupported data format", NULL, NULL, DT_DEVICE_NONE, roi_in, roi_out, "no module given\n");
+        "unsupported data format", NULL, NULL, DT_DEVICE_NONE, roi_in, roi_out, "no module given");
     }
     return FALSE;
   }
@@ -3944,7 +3944,7 @@ static float _action_process(gpointer target,
         return 0; // don't overwrite toast below
       default:
         dt_print(DT_DEBUG_ALWAYS,
-                 "[imageop::_action_process] effect %d for presets not yet implemented\n",
+                 "[imageop::_action_process] effect %d for presets not yet implemented",
                  effect);
         break;
       }

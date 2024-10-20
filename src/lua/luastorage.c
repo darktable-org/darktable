@@ -115,7 +115,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,
                        icc_type, icc_filename, icc_intent, self, self_data, num, total, metadata) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[lua] %s: could not export to file `%s'!\n", self->name(self), complete_name);
+             "[lua] %s: could not export to file `%s'!", self->name(self), complete_name);
     g_free(complete_name);
     g_free(filename);
     return 1;
@@ -208,7 +208,7 @@ static int initialize_store_wrapper(struct dt_imageio_module_storage_t *self,
     if(lua_type(L, -1) != LUA_TTABLE)
     {
       dt_print(DT_DEBUG_LUA,
-               "LUA ERROR initialization function of storage did not return nil or table\n");
+               "LUA ERROR initialization function of storage did not return nil or table");
       dt_lua_unlock();
       return 1;
     }

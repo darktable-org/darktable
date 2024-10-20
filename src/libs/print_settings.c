@@ -310,7 +310,7 @@ static int write_image(dt_imageio_module_data_t *data,
     (uint16_t *)malloc((size_t)3 * (d->bpp == 8?1:2) * d->head.width * d->head.height);
   if(!d->params->buf)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[print] unable to allocate memory for image %s\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[print] unable to allocate memory for image %s", filename);
     return 1;
   }
 
@@ -394,7 +394,7 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
     {
       dt_control_log(_("cannot open printer profile `%s'"), params->p_icc_profile);
       dt_print(DT_DEBUG_ALWAYS,
-               "cannot open printer profile `%s'\n",
+               "cannot open printer profile `%s'",
                params->p_icc_profile);
       dt_control_queue_redraw();
       return 1;
@@ -405,7 +405,7 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
       {
         dt_control_log(_("error getting output profile for image %d"), img->imgid);
         dt_print(DT_DEBUG_ALWAYS,
-                 "error getting output profile for image %d\n",
+                 "error getting output profile for image %d",
                  img->imgid);
         dt_control_queue_redraw();
         return 1;
@@ -418,7 +418,7 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
         dt_control_log(_("cannot apply printer profile `%s'"),
                        params->p_icc_profile);
         dt_print(DT_DEBUG_ALWAYS,
-                 "cannot apply printer profile `%s'\n",
+                 "cannot apply printer profile `%s'",
                  params->p_icc_profile);
         dt_control_queue_redraw();
         return 1;
@@ -537,7 +537,7 @@ static int _export_and_setup_pos(dt_job_t *job,
 
   dt_printing_setup_page(&params->imgs, width, height, params->prt.printer.resolution);
 
-  dt_print(DT_DEBUG_PRINT, "[print] max image size %d x %d (at resolution %d)\n",
+  dt_print(DT_DEBUG_PRINT, "[print] max image size %d x %d (at resolution %d)",
            img->max_width, img->max_height, params->prt.printer.resolution);
 
   if(_export_image(job, img))
@@ -580,7 +580,7 @@ static int _print_job_run(dt_job_t *job)
   if(fd == -1)
   {
     dt_control_log(_("failed to create temporary PDF for printing"));
-    dt_print(DT_DEBUG_ALWAYS, "failed to create temporary PDF for printing\n");
+    dt_print(DT_DEBUG_ALWAYS, "failed to create temporary PDF for printing");
     return 1;
   }
   close(fd);

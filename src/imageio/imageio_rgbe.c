@@ -81,17 +81,17 @@ static int rgbe_error(int rgbe_error_code, char *msg)
   switch(rgbe_error_code)
   {
     case rgbe_read_error:
-      dt_print(DT_DEBUG_ALWAYS, "[rgbe_open] RGBE read error: %s\n", strerror(errno));
+      dt_print(DT_DEBUG_ALWAYS, "[rgbe_open] RGBE read error: %s", strerror(errno));
       break;
     case rgbe_write_error:
-      dt_print(DT_DEBUG_ALWAYS, "[rgbe_open] RGBE write error: %s\n", strerror(errno));
+      dt_print(DT_DEBUG_ALWAYS, "[rgbe_open] RGBE write error: %s", strerror(errno));
       break;
     case rgbe_format_error:
-      dt_print(DT_DEBUG_ALWAYS, "[rgbe_open] RGBE bad file format: %s\n", msg);
+      dt_print(DT_DEBUG_ALWAYS, "[rgbe_open] RGBE bad file format: %s", msg);
       break;
     default:
     case rgbe_memory_error:
-      dt_print(DT_DEBUG_ALWAYS, "[rgbe_open] RGBE error: %s\n", msg);
+      dt_print(DT_DEBUG_ALWAYS, "[rgbe_open] RGBE error: %s", msg);
   }
   return RGBE_RETURN_FAILURE;
 }

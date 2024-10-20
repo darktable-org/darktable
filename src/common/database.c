@@ -396,8 +396,8 @@ end:
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
   else
   {
-    dt_print(DT_DEBUG_ALWAYS, "[init] failing query: `%s'\n", failing_query);
-    dt_print(DT_DEBUG_ALWAYS, "[init]   %s\n", sqlite3_errmsg(db->handle));
+    dt_print(DT_DEBUG_ALWAYS, "[init] failing query: `%s'", failing_query);
+    dt_print(DT_DEBUG_ALWAYS, "[init]   %s", sqlite3_errmsg(db->handle));
     sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
   }
 
@@ -412,7 +412,7 @@ end:
     if(sqlite3_exec(db->handle, _query, NULL, NULL, NULL) != SQLITE_OK)          \
     {                                                                            \
       dt_print(DT_DEBUG_ALWAYS, _message);                                       \
-      dt_print(DT_DEBUG_ALWAYS, "[init]   %s\n", sqlite3_errmsg(db->handle));    \
+      dt_print(DT_DEBUG_ALWAYS, "[init]   %s", sqlite3_errmsg(db->handle));      \
       FINALIZE;                                                                  \
       sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);        \
       return version;                                                            \
@@ -425,7 +425,7 @@ end:
     if(sqlite3_step(_stmt) != _expected)                                         \
     {                                                                            \
       dt_print(DT_DEBUG_ALWAYS, _message);                                       \
-      dt_print(DT_DEBUG_ALWAYS, "[init]   %s\n", sqlite3_errmsg(db->handle));    \
+      dt_print(DT_DEBUG_ALWAYS, "[init]   %s", sqlite3_errmsg(db->handle));      \
       FINALIZE;                                                                  \
       sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);        \
       return version;                                                            \
@@ -438,7 +438,7 @@ end:
     if(sqlite3_prepare_v2(db->handle, _query, -1, &_stmt, NULL) != SQLITE_OK)    \
     {                                                                            \
       dt_print(DT_DEBUG_ALWAYS, _message);                                       \
-      dt_print(DT_DEBUG_ALWAYS, "[init]   %s\n", sqlite3_errmsg(db->handle));    \
+      dt_print(DT_DEBUG_ALWAYS, "[init]   %s", sqlite3_errmsg(db->handle));      \
       FINALIZE;                                                                  \
       sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);        \
       return version;                                                            \
@@ -1147,7 +1147,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     while(sqlite3_step(sel_stmt) == SQLITE_ROW)
     {
       const char *op_name = (const char *)sqlite3_column_text(sel_stmt, 0);
-      dt_print(DT_DEBUG_ALWAYS, "[init] operation %s with no iop_order while upgrading database\n", op_name);
+      dt_print(DT_DEBUG_ALWAYS, "[init] operation %s with no iop_order while upgrading database", op_name);
     }
     sqlite3_finalize(sel_stmt);
     // clang-format off
@@ -2990,7 +2990,7 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
     while(sqlite3_step(sel_stmt) == SQLITE_ROW)
     {
       const char *op_name = (const char *)sqlite3_column_text(sel_stmt, 0);
-      dt_print(DT_DEBUG_ALWAYS, "[init] operation %s with no iop_order while upgrading style_items in database\n", op_name);
+      dt_print(DT_DEBUG_ALWAYS, "[init] operation %s with no iop_order while upgrading style_items in database", op_name);
     }
     sqlite3_finalize(sel_stmt);
     // clang-format off
@@ -3620,7 +3620,7 @@ static void _sanitize_db(dt_database_t *db)
     {
       gchar *new_tag = dt_util_foo_to_utf8(tag);
       dt_print(DT_DEBUG_ALWAYS,
-               "[init]: tag `%s' is not valid utf8, replacing it with `%s'\n", tag, new_tag);
+               "[init]: tag `%s' is not valid utf8, replacing it with `%s'", tag, new_tag);
       sqlite3_bind_text(innerstmt, 1, new_tag, -1, SQLITE_TRANSIENT);
       sqlite3_bind_int(innerstmt, 2, id);
       sqlite3_step(innerstmt);
@@ -3647,7 +3647,7 @@ static void _sanitize_db(dt_database_t *db)
     if(sqlite3_exec(db->handle, _query, NULL, NULL, NULL) != SQLITE_OK)            \
     {                                                                              \
       dt_print(DT_DEBUG_ALWAYS, _message);                                         \
-      dt_print(DT_DEBUG_ALWAYS, "[init]   %s\n", sqlite3_errmsg(db->handle));      \
+      dt_print(DT_DEBUG_ALWAYS, "[init]   %s", sqlite3_errmsg(db->handle));        \
       FINALIZE;                                                                    \
       sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);          \
       return FALSE;                                                                \
@@ -3660,7 +3660,7 @@ static void _sanitize_db(dt_database_t *db)
     if(sqlite3_step(_stmt) != _expected)                                           \
     {                                                                              \
       dt_print(DT_DEBUG_ALWAYS, _message);                                         \
-      dt_print(DT_DEBUG_ALWAYS, "[init]   %s\n", sqlite3_errmsg(db->handle));      \
+      dt_print(DT_DEBUG_ALWAYS, "[init]   %s", sqlite3_errmsg(db->handle));        \
       FINALIZE;                                                                    \
       sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);          \
       return FALSE;                                                                \
@@ -3673,7 +3673,7 @@ static void _sanitize_db(dt_database_t *db)
     if(sqlite3_prepare_v2(db->handle, _query, -1, &_stmt, NULL) != SQLITE_OK)      \
     {                                                                              \
       dt_print(DT_DEBUG_ALWAYS, _message);                                         \
-      dt_print(DT_DEBUG_ALWAYS, "[init]   %s\n", sqlite3_errmsg(db->handle));      \
+      dt_print(DT_DEBUG_ALWAYS, "[init]   %s", sqlite3_errmsg(db->handle));        \
       FINALIZE;                                                                    \
       sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);          \
       return FALSE;                                                                \
@@ -3874,7 +3874,7 @@ lock_again:
           else
           {
             dt_print(DT_DEBUG_ALWAYS,
-                     "[init] the database lock file contains a pid that seems to be alive in your system: %d\n",
+                     "[init] the database lock file contains a pid that seems to be alive in your system: %d",
                      db->error_other_pid);
             db->error_message
               = g_strdup_printf(_("the database lock file contains a pid that seems to be alive in your system: %d"),
@@ -3883,7 +3883,7 @@ lock_again:
         }
         else
         {
-          dt_print(DT_DEBUG_ALWAYS, "[init] the database lock file seems to be empty\n");
+          dt_print(DT_DEBUG_ALWAYS, "[init] the database lock file seems to be empty");
           db->error_message = g_strdup_printf(_("the database lock file seems to be empty"));
         }
         close(fd);
@@ -3892,7 +3892,7 @@ lock_again:
       {
         int err = errno;
         dt_print(DT_DEBUG_ALWAYS,
-                 "[init] error opening the database lock file for reading: %s\n",
+                 "[init] error opening the database lock file for reading: %s",
                  strerror(err));
         db->error_message = g_strdup_printf(_("error opening the database lock file for reading: %s"), strerror(err));
       }
@@ -3981,7 +3981,7 @@ static void _ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
   // if there's no gui just leave
   if(!has_gui)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[init] database `%s' is out-of-date. aborting.\n", dbname);
+    dt_print(DT_DEBUG_ALWAYS, "[init] database `%s' is out-of-date. aborting", dbname);
     exit(1);
   }
 
@@ -4003,7 +4003,7 @@ static void _ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
   // if no upgrade, we exit now, nothing we can do more
   if(!shall_we_update_the_db)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[init] we shall not update the database, aborting.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[init] we shall not update the database, aborting.");
     exit(1);
   }
 }
@@ -4042,7 +4042,7 @@ void dt_database_backup(const char *filename)
       int fd = g_open(backup, O_CREAT, S_IRUSR);
       if(fd < 0 || !g_close(fd, &gerror)) copy_status = FALSE;
     }
-    if(!copy_status) dt_print(DT_DEBUG_ALWAYS, "[backup failed] %s -> %s\n", filename, backup);
+    if(!copy_status) dt_print(DT_DEBUG_ALWAYS, "[backup failed] %s -> %s", filename, backup);
 
     g_object_unref(src);
     g_object_unref(dest);
@@ -4168,7 +4168,7 @@ start:
     dt_database_backup(dbfilename_library);
   }
 
-  dt_print(DT_DEBUG_SQL, "[init sql] library: %s, data: %s\n",
+  dt_print(DT_DEBUG_SQL, "[init sql] library: %s, data: %s",
            dbfilename_library, dbfilename_data);
 
   /* having more than one instance of darktable using the same database is a bad idea */
@@ -4178,7 +4178,7 @@ start:
   if(!db->lock_acquired)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[init] database is locked, probably another process is already using it\n");
+             "[init] database is locked, probably another process is already using it");
     g_free(dbname);
     return db;
   }
@@ -4187,14 +4187,11 @@ start:
   /* opening / creating database */
   if(sqlite3_open(db->dbfilename_library, &db->handle))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[init] could not find database ");
-    if(dbname)
-      dt_print(DT_DEBUG_ALWAYS, "`%s'!\n", dbname);
-    else
-      dt_print(DT_DEBUG_ALWAYS, "\n");
-    dt_print(DT_DEBUG_ALWAYS, "[init] maybe your %s/darktablerc is corrupt?\n", datadir);
+    dt_print(DT_DEBUG_ALWAYS, "[init] could not find database %s%s%s",
+                              dbname ? " `" : "", dbname ? dbname : "", dbname ? "'!" : "");
+    dt_print(DT_DEBUG_ALWAYS, "[init] maybe your %s/darktablerc is corrupt?", datadir);
     dt_loc_get_datadir(dbfilename_library, sizeof(dbfilename_library));
-    dt_print(DT_DEBUG_ALWAYS, "[init] try `cp %s/darktablerc %s/darktablerc'\n",
+    dt_print(DT_DEBUG_ALWAYS, "[init] try `cp %s/darktablerc %s/darktablerc'",
              dbfilename_library, datadir);
     sqlite3_close(db->handle);
     g_free(dbname);
@@ -4219,7 +4216,7 @@ start:
   if(rc != SQLITE_OK || sqlite3_step(stmt) != SQLITE_DONE)
   {
     sqlite3_finalize(stmt);
-    dt_print(DT_DEBUG_ALWAYS, "[init] database `%s' couldn't be opened. aborting\n",
+    dt_print(DT_DEBUG_ALWAYS, "[init] database `%s' couldn't be opened. aborting",
              dbfilename_data);
     dt_database_destroy(db);
     db = NULL;
@@ -4265,7 +4262,7 @@ start:
         {
           // we couldn't upgrade the db for some reason. bail out.
           dt_print(DT_DEBUG_ALWAYS,
-                   "[init] database `%s' couldn't be upgraded from version %d to %d. aborting\n",
+                   "[init] database `%s' couldn't be upgraded from version %d to %d. aborting",
                    dbfilename_data, db_version, CURRENT_DATABASE_VERSION_DATA);
           dt_database_destroy(db);
           db = NULL;
@@ -4282,7 +4279,7 @@ start:
         // newer: bail out
         _too_new_db_version(dbfilename_data, has_gui);
         dt_print(DT_DEBUG_ALWAYS,
-                 "[init] database version of `%s' is too new for this build of darktable. aborting\n",
+                 "[init] database version of `%s' is too new for this build of darktable. aborting",
                  dbfilename_data);
         dt_database_destroy(db);
         db = NULL;
@@ -4375,7 +4372,7 @@ start:
       {
         dt_print(DT_DEBUG_ALWAYS,
                  "[init] database `%s' is corrupt and can't be opened! either replace it from a backup or "
-                 "delete the file so that darktable can create a new one the next time. aborting\n",
+                 "delete the file so that darktable can create a new one the next time. aborting",
                  dbfilename_data);
         g_free(data_snap);
         goto error;
@@ -4386,9 +4383,9 @@ start:
       dt_print(DT_DEBUG_ALWAYS, "[init] deleting `%s' on user request", dbfilename_data);
 
       if(g_unlink(dbfilename_data) == 0)
-        dt_print(DT_DEBUG_ALWAYS, " ... ok\n");
+        dt_print(DT_DEBUG_ALWAYS, " ... ok");
       else
-        dt_print(DT_DEBUG_ALWAYS, " ... failed\n");
+        dt_print(DT_DEBUG_ALWAYS, " ... failed");
 
       if(resp == GTK_RESPONSE_ACCEPT && data_snap)
       {
@@ -4412,9 +4409,9 @@ start:
             if(fd < 0 || !g_close(fd, &gerror)) copy_status = FALSE;
           }
           if(copy_status)
-            dt_print(DT_DEBUG_ALWAYS, " success!\n");
+            dt_print(DT_DEBUG_ALWAYS, " success!");
           else
-            dt_print(DT_DEBUG_ALWAYS, " failed!\n");
+            dt_print(DT_DEBUG_ALWAYS, " failed!");
 
           g_object_unref(src);
           g_object_unref(dest);
@@ -4449,7 +4446,7 @@ start:
       {
         // we couldn't upgrade the db for some reason. bail out.
         dt_print(DT_DEBUG_ALWAYS,
-                 "[init] database `%s' couldn't be upgraded from version %d to %d. aborting\n",
+                 "[init] database `%s' couldn't be upgraded from version %d to %d. aborting",
                  dbname, db_version, CURRENT_DATABASE_VERSION_LIBRARY);
         dt_database_destroy(db);
         db = NULL;
@@ -4465,7 +4462,7 @@ start:
       // newer: bail out. it's better than what we did before: delete everything
       _too_new_db_version(dbfilename_library, has_gui);
       dt_print(DT_DEBUG_ALWAYS,
-               "[init] database version of `%s' is too new for this build of darktable. aborting\n",
+               "[init] database version of `%s' is too new for this build of darktable. aborting",
                dbname);
       dt_database_destroy(db);
       db = NULL;
@@ -4556,7 +4553,7 @@ start:
     {
       dt_print(DT_DEBUG_ALWAYS,
                "[init] database `%s' is corrupt and can't be opened! either replace it from a backup or "
-               "delete the file so that darktable can create a new one the next time. aborting\n",
+               "delete the file so that darktable can create a new one the next time. aborting",
                dbfilename_library);
       g_free(data_snap);
       goto error;
@@ -4567,9 +4564,9 @@ start:
     dt_print(DT_DEBUG_ALWAYS, "[init] deleting `%s' on user request", dbfilename_library);
 
     if(g_unlink(dbfilename_library) == 0)
-      dt_print(DT_DEBUG_ALWAYS, " ... ok\n");
+      dt_print(DT_DEBUG_ALWAYS, " ... ok");
     else
-      dt_print(DT_DEBUG_ALWAYS, " ... failed\n");
+      dt_print(DT_DEBUG_ALWAYS, " ... failed");
 
     if(resp == GTK_RESPONSE_ACCEPT && data_snap)
     {
@@ -4593,9 +4590,9 @@ start:
           if(fd < 0 || !g_close(fd, &gerror)) copy_status = FALSE;
         }
         if(copy_status)
-          dt_print(DT_DEBUG_ALWAYS, " success!\n");
+          dt_print(DT_DEBUG_ALWAYS, " success!");
         else
-          dt_print(DT_DEBUG_ALWAYS, " failed!\n");
+          dt_print(DT_DEBUG_ALWAYS, " failed!");
         g_object_unref(src);
         g_object_unref(dest);
       }
@@ -4620,7 +4617,7 @@ start:
       {
         // we couldn't migrate the db for some reason. bail out.
         dt_print(DT_DEBUG_ALWAYS,
-                 "[init] database `%s' couldn't be migrated from the legacy version %d. aborting\n",
+                 "[init] database `%s' couldn't be migrated from the legacy version %d. aborting",
                  dbname, db_version);
         dt_database_destroy(db);
         db = NULL;
@@ -4630,7 +4627,7 @@ start:
       {
         // we couldn't upgrade the db for some reason. bail out.
         dt_print(DT_DEBUG_ALWAYS,
-                 "[init] database `%s' couldn't be upgraded from version 1 to %d. aborting\n",
+                 "[init] database `%s' couldn't be upgraded from version 1 to %d. aborting",
                  dbname, CURRENT_DATABASE_VERSION_LIBRARY);
         dt_database_destroy(db);
         db = NULL;
@@ -4665,7 +4662,7 @@ start:
   {
     rc = sqlite3IcuInit(db->handle);
     if(rc != SQLITE_OK)
-      dt_print(DT_DEBUG_ALWAYS, "[sqlite] init icu extension error %d\n", rc);
+      dt_print(DT_DEBUG_ALWAYS, "[sqlite] init icu extension error %d", rc);
   }
 #endif
 
@@ -4706,7 +4703,7 @@ void dt_upgrade_maker_model(const dt_database_t *db)
     sqlite3_bind_text(stmt, 1, darktable_package_version, -1, SQLITE_TRANSIENT);
     if(sqlite3_step(stmt) != SQLITE_DONE)
     {
-      dt_print(DT_DEBUG_ALWAYS, "[init] can't insert/update new dt_version\n");
+      dt_print(DT_DEBUG_ALWAYS, "[init] can't insert/update new dt_version");
     }
   }
 
@@ -4759,7 +4756,7 @@ static void _database_migrate_to_xdg_structure()
       gchar *destdbname = g_strdup_printf("%s/%s", datadir, "library.db");
       if(!g_file_test(destdbname, G_FILE_TEST_EXISTS))
       {
-        dt_print(DT_DEBUG_ALWAYS, "[init] moving database into new XDG directory structure\n");
+        dt_print(DT_DEBUG_ALWAYS, "[init] moving database into new XDG directory structure");
         rename(dbfilename, destdbname);
         dt_conf_set_string("database", "library.db");
       }
@@ -4784,7 +4781,7 @@ static void _database_delete_mipmaps_files()
 
   if(g_access(mipmapfilename, F_OK) != -1)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[mipmap_cache] dropping old version file: %s\n", mipmapfilename);
+    dt_print(DT_DEBUG_ALWAYS, "[mipmap_cache] dropping old version file: %s", mipmapfilename);
     g_unlink(mipmapfilename);
 
     snprintf(mipmapfilename, sizeof(mipmapfilename), "%s/mipmaps.fallback", cachedir);
@@ -4807,17 +4804,17 @@ void dt_database_cleanup_busy_statements(const struct dt_database_t *db)
     if(sqlite3_stmt_busy(stmt))
     {
       dt_print(DT_DEBUG_SQL,
-               "[db busy stmt] non-finalized nor stepped through statement: '%s'\n",sql);
+               "[db busy stmt] non-finalized nor stepped through statement: '%s'",sql);
       sqlite3_reset(stmt);
     }
     else {
-      dt_print(DT_DEBUG_SQL, "[db busy stmt] non-finalized statement: '%s'\n",sql);
+      dt_print(DT_DEBUG_SQL, "[db busy stmt] non-finalized statement: '%s'",sql);
     }
     sqlite3_finalize(stmt);
   }
 }
 
-#define ERRCHECK {if(err!=NULL) {dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance error: '%s'\n",err); sqlite3_free(err); err=NULL;}}
+#define ERRCHECK {if(err!=NULL) {dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance error: '%s'",err); sqlite3_free(err); err=NULL;}}
 void dt_database_perform_maintenance(const struct dt_database_t *db)
 {
   char* err = NULL;
@@ -4832,7 +4829,7 @@ void dt_database_perform_maintenance(const struct dt_database_t *db)
   if(calc_pre_size == 0)
   {
     dt_print(DT_DEBUG_SQL,
-             "[db maintenance] maintenance deemed unnecessary, performing only analyze.\n");
+             "[db maintenance] maintenance deemed unnecessary, performing only analyze.");
     DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE data", NULL, NULL, &err);
     ERRCHECK
     DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE main", NULL, NULL, &err);
@@ -4865,13 +4862,13 @@ void dt_database_perform_maintenance(const struct dt_database_t *db)
   const gint64 bytes_freed = calc_pre_size - calc_post_size;
 
   dt_print(DT_DEBUG_SQL,
-           "[db maintenance] maintenance done, %" G_GINT64_FORMAT " bytes freed.\n",
+           "[db maintenance] maintenance done, %" G_GINT64_FORMAT " bytes freed",
            bytes_freed);
 
   if(calc_post_size >= calc_pre_size)
   {
     dt_print(DT_DEBUG_SQL,
-             "[db maintenance] maintenance problem. if no errors logged, it should work fine next time.\n");
+             "[db maintenance] maintenance problem. if no errors logged, it should work fine next time");
   }
 }
 #undef ERRCHECK
@@ -4896,14 +4893,14 @@ gboolean dt_database_maybe_maintenance(const struct dt_database_t *db)
   const int data_page_size = _get_pragma_int_val(db->handle, "data.page_size");
 
   dt_print(DT_DEBUG_SQL,
-           "[db maintenance] main: [%d/%d pages], data: [%d/%d pages].\n",
+           "[db maintenance] main: [%d/%d pages], data: [%d/%d pages]",
            main_free_count, main_page_count, data_free_count, data_page_count);
 
   if(main_page_count <= 0 || data_page_count <= 0)
   {
     //something's wrong with PRAGMA page_size returns. early bail.
     dt_print(DT_DEBUG_SQL,
-             "[db maintenance] page_count <= 0 : main.page_count: %d, data.page_count: %d \n",
+             "[db maintenance] page_count <= 0 : main.page_count: %d, data.page_count: %d ",
              main_page_count, data_page_count);
     return FALSE;
   }
@@ -4919,7 +4916,7 @@ gboolean dt_database_maybe_maintenance(const struct dt_database_t *db)
   {
     const guint64 calc_size = (main_free_count*main_page_size) + (data_free_count*data_page_size);
     dt_print(DT_DEBUG_SQL,
-             "[db maintenance] maintenance, %" G_GUINT64_FORMAT " bytes to free.\n",
+             "[db maintenance] maintenance, %" G_GUINT64_FORMAT " bytes to free",
              calc_size);
     return TRUE;
   }
@@ -4940,7 +4937,7 @@ void dt_database_optimize(const struct dt_database_t *db)
 static void _print_backup_progress(int remaining, int total)
 {
   // TODO if we have closing splashpage - this can be used to advance progressbar :)
-  dt_print(DT_DEBUG_SQL, "[db backup] %d out of %d done\n", total - remaining, total);
+  dt_print(DT_DEBUG_SQL, "[db backup] %d out of %d done", total - remaining, total);
 }
 
 static int _backup_db(
@@ -4961,7 +4958,7 @@ static int _backup_db(
     sqlite3_backup *sb_dest = sqlite3_backup_init(dest_db, "main", src_db, src_db_name);
     if(sb_dest)
     {
-      dt_print(DT_DEBUG_SQL, "[db backup] %s to %s\n", src_db_name, dest_filename);
+      dt_print(DT_DEBUG_SQL, "[db backup] %s to %s", src_db_name, dest_filename);
       gchar *pragma = g_strdup_printf("%s.page_count", src_db_name);
       const int spc = _get_pragma_int_val(src_db, pragma);
       g_free(pragma);
@@ -5052,13 +5049,13 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
   {
     // early bail out on "never"
     dt_print(DT_DEBUG_SQL,
-             "[db backup] please consider enabling database snapshots.\n");
+             "[db backup] please consider enabling database snapshots.");
     return FALSE;
   }
   if(!g_strcmp0(config, "on close"))
   {
     // early bail out on "on close"
-    dt_print(DT_DEBUG_SQL, "[db backup] performing unconditional snapshot.\n");
+    dt_print(DT_DEBUG_SQL, "[db backup] performing unconditional snapshot.");
     return TRUE;
   }
 
@@ -5081,7 +5078,7 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
   {
     // early bail out on "invalid value"
     dt_print(DT_DEBUG_SQL,
-             "[db backup] invalid timespan requirement expecting never/on close/once a [day/week/month], got %s.\n",
+             "[db backup] invalid timespan requirement expecting never/on close/once a [day/week/month], got %s",
              config);
     return TRUE;
   }
@@ -5091,13 +5088,13 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
   //backup may done as last db operation, way after config file is closed. Plus we might be mixing dates of backups for
   //various library.db
 
-  dt_print(DT_DEBUG_SQL, "[db backup] checking snapshots existence.\n");
+  dt_print(DT_DEBUG_SQL, "[db backup] checking snapshots existence.");
   GFile *library = g_file_parse_name(db->dbfilename_library);
   GFile *parent = g_file_get_parent(library);
 
   if(parent == NULL)
   {
-    dt_print(DT_DEBUG_SQL, "[db backup] couldn't get library parent!.\n");
+    dt_print(DT_DEBUG_SQL, "[db backup] couldn't get library parent!.");
     g_object_unref(library);
     return FALSE;
   }
@@ -5107,7 +5104,7 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
 
   if(library_dir_files == NULL)
   {
-    dt_print(DT_DEBUG_SQL, "[db backup] couldn't enumerate library parent: %s.\n", error->message);
+    dt_print(DT_DEBUG_SQL, "[db backup] couldn't enumerate library parent: %s", error->message);
     g_object_unref(parent);
     g_object_unref(library);
     g_error_free(error);
@@ -5129,7 +5126,7 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
     const char* fname = g_file_info_get_name(info);
     if(g_str_has_prefix(fname, lib_snap_format) || g_str_has_prefix(fname, lib_backup_format))
     {
-      dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.\n", fname);
+      dt_print(DT_DEBUG_SQL, "[db backup] found file: %s", fname);
       if(last_snap == 0)
       {
         last_snap = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
@@ -5150,7 +5147,7 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
 
   if(error)
   {
-    dt_print(DT_DEBUG_SQL, "[db backup] problem enumerating library parent: %s.\n", error->message);
+    dt_print(DT_DEBUG_SQL, "[db backup] problem enumerating library parent: %s", error->message);
     g_file_enumerator_close(library_dir_files, NULL, NULL);
     g_object_unref(library_dir_files);
     g_error_free(error);
@@ -5167,7 +5164,7 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
 
   gchar *now_txt = g_date_time_format(date_now, "%Y%m%d%H%M%S");
   gchar *ls_txt = g_date_time_format(date_last_snap, "%Y%m%d%H%M%S");
-  dt_print(DT_DEBUG_SQL, "[db backup] last snap: %s; curr date: %s.\n", ls_txt, now_txt);
+  dt_print(DT_DEBUG_SQL, "[db backup] last snap: %s; curr date: %s", ls_txt, now_txt);
   g_free(now_txt);
   g_free(ls_txt);
 
@@ -5263,13 +5260,13 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
   if(keep_snaps < 0)
     return NULL;
 
-  dt_print(DT_DEBUG_SQL, "[db backup] checking snapshots existence.\n");
+  dt_print(DT_DEBUG_SQL, "[db backup] checking snapshots existence");
   GFile *lib_file = g_file_parse_name(db->dbfilename_library);
   GFile *lib_parent = g_file_get_parent(lib_file);
 
   if(lib_parent == NULL)
   {
-    dt_print(DT_DEBUG_SQL, "[db backup] couldn't get library parent!.\n");
+    dt_print(DT_DEBUG_SQL, "[db backup] couldn't get library parent!");
     g_object_unref(lib_file);
     return NULL;
   }
@@ -5279,7 +5276,7 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
 
   if(dat_parent == NULL)
   {
-    dt_print(DT_DEBUG_SQL, "[db backup] couldn't get data parent!.\n");
+    dt_print(DT_DEBUG_SQL, "[db backup] couldn't get data parent!");
     g_object_unref(dat_file);
     g_object_unref(lib_file);
     g_object_unref(lib_parent);
@@ -5311,7 +5308,7 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
     if(library_dir_files == NULL)
     {
       dt_print(DT_DEBUG_SQL,
-               "[db backup] couldn't enumerate library parent: %s.\n",
+               "[db backup] couldn't enumerate library parent: %s",
                error->message);
       g_object_unref(lib_parent);
       g_object_unref(dat_parent);
@@ -5334,12 +5331,12 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
       const char* fname = g_file_info_get_name(info);
       if(g_str_has_prefix(fname, lib_snap_format))
       {
-        dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.\n", fname);
+        dt_print(DT_DEBUG_SQL, "[db backup] found file: %s", fname);
         g_queue_insert_sorted(lib_snaps, g_strdup(fname), _db_snap_sort, NULL);
       }
       else if(g_str_has_prefix(fname, dat_snap_format))
       {
-        dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.\n", fname);
+        dt_print(DT_DEBUG_SQL, "[db backup] found file: %s", fname);
         g_queue_insert_sorted(dat_snaps, g_strdup(fname), _db_snap_sort, NULL);
       }
       else if(g_str_has_prefix(fname, lib_tmp_format) || g_str_has_prefix(fname, dat_tmp_format))
@@ -5354,7 +5351,7 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
 
     if(error)
     {
-      dt_print(DT_DEBUG_SQL, "[db backup] problem enumerating library parent: %s.\n", error->message);
+      dt_print(DT_DEBUG_SQL, "[db backup] problem enumerating library parent: %s", error->message);
       g_object_unref(lib_parent);
       g_object_unref(dat_parent);
       g_free(lib_tmp_format);
@@ -5380,7 +5377,7 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
     if(library_dir_files == NULL)
     {
       dt_print(DT_DEBUG_SQL,
-               "[db backup] couldn't enumerate library parent: %s.\n",
+               "[db backup] couldn't enumerate library parent: %s",
                error->message);
       g_object_unref(lib_parent);
       g_object_unref(dat_parent);
@@ -5400,7 +5397,7 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
     if(data_dir_files == NULL)
     {
       dt_print(DT_DEBUG_SQL,
-               "[db backup] couldn't enumerate data parent: %s.\n",
+               "[db backup] couldn't enumerate data parent: %s",
                error->message);
       g_object_unref(lib_parent);
       g_object_unref(dat_parent);
@@ -5425,7 +5422,7 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
       const char* fname = g_file_info_get_name(info);
       if(g_str_has_prefix(fname, lib_snap_format))
       {
-        dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.\n", fname);
+        dt_print(DT_DEBUG_SQL, "[db backup] found file: %s", fname);
         g_queue_insert_sorted(lib_snaps, g_strdup(fname), _db_snap_sort, NULL);
       }
       else if(g_str_has_prefix(fname, lib_tmp_format) || g_str_has_prefix(fname, dat_tmp_format))
@@ -5440,7 +5437,7 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
     if(error)
     {
       dt_print(DT_DEBUG_SQL,
-               "[db backup] problem enumerating library parent: %s.\n",
+               "[db backup] problem enumerating library parent: %s",
                error->message);
       g_object_unref(lib_parent);
       g_object_unref(dat_parent);
@@ -5465,7 +5462,7 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
       const char* fname = g_file_info_get_name(info);
       if(g_str_has_prefix(fname, dat_snap_format))
       {
-        dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.\n", fname);
+        dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.", fname);
         g_queue_insert_sorted(dat_snaps, g_strdup(fname), _db_snap_sort, NULL);
       }
       else if(g_str_has_prefix(fname, lib_tmp_format) || g_str_has_prefix(fname, dat_tmp_format))
@@ -5482,7 +5479,7 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
     if(error)
     {
       dt_print(DT_DEBUG_SQL,
-               "[db backup] problem enumerating data parent: %s.\n",
+               "[db backup] problem enumerating data parent: %s",
                error->message);
       g_object_unref(lib_parent);
       g_object_unref(dat_parent);
@@ -5553,13 +5550,13 @@ gchar *dt_database_get_most_recent_snap(const char* db_filename)
   if(!g_strcmp0(db_filename, ":memory:"))
     return NULL;
 
-  dt_print(DT_DEBUG_SQL, "[db backup] checking snapshots existence.\n");
+  dt_print(DT_DEBUG_SQL, "[db backup] checking snapshots existence");
   GFile *db_file = g_file_parse_name(db_filename);
   GFile *parent = g_file_get_parent(db_file);
 
   if(parent == NULL)
   {
-    dt_print(DT_DEBUG_SQL, "[db backup] couldn't get database parent!.\n");
+    dt_print(DT_DEBUG_SQL, "[db backup] couldn't get database parent!");
     g_object_unref(db_file);
     return NULL;
   }
@@ -5570,7 +5567,7 @@ gchar *dt_database_get_most_recent_snap(const char* db_filename)
   if(db_dir_files == NULL)
   {
     dt_print(DT_DEBUG_SQL,
-             "[db backup] couldn't enumerate database parent: %s.\n",
+             "[db backup] couldn't enumerate database parent: %s",
              error->message);
     g_object_unref(parent);
     g_object_unref(db_file);
@@ -5594,7 +5591,7 @@ gchar *dt_database_get_most_recent_snap(const char* db_filename)
     const char* fname = g_file_info_get_name(info);
     if(g_str_has_prefix(fname, db_snap_format) || g_str_has_prefix(fname, db_backup_format))
     {
-      dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.\n", fname);
+      dt_print(DT_DEBUG_SQL, "[db backup] found file: %s", fname);
       if(last_snap == 0)
       {
         last_snap = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
@@ -5618,7 +5615,7 @@ gchar *dt_database_get_most_recent_snap(const char* db_filename)
   if(error)
   {
     dt_print(DT_DEBUG_SQL,
-             "[db backup] problem enumerating database parent: %s.\n",
+             "[db backup] problem enumerating database parent: %s",
              error->message);
     g_file_enumerator_close(db_dir_files, NULL, NULL);
     g_object_unref(db_dir_files);
@@ -5681,14 +5678,14 @@ void dt_database_start_transaction(const struct dt_database_t *db)
 #else
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_database_start_transaction] nested transaction detected (%d)\n",
+             "[dt_database_start_transaction] nested transaction detected (%d)",
              trxid);
   }
 #endif
 
   if(trxid > MAX_NESTED_TRANSACTIONS)
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_database_start_transaction] more than %d nested transaction\n",
+             "[dt_database_start_transaction] more than %d nested transaction",
              MAX_NESTED_TRANSACTIONS);
 }
 
@@ -5698,7 +5695,7 @@ void dt_database_release_transaction(const struct dt_database_t *db)
 
   if(trxid <= 0)
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_database_release_transaction] COMMIT outside a transaction\n");
+             "[dt_database_release_transaction] COMMIT outside a transaction");
 
   if(trxid == 1)
   {
@@ -5714,7 +5711,7 @@ void dt_database_release_transaction(const struct dt_database_t *db)
 #else
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_database_end_transaction] nested transaction detected (%d)\n",
+             "[dt_database_end_transaction] nested transaction detected (%d)",
              trxid);
   }
 #endif
@@ -5726,7 +5723,7 @@ void dt_database_rollback_transaction(const struct dt_database_t *db)
 
   if(trxid <= 0)
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_database_rollback_transaction] ROLLBACK outside a transaction\n");
+             "[dt_database_rollback_transaction] ROLLBACK outside a transaction");
 
   if(trxid == 1)
   {
@@ -5742,7 +5739,7 @@ void dt_database_rollback_transaction(const struct dt_database_t *db)
 #else
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_database_rollback_transaction] nested transaction detected (%d)\n",
+             "[dt_database_rollback_transaction] nested transaction detected (%d)",
              trxid);
   }
 #endif

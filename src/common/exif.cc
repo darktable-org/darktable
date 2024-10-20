@@ -322,7 +322,7 @@ void dt_exif_set_exiv2_taglist()
   catch (Exiv2::AnyError& e)
   {
     const char *errstring = e.what();
-    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 taglist] %s\n", errstring);
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 taglist] %s", errstring);
   }
 }
 
@@ -532,7 +532,7 @@ static bool _exif_read_xmp_tag(Exiv2::XmpData &xmpData,
   catch(Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
-    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 read_xmp_tag] %s\n", errstring);
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 read_xmp_tag] %s", errstring);
     return false;
   }
 }
@@ -697,7 +697,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img,
     imgs = NULL;
     const char *errstring = e.what();
     dt_print(DT_DEBUG_IMAGEIO,
-             "[exiv2 _exif_decode_xmp_data] %s: %s\n",
+             "[exiv2 _exif_decode_xmp_data] %s: %s",
              img->filename,
              errstring);
     return false;
@@ -716,7 +716,7 @@ static bool _exif_read_iptc_tag(Exiv2::IptcData &iptcData,
   catch(Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
-    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 read_iptc_tag] %s\n", errstring);
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 read_iptc_tag] %s", errstring);
     return false;
   }
 }
@@ -801,7 +801,7 @@ static bool _exif_decode_iptc_data(dt_image_t *img,
   {
     const char *errstring = e.what();
     dt_print(DT_DEBUG_IMAGEIO,
-             "[exiv2 _exif_decode_iptc_data] %s: %s\n",
+             "[exiv2 _exif_decode_iptc_data] %s: %s",
              img->filename,
              errstring);
     return false;
@@ -820,7 +820,7 @@ static bool _exif_read_exif_tag(Exiv2::ExifData &exifData,
   catch(Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
-    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 read_exif_tag] %s\n", errstring);
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 read_exif_tag] %s", errstring);
     return false;
   }
 }
@@ -1080,7 +1080,7 @@ void dt_exif_img_check_additional_tags(dt_image_t *img,
   catch(Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
-    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 reading DefaultUserCrop] %s: %s\n", filename, errstring);
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 reading DefaultUserCrop] %s: %s", filename, errstring);
     return;
   }
 }
@@ -1596,7 +1596,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         {
           _strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
         }
-        dt_print(DT_DEBUG_ALWAYS, "[exif] Warning: lens \"%s\" unknown as \"%s\"\n",
+        dt_print(DT_DEBUG_ALWAYS, "[exif] Warning: lens \"%s\" unknown as \"%s\"",
                  img->exif_lens, lens.c_str());
       }
     }
@@ -1912,7 +1912,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       if(sel_illu > -1)
         dt_print(DT_DEBUG_IMAGEIO,
                  "[exif] `%s` dng illuminant %i (%iK) selected from"
-                 "  [1] %i (%iK), [2] %i (%iK), [3] %i (%iK)\n",
+                 "  [1] %i (%iK), [2] %i (%iK), [3] %i (%iK)",
                  img->filename, illu[sel_illu], sel_temp,
                  illu[0], _illu_to_temp(illu[0]),
                  illu[1], _illu_to_temp(illu[1]),
@@ -1980,11 +1980,11 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
           default:
             dt_print(DT_DEBUG_ALWAYS,
                      "[exif] did not find a proper DNG correction matrix"
-                     " for illuminant %i\n",
+                     " for illuminant %i",
                      illu[sel_illu]);
             break;
         }
-        dt_print(DT_DEBUG_IMAGEIO, "[exif] d65 matrix: %.4f %.4f %.4f | %.4f %.4f %.4f | %.4f %.4f %.4f\n",
+        dt_print(DT_DEBUG_IMAGEIO, "[exif] d65 matrix: %.4f %.4f %.4f | %.4f %.4f %.4f | %.4f %.4f %.4f",
            img->d65_color_matrix[0], img->d65_color_matrix[1], img->d65_color_matrix[2],
            img->d65_color_matrix[3], img->d65_color_matrix[4], img->d65_color_matrix[5],
            img->d65_color_matrix[6], img->d65_color_matrix[7], img->d65_color_matrix[8]);
@@ -2092,7 +2092,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
   catch(Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
-    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 _exif_decode_exif_data] %s: %s\n", img->filename, errstring);
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 _exif_decode_exif_data] %s: %s", img->filename, errstring);
     return false;
   }
 }
@@ -2173,7 +2173,7 @@ gboolean dt_exif_read_from_blob(dt_image_t *img,
   catch(Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
-    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 dt_exif_read_from_blob] %s: %s\n", img->filename, errstring);
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 dt_exif_read_from_blob] %s: %s", img->filename, errstring);
     return TRUE;
   }
 }
@@ -2218,7 +2218,7 @@ gboolean dt_exif_get_thumbnail(const char *path,
     *buffer = (uint8_t *)malloc(_size);
     if(!*buffer) {
       dt_print(DT_DEBUG_IMAGEIO,
-               "[exiv2 dt_exif_get_thumbnail] couldn't allocate memory for thumbnail for %s\n",
+               "[exiv2 dt_exif_get_thumbnail] couldn't allocate memory for thumbnail for %s",
                path);
       return TRUE;
     }
@@ -2230,7 +2230,7 @@ gboolean dt_exif_get_thumbnail(const char *path,
   catch(Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "[exiv2 dt_exif_get_thumbnail] %s: %s\n",
+             "[exiv2 dt_exif_get_thumbnail] %s: %s",
              path,
              e.what());
     return TRUE;
@@ -2308,7 +2308,7 @@ gboolean dt_exif_read(dt_image_t *img,
   catch(Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "[exiv2 dt_exif_read] %s: %s\n",
+             "[exiv2 dt_exif_read] %s: %s",
              path,
              e.what());
     return TRUE;
@@ -2370,7 +2370,7 @@ int dt_exif_write_blob(uint8_t *blob,
   catch(Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "[exiv2 dt_exif_write_blob] %s: %s\n",
+             "[exiv2 dt_exif_write_blob] %s: %s",
              path,
              e.what());
     return 0;
@@ -2753,7 +2753,7 @@ int dt_exif_read_blob(uint8_t **buf,
   {
     // std::cerr.rdbuf(savecerr);
     dt_print(DT_DEBUG_IMAGEIO,
-             "[exiv2 dt_exif_read_blob] %s: %s\n",
+             "[exiv2 dt_exif_read_blob] %s: %s",
              path,
              e.what());
     free(*buf);
@@ -2993,7 +2993,7 @@ static void _exif_import_tags(dt_image_t *img,
 
         if(tagid > 0) break;
 
-        dt_print(DT_DEBUG_ALWAYS, "[xmp_import] creating tag: %s\n", tag);
+        dt_print(DT_DEBUG_ALWAYS, "[xmp_import] creating tag: %s", tag);
 
         // Create this tag (increment id, leave icon empty), retry.
         DT_DEBUG_SQLITE3_BIND_TEXT(stmt_ins_tags, 1, tag, -1, SQLITE_TRANSIENT);
@@ -3118,7 +3118,7 @@ static GList *_read_history_v1(const std::string &xmpPacket,
     dt_print(DT_DEBUG_IMAGEIO,
              "XML '%s' parsed with errors\n"
              "Error description: %s\n"
-             "Error offset: %td\n",
+             "Error offset: %td",
              filename,
              result.description(),
              result.offset);
@@ -3241,7 +3241,7 @@ static GList *_read_history_v2(Exiv2::XmpData &xmpData,
       if(errno)
       {
         dt_print(DT_DEBUG_IMAGEIO,
-                 "error reading history from '%s' (%s)\n",
+                 "error reading history from '%s' (%s)",
                  key,
                  filename);
         g_list_free_full(history_entries, _free_history_entry);
@@ -3253,7 +3253,7 @@ static GList *_read_history_v2(Exiv2::XmpData &xmpData,
       if(*(key_iter++) != ']')
       {
         dt_print(DT_DEBUG_IMAGEIO,
-                 "error reading history from '%s' (%s)\n",
+                 "error reading history from '%s' (%s)",
                  key,
                  filename);
         g_list_free_full(history_entries, _free_history_entry);
@@ -3361,7 +3361,7 @@ skip:
     if(!(entry->have_operation && entry->have_params && entry->have_modversion))
     {
       dt_print(DT_DEBUG_IMAGEIO,
-               "[exif] error: reading history from '%s' failed due to missing tags\n",
+               "[exif] error: reading history from '%s' failed due to missing tags",
                filename);
       g_list_free_full(history_entries, _free_history_entry);
       history_entries = NULL;
@@ -3488,7 +3488,7 @@ static GList *_read_masks_v3(Exiv2::XmpData &xmpData,
       if(errno)
       {
         dt_print(DT_DEBUG_IMAGEIO,
-                 "error reading masks history from '%s' (%s)\n",
+                 "error reading masks history from '%s' (%s)",
                  key,
                  filename);
         g_list_free_full(history_entries, _free_mask_entry);
@@ -3500,7 +3500,7 @@ static GList *_read_masks_v3(Exiv2::XmpData &xmpData,
       if(*(key_iter++) != ']')
       {
         dt_print(DT_DEBUG_IMAGEIO,
-                 "error reading masks history from '%s' (%s)\n",
+                 "error reading masks history from '%s' (%s)",
                  key,
                  filename);
         g_list_free_full(history_entries, _free_mask_entry);
@@ -3651,7 +3651,7 @@ static void _add_mask_entries_to_db(const dt_imgid_t imgid,
     if((int)(entry->mask_nb * sizeof(dt_masks_point_group_t)) != entry->mask_points_len)
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "[masks] error loading masks from XMP file, bad binary blob size.\n");
+               "[masks] error loading masks from XMP file, bad binary blob size.");
       return;
     }
     for(int i = 0; i < entry->mask_nb; i++)
@@ -3889,7 +3889,7 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
     else
     {
       dt_print(DT_DEBUG_IMAGEIO,
-               "error: XMP schema version %d in '%s' not supported\n",
+               "error: XMP schema version %d in '%s' not supported",
                xmp_version,
                filename);
       g_hash_table_destroy(mask_entries);
@@ -3905,9 +3905,9 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
     if(sqlite3_step(stmt) != SQLITE_DONE)
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "[exif] error deleting history for image %d\n", img->id);
+               "[exif] error deleting history for image %d", img->id);
       dt_print(DT_DEBUG_ALWAYS,
-               "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+               "[exif]   %s", sqlite3_errmsg(dt_database_get(darktable.db)));
       all_ok = FALSE;
       goto end;
     }
@@ -4047,9 +4047,9 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
       if(sqlite3_step(stmt) != SQLITE_DONE)
       {
         dt_print(DT_DEBUG_ALWAYS,
-                 "[exif] error adding history entry for image %d\n", img->id);
+                 "[exif] error adding history entry for image %d", img->id);
         dt_print(DT_DEBUG_ALWAYS,
-                 "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+                 "[exif]   %s", sqlite3_errmsg(dt_database_get(darktable.db)));
         all_ok = FALSE;
         goto end;
       }
@@ -4090,7 +4090,7 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
           else
           {
             dt_print(DT_DEBUG_ALWAYS,
-                     "[exif] cannot get iop-order for module '%s', XMP may be corrupted\n",
+                     "[exif] cannot get iop-order for module '%s', XMP may be corrupted",
                      entry->operation);
             g_list_free_full(iop_order_list, free);
             g_list_free_full(history_entries, _free_history_entry);
@@ -4165,9 +4165,9 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
         if(sqlite3_step(stmt) != SQLITE_DONE)
         {
           dt_print(DT_DEBUG_ALWAYS,
-                   "[exif] error adding mask history entry for image %d\n", img->id);
+                   "[exif] error adding mask history entry for image %d", img->id);
           dt_print(DT_DEBUG_ALWAYS,
-                   "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+                   "[exif]   %s", sqlite3_errmsg(dt_database_get(darktable.db)));
           all_ok = FALSE;
           goto end;
         }
@@ -4195,9 +4195,9 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
       if(!ok)
       {
         dt_print(DT_DEBUG_ALWAYS,
-                 "[exif] error writing history_end for image %d\n", img->id);
+                 "[exif] error writing history_end for image %d", img->id);
         dt_print(DT_DEBUG_ALWAYS,
-                 "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+                 "[exif]   %s", sqlite3_errmsg(dt_database_get(darktable.db)));
         all_ok = FALSE;
         goto end;
       }
@@ -4219,9 +4219,9 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
       if(sqlite3_step(stmt) != SQLITE_DONE)
       {
         dt_print(DT_DEBUG_ALWAYS,
-                 "[exif] error writing history_end for image %d\n", img->id);
+                 "[exif] error writing history_end for image %d", img->id);
         dt_print(DT_DEBUG_ALWAYS,
-                 "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+                 "[exif]   %s", sqlite3_errmsg(dt_database_get(darktable.db)));
         all_ok = FALSE;
         goto end;
       }
@@ -4229,9 +4229,9 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
     if(!dt_ioppr_write_iop_order_list(iop_order_list, img->id))
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "[exif] error writing iop_list for image %d\n", img->id);
+               "[exif] error writing iop_list for image %d", img->id);
       dt_print(DT_DEBUG_ALWAYS,
-               "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+               "[exif]   %s", sqlite3_errmsg(dt_database_get(darktable.db)));
       all_ok = FALSE;
       goto end;
     }
@@ -4261,7 +4261,7 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
       {
         dt_print(DT_DEBUG_ALWAYS,
                  "[exif] dt_exif_xmp_read for %s, id %i found auto_presets_applied"
-                 " but there was no history\n",
+                 " but there was no history",
                  filename,img->id);
       }
     }
@@ -4315,7 +4315,7 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
     else
     {
       dt_print(DT_DEBUG_IMAGEIO,
-               "[exif] error reading history from '%s'\n",
+               "[exif] error reading history from '%s'",
                filename);
       dt_database_rollback_transaction(darktable.db);
       return TRUE;
@@ -4885,7 +4885,7 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData,
 
   const double end = dt_get_debug_wtime();
   dt_print(DT_DEBUG_DEV,
-           "exif_xmp_read_data: %s. imgid=%i, hist=%i, took %.3fs\n",
+           "exif_xmp_read_data: %s. imgid=%i, hist=%i, took %.3fs",
            info,
            imgid,
            history_end,
@@ -5087,7 +5087,7 @@ char *dt_exif_xmp_read_string(const dt_imgid_t imgid)
   catch(Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "[xmp_read_blob] caught exiv2 exception '%s'\n",
+             "[xmp_read_blob] caught exiv2 exception '%s'",
              e.what());
     return NULL;
   }
@@ -5405,7 +5405,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
     catch(Exiv2::AnyError &e)
     {
       dt_print(DT_DEBUG_IMAGEIO,
-               "[xmp_attach] %s: caught exiv2 exception '%s'\n",
+               "[xmp_attach] %s: caught exiv2 exception '%s'",
                input_filename,
                e.what());
     }
@@ -5619,7 +5619,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
         catch(Exiv2::AnyError &e2)
         {
           dt_print(DT_DEBUG_IMAGEIO,
-                   "[dt_exif_xmp_attach_export] without history %s: caught exiv2 exception '%s'\n",
+                   "[dt_exif_xmp_attach_export] without history %s: caught exiv2 exception '%s'",
                    filename,
                    e2.what());
           return TRUE;
@@ -5633,7 +5633,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
   catch(Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "[dt_exif_xmp_attach_export] %s: caught exiv2 exception '%s'\n",
+             "[dt_exif_xmp_attach_export] %s: caught exiv2 exception '%s'",
              filename,
              e.what());
     return TRUE;
@@ -5675,7 +5675,7 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
       else
       {
         dt_print(DT_DEBUG_ALWAYS,
-                 "cannot read XMP file '%s': '%s'\n", filename, strerror(errno));
+                 "cannot read XMP file '%s': '%s'", filename, strerror(errno));
         dt_control_log(_("cannot read XMP file '%s': '%s'"), filename, strerror(errno));
       }
 
@@ -5734,7 +5734,7 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
       else
       {
         dt_print(DT_DEBUG_ALWAYS,
-                 "cannot write XMP file '%s': '%s'\n", filename, strerror(errno));
+                 "cannot write XMP file '%s': '%s'", filename, strerror(errno));
         dt_control_log(_("cannot write XMP file '%s': '%s'"), filename, strerror(errno));
         return TRUE;
       }
@@ -5745,7 +5745,7 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
   catch(Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "[dt_exif_xmp_write] %s: caught exiv2 exception '%s'\n",
+             "[dt_exif_xmp_write] %s: caught exiv2 exception '%s'",
              filename,
              e.what());
     return TRUE;
@@ -5795,7 +5795,7 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
   catch(Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "[exiv2 dt_exif_get_color_space] %s\n",
+             "[exiv2 dt_exif_get_color_space] %s",
              e.what());
     return DT_COLORSPACE_DISPLAY;
   }
@@ -5818,7 +5818,7 @@ void dt_exif_get_basic_data(const uint8_t *data,
   catch(Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "[exiv2 dt_exif_get_basic_data] %s\n",
+             "[exiv2 dt_exif_get_basic_data] %s",
              e.what());
   }
 }

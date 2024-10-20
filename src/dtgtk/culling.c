@@ -1725,7 +1725,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
 
     dt_print(DT_DEBUG_LIGHTTABLE,
       "[culling_placement] thumb_id=%d, x=%d, y=%d, width=%d, height=%d"
-             " - table_width=%d, table_height=%d\n",
+             " - table_width=%d, table_height=%d",
              thumb->imgid, thumb->x, thumb->y, thumb->width, thumb->height,
              table->view_width, table->view_height);
   }
@@ -1867,7 +1867,7 @@ void dt_culling_full_redraw(dt_culling_t *table, const gboolean force)
     }
   }
 
-  dt_print(DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF, "[dt_culling_full_redraw] done in %0.04f sec\n", dt_get_wtime() - start);
+  dt_print(DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF, "[dt_culling_full_redraw] done in %0.04f sec", dt_get_wtime() - start);
 
   if(darktable.unmuted & DT_DEBUG_CACHE) dt_mipmap_cache_print(darktable.mipmap_cache);
 }

@@ -304,7 +304,7 @@ static void _heal_laplace_loop(float *const restrict red_pixels, float *const re
   unsigned *const restrict black_runs = dt_alloc_align_type(unsigned, subwidth * (height + 2));
   if(!red_runs || !black_runs)
   {
-    dt_print(DT_DEBUG_ALWAYS, "_heal_laplace_loop: error allocating memory for healing\n");
+    dt_print(DT_DEBUG_ALWAYS, "_heal_laplace_loop: error allocating memory for healing");
     goto cleanup;
   }
 
@@ -356,7 +356,7 @@ void dt_heal(const float *const src_buffer, float *dest_buffer, const float *con
 {
   if(ch != 4)
   {
-    dt_print(DT_DEBUG_ALWAYS, "dt_heal: full-color image required\n");
+    dt_print(DT_DEBUG_ALWAYS, "dt_heal: full-color image required");
     return;
   }
   const size_t subwidth = 4 * ((width+1)/2);  // round up to be able to handle odd widths
@@ -364,7 +364,7 @@ void dt_heal(const float *const src_buffer, float *dest_buffer, const float *con
   float *const restrict black_buffer = dt_alloc_align_float(subwidth * (height + 2));
   if(red_buffer == NULL || black_buffer == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "dt_heal: error allocating memory for healing\n");
+    dt_print(DT_DEBUG_ALWAYS, "dt_heal: error allocating memory for healing");
     goto cleanup;
   }
 

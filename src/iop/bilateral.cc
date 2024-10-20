@@ -351,7 +351,7 @@ void tiling_callback(struct dt_iop_module_t *self,
 
     dt_print(DT_DEBUG_MEMORY,
              "[bilateral tiling requirements] "
-             "tiling factor=%f, npixels=%lu, estimated hashbytes=%lu\n",
+             "tiling factor=%f, npixels=%lu, estimated hashbytes=%lu",
              tiling->factor, npixels, hash_bytes);
   }
   tiling->overhead = 0;

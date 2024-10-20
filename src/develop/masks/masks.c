@@ -251,7 +251,7 @@ void dt_masks_gui_form_test_create(dt_masks_form_t *form,
   {
     if(gui->pipe_hash != darktable.develop->preview_pipe->backbuf_hash)
     {
-      dt_print(DT_DEBUG_EXPOSE, "[dt_masks_gui_form_test_create] refreshes mask visualizer\n");
+      dt_print(DT_DEBUG_EXPOSE, "[dt_masks_gui_form_test_create] refreshes mask visualizer");
       gui->pipe_hash = 0;
       gui->formid = NO_MASKID;
       g_list_free_full(gui->points, dt_masks_form_gui_points_free);
@@ -981,7 +981,7 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid)
 
         dt_print(DT_DEBUG_ALWAYS,
                  "[_dev_read_masks_history] %s (imgid `%i'):"
-                 " mask version mismatch: history is %d, darktable is %d.\n",
+                 " mask version mismatch: history is %d, darktable is %d",
                  fname, imgid, form->version, dt_masks_version());
         dt_control_log(_("%s: mask version mismatch: %d != %d"),
                        fname, dt_masks_version(), form->version);
@@ -1013,7 +1013,7 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid)
     else
       dt_print(DT_DEBUG_ALWAYS,
                "[_dev_read_masks_history] can't find history entry %i"
-               " while adding mask %s(%i)\n",
+               " while adding mask %s(%i)",
                num, form->name, formid);
 
     if(num < dev->history_end) hist_item_last = hist_item;
@@ -2465,7 +2465,7 @@ void dt_masks_set_source_pos_initial_state(dt_masks_form_gui_t *gui,
     gui->source_pos_type = DT_MASKS_SOURCE_POS_RELATIVE_TEMP;
   else
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_masks_set_source_pos_initial_state] unknown state for setting masks position type\n");
+             "[dt_masks_set_source_pos_initial_state] unknown state for setting masks position type");
 
   // both source types record an absolute position, for the relative
   // type, the first time is used the position is recorded, the second

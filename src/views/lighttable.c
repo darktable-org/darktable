@@ -430,7 +430,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   lib->already_started = TRUE;
 
   dt_print(DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF,
-           "[lighttable] expose took %0.04f sec\n",
+           "[lighttable] expose took %0.04f sec",
            dt_get_wtime() - start);
 }
 
@@ -1020,7 +1020,7 @@ static void _profile_display_profile_callback(GtkWidget *combo, gpointer user_da
 
   // profile not found, fall back to system display profile. shouldn't happen
   dt_print(DT_DEBUG_ALWAYS,
-           "can't find display profile `%s', using system display profile instead\n",
+           "can't find display profile `%s', using system display profile instead",
            dt_bauhaus_combobox_get_text(combo));
   profile_changed = darktable.color_profiles->display_type != DT_COLORSPACE_DISPLAY;
   darktable.color_profiles->display_type = DT_COLORSPACE_DISPLAY;
@@ -1062,7 +1062,7 @@ static void _profile_display2_profile_callback(GtkWidget *combo, gpointer user_d
 
   // profile not found, fall back to system display2 profile. shouldn't happen
   dt_print(DT_DEBUG_ALWAYS,
-           "can't find preview display profile `%s', using system display profile instead\n",
+           "can't find preview display profile `%s', using system display profile instead",
            dt_bauhaus_combobox_get_text(combo));
   profile_changed = darktable.color_profiles->display2_type != DT_COLORSPACE_DISPLAY2;
   darktable.color_profiles->display2_type = DT_COLORSPACE_DISPLAY2;

@@ -76,10 +76,10 @@ void dt_bilateral_grid_size(dt_bilateral_t *b,
 #if 0
   if(b->sigma_s != sigma_s)
     dt_print(DT_DEBUG_ALWAYS,
-             "[bilateral] clamped sigma_s (%g -> %g)!\n",sigma_s,b->sigma_s);
+             "[bilateral] clamped sigma_s (%g -> %g)!",sigma_s,b->sigma_s);
   if(b->sigma_r != sigma_r)
     dt_print(DT_DEBUG_ALWAYS,
-             "[bilateral] clamped sigma_r (%g -> %g)!\n",sigma_r,b->sigma_r);
+             "[bilateral] clamped sigma_r (%g -> %g)!",sigma_r,b->sigma_r);
 #endif
 }
 
@@ -187,13 +187,13 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
   if(!b->buf)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[bilateral] unable to allocate buffer for %zux%zux%zu grid\n",
+             "[bilateral] unable to allocate buffer for %zux%zux%zu grid",
              b->size_x,b->size_y,b->size_z);
     free(b);
     return NULL;
   }
   dt_print(DT_DEBUG_DEV,
-           "[bilateral] created grid [%ld %ld %ld] with sigma (%f %f) (%f %f)\n",
+           "[bilateral] created grid [%ld %ld %ld] with sigma (%f %f) (%f %f)",
            b->size_x, b->size_y, b->size_z, b->sigma_s, sigma_s, b->sigma_r, sigma_r);
   return b;
 }

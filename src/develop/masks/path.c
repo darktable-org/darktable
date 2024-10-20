@@ -1350,7 +1350,7 @@ static int _path_get_pts_border(dt_develop_t *dev,
   if(cw == 0) cw = -1;
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] path_points init took %0.04f sec\n", form->name,
+           "[masks %s] path_points init took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   // we render all segments
@@ -1474,7 +1474,7 @@ static int _path_get_pts_border(dt_develop_t *dev,
   }
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] path_points point recurs %0.04f sec\n",
+           "[masks %s] path_points point recurs %0.04f sec",
            form->name, dt_get_lap_time(&start2));
 
   // we don't want the border to self-intersect
@@ -1485,7 +1485,7 @@ static int _path_get_pts_border(dt_develop_t *dev,
     inter_count = _path_find_self_intersection(intersections, gap_fill_segs, nb, *border, *border_count);
 
     dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-             "[masks %s] path_points self-intersect took %0.04f sec\n", form->name,
+             "[masks %s] path_points self-intersect took %0.04f sec", form->name,
              dt_get_lap_time(&start2));
   }
 
@@ -1525,7 +1525,7 @@ static int _path_get_pts_border(dt_develop_t *dev,
     }
 
     dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-             "[masks %s] path_points end took %0.04f sec\n",
+             "[masks %s] path_points end took %0.04f sec",
              form->name, dt_get_lap_time(&start2));
 
     dt_masks_dynbuf_free(intersections);
@@ -1542,7 +1542,7 @@ static int _path_get_pts_border(dt_develop_t *dev,
                                         transf_direction, *border, *border_count))
     {
       dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-               "[masks %s] path_points transform took %0.04f sec\n", form->name,
+               "[masks %s] path_points transform took %0.04f sec", form->name,
                dt_get_lap_time(&start2));
 
       if(border)
@@ -1580,7 +1580,7 @@ static int _path_get_pts_border(dt_develop_t *dev,
       }
 
       dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-               "[masks %s] path_points end took %0.04f sec\n", form->name,
+               "[masks %s] path_points end took %0.04f sec", form->name,
                dt_get_lap_time(&start2));
 
       dt_masks_dynbuf_free(intersections);
@@ -3186,7 +3186,7 @@ static int _path_get_mask(const dt_iop_module_t *const module,
   }
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] path points took %0.04f sec\n",
+           "[masks %s] path points took %0.04f sec",
            form->name, dt_get_lap_time(&start));
   start2 = start;
 
@@ -3199,7 +3199,7 @@ static int _path_get_mask(const dt_iop_module_t *const module,
   const int wb = *width;
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] path_fill min max took %0.04f sec\n", form->name,
+           "[masks %s] path_fill min max took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   // we allocate the buffer
@@ -3321,7 +3321,7 @@ static int _path_get_mask(const dt_iop_module_t *const module,
     }
   }
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] path_fill draw path took %0.04f sec\n", form->name,
+           "[masks %s] path_fill draw path took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   DT_OMP_FOR()
@@ -3337,7 +3337,7 @@ static int _path_get_mask(const dt_iop_module_t *const module,
   }
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] path_fill fill plain took %0.04f sec\n", form->name,
+           "[masks %s] path_fill fill plain took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   // now we fill the falloff
@@ -3381,14 +3381,14 @@ static int _path_get_mask(const dt_iop_module_t *const module,
   }
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] path_fill fill falloff took %0.04f sec\n", form->name,
+           "[masks %s] path_fill fill falloff took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   dt_free_align(points);
   dt_free_align(border);
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] path fill buffer took %0.04f sec\n", form->name,
+           "[masks %s] path fill buffer took %0.04f sec", form->name,
            dt_get_lap_time(&start));
 
   return 1;
@@ -3630,7 +3630,7 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
   }
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] path points took %0.04f sec\n",
+           "[masks %s] path points took %0.04f sec",
            form->name, dt_get_lap_time(&start));
   start2 = start;
 
@@ -3731,11 +3731,11 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
                          &xmin, &xmax, &ymin, &ymax);
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] path_fill min max took %0.04f sec\n", form->name,
+           "[masks %s] path_fill min max took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] path_fill clear mask took %0.04f sec\n", form->name,
+           "[masks %s] path_fill clear mask took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   // deal with path if it does not lie outside of roi
@@ -3765,7 +3765,7 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
     path_encircles_roi = path_encircles_roi || !crop_success;
 
     dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-             "[masks %s] path_fill crop to roi took %0.04f sec\n", form->name,
+             "[masks %s] path_fill crop to roi took %0.04f sec", form->name,
              dt_get_lap_time(&start2));
 
     if(path_encircles_roi)
@@ -3822,7 +3822,7 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
       }
 
       dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-               "[masks %s] path_fill draw path took %0.04f sec\n", form->name,
+               "[masks %s] path_fill draw path took %0.04f sec", form->name,
                dt_get_lap_time(&start2));
 
       // we fill the inside plain
@@ -3846,7 +3846,7 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
       }
 
       dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-               "[masks %s] path_fill fill plain took %0.04f sec\n", form->name,
+               "[masks %s] path_fill fill plain took %0.04f sec", form->name,
                dt_get_lap_time(&start2));
     }
     dt_free_align(cpoints);
@@ -3922,7 +3922,7 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
     dt_free_align(dpoints);
 
     dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-             "[masks %s] path_fill fill falloff took %0.04f sec\n", form->name,
+             "[masks %s] path_fill fill falloff took %0.04f sec", form->name,
              dt_get_lap_time(&start2));
   }
 
@@ -3930,7 +3930,7 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module,
   dt_free_align(border);
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] path fill buffer took %0.04f sec\n", form->name,
+           "[masks %s] path fill buffer took %0.04f sec", form->name,
            dt_get_lap_time(&start));
 
   return 1;

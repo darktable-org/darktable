@@ -110,7 +110,7 @@ void dt_history_snapshot_create(const dt_imgid_t imgid,
   {
     dt_database_rollback_transaction(darktable.db);
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_history_snapshot_undo_create] fails to create a snapshot for %d\n",
+             "[dt_history_snapshot_undo_create] fails to create a snapshot for %d",
              imgid);
   }
 }
@@ -234,7 +234,7 @@ static void _history_snapshot_restore(const dt_imgid_t imgid,
   {
     dt_database_rollback_transaction(darktable.db);
     dt_print(DT_DEBUG_ALWAYS,
-             "[_history_snapshot_undo_restore] fails to restore a snapshot for %d\n",
+             "[_history_snapshot_undo_restore] fails to restore a snapshot for %d",
              imgid);
   }
   dt_unlock_image(imgid);

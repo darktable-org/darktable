@@ -772,7 +772,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   else if(picker == g->auto_button)
     apply_autotune(self);
   else
-    dt_print(DT_DEBUG_ALWAYS, "[filmic] unknown color picker\n");
+    dt_print(DT_DEBUG_ALWAYS, "[filmic] unknown color picker");
 }
 
 static void grey_point_source_callback(GtkWidget *slider, dt_iop_module_t *self)

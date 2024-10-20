@@ -2168,7 +2168,7 @@ static void _event_dnd_get(GtkWidget *widget,
         dt_imgid_t *imgs = calloc(imgs_nb, sizeof(dt_imgid_t));
         if(!imgs)
         {
-          dt_print(DT_DEBUG_ALWAYS,"[thumbtable] out of memory preparing drop target\n");
+          dt_print(DT_DEBUG_ALWAYS,"[thumbtable] out of memory preparing drop target");
           break;
         }
         GList *l = table->drag_list;
@@ -2508,7 +2508,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
     sqlite3_stmt *stmt;
     dt_print(DT_DEBUG_LIGHTTABLE,
              "reload thumbs from db. force=%d w=%d h=%d zoom=%d rows=%d size=%d"
-             " offset=%d centering=%d...\n",
+             " offset=%d centering=%d...",
              force, table->view_width, table->view_height,
              table->thumbs_per_row, table->rows, table->thumb_size,
              table->offset, table->center_offset);
@@ -2703,7 +2703,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table,
     }
 
     dt_print(DT_DEBUG_LIGHTTABLE,
-             "done in %0.04f sec %d thumbs reloaded\n",
+             "done in %0.04f sec %d thumbs reloaded",
              dt_get_wtime() - start, nbnew);
     g_free(query);
     sqlite3_finalize(stmt);

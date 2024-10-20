@@ -127,9 +127,9 @@ void dt_printing_setup_display(dt_images_box *imgs,
   imgs->screen.print_area.width  = awidth;
   imgs->screen.print_area.height = aheight;
 
-  dt_print(DT_DEBUG_PRINT, "[printing] screen/page  (%3.1f, %3.1f) -> (%3.1f, %3.1f)\n",
+  dt_print(DT_DEBUG_PRINT, "[printing] screen/page  (%3.1f, %3.1f) -> (%3.1f, %3.1f)",
            px, py, pwidth, pheight);
-  dt_print(DT_DEBUG_PRINT, "[printing] screen/parea (%3.1f, %3.1f) -> (%3.1f, %3.1f)\n",
+  dt_print(DT_DEBUG_PRINT, "[printing] screen/parea (%3.1f, %3.1f) -> (%3.1f, %3.1f)",
            ax, ay, awidth, aheight);
 
   imgs->screen.borderless = borderless;

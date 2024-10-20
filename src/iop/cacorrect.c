@@ -292,7 +292,7 @@ void process(
   if(!out)
   {
     dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out);
-    dt_print(DT_DEBUG_ALWAYS,"[cacorrect] out of memory, skipping\n");
+    dt_print(DT_DEBUG_ALWAYS,"[cacorrect] out of memory, skipping");
     return;
   }
 
@@ -324,7 +324,7 @@ void process(
     oldraw = dt_calloc_align_float(h_bsize * 2);
     if(!redfactor || !bluefactor || !oldraw)
     {
-      dt_print(DT_DEBUG_ALWAYS,"[cacorrect] out of memory, skipping\n");
+      dt_print(DT_DEBUG_ALWAYS,"[cacorrect] out of memory, skipping");
       goto writeout;
     }
     // copy raw values before ca correction
@@ -348,7 +348,7 @@ void process(
 
   if(!Gtmp || !RawDataTmp)
   {
-    dt_print(DT_DEBUG_ALWAYS,"[cacorrect] out of memory, skipping\n");
+    dt_print(DT_DEBUG_ALWAYS,"[cacorrect] out of memory, skipping");
     goto writeout;
   }
 
@@ -702,7 +702,7 @@ void process(
             else
             {
               processpasstwo = FALSE;
-              dt_print(DT_DEBUG_PIPE, "[cacorrect] blockdenom vanishes\n");
+              dt_print(DT_DEBUG_PIPE, "[cacorrect] blockdenom vanishes");
               break;
             }
           }
@@ -813,7 +813,7 @@ void process(
 
             if(numblox[1] < 10)
             {
-              dt_print(DT_DEBUG_PIPE, "[cacorrect] restrict fit to linear, numblox = %d \n", numblox[1]);
+              dt_print(DT_DEBUG_PIPE, "[cacorrect] restrict fit to linear, numblox = %d ", numblox[1]);
               processpasstwo = FALSE;
             }
           }
@@ -975,7 +975,7 @@ void process(
                 float powHblock = powVblock;
                 for(int j = 0; j < polyord; j++)
                 {
-                  // printf("i= %d j= %d polycoeff= %f \n",i,j,fitparams[0][0][polyord*i+j]);
+                  // printf("i= %d j= %d polycoeff= %f ",i,j,fitparams[0][0][polyord*i+j]);
                   lblockshifts[0][0] += powHblock * fitparams[0][0][polyord * i + j];
                   lblockshifts[0][1] += powHblock * fitparams[0][1][polyord * i + j];
                   lblockshifts[1][0] += powHblock * fitparams[1][0][polyord * i + j];

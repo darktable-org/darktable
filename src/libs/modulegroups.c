@@ -815,7 +815,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
                                   ? gtk_entry_get_text(GTK_ENTRY(d->text_entry))
                                   : NULL;
 
-  dt_print(DT_DEBUG_IOPORDER, "[lib_modulegroups_update_iop_visibility] modulegroups\n");
+  dt_print(DT_DEBUG_IOPORDER, "[lib_modulegroups_update_iop_visibility] modulegroups");
 
   // update basic button selection too
   ++darktable.gui->reset;
@@ -849,7 +849,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
     GtkWidget *w = module->expander;
 
     if(module->enabled)
-    dt_print(DT_DEBUG_IOPORDER, "%20s %d%s\n",
+    dt_print(DT_DEBUG_IOPORDER, "%20s %d%s",
       module->op, module->iop_order, (dt_iop_is_hidden(module)) ? ", hidden" : "");
 
       /* skip modules without an gui */

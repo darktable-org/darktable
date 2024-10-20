@@ -62,13 +62,13 @@ int getrusage(int who, struct rusage *usage)
   {
     if(!GetProcessTimes(GetCurrentProcess(), &creation_time, &exit_time, &kernel_time, &user_time))
     {
-      dt_print(DT_DEBUG_ALWAYS, "failed at GetProcessTimes\n");
+      dt_print(DT_DEBUG_ALWAYS, "failed at GetProcessTimes");
       return -1;
     }
 
     if(!GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc)))
     {
-      dt_print(DT_DEBUG_ALWAYS, "failed at GetProcessMemoryInfo\n");
+      dt_print(DT_DEBUG_ALWAYS, "failed at GetProcessMemoryInfo");
       return -1;
     }
 
@@ -82,7 +82,7 @@ int getrusage(int who, struct rusage *usage)
   {
     if(!GetThreadTimes(GetCurrentThread(), &creation_time, &exit_time, &kernel_time, &user_time))
     {
-      dt_print(DT_DEBUG_ALWAYS, "failed at GetThreadTimes\n");
+      dt_print(DT_DEBUG_ALWAYS, "failed at GetThreadTimes");
       return -1;
     }
     usage_to_timeval(&kernel_time, &usage->ru_stime);

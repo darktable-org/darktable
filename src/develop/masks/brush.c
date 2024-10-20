@@ -791,7 +791,7 @@ static int _brush_get_pts_border(dt_develop_t *dev,
   int start_stamp = 0;
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] brush_points init took %0.04f sec\n", form->name,
+           "[masks %s] brush_points init took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   // we render all segments first upwards, then downwards
@@ -1040,7 +1040,7 @@ static int _brush_get_pts_border(dt_develop_t *dev,
   // *payload_count : -1);
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] brush_points point recurs %0.04f sec\n", form->name,
+           "[masks %s] brush_points point recurs %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   // and we transform them with all distorted modules
@@ -1082,7 +1082,7 @@ static int _brush_get_pts_border(dt_develop_t *dev,
     }
 
     dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-             "[masks %s] path_points end took %0.04f sec\n",
+             "[masks %s] path_points end took %0.04f sec",
              form->name, dt_get_lap_time(&start2));
 
     return 1;
@@ -1094,7 +1094,7 @@ static int _brush_get_pts_border(dt_develop_t *dev,
                                                 transf_direction, *border, *border_count))
     {
       dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-               "[masks %s] brush_points transform took %0.04f sec\n", form->name,
+               "[masks %s] brush_points transform took %0.04f sec", form->name,
                dt_get_lap_time(&start2));
       return 1;
     }
@@ -2938,14 +2938,14 @@ static int _brush_get_mask(const dt_iop_module_t *const module,
   }
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] brush points took %0.04f sec\n",
+           "[masks %s] brush points took %0.04f sec",
            form->name, dt_get_lap_time(&start2));
 
   const guint nb_corner = g_list_length(form->points);
   _brush_bounding_box(points, border, nb_corner, points_count, width, height, posx, posy);
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] brush_fill min max took %0.04f sec\n", form->name,
+           "[masks %s] brush_fill min max took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   // we allocate the buffer
@@ -2980,7 +2980,7 @@ static int _brush_get_mask(const dt_iop_module_t *const module,
   dt_free_align(payload);
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] brush fill buffer took %0.04f sec\n", form->name,
+           "[masks %s] brush fill buffer took %0.04f sec", form->name,
            dt_get_lap_time(&start));
 
   return 1;
@@ -3071,7 +3071,7 @@ static int _brush_get_mask_roi(const dt_iop_module_t *const module,
   }
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] brush points took %0.04f sec\n",
+           "[masks %s] brush points took %0.04f sec",
            form->name, dt_get_lap_time(&start2));
 
   const guint nb_corner = g_list_length(form->points);
@@ -3099,7 +3099,7 @@ static int _brush_get_mask_roi(const dt_iop_module_t *const module,
                           points_count, &xmin, &xmax, &ymin, &ymax);
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] brush_fill min max took %0.04f sec\n", form->name,
+           "[masks %s] brush_fill min max took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
 
   // check if the path completely lies outside of roi -> we're done/mask remains empty
@@ -3130,10 +3130,10 @@ static int _brush_get_mask_roi(const dt_iop_module_t *const module,
   dt_free_align(payload);
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] brush set falloff took %0.04f sec\n", form->name,
+           "[masks %s] brush set falloff took %0.04f sec", form->name,
            dt_get_lap_time(&start2));
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] brush fill buffer took %0.04f sec\n", form->name,
+           "[masks %s] brush fill buffer took %0.04f sec", form->name,
            dt_get_lap_time(&start));
 
   return 1;

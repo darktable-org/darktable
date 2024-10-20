@@ -228,7 +228,7 @@ static void _image_set_monochrome_flag(const dt_imgid_t imgid,
   }
   else
     dt_print(DT_DEBUG_ALWAYS,
-             "[image_set_monochrome_flag] could not get imgid=%i from cache\n", imgid);
+             "[image_set_monochrome_flag] could not get imgid=%i from cache", imgid);
 }
 
 void dt_image_set_monochrome_flag(const dt_imgid_t imgid, const gboolean monochrome)
@@ -865,7 +865,7 @@ void dt_image_update_final_size(const dt_imgid_t imgid)
       DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
     }
   }
-  dt_print(DT_DEBUG_PIPE, "[dt_image_update_final_size] for ID=%i, updated to %ix%i\n", imgid, ww, hh);
+  dt_print(DT_DEBUG_PIPE, "[dt_image_update_final_size] for ID=%i, updated to %ix%i", imgid, ww, hh);
 }
 
 gboolean dt_image_get_final_size(const dt_imgid_t imgid, int *width, int *height)
@@ -883,12 +883,12 @@ gboolean dt_image_get_final_size(const dt_imgid_t imgid, int *width, int *height
   {
     *width = img.final_width;
     *height = img.final_height;
-    dt_print(DT_DEBUG_PIPE, "[dt_image_get_final_size] for ID=%i from cache %ix%i\n", imgid, *width, *height);
+    dt_print(DT_DEBUG_PIPE, "[dt_image_get_final_size] for ID=%i from cache %ix%i", imgid, *width, *height);
     return FALSE;
   }
 
   // we have to do the costly pipe run to get the final image size
-  dt_print(DT_DEBUG_PIPE, "[dt_image_get_final_size] calculate it for ID=%i\n", imgid);
+  dt_print(DT_DEBUG_PIPE, "[dt_image_get_final_size] calculate it for ID=%i", imgid);
   dt_develop_t dev;
   dt_dev_init(&dev, FALSE);
   dt_dev_load_image(&dev, imgid);
@@ -1236,7 +1236,7 @@ static int32_t _image_get_possible_version(const dt_imgid_t imgid,
   }
   if(safe_max_version == 0)
   {
-    dt_print(DT_DEBUG_ALWAYS, "image_get_possible_version couldn't find a safe new version above %d\n",
+    dt_print(DT_DEBUG_ALWAYS, "image_get_possible_version couldn't find a safe new version above %d",
       max_version);
     safe_max_version = max_version;
   }
@@ -1400,7 +1400,7 @@ static dt_imgid_t _image_duplicate_with_version_ext(const dt_imgid_t imgid,
       // b) duplicates had been removed from and later added to database.
       safe_new_version = _image_get_possible_version(imgid, safe_new_version);
       if(safe_new_version != max_version + 1)
-        dt_print(DT_DEBUG_ALWAYS, "dt_image_duplicate version forced %d -> %d\n",
+        dt_print(DT_DEBUG_ALWAYS, "dt_image_duplicate version forced %d -> %d",
           max_version + 1, safe_new_version);
     }
 
@@ -1824,7 +1824,7 @@ static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
   rc = sqlite3_step(stmt);
   if(rc != SQLITE_DONE)
     dt_print(DT_DEBUG_ALWAYS,
-             "[image_import_internal] sqlite3 error %d in `%s`\n", rc, filename);
+             "[image_import_internal] sqlite3 error %d in `%s`", rc, filename);
   sqlite3_finalize(stmt);
 
   id = dt_image_get_id(film_id, imgfname);
@@ -2307,7 +2307,7 @@ gboolean dt_image_rename(const dt_imgid_t imgid,
         if(!moveStatus)
         {
           dt_print(DT_DEBUG_ALWAYS,
-                   "[dt_image_rename] error moving local copy `%s' -> `%s'\n",
+                   "[dt_image_rename] error moving local copy `%s' -> `%s'",
                    copysrcpath, copydestpath);
 
           if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
@@ -2638,7 +2638,7 @@ dt_imgid_t dt_image_copy_rename(const dt_imgid_t imgid,
     else
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "[dt_image_copy_rename] Failed to copy image %s: %s\n",
+               "[dt_image_copy_rename] Failed to copy image %s: %s",
                srcpath, gerror->message);
     }
     g_object_unref(dest);

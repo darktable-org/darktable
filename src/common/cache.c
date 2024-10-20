@@ -134,7 +134,7 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache,
     dt_pthread_mutex_unlock(&cache->lock);
     const double end = dt_get_debug_wtime();
     if(end - start > 0.1)
-      dt_print(DT_DEBUG_ALWAYS, "try+ wait time %.06fs mode %c \n", end - start, mode);
+      dt_print(DT_DEBUG_ALWAYS, "try+ wait time %.06fs mode %c", end - start, mode);
 
     if(mode == 'w')
     {
@@ -149,7 +149,7 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache,
   dt_pthread_mutex_unlock(&cache->lock);
   const double end = dt_get_debug_wtime();
   if(end - start > 0.1)
-    dt_print(DT_DEBUG_ALWAYS, "try- wait time %.06fs\n", end - start);
+    dt_print(DT_DEBUG_ALWAYS, "try- wait time %.06fs", end - start);
   return 0;
 }
 
@@ -226,7 +226,7 @@ restart:
   // here dies your 32-bit system:
   dt_cache_entry_t *entry = (dt_cache_entry_t *)g_slice_alloc(sizeof(dt_cache_entry_t));
   const int ret = dt_pthread_rwlock_init(&entry->lock, 0);
-  if(ret) dt_print(DT_DEBUG_ALWAYS, "rwlock init: %d\n", ret);
+  if(ret) dt_print(DT_DEBUG_ALWAYS, "rwlock init: %d", ret);
 
   entry->data = 0;
   entry->data_size = cache->entry_size;
@@ -264,7 +264,7 @@ restart:
   dt_pthread_mutex_unlock(&cache->lock);
   const double end = dt_get_debug_wtime();
   if(end - start > 0.1)
-    dt_print(DT_DEBUG_ALWAYS, "wait time %.06fs\n", end - start);
+    dt_print(DT_DEBUG_ALWAYS, "wait time %.06fs", end - start);
 
   // WARNING: do *NOT* unpoison here. it must be done by the caller!
 

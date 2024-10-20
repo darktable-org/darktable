@@ -146,7 +146,7 @@ void init(dt_imageio_module_format_t *self)
   if(codecName == NULL)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "libavif doesn't offer encoding support!\n");
+             "libavif doesn't offer encoding support!");
     self->ready = FALSE;
     return;
   }
@@ -293,7 +293,7 @@ int write_image(struct dt_imageio_module_data_t *data,
 
   dt_print(DT_DEBUG_IMAGEIO,
            "Exporting AVIF image [%s] "
-           "[width: %zu, height: %zu, bit depth: %zu, comp: %s, quality: %u]\n",
+           "[width: %zu, height: %zu, bit depth: %zu, comp: %s, quality: %u]",
            filename,
            width,
            height,
@@ -369,7 +369,7 @@ int write_image(struct dt_imageio_module_data_t *data,
   if(format == AVIF_PIXEL_FORMAT_YUV444 && d->compression_type == AVIF_COMP_LOSSLESS)
     image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_IDENTITY;
 
-  dt_print(DT_DEBUG_IMAGEIO, "[avif colorprofile profile: %s]\n", dt_colorspaces_get_name(cp->type, filename));
+  dt_print(DT_DEBUG_IMAGEIO, "[avif colorprofile profile: %s]", dt_colorspaces_get_name(cp->type, filename));
 
   if(!have_nclx)
   {
@@ -381,7 +381,7 @@ int write_image(struct dt_imageio_module_data_t *data,
       icc_profile_data = malloc(sizeof(uint8_t) * icc_profile_len);
       if(icc_profile_data == NULL)
       {
-        dt_print(DT_DEBUG_IMAGEIO, "Failed to allocate ICC profile\n");
+        dt_print(DT_DEBUG_IMAGEIO, "Failed to allocate ICC profile");
         rc = 1;
         goto out;
       }
@@ -390,7 +390,7 @@ int write_image(struct dt_imageio_module_data_t *data,
       result = avifImageSetProfileICC(image, icc_profile_data, icc_profile_len);
       if(result != AVIF_RESULT_OK)
       {
-        dt_print(DT_DEBUG_IMAGEIO, "avifImageSetProfileICC failed\n");
+        dt_print(DT_DEBUG_IMAGEIO, "avifImageSetProfileICC failed");
         rc = 1;
         goto out;
       }
@@ -423,7 +423,7 @@ int write_image(struct dt_imageio_module_data_t *data,
   result = avifRGBImageAllocatePixels(&rgb);
   if(result != AVIF_RESULT_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "avifRGBImageAllocatePixels failed\n");
+    dt_print(DT_DEBUG_IMAGEIO, "avifRGBImageAllocatePixels failed");
     rc = 1;
     goto out;
   }
@@ -484,7 +484,7 @@ int write_image(struct dt_imageio_module_data_t *data,
   result = avifImageRGBToYUV(image, &rgb);
   if(result != AVIF_RESULT_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "avifImageRGBToYUV failed\n");
+    dt_print(DT_DEBUG_IMAGEIO, "avifImageRGBToYUV failed");
     rc = 1;
     goto out;
   }
@@ -497,7 +497,7 @@ int write_image(struct dt_imageio_module_data_t *data,
     result = avifImageSetMetadataExif(image, exif, exif_len);
     if(result != AVIF_RESULT_OK)
     {
-      dt_print(DT_DEBUG_IMAGEIO, "avifImageSetMetadataExif failed\n");
+      dt_print(DT_DEBUG_IMAGEIO, "avifImageSetMetadataExif failed");
       // as this error does not lead to invalid files keep going
     }
 #else
@@ -518,7 +518,7 @@ int write_image(struct dt_imageio_module_data_t *data,
       g_free(xmp_string);
       if(result != AVIF_RESULT_OK)
       {
-        dt_print(DT_DEBUG_IMAGEIO, "avifImageSetMetadataXMP failed\n");
+        dt_print(DT_DEBUG_IMAGEIO, "avifImageSetMetadataXMP failed");
         // as this error does not lead to invalid files keep going
       }
 #else
@@ -530,7 +530,7 @@ int write_image(struct dt_imageio_module_data_t *data,
   encoder = avifEncoderCreate();
   if(encoder == NULL)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "avifEncoderCreate failed\n");
+    dt_print(DT_DEBUG_IMAGEIO, "avifEncoderCreate failed");
     result = AVIF_RESULT_UNKNOWN_ERROR;
     rc = 1;
     goto out;
@@ -609,7 +609,7 @@ int write_image(struct dt_imageio_module_data_t *data,
 
   dt_print(DT_DEBUG_IMAGEIO,
            "[avif quality: %u => maxQuantizer: %u, minQuantizer: %u, "
-           "tileColsLog2: %u, tileRowsLog2: %u, threads: %u, speed: %u]\n",
+           "tileColsLog2: %u, tileRowsLog2: %u, threads: %u, speed: %u]",
            d->quality,
            encoder->maxQuantizer,
            encoder->minQuantizer,
@@ -623,14 +623,14 @@ int write_image(struct dt_imageio_module_data_t *data,
   result = avifEncoderWrite(encoder, image, &output);
   if(result != AVIF_RESULT_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "avifEncoderWrite failed\n");
+    dt_print(DT_DEBUG_IMAGEIO, "avifEncoderWrite failed");
     rc = 1;
     goto out;
   }
 
   if(output.size == 0 || output.data == NULL)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "avifEncoderWrite returned empty data\n");
+    dt_print(DT_DEBUG_IMAGEIO, "avifEncoderWrite returned empty data");
     result = AVIF_RESULT_UNKNOWN_ERROR;
     rc = 1;
     goto out;
@@ -662,7 +662,7 @@ int write_image(struct dt_imageio_module_data_t *data,
 out:
 
   if(result || rc)
-    dt_print(DT_DEBUG_IMAGEIO, "%s `%s'%s%s\n",
+    dt_print(DT_DEBUG_IMAGEIO, "%s `%s'%s%s",
         image     ? "Write AVIF image error"
                   : "Failed to create AVIF image",
         filename,

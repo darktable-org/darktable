@@ -3401,7 +3401,7 @@ void init_global(dt_iop_module_so_t *module)
       userdbts > sysdbts ? dt_iop_lensfun_db->UserUpdatesLocation : sysdbpath;
     if(dt_iop_lensfun_db->Load(dbpath) != LF_NO_ERROR)
       dt_print(DT_DEBUG_ALWAYS,
-               "[iop_lens]: could not load Lensfun database in `%s'!\n",
+               "[iop_lens]: could not load Lensfun database in `%s'!",
                dbpath);
     else
       dt_iop_lensfun_db->Load(dt_iop_lensfun_db->UserLocation);
@@ -3413,7 +3413,7 @@ void init_global(dt_iop_module_so_t *module)
     if(dt_iop_lensfun_db->Load() != LF_NO_ERROR)
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "[iop_lens]: could not load Lensfun database in `%s'!\n",
+               "[iop_lens]: could not load Lensfun database in `%s'!",
                sysdbpath);
 #endif
       g_free(dt_iop_lensfun_db->HomeDataDir);
@@ -3421,7 +3421,7 @@ void init_global(dt_iop_module_so_t *module)
                                                         (char *)NULL);
       if(dt_iop_lensfun_db->Load() != LF_NO_ERROR)
         dt_print(DT_DEBUG_ALWAYS,
-                 "[iop_lens]: could not load Lensfun database in `%s'!\n",
+                 "[iop_lens]: could not load Lensfun database in `%s'!",
                  dt_iop_lensfun_db->HomeDataDir);
 #ifdef LF_MAX_DATABASE_VERSION
     }

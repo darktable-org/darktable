@@ -648,7 +648,7 @@ void expose(
   {
     dt_print_pipe(DT_DEBUG_EXPOSE,
         "expose livesamples FALSE",
-         port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d\n",
+         port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d",
          width, height, pointerx, pointery);
     _darkroom_pickers_draw(self, cri, wd, ht, zoom_scale,
                            darktable.lib->proxy.colorpicker.live_samples, FALSE);
@@ -663,7 +663,7 @@ void expose(
   {
     dt_print_pipe(DT_DEBUG_EXPOSE,
         "expose livesample TRUE",
-         port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d\n",
+         port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d",
          width, height, pointerx, pointery);
     GSList samples = { .data = darktable.lib->proxy.colorpicker.primary_sample,
                        .next = NULL };
@@ -684,7 +684,7 @@ void expose(
   {
     dt_print_pipe(DT_DEBUG_EXPOSE,
         "expose masks",
-         port->pipe, dev->gui_module, DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d\n",
+         port->pipe, dev->gui_module, DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d",
          width, height, pointerx, pointery);
     dt_masks_events_post_expose(dev->gui_module, cri, width, height, pzx, pzy, zoom_scale);
   }
@@ -710,7 +710,7 @@ void expose(
         dt_print_pipe(DT_DEBUG_EXPOSE,
                       "expose cropper",
                       port->pipe, dev->cropping.exposer,
-                      DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d\n",
+                      DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d",
                       width, height, pointerx, pointery);
         _module_gui_post_expose(dev->cropping.exposer, cri, wd, ht, pzx, pzy, zoom_scale);
         guides = TRUE;
@@ -723,7 +723,7 @@ void expose(
                       "expose module",
                       port->pipe, dev->gui_module,
                       DT_DEVICE_NONE, NULL, NULL,
-                      "%dx%d, px=%d py=%d\n",
+                      "%dx%d, px=%d py=%d",
                       width, height, pointerx, pointery);
         _module_gui_post_expose(dev->gui_module, cri, wd, ht, pzx, pzy, zoom_scale);
         guides = TRUE;
@@ -742,7 +742,7 @@ void expose(
     gchar *label = darktable.color_profiles->mode == DT_PROFILE_GAMUTCHECK ? _("gamut check") : _("soft proof");
     dt_print_pipe(DT_DEBUG_EXPOSE,
         "expose profile",
-         port->pipe, NULL, port->pipe->devid, NULL, NULL, "%dx%d, px=%d py=%d. proof: %s\n",
+         port->pipe, NULL, port->pipe->devid, NULL, NULL, "%dx%d, px=%d py=%d. proof: %s",
          width, height, pointerx, pointery, label);
 
     cairo_set_source_rgba(cri, 0.5, 0.5, 0.5, 0.5);
@@ -1694,7 +1694,7 @@ static void _softproof_profile_callback(GtkWidget *combo, gpointer user_data)
 
   // profile not found, fall back to sRGB. shouldn't happen
   dt_print(DT_DEBUG_ALWAYS,
-           "can't find softproof profile `%s', using sRGB instead\n",
+           "can't find softproof profile `%s', using sRGB instead",
            dt_bauhaus_combobox_get_text(combo));
   profile_changed = darktable.color_profiles->softproof_type != DT_COLORSPACE_SRGB;
   darktable.color_profiles->softproof_type = DT_COLORSPACE_SRGB;
@@ -1733,7 +1733,7 @@ static void _display_profile_callback(GtkWidget *combo, gpointer user_data)
 
   // profile not found, fall back to system display profile. shouldn't happen
   dt_print(DT_DEBUG_ALWAYS,
-           "can't find display profile `%s', using system display profile instead\n",
+           "can't find display profile `%s', using system display profile instead",
            dt_bauhaus_combobox_get_text(combo));
   profile_changed = darktable.color_profiles->display_type != DT_COLORSPACE_DISPLAY;
   darktable.color_profiles->display_type = DT_COLORSPACE_DISPLAY;
@@ -1775,7 +1775,7 @@ static void _display2_profile_callback(GtkWidget *combo, gpointer user_data)
 
   // profile not found, fall back to system display2 profile. shouldn't happen
   dt_print(DT_DEBUG_ALWAYS,
-           "can't find preview display profile `%s', using system display profile instead\n",
+           "can't find preview display profile `%s', using system display profile instead",
           dt_bauhaus_combobox_get_text(combo));
   profile_changed = darktable.color_profiles->display2_type != DT_COLORSPACE_DISPLAY2;
   darktable.color_profiles->display2_type = DT_COLORSPACE_DISPLAY2;
@@ -1825,7 +1825,7 @@ static void _histogram_profile_callback(GtkWidget *combo, gpointer user_data)
 
   // profile not found, fall back to export profile. shouldn't happen
   dt_print(DT_DEBUG_ALWAYS,
-           "can't find histogram profile `%s', using export profile instead\n",
+           "can't find histogram profile `%s', using export profile instead",
            dt_bauhaus_combobox_get_text(combo));
   profile_changed = darktable.color_profiles->histogram_type != DT_COLORSPACE_WORK;
   darktable.color_profiles->histogram_type = DT_COLORSPACE_WORK;
@@ -2673,7 +2673,7 @@ void enter(dt_view_t *self)
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED, _darkroom_ui_preview2_pipe_finish_signal_callback, self);
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_TROUBLE_MESSAGE, _display_module_trouble_message_callback, self);
 
-  dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode\n", dt_get_wtime());
+  dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode", dt_get_wtime());
   dt_develop_t *dev = self->data;
   if(!dev->form_gui)
   {
@@ -2949,7 +2949,7 @@ void leave(dt_view_t *self)
 
   darktable.develop->image_storage.id = NO_IMGID;
 
-  dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode\n", dt_get_wtime());
+  dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode", dt_get_wtime());
 }
 
 void mouse_leave(dt_view_t *self)

@@ -297,7 +297,7 @@ static inline void fast_surface_blur(float *const restrict image,
 
   if(!ds_image || !ds_mask || !ds_ab || !ab)
   {
-    dt_print(DT_DEBUG_PIPE, "fast guided filter failed to allocate memory\n");
+    dt_print(DT_DEBUG_PIPE, "fast guided filter failed to allocate memory");
     dt_control_log(_("fast guided filter failed to allocate memory, check your RAM settings"));
     goto clean;
   }

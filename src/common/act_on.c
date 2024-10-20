@@ -258,7 +258,7 @@ gboolean _cache_update(const gboolean only_visible,
     for(GList *ll = l;
         ll;
         ll = g_list_next(ll)) dt_util_str_cat(&tx, "%d ", GPOINTER_TO_INT(ll->data));
-    dt_print(DT_DEBUG_ACT_ON, "%s\n", tx);
+    dt_print(DT_DEBUG_ACT_ON, "%s", tx);
     g_free(tx);
   }
 
@@ -442,7 +442,7 @@ dt_imgid_t dt_act_on_get_main_image()
   }
 
   if((darktable.unmuted & DT_DEBUG_ACT_ON) == DT_DEBUG_ACT_ON)
-    dt_print(DT_DEBUG_ACT_ON, "[images to act on] single image : %d\n", ret);
+    dt_print(DT_DEBUG_ACT_ON, "[images to act on] single image : %d", ret);
 
   return ret;
 }

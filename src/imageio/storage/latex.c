@@ -283,7 +283,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     if(*c == '/') *c = '\0';
     if(g_mkdir_with_parents(dirname, 0755))
     {
-      dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_latex] could not create directory: `%s'!\n", dirname);
+      dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_latex] could not create directory: `%s'!", dirname);
       dt_control_log(_("could not create directory `%s'!"), dirname);
       dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
       return 1;
@@ -372,7 +372,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
                     TRUE, export_masks, icc_type, icc_filename,
                     icc_intent, self, sdata, num, total, metadata);
 
-  dt_print(DT_DEBUG_ALWAYS, "[export_job] exported to `%s'\n", filename);
+  dt_print(DT_DEBUG_ALWAYS, "[export_job] exported to `%s'", filename);
   dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'",
                           num),
                  num, total, filename);

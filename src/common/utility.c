@@ -499,7 +499,7 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
                                                        final_height, stride);
     if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
     {
-      dt_print(DT_DEBUG_ALWAYS, "warning: can't load darktable logo from SVG file `%s'\n", dtlogo);
+      dt_print(DT_DEBUG_ALWAYS, "warning: can't load darktable logo from SVG file `%s'", dtlogo);
       cairo_surface_destroy(surface);
       free(image_buffer);
       image_buffer = NULL;
@@ -518,7 +518,7 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
   else
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "warning: can't load darktable logo from SVG file `%s'\n%s\n", dtlogo, error->message);
+             "warning: can't load darktable logo from SVG file `%s'\n%s", dtlogo, error->message);
     g_error_free(error);
   }
 

@@ -1303,7 +1303,7 @@ static void cms_error_handler(const cmsContext ContextID,
                               const cmsUInt32Number ErrorCode,
                               const char *text)
 {
-  dt_print(DT_DEBUG_ALWAYS, "[lcms2] error %d: %s\n", ErrorCode, text);
+  dt_print(DT_DEBUG_ALWAYS, "[lcms2] error %d: %s", ErrorCode, text);
 }
 
 static gint _sort_profiles(gconstpointer a, gconstpointer b)
@@ -1644,7 +1644,7 @@ dt_colorspaces_t *dt_colorspaces_init()
     {
       dt_print(DT_DEBUG_DEV,
                "output profile `%s' color space `%c%c%c%c'"
-               " not supported for work profile\n",
+               " not supported for work profile",
                prof->name, (char)(color_space >> 24),
                (char)(color_space >> 16),
                (char)(color_space >> 8),
@@ -1660,7 +1660,7 @@ dt_colorspaces_t *dt_colorspaces_init()
                          " it has been replaced by sRGB!"), name);
         dt_print(DT_DEBUG_ALWAYS,
                 "[colorspaces] profile `%s' not usable as histogram profile."
-                 " it has been replaced by sRGB!\n",
+                 " it has been replaced by sRGB!",
                 name);
         res->histogram_type = DT_COLORSPACE_SRGB;
         res->histogram_filename[0] = '\0';
@@ -1857,7 +1857,7 @@ static void dt_colorspaces_get_display_profile_colord_callback(GObject *source,
             _update_display_profile(tmp_data, size, NULL, 0);
           dt_print(DT_DEBUG_CONTROL,
                    "[color profile] colord gave us a new screen profile:"
-                   " '%s' (size: %zu)\n", filename, size);
+                   " '%s' (size: %zu)", filename, size);
         }
         else
         {

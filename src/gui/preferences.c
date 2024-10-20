@@ -99,7 +99,7 @@ static void load_themes_dir(const char *basedir)
   GDir *dir = g_dir_open(themes_dir, 0, NULL);
   if(dir)
   {
-    dt_print(DT_DEBUG_DEV, "adding themes directory: %s\n", themes_dir);
+    dt_print(DT_DEBUG_DEV, "adding themes directory: %s", themes_dir);
 
     const gchar *d_name;
     while((d_name = g_dir_read_name(dir)))
@@ -192,7 +192,7 @@ static void save_usercss(GtkTextBuffer *buffer)
   GError *error = NULL;
   if(!g_file_set_contents(usercsspath, usercsscontent, -1, &error))
   {
-    dt_print(DT_DEBUG_ALWAYS, "%s: error saving css to %s: %s\n",
+    dt_print(DT_DEBUG_ALWAYS, "%s: error saving css to %s: %s",
              G_STRFUNC, usercsspath, error->message);
     g_clear_error(&error);
   }

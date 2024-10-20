@@ -144,7 +144,7 @@ static inline void _fib_latt(int *const x, int *const y, float radius, int step,
   {
     *x = 0;
     *y = 0;
-    dt_print(DT_DEBUG_ALWAYS, "Fibonacci lattice index wrong/out of bounds in defringe module\n");
+    dt_print(DT_DEBUG_ALWAYS, "Fibonacci lattice index wrong/out of bounds in defringe module");
     return;
   }
   float px = step / fib[idx], py = step * (fib[idx + 1] / fib[idx]);
@@ -204,7 +204,7 @@ void process(struct dt_iop_module_t *module,
   gauss = dt_gaussian_init(width, height, 4, Labmax, Labmin, sigma, order);
   if(!gauss)
   {
-    dt_print(DT_DEBUG_ALWAYS, "Error allocating memory for gaussian blur in defringe module\n");
+    dt_print(DT_DEBUG_ALWAYS, "Error allocating memory for gaussian blur in defringe module");
     goto ERROR_EXIT;
   }
   dt_gaussian_blur_4c(gauss, in, out);
@@ -251,7 +251,7 @@ void process(struct dt_iop_module_t *module,
   xy_small = malloc(sizeof(int) * 2 * samples_small);
   if(!xy_avg || !xy_small)
   {
-    dt_print(DT_DEBUG_ALWAYS, "Error allocating memory for fibonacci lattice in defringe module\n");
+    dt_print(DT_DEBUG_ALWAYS, "Error allocating memory for fibonacci lattice in defringe module");
     goto ERROR_EXIT;
   }
 

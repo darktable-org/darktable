@@ -56,7 +56,7 @@ gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module,
   if(!module->views)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "module %s doesn't have views flags\n",
+             "module %s doesn't have views flags",
              module->name(module));
     return FALSE;
   }
@@ -653,7 +653,7 @@ static int dt_lib_load_module(void *m,
       && (module->legacy_params || module->set_params || module->get_params))
      || (!module->init_presets && module->manage_presets))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[dt_lib_load_module] illegal method combination in '%s'\n",
+    dt_print(DT_DEBUG_ALWAYS, "[dt_lib_load_module] illegal method combination in '%s'",
              module->plugin_name);
   }
 
@@ -774,7 +774,7 @@ void dt_lib_init_presets(dt_lib_module_t *module)
           // write the updated preset back to db
           dt_print(DT_DEBUG_ALWAYS,
                    "[lighttable_init_presets] updating '%s' preset '%s'"
-                   " from version %d to version %d\n",
+                   " from version %d to version %d",
                    module->plugin_name, name, op_version, version);
           sqlite3_stmt *innerstmt;
           // clang-format off
@@ -797,7 +797,7 @@ void dt_lib_init_presets(dt_lib_module_t *module)
           dt_print(DT_DEBUG_ALWAYS,
                    "[lighttable_init_presets] Can't upgrade '%s' preset '%s'"
                    " from version %d to %d, "
-                   "no legacy_params() implemented or unable to update\n",
+                   "no legacy_params() implemented or unable to update",
                    module->plugin_name, name, op_version, version);
           sqlite3_stmt *innerstmt;
           // clang-format off

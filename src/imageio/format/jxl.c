@@ -132,7 +132,7 @@ int write_image(struct dt_imageio_module_data_t *data,
     if((JxlEncoderStatus)code != JXL_ENC_SUCCESS)                                                                 \
     {                                                                                                             \
       JxlEncoderError err = JxlEncoderGetError(encoder);                                                          \
-      dt_print(DT_DEBUG_IMAGEIO, "[jxl] libjxl call failed with err %d (src/imageio/format/jxl.c#L%d)\n", err,    \
+      dt_print(DT_DEBUG_IMAGEIO, "[jxl] libjxl call failed with err %d (src/imageio/format/jxl.c#L%d)", err,      \
                __LINE__);                                                                                         \
       goto end;                                                                                                   \
     }                                                                                                             \
@@ -140,7 +140,7 @@ int write_image(struct dt_imageio_module_data_t *data,
 
 #define JXL_FAIL(msg, ...)                                                                                        \
   {                                                                                                               \
-    dt_print(DT_DEBUG_IMAGEIO, "[jxl] " msg "\n", ##__VA_ARGS__);                                                 \
+    dt_print(DT_DEBUG_IMAGEIO, "[jxl] " msg "", ##__VA_ARGS__);                                                   \
     goto end;                                                                                                     \
   }
 
@@ -282,7 +282,7 @@ int write_image(struct dt_imageio_module_data_t *data,
   {
     // If we didn't manage to write the color encoding natively we need to fallback to ICC
     dt_print(DT_DEBUG_IMAGEIO,
-             "[jxl] could not generate color encoding structure, falling back to ICC\n");
+             "[jxl] could not generate color encoding structure, falling back to ICC");
 
     cmsUInt32Number icc_size = 0;
     // First find the size of the ICC buffer
