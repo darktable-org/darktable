@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-14 21:39+0200\n"
-"PO-Revision-Date: 2024-10-14 21:41+0200\n"
+"POT-Creation-Date: 2024-10-20 19:06+0200\n"
+"PO-Revision-Date: 2024-10-20 20:34+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -859,9 +859,9 @@ msgstr "Ce paramètre a été modifié"
 #: ../build/bin/preferences_gen.h:4279 ../build/bin/preferences_gen.h:4462
 #: ../build/bin/preferences_gen.h:5101 ../build/bin/preferences_gen.h:5841
 #: ../build/bin/preferences_gen.h:6677 ../build/bin/preferences_gen.h:7170
-#: ../build/bin/preferences_gen.h:7436 ../src/gui/accelerators.c:3006
-#: ../src/gui/gtk.c:3148 ../src/gui/preferences.c:460
-#: ../src/gui/preferences.c:891 ../src/libs/modulegroups.c:4084
+#: ../build/bin/preferences_gen.h:7436 ../src/gui/accelerators.c:3007
+#: ../src/gui/gtk.c:3149 ../src/gui/preferences.c:461
+#: ../src/gui/preferences.c:892 ../src/libs/modulegroups.c:4084
 msgid "?"
 msgstr "?"
 
@@ -984,8 +984,8 @@ msgstr "Nommage des fichiers"
 msgid "file naming pattern used for a import session"
 msgstr "Nommage des fichiers pour la session d’importation"
 
-#: ../build/bin/preferences_gen.h:4472 ../src/gui/gtk.c:1371
-#: ../src/gui/preferences.c:561 ../src/libs/tools/lighttable.c:66
+#: ../build/bin/preferences_gen.h:4472 ../src/gui/gtk.c:1372
+#: ../src/gui/preferences.c:562 ../src/libs/tools/lighttable.c:66
 #: ../src/views/lighttable.c:91
 msgid "lighttable"
 msgstr "Table lumineuse"
@@ -1250,8 +1250,8 @@ msgstr "Voir le manuel pour connaître toutes les étiquettes utilisables."
 msgid "pattern for the thumbnail tooltip (empty to disable)"
 msgstr "Patron pour les info-bulles des miniatures (vide pour désactiver)"
 
-#: ../build/bin/preferences_gen.h:5111 ../src/gui/gtk.c:1373
-#: ../src/gui/preferences.c:561 ../src/views/darkroom.c:94
+#: ../build/bin/preferences_gen.h:5111 ../src/gui/gtk.c:1374
+#: ../src/gui/preferences.c:562 ../src/views/darkroom.c:94
 msgid "darkroom"
 msgstr "Chambre noire"
 
@@ -1530,7 +1530,7 @@ msgid "LUT 3D root folder"
 msgstr "Répertoire 3D LUT racine"
 
 #: ../build/bin/preferences_gen.h:5982 ../src/control/jobs/control_jobs.c:2155
-#: ../src/control/jobs/control_jobs.c:2211 ../src/gui/preferences.c:1097
+#: ../src/control/jobs/control_jobs.c:2211 ../src/gui/preferences.c:1098
 #: ../src/gui/presets.c:422 ../src/imageio/storage/disk.c:196
 #: ../src/imageio/storage/disk.c:276 ../src/imageio/storage/gallery.c:148
 #: ../src/imageio/storage/gallery.c:212 ../src/imageio/storage/latex.c:144
@@ -2444,7 +2444,7 @@ msgstr "Cisaillement"
 #. focal length
 #: ../build/lib/darktable/plugins/introspection_ashift.c:148
 #: ../build/lib/darktable/plugins/introspection_ashift.c:291
-#: ../src/common/collection.c:625 ../src/gui/preferences.c:859
+#: ../src/common/collection.c:623 ../src/gui/preferences.c:860
 #: ../src/gui/presets.c:733 ../src/libs/camera.c:548
 #: ../src/libs/metadata_view.c:157
 msgid "focal length"
@@ -2497,7 +2497,7 @@ msgstr "Spécifique"
 #: ../src/develop/blend_gui.c:153 ../src/develop/blend_gui.c:182
 #: ../src/develop/blend_gui.c:3465 ../src/gui/accelerators.c:152
 #: ../src/gui/accelerators.c:162 ../src/gui/accelerators.c:250
-#: ../src/imageio/format/avif.c:947 ../src/imageio/format/j2k.c:681
+#: ../src/imageio/format/avif.c:949 ../src/imageio/format/j2k.c:681
 #: ../src/libs/live_view.c:361
 msgid "off"
 msgstr "Désactivé(e)"
@@ -2522,7 +2522,7 @@ msgstr "Décalage d’exposition"
 
 #: ../build/lib/darktable/plugins/introspection_basecurve.c:146
 #: ../build/lib/darktable/plugins/introspection_basecurve.c:239
-#: ../src/common/collection.c:633 ../src/libs/metadata_view.c:152
+#: ../src/common/collection.c:631 ../src/libs/metadata_view.c:152
 msgid "exposure bias"
 msgstr "Biais d’exposition"
 
@@ -2707,7 +2707,7 @@ msgid "offset"
 msgstr "Décalage"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:220
-#: ../src/common/collection.c:623 ../src/gui/preferences.c:843
+#: ../src/common/collection.c:621 ../src/gui/preferences.c:844
 #: ../src/gui/presets.c:675 ../src/libs/metadata_view.c:149
 msgid "lens"
 msgstr "Objectif"
@@ -2734,7 +2734,7 @@ msgstr "Couleur de la bordure"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:124
 #: ../build/lib/darktable/plugins/introspection_borders.c:271
-#: ../src/common/collection.c:635 ../src/libs/filtering.c:59
+#: ../src/common/collection.c:633 ../src/libs/filtering.c:59
 msgid "aspect ratio"
 msgstr "Ratio d’aspect"
 
@@ -2785,7 +2785,7 @@ msgstr "Base"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:349
 #: ../build/lib/darktable/plugins/introspection_borders.c:355
-#: ../src/gui/preferences.c:864 ../src/imageio/format/jpeg.c:603
+#: ../src/gui/preferences.c:865 ../src/imageio/format/jpeg.c:603
 #: ../src/iop/ashift.c:6167 ../src/iop/basicadj.c:659 ../src/iop/flip.c:458
 #: ../src/iop/flip.c:460 ../src/iop/levels.c:654 ../src/iop/rgblevels.c:1106
 msgid "auto"
@@ -2909,10 +2909,10 @@ msgstr "Aberrations chromatiques importantes"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:507
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:539
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:160
-#: ../src/common/collection.c:1475 ../src/common/color_vocabulary.c:232
+#: ../src/common/collection.c:1473 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:380 ../src/develop/blend_gui.c:2382
 #: ../src/develop/blend_gui.c:2430 ../src/develop/lightroom.c:887
-#: ../src/gui/gtk.c:3748 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:372
+#: ../src/gui/gtk.c:3749 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:372
 #: ../src/iop/channelmixer.c:615 ../src/iop/channelmixer.c:625
 #: ../src/iop/channelmixerrgb.c:4665 ../src/iop/colorequal.c:2974
 #: ../src/iop/colorzones.c:2488 ../src/iop/temperature.c:2014
@@ -2929,10 +2929,10 @@ msgstr "Rouge"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:519
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:551
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:159
-#: ../src/common/collection.c:1479 ../src/common/color_vocabulary.c:277
+#: ../src/common/collection.c:1477 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:382 ../src/develop/blend_gui.c:2388
 #: ../src/develop/blend_gui.c:2436 ../src/develop/lightroom.c:891
-#: ../src/gui/gtk.c:3749 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:377
+#: ../src/gui/gtk.c:3750 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:377
 #: ../src/iop/channelmixer.c:616 ../src/iop/channelmixer.c:631
 #: ../src/iop/channelmixerrgb.c:4666 ../src/iop/colorequal.c:2977
 #: ../src/iop/colorzones.c:2491 ../src/iop/temperature.c:1998
@@ -2950,10 +2950,10 @@ msgstr "Vert"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:527
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:559
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:161
-#: ../src/common/collection.c:1481 ../src/common/color_vocabulary.c:324
+#: ../src/common/collection.c:1479 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:383 ../src/develop/blend_gui.c:2394
 #: ../src/develop/blend_gui.c:2442 ../src/develop/lightroom.c:893
-#: ../src/gui/gtk.c:3750 ../src/iop/bilateral.cc:382
+#: ../src/gui/gtk.c:3751 ../src/iop/bilateral.cc:382
 #: ../src/iop/channelmixer.c:617 ../src/iop/channelmixer.c:637
 #: ../src/iop/channelmixerrgb.c:4667 ../src/iop/colorequal.c:2979
 #: ../src/iop/colorzones.c:2493 ../src/iop/temperature.c:2018
@@ -3069,7 +3069,7 @@ msgstr "Planckien (corps noir)"
 msgid "custom"
 msgstr "Personnalisé"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:517
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:515
 msgid "as shot in camera"
 msgstr "Tel que pris par le boîtier"
 
@@ -3193,7 +3193,7 @@ msgstr "Version 3 (Avril 2021)"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:303
 #: ../build/lib/darktable/plugins/introspection_crop.c:61
 #: ../build/lib/darktable/plugins/introspection_crop.c:134
-#: ../src/gui/gtk.c:1328 ../src/iop/atrous.c:1621
+#: ../src/gui/gtk.c:1329 ../src/iop/atrous.c:1621
 msgid "left"
 msgstr "Gauche"
 
@@ -3201,7 +3201,7 @@ msgstr "Gauche"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:307
 #: ../build/lib/darktable/plugins/introspection_crop.c:67
 #: ../build/lib/darktable/plugins/introspection_crop.c:138
-#: ../src/gui/accelerators.c:135 ../src/gui/gtk.c:1338
+#: ../src/gui/accelerators.c:135 ../src/gui/gtk.c:1339
 msgid "top"
 msgstr "Haut"
 
@@ -3209,7 +3209,7 @@ msgstr "Haut"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:311
 #: ../build/lib/darktable/plugins/introspection_crop.c:73
 #: ../build/lib/darktable/plugins/introspection_crop.c:142
-#: ../src/gui/gtk.c:1333 ../src/iop/atrous.c:1620
+#: ../src/gui/gtk.c:1334 ../src/iop/atrous.c:1620
 msgid "right"
 msgstr "Droite"
 
@@ -3217,7 +3217,7 @@ msgstr "Droite"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:315
 #: ../build/lib/darktable/plugins/introspection_crop.c:79
 #: ../build/lib/darktable/plugins/introspection_crop.c:146
-#: ../src/gui/accelerators.c:136 ../src/gui/gtk.c:1342
+#: ../src/gui/accelerators.c:136 ../src/gui/gtk.c:1343
 msgid "bottom"
 msgstr "Bas"
 
@@ -3462,7 +3462,7 @@ msgstr "Orange"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:483
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:515
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:547
-#: ../src/common/collection.c:1477 ../src/common/colorlabels.c:381
+#: ../src/common/collection.c:1475 ../src/common/colorlabels.c:381
 #: ../src/develop/lightroom.c:889 ../src/gui/guides.c:732
 #: ../src/iop/colorequal.c:2976 ../src/iop/colorzones.c:2490
 #: ../src/iop/temperature.c:2004 ../src/libs/collect.c:1949
@@ -3764,7 +3764,7 @@ msgstr "Markesteijn 3 passes + VNG"
 
 #. history
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:232
-#: ../src/common/collection.c:1495 ../src/libs/collect.c:1890
+#: ../src/common/collection.c:1493 ../src/libs/collect.c:1890
 #: ../src/libs/filters/history.c:38
 msgid "basic"
 msgstr "Basique"
@@ -4226,8 +4226,8 @@ msgstr "Reconstruction des hautes lumières"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:549
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
-#: ../src/common/variables.c:184 ../src/common/variables.c:837
-#: ../src/develop/imageop_gui.c:209 ../src/imageio/format/avif.c:932
+#: ../src/common/variables.c:184 ../src/common/variables.c:877
+#: ../src/develop/imageop_gui.c:209 ../src/imageio/format/avif.c:934
 #: ../src/imageio/format/pdf.c:653 ../src/imageio/format/pdf.c:672
 #: ../src/imageio/format/tiff.c:928 ../src/libs/export.c:1355
 #: ../src/libs/export.c:1364 ../src/libs/export.c:1373
@@ -4634,8 +4634,8 @@ msgstr "Vignettage manuel seulement"
 #. get nice text for bounds
 #. Side-border hide/show
 #: ../build/lib/darktable/plugins/introspection_lens.cc:534
-#: ../src/dtgtk/range.c:1761 ../src/gui/accelerators.c:2602
-#: ../src/gui/accelerators.c:2684 ../src/gui/gtk.c:1394 ../src/gui/gtk.c:3747
+#: ../src/dtgtk/range.c:1761 ../src/gui/accelerators.c:2603
+#: ../src/gui/accelerators.c:2685 ../src/gui/gtk.c:1395 ../src/gui/gtk.c:3748
 #: ../src/imageio/format/pdf.c:662 ../src/iop/denoiseprofile.c:3674
 #: ../src/iop/rawdenoise.c:885 ../src/libs/collect.c:3558
 #: ../src/libs/filtering.c:1544 ../src/libs/filters/colors.c:157
@@ -5040,7 +5040,7 @@ msgstr "GainMap intégré"
 #. exposure
 #: ../build/lib/darktable/plugins/introspection_relight.c:43
 #: ../build/lib/darktable/plugins/introspection_relight.c:98
-#: ../src/common/collection.c:631 ../src/gui/preferences.c:851
+#: ../src/common/collection.c:629 ../src/gui/preferences.c:852
 #: ../src/gui/presets.c:699 ../src/iop/basicadj.c:625 ../src/iop/exposure.c:122
 #: ../src/iop/exposure.c:1127 ../src/libs/metadata_view.c:151
 msgid "exposure"
@@ -5457,80 +5457,80 @@ msgstr "Montre des images sur la carte"
 msgid "Print your images"
 msgstr "Imprimer les images"
 
-#: ../src/bauhaus/bauhaus.c:878 ../src/bauhaus/bauhaus.c:3969
+#: ../src/bauhaus/bauhaus.c:881 ../src/bauhaus/bauhaus.c:3958
 #: ../src/iop/colorequal.c:3076
 msgid "sliders"
 msgstr "Réglettes"
 
-#: ../src/bauhaus/bauhaus.c:880 ../src/bauhaus/bauhaus.c:3974
+#: ../src/bauhaus/bauhaus.c:883 ../src/bauhaus/bauhaus.c:3963
 msgid "dropdowns"
 msgstr "Menus déroulants"
 
-#: ../src/bauhaus/bauhaus.c:882 ../src/bauhaus/bauhaus.c:3979
+#: ../src/bauhaus/bauhaus.c:885 ../src/bauhaus/bauhaus.c:3968
 msgid "buttons"
 msgstr "Boutons"
 
-#: ../src/bauhaus/bauhaus.c:3635
+#: ../src/bauhaus/bauhaus.c:3625
 msgid "button on"
 msgstr "Bouton actif"
 
-#: ../src/bauhaus/bauhaus.c:3635
+#: ../src/bauhaus/bauhaus.c:3625
 msgid "button off"
 msgstr "Bouton inactif"
 
-#: ../src/bauhaus/bauhaus.c:3636
+#: ../src/bauhaus/bauhaus.c:3626
 msgid "button pressed"
 msgstr "Bouton appuyé"
 
-#: ../src/bauhaus/bauhaus.c:3874
+#: ../src/bauhaus/bauhaus.c:3863
 msgid "not that many sliders"
 msgstr "Pas tant de réglettes"
 
-#: ../src/bauhaus/bauhaus.c:3888
+#: ../src/bauhaus/bauhaus.c:3877
 msgid "not that many dropdowns"
 msgstr "Pas tant de menus déroulants"
 
-#: ../src/bauhaus/bauhaus.c:3907
+#: ../src/bauhaus/bauhaus.c:3896
 msgid "not that many buttons"
 msgstr "Pas tant de boutons"
 
-#: ../src/bauhaus/bauhaus.c:3912 ../src/gui/accelerators.c:396
+#: ../src/bauhaus/bauhaus.c:3901 ../src/gui/accelerators.c:396
 msgid "value"
 msgstr "Valeur"
 
-#: ../src/bauhaus/bauhaus.c:3913 ../src/bauhaus/bauhaus.c:3919
+#: ../src/bauhaus/bauhaus.c:3902 ../src/bauhaus/bauhaus.c:3908
 #: ../src/gui/accelerators.c:375
 msgid "button"
 msgstr "Bouton"
 
-#: ../src/bauhaus/bauhaus.c:3914
+#: ../src/bauhaus/bauhaus.c:3903
 msgid "force"
 msgstr "Force"
 
-#: ../src/bauhaus/bauhaus.c:3915 ../src/libs/navigation.c:187
+#: ../src/bauhaus/bauhaus.c:3904 ../src/libs/navigation.c:187
 #: ../src/libs/navigation.c:199
 msgid "zoom"
 msgstr "Zoom"
 
-#: ../src/bauhaus/bauhaus.c:3918 ../src/libs/select.c:40
+#: ../src/bauhaus/bauhaus.c:3907 ../src/libs/select.c:40
 msgid "selection"
 msgstr "Sélection"
 
-#: ../src/bauhaus/bauhaus.c:3958
+#: ../src/bauhaus/bauhaus.c:3947
 msgid "slider"
 msgstr "Réglette"
 
-#: ../src/bauhaus/bauhaus.c:3963
+#: ../src/bauhaus/bauhaus.c:3952
 msgid "dropdown"
 msgstr "Menu déroulant"
 
 #: ../src/chart/main.c:504 ../src/common/database.c:3734
 #: ../src/control/jobs/control_jobs.c:2156
-#: ../src/control/jobs/control_jobs.c:2214 ../src/gui/accelerators.c:2507
-#: ../src/gui/accelerators.c:2589 ../src/gui/accelerators.c:2642
-#: ../src/gui/accelerators.c:2671 ../src/gui/accelerators.c:2733
-#: ../src/gui/hist_dialog.c:228 ../src/gui/preferences.c:1059
-#: ../src/gui/preferences.c:1098 ../src/gui/presets.c:423
+#: ../src/control/jobs/control_jobs.c:2214 ../src/gui/accelerators.c:2508
+#: ../src/gui/accelerators.c:2590 ../src/gui/accelerators.c:2643
+#: ../src/gui/accelerators.c:2672 ../src/gui/accelerators.c:2734
+#: ../src/gui/hist_dialog.c:228 ../src/gui/preferences.c:1060
+#: ../src/gui/preferences.c:1099 ../src/gui/presets.c:423
 #: ../src/gui/presets.c:566 ../src/gui/styles_dialog.c:555
 #: ../src/imageio/storage/disk.c:197 ../src/imageio/storage/gallery.c:149
 #: ../src/imageio/storage/latex.c:145 ../src/iop/lut3d.c:1556
@@ -5549,7 +5549,7 @@ msgstr "Menu déroulant"
 msgid "_cancel"
 msgstr "_Annuler"
 
-#: ../src/chart/main.c:504 ../src/gui/preferences.c:1098
+#: ../src/chart/main.c:504 ../src/gui/preferences.c:1099
 #: ../src/gui/styles_dialog.c:556 ../src/libs/collect.c:3390
 #: ../src/libs/export_metadata.c:277 ../src/libs/metadata.c:469
 #: ../src/libs/metadata_view.c:1264 ../src/libs/recentcollect.c:233
@@ -5749,58 +5749,60 @@ msgstr ""
 "L’appareil photo « %s » sur le port « %s » doit être remonté,\n"
 "s’assurer qu’il autorise l’accès et qu’il n’est pas monté par ailleurs."
 
-#: ../src/common/collection.c:584
+#: ../src/common/collection.c:582
 msgid "too much time to update aspect ratio for the collection"
 msgstr "Trop de temps pour mettre à jour l’aspect pour la collection"
 
-#: ../src/common/collection.c:599
+#: ../src/common/collection.c:597
 msgid "film roll"
 msgstr "Pellicule"
 
-#: ../src/common/collection.c:601
+#. manage the scripts
+#: ../src/common/collection.c:599
+#: ../src/external/lua-scripts/tools/script_manager.lua:1375
 msgid "folder"
 msgstr "Dossier"
 
-#: ../src/common/collection.c:603
+#: ../src/common/collection.c:601
 msgid "camera"
 msgstr "Boîtier"
 
-#: ../src/common/collection.c:605 ../src/libs/export_metadata.c:176
+#: ../src/common/collection.c:603 ../src/libs/export_metadata.c:176
 #: ../src/libs/tagging.c:3395
 msgid "tag"
 msgstr "Mot-clé"
 
-#: ../src/common/collection.c:607
+#: ../src/common/collection.c:605
 msgid "capture date"
 msgstr "Date de capture"
 
-#: ../src/common/collection.c:609 ../src/libs/filtering.c:61
+#: ../src/common/collection.c:607 ../src/libs/filtering.c:61
 msgid "capture time"
 msgstr "Heure de capture"
 
-#: ../src/common/collection.c:611 ../src/libs/filtering.c:62
+#: ../src/common/collection.c:609 ../src/libs/filtering.c:62
 msgid "import time"
 msgstr "Date d’importation"
 
-#: ../src/common/collection.c:613 ../src/libs/filtering.c:63
+#: ../src/common/collection.c:611 ../src/libs/filtering.c:63
 msgid "modification time"
 msgstr "Date de modification"
 
-#: ../src/common/collection.c:615 ../src/libs/filtering.c:64
+#: ../src/common/collection.c:613 ../src/libs/filtering.c:64
 msgid "export time"
 msgstr "Date d’exportation"
 
-#: ../src/common/collection.c:617 ../src/libs/filtering.c:65
+#: ../src/common/collection.c:615 ../src/libs/filtering.c:65
 msgid "print time"
 msgstr "Date d’impression"
 
-#: ../src/common/collection.c:619 ../src/libs/collect.c:3768
+#: ../src/common/collection.c:617 ../src/libs/collect.c:3768
 #: ../src/libs/filtering.c:2262 ../src/libs/filtering.c:2282
 #: ../src/libs/filters/history.c:153 ../src/libs/history.c:96
 msgid "history"
 msgstr "Historique"
 
-#: ../src/common/collection.c:621 ../src/common/colorlabels.c:388
+#: ../src/common/collection.c:619 ../src/common/colorlabels.c:388
 #: ../src/develop/lightroom.c:1607 ../src/dtgtk/thumbnail.c:1538
 #: ../src/libs/filtering.c:68 ../src/libs/filters/colors.c:301
 #: ../src/libs/filters/colors.c:312 ../src/libs/tools/colorlabels.c:143
@@ -5808,142 +5810,142 @@ msgid "color label"
 msgstr "Label couleur"
 
 #. iso
-#: ../src/common/collection.c:627 ../src/gui/preferences.c:847
+#: ../src/common/collection.c:625 ../src/gui/preferences.c:848
 #: ../src/gui/presets.c:681 ../src/libs/camera.c:556
 #: ../src/libs/metadata_view.c:161
 msgid "ISO"
 msgstr "ISO"
 
 #. aperture
-#: ../src/common/collection.c:629 ../src/gui/preferences.c:855
+#: ../src/common/collection.c:627 ../src/gui/preferences.c:856
 #: ../src/gui/presets.c:716 ../src/libs/camera.c:543 ../src/libs/camera.c:545
 #: ../src/libs/metadata_view.c:150
 msgid "aperture"
 msgstr "Ouverture"
 
-#: ../src/common/collection.c:637 ../src/libs/filtering.c:57
+#: ../src/common/collection.c:635 ../src/libs/filtering.c:57
 #: ../src/libs/filters/filename.c:368 ../src/libs/metadata_view.c:136
 msgid "filename"
 msgstr "Nom de fichier"
 
-#: ../src/common/collection.c:639 ../src/develop/lightroom.c:1598
+#: ../src/common/collection.c:637 ../src/develop/lightroom.c:1598
 #: ../src/libs/geotagging.c:141
 msgid "geotagging"
 msgstr "Géolocalisation"
 
-#: ../src/common/collection.c:641 ../src/libs/filtering.c:72
+#: ../src/common/collection.c:639 ../src/libs/filtering.c:72
 msgid "group"
 msgstr "Grouper"
 
-#: ../src/common/collection.c:643 ../src/dtgtk/thumbnail.c:1553
+#: ../src/common/collection.c:641 ../src/dtgtk/thumbnail.c:1553
 #: ../src/libs/filters/local_copy.c:142 ../src/libs/metadata_view.c:139
 #: ../src/libs/metadata_view.c:355
 msgid "local copy"
 msgstr "Copie locale"
 
-#: ../src/common/collection.c:645 ../src/gui/preferences.c:823
+#: ../src/common/collection.c:643 ../src/gui/preferences.c:824
 msgid "module"
 msgstr "Module"
 
-#: ../src/common/collection.c:647 ../src/gui/hist_dialog.c:346
+#: ../src/common/collection.c:645 ../src/gui/hist_dialog.c:346
 #: ../src/gui/styles_dialog.c:765 ../src/gui/styles_dialog.c:814
 #: ../src/libs/filters/module_order.c:161 ../src/libs/ioporder.c:39
 msgid "module order"
 msgstr "Ordre des modules"
 
-#: ../src/common/collection.c:649
+#: ../src/common/collection.c:647
 msgid "range rating"
 msgstr "Intervalle de notation"
 
-#: ../src/common/collection.c:651 ../src/common/ratings.c:338
+#: ../src/common/collection.c:649 ../src/common/ratings.c:338
 #: ../src/develop/lightroom.c:1582 ../src/libs/filtering.c:67
 #: ../src/libs/tools/ratings.c:110
 msgid "rating"
 msgstr "Étoile"
 
-#: ../src/common/collection.c:653
+#: ../src/common/collection.c:651
 msgid "search"
 msgstr "Rechercher"
 
-#: ../src/common/collection.c:655 ../src/libs/metadata_view.c:154
+#: ../src/common/collection.c:653 ../src/libs/metadata_view.c:154
 msgid "white balance"
 msgstr "Balance des blancs"
 
-#: ../src/common/collection.c:657 ../src/common/wb_presets.c:87
+#: ../src/common/collection.c:655 ../src/common/wb_presets.c:87
 #: ../src/libs/metadata_view.c:155
 msgid "flash"
 msgstr "Flash"
 
-#: ../src/common/collection.c:659 ../src/libs/metadata_view.c:153
+#: ../src/common/collection.c:657 ../src/libs/metadata_view.c:153
 msgid "exposure program"
 msgstr "Mode d’exposition"
 
-#: ../src/common/collection.c:661 ../src/libs/metadata_view.c:156
+#: ../src/common/collection.c:659 ../src/libs/metadata_view.c:156
 msgid "metering mode"
 msgstr "Mode de mesure"
 
-#: ../src/common/collection.c:1483 ../src/common/color_vocabulary.c:339
+#: ../src/common/collection.c:1481 ../src/common/color_vocabulary.c:339
 #: ../src/common/colorlabels.c:384 ../src/iop/colorzones.c:2494
 #: ../src/libs/collect.c:1949 ../src/libs/filters/colors.c:264
 msgid "purple"
 msgstr "Violet"
 
-#: ../src/common/collection.c:1501 ../src/libs/collect.c:1890
+#: ../src/common/collection.c:1499 ../src/libs/collect.c:1890
 #: ../src/libs/filters/history.c:38
 msgid "auto applied"
 msgstr "Appliqué automatiquement"
 
-#: ../src/common/collection.c:1507 ../src/libs/collect.c:1890
+#: ../src/common/collection.c:1505 ../src/libs/collect.c:1890
 #: ../src/libs/filters/history.c:38
 msgid "altered"
 msgstr "Développées"
 
-#: ../src/common/collection.c:1525 ../src/common/collection.c:1636
+#: ../src/common/collection.c:1523 ../src/common/collection.c:1634
 #: ../src/libs/collect.c:1256 ../src/libs/collect.c:1444
 #: ../src/libs/collect.c:1470 ../src/libs/collect.c:1614
 #: ../src/libs/collect.c:2798
 msgid "not tagged"
 msgstr "Non positionnée"
 
-#: ../src/common/collection.c:1526 ../src/libs/collect.c:1470
+#: ../src/common/collection.c:1524 ../src/libs/collect.c:1470
 #: ../src/libs/map_locations.c:742
 msgid "tagged"
 msgstr "Positionnée"
 
-#: ../src/common/collection.c:1527
+#: ../src/common/collection.c:1525
 msgid "tagged*"
 msgstr "Positionnée*"
 
 #. local copy
-#: ../src/common/collection.c:1561 ../src/libs/collect.c:1912
+#: ../src/common/collection.c:1559 ../src/libs/collect.c:1912
 #: ../src/libs/filters/local_copy.c:38
 msgid "not copied locally"
 msgstr "Non copiée localement"
 
-#: ../src/common/collection.c:1566 ../src/libs/collect.c:1911
+#: ../src/common/collection.c:1564 ../src/libs/collect.c:1911
 #: ../src/libs/filters/local_copy.c:38
 msgid "copied locally"
 msgstr "Copiée localement"
 
 #. if its undefined
-#: ../src/common/collection.c:1608 ../src/common/collection.c:1720
-#: ../src/common/collection.c:1747 ../src/common/collection.c:1774
-#: ../src/common/collection.c:1800 ../src/common/collection.c:1826
-#: ../src/common/collection.c:2625 ../src/libs/collect.c:2315
+#: ../src/common/collection.c:1606 ../src/common/collection.c:1718
+#: ../src/common/collection.c:1745 ../src/common/collection.c:1772
+#: ../src/common/collection.c:1798 ../src/common/collection.c:1824
+#: ../src/common/collection.c:2623 ../src/libs/collect.c:2315
 #: ../src/libs/collect.c:2316
 msgid "unnamed"
 msgstr "Sans nom"
 
-#: ../src/common/collection.c:2276 ../src/libs/collect.c:2204
+#: ../src/common/collection.c:2274 ../src/libs/collect.c:2204
 msgid "not defined"
 msgstr "Non défini"
 
-#: ../src/common/collection.c:2752
+#: ../src/common/collection.c:2750
 #, c-format
 msgid "<b>%d</b> image (#<b>%d</b>) selected of <b>%d</b>"
 msgstr "<b>%d</b> image (#<b>%d</b>) sélectionnée parmi <b>%d</b>"
 
-#: ../src/common/collection.c:2759
+#: ../src/common/collection.c:2757
 #, c-format
 msgid "<b>%d</b> image selected of <b>%d</b>"
 msgid_plural "<b>%d</b> images selected of <b>%d</b>"
@@ -6241,8 +6243,9 @@ msgstr "Labels de couleur positionnés à « %s »"
 msgid "all colorlabels removed"
 msgstr "Tous les labels de couleur sont supprimés"
 
-#: ../src/common/colorlabels.c:379 ../src/gui/accelerators.c:192
-#: ../src/libs/image.c:668
+#: ../src/common/colorlabels.c:379
+#: ../src/external/lua-scripts/tools/executable_manager.lua:224
+#: ../src/gui/accelerators.c:192 ../src/libs/image.c:668
 msgid "clear"
 msgstr "Effacer"
 
@@ -6707,11 +6710,11 @@ msgstr ""
 "\n"
 "Réellement supprimer les fichiers verrous ?\n"
 
-#: ../src/common/database.c:3741 ../src/gui/gtk.c:3099
+#: ../src/common/database.c:3741 ../src/gui/gtk.c:3100
 msgid "_no"
 msgstr "_Non"
 
-#: ../src/common/database.c:3741 ../src/gui/gtk.c:3098
+#: ../src/common/database.c:3741 ../src/gui/gtk.c:3099
 msgid "_yes"
 msgstr "_Oui"
 
@@ -6730,7 +6733,7 @@ msgstr ""
 "darktable doit être redémarré.\n"
 
 #: ../src/common/database.c:3759 ../src/common/database.c:3766
-#: ../src/gui/accelerators.c:2590 ../src/gui/accelerators.c:2672
+#: ../src/gui/accelerators.c:2591 ../src/gui/accelerators.c:2673
 #: ../src/gui/hist_dialog.c:229 ../src/gui/presets.c:567
 msgid "_ok"
 msgstr "_Ok"
@@ -6824,9 +6827,9 @@ msgstr ""
 msgid "darktable - schema migration"
 msgstr "darktable - Migration de la base de données"
 
-#: ../src/common/database.c:3999 ../src/common/database.c:4321
-#: ../src/common/database.c:4336 ../src/common/database.c:4504
-#: ../src/common/database.c:4519
+#: ../src/common/database.c:3999 ../src/common/database.c:4318
+#: ../src/common/database.c:4333 ../src/common/database.c:4501
+#: ../src/common/database.c:4516
 msgid "_close darktable"
 msgstr "_Quitter darktable"
 
@@ -6834,7 +6837,7 @@ msgstr "_Quitter darktable"
 msgid "_upgrade database"
 msgstr "_Mise à jour de la base de données"
 
-#: ../src/common/database.c:4301 ../src/common/database.c:4484
+#: ../src/common/database.c:4298 ../src/common/database.c:4481
 #, c-format
 msgid ""
 "quick_check said:\n"
@@ -6844,21 +6847,21 @@ msgstr ""
 "« %s »\n"
 "\n"
 
-#: ../src/common/database.c:4318 ../src/common/database.c:4333
-#: ../src/common/database.c:4501 ../src/common/database.c:4516
+#: ../src/common/database.c:4315 ../src/common/database.c:4330
+#: ../src/common/database.c:4498 ../src/common/database.c:4513
 msgid "darktable - error opening database"
 msgstr "darktable - Erreur lors de l’ouverture de la base de données"
 
-#: ../src/common/database.c:4322 ../src/common/database.c:4505
+#: ../src/common/database.c:4319 ../src/common/database.c:4502
 msgid "_attempt restore"
 msgstr "_Essayer de restaurer"
 
-#: ../src/common/database.c:4323 ../src/common/database.c:4337
-#: ../src/common/database.c:4506 ../src/common/database.c:4520
+#: ../src/common/database.c:4320 ../src/common/database.c:4334
+#: ../src/common/database.c:4503 ../src/common/database.c:4517
 msgid "_delete database"
 msgstr "_Effacer la base de données"
 
-#: ../src/common/database.c:4326 ../src/common/database.c:4509
+#: ../src/common/database.c:4323 ../src/common/database.c:4506
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup, attempt an automatic restore\n"
@@ -6871,7 +6874,7 @@ msgstr ""
 "récente\n"
 " • Ou supprimer la base corrompue et redémarrer avec une nouvelle base ?"
 
-#: ../src/common/database.c:4340 ../src/common/database.c:4523
+#: ../src/common/database.c:4337 ../src/common/database.c:4520
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or delete the corrupted database\n"
@@ -6881,7 +6884,7 @@ msgstr ""
 "la base de données depuis une sauvegarde, ou supprimer la base corrompue\n"
 "et redémarrer avec une nouvelle base ?"
 
-#: ../src/common/database.c:4347 ../src/common/database.c:4528
+#: ../src/common/database.c:4344 ../src/common/database.c:4525
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -6935,7 +6938,7 @@ msgid_plural "remove empty directories?"
 msgstr[0] "Supprimer le répertoire vide ?"
 msgstr[1] "Supprimer les répertoires vides ?"
 
-#: ../src/common/film.c:368 ../src/gui/preferences.c:831
+#: ../src/common/film.c:368 ../src/gui/preferences.c:832
 #: ../src/gui/styles_dialog.c:586 ../src/libs/geotagging.c:841
 #: ../src/libs/import.c:1907
 msgid "name"
@@ -7122,7 +7125,7 @@ msgstr "RawSpeed"
 msgid "Netpbm"
 msgstr "Netpbm"
 
-#: ../src/common/image.h:234 ../src/imageio/format/avif.c:832
+#: ../src/common/image.h:234 ../src/imageio/format/avif.c:834
 msgid "AVIF"
 msgstr "AVIF"
 
@@ -7167,10 +7170,10 @@ msgstr ""
 #: ../src/common/import_session.c:300
 msgid ""
 "couldn't expand to a unique filename for session, please check your import "
-"session settings."
+"session settings"
 msgstr ""
-"Impossible d’affecter un nom unique à la session. Vérifier les réglages "
-"d’importation."
+"Impossible de trouver un nom de fichier unique pour la session, merci de "
+"vérifier les paramètres de session d'importation"
 
 #: ../src/common/import_session.c:393
 msgid "requested session path not available. device not mounted?"
@@ -7213,10 +7216,12 @@ msgid "publisher"
 msgstr "Diffuseur"
 
 #. title
-#: ../src/common/metadata.c:48 ../src/imageio/format/pdf.c:591
-#: ../src/imageio/format/pdf.c:593 ../src/imageio/storage/gallery.c:218
-#: ../src/imageio/storage/gallery.c:221 ../src/imageio/storage/latex.c:205
-#: ../src/imageio/storage/piwigo.c:1141 ../src/libs/filtering.c:69
+#: ../src/common/metadata.c:48
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:70
+#: ../src/imageio/format/pdf.c:591 ../src/imageio/format/pdf.c:593
+#: ../src/imageio/storage/gallery.c:218 ../src/imageio/storage/gallery.c:221
+#: ../src/imageio/storage/latex.c:205 ../src/imageio/storage/piwigo.c:1141
+#: ../src/libs/filtering.c:69
 msgid "title"
 msgstr "Titre"
 
@@ -7399,7 +7404,9 @@ msgstr "Image notée à 0 étoile"
 msgid "image rated to %s"
 msgstr "Image notée à « %s »"
 
-#: ../src/common/ratings.c:322 ../src/views/lighttable.c:766
+#: ../src/common/ratings.c:322
+#: ../src/external/lua-scripts/tools/executable_manager.lua:220
+#: ../src/views/lighttable.c:766
 msgid "select"
 msgstr "Sélection"
 
@@ -7489,20 +7496,20 @@ msgstr "Le style « %s » a été importé"
 msgid "could not read file `%s'"
 msgstr "Impossible de lire le fichier « %s »"
 
-#: ../src/common/utility.c:559
+#: ../src/common/utility.c:557
 msgid "above sea level"
 msgstr "Au-dessus du niveau de la mer"
 
-#: ../src/common/utility.c:560
+#: ../src/common/utility.c:558
 msgid "below sea level"
 msgstr "Sous le niveau de la mer"
 
-#: ../src/common/utility.c:611 ../src/libs/metadata_view.c:949
+#: ../src/common/utility.c:609 ../src/libs/metadata_view.c:949
 msgid "m"
 msgstr "M"
 
-#: ../src/common/variables.c:184 ../src/common/variables.c:835
-#: ../src/develop/imageop_gui.c:210 ../src/imageio/format/avif.c:932
+#: ../src/common/variables.c:184 ../src/common/variables.c:875
+#: ../src/develop/imageop_gui.c:210 ../src/imageio/format/avif.c:934
 #: ../src/imageio/format/pdf.c:653 ../src/imageio/format/pdf.c:672
 #: ../src/imageio/format/tiff.c:928 ../src/libs/export.c:1355
 #: ../src/libs/export.c:1364 ../src/libs/export.c:1373
@@ -8754,7 +8761,7 @@ msgstr "Entrée après le flou"
 
 #: ../src/develop/blend_gui.c:183 ../src/gui/accelerators.c:151
 #: ../src/gui/accelerators.c:161 ../src/gui/accelerators.c:250
-#: ../src/imageio/format/avif.c:947 ../src/libs/live_view.c:362
+#: ../src/imageio/format/avif.c:949 ../src/libs/live_view.c:362
 msgid "on"
 msgstr "Activé(e)"
 
@@ -9348,7 +9355,7 @@ msgstr ""
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s : Module « %s » version non cohérente : %d != %d"
 
-#: ../src/develop/develop.c:3116
+#: ../src/develop/develop.c:3109
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr ""
 "Duplication de module, impossible de déplacer la nouvelle instance après "
@@ -9491,16 +9498,18 @@ msgstr "Nouveau"
 msgid "duplicate"
 msgstr "Cloner"
 
-#: ../src/develop/imageop.c:3979 ../src/gui/accelerators.c:134
-#: ../src/gui/accelerators.c:144 ../src/gui/gtk.c:3595 ../src/gui/gtk.c:3650
-#: ../src/gui/hist_dialog.c:272 ../src/gui/styles_dialog.c:646
-#: ../src/gui/styles_dialog.c:668 ../src/iop/atrous.c:1615
-#: ../src/libs/lib.c:1561 ../src/libs/modulegroups.c:4079
+#: ../src/develop/imageop.c:3979
+#: ../src/external/lua-scripts/tools/executable_manager.lua:222
+#: ../src/gui/accelerators.c:134 ../src/gui/accelerators.c:144
+#: ../src/gui/gtk.c:3596 ../src/gui/gtk.c:3651 ../src/gui/hist_dialog.c:272
+#: ../src/gui/styles_dialog.c:646 ../src/gui/styles_dialog.c:668
+#: ../src/iop/atrous.c:1615 ../src/libs/lib.c:1561
+#: ../src/libs/modulegroups.c:4079
 msgid "reset"
 msgstr "Réinitialiser"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3980 ../src/gui/preferences.c:813
+#: ../src/develop/imageop.c:3980 ../src/gui/preferences.c:814
 #: ../src/libs/lib.c:1562
 msgid "presets"
 msgstr "Préréglages"
@@ -9513,7 +9522,7 @@ msgstr "Activer"
 msgid "focus"
 msgstr "Focus"
 
-#: ../src/develop/imageop.c:3983 ../src/gui/accelerators.c:2884
+#: ../src/develop/imageop.c:3983 ../src/gui/accelerators.c:2885
 msgid "instance"
 msgstr "Instance"
 
@@ -10127,7 +10136,9 @@ msgstr "Définit les bornes de l’étendue avec cette valeur"
 msgid "double-click to reset"
 msgstr "Double clic pour réinitialiser"
 
+#. loop through the tabke of path preferences and populate the widgets
 #: ../src/dtgtk/thumbnail.c:146 ../src/dtgtk/thumbnail.c:179
+#: ../src/external/lua-scripts/tools/executable_manager.lua:218
 msgid "current"
 msgstr "Actuelle"
 
@@ -10322,6 +10333,1905 @@ msgstr "Choisir le dossier"
 msgid "select untouched"
 msgstr "Non développées"
 
+#. clang-format off
+#. modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+#. vim: shiftwidth=2 expandtab tabstop=2 cindent
+#. kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+#. clang-format on
+#. allow time for the error to display before script_manager writes it's error message
+#. allow time for the error to display before script_manager writes it's error message
+#.
+#. NAME
+#. prequire - a protected lua require
+#.
+#. SYNOPSIS
+#. local du = require "lib/dtutils"
+#.
+#. local result = du.prequire(req_name)
+#. req_name - the filename of the lua code to load without the ".lua" filetype
+#.
+#. DESCRIPTION
+#. prequire is a protected require that can survive an error in the code being loaded without
+#. bringing down the calling routine.
+#.
+#. RETURN VALUE
+#. result - the code or true on success, otherwise an error message
+#.
+#. EXAMPLE
+#. prequire("lib/dtutils.file") which would load lib/dtutils/file.lua
+#.
+#.
+#. Sort a table
+#. Code copied from http://stackoverflow.com/questions/15706270/sort-a-table-in-lua
+#. collect the keys
+#. if order function given, sort by it by passing the table and keys a, b,
+#. otherwise just sort the keys
+#. return the iterator function
+#.
+#. This file is part of darktable,
+#. Copyright (c) 2014 Jérémy Rosen
+#. Copyright (c) 2016 Bill Ferguson
+#.
+#. darktable is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation, either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. darktable is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. DEBUG HELPERS
+#. A collection of helper functions to help debugging lua scripts.
+#.
+#. require it as
+#.
+#. dhelpers = require "lib/dtutils.debug"
+#.
+#. Each function is documented in its own header
+#.
+#.
+#.
+#. The actual content of the module
+#. vim: shiftwidth=2 expandtab tabstop=2 cindent
+#. kate: tab-indents: off; indent-width 2; replace-tabs on; remove-trailing-space on;
+#.
+#. local function to run a test command on windows and return a true if it succeeds
+#. instead of returning true if it runs
+#.
+#.
+#. local function to determine if a path name is a windows executable
+#.
+#. test if directory
+#. test exists
+#. test if file
+#. make sure it's not a directory
+#. test executable
+#.
+#. local function to return a case insensitive pattern for matching
+#. i.e. gimp becomes [Gg][Ii][Mm][Pp] which  should match any capitalization
+#. of gimp.
+#.
+#.
+#. local function to search windows for an executable
+#.
+#. use where on path
+#. use where on program files
+#. use where on program files (x86)
+#. save it so we don't have to search again
+#.
+#. local function to search *nix systems for an executable
+#.
+#.
+#. local function to search macos systems for an executable
+#.
+#. see if it's in the path
+#. save it so we don't have to search again
+#.
+#. local function to provide a generic search call that can be
+#. split into operating system specific calls
+#.
+#.
+#. local function to check if an executable path is
+#. a windows executable on linux or macos, thus requiring wine to run
+#.
+#. check for windows executable to run under wine
+#.
+#. local function to check if an executable path is
+#. a valid executable.  Some generic checks are done before
+#. system specific checks are done.
+#.
+#. reset path preference is the returned preference is a directory
+#.
+#. local function to the old check_if_bin_exists functionality
+#. on windows in order to decrease the amount of windows being
+#. created and destroyed by system calls.
+#.
+#. only run on windows if preference checked
+#. the following path, filename, etc functions have
+#. moved to the string library since they are string
+#. manipulation functions, and to prevent circular
+#. library inclusiion.
+#. these functions are left here for compatibility
+#. with older scripts
+#. Thanks Tobias Jakobs for the idea
+#. result = os.execute('if exist "'..filepath..'" (cmd /c exit 0) else (cmd /c exit 1)')
+#. if not result then
+#. result = false
+#. end
+#. if cp exists, use it
+#. if cp was not present, or if cp failed, then a pure lua solution
+#. an error occurred, so let's try using the operating system function
+#. if the mv didn't exist or succeed, then...
+#. pure lua solution
+#. nil on error, some value if success
+#. break up the filepath into parts
+#. check to see if we've incremented before
+#. we do 2 digit increments so make sure we didn't grab part of the filename
+#. we got the filename so set the increment to 01
+#. limit to 99 more exports of the original export
+#.
+#. The new check_if_bin_exists() does multiple calls to the operating system to check
+#. if the file exists and is an executable.  On windows, each call to the operating system
+#. causes a window to open in order to run the command, then the window closes when the
+#. command exits.  If the user gets annoyed by the "flickering windows", then they can
+#. enable this preference to use the old check_if_bin_exists() that relys on the
+#. executable path preferences and doesn't do as many checks.
+#.
+#. set the default log levels
+#. returns the path to the file prefixed with @
+#. we just need the filename, so grab it from the string
+#. Thanks, Tobias Jakobs  :-)
+#. these aren't valid for setting levels
+#. Keep &amp; first, otherwise it will double escape other characters
+#. A sanitized string must be quoted.
+#. A quoted string containing no quote characters within is sanitized.
+#. Any quote characters within a sanitized string must be properly
+#. escaped.
+#. strip out single quotes from quoted pathnames
+#. Thank you Tobias Jakobs for the awesome regular expression, which I tweaked a little
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. C O N S T A N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. Not Implemented
+#. find the $CATEGORYn and $CATEGORY[n,m] requests and add them to the substitute list
+#. grab each complete variable
+#. strip of the leading $( and trailing )
+#. get the element number and the tag to match
+#. new syntax
+#. add one to element since lua arrays are 1 based
+#. convert image.exif_datetime_taken to system time
+#. build the argument substitution list from each image
+#. is time millisecond aware?  Implemented in API 9.1.0
+#. ROLL.NAME
+#. FILE.FOLDER
+#. FILE.NAME
+#. FILE.EXTENSION
+#. ID
+#. VERSION
+#. VERSION.IF_MULTI
+#. VERSION.NAME
+#. DARKTABLE.VERSION
+#. DARKTABLE.NAME
+#. SEQUENCE
+#. WIDTH.SENSOR
+#. HEIGHT.SENSOR
+#. WIDTH.RAW
+#. HEIGHT.RAW
+#. WIDTH.CROP
+#. HEIGHT.CROP
+#. WIDTH.EXPORT
+#. HEIGHT.EXPORT
+#. WIDTH.MAX   -- from export module
+#. HEIGHT.MAX  -- from export module
+#. YEAR
+#. YEAR.SHORT
+#. MONTH
+#. MONTH.LONG
+#. MONTH.SHORT
+#. DAY
+#. HOUR
+#. HOUR.AMPM
+#. MINUTE
+#. SECOND
+#. MSEC
+#. EXIF.YEAR
+#. EXIF.YEAR.SHORT
+#. EXIF.MONTH
+#. EXIF.MONTH.LONG
+#. EXIF.MONTH.SHORT
+#. EXIF.DAY
+#. EXIF.HOUR
+#. EXIF.HOUR.AMPM
+#. EXIF.MINUTE
+#. EXIF.SECOND
+#. EXIF.MSEC
+#. EXIF.DATE.REGIONAL - wont be implemented
+#. EXIF.TIME.REGIONAL - wont be implemented
+#. EXIF.ISO
+#. EXIF.EXPOSURE
+#. EXIF.EXPOSURE.BIAS
+#. EXIF.EXPOSURE.PROGRAM
+#. EXIF.APERTURE
+#. EXIF.CROP_FACTOR
+#. EXIF.FOCAL.LENGTH
+#. EXIF.FOCAL.LENGTH.EQUIV
+#. EXIF.FOCUS.DISTANCE
+#. EXIF.MAKER
+#. EXIF.MODEL
+#. EXIF.WHITEBALANCE
+#. EXIF.METERING
+#. LENS
+#. EXIF.FLASH.ICON
+#. EXIF.FLASH
+#. GPS.LONGITUDE
+#. GPS.LATITUDE
+#. GPS.ELEVATION
+#. GPS.LOCATION.ICON
+#. LONGITUDE
+#. LATITUDE
+#. ELEVATION
+#. GPS.LOCATION - wont be implemented
+#. STARS
+#. RATING.ICONS - wont be implemented
+#. LABELS
+#. LABELS.ICONS - wont be implemented
+#. TITLE
+#. DESCRIPTION
+#. CREATOR
+#. PUBLISHER
+#. RIGHTS
+#. TAGS - wont be implemented
+#. SIDECAR.TXT - wont be implemented
+#. FOLDER.PICTURES
+#. FOLDER.HOME
+#. FOLDER.DESKTOP
+#. OPENCL.ACTIVATED - wont be implemented
+#. USERNAME
+#. NL - wont be implemented
+#. JOBCODE - wont be implemented
+#. populate the substitution list
+#. do category substitutions separately
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:862
+#: ../src/gui/gtkentry.c:173
+msgid "$(ROLL.NAME) - roll of the input image"
+msgstr "$(ROLL.NAME) - Nom du dossier"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:863
+#: ../src/gui/gtkentry.c:174
+msgid "$(FILE.FOLDER) - folder containing the input image"
+msgstr "$(FILE.FOLDER) - Chemin du dossier de l’image d’origine"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:864
+#: ../src/gui/gtkentry.c:175
+msgid "$(FILE.NAME) - basename of the input image"
+msgstr "$(FILE.NAME) - Nom de base de l’image d’origine"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:865
+#: ../src/gui/gtkentry.c:176
+msgid "$(FILE.EXTENSION) - extension of the input image"
+msgstr "$(FILE.EXTENSION) - Extension du fichier d’origine"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:866
+#: ../src/gui/gtkentry.c:247
+msgid "$(ID) - image ID"
+msgstr "$(ID) - Numéro d’image"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:867
+#: ../src/gui/gtkentry.c:177
+msgid "$(VERSION) - duplicate version"
+msgstr "$(VERSION) - Version copie virtuelle"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:868
+#: ../src/gui/gtkentry.c:178
+msgid ""
+"$(VERSION.IF_MULTI) - same as $(VERSION) but null string if only one version "
+"exists"
+msgstr ""
+"$(VERSION.IF_MULTI) - Comme $(VERSION) mais égal à chaîne vide si une seule "
+"version existe"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:869
+#: ../src/gui/gtkentry.c:179
+msgid "$(VERSION.NAME) - version name from metadata"
+msgstr "$(VERSION.NAME) - Nom de version dans les métadonnées"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:870
+#: ../src/gui/gtkentry.c:261
+msgid "$(DARKTABLE.VERSION) - current darktable version"
+msgstr "$(DARKTABLE.VERSION) - Version de darktable"
+
+#. _("$(DARKTABLE.NAME) - darktable name"),  -- not implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:872
+#: ../src/gui/gtkentry.c:181
+msgid ""
+"$(SEQUENCE[n,m]) - sequence number, n: number of digits, m: start number"
+msgstr ""
+"$(SEQUENCE[n,m]) - Nombre séquentiel, n : nombre de chiffre, m : valeur "
+"initiale"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:873
+#: ../src/gui/gtkentry.c:183
+msgid "$(WIDTH.SENSOR) - image sensor width"
+msgstr "$(WIDTH.SENSOR) - Largeur de l'image du capteur"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:874
+#: ../src/gui/gtkentry.c:188
+msgid "$(HEIGHT.SENSOR) - image sensor height"
+msgstr "$(HEIGHT.SENSOR) - Hauteur de l’image du capteur"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:875
+#: ../src/gui/gtkentry.c:184
+msgid "$(WIDTH.RAW) - RAW image width"
+msgstr "$(WIDTH.RAW) - Largeur de l’image RAW"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:876
+#: ../src/gui/gtkentry.c:189
+msgid "$(HEIGHT.RAW) - RAW image height"
+msgstr "$(HEIGHT.RAW) - Hauteur de l’image RAW"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:877
+#: ../src/gui/gtkentry.c:185
+msgid "$(WIDTH.CROP) - image width after crop"
+msgstr "$(WIDTH.CROP) - Largeur de l’image après recadrage"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:878
+#: ../src/gui/gtkentry.c:190
+msgid "$(HEIGHT.CROP) - image height after crop"
+msgstr "$(HEIGHT.CROP) - Hauteur de l’image après recadrage"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:879
+#: ../src/gui/gtkentry.c:186
+msgid "$(WIDTH.EXPORT) - exported image width"
+msgstr "$(WIDTH.EXPORT) - Largeur de l’image exportée"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:880
+#: ../src/gui/gtkentry.c:191
+msgid "$(HEIGHT.EXPORT) - exported image height"
+msgstr "$(HEIGHT.EXPORT) - Hauteur de l’image exportée"
+
+#. _("$(WIDTH.MAX) - maximum image export width"),  -- not implemented
+#. _("$(HEIGHT.MAX) - maximum image export height"),  -- not implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:883
+#: ../src/gui/gtkentry.c:192
+msgid "$(YEAR) - year"
+msgstr "$(YEAR) - Année"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:884
+#: ../src/gui/gtkentry.c:193
+msgid "$(YEAR.SHORT) - year without century"
+msgstr "$(YEAR.SHORT) - Année sans le siècle"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:885
+#: ../src/gui/gtkentry.c:194
+msgid "$(MONTH) - month"
+msgstr "$(MONTH) - Mois"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:886
+#: ../src/gui/gtkentry.c:196
+msgid "$(MONTH.LONG) - full month name according to the current locale"
+msgstr "$(MONTH.LONG) - Nom du mois"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:887
+#: ../src/gui/gtkentry.c:195
+msgid "$(MONTH.SHORT) - abbreviated month name according to the current locale"
+msgstr "$(MONTH.SHORT) - Abréviation du nom du mois"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:888
+#: ../src/gui/gtkentry.c:197
+msgid "$(DAY) - day"
+msgstr "$(DAY) - Jour"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:889
+#: ../src/gui/gtkentry.c:198
+msgid "$(HOUR) - hour"
+msgstr "$(HOUR) - Heure"
+
+#. _("$(HOUR.AMPM) - hour, 12-hour clock"),  -- not implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:891
+#: ../src/gui/gtkentry.c:200
+msgid "$(MINUTE) - minute"
+msgstr "$(MINUTE) - Minutes"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:892
+#: ../src/gui/gtkentry.c:201
+msgid "$(SECOND) - second"
+msgstr "$(SECOND) - Secondes"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:893
+#: ../src/gui/gtkentry.c:202
+msgid "$(MSEC) - millisecond"
+msgstr "$(MSEC) - Millisecondes"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:894
+#: ../src/gui/gtkentry.c:205
+msgid "$(EXIF.YEAR) - EXIF year"
+msgstr "$(EXIF.YEAR) - Année EXIF"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:895
+#: ../src/gui/gtkentry.c:206
+msgid "$(EXIF.YEAR.SHORT) - EXIF year without century"
+msgstr "$(EXIF.YEAR.SHORT) - Année EXIF sans le siècle"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:896
+#: ../src/gui/gtkentry.c:207
+msgid "$(EXIF.MONTH) - EXIF month"
+msgstr "$(EXIF.MONTH) - Mois EXIF"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:897
+#: ../src/gui/gtkentry.c:209
+msgid ""
+"$(EXIF.MONTH.LONG) - full EXIF month name according to the current locale"
+msgstr "$(EXIF.MONTH.LONG) - Nom du mois de l’EXIF"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:898
+#: ../src/gui/gtkentry.c:208
+msgid ""
+"$(EXIF.MONTH.SHORT) - abbreviated EXIF month name according to the current "
+"locale"
+msgstr "$(EXIF.MONTH.SHORT) - Abréviation du nom du mois EXIF"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:899
+#: ../src/gui/gtkentry.c:210
+msgid "$(EXIF.DAY) - EXIF day"
+msgstr "$(EXIF.DAY) - Jour EXIF"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:900
+#: ../src/gui/gtkentry.c:211
+msgid "$(EXIF.HOUR) - EXIF hour"
+msgstr "$(EXIF.HOUR) - Heure EXIF"
+
+#. _("$(EXIF.HOUR.AMPM) - EXIF hour, 12-hour clock") ..  "\n" .. -- not implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:902
+#: ../src/gui/gtkentry.c:213
+msgid "$(EXIF.MINUTE) - EXIF minute"
+msgstr "$(EXIF.MINUTE) - Minutes EXIF"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:903
+#: ../src/gui/gtkentry.c:214
+msgid "$(EXIF.SECOND) - EXIF second"
+msgstr "$(EXIF.SECOND) - Secondes EXIF"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:904
+#: ../src/gui/gtkentry.c:215
+msgid "$(EXIF.MSEC) - EXIF millisecond"
+msgstr "$(EXIF.MSEC) - Millisecondes EXIF"
+
+#. _("$(EXIF.DATE.REGIONAL) - localized EXIF date"),  -- not implemented
+#. _("$(EXIF.TIME.REGIONAL) - localized EXIF time"),  -- not implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:907
+#: ../src/gui/gtkentry.c:216
+msgid "$(EXIF.ISO) - ISO value"
+msgstr "$(EXIF.ISO) - Valeur ISO EXIF"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:908
+#: ../src/gui/gtkentry.c:219
+msgid "$(EXIF.EXPOSURE) - EXIF exposure"
+msgstr "$(EXIF.EXPOSURE) - Exposition EXIF"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:909
+#: ../src/gui/gtkentry.c:217
+msgid "$(EXIF.EXPOSURE.BIAS) - EXIF exposure bias"
+msgstr "$(EXIF.EXPOSURE.BIAS) - Compensation d’exposition EXIF"
+
+#. _("$(EXIF.EXPOSURE.PROGRAM) - EXIF exposure program"),  -- not implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:911
+#: ../src/gui/gtkentry.c:220
+msgid "$(EXIF.APERTURE) - EXIF aperture"
+msgstr "$(EXIF.APERTURE) - Ouverture EXIF"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:912
+#: ../src/gui/gtkentry.c:221
+msgid "$(EXIF.CROP_FACTOR) - EXIF crop factor"
+msgstr "$(EXIF.CROP_FACTOR) - Facteur de recadrage EXIF"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:913
+#: ../src/gui/gtkentry.c:222
+msgid "$(EXIF.FOCAL.LENGTH) - EXIF focal length"
+msgstr "$(EXIF.FOCAL.LENGTH) - Longueur focale EXIF"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:914
+#: ../src/gui/gtkentry.c:223
+msgid "$(EXIF.FOCAL.LENGTH.EQUIV) - EXIF 35 mm equivalent focal length"
+msgstr "$(EXIF.FOCAL.LENGTH.EQUIV) - Longueur focale équivalente 35mm EXIF"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:915
+#: ../src/gui/gtkentry.c:224
+msgid "$(EXIF.FOCUS.DISTANCE) - EXIF focal distance"
+msgstr "$(EXIF.FOCUS.DISTANCE) - Distance de mise au point EXIF"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:916
+#: ../src/gui/gtkentry.c:225
+msgid "$(EXIF.MAKER) - camera maker"
+msgstr "$(EXIF.MAKER) - Fabriquant du boîtier EXIF"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:917
+#: ../src/gui/gtkentry.c:226
+msgid "$(EXIF.MODEL) - camera model"
+msgstr "$(EXIF.MODEL) - Modèle de boîtier EXIF"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:918
+#: ../src/gui/gtkentry.c:227
+msgid "$(EXIF.WHITEBALANCE) - EXIF selected white balance"
+msgstr "$(EXIF.WHITEBALANCE) - Balance des blancs EXIF"
+
+#. not implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:919
+#: ../src/gui/gtkentry.c:228
+msgid "$(EXIF.METERING) - EXIF exposure metering mode"
+msgstr "$(EXIF.METERING) - Mode de mesure d'exposition EXIF"
+
+#. not implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:920
+#: ../src/gui/gtkentry.c:229
+msgid "$(EXIF.LENS) - lens"
+msgstr "$(EXIF.LENS) - Objectif EXIF"
+
+#. _("$(EXIF.FLASH.ICON) - icon indicating whether flash was used") ..  -- not implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:922
+#: ../src/gui/gtkentry.c:231
+msgid "$(EXIF.FLASH) - was flash used (yes/no/--)"
+msgstr "$(EXIF.FLASH) - Le flash a-t-il été utilisé (Oui / Non / --)"
+
+#. not implemented
+#. _("$(GPS.LONGITUDE) - longitude"),-- not implemented
+#. _("$(GPS.LATITUDE) - latitude"),-- not implemented
+#. _("$(GPS.ELEVATION) - elevation"),-- not implemented
+#. _("$(GPS.LOCATION.ICON) - icon indicating whether GPS location is known"),-- not implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:927
+#: ../src/gui/gtkentry.c:236
+msgid "$(LONGITUDE) - longitude"
+msgstr "$(LONGITUDE) - Longitude"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:928
+#: ../src/gui/gtkentry.c:237
+msgid "$(LATITUDE) - latitude"
+msgstr "$(LATITUDE) - Latitude"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:929
+#: ../src/gui/gtkentry.c:238
+msgid "$(ELEVATION) - elevation"
+msgstr "$(ELEVATION) - Élévation"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:930
+#: ../src/gui/gtkentry.c:239
+msgid "$(STARS) - star rating as number (-1 for rejected)"
+msgstr "$(STARS) - Notation avec un nombre (–1 pour rejeter)"
+
+#. _("$(RATING.ICONS) - star/reject rating in icon form"),-- not implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:932
+#: ../src/gui/gtkentry.c:241
+msgid "$(LABELS) - color labels as text"
+msgstr "$(LABELS) - Labels de couleur en noms"
+
+#. _("$(LABELS.ICONS) - color labels as icons"),-- not implemented
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:934
+#: ../src/gui/gtkentry.c:248
+msgid "$(TITLE) - title from metadata"
+msgstr "$(TITLE) - Titre des métadonnées"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:935
+#: ../src/gui/gtkentry.c:249
+msgid "$(DESCRIPTION) - description from metadata"
+msgstr "$(DESCRIPTION) - Description des métadonnées"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:936
+#: ../src/gui/gtkentry.c:250
+msgid "$(CREATOR) - creator from metadata"
+msgstr "$(CREATOR) - Auteur des métadonnées"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:937
+#: ../src/gui/gtkentry.c:251
+msgid "$(PUBLISHER) - publisher from metadata"
+msgstr "$(PUBLISHER) - Diffuseur des métadonnées"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:938
+#: ../src/gui/gtkentry.c:252
+msgid "$(RIGHTS) - rights from metadata"
+msgstr "$(RIGHTS) - Droits des métadonnées"
+
+#. _("$(TAGS) - tags as set in metadata settings"),
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:940
+#: ../src/gui/gtkentry.c:258
+msgid "$(CATEGORY[n,category]) - subtag of level n in hierarchical tags"
+msgstr ""
+"$(CATEGORY[n,category])) - Sous-mot-clé de niveau n des mots-clés "
+"hiérarchiques"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:941
+#: ../src/gui/gtkentry.c:262
+msgid "$(SIDECAR_TXT) - contents of .txt sidecar file, if present"
+msgstr "$(SIDECAR_TXT) - Contenu du fichier .txt si présent"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:942
+#: ../src/gui/gtkentry.c:254
+msgid "$(FOLDER.PICTURES) - pictures folder"
+msgstr "$(FOLDER.PICTURES) - Répertoire des images"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:943
+#: ../src/gui/gtkentry.c:255
+msgid "$(FOLDER.HOME) - home folder"
+msgstr "$(FOLDER.HOME) - Dossier personnel"
+
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:944
+#: ../src/gui/gtkentry.c:256
+msgid "$(FOLDER.DESKTOP) - desktop folder"
+msgstr "$(FOLDER.DESKTOP) - Dossier du bureau"
+
+#. _("$(OPENCL.ACTIVATED) - whether OpenCL is activated"),
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:946
+#: ../src/gui/gtkentry.c:253
+msgid "$(USERNAME) - login name"
+msgstr "$(USERNAME) - Nom d’utilisateur"
+
+#. _("$(NL) - newline"),
+#. _("$(JOBCODE) - job code for import"),
+#. handle different versions of names
+#. get the substitution and do any string manipulations requested
+#. remove the var from the string
+#. string modifications
+#. replace the substitution variables in a string
+#. escape % from windows shell
+#. On Windows we don't need any command. (start e.g. has problems with spaces in the filename, even if we put quoter around them.) https://stackoverflow.com/questions/13691827/opening-file-with-spaces-in-windows-via-command-prompt
+#.
+#. This file is part of darktable,
+#. copyright (c) 2015 Tobias Ellinghaus
+#.
+#. darktable is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation, either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. darktable is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. CHECK FOR UPDATES
+#. a simple script that will automatically look for newer releases on github and inform
+#. when there is something. it will only check on startup and only once a week.
+#.
+#. USAGE
+#. * install luasec and cjson for Lua 5.4 on your system
+#. * require this script from your main lua file
+#. * restart darktable
+#.
+#.
+#. return data structure for script_manager
+#: ../src/external/lua-scripts/official/check_for_updates.lua:49
+msgid "check for newer darktable releases"
+msgstr "Vérifier les nouvelles version de darktable"
+
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#. compare two version strings of the form "major.minor.patch"
+#. returns -1, 0, 1 if the first version is smaller, equal, greater than the second version,
+#. or nil if one or both are of the wrong format
+#. strings like "release-1.2.3" and "1.2.3+456~gb00b5" are fine, too
+#. when rc == 0 then it's a proper release and newer than the rcs
+#. nothing to destroy
+#. local function test(a, b, r)
+#. local cmp = compare_versions(a, b)
+#. if(not cmp) then
+#. print(a .. " ./. " .. b .. " => MALFORMED INPUT")
+#. elseif(cmp == r) then
+#. print(a .. " ./. " .. b .. " => PASSED")
+#. else
+#. print(a .. " ./. " .. b .. " => FAILED")
+#. end
+#. end
+#.
+#. test("malformed", "1.0.0", 0)
+#. test("2.0rc1+135~ge456b2b-dirty", "release-1.6.9", 1)
+#. test("release-1.6.9", "2.0rc1+135~ge456b2b-dirty", -1)
+#. test("2.0rc1+135~ge456b2b-dirty", "2.0rc2+135~ge456b2b-dirty", -1)
+#. test("2.0rc2+135~ge456b2b-dirty", "2.0rc1+135~ge456b2b-dirty", 1)
+#. test("2.0rc3+135~ge456b2b-dirty", "release-2.0", -1)
+#. test("2.0rc3+135~ge456b2b-dirty", "release-2.0.0", -1)
+#. test("1.0.0", "2.0.0", -1)
+#. test("2.0.0", "1.0.0", 1)
+#. test("3.0.0", "3.0.0", 0)
+#. check stored timestamp and skip the check if the last time was not too long ago
+#. for now we are assuming that os.time() returns seconds. that's not guaranteed but the case on many systems.
+#. the reference date doesn't matter, as long as it's currently positive (we start with 0 the first time)
+#. see http://lua-users.org/wiki/DateAndTime
+#. check once a week
+#. try to get the latest release's version from github and compare to what we are running
+#. see https://developer.github.com/v3/repos/releases/ for the api docs
+#. just ignore when anything fails and retry at some other time
+#. http://www.kyne.com.au/~mark/software/lua-cjson-manual.html
+#. update timestamp to not check again for a while
+#.
+#. This file is part of darktable,
+#. copyright (c) 2016 Tobias Ellinghaus
+#.
+#. darktable is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation, either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. darktable is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. ADD SUPPORT FOR COPYING METADATA+RATING+COLOR LABELS+TAGS BETWEEN IMAGES
+#. This script adds keyboard shortcuts and buttons to copy/paste metadata between images.
+#.
+#. USAGE
+#. * require this script from your main lua file
+#. * it adds buttons to the selected images module
+#. * it adds two keyboard shortcuts
+#.
+#. return data structure for script_manager
+#: ../src/external/lua-scripts/official/copy_paste_metadata.lua:44
+msgid ""
+"adds keyboard shortcuts and buttons to copy/paste metadata between images"
+msgstr ""
+"Ajoute un raccourci clavier et un bouton pour copier/coller les métadonnées "
+"entres images"
+
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#. set this to "false" if you don't want to overwrite metadata fields
+#. (title, description, creator, publisher and rights) that are already set
+#: ../src/external/lua-scripts/official/copy_paste_metadata.lua:136
+#: ../src/external/lua-scripts/official/copy_paste_metadata.lua:154
+msgid "copy metadata"
+msgstr "Copier les métadonnées"
+
+#: ../src/external/lua-scripts/official/copy_paste_metadata.lua:138
+msgid "copy metadata of the first selected image"
+msgstr "Copier les métadonnées de la première image sélectionnée"
+
+#: ../src/external/lua-scripts/official/copy_paste_metadata.lua:144
+#: ../src/external/lua-scripts/official/copy_paste_metadata.lua:160
+msgid "paste metadata"
+msgstr "Coller les métadonnées"
+
+#: ../src/external/lua-scripts/official/copy_paste_metadata.lua:146
+msgid "paste metadata to the selected images"
+msgstr "Coller les métadonnées aux images sélectionnées"
+
+#.
+#. This file is part of darktable,
+#. copyright (c) 2014--2018 Tobias Ellinghaus
+#.
+#. darktable is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation, either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. darktable is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. DELETE LONG TAGS
+#. A simple script that will automatically delete all tags longer than a set length
+#.
+#. USAGE
+#. * require this script from your main lua file
+#. * set the the maximum length in darktable's preference
+#. * restart darktable
+#.
+#. all tags longer than the given length will be automatically deleted at every restart
+#.
+#.
+#. return data structure for script_manager
+#: ../src/external/lua-scripts/official/delete_long_tags.lua:48
+msgid "delete all tags longer than a set length"
+msgstr "Supprimer tous les mots-clés plus long qu'une limite donnée"
+
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#. noting to destroy
+#. deleting while iterating the tags list seems to break the iterator!
+#.
+#. This file is part of darktable,
+#. copyright (c) 2018 Tobias Ellinghaus
+#.
+#. darktable is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation, either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. darktable is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. DELETE UNUSED TAGS
+#. A simple script that will automatically delete all tags that are not attached to any images
+#.
+#. USAGE
+#. * require this script from your main lua file
+#. * restart darktable
+#.
+#. all tags that are not used will be automatically deleted at every restart
+#.
+#. noting to destroy
+#. return data structure for script_manager
+#: ../src/external/lua-scripts/official/delete_unused_tags.lua:52
+msgid "delete unused tags"
+msgstr "Supprimer les mots-clé non utilisés"
+
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#. deleting while iterating the tags list seems to break the iterator!
+#.
+#. This file is part of darktable,
+#. copyright (c) 2016 Tobias Ellinghaus
+#.
+#. darktable is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation, either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. darktable is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. RUN ENFUSE ON THE SELECTED IMAGES
+#. This script uses enfuse to merge the selected images into one tonemapped image and imports the result.
+#. It only works on ldr images (like, JPEG).
+#.
+#. USAGE
+#. * require this script from your main lua file
+#. * it creates a new lighttable module
+#.
+#. TODO
+#. * remember the exposure_mu value in config when the slider is moved
+#. * make the output filename unique so you can use it more than once per filmroll
+#. * find a less stupid way to make sure the float value of exposure_mu gets turned into a string
+#. with a decimal point instead of a comma in some languages
+#. * export images that are not ldr and remove them afterwards
+#.
+#. return data structure for script_manager
+#: ../src/external/lua-scripts/official/enfuse.lua:56
+msgid "exposure blend images"
+msgstr "Fusion d'exposition d'images"
+
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#. plugin name
+#. name
+#. expandable
+#. resetable
+#. containers
+#. widget
+#. view_enter
+#. view_leave
+#. add a new lib
+#. is enfuse installed?
+#. instance of DT tiff exporter
+#. check the version so that we can use the correct arguments
+#. initialize exposure_mu value and depth setting in config to sane defaults (would be 0 otherwise)
+#. set up some widgets, initialized from config
+#: ../src/external/lua-scripts/official/enfuse.lua:139
+msgid ""
+"center also known as mean of gaussian weighting function (0 <= mean <= 1); "
+"default: 0.5"
+msgstr ""
+"Centre, aussi connu comme moyenne d'une fonctionne de pondération gaussienne "
+"(0 <= moyenne <= 1); défaut 0.5"
+
+#: ../src/external/lua-scripts/official/enfuse.lua:148
+msgid ""
+"optimum exposure value, usually the maximum of the weighting function (0 <= "
+"optimum <=1); default 0.5"
+msgstr ""
+"Valeur d'exposition optimale, généralement le maximum d'une fonction de "
+"pondération (0 <= optimum <= 1); défaut 0.5"
+
+#: ../src/external/lua-scripts/official/enfuse.lua:158
+msgid "the number of bits per channel of the output image"
+msgstr "Le nombre de bit par canal de l'image exportée"
+
+#: ../src/external/lua-scripts/official/enfuse.lua:167
+msgid "force blending in selected colorspace"
+msgstr "Forcer la fusion dans l'espace couleur sélectionné"
+
+#: ../src/external/lua-scripts/official/enfuse.lua:174
+msgid "run enfuse"
+msgstr "Exécuter « enfuse » "
+
+#: ../src/external/lua-scripts/official/enfuse.lua:174
+msgid "enfuse not installed"
+msgstr "L'outil « enfuse » n'est pas installé"
+
+#. remember exposure_mu
+#. TODO: find a way to save it whenever the value changes
+#. create a temp response file
+#. windows os.tmpname() defaults to root directory
+#: ../src/external/lua-scripts/official/enfuse.lua:192
+#, lua-format
+msgid "error writing to '%s'"
+msgstr "Erreur lors de l'écriture de « %s »"
+
+#. add all filenames to the response file
+#. only use ldr files as enfuse can't open raws
+#. alternatively raws will be exported as tiff
+#. windows os.tmpname() defaults to root directory
+#: ../src/external/lua-scripts/official/enfuse.lua:215
+#, lua-format
+msgid "converting raw file '%s' to tiff..."
+msgstr "Conversion du fichier RAW « %s » en TIFF..."
+
+#. other images will be skipped
+#: ../src/external/lua-scripts/official/enfuse.lua:225
+#, lua-format
+msgid "skipping %s..."
+msgstr "Ignorer « %s »..."
+
+#. bail out if there is nothing to do
+#: ../src/external/lua-scripts/official/enfuse.lua:232
+msgid "no suitable images selected, nothing to do for enfuse"
+msgstr "Aucune image valide sélectionnée, rien à faire pour « enfuse »"
+
+#: ../src/external/lua-scripts/official/enfuse.lua:238
+#, lua-format
+msgid "%d image(s) skipped"
+msgstr "%d image(s) ignorée(s)"
+
+#. call enfuse on the response file
+#. TODO: find something nicer
+#: ../src/external/lua-scripts/official/enfuse.lua:258
+msgid "enfuse failed, see terminal output for details"
+msgstr "L'outil « enfuse » a échoué, voir le terminal pour les détails"
+
+#. remove the response file
+#. import resulting tiff
+#. tell the user that everything worked
+#: ../src/external/lua-scripts/official/enfuse.lua:270
+msgid "enfuse was successful, resulting image has been imported"
+msgstr "Exécution de « enfuse » avec succès, l'image résultante a été importée"
+
+#. normally printing to stdout is bad, but we allow enfuse to show its output, so adding one extra line is ok
+#: ../src/external/lua-scripts/official/enfuse.lua:272
+#, lua-format
+msgid "enfuse: done, resulting image '%s' has been imported with id %d"
+msgstr ""
+"Fin de « enfuse », image résultante « %s » a été importée avec le numéro %d"
+
+#. ... and tell dt about it all
+#: ../src/external/lua-scripts/official/enfuse.lua:306
+msgid "could not find enfuse executable, not loading enfuse exporter..."
+msgstr ""
+"Impossible de trouver l'exécutable « enfuse », le module d'export n'est pas "
+"chargé"
+
+#. vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
+#. kate: hl Lua;
+#.
+#. This file is part of darktable,
+#. copyright (c) 2014 Tobias Ellinghaus
+#.
+#. darktable is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation, either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. darktable is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. GENERATE IMAGE TEXT
+#. A script to run a command on images to generate text metadata
+#.
+#. The medata will be displayed as an overlay on the image in lighttable mode
+#.
+#. USAGE
+#. * require this script from your main lua file
+#. * set a command to run on all image, this command should output text on stdout
+#. * enable image file generation
+#.
+#.
+#.
+#. TODO:
+#. * enable showing of the txt file (plugins/lighttable/draw_custom_metadata) if this script is enabled
+#. * maybe allow a lua command returning text instead of a command line call? both?
+#. * make filenames with double quotes (") work
+#. return data structure for script_manager
+#: ../src/external/lua-scripts/official/generate_image_txt.lua:55
+msgid "overlay metadata on the selected image(s)"
+msgstr "Métadonnées en surimpression des images sélectionnées"
+
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#: ../src/external/lua-scripts/official/generate_image_txt.lua:68
+msgid "create txt sidecars to display with images"
+msgstr "Créer les fichiers txt à afficher avec les images"
+
+#: ../src/external/lua-scripts/official/generate_image_txt.lua:69
+msgid ""
+"the txt files created get shown when the lighttable is zoomed in to one "
+"image. also enable the txt overlay setting in the gui tab"
+msgstr ""
+"Les fichiers txt créés sont affichés lorsque la table lumineuse est zoomée "
+"avec une seule image. Vous devez aussi activer l'affichage des "
+"superpositions txt dans les préférences GUI."
+
+#: ../src/external/lua-scripts/official/generate_image_txt.lua:75
+msgid "command to generate the txt sidecar"
+msgstr "Commande pour générer le fichier txt"
+
+#: ../src/external/lua-scripts/official/generate_image_txt.lua:76
+msgid ""
+"the output of this command gets written to the txt file. use $(FILE_NAME) "
+"for the image file"
+msgstr ""
+"La sortie de cette commande se trouve écrite dans le fichier txt. Utiliser "
+"$(FILE_NAME) pour le fichier image."
+
+#: ../src/external/lua-scripts/official/generate_image_txt.lua:82
+msgid "the command for txt sidecars looks bad. better check the preferences"
+msgstr ""
+"La commande pour les fichiers txt ne semble pas correcte. Merci de vérifier "
+"les préférences."
+
+#. no need to waste processing time if the image has a txt file already
+#. there should be at least one "$(FILE_NAME)" in the command. warn if not, but only once
+#. set the flag to true first so that subsequent runs don't mess with the txt
+#. next: create the txt
+#. better safe than sorry: check if the file maybe exists. this is for example true when shooting raw+jpg
+#. we are confident now that it's safe to write the file
+#. compose the command to run
+#. finally, run it
+#. vim: shiftwidth=2 expandtab tabstop=2 cindent
+#. kate: tab-indents: off; indent-width 2; replace-tabs on; remove-trailing-space on;
+#.
+#. This file is part of darktable,
+#. copyright (c) 2014 Jérémy Rosen
+#.
+#. darktable is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation, either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. darktable is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. IMAGE_PATH_IN_UI
+#. Add a widget with the path of the selected images for easy copy/past
+#. Simple shortcuts to have multiple selection bufers
+#.
+#.
+#. USAGE
+#. * require this file from your main lua config file:
+#.
+#. This plugin will add a widget at the bottom of the left column in lighttable mode
+#.
+#.
+#.
+#. return data structure for script_manager
+#: ../src/external/lua-scripts/official/image_path_in_ui.lua:48
+msgid "print the image path in the UI"
+msgstr "Affichage le chemin de l'image dans l'interface"
+
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#.
+#. vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
+#.
+#. This file is part of darktable,
+#. copyright (c) 2015 Tobias Ellinghaus
+#.
+#. darktable is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation, either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. darktable is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. IMPORT FILTER MANAGER
+#. This script adds a dropdown list with import filters to the import dialog.
+#. Scripts can add new filters by registering them with
+#. darktable.register_import_filter(name, callback)
+#. The callback has type function(event, images), i.e., it is the same as when
+#. directly registering the pre-import event.
+#.
+#.
+#. USAGE
+#. * require this script from your main lua file
+#. * also require some files with import filters, for example import_filters.lua.
+#. it is important to add them AFTER this one!
+#.
+#: ../src/external/lua-scripts/official/import_filter_manager.lua:45
+msgid "manage import filters"
+msgstr "Gère les filtres d'importation"
+
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#. allow changing the filter from the preferences
+#. the dropdown to select the active filter from the import dialog
+#: ../src/external/lua-scripts/official/import_filter_manager.lua:60
+#: ../src/external/lua-scripts/official/import_filter_manager.lua:66
+msgid "import filter"
+msgstr "Filtre d'importation"
+
+#: ../src/external/lua-scripts/official/import_filter_manager.lua:60
+msgid "the name of the filter used for importing images"
+msgstr "Le nom du filtre utilisé pour l'importation d'images"
+
+#: ../src/external/lua-scripts/official/import_filter_manager.lua:68
+msgid "import filters are applied after completion of the import dialog"
+msgstr ""
+"Les filtres d'importation sont appliqués après la fermeture de la fenêtre "
+"d'importation"
+
+#. the first entry in the list is hard coded to "" so it's possible to have no filter
+#. this is just a wrapper which calls the active import filter
+#. add a new global function to register import filters
+#. noting to destroy
+#. vim: shiftwidth=2 expandtab tabstop=2 cindent
+#. kate: tab-indents: off; indent-width 2; replace-tabs on; remove-trailing-space on;
+#.
+#. This file is part of darktable,
+#. copyright (c) 2015-2016 Tobias Ellinghaus & Christian Mandel
+#.
+#. darktable is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation, either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. darktable is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. EXAMPLE IMPORT FILTERS
+#. This script goes along with the import filter manager. It adds two filters:
+#. * ignore jpegs: this one does the same as the existing option in the import dialog
+#. and just skips all JPEGs during import.
+#. * prefer raw over jpeg: this one is a bit more elaborate, it ignores JPEGs when there
+#. is also another file with the same basename, otherwise it
+#. allows JPEGs, too.
+#.
+#. USAGE
+#. * require this script from your main lua file AFTER import_filter_manager.lua
+#.
+#: ../src/external/lua-scripts/official/import_filters.lua:43
+msgid "import filtering"
+msgstr "Filtrer l'importation"
+
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#. we get fed a sorted list of filenames. just setting images to ignore to nil is enough
+#. ignore jpeg
+#. ignore jpeg iff another format for the image is found
+#. add dummy image to force processing for the last image
+#. we are done with the base name, act according to what we found out
+#. remember what we have here to act accordingly after all instances of this base name were checked
+#. remove dummy image from list (just to make sure, it works even with keeping
+#. the dummy but that may break in the future), table.remove(images) does not
+#. work reliable because it can fail for sparse tables
+#. nothing to destroy
+#. vim: shiftwidth=2 expandtab tabstop=2 cindent
+#. kate: tab-indents: off; indent-width 2; replace-tabs on; remove-trailing-space on;
+#.
+#. This file is part of darktable,
+#. copyright (c) 2014 Jérémy Rosen
+#.
+#. darktable is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation, either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. darktable is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. SAVE SELECTION
+#. Simple shortcuts to have multiple selection bufers
+#.
+#.
+#. USAGE
+#. * require this file from your main lua config file:
+#. * go to configuration => preferences => lua
+#. * set the shortcuts you want to use
+#.
+#. This plugin will provide shortcuts to save to and restore from up to five temporary buffers
+#.
+#. This plugin also provides a shortcut to swap the current selection with a quick-swap buffer
+#.
+#. The variable "buffer_count" controls the number of selection buffers,
+#. increase it if you need more temporary selection buffers
+#.
+#.
+#. return data structure for script_manager
+#: ../src/external/lua-scripts/official/save_selection.lua:53
+msgid "shortcuts providing multiple selection buffers"
+msgstr "Raccourcis permettant plusieurs sauvegarde de sélection"
+
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#: ../src/external/lua-scripts/official/save_selection.lua:77
+#, lua-format
+msgid "save to buffer %d"
+msgstr "Sauvegarder vers le tampon %d"
+
+#: ../src/external/lua-scripts/official/save_selection.lua:80
+#, lua-format
+msgid "restore from buffer %d"
+msgstr "Restaurer depuis le tampon %d"
+
+#: ../src/external/lua-scripts/official/save_selection.lua:86
+msgid "switch selection with temporary buffer"
+msgstr "Échange la sélection avec le tampon temporaire"
+
+#.
+#. vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
+#.
+#. This file is part of darktable,
+#. copyright (c) 2015 Jérémy Rosen & Pascal Obry
+#. edited 2016 Tejovanth N
+#.
+#. darktable is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation, either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. darktable is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. SELECTION_TO_PDF
+#. Generates a PDF file (via Latex) containing all selected images
+#.
+#. ADDITIANAL SOFTWARE NEEDED FOR THIS SCRIPT
+#. * a PDF-Viewer
+#. * pdflatex (Latex)
+#.
+#. USAGE
+#. * require this file from your main lua config file:
+#.
+#. This plugin will add a new exporter that will allow you to generate the pdf file
+#.
+#. Plugin allows you to choose how many thumbnails you need per row
+#.
+#.
+#.
+#. return data structure for script_manager
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:53
+msgid "generate a pdf file of selected images"
+msgstr "Générer un PDF avec les images sélectionnées"
+
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:65
+msgid "a pdf viewer"
+msgstr "Lecteur PDF"
+
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:66
+msgid "can be an absolute pathname or the tool may be in the PATH"
+msgstr ""
+"Peut-être un chemin absolu or l'outil peut être dans le chemin de recherche "
+"(PATH)"
+
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:74
+msgid "thumbs per line"
+msgstr "Miniatures par ligne"
+
+#. The soft minimum value for the slider, the slider can't go beyond this point
+#. The soft maximum value for the slider, the slider can't go beyond this point
+#. The hard minimum value for the slider, the user can't manually enter a value beyond this point
+#. The hard maximum value for the slider, the user can't manually enter a value beyond this point
+#. The current value of the slider
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:83
+msgid "title:"
+msgstr "Titre :"
+
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:85
+msgid "thumbnails per row:"
+msgstr "Miniatures par ligne :"
+
+#. fact is that latex will get confused if the filename has multiple dots.
+#. so \includegraphics{file.01.jpg} wont work. We need to output the filename
+#. and extention separated, e.g: \includegraphics{{file.01}.jpg}
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:132
+msgid "export thumbnails to pdf"
+msgstr "Exporter une miniature en PDF"
+
+#. convert to PDF
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:179
+msgid "problem running pdflatex"
+msgstr "Problème lors de l'exécution de « pdflatex »"
+
+#. this one is probably usefull to the user
+#. open the PDF
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:189
+msgid "problem running pdf viewer"
+msgstr "Problème lors de l'exécution de l'afficheur PDF"
+
+#. this one is probably usefull to the user
+#. finally do some clean-up
+#.
+#. vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
+#.
+#. This file is part of darktable,
+#. copyright (c) 2018 Bill Ferguson
+#.
+#. darktable is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation, either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. darktable is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. executable_manager.lua - a tool for managing external executables used by darktable lua scripts
+#.
+#. executable_manager is a tool for managing the executable preferences stored in the darktablerc file.
+#. On startup the darktablerc file is scanned and a widget is built for each executable path.  The user
+#. can select the executable from a drop down list and then modify the settings as desired.
+#.
+#. Any changes made using executable_manager won't be saved in the darktablerc file until darktable exits, but
+#. the preference is updated when the change is made so scripts will pick up the changes without restarting
+#. darktable.
+#.
+#.
+#. return data structure for script_manager
+#: ../src/external/lua-scripts/tools/executable_manager.lua:50
+msgid "manage the list of external executables used by the lua scripts"
+msgstr "Gérer les liste des exécutables externes utilisés par les scripts Lua"
+
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#. our own namespace
+#. - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#. F U N C T I O N S
+#. - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#. use find to get the matches
+#. strip out the first line
+#. use grep and just return the answers
+#. Module name
+#: ../src/external/lua-scripts/tools/executable_manager.lua:118
+msgid "executables"
+msgstr "Exécutables"
+
+#. Visible name
+#. expandable
+#. resetable
+#. containers
+#. widget
+#. view_enter
+#. view_leave
+#. - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#. M A I N   P R O G R A M
+#. - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#. grep the executable_paths statements out of the darktablerc file
+#. check if we have something to manage and exit if not
+#: ../src/external/lua-scripts/tools/executable_manager.lua:157
+msgid "no executable paths found, exiting..."
+msgstr "Pas de chemin d'exécutable trouvé, termine..."
+
+#. build a table of the path preferences
+#. preferences are stored with forward slashes
+#: ../src/external/lua-scripts/tools/executable_manager.lua:173
+msgid "select an executable"
+msgstr "Sélectionner une exécutable"
+
+#: ../src/external/lua-scripts/tools/executable_manager.lua:173
+msgid "search path for executable"
+msgstr "Chemin de recherche pour l'exécutable"
+
+#. create a stack widget to hold the executable path widgets
+#. create a combobox to for indexing into the stack of widgets
+#: ../src/external/lua-scripts/tools/executable_manager.lua:202
+msgid "executable"
+msgstr "Exécutable"
+
+#: ../src/external/lua-scripts/tools/executable_manager.lua:203
+msgid "select executable to modify"
+msgstr "Sélectionner un exécutable à modifier"
+
+#: ../src/external/lua-scripts/tools/executable_manager.lua:225
+#, lua-format
+msgid "clear path for %s"
+msgstr "Supprimer le chemin pour %s"
+
+#. register the lib
+#.
+#. get_lib_manpages.lua - retrieve the included library documentation and output it as man pages
+#.
+#. Copyright (c) 2016, Bill Ferguson
+#.
+#. nothing to destroy
+#. find the libraries
+#. loop through the libraries
+#. print the documentation for the library
+#. print the documentation for each of the functions
+#: ../src/external/lua-scripts/tools/get_lib_manpages.lua:92
+msgid "output the internal library documentation as man pages"
+msgstr ""
+"Générer la documentation de la bibliothèque interne comme pages de manuel"
+
+#.
+#. get_libdoc.lua - retrieve the included library documentation and output it
+#.
+#. Copyright (c) 2016, Bill Ferguson
+#.
+#. nothing to destroy
+#. find the libraries
+#. loop through the libraries
+#. print the documentation for the library
+#. print the documentation for each of the functions
+#: ../src/external/lua-scripts/tools/get_libdoc.lua:66
+msgid "retrieve and print the documentation to the console"
+msgstr "Récupère et affiche la documentation dans la console"
+
+#.
+#. This file is part of darktable,
+#. copyright (c) 2018, 2020, 2023, 2024 Bill Ferguson <wpferguson@gmail.com>
+#.
+#. darktable is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation, either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. darktable is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. script_manager.lua - a tool for managing the darktable lua scripts
+#.
+#. script_manager is designed to be called from the users luarc file and used to
+#. manage the lua scripts.
+#.
+#. On startup script_manager scans the lua scripts directory to see what scripts are present.
+#. Scripts are sorted by 'folder' based on what sub-directory they are in.  With no
+#. additional script repositories iinstalled, the folders are contrib, examples, official
+#. and tools.  When a folder is selected the buttons show the script name and whether the
+#. script is started or stopped.  The button is a toggle, so if the script is stopped click
+#. the button to start it and vice versa.
+#.
+#. Features
+#.
+#. * the number of script buttons shown can be changed to any number between 5 and 20.  The
+#. default is 10 buttons.  This can be changed in the configuration action.
+#.
+#. * additional repositories of scripts may be installed using from the install/update action.
+#.
+#. * installed scripts can be updated from the install/update action.  This includes extra
+#. repositories that have been installed.
+#.
+#. * the scripts can be disabled if desired from the install/update action.  This can only
+#. be reversed manually.  To enable the "Disable Scripts" button, check the checkbox to
+#. endable it.  This is to prevent accidentally disabling the scripts.  Click the
+#. "Disable Scripts" button and the luarc file is renamed to luarc.disable.  If at
+#. a later time you want to enable the scripts again, simply rename the luarc.disabled
+#. file to luarc and the scripts will run.
+#.
+#.
+#. api check
+#. du.check_min_api_version("9.3.0", "script_manager")
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. C O N S T A N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. script_manager required API version
+#. path separator
+#. command separator
+#. local POWER_ICON = dt.configuration.config_dir .. "/lua/data/data/icons/power.png"
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. P R E F E R E N C E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#: ../src/external/lua-scripts/tools/script_manager.lua:104
+msgid "check for updated scripts on start up"
+msgstr "Vérifier les mises à jour des scripts au démarrage"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:105
+msgid "automatically update scripts to correct version"
+msgstr "Mise à jour automatique des scripts à la version requise"
+
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. L O G  L E V E L
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. N A M E  S P A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. set up tables to contain all the widgets and choices
+#. set log level for functions
+#.
+#.
+#. sm.scripts is a table of tables for containing the scripts
+#. It is organized as into folder (folder) subtables containing
+#. each script definition, which is a table
+#.
+#. sm.scripts-
+#. |
+#. - folder------------|
+#. |                     - script
+#. - folder----|       |
+#. - script|
+#. |       - script
+#. - script|
+#.
+#. and a script table looks like
+#.
+#. name          the name of the script file without the lua extension
+#. path          folder (folder), path separator, path, name without the lua extension
+#. doc           the header comments from the script to be used as a tooltip
+#. script_name   the folder, path separator, and name without the lua extension
+#. running       true if running, false if not, hidden if running but the
+#. lib/storage/action for the script is hidden
+#. has_lib       true if it creates a module
+#. lib_name      name of the created lib
+#. has_storage   true if it creates a storage (exporter)
+#. storage_name  name of the exporter (in the exporter storage menu)
+#. has_action    true if it creates an action
+#. action_name   name on the button
+#. has_select    true if it creates a select
+#. select_name   name on the button
+#. has_event     true if it creates an event handler
+#. event_type    type of event, shortcut, post-xxx, pre-xxx
+#. callback      name of the callback routine
+#. initialized   all of the above data has been retreived and set.  If the
+#. script is unloaded and reloaded we don't have to reparse the file
+#.
+#.
+#. installed script repositories
+#. don't let it run until everything is in place
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. F U N C T I O N S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. -----------------
+#. helper functions
+#. -----------------
+#. --------------
+#. git interface
+#. --------------
+#. ------------------
+#. utility functions
+#. ------------------
+#. ----------------
+#. script handling
+#. ----------------
+#. set_log_level(log.debug)
+#. slurp the file
+#. grab the script_data.metadata table
+#. format it into a string block for display
+#. slurp the file
+#. assume that the second block comment is the documentation
+#: ../src/external/lua-scripts/tools/script_manager.lua:468
+msgid "no documentation available"
+msgstr "Pas de documentation disponible"
+
+#. status of start function
+#. error message returned if module doesn't start
+#. script is a lib and loaded but hidden and the user wants to reload
+#. presently the lua api doesn't support unloading lib elements however, we
+#. can hide libs, so we just mark those as hidden and hide the gui
+#. can delete storages
+#. can delete actions
+#. can delete selects
+#. and mark them inactive for the next time darktable starts
+#. deactivate it....
+#. the script file supplied is folder/filename.filetype
+#. the following pattern splits the string into folder, path, name, fileename, and filetype
+#. for example contrib/gimp.lua becomes
+#. folder - contrib
+#. path -
+#. name - gimp.lua
+#. filename - gimp
+#. filetype - lua
+#. Thanks Tobias Jakobs for the awesome regulary expression
+#. change the path separator from / to \ for windows
+#. add the script data
+#. scan the scripts
+#. strip the lua dir off
+#. strip off .lua\n
+#. let's not include ourself
+#. skip plugins
+#. let's not try and run libraries
+#. don't match files in the .git directory
+#. but let's make sure libraries can be found
+#. ------------
+#. UI handling
+#. ------------
+#. strip the lua dir off
+#. get everything to the first /
+#. if we have a folder (.git doesn't)
+#. skip plugins
+#: ../src/external/lua-scripts/tools/script_manager.lua:698
+#: ../src/external/lua-scripts/tools/script_manager.lua:813
+msgid ""
+"ERROR: git not found.  Install or specify the location of the git executable."
+msgstr ""
+"ERREUR : La commande « git » n'est pas trouvée. Merci d'installer pour de "
+"spécifier la chemin d'installation de l'exécutable « git »."
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:712
+msgid "lua scripts successfully updated"
+msgstr "Scripts Lua mis à jour avec succès"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:852
+msgid "no scripts found to install"
+msgstr "Aucun scripts à installer trouvé"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:857
+msgid "failed to download scripts"
+msgstr "Échec du téléchargement des scripts"
+
+#. no change
+#. force the buttons to repopulate
+#. jump back to start/stop scripts
+#. load the prefs and update settings
+#. update_script_choices
+#. folder selector
+#. num_buttons
+#. main menu
+#. Module name
+#: ../src/external/lua-scripts/tools/script_manager.lua:1164
+#: ../src/external/lua-scripts/tools/script_manager.lua:1438
+msgid "scripts"
+msgstr "Scripts"
+
+#. Visible name
+#. expandable
+#. resetable
+#. containers
+#. view_enter
+#. view_leave
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. M A I N  P R O G R A M
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. ensure shortcuts module knows widgets belong to script_manager
+#. only make changes to clean branches
+#. probably upgraded from an earlier api version so get back to master
+#. to use the latest version of script_manager to get the proper API
+#: ../src/external/lua-scripts/tools/script_manager.lua:1209
+msgid "lua API version reset, please restart darktable"
+msgstr ""
+"Réinitialisation de la version de l'API Lua, merci de redémarrer Darktable"
+
+#. do nothing, we are fine
+#. we are on a dev API version, so checkout the dev
+#. api version or checkout/stay on master
+#. stay on master
+#. checkout the appropriate branch for API version if it exists
+#: ../src/external/lua-scripts/tools/script_manager.lua:1256
+msgid ""
+"you must restart darktable to use the correct version of the lua scripts"
+msgstr ""
+"Vous devez redémarrer Darktable pour utiliser la version correcte des "
+"scripts Lua"
+
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. U S E R  I N T E R F A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. update the scripts
+#: ../src/external/lua-scripts/tools/script_manager.lua:1282
+msgid "scripts to update"
+msgstr "Scripts à mettre à jour"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:1283
+msgid "select the scripts installation to update"
+msgstr "Sélectionner l'installation des scripts à mettre à jour"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:1292
+#: ../src/external/lua-scripts/tools/script_manager.lua:1354
+msgid "update scripts"
+msgstr "Mettre à jour les scripts"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:1293
+msgid "update the lua scripts from the repository"
+msgstr "Mise à jour des scripts Lua depuis le dépôt"
+
+#. add additional scripts
+#: ../src/external/lua-scripts/tools/script_manager.lua:1304
+msgid ""
+"enter the URL of the git repository containing the scripts you wish to add"
+msgstr "Enter l'URL du dépôt Git contenant les scripts que vous voulez ajouter"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:1309
+msgid "name of new folder"
+msgstr "Nom du nouveau dossier"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:1310
+msgid "enter a folder name for the additional scripts"
+msgstr "Entrer un nom de dossier pour les scripts additionnels"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:1315
+msgid "URL to download additional scripts from"
+msgstr "URL pour télécharger des scripts additionnels"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:1317
+msgid "new folder to place scripts in"
+msgstr "Nouveau dossier pour y placer les scripts"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:1320
+msgid "install additional scripts"
+msgstr "Installer des scripts additionnels"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:1328
+msgid "enable \"disable scripts\" button"
+msgstr "Active le bouton « Désactiver scripts »"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:1340
+#: ../src/external/lua-scripts/tools/script_manager.lua:1365
+msgid "disable scripts"
+msgstr "Désactiver les scripts"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:1346
+msgid "lua scripts will not run the next time darktable is started"
+msgstr "Les scripts Lua ne se lanceront pas lors du redémarrage de Darktable"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:1360
+msgid "add more scripts"
+msgstr "Ajouter plus de scripts"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:1376
+msgid "select the script folder"
+msgstr "Sélectionner le dossier du script"
+
+#. a script "button" consists of:
+#. a button to start and stop the script
+#. a label that contains the name of the script
+#. a horizontal box that contains the button and the label
+#: ../src/external/lua-scripts/tools/script_manager.lua:1407
+#: ../src/iop/channelmixerrgb.c:4449 ../src/iop/clipping.c:2107
+#: ../src/iop/colorbalancergb.c:1783 ../src/iop/colorequal.c:3026
+#: ../src/iop/filmicrgb.c:4382 ../src/iop/negadoctor.c:842
+#: ../src/iop/toneequal.c:3315 ../src/libs/image.c:498
+#: ../src/views/lighttable.c:1256
+msgid "page"
+msgstr "Page"
+
+#. configure options
+#: ../src/external/lua-scripts/tools/script_manager.lua:1447
+msgid "scripts per page"
+msgstr "Scripts par page"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:1448
+msgid "select number of start/stop buttons to display"
+msgstr "Sélectionner le nombre de bouton démarrer/arrêter à afficher"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:1459
+msgid "change number of buttons"
+msgstr "Changer le nombre de bouton"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:1469
+msgid "configuration"
+msgstr "Configuration"
+
+#. stack for the options
+#. main menu
+#: ../src/external/lua-scripts/tools/script_manager.lua:1491
+#: ../src/gui/accelerators.c:2851 ../src/gui/accelerators.c:2953
+#: ../src/views/view.c:1576
+msgid "action"
+msgstr "Action"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:1497
+msgid "install/update scripts"
+msgstr "Installer/mettre à jours les scripts"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:1497
+msgid "configure"
+msgstr "Configurer"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:1497
+msgid "start/stop scripts"
+msgstr "Démarrer/arrêter les scripts"
+
 #: ../src/generate-cache/main.c:50
 #, c-format
 msgid "creating cache directories\n"
@@ -10508,12 +12418,12 @@ msgid "edit"
 msgstr "Modifier"
 
 #: ../src/gui/accelerators.c:132 ../src/gui/accelerators.c:744
-#: ../src/gui/accelerators.c:1465
+#: ../src/gui/accelerators.c:1464
 msgid "up"
 msgstr "Monter"
 
 #: ../src/gui/accelerators.c:133 ../src/gui/accelerators.c:744
-#: ../src/gui/accelerators.c:1465
+#: ../src/gui/accelerators.c:1464
 msgid "down"
 msgstr "Descendre"
 
@@ -10526,20 +12436,20 @@ msgid "popup"
 msgstr "Popup"
 
 #: ../src/gui/accelerators.c:142 ../src/gui/accelerators.c:175
-#: ../src/gui/gtk.c:3648 ../src/views/lighttable.c:760
+#: ../src/gui/gtk.c:3649 ../src/views/lighttable.c:760
 msgid "next"
 msgstr "Suivant"
 
 #: ../src/gui/accelerators.c:143 ../src/gui/accelerators.c:174
-#: ../src/gui/gtk.c:3649 ../src/views/lighttable.c:761
+#: ../src/gui/gtk.c:3650 ../src/views/lighttable.c:761
 msgid "previous"
 msgstr "Précédent"
 
-#: ../src/gui/accelerators.c:145 ../src/gui/accelerators.c:1608
+#: ../src/gui/accelerators.c:145 ../src/gui/accelerators.c:1607
 msgid "last"
 msgstr "Dernier"
 
-#: ../src/gui/accelerators.c:146 ../src/gui/accelerators.c:1607
+#: ../src/gui/accelerators.c:146 ../src/gui/accelerators.c:1606
 msgid "first"
 msgstr "Premier"
 
@@ -10566,7 +12476,7 @@ msgstr "Inverser-droit"
 msgid "right-on"
 msgstr "Sur-droit"
 
-#: ../src/gui/accelerators.c:167 ../src/gui/gtk.c:3647
+#: ../src/gui/accelerators.c:167 ../src/gui/gtk.c:3648
 msgid "activate"
 msgstr "Activer"
 
@@ -10689,8 +12599,8 @@ msgstr "Dernière instance"
 msgid "relative instance"
 msgstr "Instance relative"
 
-#: ../src/gui/accelerators.c:787 ../src/gui/accelerators.c:2874
-#: ../src/gui/accelerators.c:3821
+#: ../src/gui/accelerators.c:787 ../src/gui/accelerators.c:2875
+#: ../src/gui/accelerators.c:3822
 msgid "speed"
 msgstr "Vitesse"
 
@@ -10801,7 +12711,7 @@ msgstr " • Molette pour changer la vitesse"
 msgid "right click to exit mapping mode"
 msgstr " • Clic droit pour quitter le mode enregistrement"
 
-#: ../src/gui/accelerators.c:1129
+#: ../src/gui/accelerators.c:1128
 #, c-format
 msgid ""
 "%sright-click to type a specific value between <b>%s</b> and <b>%s</b>\n"
@@ -10810,24 +12720,24 @@ msgstr ""
 "%sclic droit pour définir une valeur entre <b>%s</b> et <b>%s</b>\n"
 "ou maintenir Ctrl+Shift lors du déplacement pour ignorer les limites souples."
 
-#: ../src/gui/accelerators.c:1193
+#: ../src/gui/accelerators.c:1192
 msgid "ctrl+v"
 msgstr "Ctrl+V"
 
-#: ../src/gui/accelerators.c:1193
+#: ../src/gui/accelerators.c:1192
 msgid "right long click"
 msgstr "Clic droit long"
 
 # minuscule initiale
-#: ../src/gui/accelerators.c:1193
+#: ../src/gui/accelerators.c:1192
 msgid "to copy Lua command"
 msgstr "pour copier la commande Lua"
 
-#: ../src/gui/accelerators.c:1461
+#: ../src/gui/accelerators.c:1460
 msgid "shortcut for move exists with single effect"
 msgstr "Un raccourci pour le mouvement existe avec un effet unique"
 
-#: ../src/gui/accelerators.c:1462
+#: ../src/gui/accelerators.c:1461
 #, c-format
 msgid ""
 "%s\n"
@@ -10838,64 +12748,64 @@ msgstr ""
 "\n"
 "(assigner « %s » à « %s »)"
 
-#: ../src/gui/accelerators.c:1463
+#: ../src/gui/accelerators.c:1462
 msgid "create separate shortcuts for up and down move?"
 msgstr ""
 "Créer des raccourcis différents pour les mouvements monter et descendre ?"
 
-#: ../src/gui/accelerators.c:1489
+#: ../src/gui/accelerators.c:1488
 #, c-format
 msgid "%s, speed reset"
 msgstr "%s, réinitialise la vitesse"
 
-#: ../src/gui/accelerators.c:1507
+#: ../src/gui/accelerators.c:1506
 msgid "shortcut exists with different settings"
 msgstr "Le raccourci existe avec des paramètres différents"
 
-#: ../src/gui/accelerators.c:1508
+#: ../src/gui/accelerators.c:1507
 msgid "reset the settings of the shortcut?"
 msgstr "Réinitialiser les paramètres du raccourci ?"
 
-#: ../src/gui/accelerators.c:1517
+#: ../src/gui/accelerators.c:1516
 msgid "shortcut already exists"
 msgstr "Le raccourci existe déjà"
 
-#: ../src/gui/accelerators.c:1519
+#: ../src/gui/accelerators.c:1518
 msgid "disable this default shortcut?"
 msgstr "Désactiver ce raccourci par défaut ?"
 
-#: ../src/gui/accelerators.c:1520
+#: ../src/gui/accelerators.c:1519
 msgid "remove the shortcut?"
 msgstr "Supprimer le raccourci ?"
 
-#: ../src/gui/accelerators.c:1560
+#: ../src/gui/accelerators.c:1559
 msgid "clashing shortcuts exist"
 msgstr "Il y a des raccourcis conflictuels"
 
-#: ../src/gui/accelerators.c:1561
+#: ../src/gui/accelerators.c:1560
 msgid "remove these existing shortcuts?"
 msgstr "Éliminer ces raccourcis existants ?"
 
 #. or 3, but change char relative[] = "-2" to "-1"
 #. NUM_INSTANCES
-#: ../src/gui/accelerators.c:1606
+#: ../src/gui/accelerators.c:1605
 msgid "preferred"
 msgstr "Préféré"
 
-#: ../src/gui/accelerators.c:1609
+#: ../src/gui/accelerators.c:1608
 msgid "second"
 msgstr "Second"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l’image n'est pas physiquement dupliquée
-#: ../src/gui/accelerators.c:1610
+#: ../src/gui/accelerators.c:1609
 msgid "last but one"
 msgstr "Pénultième"
 
-#: ../src/gui/accelerators.c:1771 ../src/gui/accelerators.c:1836
+#: ../src/gui/accelerators.c:1770 ../src/gui/accelerators.c:1835
 msgid "(unchanged)"
 msgstr "(Non modifié)"
 
-#: ../src/gui/accelerators.c:1951
+#: ../src/gui/accelerators.c:1952
 msgid ""
 "define a shortcut by pressing a key, optionally combined with modifier keys "
 "(ctrl/shift/alt)\n"
@@ -10921,47 +12831,47 @@ msgstr ""
 "\n"
 "Clic droit pour annuler."
 
-#: ../src/gui/accelerators.c:2024
+#: ../src/gui/accelerators.c:2025
 msgid "removing shortcut"
 msgstr "Suppression du raccourci"
 
-#: ../src/gui/accelerators.c:2026
+#: ../src/gui/accelerators.c:2027
 msgid "disable the selected default shortcut?"
 msgstr "Désactiver le raccourci par défaut sélectionné ?"
 
-#: ../src/gui/accelerators.c:2027
+#: ../src/gui/accelerators.c:2028
 msgid "restore the selected default shortcut?"
 msgstr "Restaurer le raccourci par défaut sélectionné ?"
 
-#: ../src/gui/accelerators.c:2028
+#: ../src/gui/accelerators.c:2029
 msgid "remove the selected shortcut?"
 msgstr "Supprimer le raccourci sélectionné ?"
 
-#: ../src/gui/accelerators.c:2117
+#: ../src/gui/accelerators.c:2118
 msgid "command"
 msgstr "Commande"
 
-#: ../src/gui/accelerators.c:2118
+#: ../src/gui/accelerators.c:2119
 msgid "preset"
 msgstr "Préréglage"
 
-#: ../src/gui/accelerators.c:2501
+#: ../src/gui/accelerators.c:2502
 msgid "restore shortcuts"
 msgstr "Restauration du raccourci"
 
-#: ../src/gui/accelerators.c:2504
+#: ../src/gui/accelerators.c:2505
 msgid "_defaults"
 msgstr "_Défaut"
 
-#: ../src/gui/accelerators.c:2505
+#: ../src/gui/accelerators.c:2506
 msgid "_startup"
 msgstr "_Démarrage"
 
-#: ../src/gui/accelerators.c:2506
+#: ../src/gui/accelerators.c:2507
 msgid "_edits"
 msgstr "_Avant modif"
 
-#: ../src/gui/accelerators.c:2513
+#: ../src/gui/accelerators.c:2514
 msgid ""
 "restore shortcuts from one of these states:\n"
 "  - default\n"
@@ -10973,7 +12883,7 @@ msgstr ""
 " • Comme au démarrage\n"
 " • Comme avant l’ouverture de ce dialogue\n"
 
-#: ../src/gui/accelerators.c:2520
+#: ../src/gui/accelerators.c:2521
 msgid ""
 "clear all newer shortcuts\n"
 "(instead of just restoring changed ones)"
@@ -10981,17 +12891,17 @@ msgstr ""
 "Effacer tous les raccourcis récents\n"
 "au lieu de restaurer ceux qui ont été modifiés."
 
-#: ../src/gui/accelerators.c:2577 ../src/gui/preferences.c:922
+#: ../src/gui/accelerators.c:2578 ../src/gui/preferences.c:923
 #: ../src/libs/tools/global_toolbox.c:491
 #: ../src/libs/tools/global_toolbox.c:662
 msgid "shortcuts"
 msgstr "Raccourcis"
 
-#: ../src/gui/accelerators.c:2587
+#: ../src/gui/accelerators.c:2588
 msgid "export shortcuts"
 msgstr "Exporter les raccourcis"
 
-#: ../src/gui/accelerators.c:2596
+#: ../src/gui/accelerators.c:2597
 msgid ""
 "export all shortcuts to a file\n"
 "or just for one selected device\n"
@@ -10999,27 +12909,27 @@ msgstr ""
 "Exporter tous les raccourcis dans un fichier\n"
 "ou seulement pour un périphérique sélectionné.\n"
 
-#: ../src/gui/accelerators.c:2603 ../src/gui/accelerators.c:2685
+#: ../src/gui/accelerators.c:2604 ../src/gui/accelerators.c:2686
 msgid "keyboard"
 msgstr "Clavier"
 
-#: ../src/gui/accelerators.c:2615
+#: ../src/gui/accelerators.c:2616
 msgid "device id"
 msgstr "Id du périphérique"
 
-#: ../src/gui/accelerators.c:2641
+#: ../src/gui/accelerators.c:2642
 msgid "select file to export"
 msgstr "Sélectionne le fichier à exporter"
 
-#: ../src/gui/accelerators.c:2642 ../src/libs/tagging.c:2629
+#: ../src/gui/accelerators.c:2643 ../src/libs/tagging.c:2629
 msgid "_export"
 msgstr "_Exporter"
 
-#: ../src/gui/accelerators.c:2669
+#: ../src/gui/accelerators.c:2670
 msgid "import shortcuts"
 msgstr "Importer des raccourcis"
 
-#: ../src/gui/accelerators.c:2678
+#: ../src/gui/accelerators.c:2679
 msgid ""
 "import all shortcuts from a file\n"
 "or just for one selected device\n"
@@ -11027,31 +12937,31 @@ msgstr ""
 "Importer tous les raccourcis du fichier,\n"
 "ou seulement pour un périphérique sélectionné.\n"
 
-#: ../src/gui/accelerators.c:2697
+#: ../src/gui/accelerators.c:2698
 msgid "id in file"
 msgstr "Id dans le fichier"
 
-#: ../src/gui/accelerators.c:2703
+#: ../src/gui/accelerators.c:2704
 msgid "id when loaded"
 msgstr "Id lorsque chargé"
 
-#: ../src/gui/accelerators.c:2707
+#: ../src/gui/accelerators.c:2708
 msgid "clear device first"
 msgstr "Effacer d’abord les raccourcis du périphérique"
 
-#: ../src/gui/accelerators.c:2732
+#: ../src/gui/accelerators.c:2733
 msgid "select file to import"
 msgstr "Sélectionner le fichier à importer"
 
-#: ../src/gui/accelerators.c:2733 ../src/libs/tagging.c:2593
+#: ../src/gui/accelerators.c:2734 ../src/libs/tagging.c:2593
 msgid "_import"
 msgstr "_Importer"
 
-#: ../src/gui/accelerators.c:2825
+#: ../src/gui/accelerators.c:2826
 msgid "search shortcuts list"
 msgstr "Chercher dans la liste des raccourcis"
 
-#: ../src/gui/accelerators.c:2827
+#: ../src/gui/accelerators.c:2828
 msgid ""
 "incrementally search the list of shortcuts\n"
 "press up or down keys to cycle through matches"
@@ -11059,28 +12969,23 @@ msgstr ""
 "Recherche incrémentale dans la liste des raccourcis,\n"
 "appuyer les touches haut ou bas pour parcourir la sélection."
 
-#: ../src/gui/accelerators.c:2847 ../src/views/view.c:1574
+#: ../src/gui/accelerators.c:2848 ../src/views/view.c:1574
 msgid "shortcut"
 msgstr "Raccourci"
 
-#: ../src/gui/accelerators.c:2850 ../src/gui/accelerators.c:2952
-#: ../src/views/view.c:1576
-msgid "action"
-msgstr "Action"
-
-#: ../src/gui/accelerators.c:2860
+#: ../src/gui/accelerators.c:2861
 msgid "element"
 msgstr "Élément"
 
-#: ../src/gui/accelerators.c:2868
+#: ../src/gui/accelerators.c:2869
 msgid "effect"
 msgstr "Effets"
 
-#: ../src/gui/accelerators.c:2928
+#: ../src/gui/accelerators.c:2929
 msgid "search actions list"
 msgstr "Chercher dans la liste d’actions"
 
-#: ../src/gui/accelerators.c:2930
+#: ../src/gui/accelerators.c:2931
 msgid ""
 "incrementally search the list of actions\n"
 "press up or down keys to cycle through matches"
@@ -11088,16 +12993,16 @@ msgstr ""
 "Recherche incrémentale dans la liste des actions,\n"
 "appuyer les touches haut ou bas pour parcourir la sélection."
 
-#: ../src/gui/accelerators.c:2960 ../src/gui/guides.c:719
+#: ../src/gui/accelerators.c:2961 ../src/gui/guides.c:719
 #: ../src/libs/export_metadata.c:179
 msgid "type"
 msgstr "Type"
 
-#: ../src/gui/accelerators.c:2998
+#: ../src/gui/accelerators.c:2999
 msgid "enable fallbacks"
 msgstr "Activer les replis"
 
-#: ../src/gui/accelerators.c:2999
+#: ../src/gui/accelerators.c:3000
 msgid ""
 "enables default meanings for additional buttons, modifiers or moves\n"
 "when used in combination with a base shortcut"
@@ -11106,38 +13011,38 @@ msgstr ""
 "additionnels,\n"
 "lorsque utilisé avec un raccourci de base."
 
-#: ../src/gui/accelerators.c:3007
+#: ../src/gui/accelerators.c:3008
 msgid "open help page for shortcuts"
 msgstr "Ouvre la page d'aide pour les raccourcis"
 
 # lorsque l’action n’engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/gui/accelerators.c:3012
+#: ../src/gui/accelerators.c:3013
 msgid "restore..."
 msgstr "Restaurer…"
 
-#: ../src/gui/accelerators.c:3013
+#: ../src/gui/accelerators.c:3014
 msgid "restore default shortcuts or previous state"
 msgstr "Restaurer les raccourcis par défaut ou leur état précédent"
 
-#: ../src/gui/accelerators.c:3017 ../src/libs/styles.c:912
+#: ../src/gui/accelerators.c:3018 ../src/libs/styles.c:912
 #: ../src/libs/tagging.c:3369
 msgid "import..."
 msgstr "Importer…"
 
-#: ../src/gui/accelerators.c:3018
+#: ../src/gui/accelerators.c:3019
 msgid "fully or partially import shortcuts from file"
 msgstr "Importer tout ou partiellement les raccourcis"
 
-#: ../src/gui/accelerators.c:3022 ../src/libs/styles.c:919
+#: ../src/gui/accelerators.c:3023 ../src/libs/styles.c:919
 #: ../src/libs/tagging.c:3372
 msgid "export..."
 msgstr "Exporter…"
 
-#: ../src/gui/accelerators.c:3023
+#: ../src/gui/accelerators.c:3024
 msgid "fully or partially export shortcuts to file"
 msgstr "Exporter tout ou partiellement les raccourcis"
 
-#: ../src/gui/accelerators.c:3031
+#: ../src/gui/accelerators.c:3032
 msgid ""
 "the recommended way to assign shortcuts to visual elements is the <b>visual "
 "shortcut mapping</b> mode.\n"
@@ -11171,34 +13076,34 @@ msgstr ""
 "<i>Cliquer <b>trois fois</b> pour supprimer définitivement cette "
 "notification.</i>"
 
-#: ../src/gui/accelerators.c:3462
+#: ../src/gui/accelerators.c:3463
 msgid "reinitialising input devices"
 msgstr "Réinitialise les périphériques d’entrée"
 
 # lorsque l’action n’engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/gui/accelerators.c:3604
+#: ../src/gui/accelerators.c:3605
 msgid "down move"
 msgstr "Mouvement vers le bas"
 
-#: ../src/gui/accelerators.c:3604
+#: ../src/gui/accelerators.c:3605
 msgid "flip top/bottom first/last"
 msgstr "Intervertir haut/bas premier/dernier"
 
-#: ../src/gui/accelerators.c:3689
+#: ../src/gui/accelerators.c:3690
 msgid "fallback to move"
 msgstr "Repli à déplacer"
 
-#: ../src/gui/accelerators.c:3940
+#: ../src/gui/accelerators.c:3941
 #, c-format
 msgid "%s not assigned"
 msgstr "« %s » n’est pas assigné"
 
-#: ../src/gui/accelerators.c:4121
+#: ../src/gui/accelerators.c:4122
 #, c-format
 msgid "%s assigned to %s"
 msgstr "« %s » est assigné à « %s »"
 
-#: ../src/gui/accelerators.c:4340
+#: ../src/gui/accelerators.c:4341
 msgid "short key press resets stuck keys"
 msgstr "Une pression courte réinitialise les touches bloquées"
 
@@ -11214,144 +13119,144 @@ msgstr "Info-bulles désactivées"
 msgid "tooltips on"
 msgstr "Info-bulles activées"
 
-#: ../src/gui/gtk.c:843
+#: ../src/gui/gtk.c:844
 msgid "closing darktable..."
 msgstr "Quitter darktable…"
 
-#: ../src/gui/gtk.c:1101
+#: ../src/gui/gtk.c:1102
 msgid "URL opened in web browser"
 msgstr "Page ouverte dans le navigateur"
 
-#: ../src/gui/gtk.c:1105
+#: ../src/gui/gtk.c:1106
 msgid "error while opening URL in web browser"
 msgstr "Erreur lors de l’ouverture d'une page dans le navigateur"
 
 #. View menu
-#: ../src/gui/gtk.c:1187
+#: ../src/gui/gtk.c:1188
 msgctxt "menu"
 msgid "Views"
 msgstr "Vues"
 
-#: ../src/gui/gtk.c:1191
+#: ../src/gui/gtk.c:1192
 msgctxt "menu"
 msgid "lighttable"
 msgstr "Table lumineuse"
 
-#: ../src/gui/gtk.c:1192
+#: ../src/gui/gtk.c:1193
 msgctxt "menu"
 msgid "darkroom"
 msgstr "Chambre noire"
 
-#: ../src/gui/gtk.c:1198
+#: ../src/gui/gtk.c:1199
 msgctxt "menu"
 msgid "slideshow"
 msgstr "Diaporama"
 
-#: ../src/gui/gtk.c:1200
+#: ../src/gui/gtk.c:1201
 msgctxt "menu"
 msgid "map"
 msgstr "Carte"
 
-#: ../src/gui/gtk.c:1202
+#: ../src/gui/gtk.c:1203
 msgctxt "menu"
 msgid "print"
 msgstr "Impression"
 
-#: ../src/gui/gtk.c:1204
+#: ../src/gui/gtk.c:1205
 msgctxt "menu"
 msgid "tethering"
 msgstr "Capture"
 
 #. Help menu
-#: ../src/gui/gtk.c:1210
+#: ../src/gui/gtk.c:1211
 msgctxt "menu"
 msgid "Help"
 msgstr "Aide"
 
-#: ../src/gui/gtk.c:1214
+#: ../src/gui/gtk.c:1215
 msgctxt "menu"
 msgid "darktable Manual"
 msgstr "Manuel darktable"
 
-#: ../src/gui/gtk.c:1221
+#: ../src/gui/gtk.c:1222
 msgctxt "menu"
 msgid "darktable Homepage"
 msgstr "Page d'accueil de darktable"
 
-#: ../src/gui/gtk.c:1245
+#: ../src/gui/gtk.c:1246
 msgctxt "menu"
 msgid "Preferences"
 msgstr "Préférences"
 
-#: ../src/gui/gtk.c:1326
+#: ../src/gui/gtk.c:1327
 msgid "panels"
 msgstr "Panneaux"
 
-#: ../src/gui/gtk.c:1368
+#: ../src/gui/gtk.c:1369
 msgid "switch views"
 msgstr "Changer de vue/carte"
 
-#: ../src/gui/gtk.c:1369 ../src/views/tethering.c:104
+#: ../src/gui/gtk.c:1370 ../src/views/tethering.c:104
 msgid "tethering"
 msgstr "Capture"
 
-#: ../src/gui/gtk.c:1375 ../src/views/map.c:274
+#: ../src/gui/gtk.c:1376 ../src/views/map.c:274
 msgid "map"
 msgstr "Carte"
 
-#: ../src/gui/gtk.c:1377 ../src/views/slideshow.c:395
+#: ../src/gui/gtk.c:1378 ../src/views/slideshow.c:395
 msgid "slideshow"
 msgstr "Diaporama"
 
 #. Print button
-#: ../src/gui/gtk.c:1379 ../src/libs/print_settings.c:2905
+#: ../src/gui/gtk.c:1380 ../src/libs/print_settings.c:2905
 msgid "print"
 msgstr "Impression"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:1386
+#: ../src/gui/gtk.c:1387
 msgid "quit"
 msgstr "Quitter"
 
 #. Full-screen accelerator (no ESC handler here to enable quit-slideshow using ESC)
-#: ../src/gui/gtk.c:1390
+#: ../src/gui/gtk.c:1391
 msgid "fullscreen"
 msgstr "Plein écran"
 
-#: ../src/gui/gtk.c:1395
+#: ../src/gui/gtk.c:1396
 msgid "collapsing controls"
 msgstr "Contrôles de repli"
 
 #. specific top/bottom toggles
-#: ../src/gui/gtk.c:1398
+#: ../src/gui/gtk.c:1399
 msgid "header"
 msgstr "Tête de groupe"
 
-#: ../src/gui/gtk.c:1400
+#: ../src/gui/gtk.c:1401
 msgid "filmstrip and timeline"
 msgstr "Bandeau et chronologie"
 
-#: ../src/gui/gtk.c:1402
+#: ../src/gui/gtk.c:1403
 msgid "top toolbar"
 msgstr "Barre d’outil haute"
 
-#: ../src/gui/gtk.c:1403
+#: ../src/gui/gtk.c:1404
 msgid "bottom toolbar"
 msgstr "Barre d’outil basse"
 
-#: ../src/gui/gtk.c:1404
+#: ../src/gui/gtk.c:1405
 msgid "all top"
 msgstr "Haut tous"
 
-#: ../src/gui/gtk.c:1405
+#: ../src/gui/gtk.c:1406
 msgid "all bottom"
 msgstr "Bas tous"
 
-#: ../src/gui/gtk.c:1407
+#: ../src/gui/gtk.c:1408
 msgid "toggle tooltip visibility"
 msgstr "Basculer les info-bulles"
 
-#: ../src/gui/gtk.c:1410
+#: ../src/gui/gtk.c:1411
 msgid "reinitialise input devices"
 msgstr "Réinitialise les périphériques d’entrée"
 
@@ -11363,8 +13268,8 @@ msgstr "Basculer le mode zones nettes"
 msgid "toggle focus peaking"
 msgstr "Basculer les zones nettes"
 
-#: ../src/gui/gtk.c:1853 ../src/gui/gtk.c:3754 ../src/gui/gtk.c:3759
-#: ../src/gui/gtk.c:3764 ../src/gui/gtk.c:3769
+#: ../src/gui/gtk.c:1853 ../src/gui/gtk.c:3755 ../src/gui/gtk.c:3760
+#: ../src/gui/gtk.c:3765 ../src/gui/gtk.c:3770
 msgid "tabs"
 msgstr "Tabs"
 
@@ -11407,166 +13312,55 @@ msgid "show/hide modules"
 msgstr "Afficher/cacher les modules"
 
 #. ask the user if darktable.org may be accessed
-#: ../src/gui/gtk.c:3215
+#: ../src/gui/gtk.c:3216
 msgid "access the online user manual?"
 msgstr "Accéder au manuel utilisateur en ligne ?"
 
-#: ../src/gui/gtk.c:3216
+#: ../src/gui/gtk.c:3217
 #, c-format
 msgid "do you want to access `%s'?"
 msgstr "Accéder à « %s » ?"
 
-#: ../src/gui/gtk.c:3289
+#: ../src/gui/gtk.c:3290
 msgid "there is no help available for this element"
 msgstr "Aucune aide disponible pour cet élément"
 
 #. font name can only use period as decimal separator
 #. but printf format strings use comma for some locales, so replace comma with period
-#: ../src/gui/gtk.c:3309 ../src/libs/metadata_view.c:804
+#: ../src/gui/gtk.c:3310 ../src/libs/metadata_view.c:804
 #, c-format
 msgid "%.1f"
 msgstr "%.1f"
 
-#: ../src/gui/gtk.c:3311
+#: ../src/gui/gtk.c:3312
 #, c-format
 msgid "Sans %s"
 msgstr "Sans %s"
 
-#: ../src/gui/gtk.c:3642
+#: ../src/gui/gtk.c:3643
 msgid "does not contain pages"
 msgstr "Ne contient pas de pages"
 
-#: ../src/gui/gtk.c:3891
+#: ../src/gui/gtk.c:3892
 #, c-format
 msgid "never show more than %d lines"
 msgstr "Ne pas montrer plus de %d lignes"
-
-#: ../src/gui/gtkentry.c:173
-msgid "$(ROLL.NAME) - roll of the input image"
-msgstr "$(ROLL.NAME) - Nom du dossier"
-
-#: ../src/gui/gtkentry.c:174
-msgid "$(FILE.FOLDER) - folder containing the input image"
-msgstr "$(FILE.FOLDER) - Chemin du dossier de l’image d’origine"
-
-#: ../src/gui/gtkentry.c:175
-msgid "$(FILE.NAME) - basename of the input image"
-msgstr "$(FILE.NAME) - Nom de base de l’image d’origine"
-
-#: ../src/gui/gtkentry.c:176
-msgid "$(FILE.EXTENSION) - extension of the input image"
-msgstr "$(FILE.EXTENSION) - Extension du fichier d’origine"
-
-#: ../src/gui/gtkentry.c:177
-msgid "$(VERSION) - duplicate version"
-msgstr "$(VERSION) - Version copie virtuelle"
-
-#: ../src/gui/gtkentry.c:178
-msgid ""
-"$(VERSION.IF_MULTI) - same as $(VERSION) but null string if only one version "
-"exists"
-msgstr ""
-"$(VERSION.IF_MULTI) - Comme $(VERSION) mais égal à chaîne vide si une seule "
-"version existe"
-
-#: ../src/gui/gtkentry.c:179
-msgid "$(VERSION.NAME) - version name from metadata"
-msgstr "$(VERSION.NAME) - Nom de version dans les métadonnées"
 
 #: ../src/gui/gtkentry.c:180
 msgid "$(JOBCODE) - job code for import"
 msgstr "$(JOBCODE) - Numéro de tâche pour l'importation"
 
-#: ../src/gui/gtkentry.c:181
-msgid ""
-"$(SEQUENCE[n,m]) - sequence number, n: number of digits, m: start number"
-msgstr ""
-"$(SEQUENCE[n,m]) - Nombre séquentiel, n : nombre de chiffre, m : valeur "
-"initiale"
-
 #: ../src/gui/gtkentry.c:182
 msgid "$(WIDTH.MAX) - maximum image export width"
 msgstr "$(WIDTH.MAX) - Largeur maximum de l’image exportée"
-
-#: ../src/gui/gtkentry.c:183
-msgid "$(WIDTH.SENSOR) - image sensor width"
-msgstr "$(WIDTH.SENSOR) - Largeur de l'image du capteur"
-
-#: ../src/gui/gtkentry.c:184
-msgid "$(WIDTH.RAW) - RAW image width"
-msgstr "$(WIDTH.RAW) - Largeur de l’image RAW"
-
-#: ../src/gui/gtkentry.c:185
-msgid "$(WIDTH.CROP) - image width after crop"
-msgstr "$(WIDTH.CROP) - Largeur de l’image après recadrage"
-
-#: ../src/gui/gtkentry.c:186
-msgid "$(WIDTH.EXPORT) - exported image width"
-msgstr "$(WIDTH.EXPORT) - Largeur de l’image exportée"
 
 #: ../src/gui/gtkentry.c:187
 msgid "$(HEIGHT.MAX) - maximum image export height"
 msgstr "$(HEIGHT.MAX) - Hauteur maximum de l’image exportée"
 
-#: ../src/gui/gtkentry.c:188
-msgid "$(HEIGHT.SENSOR) - image sensor height"
-msgstr "$(HEIGHT.SENSOR) - Hauteur de l’image du capteur"
-
-#: ../src/gui/gtkentry.c:189
-msgid "$(HEIGHT.RAW) - RAW image height"
-msgstr "$(HEIGHT.RAW) - Hauteur de l’image RAW"
-
-#: ../src/gui/gtkentry.c:190
-msgid "$(HEIGHT.CROP) - image height after crop"
-msgstr "$(HEIGHT.CROP) - Hauteur de l’image après recadrage"
-
-#: ../src/gui/gtkentry.c:191
-msgid "$(HEIGHT.EXPORT) - exported image height"
-msgstr "$(HEIGHT.EXPORT) - Hauteur de l’image exportée"
-
-#: ../src/gui/gtkentry.c:192
-msgid "$(YEAR) - year"
-msgstr "$(YEAR) - Année"
-
-#: ../src/gui/gtkentry.c:193
-msgid "$(YEAR.SHORT) - year without century"
-msgstr "$(YEAR.SHORT) - Année sans le siècle"
-
-#: ../src/gui/gtkentry.c:194
-msgid "$(MONTH) - month"
-msgstr "$(MONTH) - Mois"
-
-#: ../src/gui/gtkentry.c:195
-msgid "$(MONTH.SHORT) - abbreviated month name according to the current locale"
-msgstr "$(MONTH.SHORT) - Abréviation du nom du mois"
-
-#: ../src/gui/gtkentry.c:196
-msgid "$(MONTH.LONG) - full month name according to the current locale"
-msgstr "$(MONTH.LONG) - Nom du mois"
-
-#: ../src/gui/gtkentry.c:197
-msgid "$(DAY) - day"
-msgstr "$(DAY) - Jour"
-
-#: ../src/gui/gtkentry.c:198
-msgid "$(HOUR) - hour"
-msgstr "$(HOUR) - Heure"
-
 #: ../src/gui/gtkentry.c:199
 msgid "$(HOUR.AMPM) - hour, 12-hour clock"
 msgstr "$(HOUR.AMPM) - Heure au format 12 heures"
-
-#: ../src/gui/gtkentry.c:200
-msgid "$(MINUTE) - minute"
-msgstr "$(MINUTE) - Minutes"
-
-#: ../src/gui/gtkentry.c:201
-msgid "$(SECOND) - second"
-msgstr "$(SECOND) - Secondes"
-
-#: ../src/gui/gtkentry.c:202
-msgid "$(MSEC) - millisecond"
-msgstr "$(MSEC) - Millisecondes"
 
 #: ../src/gui/gtkentry.c:203
 msgid "$(EXIF.DATE.REGIONAL) - localized EXIF date"
@@ -11576,116 +13370,17 @@ msgstr "$(EXIF.DATE.REGIONAL) - Date localisée EXIF"
 msgid "$(EXIF.TIME.REGIONAL) - localized EXIF time"
 msgstr "$(EXIF.TIME.REGIONAL) - Heure localisée EXIF"
 
-#: ../src/gui/gtkentry.c:205
-msgid "$(EXIF.YEAR) - EXIF year"
-msgstr "$(EXIF.YEAR) - Année EXIF"
-
-#: ../src/gui/gtkentry.c:206
-msgid "$(EXIF.YEAR.SHORT) - EXIF year without century"
-msgstr "$(EXIF.YEAR.SHORT) - Année EXIF sans le siècle"
-
-#: ../src/gui/gtkentry.c:207
-msgid "$(EXIF.MONTH) - EXIF month"
-msgstr "$(EXIF.MONTH) - Mois EXIF"
-
-#: ../src/gui/gtkentry.c:208
-msgid ""
-"$(EXIF.MONTH.SHORT) - abbreviated EXIF month name according to the current "
-"locale"
-msgstr "$(EXIF.MONTH.SHORT) - Abréviation du nom du mois EXIF"
-
-#: ../src/gui/gtkentry.c:209
-msgid ""
-"$(EXIF.MONTH.LONG) - full EXIF month name according to the current locale"
-msgstr "$(EXIF.MONTH.LONG) - Nom du mois de l’EXIF"
-
-#: ../src/gui/gtkentry.c:210
-msgid "$(EXIF.DAY) - EXIF day"
-msgstr "$(EXIF.DAY) - Jour EXIF"
-
-#: ../src/gui/gtkentry.c:211
-msgid "$(EXIF.HOUR) - EXIF hour"
-msgstr "$(EXIF.HOUR) - Heure EXIF"
-
 #: ../src/gui/gtkentry.c:212
 msgid "$(EXIF.HOUR.AMPM) - EXIF hour, 12-hour clock"
 msgstr "$(EXIF.HOUR.AMPM) - Heure EXIF au format de 12 heures"
-
-#: ../src/gui/gtkentry.c:213
-msgid "$(EXIF.MINUTE) - EXIF minute"
-msgstr "$(EXIF.MINUTE) - Minutes EXIF"
-
-#: ../src/gui/gtkentry.c:214
-msgid "$(EXIF.SECOND) - EXIF second"
-msgstr "$(EXIF.SECOND) - Secondes EXIF"
-
-#: ../src/gui/gtkentry.c:215
-msgid "$(EXIF.MSEC) - EXIF millisecond"
-msgstr "$(EXIF.MSEC) - Millisecondes EXIF"
-
-#: ../src/gui/gtkentry.c:216
-msgid "$(EXIF.ISO) - ISO value"
-msgstr "$(EXIF.ISO) - Valeur ISO EXIF"
-
-#: ../src/gui/gtkentry.c:217
-msgid "$(EXIF.EXPOSURE.BIAS) - EXIF exposure bias"
-msgstr "$(EXIF.EXPOSURE.BIAS) - Compensation d’exposition EXIF"
 
 #: ../src/gui/gtkentry.c:218
 msgid "$(EXIF.EXPOSURE.PROGRAM) - EXIF exposure program"
 msgstr "$(EXIF.EXPOSURE.PROGRAM) - Programme d'exposition EXIF"
 
-#: ../src/gui/gtkentry.c:219
-msgid "$(EXIF.EXPOSURE) - EXIF exposure"
-msgstr "$(EXIF.EXPOSURE) - Exposition EXIF"
-
-#: ../src/gui/gtkentry.c:220
-msgid "$(EXIF.APERTURE) - EXIF aperture"
-msgstr "$(EXIF.APERTURE) - Ouverture EXIF"
-
-#: ../src/gui/gtkentry.c:221
-msgid "$(EXIF.CROP_FACTOR) - EXIF crop factor"
-msgstr "$(EXIF.CROP_FACTOR) - Facteur de recadrage EXIF"
-
-#: ../src/gui/gtkentry.c:222
-msgid "$(EXIF.FOCAL.LENGTH) - EXIF focal length"
-msgstr "$(EXIF.FOCAL.LENGTH) - Longueur focale EXIF"
-
-#: ../src/gui/gtkentry.c:223
-msgid "$(EXIF.FOCAL.LENGTH.EQUIV) - EXIF 35 mm equivalent focal length"
-msgstr "$(EXIF.FOCAL.LENGTH.EQUIV) - Longueur focale équivalente 35mm EXIF"
-
-#: ../src/gui/gtkentry.c:224
-msgid "$(EXIF.FOCUS.DISTANCE) - EXIF focal distance"
-msgstr "$(EXIF.FOCUS.DISTANCE) - Distance de mise au point EXIF"
-
-#: ../src/gui/gtkentry.c:225
-msgid "$(EXIF.MAKER) - camera maker"
-msgstr "$(EXIF.MAKER) - Fabriquant du boîtier EXIF"
-
-#: ../src/gui/gtkentry.c:226
-msgid "$(EXIF.MODEL) - camera model"
-msgstr "$(EXIF.MODEL) - Modèle de boîtier EXIF"
-
-#: ../src/gui/gtkentry.c:227
-msgid "$(EXIF.WHITEBALANCE) - EXIF selected white balance"
-msgstr "$(EXIF.WHITEBALANCE) - Balance des blancs EXIF"
-
-#: ../src/gui/gtkentry.c:228
-msgid "$(EXIF.METERING) - EXIF exposure metering mode"
-msgstr "$(EXIF.METERING) - Mode de mesure d'exposition EXIF"
-
-#: ../src/gui/gtkentry.c:229
-msgid "$(EXIF.LENS) - lens"
-msgstr "$(EXIF.LENS) - Objectif EXIF"
-
 #: ../src/gui/gtkentry.c:230
 msgid "$(EXIF.FLASH.ICON) - icon indicating whether flash was used"
 msgstr "$(EXIF.FLASH.ICON) - Icône indiquant si le flash a été utilisé"
-
-#: ../src/gui/gtkentry.c:231
-msgid "$(EXIF.FLASH) - was flash used (yes/no/--)"
-msgstr "$(EXIF.FLASH) - Le flash a-t-il été utilisé (Oui / Non / --)"
 
 #: ../src/gui/gtkentry.c:232
 msgid "$(GPS.LONGITUDE) - longitude"
@@ -11704,29 +13399,9 @@ msgid "$(GPS.LOCATION.ICON) - icon indicating whether GPS location is known"
 msgstr ""
 "$(GPS.LOCATION.ICON) - Icône indiquant si une localisation GPS est connue"
 
-#: ../src/gui/gtkentry.c:236
-msgid "$(LONGITUDE) - longitude"
-msgstr "$(LONGITUDE) - Longitude"
-
-#: ../src/gui/gtkentry.c:237
-msgid "$(LATITUDE) - latitude"
-msgstr "$(LATITUDE) - Latitude"
-
-#: ../src/gui/gtkentry.c:238
-msgid "$(ELEVATION) - elevation"
-msgstr "$(ELEVATION) - Élévation"
-
-#: ../src/gui/gtkentry.c:239
-msgid "$(STARS) - star rating as number (-1 for rejected)"
-msgstr "$(STARS) - Notation avec un nombre (–1 pour rejeter)"
-
 #: ../src/gui/gtkentry.c:240
 msgid "$(RATING.ICONS) - star/reject rating in icon form"
 msgstr "$(RATING.ICONS) - Notation étoile ou rejeter en icônes"
-
-#: ../src/gui/gtkentry.c:241
-msgid "$(LABELS) - color labels as text"
-msgstr "$(LABELS) - Labels de couleur en noms"
 
 #: ../src/gui/gtkentry.c:242
 msgid "$(LABELS.ICONS) - color labels as icons"
@@ -11743,71 +13418,26 @@ msgstr ""
 msgid "$(IMAGE.TAGS) - tags as set in metadata settings, flattened"
 msgstr "$(IMAGE.TAGS) - Mots-clés des métadonnées, sans hiérarchie"
 
-#: ../src/gui/gtkentry.c:245 ../src/gui/gtkentry.c:246
-msgid "$(ID) - image ID"
-msgstr "$(ID) - Numéro d’image"
+#: ../src/gui/gtkentry.c:245
+msgid "$(IMAGE.ID) - image ID"
+msgstr "$(IMAGE.ID) - Numéro d’image"
 
-#: ../src/gui/gtkentry.c:247
-msgid "$(TITLE) - title from metadata"
-msgstr "$(TITLE) - Titre des métadonnées"
+#: ../src/gui/gtkentry.c:246
+msgid "$(IMAGE.ID.NEXT) - next image ID to be assigned on import"
+msgstr ""
+"$(IMAGE.ID.NEXT) - Numéro d'image suivante qui sera assigné à l'importation"
 
-#: ../src/gui/gtkentry.c:248
-msgid "$(DESCRIPTION) - description from metadata"
-msgstr "$(DESCRIPTION) - Description des métadonnées"
-
-#: ../src/gui/gtkentry.c:249
-msgid "$(CREATOR) - creator from metadata"
-msgstr "$(CREATOR) - Auteur des métadonnées"
-
-#: ../src/gui/gtkentry.c:250
-msgid "$(PUBLISHER) - publisher from metadata"
-msgstr "$(PUBLISHER) - Diffuseur des métadonnées"
-
-#: ../src/gui/gtkentry.c:251
-msgid "$(RIGHTS) - rights from metadata"
-msgstr "$(RIGHTS) - Droits des métadonnées"
-
-#: ../src/gui/gtkentry.c:252
-msgid "$(USERNAME) - login name"
-msgstr "$(USERNAME) - Nom d’utilisateur"
-
-#: ../src/gui/gtkentry.c:253
-msgid "$(FOLDER.PICTURES) - pictures folder"
-msgstr "$(FOLDER.PICTURES) - Répertoire des images"
-
-#: ../src/gui/gtkentry.c:254
-msgid "$(FOLDER.HOME) - home folder"
-msgstr "$(FOLDER.HOME) - Dossier personnel"
-
-#: ../src/gui/gtkentry.c:255
-msgid "$(FOLDER.DESKTOP) - desktop folder"
-msgstr "$(FOLDER.DESKTOP) - Dossier du bureau"
-
-#: ../src/gui/gtkentry.c:256
+#: ../src/gui/gtkentry.c:257
 msgid "$(OPENCL.ACTIVATED) - whether OpenCL is activated"
 msgstr "$(OPENCL.ACTIVATED) - Activation d’OpenCL"
 
-#: ../src/gui/gtkentry.c:257
-msgid "$(CATEGORY[n,category]) - subtag of level n in hierarchical tags"
-msgstr ""
-"$(CATEGORY[n,category])) - Sous-mot-clé de niveau n des mots-clés "
-"hiérarchiques"
-
-#: ../src/gui/gtkentry.c:258
+#: ../src/gui/gtkentry.c:259
 msgid "$(TAGS) - tags as set in metadata settings"
 msgstr "$(TAGS) - mots-clés des métadonnées"
 
-#: ../src/gui/gtkentry.c:259
+#: ../src/gui/gtkentry.c:260
 msgid "$(DARKTABLE.NAME) - darktable name"
 msgstr "$(DARKTABLE.NAME) - Nom darktable"
-
-#: ../src/gui/gtkentry.c:260
-msgid "$(DARKTABLE.VERSION) - current darktable version"
-msgstr "$(DARKTABLE.VERSION) - Version de darktable"
-
-#: ../src/gui/gtkentry.c:261
-msgid "$(SIDECAR_TXT) - contents of .txt sidecar file, if present"
-msgstr "$(SIDECAR_TXT) - Contenu du fichier .txt si présent"
 
 #: ../src/gui/guides.c:30 ../src/iop/colorcorrection.c:247
 #: ../src/iop/monochrome.c:564
@@ -12038,11 +13668,11 @@ msgstr ""
 msgid "interface language"
 msgstr "Langue de l’interface"
 
-#: ../src/gui/preferences.c:321
+#: ../src/gui/preferences.c:322
 msgid "double-click to reset to the system language"
 msgstr "Double clic pour réinitialiser à la langue du système"
 
-#: ../src/gui/preferences.c:323
+#: ../src/gui/preferences.c:324
 msgid ""
 "set the language of the user interface. the system default is marked with an "
 "* \n"
@@ -12051,27 +13681,27 @@ msgstr ""
 "Règle la langue de l’interface utilisateur (nécessite un redémarrage).\n"
 "La langue système par défaut est marquée d’une *."
 
-#: ../src/gui/preferences.c:332
+#: ../src/gui/preferences.c:333
 msgid "theme"
 msgstr "Thème"
 
-#: ../src/gui/preferences.c:362
+#: ../src/gui/preferences.c:363
 msgid "set the theme for the user interface"
 msgstr "Définit le thème de l’interface utilisateur"
 
-#: ../src/gui/preferences.c:375 ../src/gui/preferences.c:382
+#: ../src/gui/preferences.c:376 ../src/gui/preferences.c:383
 msgid "use system font size"
 msgstr "Utilisation de la police système"
 
-#: ../src/gui/preferences.c:391 ../src/gui/preferences.c:398
+#: ../src/gui/preferences.c:392 ../src/gui/preferences.c:399
 msgid "font size in points"
 msgstr "Taille de la police en points"
 
-#: ../src/gui/preferences.c:403
+#: ../src/gui/preferences.c:404
 msgid "GUI controls and text DPI"
 msgstr "Contrôles de l’IU et DPI du texte"
 
-#: ../src/gui/preferences.c:410
+#: ../src/gui/preferences.c:411
 msgid ""
 "adjust the global GUI resolution to rescale controls, buttons, labels, etc.\n"
 "increase for a magnified GUI, decrease to fit more content in window.\n"
@@ -12088,76 +13718,76 @@ msgstr ""
 "qui est de 96 DPI la plupart du temps.\n"
 "(nécessite un redémarrage)"
 
-#: ../src/gui/preferences.c:418
+#: ../src/gui/preferences.c:419
 msgid "reset view panels"
 msgstr "Réinitialiser les panneaux des vues"
 
-#: ../src/gui/preferences.c:419
+#: ../src/gui/preferences.c:420
 msgid "reset hidden panels, their sizes and selected modules in all views"
 msgstr ""
 "Réinitialiser les panneaux cachés, leurs tailles et les modules sélectionnés "
 "dans toutes les vues"
 
 #. checkbox to allow user to modify theme with user.css
-#: ../src/gui/preferences.c:424
+#: ../src/gui/preferences.c:425
 msgid "modify selected theme with CSS tweaks below"
 msgstr "Modifier le thème via les ajustements CSS ci-dessous"
 
-#: ../src/gui/preferences.c:432
+#: ../src/gui/preferences.c:433
 msgid "modify theme with CSS keyed below (saved to user.css)"
 msgstr ""
 "Modifie le thème avec le code CSS entré ci-dessous,\n"
 "(sauvegardé dans user.css)"
 
 # espaces en début et fin pour des marges dans le bouton
-#: ../src/gui/preferences.c:454
+#: ../src/gui/preferences.c:455
 msgctxt "usercss"
 msgid "save CSS and apply"
 msgstr " Sauvegarder et appliquer "
 
-#: ../src/gui/preferences.c:459
+#: ../src/gui/preferences.c:460
 msgid "click to save and apply the CSS tweaks entered in this editor"
 msgstr ""
 "Sauvegarder et appliquer les modifications CSS entrées dans cet éditeur"
 
-#: ../src/gui/preferences.c:461
+#: ../src/gui/preferences.c:462
 msgid "open help page for CSS tweaks"
 msgstr "Ouvre la page d'aide pour les ajustements CSS"
 
 #. load default text with some pointers
-#: ../src/gui/preferences.c:482
+#: ../src/gui/preferences.c:483
 msgid "ERROR Loading user.css"
 msgstr "Erreur lors du chargement de user.css"
 
 #. load default text
-#: ../src/gui/preferences.c:491
+#: ../src/gui/preferences.c:492
 msgid "Enter CSS theme tweaks here"
 msgstr "Entrer ici les modifications CSS du thème"
 
-#: ../src/gui/preferences.c:512
+#: ../src/gui/preferences.c:513
 msgid "darktable preferences"
 msgstr "Préférences"
 
-#: ../src/gui/preferences.c:576
+#: ../src/gui/preferences.c:577
 msgid "darktable needs to be restarted for settings to take effect"
 msgstr "darktable doit être redémarré pour prendre en compte les changements"
 
 #. exif
-#: ../src/gui/preferences.c:835 ../src/gui/presets.c:659
+#: ../src/gui/preferences.c:836 ../src/gui/presets.c:659
 #: ../src/libs/metadata_view.c:147
 msgid "model"
 msgstr "Modèle"
 
-#: ../src/gui/preferences.c:839 ../src/gui/presets.c:667
+#: ../src/gui/preferences.c:840 ../src/gui/presets.c:667
 #: ../src/libs/metadata_view.c:148
 msgid "maker"
 msgstr "Fabricant"
 
-#: ../src/gui/preferences.c:876
+#: ../src/gui/preferences.c:877
 msgid "search presets list"
 msgstr "Chercher dans la liste des raccourcis"
 
-#: ../src/gui/preferences.c:877
+#: ../src/gui/preferences.c:878
 msgid ""
 "incrementally search the list of presets\n"
 "press up or down keys to cycle through matches"
@@ -12165,36 +13795,36 @@ msgstr ""
 "Recherche incrémentale dans la liste des raccourcis.\n"
 "Appuyer les touches Haut ou Bas pour parcourir la sélection."
 
-#: ../src/gui/preferences.c:883
+#: ../src/gui/preferences.c:884
 msgctxt "preferences"
 msgid "import..."
 msgstr "Importer"
 
-#: ../src/gui/preferences.c:887
+#: ../src/gui/preferences.c:888
 msgctxt "preferences"
 msgid "export..."
 msgstr "Exporter"
 
-#: ../src/gui/preferences.c:1047
+#: ../src/gui/preferences.c:1048
 #, c-format
 msgid "failed to import preset %s"
 msgstr "Échec d’importation du préréglage « %s »"
 
-#: ../src/gui/preferences.c:1058
+#: ../src/gui/preferences.c:1059
 msgid "select preset(s) to import"
 msgstr "Sélectionne le(s) préréglage(s) à importer"
 
-#: ../src/gui/preferences.c:1059 ../src/libs/collect.c:435
+#: ../src/gui/preferences.c:1060 ../src/libs/collect.c:435
 #: ../src/libs/copy_history.c:122 ../src/libs/geotagging.c:945
 #: ../src/libs/import.c:1858 ../src/libs/import.c:1971 ../src/libs/styles.c:584
 msgid "_open"
 msgstr "_Ouvrir"
 
-#: ../src/gui/preferences.c:1068
+#: ../src/gui/preferences.c:1069
 msgid "darktable preset files"
 msgstr "Fichiers de préréglage"
 
-#: ../src/gui/preferences.c:1073 ../src/iop/lut3d.c:1587
+#: ../src/gui/preferences.c:1074 ../src/iop/lut3d.c:1587
 #: ../src/libs/copy_history.c:161 ../src/libs/geotagging.c:961
 #: ../src/libs/styles.c:598
 msgid "all files"
@@ -12609,7 +14239,7 @@ msgid "lossy"
 msgstr "Avec perte"
 
 #. Bit depth combo box
-#: ../src/imageio/format/avif.c:910 ../src/imageio/format/exr.cc:591
+#: ../src/imageio/format/avif.c:912 ../src/imageio/format/exr.cc:591
 #: ../src/imageio/format/jxl.c:579 ../src/imageio/format/pdf.c:678
 #: ../src/imageio/format/png.c:686 ../src/imageio/format/tiff.c:882
 #: ../src/imageio/format/xcf.c:360
@@ -12617,7 +14247,7 @@ msgid "bit depth"
 msgstr "Bits"
 
 # en anglais "information" peut être un pluriel implicite, comme ici probablement
-#: ../src/imageio/format/avif.c:923
+#: ../src/imageio/format/avif.c:925
 msgid "color information stored in an image, higher is better"
 msgstr ""
 "Informations de couleur stockées dans l’image,\n"
@@ -12627,11 +14257,11 @@ msgstr ""
 #. * Color mode combo box
 #.
 #. shortfile option combo box
-#: ../src/imageio/format/avif.c:930 ../src/imageio/format/tiff.c:926
+#: ../src/imageio/format/avif.c:932 ../src/imageio/format/tiff.c:926
 msgid "B&W as grayscale"
 msgstr "N&B en échelle de gris"
 
-#: ../src/imageio/format/avif.c:931 ../src/imageio/format/tiff.c:927
+#: ../src/imageio/format/avif.c:933 ../src/imageio/format/tiff.c:927
 msgid "saving as grayscale will reduce the size for black & white images"
 msgstr ""
 "Enregistrer en échelle de gris réduira la taille des images noir & blanc"
@@ -12639,11 +14269,11 @@ msgstr ""
 #.
 #. * Tiling combo box
 #.
-#: ../src/imageio/format/avif.c:942
+#: ../src/imageio/format/avif.c:944
 msgid "tiling"
 msgstr "Tuilage"
 
-#: ../src/imageio/format/avif.c:943
+#: ../src/imageio/format/avif.c:945
 msgid ""
 "tile an image into segments.\n"
 "\n"
@@ -12657,14 +14287,14 @@ msgstr ""
 
 #. compression
 #. Compression method combo box
-#: ../src/imageio/format/avif.c:960 ../src/imageio/format/exr.cc:601
+#: ../src/imageio/format/avif.c:962 ../src/imageio/format/exr.cc:601
 #: ../src/imageio/format/pdf.c:693 ../src/imageio/format/png.c:701
 #: ../src/imageio/format/tiff.c:905 ../src/imageio/format/webp.c:414
 #: ../src/libs/masks.c:117
 msgid "compression"
 msgstr "Dégradé"
 
-#: ../src/imageio/format/avif.c:968
+#: ../src/imageio/format/avif.c:970
 msgid "the compression for the image"
 msgstr "Compression de l’images"
 
@@ -12673,13 +14303,13 @@ msgstr "Compression de l’images"
 #. step
 #. default
 #. digits
-#: ../src/imageio/format/avif.c:988 ../src/imageio/format/j2k.c:674
+#: ../src/imageio/format/avif.c:990 ../src/imageio/format/j2k.c:674
 #: ../src/imageio/format/jpeg.c:583 ../src/imageio/format/jxl.c:607
 #: ../src/imageio/format/webp.c:425 ../src/libs/camera.c:562
 msgid "quality"
 msgstr "Qualité"
 
-#: ../src/imageio/format/avif.c:991
+#: ../src/imageio/format/avif.c:993
 msgid ""
 "the quality of an image, less quality means fewer details.\n"
 "\n"
@@ -12700,11 +14330,11 @@ msgstr ""
 #. step
 #. default
 #. digits
-#: ../src/imageio/format/avif.c:1013
+#: ../src/imageio/format/avif.c:1015
 msgid "encoding speed"
 msgstr "Vitesse d'encodage"
 
-#: ../src/imageio/format/avif.c:1016
+#: ../src/imageio/format/avif.c:1018
 msgid "trades off quality and file size for quicker encoding time"
 msgstr ""
 "Compromis entre qualité et taille du fichier pour un encodage plus rapide"
@@ -15204,14 +16834,6 @@ msgstr ""
 "L : \t%.1f %%\n"
 "h : \t%.1f °\n"
 "c : \t%.1f"
-
-#: ../src/iop/channelmixerrgb.c:4449 ../src/iop/clipping.c:2107
-#: ../src/iop/colorbalancergb.c:1783 ../src/iop/colorequal.c:3026
-#: ../src/iop/filmicrgb.c:4382 ../src/iop/negadoctor.c:842
-#: ../src/iop/toneequal.c:3315 ../src/libs/image.c:498
-#: ../src/views/lighttable.c:1256
-msgid "page"
-msgstr "Page"
 
 #. Page CAT
 #: ../src/iop/channelmixerrgb.c:4452
@@ -26686,7 +28308,7 @@ msgstr "Double clic pour réinitialiser à « %f »"
 msgid "Lua options"
 msgstr "Options Lua"
 
-#: ../src/views/darkroom.c:521
+#: ../src/views/darkroom.c:517
 #, c-format
 msgid ""
 "file `%s' is not available, switching to lighttable now.\n"
@@ -26703,7 +28325,7 @@ msgstr ""
 "fichiers peuvent être accédés depuis le même emplacement que lorsque qu'ils "
 "ont été importés."
 
-#: ../src/views/darkroom.c:528
+#: ../src/views/darkroom.c:524
 #, c-format
 msgid ""
 "file `%s' appears corrupt, switching to lighttable now.\n"
@@ -26716,14 +28338,14 @@ msgstr ""
 "Merci de vérifier qu'il a été correctement et complètement copié depuis le "
 "boîtier."
 
-#: ../src/views/darkroom.c:534
+#: ../src/views/darkroom.c:530
 #, c-format
 msgid "file `%s' is not in any recognized format, switching to lighttable now."
 msgstr ""
 "Le fichier « %s » n'a pas un format connu, retour sur la table lumineuse "
 "maintenant."
 
-#: ../src/views/darkroom.c:539
+#: ../src/views/darkroom.c:535
 #, c-format
 msgid ""
 "file `%s' is from an unsupported camera model, switching to lighttable now."
@@ -26731,7 +28353,7 @@ msgstr ""
 "Le fichier « %s » provient d'un modèle de boîtier non supporté, retour sur "
 "la table lumineuse maintenant."
 
-#: ../src/views/darkroom.c:544
+#: ../src/views/darkroom.c:540
 #, c-format
 msgid ""
 "file `%s' uses an unsupported feature, switching to lighttable now.\n"
@@ -26751,7 +28373,7 @@ msgstr ""
 "support/\n"
 "et les notes de version correspondante de darktable)"
 
-#: ../src/views/darkroom.c:552
+#: ../src/views/darkroom.c:548
 #, c-format
 msgid ""
 "error while reading file `%s', switching to lighttable now.\n"
@@ -26763,7 +28385,7 @@ msgstr ""
 "\n"
 "Merci de vérifier que le fichier n'a pas été tronqué."
 
-#: ../src/views/darkroom.c:558
+#: ../src/views/darkroom.c:554
 #, c-format
 msgid ""
 "darktable could not load `%s', switching to lighttable now.\n"
@@ -26784,7 +28406,7 @@ msgstr ""
 "Si l’appareil figure dans la liste, merci d’ouvrir un ticket\n"
 "sur https://github.com/darktable-org/darktable"
 
-#: ../src/views/darkroom.c:585
+#: ../src/views/darkroom.c:581
 #, c-format
 msgctxt "darkroom"
 msgid "loading `%s' ..."
@@ -28744,9 +30366,6 @@ msgstr "Actions de la souris"
 #~ msgid "on both (don't ask)"
 #~ msgstr "Aux deux (sans confirmation)"
 
-#~ msgid "check for database maintenance"
-#~ msgstr "Vérifier pour la maintenance des bases de données"
-
 #~ msgid ""
 #~ "this option indicates when to check database fragmentation and perform "
 #~ "maintenance"
@@ -29394,10 +31013,6 @@ msgstr "Actions de la souris"
 #~ msgstr "Définit l’image comme couleur"
 
 #~ msgctxt "accel"
-#~ msgid "copy metadata"
-#~ msgstr "Copier métadonnées"
-
-#~ msgctxt "accel"
 #~ msgid "clear metadata"
 #~ msgstr "Effacer métadonnées"
 
@@ -29846,10 +31461,6 @@ msgstr "Actions de la souris"
 #~ msgctxt "accel"
 #~ msgid "lighttable view"
 #~ msgstr "Table lumineuse"
-
-#~ msgctxt "accel"
-#~ msgid "map view"
-#~ msgstr "Vue carte"
 
 #~ msgctxt "accel"
 #~ msgid "slideshow view"
@@ -30717,9 +32328,6 @@ msgstr "Actions de la souris"
 #~ msgid "file has unknown format!"
 #~ msgstr "Le fichier possède un format inconnu !"
 
-#~ msgid "import folder"
-#~ msgstr "Importer un dossier"
-
 #~ msgid "image…"
 #~ msgstr "Image…"
 
@@ -30963,11 +32571,6 @@ msgstr "Actions de la souris"
 #~ msgid "clear"
 #~ msgstr "Effacer"
 
-#~ msgid "remove metadata from selected images"
-#~ msgstr ""
-#~ "Enlève les métadonnées\n"
-#~ "des images sélectionnées"
-
 #~ msgid "metadata to be applied per default"
 #~ msgstr "Métadonnées à appliquer par défaut"
 
@@ -30988,9 +32591,6 @@ msgstr "Actions de la souris"
 
 #~ msgid "hidden"
 #~ msgstr "Caché "
-
-#~ msgid "configure metadata"
-#~ msgstr "Configurer métadonnées"
 
 #~ msgid "file manager"
 #~ msgstr "Navigateur de fichier"
@@ -33471,10 +35071,6 @@ msgstr "Actions de la souris"
 
 #~ msgid "color checker lut"
 #~ msgstr "Table correspondance couleurs"
-
-#~ msgctxt "accel"
-#~ msgid "disable tools"
-#~ msgstr "Désactiver les outils"
 
 #~ msgid "dark skin :A0"
 #~ msgstr "Peau sombre :A0"
