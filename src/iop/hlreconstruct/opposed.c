@@ -91,14 +91,13 @@ static inline char _mask_dilated(const char *in, const size_t w1)
 
 
 // A slightly modified version for sraws
-static void _process_linear_opposed(
-        struct dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        const float *const input,
-        float *const output,
-        const dt_iop_roi_t *const roi_in,
-        const dt_iop_roi_t *const roi_out,
-        const gboolean quality)
+static void _process_linear_opposed(dt_iop_module_t *self,
+                                    dt_dev_pixelpipe_iop_t *piece,
+                                    const float *const input,
+                                    float *const output,
+                                    const dt_iop_roi_t *const roi_in,
+                                    const dt_iop_roi_t *const roi_out,
+                                    const gboolean quality)
 {
   dt_iop_highlights_data_t *d = piece->data;
   const float clipval = highlights_clip_magics[DT_IOP_HIGHLIGHTS_OPPOSED] * d->clip;
@@ -203,20 +202,20 @@ static void _process_linear_opposed(
   }
 }
 
-static float *_process_opposed(
-        struct dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        const float *const input,
-        float *const output,
-        const dt_iop_roi_t *const roi_in,
-        const dt_iop_roi_t *const roi_out,
-        const gboolean keep,
-        const gboolean quality)
+static float *_process_opposed(dt_iop_module_t *self,
+                               dt_dev_pixelpipe_iop_t *piece,
+                               const float *const input,
+                               float *const output,
+                               const dt_iop_roi_t *const roi_in,
+                               const dt_iop_roi_t *const roi_out,
+                               const gboolean keep,
+                               const gboolean quality)
 {
   dt_iop_highlights_data_t *d = piece->data;
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   const uint32_t filters = piece->pipe->dsc.filters;
   const float clipval = highlights_clip_magics[DT_IOP_HIGHLIGHTS_OPPOSED] * d->clip;
+
   const dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
   const gboolean wbon = dsc->temperature.enabled;
   const dt_aligned_pixel_t icoeffs = { wbon ? dsc->temperature.coeffs[0] : 1.0f,
@@ -398,19 +397,19 @@ static float *_process_opposed(
 }
 
 #ifdef HAVE_OPENCL
-static cl_int process_opposed_cl(
-        struct dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        cl_mem dev_in,
-        cl_mem dev_out,
-        const dt_iop_roi_t *const roi_in,
-        const dt_iop_roi_t *const roi_out)
+static cl_int process_opposed_cl(dt_iop_module_t *self,
+                                 dt_dev_pixelpipe_iop_t *piece,
+                                 cl_mem dev_in,
+                                 cl_mem dev_out,
+                                 const dt_iop_roi_t *const roi_in,
+                                 const dt_iop_roi_t *const roi_out)
 {
   dt_iop_highlights_data_t *d = piece->data;
   const dt_iop_highlights_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const uint32_t filters = piece->pipe->dsc.filters;
+
   const float clipval = highlights_clip_magics[DT_IOP_HIGHLIGHTS_OPPOSED] * d->clip;
   const dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
   const gboolean wbon = dsc->temperature.enabled;

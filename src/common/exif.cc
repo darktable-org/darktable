@@ -858,6 +858,26 @@ static bool _check_usercrop(Exiv2::ExifData &exifData,
   return FALSE;
 }
 
+static void _check_linear_response_limit(Exiv2::ExifData &exifData,
+                                         dt_image_t *img)
+{
+  bool found_one = false;
+
+  // currently this only reads the dng tag, could also be used for other raws
+
+  Exiv2::ExifData::const_iterator linr =
+    exifData.findKey(Exiv2::ExifKey("Exif.Image.LinearResponseLimit"));
+  if(linr != exifData.end() && linr->count() == 1)
+  {
+    img->linear_response_limit = linr->toFloat();
+    found_one = true;
+  }
+
+  if(found_one)
+    dt_print(DT_DEBUG_IMAGEIO, "[exif] `%s` has LinearResponseLimit %.4f",
+      img->filename, img->linear_response_limit);
+}
+
 static gboolean _check_dng_opcodes(Exiv2::ExifData &exifData,
                                    dt_image_t *img)
 {
@@ -1074,13 +1094,14 @@ void dt_exif_img_check_additional_tags(dt_image_t *img,
       _check_usercrop(exifData, img);
       _check_dng_opcodes(exifData, img);
       _check_lens_correction_data(exifData, img);
+      _check_linear_response_limit(exifData, img);
     }
     return;
   }
   catch(Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
-    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 reading DefaultUserCrop] %s: %s", filename, errstring);
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 reading additional exif tags] %s: %s", filename, errstring);
     return;
   }
 }
