@@ -203,7 +203,7 @@ const char *aliases()
 }
 
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("remove and clone spots, perform split-frequency skin editing"),
                                       _("corrective"),
@@ -744,7 +744,7 @@ static void rt_show_forms_for_current_scale(dt_iop_module_t *self)
 }
 
 // called if a shape is added or deleted
-static void rt_resynch_params(struct dt_iop_module_t *self)
+static void rt_resynch_params(dt_iop_module_t *self)
 {
   dt_iop_retouch_params_t *p = self->params;
   dt_develop_blend_params_t *bp = self->blend_params;
@@ -2129,7 +2129,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 // GUI
 //---------------------------------------------------------------------------------------
 
-void masks_selection_changed(struct dt_iop_module_t *self, const int form_selected_id)
+void masks_selection_changed(dt_iop_module_t *self, const int form_selected_id)
 {
   dt_iop_retouch_gui_data_t *g = self->gui_data;
   if(!g) return;
@@ -2197,7 +2197,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-void gui_focus(struct dt_iop_module_t *self,
+void gui_focus(dt_iop_module_t *self,
                const gboolean in)
 {
   if(self->enabled
@@ -2254,11 +2254,11 @@ void gui_focus(struct dt_iop_module_t *self,
   }
 }
 
-void tiling_callback(struct dt_iop_module_t *self,
-                     struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in,
                      const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
   dt_iop_retouch_params_t *p = self->params;
   const float require = 2.0f;
@@ -2281,14 +2281,14 @@ void tiling_callback(struct dt_iop_module_t *self,
   tiling->yalign = 1;
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_retouch_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -2402,7 +2402,7 @@ void gui_update(dt_iop_module_t *self)
   dtgtk_gradient_slider_multivalue_set_values(g->preview_levels_gslider, dlevels);
 }
 
-void change_image(struct dt_iop_module_t *self)
+void change_image(dt_iop_module_t *self)
 {
   dt_iop_retouch_gui_data_t *g = self->gui_data;
   if(g)
@@ -2777,7 +2777,7 @@ void gui_init(dt_iop_module_t *self)
                             rt_develop_ui_pipe_finished_callback, self);
 }
 
-void gui_reset(struct dt_iop_module_t *self)
+void gui_reset(dt_iop_module_t *self)
 {
   // hide the previous masks
   dt_masks_reset_form_gui();
@@ -2800,8 +2800,8 @@ void gui_cleanup(dt_iop_module_t *self)
   IOP_GUI_FREE;
 }
 
-static void rt_compute_roi_in(struct dt_iop_module_t *self,
-                              struct dt_dev_pixelpipe_iop_t *piece,
+static void rt_compute_roi_in(dt_iop_module_t *self,
+                              dt_dev_pixelpipe_iop_t *piece,
                               dt_iop_roi_t *roi_in,
                               int *_roir,
                               int *_roib,
@@ -2911,8 +2911,8 @@ static void rt_compute_roi_in(struct dt_iop_module_t *self,
 
 // for a given form, if a previous clone/heal destination intersects the source area,
 // include that area in roi_in too
-static void rt_extend_roi_in_from_source_clones(struct dt_iop_module_t *self,
-                                                struct dt_dev_pixelpipe_iop_t *piece,
+static void rt_extend_roi_in_from_source_clones(dt_iop_module_t *self,
+                                                dt_dev_pixelpipe_iop_t *piece,
                                                 dt_iop_roi_t *roi_in,
                                                 const dt_mask_id_t formid_src,
                                                 const int fl_src,
@@ -3015,8 +3015,8 @@ static void rt_extend_roi_in_from_source_clones(struct dt_iop_module_t *self,
 
 // for clone and heal, if the source area is the destination from another clone/heal,
 // we also need the area from that previous clone/heal
-static void rt_extend_roi_in_for_clone(struct dt_iop_module_t *self,
-                                       struct dt_dev_pixelpipe_iop_t *piece,
+static void rt_extend_roi_in_for_clone(dt_iop_module_t *self,
+                                       dt_dev_pixelpipe_iop_t *piece,
                                        dt_iop_roi_t *roi_in,
                                        int *_roir,
                                        int *_roib,
@@ -3090,8 +3090,8 @@ static void rt_extend_roi_in_for_clone(struct dt_iop_module_t *self,
 }
 
 // needed if mask dest is in roi and mask src is not
-void modify_roi_in(struct dt_iop_module_t *self,
-                   struct dt_dev_pixelpipe_iop_t *piece,
+void modify_roi_in(dt_iop_module_t *self,
+                   dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *roi_out,
                    dt_iop_roi_t *roi_in)
 {
@@ -3163,7 +3163,7 @@ static void image_lab2rgb(float *img_src,
   }
 }
 
-static void rt_process_stats(struct dt_iop_module_t *self,
+static void rt_process_stats(dt_iop_module_t *self,
                              dt_dev_pixelpipe_iop_t *piece,
                              float *const img_src,
                              const int width,
@@ -3324,9 +3324,9 @@ static void rt_intersect_2_rois(dt_iop_roi_t *const roi_1,
 }
 
 static void rt_copy_in_to_out(const float *const in,
-                              const struct dt_iop_roi_t *const roi_in,
+                              const dt_iop_roi_t *const roi_in,
                               float *const out,
-                              const struct dt_iop_roi_t *const roi_out,
+                              const dt_iop_roi_t *const roi_out,
                               const int ch,
                               const int dx,
                               const int dy)
@@ -3848,7 +3848,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
   }
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -3990,8 +3990,8 @@ cleanup:
   dt_dwt_free(dwt_p);
 }
 
-void distort_mask(struct dt_iop_module_t *self,
-                  struct dt_dev_pixelpipe_iop_t *piece,
+void distort_mask(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
                   const float *const in,
                   float *const out,
                   const dt_iop_roi_t *const roi_in,
@@ -4002,7 +4002,7 @@ void distort_mask(struct dt_iop_module_t *self,
 
 #ifdef HAVE_OPENCL
 
-cl_int rt_process_stats_cl(struct dt_iop_module_t *self,
+cl_int rt_process_stats_cl(dt_iop_module_t *self,
                            dt_dev_pixelpipe_iop_t *piece,
                            const int devid,
                            cl_mem dev_img,
@@ -4050,7 +4050,7 @@ cleanup:
   return err;
 }
 
-cl_int rt_adjust_levels_cl(struct dt_iop_module_t *self,
+cl_int rt_adjust_levels_cl(dt_iop_module_t *self,
                            dt_dev_pixelpipe_iop_t *piece,
                            const int devid,
                            cl_mem dev_img,
@@ -4100,9 +4100,9 @@ cleanup:
 
 static cl_int rt_copy_in_to_out_cl(const int devid,
                                    cl_mem dev_in,
-                                   const struct dt_iop_roi_t *const roi_in,
+                                   const dt_iop_roi_t *const roi_in,
                                    cl_mem dev_out,
-                                   const struct dt_iop_roi_t *const roi_out,
+                                   const dt_iop_roi_t *const roi_out,
                                    const int dx,
                                    const int dy,
                                    const int kernel)
@@ -4799,7 +4799,7 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer,
   return err;
 }
 
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,

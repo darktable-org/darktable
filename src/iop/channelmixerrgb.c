@@ -232,7 +232,7 @@ const char *aliases()
   return _("channel mixer|white balance|monochrome");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("perform color space corrections\n"
                                         "such as white balance, channels mixing\n"
@@ -315,7 +315,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_channelmixer_rgb_params_v1_t;
 
     const dt_iop_channelmixer_rgb_params_v1_t *o = old_params;
-    dt_iop_channelmixer_rgb_params_v3_t *n = 
+    dt_iop_channelmixer_rgb_params_v3_t *n =
       malloc(sizeof(dt_iop_channelmixer_rgb_params_v3_t));
 
     // V1 and V2 use the same param structure but the normalize_grey
@@ -364,7 +364,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_channelmixer_rgb_params_v2_t;
 
     const dt_iop_channelmixer_rgb_params_v2_t *o = old_params;
-    dt_iop_channelmixer_rgb_params_v3_t *n = 
+    dt_iop_channelmixer_rgb_params_v3_t *n =
       malloc(sizeof(dt_iop_channelmixer_rgb_params_v3_t));
 
     memcpy(n, o, sizeof(dt_iop_channelmixer_rgb_params_v2_t));
@@ -604,7 +604,7 @@ static const char *_area_mapping_section_text(const dt_iop_channelmixer_rgb_gui_
   return _area_mapping_active(g) ? _("area color mapping (active)") : _("area color mapping");
 }
 
-static gboolean _get_white_balance_coeff(struct dt_iop_module_t *self,
+static gboolean _get_white_balance_coeff(dt_iop_module_t *self,
                                          dt_aligned_pixel_t custom_wb)
 {
   const dt_dev_chroma_t *chr = &self->dev->chroma;
@@ -1164,7 +1164,7 @@ static inline void _auto_detect_WB(const float *const restrict in,
 
 #endif // AI_ACTIVATED
 
-static void _declare_cat_on_pipe(struct dt_iop_module_t *self, const gboolean preset)
+static void _declare_cat_on_pipe(dt_iop_module_t *self, const gboolean preset)
 {
   // Avertise in dev->chroma that we are doing chromatic adaptation here
   // preset = TRUE allows to capture the CAT a priori at init time
@@ -1203,10 +1203,10 @@ static void _declare_cat_on_pipe(struct dt_iop_module_t *self, const gboolean pr
       self->op, dt_iop_get_instance_id(self), origcat, chr->adaptation);
 }
 
-static void _update_illuminants(struct dt_iop_module_t *self);
-static void _update_approx_cct(struct dt_iop_module_t *self);
-static void _update_illuminant_color(struct dt_iop_module_t *self);
-static void _paint_temperature_background(struct dt_iop_module_t *self);
+static void _update_illuminants(dt_iop_module_t *self);
+static void _update_approx_cct(dt_iop_module_t *self);
+static void _update_illuminant_color(dt_iop_module_t *self);
+static void _paint_temperature_background(dt_iop_module_t *self);
 
 static void _check_if_close_to_daylight(const float x,
                                         const float y,
@@ -1978,7 +1978,7 @@ static void _validate_color_checker(const float *const restrict in,
   dt_free_align(patches);
 }
 
-static void _set_trouble_messages(struct dt_iop_module_t *self)
+static void _set_trouble_messages(dt_iop_module_t *self)
 {
   const dt_iop_channelmixer_rgb_params_t *p = self->params;
   const dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
@@ -2113,7 +2113,7 @@ static void _set_trouble_messages(struct dt_iop_module_t *self)
   }
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const restrict ivoid,
              void *const restrict ovoid,
@@ -2121,9 +2121,9 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_out)
 {
   dt_iop_channelmixer_rbg_data_t *data = piece->data;
-  const struct dt_iop_order_iccprofile_info_t *const work_profile =
+  const dt_iop_order_iccprofile_info_t *const work_profile =
     dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
-  const struct dt_iop_order_iccprofile_info_t *const input_profile =
+  const dt_iop_order_iccprofile_info_t *const input_profile =
     dt_ioppr_get_pipe_input_profile_info(piece->pipe);
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
 
@@ -2294,7 +2294,7 @@ void process(struct dt_iop_module_t *self,
 }
 
 #if HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
@@ -2304,7 +2304,7 @@ int process_cl(struct dt_iop_module_t *self,
   dt_iop_channelmixer_rbg_data_t *const d = piece->data;
   dt_iop_channelmixer_rgb_global_data_t *const gd = self->global_data;
 
-  const struct dt_iop_order_iccprofile_info_t *const work_profile =
+  const dt_iop_order_iccprofile_info_t *const work_profile =
     dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
 
   if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
@@ -3027,7 +3027,7 @@ static void _preview_pipe_finished_callback(gpointer instance, dt_iop_module_t *
   if(g) _set_trouble_messages(self);
 }
 
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -3393,7 +3393,7 @@ static void _paint_hue(dt_iop_module_t *self)
 
 static void _convert_GUI_colors
   (dt_iop_channelmixer_rgb_params_t *p,
-   const struct dt_iop_order_iccprofile_info_t *const work_profile,
+   const dt_iop_order_iccprofile_info_t *const work_profile,
    const dt_aligned_pixel_t LMS,
    dt_aligned_pixel_t RGB)
 {
@@ -3430,7 +3430,7 @@ static void _convert_GUI_colors
 
 static void _update_RGB_slider_stop
   (dt_iop_channelmixer_rgb_params_t *p,
-   const struct dt_iop_order_iccprofile_info_t *const work_profile,
+   const dt_iop_order_iccprofile_info_t *const work_profile,
    GtkWidget *w,
    const float stop,
    const float c,
@@ -3458,7 +3458,7 @@ static void _update_RGB_colors(dt_iop_module_t *self,
 {
   // update the fill background color of x, y sliders
   dt_iop_channelmixer_rgb_params_t *p = self->params;
-  const struct dt_iop_order_iccprofile_info_t *const work_profile =
+  const dt_iop_order_iccprofile_info_t *const work_profile =
     dt_ioppr_get_pipe_current_profile_info(self, self->dev->full.pipe);
 
   // scale params if needed
@@ -3490,7 +3490,7 @@ static void _update_RGB_colors(dt_iop_module_t *self,
   gtk_widget_queue_draw(w_g);
 }
 
-static void _paint_temperature_background(struct dt_iop_module_t *self)
+static void _paint_temperature_background(dt_iop_module_t *self)
 {
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
 
@@ -3731,14 +3731,14 @@ static void _illum_xy_callback(GtkWidget *slider,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = dt_calloc1_align_type(dt_iop_channelmixer_rbg_data_t);
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -3755,7 +3755,7 @@ void gui_reset(dt_iop_module_t *self)
   gui_changed(self, NULL, NULL);
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
@@ -4147,7 +4147,7 @@ void gui_changed(dt_iop_module_t *self,
   --darktable.gui->reset;
 }
 
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
+void gui_focus(dt_iop_module_t *self, gboolean in)
 {
   gui_changed(self, NULL, NULL);
 }
@@ -4418,7 +4418,7 @@ void color_picker_apply(dt_iop_module_t *self,
 }
 
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_channelmixer_rgb_gui_data_t *g = IOP_GUI_ALLOC(channelmixer_rgb);
 
@@ -4776,7 +4776,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(collapsible), GTK_WIDGET(toolbar), FALSE, FALSE, 0);
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   if(self && self->dev)
   {

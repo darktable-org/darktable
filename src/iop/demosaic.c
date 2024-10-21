@@ -288,7 +288,7 @@ const char *name()
   return _("demosaic");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("reconstruct full RGB pixels from a sensor color filter array reading"),
                                       _("mandatory"),
@@ -1132,12 +1132,12 @@ void commit_params(dt_iop_module_t *self,
   }
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_demosaic_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
@@ -1235,7 +1235,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     dt_dev_reprocess_center(self->dev);
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
   dt_bauhaus_widget_set_quad_active(g->dual_thrs, FALSE);
@@ -1255,7 +1255,7 @@ static void _visualize_callback(GtkWidget *quad, dt_iop_module_t *self)
   dt_dev_reprocess_center(self->dev);
 }
 
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
+void gui_focus(dt_iop_module_t *self, gboolean in)
 {
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
   if(!in)
@@ -1267,7 +1267,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   }
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_demosaic_gui_data_t *g = IOP_GUI_ALLOC(demosaic);
 

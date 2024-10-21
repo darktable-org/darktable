@@ -166,7 +166,7 @@ const char *name()
   return _("basic adjustments");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("apply usual image adjustments"),
                                       _("creative"),
@@ -469,8 +469,7 @@ void gui_post_expose(dt_iop_module_t *self,
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 24; // basicadj.cl, from programs.conf
-  dt_iop_basicadj_global_data_t *gd
-      = (dt_iop_basicadj_global_data_t *)malloc(sizeof(dt_iop_basicadj_global_data_t));
+  dt_iop_basicadj_global_data_t *gd = malloc(sizeof(dt_iop_basicadj_global_data_t));
   module->data = gd;
 
   gd->kernel_basicadj = dt_opencl_create_kernel(program, "basicadj");
@@ -530,9 +529,11 @@ static inline float get_lut_contrast(const float x, const float contrast, const 
                    : lut[CLAMP((int)(x * 0x10000ul), 0, 0xffff)];
 }
 
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
+                     dt_develop_tiling_t *tiling)
 {
   tiling->factor = 2.0f;
   tiling->factor_cl = 3.0f;
@@ -543,7 +544,9 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   tiling->xalign = 1;
   tiling->yalign = 1;
 }
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self,
+                   dt_iop_params_t *params,
+                   dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_basicadj_data_t *d = piece->data;
@@ -572,30 +575,30 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   }
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_basicadj_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   dt_iop_basicadj_gui_data_t *g = self->gui_data;
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_select_region), g->draw_selected_region);
 }
 
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
+void gui_focus(dt_iop_module_t *self, gboolean in)
 {
   if(!in) _turn_select_region_off(self);
 }
 
-void change_image(struct dt_iop_module_t *self)
+void change_image(dt_iop_module_t *self)
 {
   dt_iop_basicadj_gui_data_t *g = self->gui_data;
 
@@ -606,7 +609,7 @@ void change_image(struct dt_iop_module_t *self)
   g->button_down = 0;
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_basicadj_gui_data_t *g = IOP_GUI_ALLOC(basicadj);
 
@@ -681,7 +684,7 @@ void gui_init(struct dt_iop_module_t *self)
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, _signal_profile_user_changed, self);
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   DT_CONTROL_SIGNAL_DISCONNECT(_develop_ui_pipe_finished_callback, self);
   DT_CONTROL_SIGNAL_DISCONNECT(_signal_profile_user_changed, self);
@@ -1225,7 +1228,7 @@ static void _auto_exposure(const float *const img, const int width, const int he
   if(histogram) dt_free_align(histogram);
 }
 
-static void _get_selected_area(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+static void _get_selected_area(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                dt_iop_basicadj_gui_data_t *g, const dt_iop_roi_t *const roi_in, int *box_out)
 {
   box_out[0] = box_out[1] = box_out[2] = box_out[3] = 0;
@@ -1282,7 +1285,7 @@ static void _get_selected_area(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
@@ -1417,7 +1420,7 @@ cleanup:
 }
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);

@@ -177,7 +177,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_LAB;
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("alter an image’s tones using curves"),
                                       _("corrective and creative"),
@@ -301,7 +301,7 @@ int legacy_params(dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_tonecurve_data_t *d = piece->data;
@@ -379,7 +379,7 @@ static inline float dt_prophoto_rgb_luminance(const float *const rgb)
   return (rgb[0] * 0.2880402f + rgb[1] * 0.7118741f + rgb[2] * 0.0000857f);
 }
 */
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const i,
              void *const o,
@@ -719,7 +719,7 @@ void init_presets(dt_iop_module_so_t *self)
   }
 }
 
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -847,7 +847,7 @@ static inline float eval_grey(const float x)
   return x;
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
@@ -875,7 +875,7 @@ void init_pipe(struct dt_iop_module_t *self,
   }
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -887,7 +887,7 @@ void cleanup_pipe(struct dt_iop_module_t *self,
   piece->data = NULL;
 }
 
-void gui_reset(struct dt_iop_module_t *self)
+void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_tonecurve_gui_data_t *g = self->gui_data;
   dt_iop_tonecurve_params_t *p = self->params;
@@ -901,7 +901,7 @@ void gui_reset(struct dt_iop_module_t *self)
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   dt_iop_tonecurve_gui_data_t *g = self->gui_data;
   dt_iop_tonecurve_params_t *p = self->params;
@@ -1235,7 +1235,7 @@ static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget,
 
 #undef TONECURVE_DEFAULT_STEP
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_tonecurve_gui_data_t *g = IOP_GUI_ALLOC(tonecurve);
   const dt_iop_tonecurve_params_t *const p = self->default_params;
@@ -1345,7 +1345,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_size_group_add_widget(g->sizegroup, GTK_WIDGET(g->channel_tabs));
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_tonecurve_gui_data_t *g = self->gui_data;
   // this one we need to unref manually. not so the initially unowned widgets.

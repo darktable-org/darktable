@@ -66,7 +66,7 @@ DT_MODULE_INTROSPECTION(4, dt_iop_temperature_params_t)
 #define DT_IOP_TEMP_D65 3
 #define DT_IOP_TEMP_D65_LATE 4
 
-static void _gui_sliders_update(struct dt_iop_module_t *self);
+static void _gui_sliders_update(dt_iop_module_t *self);
 
 typedef struct dt_iop_temperature_params_t
 {
@@ -244,7 +244,7 @@ const char *name()
   return C_("modulename", "white balance");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
     (self,
@@ -518,7 +518,7 @@ static inline void scaled_copy_4wide(float *const outp,
 static inline void _publish_chroma(dt_dev_pixelpipe_iop_t *piece)
 {
   const dt_iop_temperature_data_t *const d = piece->data;
-  struct dt_iop_module_t *self = piece->module;
+  dt_iop_module_t *self = piece->module;
   dt_dev_chroma_t *chr = &self->dev->chroma;
 
   piece->pipe->dsc.temperature.enabled = piece->enabled;
@@ -532,7 +532,7 @@ static inline void _publish_chroma(dt_dev_pixelpipe_iop_t *piece)
   chr->late_correction = (d->preset == DT_IOP_TEMP_D65_LATE);
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -642,7 +642,7 @@ void process(struct dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
@@ -702,7 +702,7 @@ error:
 }
 #endif
 
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -745,14 +745,14 @@ void commit_params(struct dt_iop_module_t *self,
     dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_temperature_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -760,7 +760,7 @@ void cleanup_pipe(struct dt_iop_module_t *self,
   piece->data = NULL;
 }
 
-static int _generate_preset_combo(struct dt_iop_module_t *self)
+static int _generate_preset_combo(dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = self->gui_data;
   int presets_found = 0;
@@ -828,7 +828,7 @@ static int _generate_preset_combo(struct dt_iop_module_t *self)
   return presets_found;
 }
 
-static void _color_finetuning_slider(struct dt_iop_module_t *self)
+static void _color_finetuning_slider(dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = self->gui_data;
 
@@ -914,7 +914,7 @@ static void _color_finetuning_slider(struct dt_iop_module_t *self)
   }
 }
 
-static void _color_rgb_sliders(struct dt_iop_module_t *self)
+static void _color_rgb_sliders(dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = self->gui_data;
 
@@ -1023,7 +1023,7 @@ static void _color_rgb_sliders(struct dt_iop_module_t *self)
   }
 }
 
-static void _color_temptint_sliders(struct dt_iop_module_t *self)
+static void _color_temptint_sliders(dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = self->gui_data;
 
@@ -1186,7 +1186,7 @@ static void _update_preset(dt_iop_module_t *self, int mode)
   chr->late_correction = (mode == DT_IOP_TEMP_D65_LATE);
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = self->gui_data;
   dt_iop_temperature_params_t *p = self->params;
@@ -1988,7 +1988,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
 }
 
 
-static void _gui_sliders_update(struct dt_iop_module_t *self)
+static void _gui_sliders_update(dt_iop_module_t *self)
 {
   const dt_image_t *img = &self->dev->image_storage;
   dt_iop_temperature_gui_data_t *g = self->gui_data;
@@ -2079,7 +2079,7 @@ static void _preference_changed(gpointer instance, dt_iop_module_t *self)
   _color_finetuning_slider(self);
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = IOP_GUI_ALLOC(temperature);
 
@@ -2237,7 +2237,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_stack_add_named(GTK_STACK(self->widget), label_disabled, "disabled");
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   DT_CONTROL_SIGNAL_DISCONNECT(_preference_changed, self);
@@ -2245,7 +2245,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   IOP_GUI_FREE;
 }
 
-void gui_reset(struct dt_iop_module_t *self)
+void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = self->gui_data;
   dt_iop_temperature_params_t *d = self->default_params;

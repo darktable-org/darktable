@@ -139,7 +139,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
     (self, _("alter an image’s tones using curves in RGB color space"),
@@ -1437,7 +1437,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
   return FALSE;
 }
 
-void gui_reset(struct dt_iop_module_t *self)
+void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_rgbcurve_gui_data_t *g = self->gui_data;
   dt_iop_rgbcurve_params_t *p = self->params;
@@ -1452,7 +1452,7 @@ void gui_reset(struct dt_iop_module_t *self)
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-void change_image(struct dt_iop_module_t *self)
+void change_image(dt_iop_module_t *self)
 {
   dt_iop_rgbcurve_gui_data_t *g = self->gui_data;
   if(g)
@@ -1466,7 +1466,7 @@ void change_image(struct dt_iop_module_t *self)
   }
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_rgbcurve_gui_data_t *g = IOP_GUI_ALLOC(rgbcurve);
   const dt_iop_rgbcurve_params_t *const p = self->default_params;
@@ -1589,7 +1589,7 @@ void gui_init(struct dt_iop_module_t *self)
                               _("method to preserve colors when applying contrast"));
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   dt_iop_rgbcurve_gui_data_t *g = self->gui_data;
   dt_iop_rgbcurve_params_t *p = self->params;
@@ -1606,7 +1606,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_rgbcurve_gui_data_t *g = self->gui_data;
 
@@ -1616,7 +1616,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   IOP_GUI_FREE;
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1644,7 +1644,7 @@ void init_pipe(struct dt_iop_module_t *self,
     d->table[DT_IOP_RGBCURVE_B][k] = k / 0x10000; // identity for b
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1762,7 +1762,7 @@ static void _generate_curve_lut(dt_dev_pixelpipe_t *pipe,
   }
 }
 
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -1791,7 +1791,7 @@ void commit_params(struct dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
@@ -1886,7 +1886,7 @@ cleanup:
 }
 #endif
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,

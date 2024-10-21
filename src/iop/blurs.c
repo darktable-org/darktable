@@ -86,7 +86,7 @@ const char *aliases()
   return _("blur|lens|motion");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
                                 _("simulate physically-accurate lens and motion blurs"),
@@ -526,7 +526,7 @@ cleanup:
 // Spatial convolution should be slower for large blurs because it is o(N²) where N is the width of the kernel
 // but code is much simpler and easier to debug
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                     const void *const restrict ivoid, void *const restrict ovoid,
                     const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -601,7 +601,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
 
 #if HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_blurs_params_t *p = piece->data;

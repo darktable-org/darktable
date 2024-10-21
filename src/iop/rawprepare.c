@@ -166,7 +166,7 @@ int legacy_params(dt_iop_module_t *self,
   return 1;
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("sets technical specificities of the raw sensor.\n"
                                         "touch with great care!"),
@@ -254,8 +254,8 @@ gboolean distort_backtransform(dt_iop_module_t *self,
 }
 
 void distort_mask(
-        struct dt_iop_module_t *self,
-        struct dt_dev_pixelpipe_iop_t *piece,
+        dt_iop_module_t *self,
+        dt_dev_pixelpipe_iop_t *piece,
         const float *const in,
         float *const out,
         const dt_iop_roi_t *const roi_in,
@@ -338,7 +338,7 @@ static int _BL(const dt_iop_roi_t *const roi_out,
 }
 
 void process(
-        struct dt_iop_module_t *self,
+        dt_iop_module_t *self,
         dt_dev_pixelpipe_iop_t *piece,
         const void *const ivoid,
         void *const ovoid,

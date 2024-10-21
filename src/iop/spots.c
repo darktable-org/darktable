@@ -63,7 +63,7 @@ const char *deprecated_msg()
   return _("this module is deprecated. please use the retouch module instead.");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("remove sensor dust spots"),
                                       _("corrective"),
@@ -183,7 +183,7 @@ int legacy_params(dt_iop_module_t *self,
   return 1;
 }
 
-static void _resynch_params(struct dt_iop_module_t *self)
+static void _resynch_params(dt_iop_module_t *self)
 {
   dt_iop_spots_params_t *p = self->params;
   dt_develop_blend_params_t *bp = self->blend_params;
@@ -438,8 +438,8 @@ static gboolean masks_form_is_in_roi(dt_iop_module_t *self,
 }
 
 // needed if mask dest is in roi and mask src is not
-void modify_roi_in(struct dt_iop_module_t *self,
-                   struct dt_dev_pixelpipe_iop_t *piece,
+void modify_roi_in(dt_iop_module_t *self,
+                   dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *roi_out,
                    dt_iop_roi_t *roi_in)
 {
@@ -567,7 +567,7 @@ static int masks_get_delta(dt_iop_module_t *self,
   return res;
 }
 
-void _process(struct dt_iop_module_t *self,
+void _process(dt_iop_module_t *self,
               dt_dev_pixelpipe_iop_t *piece,
               const float *const in,
               float *const out,
@@ -722,7 +722,7 @@ void _process(struct dt_iop_module_t *self,
   }
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const i,
              void *const o,
@@ -734,7 +734,7 @@ void process(struct dt_iop_module_t *self,
   _process(self, piece, in, out, roi_in, roi_out, piece->colors);
 }
 
-void distort_mask(struct dt_iop_module_t *self,
+void distort_mask(dt_iop_module_t *self,
                   dt_dev_pixelpipe_iop_t *piece,
                   const float *const in,
                   float *const out,
@@ -762,7 +762,7 @@ void init(dt_iop_module_t *module)
   memcpy(module->default_params, &tmp, sizeof(dt_iop_spots_params_t));
 }
 
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
+void gui_focus(dt_iop_module_t *self, gboolean in)
 {
   if(self->enabled && !darktable.develop->full.pipe->loading)
   {
@@ -806,14 +806,14 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   }
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_spots_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -898,7 +898,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 }
 
-void gui_reset(struct dt_iop_module_t *self)
+void gui_reset(dt_iop_module_t *self)
 {
   // hide the previous masks
   dt_masks_reset_form_gui();

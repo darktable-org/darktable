@@ -140,7 +140,7 @@ const char *aliases()
   return _("film|invert|negative|scan");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("invert film negative scans and simulate printing on paper"),
                                       _("corrective and creative"),
@@ -325,7 +325,7 @@ static inline void _process_pixel(const dt_aligned_pixel_t pix_in,
     }
 }
 
-void process(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const piece,
+void process(dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const piece,
              const void *const restrict ivoid, void *const restrict ovoid,
              const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
@@ -364,7 +364,7 @@ void process(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const p
 
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   const dt_iop_negadoctor_data_t *const d = piece->data;
@@ -444,12 +444,12 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = g_malloc0(sizeof(dt_iop_negadoctor_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   g_free(piece->data);
   piece->data = NULL;

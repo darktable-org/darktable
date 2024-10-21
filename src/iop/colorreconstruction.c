@@ -114,7 +114,7 @@ const char *name()
   return _("color reconstruction");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("recover clipped highlights by propagating surrounding colors"),
                                       _("corrective"),
@@ -267,7 +267,7 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_in
                                                                                    const float sigma_s,     // spatial sigma (blur pixel coords)
                                                                                    const float sigma_r)     // range sigma (blur luma values)
 {
-  dt_iop_colorreconstruct_bilateral_t *b = (dt_iop_colorreconstruct_bilateral_t *)malloc(sizeof(dt_iop_colorreconstruct_bilateral_t));
+  dt_iop_colorreconstruct_bilateral_t *b = malloc(sizeof(dt_iop_colorreconstruct_bilateral_t));
   if(!b)
   {
     dt_print(DT_DEBUG_ALWAYS, "[color reconstruction] not able to allocate buffer (a)");
@@ -599,7 +599,7 @@ static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruc
 }
 
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorreconstruct_data_t *data = piece->data;
@@ -1009,7 +1009,7 @@ static cl_int dt_iop_colorreconstruct_bilateral_slice_cl(dt_iop_colorreconstruct
   return err;
 }
 
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorreconstruct_data_t *d = piece->data;
@@ -1112,9 +1112,9 @@ static size_t dt_iop_colorreconstruct_bilateral_singlebuffer_size(const int widt
   return size_x * size_y * size_z * 4 * sizeof(float);
 }
 
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
   dt_iop_colorreconstruct_data_t *d = piece->data;
   // the total scale is composed of scale before input to the pipeline (iscale),
@@ -1150,7 +1150,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorreconstruct_params_t *p = (dt_iop_colorreconstruct_params_t *)p1;
@@ -1167,19 +1167,19 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 #endif
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorreconstruct_data_t *d = (dt_iop_colorreconstruct_data_t *)calloc(1, sizeof(dt_iop_colorreconstruct_data_t));
   piece->data = (void *)d;
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   const gboolean monochrome = dt_image_is_monochrome(&self->dev->image_storage);
   dt_iop_colorreconstruct_gui_data_t *g = self->gui_data;
@@ -1221,7 +1221,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 }
 
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_colorreconstruct_gui_data_t *g = IOP_GUI_ALLOC(colorreconstruct);
 
@@ -1264,7 +1264,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_stack_add_named(GTK_STACK(self->widget), box_enabled, "default");
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_colorreconstruct_gui_data_t *g = self->gui_data;
   dt_iop_colorreconstruct_bilateral_dump(g->can);

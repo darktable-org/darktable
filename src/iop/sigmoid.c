@@ -200,7 +200,7 @@ const char *aliases()
   return _("tone mapping|view transform|display transform");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
                                 _("apply a view transform to make a image displayable\n"
@@ -486,7 +486,7 @@ static dt_colorspaces_color_profile_type_t _get_base_profile_type(const dt_iop_s
   return DT_COLORSPACE_LIN_REC2020;
 }
 
-static const dt_iop_order_iccprofile_info_t * _get_base_profile(struct dt_develop_t *dev,
+static const dt_iop_order_iccprofile_info_t * _get_base_profile(dt_develop_t *dev,
                                                                 const dt_iop_order_iccprofile_info_t *pipe_work_profile,
                                                                 const dt_iop_sigmoid_base_primaries_t base_primaries)
 {
@@ -705,7 +705,7 @@ static inline void _preserve_hue_and_energy(const dt_aligned_pixel_t pix_in,
   }
 }
 
-void process_loglogistic_per_channel(struct dt_develop_t *dev,
+void process_loglogistic_per_channel(dt_develop_t *dev,
                                      dt_dev_pixelpipe_iop_t *piece,
                                      const void *const ivoid, void *const ovoid,
                                      const dt_iop_roi_t *const roi_in,
@@ -766,7 +766,7 @@ void process_loglogistic_per_channel(struct dt_develop_t *dev,
 }
 
 /** process, all real work is done here. */
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -787,7 +787,7 @@ void process(struct dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
