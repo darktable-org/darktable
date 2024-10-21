@@ -186,11 +186,12 @@ void dt_control_job_set_state_callback(_dt_job_t *job, dt_job_state_change_callb
   job->state_changed_cb = cb;
 }
 
-
-static void dt_control_job_print(_dt_job_t *job)
+// We don't want to log dt_get_wtime() as we already show the stamp
+static void _control_job_print(_dt_job_t *job, const char *info, const char *err, int32_t res)
 {
   if(!job) return;
-  dt_print(DT_DEBUG_CONTROL, "%s | queue: %d | priority: %d", job->description, job->queue, job->priority);
+  dt_print(DT_DEBUG_CONTROL, "[%s]\t%02d %s %s | queue: %d | priority: %d",
+    info, res, err, job->description, job->queue, job->priority);
 }
 
 void dt_control_job_cancel(_dt_job_t *job)
@@ -213,7 +214,7 @@ void dt_control_job_wait(_dt_job_t *job)
     g_usleep(100000); // wait 0.1 seconds
     state = dt_control_job_get_state(job);
   }
-     
+
   /* if job execution is not finished let's wait for it */
   if(state == DT_JOB_STATE_RUNNING || state == DT_JOB_STATE_CANCELLED)
   {
@@ -246,9 +247,7 @@ static gboolean _control_run_job_res(dt_control_t *control, int32_t res)
   dt_pthread_mutex_lock(&job->wait_mutex);
   if(dt_control_job_get_state(job) == DT_JOB_STATE_QUEUED)
   {
-    dt_print(DT_DEBUG_CONTROL, "[run_job+] %02d %f ", res, dt_get_wtime());
-    dt_control_job_print(job);
-    dt_print(DT_DEBUG_CONTROL, "\n");
+    _control_job_print(job, "run_job+", "", res);
 
     _control_job_set_state(job, DT_JOB_STATE_RUNNING);
 
@@ -256,9 +255,7 @@ static gboolean _control_run_job_res(dt_control_t *control, int32_t res)
     job->result = job->execute(job);
 
     _control_job_set_state(job, DT_JOB_STATE_FINISHED);
-    dt_print(DT_DEBUG_CONTROL, "[run_job-] %02d %f ", res, dt_get_wtime());
-    dt_control_job_print(job);
-    dt_print(DT_DEBUG_CONTROL, "\n");
+    _control_job_print(job, "run_job-", "", res);
   }
   dt_pthread_mutex_unlock(&job->wait_mutex);
   dt_control_job_dispose(job);
@@ -330,10 +327,7 @@ static _dt_job_t *_control_schedule_job(dt_control_t *control)
 
 static void _control_job_execute(_dt_job_t *job)
 {
-  dt_print(DT_DEBUG_CONTROL, "[run_job+] %02d %f ", DT_CTL_WORKER_RESERVED + dt_control_get_threadid(),
-           dt_get_wtime());
-  dt_control_job_print(job);
-  dt_print_nts(DT_DEBUG_CONTROL, "\n");
+  _control_job_print(job, "run_job+", "", DT_CTL_WORKER_RESERVED + dt_control_get_threadid());
 
   _control_job_set_state(job, DT_JOB_STATE_RUNNING);
 
@@ -341,11 +335,7 @@ static void _control_job_execute(_dt_job_t *job)
   job->result = job->execute(job);
 
   _control_job_set_state(job, DT_JOB_STATE_FINISHED);
-
-  dt_print(DT_DEBUG_CONTROL, "[run_job-] %02d %f ", DT_CTL_WORKER_RESERVED + dt_control_get_threadid(),
-           dt_get_wtime());
-  dt_control_job_print(job);
-  dt_print_nts(DT_DEBUG_CONTROL, "\n");
+  _control_job_print(job, "run_job-", "", DT_CTL_WORKER_RESERVED + dt_control_get_threadid());
 }
 
 static gboolean _control_run_job(dt_control_t *control)
@@ -394,8 +384,7 @@ gboolean dt_control_add_job_res(dt_control_t *control,
   }
 
   dt_print(DT_DEBUG_CONTROL, "[add_job_res] %d | ", res);
-  dt_control_job_print(job);
-  dt_print_nts(DT_DEBUG_CONTROL, "\n");
+  _control_job_print(job, "add_job_res", "", res);
 
   _control_job_set_state(job, DT_JOB_STATE_QUEUED);
   control->job_res[res] = job;
@@ -441,9 +430,7 @@ gboolean dt_control_add_job(dt_control_t *control,
   GList **queue = &control->queues[queue_id];
   size_t length = control->queue_length[queue_id];
 
-  dt_print(DT_DEBUG_CONTROL, "[add_job] %zu | ", length);
-  dt_control_job_print(job);
-  dt_print_nts(DT_DEBUG_CONTROL, "\n");
+  _control_job_print(job, "add_job", "", (int32_t)length);
 
   if(queue_id == DT_JOB_QUEUE_SYSTEM_FG)
   {
@@ -456,9 +443,7 @@ gboolean dt_control_add_job(dt_control_t *control,
       _dt_job_t *other_job = (_dt_job_t *)control->job[k];
       if(_control_job_equal(job, other_job))
       {
-        dt_print(DT_DEBUG_CONTROL, "[add_job] found job already in scheduled: ");
-        dt_control_job_print(other_job);
-        dt_print_nts(DT_DEBUG_CONTROL, "\n");
+        _control_job_print(other_job, "add_job", "found job already in scheduled:", -1);
 
         dt_pthread_mutex_unlock(&control->queue_mutex);
 
@@ -475,9 +460,7 @@ gboolean dt_control_add_job(dt_control_t *control,
       _dt_job_t *other_job = (_dt_job_t *)iter->data;
       if(_control_job_equal(job, other_job))
       {
-        dt_print(DT_DEBUG_CONTROL, "[add_job] found job already in queue: ");
-        dt_control_job_print(other_job);
-        dt_print_nts(DT_DEBUG_CONTROL, "\n");
+        _control_job_print(other_job, "add_job", "found job already in queue", -1);
 
         *queue = g_list_delete_link(*queue, iter);
         length--;

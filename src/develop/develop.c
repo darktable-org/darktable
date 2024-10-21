@@ -1921,7 +1921,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
     dt_print(DT_DEBUG_PARAMS,
              "[dt_dev_read_history_ext] temporary history initialised with"
-             " default params and presets\n");
+             " default params and presets");
 
     // Now merge memory.history into main.history
 
