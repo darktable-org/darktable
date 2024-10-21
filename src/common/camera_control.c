@@ -1885,7 +1885,7 @@ int dt_camctl_camera_property_exists(const dt_camctl_t *c,
   {
     dt_print(DT_DEBUG_CAMCTL,
              "[camera_control] failed to check if property exists"
-             " in camera configuration, camera == NULL\n");
+             " in camera configuration, camera == NULL");
     return 0;
   }
 
@@ -1895,7 +1895,7 @@ int dt_camctl_camera_property_exists(const dt_camctl_t *c,
   {
     dt_print(DT_DEBUG_CAMCTL,
              "[camera_control] failed to check if property exists"
-             " in camera configuration, camera configuration == NULL\n");
+             " in camera configuration, camera configuration == NULL");
     return 0;
   }
 
@@ -1963,7 +1963,7 @@ const char *dt_camctl_camera_property_get_first_choice(const dt_camctl_t *c,
   {
     dt_print(DT_DEBUG_CAMCTL,
              "[camera_control] failed to get first choice of property from camera,"
-             " camera==NULL\n");
+             " camera==NULL");
     return NULL;
   }
   dt_camera_t *camera = (dt_camera_t *)cam;
@@ -1997,7 +1997,7 @@ const char *dt_camctl_camera_property_get_next_choice(const dt_camctl_t *c,
   {
     dt_print(DT_DEBUG_CAMCTL,
              "[camera_control] Failed to get next choice of property from camera,"
-             " camera==NULL\n");
+             " camera==NULL");
     return NULL;
   }
   dt_camera_t *camera = (dt_camera_t *)cam;

@@ -147,7 +147,7 @@ dt_bilateral_cl_t *dt_bilateral_init_cl(const int devid,
   }
 
 #if 0
-  fprintf(stderr, "[bilateral] created grid [%d %d %d]"
+  dt_print(DT_DEBUG_ALWAYS, "[bilateral] created grid [%d %d %d]"
           " with sigma (%f %f) (%f %f)\n", b->size_x, b->size_y, b->size_z,
           b->sigma_s, sigma_s, b->sigma_r, sigma_r);
 #endif

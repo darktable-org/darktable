@@ -87,7 +87,7 @@ const dt_pwstorage_t *dt_pwstorage_new()
         _backend = PW_STORAGE_BACKEND_LIBSECRET;
     #endif
 
-    dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] autodetected storage backend.");
+    dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] autodetected storage backend");
   }
   else if(strcmp(_backend_str, "none") == 0)
     _backend = PW_STORAGE_BACKEND_NONE;
@@ -109,7 +109,7 @@ const dt_pwstorage_t *dt_pwstorage_new()
 #endif
   else if(strcmp(_backend_str, "gnome keyring") == 0)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[pwstorage_new] GNOME Keyring backend is no longer supported.");
+    dt_print(DT_DEBUG_ALWAYS, "[pwstorage_new] GNOME Keyring backend is no longer supported");
     dt_control_log(_("GNOME Keyring backend is no longer supported. configure a different one"));
     _backend = PW_STORAGE_BACKEND_NONE;
   }
@@ -117,20 +117,20 @@ const dt_pwstorage_t *dt_pwstorage_new()
   switch(_backend)
   {
     default:
-      dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] unknown storage backend. Using none.");
+      dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] unknown storage backend. Using none");
     case PW_STORAGE_BACKEND_NONE:
       pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_NONE;
       pwstorage->backend_context = NULL;
       dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] no storage backend. not storing username/password. "
-                                   "please change in preferences, security tab.\n");
+                                   "please change in preferences, security tab");
       break;
     case PW_STORAGE_BACKEND_LIBSECRET:
 #ifdef HAVE_LIBSECRET
-      dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] using libsecret backend for username/password storage.");
+      dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] using libsecret backend for username/password storage");
       pwstorage->backend_context = (void *)dt_pwstorage_libsecret_new();
       if(pwstorage->backend_context == NULL)
       {
-        dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] error starting libsecret. using no storage backend.");
+        dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] error starting libsecret. using no storage backend");
         pwstorage->backend_context = NULL;
         pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_NONE;
       }
@@ -141,17 +141,17 @@ const dt_pwstorage_t *dt_pwstorage_new()
       break;
 #else
       dt_print(DT_DEBUG_PWSTORAGE,
-               "[pwstorage_new] libsecret backend not available. using no storage backend.");
+               "[pwstorage_new] libsecret backend not available. using no storage backend");
       pwstorage->backend_context = NULL;
       pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_NONE;
 #endif
     case PW_STORAGE_BACKEND_KWALLET:
 #ifdef HAVE_KWALLET
-      dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] using kwallet backend for username/password storage.");
+      dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] using kwallet backend for username/password storage");
       pwstorage->backend_context = (void *)dt_pwstorage_kwallet_new();
       if(pwstorage->backend_context == NULL)
       {
-        dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] error starting kwallet. using no storage backend.");
+        dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] error starting kwallet. using no storage backend");
         pwstorage->backend_context = NULL;
         pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_NONE;
       }
@@ -163,30 +163,30 @@ const dt_pwstorage_t *dt_pwstorage_new()
       break;
 #else
       dt_print(DT_DEBUG_PWSTORAGE,
-               "[pwstorage_new] kwallet backend not available. using no storage backend.");
+               "[pwstorage_new] kwallet backend not available. using no storage backend");
       pwstorage->backend_context = NULL;
       pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_NONE;
 #endif
     case PW_STORAGE_BACKEND_APPLE_KEYCHAIN:
 #ifdef HAVE_APPLE_KEYCHAIN
-      dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] using apple keychain backend for username/password storage.");
+      dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] using apple keychain backend for username/password storage");
       pwstorage->backend_context = (void *)dt_pwstorage_apple_keychain_new();
       pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_APPLE_KEYCHAIN;
 #else
       dt_print(DT_DEBUG_PWSTORAGE,
-               "[pwstorage_new] apple keychain backend not available. using no storage backend.");
+               "[pwstorage_new] apple keychain backend not available. using no storage backend");
       pwstorage->backend_context = NULL;
       pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_NONE;
 #endif
       break;
     case PW_STORAGE_BACKEND_WINDOWS_CREDENTIALS:
 #ifdef HAVE_WINDOWS_CREDENTIALS
-      dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] using windows credentials backend for username/password storage.");
+      dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] using windows credentials backend for username/password storage");
       pwstorage->backend_context = (void *)dt_pwstorage_windows_credentials_new();
       pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_WINDOWS_CREDENTIALS;
 #else
       dt_print(DT_DEBUG_PWSTORAGE,
-               "[pwstorage_new] windows credentials backend not available. using no storage backend.");
+               "[pwstorage_new] windows credentials backend not available. using no storage backend");
       pwstorage->backend_context = NULL;
       pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_NONE;
 #endif
@@ -253,7 +253,7 @@ gboolean dt_pwstorage_set(const gchar *slot, GHashTable *table)
   switch(darktable.pwstorage->pw_storage_backend)
   {
     case PW_STORAGE_BACKEND_NONE:
-      dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_set] no backend. not storing anything.");
+      dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_set] no backend. not storing anything");
       break;
     case PW_STORAGE_BACKEND_LIBSECRET:
 #if HAVE_LIBSECRET
@@ -289,7 +289,7 @@ GHashTable *dt_pwstorage_get(const gchar *slot)
   switch(darktable.pwstorage->pw_storage_backend)
   {
     case PW_STORAGE_BACKEND_NONE:
-      dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_get] no backend. not reading anything.");
+      dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_get] no backend. not reading anything");
       break;
     case PW_STORAGE_BACKEND_LIBSECRET:
 #if HAVE_LIBSECRET

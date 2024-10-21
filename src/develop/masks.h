@@ -968,14 +968,14 @@ static inline gboolean _dt_masks_intbuf_growto(dt_masks_intbuf_t *a,
   {
     // not much we can do here except emit an error message
     dt_print(DT_DEBUG_ALWAYS,
-             "critical: out of memory for intbuf '%s' with size request %zu!\n",
+             "critical: out of memory for intbuf '%s' with size request %zu!",
              a->tag, newsize);
     return FALSE;
   }
   if (a->buffer)
   {
     memcpy(newbuf, a->buffer, a->size * sizeof(int));
-    dt_print(DT_DEBUG_MASKS, "[masks intbuf '%s'] grows to size %lu (is %p, was %p)\n",
+    dt_print(DT_DEBUG_MASKS, "[masks intbuf '%s'] grows to size %lu (is %p, was %p)",
              a->tag,
              (unsigned long)a->size, newbuf, a->buffer);
     dt_free_align(a->buffer);
@@ -997,7 +997,7 @@ dt_masks_intbuf_t *dt_masks_intbuf_init(const size_t size, const char *tag)
     g_strlcpy(a->tag, tag, sizeof(a->tag)); //only for debugging purposes
     a->pos = 0;
     if(_dt_masks_intbuf_growto(a, size))
-      dt_print(DT_DEBUG_MASKS, "[masks intbuf '%s'] with initial size %lu (is %p)\n",
+      dt_print(DT_DEBUG_MASKS, "[masks intbuf '%s'] with initial size %lu (is %p)",
                a->tag,
                (unsigned long)a->size, a->buffer);
     if(a->buffer == NULL)
@@ -1035,13 +1035,14 @@ static inline
 void dt_masks_intbuf_free(dt_masks_intbuf_t *a)
 {
   if(a == NULL) return;
-  dt_print(DT_DEBUG_MASKS, "[masks intbuf '%s'] freed (was %p)\n", a->tag,
+  dt_print(DT_DEBUG_MASKS, "[masks intbuf '%s'] freed (was %p)", a->tag,
           a->buffer);
   dt_free_align(a->buffer);
   free(a);
 }
 
 // Dump buffer to file for debugging.
+/*
 static inline
 void dt_masks_intnbuf_debug_print(dt_masks_intbuf_t *a)
 {
@@ -1056,6 +1057,7 @@ void dt_masks_intnbuf_debug_print(dt_masks_intbuf_t *a)
   }
   fclose(f);
 }
+*/
 
 /* End of dynamic buffer code
  ******************************************************/
