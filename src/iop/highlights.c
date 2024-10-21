@@ -385,11 +385,11 @@ void modify_roi_in(dt_iop_module_t *self,
   roi_in->scale = 1.0f;
 }
 
-void tiling_callback(struct dt_iop_module_t *self,
-                     struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in,
                      const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
   dt_iop_highlights_data_t *d = piece->data;
   const uint32_t filters = piece->pipe->dsc.filters;
@@ -407,8 +407,7 @@ void tiling_callback(struct dt_iop_module_t *self,
   tiling->overhead = 0;
   tiling->overlap = 0;
 
-  dt_develop_blend_params_t *const bldata =
-    (dt_develop_blend_params_t *const)piece->blendop_data;
+  dt_develop_blend_params_t *const bldata = piece->blendop_data;
   if(bldata
     && (piece->pipe->store_all_raster_masks || dt_iop_is_raster_mask_used(self, BLEND_RASTER_ID)))
   {
@@ -464,7 +463,7 @@ void tiling_callback(struct dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
@@ -673,7 +672,7 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece,
                               void *const ovoid,
                               const dt_iop_roi_t *const roi_in,
                               const dt_iop_roi_t *const roi_out,
-                              dt_iop_highlights_data_t *data)
+                              dt_iop_highlights_data_t *d)
 {
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   const uint32_t filters = piece->pipe->dsc.filters;
@@ -681,7 +680,7 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece,
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
-  const float mclip = data->clip * highlights_clip_magics[data->mode];
+  const float mclip = d->clip * highlights_clip_magics[d->mode];
   const float *cf = piece->pipe->dsc.temperature.coeffs;
   const float clips[4] = { mclip * (cf[RED]   <= 0.0f ? 1.0f : cf[RED]),
                            mclip * (cf[GREEN] <= 0.0f ? 1.0f : cf[GREEN]),
@@ -724,7 +723,7 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece,
   }
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -732,11 +731,12 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_out)
 {
   const uint32_t filters = piece->pipe->dsc.filters;
-  dt_iop_highlights_data_t *data = piece->data;
+  dt_iop_highlights_data_t *d = piece->data;
   dt_iop_highlights_gui_data_t *g = self->gui_data;
 
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
+
   if(g && fullpipe)
   {
     if(g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF)
@@ -744,7 +744,7 @@ void process(struct dt_iop_module_t *self,
       piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
       if(g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED)
       {
-        process_visualize(piece, ivoid, ovoid, roi_in, roi_out, data);
+        process_visualize(piece, ivoid, ovoid, roi_in, roi_out, d);
         return;
       }
     }
@@ -760,11 +760,11 @@ void process(struct dt_iop_module_t *self,
     high_quality = (level >= min_s);
   }
 
-  const float clip = data->clip * dt_iop_get_processed_minimum(piece);
+  const float clip = d->clip * dt_iop_get_processed_minimum(piece);
 
   if(filters == 0)
   {
-    if(data->mode == DT_IOP_HIGHLIGHTS_CLIP)
+    if(d->mode == DT_IOP_HIGHLIGHTS_CLIP)
     {
       process_clip(self, piece, ivoid, ovoid, roi_in, roi_out, clip);
       const float m = dt_iop_get_processed_minimum(piece);
@@ -778,13 +778,13 @@ void process(struct dt_iop_module_t *self,
     return;
   }
 
-  const dt_iop_highlights_mode_t dmode = fastmode && (data->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)
-                                          ? DT_IOP_HIGHLIGHTS_OPPOSED : data->mode;
+  const dt_iop_highlights_mode_t dmode = fastmode && (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)
+                                          ? DT_IOP_HIGHLIGHTS_OPPOSED : d->mode;
   switch(dmode)
   {
     case DT_IOP_HIGHLIGHTS_INPAINT: // a1ex's (magiclantern) idea of color inpainting:
     {
-      const float clipper = data->clip * highlights_clip_magics[DT_IOP_HIGHLIGHTS_INPAINT];
+      const float clipper = d->clip * highlights_clip_magics[DT_IOP_HIGHLIGHTS_INPAINT];
       const float clips[4] = { clipper * piece->pipe->dsc.processed_maximum[0],
                                clipper * piece->pipe->dsc.processed_maximum[1],
                                clipper * piece->pipe->dsc.processed_maximum[2], clip };
@@ -840,7 +840,7 @@ void process(struct dt_iop_module_t *self,
 
       float *tmp = _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, TRUE, TRUE);
       if(tmp)
-        _process_segmentation(piece, ivoid, ovoid, roi_in, roi_out, data, vmode, tmp);
+        _process_segmentation(piece, ivoid, ovoid, roi_in, roi_out, d, vmode, tmp);
       dt_free_align(tmp);
       break;
     }
@@ -853,7 +853,7 @@ void process(struct dt_iop_module_t *self,
 
     case DT_IOP_HIGHLIGHTS_LAPLACIAN:
     {
-      const float clipper = data->clip * highlights_clip_magics[DT_IOP_HIGHLIGHTS_LAPLACIAN];
+      const float clipper = d->clip * highlights_clip_magics[DT_IOP_HIGHLIGHTS_LAPLACIAN];
       const dt_aligned_pixel_t clips = { clipper * piece->pipe->dsc.processed_maximum[0],
                                          clipper * piece->pipe->dsc.processed_maximum[1],
                                          clipper * piece->pipe->dsc.processed_maximum[2], clip };
@@ -869,7 +869,7 @@ void process(struct dt_iop_module_t *self,
   }
 
   // update processed maximum
-  if((data->mode != DT_IOP_HIGHLIGHTS_LAPLACIAN) && (data->mode != DT_IOP_HIGHLIGHTS_SEGMENTS) && (data->mode != DT_IOP_HIGHLIGHTS_OPPOSED))
+  if((d->mode != DT_IOP_HIGHLIGHTS_LAPLACIAN) && (d->mode != DT_IOP_HIGHLIGHTS_SEGMENTS) && (d->mode != DT_IOP_HIGHLIGHTS_OPPOSED))
   {
     // The guided laplacian, inpaint opposed and segmentation modes keep signal scene-referred and don't clip highlights to 1
     // For the other modes, we need to notify the pipeline that white point has changed
@@ -878,7 +878,7 @@ void process(struct dt_iop_module_t *self,
   }
 }
 
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -919,8 +919,7 @@ void commit_params(struct dt_iop_module_t *self,
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 2; // basic.cl, from programs.conf
-  dt_iop_highlights_global_data_t *gd
-      = (dt_iop_highlights_global_data_t *)malloc(sizeof(dt_iop_highlights_global_data_t));
+  dt_iop_highlights_global_data_t *gd = malloc(sizeof(dt_iop_highlights_global_data_t));
   module->data = gd;
   gd->kernel_highlights_1f_clip = dt_opencl_create_kernel(program, "highlights_1f_clip");
   gd->kernel_highlights_1f_lch_bayer = dt_opencl_create_kernel(program, "highlights_1f_lch_bayer");
@@ -1050,7 +1049,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   dt_iop_highlights_gui_data_t *g = self->gui_data;
   const dt_image_t *img = &self->dev->image_storage;
@@ -1124,6 +1123,7 @@ void reload_defaults(dt_iop_module_t *self)
     dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
     g->hlr_mask_mode = DT_HIGHLIGHTS_MASK_OFF;
   }
+  d->clip = MIN(d->clip, img->linear_response_limit);
 }
 
 static void _visualize_callback(GtkWidget *quad, dt_iop_module_t *self)
