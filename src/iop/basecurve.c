@@ -385,7 +385,7 @@ const char *name()
   return _("base curve");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
     (self,
@@ -587,7 +587,7 @@ static float exposure_increment(float stops, int e, float fusion, float bias)
 
 #ifdef HAVE_OPENCL
 static
-int gauss_blur_cl(struct dt_iop_module_t *self,
+int gauss_blur_cl(dt_iop_module_t *self,
                   dt_dev_pixelpipe_iop_t *piece,
                   cl_mem dev_in,
                   cl_mem dev_out,
@@ -614,7 +614,7 @@ int gauss_blur_cl(struct dt_iop_module_t *self,
 }
 
 static
-int gauss_expand_cl(struct dt_iop_module_t *self,
+int gauss_expand_cl(dt_iop_module_t *self,
                     dt_dev_pixelpipe_iop_t *piece,
                     cl_mem dev_in,
                     cl_mem dev_out,
@@ -636,7 +636,7 @@ int gauss_expand_cl(struct dt_iop_module_t *self,
 
 
 static
-int gauss_reduce_cl(struct dt_iop_module_t *self,
+int gauss_reduce_cl(dt_iop_module_t *self,
                     dt_dev_pixelpipe_iop_t *piece,
                     cl_mem dev_in,
                     cl_mem dev_coarse,
@@ -677,7 +677,7 @@ int gauss_reduce_cl(struct dt_iop_module_t *self,
 }
 
 static
-int process_cl_fusion(struct dt_iop_module_t *self,
+int process_cl_fusion(dt_iop_module_t *self,
                       dt_dev_pixelpipe_iop_t *piece,
                       cl_mem dev_in,
                       cl_mem dev_out,
@@ -923,7 +923,7 @@ error:
 }
 
 static
-int process_cl_lut(struct dt_iop_module_t *self,
+int process_cl_lut(dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece,
                    cl_mem dev_in,
                    cl_mem dev_out,
@@ -988,7 +988,7 @@ error:
   return err;
 }
 
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in,
@@ -1004,11 +1004,11 @@ int process_cl(struct dt_iop_module_t *self,
 
 #endif
 
-void tiling_callback(struct dt_iop_module_t *self,
-                     struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in,
                      const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
   dt_iop_basecurve_data_t *const d = piece->data;
 
@@ -1231,7 +1231,7 @@ static inline void gauss_reduce(
   }
 }
 
-void process_fusion(struct dt_iop_module_t *self,
+void process_fusion(dt_iop_module_t *self,
                     dt_dev_pixelpipe_iop_t *piece,
                     const void *const ivoid,
                     void *const ovoid,
@@ -1403,7 +1403,7 @@ cleanup:
   free(comb);
 }
 
-void process_lut(struct dt_iop_module_t *self,
+void process_lut(dt_iop_module_t *self,
                  dt_dev_pixelpipe_iop_t *piece,
                  const void *const ivoid,
                  void *const ovoid,
@@ -1429,7 +1429,7 @@ void process_lut(struct dt_iop_module_t *self,
 }
 
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -1445,7 +1445,7 @@ void process(struct dt_iop_module_t *self,
     process_lut(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
 
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -1491,7 +1491,7 @@ void commit_params(struct dt_iop_module_t *self,
   dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1500,7 +1500,7 @@ void init_pipe(struct dt_iop_module_t *self,
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1511,7 +1511,7 @@ void cleanup_pipe(struct dt_iop_module_t *self,
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   dt_iop_basecurve_params_t *p = self->params;
   dt_iop_basecurve_gui_data_t *g = self->gui_data;
@@ -1541,8 +1541,7 @@ void init(dt_iop_module_t *module)
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 18; // basecurve.cl, from programs.conf
-  dt_iop_basecurve_global_data_t *gd
-      = (dt_iop_basecurve_global_data_t *)malloc(sizeof(dt_iop_basecurve_global_data_t));
+  dt_iop_basecurve_global_data_t *gd = malloc(sizeof(dt_iop_basecurve_global_data_t));
   module->data = gd;
   gd->kernel_basecurve_lut = dt_opencl_create_kernel(program, "basecurve_lut");
   gd->kernel_basecurve_zero = dt_opencl_create_kernel(program, "basecurve_zero");
@@ -2125,7 +2124,7 @@ static void logbase_callback(GtkWidget *slider, dt_iop_module_t *self)
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_basecurve_gui_data_t *g = IOP_GUI_ALLOC(basecurve);
   const dt_iop_basecurve_params_t *const p = self->default_params;
@@ -2188,7 +2187,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "key-press-event", G_CALLBACK(dt_iop_basecurve_key_press), self);
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_basecurve_gui_data_t *g = self->gui_data;
   dt_draw_curve_destroy(g->minmax_curve);

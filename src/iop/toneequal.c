@@ -325,7 +325,7 @@ const char *aliases()
 }
 
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
     (self, _("relight the scene as if the lighting was done directly on the scene"),
@@ -692,7 +692,7 @@ static float get_luminance_from_buffer(const float *const buffer,
   return luminance;
 }
 
-static void _get_point(struct dt_iop_module_t *module,
+static void _get_point(dt_iop_module_t *module,
                        const int c_x,
                        const int c_y,
                        int *x,
@@ -992,7 +992,7 @@ static inline void display_luminance_mask(const float *const restrict in,
 
 __DT_CLONE_TARGETS__
 static
-void toneeq_process(struct dt_iop_module_t *self,
+void toneeq_process(dt_iop_module_t *self,
                     dt_dev_pixelpipe_iop_t *piece,
                     const void *const restrict ivoid,
                     void *const restrict ovoid,
@@ -1171,7 +1171,7 @@ void toneeq_process(struct dt_iop_module_t *self,
   if(!cached) dt_free_align(luminance);
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const restrict ivoid,
              void *const restrict ovoid,
@@ -1182,8 +1182,8 @@ void process(struct dt_iop_module_t *self,
 }
 
 
-void modify_roi_in(struct dt_iop_module_t *self,
-                   struct dt_dev_pixelpipe_iop_t *piece,
+void modify_roi_in(dt_iop_module_t *self,
+                   dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *roi_out,
                    dt_iop_roi_t *roi_in)
 {
@@ -1341,7 +1341,7 @@ static int commit_channels_gains(const float factors[CHANNELS],
  ***/
 
 
-static void gui_cache_init(struct dt_iop_module_t *self)
+static void gui_cache_init(dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   if(g == NULL) return;
@@ -1480,7 +1480,7 @@ static inline void compute_log_histogram_and_stats(const float *const restrict l
   }
 }
 
-static inline void update_histogram(struct dt_iop_module_t *const self)
+static inline void update_histogram(dt_iop_module_t *const self)
 {
   dt_iop_toneequalizer_gui_data_t *const g = self->gui_data;
   if(g == NULL) return;
@@ -1500,7 +1500,7 @@ static inline void update_histogram(struct dt_iop_module_t *const self)
 
 
 __DT_CLONE_TARGETS__
-static inline void compute_lut_correction(struct dt_iop_toneequalizer_gui_data_t *g,
+static inline void compute_lut_correction(dt_iop_toneequalizer_gui_data_t *g,
                                           const float offset,
                                           const float scaling)
 {
@@ -1523,7 +1523,7 @@ static inline void compute_lut_correction(struct dt_iop_toneequalizer_gui_data_t
 
 
 
-static inline gboolean update_curve_lut(struct dt_iop_module_t *self)
+static inline gboolean update_curve_lut(dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_params_t *p = self->params;
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
@@ -1588,7 +1588,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 }
 
 
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -1652,7 +1652,7 @@ void commit_params(struct dt_iop_module_t *self,
 }
 
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1660,7 +1660,7 @@ void init_pipe(struct dt_iop_module_t *self,
 }
 
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1668,7 +1668,7 @@ void cleanup_pipe(struct dt_iop_module_t *self,
   piece->data = NULL;
 }
 
-void show_guiding_controls(struct dt_iop_module_t *self)
+void show_guiding_controls(dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
@@ -1727,7 +1727,7 @@ void update_exposure_sliders(dt_iop_toneequalizer_gui_data_t *g,
 }
 
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   dt_iop_toneequalizer_params_t *p = self->params;
@@ -1973,7 +1973,7 @@ static void show_luminance_mask_callback(GtkWidget *togglebutton,
  * GUI Interactivity
  **/
 
-static void switch_cursors(struct dt_iop_module_t *self)
+static void switch_cursors(dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
@@ -2101,7 +2101,7 @@ int mouse_moved(dt_iop_module_t *self,
 }
 
 
-int mouse_leave(struct dt_iop_module_t *self)
+int mouse_leave(dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
@@ -2184,7 +2184,7 @@ static inline int set_new_params_interactive(const float control_exposure,
 }
 
 
-int scrolled(struct dt_iop_module_t *self,
+int scrolled(dt_iop_module_t *self,
              const float x,
              const float y,
              const int up,
@@ -2555,7 +2555,7 @@ static void _unset_distort_signal(dt_iop_module_t *self)
   }
 }
 
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
+void gui_focus(dt_iop_module_t *self, gboolean in)
 {
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   dt_iop_gui_enter_critical_section(self);
@@ -3221,7 +3221,7 @@ static gboolean notebook_button_press(GtkWidget *widget,
   return FALSE;
 }
 
-GSList *mouse_actions(struct dt_iop_module_t *self)
+GSList *mouse_actions(dt_iop_module_t *self)
 {
   GSList *lm = NULL;
   lm = dt_mouse_action_create_format
@@ -3290,7 +3290,7 @@ static void _develop_ui_pipe_finished_callback(gpointer instance,
   switch_cursors(self);
 }
 
-void gui_reset(struct dt_iop_module_t *self)
+void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   if(g == NULL) return;
@@ -3304,7 +3304,7 @@ void gui_reset(struct dt_iop_module_t *self)
 }
 
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = IOP_GUI_ALLOC(toneequalizer);
 
@@ -3530,7 +3530,7 @@ void gui_init(struct dt_iop_module_t *self)
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _develop_ui_pipe_started_callback, self);
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;

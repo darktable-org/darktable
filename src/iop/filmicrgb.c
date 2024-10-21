@@ -344,7 +344,7 @@ const char *aliases()
   return _("tone mapping|curve|view transform|contrast|saturation|highlights");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("apply a view transform to prepare the scene-referred pipeline\n"
                                         "for display on SDR screens and paper prints\n"
@@ -378,7 +378,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 #endif
 
 inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_params_t *const p,
-                                                    struct dt_iop_filmic_rgb_spline_t *const spline);
+                                                    dt_iop_filmic_rgb_spline_t *const spline);
 
 // BEWARE: convert_to_spline_v3 supports up to v6 of params (see legacy_params)
 // convert parameters from spline v1 or v2 to spline v3
@@ -2069,9 +2069,9 @@ static inline void restore_ratios(float *const restrict ratios,
   }
 }
 
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
   const int scales = get_scales(roi_in, piece);
   const int max_filter_radius = (1 << scales);
@@ -2366,7 +2366,7 @@ error:
 }
 
 
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in,
@@ -2750,7 +2750,7 @@ static void show_mask_callback(GtkToggleButton *button, GdkEventButton *event, d
 // returns true if contrast was clamped, false otherwise
 // used in GUI, to show user when contrast clamping is happening
 inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_params_t *const p,
-                                                        struct dt_iop_filmic_rgb_spline_t *const spline)
+                                                        dt_iop_filmic_rgb_spline_t *const spline)
 {
   float grey_display = 0.4638f;
   gboolean clamping = FALSE;
@@ -3122,7 +3122,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->enable_highlight_reconstruction = p->enable_highlight_reconstruction;
 }
 
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
+void gui_focus(dt_iop_module_t *self, gboolean in)
 {
   dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
@@ -3297,8 +3297,8 @@ static inline void dt_cairo_draw_arrow(cairo_t *cr, double origin_x, double orig
   }
 }
 
-void filmic_gui_draw_icon(cairo_t *cr, struct dt_iop_filmicrgb_gui_button_data_t *button,
-                          struct dt_iop_filmicrgb_gui_data_t *g)
+void filmic_gui_draw_icon(cairo_t *cr, dt_iop_filmicrgb_gui_button_data_t *button,
+                          dt_iop_filmicrgb_gui_data_t *g)
 {
   if(!g->gui_sizes_inited) return;
 

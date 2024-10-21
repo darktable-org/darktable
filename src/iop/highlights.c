@@ -173,7 +173,7 @@ const char *name()
   return _("highlight reconstruction");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("avoid magenta highlights and try to recover highlights colors"),
                                       _("corrective"),
@@ -327,8 +327,8 @@ static dt_hash_t img_opphash = ULLONG_MAX;
 #include "hlreconstruct/lch.c"
 
 void distort_mask(
-        struct dt_iop_module_t *self,
-        struct dt_dev_pixelpipe_iop_t *piece,
+        dt_iop_module_t *self,
+        dt_dev_pixelpipe_iop_t *piece,
         const float *const in,
         float *const out,
         const dt_iop_roi_t *const roi_in,
@@ -975,12 +975,12 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_highlights_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
@@ -1170,7 +1170,7 @@ static void _strength_callback(GtkWidget *quad, dt_iop_module_t *self)
   dt_dev_reprocess_center(self->dev);
 }
 
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
+void gui_focus(dt_iop_module_t *self, gboolean in)
 {
   dt_iop_highlights_gui_data_t *g = self->gui_data;
   if(!in)
@@ -1185,7 +1185,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   }
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_highlights_gui_data_t *g = IOP_GUI_ALLOC(highlights);
   GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);

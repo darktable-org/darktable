@@ -124,7 +124,7 @@ const char *name()
   return _("input color profile");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("convert any RGB input to pipeline reference RGB\n"
                                         "using color profiles to remap RGB values"),
@@ -636,7 +636,7 @@ static inline void _apply_tone_curves(dt_aligned_pixel_t pixel,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
@@ -769,7 +769,7 @@ static inline void _apply_blue_mapping(const float *const in, float *const out)
 }
 
 // legacy processing (IOP versions 1 and 2, 2014 and earlier)
-static void _process_cmatrix_bm(struct dt_iop_module_t *self,
+static void _process_cmatrix_bm(dt_iop_module_t *self,
                                dt_dev_pixelpipe_iop_t *piece,
                                const void *const ivoid,
                                void *const ovoid,
@@ -916,7 +916,7 @@ static inline void _cmatrix_fastpath_clipping(float *const restrict out,
   }
 }
 
-static void process_cmatrix_fastpath(struct dt_iop_module_t *self,
+static void process_cmatrix_fastpath(dt_iop_module_t *self,
                                      dt_dev_pixelpipe_iop_t *piece,
                                      const void *const ivoid,
                                      void *const ovoid,
@@ -1042,7 +1042,7 @@ static inline void _cmatrix_proper_clipping(float *const restrict out,
   }
 }
 
-static void process_cmatrix_proper(struct dt_iop_module_t *self,
+static void process_cmatrix_proper(dt_iop_module_t *self,
                                    dt_dev_pixelpipe_iop_t *piece,
                                    const void *const ivoid,
                                    void *const ovoid,
@@ -1085,7 +1085,7 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self,
   dt_omploop_sfence();
 }
 
-static void process_cmatrix(struct dt_iop_module_t *self,
+static void process_cmatrix(dt_iop_module_t *self,
                             dt_dev_pixelpipe_iop_t *piece,
                             const void *const ivoid,
                             void *const ovoid,
@@ -1112,7 +1112,7 @@ static void process_cmatrix(struct dt_iop_module_t *self,
 }
 
 // legacy processing (IOP versions 1 and 2, 2014 and earlier)
-static void process_lcms2_bm(struct dt_iop_module_t *self,
+static void process_lcms2_bm(dt_iop_module_t *self,
                              dt_dev_pixelpipe_iop_t *piece,
                              const void *const ivoid,
                              void *const ovoid,
@@ -1152,7 +1152,7 @@ static void process_lcms2_bm(struct dt_iop_module_t *self,
   }
 }
 
-static void process_lcms2_proper(struct dt_iop_module_t *self,
+static void process_lcms2_proper(dt_iop_module_t *self,
                                  dt_dev_pixelpipe_iop_t *piece,
                                  const void *const ivoid,
                                  void *const ovoid,
@@ -1200,7 +1200,7 @@ static void process_lcms2_proper(struct dt_iop_module_t *self,
   dt_free_align(scratchlines);
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -1271,7 +1271,7 @@ void process(struct dt_iop_module_t *self,
   }
 }
 
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -1591,7 +1591,7 @@ void commit_params(struct dt_iop_module_t *self,
                                        d->filename, p->intent, d->cmatrix);
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1604,7 +1604,7 @@ void init_pipe(struct dt_iop_module_t *self,
   d->xform_nrgb_Lab = NULL;
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1630,7 +1630,7 @@ void cleanup_pipe(struct dt_iop_module_t *self,
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   dt_iop_colorin_gui_data_t *g = self->gui_data;
   dt_iop_colorin_params_t *p = self->params;
@@ -2037,7 +2037,7 @@ static void update_profile_list(dt_iop_module_t *self)
   }
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
   dt_iop_colorin_gui_data_t *g = IOP_GUI_ALLOC(colorin);
@@ -2075,7 +2075,7 @@ void gui_init(struct dt_iop_module_t *self)
                               _("confine Lab values to gamut of RGB color space"));
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_colorin_gui_data_t *g = self->gui_data;
   while(g->image_profiles)

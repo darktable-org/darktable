@@ -127,7 +127,7 @@ const char *name()
 
 // a routine returning the description of the module. this is
 // displayed when the mouse is over the module's header.
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
     (self,
@@ -252,11 +252,11 @@ void commit_params(dt_iop_module_t *self,
     IOP_FLAGS_ALLOW_TILING Also define this if the module uses more
     memory on the OpenCl device than the in& output buffers.
 */
-void tiling_callback(struct dt_iop_module_t *self,
-                     struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in,
                      const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
   tiling->factor = 2.0f;    // input buffer + output buffer; increase
                             // if additional memory allocated
@@ -273,9 +273,9 @@ void tiling_callback(struct dt_iop_module_t *self,
 #endif
 
 /** modify regions of interest (optional, per pixel ops don't need this) */
-// void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t
+// void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t
 // *roi_out, const dt_iop_roi_t *roi_in);
-// void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t
+// void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t
 // *roi_out, dt_iop_roi_t *roi_in);
 
 #if 0
@@ -333,7 +333,7 @@ gboolean distort_backtransform(dt_iop_module_t *self,
 #endif
 
 /** modify a mask according to the pixel shifts the module applies (optional, per-pixel ops don't need this) */
-// void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+// void distort_mask(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in,
 // float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
 
 /** process, all real work is done here.
@@ -343,7 +343,7 @@ gboolean distort_backtransform(dt_iop_module_t *self,
           a signal should be used (raise a signal here) and a corresponding callback
           must be connected to this signal.
 */
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -716,7 +716,7 @@ void gui_cleanup(dt_iop_module_t *self)
 // int mouse_moved(dt_iop_module_t *self, double x, double y, double pressure, int which);
 // int button_pressed(dt_iop_module_t *self, double x, double y, double pressure, int which, int type,
 // uint32_t state);
-// int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
+// int button_released(dt_iop_module_t *self, double x, double y, int which, uint32_t state);
 // int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state);
 
 // optional: if mouse events are handled by the iop, we can add text to the help screen by declaring

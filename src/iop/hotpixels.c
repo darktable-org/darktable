@@ -69,7 +69,7 @@ const char *name()
   return _("hot pixels");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("remove abnormally bright pixels by dampening them with neighbors"),
                                       _("corrective"),
@@ -323,7 +323,7 @@ static int process_xtrans(const dt_iop_hotpixels_data_t *data,
   return fixed;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_hotpixels_gui_data_t *g = self->gui_data;
@@ -364,7 +364,7 @@ void reload_defaults(dt_iop_module_t *module)
   module->hide_enable_button = !supported;
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t *)params;
@@ -383,12 +383,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   if(!supported || p->strength == 0.0) piece->enabled = FALSE;
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_hotpixels_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;

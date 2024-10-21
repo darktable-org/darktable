@@ -96,7 +96,7 @@ const char *name()
   return _("unbreak input profile");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("correct input color profiles meant to be applied on non-linear RGB"),
                                       _("corrective"),
@@ -211,7 +211,7 @@ int legacy_params(dt_iop_module_t *self,
 
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_profilegamma_data_t *d = piece->data;

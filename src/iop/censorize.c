@@ -80,7 +80,7 @@ const char *name()
   return _("censorize");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("censorize license plates and body parts for privacy"),
                                       _("creative"),
@@ -138,7 +138,7 @@ static inline void make_noise(float *const output,
 }
 
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -279,7 +279,7 @@ void process(struct dt_iop_module_t *self,
 
 // OpenCL not implemented yet, but the following only needs a slight modification to get it working
 #if FALSE
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
@@ -379,11 +379,11 @@ error:
   return err;
 }
 
-void tiling_callback(struct dt_iop_module_t *self,
-                     struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in,
                      const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
   tiling->factor = 3.0f;
   tiling->factor_cl = 5.0f;
@@ -414,7 +414,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 #endif
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_censorize_gui_data_t *g = IOP_GUI_ALLOC(censorize);
 

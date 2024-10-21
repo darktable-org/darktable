@@ -74,7 +74,7 @@ const char *name()
   return _("rgb primaries");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("adjustment of the RGB color primaries for color grading"),
                                       _("corrective or creative"),
@@ -125,7 +125,7 @@ static void _calculate_adjustment_matrix
   dt_colormatrix_mul(matrix, RGB_TO_XYZ, pipe_work_profile->matrix_out_transposed);
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -156,7 +156,7 @@ void process(struct dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
@@ -416,7 +416,7 @@ void gui_init(dt_iop_module_t *self)
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _signal_profile_changed, self);
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   DT_CONTROL_SIGNAL_DISCONNECT(_signal_profile_user_changed, self);
   DT_CONTROL_SIGNAL_DISCONNECT(_signal_profile_changed, self);

@@ -126,7 +126,7 @@ const char *aliases()
   return _("reframe|distortion");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
                                 _("change the framing"),
@@ -166,7 +166,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-static int _gui_has_focus(struct dt_iop_module_t *self)
+static int _gui_has_focus(dt_iop_module_t *self)
 {
   return (self->dev->gui_module == self
           && dt_dev_modulegroups_test_activated(darktable.develop));
@@ -226,7 +226,7 @@ static void _commit_box(dt_iop_module_t *self,
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static gboolean _set_max_clip(struct dt_iop_module_t *self)
+static gboolean _set_max_clip(dt_iop_module_t *self)
 {
   dt_iop_crop_gui_data_t *g = self->gui_data;
   dt_iop_crop_params_t *p = self->params;
@@ -314,8 +314,8 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   return TRUE;
 }
 
-void distort_mask(struct dt_iop_module_t *self,
-                  struct dt_dev_pixelpipe_iop_t *piece,
+void distort_mask(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
                   const float *const in,
                   float *const out,
                   const dt_iop_roi_t *const roi_in,
@@ -324,8 +324,8 @@ void distort_mask(struct dt_iop_module_t *self,
   dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 }
 
-void modify_roi_out(struct dt_iop_module_t *self,
-                    struct dt_dev_pixelpipe_iop_t *piece,
+void modify_roi_out(dt_iop_module_t *self,
+                    dt_dev_pixelpipe_iop_t *piece,
                     dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *roi_in)
 {
@@ -370,8 +370,8 @@ void modify_roi_out(struct dt_iop_module_t *self,
   if(roi_out->height < 5) roi_out->height = 5;
 }
 
-void modify_roi_in(struct dt_iop_module_t *self,
-                   struct dt_dev_pixelpipe_iop_t *piece,
+void modify_roi_in(dt_iop_module_t *self,
+                   dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *roi_out,
                    dt_iop_roi_t *roi_in)
 {
@@ -388,7 +388,7 @@ void modify_roi_in(struct dt_iop_module_t *self,
   roi_in->y = CLAMP(roi_in->y, 0, (int)floorf(ih));
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -399,7 +399,7 @@ void process(struct dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
@@ -413,7 +413,7 @@ int process_cl(struct dt_iop_module_t *self,
 }
 #endif
 
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -462,7 +462,7 @@ static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *
   g->clip_max_pipe_hash = 0;
 }
 
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
+void gui_focus(dt_iop_module_t *self, gboolean in)
 {
   darktable.develop->history_postpone_invalidate =
     in && dt_dev_modulegroups_test_activated(darktable.develop);
@@ -501,14 +501,14 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   g->focus_time = g_get_monotonic_time();
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_crop_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -997,14 +997,14 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   _commit_box(self, g, p);
 }
 
-void gui_reset(struct dt_iop_module_t *self)
+void gui_reset(dt_iop_module_t *self)
 {
   /* reset aspect preset to default */
   dt_conf_set_int("plugins/darkroom/crop/ratio_d", 0);
   dt_conf_set_int("plugins/darkroom/crop/ratio_n", 0);
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   dt_iop_crop_gui_data_t *g = self->gui_data;
   dt_iop_crop_params_t *p = self->params;
@@ -1111,7 +1111,7 @@ static gchar *_aspect_format(gchar *original,
     return g_strdup_printf("%s  %4.2f", original, (float)adim / (float)bdim);
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_crop_gui_data_t *g = IOP_GUI_ALLOC(crop);
 
@@ -1312,7 +1312,7 @@ static void _aspect_free(gpointer data)
   g_free(aspect);
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_crop_gui_data_t *g = self->gui_data;
   g_list_free_full(g->aspect_list, _aspect_free);
@@ -1798,7 +1798,7 @@ int button_pressed(dt_iop_module_t *self,
     return 0;
 }
 
-GSList *mouse_actions(struct dt_iop_module_t *self)
+GSList *mouse_actions(dt_iop_module_t *self)
 {
   GSList *lm = NULL;
   lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, 0,

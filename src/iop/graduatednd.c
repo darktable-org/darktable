@@ -140,7 +140,7 @@ const char *name()
   return _("graduated density");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("simulate an optical graduated neutral density filter"),
                                       _("corrective and creative"),
@@ -207,7 +207,7 @@ static float _dist_seg(
 }
 
 static int _set_grad_from_points(
-	struct dt_iop_module_t *self,
+	dt_iop_module_t *self,
         float xa,
         float ya,
         float xb,
@@ -309,7 +309,7 @@ static int _set_grad_from_points(
 }
 
 static int _set_points_from_grad(
-	struct dt_iop_module_t *self,
+	dt_iop_module_t *self,
         float *xa,
         float *ya,
         float *xb,
@@ -482,7 +482,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void gui_reset(struct dt_iop_module_t *self)
+void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_color_picker_reset(self, TRUE);
 }
@@ -778,7 +778,7 @@ static inline float _compute_density(const float dens, const float length)
   return density;
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -928,7 +928,7 @@ void process(struct dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in,
@@ -1013,7 +1013,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
 }
 
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -1035,14 +1035,14 @@ void commit_params(struct dt_iop_module_t *self,
   for(int l = 0; l < 4; l++) d->color1[l] = 1.0 - d->color[l];
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_graduatednd_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1050,7 +1050,7 @@ void cleanup_pipe(struct dt_iop_module_t *self,
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   dt_iop_graduatednd_gui_data_t *g = self->gui_data;
   dt_iop_graduatednd_params_t *p = self->params;
@@ -1061,7 +1061,7 @@ void gui_update(struct dt_iop_module_t *self)
   _update_saturation_slider_end_color(g->saturation, p->hue);
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_graduatednd_gui_data_t *g = IOP_GUI_ALLOC(graduatednd);
 
@@ -1102,7 +1102,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->define = 0;
 }
 
-GSList *mouse_actions(struct dt_iop_module_t *self)
+GSList *mouse_actions(dt_iop_module_t *self)
 {
   GSList *lm = NULL;
   lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, 0,

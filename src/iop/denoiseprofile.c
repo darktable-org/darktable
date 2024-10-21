@@ -772,7 +772,7 @@ const char *name()
   return _("denoise (profiled)");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
                                 _("denoise using noise statistics profiled on sensors"),
@@ -805,11 +805,11 @@ typedef union floatint_t
   uint32_t i;
 } floatint_t;
 
-void tiling_callback(struct dt_iop_module_t *self,
-                     struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in,
                      const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
   dt_iop_denoiseprofile_params_t *d = piece->data;
 
@@ -1383,7 +1383,7 @@ static void variance_stabilizing_xform(dt_aligned_pixel_t thrs,
     thrs[c] = adjt[c] * sb2 / std_x[c];
 }
 
-static void process_wavelets(struct dt_iop_module_t *self,
+static void process_wavelets(dt_iop_module_t *self,
                              dt_dev_pixelpipe_iop_t *piece,
                              const void *const ivoid,
                              void *const ovoid,
@@ -1734,7 +1734,7 @@ static void nlmeans_backtransform(const dt_iop_denoiseprofile_data_t *const d,
   return;
 }
 
-static void process_nlmeans(struct dt_iop_module_t *self,
+static void process_nlmeans(dt_iop_module_t *self,
                             dt_dev_pixelpipe_iop_t *piece,
                             const void *const ivoid,
                             void *const ovoid,
@@ -1852,7 +1852,7 @@ static void variance_rec(const size_t npixels,
   }
 }
 
-static void process_variance(struct dt_iop_module_t *self,
+static void process_variance(dt_iop_module_t *self,
                              dt_dev_pixelpipe_iop_t *piece,
                              const void *const ivoid,
                              void *const ovoid,
@@ -1928,7 +1928,7 @@ static int bucket_next(unsigned int *state, unsigned int max)
 #endif
 
 #if defined(HAVE_OPENCL)
-static int process_nlmeans_cl(struct dt_iop_module_t *self,
+static int process_nlmeans_cl(dt_iop_module_t *self,
                               dt_dev_pixelpipe_iop_t *piece,
                               cl_mem dev_in,
                               cl_mem dev_out,
@@ -2244,7 +2244,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self,
 }
 
 
-static int process_wavelets_cl(struct dt_iop_module_t *self,
+static int process_wavelets_cl(dt_iop_module_t *self,
                                dt_dev_pixelpipe_iop_t *piece,
                                cl_mem dev_in,
                                cl_mem dev_out,
@@ -2700,7 +2700,7 @@ error:
   return err;
 }
 
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
@@ -2726,7 +2726,7 @@ int process_cl(struct dt_iop_module_t *self,
 }
 #endif // HAVE_OPENCL
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -2967,7 +2967,7 @@ static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t 
 
 /** commit is the synch point between core and gui, so it copies
  * params to pipe data. */
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *params,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -3036,7 +3036,7 @@ void commit_params(struct dt_iop_module_t *self,
   d->use_new_vst = p->use_new_vst;
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
@@ -3053,7 +3053,7 @@ void init_pipe(struct dt_iop_module_t *self,
   }
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {

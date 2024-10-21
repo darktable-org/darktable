@@ -77,7 +77,7 @@ const char *aliases()
   return _("chromatic aberrations");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("attenuate chromatic aberration by desaturating edges"),
                                       _("corrective"),
@@ -168,7 +168,7 @@ static inline void _fib_latt(int *const x, int *const y, float radius, int step,
 // most are chosen arbitrarily and/or by experiment/trial+error ... I am sorry ;-)
 // and having everything user-defineable would be just too much
 // -----------------------------------------------------------------------------------------
-void process(struct dt_iop_module_t *module,
+void process(dt_iop_module_t *module,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const i,
              void *const o,

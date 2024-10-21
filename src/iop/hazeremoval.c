@@ -107,7 +107,7 @@ const char *aliases()
   return _("dehaze|defog|smoke|smog");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("remove fog and atmospheric hazing from images"),
                                       _("corrective"),
@@ -698,7 +698,7 @@ error:
   return err;
 }
 
-static int _box_max_cl(struct dt_iop_module_t *self,
+static int _box_max_cl(dt_iop_module_t *self,
                        int devid,
                        cl_mem in,
                        cl_mem out,
@@ -723,7 +723,7 @@ error:
 }
 
 
-static int _transition_map_cl(struct dt_iop_module_t *self,
+static int _transition_map_cl(dt_iop_module_t *self,
                               int devid,
                               cl_mem img1,
                               cl_mem img2,
@@ -746,7 +746,7 @@ static int _transition_map_cl(struct dt_iop_module_t *self,
 }
 
 
-static int _dehaze_cl(struct dt_iop_module_t *self,
+static int _dehaze_cl(dt_iop_module_t *self,
                       int devid,
                       cl_mem img_in,
                       cl_mem trans_map,
@@ -765,11 +765,11 @@ static int _dehaze_cl(struct dt_iop_module_t *self,
                                           CLARG(A0[0]), CLARG(A0[1]), CLARG(A0[2]));
 }
 
-void tiling_callback(struct dt_iop_module_t *self,
-                     struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in,
                      const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
   tiling->factor = 2.5f;  // in + out + two single-channel temp buffers
   tiling->factor_cl = 5.0f;
@@ -781,7 +781,7 @@ void tiling_callback(struct dt_iop_module_t *self,
   tiling->yalign = 1;
 }
 
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem img_in,
                cl_mem img_out,

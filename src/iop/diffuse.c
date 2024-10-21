@@ -132,7 +132,7 @@ const char *aliases()
   return _("diffusion|deconvolution|blur|sharpening|bloom|clarity|dehaze|inpaint|watercolor");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
     (self,
@@ -778,11 +778,11 @@ void init_presets(dt_iop_module_so_t *self)
                              DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
-void tiling_callback(struct dt_iop_module_t *self,
-                     struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in,
                      const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
   dt_iop_diffuse_data_t *data = piece->data;
 
@@ -1610,7 +1610,7 @@ static inline cl_int wavelets_process_cl(const int devid,
   return err;
 }
 
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
@@ -1766,7 +1766,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 #endif
 
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_diffuse_gui_data_t *g = IOP_GUI_ALLOC(diffuse);
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);

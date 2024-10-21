@@ -209,7 +209,7 @@ const char *aliases()
   return _("color zones|hsl");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
     (self, _("change saturation, hue and brightness depending on local hue"),
@@ -341,11 +341,11 @@ static inline float _get_scaling(const float sigma)
   return MAX(1.0f, MIN(4.0f, floorf(sigma - 1.5f)));
 }
 
-void tiling_callback(struct dt_iop_module_t *self,
-                     struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in,
                      const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
   dt_iop_colorequal_data_t *data = piece->data;
 
@@ -970,7 +970,7 @@ static void _prepare_process(const float roi_scale,
   _init_satweights(d->contrast);
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const i,
              void *const o,
@@ -1541,7 +1541,7 @@ error:
   return err;
 }
 
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
@@ -1744,7 +1744,7 @@ static inline void _periodic_RBF_interpolate(float nodes[NODES],
   }
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1759,7 +1759,7 @@ void init_pipe(struct dt_iop_module_t *self,
 }
 
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1772,7 +1772,7 @@ void cleanup_pipe(struct dt_iop_module_t *self,
   piece->data = NULL;
 }
 
-static inline void _pack_saturation(struct dt_iop_colorequal_params_t *p,
+static inline void _pack_saturation(dt_iop_colorequal_params_t *p,
                                     float array[NODES])
 {
   array[0] = p->sat_red;
@@ -1785,7 +1785,7 @@ static inline void _pack_saturation(struct dt_iop_colorequal_params_t *p,
   array[7] = p->sat_magenta;
 }
 
-static inline void _pack_hue(struct dt_iop_colorequal_params_t *p,
+static inline void _pack_hue(dt_iop_colorequal_params_t *p,
                              float array[NODES])
 {
   array[0] = p->hue_red;
@@ -1801,7 +1801,7 @@ static inline void _pack_hue(struct dt_iop_colorequal_params_t *p,
     array[i] = array[i] / 180.f * M_PI_F; // Convert to radians
 }
 
-static inline void _pack_brightness(struct dt_iop_colorequal_params_t *p,
+static inline void _pack_brightness(dt_iop_colorequal_params_t *p,
                                     float array[NODES])
 {
   array[0] = p->bright_red;
@@ -1815,7 +1815,7 @@ static inline void _pack_brightness(struct dt_iop_colorequal_params_t *p,
 }
 
 
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)

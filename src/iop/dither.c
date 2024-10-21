@@ -113,7 +113,7 @@ const char *aliases()
   return _("dithering|posterization|reduce bit depth");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("reduce banding and posterization effects in output\n"
                                         "JPEGs by adding random noise, or reduce bit depth"),
@@ -402,7 +402,7 @@ static int _get_dither_parameters(
 
 DT_OMP_DECLARE_SIMD(aligned(ivoid, ovoid : 64))
 static void _process_floyd_steinberg(
-        struct dt_iop_module_t *self,
+        dt_iop_module_t *self,
         dt_dev_pixelpipe_iop_t *piece,
         const void *const ivoid,
         void *const ovoid,
@@ -576,7 +576,7 @@ static void _process_floyd_steinberg(
 }
 
 static void _process_random(
-        struct dt_iop_module_t *self,
+        dt_iop_module_t *self,
         dt_dev_pixelpipe_iop_t *piece,
         const void *const ivoid,
         void *const ovoid,
@@ -620,7 +620,7 @@ static void _process_random(
 }
 
 static void _process_posterize(
-        struct dt_iop_module_t *self,
+        dt_iop_module_t *self,
         dt_dev_pixelpipe_iop_t *piece,
         const void *const ivoid,
         void *const ovoid,
@@ -656,7 +656,7 @@ static void _process_posterize(
 
 
 void process(
-        struct dt_iop_module_t *self,
+        dt_iop_module_t *self,
         dt_dev_pixelpipe_iop_t *piece,
         const void *const ivoid,
         void *const ovoid,
@@ -717,7 +717,7 @@ _range_callback (GtkWidget *slider, dt_iop_module_t *self)
 #endif
 
 void commit_params(
-        struct dt_iop_module_t *self,
+        dt_iop_module_t *self,
         dt_iop_params_t *p1,
         dt_dev_pixelpipe_t *pipe,
         dt_dev_pixelpipe_iop_t *piece)
@@ -731,19 +731,19 @@ void commit_params(
   d->random.damping = p->random.damping;
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_dither_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   dt_iop_dither_gui_data_t *g = self->gui_data;
   dt_iop_dither_params_t *p = self->params;
@@ -759,7 +759,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_set_visible(g->random, p->dither_type == DITHER_RANDOM);
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_dither_gui_data_t *g = IOP_GUI_ALLOC(dither);
 

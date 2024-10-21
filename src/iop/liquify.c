@@ -291,7 +291,7 @@ const char *name()
   return _("liquify");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("distort parts of the image"),
                                       _("creative"),
@@ -542,7 +542,7 @@ typedef struct
   int transf_direction;
 } distort_params_t;
 
-static void _distort_paths_locked(const struct dt_iop_module_t *module,
+static void _distort_paths_locked(const dt_iop_module_t *module,
                                   const distort_params_t *params,
                                   const dt_iop_liquify_params_t *p)
 {
@@ -649,7 +649,7 @@ static void _distort_paths_locked(const struct dt_iop_module_t *module,
   free(buffer);
 }
 
-static void distort_paths_raw_to_piece(const struct dt_iop_module_t *module,
+static void distort_paths_raw_to_piece(const dt_iop_module_t *module,
                                        dt_dev_pixelpipe_t *pipe,
                                        const float roi_in_scale,
                                        dt_iop_liquify_params_t *p)
@@ -1014,7 +1014,7 @@ static void apply_round_stamp(const dt_liquify_warp_t *const restrict warp,
   device coords.
 */
 
-static void _apply_global_distortion_map(struct dt_iop_module_t *module,
+static void _apply_global_distortion_map(dt_iop_module_t *module,
                                          dt_dev_pixelpipe_iop_t *piece,
                                          const float *const restrict in,
                                          float *const restrict out,
@@ -1182,7 +1182,7 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
   return map;
 }
 
-static void _build_global_distortion_map(struct dt_iop_module_t *module,
+static void _build_global_distortion_map(dt_iop_module_t *module,
                                          const dt_dev_pixelpipe_iop_t *piece,
                                          const float scale,
                                          const dt_iop_roi_t *roi,
@@ -1207,10 +1207,10 @@ static void _build_global_distortion_map(struct dt_iop_module_t *module,
   g_list_free_full(interpolated, free);
 }
 
-void modify_roi_in(struct dt_iop_module_t *module,
-                    struct dt_dev_pixelpipe_iop_t *piece,
-                    const dt_iop_roi_t *roi_out,
-                    dt_iop_roi_t *roi_in)
+void modify_roi_in(dt_iop_module_t *module,
+                   dt_dev_pixelpipe_iop_t *piece,
+                   const dt_iop_roi_t *roi_out,
+                   dt_iop_roi_t *roi_in)
 {
   // Because we move pixels, and we may have to sample a pixel from
   // outside roi_in, we need to expand roi_in to contain all our
@@ -1366,8 +1366,8 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   return _distort_xtransform(self, piece, points, points_count, FALSE);
 }
 
-void distort_mask(struct dt_iop_module_t *self,
-                  struct dt_dev_pixelpipe_iop_t *piece,
+void distort_mask(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
                   const float *const in,
                   float *const out,
                   const dt_iop_roi_t *const roi_in,
@@ -1396,7 +1396,7 @@ void distort_mask(struct dt_iop_module_t *self,
   dt_free_align((void *) map);
 }
 
-void process(struct dt_iop_module_t *module,
+void process(dt_iop_module_t *module,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const in,
              void *const out,
@@ -1458,7 +1458,7 @@ typedef struct
 typedef cl_mem cl_mem_t;
 typedef cl_int cl_int_t;
 
-static cl_int_t _apply_global_distortion_map_cl(struct dt_iop_module_t *module,
+static cl_int_t _apply_global_distortion_map_cl(dt_iop_module_t *module,
                                                 dt_dev_pixelpipe_iop_t *piece,
                                                 const cl_mem_t dev_in,
                                                 const cl_mem_t dev_out,
@@ -1554,7 +1554,7 @@ error:
   return err;
 }
 
-int process_cl(struct dt_iop_module_t *module,
+int process_cl(dt_iop_module_t *module,
                 dt_dev_pixelpipe_iop_t *piece,
                 const cl_mem_t dev_in,
                 const cl_mem_t dev_out,
@@ -1695,7 +1695,7 @@ static gboolean detect_drag(const dt_iop_liquify_gui_data_t *g,
     cabsf(pt - g->last_button1_pressed_pos) >= (GET_UI_WIDTH(MIN_DRAG) / scale);
 }
 
-static void update_warp_count(struct dt_iop_module_t *module)
+static void update_warp_count(dt_iop_module_t *module)
 {
   const dt_iop_liquify_gui_data_t *g = module->gui_data;
   const dt_iop_liquify_params_t *p = module->params;
@@ -2320,7 +2320,7 @@ void _hit_paths(dt_iop_module_t *module,
   }
 }
 
-static void draw_paths(struct dt_iop_module_t *module,
+static void draw_paths(dt_iop_module_t *module,
                        cairo_t *cr,
                        const float scale,
                        dt_iop_liquify_params_t *params)
@@ -2350,7 +2350,7 @@ static void draw_paths(struct dt_iop_module_t *module,
   g_list_free(layers);
 }
 
-void _hit_test_paths(struct dt_iop_module_t *module,
+void _hit_test_paths(dt_iop_module_t *module,
                      dt_iop_liquify_params_t *params,
                      float complex pt,
                      dt_liquify_hit_t *hit)
@@ -2724,7 +2724,7 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn,
                                         GdkEventButton *event,
                                         dt_iop_module_t *module);
 
-void gui_focus(struct dt_iop_module_t *self,
+void gui_focus(dt_iop_module_t *self,
                const gboolean in)
 {
   if(!in)
@@ -2734,7 +2734,7 @@ void gui_focus(struct dt_iop_module_t *self,
   }
 }
 
-static void sync_pipe(struct dt_iop_module_t *module,
+static void sync_pipe(dt_iop_module_t *module,
                       const gboolean history)
 {
   if(history)
@@ -2765,7 +2765,7 @@ static void sync_pipe(struct dt_iop_module_t *module,
   ctrl+click on strength:    Cycle linear, grow, shrink
 */
 
-static void get_point_scale(struct dt_iop_module_t *module,
+static void get_point_scale(dt_iop_module_t *module,
                             const float pzx,
                             const float pzy,
                             float complex *pt,
@@ -3019,7 +3019,7 @@ static void get_stamp_params(dt_iop_module_t *module,
 /*
   add support for changing the radius and the strength vector for the temp node
  */
-int scrolled(struct dt_iop_module_t *module,
+int scrolled(dt_iop_module_t *module,
              const float x,
              const float y,
              const int up,
