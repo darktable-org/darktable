@@ -1978,7 +1978,7 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
         {
           if(report)
             dt_print(DT_DEBUG_ALWAYS, "[iop_validate_params] `%s' failed"
-                   " for type \"%s\", for array element \"%d\"\n",
+                   " for type \"%s\", for array element \"%d\"",
                      name, field->header.type_name, i);
           all_ok = FALSE;
           break;

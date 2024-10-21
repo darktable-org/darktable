@@ -1239,7 +1239,7 @@ void dt_bauhaus_update_from_field(dt_iop_module_t *module,
       default:
         dt_print
           (DT_DEBUG_ALWAYS,
-           "[dt_bauhaus_update_from_field] invalid bauhaus widget type encountered\n");
+           "[dt_bauhaus_update_from_field] invalid bauhaus widget type encountered");
     }
 
     // if gui->reset then notebook tab highlights were not yet changed

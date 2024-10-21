@@ -2057,7 +2057,7 @@ void dt_colorspaces_set_display_profile
     else
       _update_display_profile(buffer, buffer_size, name, sizeof(name));
     dt_print(DT_DEBUG_CONTROL, "[color profile] we got a new screen profile `%s'"
-             " from the %s (size: %d)\n",
+             " from the %s (size: %d)",
              *name ? name : "(unknown)", profile_source, buffer_size);
   }
   else
@@ -2210,7 +2210,7 @@ dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type
 
   if(filename != NULL)
     dt_print(DT_DEBUG_IMAGEIO, "[colorin] unsupported CICP color profile"
-             " for `%s': %d/%d/%d\n", filename,
+             " for `%s': %d/%d/%d", filename,
              cicp->color_primaries,
              cicp->transfer_characteristics,
              cicp->matrix_coefficients);
