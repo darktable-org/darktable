@@ -82,7 +82,7 @@ const char *aliases()
   return _("saturation");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("increase saturation and separation between\n"
                                         "opposite colors"),
@@ -166,7 +166,7 @@ static inline void clamped_scaling(float *const restrict out,
   copy_pixel_nontemporal(out, res);
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -224,7 +224,7 @@ void process(struct dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
@@ -269,7 +269,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 
 /** commit is the synch point between core and gui, so it copies params to pipe data. */
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *params,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -283,14 +283,14 @@ void commit_params(struct dt_iop_module_t *self,
   d->unbound = p->unbound;
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_colorcontrast_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {

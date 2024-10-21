@@ -93,7 +93,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
                                 _("internal module to setup technical specificities of raw sensor.\n\n"
@@ -179,8 +179,8 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   return TRUE;
 }
 
-void distort_mask(struct dt_iop_module_t *self,
-                  struct dt_dev_pixelpipe_iop_t *piece,
+void distort_mask(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
                   const float *const in,
                   float *const out,
                   const dt_iop_roi_t *const roi_in,

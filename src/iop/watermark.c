@@ -202,7 +202,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_watermark_params_v1_t;
 
     const dt_iop_watermark_params_v1_t *o = (dt_iop_watermark_params_v1_t *)old_params;
-    dt_iop_watermark_params_v6_t *n = 
+    dt_iop_watermark_params_v6_t *n =
       malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
@@ -241,7 +241,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_watermark_params_v2_t;
 
     const dt_iop_watermark_params_v2_t *o = (dt_iop_watermark_params_v2_t *)old_params;
-    dt_iop_watermark_params_v6_t *n = 
+    dt_iop_watermark_params_v6_t *n =
       malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
@@ -282,7 +282,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_watermark_params_v3_t;
 
     const dt_iop_watermark_params_v3_t *o = (dt_iop_watermark_params_v3_t *)old_params;
-    dt_iop_watermark_params_v6_t *n = 
+    dt_iop_watermark_params_v6_t *n =
       malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
@@ -330,7 +330,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_watermark_params_v4_t;
 
     const dt_iop_watermark_params_v4_t *o = (dt_iop_watermark_params_v4_t *)old_params;
-    dt_iop_watermark_params_v6_t *n = 
+    dt_iop_watermark_params_v6_t *n =
       malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
@@ -380,7 +380,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_watermark_params_v5_t;
 
     const dt_iop_watermark_params_v5_t *o = (dt_iop_watermark_params_v5_t *)old_params;
-    dt_iop_watermark_params_v6_t *n = 
+    dt_iop_watermark_params_v6_t *n =
       malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
@@ -412,7 +412,7 @@ const char *name()
   return _("watermark");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("overlay an SVG watermark like a signature on the image"),
                                       _("creative"),
@@ -567,8 +567,12 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
   return svgdata;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   dt_iop_watermark_data_t *data = piece->data;
   float *in = (float *)ivoid;
@@ -1173,7 +1177,9 @@ static void _fontsel_callback(GtkWidget *button, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self,
+                   dt_iop_params_t *p1,
+                   dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)p1;
@@ -1200,19 +1206,21 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 // dt_print(DT_DEBUG_ALWAYS, "Commit params: %s...",d->filename);
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self,
+               dt_dev_pixelpipe_t *pipe,
+               dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_watermark_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   dt_iop_watermark_gui_data_t *g = self->gui_data;
   dt_iop_watermark_params_t *p = self->params;
@@ -1271,7 +1279,7 @@ void init(dt_iop_module_t *module)
   g_strlcpy(d->font, "DejaVu Sans 10", sizeof(d->font));
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_watermark_gui_data_t *g = IOP_GUI_ALLOC(watermark);
   dt_iop_watermark_params_t *p = self->params;
@@ -1413,7 +1421,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->fontsel), "font-set", G_CALLBACK(_fontsel_callback), self);
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_watermark_gui_data_t *g = self->gui_data;
   g_list_free_full(g->watermarks_filenames, g_free);

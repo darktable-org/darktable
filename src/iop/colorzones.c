@@ -139,7 +139,7 @@ const char *name()
   return _("color zones");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
     (self, _("selectively shift hues, chroma and lightness of pixels"),
@@ -427,7 +427,7 @@ static inline float strength(const float value,
   return value + (value - 0.5f) * (strength / 100.0f);
 }
 
-void process_display(struct dt_iop_module_t *self,
+void process_display(dt_iop_module_t *self,
                      dt_dev_pixelpipe_iop_t *piece,
                      const void *const ivoid,
                      void *const ovoid,
@@ -478,7 +478,7 @@ void process_display(struct dt_iop_module_t *self,
   piece->pipe->bypass_blendif = TRUE;
 }
 
-void process_v1(struct dt_iop_module_t *self,
+void process_v1(dt_iop_module_t *self,
                 dt_dev_pixelpipe_iop_t *piece,
                 const void *const ivoid,
                 void *const ovoid,
@@ -526,7 +526,7 @@ void process_v1(struct dt_iop_module_t *self,
   }
 }
 
-void process_v3(struct dt_iop_module_t *self,
+void process_v3(dt_iop_module_t *self,
                 dt_dev_pixelpipe_iop_t *piece,
                 const void *const ivoid,
                 void *const ovoid,
@@ -572,7 +572,7 @@ void process_v3(struct dt_iop_module_t *self,
   }
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -595,7 +595,7 @@ void process(struct dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in,
@@ -2563,7 +2563,7 @@ const dt_action_def_t _action_def_zones
       _action_process_zones,
       _action_elements_zones };
 
-void gui_reset(struct dt_iop_module_t *self)
+void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
 
@@ -2580,7 +2580,7 @@ void gui_reset(struct dt_iop_module_t *self)
   _reset_display_selection(self);
 }
 
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
+void gui_focus(dt_iop_module_t *self, gboolean in)
 {
   if(!in)
   {
@@ -2589,7 +2589,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   }
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_colorzones_gui_data_t *g = IOP_GUI_ALLOC(colorzones);
   const dt_iop_colorzones_params_t *const p = self->default_params;
@@ -2762,7 +2762,7 @@ void gui_init(struct dt_iop_module_t *self)
                    G_CALLBACK(_interpolator_callback), self);
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
   dt_iop_colorzones_params_t *p = self->params;
@@ -2772,7 +2772,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
   dt_conf_set_int("plugins/darkroom/colorzones/gui_channel", g->channel);
@@ -2803,7 +2803,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -2924,7 +2924,7 @@ void commit_params(struct dt_iop_module_t *self,
   }
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
@@ -2946,7 +2946,7 @@ void init_pipe(struct dt_iop_module_t *self,
   d->mode = default_params->mode;
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {

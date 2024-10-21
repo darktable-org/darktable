@@ -127,7 +127,7 @@ const char *aliases()
   return _("sharpness|acutance|local contrast|clarity");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("add or remove local contrast, sharpness, acutance"),
                                       _("corrective and creative"),
@@ -272,8 +272,8 @@ static int get_scales(float (*thrs)[4],
 
 /* just process the supplied image buffer, upstream
  * default_process_tiling() does the rest */
-static void process_wavelets(struct dt_iop_module_t *self,
-                             struct dt_dev_pixelpipe_iop_t *piece,
+static void process_wavelets(dt_iop_module_t *self,
+                             dt_dev_pixelpipe_iop_t *piece,
                              const void *const i,
                              void *const o,
                              const dt_iop_roi_t *const roi_in,
@@ -347,8 +347,8 @@ static void process_wavelets(struct dt_iop_module_t *self,
   return;
 }
 
-void process(struct dt_iop_module_t *self,
-             struct dt_dev_pixelpipe_iop_t *piece,
+void process(dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
              const void *const i,
              void *const o,
              const dt_iop_roi_t *const roi_in,
@@ -362,8 +362,12 @@ void process(struct dt_iop_module_t *self,
 #ifdef USE_NEW_CL
 /* this version is adapted to the new global tiling mechanism. it no
  * longer does tiling by itself. */
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
 {
   dt_iop_atrous_data_t *d = piece->data;
   dt_aligned_pixel_t thrs[MAX_NUM_SCALES];
@@ -485,7 +489,7 @@ error:
 #else // ======== old, memory-hungry implementation ========================================================
 
 /* this version is adapted to the new global tiling mechanism. it no longer does tiling by itself. */
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in,
@@ -619,11 +623,11 @@ error:
 
 #endif // HAVE_OPENCL
 
-void tiling_callback(struct dt_iop_module_t *self,
-                     struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in,
                      const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
   dt_iop_atrous_data_t *d = piece->data;
   dt_aligned_pixel_t thrs[MAX_NUM_SCALES];
@@ -698,7 +702,7 @@ static inline void _apply_mix(dt_iop_module_t *self,
   *y = fminf(1.0f, fmaxf(0.0f, py + (mix - 1.0f) * (py - dp->y[ch][k])));
 }
 
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *params,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -733,7 +737,7 @@ void commit_params(struct dt_iop_module_t *self,
   d->octaves = MIN(BANDS, l);
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
@@ -756,7 +760,7 @@ void init_pipe(struct dt_iop_module_t *self,
   d->octaves = MIN(BANDS, l);
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1068,7 +1072,7 @@ static void reset_mix(dt_iop_module_t *self)
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   reset_mix(self);
 }
@@ -1761,7 +1765,7 @@ const dt_action_def_t _action_def_equalizer
       _action_elements_equalizer,
       _action_fallbacks_equalizer };
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_atrous_gui_data_t *g = IOP_GUI_ALLOC(atrous);
   const dt_iop_atrous_params_t *const p = self->default_params;
@@ -1800,8 +1804,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   // graph
   g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap
-                             (NULL, 
-                              0, 
+                             (NULL,
+                              0,
                               "plugins/darkroom/atrous/graphheight"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
 
@@ -1828,7 +1832,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->mix), "value-changed", G_CALLBACK(mix_callback), self);
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_atrous_gui_data_t *g = self->gui_data;
   dt_conf_set_int("plugins/darkroom/atrous/gui_channel", g->channel);

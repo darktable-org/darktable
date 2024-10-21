@@ -262,7 +262,7 @@ const char *aliases()
   return _("vignette|chromatic aberrations|distortion");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("correct lenses optical flaws"),
                                       _("corrective"),
@@ -1285,7 +1285,7 @@ static void _process_lf(dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-static int _process_cl_lf(struct dt_iop_module_t *self,
+static int _process_cl_lf(dt_iop_module_t *self,
                           dt_dev_pixelpipe_iop_t *piece,
                           cl_mem dev_in, cl_mem dev_out,
                           const dt_iop_roi_t *const roi_in,
@@ -1535,11 +1535,11 @@ error:
 }
 #endif
 
-static void _tiling_callback_lf(struct dt_iop_module_t *self,
-                                struct dt_dev_pixelpipe_iop_t *piece,
+static void _tiling_callback_lf(dt_iop_module_t *self,
+                                dt_dev_pixelpipe_iop_t *piece,
                                 const dt_iop_roi_t *roi_in,
                                 const dt_iop_roi_t *roi_out,
-                                struct dt_develop_tiling_t *tiling)
+                                dt_develop_tiling_t *tiling)
 {
   tiling->factor = 4.5f; // in + out + tmp + tmpbuf
   tiling->maxbuf = 1.5f;
@@ -1633,8 +1633,8 @@ static gboolean _distort_backtransform_lf(dt_iop_module_t *self,
 }
 
 // TODO: Shall we keep LF_MODIFY_TCA in the modifiers?
-static void _distort_mask_lf(struct dt_iop_module_t *self,
-                             struct dt_dev_pixelpipe_iop_t *piece,
+static void _distort_mask_lf(dt_iop_module_t *self,
+                             dt_dev_pixelpipe_iop_t *piece,
                              const float *const in,
                              float *const out,
                              const dt_iop_roi_t *const roi_in,
@@ -1706,8 +1706,8 @@ static void _distort_mask_lf(struct dt_iop_module_t *self,
   delete modifier;
 }
 
-static void _modify_roi_in_lf(struct dt_iop_module_t *self,
-                              struct dt_dev_pixelpipe_iop_t *piece,
+static void _modify_roi_in_lf(dt_iop_module_t *self,
+                              dt_dev_pixelpipe_iop_t *piece,
                               const dt_iop_roi_t *const roi_out,
                               dt_iop_roi_t *roi_in)
 {
@@ -1817,7 +1817,7 @@ DT_OMP_PRAGMA(barrier)
   delete modifier;
 }
 
-static void _commit_params_lf(struct dt_iop_module_t *self,
+static void _commit_params_lf(dt_iop_module_t *self,
                               dt_iop_lens_params_t *p,
                               dt_dev_pixelpipe_t *pipe,
                               dt_dev_pixelpipe_iop_t *piece)
@@ -1977,7 +1977,7 @@ static inline float _calc_vignette_spline(const float radius,
 }
 
 
-static void _preprocess_vignette(struct dt_iop_module_t *self,
+static void _preprocess_vignette(dt_iop_module_t *self,
                                  dt_dev_pixelpipe_iop_t *piece,
                                  const float *const data,
                                  float *vig,
@@ -2604,11 +2604,11 @@ static void _commit_params_vig(dt_iop_module_t *self,
   }
 }
 
-static void _tiling_callback_md(struct dt_iop_module_t *self,
-                                struct dt_dev_pixelpipe_iop_t *piece,
+static void _tiling_callback_md(dt_iop_module_t *self,
+                                dt_dev_pixelpipe_iop_t *piece,
                                 const dt_iop_roi_t *roi_in,
                                 const dt_iop_roi_t *roi_out,
-                                struct dt_develop_tiling_t *tiling)
+                                dt_develop_tiling_t *tiling)
 {
   tiling->factor = 4.5f; // in + out + tmp + tmpbuf
   tiling->maxbuf = 1.5f;
@@ -2618,11 +2618,11 @@ static void _tiling_callback_md(struct dt_iop_module_t *self,
   tiling->yalign = 1;
 }
 
-static void _tiling_callback_vg(struct dt_iop_module_t *self,
-                                struct dt_dev_pixelpipe_iop_t *piece,
+static void _tiling_callback_vg(dt_iop_module_t *self,
+                                dt_dev_pixelpipe_iop_t *piece,
                                 const dt_iop_roi_t *roi_in,
                                 const dt_iop_roi_t *roi_out,
-                                struct dt_develop_tiling_t *tiling)
+                                dt_develop_tiling_t *tiling)
 {
   tiling->factor = 2.0f;
   tiling->maxbuf = 1.0f;
@@ -2708,8 +2708,8 @@ static gboolean _distort_backtransform_md(dt_iop_module_t *self,
   return TRUE;
 }
 
-static void _distort_mask_md(struct dt_iop_module_t *self,
-                             struct dt_dev_pixelpipe_iop_t *piece,
+static void _distort_mask_md(dt_iop_module_t *self,
+                             dt_dev_pixelpipe_iop_t *piece,
                              const float *const in,
                              float *const out,
                              const dt_iop_roi_t *const roi_in,
@@ -2754,7 +2754,7 @@ static void _distort_mask_md(struct dt_iop_module_t *self,
   }
 }
 
-static void _process_md(struct dt_iop_module_t *self,
+static void _process_md(dt_iop_module_t *self,
                         dt_dev_pixelpipe_iop_t *piece,
                         const void *const ivoid,
                         void *const ovoid,
@@ -2842,7 +2842,7 @@ static void _process_md(struct dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-static int _process_cl_md(struct dt_iop_module_t *self,
+static int _process_cl_md(dt_iop_module_t *self,
                           dt_dev_pixelpipe_iop_t *piece,
                           cl_mem dev_in,
                           cl_mem dev_out,
@@ -2924,8 +2924,8 @@ error:
 }
 #endif
 
-static void _modify_roi_in_md(struct dt_iop_module_t *self,
-                              struct dt_dev_pixelpipe_iop_t *piece,
+static void _modify_roi_in_md(dt_iop_module_t *self,
+                              dt_dev_pixelpipe_iop_t *piece,
                               const dt_iop_roi_t *const roi_out,
                               dt_iop_roi_t *roi_in)
 {
@@ -3017,8 +3017,8 @@ static void _modify_roi_in_md(struct dt_iop_module_t *self,
   roi_in->height = CLAMP(roi_in->height, 1, (int)floorf(orig_h) - roi_in->y);
 }
 
-static void _modify_roi_in_vg(struct dt_iop_module_t *self,
-                              struct dt_dev_pixelpipe_iop_t *piece,
+static void _modify_roi_in_vg(dt_iop_module_t *self,
+                              dt_dev_pixelpipe_iop_t *piece,
                               const dt_iop_roi_t *const roi_out,
                               dt_iop_roi_t *roi_in)
 {
@@ -3073,7 +3073,7 @@ void process(dt_iop_module_t *self,
 
 
 #ifdef HAVE_OPENCL
-cl_int _preprocess_vignette_cl(struct dt_iop_module_t *self,
+cl_int _preprocess_vignette_cl(dt_iop_module_t *self,
                                dt_dev_pixelpipe_iop_t *piece,
                                cl_mem dev_in,
                                cl_mem dev_vig,
@@ -3107,7 +3107,7 @@ cl_int _preprocess_vignette_cl(struct dt_iop_module_t *self,
   return err;
 }
 
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
@@ -3164,11 +3164,11 @@ int process_cl(struct dt_iop_module_t *self,
 }
 #endif
 
-void tiling_callback(struct dt_iop_module_t *self,
-                     struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in,
                      const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
 
@@ -3220,8 +3220,8 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   return FALSE;
 }
 
-void distort_mask(struct dt_iop_module_t *self,
-                  struct dt_dev_pixelpipe_iop_t *piece,
+void distort_mask(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
                   const float *const in,
                   float *const out,
                   const dt_iop_roi_t *const roi_in,
@@ -3241,8 +3241,8 @@ void distort_mask(struct dt_iop_module_t *self,
     dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 }
 
-void modify_roi_in(struct dt_iop_module_t *self,
-                   struct dt_dev_pixelpipe_iop_t *piece,
+void modify_roi_in(dt_iop_module_t *self,
+                   dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *const roi_out,
                    dt_iop_roi_t *roi_in)
 {
@@ -3262,7 +3262,7 @@ void modify_roi_in(struct dt_iop_module_t *self,
 
 // _get_method returns the method to use based on the provided
 // preferred method and available methods.
-const dt_iop_lens_method_t _get_method(struct dt_iop_module_t *self,
+const dt_iop_lens_method_t _get_method(dt_iop_module_t *self,
                                        dt_iop_lens_method_t method)
 {
   // currently we have only two methods. If new methods will be added
@@ -3281,7 +3281,7 @@ const dt_iop_lens_method_t _get_method(struct dt_iop_module_t *self,
   return method;
 }
 
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -3326,14 +3326,14 @@ void commit_params(struct dt_iop_module_t *self,
    _commit_params_vig(self, p, pipe, piece);
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_lens_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -4298,7 +4298,7 @@ static void _autoscale_pressed_lf(GtkWidget *button, dt_iop_module_t *self)
 
 /* -- Lensfun GUI end -- */
 
-static void _display_errors(struct dt_iop_module_t *self)
+static void _display_errors(dt_iop_module_t *self)
 {
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
@@ -4438,7 +4438,7 @@ static void _visualize_callback(GtkWidget *quad,
   dt_dev_reprocess_center(self->dev);
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_lens_gui_data_t *g = IOP_GUI_ALLOC(lens);
 
@@ -4691,8 +4691,7 @@ void gui_init(struct dt_iop_module_t *self)
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _have_corrections_done, self);
 }
 
-void gui_focus(struct dt_iop_module_t *self,
-               gboolean in)
+void gui_focus(dt_iop_module_t *self, gboolean in)
 {
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   if(!in)
@@ -4706,7 +4705,7 @@ void gui_focus(struct dt_iop_module_t *self,
   _display_errors(self);
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   // let GUI elements reflect params
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
@@ -4777,7 +4776,7 @@ void gui_update(struct dt_iop_module_t *self)
   gui_changed(self, NULL, NULL);
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   DT_CONTROL_SIGNAL_DISCONNECT(_have_corrections_done, self);
   DT_CONTROL_SIGNAL_DISCONNECT(_develop_ui_pipe_finished_callback, self);

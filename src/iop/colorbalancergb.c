@@ -176,7 +176,7 @@ const char *aliases()
   return _("offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance|saturation");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("color grading tools using alpha masks to separate\n"
                                         "shadows, mid-tones and highlights"),
@@ -578,7 +578,7 @@ static inline void opacity_masks(const float x,
   }
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -587,7 +587,7 @@ void process(struct dt_iop_module_t *self,
 {
   dt_iop_colorbalancergb_data_t *d = piece->data;
   dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
-  const struct dt_iop_order_iccprofile_info_t *const work_profile
+  const dt_iop_order_iccprofile_info_t *const work_profile
       = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
   if(work_profile == NULL) return; // no point
 
@@ -947,7 +947,7 @@ void process(struct dt_iop_module_t *self,
 
 
 #if HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in,
@@ -970,7 +970,7 @@ int process_cl(struct dt_iop_module_t *self,
   const int height = roi_in->height;
 
   // Get working color profile
-  const struct dt_iop_order_iccprofile_info_t *const work_profile
+  const dt_iop_order_iccprofile_info_t *const work_profile
       = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
   if(work_profile == NULL) return err; // no point
 
@@ -1087,7 +1087,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 }
 #endif
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorbalancergb_data_t *d = piece->data;
@@ -1176,7 +1176,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // Check if the RGB working profile has changed in pipe
   // WARNING: this function is not triggered upon working profile change,
   // so the gamut boundaries are wrong until we change some param in this module
-  struct dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
+  dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
   if(work_profile == NULL) return;
   if(work_profile != d->work_profile)
   {
@@ -1264,7 +1264,7 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 void pipe_RGB_to_Ych(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, const dt_aligned_pixel_t RGB,
                      dt_aligned_pixel_t Ych)
 {
-  const struct dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, pipe);
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, pipe);
   if(work_profile == NULL) return; // no point
 
   dt_aligned_pixel_t XYZ_D50 = { 0.f };
@@ -2068,7 +2068,7 @@ void gui_init(dt_iop_module_t *self)
 }
 
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   IOP_GUI_FREE;
 }

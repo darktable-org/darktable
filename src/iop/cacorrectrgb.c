@@ -164,7 +164,7 @@ const char *name()
   return _("chromatic aberrations");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("correct chromatic aberrations"),
                                       _("corrective"),
@@ -660,7 +660,7 @@ static void reduce_chromatic_aberrations(const float* const restrict in,
   reduce_artifacts(in, width, height, sigma, guide, safety, out);
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,

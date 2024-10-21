@@ -79,14 +79,14 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
                                 _("module for setting pixel aspect ratio\n\n"
                                 "useful for certain sensor types and anamorphic desqueeze"),
-                                _("corrective"), 
-                                _("linear, RGB, scene-referred"), 
-                                _("linear, RGB"), 
+                                _("corrective"),
+                                _("linear, RGB, scene-referred"),
+                                _("linear, RGB"),
                                 _("linear, RGB, scene-referred"));
 }
 
@@ -150,8 +150,8 @@ gboolean distort_backtransform(dt_iop_module_t *self,
 }
 
 void distort_mask(
-        struct dt_iop_module_t *self,
-        struct dt_dev_pixelpipe_iop_t *piece,
+        dt_iop_module_t *self,
+        dt_dev_pixelpipe_iop_t *piece,
         const float *const in,
         float *const out,
         const dt_iop_roi_t *const roi_in,
@@ -256,7 +256,7 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 void gui_init(dt_iop_module_t *self)
 {
   IOP_GUI_ALLOC(scalepixels);
-  
+
   GtkWidget *w = dt_bauhaus_slider_from_params(self, "pixel_aspect_ratio");
   gtk_widget_set_tooltip_text(w, _("adjust pixel aspect ratio"));
 }

@@ -119,7 +119,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("adjust black, white and mid-gray points in RGB color space"),
                                       _("corrective and creative"),
@@ -128,7 +128,7 @@ const char **description(struct dt_iop_module_t *self)
                                       _("non-linear, RGB, display-referred"));
 }
 
-static void _turn_select_region_off(struct dt_iop_module_t *self)
+static void _turn_select_region_off(dt_iop_module_t *self)
 {
   dt_iop_rgblevels_gui_data_t *g = self->gui_data;
   if(g)
@@ -138,7 +138,7 @@ static void _turn_select_region_off(struct dt_iop_module_t *self)
   }
 }
 
-static void _turn_selregion_picker_off(struct dt_iop_module_t *self)
+static void _turn_selregion_picker_off(dt_iop_module_t *self)
 {
   _turn_select_region_off(self);
   dt_iop_color_picker_reset(self, TRUE);
@@ -903,12 +903,12 @@ void gui_update(dt_iop_module_t *self)
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
+void gui_focus(dt_iop_module_t *self, gboolean in)
 {
   if(!in) _turn_select_region_off(self);
 }
 
-void gui_reset(struct dt_iop_module_t *self)
+void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_rgblevels_gui_data_t *g = self->gui_data;
 
@@ -952,7 +952,7 @@ void cleanup_global(dt_iop_module_so_t *self)
   self->data = NULL;
 }
 
-void change_image(struct dt_iop_module_t *self)
+void change_image(dt_iop_module_t *self)
 {
   dt_iop_rgblevels_gui_data_t *g = self->gui_data;
 
@@ -1144,7 +1144,7 @@ void gui_cleanup(dt_iop_module_t *self)
   IOP_GUI_FREE;
 }
 
-static void _get_selected_area(struct dt_iop_module_t *self,
+static void _get_selected_area(dt_iop_module_t *self,
                                dt_dev_pixelpipe_iop_t *piece,
                                dt_iop_rgblevels_gui_data_t *g,
                                const dt_iop_roi_t *const roi_in,

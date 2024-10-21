@@ -100,7 +100,7 @@ typedef enum _grab_region_t
 } _grab_region_t;
 
 /* calculate the aspect ratios for current image */
-static void keystone_type_populate(struct dt_iop_module_t *self, gboolean with_applied, int select);
+static void keystone_type_populate(dt_iop_module_t *self, gboolean with_applied, int select);
 
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
@@ -353,7 +353,7 @@ const char *aliases()
   return _("reframe|perspective|keystone|distortion");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("change the framing and correct the perspective"),
                                       _("corrective or creative"),
@@ -391,7 +391,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-static int gui_has_focus(struct dt_iop_module_t *self)
+static int gui_has_focus(dt_iop_module_t *self)
 {
   return (self->dev->gui_module == self
           && dt_dev_modulegroups_test_activated(darktable.develop));
@@ -618,8 +618,8 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   return TRUE;
 }
 
-void distort_mask(struct dt_iop_module_t *self,
-                  struct dt_dev_pixelpipe_iop_t *piece,
+void distort_mask(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
                   const float *const in,
                   float *const out,
                   const dt_iop_roi_t *const roi_in,
@@ -688,7 +688,7 @@ void distort_mask(struct dt_iop_module_t *self,
   }
 }
 
-static int _iop_clipping_set_max_clip(struct dt_iop_module_t *self)
+static int _iop_clipping_set_max_clip(dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = self->gui_data;
   dt_iop_clipping_params_t *p = self->params;
@@ -727,7 +727,7 @@ static int _iop_clipping_set_max_clip(struct dt_iop_module_t *self)
   return 1;
 }
 
-void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
+void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *roi_in_orig)
 {
   dt_iop_roi_t roi_in_d = *roi_in_orig;
@@ -927,7 +927,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   d->ciy = roi_out->y;
 }
 
-void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
 {
   dt_iop_clipping_data_t *d = piece->data;
@@ -1002,7 +1002,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
 // 3rd (final) pass: you get this input region (may be different from what was requested above),
 // do your best to fill the output region!
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   if(!dt_iop_have_required_input_format(4/*need full-color pixels*/, self, piece->colors,
@@ -1078,7 +1078,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_clipping_data_t *d = piece->data;
@@ -1183,7 +1183,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 }
 
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)p1;
@@ -1362,7 +1362,7 @@ static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *
   g->clip_max_pipe_hash = 0;
 }
 
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
+void gui_focus(dt_iop_module_t *self, gboolean in)
 {
   dt_iop_clipping_gui_data_t *g = self->gui_data;
   dt_iop_clipping_params_t *p = self->params;
@@ -1405,12 +1405,12 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
 }
 
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_clipping_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
@@ -1876,7 +1876,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   if(w == g->crop_auto) dt_control_queue_redraw_center();
 }
 
-void gui_reset(struct dt_iop_module_t *self)
+void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = self->gui_data;
   /* reset aspect preset to default */
@@ -1923,7 +1923,7 @@ static void keystone_type_changed(GtkWidget *combo, dt_iop_module_t *self)
   dt_control_queue_redraw_center();
 }
 
-static void keystone_type_populate(struct dt_iop_module_t *self, gboolean with_applied, int select)
+static void keystone_type_populate(dt_iop_module_t *self, gboolean with_applied, int select)
 {
   dt_iop_clipping_gui_data_t *g = self->gui_data;
   dt_iop_clipping_params_t *p = self->params;
@@ -1949,7 +1949,7 @@ static void keystone_type_populate(struct dt_iop_module_t *self, gboolean with_a
   keystone_type_changed(g->keystone_type, self);
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = self->gui_data;
   dt_iop_clipping_params_t *p = self->params;
@@ -2082,7 +2082,7 @@ static gchar *format_aspect(gchar *original, int adim, int bdim)
   return g_strdup_printf("%s  %4.2f", original, (float)adim / (float)bdim);
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = IOP_GUI_ALLOC(clipping);
 
@@ -2290,7 +2290,7 @@ static void free_aspect(gpointer data)
   g_free(aspect);
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = self->gui_data;
   g_list_free_full(g->aspect_list, free_aspect);
@@ -3341,7 +3341,7 @@ int button_pressed(dt_iop_module_t *self,
     return 0;
 }
 
-GSList *mouse_actions(struct dt_iop_module_t *self)
+GSList *mouse_actions(dt_iop_module_t *self)
 {
   GSList *lm = NULL;
   lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, 0, _("[%s on borders] crop"), self->name());

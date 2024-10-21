@@ -104,7 +104,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
     (self,
@@ -283,8 +283,8 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   return TRUE;
 }
 
-void distort_mask(struct dt_iop_module_t *self,
-                  struct dt_dev_pixelpipe_iop_t *piece,
+void distort_mask(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
                   const float *const in,
                   float *const out,
                   const dt_iop_roi_t *const roi_in,
@@ -299,8 +299,8 @@ void distort_mask(struct dt_iop_module_t *self,
                           roi_in->width, roi_in->height, stride, d->orientation);
 }
 
-void modify_roi_out(struct dt_iop_module_t *self,
-                    struct dt_dev_pixelpipe_iop_t *piece,
+void modify_roi_out(dt_iop_module_t *self,
+                    dt_dev_pixelpipe_iop_t *piece,
                     dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *roi_in)
 {
@@ -315,8 +315,8 @@ void modify_roi_out(struct dt_iop_module_t *self,
   }
 }
 
-void modify_roi_in(struct dt_iop_module_t *self,
-                   struct dt_dev_pixelpipe_iop_t *piece,
+void modify_roi_in(dt_iop_module_t *self,
+                   dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *roi_out,
                    dt_iop_roi_t *roi_in)
 {
@@ -362,7 +362,7 @@ void modify_roi_in(struct dt_iop_module_t *self,
 
 // 3rd (final) pass: you get this input region (may be different from
 // what was requested above), do your best to fill the output region!
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -381,7 +381,7 @@ void process(struct dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
@@ -417,7 +417,7 @@ void cleanup_global(dt_iop_module_so_t *self)
   self->data = NULL;
 }
 
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -434,14 +434,14 @@ void commit_params(struct dt_iop_module_t *self,
     piece->enabled = 0;
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_flip_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -589,7 +589,7 @@ static void _flip_v(GtkWidget *widget, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   self->gui_data = NULL;
   dt_iop_flip_params_t *p = self->params;
@@ -617,7 +617,7 @@ void gui_init(struct dt_iop_module_t *self)
                     self->widget);
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   self->gui_data = NULL;
 }
