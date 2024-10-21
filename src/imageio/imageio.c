@@ -1631,9 +1631,6 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
     if(!_image_handled(ret))
       ret = dt_imageio_open_pnm(img, filename, buf);
     
-    if(!_image_handled(ret))
-      ret = dt_imageio_open_pfm(img, filename, buf);
-    
     // final fallback that tries to open file via GraphicsMagick or ImageMagick
     if(!_image_handled(ret))
       ret = dt_imageio_open_exotic(img, filename, buf);
