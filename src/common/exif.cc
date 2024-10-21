@@ -1802,6 +1802,8 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     // Read embedded color matrix and DNG related tags.
     if(FIND_EXIF_TAG("Exif.Image.DNGVersion"))
     {
+      gboolean missing_sample = FALSE;
+
       // initialize matrixes and data with noop / defaults
       float CM[3][9];
       float FM[3][9];
@@ -1933,12 +1935,13 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       {
         const gboolean anymat = has_CM[k] || has_CC[k] || has_FM[k];
 
-        // Currently dt does not support DT_LS_Other so we do a fallback but backreport and request a github issue
+        // Currently dt does not support DT_LS_Other so we do a fallback but backreport and request samples
         if(illu[k] == DT_LS_Other)
         {
           dt_control_log(_("detected OtherIlluminant in `%s`, please report via darktable github"), img->filename);
           dt_print(DT_DEBUG_IMAGEIO, "detected not-implemented OtherIlluminant in `%s`, please report via darktable github", img->filename);
           illu[k] = DT_LS_D65;
+          missing_sample = TRUE;
         }
 
         if(illu[k] != DT_LS_Unknown)
@@ -1986,6 +1989,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       {
         dt_control_log(_("special exif illuminants in `%s`, please report via darktable github"), img->filename);
         dt_print(DT_DEBUG_ALWAYS, "special exif illuminants in `%s`, please report via darktable github", img->filename);
+        missing_sample = TRUE;
       }
 
 
@@ -2012,6 +2016,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         if(forward_suggested)
         {
           dt_control_log(_("forward matrix in `%s`, please report via darktable github"), img->filename);
+          missing_sample = TRUE;
         }
         dt_print(DT_DEBUG_IMAGEIO,
           "[exif] %s%s%s: selected from  [1] %s (%iK), [2] %s (%iK), [3] %s (%iK)",
@@ -2030,6 +2035,14 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
         mat3mul(img->d65_color_matrix, illuminant_data[illuminant].CA, cameratoXYZ);
         _print_matrix_data("dt_image_t d65_color_matrix", 0, img->d65_color_matrix);
+      }
+      if(missing_sample)
+      {
+        guint tagid = 0;
+        char tagname[32];
+        snprintf(tagname, sizeof(tagname), "darktable|issue|no-samples");
+        dt_tag_new(tagname, &tagid);
+        dt_tag_attach(tagid, img->id, FALSE, FALSE);
       }
     }
 
