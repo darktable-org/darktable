@@ -38,14 +38,6 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img,
                                         const char *filename,
                                         dt_mipmap_buffer_t *mbuf)
 {
-  const char *ext = filename + strlen(filename);
-
-  while(*ext != '.' && ext > filename)
-    ext--;
-
-  if(strcasecmp(ext, ".pfm"))
-    return DT_IMAGEIO_LOAD_FAILED;
-
   FILE *f = g_fopen(filename, "rb");
   if(!f)
     return DT_IMAGEIO_FILE_NOT_FOUND;
