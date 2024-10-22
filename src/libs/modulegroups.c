@@ -1043,7 +1043,7 @@ static gboolean _lib_modulegroups_upd_gui_thread(gpointer user_data)
 /* this is a proxy function so it might be called from another thread */
 static void _lib_modulegroups_set(dt_lib_module_t *self, uint32_t group)
 {
-  _set_gui_thread_t *params = (_set_gui_thread_t *)malloc(sizeof(_set_gui_thread_t));
+  _set_gui_thread_t *params = malloc(sizeof(_set_gui_thread_t));
   if(!params) return;
   params->self = self;
   params->group = group;
@@ -1053,7 +1053,7 @@ static void _lib_modulegroups_set(dt_lib_module_t *self, uint32_t group)
 /* this is a proxy function so it might be called from another thread */
 static void _lib_modulegroups_update_visibility_proxy(dt_lib_module_t *self)
 {
-  _set_gui_thread_t *params = (_set_gui_thread_t *)malloc(sizeof(_set_gui_thread_t));
+  _set_gui_thread_t *params = malloc(sizeof(_set_gui_thread_t));
   if(!params) return;
   params->self = self;
   g_main_context_invoke(NULL, _lib_modulegroups_upd_gui_thread, params);

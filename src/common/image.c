@@ -738,7 +738,7 @@ static void _image_set_location(GList *imgs,
 
     if(undo_on)
     {
-      dt_undo_geotag_t *undogeotag = (dt_undo_geotag_t *)malloc(sizeof(dt_undo_geotag_t));
+      dt_undo_geotag_t *undogeotag = malloc(sizeof(dt_undo_geotag_t));
       undogeotag->imgid = imgid;
       dt_image_get_location(imgid, &undogeotag->before);
 
@@ -800,7 +800,7 @@ static void _image_set_images_locations(const GList *img,
     const dt_image_geoloc_t *geoloc = &g_array_index(gloc, dt_image_geoloc_t, i);
     if(undo_on)
     {
-      dt_undo_geotag_t *undogeotag = (dt_undo_geotag_t *)malloc(sizeof(dt_undo_geotag_t));
+      dt_undo_geotag_t *undogeotag = malloc(sizeof(dt_undo_geotag_t));
       undogeotag->imgid = imgid;
       dt_image_get_location(imgid, &undogeotag->before);
 

@@ -162,7 +162,7 @@ dt_gaussian_t *dt_gaussian_init(const int width,    // width of input image
                                 const float sigma,  // gaussian sigma
                                 const int order)    // order of gaussian blur
 {
-  dt_gaussian_t *g = (dt_gaussian_t *)malloc(sizeof(dt_gaussian_t));
+  dt_gaussian_t *g = malloc(sizeof(dt_gaussian_t));
   if(!g) return NULL;
 
   g->width = width;
@@ -776,7 +776,7 @@ void dt_gaussian_fast_blur(float *in,
 #ifdef HAVE_OPENCL
 dt_gaussian_cl_global_t *dt_gaussian_init_cl_global()
 {
-  dt_gaussian_cl_global_t *g = (dt_gaussian_cl_global_t *)malloc(sizeof(dt_gaussian_cl_global_t));
+  dt_gaussian_cl_global_t *g = malloc(sizeof(dt_gaussian_cl_global_t));
 
   const int program = 6; // gaussian.cl, from programs.conf
   g->kernel_gaussian_column_1c = dt_opencl_create_kernel(program, "gaussian_column_1c");
@@ -816,7 +816,7 @@ dt_gaussian_cl_t *dt_gaussian_init_cl(const int devid,
 
   if(!(channels == 1 || channels == 2 || channels == 4)) return NULL;
 
-  dt_gaussian_cl_t *g = (dt_gaussian_cl_t *)malloc(sizeof(dt_gaussian_cl_t));
+  dt_gaussian_cl_t *g = malloc(sizeof(dt_gaussian_cl_t));
   if(!g) return NULL;
 
   g->global = darktable.opencl->gaussian;

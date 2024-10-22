@@ -428,8 +428,7 @@ void init_presets(dt_iop_module_so_t *self)
 
 void init_global(dt_iop_module_so_t *module)
 {
-  dt_iop_negadoctor_global_data_t *gd
-      = (dt_iop_negadoctor_global_data_t *)malloc(sizeof(dt_iop_negadoctor_global_data_t));
+  dt_iop_negadoctor_global_data_t *gd = malloc(sizeof(dt_iop_negadoctor_global_data_t));
 
   module->data = gd;
   const int program = 30; // negadoctor.cl, from programs.conf

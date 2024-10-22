@@ -97,7 +97,7 @@ static void _dropdown_changed(GtkComboBox *widget, gpointer user_data)
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_viewswitcher_t *d = (dt_lib_viewswitcher_t *)g_malloc0(sizeof(dt_lib_viewswitcher_t));
+  dt_lib_viewswitcher_t *d = g_malloc0(sizeof(dt_lib_viewswitcher_t));
   self->data = (void *)d;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);

@@ -289,8 +289,7 @@ void init_global(dt_iop_module_so_t *module)
 {
   const int program = 37; // colorequal.cl, from programs.conf
 
-  dt_iop_colorequal_global_data_t *gd
-      = (dt_iop_colorequal_global_data_t *)malloc(sizeof(dt_iop_colorequal_global_data_t));
+  dt_iop_colorequal_global_data_t *gd = malloc(sizeof(dt_iop_colorequal_global_data_t));
   module->data = gd;
 
   gd->ce_init_covariance = dt_opencl_create_kernel(program, "init_covariance");

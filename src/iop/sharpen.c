@@ -406,8 +406,7 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 7; // sharpen.cl, from programs.conf
-  dt_iop_sharpen_global_data_t *gd
-      = (dt_iop_sharpen_global_data_t *)malloc(sizeof(dt_iop_sharpen_global_data_t));
+  dt_iop_sharpen_global_data_t *gd = malloc(sizeof(dt_iop_sharpen_global_data_t));
   module->data = gd;
   gd->kernel_sharpen_hblur = dt_opencl_create_kernel(program, "sharpen_hblur");
   gd->kernel_sharpen_vblur = dt_opencl_create_kernel(program, "sharpen_vblur");

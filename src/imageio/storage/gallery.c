@@ -188,7 +188,7 @@ static void title_changed_callback(GtkEntry *entry,
 
 void gui_init(dt_imageio_module_storage_t *self)
 {
-  gallery_t *d = (gallery_t *)malloc(sizeof(gallery_t));
+  gallery_t *d = malloc(sizeof(gallery_t));
   self->gui_data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);

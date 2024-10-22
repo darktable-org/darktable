@@ -190,8 +190,7 @@ static gboolean _rating_update(dt_lib_filtering_rule_t *rule)
 static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
                                        const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
-  _widgets_rating_legacy_t *rating_legacy
-      = (_widgets_rating_legacy_t *)g_malloc0(sizeof(_widgets_rating_legacy_t));
+  _widgets_rating_legacy_t *rating_legacy = g_malloc0(sizeof(_widgets_rating_legacy_t));
   rating_legacy->rule = rule;
 
   rating_legacy->overlay = gtk_overlay_new();

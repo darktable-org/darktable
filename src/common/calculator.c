@@ -72,7 +72,7 @@ static token_t *_get_token(parser_state_t *self)
 {
   if(!self->p) return NULL;
 
-  token_t *token = (token_t *)malloc(sizeof(token_t));
+  token_t *token = malloc(sizeof(token_t));
 
   for(; *self->p; self->p++)
   {
@@ -327,7 +327,7 @@ double dt_calculator_solve(const double x, const char *formula)
   if(formula == NULL || *formula == '\0') return NAN;
 
   gchar *dotformula = g_strdup(formula);
-  parser_state_t *self = (parser_state_t *)malloc(sizeof(parser_state_t));
+  parser_state_t *self = malloc(sizeof(parser_state_t));
 
   self->p = g_strdelimit(dotformula, ",", '.');
   self->x = x;

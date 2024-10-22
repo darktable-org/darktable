@@ -933,7 +933,7 @@ static void _popup_date_type_changed(GtkWidget *w, GtkDarktableRangeSelect *rang
 
 static void _popup_date_init(GtkDarktableRangeSelect *range)
 {
-  _range_date_popup *pop = (_range_date_popup *)g_malloc0(sizeof(_range_date_popup));
+  _range_date_popup *pop = g_malloc0(sizeof(_range_date_popup));
   range->date_popup = pop;
   pop->popup = gtk_popover_new(range->band);
   GtkWidget *vbox0 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -1856,7 +1856,7 @@ dt_range_bounds_t dtgtk_range_select_get_selection(GtkDarktableRangeSelect *rang
 
 void dtgtk_range_select_add_block(GtkDarktableRangeSelect *range, const double value_r, const int count)
 {
-  _range_block *block = (_range_block *)g_malloc0(sizeof(_range_block));
+  _range_block *block = g_malloc0(sizeof(_range_block));
   block->value_r = value_r;
   block->value2_r = value_r;
   block->bounds = DT_RANGE_BOUND_FIXED;
@@ -1867,7 +1867,7 @@ void dtgtk_range_select_add_block(GtkDarktableRangeSelect *range, const double v
 void dtgtk_range_select_add_range_block(GtkDarktableRangeSelect *range, const double min_r, const double max_r,
                                         const dt_range_bounds_t bounds, gchar *txt, const int count)
 {
-  _range_block *block = (_range_block *)g_malloc0(sizeof(_range_block));
+  _range_block *block = g_malloc0(sizeof(_range_block));
   block->value_r = min_r;
   block->value2_r = max_r;
   block->bounds = bounds;
@@ -1901,7 +1901,7 @@ void dtgtk_range_select_set_band_func(GtkDarktableRangeSelect *range, DTGTKTrans
 void dtgtk_range_select_add_icon(GtkDarktableRangeSelect *range, const int posx, const double value_r,
                                  DTGTKCairoPaintIconFunc paint, gint flags, void *data)
 {
-  _range_icon *icon = (_range_icon *)g_malloc0(sizeof(_range_icon));
+  _range_icon *icon = g_malloc0(sizeof(_range_icon));
   icon->posx = posx;
   icon->value_r = value_r;
   icon->paint = paint;
@@ -1920,7 +1920,7 @@ void dtgtk_range_select_reset_icons(GtkDarktableRangeSelect *range)
 
 void dtgtk_range_select_add_marker(GtkDarktableRangeSelect *range, const double value_r, const gboolean magnetic)
 {
-  _range_marker *mark = (_range_marker *)g_malloc0(sizeof(_range_marker));
+  _range_marker *mark = g_malloc0(sizeof(_range_marker));
   mark->value_r = value_r;
   mark->magnetic = magnetic;
 

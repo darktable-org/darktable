@@ -131,7 +131,7 @@ int position(const dt_lib_module_t *self)
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_select_t *d = (dt_lib_select_t *)malloc(sizeof(dt_lib_select_t));
+  dt_lib_select_t *d = malloc(sizeof(dt_lib_select_t));
   self->data = d;
   self->widget = gtk_grid_new();
 

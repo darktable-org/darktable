@@ -1001,8 +1001,7 @@ static void _filname_pattern_entry_changed_callback(GtkEntry *entry,
 
 void gui_init(dt_imageio_module_storage_t *self)
 {
-  self->gui_data =
-    (dt_storage_piwigo_gui_data_t *)g_malloc0(sizeof(dt_storage_piwigo_gui_data_t));
+  self->gui_data = g_malloc0(sizeof(dt_storage_piwigo_gui_data_t));
   dt_storage_piwigo_gui_data_t *ui = self->gui_data;
 
   ui->albums = NULL;
@@ -1283,7 +1282,7 @@ int store(dt_imageio_module_storage_t *self,
     dt_control_log(_("not logged in to Piwigo server!"));
     return 1;
   }
-    
+
   gint result = 0;
   gint skipped = 0;
 

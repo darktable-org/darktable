@@ -282,7 +282,7 @@ dt_filmid_t dt_film_import(const char *dirname)
   GError *error = NULL;
 
   /* initialize a film object*/
-  dt_film_t *film = (dt_film_t *)malloc(sizeof(dt_film_t));
+  dt_film_t *film = malloc(sizeof(dt_film_t));
   dt_film_init(film);
 
   dt_film_new(film, dirname);

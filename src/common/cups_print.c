@@ -299,7 +299,7 @@ GList *dt_get_papers(const dt_printer_info_t *printer)
               else
                 g_strlcpy(common_name, size.media, sizeof(common_name));
 
-              dt_paper_info_t *paper = (dt_paper_info_t*)malloc(sizeof(dt_paper_info_t));
+              dt_paper_info_t *paper = malloc(sizeof(dt_paper_info_t));
               g_strlcpy(paper->name, size.media, sizeof(paper->name));
               g_strlcpy(paper->common_name, common_name, sizeof(paper->common_name));
               paper->width = (double)size.width / 100.0;
@@ -337,7 +337,7 @@ GList *dt_get_papers(const dt_printer_info_t *printer)
     {
       if(size->width!=0 && size->length!=0 && !paper_exists(result, size->name))
       {
-        dt_paper_info_t *paper = (dt_paper_info_t*)malloc(sizeof(dt_paper_info_t));
+        dt_paper_info_t *paper = malloc(sizeof(dt_paper_info_t));
         g_strlcpy(paper->name, size->name, MAX_NAME);
         g_strlcpy(paper->common_name, size->name, MAX_NAME);
         paper->width = (double)dt_pdf_point_to_mm(size->width);
@@ -379,7 +379,7 @@ GList *dt_get_media_type(const dt_printer_info_t *printer)
 
         for(int k=0; k<opt->num_choices; k++)
         {
-          dt_medium_info_t *media = (dt_medium_info_t*)malloc(sizeof(dt_medium_info_t));
+          dt_medium_info_t *media = malloc(sizeof(dt_medium_info_t));
           g_strlcpy(media->name, choice->choice, MAX_NAME);
           g_strlcpy(media->common_name, choice->text, MAX_NAME);
           result = g_list_prepend (result, media);

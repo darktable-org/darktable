@@ -311,7 +311,7 @@ void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t sign
 
   dt_signal_description *signal_description = &_signal_description[signal];
 
-  _signal_param_t *params = (_signal_param_t *)malloc(sizeof(_signal_param_t));
+  _signal_param_t *params = malloc(sizeof(_signal_param_t));
   if(!params) return;
 
   GValue *instance_and_params = calloc(1 + signal_description->n_params, sizeof(GValue));

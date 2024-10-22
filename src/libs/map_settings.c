@@ -81,7 +81,7 @@ static void _map_source_changed(GtkWidget *widget, gpointer data)
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_map_settings_t *d = (dt_lib_map_settings_t *)malloc(sizeof(dt_lib_map_settings_t));
+  dt_lib_map_settings_t *d = malloc(sizeof(dt_lib_map_settings_t));
   self->data = d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 

@@ -333,7 +333,7 @@ GList *dt_noiseprofile_get_matching(const dt_image_t *cimg)
             json_reader_end_element(reader);
 
             // everything worked out, add tmp_profile to result
-            dt_noiseprofile_t *new_profile = (dt_noiseprofile_t *)malloc(sizeof(dt_noiseprofile_t));
+            dt_noiseprofile_t *new_profile = malloc(sizeof(dt_noiseprofile_t));
             *new_profile = tmp_profile;
             result = g_list_prepend(result, new_profile);
 

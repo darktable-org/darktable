@@ -275,7 +275,7 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module,
   else
   {
     // we create the circle
-    dt_masks_point_circle_t *circle = (malloc(sizeof(dt_masks_point_circle_t)));
+    dt_masks_point_circle_t *circle = malloc(sizeof(dt_masks_point_circle_t));
 
     // we change the center value
     float pts[2] = { pzx * wd, pzy * ht };

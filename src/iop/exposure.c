@@ -689,8 +689,7 @@ void gui_update(struct dt_iop_module_t *self)
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 2; // from programs.conf: basic.cl
-  dt_iop_exposure_global_data_t *gd
-      = (dt_iop_exposure_global_data_t *)malloc(sizeof(dt_iop_exposure_global_data_t));
+  dt_iop_exposure_global_data_t *gd = malloc(sizeof(dt_iop_exposure_global_data_t));
   module->data = gd;
   gd->kernel_exposure = dt_opencl_create_kernel(program, "exposure");
 }

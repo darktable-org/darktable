@@ -92,9 +92,9 @@ void dt_dev_init(dt_develop_t *dev,
 
   if(dev->gui_attached)
   {
-    dev->full.pipe = (dt_dev_pixelpipe_t *)malloc(sizeof(dt_dev_pixelpipe_t));
-    dev->preview_pipe = (dt_dev_pixelpipe_t *)malloc(sizeof(dt_dev_pixelpipe_t));
-    dev->preview2.pipe = (dt_dev_pixelpipe_t *)malloc(sizeof(dt_dev_pixelpipe_t));
+    dev->full.pipe = malloc(sizeof(dt_dev_pixelpipe_t));
+    dev->preview_pipe = malloc(sizeof(dt_dev_pixelpipe_t));
+    dev->preview2.pipe = malloc(sizeof(dt_dev_pixelpipe_t));
     dt_dev_pixelpipe_init(dev->full.pipe);
     dt_dev_pixelpipe_init_preview(dev->preview_pipe);
     dt_dev_pixelpipe_init_preview2(dev->preview2.pipe);

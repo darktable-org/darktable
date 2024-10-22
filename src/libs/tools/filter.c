@@ -94,7 +94,7 @@ static gboolean _pref_show(GtkWidget *widget, GdkEventButton *event, dt_lib_modu
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)g_malloc0(sizeof(dt_lib_tool_filter_t));
+  dt_lib_tool_filter_t *d = g_malloc0(sizeof(dt_lib_tool_filter_t));
   self->data = (void *)d;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);

@@ -202,8 +202,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_watermark_params_v1_t;
 
     const dt_iop_watermark_params_v1_t *o = (dt_iop_watermark_params_v1_t *)old_params;
-    dt_iop_watermark_params_v6_t *n =
-      malloc(sizeof(dt_iop_watermark_params_v6_t));
+    dt_iop_watermark_params_v6_t *n = malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
     n->scale = o->scale;
@@ -241,8 +240,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_watermark_params_v2_t;
 
     const dt_iop_watermark_params_v2_t *o = (dt_iop_watermark_params_v2_t *)old_params;
-    dt_iop_watermark_params_v6_t *n =
-      malloc(sizeof(dt_iop_watermark_params_v6_t));
+    dt_iop_watermark_params_v6_t *n = malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
     n->scale = o->scale;
@@ -282,8 +280,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_watermark_params_v3_t;
 
     const dt_iop_watermark_params_v3_t *o = (dt_iop_watermark_params_v3_t *)old_params;
-    dt_iop_watermark_params_v6_t *n =
-      malloc(sizeof(dt_iop_watermark_params_v6_t));
+    dt_iop_watermark_params_v6_t *n = malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
     n->scale = o->scale;
@@ -380,8 +377,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_watermark_params_v5_t;
 
     const dt_iop_watermark_params_v5_t *o = (dt_iop_watermark_params_v5_t *)old_params;
-    dt_iop_watermark_params_v6_t *n =
-      malloc(sizeof(dt_iop_watermark_params_v6_t));
+    dt_iop_watermark_params_v6_t *n = malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
     n->scale = o->scale;

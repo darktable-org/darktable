@@ -272,8 +272,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
       for(int k = old_nb_items; k < new_nb_items; k++)
       {
         GtkWidget *box = GTK_WIDGET(d->box);
-        dt_lib_recentcollect_item_t *item
-            = (dt_lib_recentcollect_item_t *)malloc(sizeof(dt_lib_recentcollect_item_t));
+        dt_lib_recentcollect_item_t *item = malloc(sizeof(dt_lib_recentcollect_item_t));
         if(item)
         {
           d->items = g_list_append(d->items, item);
@@ -316,8 +315,7 @@ void gui_reset(dt_lib_module_t *self)
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_recentcollect_t *d;
-  d = (dt_lib_recentcollect_t *)malloc(sizeof(dt_lib_recentcollect_t));
+  dt_lib_recentcollect_t *d = malloc(sizeof(dt_lib_recentcollect_t));
   d->items = NULL;
   self->data = (void *)d;
 
@@ -331,7 +329,7 @@ void gui_init(dt_lib_module_t *self)
   // add buttons in the list, set them all to invisible
   for(int k = 0; k < _conf_get_max_shown_items(); k++)
   {
-    dt_lib_recentcollect_item_t *item = (dt_lib_recentcollect_item_t *)malloc(sizeof(dt_lib_recentcollect_item_t));
+    dt_lib_recentcollect_item_t *item = malloc(sizeof(dt_lib_recentcollect_item_t));
     d->items = g_list_append(d->items, item);
     item->button = gtk_button_new();
     gtk_box_pack_start(GTK_BOX(box), item->button, FALSE, TRUE, 0);

@@ -913,8 +913,7 @@ void dt_gui_presets_show_iop_edit_dialog(const char *name_in,
                                          const gboolean allow_remove,
                                          GtkWindow *parent)
 {
-  dt_gui_presets_edit_dialog_t *g
-      = (dt_gui_presets_edit_dialog_t *)g_malloc0(sizeof(dt_gui_presets_edit_dialog_t));
+  dt_gui_presets_edit_dialog_t *g = g_malloc0(sizeof(dt_gui_presets_edit_dialog_t));
   g->old_id = -1;
   g->original_name = g_strdup(name_in);
   g->iop = module;
@@ -946,8 +945,7 @@ void dt_gui_presets_show_edit_dialog(const char *name_in,
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    dt_gui_presets_edit_dialog_t *g
-        = (dt_gui_presets_edit_dialog_t *)g_malloc0(sizeof(dt_gui_presets_edit_dialog_t));
+    dt_gui_presets_edit_dialog_t *g = g_malloc0(sizeof(dt_gui_presets_edit_dialog_t));
     g->old_id = rowid;
     g->original_name = g_strdup(name_in);
     g->operation = g_strdup((char *)sqlite3_column_text(stmt, 0));

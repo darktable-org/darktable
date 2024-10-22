@@ -389,7 +389,7 @@ static void _lib_duplicate_preview_updated_callback(gpointer instance,
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)g_malloc0(sizeof(dt_lib_duplicate_t));
+  dt_lib_duplicate_t *d = g_malloc0(sizeof(dt_lib_duplicate_t));
   self->data = (void *)d;
 
   d->imgid = NO_IMGID;

@@ -209,7 +209,7 @@ static GtkWidget *_lib_location_place_widget_new(dt_lib_location_t *lib,
   gtk_widget_show_all(eb);
 
   /* connect button press signal for result item */
-  _callback_param_t *param = (_callback_param_t *)malloc(sizeof(_callback_param_t));
+  _callback_param_t *param = malloc(sizeof(_callback_param_t));
   if(param)
   {
     lib->callback_params = g_list_append(lib->callback_params, param);

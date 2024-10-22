@@ -558,7 +558,7 @@ static void _midi_open_devices(dt_lib_module_t *self)
           dt_control_log(_("%s opened as midi%d"), info->name, dev);
       }
 
-      dt_midi_device_t *midi = (dt_midi_device_t *)g_malloc0(sizeof(dt_midi_device_t));
+      dt_midi_device_t *midi = g_malloc0(sizeof(dt_midi_device_t));
 
       midi->id          = id + dev;
       midi->info        = info;

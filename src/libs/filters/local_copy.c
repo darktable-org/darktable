@@ -135,7 +135,7 @@ static gboolean _local_copy_update(dt_lib_filtering_rule_t *rule)
 static void _local_copy_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
                                     const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
-  _widgets_local_copy_t *local_copy = (_widgets_local_copy_t *)g_malloc0(sizeof(_widgets_local_copy_t));
+  _widgets_local_copy_t *local_copy = g_malloc0(sizeof(_widgets_local_copy_t));
   local_copy->rule = rule;
 
   local_copy->combo = dt_bauhaus_combobox_new_full(

@@ -541,7 +541,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)malloc(sizeof(dt_iop_rawdenoise_data_t));
+  dt_iop_rawdenoise_data_t *d = malloc(sizeof(dt_iop_rawdenoise_data_t));
   const dt_iop_rawdenoise_params_t *const default_params = self->default_params;
 
   piece->data = (void *)d;

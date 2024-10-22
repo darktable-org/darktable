@@ -4139,8 +4139,7 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
       {
         history_entry_t *entry = (history_entry_t *)iter->data;
 
-        dt_iop_order_entry_t *e =
-          (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
+        dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
         memcpy(e->operation, entry->operation, sizeof(e->operation));
         e->instance = entry->multi_priority;
 

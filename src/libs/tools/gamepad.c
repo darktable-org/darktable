@@ -284,7 +284,7 @@ static void _gamepad_open_devices(dt_lib_module_t *self)
                  SDL_GameControllerNameForIndex(i));
       }
 
-      dt_gamepad_device_t *gamepad = (dt_gamepad_device_t *)g_malloc0(sizeof(dt_gamepad_device_t));
+      dt_gamepad_device_t *gamepad = g_malloc0(sizeof(dt_gamepad_device_t));
 
       gamepad->controller = controller;
       gamepad->id = id++;

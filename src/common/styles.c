@@ -886,7 +886,7 @@ void _styles_apply_to_image_ext(const char *name,
     GList *si_list = NULL;
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      dt_style_item_t *style_item = (dt_style_item_t *)malloc(sizeof(dt_style_item_t));
+      dt_style_item_t *style_item = malloc(sizeof(dt_style_item_t));
 
       style_item->num = sqlite3_column_int(stmt, 0);
       style_item->selimg_num = 0;
