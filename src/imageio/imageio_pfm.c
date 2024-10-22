@@ -38,20 +38,12 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img,
                                         const char *filename,
                                         dt_mipmap_buffer_t *mbuf)
 {
-  const char *ext = filename + strlen(filename);
-
-  while(*ext != '.' && ext > filename)
-    ext--;
-
-  if(strcasecmp(ext, ".pfm"))
-    return DT_IMAGEIO_LOAD_FAILED;
-
   FILE *f = g_fopen(filename, "rb");
   if(!f)
     return DT_IMAGEIO_FILE_NOT_FOUND;
 
   int ret = 0;
-  int cols = 3;
+  int channels = 3;
   float scale_factor;
   char head[2] = { 'X', 'X' };
 
@@ -61,9 +53,9 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img,
     goto error_corrupt;
 
   if(head[1] == 'F')
-    cols = 3;
+    channels = 3;
   else if(head[1] == 'f')
-    cols = 1;
+    channels = 1;
   else
     goto error_corrupt;
 
@@ -105,24 +97,28 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img,
   if(!readbuf)
     goto error_cache_full;
 
-  union { float f; guint32 i; } value;
+  // We use this union to swap the byte order in the float value if needed
+  union { float as_float; guint32 as_int; } value;
 
-  if(cols == 3)
+  // The de facto standard (set by the first implementation) scanline order
+  // of PFM is bottom-to-top, so in the loops below we change the order of
+  // the rows in the process of filling the output buffer with data
+  if(channels == 3)
   {
     ret = fread(readbuf, 3 * sizeof(float), npixels, f);
 
 DT_OMP_FOR(collapse(2))
-    for(size_t j = 0; j < img->height; j++)
-      for(size_t i = 0; i < img->width; i++)
+    for(size_t row = 0; row < img->height; row++)
+      for(size_t column = 0; column < img->width; column++)
       {
         dt_aligned_pixel_t pix = {0.0f, 0.0f, 0.0f, 0.0f};
         for_three_channels(c)
         {
-        value.f = readbuf[3 * ((img->height - 1 - j) * img->width + i) + c];
-        if(swap_byte_order) value.i = GUINT32_SWAP_LE_BE(value.i);
-        pix[c] = value.f;
+        value.as_float = readbuf[3 * ((img->height - 1 - row) * img->width + column) + c];
+        if(swap_byte_order) value.as_int = GUINT32_SWAP_LE_BE(value.as_int);
+        pix[c] = value.as_float;
         }
-        copy_pixel_nontemporal(&buf[4 * (img->width * j + i)], pix);
+        copy_pixel_nontemporal(&buf[4 * (img->width * row + column)], pix);
       }
   }
   else
@@ -130,13 +126,13 @@ DT_OMP_FOR(collapse(2))
     ret = fread(readbuf, sizeof(float), npixels, f);
 
 DT_OMP_FOR(collapse(2))
-    for(size_t j = 0; j < img->height; j++)
-      for(size_t i = 0; i < img->width; i++)
+    for(size_t row = 0; row < img->height; row++)
+      for(size_t column = 0; column < img->width; column++)
       {
-        value.f = readbuf[((img->height - 1 - j) * img->width + i)];
-        if(swap_byte_order) value.i = GUINT32_SWAP_LE_BE(value.i);
-        buf[4 * (img->width * j + i) + 2] = buf[4 * (img->width * j + i) + 1]
-            = buf[4 * (img->width * j + i) + 0] = value.f;
+        value.as_float = readbuf[((img->height - 1 - row) * img->width + column)];
+        if(swap_byte_order) value.as_int = GUINT32_SWAP_LE_BE(value.as_int);
+        buf[4 * (img->width * row + column) + 2] = buf[4 * (img->width * row + column) + 1]
+            = buf[4 * (img->width * row + column) + 0] = value.as_float;
       }
   }
 
