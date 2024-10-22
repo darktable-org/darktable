@@ -542,7 +542,7 @@ void dt_gui_preferences_show()
   gtk_box_pack_start(GTK_BOX(box), stacksidebar, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box), stack, TRUE, TRUE, 0);
 
-  dt_gui_themetweak_widgets_t *tweak_widgets = (dt_gui_themetweak_widgets_t *)malloc(sizeof(dt_gui_themetweak_widgets_t));
+  dt_gui_themetweak_widgets_t *tweak_widgets = malloc(sizeof(dt_gui_themetweak_widgets_t));
 
   restart_required = FALSE;
 

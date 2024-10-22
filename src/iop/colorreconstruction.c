@@ -307,7 +307,7 @@ static dt_iop_colorreconstruct_bilateral_frozen_t *dt_iop_colorreconstruct_bilat
 {
   if(!b) return NULL;
 
-  dt_iop_colorreconstruct_bilateral_frozen_t *bf = (dt_iop_colorreconstruct_bilateral_frozen_t *)malloc(sizeof(dt_iop_colorreconstruct_bilateral_frozen_t));
+  dt_iop_colorreconstruct_bilateral_frozen_t *bf = malloc(sizeof(dt_iop_colorreconstruct_bilateral_frozen_t));
   if(!bf)
   {
     dt_print(DT_DEBUG_ALWAYS, "[color reconstruction] not able to allocate buffer (c)");
@@ -343,7 +343,7 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_th
 {
   if(!bf) return NULL;
 
-  dt_iop_colorreconstruct_bilateral_t *b = (dt_iop_colorreconstruct_bilateral_t *)malloc(sizeof(dt_iop_colorreconstruct_bilateral_t));
+  dt_iop_colorreconstruct_bilateral_t *b = malloc(sizeof(dt_iop_colorreconstruct_bilateral_t));
   if(!b)
   {
     dt_print(DT_DEBUG_ALWAYS, "[color reconstruction] not able to allocate buffer (e)");
@@ -731,7 +731,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
     return NULL;
   }
 
-  dt_iop_colorreconstruct_bilateral_cl_t *b = (dt_iop_colorreconstruct_bilateral_cl_t *)malloc(sizeof(dt_iop_colorreconstruct_bilateral_cl_t));
+  dt_iop_colorreconstruct_bilateral_cl_t *b = malloc(sizeof(dt_iop_colorreconstruct_bilateral_cl_t));
   if(!b)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate host buffer (a)");
@@ -801,7 +801,7 @@ static dt_iop_colorreconstruct_bilateral_frozen_t *dt_iop_colorreconstruct_bilat
 {
   if(!b) return NULL;
 
-  dt_iop_colorreconstruct_bilateral_frozen_t *bf = (dt_iop_colorreconstruct_bilateral_frozen_t *)malloc(sizeof(dt_iop_colorreconstruct_bilateral_frozen_t));
+  dt_iop_colorreconstruct_bilateral_frozen_t *bf = malloc(sizeof(dt_iop_colorreconstruct_bilateral_frozen_t));
   if(!bf)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate host buffer (d)");
@@ -1199,8 +1199,7 @@ void gui_update(dt_iop_module_t *self)
 
 void init_global(dt_iop_module_so_t *module)
 {
-  dt_iop_colorreconstruct_global_data_t *gd
-      = (dt_iop_colorreconstruct_global_data_t *)malloc(sizeof(dt_iop_colorreconstruct_global_data_t));
+  dt_iop_colorreconstruct_global_data_t *gd = malloc(sizeof(dt_iop_colorreconstruct_global_data_t));
   module->data = gd;
   const int program = 13; // colorcorrection.cl, from programs.conf
   gd->kernel_colorreconstruct_zero = dt_opencl_create_kernel(program, "colorreconstruction_zero");

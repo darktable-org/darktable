@@ -893,7 +893,7 @@ static gboolean _click_on_view(GtkWidget *view, GdkEventButton *event, dt_lib_mo
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)g_malloc0(sizeof(dt_lib_map_locations_t));
+  dt_lib_map_locations_t *d = g_malloc0(sizeof(dt_lib_map_locations_t));
   self->data = d;
 
   self->widget =  gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);

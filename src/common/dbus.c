@@ -186,7 +186,7 @@ static void _on_name_lost(GDBusConnection *connection, const gchar *name, gpoint
 
 struct dt_dbus_t *dt_dbus_init()
 {
-  dt_dbus_t *dbus = (dt_dbus_t *)g_malloc0(sizeof(dt_dbus_t));
+  dt_dbus_t *dbus = g_malloc0(sizeof(dt_dbus_t));
   if(!dbus) return NULL;
 
   dbus->introspection_data = g_dbus_node_info_new_for_xml(introspection_xml, NULL);

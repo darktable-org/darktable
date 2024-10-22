@@ -33,7 +33,7 @@ static void _image_cache_allocate(void *data,
 {
   entry->cost = sizeof(dt_image_t);
 
-  dt_image_t *img = (dt_image_t *)g_malloc0(sizeof(dt_image_t));
+  dt_image_t *img = g_malloc0(sizeof(dt_image_t));
   dt_image_init(img);
   entry->data = img;
   // load stuff from db and store in cache:

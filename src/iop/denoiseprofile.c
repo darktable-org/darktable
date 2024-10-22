@@ -2876,8 +2876,7 @@ void reload_defaults(dt_iop_module_t *module)
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 11; // denoiseprofile.cl, from programs.conf
-  dt_iop_denoiseprofile_global_data_t *gd =
-      malloc(sizeof(dt_iop_denoiseprofile_global_data_t));
+  dt_iop_denoiseprofile_global_data_t *gd = malloc(sizeof(dt_iop_denoiseprofile_global_data_t));
 
   module->data = gd;
   gd->kernel_denoiseprofile_precondition =

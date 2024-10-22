@@ -1777,7 +1777,7 @@ static GdkPixbuf *_get_pixbuf_from_cairo(DTGTKCairoPaintIconFunc paint,
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_masks_t *d = (dt_lib_masks_t *)g_malloc0(sizeof(dt_lib_masks_t));
+  dt_lib_masks_t *d = g_malloc0(sizeof(dt_lib_masks_t));
   self->data = (void *)d;
 
   // initialise all masks pixbuf. This is needed for the "automatic"

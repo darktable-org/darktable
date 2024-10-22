@@ -69,7 +69,7 @@ int position(const dt_lib_module_t *self)
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_view_toolbox_t *d = (dt_lib_view_toolbox_t *)g_malloc0(sizeof(dt_lib_view_toolbox_t));
+  dt_lib_view_toolbox_t *d = g_malloc0(sizeof(dt_lib_view_toolbox_t));
   self->data = (void *)d;
 
   /* the toolbar container */

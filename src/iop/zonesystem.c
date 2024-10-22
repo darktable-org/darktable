@@ -344,8 +344,7 @@ error:
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 2; // basic.cl, from programs.conf
-  dt_iop_zonesystem_global_data_t *gd
-      = (dt_iop_zonesystem_global_data_t *)malloc(sizeof(dt_iop_zonesystem_global_data_t));
+  dt_iop_zonesystem_global_data_t *gd = malloc(sizeof(dt_iop_zonesystem_global_data_t));
   module->data = gd;
   gd->kernel_zonesystem = dt_opencl_create_kernel(program, "zonesystem");
 }
@@ -398,11 +397,11 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_queue_draw(GTK_WIDGET(g->zones));
 }
 
-static void _iop_zonesystem_redraw_preview_callback(gpointer instance, 
+static void _iop_zonesystem_redraw_preview_callback(gpointer instance,
                                                     dt_iop_module_t *self);
-static gboolean dt_iop_zonesystem_preview_draw(GtkWidget *widget, cairo_t *crf, 
+static gboolean dt_iop_zonesystem_preview_draw(GtkWidget *widget, cairo_t *crf,
                                                dt_iop_module_t *self);
-static gboolean dt_iop_zonesystem_bar_draw(GtkWidget *widget, cairo_t *crf, 
+static gboolean dt_iop_zonesystem_bar_draw(GtkWidget *widget, cairo_t *crf,
                                            dt_iop_module_t *self);
 static gboolean dt_iop_zonesystem_bar_motion_notify(GtkWidget *widget, GdkEventMotion *event,
                                                     dt_iop_module_t *self);

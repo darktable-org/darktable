@@ -300,8 +300,7 @@ void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 9; // soften.cl, from programs.conf
-  dt_iop_soften_global_data_t *gd
-      = (dt_iop_soften_global_data_t *)malloc(sizeof(dt_iop_soften_global_data_t));
+  dt_iop_soften_global_data_t *gd = malloc(sizeof(dt_iop_soften_global_data_t));
   module->data = gd;
   gd->kernel_soften_overexposed = dt_opencl_create_kernel(program, "soften_overexposed");
   gd->kernel_soften_hblur = dt_opencl_create_kernel(program, "soften_hblur");

@@ -1373,7 +1373,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
         current_order_version = iop_order_version;
       }
 
-      dt_iop_order_entry_t *item = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
+      dt_iop_order_entry_t *item = malloc(sizeof(dt_iop_order_entry_t));
       memcpy(item->operation, operation, sizeof(item->operation));
       item->instance = multi_priority;
       item->o.iop_order_f = iop_order; // used to order the enties only
@@ -4141,7 +4141,7 @@ start:
     snprintf(dbfilename_data, sizeof(dbfilename_data), ":memory:");
 
   /* create database */
-  dt_database_t *db = (dt_database_t *)g_malloc0(sizeof(dt_database_t));
+  dt_database_t *db = g_malloc0(sizeof(dt_database_t));
   db->dbfilename_data = g_strdup(dbfilename_data);
   db->dbfilename_library = g_strdup(dbfilename_library);
 

@@ -273,7 +273,7 @@ const dt_action_def_t dt_action_def_colors_rule
 static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
                                 const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
-  _widgets_colors_t *colors = (_widgets_colors_t *)g_malloc0(sizeof(_widgets_colors_t));
+  _widgets_colors_t *colors = g_malloc0(sizeof(_widgets_colors_t));
   colors->rule = rule;
   if(top)
     rule->w_specific_top = colors;

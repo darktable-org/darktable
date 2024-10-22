@@ -146,7 +146,7 @@ static gboolean _history_update(dt_lib_filtering_rule_t *rule)
 static void _history_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
                                  const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
-  _widgets_history_t *history = (_widgets_history_t *)g_malloc0(sizeof(_widgets_history_t));
+  _widgets_history_t *history = g_malloc0(sizeof(_widgets_history_t));
   history->rule = rule;
 
   history->combo

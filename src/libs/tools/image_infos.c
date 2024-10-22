@@ -124,7 +124,7 @@ void _lib_imageinfo_update_message3(gpointer instance, int query_change, int cha
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_imageinfo_t *d = (dt_lib_imageinfo_t *)g_malloc0(sizeof(dt_lib_imageinfo_t));
+  dt_lib_imageinfo_t *d = g_malloc0(sizeof(dt_lib_imageinfo_t));
   self->data = (void *)d;
 
   self->widget = gtk_event_box_new();

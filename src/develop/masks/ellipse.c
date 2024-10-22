@@ -640,8 +640,7 @@ static int _ellipse_events_button_pressed(dt_iop_module_t *module,
   else
   {
     // we create the ellipse
-    dt_masks_point_ellipse_t *ellipse
-        = (dt_masks_point_ellipse_t *)(malloc(sizeof(dt_masks_point_ellipse_t)));
+    dt_masks_point_ellipse_t *ellipse = malloc(sizeof(dt_masks_point_ellipse_t));
 
     // we change the center value
     float pts[2] = { pzx * wd, pzy * ht };
