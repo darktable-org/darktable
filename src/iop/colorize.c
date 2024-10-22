@@ -200,8 +200,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 8; // extended.cl, from programs.conf
-  dt_iop_colorize_global_data_t *gd
-      = (dt_iop_colorize_global_data_t *)malloc(sizeof(dt_iop_colorize_global_data_t));
+  dt_iop_colorize_global_data_t *gd = malloc(sizeof(dt_iop_colorize_global_data_t));
   module->data = gd;
   gd->kernel_colorize = dt_opencl_create_kernel(program, "colorize");
 }

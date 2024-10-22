@@ -430,7 +430,7 @@ static gboolean _tag_execute(const GList *tags,
   for(const GList *images = imgs; images; images = g_list_next(images))
   {
     const dt_imgid_t image_id = GPOINTER_TO_INT(images->data);
-    dt_undo_tags_t *undotags = (dt_undo_tags_t *)malloc(sizeof(dt_undo_tags_t));
+    dt_undo_tags_t *undotags = malloc(sizeof(dt_undo_tags_t));
     undotags->imgid = image_id;
     undotags->before = _tag_get_tags(image_id, DT_TAG_TYPE_ALL);
     switch(action)

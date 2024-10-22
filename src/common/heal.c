@@ -385,7 +385,7 @@ cleanup:
 
 dt_heal_cl_global_t *dt_heal_init_cl_global()
 {
-  dt_heal_cl_global_t *g = (dt_heal_cl_global_t *)malloc(sizeof(dt_heal_cl_global_t));
+  dt_heal_cl_global_t *g = malloc(sizeof(dt_heal_cl_global_t));
 
   return g;
 }
@@ -400,7 +400,7 @@ void dt_heal_free_cl_global(dt_heal_cl_global_t *g)
 heal_params_cl_t *dt_heal_init_cl(const int devid)
 {
 
-  heal_params_cl_t *p = (heal_params_cl_t *)malloc(sizeof(heal_params_cl_t));
+  heal_params_cl_t *p = malloc(sizeof(heal_params_cl_t));
   if(!p) return NULL;
 
   p->global = darktable.opencl->heal;

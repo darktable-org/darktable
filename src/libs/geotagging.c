@@ -1102,7 +1102,7 @@ static GList *_lib_geotagging_get_timezones(void)
     }
     size_t last_char = strlen(name) - 1;
     if(name[last_char] == '\n') name[last_char] = '\0';
-    tz_tuple_t *tz_tuple = (tz_tuple_t *)malloc(sizeof(tz_tuple_t));
+    tz_tuple_t *tz_tuple = malloc(sizeof(tz_tuple_t));
     if(tz_tuple)
     {
       tz_tuple->display = name;
@@ -1116,7 +1116,7 @@ static GList *_lib_geotagging_get_timezones(void)
   // sort timezones
   timezones = g_list_sort(timezones, _sort_timezones);
 
-  tz_tuple_t *utc = (tz_tuple_t *)malloc(sizeof(tz_tuple_t));
+  tz_tuple_t *utc = malloc(sizeof(tz_tuple_t));
   if(utc)
   {
     utc->display = g_strdup("UTC");
@@ -1152,7 +1152,7 @@ static GList *_lib_geotagging_get_timezones(void)
                        NULL,
                        NULL) == ERROR_SUCCESS)
     {
-      wchar_t *subkeyname = (wchar_t *)malloc(sizeof(wchar_t) * (max_subkey_len + 1));
+      wchar_t *subkeyname = malloc(sizeof(wchar_t) * (max_subkey_len + 1));
 
       for(DWORD i = 1; i < n_subkeys; i++)
       {
@@ -1178,7 +1178,7 @@ static GList *_lib_geotagging_get_timezones(void)
                           NULL,
                           &buffer_size) == ERROR_SUCCESS)
           {
-            wchar_t *display_name = (wchar_t *)malloc(buffer_size);
+            wchar_t *display_name = malloc(buffer_size);
             if(RegGetValueW(HKEY_LOCAL_MACHINE,
                             subkeypath,
                             L"Display",
@@ -1187,7 +1187,7 @@ static GList *_lib_geotagging_get_timezones(void)
                             display_name,
                             &buffer_size) == ERROR_SUCCESS)
             {
-              tz_tuple_t *tz = (tz_tuple_t *)malloc(sizeof(tz_tuple_t));
+              tz_tuple_t *tz = malloc(sizeof(tz_tuple_t));
               if(tz)
               {
                 tz->name = subkeyname_utf8;
@@ -1751,7 +1751,7 @@ static void _dt_pref_change_callback(gpointer instance, dt_lib_module_t *self)
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)g_malloc0(sizeof(dt_lib_geotagging_t));
+  dt_lib_geotagging_t *d = g_malloc0(sizeof(dt_lib_geotagging_t));
   self->data = (void *)d;
   d->timezones = _lib_geotagging_get_timezones();
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);

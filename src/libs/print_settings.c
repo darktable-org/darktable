@@ -1356,7 +1356,7 @@ static GList* _get_profiles()
   prof->ppos = -2;
   list = g_list_prepend(list, prof);
 
-  prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
+  prof = g_malloc0(sizeof(dt_lib_export_profile_t));
   prof->type = DT_COLORSPACE_ADOBERGB;
   dt_utf8_strlcpy(prof->name, _("Adobe RGB (compatible)"), sizeof(prof->name));
   prof->pos = -2;
@@ -1369,7 +1369,7 @@ static GList* _get_profiles()
     dt_colorspaces_color_profile_t *p = iter->data;
     if(p->type == DT_COLORSPACE_FILE)
     {
-      prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
+      prof = g_malloc0(sizeof(dt_lib_export_profile_t));
       g_strlcpy(prof->name, p->name, sizeof(prof->name));
       g_strlcpy(prof->filename, p->filename, sizeof(prof->filename));
       prof->type = DT_COLORSPACE_FILE;
@@ -2316,8 +2316,7 @@ static void _y_changed(GtkWidget *widget,
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_print_settings_t *d =
-    (dt_lib_print_settings_t*)malloc(sizeof(dt_lib_print_settings_t));
+  dt_lib_print_settings_t *d = malloc(sizeof(dt_lib_print_settings_t));
   self->data = d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   dt_gui_add_help_link(self->widget, "print_overview");

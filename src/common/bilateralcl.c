@@ -28,7 +28,7 @@
 
 dt_bilateral_cl_global_t *dt_bilateral_init_cl_global()
 {
-  dt_bilateral_cl_global_t *b = (dt_bilateral_cl_global_t *)malloc(sizeof(dt_bilateral_cl_global_t));
+  dt_bilateral_cl_global_t *b = malloc(sizeof(dt_bilateral_cl_global_t));
 
   const int program = 10; // bilateral.cl, from programs.conf
   b->kernel_zero = dt_opencl_create_kernel(program, "zero");
@@ -99,7 +99,7 @@ dt_bilateral_cl_t *dt_bilateral_init_cl(const int devid,
     return NULL;
   }
 
-  dt_bilateral_cl_t *b = (dt_bilateral_cl_t *)malloc(sizeof(dt_bilateral_cl_t));
+  dt_bilateral_cl_t *b = malloc(sizeof(dt_bilateral_cl_t));
   if(!b) return NULL;
 
   b->global = darktable.opencl->bilateral;

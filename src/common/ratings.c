@@ -152,7 +152,7 @@ static void _ratings_apply(const GList *imgs,
     const int old_rating = dt_ratings_get(image_id);
     if(undo_on)
     {
-      dt_undo_ratings_t *undoratings = (dt_undo_ratings_t *)malloc(sizeof(dt_undo_ratings_t));
+      dt_undo_ratings_t *undoratings = malloc(sizeof(dt_undo_ratings_t));
       undoratings->imgid = image_id;
       undoratings->before = old_rating;
       undoratings->after = rating;

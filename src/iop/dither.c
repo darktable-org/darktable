@@ -157,7 +157,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_dither_params_v1_t;
 
     const dt_iop_dither_params_v1_t *o = (dt_iop_dither_params_v1_t *)old_params;
-    dt_iop_dither_params_v1_t *n = (dt_iop_dither_params_v1_t *)malloc(sizeof(dt_iop_dither_params_v1_t));
+    dt_iop_dither_params_v1_t *n = malloc(sizeof(dt_iop_dither_params_v1_t));
     memcpy(n, o, sizeof(dt_iop_dither_params_v1_t));
 
     *new_params = n;

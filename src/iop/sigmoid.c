@@ -857,7 +857,7 @@ cleanup:
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 36; // sigmoid.cl, from programs.conf
-  dt_iop_sigmoid_global_data_t *gd = (dt_iop_sigmoid_global_data_t *)malloc(sizeof(dt_iop_sigmoid_global_data_t));
+  dt_iop_sigmoid_global_data_t *gd = malloc(sizeof(dt_iop_sigmoid_global_data_t));
 
   module->data = gd;
   gd->kernel_sigmoid_loglogistic_per_channel = dt_opencl_create_kernel(program, "sigmoid_loglogistic_per_channel");

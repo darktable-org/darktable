@@ -389,7 +389,7 @@ static void _misc_widget_init(dt_lib_filtering_rule_t *rule,
                               dt_lib_module_t *self,
                               const gboolean top)
 {
-  _widgets_misc_t *misc = (_widgets_misc_t *)g_malloc0(sizeof(_widgets_misc_t));
+  _widgets_misc_t *misc = g_malloc0(sizeof(_widgets_misc_t));
   misc->rule = rule;
   misc->prop = prop;
 

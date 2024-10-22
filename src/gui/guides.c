@@ -534,7 +534,7 @@ static void _guides_add_guide(GList **list, const char *name,
                               void *user_data, GDestroyNotify free,
                               gboolean support_flip)
 {
-  dt_guides_t *guide = (dt_guides_t *)malloc(sizeof(dt_guides_t));
+  dt_guides_t *guide = malloc(sizeof(dt_guides_t));
   g_strlcpy(guide->name, name, sizeof(guide->name));
   guide->draw = draw;
   guide->widget = widget;
@@ -693,7 +693,7 @@ GtkWidget *dt_guides_popover(dt_view_t *self, GtkWidget *button)
   GtkWidget *pop = gtk_popover_new(button);
 
   // create a new struct for all the widgets
-  _guides_settings_t *gw = (_guides_settings_t *)g_malloc0(sizeof(_guides_settings_t));
+  _guides_settings_t *gw = g_malloc0(sizeof(_guides_settings_t));
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   // title

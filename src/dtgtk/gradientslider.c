@@ -717,13 +717,13 @@ GtkWidget *dtgtk_gradient_slider_multivalue_new_with_color(GdkRGBA start, GdkRGB
   _gradient_slider_set_defaults(gslider);
 
   // Construct gradient start color
-  _gradient_slider_stop_t *gc = (_gradient_slider_stop_t *)g_malloc(sizeof(_gradient_slider_stop_t));
+  _gradient_slider_stop_t *gc = g_malloc(sizeof(_gradient_slider_stop_t));
   gc->position = 0.0;
   memcpy(&gc->color, &start, sizeof(GdkRGBA));
   gslider->colors = g_list_append(gslider->colors, gc);
 
   // Construct gradient stop color
-  gc = (_gradient_slider_stop_t *)g_malloc(sizeof(_gradient_slider_stop_t));
+  gc = g_malloc(sizeof(_gradient_slider_stop_t));
   gc->position = 1.0;
   memcpy(&gc->color, &end, sizeof(GdkRGBA));
   gslider->colors = g_list_append(gslider->colors, gc);
@@ -753,7 +753,7 @@ void dtgtk_gradient_slider_multivalue_set_stop(GtkDarktableGradientSlider *gslid
   else
   {
     // stop didn't exist lets add it
-    _gradient_slider_stop_t *gc = (_gradient_slider_stop_t *)g_malloc(sizeof(_gradient_slider_stop_t));
+    _gradient_slider_stop_t *gc = g_malloc(sizeof(_gradient_slider_stop_t));
     gc->position = rawposition;
     memcpy(&gc->color, &color, sizeof(GdkRGBA));
     gslider->colors = g_list_append(gslider->colors, gc);

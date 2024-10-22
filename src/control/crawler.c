@@ -207,8 +207,7 @@ GList *dt_control_crawler_run(void)
       // step 1: check if the xmp is newer than our db entry
       if(timestamp + MAX_TIME_SKEW < statbuf.st_mtime)
       {
-        dt_control_crawler_result_t *item
-            = (dt_control_crawler_result_t *)malloc(sizeof(dt_control_crawler_result_t));
+        dt_control_crawler_result_t *item = malloc(sizeof(dt_control_crawler_result_t));
         item->id = id;
         item->timestamp_xmp = statbuf.st_mtime;
         item->timestamp_db = timestamp;

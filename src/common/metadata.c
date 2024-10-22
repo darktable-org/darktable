@@ -581,7 +581,7 @@ static void _metadata_execute(const GList *imgs,
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(images->data);
 
-    dt_undo_metadata_t *undometadata = (dt_undo_metadata_t *)malloc(sizeof(dt_undo_metadata_t));
+    dt_undo_metadata_t *undometadata = malloc(sizeof(dt_undo_metadata_t));
     undometadata->imgid = imgid;
     undometadata->before = dt_metadata_get_list_id(imgid);
     switch(action)

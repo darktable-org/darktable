@@ -469,7 +469,7 @@ static int _gradient_events_button_released(dt_iop_module_t *module,
     const float zoom_scale = dt_dev_get_zoom_scale_full();
 
     // we create the gradient
-    dt_masks_point_gradient_t *gradient = (malloc(sizeof(dt_masks_point_gradient_t)));
+    dt_masks_point_gradient_t *gradient = malloc(sizeof(dt_masks_point_gradient_t));
 
     // get the rotation angle only if we are not too close from starting point
     _gradient_init_values(zoom_scale, gui, gui->posx, gui->posy, pzx * wd, pzy * ht,

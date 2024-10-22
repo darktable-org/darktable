@@ -322,7 +322,7 @@ int position(const dt_lib_module_t *self)
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)malloc(sizeof(dt_lib_copy_history_t));
+  dt_lib_copy_history_t *d = malloc(sizeof(dt_lib_copy_history_t));
   self->data = (void *)d;
 
   self->widget = gtk_grid_new();

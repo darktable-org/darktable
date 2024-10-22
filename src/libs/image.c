@@ -366,7 +366,7 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
     }
     if(geotag_flag)
     {
-      dt_image_geoloc_t *geoloc = (dt_image_geoloc_t *)malloc(sizeof(dt_image_geoloc_t));
+      dt_image_geoloc_t *geoloc = malloc(sizeof(dt_image_geoloc_t));
       if(action == DT_MA_CLEAR)
         geoloc->longitude = geoloc->latitude = geoloc->elevation = NAN;
       else
@@ -490,7 +490,7 @@ static void pastemode_combobox_changed(GtkWidget *widget,
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_image_t *d = (dt_lib_image_t *)malloc(sizeof(dt_lib_image_t));
+  dt_lib_image_t *d = malloc(sizeof(dt_lib_image_t));
   self->data = (void *)d;
 
   static struct dt_action_def_t notebook_def = { };

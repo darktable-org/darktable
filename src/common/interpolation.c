@@ -1187,8 +1187,7 @@ void dt_interpolation_resample_roi(const struct dt_interpolation *itor,
 #ifdef HAVE_OPENCL
 dt_interpolation_cl_global_t *dt_interpolation_init_cl_global()
 {
-  dt_interpolation_cl_global_t *g
-      = (dt_interpolation_cl_global_t *)malloc(sizeof(dt_interpolation_cl_global_t));
+  dt_interpolation_cl_global_t *g = malloc(sizeof(dt_interpolation_cl_global_t));
 
   const int program = 2; // basic.cl, from programs.conf
   g->kernel_interpolation_resample =
