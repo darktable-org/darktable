@@ -97,8 +97,12 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img,
   if(!readbuf)
     goto error_cache_full;
 
+  // We use this union to swap the byte order in the float value if needed
   union { float as_float; guint32 as_int; } value;
 
+  // The de facto standard (set by the first implementation) scanline order
+  // of PFM is bottom-to-top, so in the loops below we change the order of
+  // the rows in the process of filling the output buffer with data
   if(channels == 3)
   {
     ret = fread(readbuf, 3 * sizeof(float), npixels, f);
