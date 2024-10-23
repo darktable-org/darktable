@@ -59,6 +59,28 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img,
   else
     goto error_corrupt;
 
+  int read_byte;
+  gboolean made_by_photoshop = TRUE;
+  // We expect metadata with a newline character at the end.
+  // If there is no whitespace in the first line, then this file
+  // was most likely written by Photoshop.
+  // We need to know this because Photoshop writes the image rows
+  // to the file in a different order.
+  for(;;)
+  {
+    read_byte = fgetc(f);
+    if((read_byte == '\n') || (read_byte == EOF))
+      break;
+    if(read_byte < '0')          // easy way to match all whitespaces
+    {
+      made_by_photoshop = FALSE; // if present, the file is not saved by Photoshop
+      break;
+    }
+  }
+
+  // Now rewind to start of PFM metadata
+  fseek(f, 3, SEEK_SET);
+
   char width_string[10] = { 0 };
   char height_string[10] = { 0 };
   char scale_factor_string[64] = { 0 };
@@ -106,15 +128,20 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img,
   if(channels == 3)
   {
     ret = fread(readbuf, 3 * sizeof(float), npixels, f);
+    size_t target_row = 0;
 
 DT_OMP_FOR(collapse(2))
     for(size_t row = 0; row < img->height; row++)
       for(size_t column = 0; column < img->width; column++)
       {
         dt_aligned_pixel_t pix = {0.0f, 0.0f, 0.0f, 0.0f};
+        if(made_by_photoshop)
+          target_row = row;
+        else
+          target_row = img->height - 1 - row;
         for_three_channels(c)
         {
-        value.as_float = readbuf[3 * ((img->height - 1 - row) * img->width + column) + c];
+        value.as_float = readbuf[3 * (target_row * img->width + column) + c];
         if(swap_byte_order) value.as_int = GUINT32_SWAP_LE_BE(value.as_int);
         pix[c] = value.as_float;
         }
@@ -124,12 +151,17 @@ DT_OMP_FOR(collapse(2))
   else
   {
     ret = fread(readbuf, sizeof(float), npixels, f);
+    size_t target_row = 0;
 
 DT_OMP_FOR(collapse(2))
     for(size_t row = 0; row < img->height; row++)
       for(size_t column = 0; column < img->width; column++)
       {
-        value.as_float = readbuf[((img->height - 1 - row) * img->width + column)];
+        if(made_by_photoshop)
+          target_row = row;
+        else
+          target_row = img->height - 1 - row;
+        value.as_float = readbuf[target_row * img->width + column];
         if(swap_byte_order) value.as_int = GUINT32_SWAP_LE_BE(value.as_int);
         buf[4 * (img->width * row + column) + 2] = buf[4 * (img->width * row + column) + 1]
             = buf[4 * (img->width * row + column) + 0] = value.as_float;
