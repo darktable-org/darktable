@@ -297,28 +297,27 @@ void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   return;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 9; // soften.cl, from programs.conf
   dt_iop_soften_global_data_t *gd = malloc(sizeof(dt_iop_soften_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_soften_overexposed = dt_opencl_create_kernel(program, "soften_overexposed");
   gd->kernel_soften_hblur = dt_opencl_create_kernel(program, "soften_hblur");
   gd->kernel_soften_vblur = dt_opencl_create_kernel(program, "soften_vblur");
   gd->kernel_soften_mix = dt_opencl_create_kernel(program, "soften_mix");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_soften_global_data_t *gd = module->data;
+  dt_iop_soften_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_soften_overexposed);
   dt_opencl_free_kernel(gd->kernel_soften_hblur);
   dt_opencl_free_kernel(gd->kernel_soften_vblur);
   dt_opencl_free_kernel(gd->kernel_soften_mix);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
-
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)

@@ -372,9 +372,9 @@ error:
 }
 #endif
 
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
   tiling->factor = 3.0f;  // in + out + temp
   tiling->factor_cl = 3.0f;

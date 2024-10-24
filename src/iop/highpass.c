@@ -338,26 +338,26 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
   piece->data = NULL;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 4; // highpass.cl, from programs.conf
   dt_iop_highpass_global_data_t *gd = malloc(sizeof(dt_iop_highpass_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_highpass_invert = dt_opencl_create_kernel(program, "highpass_invert");
   gd->kernel_highpass_hblur = dt_opencl_create_kernel(program, "highpass_hblur");
   gd->kernel_highpass_vblur = dt_opencl_create_kernel(program, "highpass_vblur");
   gd->kernel_highpass_mix = dt_opencl_create_kernel(program, "highpass_mix");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_highpass_global_data_t *gd = module->data;
+  dt_iop_highpass_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_highpass_invert);
   dt_opencl_free_kernel(gd->kernel_highpass_hblur);
   dt_opencl_free_kernel(gd->kernel_highpass_vblur);
   dt_opencl_free_kernel(gd->kernel_highpass_mix);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 

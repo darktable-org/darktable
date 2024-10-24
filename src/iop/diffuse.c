@@ -1730,12 +1730,12 @@ error:
   return err;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 33; // extended.cl in programs.conf
   dt_iop_diffuse_global_data_t *gd = malloc(sizeof(dt_iop_diffuse_global_data_t));
 
-  module->data = gd;
+  self->data = gd;
   gd->kernel_diffuse_build_mask = dt_opencl_create_kernel(program, "build_mask");
   gd->kernel_diffuse_inpaint_mask = dt_opencl_create_kernel(program, "inpaint_mask");
   gd->kernel_diffuse_pde = dt_opencl_create_kernel(program, "diffuse_pde");
@@ -1750,9 +1750,9 @@ void init_global(dt_iop_module_so_t *module)
 }
 
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_diffuse_global_data_t *gd = module->data;
+  dt_iop_diffuse_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_diffuse_build_mask);
   dt_opencl_free_kernel(gd->kernel_diffuse_inpaint_mask);
   dt_opencl_free_kernel(gd->kernel_diffuse_pde);
@@ -1760,8 +1760,8 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_filmic_bspline_vertical);
   dt_opencl_free_kernel(gd->kernel_filmic_bspline_horizontal);
   dt_opencl_free_kernel(gd->kernel_filmic_wavelets_detail);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 #endif
 

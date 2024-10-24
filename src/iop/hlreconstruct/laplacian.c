@@ -583,7 +583,7 @@ static inline gint wavelets_process(const float *const restrict in,
 }
 
 
-static void process_laplacian_bayer(struct dt_iop_module_t *self,
+static void process_laplacian_bayer(dt_iop_module_t *self,
                                     dt_dev_pixelpipe_iop_t *piece,
                                     const void *const restrict ivoid,
                                     void *const restrict ovoid,
@@ -778,7 +778,7 @@ static inline cl_int wavelets_process_cl(const int devid,
   return err;
 }
 
-static cl_int process_laplacian_bayer_cl(struct dt_iop_module_t *self,
+static cl_int process_laplacian_bayer_cl(dt_iop_module_t *self,
                                          dt_dev_pixelpipe_iop_t *piece,
                                          cl_mem dev_in,
                                          cl_mem dev_out,

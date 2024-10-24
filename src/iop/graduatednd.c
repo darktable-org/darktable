@@ -979,22 +979,22 @@ int process_cl(dt_iop_module_t *self,
 }
 #endif
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 8; // extended.cl, from programs.conf
   dt_iop_graduatednd_global_data_t *gd = malloc(sizeof(dt_iop_graduatednd_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_graduatedndp = dt_opencl_create_kernel(program, "graduatedndp");
   gd->kernel_graduatedndm = dt_opencl_create_kernel(program, "graduatedndm");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_graduatednd_global_data_t *gd = module->data;
+  dt_iop_graduatednd_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_graduatedndp);
   dt_opencl_free_kernel(gd->kernel_graduatedndm);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)

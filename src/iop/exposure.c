@@ -122,7 +122,7 @@ const char *name()
   return _("exposure");
 }
 
-const char** description(struct dt_iop_module_t *self)
+const char** description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
     (self,
@@ -1097,12 +1097,12 @@ static void _spot_settings_changed_callback(GtkWidget *slider,
   // else : just record new values and do nothing
 }
 
-void gui_reset(struct dt_iop_module_t *self)
+void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_color_picker_reset(self, TRUE);
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_exposure_gui_data_t *g = IOP_GUI_ALLOC(exposure);
 
@@ -1265,7 +1265,7 @@ void gui_init(struct dt_iop_module_t *self)
   instance->get_black = _exposure_proxy_get_black;
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_exposure_gui_data_t *g = self->gui_data;
 

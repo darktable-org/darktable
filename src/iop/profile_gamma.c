@@ -575,23 +575,23 @@ void gui_update(dt_iop_module_t *self)
   gui_changed(self, g->mode, 0);
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_profilegamma_global_data_t *gd = malloc(sizeof(dt_iop_profilegamma_global_data_t));
 
-  module->data = gd;
+  self->data = gd;
   gd->kernel_profilegamma = dt_opencl_create_kernel(program, "profilegamma");
   gd->kernel_profilegamma_log = dt_opencl_create_kernel(program, "profilegamma_log");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_profilegamma_global_data_t *gd = module->data;
+  dt_iop_profilegamma_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_profilegamma);
   dt_opencl_free_kernel(gd->kernel_profilegamma_log);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 

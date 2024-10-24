@@ -1430,7 +1430,7 @@ static void _gradient_sanitize_config(dt_masks_type_t type)
   dt_conf_set_float(DT_MASKS_CONF(type, gradient, curvature), 0.0f);
 }
 
-static void _gradient_set_form_name(struct dt_masks_form_t *const form,
+static void _gradient_set_form_name(dt_masks_form_t *const form,
                                     const size_t nb)
 {
   snprintf(form->name, sizeof(form->name), _("gradient #%d"), (int)nb);

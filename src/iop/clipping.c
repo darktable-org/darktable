@@ -1158,11 +1158,11 @@ error:
 }
 #endif
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // basic.cl from programs.conf
   dt_iop_clipping_global_data_t *gd = malloc(sizeof(dt_iop_clipping_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_clip_rotate_bilinear = dt_opencl_create_kernel(program, "clip_rotate_bilinear");
   gd->kernel_clip_rotate_bicubic = dt_opencl_create_kernel(program, "clip_rotate_bicubic");
   gd->kernel_clip_rotate_lanczos2 = dt_opencl_create_kernel(program, "clip_rotate_lanczos2");
@@ -1170,15 +1170,15 @@ void init_global(dt_iop_module_so_t *module)
 }
 
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_clipping_global_data_t *gd = module->data;
+  dt_iop_clipping_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_clip_rotate_bilinear);
   dt_opencl_free_kernel(gd->kernel_clip_rotate_bicubic);
   dt_opencl_free_kernel(gd->kernel_clip_rotate_lanczos2);
   dt_opencl_free_kernel(gd->kernel_clip_rotate_lanczos3);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 

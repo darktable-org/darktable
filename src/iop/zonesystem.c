@@ -143,7 +143,7 @@ static inline int _iop_zonesystem_zone_index_from_lightness(float lightness, flo
 }
 
 /* calculate a zonemap with scale values for each zone based on controlpoints from param */
-static inline void _iop_zonesystem_calculate_zonemap(struct dt_iop_zonesystem_params_t *p, float *zonemap)
+static inline void _iop_zonesystem_calculate_zonemap(dt_iop_zonesystem_params_t *p, float *zonemap)
 {
   int steps = 0;
   int pk = 0;
@@ -170,7 +170,7 @@ static inline void _iop_zonesystem_calculate_zonemap(struct dt_iop_zonesystem_pa
   }
 }
 
-static void process_common_setup(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+static void process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                  const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
                                  const dt_iop_roi_t *const roi_out)
 {
@@ -195,7 +195,7 @@ static void process_common_setup(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   }
 }
 
-static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+static void process_common_cleanup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                    const void *const ivoid, void *const ovoid,
                                    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -266,7 +266,7 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
@@ -298,7 +298,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_zonesystem_data_t *data = piece->data;
@@ -341,24 +341,24 @@ error:
 
 
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_zonesystem_global_data_t *gd = malloc(sizeof(dt_iop_zonesystem_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_zonesystem = dt_opencl_create_kernel(program, "zonesystem");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_zonesystem_global_data_t *gd = module->data;
+  dt_iop_zonesystem_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_zonesystem);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)p1;
@@ -380,18 +380,18 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     d->zonemap_offset[k] = 100.0f * ((k + 1) * zonemap[k] - k * zonemap[k + 1]);
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_zonesystem_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   dt_iop_zonesystem_gui_data_t *g = self->gui_data;
   gtk_widget_queue_draw(GTK_WIDGET(g->zones));
@@ -438,7 +438,7 @@ static void size_allocate_callback(GtkWidget *widget, GtkAllocation *allocation,
   }
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_zonesystem_gui_data_t *g = IOP_GUI_ALLOC(zonesystem);
   g->in_preview_buffer = g->out_preview_buffer = NULL;
@@ -489,7 +489,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->image_height = 0;
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   DT_CONTROL_SIGNAL_DISCONNECT(_iop_zonesystem_redraw_preview_callback, self);
 

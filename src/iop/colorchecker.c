@@ -841,7 +841,7 @@ void _colorchecker_rebuild_patch_list(dt_iop_module_t *self)
   }
 }
 
-void _colorchecker_update_sliders(struct dt_iop_module_t *self)
+void _colorchecker_update_sliders(dt_iop_module_t *self)
 {
   dt_iop_colorchecker_params_t *p = self->params;
   dt_iop_colorchecker_gui_data_t *g = self->gui_data;

@@ -1114,11 +1114,11 @@ void filepath_set_unix_separator(char *filepath)
     if(filepath[i]=='\\') filepath[i] = '/';
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 28; // rgbcurve.cl, from programs.conf
   dt_iop_lut3d_global_data_t *gd = malloc(sizeof(dt_iop_lut3d_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_lut3d_tetrahedral = dt_opencl_create_kernel(program, "lut3d_tetrahedral");
   gd->kernel_lut3d_trilinear = dt_opencl_create_kernel(program, "lut3d_trilinear");
   gd->kernel_lut3d_pyramid = dt_opencl_create_kernel(program, "lut3d_pyramid");
@@ -1133,15 +1133,15 @@ void init_global(dt_iop_module_so_t *module)
 #endif // HAVE_GMIC
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_lut3d_global_data_t *gd = module->data;
+  dt_iop_lut3d_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_lut3d_tetrahedral);
   dt_opencl_free_kernel(gd->kernel_lut3d_trilinear);
   dt_opencl_free_kernel(gd->kernel_lut3d_pyramid);
   dt_opencl_free_kernel(gd->kernel_lut3d_none);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 static int calculate_clut(dt_iop_lut3d_params_t *const p, float **clut)

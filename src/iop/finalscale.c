@@ -115,8 +115,8 @@ void modify_roi_in(dt_iop_module_t *self,
   }
 }
 
-void tiling_callback(struct dt_iop_module_t *self,
-                     struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in,
                      const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
@@ -136,8 +136,8 @@ void tiling_callback(struct dt_iop_module_t *self,
   tiling->yalign = 1;
 }
 
-void distort_mask(struct dt_iop_module_t *self,
-                  struct dt_dev_pixelpipe_iop_t *piece,
+void distort_mask(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
                   const float *const in,
                   float *const out,
                   const dt_iop_roi_t *const roi_in,
@@ -149,7 +149,7 @@ void distort_mask(struct dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in,

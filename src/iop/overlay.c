@@ -937,7 +937,7 @@ void gui_changed(dt_iop_module_t *self,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   dt_iop_overlay_global_data_t *gd = calloc(1, sizeof(dt_iop_overlay_global_data_t));
 
@@ -945,19 +945,19 @@ void init_global(dt_iop_module_so_t *module)
   pthread_mutexattr_init(&recursive_locking);
   pthread_mutexattr_settype(&recursive_locking, PTHREAD_MUTEX_RECURSIVE);
   dt_pthread_mutex_init(&gd->overlay_threadsafe, &recursive_locking);
-  module->data = gd;
+  self->data = gd;
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_overlay_global_data_t *gd = module->data;
+  dt_iop_overlay_global_data_t *gd = self->data;
 
   for(int k=0; k<MAX_OVERLAY; k++)
     dt_free_align(gd->cache[k]);
 
   dt_pthread_mutex_destroy(&gd->overlay_threadsafe);
   free(gd);
-  module->data = NULL;
+  self->data = NULL;
 }
 
 static void _signal_image_changed(gpointer instance, dt_iop_module_t *self)

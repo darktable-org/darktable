@@ -285,12 +285,12 @@ typedef struct dt_iop_colorequal_gui_data_t
   float points[NODES+1][2];
 } dt_iop_colorequal_gui_data_t;
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 37; // colorequal.cl, from programs.conf
 
   dt_iop_colorequal_global_data_t *gd = malloc(sizeof(dt_iop_colorequal_global_data_t));
-  module->data = gd;
+  self->data = gd;
 
   gd->ce_init_covariance = dt_opencl_create_kernel(program, "init_covariance");
   gd->ce_finish_covariance = dt_opencl_create_kernel(program, "finish_covariance");
@@ -310,9 +310,9 @@ void init_global(dt_iop_module_so_t *module)
   gd->ce_bilinear4 = dt_opencl_create_kernel(program, "bilinear4");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_colorequal_global_data_t *gd = (dt_iop_colorequal_global_data_t *)module->data;
+  dt_iop_colorequal_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->ce_init_covariance);
   dt_opencl_free_kernel(gd->ce_finish_covariance);
   dt_opencl_free_kernel(gd->ce_prepare_prefilter);
@@ -330,8 +330,8 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->ce_bilinear2);
   dt_opencl_free_kernel(gd->ce_bilinear4);
 
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 
@@ -2268,7 +2268,7 @@ void init_presets(dt_iop_module_so_t *self)
                              1, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
+void gui_focus(dt_iop_module_t *self, gboolean in)
 {
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
   if(!in)
@@ -2890,7 +2890,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
@@ -2985,7 +2985,7 @@ static const dt_action_def_t _action_def_coloreq
       _action_process_colorequal,
       _action_elements_colorequal };
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_colorequal_gui_data_t *g = IOP_GUI_ALLOC(colorequal);
 

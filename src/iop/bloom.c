@@ -359,11 +359,11 @@ void tiling_callback(dt_iop_module_t *self,
   return;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 12; // bloom.cl, from programs.conf
   dt_iop_bloom_global_data_t *gd = malloc(sizeof(dt_iop_bloom_global_data_t));
-  module->data = gd;
+  self->data = gd;
 
   gd->kernel_bloom_threshold = dt_opencl_create_kernel(program, "bloom_threshold");
   gd->kernel_bloom_hblur = dt_opencl_create_kernel(program, "bloom_hblur");
@@ -371,15 +371,15 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_bloom_mix = dt_opencl_create_kernel(program, "bloom_mix");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  const dt_iop_bloom_global_data_t *gd = module->data;
+  const dt_iop_bloom_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_bloom_threshold);
   dt_opencl_free_kernel(gd->kernel_bloom_hblur);
   dt_opencl_free_kernel(gd->kernel_bloom_vblur);
   dt_opencl_free_kernel(gd->kernel_bloom_mix);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 void commit_params(dt_iop_module_t *self,

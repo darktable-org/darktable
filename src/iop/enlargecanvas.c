@@ -75,7 +75,7 @@ const char *name()
   return _("enlarge canvas");
 }
 
-const char** description(struct dt_iop_module_t *self)
+const char** description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
     (self,
@@ -117,8 +117,8 @@ void commit_params(dt_iop_module_t *self,
   memcpy(piece->data, p1, self->params_size);
 }
 
-void modify_roi_out(struct dt_iop_module_t *self,
-                    struct dt_dev_pixelpipe_iop_t *piece,
+void modify_roi_out(dt_iop_module_t *self,
+                    dt_dev_pixelpipe_iop_t *piece,
                     dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *roi_in)
 {
@@ -151,8 +151,8 @@ void modify_roi_out(struct dt_iop_module_t *self,
   roi_out->height = CLAMP(roi_out->height, 5, roi_in->height * 3);
 }
 
-void modify_roi_in(struct dt_iop_module_t *self,
-                   struct dt_dev_pixelpipe_iop_t *piece,
+void modify_roi_in(dt_iop_module_t *self,
+                   dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *roi_out,
                    dt_iop_roi_t *roi_in)
 {
@@ -290,8 +290,8 @@ static void _compute_pos(const dt_iop_enlargecanvas_data_t *const d,
   *pos_h = CLAMP(*pos_h, 0.0f, 1.0f);
 }
 
-void distort_mask(struct dt_iop_module_t *self,
-                  struct dt_dev_pixelpipe_iop_t *piece,
+void distort_mask(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
                   const float *const in,
                   float *const out,
                   const dt_iop_roi_t *const roi_in,
@@ -328,7 +328,7 @@ void distort_mask(struct dt_iop_module_t *self,
   }
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
