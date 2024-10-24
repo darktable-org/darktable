@@ -854,23 +854,23 @@ cleanup:
 }
 #endif // HAVE_OPENCL
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 36; // sigmoid.cl, from programs.conf
   dt_iop_sigmoid_global_data_t *gd = malloc(sizeof(dt_iop_sigmoid_global_data_t));
 
-  module->data = gd;
+  self->data = gd;
   gd->kernel_sigmoid_loglogistic_per_channel = dt_opencl_create_kernel(program, "sigmoid_loglogistic_per_channel");
   gd->kernel_sigmoid_loglogistic_rgb_ratio = dt_opencl_create_kernel(program, "sigmoid_loglogistic_rgb_ratio");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_sigmoid_global_data_t *gd = module->data;
+  dt_iop_sigmoid_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_per_channel);
   dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_rgb_ratio);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

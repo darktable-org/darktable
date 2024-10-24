@@ -1312,7 +1312,7 @@ static float _brush_get_position_in_segment(const float x,
   return tmin;
 }
 
-static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module,
+static int _brush_events_mouse_scrolled(dt_iop_module_t *module,
                                         const float pzx,
                                         const float pzy,
                                         const int up,
@@ -1465,7 +1465,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module,
   return 0;
 }
 
-static int _brush_events_button_pressed(struct dt_iop_module_t *module,
+static int _brush_events_button_pressed(dt_iop_module_t *module,
                                         const float pzx,
                                         const float pzy,
                                         const double pressure,
@@ -1798,7 +1798,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module,
   return 0;
 }
 
-static int _brush_events_button_released(struct dt_iop_module_t *module,
+static int _brush_events_button_released(dt_iop_module_t *module,
                                          const float pzx,
                                          const float pzy,
                                          const int which,

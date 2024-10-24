@@ -488,8 +488,8 @@ static int _simplex(double (*objfunc)(double[], void *[]), double start[], int n
 }
 
 
-static int _nm_fit_output_to_input_roi(struct dt_iop_module_t *self,
-                                       struct dt_dev_pixelpipe_iop_t *piece,
+static int _nm_fit_output_to_input_roi(dt_iop_module_t *self,
+                                       dt_dev_pixelpipe_iop_t *piece,
                                        const dt_iop_roi_t *iroi,
                                        dt_iop_roi_t *oroi,
                                        int delta)
@@ -519,8 +519,8 @@ static int _nm_fit_output_to_input_roi(struct dt_iop_module_t *self,
 /* find a matching oroi_full by probing start value of oroi and get corresponding input roi into iroi_probe.
    We search in two steps. first by a simplicistic iterative search which will succeed in most cases.
    If this does not converge, we do a downhill simplex (nelder-mead) fitting */
-static int _fit_output_to_input_roi(struct dt_iop_module_t *self,
-                                    struct dt_dev_pixelpipe_iop_t *piece,
+static int _fit_output_to_input_roi(dt_iop_module_t *self,
+                                    dt_dev_pixelpipe_iop_t *piece,
                                     const dt_iop_roi_t *iroi,
                                     dt_iop_roi_t *oroi,
                                     int delta,
@@ -564,8 +564,8 @@ static int _fit_output_to_input_roi(struct dt_iop_module_t *self,
 
 
 /* simple tiling algorithm for roi_in == roi_out, i.e. for pixel to pixel modules/operations */
-static void _default_process_tiling_ptp(struct dt_iop_module_t *self,
-                                        struct dt_dev_pixelpipe_iop_t *piece,
+static void _default_process_tiling_ptp(dt_iop_module_t *self,
+                                        dt_dev_pixelpipe_iop_t *piece,
                                         const void *const ivoid,
                                         void *const ovoid,
                                         const dt_iop_roi_t *const roi_in,
@@ -824,8 +824,8 @@ fallback:
 
 /* more elaborate tiling algorithm for roi_in != roi_out: slower than the ptp variant,
    more tiles and larger overlap */
-static void _default_process_tiling_roi(struct dt_iop_module_t *self,
-                                        struct dt_dev_pixelpipe_iop_t *piece,
+static void _default_process_tiling_roi(dt_iop_module_t *self,
+                                        dt_dev_pixelpipe_iop_t *piece,
                                         const void *const ivoid,
                                         void *const ovoid,
                                         const dt_iop_roi_t *const roi_in,
@@ -1176,8 +1176,8 @@ fallback:
    _default_process_tiling_roi() takes care of all other cases where image gets distorted and for module
    "clipping",
    "flip" as this may flip or mirror the image. */
-void default_process_tiling(struct dt_iop_module_t *self,
-                            struct dt_dev_pixelpipe_iop_t *piece,
+void default_process_tiling(dt_iop_module_t *self,
+                            dt_dev_pixelpipe_iop_t *piece,
                             const void *const ivoid,
                             void *const ovoid,
                             const dt_iop_roi_t *const roi_in,
@@ -1191,8 +1191,8 @@ void default_process_tiling(struct dt_iop_module_t *self,
   return;
 }
 
-float dt_tiling_estimate_cpumem(struct dt_develop_tiling_t *tiling,
-                                struct dt_dev_pixelpipe_iop_t *piece,
+float dt_tiling_estimate_cpumem(dt_develop_tiling_t *tiling,
+                                dt_dev_pixelpipe_iop_t *piece,
                                 const dt_iop_roi_t *const roi_in,
                                 const dt_iop_roi_t *const roi_out,
                                 const int max_bpp)
@@ -1252,8 +1252,8 @@ float dt_tiling_estimate_cpumem(struct dt_develop_tiling_t *tiling,
 }
 
 #ifdef HAVE_OPENCL
-float dt_tiling_estimate_clmem(struct dt_develop_tiling_t *tiling,
-                               struct dt_dev_pixelpipe_iop_t *piece,
+float dt_tiling_estimate_clmem(dt_develop_tiling_t *tiling,
+                               dt_dev_pixelpipe_iop_t *piece,
                                const dt_iop_roi_t *const roi_in,
                                const dt_iop_roi_t *const roi_out,
                                const int max_bpp)
@@ -1313,8 +1313,8 @@ float dt_tiling_estimate_clmem(struct dt_develop_tiling_t *tiling,
 }
 
 /* simple tiling algorithm for roi_in == roi_out, i.e. for pixel to pixel modules/operations */
-static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self,
-                                          struct dt_dev_pixelpipe_iop_t *piece,
+static int _default_process_tiling_cl_ptp(dt_iop_module_t *self,
+                                          dt_dev_pixelpipe_iop_t *piece,
                                           const void *const ivoid,
                                           void *const ovoid,
                                           const dt_iop_roi_t *const roi_in,
@@ -1691,8 +1691,8 @@ error:
 
 /* more elaborate tiling algorithm for roi_in != roi_out: slower than the ptp variant,
    more tiles and larger overlap */
-static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self,
-                                          struct dt_dev_pixelpipe_iop_t *piece,
+static int _default_process_tiling_cl_roi(dt_iop_module_t *self,
+                                          dt_dev_pixelpipe_iop_t *piece,
                                           const void *const ivoid,
                                           void *const ovoid,
                                           const dt_iop_roi_t *const roi_in,
@@ -2157,8 +2157,8 @@ error:
 /* if a module does not implement process_tiling_cl() by itself, this function is called instead.
    _default_process_tiling_cl_ptp() is able to handle standard cases where pixels do not change their places.
    _default_process_tiling_cl_roi() takes care of all other cases where image gets distorted. */
-int default_process_tiling_cl(struct dt_iop_module_t *self,
-                              struct dt_dev_pixelpipe_iop_t *piece,
+int default_process_tiling_cl(dt_iop_module_t *self,
+                              dt_dev_pixelpipe_iop_t *piece,
                               const void *const ivoid,
                               void *const ovoid,
                               const dt_iop_roi_t *const roi_in,
@@ -2172,8 +2172,8 @@ int default_process_tiling_cl(struct dt_iop_module_t *self,
 }
 
 #else
-int default_process_tiling_cl(struct dt_iop_module_t *self,
-                              struct dt_dev_pixelpipe_iop_t *piece,
+int default_process_tiling_cl(dt_iop_module_t *self,
+                              dt_dev_pixelpipe_iop_t *piece,
                               const void *const ivoid,
                               void *const ovoid,
                               const dt_iop_roi_t *const roi_in,
@@ -2191,8 +2191,8 @@ int default_process_tiling_cl(struct dt_iop_module_t *self,
    alignment required. Simple pixel to pixel modules (take tonecurve as an example) can happily
    live with that.
    (1) Small overhead like look-up-tables in tonecurve can be ignored safely. */
-void default_tiling_callback(struct dt_iop_module_t *self,
-                             struct dt_dev_pixelpipe_iop_t *piece,
+void default_tiling_callback(dt_iop_module_t *self,
+                             dt_dev_pixelpipe_iop_t *piece,
                              const dt_iop_roi_t *roi_in,
                              const dt_iop_roi_t *roi_out,
                              struct dt_develop_tiling_t *tiling)

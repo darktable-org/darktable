@@ -419,7 +419,7 @@ static int _ellipse_get_points_border(dt_develop_t *dev,
   return 0;
 }
 
-static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module,
+static int _ellipse_events_mouse_scrolled(dt_iop_module_t *module,
                                           const float pzx,
                                           const float pzy,
                                           const int up,
@@ -1969,7 +1969,7 @@ static GSList *_ellipse_setup_mouse_actions(const struct dt_masks_form_t *const 
   return lm;
 }
 
-static void _ellipse_set_form_name(struct dt_masks_form_t *const form,
+static void _ellipse_set_form_name(dt_masks_form_t *const form,
                                    const size_t nb)
 {
   snprintf(form->name, sizeof(form->name), _("ellipse #%d"), (int)nb);

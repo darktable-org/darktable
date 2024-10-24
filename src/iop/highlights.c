@@ -916,11 +916,11 @@ void commit_params(dt_iop_module_t *self,
     piece->process_cl_ready = FALSE;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_highlights_global_data_t *gd = malloc(sizeof(dt_iop_highlights_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_highlights_1f_clip = dt_opencl_create_kernel(program, "highlights_1f_clip");
   gd->kernel_highlights_1f_lch_bayer = dt_opencl_create_kernel(program, "highlights_1f_lch_bayer");
   gd->kernel_highlights_1f_lch_xtrans = dt_opencl_create_kernel(program, "highlights_1f_lch_xtrans");
@@ -945,9 +945,9 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_filmic_wavelets_detail = dt_opencl_create_kernel(wavelets, "wavelets_detail_level");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_highlights_global_data_t *gd = module->data;
+  dt_iop_highlights_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_highlights_4f_clip);
   dt_opencl_free_kernel(gd->kernel_highlights_1f_lch_bayer);
   dt_opencl_free_kernel(gd->kernel_highlights_1f_lch_xtrans);
@@ -971,8 +971,8 @@ void cleanup_global(dt_iop_module_so_t *module)
 
   dt_opencl_free_kernel(gd->kernel_interpolate_bilinear);
 
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

@@ -188,7 +188,7 @@ static void _blendif_combine_channels(const float *const restrict pixels,
   }
 }
 
-void dt_develop_blendif_lab_make_mask(struct dt_dev_pixelpipe_iop_t *piece,
+void dt_develop_blendif_lab_make_mask(dt_dev_pixelpipe_iop_t *piece,
                                       const float *const restrict a,
                                       const float *const restrict b,
                                       const struct dt_iop_roi_t *const roi_in,
