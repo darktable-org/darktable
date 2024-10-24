@@ -1123,7 +1123,7 @@ char *dt_history_get_items_as_string(const dt_imgid_t imgid)
   }
   sqlite3_finalize(stmt);
   items = g_list_reverse(items); // list was built in reverse order, so un-reverse it
-  char *result = dt_util_glist_to_str("", items);
+  char *result = dt_util_glist_to_str("\n", items);
   g_list_free_full(items, g_free);
   return result;
 }

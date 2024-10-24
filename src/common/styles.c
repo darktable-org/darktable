@@ -1209,7 +1209,7 @@ char *dt_styles_get_item_list_as_string(const char *name)
   }
   names = g_list_reverse(names);  // list was built in reverse order, so un-reverse it
 
-  char *result = dt_util_glist_to_str("", names);
+  char *result = dt_util_glist_to_str("\n", names);
   g_list_free_full(names, g_free);
   g_list_free_full(items, dt_style_item_free);
   return result;
