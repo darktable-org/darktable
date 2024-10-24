@@ -236,21 +236,21 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 #endif
 
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 8; // extended.cl from programs.conf
   dt_iop_splittoning_global_data_t *gd = malloc(sizeof(dt_iop_splittoning_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_splittoning = dt_opencl_create_kernel(program, "splittoning");
 }
 
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_splittoning_global_data_t *gd = module->data;
+  dt_iop_splittoning_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_splittoning);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 static inline void update_colorpicker_color(GtkWidget *colorpicker, float hue, float sat)

@@ -228,20 +228,20 @@ int legacy_params(dt_iop_module_t *self,
 #undef DT_IOP_COLOR_ICC_LEN_V4
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_colorout_global_data_t *gd = malloc(sizeof(dt_iop_colorout_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_colorout = dt_opencl_create_kernel(program, "colorout");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_colorout_global_data_t *gd = module->data;
+  dt_iop_colorout_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_colorout);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 static void intent_changed(GtkWidget *widget, dt_iop_module_t *self)

@@ -655,22 +655,22 @@ error:
 #endif
 
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // basic.cl from programs.conf
   dt_iop_borders_global_data_t *gd
       = (dt_iop_borders_global_data_t *)malloc(sizeof(dt_iop_borders_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_borders_fill = dt_opencl_create_kernel(program, "borders_fill");
 }
 
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_borders_global_data_t *gd = module->data;
+  dt_iop_borders_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_borders_fill);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 

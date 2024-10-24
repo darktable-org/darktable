@@ -168,7 +168,7 @@ int legacy_params(dt_iop_module_t *self,
   return 1;
 }
 
-static inline void process_reinhard(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+static inline void process_reinhard(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                     const void *const ivoid, void *const ovoid,
                                     const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                                     dt_iop_global_tonemap_data_t *data)
@@ -189,7 +189,7 @@ static inline void process_reinhard(struct dt_iop_module_t *self, dt_dev_pixelpi
   }
 }
 
-static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+static inline void process_drago(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                  const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
                                  const dt_iop_roi_t *const roi_out, dt_iop_global_tonemap_data_t *data)
 {
@@ -266,7 +266,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   }
 }
 
-static inline void process_filmic(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+static inline void process_filmic(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                   const void *const ivoid, void *const ovoid,
                                   const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                                   dt_iop_global_tonemap_data_t *data)
@@ -288,7 +288,7 @@ static inline void process_filmic(struct dt_iop_module_t *self, dt_dev_pixelpipe
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_global_tonemap_data_t *data = piece->data;
@@ -328,7 +328,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_global_tonemap_data_t *d = piece->data;
@@ -525,9 +525,9 @@ finally:
 #endif
 
 
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
   dt_iop_global_tonemap_data_t *d = piece->data;
 
@@ -554,7 +554,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   return;
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)p1;
@@ -574,22 +574,22 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 #endif
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_global_tonemap_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 8; // extended.cl from programs.conf
   dt_iop_global_tonemap_global_data_t *gd = malloc(sizeof(dt_iop_global_tonemap_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_pixelmax_first = dt_opencl_create_kernel(program, "pixelmax_first");
   gd->kernel_pixelmax_second = dt_opencl_create_kernel(program, "pixelmax_second");
   gd->kernel_global_tonemap_reinhard = dt_opencl_create_kernel(program, "global_tonemap_reinhard");
@@ -598,16 +598,16 @@ void init_global(dt_iop_module_so_t *module)
 }
 
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_global_tonemap_global_data_t *gd = module->data;
+  dt_iop_global_tonemap_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_pixelmax_first);
   dt_opencl_free_kernel(gd->kernel_pixelmax_second);
   dt_opencl_free_kernel(gd->kernel_global_tonemap_reinhard);
   dt_opencl_free_kernel(gd->kernel_global_tonemap_drago);
   dt_opencl_free_kernel(gd->kernel_global_tonemap_filmic);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
@@ -622,7 +622,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   dt_iop_global_tonemap_gui_data_t *g = self->gui_data;
 
@@ -634,7 +634,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_gui_leave_critical_section(self);
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_global_tonemap_gui_data_t *g = IOP_GUI_ALLOC(global_tonemap);
 
@@ -655,7 +655,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->detail, 3);
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   IOP_GUI_FREE;
 }

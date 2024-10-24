@@ -1375,24 +1375,24 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   _check_tuner_picker_labels(self);
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 8; // extended.cl, from programs.conf
   dt_iop_colorbalance_global_data_t *gd = malloc(sizeof(dt_iop_colorbalance_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_colorbalance = dt_opencl_create_kernel(program, "colorbalance");
   gd->kernel_colorbalance_lgg = dt_opencl_create_kernel(program, "colorbalance_lgg");
   gd->kernel_colorbalance_cdl = dt_opencl_create_kernel(program, "colorbalance_cdl");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_colorbalance_global_data_t *gd = module->data;
+  dt_iop_colorbalance_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_colorbalance);
   dt_opencl_free_kernel(gd->kernel_colorbalance_lgg);
   dt_opencl_free_kernel(gd->kernel_colorbalance_cdl);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,

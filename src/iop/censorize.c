@@ -395,20 +395,20 @@ void tiling_callback(dt_iop_module_t *self,
   tiling->yalign = 1;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 6; // gaussian.cl, from programs.conf
   dt_iop_censorize_global_data_t *gd = malloc(sizeof(dt_iop_censorize_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_lowpass_mix = dt_opencl_create_kernel(program, "lowpass_mix");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_censorize_global_data_t *gd = module->data;
+  dt_iop_censorize_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_lowpass_mix);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 #endif
