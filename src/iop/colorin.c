@@ -475,24 +475,24 @@ int legacy_params(dt_iop_module_t *self,
 #undef DT_IOP_COLOR_ICC_LEN_V5
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_colorin_global_data_t *gd = malloc(sizeof(dt_iop_colorin_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_colorin_unbound = dt_opencl_create_kernel(program, "colorin_unbound");
   gd->kernel_colorin_clipping = dt_opencl_create_kernel(program, "colorin_clipping");
   gd->kernel_colorin_correction =  dt_opencl_create_kernel(program, "colorin_correct");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_colorin_global_data_t *gd = module->data;
+  dt_iop_colorin_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_colorin_unbound);
   dt_opencl_free_kernel(gd->kernel_colorin_clipping);
   dt_opencl_free_kernel(gd->kernel_colorin_correction);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 static void _profile_changed(GtkWidget *widget, dt_iop_module_t *self)
@@ -1697,19 +1697,19 @@ void gui_update(dt_iop_module_t *self)
 }
 
 // FIXME: update the gui when we add/remove the eprofile or ematrix
-void reload_defaults(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *self)
 {
-  module->default_enabled = TRUE;
-  module->hide_enable_button = TRUE;
+  self->default_enabled = TRUE;
+  self->hide_enable_button = TRUE;
 
-  dt_iop_colorin_params_t *d = module->default_params;
+  dt_iop_colorin_params_t *d = self->default_params;
 
   dt_colorspaces_color_profile_type_t color_profile = DT_COLORSPACE_NONE;
 
   // some file formats like jpeg can have an embedded color profile
   // currently we only support jpeg, j2k, tiff, png, avif, and heif
   dt_image_t *img = dt_image_cache_get(darktable.image_cache,
-                                       module->dev->image_storage.id, 'w');
+                                       self->dev->image_storage.id, 'w');
 
   if(!img->profile)
   {
@@ -1805,7 +1805,7 @@ void reload_defaults(dt_iop_module_t *module)
   // change.
 
   // We need gui_data to access widget in order to change tooltip.
-  dt_iop_colorin_gui_data_t *g = module->gui_data;
+  dt_iop_colorin_gui_data_t *g = self->gui_data;
 
   // reload_defaults() can be called with unavailable (i.e., NULL) gui_data.
   // In this case, we have nothing to do with tooltips.
@@ -1911,7 +1911,7 @@ void reload_defaults(dt_iop_module_t *module)
 
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 
-  update_profile_list(module);
+  update_profile_list(self);
 }
 
 static void update_profile_list(dt_iop_module_t *self)

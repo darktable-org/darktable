@@ -3756,9 +3756,8 @@ void gui_reset(dt_iop_module_t *self)
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
-  dt_iop_channelmixer_rgb_params_t *p = module->params;
+  dt_iop_channelmixer_rgb_params_t *p = self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
 
@@ -3822,8 +3821,7 @@ void gui_update(dt_iop_module_t *self)
   // always disable profiling mode by default
   g->is_profiling_started = FALSE;
 
-  dt_iop_channelmixer_rgb_params_t *d =
-    (dt_iop_channelmixer_rgb_params_t *)module->default_params;
+  dt_iop_channelmixer_rgb_params_t *d = self->default_params;
   g->last_daylight_temperature = d->temperature;
   g->last_bb_temperature = d->temperature;
 
@@ -3839,23 +3837,23 @@ void gui_update(dt_iop_module_t *self)
   gui_changed(self, NULL, NULL);
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  dt_iop_default_init(module);
+  dt_iop_default_init(self);
 
-  dt_iop_channelmixer_rgb_params_t *d = module->default_params;
+  dt_iop_channelmixer_rgb_params_t *d = self->default_params;
   d->red[0] = d->green[1] = d->blue[2] = 1.0;
 }
 
-void reload_defaults(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_channelmixer_rgb_params_t *d = module->default_params;
+  dt_iop_channelmixer_rgb_params_t *d = self->default_params;
 
-  d->x = module->get_f("x")->Float.Default;
-  d->y = module->get_f("y")->Float.Default;
-  d->temperature = module->get_f("temperature")->Float.Default;
-  d->illuminant = module->get_f("illuminant")->Enum.Default;
-  d->adaptation = module->get_f("adaptation")->Enum.Default;
+  d->x = self->get_f("x")->Float.Default;
+  d->y = self->get_f("y")->Float.Default;
+  d->temperature = self->get_f("temperature")->Float.Default;
+  d->illuminant = self->get_f("illuminant")->Enum.Default;
+  d->adaptation = self->get_f("adaptation")->Enum.Default;
 
   const gboolean is_workflow_none = dt_conf_is_equal("plugins/darkroom/workflow", "none");
   const gboolean is_modern = dt_is_scene_referred() || is_workflow_none;
@@ -3863,15 +3861,15 @@ void reload_defaults(dt_iop_module_t *module)
   // note that if there is already an instance of this module with an
   // adaptation set we default to RGB (none) in this instance.
   // try to register the CAT here
-  _declare_cat_on_pipe(module, is_modern);
-  const dt_image_t *img = &module->dev->image_storage;
+  _declare_cat_on_pipe(self, is_modern);
+  const dt_image_t *img = &self->dev->image_storage;
 
   // check if we could register
   const gboolean CAT_already_applied =
-    (module->dev->chroma.adaptation != NULL)       // CAT exists
-    && (module->dev->chroma.adaptation != module); // and it is not us
+    (self->dev->chroma.adaptation != NULL)       // CAT exists
+    && (self->dev->chroma.adaptation != self); // and it is not us
 
-  module->default_enabled = FALSE;
+  self->default_enabled = FALSE;
 
   if(CAT_already_applied || dt_image_is_monochrome(img))
   {
@@ -3884,7 +3882,7 @@ void reload_defaults(dt_iop_module_t *module)
     d->adaptation = DT_ADAPTATION_CAT16;
 
     dt_aligned_pixel_t custom_wb;
-    if(!_get_white_balance_coeff(module, custom_wb))
+    if(!_get_white_balance_coeff(self, custom_wb))
     {
       if(find_temperature_from_raw_coeffs(img, custom_wb, &(d->x), &(d->y)))
         d->illuminant = DT_ILLUMINANT_CAMERA;
@@ -3893,7 +3891,7 @@ void reload_defaults(dt_iop_module_t *module)
     }
   }
 
-  dt_iop_channelmixer_rgb_gui_data_t *g = module->gui_data;
+  dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
   if(g)
   {
     const dt_aligned_pixel_t xyY = { d->x, d->y, 1.f };
@@ -3919,13 +3917,13 @@ void reload_defaults(dt_iop_module_t *module)
     {
       if(pos == -1)
         dt_bauhaus_combobox_add_introspection(g->illuminant, NULL,
-                                              module->so->get_f("illuminant")->Enum.values,
+                                              self->so->get_f("illuminant")->Enum.values,
                                               DT_ILLUMINANT_CAMERA, DT_ILLUMINANT_CAMERA);
     }
     else
       dt_bauhaus_combobox_remove_at(g->illuminant, pos);
 
-    gui_changed(module, NULL, NULL);
+    gui_changed(self, NULL, NULL);
   }
 }
 

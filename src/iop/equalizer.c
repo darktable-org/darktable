@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -216,14 +216,14 @@ void gui_update(struct dt_iop_module_t *self)
   // gtk_widget_queue_draw(self->widget);
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  module->params = calloc(1, sizeof(dt_iop_equalizer_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_equalizer_params_t));
-  module->default_enabled = FALSE; // we're a rather slow and rare op.
-  module->params_size = sizeof(dt_iop_equalizer_params_t);
-  module->gui_data = NULL;
-  dt_iop_equalizer_params_t *d = module->default_params;
+  self->params = calloc(1, sizeof(dt_iop_equalizer_params_t));
+  self->default_params = calloc(1, sizeof(dt_iop_equalizer_params_t));
+  self->default_enabled = FALSE; // we're a rather slow and rare op.
+  self->params_size = sizeof(dt_iop_equalizer_params_t);
+  self->gui_data = NULL;
+  dt_iop_equalizer_params_t *d = self->default_params;
   for(int ch = 0; ch < 3; ch++)
   {
     for(int k = 0; k < DT_IOP_EQUALIZER_BANDS; k++)

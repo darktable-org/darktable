@@ -882,11 +882,11 @@ int process_cl(dt_iop_module_t *self,
 }
 #endif
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 0; // from programs.conf
   dt_iop_demosaic_global_data_t *gd = malloc(sizeof(dt_iop_demosaic_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_zoom_half_size = dt_opencl_create_kernel(program, "clip_and_zoom_demosaic_half_size");
   gd->kernel_ppg_green = dt_opencl_create_kernel(program, "ppg_demosaic_green");
   gd->kernel_green_eq_lavg = dt_opencl_create_kernel(program, "green_equilibration_lavg");
@@ -947,9 +947,9 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_write_blended_dual  = dt_opencl_create_kernel(rcd, "write_blended_dual");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_demosaic_global_data_t *gd = module->data;
+  dt_iop_demosaic_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_zoom_half_size);
   dt_opencl_free_kernel(gd->kernel_ppg_green);
   dt_opencl_free_kernel(gd->kernel_pre_median);
@@ -1000,8 +1000,8 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_rcd_border_redblue);
   dt_opencl_free_kernel(gd->kernel_rcd_border_green);
   dt_opencl_free_kernel(gd->kernel_write_blended_dual);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
   _cleanup_lmmse_gamma();
 }
 
@@ -1143,24 +1143,24 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
   piece->data = NULL;
 }
 
-void reload_defaults(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_demosaic_params_t *d = module->default_params;
+  dt_iop_demosaic_params_t *d = self->default_params;
 
-  if(dt_image_is_monochrome(&module->dev->image_storage))
+  if(dt_image_is_monochrome(&self->dev->image_storage))
     d->demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
-  else if(module->dev->image_storage.buf_dsc.filters == 9u)
+  else if(self->dev->image_storage.buf_dsc.filters == 9u)
     d->demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
   else
-    d->demosaicing_method = module->dev->image_storage.flags & DT_IMAGE_4BAYER
+    d->demosaicing_method = self->dev->image_storage.flags & DT_IMAGE_4BAYER
                             ? DT_IOP_DEMOSAIC_VNG4
                             : DT_IOP_DEMOSAIC_RCD;
 
-  module->hide_enable_button = TRUE;
+  self->hide_enable_button = TRUE;
 
-  module->default_enabled = dt_image_is_raw(&module->dev->image_storage);
-  if(module->widget)
-    gtk_stack_set_visible_child_name(GTK_STACK(module->widget), module->default_enabled ? "raw" : "non_raw");
+  self->default_enabled = dt_image_is_raw(&self->dev->image_storage);
+  if(self->widget)
+    gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)

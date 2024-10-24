@@ -647,11 +647,11 @@ void tiling_callback(dt_iop_module_t *self,
   return;
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  dt_iop_default_init(module);
+  dt_iop_default_init(self);
 
-  dt_iop_atrous_params_t *d = module->default_params;
+  dt_iop_atrous_params_t *d = self->default_params;
 
   for(int k = 0; k < BANDS; k++)
   {
@@ -661,12 +661,11 @@ void init(dt_iop_module_t *module)
   }
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 1; // from programs.conf
-  dt_iop_atrous_global_data_t *gd
-      = (dt_iop_atrous_global_data_t *)malloc(sizeof(dt_iop_atrous_global_data_t));
-  module->data = gd;
+  dt_iop_atrous_global_data_t *gd = malloc(sizeof(dt_iop_atrous_global_data_t));
+  self->data = gd;
   gd->kernel_decompose = dt_opencl_create_kernel(program, "eaw_decompose");
   gd->kernel_synthesize = dt_opencl_create_kernel(program, "eaw_synthesize");
 #ifdef USE_NEW_CL
@@ -675,22 +674,22 @@ void init_global(dt_iop_module_so_t *module)
 #endif
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_atrous_global_data_t *gd = module->data;
+  dt_iop_atrous_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_decompose);
   dt_opencl_free_kernel(gd->kernel_synthesize);
 #ifdef USE_NEW_CL
   dt_opencl_free_kernel(gd->kernel_zero);
   dt_opencl_free_kernel(gd->kernel_addbuffers);
 #endif
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 static inline void _apply_mix(dt_iop_module_t *self,
-                              const int ch
-                              , const int k,
+                              const int ch,
+                              const int k,
                               const float mix,
                               const float px,
                               const float py,

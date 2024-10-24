@@ -354,14 +354,14 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
 }
 
-void reload_defaults(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *self)
 {
-  const dt_image_t *img = &module->dev->image_storage;
+  const dt_image_t *img = &self->dev->image_storage;
 
   const gboolean monoraw = (img->flags & DT_IMAGE_S_RAW) && (img->flags & DT_IMAGE_MONOCHROME);
   const gboolean supported = dt_image_is_raw(img) || monoraw;
   // can't be switched on for non-raw images:
-  module->hide_enable_button = !supported;
+  self->hide_enable_button = !supported;
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,

@@ -262,7 +262,7 @@ static void slope_callback(GtkWidget *slider, dt_iop_module_t *self)
 
 
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)p1;
@@ -272,7 +272,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->slope = p->slope;
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_rlce_data_t));
 }
@@ -283,7 +283,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   dt_iop_rlce_gui_data_t *g = self->gui_data;
   dt_iop_rlce_params_t *p = self->params;
@@ -291,25 +291,25 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale2, p->slope);
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  module->params = calloc(1, sizeof(dt_iop_rlce_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_rlce_params_t));
-  module->default_enabled = FALSE;
-  module->params_size = sizeof(dt_iop_rlce_params_t);
-  module->gui_data = NULL;
-  *((dt_iop_rlce_params_t *)module->default_params) = (dt_iop_rlce_params_t){ 64, 1.25 };
+  self->params = calloc(1, sizeof(dt_iop_rlce_params_t));
+  self->default_params = calloc(1, sizeof(dt_iop_rlce_params_t));
+  self->default_enabled = FALSE;
+  self->params_size = sizeof(dt_iop_rlce_params_t);
+  self->gui_data = NULL;
+  *((dt_iop_rlce_params_t *)self->default_params) = (dt_iop_rlce_params_t){ 64, 1.25 };
 }
 
-void cleanup(dt_iop_module_t *module)
+void cleanup(dt_iop_module_t *self)
 {
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
+  free(self->params);
+  self->params = NULL;
+  free(self->default_params);
+  self->default_params = NULL;
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_rlce_gui_data_t *g = IOP_GUI_ALLOC(rlce);
   dt_iop_rlce_params_t *p = self->default_params;

@@ -489,11 +489,11 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  dt_iop_default_init(module);
+  dt_iop_default_init(self);
 
-  dt_iop_rawdenoise_params_t *d = module->default_params;
+  dt_iop_rawdenoise_params_t *d = self->default_params;
 
   for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
   {
@@ -504,17 +504,17 @@ void init(dt_iop_module_t *module)
   }
 }
 
-void reload_defaults(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *self)
 {
   // can't be switched on for non-raw images:
-  module->hide_enable_button = !dt_image_is_raw(&module->dev->image_storage);
+  self->hide_enable_button = !dt_image_is_raw(&self->dev->image_storage);
 
-  if(module->widget)
+  if(self->widget)
   {
-    gtk_stack_set_visible_child_name(GTK_STACK(module->widget), module->hide_enable_button ? "non_raw" : "raw");
+    gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->hide_enable_button ? "non_raw" : "raw");
   }
 
-  module->default_enabled = FALSE;
+  self->default_enabled = FALSE;
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
