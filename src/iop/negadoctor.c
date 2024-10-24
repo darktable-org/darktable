@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2023 darktable developers.
+    Copyright (C) 2020-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -381,11 +381,11 @@ int process_cl(dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const piece,
 #endif
 
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  dt_iop_default_init(module);
+  dt_iop_default_init(self);
 
-  dt_iop_negadoctor_params_t *d = module->default_params;
+  dt_iop_negadoctor_params_t *d = self->default_params;
 
   d->Dmin[0] = 1.00f;
   d->Dmin[1] = 0.45f;
@@ -426,21 +426,21 @@ void init_presets(dt_iop_module_so_t *self)
                              self->version(), &tmq, sizeof(tmq), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   dt_iop_negadoctor_global_data_t *gd = malloc(sizeof(dt_iop_negadoctor_global_data_t));
 
-  module->data = gd;
+  self->data = gd;
   const int program = 30; // negadoctor.cl, from programs.conf
   gd->kernel_negadoctor = dt_opencl_create_kernel(program, "negadoctor");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_negadoctor_global_data_t *gd = module->data;
+  dt_iop_negadoctor_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_negadoctor);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

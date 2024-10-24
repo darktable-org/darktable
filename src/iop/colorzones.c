@@ -2372,14 +2372,14 @@ static void _edit_by_area_callback(GtkWidget *widget,
 }
 
 static void _display_mask_callback(GtkToggleButton *togglebutton,
-                                   dt_iop_module_t *module)
+                                   dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
-  dt_iop_colorzones_gui_data_t *g = module->gui_data;
+  dt_iop_colorzones_gui_data_t *g = self->gui_data;
 
   // if blend module is displaying mask do not display it here
-  if(module->request_mask_display && !g->display_mask)
+  if(self->request_mask_display && !g->display_mask)
   {
     dt_control_log(_("cannot display masks when the blending mask is displayed"));
 
@@ -2391,9 +2391,9 @@ static void _display_mask_callback(GtkToggleButton *togglebutton,
 
   g->display_mask = gtk_toggle_button_get_active(togglebutton);
 
-  if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
-  dt_iop_request_focus(module);
-  dt_iop_refresh_center(module);
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  dt_iop_request_focus(self);
+  dt_iop_refresh_center(self);
 }
 
 void color_picker_apply(dt_iop_module_t *self,
@@ -2783,24 +2783,24 @@ void gui_cleanup(dt_iop_module_t *self)
   IOP_GUI_FREE;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_colorzones_global_data_t *gd = malloc(sizeof(dt_iop_colorzones_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_colorzones = dt_opencl_create_kernel(program, "colorzones");
   gd->kernel_colorzones_v3 = dt_opencl_create_kernel(program, "colorzones_v3");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_colorzones_global_data_t *gd = module->data;
+  dt_iop_colorzones_global_data_t *gd = self->data;
 
   dt_opencl_free_kernel(gd->kernel_colorzones);
   dt_opencl_free_kernel(gd->kernel_colorzones_v3);
 
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 void commit_params(dt_iop_module_t *self,
@@ -2960,16 +2960,16 @@ void cleanup_pipe(dt_iop_module_t *self,
   piece->data = NULL;
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  module->params = calloc(1, sizeof(dt_iop_colorzones_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_colorzones_params_t));
-  module->default_enabled = FALSE;
-  module->params_size = sizeof(dt_iop_colorzones_params_t);
-  module->gui_data = NULL;
-  module->request_histogram |= DT_REQUEST_ON;
+  self->params = calloc(1, sizeof(dt_iop_colorzones_params_t));
+  self->default_params = calloc(1, sizeof(dt_iop_colorzones_params_t));
+  self->default_enabled = FALSE;
+  self->params_size = sizeof(dt_iop_colorzones_params_t);
+  self->gui_data = NULL;
+  self->request_histogram |= DT_REQUEST_ON;
 
-  _reset_parameters(module->default_params, DT_IOP_COLORZONES_h,
+  _reset_parameters(self->default_params, DT_IOP_COLORZONES_h,
                     DT_IOP_COLORZONES_SPLINES_V2);
 }
 

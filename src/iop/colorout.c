@@ -806,12 +806,12 @@ void gui_update(dt_iop_module_t *self)
            dt_colorspaces_get_name(p->type, p->filename));
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  dt_iop_default_init(module);
+  dt_iop_default_init(self);
 
-  module->hide_enable_button = TRUE;
-  module->default_enabled = TRUE;
+  self->hide_enable_button = TRUE;
+  self->default_enabled = TRUE;
 }
 
 static void _preference_changed(gpointer instance, dt_iop_module_t *self)

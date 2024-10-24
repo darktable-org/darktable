@@ -692,7 +692,7 @@ static float get_luminance_from_buffer(const float *const buffer,
   return luminance;
 }
 
-static void _get_point(dt_iop_module_t *module,
+static void _get_point(dt_iop_module_t *self,
                        const int c_x,
                        const int c_y,
                        int *x,
@@ -704,7 +704,7 @@ static void _get_point(dt_iop_module_t *module,
   //       is moved below rotation & perspective it will fail as we are
   //       then missing all the transform after tone-eq.
   const double crop_order =
-    dt_ioppr_get_iop_order(module->dev->iop_order_list, "crop", 0);
+    dt_ioppr_get_iop_order(self->dev->iop_order_list, "crop", 0);
 
   float pts[2] = { c_x, c_y };
 
@@ -1572,18 +1572,18 @@ static inline gboolean update_curve_lut(dt_iop_module_t *self)
 }
 
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   dt_iop_toneequalizer_global_data_t *gd = malloc(sizeof(dt_iop_toneequalizer_global_data_t));
 
-  module->data = gd;
+  self->data = gd;
 }
 
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 
@@ -1669,9 +1669,8 @@ void cleanup_pipe(dt_iop_module_t *self,
 
 void show_guiding_controls(dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
-  const dt_iop_toneequalizer_params_t *p = module->params;
+  const dt_iop_toneequalizer_params_t *p = self->params;
 
   switch(p->details)
   {

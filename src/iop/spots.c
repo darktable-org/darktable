@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -745,21 +745,21 @@ void distort_mask(dt_iop_module_t *self,
 }
 
 /** init, cleanup, commit to pipeline */
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
   // we don't need global data:
-  module->global_data = NULL; // malloc(sizeof(dt_iop_spots_global_data_t));
-  module->params = calloc(1, sizeof(dt_iop_spots_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_spots_params_t));
+  self->global_data = NULL; // malloc(sizeof(dt_iop_spots_global_data_t));
+  self->params = calloc(1, sizeof(dt_iop_spots_params_t));
+  self->default_params = calloc(1, sizeof(dt_iop_spots_params_t));
   // our module is disabled by default
   // by default:
-  module->default_enabled = FALSE;
-  module->params_size = sizeof(dt_iop_spots_params_t);
-  module->gui_data = NULL;
+  self->default_enabled = FALSE;
+  self->params_size = sizeof(dt_iop_spots_params_t);
+  self->gui_data = NULL;
   // init defaults:
   dt_iop_spots_params_t tmp = (dt_iop_spots_params_t){ { 0 }, { 2 } };
 
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_spots_params_t));
+  memcpy(self->default_params, &tmp, sizeof(dt_iop_spots_params_t));
 }
 
 void gui_focus(dt_iop_module_t *self, gboolean in)
