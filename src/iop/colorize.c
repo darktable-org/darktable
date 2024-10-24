@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -197,20 +197,20 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 }
 #endif
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 8; // extended.cl, from programs.conf
   dt_iop_colorize_global_data_t *gd = malloc(sizeof(dt_iop_colorize_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_colorize = dt_opencl_create_kernel(program, "colorize");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_colorize_global_data_t *gd = module->data;
+  dt_iop_colorize_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_colorize);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 static inline void update_saturation_slider_end_color(GtkWidget *slider, float hue)
@@ -323,11 +323,11 @@ void gui_update(dt_iop_module_t *self)
   update_saturation_slider_end_color(g->saturation, p->hue);
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  dt_iop_default_init(module);
+  dt_iop_default_init(self);
 
-  ((dt_iop_colorize_params_t *)module->default_params)->version = module->version();
+  ((dt_iop_colorize_params_t *)self->default_params)->version = self->version();
 }
 
 void gui_init(dt_iop_module_t *self)

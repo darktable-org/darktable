@@ -3169,31 +3169,31 @@ void gui_update(dt_iop_module_t *self)
   gui_changed(self, NULL, NULL);
 }
 
-void reload_defaults(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_filmicrgb_params_t *d = module->default_params;
+  dt_iop_filmicrgb_params_t *d = self->default_params;
 
-  d->black_point_source = module->so->get_f("black_point_source")->Float.Default;
-  d->white_point_source = module->so->get_f("white_point_source")->Float.Default;
-  d->output_power = module->so->get_f("output_power")->Float.Default;
+  d->black_point_source = self->so->get_f("black_point_source")->Float.Default;
+  d->white_point_source = self->so->get_f("white_point_source")->Float.Default;
+  d->output_power = self->so->get_f("output_power")->Float.Default;
 
-  module->default_enabled = FALSE;
+  self->default_enabled = FALSE;
 
   const gboolean is_scene_referred = dt_is_scene_referred();
 
-  if(dt_image_is_matrix_correction_supported(&module->dev->image_storage)
+  if(dt_image_is_matrix_correction_supported(&self->dev->image_storage)
      && is_scene_referred)
   {
     // For scene-referred workflow, auto-enable and adjust based on exposure
     // TODO: fetch actual exposure in module, don't assume 1.
-    const float exposure = 0.7f - dt_image_get_exposure_bias(&module->dev->image_storage);
+    const float exposure = 0.7f - dt_image_get_exposure_bias(&self->dev->image_storage);
 
     // As global exposure increases, white exposure increases faster than black
     // this is probably because raw black/white points offsets the lower bound of the dynamic range to 0
     // so exposure compensation actually increases the dynamic range too (stretches only white).
     d->black_point_source += 0.5f * exposure;
     d->white_point_source += 0.8f * exposure;
-    _compute_output_power(module, d);
+    _compute_output_power(self, d);
   }
 }
 
@@ -3220,12 +3220,12 @@ void init_presets(dt_iop_module_so_t *self)
   }
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 22; // filmic.cl, from programs.conf
   dt_iop_filmicrgb_global_data_t *gd = malloc(sizeof(dt_iop_filmicrgb_global_data_t));
 
-  module->data = gd;
+  self->data = gd;
   gd->kernel_filmic_rgb_split = dt_opencl_create_kernel(program, "filmicrgb_split");
   gd->kernel_filmic_rgb_chroma = dt_opencl_create_kernel(program, "filmicrgb_chroma");
   gd->kernel_filmic_mask = dt_opencl_create_kernel(program, "filmic_mask_clipped_pixels");
@@ -3242,9 +3242,9 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_filmic_wavelets_detail = dt_opencl_create_kernel(wavelets, "wavelets_detail_level");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_filmicrgb_global_data_t *gd = module->data;
+  dt_iop_filmicrgb_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_filmic_rgb_split);
   dt_opencl_free_kernel(gd->kernel_filmic_rgb_chroma);
   dt_opencl_free_kernel(gd->kernel_filmic_mask);
@@ -3257,8 +3257,8 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_filmic_wavelets_reconstruct);
   dt_opencl_free_kernel(gd->kernel_filmic_compute_ratios);
   dt_opencl_free_kernel(gd->kernel_filmic_restore_ratios);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 

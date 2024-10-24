@@ -1397,9 +1397,9 @@ void gui_update(dt_iop_module_t *self)
   gtk_widget_queue_draw(self->widget);
 }
 
-static gboolean _calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
+static gboolean _calculate_bogus_daylight_wb(dt_iop_module_t *self, double bwb[4])
 {
-  if(!dt_image_is_matrix_correction_supported(&module->dev->image_storage))
+  if(!dt_image_is_matrix_correction_supported(&self->dev->image_storage))
   {
     bwb[0] = 1.0;
     bwb[2] = 1.0;
@@ -1411,9 +1411,9 @@ static gboolean _calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb
 
   double mul[4];
   if(dt_colorspaces_conversion_matrices_rgb
-     (module->dev->image_storage.adobe_XYZ_to_CAM,
+     (self->dev->image_storage.adobe_XYZ_to_CAM,
       NULL, NULL,
-      module->dev->image_storage.d65_color_matrix, mul))
+      self->dev->image_storage.d65_color_matrix, mul))
   {
     // normalize green:
     bwb[0] = mul[0] / mul[1];
@@ -1427,9 +1427,9 @@ static gboolean _calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb
   return TRUE;
 }
 
-static void _prepare_matrices(dt_iop_module_t *module)
+static void _prepare_matrices(dt_iop_module_t *self)
 {
-  dt_iop_temperature_gui_data_t *g = module->gui_data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
 
   // sRGB D65
   const double RGB_to_XYZ[3][4] = { { 0.4124564, 0.3575761, 0.1804375, 0 },
@@ -1442,7 +1442,7 @@ static void _prepare_matrices(dt_iop_module_t *module)
                                     { 0.0556434, -0.2040259, 1.0572252 },
                                     { 0, 0, 0 } };
 
-  if(!dt_image_is_raw(&module->dev->image_storage))
+  if(!dt_image_is_raw(&self->dev->image_storage))
   {
     // let's just assume for now(TM) that if it is not raw, it is sRGB
     memcpy(g->XYZ_to_CAM, XYZ_to_RGB, sizeof(g->XYZ_to_CAM));
@@ -1450,22 +1450,22 @@ static void _prepare_matrices(dt_iop_module_t *module)
     return;
   }
 
-  if(!dt_colorspaces_conversion_matrices_xyz(module->dev->image_storage.adobe_XYZ_to_CAM,
-                                              module->dev->image_storage.d65_color_matrix,
+  if(!dt_colorspaces_conversion_matrices_xyz(self->dev->image_storage.adobe_XYZ_to_CAM,
+                                              self->dev->image_storage.d65_color_matrix,
                                               g->XYZ_to_CAM, g->CAM_to_XYZ))
   {
-    if(module->dev->image_storage.load_status == DT_IMAGEIO_OK)  // suppress spurious error messages
+    if(self->dev->image_storage.load_status == DT_IMAGEIO_OK)  // suppress spurious error messages
     {
-      char *camera = module->dev->image_storage.camera_makermodel;
+      char *camera = self->dev->image_storage.camera_makermodel;
       dt_print(DT_DEBUG_ALWAYS, "[temperature] `%s' color matrix not found for image", camera);
       dt_control_log(_("`%s' color matrix not found for image"), camera);
     }
   }
 }
 
-static void _find_coeffs(dt_iop_module_t *module, double coeffs[4])
+static void _find_coeffs(dt_iop_module_t *self, double coeffs[4])
 {
-  const dt_image_t *img = &module->dev->image_storage;
+  const dt_image_t *img = &self->dev->image_storage;
 
   // the raw should provide wb coeffs:
   gboolean ok = TRUE;
@@ -1484,7 +1484,7 @@ static void _find_coeffs(dt_iop_module_t *module, double coeffs[4])
   }
 
   double bwb[4];
-  if(!_calculate_bogus_daylight_wb(module, bwb))
+  if(!_calculate_bogus_daylight_wb(self, bwb))
   {
     // found camera matrix and used it to calculate bogus daylight wb
     for_four_channels(c)
@@ -1508,7 +1508,7 @@ static void _find_coeffs(dt_iop_module_t *module, double coeffs[4])
   }
 
   // did not find preset either?
-  if(!_ignore_missing_wb(&(module->dev->image_storage)))
+  if(!_ignore_missing_wb(&(self->dev->image_storage)))
   {
     //  only display this if we have a sample, otherwise it is better to keep
     //  on screen the more important message about missing sample and the way
@@ -1528,10 +1528,10 @@ static void _find_coeffs(dt_iop_module_t *module, double coeffs[4])
   coeffs[3] = 1.0;
 }
 
-void reload_defaults(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_temperature_params_t *d = module->default_params;
-  dt_iop_temperature_params_t *p = module->params;
+  dt_iop_temperature_params_t *d = self->default_params;
+  dt_iop_temperature_params_t *p = self->params;
 
   d->preset = dt_is_scene_referred() ? DT_IOP_TEMP_D65_LATE : DT_IOP_TEMP_AS_SHOT;
 
@@ -1540,27 +1540,27 @@ void reload_defaults(dt_iop_module_t *module)
     dcoeffs[k] = 1.0f;
 
   // we might be called from presets update infrastructure => there is no image
-  if(!module->dev || !dt_is_valid_imgid(module->dev->image_storage.id))
+  if(!self->dev || !dt_is_valid_imgid(self->dev->image_storage.id))
     return;
 
   const gboolean is_raw =
-    dt_image_is_matrix_correction_supported(&module->dev->image_storage);
+    dt_image_is_matrix_correction_supported(&self->dev->image_storage);
   const gboolean true_monochrome =
-    dt_image_monochrome_flags(&module->dev->image_storage) & DT_IMAGE_MONOCHROME;
+    dt_image_monochrome_flags(&self->dev->image_storage) & DT_IMAGE_MONOCHROME;
 
   gboolean another_cat_defined = FALSE;
 
   if(!dt_is_scene_referred())
   {
     another_cat_defined =
-      dt_history_check_module_exists(module->dev->image_storage.id,
+      dt_history_check_module_exists(self->dev->image_storage.id,
                                      "channelmixerrgb", TRUE);
   }
 
   const gboolean is_modern = dt_is_scene_referred() || another_cat_defined;
 
-  module->default_enabled = FALSE;
-  module->hide_enable_button = true_monochrome;
+  self->default_enabled = FALSE;
+  self->hide_enable_button = true_monochrome;
 
   // we want these data in all cases to keep them in dev->chroma
   double daylights[4] = {1.0, 1.0, 1.0, 1.0 };
@@ -1569,7 +1569,7 @@ void reload_defaults(dt_iop_module_t *module)
   // to have at least something and definitely not crash
   _temp_array_from_params(daylights, d);
 
-  if(!_calculate_bogus_daylight_wb(module, daylights))
+  if(!_calculate_bogus_daylight_wb(self, daylights))
   {
     // found camera matrix and used it to calculate bogus daylight wb
   }
@@ -1581,8 +1581,8 @@ void reload_defaults(dt_iop_module_t *module)
     {
       const dt_wb_data *wbp = dt_wb_preset(i);
 
-      if(!strcmp(wbp->make, module->dev->image_storage.camera_maker)
-         && !strcmp(wbp->model, module->dev->image_storage.camera_model)
+      if(!strcmp(wbp->make, self->dev->image_storage.camera_maker)
+         && !strcmp(wbp->model, self->dev->image_storage.camera_model)
          && (!strcmp(wbp->name, "Daylight")  //??? PO
              || !strcmp(wbp->name, "DirectSunlight"))
          && wbp->tuning == 0)
@@ -1597,14 +1597,14 @@ void reload_defaults(dt_iop_module_t *module)
   // Store EXIF WB coeffs
   if(is_raw)
   {
-    _find_coeffs(module, as_shot);
+    _find_coeffs(self, as_shot);
     as_shot[0] /= as_shot[1];
     as_shot[2] /= as_shot[1];
     as_shot[3] /= as_shot[1];
     as_shot[1] = 1.0;
   }
 
-  dt_dev_chroma_t *chr = &module->dev->chroma;
+  dt_dev_chroma_t *chr = &self->dev->chroma;
   for_four_channels(k)
   {
     chr->as_shot[k] = as_shot[k];
@@ -1626,19 +1626,19 @@ void reload_defaults(dt_iop_module_t *module)
 
   if(!true_monochrome)
   {
-    if(module->gui_data)
-      _prepare_matrices(module);
+    if(self->gui_data)
+      _prepare_matrices(self);
 
     /* check if file is raw / hdr */
     if(is_raw)
     {
       // raw images need wb:
-      module->default_enabled = TRUE;
+      self->default_enabled = TRUE;
 
       // if workflow = modern, only set WB coeffs equivalent to D65 illuminant
       // full chromatic adaptation is deferred to channelmixerrgb
       double coeffs[4] = { 0 };
-      if(is_modern && !_calculate_bogus_daylight_wb(module, coeffs))
+      if(is_modern && !_calculate_bogus_daylight_wb(self, coeffs))
       {
         for_four_channels(k)
           dcoeffs[k] = as_shot[k];
@@ -1647,7 +1647,7 @@ void reload_defaults(dt_iop_module_t *module)
       else
       {
         // do best to find starting coeffs
-        _find_coeffs(module, coeffs);
+        _find_coeffs(self, coeffs);
         dcoeffs[0] = coeffs[0]/coeffs[1];
         dcoeffs[2] = coeffs[2]/coeffs[1];
         dcoeffs[3] = coeffs[3]/coeffs[1];
@@ -1658,11 +1658,11 @@ void reload_defaults(dt_iop_module_t *module)
 
   // remember daylight wb used for temperature/tint conversion,
   // assuming it corresponds to CIE daylight (D65)
-  dt_iop_temperature_gui_data_t *g = module->gui_data;
+  dt_iop_temperature_gui_data_t *g = self->gui_data;
   if(g)
   {
-    gtk_stack_set_visible_child_name(GTK_STACK(module->widget),
-                                     module->hide_enable_button ? "disabled" : "enabled");
+    gtk_stack_set_visible_child_name(GTK_STACK(self->widget),
+                                     self->hide_enable_button ? "disabled" : "enabled");
 
     dt_bauhaus_slider_set_default(g->scale_r, dcoeffs[0]);
     dt_bauhaus_slider_set_default(g->scale_g, dcoeffs[1]);
@@ -1673,7 +1673,7 @@ void reload_defaults(dt_iop_module_t *module)
       g->mod_coeff[k] = dcoeffs[k];
 
     float TempK, tint;
-    _mul2temp(module, d, &TempK, &tint);
+    _mul2temp(self, d, &TempK, &tint);
 
     dt_bauhaus_slider_set_default(g->scale_k, TempK);
     dt_bauhaus_slider_set_default(g->scale_tint, tint);
@@ -1694,9 +1694,9 @@ void reload_defaults(dt_iop_module_t *module)
     g->preset_cnt = DT_IOP_NUM_OF_STD_TEMP_PRESETS;
     memset(g->preset_num, 0, sizeof(g->preset_num));
 
-    _generate_preset_combo(module);
+    _generate_preset_combo(self);
 
-    _gui_sliders_update(module);
+    _gui_sliders_update(self);
 
     dt_bauhaus_combobox_set(g->presets, p->preset);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_d65_late), p->preset == DT_IOP_TEMP_D65_LATE);
@@ -1706,25 +1706,25 @@ void reload_defaults(dt_iop_module_t *module)
   }
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_temperature_global_data_t *gd = malloc(sizeof(dt_iop_temperature_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_whitebalance_4f = dt_opencl_create_kernel(program, "whitebalance_4f");
   gd->kernel_whitebalance_1f = dt_opencl_create_kernel(program, "whitebalance_1f");
   gd->kernel_whitebalance_1f_xtrans =
     dt_opencl_create_kernel(program, "whitebalance_1f_xtrans");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_temperature_global_data_t *gd = module->data;
+  dt_iop_temperature_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_whitebalance_4f);
   dt_opencl_free_kernel(gd->kernel_whitebalance_1f);
   dt_opencl_free_kernel(gd->kernel_whitebalance_1f_xtrans);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 static void _temp_tint_callback(GtkWidget *slider, dt_iop_module_t *self)

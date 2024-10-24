@@ -151,18 +151,18 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-static void _exposure_proxy_set_exposure(struct dt_iop_module_t *self,
+static void _exposure_proxy_set_exposure(dt_iop_module_t *self,
                                          const float exposure);
 
-static float _exposure_proxy_get_exposure(struct dt_iop_module_t *self);
+static float _exposure_proxy_get_exposure(dt_iop_module_t *self);
 
-static void _exposure_proxy_set_black(struct dt_iop_module_t *self,
+static void _exposure_proxy_set_black(dt_iop_module_t *self,
                                       const float black);
 
-static float _exposure_proxy_get_black(struct dt_iop_module_t *self);
+static float _exposure_proxy_get_black(dt_iop_module_t *self);
 static void _paint_hue(dt_iop_module_t *self);
 
-static void _exposure_set_black(struct dt_iop_module_t *self,
+static void _exposure_set_black(dt_iop_module_t *self,
                                 const float black);
 
 int legacy_params(dt_iop_module_t *self,
@@ -324,19 +324,19 @@ void init_presets(dt_iop_module_so_t *self)
   }
 }
 
-void reload_defaults(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_exposure_params_t *d = module->default_params;
+  dt_iop_exposure_params_t *d = self->default_params;
 
   const gboolean scene_raw =
-     dt_image_is_rawprepare_supported(&module->dev->image_storage)
+     dt_image_is_rawprepare_supported(&self->dev->image_storage)
      && dt_is_scene_referred();
 
   d->mode = EXPOSURE_MODE_MANUAL;
 
-  if(scene_raw && module->multi_priority == 0)
+  if(scene_raw && self->multi_priority == 0)
   {
-    const gboolean mono = dt_image_is_monochrome(&module->dev->image_storage);
+    const gboolean mono = dt_image_is_monochrome(&self->dev->image_storage);
     d->exposure = mono ? 0.0f : 0.7f;
     d->black =    mono ? 0.0f : -0.000244140625f;
     d->compensate_exposure_bias = TRUE;
@@ -492,7 +492,7 @@ static void _process_common_setup(dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
@@ -521,15 +521,14 @@ error:
 }
 #endif
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const i,
              void *const o,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_exposure_data_t *const d =
-    (const dt_iop_exposure_data_t *const)piece->data;
+  const dt_iop_exposure_data_t *const d = piece->data;
 
   _process_common_setup(self, piece);
 
@@ -550,7 +549,7 @@ void process(struct dt_iop_module_t *self,
 }
 
 
-static float _get_exposure_bias(const struct dt_iop_module_t *self)
+static float _get_exposure_bias(const dt_iop_module_t *self)
 {
   float bias = 0.0f;
 
@@ -566,7 +565,7 @@ static float _get_exposure_bias(const struct dt_iop_module_t *self)
 }
 
 
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -595,14 +594,14 @@ void commit_params(struct dt_iop_module_t *self,
   }
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_exposure_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -615,7 +614,7 @@ static void _autoexp_disable(dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   dt_iop_exposure_gui_data_t *g = self->gui_data;
   dt_iop_exposure_params_t *p = self->params;
@@ -686,23 +685,23 @@ void gui_update(struct dt_iop_module_t *self)
   dt_gui_update_collapsible_section(&g->cs);
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // from programs.conf: basic.cl
   dt_iop_exposure_global_data_t *gd = malloc(sizeof(dt_iop_exposure_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_exposure = dt_opencl_create_kernel(program, "exposure");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_exposure_global_data_t *gd = module->data;
+  dt_iop_exposure_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_exposure);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
-static void _exposure_set_white(struct dt_iop_module_t *self,
+static void _exposure_set_white(dt_iop_module_t *self,
                                 const float white)
 {
   dt_iop_exposure_params_t *p = self->params;
@@ -721,7 +720,7 @@ static void _exposure_set_white(struct dt_iop_module_t *self,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _exposure_proxy_set_exposure(struct dt_iop_module_t *self,
+static void _exposure_proxy_set_exposure(dt_iop_module_t *self,
                                          const float exposure)
 {
   dt_iop_exposure_params_t *p = self->params;
@@ -746,7 +745,7 @@ static void _exposure_proxy_set_exposure(struct dt_iop_module_t *self,
   }
 }
 
-static float _exposure_proxy_get_exposure(struct dt_iop_module_t *self)
+static float _exposure_proxy_get_exposure(dt_iop_module_t *self)
 {
   dt_iop_exposure_params_t *p = self->params;
 
@@ -760,7 +759,7 @@ static float _exposure_proxy_get_exposure(struct dt_iop_module_t *self)
   }
 }
 
-static void _exposure_set_black(struct dt_iop_module_t *self,
+static void _exposure_set_black(dt_iop_module_t *self,
                                 const float black)
 {
   dt_iop_exposure_params_t *p = self->params;
@@ -780,14 +779,14 @@ static void _exposure_set_black(struct dt_iop_module_t *self,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _exposure_proxy_set_black(struct dt_iop_module_t *self,
+static void _exposure_proxy_set_black(dt_iop_module_t *self,
                                       const float black)
 {
   _autoexp_disable(self);
   _exposure_set_black(self, black);
 }
 
-static float _exposure_proxy_get_black(struct dt_iop_module_t *self)
+static float _exposure_proxy_get_black(dt_iop_module_t *self)
 {
   dt_iop_exposure_params_t *p = self->params;
   return p->black;

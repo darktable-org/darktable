@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -105,7 +105,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 //   dt_accel_connect_slider_iop(self, "color scheme", GTK_WIDGET(g->colorscheme));
 // }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, piece->module, piece->colors,
@@ -306,7 +306,7 @@ process_finish:
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_develop_t *dev = self->dev;
@@ -387,47 +387,47 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 }
 
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // basic.cl from programs.conf
   dt_iop_overexposed_global_data_t *gd = malloc(sizeof(dt_iop_overexposed_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_overexposed = dt_opencl_create_kernel(program, "overexposed");
 }
 
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_overexposed_global_data_t *gd = module->data;
+  dt_iop_overexposed_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_overexposed);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   piece->enabled = self->dev->overexposed.enabled && fullpipe && self->dev->gui_attached;
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = NULL;
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  module->params = calloc(1, sizeof(dt_iop_overexposed_t));
-  module->default_params = calloc(1, sizeof(dt_iop_overexposed_t));
-  module->hide_enable_button = TRUE;
-  module->default_enabled = TRUE;
-  module->params_size = sizeof(dt_iop_overexposed_t);
-  module->gui_data = NULL;
+  self->params = calloc(1, sizeof(dt_iop_overexposed_t));
+  self->default_params = calloc(1, sizeof(dt_iop_overexposed_t));
+  self->hide_enable_button = TRUE;
+  self->default_enabled = TRUE;
+  self->params_size = sizeof(dt_iop_overexposed_t);
+  self->gui_data = NULL;
 }
 
 // clang-format off

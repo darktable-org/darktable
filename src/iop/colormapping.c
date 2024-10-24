@@ -798,29 +798,29 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
   piece->data = NULL;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 8; // extended.cl, from programs.conf
   dt_iop_colormapping_global_data_t *gd = malloc(sizeof(dt_iop_colormapping_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_histogram = dt_opencl_create_kernel(program, "colormapping_histogram");
   gd->kernel_mapping = dt_opencl_create_kernel(program, "colormapping_mapping");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_colormapping_global_data_t *gd = module->data;
+  dt_iop_colormapping_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_histogram);
   dt_opencl_free_kernel(gd->kernel_mapping);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
-void reload_defaults(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_colormapping_params_t *d = module->default_params;
-  dt_iop_colormapping_gui_data_t *g = module->gui_data;
-  if(module->dev->gui_attached && g && g->flowback_set)
+  dt_iop_colormapping_params_t *d = self->default_params;
+  dt_iop_colormapping_gui_data_t *g = self->gui_data;
+  if(self->dev->gui_attached && g && g->flowback_set)
   {
     memcpy(d->source_ihist, g->flowback.hist, sizeof(float) * HISTN);
     memcpy(d->source_mean, g->flowback.mean, sizeof(float) * MAXN * 2);

@@ -1656,36 +1656,36 @@ void cleanup_pipe(dt_iop_module_t *self,
   piece->data = NULL;
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  dt_iop_default_init(module);
+  dt_iop_default_init(self);
 
-  module->request_histogram |= (DT_REQUEST_ON | DT_REQUEST_EXPANDED);
+  self->request_histogram |= (DT_REQUEST_ON | DT_REQUEST_EXPANDED);
 
-  dt_iop_rgbcurve_params_t *d = module->default_params;
+  dt_iop_rgbcurve_params_t *d = self->default_params;
 
   d->curve_nodes[0][1].x = d->curve_nodes[0][1].y =
   d->curve_nodes[1][1].x = d->curve_nodes[1][1].y =
   d->curve_nodes[2][1].x = d->curve_nodes[2][1].y = 1.0;
 
-  module->histogram_middle_grey = d->compensate_middle_grey;
+  self->histogram_middle_grey = d->compensate_middle_grey;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 25; // rgbcurve.cl, from programs.conf
   dt_iop_rgbcurve_global_data_t *gd =dt_alloc1_align_type(dt_iop_rgbcurve_global_data_t);
-  module->data = gd;
+  self->data = gd;
 
   gd->kernel_rgbcurve = dt_opencl_create_kernel(program, "rgbcurve");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_rgbcurve_global_data_t *gd = module->data;
+  dt_iop_rgbcurve_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_rgbcurve);
-  dt_free_align(module->data);
-  module->data = NULL;
+  dt_free_align(self->data);
+  self->data = NULL;
 }
 
 // called from process*(), takes care of changed curve type

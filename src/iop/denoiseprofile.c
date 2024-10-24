@@ -2766,11 +2766,11 @@ static inline float infer_bias_from_profile(const float a)
   return -MAX(5 + 0.5 * logf(a), 0.0);
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  dt_iop_default_init(module);
+  dt_iop_default_init(self);
 
-  dt_iop_denoiseprofile_params_t *d = module->default_params;
+  dt_iop_denoiseprofile_params_t *d = self->default_params;
 
   for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
   {
@@ -2783,10 +2783,10 @@ void init(dt_iop_module_t *module)
 
 /** this will be called to init new defaults if a new image is loaded
  * from film strip mode. */
-void reload_defaults(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_denoiseprofile_gui_data_t *g = module->gui_data;
-  dt_iop_denoiseprofile_params_t *d = module->default_params;
+  dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
+  dt_iop_denoiseprofile_params_t *d = self->default_params;
 
   d->radius = 1.0f;
   d->nbhood = 7.0f;
@@ -2802,8 +2802,8 @@ void reload_defaults(dt_iop_module_t *module)
   d->use_new_vst = TRUE;
   d->wavelet_color_mode = MODE_Y0U0V0;
 
-  GList *profiles = dt_noiseprofile_get_matching(&module->dev->image_storage);
-  const int iso = module->dev->image_storage.exif_iso;
+  GList *profiles = dt_noiseprofile_get_matching(&self->dev->image_storage);
+  const int iso = self->dev->image_storage.exif_iso;
 
   // default to generic poissonian
   dt_noiseprofile_t interpolated = dt_noiseprofile_generic;
@@ -2869,16 +2869,16 @@ void reload_defaults(dt_iop_module_t *module)
     }
     dt_bauhaus_combobox_set(g->profile, 0);
 
-    gui_update(module);
+    gui_update(self);
   }
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 11; // denoiseprofile.cl, from programs.conf
   dt_iop_denoiseprofile_global_data_t *gd = malloc(sizeof(dt_iop_denoiseprofile_global_data_t));
 
-  module->data = gd;
+  self->data = gd;
   gd->kernel_denoiseprofile_precondition =
     dt_opencl_create_kernel(program, "denoiseprofile_precondition");
   gd->kernel_denoiseprofile_precondition_v2 =
@@ -2915,9 +2915,9 @@ void init_global(dt_iop_module_so_t *module)
     dt_opencl_create_kernel(program, "denoiseprofile_reduce_second");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_denoiseprofile_global_data_t *gd = module->data;
+  dt_iop_denoiseprofile_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_precondition);
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_precondition_v2);
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_init);
@@ -2933,8 +2933,8 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_synthesize);
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_reduce_first);
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_reduce_second);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self)

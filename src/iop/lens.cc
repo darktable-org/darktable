@@ -3349,12 +3349,12 @@ void cleanup_pipe(dt_iop_module_t *self,
   piece->data = NULL;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_lens_global_data_t *gd =
     (dt_iop_lens_global_data_t *)calloc(1, sizeof(dt_iop_lens_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_lens_distort_bilinear =
     dt_opencl_create_kernel(program, "lens_distort_bilinear");
   gd->kernel_lens_distort_bicubic =
@@ -3466,14 +3466,14 @@ static char *_lens_sanitize(const char *orig_lens)
   }
 }
 
-void reload_defaults(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *self)
 {
   char *new_lens;
-  const dt_image_t *img = &module->dev->image_storage;
+  const dt_image_t *img = &self->dev->image_storage;
 
   // reload image specific stuff
   // get all we can from exif:
-  dt_iop_lens_params_t *d = (dt_iop_lens_params_t *)module->default_params;
+  dt_iop_lens_params_t *d = (dt_iop_lens_params_t *)self->default_params;
 
   new_lens = _lens_sanitize(img->exif_lens);
   g_strlcpy(d->lens, new_lens, sizeof(d->lens));
@@ -3505,7 +3505,7 @@ void reload_defaults(dt_iop_module_t *module)
   if(img->exif_maker[0] || model[0])
   {
     dt_iop_lens_global_data_t *gd =
-      (dt_iop_lens_global_data_t *)module->global_data;
+      (dt_iop_lens_global_data_t *)self->global_data;
 
     // just to be sure
     if(!gd || !gd->db) return;
@@ -3570,14 +3570,14 @@ void reload_defaults(dt_iop_module_t *module)
       }
 
       d->crop = cam[0]->CropFactor;
-      d->scale = _get_autoscale_lf(module, d, cam[0]);
+      d->scale = _get_autoscale_lf(self, d, cam[0]);
 
       lf_free(cam);
     }
   }
 
   d->method = DT_IOP_LENS_METHOD_LENSFUN;
-  if(_have_embedded_metadata(module))
+  if(_have_embedded_metadata(self))
   {
     // prefer embedded metadata if available
     d->method = DT_IOP_LENS_METHOD_EMBEDDED_METADATA;
@@ -3586,28 +3586,28 @@ void reload_defaults(dt_iop_module_t *module)
     d->scale_md = 1.0f;
   }
 
-  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)module->gui_data;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   if(g)
   {
     dt_bauhaus_combobox_clear(g->methods_selector);
     dt_bauhaus_combobox_add_introspection
       (g->methods_selector, NULL,
-       module->so->get_f("method")->Enum.values,
-       _have_embedded_metadata(module)
+       self->so->get_f("method")->Enum.values,
+       _have_embedded_metadata(self)
        ? DT_IOP_LENS_METHOD_EMBEDDED_METADATA
        : DT_IOP_LENS_METHOD_LENSFUN, -1);
 
     // if we have a gui -> reset corrections_done message
-    dt_iop_gui_enter_critical_section(module);
+    dt_iop_gui_enter_critical_section(self);
     g->corrections_done = -1;
-    dt_iop_gui_leave_critical_section(module);
+    dt_iop_gui_leave_critical_section(self);
     gtk_label_set_text(g->message, "");
   }
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)module->data;
+  dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->data;
 
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   delete dt_iop_lensfun_db;
@@ -3620,8 +3620,8 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_lens_man_vignette);
   dt_opencl_free_kernel(gd->kernel_md_vignette);
   dt_opencl_free_kernel(gd->kernel_md_correct);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 /* Lensfun GUI start */

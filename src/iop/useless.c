@@ -434,7 +434,7 @@ void process(dt_iop_module_t *self,
 }
 
 /** Optional init and cleanup */
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
   // Allocates memory for a module instance and fills default_params.
   // If this callback is not provided, the standard implementation in
@@ -447,7 +447,7 @@ void init(dt_iop_module_t *module)
   // initialisation.  The values in params will not be used and
   // default_params can be overwritten by reload_params on a per-image
   // basis.
-  dt_iop_default_init(module);
+  dt_iop_default_init(self);
 
   // Any non-default settings; for example disabling the on/off switch:
   module->hide_enable_button = TRUE;
@@ -457,26 +457,26 @@ void init(dt_iop_module_t *module)
   // label with an explanatory text when the module can't be used.
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
-  module->data = malloc(sizeof(dt_iop_useless_global_data_t));
+  self->data = malloc(sizeof(dt_iop_useless_global_data_t));
 }
 
-void cleanup(dt_iop_module_t *module)
+void cleanup(dt_iop_module_t *self)
 {
   // Releases any memory allocated in init(module) Implement this
   // function explicitly if the module allocates additional memory
   // besides (default_)params.  this is rare.
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
+  free(self->params);
+  self->params = NULL;
+  free(self->default_params);
+  self->default_params = NULL;
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 /** Put your local callbacks here, be sure to make them static so they
@@ -582,23 +582,23 @@ void gui_update(dt_iop_module_t *self)
 
 /** optional: if this exists, it will be called to init new defaults if a new image is
  * loaded from film strip mode. */
-void reload_defaults(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *self)
 {
   // This only has to be provided if module settings or default_params
   // need to depend on image type (raw?) or exif data.  Make sure to
   // always reset to the default for non-special cases, otherwise the
   // override will stick when switching to another image.
-  dt_iop_useless_params_t *d = module->default_params;
+  dt_iop_useless_params_t *d = self->default_params;
 
   // As an example, switch off for non-raw images. The enable button
   // was already hidden in init().
-  if(!dt_image_is_raw(&module->dev->image_storage))
+  if(!dt_image_is_raw(&self->dev->image_storage))
   {
-    module->default_enabled = FALSE;
+    self->default_enabled = FALSE;
   }
   else
   {
-    module->default_enabled = TRUE;
+    self->default_enabled = TRUE;
     d->checker_scale = 3; // something dependent on exif, for example.
   }
 
@@ -608,7 +608,7 @@ void reload_defaults(dt_iop_module_t *module)
   // the default values in widgets. Resetting the individual widgets
   // will then have the same effect as resetting the whole module at
   // once.
-  dt_iop_useless_gui_data_t *g = module->gui_data;
+  dt_iop_useless_gui_data_t *g = self->gui_data;
   if(g)
   {
     dt_bauhaus_slider_set_default(g->scale, d->checker_scale);

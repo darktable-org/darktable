@@ -388,18 +388,18 @@ void process(struct dt_iop_module_t *self,
   dt_iop_copy_image_with_border((float*)ovoid, (const float*)ivoid, &binfo);
 }
 
-void cleanup(dt_iop_module_t *module)
+void cleanup(dt_iop_module_t *self)
 {
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
+  free(self->params);
+  self->params = NULL;
+  free(self->default_params);
+  self->default_params = NULL;
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 /** gui setup and update, these are needed. */

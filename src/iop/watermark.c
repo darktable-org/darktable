@@ -1265,11 +1265,11 @@ void gui_changed(dt_iop_module_t *self,
   }
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  dt_iop_default_init(module);
+  dt_iop_default_init(self);
 
-  dt_iop_watermark_params_t *d = module->default_params;
+  dt_iop_watermark_params_t *d = self->default_params;
 
   g_strlcpy(d->filename, "darktable.svg", sizeof(d->filename));
   g_strlcpy(d->font, "DejaVu Sans 10", sizeof(d->font));

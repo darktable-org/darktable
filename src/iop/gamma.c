@@ -281,7 +281,7 @@ static void _copy_output(const float *const restrict in,
 }
 
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const i,
              void *const o,
@@ -327,15 +327,15 @@ void process(struct dt_iop_module_t *self,
   }
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  // module->data = malloc(sizeof(dt_iop_gamma_data_t));
-  module->params = calloc(1, sizeof(dt_iop_gamma_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_gamma_params_t));
-  module->params_size = sizeof(dt_iop_gamma_params_t);
-  module->gui_data = NULL;
-  module->hide_enable_button = TRUE;
-  module->default_enabled = TRUE;
+  // self->data = malloc(sizeof(dt_iop_gamma_data_t));
+  self->params = calloc(1, sizeof(dt_iop_gamma_params_t));
+  self->default_params = calloc(1, sizeof(dt_iop_gamma_params_t));
+  self->params_size = sizeof(dt_iop_gamma_params_t);
+  self->gui_data = NULL;
+  self->hide_enable_button = TRUE;
+  self->default_enabled = TRUE;
 }
 
 // clang-format off

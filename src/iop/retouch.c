@@ -2049,14 +2049,14 @@ static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton,
 
 static gboolean rt_showmask_callback(GtkToggleButton *togglebutton,
                                      GdkEventButton *event,
-                                     dt_iop_module_t *module)
+                                     dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return TRUE;
 
-  dt_iop_retouch_gui_data_t *g = module->gui_data;
+  dt_iop_retouch_gui_data_t *g = self->gui_data;
 
   // if blend module is displaying mask do not display it here
-  if((module->request_mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE)
+  if((self->request_mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE)
      && !g->mask_display)
   {
     dt_control_log(_("cannot display masks when the blending mask is displayed"));
@@ -2067,11 +2067,11 @@ static gboolean rt_showmask_callback(GtkToggleButton *togglebutton,
 
   g->mask_display = !gtk_toggle_button_get_active(togglebutton);
 
-  if(module->off)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
-  dt_iop_request_focus(module);
+  if(self->off)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  dt_iop_request_focus(self);
 
-  dt_iop_refresh_center(module);
+  dt_iop_refresh_center(self);
 
   gtk_toggle_button_set_active(togglebutton, g->mask_display);
   return TRUE;
@@ -2079,17 +2079,17 @@ static gboolean rt_showmask_callback(GtkToggleButton *togglebutton,
 
 static gboolean rt_suppress_callback(GtkToggleButton *togglebutton,
                                      GdkEventButton *event,
-                                     dt_iop_module_t *module)
+                                     dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return TRUE;
 
-  dt_iop_retouch_gui_data_t *g = module->gui_data;
+  dt_iop_retouch_gui_data_t *g = self->gui_data;
   g->suppress_mask = !gtk_toggle_button_get_active(togglebutton);
 
-  if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
-  dt_iop_request_focus(module);
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  dt_iop_request_focus(self);
 
-  dt_iop_refresh_center(module);
+  dt_iop_refresh_center(self);
 
   gtk_toggle_button_set_active(togglebutton, g->suppress_mask);
   return TRUE;
@@ -2139,11 +2139,11 @@ void masks_selection_changed(dt_iop_module_t *self, const int form_selected_id)
   dt_iop_gui_leave_critical_section(self);
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  dt_iop_default_init(module);
+  dt_iop_default_init(self);
 
-  dt_iop_retouch_params_t *d = module->default_params;
+  dt_iop_retouch_params_t *d = self->default_params;
 
   d->preview_levels[0] = RETOUCH_PREVIEW_LVL_MIN;
   d->preview_levels[1] = 0.f;
@@ -2151,11 +2151,11 @@ void init(dt_iop_module_t *module)
   d->algorithm = dt_conf_get_int("plugins/darkroom/retouch/default_algo");
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 21; // retouch.cl, from programs.conf
   dt_iop_retouch_global_data_t *gd = malloc(sizeof(dt_iop_retouch_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_retouch_clear_alpha =
     dt_opencl_create_kernel(program, "retouch_clear_alpha");
   gd->kernel_retouch_copy_alpha =
@@ -2178,9 +2178,9 @@ void init_global(dt_iop_module_so_t *module)
     dt_opencl_create_kernel(program, "retouch_copy_mask_to_alpha");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_retouch_global_data_t *gd = module->data;
+  dt_iop_retouch_global_data_t *gd = self->data;
 
   dt_opencl_free_kernel(gd->kernel_retouch_clear_alpha);
   dt_opencl_free_kernel(gd->kernel_retouch_copy_alpha);
@@ -2193,12 +2193,11 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_retouch_image_lab2rgb);
   dt_opencl_free_kernel(gd->kernel_retouch_copy_mask_to_alpha);
 
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
-void gui_focus(dt_iop_module_t *self,
-               const gboolean in)
+void gui_focus(dt_iop_module_t *self, const gboolean in)
 {
   if(self->enabled
      && !darktable.develop->full.pipe->loading)

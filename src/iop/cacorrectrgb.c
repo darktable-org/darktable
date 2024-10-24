@@ -692,9 +692,9 @@ void gui_update(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->refine_manifolds), p->refine_manifolds);
 }
 
-void reload_defaults(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_cacorrectrgb_params_t *d = module->default_params;
+  dt_iop_cacorrectrgb_params_t *d = self->default_params;
 
   d->guide_channel = DT_CACORRECT_RGB_G;
   d->radius = 5.0f;
@@ -702,7 +702,7 @@ void reload_defaults(dt_iop_module_t *module)
   d->mode = DT_CACORRECT_MODE_STANDARD;
   d->refine_manifolds = FALSE;
 
-  dt_iop_cacorrectrgb_gui_data_t *g = module->gui_data;
+  dt_iop_cacorrectrgb_gui_data_t *g = self->gui_data;
   if(g)
   {
     dt_bauhaus_combobox_set_default(g->guide_channel, d->guide_channel);

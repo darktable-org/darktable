@@ -1289,15 +1289,15 @@ void gui_update(dt_iop_module_t *self)
 
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  module->params = calloc(1, sizeof(dt_iop_filmic_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_filmic_params_t));
-  module->default_enabled = FALSE;
-  module->params_size = sizeof(dt_iop_filmic_params_t);
-  module->gui_data = NULL;
+  self->params = calloc(1, sizeof(dt_iop_filmic_params_t));
+  self->default_params = calloc(1, sizeof(dt_iop_filmic_params_t));
+  self->default_enabled = FALSE;
+  self->params_size = sizeof(dt_iop_filmic_params_t);
+  self->gui_data = NULL;
 
-  *(dt_iop_filmic_params_t *)module->default_params
+  *(dt_iop_filmic_params_t *)self->default_params
     = (dt_iop_filmic_params_t){
                                  .grey_point_source   = 18, // source grey
                                  .black_point_source  = -8.65,  // source black
@@ -1317,29 +1317,29 @@ void init(dt_iop_module_t *module)
                               };
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 22; // filmic.cl, from programs.conf
   dt_iop_filmic_global_data_t *gd = malloc(sizeof(dt_iop_filmic_global_data_t));
 
-  module->data = gd;
+  self->data = gd;
   gd->kernel_filmic = dt_opencl_create_kernel(program, "filmic");
 }
 
-void cleanup(dt_iop_module_t *module)
+void cleanup(dt_iop_module_t *self)
 {
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
+  free(self->params);
+  self->params = NULL;
+  free(self->default_params);
+  self->default_params = NULL;
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_filmic_global_data_t *gd = module->data;
+  dt_iop_filmic_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_filmic);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 void gui_reset(dt_iop_module_t *self)

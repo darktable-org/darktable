@@ -503,15 +503,15 @@ static gboolean _check_camera(dt_iop_basecurve_params_t *d,
   return FALSE;
 }
 
-void reload_defaults(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_basecurve_params_t *const d = module->default_params;
+  dt_iop_basecurve_params_t *const d = self->default_params;
 
-  if(module->multi_priority == 0)
+  if(self->multi_priority == 0)
   {
-    const dt_image_t *const image = &(module->dev->image_storage);
+    const dt_image_t *const image = &(self->dev->image_storage);
 
-    module->default_enabled = FALSE;
+    self->default_enabled = FALSE;
 
     gboolean FOUND = FALSE;
 
@@ -1530,19 +1530,19 @@ static float eval_grey(float x)
   return x;
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  dt_iop_default_init(module);
-  dt_iop_basecurve_params_t *d = module->default_params;
+  dt_iop_default_init(self);
+  dt_iop_basecurve_params_t *d = self->default_params;
   d->basecurve[0][1].x = d->basecurve[0][1].y = 1.0;
   d->basecurve_nodes[0] = 2;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 18; // basecurve.cl, from programs.conf
   dt_iop_basecurve_global_data_t *gd = malloc(sizeof(dt_iop_basecurve_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_basecurve_lut = dt_opencl_create_kernel(program, "basecurve_lut");
   gd->kernel_basecurve_zero = dt_opencl_create_kernel(program, "basecurve_zero");
   gd->kernel_basecurve_legacy_lut = dt_opencl_create_kernel(program, "basecurve_legacy_lut");
@@ -1560,9 +1560,9 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_basecurve_finalize = dt_opencl_create_kernel(program, "basecurve_finalize");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_basecurve_global_data_t *gd = module->data;
+  dt_iop_basecurve_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_basecurve_lut);
   dt_opencl_free_kernel(gd->kernel_basecurve_zero);
   dt_opencl_free_kernel(gd->kernel_basecurve_legacy_lut);
@@ -1578,8 +1578,8 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_basecurve_normalize);
   dt_opencl_free_kernel(gd->kernel_basecurve_reconstruct);
   dt_opencl_free_kernel(gd->kernel_basecurve_finalize);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 static gboolean dt_iop_basecurve_leave_notify(GtkWidget *widget,

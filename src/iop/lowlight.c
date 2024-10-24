@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -219,21 +219,21 @@ finish:
 #endif
 
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // basic.cl from programs.conf
   dt_iop_lowlight_global_data_t *gd = malloc(sizeof(dt_iop_lowlight_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_lowlight = dt_opencl_create_kernel(program, "lowlight");
 }
 
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_lowlight_global_data_t *gd = module->data;
+  dt_iop_lowlight_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_lowlight);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 
@@ -257,11 +257,11 @@ void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
   const dt_iop_lowlight_params_t *const default_params = self->default_params;
   piece->data = (void *)d;
   d->curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
-  (void)dt_draw_curve_add_point(d->curve, default_params->transition_x[DT_IOP_LOWLIGHT_BANDS - 2] - 1.0,
+  dt_draw_curve_add_point(d->curve, default_params->transition_x[DT_IOP_LOWLIGHT_BANDS - 2] - 1.0,
                                 default_params->transition_y[DT_IOP_LOWLIGHT_BANDS - 2]);
   for(int k = 0; k < DT_IOP_LOWLIGHT_BANDS; k++)
-    (void)dt_draw_curve_add_point(d->curve, default_params->transition_x[k], default_params->transition_y[k]);
-  (void)dt_draw_curve_add_point(d->curve, default_params->transition_x[1] + 1.0,
+    dt_draw_curve_add_point(d->curve, default_params->transition_x[k], default_params->transition_y[k]);
+  dt_draw_curve_add_point(d->curve, default_params->transition_x[1] + 1.0,
                                 default_params->transition_y[1]);
 }
 
@@ -282,11 +282,11 @@ void gui_update(dt_iop_module_t *self)
   gtk_widget_queue_draw(GTK_WIDGET(g->area));;
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  dt_iop_default_init(module);
+  dt_iop_default_init(self);
 
-  dt_iop_lowlight_params_t *d = module->default_params;
+  dt_iop_lowlight_params_t *d = self->default_params;
 
   for(int k = 0; k < DT_IOP_LOWLIGHT_BANDS; k++) d->transition_x[k] = k / (DT_IOP_LOWLIGHT_BANDS - 1.0);
 }
