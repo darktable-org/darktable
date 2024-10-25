@@ -1372,8 +1372,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
               cachedir_from_command,
               tmpdir_from_command);
 
-  dt_print(DT_DEBUG_MEMORY, "[memory] at startup");
-  dt_print_mem_usage();
+  dt_print_mem_usage("at startup");
 
   char sharedir[PATH_MAX] = { 0 };
   dt_loc_get_sharedir(sharedir, sizeof(sharedir));
@@ -1827,9 +1826,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_gui_process_events();
   }
 
-  dt_print(DT_DEBUG_MEMORY, "[memory] after successful startup");
-  dt_print_mem_usage();
-
 /* init lua last, since it's user made stuff it must be in the real environment */
 #ifdef USE_LUA
   darktable_splash_screen_set_progress(_("initializing Lua"));
@@ -1916,6 +1912,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   dt_print(DT_DEBUG_CONTROL,
            "[dt_init] startup took %f seconds", dt_get_wtime() - start_wtime);
+
+  dt_print_mem_usage("after successful startup");
+
   return 0;
 }
 
@@ -2482,7 +2481,7 @@ void dt_capabilities_cleanup()
 }
 
 
-void dt_print_mem_usage()
+void dt_print_mem_usage(char *info)
 {
   if(!(darktable.unmuted & DT_DEBUG_MEMORY))
     return;
@@ -2517,11 +2516,12 @@ void dt_print_mem_usage()
   fclose(f);
 
   dt_print(DT_DEBUG_ALWAYS,
-                  "[memory] max address space (vmpeak): %15s"
-                  "            [memory] cur address space (vmsize): %15s"
-                  "            [memory] max used memory   (vmhwm ): %15s"
-                  "            [memory] cur used memory   (vmrss ): %15s",
-          vmpeak, vmsize, vmhwm, vmrss);
+                  "[memory] %s\n"
+                  "             max address space (vmpeak): %15s"
+                  "             cur address space (vmsize): %15s"
+                  "             max used memory   (vmhwm ): %15s"
+                  "             cur used memory   (vmrss ): %15s",
+          info, vmpeak, vmsize, vmhwm, vmrss);
 
 #elif defined(__APPLE__)
   struct task_basic_info t_info;
@@ -2529,17 +2529,18 @@ void dt_print_mem_usage()
 
   if(KERN_SUCCESS != task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&t_info, &t_info_count))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[memory] task memory info unknown.");
+    dt_print(DT_DEBUG_ALWAYS, "[memory] task memory info unknown");
     return;
   }
 
   // Report in kB, to match output of /proc on Linux.
   dt_print(DT_DEBUG_ALWAYS,
-                  "[memory] max address space (vmpeak): %15s\n"
-                  "            [memory] cur address space (vmsize): %12llu kB\n"
-                  "            [memory] max used memory   (vmhwm ): %15s\n"
-                  "            [memory] cur used memory   (vmrss ): %12llu kB",
-          "unknown", (uint64_t)t_info.virtual_size / 1024, "unknown", (uint64_t)t_info.resident_size / 1024);
+                  "[memory] %s\n"
+                  "            max address space (vmpeak): %15s\n"
+                  "            cur address space (vmsize): %12llu kB\n"
+                  "            max used memory   (vmhwm ): %15s\n"
+                  "            cur used memory   (vmrss ): %12llu kB",
+          info, "unknown", (uint64_t)t_info.virtual_size / 1024, "unknown", (uint64_t)t_info.resident_size / 1024);
 #elif defined (_WIN32)
   //Based on: http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
   MEMORYSTATUSEX memInfo;
@@ -2561,11 +2562,12 @@ void dt_print_mem_usage()
 
 
   dt_print(DT_DEBUG_ALWAYS,
-                  "[memory] max address space (vmpeak): %12llu kB\n"
-                  "            [memory] cur address space (vmsize): %12llu kB\n"
-                  "            [memory] max used memory   (vmhwm ): %12llu kB\n"
-                  "            [memory] cur used memory   (vmrss ): %12llu Kb",
-          virtualMemUsedByMeMax / 1024, virtualMemUsedByMe / 1024, physMemUsedByMeMax / 1024,
+                  "[memory] %s\n"
+                  "            max address space (vmpeak): %12llu kB\n"
+                  "            cur address space (vmsize): %12llu kB\n"
+                  "            max used memory   (vmhwm ): %12llu kB\n"
+                  "            cur used memory   (vmrss ): %12llu Kb",
+          info, virtualMemUsedByMeMax / 1024, virtualMemUsedByMe / 1024, physMemUsedByMeMax / 1024,
           physMemUsedByMe / 1024);
 
 #else

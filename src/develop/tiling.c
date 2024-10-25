@@ -606,7 +606,7 @@ static void _default_process_tiling_ptp(dt_iop_module_t *self,
   }
 
   /* calculate optimal size of tiles */
-  float available = dt_get_available_mem();
+  float available = dt_get_available_pipe_mem(piece->pipe);
   assert(available >= 500.0f * 1024.0f * 1024.0f);
   /* correct for size of ivoid and ovoid which are needed on top of tiling */
   available = fmaxf(available - ((float)roi_out->width * roi_out->height * out_bpp)
@@ -880,7 +880,7 @@ static void _default_process_tiling_roi(dt_iop_module_t *self,
   }
 
   /* calculate optimal size of tiles */
-  float available = dt_get_available_mem();
+  float available = dt_get_available_pipe_mem(piece->pipe);
   assert(available >= 500.0f * 1024.0f * 1024.0f);
   /* correct for size of ivoid and ovoid which are needed on top of tiling */
   available = fmaxf(available - ((float)roi_out->width * roi_out->height * out_bpp)
@@ -1199,12 +1199,12 @@ float dt_tiling_estimate_cpumem(dt_develop_tiling_t *tiling,
 {
   const int m_dx = MAX(roi_in->width, roi_out->width);
   const int m_dy = MAX(roi_in->height, roi_out->height);
-  if(dt_tiling_piece_fits_host_memory(m_dx, m_dy, max_bpp, tiling->factor, tiling->overhead))
+  if(dt_tiling_piece_fits_host_memory(piece, m_dx, m_dy, max_bpp, tiling->factor, tiling->overhead))
     return (float)m_dx * m_dy * max_bpp * tiling->factor + tiling->overhead;
 
   float fullscale = fmaxf(roi_in->scale / roi_out->scale, sqrtf(((float)roi_in->width * roi_in->height)
                                                               / ((float)roi_out->width * roi_out->height)));
-  float available = dt_get_available_mem();
+  float available = dt_get_available_pipe_mem(piece->pipe);
   available = fmaxf(available - ((float)roi_out->width * roi_out->height * max_bpp)
                    - ((float)roi_in->width * roi_in->height * max_bpp) - tiling->overhead, 0.0f);
 
@@ -2233,13 +2233,14 @@ void default_tiling_callback(dt_iop_module_t *self,
   return;
 }
 
-gboolean dt_tiling_piece_fits_host_memory(const size_t width,
+gboolean dt_tiling_piece_fits_host_memory(const dt_dev_pixelpipe_iop_t *piece,
+                                          const size_t width,
                                           const size_t height,
                                           const unsigned bpp,
                                           const float factor,
                                           const size_t overhead)
 {
-  const size_t available = dt_get_available_mem();
+  const size_t available = dt_get_available_pipe_mem(piece->pipe);
   const size_t total = factor * width * height * bpp + overhead;
 
   return (total <= available) ? TRUE : FALSE;

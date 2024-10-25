@@ -231,6 +231,8 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
                                       const size_t size,
                                       const int32_t entries,
                                       const size_t memlimit);
+// returns available memory for the pipe
+size_t dt_get_available_pipe_mem(const dt_dev_pixelpipe_t *pipe);
 // constructs a new input buffer from given RGB float array.
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe,
                                 struct dt_develop_t *dev,
