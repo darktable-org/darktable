@@ -884,7 +884,7 @@ static inline gboolean dt_slist_length_equal(GSList *l1, GSList *l2)
 }
 
 // checks internally for DT_DEBUG_MEMORY
-void dt_print_mem_usage();
+void dt_print_mem_usage(char *info);
 
 // try to start the backthumbs crawler
 void dt_start_backtumbs_crawler();

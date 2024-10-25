@@ -126,7 +126,7 @@ typedef enum {
   DT_FILETYPE_PEF,	// Pentax
   DT_FILETYPE_RAF,	// Fujifilm
   DT_FILETYPE_RW2,	// Panasonic
-  DT_FILETYPE_SRW,	
+  DT_FILETYPE_SRW,
   DT_FILETYPE_X3F,	// Sigma Foveon
   DT_FILETYPE_OTHER_RAW,
   DT_FILETYPE_DNG,
@@ -1236,7 +1236,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   // note: not perfect but a reasonable good guess looking at overall pixelpipe requirements
   // and specific stuff in finalscale.
   const double max_possible_scale = fmin(100.0, fmax(1.0, // keep maximum allowed scale as we had in 4.6
-      (double)dt_get_available_mem() / (double)(1 + 64 * sizeof(float) * pipe.processed_width * pipe.processed_height)));
+      (double)dt_get_available_pipe_mem(&pipe) / (double)(1 + 64 * sizeof(float) * pipe.processed_width * pipe.processed_height)));
 
   const gboolean doscale = upscale && ((width > 0 || height > 0) || is_scaling);
   const double max_scale = doscale ? max_possible_scale : 1.00;
@@ -1612,25 +1612,25 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
 
     if(!_image_handled(ret))
       ret = dt_imageio_open_exr(img, filename, buf);
-    
+
     if(!_image_handled(ret))
       ret = dt_imageio_open_rgbe(img, filename, buf);
-    
+
     if(!_image_handled(ret))
       ret = dt_imageio_open_j2k(img, filename, buf);
-    
+
     if(!_image_handled(ret))
       ret = dt_imageio_open_jpegxl(img, filename, buf);
-    
+
     if(!_image_handled(ret))
       ret = dt_imageio_open_jpeg(img, filename, buf);
-    
+
     if(!_image_handled(ret))
       ret = dt_imageio_open_qoi(img, filename, buf);
 
     if(!_image_handled(ret))
       ret = dt_imageio_open_pnm(img, filename, buf);
-    
+
     // final fallback that tries to open file via GraphicsMagick or ImageMagick
     if(!_image_handled(ret))
       ret = dt_imageio_open_exotic(img, filename, buf);
