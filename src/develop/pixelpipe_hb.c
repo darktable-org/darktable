@@ -1919,13 +1919,13 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                   && (cho == 1 || cho == 4)
                   && dt_str_commasubstring(darktable.dump_diff_pipe, module->op))
               {
-                const size_t ow = roi_out->width;
-                const size_t oh = roi_out->height;
-                const size_t iw = roi_in.width;
-                const size_t ih = roi_in.height;
-                float *clindata = dt_alloc_align_float(iw * ih * ch);
-                float *cloutdata = dt_alloc_align_float(ow * oh * cho);
-                float *cpudata = dt_alloc_align_float(ow * oh * cho);
+                const int ow = roi_out->width;
+                const int oh = roi_out->height;
+                const int iw = roi_in.width;
+                const int ih = roi_in.height;
+                float *clindata = dt_alloc_align_float((size_t)iw * ih * ch);
+                float *cloutdata = dt_alloc_align_float((size_t)ow * oh * cho);
+                float *cpudata = dt_alloc_align_float((size_t)ow * oh * cho);
                 if(clindata && cloutdata && cpudata)
                 {
                   cl_int terr = dt_opencl_read_host_from_device(pipe->devid, cloutdata, *cl_mem_output, ow, oh, cho * sizeof(float));
