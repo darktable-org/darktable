@@ -1199,7 +1199,7 @@ float dt_tiling_estimate_cpumem(dt_develop_tiling_t *tiling,
 {
   const int m_dx = MAX(roi_in->width, roi_out->width);
   const int m_dy = MAX(roi_in->height, roi_out->height);
-  if(dt_tiling_piece_fits_host_memory(m_dx, m_dy, max_bpp, tiling->factor, tiling->overhead))
+  if(dt_tiling_piece_fits_host_memory(piece, m_dx, m_dy, max_bpp, tiling->factor, tiling->overhead))
     return (float)m_dx * m_dy * max_bpp * tiling->factor + tiling->overhead;
 
   float fullscale = fmaxf(roi_in->scale / roi_out->scale, sqrtf(((float)roi_in->width * roi_in->height)
@@ -2233,7 +2233,8 @@ void default_tiling_callback(dt_iop_module_t *self,
   return;
 }
 
-gboolean dt_tiling_piece_fits_host_memory(const size_t width,
+gboolean dt_tiling_piece_fits_host_memory(const dt_dev_pixelpipe_iop_t *piece,
+                                          const size_t width,
                                           const size_t height,
                                           const unsigned bpp,
                                           const float factor,
