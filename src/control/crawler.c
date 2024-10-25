@@ -228,7 +228,7 @@ GList *dt_control_crawler_run(void)
     while((c > image_path) && (*c != '.')) c--;
     len = c - image_path + 1;
 
-    char *extra_path = (char *)calloc(len + 3 + 1, sizeof(char));
+    char *extra_path = calloc(len + 3 + 1, sizeof(char));
     if(extra_path)
     {
       g_strlcpy(extra_path, image_path, len + 1);

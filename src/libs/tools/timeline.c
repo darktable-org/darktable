@@ -1377,7 +1377,7 @@ static gboolean _lib_timeline_mouse_leave_callback(GtkWidget *w, GdkEventCrossin
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_timeline_t *d = (dt_lib_timeline_t *)calloc(1, sizeof(dt_lib_timeline_t));
+  dt_lib_timeline_t *d = calloc(1, sizeof(dt_lib_timeline_t));
   self->data = (void *)d;
 
   d->zoom = CLAMP(dt_conf_get_int("plugins/lighttable/timeline/last_zoom"), 0, 8);

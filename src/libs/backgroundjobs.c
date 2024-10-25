@@ -145,8 +145,7 @@ static gboolean _added_gui_thread(gpointer user_data)
 static void *_lib_backgroundjobs_added(dt_lib_module_t *self, gboolean has_progress_bar, const gchar *message)
 {
   // add a new gui thingy
-  dt_lib_backgroundjob_element_t *instance
-      = (dt_lib_backgroundjob_element_t *)calloc(1, sizeof(dt_lib_backgroundjob_element_t));
+  dt_lib_backgroundjob_element_t *instance = calloc(1, sizeof(dt_lib_backgroundjob_element_t));
   if(!instance) return NULL;
   _added_gui_thread_t *params = malloc(sizeof(_added_gui_thread_t));
   if(!params)

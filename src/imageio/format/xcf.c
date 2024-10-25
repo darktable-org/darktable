@@ -249,7 +249,7 @@ size_t params_size(dt_imageio_module_format_t *self)
 
 void *get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_xcf_t *d = (dt_imageio_xcf_t *)calloc(1, sizeof(dt_imageio_xcf_t));
+  dt_imageio_xcf_t *d = calloc(1, sizeof(dt_imageio_xcf_t));
 
   const char *conf_bpp = dt_conf_get_string_const("plugins/imageio/format/xcf/bpp");
   d->bpp = atoi(conf_bpp);
@@ -344,7 +344,7 @@ static void bpp_combobox_changed(GtkWidget *widget, gpointer user_data)
 
 void gui_init(dt_imageio_module_format_t *self)
 {
-  dt_imageio_xcf_gui_t *gui = (dt_imageio_xcf_gui_t *)malloc(sizeof(dt_imageio_xcf_gui_t));
+  dt_imageio_xcf_gui_t *gui = malloc(sizeof(dt_imageio_xcf_gui_t));
   self->gui_data = (void *)gui;
 
   int bpp = 32;

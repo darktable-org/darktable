@@ -3161,7 +3161,7 @@ static void _event_dnd_end(GtkWidget *widget, GdkDragContext *context, dt_lib_mo
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_tagging_t *d = (dt_lib_tagging_t *)calloc(sizeof(dt_lib_tagging_t),1);
+  dt_lib_tagging_t *d = calloc(sizeof(dt_lib_tagging_t),1);
   self->data = (void *)d;
   d->last_tag = NULL;
 

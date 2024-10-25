@@ -542,7 +542,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
     } dt_imageio_j2k_v1_t;
 
     const dt_imageio_j2k_v1_t *o = (dt_imageio_j2k_v1_t *)old_params;
-    dt_imageio_j2k_v2_t *n = (dt_imageio_j2k_v2_t *)malloc(sizeof(dt_imageio_j2k_v2_t));
+    dt_imageio_j2k_v2_t *n = malloc(sizeof(dt_imageio_j2k_v2_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -574,7 +574,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
   {
     // let's update from 2 to 3
     const dt_imageio_j2k_v2_t *o = (dt_imageio_j2k_v2_t *)old_params;
-    dt_imageio_j2k_v3_t *n = (dt_imageio_j2k_v3_t *)malloc(sizeof(dt_imageio_j2k_v3_t));
+    dt_imageio_j2k_v3_t *n = malloc(sizeof(dt_imageio_j2k_v3_t));
 
     n->global.max_width = o->global.max_width;
     n->global.max_height = o->global.max_height;
@@ -595,7 +595,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
 
 void *get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_j2k_t *d = (dt_imageio_j2k_t *)calloc(1, sizeof(dt_imageio_j2k_t));
+  dt_imageio_j2k_t *d = calloc(1, sizeof(dt_imageio_j2k_t));
   d->bpp = 12; // can be 8, 12 or 16
   d->preset = dt_conf_get_int("plugins/imageio/format/j2k/preset");
   d->quality = dt_conf_get_int("plugins/imageio/format/j2k/quality");
@@ -658,7 +658,7 @@ static void quality_changed(GtkWidget *slider, gpointer user_data)
 // TODO: some quality/compression stuff in case "off" is selected
 void gui_init(dt_imageio_module_format_t *self)
 {
-  dt_imageio_j2k_gui_t *gui = (dt_imageio_j2k_gui_t *)malloc(sizeof(dt_imageio_j2k_gui_t));
+  dt_imageio_j2k_gui_t *gui = malloc(sizeof(dt_imageio_j2k_gui_t));
   self->gui_data = (void *)gui;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 

@@ -132,7 +132,7 @@ void *dt_control_job_get_params(const _dt_job_t *job)
 dt_job_t *dt_control_job_create(dt_job_execute_callback execute,
                                 const char *msg, ...)
 {
-  _dt_job_t *job = (_dt_job_t *)calloc(1, sizeof(_dt_job_t));
+  _dt_job_t *job = calloc(1, sizeof(_dt_job_t));
   if(!job) return NULL;
 
   va_list ap;
@@ -642,8 +642,7 @@ void dt_control_jobs_init(dt_control_t *control)
   dt_pthread_mutex_unlock(&control->run_mutex);
   for(int k = 0; k < control->num_threads; k++)
   {
-    worker_thread_parameters_t *params
-        = (worker_thread_parameters_t *)calloc(1, sizeof(worker_thread_parameters_t));
+    worker_thread_parameters_t *params = calloc(1, sizeof(worker_thread_parameters_t));
     params->self = control;
     params->threadid = k;
     dt_pthread_create(&control->thread[k], _control_work, params);
@@ -656,8 +655,7 @@ void dt_control_jobs_init(dt_control_t *control)
   {
     control->job_res[k] = NULL;
     control->new_res[k] = 0;
-    worker_thread_parameters_t *params
-        = (worker_thread_parameters_t *)calloc(1, sizeof(worker_thread_parameters_t));
+    worker_thread_parameters_t *params = calloc(1, sizeof(worker_thread_parameters_t));
     params->self = control;
     params->threadid = k;
     dt_pthread_create(&control->thread_res[k], _control_work_res, params);

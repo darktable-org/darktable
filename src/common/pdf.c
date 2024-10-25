@@ -277,7 +277,7 @@ static size_t _pdf_stream_encoder_Flate(dt_pdf_t *pdf, const unsigned char *data
 {
   int result;
   uLongf destLen = compressBound(len);
-  unsigned char *buffer = (unsigned char *)malloc(destLen);
+  unsigned char *buffer = malloc(destLen);
 
   result = compress(buffer, &destLen, data, len);
 
@@ -785,12 +785,12 @@ float * read_ppm(const char * filename, int * wd, int * ht)
     return NULL;
   }
 
-  float *image = (float*)malloc(sizeof(float) * width * height * 3);
+  float *image = malloc(sizeof(float) * width * height * 3);
 
   if(max <= 255)
   {
     // read a 8 bit PPM
-    uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t) * width * height * 3);
+    uint8_t *tmp = malloc(sizeof(uint8_t) * width * height * 3);
     int res = fread(tmp, sizeof(uint8_t) * 3, width * height, f);
     if(res != width * height)
     {
@@ -809,7 +809,7 @@ float * read_ppm(const char * filename, int * wd, int * ht)
   else
   {
     // read a 16 bit PPM
-    uint16_t *tmp = (uint16_t *)malloc(sizeof(uint16_t) * width * height * 3);
+    uint16_t *tmp = malloc(sizeof(uint16_t) * width * height * 3);
     int res = fread(tmp, sizeof(uint16_t) * 3, width * height, f);
     if(res != width * height)
     {
@@ -871,7 +871,7 @@ int main(int argc, char *argv[])
     int width, height;
     float *image = read_ppm(argv[i + 1], &width, &height);
     if(!image) exit(1);
-    uint16_t *data = (uint16_t *)malloc(sizeof(uint16_t) * 3 * width * height);
+    uint16_t *data = malloc(sizeof(uint16_t) * 3 * width * height);
     if(!data)
     {
       free(image);
