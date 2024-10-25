@@ -403,7 +403,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
     } dt_imageio_jpeg_v1_t;
 
     const dt_imageio_jpeg_v1_t *o = (dt_imageio_jpeg_v1_t *)old_params;
-    dt_imageio_jpeg_v2_t *n = (dt_imageio_jpeg_v2_t *)malloc(sizeof(dt_imageio_jpeg_v2_t));
+    dt_imageio_jpeg_v2_t *n = malloc(sizeof(dt_imageio_jpeg_v2_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -438,7 +438,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
   if(old_version == 2)
   {
     const dt_imageio_jpeg_v2_t *o = (dt_imageio_jpeg_v2_t *)old_params;
-    dt_imageio_jpeg_v3_t *n = (dt_imageio_jpeg_v3_t *)malloc(sizeof(dt_imageio_jpeg_v3_t));
+    dt_imageio_jpeg_v3_t *n = malloc(sizeof(dt_imageio_jpeg_v3_t));
 
     n->global.max_width = o->global.max_width;
     n->global.max_height = o->global.max_height;
@@ -466,7 +466,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
 void *get_params(dt_imageio_module_format_t *self)
 {
   // adjust this if more params are stored (subsampling etc)
-  dt_imageio_jpeg_t *d = (dt_imageio_jpeg_t *)calloc(1, sizeof(dt_imageio_jpeg_t));
+  dt_imageio_jpeg_t *d = calloc(1, sizeof(dt_imageio_jpeg_t));
   d->quality = dt_conf_get_int("plugins/imageio/format/jpeg/quality");
   d->subsample = dt_conf_get_int("plugins/imageio/format/jpeg/subsample");
   return d;

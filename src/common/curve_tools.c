@@ -107,7 +107,7 @@ float *d3_np_fs(int n, float a[], float b[])
       return NULL;
     }
   }
-  float *x = (float *)calloc(n, sizeof(float));
+  float *x = calloc(n, sizeof(float));
   // nc_merror(x, "d3_np_fs");
 
   for(int i = 0; i < n; i++)
@@ -265,9 +265,9 @@ static float *spline_cubic_set_internal(int n, float t[], float y[], int ibcbeg,
       return NULL;
     }
   }
-  float *a = (float *)calloc(3 * n, sizeof(float));
+  float *a = calloc(3 * n, sizeof(float));
   // nc_merror(a, "spline_cubic_set");
-  float *b = (float *)calloc(n, sizeof(float));
+  float *b = calloc(n, sizeof(float));
   // nc_merror(b, "spline_cubic_set");
   //
   //  Set up the first equation.
@@ -410,9 +410,9 @@ float *monotone_hermite_set(int n, float x[], float y[])
     }
   }
 
-  float *delta = (float *)calloc(n, sizeof(float));
+  float *delta = calloc(n, sizeof(float));
   // nc_merror(delta, "spline_cubic_set");
-  float *m = (float *)calloc(n + 1, sizeof(float));
+  float *m = calloc(n + 1, sizeof(float));
   // nc_merror(m, "spline_cubic_set");
   // calculate the slopes
   for(int i = 0; i < n - 1; i++)
@@ -484,7 +484,7 @@ float *catmull_rom_set(int n, float x[], float y[])
     }
   }
   // nc_merror(delta, "spline_cubic_set");
-  float *m = (float *)calloc(n, sizeof(float));
+  float *m = calloc(n, sizeof(float));
   // nc_merror(m, "spline_cubic_set");
 
   // calculate the slopes

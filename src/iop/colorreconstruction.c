@@ -871,7 +871,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
     return NULL;
   }
 
-  dt_iop_colorreconstruct_bilateral_cl_t *b = (dt_iop_colorreconstruct_bilateral_cl_t *)malloc(sizeof(dt_iop_colorreconstruct_bilateral_cl_t));
+  dt_iop_colorreconstruct_bilateral_cl_t *b = malloc(sizeof(dt_iop_colorreconstruct_bilateral_cl_t));
   if(!b)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate host buffer (f)");
@@ -1169,7 +1169,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_colorreconstruct_data_t *d = (dt_iop_colorreconstruct_data_t *)calloc(1, sizeof(dt_iop_colorreconstruct_data_t));
+  dt_iop_colorreconstruct_data_t *d = calloc(1, sizeof(dt_iop_colorreconstruct_data_t));
   piece->data = (void *)d;
 }
 

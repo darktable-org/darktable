@@ -621,7 +621,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
     } dt_imageio_tiff_v1_t;
 
     const dt_imageio_tiff_v1_t *o = (dt_imageio_tiff_v1_t *)old_params;
-    dt_imageio_tiff_v4_t *n = (dt_imageio_tiff_v4_t *)calloc(1, sizeof(dt_imageio_tiff_v4_t));
+    dt_imageio_tiff_v4_t *n = calloc(1, sizeof(dt_imageio_tiff_v4_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -654,7 +654,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
     } dt_imageio_tiff_v2_t;
 
     const dt_imageio_tiff_v2_t *o = (dt_imageio_tiff_v2_t *)old_params;
-    dt_imageio_tiff_v4_t *n = (dt_imageio_tiff_v4_t *)calloc(1, sizeof(dt_imageio_tiff_v4_t));
+    dt_imageio_tiff_v4_t *n = calloc(1, sizeof(dt_imageio_tiff_v4_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -686,7 +686,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
     } dt_imageio_tiff_v3_t;
 
     const dt_imageio_tiff_v3_t *o = (dt_imageio_tiff_v3_t *)old_params;
-    dt_imageio_tiff_v4_t *n = (dt_imageio_tiff_v4_t *)calloc(1, sizeof(dt_imageio_tiff_v4_t));
+    dt_imageio_tiff_v4_t *n = calloc(1, sizeof(dt_imageio_tiff_v4_t));
 
     n->global.max_width = o->global.max_width;
     n->global.max_height = o->global.max_height;
@@ -736,7 +736,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
 
 void *get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));
+  dt_imageio_tiff_t *d = calloc(1, sizeof(dt_imageio_tiff_t));
 
   if(!d) return NULL;
 
@@ -862,7 +862,7 @@ void cleanup(dt_imageio_module_format_t *self)
 
 void gui_init(dt_imageio_module_format_t *self)
 {
-  dt_imageio_tiff_gui_t *gui = (dt_imageio_tiff_gui_t *)malloc(sizeof(dt_imageio_tiff_gui_t));
+  dt_imageio_tiff_gui_t *gui = malloc(sizeof(dt_imageio_tiff_gui_t));
   if(!gui) return;
   self->gui_data = (void *)gui;
 

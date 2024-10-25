@@ -964,7 +964,7 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const dt_imgid_t imgid)
       const size_t point_size = form->functions->point_struct_size;
       for(int i = 0; i < nb_points; i++)
       {
-        char *point = (char *)malloc(point_size);
+        char *point = malloc(point_size);
         memcpy(point, ptbuf + i*point_size, point_size);
         form->points = g_list_append(form->points, point);
       }
@@ -1050,7 +1050,7 @@ void dt_masks_write_masks_history_item(const dt_imgid_t imgid,
   {
     const size_t point_size = form->functions->point_struct_size;
     const guint nb = g_list_length(form->points);
-    char *const restrict ptbuf = (char *)malloc(nb * point_size);
+    char *const restrict ptbuf = malloc(nb * point_size);
     int pos = 0;
     for(GList *points = form->points; points; points = g_list_next(points))
     {

@@ -1396,7 +1396,7 @@ dt_colorspaces_t *dt_colorspaces_init()
 {
   cmsSetLogErrorHandler(cms_error_handler);
 
-  dt_colorspaces_t *res = (dt_colorspaces_t *)calloc(1, sizeof(dt_colorspaces_t));
+  dt_colorspaces_t *res = calloc(1, sizeof(dt_colorspaces_t));
 
   _compute_prequantized_primaries(&D65xyY, &Rec709_Primaries,
                                   &Rec709_Primaries_Prequantized);

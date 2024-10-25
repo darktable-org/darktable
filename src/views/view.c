@@ -755,7 +755,7 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
 
   // we transfer cached image on a cairo_surface (with colorspace transform if needed)
   cairo_surface_t *tmp_surface = NULL;
-  uint8_t *rgbbuf = (uint8_t *)calloc((size_t)buf_wd * buf_ht * 4, sizeof(uint8_t));
+  uint8_t *rgbbuf = calloc((size_t)buf_wd * buf_ht * 4, sizeof(uint8_t));
   if(rgbbuf)
   {
     gboolean have_lock = FALSE;
@@ -1322,7 +1322,7 @@ GSList *dt_mouse_action_create_simple(GSList *actions,
                                       const GdkModifierType accel,
                                       const char *const description)
 {
-  dt_mouse_action_t *a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  dt_mouse_action_t *a = calloc(1, sizeof(dt_mouse_action_t));
   if(a)
   {
     a->action = type;
@@ -1340,7 +1340,7 @@ GSList *dt_mouse_action_create_format(GSList *actions,
                                       const char *const format_string,
                                       const char *const replacement)
 {
-  dt_mouse_action_t *a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  dt_mouse_action_t *a = calloc(1, sizeof(dt_mouse_action_t));
   if(a)
   {
     a->action = type;

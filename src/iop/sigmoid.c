@@ -117,7 +117,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_sigmoid_params_v1_t;
 
     // Copy the common part of the params struct
-    dt_iop_sigmoid_params_v3_t *n = (dt_iop_sigmoid_params_v3_t *)calloc(1, sizeof(dt_iop_sigmoid_params_v3_t));
+    dt_iop_sigmoid_params_v3_t *n = calloc(1, sizeof(dt_iop_sigmoid_params_v3_t));
     memcpy(n, old_params, sizeof(dt_iop_sigmoid_params_v1_t));
 
     *new_params = n;
@@ -147,7 +147,7 @@ int legacy_params(dt_iop_module_t *self,
       float purity;
     } dt_iop_sigmoid_params_v2_t;
     // Copy the common part of the params struct
-    dt_iop_sigmoid_params_v3_t *n = (dt_iop_sigmoid_params_v3_t *)calloc(1, sizeof(dt_iop_sigmoid_params_v3_t));
+    dt_iop_sigmoid_params_v3_t *n = calloc(1, sizeof(dt_iop_sigmoid_params_v3_t));
     memcpy(n, old_params, sizeof(dt_iop_sigmoid_params_v2_t));
 
     *new_params = n;

@@ -882,7 +882,7 @@ static gchar *_thumbs_get_overlays_class(dt_thumbnail_overlay_t over)
 
 dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
 {
-  dt_culling_t *table = (dt_culling_t *)calloc(1, sizeof(dt_culling_t));
+  dt_culling_t *table = calloc(1, sizeof(dt_culling_t));
   table->mode = mode;
   table->zoom_ratio = IMG_TO_FIT;
   table->widget = gtk_layout_new(NULL, NULL);

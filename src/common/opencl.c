@@ -1966,7 +1966,7 @@ int dt_opencl_lock_device(const int pipetype)
   dt_pthread_mutex_lock(&cl->lock);
 
   const size_t prio_size = sizeof(int) * (cl->num_devs + 1);
-  int *priority = (int *)malloc(prio_size);
+  int *priority = malloc(prio_size);
   int mandatory;
   gboolean heavy = FALSE;
 
@@ -2110,7 +2110,7 @@ static void _opencl_md5sum(const char **files,
     }
 
     const size_t filesize = filestat.st_size;
-    char *file = (char *)malloc(filesize);
+    char *file = malloc(filesize);
 
     if(!file)
     {
@@ -2177,7 +2177,7 @@ static gboolean _opencl_load_program(const int dev,
   if(!f) return FALSE;
 
   const size_t filesize = filestat.st_size;
-  char *file = (char *)malloc(filesize + 2048);
+  char *file = malloc(filesize + 2048);
   size_t rd = fread(file, sizeof(char), filesize, f);
   fclose(f);
   if(rd != filesize)
@@ -2254,7 +2254,7 @@ static gboolean _opencl_load_program(const int dev,
         // md5sum matches, load cached binary
         size_t cached_filesize = cachedstat.st_size;
 
-        unsigned char *cached_content = (unsigned char *)malloc(cached_filesize + 1);
+        unsigned char *cached_content = malloc(cached_filesize + 1);
         rd = fread(cached_content, sizeof(char), cached_filesize, cached);
         if(rd != cached_filesize)
         {

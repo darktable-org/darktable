@@ -319,7 +319,7 @@ static void free_params_wrapper(struct dt_imageio_module_storage_t *self,
 {
   dt_job_t *job = dt_control_job_create(&free_param_wrapper_job, "lua: destroy storage param");
   if(!job) return;
-  free_param_wrapper_data *t = (free_param_wrapper_data *)calloc(1, sizeof(free_param_wrapper_data));
+  free_param_wrapper_data *t = calloc(1, sizeof(free_param_wrapper_data));
   if(!t)
   {
     dt_control_job_dispose(job);

@@ -205,8 +205,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorchecker_params_v1_t;
 
     const dt_iop_colorchecker_params_v1_t *o = old_params;
-    dt_iop_colorchecker_params_v2_t  *n =
-      (dt_iop_colorchecker_params_v2_t  *)malloc(sizeof(dt_iop_colorchecker_params_v2_t));
+    dt_iop_colorchecker_params_v2_t *n = malloc(sizeof(dt_iop_colorchecker_params_v2_t));
 
     n->num_patches = 24;
     for(int k=0; k<24; k++)

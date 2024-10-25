@@ -717,7 +717,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
   {
     // let's update from 1 to 2
     const dt_imageio_avif_v1_t *o = (dt_imageio_avif_v1_t *)old_params;
-    dt_imageio_avif_v2_t *n = (dt_imageio_avif_v2_t *)malloc(sizeof(dt_imageio_avif_v2_t));
+    dt_imageio_avif_v2_t *n = malloc(sizeof(dt_imageio_avif_v2_t));
 
     n->global.max_width = o->global.max_width;
     n->global.max_height = o->global.max_height;
@@ -741,7 +741,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
 
 void *get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_avif_t *d = (dt_imageio_avif_t *)calloc(1, sizeof(dt_imageio_avif_t));
+  dt_imageio_avif_t *d = calloc(1, sizeof(dt_imageio_avif_t));
 
   if(d == NULL)
   {

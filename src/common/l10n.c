@@ -328,7 +328,7 @@ gchar *_l10n_get_language(const gchar *filename)
 
 dt_l10n_t *dt_l10n_init(const gchar *filename, const gboolean init_list)
 {
-  dt_l10n_t *result = (dt_l10n_t *)calloc(1, sizeof(dt_l10n_t));
+  dt_l10n_t *result = calloc(1, sizeof(dt_l10n_t));
   result->selected = -1;
   result->sys_default = -1;
 
@@ -386,7 +386,7 @@ dt_l10n_t *dt_l10n_init(const gchar *filename, const gboolean init_list)
                                            "LC_MESSAGES", GETTEXT_PACKAGE ".mo", NULL);
         if(g_file_test(testname, G_FILE_TEST_EXISTS))
         {
-          language = (dt_l10n_language_t *)calloc(1, sizeof(dt_l10n_language_t));
+          language = calloc(1, sizeof(dt_l10n_language_t));
           result->languages = g_list_prepend(result->languages, language);
 
           // some languages have a regional part in the filename, we

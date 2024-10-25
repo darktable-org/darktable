@@ -299,7 +299,7 @@ dt_progress_t *dt_control_progress_create(dt_control_t *control, gboolean has_pr
                                           const gchar *message)
 {
   // create the object
-  dt_progress_t *progress = (dt_progress_t *)calloc(1, sizeof(dt_progress_t));
+  dt_progress_t *progress = calloc(1, sizeof(dt_progress_t));
   dt_pthread_mutex_init(&(progress->mutex), NULL);
 
   // fill it with values

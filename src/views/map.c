@@ -1520,7 +1520,7 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
       {
         if(p[i].cluster_id == NOISE)
         {
-          dt_map_image_t *entry = (dt_map_image_t *)calloc(1, sizeof(dt_map_image_t));
+          dt_map_image_t *entry = calloc(1, sizeof(dt_map_image_t));
           if(entry)
           {
             entry->imgid = p[i].imgid;
@@ -1540,7 +1540,7 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
         {
           processed[p[i].cluster_id] = TRUE;
           group = p[i].cluster_id;
-          dt_map_image_t *entry = (dt_map_image_t *)calloc(1, sizeof(dt_map_image_t));
+          dt_map_image_t *entry = calloc(1, sizeof(dt_map_image_t));
           if(entry)
           {
             entry->imgid = p[i].imgid;

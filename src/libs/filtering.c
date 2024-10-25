@@ -2217,7 +2217,7 @@ static void _sort_history_show(GtkWidget *widget, dt_lib_module_t *self)
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)calloc(1, sizeof(dt_lib_filtering_t));
+  dt_lib_filtering_t *d = calloc(1, sizeof(dt_lib_filtering_t));
 
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);

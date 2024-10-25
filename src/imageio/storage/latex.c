@@ -179,7 +179,7 @@ static void title_changed_callback(GtkEntry *entry, gpointer user_data)
 
 void gui_init(dt_imageio_module_storage_t *self)
 {
-  latex_t *d = (latex_t *)malloc(sizeof(latex_t));
+  latex_t *d = malloc(sizeof(latex_t));
   self->gui_data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -436,7 +436,7 @@ void init(dt_imageio_module_storage_t *self)
 }
 void *get_params(dt_imageio_module_storage_t *self)
 {
-  dt_imageio_latex_t *d = (dt_imageio_latex_t *)calloc(1, sizeof(dt_imageio_latex_t));
+  dt_imageio_latex_t *d = calloc(1, sizeof(dt_imageio_latex_t));
   d->vp = NULL;
   d->l = NULL;
   dt_variables_params_init(&d->vp);

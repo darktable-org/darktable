@@ -105,7 +105,7 @@ void *legacy_params(dt_imageio_module_storage_t *self,
     } dt_imageio_disk_v1_t;
 
     const dt_imageio_disk_v1_t *o = (dt_imageio_disk_v1_t *)old_params;
-    dt_imageio_disk_v3_t *n = (dt_imageio_disk_v3_t *)malloc(sizeof(dt_imageio_disk_v3_t));
+    dt_imageio_disk_v3_t *n = malloc(sizeof(dt_imageio_disk_v3_t));
 
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     n->onsave_action = (o->overwrite)
@@ -126,7 +126,7 @@ void *legacy_params(dt_imageio_module_storage_t *self,
     } dt_imageio_disk_v2_t;
 
     const dt_imageio_disk_v2_t *o = (dt_imageio_disk_v2_t *)old_params;
-    dt_imageio_disk_v3_t *n = (dt_imageio_disk_v3_t *)malloc(sizeof(dt_imageio_disk_v3_t));
+    dt_imageio_disk_v3_t *n = malloc(sizeof(dt_imageio_disk_v3_t));
 
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     n->onsave_action = (o->overwrite)
@@ -253,7 +253,7 @@ static void onsave_action_toggle_callback(GtkWidget *widget,
 
 void gui_init(dt_imageio_module_storage_t *self)
 {
-  disk_t *d = (disk_t *)malloc(sizeof(disk_t));
+  disk_t *d = malloc(sizeof(disk_t));
   self->gui_data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
@@ -501,7 +501,7 @@ void init(dt_imageio_module_storage_t *self)
 
 void *get_params(dt_imageio_module_storage_t *self)
 {
-  dt_imageio_disk_t *d = (dt_imageio_disk_t *)calloc(1, sizeof(dt_imageio_disk_t));
+  dt_imageio_disk_t *d = calloc(1, sizeof(dt_imageio_disk_t));
 
   const char *text =
     dt_conf_get_string_const("plugins/imageio/storage/disk/file_directory");

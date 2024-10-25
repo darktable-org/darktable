@@ -41,7 +41,7 @@ void heap_cleanup(heap_t *h)
 
 heap_t *heap_init(uint32_t size)
 {
-  heap_t *h = (heap_t *)malloc(sizeof(heap_t));
+  heap_t *h = malloc(sizeof(heap_t));
   if(h)
   {
     h->keys = (uint64_t *)malloc(sizeof(uint64_t) * size);

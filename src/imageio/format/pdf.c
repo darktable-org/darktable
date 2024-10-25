@@ -296,7 +296,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
           icc_id = dt_pdf_add_icc_from_data(d->pdf, buf, len);
           free(buf);
         }
-        _pdf_icc_t *icc = (_pdf_icc_t *)malloc(sizeof(_pdf_icc_t));
+        _pdf_icc_t *icc = malloc(sizeof(_pdf_icc_t));
         if(icc)
         {
           icc->profile = profile;
@@ -739,7 +739,7 @@ size_t params_size(dt_imageio_module_format_t *self)
 
 void *get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_pdf_t *d = (dt_imageio_pdf_t *)calloc(1, sizeof(dt_imageio_pdf_t));
+  dt_imageio_pdf_t *d = calloc(1, sizeof(dt_imageio_pdf_t));
 
   if(d)
   {

@@ -244,7 +244,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_colisa_data_t *d = (dt_iop_colisa_data_t *)calloc(1, sizeof(dt_iop_colisa_data_t));
+  dt_iop_colisa_data_t *d = calloc(1, sizeof(dt_iop_colisa_data_t));
   piece->data = (void *)d;
   for(int k = 0; k < 0x10000; k++) d->ctable[k] = d->ltable[k] = 100.0f * k / 0x10000; // identity
 }

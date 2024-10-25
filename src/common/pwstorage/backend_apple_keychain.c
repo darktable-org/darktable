@@ -30,7 +30,7 @@ static char* _CFStringCopyUTF8String(CFStringRef aString) {
 
   CFIndex length = CFStringGetLength(aString);
   CFIndex maxSize = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1;
-  char *buffer = (char *)malloc(maxSize);
+  char *buffer = malloc(maxSize);
   if (CFStringGetCString(aString, buffer, maxSize, kCFStringEncodingUTF8))
   {
     return buffer;

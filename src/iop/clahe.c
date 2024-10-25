@@ -93,7 +93,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const int ch = piece->colors;
 
   // PASS1: Get a luminance map of image...
-  float *luminance = (float *)malloc(sizeof(float) * ((size_t)roi_out->width * roi_out->height));
+  float *luminance = malloc(sizeof(float) * ((size_t)roi_out->width * roi_out->height));
 // double lsmax=0.0,lsmin=1.0;
   DT_OMP_FOR()
   for(int j = 0; j < roi_out->height; j++)

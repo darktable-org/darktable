@@ -175,7 +175,7 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
                                   const float sigma_s, // spatial sigma (blur pixel coords)
                                   const float sigma_r) // range sigma (blur luma values)
 {
-  dt_bilateral_t *b = (dt_bilateral_t *)malloc(sizeof(dt_bilateral_t));
+  dt_bilateral_t *b = malloc(sizeof(dt_bilateral_t));
   if(!b) return NULL;
   dt_bilateral_grid_size(b,width,height,100.0f,sigma_s,sigma_r);
   b->width = width;
@@ -222,7 +222,7 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
     oz + oy + ox
   };
 
-  DT_OMP_FOR()  
+  DT_OMP_FOR()
   for(int slice = 0; slice < b->numslices; slice++)
   {
     const int firstrow = slice * b->sliceheight;

@@ -57,7 +57,7 @@ dt_gmodule_t *dt_gmodule_open(const char *library)
 
   if(gmodule != NULL)
   {
-    module = (dt_gmodule_t *)malloc(sizeof(dt_gmodule_t));
+    module = malloc(sizeof(dt_gmodule_t));
     module->gmodule = gmodule;
     module->library = name;
   }
@@ -72,7 +72,7 @@ dt_gmodule_t *dt_gmodule_open(const char *library)
 gboolean dt_gmodule_symbol(dt_gmodule_t *module, const char *name, void (**pointer)(void))
 {
   // As in g_module_symbol() reference the returned pointer might be NULL
-  // so we also check for a non-NULL pointer for returned success 
+  // so we also check for a non-NULL pointer for returned success
   const gboolean symbol = g_module_symbol(module->gmodule, name, (gpointer)pointer);
   const gboolean valid = *pointer != NULL;
   if(!(symbol && valid))
@@ -95,7 +95,7 @@ dt_gmodule_t *dt_gmodule_open(const char *library)
 
   if(gmodule != NULL)
   {
-    module = (dt_gmodule_t *)malloc(sizeof(dt_gmodule_t));
+    module = malloc(sizeof(dt_gmodule_t));
     module->gmodule = gmodule;
     module->library = g_strdup(library);
   }
