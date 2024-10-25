@@ -256,12 +256,17 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   return dt_dev_pixelpipe_cache_init(pipe, entries, size, memlimit);
 }
 
-static void get_output_format(
-              dt_iop_module_t *module,
-              dt_dev_pixelpipe_t *pipe,
-              dt_dev_pixelpipe_iop_t *piece,
-              dt_develop_t *dev,
-              dt_iop_buffer_dsc_t *dsc)
+size_t dt_get_available_pipe_mem(const dt_dev_pixelpipe_t *pipe)
+{
+  size_t allmem = dt_get_available_mem();
+  return MAX(1lu * 1024lu * 1024lu, allmem / (pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL ? 3 : 1));
+}
+
+static void get_output_format(dt_iop_module_t *module,
+                              dt_dev_pixelpipe_t *pipe,
+                              dt_dev_pixelpipe_iop_t *piece,
+                              dt_develop_t *dev,
+                              dt_iop_buffer_dsc_t *dsc)
 {
   if(module) return module->output_format(module, pipe, piece, dsc);
 
@@ -662,15 +667,14 @@ void dt_dev_pixelpipe_usedetails(dt_dev_pixelpipe_t *pipe)
   pipe->want_detail_mask = TRUE;
 }
 
-static void _dump_pipe_pfm_diff(
-        const char *mod,
-        const void *indata,
-        const dt_iop_roi_t *roi_in,
-        const int inbpp,
-        const void *outdata,
-        const dt_iop_roi_t *roi_out,
-        const int outbpp,
-        const char *pipe)
+static void _dump_pipe_pfm_diff(const char *mod,
+                                const void *indata,
+                                const dt_iop_roi_t *roi_in,
+                                const int inbpp,
+                                const void *outdata,
+                                const dt_iop_roi_t *roi_out,
+                                const int outbpp,
+                                const char *pipe)
 {
   if(!darktable.dump_pfm_pipe) return;
   if(!mod) return;
