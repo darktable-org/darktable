@@ -1089,19 +1089,18 @@ static void _collect_histogram_on_CPU(dt_dev_pixelpipe_t *pipe,
   }
 }
 
-static gboolean _pixelpipe_process_on_CPU(
-                 dt_dev_pixelpipe_t *pipe,
-                 dt_develop_t *dev,
-                 float *input,
-                 dt_iop_buffer_dsc_t *input_format,
-                 const dt_iop_roi_t *roi_in,
-                 void **output,
-                 dt_iop_buffer_dsc_t **out_format,
-                 const dt_iop_roi_t *roi_out,
-                 dt_iop_module_t *module,
-                 dt_dev_pixelpipe_iop_t *piece,
-                 dt_develop_tiling_t *tiling,
-                 dt_pixelpipe_flow_t *pixelpipe_flow)
+static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
+                                          dt_develop_t *dev,
+                                          float *input,
+                                          dt_iop_buffer_dsc_t *input_format,
+                                          const dt_iop_roi_t *roi_in,
+                                          void **output,
+                                          dt_iop_buffer_dsc_t **out_format,
+                                          const dt_iop_roi_t *roi_out,
+                                          dt_iop_module_t *module,
+                                          dt_dev_pixelpipe_iop_t *piece,
+                                          dt_develop_tiling_t *tiling,
+                                          dt_pixelpipe_flow_t *pixelpipe_flow)
 {
   if(dt_atomic_get_int(&pipe->shutdown))
     return TRUE;
@@ -1162,7 +1161,7 @@ static gboolean _pixelpipe_process_on_CPU(
   const size_t m_width = MAX(roi_in->width, roi_out->width);
   const size_t m_height = MAX(roi_in->height, roi_out->height);
 
-  const gboolean fitting = dt_tiling_piece_fits_host_memory(m_width, m_height, m_bpp, tiling->factor, tiling->overhead);
+  const gboolean fitting = dt_tiling_piece_fits_host_memory(piece, m_width, m_height, m_bpp, tiling->factor, tiling->overhead);
   /* process module on cpu. use tiling if needed and possible. */
 
   const gboolean pfm_dump = darktable.dump_pfm_pipe
@@ -1330,16 +1329,15 @@ static inline gboolean _skip_piece_on_tags(const dt_dev_pixelpipe_iop_t *piece)
 }
 
 // recursive helper for process, returns TRUE in case of unfinished work or error
-static gboolean _dev_pixelpipe_process_rec(
-                 dt_dev_pixelpipe_t *pipe,
-                 dt_develop_t *dev,
-                 void **output,
-                 void **cl_mem_output,
-                 dt_iop_buffer_dsc_t **out_format,
-                 const dt_iop_roi_t *roi_out,
-                 GList *modules,
-                 GList *pieces,
-                 const int pos)
+static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
+                                           dt_develop_t *dev,
+                                           void **output,
+                                           void **cl_mem_output,
+                                           dt_iop_buffer_dsc_t **out_format,
+                                           const dt_iop_roi_t *roi_out,
+                                           GList *modules,
+                                           GList *pieces,
+                                           const int pos)
 {
   if(dt_atomic_get_int(&pipe->shutdown))
     return TRUE;
@@ -2582,14 +2580,13 @@ static gboolean _dev_pixelpipe_process_rec(
 }
 
 
-gboolean dt_dev_pixelpipe_process_no_gamma(
-           dt_dev_pixelpipe_t *pipe,
-           dt_develop_t *dev,
-           const int x,
-           const int y,
-           const int width,
-           const int height,
-           const float scale)
+gboolean dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe,
+                                           dt_develop_t *dev,
+                                           const int x,
+                                           const int y,
+                                           const int width,
+                                           const int height,
+                                           const float scale)
 {
   // temporarily disable gamma mapping.
   GList *gammap = g_list_last(pipe->nodes);
@@ -2638,16 +2635,15 @@ void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op)
 }
 
 // returns TRUE in case of error or early exit
-static gboolean _dev_pixelpipe_process_rec_and_backcopy(
-                  dt_dev_pixelpipe_t *pipe,
-                  dt_develop_t *dev,
-                  void **output,
-                  void **cl_mem_output,
-                  dt_iop_buffer_dsc_t **out_format,
-                  const dt_iop_roi_t *roi_out,
-                  GList *modules,
-                  GList *pieces,
-                  const int pos)
+static gboolean _dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe,
+                                                        dt_develop_t *dev,
+                                                        void **output,
+                                                        void **cl_mem_output,
+                                                        dt_iop_buffer_dsc_t **out_format,
+                                                        const dt_iop_roi_t *roi_out,
+                                                        GList *modules,
+                                                        GList *pieces,
+                                                        const int pos)
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex);
   darktable.dtresources.group = 4 * darktable.dtresources.level;
@@ -2691,15 +2687,14 @@ static gboolean _dev_pixelpipe_process_rec_and_backcopy(
   return ret;
 }
 
-gboolean dt_dev_pixelpipe_process(
-           dt_dev_pixelpipe_t *pipe,
-           dt_develop_t *dev,
-           const int x,
-           const int y,
-           const int width,
-           const int height,
-           const float scale,
-           const int devid)
+gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
+                                  dt_develop_t *dev,
+                                  const int x,
+                                  const int y,
+                                  const int width,
+                                  const int height,
+                                  const float scale,
+                                  const int devid)
 {
   pipe->processing = TRUE;
   pipe->nocache = (pipe->type & DT_DEV_PIXELPIPE_IMAGE) != 0;
@@ -2712,9 +2707,6 @@ gboolean dt_dev_pixelpipe_process(
 
   if(!claimed)  // don't free cachelines as the caller is using them
     dt_dev_pixelpipe_cache_checkmem(pipe);
-
-  dt_print(DT_DEBUG_MEMORY, "[memory] before pixelpipe process");
-  dt_print_mem_usage();
 
   if(pipe->devid > DT_DEVICE_CPU) dt_opencl_events_reset(pipe->devid);
 
@@ -2758,9 +2750,13 @@ restart:
       pipe->image.id,
       darktable.opencl->dev[pipe->devid].cname);
   else
-#endif
     dt_print_pipe(DT_DEBUG_PIPE, "pipe starting", pipe, NULL, pipe->devid, &roi, &roi, "ID=%i",
       pipe->image.id);
+#else
+  dt_print_pipe(DT_DEBUG_PIPE, "pipe starting", pipe, NULL, pipe->devid, &roi, &roi, "ID=%i",
+      pipe->image.id);
+#endif
+  dt_print_mem_usage("before pixelpipe process");
 
   // run pixelpipe recursively and get error status
   const gboolean err = _dev_pixelpipe_process_rec_and_backcopy(pipe, dev, &buf,
@@ -2772,10 +2768,9 @@ restart:
                           ? (dt_opencl_events_flush(pipe->devid, TRUE) != 0)
                           : FALSE;
 
-  // Check if we had opencl errors,
-  // remark: opencl errors can come in two ways:
-  // processed pipe->opencl_error checked via 'err'
-  // OpenCL events so oclerr is TRUE
+  // Check if we had opencl errors, those can come in two ways:
+  //   processed pipe->opencl_error checked via 'err'
+  //   OpenCL events so oclerr is TRUE
   const int old_devid = pipe->devid;
   if(oclerr || (err && pipe->opencl_error))
   {
@@ -2874,8 +2869,9 @@ restart:
   if(!claimed)
     dt_dev_pixelpipe_cache_report(pipe);
 
-  dt_print_pipe(DT_DEBUG_PIPE, "pipe finished", pipe, NULL, old_devid, &roi, &roi, "ID=%i\n",
+  dt_print_pipe(DT_DEBUG_PIPE, "pipe finished", pipe, NULL, old_devid, &roi, &roi, "ID=%i",
     pipe->image.id);
+  dt_print_mem_usage("after pixelpipe process");
 
   pipe->processing = FALSE;
   return FALSE;

@@ -459,7 +459,7 @@ void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe)
   }
 
   _cline_stats(cache);
-  dt_print_pipe(DT_DEBUG_PIPE, "pipe cache check", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MEMORY, "pipe cache check", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
     "%i lines (important=%i, used=%i). Freed %iMB. Using using %iMB, limit=%iMB",
     cache->entries, cache->limportant, cache->lused,
     _to_mb(freed), _to_mb(cache->allmem), _to_mb(cache->memlimit));
@@ -470,7 +470,7 @@ void dt_dev_pixelpipe_cache_report(dt_dev_pixelpipe_t *pipe)
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
 
   _cline_stats(cache);
-  dt_print_pipe(DT_DEBUG_PIPE, "cache report", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MEMORY, "cache report", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
     "%i lines (important=%i, used=%i, invalid=%i). Using %iMB, limit=%iMB. Hits/run=%.2f. Hits/test=%.3f",
     cache->entries, cache->limportant, cache->lused, cache->linvalid,
     _to_mb(cache->allmem), _to_mb(cache->memlimit),
