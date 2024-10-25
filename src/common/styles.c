@@ -669,7 +669,7 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
 
   if(mod_src)
   {
-    dt_iop_module_t *module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
+    dt_iop_module_t *module = calloc(1, sizeof(dt_iop_module_t));
 
     if(module)
       module->dev = dev;

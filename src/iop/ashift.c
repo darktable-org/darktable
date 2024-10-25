@@ -1551,8 +1551,7 @@ static gboolean line_detect(float *in,
   if(lines_count > 0)
   {
     // aggregate lines data into our own structures
-    ashift_lines =
-      (dt_iop_ashift_line_t *)malloc(sizeof(dt_iop_ashift_line_t) * lines_count);
+    ashift_lines = malloc(sizeof(dt_iop_ashift_line_t) * lines_count);
 
     if(ashift_lines == NULL) goto error;
 
@@ -3104,7 +3103,7 @@ static gboolean _draw_retrieve_lines_from_params(dt_iop_module_t *self,
                                      DT_DEV_TRANSFORM_DIR_BACK_EXCL, pts, 4))
     {
       if(g->lines) free(g->lines);
-      g->lines = (dt_iop_ashift_line_t *)calloc(4, sizeof(dt_iop_ashift_line_t));
+      g->lines = calloc(4, sizeof(dt_iop_ashift_line_t));
       // vertical lines
       _draw_basic_line
         (&g->lines[0],
@@ -3151,7 +3150,7 @@ static gboolean _draw_retrieve_lines_from_params(dt_iop_module_t *self,
                                      p->last_drawn_lines_count * 2))
     {
       if(g->lines) free(g->lines);
-      g->lines = (dt_iop_ashift_line_t *)calloc(p->last_drawn_lines_count, sizeof(dt_iop_ashift_line_t));
+      g->lines = calloc(p->last_drawn_lines_count, sizeof(dt_iop_ashift_line_t));
 
       int vnb = 0; // number of vertical lines
       int hnb = 0; // number of horizontal lines
@@ -3364,7 +3363,7 @@ static void _do_get_structure_quad(dt_iop_module_t *self)
                                          DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 4))
     {
       g->current_structure_method = ASHIFT_METHOD_QUAD;
-      g->lines = (dt_iop_ashift_line_t *)calloc(4, sizeof(dt_iop_ashift_line_t));
+      g->lines = calloc(4, sizeof(dt_iop_ashift_line_t));
       g->lines_count = 4;
 
       _draw_basic_line(&g->lines[0],
@@ -3923,7 +3922,7 @@ static gboolean _get_points(dt_iop_module_t *self,
   const int isflipped = g->isflipped;
 
   // allocate new index array
-  my_points_idx = (dt_iop_ashift_points_idx_t *)malloc(sizeof(dt_iop_ashift_points_idx_t) * lines_count);
+  my_points_idx = malloc(sizeof(dt_iop_ashift_points_idx_t) * lines_count);
   if(my_points_idx == NULL) goto error;
 
   // account for total number of points
@@ -5656,7 +5655,7 @@ void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_ashift_data_t *d = (dt_iop_ashift_data_t *)calloc(1, sizeof(dt_iop_ashift_data_t));
+  dt_iop_ashift_data_t *d = calloc(1, sizeof(dt_iop_ashift_data_t));
   piece->data = (void *)d;
 }
 
@@ -5792,8 +5791,7 @@ void reload_defaults(dt_iop_module_t *self)
 
 void init_global(dt_iop_module_so_t *self)
 {
-  dt_iop_ashift_global_data_t *gd
-      = (dt_iop_ashift_global_data_t *)malloc(sizeof(dt_iop_ashift_global_data_t));
+  dt_iop_ashift_global_data_t *gd = malloc(sizeof(dt_iop_ashift_global_data_t));
   self->data = gd;
 
   const int program = 2; // basic.cl, from programs.conf

@@ -171,8 +171,8 @@ dt_gaussian_t *dt_gaussian_init(const int width,    // width of input image
   g->sigma = sigma;
   g->order = order;
   g->buf = NULL;
-  g->max = (float *)calloc(channels, sizeof(float));
-  g->min = (float *)calloc(channels, sizeof(float));
+  g->max = calloc(channels, sizeof(float));
+  g->min = calloc(channels, sizeof(float));
 
   if(!g->min || !g->max) goto error;
 
@@ -828,8 +828,8 @@ dt_gaussian_cl_t *dt_gaussian_init_cl(const int devid,
   g->order = order;
   g->dev_temp1 = NULL;
   g->dev_temp2 = NULL;
-  g->max = (float *)calloc(channels, sizeof(float));
-  g->min = (float *)calloc(channels, sizeof(float));
+  g->max = calloc(channels, sizeof(float));
+  g->min = calloc(channels, sizeof(float));
 
   if(!g->min || !g->max) goto error;
 

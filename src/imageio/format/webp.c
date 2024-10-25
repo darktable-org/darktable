@@ -283,7 +283,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
     } dt_imageio_webp_v1_t;
 
     const dt_imageio_webp_v1_t *o = (dt_imageio_webp_v1_t *)old_params;
-    dt_imageio_webp_v2_t *n = (dt_imageio_webp_v2_t *)malloc(sizeof(dt_imageio_webp_v2_t));
+    dt_imageio_webp_v2_t *n = malloc(sizeof(dt_imageio_webp_v2_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -322,7 +322,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
 
 void *get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_webp_t *d = (dt_imageio_webp_t *)calloc(1, sizeof(dt_imageio_webp_t));
+  dt_imageio_webp_t *d = calloc(1, sizeof(dt_imageio_webp_t));
   d->comp_type = dt_conf_get_int("plugins/imageio/format/webp/comp_type");
   d->quality = dt_conf_get_int("plugins/imageio/format/webp/quality");
   d->hint = dt_conf_get_int("plugins/imageio/format/webp/hint");
@@ -403,7 +403,7 @@ static void hint_combobox_changed(GtkWidget *widget, gpointer user_data)
 
 void gui_init(dt_imageio_module_format_t *self)
 {
-  dt_imageio_webp_gui_data_t *gui = (dt_imageio_webp_gui_data_t *)malloc(sizeof(dt_imageio_webp_gui_data_t));
+  dt_imageio_webp_gui_data_t *gui = malloc(sizeof(dt_imageio_webp_gui_data_t));
   self->gui_data = (void *)gui;
   const int comp_type = dt_conf_get_int("plugins/imageio/format/webp/comp_type");
   const int quality = dt_conf_get_int("plugins/imageio/format/webp/quality");

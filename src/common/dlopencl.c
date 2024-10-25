@@ -86,7 +86,7 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
     return NULL;
 
   /* now bind symbols */
-  ocl = (dt_dlopencl_t *)malloc(sizeof(dt_dlopencl_t));
+  ocl = malloc(sizeof(dt_dlopencl_t));
 
   if(ocl == NULL)
   {

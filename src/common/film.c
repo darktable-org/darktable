@@ -102,7 +102,7 @@ char *dt_sqlite3_escape_wildcards(const char *s)
     if (*t == '%' || *t == '_' || *t == '~')
       count++;
   }
-  char *result = (char*)malloc(count+1);
+  char *result = malloc(count+1);
   if(!result)
     return result;
   char *dest = result;

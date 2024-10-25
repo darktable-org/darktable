@@ -265,7 +265,7 @@ static int dt_imageio_load_modules_storage(dt_imageio_t *iio)
     if(!g_str_has_prefix(d_name, SHARED_MODULE_PREFIX)) continue;
     if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
     g_strlcpy(plugin_name, d_name + name_offset, strlen(d_name) - name_end + 1);
-    module = (dt_imageio_module_storage_t *)calloc(1, sizeof(dt_imageio_module_storage_t));
+    module = calloc(1, sizeof(dt_imageio_module_storage_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_storage(module, libname, plugin_name))
     {

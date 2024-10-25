@@ -186,7 +186,7 @@ void *legacy_params(struct dt_lib_module_t *self,
       /* preset is corrupted, return NULL and drop the preset */
       return NULL;
 
-    dt_lib_collect_params_t *n = (dt_lib_collect_params_t *)malloc(old_params_size);
+    dt_lib_collect_params_t *n = malloc(old_params_size);
 
     const int table[DT_COLLECTION_PROP_LAST] =
       {
@@ -243,7 +243,7 @@ void *legacy_params(struct dt_lib_module_t *self,
       /* preset is corrupted, return NULL and drop the preset */
       return NULL;
 
-    dt_lib_collect_params_t *new = (dt_lib_collect_params_t *)malloc(old_params_size);
+    dt_lib_collect_params_t *new = malloc(old_params_size);
 
     const int table[DT_COLLECTION_PROP_LAST] =
       {
@@ -1569,7 +1569,7 @@ static void _tree_view(dt_lib_collect_rule_t *dr)
         g_free(tck);
       }
 
-      name_key_tuple_t *tuple = (name_key_tuple_t *)malloc(sizeof(name_key_tuple_t));
+      name_key_tuple_t *tuple = malloc(sizeof(name_key_tuple_t));
       tuple->name = name;
       tuple->collate_key = collate_key;
       tuple->count = count;
@@ -2413,7 +2413,7 @@ static void _list_view(dt_lib_collect_rule_t *dr)
 
     if(match_count == 3)
     {
-      _range_t *range = (_range_t *)calloc(1, sizeof(_range_t));
+      _range_t *range = calloc(1, sizeof(_range_t));
       range->start = g_match_info_fetch(match_info, 1);
       range->stop = g_match_info_fetch(match_info, 2);
 
@@ -3656,7 +3656,7 @@ GtkWidget *gui_tool_box(dt_lib_module_t *self)
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_collect_t *d = (dt_lib_collect_t *)calloc(1, sizeof(dt_lib_collect_t));
+  dt_lib_collect_t *d = calloc(1, sizeof(dt_lib_collect_t));
 
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);

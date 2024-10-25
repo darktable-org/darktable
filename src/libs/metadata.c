@@ -671,7 +671,7 @@ static gboolean _metadata_reset(GtkWidget *label,
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)calloc(1, sizeof(dt_lib_metadata_t));
+  dt_lib_metadata_t *d = calloc(1, sizeof(dt_lib_metadata_t));
   self->data = (void *)d;
 
   GtkGrid *grid = GTK_GRID(gtk_grid_new());

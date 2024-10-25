@@ -870,7 +870,7 @@ static void _dev_add_history_item_ext(dt_develop_t *dev,
     // new operation, push new item
     dev->history_end++;
 
-    hist = (dt_dev_history_item_t *)calloc(1, sizeof(dt_dev_history_item_t));
+    hist = calloc(1, sizeof(dt_dev_history_item_t));
 
     g_strlcpy(hist->op_name, module->op, sizeof(hist->op_name));
     hist->focus_hash = dev->focus_hash;
@@ -2090,7 +2090,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     if(!hist->module && find_op)
     {
       // we have to add a new instance of this module and set index to modindex
-      dt_iop_module_t *new_module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
+      dt_iop_module_t *new_module = calloc(1, sizeof(dt_iop_module_t));
       if(!dt_iop_load_module(new_module, find_op->so, dev))
       {
         dt_iop_update_multi_priority(new_module, multi_priority);
@@ -3028,7 +3028,7 @@ void dt_dev_masks_list_remove(dt_develop_t *dev,
     dev->proxy.masks.list_remove(dev->proxy.masks.module, formid, parentid);
 }
 void dt_dev_masks_selection_change(dt_develop_t *dev,
-                                   struct dt_iop_module_t *module,
+                                   dt_iop_module_t *module,
                                    const dt_mask_id_t selectid)
 {
   if(dev->proxy.masks.module && dev->proxy.masks.selection_change)
@@ -3041,7 +3041,7 @@ dt_iop_module_t *dt_dev_module_duplicate_ext(dt_develop_t *dev,
                                              const gboolean reorder_iop)
 {
   // we create the new module
-  dt_iop_module_t *module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
+  dt_iop_module_t *module = calloc(1, sizeof(dt_iop_module_t));
   if(dt_iop_load_module(module, base->so, base->dev))
     return NULL;
   module->instance = base->instance;
@@ -3182,7 +3182,7 @@ void dt_dev_module_remove(dt_develop_t *dev,
   }
 }
 
-gchar *dt_history_item_get_name(const struct dt_iop_module_t *module)
+gchar *dt_history_item_get_name(const dt_iop_module_t *module)
 {
   gchar *label;
   /* create a history button and add to box */
@@ -3209,13 +3209,12 @@ gboolean dt_dev_distort_backtransform(dt_develop_t *dev,
     (dev, dev->preview_pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
 }
 
-gboolean dt_dev_distort_transform_plus
-  (dt_develop_t *dev,
-   dt_dev_pixelpipe_t *pipe,
-   const double iop_order,
-   const dt_dev_transform_direction_t transf_direction,
-   float *points,
-   const size_t points_count)
+gboolean dt_dev_distort_transform_plus(dt_develop_t *dev,
+                                       dt_dev_pixelpipe_t *pipe,
+                                       const double iop_order,
+                                       const dt_dev_transform_direction_t transf_direction,
+                                       float *points,
+                                       const size_t points_count)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
   _dev_distort_transform_locked(dev, pipe, iop_order, transf_direction,
@@ -3225,13 +3224,12 @@ gboolean dt_dev_distort_transform_plus
 }
 
 
-gboolean dt_dev_distort_backtransform_plus
-  (dt_develop_t *dev,
-   dt_dev_pixelpipe_t *pipe,
-   const double iop_order,
-   const dt_dev_transform_direction_t transf_direction,
-   float *points,
-   const size_t points_count)
+gboolean dt_dev_distort_backtransform_plus(dt_develop_t *dev,
+                                           dt_dev_pixelpipe_t *pipe,
+                                           const double iop_order,
+                                           const dt_dev_transform_direction_t transf_direction,
+                                           float *points,
+                                           const size_t points_count)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
   const gboolean success = _dev_distort_backtransform_locked
@@ -3242,8 +3240,8 @@ gboolean dt_dev_distort_backtransform_plus
 }
 
 dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev,
-                                                    struct dt_dev_pixelpipe_t *pipe,
-                                                    struct dt_iop_module_t *module)
+                                                    dt_dev_pixelpipe_t *pipe,
+                                                    dt_iop_module_t *module)
 {
   for(const GList *pieces = g_list_last(pipe->nodes);
       pieces;
@@ -3259,9 +3257,9 @@ dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev,
 }
 
 dt_hash_t dt_dev_hash_plus(dt_develop_t *dev,
-                          struct dt_dev_pixelpipe_t *pipe,
-                          const double iop_order,
-                          const dt_dev_transform_direction_t transf_direction)
+                           dt_dev_pixelpipe_t *pipe,
+                           const double iop_order,
+                           const dt_dev_transform_direction_t transf_direction)
 {
   dt_hash_t hash = DT_INITHASH;
   dt_pthread_mutex_lock(&dev->history_mutex);
@@ -3296,11 +3294,11 @@ dt_hash_t dt_dev_hash_plus(dt_develop_t *dev,
 }
 
 static gboolean _dev_wait_hash(dt_develop_t *dev,
-                          struct dt_dev_pixelpipe_t *pipe,
-                          const double iop_order,
-                          const dt_dev_transform_direction_t transf_direction,
-                          dt_pthread_mutex_t *lock,
-                          const volatile dt_hash_t *const hash)
+                               dt_dev_pixelpipe_t *pipe,
+                               const double iop_order,
+                               const dt_dev_transform_direction_t transf_direction,
+                               dt_pthread_mutex_t *lock,
+                               const volatile dt_hash_t *const hash)
 {
   const int usec = 5000;
   int nloop;
@@ -3342,7 +3340,7 @@ static gboolean _dev_wait_hash(dt_develop_t *dev,
 }
 
 gboolean dt_dev_sync_pixelpipe_hash(dt_develop_t *dev,
-                                    struct dt_dev_pixelpipe_t *pipe,
+                                    dt_dev_pixelpipe_t *pipe,
                                     const double iop_order,
                                     const dt_dev_transform_direction_t transf_direction,
                                     dt_pthread_mutex_t *lock,
@@ -3366,9 +3364,9 @@ gboolean dt_dev_sync_pixelpipe_hash(dt_develop_t *dev,
 }
 
 dt_hash_t dt_dev_hash_distort_plus(dt_develop_t *dev,
-                                  struct dt_dev_pixelpipe_t *pipe,
-                                  const double iop_order,
-                                  const dt_dev_transform_direction_t transf_direction)
+                                   dt_dev_pixelpipe_t *pipe,
+                                   const double iop_order,
+                                   const dt_dev_transform_direction_t transf_direction)
 {
   dt_hash_t hash = DT_INITHASH;
   dt_pthread_mutex_lock(&dev->history_mutex);

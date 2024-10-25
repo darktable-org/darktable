@@ -86,7 +86,7 @@ const char *dt_dev_pixelpipe_type_to_str(const dt_dev_pixelpipe_type_t pipe_type
 
 void dt_print_pipe_ext(const char *title,
                        const dt_dev_pixelpipe_t *pipe,
-                       const struct dt_iop_module_t *module,
+                       const dt_iop_module_t *module,
                        const int device,
                        const dt_iop_roi_t *roi_in,
                        const dt_iop_roi_t *roi_out,
@@ -616,7 +616,7 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   dt_pthread_mutex_unlock(&pipe->busy_mutex);
 }
 
-void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev)
+void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
 

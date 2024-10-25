@@ -139,7 +139,7 @@ gchar *dt_util_float_to_str(const gchar *format, const double value)
 #endif
 
   gchar *txt = g_strdup_printf(format, value);
-  
+
 #if defined(WIN32)
   _configthreadlocale(_DISABLE_PER_THREAD_LOCALE);
 #else
@@ -490,7 +490,7 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
                 final_height = dimension.height * factor * ppd;
     const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, final_width);
 
-    guint8 *image_buffer = (guint8 *)calloc(stride * final_height, sizeof(guint8));
+    guint8 *image_buffer = calloc(stride * final_height, sizeof(guint8));
     if(darktable.gui)
       surface = dt_cairo_image_surface_create_for_data(image_buffer, CAIRO_FORMAT_ARGB32, final_width,
                                                       final_height, stride);
@@ -906,7 +906,7 @@ char *dt_read_file(const char *const filename, size_t *filesize)
   const size_t end = ftell(fd);
   rewind(fd);
 
-  char *content = (char *)malloc(sizeof(char) * end);
+  char *content = malloc(sizeof(char) * end);
   if(!content) return NULL;
 
   const size_t count = fread(content, sizeof(char), end, fd);
