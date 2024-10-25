@@ -2160,9 +2160,10 @@ void dtgtk_cairo_paint_or(cairo_t *cr, gint x, gint y, gint w, gint h, gint flag
 {
   PREAMBLE(1, 1, 0, 0)
 
-  cairo_move_to(cr, 0.1, 0.3);
-  cairo_curve_to(cr, 0.1, 1.1, 0.9, 1.1, 0.9, 0.3);
-  cairo_stroke(cr);
+  cairo_set_font_size(cr, 0.9);
+
+  cairo_move_to(cr, 0.2, 0.85);
+  cairo_show_text(cr, "||");  
 
   FINISH
 }
@@ -2171,9 +2172,10 @@ void dtgtk_cairo_paint_and(cairo_t *cr, gint x, gint y, gint w, gint h, gint fla
 {
   PREAMBLE(1, 1, 0, 0)
 
-  cairo_move_to(cr, 0.1, 0.9);
-  cairo_curve_to(cr, 0.1, 0.1, 0.9, 0.1, 0.9, 0.9);
-  cairo_stroke(cr);
+  cairo_set_font_size(cr, 0.9);
+
+  cairo_move_to(cr, 0.2, 0.85);
+  cairo_show_text(cr, "&");  
 
   FINISH
 }

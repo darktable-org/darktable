@@ -304,8 +304,8 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   gtk_box_pack_start(GTK_BOX(hbox), colors->operator, FALSE, FALSE, 2);
   gtk_widget_set_tooltip_text(colors->operator,
                               _("filter by images color label"
-                                "\nand (∩): images having all selected color labels"
-                                "\nor (∪): images with at least one of the selected color labels"));
+                                "\nand (&): images having all selected color labels"
+                                "\nor (||): images with at least one of the selected color labels"));
   g_signal_connect(G_OBJECT(colors->operator), "clicked", G_CALLBACK(_colors_operator_clicked), colors);
   g_signal_connect(G_OBJECT(colors->operator), "enter-notify-event", G_CALLBACK(_colors_enter_notify),
                    GINT_TO_POINTER(-1));
