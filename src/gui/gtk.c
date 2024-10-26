@@ -2980,6 +2980,9 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title,
     gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
   }
 
+  // to prevent the splash screen from hiding the yes/no dialog
+  darktable_splash_screen_destroy();
+
   gtk_widget_show_all(window);
   gtk_window_set_keep_above(GTK_WINDOW(window), TRUE);
   gtk_main();
