@@ -3719,7 +3719,7 @@ void dt_database_show_error(const dt_database_t *db)
           "\n"
           "  4 - If you have done this or are certain that no other instances of darktable are running, \n"
           "      this probably means that the last instance was ended abnormally. \n"
-          "      Click on the \"delete database lock files\" button to remove the files <i>data.db.lock</i> and <i>library.db.lock</i>. \n"
+          "      Click on the \"delete database lock files\" button to delete the files <i>data.db.lock</i> and <i>library.db.lock</i>. \n"
           "\n\n"
           "      <i><u>Caution!</u> Do not delete these files without first undertaking the above checks, \n"
           "      otherwise you risk generating serious inconsistencies in your database.</i>\n"),
@@ -3756,7 +3756,7 @@ void dt_database_show_error(const dt_database_t *db)
         else
           dt_gui_show_standalone_yes_no_dialog
             (_("error"), g_markup_printf_escaped(
-              _("\nat least one file could not be removed.\n"
+              _("\nat least one file could not be deleted.\n"
                 "you may try to manually delete the files <i>data.db.lock</i> and <i>library.db.lock</i>\n"
                 "in folder <a href=\"file:///%s\">%s</a>.\n"), lck_dirname, lck_dirname),
              _("_ok"), NULL);
