@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-25 21:03-0300\n"
-"PO-Revision-Date: 2024-10-25 21:02-0300\n"
+"POT-Creation-Date: 2024-10-27 18:09-0300\n"
+"PO-Revision-Date: 2024-10-27 18:08-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -860,7 +860,7 @@ msgstr "esta predefinição foi modificada"
 #: ../build/bin/preferences_gen.h:5101 ../build/bin/preferences_gen.h:5841
 #: ../build/bin/preferences_gen.h:6677 ../build/bin/preferences_gen.h:7170
 #: ../build/bin/preferences_gen.h:7436 ../src/gui/accelerators.c:3007
-#: ../src/gui/gtk.c:3149 ../src/gui/preferences.c:461
+#: ../src/gui/gtk.c:3153 ../src/gui/preferences.c:461
 #: ../src/gui/preferences.c:892 ../src/libs/modulegroups.c:4084
 msgid "?"
 msgstr "?"
@@ -2060,10 +2060,10 @@ msgstr "mostrar a tela inicial (splash screen) ao inicializar"
 
 #: ../build/bin/preferences_gen.h:7480
 msgid ""
-"display a small message dialog showing the progress of darktable's startup "
-"before the main window appears"
+"display a small window showing the progress of darktable startup before the "
+"main window appears"
 msgstr ""
-"mostrar um pequeno diálogo mostrando o progresso da inicialização do "
+"mostrar uma pequena janela mostrando o progresso da inicialização do "
 "darktable antes da janela principal aparecer"
 
 #: ../build/bin/preferences_gen.h:7501
@@ -2892,7 +2892,7 @@ msgstr "aberração cromática muito grande"
 #: ../src/common/collection.c:1473 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:380 ../src/develop/blend_gui.c:2382
 #: ../src/develop/blend_gui.c:2430 ../src/develop/lightroom.c:887
-#: ../src/gui/gtk.c:3749 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:372
+#: ../src/gui/gtk.c:3753 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:372
 #: ../src/iop/channelmixer.c:615 ../src/iop/channelmixer.c:625
 #: ../src/iop/channelmixerrgb.c:4662 ../src/iop/colorequal.c:2973
 #: ../src/iop/colorzones.c:2488 ../src/iop/temperature.c:2013
@@ -2912,7 +2912,7 @@ msgstr "vermelho"
 #: ../src/common/collection.c:1477 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:382 ../src/develop/blend_gui.c:2388
 #: ../src/develop/blend_gui.c:2436 ../src/develop/lightroom.c:891
-#: ../src/gui/gtk.c:3750 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:377
+#: ../src/gui/gtk.c:3754 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:377
 #: ../src/iop/channelmixer.c:616 ../src/iop/channelmixer.c:631
 #: ../src/iop/channelmixerrgb.c:4663 ../src/iop/colorequal.c:2976
 #: ../src/iop/colorzones.c:2491 ../src/iop/temperature.c:1997
@@ -2933,7 +2933,7 @@ msgstr "verde"
 #: ../src/common/collection.c:1479 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:383 ../src/develop/blend_gui.c:2394
 #: ../src/develop/blend_gui.c:2442 ../src/develop/lightroom.c:893
-#: ../src/gui/gtk.c:3751 ../src/iop/bilateral.cc:382
+#: ../src/gui/gtk.c:3755 ../src/iop/bilateral.cc:382
 #: ../src/iop/channelmixer.c:617 ../src/iop/channelmixer.c:637
 #: ../src/iop/channelmixerrgb.c:4664 ../src/iop/colorequal.c:2978
 #: ../src/iop/colorzones.c:2493 ../src/iop/temperature.c:2017
@@ -4613,7 +4613,7 @@ msgstr "apenas vinheta manual"
 #. Side-border hide/show
 #: ../build/lib/darktable/plugins/introspection_lens.cc:534
 #: ../src/dtgtk/range.c:1761 ../src/gui/accelerators.c:2603
-#: ../src/gui/accelerators.c:2685 ../src/gui/gtk.c:1395 ../src/gui/gtk.c:3748
+#: ../src/gui/accelerators.c:2685 ../src/gui/gtk.c:1395 ../src/gui/gtk.c:3752
 #: ../src/imageio/format/pdf.c:662 ../src/iop/denoiseprofile.c:3673
 #: ../src/iop/rawdenoise.c:885 ../src/libs/collect.c:3558
 #: ../src/libs/filtering.c:1544 ../src/libs/filters/colors.c:157
@@ -6608,7 +6608,7 @@ msgid ""
 "  4 - If you have done this or are certain that no other instances of "
 "darktable are running, \n"
 "      this probably means that the last instance was ended abnormally. \n"
-"      Click on the \"delete database lock files\" button to remove the files "
+"      Click on the \"delete database lock files\" button to delete the files "
 "<i>data.db.lock</i> and <i>library.db.lock</i>. \n"
 "\n"
 "\n"
@@ -6675,11 +6675,11 @@ msgstr ""
 "\n"
 "você realmente deseja excluir os arquivos de trava?\n"
 
-#: ../src/common/database.c:3737 ../src/gui/gtk.c:3100
+#: ../src/common/database.c:3737 ../src/gui/gtk.c:3104
 msgid "_no"
 msgstr "_não"
 
-#: ../src/common/database.c:3737 ../src/gui/gtk.c:3099
+#: ../src/common/database.c:3737 ../src/gui/gtk.c:3103
 msgid "_yes"
 msgstr "_sim"
 
@@ -6711,7 +6711,7 @@ msgstr "erro"
 #, c-format
 msgid ""
 "\n"
-"at least one file could not be removed.\n"
+"at least one file could not be deleted.\n"
 "you may try to manually delete the files <i>data.db.lock</i> and <i>library."
 "db.lock</i>\n"
 "in folder <a href=\"file:///%s\">%s</a>.\n"
@@ -6720,7 +6720,7 @@ msgstr ""
 "pelo menos um arquivo não pode ser removido.\n"
 "você pode tentar manualmente apagar os arquivos <i>data.db.lock</i> e "
 "<i>library.db.lock</i>\n"
-"na pasta <a href=\"file:///%s\">%s</a>\n"
+"na pasta <a href=\"file:///%s\">%s</a>.\n"
 
 #: ../src/common/database.c:3876
 #, c-format
@@ -6905,14 +6905,14 @@ msgstr ""
 "configuração de RAM"
 
 #: ../src/common/film.c:341
-msgid "do you want to remove this empty directory?"
-msgid_plural "do you want to remove these empty directories?"
-msgstr[0] "você realmente deseja remover esta pasta vazia?"
-msgstr[1] "você realmente deseja remover estes diretórios vazios?"
+msgid "do you want to delete this empty directory?"
+msgid_plural "do you want to delete these empty directories?"
+msgstr[0] "você deseja remover esta pasta vazia?"
+msgstr[1] "você deseja remover estas pastas vazias?"
 
 #: ../src/common/film.c:348
-msgid "remove empty directory?"
-msgid_plural "remove empty directories?"
+msgid "delete empty directory?"
+msgid_plural "delete empty directories?"
 msgstr[0] "remover pasta vazia?"
 msgstr[1] "remover pastas vazias?"
 
@@ -9451,7 +9451,7 @@ msgstr "duplicar"
 #: ../src/develop/imageop.c:3979
 #: ../src/external/lua-scripts/tools/executable_manager.lua:222
 #: ../src/gui/accelerators.c:134 ../src/gui/accelerators.c:144
-#: ../src/gui/gtk.c:3596 ../src/gui/gtk.c:3651 ../src/gui/hist_dialog.c:272
+#: ../src/gui/gtk.c:3600 ../src/gui/gtk.c:3655 ../src/gui/hist_dialog.c:272
 #: ../src/gui/styles_dialog.c:646 ../src/gui/styles_dialog.c:668
 #: ../src/iop/atrous.c:1618 ../src/libs/lib.c:1561
 #: ../src/libs/modulegroups.c:4079
@@ -12365,12 +12365,12 @@ msgid "popup"
 msgstr "popup"
 
 #: ../src/gui/accelerators.c:142 ../src/gui/accelerators.c:175
-#: ../src/gui/gtk.c:3649 ../src/views/lighttable.c:760
+#: ../src/gui/gtk.c:3653 ../src/views/lighttable.c:760
 msgid "next"
 msgstr "próxima"
 
 #: ../src/gui/accelerators.c:143 ../src/gui/accelerators.c:174
-#: ../src/gui/gtk.c:3650 ../src/views/lighttable.c:761
+#: ../src/gui/gtk.c:3654 ../src/views/lighttable.c:761
 msgid "previous"
 msgstr "anterior"
 
@@ -12405,7 +12405,7 @@ msgstr "alternar-direita"
 msgid "right-on"
 msgstr "à direita"
 
-#: ../src/gui/accelerators.c:167 ../src/gui/gtk.c:3648
+#: ../src/gui/accelerators.c:167 ../src/gui/gtk.c:3652
 msgid "activate"
 msgstr "ativar"
 
@@ -13181,8 +13181,8 @@ msgstr "alterna foco máximo"
 msgid "toggle focus peaking"
 msgstr "alternar foco máximo"
 
-#: ../src/gui/gtk.c:1853 ../src/gui/gtk.c:3755 ../src/gui/gtk.c:3760
-#: ../src/gui/gtk.c:3765 ../src/gui/gtk.c:3770
+#: ../src/gui/gtk.c:1853 ../src/gui/gtk.c:3759 ../src/gui/gtk.c:3764
+#: ../src/gui/gtk.c:3769 ../src/gui/gtk.c:3774
 msgid "tabs"
 msgstr "abas"
 
@@ -13224,36 +13224,36 @@ msgid "show/hide modules"
 msgstr "mostrar/ocultar módulos"
 
 #. ask the user if darktable.org may be accessed
-#: ../src/gui/gtk.c:3216
+#: ../src/gui/gtk.c:3220
 msgid "access the online user manual?"
 msgstr "acessar o manual do usuário online?"
 
-#: ../src/gui/gtk.c:3217
+#: ../src/gui/gtk.c:3221
 #, c-format
 msgid "do you want to access `%s'?"
 msgstr "você deseja acessar `%s'?"
 
-#: ../src/gui/gtk.c:3290
+#: ../src/gui/gtk.c:3294
 msgid "there is no help available for this element"
 msgstr "não há ajuda disponível para este elemento"
 
 #. font name can only use period as decimal separator
 #. but printf format strings use comma for some locales, so replace comma with period
-#: ../src/gui/gtk.c:3310 ../src/libs/metadata_view.c:804
+#: ../src/gui/gtk.c:3314 ../src/libs/metadata_view.c:804
 #, c-format
 msgid "%.1f"
 msgstr "%.1f"
 
-#: ../src/gui/gtk.c:3312
+#: ../src/gui/gtk.c:3316
 #, c-format
 msgid "Sans %s"
 msgstr "Sans %s"
 
-#: ../src/gui/gtk.c:3643
+#: ../src/gui/gtk.c:3647
 msgid "does not contain pages"
 msgstr "não contém páginas"
 
-#: ../src/gui/gtk.c:3892
+#: ../src/gui/gtk.c:3896
 #, c-format
 msgid "never show more than %d lines"
 msgstr "nunca mostrar mais que %d linhas"
@@ -14024,15 +14024,15 @@ msgstr "armazenar nova predefinição..."
 msgid "update preset"
 msgstr "atualizar predefinição"
 
-#: ../src/gui/splash.c:131
+#: ../src/gui/splash.c:149
 msgid "darktable starting"
 msgstr "darktable iniciando"
 
-#: ../src/gui/splash.c:136
+#: ../src/gui/splash.c:156
 msgid "initializing"
 msgstr "inicializando"
 
-#: ../src/gui/splash.c:167
+#: ../src/gui/splash.c:191
 msgid ""
 "Photography workflow\n"
 "application and\n"
@@ -14043,7 +14043,7 @@ msgstr ""
 "e revelação de RAW"
 
 #. put the darktable wordmark and description in a vertical stack
-#: ../src/gui/splash.c:188
+#: ../src/gui/splash.c:212
 msgid ""
 "Photography workflow application\n"
 "and RAW developer"
@@ -14053,19 +14053,19 @@ msgstr ""
 
 #. ensure that text is vertically centered
 #. with respect to logo
-#: ../src/gui/splash.c:198
+#: ../src/gui/splash.c:222
 msgid "get ready to unleash your creativity"
 msgstr "prepare-se para libertar sua criatividade"
 
-#: ../src/gui/splash.c:308
+#: ../src/gui/splash.c:344
 msgid "darktable shutdown"
 msgstr "shutdown do darktable"
 
-#: ../src/gui/splash.c:322
+#: ../src/gui/splash.c:359
 msgid "darktable is now shutting down"
 msgstr "o darktable agora está desligando"
 
-#: ../src/gui/splash.c:324
+#: ../src/gui/splash.c:361
 msgid "please wait while background jobs finish"
 msgstr "por favor espere enquanto processos de fundo terminam"
 
@@ -24716,12 +24716,12 @@ msgstr "regras"
 #: ../src/libs/filters/colors.c:306
 msgid ""
 "filter by images color label\n"
-"and (∩): images having all selected color labels\n"
-"or (∪): images with at least one of the selected color labels"
+"intersection: images having all selected color labels\n"
+"union: images with at least one of the selected color labels"
 msgstr ""
 "filtrar por cor da etiqueta das imagens\n"
-"e (n): imagens tendo as mesmas etiquetas de cor\n"
-"ou (u): imagens tendo ao menos uma das etiquetas de cor selecionadas"
+"interseção: imagens tendo as mesmas etiquetas de cor\n"
+"união: imagens tendo ao menos uma das etiquetas de cor selecionadas"
 
 #: ../src/libs/filters/filename.c:369
 msgid ""
