@@ -3527,7 +3527,7 @@ static void _create_library_schema(dt_database_t *db)
      NULL, NULL, NULL);
   // clang-format on
 
-  // continue by executing the upgrade scripts
+  // continue by executing the upgrade steps
   _upgrade_library_schema(db, LAST_FULL_DATABASE_VERSION_LIBRARY);
 }
 
@@ -3588,7 +3588,8 @@ static void _create_data_schema(dt_database_t *db)
                "FOREIGN KEY(tagid) REFERENCES tags(id))", NULL, NULL, NULL);
   // clang-format on
 
-    _upgrade_data_schema(db, LAST_FULL_DATABASE_VERSION_DATA);
+  // continue by executing the upgrade steps
+  _upgrade_data_schema(db, LAST_FULL_DATABASE_VERSION_DATA);
 }
 
 // create the in-memory tables
