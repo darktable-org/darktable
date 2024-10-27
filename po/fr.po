@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-27 20:41+0100\n"
-"PO-Revision-Date: 2024-10-27 21:00+0100\n"
+"POT-Creation-Date: 2024-10-27 21:08+0100\n"
+"PO-Revision-Date: 2024-10-27 21:12+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -6730,7 +6730,7 @@ msgid ""
 msgstr ""
 "\n"
 "Suppression des fichiers verrous réussie,\n"
-"darktable doit être redémarré.\n"
+"Darktable doit être redémarré.\n"
 
 #: ../src/common/database.c:3755 ../src/common/database.c:3762
 #: ../src/gui/accelerators.c:2591 ../src/gui/accelerators.c:2673
@@ -11279,19 +11279,20 @@ msgstr "Supprimer les mots-clé non utilisés"
 #. * export images that are not ldr and remove them afterwards
 #.
 #. return data structure for script_manager
-#: ../src/external/lua-scripts/official/enfuse.lua:55
-msgid "enfuse"
-msgstr "« enfuse » "
-
-#: ../src/external/lua-scripts/official/enfuse.lua:56
-msgid "exposure blend images"
-msgstr "Fusion d'exposition d'images"
-
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
 #. plugin name
+#: ../src/external/lua-scripts/official/enfuse.lua:55
+#: ../src/external/lua-scripts/official/enfuse.lua:75
+msgid "enfuse"
+msgstr "Enfuse"
+
+#: ../src/external/lua-scripts/official/enfuse.lua:56
+msgid "exposure blend images"
+msgstr "Fusion d'exposition d'images"
+
 #. name
 #. expandable
 #. resetable
@@ -11305,6 +11306,10 @@ msgstr "Fusion d'exposition d'images"
 #. check the version so that we can use the correct arguments
 #. initialize exposure_mu value and depth setting in config to sane defaults (would be 0 otherwise)
 #. set up some widgets, initialized from config
+#: ../src/external/lua-scripts/official/enfuse.lua:138
+msgid "exposure mu"
+msgstr "Exposition mean of gaussian"
+
 #: ../src/external/lua-scripts/official/enfuse.lua:139
 msgid ""
 "center also known as mean of gaussian weighting function (0 <= mean <= 1); "
@@ -11312,6 +11317,10 @@ msgid ""
 msgstr ""
 "Centre, aussi connu comme moyenne d'une fonctionne de pondération gaussienne "
 "(0 <= moyenne <= 1); défaut 0.5"
+
+#: ../src/external/lua-scripts/official/enfuse.lua:147
+msgid "exposure optimum"
+msgstr "Optimum d’exposition"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:148
 msgid ""
@@ -11321,9 +11330,17 @@ msgstr ""
 "Valeur d'exposition optimale, généralement le maximum d'une fonction de "
 "pondération (0 <= optimum <= 1); défaut 0.5"
 
+#: ../src/external/lua-scripts/official/enfuse.lua:157
+msgid "depth"
+msgstr "Bits"
+
 #: ../src/external/lua-scripts/official/enfuse.lua:158
 msgid "the number of bits per channel of the output image"
 msgstr "Le nombre de bit par canal de l'image exportée"
+
+#: ../src/external/lua-scripts/official/enfuse.lua:166
+msgid "blend colorspace"
+msgstr "Espace de couleur de fusion"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:167
 msgid "force blending in selected colorspace"
@@ -11531,6 +11548,10 @@ msgstr "Affichage le chemin de l'image dans l'interface"
 #. set to hide for libs since we can't destroy them commpletely yet
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
+#: ../src/external/lua-scripts/official/image_path_in_ui.lua:66
+msgid "selected images path"
+msgstr "Chemin des images sélectionnées"
+
 #.
 #. vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
 #.
@@ -20337,7 +20358,7 @@ msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
 "v4 is a newer desaturation method, based on spectral purity of light."
 msgstr ""
-" • V3 est la méthode de désaturation de darktable 3.0, la même que la "
+" • V3 est la méthode de désaturation de Darktable 3.0, la même que la "
 "balance des couleurs,\n"
 " • V4 est la nouvelle méthode de désaturation basée sur la pureté du spectre "
 "de la lumière."
