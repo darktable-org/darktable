@@ -2612,9 +2612,9 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
       const int mode = dt_conf_get_int(confname);
 
       if(mode == DT_LIB_COLLECT_MODE_AND)
-        button->icon = dtgtk_cairo_paint_and;
+        button->icon = dtgtk_cairo_paint_intersection;
       else if(mode == DT_LIB_COLLECT_MODE_OR)
-        button->icon = dtgtk_cairo_paint_or;
+        button->icon = dtgtk_cairo_paint_union;
       else if(mode == DT_LIB_COLLECT_MODE_AND_NOT)
         button->icon = dtgtk_cairo_paint_andnot;
 
