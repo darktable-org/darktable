@@ -105,7 +105,7 @@
     <type>bool</type>
     <default>true</default>
     <shortdescription>show splash screen at startup</shortdescription>
-    <longdescription>display a small message dialog showing the progress of darktable's startup before the main window appears</longdescription>
+    <longdescription>display a small window showing the progress of darktable startup before the main window appears</longdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="interface">
     <name>accel/load_defaults</name>
