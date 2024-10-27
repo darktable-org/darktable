@@ -3221,7 +3221,7 @@ static gboolean _upgrade_data_schema(dt_database_t *db, int version)
   return TRUE;
 }
 
-/* create the library database schema according to the state from 27 October 2024, and set the version in db_info accordingly.
+/* create the 'library' database schema according to the state from 27 October 2024, and set the version in db_info accordingly.
  * from now on, do NOT update this function; simply add further modifications to _upgrade_library_schema for consistency. */
 static void _create_library_schema(dt_database_t *db)
 {
@@ -3531,7 +3531,7 @@ static void _create_library_schema(dt_database_t *db)
   _upgrade_library_schema(db, LAST_FULL_DATABASE_VERSION_LIBRARY);
 }
 
-/* create the data database schema according to the state from 27 October 2024, and set the version in db_info accordingly.
+/* create the 'data' database schema according to the state from 27 October 2024, and set the version in db_info accordingly.
  * from now on, do NOT update this function; simply add further modifications to _upgrade_data_schema for consistency. */
 static void _create_data_schema(dt_database_t *db)
 {
@@ -3544,7 +3544,7 @@ static void _create_data_schema(dt_database_t *db)
   sqlite3_prepare_v2
     (db->handle, "INSERT OR REPLACE INTO data.db_info (key, value) VALUES ('version', ?1)",
      -1, &stmt, NULL);
-  sqlite3_bind_int(stmt, 1, LAST_FULL_DATABASE_VERSION_DATA); //@@@ kofa use the last 'direct schema' version instead; at the end, call _upgrade_data_schema
+  sqlite3_bind_int(stmt, 1, LAST_FULL_DATABASE_VERSION_DATA);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   ////////////////////////////// tags
