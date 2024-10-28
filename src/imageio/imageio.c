@@ -547,7 +547,14 @@ static dt_imageio_retval_t _open_by_magic_number(dt_image_t *img, const char *fi
 {
   const dt_magic_bytes_t *sig = _find_signature(filename);
   if(sig && sig->loader)
-    return sig->loader(img, filename, buf);
+  {
+    dt_imageio_retval_t status = sig->loader(img, filename, buf);
+    // if there's a secondary search string in the signature, it might have shown up spuriously,
+    // so if the loader says the file is corrupt, request the fallback loaders
+    if(status == DT_IMAGEIO_FILE_CORRUPTED && sig->searchstring)
+      return DT_IMAGEIO_UNRECOGNIZED;
+    return status;
+  }
   return DT_IMAGEIO_UNRECOGNIZED;
 }
 
