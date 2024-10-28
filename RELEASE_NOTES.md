@@ -53,6 +53,11 @@ changes (where available).
   script to auto-apply the appropriate style on import and manually
   apply styles to a collection of previously-imported images.
 
+- Added an optional splash screen showing startup progress (including
+  estimated time remaining during the scan for updated sidecar files) to
+  dramatically reduce the time between invoking darktable and something
+  appearing on screen when the user has a large library.
+
 - The user interface now gives feedback while processing bulk image
   operations such as rating, tagging, applying styles, and edit
   history management (and undoing those operations), rather than
