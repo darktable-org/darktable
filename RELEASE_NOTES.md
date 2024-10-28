@@ -122,6 +122,10 @@ changes (where available).
 - Improved the message displayed at startup when the database is
   locked by another instance of darktable.
 
+- Replaced the icon of the operator button in the color label filter
+  for working with multiple selected color labels
+  (union/intersection).
+
 ## Performance Improvements
 
 - Added OpenCL implementation of color equalizer.
