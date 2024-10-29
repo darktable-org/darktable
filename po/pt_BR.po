@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-27 18:09-0300\n"
-"PO-Revision-Date: 2024-10-27 18:08-0300\n"
+"POT-Creation-Date: 2024-10-29 15:23-0300\n"
+"PO-Revision-Date: 2024-10-29 15:23-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -5730,7 +5730,7 @@ msgstr "rolo de filme"
 
 #. manage the scripts
 #: ../src/common/collection.c:599
-#: ../src/external/lua-scripts/tools/script_manager.lua:1375
+#: ../src/external/lua-scripts/tools/script_manager.lua:1409
 msgid "folder"
 msgstr "pasta"
 
@@ -7222,17 +7222,17 @@ msgstr "id da imagem"
 msgid "preserved filename"
 msgstr "nomes preservado de arquivo"
 
-#: ../src/common/mipmap_cache.c:1299 ../src/imageio/imageio.c:1059
+#: ../src/common/mipmap_cache.c:1299 ../src/imageio/imageio.c:1071
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "imagem `%s' não disponível!"
 
-#: ../src/common/mipmap_cache.c:1302 ../src/imageio/imageio.c:1063
+#: ../src/common/mipmap_cache.c:1302 ../src/imageio/imageio.c:1075
 #, c-format
 msgid "unable to load image `%s'!"
 msgstr "não fi possível carregar a imagem `%s'!"
 
-#: ../src/common/mipmap_cache.c:1304 ../src/imageio/imageio.c:1065
+#: ../src/common/mipmap_cache.c:1304 ../src/imageio/imageio.c:1077
 #, c-format
 msgid "image '%s' not supported"
 msgstr "imagem `%s` não é suportada"
@@ -10975,6 +10975,10 @@ msgstr "$(USERNAME) - nome de login"
 #.
 #.
 #. return data structure for script_manager
+#: ../src/external/lua-scripts/official/check_for_updates.lua:48
+msgid "check for updates"
+msgstr "procurar por atualizações"
+
 #: ../src/external/lua-scripts/official/check_for_updates.lua:49
 msgid "check for newer darktable releases"
 msgstr "procurar por novas releases do darktable"
@@ -11047,6 +11051,11 @@ msgstr "procurar por novas releases do darktable"
 #. * it adds two keyboard shortcuts
 #.
 #. return data structure for script_manager
+#: ../src/external/lua-scripts/official/copy_paste_metadata.lua:43
+#, fuzzy
+msgid "copy paste metadata"
+msgstr "colar metadados"
+
 #: ../src/external/lua-scripts/official/copy_paste_metadata.lua:44
 msgid ""
 "adds keyboard shortcuts and buttons to copy/paste metadata between images"
@@ -11106,6 +11115,11 @@ msgstr "colar os metadados nas imagens selecionadas"
 #.
 #.
 #. return data structure for script_manager
+#: ../src/external/lua-scripts/official/delete_long_tags.lua:47
+#, fuzzy
+msgid "delete long tags"
+msgstr "excluir etiqueta"
+
 #: ../src/external/lua-scripts/official/delete_long_tags.lua:48
 msgid "delete all tags longer than a set length"
 msgstr "remover todas as etiquetas mais longas do que um dado comprimento"
@@ -11145,6 +11159,7 @@ msgstr "remover todas as etiquetas mais longas do que um dado comprimento"
 #.
 #. noting to destroy
 #. return data structure for script_manager
+#: ../src/external/lua-scripts/official/delete_unused_tags.lua:51
 #: ../src/external/lua-scripts/official/delete_unused_tags.lua:52
 msgid "delete unused tags"
 msgstr "excluir etiquetas não usadas"
@@ -11188,15 +11203,20 @@ msgstr "excluir etiquetas não usadas"
 #. * export images that are not ldr and remove them afterwards
 #.
 #. return data structure for script_manager
-#: ../src/external/lua-scripts/official/enfuse.lua:56
-msgid "exposure blend images"
-msgstr "mesclar imagens por exposição"
-
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
 #. plugin name
+#: ../src/external/lua-scripts/official/enfuse.lua:55
+#: ../src/external/lua-scripts/official/enfuse.lua:75
+msgid "enfuse"
+msgstr "enfuse"
+
+#: ../src/external/lua-scripts/official/enfuse.lua:56
+msgid "exposure blend images"
+msgstr "mesclar imagens por exposição"
+
 #. name
 #. expandable
 #. resetable
@@ -11210,6 +11230,11 @@ msgstr "mesclar imagens por exposição"
 #. check the version so that we can use the correct arguments
 #. initialize exposure_mu value and depth setting in config to sane defaults (would be 0 otherwise)
 #. set up some widgets, initialized from config
+#: ../src/external/lua-scripts/official/enfuse.lua:138
+#, fuzzy
+msgid "exposure mu"
+msgstr "exposição"
+
 #: ../src/external/lua-scripts/official/enfuse.lua:139
 msgid ""
 "center also known as mean of gaussian weighting function (0 <= mean <= 1); "
@@ -11217,6 +11242,10 @@ msgid ""
 msgstr ""
 "centro também conhecido como média da função de peso gaussiana (0 <= média "
 "<= 1); default: 0.5"
+
+#: ../src/external/lua-scripts/official/enfuse.lua:147
+msgid "exposure optimum"
+msgstr "ótimo de exposição"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:148
 msgid ""
@@ -11226,9 +11255,18 @@ msgstr ""
 "valor ótimo de exposição, usualmente o máximo da função peso (0 <= ótimo "
 "<=1); padrão 0.5"
 
+#: ../src/external/lua-scripts/official/enfuse.lua:157
+msgid "depth"
+msgstr "profundidade"
+
 #: ../src/external/lua-scripts/official/enfuse.lua:158
 msgid "the number of bits per channel of the output image"
 msgstr "número de bits por canal da imagem de saída"
+
+#: ../src/external/lua-scripts/official/enfuse.lua:166
+#, fuzzy
+msgid "blend colorspace"
+msgstr "espaço de cor"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:167
 msgid "force blending in selected colorspace"
@@ -11339,6 +11377,10 @@ msgstr ""
 #. * maybe allow a lua command returning text instead of a command line call? both?
 #. * make filenames with double quotes (") work
 #. return data structure for script_manager
+#: ../src/external/lua-scripts/official/generate_image_txt.lua:54
+msgid "generate image text"
+msgstr "gerar texto da imagem"
+
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:55
 msgid "overlay metadata on the selected image(s)"
 msgstr "sobrepor metadados na(s) imagem(s) selecionada(s)"
@@ -11419,6 +11461,10 @@ msgstr ""
 #.
 #.
 #. return data structure for script_manager
+#: ../src/external/lua-scripts/official/image_path_in_ui.lua:47
+msgid "image path in UI"
+msgstr "caminho da imagem na interface"
+
 #: ../src/external/lua-scripts/official/image_path_in_ui.lua:48
 msgid "print the image path in the UI"
 msgstr "mostrar o caminho da imagem na interface"
@@ -11427,6 +11473,10 @@ msgstr "mostrar o caminho da imagem na interface"
 #. set to hide for libs since we can't destroy them commpletely yet
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
+#: ../src/external/lua-scripts/official/image_path_in_ui.lua:66
+msgid "selected images path"
+msgstr "caminho das imagem selecionada"
+
 #.
 #. vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
 #.
@@ -11460,6 +11510,11 @@ msgstr "mostrar o caminho da imagem na interface"
 #. * also require some files with import filters, for example import_filters.lua.
 #. it is important to add them AFTER this one!
 #.
+#: ../src/external/lua-scripts/official/import_filter_manager.lua:44
+#, fuzzy
+msgid "import filter manager"
+msgstr "filtragem de importação"
+
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:45
 msgid "manage import filters"
 msgstr "gerenciar filtros de importação"
@@ -11520,6 +11575,10 @@ msgstr ""
 #. USAGE
 #. * require this script from your main lua file AFTER import_filter_manager.lua
 #.
+#: ../src/external/lua-scripts/official/import_filters.lua:42
+msgid "import filters"
+msgstr "filtros de importação"
+
 #: ../src/external/lua-scripts/official/import_filters.lua:43
 msgid "import filtering"
 msgstr "filtragem de importação"
@@ -11576,6 +11635,10 @@ msgstr "filtragem de importação"
 #.
 #.
 #. return data structure for script_manager
+#: ../src/external/lua-scripts/official/save_selection.lua:52
+msgid "save selection"
+msgstr "salvar seleção"
+
 #: ../src/external/lua-scripts/official/save_selection.lua:53
 msgid "shortcuts providing multiple selection buffers"
 msgstr "atalhos de teclado provendo múltiplos buffers de seleção"
@@ -11636,6 +11699,10 @@ msgstr "trocar a seleção com o buffer temporário"
 #.
 #.
 #. return data structure for script_manager
+#: ../src/external/lua-scripts/official/selection_to_pdf.lua:52
+msgid "selection to PDF"
+msgstr "seleção para PDF"
+
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:53
 msgid "generate a pdf file of selected images"
 msgstr "gerar um arquivo pdf das imagens selecionadas"
@@ -11721,6 +11788,11 @@ msgstr "problema executando visualizador de pdf"
 #.
 #.
 #. return data structure for script_manager
+#: ../src/external/lua-scripts/tools/executable_manager.lua:49
+#, fuzzy
+msgid "executable manager"
+msgstr "executável"
+
 #: ../src/external/lua-scripts/tools/executable_manager.lua:50
 msgid "manage the list of external executables used by the lua scripts"
 msgstr "gerenciar a lista de executáveis externos usados pelos scripts lua"
@@ -11793,6 +11865,10 @@ msgstr "limpar caminho para %s"
 #. loop through the libraries
 #. print the documentation for the library
 #. print the documentation for each of the functions
+#: ../src/external/lua-scripts/tools/get_lib_manpages.lua:91
+msgid "get library man pages"
+msgstr ""
+
 #: ../src/external/lua-scripts/tools/get_lib_manpages.lua:92
 msgid "output the internal library documentation as man pages"
 msgstr "produzir adocumentação interna da biblioteca como man pages"
@@ -11807,6 +11883,11 @@ msgstr "produzir adocumentação interna da biblioteca como man pages"
 #. loop through the libraries
 #. print the documentation for the library
 #. print the documentation for each of the functions
+#: ../src/external/lua-scripts/tools/get_libdoc.lua:65
+#, fuzzy
+msgid "get library docs"
+msgstr "adicionar à biblioteca"
+
 #: ../src/external/lua-scripts/tools/get_libdoc.lua:66
 msgid "retrieve and print the documentation to the console"
 msgstr "recuperar e mostrar a documentação no console"
@@ -11939,16 +12020,39 @@ msgstr "automaticamente atualizar scripts para a versão correta"
 #. ------------------
 #. utility functions
 #. ------------------
+#. trim leading spaces
+#. trim trailing spaces
+#. trim trailing comma and comments
 #. ----------------
 #. script handling
 #. ----------------
+#: ../src/external/lua-scripts/tools/script_manager.lua:408
+#, fuzzy
+msgid "contributed"
+msgstr "contribuidores"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:410
+msgid "examples"
+msgstr "exemplos"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:412
+msgid "official"
+msgstr "oficial"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:414
+#: ../src/iop/retouch.c:2483 ../src/iop/retouch.c:2489
+#: ../src/iop/retouch.c:2495 ../src/iop/retouch.c:2501
+msgid "tools"
+msgstr "ferramentas"
+
+#. in case we get lucky and the string got translated elsewhere
 #. set_log_level(log.debug)
 #. slurp the file
 #. grab the script_data.metadata table
-#. format it into a string block for display
+#. break up the lines into key value pairs
 #. slurp the file
 #. assume that the second block comment is the documentation
-#: ../src/external/lua-scripts/tools/script_manager.lua:468
+#: ../src/external/lua-scripts/tools/script_manager.lua:502
 msgid "no documentation available"
 msgstr "não há documentação disponível"
 
@@ -11988,25 +12092,30 @@ msgstr "não há documentação disponível"
 #. get everything to the first /
 #. if we have a folder (.git doesn't)
 #. skip plugins
-#: ../src/external/lua-scripts/tools/script_manager.lua:698
-#: ../src/external/lua-scripts/tools/script_manager.lua:813
+#: ../src/external/lua-scripts/tools/script_manager.lua:732
+#: ../src/external/lua-scripts/tools/script_manager.lua:847
 msgid ""
 "ERROR: git not found.  Install or specify the location of the git executable."
 msgstr ""
 "ERRO: git não encontrado.  Instale ou especifique a localizaçào do "
 "executável git."
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:712
+#: ../src/external/lua-scripts/tools/script_manager.lua:746
 msgid "lua scripts successfully updated"
 msgstr "scripts lua atualizados com sucesso"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:852
+#: ../src/external/lua-scripts/tools/script_manager.lua:886
 msgid "no scripts found to install"
 msgstr "nenhum script encontrado para instalar"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:857
+#: ../src/external/lua-scripts/tools/script_manager.lua:891
 msgid "failed to download scripts"
 msgstr "falha ao baixar scripts"
+
+#: ../src/external/lua-scripts/tools/script_manager.lua:1043
+#, lua-format
+msgid "page %d of %d"
+msgstr "página %d de %d"
 
 #. no change
 #. force the buttons to repopulate
@@ -12017,8 +12126,8 @@ msgstr "falha ao baixar scripts"
 #. num_buttons
 #. main menu
 #. Module name
-#: ../src/external/lua-scripts/tools/script_manager.lua:1164
-#: ../src/external/lua-scripts/tools/script_manager.lua:1438
+#: ../src/external/lua-scripts/tools/script_manager.lua:1198
+#: ../src/external/lua-scripts/tools/script_manager.lua:1472
 msgid "scripts"
 msgstr "scripts"
 
@@ -12035,7 +12144,7 @@ msgstr "scripts"
 #. only make changes to clean branches
 #. probably upgraded from an earlier api version so get back to master
 #. to use the latest version of script_manager to get the proper API
-#: ../src/external/lua-scripts/tools/script_manager.lua:1209
+#: ../src/external/lua-scripts/tools/script_manager.lua:1243
 msgid "lua API version reset, please restart darktable"
 msgstr "versão da API de lua resetada, por favor reinicie o darktable"
 
@@ -12044,7 +12153,7 @@ msgstr "versão da API de lua resetada, por favor reinicie o darktable"
 #. api version or checkout/stay on master
 #. stay on master
 #. checkout the appropriate branch for API version if it exists
-#: ../src/external/lua-scripts/tools/script_manager.lua:1256
+#: ../src/external/lua-scripts/tools/script_manager.lua:1290
 msgid ""
 "you must restart darktable to use the correct version of the lua scripts"
 msgstr ""
@@ -12054,68 +12163,68 @@ msgstr ""
 #. U S E R  I N T E R F A C E
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. update the scripts
-#: ../src/external/lua-scripts/tools/script_manager.lua:1282
+#: ../src/external/lua-scripts/tools/script_manager.lua:1316
 msgid "scripts to update"
 msgstr "scripts para atualizar"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1283
+#: ../src/external/lua-scripts/tools/script_manager.lua:1317
 msgid "select the scripts installation to update"
 msgstr "selecione a instalação de scripts para atualizar"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1292
-#: ../src/external/lua-scripts/tools/script_manager.lua:1354
+#: ../src/external/lua-scripts/tools/script_manager.lua:1326
+#: ../src/external/lua-scripts/tools/script_manager.lua:1388
 msgid "update scripts"
 msgstr "atualizar scripts"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1293
+#: ../src/external/lua-scripts/tools/script_manager.lua:1327
 msgid "update the lua scripts from the repository"
 msgstr "atualizar os scripts lua a partir do repositório"
 
 #. add additional scripts
-#: ../src/external/lua-scripts/tools/script_manager.lua:1304
+#: ../src/external/lua-scripts/tools/script_manager.lua:1338
 msgid ""
 "enter the URL of the git repository containing the scripts you wish to add"
 msgstr "entre a URL do repositório git contendo os scripts que quer adicionar"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1309
+#: ../src/external/lua-scripts/tools/script_manager.lua:1343
 msgid "name of new folder"
 msgstr "nome da nova pasta"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1310
+#: ../src/external/lua-scripts/tools/script_manager.lua:1344
 msgid "enter a folder name for the additional scripts"
 msgstr "entre um nome de pasta para os scripts adicionais"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1315
+#: ../src/external/lua-scripts/tools/script_manager.lua:1349
 msgid "URL to download additional scripts from"
 msgstr "URL de onde baixar scripts adicionais"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1317
+#: ../src/external/lua-scripts/tools/script_manager.lua:1351
 msgid "new folder to place scripts in"
 msgstr "nova pasta onde colocar os scripts"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1320
+#: ../src/external/lua-scripts/tools/script_manager.lua:1354
 msgid "install additional scripts"
 msgstr "instalar scripts adicionais"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1328
+#: ../src/external/lua-scripts/tools/script_manager.lua:1362
 msgid "enable \"disable scripts\" button"
 msgstr "habilitar botào \"desabilitar scripts\""
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1340
-#: ../src/external/lua-scripts/tools/script_manager.lua:1365
+#: ../src/external/lua-scripts/tools/script_manager.lua:1374
+#: ../src/external/lua-scripts/tools/script_manager.lua:1399
 msgid "disable scripts"
 msgstr "desabilitar scripts"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1346
+#: ../src/external/lua-scripts/tools/script_manager.lua:1380
 msgid "lua scripts will not run the next time darktable is started"
 msgstr ""
 "os scripts lua não vão executar na próxima vez que o darktable for iniciado"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1360
+#: ../src/external/lua-scripts/tools/script_manager.lua:1394
 msgid "add more scripts"
 msgstr "adicionar mais scripts"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1376
+#: ../src/external/lua-scripts/tools/script_manager.lua:1410
 msgid "select the script folder"
 msgstr "selecione a pasta do script"
 
@@ -12123,7 +12232,7 @@ msgstr "selecione a pasta do script"
 #. a button to start and stop the script
 #. a label that contains the name of the script
 #. a horizontal box that contains the button and the label
-#: ../src/external/lua-scripts/tools/script_manager.lua:1407
+#: ../src/external/lua-scripts/tools/script_manager.lua:1441
 #: ../src/iop/channelmixerrgb.c:4446 ../src/iop/clipping.c:2106
 #: ../src/iop/colorbalancergb.c:1782 ../src/iop/colorequal.c:3025
 #: ../src/iop/filmicrgb.c:4381 ../src/iop/negadoctor.c:841
@@ -12133,39 +12242,39 @@ msgid "page"
 msgstr "página"
 
 #. configure options
-#: ../src/external/lua-scripts/tools/script_manager.lua:1447
+#: ../src/external/lua-scripts/tools/script_manager.lua:1481
 msgid "scripts per page"
 msgstr "scripts por página"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1448
+#: ../src/external/lua-scripts/tools/script_manager.lua:1482
 msgid "select number of start/stop buttons to display"
 msgstr "selecione o número de botões iniciar/parar a serem mostrados"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1459
+#: ../src/external/lua-scripts/tools/script_manager.lua:1493
 msgid "change number of buttons"
 msgstr "mudar número de botões"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1469
+#: ../src/external/lua-scripts/tools/script_manager.lua:1503
 msgid "configuration"
 msgstr "configuração"
 
 #. stack for the options
 #. main menu
-#: ../src/external/lua-scripts/tools/script_manager.lua:1491
+#: ../src/external/lua-scripts/tools/script_manager.lua:1525
 #: ../src/gui/accelerators.c:2851 ../src/gui/accelerators.c:2953
 #: ../src/views/view.c:1576
 msgid "action"
 msgstr "ação"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1497
+#: ../src/external/lua-scripts/tools/script_manager.lua:1531
 msgid "install/update scripts"
 msgstr "instalar/atualizar scripts"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1497
+#: ../src/external/lua-scripts/tools/script_manager.lua:1531
 msgid "configure"
 msgstr "configurar"
 
-#: ../src/external/lua-scripts/tools/script_manager.lua:1497
+#: ../src/external/lua-scripts/tools/script_manager.lua:1531
 msgid "start/stop scripts"
 msgstr "iniciar/parar scripts"
 
@@ -14672,7 +14781,7 @@ msgstr "gráfico"
 msgid "XCF"
 msgstr "XCF"
 
-#: ../src/imageio/imageio.c:1082
+#: ../src/imageio/imageio.c:1094
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -14681,17 +14790,17 @@ msgstr ""
 "falha ao reservar memória para %s, favor reduza as threads usadas para "
 "exportação ou acrescente mais memória."
 
-#: ../src/imageio/imageio.c:1084
+#: ../src/imageio/imageio.c:1096
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "exporta miniatura"
 
-#: ../src/imageio/imageio.c:1084
+#: ../src/imageio/imageio.c:1096
 msgctxt "noun"
 msgid "export"
 msgstr "exporta"
 
-#: ../src/imageio/imageio.c:1101
+#: ../src/imageio/imageio.c:1113
 #, c-format
 msgid "cannot find the style '%s' to apply during export"
 msgstr ""
@@ -22085,11 +22194,6 @@ msgstr "mostrar e editar formas no modo restrito"
 #: ../src/iop/retouch.c:2480
 msgid "algorithms:"
 msgstr "algoritmos:"
-
-#: ../src/iop/retouch.c:2483 ../src/iop/retouch.c:2489
-#: ../src/iop/retouch.c:2495 ../src/iop/retouch.c:2501
-msgid "tools"
-msgstr "ferramentas"
 
 #: ../src/iop/retouch.c:2483 ../src/iop/retouch.c:2509
 msgid "activate blur tool"
