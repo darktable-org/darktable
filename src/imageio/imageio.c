@@ -1596,7 +1596,10 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
 
   // check for known magic numbers and call the appropriate loader if we recognize a magic number
   ret = _open_by_magic_number(img, filename, buf);
-  if(ret == DT_IMAGEIO_UNRECOGNIZED)
+
+  // Go to fallback path if we didn't recognize the magic bytes (UNRECOGNIZED)
+  // or the main loader has rejected the file (UNSUPPORTED_FORMAT)
+  if((ret == DT_IMAGEIO_UNRECOGNIZED) || (ret == DT_IMAGEIO_UNSUPPORTED_FORMAT))
   {
     // special case - most camera RAW files are TIFF containers, so if we have an LDR file extension,
     // try loading the file as TIFF
