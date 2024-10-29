@@ -132,18 +132,18 @@ uint32_t dt_rawspeed_crop_dcraw_filters(const uint32_t filters,
 static gboolean _ignore_image(const gchar *filename)
 {
   gchar *extensions_ignorelist;
-  const gchar *always_by_libraw = "cr3";
+  const gchar *always_ignore = "cr3 tiff";
 
   gchar *ext = g_strrstr(filename, ".");
   if(!ext) return FALSE;
   ext++;
 
   if(dt_conf_key_not_empty("libraw_extensions"))
-    extensions_ignorelist = g_strjoin(" ", always_by_libraw,
+    extensions_ignorelist = g_strjoin(" ", always_ignore,
                                       dt_conf_get_string_const("libraw_extensions"),
                                       (char *)NULL);
   else
-    extensions_ignorelist = g_strdup(always_by_libraw);
+    extensions_ignorelist = g_strdup(always_ignore);
 
   dt_print(DT_DEBUG_IMAGEIO,
            "[rawspeed_open] extensions list to ignore: `%s'",
