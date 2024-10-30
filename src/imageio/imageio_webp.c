@@ -92,12 +92,12 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img,
              filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
-  uint8_t *int_RGBA_buf = WebPDecodeRGBAInto(read_buffer,
-                                             filesize,
-                                             int_RGBA_buffer,
-                                             npixels * 4,
-                                             width * 4);
-  if(!int_RGBA_buf)
+  uint8_t *decoded = WebPDecodeRGBAInto(read_buffer,
+                                        filesize,
+                                        int_RGBA_buffer,
+                                        npixels * 4,
+                                        width * 4);
+  if(!decoded)
   {
     g_free(read_buffer);
     dt_free_align(int_RGBA_buffer);
@@ -153,7 +153,7 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img,
   {
     dt_aligned_pixel_t pix = {0.0f, 0.0f, 0.0f, 0.0f};
     for_three_channels(c)
-      pix[c] = *(int_RGBA_buf + i * 4 + c) / 255.f;
+      pix[c] = *(int_RGBA_buffer + i * 4 + c) / 255.f;
     copy_pixel_nontemporal(&mipbuf[i * 4], pix);
   }
 
