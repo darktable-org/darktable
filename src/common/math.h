@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2018-2023 darktable developers.
+ *    Copyright (C) 2018-2024 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@
 #include <stdint.h>
 #include "common/sse.h"		// also includes darktable.h
 
+#define LUT_ELEM 512 // gamut LUT number of elements:
+
 #define NORM_MIN 1.52587890625e-05f // norm can't be < to 2^(-16)
 
 // select speed vs accuracy tradeoff
@@ -42,12 +44,8 @@
 #define M_PI   3.14159265358979323846
 #endif /* !M_PI */
 #ifndef M_PI_F
-#define M_PI_F  3.14159265358979324f
+#define M_PI_F 3.14159265358979323846f
 #endif /* !M_PI_F */
-
-
-#define DT_M_PI_F (3.14159265358979324f)
-#define DT_M_PI (3.14159265358979324)
 
 #define DT_M_LN2f (0.6931471805599453f)
 
@@ -108,7 +106,9 @@ static inline gboolean dt_isnormal(const float val)
 //*****************
 
 // test floats difference smaller than eps
-static inline gboolean feqf(const float v1, const float v2, const float eps)
+static inline gboolean feqf(const float v1,
+                            const float v2,
+                            const float eps)
 {
   return (fabsf(v1 - v2) < eps);
 }
@@ -120,16 +120,18 @@ static inline float sqrf(const float a)
 }
 
 // taken from rt code: calculate a * b + (1 - a) * c
-static inline float interpolatef(const float a, const float b, const float c)
+static inline float interpolatef(const float a,
+                                 const float b,
+                                 const float c)
 {
   return a * (b - c) + c;
 }
 
 // Kahan summation algorithm
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline float Kahan_sum(const float m, float *const __restrict__ c, const float add)
+DT_OMP_DECLARE_SIMD()
+static inline float Kahan_sum(const float m,
+                              float *const __restrict__ c,
+                              const float add)
 {
    const float t1 = add - (*c);
    const float t2 = m + t1;
@@ -137,12 +139,22 @@ static inline float Kahan_sum(const float m, float *const __restrict__ c, const 
    return t2;
 }
 
+static inline float scharr_gradient(const float *p, const int w)
+{
+  const float gx = 47.0f / 255.0f * (p[-w-1] - p[-w+1] + p[w-1]  - p[w+1])
+                + 162.0f / 255.0f * (p[-1] - p[1]);
+  const float gy = 47.0f / 255.0f * (p[-w-1] - p[w-1]  + p[-w+1] - p[w+1])
+                + 162.0f / 255.0f * (p[-w] - p[w]);
+  return sqrtf(sqrf(gx) + sqrf(gy));
+}
+
 static inline float Log2(const float x)
 {
   return (x > 0.0f) ? (logf(x) / DT_M_LN2f) : x;
 }
 
-static inline float Log2Thres(const float x, const float Thres)
+static inline float Log2Thres(const float x,
+                              const float Thres)
 {
   return logf(x > Thres ? x : Thres) / DT_M_LN2f;
 }
@@ -170,9 +182,7 @@ static inline float fastlog(const float x)
 
 // multiply 3x3 matrix with 3x1 vector
 // dest needs to be different from v
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void mat3mulv(float *const __restrict__ dest,
                             const float *const mat,
                             const float *const __restrict__ v)
@@ -190,9 +200,7 @@ static inline void mat3mulv(float *const __restrict__ dest,
 // multiply two 3x3 matrices
 // dest needs to be different from m1 and m2
 // dest = m1 * m2 in this order
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void mat3mul(float *const __restrict__ dest,
                            const float *const __restrict__ m1,
                            const float *const __restrict__ m2)
@@ -213,9 +221,7 @@ static inline void mat3mul(float *const __restrict__ dest,
 // multiply two padded 3x3 matrices
 // dest needs to be different from m1 and m2
 // dest = m1 * m2 in this order
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void mat3SSEmul(dt_colormatrix_t dest,
                               const dt_colormatrix_t m1,
                               const dt_colormatrix_t m2)
@@ -233,29 +239,26 @@ static inline void mat3SSEmul(dt_colormatrix_t dest,
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline void mul_mat_vec_2(const float *m, const float *p, float *o)
+DT_OMP_DECLARE_SIMD()
+static inline void mul_mat_vec_2(const float *m,
+                                 const float *p,
+                                 float *o)
 {
   o[0] = p[0] * m[0] + p[1] * m[1];
   o[1] = p[0] * m[2] + p[1] * m[3];
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(v_2) aligned(v_1, v_2:16)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(v_2) aligned(v_1, v_2:16))
 static inline float scalar_product(const dt_aligned_pixel_t v_1,
                                    const dt_aligned_pixel_t v_2)
 {
-  // specialized 3×1 dot products 2 4×1 RGB-alpha pixels.
-  // v_2 needs to be uniform along loop increments, e.g. independent from current pixel values
-  // we force an order of computation similar to SSE4 _mm_dp_ps() hoping the compiler will get the clue
+  // specialized 3×1 dot products 2 4×1 RGB-alpha pixels.  v_2 needs
+  // to be uniform along loop increments, e.g. independent from
+  // current pixel values we force an order of computation similar to
+  // SSE4 _mm_dp_ps() hoping the compiler will get the clue
   float acc = 0.f;
 
-#ifdef _OPENMP
-#pragma omp simd aligned(v_1, v_2:16) reduction(+:acc)
-#endif
+  DT_OMP_SIMD(aligned(v_1, v_2:16) reduction(+:acc))
   for(size_t c = 0; c < 3; c++)
     acc += v_1[c] * v_2[c];
 
@@ -263,34 +266,26 @@ static inline float scalar_product(const dt_aligned_pixel_t v_1,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(M) aligned(M:64) aligned(v_in, v_out:16)
-#endif
+DT_OMP_DECLARE_SIMD(uniform(M) aligned(M:64) aligned(v_in, v_out:16))
 static inline void dot_product(const dt_aligned_pixel_t v_in,
                                const dt_colormatrix_t M,
                                dt_aligned_pixel_t v_out)
 {
   // specialized 3×4 dot products of 4×1 RGB-alpha pixels
-  #ifdef _OPENMP
-  #pragma omp simd aligned(M:64) aligned(v_in, v_out:16)
-  #endif
+  DT_OMP_SIMD(aligned(M:64) aligned(v_in, v_out:16))
   for(size_t i = 0; i < 3; ++i)
     v_out[i] = scalar_product(v_in, M[i]);
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float sqf(const float x)
 {
   return x * x;
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(p:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(p:16))
 static inline float median9f(const float *p)
 {
   float p1 = MIN(p[1], p[2]);
@@ -325,19 +320,16 @@ static inline float median9f(const float *p)
   return MIN(p2,p4);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(vector:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(vector:16))
 static inline float euclidean_norm(const dt_aligned_pixel_t vector)
 {
   return fmaxf(sqrtf(sqf(vector[0]) + sqf(vector[1]) + sqf(vector[2])), NORM_MIN);
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(vector:16)
-#endif
-static inline void downscale_vector(dt_aligned_pixel_t vector, const float scaling)
+DT_OMP_DECLARE_SIMD(aligned(vector:16))
+static inline void downscale_vector(dt_aligned_pixel_t vector,
+                                    const float scaling)
 {
   // check that scaling is positive (NaN produces FALSE)
   const int valid = (scaling > NORM_MIN);
@@ -346,10 +338,9 @@ static inline void downscale_vector(dt_aligned_pixel_t vector, const float scali
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(vector:16)
-#endif
-static inline void upscale_vector(dt_aligned_pixel_t vector, const float scaling)
+DT_OMP_DECLARE_SIMD(aligned(vector:16))
+static inline void upscale_vector(dt_aligned_pixel_t vector,
+                                  const float scaling)
 {
   // check that scaling is positive (NaN produces FALSE)
   const int valid = (scaling > NORM_MIN);
@@ -358,9 +349,7 @@ static inline void upscale_vector(dt_aligned_pixel_t vector, const float scaling
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float dt_log2f(const float f)
 {
 #ifdef __GLIBC__
@@ -375,20 +364,19 @@ union float_int {
   int k;
 };
 
-// a faster, vectorizable version of hypotf() when we know that there won't be overflow, NaNs, or infinities
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline float dt_fast_hypotf(const float x, const float y)
+// a faster, vectorizable version of hypotf() when we know that there
+// won't be overflow, NaNs, or infinities
+DT_OMP_DECLARE_SIMD()
+static inline float dt_fast_hypotf(const float x,
+                                   const float y)
 {
   return sqrtf(x * x + y * y);
 }
 
 // fast approximation of expf()
-/****** if you change this function, you need to make the same change in data/kernels/{basecurve,basic}.cl ***/
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+/****** if you change this function, you need to make the same change
+ * in data/kernels/{basecurve,basic}.cl ***/
+DT_OMP_DECLARE_SIMD()
 static inline float dt_fast_expf(const float x)
 {
   // meant for the range [-100.0f, 0.0f]. largest error ~ -0.06 at 0.0f.
@@ -405,7 +393,8 @@ static inline float dt_fast_expf(const float x)
 }
 
 // fast approximation of 2^-x for 0<x<126
-/****** if you change this function, you need to make the same change in data/kernels/{denoiseprofile,nlmeans}.cl ***/
+/****** if you change this function, you need to make the same change
+ * in data/kernels/{denoiseprofile,nlmeans}.cl ***/
 static inline float dt_fast_mexp2f(const float x)
 {
   const int i1 = 0x3f800000; // bit representation of 2^0
@@ -476,10 +465,20 @@ static inline void dt_vector_max(dt_aligned_pixel_t max,
 #endif
 }
 
-static inline void dt_vector_round(const dt_aligned_pixel_t input, dt_aligned_pixel_t rounded)
+static inline void dt_vector_max_nan(dt_aligned_pixel_t max,
+                                     const dt_aligned_pixel_t v1,
+                                     const dt_aligned_pixel_t v2)
 {
-  // unfortunately, casting to int truncates toward zero, so we need to use an SSE intrinsic to
-  // make the compiler convert with rounding instead
+  for_four_channels(c)
+    max[c] = fmaxf(v1[c], v2[c]);
+}
+
+static inline void dt_vector_round(const dt_aligned_pixel_t input,
+                                   dt_aligned_pixel_t rounded)
+{
+  // unfortunately, casting to int truncates toward zero, so we need
+  // to use an SSE intrinsic to make the compiler convert with
+  // rounding instead
 #ifdef __SSE2__
   *((__m128*)rounded) = _mm_cvtepi32_ps(_mm_cvtps_epi32(*((__m128*)input)));
 #else
@@ -490,7 +489,8 @@ static inline void dt_vector_round(const dt_aligned_pixel_t input, dt_aligned_pi
 
 // plain auto-vectorizing C implementation of _mm_log2_ps from sse.h
 // See http://www.devmaster.net/forums/showthread.php?p=43580 for the original
-static inline void dt_vector_log2(const dt_aligned_pixel_t x, dt_aligned_pixel_t res)
+static inline void dt_vector_log2(const dt_aligned_pixel_t x,
+                                  dt_aligned_pixel_t res)
 {
   // split input value into exponent and mantissa
   union { float f[4]; uint32_t i[4]; } mant, vx = { .f = { x[0], x[1], x[2], x[3] } };
@@ -500,8 +500,9 @@ static inline void dt_vector_log2(const dt_aligned_pixel_t x, dt_aligned_pixel_t
     mant.i[c] = (vx.i[c] & 0x007FFFFF) | 0x3F800000;
     exp[c] = (float)((vx.i[c] & 0x7F800000) >> 23) - 127;
   }
-  // evaluate polynomial fit of log2(x)/(x-1).  Coefficients chosen for minimax fit in [1, 2[
-  // These coefficients can be generated with
+  // evaluate polynomial fit of log2(x)/(x-1).  Coefficients chosen
+  // for minimax fit in [1, 2[ These coefficients can be generated
+  // with
   // http://www.boost.org/doc/libs/1_36_0/libs/math/doc/sf_and_dist/html/math_toolkit/toolkit/internals2/minimax.html
   dt_aligned_pixel_t logmant;
   for_four_channels(c)
@@ -527,7 +528,8 @@ static inline void dt_vector_log2(const dt_aligned_pixel_t x, dt_aligned_pixel_t
     res[c] = (logmant[c] * (mant.f[c] - 1.0f)) + exp[c];
 }
 
-static inline void dt_vector_exp(const dt_aligned_pixel_t x, dt_aligned_pixel_t result)
+static inline void dt_vector_exp(const dt_aligned_pixel_t x,
+                                 dt_aligned_pixel_t result)
 {
   // meant for the range [-100.0f, 0.0f]. largest error ~ -0.06 at 0.0f.
   // will get _a_lot_ worse for x > 0.0f (9000 at 10.0f)..
@@ -547,11 +549,14 @@ static inline void dt_vector_exp(const dt_aligned_pixel_t x, dt_aligned_pixel_t 
 
 // plain auto-vectorizing C implementation of _mm_exp2_ps from sse.h
 // See http://www.devmaster.net/forums/showthread.php?p=43580 for the original
-static inline void dt_vector_exp2(const dt_aligned_pixel_t input, dt_aligned_pixel_t res)
+static inline void dt_vector_exp2(const dt_aligned_pixel_t input,
+                                  dt_aligned_pixel_t res)
 {
   // clamp the exponent to the supported range
-  static const dt_aligned_pixel_t lower_bound = { -126.99999f, -126.99999f, -126.99999f, -126.99999f };
-  static const dt_aligned_pixel_t upper_bound = {  129.00000f,  129.00000f,  129.00000f,  129.00000f };
+  static const dt_aligned_pixel_t lower_bound =
+    { -126.99999f, -126.99999f, -126.99999f, -126.99999f };
+  static const dt_aligned_pixel_t upper_bound =
+    {  129.00000f,  129.00000f,  129.00000f,  129.00000f };
   static const dt_aligned_pixel_t v_half = { 0.5f, 0.5f, 0.5f, 0.5f };
   dt_aligned_pixel_t x;
   dt_vector_min(x, input, upper_bound);
@@ -567,12 +572,14 @@ static inline void dt_vector_exp2(const dt_aligned_pixel_t input, dt_aligned_pix
   for_four_channels(c)
     fpart[c] = x[c] - ipart[c];
 
-  // compute the multiplier 2^ipart by directly building the corresponding float value
+  // compute the multiplier 2^ipart by directly building the
+  // corresponding float value
   union { uint32_t i[4]; float f[4]; } expipart;
   for_four_channels(c)
     expipart.i[c] = (127 + (int)ipart[c]) << 23;
 
-  // evaluate the nth-degree polynomial (coefficients chosen for minimax fit on [-0.5, 0.5[ )
+  // evaluate the nth-degree polynomial (coefficients chosen for
+  // minimax fit on [-0.5, 0.5[ )
   dt_aligned_pixel_t expfpart;
   for_four_channels(c)
   {
@@ -596,7 +603,8 @@ static inline void dt_vector_exp2(const dt_aligned_pixel_t input, dt_aligned_pix
     res[c] = expipart.f[c] * expfpart[c];
 }
 
-static inline void dt_vector_exp10(const dt_aligned_pixel_t x, dt_aligned_pixel_t res)
+static inline void dt_vector_exp10(const dt_aligned_pixel_t x,
+                                   dt_aligned_pixel_t res)
 {
   // 10^x == 2^(3.3219280948873626 * x)
   dt_aligned_pixel_t scaled;
@@ -650,8 +658,8 @@ static inline void dt_vector_mul(dt_aligned_pixel_t result,
 }
 
 static inline void dt_vector_mul1(dt_aligned_pixel_t result,
-                                 const dt_aligned_pixel_t in,
-                                 const float scale)
+                                  const dt_aligned_pixel_t in,
+                                  const float scale)
 {
   for_four_channels(c, aligned(result,in))
     result[c] = in[c] * scale;
@@ -666,8 +674,8 @@ static inline void dt_vector_div(dt_aligned_pixel_t result,
 }
 
 static inline void dt_vector_div1(dt_aligned_pixel_t result,
-                                 const dt_aligned_pixel_t in,
-                                 const float divisor)
+                                  const dt_aligned_pixel_t in,
+                                  const float divisor)
 {
   for_four_channels(c, aligned(result,in))
     result[c] = in[c] / divisor;
@@ -697,6 +705,13 @@ static inline void dt_vector_clipneg(dt_aligned_pixel_t values)
   dt_vector_max(values, values, zero);
 }
 
+static inline void dt_vector_clipneg_nan(dt_aligned_pixel_t values)
+{
+  static const dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f };
+  dt_vector_max_nan(values, values, zero);
+}
+
+
 /** Compute approximate sines, four at a time.
  * This function behaves correctly for the range [-pi pi] only.
  * It has the following properties:
@@ -709,7 +724,8 @@ static inline void dt_vector_clipneg(dt_aligned_pixel_t values)
  * @param arg: Radian parameters
  * @return sine: guess what
  */
-static inline void dt_vector_sin(const dt_aligned_pixel_t arg, dt_aligned_pixel_t sine)
+static inline void dt_vector_sin(const dt_aligned_pixel_t arg,
+                                 dt_aligned_pixel_t sine)
 {
   static const dt_aligned_pixel_t pi = { M_PI_F, M_PI_F, M_PI_F, M_PI_F };
   static const dt_aligned_pixel_t a
@@ -732,7 +748,6 @@ static inline void dt_vector_sin(const dt_aligned_pixel_t arg, dt_aligned_pixel_
   for_four_channels(c)
     sine[c] = scaled[c] * (p[c] * (abs_scaled[c] - one[c]) + one[c]);
 }
-
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

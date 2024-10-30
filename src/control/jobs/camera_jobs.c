@@ -288,9 +288,9 @@ void _camera_import_image_downloaded(const dt_camera_t *camera,
   {
     // only redraw at the end, to not spam the cpu with exposure events
     dt_control_queue_redraw_center();
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
 
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED,
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_FILMROLLS_IMPORTED,
                             dt_import_session_film_id(t->shared.session));
   }
   t->import_count++;
@@ -329,12 +329,6 @@ static int32_t dt_camera_import_job_run(dt_job_t *job)
 {
   dt_camera_import_t *params = dt_control_job_get_params(job);
   dt_control_log(_("starting to import images from camera"));
-
-  if(!dt_import_session_ready(params->shared.session))
-  {
-    dt_control_log(_("failed to import images from camera."));
-    return 1;
-  }
 
   guint total = g_list_length(params->images);
   char message[512] = { 0 };

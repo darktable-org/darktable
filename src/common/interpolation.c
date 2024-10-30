@@ -1,6 +1,6 @@
 /* --------------------------------------------------------------------------
     This file is part of darktable,
-    Copyright (C) 2012-2023 darktable developers.
+    Copyright (C) 2012-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -64,7 +64,7 @@ static void _show_2_times(const dt_times_t *start,
     dt_times_t end;
     dt_get_times(&end);
     dt_print(DT_DEBUG_PERF,
-             "[%s] plan %.3f secs (%.3f CPU) resample %.3f secs (%.3f CPU)\n",
+             "[%s] plan %.3f secs (%.3f CPU) resample %.3f secs (%.3f CPU)",
              prefix, mid->clock - start->clock, mid->user - start->user,
              end.clock - mid->clock, end.user - mid->user);
   }
@@ -1025,7 +1025,7 @@ static void _interpolation_resample_plain(const struct dt_interpolation *itor,
   const int32_t out_stride_floats = roi_out->width * 4;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
-                "resample_plain", NULL, NULL, DT_DEVICE_CPU, roi_in, roi_out, "%s\n",itor->name);
+                "resample_plain", NULL, NULL, DT_DEVICE_CPU, roi_in, roi_out, "%s",itor->name);
   dt_times_t start = { 0 }, mid = { 0 };
   dt_get_perf_times(&start);
 
@@ -1034,11 +1034,7 @@ static void _interpolation_resample_plain(const struct dt_interpolation *itor,
   {
     const int x0 = roi_out->x * 4 * sizeof(float);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, in_stride_floats, out_stride_floats, roi_out, x0) \
-    shared(out)
-#endif
+    DT_OMP_FOR()
     for(int y = 0; y < roi_out->height; y++)
     {
       memcpy((char *)out + (size_t)out_stride_floats * sizeof(float) * y,
@@ -1071,12 +1067,7 @@ static void _interpolation_resample_plain(const struct dt_interpolation *itor,
   const size_t width = roi_out->width;
 
   // Process each output line
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, in_stride_floats, out, out_stride_floats, height, width, \
-                      hlength, hindex, hkernel, vlength, vindex, vkernel)       \
-  shared(vmeta)
-#endif
+  DT_OMP_FOR()
   for(size_t oy = 0; oy < height; oy++)
   {
     // Initialize column resampling indexes
@@ -1166,7 +1157,7 @@ void dt_interpolation_resample(const struct dt_interpolation *itor,
 {
   if(out == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[dt_interpolation_resample] no valid output buffer\n");
+    dt_print(DT_DEBUG_ALWAYS, "[dt_interpolation_resample] no valid output buffer");
     return;
   }
 
@@ -1196,8 +1187,7 @@ void dt_interpolation_resample_roi(const struct dt_interpolation *itor,
 #ifdef HAVE_OPENCL
 dt_interpolation_cl_global_t *dt_interpolation_init_cl_global()
 {
-  dt_interpolation_cl_global_t *g
-      = (dt_interpolation_cl_global_t *)malloc(sizeof(dt_interpolation_cl_global_t));
+  dt_interpolation_cl_global_t *g = malloc(sizeof(dt_interpolation_cl_global_t));
 
   const int program = 2; // basic.cl, from programs.conf
   g->kernel_interpolation_resample =
@@ -1256,7 +1246,7 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor,
   cl_mem dev_vmeta = NULL;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
-                "resample", NULL, NULL, devid, roi_in, roi_out, "%s\n", itor->name);
+                "resample", NULL, NULL, devid, roi_in, roi_out, "%s", itor->name);
   dt_times_t start = { 0 }, mid = { 0 };
   dt_get_perf_times(&start);
 
@@ -1394,7 +1384,7 @@ error:
     _show_2_times(&start, &mid, "resample_cl");
   else if(err != CL_INVALID_WORK_GROUP_SIZE)
     dt_print_pipe(DT_DEBUG_OPENCL, "interpolation_resample", NULL, NULL, devid, roi_in, roi_out,
-      "Error: %s\n", cl_errstr(err));
+      "Error: %s", cl_errstr(err));
 
   dt_opencl_release_mem_object(dev_hindex);
   dt_opencl_release_mem_object(dev_hlength);
@@ -1446,7 +1436,7 @@ static void _interpolation_resample_1c_plain(const struct dt_interpolation *itor
   int *vmeta = NULL;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
-      "resample_1c_plain", NULL, NULL, DT_DEVICE_CPU, roi_in, roi_out, "%s\n", itor->name);
+      "resample_1c_plain", NULL, NULL, DT_DEVICE_CPU, roi_in, roi_out, "%s", itor->name);
   dt_times_t start = { 0 }, mid = { 0 };
   dt_get_perf_times(&start);
 
@@ -1457,11 +1447,7 @@ static void _interpolation_resample_1c_plain(const struct dt_interpolation *itor
   if(roi_out->scale == 1.f)
   {
     const int x0 = roi_out->x * sizeof(float);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, in_stride, out_stride, roi_out, x0) \
-    shared(out)
-#endif
+    DT_OMP_FOR()
     for(int y = 0; y < roi_out->height; y++)
     {
       float *i = (float *)((char *)in + in_stride * (y + roi_out->y) + x0);
@@ -1490,11 +1476,7 @@ static void _interpolation_resample_1c_plain(const struct dt_interpolation *itor
   dt_get_perf_times(&mid);
 
   // Process each output line
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, in_stride, out_stride, roi_out) \
-  shared(out, hindex, hlength, hkernel, vindex, vlength, vkernel, vmeta)
-#endif
+  DT_OMP_FOR()
   for(int oy = 0; oy < roi_out->height; oy++)
   {
     // Initialize column resampling indexes

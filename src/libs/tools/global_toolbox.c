@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -80,10 +80,9 @@ int position(const dt_lib_module_t *self)
   return 1001;
 }
 
-static void _overlays_toggle_button(GtkWidget *w, gpointer user_data)
+static void _overlays_toggle_button(GtkWidget *w, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+  dt_lib_tool_preferences_t *d = self->data;
 
   if(d->disable_over_events) return;
 
@@ -116,10 +115,9 @@ static void _overlays_toggle_button(GtkWidget *w, gpointer user_data)
 #endif // USE_LUA
 }
 
-static void _overlays_toggle_culling_button(GtkWidget *w, gpointer user_data)
+static void _overlays_toggle_culling_button(GtkWidget *w, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+  dt_lib_tool_preferences_t *d = self->data;
 
   if(d->disable_over_events) return;
 
@@ -153,10 +151,9 @@ static void _overlays_toggle_culling_button(GtkWidget *w, gpointer user_data)
 #endif // USE_LUA
 }
 
-static void _overlays_timeout_changed(GtkWidget *w, gpointer user_data)
+static void _overlays_timeout_changed(GtkWidget *w, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+  dt_lib_tool_preferences_t *d = self->data;
 
   const int val = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(w));
 
@@ -178,7 +175,7 @@ static void _overlays_timeout_changed(GtkWidget *w, gpointer user_data)
 
 static void _overlays_show_popup(GtkWidget *button, dt_lib_module_t *self)
 {
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+  dt_lib_tool_preferences_t *d = self->data;
 
   d->disable_over_events = TRUE;
 
@@ -384,7 +381,7 @@ static void _main_icons_register_size(GtkWidget *widget, GdkRectangle *allocatio
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)g_malloc0(sizeof(dt_lib_tool_preferences_t));
+  dt_lib_tool_preferences_t *d = g_malloc0(sizeof(dt_lib_tool_preferences_t));
   self->data = (void *)d;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -493,11 +490,21 @@ void gui_init(dt_lib_module_t *self)
   d->keymap_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_shortcut, 0, NULL);
   dt_action_define(&darktable.control->actions_global, NULL, N_("shortcuts"), d->keymap_button, &dt_action_def_toggle);
   gtk_box_pack_start(GTK_BOX(self->widget), d->keymap_button, FALSE, FALSE, 0);
-  gtk_widget_set_tooltip_text(d->keymap_button, _("define shortcuts\n"
-                                                  "ctrl+click to switch off overwrite confirmations\n\n"
-                                                  "hover over a widget and press keys with mouse click and scroll or move combinations\n"
-                                                  "repeat same combination again to delete mapping\n"
-                                                  "click on a widget, module or screen area to open the dialog for further configuration"));
+  gtk_widget_set_tooltip_text(d->keymap_button, _("define keyboard shortcuts for on-screen controls\n"
+                                                  "ctrl+click to switch off overwrite confirmations\n"
+                                                  "\n"
+                                                  "after activating:\n"
+                                                  "\n"
+                                                  "- hover over a control (button, slider, etc.) and press\n"
+                                                  "  a keystroke combination (optionally with mouse click,\n"
+                                                  "  move, or scroll while holding down the keys) to\n"
+                                                  "  define a shortcut for the control,\n"
+                                                  "- type an existing combination to delete that mapping\n"
+                                                  "\n"
+                                                  "click on a control, module or screen area to open the\n"
+                                                  "dialog for more detailed configuration\n"
+                                                  "\n"
+                                                  "right-click to exit mapping mode"));
   g_signal_connect(G_OBJECT(d->keymap_button), "clicked", G_CALLBACK(_lib_keymap_button_clicked), d);
   g_signal_connect(G_OBJECT(d->keymap_button), "button-press-event", G_CALLBACK(_lib_keymap_button_press_release), d);
   g_signal_connect(G_OBJECT(d->keymap_button), "button-release-event", G_CALLBACK(_lib_keymap_button_press_release), d);
@@ -535,7 +542,10 @@ static void _lib_filter_grouping_button_clicked(GtkWidget *widget, gpointer user
     gtk_widget_set_tooltip_text(widget, _("collapse grouped images"));
   dt_conf_set_bool("ui_last/grouping", darktable.gui->grouping);
   darktable.gui->expanded_group_id = NO_IMGID;
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_GROUPING, NULL);
+  dt_collection_update_query(darktable.collection,
+                             DT_COLLECTION_CHANGE_RELOAD,
+                             DT_COLLECTION_PROP_UNDEF,
+                             NULL);
 
 #ifdef USE_LUA
   dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
@@ -810,7 +820,7 @@ static gboolean _lib_keymap_button_press_release(GtkWidget *button, GdkEventButt
 static int grouping_member(lua_State *L)
 {
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+  dt_lib_tool_preferences_t *d = self->data;
   if(lua_gettop(L) != 3)
   {
     lua_pushboolean(L, darktable.gui->grouping);
@@ -830,7 +840,7 @@ static int grouping_member(lua_State *L)
 static int show_overlays_member(lua_State *L)
 {
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+  dt_lib_tool_preferences_t *d = self->data;
   if(lua_gettop(L) != 3)
   {
     lua_pushboolean(L, darktable.gui->show_overlays);

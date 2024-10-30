@@ -13,7 +13,7 @@ FILE(GLOB SOURCE_FILES
   "common/atomic.c"
   "common/bilateral.c"
   "common/bilateralcl.c"
-  "common/box_filters.c"
+  "common/box_filters.cc"
   "common/cache.c"
   "common/calculator.c"
   "common/collection.c"
@@ -40,6 +40,7 @@ FILE(GLOB SOURCE_FILES
   "common/file_location.c"
   "common/film.c"
   "common/gaussian.c"
+  "common/gimp.c"
   "common/gpx.c"
   "common/grouping.c"
   "common/guided_filter.c"
@@ -93,6 +94,7 @@ FILE(GLOB SOURCE_FILES
   "control/jobs/develop_jobs.c"
   "control/jobs/film_jobs.c"
   "control/jobs/image_jobs.c"
+  "control/jobs/sidecar_jobs.c"
   "control/progress.c"
   "control/signal.c"
   "develop/blend.c"
@@ -127,6 +129,7 @@ FILE(GLOB SOURCE_FILES
   "dtgtk/range.c"
   "dtgtk/resetlabel.c"
   "dtgtk/sidepanel.c"
+  "dtgtk/stylemenu.c"
   "dtgtk/thumbnail.c"
   "dtgtk/thumbnail_btn.c"
   "dtgtk/thumbtable.c"
@@ -141,6 +144,7 @@ FILE(GLOB SOURCE_FILES
   "gui/import_metadata.c"
   "gui/preferences.c"
   "gui/presets.c"
+  "gui/splash.c"
   "gui/styles_dialog.c"
   "imageio/imageio.c"
   "imageio/imageio_gm.c"
@@ -196,6 +200,9 @@ if(WIN32)
 
   list(APPEND SOURCE_FILES "win/scandir.c")
   list(APPEND HEADER_FILES "win/scandir.h")
+
+  list(APPEND SOURCE_FILES "common/pwstorage/backend_windows_credentials.c")
+  list(APPEND HEADER_FILES "common/pwstorage/backend_windows_credentials.h")
 
   # Use mingw's sprintf instead of windows's
   ADD_DEFINITIONS( -D__USE_MINGW_ANSI_STDIO=1 )
@@ -420,26 +427,26 @@ find_package(LensFun REQUIRED)
 include_directories(SYSTEM ${LensFun_INCLUDE_DIRS})
 list(APPEND LIBS ${LensFun_LIBRARIES})
 
-find_package(Sqlite3 3.15 REQUIRED)
-if(NOT Sqlite3_VERSION VERSION_LESS 3.24)
-  add_definitions("-DHAVE_SQLITE_324_OR_NEWER")
-  message(STATUS "Sqlite3 version 3.24 or newer")
-else()
-  message(STATUS "Sqlite3 version older than 3.24, some features may be downgraded")
-endif()
-include_directories(SYSTEM ${Sqlite3_INCLUDE_DIR})
-list(APPEND LIBS ${Sqlite3_LIBRARIES})
-add_definitions(${Sqlite3_DEFINITIONS})
+find_package(SQLite3 3.26 REQUIRED)
+list(APPEND LIBS SQLite::SQLite3)
 
-foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 LibXml2 CURL PNG JPEG TIFF LCMS2 JsonGlib)
+foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 PNG JPEG TIFF LCMS2 JsonGlib)
   find_package(${lib} REQUIRED)
   include_directories(SYSTEM ${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
   add_definitions(${${lib}_DEFINITIONS})
 endforeach(lib)
 
-# Require exiv2 >= 0.25 to make sure everything we need is available
-find_package(Exiv2 0.25 REQUIRED)
+if(PNG_VERSION_STRING VERSION_LESS 1.5)
+  message(FATAL_ERROR "libpng version 1.5 or newer is required")
+endif()
+
+# Use imported target for curl
+find_package(CURL 7.56 REQUIRED)
+list(APPEND LIBS CURL::libcurl)
+
+# Require exiv2 >= 0.27.2 to make sure everything we need is available
+find_package(Exiv2 0.27.2 REQUIRED)
 include_directories(SYSTEM ${Exiv2_INCLUDE_DIRS})
 list(APPEND LIBS ${Exiv2_LIBRARIES})
 add_definitions(${Exiv2_DEFINITIONS})
@@ -457,7 +464,6 @@ if (USE_ISOBMFF)
       "${Exiv2_INCLUDE_DIRS}/exiv2/exv_conf.h"
       HAVE_EXV_ENABLE_BMFF)
     if(HAVE_EXV_ENABLE_BMFF)
-      add_definitions(-DHAVE_LIBEXIV2_WITH_ISOBMFF=1)
       set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} cr3 CACHE INTERNAL "")
       message(STATUS "Exiv2 >= 0.27.4 found with ISOBMFF support (CR3, AVIF, HEIF)")
     else()
@@ -474,14 +480,13 @@ if(USE_PORTMIDI)
 endif(USE_PORTMIDI)
 
 if(USE_OPENJPEG)
-  find_package(OpenJPEG)
+  find_package(OpenJPEG CONFIG)
   if(OpenJPEG_FOUND)
     add_definitions("-DHAVE_OPENJPEG")
     list(APPEND SOURCES "imageio/imageio_j2k.c")
-
-    include_directories(SYSTEM ${OpenJPEG_INCLUDE_DIRS})
-    list(APPEND LIBS ${OpenJPEG_LIBRARIES})
-    set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} j2c j2k jp2 jpc CACHE INTERNAL "")
+    include_directories(SYSTEM ${OPENJPEG_INCLUDE_DIRS})
+    list(APPEND LIBS ${OPENJPEG_LIBRARIES})
+    set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} j2c j2k jp2 jpc jpf jpx CACHE INTERNAL "")
   endif(OpenJPEG_FOUND)
 endif(USE_OPENJPEG)
 
@@ -522,6 +527,10 @@ if(APPLE)
   add_definitions("-DHAVE_APPLE_KEYCHAIN")
 endif(APPLE)
 
+if(WIN32)
+  add_definitions("-DHAVE_WINDOWS_CREDENTIALS")
+endif(WIN32)
+
 if(USE_MAC_INTEGRATION)
   find_package(MacIntegration)
   if(MacIntegration_FOUND)
@@ -550,7 +559,7 @@ if(USE_GRAPHICSMAGICK)
   find_package(GraphicsMagick)
   if(GraphicsMagick_FOUND)
     add_definitions(-DHAVE_GRAPHICSMAGICK)
-    set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} bmp dcm fit fits fts gif jng jp2 jpc miff mng pam webp jxl CACHE INTERNAL "")
+    set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} bmp dcm fit fits fts gif jng jp2 jpc jpf jpx miff mng pam webp jxl CACHE INTERNAL "")
     include_directories(SYSTEM ${GraphicsMagick_INCLUDE_DIRS})
     list(APPEND LIBS ${GraphicsMagick_LIBRARIES})
   endif(GraphicsMagick_FOUND)
@@ -572,7 +581,7 @@ if(USE_IMAGEMAGICK AND NOT GraphicsMagick_FOUND)
       list(APPEND LIBS ${ImageMagick_LIBRARY})
       unset(ImageMagick_LIBRARY CACHE)
     endforeach(lib)
-    set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} bmp dcm fit fits fts gif jng jp2 jpc miff mng pam webp jxl CACHE INTERNAL "")
+    set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} bmp dcm fit fits fts gif jng jp2 jpc jpf jpx miff mng pam webp jxl CACHE INTERNAL "")
   endif(ImageMagick_FOUND)
 endif(USE_IMAGEMAGICK AND NOT GraphicsMagick_FOUND)
 
@@ -625,18 +634,6 @@ if(NOT HAVE_TLS)
 endif()
 
 
-if(WIN32)
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc -municode")
-  set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
-  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
-
-  SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
-  SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
-
-  list(APPEND LIBS psapi) # Needed for GetProcessMemoryInfo()
-  list(APPEND LIBS exchndl) # Needed for exception handling and backtrace()
-endif(WIN32)
-
 if(NOT CUSTOM_CFLAGS)
   if(BUILD_SSE2_CODEPATHS)
     #we MUST always specify our required instruction set, native might not detect it
@@ -678,6 +675,18 @@ if(NOT CUSTOM_CFLAGS)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
   endif()
 endif(NOT CUSTOM_CFLAGS)
+
+if(WIN32)
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc -municode")
+  set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
+
+  SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
+  SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common")
+
+  list(APPEND LIBS psapi) # Needed for GetProcessMemoryInfo()
+  list(APPEND LIBS exchndl) # Needed for exception handling and backtrace()
+endif(WIN32)
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
@@ -739,6 +748,7 @@ if(USE_LUA)
       "lua/styles.c"
       "lua/tags.c"
       "lua/types.c"
+      "lua/util.c"
       "lua/view.c"
       "lua/widget/box.c"
       "lua/widget/button.c"
@@ -763,7 +773,7 @@ endif(USE_LUA)
 
 if(USE_LUA)
   if(NOT Lua54_FOUND)
-    list(APPEND LIB_DEPS lua) # 2nd half of the uglyness :/
+    list(APPEND LIB_DEPS lua) # 2nd half of the ugliness :/
   endif(NOT Lua54_FOUND)
   # liblautoc for lua automated interface generation
   add_library(lautoc_static STATIC IMPORTED)
@@ -774,7 +784,7 @@ if(USE_LUA)
   list(APPEND STATIC_LIBS lautoc_static)
 endif(USE_LUA)
 
-find_package(Pugixml 1.2 REQUIRED)
+find_package(Pugixml 1.5 REQUIRED)
 include_directories(SYSTEM ${Pugixml_INCLUDE_DIRS})
 list(APPEND LIBS ${Pugixml_LIBRARIES})
 

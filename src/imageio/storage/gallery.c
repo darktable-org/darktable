@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -107,8 +107,7 @@ void *legacy_params(dt_imageio_module_storage_t *self,
     } dt_imageio_gallery_v1_t;
 
     const dt_imageio_gallery_v1_t *o = (dt_imageio_gallery_v1_t *)old_params;
-    dt_imageio_gallery_v2_t *n =
-      (dt_imageio_gallery_v2_t *)malloc(sizeof(dt_imageio_gallery_v2_t));
+    dt_imageio_gallery_v2_t *n = malloc(sizeof(dt_imageio_gallery_v2_t));
 
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     g_strlcpy(n->title, o->title, sizeof(n->title));
@@ -157,7 +156,7 @@ static void button_clicked(GtkWidget *widget,
   if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    char *composed = g_build_filename(dir, "$(FILE_NAME)", NULL);
+    char *composed = g_build_filename(dir, "$(FILE.NAME)", NULL);
 
     // composed can now contain '\': on Windows it's the path separator,
     // on other platforms it can be part of a regular folder name.
@@ -189,7 +188,7 @@ static void title_changed_callback(GtkEntry *entry,
 
 void gui_init(dt_imageio_module_storage_t *self)
 {
-  gallery_t *d = (gallery_t *)malloc(sizeof(gallery_t));
+  gallery_t *d = malloc(sizeof(gallery_t));
   self->gui_data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -272,8 +271,7 @@ int store(dt_imageio_module_storage_t *self,
 
   char filename[PATH_MAX] = { 0 };
   char dirname[PATH_MAX] = { 0 };
-  gboolean from_cache = FALSE;
-  dt_image_full_path(imgid, dirname, sizeof(dirname), &from_cache);
+  dt_image_full_path(imgid, dirname, sizeof(dirname), NULL);
 
   char tmp_dir[PATH_MAX] = { 0 };
 
@@ -290,12 +288,12 @@ int store(dt_imageio_module_storage_t *self,
   g_strlcpy(tmp_dir, result_tmp_dir, sizeof(tmp_dir));
   g_free(result_tmp_dir);
 
-  // if filenamepattern is a directory just let att ${FILE_NAME} as default..
+  // if filenamepattern is a directory just add ${FILE.NAME} as default..
   if(g_file_test(tmp_dir, G_FILE_TEST_IS_DIR)
      || ((d->filename + strlen(d->filename) - 1)[0] == '/'
-         || (d->filename + strlen(d->filename) - 1)[0] == '\\'))
+         || (d->filename + strlen(d->filename) - 1)[0] == G_DIR_SEPARATOR))
     snprintf(d->filename + strlen(d->filename),
-             sizeof(d->filename) - strlen(d->filename), "/$(FILE_NAME)");
+             sizeof(d->filename) - strlen(d->filename), "/$(FILE.NAME)");
 
   // avoid braindead export which is bound to overwrite at random:
   if(total > 1 && !g_strrstr(d->filename, "$"))
@@ -316,13 +314,13 @@ int store(dt_imageio_module_storage_t *self,
 
   const char *ext = format->extension(fdata);
   char *c = dirname + strlen(dirname);
-  for(; c > dirname && *c != '/'; c--)
+  for(; c > dirname && *c != '/' && *c != G_DIR_SEPARATOR; c--)
     ;
-  if(*c == '/') *c = '\0';
+  if(*c == '/' || *c == G_DIR_SEPARATOR) *c = '\0';
   if(g_mkdir_with_parents(dirname, 0755))
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[imageio_storage_gallery] could not create directory: `%s'!\n", dirname);
+             "[imageio_storage_gallery] could not create directory: `%s'!", dirname);
     dt_control_log(_("could not create directory `%s'!"), dirname);
     return 1;
   }
@@ -331,9 +329,9 @@ int store(dt_imageio_module_storage_t *self,
   g_strlcpy(d->cached_dirname, dirname, sizeof(d->cached_dirname));
 
   c = filename + strlen(filename);
-  for(; c > filename && *c != '.' && *c != '/'; c--)
+  for(; c > filename && *c != '.' && *c != '/' && *c != G_DIR_SEPARATOR; c--)
     ;
-  if(c <= filename || *c == '/') c = filename + strlen(filename);
+  if(c <= filename || *c == '/' || *c == G_DIR_SEPARATOR) c = filename + strlen(filename);
 
   sprintf(c, ".%s", ext);
 
@@ -405,7 +403,7 @@ int store(dt_imageio_module_storage_t *self,
                        icc_filename, icc_intent, self, sdata, num, total, metadata) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
+             "[imageio_storage_gallery] could not export to file: `%s'!", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
     free(pair);
     g_free(esc_relfilename);
@@ -446,7 +444,7 @@ int store(dt_imageio_module_storage_t *self,
                        icc_intent, self, sdata, num, total, NULL) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
+             "[imageio_storage_gallery] could not export to file: `%s'!", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
     return 1;
   }
@@ -454,7 +452,7 @@ int store(dt_imageio_module_storage_t *self,
   fdata->max_width = save_max_width;
   fdata->max_height = save_max_height;
 
-  dt_print(DT_DEBUG_ALWAYS, "[export_job] exported to `%s'\n", filename);
+  dt_print(DT_DEBUG_ALWAYS, "[export_job] exported to `%s'", filename);
   dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
                  num, total, filename);
   return 0;
@@ -621,8 +619,7 @@ void init(dt_imageio_module_storage_t *self)
 
 void *get_params(dt_imageio_module_storage_t *self)
 {
-  dt_imageio_gallery_t *d =
-    (dt_imageio_gallery_t *)calloc(1, sizeof(dt_imageio_gallery_t));
+  dt_imageio_gallery_t *d = calloc(1, sizeof(dt_imageio_gallery_t));
   d->vp = NULL;
   d->l = NULL;
   dt_variables_params_init(&d->vp);

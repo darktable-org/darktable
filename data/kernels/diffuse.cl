@@ -218,7 +218,7 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
     find_gradient(neighbour_pixel_LF, gradient);
     find_gradient(neighbour_pixel_HF, laplacian);
 
-    const float4 magnitude_grad = native_sqrt(sqf(gradient[0]) + sqf(gradient[1]));
+    const float4 magnitude_grad = dtcl_sqrt(sqf(gradient[0]) + sqf(gradient[1]));
     // Compute cos(arg(grad)) = dx / hypot - force arg(grad) = 0 if hypot == 0
     gradient[0] = (magnitude_grad != 0.f) ? gradient[0] / magnitude_grad
                                           : 1.f; // cos(0)
@@ -227,7 +227,7 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
                                           : 0.f; // sin(0)
     // Warning : now gradient[2] = { cos(arg(grad)) , sin(arg(grad)) }
 
-    const float4 magnitude_lapl = native_sqrt(sqf(laplacian[0]) + sqf(laplacian[1]));
+    const float4 magnitude_lapl = dtcl_sqrt(sqf(laplacian[0]) + sqf(laplacian[1]));
     // Compute cos(arg(lapl)) = dx / hypot - force arg(lapl) = 0 if hypot == 0
     laplacian[0] = (magnitude_lapl != 0.f) ? laplacian[0] / magnitude_lapl
                                            : 1.f; // cos(0)

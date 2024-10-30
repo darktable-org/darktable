@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2016-2023 darktable developers.
+  Copyright (C) 2016-2024 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -191,7 +191,7 @@ struct point {int x,y;};
  */
 static void error(char * msg)
 {
-  dt_print(DT_DEBUG_ALWAYS,"LSD Error: %s\n",msg);
+  dt_print(DT_DEBUG_ALWAYS,"LSD Error: %s",msg);
   exit(EXIT_FAILURE);
 }
 
@@ -826,7 +826,12 @@ static image_double ll_angle( image_double in, double threshold,
   range_l_e = (struct coorlist **) calloc( (size_t) n_bins,
                                            sizeof(struct coorlist *) );
   if( list == NULL || range_l_s == NULL || range_l_e == NULL )
+  {
+    free(list);
+    free(range_l_s);
+    free(range_l_e);
     error("not enough memory.");
+  }
   for(i=0;i<n_bins;i++) range_l_s[i] = range_l_e[i] = NULL;
 
   /* 'undefined' on the down and right boundaries */

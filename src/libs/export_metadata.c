@@ -387,13 +387,13 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   d->taglist = (GList *)dt_exif_get_exiv2_taglist();
   GList *list = dt_util_str_to_glist("\1", metadata_presets);
   int32_t flags = 0;
-  if(list)
+  if(!g_list_is_empty(list))
   {
     char *flags_hexa = list->data;
     flags = strtol(flags_hexa, NULL, 16);
     list = g_list_remove(list, flags_hexa);
     g_free(flags_hexa);
-    if(list)
+    if(!g_list_is_empty(list))
     {
       for(GList *tags = list; tags; tags = g_list_next(tags))
       {
@@ -466,7 +466,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
       gtk_tree_model_get(GTK_TREE_MODEL(d->liststore), &iter, DT_LIB_EXPORT_METADATA_COL_XMP, &tagname,
           DT_LIB_EXPORT_METADATA_COL_FORMULA, &formula, -1);
       // metadata presets are stored into a single string with '\1' as a separator
-      newlist = dt_util_dstrcat(newlist,"\1%s\1%s", tagname, formula);
+      dt_util_str_cat(&newlist,"\1%s\1%s", tagname, formula);
       g_free(tagname);
       g_free(formula);
       valid = gtk_tree_model_iter_next (GTK_TREE_MODEL(d->liststore), &iter);
@@ -484,4 +484,3 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

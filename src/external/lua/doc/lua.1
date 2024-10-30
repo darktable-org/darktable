@@ -1,5 +1,5 @@
-.\" $Id: lua.man,v 1.14 2020/05/21 19:31:21 lhf Exp $
-.TH LUA 1 "$Date: 2020/05/21 19:31:21 $"
+.\" $Id: lua.man,v 1.14 2022/09/23 09:06:36 lhf Exp $
+.TH LUA 1 "$Date: 2022/09/23 09:06:36 $"
 .SH NAME
 lua \- Lua interpreter
 .SH SYNOPSIS
@@ -86,11 +86,17 @@ execute statement
 enter interactive mode after executing
 .IR script .
 .TP
-.BI \-l " name"
+.BI \-l " mod"
 require library
-.I name
+.I mod
 into global
-.IR name .
+.IR mod .
+.TP
+.BI \-l " g=mod"
+require library
+.I mod
+into global
+.IR g .
 .TP
 .B \-v
 show version information.

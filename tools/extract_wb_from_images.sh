@@ -6,6 +6,13 @@
 
 commandline="$0 $*"
 
+# check for exiftool
+_etpath="$(which exiftool)"
+if [ ! -f "$_etpath" -o ! -x "$_etpath" ] ; then
+    echo "error: 'exiftool' not found, please ensure it is installed and added to path."
+    exit 1
+fi
+
 # handle command line arguments
 option="$1"
 if [ "${option}" = "-h" ] || [ "${option}" = "--help" ]; then

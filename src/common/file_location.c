@@ -56,7 +56,7 @@ void dt_loc_init(const char *datadir, const char *moduledir, const char *localed
     // strip of the executable name from the path to retrieve the path alone
     application_directory[dirname_length] = '\0';
   }
-  dt_print(DT_DEBUG_DEV, "application_directory: %s\n", application_directory);
+  dt_print(DT_DEBUG_DEV, "application_directory: %s", application_directory);
 
   // set up absolute pathes based on their relative value
   dt_loc_init_datadir(application_directory, datadir);
@@ -211,7 +211,7 @@ void dt_check_opendir(const char* context, const char* directory)
 {
   if(!directory)
   {
-    dt_print(DT_DEBUG_ALWAYS, "directory for %s has not been set.\n", context);
+    dt_print(DT_DEBUG_ALWAYS, "directory for %s has not been set", context);
     exit(EXIT_FAILURE);
   }
 
@@ -222,23 +222,23 @@ void dt_check_opendir(const char* context, const char* directory)
   if(attribs != INVALID_FILE_ATTRIBUTES &&
       (attribs & FILE_ATTRIBUTE_DIRECTORY))
   {
-    dt_print(DT_DEBUG_DEV, "%s: %s\n", context, directory);
+    dt_print(DT_DEBUG_DEV, "%s: %s", context, directory);
   }
   else
   {
-    dt_print(DT_DEBUG_ALWAYS, "%s: directory '%s' fails to open.'\n", context, directory);
+    dt_print(DT_DEBUG_ALWAYS, "%s: directory '%s' fails to open", context, directory);
     exit(EXIT_FAILURE);
   }
 #else
   DIR* dir = opendir(directory);
   if(dir)
   {
-    dt_print(DT_DEBUG_DEV, "%s: %s\n", context, directory);
+    dt_print(DT_DEBUG_DEV, "%s: %s", context, directory);
     closedir(dir);
   }
   else
   {
-    dt_print(DT_DEBUG_ALWAYS, "opendir '%s' fails with: '%s'\n", directory, strerror(errno));
+    dt_print(DT_DEBUG_ALWAYS, "opendir '%s' fails with: '%s'", directory, strerror(errno));
     exit(EXIT_FAILURE);
   }
 #endif

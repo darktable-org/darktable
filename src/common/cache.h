@@ -30,7 +30,7 @@ typedef struct dt_cache_entry_t
   size_t cost;
   GList *link;
   dt_pthread_rwlock_t lock;
-  int _lock_demoting;
+  gboolean _lock_demoting;
   uint32_t key;
 }
 dt_cache_entry_t;

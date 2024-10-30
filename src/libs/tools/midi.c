@@ -375,7 +375,7 @@ static void _update_with_move(dt_midi_device_t *midi,
   midi->last_known[controller] = rotor_position;
   _midi_write(midi, midi->channel, 0xB, controller, rotor_position);
 
-  // dt_print(DT_DEBUG_INPUT, "Controller: Channel %d, controller %d, position: %d\n", midi->channel, controller, rotor_position);
+  // dt_print(DT_DEBUG_INPUT, "Controller: Channel %d, controller %d, position: %d", midi->channel, controller, rotor_position);
 }
 
 static gboolean _poll_devices(gpointer user_data)
@@ -410,7 +410,7 @@ static gboolean _poll_devices(gpointer user_data)
       switch(event_type)
       {
       case 0x9:  // note on
-        dt_print(DT_DEBUG_INPUT, "Note On: Channel %d, Data1 %d\n", midi->channel, event_data1);
+        dt_print(DT_DEBUG_INPUT, "Note On: Channel %d, Data1 %d", midi->channel, event_data1);
 
         layer_B = event_data1 > (midi->behringer == 'M' ? 23 : 54);
 
@@ -421,7 +421,7 @@ static gboolean _poll_devices(gpointer user_data)
         dt_shortcut_key_press(midi->id, event[i].timestamp, event_data1);
         break;
       case 0x8:  // note off
-        dt_print(DT_DEBUG_INPUT, "Note Off: Channel %d, Data1 %d\n", midi->channel, event_data1);
+        dt_print(DT_DEBUG_INPUT, "Note Off: Channel %d, Data1 %d", midi->channel, event_data1);
 
         layer_B = event_data1 > (midi->behringer == 'M' ? 23 : 54);
 
@@ -443,7 +443,7 @@ static gboolean _poll_devices(gpointer user_data)
              Pm_MessageData1(event[j].message) == event_data1)
           {
             event_data2 = Pm_MessageData2(event[j].message);
-            dt_print(DT_DEBUG_INPUT, "Controller: Channel %d, Data1 %d, Data2 %d\n", midi->channel, event_data1, event_data2);
+            dt_print(DT_DEBUG_INPUT, "Controller: Channel %d, Data1 %d, Data2 %d", midi->channel, event_data1, event_data2);
 
             accum += _calculate_move(midi, event_data1, event_data2);
             event[j].message = 0; // don't process again later
@@ -481,11 +481,11 @@ static void _midi_open_devices(dt_lib_module_t *self)
 {
   if(Pm_Initialize())
   {
-    dt_print(DT_DEBUG_ALWAYS, "[_midi_open_devices] ERROR initialising PortMidi\n");
+    dt_print(DT_DEBUG_ALWAYS, "[_midi_open_devices] ERROR initialising PortMidi");
     return;
   }
   else
-    dt_print(DT_DEBUG_INPUT, "[_midi_open_devices] PortMidi initialized\n");
+    dt_print(DT_DEBUG_INPUT, "[_midi_open_devices] PortMidi initialized");
 
   dt_input_device_t id = dt_register_input_driver(self, &_driver_definition);
 
@@ -497,7 +497,7 @@ static void _midi_open_devices(dt_lib_module_t *self)
   for(int i = 0; i < Pm_CountDevices(); i++)
   {
     const PmDeviceInfo *info = Pm_GetDeviceInfo(i);
-    dt_print(DT_DEBUG_INPUT, "[_midi_open_devices] found midi device '%s' via '%s'\n", info->name, info->interf);
+    dt_print(DT_DEBUG_INPUT, "[_midi_open_devices] found midi device '%s' via '%s'", info->name, info->interf);
 
     if(info->input && !strstr(info->name, "Midi Through Port"))
     {
@@ -546,19 +546,19 @@ static void _midi_open_devices(dt_lib_module_t *self)
 
       if(error < 0)
       {
-        dt_print(DT_DEBUG_ALWAYS, "[_midi_open_devices] ERROR opening midi device '%s' via '%s'\n",
+        dt_print(DT_DEBUG_ALWAYS, "[_midi_open_devices] ERROR opening midi device '%s' via '%s'",
                  info->name, info->interf);
         continue;
       }
       else
       {
-        dt_print(DT_DEBUG_INPUT, "[_midi_open_devices] opened midi device '%s' via '%s' as midi%d\n",
+        dt_print(DT_DEBUG_INPUT, "[_midi_open_devices] opened midi device '%s' via '%s' as midi%d",
                  info->name, info->interf, dev);
         if(!cur_dev || !*cur_dev)
           dt_control_log(_("%s opened as midi%d"), info->name, dev);
       }
 
-      dt_midi_device_t *midi = (dt_midi_device_t *)g_malloc0(sizeof(dt_midi_device_t));
+      dt_midi_device_t *midi = g_malloc0(sizeof(dt_midi_device_t));
 
       midi->id          = id + dev;
       midi->info        = info;

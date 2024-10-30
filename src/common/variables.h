@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,9 +22,7 @@
 #include <stdint.h>
 #include "common/image.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 typedef struct dt_variables_params_t
 {
@@ -45,6 +43,9 @@ typedef struct dt_variables_params_t
 
   /** do we need to escape variables text for markup ? */
   gboolean escape_markup;
+
+  /** do we need to use an HTML entity for new lines instead of a newline character? */
+  gboolean use_html_newline;
 
   /** img cache already controlled */
   void *img;
@@ -79,9 +80,7 @@ char *dt_variables_expand(dt_variables_params_t *params,
 /** reset sequence number */
 void dt_variables_reset_sequence(dt_variables_params_t *params);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

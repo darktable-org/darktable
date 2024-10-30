@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -86,21 +86,16 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_rlce_data_t *data = (dt_iop_rlce_data_t *)piece->data;
+  dt_iop_rlce_data_t *data = piece->data;
   const int ch = piece->colors;
 
   // PASS1: Get a luminance map of image...
-  float *luminance = (float *)malloc(sizeof(float) * ((size_t)roi_out->width * roi_out->height));
+  float *luminance = malloc(sizeof(float) * ((size_t)roi_out->width * roi_out->height));
 // double lsmax=0.0,lsmin=1.0;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, ivoid, roi_out) \
-  shared(luminance) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int j = 0; j < roi_out->height; j++)
   {
     float *in = (float *)ivoid + (size_t)j * roi_out->width * ch;
@@ -127,13 +122,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *const restrict dest_buf = dt_alloc_perthread_float(roi_out->width, &destbuf_size);
 
 // CLAHE
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, dest_buf, destbuf_size, ivoid, ovoid, rad, roi_in, \
-                      roi_out, slope) \
-  shared(luminance) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int j = 0; j < roi_out->height; j++)
   {
     int yMin = fmax(0, j - rad);
@@ -255,77 +244,75 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #undef BINS
 }
 
-static void radius_callback(GtkWidget *slider, gpointer user_data)
+static void radius_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)self->params;
+  dt_iop_rlce_params_t *p = self->params;
   p->radius = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void slope_callback(GtkWidget *slider, gpointer user_data)
+static void slope_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)self->params;
+  dt_iop_rlce_params_t *p = self->params;
   p->slope = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)p1;
-  dt_iop_rlce_data_t *d = (dt_iop_rlce_data_t *)piece->data;
+  dt_iop_rlce_data_t *d = piece->data;
 
   d->radius = p->radius;
   d->slope = p->slope;
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_rlce_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_rlce_gui_data_t *g = (dt_iop_rlce_gui_data_t *)self->gui_data;
-  dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)self->params;
+  dt_iop_rlce_gui_data_t *g = self->gui_data;
+  dt_iop_rlce_params_t *p = self->params;
   dt_bauhaus_slider_set(g->scale1, p->radius);
   dt_bauhaus_slider_set(g->scale2, p->slope);
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  module->params = calloc(1, sizeof(dt_iop_rlce_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_rlce_params_t));
-  module->default_enabled = FALSE;
-  module->params_size = sizeof(dt_iop_rlce_params_t);
-  module->gui_data = NULL;
-  *((dt_iop_rlce_params_t *)module->default_params) = (dt_iop_rlce_params_t){ 64, 1.25 };
+  self->params = calloc(1, sizeof(dt_iop_rlce_params_t));
+  self->default_params = calloc(1, sizeof(dt_iop_rlce_params_t));
+  self->default_enabled = FALSE;
+  self->params_size = sizeof(dt_iop_rlce_params_t);
+  self->gui_data = NULL;
+  *((dt_iop_rlce_params_t *)self->default_params) = (dt_iop_rlce_params_t){ 64, 1.25 };
 }
 
-void cleanup(dt_iop_module_t *module)
+void cleanup(dt_iop_module_t *self)
 {
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
+  free(self->params);
+  self->params = NULL;
+  free(self->default_params);
+  self->default_params = NULL;
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_rlce_gui_data_t *g = IOP_GUI_ALLOC(rlce);
-  dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)self->default_params;
+  dt_iop_rlce_params_t *p = self->default_params;
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 

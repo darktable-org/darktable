@@ -55,13 +55,15 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
 void dt_gaussian_blur_4c(dt_gaussian_t *g, const float *const in, float *const out);
 
 void dt_gaussian_free(dt_gaussian_t *g);
-
+void dt_gaussian_fast_blur(float *in, float *out, const int width, const int height, const float sigma, const float min, const float max, const int channels);
 
 #ifdef HAVE_OPENCL
 typedef struct dt_gaussian_cl_global_t
 {
   int kernel_gaussian_column_4c, kernel_gaussian_transpose_4c;
+  int kernel_gaussian_column_2c, kernel_gaussian_transpose_2c;
   int kernel_gaussian_column_1c, kernel_gaussian_transpose_1c;
+  int kernel_gaussian_9x9;
 } dt_gaussian_cl_global_t;
 
 
@@ -88,6 +90,8 @@ dt_gaussian_cl_t *dt_gaussian_init_cl(const int devid, const int width, const in
                                       const float *max, const float *min, const float sigma, const int order);
 
 cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out);
+cl_int dt_gaussian_blur_cl_buffer(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out);
+cl_int dt_gaussian_fast_blur_cl_buffer(const int devid, cl_mem dev_in, cl_mem dev_out, const int width, const int height, const float sigma, const int ch, const float min, const float max);
 
 void dt_gaussian_free_cl(dt_gaussian_cl_t *g);
 #endif

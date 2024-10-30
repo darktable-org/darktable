@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -73,6 +73,11 @@ void dt_image_cache_read_release(dt_image_cache_t *cache,
 void dt_image_cache_write_release(dt_image_cache_t *cache,
                                   dt_image_t *img,
                                   const dt_image_cache_write_mode_t mode);
+// As above with some additional information
+void dt_image_cache_write_release_info(dt_image_cache_t *cache,
+                                       dt_image_t *img,
+                                       const dt_image_cache_write_mode_t mode,
+                                       const char *info);
 
 // remove the image from the cache
 void dt_image_cache_remove(dt_image_cache_t *cache,

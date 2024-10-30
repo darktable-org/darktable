@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2023 darktable developers.
+    Copyright (C) 2017-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -54,11 +54,7 @@ static void _heal_sub(const float *const top_buffer, const float *const bottom_b
   // how many red or black pixels per line?  For consistency, we need the larger of the two, so round up
   const size_t res_stride = 4 * ((width + 1) / 2);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(top_buffer, bottom_buffer, red_buffer, black_buffer, height, width, res_stride) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t row = 0; row < height; row++)
   {
     const int parity = row & 1;
@@ -104,12 +100,7 @@ static void _heal_add(const float *const restrict red_buffer, const float *const
   // add one to ensure a padding pixel on the right
   const size_t res_stride = 4 * ((width + 1) / 2);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(red_buffer, black_buffer, second_buffer, height, width, res_stride) \
-  dt_omp_sharedconst(result_buffer) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t row = 0; row < height; row++)
   {
     const int parity = row & 1;
@@ -137,26 +128,13 @@ static void _heal_add(const float *const restrict red_buffer, const float *const
   }
 }
 
-// define a custom reduction operation to handle a 3-vector of floats
-// we can't return an array from a function, so wrap the array type in a struct
-typedef struct _aligned_pixel { dt_aligned_pixel_t v; } _aligned_pixel;
-#ifdef _OPENMP
-static inline _aligned_pixel _add_float4(_aligned_pixel acc, _aligned_pixel newval)
-{
-  for_each_channel(c) acc.v[c] += newval.v[c];
-  return acc;
-}
-#pragma omp declare reduction(vsum:_aligned_pixel:omp_out=_add_float4(omp_out,omp_in)) \
-  initializer(omp_priv = { { 0.0f, 0.0f, 0.0f, 0.0f } })
-#endif
-
 // Perform one iteration of Gauss-Seidel, and return the sum squared residual.
 static float _heal_laplace_iteration(float *const restrict active_pixels,
                                      const float *const restrict neighbor_pixels,
                                      const size_t height, const size_t width, const unsigned *const restrict runs,
                                      const size_t num_runs, const size_t start_parity, const float w)
 {
-  _aligned_pixel err = { { 0.f } };
+  dt_aligned_pixel_t err = { 0.f, 0.0f, 0.0f, 0.0f };
 
   // on each iteration, we adjust each cell of the current color by a weighted fraction of the difference between
   // it and the sum of the adjacenct cells of the opposite color.  Because we've split the cells by color, this
@@ -176,12 +154,7 @@ static float _heal_laplace_iteration(float *const restrict active_pixels,
   // left and right neighbors depend on which color the row starts with: if red, they are b(i)(j-1) and b(i)(j);
   // if black, they are b(i)(j) and b(i)(j+1).  All of the above holds when colors are swapped.
 #if !(defined(__apple_build_version__) && __apple_build_version__ < 11030000) //makes Xcode 11.3.1 compiler crash
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(active_pixels, neighbor_pixels, runs, num_runs, width, height, start_parity, w) \
-  schedule(static) \
-  reduction(vsum : err)
-#endif /* _OPENMP */
+    DT_OMP_FOR(reduction(+ : err[0:4]))
 #endif
     for(size_t i = 0; i < num_runs; i++)
     {
@@ -216,7 +189,7 @@ static float _heal_laplace_iteration(float *const restrict active_pixels,
                              - (neighbor_pixels[index - vert_offset + c] + neighbor_pixels[index + vert_offset + c]
                                 + left[c] + right[c]));
           active_pixels[index + c] -= diff[c];
-          err.v[c] += (diff[c] * diff[c]);
+          err[c] += (diff[c] * diff[c]);
         }
         continue;
       }
@@ -234,12 +207,12 @@ static float _heal_laplace_iteration(float *const restrict active_pixels,
                          - (neighbor_pixels[pixidx - vert_offset + c] + neighbor_pixels[pixidx + vert_offset + c]
                             + left[c] + right[c]));
           active_pixels[pixidx + c] -= diff[c];
-          err.v[c] += (diff[c] * diff[c]);
+          err[c] += (diff[c] * diff[c]);
           left[c] = right[c];
         }
       }
     }
-  return err.v[0] + err.v[1] + err.v[2];
+  return err[0] + err[1] + err[2];
 }
 
 // convert alternating pixels of one row of the opacity mask into a set of runs of opaque pixels of the
@@ -331,7 +304,7 @@ static void _heal_laplace_loop(float *const restrict red_pixels, float *const re
   unsigned *const restrict black_runs = dt_alloc_align_type(unsigned, subwidth * (height + 2));
   if(!red_runs || !black_runs)
   {
-    dt_print(DT_DEBUG_ALWAYS, "_heal_laplace_loop: error allocating memory for healing\n");
+    dt_print(DT_DEBUG_ALWAYS, "_heal_laplace_loop: error allocating memory for healing");
     goto cleanup;
   }
 
@@ -340,14 +313,10 @@ static void _heal_laplace_loop(float *const restrict red_pixels, float *const re
   size_t nmask_red = 0;
   size_t nmask_black = 0;
 
-#ifdef _OPENMP
-#pragma omp parallel sections
-#endif
+  DT_OMP_PRAGMA(parallel sections)
   {
     collect_runs(1, mask, width, height, subwidth, red_runs, &num_red, &nmask_red);
-    #ifdef _OPENMP
-    #pragma omp section
-    #endif
+    DT_OMP_PRAGMA(section)
     collect_runs(0, mask, width, height, subwidth, black_runs, &num_black, &nmask_black);
   }
   const size_t nmask = nmask_red + nmask_black;
@@ -387,7 +356,7 @@ void dt_heal(const float *const src_buffer, float *dest_buffer, const float *con
 {
   if(ch != 4)
   {
-    dt_print(DT_DEBUG_ALWAYS, "dt_heal: full-color image required\n");
+    dt_print(DT_DEBUG_ALWAYS, "dt_heal: full-color image required");
     return;
   }
   const size_t subwidth = 4 * ((width+1)/2);  // round up to be able to handle odd widths
@@ -395,7 +364,7 @@ void dt_heal(const float *const src_buffer, float *dest_buffer, const float *con
   float *const restrict black_buffer = dt_alloc_align_float(subwidth * (height + 2));
   if(red_buffer == NULL || black_buffer == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "dt_heal: error allocating memory for healing\n");
+    dt_print(DT_DEBUG_ALWAYS, "dt_heal: error allocating memory for healing");
     goto cleanup;
   }
 
@@ -416,7 +385,7 @@ cleanup:
 
 dt_heal_cl_global_t *dt_heal_init_cl_global()
 {
-  dt_heal_cl_global_t *g = (dt_heal_cl_global_t *)malloc(sizeof(dt_heal_cl_global_t));
+  dt_heal_cl_global_t *g = malloc(sizeof(dt_heal_cl_global_t));
 
   return g;
 }
@@ -431,7 +400,7 @@ void dt_heal_free_cl_global(dt_heal_cl_global_t *g)
 heal_params_cl_t *dt_heal_init_cl(const int devid)
 {
 
-  heal_params_cl_t *p = (heal_params_cl_t *)malloc(sizeof(heal_params_cl_t));
+  heal_params_cl_t *p = malloc(sizeof(heal_params_cl_t));
   if(!p) return NULL;
 
   p->global = darktable.opencl->heal;

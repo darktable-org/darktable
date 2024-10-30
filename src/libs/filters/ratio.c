@@ -117,11 +117,11 @@ static gchar *_ratio_print_func(const double value, const gboolean detailled)
   if(detailled)
   {
     if(value < 1.0)
-      return dt_util_dstrcat(txt, " %s", _("portrait"));
+      dt_util_str_cat(&txt, " %s", _("portrait"));
     else if(value > 1.0)
-      return dt_util_dstrcat(txt, " %s", _("landscape"));
+      dt_util_str_cat(&txt, " %s", _("landscape"));
     else if(value == 1.0)
-      return dt_util_dstrcat(txt, " %s", _("square"));
+      dt_util_str_cat(&txt, " %s", _("square"));
   }
   return txt;
 }
@@ -129,7 +129,7 @@ static gchar *_ratio_print_func(const double value, const gboolean detailled)
 static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
                                const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
-  _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
+  _widgets_range_t *special = g_malloc0(sizeof(_widgets_range_t));
 
   special->range_select
       = dtgtk_range_select_new(dt_collection_name_untranslated(prop), !top, DT_RANGE_TYPE_NUMERIC);

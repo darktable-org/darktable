@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@
 #endif
 #include <gdk/gdkkeysyms.h>
 
-DT_MODULE(3)
+DT_MODULE(4)
 
 typedef enum dt_metadata_pref_cols_t
 {
@@ -58,6 +58,12 @@ typedef struct dt_lib_metadata_t
 const char *name(dt_lib_module_t *self)
 {
   return _("metadata editor");
+}
+
+const char *description(dt_lib_module_t *self)
+{
+  return _("modify text metadata fields of\n"
+           "the currently selected images");
 }
 
 dt_view_type_flags_t views(dt_lib_module_t *self)
@@ -121,7 +127,7 @@ static void _fill_text_view(const uint32_t i,
                             const uint32_t count,
                             dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  dt_lib_metadata_t *d = self->data;
 
   g_object_set_data(G_OBJECT(d->textview[i]), "tv_multiple", GINT_TO_POINTER(count == 1));
   GtkTextBuffer *buffer = gtk_text_view_get_buffer(d->textview[i]);
@@ -132,13 +138,13 @@ static void _write_metadata(dt_lib_module_t *self);
 
 void gui_update(dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  dt_lib_metadata_t *d = self->data;
 
   GList *imgs = dt_act_on_get_images(FALSE, FALSE, FALSE);
 
   // first we want to make sure the list of images to act on has changed
   // this is not the case if mouse hover change but still stay in selection for ex.
-  if(imgs && d->last_act_on && g_list_length(imgs) == g_list_length(d->last_act_on))
+  if(imgs && d->last_act_on && dt_list_length_equal(imgs, d->last_act_on))
   {
     gboolean changed = FALSE;
     GList *l = d->last_act_on;
@@ -271,25 +277,25 @@ static void _metadata_set_list(const int i,
 
 static void _write_metadata(dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  dt_lib_metadata_t *d = self->data;
 
   GList *key_value = NULL;
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
     _metadata_set_list(i, &key_value, d);
 
-  if(key_value)
+  if(key_value && d->last_act_on)
   {
+    dt_gui_cursor_set_busy();
     dt_metadata_set_list(d->last_act_on, key_value, TRUE);
 
     for(GList *l = key_value; l; l = l->next->next) g_free(l->next->data);
     g_list_free(key_value);
 
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                  DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                  DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
 
     dt_image_synch_xmps(d->last_act_on);
+    dt_gui_cursor_clear_busy();
   }
 
   g_list_free(d->last_act_on);
@@ -309,7 +315,7 @@ static void _apply_button_clicked(GtkButton *button,
 static void _cancel_button_clicked(GtkButton *button,
                                    dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  dt_lib_metadata_t *d = self->data;
   g_list_free(d->last_act_on);
   d->last_act_on = NULL;
 
@@ -321,7 +327,7 @@ static gboolean _key_pressed(GtkWidget *textview,
                              GdkEventKey *event,
                              dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  dt_lib_metadata_t *d = self->data;
 
   switch(event->keyval)
   {
@@ -365,7 +371,7 @@ int position(const dt_lib_module_t *self)
 
 static void _update_layout(dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  dt_lib_metadata_t *d = self->data;
 
   GtkWidget *first = NULL, *previous = NULL;
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
@@ -400,7 +406,7 @@ static void _update_layout(dt_lib_module_t *self)
 
 void gui_reset(dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  dt_lib_metadata_t *d = self->data;
 
   ++darktable.gui->reset;
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
@@ -601,10 +607,10 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
       valid = gtk_tree_model_iter_next(model, &iter);
     }
     if(meta_signal)
-      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_CHANGED,
+      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED,
                               meta_remove
-                                    ? DT_METADATA_SIGNAL_HIDDEN
-                                    : DT_METADATA_SIGNAL_SHOWN);
+                              ? DT_METADATA_SIGNAL_HIDDEN
+                              : DT_METADATA_SIGNAL_SHOWN);
   }
   _update_layout(self);
   gtk_widget_destroy(dialog);
@@ -629,7 +635,7 @@ static void _populate_popup_multi(GtkTextView *textview,
                                   GtkWidget *popup,
                                   dt_lib_module_t *self)
 {
-  const dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  const dt_lib_metadata_t *d = self->data;
 
   // get grid line number
   const int i = _textview_index(textview);
@@ -660,12 +666,12 @@ static gboolean _metadata_reset(GtkWidget *label,
     else
       g_signal_emit_by_name(G_OBJECT(buffer), "changed"); // even if unchanged
   }
-  return FALSE;
+  return TRUE;
 }
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)calloc(1, sizeof(dt_lib_metadata_t));
+  dt_lib_metadata_t *d = calloc(1, sizeof(dt_lib_metadata_t));
   self->data = (void *)d;
 
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
@@ -681,6 +687,7 @@ void gui_init(dt_lib_module_t *self)
     d->label[i] = dt_ui_label_new(_(name));
     gtk_widget_set_halign(d->label[i], GTK_ALIGN_FILL);
     GtkWidget *labelev = gtk_event_box_new();
+    gtk_widget_set_tooltip_text(labelev, _("double-click to reset"));
     gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
     gtk_container_add(GTK_CONTAINER(labelev), d->label[i]);
     gtk_grid_attach(grid, labelev, 0, i, 1, 1);
@@ -742,14 +749,11 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, d->button_box, 0, DT_METADATA_NUMBER, 2, 1);
 
   /* lets signup for mouse over image change signals */
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
-                                  G_CALLBACK(_image_selection_changed_callback), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _image_selection_changed_callback, self);
 
   // and 2 other interesting signals:
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
-                                  G_CALLBACK(_image_selection_changed_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
-                                  G_CALLBACK(_collection_updated_callback), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_SELECTION_CHANGED, _image_selection_changed_callback, self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _collection_updated_callback, self);
 
   gtk_widget_show_all(self->widget);
   gtk_widget_set_no_show_all(self->widget, TRUE);
@@ -758,10 +762,10 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
+  dt_lib_metadata_t *d = self->data;
+  DT_CONTROL_SIGNAL_DISCONNECT(_image_selection_changed_callback, self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_image_selection_changed_callback, self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_collection_updated_callback, self);
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
@@ -780,10 +784,13 @@ static void add_rights_preset(dt_lib_module_t *self, char *name, char *string)
   const unsigned int params_size = strlen(string) + metadata_nb;
 
   char *params = calloc(sizeof(char), params_size);
-  memcpy(params + 4, string, params_size - metadata_nb);
-  dt_lib_presets_add(name, self->plugin_name, self->version(),
-                     params, params_size, TRUE, 0);
-  free(params);
+  if(params)
+  {
+    memcpy(params + 4, string, params_size - metadata_nb);
+    dt_lib_presets_add(name, self->plugin_name, self->version(),
+                       params, params_size, TRUE, 0);
+    free(params);
+  }
 }
 
 void init_presets(dt_lib_module_t *self)
@@ -862,12 +869,23 @@ void *legacy_params(dt_lib_module_t *self,
     *new_version = 3;
     return new_params;
   }
+  else if(old_version == 3)
+  {
+    const size_t new_params_size = old_params_size + 1;
+    char *new_params = calloc(sizeof(char), new_params_size);
+
+    memcpy(new_params, old_params, old_params_size);
+
+    *new_size = new_params_size;
+    *new_version = 4;
+    return new_params;
+  }
   return NULL;
 }
 
 void *get_params(dt_lib_module_t *self, int *size)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  dt_lib_metadata_t *d = self->data;
 
   *size = 0;
   char *metadata[DT_METADATA_NUMBER];
@@ -888,6 +906,8 @@ void *get_params(dt_lib_module_t *self, int *size)
   }
 
   char *params = (char *)malloc(*size);
+  if(!params)
+    return NULL;
 
   int pos = 0;
 
@@ -910,7 +930,7 @@ int set_params(dt_lib_module_t *self,
                const void *params, int size)
 {
   if(!params) return 1;
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  dt_lib_metadata_t *d = self->data;
 
   char *buf = (char *)params;
   char *metadata[DT_METADATA_NUMBER];
@@ -944,7 +964,7 @@ int set_params(dt_lib_module_t *self,
 
   g_list_free(key_value);
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   dt_image_synch_xmps(imgs);
   g_list_free(imgs);
   // force the ui refresh to update the info from preset

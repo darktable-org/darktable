@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2023 darktable developers.
+    Copyright (C) 2017-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -130,11 +130,7 @@ void eaw_decompose_and_synthesize(float *const restrict out,
   const int boundary = 2 * mult;
   const dt_aligned_pixel_t vsharpen = { -0.5f * sharpen, -sharpen, -sharpen, 0.0f };
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(accum, filter, height, in, vsharpen, threshold, boost, mult, boundary, out, width) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t rowid = 0; rowid < height; rowid++)
   {
     const size_t j = dwt_interleave_rows(rowid, height, mult);
@@ -215,11 +211,7 @@ void eaw_synthesize(float *const out, const float *const in, const float *const 
   const dt_aligned_pixel_t boostval = { boost[0], boost[1], boost[2], boost[3] };
   const size_t npixels = (size_t)width * height;
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(in, out, detail, npixels, thresh, boostval)       \
-  schedule(simd:static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   {
     accumulate(out + 4*k, detail + 4*k, thresh, boostval);
@@ -247,19 +239,6 @@ static inline float dn_weight(const float *c1, const float *c2, const float inv_
   return fast_mexp2f(MAX(0, dot * var - off2));
 }
 
-typedef struct _aligned_pixel {
-  dt_aligned_pixel_t v;
-} _aligned_pixel;
-#ifdef _OPENMP
-static inline _aligned_pixel add_float4(_aligned_pixel acc, _aligned_pixel newval)
-{
-  for_four_channels(c) acc.v[c] += newval.v[c];
-  return acc;
-}
-#pragma omp declare reduction(vsum:_aligned_pixel:omp_out=add_float4(omp_out,omp_in)) \
-  initializer(omp_priv = { .v = { 0.0f, 0.0f, 0.0f, 0.0f } })
-#endif
-
 #undef SUM_PIXEL_CONTRIBUTION
 #define SUM_PIXEL_CONTRIBUTION	 		                                                             \
   do                                                                                                         \
@@ -282,7 +261,7 @@ static inline _aligned_pixel add_float4(_aligned_pixel acc, _aligned_pixel newva
     sum[c] /= wgt[c];                                                   				     \
     pcoarse[c] = sum[c];                                                                                     \
     det[c] = (px[c] - sum[c]);									             \
-    sum_sq.v[c] += (det[c]*det[c]);					                                     \
+    sum_sq[c] += (det[c]*det[c]);					                                     \
   }                                                                       				     \
   copy_pixel_nontemporal(pdetail, det);                                                                      \
   px += 4;                                                                                                   \
@@ -304,15 +283,10 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
     };
   const int boundary = 2 * mult;
 
-  _aligned_pixel sum_sq = { .v = { 0.0f } };
+  dt_aligned_pixel_t sum_sq = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 #if !(defined(__apple_build_version__) && __apple_build_version__ < 11030000) //makes Xcode 11.3.1 compiler crash
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, boundary, out, width) \
-  reduction(vsum: sum_sq) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(reduction(+: sum_sq[0:4]))
 #endif
   for(int rowid = 0; rowid < height; rowid++)
   {
@@ -385,7 +359,7 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
     }
   }
   for_each_channel(c)
-    sum_squared[c] = sum_sq.v[c];
+    sum_squared[c] = sum_sq[c];
 }
 
 #undef SUM_PIXEL_CONTRIBUTION

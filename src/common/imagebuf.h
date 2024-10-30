@@ -23,9 +23,7 @@
 
 #include "develop/imageop.h" // for dt_iop_roi_t
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 // Allocate a 64-byte aligned buffer for an image of the given dimensions and channels.
 // The return value must be freed with dt_free_align().
@@ -73,11 +71,7 @@ static inline void dt_simd_memcpy(const float *const __restrict__ in,
   // Perform a parallel vectorized memcpy on 64-bits aligned
   // contiguous buffers. This is several times faster than the original memcpy
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(in, out, num_elem) \
-schedule(simd:static) aligned(in, out:64)
-#endif
+  DT_OMP_FOR_SIMD(aligned(in, out:64))
   for(size_t k = 0; k < num_elem; k++)
     out[k] = in[k];
 }
@@ -190,9 +184,7 @@ void dt_iop_image_copy_benchmark();
 // load configurable settings from darktablerc
 void dt_iop_image_copy_configure();
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

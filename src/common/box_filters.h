@@ -28,18 +28,26 @@
 // summation
 #define BOXFILTER_KAHAN_SUM 0x1000000
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+  
 // ch = number of channels per pixel.  Supported values: 1, 2, 4, and 4|Kahan
 void dt_box_mean(float *const buf, const size_t height, const size_t width, const uint32_t ch,
                  const size_t radius, const uint32_t interations);
 // run a single iteration horizonally over a single row.  Supported values for ch: 4|Kahan
 // 'scratch' must point at a buffer large enough to hold ch*width floats, or be NULL
-void dt_box_mean_horizontal(float *const restrict buf, const size_t width, const uint32_t ch, const size_t radius,
-                            float *const restrict scratch);
+void dt_box_mean_horizontal(float *const buf, const size_t width, const uint32_t ch, const size_t radius,
+                            float *const scratch);
 // run a single iteration vertically over the entire image.  Supported values for ch: 4|Kahan
 void dt_box_mean_vertical(float *const buf, const size_t height, const size_t width, const uint32_t ch, const size_t radius);
 
 void dt_box_min(float *const buf, const size_t height, const size_t width, const uint32_t ch, const size_t radius);
 void dt_box_max(float *const buf, const size_t height, const size_t width, const uint32_t ch, const size_t radius);
+
+#ifdef __cplusplus
+}
+#endif
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

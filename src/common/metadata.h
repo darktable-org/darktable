@@ -21,9 +21,7 @@
 #include "common/darktable.h"
 #include "gui/gtk.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 typedef enum dt_metadata_t
 {
@@ -38,6 +36,7 @@ typedef enum dt_metadata_t
   DT_METADATA_XMP_ACDSEE_NOTES,
   DT_METADATA_XMP_VERSION_NAME,
   DT_METADATA_XMP_IMAGE_ID,
+  DT_METADATA_XMP_PRESERVED_FILENAME,
   DT_METADATA_NUMBER
 }
 dt_metadata_t;
@@ -102,11 +101,11 @@ int dt_metadata_get_type(const uint32_t keyid);
 /** init metadata flags */
 void dt_metadata_init();
 
-/** Set metadata for a specific image, or all selected for id == -1. */
-void dt_metadata_set(int id, const char *key, const char *value, const gboolean undo_on); // duplicate.c, lua/image.c
+/** Set metadata for a specific image, or all selected for an invalid id */
+void dt_metadata_set(const dt_imgid_t imgid, const char *key, const char *value, const gboolean undo_on); // duplicate.c, lua/image.c
 
 /** Set imported metadata for a specific image */
-void dt_metadata_set_import(int id, const char *key, const char *value); // exif.cc, ligthroom.c
+void dt_metadata_set_import(const dt_imgid_t imgid, const char *key, const char *value); // exif.cc, ligthroom.c
 
 /** Set metadata (named keys) for a specific image, or all selected for id == -1. */
 /** list is a set of key, value */
@@ -117,23 +116,21 @@ void dt_metadata_set_list(const GList *imgs, GList *key_value, const gboolean un
     if clear_on TRUE the image metadata are cleared before attaching the new ones*/
 void dt_metadata_set_list_id(const GList *img, const GList *metadata, const gboolean clear_on,
                              const gboolean undo_on);
-/** Get metadata (named keys) for a specific image, or all selected for id == -1.
+/** Get metadata (named keys) for a specific image, or all selected for an invalid imgid
     For keys which return a string, the caller has to make sure that it
     is freed after usage. */
-GList *dt_metadata_get(int id, const char *key, uint32_t *count); // exif.cc, variables.c, facebook.c, flicker.c, gallery.c, googlephoto.c, latex.c, piwigo.c, watermark.c, metadata_view.c, libs/metadata.c, print_settings.c, lua/image.c
+GList *dt_metadata_get(const dt_imgid_t imgid, const char *key, uint32_t *count); // exif.cc, variables.c, facebook.c, flicker.c, gallery.c, googlephoto.c, latex.c, piwigo.c, watermark.c, metadata_view.c, libs/metadata.c, print_settings.c, lua/image.c
 
 /** Get metadata (id keys) for a specific image. The caller has to free the list after usage. */
-GList *dt_metadata_get_list_id(int id); // libs/image.c
+GList *dt_metadata_get_list_id(const dt_imgid_t imgid); // libs/image.c
 
-/** Remove metadata from specific images, or all selected for id == -1. */
+/** Remove metadata from images in list */
 void dt_metadata_clear(const GList *imgs, const gboolean undo_on); // libs/metadata.c
 
 /** check if the "Xmp.darktable.image_id" already exists */
 gboolean dt_metadata_already_imported(const char *filename, const char *datetime);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

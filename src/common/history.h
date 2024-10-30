@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -81,19 +81,23 @@ gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
                                             const gboolean merge,
                                             GList *ops,
                                             const gboolean copy_iop_order,
-                                            const gboolean copy_full);
+                                            const gboolean copy_full,
+                                            const gboolean sync);
 
 /** delete all history for the given image */
 void dt_history_delete_on_image(const dt_imgid_t imgid);
 
 /** as above but control whether to record undo/redo */
-void dt_history_delete_on_image_ext(const dt_imgid_t imgid, const gboolean undo);
+void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
+                                    const gboolean undo,
+                                    const gboolean init_history);
 
 /** copy history from imgid and pasts on selected images, merge or overwrite... */
 gboolean dt_history_copy(const dt_imgid_t imgid);
 gboolean dt_history_copy_parts(const dt_imgid_t imgid);
-gboolean dt_history_paste_on_list(const GList *list, gboolean undo);
-gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo);
+gboolean dt_history_paste(const dt_imgid_t imgid,
+                          const gboolean merge,
+                          const gboolean paste); // requires prior setup of copied history
 
 static inline gboolean dt_history_module_skip_copy(const int flags)
 {
@@ -101,7 +105,8 @@ static inline gboolean dt_history_module_skip_copy(const int flags)
 }
 
 /** load a dt file and applies to selected images */
-gboolean dt_history_load_and_apply_on_list(gchar *filename, const GList *list);
+gboolean dt_history_load_and_apply_on_list(gchar *filename,
+                                           const GList *list);
 
 /** load a dt file and applies to specified image */
 gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
@@ -109,19 +114,19 @@ gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
                                    const gboolean history_only);
 
 /** delete historystack of selected images */
-gboolean dt_history_delete_on_list(const GList *list, const gboolean undo);
+gboolean dt_history_delete(const dt_imgid_t imgid,
+                           const gboolean undo);
 
 /** compress history stack */
-int dt_history_compress_on_list(const GList *imgs);
-void dt_history_compress_on_image(const dt_imgid_t imgid);
+gboolean dt_history_compress(const dt_imgid_t imgid); // syncs to sidecar, says whether compress was successful
+void dt_history_compress_on_image(const dt_imgid_t imgid); // database only
 
 /** truncate history stack */
-void dt_history_truncate_on_image(const dt_imgid_t imgid, const int32_t history_end);
+void dt_history_truncate_on_image(const dt_imgid_t imgid,
+                                  const int32_t history_end);
 
 /* duplicate an history list */
 GList *dt_history_duplicate(GList *hist);
-
-
 
 typedef struct dt_history_item_t
 {
@@ -140,6 +145,7 @@ char *dt_history_get_name_label(const char *name,
 /** get list of history items for image */
 GList *dt_history_get_items(const dt_imgid_t imgid,
                             const gboolean enabled,
+                            const gboolean multi_priority_order,
                             const gboolean markup);
 
 /** get list of history items for image as a nice string */
@@ -172,10 +178,12 @@ gboolean dt_history_hash_is_mipmap_synced(const dt_imgid_t imgid);
 void dt_history_hash_set_mipmap(const dt_imgid_t imgid);
 
 /** write hash values to db */
-void dt_history_hash_write(const dt_imgid_t imgid, const dt_history_hash_values_t *const hash);
+void dt_history_hash_write(const dt_imgid_t imgid,
+                           const dt_history_hash_values_t *const hash);
 
 /** read hash values from db */
-void dt_history_hash_read(const dt_imgid_t imgid, dt_history_hash_values_t *hash);
+void dt_history_hash_read(const dt_imgid_t imgid,
+                          dt_history_hash_values_t *hash);
 
 /** release memory for hash values */
 void dt_history_hash_free(dt_history_hash_values_t *hash);

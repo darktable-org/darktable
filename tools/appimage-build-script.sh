@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 
-# This script builds darktable and then package it as an AppImage.
-# You are expected to call this script from the darktable root folder.
+# This script builds darktable and then packages it as an AppImage.
+# You are expected to call it from the darktable root folder.
+
+# This script contains the launch of the AppImage program, linuxdeploy.
+# By default, FUSE, which is required for the standard technology of
+# launching programs in AppImage format, does not work in Docker containers.
+# So if this script is running in a Docker container, the environment
+# variable APPIMAGE_EXTRACT_AND_RUN=1 must be set before calling it.
 
 # desktop-file-validate is an optional dependency for darktable build, but is required by linuxdeploy.
 if ! [ -x "$(command -v desktop-file-validate)" ]; then
@@ -19,7 +25,7 @@ export DESTDIR=../AppDir
 # This allows you to conveniently manage the enabling/disabling of various features.
 # For example, you can easily build darktable with support for ImageMagick instead of GraphicsMagick
 # by running this script with the parameters `--disable-graphicsmagick --enable-imagemagick`
-./build.sh --build-dir ./build/ --prefix /usr --build-type Release $@ --install -- "-DBINARY_PACKAGE_BUILD=1 -DDONT_USE_INTERNAL_LUA=Off -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON"
+./build.sh --build-dir ./build/ --prefix /usr --build-type Release $@ --install -- "-DBINARY_PACKAGE_BUILD=1 -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON -DDONT_USE_INTERNAL_LUA=Off -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON"
 
 # Sanitize path to executable in org.darktable.darktable.desktop (it will be handled by AppImage).
 # In fact, most desktop files do not include the full path to the program in the Exec field
@@ -40,7 +46,11 @@ export VERSION=$(sh ../tools/get_git_version_string.sh)
 export DISABLE_COPYRIGHT_FILES_DEPLOYMENT=1
 
 # Instruct LDAI (LinuxDeploy AppImage plugin) to embed AppImage update information
-export LDAI_UPDATE_INFORMATION="gh-releases-zsync|darktable-org|darktable|nightly|Darktable-*-x86_64.AppImage.zsync"
+if [ "$DARKTABLE_APPIMAGE_UPDATE" == "release" ]; then
+  export LDAI_UPDATE_INFORMATION="gh-releases-zsync|darktable-org|darktable|latest|Darktable-*-x86_64.AppImage.zsync"
+elif [ "$DARKTABLE_APPIMAGE_UPDATE" != "no" ]; then
+  export LDAI_UPDATE_INFORMATION="gh-releases-zsync|darktable-org|darktable|nightly|Darktable-*-x86_64.AppImage.zsync"
+fi
 
 # '--deploy-deps-only' are needed to tell linuxdeploy where to collect dependencies
 # of modules that are loaded via dlopen (and therefore cannot be found automatically)

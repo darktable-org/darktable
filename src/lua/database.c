@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2013-2021 darktable developers.
+   Copyright (C) 2013-2024 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -40,6 +40,25 @@ int dt_lua_duplicate_image(lua_State *L)
   imgid = dt_image_duplicate(imgid);
   luaA_push(L, dt_lua_image_t, &imgid);
   return 1;
+}
+
+int dt_lua_duplicate_image_with_history(lua_State *L)
+{
+  dt_imgid_t imgid;
+  dt_imgid_t newid;
+  luaA_to(L, dt_lua_image_t, &imgid, -1);
+  newid = dt_image_duplicate(imgid);
+  if(!dt_is_valid_imgid(newid))
+  {
+    luaA_push(L, dt_lua_image_t, &imgid);
+    return 1;
+  }
+  else
+  {
+    dt_history_copy_and_paste_on_image(imgid, newid, FALSE, NULL, TRUE, TRUE, TRUE);
+    luaA_push(L, dt_lua_image_t, &newid);
+    return 1;
+  }
 }
 
 int dt_lua_delete_image(lua_State *L)
@@ -108,7 +127,7 @@ int dt_lua_copy_image(lua_State *L)
 static int import_images(lua_State *L)
 {
   char *full_name = g_realpath(luaL_checkstring(L, -1));
-  int result;
+  dt_filmid_t result;
 
   if(!full_name || !g_file_test(full_name, G_FILE_TEST_EXISTS))
   {
@@ -118,7 +137,7 @@ static int import_images(lua_State *L)
   else if(g_file_test(full_name, G_FILE_TEST_IS_DIR))
   {
     result = dt_film_import(full_name);
-    if(result == 0)
+    if(!dt_is_valid_filmid(result))
     {
       g_free(full_name);
       return luaL_error(L, "error while importing");
@@ -141,7 +160,7 @@ static int import_images(lua_State *L)
     }
     result = dt_film_new(&new_film, final_path);
     g_free(final_path);
-    if(result == 0)
+    if(!dt_is_valid_filmid(result))
     {
       if(dt_film_is_empty(new_film.id)) dt_film_remove(new_film.id);
       dt_film_cleanup(&new_film);
@@ -152,7 +171,7 @@ static int import_images(lua_State *L)
     result = dt_image_import_lua(new_film.id, full_name, TRUE);
     if(dt_film_is_empty(new_film.id)) dt_film_remove(new_film.id);
     dt_film_cleanup(&new_film);
-    if(result == 0)
+    if(!dt_is_valid_filmid(result))
     {
       g_free(full_name);
       return luaL_error(L, "error while importing");
@@ -161,7 +180,7 @@ static int import_images(lua_State *L)
     // force refresh of thumbtable view
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                                g_list_prepend(NULL, GINT_TO_POINTER(result)));
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_FILMROLLS_CHANGED);
     dt_control_queue_redraw_center();
 
   }
@@ -307,8 +326,7 @@ int dt_lua_init_database(lua_State *L)
   lua_pushcfunction(L, dt_lua_event_multiinstance_destroy);
   lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
   dt_lua_event_add(L, "post-import-film");
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, G_CALLBACK(on_film_imported),
-                            NULL);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_FILMROLLS_IMPORTED, on_film_imported, NULL);
 
   lua_pushcfunction(L, dt_lua_event_multiinstance_register);
   lua_pushcfunction(L, dt_lua_event_multiinstance_destroy);

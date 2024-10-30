@@ -234,10 +234,8 @@ for filename in sys.argv[1:]:
         eprint('WARNING: {0} has finetuning over GM axis! Data is skewed!'.format(filename))
 
     # adjust the maker/model we found with the map we generated before
-    if exif_name_map[maker,model]:
-        enm = exif_name_map[maker,model]
-        maker = enm[0]
-        model = enm[1]
+    if exif_name_map.get(maker,model) is not None:
+        maker,model = exif_name_map[maker,model]
     else:
         eprint("WARNING: Couldn't find model in cameras.xml ('{0}', '{1}')".format(maker, model))
 

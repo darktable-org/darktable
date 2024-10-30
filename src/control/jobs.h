@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include <glib.h>
 #include <inttypes.h>
 #include <stddef.h>
+#include <views/view.h>
 
 #define DT_CONTROL_DESCRIPTION_LEN 256
 // reserved workers
@@ -47,7 +48,8 @@ typedef enum dt_job_queue_t
   DT_JOB_QUEUE_USER_BG = 2,     // imports, ...
   DT_JOB_QUEUE_USER_EXPORT = 3, // exports. only one of these jobs will ever be scheduled at a time
   DT_JOB_QUEUE_SYSTEM_BG = 4,   // some lua stuff that may not be pushed out of the queue, ...
-  DT_JOB_QUEUE_MAX = 5
+  DT_JOB_QUEUE_MAX = 5,
+  DT_JOB_QUEUE_SYNCHRONOUS = 1000 // don't queue, run immediately and don't return until done
 } dt_job_queue_t;
 
 typedef struct _dt_job_t dt_job_t;
@@ -87,6 +89,10 @@ void dt_control_jobs_cleanup(struct dt_control_t *control);
 
 gboolean dt_control_add_job(struct dt_control_t *control, dt_job_queue_t queue_id, dt_job_t *job);
 gboolean dt_control_add_job_res(struct dt_control_t *s, dt_job_t *job, int32_t res);
+
+dt_view_type_flags_t dt_control_job_get_view_creator(const dt_job_t *job);
+gboolean dt_control_job_is_synchronous(const dt_job_t *job);
+void dt_control_job_set_synchronous(dt_job_t *job, gboolean sync);
 
 int32_t dt_control_get_threadid();
 

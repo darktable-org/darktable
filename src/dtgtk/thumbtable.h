@@ -72,6 +72,7 @@ typedef struct dt_thumbtable_t
   int prefs_size;              // size value to determine overlays mode and css class
   int view_width, view_height; // last main widget size
   GdkRectangle thumbs_area;    // coordinate of all the currently loaded thumbs area
+  PangoRectangle manual_button;// coordinates of the click "here" text
 
   int center_offset; // in filemanager, we can have a gap, esp. for zoom==1, we need to center everything
 
@@ -104,6 +105,10 @@ typedef struct dt_thumbtable_t
   // scroll timeout values
   guint scroll_timeout_id;
   float scroll_value;
+
+  // darkroom selection from filmstrip (support for single & double click)
+  guint sel_single_cb;
+  dt_imgid_t to_selid;
 } dt_thumbtable_t;
 
 dt_thumbtable_t *dt_thumbtable_new();
@@ -126,7 +131,7 @@ gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table, dt_imgid_
 gboolean dt_thumbtable_check_imgid_visibility(dt_thumbtable_t *table, dt_imgid_t imgid);
 
 // drag & drop receive function - handles dropping of files in the center view (files are added to the library)
-void dt_thumbtable_event_dnd_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y, GtkSelectionData *selection_data, guint target_type, guint time, gpointer user_data);
+void dt_thumbtable_event_dnd_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y, GtkSelectionData *selection_data, guint target_type, guint time, dt_thumbtable_t *table);
 
 // move by key actions.
 // this key accels are not managed here but inside view
@@ -148,4 +153,3 @@ void dt_thumbtable_set_overlays_block_timeout(dt_thumbtable_t *table, const int 
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

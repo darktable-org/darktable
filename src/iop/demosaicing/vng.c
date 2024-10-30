@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,12 +29,7 @@ static void lin_interpolate(
   const int colors = (filters == 9) ? 3 : 4;
 
 // border interpolate
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(colors, filters, in, roi_in, roi_out, xtrans) \
-  shared(out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int row = 0; row < roi_out->height; row++)
     for(int col = 0; col < roi_out->width; col++)
     {
@@ -106,12 +101,7 @@ static void lin_interpolate(
       *ip = f;
     }
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(colors, in, lookup, roi_in, roi_out, size) \
-  shared(out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int row = 1; row < roi_out->height - 1; row++)
   {
     float *buf = out + 4 * roi_out->width * row + 4;
@@ -206,7 +196,7 @@ static void vng_interpolate(
   char *buffer = (char *)dt_alloc_aligned(sizeof(**brow) * width * 3 + sizeof(*ip) * prow * pcol * 320);
   if(!buffer)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[demosaic] not able to allocate VNG buffer\n");
+    dt_print(DT_DEBUG_ALWAYS, "[demosaic] not able to allocate VNG buffer");
     return;
   }
   for(int row = 0; row < 3; row++) brow[row] = (float(*)[4])buffer + row * width;
@@ -254,13 +244,7 @@ static void vng_interpolate(
 
   for(int row = 2; row < height - 2; row++) /* Do VNG interpolation */
   {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(colors, pcol, prow, roi_in, width, xtrans) \
-    shared(row, code, brow, out, filters4) \
-    private(ip) \
-    schedule(static)
-#endif
+    DT_OMP_FOR(private(ip))
     for(int col = 2; col < width - 2; col++)
     {
       int g;
@@ -323,29 +307,27 @@ static void vng_interpolate(
   dt_free_align(buffer);
 
   if(filters != 9 && !FILTERS_ARE_4BAYER(filters)) // x-trans or CYGM/RGBE
+  {
 // for Bayer mix the two greens to make VNG4
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(height, width) \
-    shared(out) \
-    schedule(static)
-#endif
-    for(int i = 0; i < height * width; i++) out[i * 4 + 1] = (out[i * 4 + 1] + out[i * 4 + 3]) / 2.0f;
+    DT_OMP_FOR()
+    for(int i = 0; i < height * width; i++)
+      out[i * 4 + 1] = (out[i * 4 + 1] + out[i * 4 + 3]) / 2.0f;
+  }
 }
 
 #ifdef HAVE_OPENCL
-static int process_vng_cl(
-        struct dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        cl_mem dev_in,
-        cl_mem dev_out,
-        const dt_iop_roi_t *const roi_in,
-        const dt_iop_roi_t *const roi_out,
-        const gboolean smooth,
-        const gboolean only_vng_linear)
+static int process_vng_cl(dt_iop_module_t *self,
+                          dt_dev_pixelpipe_iop_t *piece,
+                          cl_mem dev_in,
+                          cl_mem dev_out,
+                          const dt_iop_roi_t *const roi_in,
+                          const dt_iop_roi_t *const roi_out,
+                          const gboolean smooth,
+                          const gboolean only_vng_linear,
+                          const gboolean write_scharr)
 {
-  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
-  dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
+  dt_iop_demosaic_data_t *data = piece->data;
+  dt_iop_demosaic_global_data_t *gd = self->global_data;
   const dt_image_t *img = &self->dev->image_storage;
 
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
@@ -364,10 +346,6 @@ static int process_vng_cl(
   const int prow = (filters4 == 9u) ? 6 : 8;
   const int pcol = (filters4 == 9u) ? 6 : 2;
   const int devid = piece->pipe->devid;
-
-  const float processed_maximum[4]
-      = { piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1],
-          piece->pipe->dsc.processed_maximum[2], 1.0f };
 
   const int qual_flags = demosaic_qual_flags(piece, img, roi_out);
 
@@ -552,15 +530,12 @@ static int process_vng_cl(
     dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
     if(dev_tmp == NULL) goto finish;
 
-    {
-      // manage borders for linear interpolation part
-      const int border = 1;
-
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
+    // manage borders for linear interpolation part
+    int border = 1;
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
         CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(border), CLARG(roi_in->x), CLARG(roi_in->y),
         CLARG(filters4), CLARG(dev_xtrans));
-      if(err != CL_SUCCESS) goto finish;
-    }
+    if(err != CL_SUCCESS) goto finish;
 
     {
       // do linear interpolation
@@ -609,21 +584,18 @@ static int process_vng_cl(
       size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
       size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
       dt_opencl_set_kernel_args(devid, gd->kernel_vng_interpolate, 0, CLARG(dev_tmp), CLARG(dev_aux),
-        CLARG(width), CLARG(height), CLARG(roi_in->x), CLARG(roi_in->y), CLARG(filters4), CLARRAY(4, processed_maximum),
+        CLARG(width), CLARG(height), CLARG(roi_in->x), CLARG(roi_in->y), CLARG(filters4),
         CLARG(dev_xtrans), CLARG(dev_ips), CLARG(dev_code), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 4) * (locopt.sizey + 4)));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_interpolate, sizes, local);
       if(err != CL_SUCCESS) goto finish;
     }
 
-    {
-      // manage borders
-      const int border = 2;
-
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
+    // manage borders
+    border = 2;
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
         CLARG(dev_in), CLARG(dev_aux), CLARG(width), CLARG(height), CLARG(border), CLARG(roi_in->x), CLARG(roi_in->y),
         CLARG(filters4), CLARG(dev_xtrans));
-      if(err != CL_SUCCESS) goto finish;
-    }
+    if(err != CL_SUCCESS) goto finish;
 
     if(filters4 != 9)
     {
@@ -638,14 +610,16 @@ static int process_vng_cl(
       if(err != CL_SUCCESS) goto finish;
     }
 
-    if(piece->pipe->want_detail_mask && data->demosaicing_method == DT_IOP_DEMOSAIC_VNG)
+    if(piece->pipe->want_detail_mask && !(data->demosaicing_method & DT_DEMOSAIC_DUAL) && write_scharr)
+    {
       err = dt_dev_write_scharr_mask_cl(piece, dev_aux, roi_in, TRUE);
-    if(err != CL_SUCCESS) goto finish;
+      if(err != CL_SUCCESS) goto finish;
+    }
 
     if(scaled)
     {
       dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi",
-        piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "\n");
+        piece->pipe, self, piece->pipe->devid, roi_in, roi_out);
       // scale temp buffer to output buffer
       err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_aux, roi_out, roi_in);
       if(err != CL_SUCCESS) goto finish;
@@ -654,16 +628,14 @@ static int process_vng_cl(
   else
   {
     const int zero = 0;
-    const int width = roi_out->width;
-    const int height = roi_out->height;
     // sample half-size or third-size image
     if(piece->pipe->dsc.filters == 9u)
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_third_size, width, height,
-        CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(roi_in->x), CLARG(roi_in->y),
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_third_size, roi_out->width, roi_out->height,
+        CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height), CLARG(roi_in->x), CLARG(roi_in->y),
         CLARG(roi_in->width), CLARG(roi_in->height), CLARG(roi_out->scale), CLARG(dev_xtrans));
     else
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_half_size, width, height,
-        CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(zero), CLARG(zero), CLARG(roi_in->width),
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_half_size, roi_out->width, roi_out->height,
+        CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height), CLARG(zero), CLARG(zero), CLARG(roi_in->width),
         CLARG(roi_in->height), CLARG(roi_out->scale), CLARG(piece->pipe->dsc.filters));
     if(err != CL_SUCCESS) goto finish;
   }
@@ -683,7 +655,7 @@ finish:
     err = color_smoothing_cl(self, piece, dev_out, dev_out, roi_out, data->color_smoothing);
 
   if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] vng problem '%s'\n", cl_errstr(err));
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] vng problem '%s'", cl_errstr(err));
   return err;
 }
 

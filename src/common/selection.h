@@ -51,13 +51,14 @@ void dt_selection_select_list(struct dt_selection_t *selection, GList *list);
 /** selects a set of images from a list. the list is unaltered */
 const struct dt_collection_t *dt_selection_get_collection(struct dt_selection_t *selection);
 /** get the list of selected images */
-GList *dt_selection_get_list(struct dt_selection_t *selection, const gboolean only_visible,
+GList *dt_selection_get_list(struct dt_selection_t *selection,
+                             const gboolean only_visible,
                              const gboolean ordering);
-gchar *dt_selection_get_list_query(struct dt_selection_t *selection, const gboolean only_visible,
+gchar *dt_selection_get_list_query(struct dt_selection_t *selection,
+                                   const gboolean only_visible,
                                    const gboolean ordering);
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

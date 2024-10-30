@@ -33,18 +33,15 @@
 #include "common/datetime.h"
 #include "paint.h"
 #include <gtk/gtk.h>
+
 G_BEGIN_DECLS
-#define DTGTK_RANGE_SELECT(obj)                                                                                   \
-  G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_range_select_get_type(), GtkDarktableRangeSelect)
-#define DTGTK_RANGE_SELECT_CLASS(klass)                                                                           \
-  G_TYPE_CHECK_CLASS_CAST(klass, dtgtk_range_select_get_type(), GtkDarktableRangeSelectClass)
-#define DTGTK_IS_RANGE_SELECT(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_range_select_get_type())
-#define DTGTK_IS_RANGE_SELECT_CLASS(klass) G_TYPE_CHECK_CLASS_TYPE(obj, dtgtk_range_select_get_type())
+
+#define DTGTK_TYPE_RANGE_SELECT dtgtk_range_select_get_type()
+G_DECLARE_FINAL_TYPE(GtkDarktableRangeSelect, dtgtk_range_select, DTGTK, RANGE_SELECT, GtkEventBox)
 
 typedef double (*DTGTKTranslateValueFunc)(const double value);
 typedef gchar *(*DTGTKPrintValueFunc)(const double value, const gboolean detailled);
 typedef gboolean (*DTGTKDecodeValueFunc)(const gchar *text, double *value);
-typedef struct _GtkDarktableRangeSelect GtkDarktableRangeSelect;
 typedef gchar *(*DTGTKCurrentTextFunc)(GtkDarktableRangeSelect *range);
 
 typedef enum dt_range_bounds_t
@@ -127,13 +124,6 @@ struct _GtkDarktableRangeSelect
   struct _range_date_popup *date_popup;
 };
 
-typedef struct _GtkDarktableRangeSelectClass
-{
-  GtkEventBoxClass parent_class;
-} GtkDarktableRangeSelectClass;
-
-GType dtgtk_range_select_get_type(void);
-
 // instantiate a new range selection widget
 GtkWidget *dtgtk_range_select_new(const gchar *property, gboolean show_entries, const dt_range_type_t type);
 
@@ -186,6 +176,7 @@ void dtgtk_range_select_redraw(GtkDarktableRangeSelect *range);
 
 // get a human readable text for bounds
 gchar *dtgtk_range_select_get_bounds_pretty(GtkDarktableRangeSelect *range);
+
 G_END_DECLS
 
 // clang-format off

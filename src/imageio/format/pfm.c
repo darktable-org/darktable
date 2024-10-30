@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     while(off-- > 0) fprintf(f, "0");
     fprintf(f, "\n");
     void *buf_line = dt_alloc_align_float((size_t)3 * pfm->width);
-    for(int j = 0; j < pfm->height; j++)
+    for(int j = 0; buf_line && j < pfm->height; j++)
     {
       // NOTE: pfm has rows in reverse order
       const int row_in = pfm->height - 1 - j;
@@ -80,7 +80,7 @@ size_t params_size(dt_imageio_module_format_t *self)
 
 void *get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_module_data_t *d = (dt_imageio_module_data_t *)calloc(1, sizeof(dt_imageio_module_data_t));
+  dt_imageio_module_data_t *d = calloc(1, sizeof(dt_imageio_module_data_t));
   return d;
 }
 

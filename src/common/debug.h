@@ -85,7 +85,7 @@
 #define DT_DEBUG_SQLITE3_EXEC(a, b, c, d, e)                                                                      \
   do                                                                                                              \
   {                                                                                                               \
-    dt_print(DT_DEBUG_SQL, "[sql] %s:%d, function %s(): exec \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, (b));   \
+    dt_print(DT_DEBUG_SQL, "[sql] %s:%d, function %s(): exec \"%s\"", __FILE__, __LINE__, __FUNCTION__, (b));     \
     __DT_DEBUG_ASSERT_WITH_QUERY__(sqlite3_exec(a, b, c, d, e), (b));                                             \
     __DT_DEBUG_SQL_QUERY__(b)                                                                                     \
   } while(0)
@@ -93,7 +93,7 @@
 #define DT_DEBUG_SQLITE3_PREPARE_V2(a, b, c, d, e)                                                                \
   do                                                                                                              \
   {                                                                                                               \
-    dt_print(DT_DEBUG_SQL, "[sql] %s:%d, function %s(): prepare \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, (b));\
+    dt_print(DT_DEBUG_SQL, "[sql] %s:%d, function %s(): prepare \"%s\"", __FILE__, __LINE__, __FUNCTION__, (b));  \
     __DT_DEBUG_ASSERT_WITH_QUERY__(sqlite3_prepare_v2(a, b, c, d, e), (b));                                       \
     __DT_DEBUG_SQL_QUERY__(b)                                                                                     \
   } while(0)

@@ -945,6 +945,153 @@ blendop_RAW(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only 
   write_imagef(out, (int2)(x, y), o);
 }
 
+__kernel void
+blendop_RAW4(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask, __write_only image2d_t out, const int width, const int height,
+            const int blend_mode, const float blend_parameter, const int2 offs, const int mask_display)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 a, b, o;
+
+  if((blend_mode & DEVELOP_BLEND_REVERSE) == DEVELOP_BLEND_REVERSE)
+  {
+    b = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
+    a = read_imagef(in_b, sampleri, (int2)(x, y));
+  }
+  else
+  {
+    a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
+    b = read_imagef(in_b, sampleri, (int2)(x, y));
+  }
+
+  float4 opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
+
+  const float4 min = 0.0f;
+  const float4 max = 1.0f;
+  const float4 lmin = 0.0f;
+  const float4 lmax = 1.0f;        /* max + fabs(min) */
+  const float4 halfmax = 0.5f;     /* lmax / 2.0f */
+  const float4 doublemax = 2.0f;   /* lmax * 2.0f */
+  const float4 opacity2 = opacity*opacity;
+
+  float4 la = clamp(a + fabs(min), lmin, lmax);
+  float4 lb = clamp(b + fabs(min), lmin, lmax);
+
+
+  /* select the blend operator */
+  switch(blend_mode & DEVELOP_BLEND_MODE_MASK)
+  {
+    case DEVELOP_BLEND_LIGHTEN:
+      o = clamp(a * (1.0f - opacity) + fmax(a, b) * opacity, min, max);
+      break;
+
+    case DEVELOP_BLEND_DARKEN:
+      o = clamp(a * (1.0f - opacity) + fmin(a, b) * opacity, min, max);
+      break;
+
+    case DEVELOP_BLEND_MULTIPLY:
+      o = clamp(a * (1.0f - opacity) + a * b * opacity, min, max);
+      break;
+
+    case DEVELOP_BLEND_AVERAGE:
+      o = clamp(a * (1.0f - opacity) + (a + b)/2.0f * opacity, min, max);
+      break;
+
+    case DEVELOP_BLEND_ADD:
+      o =  clamp(a * (1.0f - opacity) +  (a + b) * opacity, min, max);
+      break;
+
+    case DEVELOP_BLEND_SUBTRACT:
+      o =  clamp(a * (1.0f - opacity) +  (b + a - fabs(min + max)) * opacity, min, max);
+      break;
+
+    case DEVELOP_BLEND_DIFFERENCE:
+    case DEVELOP_BLEND_DIFFERENCE2:
+      o = clamp(la * (1.0f - opacity) + fabs(la - lb) * opacity, lmin, lmax) - fabs(min);
+      break;
+
+    case DEVELOP_BLEND_SCREEN:
+      o = clamp(la * (1.0f - opacity) + (lmax - (lmax - la) * (lmax - lb)) * opacity, lmin, lmax) - fabs(min);
+      break;
+
+    case DEVELOP_BLEND_OVERLAY:
+      o = clamp(la * (1.0f - opacity2) + (la > halfmax ? lmax - (lmax - doublemax * (la - halfmax)) * (lmax-lb) : doublemax * la * lb) * opacity2, lmin, lmax) - fabs(min);
+      break;
+
+    case DEVELOP_BLEND_SOFTLIGHT:
+      o = clamp(la * (1.0f - opacity2) + (lb > halfmax ? lmax - (lmax - la)  * (lmax - (lb - halfmax)) : la * (lb + halfmax)) * opacity2, lmin, lmax) - fabs(min);
+      break;
+
+    case DEVELOP_BLEND_HARDLIGHT:
+      o = clamp(la * (1.0f - opacity2) + (lb > halfmax ? lmax - (lmax - doublemax * (la - halfmax)) * (lmax-lb) : doublemax * la * lb) * opacity2, lmin, lmax) - fabs(min);
+      break;
+
+    case DEVELOP_BLEND_VIVIDLIGHT:
+      o = clamp(la * (1.0f - opacity2) + (lb > halfmax ? la / (lb >= lmax ? lmax : (doublemax * (lmax - lb))) : (lb <= lmin ? lmin : lmax - (lmax - la)/(doublemax * lb))) * opacity2, lmin, lmax) - fabs(min);
+      break;
+
+    case DEVELOP_BLEND_LINEARLIGHT:
+      o = clamp(la * (1.0f - opacity2) + (la + doublemax * lb - lmax) * opacity2, lmin, lmax) - fabs(min);
+      break;
+
+    case DEVELOP_BLEND_PINLIGHT:
+      o = clamp(la * (1.0f - opacity2) + (lb > halfmax ? fmax(la, doublemax * (lb - halfmax)) : fmin(la, doublemax * lb)) * opacity2, lmin, lmax) - fabs(min);
+      break;
+
+    case DEVELOP_BLEND_LIGHTNESS:
+      o = clamp(a, min, max);   // Noop for Raw
+      break;
+
+    case DEVELOP_BLEND_CHROMA:
+      o = clamp(a, min, max);   // Noop for Raw
+      break;
+
+    case DEVELOP_BLEND_HUE:
+      o = clamp(a, min, max);   // Noop for Raw
+      break;
+
+    case DEVELOP_BLEND_COLOR:
+      o = clamp(a, min, max);   // Noop for Raw
+      break;
+
+    case DEVELOP_BLEND_COLORADJUST:
+      o = clamp(a, min, max);   // Noop for Raw
+      break;
+
+    case DEVELOP_BLEND_BOUNDED:
+      o =  clamp((a * (1.0f - opacity)) + (b * opacity), min, max);
+      break;
+
+    case DEVELOP_BLEND_LAB_LIGHTNESS:
+    case DEVELOP_BLEND_LAB_COLOR:
+    case DEVELOP_BLEND_LAB_L:
+    case DEVELOP_BLEND_LAB_A:
+    case DEVELOP_BLEND_LAB_B:
+      o = a;                            // Noop for Raw (without clamping)
+      break;
+
+    case DEVELOP_BLEND_HSV_LIGHTNESS:
+    case DEVELOP_BLEND_HSV_COLOR:
+    case DEVELOP_BLEND_RGB_R:
+    case DEVELOP_BLEND_RGB_G:
+    case DEVELOP_BLEND_RGB_B:
+      o = a;                            // Noop for Raw (without clamping)
+      break;
+
+    /* fallback to normal blend */
+    case DEVELOP_BLEND_NORMAL2:
+    default:
+      o =  (a * (1.0f - opacity)) + (b * opacity);
+      break;
+
+  }
+
+  write_imagef(out, (int2)(x, y), o);
+}
+
 
 __kernel void
 blendop_rgb_hsl(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask, __write_only image2d_t out, const int width, const int height,
@@ -1319,6 +1466,42 @@ blendop_set_mask (__write_only image2d_t mask, const int width, const int height
   write_imagef(mask, (int2)(x, y), value);
 }
 
+#define MININ 1e-5f
+__kernel void blendop_highlights_mask
+  ( __read_only image2d_t in, __read_only image2d_t out,
+    __read_only image2d_t mask_in, __write_only image2d_t mask_out,
+    const int width, const int height,
+    const int iwidth, const int iheight,
+    const int ch, const int2 offs)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  int irow = y + offs.y;
+  int icol = x + offs.x;
+  if((irow >= iheight) || (icol >= iwidth)) return;
+
+  float r = 0.0f;
+  const float m = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
+
+  if(ch == 1)
+  {
+    const float a = fmax(MININ, read_imagef(in, sampleri, (int2)(icol, irow)).x);
+    const float b = read_imagef(out, sampleri, (int2)(x, y)).x / a;
+    r = 10.0f * fmax(0.0f, b - 1.0f);
+  }
+  else
+  {
+    const float4 a = fmax(MININ, read_imagef(in, sampleri, (int2)(icol, irow)));
+    const float4 b = read_imagef(out, sampleri, (int2)(x, y)) / a;
+    r = 10.0f * fmax(0.0f, (fmax(b.w, fmax(b.x, b.y)) - 1.0f));
+  }
+
+  write_imagef(mask_out, (int2)(x, y), m * clamp(r*r, 0.0f, 2.0f));
+}
+#undef MININ
 
 __kernel void
 blendop_display_channel(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask,

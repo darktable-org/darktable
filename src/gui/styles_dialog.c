@@ -23,6 +23,7 @@
 #include "common/debug.h"
 #include "common/history.h"
 #include "common/styles.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "gui/gtk.h"
@@ -527,8 +528,7 @@ static void _gui_styles_dialog_run(gboolean edit,
   if(name && (dt_styles_exists(name)) == 0) return;
 
   /* initialize the dialog */
-  dt_gui_styles_dialog_t *sd =
-    (dt_gui_styles_dialog_t *)g_malloc0(sizeof(dt_gui_styles_dialog_t));
+  dt_gui_styles_dialog_t *sd = g_malloc0(sizeof(dt_gui_styles_dialog_t));
 
   sd->nameorig = g_strdup(name);
   sd->imgid = imgid;
@@ -771,7 +771,7 @@ static void _gui_styles_dialog_run(gboolean edit,
     {
       for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
       {
-        dt_style_item_t *item = (dt_style_item_t *)items_iter->data;
+        dt_style_item_t *item = items_iter->data;
         const dt_develop_mask_mode_t mask_mode = item->blendop_params->mask_mode;
 
         if(item->num != -1 && item->selimg_num != -1) // defined in style and image
@@ -821,12 +821,12 @@ static void _gui_styles_dialog_run(gboolean edit,
                        -1);
     g_free(label);
 
-    GList *items = dt_history_get_items(imgid, FALSE, TRUE);
+    GList *items = dt_history_get_items(imgid, FALSE, TRUE, TRUE);
     if(items)
     {
       for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
       {
-        dt_history_item_t *item = (dt_history_item_t *)items_iter->data;
+        dt_history_item_t *item = items_iter->data;
 
         /* lookup history item module */
         gboolean enabled = TRUE;
@@ -959,21 +959,36 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
 
   GtkWidget *label = NULL;
 
-  // name
-  gchar *esc_name = g_markup_printf_escaped("<b>%s</b>", name);
+// Currently, some module names listed in the style tooltip are wider than the
+// style thumbnail, so the actual width of the tooltip can sometimes "breathe".
+// Given this, the width we specify here can also make the tooltip a little wider.
+#define STYLE_TOOLTIP_MAX_WIDTH 30
+
+  // Style name
+  char *localized_name = dt_util_localize_segmented_name(name);
+  gchar *esc_name = g_markup_printf_escaped("<b>%s</b>", localized_name);
+  free(localized_name);
   label = gtk_label_new(NULL);
   gtk_label_set_markup(GTK_LABEL(label), esc_name);
+  gtk_label_set_max_width_chars(GTK_LABEL(label), STYLE_TOOLTIP_MAX_WIDTH);
+  gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
   gtk_box_pack_start(GTK_BOX(ht), label, FALSE, FALSE, 0);
   g_free(esc_name);
 
-  // description
+  // Style description, it can be empty
   char *des = dt_styles_get_description(name);
 
-  if(strlen(des)>0)
+  if(des && strlen(des) > 0)
   {
+    // If the name and/or description are long and become multi-line, it will look
+    // hard to understand what is what, so we add a horizontal separator between them.
+    gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
+
     gchar *esc_des = g_markup_printf_escaped("<b>%s</b>", des);
     label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(label), esc_des);
+    gtk_label_set_max_width_chars(GTK_LABEL(label), STYLE_TOOLTIP_MAX_WIDTH);
+    gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
     gtk_box_pack_start(GTK_BOX(ht), label, FALSE, FALSE, 0);
     g_free(esc_des);
   }
@@ -985,7 +1000,7 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
   while(l)
   {
     char mn[64];
-    dt_style_item_t *i = (dt_style_item_t *)l->data;
+    dt_style_item_t *i = l->data;
 
     if(i->multi_name && strlen(i->multi_name) > 0)
     {

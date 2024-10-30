@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2023 darktable developers.
+    Copyright (C) 2012-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,9 +39,9 @@
 static gboolean _supported_image(const gchar *filename)
 {
   const char *extensions_whitelist[] = { "tiff", "tif", "pbm", "pgm", "ppm", "pnm",
-                                         "webp", "jpc", "jp2", "bmp", "dcm", "jng",
-                                         "miff", "mng", "pam", "gif", "jxl", "fit",
-                                         "fits", "fts", NULL };
+                                         "webp", "jpc", "jp2", "jpf", "jpx", "bmp",
+                                         "miff", "dcm", "jng", "mng", "pam", "gif",
+                                         "fits", "fit", "fts", "jxl", NULL };
   gboolean supported = FALSE;
   char *ext = g_strrstr(filename, ".");
   if(!ext) return FALSE;
@@ -77,16 +77,16 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
   if(exception.severity != UndefinedException) CatchException(&exception);
   if(!image)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[GraphicsMagick_open] image `%s' not found\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[GraphicsMagick_open] image `%s' not found", img->filename);
     err = DT_IMAGEIO_FILE_NOT_FOUND;
     goto error;
   }
 
-  dt_print(DT_DEBUG_IMAGEIO, "[GraphicsMagick_open] image `%s' loading\n", img->filename);
+  dt_print(DT_DEBUG_IMAGEIO, "[GraphicsMagick_open] image `%s' loading", img->filename);
 
   if(IsCMYKColorspace(image->colorspace))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[GraphicsMagick_open] error: CMYK images are not supported.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[GraphicsMagick_open] error: CMYK images are not supported.");
     err =  DT_IMAGEIO_LOAD_FAILED;
     goto error;
   }
@@ -103,7 +103,7 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
   float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!mipbuf)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[GraphicsMagick_open] could not alloc full buffer for image `%s'\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[GraphicsMagick_open] could not alloc full buffer for image `%s'", img->filename);
     err = DT_IMAGEIO_CACHE_FULL;
     goto error;
   }
@@ -115,7 +115,7 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
     if(exception.severity != UndefinedException) CatchException(&exception);
     if(ret != MagickPass)
     {
-      dt_print(DT_DEBUG_ALWAYS, "[GraphicsMagick_open] error reading image `%s'\n", img->filename);
+      dt_print(DT_DEBUG_ALWAYS, "[GraphicsMagick_open] error reading image `%s'", img->filename);
       err = DT_IMAGEIO_LOAD_FAILED;
       goto error;
     }
@@ -125,9 +125,12 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
   const uint8_t *profile_data = (const uint8_t *)GetImageProfile(image, "ICM", &profile_length);
   if(profile_data)
   {
-    img->profile_size = profile_length;
     img->profile = (uint8_t *)g_malloc0(profile_length);
-    memcpy(img->profile, profile_data, profile_length);
+    if(img->profile)
+    {
+      memcpy(img->profile, profile_data, profile_length);
+      img->profile_size = profile_length;
+    }
   }
 
   if(image) DestroyImage(image);

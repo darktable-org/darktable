@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2023 darktable developers.
+    Copyright (C) 2017-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -119,10 +119,7 @@ static void _guided_filter_tiling(color_image imgg,
   const size_t img_dimen = dt_round_size(mean.width, 16);
   size_t img_bak_sz;
   float *img_bak = dt_alloc_perthread_float(9*img_dimen, &img_bak_sz);
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(img, imgg, mean, variance, img_bak) \
-  dt_omp_firstprivate(img_bak_sz, img_dimen, w, guide_weight) dt_omp_sharedconst(source)
-#endif
+  DT_OMP_FOR(shared(img, imgg, mean, variance, img_bak) dt_omp_sharedconst(source))
   for(int j_imgg = source.lower; j_imgg < source.upper; j_imgg++)
   {
     int j = j_imgg - source.lower;
@@ -163,10 +160,7 @@ static void _guided_filter_tiling(color_image imgg,
   #define A_GREEN 1
   #define A_BLUE 2
   #define B 3
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) \
-  dt_omp_firstprivate(size, eps) shared(mean, variance, a_b)
-#endif
+  DT_OMP_FOR(shared(mean, variance, a_b))
   for(size_t i = 0; i < size; i++)
   {
     const float *meanpx = _get_color_pixel(mean, i);
@@ -224,10 +218,7 @@ static void _guided_filter_tiling(color_image imgg,
 
   dt_box_mean(a_b.data, a_b.height, a_b.width, a_b.stride|BOXFILTER_KAHAN_SUM, w, 1);
 
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) \
-  shared(target, imgg, a_b, img_out) dt_omp_sharedconst(source) dt_omp_firstprivate(min, max, width, guide_weight)
-#endif
+  DT_OMP_FOR(shared(target, imgg, a_b, img_out) dt_omp_sharedconst(source))
   for(int j_imgg = target.lower; j_imgg < target.upper; j_imgg++)
   {
     // index of the left most target pixel in the current row
@@ -337,23 +328,14 @@ static int _cl_box_mean(const int devid,
                         cl_mem out,
                         cl_mem temp)
 {
-  const int kernel_x = darktable.opencl->guided_filter->kernel_guided_filter_box_mean_x;
-  const int kernel_y = darktable.opencl->guided_filter->kernel_guided_filter_box_mean_y;
-
-  const size_t sizes_x[] = { ROUNDUPDHT(height, devid), 1, 1 };
-  const size_t sizes_y[] = { ROUNDUPDWD(width, devid), 1, 1 };
-
-  dt_opencl_set_kernel_args(devid, kernel_x, 0,
+  const cl_int err = dt_opencl_enqueue_kernel_1d_args(devid, darktable.opencl->guided_filter->kernel_guided_filter_box_mean_x, height,
                               CLARG(width), CLARG(height),
                               CLARG(in), CLARG(temp), CLARG(w));
-
-  const cl_int err = dt_opencl_enqueue_kernel_ndim_with_local(devid, kernel_x, sizes_x, NULL, 1);
   if(err != CL_SUCCESS) return err;
 
-  dt_opencl_set_kernel_args(devid, kernel_y, 0,
+  return dt_opencl_enqueue_kernel_1d_args(devid, darktable.opencl->guided_filter->kernel_guided_filter_box_mean_y, width,
                               CLARG(width), CLARG(height),
                               CLARG(temp), CLARG(out), CLARG(w));
-  return dt_opencl_enqueue_kernel_ndim_with_local(devid, kernel_y, sizes_y, NULL, 1);
 }
 
 
@@ -631,7 +613,7 @@ error:
 }
 
 
-void guided_filter_cl(int devid,
+int guided_filter_cl(int devid,
                       cl_mem guide,
                       cl_mem in,
                       cl_mem out,
@@ -656,14 +638,15 @@ void guided_filter_cl(int devid,
   {
     err = _guided_filter_cl_impl(devid, guide, in, out, width, height, ch, w, sqrt_eps, guide_weight, min, max);
     if(err != CL_SUCCESS)
-      dt_print(DT_DEBUG_OPENCL, "[guided filter] opencl error %s\n", cl_errstr(err));
+      dt_print(DT_DEBUG_OPENCL, "[guided filter] opencl error %s", cl_errstr(err));
   }
   if(err != CL_SUCCESS)
   {
     err = _guided_filter_cl_fallback(devid, guide, in, out, width, height, ch, w, sqrt_eps, guide_weight, min, max);
     if(err != CL_SUCCESS)
-      dt_print(DT_DEBUG_OPENCL, "[guided filter] opencl cpu fallback error %s\n", cl_errstr(err));
+      dt_print(DT_DEBUG_OPENCL, "[guided filter] opencl cpu fallback error %s", cl_errstr(err));
   }
+  return err;
 }
 
 #endif

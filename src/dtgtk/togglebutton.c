@@ -21,18 +21,18 @@
 #include "gui/gtk.h"
 #include <string.h>
 
-static void _togglebutton_class_init(GtkDarktableToggleButtonClass *klass);
-static void _togglebutton_init(GtkDarktableToggleButton *slider);
+G_DEFINE_TYPE(GtkDarktableToggleButton, dtgtk_togglebutton, GTK_TYPE_TOGGLE_BUTTON);
+
 static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr);
 
-static void _togglebutton_class_init(GtkDarktableToggleButtonClass *klass)
+static void dtgtk_togglebutton_class_init(GtkDarktableToggleButtonClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
 
   widget_class->draw = _togglebutton_draw;
 }
 
-static void _togglebutton_init(GtkDarktableToggleButton *slider)
+static void dtgtk_togglebutton_init(GtkDarktableToggleButton *slider)
 {
 }
 
@@ -144,25 +144,6 @@ GtkWidget *dtgtk_togglebutton_new(DTGTKCairoPaintIconFunc paint, gint paintflags
   g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(gtk_widget_queue_draw), NULL);
   return (GtkWidget *)button;
 }
-
-GType dtgtk_togglebutton_get_type()
-{
-  static GType dtgtk_togglebutton_type = 0;
-  if(!dtgtk_togglebutton_type)
-  {
-    static const GTypeInfo dtgtk_togglebutton_info = {
-      sizeof(GtkDarktableToggleButtonClass), (GBaseInitFunc)NULL, (GBaseFinalizeFunc)NULL,
-      (GClassInitFunc)_togglebutton_class_init, NULL, /* class_finalize */
-      NULL,                                           /* class_data */
-      sizeof(GtkDarktableToggleButton), 0,            /* n_preallocs */
-      (GInstanceInitFunc)_togglebutton_init,
-    };
-    dtgtk_togglebutton_type = g_type_register_static(GTK_TYPE_TOGGLE_BUTTON, "GtkDarktableToggleButton",
-                                                     &dtgtk_togglebutton_info, 0);
-  }
-  return dtgtk_togglebutton_type;
-}
-
 
 void dtgtk_togglebutton_set_paint(GtkDarktableToggleButton *button, DTGTKCairoPaintIconFunc paint,
                                   gint paintflags, void *paintdata)

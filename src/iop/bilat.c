@@ -77,7 +77,12 @@ const char *name()
   return _("local contrast");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char *aliases()
+{
+  return _("clarity");
+}
+
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("manipulate local and global contrast separately"),
                                       _("creative"),
@@ -131,8 +136,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_bilat_params_v1_t;
 
     const dt_iop_bilat_params_v1_t *o = old_params;
-    dt_iop_bilat_params_v3_t *n =
-      (dt_iop_bilat_params_v3_t *)malloc(sizeof(dt_iop_bilat_params_v3_t));
+    dt_iop_bilat_params_v3_t *n = malloc(sizeof(dt_iop_bilat_params_v3_t));
     n->detail  = o->detail;
     n->sigma_r = o->sigma_r;
     n->sigma_s = o->sigma_s;
@@ -156,8 +160,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_bilat_params_v2_t;
 
     const dt_iop_bilat_params_v2_t *o = old_params;
-    dt_iop_bilat_params_v3_t *n =
-      (dt_iop_bilat_params_v3_t *)malloc(sizeof(dt_iop_bilat_params_v3_t));
+    dt_iop_bilat_params_v3_t *n = malloc(sizeof(dt_iop_bilat_params_v3_t));
     n->detail  = o->detail;
     n->sigma_r = o->sigma_r;
     n->sigma_s = o->sigma_s;
@@ -198,14 +201,14 @@ void init_presets(dt_iop_module_so_t *self)
 
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
+  dt_iop_bilat_data_t *d = piece->data;
 
   cl_int err = DT_OPENCL_PROCESS_CL;
   if(d->mode == s_mode_bilateral)
@@ -244,13 +247,13 @@ error_ll:
 #endif
 
 
-void tiling_callback(struct dt_iop_module_t *self,
-                     struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in,
                      const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
-  dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
+  dt_iop_bilat_data_t *d = piece->data;
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
 
@@ -294,13 +297,13 @@ void tiling_callback(struct dt_iop_module_t *self,
   }
 }
 
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)p1;
-  dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
+  dt_iop_bilat_data_t *d = piece->data;
   *d = *p;
 
 #ifdef HAVE_OPENCL
@@ -313,7 +316,7 @@ void commit_params(struct dt_iop_module_t *self,
 }
 
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
@@ -321,7 +324,7 @@ void init_pipe(struct dt_iop_module_t *self,
 }
 
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -330,7 +333,7 @@ void cleanup_pipe(struct dt_iop_module_t *self,
 }
 
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in,
@@ -338,7 +341,7 @@ void process(struct dt_iop_module_t *self,
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
-  dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
+  dt_iop_bilat_data_t *d = piece->data;
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
   // used to adjuste blur level depending on size. Don't amplify noise if magnified > 100%
@@ -371,8 +374,8 @@ void process(struct dt_iop_module_t *self,
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
-  dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
+  dt_iop_bilat_gui_data_t *g = self->gui_data;
+  dt_iop_bilat_params_t *p = self->params;
   if(w == g->highlights || w == g->shadows || w == g->midtone)
   {
     dt_bauhaus_combobox_set(g->mode, s_mode_local_laplacian);
@@ -407,8 +410,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
-  dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
+  dt_iop_bilat_gui_data_t *g = self->gui_data;
+  dt_iop_bilat_params_t *p = self->params;
 
   if(p->mode == s_mode_local_laplacian)
   {

@@ -71,7 +71,7 @@ static gchar *_focal_print_func(const double value, const gboolean detailled)
 
   if(detailled)
   {
-    txt = dt_util_dstrcat(txt, " %s", _("mm"));
+    dt_util_str_cat(&txt, " %s", _("mm"));
   }
   return txt;
 }
@@ -79,7 +79,7 @@ static gchar *_focal_print_func(const double value, const gboolean detailled)
 static void _focal_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
                                const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
-  _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
+  _widgets_range_t *special = g_malloc0(sizeof(_widgets_range_t));
 
   special->range_select
       = dtgtk_range_select_new(dt_collection_name_untranslated(prop), !top, DT_RANGE_TYPE_NUMERIC);

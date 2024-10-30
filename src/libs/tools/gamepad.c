@@ -209,18 +209,18 @@ static gboolean _poll_devices(gpointer user_data)
     switch(event.type)
     {
     case SDL_CONTROLLERBUTTONDOWN:
-      dt_print(DT_DEBUG_INPUT, "SDL button down event time %d id %d button %hhd state %hhd\n", event.cbutton.timestamp, event.cbutton.which, event.cbutton.button, event.cbutton.state);
+      dt_print(DT_DEBUG_INPUT, "SDL button down event time %d id %d button %hhd state %hhd", event.cbutton.timestamp, event.cbutton.which, event.cbutton.button, event.cbutton.state);
       _process_axis_and_send(gamepad, event.cbutton.timestamp);
       dt_shortcut_key_press(gamepad->id, event.cbutton.timestamp, event.cbutton.button);
 
       break;
     case SDL_CONTROLLERBUTTONUP:
-      dt_print(DT_DEBUG_INPUT, "SDL button up event time %d id %d button %hhd state %hhd\n", event.cbutton.timestamp, event.cbutton.which, event.cbutton.button, event.cbutton.state);
+      dt_print(DT_DEBUG_INPUT, "SDL button up event time %d id %d button %hhd state %hhd", event.cbutton.timestamp, event.cbutton.which, event.cbutton.button, event.cbutton.state);
       _process_axis_and_send(gamepad, event.cbutton.timestamp);
       dt_shortcut_key_release(gamepad->id, event.cbutton.timestamp, event.cbutton.button);
       break;
     case SDL_CONTROLLERAXISMOTION:
-      dt_print(DT_DEBUG_INPUT, "SDL axis event type %d time %d id %d axis %hhd value %hd\n", event.caxis.type, event.caxis.timestamp, event.caxis.which, event.caxis.axis, event.caxis.value);
+      dt_print(DT_DEBUG_INPUT, "SDL axis event type %d time %d id %d axis %hhd value %hd", event.caxis.type, event.caxis.timestamp, event.caxis.which, event.caxis.axis, event.caxis.value);
 
       if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT || event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
       {
@@ -250,7 +250,7 @@ static gboolean _poll_devices(gpointer user_data)
 
   for(GSList *gamepads = self->data; gamepads; gamepads = gamepads->next) _process_axis_and_send(gamepads->data, SDL_GetTicks());
 
-  if(num_events) dt_print(DT_DEBUG_INPUT, "sdl num_events: %d time: %u\n", num_events, SDL_GetTicks());
+  if(num_events) dt_print(DT_DEBUG_INPUT, "sdl num_events: %d time: %u", num_events, SDL_GetTicks());
   return G_SOURCE_CONTINUE;
 }
 
@@ -258,11 +258,11 @@ static void _gamepad_open_devices(dt_lib_module_t *self)
 {
   if(SDL_Init(SDL_INIT_GAMECONTROLLER))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[_gamepad_open_devices] ERROR initialising SDL\n");
+    dt_print(DT_DEBUG_ALWAYS, "[_gamepad_open_devices] ERROR initialising SDL");
     return;
   }
   else
-    dt_print(DT_DEBUG_INPUT, "[_gamepad_open_devices] SDL initialized\n");
+    dt_print(DT_DEBUG_INPUT, "[_gamepad_open_devices] SDL initialized");
 
   dt_input_device_t id = dt_register_input_driver(self, &_driver_definition);
 
@@ -274,17 +274,17 @@ static void _gamepad_open_devices(dt_lib_module_t *self)
 
       if(!controller)
       {
-        dt_print(DT_DEBUG_ALWAYS, "[_gamepad_open_devices] ERROR opening game controller '%s'\n",
+        dt_print(DT_DEBUG_ALWAYS, "[_gamepad_open_devices] ERROR opening game controller '%s'",
                  SDL_GameControllerNameForIndex(i));
         continue;
       }
       else
       {
-        dt_print(DT_DEBUG_ALWAYS, "[_gamepad_open_devices] opened game controller '%s'\n",
+        dt_print(DT_DEBUG_ALWAYS, "[_gamepad_open_devices] opened game controller '%s'",
                  SDL_GameControllerNameForIndex(i));
       }
 
-      dt_gamepad_device_t *gamepad = (dt_gamepad_device_t *)g_malloc0(sizeof(dt_gamepad_device_t));
+      dt_gamepad_device_t *gamepad = g_malloc0(sizeof(dt_gamepad_device_t));
 
       gamepad->controller = controller;
       gamepad->id = id++;

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,10 +28,10 @@ void dt_grouping_add_to_group(const dt_imgid_t group_id,
                               const dt_imgid_t image_id);
 
 /** remove an image from a group. returns the new group_id of the other images. */
-int dt_grouping_remove_from_group(const dt_imgid_t image_id);
+dt_imgid_t dt_grouping_remove_from_group(const dt_imgid_t image_id);
 
 /** make an image the representative of the group it is in. returns the new group_id. */
-int dt_grouping_change_representative(const dt_imgid_t image_id);
+dt_imgid_t dt_grouping_change_representative(const dt_imgid_t image_id);
 
 /** get images of the group */
 GList *dt_grouping_get_group_images(const dt_imgid_t imgid);

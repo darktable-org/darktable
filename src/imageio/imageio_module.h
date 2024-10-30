@@ -34,9 +34,7 @@
 #include "lua/types.h"
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 
 /** Flag for the format modules */
@@ -156,9 +154,7 @@ void dt_imageio_remove_storage(dt_imageio_module_storage_t *storage);
 // of the settings export.
 gchar *dt_imageio_resizing_factor_get_and_parsing(double *num, double *denum);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

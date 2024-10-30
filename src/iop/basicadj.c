@@ -134,8 +134,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_basicadj_params_v1_t;
 
     const dt_iop_basicadj_params_v1_t *old = old_params;
-    dt_iop_basicadj_params_v2_t *new =
-      (dt_iop_basicadj_params_v2_t *)malloc(sizeof(dt_iop_basicadj_params_v2_t));
+    dt_iop_basicadj_params_v2_t *new = malloc(sizeof(dt_iop_basicadj_params_v2_t));
 
     new->black_point = old->black_point;
     new->exposure = old->exposure;
@@ -167,7 +166,7 @@ const char *name()
   return _("basic adjustments");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("apply usual image adjustments"),
                                       _("creative"),
@@ -195,7 +194,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 
 static void _turn_select_region_off(struct dt_iop_module_t *self)
 {
-  dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
+  dt_iop_basicadj_gui_data_t *g = self->gui_data;
   if(g)
   {
     g->button_down = g->draw_selected_region = 0;
@@ -223,7 +222,7 @@ static void _auto_levels_callback(GtkButton *button, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
-  dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
+  dt_iop_basicadj_gui_data_t *g = self->gui_data;
 
   dt_iop_request_focus(self);
   if(self->off)
@@ -249,7 +248,7 @@ static void _select_region_toggled_callback(GtkToggleButton *togglebutton, dt_io
 {
   if(darktable.gui->reset) return;
 
-  dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
+  dt_iop_basicadj_gui_data_t *g = self->gui_data;
 
   dt_iop_request_focus(self);
   if(self->off)
@@ -272,11 +271,10 @@ static void _select_region_toggled_callback(GtkToggleButton *togglebutton, dt_io
   dt_iop_gui_leave_critical_section(self);
 }
 
-static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_data)
+static void _develop_ui_pipe_finished_callback(gpointer instance, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-  dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
+  dt_iop_basicadj_params_t *p = self->params;
+  dt_iop_basicadj_gui_data_t *g = self->gui_data;
 
   if(g == NULL) return;
 
@@ -308,15 +306,14 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
   }
 }
 
-static void _signal_profile_user_changed(gpointer instance, uint8_t profile_type, gpointer user_data)
+static void _signal_profile_user_changed(gpointer instance, uint8_t profile_type, dt_iop_module_t *self)
 {
   if(profile_type == DT_COLORSPACES_PROFILE_TYPE_WORK)
   {
-    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     if(!self->enabled) return;
 
-    dt_iop_basicadj_params_t *def = (dt_iop_basicadj_params_t *)self->default_params;
-    dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
+    dt_iop_basicadj_params_t *def = self->default_params;
+    dt_iop_basicadj_gui_data_t *g = self->gui_data;
 
     const dt_iop_order_iccprofile_info_t *const work_profile
         = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
@@ -347,7 +344,7 @@ int mouse_moved(dt_iop_module_t *self,
                 const float zoom_scale)
 {
   int handled = 0;
-  dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
+  dt_iop_basicadj_gui_data_t *g = self->gui_data;
   if(g && g->draw_selected_region && g->button_down && self->enabled)
   {
     float wd, ht;
@@ -372,7 +369,7 @@ int button_released(dt_iop_module_t *self,
                     const float zoom_scale)
 {
   int handled = 0;
-  dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
+  dt_iop_basicadj_gui_data_t *g = self->gui_data;
   if(g && g->draw_selected_region && self->enabled)
   {
     if(fabsf(g->posx_from - g->posx_to) > 1 && fabsf(g->posy_from - g->posy_to) > 1)
@@ -411,7 +408,7 @@ int button_pressed(dt_iop_module_t *self,
                    const float zoom_scale)
 {
   int handled = 0;
-  dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
+  dt_iop_basicadj_gui_data_t *g = self->gui_data;
   if(g && g->draw_selected_region && self->enabled)
   {
     if((which == 3) || (which == 1 && type == GDK_2BUTTON_PRESS))
@@ -445,7 +442,7 @@ void gui_post_expose(dt_iop_module_t *self,
                      const float pointery,
                      const float zoom_scale)
 {
-  dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
+  dt_iop_basicadj_gui_data_t *g = self->gui_data;
   if(g == NULL || !self->enabled) return;
   if(!g->draw_selected_region || !g->button_down) return;
   if(g->posx_from == g->posx_to && g->posy_from == g->posy_to) return;
@@ -469,30 +466,29 @@ void gui_post_expose(dt_iop_module_t *self,
   cairo_stroke(cr);
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 24; // basicadj.cl, from programs.conf
-  dt_iop_basicadj_global_data_t *gd
-      = (dt_iop_basicadj_global_data_t *)malloc(sizeof(dt_iop_basicadj_global_data_t));
-  module->data = gd;
+  dt_iop_basicadj_global_data_t *gd = malloc(sizeof(dt_iop_basicadj_global_data_t));
+  self->data = gd;
 
   gd->kernel_basicadj = dt_opencl_create_kernel(program, "basicadj");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_basicadj_global_data_t *gd = (dt_iop_basicadj_global_data_t *)module->data;
+  dt_iop_basicadj_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_basicadj);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
   if(darktable.gui->reset) return;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-  dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
+  dt_iop_basicadj_params_t *p = self->params;
+  dt_iop_basicadj_gui_data_t *g = self->gui_data;
 
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, pipe);
   p->middle_grey = (work_profile) ? (dt_ioppr_get_rgb_matrix_luminance(self->picked_color,
@@ -533,9 +529,11 @@ static inline float get_lut_contrast(const float x, const float contrast, const 
                    : lut[CLAMP((int)(x * 0x10000ul), 0, 0xffff)];
 }
 
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
+                     dt_develop_tiling_t *tiling)
 {
   tiling->factor = 2.0f;
   tiling->factor_cl = 3.0f;
@@ -546,10 +544,12 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   tiling->xalign = 1;
   tiling->yalign = 1;
 }
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self,
+                   dt_iop_params_t *params,
+                   dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_basicadj_data_t *d = (dt_iop_basicadj_data_t *)piece->data;
+  dt_iop_basicadj_data_t *d = piece->data;
   dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)params;
 
   memcpy(&d->params, params, sizeof(dt_iop_basicadj_params_t));
@@ -575,32 +575,32 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   }
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_basicadj_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
+  dt_iop_basicadj_gui_data_t *g = self->gui_data;
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_select_region), g->draw_selected_region);
 }
 
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
+void gui_focus(dt_iop_module_t *self, gboolean in)
 {
   if(!in) _turn_select_region_off(self);
 }
 
-void change_image(struct dt_iop_module_t *self)
+void change_image(dt_iop_module_t *self)
 {
-  dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
+  dt_iop_basicadj_gui_data_t *g = self->gui_data;
 
   g->call_auto_exposure = 0;
   g->draw_selected_region = 0;
@@ -609,7 +609,7 @@ void change_image(struct dt_iop_module_t *self)
   g->button_down = 0;
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_basicadj_gui_data_t *g = IOP_GUI_ALLOC(basicadj);
 
@@ -679,17 +679,15 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->sl_clip, _("adjusts clipping value for auto exposure calculation"));
 
   // add signal handler for preview pipe finish
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-                            G_CALLBACK(_develop_ui_pipe_finished_callback), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _develop_ui_pipe_finished_callback, self);
   // and profile change
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
-                            G_CALLBACK(_signal_profile_user_changed), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, _signal_profile_user_changed, self);
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_develop_ui_pipe_finished_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_signal_profile_user_changed), self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_develop_ui_pipe_finished_callback, self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_signal_profile_user_changed, self);
 
   IOP_GUI_FREE;
 }
@@ -1177,32 +1175,32 @@ cleanup:
   if(dt_isnan(expcomp))
   {
     expcomp = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] expcomp is NaN!!!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] expcomp is NaN!!!");
   }
   if(dt_isnan(black))
   {
     black = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] black is NaN!!!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] black is NaN!!!");
   }
   if(dt_isnan(bright))
   {
     bright = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] bright is NaN!!!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] bright is NaN!!!");
   }
   if(dt_isnan(contr))
   {
     contr = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] contr is NaN!!!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] contr is NaN!!!");
   }
   if(dt_isnan(hlcompr))
   {
     hlcompr = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] hlcompr is NaN!!!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] hlcompr is NaN!!!");
   }
   if(dt_isnan(hlcomprthresh))
   {
     hlcomprthresh = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] hlcomprthresh is NaN!!!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] hlcomprthresh is NaN!!!");
   }
 
   *_expcomp = expcomp;
@@ -1230,7 +1228,7 @@ static void _auto_exposure(const float *const img, const int width, const int he
   if(histogram) dt_free_align(histogram);
 }
 
-static void _get_selected_area(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+static void _get_selected_area(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                dt_iop_basicadj_gui_data_t *g, const dt_iop_roi_t *const roi_in, int *box_out)
 {
   box_out[0] = box_out[1] = box_out[2] = box_out[3] = 0;
@@ -1287,16 +1285,16 @@ static void _get_selected_area(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
 
   const int ch = piece->colors;
-  dt_iop_basicadj_data_t *d = (dt_iop_basicadj_data_t *)piece->data;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)&d->params;
-  dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
-  dt_iop_basicadj_global_data_t *gd = (dt_iop_basicadj_global_data_t *)self->global_data;
+  dt_iop_basicadj_data_t *d = piece->data;
+  dt_iop_basicadj_params_t *p = &d->params;
+  dt_iop_basicadj_gui_data_t *g = self->gui_data;
+  dt_iop_basicadj_global_data_t *gd = self->global_data;
 
   cl_int err = CL_SUCCESS;
 
@@ -1327,7 +1325,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       src_buffer = dt_alloc_align_float((size_t)ch * width * height);
       if(src_buffer == NULL)
       {
-        dt_print(DT_DEBUG_ALWAYS, "[basicadj process_cl] error allocating memory for color transformation 1\n");
+        dt_print(DT_DEBUG_ALWAYS, "[basicadj process_cl] error allocating memory for color transformation 1");
         err = DT_OPENCL_SYSMEM_ALLOCATION;
         goto cleanup;
       }
@@ -1335,7 +1333,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       err = dt_opencl_copy_device_to_host(devid, src_buffer, dev_in, width, height, ch * sizeof(float));
       if(err != CL_SUCCESS)
       {
-        dt_print(DT_DEBUG_ALWAYS, "[basicadj process_cl] error allocating memory for color transformation 2\n");
+        dt_print(DT_DEBUG_ALWAYS, "[basicadj process_cl] error allocating memory for color transformation 2");
         goto cleanup;
       }
 
@@ -1392,7 +1390,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_gamma = dt_opencl_copy_host_to_device(devid, d->lut_gamma, 256, 256, sizeof(float));
   if(dev_gamma == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[basicadj process_cl] error allocating memory 3\n");
+    dt_print(DT_DEBUG_ALWAYS, "[basicadj process_cl] error allocating memory 3");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1400,7 +1398,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_contrast = dt_opencl_copy_host_to_device(devid, d->lut_contrast, 256, 256, sizeof(float));
   if(dev_contrast == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[basicadj process_cl] error allocating memory 4\n");
+    dt_print(DT_DEBUG_ALWAYS, "[basicadj process_cl] error allocating memory 4");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1422,15 +1420,15 @@ cleanup:
 }
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
 
   const int ch = piece->colors;
-  dt_iop_basicadj_data_t *d = (dt_iop_basicadj_data_t *)piece->data;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)&d->params;
-  dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
+  dt_iop_basicadj_data_t *d = piece->data;
+  dt_iop_basicadj_params_t *p = &d->params;
+  dt_iop_basicadj_gui_data_t *g = self->gui_data;
 
   // process auto levels
   if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
@@ -1486,16 +1484,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *const out = (float *const)ovoid;
   const size_t stride = (size_t)roi_out->height * roi_out->width * ch;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(black_point, ch, contrast, gamma, hlcomp, hlrange, in, \
-                      inv_middle_grey, middle_grey, out, plain_contrast, \
-                      preserve_colors, process_hlcompr, process_gamma, \
-                      process_saturation_vibrance, saturation, vibrance, \
-                      scale, stride, work_profile) \
-  shared(d) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < stride; k += ch)
   {
     for(size_t c = 0; c < 3; c++)

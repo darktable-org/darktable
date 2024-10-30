@@ -95,7 +95,7 @@ static void global_progress_start(dt_control_t *control, dt_progress_t *progress
                                   &error);
     if(error)
     {
-      dt_print(DT_DEBUG_ALWAYS, "[progress_create] dbus error: %s\n", error->message);
+      dt_print(DT_DEBUG_ALWAYS, "[progress_create] dbus error: %s", error->message);
       g_error_free(error);
     }
   }
@@ -117,9 +117,9 @@ static void global_progress_start(dt_control_t *control, dt_progress_t *progress
   {
     HWND hwnd = GDK_WINDOW_HWND(gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui)));
     if(ITaskbarList3_SetProgressState(control->progress_system.taskbarlist, hwnd, TBPF_NORMAL) != S_OK)
-      dt_print(DT_DEBUG_ALWAYS, "[progress_create] SetProgressState failed\n");
+      dt_print(DT_DEBUG_ALWAYS, "[progress_create] SetProgressState failed");
     if(ITaskbarList3_SetProgressValue(control->progress_system.taskbarlist, hwnd, control->progress_system.global_progress * 100, 100) != S_OK)
-      dt_print(DT_DEBUG_ALWAYS, "[progress_create] SetProgressValue failed\n");
+      dt_print(DT_DEBUG_ALWAYS, "[progress_create] SetProgressValue failed");
   }
 
 #endif
@@ -155,7 +155,7 @@ static void global_progress_set(dt_control_t *control, dt_progress_t *progress, 
                                   &error);
     if(error)
     {
-      dt_print(DT_DEBUG_ALWAYS, "[progress_set] dbus error: %s\n", error->message);
+      dt_print(DT_DEBUG_ALWAYS, "[progress_set] dbus error: %s", error->message);
       g_error_free(error);
     }
   }
@@ -168,7 +168,7 @@ static void global_progress_set(dt_control_t *control, dt_progress_t *progress, 
   {
     HWND hwnd = GDK_WINDOW_HWND(gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui)));
     if(ITaskbarList3_SetProgressValue(control->progress_system.taskbarlist, hwnd, control->progress_system.global_progress * 100, 100) != S_OK)
-      dt_print(DT_DEBUG_ALWAYS, "[progress_create] SetProgressValue failed\n");
+      dt_print(DT_DEBUG_ALWAYS, "[progress_create] SetProgressValue failed");
   }
 
 #endif
@@ -183,7 +183,7 @@ static void global_progress_end(dt_control_t *control, dt_progress_t *progress)
   for(GList *iter = control->progress_system.list; iter; iter = g_list_next(iter))
   {
     // this is called after the current progress got removed from the list!
-    dt_progress_t *p = (dt_progress_t *)iter->data;
+    dt_progress_t *p = iter->data;
     const double value = dt_control_progress_get_progress(p);
     control->progress_system.global_progress = MAX(control->progress_system.global_progress, value);
   }
@@ -217,7 +217,7 @@ static void global_progress_end(dt_control_t *control, dt_progress_t *progress)
                                   &error);
     if(error)
     {
-      dt_print(DT_DEBUG_ALWAYS, "[progress_destroy] dbus error: %s\n", error->message);
+      dt_print(DT_DEBUG_ALWAYS, "[progress_destroy] dbus error: %s", error->message);
       g_error_free(error);
     }
 
@@ -235,13 +235,13 @@ static void global_progress_end(dt_control_t *control, dt_progress_t *progress)
     if(control->progress_system.n_progress_bar == 0)
     {
       if(ITaskbarList3_SetProgressState(control->progress_system.taskbarlist, hwnd, TBPF_NOPROGRESS) != S_OK)
-        dt_print(DT_DEBUG_ALWAYS, "[progress_create] SetProgressState failed\n");
+        dt_print(DT_DEBUG_ALWAYS, "[progress_create] SetProgressState failed");
     }
     else
     {
       if(ITaskbarList3_SetProgressValue(control->progress_system.taskbarlist, hwnd,
                                         control->progress_system.global_progress * 100, 100) != S_OK)
-        dt_print(DT_DEBUG_ALWAYS, "[progress_create] SetProgressValue failed\n");
+        dt_print(DT_DEBUG_ALWAYS, "[progress_create] SetProgressValue failed");
     }
   }
 
@@ -277,7 +277,7 @@ void dt_control_progress_init(struct dt_control_t *control)
                                   &error);
     if(error)
     {
-      dt_print(DT_DEBUG_ALWAYS, "[progress_init] dbus error: %s\n", error->message);
+      dt_print(DT_DEBUG_ALWAYS, "[progress_init] dbus error: %s", error->message);
       g_error_free(error);
     }
 
@@ -299,7 +299,7 @@ dt_progress_t *dt_control_progress_create(dt_control_t *control, gboolean has_pr
                                           const gchar *message)
 {
   // create the object
-  dt_progress_t *progress = (dt_progress_t *)calloc(1, sizeof(dt_progress_t));
+  dt_progress_t *progress = calloc(1, sizeof(dt_progress_t));
   dt_pthread_mutex_init(&(progress->mutex), NULL);
 
   // fill it with values

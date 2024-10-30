@@ -23,7 +23,7 @@
 #if defined(__GNUC__)
 #pragma GCC optimize ("finite-math-only", "no-math-errno", "fast-math", "fp-contract=fast")
 #endif
- 
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -111,7 +111,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 //#define GAUSS(a, b, c, x) (a * powf(2.718281828f, (-powf((x - b), 2) / (powf(c, 2)))))
 #define GAUSS(a, b, c, x) (a * expf(-(x-b)*(x-b) / (c*c)))
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -122,7 +122,7 @@ void process(struct dt_iop_module_t *self,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
 
-  dt_iop_relight_data_t *data = (dt_iop_relight_data_t *)piece->data;
+  dt_iop_relight_data_t *data = piece->data;
 
   // Precalculate parameters for gauss function
   const float a = 1.0f;                           // Height of top
@@ -132,11 +132,7 @@ void process(struct dt_iop_module_t *self,
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
   const float ev = data->ev;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(a, b, c, ivoid, ovoid, npixels, ev) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   {
     const float *const restrict in = ((float *)ivoid) + 4*k;
@@ -155,11 +151,11 @@ void process(struct dt_iop_module_t *self,
 
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_relight_data_t *data = (dt_iop_relight_data_t *)piece->data;
-  dt_iop_relight_global_data_t *gd = (dt_iop_relight_global_data_t *)self->global_data;
+  dt_iop_relight_data_t *data = piece->data;
+  dt_iop_relight_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -174,66 +170,64 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 }
 #endif
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 8; // extended.cl, from programs.conf
-  dt_iop_relight_global_data_t *gd
-      = (dt_iop_relight_global_data_t *)malloc(sizeof(dt_iop_relight_global_data_t));
-  module->data = gd;
+  dt_iop_relight_global_data_t *gd = malloc(sizeof(dt_iop_relight_global_data_t));
+  self->data = gd;
   gd->kernel_relight = dt_opencl_create_kernel(program, "relight");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_relight_global_data_t *gd = (dt_iop_relight_global_data_t *)module->data;
+  dt_iop_relight_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_relight);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
-static void center_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
+static void center_callback(GtkDarktableGradientSlider *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
+  dt_iop_relight_params_t *p = self->params;
   dt_iop_color_picker_reset(self, TRUE);
   p->center = dtgtk_gradient_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)p1;
-  dt_iop_relight_data_t *d = (dt_iop_relight_data_t *)piece->data;
+  dt_iop_relight_data_t *d = piece->data;
 
   d->ev = p->ev;
   d->width = p->width;
   d->center = p->center;
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_relight_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
-  dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
+  dt_iop_relight_gui_data_t *g = self->gui_data;
+  dt_iop_relight_params_t *p = self->params;
   dtgtk_gradient_slider_set_value(g->center, p->center);
 }
 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
+  dt_iop_relight_gui_data_t *g = self->gui_data;
   float mean, min, max;
 
   if(self->picked_color_max[0] >= 0.0f)
@@ -250,7 +244,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   dtgtk_gradient_slider_set_picker_meanminmax(DTGTK_GRADIENT_SLIDER(g->center), mean, min, max);
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_relight_gui_data_t *g = IOP_GUI_ALLOC(relight);
 

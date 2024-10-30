@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,7 +15,12 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/darktable.h"
+#include "common/image.h"
+#include "develop/develop.h"
+#include "common/gimp.h"
+#include "common/image_cache.h"
 #include "gui/gtk.h"
 #include <stdlib.h>
 
@@ -39,7 +44,8 @@ int main(int argc, char *argv[])
   char datetime[DT_DATETIME_EXIF_LENGTH];
   dt_datetime_now_to_exif(datetime);
 
-  // make sure to not redirect output when the output is already being redirected, either to a file or a pipe.
+  // Make sure to not redirect output when the output is already
+  // being redirected, either to a file or a pipe.
   int out_type = GetFileType(GetStdHandle(STD_OUTPUT_HANDLE));
   int err_type = GetFileType(GetStdHandle(STD_ERROR_HANDLE));
   gboolean redirect_output = ((out_type != FILE_TYPE_DISK && out_type != FILE_TYPE_PIPE) &&
@@ -48,7 +54,10 @@ int main(int argc, char *argv[])
   for(int k = 1; k < argc; k++)
   {
     // For simple arguments do not redirect stdout
-    if(!strcmp(argv[k], "--help") || !strcmp(argv[k], "-h") || !strcmp(argv[k], "/?") || !strcmp(argv[k], "--version"))
+    if(!strcmp(argv[k], "--help") ||
+       !strcmp(argv[k], "-h") ||
+       !strcmp(argv[k], "/?") ||
+       !strcmp(argv[k], "--version"))
     {
       redirect_output = FALSE;
       break;
@@ -57,8 +66,7 @@ int main(int argc, char *argv[])
 
   if(redirect_output)
   {
-    // something like C:\Users\username\AppData\Local\Microsoft\Windows\Temporary Internet Files\darktable\darktable-log.txt
-    char *logdir = g_build_filename(g_get_user_cache_dir(), "darktable", NULL);
+    char *logdir = g_build_filename(g_get_home_dir(), "Documents", "Darktable", NULL);
     char *logfile = g_build_filename(logdir, "darktable-log.txt", NULL);
 
     g_mkdir_with_parents(logdir, 0700);
@@ -66,17 +74,21 @@ int main(int argc, char *argv[])
     g_freopen(logfile, "a", stdout);
     dup2(fileno(stdout), fileno(stderr));
 
-    // We don't need the console window anymore, free it
-    // This ensures that only darktable's main window will be visible
+    // We don't need the console window anymore, free it.
+    // This ensures that only darktable's main window will be visible.
     FreeConsole();
 
     g_free(logdir);
     g_free(logfile);
 
-    // don't buffer stdout/stderr. we have basically two options: unbuffered or line buffered.
-    // unbuffered keeps the order in which things are printed but concurrent threads printing can lead to intermangled output. ugly.
-    // line buffered should keep lines together but in my tests the order of things no longer matches. ugly and potentially confusing.
-    // thus we are doing the thing that is just ugly (in rare cases) but at least not confusing.
+    // Don't buffer stdout/stderr. We have basically two options:
+    // unbuffered or line buffered.
+    // Unbuffered keeps the order in which things are printed but concurrent
+    // threads printing can lead to intermangled output. Ugly.
+    // Line buffered should keep lines together but the order of things
+    // no longer matches. Ugly and potentially confusing.
+    // Thus we are doing the thing that is just ugly (in rare cases)
+    // but at least not confusing.
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
 
@@ -86,12 +98,48 @@ int main(int argc, char *argv[])
     printf("\n");
   }
 
-  // make sure GTK client side decoration is disabled, otherwise windows resizing issues can be observed
+  // Make sure GTK client side decoration is disabled,
+  // otherwise windows resizing issues can be observed.
   g_setenv("GTK_CSD", "0", TRUE);
 #endif
 
   if(dt_init(argc, argv, TRUE, TRUE, NULL)) exit(1);
-  dt_gui_gtk_run(darktable.gui);
+
+  if(dt_check_gimpmode_ok("version"))
+    fprintf(stdout, "\n<<<gimp\n%d\ngimp>>>\n", DT_GIMP_VERSION);
+
+  if(dt_check_gimpmode_ok("file"))
+  {
+    const dt_imgid_t id = dt_gimp_load_darkroom(darktable.gimp.path);
+    if(!dt_is_valid_imgid(id))
+      darktable.gimp.error = TRUE;
+  }
+
+  if(dt_check_gimpmode_ok("thumb"))
+  {
+    const dt_imgid_t id = dt_gimp_load_image(darktable.gimp.path);
+    if(dt_is_valid_imgid(id))
+    {
+      if(!dt_export_gimp_file(id))
+        darktable.gimp.error = TRUE;
+    }
+    else
+      darktable.gimp.error = TRUE;
+  }
+
+  if(!darktable.gimp.mode || dt_check_gimpmode_ok("file"))
+    dt_gui_gtk_run(darktable.gui);
+
+  if(dt_check_gimpmode_ok("file"))
+  {
+    if(!dt_export_gimp_file(darktable.gimp.imgid))
+      darktable.gimp.error = TRUE;
+  }
+
+  dt_cleanup();
+
+  if(darktable.gimp.mode && darktable.gimp.error)
+    fprintf(stdout, "\n<<<gimp\nerror\ngimp>>>\n");
 
 #ifdef _WIN32
   if(redirect_output)
@@ -103,7 +151,8 @@ int main(int argc, char *argv[])
   }
 #endif
 
-  exit(0);
+  const int exitcode = darktable.gimp.mode ? (darktable.gimp.error ? 1 : 0) : 0;
+  exit(exitcode);
 }
 
 // clang-format off
@@ -111,4 +160,3 @@ int main(int argc, char *argv[])
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

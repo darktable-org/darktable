@@ -71,40 +71,63 @@ typedef struct dt_images_box
 } dt_images_box;
 
 // return the box index or -1 if (x, y) coordinate is not over an image
-int32_t dt_printing_get_image_box(const dt_images_box *imgs, const int x, const int y);
+int32_t dt_printing_get_image_box(const dt_images_box *imgs,
+                                  const int x,
+                                  const int y);
 
 void dt_printing_clear_box(dt_image_box *img);
 void dt_printing_clear_boxes(dt_images_box *imgs);
 
 /* (x, y) -> (width, height) are in pixels (on screen position) */
 void dt_printing_setup_display(dt_images_box *imgs,
-                               const float px, const float py, const float pwidth, const float pheight,
-                               const float ax, const float ay, const float awidth, const float aheight, gboolean borderless);
+                               const float px,
+                               const float py,
+                               const float pwidth,
+                               const float pheight,
+                               const float ax,
+                               const float ay,
+                               const float awidth,
+                               const float aheight,
+                               const gboolean borderless);
 
-void dt_printing_setup_box(dt_images_box *imgs, const int idx,
-                           const float x, const float y,
-                           const float width, const float height);
+void dt_printing_setup_box(dt_images_box *imgs,
+                           const int idx,
+                           const float x,
+                           const float y,
+                           const float width,
+                           const float height);
 
 /* page_width page_height in mm, compute the max_width and max_height in
    pixels for the image */
 void dt_printing_setup_page(dt_images_box *imgs,
-                            const float page_width, const float page_height,
+                            const float page_width,
+                            const float page_height,
                             const int resolution);
 
 /* setup the image id and exported width x height */
-void dt_printing_setup_image(dt_images_box *imgs, const int idx,
-                             const dt_imgid_t imgid, const int32_t width, const int32_t height,
+void dt_printing_setup_image(dt_images_box *imgs,
+                             const int idx,
+                             const dt_imgid_t imgid,
+                             const int32_t width,
+                             const int32_t height,
                              const dt_alignment_t alignment);
 
 /* return the on screen pos with alignement */
-void dt_printing_get_screen_pos(const dt_images_box *imgs, const dt_image_box *img, dt_image_pos *pos);
-void dt_printing_get_screen_rel_pos(const dt_images_box *imgs, const dt_image_box *img, dt_image_pos *pos);
-void dt_printing_get_image_pos_mm(const dt_images_box *imgs, const dt_image_box *img, dt_image_pos *pos);
-void dt_printing_get_image_pos(const dt_images_box *imgs, const dt_image_box *img, dt_image_pos *pos);
+void dt_printing_get_screen_pos(const dt_images_box *imgs,
+                                const dt_image_box *img,
+                                dt_image_pos *pos);
+void dt_printing_get_screen_rel_pos(const dt_images_box *imgs,
+                                    const dt_image_box *img,
+                                    dt_image_pos *pos);
+void dt_printing_get_image_pos_mm(const dt_images_box *imgs,
+                                  const dt_image_box *img,
+                                  dt_image_pos *pos);
+void dt_printing_get_image_pos(const dt_images_box *imgs,
+                               const dt_image_box *img,
+                               dt_image_pos *pos);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

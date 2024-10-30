@@ -116,9 +116,7 @@ static inline __m128 dt_prophotoRGB_to_XYZ_sse2(__m128 rgb)
 }
 #endif
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(in,out : 16) aligned(matrix : 64)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in,out : 16) aligned(matrix : 64))
 static inline void dt_apply_transposed_color_matrix(const dt_aligned_pixel_t in, const dt_colormatrix_t matrix,
                                                     dt_aligned_pixel_t out)
 {
@@ -128,9 +126,7 @@ static inline void dt_apply_transposed_color_matrix(const dt_aligned_pixel_t in,
     out[r] = matrix[0][r] * in[0] + matrix[1][r] * in[1] + matrix[2][r] * in[2];
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(in,out,matrix_row0,matrix_row1,matrix_row2)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in,out,matrix_row0,matrix_row1,matrix_row2))
 static inline void dt_apply_color_matrix_by_row(const dt_aligned_pixel_t in,
                                                 const dt_aligned_pixel_t matrix_row0,
                                                 const dt_aligned_pixel_t matrix_row1,
@@ -143,9 +139,7 @@ static inline void dt_apply_color_matrix_by_row(const dt_aligned_pixel_t in,
     out[r] = matrix_row0[r] * in[0] + matrix_row1[r] * in[1] + matrix_row2[r] * in[2];
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd simdlen(4)
-#endif
+DT_OMP_DECLARE_SIMD(simdlen(4))
 static inline float cbrt_5f(float f)
 {
   uint32_t * const p = (uint32_t *)&f;
@@ -153,9 +147,7 @@ static inline float cbrt_5f(float f)
   return f;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd simdlen(4)
-#endif
+DT_OMP_DECLARE_SIMD(simdlen(4))
 static inline float cbrta_halleyf(const float a, const float R)
 {
   const float a3 = a * a * a;
@@ -163,9 +155,7 @@ static inline float cbrta_halleyf(const float a, const float R)
   return b;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd simdlen(4)
-#endif
+DT_OMP_DECLARE_SIMD(simdlen(4))
 static inline float lab_f(const float x)
 {
   const float epsilon = 216.0f / 24389.0f;
@@ -177,9 +167,7 @@ static inline float lab_f(const float x)
 static const dt_aligned_pixel_t d50 = { 0.9642f, 1.0f, 0.8249f };
 static const dt_aligned_pixel_t d50_inv = { 1.0f/0.9642f, 1.0f, 1.0f/0.8249f };
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(Lab, XYZ:16) uniform(Lab, XYZ)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(Lab, XYZ:16) uniform(Lab, XYZ))
 static inline void dt_XYZ_to_Lab(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t Lab)
 {
   dt_aligned_pixel_t f;
@@ -209,9 +197,7 @@ static inline void dt_XYZ_to_Lab(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_
     Lab[c] = (coeff[c] * (tmp1[c] - tmp2[c])) - offset[c];
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd simdlen(4)
-#endif
+DT_OMP_DECLARE_SIMD(simdlen(4))
 static inline float lab_f_inv(const float x)
 {
   const float epsilon = 0.20689655172413796f; // cbrtf(216.0f/24389.0f);
@@ -220,9 +206,7 @@ static inline float lab_f_inv(const float x)
 }
 
 /** uses D50 white point. */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(Lab, XYZ:16) uniform(Lab, XYZ)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(Lab, XYZ:16) uniform(Lab, XYZ))
 static inline void dt_Lab_to_XYZ(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t XYZ)
 {
   dt_aligned_pixel_t f = { Lab[1], Lab[0], Lab[2], Lab[3] };
@@ -240,9 +224,7 @@ static inline void dt_Lab_to_XYZ(const dt_aligned_pixel_t Lab, dt_aligned_pixel_
 }
 
 /** uses D50 white point. */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(Lab, RGB:16) uniform(Lab, RGB)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(Lab, RGB:16) uniform(Lab, RGB))
 static inline void dt_Lab_to_linearRGB(
 	const dt_aligned_pixel_t Lab,
         const dt_aligned_pixel_t cmatrix_row0,
@@ -278,9 +260,7 @@ static inline void dt_Lab_to_linearRGB(
    To avoid passing the specific whitepoint coordinates we define two variants for D50 and D65
 */
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(xyY, sXYZ:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(xyY, sXYZ:16))
 static inline void dt_D65_XYZ_to_xyY(const dt_aligned_pixel_t sXYZ, dt_aligned_pixel_t xyY)
 {
   static const dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -293,9 +273,7 @@ static inline void dt_D65_XYZ_to_xyY(const dt_aligned_pixel_t sXYZ, dt_aligned_p
   xyY[2] = XYZ[1];
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(xyY, sXYZ:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(xyY, sXYZ:16))
 static inline void dt_D50_XYZ_to_xyY(const dt_aligned_pixel_t sXYZ, dt_aligned_pixel_t xyY)
 {
   static const dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -308,9 +286,7 @@ static inline void dt_D50_XYZ_to_xyY(const dt_aligned_pixel_t sXYZ, dt_aligned_p
   xyY[2] = XYZ[1];
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(xyY, XYZ:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(xyY, XYZ:16))
 static inline void dt_xyY_to_XYZ(const dt_aligned_pixel_t xyY, dt_aligned_pixel_t XYZ)
 {
   const gboolean bad = xyY[1] == 0.0f;
@@ -321,9 +297,7 @@ static inline void dt_xyY_to_XYZ(const dt_aligned_pixel_t xyY, dt_aligned_pixel_
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(xyY, uvY:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(xyY, uvY:16))
 static inline void dt_xyY_to_uvY(const dt_aligned_pixel_t xyY, dt_aligned_pixel_t uvY)
 {
   // This is the linear part of the chromaticity transform from CIE L*u*v* e.g. u'v'.
@@ -338,18 +312,14 @@ static inline void dt_xyY_to_uvY(const dt_aligned_pixel_t xyY, dt_aligned_pixel_
   uvY[2] = xyY[2];                     // Y
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float cbf(const float x)
 {
   return x * x * x;
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(xyY, Luv:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(xyY, Luv:16))
 static inline void dt_xyY_to_Luv(const dt_aligned_pixel_t xyY, dt_aligned_pixel_t Luv)
 {
   // This is the second, non-linear, part of the the 1976 CIE L*u*v* transform.
@@ -390,9 +360,7 @@ static inline void dt_xyY_to_Lch(const dt_aligned_pixel_t xyY, dt_aligned_pixel_
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(uvY, xyY:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(uvY, xyY:16))
 static inline void dt_uvY_to_xyY(const dt_aligned_pixel_t uvY, dt_aligned_pixel_t xyY)
 {
   // This is the linear part of chromaticity transform from CIE L*u*v* e.g. u'v'.
@@ -408,9 +376,7 @@ static inline void dt_uvY_to_xyY(const dt_aligned_pixel_t uvY, dt_aligned_pixel_
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(xyY, Luv:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(xyY, Luv:16))
 static inline void dt_Luv_to_xyY(const dt_aligned_pixel_t Luv, dt_aligned_pixel_t xyY)
 {
   // This is the second, non-linear, part of the the 1976 CIE L*u*v* transform.
@@ -449,9 +415,7 @@ static inline void dt_Lch_to_xyY(const dt_aligned_pixel_t Lch, dt_aligned_pixel_
 
 
 /** Uses D65 **/
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void dt_XYZ_to_Rec709_D65(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t sRGB)
 {
   // linear sRGB == Rec709 with no gamma
@@ -465,9 +429,7 @@ static inline void dt_XYZ_to_Rec709_D65(const dt_aligned_pixel_t XYZ, dt_aligned
   dt_apply_transposed_color_matrix(XYZ, xyz_to_srgb_transposed, sRGB);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(sRGB, RGB)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(sRGB, RGB))
 static inline void dt_sRGB_to_linear_sRGB(const dt_aligned_pixel_t sRGB, dt_aligned_pixel_t RGB)
 {
   // gamma corrected sRGB -> linear sRGB
@@ -491,9 +453,7 @@ static inline void dt_sRGB_to_linear_sRGB(const dt_aligned_pixel_t sRGB, dt_alig
 //    RGB[c] = sRGB[c] <= 0.04045f ? sRGB[c] / 12.92f : powf((sRGB[c] + 0.055f) / (1.0f + 0.055f), 2.4f);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(XYZ,rgb)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(XYZ,rgb))
 static inline void dt_XYZ_to_prophotorgb(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t rgb)
 {
   // transpose and pad the conversion matrix to enable vectorization
@@ -513,9 +473,7 @@ static const dt_colormatrix_t prophotorgb_to_xyz_transpose = {
   { 0.0313534f, 0.0000857f, 0.8252100f, 0.0f }
 };
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(rgb, XYZ)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(rgb, XYZ))
 static inline void dt_prophotorgb_to_XYZ(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t XYZ)
 {
   dt_apply_transposed_color_matrix(rgb,prophotorgb_to_xyz_transpose,XYZ);
@@ -545,17 +503,13 @@ static inline void dt_linearRGB_to_XYZ(const dt_aligned_pixel_t linearRGB, dt_al
   dt_apply_transposed_color_matrix(linearRGB, sRGB_to_xyz_transposed, XYZ);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(sRGB, XYZ_D50: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(sRGB, XYZ_D50: 16))
 static inline void dt_Rec709_to_XYZ_D50(const dt_aligned_pixel_t sRGB, dt_aligned_pixel_t XYZ_D50)
 {
   dt_apply_transposed_color_matrix(sRGB, sRGB_to_xyz_transposed, XYZ_D50);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(sRGB, XYZ)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(sRGB, XYZ))
 static inline void dt_sRGB_to_XYZ(const dt_aligned_pixel_t sRGB, dt_aligned_pixel_t XYZ)
 {
   dt_aligned_pixel_t rgb = { 0 };
@@ -570,9 +524,7 @@ static inline void dt_XYZ_to_linearRGB(const dt_aligned_pixel_t XYZ, dt_aligned_
 }
 
 /** Uses D50 **/
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void dt_XYZ_to_Rec709_D50(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t sRGB)
 {
   // XYZ -> linear sRGB
@@ -580,9 +532,7 @@ static inline void dt_XYZ_to_Rec709_D50(const dt_aligned_pixel_t XYZ, dt_aligned
 }
 
 /** uses D50 white point. */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(XYZ, sRGB)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(XYZ, sRGB))
 static inline void dt_XYZ_to_sRGB(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t sRGB)
 {
   // XYZ -> linear sRGB
@@ -606,9 +556,7 @@ static inline void dt_XYZ_to_sRGB(const dt_aligned_pixel_t XYZ, dt_aligned_pixel
 }
 
 /** uses D50 white point and clips the output to [0..1]. */
-#ifdef _OPENMP
-#pragma omp declare simd aligned(XYZ, sRGB)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(XYZ, sRGB))
 static inline void dt_XYZ_to_sRGB_clipped(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t sRGB)
 {
   dt_aligned_pixel_t result;
@@ -618,9 +566,7 @@ static inline void dt_XYZ_to_sRGB_clipped(const dt_aligned_pixel_t XYZ, dt_align
     sRGB[c] = CLIP(result[c]);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(Lab, rgb)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(Lab, rgb))
 static inline float dt_Lab_to_prophotorgb(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t rgb)
 {
   dt_aligned_pixel_t XYZ = { 0.0f };
@@ -629,9 +575,7 @@ static inline float dt_Lab_to_prophotorgb(const dt_aligned_pixel_t Lab, dt_align
   return XYZ[1];
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(rgb, Lab)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(rgb, Lab))
 static inline void dt_prophotorgb_to_Lab(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t Lab)
 {
   dt_aligned_pixel_t XYZ = { 0.0f };
@@ -639,9 +583,7 @@ static inline void dt_prophotorgb_to_Lab(const dt_aligned_pixel_t rgb, dt_aligne
   dt_XYZ_to_Lab(XYZ, Lab);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(rgb, Lab, cmatrix_row0, cmatrix_row1, cmatrix_row2)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(rgb, Lab, cmatrix_row0, cmatrix_row1, cmatrix_row2))
 static inline void dt_RGB_to_Lab(const dt_aligned_pixel_t rgb,
                                  const dt_aligned_pixel_t cmatrix_row0,
                                  const dt_aligned_pixel_t cmatrix_row1,
@@ -654,9 +596,7 @@ static inline void dt_RGB_to_Lab(const dt_aligned_pixel_t rgb,
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(RGB)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(RGB))
 static inline float _dt_RGB_2_Hue(const dt_aligned_pixel_t RGB, const float max, const float delta)
 {
   float hue;
@@ -673,9 +613,7 @@ static inline float _dt_RGB_2_Hue(const dt_aligned_pixel_t RGB, const float max,
   return hue;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(RGB: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(RGB: 16))
 static inline void _dt_Hue_2_RGB(dt_aligned_pixel_t RGB, const float H, const float C, const float min)
 {
   const float h = H * 6.0f;
@@ -725,9 +663,7 @@ static inline void _dt_Hue_2_RGB(dt_aligned_pixel_t RGB, const float H, const fl
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(RGB, HSL: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(RGB, HSL: 16))
 static inline void dt_RGB_2_HSL(const dt_aligned_pixel_t RGB, dt_aligned_pixel_t HSL)
 {
   const float min = fminf(RGB[0], fminf(RGB[1], RGB[2]));
@@ -735,7 +671,8 @@ static inline void dt_RGB_2_HSL(const dt_aligned_pixel_t RGB, dt_aligned_pixel_t
   const float delta = max - min;
 
   const float L = (max + min) / 2.0f;
-  float H, S;
+  float H = 0.0f;
+  float S = 0.0f;
 
   if(fabsf(max) > 1e-6f && fabsf(delta) > 1e-6f)
   {
@@ -745,20 +682,13 @@ static inline void dt_RGB_2_HSL(const dt_aligned_pixel_t RGB, dt_aligned_pixel_t
       S = delta / (2.0f - max - min);
     H = _dt_RGB_2_Hue(RGB, max, delta);
   }
-  else
-  {
-    H = 0.0f;
-    S = 0.0f;
-  }
 
   HSL[0] = H;
   HSL[1] = S;
   HSL[2] = L;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(HSL, RGB: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(HSL, RGB: 16))
 static inline void dt_HSL_2_RGB(const dt_aligned_pixel_t HSL, dt_aligned_pixel_t RGB)
 {
   // almost straight from https://en.wikipedia.org/wiki/HSL_and_HSV
@@ -773,9 +703,7 @@ static inline void dt_HSL_2_RGB(const dt_aligned_pixel_t HSL, dt_aligned_pixel_t
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(RGB, HSV: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(RGB, HSV: 16))
 static inline void dt_RGB_2_HSV(const dt_aligned_pixel_t RGB, dt_aligned_pixel_t HSV)
 {
   const float min = fminf(RGB[0], fminf(RGB[1], RGB[2]));
@@ -801,9 +729,7 @@ static inline void dt_RGB_2_HSV(const dt_aligned_pixel_t RGB, dt_aligned_pixel_t
   HSV[2] = V;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(HSV, RGB: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(HSV, RGB: 16))
 static inline void dt_HSV_2_RGB(const dt_aligned_pixel_t HSV, dt_aligned_pixel_t RGB)
 {
   // almost straight from https://en.wikipedia.org/wiki/HSL_and_HSV
@@ -813,9 +739,7 @@ static inline void dt_HSV_2_RGB(const dt_aligned_pixel_t HSV, dt_aligned_pixel_t
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(RGB, HCV: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(RGB, HCV: 16))
 static inline void dt_RGB_2_HCV(const dt_aligned_pixel_t RGB, dt_aligned_pixel_t HCV)
 {
   const float min = fminf(RGB[0], fminf(RGB[1], RGB[2]));
@@ -841,17 +765,15 @@ static inline void dt_RGB_2_HCV(const dt_aligned_pixel_t RGB, dt_aligned_pixel_t
   HCV[2] = V;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void dt_Lab_2_LCH(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t LCH)
 {
   float var_H = atan2f(Lab[2], Lab[1]);
 
   if(var_H > 0.0f)
-    var_H = var_H / (2.0f * DT_M_PI_F);
+    var_H = var_H / (2.0f * M_PI_F);
   else
-    var_H = 1.0f - fabsf(var_H) / (2.0f * DT_M_PI_F);
+    var_H = 1.0f - fabsf(var_H) / (2.0f * M_PI_F);
 
   LCH[0] = Lab[0];
   LCH[1] = hypotf(Lab[1], Lab[2]);
@@ -859,14 +781,12 @@ static inline void dt_Lab_2_LCH(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline void dt_LCH_2_Lab(const dt_aligned_pixel_t LCH, dt_aligned_pixel_t Lab)
 {
   Lab[0] = LCH[0];
-  Lab[1] = cosf(2.0f * DT_M_PI_F * LCH[2]) * LCH[1];
-  Lab[2] = sinf(2.0f * DT_M_PI_F * LCH[2]) * LCH[1];
+  Lab[1] = cosf(2.0f * M_PI_F * LCH[2]) * LCH[1];
+  Lab[2] = sinf(2.0f * M_PI_F * LCH[2]) * LCH[1];
 }
 
 static inline float dt_camera_rgb_luminance(const dt_aligned_pixel_t rgb)
@@ -875,9 +795,7 @@ static inline float dt_camera_rgb_luminance(const dt_aligned_pixel_t rgb)
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(XYZ_D50, XYZ_D65: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(XYZ_D50, XYZ_D65: 16))
 static inline void dt_XYZ_D50_2_XYZ_D65(const dt_aligned_pixel_t XYZ_D50, dt_aligned_pixel_t XYZ_D65)
 {
   // Bradford adaptation matrix from http://www.brucelindbloom.com/index.html?Eqn_ChromAdapt.html
@@ -891,9 +809,7 @@ static inline void dt_XYZ_D50_2_XYZ_D65(const dt_aligned_pixel_t XYZ_D50, dt_ali
     XYZ_D65[x] = M_transposed[0][x] * XYZ_D50[0] + M_transposed[1][x] * XYZ_D50[1] + M_transposed[2][x] * XYZ_D50[2];
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(XYZ_D50, XYZ_D65: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(XYZ_D50, XYZ_D65: 16))
 static inline void dt_XYZ_D65_2_XYZ_D50(const dt_aligned_pixel_t XYZ_D65, dt_aligned_pixel_t XYZ_D50)
 {
   // Bradford adaptation matrix from http://www.brucelindbloom.com/index.html?Eqn_ChromAdapt.html
@@ -915,9 +831,7 @@ static inline void dt_XYZ_D65_2_XYZ_D50(const dt_aligned_pixel_t XYZ_D65, dt_ali
  *  https://www.osapublishing.org/oe/fulltext.cfm?uri=oe-25-13-15131&id=368272
  */
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(XYZ_D65, JzAzBz: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(XYZ_D65, JzAzBz: 16))
 static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_pixel_t JzAzBz)
 {
   const float b = 1.15f;
@@ -950,9 +864,7 @@ static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_
   // X'Y'Z -> L'M'S'
   dt_aligned_pixel_t LMS = { 0.0f, 0.0f, 0.0f, 0.0f };
   dt_apply_transposed_color_matrix(XYZ, M_transposed, LMS);
-#ifdef _OPENMP
-#pragma omp simd aligned(LMS, XYZ:16)
-#endif
+  DT_OMP_SIMD(aligned(LMS, XYZ:16))
   for(int i = 0; i < 3; i++)
   {
     LMS[i] = powf(fmaxf(LMS[i] / 10000.f, 0.0f), n);
@@ -965,30 +877,24 @@ static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_
   JzAzBz[0] = fmaxf(((1.0f + d) * JzAzBz[0]) / (1.0f + d * JzAzBz[0]) - d0, 0.f);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(JzAzBz, JzCzhz: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(JzAzBz, JzCzhz: 16))
 static inline void dt_JzAzBz_2_JzCzhz(const dt_aligned_pixel_t JzAzBz, dt_aligned_pixel_t JzCzhz)
 {
-  float var_H = atan2f(JzAzBz[2], JzAzBz[1]) / (2.0f * DT_M_PI_F);
+  float var_H = atan2f(JzAzBz[2], JzAzBz[1]) / (2.0f * M_PI_F);
   JzCzhz[0] = JzAzBz[0];
   JzCzhz[1] = hypotf(JzAzBz[1], JzAzBz[2]);
   JzCzhz[2] = var_H >= 0.0f ? var_H : 1.0f + var_H;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(JzCzhz, JzAzBz: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(JzCzhz, JzAzBz: 16))
 static inline void dt_JzCzhz_2_JzAzBz(const dt_aligned_pixel_t JzCzhz, dt_aligned_pixel_t JzAzBz)
 {
   JzAzBz[0] = JzCzhz[0];
-  JzAzBz[1] = cosf(2.0f * DT_M_PI_F * JzCzhz[2]) * JzCzhz[1];
-  JzAzBz[2] = sinf(2.0f * DT_M_PI_F * JzCzhz[2]) * JzCzhz[1];
+  JzAzBz[1] = cosf(2.0f * M_PI_F * JzCzhz[2]) * JzCzhz[1];
+  JzAzBz[2] = sinf(2.0f * M_PI_F * JzCzhz[2]) * JzCzhz[1];
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(JzAzBz, XYZ_D65: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(JzAzBz, XYZ_D65: 16))
 static inline void dt_JzAzBz_2_XYZ(const dt_aligned_pixel_t JzAzBz, dt_aligned_pixel_t XYZ_D65)
 {
   const float b = 1.15f;
@@ -1081,17 +987,13 @@ static const dt_colormatrix_t LMS_2006_D65_to_XYZ_D65_trans
         {  0.34785879f, -0.04104687f,  1.74274183f, 0.f } };
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(LMS, XYZ: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(LMS, XYZ: 16))
 static inline void XYZ_to_LMS(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t LMS)
 {
   dt_apply_transposed_color_matrix(XYZ, XYZ_D65_to_LMS_2006_D65_trans, LMS);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(XYZ, LMS: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(XYZ, LMS: 16))
 static inline void LMS_to_XYZ(const dt_aligned_pixel_t LMS, dt_aligned_pixel_t XYZ)
 {
   dt_apply_transposed_color_matrix(LMS, LMS_2006_D65_to_XYZ_D65_trans, XYZ);
@@ -1114,17 +1016,13 @@ static const dt_colormatrix_t LMS_D65_to_filmlightRGB_D65_trans
         { -0.66666667f,  1.66666667f,         0.f, 0.f },
         {  0.02061856f, -0.05154639f, 1.03092784f, 0.f } };
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(LMS, RGB: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(LMS, RGB: 16))
 static inline void gradingRGB_to_LMS(const dt_aligned_pixel_t RGB, dt_aligned_pixel_t LMS)
 {
   dt_apply_transposed_color_matrix(RGB, filmlightRGB_D65_to_LMS_D65_trans, LMS);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(LMS, RGB: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(LMS, RGB: 16))
 static inline void LMS_to_gradingRGB(const dt_aligned_pixel_t LMS, dt_aligned_pixel_t RGB)
 {
   dt_apply_transposed_color_matrix(LMS, LMS_D65_to_filmlightRGB_D65_trans, RGB);
@@ -1135,9 +1033,7 @@ static inline void LMS_to_gradingRGB(const dt_aligned_pixel_t LMS, dt_aligned_pi
 * Re-express the Filmlight RGB triplet as Yrg luminance/chromacity coordinates
 */
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(LMS, Yrg: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(LMS, Yrg: 16))
 static inline void LMS_to_Yrg(const dt_aligned_pixel_t LMS, dt_aligned_pixel_t Yrg)
 {
   // compute luminance
@@ -1157,9 +1053,7 @@ static inline void LMS_to_Yrg(const dt_aligned_pixel_t LMS, dt_aligned_pixel_t Y
   Yrg[2] = rgb[1];
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(Yrg, LMS: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(Yrg, LMS: 16))
 static inline void Yrg_to_LMS(const dt_aligned_pixel_t Yrg, dt_aligned_pixel_t LMS)
 {
   const float Y = Yrg[0];
@@ -1190,9 +1084,7 @@ static inline void Yrg_to_LMS(const dt_aligned_pixel_t Yrg, dt_aligned_pixel_t L
  * trigonometric functions.
  */
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(Ych, Yrg: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(Ych, Yrg: 16))
 static inline void Yrg_to_Ych(const dt_aligned_pixel_t Yrg, dt_aligned_pixel_t Ych)
 {
   const float Y = Yrg[0];
@@ -1211,9 +1103,7 @@ static inline void Yrg_to_Ych(const dt_aligned_pixel_t Yrg, dt_aligned_pixel_t Y
   Ych[3] = sin_h;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(Ych, Yrg: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(Ych, Yrg: 16))
 static inline void Ych_to_Yrg(const dt_aligned_pixel_t Ych, dt_aligned_pixel_t Yrg)
 {
   const float Y = Ych[0];
@@ -1227,9 +1117,7 @@ static inline void Ych_to_Yrg(const dt_aligned_pixel_t Ych, dt_aligned_pixel_t Y
   Yrg[2] = g;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(Ych: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(Ych: 16))
 static inline void make_Ych(const float Y, const float c, const float h, dt_aligned_pixel_t Ych)
 {
   Ych[0] = Y;
@@ -1238,9 +1126,7 @@ static inline void make_Ych(const float Y, const float c, const float h, dt_alig
   Ych[3] = sinf(h);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(Ych: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(Ych: 16))
 static inline float get_hue_angle_from_Ych(const dt_aligned_pixel_t Ych)
 {
   return atan2f(Ych[3], Ych[2]);
@@ -1250,9 +1136,7 @@ static inline float get_hue_angle_from_Ych(const dt_aligned_pixel_t Ych)
 * Filmlight RGB utils functions
 */
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(Ych, RGB: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(Ych, RGB: 16))
 static inline void Ych_to_gradingRGB(const dt_aligned_pixel_t Ych, dt_aligned_pixel_t RGB)
 {
   dt_aligned_pixel_t Yrg = { 0.f };
@@ -1263,9 +1147,7 @@ static inline void Ych_to_gradingRGB(const dt_aligned_pixel_t Ych, dt_aligned_pi
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(Ych, RGB: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(Ych, RGB: 16))
 static inline void gradingRGB_to_Ych(const dt_aligned_pixel_t RGB, dt_aligned_pixel_t Ych)
 {
   dt_aligned_pixel_t Yrg = { 0.f };
@@ -1276,9 +1158,7 @@ static inline void gradingRGB_to_Ych(const dt_aligned_pixel_t RGB, dt_aligned_pi
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(Ych, XYZ: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(Ych, XYZ: 16))
 static inline void XYZ_to_Ych(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t Ych)
 {
   // WARNING: XYZ needs to be chroma-adapted to D65 before
@@ -1290,9 +1170,7 @@ static inline void XYZ_to_Ych(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t Y
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(Ych, XYZ: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(Ych, XYZ: 16))
 static inline void Ych_to_XYZ(const dt_aligned_pixel_t Ych, dt_aligned_pixel_t XYZ)
 {
   // WARNING: XYZ is output in D65
@@ -1365,21 +1243,6 @@ static inline void dt_YCbCr_to_RGB(const dt_aligned_pixel_t yuv, dt_aligned_pixe
  * Use this space for color-grading in a perceptual framework.
  * The CAM terms have been removed for performance.
  **/
-
-static inline float Y_to_dt_UCS_L_star(const float Y)
-{
-  // WARNING: L_star needs to be < 2.098883786377, meaning Y needs to be < 3.875766378407574e+19
-  const float Y_hat = powf(Y, 0.631651345306265f);
-  return 2.098883786377f * Y_hat / (Y_hat + 1.12426773749357f);
-}
-
-static inline float dt_UCS_L_star_to_Y(const float L_star)
-{
-  // WARNING: L_star needs to be < 2.098883786377, meaning Y needs to be < 3.875766378407574e+19
-  return powf((1.12426773749357f * L_star / (2.098883786377f - L_star)), 1.5831518565279648f);
-}
-
-
 // L_star upper limit is 2.098883786377 truncated to 32-bit float and last decimal removed.
 // By clipping L_star to this limit, we ensure dt_UCS_L_star_to_Y() doesn't divide by zero.
 // static const float DT_UCS_L_STAR_UPPER_LIMIT = 2.098883f;
@@ -1389,13 +1252,22 @@ static inline float dt_UCS_L_star_to_Y(const float L_star)
 // Instead of using above theoretical values we use some modified versions
 // that not avoid div-by-zero but div-by-close-to-zero
 // this leads to more stability for extremely bright parts as we avoid single float precision overflows
-static const float DT_UCS_L_STAR_UPPER_LIMIT = 2.09885f;
-static const float DT_UCS_Y_UPPER_LIMIT = 1e8f;
+#define DT_UCS_L_STAR_RANGE 2.098883786377f
+#define DT_UCS_L_STAR_UPPER_LIMIT 2.09885f
+#define DT_UCS_Y_UPPER_LIMIT 1e8f
 
+static inline float Y_to_dt_UCS_L_star(const float Y)
+{
+  const float Y_hat = powf(Y, 0.631651345306265f);
+  return DT_UCS_L_STAR_RANGE * Y_hat / (Y_hat + 1.12426773749357f);
+}
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(xyY: 16)
-#endif
+static inline float dt_UCS_L_star_to_Y(const float L_star)
+{
+  return powf((1.12426773749357f * L_star / (DT_UCS_L_STAR_RANGE - L_star)), 1.5831518565279648f);
+}
+
+DT_OMP_DECLARE_SIMD(aligned(xyY: 16))
 static inline void xyY_to_dt_UCS_UV(const dt_aligned_pixel_t xyY, float UV_star_prime[2])
 {
 
@@ -1423,9 +1295,7 @@ static inline void xyY_to_dt_UCS_UV(const dt_aligned_pixel_t xyY, float UV_star_
 
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(JCH: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(JCH: 16))
 static inline void dt_UCS_LUV_to_JCH(const float L_star, const float L_white, const float UV_star_prime[2], dt_aligned_pixel_t JCH)
 {
   const float M2 = UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1]; // square of colorfulness M
@@ -1436,9 +1306,7 @@ static inline void dt_UCS_LUV_to_JCH(const float L_star, const float L_white, co
   JCH[2] = atan2f(UV_star_prime[1], UV_star_prime[0]);
  }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(xyY, JCH: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(xyY, JCH: 16))
 static inline void xyY_to_dt_UCS_JCH(const dt_aligned_pixel_t xyY, const float L_white, dt_aligned_pixel_t JCH)
 {
   /*
@@ -1452,14 +1320,11 @@ static inline void xyY_to_dt_UCS_JCH(const dt_aligned_pixel_t xyY, const float L
 
   float UV_star_prime[2];
   xyY_to_dt_UCS_UV(xyY, UV_star_prime);
-
   dt_UCS_LUV_to_JCH(Y_to_dt_UCS_L_star(xyY[2]), L_white, UV_star_prime, JCH);
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(xyY, JCH: 16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(xyY, JCH: 16))
 static inline void dt_UCS_JCH_to_xyY(const dt_aligned_pixel_t JCH, const float L_white, dt_aligned_pixel_t xyY)
 {
   /*

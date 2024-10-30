@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2023 darktable developers.
+    Copyright (C) 2018-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,13 +41,15 @@ static dt_imageio_retval_t _read_pbm(dt_image_t *img, FILE*f, float *buf)
 
   int bytes_needed = (img->width + 7) / 8;
   uint8_t *line = calloc(bytes_needed, sizeof(uint8_t));
+  if(!line)
+    return DT_IMAGEIO_LOAD_FAILED;
 
   float *buf_iter = buf;
   for(size_t y = 0; y < img->height; y++)
   {
     if(fread(line, sizeof(uint8_t), (size_t)bytes_needed, f) != bytes_needed)
     {
-      result = DT_IMAGEIO_LOAD_FAILED;
+      result = DT_IMAGEIO_IOERROR;
       break;
     }
     for(size_t x = 0; x < bytes_needed; x++)
@@ -81,18 +83,18 @@ static dt_imageio_retval_t _read_pgm(dt_image_t *img, FILE*f, float *buf)
     max = atoi(maxvalue_string);
   else
     return DT_IMAGEIO_LOAD_FAILED;
-  if(max == 0 || max > 65535) return DT_IMAGEIO_LOAD_FAILED;
+  if(max == 0 || max > 65535) return DT_IMAGEIO_FILE_CORRUPTED;
 
   if(max <= 255)
   {
     uint8_t *line = calloc(img->width, sizeof(uint8_t));
 
     float *buf_iter = buf;
-    for(size_t y = 0; y < img->height; y++)
+    for(size_t y = 0; line && y < img->height; y++)
     {
       if(fread(line, sizeof(uint8_t), (size_t)img->width, f) != img->width)
       {
-        result = DT_IMAGEIO_LOAD_FAILED;
+        result = DT_IMAGEIO_FILE_CORRUPTED;
         break;
       }
       for(size_t x = 0; x < img->width; x++)
@@ -110,11 +112,11 @@ static dt_imageio_retval_t _read_pgm(dt_image_t *img, FILE*f, float *buf)
     uint16_t *line = calloc(img->width, sizeof(uint16_t));
 
     float *buf_iter = buf;
-    for(size_t y = 0; y < img->height; y++)
+    for(size_t y = 0; line && y < img->height; y++)
     {
       if(fread(line, sizeof(uint16_t), (size_t)img->width, f) != img->width)
       {
-        result = DT_IMAGEIO_LOAD_FAILED;
+        result = DT_IMAGEIO_FILE_CORRUPTED;
         break;
       }
       for(size_t x = 0; x < img->width; x++)
@@ -146,14 +148,14 @@ static dt_imageio_retval_t _read_ppm(dt_image_t *img, FILE*f, float *buf)
     max = atoi(maxvalue_string);
   else
     return DT_IMAGEIO_LOAD_FAILED;
-  if(max == 0 || max > 65535) return DT_IMAGEIO_LOAD_FAILED;
+  if(max == 0 || max > 65535) return DT_IMAGEIO_FILE_CORRUPTED;
 
   if(max <= 255)
   {
     uint8_t *line = calloc((size_t)3 * img->width, sizeof(uint8_t));
 
     float *buf_iter = buf;
-    for(size_t y = 0; y < img->height; y++)
+    for(size_t y = 0; line && y < img->height; y++)
     {
       if(fread(line, 3 * sizeof(uint8_t), (size_t)img->width, f) != img->width)
       {
@@ -177,11 +179,11 @@ static dt_imageio_retval_t _read_ppm(dt_image_t *img, FILE*f, float *buf)
     uint16_t *line = calloc((size_t)3 * img->width, sizeof(uint16_t));
 
     float *buf_iter = buf;
-    for(size_t y = 0; y < img->height; y++)
+    for(size_t y = 0; line && y < img->height; y++)
     {
       if(fread(line, 3 * sizeof(uint16_t), (size_t)img->width, f) != img->width)
       {
-        result = DT_IMAGEIO_LOAD_FAILED;
+        result = DT_IMAGEIO_FILE_CORRUPTED;
         break;
       }
       for(size_t x = 0; x < img->width; x++)
@@ -209,9 +211,9 @@ dt_imageio_retval_t dt_imageio_open_pnm(dt_image_t *img, const char *filename, d
   const char *ext = filename + strlen(filename);
   while(*ext != '.' && ext > filename) ext--;
   if(strcasecmp(ext, ".pbm") && strcasecmp(ext, ".pgm") && strcasecmp(ext, ".pnm") && strcasecmp(ext, ".ppm"))
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
   FILE *f = g_fopen(filename, "rb");
-  if(!f) return DT_IMAGEIO_LOAD_FAILED;
+  if(!f) return DT_IMAGEIO_FILE_NOT_FOUND;
   int ret = 0;
   dt_imageio_retval_t result = DT_IMAGEIO_LOAD_FAILED;
 

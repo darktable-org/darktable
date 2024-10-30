@@ -23,48 +23,50 @@
 #pragma once
 
 
-#if defined(_OPENMP) && !defined(_WIN32) && !defined(__GNUC__)
+#if defined(_OPENMP) && !defined(_WIN32) && (!defined(__GNUC__) || __GNUC__ >= 12)
 
-#pragma omp declare simd
+#ifndef __GNUC__  // GCC 12 compiles but fails at runtime due to missing library function
+DT_OMP_DECLARE_SIMD()
 extern float fmaxf(const float x, const float y);
+#endif
 
-#pragma omp declare simd
+#ifndef __GNUC__  // GCC 12 compiles but fails at runtime due to missing library function
+DT_OMP_DECLARE_SIMD()
 extern float fminf(const float x, const float y);
+#endif
 
-#pragma omp declare simd
+DT_OMP_DECLARE_SIMD()
 extern float fabsf(const float x);
 
-#pragma omp declare simd
+DT_OMP_DECLARE_SIMD()
 extern float powf(const float x, const float y);
 
-#pragma omp declare simd
+DT_OMP_DECLARE_SIMD()
 extern float sqrtf(const float x);
 
-#pragma omp declare simd
+DT_OMP_DECLARE_SIMD()
 extern float cbrtf(const float x);
 
-#pragma omp declare simd
+DT_OMP_DECLARE_SIMD()
 extern float log2f(const float x);
 
-#pragma omp declare simd
+DT_OMP_DECLARE_SIMD()
 extern float exp2f(const float x);
 
-#pragma omp declare simd
+DT_OMP_DECLARE_SIMD()
 extern float log10f(const float x);
 
-#pragma omp declare simd
+DT_OMP_DECLARE_SIMD()
 extern float expf(const float x);
 
-#pragma omp declare simd
+DT_OMP_DECLARE_SIMD()
 extern float logf(const float x);
 
 #endif
 
 /* Bring our own optimized maths functions because Clang makes dumb shit */
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float fast_exp10f(const float x)
 {
   // we use the property : 10^x = exp(log(10) * x) = 2^(log(10) * x / log(2))
@@ -73,9 +75,7 @@ static inline float fast_exp10f(const float x)
 }
 
 // Since we are at it, write an optimized expf
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float fast_expf(const float x)
 {
   // we use the property : exp(x) = 2^(x / log(2))
@@ -84,9 +84,7 @@ static inline float fast_expf(const float x)
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(vector:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(vector:16))
 static inline float v_maxf(const float vector[3])
 {
   // Find the max over an RGB vector
@@ -94,27 +92,21 @@ static inline float v_maxf(const float vector[3])
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(vector:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(vector:16))
 static inline float v_minf(const float vector[3])
 {
   // Find the min over an RGB vector
   return fminf(fminf(vector[0], vector[1]), vector[2]);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(vector:16)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(vector:16))
 static inline float v_sumf(const float vector[3])
 {
   return vector[0] + vector[1] + vector[2];
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float fmaxabsf(const float a, const float b)
 {
   // Find the max in absolute value and return it with its sign
@@ -122,9 +114,7 @@ static inline float fmaxabsf(const float a, const float b)
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float fminabsf(const float a, const float b)
 {
   // Find the min in absolute value and return it with its sign
@@ -132,9 +122,7 @@ static inline float fminabsf(const float a, const float b)
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
+DT_OMP_DECLARE_SIMD()
 static inline float clamp_simd(const float x)
 {
   return fminf(fmaxf(x, 0.0f), 1.0f);

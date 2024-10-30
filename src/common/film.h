@@ -31,7 +31,7 @@
  */
 typedef struct dt_film_t
 {
-  int32_t id;
+  dt_filmid_t id;
   char dirname[512];
   dt_pthread_mutex_t images_mutex;
   GDir *dir;
@@ -42,29 +42,27 @@ typedef struct dt_film_t
 void dt_film_init(dt_film_t *film);
 void dt_film_cleanup(dt_film_t *film);
 /** open film with given id. */
-int dt_film_open(const int32_t id);
-/** open film with given id. */
-int dt_film_open2(dt_film_t *film);
+gboolean dt_film_open(const dt_filmid_t id);
 
 /** open num-th most recently used film. */
-int dt_film_open_recent(const int32_t num);
+// gboolean dt_film_open_recent(const int32_t num);
 /** import new film and all images in this directory as a background task(non-recursive, existing films/images
  * are respected). */
-int dt_film_import(const char *dirname);
+dt_filmid_t dt_film_import(const char *dirname);
 /** constructs the lighttable/query setting for this film, respecting stars and filters. */
-void dt_film_set_query(const int32_t id);
+void dt_film_set_query(const dt_filmid_t id);
 /** get id associated with filmroll */
-int32_t dt_film_get_id(const char *folder);
+dt_filmid_t dt_film_get_id(const char *folder);
 /** removes this film and all its images from db. */
-void dt_film_remove(const int id);
+void dt_film_remove(const dt_filmid_t id);
 /** checks if film is empty */
-gboolean dt_film_is_empty(const int id);
+gboolean dt_film_is_empty(const dt_filmid_t id);
 /** Creating a new filmroll */
-int dt_film_new(dt_film_t *film, const char *directory);
+dt_filmid_t dt_film_new(dt_film_t *film, const char *directory);
 /** removes all empty film rolls. */
 void dt_film_remove_empty();
 /** gets all image ids in film. the returned GList has to be freed with g_list_free(). */
-GList *dt_film_get_image_ids(const int filmid);
+GList *dt_film_get_image_ids(const dt_filmid_t filmid);
 // initialize film folder status
 void dt_film_set_folder_status();
 // clang-format off

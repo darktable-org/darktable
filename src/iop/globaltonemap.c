@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2023 darktable developers.
+    Copyright (C) 2012-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -152,10 +152,8 @@ int legacy_params(dt_iop_module_t *self,
       } drago;
     } dt_iop_global_tonemap_params_v1_t;
 
-    const dt_iop_global_tonemap_params_v1_t *o =
-      (dt_iop_global_tonemap_params_v1_t *)old_params;
+    const dt_iop_global_tonemap_params_v1_t *o = old_params;
     dt_iop_global_tonemap_params_v3_t *n =
-      (dt_iop_global_tonemap_params_v3_t *)
       malloc(sizeof(dt_iop_global_tonemap_params_v3_t));
 
     // only appended detail, 0 is no-op
@@ -170,7 +168,7 @@ int legacy_params(dt_iop_module_t *self,
   return 1;
 }
 
-static inline void process_reinhard(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+static inline void process_reinhard(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                     const void *const ivoid, void *const ovoid,
                                     const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                                     dt_iop_global_tonemap_data_t *data)
@@ -179,12 +177,7 @@ static inline void process_reinhard(struct dt_iop_module_t *self, dt_dev_pixelpi
   float *out = (float *)ovoid;
   const int ch = piece->colors;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, roi_out) \
-  shared(in, out, data) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
     float *inp = in + ch * k;
@@ -196,11 +189,11 @@ static inline void process_reinhard(struct dt_iop_module_t *self, dt_dev_pixelpi
   }
 }
 
-static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+static inline void process_drago(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                  const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
                                  const dt_iop_roi_t *const roi_out, dt_iop_global_tonemap_data_t *data)
 {
-  dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
+  dt_iop_global_tonemap_gui_data_t *g = self->gui_data;
   float *in = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
@@ -235,11 +228,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   if(tmp_lwmax == -FLT_MAX)
   {
     lwmax = eps;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(roi_out, in, ch) reduction(max : lwmax)      \
-  schedule(static)
-#endif
+    DT_OMP_FOR(reduction(max : lwmax))
     for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
     {
       const float *inp = in + ch * k;
@@ -264,12 +253,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   const float ldc = data->drago.max_light * 0.01 / log10f(lwmax + 1);
   const float bl = logf(fmaxf(eps, data->drago.bias)) / logf(0.5);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, bl, ldc, roi_out, eps) \
-  shared(in, out, lwmax) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
     float *inp = in + ch * k;
@@ -282,7 +266,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   }
 }
 
-static inline void process_filmic(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+static inline void process_filmic(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                   const void *const ivoid, void *const ovoid,
                                   const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                                   dt_iop_global_tonemap_data_t *data)
@@ -291,12 +275,7 @@ static inline void process_filmic(struct dt_iop_module_t *self, dt_dev_pixelpipe
   float *out = (float *)ovoid;
   const int ch = piece->colors;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, roi_out) \
-  shared(in, out, data) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
     float *inp = in + ch * k;
@@ -309,10 +288,10 @@ static inline void process_filmic(struct dt_iop_module_t *self, dt_dev_pixelpipe
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_global_tonemap_data_t *data = (dt_iop_global_tonemap_data_t *)piece->data;
+  dt_iop_global_tonemap_data_t *data = piece->data;
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
   const float sigma_r = 8.0f; // does not depend on scale
   const float iw = piece->buf_in.width / scale;
@@ -349,15 +328,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_global_tonemap_data_t *d = (dt_iop_global_tonemap_data_t *)piece->data;
-  dt_iop_global_tonemap_global_data_t *gd = (dt_iop_global_tonemap_global_data_t *)self->global_data;
-  dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
+  dt_iop_global_tonemap_data_t *d = piece->data;
+  dt_iop_global_tonemap_global_data_t *gd = self->global_data;
+  dt_iop_global_tonemap_gui_data_t *g = self->gui_data;
   dt_bilateral_cl_t *b = NULL;
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   cl_mem dev_m = NULL;
   cl_mem dev_r = NULL;
   float *maximum = NULL;
@@ -408,7 +387,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                                       .sizex = 1 << 4, .sizey = 1 << 4 };
 
       if(!dt_opencl_local_buffer_opt(devid, gd->kernel_pixelmax_first, &flocopt))
+      {
+        err = CL_INVALID_WORK_DIMENSION;
         goto finally;
+      }
 
       const size_t bwidth = ROUNDUP(width, flocopt.sizex);
       const size_t bheight = ROUNDUP(height, flocopt.sizey);
@@ -421,7 +403,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                                       .sizex = 1 << 16, .sizey = 1 };
 
       if(!dt_opencl_local_buffer_opt(devid, gd->kernel_pixelmax_second, &slocopt))
+      {
+        err = CL_INVALID_WORK_DIMENSION;
         goto finally;
+      }
 
       const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, slocopt.sizex) / slocopt.sizex);
 
@@ -457,6 +442,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       if(err != CL_SUCCESS) goto finally;
 
       maximum = dt_alloc_align_float((size_t)reducesize);
+      if(!maximum)
+      {
+        err = DT_OPENCL_SYSMEM_ALLOCATION;
+        goto finally;
+      }
       err = dt_opencl_read_buffer_from_device(devid, (void *)maximum, dev_r, 0,
                                             sizeof(float) * reducesize, CL_TRUE);
       if(err != CL_SUCCESS) goto finally;
@@ -535,11 +525,11 @@ finally:
 #endif
 
 
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
-  dt_iop_global_tonemap_data_t *d = (dt_iop_global_tonemap_data_t *)piece->data;
+  dt_iop_global_tonemap_data_t *d = piece->data;
 
   const float scale = piece->iscale / roi_in->scale;
   const float iw = piece->buf_in.width / scale;
@@ -564,11 +554,11 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   return;
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)p1;
-  dt_iop_global_tonemap_data_t *d = (dt_iop_global_tonemap_data_t *)piece->data;
+  dt_iop_global_tonemap_data_t *d = piece->data;
 
   d->operator= p->operator;
   d->drago.bias = p->drago.bias;
@@ -584,23 +574,22 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 #endif
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_global_tonemap_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 8; // extended.cl from programs.conf
-  dt_iop_global_tonemap_global_data_t *gd
-      = (dt_iop_global_tonemap_global_data_t *)malloc(sizeof(dt_iop_global_tonemap_global_data_t));
-  module->data = gd;
+  dt_iop_global_tonemap_global_data_t *gd = malloc(sizeof(dt_iop_global_tonemap_global_data_t));
+  self->data = gd;
   gd->kernel_pixelmax_first = dt_opencl_create_kernel(program, "pixelmax_first");
   gd->kernel_pixelmax_second = dt_opencl_create_kernel(program, "pixelmax_second");
   gd->kernel_global_tonemap_reinhard = dt_opencl_create_kernel(program, "global_tonemap_reinhard");
@@ -609,22 +598,22 @@ void init_global(dt_iop_module_so_t *module)
 }
 
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_global_tonemap_global_data_t *gd = (dt_iop_global_tonemap_global_data_t *)module->data;
+  dt_iop_global_tonemap_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_pixelmax_first);
   dt_opencl_free_kernel(gd->kernel_pixelmax_second);
   dt_opencl_free_kernel(gd->kernel_global_tonemap_reinhard);
   dt_opencl_free_kernel(gd->kernel_global_tonemap_drago);
   dt_opencl_free_kernel(gd->kernel_global_tonemap_filmic);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
-  dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)self->params;
+  dt_iop_global_tonemap_gui_data_t *g = self->gui_data;
+  dt_iop_global_tonemap_params_t *p = self->params;
 
   if(!w || w == g->operator)
   {
@@ -633,9 +622,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
+  dt_iop_global_tonemap_gui_data_t *g = self->gui_data;
 
   gui_changed(self, NULL, 0);
 
@@ -645,7 +634,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_gui_leave_critical_section(self);
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_global_tonemap_gui_data_t *g = IOP_GUI_ALLOC(global_tonemap);
 
@@ -666,7 +655,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->detail, 3);
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   IOP_GUI_FREE;
 }

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ static gchar *_get_tb_removed_tag_string_values(GList *before,
   {
     if(!g_list_find(a, b->data))
     {
-      tag_list = dt_util_dstrcat(tag_list, "%d,", GPOINTER_TO_INT(b->data));
+      dt_util_str_cat(&tag_list, "%d,", GPOINTER_TO_INT(b->data));
     }
   }
   if(tag_list) tag_list[strlen(tag_list) - 1] = '\0';
@@ -63,8 +63,8 @@ static gchar *_get_tb_added_tag_string_values(const dt_imgid_t img,
     if(!g_list_find(b, a->data))
     {
       // clang-format off
-      tag_list = dt_util_dstrcat
-        (tag_list,
+      dt_util_str_cat
+        (&tag_list,
          "(%d,%d,"
          "  (SELECT (IFNULL(MAX(position),0) & 0xFFFFFFFF00000000) + (1 << 32)"
          "    FROM main.tagged_images)"
@@ -135,7 +135,7 @@ static void _pop_undo(gpointer user_data,
   {
     for(GList *list = (GList *)data; list; list = g_list_next(list))
     {
-      dt_undo_tags_t *undotags = (dt_undo_tags_t *)list->data;
+      dt_undo_tags_t *undotags = list->data;
 
       GList *before = (action == DT_ACTION_UNDO) ? undotags->after : undotags->before;
       GList *after = (action == DT_ACTION_UNDO) ? undotags->before : undotags->after;
@@ -143,7 +143,7 @@ static void _pop_undo(gpointer user_data,
       *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undotags->imgid));
     }
 
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
   }
 }
 
@@ -220,7 +220,7 @@ gboolean dt_tag_new_from_gui(const char *name,
   const gboolean ret = dt_tag_new(name, tagid);
   /* if everything went fine, raise signal of tags change to refresh
    * keywords module in GUI */
-  if(ret) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  if(ret) DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
   return ret;
 }
 
@@ -297,7 +297,7 @@ guint dt_tag_remove_list(GList *tag_list)
   for(GList *taglist = tag_list; taglist ; taglist = g_list_next(taglist))
   {
     const guint tagid = ((dt_tag_t *)taglist->data)->id;
-    flatlist = dt_util_dstrcat(flatlist, "%u,", tagid);
+    dt_util_str_cat(&flatlist, "%u,", tagid);
     count++;
     if(flatlist && count > 1000)
     {
@@ -364,12 +364,14 @@ gboolean dt_tag_exists(const char *name, guint *tagid)
 
   if(rt == SQLITE_ROW)
   {
-    if(tagid != NULL) *tagid = sqlite3_column_int64(stmt, 0);
+    if(tagid != NULL)
+      *tagid = sqlite3_column_int64(stmt, 0);
     sqlite3_finalize(stmt);
     return TRUE;
   }
 
-  if(tagid != NULL) *tagid = -1;
+  if(tagid != NULL)
+    *tagid = -1;
   sqlite3_finalize(stmt);
   return FALSE;
 }
@@ -428,7 +430,7 @@ static gboolean _tag_execute(const GList *tags,
   for(const GList *images = imgs; images; images = g_list_next(images))
   {
     const dt_imgid_t image_id = GPOINTER_TO_INT(images->data);
-    dt_undo_tags_t *undotags = (dt_undo_tags_t *)malloc(sizeof(dt_undo_tags_t));
+    dt_undo_tags_t *undotags = malloc(sizeof(dt_undo_tags_t));
     undotags->imgid = image_id;
     undotags->before = _tag_get_tags(image_id, DT_TAG_TYPE_ALL);
     switch(action)
@@ -470,12 +472,13 @@ gboolean dt_tag_attach_images(const guint tagid,
                               const GList *img,
                               const gboolean undo_on)
 {
-  if(!img) return FALSE;
+  if(g_list_is_empty(img)) return FALSE;
   GList *undo = NULL;
   GList *tags = NULL;
 
   tags = g_list_prepend(tags, GINT_TO_POINTER(tagid));
-  if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_TAGS);
+  if(undo_on)
+    dt_undo_start_group(darktable.undo, DT_UNDO_TAGS);
 
   const gboolean res = _tag_execute(tags, img, &undo, undo_on, DT_TA_ATTACH);
 
@@ -486,7 +489,6 @@ gboolean dt_tag_attach_images(const guint tagid,
                    DT_UNDO_TAGS, undo, _pop_undo, _tags_undo_data_free);
     dt_undo_end_group(darktable.undo);
   }
-
   return res;
 }
 
@@ -518,10 +520,11 @@ gboolean dt_tag_set_tags(const GList *tags,
                          const gboolean clear_on,
                          const gboolean undo_on)
 {
-  if(img)
+  if(!g_list_is_empty(img))
   {
     GList *undo = NULL;
-    if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_TAGS);
+    if(undo_on)
+      dt_undo_start_group(darktable.undo, DT_UNDO_TAGS);
 
     const gboolean res = _tag_execute
       (tags, img, &undo, undo_on,
@@ -563,7 +566,7 @@ gboolean dt_tag_attach_string_list(const gchar *tags,
     }
 
     // attach newly created tags
-    if(img)
+    if(!g_list_is_empty(img))
     {
       GList *undo = NULL;
       if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_TAGS);
@@ -587,7 +590,7 @@ gboolean dt_tag_detach_images(const guint tagid,
                               const GList *img,
                               const gboolean undo_on)
 {
-  if(img)
+  if(!g_list_is_empty(img))
   {
     GList *tags = NULL;
     tags = g_list_prepend(tags, GINT_TO_POINTER(tagid));
@@ -630,11 +633,47 @@ gboolean dt_tag_detach_by_string(const char *name,
                                  const gboolean undo_on,
                                  const gboolean group_on)
 {
-  if(!name || !name[0]) return FALSE;
-  guint tagid = 0;
-  if(!dt_tag_exists(name, &tagid)) return FALSE;
+  if(!name || !name[0])
+    return FALSE;
 
-  return dt_tag_detach(tagid, imgid, undo_on, group_on);
+  // We need a case sensitive search so we use the GLOB operator here
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT tagid"
+     " FROM main.tagged_images as ti, data.tags as t"
+     " WHERE ti.tagid = t.id"
+     "   AND t.name GLOB ?1",
+     -1, &stmt,
+     NULL);
+
+  char *n = g_strdup(name);
+
+  // Replace % by * for the GLOB operator
+
+  char *p = n;
+  while(*p)
+  {
+    if(*p == '%')
+      *p = '*';
+    p++;
+  }
+
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, n, -1, SQLITE_TRANSIENT);
+
+  gboolean res = FALSE;
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    res = TRUE;
+    const guint tagid = (guint)sqlite3_column_int(stmt, 0);
+    dt_tag_detach(tagid, imgid, undo_on, group_on);
+  }
+
+  g_free(n);
+
+  return res;
 }
 
 void dt_set_darktable_tags()
@@ -658,6 +697,9 @@ void dt_set_darktable_tags()
 uint32_t dt_tag_count_attached(const dt_imgid_t imgid,
                                const gboolean ignore_dt_tags)
 {
+  if(!dt_is_valid_imgid(imgid))
+    return 0;
+
   sqlite3_stmt *stmt;
 
   gchar *query = g_strdup_printf
@@ -860,7 +902,7 @@ GList *dt_tag_get_list(const dt_imgid_t imgid)
 
   for(; taglist; taglist = g_list_next(taglist))
   {
-    dt_tag_t *t = (dt_tag_t *)taglist->data;
+    dt_tag_t *t = taglist->data;
     gchar *value = t->tag;
 
     gchar **pch = g_strsplit(value, "|", -1);
@@ -903,7 +945,7 @@ GList *dt_tag_get_hierarchical(const dt_imgid_t imgid)
 
   for(GList *tag_iter = taglist; tag_iter; tag_iter = g_list_next(tag_iter))
   {
-    dt_tag_t *t = (dt_tag_t *)tag_iter->data;
+    dt_tag_t *t = tag_iter->data;
     tags = g_list_prepend(tags, g_strdup(t->tag));
   }
 
@@ -985,13 +1027,13 @@ GList *dt_tag_get_list_export(const dt_imgid_t imgid,
   {
     for(GList *tagt = sorted_tags; tagt; tagt = g_list_next(tagt))
     {
-      dt_tag_t *t = (dt_tag_t *)sorted_tags->data;
+      dt_tag_t *t = sorted_tags->data;
       t->flags &= ~DT_TF_PRIVATE;
     }
   }
   for(; sorted_tags; sorted_tags = g_list_next(sorted_tags))
   {
-    dt_tag_t *t = (dt_tag_t *)sorted_tags->data;
+    dt_tag_t *t = sorted_tags->data;
     if((export_private_tags || !(t->flags & DT_TF_PRIVATE))
         && !(t->flags & DT_TF_CATEGORY))
     {
@@ -1060,7 +1102,7 @@ GList *dt_tag_get_hierarchical_export(const dt_imgid_t imgid,
 
   for(GList *tag_iter = taglist; tag_iter; tag_iter = g_list_next(tag_iter))
   {
-    dt_tag_t *t = (dt_tag_t *)tag_iter->data;
+    dt_tag_t *t = tag_iter->data;
     if(export_private_tags || !(t->flags & DT_TF_PRIVATE))
     {
       tags = g_list_prepend(tags, g_strdup(t->tag));
@@ -1119,7 +1161,7 @@ GList *dt_tag_get_images_from_list(const GList *img, const gint tagid)
   char *images = NULL;
   for(GList *imgs = (GList *)img; imgs; imgs = g_list_next(imgs))
   {
-    images = dt_util_dstrcat(images, "%d,",GPOINTER_TO_INT(imgs->data));
+    dt_util_str_cat(&images, "%d,",GPOINTER_TO_INT(imgs->data));
   }
   if(images)
   {
@@ -1167,7 +1209,7 @@ uint32_t dt_tag_get_suggestions(GList **result)
      "  LEFT JOIN ("
      "    SELECT tagid, COUNT(imgid) AS count2"
      "    FROM main.tagged_images"
-     "    WHERE imgid IN main.selected_images"
+     "    WHERE imgid IN (SELECT imgid FROM main.selected_images)"
      "    GROUP BY tagid) AS at"
      "  ON at.tagid = S.tagid"
      "  WHERE S.tagid NOT IN memory.darktable_tags"
@@ -1486,7 +1528,7 @@ static gchar *dt_cleanup_synonyms(gchar *synonyms_entry)
       char *e = g_strstrip(*entry);
       if(*e)
       {
-        synonyms = dt_util_dstrcat(synonyms, "%s, ", e);
+        dt_util_str_cat(&synonyms, "%s, ", e);
       }
       entry++;
     }
@@ -1570,7 +1612,7 @@ void dt_tag_add_synonym(const gint tagid,
   char *synonyms = dt_tag_get_synonyms(tagid);
   if(synonyms)
   {
-    synonyms = dt_util_dstrcat(synonyms, ", %s", synonym);
+    dt_util_str_cat(&synonyms, ", %s", synonym);
   }
   else
   {
@@ -1728,7 +1770,7 @@ ssize_t dt_tag_import(const char *filename)
   g_list_free_full(hierarchy, g_free);
   fclose(fd);
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
 
   return count;
 }
@@ -1870,7 +1912,7 @@ char *dt_tag_get_subtags(const dt_imgid_t imgid,
           valid = FALSE;
       }
       if(valid)
-        tags = dt_util_dstrcat(tags, "%s,", subtag);
+        dt_util_str_cat(&tags, "%s,", subtag);
       g_strfreev(pch);
     }
   }

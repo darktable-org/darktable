@@ -135,11 +135,11 @@ void dt_lua_lock_internal(const char *function, const char *file, int line, gboo
 #ifdef _DEBUG
   if(!silent && !darktable.lua_state.ending && pthread_equal(darktable.control->gui_thread, pthread_self()) != 0)
   {
-    dt_print(DT_DEBUG_LUA, "LUA WARNING locking from the gui thread should be avoided\n");
+    dt_print(DT_DEBUG_LUA, "LUA WARNING locking from the gui thread should be avoided");
     //g_assert(false);
   }
 
-  dt_print(DT_DEBUG_LUA,"LUA DEBUG : thread %p waiting from %s:%d\n", g_thread_self(), function, line);
+  dt_print(DT_DEBUG_LUA,"LUA DEBUG : thread %p waiting from %s:%d", g_thread_self(), function, line);
 #endif
   dt_pthread_mutex_lock(&darktable.lua_state.mutex);
   while(darktable.lua_state.exec_lock == true) {
@@ -148,13 +148,13 @@ void dt_lua_lock_internal(const char *function, const char *file, int line, gboo
   darktable.lua_state.exec_lock = true;
   dt_pthread_mutex_unlock(&darktable.lua_state.mutex);
 #ifdef _DEBUG
-  dt_print(DT_DEBUG_LUA,"LUA DEBUG : thread %p taken from %s:%d\n",  g_thread_self(), function, line);
+  dt_print(DT_DEBUG_LUA,"LUA DEBUG : thread %p taken from %s:%d",  g_thread_self(), function, line);
 #endif
 }
 void dt_lua_unlock_internal(const char *function, int line)
 {
 #ifdef _DEBUG
-  dt_print(DT_DEBUG_LUA,"LUA DEBUG : thread %p released from %s:%d\n",g_thread_self(), function,line);
+  dt_print(DT_DEBUG_LUA,"LUA DEBUG : thread %p released from %s:%d",g_thread_self(), function,line);
 #endif
   dt_pthread_mutex_lock(&darktable.lua_state.mutex);
   darktable.lua_state.exec_lock = false;

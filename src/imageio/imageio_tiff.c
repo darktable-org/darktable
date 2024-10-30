@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -358,7 +358,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   while(*ext != '.' && ext > filename) ext--;
   if(strncmp(ext, ".tif", 4) && strncmp(ext, ".TIF", 4) && strncmp(ext, ".tiff", 5)
      && strncmp(ext, ".TIFF", 5))
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
   tiff_t t;
@@ -389,41 +389,41 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
 
   if(inkset == INKSET_CMYK || inkset == INKSET_MULTIINK)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: CMYK (or multiink) TIFFs are not supported.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: CMYK (or multiink) TIFFs are not supported.");
     TIFFClose(t.tiff);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_UNSUPPORTED_FEATURE;
   }
 
   if(TIFFRasterScanlineSize(t.tiff) != TIFFScanlineSize(t.tiff))
   {
     TIFFClose(t.tiff);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
   t.scanlinesize = TIFFScanlineSize(t.tiff);
 
-  dt_print(DT_DEBUG_IMAGEIO, "[tiff_open] %dx%d %dbpp, %d samples per pixel.\n", t.width, t.height, t.bpp, t.spp);
+  dt_print(DT_DEBUG_IMAGEIO, "[tiff_open] %dx%d %dbpp, %d samples per pixel", t.width, t.height, t.bpp, t.spp);
 
   // we only support 8, 16 and 32 bits per pixel formats.
   if(t.bpp != 8 && t.bpp != 16 && t.bpp != 32)
   {
     TIFFClose(t.tiff);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_UNSUPPORTED_FEATURE;
   }
 
   /* we only support 1, 3 or 4 samples per pixel */
   if(t.spp != 1 && t.spp != 3 && t.spp != 4)
   {
     TIFFClose(t.tiff);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_UNSUPPORTED_FEATURE;
   }
 
   /* don't depend on planar config if spp == 1 */
   if(t.spp > 1 && config != PLANARCONFIG_CONTIG)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: PlanarConfiguration other than chunky is not supported.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: PlanarConfiguration other than chunky is not supported.");
     TIFFClose(t.tiff);
-    return DT_IMAGEIO_LOAD_FAILED;
+    return DT_IMAGEIO_UNSUPPORTED_FEATURE;
   }
 
   /* initialize cached image buffer */
@@ -438,7 +438,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   t.mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, t.image);
   if(!t.mipbuf)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: could not alloc full buffer for image `%s'\n", t.image->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: could not alloc full buffer for image `%s'", t.image->filename);
     TIFFClose(t.tiff);
     return DT_IMAGEIO_CACHE_FULL;
   }
@@ -464,6 +464,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   }
 
   int ok = 1;
+  dt_imageio_retval_t ret = DT_IMAGEIO_LOAD_FAILED;
 
   if((photometric == PHOTOMETRIC_CIELAB || photometric == PHOTOMETRIC_ICCLAB) && t.bpp == 8 && t.sampleformat == SAMPLEFORMAT_UINT)
     ok = _read_chunky_8_Lab(&t, photometric);
@@ -479,8 +480,9 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
     ok = _read_chunky_f(&t);
   else
   {
-    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: not a supported tiff image format.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: not a supported tiff image format.");
     ok = 0;
+    ret = DT_IMAGEIO_UNSUPPORTED_FEATURE;
   }
 
   _TIFFfree(t.buf);
@@ -494,7 +496,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
     return DT_IMAGEIO_OK;
   }
   else
-    return DT_IMAGEIO_LOAD_FAILED;
+    return ret;
 }
 
 int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
@@ -526,7 +528,8 @@ int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
     if(profile_len > 0)
     {
       *out = (uint8_t *)g_malloc(profile_len);
-      cmsSaveProfileToMem(profile, *out, &profile_len);
+      if(*out)
+        cmsSaveProfileToMem(profile, *out, &profile_len);
     }
   }
   else if(TIFFGetField(tiff, TIFFTAG_ICCPROFILE, &profile_len, &profile))
@@ -534,7 +537,8 @@ int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
     if(profile_len > 0)
     {
       *out = (uint8_t *)g_malloc(profile_len);
-      memcpy(*out, profile, profile_len);
+      if(*out)
+        memcpy(*out, profile, profile_len);
     }
   }
   else

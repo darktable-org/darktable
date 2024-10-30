@@ -20,9 +20,7 @@
 
 #include "develop/imageop.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *param);
 
@@ -55,9 +53,7 @@ GtkWidget *dt_iop_button_new(dt_iop_module_t *self, const gchar *label,
 /* returns up or !up depending on the masks_updown preference */
 gboolean dt_mask_scroll_increases(int up);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

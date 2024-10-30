@@ -66,7 +66,7 @@ static inline void _push_stack(int xpos, int ypos, dt_ff_stack_t *stack)
   const int i = stack->pos;
   if(i >= stack->size - 1)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[segmentation stack overflow] %i\n", stack->size);
+    dt_print(DT_DEBUG_ALWAYS, "[segmentation stack overflow] %i", stack->size);
     return;
   }
   stack->el[i].xpos = xpos;
@@ -88,7 +88,7 @@ static inline dt_pos_t * _pop_stack(dt_ff_stack_t *stack)
   if(stack->pos > 0)
     stack->pos--;
   else
-    dt_print(DT_DEBUG_ALWAYS, "[segmentation stack underflow]\n");
+    dt_print(DT_DEBUG_ALWAYS, "[segmentation stack underflow]");
   return &stack->el[stack->pos];
 }
 
@@ -215,11 +215,7 @@ static inline void _dilating(const uint32_t *img,
                              const int border,
                              const int radius)
 {
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img, o, height, w1, border, radius) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(int row = border; row < height - border; row++)
   {
     for(int col = border; col < w1 - border; col++)
@@ -290,11 +286,7 @@ static inline void _eroding(const uint32_t *img,
                             const int border,
                             const int radius)
 {
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img, o, height, w1, border, radius) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(int row = border; row < height - border; row++)
   {
     for(int col = border; col < w1 - border; col++)
@@ -562,7 +554,7 @@ void dt_segmentize_plane(dt_iop_segmentation_t *seg)
   stack.el = dt_alloc_align_type(dt_pos_t, stack.size);
   if(!stack.el)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[segmentize_plane] can't allocate segmentation stack\n");
+    dt_print(DT_DEBUG_ALWAYS, "[segmentize_plane] can't allocate segmentation stack");
     return;
   }
   const int border = seg->border;
@@ -584,7 +576,7 @@ void dt_segmentize_plane(dt_iop_segmentation_t *seg)
   finish:
 
   if(id >= (seg->slots - 2))
-    dt_print(DT_DEBUG_ALWAYS, "[segmentize_plane] %ix%i number of segments exceeds maximum=%i\n",
+    dt_print(DT_DEBUG_ALWAYS, "[segmentize_plane] %ix%i number of segments exceeds maximum=%i",
              (int)width, (int)height, seg->slots);
 
   dt_free_align(stack.el);

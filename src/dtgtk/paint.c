@@ -2155,25 +2155,47 @@ void dtgtk_cairo_paint_text_label(cairo_t *cr, gint x, gint y, gint w, gint h, g
   FINISH
 }
 
-
-void dtgtk_cairo_paint_or(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_union(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
-  cairo_move_to(cr, 0.1, 0.3);
-  cairo_curve_to(cr, 0.1, 1.1, 0.9, 1.1, 0.9, 0.3);
-  cairo_stroke(cr);
+  const float r = 0.3;
+  cairo_arc(cr, r, 0.5, r, 0, 2.0 * M_PI);
+  cairo_arc(cr, r * 2.4, 0.5, r, 0, 2.0 * M_PI);
+  cairo_fill(cr);
 
   FINISH
 }
 
-void dtgtk_cairo_paint_and(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_intersection(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
-  cairo_move_to(cr, 0.1, 0.9);
-  cairo_curve_to(cr, 0.1, 0.1, 0.9, 0.1, 0.9, 0.9);
+  double r, g, b, alpha;
+  cairo_pattern_get_rgba (cairo_get_source(cr), &r, &g, &b, &alpha);
+  cairo_set_source_rgba(cr, r, g, b, 1.0);
+
+  const float radius = 0.3;
+
+  // we draw the outline of the 2 circles
+  cairo_push_group(cr);
+  cairo_arc(cr, radius, 0.5, radius, 0, 2.0 * M_PI);
   cairo_stroke(cr);
+  cairo_arc(cr, radius * 2.4, 0.5, radius, 0, 2.0 * M_PI);
+  cairo_stroke(cr);
+
+  // we draw the intersection of the 2 circles
+  cairo_push_group(cr);
+  cairo_arc(cr, radius, 0.5, radius * 1.2, 0, 2.0 * M_PI);
+  cairo_fill(cr);
+  cairo_set_operator(cr, CAIRO_OPERATOR_IN);
+  cairo_arc(cr, radius * 2.4, 0.5, radius * 1.2, 0, 2.0 * M_PI);
+  cairo_fill(cr);
+  cairo_pop_group_to_source(cr);
+  cairo_paint(cr);
+  cairo_pop_group_to_source(cr);
+  
+  cairo_paint_with_alpha(cr, alpha);
 
   FINISH
 }
@@ -2286,6 +2308,49 @@ void dtgtk_cairo_paint_bulb(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   {
     cairo_stroke(cr);
     cairo_arc(cr, 0.5, 0.38, 0.2, -M_PI / 3., -M_PI / 6.);
+    cairo_stroke(cr);
+  }
+
+  // screw
+  cairo_move_to(cr, 0.33, 0.38 + 0.36 + 1 * line_width);
+  cairo_line_to(cr, 0.67, 0.38 + 0.36 + 1 * line_width);
+  cairo_stroke(cr);
+
+  // nib
+  cairo_arc(cr, 0.5, 0.38 + 0.36 + 2. * line_width, 2.0 * line_width, 0, M_PI);
+  cairo_fill(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_bulb_mod(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(0.95, 1, 0, -0.05)
+
+  const float line_width = 0.1;
+
+  cairo_rectangle(cr, 0.78, 0.950, .22, 0.22);
+  if(flags & CPF_ACTIVE)
+  {
+    cairo_stroke_preserve(cr);
+    cairo_fill(cr);
+  }
+  else
+    cairo_stroke(cr);
+
+  // glass
+  cairo_arc_negative(cr, 0.5, 0.38, 0.4, 1., M_PI - 1.);
+  cairo_close_path(cr);
+
+  if(flags & CPF_ACTIVE)
+  {
+    cairo_stroke_preserve(cr);
+    cairo_fill(cr);
+  }
+  else
+  {
+    cairo_stroke(cr);
+    cairo_arc(cr, 0.5, 0.38, 0.2, -M_PI / 3.0, -M_PI / 6.);
     cairo_stroke(cr);
   }
 

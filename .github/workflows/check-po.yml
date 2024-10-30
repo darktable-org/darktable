@@ -1,0 +1,41 @@
+name: Check the PO files
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+        - "!**"
+        - "po/**"
+  pull_request:
+    branches:
+      - master
+    paths:
+        - "!**"
+        - "po/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  po-check:
+    if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
+    name: Check the PO files for correctness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+          path: src
+          fetch-depth: 1
+
+      - name: Check to see if msgfmt reports an error
+        run: |
+          sudo apt-get -y install gettext
+          cd src/po
+          for pofile in *.po; do
+            echo "Checking $pofile"
+            msgfmt -c -v $pofile -o /dev/null
+            test $? -eq 0 || exit 1
+          done

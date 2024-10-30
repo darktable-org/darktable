@@ -19,12 +19,12 @@
 #include "gui/gtk.h"
 #include <string.h>
 
-static void _thumbnail_btn_class_init(GtkDarktableThumbnailBtnClass *klass);
-static void _thumbnail_btn_init(GtkDarktableThumbnailBtn *button);
+G_DEFINE_TYPE(GtkDarktableThumbnailBtn, dtgtk_thumbnail_btn, GTK_TYPE_DRAWING_AREA);
+
 static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr);
 static gboolean _thumbnail_btn_enter_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event);
 
-static void _thumbnail_btn_class_init(GtkDarktableThumbnailBtnClass *klass)
+static void dtgtk_thumbnail_btn_class_init(GtkDarktableThumbnailBtnClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
 
@@ -33,7 +33,7 @@ static void _thumbnail_btn_class_init(GtkDarktableThumbnailBtnClass *klass)
   widget_class->leave_notify_event = _thumbnail_btn_enter_leave_notify_callback;
 }
 
-static void _thumbnail_btn_init(GtkDarktableThumbnailBtn *button)
+static void dtgtk_thumbnail_btn_init(GtkDarktableThumbnailBtn *button)
 {
 }
 
@@ -128,28 +128,6 @@ GtkWidget *dtgtk_thumbnail_btn_new(DTGTKCairoPaintIconFunc paint, gint paintflag
   gtk_widget_set_app_paintable(GTK_WIDGET(button), TRUE);
   gtk_widget_set_name(GTK_WIDGET(button), "thumbnail_btn");
   return (GtkWidget *)button;
-}
-
-GType dtgtk_thumbnail_btn_get_type()
-{
-  static GType dtgtk_thumbnail_btn_type = 0;
-  if(!dtgtk_thumbnail_btn_type)
-  {
-    static const GTypeInfo dtgtk_thumbnail_btn_info = {
-      sizeof(GtkDarktableThumbnailBtnClass),
-      (GBaseInitFunc)NULL,
-      (GBaseFinalizeFunc)NULL,
-      (GClassInitFunc)_thumbnail_btn_class_init,
-      NULL, /* class_finalize */
-      NULL, /* class_data */
-      sizeof(GtkDarktableThumbnailBtn),
-      0, /* n_preallocs */
-      (GInstanceInitFunc)_thumbnail_btn_init,
-    };
-    dtgtk_thumbnail_btn_type
-        = g_type_register_static(GTK_TYPE_DRAWING_AREA, "GtkDarktableThumbnailBtn", &dtgtk_thumbnail_btn_info, 0);
-  }
-  return dtgtk_thumbnail_btn_type;
 }
 
 gboolean dtgtk_thumbnail_btn_is_hidden(GtkWidget *widget)

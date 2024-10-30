@@ -245,12 +245,12 @@ static void _update_samples_output(dt_lib_module_t *self)
 /* set sample area proxy impl */
 
 static void _set_sample_box_area(dt_lib_module_t *self,
-                                 const dt_boundingbox_t box)
+                                 const dt_pickerbox_t box)
 {
   dt_lib_colorpicker_t *data = self->data;
 
   // primary sample always follows/represents current picker
-  for(int k = 0; k < 4; k++)
+  for(int k = 0; k < 8; k++)
     data->primary_sample.box[k] = box[k];
 
   _update_size(self, DT_LIB_COLORPICKER_SIZE_BOX);
@@ -489,8 +489,7 @@ static void _add_sample(GtkButton *widget,
     return;
 
   dt_lib_colorpicker_t *data = self->data;
-  dt_colorpicker_sample_t *sample =
-    (dt_colorpicker_sample_t *)malloc(sizeof(dt_colorpicker_sample_t));
+  dt_colorpicker_sample_t *sample = malloc(sizeof(dt_colorpicker_sample_t));
 
   memcpy(sample, &data->primary_sample, sizeof(dt_colorpicker_sample_t));
   sample->locked = FALSE;
@@ -581,8 +580,7 @@ static void _restrict_histogram_changed(GtkToggleButton *button,
 void gui_init(dt_lib_module_t *self)
 {
   // Initializing self data structure
-  dt_lib_colorpicker_t *data =
-    (dt_lib_colorpicker_t *)calloc(1, sizeof(dt_lib_colorpicker_t));
+  dt_lib_colorpicker_t *data = calloc(1, sizeof(dt_lib_colorpicker_t));
 
   self->data = (void *)data;
 

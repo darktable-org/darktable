@@ -171,7 +171,7 @@ static void _camera_property_value_changed(const dt_camera_t *camera, const char
   GList *citem;
   if((citem = g_list_find_custom(lib->gui.properties, name, _compare_property_by_name)) != NULL)
   {
-    dt_lib_camera_property_t *prop = (dt_lib_camera_property_t *)citem->data;
+    dt_lib_camera_property_t *prop = citem->data;
     dt_bauhaus_combobox_set_from_text(prop->values, value);
   }
 }
@@ -311,7 +311,7 @@ static void _toggle_capture_mode_clicked(GtkWidget *widget, gpointer user_data)
 static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height,
                              int32_t pointerx, int32_t pointery)
 {
-  dt_lib_camera_t *lib = (dt_lib_camera_t *)self->data;
+  dt_lib_camera_t *lib = self->data;
 
   // Draw infobar background at top
   cairo_set_source_rgb(cr, .0, .0, .0);
@@ -349,7 +349,7 @@ static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, 
   gchar center[1024] = { 0 };
   for(GList *l = lib->gui.properties; l; l = g_list_next(l))
   {
-    dt_lib_camera_property_t *prop = (dt_lib_camera_property_t *)l->data;
+    dt_lib_camera_property_t *prop = l->data;
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(prop->osd)) == TRUE)
     {
       g_strlcat(center, "      ", sizeof(center));
@@ -496,8 +496,7 @@ void gui_init(dt_lib_module_t *self)
 
   label = gtk_label_new(_("label"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  lib->gui.plabel = gtk_entry_new();
-  gtk_entry_set_width_chars(GTK_ENTRY(lib->gui.plabel), 0);
+  lib->gui.plabel = dt_ui_entry_new(0);
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.plabel), GTK_WIDGET(label), GTK_POS_RIGHT, 1, 1);
 
@@ -506,8 +505,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   GtkWidget *widget = gtk_button_new_with_label("O");
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_show_property_popupmenu_clicked), lib);
-  lib->gui.pname = gtk_entry_new();
-  gtk_entry_set_width_chars(GTK_ENTRY(lib->gui.pname), 0);
+  lib->gui.pname = dt_ui_entry_new(0);
   gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.pname), TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(widget), FALSE, FALSE, 0);
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 1, 1);
@@ -573,7 +571,7 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
   {
     for(GSList *item = options; item; item = g_slist_next(item))
     {
-      dt_conf_string_entry_t *entry = (dt_conf_string_entry_t *)item->data;
+      dt_conf_string_entry_t *entry = item->data;
 
       /* get the label from key */
       char *p = entry->key;

@@ -132,11 +132,21 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
     ${MINGW_PATH}/libssl*.dll
     )
 
+  if(Imath_FOUND)
+    file(GLOB TMP_SYSTEM_RUNTIME_LIBS
+      #IMATH
+      ${MINGW_PATH}/libImath-*.dll
+    )
+    list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
+  endif()
+
   if(OpenEXR_FOUND)
     file(GLOB TMP_SYSTEM_RUNTIME_LIBS
       #OPENEXR
-      ${MINGW_PATH}/libIexMath*.dll
-      ${MINGW_PATH}/libIlmImfUtil*.dll
+      ${MINGW_PATH}/libIex-*.dll
+      ${MINGW_PATH}/libIlmThread-*.dll
+      ${MINGW_PATH}/libOpenEXR-*.dll
+      ${MINGW_PATH}/libOpenEXRCore-*.dll
     )
     list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
   endif()
@@ -144,10 +154,7 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
   if(OpenJPEG_FOUND)
     file(GLOB TMP_SYSTEM_RUNTIME_LIBS
       #OPENJPEG
-      ${MINGW_PATH}/libopenjp3d*.dll
-      ${MINGW_PATH}/libopenjpip*.dll
-      ${MINGW_PATH}/libopenjpwl*.dll
-      ${MINGW_PATH}/libopenmj2*.dll
+      ${MINGW_PATH}/libopenjp2*.dll
     )
     list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
   endif()

@@ -28,9 +28,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 typedef enum dt_confgen_type_t
 {
@@ -90,7 +88,7 @@ float dt_conf_get_float(const char *name);
 int dt_conf_get_and_sanitize_int(const char *name, int min, int max);
 int64_t dt_conf_get_and_sanitize_int64(const char *name, int64_t min, int64_t max);
 float dt_conf_get_and_sanitize_float(const char *name, float min, float max);
-int dt_conf_get_bool(const char *name);
+gboolean dt_conf_get_bool(const char *name);
 // get the configuration string without duplicating it; the returned
 // string will be invalidated by any subsequent dt_conf_set_string
 // call
@@ -138,9 +136,7 @@ gchar* dt_conf_expand_default_dir(const char *dir);
 gchar *dt_conf_read_values(const char *filename,
                            gchar* (*callback)(const gchar *key, const gchar *value));
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

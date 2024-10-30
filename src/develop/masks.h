@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2023 darktable developers.
+    Copyright (C) 2013-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -120,6 +120,24 @@ typedef enum dt_masks_source_pos_type_t
   DT_MASKS_SOURCE_POS_ABSOLUTE = 2
 } dt_masks_source_pos_type_t;
 
+/* selected Bézier control point for path*/
+typedef enum dt_masks_path_ctrl_t
+{
+  DT_MASKS_PATH_CRTL_NONE = 0,
+  DT_MASKS_PATH_CTRL1 = 1,
+  DT_MASKS_PATH_CTRL2 = 2
+
+} dt_masks_path_ctrl_t;
+
+/* restrictions on moving Bézier control points */
+typedef enum dt_masks_path_edit_mode_t
+{
+  DT_MASKS_BEZIER_NONE = 0,        // preserve angle & scale
+  DT_MASKS_BEZIER_SINGLE = 1,      // no restriction
+  DT_MASKS_BEZIER_SYMMETRIC = 2,   // force full symmetry
+  DT_MASKS_BEZIER_SING_SYMM = 3    // SINGLE && SYMMETRIC => force angle symmetry only
+} dt_masks_path_edit_mode_t;
+
 /** structure used to store 1 point for a circle */
 typedef struct dt_masks_point_circle_t
 {
@@ -201,7 +219,7 @@ typedef struct dt_masks_functions_t
                           int *count,
                           float *min,
                           float *max);
-  void (*duplicate_points)(struct dt_develop_t *const dev,
+  void (*duplicate_points)(dt_develop_t *const dev,
                            struct dt_masks_form_t *base,
                            struct dt_masks_form_t *dest);
   void (*initial_source_pos)(const float iwd,
@@ -262,7 +280,7 @@ typedef struct dt_masks_functions_t
                          int *height,
                          int *posx,
                          int *posy);
-  int (*mouse_moved)(struct dt_iop_module_t *module,
+  int (*mouse_moved)(dt_iop_module_t *module,
                      float pzx,
                      float pzy,
                      const double pressure,
@@ -272,7 +290,7 @@ typedef struct dt_masks_functions_t
                      const dt_imgid_t parentid,
                      struct dt_masks_form_gui_t *gui,
                      const int index);
-  int (*mouse_scrolled)(struct dt_iop_module_t *module,
+  int (*mouse_scrolled)(dt_iop_module_t *module,
                         float pzx,
                         float pzy,
                         const gboolean up,
@@ -281,7 +299,7 @@ typedef struct dt_masks_functions_t
                         const dt_imgid_t parentid,
                         struct dt_masks_form_gui_t *gui,
                         const int index);
-  int (*button_pressed)(struct dt_iop_module_t *module,
+  int (*button_pressed)(dt_iop_module_t *module,
                         float pzx,
                         float pzy,
                         const double pressure,
@@ -292,7 +310,7 @@ typedef struct dt_masks_functions_t
                         const dt_imgid_t parentid,
                         struct dt_masks_form_gui_t *gui,
                         const int index);
-  int (*button_released)(struct dt_iop_module_t *module,
+  int (*button_released)(dt_iop_module_t *module,
                          float pzx,
                          float pzy,
                          const int which,
@@ -345,6 +363,14 @@ typedef struct dt_masks_dynbuf_t
   size_t size;
 } dt_masks_dynbuf_t;
 
+typedef struct dt_masks_intbuf_t
+{
+  int *buffer;
+  char tag[128];
+  size_t pos;
+  size_t size;
+} dt_masks_intbuf_t;
+
 
 /** structure used to display a form */
 typedef struct dt_masks_form_gui_t
@@ -367,6 +393,7 @@ typedef struct dt_masks_form_gui_t
   int point_selected;
   int point_edited;
   int feather_selected;
+  dt_masks_path_ctrl_t bezier_ctrl; // For paths, this selects a Bézier control point.
   int seg_selected;
   int point_border_selected;
   int source_pos_type;
@@ -380,6 +407,10 @@ typedef struct dt_masks_form_gui_t
   int feather_dragging;
   int seg_dragging;
   int point_border_dragging;
+
+  dt_masks_path_edit_mode_t bezier_mode;  // Bézier editing with shift or ctrl
+  float bezier_ctrl_angle;  // angle between ctrl1 and ctrl2
+  float bezier_ctrl_scale;  // length of ctrl2 relative to ctrl1
 
   int group_edited;
   int group_selected;
@@ -514,7 +545,6 @@ void dt_masks_write_masks_history_item(const dt_imgid_t imgid,
                                        const int num,
                                        dt_masks_form_t *form);
 void dt_masks_free_form(dt_masks_form_t *form);
-void dt_masks_update_image(dt_develop_t *dev);
 void dt_masks_cleanup_unused(dt_develop_t *dev);
 
 /** function used to manipulate forms for masks */
@@ -523,30 +553,30 @@ void dt_masks_clear_form_gui(dt_develop_t *dev);
 void dt_masks_reset_form_gui(void);
 void dt_masks_reset_show_masks_icons(void);
 
-int dt_masks_events_mouse_moved(struct dt_iop_module_t *module,
-                                const float x,
-                                const float y,
-                                const double pressure,
-                                const int which,
-                                const float zoom_scale);
-int dt_masks_events_button_released(struct dt_iop_module_t *module,
-                                    const float x,
-                                    const float y,
-                                    const int which,
-                                    const uint32_t state,
-                                    const float zoom_scale);
-int dt_masks_events_button_pressed(struct dt_iop_module_t *module,
-                                   const float x,
-                                   const float y,
-                                   const double pressure,
-                                   const int which,
-                                   const int type,
-                                   const uint32_t state);
-int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module,
-                                   const float x,
-                                   const float y,
-                                   const gboolean up,
-                                   const uint32_t state);
+gboolean dt_masks_events_mouse_moved(struct dt_iop_module_t *module,
+                                     const float x,
+                                     const float y,
+                                     const double pressure,
+                                     const int which,
+                                     const float zoom_scale);
+gboolean dt_masks_events_button_released(struct dt_iop_module_t *module,
+                                         const float x,
+                                         const float y,
+                                         const int which,
+                                         const uint32_t state,
+                                         const float zoom_scale);
+gboolean dt_masks_events_button_pressed(struct dt_iop_module_t *module,
+                                        const float x,
+                                        const float y,
+                                        const double pressure,
+                                        const int which,
+                                        const int type,
+                                        const uint32_t state);
+gboolean dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module,
+                                        const float x,
+                                        const float y,
+                                        const gboolean up,
+                                        const uint32_t state);
 void dt_masks_events_post_expose(struct dt_iop_module_t *module,
                                  cairo_t *cr,
                                  const int32_t width,
@@ -554,8 +584,8 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module,
                                  const float pointerx,
                                  const float pointery,
                                  const float zoom_scale);
-int dt_masks_events_mouse_leave(struct dt_iop_module_t *module);
-int dt_masks_events_mouse_enter(struct dt_iop_module_t *module);
+gboolean dt_masks_events_mouse_leave(struct dt_iop_module_t *module);
+gboolean dt_masks_events_mouse_enter(struct dt_iop_module_t *module);
 
 /** functions used to manipulate gui data */
 void dt_masks_gui_form_create(dt_masks_form_t *form,
@@ -613,18 +643,18 @@ dt_masks_form_t *dt_masks_dup_masks_form(const dt_masks_form_t *form);
 GList *dt_masks_dup_forms_deep(GList *forms, dt_masks_form_t *form);
 
 /** utils functions */
-int dt_masks_point_in_form_exact(const float x,
-                                 const float y,
-                                 float *points,
-                                 const int points_start,
-                                 const int points_count);
-int dt_masks_point_in_form_near(const float x,
-                                const float y,
-                                float *points,
-                                const int points_start,
-                                const int points_count,
-                                const float distance,
-                                int *near);
+gboolean dt_masks_point_in_form_exact(const float x,
+                                      const float y,
+                                      float *points,
+                                      const int points_start,
+                                      const int points_count);
+gboolean dt_masks_point_in_form_near(const float x,
+                                     const float y,
+                                     float *points,
+                                     const int points_start,
+                                     const int points_count,
+                                     const float distance,
+                                     int *near);
 float dt_masks_drag_factor(dt_masks_form_gui_t *gui,
                            const int index,
                            const int k,
@@ -668,24 +698,12 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui,
                                          const int adding);
 
 /** detail mask support */
-void dt_masks_extend_border(float *const mask,
-                            const int width,
-                            const int height,
-                            const int border);
-void dt_masks_blur_coeff(float *coeffs, const float sigma);
-void dt_masks_blur(float *const src,
-                   float *const out,
-                   const int width,
-                   const int height,
-                   const float sigma,
-                   const float gain,
-                   const float clip);
 gboolean dt_masks_calc_scharr_mask(dt_dev_detail_mask_t *details,
-                                      float *const src,
-                                      const dt_aligned_pixel_t wb);
+                                   float *const src,
+                                   const dt_aligned_pixel_t wb);
 float *dt_masks_calc_detail_mask(struct dt_dev_pixelpipe_iop_t *piece,
-                               const float threshold,
-                               const gboolean detail);
+                                 const float threshold,
+                                 const gboolean detail);
 
 /** return the list of possible mouse actions */
 GSList *dt_masks_mouse_actions(dt_masks_form_t *form);
@@ -695,22 +713,27 @@ void dt_group_events_post_expose(cairo_t *cr,
                                  dt_masks_form_t *form,
                                  dt_masks_form_gui_t *gui);
 
-/** code for dynamic handling of intermediate buffers */
-static inline gboolean _dt_masks_dynbuf_growto(dt_masks_dynbuf_t *a, const size_t newsize)
+
+/******************************************************
+ * code for dynamic handling of intermediate buffers
+ * buffer for floats
+ */
+static inline gboolean _dt_masks_dynbuf_growto(dt_masks_dynbuf_t *a,
+                                               const size_t newsize)
 {
   float *newbuf = dt_alloc_align_float(newsize);
   if (!newbuf)
   {
     // not much we can do here except emit an error message
     dt_print(DT_DEBUG_ALWAYS,
-             "critical: out of memory for dynbuf '%s' with size request %zu!\n",
+             "critical: out of memory for dynbuf '%s' with size request %zu!",
              a->tag, newsize);
     return FALSE;
   }
   if (a->buffer)
   {
     memcpy(newbuf, a->buffer, a->size * sizeof(float));
-    dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] grows to size %lu (is %p, was %p)\n",
+    dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] grows to size %lu (is %p, was %p)",
              a->tag,
              (unsigned long)a->size, newbuf, a->buffer);
     dt_free_align(a->buffer);
@@ -731,7 +754,7 @@ dt_masks_dynbuf_t *dt_masks_dynbuf_init(const size_t size, const char *tag)
     g_strlcpy(a->tag, tag, sizeof(a->tag)); //only for debugging purposes
     a->pos = 0;
     if(_dt_masks_dynbuf_growto(a, size))
-      dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] with initial size %lu (is %p)\n",
+      dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] with initial size %lu (is %p)",
                a->tag,
                (unsigned long)a->size, a->buffer);
     if(a->buffer == NULL)
@@ -828,6 +851,15 @@ float dt_masks_dynbuf_get(dt_masks_dynbuf_t *a, const int offset)
 }
 
 static inline
+float dt_masks_dynbuf_get_absolute(dt_masks_dynbuf_t *a, const int position)
+{
+  assert(a != NULL);
+  assert(position >= 0);
+  assert((long)a->pos > position);
+  return (a->buffer[position]);
+}
+
+static inline
 void dt_masks_dynbuf_set(dt_masks_dynbuf_t *a, const int offset, const float value)
 {
   assert(a != NULL);
@@ -835,6 +867,15 @@ void dt_masks_dynbuf_set(dt_masks_dynbuf_t *a, const int offset, const float val
   assert(offset < 0);
   assert((long)a->pos + offset >= 0);
   a->buffer[a->pos + offset] = value;
+}
+
+static inline
+void dt_masks_dynbuf_set_absolute(dt_masks_dynbuf_t *a, const int position, const float value)
+{
+  assert(a != NULL);
+  assert(position >= 0);
+  assert((long)a->pos > position);
+  a->buffer[position] = value;
 }
 
 static inline
@@ -849,6 +890,14 @@ size_t dt_masks_dynbuf_position(dt_masks_dynbuf_t *a)
 {
   assert(a != NULL);
   return a->pos;
+}
+
+static inline
+void dt_masks_dynbuf_reset_position(dt_masks_dynbuf_t *a, const size_t newpos)
+{
+  assert(a != NULL);
+  assert(newpos <= a->pos);
+  a->pos = newpos;
 }
 
 static inline
@@ -873,11 +922,145 @@ static inline
 void dt_masks_dynbuf_free(dt_masks_dynbuf_t *a)
 {
   if(a == NULL) return;
-  dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] freed (was %p)\n", a->tag,
+  dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] freed (was %p)", a->tag,
           a->buffer);
   dt_free_align(a->buffer);
   free(a);
 }
+
+// Dump buffer to file for debugging.
+static inline
+void dt_masks_dynbuf_debug_print(dt_masks_dynbuf_t *a, gboolean to_stdout)
+{
+  if(a == NULL) return;
+  if (to_stdout)
+  {
+    printf("'%s' buffer: ", a->tag);
+    for (size_t i = 0; i < a->pos; i += 2)
+    {
+      printf("(%f %f), ", a->buffer[i], a->buffer[i+1]);
+    }
+    printf("\n");
+  }
+  else
+  {
+    FILE *f;
+    char filename[255] = { 0 };
+    sprintf(filename, "debug-%ld-%s", time(NULL), a->tag);
+    f = g_fopen(filename, "w");
+    for (size_t i = 0; i < a->pos; i += 2)
+    {
+      fprintf(f, "%f %f\n", a->buffer[i], a->buffer[i+1]);
+    }
+    fclose(f);
+  }
+}
+
+/******************************************************
+ * code for dynamic handling of intermediate buffers
+ * buffer for ints
+ */
+static inline gboolean _dt_masks_intbuf_growto(dt_masks_intbuf_t *a,
+                                               const size_t newsize)
+{
+  int *newbuf = dt_alloc_align_int(newsize);
+  if (!newbuf)
+  {
+    // not much we can do here except emit an error message
+    dt_print(DT_DEBUG_ALWAYS,
+             "critical: out of memory for intbuf '%s' with size request %zu!",
+             a->tag, newsize);
+    return FALSE;
+  }
+  if (a->buffer)
+  {
+    memcpy(newbuf, a->buffer, a->size * sizeof(int));
+    dt_print(DT_DEBUG_MASKS, "[masks intbuf '%s'] grows to size %lu (is %p, was %p)",
+             a->tag,
+             (unsigned long)a->size, newbuf, a->buffer);
+    dt_free_align(a->buffer);
+  }
+  a->size = newsize;
+  a->buffer = newbuf;
+  return TRUE;
+}
+
+
+static inline
+dt_masks_intbuf_t *dt_masks_intbuf_init(const size_t size, const char *tag)
+{
+  assert(size > 0);
+  dt_masks_intbuf_t *a = (dt_masks_intbuf_t *)calloc(1, sizeof(dt_masks_intbuf_t));
+
+  if(a != NULL)
+  {
+    g_strlcpy(a->tag, tag, sizeof(a->tag)); //only for debugging purposes
+    a->pos = 0;
+    if(_dt_masks_intbuf_growto(a, size))
+      dt_print(DT_DEBUG_MASKS, "[masks intbuf '%s'] with initial size %lu (is %p)",
+               a->tag,
+               (unsigned long)a->size, a->buffer);
+    if(a->buffer == NULL)
+    {
+      free(a);
+      a = NULL;
+    }
+  }
+  return a;
+}
+
+
+static inline
+void dt_masks_intbuf_add2(dt_masks_intbuf_t *a, const float value1, const float value2)
+{
+  assert(a != NULL);
+  assert(a->pos <= a->size);
+  if(__builtin_expect(a->pos + 2 >= a->size, 0))
+  {
+    if (a->size == 0 || !_dt_masks_intbuf_growto(a, 2 * (a->size+1)))
+      return;
+  }
+  a->buffer[a->pos++] = value1;
+  a->buffer[a->pos++] = value2;
+}
+
+static inline
+size_t dt_masks_intbuf_position(dt_masks_intbuf_t *a)
+{
+  assert(a != NULL);
+  return a->pos;
+}
+
+static inline
+void dt_masks_intbuf_free(dt_masks_intbuf_t *a)
+{
+  if(a == NULL) return;
+  dt_print(DT_DEBUG_MASKS, "[masks intbuf '%s'] freed (was %p)", a->tag,
+          a->buffer);
+  dt_free_align(a->buffer);
+  free(a);
+}
+
+// Dump buffer to file for debugging.
+/*
+static inline
+void dt_masks_intnbuf_debug_print(dt_masks_intbuf_t *a)
+{
+  if(a == NULL) return;
+  FILE *f;
+  char filename[255] = { 0 };
+  sprintf(filename, "debug-%ld-%s", time(NULL), a->tag);
+  f = g_fopen(filename, "w");
+  for (size_t i = 0; i < a->pos; i += 2)
+  {
+    fprintf(f, "%d %d\n", a->buffer[i], a->buffer[i+1]);
+  }
+  fclose(f);
+}
+*/
+
+/* End of dynamic buffer code
+ ******************************************************/
 
 static inline
 int dt_masks_roundup(const int num, const int mult)

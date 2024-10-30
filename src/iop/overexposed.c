@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -105,7 +105,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 //   dt_accel_connect_slider_iop(self, "color scheme", GTK_WIDGET(g->colorscheme));
 // }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, piece->module, piece->colors,
@@ -131,8 +131,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float *const upper_color = dt_iop_overexposed_colors[colorscheme][0];
   const float *const lower_color = dt_iop_overexposed_colors[colorscheme][1];
 
-  const float *const restrict in = __builtin_assume_aligned((const float *const restrict)ivoid, 64);
-  float *const restrict out = __builtin_assume_aligned((float *const restrict)ovoid, 64);
+  const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)ivoid);
+  float *const restrict out = DT_IS_ALIGNED((float *const restrict)ovoid);
 
   const dt_iop_order_iccprofile_info_t *const current_profile = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_histogram_profile_info(dev);
@@ -144,7 +144,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                             work_profile, self->op);
   else
   {
-    dt_print(DT_DEBUG_ALWAYS, "[overexposed process] can't create transform profile\n");
+    dt_print(DT_DEBUG_ALWAYS, "[overexposed process] can't create transform profile");
     dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out);
     dt_control_log(_("module overexposed failed in color conversion"));
     goto process_finish;
@@ -155,12 +155,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(dev->overexposed.mode == DT_CLIPPING_PREVIEW_ANYRGB)
   {
     // Any of the RGB channels is out of bounds
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, img_tmp, in, lower, lower_color, out, roi_out, \
-                      upper, upper_color) \
-  schedule(static)
-#endif
+    DT_OMP_FOR()
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
     {
       if(img_tmp[k + 0] >= upper || img_tmp[k + 1] >= upper || img_tmp[k + 2] >= upper)
@@ -181,12 +176,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else if(dev->overexposed.mode == DT_CLIPPING_PREVIEW_GAMUT && work_profile)
   {
     // Gamut is out of bounds
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, img_tmp, in, lower, lower_color, out, roi_out, \
-                      upper, upper_color, work_profile) \
-  schedule(static)
-#endif
+    DT_OMP_FOR()
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
     {
       const float luminance = dt_ioppr_get_rgb_matrix_luminance(img_tmp + k,
@@ -239,12 +229,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else if(dev->overexposed.mode == DT_CLIPPING_PREVIEW_LUMINANCE && work_profile)
   {
     // Luminance channel is out of bounds
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, img_tmp, in, lower, lower_color, out, roi_out, \
-                      upper, upper_color, work_profile) \
-  schedule(static)
-#endif
+    DT_OMP_FOR()
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
     {
       const float luminance = dt_ioppr_get_rgb_matrix_luminance(img_tmp + k,
@@ -271,12 +256,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else if(dev->overexposed.mode == DT_CLIPPING_PREVIEW_SATURATION && work_profile)
   {
     // Show saturation out of bounds where luminance is valid
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, img_tmp, in, lower, lower_color, out, roi_out, \
-                      upper, upper_color, work_profile) \
-  schedule(static)
-#endif
+    DT_OMP_FOR()
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
     {
       const float luminance = dt_ioppr_get_rgb_matrix_luminance(img_tmp + k,
@@ -326,11 +306,11 @@ process_finish:
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_develop_t *dev = self->dev;
-  dt_iop_overexposed_global_data_t *gd = (dt_iop_overexposed_global_data_t *)self->global_data;
+  dt_iop_overexposed_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
@@ -358,7 +338,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                                                current_profile, work_profile, self->op);
   else
   {
-    dt_print(DT_DEBUG_ALWAYS, "[overexposed process_cl] can't create transform profile\n");
+    dt_print(DT_DEBUG_ALWAYS, "[overexposed process_cl] can't create transform profile");
     dt_control_log(_("module overexposed failed in color conversion"));
     goto error;
   }
@@ -392,9 +372,9 @@ error:
 }
 #endif
 
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
   tiling->factor = 3.0f;  // in + out + temp
   tiling->factor_cl = 3.0f;
@@ -407,48 +387,47 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 }
 
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // basic.cl from programs.conf
-  dt_iop_overexposed_global_data_t *gd
-      = (dt_iop_overexposed_global_data_t *)malloc(sizeof(dt_iop_overexposed_global_data_t));
-  module->data = gd;
+  dt_iop_overexposed_global_data_t *gd = malloc(sizeof(dt_iop_overexposed_global_data_t));
+  self->data = gd;
   gd->kernel_overexposed = dt_opencl_create_kernel(program, "overexposed");
 }
 
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_overexposed_global_data_t *gd = (dt_iop_overexposed_global_data_t *)module->data;
+  dt_iop_overexposed_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_overexposed);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   piece->enabled = self->dev->overexposed.enabled && fullpipe && self->dev->gui_attached;
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = NULL;
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  module->params = calloc(1, sizeof(dt_iop_overexposed_t));
-  module->default_params = calloc(1, sizeof(dt_iop_overexposed_t));
-  module->hide_enable_button = TRUE;
-  module->default_enabled = TRUE;
-  module->params_size = sizeof(dt_iop_overexposed_t);
-  module->gui_data = NULL;
+  self->params = calloc(1, sizeof(dt_iop_overexposed_t));
+  self->default_params = calloc(1, sizeof(dt_iop_overexposed_t));
+  self->hide_enable_button = TRUE;
+  self->default_enabled = TRUE;
+  self->params_size = sizeof(dt_iop_overexposed_t);
+  self->gui_data = NULL;
 }
 
 // clang-format off

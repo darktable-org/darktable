@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -96,6 +96,9 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_TAG,
   DT_COLLECTION_PROP_COLORLABEL,
   DT_COLLECTION_PROP_METADATA,
+
+  //  keep DT_COLLECTION_PROP_GROUPING to avoid breaking all presets based on
+  //  filters defined after GROUPING here.
   DT_COLLECTION_PROP_GROUPING = DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER,
   DT_COLLECTION_PROP_LOCAL_COPY,
 
@@ -107,10 +110,22 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_TEXTSEARCH,
   DT_COLLECTION_PROP_RATING,
 
+  DT_COLLECTION_PROP_WHITEBALANCE,
+  DT_COLLECTION_PROP_FLASH,
+  DT_COLLECTION_PROP_EXPOSURE_PROGRAM,
+  DT_COLLECTION_PROP_METERING_MODE,
+
+  DT_COLLECTION_PROP_GROUP_ID,
+
+  DT_COLLECTION_PROP_EXPOSURE_BIAS,
+
+  // all new collection types need to be added before DT_COLLECTION_PROP_LAST,
+  // which separates actual collection types from special flag values
   DT_COLLECTION_PROP_LAST,
 
   DT_COLLECTION_PROP_UNDEF,
   DT_COLLECTION_PROP_SORT
+
 } dt_collection_properties_t;
 
 typedef enum dt_collection_change_t

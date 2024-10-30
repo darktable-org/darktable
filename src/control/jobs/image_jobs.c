@@ -50,7 +50,7 @@ dt_job_t *dt_image_load_job_create(int32_t id, dt_mipmap_size_t mip)
 {
   dt_job_t *job = dt_control_job_create(&dt_image_load_job_run, "load image %d mip %d", id, mip);
   if(!job) return NULL;
-  dt_image_load_t *params = (dt_image_load_t *)calloc(1, sizeof(dt_image_load_t));
+  dt_image_load_t *params = calloc(1, sizeof(dt_image_load_t));
   if(!params)
   {
     dt_control_job_dispose(job);
@@ -79,7 +79,7 @@ static int32_t dt_image_import_job_run(dt_job_t *job)
   const int id = dt_image_import(params->film_id, params->filename, TRUE, TRUE);
   if(id)
   {
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
     dt_control_queue_redraw();
   }
 
@@ -101,7 +101,7 @@ dt_job_t *dt_image_import_job_create(uint32_t filmid, const char *filename)
   dt_image_import_t *params;
   dt_job_t *job = dt_control_job_create(&dt_image_import_job_run, "import image");
   if(!job) return NULL;
-  params = (dt_image_import_t *)calloc(1, sizeof(dt_image_import_t));
+  params = calloc(1, sizeof(dt_image_import_t));
   if(!params)
   {
     dt_control_job_dispose(job);

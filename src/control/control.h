@@ -39,9 +39,7 @@
 #include <shobjidl.h>
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 struct dt_lib_backgroundjob_element_t;
 
@@ -116,10 +114,11 @@ struct dt_control_t;
 /** sets the hinter message */
 void dt_control_hinter_message(const struct dt_control_t *s, const char *message);
 
-#define DT_CTL_LOG_SIZE 10
+#define DT_CTL_LOG_SIZE 8 // must be power-of-2
+#define DT_CTL_TOAST_SIZE 2
+
 #define DT_CTL_LOG_MSG_SIZE 1000
 #define DT_CTL_LOG_TIMEOUT 5000
-#define DT_CTL_TOAST_SIZE 10
 #define DT_CTL_TOAST_MSG_SIZE 300
 #define DT_CTL_TOAST_TIMEOUT 1500
 /**
@@ -161,14 +160,14 @@ typedef struct dt_control_t
   gboolean lock_cursor_shape;
 
   // message log
-  int log_pos, log_ack;
+  int32_t log_pos, log_ack;
   char log_message[DT_CTL_LOG_SIZE][DT_CTL_LOG_MSG_SIZE];
   guint log_message_timeout_id;
   int log_busy;
   dt_pthread_mutex_t log_mutex;
 
   // toast log
-  int toast_pos, toast_ack;
+  int32_t toast_pos, toast_ack;
   char toast_message[DT_CTL_TOAST_SIZE][DT_CTL_TOAST_MSG_SIZE];
   guint toast_message_timeout_id;
   int toast_busy;
@@ -253,9 +252,7 @@ gboolean dt_control_running();
 dt_imgid_t dt_control_get_mouse_over_id();
 void dt_control_set_mouse_over_id(const dt_imgid_t value);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

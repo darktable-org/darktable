@@ -79,8 +79,7 @@ void *legacy_params(dt_imageio_module_storage_t *self,
     } dt_imageio_email_v1_t;
 
     const dt_imageio_email_v1_t *o = (dt_imageio_email_v1_t *)old_params;
-    dt_imageio_email_v2_t *n =
-      (dt_imageio_email_v2_t *)malloc(sizeof(dt_imageio_email_v2_t));
+    dt_imageio_email_v2_t *n = malloc(sizeof(dt_imageio_email_v2_t));
 
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
 
@@ -159,8 +158,7 @@ int store(dt_imageio_module_storage_t *self,
   dt_loc_get_tmp_dir(tmpdir, sizeof(tmpdir));
 
   char dirname[PATH_MAX] = { 0 };
-  gboolean from_cache = FALSE;
-  dt_image_full_path(imgid, dirname, sizeof(dirname), &from_cache);
+  dt_image_full_path(imgid, dirname, sizeof(dirname), NULL);
   gchar *filename = g_path_get_basename(dirname);
 
   g_strlcpy(dirname, filename, sizeof(dirname));
@@ -182,7 +180,7 @@ int store(dt_imageio_module_storage_t *self,
                        icc_filename, icc_intent, self, sdata, num, total, metadata) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[imageio_storage_email] could not export to file: `%s'!\n",
+             "[imageio_storage_email] could not export to file: `%s'!",
              attachment->file);
     dt_control_log(_("could not export to file `%s'!"), attachment->file);
     g_free(attachment->file);
@@ -194,9 +192,7 @@ int store(dt_imageio_module_storage_t *self,
   dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
                  num, total, attachment->file);
 
-#ifdef _OPENMP // store can be called in parallel, so synch access to shared memory
-#pragma omp critical
-#endif
+  DT_OMP_PRAGMA(critical) // store can be called in parallel, so synch access to shared memory
   d->images = g_list_append(d->images, attachment);
 
   g_free(filename);
@@ -369,7 +365,7 @@ void finalize_store(dt_imageio_module_storage_t *self,
   argv[argc] = NULL;
 
   gchar *cmdline = g_strjoinv(" ", argv);
-  dt_print(DT_DEBUG_IMAGEIO, "[email] launching '%s'\n", cmdline);
+  dt_print(DT_DEBUG_IMAGEIO, "[email] launching '%s'", cmdline);
   g_free(cmdline);
 
   gint exit_status = 0;
@@ -448,7 +444,7 @@ void finalize_store(dt_imageio_module_storage_t *self,
   argv[argc] = NULL;
 
   gchar *cmdline = g_strjoinv(" ", argv);
-  dt_print(DT_DEBUG_IMAGEIO, "[email] launching '%s'\n", cmdline);
+  dt_print(DT_DEBUG_IMAGEIO, "[email] launching '%s'", cmdline);
   g_free(cmdline);
 
   gint exit_status = 0;

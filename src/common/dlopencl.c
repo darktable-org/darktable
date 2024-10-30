@@ -41,7 +41,7 @@ static const char *ocllib[] = { "libOpenCL", "libOpenCL.so", "libOpenCL.so.1", N
 void dt_dlopencl_noop(void)
 {
   /* we should normally never get here */
-  dt_print(DT_DEBUG_ALWAYS, "dt_dlopencl internal error: unsupported function call\n");
+  dt_print(DT_DEBUG_ALWAYS, "dt_dlopencl internal error: unsupported function call");
   raise(SIGABRT);
 }
 
@@ -63,9 +63,9 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
     library = name;
     module = dt_gmodule_open(library);
     if(module == NULL)
-      dt_print(DT_DEBUG_OPENCL, "[dt_dlopencl_init] could not find specified opencl runtime library '%s'\n", library);
+      dt_print(DT_DEBUG_OPENCL, "[dt_dlopencl_init] could not find specified opencl runtime library '%s'", library);
     else
-      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[dt_dlopencl_init] found specified opencl runtime library '%s'\n", library);
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[dt_dlopencl_init] found specified opencl runtime library '%s'", library);
   }
   else
   {
@@ -75,9 +75,9 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
       library = *iter;
       module = dt_gmodule_open(library);
       if(module == NULL)
-        dt_print(DT_DEBUG_OPENCL, "[dt_dlopencl_init] could not find default opencl runtime library '%s'\n", library);
+        dt_print(DT_DEBUG_OPENCL, "[dt_dlopencl_init] could not find default opencl runtime library '%s'", library);
       else
-        dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[dt_dlopencl_init] found default opencl runtime library '%s'\n", library);
+        dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[dt_dlopencl_init] found default opencl runtime library '%s'", library);
       iter++;
     }
   }
@@ -86,7 +86,7 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
     return NULL;
 
   /* now bind symbols */
-  ocl = (dt_dlopencl_t *)malloc(sizeof(dt_dlopencl_t));
+  ocl = malloc(sizeof(dt_dlopencl_t));
 
   if(ocl == NULL)
   {
@@ -209,7 +209,7 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
   ocl->have_opencl = success;
 
   if(!success)
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not load all required symbols from library\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not load all required symbols from library");
 
   free(module);
 

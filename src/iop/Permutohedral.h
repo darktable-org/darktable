@@ -167,9 +167,7 @@ public:
 
     Key(const Key &origin, int dim, int direction) // construct neighbor in dimension 'dim'
     {
-#ifdef _OPENMP
-#pragma omp simd
-#endif
+      DT_OMP_SIMD()
       for(int i = 0; i < KD; i++)
 	 key[i] = origin.key[i] + direction;
       key[dim] = origin.key[dim] - direction * KD;
@@ -345,7 +343,7 @@ public:
     values = new Value[maxFill()];
     init_alloc = total_alloc = capacity * sizeof(Entry) + maxFill() * sizeof(Key) + maxFill() * sizeof(Value);
   }
-   
+
   /* grow the size of the hash table so that it can hold exactly num_entries
    * without requiring resizing.  The actual index array will be rounded up
    * to the next higher power of two.
@@ -389,7 +387,7 @@ public:
     entries = newEntries;
     total_alloc = capacity * sizeof(Entry) + maxFill() * sizeof(Key) + maxFill() * sizeof(Value);
   }
-   
+
 private:
   // Private struct for the hash table entries.
   struct Entry
@@ -541,9 +539,7 @@ public:
     constexpr float scale = 1.0f / (D + 1);
 
     // greedily search for the closest zero-colored lattice point
-#ifdef _OPENMP
-#pragma omp simd
-#endif
+    DT_OMP_SIMD()
     for(size_t i = 0; i <= D; i++)
     {
       float v = elevated[i] * scale;
@@ -674,23 +670,14 @@ public:
         offset_remap[i][j] = val - hashTables[0].getValues();
       }
     }
-    if(darktable.unmuted & DT_DEBUG_MEMORY)
-    {
-       float fill_factor = 100.0f * total_entries / alloc_entries;
-       std::cerr << "[permutohedral] hash tables " << total_bytes << " bytes (" << init_bytes
-		 << " initially), " << total_entries << " entries" << std::endl
-		 << "[permutohedral] tables grew " << total_grows << " times, replay using "
-		 << (sizeof(ReplayEntry)*nData) << " bytes for " << nData << " pixels" << std::endl
-		 << "[permutohedral] fill factor " << fill_factor << "%, remap using "
-		 << remap_bytes << " bytes," << std::endl;
-    }
+    dt_print(DT_DEBUG_MEMORY,
+      "[permutohedral] hash tables %lu bytes (%lu initially), %lu entries, [permutohedral] tables grew %lu times, "
+      "replay using %lu bytes for %lu pixels, [permutohedral] fill factor %f%%, remap using %lu bytes",
+      total_bytes, init_bytes, total_entries, total_grows,
+      (sizeof(ReplayEntry)*nData), nData, (float)100.0f * total_entries / alloc_entries, remap_bytes);
 
     /* Rewrite the offsets in the replay structure from the above generated table. */
-#ifdef _OPENMP
-#pragma omp parallel for default(none) if(nData >= 100000) \
-   dt_omp_firstprivate(nData, replay, offset_remap) \
-   schedule(static)
-#endif
+    DT_OMP_FOR(if(nData >= 100000))
     for(size_t i = 0; i < nData; i++)
     {
       if(replay[i].table > 0)
@@ -730,18 +717,14 @@ public:
     const Value zero{ 0 };
     const Value *const zeroPtr = &zero;
 
-    if (darktable.unmuted & DT_DEBUG_MEMORY)
-       std::cerr << "[permutohedral] blur using " << (sizeof(Value)*hashTables[0].size())
-		 << " bytes for newValue"<<std::endl;
+    dt_print(DT_DEBUG_MEMORY,
+      "[permutohedral] blur using %lu bytes for newValue",
+      (sizeof(Value)*hashTables[0].size()));
 
     // For each of d+1 axes,
     for(int j = 0; j <= D; j++)
     {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(j, oldValue, newValue, hashTableBase, hashTables, keyBase, zeroPtr) \
-    schedule(static)
-#endif
+      DT_OMP_FOR()
       // For each vertex in the lattice,
       for(size_t i = 0; i < hashTables[0].size(); i++) // blur point i in dimension j
       {

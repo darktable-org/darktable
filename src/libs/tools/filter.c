@@ -70,18 +70,18 @@ int position(const dt_lib_module_t *self)
 
 static GtkWidget *_lib_filter_get_filter_box(dt_lib_module_t *self)
 {
-  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  dt_lib_tool_filter_t *d = self->data;
   return d->filter_box;
 }
 static GtkWidget *_lib_filter_get_sort_box(dt_lib_module_t *self)
 {
-  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  dt_lib_tool_filter_t *d = self->data;
   return d->sort_box;
 }
 
 static GtkWidget *_lib_filter_get_count(dt_lib_module_t *self)
 {
-  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  dt_lib_tool_filter_t *d = self->data;
   return d->count;
 }
 
@@ -94,7 +94,7 @@ static gboolean _pref_show(GtkWidget *widget, GdkEventButton *event, dt_lib_modu
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)g_malloc0(sizeof(dt_lib_tool_filter_t));
+  dt_lib_tool_filter_t *d = g_malloc0(sizeof(dt_lib_tool_filter_t));
   self->data = (void *)d;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);

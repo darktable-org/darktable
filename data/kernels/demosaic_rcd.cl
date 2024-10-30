@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    rcd_cl implemented Hanno Schwalm (hanno@schwalm-bremen.de)
+    Copyright (C) 2020-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -306,10 +306,10 @@ __kernel void calc_Y0_mask(global float *mask, __read_only image2d_t in, const i
   const int idx = mad24(row, w, col);
 
   float4 pt = read_imagef(in, sampleri, (int2)(col, row));
-  const float val = ICLAMP(pt.x / red, 0.0f, 1.0f)
-                  + ICLAMP(pt.y / green, 0.0f, 1.0f)
-                  + ICLAMP(pt.z / blue, 0.0f, 1.0f);
-  mask[idx] = native_sqrt(val / 3.0f);
+  const float val = fmax(pt.x / red, 0.0f)
+                  + fmax(pt.y / green, 0.0f)
+                  + fmax(pt.z / blue, 0.0f);
+  mask[idx] = dtcl_sqrt(val / 3.0f);
 }
 
 __kernel void calc_scharr_mask(global float *in, global float *out, const int w, const int height)
@@ -326,42 +326,12 @@ __kernel void calc_scharr_mask(global float *in, global float *out, const int w,
   inrow = row > height - 2 ? height - 2 : inrow;
 
   const int idx = mad24(inrow, w, incol);
-
-  // scharr operator
-  const float gx = 47.0f * (in[idx-w-1] - in[idx-w+1])
-                + 162.0f * (in[idx-1]   - in[idx+1])
-                 + 47.0f * (in[idx+w-1] - in[idx+w+1]);
-  const float gy = 47.0f * (in[idx-w-1] - in[idx+w-1])
-                + 162.0f * (in[idx-w]   - in[idx+w])
-                 + 47.0f * (in[idx-w+1] - in[idx+w+1]);
-  const float gradient_magnitude = native_sqrt(sqrf(gx / 256.0f) + sqrf(gy / 256.0f));
-  out[oidx] = gradient_magnitude / 16.0f;
-}
-
-__kernel void write_scharr_mask(global float *in, global float *out, const int w, const int height)
-{
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if((col >= w) || (row >= height)) return;
-
-  const int oidx = mad24(row, w, col);
-
-  int incol = col < 1 ? 1 : col;
-  incol = col > w - 2 ? w - 2 : incol;
-  int inrow = row < 1 ? 1 : row;
-  inrow = row > height - 2 ? height - 2 : inrow;
-
-  const int idx = mad24(inrow, w, incol);
-
-  // scharr operator
-  const float gx = 47.0f * (in[idx-w-1] - in[idx-w+1])
-                + 162.0f * (in[idx-1]   - in[idx+1])
-                 + 47.0f * (in[idx+w-1] - in[idx+w+1]);
-  const float gy = 47.0f * (in[idx-w-1] - in[idx+w-1])
-                + 162.0f * (in[idx-w]   - in[idx+w])
-                 + 47.0f * (in[idx-w+1] - in[idx+w+1]);
-  const float gradient_magnitude = native_sqrt(sqrf(gx / 256.0f) + sqrf(gy / 256.0f));
-  out[idx] = gradient_magnitude / 16.0f;
+  const float gx = 47.0f / 255.0f * (in[idx-w-1] - in[idx-w+1] + in[idx+w-1] - in[idx+w+1])
+                + 162.0f / 255.0f * (in[idx-1]   - in[idx+1]);
+  const float gy = 47.0f / 255.0f * (in[idx-w-1] - in[idx+w-1] + in[idx-w+1] - in[idx+w+1])
+                + 162.0f / 255.0f * (in[idx-w]   - in[idx+w]);
+  const float gradient_magnitude = dtcl_sqrt(sqrf(gx) + sqrf(gy));
+  out[oidx] = clamp(gradient_magnitude / 16.0f, 0.0f, 1.0f);
 }
 
 __kernel void calc_detail_blend(global float *in, global float *out, const int w, const int height, const float threshold, const int detail)
@@ -372,40 +342,8 @@ __kernel void calc_detail_blend(global float *in, global float *out, const int w
 
   const int idx = mad24(row, w, col);
 
-  const float blend = ICLAMP(calcBlendFactor(in[idx], threshold), 0.0f, 1.0f);
+  const float blend = clamp(calcBlendFactor(in[idx], threshold), 0.0f, 1.0f);
   out[idx] = detail ? blend : 1.0f - blend;
-}
-
-__kernel void fastblur_mask_9x9(global float *src, global float *out, const int w, const int height, global const float *kern)
-{
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if((col >= w) || (row >= height)) return;
-
-  const int oidx = mad24(row, w, col);
-  int incol = col < 4 ? 4 : col;
-  incol = col > w - 5 ? w - 5 : incol;
-  int inrow = row < 4 ? 4 : row;
-  inrow = row > height - 5 ? height - 5 : inrow;
-  const int i = mad24(inrow, w, incol);
-
-  const int w2 = 2 * w;
-  const int w3 = 3 * w;
-  const int w4 = 4 * w;
-  const float val = kern[12] * (src[i - w4 - 2] + src[i - w4 + 2] + src[i - w2 - 4] + src[i - w2 + 4] + src[i + w2 - 4] + src[i + w2 + 4] + src[i + w4 - 2] + src[i + w4 + 2]) +
-                    kern[11] * (src[i - w4 - 1] + src[i - w4 + 1] + src[i -  w - 4] + src[i -  w + 4] + src[i +  w - 4] + src[i +  w + 4] + src[i + w4 - 1] + src[i + w4 + 1]) +
-                    kern[10] * (src[i - w4] + src[i - 4] + src[i + 4] + src[i + w4]) +
-                    kern[9] * (src[i - w3 - 3] + src[i - w3 + 3] + src[i + w3 - 3] + src[i + w3 + 3]) +
-                    kern[8] * (src[i - w3 - 2] + src[i - w3 + 2] + src[i - w2 - 3] + src[i - w2 + 3] + src[i + w2 - 3] + src[i + w2 + 3] + src[i + w3 - 2] + src[i + w3 + 2]) +
-                    kern[7] * (src[i - w3 - 1] + src[i - w3 + 1] + src[i -  w - 3] + src[i -  w + 3] + src[i +  w - 3] + src[i +  w + 3] + src[i + w3 - 1] + src[i + w3 + 1]) +
-                    kern[6] * (src[i - w3] + src[i - 3] + src[i + 3] + src[i + w3]) +
-                    kern[5] * (src[i - w2 - 2] + src[i - w2 + 2] + src[i + w2 - 2] + src[i + w2 + 2]) +
-                    kern[4] * (src[i - w2 - 1] + src[i - w2 + 1] + src[i -  w - 2] + src[i -  w + 2] + src[i +  w - 2] + src[i +  w + 2] + src[i + w2 - 1] + src[i + w2 + 1]) +
-                    kern[3] * (src[i - w2] + src[i - 2] + src[i + 2] + src[i + w2]) +
-                    kern[2] * (src[i -  w - 1] + src[i -  w + 1] + src[i +  w - 1] + src[i +  w + 1]) +
-                    kern[1] * (src[i -  w] + src[i - 1] + src[i + 1] + src[i +  w]) +
-                    kern[0] * src[i];
-  out[oidx] = ICLAMP(val, 0.0f, 1.0f);
 }
 
 kernel void rcd_border_green(read_only image2d_t in, write_only image2d_t out, const int width, const int height,

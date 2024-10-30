@@ -65,13 +65,13 @@ static int lua_print_hinter(lua_State *L)
 
 static int lua_print_log(lua_State *L)
 {
-  dt_print(DT_DEBUG_LUA, "LUA %s\n", luaL_checkstring(L, -1));
+  dt_print(DT_DEBUG_LUA, "LUA %s", luaL_checkstring(L, -1));
   return 0;
 }
 
 static int lua_print_error(lua_State *L)
 {
-  dt_print(DT_DEBUG_LUA, "LUA ERROR %s\n", luaL_checkstring(L, -1));
+  dt_print(DT_DEBUG_LUA, "LUA ERROR %s", luaL_checkstring(L, -1));
   return 0;
 }
 

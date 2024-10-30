@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2021 darktable developers.
+    copyright (c) 2021-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,7 +41,6 @@ typedef enum dt_adaptation_t
 #define INVERSE_SQRT_3 0.5773502691896258f
 #define TRUE 1
 #define FALSE 0
-#define NORM_MIN 1e-6f
 
 static inline float sqf(const float x)
 {
@@ -50,7 +49,7 @@ static inline float sqf(const float x)
 
 static inline float euclidean_norm(const float4 input)
 {
-  return fmax(native_sqrt(sqf(input.x) + sqf(input.y) + sqf(input.z)), NORM_MIN);
+  return fmax(dtcl_sqrt(sqf(input.x) + sqf(input.y) + sqf(input.z)), NORM_MIN);
 }
 
 static inline float4 gamut_mapping(const float4 input, const float compression, const int clip)
@@ -60,53 +59,46 @@ static inline float4 gamut_mapping(const float4 input, const float compression, 
   const float Y = input.y;
 
   float4 output;
+  float4 xyY = {  sum > 0.0f ? input.x / sum : (float)0.34567,
+                  sum > 0.0f ? input.y / sum : (float)0.35850,
+                  Y,
+                  0.0f };
 
-  if(sum > 0.f && Y > 0.f)
-  {
-    // Convert to xyY
-    float4 xyY = { input.x / sum, input.y / sum , Y, 0.0f };
+  // Convert to uvY
+  float4 uvY = dt_xyY_to_uvY(xyY);
 
-    // Convert to uvY
-    float4 uvY = dt_xyY_to_uvY(xyY);
+  // Get the chromaticity difference with white point uv
+  const float2 D50 = { 0.20915914598542354f, 0.488075320769787f };
+  const float2 delta = D50 - uvY.xy;
+  const float Delta = Y * (sqf(delta.x) + sqf(delta.y));
 
-    // Get the chromaticity difference with white point uv
-    const float2 D50 = { 0.20915914598542354f, 0.488075320769787f };
-    const float2 delta = D50 - uvY.xy;
-    const float Delta = Y * (sqf(delta.x) + sqf(delta.y));
+  // Compress chromaticity (move toward white point)
+  const float correction = (compression == 0.0f) ? 0.f : dtcl_pow(Delta, compression);
 
-    // Compress chromaticity (move toward white point)
-    const float correction = (compression == 0.0f) ? 0.f : native_powr(Delta, compression);
+  // Ensure the correction does not bring our uyY vector the other side of D50
+  // that would switch to the opposite color, so we clip at D50
+  const float2 tmp =  correction * delta + uvY.xy;
+  uvY.xy = (uvY.xy > D50) ? fmax(tmp, D50)
+                          : fmin(tmp, D50);
 
-    // Ensure the correction does not bring our uyY vector the other side of D50
-    // that would switch to the opposite color, so we clip at D50
-    const float2 tmp =  correction * delta + uvY.xy;
-    uvY.xy = (uvY.xy > D50) ? fmax(tmp, D50)
-                            : fmin(tmp, D50);
+  // Convert back to xyY
+  xyY = dt_uvY_to_xyY(uvY);
 
-    // Convert back to xyY
-    xyY = dt_uvY_to_xyY(uvY);
+  // Clip upon request
+  if(clip) xyY.xy = fmax(xyY.xy, 0.0f);
 
-    // Clip upon request
-    if(clip) xyY.xy = fmax(xyY.xy, 0.0f);
+  // Check sanity of y
+  // since we later divide by y, it can't be zero
+  xyY.y = fmax(xyY.y, NORM_MIN);
 
-    // Check sanity of y
-    // since we later divide by y, it can't be zero
-    xyY.y = fmax(xyY.y, NORM_MIN);
+  // Check sanity of x and y :
+  // since Z = Y (1 - x - y) / y, if x + y >= 1, Z will be negative
+  const float scale = xyY.x + xyY.y;
+  const int sanitize = (scale >= 1.f);
+  xyY.xy = (sanitize) ? xyY.xy / scale : xyY.xy;
 
-    // Check sanity of x and y :
-    // since Z = Y (1 - x - y) / y, if x + y >= 1, Z will be negative
-    const float scale = xyY.x + xyY.y;
-    const int sanitize = (scale >= 1.f);
-    xyY.xy = (sanitize) ? xyY.xy / scale : xyY.xy;
-
-    // Convert back to XYZ
-    output = dt_xyY_to_XYZ(xyY);
-  }
-  else
-  {
-    // sum of channels == 0, and/or Y == 0 so we have black
-    output = (float4)0.f;
-  }
+  // Convert back to XYZ
+  output = dt_xyY_to_XYZ(xyY);
   return output;
 }
 
@@ -385,18 +377,19 @@ channelmixerrgb_CAT16(read_only image2d_t in, write_only image2d_t out,
 
   if(clip) RGB = fmax(RGB, 0.f);
 
-  /* WE START IN PIPELINE RGB */
+  /* WE START IN PIPELINE RGB */
   unswitch_chroma_adapt(kind);
 
-  /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
+  /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
   // Gamut mapping happens in XYZ space no matter what
+  if(clip) XYZ = fmax(XYZ, 0.0f);
   XYZ = gamut_mapping(XYZ, gamut, clip);
 
   // convert to LMS, XYZ or pipeline RGB
   unswitch_convert_XYZ_to_any_LMS(kind);
 
-  /* FROM HERE WE ARE IN LMS, XYZ OR PIPELINE RGB depending on user param */
+  /* FROM HERE WE ARE IN LMS, XYZ OR PIPELINE RGB depending on user param */
 
   // Clip in LMS
   if(clip) LMS = fmax(LMS, 0.0f);
@@ -465,12 +458,13 @@ channelmixerrgb_bradford_linear(read_only image2d_t in, write_only image2d_t out
 
   if(clip) RGB = fmax(RGB, 0.f);
 
-  /* WE START IN PIPELINE RGB */
+  /* WE START IN PIPELINE RGB */
   unswitch_chroma_adapt(kind);
 
-  /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
+  /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
   // Gamut mapping happens in XYZ space no matter what
+  if(clip) XYZ = fmax(XYZ, 0.0f);
   XYZ = gamut_mapping(XYZ, gamut, clip);
 
   // convert to LMS, XYZ or pipeline RGB
@@ -544,12 +538,13 @@ channelmixerrgb_bradford_full(read_only image2d_t in, write_only image2d_t out,
 
   if(clip) RGB = fmax(RGB, 0.f);
 
-  /* WE START IN PIPELINE RGB */
+  /* WE START IN PIPELINE RGB */
   unswitch_chroma_adapt(kind);
 
-  /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
+  /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
   // Gamut mapping happens in XYZ space no matter what
+  if(clip) XYZ = fmax(XYZ, 0.0f);
   XYZ = gamut_mapping(XYZ, gamut, clip);
 
   // convert to LMS, XYZ or pipeline RGB
@@ -624,12 +619,13 @@ channelmixerrgb_XYZ(read_only image2d_t in, write_only image2d_t out,
 
   if(clip) RGB = fmax(RGB, 0.f);
 
-  /* WE START IN PIPELINE RGB */
+  /* WE START IN PIPELINE RGB */
   unswitch_chroma_adapt(kind);
 
-  /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
+  /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
   // Gamut mapping happens in XYZ space no matter what
+  if(clip) XYZ = fmax(XYZ, 0.0f);
   XYZ = gamut_mapping(XYZ, gamut, clip);
 
   // convert to LMS, XYZ or pipeline RGB
@@ -703,12 +699,13 @@ channelmixerrgb_RGB(read_only image2d_t in, write_only image2d_t out,
 
   if(clip) RGB = fmax(RGB, 0.f);
 
-  /* WE START IN PIPELINE RGB */
+  /* WE START IN PIPELINE RGB */
   unswitch_chroma_adapt(kind);
 
-  /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
+  /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
   // Gamut mapping happens in XYZ space no matter what
+  if(clip) XYZ = fmax(XYZ, 0.0f);
   XYZ = gamut_mapping(XYZ, gamut, clip);
 
   // convert to LMS, XYZ or pipeline RGB

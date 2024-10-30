@@ -100,7 +100,7 @@ const char *name()
   return _("lowpass");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("isolate low frequencies in the image"),
                                       _("creative"),
@@ -155,8 +155,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_lowpass_params_v1_t;
 
     const dt_iop_lowpass_params_v1_t *old = old_params;
-    dt_iop_lowpass_params_v4_t *new =
-      (dt_iop_lowpass_params_v4_t *)malloc(sizeof(dt_iop_lowpass_params_v4_t));
+    dt_iop_lowpass_params_v4_t *new = malloc(sizeof(dt_iop_lowpass_params_v4_t));
     new->order = old->order;
     new->radius = fabs(old->radius);
     new->contrast = old->contrast;
@@ -182,8 +181,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_lowpass_params_v2_t;
 
     const dt_iop_lowpass_params_v2_t *old = old_params;
-    dt_iop_lowpass_params_v4_t *new =
-      (dt_iop_lowpass_params_v4_t *)malloc(sizeof(dt_iop_lowpass_params_v4_t));
+    dt_iop_lowpass_params_v4_t *new = malloc(sizeof(dt_iop_lowpass_params_v4_t));
     new->order = old->order;
     new->radius = fabs(old->radius);
     new->contrast = old->contrast;
@@ -210,8 +208,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_lowpass_params_v3_t;
 
     const dt_iop_lowpass_params_v3_t *old = old_params;
-    dt_iop_lowpass_params_v4_t *new =
-      (dt_iop_lowpass_params_v4_t *)malloc(sizeof(dt_iop_lowpass_params_v4_t));
+    dt_iop_lowpass_params_v4_t *new = malloc(sizeof(dt_iop_lowpass_params_v4_t));
     new->order = old->order;
     new->radius = fabs(old->radius);
     new->contrast = old->contrast;
@@ -230,15 +227,15 @@ int legacy_params(dt_iop_module_t *self,
 
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_lowpass_data_t *d = (dt_iop_lowpass_data_t *)piece->data;
-  dt_iop_lowpass_global_data_t *gd = (dt_iop_lowpass_global_data_t *)self->global_data;
+  dt_iop_lowpass_data_t *d = piece->data;
+  dt_iop_lowpass_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
@@ -299,7 +296,7 @@ int process_cl(struct dt_iop_module_t *self,
   }
 
   err = DT_OPENCL_SYSMEM_ALLOCATION;
-  dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
+  dev_tmp = dt_opencl_duplicate_image(devid, dev_out);
   if(dev_tmp == NULL) goto error;
 
   dev_cm = dt_opencl_copy_host_to_device(devid, d->ctable, 256, 256, sizeof(float));
@@ -313,11 +310,6 @@ int process_cl(struct dt_iop_module_t *self,
 
   dev_lcoeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->lunbounded_coeffs);
   if(dev_lcoeffs == NULL) goto error;
-
-  size_t origin[] = { 0, 0, 0 };
-  size_t region[] = { width, height, 1 };
-  err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
-  if(err != CL_SUCCESS) goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_lowpass_mix, width, height,
     CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(saturation), CLARG(dev_cm),
@@ -336,13 +328,13 @@ error:
 }
 #endif
 
-void tiling_callback(struct dt_iop_module_t *self,
-                     struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in,
                      const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
-  dt_iop_lowpass_data_t *d = (dt_iop_lowpass_data_t *)piece->data;
+  dt_iop_lowpass_data_t *d = piece->data;
 
   const float radius = fmax(0.1f, d->radius);
   const float sigma = radius * roi_in->scale / piece->iscale;
@@ -378,7 +370,7 @@ void tiling_callback(struct dt_iop_module_t *self,
   return;
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -389,7 +381,7 @@ void process(struct dt_iop_module_t *self,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
 
-  dt_iop_lowpass_data_t *data = (dt_iop_lowpass_data_t *)piece->data;
+  dt_iop_lowpass_data_t *data = piece->data;
   const float *const restrict in = (float *)ivoid;
   float *const out = (float *)ovoid;
 
@@ -445,11 +437,7 @@ void process(struct dt_iop_module_t *self,
   const size_t npixels = width * height;
   const float saturation = data->saturation;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, Labmax, Labmin, in, out, data, saturation) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < 4*npixels; k += 4)
   {
     // apply contrast and brightness curves to L channel
@@ -467,13 +455,13 @@ void process(struct dt_iop_module_t *self,
   }
 }
 
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)p1;
-  dt_iop_lowpass_data_t *d = (dt_iop_lowpass_data_t *)piece->data;
+  dt_iop_lowpass_data_t *d = piece->data;
   d->order = p->order;
   d->radius = p->radius;
   d->contrast = p->contrast;
@@ -502,11 +490,7 @@ void commit_params(struct dt_iop_module_t *self,
     const float contrastm1sq = boost * (fabs(d->contrast) - 1.0f) * (fabs(d->contrast) - 1.0f);
     const float contrastscale = copysign(sqrtf(1.0f + contrastm1sq), d->contrast);
     float *const ctable = d->ctable;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(contrastm1sq, contrastscale, ctable)      \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(size_t k = 0; k < 0x10000; k++)
     {
       const float kx2m1 = 2.0f * (float)k / 0x10000 - 1.0f;
@@ -527,11 +511,7 @@ void commit_params(struct dt_iop_module_t *self,
   const float gamma = (d->brightness >= 0.0f) ? 1.0f / (1.0f + d->brightness) : (1.0f - d->brightness);
 
   float *const ltable = d->ltable;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(gamma, ltable)          \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < 0x10000; k++)
   {
     ltable[k] = 100.0f * powf((float)k / 0x10000, gamma);
@@ -546,16 +526,16 @@ void commit_params(struct dt_iop_module_t *self,
   dt_iop_estimate_exp(xl, yl, 4, d->lunbounded_coeffs);
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_lowpass_data_t *d = (dt_iop_lowpass_data_t *)calloc(1, sizeof(dt_iop_lowpass_data_t));
+  dt_iop_lowpass_data_t *d = calloc(1, sizeof(dt_iop_lowpass_data_t));
   piece->data = (void *)d;
   for(int k = 0; k < 0x10000; k++) d->ctable[k] = d->ltable[k] = 100.0f * k / 0x10000; // identity
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -563,12 +543,11 @@ void cleanup_pipe(struct dt_iop_module_t *self,
   piece->data = NULL;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 6; // gaussian.cl, from programs.conf
-  dt_iop_lowpass_global_data_t *gd
-      = (dt_iop_lowpass_global_data_t *)malloc(sizeof(dt_iop_lowpass_global_data_t));
-  module->data = gd;
+  dt_iop_lowpass_global_data_t *gd = malloc(sizeof(dt_iop_lowpass_global_data_t));
+  self->data = gd;
   gd->kernel_lowpass_mix = dt_opencl_create_kernel(program, "lowpass_mix");
 }
 
@@ -583,15 +562,15 @@ void init_presets(dt_iop_module_so_t *self)
   dt_database_release_transaction(darktable.db);
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_lowpass_global_data_t *gd = (dt_iop_lowpass_global_data_t *)module->data;
+  dt_iop_lowpass_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_lowpass_mix);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_lowpass_gui_data_t *g = IOP_GUI_ALLOC(lowpass);
 

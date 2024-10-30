@@ -64,7 +64,7 @@ static int check_version(lua_State *L)
   }
   else
   {
-    dt_print(DT_DEBUG_LUA, "LUA ERROR Module %s is not compatible with API %d.%d.%d-%s\n", module_name,
+    dt_print(DT_DEBUG_LUA, "LUA ERROR Module %s is not compatible with API %d.%d.%d-%s", module_name,
              LUA_API_VERSION_MAJOR, LUA_API_VERSION_MINOR, LUA_API_VERSION_PATCH, LUA_API_VERSION_SUFFIX);
   }
   return 0;

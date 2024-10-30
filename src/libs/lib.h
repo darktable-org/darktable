@@ -115,14 +115,21 @@ typedef struct dt_lib_module_t
   /** does gui need to be updated if visible */
   gboolean gui_uptodate;
 
-  GtkWidget *label;
   GtkWidget *arrow;
   GtkWidget *reset_button;
   GtkWidget *presets_button;
 
   gboolean pref_based_presets;
-  gboolean no_control_widgets;
 } dt_lib_module_t;
+
+typedef struct dt_lib_module_info_t
+{
+  char *plugin_name;
+  int32_t version;
+  char *params;
+  int params_size;
+  dt_lib_module_t *module;
+} dt_lib_module_info_t;
 
 void dt_lib_init(dt_lib_t *lib);
 void dt_lib_cleanup(dt_lib_t *lib);
@@ -142,6 +149,8 @@ extern const struct dt_action_def_t dt_action_def_lib;
 
 /** return the plugin with the given name */
 dt_lib_module_t *dt_lib_get_module(const char *name);
+/** return the container the plugin should be located in active view*/
+uint32_t dt_lib_get_container(dt_lib_module_t *module);
 
 /** get the visible state of a plugin */
 gboolean dt_lib_is_visible(dt_lib_module_t *module);
@@ -160,6 +169,9 @@ void dt_lib_gui_set_label(dt_lib_module_t *module,
 gchar *dt_lib_get_localized_name(const gchar *plugin_name);
 
 /** preset stuff for lib */
+
+/** return active preset name */
+gchar *dt_lib_get_active_preset_name(dt_lib_module_info_t *minfo);
 
 /** add or replace a preset for this operation. */
 void dt_lib_presets_add(const char *name,
@@ -199,7 +211,7 @@ gboolean dt_lib_presets_can_autoapply(dt_lib_module_t *mod);
 
 /** set the colorpicker area selection tool and size, box[k] 0.0 - 1.0 */
 void dt_lib_colorpicker_set_box_area(dt_lib_t *lib,
-                                     const dt_boundingbox_t box);
+                                     const dt_pickerbox_t box);
 
 /** set the colorpicker point selection tool and position */
 void dt_lib_colorpicker_set_point(dt_lib_t *lib,

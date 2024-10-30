@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2023 darktable developers.
+    Copyright (C) 2016-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -152,6 +152,8 @@ void dt_iop_image_copy(float *const __restrict__ out,
 #ifdef _OPENMP
   if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
+    float *const outv __attribute__((aligned(16))) = out;
+    const float *const inv __attribute__((aligned(16))) = in;
     // we can gain a little by using a small number of threads in
     // parallel, but not much since the memory bus quickly saturates
     // (basically, each core can saturate a memory channel, so a
@@ -160,18 +162,16 @@ void dt_iop_image_copy(float *const __restrict__ out,
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
     // determine the number of 4-float vectors to be processed by each thread
     const size_t chunksize = (((nfloats + nthreads - 1) / nthreads) + 3) / 4;
-#pragma omp parallel for simd aligned(in, out : 16) default(none) \
-    dt_omp_firstprivate(in, out, nfloats, chunksize, nthreads) \
-    schedule(simd:static) num_threads(nthreads)
+    DT_OMP_FOR(num_threads(nthreads))
     for(size_t chunk = 0; chunk < nthreads; chunk++)
     {
       const size_t limit = MIN(4*(chunk+1)*chunksize, nfloats);
       const size_t limit4 = limit & ~3;
       for(size_t k = 4 * chunk * chunksize; k < limit4; k += 4)
-        copy_pixel_nontemporal(out + k, in + k);
+        copy_pixel_nontemporal(outv + k, inv + k);
       // handle any leftover pixels in the final slice
       for(size_t k = 0; k < (limit & 3); k++)
-        out[k + limit4] = in[k + limit4];
+        outv[k + limit4] = inv[k + limit4];
     }
     return;
   }
@@ -207,11 +207,7 @@ void dt_iop_copy_image_roi(float *const __restrict__ out,
       && (roi_in->height - dy >= roi_out->height))
   {
     const size_t lwidth = sizeof(float) * roi_out->width * ch;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, in, out, roi_in, roi_out, dx, dy, lwidth) \
-  schedule(static)
-#endif
+    DT_OMP_FOR()
     for(size_t row = 0; row < roi_out->height; row++)
     {
       float *o = out + (size_t)(ch * row * roi_out->width);
@@ -223,11 +219,7 @@ void dt_iop_copy_image_roi(float *const __restrict__ out,
 
   // the RoI are inconsistant so we do a copy per location and fill by zero if
   // not available in RoI-in
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(out, in, roi_in, roi_out, dx, dy, ch) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(int row = 0; row < roi_out->height; row++)
   {
     for(int col = 0; col < roi_out->width; col++)
@@ -262,17 +254,14 @@ void dt_iop_image_scaled_copy(float *const restrict buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
-#pragma omp parallel for simd aligned(buf, src : 16) default(none) \
-  dt_omp_firstprivate(buf, src, scale, nfloats) schedule(simd:static) num_threads(nthreads)
+    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf, src : 16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] = scale * src[k];
     return;
   }
 #endif // _OPENMP
   // no OpenMP, or image too small to bother parallelizing
-#ifdef _OPENMP
-#pragma simd aligned(buf, src : 16)
-#endif
+  DT_OMP_SIMD(aligned(buf, src : 16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] = scale * src[k];
 }
@@ -290,9 +279,7 @@ void dt_iop_image_fill(float *const buf,
     const size_t nthreads = MIN(16, dt_get_num_threads());
     // determine the number of 4-float vectors to be processed by each thread
     const size_t chunksize = (((nfloats + nthreads - 1) / nthreads) + 3) / 4;
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, fill_value, nfloats, nthreads, chunksize) \
-  schedule(static) num_threads(nthreads)
+    DT_OMP_FOR(num_threads(nthreads))
     for(size_t chunk = 0; chunk < nthreads; chunk++)
     {
       size_t limit = MIN(4*(chunk+1)*chunksize, nfloats);
@@ -315,9 +302,7 @@ void dt_iop_image_fill(float *const buf,
   }
   else
   {
-#ifdef _OPENMP
-#pragma simd aligned(buf:16)
-#endif
+    DT_OMP_SIMD(aligned(buf:16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] = fill_value;
   }
@@ -339,17 +324,14 @@ void dt_iop_image_add_const(float *const buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
-#pragma omp parallel for simd aligned(buf:16) default(none) \
-  dt_omp_firstprivate(buf, add_value, nfloats) schedule(simd:static) num_threads(nthreads)
+    DT_OMP_FOR_SIMD(num_threads(nthreads))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] += add_value;
     return;
   }
 #endif // _OPENMP
   // no OpenMP, or image too small to bother parallelizing
-#ifdef _OPENMP
-#pragma simd aligned(buf:16)
-#endif
+  DT_OMP_SIMD(aligned(buf:16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] += add_value;
 }
@@ -370,17 +352,14 @@ void dt_iop_image_add_image(float *const buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
-#pragma omp parallel for simd aligned(buf, other_image : 16) default(none) \
-  dt_omp_firstprivate(buf, other_image, nfloats) schedule(simd:static) num_threads(nthreads)
+    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf, other_image : 16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] += other_image[k];
     return;
   }
 #endif // _OPENMP
   // no OpenMP, or image too small to bother parallelizing
-#ifdef _OPENMP
-#pragma simd aligned(buf, other_image : 16)
-#endif
+  DT_OMP_SIMD(aligned(buf, other_image : 16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] += other_image[k];
 }
@@ -401,17 +380,14 @@ void dt_iop_image_sub_image(float *const buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
-#pragma omp parallel for simd aligned(buf, other_image : 16) default(none) \
-  dt_omp_firstprivate(buf, other_image, nfloats) schedule(simd:static) num_threads(nthreads)
+    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf, other_image : 16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] -= other_image[k];
     return;
   }
 #endif // _OPENMP
   // no OpenMP, or image too small to bother parallelizing
-#ifdef _OPENMP
-#pragma simd aligned(buf, other_image : 16)
-#endif
+  DT_OMP_SIMD(aligned(buf, other_image : 16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] -= other_image[k];
 }
@@ -432,17 +408,14 @@ void dt_iop_image_invert(float *const buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
-#pragma omp parallel for simd aligned(buf:16) default(none) \
-  dt_omp_firstprivate(buf, max_value, nfloats) schedule(simd:static) num_threads(nthreads)
+    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf:16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] = max_value - buf[k];
     return;
   }
 #endif // _OPENMP
   // no OpenMP, or image too small to bother parallelizing
-#ifdef _OPENMP
-#pragma simd aligned(buf:16)
-#endif
+  DT_OMP_SIMD(aligned(buf:16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] = max_value - buf[k];
 }
@@ -463,17 +436,14 @@ void dt_iop_image_mul_const(float *const buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
-#pragma omp parallel for simd aligned(buf:16) default(none) \
-  dt_omp_firstprivate(buf, mul_value, nfloats) schedule(simd:static) num_threads(nthreads)
+    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf:16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] *= mul_value;
     return;
   }
 #endif // _OPENMP
   // no OpenMP, or image too small to bother parallelizing
-#ifdef _OPENMP
-#pragma simd aligned(buf:16)
-#endif
+  DT_OMP_SIMD(aligned(buf:16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] *= mul_value;
 }
@@ -494,17 +464,14 @@ void dt_iop_image_div_const(float *const buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(darktable.num_openmp_threads,parallel_imgop_maxthreads);
-#pragma omp parallel for simd aligned(buf:16) default(none) \
-  dt_omp_firstprivate(buf, div_value, nfloats) schedule(simd:static) num_threads(nthreads)
+    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf:16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] /= div_value;
     return;
   }
 #endif // _OPENMP
   // no OpenMP, or image too small to bother parallelizing
-#ifdef _OPENMP
-#pragma simd aligned(buf:16)
-#endif
+  DT_OMP_SIMD(aligned(buf:16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] /= div_value;
 }
@@ -528,18 +495,14 @@ void dt_iop_image_linear_blend(float *const restrict buf,
     // system with quad-channel memory won't be able to take advantage
     // of more than four cores).
     const int nthreads = MIN(dt_get_num_threads(), parallel_imgop_maxthreads);
-#pragma omp parallel for simd aligned(buf:16) default(none) \
-  dt_omp_firstprivate(buf, lambda, lambda_1,  nfloats) \
-  dt_omp_sharedconst(other) schedule(simd:static) num_threads(nthreads)
+    DT_OMP_FOR_SIMD(num_threads(nthreads) aligned(buf:16))
     for(size_t k = 0; k < nfloats; k++)
       buf[k] = lambda*buf[k] + lambda_1*other[k];
     return;
   }
 #endif // _OPENMP
   // no OpenMP, or image too small to bother parallelizing
-#ifdef _OPENMP
-#pragma simd aligned(buf:16)
-#endif
+  DT_OMP_SIMD(aligned(buf:16))
   for(size_t k = 0; k < nfloats; k++)
     buf[k] = lambda*buf[k] + lambda_1*other[k];
 }

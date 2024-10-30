@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2023 darktable developers.
+    Copyright (C) 2019-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -176,12 +176,12 @@ static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
     if(id != thumb->groupid)
     {
       if(id == thumb->imgid)
-        tt = dt_util_dstrcat(tt, "\n\u2022 %s", _("current"));
+        dt_util_str_cat(&tt, "\n\u2022 %s", _("current"));
       else
       {
-        tt = dt_util_dstrcat(tt, "\n\u2022 %s", sqlite3_column_text(stmt, 2));
+        dt_util_str_cat(&tt, "\n\u2022 %s", sqlite3_column_text(stmt, 2));
         if(v > 0)
-          tt = dt_util_dstrcat(tt, " v%d", v);
+          dt_util_str_cat(&tt, " v%d", v);
       }
     }
   }
@@ -646,15 +646,19 @@ static gboolean _event_image_draw(GtkWidget *widget,
       // better use the preview buffer for surface, in order to stay in sync
       dt_thumbnail_surface_destroy(thumb);
 
+      // make sure we use all backbuf data here with local copies in a protected state
+      // to protect against darkroom image switching to next/previous for example.
+      dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
+      dt_pthread_mutex_lock(mutex);
+
       // get new surface with preview image
       const int buf_width = dev->preview_pipe->backbuf_width;
       const int buf_height = dev->preview_pipe->backbuf_height;
-      uint8_t *rgbbuf = g_malloc0(sizeof(unsigned char) * 4 * buf_width * buf_height);
 
-      dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
-      dt_pthread_mutex_lock(mutex);
-      memcpy(rgbbuf, dev->preview_pipe->backbuf,
-             sizeof(unsigned char) * 4 * buf_width * buf_height);
+      const size_t bbufsize = sizeof(uint8_t) * 4 * buf_width * buf_height;
+      uint8_t *rgbbuf = dt_alloc_align_uint8(bbufsize);
+
+      memcpy(rgbbuf, dev->preview_pipe->backbuf, bbufsize);
       dt_pthread_mutex_unlock(mutex);
 
       const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf_width);
@@ -677,11 +681,11 @@ static gboolean _event_image_draw(GtkWidget *widget,
         cairo_scale(cr2, scale, scale);
 
         cairo_set_source_surface(cr2, tmp_surface, 0, 0);
-        // set filter no nearest: in skull mode, we want to see big
+        // set filter to nearest: in skull/error mode, we want to see big
         // pixels.  in 1 iir mode for the right mip, we want to see
         // exactly what the pipe gave us, 1:1 pixel for pixel.  in
         // between, filtering just makes stuff go unsharp.
-        if((buf_width <= 8 && buf_height <= 8) || fabsf(scale - 1.0f) < 0.01f)
+        if((buf_width <= 30 && buf_height <= 30) || fabsf(scale - 1.0f) < 0.01f)
           cairo_pattern_set_filter(cairo_get_source(cr2), CAIRO_FILTER_NEAREST);
         else
           cairo_pattern_set_filter(cairo_get_source(cr2), darktable.gui->filter_image);
@@ -696,12 +700,10 @@ static gboolean _event_image_draw(GtkWidget *widget,
                           cairo_image_surface_get_data(thumb->img_surf));
           cairo_restore(cr2);
         }
-
         cairo_surface_destroy(tmp_surface);
         cairo_destroy(cr2);
       }
-      if(rgbbuf) g_free(rgbbuf);
-
+      dt_free_align(rgbbuf);
       thumb->img_surf_preview = TRUE;
     }
     else
@@ -709,11 +711,12 @@ static gboolean _event_image_draw(GtkWidget *widget,
       cairo_surface_t *img_surf = NULL;
       if(thumb->zoomable)
       {
-        const float zoom100 = dt_thumbnail_get_zoom100(thumb);
-        // Any zoom100 > 1 is ensured to be correct
-        if(thumb->zoom > 1.0f && zoom100 > 1.0f)
-          thumb->zoom = MIN(thumb->zoom, zoom100);
-
+        if(thumb->zoom > 1.0f)
+        {
+          const float zoom100 = dt_thumbnail_get_zoom100(thumb);
+          if(zoom100 > 1.0f)
+            thumb->zoom = MIN(thumb->zoom, zoom100);
+        }
         res = dt_view_image_get_surface(thumb->imgid,
                                         image_w * thumb->zoom,
                                         image_h * thumb->zoom,
@@ -938,50 +941,13 @@ static gboolean _event_main_motion(GtkWidget *widget,
   return FALSE;
 }
 
-static gboolean _event_main_press(GtkWidget *widget,
-                                  GdkEventButton *event,
-                                  gpointer user_data)
-{
-  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  if(event->button == 1
-     && ((event->type == GDK_2BUTTON_PRESS && !thumb->single_click)
-         || (event->type == GDK_BUTTON_PRESS
-             && dt_modifier_is(event->state, 0) && thumb->single_click)))
-  {
-    dt_control_set_mouse_over_id(thumb->imgid);
-    // to ensure we haven't lost imgid during double-click
-  }
-  return FALSE;
-}
-static gboolean _event_main_release(GtkWidget *widget,
-                                    GdkEventButton *event,
-                                    gpointer user_data)
-{
-  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-
-  if(event->button == 1
-     && !thumb->moved
-     && thumb->sel_mode != DT_THUMBNAIL_SEL_MODE_DISABLED)
-  {
-    if(dt_modifier_is(event->state, 0)
-       && thumb->sel_mode != DT_THUMBNAIL_SEL_MODE_MOD_ONLY)
-      dt_selection_select_single(darktable.selection, thumb->imgid);
-    else if(dt_modifier_is(event->state, GDK_MOD1_MASK))
-      dt_selection_select_single(darktable.selection, thumb->imgid);
-    else if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
-      dt_selection_toggle(darktable.selection, thumb->imgid);
-    else if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
-      dt_selection_select_range(darktable.selection, thumb->imgid);
-  }
-  return FALSE;
-}
-
 static gboolean _event_rating_press(GtkWidget *widget,
                                     GdkEventButton *event,
                                     gpointer user_data)
 {
   return TRUE;
 }
+
 static gboolean _event_rating_release(GtkWidget *widget,
                                       GdkEventButton *event,
                                       gpointer user_data)
@@ -1042,7 +1008,7 @@ static gboolean _event_grouping_release(GtkWidget *widget,
       sqlite3_stmt *stmt;
       DT_DEBUG_SQLITE3_PREPARE_V2(
           dt_database_get(darktable.db),
-          "INSERT OR IGNORE INTO main.selected_images"
+          "INSERT OR IGNORE INTO main.selected_images (imgid)"
           " SELECT id FROM main.images WHERE group_id = ?1", -1, &stmt,
           NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, thumb->groupid);
@@ -1063,7 +1029,8 @@ static gboolean _event_grouping_release(GtkWidget *widget,
     else // expand the group
       darktable.gui->expanded_group_id = thumb->groupid;
     dt_collection_update_query(darktable.collection,
-                               DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_GROUPING,
+                               DT_COLLECTION_CHANGE_RELOAD,
+                               DT_COLLECTION_PROP_UNDEF,
                                NULL);
   }
   return FALSE;
@@ -1397,25 +1364,13 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
     g_signal_connect(G_OBJECT(thumb->w_main), "drag-motion",
                      G_CALLBACK(_event_main_drag_motion), thumb);
 
-    g_signal_connect(G_OBJECT(thumb->w_main), "button-press-event",
-                     G_CALLBACK(_event_main_press), thumb);
-    g_signal_connect(G_OBJECT(thumb->w_main), "button-release-event",
-                     G_CALLBACK(_event_main_release), thumb);
-
     g_object_set_data(G_OBJECT(thumb->w_main), "thumb", thumb);
-    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
-                              G_CALLBACK(_dt_active_images_callback), thumb);
-    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
-                              G_CALLBACK(_dt_selection_changed_callback), thumb);
-    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-                              G_CALLBACK(_dt_mipmaps_updated_callback), thumb);
-    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
-                                    DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-                              G_CALLBACK(_dt_preview_updated_callback), thumb);
-    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED,
-                              G_CALLBACK(_dt_image_info_changed_callback), thumb);
-    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
-                              G_CALLBACK(_dt_collection_changed_callback), thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_ACTIVE_IMAGES_CHANGE, _dt_active_images_callback, thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_SELECTION_CHANGED, _dt_selection_changed_callback, thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, _dt_mipmaps_updated_callback, thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _dt_preview_updated_callback, thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_IMAGE_INFO_CHANGED, _dt_image_info_changed_callback, thumb);
+    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _dt_collection_changed_callback, thumb);
 
     // the background
     thumb->w_back = gtk_event_box_new();
@@ -1759,18 +1714,12 @@ void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
   if(thumb->expose_again_timeout_id != 0)
     g_source_remove(thumb->expose_again_timeout_id);
 
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_dt_selection_changed_callback), thumb);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_dt_active_images_callback), thumb);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_dt_mipmaps_updated_callback), thumb);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_dt_preview_updated_callback), thumb);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_dt_image_info_changed_callback), thumb);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_dt_collection_changed_callback), thumb);
+  DT_CONTROL_SIGNAL_DISCONNECT(_dt_selection_changed_callback, thumb);
+  DT_CONTROL_SIGNAL_DISCONNECT(_dt_active_images_callback, thumb);
+  DT_CONTROL_SIGNAL_DISCONNECT(_dt_mipmaps_updated_callback, thumb);
+  DT_CONTROL_SIGNAL_DISCONNECT(_dt_preview_updated_callback, thumb);
+  DT_CONTROL_SIGNAL_DISCONNECT(_dt_image_info_changed_callback, thumb);
+  DT_CONTROL_SIGNAL_DISCONNECT(_dt_collection_changed_callback, thumb);
   dt_thumbnail_surface_destroy(thumb);
   if(thumb->w_main) gtk_widget_destroy(thumb->w_main);
   if(thumb->filename) g_free(thumb->filename);

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -117,12 +117,22 @@ typedef unsigned int u_int;
 #endif
 #endif /* dt_omp_nontemporal */
 
+#define DT_OMP_STRINGIFY(...) #__VA_ARGS__
+#define DT_OMP_PRAGMA(...) _Pragma(DT_OMP_STRINGIFY(omp __VA_ARGS__))
+
 #else /* _OPENMP */
 
 # define omp_get_max_threads() 1
 # define omp_get_thread_num() 0
 
+#define DT_OMP_PRAGMA(...)
+
 #endif /* _OPENMP */
+
+#define DT_OMP_SIMD(clauses) DT_OMP_PRAGMA(simd clauses)
+#define DT_OMP_DECLARE_SIMD(clauses) DT_OMP_PRAGMA(declare simd clauses)
+#define DT_OMP_FOR(clauses) DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(static) clauses)
+#define DT_OMP_FOR_SIMD(clauses) DT_OMP_PRAGMA(parallel for simd default(firstprivate) schedule(simd:static) clauses)
 
 #ifndef _RELEASE
 #include "common/poison.h"
@@ -140,7 +150,7 @@ extern "C" {
 /* Create cloned functions for various CPU SSE generations */
 /* See for instructions https://hannes.hauswedell.net/post/2017/12/09/fmv/ */
 /* TL;DR : use only on SIMD functions containing low-level paralellized/vectorized loops */
-#if __has_attribute(target_clones) && !defined(_WIN32) && !defined(NATIVE_ARCH)
+#if __has_attribute(target_clones) && !defined(_WIN32) && !defined(NATIVE_ARCH) && !defined(__APPLE__) && defined(__GLIBC__)
 # if defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
 #define __DT_CLONE_TARGETS__ __attribute__((target_clones("default", "sse2", "sse3", "sse4.1", "sse4.2", "popcnt", "avx", "avx2", "avx512f", "fma4")))
 # elif defined(__PPC64__)
@@ -154,9 +164,11 @@ extern "C" {
 #endif
 
 typedef int32_t dt_imgid_t;
+typedef int32_t dt_filmid_t;
 #define NO_IMGID (0)
+#define NO_FILMID (0)
 #define dt_is_valid_imgid(n) ((n) > NO_IMGID)
-
+#define dt_is_valid_filmid(n) ((n) > NO_FILMID)
 /*
   A dt_mask_id_t can be
   0  -> a formless mask
@@ -177,12 +189,15 @@ typedef int32_t dt_mask_id_t;
 /* Helper to force stack vectors to be aligned on DT_CACHELINE_BYTES blocks to enable AVX2 */
 #define DT_IS_ALIGNED(x) __builtin_assume_aligned(x, DT_CACHELINE_BYTES)
 
+/* Helper for 4-float pixel vectors */
+#define DT_IS_ALIGNED_PIXEL(x) __builtin_assume_aligned(x, 16)
+
 #define DT_MODULE_VERSION 25 // version of dt's module interface
 
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
 // bump this number and make sure you have an updated logic in dt_configure_runtime_performance()
-#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 16
+#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 17
 #define DT_PERF_INFOSIZE 4096
 
 // every module has to define this:
@@ -269,6 +284,7 @@ struct dt_colorspaces_t;
 struct dt_l10n_t;
 
 typedef float dt_boundingbox_t[4];  //(x,y) of upperleft, then (x,y) of lowerright
+typedef float dt_pickerbox_t[8];
 
 typedef enum dt_debug_thread_t
 {
@@ -300,6 +316,7 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_VERBOSE        = 1 << 24,
   DT_DEBUG_PIPE           = 1 << 25,
   DT_DEBUG_EXPOSE         = 1 << 26,
+  DT_DEBUG_PICKER         = 1 << 27,
   DT_DEBUG_ALL            = 0xffffffff & ~DT_DEBUG_VERBOSE,
   DT_DEBUG_COMMON         = DT_DEBUG_OPENCL | DT_DEBUG_DEV | DT_DEBUG_MASKS | DT_DEBUG_PARAMS | DT_DEBUG_IMAGEIO | DT_DEBUG_PIPE,
   DT_DEBUG_RESTRICT       = DT_DEBUG_VERBOSE | DT_DEBUG_PERF,
@@ -330,6 +347,15 @@ typedef struct dt_backthumb_t
   gboolean capable;
   int32_t mipsize;
 } dt_backthumb_t;
+
+typedef struct dt_gimp_t
+{
+  int32_t size;
+  char *mode;
+  char *path;
+  dt_imgid_t imgid;
+  gboolean error;
+} dt_gimp_t;
 
 typedef struct darktable_t
 {
@@ -380,6 +406,7 @@ typedef struct darktable_t
   char *cachedir;
   char *dump_pfm_module;
   char *dump_pfm_pipe;
+  char *dump_diff_pipe;
   char *tmp_directory;
   char *bench_module;
   dt_lua_state_t lua_state;
@@ -393,6 +420,7 @@ typedef struct darktable_t
   GDateTime *origin_gdt;
   struct dt_sys_resources_t dtresources;
   struct dt_backthumb_t backthumbs;
+  struct dt_gimp_t gimp;
 } darktable_t;
 
 typedef struct
@@ -421,9 +449,10 @@ void dt_cleanup();
          && !(DT_DEBUG_RESTRICT & (thread) & ~darktable.unmuted)) \
         func(__VA_ARGS__); } while(0)
 
-#define dt_print_pipe(thread, ...) dt_debug_if(thread, dt_print_pipe_ext, __VA_ARGS__)
 #define dt_print(thread, ...) dt_debug_if(thread, dt_print_ext, __VA_ARGS__)
 #define dt_print_nts(thread, ...) dt_debug_if(thread, dt_print_nts_ext, __VA_ARGS__)
+#define dt_print_pipe(thread, title, pipe, module, device, roi_in, roi_out, ...) \
+  dt_debug_if(thread, dt_print_pipe_ext, title, pipe, module, device, roi_in, roi_out, " " __VA_ARGS__)
 
 void dt_print_ext(const char *msg, ...)
   __attribute__((format(printf, 1, 2)));
@@ -461,6 +490,14 @@ void dt_dump_pipe_pfm(const char *mod,
                       const int bpp,
                       const gboolean input,
                       const char *pipe);
+
+void dt_dump_pipe_diff_pfm(const char *mod,
+                          const float *a,
+                          const float *b,
+                          const int width,
+                          const int height,
+                          const int ch,
+                          const char *pipe);
 
 void *dt_alloc_aligned(const size_t size);
 
@@ -509,6 +546,12 @@ static inline float *dt_calloc_align_float(const size_t nfloats)
   if(buf) memset(buf, 0, nfloats * sizeof(float));
   return (float*)__builtin_assume_aligned(buf, DT_CACHELINE_BYTES);
 }
+
+static inline gboolean dt_check_aligned(void *addr)
+{
+  return ((uintptr_t)addr & (DT_CACHELINE_BYTES - 1)) == 0;
+}
+
 size_t dt_round_size(const size_t size, const size_t alignment);
 
 #ifdef _WIN32
@@ -782,6 +825,7 @@ static inline void copy_pixel(float *const __restrict__ out,
 
 // a few macros and helper functions to speed up certain frequently-used GLib operations
 #define g_list_is_singleton(list) ((list) && (!(list)->next))
+#define g_list_is_empty(list) (!list)
 
 static inline gboolean g_list_shorter_than(const GList *list,
                                            unsigned len)
@@ -817,8 +861,30 @@ static inline const GList *g_list_prev_wraparound(const GList *list)
   return g_list_previous(list) ? g_list_previous(list) : g_list_last((GList*)list);
 }
 
+// returns true if the two GLists have the same length
+static inline gboolean dt_list_length_equal(GList *l1, GList *l2)
+{
+  while (l1 && l2)
+  {
+    l1 = g_list_next(l1);
+    l2 = g_list_next(l2);
+  }
+  return !l1 && !l2;
+}
+
+// returns true if the two GSLists have the same length
+static inline gboolean dt_slist_length_equal(GSList *l1, GSList *l2)
+{
+  while (l1 && l2)
+  {
+    l1 = g_slist_next(l1);
+    l2 = g_slist_next(l2);
+  }
+  return !l1 && !l2;
+}
+
 // checks internally for DT_DEBUG_MEMORY
-void dt_print_mem_usage();
+void dt_print_mem_usage(char *info);
 
 // try to start the backthumbs crawler
 void dt_start_backtumbs_crawler();
@@ -827,9 +893,9 @@ void dt_configure_runtime_performance(const int version, char *config_info);
 // helper function which loads whatever image_to_load points to:
 // single image files or whole directories it tells you if it was a
 // single image or a directory in single_image (when it's not NULL)
-int dt_load_from_string(const gchar *image_to_load,
-                        const gboolean open_image_in_dr,
-                        gboolean *single_image);
+dt_imgid_t dt_load_from_string(const gchar *image_to_load,
+                               const gboolean open_image_in_dr,
+                               gboolean *single_image);
 
 #define dt_unreachable_codepath_with_desc(D)                                                                 \
   dt_unreachable_codepath_with_caller(D, __FILE__, __LINE__, __FUNCTION__)
@@ -842,7 +908,7 @@ static inline void dt_unreachable_codepath_with_caller(const char *description,
 {
   dt_print(DT_DEBUG_ALWAYS,
            "[dt_unreachable_codepath] {%s} %s:%d (%s) - we should not be here."
-           " please report this to the developers.",
+           " please report this to the developers",
            description, file, line, function);
   __builtin_unreachable();
 }
@@ -902,6 +968,16 @@ static inline const gchar *NQ_(const gchar *String)
 {
   const gchar *context_end = strchr(String, '|');
   return context_end ? context_end + 1 : String;
+}
+
+static inline gboolean dt_check_gimpmode(const char *mode)
+{
+  return darktable.gimp.mode ? strcmp(darktable.gimp.mode, mode) == 0 : FALSE;
+}
+
+static inline gboolean dt_check_gimpmode_ok(const char *mode)
+{
+  return darktable.gimp.mode ? !darktable.gimp.error && strcmp(darktable.gimp.mode, mode) == 0 : FALSE;
 }
 
 #ifdef __cplusplus

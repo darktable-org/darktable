@@ -16,6 +16,7 @@ env:
 
 jobs:
   stale:
+    if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
 
     permissions:
       issues: write  # for actions/stale to close stale issues

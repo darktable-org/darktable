@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2022 darktable developers.
+    Copyright (C) 2018-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,7 +32,6 @@ dt_help_url urls_db[] =
   {"layout_zoomable",            "lighttable/lighttable-modes/zoomable-lighttable/"},
   {"layout_culling",             "lighttable/lighttable-modes/culling/"},
   {"layout_preview",             "lighttable/lighttable-modes/full-preview/"},
-  {"filter",                     NULL},
   {"colorlabels",                "lighttable/digital-asset-management/star-color/#color-labels"},
   {"import",                     "module-reference/utility-modules/lighttable/import/"},
   {"import_dialog",              "module-reference/utility-modules/lighttable/import/#import-dialog"},
@@ -50,7 +49,7 @@ dt_help_url urls_db[] =
   {"metadata_view",              "module-reference/utility-modules/shared/image-information/"},
   {"export",                     "module-reference/utility-modules/shared/export/"},
   {"export_dialog",              "module-reference/utility-modules/shared/export/#metadata-preferences"},
-  {"histogram",                  "module-reference/utility-modules/shared/histogram/"},
+  {"histogram",                  "module-reference/utility-modules/shared/scopes/"},
   {"navigation",                 "module-reference/utility-modules/darkroom/navigation/"},
   {"snapshots",                  "module-reference/utility-modules/darkroom/snapshots/"},
   {"history",                    "module-reference/utility-modules/darkroom/history-stack/"},
@@ -122,6 +121,7 @@ dt_help_url urls_db[] =
   {"colorchecker",               "module-reference/processing-modules/color-look-up-table/"},
   {"colorcontrast",              "module-reference/processing-modules/color-contrast/"},
   {"colorcorrection",            "module-reference/processing-modules/color-correction/"},
+  {"colorequal",                 "module-reference/processing-modules/color-equalizer/"},
   {"colorin",                    "module-reference/processing-modules/input-color-profile/"},
   {"colorize",                   "module-reference/processing-modules/colorize/"},
   {"colormapping",               "module-reference/processing-modules/color-mapping/"},
@@ -134,6 +134,7 @@ dt_help_url urls_db[] =
   {"demosaic",                   "module-reference/processing-modules/demosaic/"},
   {"denoiseprofile",             "module-reference/processing-modules/denoise-profiled/"},
   {"dither",                     "module-reference/processing-modules/dithering/"},
+  {"enlargecanvas",              "module-reference/processing-modules/enlarge-canvas/"},
   {"equalizer",                  NULL}, // deprecated, replaced by atrous
   {"exposure",                   "module-reference/processing-modules/exposure/"},
   {"filmic",                     "module-reference/processing-modules/filmic-rgb/"},
@@ -157,6 +158,8 @@ dt_help_url urls_db[] =
   {"monochrome",                 "module-reference/processing-modules/monochrome/"},
   {"negadoctor",                 "module-reference/processing-modules/negadoctor/"},
   {"nlmeans",                    "module-reference/processing-modules/astrophoto-denoise/"},
+  {"overlay",                    "module-reference/processing-modules/composite/"},
+  {"primaries",                  "module-reference/processing-modules/rgb-primaries/"},
   {"profile_gamma",              "module-reference/processing-modules/unbreak-input-profile/"},
   {"rawdenoise",                 "module-reference/processing-modules/raw-denoise/"},
   {"rawprepare",                 "module-reference/processing-modules/raw-black-white-point/"},
@@ -184,13 +187,16 @@ dt_help_url urls_db[] =
 
 char *dt_get_help_url(const char *name)
 {
-  if(name==NULL) return NULL;
+  if(name == NULL)
+    return NULL;
 
-  for(int k=0; k< sizeof(urls_db)/2/sizeof(char *); k++)
-    if(!strcmp(urls_db[k].name, name)) return urls_db[k].url;
+  for(int k = 0; k < sizeof(urls_db)/2/sizeof(char *); k++)
+    if(!strcmp(urls_db[k].name, name))
+      return urls_db[k].url;
 
   return NULL;
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

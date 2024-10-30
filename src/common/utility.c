@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -56,28 +56,59 @@
 #include <librsvg/rsvg-cairo.h>
 #endif
 
-gchar *dt_util_dstrcat(gchar *str, const gchar *format, ...)
+const char *dt_util_localize_string(const char *s)
 {
+  // check whether the string starts with the magic tag to request localization
+  static const char prefix[] = "_l10n_";
+  static const int prefix_len = sizeof(prefix)-1;
+
+  if(s && strncmp(s, prefix, prefix_len) == 0)
+    return _(s+prefix_len);
+  else
+    return s;
+}
+
+gchar *dt_util_localize_segmented_name(const char *s)
+{
+  gchar **split = g_strsplit(s, "|", 0);
+  gchar *localized = NULL;
+  if (split && split[0])
+  {
+    gsize loc_len = 1 + strlen(dt_util_localize_string(split[0]));
+    for(int i = 1; split[i] != NULL; i++)
+      loc_len += strlen(dt_util_localize_string(split[i])) + strlen(" | ");
+    localized = g_new0(gchar, loc_len);
+    gchar *end = g_stpcpy(localized, dt_util_localize_string(split[0]));
+    for(int i = 1; split[i] != NULL; i++)
+    {
+      end = g_stpcpy(end, " | ");
+      end = g_stpcpy(end, dt_util_localize_string(split[i]));
+    }
+  }
+  g_strfreev(split);
+  return localized;
+}
+
+void dt_util_str_cat(gchar **str, const gchar *format, ...)
+{
+  if(!str) return;
+
   va_list args;
-  gchar *ns;
   va_start(args, format);
-  const size_t clen = str ? strlen(str) : 0;
+  const size_t clen = *str ? strlen(*str) : 0;
   const int alen = g_vsnprintf(NULL, 0, format, args);
+  va_end(args);
   const int nsize = alen + clen + 1;
 
   /* realloc for new string */
-  ns = g_realloc(str, nsize);
-  if(str == NULL) ns[0] = '\0';
-  va_end(args);
+  *str = g_realloc(*str, nsize);
 
   /* append string */
   va_start(args, format);
-  g_vsnprintf(ns + clen, alen + 1, format, args);
+  g_vsnprintf(*str + clen, alen + 1, format, args);
   va_end(args);
 
-  ns[nsize - 1] = '\0';
-
-  return ns;
+  (*str)[nsize - 1] = '\0';
 }
 
 guint dt_util_str_occurence(const gchar *haystack, const gchar *needle)
@@ -108,7 +139,7 @@ gchar *dt_util_float_to_str(const gchar *format, const double value)
 #endif
 
   gchar *txt = g_strdup_printf(format, value);
-  
+
 #if defined(WIN32)
   _configthreadlocale(_DISABLE_PER_THREAD_LOCALE);
 #else
@@ -459,7 +490,7 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
                 final_height = dimension.height * factor * ppd;
     const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, final_width);
 
-    guint8 *image_buffer = (guint8 *)calloc(stride * final_height, sizeof(guint8));
+    guint8 *image_buffer = calloc(stride * final_height, sizeof(guint8));
     if(darktable.gui)
       surface = dt_cairo_image_surface_create_for_data(image_buffer, CAIRO_FORMAT_ARGB32, final_width,
                                                       final_height, stride);
@@ -468,7 +499,7 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
                                                        final_height, stride);
     if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
     {
-      dt_print(DT_DEBUG_ALWAYS, "warning: can't load darktable logo from SVG file `%s'\n", dtlogo);
+      dt_print(DT_DEBUG_ALWAYS, "warning: can't load darktable logo from SVG file `%s'", dtlogo);
       cairo_surface_destroy(surface);
       free(image_buffer);
       image_buffer = NULL;
@@ -487,7 +518,7 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
   else
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "warning: can't load darktable logo from SVG file `%s'\n%s\n", dtlogo, error->message);
+             "warning: can't load darktable logo from SVG file `%s'\n%s", dtlogo, error->message);
     g_error_free(error);
   }
 
@@ -875,7 +906,7 @@ char *dt_read_file(const char *const filename, size_t *filesize)
   const size_t end = ftell(fd);
   rewind(fd);
 
-  char *content = (char *)malloc(sizeof(char) * end);
+  char *content = malloc(sizeof(char) * end);
   if(!content) return NULL;
 
   const size_t count = fread(content, sizeof(char), end, fd);

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2015-2023 darktable developers.
+    Copyright (C) 2015-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -98,6 +98,12 @@ void modify_roi_in(dt_iop_module_t *self,
                                piece->buf_in.width));
   roi_in->height = MAX(16, MIN(ceilf(roi_out->height / roi_out->scale),
                                piece->buf_in.height));
+
+  // FIXME As long as we don't support upscaling via OpenCL we can & should disable OpenCL
+  // here to avoid the costly later fallback to CPU upscaling
+  if(roi_in->scale > 1.0f)
+    piece->process_cl_ready = FALSE;
+
   roi_in->scale = 1.0f;
 
   if(_gui_fullpipe(piece))
@@ -109,8 +115,29 @@ void modify_roi_in(dt_iop_module_t *self,
   }
 }
 
-void distort_mask(struct dt_iop_module_t *self,
-                  struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
+                     struct dt_develop_tiling_t *tiling)
+{
+  const float ioratio
+      = (float)(roi_out->width * roi_out->height) / (float)(roi_in->width * roi_in->height);
+
+  tiling->factor = 1.0f + ioratio;
+  tiling->factor += ioratio != 1.0f ? 0.5f : 0.0f; // approximate extra requirements for interpolation
+  tiling->factor_cl = tiling->factor;
+  tiling->maxbuf = 1.0f;
+  tiling->maxbuf_cl = tiling->maxbuf;
+  tiling->overhead = 0;
+
+  tiling->overlap = 4;
+  tiling->xalign = 1;
+  tiling->yalign = 1;
+}
+
+void distort_mask(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
                   const float *const in,
                   float *const out,
                   const dt_iop_roi_t *const roi_in,
@@ -122,7 +149,7 @@ void distort_mask(struct dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in,
@@ -131,16 +158,20 @@ int process_cl(struct dt_iop_module_t *self,
   if(roi_out->scale > 1.0f) // trust cl code for 1:1 copy here or downscale
   {
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl_finalscale] upscaling not yet supported by opencl code\n");
+             "[opencl_finalscale] upscaling not yet supported by opencl code");
     return DT_OPENCL_PROCESS_CL;
   }
 
   const int devid = piece->pipe->devid;
+  const gboolean exporting = piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT;
 
   dt_print_pipe(DT_DEBUG_IMAGEIO,
-                "clip_and_zoom_roi",
-                piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "device=%i\n", devid);
-  return dt_iop_clip_and_zoom_cl(devid, dev_out, dev_in, roi_out, roi_in);
+                exporting ? "clip_and_zoom_roi" : "clip_and_zoom",
+                piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "device=%i", devid);
+  if(exporting)
+    return dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
+  else
+    return dt_iop_clip_and_zoom_cl(devid, dev_out, dev_in, roi_out, roi_in);
 }
 #endif
 
@@ -151,10 +182,15 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
+  const gboolean exporting = piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT;
   dt_print_pipe(DT_DEBUG_IMAGEIO,
-                "clip_and_zoom_roi", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "\n");
+                exporting ? "clip_and_zoom_roi" : "clip_and_zoom",
+                piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out);
 
-  dt_iop_clip_and_zoom((float *)ovoid, (float *)ivoid, roi_out, roi_in);
+  if(exporting)
+    dt_iop_clip_and_zoom_roi((float *)ovoid, (float *)ivoid, roi_out, roi_in);
+  else
+    dt_iop_clip_and_zoom((float *)ovoid, (float *)ivoid, roi_out, roi_in);
 }
 
 void commit_params(dt_iop_module_t *self,
@@ -162,7 +198,9 @@ void commit_params(dt_iop_module_t *self,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
+  const int use_finalscale = DT_DEV_PIXELPIPE_IMAGE | DT_DEV_PIXELPIPE_IMAGE_FINAL;
   piece->enabled = piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT
+                  || (pipe->type & use_finalscale) == use_finalscale
                   || _gui_fullpipe(piece);
 }
 

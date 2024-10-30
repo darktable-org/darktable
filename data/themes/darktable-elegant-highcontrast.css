@@ -1,0 +1,41 @@
+@import url("darktable-elegant-darker.css");
+
+@define-color fg_color @grey_95; /* general text */
+@define-color base_color @fg_color; /* legacy stuff */
+@define-color disabled_fg_color @grey_45; /* disabled controls */
+
+/* Modules box (plugins) */
+@define-color plugin_fg_color @grey_95;
+
+/* Modules controls (sliders and comboboxes) */
+@define-color bauhaus_fg @grey_95;
+@define-color bauhaus_fg_hover @grey_85;
+@define-color bauhaus_fg_selected @grey_95;
+
+/* GTK Buttons and tabs */
+@define-color button_fg @grey_75;
+@define-color button_focus_fg @grey_90;
+@define-color button_checked_fg @grey_90;
+@define-color button_hover_fg @grey_15;
+
+/* text fields */
+@define-color field_fg @grey_85;
+@define-color field_active_fg @grey_85;
+@define-color field_selected_fg @grey_95;
+
+/* Tooltips and contextual helpers */
+@define-color tooltip_fg_color @grey_95;
+@define-color log_fg_color @grey_90;
+
+/* Views */
+
+/* Lighttable and film-strip */
+@define-color thumbnail_font_color @grey_20;
+
+/* Graphs : histogram, navigation thumbnail and some items on tone curve */
+@define-color graph_fg @grey_90;
+@define-color graph_fg_active @grey_100;
+@define-color graph_grid @grey_00;
+
+#iop-panel-label, #lib-panel-label, #iop-module-name { color: @fg_color; }
+#module-header .toggle:checked { color: @fg_color; }

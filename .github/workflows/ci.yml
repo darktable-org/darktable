@@ -36,6 +36,7 @@ on:
         - "data/watermarks/**"
         - "tools/*"
         - "**.md"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -43,59 +44,66 @@ permissions:
 jobs:
 
   Linux:
-    name: Linux.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
-    runs-on: ${{ matrix.os.label }}
+    if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
+    name: Linux.${{ matrix.distro }}.${{ matrix.compiler.compiler }}.${{ matrix.btype }}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.distro }}
+      options: --tmpfs /tmp:exec --tmpfs /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}:exec
     strategy:
       fail-fast: true
       matrix:
-        os:
-          - { label: ubuntu-latest, code: latest }
+        distro:
+          - "ubuntu:24.10"
         compiler:
-          - { compiler: GNU13,  CC: gcc-13,   CXX: g++-13,     packages: gcc-13 g++-13 }
-          - { compiler: LLVM15, CC: clang-15, CXX: clang++-15, packages: clang-15 libomp-15-dev llvm-15-dev libc++-15-dev libc++abi1-15 lld-15 clang-tools-15 mlir-15-tools libmlir-15-dev}
+          - { compiler: GNU14,  CC: gcc-14,   CXX: g++-14,     packages: gcc-14 g++-14 }
+          - { compiler: LLVM18, CC: clang-18, CXX: clang++-18, packages: clang-18 libomp-18-dev llvm-18-dev libc++-18-dev libc++abi1-18 lld-18 clang-tools-18 mlir-18-tools libmlir-18-dev}
         btype:
           - Release
         target:
           - skiptest
         generator:
           - Ninja
+        eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
         include:
           # We want one run in CI to be Debug to make sure the Debug build isn't broken
-          - os: { label: ubuntu-latest, code: latest }
+          - distro: "ubuntu:24.10"
             btype: Debug
-            compiler: { compiler: GNU13,  CC: gcc-13,   CXX: g++-13,     packages: gcc-13 g++-13 }
+            compiler: { compiler: GNU14, CC: gcc-14, CXX: g++-14, packages: gcc-14 g++-14 }
             target: skiptest
             generator: Ninja
+            eco: -DDONT_USE_INTERNAL_LIBRAW=OFF
     env:
+      DISTRO: ${{ matrix.distro }}
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}
       SRC_DIR: ${{ github.workspace }}/src
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
+      ECO: ${{ matrix.eco }}
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
       DARKTABLE_CLI: ${{ github.workspace }}/install/bin/darktable-cli
     steps:
+      - name: Update base packages
+        timeout-minutes: 1
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          set -xe
+          rm -rf /var/lib/apt/lists/*
+          apt-get --yes update
+          apt-get --yes install eatmydata
+          eatmydata apt-get --yes upgrade
       - name: Install compiler ${{ matrix.compiler.compiler }}
         run: |
-          # The libunwind-14* packages are already installed in the CI image, they are part
-          # of the Clang 14 compiler-specific packages. Due to the shortcomings of inter-package
-          # dependencies, their presence prevents the installation of similar packages for Clang 15.
-          # So we have to remove them first.
-          sudo apt remove -y libunwind-14 libunwind-14-dev
-          # Remove azure mirror because it is unreliable and sometimes unpredictably leads to failed CI
-          sudo sed -i 's/azure\.//' /etc/apt/sources.list
-          sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-          sudo add-apt-repository -y universe
-          sudo add-apt-repository -y multiverse
-          sudo apt-get update
-          sudo eatmydata apt-get -y install \
-            ${{ matrix.compiler.packages }}
+          eatmydata apt-get --yes install ${{ matrix.compiler.packages }}
       - name: Install Base Dependencies
         run: |
-          sudo eatmydata apt-get -y install \
+          eatmydata apt-get --yes install \
             build-essential \
+            cmake \
             appstream-util \
             desktop-file-utils \
             gettext \
@@ -129,6 +137,7 @@ jobs:
             libpng-dev \
             libportmidi-dev \
             libpugixml-dev \
+            libraw-dev \
             librsvg2-dev \
             libsaxon-java \
             libsdl2-dev \
@@ -147,8 +156,16 @@ jobs:
             zlib1g-dev;
       - uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: false
           path: src
+          fetch-depth: 1
+      - name: Get only those submodules that are needed for build
+        run: |
+          cd src
+          git submodule init
+          git config submodule.src/tests/integration.update none
+          git submodule update
+          cd -
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}";
@@ -158,10 +175,9 @@ jobs:
         run: |
           ${INSTALL_PREFIX}/bin/darktable --version || true
           ${INSTALL_PREFIX}/bin/darktable-cli \
-                 --width 2048 --height 2048 \
+                 --width 1000 --height 1000 \
                  --hq true --apply-custom-presets false \
-                 "${SRC_DIR}/src/tests/integration/images/mire1.cr2" \
-                 "${SRC_DIR}/src/tests/integration/0000-nop/nop.xmp" \
+                 "${SRC_DIR}/data/pixmaps/256x256/darktable.png" \
                  output.png \
                  --core --disable-opencl --conf host_memory_limit=8192 \
                  --conf worker_threads=4 -t 4 \
@@ -175,7 +191,8 @@ jobs:
           ./run.sh --no-opencl --no-deltae --fast-fail
 
   Windows:
-    name: Windows.${{ matrix.msystem }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
+    if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
+    name: Windows.${{ matrix.msystem }}.${{ matrix.btype }}
     runs-on: windows-latest
     strategy:
       fail-fast: true
@@ -201,7 +218,6 @@ jobs:
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       TARGET: ${{ matrix.target }}
       GENERATOR: ${{ matrix.generator }}
-      # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
     steps:
       - uses: msys2/setup-msys2@v2
         with:
@@ -257,8 +273,16 @@ jobs:
         shell: bash
       - uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: false
           path: src
+          fetch-depth: 1
+      - name: Get only those submodules that are needed for build
+        run: |
+          cd src
+          git submodule init
+          git config submodule.src/tests/integration.update none
+          git submodule update
+          cd -
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}"
@@ -270,11 +294,9 @@ jobs:
           $(cygpath ${INSTALL_PREFIX})/bin/darktable-cli.exe --version || true
           echo "Testing RUN!"
           $(cygpath ${INSTALL_PREFIX})/bin/darktable-cli.exe \
-                 --verbose \
-                 --width 2048 --height 2048 \
+                 --width 1000 --height 1000 \
                  --hq true --apply-custom-presets false \
-                 $(cygpath ${SRC_DIR})/src/tests/integration/images/mire1.cr2 \
-                 $(cygpath ${SRC_DIR})/src/tests/integration/0000-nop/nop.xmp \
+                 $(cygpath ${SRC_DIR})/data/pixmaps/256x256/darktable.png \
                  output.png \
                  --core --disable-opencl --conf host_memory_limit=8192 \
                  --conf worker_threads=4 -t 4 \
@@ -282,13 +304,15 @@ jobs:
                  --conf plugins/lighttable/export/iccintent=0
 
   macOS:
-    name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
+    if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
+    name: macOS.${{ matrix.build.os }}.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}.${{ matrix.btype }}
     runs-on: ${{ matrix.build.os }}
     strategy:
       fail-fast: true
       matrix:
         build:
-          - { os: macos-12,    xcode: 14.2,   deployment: 12.5 } # LLVM14
+          - { os: macos-13,    xcode: 15.2,   deployment: 13.5 } # LLVM16, x86_64
+          - { os: macos-14,    xcode: 15.4,   deployment: 14.0 } # LLVM16, arm64
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Release ]
@@ -296,7 +320,7 @@ jobs:
           - skiptest
         generator:
           - Ninja
-        eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
+        eco: [-DDONT_USE_INTERNAL_LIBRAW=ON -DUSE_GRAPHICSMAGICK=OFF -DUSE_IMAGEMAGICK=ON]
     env:
       DEVELOPER_DIR: /Applications/Xcode_${{ matrix.build.xcode }}.app/Contents/Developer
       CC: ${{ matrix.compiler.CC }}
@@ -312,8 +336,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: false
           path: src
+          fetch-depth: 1
+      - name: Get only those submodules that are needed for build
+        run: |
+          cd src
+          git submodule init
+          git config submodule.src/tests/integration.update none
+          git submodule update
+          cd -
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
@@ -326,7 +358,6 @@ jobs:
           brew link --force libomp
           brew link --force libsoup@2
       - name: Build and Install
-          # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
         run: |
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";
@@ -335,10 +366,9 @@ jobs:
         run: |
           ${INSTALL_PREFIX}/bin/darktable --version || true
           ${INSTALL_PREFIX}/bin/darktable-cli \
-                 --width 2048 --height 2048 \
+                 --width 1000 --height 1000 \
                  --hq true --apply-custom-presets false \
-                 "${SRC_DIR}/src/tests/integration/images/mire1.cr2" \
-                 "${SRC_DIR}/src/tests/integration/0000-nop/nop.xmp" \
+                 "${SRC_DIR}/data/pixmaps/256x256/darktable.png" \
                  output.png \
                  --core --disable-opencl --conf host_memory_limit=8192 \
                  --conf worker_threads=4 -t 4 \

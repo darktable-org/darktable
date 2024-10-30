@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2010-2023 darktable developers.
+   Copyright (C) 2010-2024 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -96,7 +96,7 @@ const char *name()
   return _("unbreak input profile");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("correct input color profiles meant to be applied on non-linear RGB"),
                                       _("corrective"),
@@ -190,10 +190,8 @@ int legacy_params(dt_iop_module_t *self,
       float gamma;
     } dt_iop_profilegamma_params_v1_t;
 
-    const dt_iop_profilegamma_params_v1_t *o =
-      (dt_iop_profilegamma_params_v1_t *)old_params;
-    dt_iop_profilegamma_params_v2_t *n =
-      (dt_iop_profilegamma_params_v2_t *)malloc(sizeof(dt_iop_profilegamma_params_v2_t));
+    const dt_iop_profilegamma_params_v1_t *o = old_params;
+    dt_iop_profilegamma_params_v2_t *n = malloc(sizeof(dt_iop_profilegamma_params_v2_t));
 
     n->linear = o->linear;
     n->gamma = o->gamma;
@@ -213,11 +211,11 @@ int legacy_params(dt_iop_module_t *self,
 
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_profilegamma_data_t *d = (dt_iop_profilegamma_data_t *)piece->data;
-  dt_iop_profilegamma_global_data_t *gd = (dt_iop_profilegamma_global_data_t *)self->global_data;
+  dt_iop_profilegamma_data_t *d = piece->data;
+  dt_iop_profilegamma_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
@@ -263,7 +261,7 @@ error:
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_profilegamma_data_t *data = (dt_iop_profilegamma_data_t *)piece->data;
+  dt_iop_profilegamma_data_t *data = piece->data;
 
   const int ch = piece->colors;
 
@@ -282,12 +280,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       */
       const float noise = powf(2.0f, -16.0f);
 
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-      dt_omp_firstprivate(ch, grey, ivoid, ovoid, roi_out, noise) \
-      shared(data) \
-      schedule(static)
-#endif
+      DT_OMP_FOR()
       for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k++)
       {
         float tmp = ((const float *)ivoid)[k] / grey;
@@ -308,12 +301,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
     case PROFILEGAMMA_GAMMA:
     {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(ch, ivoid, ovoid, roi_out) \
-      shared(data) \
-      schedule(static)
-#endif
+      DT_OMP_FOR()
       for(int k = 0; k < roi_out->height; k++)
       {
         const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
@@ -342,8 +330,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 static void apply_auto_grey(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
-  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
+  dt_iop_profilegamma_params_t *p = self->params;
+  dt_iop_profilegamma_gui_data_t *g = self->gui_data;
 
   float grey = fmax(fmax(self->picked_color[0], self->picked_color[1]), self->picked_color[2]);
   p->grey_point = 100.f * grey;
@@ -358,8 +346,8 @@ static void apply_auto_grey(dt_iop_module_t *self)
 static void apply_auto_black(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
-  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
+  dt_iop_profilegamma_params_t *p = self->params;
+  dt_iop_profilegamma_gui_data_t *g = self->gui_data;
 
   float noise = powf(2.0f, -16.0f);
 
@@ -380,8 +368,8 @@ static void apply_auto_black(dt_iop_module_t *self)
 static void apply_auto_dynamic_range(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
-  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
+  dt_iop_profilegamma_params_t *p = self->params;
+  dt_iop_profilegamma_gui_data_t *g = self->gui_data;
 
   float noise = powf(2.0f, -16.0f);
 
@@ -404,8 +392,8 @@ static void apply_auto_dynamic_range(dt_iop_module_t *self)
 
 static void apply_autotune(dt_iop_module_t *self)
 {
-  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
-  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
+  dt_iop_profilegamma_params_t *p = self->params;
+  dt_iop_profilegamma_gui_data_t *g = self->gui_data;
 
   float noise = powf(2.0f, -16.0f);
 
@@ -438,8 +426,8 @@ static void apply_autotune(dt_iop_module_t *self)
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
+  dt_iop_profilegamma_gui_data_t *g = self->gui_data;
+  dt_iop_profilegamma_params_t *p = self->params;
 
   if(w == g->mode)
   {
@@ -476,7 +464,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
+  dt_iop_profilegamma_gui_data_t *g = self->gui_data;
   if     (picker == g->grey_point)
     apply_auto_grey(self);
   else if(picker == g->shadows_range)
@@ -486,14 +474,14 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   else if(picker == g->auto_button)
     apply_autotune(self);
   else
-    dt_print(DT_DEBUG_ALWAYS, "[profile_gamma] unknown color picker\n");
+    dt_print(DT_DEBUG_ALWAYS, "[profile_gamma] unknown color picker");
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)p1;
-  dt_iop_profilegamma_data_t *d = (dt_iop_profilegamma_data_t *)piece->data;
+  dt_iop_profilegamma_data_t *d = piece->data;
 
   const float linear = p->linear;
   const float gamma = p->gamma;
@@ -504,21 +492,14 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   float a, b, c, g;
   if(gamma == 1.0)
   {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d) schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int k = 0; k < 0x10000; k++) d->table[k] = 1.0 * k / 0x10000;
   }
   else
   {
     if(linear == 0.0)
     {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(gamma) \
-      shared(d) \
-      schedule(static)
-#endif
+      DT_OMP_FOR()
       for(int k = 0; k < 0x10000; k++) d->table[k] = powf(1.00 * k / 0x10000, gamma);
     }
     else
@@ -535,12 +516,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
         a = b = g = 0.0;
         c = 1.0;
       }
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(linear) \
-      shared(d, a, b, c, g) \
-      schedule(static)
-#endif
+      DT_OMP_FOR()
       for(int k = 0; k < 0x10000; k++)
       {
         float tmp;
@@ -592,31 +568,30 @@ void gui_reset(dt_iop_module_t *self)
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
+  dt_iop_profilegamma_gui_data_t *g = self->gui_data;
 
   dt_iop_color_picker_reset(self, TRUE);
 
   gui_changed(self, g->mode, 0);
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // basic.cl, from programs.conf
-  dt_iop_profilegamma_global_data_t *gd
-      = (dt_iop_profilegamma_global_data_t *)malloc(sizeof(dt_iop_profilegamma_global_data_t));
+  dt_iop_profilegamma_global_data_t *gd = malloc(sizeof(dt_iop_profilegamma_global_data_t));
 
-  module->data = gd;
+  self->data = gd;
   gd->kernel_profilegamma = dt_opencl_create_kernel(program, "profilegamma");
   gd->kernel_profilegamma_log = dt_opencl_create_kernel(program, "profilegamma_log");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_profilegamma_global_data_t *gd = (dt_iop_profilegamma_global_data_t *)module->data;
+  dt_iop_profilegamma_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_profilegamma);
   dt_opencl_free_kernel(gd->kernel_profilegamma_log);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 

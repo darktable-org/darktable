@@ -251,16 +251,11 @@ icc_end:
     out_image = dt_alloc_aligned(stride * width * height);
     if(out_image == NULL)
     {
-      dt_print(DT_DEBUG_ALWAYS, "[exr export] error allocating image conversion buffer\n");
+      dt_print(DT_DEBUG_ALWAYS, "[exr export] error allocating image conversion buffer");
       return 1;
     }
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(in_tmp, out_image, width, height) \
-  schedule(simd:static) \
-  collapse(2)
-#endif
+    DT_OMP_FOR(collapse(2))
     for(size_t y = 0; y < height; y++)
     {
       for(size_t x = 0; x < width; x++)
@@ -332,16 +327,11 @@ icc_end:
           void *out_mask = dt_alloc_aligned(stride * width * height);
           if(out_mask == NULL)
           {
-            dt_print(DT_DEBUG_ALWAYS, "[exr export] error allocating mask conversion buffer\n");
+            dt_print(DT_DEBUG_ALWAYS, "[exr export] error allocating mask conversion buffer");
             return 1;
           }
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(raster_mask, out_mask, width, height) \
-  schedule(simd:static) \
-  collapse(2)
-#endif
+          DT_OMP_FOR(collapse(2))
           for(size_t y = 0; y < height; y++)
           {
             for(size_t x = 0; x < width; x++)

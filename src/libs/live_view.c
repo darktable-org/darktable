@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2023 darktable developers.
+    Copyright (C) 2012-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -175,7 +175,7 @@ static void _auto_focus_button_clicked(GtkWidget *widget, gpointer user_data)
   CameraWidgetType property_type;
   if(dt_camctl_camera_get_property_type(darktable.camctl, NULL, property, &property_type))
   {
-    dt_print(DT_DEBUG_CAMCTL, "[camera control] unable to get property type for %s\n", property);
+    dt_print(DT_DEBUG_CAMCTL, "[camera control] unable to get property type for %s", property);
   }
   else
   {
@@ -186,7 +186,7 @@ static void _auto_focus_button_clicked(GtkWidget *widget, gpointer user_data)
     else
     {
       // TODO evaluate if this is the right thing to do in default scenario
-      dt_print(DT_DEBUG_CAMCTL, "[camera control] unable to set %s for property type %d\n", property, property_type);
+      dt_print(DT_DEBUG_CAMCTL, "[camera control] unable to set %s for property type %d", property, property_type);
     }
   }
 }
@@ -515,7 +515,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
             y1 = buf.height;
             break;
           default:
-            dt_print(DT_DEBUG_ALWAYS, "OMFG, the world will collapse, this shouldn't be reachable!\n");
+            dt_print(DT_DEBUG_ALWAYS, "OMFG, the world will collapse, this shouldn't be reachable!");
             dt_pthread_mutex_unlock(&cam->live_view_buffer_mutex);
             return;
         }
@@ -526,10 +526,10 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
 
       cairo_set_source_surface(cr, surface, 0, 0);
       // set filter no nearest:
-      // in skull mode, we want to see big pixels.
+      // in skull/error mode, we want to see big pixels.
       // in 1 iir mode for the right mip, we want to see exactly what the pipe gave us, 1:1 pixel for pixel.
       // in between, filtering just makes stuff go unsharp.
-      if((buf.width <= 8 && buf.height <= 8) || fabsf(scale - 1.0f) < 0.01f)
+      if((buf.width <= 30 && buf.height <= 30) || fabsf(scale - 1.0f) < 0.01f)
         cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
       cairo_rectangle(cr, 0, 0, buf.width, buf.height);
       const int overlay_modes_index = dt_bauhaus_combobox_get(lib->overlay_mode);
@@ -623,7 +623,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
 
 int button_released(struct dt_lib_module_t *self, double x, double y, int which, uint32_t state)
 {
-  dt_lib_live_view_t *d = (dt_lib_live_view_t *)self->data;
+  dt_lib_live_view_t *d = self->data;
   if(d->splitline_dragging == TRUE)
   {
     d->splitline_dragging = FALSE;
@@ -635,7 +635,7 @@ int button_released(struct dt_lib_module_t *self, double x, double y, int which,
 int button_pressed(struct dt_lib_module_t *self, double x, double y, double pressure, int which, int type,
                    uint32_t state)
 {
-  dt_lib_live_view_t *lib = (dt_lib_live_view_t *)self->data;
+  dt_lib_live_view_t *lib = self->data;
   int result = 0;
 
   dt_imgid_t imgid = NO_IMGID;
@@ -684,7 +684,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
 
 int mouse_moved(dt_lib_module_t *self, double x, double y, double pressure, int which)
 {
-  dt_lib_live_view_t *lib = (dt_lib_live_view_t *)self->data;
+  dt_lib_live_view_t *lib = self->data;
   int result = 0;
 
   if(lib->splitline_dragging)

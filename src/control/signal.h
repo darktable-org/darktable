@@ -20,9 +20,7 @@
 
 #include <glib-object.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 /** \brief enum of signals to listen for in darktable.
     \note To add a new signal, first off add a enum and
@@ -277,6 +275,11 @@ typedef enum dt_signal_t
   /* \brief This signal is raised when the user choses a new location from map (module location)*/
   DT_SIGNAL_LOCATION_CHANGED,
 
+  /** \brief This signal is raised when a storage module signalizes to enable/disable the export
+    no param, no returned value
+  */
+  DT_SIGNAL_IMAGEIO_STORAGE_EXPORT_ENABLE,
+
   /* do not touch !*/
   DT_SIGNAL_COUNT
 } dt_signal_t;
@@ -290,7 +293,7 @@ typedef enum dt_debug_signal_action_t
   DT_DEBUG_SIGNAL_ACT_PRINT_TRACE = 1 << 3,
 } dt_debug_signal_action_t;
 
-/* inititialize the signal framework */
+/* initialize the signal framework */
 struct dt_control_signal_t *dt_control_signal_init();
 /* raises a signal */
 void dt_control_signal_raise(const struct dt_control_signal_t *ctlsig, const dt_signal_t signal, ...);
@@ -304,40 +307,38 @@ void dt_control_signal_block_by_func(const struct dt_control_signal_t *ctlsig, G
 /* unblocks a callback */
 void dt_control_signal_unblock_by_func(const struct dt_control_signal_t *ctlsig, GCallback cb, gpointer user_data);
 
-#define DT_DEBUG_CONTROL_SIGNAL_RAISE(ctlsig, signal, ...)                                                                       \
-  do                                                                                                                             \
-  {                                                                                                                              \
-    if((darktable.unmuted_signal_dbg_acts & DT_DEBUG_SIGNAL_ACT_RAISE) && darktable.unmuted_signal_dbg[signal])                 \
-    {                                                                                                                            \
-      dt_print(DT_DEBUG_SIGNAL, "[signal] %s:%d, function %s(): raise signal %s\n", __FILE__, __LINE__, __FUNCTION__, #signal);  \
-    }                                                                                                                            \
-    dt_control_signal_raise(ctlsig, signal, ##__VA_ARGS__);                                                                      \
+#define DT_CONTROL_SIGNAL_RAISE(signal, ...)                                                                               \
+  do                                                                                                                       \
+  {                                                                                                                        \
+    if((darktable.unmuted_signal_dbg_acts & DT_DEBUG_SIGNAL_ACT_RAISE) && darktable.unmuted_signal_dbg[signal])            \
+    {                                                                                                                      \
+      dt_print(DT_DEBUG_SIGNAL, "[signal] raise %s; %s:%d, function %s()", #signal, __FILE__, __LINE__, __FUNCTION__);   \
+    }                                                                                                                      \
+    dt_control_signal_raise(darktable.signals, signal, ##__VA_ARGS__);                                                     \
   } while (0)
 
-#define DT_DEBUG_CONTROL_SIGNAL_CONNECT(ctlsig, signal, cb, user_data)                                                           \
-  do                                                                                                                             \
-  {                                                                                                                              \
-    if((darktable.unmuted_signal_dbg_acts & DT_DEBUG_SIGNAL_ACT_CONNECT) && darktable.unmuted_signal_dbg[signal])                \
-    {                                                                                                                            \
-      dt_print(DT_DEBUG_SIGNAL, "[signal] %s:%d, function: %s() connect handler %s to signal %s\n", __FILE__, __LINE__,          \
-               __FUNCTION__, #cb, #signal);                                                                                      \
-    }                                                                                                                            \
-    dt_control_signal_connect(ctlsig, signal, cb, user_data);                                                                    \
+#define DT_CONTROL_SIGNAL_CONNECT(signal, cb, user_data)                                                                   \
+  do                                                                                                                       \
+  {                                                                                                                        \
+    if((darktable.unmuted_signal_dbg_acts & DT_DEBUG_SIGNAL_ACT_CONNECT) && darktable.unmuted_signal_dbg[signal])          \
+    {                                                                                                                      \
+      dt_print(DT_DEBUG_SIGNAL, "[signal] connect    %s to %s; %s:%d, function: %s()", #cb, #signal,                        \
+                                __FILE__, __LINE__, __FUNCTION__);                                                         \
+    }                                                                                                                      \
+    dt_control_signal_connect(darktable.signals, signal, G_CALLBACK(cb), user_data);                                       \
   } while (0)
 
-#define DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(ctlsig, cb, user_data)                                                                \
-  do                                                                                                                             \
-  {                                                                                                                              \
-    if(darktable.unmuted_signal_dbg_acts & DT_DEBUG_SIGNAL_ACT_DISCONNECT)                                                       \
-    {                                                                                                                            \
-      dt_print(DT_DEBUG_SIGNAL, "[signal] %s:%d, function: %s() disconnect handler %s\n", __FILE__, __LINE__, __FUNCTION__, #cb);\
-    }                                                                                                                            \
-    dt_control_signal_disconnect(ctlsig, cb, user_data);                                                                         \
+#define DT_CONTROL_SIGNAL_DISCONNECT(cb, user_data)                                                                        \
+  do                                                                                                                       \
+  {                                                                                                                        \
+    if(darktable.unmuted_signal_dbg_acts & DT_DEBUG_SIGNAL_ACT_DISCONNECT)                                                 \
+    {                                                                                                                      \
+      dt_print(DT_DEBUG_SIGNAL, "[signal] disconnect %s; %s:%d, function: %s()", #cb, __FILE__, __LINE__, __FUNCTION__); \
+    }                                                                                                                      \
+    dt_control_signal_disconnect(darktable.signals, G_CALLBACK(cb), user_data);                                            \
   } while (0)
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

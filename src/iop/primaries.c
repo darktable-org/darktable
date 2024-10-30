@@ -41,7 +41,7 @@
 
 DT_MODULE_INTROSPECTION(1, dt_iop_primaries_params_t)
 
-static const float RAD_TO_DEG = 180.f / DT_M_PI_F;
+static const float RAD_TO_DEG = 180.f / M_PI_F;
 
 typedef struct dt_iop_primaries_params_t
 {
@@ -74,7 +74,7 @@ const char *name()
   return _("rgb primaries");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("adjustment of the RGB color primaries for color grading"),
                                       _("corrective or creative"),
@@ -125,14 +125,14 @@ static void _calculate_adjustment_matrix
   dt_colormatrix_mul(matrix, RGB_TO_XYZ, pipe_work_profile->matrix_out_transposed);
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_primaries_params_t *params = (dt_iop_primaries_params_t *)piece->data;
+  dt_iop_primaries_params_t *params = piece->data;
 
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self,
                                         piece->colors, ivoid, ovoid, roi_in,
@@ -144,9 +144,7 @@ void process(struct dt_iop_module_t *self,
   dt_colormatrix_t matrix;
   _calculate_adjustment_matrix(params, pipe_work_profile, matrix);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(matrix) dt_omp_firstprivate(ivoid, ovoid, roi_out)
-#endif
+  DT_OMP_FOR(shared(matrix))
   for(size_t k = 0; k < 4 * roi_out->width * roi_out->height; k += 4)
   {
     const float *const restrict in = ((const float *)ivoid) + k;
@@ -158,15 +156,15 @@ void process(struct dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_primaries_params_t *params = (dt_iop_primaries_params_t *)piece->data;
-  dt_iop_primaries_global_data_t *gd = (dt_iop_primaries_global_data_t *)self->global_data;
+  dt_iop_primaries_params_t *params = piece->data;
+  dt_iop_primaries_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -181,7 +179,7 @@ int process_cl(struct dt_iop_module_t *self,
   cl_mem dev_matrix = dt_opencl_copy_host_to_device_constant(devid, sizeof(matrix), matrix);
   if(dev_matrix == NULL)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_primaries] couldn't allocate memory!\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_primaries] couldn't allocate memory!");
     return DT_OPENCL_DEFAULT_ERROR;
   }
 
@@ -299,7 +297,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   if(!self->dev || !self->dev->full.pipe) return;
 
-  dt_iop_primaries_gui_data_t *g = (dt_iop_primaries_gui_data_t *)self->gui_data;
+  dt_iop_primaries_gui_data_t *g = self->gui_data;
 
   const dt_iop_order_iccprofile_info_t *work_profile =
     dt_ioppr_get_pipe_current_profile_info(self, self->dev->full.pipe);
@@ -348,16 +346,14 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 static void _signal_profile_user_changed(gpointer instance,
                                          const uint8_t profile_type,
-                                         gpointer user_data)
+                                         dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   gui_changed(self, NULL, NULL);
 }
 
 static void _signal_profile_changed(gpointer instance,
-                                    gpointer user_data)
+                                    dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   gui_changed(self, NULL, NULL);
 }
 
@@ -415,39 +411,33 @@ void gui_init(dt_iop_module_t *self)
   g->painted_work_profile = NULL;
   g->painted_display_profile = NULL;
 
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
-                                  G_CALLBACK(_signal_profile_user_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED,
-                                  G_CALLBACK(_signal_profile_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
-                                  G_CALLBACK(_signal_profile_changed), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, _signal_profile_user_changed, self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_CHANGED, _signal_profile_changed, self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _signal_profile_changed, self);
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_signal_profile_user_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_signal_profile_changed), self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_signal_profile_user_changed, self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_signal_profile_changed, self);
 
   IOP_GUI_FREE;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 8; // extended.cl, from programs.conf
-  dt_iop_primaries_global_data_t *gd =
-    (dt_iop_primaries_global_data_t *)malloc(sizeof(dt_iop_primaries_global_data_t));
-  module->data = gd;
+  dt_iop_primaries_global_data_t *gd = malloc(sizeof(dt_iop_primaries_global_data_t));
+  self->data = gd;
   gd->kernel_primaries = dt_opencl_create_kernel(program, "primaries");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_primaries_global_data_t *gd = (dt_iop_primaries_global_data_t *)module->data;
+  dt_iop_primaries_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_primaries);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 // clang-format off

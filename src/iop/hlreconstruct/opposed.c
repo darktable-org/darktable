@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022-2023 darktable developers.
+    Copyright (C) 2022-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,11 +41,12 @@
 static dt_hash_t _opposed_parhash(dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
-  dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
+  dt_iop_highlights_data_t *d = piece->data;
 
   dt_hash_t hash = dt_hash(DT_INITHASH, &dsc->rawprepare, sizeof(dsc->rawprepare));
   hash = dt_hash(hash, &dsc->temperature, sizeof(dsc->temperature));
-  return dt_hash(hash, &d->clip, sizeof(d->clip));
+  hash = dt_hash(hash, &d->clip, sizeof(d->clip));
+  return dt_hash(hash, &piece->module->dev->chroma.late_correction, sizeof(int));
 }
 
 static dt_hash_t _opposed_hash(dt_dev_pixelpipe_iop_t *piece)
@@ -90,16 +91,15 @@ static inline char _mask_dilated(const char *in, const size_t w1)
 
 
 // A slightly modified version for sraws
-static void _process_linear_opposed(
-        struct dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        const float *const input,
-        float *const output,
-        const dt_iop_roi_t *const roi_in,
-        const dt_iop_roi_t *const roi_out,
-        const gboolean quality)
+static void _process_linear_opposed(dt_iop_module_t *self,
+                                    dt_dev_pixelpipe_iop_t *piece,
+                                    const float *const input,
+                                    float *const output,
+                                    const dt_iop_roi_t *const roi_in,
+                                    const dt_iop_roi_t *const roi_out,
+                                    const gboolean quality)
 {
-  dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
+  dt_iop_highlights_data_t *d = piece->data;
   const float clipval = highlights_clip_magics[DT_IOP_HIGHLIGHTS_OPPOSED] * d->clip;
   const dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
   const gboolean wbon = dsc->temperature.enabled;
@@ -122,12 +122,7 @@ static void _process_linear_opposed(
   if(mask)
   {
     gboolean anyclipped = FALSE;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  reduction( | : anyclipped) \
-  dt_omp_firstprivate(clips, input, roi_in, mask, msize, mwidth) \
-  schedule(static)
-#endif
+    DT_OMP_FOR(reduction( | : anyclipped))
     for(size_t row = 1; row < roi_in->height -1; row++)
     {
       for(size_t col = 1; col < roi_in->width -1; col++)
@@ -154,11 +149,7 @@ static void _process_linear_opposed(
 
     if(anyclipped)
     {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(mask, mwidth, mheight, msize) \
-  schedule(static) collapse(2)
-#endif
+      DT_OMP_FOR(collapse(2))
       for(size_t row = 3; row < mheight - 3; row++)
       {
         for(size_t col = 3; col < mwidth - 3; col++)
@@ -170,12 +161,7 @@ static void _process_linear_opposed(
         }
       }
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(input, roi_in, clips, mask, msize, mwidth) \
-  reduction(+ : sums, cnts) \
-  schedule(static)
-#endif
+      DT_OMP_FOR(reduction(+ : sums, cnts))
       for(size_t row = 3; row < roi_in->height - 3; row++)
       {
         for(size_t col = 3; col < roi_in->width - 3; col++)
@@ -197,11 +183,7 @@ static void _process_linear_opposed(
     }
     dt_free_align(mask);
   }
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(output, input, roi_in, roi_out, chrominance, clips) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(ssize_t row = 0; row < roi_out->height; row++)
   {
     for(ssize_t col = 0; col < roi_out->width; col++)
@@ -220,26 +202,33 @@ static void _process_linear_opposed(
   }
 }
 
-static float *_process_opposed(
-        struct dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        const float *const input,
-        float *const output,
-        const dt_iop_roi_t *const roi_in,
-        const dt_iop_roi_t *const roi_out,
-        const gboolean keep,
-        const gboolean quality)
+static float *_process_opposed(dt_iop_module_t *self,
+                               dt_dev_pixelpipe_iop_t *piece,
+                               const float *const input,
+                               float *const output,
+                               const dt_iop_roi_t *const roi_in,
+                               const dt_iop_roi_t *const roi_out,
+                               const gboolean keep,
+                               const gboolean quality)
 {
-  dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
+  dt_iop_highlights_data_t *d = piece->data;
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   const uint32_t filters = piece->pipe->dsc.filters;
   const float clipval = highlights_clip_magics[DT_IOP_HIGHLIGHTS_OPPOSED] * d->clip;
+
   const dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
   const gboolean wbon = dsc->temperature.enabled;
   const dt_aligned_pixel_t icoeffs = { wbon ? dsc->temperature.coeffs[0] : 1.0f,
                                        wbon ? dsc->temperature.coeffs[1] : 1.0f,
                                        wbon ? dsc->temperature.coeffs[2] : 1.0f};
   const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2]};
+
+  const dt_dev_chroma_t *chr = &self->dev->chroma;
+  const gboolean late = chr->late_correction;
+  const dt_aligned_pixel_t correction = { late ? (float)(chr->D65coeffs[0] / chr->as_shot[0]) : 1.0f,
+                                          late ? (float)(chr->D65coeffs[1] / chr->as_shot[1]) : 1.0f,
+                                          late ? (float)(chr->D65coeffs[2] / chr->as_shot[2]) : 1.0f,
+                                          1.0f };
 
   const size_t mwidth  = roi_in->width / 3;
   const size_t mheight = roi_in->height / 3;
@@ -264,12 +253,7 @@ static float *_process_opposed(
     if(mask)
     {
       gboolean anyclipped = FALSE;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  reduction( | : anyclipped) \
-  dt_omp_firstprivate(clips, input, roi_in, xtrans, mask, filters, msize, mwidth, mheight) \
-  schedule(static) collapse(2)
-#endif
+      DT_OMP_FOR(reduction( | : anyclipped) collapse(2))
       for(int mrow = 1; mrow < mheight-1; mrow++)
       {
         for(int mcol = 1; mcol < mwidth-1; mcol++)
@@ -304,11 +288,7 @@ static float *_process_opposed(
          to get those locations.
          If there are no clipped locations we keep the chrominance correction at 0 but make it valid
         */
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(mask, mwidth, mheight, msize) \
-  schedule(static) collapse(2)
-#endif
+        DT_OMP_FOR(collapse(2))
         for(size_t row = 3; row < mheight - 3; row++)
         {
           for(size_t col = 3; col < mwidth - 3; col++)
@@ -322,12 +302,7 @@ static float *_process_opposed(
 
         const dt_aligned_pixel_t lo_clips = { 0.2f * clips[0], 0.2f * clips[1], 0.2f * clips[2], 1.0f };
        /* After having the surrounding mask for each color channel we can calculate the chrominance corrections. */
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(input, roi_in, xtrans, clips, lo_clips, mask, filters, msize, mwidth) \
-  reduction(+ : sums, cnts) \
-  schedule(static) collapse(2)
-#endif
+        DT_OMP_FOR(reduction(+ : sums, cnts) collapse(2))
         for(size_t row = 3; row < roi_in->height - 3; row++)
         {
           for(size_t col = 3; col < roi_in->width - 3; col++)
@@ -340,7 +315,7 @@ static float *_process_opposed(
             if((inval < clips[color]) && (inval > lo_clips[color])
                && (mask[(color+3) * msize + _raw_to_cmap(mwidth, row, col)]))
             {
-              sums[color] += inval - _calc_refavg(&input[idx], xtrans, filters, row, col, roi_in, TRUE);
+              sums[color] += inval - _calc_refavg(input, xtrans, filters, row, col, roi_in, correction, TRUE);
               cnts[color] += 1.0f;
             }
           }
@@ -359,10 +334,10 @@ static float *_process_opposed(
 
       dt_print_pipe(DT_DEBUG_PIPE,
           "opposed chroma", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out,
-          "red: %3.4f, green: %3.4f, blue: %3.4f for hash=%" PRIx64 "%s%s\n",
+          "RGB %3.4f %3.4f %3.4f hash=%" PRIx64 "%s%s",
           chrominance[0], chrominance[1], chrominance[2],
           _opposed_parhash(piece),
-          piece->pipe->type == DT_DEV_PIXELPIPE_FULL ? ", saved to cache" : "",
+          piece->pipe->type == DT_DEV_PIXELPIPE_FULL ? ", saved" : "",
           img_oppclipped ? "" : ", unclipped");
     }
     dt_free_align(mask);
@@ -371,11 +346,7 @@ static float *_process_opposed(
   float *tmpout = (keep) ? dt_alloc_align_float(roi_in->width * roi_in->height) : NULL;
   if(tmpout)
   {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(clips, input, tmpout, roi_in, xtrans, chrominance, filters) \
-  schedule(static) collapse(2)
-#endif
+    DT_OMP_FOR(collapse(2))
     for(size_t row = 0; row < roi_in->height; row++)
     {
       for(size_t col = 0; col < roi_in->width; col++)
@@ -385,7 +356,7 @@ static float *_process_opposed(
         const float inval = MAX(0.0f, input[idx]);
         if(inval >= clips[color])
         {
-          const float ref = _calc_refavg(&input[idx], xtrans, filters, row, col, roi_in, TRUE);
+          const float ref = _calc_refavg(input, xtrans, filters, row, col, roi_in, correction, TRUE);
           tmpout[idx] = MAX(inval, ref + chrominance[color]);
         }
         else
@@ -394,11 +365,7 @@ static float *_process_opposed(
     }
   }
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(output, input, tmpout, chrominance, clips, xtrans, roi_in, roi_out, filters) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(size_t row = 0; row < roi_out->height; row++)
   {
     for(size_t col = 0; col < roi_out->width; col++)
@@ -418,7 +385,7 @@ static float *_process_opposed(
           oval = MAX(0.0f, input[ix]);
           if(oval >= clips[color])
           {
-            const float ref = _calc_refavg(&input[ix], xtrans, filters, irow, icol, roi_in, TRUE);
+            const float ref = _calc_refavg(input, xtrans, filters, irow, icol, roi_in, correction, TRUE);
             oval = MAX(oval, ref + chrominance[color]);
           }
         }
@@ -430,19 +397,19 @@ static float *_process_opposed(
 }
 
 #ifdef HAVE_OPENCL
-static cl_int process_opposed_cl(
-        struct dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        cl_mem dev_in,
-        cl_mem dev_out,
-        const dt_iop_roi_t *const roi_in,
-        const dt_iop_roi_t *const roi_out)
+static cl_int process_opposed_cl(dt_iop_module_t *self,
+                                 dt_dev_pixelpipe_iop_t *piece,
+                                 cl_mem dev_in,
+                                 cl_mem dev_out,
+                                 const dt_iop_roi_t *const roi_in,
+                                 const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
-  const dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)self->global_data;
+  dt_iop_highlights_data_t *d = piece->data;
+  const dt_iop_highlights_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const uint32_t filters = piece->pipe->dsc.filters;
+
   const float clipval = highlights_clip_magics[DT_IOP_HIGHLIGHTS_OPPOSED] * d->clip;
   const dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
   const gboolean wbon = dsc->temperature.enabled;
@@ -452,6 +419,13 @@ static cl_int process_opposed_cl(
 
   dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2], 1.0f};
 
+  const dt_dev_chroma_t *chr = &self->dev->chroma;
+  const gboolean late = chr->late_correction;
+  dt_aligned_pixel_t correction = { late ? (float)(chr->D65coeffs[0] / chr->as_shot[0]) : 1.0f,
+                                    late ? (float)(chr->D65coeffs[1] / chr->as_shot[1]) : 1.0f,
+                                    late ? (float)(chr->D65coeffs[2] / chr->as_shot[2]) : 1.0f,
+                                    1.0f };
+
   cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
   cl_mem dev_chrominance = NULL;
   cl_mem dev_xtrans = NULL;
@@ -459,12 +433,10 @@ static cl_int process_opposed_cl(
   cl_mem dev_inmask = NULL;
   cl_mem dev_outmask = NULL;
   cl_mem dev_accu = NULL;
+  cl_mem dev_correction = NULL;
   float *claccu = NULL;
 
   const size_t iheight = ROUNDUPDHT(roi_in->height, devid);
-  const size_t owidth = ROUNDUPDWD(roi_out->width, devid);
-  const size_t oheight = ROUNDUPDHT(roi_out->height, devid);
-
   const int mwidth  = roi_in->width / 3;
   const int mheight = roi_in->height / 3;
   const int msize = dt_round_size((size_t) (mwidth+1) * (mheight+1), 16);
@@ -479,6 +451,9 @@ static cl_int process_opposed_cl(
 
     dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
     if(dev_clips == NULL) goto error;
+
+    dev_correction = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), correction);
+    if(dev_correction == NULL) goto error;
   }
 
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
@@ -511,25 +486,22 @@ static cl_int process_opposed_cl(
     if(err != CL_SUCCESS) goto error;
 
     err = DT_OPENCL_SYSMEM_ALLOCATION;
-    const size_t accusize = sizeof(float) * 6 * iheight;
+    const size_t accusize = sizeof(float) * 8 * iheight;
     dev_accu = dt_opencl_alloc_device_buffer(devid, accusize);
     if(dev_accu == NULL) goto error;
 
-    claccu = dt_calloc_align_float(6 * iheight);
+    claccu = dt_calloc_align_float(8 * iheight);
     if(claccu == NULL) goto error;
 
     err = dt_opencl_write_buffer_to_device(devid, claccu, dev_accu, 0, accusize, TRUE);
     if(err != CL_SUCCESS) goto error;
 
-    size_t sizes[] = { iheight, 1, 1 };
-
-    dt_opencl_set_kernel_args(devid, gd->kernel_highlights_chroma, 0,
+    err = dt_opencl_enqueue_kernel_1d_args(devid, gd->kernel_highlights_chroma, iheight,
             CLARG(dev_in), CLARG(dev_outmask), CLARG(dev_accu),
             CLARG(roi_in->width), CLARG(roi_in->height),
             CLARG(msize), CLARG(mwidth),
-            CLARG(filters), CLARG(dev_xtrans), CLARG(dev_clips));
+            CLARG(filters), CLARG(dev_xtrans), CLARG(dev_clips), CLARG(dev_correction));
 
-    err = dt_opencl_enqueue_kernel_ndim_with_local(devid, gd->kernel_highlights_chroma, sizes, NULL, 1);
     if(err != CL_SUCCESS) goto error;
 
     err = dt_opencl_read_buffer_from_device(devid, claccu, dev_accu, 0, accusize, TRUE);
@@ -538,12 +510,14 @@ static cl_int process_opposed_cl(
     // collect row data and accumulate
     dt_aligned_pixel_t sums = { 0.0f, 0.0f, 0.0f};
     dt_aligned_pixel_t cnts = { 0.0f, 0.0f, 0.0f};
+    float clipped = 0.0f;
     for(int row = 3; row < roi_in->height - 3; row++)
     {
       for_three_channels(c)
       {
-        sums[c] += claccu[6*row + 2*c];
-        cnts[c] += claccu[6*row + 2*c +1];
+        sums[c] += claccu[8*row + 2*c];
+        cnts[c] += claccu[8*row + 2*c +1];
+        clipped += claccu[8*row + 6];
       }
     }
     for_three_channels(c)
@@ -554,16 +528,15 @@ static cl_int process_opposed_cl(
       for_three_channels(c)
         img_oppchroma[c] = chrominance[c];
       img_opphash = opphash;
-
-      img_oppclipped = cnts[0] > 0.0f || cnts[1] > 0.0f || cnts[2] > 0.0f;
+      img_oppclipped = clipped > 0.0f;
     }
 
     dt_print_pipe(DT_DEBUG_PIPE,
         "opposed chroma", piece->pipe, self, piece->pipe->devid, roi_in, roi_out,
-        "red: %3.4f, green: %3.4f, blue: %3.4f for hash=%" PRIx64 "%s%s\n",
+        "RGB %3.4f %3.4f %3.4f hash=%" PRIx64 "%s%s",
         chrominance[0], chrominance[1], chrominance[2],
         _opposed_parhash(piece),
-        piece->pipe->type == DT_DEV_PIXELPIPE_FULL ? ", saved to cache" : "",
+        piece->pipe->type == DT_DEV_PIXELPIPE_FULL ? ", saved" : "",
         img_oppclipped ? "" : ", unclipped");
   }
 
@@ -571,7 +544,7 @@ static cl_int process_opposed_cl(
   dev_chrominance = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), chrominance);
   if(dev_chrominance == NULL) goto error;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_opposed, owidth, oheight,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_opposed, roi_out->width, roi_out->height,
           CLARG(dev_in), CLARG(dev_out),
           CLARG(roi_out->width), CLARG(roi_out->height),
           CLARG(roi_in->width), CLARG(roi_in->height),
@@ -579,6 +552,7 @@ static cl_int process_opposed_cl(
           CLARG(filters), CLARG(dev_xtrans),
           CLARG(dev_clips),
           CLARG(dev_chrominance),
+          CLARG(dev_correction),
           CLARG(fastcopymode));
 
   error:
@@ -588,6 +562,7 @@ static cl_int process_opposed_cl(
   dt_opencl_release_mem_object(dev_inmask);
   dt_opencl_release_mem_object(dev_outmask);
   dt_opencl_release_mem_object(dev_accu);
+  dt_opencl_release_mem_object(dev_correction);
   dt_free_align(claccu);
   return err;
 }

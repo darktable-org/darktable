@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -242,12 +242,7 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
   {
     for(int k = 0; k < n; k++) cnt[k] = 0;
 // randomly sample col positions inside roi
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(cnt, mean, n, roi, samples, var) \
-    shared(col, mean_out) \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int s = 0; s < samples; s++)
     {
       const int j = dt_points_get() * roi->height;
@@ -259,26 +254,16 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
         const dt_aligned_pixel_t Lab = { L, col[3 * (roi->width * j + i) + 1], col[3 * (roi->width * j + i) + 2] };
         // determine dist to mean_out
         const int c = get_cluster(Lab, n, mean_out);
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+        DT_OMP_PRAGMA(atomic)
         cnt[c]++;
 // update mean, var
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+        DT_OMP_PRAGMA(atomic)
         var[c][0] += Lab[1] * Lab[1];
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+        DT_OMP_PRAGMA(atomic)
         var[c][1] += Lab[2] * Lab[2];
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+        DT_OMP_PRAGMA(atomic)
         mean[c][0] += Lab[1];
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
+        DT_OMP_PRAGMA(atomic)
         mean[c][1] += Lab[2];
       }
     }
@@ -307,11 +292,11 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   // FIXME: this returns nan!!
-  dt_iop_colortransfer_data_t *data = (dt_iop_colortransfer_data_t *)piece->data;
+  dt_iop_colortransfer_data_t *data = piece->data;
   float *in = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
@@ -332,7 +317,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       // notify gui that commit_params should let stuff flow back!
       data->flag = ACQUIRED;
-      dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
+      dt_iop_colortransfer_params_t *p = self->params;
       p->flag = ACQUIRE2;
     }
     dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, ch);
@@ -342,12 +327,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // apply histogram of L and clustering of (a,b)
     int hist[HISTN];
     capture_histogram(in, roi_in, hist);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, roi_out) \
-    shared(data, in, out, hist) \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int k = 0; k < roi_out->height; k++)
     {
       size_t j = (size_t)ch * roi_out->width * k;
@@ -372,12 +352,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     get_cluster_mapping(data->n, mean, data->mean, mapio);
 
 // for all pixels: find input cluster, transfer to mapped target cluster
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, mapio, mean, roi_out, var) \
-    shared(data, in, out) \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int k = 0; k < roi_out->height; k++)
     {
       float weight[MAXN];
@@ -417,24 +392,24 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_colortransfer_data_t));
-  dt_iop_colortransfer_data_t *d = (dt_iop_colortransfer_data_t *)piece->data;
+  dt_iop_colortransfer_data_t *d = piece->data;
   d->flag = NEUTRAL;
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   IOP_GUI_ALLOC(colortransfer);
 

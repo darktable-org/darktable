@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -54,11 +54,7 @@ static void dual_demosaic(
 
   if(dual_mask)
   {
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(mask, high_data, msize) \
-  schedule(simd:static) aligned(mask, high_data : 64)
-#endif
+    DT_OMP_FOR_SIMD(aligned(mask, high_data : 64))
     for(int idx = 0; idx < msize; idx++)
       high_data[idx * 4 + 3] = mask[idx];
   }
@@ -70,11 +66,7 @@ static void dual_demosaic(
     vng_interpolate(vng_image, raw_data, roi_out, roi_in, filters, xtrans, FALSE);
     color_smoothing(vng_image, roi_out, 2);
 
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(mask, high_data, vng_image, msize) \
-  schedule(simd:static) aligned(mask, vng_image, high_data : 64)
-#endif
+    DT_OMP_FOR_SIMD(aligned(mask, vng_image, high_data : 64))
     for(int idx = 0; idx < msize; idx++)
     {
       const int oidx = 4 * idx;
@@ -91,54 +83,46 @@ static void dual_demosaic(
 }
 
 #ifdef HAVE_OPENCL
-gboolean dual_demosaic_cl(
-        struct dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        cl_mem high_image,
-        cl_mem low_image,
-        cl_mem out,
-        const dt_iop_roi_t *const roi_in,
-        const int dual_mask)
+gboolean dual_demosaic_cl(struct dt_iop_module_t *self,
+                          dt_dev_pixelpipe_iop_t *piece,
+                          cl_mem high_image,
+                          cl_mem low_image,
+                          cl_mem out,
+                          const dt_iop_roi_t *const roi_in,
+                          const int dual_mask)
 {
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
-  const int clwidth = ROUNDUPDWD(width, devid);
-  const int clheight = ROUNDUPDHT(height, devid);
 
-  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
-  dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
+  dt_iop_demosaic_data_t *data = piece->data;
+  dt_iop_demosaic_global_data_t *gd = self->global_data;
 
   const float contrastf = slider2contrast(data->dual_thrs);
 
-  cl_int err = CL_SUCCESS;
-  cl_mem dev_blurmat = NULL;
-  cl_mem mask = dt_opencl_alloc_device_buffer(devid, width * height * sizeof(float));
-  cl_mem tmp = dt_opencl_alloc_device_buffer(devid, width * height * sizeof(float));
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  cl_mem mask = NULL;
+  cl_mem tmp = NULL;
+  const size_t bsize = sizeof(float) * width * height;
 
-  err = dt_opencl_write_buffer_to_device(devid, piece->pipe->scharr.data, tmp, 0, sizeof(float) * width * height, TRUE);
+  tmp = dt_opencl_copy_host_to_device_constant(devid, bsize, piece->pipe->scharr.data);
+  mask = dt_opencl_alloc_device_buffer(devid, bsize);
+  if(mask == NULL || tmp == NULL) goto finish;
+
+  const int detail = 1;
+  err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_calc_blend, width, height,
+      CLARG(tmp), CLARG(mask), CLARG(width), CLARG(height), CLARG(contrastf), CLARG(detail));
   if(err != CL_SUCCESS) goto finish;
 
-  const int flag = 1;
-  err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_calc_blend, clwidth, clheight,
-      CLARG(tmp), CLARG(mask), CLARG(width), CLARG(height), CLARG(contrastf), CLARG(flag));
+  err = dt_gaussian_fast_blur_cl_buffer(devid, mask, tmp, width, height, 2.0f, 1, 0.0f, 1.0f);
   if(err != CL_SUCCESS) goto finish;
 
-  float blurmat[13];
-  dt_masks_blur_coeff(blurmat, 2.0f);
-  dev_blurmat = dt_opencl_copy_host_to_device_constant(devid, sizeof(blurmat), blurmat);
-
-  err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_mask_blur, clwidth, clheight,
-      CLARG(mask), CLARG(tmp), CLARG(width), CLARG(height), CLARG(dev_blurmat));
-  if(err != CL_SUCCESS) goto finish;
-
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_write_blended_dual, clwidth, clheight,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_write_blended_dual, width, height,
       CLARG(high_image), CLARG(low_image), CLARG(out), CLARG(width), CLARG(height), CLARG(tmp), CLARG(dual_mask));
 
   finish:
   dt_opencl_release_mem_object(mask);
   dt_opencl_release_mem_object(tmp);
-  dt_opencl_release_mem_object(dev_blurmat);
   return err;
 }
 #endif

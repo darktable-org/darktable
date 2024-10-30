@@ -28,7 +28,7 @@
 
 dt_bilateral_cl_global_t *dt_bilateral_init_cl_global()
 {
-  dt_bilateral_cl_global_t *b = (dt_bilateral_cl_global_t *)malloc(sizeof(dt_bilateral_cl_global_t));
+  dt_bilateral_cl_global_t *b = malloc(sizeof(dt_bilateral_cl_global_t));
 
   const int program = 10; // bilateral.cl, from programs.conf
   b->kernel_zero = dt_opencl_create_kernel(program, "zero");
@@ -87,19 +87,19 @@ dt_bilateral_cl_t *dt_bilateral_init_cl(const int devid,
   if(!dt_opencl_local_buffer_opt(devid, darktable.opencl->bilateral->kernel_splat, &locopt))
   {
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl_bilateral] can not identify resource limits for device %d in bilateral grid\n", devid);
+             "[opencl_bilateral] can not identify resource limits for device %d in bilateral grid", devid);
     return NULL;
   }
 
   if(locopt.sizex * locopt.sizey < 16 * 16)
   {
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl_bilateral] device %d does not offer sufficient resources to run bilateral grid\n",
+             "[opencl_bilateral] device %d does not offer sufficient resources to run bilateral grid",
              devid);
     return NULL;
   }
 
-  dt_bilateral_cl_t *b = (dt_bilateral_cl_t *)malloc(sizeof(dt_bilateral_cl_t));
+  dt_bilateral_cl_t *b = malloc(sizeof(dt_bilateral_cl_t));
   if(!b) return NULL;
 
   b->global = darktable.opencl->bilateral;
@@ -147,7 +147,7 @@ dt_bilateral_cl_t *dt_bilateral_init_cl(const int devid,
   }
 
 #if 0
-  fprintf(stderr, "[bilateral] created grid [%d %d %d]"
+  dt_print(DT_DEBUG_ALWAYS, "[bilateral] created grid [%d %d %d]"
           " with sigma (%f %f) (%f %f)\n", b->size_x, b->size_y, b->size_z,
           b->sigma_s, sigma_s, b->sigma_r, sigma_r);
 #endif

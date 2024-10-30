@@ -1,4 +1,22 @@
 /*
+    This file is part of darktable,
+    Copyright (C) 2013-2024 darktable developers.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/*
  * UFRaw - Unidentified Flying Raw converter for digital camera images
  *
  * wb_presets.c - White balance preset values for various cameras
@@ -82,9 +100,7 @@ int wb_presets_size = 10000;
 int wb_presets_count = 0;
 
 #define _ERROR(...)     {\
-                          dt_print(DT_DEBUG_CONTROL, "[wb_presets] error: " );\
-                          dt_print(DT_DEBUG_CONTROL, __VA_ARGS__);\
-                          dt_print(DT_DEBUG_CONTROL, "\n");\
+                          dt_print(DT_DEBUG_CONTROL, "[wb_presets] error: " __VA_ARGS__);\
                           valid = FALSE; \
                           goto end;\
                         }
@@ -106,6 +122,12 @@ dt_wb_data *dt_wb_preset(const int k)
 void dt_wb_presets_init(const char *alternative)
 {
   wb_presets = calloc(sizeof(dt_wb_data), wb_presets_size);
+  if(!wb_presets)
+  {
+    wb_presets_size = 0;
+    dt_print(DT_DEBUG_ALWAYS, "[wb_presets] out of memory while initializing");
+    return;
+  }
 
   // dt_wb_presets_w();
 
@@ -122,14 +144,14 @@ void dt_wb_presets_init(const char *alternative)
   else
     g_strlcpy(filename, alternative, sizeof(filename));
 
-  dt_print(DT_DEBUG_CONTROL, "[wb_presets] loading wb_presets from `%s'\n", filename);
+  dt_print(DT_DEBUG_CONTROL, "[wb_presets] loading wb_presets from `%s'", filename);
   if(!g_file_test(filename, G_FILE_TEST_EXISTS)) return;
 
   JsonParser *parser = json_parser_new();
   if(!json_parser_load_from_file(parser, filename, &error))
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[wb_presets] error: parsing json from `%s' failed\n%s\n", filename, error->message);
+             "[wb_presets] error: parsing json from `%s' failed\n%s", filename, error->message);
     g_error_free(error);
     g_object_unref(parser);
     return;
@@ -140,7 +162,7 @@ void dt_wb_presets_init(const char *alternative)
   JsonReader *reader = NULL;
   gboolean valid = TRUE;
 
-  dt_print(DT_DEBUG_CONTROL, "[wb_presets] loading noiseprofile file\n");
+  dt_print(DT_DEBUG_CONTROL, "[wb_presets] loading noiseprofile file");
 
   JsonNode *root = json_parser_get_root(parser);
   if(!root) _ERROR("can't get the root node");
@@ -164,7 +186,7 @@ void dt_wb_presets_init(const char *alternative)
     _ERROR("`wb_presets' is supposed to be an array");
 
   const int n_makers = json_reader_count_elements(reader);
-  dt_print(DT_DEBUG_CONTROL, "[wb_presets] found %d makers\n", n_makers);
+  dt_print(DT_DEBUG_CONTROL, "[wb_presets] found %d makers", n_makers);
 
   for(int i = 0; i < n_makers; i++)
   {
@@ -180,7 +202,7 @@ void dt_wb_presets_init(const char *alternative)
       g_strdup(json_reader_get_string_value(reader));
     json_reader_end_member(reader);
 
-    dt_print(DT_DEBUG_CONTROL, "[wb_presets] found maker `%s'\n",
+    dt_print(DT_DEBUG_CONTROL, "[wb_presets] found maker `%s'",
              wb_presets[wb_presets_count].make);
     // go through all models and check those
 
@@ -188,7 +210,7 @@ void dt_wb_presets_init(const char *alternative)
       _ERROR("missing `models`");
 
     const int n_models = json_reader_count_elements(reader);
-    dt_print(DT_DEBUG_CONTROL, "[wb_presets] found %d models\n", n_models);
+    dt_print(DT_DEBUG_CONTROL, "[wb_presets] found %d models", n_models);
 
     for(int j = 0; j < n_models; j++)
     {
@@ -205,14 +227,14 @@ void dt_wb_presets_init(const char *alternative)
 
       json_reader_end_member(reader);
 
-      dt_print(DT_DEBUG_CONTROL, "[wb_presets] found %s\n",
+      dt_print(DT_DEBUG_CONTROL, "[wb_presets] found %s",
                wb_presets[wb_presets_count].model);
 
       if(!json_reader_read_member(reader, "presets"))
         _ERROR("missing `presets`");
 
       const int n_presets = json_reader_count_elements(reader);
-      dt_print(DT_DEBUG_CONTROL, "[wb_presets] found %d presets\n",
+      dt_print(DT_DEBUG_CONTROL, "[wb_presets] found %d presets",
                n_presets);
 
       for(int k = 0; k < n_presets; k++)
@@ -280,10 +302,11 @@ void dt_wb_presets_init(const char *alternative)
     json_reader_end_element(reader); // makers
   }
 
-  dt_print(DT_DEBUG_CONTROL, "[wb_presets] found %d wb presets\n",
+  dt_print(DT_DEBUG_CONTROL, "[wb_presets] found %d wb presets",
            wb_presets_count);
 
 end:
+  if(parser) g_object_unref(parser);
   if(reader) g_object_unref(reader);
   if(!valid) exit(1);
   return;

@@ -20,19 +20,18 @@
 
 #include "paint.h"
 #include <gtk/gtk.h>
+
 G_BEGIN_DECLS
-#define DTGTK_BUTTON(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_button_get_type(), GtkDarktableButton)
-#define DTGTK_BUTTON_CLASS(klass)                                                                            \
-  G_TYPE_CHECK_CLASS_CAST(klass, dtgtk_button_get_type(), GtkDarktableButtonClass)
-#define DTGTK_IS_BUTTON(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_button_get_type())
-#define DTGTK_IS_BUTTON_CLASS(klass) G_TYPE_CHECK_CLASS_TYPE(obj, dtgtk_button_get_type())
+
+#define DTKGTK_TYPE_BUTTON dtgtk_button_get_type()
+G_DECLARE_FINAL_TYPE(GtkDarktableButton, dtgtk_button, DTGTK, BUTTON, GtkButton)
 
 typedef enum _darktable_button_flags
 {
   DARKTABLE_BUTTON_SHOW_LABEL = 1
 } _darktable_button_flags_t;
 
-typedef struct _GtkDarktableButton
+struct _GtkDarktableButton
 {
   GtkButton widget;
   DTGTKCairoPaintIconFunc icon;
@@ -40,14 +39,7 @@ typedef struct _GtkDarktableButton
   void *icon_data;
   GdkRGBA bg, fg;
   GtkWidget *canvas;
-} GtkDarktableButton;
-
-typedef struct _GtkDarktableButtonClass
-{
-  GtkButtonClass parent_class;
-} GtkDarktableButtonClass;
-
-GType dtgtk_button_get_type(void);
+};
 
 /** instantiate a new darktable button control passing paint function as content */
 GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata);

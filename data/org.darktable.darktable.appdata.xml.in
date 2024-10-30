@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright (C) 2009-2021 darktable developers.
+<!-- Copyright (C) 2009-2024 darktable developers.
 -->
 <component type="desktop">
   <id>org.darktable.darktable</id>
@@ -11,9 +11,8 @@
   <translation type="gettext">darktable</translation>
   <description>
     <_p>
-      darktable manages your digital negatives in a database and lets you
-      view them through a lighttable. It also enables you to develop raw
-      images and enhance them in a darkroom.
+      darktable manages your camera raw files and images in a database, lets you
+      view them through lighttable mode and develop/enhance them in darkroom mode.
     </_p>
     <_p>
       Other modes besides lighttable and darkroom are a map for geotagging,
@@ -48,6 +47,9 @@
   </screenshots>
   <content_rating type="oars-1.1" />
   <releases>
+    <release date="2024-07-24" version="4.8.1"/>
+    <release date="2024-06-21" version="4.8.0"/>
+    <release date="2024-02-17" version="4.6.1"/>
     <release date="2023-12-21" version="4.6.0"/>
     <release date="2023-07-22" version="4.4.2"/>
     <release date="2023-07-01" version="4.4.1"/>
@@ -71,6 +73,9 @@
     <release date="2019-03-07" version="2.6.1"/>
     <release date="2018-12-24" version="2.6.0"/>
   </releases>
+  <developer id="org.darktable">
+    <name>darktable developers</name>
+  </developer>
   <url type="homepage">https://www.darktable.org/</url>
   <url type="bugtracker">https://github.com/darktable-org/darktable/issues</url>
   <url type="help">https://www.darktable.org/resources/</url>

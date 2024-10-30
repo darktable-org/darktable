@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2022 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -69,7 +69,7 @@ const char *name()
   return _("hot pixels");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("remove abnormally bright pixels by dampening them with neighbors"),
                                       _("corrective"),
@@ -116,13 +116,7 @@ static int process_bayer(const dt_iop_hotpixels_data_t *data,
   const int widthx2 = width * 2;
   int fixed = 0;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ivoid, markfixed, min_neighbours, multiplier, ovoid, \
-                      roi_out, threshold, width, widthx2) \
-  reduction(+ : fixed) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(reduction(+ : fixed))
   for(int row = 2; row < roi_out->height - 2; row++)
   {
     const float *in = (float *)ivoid + (size_t)width * row + 2;
@@ -178,13 +172,7 @@ static int process_monochrome(const dt_iop_hotpixels_data_t *data,
   const int width = roi_out->width;
   int fixed = 0;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ivoid, markfixed, min_neighbours, multiplier, ovoid, \
-                      roi_out, threshold, width, planes) \
-  reduction(+ : fixed) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(reduction(+ : fixed))
   for(int row = 1; row < roi_out->height - 1; row++)
   {
     const float *in = (float *)ivoid + (size_t)planes * (width * row + 1);
@@ -281,14 +269,7 @@ static int process_xtrans(const dt_iop_hotpixels_data_t *data,
   const int width = roi_out->width;
   int fixed = 0;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ivoid, markfixed, min_neighbours, multiplier, ovoid, \
-                      roi_out, threshold, xtrans, width) \
-  shared(offsets) \
-  reduction(+ : fixed) \
-  schedule(static)
-#endif
+  DT_OMP_FOR(reduction(+ : fixed))
   for(int row = 2; row < roi_out->height - 2; row++)
   {
     const float *in = (float *)ivoid + (size_t)width * row + 2;
@@ -342,11 +323,11 @@ static int process_xtrans(const dt_iop_hotpixels_data_t *data,
   return fixed;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
-  const dt_iop_hotpixels_data_t *data = (dt_iop_hotpixels_data_t *)piece->data;
+  dt_iop_hotpixels_gui_data_t *g = self->gui_data;
+  const dt_iop_hotpixels_data_t *data = piece->data;
 
   // The processing loop should output only a few pixels, so just copy everything first
   const int planes = data->pure_monochrome ? 4 : 1;
@@ -373,21 +354,21 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 }
 
-void reload_defaults(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *self)
 {
-  const dt_image_t *img = &module->dev->image_storage;
+  const dt_image_t *img = &self->dev->image_storage;
 
   const gboolean monoraw = (img->flags & DT_IMAGE_S_RAW) && (img->flags & DT_IMAGE_MONOCHROME);
   const gboolean supported = dt_image_is_raw(img) || monoraw;
   // can't be switched on for non-raw images:
-  module->hide_enable_button = !supported;
+  self->hide_enable_button = !supported;
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t *)params;
-  dt_iop_hotpixels_data_t *d = (dt_iop_hotpixels_data_t *)piece->data;
+  dt_iop_hotpixels_data_t *d = piece->data;
   d->filters = piece->pipe->dsc.filters;
   d->multiplier = p->strength / 2.0;
   d->threshold = p->threshold;
@@ -402,12 +383,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   if(!supported || p->strength == 0.0) piece->enabled = FALSE;
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_hotpixels_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
@@ -416,8 +397,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
-  dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t *)self->params;
+  dt_iop_hotpixels_gui_data_t *g = self->gui_data;
+  dt_iop_hotpixels_params_t *p = self->params;
   gtk_toggle_button_set_active(g->markfixed, p->markfixed);
   gtk_toggle_button_set_active(g->permissive, p->permissive);
   g->pixels_fixed = -1;
@@ -434,7 +415,7 @@ void gui_update(dt_iop_module_t *self)
 
 static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 {
-  dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
+  dt_iop_hotpixels_gui_data_t *g = self->gui_data;
   if(darktable.gui->reset) return FALSE;
 
   if(g->pixels_fixed < 0) return FALSE;

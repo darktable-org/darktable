@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/colorlabels.h"
 #include "common/collection.h"
 #include "common/darktable.h"
@@ -43,6 +44,9 @@ typedef struct dt_undo_colorlabels_t
 
 int dt_colorlabels_get_labels(const dt_imgid_t imgid)
 {
+  if(!dt_is_valid_imgid(imgid))
+    return 0;
+
   sqlite3_stmt *stmt;
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -57,8 +61,13 @@ int dt_colorlabels_get_labels(const dt_imgid_t imgid)
   return colors;
 }
 
-static void _pop_undo_execute(const dt_imgid_t imgid, const uint8_t before, const uint8_t after)
+static void _pop_undo_execute(const dt_imgid_t imgid,
+                              const uint8_t before,
+                              const uint8_t after)
 {
+  if(!dt_is_valid_imgid(imgid))
+    return;
+
   for(int color=0; color<5; color++)
   {
     if(after & (1<<color))
@@ -71,16 +80,22 @@ static void _pop_undo_execute(const dt_imgid_t imgid, const uint8_t before, cons
   }
 }
 
-static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action, GList **imgs)
+static void _pop_undo(gpointer user_data,
+                      dt_undo_type_t type,
+                      dt_undo_data_t data,
+                      dt_undo_action_t action,
+                      GList **imgs)
 {
   if(type == DT_UNDO_COLORLABELS)
   {
     for(GList *list = (GList *)data; list; list = g_list_next(list))
     {
-      dt_undo_colorlabels_t *undocolorlabels = (dt_undo_colorlabels_t *)list->data;
+      dt_undo_colorlabels_t *undocolorlabels = list->data;
 
-      const uint8_t before = (action == DT_ACTION_UNDO) ? undocolorlabels->after : undocolorlabels->before;
-      const uint8_t after = (action == DT_ACTION_UNDO) ? undocolorlabels->before : undocolorlabels->after;
+      const uint8_t before = (action == DT_ACTION_UNDO)
+        ? undocolorlabels->after : undocolorlabels->before;
+      const uint8_t after = (action == DT_ACTION_UNDO)
+        ? undocolorlabels->before : undocolorlabels->after;
       _pop_undo_execute(undocolorlabels->imgid, before, after);
       *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undocolorlabels->imgid));
     }
@@ -94,8 +109,11 @@ static void _colorlabels_undo_data_free(gpointer data)
   g_list_free(l);
 }
 
-void dt_colorlabels_remove_labels(const dt_imgid_t imgid)
+void dt_colorlabels_remove_all_labels(const dt_imgid_t imgid)
 {
+  if(!dt_is_valid_imgid(imgid))
+    return;
+
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "DELETE FROM main.color_labels WHERE imgid=?1",
@@ -105,12 +123,14 @@ void dt_colorlabels_remove_labels(const dt_imgid_t imgid)
   sqlite3_finalize(stmt);
 }
 
-void dt_colorlabels_set_label(const dt_imgid_t imgid, const int color)
+void dt_colorlabels_set_label(const dt_imgid_t imgid,
+                              const int color)
 {
   sqlite3_stmt *stmt;
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO main.color_labels (imgid, color) VALUES (?1, ?2)",
+                              "INSERT INTO main.color_labels (imgid, color)"
+                              " VALUES (?1, ?2)",
                               -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -119,12 +139,17 @@ void dt_colorlabels_set_label(const dt_imgid_t imgid, const int color)
   sqlite3_finalize(stmt);
 }
 
-void dt_colorlabels_remove_label(const dt_imgid_t imgid, const int color)
+void dt_colorlabels_remove_label(const dt_imgid_t imgid,
+                                 const int color)
 {
+  if(!dt_is_valid_imgid(imgid))
+    return;
+
   sqlite3_stmt *stmt;
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "DELETE FROM main.color_labels WHERE imgid=?1 AND color=?2",
+                              "DELETE FROM main.color_labels"
+                              " WHERE imgid=?1 AND color=?2",
                               -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -141,18 +166,27 @@ typedef enum dt_colorlabels_actions_t
 } dt_colorlabels_actions_t;
 
 
-static void _colorlabels_execute(const GList *imgs, const int labels, GList **undo, const gboolean undo_on, int action)
+static void _colorlabels_execute(const GList *imgs,
+                                 const int labels,
+                                 GList **undo,
+                                 const gboolean undo_on,
+                                 int action)
 {
+  dt_gui_cursor_set_busy();
   if(action == DT_CA_TOGGLE)
   {
-    // if we are supposed to toggle color labels, first check if all images have that label
-    for(const GList *image = imgs; image; image = g_list_next((GList *)image))
+    // if we are supposed to toggle color labels, first check if all
+    // images have that label
+    for(const GList *image = imgs;
+        image;
+        image = g_list_next((GList *)image))
     {
-      const dt_imgid_t image_id = GPOINTER_TO_INT(image->data);
-      const uint8_t before = dt_colorlabels_get_labels(image_id);
+      const dt_imgid_t imgid = GPOINTER_TO_INT(image->data);
+      const uint8_t before = dt_colorlabels_get_labels(imgid);
 
-      // as long as a single image does not have the label we do not toggle the label for all images
-      // but add the label to all unlabeled images first
+      // as long as a single image does not have the label we do not
+      // toggle the label for all images but add the label to all
+      // unlabeled images first
       if(!(before & labels))
       {
         action = DT_CA_ADD;
@@ -161,10 +195,12 @@ static void _colorlabels_execute(const GList *imgs, const int labels, GList **un
     }
   }
 
-  for(const GList *image = imgs; image; image = g_list_next((GList *)image))
+  for(const GList *image = imgs;
+      image;
+      image = g_list_next((GList *)image))
   {
-    const dt_imgid_t image_id = GPOINTER_TO_INT(image->data);
-    const uint8_t before = dt_colorlabels_get_labels(image_id);
+    const dt_imgid_t imgid = GPOINTER_TO_INT(image->data);
+    const uint8_t before = dt_colorlabels_get_labels(imgid);
     uint8_t after = 0;
     switch(action)
     {
@@ -184,34 +220,39 @@ static void _colorlabels_execute(const GList *imgs, const int labels, GList **un
 
     if(undo_on)
     {
-      dt_undo_colorlabels_t *undocolorlabels = (dt_undo_colorlabels_t *)malloc(sizeof(dt_undo_colorlabels_t));
-      undocolorlabels->imgid = image_id;
+      dt_undo_colorlabels_t *undocolorlabels = malloc(sizeof(dt_undo_colorlabels_t));
+      undocolorlabels->imgid = imgid;
       undocolorlabels->before = before;
       undocolorlabels->after = after;
       *undo = g_list_append(*undo, undocolorlabels);
     }
 
-    _pop_undo_execute(image_id, before, after);
+    _pop_undo_execute(imgid, before, after);
   }
+  dt_gui_cursor_clear_busy();
 }
 
-void dt_colorlabels_set_labels(const GList *img, const int labels, const gboolean clear_on,
+void dt_colorlabels_set_labels(const GList *img,
+                               const int labels,
+                               const gboolean clear_on,
                                const gboolean undo_on)
 {
-  if(img)
+  if(!g_list_is_empty(img))
   {
     GList *undo = NULL;
-    if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_COLORLABELS);
+    if(undo_on)
+      dt_undo_start_group(darktable.undo, DT_UNDO_COLORLABELS);
 
     _colorlabels_execute(img, labels, &undo, undo_on, clear_on ? DT_CA_SET : DT_CA_ADD);
 
     if(undo_on)
     {
-      dt_undo_record(darktable.undo, NULL, DT_UNDO_COLORLABELS, undo, _pop_undo, _colorlabels_undo_data_free);
+      dt_undo_record(darktable.undo, NULL, DT_UNDO_COLORLABELS,
+                     undo, _pop_undo, _colorlabels_undo_data_free);
       dt_undo_end_group(darktable.undo);
     }
     dt_collection_hint_message(darktable.collection);
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   }
 }
 
@@ -219,6 +260,7 @@ void dt_colorlabels_toggle_label_on_list(const GList *list,
                                          const int color,
                                          const gboolean undo_on)
 {
+  dt_gui_cursor_set_busy();
   const int label = 1<<color;
   GList *undo = NULL;
   if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_COLORLABELS);
@@ -233,10 +275,7 @@ void dt_colorlabels_toggle_label_on_list(const GList *list,
   }
 
   // synchronise xmp files
-  for(GList *l = (GList *)list; l; l = g_list_next(l))
-  {
-    dt_image_synch_xmp(GPOINTER_TO_INT(l->data));
-  }
+  dt_image_synch_xmps(list);
 
   if(undo_on)
   {
@@ -244,12 +283,16 @@ void dt_colorlabels_toggle_label_on_list(const GList *list,
                    DT_UNDO_COLORLABELS, undo, _pop_undo, _colorlabels_undo_data_free);
     dt_undo_end_group(darktable.undo);
   }
+  dt_gui_cursor_clear_busy();
   dt_collection_hint_message(darktable.collection);
 }
 
-int dt_colorlabels_check_label(const dt_imgid_t imgid, const int color)
+gboolean dt_colorlabels_check_label(const dt_imgid_t imgid,
+                                    const int color)
 {
-  if(!dt_is_valid_imgid(imgid)) return 0;
+  if(!dt_is_valid_imgid(imgid))
+    return FALSE;
+
   sqlite3_stmt *stmt;
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -260,26 +303,26 @@ int dt_colorlabels_check_label(const dt_imgid_t imgid, const int color)
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, color);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    sqlite3_finalize(stmt);
-    return 1;
-  }
-  else
-  {
-    sqlite3_finalize(stmt);
-    return 0;
-  }
+  const gboolean result = sqlite3_step(stmt) == SQLITE_ROW;
+  sqlite3_finalize(stmt);
+  return result;
 }
 
-// FIXME: XMP uses Red, Green, ... while we use red, green, ... What should this function return?
+// FIXME: XMP uses Red, Green, ... while we use red, green, ... What
+// should this function return?
 const char *dt_colorlabels_to_string(int label)
 {
-  if(label < 0 || label >= DT_COLORLABELS_LAST) return ""; // shouldn't happen
+  if(label < 0
+     || label >= DT_COLORLABELS_LAST)
+    return ""; // shouldn't happen
+
   return dt_colorlabels_name[label];
 }
 
-static float _action_process_color_label(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+static float _action_process_color_label(gpointer target,
+                                         const dt_action_element_t element,
+                                         const dt_action_effect_t effect,
+                                         const float move_size)
 {
   float return_value = DT_ACTION_NOT_VALID;
 
@@ -288,21 +331,26 @@ static float _action_process_color_label(gpointer target, dt_action_element_t el
     GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
     dt_colorlabels_toggle_label_on_list(imgs, element ? element - 1 : 5, TRUE);
 
-    // if we are in darkroom we show a message as there might be no other indication
-    if(dt_view_get_current() == DT_VIEW_DARKROOM && g_list_is_singleton(imgs) && darktable.develop->preview_pipe)
+    // if we are in darkroom we show a message as there might be no
+    // other indication
+    if(dt_view_get_current() == DT_VIEW_DARKROOM
+       && g_list_is_singleton(imgs)
+       && darktable.develop->preview_pipe)
     {
       // we verify that the image is the active one
-      const int id = GPOINTER_TO_INT(imgs->data);
-      if(id == darktable.develop->preview_pipe->output_imgid)
+      const dt_imgid_t imgid = GPOINTER_TO_INT(imgs->data);
+      if(imgid == darktable.develop->preview_pipe->output_imgid)
       {
-        GList *res = dt_metadata_get(id, "Xmp.darktable.colorlabels", NULL);
+        GList *res = dt_metadata_get(imgid, "Xmp.darktable.colorlabels", NULL);
         gchar *result = NULL;
         for(GList *res_iter = res; res_iter; res_iter = g_list_next(res_iter))
         {
           const GdkRGBA c = darktable.bauhaus->colorlabels[GPOINTER_TO_INT(res_iter->data)];
-          result = dt_util_dstrcat(result,
-                                  "<span foreground='#%02x%02x%02x'>⬤ </span>",
-                                  (guint)(c.red*255), (guint)(c.green*255), (guint)(c.blue*255));
+          dt_util_str_cat(&result,
+                          "<span foreground='#%02x%02x%02x'>⬤ </span>",
+                          (guint)(c.red*255),
+                          (guint)(c.green*255),
+                          (guint)(c.blue*255));
         }
         g_list_free(res);
         if(result)
@@ -313,16 +361,15 @@ static float _action_process_color_label(gpointer target, dt_action_element_t el
       }
     }
 
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL,
+    dt_collection_update_query(darktable.collection,
+                               DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL,
                                imgs);
   }
   else if(darktable.develop && element != 0)
   {
-    const dt_imgid_t image_id = darktable.develop->image_storage.id;
-    if(dt_is_valid_imgid(image_id))
-    {
-      return_value = dt_colorlabels_check_label(image_id, element - 1);
-    }
+    const dt_imgid_t imgid = darktable.develop->image_storage.id;
+    if(dt_is_valid_imgid(imgid))
+      return_value = dt_colorlabels_check_label(imgid, element - 1) ? 1.0f : 0.0f;
   }
 
   return return_value;

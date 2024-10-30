@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -92,7 +92,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("resaturate giving more weight to blacks, whites and low-saturation pixels"),
                                       _("creative"),
@@ -125,8 +125,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_velvia_params_v1_t;
 
     const dt_iop_velvia_params_v1_t *o = old_params;
-    dt_iop_velvia_params_v2_t *n =
-      (dt_iop_velvia_params_v2_t *)malloc(sizeof(dt_iop_velvia_params_v2_t));
+    dt_iop_velvia_params_v2_t *n = malloc(sizeof(dt_iop_velvia_params_v2_t));
     n->strength = o->saturation * o->vibrance / 100.0f;
     n->bias = o->luminance;
 
@@ -138,7 +137,7 @@ int legacy_params(dt_iop_module_t *self,
   return 1;
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -148,7 +147,7 @@ void process(struct dt_iop_module_t *self,
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
-  const dt_iop_velvia_data_t *const data = (dt_iop_velvia_data_t *)piece->data;
+  const dt_iop_velvia_data_t *const data = piece->data;
 
   const float strength = data->strength / 100.0f;
 
@@ -160,11 +159,7 @@ void process(struct dt_iop_module_t *self,
     const size_t npixels = (size_t)roi_out->width * roi_out->height;
     const float bias = data->bias;
 
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(ivoid, ovoid, npixels, strength, bias)      \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(size_t k = 0; k < npixels; k++)
     {
       const float *const in = (const float *const)ivoid + 4 * k;
@@ -204,11 +199,11 @@ void process(struct dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_velvia_data_t *data = (dt_iop_velvia_data_t *)piece->data;
-  dt_iop_velvia_global_data_t *gd = (dt_iop_velvia_global_data_t *)self->global_data;
+  dt_iop_velvia_data_t *data = piece->data;
+  dt_iop_velvia_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
@@ -235,53 +230,52 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 }
 #endif
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 8; // extended.cl, from programs.conf
-  dt_iop_velvia_global_data_t *gd
-      = (dt_iop_velvia_global_data_t *)malloc(sizeof(dt_iop_velvia_global_data_t));
-  module->data = gd;
+  dt_iop_velvia_global_data_t *gd = malloc(sizeof(dt_iop_velvia_global_data_t));
+  self->data = gd;
   gd->kernel_velvia = dt_opencl_create_kernel(program, "velvia");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_velvia_global_data_t *gd = (dt_iop_velvia_global_data_t *)module->data;
+  dt_iop_velvia_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_velvia);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_velvia_params_t *p = (dt_iop_velvia_params_t *)p1;
-  dt_iop_velvia_data_t *d = (dt_iop_velvia_data_t *)piece->data;
+  dt_iop_velvia_data_t *d = piece->data;
 
   d->strength = p->strength;
   d->bias = p->bias;
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_velvia_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_velvia_gui_data_t *g = (dt_iop_velvia_gui_data_t *)self->gui_data;
-  dt_iop_velvia_params_t *p = (dt_iop_velvia_params_t *)self->params;
+  dt_iop_velvia_gui_data_t *g = self->gui_data;
+  dt_iop_velvia_params_t *p = self->params;
   dt_bauhaus_slider_set(g->strength_scale, p->strength);
   dt_bauhaus_slider_set(g->bias_scale, p->bias);
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_velvia_gui_data_t *g = IOP_GUI_ALLOC(velvia);
 

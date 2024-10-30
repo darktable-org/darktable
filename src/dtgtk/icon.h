@@ -20,26 +20,19 @@
 
 #include "paint.h"
 #include <gtk/gtk.h>
-G_BEGIN_DECLS
-#define DTGTK_ICON(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_icon_get_type(), GtkDarktableIcon)
-#define DTGTK_ICON_CLASS(klass) G_TYPE_CHECK_CLASS_CAST(klass, dtgtk_icon_get_type(), GtkDarktableIconClass)
-#define DTGTK_IS_ICON(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_icon_get_type())
-#define DTGTK_IS_ICON_CLASS(klass) G_TYPE_CHECK_CLASS_TYPE(obj, dtgtk_icon_get_type())
 
-typedef struct _GtkDarktableIcon
+G_BEGIN_DECLS
+
+#define DTGTK_TYPE_ICON dtgtk_icon_get_type()
+G_DECLARE_FINAL_TYPE(GtkDarktableIcon, dtgtk_icon, DTGTK, ICON, GtkEventBox)
+
+struct _GtkDarktableIcon
 {
   GtkEventBox widget;
   DTGTKCairoPaintIconFunc icon;
   gint icon_flags;
   void *icon_data;
-} GtkDarktableIcon;
-
-typedef struct _GtkDarktableIconClass
-{
-  GtkEventBoxClass parent_class;
-} GtkDarktableIconClass;
-
-GType dtgtk_icon_get_type(void);
+};
 
 /** instantiate a new darktable icon control passing paint function as content */
 GtkWidget *dtgtk_icon_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata);

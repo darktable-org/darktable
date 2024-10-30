@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -64,13 +64,13 @@ dt_job_t *dt_film_import1_create(dt_film_t *film)
 {
   dt_job_t *job = dt_control_job_create(&dt_film_import1_run, "cache load raw images for preview");
   if(!job) return NULL;
-  dt_film_import1_t *params = (dt_film_import1_t *)calloc(1, sizeof(dt_film_import1_t));
+  dt_film_import1_t *params = calloc(1, sizeof(dt_film_import1_t));
   if(!params)
   {
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_add_progress(job, _("import images"), FALSE);
+  dt_control_job_add_progress(job, _("import images"), TRUE);
   dt_control_job_set_params(job, params, dt_film_import1_cleanup);
   params->film = film;
   dt_pthread_mutex_lock(&film->images_mutex);
@@ -82,7 +82,8 @@ dt_job_t *dt_film_import1_create(dt_film_t *film)
 static int32_t _pathlist_import_run(dt_job_t *job)
 {
   dt_film_import1_t *params = dt_control_job_get_params(job);
-  _film_import1(job, NULL, params->imagelist); // import the specified images, creating filmrolls as needed
+  if(params->imagelist)
+    _film_import1(job, NULL, params->imagelist); // import the specified images, creating filmrolls as needed
   params->imagelist = NULL;  // the import will have freed the image list
 
   // notify the user via the window manager
@@ -100,13 +101,13 @@ dt_job_t *dt_pathlist_import_create(int argc, char *argv[])
 {
   dt_job_t *job = dt_control_job_create(&_pathlist_import_run, "import commandline images");
   if(!job) return NULL;
-  dt_film_import1_t *params = (dt_film_import1_t *)calloc(1, sizeof(dt_film_import1_t));
+  dt_film_import1_t *params = calloc(1, sizeof(dt_film_import1_t));
   if(!params)
   {
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_add_progress(job, _("import images"), FALSE);
+  dt_control_job_add_progress(job, _("import images"), TRUE);
   dt_control_job_set_params(job, params, _pathlist_import_cleanup);
   params->film = NULL;
   // now collect all of the images to be imported
@@ -354,6 +355,8 @@ static void _film_import1(dt_job_t *job, dt_film_t *film, GList *images)
       pending = 0;
       last_update = curr_time;
     }
+    if(dt_control_job_get_state(job) == DT_JOB_STATE_CANCELLED)
+      break;
   }
 
   g_list_free_full(images, g_free);
@@ -361,12 +364,12 @@ static void _film_import1(dt_job_t *job, dt_film_t *film, GList *images)
 
   // only redraw at the end, to not spam the cpu with exposure events
   dt_control_queue_redraw_center();
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, film ? film->id : cfr->id);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_FILMROLLS_IMPORTED, film ? film->id : cfr->id);
 
   //QUESTION: should this come after _apply_filmroll_gpx, since that can change geotags again?
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, all_imgs, 0);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_GEOTAG_CHANGED, all_imgs, 0);
 
   _apply_filmroll_gpx(cfr);
 

@@ -113,11 +113,13 @@ class CameraSupportState
         @exif_alias_map[exif_id] = id
         mode = ""
         mode = c.attribute("mode").value if c.attribute("mode")
+        mode = "DNG" if mode == "dng"
+        mode = "CHDK" if mode == "chdk"
         if mode != ""
           @rawspeed_modes[id] ||= []
           @rawspeed_modes[id] <<= mode
         end
-        @rawspeed_dngs[id] = true if mode == "dng"
+        @rawspeed_dngs[id] = true if mode == "DNG"
         if PANASONIC_NEEDED_FORMATS.include?(mode)
           @rawspeed_panasonic_formats[id] ||= []
           @rawspeed_panasonic_formats[id] << mode
@@ -315,10 +317,10 @@ class CameraSupportState
       puts
     end
 
-    print_list "### Base Support", new_basics
-    print_list "### White Balance Presets", new_presets
-    print_list "### Noise Profiles", new_profiles
-    print_list "### Custom Color matrices", new_matrices
+    print_list "### Base Support", new_basics.uniq
+    print_list "### White Balance Presets", new_presets.uniq
+    print_list "### Noise Profiles", new_profiles.uniq
+    print_list "### Custom Color matrices", new_matrices.uniq
   end
 end #class CameraSupportState
 

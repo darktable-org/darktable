@@ -23,7 +23,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/exif.h"
 #include "common/chromatic_adaptation.h"
-#include "common/colorspaces_inline_conversions.h"
+#include "common/darktable_ucs_22_helpers.h"
 #include "common/gamut_mapping.h"
 #include "common/opencl.h"
 #include "develop/blend.h"
@@ -42,7 +42,6 @@
 
 //#include <gtk/gtk.h>
 #include <stdlib.h>
-#define LUT_ELEM 360     // gamut LUT number of elements: resolution of 1°
 #define STEPS 92         // so we test 92×92×92 combinations of RGB in [0; 1] to build the gamut LUT
 
 // Filmlight Yrg puts red at 330°, while usual HSL wheels put it at 360/0°
@@ -177,7 +176,7 @@ const char *aliases()
   return _("offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance|saturation");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("color grading tools using alpha masks to separate\n"
                                         "shadows, mid-tones and highlights"),
@@ -299,10 +298,8 @@ int legacy_params(dt_iop_module_t *self,
       float hue_angle;
     } dt_iop_colorbalancergb_params_v1_t;
 
-    const dt_iop_colorbalancergb_params_v1_t *o =
-      (dt_iop_colorbalancergb_params_v1_t *)old_params;
+    const dt_iop_colorbalancergb_params_v1_t *o = old_params;
     dt_iop_colorbalancergb_params_v5_t *n =
-      (dt_iop_colorbalancergb_params_v5_t *)
       malloc(sizeof(dt_iop_colorbalancergb_params_v5_t));
 
     // Init params with defaults
@@ -361,10 +358,8 @@ int legacy_params(dt_iop_module_t *self,
       float brilliance_shadows;
     } dt_iop_colorbalancergb_params_v2_t;
 
-    const dt_iop_colorbalancergb_params_v2_t *o =
-      (dt_iop_colorbalancergb_params_v2_t *)old_params;
+    const dt_iop_colorbalancergb_params_v2_t *o = old_params;
     dt_iop_colorbalancergb_params_v5_t *n =
-      (dt_iop_colorbalancergb_params_v5_t *)
       malloc(sizeof(dt_iop_colorbalancergb_params_v5_t));
 
     // Init params with defaults
@@ -424,10 +419,8 @@ int legacy_params(dt_iop_module_t *self,
       float mask_grey_fulcrum;
     } dt_iop_colorbalancergb_params_v3_t;
 
-    const dt_iop_colorbalancergb_params_v3_t *o =
-      (dt_iop_colorbalancergb_params_v3_t *)old_params;
+    const dt_iop_colorbalancergb_params_v3_t *o = old_params;
     dt_iop_colorbalancergb_params_v5_t *n =
-      (dt_iop_colorbalancergb_params_v5_t *)
       malloc(sizeof(dt_iop_colorbalancergb_params_v5_t));
 
     // Init params with defaults
@@ -491,10 +484,8 @@ int legacy_params(dt_iop_module_t *self,
       float contrast;
     } dt_iop_colorbalancergb_params_v4_t;
 
-    const dt_iop_colorbalancergb_params_v4_t *o =
-      (dt_iop_colorbalancergb_params_v4_t *)old_params;
+    const dt_iop_colorbalancergb_params_v4_t *o = old_params;
     dt_iop_colorbalancergb_params_v5_t *n =
-      (dt_iop_colorbalancergb_params_v5_t *)
       malloc(sizeof(dt_iop_colorbalancergb_params_v5_t));
 
     // Init params with defaults
@@ -558,9 +549,7 @@ void init_presets(dt_iop_module_so_t *self)
 
 
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(output, output_comp: 16) uniform(shadows_weight, midtones_weight, highlights_weight)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(output, output_comp: 16) uniform(shadows_weight, midtones_weight, highlights_weight))
 static inline void opacity_masks(const float x,
                                  const float shadows_weight, const float highlights_weight,
                                  const float midtones_weight, const float mask_grey_fulcrum,
@@ -589,54 +578,16 @@ static inline void opacity_masks(const float x,
   }
 }
 
-
-static inline float soft_clip(const float x, const float soft_threshold, const float hard_threshold)
-{
-  // use an exponential soft clipping above soft_threshold
-  // hard threshold must be > soft threshold
-  const float norm = hard_threshold - soft_threshold;
-  return (x > soft_threshold) ? soft_threshold + (1.f - expf(-(x - soft_threshold) / norm)) * norm : x;
-}
-
-
-static inline float lookup_gamut(const float *const gamut_lut, const float x)
-{
-  // WARNING : x should be between [-pi ; pi ], which is the default output of atan2 anyway
-
-  // convert in LUT coordinate
-  const float x_test = (LUT_ELEM - 1) * (x + M_PI_F) / (2.f * M_PI_F);
-
-  // find the 2 closest integer coordinates (next/previous)
-  float x_prev = floorf(x_test);
-  float x_next = ceilf(x_test);
-
-  // get the 2 closest LUT elements at integer coordinates
-  // cycle on the hue ring if out of bounds
-  int xi = (int)x_prev;
-  if(xi < 0) xi = LUT_ELEM - 1;
-  else if(xi > LUT_ELEM - 1) xi = 0;
-
-  int xii = (int)x_next;
-  if(xii < 0) xii = LUT_ELEM - 1;
-  else if(xii > LUT_ELEM - 1) xii = 0;
-
-  // fetch the corresponding y values
-  const float y_prev = gamut_lut[xi];
-
-  // return y_prev if we are on the same integer LUT element or do linear interpolation
-  return y_prev + ((xi != xii) ? (x_test - x_prev) * (gamut_lut[xii] - y_prev) : 0.0f);
-}
-
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorbalancergb_data_t *d = (dt_iop_colorbalancergb_data_t *)piece->data;
-  dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
-  const struct dt_iop_order_iccprofile_info_t *const work_profile
+  dt_iop_colorbalancergb_data_t *d = piece->data;
+  dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
+  const dt_iop_order_iccprofile_info_t *const work_profile
       = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
   if(work_profile == NULL) return; // no point
 
@@ -679,18 +630,18 @@ void process(struct dt_iop_module_t *self,
   dt_colormatrix_t output_matrix_trans;
   dt_colormatrix_transpose(output_matrix_trans, output_matrix);
 
-  const float *const restrict in = __builtin_assume_aligned(((const float *const restrict)ivoid), 64);
-  float *const restrict out = __builtin_assume_aligned(((float *const restrict)ovoid), 64);
-  const float *const restrict gamut_LUT = __builtin_assume_aligned(((const float *const restrict)d->gamut_LUT), 64);
+  const float *const restrict in = DT_IS_ALIGNED(((const float *const restrict)ivoid));
+  float *const restrict out = DT_IS_ALIGNED(((float *const restrict)ovoid));
+  const float *const restrict gamut_LUT = DT_IS_ALIGNED(((const float *const restrict)d->gamut_LUT));
 
-  const float *const restrict global = __builtin_assume_aligned((const float *const restrict)d->global, 16);
-  const float *const restrict highlights = __builtin_assume_aligned((const float *const restrict)d->highlights, 16);
-  const float *const restrict shadows = __builtin_assume_aligned((const float *const restrict)d->shadows, 16);
-  const float *const restrict midtones = __builtin_assume_aligned((const float *const restrict)d->midtones, 16);
+  const float *const restrict global = DT_IS_ALIGNED_PIXEL((const float *const restrict)d->global);
+  const float *const restrict highlights = DT_IS_ALIGNED_PIXEL((const float *const restrict)d->highlights);
+  const float *const restrict shadows = DT_IS_ALIGNED_PIXEL((const float *const restrict)d->shadows);
+  const float *const restrict midtones = DT_IS_ALIGNED_PIXEL((const float *const restrict)d->midtones);
 
-  const float *const restrict chroma = __builtin_assume_aligned((const float *const restrict)d->chroma, 16);
-  const float *const restrict saturation = __builtin_assume_aligned((const float *const restrict)d->saturation, 16);
-  const float *const restrict brilliance = __builtin_assume_aligned((const float *const restrict)d->brilliance, 16);
+  const float *const restrict chroma = DT_IS_ALIGNED_PIXEL((const float *const restrict)d->chroma);
+  const float *const restrict saturation = DT_IS_ALIGNED_PIXEL((const float *const restrict)d->saturation);
+  const float *const restrict brilliance = DT_IS_ALIGNED_PIXEL((const float *const restrict)d->brilliance);
 
   const gint mask_display
       = ((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) && self->dev->gui_attached
@@ -710,15 +661,7 @@ void process(struct dt_iop_module_t *self,
   const size_t npixels = (size_t)roi_out->height * roi_out->width;
   const size_t out_width = roi_out->width;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, out, npixels, out_width, d, g, mask_display, \
-                      input_matrix_trans, output_matrix_trans, gamut_LUT,     \
-                      global, highlights, shadows, midtones, chroma, \
-                      saturation, brilliance, checker_1, checker_2, L_white, \
-                      hue_rotation_matrix)                              \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k  = 0; k < 4 * npixels; k += 4)
   {
     // clip pipeline RGB
@@ -850,7 +793,7 @@ void process(struct dt_iop_module_t *self,
                                 d->saturation_global + scalar_product(opacities, saturation) }; // move in O direction
 
       SO[0] = JC[0] * M_rot_dir[0][0] + JC[1] * M_rot_dir[0][1];
-      SO[1] = SO[0] * MIN(MAX(T * boosts[1], -T), DT_M_PI_F / 2.f - T);
+      SO[1] = SO[0] * MIN(MAX(T * boosts[1], -T), M_PI_F / 2.f - T);
       SO[0] = MAX(SO[0] * boosts[0], 0.f);
 
       // Project back to JCh, that is rotate back of -T angle
@@ -1004,15 +947,15 @@ void process(struct dt_iop_module_t *self,
 
 
 #if HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_colorbalancergb_data_t *const d = (dt_iop_colorbalancergb_data_t *)piece->data;
-  dt_iop_colorbalancergb_global_data_t *const gd = (dt_iop_colorbalancergb_global_data_t *)self->global_data;
-  dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
+  const dt_iop_colorbalancergb_data_t *const d = piece->data;
+  dt_iop_colorbalancergb_global_data_t *const gd = self->global_data;
+  dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
@@ -1027,7 +970,7 @@ int process_cl(struct dt_iop_module_t *self,
   const int height = roi_in->height;
 
   // Get working color profile
-  const struct dt_iop_order_iccprofile_info_t *const work_profile
+  const dt_iop_order_iccprofile_info_t *const work_profile
       = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
   if(work_profile == NULL) return err; // no point
 
@@ -1124,42 +1067,29 @@ error:
   return err;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 8; // extended.cl in programs.conf
-  dt_iop_colorbalancergb_global_data_t *gd
-      = (dt_iop_colorbalancergb_global_data_t *)malloc(sizeof(dt_iop_colorbalancergb_global_data_t));
+  dt_iop_colorbalancergb_global_data_t *gd = malloc(sizeof(dt_iop_colorbalancergb_global_data_t));
 
-  module->data = gd;
+  self->data = gd;
   gd->kernel_colorbalance_rgb = dt_opencl_create_kernel(program, "colorbalancergb");
 }
 
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_colorbalancergb_global_data_t *gd = (dt_iop_colorbalancergb_global_data_t *)module->data;
+  dt_iop_colorbalancergb_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_colorbalance_rgb);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 #endif
 
-
-static inline float Delta_H(const float h_1, const float h_2)
-{
-  // Compute the difference between 2 angles
-  // and force the result in [-pi; pi] radians
-  float diff = h_1 - h_2;
-  diff += (diff < -M_PI_F) ? 2.f * M_PI_F : 0.f;
-  diff -= (diff > M_PI_F) ? 2.f * M_PI_F : 0.f;
-  return diff;
-}
-
-
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_colorbalancergb_data_t *d = (dt_iop_colorbalancergb_data_t *)(piece->data);
+  dt_iop_colorbalancergb_data_t *d = piece->data;
   dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)p1;
 
   d->checker_color_1[0] = CLAMP(dt_conf_get_float("plugins/darkroom/colorbalancergb/checker1/red"), 0.f, 1.f);
@@ -1245,7 +1175,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // Check if the RGB working profile has changed in pipe
   // WARNING: this function is not triggered upon working profile change,
   // so the gamut boundaries are wrong until we change some param in this module
-  struct dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
+  dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
   if(work_profile == NULL) return;
   if(work_profile != d->work_profile)
   {
@@ -1257,22 +1187,16 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // this will be used to prevent users to mess up their images by pushing chroma out of gamut
   if(!d->lut_inited)
   {
-    float *const restrict LUT_saturation = dt_calloc_align_float(LUT_ELEM);
-
     // Premultiply both matrices to go from D50 pipeline RGB to D65 XYZ in a single matrix dot product
     // instead of D50 pipeline to D50 XYZ (work_profile->matrix_in) and then D50 XYZ to D65 XYZ
     dt_colormatrix_t input_matrix;
     dt_colormatrix_mul(input_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in);
-
+    float *gamut_LUT = d->gamut_LUT;
     // make RGB values vary between [0; 1] in working space, convert to Ych and get the max(c(h)))
     if(p->saturation_formula == DT_COLORBALANCE_SATURATION_JZAZBZ)
     {
-      #ifdef _OPENMP
-      #pragma omp parallel for default(none) \
-            dt_omp_firstprivate(input_matrix, p) schedule(static) \
-            reduction(max : LUT_saturation[:LUT_ELEM]) \
-            collapse(3)
-      #endif
+      float *const restrict sampler = dt_calloc_align_float(LUT_ELEM);
+      DT_OMP_FOR(reduction(max: sampler[:LUT_ELEM]) collapse(3))
       for(size_t r = 0; r < STEPS; r++)
         for(size_t g = 0; g < STEPS; g++)
           for(size_t b = 0; b < STEPS; b++)
@@ -1295,103 +1219,26 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
             saturation = (Jch[0] > 0.f) ? Jch[1] / Jch[0] : 0.f;
             hue = Jch[2];
 
-            const size_t index = roundf((LUT_ELEM - 1) * (hue + M_PI_F) / (2.f * M_PI_F));
-            LUT_saturation[index] = fmaxf(saturation, LUT_saturation[index]);
+            int index = roundf((LUT_ELEM - 1) * (hue + M_PI_F) / (2.f * M_PI_F));
+            index += (index < 0) ? LUT_ELEM : 0;
+            index -= (index >= LUT_ELEM) ? LUT_ELEM : 0;
+            sampler[index] = fmaxf(sampler[index], saturation);
           }
 
+     // anti-aliasing on the LUT (simple 5-taps 1D box average)
+      for(size_t k = 2; k < LUT_ELEM - 2; k++)
+        d->gamut_LUT[k] = (sampler[k - 2] + sampler[k - 1] + sampler[k] + sampler[k + 1] + sampler[k + 2]) / 5.f;
+
+      // handle bounds
+      d->gamut_LUT[0] = (sampler[LUT_ELEM - 2] + sampler[LUT_ELEM - 1] + sampler[0] + sampler[1] + sampler[2]) / 5.f;
+      d->gamut_LUT[1] = (sampler[LUT_ELEM - 1] + sampler[0] + sampler[1] + sampler[2] + sampler[3]) / 5.f;
+      d->gamut_LUT[LUT_ELEM - 1] = (sampler[LUT_ELEM - 3] + sampler[LUT_ELEM - 2] + sampler[LUT_ELEM - 1] + sampler[0] + sampler[1]) / 5.f;
+      d->gamut_LUT[LUT_ELEM - 2] = (sampler[LUT_ELEM - 4] + sampler[LUT_ELEM - 3] + sampler[LUT_ELEM - 2] + sampler[LUT_ELEM - 1] + sampler[0]) / 5.f;
+      dt_free_align(sampler);
     }
     else if(p->saturation_formula == DT_COLORBALANCE_SATURATION_DTUCS)
-    {
-      const dt_aligned_pixel_t D65_xyY = { D65xyY.x, D65xyY.y,  1.f, 0.f };
+      dt_UCS_22_build_gamut_LUT(input_matrix, gamut_LUT);
 
-      // Compute the RGB space primaries in xyY
-      dt_aligned_pixel_t RGB_red   = { 1.f, 0.f, 0.f, 0.f };
-      dt_aligned_pixel_t RGB_green = { 0.f, 1.f, 0.f, 0.f };
-      dt_aligned_pixel_t RGB_blue =  { 0.f, 0.f, 1.f, 0.f };
-
-      dt_aligned_pixel_t XYZ_red, XYZ_green, XYZ_blue;
-      dot_product(RGB_red, input_matrix, XYZ_red);
-      dot_product(RGB_green, input_matrix, XYZ_green);
-      dot_product(RGB_blue, input_matrix, XYZ_blue);
-
-      dt_aligned_pixel_t xyY_red, xyY_green, xyY_blue;
-      dt_D65_XYZ_to_xyY(XYZ_red, xyY_red);
-      dt_D65_XYZ_to_xyY(XYZ_green, xyY_green);
-      dt_D65_XYZ_to_xyY(XYZ_blue, xyY_blue);
-
-      // Get the "hue" angles of the primaries in xy compared to D65
-      const float h_red   = atan2f(xyY_red[1] - D65_xyY[1], xyY_red[0] - D65_xyY[0]);
-      const float h_green = atan2f(xyY_green[1] - D65_xyY[1], xyY_green[0] - D65_xyY[0]);
-      const float h_blue  = atan2f(xyY_blue[1] - D65_xyY[1], xyY_blue[0] - D65_xyY[0]);
-
-      // March the gamut boundary in CIE xyY 1931 by angular steps of 0.02°
-      #ifdef _OPENMP
-        #pragma omp parallel for default(none) \
-              dt_omp_firstprivate(input_matrix, xyY_red, xyY_green, xyY_blue, h_red, h_green, h_blue, D65_xyY) \
-              reduction(max : LUT_saturation[:LUT_ELEM]) \
-              schedule(static)
-      #endif
-
-      for(int i = 0; i < 50 * 360; i++)
-      {
-        const float angle = -M_PI_F + ((float)i) / (50.f * 360.f) * 2.f * M_PI_F;
-        const float tan_angle = tanf(angle);
-
-        const float t_1 = Delta_H(angle, h_blue)  / Delta_H(h_red, h_blue);
-        const float t_2 = Delta_H(angle, h_red)   / Delta_H(h_green, h_red);
-        const float t_3 = Delta_H(angle, h_green) / Delta_H(h_blue, h_green);
-
-        float x_t = 0;
-        float y_t = 0;
-
-        if(t_1 == CLAMP(t_1, 0, 1))
-        {
-          const float t = (D65_xyY[1] - xyY_blue[1] + tan_angle * (xyY_blue[0] - D65_xyY[0]))
-                    / (xyY_red[1] - xyY_blue[1] + tan_angle * (xyY_blue[0] - xyY_red[0]));
-          x_t = xyY_blue[0] + t * (xyY_red[0] - xyY_blue[0]);
-          y_t = xyY_blue[1] + t * (xyY_red[1] - xyY_blue[1]);
-        }
-        else if(t_2 == CLAMP(t_2, 0, 1))
-        {
-          const float t = (D65_xyY[1] - xyY_red[1] + tan_angle * (xyY_red[0] - D65_xyY[0]))
-                    / (xyY_green[1] - xyY_red[1] + tan_angle * (xyY_red[0] - xyY_green[0]));
-          x_t = xyY_red[0] + t * (xyY_green[0] - xyY_red[0]);
-          y_t = xyY_red[1] + t * (xyY_green[1] - xyY_red[1]);
-        }
-        else if(t_3 == CLAMP(t_3, 0, 1))
-        {
-          const float t = (D65_xyY[1] - xyY_green[1] + tan_angle * (xyY_green[0] - D65_xyY[0]))
-                        / (xyY_blue[1] - xyY_green[1] + tan_angle * (xyY_green[0] - xyY_blue[0]));
-          x_t = xyY_green[0] + t * (xyY_blue[0] - xyY_green[0]);
-          y_t = xyY_green[1] + t * (xyY_blue[1] - xyY_green[1]);
-        }
-
-        // Convert to darktable UCS
-        dt_aligned_pixel_t xyY = { x_t, y_t, 1.f, 0.f };
-        float UV_star_prime[2];
-        xyY_to_dt_UCS_UV(xyY, UV_star_prime);
-
-        // Get the hue angle in darktable UCS
-        const float hue = atan2f(UV_star_prime[1], UV_star_prime[0]);
-        int index = roundf((LUT_ELEM - 1) * (hue + M_PI_F) / (2.f * M_PI_F));
-        index += (index < 0) ? LUT_ELEM : 0;
-        index -= (index >= LUT_ELEM) ? LUT_ELEM : 0;
-        // Warning: we store M², the square of the colorfulness
-        LUT_saturation[index] = fmaxf(LUT_saturation[index], UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1]);
-      }
-    }
-
-    // anti-aliasing on the LUT (simple 5-taps 1D box average)
-    for(size_t k = 2; k < LUT_ELEM - 2; k++)
-      d->gamut_LUT[k] = (LUT_saturation[k - 2] + LUT_saturation[k - 1] + LUT_saturation[k] + LUT_saturation[k + 1] + LUT_saturation[k + 2]) / 5.f;
-
-    // handle bounds
-    d->gamut_LUT[0] = (LUT_saturation[LUT_ELEM - 2] + LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0] + LUT_saturation[1] + LUT_saturation[2]) / 5.f;
-    d->gamut_LUT[1] = (LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0] + LUT_saturation[1] + LUT_saturation[2] + LUT_saturation[3]) / 5.f;
-    d->gamut_LUT[LUT_ELEM - 1] = (LUT_saturation[LUT_ELEM - 3] + LUT_saturation[LUT_ELEM - 2] + LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0] + LUT_saturation[1]) / 5.f;
-    d->gamut_LUT[LUT_ELEM - 2] = (LUT_saturation[LUT_ELEM - 4] + LUT_saturation[LUT_ELEM - 3] + LUT_saturation[LUT_ELEM - 2] + LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0]) / 5.f;
-
-    dt_free_align(LUT_saturation);
     d->lut_inited = TRUE;
   }
 }
@@ -1399,7 +1246,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = dt_calloc1_align_type(dt_iop_colorbalancergb_data_t);
-  dt_iop_colorbalancergb_data_t *d = (dt_iop_colorbalancergb_data_t *)(piece->data);
+  dt_iop_colorbalancergb_data_t *d = piece->data;
   d->gamut_LUT = dt_alloc_align_float(LUT_ELEM);
   d->lut_inited = FALSE;
   d->work_profile = NULL;
@@ -1407,7 +1254,7 @@ void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
 
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_colorbalancergb_data_t *d = (dt_iop_colorbalancergb_data_t *)(piece->data);
+  dt_iop_colorbalancergb_data_t *d = piece->data;
   if(d->gamut_LUT) dt_free_align(d->gamut_LUT);
   dt_free_align(piece->data);
   piece->data = NULL;
@@ -1416,7 +1263,7 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 void pipe_RGB_to_Ych(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, const dt_aligned_pixel_t RGB,
                      dt_aligned_pixel_t Ych)
 {
-  const struct dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, pipe);
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, pipe);
   if(work_profile == NULL) return; // no point
 
   dt_aligned_pixel_t XYZ_D50 = { 0.f };
@@ -1433,8 +1280,8 @@ void pipe_RGB_to_Ych(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, const dt_a
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
-  dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)self->params;
+  dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
+  dt_iop_colorbalancergb_params_t *p = self->params;
 
   dt_aligned_pixel_t Ych = { 0.f };
   dt_aligned_pixel_t max_Ych = { 0.f };
@@ -1483,7 +1330,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
     dt_bauhaus_slider_set(g->grey_fulcrum, p->grey_fulcrum);
   }
   else
-    dt_print(DT_DEBUG_ALWAYS, "[colorbalancergb] unknown color picker\n");
+    dt_print(DT_DEBUG_ALWAYS, "[colorbalancergb] unknown color picker");
   --darktable.gui->reset;
 
   gui_changed(self, picker, NULL);
@@ -1569,7 +1416,7 @@ static void mask_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
 
-  dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
+  dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
 
   // if blend module is displaying mask do not display it here
   if(self->request_mask_display)
@@ -1601,10 +1448,9 @@ static void mask_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
 }
 
 
-static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)self->params;
+  dt_iop_colorbalancergb_params_t *p = self->params;
   const float shadows_weight = 2.f + p->shadows_weight * 2.f;
   const float highlights_weight = 2.f + p->highlights_weight * 2.f;
 
@@ -1663,11 +1509,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   const size_t checker_1 = DT_PIXEL_APPLY_DPI(6);
   const size_t checker_2 = 2 * checker_1;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(data, graph_height, line_height, checker_1, checker_2) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(size_t i = 0; i < (size_t)graph_height; i++)
     for(size_t j = 0; j < (size_t)line_height; j++)
     {
@@ -1711,11 +1553,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   float *LUT[3];
   for(size_t c = 0; c < 3; c++) LUT[c] = dt_alloc_align_float(LUT_ELEM);
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(LUT, shadows_weight, midtones_weight, highlights_weight, mask_grey_fulcrum) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0 ; k < LUT_ELEM; k++)
   {
     const float Y = k / (float)(LUT_ELEM - 1);
@@ -1800,8 +1638,8 @@ static void checker_size_callback(GtkWidget *widget, dt_iop_module_t *self)
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
-  dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)self->params;
+  dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
+  dt_iop_colorbalancergb_params_t *p = self->params;
 
   // Prepare data for gamut mapping slider backgrounds
   // Make our best effort to find display profile. If not found
@@ -1853,8 +1691,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
-  dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)self->params;
+  dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
+  dt_iop_colorbalancergb_params_t *p = self->params;
 
   dt_bauhaus_slider_set(g->hue_angle, p->hue_angle);
   dt_bauhaus_slider_set(g->vibrance, p->vibrance);
@@ -1928,7 +1766,7 @@ void gui_update(dt_iop_module_t *self)
 
 void gui_reset(dt_iop_module_t *self)
 {
-  //dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
+  //dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
   dt_iop_color_picker_reset(self, TRUE);
 }
 
@@ -2124,7 +1962,9 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "luminance ranges")), FALSE, FALSE, 0);
 
-  g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/colorbalancergb/aspect_percent"));
+  g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL,
+                                               0,
+                                               "plugins/darkroom/colorbalancergb/graphheight"));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), NULL);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
@@ -2188,7 +2028,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(row2), FALSE, FALSE, 0);
 
   g->checker_size = dt_bauhaus_slider_new_with_range(self, 2., 32., 0, 8., 0);
-  dt_bauhaus_slider_set_format(g->checker_size, " px");
+  dt_bauhaus_slider_set_format(g->checker_size, _(" px"));
   dt_bauhaus_widget_set_label(g->checker_size,  NULL, _("checkerboard size"));
   g_signal_connect(G_OBJECT(g->checker_size), "value-changed", G_CALLBACK(checker_size_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->checker_size), FALSE, FALSE, 0);
@@ -2227,7 +2067,7 @@ void gui_init(dt_iop_module_t *self)
 }
 
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   IOP_GUI_FREE;
 }

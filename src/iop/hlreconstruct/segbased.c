@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022-2023 darktable developers.
+    Copyright (C) 2022-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ The algorithm follows these basic ideas:
 4. In all 3 color planes we look for isolated areas being clipped (segments).
    These segments also include the unclipped photosites at the borders, we also use these locations for estimating the global chrominance.
    Inside these segments we look for a candidate to represent the value we take for restoration.
-   Choosing the candidate is done at all non-clipped locations of a segment, the best candidate is selected via a weighing
+   Choosing the candidate is done at all non-clipped locations of a segment, the best candidate is selected via a weighting
    function - the weight is derived from
    - the local standard deviation in a 5x5 area and
    - the median value of unclipped positions also in a 5x5 area.
@@ -55,7 +55,7 @@ The chosen segmentation algorithm works like this:
 3. The segmentation algorithm uses a modified floodfill, it also takes care of the surrounding rectangle of every segment
    and marks the segment borders.
 4. After segmentation we check every segment for
-   - the segment's best candidate via the weighing function
+   - the segment's best candidate via the weighting function
    - the candidates location
 */
 
@@ -126,11 +126,7 @@ static void _calc_plane_candidates(const float *plane,
                                    const float clipval,
                                    const float badlevel)
 {
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(plane, refavg, seg, clipval, badlevel) \
-  schedule(dynamic)
-#endif
+  DT_OMP_PRAGMA(parallel for default(firstprivate) schedule(dynamic))
   for(uint32_t id = 2; id < seg->nr; id++)
   {
     seg->val1[id] = 0.0f;
@@ -195,29 +191,30 @@ static inline float _calc_refavg(const float *in,
                                  const int row,
                                  const int col,
                                  const dt_iop_roi_t *const roi,
+                                 const dt_aligned_pixel_t correction,
                                  const gboolean linear)
 {
   const int color = (filters == 9u) ? FCxtrans(row, col, roi, xtrans) : FC(row, col, filters);
   dt_aligned_pixel_t mean = { 0.0f, 0.0f, 0.0f, 0.0f };
   dt_aligned_pixel_t cnt = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-  const int dymin = (row > 0) ? -1 : 0;
-  const int dxmin = (col > 0) ? -1 : 0;
-  const int dymax = (row < roi->height -1) ? 2 : 1;
-  const int dxmax = (col < roi->width -1) ? 2 : 1;
+  const int dymin = MAX(0, row - 1);
+  const int dxmin = MAX(0, col - 1);
+  const int dymax = MIN(roi->height - 1, row +2);
+  const int dxmax = MIN(roi->width - 1, col + 2);
 
   for(int dy = dymin; dy < dymax; dy++)
   {
     for(int dx = dxmin; dx < dxmax; dx++)
     {
       const float val = fmaxf(0.0f, in[(size_t)dy * roi->width + dx]);
-      const int c = (filters == 9u) ? FCxtrans(row + dy, col + dx, roi, xtrans) : FC(row + dy, col + dx, filters);
+      const int c = (filters == 9u) ? FCxtrans(dy, dx, roi, xtrans) : FC(dy, dx, filters);
       mean[c] += val;
       cnt[c] += 1.0f;
     }
   }
   for_each_channel(c)
-    mean[c] = (cnt[c] > 0.0f) ? powf(mean[c] / cnt[c], 1.0f / HL_POWERF) : 0.0f;
+    mean[c] = (cnt[c] > 0.0f) ? powf((correction[c] * mean[c]) / cnt[c], 1.0f / HL_POWERF) : 0.0f;
 
   const dt_aligned_pixel_t croot_refavg = { 0.5f * (mean[1] + mean[2]),
                                             0.5f * (mean[0] + mean[2]),
@@ -232,11 +229,7 @@ static void _initial_gradients(const size_t w,
                                float *distance,
                                float *gradient)
 {
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(luminance, gradient, distance, w, height) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(int row = HL_BORDER + 2; row < height - HL_BORDER - 2; row++)
   {
     for(int col = HL_BORDER + 2; col < w - HL_BORDER - 2; col++)
@@ -244,16 +237,7 @@ static void _initial_gradients(const size_t w,
       const size_t v = (size_t)row * w + col;
       float g = 0.0f;
       if((distance[v] > 0.0f) && (distance[v] < 2.0f))
-      {
-        // scharr operator
-        const float gx = 47.0f * (luminance[v-w-1] - luminance[v-w+1])
-                      + 162.0f * (luminance[v-1]   - luminance[v+1])
-                       + 47.0f * (luminance[v+w-1] - luminance[v+w+1]);
-        const float gy = 47.0f * (luminance[v-w-1] - luminance[v+w-1])
-                      + 162.0f * (luminance[v-w]   - luminance[v+w])
-                       + 47.0f * (luminance[v-w+1] - luminance[v+w+1]);
-        g = 4.0f * sqrtf(sqrf(gx / 256.0f) + sqrf(gy / 256.0f));
-      }
+        g = 4.0f * scharr_gradient(&luminance[v], w);
       gradient[v] = g;
     }
   }
@@ -269,12 +253,7 @@ static float _segment_maxdistance(float *distance,
   const int ymax = MIN(seg->ymax[id]+3, seg->height - seg->border);
   float max_distance = 0.0f;
 
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-  reduction(max : max_distance) \
-  dt_omp_firstprivate(distance, seg, xmin, xmax, ymin, ymax, id) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(reduction(max : max_distance) collapse(2))
   for(int row = ymin; row < ymax; row++)
   {
     for(int col = xmin; col < xmax; col++)
@@ -319,11 +298,7 @@ static void _calc_distance_ring(const int xmin,
                                 dt_iop_segmentation_t *seg,
                                 const uint32_t id)
 {
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(distance, gradient, seg, xmin, xmax, ymin, ymax, dist, id, attenuate) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(int row = ymin; row < ymax; row++)
   {
     for(int col = xmin; col < xmax; col++)
@@ -378,11 +353,7 @@ static void _segment_gradients(float *distance,
 
   if(maxdist > 4.0f)
   {
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(gradient, seg, tmp, xmin, xmax, ymin, ymax) \
-  schedule(static)
-#endif
+    DT_OMP_FOR()
     for(size_t row = ymin; row < ymax; row++)
     {
       for(size_t col = xmin, s = (size_t)row*seg->width + col, d = (size_t)(row-ymin)*(xmax-xmin);
@@ -391,11 +362,7 @@ static void _segment_gradients(float *distance,
     }
 
     dt_box_mean(tmp, ymax-ymin, xmax-xmin, 1, MIN((int)maxdist, 15), 2);
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(gradient, tmp, seg, xmin, xmax, ymin, ymax, id) \
-  schedule(static)
-#endif
+    DT_OMP_FOR()
     for(size_t row = ymin; row < ymax; row++)
     {
       for(size_t col = xmin, v = row * seg->width + col, s = (row-ymin)*(xmax-xmin);
@@ -406,11 +373,7 @@ static void _segment_gradients(float *distance,
       }
     }
   }
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(gradient, tmp, seg, xmin, xmax, ymin, ymax, id, strength) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(int row = ymin; row < ymax; row++)
   {
     for(int col = xmin; col < xmax; col++)
@@ -455,25 +418,62 @@ static inline size_t _raw_to_plane(const int width, const int row, const int col
   return (HL_BORDER + (row / 3)) * width + (col / 3) + HL_BORDER;
 }
 
+static void _masks_extend_border(float *const mask,
+                                 const int width,
+                                 const int height,
+                                 const int border)
+{
+  if(border <= 0) return;
+  DT_OMP_FOR()
+  for(size_t row = border; row < height - border; row++)
+  {
+    const size_t idx = row * width;
+    for(size_t i = 0; i < border; i++)
+    {
+      mask[idx + i] = mask[idx + border];
+      mask[idx + width - i - 1] = mask[idx + width - border -1];
+    }
+  }
+  DT_OMP_FOR()
+  for(size_t col = 0; col < width; col++)
+  {
+    const float top = mask[border * width + MIN(width - border - 1, MAX(col, border))];
+    const float bot = mask[(height - border - 1) * width
+                           + MIN(width - border - 1, MAX(col, border))];
+    for(size_t i = 0; i < border; i++)
+    {
+      mask[col + i * width] = top;
+      mask[col + (height - i - 1) * width] = bot;
+    }
+  }
+}
+
 static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
                                   const float *const input,
                                   float *const output,
                                   const dt_iop_roi_t *const roi_in,
                                   const dt_iop_roi_t *const roi_out,
-                                  dt_iop_highlights_data_t *data,
+                                  dt_iop_highlights_data_t *d,
                                   const int vmode,
                                   float *tmpout)
 {
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   const uint32_t filters = piece->pipe->dsc.filters;
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-  const float clipval = fmaxf(0.1f, 0.987f * data->clip);
+  const float clipval = MAX(0.1f, highlights_clip_magics[DT_IOP_HIGHLIGHTS_SEGMENTS] * d->clip);
+
   const dt_aligned_pixel_t icoeffs = { piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2]};
-  const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2]}; 
+  const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2]};
   const dt_aligned_pixel_t cube_coeffs = { powf(clips[0], 1.0f / HL_POWERF), powf(clips[1], 1.0f / HL_POWERF), powf(clips[2], 1.0f / HL_POWERF)};
 
-  const int recovery_mode = data->recovery;
-  const float strength = data->strength;
+  const dt_dev_chroma_t *chr = &piece->module->dev->chroma;
+  const gboolean late = chr->late_correction;
+  const dt_aligned_pixel_t correction = { late ? (float)(chr->D65coeffs[0] / chr->as_shot[0]) : 1.0f,
+                                          late ? (float)(chr->D65coeffs[1] / chr->as_shot[1]) : 1.0f,
+                                          late ? (float)(chr->D65coeffs[2] / chr->as_shot[2]) : 1.0f,
+                                          1.0f };
+  const int recovery_mode = d->recovery;
+  const float strength = d->strength;
 
   const int recovery_closing[NUM_RECOVERY_MODES] = { 0, 0, 0, 2, 2, 0, 2};
   const int recovery_close = recovery_closing[recovery_mode];
@@ -486,7 +486,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   float *fbuffer = dt_alloc_align_float(HL_FLOAT_PLANES * p_size);
   if(!fbuffer)
   {
-    dt_print(DT_DEBUG_PIPE, "[process segmentation] can't allocate intermediate buffers\n");
+    dt_print(DT_DEBUG_PIPE, "[process segmentation] can't allocate intermediate buffers");
     return;
   }
 
@@ -506,7 +506,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
 
   if(segerror)
   {
-    dt_print(DT_DEBUG_PIPE, "[process segmentation] can't allocate segmentation buffers\n");
+    dt_print(DT_DEBUG_PIPE, "[process segmentation] can't allocate segmentation buffers");
     for(int i = 0; i < HL_SEGMENT_PLANES; i++)
       dt_segmentation_free_struct(&isegments[i]);
 
@@ -519,14 +519,8 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   // populate the segmentation data, planes and refavg ...
   int32_t anyclipped = 0;
   gboolean has_allclipped = FALSE;
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-  reduction( | : has_allclipped) \
-  reduction( + : anyclipped) \
-  dt_omp_firstprivate(tmpout, roi_in, plane, isegments, cube_coeffs, refavg, xtrans, pwidth, filters, xshifter) \
-  schedule(static) collapse(2)
-#endif
-  for(int row = 1; row < roi_in->height-1; row++)
+  DT_OMP_FOR(reduction( | : has_allclipped) reduction( + : anyclipped) collapse(2))
+  for(int row = 1; row < roi_in->height - 1; row++)
   {
     for(int col = 1; col < roi_in->width - 1; col++)
     {
@@ -536,20 +530,20 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
       {
         dt_aligned_pixel_t mean = { 0.0f, 0.0f, 0.0f, 0.0f };
         dt_aligned_pixel_t cnt = { 0.0f, 0.0f, 0.0f, 0.0f };
-        for(int dy = -1; dy < 2; dy++)
+        for(int dy = row - 1; dy < row + 2; dy++)
         {
-          for(int dx = -1; dx < 2; dx++)
+          for(int dx = col -1; dx < col + 2; dx++)
           {
-            const size_t idx = (size_t)(row + dy) * roi_in->width + col + dx;
+            const size_t idx = (size_t)dy * roi_in->width + dx;
             const float val = tmpout[idx];
-            const int c = (filters == 9u) ? FCxtrans(row + dy, col + dx, roi_in, xtrans) : FC(row + dy, col + dx, filters);
+            const int c = (filters == 9u) ? FCxtrans(dy, dx, roi_in, xtrans) : FC(dy, dx, filters);
             mean[c] += val;
             cnt[c] += 1.0f;
           }
         }
 
         for_each_channel(c)
-          mean[c] = (cnt[c] > 0.0f) ? powf(mean[c] / cnt[c], 1.0f / HL_POWERF) : 0.0f;
+          mean[c] = (cnt[c] > 0.0f) ? powf(correction[c] * mean[c] / cnt[c], 1.0f / HL_POWERF) : 0.0f;
         const dt_aligned_pixel_t cube_refavg = { 0.5f * (mean[1] + mean[2]),
                                                  0.5f * (mean[0] + mean[2]),
                                                  0.5f * (mean[0] + mean[1]),
@@ -562,7 +556,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
           plane[c][o] = mean[c];
           refavg[c][o] = cube_refavg[c];
           if(mean[c] > cube_coeffs[c])
-          { 
+          {
             allclipped += 1;
             isegments[c].data[o] = 1;
           }
@@ -575,19 +569,17 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   }
 
   if((anyclipped < 20) && vmode == DT_HIGHLIGHTS_MASK_OFF)
-    goto finish; 
+    goto finish;
 
   for(int i = 0; i < HL_RGB_PLANES; i++)
-    dt_masks_extend_border(plane[i], pwidth, pheight, HL_BORDER);
+    _masks_extend_border(plane[i], pwidth, pheight, HL_BORDER);
 
   for(int p = 0; p < HL_RGB_PLANES; p++)
-    dt_segments_combine(&isegments[p], data->combine);
+    dt_segments_combine(&isegments[p], d->combine);
 
   if(dt_get_num_threads() >= HL_RGB_PLANES)
   {
-#ifdef _OPENMP
-  #pragma omp parallel num_threads(HL_RGB_PLANES)
-#endif
+    DT_OMP_PRAGMA(parallel num_threads(HL_RGB_PLANES))
     {
       dt_segmentize_plane(&isegments[dt_get_thread_num()]);
     }
@@ -599,13 +591,9 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   }
 
   for(int p = 0; p < HL_RGB_PLANES; p++)
-    _calc_plane_candidates(plane[p], refavg[p], &isegments[p], cube_coeffs[p], data->candidating);
+    _calc_plane_candidates(plane[p], refavg[p], &isegments[p], cube_coeffs[p], d->candidating);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(clips, input, tmpout, roi_in, xtrans, isegments, plane, filters, pwidth) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(int row = 1; row < roi_in->height-1; row++)
   {
     for(int col = 1; col < roi_in->width-1; col++)
@@ -623,7 +611,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
           if(candidate != 0.0f)
           {
             const float cand_reference = isegments[color].val2[pid];
-            const float refavg_here = _calc_refavg(&input[idx], xtrans, filters, row, col, roi_in, FALSE);
+            const float refavg_here = _calc_refavg(input, xtrans, filters, row, col, roi_in, correction, FALSE);
             const float oval = powf(refavg_here + candidate - cand_reference, HL_POWERF);
             tmpout[idx] = plane[color][o] = fmaxf(inval, oval);
           }
@@ -648,11 +636,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
     dt_segments_combine(segall, recovery_close);
     dt_iop_image_fill(gradient, fminf(1.0f, 5.0f * strength), pwidth, pheight, 1);
     dt_iop_image_fill(distance, 0.0f, pwidth, pheight, 1);
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(tmp, plane, distance, segall, icoeffs, pheight, pwidth) \
-  schedule(static) collapse(2)
-#endif
+    DT_OMP_FOR(collapse(2))
     for(int row = segall->border; row < pheight - segall->border; row++)
     {
       for(int col = segall->border; col < pwidth - segall->border; col++)
@@ -663,9 +647,8 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
         distance[i] = (segall->data[i] == 1) ? DT_DISTANCE_TRANSFORM_MAX : 0.0f;
       }
     }
-    dt_masks_extend_border(tmp, pwidth, pheight, segall->border);
-    dt_masks_blur(tmp, luminance, pwidth, pheight, 1.2f, 1.0f, 20.0f);
-    dt_masks_extend_border(luminance, pwidth, pheight, segall->border);
+    _masks_extend_border(tmp, pwidth, pheight, segall->border);
+    dt_gaussian_fast_blur(tmp, luminance, pwidth, pheight, 1.2f, 0.0f, 20.0f, 1);
   }
 
   if(do_recovery)
@@ -675,7 +658,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
     {
       dt_segmentize_plane(segall);
       _initial_gradients(pwidth, pheight, luminance, distance, recout);
-      dt_masks_extend_border(recout, pwidth, pheight, segall->border);
+      _masks_extend_border(recout, pwidth, pheight, segall->border);
 
       // now we check for significant all-clipped-segments and reconstruct data
       for(uint32_t id = 2; id < segall->nr; id++)
@@ -686,9 +669,9 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
           _segment_gradients(distance, recout, tmp, recovery_mode, segall, id, recovery_close);
       }
 
-      dt_masks_blur(recout, gradient, pwidth, pheight, 1.2f, 1.0f, 20.0f);
+      dt_gaussian_fast_blur(recout, gradient, pwidth, pheight, 1.2f, 0.0f, 20.0f, 1);
       // possibly add some noise
-      const float noise_level = data->noise_level;
+      const float noise_level = d->noise_level;
       if(noise_level > 0.0f)
       {
         for(uint32_t id = 2; id < segall->nr; id++)
@@ -700,11 +683,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
 
       const float dshift = 2.0f + (float)recovery_closing[recovery_mode];
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(clips, input, tmpout, roi_in, xtrans, gradient, distance, filters, pwidth, dshift, strength) \
-  schedule(static) collapse(2)
-#endif
+      DT_OMP_FOR(collapse(2))
       for(int row = 1; row < roi_in->height - 1; row++)
       {
         for(int col = 1; col < roi_in->width - 1; col++)
@@ -723,11 +702,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
     }
   }
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(luminance, output, tmpout, roi_in, roi_out, xtrans, isegments, segall, gradient, filters, pwidth, vmode, strength, do_masking) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(int row = 0; row < roi_out->height; row++)
   {
     for(int col = 0; col < roi_out->width; col++)
@@ -771,7 +746,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
     }
   }
 
-  dt_print(DT_DEBUG_PERF, "[segmentation report %-12s] %5.1fMpix, segments: %3i red, %3i green, %3i blue, %3i all, %4i allowed.\n",
+  dt_print(DT_DEBUG_PERF, "[segmentation report %-12s] %5.1fMpix, segments: %3i red, %3i green, %3i blue, %3i all, %4i allowed",
       dt_dev_pixelpipe_type_to_str(piece->pipe->type),
       (float) (roi_in->width * roi_in->height) / 1.0e6f, isegments[0].nr -2, isegments[1].nr-2, isegments[2].nr-2, isegments[3].nr-2,
       segmentation_limit-2);

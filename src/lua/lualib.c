@@ -111,13 +111,8 @@ int position_wrapper(const struct dt_lib_module_t *self)
   const dt_view_t *cur_view = dt_view_manager_get_current_view(darktable.view_manager);
   lua_lib_data_t *gui_data = self->data;
   position_description_t *position_description = get_position_description(gui_data, cur_view);
-  if(position_description) return position_description->position;
-  printf("ERROR in lualib, couldn't find a position for `%s', this should never happen\n", gui_data->name);
-  /*
-     No position found. This can happen if we are called while current view is not one
-     of our views. just return 0
-     */
-  return 0;
+  // If current view is not one of our views, just return 0
+  return position_description ? position_description->position : 0;
 }
 
 static int async_lib_call(lua_State * L)
@@ -182,7 +177,6 @@ static dt_lib_module_t ref_lib = {
   .button_released = NULL,
   .button_pressed = NULL,
   .scrolled = NULL,
-  .configure = NULL,
   .position = position_wrapper,
   .legacy_params = NULL,
   .get_params = NULL,

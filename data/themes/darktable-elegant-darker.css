@@ -68,7 +68,7 @@ box,
 box *
 {
   font-family: "Roboto Light", "Roboto",                  /* best case scenario */
-               "Segoe UI Light", "Segoe UI",              /* Windows 10 default */
+               "Segoe UI",                                /* Windows 10 default */
                "SF Pro Display Light", "SF Pro Display",  /* Mac OS X default */
                "Ubuntu Light", "Ubuntu", "IPAPGothic",    /* Ubuntu default */
                "Cantarell",                               /* Gnome default */

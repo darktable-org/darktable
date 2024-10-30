@@ -53,13 +53,17 @@ typedef struct dt_iop_color_picker_t
    * IOP_CS_HSL: for RGB modules
    */
   dt_iop_colorspace_type_t picker_cst;
+  /* if we define via dt_color_picker_new_with_cst() we don't want the picker callbacks
+     to modify it's picker_cst
+  */
+  gboolean fixed_cst;
   /** used to avoid recursion when a parameter is modified in the apply() */
   GtkWidget *colorpick;
   // positions are associated with the current picker widget: will set
   // the picker request for the primary picker when this picker is
   // activated, and will remember the most recent picker position
   float pick_pos[2];
-  dt_boundingbox_t pick_box;
+  dt_pickerbox_t pick_box;
   gboolean changed;
 } dt_iop_color_picker_t;
 

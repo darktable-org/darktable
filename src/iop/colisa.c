@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2013-2020 darktable developers.
+  Copyright (C) 2013-2024 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -84,7 +84,7 @@ const char *name()
   return _("contrast brightness saturation");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("adjust the look of the image"),
                                       _("creative"),
@@ -112,11 +112,11 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colisa_data_t *d = (dt_iop_colisa_data_t *)piece->data;
-  dt_iop_colisa_global_data_t *gd = (dt_iop_colisa_global_data_t *)self->global_data;
+  dt_iop_colisa_data_t *d = piece->data;
+  dt_iop_colisa_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
@@ -158,10 +158,10 @@ error:
 }
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colisa_data_t *data = (dt_iop_colisa_data_t *)piece->data;
+  dt_iop_colisa_data_t *data = piece->data;
   float *in = (float *)ivoid;
   float *out = (float *)ovoid;
 
@@ -169,12 +169,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int height = roi_in->height;
   const int ch = piece->colors;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, height, width) \
-  shared(in, out, data) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)width * height; k++)
   {
     float L = (in[k * ch + 0] < 100.0f)
@@ -189,11 +184,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colisa_params_t *p = (dt_iop_colisa_params_t *)p1;
-  dt_iop_colisa_data_t *d = (dt_iop_colisa_data_t *)piece->data;
+  dt_iop_colisa_data_t *d = piece->data;
 
   d->contrast = p->contrast + 1.0f; // rescale from [-1;+1] to [0;+2] (zero meaning no contrast -> gray plane)
   d->brightness = p->brightness * 2.0f; // rescale from [-1;+1] to [-2;+2]
@@ -203,9 +198,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   if(d->contrast <= 1.0f)
   {
 // linear curve for d->contrast below 1
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d) schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int k = 0; k < 0x10000; k++) d->ctable[k] = d->contrast * (100.0f * k / 0x10000 - 50.0f) + 50.0f;
   }
   else
@@ -214,12 +207,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     const float boost = 20.0f;
     const float contrastm1sq = boost * (d->contrast - 1.0f) * (d->contrast - 1.0f);
     const float contrastscale = sqrtf(1.0f + contrastm1sq);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(contrastm1sq, contrastscale) \
-    shared(d) \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int k = 0; k < 0x10000; k++)
     {
       float kx2m1 = 2.0f * (float)k / 0x10000 - 1.0f;
@@ -239,12 +227,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // generate precomputed brightness curve
   const float gamma = (d->brightness >= 0.0f) ? 1.0f / (1.0f + d->brightness) : (1.0f - d->brightness);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(gamma) \
-  shared(d) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int k = 0; k < 0x10000; k++)
   {
     d->ltable[k] = 100.0f * powf((float)k / 0x10000, gamma);
@@ -259,39 +242,38 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_estimate_exp(xl, yl, 4, d->lunbounded_coeffs);
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_colisa_data_t *d = (dt_iop_colisa_data_t *)calloc(1, sizeof(dt_iop_colisa_data_t));
+  dt_iop_colisa_data_t *d = calloc(1, sizeof(dt_iop_colisa_data_t));
   piece->data = (void *)d;
   for(int k = 0; k < 0x10000; k++) d->ctable[k] = d->ltable[k] = 100.0f * k / 0x10000; // identity
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // basic.cl, from programs.conf
-  dt_iop_colisa_global_data_t *gd
-      = (dt_iop_colisa_global_data_t *)malloc(sizeof(dt_iop_colisa_global_data_t));
-  module->data = gd;
+  dt_iop_colisa_global_data_t *gd = malloc(sizeof(dt_iop_colisa_global_data_t));
+  self->data = gd;
   gd->kernel_colisa = dt_opencl_create_kernel(program, "colisa");
 }
 
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_colisa_global_data_t *gd = (dt_iop_colisa_global_data_t *)module->data;
+  dt_iop_colisa_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_colisa);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_colisa_gui_data_t *g = IOP_GUI_ALLOC(colisa);
 

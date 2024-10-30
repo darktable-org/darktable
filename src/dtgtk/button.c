@@ -21,8 +21,9 @@
 #include "gui/gtk.h"
 #include <string.h>
 
+G_DEFINE_TYPE(GtkDarktableButton, dtgtk_button, GTK_TYPE_BUTTON)
 
-static void _button_init(GtkDarktableButton *button)
+static void dtgtk_button_init(GtkDarktableButton *button)
 {
 }
 
@@ -102,7 +103,7 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   return FALSE;
 }
 
-static void _button_class_init(GtkDarktableButtonClass *klass)
+static void dtgtk_button_class_init(GtkDarktableButtonClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
 
@@ -124,28 +125,6 @@ GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint,
   dt_gui_add_class(GTK_WIDGET(button), "dt_module_btn");
   gtk_widget_set_name(GTK_WIDGET(button->canvas), "button-canvas");
   return (GtkWidget *)button;
-}
-
-GType dtgtk_button_get_type()
-{
-  static GType dtgtk_button_type = 0;
-  if(!dtgtk_button_type)
-  {
-    static const GTypeInfo dtgtk_button_info = {
-      sizeof(GtkDarktableButtonClass),
-      (GBaseInitFunc)NULL,
-      (GBaseFinalizeFunc)NULL,
-      (GClassInitFunc)_button_class_init, NULL, /* class_finalize */
-      NULL,                                     /* class_data */
-      sizeof(GtkDarktableButton), 0,            /* n_preallocs */
-      (GInstanceInitFunc)_button_init,
-    };
-    dtgtk_button_type = g_type_register_static(GTK_TYPE_BUTTON,
-                                               "GtkDarktableButton",
-                                               &dtgtk_button_info,
-                                               0);
-  }
-  return dtgtk_button_type;
 }
 
 void dtgtk_button_set_paint(GtkDarktableButton *button,

@@ -153,8 +153,7 @@ static int dt_imageio_load_modules_format(dt_imageio_t *iio)
     if(!g_str_has_prefix(d_name, SHARED_MODULE_PREFIX)) continue;
     if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
     g_strlcpy(plugin_name, d_name + name_offset, strlen(d_name) - name_end + 1);
-    dt_imageio_module_format_t *module =
-      (dt_imageio_module_format_t *)calloc(1, sizeof(dt_imageio_module_format_t));
+    dt_imageio_module_format_t *module = calloc(1, sizeof(dt_imageio_module_format_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_format(module, libname, plugin_name))
     {
@@ -266,7 +265,7 @@ static int dt_imageio_load_modules_storage(dt_imageio_t *iio)
     if(!g_str_has_prefix(d_name, SHARED_MODULE_PREFIX)) continue;
     if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
     g_strlcpy(plugin_name, d_name + name_offset, strlen(d_name) - name_end + 1);
-    module = (dt_imageio_module_storage_t *)calloc(1, sizeof(dt_imageio_module_storage_t));
+    module = calloc(1, sizeof(dt_imageio_module_storage_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_storage(module, libname, plugin_name))
     {
@@ -297,7 +296,7 @@ void dt_imageio_cleanup(dt_imageio_t *iio)
 {
   while(iio->plugins_format)
   {
-    dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)(iio->plugins_format->data);
+    dt_imageio_module_format_t *module = iio->plugins_format->data;
     module->gui_cleanup(module);
     module->cleanup(module);
     if(module->widget) g_object_unref(module->widget);
@@ -307,7 +306,7 @@ void dt_imageio_cleanup(dt_imageio_t *iio)
   }
   while(iio->plugins_storage)
   {
-    dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)(iio->plugins_storage->data);
+    dt_imageio_module_storage_t *module = iio->plugins_storage->data;
     module->gui_cleanup(module);
     if(module->widget) g_object_unref(module->widget);
     if(module->module) g_module_close(module->module);
@@ -346,7 +345,7 @@ dt_imageio_module_format_t *dt_imageio_get_format_by_name(const char *name)
   dt_imageio_t *iio = darktable.imageio;
   for(GList *it = iio->plugins_format; it; it = g_list_next(it))
   {
-    dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
+    dt_imageio_module_format_t *module = it->data;
     if(!strcmp(module->plugin_name, name)) return module;
   }
   return NULL;
@@ -358,7 +357,7 @@ dt_imageio_module_storage_t *dt_imageio_get_storage_by_name(const char *name)
   dt_imageio_t *iio = darktable.imageio;
   for(GList *it = iio->plugins_storage; it; it = g_list_next(it))
   {
-    dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
+    dt_imageio_module_storage_t *module = it->data;
     if(!strcmp(module->plugin_name, name)) return module;
   }
   return NULL;
@@ -395,13 +394,13 @@ void dt_imageio_insert_storage(dt_imageio_module_storage_t *storage)
 {
   darktable.imageio->plugins_storage
       = g_list_insert_sorted(darktable.imageio->plugins_storage, storage, dt_imageio_sort_modules_storage);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGEIO_STORAGE_CHANGE);
 }
 
 void dt_imageio_remove_storage(dt_imageio_module_storage_t *storage)
 {
   darktable.imageio->plugins_storage  = g_list_remove(darktable.imageio->plugins_storage, storage);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGEIO_STORAGE_CHANGE);
 }
 
 gchar *dt_imageio_resizing_factor_get_and_parsing(double *num, double *denum)

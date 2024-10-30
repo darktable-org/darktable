@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2023 darktable developers.
+    Copyright (C) 2016-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -115,11 +115,7 @@ static void pad_by_replication(
     const uint32_t h,		// total height, including top and bottom padding
     const uint32_t padding)	// number of lines of padding on each side
 {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, padding, h, w) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int j=0;j<padding;j++)
   {
     memcpy(buf + w*j, buf+padding*w, sizeof(float)*w);
@@ -133,12 +129,7 @@ static inline void gauss_expand(
     const int wd,             // fine res
     const int ht)
 {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(fine, input, wd, ht) \
-  schedule(static) \
-  collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(int j=1;j<((ht-1)&~1);j++)  // even ht: two px boundary. odd ht: one px.
     for(int i=1;i<((wd-1)&~1);i++)
       fine[j*wd+i] = ll_expand_gaussian(input, i, j, wd, ht);
@@ -177,13 +168,9 @@ static inline void gauss_reduce(
 {
   // blur, store only coarse res
   const size_t cw = (wd-1)/2+1, ch = (ht-1)/2+1;
-#ifdef _OPENMP
   // DON'T parallelize the very smallest levels of the pyramid, as the threading overhead
   // is greater than the time needed to do it sequentially
-#pragma omp parallel for simd default(none) if(ch*cw>2000)  \
-  dt_omp_firstprivate(coarse, cw, ch, input, wd) \
-  schedule(simd:static)
-#endif
+  DT_OMP_FOR(if(ch*cw>2000))
   for(size_t j=1;j<ch-1;j++)
   {
     const float *base = input + 2*(j-1)*wd;
@@ -242,13 +229,8 @@ static inline float *ll_pad_input(
 
   if(b && b->mode == 2)
   { // pad by preview buffer
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ht, input, max_supp, out, wd, stride) \
-    shared(wd2, ht2) \
-    schedule(static) \
-    collapse(2)
-#endif // fill regular pixels:
+    // fill regular pixels:
+    DT_OMP_FOR(collapse(2))
     for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
       out[(j+max_supp)**wd2+i+max_supp] = input[stride*(wd*j+i)] * 0.01f; // L -> [0,1]
 
@@ -271,52 +253,31 @@ static inline float *ll_pad_input(
       /* TODO: linear interpolation?*/\
       out[*wd2*j+i] = b->pad0[b->pwd*py+px];\
     } } while(0)
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(input, max_supp, out, wd, stride) \
-    shared(wd2, ht2, b) \
-    schedule(static) \
-    collapse(2)
-#endif // left border
-    for(int j=max_supp;j<*ht2-max_supp;j++) for(int i=0;i<max_supp;i++)
-      LL_FILL(input[stride*wd*(j-max_supp)]* 0.01f);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(input, max_supp, out, stride, wd) \
-    shared(wd2, ht2, b) \
-    schedule(static) \
-    collapse(2)
-#endif // right border
-    for(int j=max_supp;j<*ht2-max_supp;j++) for(int i=wd+max_supp;i<*wd2;i++)
-      LL_FILL(input[stride*((j-max_supp)*wd+wd-1)] * 0.01f);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(max_supp, out) \
-    shared(wd2, ht2, b) \
-    schedule(static) \
-    collapse(2)
-#endif // top border
-    for(int j=0;j<max_supp;j++) for(int i=0;i<*wd2;i++)
-      LL_FILL(out[*wd2*max_supp+i]);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ht, max_supp, out) \
-    shared(wd2, ht2, b) \
-    schedule(static) \
-    collapse(2)
-#endif // bottom border
-    for(int j=max_supp+ht;j<*ht2;j++) for(int i=0;i<*wd2;i++)
-      LL_FILL(out[*wd2*(max_supp+ht-1)+i]);
+    // left border
+    DT_OMP_FOR(collapse(2))
+    for(int j=max_supp;j<*ht2-max_supp;j++)
+      for(int i=0;i<max_supp;i++)
+        LL_FILL(input[stride*wd*(j-max_supp)]* 0.01f);
+    // right border
+    DT_OMP_FOR(collapse(2))
+    for(int j=max_supp;j<*ht2-max_supp;j++)
+      for(int i=wd+max_supp;i<*wd2;i++)
+        LL_FILL(input[stride*((j-max_supp)*wd+wd-1)] * 0.01f);
+    // top border
+    DT_OMP_FOR(collapse(2))
+    for(int j=0;j<max_supp;j++)
+      for(int i=0;i<*wd2;i++)
+        LL_FILL(out[*wd2*max_supp+i]);
+    // bottom border
+    DT_OMP_FOR(collapse(2))
+    for(int j=max_supp+ht;j<*ht2;j++)
+      for(int i=0;i<*wd2;i++)
+        LL_FILL(out[*wd2*(max_supp+ht-1)+i]);
 #undef LL_FILL
   }
   else
   { // pad by replication:
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(input, ht, max_supp, out, wd, stride) \
-    shared(wd2, ht2) \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int j=0;j<ht;j++)
     {
       for(int i=0;i<max_supp;i++)
@@ -393,11 +354,7 @@ void apply_curve(
     const float highlights,
     const float clarity)
 {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(clarity, g, h, highlights, in, out, padding, sigma, shadows, w) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(uint32_t j=padding;j<h-padding;j++)
   {
     const float *in2  = in  + j*w + padding;
@@ -537,9 +494,7 @@ void local_laplacian_internal(
       dt_dump_pfm("coarse", b->output[pl0], pw0, ph0,  4 * sizeof(float), "locallaplacian");
       dt_dump_pfm("oldcoarse", output[last_level], pw, ph,  4 * sizeof(float), "locallaplacian");
     }
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) collapse(2) default(shared)
-#endif
+    DT_OMP_FOR(collapse(2))
     for(int j=0;j<ph;j++) for(int i=0;i<pw;i++)
     {
       // image coordinates in full buffer
@@ -585,13 +540,7 @@ void local_laplacian_internal(
 
     gauss_expand(output[l+1], output[l], pw, ph);
     // go through all coefficients in the upsampled gauss buffer:
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ph, pw) \
-    shared(w,h,buf,output,l,gamma,padded) \
-    schedule(static) \
-    collapse(2)
-#endif
+    DT_OMP_FOR(collapse(2))
     for(int j=0;j<ph;j++) for(int i=0;i<pw;i++)
     {
       const float v = padded[l][j*pw+i];
@@ -609,13 +558,7 @@ void local_laplacian_internal(
       //   output[l][j*pw+i] += ll_laplacian(padded[l+1], padded[l], i, j, pw, ph);
     }
   }
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ht, input, max_supp, out, wd) \
-  shared(w,output,buf) \
-  schedule(static) \
-  collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
   {
     out[4*(j*wd+i)+0] = 100.0f * output[0][(j+max_supp)*w+max_supp+i]; // [0,1] -> L

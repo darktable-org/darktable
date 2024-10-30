@@ -152,7 +152,7 @@ int write_image(dt_imageio_module_data_t *webp, const char *filename, const void
   config.partition_limit = 70;
   if(!WebPValidateConfig(&config))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[webp export] error validating encoder configuration\n");
+    dt_print(DT_DEBUG_ALWAYS, "[webp export] error validating encoder configuration");
     goto error;
   }
 
@@ -171,13 +171,13 @@ int write_image(dt_imageio_module_data_t *webp, const char *filename, const void
       err = WebPMuxSetChunk(mux, "ICCP", &icc_profile, 0);
       if(err != WEBP_MUX_OK)
       {
-        dt_print(DT_DEBUG_ALWAYS, "[webp export] error adding ICC profile to WebP stream\n");
+        dt_print(DT_DEBUG_ALWAYS, "[webp export] error adding ICC profile to WebP stream");
         goto error;
       }
     }
     else
     {
-      dt_print(DT_DEBUG_ALWAYS, "[webp export] error allocating ICC profile buffer\n");
+      dt_print(DT_DEBUG_ALWAYS, "[webp export] error allocating ICC profile buffer");
       goto error;
     }
   }
@@ -203,7 +203,7 @@ int write_image(dt_imageio_module_data_t *webp, const char *filename, const void
 
   if(!WebPEncode(&config, &pic))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[webp export] error (%d) during encoding: %s\n", pic.error_code,
+    dt_print(DT_DEBUG_ALWAYS, "[webp export] error (%d) during encoding: %s", pic.error_code,
             get_error_str(pic.error_code));
     goto error;
   }
@@ -213,7 +213,7 @@ int write_image(dt_imageio_module_data_t *webp, const char *filename, const void
   err = WebPMuxSetImage(mux, &bitstream, 0);
   if(err != WEBP_MUX_OK)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[webp export] error adding image to WebP stream\n");
+    dt_print(DT_DEBUG_ALWAYS, "[webp export] error adding image to WebP stream");
     goto error;
   }
 
@@ -221,19 +221,19 @@ int write_image(dt_imageio_module_data_t *webp, const char *filename, const void
   err = WebPMuxAssemble(mux, &assembled_data);
   if(err != WEBP_MUX_OK)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[webp export] error assembling the WebP file\n");
+    dt_print(DT_DEBUG_ALWAYS, "[webp export] error assembling the WebP file");
     goto error;
   }
 
   out = g_fopen(filename, "w+b");
   if(!out)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[webp export] error creating file %s\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[webp export] error creating file %s", filename);
     goto error;
   }
   if(fwrite(assembled_data.bytes, assembled_data.size, 1, out) != 1)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[webp export] error writing %zu bytes to file %s\n", assembled_data.size, filename);
+    dt_print(DT_DEBUG_ALWAYS, "[webp export] error writing %zu bytes to file %s", assembled_data.size, filename);
     goto error;
   }
 
@@ -283,7 +283,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
     } dt_imageio_webp_v1_t;
 
     const dt_imageio_webp_v1_t *o = (dt_imageio_webp_v1_t *)old_params;
-    dt_imageio_webp_v2_t *n = (dt_imageio_webp_v2_t *)malloc(sizeof(dt_imageio_webp_v2_t));
+    dt_imageio_webp_v2_t *n = malloc(sizeof(dt_imageio_webp_v2_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -322,7 +322,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
 
 void *get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_webp_t *d = (dt_imageio_webp_t *)calloc(1, sizeof(dt_imageio_webp_t));
+  dt_imageio_webp_t *d = calloc(1, sizeof(dt_imageio_webp_t));
   d->comp_type = dt_conf_get_int("plugins/imageio/format/webp/comp_type");
   d->quality = dt_conf_get_int("plugins/imageio/format/webp/quality");
   d->hint = dt_conf_get_int("plugins/imageio/format/webp/hint");
@@ -333,7 +333,7 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
 {
   if(size != self->params_size(self)) return 1;
   const dt_imageio_webp_t *d = (dt_imageio_webp_t *)params;
-  dt_imageio_webp_gui_data_t *g = (dt_imageio_webp_gui_data_t *)self->gui_data;
+  dt_imageio_webp_gui_data_t *g = self->gui_data;
   dt_bauhaus_combobox_set(g->compression, d->comp_type);
   dt_bauhaus_slider_set(g->quality, d->quality);
   dt_bauhaus_combobox_set(g->hint, d->hint);
@@ -403,7 +403,7 @@ static void hint_combobox_changed(GtkWidget *widget, gpointer user_data)
 
 void gui_init(dt_imageio_module_format_t *self)
 {
-  dt_imageio_webp_gui_data_t *gui = (dt_imageio_webp_gui_data_t *)malloc(sizeof(dt_imageio_webp_gui_data_t));
+  dt_imageio_webp_gui_data_t *gui = malloc(sizeof(dt_imageio_webp_gui_data_t));
   self->gui_data = (void *)gui;
   const int comp_type = dt_conf_get_int("plugins/imageio/format/webp/comp_type");
   const int quality = dt_conf_get_int("plugins/imageio/format/webp/quality");
@@ -450,7 +450,7 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
-  dt_imageio_webp_gui_data_t *gui = (dt_imageio_webp_gui_data_t *)self->gui_data;
+  dt_imageio_webp_gui_data_t *gui = self->gui_data;
   const int comp_type = dt_confgen_get_int("plugins/imageio/format/webp/comp_type", DT_DEFAULT);
   const int quality = dt_confgen_get_int("plugins/imageio/format/webp/quality", DT_DEFAULT);
   const int hint = dt_confgen_get_int("plugins/imageio/format/webp/hint", DT_DEFAULT);

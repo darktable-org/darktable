@@ -160,7 +160,7 @@ static void _search_reset_text_entry(GtkButton *button, dt_lib_filtering_rule_t 
 static void _search_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
                                 const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
-  _widgets_search_t *search = (_widgets_search_t *)g_malloc0(sizeof(_widgets_search_t));
+  _widgets_search_t *search = g_malloc0(sizeof(_widgets_search_t));
   search->rule = rule;
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -169,6 +169,7 @@ static void _search_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   else
     gtk_box_pack_start(GTK_BOX(rule->w_special_box), hbox, TRUE, TRUE, 0);
   search->text = gtk_search_entry_new();
+  gtk_drag_dest_unset(search->text);
   g_signal_connect(G_OBJECT(search->text), "search-changed", G_CALLBACK(_search_changed), search);
   g_signal_connect(G_OBJECT(search->text), "stop-search", G_CALLBACK(_search_reset_text_entry), rule);
   if(top)

@@ -32,7 +32,7 @@ For a complete introduction to Lua programming, see the book
 
 <P>
 <SMALL>
-Copyright &copy; 2020&ndash;2021 Lua.org, PUC-Rio.
+Copyright &copy; 2020&ndash;2023 Lua.org, PUC-Rio.
 Freely available under the terms of the
 <A HREF="http://www.lua.org/license.html">Lua license</A>.
 </SMALL>
@@ -85,6 +85,8 @@ Freely available under the terms of the
 <LI><A HREF="manual.html#3.4.9">3.4.9 &ndash; Table Constructors</A>
 <LI><A HREF="manual.html#3.4.10">3.4.10 &ndash; Function Calls</A>
 <LI><A HREF="manual.html#3.4.11">3.4.11 &ndash; Function Definitions</A>
+<LI><A HREF="manual.html#3.4.12">3.4.12 &ndash; Lists of expressions, multiple results, and adjustment<A>
+
 </UL>
 <LI><A HREF="manual.html#3.5">3.5 &ndash; Visibility Rules</A>
 </UL>
@@ -613,7 +615,7 @@ Freely available under the terms of the
 <A HREF="manual.html#pdf-LUA_HOOKLINE">LUA_HOOKLINE</A><BR>
 <A HREF="manual.html#pdf-LUA_HOOKRET">LUA_HOOKRET</A><BR>
 <A HREF="manual.html#pdf-LUA_HOOKTAILCALL">LUA_HOOKTAILCALL</A><BR>
-<A HREF="manual.html#pdf-LUAL_BUFFERSIZE">LUAL_BUFFERSIZE</A><BR>
+<A HREF="manual.html#pdf-LUA_LOADED_TABLE">LUA_LOADED_TABLE</A><BR>
 <A HREF="manual.html#pdf-LUA_MASKCALL">LUA_MASKCALL</A><BR>
 <A HREF="manual.html#pdf-LUA_MASKCOUNT">LUA_MASKCOUNT</A><BR>
 <A HREF="manual.html#pdf-LUA_MASKLINE">LUA_MASKLINE</A><BR>
@@ -641,6 +643,7 @@ Freely available under the terms of the
 <A HREF="manual.html#pdf-LUA_OPSHR">LUA_OPSHR</A><BR>
 <A HREF="manual.html#pdf-LUA_OPSUB">LUA_OPSUB</A><BR>
 <A HREF="manual.html#pdf-LUA_OPUNM">LUA_OPUNM</A><BR>
+<A HREF="manual.html#pdf-LUA_PRELOAD_TABLE">LUA_PRELOAD_TABLE</A><BR>
 <A HREF="manual.html#pdf-LUA_REFNIL">LUA_REFNIL</A><BR>
 <A HREF="manual.html#pdf-LUA_REGISTRYINDEX">LUA_REGISTRYINDEX</A><BR>
 <A HREF="manual.html#pdf-LUA_RIDX_GLOBALS">LUA_RIDX_GLOBALS</A><BR>
@@ -657,6 +660,7 @@ Freely available under the terms of the
 <A HREF="manual.html#pdf-LUA_TUSERDATA">LUA_TUSERDATA</A><BR>
 <A HREF="manual.html#pdf-LUA_USE_APICHECK">LUA_USE_APICHECK</A><BR>
 <A HREF="manual.html#pdf-LUA_YIELD">LUA_YIELD</A><BR>
+<A HREF="manual.html#pdf-LUAL_BUFFERSIZE">LUAL_BUFFERSIZE</A><BR>
 
 </TD>
 </TR>
@@ -664,10 +668,10 @@ Freely available under the terms of the
 
 <P CLASS="footer">
 Last update:
-Wed Mar  3 13:04:44 UTC 2021
+Sat Apr  1 17:57:05 UTC 2023
 </P>
 <!--
-Last change: revised for Lua 5.4.3
+Last change: revised for Lua 5.4.5
 -->
 
 </BODY>

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -80,8 +80,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_invert_params_v1_t;
 
     const dt_iop_invert_params_v1_t *o = (dt_iop_invert_params_v1_t *)old_params;
-    dt_iop_invert_params_v2_t *n =
-      (dt_iop_invert_params_v2_t *)malloc(sizeof(dt_iop_invert_params_v2_t));
+    dt_iop_invert_params_v2_t *n = malloc(sizeof(dt_iop_invert_params_v2_t));
 
     n->color[0] = o->color[0];
     n->color[1] = o->color[1];
@@ -102,7 +101,7 @@ int legacy_params(dt_iop_module_t *self,
       {
         const char *camera = self->dev->image_storage.camera_makermodel;
         dt_print(DT_DEBUG_ALWAYS,
-                 "[invert] `%s' color matrix not found for 4bayer image\n", camera);
+                 "[invert] `%s' color matrix not found for 4bayer image", camera);
         dt_control_log(_("`%s' color matrix not found for 4bayer image"), camera);
       }
       else
@@ -130,7 +129,7 @@ const char *deprecated_msg()
   return _("this module is deprecated. please use the negadoctor module instead.");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("invert film negatives"),
                                       _("corrective"),
@@ -159,8 +158,8 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 
 static void gui_update_from_coeffs(dt_iop_module_t *self)
 {
-  dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
-  dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
+  dt_iop_invert_gui_data_t *g = self->gui_data;
+  dt_iop_invert_params_t *p = self->params;
 
   GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
 
@@ -205,8 +204,8 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
 static void colorpicker_callback(GtkColorButton *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
-  dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
+  dt_iop_invert_gui_data_t *g = self->gui_data;
+  dt_iop_invert_params_t *p = self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
 
@@ -228,10 +227,10 @@ static void colorpicker_callback(GtkColorButton *widget, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_invert_data_t *const d = (dt_iop_invert_data_t *)piece->data;
+  const dt_iop_invert_data_t *const d = piece->data;
 
   const float *const m = piece->pipe->dsc.processed_maximum;
 
@@ -254,11 +253,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   if(filters == 9u)
   { // xtrans float mosaiced
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(film_rgb_f, in, out, roi_out, height, width, xtrans) \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(size_t j = 0; j < height; j++)
     {
       const size_t p = j * width;
@@ -309,11 +304,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const size_t x = roi_out->x;
     const size_t y = roi_out->y;
 
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(film_rgb_f, filters, in, out, roi_out, height, width, x, y) \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int j = 0; j < height; j++)
     {
       const size_t p = (size_t)j * width;
@@ -354,11 +345,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     const dt_aligned_pixel_t color = { d->color[0], d->color[1], d->color[2], 1.0f };
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(in, out, npixels, color)      \
-    schedule(simd:static)
-#endif
+    DT_OMP_FOR()
     for(size_t k = 0; k < npixels; k++)
     {
       dt_aligned_pixel_t inv;
@@ -371,11 +358,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_invert_data_t *d = (dt_iop_invert_data_t *)piece->data;
-  dt_iop_invert_global_data_t *gd = (dt_iop_invert_global_data_t *)self->global_data;
+  dt_iop_invert_data_t *d = piece->data;
+  dt_iop_invert_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const uint32_t filters = piece->pipe->dsc.filters;
@@ -438,7 +425,7 @@ void reload_defaults(dt_iop_module_t *self)
                                                    self->dev->image_storage.d65_color_matrix, NULL))
         {
           const char *camera = self->dev->image_storage.camera_makermodel;
-          dt_print(DT_DEBUG_ALWAYS, "[invert] `%s' color matrix not found for 4bayer image\n", camera);
+          dt_print(DT_DEBUG_ALWAYS, "[invert] `%s' color matrix not found for 4bayer image", camera);
           dt_control_log(_("`%s' color matrix not found for 4bayer image"), camera);
         }
       }
@@ -446,30 +433,30 @@ void reload_defaults(dt_iop_module_t *self)
   }
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // basic.cl, from programs.conf
-  module->data = malloc(sizeof(dt_iop_invert_global_data_t));
+  self->data = malloc(sizeof(dt_iop_invert_global_data_t));
 
-  dt_iop_invert_global_data_t *gd = module->data;
+  dt_iop_invert_global_data_t *gd = self->data;
   gd->kernel_invert_1f = dt_opencl_create_kernel(program, "invert_1f");
   gd->kernel_invert_4f = dt_opencl_create_kernel(program, "invert_4f");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_invert_global_data_t *gd = (dt_iop_invert_global_data_t *)module->data;
+  dt_iop_invert_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_invert_4f);
   dt_opencl_free_kernel(gd->kernel_invert_1f);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)params;
-  dt_iop_invert_data_t *d = (dt_iop_invert_data_t *)piece->data;
+  dt_iop_invert_data_t *d = piece->data;
 
   for(int k = 0; k < 4; k++) d->color[k] = p->color[k];
 
@@ -482,12 +469,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   if(self->hide_enable_button) piece->enabled = FALSE;
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = g_malloc0(sizeof(dt_iop_invert_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   g_free(piece->data);
   piece->data = NULL;
@@ -501,7 +488,7 @@ void gui_update(dt_iop_module_t *self)
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_invert_gui_data_t *g = IOP_GUI_ALLOC(invert);
-  dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
+  dt_iop_invert_params_t *p = self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   g->label = DTGTK_RESET_LABEL(dtgtk_reset_label_new("", self, &p->color, sizeof(float) * 4));

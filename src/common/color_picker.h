@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2020 darktable developers.
+    Copyright (C) 2016-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,6 +25,26 @@ struct dt_iop_buffer_dsc_t;
 struct dt_iop_roi_t;
 enum dt_iop_colorspace_type_t;
 
+typedef enum dt_pixelpipe_picker_source_t
+{
+  PIXELPIPE_PICKER_INPUT = 0,
+  PIXELPIPE_PICKER_OUTPUT = 1
+} dt_pixelpipe_picker_source_t;
+
+void dt_color_picker_backtransform_box(dt_develop_t *dev,
+                              const int num,
+                              const float *in,
+                              float *out);
+void dt_color_picker_transform_box(dt_develop_t *dev,
+                              const int num,
+                              const float *in,
+                              float *out,
+                              gboolean scale);
+gboolean dt_color_picker_box(dt_iop_module_t *module,
+                             const dt_iop_roi_t *roi,
+                             const dt_colorpicker_sample_t *const sample,
+                             dt_pixelpipe_picker_source_t picker_source,
+                             int *box);
 void dt_color_picker_helper(const struct dt_iop_buffer_dsc_t *dsc, const float *const pixel,
                             const struct dt_iop_roi_t *roi, const int *const box,
                             const gboolean denoise,

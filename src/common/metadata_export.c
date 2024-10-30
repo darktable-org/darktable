@@ -55,7 +55,7 @@ char *dt_lib_export_metadata_get_conf(void)
         {
           formula[0] = '\0';
           formula ++;
-          metadata_presets = dt_util_dstrcat(metadata_presets,"\1%s\1%s", nameformula, formula);
+          dt_util_str_cat(&metadata_presets,"\1%s\1%s", nameformula, formula);
         }
       }
       g_free(nameformula);
@@ -77,13 +77,13 @@ void dt_lib_export_metadata_set_conf(const char *metadata_presets)
   int i = 0;
   char *conf_keyword = NULL;
   char *nameformula = NULL;
-  if(list)
+  if(!g_list_is_empty(list))
   {
     char *flags_hexa = list->data;
     dt_conf_set_string(flags_keyword, flags_hexa);
     list = g_list_remove(list, flags_hexa);
     g_free(flags_hexa);
-    if(list)
+    if(!g_list_is_empty(list))
     {
       for(GList *tags = list; tags; tags = g_list_next(tags))
       {
@@ -120,4 +120,3 @@ void dt_lib_export_metadata_set_conf(const char *metadata_presets)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

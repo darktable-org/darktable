@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -72,7 +72,7 @@ const char *name()
   return _("highpass");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("isolate high frequencies in the image"),
                                       _("creative"),
@@ -98,11 +98,11 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_LAB;
 }
 
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
-  dt_iop_highpass_data_t *d = (dt_iop_highpass_data_t *)piece->data;
+  dt_iop_highpass_data_t *d = piece->data;
 
   const int rad = MAX_RADIUS * (fmin(100.0f, d->sharpness + 1) / 100.0f);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
@@ -122,11 +122,11 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_highpass_data_t *d = (dt_iop_highpass_data_t *)piece->data;
-  dt_iop_highpass_global_data_t *gd = (dt_iop_highpass_global_data_t *)self->global_data;
+  dt_iop_highpass_data_t *d = piece->data;
+  dt_iop_highpass_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem dev_tmp = NULL;
@@ -257,11 +257,7 @@ static void _blend(const float *const restrict in,
   /* reverse order */
   /* We can only do the final 3/4 in parallel here, because updating the first quarter in one thread */
   /* would clobber values still needed by other threads. */
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(contrast_scale, npixels, in, out)  \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = npixels - 1; k >= npixels/4; k--)
   {
     dt_aligned_pixel_t hipass = { 0.0f, 0.0f, 0.0f, 0.0f };  // a=b=0 to desaturate, alpha doesn't matter
@@ -272,7 +268,7 @@ static void _blend(const float *const restrict in,
   }
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -282,7 +278,7 @@ void process(struct dt_iop_module_t *self,
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
-  dt_iop_highpass_data_t *data = (dt_iop_highpass_data_t *)piece->data;
+  dt_iop_highpass_data_t *data = piece->data;
   const float *const in = (float *)ivoid;
   float *out = (float *)ovoid;
 
@@ -290,11 +286,8 @@ void process(struct dt_iop_module_t *self,
 /* since we use only the L channel, pack the values together instead of every fourth float */
 /* to reduce cache pressure and memory bandwidth during the blur operation */
   const size_t npixels = (size_t)roi_out->height * roi_out->width;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels,in,out)  \
-  schedule(simd:static)
-#endif
+
+  DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)npixels; k++)
     out[k] = 100.0f - LCLIP(in[4 * k]); // only L in Lab space
 
@@ -324,52 +317,51 @@ void process(struct dt_iop_module_t *self,
   }
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_highpass_params_t *p = (dt_iop_highpass_params_t *)p1;
-  dt_iop_highpass_data_t *d = (dt_iop_highpass_data_t *)piece->data;
+  dt_iop_highpass_data_t *d = piece->data;
 
   d->sharpness = p->sharpness;
   d->contrast = p->contrast;
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_highpass_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 4; // highpass.cl, from programs.conf
-  dt_iop_highpass_global_data_t *gd
-      = (dt_iop_highpass_global_data_t *)malloc(sizeof(dt_iop_highpass_global_data_t));
-  module->data = gd;
+  dt_iop_highpass_global_data_t *gd = malloc(sizeof(dt_iop_highpass_global_data_t));
+  self->data = gd;
   gd->kernel_highpass_invert = dt_opencl_create_kernel(program, "highpass_invert");
   gd->kernel_highpass_hblur = dt_opencl_create_kernel(program, "highpass_hblur");
   gd->kernel_highpass_vblur = dt_opencl_create_kernel(program, "highpass_vblur");
   gd->kernel_highpass_mix = dt_opencl_create_kernel(program, "highpass_mix");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_highpass_global_data_t *gd = (dt_iop_highpass_global_data_t *)module->data;
+  dt_iop_highpass_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_highpass_invert);
   dt_opencl_free_kernel(gd->kernel_highpass_hblur);
   dt_opencl_free_kernel(gd->kernel_highpass_vblur);
   dt_opencl_free_kernel(gd->kernel_highpass_mix);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_highpass_gui_data_t *g = IOP_GUI_ALLOC(highpass);
 

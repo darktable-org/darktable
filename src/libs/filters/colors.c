@@ -149,7 +149,7 @@ static gchar *_colors_pretty_print(const gchar *raw_txt)
         col = g_strdup(_("P"));
         break;
     }
-    txt = dt_util_dstrcat(txt, "%s%s%s%s", (i == 0) ? "" : " ", (incl) ? "" : "<s>", col, (incl) ? "" : "</s>");
+    dt_util_str_cat(&txt, "%s%s%s%s", (i == 0) ? "" : " ", (incl) ? "" : "<s>", col, (incl) ? "" : "</s>");
     g_free(col);
   }
   if(nb == 0)
@@ -196,13 +196,13 @@ static gboolean _colors_update(dt_lib_filtering_rule_t *rule)
   if(nb <= 1)
     _set_mask(colors->rule, mask | CL_AND_MASK, FALSE);
   dtgtk_button_set_paint(DTGTK_BUTTON(colors->operator),
-                         (mask & CL_AND_MASK) ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or, 0, NULL);
+                         (mask & CL_AND_MASK) ? dtgtk_cairo_paint_intersection : dtgtk_cairo_paint_union, 0, NULL);
   gtk_widget_set_sensitive(colors->operator, nb > 1);
   gtk_widget_queue_draw(colors->operator);
   if(colorstop)
   {
     dtgtk_button_set_paint(DTGTK_BUTTON(colorstop->operator),
-                           (mask & CL_AND_MASK) ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or, 0, NULL);
+                           (mask & CL_AND_MASK) ? dtgtk_cairo_paint_intersection : dtgtk_cairo_paint_union, 0, NULL);
     gtk_widget_set_sensitive(colorstop->operator, nb > 1);
     gtk_widget_queue_draw(colorstop->operator);
   }
@@ -273,7 +273,7 @@ const dt_action_def_t dt_action_def_colors_rule
 static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
                                 const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
-  _widgets_colors_t *colors = (_widgets_colors_t *)g_malloc0(sizeof(_widgets_colors_t));
+  _widgets_colors_t *colors = g_malloc0(sizeof(_widgets_colors_t));
   colors->rule = rule;
   if(top)
     rule->w_specific_top = colors;
@@ -300,12 +300,12 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
                      GINT_TO_POINTER(k));
     dt_action_define(DT_ACTION(self), N_("rules"), N_("color label"), colors->colors[k], &dt_action_def_colors_rule);
   }
-  colors->operator= dtgtk_button_new(dtgtk_cairo_paint_and, 0, NULL);
+  colors->operator= dtgtk_button_new(dtgtk_cairo_paint_intersection, 0, NULL);
   gtk_box_pack_start(GTK_BOX(hbox), colors->operator, FALSE, FALSE, 2);
   gtk_widget_set_tooltip_text(colors->operator,
                               _("filter by images color label"
-                                "\nand (∩): images having all selected color labels"
-                                "\nor (∪): images with at least one of the selected color labels"));
+                                "\nintersection: images having all selected color labels"
+                                "\nunion: images with at least one of the selected color labels"));
   g_signal_connect(G_OBJECT(colors->operator), "clicked", G_CALLBACK(_colors_operator_clicked), colors);
   g_signal_connect(G_OBJECT(colors->operator), "enter-notify-event", G_CALLBACK(_colors_enter_notify),
                    GINT_TO_POINTER(-1));

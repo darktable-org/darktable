@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@ typedef enum dt_dng_illuminant_t // from adobes dng_sdk
 	DT_LS_D75                  = 22,
 	DT_LS_D50                  = 23,
 	DT_LS_ISOStudioTungsten    = 24,
-	DT_LS_Other                = 255
+	DT_LS_Other                = 25 // in SDK this is 255, in dt this is the last defined
 } dt_dng_illuminant_t;
 
 // stores hard-coded crop factors for models for which we can't calculate the correct value
@@ -59,6 +59,14 @@ struct dt_model_cropfactor
   const char *model;
   float cropfactor;
 };
+
+typedef struct dt_dng_illuminant_data_t
+{
+    int temp;
+    char name[28];
+    float xy[2];
+    float CA[9];
+} dt_dng_illuminant_data_t;
 
 /** set the list of available tags from Exvi2 */
 void dt_exif_set_exiv2_taglist();
@@ -80,8 +88,8 @@ gboolean dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size);
 
 /** write exif to blob, return length in bytes. blob will be allocated by the function. sRGB should be true
  * if sRGB colorspace is used as output. */
-int dt_exif_read_blob(uint8_t **blob, const char *path, const dt_imgid_t imgid, const int sRGB, const int out_width,
-                      const int out_height, const int dng_mode);
+int dt_exif_read_blob(uint8_t **blob, const char *path, const dt_imgid_t imgid, const gboolean sRGB, const int out_width,
+                      const int out_height, const gboolean dng_mode);
 
 /** Reads exif tags that are not cached in the database */
 void dt_exif_img_check_additional_tags(dt_image_t *img, const char *filename);
@@ -90,7 +98,11 @@ void dt_exif_img_check_additional_tags(dt_image_t *img, const char *filename);
 int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int compressed);
 
 /** write xmp sidecar file. */
-gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename);
+/** if force_write is FALSE, the current contents of the sidecar file are compared against what
+    would be written, and the write is skipped if they are the same.  This preserves the sidecar
+    timestamp for the case where multiple computers share a drive and the crawler is used to
+    find new edits. */
+gboolean dt_exif_xmp_write(const dt_imgid_t imgid, const char *filename, const gboolean force_write);
 
 /** write xmp packet inside an image. */
 gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid, const char *filename, void *metadata,

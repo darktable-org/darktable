@@ -19,7 +19,9 @@
 #include <sqlite3.h>
 
 #include "common/debug.h"
+#include "common/introspection.h"
 #include "common/tags.h"
+#include "develop/imageop.h"
 #include "overlay.h"
 
 void dt_overlay_record(const dt_imgid_t imgid, const dt_imgid_t overlay_id)
@@ -131,10 +133,17 @@ gboolean dt_overlay_used_by(const dt_imgid_t imgid, const dt_imgid_t overlay_id)
   sqlite3_stmt *stmt;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT 1"
-                              " FROM overlay"
-                              " WHERE imgid = ?1"
-                              "   AND overlay_id = ?2",
+                              "WITH RECURSIVE cte_overlay (imgid, overlay_id) AS ("
+                              " SELECT imgid, overlay_id"
+                              " FROM overlay o"
+                              " WHERE o.imgid = ?1" // ID of the image we want to use as an overlay; we want to query its overlay tree
+                              " UNION"
+                              " SELECT o.imgid, o.overlay_id"
+                              " FROM overlay o"
+                              " JOIN cte_overlay c ON c.overlay_id = o.imgid" // the overlays of the image
+                              ")"
+                              " SELECT 1 FROM cte_overlay"
+                              " WHERE overlay_id = ?2", // ID of the image for which we want to set the other as overlay; it must not appear in the overlay tree
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, overlay_id);
@@ -148,4 +157,90 @@ gboolean dt_overlay_used_by(const dt_imgid_t imgid, const dt_imgid_t overlay_id)
   sqlite3_finalize(stmt);
 
   return result;
+}
+
+void dt_overlay_add_from_history(const dt_imgid_t imgid)
+{
+  // get all history for module overlay to add added overlay references
+  // after a copy/paste or restoring an history (undo / redo)
+
+  const dt_iop_module_so_t *overlay = dt_iop_get_module_so("overlay");
+  if(overlay == NULL) return;
+
+  // remove all overlays reference, the found ones will be added
+  // just below by looking at the whole history.
+  dt_overlays_remove(imgid);
+
+  sqlite3_stmt *stmt;
+
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+    "SELECT op_params"
+    " FROM main.history"
+    " WHERE imgid = ?1"
+    "   AND operation = 'overlay'",
+    -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const void *op_params = (void *)sqlite3_column_blob(stmt, 0);
+
+    // get imgid (overlay id) using introspection
+    const dt_imgid_t *overlay_id = overlay->get_p(op_params, "imgid");
+
+    if(dt_is_valid_imgid(overlay_id))
+    {
+      dt_overlay_record(imgid, *overlay_id);
+
+      dt_print(DT_DEBUG_PARAMS,
+               "[dt_overlay_add_from_history] "
+               "add overlay %d to imgid %d",
+               *overlay_id, imgid);
+    }
+  }
+  sqlite3_finalize(stmt);
+}
+
+void dt_overlay_remove_from_history(const dt_imgid_t imgid,
+                                    const int num)
+{
+  // get all history above history_end for module overlay to clean-up
+  // the overlay reference if any.
+
+  const dt_iop_module_so_t *overlay = dt_iop_get_module_so("overlay");
+  if(overlay == NULL) return;
+
+  sqlite3_stmt *stmt;
+
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+    "SELECT op_params"
+    " FROM main.history"
+    " WHERE imgid = ?1"
+    "   AND operation = 'overlay'"
+    "   AND num >= ?2", -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const void *op_params = (void *)sqlite3_column_blob(stmt, 0);
+
+    // get imgid (overlay id) using introspection
+    const dt_imgid_t *overlay_id = overlay->get_p(op_params, "imgid");
+
+    if(dt_is_valid_imgid(overlay_id))
+    {
+      dt_overlay_remove(imgid, *overlay_id);
+
+      dt_print(DT_DEBUG_PARAMS,
+               "[dt_overlay_remove_from_history] "
+               "remove overlay %d from imgid %d",
+               *overlay_id, imgid);
+    }
+  }
+  sqlite3_finalize(stmt);
 }

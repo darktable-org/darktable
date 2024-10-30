@@ -73,16 +73,16 @@ static gboolean _import_session_initialize_filmroll(dt_import_session_t *self, c
   /* recursively create directories, abort if failed */
   if(g_mkdir_with_parents(path, 0755) == -1)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[import_session] failed to create session path %s.\n", path);
+    dt_print(DT_DEBUG_ALWAYS, "[import_session] failed to create session path %s", path);
     _import_session_cleanup_filmroll(self); // superfluous?
     return TRUE;
   }
   /* open one or initialize a filmroll for the session */
   self->film = (dt_film_t *)g_malloc0(sizeof(dt_film_t));
-  const int32_t film_id = dt_film_new(self->film, path);
-  if(film_id == 0)
+  const dt_filmid_t film_id = dt_film_new(self->film, path);
+  if(!dt_is_valid_filmid(film_id))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[import_session] Failed to initialize film roll.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[import_session] Failed to initialize film roll");
     _import_session_cleanup_filmroll(self);
     return TRUE;
   }
@@ -119,7 +119,7 @@ static gchar *_import_session_path_pattern()
 
   if(!sub || !base)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[import_session] No base or subpath configured...\n");
+    dt_print(DT_DEBUG_ALWAYS, "[import_session] No base or subpath configured...");
     goto bail_out;
   }
 
@@ -143,7 +143,7 @@ static char *_import_session_filename_pattern()
   gchar *name = dt_conf_get_string("session/filename_pattern");
   if(!name)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[import_session] No name configured...\n");
+    dt_print(DT_DEBUG_ALWAYS, "[import_session] No name configured...");
     return NULL;
   }
 
@@ -177,11 +177,6 @@ void dt_import_session_destroy(struct dt_import_session_t *self)
   g_free(self);
 }
 
-gboolean dt_import_session_ready(struct dt_import_session_t *self)
-{
-  return (self->film && self->film->id);
-}
-
 void dt_import_session_ref(struct dt_import_session_t *self)
 {
   self->ref++;
@@ -197,7 +192,7 @@ void dt_import_session_import(struct dt_import_session_t *self)
   const dt_imgid_t imgid = dt_image_import(self->film->id, self->current_filename, TRUE, TRUE);
   if(dt_is_valid_imgid(imgid))
   {
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, imgid);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, imgid);
     dt_control_queue_redraw();
   }
 }
@@ -209,9 +204,6 @@ void dt_import_session_set_name(struct dt_import_session_t *self, const char *na
   g_free((void *)self->vp->jobcode);
 
   self->vp->jobcode = g_strdup(name);
-
-  /* setup new filmroll if path has changed */
-  dt_import_session_path(self, FALSE);
 }
 
 
@@ -274,7 +266,7 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
   char *pattern = _import_session_filename_pattern();
   if(pattern == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[import_session] Failed to get session filaname pattern.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[import_session] Failed to get session filaname pattern");
     return NULL;
   }
 
@@ -290,7 +282,7 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
   char *previous_fname = fname;
   if(g_file_test(fname, G_FILE_TEST_EXISTS) == TRUE)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[import_session] File %s exists.\n", fname);
+    dt_print(DT_DEBUG_ALWAYS, "[import_session] File %s exists", fname);
     do
     {
       /* file exists, yield a new filename */
@@ -298,14 +290,14 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
       result_fname = _import_session_filename_from_pattern(self, pattern);
       fname = g_build_path(G_DIR_SEPARATOR_S, path, result_fname, (char *)NULL);
 
-      dt_print(DT_DEBUG_ALWAYS, "[import_session] Testing %s.\n", fname);
+      dt_print(DT_DEBUG_ALWAYS, "[import_session] Testing %s", fname);
       /* check if same filename was yielded as before */
       if(strcmp(previous_fname, fname) == 0)
       {
         g_free(previous_fname);
         g_free(fname);
         dt_control_log(_(
-            "couldn't expand to a unique filename for session, please check your import session settings."));
+            "couldn't expand to a unique filename for session, please check your import session settings"));
         return NULL;
       }
 
@@ -319,7 +311,7 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
   g_free(pattern);
 
   self->current_filename = result_fname;
-  dt_print(DT_DEBUG_ALWAYS, "[import_session] Using filename %s.\n", self->current_filename);
+  dt_print(DT_DEBUG_ALWAYS, "[import_session] Using filename %s.", self->current_filename);
 
   return self->current_filename;
 }
@@ -341,7 +333,7 @@ static const char *_import_session_path(struct dt_import_session_t *self, gboole
   gchar *pattern = _import_session_path_pattern();
   if(pattern == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[import_session] Failed to get session path pattern.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[import_session] Failed to get session path pattern.");
     return NULL;
   }
 
@@ -397,7 +389,7 @@ const char *dt_import_session_path(struct dt_import_session_t *self, gboolean us
   const char *path = _import_session_path(self, use_current_path);
   if(path == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[import_session] Failed to get session path.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[import_session] Failed to get session path");
     dt_control_log(_("requested session path not available. "
                      "device not mounted?"));
   }

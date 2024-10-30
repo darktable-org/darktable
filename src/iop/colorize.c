@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -92,7 +92,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_LAB;
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("overlay a solid color on the image"),
                                       _("creative"),
@@ -128,8 +128,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorize_params_v1_t;
 
     const dt_iop_colorize_params_v1_t *o = old_params;
-    dt_iop_colorize_params_v2_t *n =
-      (dt_iop_colorize_params_v2_t *)malloc(sizeof(dt_iop_colorize_params_v2_t));
+    dt_iop_colorize_params_v2_t *n = malloc(sizeof(dt_iop_colorize_params_v2_t));
 
     n->hue = o->hue;
     n->saturation = o->saturation;
@@ -145,7 +144,7 @@ int legacy_params(dt_iop_module_t *self,
   return 1;
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -158,7 +157,7 @@ void process(struct dt_iop_module_t *self,
 
   const float *const in = (float*)ivoid;
   float *const out = (float*)ovoid;
-  dt_iop_colorize_data_t *d = (dt_iop_colorize_data_t *)piece->data;
+  dt_iop_colorize_data_t *d = piece->data;
 
   const float L = d->L;
   const float a = d->a;
@@ -168,11 +167,7 @@ void process(struct dt_iop_module_t *self,
   const size_t npixels = (size_t)roi_out->height * roi_out->width;
   const dt_aligned_pixel_t color = { 0.0f, a, b, 0.0f };
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(a, b, in, out, Lmlmix, mix, npixels, color)  \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   {
     const float mixed_L = Lmlmix + in[4*k + 0] * mix;
@@ -182,11 +177,11 @@ void process(struct dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorize_data_t *data = (dt_iop_colorize_data_t *)piece->data;
-  dt_iop_colorize_global_data_t *gd = (dt_iop_colorize_global_data_t *)self->global_data;
+  dt_iop_colorize_data_t *data = piece->data;
+  dt_iop_colorize_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -202,21 +197,20 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 }
 #endif
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 8; // extended.cl, from programs.conf
-  dt_iop_colorize_global_data_t *gd
-      = (dt_iop_colorize_global_data_t *)malloc(sizeof(dt_iop_colorize_global_data_t));
-  module->data = gd;
+  dt_iop_colorize_global_data_t *gd = malloc(sizeof(dt_iop_colorize_global_data_t));
+  self->data = gd;
   gd->kernel_colorize = dt_opencl_create_kernel(program, "colorize");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_colorize_global_data_t *gd = (dt_iop_colorize_global_data_t *)module->data;
+  dt_iop_colorize_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_colorize);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 static inline void update_saturation_slider_end_color(GtkWidget *slider, float hue)
@@ -228,8 +222,8 @@ static inline void update_saturation_slider_end_color(GtkWidget *slider, float h
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)self->params;
-  dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
+  dt_iop_colorize_params_t *p = self->params;
+  dt_iop_colorize_gui_data_t *g = self->gui_data;
 
   if(w == g->hue)
   {
@@ -241,8 +235,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
-  dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)self->params;
+  dt_iop_colorize_gui_data_t *g = self->gui_data;
+  dt_iop_colorize_params_t *p = self->params;
 
   // convert picker RGB 2 HSL
   float H = .0f, S = .0f, L = .0f;
@@ -270,16 +264,16 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void gui_reset(struct dt_iop_module_t *self)
+void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_color_picker_reset(self, TRUE);
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)p1;
-  dt_iop_colorize_data_t *d = (dt_iop_colorize_data_t *)piece->data;
+  dt_iop_colorize_data_t *d = piece->data;
 
   /* create Lab */
   dt_aligned_pixel_t rgb = { 0 };
@@ -308,35 +302,35 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->mix = p->source_lightness_mix / 100.0f;
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_colorize_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
-  dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)self->params;
+  dt_iop_colorize_gui_data_t *g = self->gui_data;
+  dt_iop_colorize_params_t *p = self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
 
   update_saturation_slider_end_color(g->saturation, p->hue);
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  dt_iop_default_init(module);
+  dt_iop_default_init(self);
 
-  ((dt_iop_colorize_params_t *)module->default_params)->version = module->version();
+  ((dt_iop_colorize_params_t *)self->default_params)->version = self->version();
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_colorize_gui_data_t *g = IOP_GUI_ALLOC(colorize);
 

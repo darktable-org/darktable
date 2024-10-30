@@ -49,7 +49,7 @@ typedef struct dt_iop_enlargecanvas_params_t
   float percent_right;  // $MIN: 0 $MAX: 100.0 $DEFAULT: 0 $DESCRIPTION: "percent right"
   float percent_top;    // $MIN: 0 $MAX: 100.0 $DEFAULT: 0 $DESCRIPTION: "percent top"
   float percent_bottom; // $MIN: 0 $MAX: 100.0 $DEFAULT: 0 $DESCRIPTION: "percent bottom"
-  dt_iop_canvas_color_t color;
+  dt_iop_canvas_color_t color;  // $DESCRIPTION: "color"
 } dt_iop_enlargecanvas_params_t;
 
 typedef struct dt_iop_enlargecanvas_data_t
@@ -72,14 +72,14 @@ typedef struct dt_iop_enlargecanvas_gui_data_t
 
 const char *name()
 {
-  return _("canvas enlargement");
+  return _("enlarge canvas");
 }
 
-const char** description(struct dt_iop_module_t *self)
+const char** description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
     (self,
-     _("enlarge canvas"),
+     _("add empty space to the left, top, right or bottom"),
      _("corrective and creative"),
      _("linear, RGB, scene-referred"),
      _("linear, RGB"),
@@ -88,7 +88,7 @@ const char** description(struct dt_iop_module_t *self)
 
 const char *aliases()
 {
-  return _("composition");
+  return _("composition|expand|extend");
 }
 
 int flags()
@@ -117,12 +117,12 @@ void commit_params(dt_iop_module_t *self,
   memcpy(piece->data, p1, self->params_size);
 }
 
-void modify_roi_out(struct dt_iop_module_t *self,
-                    struct dt_dev_pixelpipe_iop_t *piece,
+void modify_roi_out(dt_iop_module_t *self,
+                    dt_dev_pixelpipe_iop_t *piece,
                     dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *roi_in)
 {
-  dt_iop_enlargecanvas_data_t *d = (dt_iop_enlargecanvas_data_t *)piece->data;
+  dt_iop_enlargecanvas_data_t *d = piece->data;
   *roi_out = *roi_in;
 
   const int border_size_l = roi_in->width * d->percent_left / 100.f;
@@ -151,12 +151,12 @@ void modify_roi_out(struct dt_iop_module_t *self,
   roi_out->height = CLAMP(roi_out->height, 5, roi_in->height * 3);
 }
 
-void modify_roi_in(struct dt_iop_module_t *self,
-                   struct dt_dev_pixelpipe_iop_t *piece,
+void modify_roi_in(dt_iop_module_t *self,
+                   dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *roi_out,
                    dt_iop_roi_t *roi_in)
 {
-  dt_iop_enlargecanvas_data_t *d = (dt_iop_enlargecanvas_data_t *)piece->data;
+  dt_iop_enlargecanvas_data_t *d = piece->data;
   *roi_in = *roi_out;
 
   const float bw = (piece->buf_out.width - piece->buf_in.width) * roi_out->scale;
@@ -200,7 +200,7 @@ int distort_transform(dt_iop_module_t *self,
                       float *points,
                       const size_t points_count)
 {
-  const dt_iop_enlargecanvas_params_t *d = (dt_iop_enlargecanvas_params_t *)piece->data;
+  const dt_iop_enlargecanvas_params_t *d = piece->data;
 
   const int bw = (piece->buf_out.width - piece->buf_in.width);
   const int bh = (piece->buf_out.height - piece->buf_in.height);
@@ -219,15 +219,13 @@ int distort_transform(dt_iop_module_t *self,
   if(border_size_l > 0 || border_size_t > 0)
   {
     // apply the coordinate adjustment to each provided point
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(points, points_count, border_size_l, border_size_t)  \
-  schedule(static) if(points_count > 100) aligned(points:64)
-#endif
+    float *const pts = DT_IS_ALIGNED(points);
+
+    DT_OMP_FOR(if(points_count > 100))
     for(size_t i = 0; i < points_count * 2; i += 2)
     {
-      points[i] += border_size_l;
-      points[i + 1] += border_size_t;
+      pts[i] += border_size_l;
+      pts[i + 1] += border_size_t;
     }
   }
 
@@ -239,7 +237,7 @@ int distort_backtransform(dt_iop_module_t *self,
                           float *points,
                           size_t points_count)
 {
-  const dt_iop_enlargecanvas_params_t *d = (dt_iop_enlargecanvas_params_t *)piece->data;
+  const dt_iop_enlargecanvas_params_t *d = piece->data;
 
   const int bw = (piece->buf_out.width - piece->buf_in.width);
   const int bh = (piece->buf_out.height - piece->buf_in.height);
@@ -257,15 +255,13 @@ int distort_backtransform(dt_iop_module_t *self,
 
   if (border_size_l > 0 || border_size_t > 0)
   {
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(points, points_count, border_size_l, border_size_t)  \
-  schedule(static) if(points_count > 100) aligned(points:64)
-#endif
+    float *const pts = DT_IS_ALIGNED(points);
+
+    DT_OMP_FOR(if(points_count > 100))
     for(size_t i = 0; i < points_count * 2; i += 2)
     {
-      points[i] -= border_size_l;
-      points[i + 1] -= border_size_t;
+      pts[i] -= border_size_l;
+      pts[i + 1] -= border_size_t;
     }
   }
 
@@ -294,14 +290,14 @@ static void _compute_pos(const dt_iop_enlargecanvas_data_t *const d,
   *pos_h = CLAMP(*pos_h, 0.0f, 1.0f);
 }
 
-void distort_mask(struct dt_iop_module_t *self,
-                  struct dt_dev_pixelpipe_iop_t *piece,
+void distort_mask(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
                   const float *const in,
                   float *const out,
                   const dt_iop_roi_t *const roi_in,
                   const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_enlargecanvas_data_t *const d = (dt_iop_enlargecanvas_data_t *)piece->data;
+  const dt_iop_enlargecanvas_data_t *const d = piece->data;
 
   float pos_v = .5f;
   float pos_h = .5f;
@@ -323,11 +319,7 @@ void distort_mask(struct dt_iop_module_t *self,
   dt_iop_image_fill(out, 0.0f, roi_out->width, roi_out->height, 1);
 
   // blit image inside border and fill the output with previous processed out
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(roi_in, roi_out, border_in_x, border_in_y, in, out)   \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(int j = 0; j < roi_in->height; j++)
   {
     float *outb = out + (size_t)(j + border_in_y) * roi_out->width + border_in_x;
@@ -336,14 +328,14 @@ void distort_mask(struct dt_iop_module_t *self,
   }
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_enlargecanvas_data_t *const d = (dt_iop_enlargecanvas_data_t *)piece->data;
+  const dt_iop_enlargecanvas_data_t *const d = piece->data;
 
   float pos_v = .5f;
   float pos_h = .5f;
@@ -381,7 +373,7 @@ void process(struct dt_iop_module_t *self,
       case DT_IOP_CANVAS_COLOR_BLUE:
         bcolor[0] = 0.f;
         bcolor[1] = 0.f;
-        bcolor[2] = 2.f;
+        bcolor[2] = 1.f;
         break;
       case DT_IOP_CANVAS_COLOR_COUNT:
         // should never happen
@@ -396,49 +388,31 @@ void process(struct dt_iop_module_t *self,
   dt_iop_copy_image_with_border((float*)ovoid, (const float*)ivoid, &binfo);
 }
 
-void cleanup(dt_iop_module_t *module)
+void cleanup(dt_iop_module_t *self)
 {
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
+  free(self->params);
+  self->params = NULL;
+  free(self->default_params);
+  self->default_params = NULL;
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 /** gui setup and update, these are needed. */
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_enlargecanvas_gui_data_t *g = (dt_iop_enlargecanvas_gui_data_t *)self->gui_data;
-  dt_iop_enlargecanvas_params_t *p = (dt_iop_enlargecanvas_params_t *)self->params;
+  dt_iop_enlargecanvas_gui_data_t *g = self->gui_data;
+  dt_iop_enlargecanvas_params_t *p = self->params;
 
   dt_bauhaus_slider_set(g->percent_left, p->percent_left);
   dt_bauhaus_slider_set(g->percent_right, p->percent_right);
   dt_bauhaus_slider_set(g->percent_top, p->percent_top);
   dt_bauhaus_slider_set(g->percent_bottom, p->percent_bottom);
   dt_bauhaus_combobox_set(g->color, p->color);
-}
-
-static void _color_changed(GtkWidget *combo, dt_iop_module_t *self)
-{
-  dt_iop_enlargecanvas_gui_data_t *g = (dt_iop_enlargecanvas_gui_data_t *)self->gui_data;
-  dt_iop_enlargecanvas_params_t *p = (dt_iop_enlargecanvas_params_t *)self->params;
-
-  const int which = dt_bauhaus_combobox_get(combo);
-
-  if(which < DT_IOP_CANVAS_COLOR_COUNT)
-  {
-    p->color = which;
-    ++darktable.gui->reset;
-    dt_bauhaus_slider_set(g->color, p->color);
-    --darktable.gui->reset;
-  }
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -449,25 +423,30 @@ void gui_init(dt_iop_module_t *self)
 
   g->percent_left = dt_bauhaus_slider_from_params(self, "percent_left");
   dt_bauhaus_slider_set_format(g->percent_left, "%");
+  gtk_widget_set_tooltip_text(g->percent_left,
+                              _("how much to enlarge the canvas to the left "
+                              "as a percentage of the original image width"));
 
   g->percent_right = dt_bauhaus_slider_from_params(self, "percent_right");
   dt_bauhaus_slider_set_format(g->percent_right, "%");
+  gtk_widget_set_tooltip_text(g->percent_right,
+                              _("how much to enlarge the canvas to the right "
+                              "as a percentage of the original image width"));
 
   g->percent_top = dt_bauhaus_slider_from_params(self, "percent_top");
   dt_bauhaus_slider_set_format(g->percent_top, "%");
+  gtk_widget_set_tooltip_text(g->percent_top,
+                              _("how much to enlarge the canvas to the top "
+                              "as a percentage of the original image height"));
 
   g->percent_bottom = dt_bauhaus_slider_from_params(self, "percent_bottom");
   dt_bauhaus_slider_set_format(g->percent_bottom, "%");
+  gtk_widget_set_tooltip_text(g->percent_bottom,
+                              _("how much to enlarge the canvas to the bottom "
+                              "as a percentage of the original image height"));
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->color, self, NULL, N_("color"),
-                               _("select the color of the enlarged canvas"),
-                               0, _color_changed, self,
-                               N_("green"),
-                               N_("red"),
-                               N_("blue"),
-                               N_("black"),
-                               N_("white"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->color, TRUE, TRUE, 0);
+  g->color = dt_bauhaus_combobox_from_params(self, "color");
+  gtk_widget_set_tooltip_text(g->color, _("select the color of the enlarged canvas"));
 }
 
 void gui_cleanup(dt_iop_module_t *self)

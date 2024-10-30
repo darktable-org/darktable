@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022-2023 darktable developers.
+    Copyright (C) 2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -214,17 +214,16 @@ typedef struct _filter_t
 
 // filters definitions
 #include "libs/filters/aperture.c"
-#include "libs/filters/camera.c"
 #include "libs/filters/colors.c"
 #include "libs/filters/date.c"
 #include "libs/filters/exposure.c"
+#include "libs/filters/exposure_bias.c"
 #include "libs/filters/filename.c"
 #include "libs/filters/focal.c"
-#include "libs/filters/grouping.c"
 #include "libs/filters/history.c"
 #include "libs/filters/iso.c"
-#include "libs/filters/lens.c"
 #include "libs/filters/local_copy.c"
+#include "libs/filters/misc.c"
 #include "libs/filters/module_order.c"
 #include "libs/filters/rating.c"
 #include "libs/filters/rating_range.c"
@@ -246,13 +245,18 @@ static _filter_t filters[]
         { DT_COLLECTION_PROP_FOCAL_LENGTH, _focal_widget_init, _focal_update },
         { DT_COLLECTION_PROP_ISO, _iso_widget_init, _iso_update },
         { DT_COLLECTION_PROP_EXPOSURE, _exposure_widget_init, _exposure_update },
-        { DT_COLLECTION_PROP_GROUPING, _grouping_widget_init, _grouping_update },
+        { DT_COLLECTION_PROP_EXPOSURE_BIAS, _exposure_bias_widget_init, _exposure_bias_update },
+        { DT_COLLECTION_PROP_GROUP_ID, _misc_widget_init, _misc_update },
         { DT_COLLECTION_PROP_LOCAL_COPY, _local_copy_widget_init, _local_copy_update },
         { DT_COLLECTION_PROP_HISTORY, _history_widget_init, _history_update },
         { DT_COLLECTION_PROP_ORDER, _module_order_widget_init, _module_order_update },
         { DT_COLLECTION_PROP_RATING, _rating_widget_init, _rating_update },
-        { DT_COLLECTION_PROP_LENS, _lens_widget_init, _lens_update },
-        { DT_COLLECTION_PROP_CAMERA, _camera_widget_init, _camera_update } };
+        { DT_COLLECTION_PROP_LENS, _misc_widget_init, _misc_update },
+        { DT_COLLECTION_PROP_CAMERA, _misc_widget_init, _misc_update },
+        { DT_COLLECTION_PROP_WHITEBALANCE, _misc_widget_init, _misc_update },
+        { DT_COLLECTION_PROP_FLASH, _misc_widget_init, _misc_update },
+        { DT_COLLECTION_PROP_EXPOSURE_PROGRAM, _misc_widget_init, _misc_update },
+        { DT_COLLECTION_PROP_METERING_MODE, _misc_widget_init, _misc_update } };
 
 static _filter_t *_filters_get(const dt_collection_properties_t prop)
 {
@@ -267,6 +271,13 @@ static _filter_t *_filters_get(const dt_collection_properties_t prop)
 const char *name(dt_lib_module_t *self)
 {
   return _("collection filters");
+}
+
+const char *description(dt_lib_module_t *self)
+{
+  return _("refine the set of images to display or edit.\n"
+           "filters can be pinned to the top toolbar, where\n"
+           "they will also be visible in the darkroom");
 }
 
 void init_presets(dt_lib_module_t *self)
@@ -813,7 +824,7 @@ static void _event_rule_change_type(GtkWidget *widget, dt_lib_module_t *self)
 static void _event_append_rule(GtkWidget *widget, dt_lib_module_t *self)
 {
   // add new rule
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
   const int mode = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "collect_id"));
   const int top = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "topbar"));
   char confname[200] = { 0 };
@@ -919,12 +930,17 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_LENS);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_APERTURE);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_EXPOSURE);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_EXPOSURE_BIAS);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_FOCAL_LENGTH);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ISO);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ASPECT_RATIO);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_WHITEBALANCE);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_FLASH);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_EXPOSURE_PROGRAM);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_METERING_MODE);
 
   _popup_add_item(spop, _("darktable"), 0, TRUE, NULL, NULL, self, 0.0);
-  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_GROUPING);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_GROUP_ID);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_LOCAL_COPY);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_HISTORY);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_MODULE);
@@ -986,12 +1002,17 @@ static void _populate_rules_combo(GtkWidget *w)
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LENS);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_APERTURE);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE_BIAS);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOCAL_LENGTH);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ISO);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ASPECT_RATIO);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_WHITEBALANCE);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FLASH);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE_PROGRAM);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METERING_MODE);
 
   dt_bauhaus_combobox_add_section(w, _("darktable"));
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GROUPING);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GROUP_ID);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LOCAL_COPY);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_HISTORY);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_MODULE);
@@ -1046,7 +1067,7 @@ static gboolean _topbar_reset_press(GtkWidget *w,
   //reset the filters
   _topbar_reset(self);
   //close the popup
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
   gtk_widget_destroy(d->topbar_popup);
 
   return FALSE;
@@ -1064,7 +1085,7 @@ static gboolean _topbar_label_press(GtkWidget *w,
 
 static void _topbar_update(dt_lib_module_t *self)
 {
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
 
   // first, we cleanup the filter box
   GtkWidget *fbox = dt_view_filter_get_filters_box(darktable.view_manager);
@@ -1359,7 +1380,7 @@ static void _widget_special_destroy(dt_lib_filtering_rule_t *rule)
 
 static void _filters_gui_update(dt_lib_module_t *self)
 {
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
 
   ++darktable.gui->reset;
   d->nb_rules = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_rules"), 0, DT_COLLECTION_MAX_RULES);
@@ -1449,18 +1470,20 @@ static void _dt_collection_updated(gpointer instance, dt_collection_change_t que
                                    gpointer self)
 {
   dt_lib_module_t *dm = (dt_lib_module_t *)self;
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)dm->data;
+  dt_lib_filtering_t *d = dm->data;
 
   gchar *where_ext = dt_collection_get_extended_where(darktable.collection, 99999);
   if(g_strcmp0(where_ext, d->last_where_ext))
   {
     g_free(d->last_where_ext);
-    d->last_where_ext = g_strdup(where_ext);
+    d->last_where_ext = where_ext;
     for(int i = 0; i <= d->nb_rules; i++)
     {
       _widget_update(&d->rule[i]);
     }
   }
+  else
+    g_free(where_ext);
 }
 
 static void _history_pretty_print(const char *buf, char *out, size_t outsize)
@@ -1558,9 +1581,8 @@ static void _event_history_apply(GtkWidget *widget, dt_lib_module_t *self)
   g_free(line);
 }
 
-static void _event_history_show(GtkWidget *widget, gpointer user_data)
+static void _event_history_show(GtkWidget *widget, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   // we show a popup with all the history entries
   GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
   gtk_widget_set_size_request(GTK_WIDGET(pop), 200, -1);
@@ -1655,15 +1677,20 @@ static void _topbar_populate_rules_combo(GtkWidget *w, dt_lib_filtering_t *d)
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LENS);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_APERTURE);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE_BIAS);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOCAL_LENGTH);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ISO);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ASPECT_RATIO);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_WHITEBALANCE);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FLASH);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE_PROGRAM);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METERING_MODE);
   // if we have not added any entry, remove the section
   if(nb == dt_bauhaus_combobox_length(w)) dt_bauhaus_combobox_remove_at(w, nb - 1);
 
   dt_bauhaus_combobox_add_section(w, _("darktable"));
   nb = dt_bauhaus_combobox_length(w);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GROUPING);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GROUP_ID);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LOCAL_COPY);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_HISTORY);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_MODULE);
@@ -1678,7 +1705,7 @@ static gboolean _topbar_rule_remove(GtkWidget *widget, GdkEventButton *event, dt
 {
   dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
   if(rule->manual_widget_set) return TRUE;
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
 
   // unpin the rule
   rule->topbar = FALSE;
@@ -1714,7 +1741,7 @@ static GtkWidget *_topbar_menu_new_rule(dt_lib_filtering_rule_t *rule, dt_lib_mo
 
 static void _topbar_rule_add(GtkWidget *widget, dt_lib_module_t *self)
 {
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
 
   const int prop = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(widget));
   if(prop < 0) return;
@@ -1745,7 +1772,7 @@ static void _topbar_rule_add(GtkWidget *widget, dt_lib_module_t *self)
 
 static void _topbar_show_pref_menu(dt_lib_module_t *self, GtkWidget *bt)
 {
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
 
   // initialize the popover
   d->topbar_popup = gtk_popover_new(bt);
@@ -1889,7 +1916,7 @@ static void _sort_combobox_changed(GtkWidget *widget, gpointer user_data)
 // this proxy function is primary called when the sort part of the filter bar is changed
 static void _proxy_reset_filter(dt_lib_module_t *self, gboolean smart_filter)
 {
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
 
   // reset each rule. we only throw the signal for the last one
   for(int i = 0; i < d->nb_rules; i++)
@@ -1936,7 +1963,7 @@ static gboolean _sort_close(GtkWidget *widget, GdkEventButton *event, dt_lib_mod
 static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sortid, const int sortorder,
                            const int num, dt_lib_module_t *self)
 {
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
   d->manual_sort_set++;
   sort->num = num;
   sort->sortid = sortid;
@@ -2000,7 +2027,7 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
 
 static void _sort_gui_update(dt_lib_module_t *self)
 {
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
 
   ++darktable.gui->reset;
   d->nb_sort = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_sort"), 0, DT_COLLECTION_MAX_RULES);
@@ -2057,7 +2084,7 @@ static void _sort_gui_update(dt_lib_module_t *self)
 static void _sort_append_sort(GtkWidget *widget, dt_lib_module_t *self)
 {
   // add new rule
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
   const int sortid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "collect_id"));
   char confname[200] = { 0 };
 
@@ -2082,9 +2109,8 @@ static void _sort_append_sort(GtkWidget *widget, dt_lib_module_t *self)
   }
 }
 
-static void _sort_show_add_popup(GtkWidget *widget, gpointer user_data)
+static void _sort_show_add_popup(GtkWidget *widget, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   // we show a popup with all the possible sort
   GtkMenuShell *spop = GTK_MENU_SHELL(gtk_menu_new());
   gtk_widget_set_size_request(GTK_WIDGET(spop), 200, -1);
@@ -2155,9 +2181,8 @@ static void _dt_images_order_change(gpointer instance, gpointer order, gpointer 
   }
 }
 
-static void _sort_history_show(GtkWidget *widget, gpointer user_data)
+static void _sort_history_show(GtkWidget *widget, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   // we show a popup with all the history entries
   GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
   gtk_widget_set_size_request(GTK_WIDGET(pop), 200, -1);
@@ -2192,7 +2217,7 @@ static void _sort_history_show(GtkWidget *widget, gpointer user_data)
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)calloc(1, sizeof(dt_lib_filtering_t));
+  dt_lib_filtering_t *d = calloc(1, sizeof(dt_lib_filtering_t));
 
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -2271,22 +2296,20 @@ void gui_init(dt_lib_module_t *self)
   // otherwise, the filter toolbar module will do it in it's gui_init()
   if(darktable.view_manager->proxy.filter.module) _filtering_gui_update(self);
 
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
-                                  G_CALLBACK(_dt_collection_updated), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE,
-                                  G_CALLBACK(_dt_images_order_change), self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _dt_collection_updated, self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_IMAGES_ORDER_CHANGE, _dt_images_order_change, self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
 
   for(int i = 0; i < DT_COLLECTION_MAX_RULES; i++)
   {
     d->rule[i].cleaning = TRUE;
   }
 
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_collection_updated), self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_dt_collection_updated, self);
   darktable.view_manager->proxy.module_filtering.module = NULL;
   free(d->params);
 
@@ -2298,7 +2321,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
 void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
 {
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  dt_lib_filtering_t *d = self->data;
   d->leaving = FALSE;
   // if we enter lighttable view, then we need to populate the filter topbar
   // we do it here because we are sure that both libs are loaded at this point
@@ -2313,7 +2336,7 @@ void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
   if(!new_view)
   {
     // we are leaving dt, so we want to avoid pb with focus and such
-    dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+    dt_lib_filtering_t *d = self->data;
     d->leaving = TRUE;
   }
 }

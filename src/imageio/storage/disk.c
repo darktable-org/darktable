@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -105,7 +105,7 @@ void *legacy_params(dt_imageio_module_storage_t *self,
     } dt_imageio_disk_v1_t;
 
     const dt_imageio_disk_v1_t *o = (dt_imageio_disk_v1_t *)old_params;
-    dt_imageio_disk_v3_t *n = (dt_imageio_disk_v3_t *)malloc(sizeof(dt_imageio_disk_v3_t));
+    dt_imageio_disk_v3_t *n = malloc(sizeof(dt_imageio_disk_v3_t));
 
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     n->onsave_action = (o->overwrite)
@@ -126,7 +126,7 @@ void *legacy_params(dt_imageio_module_storage_t *self,
     } dt_imageio_disk_v2_t;
 
     const dt_imageio_disk_v2_t *o = (dt_imageio_disk_v2_t *)old_params;
-    dt_imageio_disk_v3_t *n = (dt_imageio_disk_v3_t *)malloc(sizeof(dt_imageio_disk_v3_t));
+    dt_imageio_disk_v3_t *n = malloc(sizeof(dt_imageio_disk_v3_t));
 
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     n->onsave_action = (o->overwrite)
@@ -159,8 +159,7 @@ void *legacy_params(dt_imageio_module_storage_t *self,
   if(old_version == 3)
   {
     const dt_imageio_disk_v3_t *o = (dt_imageio_disk_v3_t *)old_params;
-    dt_imageio_disk_v4_t *n =
-      (dt_imageio_disk_v4_t *)malloc(sizeof(dt_imageio_disk_v4_t));
+    dt_imageio_disk_v4_t *n = malloc(sizeof(dt_imageio_disk_v4_t));
 
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     switch(o->onsave_action)
@@ -198,14 +197,29 @@ static void button_clicked(GtkWidget *widget,
         _("_select as output destination"), _("_cancel"));
 
   gchar *old = g_strdup(gtk_entry_get_text(d->entry));
-  char *c = g_strstr_len(old, -1, "$");
-  if(c) *c = '\0';
-  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), old);
+  gchar *dirname;
+  gchar *filename;
+  if (g_file_test(old, G_FILE_TEST_IS_DIR))
+  {
+    // only a directory was specified, no filename
+    // so we use the default $(FILE.NAME) for filename.
+    dirname = g_strdup(old);
+    filename = g_strdup("$(FILE.NAME)");
+  }
+  else
+  {
+    dirname = g_path_get_dirname(old);
+    filename = g_path_get_basename(old);
+  }
+
+  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), dirname);
   g_free(old);
+  g_free(dirname);
+
   if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    char *composed = g_build_filename(dir, "$(FILE_NAME)", NULL);
+    char *composed = g_build_filename(dir, filename, NULL);
 
     // composed can now contain '\': on Windows it's the path separator,
     // on other platforms it can be part of a regular folder name.
@@ -219,6 +233,7 @@ static void button_clicked(GtkWidget *widget,
     g_free(composed);
     g_free(escaped);
   }
+  g_free(filename);
   g_object_unref(filechooser);
 }
 
@@ -238,7 +253,7 @@ static void onsave_action_toggle_callback(GtkWidget *widget,
 
 void gui_init(dt_imageio_module_storage_t *self)
 {
-  disk_t *d = (disk_t *)malloc(sizeof(disk_t));
+  disk_t *d = malloc(sizeof(disk_t));
   self->gui_data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
@@ -313,8 +328,7 @@ int store(dt_imageio_module_storage_t *self,
   char input_dir[PATH_MAX] = { 0 };
   char pattern[DT_MAX_PATH_FOR_PARAMS];
   g_strlcpy(pattern, d->filename, sizeof(pattern));
-  gboolean from_cache = FALSE;
-  dt_image_full_path(imgid, input_dir, sizeof(input_dir), &from_cache);
+  dt_image_full_path(imgid, input_dir, sizeof(input_dir), NULL);
   // set variable values to expand them afterwards in darktable variables
   dt_variables_set_max_width_height(d->vp, fdata->max_width, fdata->max_height);
   dt_variables_set_upscale(d->vp, upscale);
@@ -366,7 +380,7 @@ try_again:
     {
       // output directory could not be created
       dt_print(DT_DEBUG_ALWAYS,
-               "[imageio_storage_disk] could not create directory: `%s'!\n",
+               "[imageio_storage_disk] could not create directory: `%s'!",
                output_dir);
       dt_control_log(_("could not create directory `%s'!"), output_dir);
       fail = TRUE;
@@ -377,7 +391,7 @@ try_again:
     {
       // output directory is not writeable
       dt_print(DT_DEBUG_ALWAYS,
-               "[imageio_storage_disk] could not write to directory: `%s'!\n",
+               "[imageio_storage_disk] could not write to directory: `%s'!",
                output_dir);
       dt_control_log(_("could not write to directory `%s'!"), output_dir);
       fail = TRUE;
@@ -415,7 +429,7 @@ try_again:
       {
         // file exists, skip
         dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-        dt_print(DT_DEBUG_ALWAYS, "[export_job] skipping `%s'\n", filename);
+        dt_print(DT_DEBUG_ALWAYS, "[export_job] skipping `%s'", filename);
         dt_control_log(ngettext("%d/%d skipping `%s'", "%d/%d skipping `%s'", num),
                        num, total, filename);
         return 0;
@@ -425,23 +439,27 @@ try_again:
     // conflict handling option: overwrite if newer
     if(!fail && d->onsave_action == DT_EXPORT_ONCONFLICT_OVERWRITE_IF_CHANGED)
     {
-      // get the image data
-      const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-      GTimeSpan change_timestamp = img->change_timestamp;
-      GTimeSpan export_timestamp = img->export_timestamp;
-      dt_image_cache_read_release(darktable.image_cache, img);
-
-      // check if the export timestamp in the database is more recent than the change
-      // date, if yes skip the image
-      if(export_timestamp > change_timestamp)
+      // check if the file exists. If not, it will be exported again, regardless
+      // of the changes.
+      if(g_file_test(filename, G_FILE_TEST_EXISTS))
       {
-        dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-        dt_print(DT_DEBUG_ALWAYS,
-                 "[export_job] skipping (not modified since export) `%s'\n", filename);
-        dt_control_log(ngettext("%d/%d skipping (not modified since export) `%s'",
-                                "%d/%d skipping (not modified since export) `%s'", num),
-                       num, total, filename);
-        return 0;
+        // get the image data
+        const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+        GTimeSpan change_timestamp = img->change_timestamp;
+        GTimeSpan export_timestamp = img->export_timestamp;
+        dt_image_cache_read_release(darktable.image_cache, img);
+
+        // check if the export timestamp in the database is more recent than the change
+        // date, if yes skip the image
+        if(export_timestamp > change_timestamp)
+        {
+          dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+          dt_print(DT_DEBUG_ALWAYS, "[export_job] skipping (not modified since export) `%s'", filename);
+          dt_control_log(ngettext("%d/%d skipping (not modified since export) `%s'",
+                                  "%d/%d skipping (not modified since export) `%s'", num),
+                         num, total, filename);
+          return 0;
+        }
       }
     }
   } // end of critical block
@@ -455,13 +473,13 @@ try_again:
                        num, total, metadata) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[imageio_storage_disk] could not export to file: `%s'!\n",
+             "[imageio_storage_disk] could not export to file: `%s'!",
              filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
     return 1;
   }
 
-  dt_print(DT_DEBUG_ALWAYS, "[export_job] exported to `%s'\n", filename);
+  dt_print(DT_DEBUG_ALWAYS, "[export_job] exported to `%s'", filename);
   dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
                  num, total, filename);
   return 0;
@@ -483,7 +501,7 @@ void init(dt_imageio_module_storage_t *self)
 
 void *get_params(dt_imageio_module_storage_t *self)
 {
-  dt_imageio_disk_t *d = (dt_imageio_disk_t *)calloc(1, sizeof(dt_imageio_disk_t));
+  dt_imageio_disk_t *d = calloc(1, sizeof(dt_imageio_disk_t));
 
   const char *text =
     dt_conf_get_string_const("plugins/imageio/storage/disk/file_directory");

@@ -172,22 +172,16 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     layers = 1;    // let's now assume a grayscale
     if(d->bpp == 32 || (d->bpp == 16 && d->pixelformat))
     {
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(in_void, d) \
-  shared(layers) \
-  schedule(simd:static) \
-  collapse(2)
-#endif
+      DT_OMP_FOR(shared(layers) collapse(2))
       for(int y = 1; y < d->global.height - 1; ++y)
       {
         for(int x = 1; x < d->global.width - 1; ++x)
         {
           if(layers == 3) continue;
           float *in = (float *)in_void + (size_t)(4 * (y * d->global.width + x));
-          if((fabsf(fmaxf(in[0], 0.001f) / fmaxf(in[1], 0.001f)) > 1.01f)
-             || (fabsf(fmaxf(in[0], 0.001f) / fmaxf(in[2], 0.001f)) > 1.01f)
-             || (fabsf(fmaxf(in[1], 0.001f) / fmaxf(in[2], 0.001f)) > 1.01f))
+          if((fabsf(MAX(in[0], 0.001f) / MAX(in[1], 0.001f)) > 1.01f)
+             || (fabsf(MAX(in[0], 0.001f) / MAX(in[2], 0.001f)) > 1.01f)
+             || (fabsf(MAX(in[1], 0.001f) / MAX(in[2], 0.001f)) > 1.01f))
           {
             layers = 3;
           }
@@ -196,13 +190,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     }
     else if(d->bpp == 16 && !d->pixelformat)
     {
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(in_void, d) \
-  shared(layers) \
-  schedule(simd:static) \
-  collapse(2)
-#endif
+      DT_OMP_FOR(shared(layers) collapse(2))
       for(int y = 1; y < d->global.height - 1; ++y)
       {
         for(int x = 1; x < d->global.width - 1; ++x)
@@ -219,13 +207,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     }
     else // 8bpp
     {
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(in_void, d) \
-  shared(layers) \
-  schedule(simd:static) \
-  collapse(2)
-#endif
+      DT_OMP_FOR(shared(layers) collapse(2))
       for(int y = 1; y < d->global.height - 1; ++y)
       {
         for(int x = 1; x < d->global.width - 1; ++x)
@@ -243,7 +225,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   }
 
   if(d->shortfile && layers == 3)
-    dt_control_log(_("not a B&W image, will not export as grayscale"));
+    dt_control_log("%s", _("not a B&W image, will not export as grayscale"));
 
   TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, layers);
   TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, (uint16_t)d->bpp);
@@ -395,7 +377,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     uint16_t page = 1;
     for(GList *iter = pipe->nodes; iter; iter = g_list_next(iter))
     {
-      dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)iter->data;
+      dt_dev_pixelpipe_iop_t *piece = iter->data;
 
       GHashTableIter rm_iter;
       gpointer key, value;
@@ -639,7 +621,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
     } dt_imageio_tiff_v1_t;
 
     const dt_imageio_tiff_v1_t *o = (dt_imageio_tiff_v1_t *)old_params;
-    dt_imageio_tiff_v4_t *n = (dt_imageio_tiff_v4_t *)calloc(1, sizeof(dt_imageio_tiff_v4_t));
+    dt_imageio_tiff_v4_t *n = calloc(1, sizeof(dt_imageio_tiff_v4_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -672,7 +654,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
     } dt_imageio_tiff_v2_t;
 
     const dt_imageio_tiff_v2_t *o = (dt_imageio_tiff_v2_t *)old_params;
-    dt_imageio_tiff_v4_t *n = (dt_imageio_tiff_v4_t *)calloc(1, sizeof(dt_imageio_tiff_v4_t));
+    dt_imageio_tiff_v4_t *n = calloc(1, sizeof(dt_imageio_tiff_v4_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -704,7 +686,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
     } dt_imageio_tiff_v3_t;
 
     const dt_imageio_tiff_v3_t *o = (dt_imageio_tiff_v3_t *)old_params;
-    dt_imageio_tiff_v4_t *n = (dt_imageio_tiff_v4_t *)calloc(1, sizeof(dt_imageio_tiff_v4_t));
+    dt_imageio_tiff_v4_t *n = calloc(1, sizeof(dt_imageio_tiff_v4_t));
 
     n->global.max_width = o->global.max_width;
     n->global.max_height = o->global.max_height;
@@ -754,7 +736,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
 
 void *get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));
+  dt_imageio_tiff_t *d = calloc(1, sizeof(dt_imageio_tiff_t));
 
   if(!d) return NULL;
 
@@ -780,7 +762,7 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
 {
   if(size != self->params_size(self)) return 1;
   const dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)params;
-  const dt_imageio_tiff_gui_t *g = (dt_imageio_tiff_gui_t *)self->gui_data;
+  const dt_imageio_tiff_gui_t *g = self->gui_data;
 
   dt_bauhaus_combobox_set(g->bpp, d->bpp == 16 ? 1 : d->bpp == 32 ? 2 : 0);
   dt_bauhaus_combobox_set(g->pixelformat, d->pixelformat & 1);
@@ -880,7 +862,7 @@ void cleanup(dt_imageio_module_format_t *self)
 
 void gui_init(dt_imageio_module_format_t *self)
 {
-  dt_imageio_tiff_gui_t *gui = (dt_imageio_tiff_gui_t *)malloc(sizeof(dt_imageio_tiff_gui_t));
+  dt_imageio_tiff_gui_t *gui = malloc(sizeof(dt_imageio_tiff_gui_t));
   if(!gui) return;
   self->gui_data = (void *)gui;
 
@@ -956,7 +938,7 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
-  dt_imageio_tiff_gui_t *gui = (dt_imageio_tiff_gui_t *)self->gui_data;
+  dt_imageio_tiff_gui_t *gui = self->gui_data;
 
   const int bpp = dt_confgen_get_int("plugins/imageio/format/tiff/bpp", DT_DEFAULT);
   dt_bauhaus_combobox_set(gui->bpp, bpp == 16 ? 1 : bpp == 32 ? 2 : 0);

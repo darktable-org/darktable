@@ -141,7 +141,7 @@ filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
 
   // Apply the transfer function of the display
   const float4 power4 = power;
-  o = native_powr(o, power4);
+  o = dtcl_pow(o, power4);
 
   i.xyz = prophotorgb_to_Lab(o).xyz;
 
@@ -163,7 +163,7 @@ static inline float pixel_rgb_norm_euclidean(const float4 pixel)
 {
   const float4 RGB = pixel;
   const float4 RGB_square = RGB * RGB;
-  return native_sqrt(RGB_square.x + RGB_square.y + RGB_square.z);
+  return dtcl_sqrt(RGB_square.x + RGB_square.y + RGB_square.z);
 }
 
 static inline float get_pixel_norm(const float4 pixel, const dt_iop_filmicrgb_methods_type_t variant,
@@ -213,7 +213,7 @@ static inline float filmic_desaturate_v2(const float x, const float sigma_toe, c
 {
   const float radius_toe = x;
   const float radius_shoulder = 1.0f - x;
-  const float sat2 = 0.5f / native_sqrt(saturation);
+  const float sat2 = 0.5f / dtcl_sqrt(saturation);
   const float key_toe = native_exp(-radius_toe * radius_toe / sigma_toe * sat2);
   const float key_shoulder = native_exp(-radius_shoulder * radius_shoulder / sigma_shoulder * sat2);
 
@@ -290,9 +290,6 @@ static inline float filmic_spline(const float x,
 
   return result;
 }
-
-#define NORM_MIN 1.52587890625e-05f // norm can't be < to 2^(-16)
-
 
 static inline float log_tonemapping_v1(const float x,
                                        const float grey, const float black,
@@ -588,7 +585,7 @@ static inline float4 filmic_chroma_v4(const float4 i,
 
   // Filmic S curve on the max RGB
   // Apply the transfer function of the display
-  norm = native_powr(clamp(filmic_spline(norm, M1, M2, M3, M4, M5, latitude_min, latitude_max, type),
+  norm = dtcl_pow(clamp(filmic_spline(norm, M1, M2, M3, M4, M5, latitude_min, latitude_max, type),
                            display_black,
                            display_white), output_power);
 
@@ -636,7 +633,7 @@ static inline float4 filmic_split_v4(const float4 i,
   // Clamp to [0, display_white]: we don't want to clamp individual channels to display_black
   // as that would limit the max available saturation. Luminance is clipped to display_black later.
   // Apply output power function afterwards.
-  o = native_powr(clamp(o, (float4)0.f, (float4)display_white), output_power);
+  o = dtcl_pow(clamp(o, (float4)0.f, (float4)display_white), output_power);
 
   // Save Ych in Kirk/Filmlight Yrg
   float4 Ych_original = pipe_RGB_to_Ych(i, matrix_in);
@@ -681,7 +678,7 @@ static inline float4 filmic_chroma_v5(const float4 i,
 
   // Filmic S curve on the max RGB
   // Apply the transfer function of the display
-  norm = native_powr(clamp(filmic_spline(norm, M1, M2, M3, M4, M5, latitude_min, latitude_max, type),
+  norm = dtcl_pow(clamp(filmic_spline(norm, M1, M2, M3, M4, M5, latitude_min, latitude_max, type),
                            display_black,
                            display_white), output_power);
 
@@ -703,7 +700,7 @@ static inline float4 filmic_chroma_v5(const float4 i,
   // Clamp to [0, display_white]: we don't want to clamp individual channels to display_black
   // as that would limit the max available saturation. Luminance is clipped to display_black later.
   // Apply output power function afterwards.
-  naive_rgb = native_powr(clamp(naive_rgb, (float4)0.f, (float4)display_white), output_power);
+  naive_rgb = dtcl_pow(clamp(naive_rgb, (float4)0.f, (float4)display_white), output_power);
 
   // Mix max RGB with naive RGB
   float4 o = (0.5f - saturation) * naive_rgb + (0.5f + saturation) * max_rgb;
@@ -753,7 +750,7 @@ static inline float4 filmic_split_v1(const float4 i,
   o.z = filmic_spline(o.z, M1, M2, M3, M4, M5, latitude_min, latitude_max, type);
 
   // Output power
-  o = native_powr(clamp(o, (float4)0.0f, (float4)1.0f), output_power);
+  o = dtcl_pow(clamp(o, (float4)0.0f, (float4)1.0f), output_power);
 
   return o;
 }
@@ -790,7 +787,7 @@ static inline float4 filmic_split_v2_v3(const float4 i,
   o.z = filmic_spline(o.z, M1, M2, M3, M4, M5, latitude_min, latitude_max, type);
 
   // Output power
-  o = native_powr(clamp(o, (float4)0.0f, (float4)1.0f), output_power);
+  o = dtcl_pow(clamp(o, (float4)0.0f, (float4)1.0f), output_power);
 
   return o;
 }
@@ -899,7 +896,7 @@ static inline float4 filmic_chroma_v1(const float4 i,
 
   // Filmic S curve on the max RGB
   // Apply the transfer function of the display
-  norm = native_powr(clamp(filmic_spline(norm, M1, M2, M3, M4, M5, latitude_min, latitude_max, type), 0.0f, 1.0f), output_power);
+  norm = dtcl_pow(clamp(filmic_spline(norm, M1, M2, M3, M4, M5, latitude_min, latitude_max, type), 0.0f, 1.0f), output_power);
 
   return o * norm;
 }
@@ -933,7 +930,7 @@ static inline float4 filmic_chroma_v2_v3(const float4 i,
 
   // Filmic S curve on the max RGB
   // Apply the transfer function of the display
-  norm = native_powr(clamp(filmic_spline(norm, M1, M2, M3, M4, M5, latitude_min, latitude_max, type), 0.0f, 1.0f), output_power);
+  norm = dtcl_pow(clamp(filmic_spline(norm, M1, M2, M3, M4, M5, latitude_min, latitude_max, type), 0.0f, 1.0f), output_power);
 
   // Re-apply ratios with saturation change
   ratios = fmax(ratios + ((float4)1.0f - ratios) * ((float4)1.0f - desaturation), (float4)0.f);
@@ -1048,7 +1045,7 @@ filmic_mask_clipped_pixels(read_only image2d_t in, write_only image2d_t out,
   float4 i = read_imagef(in, sampleri, (int2)(x, y));
   const float4 i2 = i * i;
 
-  const float pix_max = fmax(native_sqrt(i2.x + i2.y + i2.z), 0.f);
+  const float pix_max = fmax(dtcl_sqrt(i2.x + i2.y + i2.z), 0.f);
   const float argument = -pix_max * normalize + feathering;
   const float weight = clamp(1.0f / ( 1.0f + native_exp2(argument)), 0.f, 1.f);
 

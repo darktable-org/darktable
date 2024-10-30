@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -52,7 +53,9 @@ typedef struct dt_iop_bloom_params_t
 
 typedef struct dt_iop_bloom_gui_data_t
 {
-  GtkWidget *size, *threshold, *strength; // size,threshold,strength
+  GtkWidget *size;
+  GtkWidget *threshold;
+  GtkWidget *strength;
 } dt_iop_bloom_gui_data_t;
 
 typedef struct dt_iop_bloom_data_t
@@ -75,9 +78,9 @@ const char *name()
   return _("bloom");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("apply Orton effect for a dreamy aetherical look"),
+  return dt_iop_set_description(self, _("apply Orton effect for a dreamy ethereal look"),
                                       _("creative"),
                                       _("non-linear, Lab, display-referred"),
                                       _("non-linear, Lab"),
@@ -102,13 +105,23 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_LAB;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_bloom_data_t *const data = (dt_iop_bloom_data_t *)piece->data;
-  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
-                                         ivoid, ovoid, roi_in, roi_out))
-    return; // image has been copied through to output and module's trouble flag has been updated
+  const dt_iop_bloom_data_t *const data = piece->data;
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/,
+                                        self,
+                                        piece->colors,
+                                        ivoid,
+                                        ovoid,
+                                        roi_in,
+                                        roi_out))
+    // image has been copied through to output and module's trouble flag has been updated
+    return;
 
   float *restrict blurlightness;
   if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 1, &blurlightness, 0))
@@ -131,13 +144,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const float threshold = data->threshold;
 /* get the thresholded lights into buffer */
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, scale, threshold) \
-  shared(blurlightness) \
-  dt_omp_sharedconst(in) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   {
     const float L = in[4*k] * scale;
@@ -151,13 +158,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_box_mean(blurlightness, roi_out->height, roi_out->width, 1, hr, BOX_ITERATIONS);
 
 /* screen blend lightness with original */
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels) \
-  shared(blurlightness) \
-  dt_omp_sharedconst(in, out) \
-  schedule(static)
-#endif
+  DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   {
     out[4*k+0] = 100.0f - (((100.0f - in[4*k]) * (100.0f - blurlightness[k])) / 100.0f); // Screen blend
@@ -179,11 +180,15 @@ static int bucket_next(unsigned int *state, unsigned int max)
   return next;
 }
 
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_bloom_data_t *d = (dt_iop_bloom_data_t *)piece->data;
-  const dt_iop_bloom_global_data_t *gd = (dt_iop_bloom_global_data_t *)self->global_data;
+  const dt_iop_bloom_data_t *d = piece->data;
+  const dt_iop_bloom_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem dev_tmp[NUM_BUCKETS] = { NULL };
@@ -204,9 +209,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   int hblocksize;
   dt_opencl_local_buffer_t hlocopt
-    = (dt_opencl_local_buffer_t){ .xoffset = 2 * radius, .xfactor = 1, .yoffset = 0, .yfactor = 1,
-                                  .cellsize = sizeof(float), .overhead = 0,
-                                  .sizex = 1 << 16, .sizey = 1 };
+    = (dt_opencl_local_buffer_t){ .xoffset = 2 * radius,
+                                  .xfactor = 1,
+                                  .yoffset = 0,
+                                  .yfactor = 1,
+                                  .cellsize = sizeof(float),
+                                  .overhead = 0,
+                                  .sizex = 1 << 16,
+                                  .sizey = 1 };
 
   if(dt_opencl_local_buffer_opt(devid, gd->kernel_bloom_hblur, &hlocopt))
     hblocksize = hlocopt.sizex;
@@ -215,9 +225,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   int vblocksize;
   dt_opencl_local_buffer_t vlocopt
-    = (dt_opencl_local_buffer_t){ .xoffset = 1, .xfactor = 1, .yoffset = 2 * radius, .yfactor = 1,
-                                  .cellsize = sizeof(float), .overhead = 0,
-                                  .sizex = 1, .sizey = 1 << 16 };
+    = (dt_opencl_local_buffer_t){ .xoffset = 1,
+                                  .xfactor = 1,
+                                  .yoffset = 2 * radius,
+                                  .yfactor = 1,
+                                  .cellsize = sizeof(float),
+                                  .overhead = 0,
+                                  .sizex = 1,
+                                  .sizey = 1 << 16 };
 
   if(dt_opencl_local_buffer_opt(devid, gd->kernel_bloom_vblur, &vlocopt))
     vblocksize = vlocopt.sizey;
@@ -242,8 +257,15 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   sizes[1] = ROUNDUPDHT(height, devid);
   sizes[2] = 1;
   dev_tmp1 = dev_tmp[bucket_next(&state, NUM_BUCKETS)];
-  dt_opencl_set_kernel_args(devid, gd->kernel_bloom_threshold, 0, CLARG(dev_in), CLARG(dev_tmp1),
-    CLARG(width), CLARG(height), CLARG(scale), CLARG(threshold));
+  dt_opencl_set_kernel_args(devid,
+                            gd->kernel_bloom_threshold,
+                            0,
+                            CLARG(dev_in),
+                            CLARG(dev_tmp1),
+                            CLARG(width),
+                            CLARG(height),
+                            CLARG(scale),
+                            CLARG(threshold));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_bloom_threshold, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -258,8 +280,16 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       local[1] = 1;
       local[2] = 1;
       dev_tmp2 = dev_tmp[bucket_next(&state, NUM_BUCKETS)];
-      dt_opencl_set_kernel_args(devid, gd->kernel_bloom_hblur, 0, CLARG(dev_tmp1), CLARG(dev_tmp2), CLARG(radius),
-        CLARG(width), CLARG(height), CLARG(hblocksize), CLLOCAL((hblocksize + 2 * radius) * sizeof(float)));
+      dt_opencl_set_kernel_args(devid,
+                                gd->kernel_bloom_hblur,
+                                0,
+                                CLARG(dev_tmp1),
+                                CLARG(dev_tmp2),
+                                CLARG(radius),
+                                CLARG(width),
+                                CLARG(height),
+                                CLARG(hblocksize),
+                                CLLOCAL((hblocksize + 2 * radius) * sizeof(float)));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_bloom_hblur, sizes, local);
       if(err != CL_SUCCESS) goto error;
 
@@ -272,8 +302,16 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       local[1] = vblocksize;
       local[2] = 1;
       dev_tmp1 = dev_tmp[bucket_next(&state, NUM_BUCKETS)];
-      dt_opencl_set_kernel_args(devid, gd->kernel_bloom_vblur, 0, CLARG(dev_tmp2), CLARG(dev_tmp1), CLARG(radius),
-        CLARG(width), CLARG(height), CLARG(vblocksize), CLLOCAL((vblocksize + 2 * radius) * sizeof(float)));
+      dt_opencl_set_kernel_args(devid,
+                                gd->kernel_bloom_vblur,
+                                0,
+                                CLARG(dev_tmp2),
+                                CLARG(dev_tmp1),
+                                CLARG(radius),
+                                CLARG(width),
+                                CLARG(height),
+                                CLARG(vblocksize),
+                                CLLOCAL((vblocksize + 2 * radius) * sizeof(float)));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_bloom_vblur, sizes, local);
       if(err != CL_SUCCESS) goto error;
     }
@@ -282,8 +320,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   sizes[0] = ROUNDUPDWD(width, devid);
   sizes[1] = ROUNDUPDHT(height, devid);
   sizes[2] = 1;
-  dt_opencl_set_kernel_args(devid, gd->kernel_bloom_mix, 0, CLARG(dev_in), CLARG(dev_tmp1), CLARG(dev_out),
-    CLARG(width), CLARG(height));
+  dt_opencl_set_kernel_args(devid,
+                            gd->kernel_bloom_mix,
+                            0,
+                            CLARG(dev_in),
+                            CLARG(dev_tmp1),
+                            CLARG(dev_out),
+                            CLARG(width),
+                            CLARG(height));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_bloom_mix, sizes);
 
 error:
@@ -293,11 +337,13 @@ error:
 }
 #endif
 
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
+                     dt_develop_tiling_t *tiling)
 {
-  const dt_iop_bloom_data_t *d = (dt_iop_bloom_data_t *)piece->data;
+  const dt_iop_bloom_data_t *d = piece->data;
 
   const int rad = 256.0f * (fmin(100.0f, d->size + 1.0f) / 100.0f);
   const float _r = ceilf(rad * roi_in->scale / piece->iscale);
@@ -313,51 +359,58 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   return;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 12; // bloom.cl, from programs.conf
-  dt_iop_bloom_global_data_t *gd = (dt_iop_bloom_global_data_t *)malloc(sizeof(dt_iop_bloom_global_data_t));
-  module->data = gd;
+  dt_iop_bloom_global_data_t *gd = malloc(sizeof(dt_iop_bloom_global_data_t));
+  self->data = gd;
+
   gd->kernel_bloom_threshold = dt_opencl_create_kernel(program, "bloom_threshold");
   gd->kernel_bloom_hblur = dt_opencl_create_kernel(program, "bloom_hblur");
   gd->kernel_bloom_vblur = dt_opencl_create_kernel(program, "bloom_vblur");
   gd->kernel_bloom_mix = dt_opencl_create_kernel(program, "bloom_mix");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  const dt_iop_bloom_global_data_t *gd = (dt_iop_bloom_global_data_t *)module->data;
+  const dt_iop_bloom_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_bloom_threshold);
   dt_opencl_free_kernel(gd->kernel_bloom_hblur);
   dt_opencl_free_kernel(gd->kernel_bloom_vblur);
   dt_opencl_free_kernel(gd->kernel_bloom_mix);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self,
+                   dt_iop_params_t *p1,
+                   dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   const dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)p1;
-  dt_iop_bloom_data_t *d = (dt_iop_bloom_data_t *)piece->data;
+  dt_iop_bloom_data_t *d = piece->data;
 
   d->strength = p->strength;
   d->size = p->size;
   d->threshold = p->threshold;
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self,
+               dt_dev_pixelpipe_t *pipe,
+               dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_bloom_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_t *pipe,
+                  dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_bloom_gui_data_t *g = IOP_GUI_ALLOC(bloom);
 
@@ -379,4 +432,3 @@ void gui_init(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

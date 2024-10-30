@@ -100,11 +100,10 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,
 
   /* construct a temporary file name */
   char tmpdir[PATH_MAX] = { 0 };
-  gboolean from_cache = FALSE;
   dt_loc_get_tmp_dir(tmpdir, sizeof(tmpdir));
 
   char dirname[PATH_MAX] = { 0 };
-  dt_image_full_path(imgid, dirname, sizeof(dirname), &from_cache);
+  dt_image_full_path(imgid, dirname, sizeof(dirname), NULL);
   dt_image_path_append_version(imgid, dirname, sizeof(dirname));
   gchar *filename = g_path_get_basename(dirname);
   gchar *end = g_strrstr(filename, ".") + 1;
@@ -116,7 +115,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,
                        icc_type, icc_filename, icc_intent, self, self_data, num, total, metadata) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[lua] %s: could not export to file `%s'!\n", self->name(self), complete_name);
+             "[lua] %s: could not export to file `%s'!", self->name(self), complete_name);
     g_free(complete_name);
     g_free(filename);
     return 1;
@@ -209,7 +208,7 @@ static int initialize_store_wrapper(struct dt_imageio_module_storage_t *self,
     if(lua_type(L, -1) != LUA_TTABLE)
     {
       dt_print(DT_DEBUG_LUA,
-               "LUA ERROR initialization function of storage did not return nil or table\n");
+               "LUA ERROR initialization function of storage did not return nil or table");
       dt_lua_unlock();
       return 1;
     }
@@ -320,7 +319,7 @@ static void free_params_wrapper(struct dt_imageio_module_storage_t *self,
 {
   dt_job_t *job = dt_control_job_create(&free_param_wrapper_job, "lua: destroy storage param");
   if(!job) return;
-  free_param_wrapper_data *t = (free_param_wrapper_data *)calloc(1, sizeof(free_param_wrapper_data));
+  free_param_wrapper_data *t = calloc(1, sizeof(free_param_wrapper_data));
   if(!t)
   {
     dt_control_job_dispose(job);
@@ -487,7 +486,7 @@ static int register_storage(lua_State *L)
     for(GList *it = darktable.imageio->plugins_format; it; it = g_list_next(it))
     {
       lua_pushvalue(L, 5);
-      dt_imageio_module_format_t *format = (dt_imageio_module_format_t *)it->data;
+      dt_imageio_module_format_t *format = it->data;
       dt_imageio_module_data_t *sdata = storage->get_params(storage);
       dt_imageio_module_data_t *fdata = format->get_params(format);
       luaA_push_type(L, storage->parameter_lua_type, sdata);
@@ -508,7 +507,7 @@ static int register_storage(lua_State *L)
     // all formats are supported
     for(GList *it = darktable.imageio->plugins_format; it; it = g_list_next(it))
     {
-      dt_imageio_module_format_t *format = (dt_imageio_module_format_t *)it->data;
+      dt_imageio_module_format_t *format = it->data;
       data->supported_formats = g_list_prepend(data->supported_formats, format);
     }
   }

@@ -120,37 +120,27 @@ void dt_gui_presets_update_fl(const char *name,
                               const int32_t version,
                               const float min,
                               const float max);
-/** update ldr flag: 0-don't care, 1-low dynamic range, 2-raw */
-void dt_gui_presets_update_ldr(const char *name,
-                               const dt_dev_operation_t op,
-                               const int32_t version,
-                               const int ldrflag);
+/** update dt_gui_presets_format_flag_t */
+void dt_gui_presets_update_format(const char *name,
+                                  const dt_dev_operation_t op,
+                                  const int32_t version,
+                                  const int flag);
 /** set auto apply property of preset. */
 void dt_gui_presets_update_autoapply(const char *name,
                                      const dt_dev_operation_t op,
                                      const int32_t version,
-                                     const int autoapply);
+                                     const gboolean autoapply);
 /** set filter mode. if 1, the preset will only show for matching images. */
 void dt_gui_presets_update_filter(const char *name,
                                   const dt_dev_operation_t op,
                                   const int32_t version,
                                   const int filter);
 
-/** show a popup menu without initialized module. */
-void dt_gui_presets_popup_menu_show_for_params(const dt_dev_operation_t op,
-                                               const int32_t version,
-                                               void *params,
-                                               const int32_t params_size,
-                                               void *blendop_params,
-                                               const dt_image_t *image,
-                                               void (*pick_callback)(GtkMenuItem *, void *),
-                                               void *callback_data);
-
 /** show the popup menu for the given module, with default behavior. */
-void dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module);
+GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module);
 
 /** show popupmenu for favorite modules */
-void dt_gui_favorite_presets_menu_show();
+void dt_gui_favorite_presets_menu_show(GtkWidget *w);
 
 /** apply a preset to the current module **/
 void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module);

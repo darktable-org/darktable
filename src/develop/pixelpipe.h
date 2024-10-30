@@ -41,7 +41,8 @@ typedef enum dt_dev_pixelpipe_type_t
   DT_DEV_PIXELPIPE_ANY       = DT_DEV_PIXELPIPE_EXPORT | DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW
                                | DT_DEV_PIXELPIPE_THUMBNAIL | DT_DEV_PIXELPIPE_PREVIEW2,
   DT_DEV_PIXELPIPE_FAST      = 1 << 8,
-  DT_DEV_PIXELPIPE_IMAGE     = 1 << 9,  // special additional flag used by dt_dev_image()
+  DT_DEV_PIXELPIPE_IMAGE     = 1 << 9,    // special additional flag used by dt_dev_image()
+  DT_DEV_PIXELPIPE_IMAGE_FINAL = 1 << 10, // special additional flag used by dt_dev_image(), mark to use finalscale
   DT_DEV_PIXELPIPE_BASIC     = DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW
 } dt_dev_pixelpipe_type_t;
 
@@ -108,8 +109,6 @@ typedef struct dt_dev_histogram_stats_t
 #define DT_IOP_PARAMS_T
 typedef void dt_iop_params_t;
 #endif
-
-const char *dt_pixelpipe_name(dt_dev_pixelpipe_type_t pipe);
 
 #ifdef __cplusplus
 } // extern "C"

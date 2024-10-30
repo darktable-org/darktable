@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,9 +23,7 @@
     (a) = tmp;                                                                                               \
   }
 
-#ifdef _OPENMP
-  #pragma omp declare simd aligned(in, out)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in, out))
 static void pre_median_b(
         float *out,
         const float *const in,
@@ -40,12 +38,7 @@ static void pre_median_b(
   const int lim[5] = { 0, 1, 2, 1, 0 };
   for(int pass = 0; pass < num_passes; pass++)
   {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(filters, in, lim, roi, threshold) \
-    shared(out) \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(int row = 3; row < roi->height - 3; row++)
     {
       float med[9];
@@ -111,12 +104,7 @@ static void color_smoothing(
         for(int j = 0; j < roi_out->height; j++)
           for(int i = 0; i < roi_out->width; i++, outp += 4) outp[3] = outp[c];
       }
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(roi_out, width4) \
-      shared(out, c) \
-      schedule(static)
-#endif
+      DT_OMP_FOR()
       for(int j = 1; j < roi_out->height - 1; j++)
       {
         float *outp = out + (size_t)4 * j * roi_out->width + 4;
@@ -176,12 +164,7 @@ static void green_equilibration_lavg(
 
   dt_iop_image_copy_by_size(out, in, width, height, 1);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, in, thr, width, maximum) \
-  shared(out, oi, oj) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(size_t j = oj; j < height - 2; j += 2)
   {
     for(size_t i = oi; i < width - 2; i += 2)
@@ -232,13 +215,7 @@ static void green_equilibration_favg(
   if((FC(oj + y, oi + x, filters) & 1) != 1) oi++;
   const int g2_offset = oi ? -1 : 1;
   dt_iop_image_copy_by_size(out, in, width, height, 1);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(g2_offset, height, in, width) \
-  reduction(+ : sum1, sum2) \
-  shared(oi, oj) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(reduction(+ : sum1, sum2) collapse(2))
   for(size_t j = oj; j < (height - 1); j += 2)
   {
     for(size_t i = oi; i < (width - 1 - g2_offset); i += 2)
@@ -253,12 +230,7 @@ static void green_equilibration_favg(
   else
     return;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(g2_offset, height, in, width) \
-  shared(out, oi, oj, gr_ratio) \
-  schedule(static) collapse(2)
-#endif
+  DT_OMP_FOR(collapse(2))
   for(int j = oj; j < (height - 1); j += 2)
   {
     for(int i = oi; i < (width - 1 - g2_offset); i += 2)
@@ -278,7 +250,7 @@ static int color_smoothing_cl(
         const dt_iop_roi_t *const roi_out,
         const int passes)
 {
-  dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
+  dt_iop_demosaic_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_out->width;
@@ -295,7 +267,10 @@ static int color_smoothing_cl(
                                   .sizex = 1 << 8, .sizey = 1 << 8 };
 
   if(!dt_opencl_local_buffer_opt(devid, gd->kernel_color_smoothing, &locopt))
+  {
+    err = CL_INVALID_WORK_DIMENSION;
     goto error;
+  }
 
   // two buffer references for our ping-pong
   cl_mem dev_t1 = dev_out;
@@ -329,7 +304,7 @@ static int color_smoothing_cl(
 error:
   dt_opencl_release_mem_object(dev_tmp);
   if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic_color_smoothing] problem '%s'\n", cl_errstr(err));
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic_color_smoothing] problem '%s'", cl_errstr(err));
   return err;
 }
 
@@ -340,8 +315,8 @@ static int green_equilibration_cl(
         cl_mem dev_out,
         const dt_iop_roi_t *const roi_in)
 {
-  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
-  dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
+  dt_iop_demosaic_data_t *data = piece->data;
+  dt_iop_demosaic_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -404,7 +379,11 @@ static int green_equilibration_cl(
     const int bufsize = (bwidth / flocopt.sizex) * (bheight / flocopt.sizey);
 
     dev_m = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 2 * bufsize);
-    if(dev_m == NULL) goto error;
+    if(dev_m == NULL)
+    {
+      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+      goto error;
+    }
 
     size_t fsizes[3] = { bwidth, bheight, 1 };
     size_t flocal[3] = { flocopt.sizex, flocopt.sizey, 1 };
@@ -500,7 +479,7 @@ error:
   dt_opencl_release_mem_object(dev_r);
   dt_free_align(sumsum);
   if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic_green_equilibration] problem  '%s'\n", cl_errstr(err));
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic_green_equilibration] problem  '%s'", cl_errstr(err));
   return err;
 }
 
@@ -513,8 +492,8 @@ static int process_default_cl(
         const dt_iop_roi_t *const roi_out,
         const int demosaicing_method)
 {
-  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
-  dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
+  dt_iop_demosaic_data_t *data = piece->data;
+  dt_iop_demosaic_global_data_t *gd = self->global_data;
   const dt_image_t *img = &self->dev->image_storage;
 
   const int devid = piece->pipe->devid;
@@ -578,7 +557,11 @@ static int process_default_cl(
     else if(demosaicing_method == DT_IOP_DEMOSAIC_PPG)
     {
       dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
-      if(dev_tmp == NULL) goto error;
+      if(dev_tmp == NULL)
+      {
+        err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+        goto error;
+      }
 
       {
         const int myborder = 3;
@@ -662,12 +645,14 @@ static int process_default_cl(
     }
 
     if(piece->pipe->want_detail_mask)
+    {
       err = dt_dev_write_scharr_mask_cl(piece, dev_aux, roi_in, TRUE);
-    if(err != CL_SUCCESS) goto error;
+      if(err != CL_SUCCESS) goto error;
+    }
 
     if(scaled)
     {
-      dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi", piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "\n");
+      dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi", piece->pipe, self, piece->pipe->devid, roi_in, roi_out);
       // scale aux buffer to output buffer
       err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_aux, roi_out, roi_in);
     }
@@ -702,7 +687,7 @@ error:
     err = color_smoothing_cl(self, piece, dev_out, dev_out, roi_out, data->color_smoothing);
 
   if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] basic kernel problem '%s'\n", cl_errstr(err));
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] basic kernel problem '%s'", cl_errstr(err));
   return err;
 }
 

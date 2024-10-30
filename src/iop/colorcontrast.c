@@ -82,7 +82,7 @@ const char *aliases()
   return _("saturation");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("increase saturation and separation between\n"
                                         "opposite colors"),
@@ -136,8 +136,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_colorcontrast_params_v1_t;
 
     const dt_iop_colorcontrast_params_v1_t *o = old_params;
-    dt_iop_colorcontrast_params_v2_t *n =
-      (dt_iop_colorcontrast_params_v2_t *)malloc(sizeof(dt_iop_colorcontrast_params_v2_t));
+    dt_iop_colorcontrast_params_v2_t *n = malloc(sizeof(dt_iop_colorcontrast_params_v2_t));
 
     n->a_steepness = o->a_steepness;
     n->a_offset = o->a_offset;
@@ -153,9 +152,7 @@ int legacy_params(dt_iop_module_t *self,
   return 1;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(in,out:64) aligned(slope,offset,low,high)
-#endif
+DT_OMP_DECLARE_SIMD(aligned(in,out:64) aligned(slope,offset,low,high))
 static inline void clamped_scaling(float *const restrict out,
                                    const float *const restrict in,
                                    const dt_aligned_pixel_t slope,
@@ -169,7 +166,7 @@ static inline void clamped_scaling(float *const restrict out,
   copy_pixel_nontemporal(out, res);
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -179,8 +176,7 @@ void process(struct dt_iop_module_t *self,
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
 
   // get our data struct:
-  const dt_iop_colorcontrast_params_t *const d =
-    (dt_iop_colorcontrast_params_t *)piece->data;
+  const dt_iop_colorcontrast_params_t *const d = piece->data;
 
   // how many colors in our buffer?
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self,
@@ -200,11 +196,7 @@ void process(struct dt_iop_module_t *self,
 
   if(d->unbound)
   {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, out, npixels, slope, offset) \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
     {
       dt_aligned_pixel_t res;
@@ -218,11 +210,7 @@ void process(struct dt_iop_module_t *self,
   else
   {
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, out, npixels, slope, offset, lowlimit, highlimit) \
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(size_t k = 0; k < npixels; k ++)
     {
       // the inner per-pixel loop needs to be declared in a separate
@@ -236,16 +224,15 @@ void process(struct dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorcontrast_data_t *data = (dt_iop_colorcontrast_data_t *)piece->data;
-  dt_iop_colorcontrast_global_data_t *gd =
-    (dt_iop_colorcontrast_global_data_t *)self->global_data;
+  dt_iop_colorcontrast_data_t *data = piece->data;
+  dt_iop_colorcontrast_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -263,33 +250,31 @@ int process_cl(struct dt_iop_module_t *self,
 #endif
 
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 8; // extended.cl, from programs.conf
-  dt_iop_colorcontrast_global_data_t *gd
-      = (dt_iop_colorcontrast_global_data_t *)malloc(sizeof(dt_iop_colorcontrast_global_data_t));
-  module->data = gd;
+  dt_iop_colorcontrast_global_data_t *gd = malloc(sizeof(dt_iop_colorcontrast_global_data_t));
+  self->data = gd;
   gd->kernel_colorcontrast = dt_opencl_create_kernel(program, "colorcontrast");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_colorcontrast_global_data_t *gd =
-    (dt_iop_colorcontrast_global_data_t *)module->data;
+  dt_iop_colorcontrast_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_colorcontrast);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 
 /** commit is the synch point between core and gui, so it copies params to pipe data. */
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *params,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorcontrast_params_t *p = (dt_iop_colorcontrast_params_t *)params;
-  dt_iop_colorcontrast_data_t *d = (dt_iop_colorcontrast_data_t *)piece->data;
+  dt_iop_colorcontrast_data_t *d = piece->data;
   d->a_steepness = p->a_steepness;
   d->a_offset = p->a_offset;
   d->b_steepness = p->b_steepness;
@@ -297,14 +282,14 @@ void commit_params(struct dt_iop_module_t *self,
   d->unbound = p->unbound;
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_colorcontrast_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -314,8 +299,8 @@ void cleanup_pipe(struct dt_iop_module_t *self,
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_colorcontrast_gui_data_t *g = (dt_iop_colorcontrast_gui_data_t *)self->gui_data;
-  dt_iop_colorcontrast_params_t *p = (dt_iop_colorcontrast_params_t *)self->params;
+  dt_iop_colorcontrast_gui_data_t *g = self->gui_data;
+  dt_iop_colorcontrast_params_t *p = self->params;
   dt_bauhaus_slider_set(g->a_scale, p->a_steepness);
   dt_bauhaus_slider_set(g->b_scale, p->b_steepness);
 }

@@ -81,7 +81,7 @@ if (USE_OPENMP)
 
         # Clang has an option to specify the OpenMP standard to use. Specify it.
         # FIXME: Implement this in FindOpenMP.cmake
-        set(OPENMP_VERSION_SPECIFIER "-fopenmp-version=45")
+        set(OPENMP_VERSION_SPECIFIER "-fopenmp-version=51")
 
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OPENMP_VERSION_SPECIFIER}")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPENMP_VERSION_SPECIFIER}")
@@ -392,28 +392,16 @@ if(USE_XMLLINT)
   endif(${Xmllint_BIN} STREQUAL "Xmllint_BIN-NOTFOUND")
 endif(USE_XMLLINT)
 
-find_program(exiftool_BIN exiftool)
-if(${exiftool_BIN} STREQUAL "exiftool_BIN-NOTFOUND")
-  message(STATUS "Missing exiftool")
-  set(HAVE_EXIFTOOL 0)
-else()
-  message(STATUS "Found exiftool")
-  set(HAVE_EXIFTOOL 1)
-endif()
-
 # done with looking for programs
 message(STATUS "All external programs found")
 
 # The path can be modified by setting CMAKE_INSTALL_LOCALEDIR
-if(USE_NLS)
-    find_package(Gettext)
-    if(GETTEXT_MSGFMT_EXECUTABLE)
-        message(STATUS "Found msgfmt to convert .po file. Translation enabled")
-        add_subdirectory(po)
-    else()
-        message(STATUS "Cannot find msgfmt to convert .po file. Translation won't be enabled")
-    endif()
-endif(USE_NLS)
+find_package(Gettext REQUIRED)
+if(GETTEXT_MSGFMT_EXECUTABLE)
+    add_subdirectory(po)
+else()
+    message(FATAL_ERROR "ERROR: Cannot find msgfmt to convert .po file")
+endif()
 
 # needed to generate file "preferences_gen.h" accordingly
 if(USE_OPENCL)

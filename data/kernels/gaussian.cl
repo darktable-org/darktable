@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011-2014 ulrich pegelow.
+    copyright (c) 2011-2024 darktable developer.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,13 +19,13 @@
 #include "common.h"
 
 
-/* This is gaussian blur in Lab space. Please mind: in contrast to most of DT's other openCL kernels,
+/* This is gaussian blur space. Please mind: in contrast to most of DT's other openCL kernels,
    the kernels in this package expect part/all of their input/output buffers in form of vectors. This
    is needed to have read-write access to some buffers which openCL does not offer for image object. */
 
 
-kernel void 
-gaussian_transpose_4c(global float4 *in, global float4 *out, unsigned int width, unsigned int height, 
+kernel void
+gaussian_transpose_4c(global float4 *in, global float4 *out, unsigned int width, unsigned int height,
                       unsigned int blocksize, local float4 *buffer)
 {
   unsigned int x = get_global_id(0);
@@ -49,9 +49,34 @@ gaussian_transpose_4c(global float4 *in, global float4 *out, unsigned int width,
   }
 }
 
+kernel void
+gaussian_transpose_2c(global float2 *in, global float2 *out, unsigned int width, unsigned int height,
+                      unsigned int blocksize, local float2 *buffer)
+{
+  unsigned int x = get_global_id(0);
+  unsigned int y = get_global_id(1);
 
-kernel void 
-gaussian_transpose_1c(global float *in, global float *out, unsigned int width, unsigned int height, 
+  if((x < width) && (y < height))
+  {
+    const unsigned int iindex = mad24(y, width, x);
+    buffer[mad24(get_local_id(1), blocksize + 1, get_local_id(0))] = in[iindex];
+  }
+
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  x = mad24(get_group_id(1), blocksize, get_local_id(0));
+  y = mad24(get_group_id(0), blocksize, get_local_id(1));
+
+  if((x < height) && (y < width))
+  {
+    const unsigned int oindex = mad24(y, height, x);
+    out[oindex] = buffer[mad24(get_local_id(0), blocksize + 1, get_local_id(1))];
+  }
+}
+
+
+kernel void
+gaussian_transpose_1c(global float *in, global float *out, unsigned int width, unsigned int height,
                       unsigned int blocksize, local float *buffer)
 {
   unsigned int x = get_global_id(0);
@@ -76,7 +101,7 @@ gaussian_transpose_1c(global float *in, global float *out, unsigned int width, u
 }
 
 
-kernel void 
+kernel void
 gaussian_column_4c(global float4 *in, global float4 *out, unsigned int width, unsigned int height,
                   const float a0, const float a1, const float a2, const float a3, const float b1, const float b2,
                   const float coefp, const float coefn, const float4 Labmax, const float4 Labmin)
@@ -100,7 +125,6 @@ gaussian_column_4c(global float4 *in, global float4 *out, unsigned int width, un
   yb = xp * coefp;
   yp = yb;
 
- 
   for(int y=0; y<height; y++)
   {
     const int idx = mad24((unsigned int)y, width, x);
@@ -113,7 +137,6 @@ gaussian_column_4c(global float4 *in, global float4 *out, unsigned int width, un
     yp = yc;
 
     out[idx] = yc;
-
   }
 
   // backward filter
@@ -122,6 +145,65 @@ gaussian_column_4c(global float4 *in, global float4 *out, unsigned int width, un
   yn = xn * coefn;
   ya = yn;
 
+  for(int y=height-1; y>-1; y--)
+  {
+    const int idx = mad24((unsigned int)y, width, x);
+
+    xc = clamp(in[idx], Labmin, Labmax);
+    yc = (a2 * xn) + (a3 * xa) - (b1 * yn) - (b2 * ya);
+
+    xa = xn;
+    xn = xc;
+    ya = yn;
+    yn = yc;
+
+    out[idx] += yc;
+  }
+}
+
+kernel void
+gaussian_column_2c(global float2 *in, global float2 *out, unsigned int width, unsigned int height,
+                  const float a0, const float a1, const float a2, const float a3, const float b1, const float b2,
+                  const float coefp, const float coefn, const float2 Labmax, const float2 Labmin)
+{
+  const unsigned int x = get_global_id(0);
+
+  if(x >= width) return;
+
+  float2 xp = (float2)0.0f;
+  float2 yb = (float2)0.0f;
+  float2 yp = (float2)0.0f;
+  float2 xc = (float2)0.0f;
+  float2 yc = (float2)0.0f;
+  float2 xn = (float2)0.0f;
+  float2 xa = (float2)0.0f;
+  float2 yn = (float2)0.0f;
+  float2 ya = (float2)0.0f;
+
+  // forward filter
+  xp = clamp(in[x], Labmin, Labmax); // 0*width+x
+  yb = xp * coefp;
+  yp = yb;
+
+  for(int y=0; y<height; y++)
+  {
+    const int idx = mad24((unsigned int)y, width, x);
+
+    xc = clamp(in[idx], Labmin, Labmax);
+    yc = (a0 * xc) + (a1 * xp) - (b1 * yp) - (b2 * yb);
+
+    xp = xc;
+    yb = yp;
+    yp = yc;
+
+    out[idx] = yc;
+  }
+
+  // backward filter
+  xn = clamp(in[mad24(height - 1, width, x)], Labmin, Labmax);
+  xa = xn;
+  yn = xn * coefn;
+  ya = yn;
 
   for(int y=height-1; y>-1; y--)
   {
@@ -130,17 +212,16 @@ gaussian_column_4c(global float4 *in, global float4 *out, unsigned int width, un
     xc = clamp(in[idx], Labmin, Labmax);
     yc = (a2 * xn) + (a3 * xa) - (b1 * yn) - (b2 * ya);
 
-    xa = xn; 
-    xn = xc; 
-    ya = yn; 
+    xa = xn;
+    xn = xc;
+    ya = yn;
     yn = yc;
 
     out[idx] += yc;
-
   }
 }
 
-kernel void 
+kernel void
 gaussian_column_1c(global float *in, global float *out, unsigned int width, unsigned int height,
                   const float a0, const float a1, const float a2, const float a3, const float b1, const float b2,
                   const float coefp, const float coefn, const float Labmax, const float Labmin)
@@ -164,7 +245,6 @@ gaussian_column_1c(global float *in, global float *out, unsigned int width, unsi
   yb = xp * coefp;
   yp = yb;
 
- 
   for(int y=0; y<height; y++)
   {
     const int idx = mad24((unsigned int)y, width, x);
@@ -177,7 +257,6 @@ gaussian_column_1c(global float *in, global float *out, unsigned int width, unsi
     yp = yc;
 
     out[idx] = yc;
-
   }
 
   // backward filter
@@ -194,16 +273,163 @@ gaussian_column_1c(global float *in, global float *out, unsigned int width, unsi
     xc = clamp(in[idx], Labmin, Labmax);
     yc = (a2 * xn) + (a3 * xa) - (b1 * yn) - (b2 * ya);
 
-    xa = xn; 
-    xn = xc; 
-    ya = yn; 
+    xa = xn;
+    xn = xc;
+    ya = yn;
     yn = yc;
 
     out[idx] += yc;
-
   }
 }
 
+__kernel void gaussian_kernel_9x9(global float *input,
+                                  global float *output,
+                                  const int width,
+                                  const int height,
+                                  const int ch,
+                                  global const float *kern,
+                                  const float minval,
+                                  const float maxval)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if((col >= width) || (row >= height)) return;
+
+  const int i = mad24(row, width, col);
+  const int w1 = width;
+  const int w2 = 2 * width;
+  const int w3 = 3 * width;
+  const int w4 = 4 * width;
+
+  #define h0 0
+  #define h1 1
+  #define h2 2
+  #define h3 3
+  #define h4 4
+
+  if(ch == 1)
+  {
+    global float *in = input;
+    global float *out = output;
+    float val = 0.0f;
+    if(col >= 4 && row >= 4 && col < width - 4 && row < height - 4)
+    {
+      val =
+            kern[10+4] * (in[i - w4 -h2]  + in[i - w4 +h2]  + in[i - w2 -h4]  + in[i - w2 +h4] + in[i + w2 -h4] + in[i + w2 +h4] + in[i + w4 -h2] + in[i + w4 +h2]) +
+            kern[5 +4] * (in[i - w4 -h1]  + in[i - w4 +h1]  + in[i - w1 -h4]  + in[i - w1 +h4] + in[i + w1 -h4] + in[i + w1 +h4] + in[i + w4 -h1] + in[i + w4 +h1]) +
+            kern[4]    * (in[i - w4 +h0]  + in[i      -h4]  + in[i      +h4]  + in[i + w4 +h0]) +
+            kern[15+3] * (in[i - w3 -h3]  + in[i - w3 +h3]  + in[i + w3 -h3]  + in[i + w3 +h3]) +
+            kern[10+3] * (in[i - w3 -h2]  + in[i - w3 +h2]  + in[i - w2 -h3]  + in[i - w2 +h3] + in[i + w2 -h3] + in[i + w2 +h3] + in[i + w3 -h2] + in[i + w3 +h2]) +
+            kern[ 5+3] * (in[i - w3 -h1]  + in[i - w3 +h1]  + in[i - w1 -h3]  + in[i - w1 +h3] + in[i + w1 -h3] + in[i + w1 +h3] + in[i + w3 -h1] + in[i + w3 +h1]) +
+            kern[   3] * (in[i - w3 +h0]  + in[i      -h3]  + in[i      +h3]  + in[i + w3 +h0]) +
+            kern[10+2] * (in[i - w2 -h2]  + in[i - w2 +h2]  + in[i + w2 -h2]  + in[i + w2 +h2]) +
+            kern[ 5+2] * (in[i - w2 -h1]  + in[i - w2 +h1]  + in[i - w1 -h2]  + in[i - w1 +h2] + in[i + w1 -h2] + in[i + w1 +h2] + in[i + w2 -h1] + in[i + w2 +h1]) +
+            kern[   2] * (in[i - w2 +h0]  + in[i      -h2]  + in[i      +h2]  + in[i + w2 +h0]) +
+            kern[ 5+1] * (in[i - w1 -h1]  + in[i - w1 +h1]  + in[i + w1 -h1]  + in[i + w1 +h1]) +
+            kern[   1] * (in[i - w1 +h0]  + in[i      -h1]  + in[i      +h1]  + in[i + w1 +h0]) +
+            kern[   0] * (in[i      +h0]);
+    }
+    else
+    {
+      for(int ir = -4; ir <= 4; ir++)
+      {
+        const int irow = row+ir;
+        if(irow >= 0 && irow < height)
+        {
+          for(int ic = -4; ic <= 4; ic++)
+          {
+            const int icol = col+ic;
+            if(icol >=0 && icol < width)
+              val += kern[5 * abs(ir) + abs(ic)] * in[mad24(irow, width, icol)];
+          }
+        }
+      }
+    }
+    out[i] = clamp(val, minval, maxval);
+  }
+
+  else if(ch == 2)
+  {
+    global float2 *in = (global float2 *)input;
+    global float2 *out = (global float2 *)output;
+    float2 val = 0.0f;
+    if(col >= 4 && row >= 4 && col < width - 4 && row < height - 4)
+    {
+      val =
+            kern[10+4] * (in[i - w4 -h2]  + in[i - w4 +h2]  + in[i - w2 -h4]  + in[i - w2 +h4] + in[i + w2 -h4] + in[i + w2 +h4] + in[i + w4 -h2] + in[i + w4 +h2]) +
+            kern[5 +4] * (in[i - w4 -h1]  + in[i - w4 +h1]  + in[i - w1 -h4]  + in[i - w1 +h4] + in[i + w1 -h4] + in[i + w1 +h4] + in[i + w4 -h1] + in[i + w4 +h1]) +
+            kern[4]    * (in[i - w4 +h0]  + in[i      -h4]  + in[i      +h4]  + in[i + w4 +h0]) +
+            kern[15+3] * (in[i - w3 -h3]  + in[i - w3 +h3]  + in[i + w3 -h3]  + in[i + w3 +h3]) +
+            kern[10+3] * (in[i - w3 -h2]  + in[i - w3 +h2]  + in[i - w2 -h3]  + in[i - w2 +h3] + in[i + w2 -h3] + in[i + w2 +h3] + in[i + w3 -h2] + in[i + w3 +h2]) +
+            kern[ 5+3] * (in[i - w3 -h1]  + in[i - w3 +h1]  + in[i - w1 -h3]  + in[i - w1 +h3] + in[i + w1 -h3] + in[i + w1 +h3] + in[i + w3 -h1] + in[i + w3 +h1]) +
+            kern[   3] * (in[i - w3 +h0]  + in[i      -h3]  + in[i      +h3]  + in[i + w3 +h0]) +
+            kern[10+2] * (in[i - w2 -h2]  + in[i - w2 +h2]  + in[i + w2 -h2]  + in[i + w2 +h2]) +
+            kern[ 5+2] * (in[i - w2 -h1]  + in[i - w2 +h1]  + in[i - w1 -h2]  + in[i - w1 +h2] + in[i + w1 -h2] + in[i + w1 +h2] + in[i + w2 -h1] + in[i + w2 +h1]) +
+            kern[   2] * (in[i - w2 +h0]  + in[i      -h2]  + in[i      +h2]  + in[i + w2 +h0]) +
+            kern[ 5+1] * (in[i - w1 -h1]  + in[i - w1 +h1]  + in[i + w1 -h1]  + in[i + w1 +h1]) +
+            kern[   1] * (in[i - w1 +h0]  + in[i      -h1]  + in[i      +h1]  + in[i + w1 +h0]) +
+            kern[   0] * (in[i      +h0]);
+    }
+    else
+    {
+      for(int ir = -4; ir <= 4; ir++)
+      {
+        const int irow = row+ir;
+        if(irow >= 0 && irow < height)
+        {
+          for(int ic = -4; ic <= 4; ic++)
+          {
+            const int icol = col+ic;
+            if(icol >=0 && icol < width)
+              val += kern[5 * abs(ir) + abs(ic)] * in[mad24(irow, width, icol)];
+          }
+        }
+      }
+    }
+    out[i] = clamp(val, minval, maxval);
+  }
+
+  else if(ch == 4)
+  {
+    global float4 *in = (global float4 *)input;
+    global float4 *out = (global float4 *)output;
+    float4 val = 0.0f;
+    if(col >= 4 && row >= 4 && col < width - 4 && row < height - 4)
+    {
+      val =
+            kern[10+4] * (in[i - w4 -h2]  + in[i - w4 +h2]  + in[i - w2 -h4]  + in[i - w2 +h4] + in[i + w2 -h4] + in[i + w2 +h4] + in[i + w4 -h2] + in[i + w4 +h2]) +
+            kern[5 +4] * (in[i - w4 -h1]  + in[i - w4 +h1]  + in[i - w1 -h4]  + in[i - w1 +h4] + in[i + w1 -h4] + in[i + w1 +h4] + in[i + w4 -h1] + in[i + w4 +h1]) +
+            kern[4]    * (in[i - w4 +h0]  + in[i      -h4]  + in[i      +h4]  + in[i + w4 +h0]) +
+            kern[15+3] * (in[i - w3 -h3]  + in[i - w3 +h3]  + in[i + w3 -h3]  + in[i + w3 +h3]) +
+            kern[10+3] * (in[i - w3 -h2]  + in[i - w3 +h2]  + in[i - w2 -h3]  + in[i - w2 +h3] + in[i + w2 -h3] + in[i + w2 +h3] + in[i + w3 -h2] + in[i + w3 +h2]) +
+            kern[ 5+3] * (in[i - w3 -h1]  + in[i - w3 +h1]  + in[i - w1 -h3]  + in[i - w1 +h3] + in[i + w1 -h3] + in[i + w1 +h3] + in[i + w3 -h1] + in[i + w3 +h1]) +
+            kern[   3] * (in[i - w3 +h0]  + in[i      -h3]  + in[i      +h3]  + in[i + w3 +h0]) +
+            kern[10+2] * (in[i - w2 -h2]  + in[i - w2 +h2]  + in[i + w2 -h2]  + in[i + w2 +h2]) +
+            kern[ 5+2] * (in[i - w2 -h1]  + in[i - w2 +h1]  + in[i - w1 -h2]  + in[i - w1 +h2] + in[i + w1 -h2] + in[i + w1 +h2] + in[i + w2 -h1] + in[i + w2 +h1]) +
+            kern[   2] * (in[i - w2 +h0]  + in[i      -h2]  + in[i      +h2]  + in[i + w2 +h0]) +
+            kern[ 5+1] * (in[i - w1 -h1]  + in[i - w1 +h1]  + in[i + w1 -h1]  + in[i + w1 +h1]) +
+            kern[   1] * (in[i - w1 +h0]  + in[i      -h1]  + in[i      +h1]  + in[i + w1 +h0]) +
+            kern[   0] * (in[i      +h0]);
+    }
+    else
+    {
+      for(int ir = -4; ir <= 4; ir++)
+      {
+        const int irow = row+ir;
+        if(irow >= 0 && irow < height)
+        {
+          for(int ic = -4; ic <= 4; ic++)
+          {
+            const int icol = col+ic;
+            if(icol >=0 && icol < width)
+              val += kern[5 * abs(ir) + abs(ic)] * in[mad24(irow, width, icol)];
+          }
+        }
+      }
+    }
+    out[i] = clamp(val, minval, maxval);
+  }
+}
 
 
 float
@@ -219,14 +445,14 @@ lookup_unbounded(read_only image2d_t lut, const float x, global float *a)
       const int2 p = (int2)((xi & 0xff), (xi >> 8));
       return read_imagef(lut, sampleri, p).x;
     }
-    else return a[1] * native_powr(x*a[0], a[2]);
+    else return a[1] * dtcl_pow(x*a[0], a[2]);
   }
   else return x;
 }
 
 
-kernel void 
-lowpass_mix(read_only image2d_t in, write_only image2d_t out, unsigned int width, unsigned int height, const float saturation, 
+kernel void
+lowpass_mix(read_only image2d_t in, write_only image2d_t out, unsigned int width, unsigned int height, const float saturation,
             read_only image2d_t ctable, global float *ca, read_only image2d_t ltable, global float *la, const int unbound)
 {
   const unsigned int x = get_global_id(0);
@@ -307,11 +533,11 @@ overlay(const float4 in_a, const float4 in_b, const float opacity, const float t
 #define UNBOUND_HIGHLIGHTS_A   (UNBOUND_A << 3)   /* 16 */
 #define UNBOUND_HIGHLIGHTS_B   (UNBOUND_B << 3)   /* 32 */
 
-kernel void 
-shadows_highlights_mix(read_only image2d_t in, read_only image2d_t mask, write_only image2d_t out, 
-                       unsigned int width, unsigned int height, 
+kernel void
+shadows_highlights_mix(read_only image2d_t in, read_only image2d_t mask, write_only image2d_t out,
+                       unsigned int width, unsigned int height,
                        const float shadows, const float highlights, const float compress,
-                       const float shadows_ccorrect, const float highlights_ccorrect, 
+                       const float shadows_ccorrect, const float highlights_ccorrect,
                        const unsigned int flags, const int unbound_mask, const float low_approximation,
                        const float whitepoint)
 {
@@ -346,5 +572,3 @@ shadows_highlights_mix(read_only image2d_t in, read_only image2d_t mask, write_o
   io.w = w;
   write_imagef(out, (int2)(x, y), io);
 }
-
-

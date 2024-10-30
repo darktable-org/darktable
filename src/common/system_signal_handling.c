@@ -227,7 +227,7 @@ void dt_set_signal_handlers()
   {
     const int errsv = errno;
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_set_signal_handlers] error: signal(SIGSEGV) returned SIG_ERR: %i (%s)\n",
+             "[dt_set_signal_handlers] error: signal(SIGSEGV) returned SIG_ERR: %i (%s)",
              errsv,
              strerror(errsv));
   }

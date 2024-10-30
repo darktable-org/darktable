@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -43,8 +43,9 @@
 extern "C" {
 
 /**
- * implementation of the 5d-color bilateral filter using andrew adams et al.'s
- * permutohedral lattice, which they kindly provided online as c++ code, under new bsd license.
+ * implementation of the 5d-color bilateral filter using andrew adams
+ * et al.'s permutohedral lattice, which they kindly provided online
+ * as c++ code, under new bsd license.
  */
 
 #define MAX_DIRECT_STAMP_RADIUS 6.0f
@@ -96,17 +97,18 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("apply edge-aware surface blur to denoise or smoothen textures"),
-                                      _("corrective and creative"),
-                                      _("linear, RGB, scene-referred"),
-                                      _("linear, RGB"),
-                                      _("linear, RGB, scene-referred"));
+  return dt_iop_set_description
+    (self, _("apply edge-aware surface blur to denoise or smoothen textures"),
+     _("corrective and creative"),
+     _("linear, RGB, scene-referred"),
+     _("linear, RGB"),
+     _("linear, RGB, scene-referred"));
 }
 
 static void _compute_sigmas(float sigma[5],
-                            struct dt_iop_bilateral_data_t *data,
+                            dt_iop_bilateral_data_t *data,
                             float scale,
                             float iscale)
 {
@@ -117,16 +119,18 @@ static void _compute_sigmas(float sigma[5],
   sigma[4] = data->sigma[4];
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
-                                         ivoid, ovoid, roi_in, roi_out))
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/,
+                                        self, piece->colors,
+                                        ivoid, ovoid, roi_in, roi_out))
     return;
+
   assert(roi_in->width == roi_out->width);
   assert(roi_in->height == roi_out->height);
 
@@ -136,11 +140,12 @@ void process(struct dt_iop_module_t *self,
   if (npixels > INT_MAX)
   {
     dt_iop_set_module_trouble_message(self, _("image too large"),
-       				      _("this module is unable to process\n"
-					 "images with more than 2 gigapixels.\n"
-					 "processing has been skipped."),
-				      "image too large, processing skipped");
-    dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid, roi_out->width, roi_out->height, 4);
+                                      _("this module is unable to process\n"
+                                        "images with more than 2 gigapixels.\n"
+                                        "processing has been skipped."),
+                                      "image too large, processing skipped");
+    dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid,
+                              roi_out->width, roi_out->height, 4);
     return;
   }
   else
@@ -154,16 +159,19 @@ void process(struct dt_iop_module_t *self,
   _compute_sigmas(sigma, data, roi_in->scale, piece->iscale);
   if(fmaxf(sigma[0], sigma[1]) < 0.1f)
   {
-    dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid, roi_out->width, roi_out->height, 4);
+    dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid,
+                              roi_out->width, roi_out->height, 4);
     return;
   }
 
   // if rad <= 6 use naive version!
   const int rad = (int)(3.0f * fmaxf(sigma[0], sigma[1]) + 1.0f);
-  if(rad <= MAX_DIRECT_STAMP_RADIUS && (piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL))
+  if(rad <= MAX_DIRECT_STAMP_RADIUS
+     && (piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL))
   {
     // no use denoising the thumbnail. takes ages without permutohedral
-    dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid, roi_out->width, roi_out->height, 4);
+    dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid,
+                              roi_out->width, roi_out->height, 4);
   }
   else if(rad <= MAX_DIRECT_STAMP_RADIUS)
   {
@@ -172,22 +180,19 @@ void process(struct dt_iop_module_t *self,
     const int wd = 2 * rad + 1;
     float *m = mat + rad * wd + rad;
     float weight = 0.0f;
-    const dt_aligned_pixel_t isig2col = { 1.f / (2.0f * sigma[2] * sigma[2]),
-                                          1.f / (2.0f * sigma[3] * sigma[3]),
-					  1.f / (2.0f * sigma[4] * sigma[4]),
-					  0.0f };
+    const dt_aligned_pixel_t isig2col = {1.0f / (2.0f * sigma[2] * sigma[2]),
+                                         1.0f / (2.0f * sigma[3] * sigma[3]),
+                                         1.0f / (2.0f * sigma[4] * sigma[4]),
+                                         0.0f };
     // init gaussian kernel
     for(int l = -rad; l <= rad; l++)
       for(int k = -rad; k <= rad; k++)
         weight += m[l * wd + k] = expf(-(l * l + k * k) / (2.f * sigma[0] * sigma[0]));
     for(int l = -rad; l <= rad; l++)
-      for(int k = -rad; k <= rad; k++) m[l * wd + k] /= weight;
+      for(int k = -rad; k <= rad; k++)
+        m[l * wd + k] /= weight;
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ivoid, ovoid, rad, height, width, wd, m, isig2col)				\
-    schedule(static)
-#endif
+    DT_OMP_FOR()
     for(size_t j = 0; j < height; j++)
     {
       const float *in = ((float *)ivoid) + 4 * (j * width);
@@ -196,40 +201,44 @@ void process(struct dt_iop_module_t *self,
       {
         // copy the unprocessed top/bottom border rows
         for(size_t i = 0; i < width; i++)
-	{
-	  copy_pixel_nontemporal(out + 4*i, in + 4*i);
-	}
+          copy_pixel_nontemporal(out + 4*i, in + 4*i);
         continue;
       }
+
       for(size_t i = 0; i < (size_t)rad; i++, in += 4)
       {
         // copy the unprocessed left border pixels
         copy_pixel_nontemporal(out + 4*i, in);
       }
+
       // apply blur to main body of image
       for(size_t i = rad; i < width - rad; i++, in += 4)
       {
         float sumw = 0.0f;
-	dt_aligned_pixel_t res = { 0.0f, 0.0f, 0.0f, 0.0f };
-	dt_aligned_pixel_t pixel;
-	copy_pixel(pixel, in);
+        dt_aligned_pixel_t res = { 0.0f, 0.0f, 0.0f, 0.0f };
+        dt_aligned_pixel_t pixel;
+        copy_pixel(pixel, in);
         for(ssize_t l = -rad; l <= rad; l++)
+        {
           for(ssize_t k = -rad; k <= rad; k++)
           {
-	    const float *inp = in + 4 * (l * width + k);
-	    dt_aligned_pixel_t chandiff;
-	    for_each_channel(c)
-	       chandiff[c] = (pixel[c] - inp[c]) * (pixel[c] - inp[c]) * isig2col[c];
-	    const float diff = chandiff[0] + chandiff[1] + chandiff[2];
-	    float pix_weight = m[l * wd + k] * expf(-diff);
+            const float *inp = in + 4 * (l * width + k);
+            dt_aligned_pixel_t chandiff;
             for_each_channel(c)
-	       res[c] += inp[c] * pix_weight;
+              chandiff[c] = (pixel[c] - inp[c]) * (pixel[c] - inp[c]) * isig2col[c];
+
+            const float diff = chandiff[0] + chandiff[1] + chandiff[2];
+            const float pix_weight = m[l * wd + k] * expf(-diff);
+            for_each_channel(c)
+              res[c] += inp[c] * pix_weight;
             sumw += pix_weight;
           }
-	for_each_channel(c)
-	   res[c] /= sumw;
-	copy_pixel_nontemporal(out + 4*i, res);
+        }
+        for_each_channel(c)
+          res[c] /= sumw;
+        copy_pixel_nontemporal(out + 4*i, res);
       }
+
       for(size_t i = width - rad; i < width; i++, in += 4)
       {
         // copy the unprocessed right border pixels
@@ -241,25 +250,25 @@ void process(struct dt_iop_module_t *self,
   else
   {
     for(int k = 0; k < 5; k++) sigma[k] = 1.0f / sigma[k];
-    
-    const size_t grid_points = (height*sigma[0]) * (width*sigma[1]) * sigma[2] * sigma[3] * sigma[4];
+
+    const size_t grid_points =
+      (height*sigma[0]) * (width*sigma[1]) * sigma[2] * sigma[3] * sigma[4];
     PermutohedralLattice<5, 4> lattice(width * height, dt_get_num_threads(), grid_points);
 
-// splat into the lattice
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ivoid, height, width, sigma)	\
-    shared(lattice)					\
-    schedule(static)
-#endif
+    // splat into the lattice
+    DT_OMP_FOR(shared(lattice))
     for(size_t j = 0; j < height; j++)
     {
       const float *in = (const float *)ivoid + j * width * 4;
       const int thread = dt_get_thread_num();
-      size_t index = j * width;
+      const size_t index = j * width;
       for(size_t i = 0; i < width; i++)
       {
-        float pos[5] = { i * sigma[0], j * sigma[1], in[0] * sigma[2], in[1] * sigma[3], in[2] * sigma[4] };
+        float pos[5] = { i * sigma[0],
+                         j * sigma[1],
+                         in[0] * sigma[2],
+                         in[1] * sigma[3],
+                         in[2] * sigma[4] };
         dt_aligned_pixel_t val = { in[0], in[1], in[2], 1.0f };
         lattice.splat(pos, val, index + i, thread);
         in += 4;
@@ -273,12 +282,7 @@ void process(struct dt_iop_module_t *self,
 
     // slice from the lattice
     float *const out = (float*)ovoid;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(out, npixels)	\
-    shared(lattice) \
-    schedule(static)
-#endif
+    DT_OMP_FOR(shared(lattice))
     for(size_t index = 0; index < npixels; index++)
     {
       dt_aligned_pixel_t val;
@@ -291,7 +295,9 @@ void process(struct dt_iop_module_t *self,
   }
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self,
+                   dt_iop_params_t *p1,
+                   dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_bilateral_params_t *p = (dt_iop_bilateral_params_t *)p1;
@@ -303,20 +309,26 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->sigma[4] = p->blue;
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self,
+               dt_dev_pixelpipe_t *pipe,
+               dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_bilateral_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_t *pipe,
+                  dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
+                     dt_develop_tiling_t *tiling)
 {
   dt_iop_bilateral_data_t *data = (dt_iop_bilateral_data_t *)piece->data;
   float sigma[5];
@@ -328,21 +340,25 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   {
     // permutohedral needs LOTS of memory
     // start with the fixed memory requirements
-    tiling->factor = 2.0f /*input+output*/ + 52.0f/16.0f /*52 bytes per pixel for ReplayEntry array*/;
-    // now try to estimate the variable needs for the hashtable based on the current parameters
+    tiling->factor = 2.0f /*input+output*/ + 52.0f/16.0f /*52 bytes per pixel for
+                                                           ReplayEntry array*/;
+    // now try to estimate the variable needs for the hashtable based
+    // on the current parameters
     size_t npixels = (size_t)roi_out->height * roi_out->width;
     size_t grid_points = (roi_out->height/sigma[0]) * (roi_out->width/sigma[1]) / sigma[2] / sigma[3] / sigma[4];
     size_t hash_bytes = PermutohedralLattice<5, 4>::estimatedBytes(grid_points, npixels);
     tiling->factor += (hash_bytes / (16.0f*npixels));
-    if(darktable.unmuted & DT_DEBUG_MEMORY)
-       std::cerr << "[bilateral] tiling factor = " << tiling->factor << ", npixels=" << npixels
-		 << ", estimated hashbytes=" << hash_bytes << std::endl;
+
+    dt_print(DT_DEBUG_MEMORY,
+             "[bilateral tiling requirements] "
+             "tiling factor=%f, npixels=%lu, estimated hashbytes=%lu",
+             tiling->factor, npixels, hash_bytes);
   }
   tiling->overhead = 0;
   tiling->overlap = rad;
   tiling->xalign = 1;
   tiling->yalign = 1;
-  return;
+  tiling->maxbuf = 1.0f;
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -368,11 +384,10 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_max(g->blue, 0.1);
   dt_bauhaus_slider_set_digits(g->blue, 4);
 }
-}
 
+} // extern "C"
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -51,10 +51,10 @@ typedef struct dt_lib_darktable_t
 
 
 /* expose function for darktable module */
-static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data);
+static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *self);
 /* button press callback */
 static gboolean _lib_darktable_button_press_callback(GtkWidget *widget, GdkEventButton *event,
-                                                     gpointer user_data);
+                                                     dt_lib_module_t *self);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -84,7 +84,7 @@ int position(const dt_lib_module_t *self)
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_darktable_t *d = (dt_lib_darktable_t *)g_malloc0(sizeof(dt_lib_darktable_t));
+  dt_lib_darktable_t *d = g_malloc0(sizeof(dt_lib_darktable_t));
   self->data = (void *)d;
 
   /* create drawing area */
@@ -119,7 +119,7 @@ void gui_init(dt_lib_module_t *self)
     g_free(logo);
     if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
     {
-      dt_print(DT_DEBUG_ALWAYS, "warning: can't load darktable logo from PNG file `%s'\n", filename);
+      dt_print(DT_DEBUG_ALWAYS, "warning: can't load darktable logo from PNG file `%s'", filename);
       goto done;
     }
     const int png_width = cairo_image_surface_get_width(surface),
@@ -135,7 +135,7 @@ void gui_init(dt_lib_module_t *self)
         = dt_cairo_image_surface_create_for_data(d->image_buffer, CAIRO_FORMAT_ARGB32, width, height, stride);
     if(cairo_surface_status(d->image) != CAIRO_STATUS_SUCCESS)
     {
-      dt_print(DT_DEBUG_ALWAYS, "warning: can't load darktable logo from PNG file `%s'\n", filename);
+      dt_print(DT_DEBUG_ALWAYS, "warning: can't load darktable logo from PNG file `%s'", filename);
       free(d->image_buffer);
       d->image_buffer = NULL;
       cairo_surface_destroy(d->image);
@@ -172,7 +172,7 @@ done:
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_darktable_t *d = (dt_lib_darktable_t *)self->data;
+  dt_lib_darktable_t *d = self->data;
   cairo_surface_destroy(d->image);
   free(d->image_buffer);
 
@@ -188,10 +188,9 @@ void gui_cleanup(dt_lib_module_t *self)
 
 
 
-static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_darktable_t *d = (dt_lib_darktable_t *)self->data;
+  dt_lib_darktable_t *d = self->data;
 
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
 
@@ -261,7 +260,7 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
 }
 
 static gboolean _lib_darktable_button_press_callback(GtkWidget *widget, GdkEventButton *event,
-                                                     gpointer user_data)
+                                                     dt_lib_module_t *self)
 {
   /* show about box */
   darktable_show_about_dialog();

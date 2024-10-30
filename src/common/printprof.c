@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2020 darktable developers.
+    Copyright (C) 2014-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -61,20 +61,18 @@ int dt_apply_printer_profile(void **in, uint32_t width, uint32_t height, int bpp
 
   if(!hTransform)
   {
-    dt_print(DT_DEBUG_ALWAYS, "error printer profile may be corrupted\n");
+    dt_print(DT_DEBUG_ALWAYS, "error printer profile may be corrupted");
     return 1;
   }
 
-  void *out = (void *)malloc((size_t)3 * width * height);
+  void *out = malloc((size_t)3 * width * height);
 
   if(bpp == 8)
   {
     const uint8_t *ptr_in = (uint8_t *)*in;
     uint8_t *ptr_out = (uint8_t *)out;
 
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(ptr_in, ptr_out, hTransform, height, width)
-#endif
+    DT_OMP_FOR(shared(hTransform))
     for(int k=0; k<height; k++)
       cmsDoTransform(hTransform, (const void *)&ptr_in[k*width*3], (void *)&ptr_out[k*width*3], width);
   }
@@ -83,9 +81,7 @@ int dt_apply_printer_profile(void **in, uint32_t width, uint32_t height, int bpp
     const uint16_t *ptr_in = (uint16_t *)*in;
     uint8_t *ptr_out = (uint8_t *)out;
 
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(ptr_in, ptr_out, hTransform, height, width)
-#endif
+    DT_OMP_FOR(shared(hTransform))
     for(int k=0; k<height; k++)
       cmsDoTransform(hTransform, (const void *)&ptr_in[k*width*3], (void *)&ptr_out[k*width*3], width);
   }
