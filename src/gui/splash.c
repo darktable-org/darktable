@@ -46,7 +46,7 @@ static GtkWidget *splash_screen = NULL;
 static GtkWidget *progress_text = NULL;
 static GtkWidget *remaining_text = NULL;
 static gboolean showing_remaining = FALSE;
-static GtkBox *remaining_box = NULL; //ab
+static GtkBox *remaining_box = NULL;
 
 static GtkWidget *exit_screen = NULL;
 
