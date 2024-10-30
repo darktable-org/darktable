@@ -67,9 +67,11 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img,
   int width, height;
   if(!WebPGetInfo(read_buffer, filesize, &width, &height))
   {
-    // If we couldn't get the webp metadata, then the file we're trying to read is most likely in
-    // a different format (darktable just trying different loaders until it finds the right one).
-    // We just have to return without complaining.
+    // The loader is currently called only for webp format files,
+    // so header parsing failure should be reported
+    dt_print(DT_DEBUG_ALWAYS,
+             "[webp_open] failed to parse header and get dimensions for %s",
+             filename);
     g_free(read_buffer);
     return DT_IMAGEIO_LOAD_FAILED;
   }
