@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-29 15:23-0300\n"
-"PO-Revision-Date: 2024-10-29 15:23-0300\n"
+"POT-Creation-Date: 2024-10-31 17:08-0300\n"
+"PO-Revision-Date: 2024-10-31 17:12-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -11052,9 +11052,8 @@ msgstr "procurar por novas releases do darktable"
 #.
 #. return data structure for script_manager
 #: ../src/external/lua-scripts/official/copy_paste_metadata.lua:43
-#, fuzzy
 msgid "copy paste metadata"
-msgstr "colar metadados"
+msgstr "copiar e colar metadados"
 
 #: ../src/external/lua-scripts/official/copy_paste_metadata.lua:44
 msgid ""
@@ -11116,9 +11115,8 @@ msgstr "colar os metadados nas imagens selecionadas"
 #.
 #. return data structure for script_manager
 #: ../src/external/lua-scripts/official/delete_long_tags.lua:47
-#, fuzzy
 msgid "delete long tags"
-msgstr "excluir etiqueta"
+msgstr "excluir etiquetas longas"
 
 #: ../src/external/lua-scripts/official/delete_long_tags.lua:48
 msgid "delete all tags longer than a set length"
@@ -11511,9 +11509,8 @@ msgstr "caminho das imagem selecionada"
 #. it is important to add them AFTER this one!
 #.
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:44
-#, fuzzy
 msgid "import filter manager"
-msgstr "filtragem de importação"
+msgstr "gerenciador de filtros de importação"
 
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:45
 msgid "manage import filters"
@@ -11789,9 +11786,8 @@ msgstr "problema executando visualizador de pdf"
 #.
 #. return data structure for script_manager
 #: ../src/external/lua-scripts/tools/executable_manager.lua:49
-#, fuzzy
 msgid "executable manager"
-msgstr "executável"
+msgstr "gerenciador de executáveis"
 
 #: ../src/external/lua-scripts/tools/executable_manager.lua:50
 msgid "manage the list of external executables used by the lua scripts"
@@ -11867,7 +11863,7 @@ msgstr "limpar caminho para %s"
 #. print the documentation for each of the functions
 #: ../src/external/lua-scripts/tools/get_lib_manpages.lua:91
 msgid "get library man pages"
-msgstr ""
+msgstr "obter páginas de manual da biblioteca"
 
 #: ../src/external/lua-scripts/tools/get_lib_manpages.lua:92
 msgid "output the internal library documentation as man pages"
@@ -11884,9 +11880,8 @@ msgstr "produzir adocumentação interna da biblioteca como man pages"
 #. print the documentation for the library
 #. print the documentation for each of the functions
 #: ../src/external/lua-scripts/tools/get_libdoc.lua:65
-#, fuzzy
 msgid "get library docs"
-msgstr "adicionar à biblioteca"
+msgstr "obter documentação da biblioteca"
 
 #: ../src/external/lua-scripts/tools/get_libdoc.lua:66
 msgid "retrieve and print the documentation to the console"
@@ -12027,9 +12022,8 @@ msgstr "automaticamente atualizar scripts para a versão correta"
 #. script handling
 #. ----------------
 #: ../src/external/lua-scripts/tools/script_manager.lua:408
-#, fuzzy
 msgid "contributed"
-msgstr "contribuidores"
+msgstr "contribuído"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:410
 msgid "examples"
