@@ -895,7 +895,7 @@ GList *dt_tag_get_list(const dt_imgid_t imgid)
 
   gboolean omit_tag_hierarchy = dt_conf_get_bool("omit_tag_hierarchy");
 
-  const uint32_t count = dt_tag_get_attached(imgid, &taglist, TRUE);
+  const uint32_t count = dt_tag_get_attached(imgid, &taglist, FALSE);
 
   if(count < 1)
     return NULL;
@@ -938,7 +938,7 @@ GList *dt_tag_get_hierarchical(const dt_imgid_t imgid)
   GList *taglist = NULL;
   GList *tags = NULL;
 
-  const uint32_t count = dt_tag_get_attached(imgid, &taglist, TRUE);
+  const uint32_t count = dt_tag_get_attached(imgid, &taglist, FALSE);
 
   if(count < 1)
     return NULL;
