@@ -23,12 +23,16 @@
 #include "develop/imageop.h"         // for IOP_CS_RGB
 #include "imageio/imageio_common.h"
 
-dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
+dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img,
+                                         const char *filename,
+                                         dt_mipmap_buffer_t *mbuf)
 {
   FILE *f = g_fopen(filename, "rb");
   if(!f)
   {
-    dt_print(DT_DEBUG_ALWAYS,"[webp_open] cannot open file for read: %s", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[webp_open] cannot open file for read: %s",
+             filename);
     return DT_IMAGEIO_FILE_NOT_FOUND;
   }
 
@@ -40,25 +44,34 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   if(!read_buffer)
   {
     fclose(f);
-    dt_print(DT_DEBUG_ALWAYS,"[webp_open] failed to allocate buffer for %s", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[webp_open] failed to allocate buffer for %s",
+             filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
+
   if(fread(read_buffer, 1, filesize, f) != filesize)
   {
     fclose(f);
     g_free(read_buffer);
-    dt_print(DT_DEBUG_ALWAYS,"[webp_open] failed to read %zu bytes from %s", filesize, filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[webp_open] failed to read %zu bytes from %s",
+             filesize,
+             filename);
     return DT_IMAGEIO_IOERROR;
   }
   fclose(f);
 
-  // WebPGetInfo should tell us the image dimensions needed for darktable image buffer allocation
+  // WebPGetInfo will tell us the image dimensions needed for
+  // darktable image buffer allocation
   int width, height;
   if(!WebPGetInfo(read_buffer, filesize, &width, &height))
   {
-    // If we couldn't get the webp metadata, then the file we're trying to read is most likely in
-    // a different format (darktable just trying different loaders until it finds the right one).
-    // We just have to return without complaining.
+    // The loader is currently called only for webp format files,
+    // so header parsing failure should be reported
+    dt_print(DT_DEBUG_ALWAYS,
+             "[webp_open] failed to parse header and get dimensions for %s",
+             filename);
     g_free(read_buffer);
     return DT_IMAGEIO_LOAD_FAILED;
   }
@@ -67,21 +80,30 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   // so the number of pixels will never overflow int
   const int npixels = width * height;
 
-  // libwebp can only decode into 8-bit integer channel format, so we have to use an intermediate
-  // buffer from which we will then perform the format conversion to the output buffer
+  // libwebp can only decode into 8-bit integer channel format,
+  // so we have to use an intermediate buffer from which we will
+  // then perform the format conversion to the output buffer
   uint8_t *int_RGBA_buffer = dt_alloc_align_uint8(npixels * 4);
   if(!int_RGBA_buffer)
   {
     g_free(read_buffer);
-    dt_print(DT_DEBUG_ALWAYS,"[webp_open] failed to alloc RGBA buffer for %s", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[webp_open] failed to alloc RGBA buffer for %s",
+             filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
-  uint8_t *int_RGBA_buf = WebPDecodeRGBAInto(read_buffer, filesize, int_RGBA_buffer, npixels * 4, width * 4);
-  if(!int_RGBA_buf)
+  uint8_t *decoded = WebPDecodeRGBAInto(read_buffer,
+                                        filesize,
+                                        int_RGBA_buffer,
+                                        npixels * 4,
+                                        width * 4);
+  if(!decoded)
   {
     g_free(read_buffer);
     dt_free_align(int_RGBA_buffer);
-    dt_print(DT_DEBUG_ALWAYS,"[webp_open] failed to decode file: %s", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[webp_open] failed to decode file: %s",
+             filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
@@ -89,7 +111,8 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   WebPData wp_data;
   wp_data.bytes = (uint8_t *)read_buffer;
   wp_data.size = filesize;
-  WebPMux *mux = WebPMuxCreate(&wp_data, 0); // 0 = data will NOT be copied to the mux object
+  // 0 in the call below means that data will NOT be copied to the mux object
+  WebPMux *mux = WebPMuxCreate(&wp_data, 0);
 
   if(mux)
   {
@@ -104,7 +127,8 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
     WebPMuxDelete(mux);
   }
 
-  // We've finished decoding and retrieving the ICC profile, the file read buffer can be freed
+  // We've finished decoding and retrieving the ICC profile,
+  // the file read buffer can be freed
   g_free(read_buffer);
 
 
@@ -118,7 +142,9 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   {
     g_free(read_buffer);
     dt_free_align(int_RGBA_buffer);
-    dt_print(DT_DEBUG_ALWAYS, "[webp_open] could not alloc full buffer for image: %s", img->filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[webp_open] could not alloc full buffer for image: %s",
+             img->filename);
     return DT_IMAGEIO_CACHE_FULL;
   }
 
@@ -127,7 +153,7 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   {
     dt_aligned_pixel_t pix = {0.0f, 0.0f, 0.0f, 0.0f};
     for_three_channels(c)
-      pix[c] = *(int_RGBA_buf + i * 4 + c) / 255.f;
+      pix[c] = *(int_RGBA_buffer + i * 4 + c) / 255.f;
     copy_pixel_nontemporal(&mipbuf[i * 4], pix);
   }
 
