@@ -1245,7 +1245,7 @@ static gboolean checker_motion_notify(
         "altered patches are marked with an outline\n"
         "click to select\n"
         "double-click to reset\n"
-        "right click to delete patch\n"
+        "right-click to delete patch\n"
         "shift+click while color picking to replace patch"),
       p->source_L[patch], p->source_a[patch], p->source_b[patch]);
   gtk_widget_set_tooltip_text(g->area, tooltip);
