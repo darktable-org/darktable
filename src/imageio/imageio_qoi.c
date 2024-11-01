@@ -38,19 +38,23 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
   FILE *f = g_fopen(filename, "rb");
   if(!f)
   {
-    dt_print(DT_DEBUG_ALWAYS,"[qoi_open] cannot open file for read: %s", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[qoi_open] cannot open file for read: %s",
+             filename);
     return DT_IMAGEIO_FILE_NOT_FOUND;
   }
 
   fseek(f, 0, SEEK_END);
   size_t filesize = ftell(f);
-  fseek(f, 0, SEEK_SET);
+  rewind(f);
 
   void *read_buffer = g_malloc(filesize);
   if(!read_buffer)
   {
     fclose(f);
-    dt_print(DT_DEBUG_ALWAYS, "[qoi_open] failed to allocate buffer for %s", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[qoi_open] failed to allocate read buffer for %s",
+             filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
@@ -59,7 +63,7 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
     fclose(f);
     g_free(read_buffer);
     dt_print(DT_DEBUG_ALWAYS,
-             "[qoi_open] failed to read %zu bytes from %s",
+             "[qoi_open] failed to read entire file (%zu bytes) from %s",
              filesize, filename);
     return DT_IMAGEIO_IOERROR;
   }
@@ -71,7 +75,9 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
   if(!int_RGBA_buf)
   {
     g_free(read_buffer);
-    dt_print(DT_DEBUG_ALWAYS,"[qoi_open] failed to decode file: %s", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[qoi_open] failed to decode file: %s",
+             filename);
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
