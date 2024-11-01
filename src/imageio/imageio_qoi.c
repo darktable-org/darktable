@@ -72,9 +72,10 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
   qoi_desc desc;
   uint8_t *int_RGBA_buf = qoi_decode(read_buffer, (int)filesize, &desc, 4);
 
+  g_free(read_buffer);
+
   if(!int_RGBA_buf)
   {
-    g_free(read_buffer);
     dt_print(DT_DEBUG_ALWAYS,
              "[qoi_open] failed to decode file: %s",
              filename);
@@ -89,7 +90,6 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
   float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!mipbuf)
   {
-    g_free(read_buffer);
     dt_print(DT_DEBUG_ALWAYS,
              "[qoi_open] could not alloc full buffer for image: %s",
              img->filename);
@@ -113,7 +113,6 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
   img->loader = LOADER_QOI;
 
   QOI_FREE(int_RGBA_buf);
-  g_free(read_buffer);
 
   return DT_IMAGEIO_OK;
 }
