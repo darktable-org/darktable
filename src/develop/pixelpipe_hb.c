@@ -1179,7 +1179,12 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
   if(!fitting && piece->process_tiling_ready)
   {
     dt_print_pipe(DT_DEBUG_PIPE,
-                  "process tiled", piece->pipe, module, DT_DEVICE_CPU, roi_in, roi_out);
+                        "process tiles",
+                        piece->pipe, module, DT_DEVICE_CPU, roi_in, roi_out, "%3i %s%s%s",
+                        module->iop_order,
+                        dt_iop_colorspace_to_name(cst_to),
+                        cst_to != cst_out ? " -> " : "",
+                        cst_to != cst_out ? dt_iop_colorspace_to_name(cst_out) : "");
     module->process_tiling(module, piece, input, *output, roi_in, roi_out, in_bpp);
 
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU
@@ -2095,8 +2100,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         // histogram collection for module
         if(success_opencl)
         {
-          _collect_histogram_on_CPU(pipe, dev, input, &roi_in, module, piece,
-                                    &pixelpipe_flow);
+          _collect_histogram_on_CPU(pipe, dev, input, &roi_in, module, piece, &pixelpipe_flow);
         }
 
         if(dt_atomic_get_int(&pipe->shutdown))
@@ -2113,8 +2117,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                         dt_iop_colorspace_to_name(cst_to),
                         cst_to != cst_out ? " -> " : "",
                         cst_to != cst_out ? dt_iop_colorspace_to_name(cst_out) : "");
-          const int err = module->process_tiling_cl(module, piece, input, *output,
-                                                     &roi_in, roi_out, in_bpp);
+          const int err = module->process_tiling_cl(module, piece, input, *output, &roi_in, roi_out, in_bpp);
           success_opencl = (err == CL_SUCCESS);
 
           if(!success_opencl)
