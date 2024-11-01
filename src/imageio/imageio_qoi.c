@@ -35,11 +35,6 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
                                         const char *filename,
                                         dt_mipmap_buffer_t *mbuf)
 {
-  // We shouldn't expect QOI images in files with an extension other than .qoi
-  char *ext = g_strrstr(filename, ".");
-  if(ext && g_ascii_strcasecmp(ext, ".qoi"))
-    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
-
   FILE *f = g_fopen(filename, "rb");
   if(!f)
   {
