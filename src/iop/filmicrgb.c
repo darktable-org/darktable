@@ -4332,7 +4332,7 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, dt_
     else if(g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)
     {
       gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("cycle through graph views.\n"
-                                                         "left click: cycle forward.\n"
+                                                         "left-click: cycle forward.\n"
                                                          "right-click: cycle backward.\n"
                                                          "double-click: reset to look view."));
     }

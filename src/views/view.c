@@ -1369,13 +1369,13 @@ static gchar *_mouse_action_get_string(dt_mouse_action_t *ma)
   switch(ma->action)
   {
     case DT_MOUSE_ACTION_LEFT:
-      dt_util_str_cat(&atxt, _("left click"));
+      dt_util_str_cat(&atxt, _("left-click"));
       break;
     case DT_MOUSE_ACTION_RIGHT:
       dt_util_str_cat(&atxt, _("right-click"));
       break;
     case DT_MOUSE_ACTION_MIDDLE:
-      dt_util_str_cat(&atxt, _("middle click"));
+      dt_util_str_cat(&atxt, _("middle-click"));
       break;
     case DT_MOUSE_ACTION_SCROLL:
       dt_util_str_cat(&atxt, _("scroll"));
@@ -1390,7 +1390,7 @@ static gchar *_mouse_action_get_string(dt_mouse_action_t *ma)
       dt_util_str_cat(&atxt, _("drag and drop"));
       break;
     case DT_MOUSE_ACTION_LEFT_DRAG:
-      dt_util_str_cat(&atxt, _("left click+drag"));
+      dt_util_str_cat(&atxt, _("left-click+drag"));
       break;
     case DT_MOUSE_ACTION_RIGHT_DRAG:
       dt_util_str_cat(&atxt, _("right-click+drag"));
