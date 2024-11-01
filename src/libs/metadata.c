@@ -53,6 +53,7 @@ typedef struct dt_lib_metadata_t
   GtkWidget *label[DT_METADATA_NUMBER];
   GtkWidget *button_box, *apply_button, *cancel_button;
   GList *last_act_on;
+  int num_grid_rows;
 } dt_lib_metadata_t;
 
 const char *name(dt_lib_module_t *self)
@@ -258,13 +259,15 @@ static void _append_kv(GList **l,
 
 static void _metadata_set_list(const int i,
                                GList **key_value,
-                               dt_lib_metadata_t *d)
+                               dt_lib_module_t *self)
 {
-  const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
-  if(dt_metadata_get_type(i) == DT_METADATA_TYPE_INTERNAL)
-    return;
+  dt_lib_metadata_t *d = self->data;
 
-  gchar *metadata = _get_buffer_text(GTK_TEXT_VIEW(d->textview[i]));
+  GtkWidget *cell = gtk_grid_get_child_at(GTK_GRID(self->widget), 1, i);
+  const uint32_t keyid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(cell), "id"));
+  GtkTextView *textview = g_object_get_data(G_OBJECT(cell), "textview");
+
+  gchar *metadata = _get_buffer_text(GTK_TEXT_VIEW(textview));
   const gboolean this_changed = d->metadata_list[i]
                                 && !_is_leave_unchanged(d->textview[i])
                               ? strcmp(metadata, d->metadata_list[i]->data)
@@ -280,8 +283,8 @@ static void _write_metadata(dt_lib_module_t *self)
   dt_lib_metadata_t *d = self->data;
 
   GList *key_value = NULL;
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
-    _metadata_set_list(i, &key_value, d);
+  for(unsigned int i = 0; i < d->num_grid_rows; i++)
+    _metadata_set_list(i, &key_value, self);
 
   if(key_value && d->last_act_on)
   {
@@ -679,12 +682,25 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(0));
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
 
-  for(int i = 0; i < DT_METADATA_NUMBER; i++)
+  sqlite3_stmt *stmt;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                          "SELECT id, name, title, type, visible, private"
+                          " FROM data.meta_data"
+                          " WHERE type <> 2"
+                          " AND visible = 1"
+                          " ORDER BY display_order",
+                          -1, &stmt, NULL);
+
+  d->num_grid_rows = 0;
+  int i = 0;
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    if(dt_metadata_get_type_by_display_order(i) == DT_METADATA_TYPE_INTERNAL)
-      continue;
-    const char *name = (char *)dt_metadata_get_name_by_display_order(i);
-    d->label[i] = dt_ui_label_new(_(name));
+    int id = sqlite3_column_int(stmt, 0);
+    char *title = (char *)sqlite3_column_text(stmt, 2);
+
+    d->label[i] = dt_ui_label_new(_(title));
     gtk_widget_set_halign(d->label[i], GTK_ALIGN_FILL);
     GtkWidget *labelev = gtk_event_box_new();
     gtk_widget_set_tooltip_text(labelev, _("double-click to reset"));
@@ -693,7 +709,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_grid_attach(grid, labelev, 0, i, 1, 1);
 
     GtkWidget *textview = gtk_text_view_new();
-    dt_action_define(DT_ACTION(self), NULL, name, textview, &dt_action_def_entry);
+    dt_action_define(DT_ACTION(self), NULL, title, textview, &dt_action_def_entry);
     gtk_widget_set_tooltip_text(textview,
               _("metadata text"
               "\nctrl+enter inserts a new line (caution, may not be compatible with standard metadata)"
@@ -709,9 +725,11 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_set_name(unchanged, "dt-metadata-multi");
     gtk_text_view_add_child_in_window(GTK_TEXT_VIEW(textview), unchanged, GTK_TEXT_WINDOW_WIDGET, 0, 0);
 
-    d->setting_name[i] = g_strdup_printf("plugins/lighttable/metadata/%s_text_height", name);
+    d->setting_name[i] = g_strdup_printf("plugins/lighttable/metadata/%s_text_height", title);
 
     GtkWidget *swindow = dt_ui_resize_wrap(GTK_WIDGET(textview), 100, d->setting_name[i]);
+    g_object_set_data(G_OBJECT(swindow), "id", GINT_TO_POINTER(id));
+    g_object_set_data(G_OBJECT(swindow), "textview", GINT_TO_POINTER(textview));
 
     gtk_grid_attach(grid, swindow, 1, i, 1, 1);
     gtk_widget_set_hexpand(swindow, TRUE);
@@ -736,7 +754,11 @@ void gui_init(dt_lib_module_t *self)
     d->textview[i] = GTK_TEXT_VIEW(textview);
     gtk_widget_set_hexpand(textview, TRUE);
     gtk_widget_set_vexpand(textview, TRUE);
+    i++;
+    d->num_grid_rows++;
   }
+
+  sqlite3_finalize(stmt);
 
   // apply button
   d->apply_button = dt_action_button_new(self, N_("apply"), _apply_button_clicked, self,
