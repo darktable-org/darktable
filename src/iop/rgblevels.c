@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2023 darktable developers.
+    Copyright (C) 2019-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1114,7 +1114,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->bt_select_region,
                               _("apply auto levels based on a region defined by the user\n"
                                 "click and drag to draw the area\n"
-                                "right click to cancel"));
+                                "right-click to cancel"));
 
   GtkWidget *autolevels_box =
     gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1054,7 +1054,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
          _("start typing for incremental search"),
          _("click to filter shortcuts list"),
          _selected_shortcut ?
-         _("\nright click to show action of selected shortcut")
+         _("\nright-click to show action of selected shortcut")
          : "",
          def || action->type > DT_ACTION_TYPE_SECTION ?
          _("\ndouble-click to define new shortcut")
@@ -1113,7 +1113,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
                                             add_remove_qap == CPF_DIRECTION_UP   ? _("ctrl+click to add to quick access panel\n") :
                                             add_remove_qap == CPF_DIRECTION_DOWN ? _("ctrl+click to remove from quick access panel\n")  : "",
                                             _("scroll to change default speed"),
-                                            _("right click to exit mapping mode"));
+                                            _("right-click to exit mapping mode"));
     }
     else if(DT_IS_BAUHAUS_WIDGET(widget)
             && DT_BAUHAUS_WIDGET(widget)->type == DT_BAUHAUS_SLIDER
