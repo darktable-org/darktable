@@ -1623,9 +1623,6 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
       ret = dt_imageio_open_heif(img, filename, buf);
 
     if(!_image_handled(ret))
-      ret = dt_imageio_open_webp(img, filename, buf);
-
-    if(!_image_handled(ret))
       ret = dt_imageio_open_exr(img, filename, buf);
 
     if(!_image_handled(ret))
