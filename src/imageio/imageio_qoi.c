@@ -90,6 +90,7 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
   float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!mipbuf)
   {
+    QOI_FREE(int_RGBA_buf);
     dt_print(DT_DEBUG_ALWAYS,
              "[qoi_open] could not alloc full buffer for image: %s",
              img->filename);
