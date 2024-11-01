@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-10-27 21:08+0100\n"
-"PO-Revision-Date: 2024-10-27 23:26+0100\n"
+"PO-Revision-Date: 2024-11-01 12:21+0100\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -123,7 +123,7 @@ msgstr "Importzeit"
 #: ../build/bin/conf_gen.h:728
 msgctxt "preferences"
 msgid "folder name"
-msgstr "Verzeichnisname"
+msgstr "Ordnername"
 
 #: ../build/bin/conf_gen.h:736
 msgctxt "preferences"
@@ -189,9 +189,8 @@ msgid ""
 "if enabled, only raw files will be allowed to import. non-raw files will not "
 "be visible in the dialog and will not be imported."
 msgstr ""
-"Wenn diese Option aktiviert ist, können nur RAW Dateien importiert werden. "
-"Nicht-RAW Dateien werden im Dialogfeld nicht angezeigt und können nicht "
-"importiert werden."
+"wenn aktiviert, können nur RAW Dateien importiert werden. Nicht-RAW Dateien "
+"werden im Dialogfeld nicht angezeigt und nicht importiert."
 
 #: ../build/bin/conf_gen.h:984
 msgid "apply metadata"
@@ -203,11 +202,11 @@ msgstr "Metadaten zu allen neu importierten Bildern hinzufügen."
 
 #: ../build/bin/conf_gen.h:991
 msgid "recursive directory"
-msgstr "inkl. Unterverzeichnisse"
+msgstr "inkl. Unterordner"
 
 #: ../build/bin/conf_gen.h:992
 msgid "recursive directory traversal when importing filmrolls"
-msgstr "rekursiver Import von Verzeichnissen"
+msgstr "rekursiver Import von Ordnern"
 
 #: ../build/bin/conf_gen.h:998
 msgid "creator to be applied when importing"
@@ -248,8 +247,8 @@ msgid ""
 "ignore EXIF rating. if not set and EXIF rating is found, it overrides "
 "'initial rating'"
 msgstr ""
-"Ignoriere Bewertung aus EXIF Daten. Falls dieses Flag nicht gesetzt ist wird "
-"die Bewertung aus den EXIF Daten übernommen, sofern es dort gesetzt ist."
+"Ignoriere Bewertung aus EXIF Daten. Falls nicht gesetzt wird die Bewertung "
+"aus den EXIF Daten übernommen, sofern es dort gesetzt ist."
 
 #: ../build/bin/conf_gen.h:1068
 msgid "import job"
@@ -273,7 +272,7 @@ msgstr ""
 "Datum/Uhrzeit mit Format: JJJJ:MM:TT[ hh:mm:ss[.sss]] eingeben, wenn das "
 "aktuelle Datum/Uhrzeit bei der Verwendung der Variablen \n"
 "$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS), $(MSEC)\n"
-"überschrieben werden soll:\n"
+"überschrieben werden soll.\n"
 "sonst das Feld leer lassen"
 
 #: ../build/bin/conf_gen.h:1082
@@ -414,9 +413,7 @@ msgstr "nur aktuelle Sammlung"
 
 #: ../build/bin/conf_gen.h:2014
 msgid "when set limit the images drawn to the current filmstrip"
-msgstr ""
-"Zeige nur Bilder auf der Karte an, die Bestandteil der aktuellen Sammlung "
-"sind."
+msgstr "Wenn gesetzt werden nur Bilder des aktuellen Filmstreifens angezeigt."
 
 #: ../build/bin/conf_gen.h:2020
 msgid "max images"
@@ -424,7 +421,7 @@ msgstr "Maximale Anzahl Bilder"
 
 #: ../build/bin/conf_gen.h:2021
 msgid "the maximum number of image thumbnails drawn on the map"
-msgstr "maximale Anzahl Miniaturbilder, die auf der Karte gezeigt werden"
+msgstr "maximale Anzahl Vorschaubilder, die auf der Karte gezeigt werden"
 
 #: ../build/bin/conf_gen.h:2027
 msgid "group size factor"
@@ -453,7 +450,7 @@ msgstr ""
 #: ../build/bin/conf_gen.h:2040
 msgctxt "preferences"
 msgid "thumbnail"
-msgstr "Miniaturbild"
+msgstr "Vorschaubild"
 
 #: ../build/bin/conf_gen.h:2041
 msgctxt "preferences"
@@ -462,14 +459,14 @@ msgstr "Anzahl"
 
 #: ../build/bin/conf_gen.h:2044
 msgid "thumbnail display"
-msgstr "Miniaturbild Anzeige"
+msgstr "Vorschaubild Anzeige"
 
 #: ../build/bin/conf_gen.h:2045
 msgid ""
 "three options are available: images thumbnails, only the count of images of "
 "the group or nothing"
 msgstr ""
-"Es stehen drei Optionen zur Verfügung: Miniaturbilder, nur Anzahl der Bilder "
+"Es stehen drei Optionen zur Verfügung: Vorschaubilder, nur Anzahl der Bilder "
 "der Gruppe oder nichts"
 
 #: ../build/bin/conf_gen.h:2058
@@ -883,7 +880,7 @@ msgstr "Sitzungs-Optionen"
 
 #: ../build/bin/preferences_gen.h:4310
 msgid "base filmroll's directory"
-msgstr "Basisverzeichnis für Filmrollen"
+msgstr "Basis-Ordner für Filmrollen"
 
 #: ../build/bin/preferences_gen.h:4325 ../build/bin/preferences_gen.h:4364
 #: ../build/bin/preferences_gen.h:4398 ../build/bin/preferences_gen.h:4437
@@ -940,7 +937,7 @@ msgstr "Doppelklick, um auf „%s” zurückzusetzen"
 
 #: ../build/bin/preferences_gen.h:4328
 msgid "directory where new imported filmrolls are created"
-msgstr "Verzeichnis, in dem neue importierte Filmrollen erstellt werden"
+msgstr "Ordner, in dem neue importierte Filmrollen erstellt werden"
 
 #: ../build/bin/preferences_gen.h:4349
 msgid "filmroll name"
@@ -1184,7 +1181,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4876
 msgid "enable smooth scrolling for lighttable thumbnails"
-msgstr "flüssiges Scrollen für Leuchttisch Miniaturbilder aktivieren"
+msgstr "flüssiges Scrollen für Leuchttisch Vorschaubilder aktivieren"
 
 #: ../build/bin/preferences_gen.h:4889
 msgid ""
@@ -1529,7 +1526,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5976
 msgid "LUT 3D root folder"
-msgstr "3D-LUT-Verzeichnis"
+msgstr "3D LUT-Ordner"
 
 #: ../build/bin/preferences_gen.h:5982 ../src/control/jobs/control_jobs.c:2155
 #: ../src/control/jobs/control_jobs.c:2211 ../src/gui/preferences.c:1098
@@ -1540,16 +1537,15 @@ msgstr "3D-LUT-Verzeichnis"
 #: ../src/libs/import.c:1970 ../src/libs/import.c:2028 ../src/libs/styles.c:442
 #: ../src/lua/preferences.c:668
 msgid "select directory"
-msgstr "Verzeichnis wählen"
+msgstr "Ordner wählen"
 
 #: ../build/bin/preferences_gen.h:5996
 msgid ""
 "this folder (and sub-folders) contains LUT files used by LUT 3D module. "
 "(restart required)"
 msgstr ""
-"Dieses Verzeichnis (einschließlich Unterverzeichnisse) enthält die LUT-"
-"Dateien, die vom 3D LUT-Modul verwendet werden. Bei Änderung Neustart "
-"erforderlich."
+"Dieser Ordner (einschließlich Unterordner) enthält die LUT-Dateien, die vom "
+"LUT 3D Modul verwendet werden. Bei Änderung Neustart erforderlich."
 
 #: ../build/bin/preferences_gen.h:6017
 msgid "auto-apply pixel workflow defaults"
@@ -1661,8 +1657,8 @@ msgid ""
 "if switched on, thumbnails and previews are rendered at lower quality but 4 "
 "times faster"
 msgstr ""
-"Wenn aktiv werden Vorschaubilder mit reduzierter Qualität aber vierfacher "
-"Geschwindigkeit berechnet."
+"wenn aktiv werden Vorschaubilder mit reduzierter Qualität aber vierfacher "
+"Geschwindigkeit berechnet"
 
 #: ../build/bin/preferences_gen.h:6219
 msgid "OpenCL"
@@ -1871,16 +1867,15 @@ msgstr "Immer nachfragen, bevor eine Bilddatei kopiert wird."
 
 #: ../build/bin/preferences_gen.h:6912
 msgid "ask before removing empty folders"
-msgstr "fragen, bevor leere Verzeichnisse entfernt werden"
+msgstr "fragen, bevor leere Ordner entfernt werden"
 
 #: ../build/bin/preferences_gen.h:6925
 msgid ""
 "always ask the user before removing any empty folder. this can happen after "
 "moving or deleting images."
 msgstr ""
-"Immer nachfragen, bevor leere Verzeichnisse gelöscht werden. \n"
-"Leere Verzeichnisse können entstehen, wenn Bilder verschoben oder gelöscht "
-"werden."
+"Immer nachfragen, bevor leere Ordner gelöscht werden. \n"
+"Leere Ordner können entstehen, wenn Bilder verschoben oder gelöscht werden."
 
 #: ../build/bin/preferences_gen.h:6946
 msgid "ask before deleting a tag"
@@ -2359,14 +2354,14 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:8310
 msgid "number of folder levels to show in lists"
-msgstr "Anzahl der anzuzeigenden Verzeichnis-Ebenen"
+msgstr "Anzahl der anzuzeigenden Ordner-Ebenen"
 
 #: ../build/bin/preferences_gen.h:8334
 msgid ""
 "the number of folder levels to show in film roll names, starting from the "
 "right"
 msgstr ""
-"Bestimmt die Anzahl an Verzeichnis-Ebenen, die im Filmrollennamen angezeigt "
+"Bestimmt die Anzahl an Ordner-Ebenen, die im Filmrollennamen angezeigt "
 "werden sollen, beginnend von rechts"
 
 #: ../build/bin/preferences_gen.h:8355
@@ -3230,7 +3225,7 @@ msgstr "Input-Sättigung"
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:126
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:211
 msgid "contrast fulcrum"
-msgstr "Kontrast Ansatzpunkt"
+msgstr "Pivot des Kontrasts"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:132
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:215
@@ -3298,7 +3293,7 @@ msgstr "Schattenverlauf"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:304
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:513
 msgid "white fulcrum"
-msgstr "Weiß Ansatzpunkt"
+msgstr "Pivot Weiß"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:310
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:517
@@ -3369,7 +3364,7 @@ msgstr "Brillianz Global"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:394
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:573
 msgid "mask middle-gray fulcrum"
-msgstr "Mittelgrau Ansatzpunkt für Maskierung"
+msgstr "Pivot des Mittelgrau der Maske"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:400
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:577
@@ -3379,7 +3374,7 @@ msgstr "Globale Lebendigkeit"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:406
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:581
 msgid "contrast gray fulcrum"
-msgstr "Kontrast Grau Ansatzpunkt"
+msgstr "Pivot Grau Kontrast"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:412
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:585
@@ -5614,8 +5609,7 @@ msgstr "Erweiterung zu lang für die Option --out-ext"
 #, c-format
 msgid "notice: input file or dir '%s' doesn't exist, skipping\n"
 msgstr ""
-"Achtung: Eingabedatei oder Verzeichnis „%s” existiert nicht, wird "
-"übersprungen\n"
+"Achtung: Eingabedatei oder Ordner „%s” existiert nicht, wird übersprungen\n"
 
 #: ../src/cli/main.c:376
 #, c-format
@@ -5775,7 +5769,7 @@ msgstr "Filmrolle"
 #: ../src/common/collection.c:599
 #: ../src/external/lua-scripts/tools/script_manager.lua:1409
 msgid "folder"
-msgstr "Verzeichnis"
+msgstr "Ordner"
 
 #: ../src/common/collection.c:601
 msgid "camera"
@@ -6955,14 +6949,14 @@ msgstr ""
 #: ../src/common/film.c:341
 msgid "do you want to delete this empty directory?"
 msgid_plural "do you want to delete these empty directories?"
-msgstr[0] "Soll dieses leere Verzeichnis gelöscht werden?"
-msgstr[1] "Sollen diese leeren Verzeichnisse gelöscht werden?"
+msgstr[0] "Soll dieser leere Ordner gelöscht werden?"
+msgstr[1] "Sollen diese leeren Ordner gelöscht werden?"
 
 #: ../src/common/film.c:348
 msgid "delete empty directory?"
 msgid_plural "delete empty directories?"
-msgstr[0] "leeres Verzeichnis löschen?"
-msgstr[1] "leere Verzeichnisse löschen?"
+msgstr[0] "leeren Ordner löschen?"
+msgstr[1] "leere Ordner löschen?"
 
 #: ../src/common/film.c:368 ../src/gui/preferences.c:832
 #: ../src/gui/styles_dialog.c:586 ../src/libs/geotagging.c:841
@@ -7223,7 +7217,7 @@ msgid ""
 msgstr ""
 "darktable lädt %s aus\n"
 "<b>%s</b>\n"
-"oder, falls dieses Verzeichnis nicht existiert, aus\n"
+"oder, falls dieser Ordner nicht existiert, aus\n"
 "<b>%s</b>"
 
 #. clang-format off
@@ -9252,11 +9246,11 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:3611
 msgid "fulcrum"
-msgstr "Ansatzpunkt"
+msgstr "Pivot"
 
 #: ../src/develop/blend_gui.c:3615
 msgid "adjust the fulcrum used by some blending operations"
-msgstr "Ansatzpunkt für einige Überblendoperationen anpassen"
+msgstr "Pivot anpassen, der von einigen Überblendoperationen verwendet wird"
 
 #. Add opacity/scale sliders to table
 #: ../src/develop/blend_gui.c:3623 ../src/iop/overlay.c:1094
@@ -10645,7 +10639,7 @@ msgstr "$(ROLL.NAME) – Filmrolle des Input Bildes"
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:863
 #: ../src/gui/gtkentry.c:174
 msgid "$(FILE.FOLDER) - folder containing the input image"
-msgstr "$(FILE.FOLDER) – Verzeichnis des Input Bildes"
+msgstr "$(FILE.FOLDER) – Ordner des Input Bildes"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:864
 #: ../src/gui/gtkentry.c:175
@@ -10988,17 +10982,17 @@ msgstr "$(SIDECAR_TXT) - Inhalt der .txt-Sidecar-Datei, falls vorhanden"
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:942
 #: ../src/gui/gtkentry.c:254
 msgid "$(FOLDER.PICTURES) - pictures folder"
-msgstr "$(PICTURES.FOLDER) – Bilder-Verzeichnis"
+msgstr "$(PICTURES.FOLDER) – Bilder-Ordner"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:943
 #: ../src/gui/gtkentry.c:255
 msgid "$(FOLDER.HOME) - home folder"
-msgstr "$(FOLDER.HOME) – Nutzer-Verzeichnis"
+msgstr "$(FOLDER.HOME) – Nutzer-Ordner"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:944
 #: ../src/gui/gtkentry.c:256
 msgid "$(FOLDER.DESKTOP) - desktop folder"
-msgstr "$(FOLDER.DESKTOP) – Desktop-Verzeichnis"
+msgstr "$(FOLDER.DESKTOP) – Desktop-Ordner"
 
 #. _("$(OPENCL.ACTIVATED) - whether OpenCL is activated"),
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:946
@@ -12254,11 +12248,11 @@ msgstr "URL des Git-Repositorys eingeben, das die gewünschten Skripte enthält"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1343
 msgid "name of new folder"
-msgstr "Name de neuen Verzeichnis"
+msgstr "Name de neuen Ordner"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1344
 msgid "enter a folder name for the additional scripts"
-msgstr "einen Verzeichnisnamen für die zusätzlichen Skripte eingeben"
+msgstr "einen Ordnernamen für die zusätzlichen Skripte eingeben"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1349
 msgid "URL to download additional scripts from"
@@ -12292,7 +12286,7 @@ msgstr "Skripte hinzufügen"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1410
 msgid "select the script folder"
-msgstr "Script-Verzeichnis auswählen"
+msgstr "Script-Ordner auswählen"
 
 #. a script "button" consists of:
 #. a button to start and stop the script
@@ -21436,7 +21430,7 @@ msgstr "Fehler: Konnte keinen Puffer für gmz-LUT-Datei reservieren."
 #: ../src/iop/lut3d.c:501
 #, c-format
 msgid "invalid png file %s"
-msgstr "ungültige PNG-Datei „%s”"
+msgstr "ungültige PNG Datei „%s”"
 
 #: ../src/iop/lut3d.c:509
 #, c-format
@@ -21446,34 +21440,34 @@ msgstr "PNG-Bittiefe %d nicht unterstützt"
 #: ../src/iop/lut3d.c:523 ../src/iop/lut3d.c:533
 #, c-format
 msgid "invalid level in png file %d %d"
-msgstr "ungültiger Grad PNG-Datei %d %d"
+msgstr "ungültiges Level in PNG Datei %d %d"
 
 #: ../src/iop/lut3d.c:528
 msgid "this darktable build is not compatible with compressed CLUT"
-msgstr "Dieser darktable-Build ist nicht kompatibel zu komprimierter CLUT."
+msgstr "Dieser darktable-Build ist nicht kompatibel zu komprimierten CLUTs"
 
 #: ../src/iop/lut3d.c:545 ../src/iop/lut3d.c:797
 #, c-format
 msgid "error - LUT 3D size %d exceeds the maximum supported"
-msgstr "Fehler: LUT 3D Größe %d überschreitet die maximal unterstützte Größe"
+msgstr "Fehler: 3D-LUT Größe %d überschreitet die maximal unterstützte Größe"
 
 #: ../src/iop/lut3d.c:557
 msgid "error allocating buffer for png LUT"
-msgstr "Fehler: Konnte keinen Puffer für png-LUT-Datei reservieren."
+msgstr "Fehler: Konnte keinen Puffer für PNG LUT-Datei reservieren"
 
 #: ../src/iop/lut3d.c:565
 #, c-format
 msgid "error - could not read png image %s"
-msgstr "Fehler: konnte Datei „%s” nicht laden"
+msgstr "Fehler: konnte PNG Datei „%s” nicht laden"
 
 #: ../src/iop/lut3d.c:575
 msgid "error - allocating buffer for png LUT"
-msgstr "Fehler: konnte keinen Puffer für png-LUT-Datei reservieren"
+msgstr "Fehler: konnte keinen Puffer für PNG LUT-Datei reservieren"
 
 #: ../src/iop/lut3d.c:750
 #, c-format
 msgid "error - invalid cube file: %s"
-msgstr "Fehler: ungültige Cube-Datei: „%s”"
+msgstr "Fehler: ungültige CUBE-Datei: „%s”"
 
 #: ../src/iop/lut3d.c:764
 msgid "DOMAIN MIN other than 0 is not supported"
@@ -21485,30 +21479,30 @@ msgstr "DOMAIN MAX ≠ 1 nicht unterstützt"
 
 #: ../src/iop/lut3d.c:786
 msgid "1D cube LUT is not supported"
-msgstr "1D cube LUTs nicht unterstützt"
+msgstr "1D CUBE LUTs nicht unterstützt"
 
 #: ../src/iop/lut3d.c:808
 msgid "error - allocating buffer for cube LUT"
-msgstr "Fehler: konnte keinen Puffer für cube-LUT reservieren"
+msgstr "Fehler: konnte keinen Puffer für CUBE LUT reservieren"
 
 #: ../src/iop/lut3d.c:819
 msgid "error - cube LUT size is not defined"
-msgstr "Fehler: cube-LUT Größe nicht definiert"
+msgstr "Fehler: CUBE LUT Größe nicht definiert"
 
 #: ../src/iop/lut3d.c:830
 #, c-format
 msgid "error - cube LUT invalid number line %d"
-msgstr "Fehler: cube-LUT Zeilenzahl %d nicht korrekt"
+msgstr "Fehler: CUBE LUT Zeilenzahl %d nicht korrekt"
 
 #: ../src/iop/lut3d.c:846
 #, c-format
 msgid "error - cube LUT lines number %d is not correct, should be %d"
-msgstr "Fehler: cube-LUT Zeilenzahl %d nicht korrekt, sollte %d sein."
+msgstr "Fehler: CUBE LUT Zeilenzahl %d nicht korrekt, sollte %d sein"
 
 #: ../src/iop/lut3d.c:856
 #, c-format
 msgid "warning - cube LUT has %d values out of range [0,1]"
-msgstr "Warnung: cube LUT %d Werte außerhalb des Bbereichs [0,1]"
+msgstr "Warnung: CUBE LUT hat %d Werte außerhalb des Bbereichs [0,1]"
 
 #: ../src/iop/lut3d.c:881
 #, c-format
@@ -21518,7 +21512,7 @@ msgstr "Fehler: Ungültige 3DL-Datei „%s”"
 #: ../src/iop/lut3d.c:902
 #, c-format
 msgid "error - the maximum shaper LUT value %d is too low"
-msgstr "Fehler: maximaler Shaper LUT Wert %d ist zu klein."
+msgstr "Fehler: maximaler Shaper LUT Wert %d ist zu klein"
 
 #: ../src/iop/lut3d.c:913
 msgid "error - allocating buffer for 3dl LUT"
@@ -21538,7 +21532,7 @@ msgstr "Fehler: maximaler LUT Wert passt zu keiner erlaubten Bittiefe."
 
 #: ../src/iop/lut3d.c:1548
 msgid "LUT root folder not defined"
-msgstr "LUT-Verzeichnis nicht definiert"
+msgstr "LUT-Ordner nicht definiert"
 
 #: ../src/iop/lut3d.c:1554
 msgid "select LUT file"
@@ -21559,7 +21553,7 @@ msgstr "Hald CLUT (png) oder 3D LUT (cube oder 3dl)"
 
 #: ../src/iop/lut3d.c:1601
 msgid "select file outside LUT root folder is not allowed"
-msgstr "Dateiauswahl außerhalb des LUT-Verzeichnisses nicht erlaubt"
+msgstr "Dateiauswahl außerhalb des LUT-Ordners nicht erlaubt"
 
 #: ../src/iop/lut3d.c:1672
 msgid ""
@@ -21569,8 +21563,8 @@ msgid ""
 msgstr ""
 "Eine Hald CLUT (png), eine 3D LUT (cube oder 3dl) oder eine komprimierte "
 "G'MIC-LUT (gmz) auswählen. \n"
-"Achtung: Das LUT-Verzeichnis muss in „Voreinstellungen/Bearbeitung” "
-"festgelegt werden, bevor eine LUT-Datei ausgewählt werden kann."
+"Achtung: Der LUT-Ordner muss in „Voreinstellungen/Bearbeitung” festgelegt "
+"werden, bevor eine LUT-Datei ausgewählt werden kann."
 
 #: ../src/iop/lut3d.c:1676
 msgid ""
@@ -21578,25 +21572,24 @@ msgid ""
 "set in preferences/processing before choosing the LUT file"
 msgstr ""
 "Eine Hald CLUT (png) oder eine 3D LUT (cube oder 3dl) auswählen. \n"
-"Achtung: Das LUT-Verzeichnis muss unter „Voreinstellungen/Bearbeitung/3D-LUT-"
-"Verzeichnis” festgelegt werden, bevor eine LUT-Datei ausgewählt werden kann."
+"Achtung: Der LUT-Ordner muss unter „Voreinstellungen/Bearbeitung/3D-LUT-"
+"Ordner” festgelegt werden, bevor eine LUT-Datei ausgewählt werden kann."
 
 #: ../src/iop/lut3d.c:1688
 msgid ""
 "the file path (relative to LUT folder) is saved with image along with the "
 "LUT data if it's a compressed LUT (gmz)"
 msgstr ""
-"Der Dateipfad (relativ zum LUT-Verzeichnis) wird im Bild mitgespeichert, "
-"zusammen mit der LUT selbst, falls es sich um eine komprimierte G'MIC-LUT "
-"(gmz) handelt."
+"Der Dateipfad (relativ zum LUT-Ordner) wird zusammen mit den LUT-Daten "
+"gespeichert, wenn es sich um eine komprimierte LUT (gmz) handelt.“"
 
 #: ../src/iop/lut3d.c:1691
 msgid ""
 "the file path (relative to LUT folder) is saved with image (and not the LUT "
 "data themselves)"
 msgstr ""
-"Der Dateipfad (relativ zum LUT-Verzeichnis) wird im Bild mitgespeichert "
-"(nicht die LUT-Daten selbst)."
+"Der Dateipfad (relativ zum LUT-Ordner) wird zusammen mit dem Bild "
+"gespeichert (nicht die LUT-Daten selbst)"
 
 #: ../src/iop/lut3d.c:1700
 msgid "enter LUT name"
@@ -25524,11 +25517,11 @@ msgstr "Überblendmodus"
 
 #: ../src/libs/history.c:957
 msgid "blend operation"
-msgstr "Überblend Operation"
+msgstr "Überblende Operation"
 
 #: ../src/libs/history.c:959
 msgid "blend fulcrum"
-msgstr "Überblend Ansatzpunkt"
+msgstr "Pivot der Überblendung"
 
 #: ../src/libs/history.c:967
 msgid "mask blur"
@@ -25801,7 +25794,7 @@ msgstr[1] "%d Bilder von %d ausgewählt"
 
 #: ../src/libs/import.c:1459
 msgid "choose the root of the folder tree below"
-msgstr "Root Verzeichnis für die unten stehende Verzeichnisstruktur"
+msgstr "Root Verzeichnis für die unten stehende Ordnertruktur"
 
 #: ../src/libs/import.c:1462
 msgid "places"
@@ -25826,11 +25819,11 @@ msgstr "Du kannst eigene Speicherorte mit dem + Icon hinzufügen"
 
 #: ../src/libs/import.c:1524
 msgid "select a folder to see the content"
-msgstr "Verzeichnis wählen um den Inhalt anzuzeigen"
+msgstr "Ordner wählen um den Inhalt anzuzeigen"
 
 #: ../src/libs/import.c:1527
 msgid "folders"
-msgstr "Verzeichnisse"
+msgstr "Ordner"
 
 #: ../src/libs/import.c:1603
 msgid "home"
@@ -25884,7 +25877,7 @@ msgstr "ungültiges Format zum Übersteuern von Datum/Uhrzeit"
 
 #: ../src/libs/import.c:2370
 msgid "import base directory"
-msgstr "Import Basisverzeichnis"
+msgstr "Import Basis-Ordner"
 
 #: ../src/libs/import.c:2371
 msgid ""
@@ -25895,13 +25888,13 @@ msgid ""
 "inspect darktable preferences -> import.\n"
 "check and possibly correct the 'base directory naming pattern'"
 msgstr ""
-"vor der Kopie von Bildern in das darktable Basisverzeichnis muß "
-"sichergestellt werden, \n"
-"daß es wie gewünscht definiert ist.\n"
+"vor der Kopie von Bildern in den darktable Basis-Ordner muß sichergestellt "
+"werden, \n"
+"daß dieser wie gewünscht definiert ist.\n"
 "Weitere Informationen siehe darktable Handbuch.\n"
 "\n"
-"ggf. das „Namensformat des Basisverzeichnisses“ im darktable "
-"Einstellungsdialog -> Importieren \n"
+"ggf. das „Basisverzeichnis für Filmrollen“ im darktable Einstellungsdialog -"
+"> Importieren \n"
 "prüfen und korrigieren."
 
 #: ../src/libs/import.c:2375
@@ -28031,7 +28024,7 @@ msgstr "ungültige Gamepad-Achse"
 #. we write the label with the size category
 #: ../src/libs/tools/global_toolbox.c:212
 msgid "thumbnails overlays for size"
-msgstr "Bildinfos für Miniaturansichten der Größe"
+msgstr "Bildinfos für Vorschaubilder der Größe"
 
 #: ../src/libs/tools/global_toolbox.c:246
 #: ../src/libs/tools/global_toolbox.c:309
