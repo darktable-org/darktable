@@ -69,14 +69,6 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
   }
   fclose(inputfile);
 
-  JxlSignature signature = JxlSignatureCheck(read_buffer, inputFileSize);
-
-  if(signature != JXL_SIG_CODESTREAM && signature != JXL_SIG_CONTAINER)
-  {
-    // It's normal if this function is called for a non-jxl file, so we should fail silently.
-    free(read_buffer);
-    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
-  }
 
   const JxlPixelFormat pixel_format =
   {
