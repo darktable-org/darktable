@@ -3647,12 +3647,12 @@ void gui_init(dt_iop_module_t *self)
 
   dt_liquify_layers[DT_LIQUIFY_LAYER_BACKGROUND].hint     = "";
   dt_liquify_layers[DT_LIQUIFY_LAYER_PATH].hint           =
-    _("<b>add node</b>: ctrl+click - <b>remove path</b>: right click\n"
+    _("<b>add node</b>: ctrl+click - <b>remove path</b>: right-click\n"
       "<b>toggle line/curve</b>: ctrl+alt+click");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CENTERPOINT].hint    =
     _("<b>move</b>: click and drag - <b>show/hide feathering controls</b>: click\n"
       "<b>autosmooth, cusp, smooth, symmetrical</b>: ctrl+click"
-      " - <b>remove</b>: right click");
+      " - <b>remove</b>: right-click");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CTRLPOINT1].hint     =
     _("<b>shape of path</b>: drag");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CTRLPOINT2].hint     =

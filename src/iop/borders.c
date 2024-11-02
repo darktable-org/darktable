@@ -935,7 +935,7 @@ void gui_init(dt_iop_module_t *self)
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->aspect, self, NULL, N_("aspect"),
                                _("select the aspect ratio\n"
-                                 "(right click on slider below to type your own w:h)"),
+                                 "(right-click on slider below to type your own w:h)"),
                                0, _aspect_changed, self,
                                N_("image"),
                                N_("3:1"),
@@ -962,7 +962,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->aspect_slider = dt_bauhaus_slider_from_params(self, "aspect");
   gtk_widget_set_tooltip_text(g->aspect_slider, _("set the custom aspect ratio\n"
-                                                  "(right click to enter number or w:h)"));
+                                                  "(right-click to enter number or w:h)"));
 
   g->aspect_orient = dt_bauhaus_combobox_from_params(self, "aspect_orient");
   gtk_widget_set_tooltip_text(g->aspect_orient,
@@ -970,7 +970,7 @@ void gui_init(dt_iop_module_t *self)
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->pos_h, self, NULL, N_("horizontal position"),
                                _("select the horizontal position ratio relative to top\n"
-                                 "(right click on slider below to type your own x:w)"),
+                                 "(right-click on slider below to type your own x:w)"),
                                0, _position_h_changed, self,
                                N_("center"), N_("1/3"), N_("3/8"),
                                N_("5/8"), N_("2/3"), N_("custom..."));
@@ -981,7 +981,7 @@ void gui_init(dt_iop_module_t *self)
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->pos_v, self, NULL, N_("vertical position"),
                                _("select the vertical position ratio relative to left\n"
-                                 "(right click on slider below to type your own y:h)"),
+                                 "(right-click on slider below to type your own y:h)"),
                                0, _position_v_changed, self,
                                N_("center"), N_("1/3"), N_("3/8"),
                                N_("5/8"), N_("2/3"), N_("custom..."));

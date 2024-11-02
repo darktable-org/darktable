@@ -873,7 +873,7 @@ void gui_init(dt_iop_module_t *self)
   g->label = GTK_LABEL(dt_ui_label_new("-1"));
   gtk_widget_set_tooltip_text(hbox,
                               _("click on a shape and drag on canvas.\nuse the mouse wheel "
-                                "to adjust size.\nright click to remove a shape."));
+                                "to adjust size.\nright-click to remove a shape."));
 
   g->bt_edit_masks = dt_iop_togglebutton_new(self, NULL, N_("show and edit shapes"), NULL,
                                              G_CALLBACK(_edit_masks), TRUE, 0, 0,
