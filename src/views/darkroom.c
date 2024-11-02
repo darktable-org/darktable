@@ -2306,7 +2306,7 @@ void gui_init(dt_view_t *self)
     ac = dt_action_define(sa, N_("raw overexposed"), N_("toggle"), dev->rawoverexposed.button, &dt_action_def_toggle);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_o, GDK_SHIFT_MASK);
     gtk_widget_set_tooltip_text(dev->rawoverexposed.button,
-                                _("toggle indication of raw overexposure\nright click for options"));
+                                _("toggle indication of raw overexposure\nright-click for options"));
     g_signal_connect(G_OBJECT(dev->rawoverexposed.button), "clicked",
                      G_CALLBACK(_rawoverexposed_quickbutton_clicked), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->rawoverexposed.button, DT_VIEW_DARKROOM);
@@ -2356,7 +2356,7 @@ void gui_init(dt_view_t *self)
     ac = dt_action_define(DT_ACTION(self), N_("overexposed"), N_("toggle"), dev->overexposed.button, &dt_action_def_toggle);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_o, 0);
     gtk_widget_set_tooltip_text(dev->overexposed.button,
-                                _("toggle clipping indication\nright click for options"));
+                                _("toggle clipping indication\nright-click for options"));
     g_signal_connect(G_OBJECT(dev->overexposed.button), "clicked",
                      G_CALLBACK(_overexposed_quickbutton_clicked), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->overexposed.button, DT_VIEW_DARKROOM);
@@ -2422,7 +2422,7 @@ void gui_init(dt_view_t *self)
     ac = dt_action_define(sa, NULL, N_("softproof"), dev->profile.softproof_button, &dt_action_def_toggle);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_s, GDK_CONTROL_MASK);
     gtk_widget_set_tooltip_text(dev->profile.softproof_button,
-                                _("toggle softproofing\nright click for profile options"));
+                                _("toggle softproofing\nright-click for profile options"));
     g_signal_connect(G_OBJECT(dev->profile.softproof_button), "clicked",
                      G_CALLBACK(_softproof_quickbutton_clicked), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->profile.softproof_button, DT_VIEW_DARKROOM);
@@ -2433,7 +2433,7 @@ void gui_init(dt_view_t *self)
     ac = dt_action_define(sa, NULL, N_("gamut check"), dev->profile.gamut_button, &dt_action_def_toggle);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_g, GDK_CONTROL_MASK);
     gtk_widget_set_tooltip_text(dev->profile.gamut_button,
-                 _("toggle gamut checking\nright click for profile options"));
+                 _("toggle gamut checking\nright-click for profile options"));
     g_signal_connect(G_OBJECT(dev->profile.gamut_button), "clicked",
                      G_CALLBACK(_gamut_quickbutton_clicked), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->profile.gamut_button, DT_VIEW_DARKROOM);
@@ -2588,7 +2588,7 @@ void gui_init(dt_view_t *self)
     ac = dt_action_define(sa, N_("guide lines"), N_("toggle"), darktable.view_manager->guides_toggle, &dt_action_def_toggle);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_g, 0);
     gtk_widget_set_tooltip_text(darktable.view_manager->guides_toggle,
-                                _("toggle guide lines\nright click for guides options"));
+                                _("toggle guide lines\nright-click for guides options"));
     darktable.view_manager->guides_popover = dt_guides_popover(self, darktable.view_manager->guides_toggle);
     g_object_ref(darktable.view_manager->guides_popover);
     g_signal_connect(G_OBJECT(darktable.view_manager->guides_toggle), "clicked",
