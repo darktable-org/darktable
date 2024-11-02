@@ -1632,9 +1632,6 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
       ret = dt_imageio_open_j2k(img, filename, buf);
 
     if(!_image_handled(ret))
-      ret = dt_imageio_open_jpegxl(img, filename, buf);
-
-    if(!_image_handled(ret))
       ret = dt_imageio_open_jpeg(img, filename, buf);
 
     if(!_image_handled(ret))
