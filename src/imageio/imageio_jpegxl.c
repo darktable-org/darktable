@@ -278,7 +278,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
       {
         JxlResizableParallelRunnerDestroy(runner);
         JxlDecoderDestroy(decoder);
-        g_free(read_buffer);
+        free(read_buffer);
         dt_print(DT_DEBUG_ALWAYS,
                  "[jpegxl_open] could not alloc full buffer for image: '%s'",
                  img->filename);
