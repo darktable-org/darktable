@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-27 21:08+0100\n"
-"PO-Revision-Date: 2024-10-27 21:12+0100\n"
+"POT-Creation-Date: 2024-11-02 12:33+0100\n"
+"PO-Revision-Date: 2024-11-02 14:14+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -7271,17 +7271,17 @@ msgstr "Numéro"
 msgid "preserved filename"
 msgstr "Nom de fichier préservé"
 
-#: ../src/common/mipmap_cache.c:1299 ../src/imageio/imageio.c:1059
+#: ../src/common/mipmap_cache.c:1299 ../src/imageio/imageio.c:1071
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "Image « %s » non disponible"
 
-#: ../src/common/mipmap_cache.c:1302 ../src/imageio/imageio.c:1063
+#: ../src/common/mipmap_cache.c:1302 ../src/imageio/imageio.c:1075
 #, c-format
 msgid "unable to load image `%s'!"
 msgstr "Impossible de charger l'image « %s » !"
 
-#: ../src/common/mipmap_cache.c:1304 ../src/imageio/imageio.c:1065
+#: ../src/common/mipmap_cache.c:1304 ../src/imageio/imageio.c:1077
 #, c-format
 msgid "image '%s' not supported"
 msgstr "Image « %s » non supportée"
@@ -12779,10 +12779,10 @@ msgstr "Cliquer pour filtrer la liste des raccourcis"
 #: ../src/gui/accelerators.c:1057
 msgid ""
 "\n"
-"right click to show action of selected shortcut"
+"right-click to show action of selected shortcut"
 msgstr ""
 "\n"
-"Clic droit pour montrer l’action du raccourci sélectionné"
+"Clic-droit pour montrer l’action du raccourci sélectionné"
 
 #: ../src/gui/accelerators.c:1060
 msgid ""
@@ -12829,8 +12829,8 @@ msgstr " • Molette pour changer la vitesse"
 # 3e ligne de la liste dans la bulle d'aide de l'icône de définition
 # des raccourcis lorsqu'activée
 #: ../src/gui/accelerators.c:1116
-msgid "right click to exit mapping mode"
-msgstr " • Clic droit pour quitter le mode enregistrement"
+msgid "right-click to exit mapping mode"
+msgstr " • Clic-droit pour quitter le mode enregistrement"
 
 #: ../src/gui/accelerators.c:1128
 #, c-format
@@ -14890,7 +14890,7 @@ msgid "XCF"
 msgstr "XCF"
 
 # Il n'y a plus de préférence du nombre de theads
-#: ../src/imageio/imageio.c:1082
+#: ../src/imageio/imageio.c:1094
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -14899,17 +14899,17 @@ msgstr ""
 "Échec de l’allocation de mémoire pour « %s », merci de diminuer le nombre de "
 "fils utilisés pour l’exportation ou d’acheter de la mémoire."
 
-#: ../src/imageio/imageio.c:1084
+#: ../src/imageio/imageio.c:1096
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "L’aperçu"
 
-#: ../src/imageio/imageio.c:1084
+#: ../src/imageio/imageio.c:1096
 msgctxt "noun"
 msgid "export"
 msgstr "L’image"
 
-#: ../src/imageio/imageio.c:1101
+#: ../src/imageio/imageio.c:1113
 #, c-format
 msgid "cannot find the style '%s' to apply during export"
 msgstr ""
@@ -15931,11 +15931,11 @@ msgstr "Applique une exposition automatique en fonction de l’image complète"
 msgid ""
 "apply auto exposure based on a region defined by the user\n"
 "click and drag to draw the area\n"
-"right click to cancel"
+"right-click to cancel"
 msgstr ""
 "Applique une exposition automatique en fonction de la sélection définie :\n"
 " • Clic et déplacer pour sélectionner la zone\n"
-" • Clic droit pour annuler"
+" • Clic-droit pour annuler"
 
 #: ../src/iop/basicadj.c:677
 msgid "clip"
@@ -16198,10 +16198,10 @@ msgstr "Aspect"
 #: ../src/iop/borders.c:937
 msgid ""
 "select the aspect ratio\n"
-"(right click on slider below to type your own w:h)"
+"(right-click on slider below to type your own w:h)"
 msgstr ""
 "Sélectionner les proportions\n"
-"(Clic droit sur la réglette pour entrer des dimensions personnalisées L:H)"
+"(Clic-droit sur la réglette pour entrer des dimensions personnalisées L:H)"
 
 #: ../src/iop/borders.c:941
 msgid "3:1"
@@ -16284,10 +16284,10 @@ msgstr "Personnalisé…"
 #: ../src/iop/borders.c:964
 msgid ""
 "set the custom aspect ratio\n"
-"(right click to enter number or w:h)"
+"(right-click to enter number or w:h)"
 msgstr ""
 "Définit les proportions personnalisées\n"
-"(Clic droit pour entrer une dimension L:H)"
+"(Clic-droit pour entrer une dimension L:H)"
 
 #: ../src/iop/borders.c:969
 msgid "aspect ratio orientation of the image with border"
@@ -16300,10 +16300,10 @@ msgstr "Position horizontale"
 #: ../src/iop/borders.c:972
 msgid ""
 "select the horizontal position ratio relative to top\n"
-"(right click on slider below to type your own x:w)"
+"(right-click on slider below to type your own x:w)"
 msgstr ""
 "Sélectionne la position horizontale par rapport au côté supérieur\n"
-"(Clic droit pour entrer des dimensions personnalisées X:L)"
+"(Clic-droit pour entrer des dimensions personnalisées X:L)"
 
 #: ../src/iop/borders.c:975 ../src/iop/borders.c:986
 msgid "center"
@@ -16336,10 +16336,10 @@ msgstr "Position verticale"
 #: ../src/iop/borders.c:983
 msgid ""
 "select the vertical position ratio relative to left\n"
-"(right click on slider below to type your own y:h)"
+"(right-click on slider below to type your own y:h)"
 msgstr ""
 "Sélectionne la position verticale par rapport au côté gauche\n"
-"(Clic droit pour entrer des dimensions personnalisées Y:H)"
+"(Clic-droit pour entrer des dimensions personnalisées Y:H)"
 
 #: ../src/iop/borders.c:991
 msgid "custom vertical position"
@@ -18130,14 +18130,14 @@ msgid ""
 "altered patches are marked with an outline\n"
 "click to select\n"
 "double-click to reset\n"
-"right click to delete patch\n"
+"right-click to delete patch\n"
 "shift+click while color picking to replace patch"
 msgstr ""
 "(%2.2f %2.2f %2.2f)\n"
 "Les pastilles modifiées sont entourées.\n"
 " • Cliquer pour sélectionner,\n"
-" • Double clic pour réinitialiser,\n"
-" • Clic droit pour supprimer une pastille,\n"
+" • Double-clic pour réinitialiser,\n"
+" • Clic-droit pour supprimer une pastille,\n"
 " • Maj+clic avec la pipette pour remplacer une pastille."
 
 #: ../src/iop/colorchecker.c:1388
@@ -18324,11 +18324,11 @@ msgstr "Options"
 #: ../src/iop/colorequal.c:3038
 msgid ""
 "double-click to reset the curve\n"
-"middle click to toggle sliders visibility\n"
+"middle-click to toggle sliders visibility\n"
 "alt+scroll to change page"
 msgstr ""
-"Double clic pour re-initialiser la courbe\n"
-"Clic milieu pour basculer l'affichage des réglettes\n"
+"Double-clic pour re-initialiser la courbe\n"
+"Clic-milieu pour basculer l'affichage des réglettes\n"
 "Alt+molette pour change de page"
 
 #: ../src/iop/colorequal.c:3065
@@ -20176,14 +20176,14 @@ msgstr "Basculer les légendes des axes"
 #: ../src/iop/filmicrgb.c:4334
 msgid ""
 "cycle through graph views.\n"
-"left click: cycle forward.\n"
-"right click: cycle backward.\n"
+"left-click: cycle forward.\n"
+"right-click: cycle backward.\n"
 "double-click: reset to look view."
 msgstr ""
 "Cycle sur les différentes vues.\n"
-" • Clic gauche pour la vue suivante\n"
-" • Clic droit pour la vue précédente\n"
-" • Double clic pour réinitialiser la vue"
+" • Clic-gauche pour la vue suivante\n"
+" • Clic-droit pour la vue précédente\n"
+" • Double-clic pour réinitialiser la vue"
 
 #: ../src/iop/filmicrgb.c:4393
 #, no-c-format
@@ -21324,10 +21324,10 @@ msgstr "dessiner plusieurs points"
 
 #: ../src/iop/liquify.c:3650
 msgid ""
-"<b>add node</b>: ctrl+click - <b>remove path</b>: right click\n"
+"<b>add node</b>: ctrl+click - <b>remove path</b>: right-click\n"
 "<b>toggle line/curve</b>: ctrl+alt+click"
 msgstr ""
-"<b>Ajouter un nœud</b> : Ctrl+clic • <b>Supprimer le chemin</b> : clic "
+"<b>Ajouter un nœud</b> : Ctrl+clic • <b>Supprimer le chemin</b> : Clic-"
 "droit\n"
 "<b>Basculer entre ligne et courbe</b> : Ctrl+Alt+clic"
 
@@ -21335,12 +21335,12 @@ msgstr ""
 msgid ""
 "<b>move</b>: click and drag - <b>show/hide feathering controls</b>: click\n"
 "<b>autosmooth, cusp, smooth, symmetrical</b>: ctrl+click - <b>remove</b>: "
-"right click"
+"right-click"
 msgstr ""
 "<b>Déplacer</b> : Clic+déplacer • <b>Montrer/cacher les contrôles</b> : "
 "Clic\n"
 "<b>Automatique, parabolique, lissé et symétrique</b> : Ctrl+clic • "
-"<b>Supprimer</b> : Clic droit"
+"<b>Supprimer</b> : Clic-droit"
 
 #: ../src/iop/liquify.c:3657 ../src/iop/liquify.c:3659
 msgid "<b>shape of path</b>: drag"
@@ -22632,11 +22632,11 @@ msgstr "Région automatique"
 msgid ""
 "apply auto levels based on a region defined by the user\n"
 "click and drag to draw the area\n"
-"right click to cancel"
+"right-click to cancel"
 msgstr ""
 "Applique un niveau automatique en fonction de la sélection définie.\n"
 " • Clic+déplacer pour sélectionner la zone,\n"
-" • Clic droit pour annuler."
+" • Clic-droit pour annuler."
 
 #: ../src/iop/rotatepixels.c:70
 msgctxt "modulename"
@@ -23017,11 +23017,11 @@ msgstr "Nombre de corrections :"
 msgid ""
 "click on a shape and drag on canvas.\n"
 "use the mouse wheel to adjust size.\n"
-"right click to remove a shape."
+"right-click to remove a shape."
 msgstr ""
 "Cliquer sur une forme pour la déplacer.\n"
 "Défiler à la souris pour ajuster la taille.\n"
-"Clic droit pour supprimer."
+"Clic-droit pour supprimer."
 
 #: ../src/iop/spots.c:878
 msgid "show and edit shapes"
@@ -28630,10 +28630,10 @@ msgstr ""
 #: ../src/views/darkroom.c:2309
 msgid ""
 "toggle indication of raw overexposure\n"
-"right click for options"
+"right-click for options"
 msgstr ""
 "Basculer les zones sur-exposées RAW.\n"
-"Clic droit pour les options."
+"Clic-droit pour les options."
 
 #: ../src/views/darkroom.c:2325
 msgid "select how to mark the clipped pixels"
@@ -28696,10 +28696,10 @@ msgstr ""
 #: ../src/views/darkroom.c:2359
 msgid ""
 "toggle clipping indication\n"
-"right click for options"
+"right-click for options"
 msgstr ""
 "Basculer les zones tronquées.\n"
-"Clic droit pour les options."
+"Clic-droit pour les options."
 
 #: ../src/views/darkroom.c:2374
 msgid "clipping preview mode"
@@ -28784,18 +28784,18 @@ msgstr "Épreuvage"
 #: ../src/views/darkroom.c:2425
 msgid ""
 "toggle softproofing\n"
-"right click for profile options"
+"right-click for profile options"
 msgstr ""
 "Basculer l’épreuvage écran,\n"
-"Clic droit pour les options de profil."
+"Clic-droit pour les options de profil."
 
 #: ../src/views/darkroom.c:2436
 msgid ""
 "toggle gamut checking\n"
-"right click for profile options"
+"right-click for profile options"
 msgstr ""
 "Basculer la vérification de gamut,\n"
-"Clic droit pour les options de profil."
+"Clic-droit pour les options de profil."
 
 #: ../src/views/darkroom.c:2463 ../src/views/darkroom.c:2465
 #: ../src/views/darkroom.c:2479 ../src/views/darkroom.c:2480
@@ -28848,10 +28848,10 @@ msgstr "profils ICC de l’histogramme et la pipette"
 #: ../src/views/darkroom.c:2591
 msgid ""
 "toggle guide lines\n"
-"right click for guides options"
+"right-click for guides options"
 msgstr ""
 "Basculer les lignes guides,\n"
-"Clic droit pour les options des guides."
+"Clic-droit pour les options des guides."
 
 #. Fullscreen preview key
 #: ../src/views/darkroom.c:2607
@@ -29232,16 +29232,16 @@ msgid "no camera with tethering support available for use..."
 msgstr "Aucun boîtier n’est disponible pour la capture"
 
 #: ../src/views/view.c:1372
-msgid "left click"
-msgstr "Clic gauche"
+msgid "left-click"
+msgstr "Clic-gauche"
 
 #: ../src/views/view.c:1375
-msgid "right click"
-msgstr "Clic droit"
+msgid "right-click"
+msgstr "Clic-droit"
 
 #: ../src/views/view.c:1378
-msgid "middle click"
-msgstr "Clic milieu"
+msgid "middle-click"
+msgstr "Clic-milieu"
 
 #: ../src/views/view.c:1384
 msgid "left double-click"
@@ -29256,12 +29256,12 @@ msgid "drag and drop"
 msgstr "Déplacer & déposer"
 
 #: ../src/views/view.c:1393
-msgid "left click+drag"
-msgstr "Clic gauche+déplacer"
+msgid "left-click+drag"
+msgstr "Clic-gauche+déplacer"
 
 #: ../src/views/view.c:1396
-msgid "right click+drag"
-msgstr "Clic droit+déplacer"
+msgid "right-click+drag"
+msgstr "Clic-droit+déplacer"
 
 #: ../src/views/view.c:1418
 msgid "darktable - accels window"
