@@ -29,13 +29,10 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
                                            const char *filename,
                                            dt_mipmap_buffer_t *mbuf)
 {
-
-  JxlDecoderStatus status;
   JxlBasicInfo basicinfo;
   size_t icc_size = 0;
   uint64_t exif_size = 0;
   uint8_t *exif_data = NULL;
-  uint32_t num_threads;
 
   FILE* inputfile = g_fopen(filename, "rb");
 
@@ -49,7 +46,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
 
   fseek(inputfile, 0, SEEK_END);
   size_t inputFileSize = ftell(inputfile);
-  fseek(inputfile, 0, SEEK_SET);
+  rewind(inputfile);
 
   void* read_buffer = malloc(inputFileSize);
   if(!read_buffer)
@@ -135,7 +132,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
   // Grand Decoding Loop
   while(1)
   {
-    status = JxlDecoderProcessInput(decoder);
+    JxlDecoderStatus status = JxlDecoderProcessInput(decoder);
 
     if(status == JXL_DEC_ERROR)
     {
@@ -177,9 +174,9 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
         return DT_IMAGEIO_FILE_CORRUPTED;
       }
 
-
-      num_threads = JxlResizableParallelRunnerSuggestThreads(basicinfo.xsize,
-                                                             basicinfo.ysize);
+      uint32_t num_threads =
+        JxlResizableParallelRunnerSuggestThreads(basicinfo.xsize,
+                                                 basicinfo.ysize);
       JxlResizableParallelRunnerSetThreads(runner, num_threads);
 
       continue;    // go to next loop iteration to process rest of the input
