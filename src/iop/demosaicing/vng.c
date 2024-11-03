@@ -18,13 +18,12 @@
 
 /* taken from dcraw and demosaic_ppg below */
 
-static void lin_interpolate(
-        float *out,
-        const float *const in,
-        const dt_iop_roi_t *const roi_out,
-        const dt_iop_roi_t *const roi_in,
-        const uint32_t filters,
-        const uint8_t (*const xtrans)[6])
+static void lin_interpolate(float *out,
+                            const float *const in,
+                            const dt_iop_roi_t *const roi_out,
+                            const dt_iop_roi_t *const roi_in,
+                            const uint32_t filters,
+                            const uint8_t (*const xtrans)[6])
 {
   const int colors = (filters == 9) ? 3 : 4;
 
@@ -142,14 +141,13 @@ static inline void _ensure_abovezero(float *to, float *from, const int floats)
     to[i] = fmaxf(0.0f, from[i]);
 }
 
-static void vng_interpolate(
-        float *out,
-        const float *const in,
-        const dt_iop_roi_t *const roi_out,
-        const dt_iop_roi_t *const roi_in,
-        const uint32_t filters,
-        const uint8_t (*const xtrans)[6],
-        const gboolean only_vng_linear)
+static void vng_interpolate(float *out,
+                            const float *const in,
+                            const dt_iop_roi_t *const roi_out,
+                            const dt_iop_roi_t *const roi_in,
+                            const uint32_t filters,
+                            const uint8_t (*const xtrans)[6],
+                            const gboolean only_vng_linear)
 {
   static const signed char terms[]
       = { -2, -2, +0, -1, 1, 0x01, -2, -2, +0, +0, 2, 0x01, -2, -1, -1, +0, 1, 0x01, -2, -1, +0, -1, 1, 0x02,
@@ -316,19 +314,14 @@ static void vng_interpolate(
 }
 
 #ifdef HAVE_OPENCL
-static int process_vng_cl(dt_iop_module_t *self,
-                          dt_dev_pixelpipe_iop_t *piece,
-                          cl_mem dev_in,
-                          cl_mem dev_out,
-                          const dt_iop_roi_t *const roi_in,
-                          const dt_iop_roi_t *const roi_out,
-                          const gboolean smooth,
-                          const gboolean only_vng_linear,
-                          const gboolean write_scharr)
+static cl_int process_vng_cl(dt_iop_module_t *self,
+                             dt_dev_pixelpipe_iop_t *piece,
+                             cl_mem dev_in,
+                             cl_mem dev_out,
+                             const dt_iop_roi_t *const roi_in,
+                             const gboolean only_vng_linear)
 {
-  dt_iop_demosaic_data_t *data = piece->data;
   dt_iop_demosaic_global_data_t *gd = self->global_data;
-  const dt_image_t *img = &self->dev->image_storage;
 
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
 
@@ -347,17 +340,13 @@ static int process_vng_cl(dt_iop_module_t *self,
   const int pcol = (filters4 == 9u) ? 6 : 2;
   const int devid = piece->pipe->devid;
 
-  const int qual_flags = demosaic_qual_flags(piece, img, roi_out);
-
   int *ips = NULL;
 
   cl_mem dev_tmp = NULL;
-  cl_mem dev_aux = NULL;
   cl_mem dev_xtrans = NULL;
   cl_mem dev_lookup = NULL;
   cl_mem dev_code = NULL;
   cl_mem dev_ips = NULL;
-  cl_mem dev_green_eq = NULL;
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   int32_t(*lookup)[16][32] = NULL;
@@ -368,11 +357,6 @@ static int process_vng_cl(dt_iop_module_t *self,
         = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
     if(dev_xtrans == NULL) goto finish;
   }
-
-  if(qual_flags & DT_DEMOSAIC_FULL_SCALE)
-  {
-    // Full demosaic and then scaling if needed
-    const int scaled = (roi_out->width != roi_in->width || roi_out->height != roi_in->height);
 
     // build interpolation lookup table for linear interpolation which for a given offset in the sensor
     // lists neighboring pixels from which to interpolate:
@@ -499,35 +483,13 @@ static int process_vng_cl(dt_iop_module_t *self,
     dev_ips = dt_opencl_copy_host_to_device_constant(devid, ips_size, ips);
     if(dev_ips == NULL) goto finish;
 
-    // green equilibration for Bayer sensors
-    if(piece->pipe->dsc.filters != 9u && data->green_eq != DT_IOP_GREEN_EQ_NO)
-    {
-      dev_green_eq = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float));
-      if(dev_green_eq == NULL) goto finish;
-
-      err = green_equilibration_cl(self, piece, dev_in, dev_green_eq, roi_in);
-      if(err != CL_SUCCESS)
-        goto finish;
-
-      dev_in = dev_green_eq;
-    }
-
-    int width = roi_out->width;
-    int height = roi_out->height;
+    int width = roi_in->width;
+    int height = roi_in->height;
 
     // need to reserve scaled auxiliary buffer or use dev_out
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-    if(scaled)
-    {
-      dev_aux = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
-      if(dev_aux == NULL) goto finish;
-      width = roi_in->width;
-      height = roi_in->height;
-    }
-    else
-      dev_aux = dev_out;
 
-    dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
+    dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
     if(dev_tmp == NULL) goto finish;
 
     // manage borders for linear interpolation part
@@ -552,19 +514,20 @@ static int process_vng_cl(dt_iop_module_t *self,
 
       size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
       size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-      dt_opencl_set_kernel_args(devid, gd->kernel_vng_lin_interpolate, 0, CLARG(dev_in), CLARG(dev_tmp),
+      dt_opencl_set_kernel_args(devid, gd->kernel_vng_lin_interpolate, 0,
+        CLARG(dev_in), CLARG(dev_tmp),
         CLARG(width), CLARG(height), CLARG(filters4), CLARG(dev_lookup), CLLOCAL(sizeof(float) * (locopt.sizex + 2) * (locopt.sizey + 2)));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_lin_interpolate, sizes, local);
       if(err != CL_SUCCESS) goto finish;
     }
 
 
-    if(qual_flags & DT_DEMOSAIC_ONLY_VNG_LINEAR)
+    if(only_vng_linear)
     {
       // leave it at linear interpolation and skip VNG
       size_t origin[] = { 0, 0, 0 };
       size_t region[] = { width, height, 1 };
-      err = dt_opencl_enqueue_copy_image(devid, dev_tmp, dev_aux, origin, origin, region);
+      err = dt_opencl_enqueue_copy_image(devid, dev_tmp, dev_out, origin, origin, region);
       if(err != CL_SUCCESS) goto finish;
     }
     else
@@ -583,7 +546,8 @@ static int process_vng_cl(dt_iop_module_t *self,
 
       size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
       size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-      dt_opencl_set_kernel_args(devid, gd->kernel_vng_interpolate, 0, CLARG(dev_tmp), CLARG(dev_aux),
+      dt_opencl_set_kernel_args(devid, gd->kernel_vng_interpolate, 0,
+        CLARG(dev_tmp), CLARG(dev_out),
         CLARG(width), CLARG(height), CLARG(roi_in->x), CLARG(roi_in->y), CLARG(filters4),
         CLARG(dev_xtrans), CLARG(dev_ips), CLARG(dev_code), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 4) * (locopt.sizey + 4)));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_interpolate, sizes, local);
@@ -593,7 +557,7 @@ static int process_vng_cl(dt_iop_module_t *self,
     // manage borders
     border = 2;
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
-        CLARG(dev_in), CLARG(dev_aux), CLARG(width), CLARG(height), CLARG(border), CLARG(roi_in->x), CLARG(roi_in->y),
+        CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(border), CLARG(roi_in->x), CLARG(roi_in->y),
         CLARG(filters4), CLARG(dev_xtrans));
     if(err != CL_SUCCESS) goto finish;
 
@@ -602,57 +566,24 @@ static int process_vng_cl(dt_iop_module_t *self,
       // for Bayer sensors mix the two green channels
       size_t origin[] = { 0, 0, 0 };
       size_t region[] = { width, height, 1 };
-      err = dt_opencl_enqueue_copy_image(devid, dev_aux, dev_tmp, origin, origin, region);
+      err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
       if(err != CL_SUCCESS) goto finish;
 
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_green_equilibrate, width, height,
-        CLARG(dev_tmp), CLARG(dev_aux), CLARG(width), CLARG(height));
+        CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height));
       if(err != CL_SUCCESS) goto finish;
     }
 
-    if(piece->pipe->want_detail_mask && !(data->demosaicing_method & DT_DEMOSAIC_DUAL) && write_scharr)
-    {
-      err = dt_dev_write_scharr_mask_cl(piece, dev_aux, roi_in, TRUE);
-      if(err != CL_SUCCESS) goto finish;
-    }
-
-    if(scaled)
-    {
-      dt_print_pipe(DT_DEBUG_PIPE, "clip_and_zoom_roi",
-        piece->pipe, self, piece->pipe->devid, roi_in, roi_out);
-      // scale temp buffer to output buffer
-      err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_aux, roi_out, roi_in);
-      if(err != CL_SUCCESS) goto finish;
-    }
-  }
-  else
-  {
-    const int zero = 0;
-    // sample half-size or third-size image
-    if(piece->pipe->dsc.filters == 9u)
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_third_size, roi_out->width, roi_out->height,
-        CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height), CLARG(roi_in->x), CLARG(roi_in->y),
-        CLARG(roi_in->width), CLARG(roi_in->height), CLARG(roi_out->scale), CLARG(dev_xtrans));
-    else
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_half_size, roi_out->width, roi_out->height,
-        CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height), CLARG(zero), CLARG(zero), CLARG(roi_in->width),
-        CLARG(roi_in->height), CLARG(roi_out->scale), CLARG(piece->pipe->dsc.filters));
-    if(err != CL_SUCCESS) goto finish;
-  }
   err = CL_SUCCESS; // we got here so no error to be reported / returned
 
 finish:
-  if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
   dt_opencl_release_mem_object(dev_tmp);
   dt_opencl_release_mem_object(dev_xtrans);
   dt_opencl_release_mem_object(dev_lookup);
   free(lookup);
   dt_opencl_release_mem_object(dev_code);
   dt_opencl_release_mem_object(dev_ips);
-  dt_opencl_release_mem_object(dev_green_eq);
   free(ips);
-  if(data->color_smoothing && smooth)
-    err = color_smoothing_cl(self, piece, dev_out, dev_out, roi_out, data->color_smoothing);
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] vng problem '%s'", cl_errstr(err));

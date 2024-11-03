@@ -18,11 +18,10 @@
 
 
 /** 1:1 demosaic from in to out, in is full buf, out is translated/cropped (scale == 1.0!) */
-static void passthrough_monochrome(
-        float *out,
-        const float *const in,
-        dt_iop_roi_t *const roi_out,
-        const dt_iop_roi_t *const roi_in)
+static void passthrough_monochrome(float *out,
+                                   const float *const in,
+                                   const dt_iop_roi_t *const roi_out,
+                                   const dt_iop_roi_t *const roi_in)
 {
   // we never want to access the input out of bounds though:
   assert(roi_in->width >= roi_out->width);
@@ -42,13 +41,12 @@ static void passthrough_monochrome(
   }
 }
 
-static void passthrough_color(
-        float *out,
-        const float *const in,
-        dt_iop_roi_t *const roi_out,
-        const dt_iop_roi_t *const roi_in,
-        const uint32_t filters,
-        const uint8_t (*const xtrans)[6])
+static void passthrough_color(float *out,
+                              const float *const in,
+                              const dt_iop_roi_t *const roi_out,
+                              const dt_iop_roi_t *const roi_in,
+                              const uint32_t filters,
+                              const uint8_t (*const xtrans)[6])
 {
   assert(roi_in->width >= roi_out->width);
   assert(roi_in->height >= roi_out->height);

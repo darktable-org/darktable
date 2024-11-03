@@ -28,16 +28,15 @@ static float slider2contrast(float slider)
 {
   return 0.005f * powf(slider, 1.1f);
 }
-static void dual_demosaic(
-        dt_dev_pixelpipe_iop_t *piece,
-        float *const restrict high_data,
-        const float *const restrict raw_data,
-        dt_iop_roi_t *const roi_out,
-        const dt_iop_roi_t *const roi_in,
-        const uint32_t filters,
-        const uint8_t (*const xtrans)[6],
-        const gboolean dual_mask,
-        const float dual_threshold)
+static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece,
+                          float *const restrict high_data,
+                          const float *const restrict raw_data,
+                          const dt_iop_roi_t *const roi_out,
+                          const dt_iop_roi_t *const roi_in,
+                          const uint32_t filters,
+                          const uint8_t (*const xtrans)[6],
+                          const gboolean dual_mask,
+                          const float dual_threshold)
 {
   if((roi_in->width < 16) || (roi_in->height < 16)) return;
 
@@ -64,7 +63,7 @@ static void dual_demosaic(
     if(!vng_image) goto error;
 
     vng_interpolate(vng_image, raw_data, roi_out, roi_in, filters, xtrans, FALSE);
-    color_smoothing(vng_image, roi_out, 2);
+    color_smoothing(vng_image, roi_in, 2);
 
     DT_OMP_FOR_SIMD(aligned(mask, vng_image, high_data : 64))
     for(int idx = 0; idx < msize; idx++)
@@ -83,7 +82,7 @@ static void dual_demosaic(
 }
 
 #ifdef HAVE_OPENCL
-gboolean dual_demosaic_cl(struct dt_iop_module_t *self,
+gboolean dual_demosaic_cl(dt_iop_module_t *self,
                           dt_dev_pixelpipe_iop_t *piece,
                           cl_mem high_image,
                           cl_mem low_image,
