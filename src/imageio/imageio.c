@@ -349,13 +349,13 @@ static const dt_magic_bytes_t _magic_signatures[] = {
   { DT_FILETYPE_OTHER_LDR, FALSE, 0, 4, dt_imageio_open_exotic,
     { 0x80, 0x2A, 0x5F, 0xD7 } },
   // ASCII NetPNM (pbm)
-  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_pnm,
+  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_exotic,
     { 'P', '1', 0x0A } },
   // ASCII NetPNM (pgm)
-  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_pnm,
+  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_exotic,
     { 'P', '2', 0x0A } },
   // ASCII NetPNM (ppm)
-  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_pnm,
+  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_exotic,
     { 'P', '3', 0x0A } },
   // binary NetPNM (pbm)
   { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_pnm,
