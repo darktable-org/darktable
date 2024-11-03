@@ -46,7 +46,7 @@
 #include <string.h>
 #include <time.h>
 
-DT_MODULE_INTROSPECTION(4, dt_iop_demosaic_params_t)
+DT_MODULE_INTROSPECTION(5, dt_iop_demosaic_params_t)
 
 #define DT_DEMOSAIC_XTRANS 1024 // masks for non-Bayer demosaic ops
 #define DT_DEMOSAIC_DUAL 2048   // masks for dual demosaicing methods
@@ -125,6 +125,12 @@ typedef struct dt_iop_demosaic_params_t
   dt_iop_demosaic_method_t demosaicing_method;  // $DEFAULT: DT_IOP_DEMOSAIC_RCD $DESCRIPTION: "method"
   dt_iop_demosaic_lmmse_t lmmse_refine;         // $DEFAULT: DT_LMMSE_REFINE_1 $DESCRIPTION: "LMMSE refine"
   float dual_thrs;                              // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.20 $DESCRIPTION: "dual threshold"
+  float csthreshold;                            // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.5 $DESCRIPTION: "threshold"
+  float csradius;                               // $MIN: 0.0 $MAX: 1.2 $DEFAULT: 0.0 $DESCRIPTION: "radius"
+  float csborder;                               // $MIN: 0.0 $MAX: 0.5 $DEFAULT: 0.0 $DESCRIPTION: "border"
+  int csiterations;                             // $MIN: 1 $MAX: 20 $DEFAULT: 5 $DESCRIPTION: "iterations"
+  int reserved1;
+  int reserved2;
 } dt_iop_demosaic_params_t;
 
 typedef struct dt_iop_demosaic_gui_data_t
@@ -318,7 +324,7 @@ int legacy_params(dt_iop_module_t *self,
                   int32_t *new_params_size,
                   int *new_version)
 {
-  typedef struct dt_iop_demosaic_params_v4_t
+  typedef struct dt_iop_demosaic_params_v5_t
   {
     dt_iop_demosaic_greeneq_t green_eq;
     float median_thrs;
@@ -326,7 +332,13 @@ int legacy_params(dt_iop_module_t *self,
     dt_iop_demosaic_method_t demosaicing_method;
     dt_iop_demosaic_lmmse_t lmmse_refine;
     float dual_thrs;
-  } dt_iop_demosaic_params_v4_t;
+    float csthreshold;
+    float csradius;
+    float csborder;
+    int csiterations;
+    int reserved1;
+    int reserved2;
+  } dt_iop_demosaic_params_v5_t;
 
   if(old_version == 2)
   {
@@ -337,17 +349,24 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_demosaic_params_v2_t;
 
     const dt_iop_demosaic_params_v2_t *o = (dt_iop_demosaic_params_v2_t *)old_params;
-    dt_iop_demosaic_params_v4_t *n = malloc(sizeof(dt_iop_demosaic_params_v4_t));
+    dt_iop_demosaic_params_v5_t *n = malloc(sizeof(dt_iop_demosaic_params_v5_t));
+
     n->green_eq = o->green_eq;
     n->median_thrs = o->median_thrs;
     n->color_smoothing = 0;
     n->demosaicing_method = DT_IOP_DEMOSAIC_PPG;
     n->lmmse_refine = DT_LMMSE_REFINE_1;
     n->dual_thrs = 0.20f;
+    n->csthreshold = 0.5f;
+    n->csradius = 0.0f;
+    n->csborder = 0.0f;
+    n->csiterations = 5;
+    n->reserved1 = 0;
+    n->reserved2 = 0;
 
     *new_params = n;
-    *new_params_size = sizeof(dt_iop_demosaic_params_v4_t);
-    *new_version = 4;
+    *new_params_size = sizeof(dt_iop_demosaic_params_v5_t);
+    *new_version = 5;
     return 0;
   }
 
@@ -363,13 +382,49 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_demosaic_params_v3_t;
 
     const dt_iop_demosaic_params_v3_t *o = (dt_iop_demosaic_params_v3_t *)old_params;
-    dt_iop_demosaic_params_v4_t *n = malloc(sizeof(dt_iop_demosaic_params_v4_t));
+    dt_iop_demosaic_params_v5_t *n = malloc(sizeof(dt_iop_demosaic_params_v5_t));
     memcpy(n, o, sizeof *o);
+
     n->dual_thrs = 0.20f;
+    n->csthreshold = 0.5f;
+    n->csradius = 0.0f;
+    n->csborder = 0.0f;
+    n->csiterations = 5;
+    n->reserved1 = 0;
+    n->reserved2 = 0;
 
     *new_params = n;
-    *new_params_size = sizeof(dt_iop_demosaic_params_v4_t);
-    *new_version = 4;
+    *new_params_size = sizeof(dt_iop_demosaic_params_v5_t);
+    *new_version = 5;
+    return 0;
+  }
+
+  if(old_version == 4)
+  {
+    typedef struct dt_iop_demosaic_params_v4_t
+    {
+      dt_iop_demosaic_greeneq_t green_eq;
+      float median_thrs;
+      dt_iop_demosaic_smooth_t color_smoothing;
+      dt_iop_demosaic_method_t demosaicing_method;
+      dt_iop_demosaic_lmmse_t lmmse_refine;
+      float dual_thrs;
+    } dt_iop_demosaic_params_v4_t;
+
+    const dt_iop_demosaic_params_v4_t *o = (dt_iop_demosaic_params_v4_t *)old_params;
+    dt_iop_demosaic_params_v5_t *n = malloc(sizeof(dt_iop_demosaic_params_v5_t));
+    memcpy(n, o, sizeof *o);
+
+    n->csthreshold = 0.5f;
+    n->csradius = 0.0f;
+    n->csborder = 0.0f;
+    n->csiterations = 5;
+    n->reserved1 = 0;
+    n->reserved2 = 0;
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_demosaic_params_v5_t);
+    *new_version = 5;
     return 0;
   }
 
