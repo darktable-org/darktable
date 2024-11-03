@@ -46,9 +46,13 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-// whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
-// _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 55
+// NEVER change these; after these versions, NEVER update _create_*_schema(), either
+// For consistency and reducing duplication / effort, after these versions, the full schema
+// is created by running the upgrade steps.
+#define LAST_FULL_DATABASE_VERSION_LIBRARY 55
+#define LAST_FULL_DATABASE_VERSION_DATA    10
+// You HAVE TO bump THESE versions whenever you add an update branches to _upgrade_*_schema_step()!
+#define CURRENT_DATABASE_VERSION_LIBRARY 56
 #define CURRENT_DATABASE_VERSION_DATA    10
 
 #define USE_NESTED_TRANSACTIONS
@@ -2911,6 +2915,31 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     new_version = 55;
   }
+  else if(version == 55) {
+    TRY_EXEC("CREATE TABLE overlay_new("
+             " imgid INTEGER, overlay_id INTEGER,"
+             " PRIMARY KEY (imgid, overlay_id),"
+             " FOREIGN KEY(imgid) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE,"
+             " FOREIGN KEY(overlay_id) REFERENCES images(id) ON UPDATE CASCADE ON DELETE RESTRICT"
+             ")",
+             "can't create migration target table 'overlay_new'");
+
+    TRY_EXEC("INSERT INTO overlay_new"
+             " SELECT imgid, overlay_id"
+             " FROM overlay",
+             "can't populate migration target table 'overlay_new'");
+
+    TRY_EXEC("CREATE INDEX main.overlay_overlay_id_index ON overlay_new (overlay_id)",
+             "can't create index on 'overlay_id'");
+
+    TRY_EXEC("DROP TABLE overlay",
+             "can't drop old table 'overlay'");
+
+    TRY_EXEC("ALTER TABLE overlay_new RENAME TO overlay",
+             "can't rename table 'overlay_new' to 'overlay'");
+
+    new_version = 56;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -3192,7 +3221,8 @@ static gboolean _upgrade_data_schema(dt_database_t *db, int version)
   return TRUE;
 }
 
-/* create the current database schema and set the version in db_info accordingly */
+/* create the 'library' database schema according to the state from 27 October 2024, and set the version in db_info accordingly.
+ * from now on, do NOT update this function; simply add further modifications to _upgrade_library_schema for consistency. */
 static void _create_library_schema(dt_database_t *db)
 {
   sqlite3_stmt *stmt;
@@ -3205,7 +3235,7 @@ static void _create_library_schema(dt_database_t *db)
     (db->handle, "INSERT OR REPLACE INTO main.db_info (key, value) VALUES ('version', ?1)",
      -1, &stmt, NULL);
   // clang-format on
-  sqlite3_bind_int(stmt, 1, CURRENT_DATABASE_VERSION_LIBRARY);
+  sqlite3_bind_int(stmt, 1, LAST_FULL_DATABASE_VERSION_LIBRARY);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   ////////////////////////////// film_rolls
@@ -3496,9 +3526,13 @@ static void _create_library_schema(dt_database_t *db)
     " ORDER BY normalized_camera, folders",
      NULL, NULL, NULL);
   // clang-format on
+
+  // continue by executing the upgrade steps
+  _upgrade_library_schema(db, LAST_FULL_DATABASE_VERSION_LIBRARY);
 }
 
-/* create the current database schema and set the version in db_info accordingly */
+/* create the 'data' database schema according to the state from 27 October 2024, and set the version in db_info accordingly.
+ * from now on, do NOT update this function; simply add further modifications to _upgrade_data_schema for consistency. */
 static void _create_data_schema(dt_database_t *db)
 {
   sqlite3_stmt *stmt;
@@ -3510,7 +3544,7 @@ static void _create_data_schema(dt_database_t *db)
   sqlite3_prepare_v2
     (db->handle, "INSERT OR REPLACE INTO data.db_info (key, value) VALUES ('version', ?1)",
      -1, &stmt, NULL);
-  sqlite3_bind_int(stmt, 1, CURRENT_DATABASE_VERSION_DATA);
+  sqlite3_bind_int(stmt, 1, LAST_FULL_DATABASE_VERSION_DATA);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   ////////////////////////////// tags
@@ -3553,6 +3587,9 @@ static void _create_data_schema(dt_database_t *db)
                "type INTEGER, longitude REAL, latitude REAL, delta1 REAL, delta2 REAL, ratio FLOAT, polygons BLOB, "
                "FOREIGN KEY(tagid) REFERENCES tags(id))", NULL, NULL, NULL);
   // clang-format on
+
+  // continue by executing the upgrade steps
+  _upgrade_data_schema(db, LAST_FULL_DATABASE_VERSION_DATA);
 }
 
 // create the in-memory tables
