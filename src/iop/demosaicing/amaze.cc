@@ -127,11 +127,11 @@ static inline float _xdivf(float d, int n)
 
 
 void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
-                       const float *const in,
-                       float *out,
-                       const dt_iop_roi_t *const roi_in,
-                       const dt_iop_roi_t *const roi_out,
-                       const uint32_t filters)
+                    const float *const in,
+                    float *out,
+                    const dt_iop_roi_t *const roi_in,
+                    const dt_iop_roi_t *const roi_out,
+                    const uint32_t filters)
 {
   int winx = roi_out->x;
   int winy = roi_out->y;

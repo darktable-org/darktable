@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,13 +17,12 @@
 */
 
 DT_OMP_DECLARE_SIMD(aligned(in, out))
-static void demosaic_ppg(
-        float *const out,
-        const float *const in,
-        const dt_iop_roi_t *const roi_out,
-        const dt_iop_roi_t *const roi_in,
-        const uint32_t filters,
-        const float thrs)
+static void demosaic_ppg(float *const out,
+                         const float *const in,
+                         const dt_iop_roi_t *const roi_out,
+                         const dt_iop_roi_t *const roi_in,
+                         const uint32_t filters,
+                         const float thrs)
 {
   // these may differ a little, if you're unlucky enough to split a bayer block with cropping or similar.
   // we never want to access the input out of bounds though:
