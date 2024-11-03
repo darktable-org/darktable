@@ -2915,7 +2915,11 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     new_version = 55;
   }
-  else if(version == 55) {
+  else if(version == 55)
+  {
+    sqlite3_exec(db->handle, "PRAGMA foreign_keys = OFF", NULL, NULL, NULL);
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
     TRY_EXEC("CREATE TABLE overlay_new("
              " imgid INTEGER, overlay_id INTEGER,"
              " PRIMARY KEY (imgid, overlay_id),"
@@ -2938,6 +2942,8 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("ALTER TABLE overlay_new RENAME TO overlay",
              "can't rename table 'overlay_new' to 'overlay'");
 
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    sqlite3_exec(db->handle, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
     new_version = 56;
   }
   else
