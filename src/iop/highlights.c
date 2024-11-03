@@ -326,13 +326,12 @@ static dt_hash_t img_opphash = ULLONG_MAX;
 #include "hlreconstruct/inpaint.c"
 #include "hlreconstruct/lch.c"
 
-void distort_mask(
-        dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        const float *const in,
-        float *const out,
-        const dt_iop_roi_t *const roi_in,
-        const dt_iop_roi_t *const roi_out)
+void distort_mask(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
+                  const float *const in,
+                  float *const out,
+                  const dt_iop_roi_t *const roi_in,
+                  const dt_iop_roi_t *const roi_out)
 {
   dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 }
