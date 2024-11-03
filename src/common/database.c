@@ -3594,6 +3594,8 @@ static void _create_data_schema(dt_database_t *db)
                "FOREIGN KEY(tagid) REFERENCES tags(id))", NULL, NULL, NULL);
   // clang-format on
 
+  /////////////////////////////////////////////////////////////////
+  // DO NOT ADD ANYMORE CODE HERE, LET THE UPGRADE STEP DO THE JOB:
   // continue by executing the upgrade steps
   _upgrade_data_schema(db, LAST_FULL_DATABASE_VERSION_DATA);
 }
