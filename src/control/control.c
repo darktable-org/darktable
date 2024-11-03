@@ -638,14 +638,22 @@ void dt_control_log(const char *msg, ...)
   va_start(ap, msg);
   char *escaped_msg = g_markup_vprintf_escaped(msg, ap);
   const int msglen = strlen(escaped_msg);
-  g_strlcpy(darktable.control->log_message[darktable.control->log_pos & (DT_CTL_LOG_SIZE-1)],
-            escaped_msg, DT_CTL_LOG_MSG_SIZE);
+
+  const int old_idx = (darktable.control->log_pos - 1) & (DT_CTL_LOG_SIZE-1);
+  const gboolean timeout = darktable.control->log_message_timeout_id;
+  const gboolean new = timeout && (g_strcmp0(escaped_msg, darktable.control->log_message[old_idx]) != 0);
+
+  if(new)
+  {
+    g_strlcpy(darktable.control->log_message[darktable.control->log_pos & (DT_CTL_LOG_SIZE-1)],
+              escaped_msg, DT_CTL_LOG_MSG_SIZE);
+    darktable.control->log_pos++;
+  }
+
   g_free(escaped_msg);
   va_end(ap);
 
-  darktable.control->log_pos++;
-
-  if(darktable.control->log_message_timeout_id)
+  if(timeout)
     g_source_remove(darktable.control->log_message_timeout_id);
 
   darktable.control->log_message_timeout_id
