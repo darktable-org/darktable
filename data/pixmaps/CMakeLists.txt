@@ -24,3 +24,8 @@ FILE(GLOB OTHER_PIXMAPS "*.jpg" "*.png" "*.svg")
 install(FILES ${OTHER_PIXMAPS} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/pixmaps COMPONENT DTApplication)
 # Need to copy to have themes, icons, etc all in one path like after installing
 file(COPY ${OTHER_PIXMAPS} DESTINATION ${DARKTABLE_DATADIR}/pixmaps)
+
+FILE(GLOB LOGO_REMAINING_CLOCK_PIXMAPS "clock/*.svg")
+install(FILES ${LOGO_REMAINING_CLOCK_PIXMAPS} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/pixmaps/clock COMPONENT DTApplication)
+# Need to copy to have themes, icons, etc all in one path like after installing
+file(COPY ${LOGO_REMAINING_CLOCK_PIXMAPS} DESTINATION ${DARKTABLE_DATADIR}/pixmaps/clock)
