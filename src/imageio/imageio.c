@@ -366,6 +366,9 @@ static const dt_magic_bytes_t _magic_signatures[] = {
   // binary NetPNM (ppm)
   { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_pnm,
     { 'P', '6', 0x0A } },
+  // binary NetPNM "Portable Arbitrary Map" (pam)
+  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_exotic,
+    { 'P', '7', 0x0A } },
   // Windows BMP bitmap image
   { DT_FILETYPE_BMP, FALSE, 0, 2, dt_imageio_open_exotic,
     { 'B', 'M' } },
