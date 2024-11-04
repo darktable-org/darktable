@@ -349,13 +349,13 @@ static const dt_magic_bytes_t _magic_signatures[] = {
   { DT_FILETYPE_OTHER_LDR, FALSE, 0, 4, dt_imageio_open_exotic,
     { 0x80, 0x2A, 0x5F, 0xD7 } },
   // ASCII NetPNM (pbm)
-  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_pnm,
+  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_exotic,
     { 'P', '1', 0x0A } },
   // ASCII NetPNM (pgm)
-  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_pnm,
+  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_exotic,
     { 'P', '2', 0x0A } },
   // ASCII NetPNM (ppm)
-  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_pnm,
+  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_exotic,
     { 'P', '3', 0x0A } },
   // binary NetPNM (pbm)
   { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_pnm,
@@ -366,6 +366,9 @@ static const dt_magic_bytes_t _magic_signatures[] = {
   // binary NetPNM (ppm)
   { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_pnm,
     { 'P', '6', 0x0A } },
+  // binary NetPNM "Portable Arbitrary Map" (pam)
+  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_exotic,
+    { 'P', '7', 0x0A } },
   // Windows BMP bitmap image
   { DT_FILETYPE_BMP, FALSE, 0, 2, dt_imageio_open_exotic,
     { 'B', 'M' } },
@@ -1630,9 +1633,6 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
 
     if(!_image_handled(ret))
       ret = dt_imageio_open_j2k(img, filename, buf);
-
-    if(!_image_handled(ret))
-      ret = dt_imageio_open_jpegxl(img, filename, buf);
 
     if(!_image_handled(ret))
       ret = dt_imageio_open_jpeg(img, filename, buf);

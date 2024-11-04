@@ -1283,7 +1283,7 @@ msgid ""
 "on middle mouse clicks. if disabled, it will toggle between viewport size "
 "and 100%, and the 'ctrl' key can be used to control the zoom level."
 msgstr ""
-"Si sélectionné, un clic milieu de la souris fera passer le zoom de 100% à "
+"Si sélectionné, un clic-milieu de la souris fera passer le zoom de 100% à "
 "200% puis de retour sur le zoom ajusté à l'écran.\n"
 "Si désactivé, le zoom passera du zoom ajusté à 100% et l'utilisation de Ctrl "
 "est nécessaire pour avoir le plein contrôle du niveau de zoom."
@@ -10037,7 +10037,7 @@ msgstr ""
 "(seule l’année est requise).\n"
 "Utiliser « min » s’il n’y a pas de borne, le préfixe « - » pour une date "
 "relative.\n"
-"Clic droit pour sélectionner depuis un calendrier ou les valeurs existantes."
+"Clic-droit pour sélectionner depuis un calendrier ou les valeurs existantes."
 
 #: ../src/dtgtk/range.c:434
 msgid ""
@@ -10052,7 +10052,7 @@ msgstr ""
 "(seule l’année est requise).\n"
 "Utiliser « max » s’il n’y a pas de borne, le préfixe « - » pour une date "
 "relative.\n"
-"Clic droit pour sélectionner depuis un calendrier ou les valeurs existantes."
+"Clic-droit pour sélectionner depuis un calendrier ou les valeurs existantes."
 
 #: ../src/dtgtk/range.c:443
 msgid ""
@@ -10062,7 +10062,7 @@ msgid ""
 msgstr ""
 "Entrer la date,\n"
 "au format « aaaa:mm:jj hh:mm:ss.sss » (seule l’année est requise).\n"
-"Clic droit pour sélectionner depuis un calendrier ou les valeurs existantes."
+"Clic-droit pour sélectionner depuis un calendrier ou les valeurs existantes."
 
 #: ../src/dtgtk/range.c:465
 msgid "date-time interval to subtract from the max value"
@@ -12847,7 +12847,7 @@ msgstr "Ctrl+V"
 
 #: ../src/gui/accelerators.c:1192
 msgid "right long click"
-msgstr "Clic droit long"
+msgstr "Clic-droit long"
 
 # minuscule initiale
 #: ../src/gui/accelerators.c:1192
@@ -12950,7 +12950,7 @@ msgstr ""
 "Les périphériques connectés peuvent envoyer des touches et des mouvements en "
 "utilisant leurs contrôles physiques.\n"
 "\n"
-"Clic droit pour annuler."
+"Clic-droit pour annuler."
 
 #: ../src/gui/accelerators.c:2025
 msgid "removing shortcut"
@@ -13426,7 +13426,7 @@ msgstr ""
 
 #: ../src/gui/gtk.c:2416
 msgid "right-click to show/hide modules"
-msgstr "Clic droit pour afficher/cacher les modules"
+msgstr "Clic-droit pour afficher/cacher les modules"
 
 #: ../src/gui/gtk.c:2425
 msgid "show/hide modules"
@@ -17366,7 +17366,7 @@ msgstr "Rotation"
 
 #: ../src/iop/clipping.c:2123
 msgid "right-click and drag a line on the image to drag a straight line"
-msgstr "Clic droit et tracer une ligne sur l’image pour indiquer l’horizontale"
+msgstr "Clic-droit et tracer une ligne sur l’image pour indiquer l’horizontale"
 
 #: ../src/iop/clipping.c:2126
 msgid "keystone"
@@ -21277,7 +21277,7 @@ msgid ""
 "<b>remove a warp</b>: right-click"
 msgstr ""
 "Utiliser un outil pour ajouter une forme.\n"
-"<b>Supprimer une forme</b> : Clic droit"
+"<b>Supprimer une forme</b> : Clic-droit"
 
 #: ../src/iop/liquify.c:3617
 msgid "warps|nodes count:"
@@ -23831,8 +23831,8 @@ msgid ""
 msgstr ""
 "Zones de luminosité.\n"
 "Utiliser la molette de pour changer le nombre de zones.\n"
-" • Clic gauche sur une frontière pour créer un marqueur,\n"
-" • Clic droit sur un marqueur pour l’effacer."
+" • Clic-gauche sur une frontière pour créer un marqueur,\n"
+" • Clic-droit sur un marqueur pour l’effacer."
 
 #: ../src/libs/backgroundjobs.c:52
 msgid "background jobs"
@@ -24213,7 +24213,7 @@ msgid ""
 msgstr ""
 "Survoler pour mettre en surbrillance dans l’image.\n"
 " • Cliquer pour verrouiller l’échantillon,\n"
-" • Clic droit pour charger l’échantillon dans la zone active de la pipette."
+" • Clic-droit pour charger l’échantillon dans la zone active de la pipette."
 
 #: ../src/libs/colorpicker.c:624 ../src/libs/colorpicker.c:691
 msgid "click to (un)hide large color patch"
@@ -24496,7 +24496,7 @@ msgid ""
 "click middle mouse button to reset to 0."
 msgstr ""
 "Largeur maximum du fichier de sortie.\n"
-"Clic milieu pour réinitialiser à 0."
+"Clic-milieu pour réinitialiser à 0."
 
 #: ../src/libs/export.c:1271
 msgid "print height"
@@ -24508,7 +24508,7 @@ msgid ""
 "click middle mouse button to reset to 0."
 msgstr ""
 "Hauteur maximum du fichier de sortie.\n"
-"Clic milieu pour réinitialiser à 0."
+"Clic-milieu pour réinitialiser à 0."
 
 #: ../src/libs/export.c:1279
 msgid "resolution in dot per inch"
@@ -24530,7 +24530,7 @@ msgid ""
 msgstr ""
 "Peut être un entier, un nombre décimal ou une fraction.\n"
 " • Zéro ou sans valeur est équivalent à 1,\n"
-" • Clic milieu pour réinitialiser à 1."
+" • Clic-milieu pour réinitialiser à 1."
 
 #: ../src/libs/export.c:1351
 msgid "allow upscaling"
@@ -24868,7 +24868,7 @@ msgstr " • Clic ou clic+déplacer pour sélectionner une ou plusieurs valeurs"
 #: ../src/libs/filtering.c:740
 msgid "right-click opens a menu to select the available values"
 msgstr ""
-" • Clic droit pour ouvrir un menu afin de sélectionner une valeur disponible"
+" • Clic-droit pour ouvrir un menu afin de sélectionner une valeur disponible"
 
 #: ../src/libs/filtering.c:837
 #, c-format
@@ -25075,7 +25075,7 @@ msgstr ""
 "Entrer le nom de fichier à chercher,\n"
 "les valeurs multiples peuvent être séparées par « , ».\n"
 "\n"
-"Clic droit pour lister les noms de fichier existants."
+"Clic-droit pour lister les noms de fichier existants."
 
 #: ../src/libs/filters/filename.c:379
 msgid "extension"
@@ -25093,7 +25093,7 @@ msgstr ""
 "Les valeurs multiples peuvent être séparées par « , ».\n"
 "Les mots-clés supportés sont « RAW », « NOT RAW », « LDR » et « HDR ».\n"
 "\n"
-"Clic droit pour lister les extensions existantes."
+"Clic-droit pour lister les extensions existantes."
 
 #: ../src/libs/filters/filename.c:408
 msgid ""
@@ -26264,7 +26264,7 @@ msgstr ""
 " • Un trait vertical « | » permet de créer un nom hiérarchique.\n"
 " • Pour supprimer un groupe d’emplacements effacer son nom.\n"
 " • Touche Entrée pour valider le nouveau nom, Échap pour annuler l’édition.\n"
-"Clic droit pour les autres actions, effacer un emplacement ou aller dans la "
+"Clic-droit pour les autres actions, effacer un emplacement ou aller dans la "
 "collection correspondante."
 
 #: ../src/libs/map_locations.c:956
@@ -26892,7 +26892,7 @@ msgid ""
 "right-click tab icon to add/remove widgets"
 msgstr ""
 "Panneau d'accès rapide.\n"
-"« Clic droit » sur les icônes des onglets pour ajouter/supprimer des widgets."
+"« Clic-droit » sur les icônes des onglets pour ajouter/supprimer des widgets."
 
 #: ../src/libs/modulegroups.c:2869
 msgid "quick access panel"
@@ -27826,7 +27826,7 @@ msgid ""
 msgstr ""
 "Mots-clés attachés.\n"
 " • Touche Suppr ou double clic pour détacher,\n"
-" • Clic droit pour afficher le menu des actions du mot-clé sélectionné,\n"
+" • Clic-droit pour afficher le menu des actions du mot-clé sélectionné,\n"
 " • Touche Tab pour donner le focus à la zone d’entrée."
 
 #: ../src/libs/tagging.c:3230
@@ -27899,7 +27899,7 @@ msgstr ""
 "sélectionnées,\n"
 " • Idem avec Maj+Entrée mais donne le focus à la zone de saisie,\n"
 " • Maj+clic pour développer complètement le mot-clé sélectionné,\n"
-" • Clic droit pour les autres actions sur le mot-clé sélectionné,\n"
+" • Clic-droit pour les autres actions sur le mot-clé sélectionné,\n"
 " • Maj+Tab pour donner le focus à la zone de saisie."
 
 #: ../src/libs/tagging.c:3366
@@ -29294,7 +29294,7 @@ msgstr "Actions de la souris"
 #~ "right-click on a place to remove it"
 #~ msgstr ""
 #~ "Ajouter un emplacement personnalisé.\n"
-#~ "Clic droit pour supprimer un emplacement."
+#~ "Clic-droit pour supprimer un emplacement."
 
 #, c-format
 #~ msgid "style %s successfully applied!"
@@ -29399,7 +29399,7 @@ msgstr "Actions de la souris"
 #~ "\n"
 #~ "%s"
 #~ msgstr ""
-#~ "Clic milieu pour basculer la visibilité des réglettes\n"
+#~ "Clic-milieu pour basculer la visibilité des réglettes\n"
 #~ "\n"
 #~ "%s"
 
@@ -30041,7 +30041,7 @@ msgstr "Actions de la souris"
 #~ "ctrl+click: add node - right click: remove path\n"
 #~ "ctrl+alt+click: toggle line/curve"
 #~ msgstr ""
-#~ "Ctrl+clic : ajouter un point • Clic droit : supprimer un chemin,\n"
+#~ "Ctrl+clic : ajouter un point • Clic-droit : supprimer un chemin,\n"
 #~ "Ctrl+Alt+clic : basculer entre ligne et courbe."
 
 #~ msgid "drag to change shape of path"
@@ -31502,7 +31502,7 @@ msgstr "Actions de la souris"
 #~ msgstr ""
 #~ "Dictionnaire des mots-clés.\n"
 #~ " • Double clic pour attacher,\n"
-#~ " • Clic droit pour afficher le menu des actions du mot-clé sélectionné,\n"
+#~ " • Clic-droit pour afficher le menu des actions du mot-clé sélectionné,\n"
 #~ " • Ctrl+molette pour redimensionner la fenêtre."
 
 #~ msgid "<b>commit</b>: double click"
@@ -34037,7 +34037,7 @@ msgstr "Actions de la souris"
 #~ "right click for options"
 #~ msgstr ""
 #~ "Basculer les zones sur-/sous-exposées\n"
-#~ "Clic droit pour les options"
+#~ "Clic-droit pour les options"
 
 #~ msgid "threshold of what shall be considered underexposed"
 #~ msgstr "Seuil en-dessous duquel les pixels sont considérés sous-exposés"
