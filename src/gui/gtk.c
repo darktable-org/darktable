@@ -2916,11 +2916,11 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title,
   if(darktable.gui)
   {
     GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
-    gtk_window_set_transient_for(GTK_WINDOW(window), win);
     gtk_window_set_modal(GTK_WINDOW(window), TRUE);
 
-    if(gtk_widget_get_visible(GTK_WIDGET(win)))
+    if(win && gtk_widget_get_visible(GTK_WIDGET(win)))
     {
+      gtk_window_set_transient_for(GTK_WINDOW(window), win);
       gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER_ON_PARENT);
     }
     else
