@@ -48,7 +48,7 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
   size_t filesize = ftell(f);
   rewind(f);
 
-  void *read_buffer = g_malloc(filesize);
+  void *read_buffer = g_try_malloc(filesize);
   if(!read_buffer)
   {
     fclose(f);
