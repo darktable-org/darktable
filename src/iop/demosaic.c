@@ -695,9 +695,9 @@ void process(dt_iop_module_t *self,
     if(demosaicing_method == DT_IOP_DEMOSAIC_MARKEST3_VNG)
       vng_interpolate(out, in, roi_in, piece->pipe->dsc.filters, xtrans, qual_flags & DT_DEMOSAIC_ONLY_VNG_LINEAR);
     else if(demosaicing_method == DT_IOP_DEMOSAIC_FDC)
-      xtrans_fdc_interpolate(self, out, in, &roo, roi_in, xtrans);
+      xtrans_fdc_interpolate(self, out, in, roi_in, xtrans);
     else if(base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN || base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3)
-      xtrans_markesteijn_interpolate(out, in, &roo, roi_in, xtrans, passes);
+      xtrans_markesteijn_interpolate(out, in, roi_in, xtrans, passes);
     else
       vng_interpolate(out, in, roi_in, piece->pipe->dsc.filters, xtrans, qual_flags & DT_DEMOSAIC_ONLY_VNG_LINEAR);
   }
