@@ -686,9 +686,9 @@ void process(dt_iop_module_t *self,
   }
 
   if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
-    passthrough_monochrome(out, in, &roo, roi_in);
+    passthrough_monochrome(out, in, roi_in);
   else if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR)
-    passthrough_color(out, in, &roo, roi_in, piece->pipe->dsc.filters, xtrans);
+    passthrough_color(out, in, roi_in, piece->pipe->dsc.filters, xtrans);
   else if(is_xtrans)
   {
     const int passes = base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3 ? 3 : 1;
