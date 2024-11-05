@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-04 19:39-0300\n"
-"PO-Revision-Date: 2024-11-04 19:39-0300\n"
+"POT-Creation-Date: 2024-11-05 19:42-0300\n"
+"PO-Revision-Date: 2024-11-05 19:42-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -28336,10 +28336,10 @@ msgstr "processamento de alta qualidade"
 
 #: ../src/views/darkroom.c:2293
 msgid ""
-"toggle high quality processing, if activated darktable processes image data "
+"toggle high quality processing. if activated darktable processes image data "
 "as it does while exporting"
 msgstr ""
-"alterna processamento de alta qualidade, se ativado o darktable processa "
+"alterna processamento de alta qualidade. se ativado o darktable processa "
 "dados da imagem como quando as exporta"
 
 #: ../src/views/darkroom.c:2309
