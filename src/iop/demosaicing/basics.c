@@ -87,10 +87,12 @@ static void pre_median(float *out,
   if(med[I] > med[J]) SWAP(med[I], med[J])
 
 static void color_smoothing(float *out,
-                            const dt_iop_roi_t *const roi_out,
+                            const dt_iop_roi_t *const roi,
                             const int num_passes)
 {
-  const int width4 = 4 * roi_out->width;
+  const int width4 = 4 * roi->width;
+  const int width = roi->width;
+  const int height = roi->height;
 
   for(int pass = 0; pass < num_passes; pass++)
   {
@@ -98,22 +100,24 @@ static void color_smoothing(float *out,
     {
       {
         float *outp = out;
-        for(int j = 0; j < roi_out->height; j++)
-          for(int i = 0; i < roi_out->width; i++, outp += 4) outp[3] = outp[c];
+        for(int j = 0; j < height; j++)
+          for(int i = 0; i < width; i++, outp += 4) outp[3] = outp[c];
       }
       DT_OMP_FOR()
-      for(int j = 1; j < roi_out->height - 1; j++)
+      for(int j = 1; j < height - 1; j++)
       {
-        float *outp = out + (size_t)4 * j * roi_out->width + 4;
-        for(int i = 1; i < roi_out->width - 1; i++, outp += 4)
+        float *outp = out + (size_t)4 * j * width + 4;
+        for(int i = 1; i < width - 1; i++, outp += 4)
         {
-          float med[9] = {
-            outp[-width4 - 4 + 3] - outp[-width4 - 4 + 1], outp[-width4 + 0 + 3] - outp[-width4 + 0 + 1],
-            outp[-width4 + 4 + 3] - outp[-width4 + 4 + 1], outp[-4 + 3] - outp[-4 + 1],
-            outp[+0 + 3] - outp[+0 + 1], outp[+4 + 3] - outp[+4 + 1],
-            outp[+width4 - 4 + 3] - outp[+width4 - 4 + 1], outp[+width4 + 0 + 3] - outp[+width4 + 0 + 1],
-            outp[+width4 + 4 + 3] - outp[+width4 + 4 + 1],
-          };
+          float med[9] = {  outp[-width4 - 4 + 3] - outp[-width4 - 4 + 1],
+                            outp[-width4 + 0 + 3] - outp[-width4 + 0 + 1],
+                            outp[-width4 + 4 + 3] - outp[-width4 + 4 + 1],
+                            outp[-4 + 3]          - outp[-4 + 1],
+                            outp[+0 + 3]          - outp[+0 + 1],
+                            outp[+4 + 3]          - outp[+4 + 1],
+                            outp[+width4 - 4 + 3] - outp[+width4 - 4 + 1],
+                            outp[+width4 + 0 + 3] - outp[+width4 + 0 + 1],
+                            outp[+width4 + 4 + 3] - outp[+width4 + 4 + 1] };
           /* optimal 9-element median search */
           SWAPmed(1, 2);
           SWAPmed(4, 5);
@@ -237,14 +241,14 @@ static void green_equilibration_favg(float *out,
 
 #ifdef HAVE_OPENCL
 // color smoothing step by multiple passes of median filtering
-static int color_smoothing_cl(dt_iop_module_t *self,
-                              dt_dev_pixelpipe_iop_t *piece,
+static int color_smoothing_cl(const dt_iop_module_t *self,
+                              const dt_dev_pixelpipe_iop_t *piece,
                               cl_mem dev_in,
                               cl_mem dev_out,
                               const dt_iop_roi_t *const roi,
                               const int passes)
 {
-  dt_iop_demosaic_global_data_t *gd = self->global_data;
+  const dt_iop_demosaic_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi->width;
@@ -274,7 +278,8 @@ static int color_smoothing_cl(dt_iop_module_t *self,
   {
     size_t sizes[] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
     size_t local[] = { locopt.sizex, locopt.sizey, 1 };
-    dt_opencl_set_kernel_args(devid, gd->kernel_color_smoothing, 0, CLARG(dev_t1), CLARG(dev_t2), CLARG(width),
+    dt_opencl_set_kernel_args(devid, gd->kernel_color_smoothing, 0,
+      CLARG(dev_t1), CLARG(dev_t2), CLARG(width),
       CLARG(height), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2)));
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_color_smoothing, sizes, local);
     if(err != CL_SUCCESS) goto error;
@@ -302,14 +307,14 @@ error:
   return err;
 }
 
-static int green_equilibration_cl(dt_iop_module_t *self,
-                                  dt_dev_pixelpipe_iop_t *piece,
+static int green_equilibration_cl(const dt_iop_module_t *self,
+                                  const dt_dev_pixelpipe_iop_t *piece,
                                   cl_mem dev_in,
                                   cl_mem dev_out,
                                   const dt_iop_roi_t *const roi_in)
 {
-  dt_iop_demosaic_data_t *d = piece->data;
-  dt_iop_demosaic_global_data_t *gd = self->global_data;
+  const dt_iop_demosaic_data_t *d = piece->data;
+  const dt_iop_demosaic_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -380,11 +385,11 @@ static int green_equilibration_cl(dt_iop_module_t *self,
 
     size_t fsizes[3] = { bwidth, bheight, 1 };
     size_t flocal[3] = { flocopt.sizex, flocopt.sizey, 1 };
-    dt_opencl_set_kernel_args(devid, gd->kernel_green_eq_favg_reduce_first, 0, CLARG(dev_in1), CLARG(width),
+    dt_opencl_set_kernel_args(devid, gd->kernel_green_eq_favg_reduce_first, 0,
+      CLARG(dev_in1), CLARG(width),
       CLARG(height), CLARG(dev_m), CLARG(piece->pipe->dsc.filters), CLARG(roi_in->x), CLARG(roi_in->y),
       CLLOCAL(sizeof(float) * 2 * flocopt.sizex * flocopt.sizey));
-    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_green_eq_favg_reduce_first, fsizes,
-                                                 flocal);
+    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_green_eq_favg_reduce_first, fsizes, flocal);
     if(err != CL_SUCCESS) goto error;
 
     dt_opencl_local_buffer_t slocopt
@@ -409,10 +414,10 @@ static int green_equilibration_cl(dt_iop_module_t *self,
 
     size_t ssizes[3] = { (size_t)reducesize * slocopt.sizex, 1, 1 };
     size_t slocal[3] = { slocopt.sizex, 1, 1 };
-    dt_opencl_set_kernel_args(devid, gd->kernel_green_eq_favg_reduce_second, 0, CLARG(dev_m), CLARG(dev_r),
+    dt_opencl_set_kernel_args(devid, gd->kernel_green_eq_favg_reduce_second, 0,
+      CLARG(dev_m), CLARG(dev_r),
       CLARG(bufsize), CLLOCAL(sizeof(float) * 2 * slocopt.sizex));
-    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_green_eq_favg_reduce_second, ssizes,
-                                                 slocal);
+    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_green_eq_favg_reduce_second, ssizes, slocal);
     if(err != CL_SUCCESS) goto error;
 
     sumsum = dt_alloc_align_float((size_t)2 * reducesize);
@@ -459,7 +464,8 @@ static int green_equilibration_cl(dt_iop_module_t *self,
 
     size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
     size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-    dt_opencl_set_kernel_args(devid, gd->kernel_green_eq_lavg, 0, CLARG(dev_in2), CLARG(dev_out2),
+    dt_opencl_set_kernel_args(devid, gd->kernel_green_eq_lavg, 0,
+      CLARG(dev_in2), CLARG(dev_out2),
       CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters), CLARG(roi_in->x), CLARG(roi_in->y),
       CLARG(threshold), CLLOCAL(sizeof(float) * (locopt.sizex + 4) * (locopt.sizey + 4)));
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_green_eq_lavg, sizes, local);
@@ -476,15 +482,15 @@ error:
   return err;
 }
 
-static int process_default_cl(dt_iop_module_t *self,
-                              dt_dev_pixelpipe_iop_t *piece,
+static int process_default_cl(const dt_iop_module_t *self,
+                              const dt_dev_pixelpipe_iop_t *piece,
                               cl_mem dev_in,
                               cl_mem dev_out,
                               const dt_iop_roi_t *const roi_in,
                               const int demosaicing_method)
 {
-  dt_iop_demosaic_data_t *d = piece->data;
-  dt_iop_demosaic_global_data_t *gd = self->global_data;
+  const dt_iop_demosaic_data_t *d = piece->data;
+  const dt_iop_demosaic_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
 
@@ -551,7 +557,8 @@ static int process_default_cl(dt_iop_module_t *self,
 
         size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
         size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-        dt_opencl_set_kernel_args(devid, gd->kernel_pre_median, 0, CLARG(dev_in), CLARG(dev_med), CLARG(width),
+        dt_opencl_set_kernel_args(devid, gd->kernel_pre_median, 0,
+          CLARG(dev_in), CLARG(dev_med), CLARG(width),
           CLARG(height), CLARG(piece->pipe->dsc.filters), CLARG(d->median_thrs), CLLOCAL(sizeof(float) * (locopt.sizex + 4) * (locopt.sizey + 4)));
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pre_median, sizes, local);
         if(err != CL_SUCCESS) goto error;
@@ -573,7 +580,8 @@ static int process_default_cl(dt_iop_module_t *self,
 
         size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
         size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-        dt_opencl_set_kernel_args(devid, gd->kernel_ppg_green, 0, CLARG(dev_med), CLARG(dev_tmp), CLARG(width),
+        dt_opencl_set_kernel_args(devid, gd->kernel_ppg_green, 0,
+          CLARG(dev_med), CLARG(dev_tmp), CLARG(width),
           CLARG(height), CLARG(piece->pipe->dsc.filters), CLLOCAL(sizeof(float) * (locopt.sizex + 2*3) * (locopt.sizey + 2*3)));
 
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_ppg_green, sizes, local);
@@ -594,7 +602,8 @@ static int process_default_cl(dt_iop_module_t *self,
 
         size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
         size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-        dt_opencl_set_kernel_args(devid, gd->kernel_ppg_redblue, 0, CLARG(dev_tmp), CLARG(dev_out), CLARG(width),
+        dt_opencl_set_kernel_args(devid, gd->kernel_ppg_redblue, 0,
+          CLARG(dev_tmp), CLARG(dev_out), CLARG(width),
           CLARG(height), CLARG(piece->pipe->dsc.filters), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2)));
 
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_ppg_redblue, sizes, local);
