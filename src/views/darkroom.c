@@ -2290,7 +2290,7 @@ void gui_init(dt_view_t *self)
                         dev->late_scaling.button, &dt_action_def_toggle);
   gtk_widget_set_tooltip_text
     (dev->late_scaling.button,
-     _("toggle high quality processing,"
+     _("toggle high quality processing."
        " if activated darktable processes image data as it does while exporting"));
   g_signal_connect(G_OBJECT(dev->late_scaling.button), "clicked",
                    G_CALLBACK(_latescaling_quickbutton_clicked), dev);
