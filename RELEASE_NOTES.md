@@ -266,6 +266,9 @@ changes (where available).
 - Fixed a bug in color calibration module where switching between
   various illuminants could lead to unpredictable settings.
 
+- Various fixes In the demosicer module. Non-usable options are hidden
+  now. Fixed dual demosaicing for xtrans sensors and OpenCL code.
+
 ## Lua
 
 ### API Version
