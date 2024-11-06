@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-02 12:32+0100\n"
-"PO-Revision-Date: 2024-11-02 15:50+0200\n"
+"POT-Creation-Date: 2024-11-06 20:32+0100\n"
+"PO-Revision-Date: 2024-11-06 22:13+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -1602,8 +1602,9 @@ msgid ""
 " - 'small': should be used if you are simultaneously running applications "
 "taking large parts of your systems memory or OpenCL/GL applications like "
 "games or Hugin.\n"
-" - 'large': is the best option if you are mainly using darktable and want it "
-"to take most of your systems resources for performance."
+" - 'large': is the best option if you are not running other applications at "
+"the same time as darktable and want it to take most of your systems "
+"resources for performance."
 msgstr ""
 "Defines how much Darktable may take from your system resources:\n"
 " - 'Default': Darktable takes ~50% of your systems resources, which is "
@@ -1611,8 +1612,9 @@ msgstr ""
 " - 'Small': should be used if you are simultaneously running applications "
 "taking large parts of your systems memory or OpenCL/GL applications like "
 "games or Hugin.\n"
-" - 'Large': is the best option if you are mainly using Darktable and want it "
-"to take most of your systems resources for performance."
+" - 'Large': is the best option if you are not running other applications at "
+"the same time as Darktable and want it to take most of your systems "
+"resources for performance."
 
 #: ../build/bin/preferences_gen.h:6197
 msgid "prefer performance over quality"
@@ -5452,7 +5454,7 @@ msgstr "Slider"
 msgid "dropdown"
 msgstr "Dropdown"
 
-#: ../src/chart/main.c:504 ../src/common/database.c:3730
+#: ../src/chart/main.c:504 ../src/common/database.c:3775
 #: ../src/control/jobs/control_jobs.c:2156
 #: ../src/control/jobs/control_jobs.c:2214 ../src/gui/accelerators.c:2508
 #: ../src/gui/accelerators.c:2590 ../src/gui/accelerators.c:2643
@@ -6525,7 +6527,7 @@ msgstr ""
 "OpenCL mandatory timeout has been updated to 1000.\n"
 "\n"
 
-#: ../src/common/database.c:3703
+#: ../src/common/database.c:3748
 #, c-format
 msgid ""
 "\n"
@@ -6599,19 +6601,19 @@ msgstr ""
 "</i>\n"
 
 #. clang-format on
-#: ../src/common/database.c:3729
+#: ../src/common/database.c:3774
 msgid "error starting darktable"
 msgstr "Error starting Darktable"
 
-#: ../src/common/database.c:3730
+#: ../src/common/database.c:3775
 msgid "_delete database lock files"
 msgstr "_Delete database lock files"
 
-#: ../src/common/database.c:3736
+#: ../src/common/database.c:3781
 msgid "are you sure?"
 msgstr "Are you sure?"
 
-#: ../src/common/database.c:3737
+#: ../src/common/database.c:3782
 msgid ""
 "\n"
 "do you really want to delete the lock files?\n"
@@ -6619,19 +6621,19 @@ msgstr ""
 "\n"
 "Do you really want to delete the lock files?\n"
 
-#: ../src/common/database.c:3737 ../src/gui/gtk.c:3104
+#: ../src/common/database.c:3782 ../src/gui/gtk.c:3104
 msgid "_no"
 msgstr "_No"
 
-#: ../src/common/database.c:3737 ../src/gui/gtk.c:3103
+#: ../src/common/database.c:3782 ../src/gui/gtk.c:3103
 msgid "_yes"
 msgstr "_Yes"
 
-#: ../src/common/database.c:3753
+#: ../src/common/database.c:3798
 msgid "done"
 msgstr "Done"
 
-#: ../src/common/database.c:3754
+#: ../src/common/database.c:3799
 msgid ""
 "\n"
 "successfully deleted the lock files.\n"
@@ -6641,17 +6643,17 @@ msgstr ""
 "Successfully deleted the lock files.\n"
 "You can now restart Darktable\n"
 
-#: ../src/common/database.c:3755 ../src/common/database.c:3762
+#: ../src/common/database.c:3800 ../src/common/database.c:3807
 #: ../src/gui/accelerators.c:2591 ../src/gui/accelerators.c:2673
 #: ../src/gui/hist_dialog.c:229 ../src/gui/presets.c:567
 msgid "_ok"
 msgstr "_OK"
 
-#: ../src/common/database.c:3758
+#: ../src/common/database.c:3803
 msgid "error"
 msgstr "Error"
 
-#: ../src/common/database.c:3759
+#: ../src/common/database.c:3804
 #, c-format
 msgid ""
 "\n"
@@ -6666,7 +6668,7 @@ msgstr ""
 "db.lock</i>\n"
 "in folder <a href=\"file:///%s\">%s</a>.\n"
 
-#: ../src/common/database.c:3876
+#: ../src/common/database.c:3921
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -6675,17 +6677,17 @@ msgstr ""
 "The database lock file contains a PID that seems to be alive in your system: "
 "%d"
 
-#: ../src/common/database.c:3883
+#: ../src/common/database.c:3928
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "The database lock file seems to be empty"
 
-#: ../src/common/database.c:3893
+#: ../src/common/database.c:3938
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr "Error opening the database lock file for reading: %s"
 
-#: ../src/common/database.c:3963
+#: ../src/common/database.c:4008
 #, c-format
 msgid ""
 "the database schema version of\n"
@@ -6702,16 +6704,16 @@ msgstr ""
 "is too new for this build of Darktable (this means the database was created "
 "or upgraded by a newer Darktable version)\n"
 
-#: ../src/common/database.c:3970
+#: ../src/common/database.c:4015
 msgid "darktable - too new db version"
 msgstr "Darktable - too new db version"
 
-#: ../src/common/database.c:3971
+#: ../src/common/database.c:4016
 msgid "_quit darktable"
 msgstr "_Quit Darktable"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:3986
+#: ../src/common/database.c:4031
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -6730,21 +6732,21 @@ msgstr ""
 "\n"
 "Do you want to proceed or quit now to do a backup\n"
 
-#: ../src/common/database.c:3994
+#: ../src/common/database.c:4039
 msgid "darktable - schema migration"
 msgstr "Darktable - schema migration"
 
-#: ../src/common/database.c:3995 ../src/common/database.c:4314
-#: ../src/common/database.c:4329 ../src/common/database.c:4487
-#: ../src/common/database.c:4502
+#: ../src/common/database.c:4040 ../src/common/database.c:4359
+#: ../src/common/database.c:4374 ../src/common/database.c:4532
+#: ../src/common/database.c:4547
 msgid "_close darktable"
 msgstr "_Close Darktable"
 
-#: ../src/common/database.c:3995
+#: ../src/common/database.c:4040
 msgid "_upgrade database"
 msgstr "_Upgrade database"
 
-#: ../src/common/database.c:4294 ../src/common/database.c:4467
+#: ../src/common/database.c:4339 ../src/common/database.c:4512
 #, c-format
 msgid ""
 "quick_check said:\n"
@@ -6753,21 +6755,21 @@ msgstr ""
 "Quick_check said:\n"
 "%s \n"
 
-#: ../src/common/database.c:4311 ../src/common/database.c:4326
-#: ../src/common/database.c:4484 ../src/common/database.c:4499
+#: ../src/common/database.c:4356 ../src/common/database.c:4371
+#: ../src/common/database.c:4529 ../src/common/database.c:4544
 msgid "darktable - error opening database"
 msgstr "Darktable - error opening database"
 
-#: ../src/common/database.c:4315 ../src/common/database.c:4488
+#: ../src/common/database.c:4360 ../src/common/database.c:4533
 msgid "_attempt restore"
 msgstr "_Attempt restore"
 
-#: ../src/common/database.c:4316 ../src/common/database.c:4330
-#: ../src/common/database.c:4489 ../src/common/database.c:4503
+#: ../src/common/database.c:4361 ../src/common/database.c:4375
+#: ../src/common/database.c:4534 ../src/common/database.c:4548
 msgid "_delete database"
 msgstr "_Delete database"
 
-#: ../src/common/database.c:4319 ../src/common/database.c:4492
+#: ../src/common/database.c:4364 ../src/common/database.c:4537
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup, attempt an automatic restore\n"
@@ -6779,7 +6781,7 @@ msgstr ""
 "from the most recent snapshot or delete the corrupted database\n"
 "and start with a new one?"
 
-#: ../src/common/database.c:4333 ../src/common/database.c:4506
+#: ../src/common/database.c:4378 ../src/common/database.c:4551
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or delete the corrupted database\n"
@@ -6789,7 +6791,7 @@ msgstr ""
 "the database from a backup or delete the corrupted database\n"
 "and start with a new one?"
 
-#: ../src/common/database.c:4340 ../src/common/database.c:4511
+#: ../src/common/database.c:4385 ../src/common/database.c:4556
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -7156,17 +7158,17 @@ msgstr "Image id"
 msgid "preserved filename"
 msgstr "Preserved filename"
 
-#: ../src/common/mipmap_cache.c:1299 ../src/imageio/imageio.c:1071
+#: ../src/common/mipmap_cache.c:1299 ../src/imageio/imageio.c:1074
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "Image `%s' is not available!"
 
-#: ../src/common/mipmap_cache.c:1302 ../src/imageio/imageio.c:1075
+#: ../src/common/mipmap_cache.c:1302 ../src/imageio/imageio.c:1078
 #, c-format
 msgid "unable to load image `%s'!"
 msgstr "Unable to load image '%s'!"
 
-#: ../src/common/mipmap_cache.c:1304 ../src/imageio/imageio.c:1077
+#: ../src/common/mipmap_cache.c:1304 ../src/imageio/imageio.c:1080
 #, c-format
 msgid "image '%s' not supported"
 msgstr "Image '%s' not supported"
@@ -9772,11 +9774,11 @@ msgstr ""
 "in module '%s'\n"
 "Please report on GitHub"
 
-#: ../src/develop/pixelpipe_hb.c:1510
+#: ../src/develop/pixelpipe_hb.c:1515
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr "Fatal input misalignment, please report on GitHub\n"
 
-#: ../src/develop/pixelpipe_hb.c:2803
+#: ../src/develop/pixelpipe_hb.c:2806
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -9796,7 +9798,7 @@ msgstr ""
 "  - Some drivers don't support needed number of events.\n"
 "  - Too small headroom settings while using 'Use all device memory'."
 
-#: ../src/develop/pixelpipe_hb.c:2970
+#: ../src/develop/pixelpipe_hb.c:2973
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -9807,7 +9809,7 @@ msgstr ""
 "'%s' as that is processed later in the pixel pipe.\n"
 "Raster mask is ignored."
 
-#: ../src/develop/tiling.c:809 ../src/develop/tiling.c:1158
+#: ../src/develop/tiling.c:811 ../src/develop/tiling.c:1151
 #, c-format
 msgid ""
 "tiling failed for module '%s'. the output most likely will be OK, but you "
@@ -14658,7 +14660,7 @@ msgstr "Graphic"
 msgid "XCF"
 msgstr "XCF"
 
-#: ../src/imageio/imageio.c:1094
+#: ../src/imageio/imageio.c:1097
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -14667,17 +14669,17 @@ msgstr ""
 "Failed to allocate memory for %s, please lower the threads used for export "
 "or buy more memory."
 
-#: ../src/imageio/imageio.c:1096
+#: ../src/imageio/imageio.c:1099
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "Thumbnail export"
 
-#: ../src/imageio/imageio.c:1096
+#: ../src/imageio/imageio.c:1099
 msgctxt "noun"
 msgid "export"
 msgstr "Export"
 
-#: ../src/imageio/imageio.c:1113
+#: ../src/imageio/imageio.c:1116
 #, c-format
 msgid "cannot find the style '%s' to apply during export"
 msgstr "Cannot find the style '%s' to apply during export"
@@ -15008,7 +15010,7 @@ msgstr "Corrective or creative"
 #: ../src/iop/channelmixerrgb.c:243 ../src/iop/clipping.c:360
 #: ../src/iop/clipping.c:362 ../src/iop/colorbalancergb.c:184
 #: ../src/iop/colorequal.c:217 ../src/iop/colorin.c:134 ../src/iop/crop.c:134
-#: ../src/iop/crop.c:136 ../src/iop/demosaic.c:297
+#: ../src/iop/crop.c:136 ../src/iop/demosaic.c:294
 #: ../src/iop/denoiseprofile.c:780 ../src/iop/denoiseprofile.c:782
 #: ../src/iop/diffuse.c:144 ../src/iop/diffuse.c:146
 #: ../src/iop/enlargecanvas.c:84 ../src/iop/enlargecanvas.c:86
@@ -16135,7 +16137,7 @@ msgstr "Correct chromatic aberrations for Bayer sensors"
 
 #: ../src/iop/cacorrect.c:85 ../src/iop/cacorrect.c:87
 #: ../src/iop/cacorrectrgb.c:171 ../src/iop/cacorrectrgb.c:173
-#: ../src/iop/demosaic.c:295 ../src/iop/highlights.c:180
+#: ../src/iop/demosaic.c:292 ../src/iop/highlights.c:180
 #: ../src/iop/highlights.c:182 ../src/iop/hotpixels.c:76
 #: ../src/iop/hotpixels.c:78 ../src/iop/rawdenoise.c:144
 #: ../src/iop/rawdenoise.c:146 ../src/iop/rawprepare.c:174
@@ -16145,7 +16147,7 @@ msgid "linear, raw, scene-referred"
 msgstr "Linear, raw, scene-referred"
 
 #: ../src/iop/cacorrect.c:86 ../src/iop/cacorrectrgb.c:172
-#: ../src/iop/demosaic.c:296 ../src/iop/invert.c:137
+#: ../src/iop/demosaic.c:293 ../src/iop/invert.c:137
 #: ../src/iop/rawdenoise.c:145 ../src/iop/rawprepare.c:175
 #: ../src/iop/temperature.c:254
 msgid "linear, raw"
@@ -18149,7 +18151,7 @@ msgstr ""
 "Convert any RGB input to pipeline reference RGB\n"
 "using color profiles to remap RGB values"
 
-#: ../src/iop/colorin.c:131 ../src/iop/colorout.c:89 ../src/iop/demosaic.c:294
+#: ../src/iop/colorin.c:131 ../src/iop/colorout.c:89 ../src/iop/demosaic.c:291
 #: ../src/iop/rawprepare.c:173
 msgid "mandatory"
 msgstr "Mandatory"
@@ -18410,8 +18412,8 @@ msgstr "If and how to give precedence to specific replacement colors"
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "The hue tone which should be given precedence over other hue tones"
 
-#: ../src/iop/colorreconstruction.c:1257 ../src/iop/demosaic.c:1321
-#: ../src/iop/highlights.c:1268
+#: ../src/iop/colorreconstruction.c:1257 ../src/iop/demosaic.c:1359
+#: ../src/iop/highlights.c:1267
 msgid "not applicable"
 msgstr "Not applicable"
 
@@ -18620,20 +18622,20 @@ msgstr "Radius for detecting fringe"
 msgid "threshold for defringe, higher values mean less defringing"
 msgstr "Threshold for defringe, higher values mean less defringing"
 
-#: ../src/iop/demosaic.c:288
+#: ../src/iop/demosaic.c:285
 msgid "demosaic"
 msgstr "Demosaic"
 
-#: ../src/iop/demosaic.c:293
+#: ../src/iop/demosaic.c:290
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr "Reconstruct full RGB pixels from a sensor color filter array reading"
 
-#: ../src/iop/demosaic.c:1130
+#: ../src/iop/demosaic.c:1167
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "`%s' color matrix not found for 4bayer image!"
 
-#: ../src/iop/demosaic.c:1281
+#: ../src/iop/demosaic.c:1319
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -18645,7 +18647,7 @@ msgstr ""
 "LMMSE is suited best for high ISO images.\n"
 "Dual demosaicers double processing time."
 
-#: ../src/iop/demosaic.c:1285
+#: ../src/iop/demosaic.c:1323
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -18655,11 +18657,11 @@ msgstr ""
 "chroma are slow.\n"
 "Dual demosaicers double processing time."
 
-#: ../src/iop/demosaic.c:1291
+#: ../src/iop/demosaic.c:1329
 msgid "Bayer4 sensor demosaicing methods."
 msgstr "Quad Bayer sensor demosaicing methods."
 
-#: ../src/iop/demosaic.c:1295
+#: ../src/iop/demosaic.c:1333
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -18669,7 +18671,7 @@ msgstr ""
 "Set to 0.0 to switch off\n"
 "Set to 1.0 to ignore edges"
 
-#: ../src/iop/demosaic.c:1300
+#: ../src/iop/demosaic.c:1338
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -18679,11 +18681,11 @@ msgstr ""
 "Set to 0.0 for high frequency content\n"
 "Set to 1.0 for flat content"
 
-#: ../src/iop/demosaic.c:1306
+#: ../src/iop/demosaic.c:1344
 msgid "toggle mask visualization"
 msgstr "Toggle mask visualization"
 
-#: ../src/iop/demosaic.c:1309
+#: ../src/iop/demosaic.c:1347
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -18691,15 +18693,15 @@ msgstr ""
 "LMMSE refinement steps. The median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
 
-#: ../src/iop/demosaic.c:1312
+#: ../src/iop/demosaic.c:1350
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "How many color smoothing median steps after demosaicing"
 
-#: ../src/iop/demosaic.c:1315
+#: ../src/iop/demosaic.c:1353
 msgid "green channels matching method"
 msgstr "Green channels matching method"
 
-#: ../src/iop/demosaic.c:1322
+#: ../src/iop/demosaic.c:1360
 msgid "demosaicing is only used for color raw images"
 msgstr "Demosaicing is only used for color raw images"
 
@@ -20385,7 +20387,7 @@ msgstr "Avoid magenta highlights and try to recover highlights colors"
 msgid "reconstruction, raw"
 msgstr "Reconstruction, raw"
 
-#: ../src/iop/highlights.c:1017
+#: ../src/iop/highlights.c:1016
 msgid ""
 "highlights: mode not available for this type of image. falling back to "
 "inpaint opposed."
@@ -20393,11 +20395,11 @@ msgstr ""
 "Highlights: mode not available for this type of image. Falling back to "
 "inpaint opposed."
 
-#: ../src/iop/highlights.c:1194
+#: ../src/iop/highlights.c:1193
 msgid "highlight reconstruction method"
 msgstr "Highlight reconstruction method"
 
-#: ../src/iop/highlights.c:1199
+#: ../src/iop/highlights.c:1198
 msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
 "highlights.\n"
@@ -20411,7 +20413,7 @@ msgstr ""
 "'Segmentation' modes,\n"
 "especially if camera white point is incorrect."
 
-#: ../src/iop/highlights.c:1203
+#: ../src/iop/highlights.c:1202
 msgid ""
 "visualize clipped highlights in a false color representation.\n"
 "the effective clipping level also depends on the reconstruction method."
@@ -20419,7 +20421,7 @@ msgstr ""
 "Visualize clipped highlights in a false color representation.\n"
 "The effective clipping level also depends on the reconstruction method."
 
-#: ../src/iop/highlights.c:1213
+#: ../src/iop/highlights.c:1212
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
 "this often leads to improved color reconstruction for tiny segments before "
@@ -20429,11 +20431,11 @@ msgstr ""
 "This often leads to improved color reconstruction for tiny segments before "
 "dark background."
 
-#: ../src/iop/highlights.c:1216
+#: ../src/iop/highlights.c:1215
 msgid "visualize the combined segments in a false color representation."
 msgstr "Visualize the combined segments in a false color representation."
 
-#: ../src/iop/highlights.c:1223
+#: ../src/iop/highlights.c:1222
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favor candidates found in segmentation analysis, decrease for "
@@ -20443,7 +20445,7 @@ msgstr ""
 "Increase to favor candidates found in segmentation analysis, decrease for "
 "opposed means inpainting."
 
-#: ../src/iop/highlights.c:1226
+#: ../src/iop/highlights.c:1225
 msgid ""
 "visualize segments that are considered to have a good candidate in a false "
 "color representation."
@@ -20451,7 +20453,7 @@ msgstr ""
 "Visualize segments that are considered to have a good candidate in a false "
 "color representation."
 
-#: ../src/iop/highlights.c:1235
+#: ../src/iop/highlights.c:1234
 msgid ""
 "approximate lost data in regions with all photosites clipped, the effect "
 "depends on segment size and border gradients.\n"
@@ -20471,15 +20473,15 @@ msgstr ""
 "The flat modes ignore narrow unclipped structures (like powerlines) to keep "
 "highlights rebuilt and avoid gradients."
 
-#: ../src/iop/highlights.c:1241
+#: ../src/iop/highlights.c:1240
 msgid "set strength of rebuilding in regions with all photosites clipped."
 msgstr "Set strength of rebuilding in regions with all photosites clipped."
 
-#: ../src/iop/highlights.c:1243
+#: ../src/iop/highlights.c:1242
 msgid "show the effect that is added to already reconstructed data."
 msgstr "Show the effect that is added to already reconstructed data."
 
-#: ../src/iop/highlights.c:1252
+#: ../src/iop/highlights.c:1251
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -20487,7 +20489,7 @@ msgstr ""
 "Add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. Useful at high ISO."
 
-#: ../src/iop/highlights.c:1256
+#: ../src/iop/highlights.c:1255
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -20495,7 +20497,7 @@ msgstr ""
 "Increase if magenta highlights don't get fully corrected\n"
 "Each new iteration brings a performance penalty."
 
-#: ../src/iop/highlights.c:1261
+#: ../src/iop/highlights.c:1260
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
@@ -20503,7 +20505,7 @@ msgstr ""
 "Increase if magenta highlights don't get fully corrected.\n"
 "This may produce non-smooth boundaries between valid and clipped regions."
 
-#: ../src/iop/highlights.c:1265
+#: ../src/iop/highlights.c:1264
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -20511,7 +20513,7 @@ msgstr ""
 "Increase to correct larger clipped areas.\n"
 "Large values bring huge performance penalties"
 
-#: ../src/iop/highlights.c:1269
+#: ../src/iop/highlights.c:1268
 msgid "this module does not work with monochrome RAW files"
 msgstr "This module does not work with monochrome RAW files"
 
@@ -28100,7 +28102,7 @@ msgstr "High quality processing"
 
 #: ../src/views/darkroom.c:2293
 msgid ""
-"toggle high quality processing, if activated darktable processes image data "
+"toggle high quality processing. if activated darktable processes image data "
 "as it does while exporting"
 msgstr ""
 "Toggle high quality processing. If activated Darktable\n"
