@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-02 12:33+0100\n"
-"PO-Revision-Date: 2024-11-02 14:14+0100\n"
+"POT-Creation-Date: 2024-11-06 20:32+0100\n"
+"PO-Revision-Date: 2024-11-06 20:34+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1037,7 +1037,7 @@ msgid ""
 "when this option is enabled then darktable will try to scroll the module to "
 "the top of the visible list"
 msgstr ""
-"Si activé darktable essaiera de positionner le module pour qu’il soit "
+"Si activé Darktable essaiera de positionner le module pour qu’il soit "
 "entièrement visible"
 
 #: ../build/bin/preferences_gen.h:4629
@@ -1626,7 +1626,7 @@ msgstr "CPU / Mémoire"
 
 #: ../build/bin/preferences_gen.h:6161
 msgid "darktable resources"
-msgstr "Ressources de darktable"
+msgstr "Ressources de Darktable"
 
 #: ../build/bin/preferences_gen.h:6176
 #, no-c-format
@@ -1637,17 +1637,18 @@ msgid ""
 " - 'small': should be used if you are simultaneously running applications "
 "taking large parts of your systems memory or OpenCL/GL applications like "
 "games or Hugin.\n"
-" - 'large': is the best option if you are mainly using darktable and want it "
-"to take most of your systems resources for performance."
+" - 'large': is the best option if you are not running other applications at "
+"the same time as darktable and want it to take most of your systems "
+"resources for performance."
 msgstr ""
-"Définit le niveau de ressources que darktable peut prendre sur le système.\n"
-" • Défaut – prend ~ 50 % des ressources ce qui permet à darktable d’être "
+"Définit le niveau de ressources que Darktable peut prendre sur le système.\n"
+" • Défaut – prend ~ 50 % des ressources ce qui permet à Darktable d’être "
 "performant\n"
 " • Faibles – à utiliser si des applications prenant une part importante des "
 "ressources sont utilisées\n"
 "simultanément, ou pour des applications OpenCL/GL comme des jeux ou Hugin\n"
-" • Importantes – la meilleure option si darktable est utilisé exclusivement, "
-"ce qui lui alloue\n"
+" • Importantes – la meilleure option si d'autres applications ne sont pas "
+"utilisées en même temps que Darktable, ce qui lui alloue\n"
 "une part importante des ressources pour la performance."
 
 #: ../build/bin/preferences_gen.h:6197
@@ -1731,7 +1732,7 @@ msgid ""
 "if enabled darktable will use all device memory except a safety margin "
 "(headroom, default is 600MB)"
 msgstr ""
-"Si activé, darktable utilisera toute la mémoire du périphérique sauf une "
+"Si activé, Darktable utilisera toute la mémoire du périphérique sauf une "
 "marge de sécurité (headroom, par défaut 600Mo)"
 
 #: ../build/bin/preferences_gen.h:6359
@@ -1958,7 +1959,7 @@ msgid ""
 " - 'once a day': create snapshot if over 24h passed since last snapshot\n"
 " - 'on close': create snapshot every time darktable is closed"
 msgstr ""
-"Les sauvegardes sont effectuées juste avant la fermeture de darktable. "
+"Les sauvegardes sont effectuées juste avant la fermeture de Darktable. "
 "Différentes options permettent de contrôler leur fréquence :\n"
 " • Jamais – ne jamais faire de sauvegarde. Seules celles qui sont "
 "obligatoires lors des montées de version de la base de données sont "
@@ -1969,7 +1970,7 @@ msgstr ""
 "la précédente\n"
 " • Une fois par jour – fait une sauvegarde si 24 h sont passées depuis la "
 "précédente,\n"
-" • À la fermeture – fait une sauvegarde à chaque fermeture de darktable"
+" • À la fermeture – fait une sauvegarde à chaque fermeture de Darktable"
 
 #: ../build/bin/preferences_gen.h:7236
 msgid "how many snapshots to keep"
@@ -2212,7 +2213,7 @@ msgstr ""
 "ajoutés\n"
 "comme simple liste non hiérarchique pour les rendre visibles aux autres "
 "applications.\n"
-"Lorsque cette option est sélectionnée, darktable inclura seulement leur "
+"Lorsque cette option est sélectionnée, Darktable inclura seulement leur "
 "dernière partie\n"
 "et ignorera le reste, ainsi « faune|insecte|syrphe » ajoutera uniquement "
 "« syrphe »."
@@ -5417,7 +5418,7 @@ msgid ""
 "darktable manages your camera raw files and images in a database, lets you "
 "view them through lighttable mode and develop/enhance them in darkroom mode."
 msgstr ""
-"darktable gère vos fichiers RAW et vos images dans une base de données, vous "
+"Darktable gère vos fichiers RAW et vos images dans une base de données, vous "
 "permet de les voir depuis la table lumineuse et de les développer / "
 "améliorer dans la chambre noire."
 
@@ -5434,7 +5435,7 @@ msgid ""
 "darktable supports most modern cameras' raw formats, and does all of its "
 "processing at very high precision."
 msgstr ""
-"darktable couvre la plupart des formats RAW récents et fait tous ses calculs "
+"Darktable couvre la plupart des formats RAW récents et fait tous ses calculs "
 "avec une très haute précision."
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:5
@@ -5524,7 +5525,7 @@ msgstr "Réglette"
 msgid "dropdown"
 msgstr "Menu déroulant"
 
-#: ../src/chart/main.c:504 ../src/common/database.c:3730
+#: ../src/chart/main.c:504 ../src/common/database.c:3775
 #: ../src/control/jobs/control_jobs.c:2156
 #: ../src/control/jobs/control_jobs.c:2214 ../src/gui/accelerators.c:2508
 #: ../src/gui/accelerators.c:2590 ../src/gui/accelerators.c:2643
@@ -5685,7 +5686,7 @@ msgid ""
 "seems to be broken."
 msgstr ""
 "Impossible de trouver le module d’export vers le disque, vérifier "
-"l’installation de darktable."
+"l’installation de Darktable."
 
 #: ../src/cli/main.c:702
 msgid "failed to get parameters from storage module, aborting export ..."
@@ -6614,7 +6615,7 @@ msgid ""
 msgstr "Le timeout obligatoire OpenCL a été mis à jour à 1000.\n"
 
 # dialogue très modifié et ajout d'un 1er message
-#: ../src/common/database.c:3703
+#: ../src/common/database.c:3748
 #, c-format
 msgid ""
 "\n"
@@ -6690,19 +6691,19 @@ msgstr ""
 "\n"
 
 #. clang-format on
-#: ../src/common/database.c:3729
+#: ../src/common/database.c:3774
 msgid "error starting darktable"
-msgstr "Erreur de lancement de darktable"
+msgstr "Erreur de lancement de Darktable"
 
-#: ../src/common/database.c:3730
+#: ../src/common/database.c:3775
 msgid "_delete database lock files"
 msgstr "_Supprimer les verrous de la base de données"
 
-#: ../src/common/database.c:3736
+#: ../src/common/database.c:3781
 msgid "are you sure?"
 msgstr "Est-ce certain ?"
 
-#: ../src/common/database.c:3737
+#: ../src/common/database.c:3782
 msgid ""
 "\n"
 "do you really want to delete the lock files?\n"
@@ -6710,19 +6711,19 @@ msgstr ""
 "\n"
 "Réellement supprimer les fichiers verrous ?\n"
 
-#: ../src/common/database.c:3737 ../src/gui/gtk.c:3104
+#: ../src/common/database.c:3782 ../src/gui/gtk.c:3104
 msgid "_no"
 msgstr "_Non"
 
-#: ../src/common/database.c:3737 ../src/gui/gtk.c:3103
+#: ../src/common/database.c:3782 ../src/gui/gtk.c:3103
 msgid "_yes"
 msgstr "_Oui"
 
-#: ../src/common/database.c:3753
+#: ../src/common/database.c:3798
 msgid "done"
 msgstr "Terminé"
 
-#: ../src/common/database.c:3754
+#: ../src/common/database.c:3799
 msgid ""
 "\n"
 "successfully deleted the lock files.\n"
@@ -6732,17 +6733,17 @@ msgstr ""
 "Suppression des fichiers verrous réussie,\n"
 "Darktable doit être redémarré.\n"
 
-#: ../src/common/database.c:3755 ../src/common/database.c:3762
+#: ../src/common/database.c:3800 ../src/common/database.c:3807
 #: ../src/gui/accelerators.c:2591 ../src/gui/accelerators.c:2673
 #: ../src/gui/hist_dialog.c:229 ../src/gui/presets.c:567
 msgid "_ok"
 msgstr "_Ok"
 
-#: ../src/common/database.c:3758
+#: ../src/common/database.c:3803
 msgid "error"
 msgstr "Erreur"
 
-#: ../src/common/database.c:3759
+#: ../src/common/database.c:3804
 #, c-format
 msgid ""
 "\n"
@@ -6756,7 +6757,7 @@ msgstr ""
 "Supprimer les fichiers <i>data.db.lock</i> et <i>library.db.lock</i> \n"
 "dans le répertoire <a href=\"file:///%s\">%s</a>. \n"
 
-#: ../src/common/database.c:3876
+#: ../src/common/database.c:3921
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -6765,19 +6766,19 @@ msgstr ""
 "Le fichier de verrouillage de la base de données contient un numéro de "
 "processus actif sur le système (%d)"
 
-#: ../src/common/database.c:3883
+#: ../src/common/database.c:3928
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "Le fichier de verrouillage de la base de données semble être vide"
 
-#: ../src/common/database.c:3893
+#: ../src/common/database.c:3938
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr ""
 "Erreur lors de la lecture du fichier de verrouillage de la base de données : "
 "« %s »"
 
-#: ../src/common/database.c:3963
+#: ../src/common/database.c:4008
 #, c-format
 msgid ""
 "the database schema version of\n"
@@ -6791,20 +6792,20 @@ msgstr ""
 "\n"
 "<span style='italic'>%s</span>\n"
 "\n"
-"est trop récente pour cette version de darktable\n"
+"est trop récente pour cette version de Darktable\n"
 "(cela signifie que la base de données a été créée ou mise à jour pas une "
-"version plus récente de darktable.\n"
+"version plus récente de Darktable.\n"
 
-#: ../src/common/database.c:3970
+#: ../src/common/database.c:4015
 msgid "darktable - too new db version"
-msgstr "darktable - Base de données trop récente"
+msgstr "Darktable - Base de données trop récente"
 
-#: ../src/common/database.c:3971
+#: ../src/common/database.c:4016
 msgid "_quit darktable"
-msgstr "_Quitter darktable"
+msgstr "_Quitter Darktable"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:3986
+#: ../src/common/database.c:4031
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -6823,21 +6824,21 @@ msgstr ""
 "\n"
 "Continuer ou quitter pour effectuer une sauvegarde.\n"
 
-#: ../src/common/database.c:3994
+#: ../src/common/database.c:4039
 msgid "darktable - schema migration"
-msgstr "darktable - Migration de la base de données"
+msgstr "Darktable - Migration de la base de données"
 
-#: ../src/common/database.c:3995 ../src/common/database.c:4314
-#: ../src/common/database.c:4329 ../src/common/database.c:4487
-#: ../src/common/database.c:4502
+#: ../src/common/database.c:4040 ../src/common/database.c:4359
+#: ../src/common/database.c:4374 ../src/common/database.c:4532
+#: ../src/common/database.c:4547
 msgid "_close darktable"
-msgstr "_Quitter darktable"
+msgstr "_Quitter Darktable"
 
-#: ../src/common/database.c:3995
+#: ../src/common/database.c:4040
 msgid "_upgrade database"
 msgstr "_Mise à jour de la base de données"
 
-#: ../src/common/database.c:4294 ../src/common/database.c:4467
+#: ../src/common/database.c:4339 ../src/common/database.c:4512
 #, c-format
 msgid ""
 "quick_check said:\n"
@@ -6847,44 +6848,44 @@ msgstr ""
 "« %s »\n"
 "\n"
 
-#: ../src/common/database.c:4311 ../src/common/database.c:4326
-#: ../src/common/database.c:4484 ../src/common/database.c:4499
+#: ../src/common/database.c:4356 ../src/common/database.c:4371
+#: ../src/common/database.c:4529 ../src/common/database.c:4544
 msgid "darktable - error opening database"
-msgstr "darktable - Erreur lors de l’ouverture de la base de données"
+msgstr "Darktable - Erreur lors de l’ouverture de la base de données"
 
-#: ../src/common/database.c:4315 ../src/common/database.c:4488
+#: ../src/common/database.c:4360 ../src/common/database.c:4533
 msgid "_attempt restore"
 msgstr "_Essayer de restaurer"
 
-#: ../src/common/database.c:4316 ../src/common/database.c:4330
-#: ../src/common/database.c:4489 ../src/common/database.c:4503
+#: ../src/common/database.c:4361 ../src/common/database.c:4375
+#: ../src/common/database.c:4534 ../src/common/database.c:4548
 msgid "_delete database"
 msgstr "_Effacer la base de données"
 
-#: ../src/common/database.c:4319 ../src/common/database.c:4492
+#: ../src/common/database.c:4364 ../src/common/database.c:4537
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup, attempt an automatic restore\n"
 "from the most recent snapshot or delete the corrupted database\n"
 "and start with a new one?"
 msgstr ""
-"Voulez-vous quitter maintenant darktable pour :\n"
+"Voulez-vous quitter maintenant Darktable pour :\n"
 " • Restaurer manuellement la base de données depuis une sauvegarde\n"
 " • Ou essayer une restauration automatique depuis la sauvegarde la plus "
 "récente\n"
 " • Ou supprimer la base corrompue et redémarrer avec une nouvelle base ?"
 
-#: ../src/common/database.c:4333 ../src/common/database.c:4506
+#: ../src/common/database.c:4378 ../src/common/database.c:4551
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or delete the corrupted database\n"
 "and start with a new one?"
 msgstr ""
-"Voulez-vous quitter darktable maintenant pour restaurer manuellement\n"
+"Voulez-vous quitter Darktable maintenant pour restaurer manuellement\n"
 "la base de données depuis une sauvegarde, ou supprimer la base corrompue\n"
 "et redémarrer avec une nouvelle base ?"
 
-#: ../src/common/database.c:4340 ../src/common/database.c:4511
+#: ../src/common/database.c:4385 ../src/common/database.c:4556
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -7221,7 +7222,7 @@ msgid ""
 "or, if this directory does not exist, from\n"
 "<b>%s</b>"
 msgstr ""
-"darktable charge les %s depuis\n"
+"Darktable charge les %s depuis\n"
 "<b>%s</b>\n"
 "ou, si ce répertoire n'existe pas, depuis\n"
 "<b>%s</b>"
@@ -7271,17 +7272,17 @@ msgstr "Numéro"
 msgid "preserved filename"
 msgstr "Nom de fichier préservé"
 
-#: ../src/common/mipmap_cache.c:1299 ../src/imageio/imageio.c:1071
+#: ../src/common/mipmap_cache.c:1299 ../src/imageio/imageio.c:1074
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "Image « %s » non disponible"
 
-#: ../src/common/mipmap_cache.c:1302 ../src/imageio/imageio.c:1075
+#: ../src/common/mipmap_cache.c:1302 ../src/imageio/imageio.c:1078
 #, c-format
 msgid "unable to load image `%s'!"
 msgstr "Impossible de charger l'image « %s » !"
 
-#: ../src/common/mipmap_cache.c:1304 ../src/imageio/imageio.c:1077
+#: ../src/common/mipmap_cache.c:1304 ../src/imageio/imageio.c:1080
 #, c-format
 msgid "image '%s' not supported"
 msgstr "Image « %s » non supportée"
@@ -8260,10 +8261,10 @@ msgid_plural ""
 "do you really want to remove %d images from darktable\n"
 "(without deleting files on disk)?"
 msgstr[0] ""
-"Enlever %d image de darktable\n"
+"Enlever %d image de Darktable\n"
 "(sans supprimer le fichier du disque) ?"
 msgstr[1] ""
-"Enlever %d images de darktable\n"
+"Enlever %d images de Darktable\n"
 "(sans supprimer les fichiers du disque) ?"
 
 #. first get all selected images, to avoid the set changing during ui interaction
@@ -9922,11 +9923,11 @@ msgstr ""
 "dans le module « %s »\n"
 "Merci de reporter sur GitHub"
 
-#: ../src/develop/pixelpipe_hb.c:1510
+#: ../src/develop/pixelpipe_hb.c:1515
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr "Erreur d'alignement en entrée, merci de reporter sur GitHub\n"
 
-#: ../src/develop/pixelpipe_hb.c:2803
+#: ../src/develop/pixelpipe_hb.c:2806
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -9941,13 +9942,13 @@ msgstr ""
 "causes possibles :\n"
 " • Pas assez de ressources OpenCL à cause des préférences choisies. Tester "
 "avec les valeurs par défaut,\n"
-" • Pilote bugué sur certains périphériques. Exécuter darktable avec l'option "
+" • Pilote bugué sur certains périphériques. Exécuter Darktable avec l'option "
 "« -d opencl » pour plus d'information,\n"
 " • Certains pilotes ne supportent pas le nombre d'événements nécessaires,\n"
 " • Le « headroom » est trop petit lorsque l'option « Utiliser toute la "
 "mémoire du périphérique » est positionnée."
 
-#: ../src/develop/pixelpipe_hb.c:2970
+#: ../src/develop/pixelpipe_hb.c:2973
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -9958,7 +9959,7 @@ msgstr ""
 " « %s » car il est calculé plus tard dans l’enchaînement des modules.\n"
 "Le masque raster est ignoré."
 
-#: ../src/develop/tiling.c:809 ../src/develop/tiling.c:1158
+#: ../src/develop/tiling.c:811 ../src/develop/tiling.c:1151
 #, c-format
 msgid ""
 "tiling failed for module '%s'. the output most likely will be OK, but you "
@@ -10234,7 +10235,7 @@ msgstr "Ou ajouter des images dans le module « Collections »"
 
 #: ../src/dtgtk/thumbtable.c:1260
 msgid "personalize darktable"
-msgstr "Personnaliser darktable"
+msgstr "Personnaliser Darktable"
 
 #: ../src/dtgtk/thumbtable.c:1261
 msgid "click on the gear icon for global preferences"
@@ -10688,7 +10689,7 @@ msgstr "$(VERSION.NAME) - Nom de version dans les métadonnées"
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:870
 #: ../src/gui/gtkentry.c:261
 msgid "$(DARKTABLE.VERSION) - current darktable version"
-msgstr "$(DARKTABLE.VERSION) - Version de darktable"
+msgstr "$(DARKTABLE.VERSION) - Version de Darktable"
 
 #. _("$(DARKTABLE.NAME) - darktable name"),  -- not implemented
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:872
@@ -11057,7 +11058,7 @@ msgstr "Vérifier les mises à jour"
 
 #: ../src/external/lua-scripts/official/check_for_updates.lua:49
 msgid "check for newer darktable releases"
-msgstr "Vérifier les nouvelles version de darktable"
+msgstr "Vérifier les nouvelles version de Darktable"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -12388,7 +12389,7 @@ msgid ""
 "no thumbnails to be generated, done.\n"
 msgstr ""
 "Attention : l’utilisation du disque pour les miniatures est désactivée.\n"
-"Activer cette utilisation pour pré-générer les miniatures que darktable "
+"Activer cette utilisation pour pré-générer les miniatures que Darktable "
 "utilisera.\n"
 "Pas de miniature à générer, fin.\n"
 
@@ -12407,7 +12408,7 @@ msgstr ""
 "Attention : l’utilisation du disque pour les prévisualisations est "
 "désactivée.\n"
 "Activer cette utilisation pour pré-générer les prévisualisations que "
-"darktable utilisera.\n"
+"Darktable utilisera.\n"
 "Pas de prévisualisation à générer, fin.\n"
 
 #: ../src/generate-cache/main.c:248
@@ -13230,7 +13231,7 @@ msgstr "Une pression courte réinitialise les touches bloquées"
 
 #: ../src/gui/gtk.c:178 ../src/views/darkroom.c:3581
 msgid "darktable - darkroom preview"
-msgstr "darktable - prévisualisation en chambre noire"
+msgstr "Darktable - prévisualisation en chambre noire"
 
 #: ../src/gui/gtk.c:187
 msgid "tooltips off"
@@ -13242,7 +13243,7 @@ msgstr "Info-bulles activées"
 
 #: ../src/gui/gtk.c:844
 msgid "closing darktable..."
-msgstr "Quitter darktable…"
+msgstr "Quitter Darktable…"
 
 #: ../src/gui/gtk.c:1102
 msgid "URL opened in web browser"
@@ -13297,12 +13298,12 @@ msgstr "Aide"
 #: ../src/gui/gtk.c:1215
 msgctxt "menu"
 msgid "darktable Manual"
-msgstr "Manuel darktable"
+msgstr "Manuel Darktable"
 
 #: ../src/gui/gtk.c:1222
 msgctxt "menu"
 msgid "darktable Homepage"
-msgstr "Page d'accueil de darktable"
+msgstr "Page d'accueil de Darktable"
 
 #: ../src/gui/gtk.c:1246
 msgctxt "menu"
@@ -13558,7 +13559,7 @@ msgstr "$(TAGS) - mots-clés des métadonnées"
 
 #: ../src/gui/gtkentry.c:260
 msgid "$(DARKTABLE.NAME) - darktable name"
-msgstr "$(DARKTABLE.NAME) - Nom darktable"
+msgstr "$(DARKTABLE.NAME) - Nom Darktable"
 
 #: ../src/gui/guides.c:30 ../src/iop/colorcorrection.c:246
 #: ../src/iop/monochrome.c:563
@@ -13891,7 +13892,7 @@ msgstr "Préférences"
 
 #: ../src/gui/preferences.c:577
 msgid "darktable needs to be restarted for settings to take effect"
-msgstr "darktable doit être redémarré pour prendre en compte les changements"
+msgstr "Darktable doit être redémarré pour prendre en compte les changements"
 
 #. exif
 #: ../src/gui/preferences.c:836 ../src/gui/presets.c:659
@@ -14890,7 +14891,7 @@ msgid "XCF"
 msgstr "XCF"
 
 # Il n'y a plus de préférence du nombre de theads
-#: ../src/imageio/imageio.c:1094
+#: ../src/imageio/imageio.c:1097
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -14899,17 +14900,17 @@ msgstr ""
 "Échec de l’allocation de mémoire pour « %s », merci de diminuer le nombre de "
 "fils utilisés pour l’exportation ou d’acheter de la mémoire."
 
-#: ../src/imageio/imageio.c:1096
+#: ../src/imageio/imageio.c:1099
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "L’aperçu"
 
-#: ../src/imageio/imageio.c:1096
+#: ../src/imageio/imageio.c:1099
 msgctxt "noun"
 msgid "export"
 msgstr "L’image"
 
-#: ../src/imageio/imageio.c:1113
+#: ../src/imageio/imageio.c:1116
 #, c-format
 msgid "cannot find the style '%s' to apply during export"
 msgstr ""
@@ -15030,7 +15031,7 @@ msgstr "Impossible de trouver la fonction « SendMail »."
 
 #: ../src/imageio/storage/email.c:315 ../src/imageio/storage/email.c:405
 msgid "images exported from darktable"
-msgstr "Images exportées depuis darktable"
+msgstr "Images exportées depuis Darktable"
 
 #: ../src/imageio/storage/email.c:384 ../src/imageio/storage/email.c:463
 msgid "could not launch email client!"
@@ -15242,7 +15243,7 @@ msgstr "Correctif ou créatif"
 #: ../src/iop/channelmixerrgb.c:243 ../src/iop/clipping.c:360
 #: ../src/iop/clipping.c:362 ../src/iop/colorbalancergb.c:184
 #: ../src/iop/colorequal.c:217 ../src/iop/colorin.c:134 ../src/iop/crop.c:134
-#: ../src/iop/crop.c:136 ../src/iop/demosaic.c:297
+#: ../src/iop/crop.c:136 ../src/iop/demosaic.c:294
 #: ../src/iop/denoiseprofile.c:780 ../src/iop/denoiseprofile.c:782
 #: ../src/iop/diffuse.c:144 ../src/iop/diffuse.c:146
 #: ../src/iop/enlargecanvas.c:84 ../src/iop/enlargecanvas.c:86
@@ -16392,7 +16393,7 @@ msgstr ""
 
 #: ../src/iop/cacorrect.c:85 ../src/iop/cacorrect.c:87
 #: ../src/iop/cacorrectrgb.c:171 ../src/iop/cacorrectrgb.c:173
-#: ../src/iop/demosaic.c:295 ../src/iop/highlights.c:180
+#: ../src/iop/demosaic.c:292 ../src/iop/highlights.c:180
 #: ../src/iop/highlights.c:182 ../src/iop/hotpixels.c:76
 #: ../src/iop/hotpixels.c:78 ../src/iop/rawdenoise.c:144
 #: ../src/iop/rawdenoise.c:146 ../src/iop/rawprepare.c:174
@@ -16402,7 +16403,7 @@ msgid "linear, raw, scene-referred"
 msgstr "Relatif à la scène, linéaire, RAW"
 
 #: ../src/iop/cacorrect.c:86 ../src/iop/cacorrectrgb.c:172
-#: ../src/iop/demosaic.c:296 ../src/iop/invert.c:137
+#: ../src/iop/demosaic.c:293 ../src/iop/invert.c:137
 #: ../src/iop/rawdenoise.c:145 ../src/iop/rawprepare.c:175
 #: ../src/iop/temperature.c:254
 msgid "linear, raw"
@@ -18445,7 +18446,7 @@ msgstr ""
 "Convertit n’importe quelle entrée RVB en RVB de référence pour le pipeline\n"
 "en utilisant les profils de couleur pour redéfinir les valeurs RVB."
 
-#: ../src/iop/colorin.c:131 ../src/iop/colorout.c:89 ../src/iop/demosaic.c:294
+#: ../src/iop/colorin.c:131 ../src/iop/colorout.c:89 ../src/iop/demosaic.c:291
 #: ../src/iop/rawprepare.c:173
 msgid "mandatory"
 msgstr "Obligatoire"
@@ -18716,8 +18717,8 @@ msgstr "Priorité à des couleurs de remplacement spécifiques"
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "Teinte à laquelle on donne priorité sur les autres"
 
-#: ../src/iop/colorreconstruction.c:1257 ../src/iop/demosaic.c:1321
-#: ../src/iop/highlights.c:1268
+#: ../src/iop/colorreconstruction.c:1257 ../src/iop/demosaic.c:1359
+#: ../src/iop/highlights.c:1267
 msgid "not applicable"
 msgstr "Non applicable"
 
@@ -18931,22 +18932,22 @@ msgstr ""
 "Seuil pour la détection de la frange, valeurs plus grandes pour moins de "
 "suppression de la frange"
 
-#: ../src/iop/demosaic.c:288
+#: ../src/iop/demosaic.c:285
 msgid "demosaic"
 msgstr "Dématriçage"
 
-#: ../src/iop/demosaic.c:293
+#: ../src/iop/demosaic.c:290
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
 "Reconstruit des pixels RVB complets\n"
 "à partir de la lecture d’un capteur à grille de filtres colorés."
 
-#: ../src/iop/demosaic.c:1130
+#: ../src/iop/demosaic.c:1167
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "Matrice de couleurs « %s » non trouvée pour une image de Bayer"
 
-#: ../src/iop/demosaic.c:1281
+#: ../src/iop/demosaic.c:1319
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -18959,7 +18960,7 @@ msgstr ""
 " • LMMSE est adapté aux images à haut ISO\n"
 "Un double dématriçage double le temps de traitement."
 
-#: ../src/iop/demosaic.c:1285
+#: ../src/iop/demosaic.c:1323
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -18969,11 +18970,11 @@ msgstr ""
 "Markesteijn 3 passes et chroma domaine fréquentiel sont lents.\n"
 "Un double dématriçage double le temps de traitement."
 
-#: ../src/iop/demosaic.c:1291
+#: ../src/iop/demosaic.c:1329
 msgid "Bayer4 sensor demosaicing methods."
 msgstr "Méthode de dématriçage pour les capteurs de Bayer."
 
-#: ../src/iop/demosaic.c:1295
+#: ../src/iop/demosaic.c:1333
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -18982,7 +18983,7 @@ msgstr ""
 "Seuil pour une passe médiane supplémentaire.\n"
 "Indiquer « 0.0 » pour désactiver, « 1.0 » pour ignorer les bords."
 
-#: ../src/iop/demosaic.c:1300
+#: ../src/iop/demosaic.c:1338
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -18992,11 +18993,11 @@ msgstr ""
 " • « 0.0 » pour favoriser les hautes fréquences (détails).\n"
 " • « 1.0 » pour favoriser les basses fréquences (aplats)."
 
-#: ../src/iop/demosaic.c:1306
+#: ../src/iop/demosaic.c:1344
 msgid "toggle mask visualization"
 msgstr "Bascule la visualisation du masque"
 
-#: ../src/iop/demosaic.c:1309
+#: ../src/iop/demosaic.c:1347
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -19005,15 +19006,15 @@ msgstr ""
 "Le pas « Médian » fait la moyenne de la sortie, le pas « Raffinement »\n"
 "ajoute un nouveau calcul des canaux rouges et bleus."
 
-#: ../src/iop/demosaic.c:1312
+#: ../src/iop/demosaic.c:1350
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "Nombre de passes pour le lissage de couleur après le dématriçage"
 
-#: ../src/iop/demosaic.c:1315
+#: ../src/iop/demosaic.c:1353
 msgid "green channels matching method"
 msgstr "Méthode de calcul des verts"
 
-#: ../src/iop/demosaic.c:1322
+#: ../src/iop/demosaic.c:1360
 msgid "demosaicing is only used for color raw images"
 msgstr "« Dématriçage » est uniquement utilisé pour les images RAW"
 
@@ -20721,7 +20722,7 @@ msgstr ""
 msgid "reconstruction, raw"
 msgstr "Reconstruire, RAW"
 
-#: ../src/iop/highlights.c:1017
+#: ../src/iop/highlights.c:1016
 msgid ""
 "highlights: mode not available for this type of image. falling back to "
 "inpaint opposed."
@@ -20729,11 +20730,11 @@ msgstr ""
 "Reconstruction des hautes lumières : mode non disponible pour ce type "
 "d’image. Repli sur « Peinture opposée »."
 
-#: ../src/iop/highlights.c:1194
+#: ../src/iop/highlights.c:1193
 msgid "highlight reconstruction method"
 msgstr "Méthode de reconstruction des hautes lumières"
 
-#: ../src/iop/highlights.c:1199
+#: ../src/iop/highlights.c:1198
 msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
 "highlights.\n"
@@ -20747,7 +20748,7 @@ msgstr ""
 "« Peinture opposée » et « Par segmentation » surtout si le point blanc du "
 "boîtier est incorrect."
 
-#: ../src/iop/highlights.c:1203
+#: ../src/iop/highlights.c:1202
 msgid ""
 "visualize clipped highlights in a false color representation.\n"
 "the effective clipping level also depends on the reconstruction method."
@@ -20757,7 +20758,7 @@ msgstr ""
 "Le niveau de troncature effectif dépend aussi de la méthode de "
 "reconstruction."
 
-#: ../src/iop/highlights.c:1213
+#: ../src/iop/highlights.c:1212
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
 "this often leads to improved color reconstruction for tiny segments before "
@@ -20767,12 +20768,12 @@ msgstr ""
 "Cela améliore souvent la reconstruction des couleurs pour les petits "
 "segments avant un arrière plan sombre."
 
-#: ../src/iop/highlights.c:1216
+#: ../src/iop/highlights.c:1215
 msgid "visualize the combined segments in a false color representation."
 msgstr ""
 "Visualise les segments combinés avec une représentation en fausse couleur."
 
-#: ../src/iop/highlights.c:1223
+#: ../src/iop/highlights.c:1222
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favor candidates found in segmentation analysis, decrease for "
@@ -20783,7 +20784,7 @@ msgstr ""
 "segmentation,\n"
 "diminuer pour un effet opposé."
 
-#: ../src/iop/highlights.c:1226
+#: ../src/iop/highlights.c:1225
 msgid ""
 "visualize segments that are considered to have a good candidate in a false "
 "color representation."
@@ -20791,7 +20792,7 @@ msgstr ""
 "Visualise les segments considérés comme bons candidats avec une "
 "représentation en fausse couleur."
 
-#: ../src/iop/highlights.c:1235
+#: ../src/iop/highlights.c:1234
 msgid ""
 "approximate lost data in regions with all photosites clipped, the effect "
 "depends on segment size and border gradients.\n"
@@ -20815,17 +20816,17 @@ msgstr ""
 "reconstruites\n"
 "et éviter les dégradés."
 
-#: ../src/iop/highlights.c:1241
+#: ../src/iop/highlights.c:1240
 msgid "set strength of rebuilding in regions with all photosites clipped."
 msgstr ""
 "Défini la force de reconstruction pour les régions avec tous les photosites "
 "tronqués."
 
-#: ../src/iop/highlights.c:1243
+#: ../src/iop/highlights.c:1242
 msgid "show the effect that is added to already reconstructed data."
 msgstr "Montre l'effet qui est ajouté aux données déjà reconstruites."
 
-#: ../src/iop/highlights.c:1252
+#: ../src/iop/highlights.c:1251
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -20833,7 +20834,7 @@ msgstr ""
 "Ajoute du bruit pour fusionner visuellement les zones reconstruites\n"
 "dans le reste de l’image bruitées. Utile pour les hauts ISO."
 
-#: ../src/iop/highlights.c:1256
+#: ../src/iop/highlights.c:1255
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -20841,7 +20842,7 @@ msgstr ""
 "Augmenter si le magenta des hautes lumières n’est pas complètement corrigé.\n"
 "Chaque nouvelle itération ajoute une pénalité de temps."
 
-#: ../src/iop/highlights.c:1261
+#: ../src/iop/highlights.c:1260
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
@@ -20850,7 +20851,7 @@ msgstr ""
 "Cela peut produire des délimitations tranchées entre les régions valides et "
 "tronquées."
 
-#: ../src/iop/highlights.c:1265
+#: ../src/iop/highlights.c:1264
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -20858,7 +20859,7 @@ msgstr ""
 "Augmenter pour corriger les larges zones tronquées.\n"
 "Les grandes valeurs pénalisent fortement les performances."
 
-#: ../src/iop/highlights.c:1269
+#: ../src/iop/highlights.c:1268
 msgid "this module does not work with monochrome RAW files"
 msgstr "Ce module ne fonctionne pas avec les fichiers RAW monochromes"
 
@@ -21496,7 +21497,7 @@ msgstr "Niveaux invalides dans le fichier PNG %d %d"
 
 #: ../src/iop/lut3d.c:528
 msgid "this darktable build is not compatible with compressed CLUT"
-msgstr "Cette version de darktable n’a pas le support des LUT compressées"
+msgstr "Cette version de Darktable n’a pas le support des LUT compressées"
 
 #: ../src/iop/lut3d.c:545 ../src/iop/lut3d.c:797
 #, c-format
@@ -24152,7 +24153,7 @@ msgstr "Détails de prise de vue"
 #: ../src/libs/filtering.c:1014 ../src/libs/filtering.c:1691
 #: ../src/libs/filtering.c:1997 ../src/libs/tools/darktable.c:61
 msgid "darktable"
-msgstr "darktable"
+msgstr "Darktable"
 
 #: ../src/libs/collect.c:3387
 msgid "collections settings"
@@ -24701,7 +24702,7 @@ msgstr ""
 "l’image.\n"
 "Si sélectionné seules les métadonnées XMP embarquées dans l’image sont "
 "exportées.\n"
-"Si le stockage distant ne supporte pas les métadonnées XMP de darktable, il "
+"Si le stockage distant ne supporte pas les métadonnées XMP de Darktable, il "
 "est possible de les définir."
 
 #: ../src/libs/export_metadata.c:319 ../src/libs/image.c:631
@@ -24762,7 +24763,7 @@ msgid ""
 "export darktable development data (recovery purpose in case of loss of "
 "database or XMP file)"
 msgstr ""
-"Exporter l’historique de développement de darktable (pour récupérer un "
+"Exporter l’historique de développement de Darktable (pour récupérer un "
 "développement en cas de perte des XMP et de la base de données)."
 
 #: ../src/libs/export_metadata.c:352
@@ -25989,10 +25990,10 @@ msgid ""
 "inspect darktable preferences -> import.\n"
 "check and possibly correct the 'base directory naming pattern'"
 msgstr ""
-"Avant de copier des images dans le répertoire de base de darktable assurez "
+"Avant de copier des images dans le répertoire de base de Darktable assurez "
 "vous qu'il est défini selon vos préférences.\n"
 "De plus amples informations peuvent être trouvée dans le manuel de "
-"darktable.\n"
+"Darktable.\n"
 "\n"
 "Vérifiez les préférences dans la section « Importer ».\n"
 "Et ajustez si nécessaire la valeur de « Nommage du répertoire de base »."
@@ -27863,7 +27864,7 @@ msgstr "Trier"
 
 #: ../src/libs/tagging.c:3252
 msgid "toggle show or not darktable tags"
-msgstr "Basculer l’affichage des mots-clés spécifiques à darktable"
+msgstr "Basculer l’affichage des mots-clés spécifiques à Darktable"
 
 #: ../src/libs/tagging.c:3252
 msgid "dttags"
@@ -28487,7 +28488,7 @@ msgstr ""
 "sélectionné dans\n"
 "le boîtier est supporté (voir https://www.darktable.org/resources/camera-"
 "support/\n"
-"et les notes de version correspondante de darktable)"
+"et les notes de version correspondante de Darktable)"
 
 #: ../src/views/darkroom.c:548
 #, c-format
@@ -28514,9 +28515,9 @@ msgid ""
 "an issue\n"
 "at https://github.com/darktable-org/darktable"
 msgstr ""
-"darktable n’a pas pu charger « %s », retour à la table lumineuse.\n"
+"Darktable n’a pas pu charger « %s », retour à la table lumineuse.\n"
 "\n"
-"Vérifier que le boîtier est supporté par darktable (la liste des appareils "
+"Vérifier que le boîtier est supporté par Darktable (la liste des appareils "
 "connus\n"
 "est sur https://www.darktable.org/resources/camera-support/).\n"
 "Si l’appareil figure dans la liste, merci d’ouvrir un ticket\n"
@@ -28597,7 +28598,7 @@ msgstr "Accès rapide aux styles"
 #. ensure that we get strings from the style files shipped with darktable localized
 #: ../src/views/darkroom.c:2265
 msgid "darktable camera styles"
-msgstr "Styles darktable pour boîtiers"
+msgstr "Styles Darktable pour boîtiers"
 
 #: ../src/views/darkroom.c:2270
 msgid "second window"
@@ -28621,11 +28622,11 @@ msgstr "Traitement haute qualité"
 
 #: ../src/views/darkroom.c:2293
 msgid ""
-"toggle high quality processing, if activated darktable processes image data "
+"toggle high quality processing. if activated darktable processes image data "
 "as it does while exporting"
 msgstr ""
 "Bascule le traitement haute qualité.\n"
-"Si activé darktable développe l'image comme lors de l'exportation."
+"Si activé Darktable développe l'image comme lors de l'exportation."
 
 #: ../src/views/darkroom.c:2309
 msgid ""
@@ -29265,7 +29266,7 @@ msgstr "Clic-droit+déplacer"
 
 #: ../src/views/view.c:1418
 msgid "darktable - accels window"
-msgstr "darktable - fenêtre des raccourcis"
+msgstr "Darktable - fenêtre des raccourcis"
 
 #: ../src/views/view.c:1467
 msgid "switch to a classic window which will stay open after key release"
@@ -29657,7 +29658,7 @@ msgstr "Actions de la souris"
 #~ "darktable discovered problems with your OpenCL setup; disabling OpenCL "
 #~ "for this session!"
 #~ msgstr ""
-#~ "darktable a rencontré des problèmes avec la configuration d’OpenCL qui "
+#~ "Darktable a rencontré des problèmes avec la configuration d’OpenCL qui "
 #~ "sera désactivé pour cette session."
 
 #~ msgid "RGB colors"
@@ -29827,7 +29828,7 @@ msgstr "Actions de la souris"
 #~ "and\n"
 #~ "%s"
 #~ msgstr ""
-#~ "darktable charge les profils ICC depuis\n"
+#~ "Darktable charge les profils ICC depuis\n"
 #~ "%s\n"
 #~ "et\n"
 #~ "%s"
@@ -30253,7 +30254,7 @@ msgstr "Actions de la souris"
 #~ "your browser now and <b>go back</b> to darktable.</p>"
 #~ msgstr ""
 #~ "<h1>Merci,</h1><p>tout devrait s’être bien passé, vous pouvez <b>fermer</"
-#~ "b> votre navigateur maintenant et <b>retourner</b> dans darktable.</p>"
+#~ "b> votre navigateur maintenant et <b>retourner</b> dans Darktable.</p>"
 
 #~ msgid "make this preset auto set values depending on images"
 #~ msgstr "Faire que ce préréglage s’initialise en fonction de l’image"
@@ -30266,7 +30267,7 @@ msgstr "Actions de la souris"
 #~ "La correction des AC supporte seulement les capteurs Bayer RGB standards"
 
 # Dans le module aberrations chromatiques raw :
-# À des niveaux de zoom élevés darktable sautera le module dans le pipeline graphique, et un message “sauté en zoomant” apparaîtra en haut du module. Cette limitation ne s’applique qu’au travail interactif et non à l’exportation finale.
+# À des niveaux de zoom élevés Darktable sautera le module dans le pipeline graphique, et un message “sauté en zoomant” apparaîtra en haut du module. Cette limitation ne s’applique qu’au travail interactif et non à l’exportation finale.
 #  et non "sauter en zoomant "
 #~ msgid "bypassed while zooming in"
 #~ msgstr "Sauté en zoomant"
@@ -30278,7 +30279,7 @@ msgstr "Actions de la souris"
 #~ msgstr ""
 #~ "Le module est contourné car une erreur s’est produite lors du calcul des "
 #~ "paramètres de la correction.\n"
-#~ "Vous pouvez obtenir plus d’information en exécutant darktable depuis une "
+#~ "Vous pouvez obtenir plus d’information en exécutant Darktable depuis une "
 #~ "console."
 
 #~ msgid ""
@@ -30454,7 +30455,7 @@ msgstr "Actions de la souris"
 #~ "and darktable is compiled without lensfun"
 #~ msgstr ""
 #~ "Métadonnées intégrées de correction d’objectif non disponibles\n"
-#~ "et darktable est compilé sans lensfun "
+#~ "et Darktable est compilé sans lensfun "
 
 #~ msgid "allow to pan & zoom while editing masks"
 #~ msgstr "Recadrer et zoomer pendant l’édition des masques"
@@ -30529,7 +30530,7 @@ msgstr "Actions de la souris"
 #~ "préférences de fonctionnement"
 
 #~ msgid "darktable - schema maintenance"
-#~ msgstr "darktable - maintenance"
+#~ msgstr "Darktable - maintenance"
 
 #~ msgid "later"
 #~ msgstr "Plus tard"
@@ -31073,7 +31074,7 @@ msgstr "Actions de la souris"
 
 #~ msgctxt "accel"
 #~ msgid "remove from darktable"
-#~ msgstr "Supprimer de darktable"
+#~ msgstr "Supprimer de Darktable"
 
 #~ msgctxt "accel"
 #~ msgid "delete from disk using trash if possible"
@@ -31271,7 +31272,7 @@ msgstr "Actions de la souris"
 
 #~ msgctxt "accel"
 #~ msgid "toggle dttags"
-#~ msgstr "Basculer les tags darktable"
+#~ msgstr "Basculer les tags Darktable"
 
 #~ msgctxt "accel"
 #~ msgid "tag"
@@ -31351,7 +31352,7 @@ msgstr "Actions de la souris"
 #~ "if switched on, darktable tunes OpenCL for best performance, overrides "
 #~ "static settings"
 #~ msgstr ""
-#~ "If activé, darktable ajustera automatiquement l’OpenCL pour de meilleurs "
+#~ "If activé, Darktable ajustera automatiquement l’OpenCL pour de meilleurs "
 #~ "performances, supplante les définitions statiques"
 
 #~ msgid ""
@@ -31362,7 +31363,7 @@ msgstr "Actions de la souris"
 #~ "\n"
 
 #~ msgid "darktable - run performance configuration?"
-#~ msgstr "darktable - exécute la configuration des performances?"
+#~ msgstr "Darktable - exécute la configuration des performances?"
 
 #~ msgid ""
 #~ "we have an updated performance configuration logic - executing that might "
@@ -31372,7 +31373,7 @@ msgstr "Actions de la souris"
 #~ "would you like to execute this update of the performance configuration?\n"
 #~ msgstr ""
 #~ "La configuration de la performance a été améliorée - exécuter cela peut "
-#~ "améliorer la performance de darktable.\n"
+#~ "améliorer la performance de Darktable.\n"
 #~ "Cela peut potentiellement changer la configuration précédente - "
 #~ "particulièrement si la configuration a été changée manuellement.\n"
 #~ "Voulez-vous exécuter une nouvelle configuration de la performance?\n"
@@ -32186,7 +32187,7 @@ msgstr "Actions de la souris"
 #~ msgstr "Filtres de collection"
 
 #~ msgid "only remove from darktable, don't delete file on disk"
-#~ msgstr "Enlever uniquement de darktable, n’efface pas le fichier du disque"
+#~ msgstr "Enlever uniquement de Darktable, n’efface pas le fichier du disque"
 
 #~ msgctxt "accel"
 #~ msgid "import in-place"
@@ -32275,15 +32276,15 @@ msgstr "Actions de la souris"
 #~ "La présence d’un fichier de verrouillage est principalement dûe à l’une "
 #~ "de ces causes :\n"
 #~ "\n"
-#~ "-Une autre occurrence de darktable est déjà ouverte et utilise cette base "
+#~ "-Une autre occurrence de Darktable est déjà ouverte et utilise cette base "
 #~ "de données.\n"
 #~ "\n"
-#~ "- Une précédente version de darktable a terminé anormalement et n’a donc "
+#~ "- Une précédente version de Darktable a terminé anormalement et n’a donc "
 #~ "pas fermé proprement la base de données.\n"
 #~ "\n"
 #~ "Comment résoudre ce problème ?\n"
 #~ "\n"
-#~ "1 - Vérifier dans votre environnent si une autre occurrence de darktable "
+#~ "1 - Vérifier dans votre environnent si une autre occurrence de Darktable "
 #~ "est active. Si c’est le cas, utilisez la ou quittez la. \n"
 #~ "   Le verrouillage indique que le numéro de processus de cette occurrence "
 #~ "est : <i><b>%d</b></i>\n"
@@ -32304,14 +32305,14 @@ msgstr "Actions de la souris"
 #~ "   (Chemin complet : <i><b>%s</b></i>).\n"
 #~ "\n"
 #~ "   <u>Attention !</u> Ne supprimez pas ces fichiers sans avoir vérifié au "
-#~ "préalable qu’il n’y a pas d’autres occurrences de darktable,\n"
+#~ "préalable qu’il n’y a pas d’autres occurrences de Darktable,\n"
 #~ "   sinon vous risquez de corrompre irrémédiablement la base de données.\n"
 #~ "\n"
 #~ "Dès que vous aurez identifié et supprimé la cause du verrouillage, "
-#~ "darktable s’exécutera a nouveau sans problème.\n"
+#~ "Darktable s’exécutera a nouveau sans problème.\n"
 
 #~ msgid "darktable cannot be started because the database is locked"
-#~ msgstr "darktable ne peut démarrer car la base de données est verrouillée"
+#~ msgstr "Darktable ne peut démarrer car la base de données est verrouillée"
 
 #, c-format
 #~ msgid ""
@@ -32341,7 +32342,7 @@ msgstr "Actions de la souris"
 #~ "before darktable 3.6. don't use it for serious work yet."
 #~ msgstr ""
 #~ "Ce module est expérimental et l’algorithme interne peut légèrement "
-#~ "changer avant darktable 3.6. Ne pas encore l’utiliser pour un travail "
+#~ "changer avant Darktable 3.6. Ne pas encore l’utiliser pour un travail "
 #~ "sérieux."
 
 #~ msgid "trash"
@@ -33985,7 +33986,7 @@ msgstr "Actions de la souris"
 #~ "<span style=\"italic\">« %s »</span>\n"
 #~ "\n"
 #~ "il semble que la base de données soit corrompue.\n"
-#~ "Voulez vous quitter darktable maintenant et restaurer manuellement\n"
+#~ "Voulez vous quitter Darktable maintenant et restaurer manuellement\n"
 #~ "la base de données depuis une sauvegarde ou re-démarrer avec une nouvelle "
 #~ "base de données ?"
 
@@ -34046,7 +34047,7 @@ msgstr "Actions de la souris"
 #~ msgstr "Seuil au-dessus duquel les pixels sont considérés sur-exposés"
 
 #~ msgid "darktable could not load"
-#~ msgstr "darktable ne peut pas ouvrir l’image"
+#~ msgstr "Darktable ne peut pas ouvrir l’image"
 
 #~ msgid "switching to lighttable now."
 #~ msgstr "Retour vers la table lumineuse"
@@ -34414,7 +34415,7 @@ msgstr "Actions de la souris"
 #~ msgstr[1] "fin de la sélection atteinte (%d images)"
 
 #~ msgid "darktable - error locking database"
-#~ msgstr "darktable - erreur du verrouillage de la base de données"
+#~ msgstr "Darktable - erreur du verrouillage de la base de données"
 
 #~ msgid "save changes"
 #~ msgstr "Savegarder"
@@ -34567,7 +34568,7 @@ msgstr "Actions de la souris"
 #~ msgstr ""
 #~ "Étape 1 : une nouvelle fenêtre ou un nouvel onglet s’est ouvert dans "
 #~ "votre navigateur. Connectez-vous à votre compte facebook et autorisez "
-#~ "darktable à charger des fichiers pour continuer."
+#~ "Darktable à charger des fichiers pour continuer."
 
 #~ msgid ""
 #~ "step 2: paste your browser URL and click the OK button once you are done."
@@ -34594,7 +34595,7 @@ msgstr "Actions de la souris"
 #~ "photos before continuing."
 #~ msgstr ""
 #~ "Une nouvelle fenêtre ou un nouvel onglet s’est ouvert dans votre "
-#~ "navigateur. Connectez-vous à votre compte facebook et autorisez darktable "
+#~ "navigateur. Connectez-vous à votre compte facebook et autorisez Darktable "
 #~ "à charger des photos pour continuer."
 
 #~ msgid "new account"
@@ -34645,7 +34646,7 @@ msgstr "Actions de la souris"
 #~ msgstr ""
 #~ "Étape 1 : une nouvelle fenêtre ou un nouvel onglet s’est ouvert dans "
 #~ "votre navigateur. Connectez-vous à votre compte flickr et autorisez "
-#~ "darktable à charger des fichiers pour continuer."
+#~ "Darktable à charger des fichiers pour continuer."
 
 #~ msgid "step 2: click the OK button once you are done."
 #~ msgstr "Étape 2 : cliquez sur \"OK\""
@@ -34689,7 +34690,7 @@ msgstr "Actions de la souris"
 #~ msgstr ""
 #~ "Étape 1 : une nouvelle fenêtre ou un nouvel onglet s’est ouvert dans "
 #~ "votre navigateur. Connectez-vous à votre compte google et autorisez "
-#~ "darktable à charger des fichiers pour continuer."
+#~ "Darktable à charger des fichiers pour continuer."
 
 #~ msgid ""
 #~ "step 2: paste the verification code shown to you in the browser and click "
@@ -34895,7 +34896,7 @@ msgstr "Actions de la souris"
 #~ "darktable doesn't export private tags per default. this option allows to "
 #~ "export them to XMP-dc Subject and XMP-lr Hierarchical Subject."
 #~ msgstr ""
-#~ "darktable n’exporte pas les mots-clés privés par défaut. Cette option "
+#~ "Darktable n’exporte pas les mots-clés privés par défaut. Cette option "
 #~ "permet de les exporter vers  XMP-dc Subject et XMP-lr Hierarchical "
 #~ "Subject."
 
@@ -34906,7 +34907,7 @@ msgstr "Actions de la souris"
 #~ "darktable doesn't export the synonyms per default. this option allows to "
 #~ "export them along with tags to XMP-dc Subject."
 #~ msgstr ""
-#~ "darktable n’exporte pas les synonymes par défaut. Cette option permet de "
+#~ "Darktable n’exporte pas les synonymes par défaut. Cette option permet de "
 #~ "les exporter avec les tags vers XMP-dc Subject."
 
 #~ msgid ""
@@ -34998,7 +34999,7 @@ msgstr "Actions de la souris"
 #~ msgid "_yes, i understood. please let me suffer by using 32-bit darktable."
 #~ msgstr ""
 #~ "_Oui, j’ai compris. Laissez-moi souffrir en utilisant la version 32 bits "
-#~ "de darktable."
+#~ "de Darktable."
 
 #~ msgid ""
 #~ "warning!\n"
@@ -35011,7 +35012,7 @@ msgstr "Actions de la souris"
 #~ "fixed.\n"
 #~ msgstr ""
 #~ "Attention !\n"
-#~ "Une version 32 bits de darktable est utilisée.\n"
+#~ "Une version 32 bits de Darktable est utilisée.\n"
 #~ "Cette version est très limitée en termes de mémoire disponible, ce qui "
 #~ "entraîne de nombreux problèmes et crashs qui ne peuvent être corrigés.\n"
 #~ "Passer à la version 64 bits est une recommandation assez impérative.\n"
@@ -35694,7 +35695,7 @@ msgstr "Actions de la souris"
 #~ msgstr ""
 #~ "Étape 1 : une nouvelle fenêtre ou un nouvel onglet s’est ouvert dans "
 #~ "votre navigateur. Connectez-vous à votre compte picasa et autorisez "
-#~ "darktable à charger des fichiers pour continuer."
+#~ "Darktable à charger des fichiers pour continuer."
 
 #~ msgctxt "lowpass"
 #~ msgid "lightness"
@@ -35936,12 +35937,12 @@ msgstr "Actions de la souris"
 #~ "backtrace log to mailing list with information about your CPU and where "
 #~ "you got the package from."
 #~ msgstr ""
-#~ "darktable a détecté une instruction illégale qui signifie probablement "
+#~ "Darktable a détecté une instruction illégale qui signifie probablement "
 #~ "qu’un code d’optimisation de CPU est utilisé à tort pour votre système. "
 #~ "Merci de reproduire le plantage en utilisant « gdb darktable » à partir "
 #~ "du terminal, puis de poster le résultat sur la liste de publication en "
 #~ "fournissant les informations de votre CPU et du paquet utilisé pour "
-#~ "darktable."
+#~ "Darktable."
 
 #~ msgid "SIMD extensions found: "
 #~ msgstr "Extensions SIMD trouvées :"
@@ -35956,11 +35957,11 @@ msgstr "Actions de la souris"
 #~ "\n"
 #~ "%s"
 #~ msgstr ""
-#~ "darktable est très gourmand en CPU et utilise des instructions SIMD SSE2 "
+#~ "Darktable est très gourmand en CPU et utilise des instructions SIMD SSE2 "
 #~ "pour les calculs importants. Cela permet une meilleure expérience "
 #~ "utilisateur mais nécessite un procésseur compatible.\n"
 #~ "\n"
-#~ "Votre processeur ne supporte malheureusement pas SSE2. darktable va "
+#~ "Votre processeur ne supporte malheureusement pas SSE2. Darktable va "
 #~ "maintenant s’interrompre.\n"
 #~ "\n"
 #~ "%s"
@@ -36389,7 +36390,7 @@ msgstr "Actions de la souris"
 #~ "this value smaller than 1.0 downsamples the preview pixels in darkroom "
 #~ "mode for faster feedback."
 #~ msgstr ""
-#~ "Si cette valeur est inférieure à 1.0, darktable sous-échantillonne les "
+#~ "Si cette valeur est inférieure à 1.0, Darktable sous-échantillonne les "
 #~ "pixels de prévisualisation pour un rendu plus rapide"
 
 #~ msgid "<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"
