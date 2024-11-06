@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-02 12:32+0100\n"
-"PO-Revision-Date: 2024-11-02 15:55+0200\n"
+"POT-Creation-Date: 2024-11-06 20:32+0100\n"
+"PO-Revision-Date: 2024-11-06 22:16+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -1633,8 +1633,9 @@ msgid ""
 " - 'small': should be used if you are simultaneously running applications "
 "taking large parts of your systems memory or OpenCL/GL applications like "
 "games or Hugin.\n"
-" - 'large': is the best option if you are mainly using darktable and want it "
-"to take most of your systems resources for performance."
+" - 'large': is the best option if you are not running other applications at "
+"the same time as darktable and want it to take most of your systems "
+"resources for performance."
 msgstr ""
 "Визначає, скільки Darktable може використати з ваших системних ресурсів.\n"
 " - 'За замовчуванням': займає ~50% ресурсів вашої системи, чого достатньо "
@@ -1642,9 +1643,9 @@ msgstr ""
 " - 'Малий': слід використовувати, якщо ви запускаєте одночасно програми, що "
 "займають значну частину пам’яті вашої системи, або програми OpenCL/GL, такі "
 "як ігри чи Hugin.\n"
-" - 'Великий': це найкращий варіант, якщо ви в основному використовуєте "
-"Darktable і хочете, щоб вона забирала більшість ваших системних ресурсів для "
-"продуктивності."
+" - 'Великий': це найкращий варіант, якщо ви не запускаєте інші програми "
+"одночасно з Darktable і хочете, щоб вона забирала більшість ваших системних "
+"ресурсів для продуктивності."
 
 #: ../build/bin/preferences_gen.h:6197
 msgid "prefer performance over quality"
@@ -5508,7 +5509,7 @@ msgstr "Повзунок"
 msgid "dropdown"
 msgstr "Спадне меню"
 
-#: ../src/chart/main.c:504 ../src/common/database.c:3730
+#: ../src/chart/main.c:504 ../src/common/database.c:3775
 #: ../src/control/jobs/control_jobs.c:2156
 #: ../src/control/jobs/control_jobs.c:2214 ../src/gui/accelerators.c:2508
 #: ../src/gui/accelerators.c:2590 ../src/gui/accelerators.c:2643
@@ -6588,7 +6589,7 @@ msgstr ""
 "Обов’язковий час очікування OpenCL оновлено до 1000.\n"
 "\n"
 
-#: ../src/common/database.c:3703
+#: ../src/common/database.c:3748
 #, c-format
 msgid ""
 "\n"
@@ -6663,19 +6664,19 @@ msgstr ""
 "даних.</i>\n"
 
 #. clang-format on
-#: ../src/common/database.c:3729
+#: ../src/common/database.c:3774
 msgid "error starting darktable"
 msgstr "Помилка запуску Darktable"
 
-#: ../src/common/database.c:3730
+#: ../src/common/database.c:3775
 msgid "_delete database lock files"
 msgstr "Видалити файли блокування бази даних"
 
-#: ../src/common/database.c:3736
+#: ../src/common/database.c:3781
 msgid "are you sure?"
 msgstr "Ви впевнені?"
 
-#: ../src/common/database.c:3737
+#: ../src/common/database.c:3782
 msgid ""
 "\n"
 "do you really want to delete the lock files?\n"
@@ -6683,19 +6684,19 @@ msgstr ""
 "\n"
 "Ви дійсно хочете видалити файли блокування?\n"
 
-#: ../src/common/database.c:3737 ../src/gui/gtk.c:3104
+#: ../src/common/database.c:3782 ../src/gui/gtk.c:3104
 msgid "_no"
 msgstr "_Ні"
 
-#: ../src/common/database.c:3737 ../src/gui/gtk.c:3103
+#: ../src/common/database.c:3782 ../src/gui/gtk.c:3103
 msgid "_yes"
 msgstr "_Так"
 
-#: ../src/common/database.c:3753
+#: ../src/common/database.c:3798
 msgid "done"
 msgstr "Зроблено"
 
-#: ../src/common/database.c:3754
+#: ../src/common/database.c:3799
 msgid ""
 "\n"
 "successfully deleted the lock files.\n"
@@ -6705,17 +6706,17 @@ msgstr ""
 "Файли блокування успішно видалені.\n"
 "Тепер ви можете перезапустити Darktable\n"
 
-#: ../src/common/database.c:3755 ../src/common/database.c:3762
+#: ../src/common/database.c:3800 ../src/common/database.c:3807
 #: ../src/gui/accelerators.c:2591 ../src/gui/accelerators.c:2673
 #: ../src/gui/hist_dialog.c:229 ../src/gui/presets.c:567
 msgid "_ok"
 msgstr "_OK"
 
-#: ../src/common/database.c:3758
+#: ../src/common/database.c:3803
 msgid "error"
 msgstr "Помилка"
 
-#: ../src/common/database.c:3759
+#: ../src/common/database.c:3804
 #, c-format
 msgid ""
 "\n"
@@ -6730,7 +6731,7 @@ msgstr ""
 "db.lock</i>\n"
 "в каталозі <a href=\"file:///%s\">%s</a>.\n"
 
-#: ../src/common/database.c:3876
+#: ../src/common/database.c:3921
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -6739,17 +6740,17 @@ msgstr ""
 "Файл блокування бази даних містить pid, який, здається, є живим у вашій "
 "системі: %d"
 
-#: ../src/common/database.c:3883
+#: ../src/common/database.c:3928
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "Файл блокування бази даних здається порожнім"
 
-#: ../src/common/database.c:3893
+#: ../src/common/database.c:3938
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr "Помилка відкриття файлу блокування бази даних для читання: %s"
 
-#: ../src/common/database.c:3963
+#: ../src/common/database.c:4008
 #, c-format
 msgid ""
 "the database schema version of\n"
@@ -6766,16 +6767,16 @@ msgstr ""
 "занадто нова для цієї збірки Darktable (це означає, що базу даних було "
 "створено або оновлено за допомогою новішої версії Darktable)\n"
 
-#: ../src/common/database.c:3970
+#: ../src/common/database.c:4015
 msgid "darktable - too new db version"
 msgstr "Darktable - занадто нова версія бази даних"
 
-#: ../src/common/database.c:3971
+#: ../src/common/database.c:4016
 msgid "_quit darktable"
 msgstr "_Вийти з Darktable"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:3986
+#: ../src/common/database.c:4031
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -6794,21 +6795,21 @@ msgstr ""
 "\n"
 "Хочете продовжити чи вийти зараз, щоб зробити резервну копію?\n"
 
-#: ../src/common/database.c:3994
+#: ../src/common/database.c:4039
 msgid "darktable - schema migration"
 msgstr "Darktable - міграція схеми бази даних"
 
-#: ../src/common/database.c:3995 ../src/common/database.c:4314
-#: ../src/common/database.c:4329 ../src/common/database.c:4487
-#: ../src/common/database.c:4502
+#: ../src/common/database.c:4040 ../src/common/database.c:4359
+#: ../src/common/database.c:4374 ../src/common/database.c:4532
+#: ../src/common/database.c:4547
 msgid "_close darktable"
 msgstr "Закрити Darktable"
 
-#: ../src/common/database.c:3995
+#: ../src/common/database.c:4040
 msgid "_upgrade database"
 msgstr "Оновити базу даних"
 
-#: ../src/common/database.c:4294 ../src/common/database.c:4467
+#: ../src/common/database.c:4339 ../src/common/database.c:4512
 #, c-format
 msgid ""
 "quick_check said:\n"
@@ -6817,21 +6818,21 @@ msgstr ""
 "Повідомлення quick_check:\n"
 "%s \n"
 
-#: ../src/common/database.c:4311 ../src/common/database.c:4326
-#: ../src/common/database.c:4484 ../src/common/database.c:4499
+#: ../src/common/database.c:4356 ../src/common/database.c:4371
+#: ../src/common/database.c:4529 ../src/common/database.c:4544
 msgid "darktable - error opening database"
 msgstr "Darktable - помилка відкриття бази даних"
 
-#: ../src/common/database.c:4315 ../src/common/database.c:4488
+#: ../src/common/database.c:4360 ../src/common/database.c:4533
 msgid "_attempt restore"
 msgstr "Спробувати відновити"
 
-#: ../src/common/database.c:4316 ../src/common/database.c:4330
-#: ../src/common/database.c:4489 ../src/common/database.c:4503
+#: ../src/common/database.c:4361 ../src/common/database.c:4375
+#: ../src/common/database.c:4534 ../src/common/database.c:4548
 msgid "_delete database"
 msgstr "Видалити базу даних"
 
-#: ../src/common/database.c:4319 ../src/common/database.c:4492
+#: ../src/common/database.c:4364 ../src/common/database.c:4537
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup, attempt an automatic restore\n"
@@ -6843,7 +6844,7 @@ msgstr ""
 "з останнього знімка бази або видалити пошкоджену базу даних\n"
 "і почати з новою?"
 
-#: ../src/common/database.c:4333 ../src/common/database.c:4506
+#: ../src/common/database.c:4378 ../src/common/database.c:4551
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or delete the corrupted database\n"
@@ -6853,7 +6854,7 @@ msgstr ""
 "базу даних із резервної копії чи видалити пошкоджену базу даних\n"
 "і почати з новою?"
 
-#: ../src/common/database.c:4340 ../src/common/database.c:4511
+#: ../src/common/database.c:4385 ../src/common/database.c:4556
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -7234,17 +7235,17 @@ msgstr "Id зображення"
 msgid "preserved filename"
 msgstr "Збережене ім'я файлу"
 
-#: ../src/common/mipmap_cache.c:1299 ../src/imageio/imageio.c:1071
+#: ../src/common/mipmap_cache.c:1299 ../src/imageio/imageio.c:1074
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "Зображення `%s' недоступне!"
 
-#: ../src/common/mipmap_cache.c:1302 ../src/imageio/imageio.c:1075
+#: ../src/common/mipmap_cache.c:1302 ../src/imageio/imageio.c:1078
 #, c-format
 msgid "unable to load image `%s'!"
 msgstr "Не вдається завантажити зображення '%s'!"
 
-#: ../src/common/mipmap_cache.c:1304 ../src/imageio/imageio.c:1077
+#: ../src/common/mipmap_cache.c:1304 ../src/imageio/imageio.c:1080
 #, c-format
 msgid "image '%s' not supported"
 msgstr "Зображення '%s' не підтримується"
@@ -9921,11 +9922,11 @@ msgstr ""
 "в модулі '%s'\n"
 "Повідомте про це на GitHub"
 
-#: ../src/develop/pixelpipe_hb.c:1510
+#: ../src/develop/pixelpipe_hb.c:1515
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr "Фатальна помилка вирівнювання вводу, повідомте про це на GitHub\n"
 
-#: ../src/develop/pixelpipe_hb.c:2803
+#: ../src/develop/pixelpipe_hb.c:2806
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -9946,7 +9947,7 @@ msgstr ""
 "  - Занадто малі параметри запасу при використанні опції 'використовувати "
 "всю пам'ять пристрою'."
 
-#: ../src/develop/pixelpipe_hb.c:2970
+#: ../src/develop/pixelpipe_hb.c:2973
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -9957,7 +9958,7 @@ msgstr ""
 "модуля '%s', бо це обробляється пізніше в конвеєрі.\n"
 "Растрова маска ігнорується."
 
-#: ../src/develop/tiling.c:809 ../src/develop/tiling.c:1158
+#: ../src/develop/tiling.c:811 ../src/develop/tiling.c:1151
 #, c-format
 msgid ""
 "tiling failed for module '%s'. the output most likely will be OK, but you "
@@ -14840,7 +14841,7 @@ msgstr "graphic"
 msgid "XCF"
 msgstr "XCF"
 
-#: ../src/imageio/imageio.c:1094
+#: ../src/imageio/imageio.c:1097
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -14849,17 +14850,17 @@ msgstr ""
 "Не вдалося виділити пам'ять для %s, будь ласка, зменште кількість потоків, "
 "що використовуються для експорту, або придбайте більше пам'яті."
 
-#: ../src/imageio/imageio.c:1096
+#: ../src/imageio/imageio.c:1099
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "Експорт мініатюр"
 
-#: ../src/imageio/imageio.c:1096
+#: ../src/imageio/imageio.c:1099
 msgctxt "noun"
 msgid "export"
 msgstr "Експорт"
 
-#: ../src/imageio/imageio.c:1113
+#: ../src/imageio/imageio.c:1116
 #, c-format
 msgid "cannot find the style '%s' to apply during export"
 msgstr "Не вдається знайти стиль '%s', який застосовується при експорті"
@@ -15194,7 +15195,7 @@ msgstr "коригуюче чи креативне"
 #: ../src/iop/channelmixerrgb.c:243 ../src/iop/clipping.c:360
 #: ../src/iop/clipping.c:362 ../src/iop/colorbalancergb.c:184
 #: ../src/iop/colorequal.c:217 ../src/iop/colorin.c:134 ../src/iop/crop.c:134
-#: ../src/iop/crop.c:136 ../src/iop/demosaic.c:297
+#: ../src/iop/crop.c:136 ../src/iop/demosaic.c:294
 #: ../src/iop/denoiseprofile.c:780 ../src/iop/denoiseprofile.c:782
 #: ../src/iop/diffuse.c:144 ../src/iop/diffuse.c:146
 #: ../src/iop/enlargecanvas.c:84 ../src/iop/enlargecanvas.c:86
@@ -16341,7 +16342,7 @@ msgstr "Коригувати хроматичні аберації для сен
 
 #: ../src/iop/cacorrect.c:85 ../src/iop/cacorrect.c:87
 #: ../src/iop/cacorrectrgb.c:171 ../src/iop/cacorrectrgb.c:173
-#: ../src/iop/demosaic.c:295 ../src/iop/highlights.c:180
+#: ../src/iop/demosaic.c:292 ../src/iop/highlights.c:180
 #: ../src/iop/highlights.c:182 ../src/iop/hotpixels.c:76
 #: ../src/iop/hotpixels.c:78 ../src/iop/rawdenoise.c:144
 #: ../src/iop/rawdenoise.c:146 ../src/iop/rawprepare.c:174
@@ -16351,7 +16352,7 @@ msgid "linear, raw, scene-referred"
 msgstr "лінійний простір, raw, на основі сцен"
 
 #: ../src/iop/cacorrect.c:86 ../src/iop/cacorrectrgb.c:172
-#: ../src/iop/demosaic.c:296 ../src/iop/invert.c:137
+#: ../src/iop/demosaic.c:293 ../src/iop/invert.c:137
 #: ../src/iop/rawdenoise.c:145 ../src/iop/rawprepare.c:175
 #: ../src/iop/temperature.c:254
 msgid "linear, raw"
@@ -18389,7 +18390,7 @@ msgstr ""
 "Перетворює будь-який вхід RGB на референсний RGB конвеєра\n"
 "використовуючи кольорові профілі для відображення RGB значень"
 
-#: ../src/iop/colorin.c:131 ../src/iop/colorout.c:89 ../src/iop/demosaic.c:294
+#: ../src/iop/colorin.c:131 ../src/iop/colorout.c:89 ../src/iop/demosaic.c:291
 #: ../src/iop/rawprepare.c:173
 msgid "mandatory"
 msgstr "Обов'язковий модуль"
@@ -18654,8 +18655,8 @@ msgstr "Коли і як давати пріоритет певним кольо
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "Тон відтінку, якому слід надавати перевагу над іншими відтінками"
 
-#: ../src/iop/colorreconstruction.c:1257 ../src/iop/demosaic.c:1321
-#: ../src/iop/highlights.c:1268
+#: ../src/iop/colorreconstruction.c:1257 ../src/iop/demosaic.c:1359
+#: ../src/iop/highlights.c:1267
 msgid "not applicable"
 msgstr "Не застосовується"
 
@@ -18869,21 +18870,21 @@ msgstr "Радіус для виявлення кайми"
 msgid "threshold for defringe, higher values mean less defringing"
 msgstr "Поріг для видалення кайми, вищі значення означають менше видалення"
 
-#: ../src/iop/demosaic.c:288
+#: ../src/iop/demosaic.c:285
 msgid "demosaic"
 msgstr "Демозаїкізація"
 
-#: ../src/iop/demosaic.c:293
+#: ../src/iop/demosaic.c:290
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
 "Реконструювати повні RGB-пікселі з даних масиву кольорових фільтрів сенсора"
 
-#: ../src/iop/demosaic.c:1130
+#: ../src/iop/demosaic.c:1167
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "Матрицю кольорів `%s' не знайдено для Bayer4 зображення!"
 
-#: ../src/iop/demosaic.c:1281
+#: ../src/iop/demosaic.c:1319
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -18895,7 +18896,7 @@ msgstr ""
 "LMMSE найкраще підходить для зображень з високим значенням ISO.\n"
 "Варіанти з двома методами подвоюють час обробки."
 
-#: ../src/iop/demosaic.c:1285
+#: ../src/iop/demosaic.c:1323
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -18905,11 +18906,11 @@ msgstr ""
 "domain chroma повільні.\n"
 "Варіанти з двома методами подвоюють час обробки."
 
-#: ../src/iop/demosaic.c:1291
+#: ../src/iop/demosaic.c:1329
 msgid "Bayer4 sensor demosaicing methods."
 msgstr "Методи демозаїкізації Bayer4."
 
-#: ../src/iop/demosaic.c:1295
+#: ../src/iop/demosaic.c:1333
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -18919,7 +18920,7 @@ msgstr ""
 "0.0 - вимикає медіанну фільтрацію\n"
 "1.0 - ігнорувати контури"
 
-#: ../src/iop/demosaic.c:1300
+#: ../src/iop/demosaic.c:1338
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -18929,11 +18930,11 @@ msgstr ""
 "0.0 - для високочастотного вмісту\n"
 "1.0 - для плоского вмісту"
 
-#: ../src/iop/demosaic.c:1306
+#: ../src/iop/demosaic.c:1344
 msgid "toggle mask visualization"
 msgstr "Перемкнути візуалізацію маски"
 
-#: ../src/iop/demosaic.c:1309
+#: ../src/iop/demosaic.c:1347
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -18941,16 +18942,16 @@ msgstr ""
 "Кроки уточнення LMMSE. Медіанні кроки усереднюють вихід,\n"
 "уточнення додає певний перерахунок червоних та синіх каналів"
 
-#: ../src/iop/demosaic.c:1312
+#: ../src/iop/demosaic.c:1350
 msgid "how many color smoothing median steps after demosaicing"
 msgstr ""
 "Кількість медіанних проходів згладжування кольорів після демозаїкізації"
 
-#: ../src/iop/demosaic.c:1315
+#: ../src/iop/demosaic.c:1353
 msgid "green channels matching method"
 msgstr "Метод вирівнювання зелених каналів"
 
-#: ../src/iop/demosaic.c:1322
+#: ../src/iop/demosaic.c:1360
 msgid "demosaicing is only used for color raw images"
 msgstr "Демозаїкізація використовується лише для кольорових raw зображень"
 
@@ -20656,7 +20657,7 @@ msgstr ""
 msgid "reconstruction, raw"
 msgstr "відновлювальна, raw"
 
-#: ../src/iop/highlights.c:1017
+#: ../src/iop/highlights.c:1016
 msgid ""
 "highlights: mode not available for this type of image. falling back to "
 "inpaint opposed."
@@ -20664,11 +20665,11 @@ msgstr ""
 "Відновлення пересвітленого: режим недоступний для цього типу зображень.\n"
 "Повертаємось до домальовування протилежного."
 
-#: ../src/iop/highlights.c:1194
+#: ../src/iop/highlights.c:1193
 msgid "highlight reconstruction method"
 msgstr "метод відновлення переекспонованих ділянок"
 
-#: ../src/iop/highlights.c:1199
+#: ../src/iop/highlights.c:1198
 msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
 "highlights.\n"
@@ -20682,7 +20683,7 @@ msgstr ""
 "'Домальовування протилежного'\n"
 "або 'Сегментації', особливо якщо точка білого камери неправильна."
 
-#: ../src/iop/highlights.c:1203
+#: ../src/iop/highlights.c:1202
 msgid ""
 "visualize clipped highlights in a false color representation.\n"
 "the effective clipping level also depends on the reconstruction method."
@@ -20690,7 +20691,7 @@ msgstr ""
 "Візуалізувати обрізані ділянки в спеціальному кольорі.\n"
 "Ефективний рівень кліппінгу також залежить від методу реконструкції."
 
-#: ../src/iop/highlights.c:1213
+#: ../src/iop/highlights.c:1212
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
 "this often leads to improved color reconstruction for tiny segments before "
@@ -20701,11 +20702,11 @@ msgstr ""
 "Це часто призводить до покращеної реконструкції кольорів для крихітних "
 "сегментів перед темним тлом."
 
-#: ../src/iop/highlights.c:1216
+#: ../src/iop/highlights.c:1215
 msgid "visualize the combined segments in a false color representation."
 msgstr "Візуалізувати об'єднані сегменти в спеціальному кольорі."
 
-#: ../src/iop/highlights.c:1223
+#: ../src/iop/highlights.c:1222
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favor candidates found in segmentation analysis, decrease for "
@@ -20714,7 +20715,7 @@ msgstr ""
 "Збільште для надання переваги знайденим у аналізі сегментації кандидатам, "
 "зменште для домальовування протилежного."
 
-#: ../src/iop/highlights.c:1226
+#: ../src/iop/highlights.c:1225
 msgid ""
 "visualize segments that are considered to have a good candidate in a false "
 "color representation."
@@ -20722,7 +20723,7 @@ msgstr ""
 "Візуалізувати сегменти, які вважаються такими, що мають хороші пікселі-"
 "кандидати, в спеціальному кольорі."
 
-#: ../src/iop/highlights.c:1235
+#: ../src/iop/highlights.c:1234
 msgid ""
 "approximate lost data in regions with all photosites clipped, the effect "
 "depends on segment size and border gradients.\n"
@@ -20743,16 +20744,16 @@ msgstr ""
 "електропередач), щоб зберегти пересвітлене реконструйованим і уникнути "
 "градієнтів."
 
-#: ../src/iop/highlights.c:1241
+#: ../src/iop/highlights.c:1240
 msgid "set strength of rebuilding in regions with all photosites clipped."
 msgstr ""
 "Установити силу реконструкції в областях, де всі фотопікселі пересвітлені."
 
-#: ../src/iop/highlights.c:1243
+#: ../src/iop/highlights.c:1242
 msgid "show the effect that is added to already reconstructed data."
 msgstr "Показати ефект, який додається до вже реконструйованих даних."
 
-#: ../src/iop/highlights.c:1252
+#: ../src/iop/highlights.c:1251
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -20760,7 +20761,7 @@ msgstr ""
 "Додати шум, щоб візуально змішати реконструйовані області\n"
 "з рештою шумного зображення. корисно при високих ISO."
 
-#: ../src/iop/highlights.c:1256
+#: ../src/iop/highlights.c:1255
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -20768,7 +20769,7 @@ msgstr ""
 "Збільште, якщо маджентові ділянки не повністю виправлені\n"
 "кожна нова ітерація призводить до зниження продуктивності."
 
-#: ../src/iop/highlights.c:1261
+#: ../src/iop/highlights.c:1260
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
@@ -20776,7 +20777,7 @@ msgstr ""
 "Збільште, якщо маджентові ділянки не повністю виправлені\n"
 "Це може створити негладкі межі між дійсними та обрізаними областями."
 
-#: ../src/iop/highlights.c:1265
+#: ../src/iop/highlights.c:1264
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -20784,7 +20785,7 @@ msgstr ""
 "Збільште, щоб виправити більші переекспоновані ділянки.\n"
 "великі значення призводять до значного зниження продуктивності"
 
-#: ../src/iop/highlights.c:1269
+#: ../src/iop/highlights.c:1268
 msgid "this module does not work with monochrome RAW files"
 msgstr "Цей модуль не працює з монохромними файлами RAW"
 
@@ -28472,7 +28473,7 @@ msgstr "Високоякісна обробка"
 
 #: ../src/views/darkroom.c:2293
 msgid ""
-"toggle high quality processing, if activated darktable processes image data "
+"toggle high quality processing. if activated darktable processes image data "
 "as it does while exporting"
 msgstr ""
 "Увімкнути високоякісну обробку. Якщо активовано, Darktable\n"
