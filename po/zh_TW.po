@@ -1,4 +1,3 @@
-#: ../src/common/darktable.c:1834
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 5.0\n"
