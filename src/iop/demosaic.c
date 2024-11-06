@@ -197,10 +197,10 @@ typedef struct dt_iop_demosaic_global_data_t
 
 typedef struct dt_iop_demosaic_data_t
 {
-  uint32_t green_eq;
-  uint32_t color_smoothing;
+  dt_iop_demosaic_greeneq_t green_eq;
+  dt_iop_demosaic_smooth_t color_smoothing;
   uint32_t demosaicing_method;
-  uint32_t lmmse_refine;
+  dt_iop_demosaic_lmmse_t lmmse_refine;
   float median_thrs;
   double CAM_to_RGB[3][4];
   float dual_thrs;
@@ -478,7 +478,7 @@ void tiling_callback(dt_iop_module_t *self,
 
   // check if output buffer has same dimension as input buffer (thus avoiding one
   // additional temporary buffer)
-  const gboolean unscaled = roi_out->width == roi_in->width && roi_out->height == roi_in->height;
+  const gboolean unscaled = roi_out->width == roi_in->width && roi_out->height == roi_in->height && feqf(roi_in->scale, roi_out->scale, 1e-8f);
   const gboolean is_opencl = piece->pipe->devid > DT_DEVICE_CPU;
   // define aligners
   tiling->xalign = is_xtrans ? DT_XTRANS_SNAPPER : DT_BAYER_SNAPPER;
@@ -627,7 +627,7 @@ void process(dt_iop_module_t *self,
   }
 
   float *in  = (float *)i;
-  float *out = (float *) o;
+  float *out = (float *)o;
 
   if(!fullscale)
   {
@@ -645,7 +645,7 @@ void process(dt_iop_module_t *self,
   const int base_demosaicing_method = demosaicing_method & ~DT_DEMOSAIC_DUAL;
   const gboolean dual = (demosaicing_method & DT_DEMOSAIC_DUAL) && !run_fast;
 
-  const gboolean direct = roi_out->width == width && roi_out->height == height;
+  const gboolean direct = roi_out->width == width && roi_out->height == height && feqf(roi_in->scale, roi_out->scale, 1e-8f);
 
   if(!direct)
   {
@@ -679,6 +679,8 @@ void process(dt_iop_module_t *self,
         green_equilibration_favg(aux, (float *)i, width, height, piece->pipe->dsc.filters, roi_in->x, roi_in->y);
         green_equilibration_lavg(in, aux, width, height, piece->pipe->dsc.filters, roi_in->x, roi_in->y, threshold);
         dt_free_align(aux);
+        break;
+      default:
         break;
     }
   }
@@ -731,9 +733,9 @@ void process(dt_iop_module_t *self,
   if(d->color_smoothing)
     color_smoothing(out, roi_in, d->color_smoothing);
 
+  dt_print_pipe(DT_DEBUG_PIPE, direct ? "demosaic inplace" : "demosaic clip_and_zoom", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out);
   if(!direct)
   {
-    dt_print_pipe(DT_DEBUG_PIPE, "demosaic clip_and_zoom", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out);
     dt_iop_clip_and_zoom_roi((float *)o, out, roi_out, &roo);
     dt_free_align(out);
   }
@@ -812,7 +814,7 @@ int process_cl(dt_iop_module_t *self,
           CLARG(height), CLARG(roi_out->scale), CLARG(piece->pipe->dsc.filters));
   }
 
-  const gboolean direct = roi_out->width == width && roi_out->height == height;
+  const gboolean direct = roi_out->width == width && roi_out->height == height && feqf(roi_in->scale, roi_out->scale, 1e-8f);
   const int base_demosaicing_method = demosaicing_method & ~DT_DEMOSAIC_DUAL;
   const gboolean dual = (demosaicing_method & DT_DEMOSAIC_DUAL) && !run_fast;
 
@@ -879,7 +881,7 @@ int process_cl(dt_iop_module_t *self,
     {
       err = process_vng_cl(self, piece, in_image, low_image, roi_in, FALSE);
       if(err == CL_SUCCESS)
-        err = color_smoothing_cl(self, piece, low_image, low_image, roi_out, d->color_smoothing);
+        err = color_smoothing_cl(self, piece, low_image, low_image, roi_in, DT_DEMOSAIC_SMOOTH_2);
       if(err == CL_SUCCESS)
         err = dual_demosaic_cl(self, piece, out_image, low_image, out_image, roi_in, showmask);
       dt_opencl_release_mem_object(low_image);
@@ -887,14 +889,21 @@ int process_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS) goto finish;
   }
 
+  if(in_image != dev_in)  // release early for less cl memory load
+  {
+    dt_opencl_release_mem_object(in_image);
+    in_image = NULL;
+  }
+
   if(d->color_smoothing)
   {
-    err = color_smoothing_cl(self, piece, out_image, out_image, roi_out, d->color_smoothing);
+    err = color_smoothing_cl(self, piece, out_image, out_image, roi_in, d->color_smoothing);
     if(err != CL_SUCCESS) goto finish;
   }
 
-  dt_print_pipe(DT_DEBUG_PIPE, "demosaic clip_and_zoom", piece->pipe, self, piece->pipe->devid, roi_in, roi_out);
-  err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, out_image, roi_out, roi_in);
+  dt_print_pipe(DT_DEBUG_PIPE, direct ? "demosaic inplace" : "demosaic clip_and_zoom", piece->pipe, self, piece->pipe->devid, roi_in, roi_out);
+  if(!direct)
+    err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, out_image, roi_out, roi_in);
 
 finish:
 
@@ -1067,10 +1076,10 @@ void commit_params(dt_iop_module_t *self,
   const gboolean passing = use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME
                         || use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR;
 
-  if(!(use_method == DT_IOP_DEMOSAIC_PPG))
+  if(use_method != DT_IOP_DEMOSAIC_PPG)
     d->median_thrs = 0.0f;
 
-  if(passing)
+  if(passing || bayer4)
   {
     d->green_eq = DT_IOP_GREEN_EQ_NO;
     d->color_smoothing = 0;
@@ -1216,7 +1225,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     use_method = DT_IOP_DEMOSAIC_VNG4;
 
   const gboolean isppg = use_method == DT_IOP_DEMOSAIC_PPG;
-  const gboolean isdual = use_method & DT_DEMOSAIC_DUAL && !bayer4;
+  const gboolean isdual = (use_method & DT_DEMOSAIC_DUAL) && !bayer4;
   const gboolean islmmse = use_method == DT_IOP_DEMOSAIC_LMMSE;
   const gboolean passing = bayerpassing
     || use_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX
@@ -1238,7 +1247,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   gtk_widget_set_visible(g->median_thrs, bayer && isppg);
   gtk_widget_set_visible(g->greeneq, !passing && !bayer4 && !xtrans);
-  gtk_widget_set_visible(g->color_smoothing, !passing && !bayer4);
+  gtk_widget_set_visible(g->color_smoothing, !passing && !bayer4 && !isdual);
   gtk_widget_set_visible(g->dual_thrs, isdual);
   gtk_widget_set_visible(g->lmmse_refine, islmmse);
 
