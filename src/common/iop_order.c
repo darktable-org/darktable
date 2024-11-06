@@ -526,6 +526,15 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 0.0f }, "", 0 }
 };
 
+const dt_iop_order_entry_t *const _iop_order_tables[DT_IOP_ORDER_LAST] =
+{
+  NULL,
+  legacy_order,
+  v30_order,
+  v30_jpg_order,
+  v31_order
+};
+
 static void *_dup_iop_order_entry(const void *src, gpointer data);
 
 static int _count_entries_operation(GList *e_list, const char *operation);
@@ -773,27 +782,15 @@ gboolean _check_iop_list_equal(GList *iop_order_list,
 
 dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
 {
-  // first check if this is the v30 order RAW
-  if(_check_iop_list_equal(iop_order_list, v31_order))
+  for(dt_iop_order_t O = DT_IOP_ORDER_LEGACY; O < DT_IOP_ORDER_LAST; O++)
   {
-    return DT_IOP_ORDER_V31;
+    if(_check_iop_list_equal(iop_order_list, _iop_order_tables[O]))
+    {
+      return O;
+    }
   }
-  else if(_check_iop_list_equal(iop_order_list, v30_order))
-  {
-    return DT_IOP_ORDER_V30;
-  }
-  else if(_check_iop_list_equal(iop_order_list, v30_jpg_order))
-  {
-    return DT_IOP_ORDER_V30_JPG;
-  }
-  else if(_check_iop_list_equal(iop_order_list, legacy_order))
-  {
-    return DT_IOP_ORDER_LEGACY;
-  }
-  else
-  {
-    return DT_IOP_ORDER_CUSTOM;
-  }
+
+  return DT_IOP_ORDER_CUSTOM;
 }
 
 gboolean dt_ioppr_has_multiple_instances(GList *iop_order_list)
@@ -934,26 +931,17 @@ GList *_table_to_list(const dt_iop_order_entry_t entries[])
 
 GList *dt_ioppr_get_iop_order_list_version(const dt_iop_order_t version)
 {
-  GList *iop_order_list = NULL;
+  switch(version)
+  {
+     case DT_IOP_ORDER_LEGACY:
+     case DT_IOP_ORDER_V30:
+     case DT_IOP_ORDER_V31:
+     case DT_IOP_ORDER_V30_JPG:
+       return _table_to_list(_iop_order_tables[version]);
 
-  if(version == DT_IOP_ORDER_LEGACY)
-  {
-    iop_order_list = _table_to_list(legacy_order);
+     default:
+       return NULL;
   }
-  else if(version == DT_IOP_ORDER_V30)
-  {
-    iop_order_list = _table_to_list(v30_order);
-  }
-  else if(version == DT_IOP_ORDER_V31)
-  {
-    iop_order_list = _table_to_list(v31_order);
-  }
-  else if(version == DT_IOP_ORDER_V30_JPG)
-  {
-    iop_order_list = _table_to_list(v30_jpg_order);
-  }
-
-  return iop_order_list;
 }
 
 void dt_ioppr_iop_order_list_free(GList *iop_order_list)
@@ -1045,21 +1033,12 @@ GList *dt_ioppr_get_iop_order_list(const dt_imgid_t imgid,
           _insert_before(iop_order_list, "colorbalancergb", "colorequal");
         }
       }
-      else if(version == DT_IOP_ORDER_LEGACY)
+      else if(version == DT_IOP_ORDER_LEGACY
+              || version == DT_IOP_ORDER_V30
+              || version == DT_IOP_ORDER_V31
+              || version == DT_IOP_ORDER_V30_JPG)
       {
-        iop_order_list = _table_to_list(legacy_order);
-      }
-      else if(version == DT_IOP_ORDER_V30)
-      {
-        iop_order_list = _table_to_list(v30_order);
-      }
-      else if(version == DT_IOP_ORDER_V31)
-      {
-        iop_order_list = _table_to_list(v31_order);
-      }
-      else if(version == DT_IOP_ORDER_V30_JPG)
-      {
-        iop_order_list = _table_to_list(v30_jpg_order);
+        iop_order_list = _table_to_list(_iop_order_tables[version]);
       }
       else
         dt_print(DT_DEBUG_ALWAYS,
@@ -1086,10 +1065,7 @@ GList *dt_ioppr_get_iop_order_list(const dt_imgid_t imgid,
       ? DT_IOP_ORDER_LEGACY
       : DT_DEFAULT_IOP_ORDER_RAW;
 
-    if(iop_order_version == DT_IOP_ORDER_LEGACY)
-      iop_order_list = _table_to_list(legacy_order);
-    else
-      iop_order_list = _table_to_list(v31_order);
+    iop_order_list = _table_to_list(_iop_order_tables[iop_order_version]);
   }
 
   if(sorted)
