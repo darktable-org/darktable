@@ -623,16 +623,17 @@ gint dt_sort_iop_list_by_order_f(gconstpointer a, gconstpointer b)
   return 0;
 }
 
-dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
+gboolean _check_iop_list_equal(GList *iop_order_list,
+                               const dt_iop_order_entry_t order_table[])
 {
-  // first check if this is the v30 order RAW
   int k = 0;
   GList *l = iop_order_list;
   gboolean ok = TRUE;
+
   while(l)
   {
     const dt_iop_order_entry_t *const restrict entry = l->data;
-    if(strcmp(v30_order[k].operation, entry->operation))
+    if(strcmp(order_table[k].operation, entry->operation))
     {
       ok = FALSE;
       break;
@@ -641,7 +642,7 @@ dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
     {
       // skip all the other instance of same module if any
       while(g_list_next(l)
-            && !strcmp(v30_order[k].operation,
+            && !strcmp(order_table[k].operation,
                        ((dt_iop_order_entry_t *)(g_list_next(l)->data))->operation))
         l = g_list_next(l);
     }
@@ -650,63 +651,28 @@ dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
     l = g_list_next(l);
   }
 
-  if(ok) return DT_IOP_ORDER_V30;
+  return ok;
+}
 
-  // then check if this is the v30 order JPG
-  k = 0;
-  l = iop_order_list;
-  ok = TRUE;
-  while(l)
+dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
+{
+  // first check if this is the v30 order RAW
+  if(_check_iop_list_equal(iop_order_list, v30_order))
   {
-    const dt_iop_order_entry_t *const restrict entry = l->data;
-    if(strcmp(v30_jpg_order[k].operation, entry->operation))
-    {
-      ok = FALSE;
-      break;
-    }
-    else
-    {
-      // skip all the other instance of same module if any
-      while(g_list_next(l)
-            && !strcmp(v30_jpg_order[k].operation,
-                       ((dt_iop_order_entry_t *)(g_list_next(l)->data))->operation))
-        l = g_list_next(l);
-    }
-
-    k++;
-    l = g_list_next(l);
+    return DT_IOP_ORDER_V30;
   }
-
-  if(ok) return DT_IOP_ORDER_V30_JPG;
-
-  // then check if this is the legacy order
-  k = 0;
-  l = iop_order_list;
-  ok = TRUE;
-  while(l)
+  else if(_check_iop_list_equal(iop_order_list, v30_jpg_order))
   {
-    const dt_iop_order_entry_t *const restrict entry = l->data;
-    if(strcmp(legacy_order[k].operation, entry->operation))
-    {
-      ok = FALSE;
-      break;
-    }
-    else
-    {
-      // skip all the other instance of same module if any
-      while(g_list_next(l)
-            && !strcmp(legacy_order[k].operation,
-                       ((dt_iop_order_entry_t *)(g_list_next(l)->data))->operation))
-        l = g_list_next(l);
-    }
-
-    k++;
-    l = g_list_next(l);
+    return DT_IOP_ORDER_V30_JPG;
   }
-
-  if(ok) return DT_IOP_ORDER_LEGACY;
-
-  return DT_IOP_ORDER_CUSTOM;
+  else if(_check_iop_list_equal(iop_order_list, legacy_order))
+  {
+    return DT_IOP_ORDER_LEGACY;
+  }
+  else
+  {
+    return DT_IOP_ORDER_CUSTOM;
+  }
 }
 
 gboolean dt_ioppr_has_multiple_instances(GList *iop_order_list)
