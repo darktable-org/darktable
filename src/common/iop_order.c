@@ -963,7 +963,8 @@ GList *dt_ioppr_get_iop_order_list(const dt_imgid_t imgid,
       iop_order_list = _table_to_list(v30_order);
   }
 
-  if(sorted) iop_order_list = g_list_sort(iop_order_list, dt_sort_iop_list_by_order);
+  if(sorted)
+    iop_order_list = g_list_sort(iop_order_list, dt_sort_iop_list_by_order);
 
   return iop_order_list;
 }
