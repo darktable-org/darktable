@@ -122,7 +122,7 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece,
                            const float *const restrict in,
                            const dt_iop_roi_t *const roi_in,
                            const uint32_t filters,
-                           const uint32_t mode)
+                           const dt_iop_demosaic_lmmse_t mode)
 {
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -146,9 +146,9 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece,
   h4 /= hs;
 
   // median filter iterations
-  const int medians = (mode < 2) ? mode : 3;
+  const int medians = (mode < DT_LMMSE_REFINE_2) ? mode : 3;
   // refinement steps
-  const int refine = (mode > 2) ? mode - 2 : 0;
+  const int refine = (mode > DT_LMMSE_REFINE_2) ? mode - 2 : 0;
 
   const float scaler = dt_iop_get_processed_maximum(piece);
   const float revscaler = 1.0f / scaler;
