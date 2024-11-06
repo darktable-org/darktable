@@ -3879,7 +3879,10 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
         //  All iop-order version before 3 are legacy one. Starting
         //  with version 3 we have the first attempts to propose the
         //  final v3 iop-order.
-        iop_order_version = pos->toLong() < 3 ? DT_IOP_ORDER_LEGACY : DT_IOP_ORDER_V30;
+        iop_order_version = pos->toLong() < 3
+          ? DT_IOP_ORDER_LEGACY
+          : DT_DEFAULT_IOP_ORDER_RAW;
+
         iop_order_list = dt_ioppr_get_iop_order_list_version(iop_order_version);
       }
       else
