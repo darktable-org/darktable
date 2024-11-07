@@ -7208,11 +7208,11 @@ msgstr "Originel"
 
 #: ../src/common/iop_order.c:61
 msgid "v3.0 RAW"
-msgstr "V3.0 RAW"
+msgstr "v3.0 RAW"
 
 #: ../src/common/iop_order.c:62
 msgid "v3.0 JPEG"
-msgstr "V3.0 JPEG"
+msgstr "v3.0 JPEG"
 
 #: ../src/common/iop_profile.c:1141
 #, c-format
@@ -26035,11 +26035,11 @@ msgstr "Paramètres"
 
 #: ../src/libs/ioporder.c:196
 msgid "v3.0 for RAW input (default)"
-msgstr "V3.0 pour les RAW (défaut)"
+msgstr "v3.0 pour les RAW (défaut)"
 
 #: ../src/libs/ioporder.c:204
 msgid "v3.0 for JPEG/non-RAW input"
-msgstr "V3.0 pour JPEG/non-RAW"
+msgstr "v3.0 pour JPEG/non-RAW"
 
 #: ../src/libs/lib.c:371
 msgid "deleting preset for obsolete module"
