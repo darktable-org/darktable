@@ -1148,7 +1148,9 @@ void dt_ioppr_set_default_iop_order(dt_develop_t *dev,
 
   _ioppr_reset_iop_order(iop_order_list);
 
-  if(dev->iop_order_list) g_list_free_full(dev->iop_order_list, free);
+  if(dev->iop_order_list)
+    g_list_free_full(dev->iop_order_list, free);
+
   dev->iop_order_list = iop_order_list;
 
   // we now set the module list given to this iop-order
@@ -1621,11 +1623,13 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list,
     gboolean reset_list = FALSE;
     dt_iop_module_t *mod = modules->data;
 
-    if(mod->iop_order == mod_prev->iop_order && mod->iop_order != INT_MAX)
+    if(mod->iop_order == mod_prev->iop_order
+       && mod->iop_order != INT_MAX)
     {
       gboolean can_move = FALSE;
 
-      if(!mod->enabled && _ioppr_search_history_by_module(history_list, mod) == NULL)
+      if(!mod->enabled
+         && _ioppr_search_history_by_module(history_list, mod) == NULL)
       {
         can_move = TRUE;
 

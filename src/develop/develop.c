@@ -1267,7 +1267,10 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt)
     history = g_list_nth(dev->history, end_prev);
   else
     history = NULL;
-  for(int i = MIN(cnt, end_prev); i < MAX(cnt, end_prev) && history && !masks_changed; i++)
+
+  for(int i = MIN(cnt, end_prev);
+      i < MAX(cnt, end_prev) && history && !masks_changed;
+      i++)
   {
     dt_dev_history_item_t *hist = history->data;
 
