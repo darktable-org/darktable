@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-06 20:32+0100\n"
-"PO-Revision-Date: 2024-11-06 22:16+0200\n"
+"POT-Creation-Date: 2024-11-07 19:50+0100\n"
+"PO-Revision-Date: 2024-11-07 22:46+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -3053,7 +3053,7 @@ msgid "Planckian (black body)"
 msgstr "Планківський (чорне тіло)"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:514
-#: ../src/common/iop_order.c:59
+#: ../src/common/iop_order.c:60
 msgid "custom"
 msgstr "Власний"
 
@@ -6898,12 +6898,12 @@ msgid "forward matrix in `%s`, please report via darktable github"
 msgstr ""
 "\"forward matrix\" в `%s`, будь ласка, повідомте через darktable github"
 
-#: ../src/common/exif.cc:5746
+#: ../src/common/exif.cc:5749
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "Не вдається прочитати файл XMP '%s': '%s'"
 
-#: ../src/common/exif.cc:5805
+#: ../src/common/exif.cc:5808
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "Не вдається записати в файл XMP '%s': '%s'"
@@ -7165,17 +7165,25 @@ msgstr ""
 msgid "requested session path not available. device not mounted?"
 msgstr "Запитаний шлях сеансу недоступний. Пристрій не змонтовано?"
 
-#: ../src/common/iop_order.c:60 ../src/libs/ioporder.c:188
+#: ../src/common/iop_order.c:61 ../src/libs/ioporder.c:195
 msgid "legacy"
 msgstr "Застарілий"
 
-#: ../src/common/iop_order.c:61
+#: ../src/common/iop_order.c:62
 msgid "v3.0 RAW"
 msgstr "v3.0 RAW"
 
-#: ../src/common/iop_order.c:62
+#: ../src/common/iop_order.c:63
 msgid "v3.0 JPEG"
 msgstr "v3.0 JPEG"
+
+#: ../src/common/iop_order.c:64
+msgid "v3.1 RAW"
+msgstr "v3.1 RAW"
+
+#: ../src/common/iop_order.c:65
+msgid "v3.1 JPEG"
+msgstr "v3.1 JPEG"
 
 #: ../src/common/iop_profile.c:1141
 #, c-format
@@ -9371,12 +9379,12 @@ msgstr ""
 "Автозбереження історії вимкнено для цього зображення через дуже велику "
 "історію або використання повільного диска"
 
-#: ../src/develop/develop.c:2223
+#: ../src/develop/develop.c:2228
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: невідповідність версій модуля `%s': %d != %d"
 
-#: ../src/develop/develop.c:3109
+#: ../src/develop/develop.c:3114
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr "Не вдається перемістити новий екземпляр модуля після базового\n"
 
@@ -25894,13 +25902,21 @@ msgstr ""
 msgid "parameters"
 msgstr "Параметри"
 
-#: ../src/libs/ioporder.c:196
-msgid "v3.0 for RAW input (default)"
-msgstr "v3.0 для RAW (умовчання)"
+#: ../src/libs/ioporder.c:203
+msgid "v3.0 for RAW input"
+msgstr "v3.0 для RAW"
 
-#: ../src/libs/ioporder.c:204
+#: ../src/libs/ioporder.c:211
 msgid "v3.0 for JPEG/non-RAW input"
 msgstr "v3.0 для JPEG/не-RAW"
+
+#: ../src/libs/ioporder.c:220
+msgid "v3.1 for RAW input"
+msgstr "v3.1 для RAW"
+
+#: ../src/libs/ioporder.c:229
+msgid "v3.1 for JPEG/non-RAW input"
+msgstr "v3.1 для JPEG/не-RAW"
 
 #: ../src/libs/lib.c:371
 msgid "deleting preset for obsolete module"
@@ -29131,6 +29147,9 @@ msgstr ""
 #: ../src/views/view.c:1534
 msgid "mouse actions"
 msgstr "Дії за допомогою миші"
+
+#~ msgid "v3.0 for RAW input (default)"
+#~ msgstr "v3.0 для RAW (умовчання)"
 
 #~ msgid "base directory naming pattern"
 #~ msgstr "Шаблон іменування базового каталогу"
