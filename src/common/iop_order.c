@@ -61,8 +61,8 @@ const char *iop_order_string[] =
   N_("legacy"),
   N_("v3.0 RAW"),
   N_("v3.0 JPEG"),
-  N_("v3.1 RAW"),
-  N_("v3.1 JPEG")
+  N_("v5.0 RAW"),
+  N_("v5.0 JPEG")
 };
 
 const char *dt_iop_order_string(const dt_iop_order_t order)
@@ -293,7 +293,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { { 0.0f }, "", 0 }
 };
 
-const dt_iop_order_entry_t v31_order[] = {
+const dt_iop_order_entry_t v50_order[] = {
   { { 1.0 }, "rawprepare", 0},
   { { 2.0 }, "invert", 0},
   { { 3.0f }, "temperature", 0},
@@ -529,7 +529,7 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
 };
 
 // default order for JPEG/TIFF/PNG files, non-linear before colorin
-const dt_iop_order_entry_t v31_jpg_order[] = {
+const dt_iop_order_entry_t v50_jpg_order[] = {
   // the following modules are not used anyway for non-RAW images :
   { { 1.0 }, "rawprepare", 0 },
   { { 2.0 }, "invert", 0 },
@@ -653,8 +653,8 @@ const dt_iop_order_entry_t *const _iop_order_tables[DT_IOP_ORDER_LAST] =
   legacy_order,
   v30_order,
   v30_jpg_order,
-  v31_order,
-  v31_jpg_order
+  v50_order,
+  v50_jpg_order
 };
 
 static void *_dup_iop_order_entry(const void *src, gpointer data);
