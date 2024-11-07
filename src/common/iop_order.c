@@ -1079,17 +1079,14 @@ GList *_table_to_list(const dt_iop_order_entry_t entries[])
 
 GList *dt_ioppr_get_iop_order_list_version(const dt_iop_order_t version)
 {
-  switch(version)
+  if(version >= DT_IOP_ORDER_LEGACY
+     && version < DT_IOP_ORDER_LAST)
   {
-     case DT_IOP_ORDER_LEGACY:
-     case DT_IOP_ORDER_V30:
-     case DT_IOP_ORDER_V31:
-     case DT_IOP_ORDER_V30_JPG:
-     case DT_IOP_ORDER_V31_JPG:
-       return _table_to_list(_iop_order_tables[version]);
-
-     default:
-       return NULL;
+    return _table_to_list(_iop_order_tables[version]);
+  }
+  else
+  {
+    return NULL;
   }
 }
 
@@ -1182,11 +1179,8 @@ GList *dt_ioppr_get_iop_order_list(const dt_imgid_t imgid,
           _insert_before(iop_order_list, "colorbalancergb", "colorequal");
         }
       }
-      else if(version == DT_IOP_ORDER_LEGACY
-              || version == DT_IOP_ORDER_V30
-              || version == DT_IOP_ORDER_V31
-              || version == DT_IOP_ORDER_V30_JPG
-              || version == DT_IOP_ORDER_V31_JPG)
+      else if(version >= DT_IOP_ORDER_LEGACY
+              && version < DT_IOP_ORDER_LAST)
       {
         iop_order_list = _table_to_list(_iop_order_tables[version]);
       }
