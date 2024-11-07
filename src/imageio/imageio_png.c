@@ -170,22 +170,6 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   if(!dt_imageio_png_read_header(filename, &image))
     return DT_IMAGEIO_UNSUPPORTED_FORMAT;
 
-  width = img->width = image.width;
-  height = img->height = image.height;
-  bpp = image.bit_depth;
-
-  img->buf_dsc.channels = 4;
-  img->buf_dsc.datatype = TYPE_FLOAT;
-
-  float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
-  if(!mipbuf)
-  {
-    fclose(image.f);
-    png_destroy_read_struct(&image.png_ptr, &image.info_ptr, NULL);
-    dt_print(DT_DEBUG_ALWAYS, "[png_open] could not alloc full buffer for image `%s'", img->filename);
-    return DT_IMAGEIO_CACHE_FULL;
-  }
-
   buf = dt_alloc_aligned((size_t)image.height * png_get_rowbytes(image.png_ptr, image.info_ptr));
 
   if(!buf)
@@ -201,6 +185,22 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
     dt_free_align(buf);
     dt_print(DT_DEBUG_ALWAYS, "[png_open] could not read image `%s'", img->filename);
     return DT_IMAGEIO_FILE_CORRUPTED;
+  }
+
+  width = img->width = image.width;
+  height = img->height = image.height;
+  bpp = image.bit_depth;
+
+  img->buf_dsc.channels = 4;
+  img->buf_dsc.datatype = TYPE_FLOAT;
+
+  float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
+  if(!mipbuf)
+  {
+    fclose(image.f);
+    png_destroy_read_struct(&image.png_ptr, &image.info_ptr, NULL);
+    dt_print(DT_DEBUG_ALWAYS, "[png_open] could not alloc full buffer for image `%s'", img->filename);
+    return DT_IMAGEIO_CACHE_FULL;
   }
 
   const size_t npixels = (size_t)width * height;
