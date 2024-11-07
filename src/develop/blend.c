@@ -1475,7 +1475,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     const gboolean new = g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID), _mask);
     dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order);
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
-       "write raster mask", piece->pipe, self, piece->pipe->devid, NULL, NULL, "%s at %p (%ix%i)",
+       "write raster mask", piece->pipe, self, devid, NULL, NULL, "%s at %p (%ix%i)",
        new ? "new" : "replaced",
        _mask, roi_out->width, roi_out->height);
   }
@@ -1484,7 +1484,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     dt_free_align(_mask);
     if(g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID)))
       dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
-        "delete raster mask", piece->pipe, self, piece->pipe->devid, roi_in, roi_out, " not requested");
+        "delete raster mask", piece->pipe, self, devid, roi_in, roi_out, " not requested");
   }
 
   dt_opencl_release_mem_object(dev_blendif_params);
@@ -1504,7 +1504,7 @@ error:
   if(g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID)))
   {
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
-      "delete raster mask", piece->pipe, self, piece->pipe->devid, roi_in, roi_out,
+      "delete raster mask", piece->pipe, self, devid, roi_in, roi_out,
       "OpenCL error: %s", cl_errstr(err));
     dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order);
   }

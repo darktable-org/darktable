@@ -94,6 +94,7 @@ void dt_print_pipe_ext(const char *title,
 {
   char vtit[128];
   char vmod[128];
+  char order[64] = { 0 };
   char dev[32] = { 0 };
   char vbuf[1024] = { 0 };
   char roi[128] = { 0 };
@@ -103,8 +104,15 @@ void dt_print_pipe_ext(const char *title,
 
   snprintf(vtit, sizeof(vtit), "%s", title);
 
-  if(module && module->iop_order == INT_MAX)
-    snprintf(vtit, sizeof(vtit), "%s", "INVALID IOP ORDER");
+  if(module)
+  {
+    if(module->iop_order == INT_MAX)
+      snprintf(order, sizeof(order), "MAX");
+    else if(module->iop_order < INT_MAX && module->iop_order >= 0)
+      snprintf(order, sizeof(order), "%i", module->iop_order);
+    else
+      snprintf(order, sizeof(order), "NEG %i", module->iop_order);
+  }
 
   snprintf(vmod, sizeof(vmod), "%s%s",
     module ? module->op : "",
@@ -114,6 +122,8 @@ void dt_print_pipe_ext(const char *title,
     snprintf(dev, sizeof(dev), "CPU");
   else if(device > DT_DEVICE_CPU)
     snprintf(dev, sizeof(dev), "CL%i", device);
+  else if(device != DT_DEVICE_NONE)
+    snprintf(dev, sizeof(dev), "??? %i", device);
 
   if(roi_in)
     snprintf(roi, sizeof(roi),
@@ -140,8 +150,8 @@ void dt_print_pipe_ext(const char *title,
   vsnprintf(vbuf, sizeof(vbuf), msg, ap);
   va_end(ap);
 
-  dt_print_ext("%-25s %-3s %-16s %-22s %s%s%s%s",
-               vtit, dev, pname, vmod, roi, roo, masking, vbuf);
+  dt_print_ext("%-25s %-3s %-16s %-22s %2s %s%s%s%s",
+               vtit, dev, pname, vmod, order, roi, roo, masking, vbuf);
 }
 
 gboolean dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe,
@@ -453,7 +463,7 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
 
   for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
   {
-    piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
+    piece = nodes->data;
 
     if(piece->module == hist->module)
     {
@@ -468,8 +478,8 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
       // not appropriate for the image.  Fixing that seemed to be
       // almost impossible after long discussions but at least we can
       // test, correct and add a problem hint here.
-      if((dt_iop_module_is(piece->module->so, "demosaic"))
-         || (dt_iop_module_is(piece->module->so, "rawprepare")))
+      if(dt_iop_module_is(piece->module->so, "demosaic")
+         || dt_iop_module_is(piece->module->so, "rawprepare"))
       {
         if(rawprep_img && !active)
           piece->enabled = TRUE;
@@ -536,9 +546,8 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
 
       dt_print_pipe(DT_DEBUG_PARAMS, "committed",
           pipe, piece->module, DT_DEVICE_NONE, NULL, NULL,
-          "%s order=%2i, piece hash=%" PRIx64,
+          "%s piece hash=%" PRIx64,
           piece->enabled ? "enabled " : "disabled",
-          piece->module->iop_order,
           piece->hash);
 
       if(piece->enabled && piece->blendop_data)
@@ -1180,8 +1189,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
   {
     dt_print_pipe(DT_DEBUG_PIPE,
                         "process tiles",
-                        piece->pipe, module, DT_DEVICE_CPU, roi_in, roi_out, "%3i %s%s%s",
-                        module->iop_order,
+                        piece->pipe, module, DT_DEVICE_CPU, roi_in, roi_out, "%s%s%s",
                         dt_iop_colorspace_to_name(cst_to),
                         cst_to != cst_out ? " -> " : "",
                         cst_to != cst_out ? dt_iop_colorspace_to_name(cst_out) : "");
@@ -1195,8 +1203,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
   {
     dt_print_pipe(DT_DEBUG_PIPE,
        "process",
-       piece->pipe, module, DT_DEVICE_CPU, roi_in, roi_out, "%3i %s%s%s%s %.fMB",
-       piece->module->iop_order,
+       piece->pipe, module, DT_DEVICE_CPU, roi_in, roi_out, "%s%s%s%s %.fMB",
        dt_iop_colorspace_to_name(cst_to),
        cst_to != cst_out ? " -> " : "",
        cst_to != cst_out ? dt_iop_colorspace_to_name(cst_out) : "",
@@ -1846,8 +1853,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         {
           dt_print_pipe(DT_DEBUG_PIPE,
                         "process",
-                        piece->pipe, module, pipe->devid, &roi_in, roi_out, "%3i %s%s%s %.1fMB",
-                        module->iop_order,
+                        piece->pipe, module, pipe->devid, &roi_in, roi_out, "%s%s%s %.1fMB",
                         dt_iop_colorspace_to_name(cst_to),
                         cst_to != cst_out ? " -> " : "",
                         cst_to != cst_out ? dt_iop_colorspace_to_name(cst_out) : "",
@@ -2112,8 +2118,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         {
           dt_print_pipe(DT_DEBUG_PIPE,
                         "process tiled",
-                        piece->pipe, module, pipe->devid, &roi_in, roi_out, "%3i %s%s%s",
-                        module->iop_order,
+                        piece->pipe, module, pipe->devid, &roi_in, roi_out, "%s%s%s",
                         dt_iop_colorspace_to_name(cst_to),
                         cst_to != cst_out ? " -> " : "",
                         cst_to != cst_out ? dt_iop_colorspace_to_name(cst_out) : "");
@@ -3230,7 +3235,7 @@ int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
 
   p->scharr.hash = dt_hash(DT_INITHASH, &p->scharr.roi, sizeof(dt_iop_roi_t));
 
-  dt_print_pipe(DT_DEBUG_PIPE, "write scharr mask CL", p, NULL, piece->pipe->devid, NULL, NULL, "%p (%ix%i)",
+  dt_print_pipe(DT_DEBUG_PIPE, "write scharr mask CL", p, NULL, devid, NULL, NULL, "%p (%ix%i)",
     mask, width, height);
 
   if(darktable.dump_pfm_module && (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT))
@@ -3240,7 +3245,7 @@ int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
   if(err != CL_SUCCESS)
   {
     dt_print_pipe(DT_DEBUG_ALWAYS,
-           "couldn't write scharr mask CL", p, NULL, piece->pipe->devid, NULL, NULL,
+           "couldn't write scharr mask CL", p, NULL, devid, NULL, NULL,
            "%s", cl_errstr(err));
     dt_dev_clear_scharr_mask(p);
   }
