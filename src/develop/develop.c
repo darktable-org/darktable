@@ -1267,7 +1267,10 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt)
     history = g_list_nth(dev->history, end_prev);
   else
     history = NULL;
-  for(int i = MIN(cnt, end_prev); i < MAX(cnt, end_prev) && history && !masks_changed; i++)
+
+  for(int i = MIN(cnt, end_prev);
+      i < MAX(cnt, end_prev) && history && !masks_changed;
+      i++)
   {
     dt_dev_history_item_t *hist = history->data;
 
@@ -1692,7 +1695,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     {
       // we have no auto-apply order, so apply iop order, depending of the workflow
       if(is_scene_referred || is_workflow_none)
-        iop_list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V30);
+        iop_list = dt_ioppr_get_iop_order_list_version((iformat & FOR_LDR)
+                                                       ? DT_DEFAULT_IOP_ORDER_JPG
+                                                       : DT_DEFAULT_IOP_ORDER_RAW);
       else
         iop_list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_LEGACY);
     }
