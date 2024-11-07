@@ -215,18 +215,18 @@ void init_presets(dt_lib_module_t *self)
   dt_ioppr_iop_order_list_free(list);
 
   // make it the default for new RAW
-  list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V31);
+  list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V50);
   params = dt_ioppr_serialize_iop_order_list(list, &size);
-  dt_lib_presets_add(_("v3.1 for RAW input"),
+  dt_lib_presets_add(_("v5.0 for RAW input"),
                      self->plugin_name, self->version(),
                      (const char *)params, (int32_t)size, TRUE,
                      is_display_referred ? 0 : FOR_RAW | FOR_MATRIX);
   free(params);
   dt_ioppr_iop_order_list_free(list);
 
-  list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V31_JPG);
+  list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V50_JPG);
   params = dt_ioppr_serialize_iop_order_list(list, &size);
-  dt_lib_presets_add(_("v3.1 for JPEG/non-RAW input"),
+  dt_lib_presets_add(_("v5.0 for JPEG/non-RAW input"),
                      self->plugin_name, self->version(),
                      (const char *)params, (int32_t)size, TRUE,
                      is_display_referred ? 0 : FOR_LDR | FOR_NOT_MONO);
