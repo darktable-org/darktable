@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-06 20:32+0100\n"
-"PO-Revision-Date: 2024-11-06 20:34+0100\n"
+"POT-Creation-Date: 2024-11-07 19:50+0100\n"
+"PO-Revision-Date: 2024-11-07 19:51+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -3066,7 +3066,7 @@ msgid "Planckian (black body)"
 msgstr "Planckien (corps noir)"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:514
-#: ../src/common/iop_order.c:59
+#: ../src/common/iop_order.c:60
 msgid "custom"
 msgstr "Personnalisé"
 
@@ -6931,12 +6931,12 @@ msgid "forward matrix in `%s`, please report via darktable github"
 msgstr ""
 "ForwardMatrix dans « %s », merci de reporter sur le GitHub de Darktable"
 
-#: ../src/common/exif.cc:5746
+#: ../src/common/exif.cc:5749
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "Impossible de lire le fichier XMP « %s » : « %s »"
 
-#: ../src/common/exif.cc:5805
+#: ../src/common/exif.cc:5808
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "Impossible d’écrire le fichier XMP « %s » : « %s »"
@@ -7202,17 +7202,25 @@ msgstr ""
 "Le chemin demandé pour la session n’est pas accessible. L’appareil n’est pas "
 "monté ?"
 
-#: ../src/common/iop_order.c:60 ../src/libs/ioporder.c:188
+#: ../src/common/iop_order.c:61 ../src/libs/ioporder.c:195
 msgid "legacy"
 msgstr "Originel"
 
-#: ../src/common/iop_order.c:61
+#: ../src/common/iop_order.c:62
 msgid "v3.0 RAW"
 msgstr "v3.0 RAW"
 
-#: ../src/common/iop_order.c:62
+#: ../src/common/iop_order.c:63
 msgid "v3.0 JPEG"
 msgstr "v3.0 JPEG"
+
+#: ../src/common/iop_order.c:64
+msgid "v3.1 RAW"
+msgstr "v3.1 RAW"
+
+#: ../src/common/iop_order.c:65
+msgid "v3.1 JPEG"
+msgstr "v3.1 JPEG"
 
 #: ../src/common/iop_profile.c:1141
 #, c-format
@@ -9371,12 +9379,12 @@ msgstr ""
 "La sauvegarde automatique a été désactivé pour cette image à cause d'un "
 "historique long ou d'un disque lent utilisé"
 
-#: ../src/develop/develop.c:2223
+#: ../src/develop/develop.c:2228
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s : Module « %s » version non cohérente : %d != %d"
 
-#: ../src/develop/develop.c:3109
+#: ../src/develop/develop.c:3114
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr ""
 "Duplication de module, impossible de déplacer la nouvelle instance après "
@@ -26033,13 +26041,21 @@ msgstr ""
 msgid "parameters"
 msgstr "Paramètres"
 
-#: ../src/libs/ioporder.c:196
-msgid "v3.0 for RAW input (default)"
-msgstr "v3.0 pour les RAW (défaut)"
+#: ../src/libs/ioporder.c:203
+msgid "v3.0 for RAW input"
+msgstr "v3.0 pour RAW"
 
-#: ../src/libs/ioporder.c:204
+#: ../src/libs/ioporder.c:211
 msgid "v3.0 for JPEG/non-RAW input"
 msgstr "v3.0 pour JPEG/non-RAW"
+
+#: ../src/libs/ioporder.c:220
+msgid "v3.1 for RAW input"
+msgstr "v3.1 pour RAW"
+
+#: ../src/libs/ioporder.c:229
+msgid "v3.1 for JPEG/non-RAW input"
+msgstr "v3.1 pour JPEG/non-RAW"
 
 #: ../src/libs/lib.c:371
 msgid "deleting preset for obsolete module"
@@ -29276,6 +29292,9 @@ msgstr "Créer une fenêtre flottante persistante"
 #: ../src/views/view.c:1534
 msgid "mouse actions"
 msgstr "Actions de la souris"
+
+#~ msgid "v3.0 for RAW input (default)"
+#~ msgstr "v3.0 pour les RAW (défaut)"
 
 #~ msgid "base directory naming pattern"
 #~ msgstr "Nommage du répertoire de base"
