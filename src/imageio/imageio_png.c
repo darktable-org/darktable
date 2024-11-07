@@ -159,10 +159,6 @@ gboolean dt_imageio_png_read_image(dt_imageio_png_t *png, void *out)
 
 dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
-  const char *ext = filename + strlen(filename);
-  while(*ext != '.' && ext > filename) ext--;
-  if(strncmp(ext, ".png", 4) && strncmp(ext, ".PNG", 4))
-    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
   dt_imageio_png_t image;
