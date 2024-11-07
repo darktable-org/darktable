@@ -253,23 +253,21 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   return TRUE;
 }
 
-void distort_mask(
-        dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        const float *const in,
-        float *const out,
-        const dt_iop_roi_t *const roi_in,
-        const dt_iop_roi_t *const roi_out)
+void distort_mask(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
+                  const float *const in,
+                  float *const out,
+                  const dt_iop_roi_t *const roi_in,
+                  const dt_iop_roi_t *const roi_out)
 {
   dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 }
 
 // we're not scaling here (bayer input), so just crop borders
-void modify_roi_out(
-        dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        dt_iop_roi_t *roi_out,
-        const dt_iop_roi_t *const roi_in)
+void modify_roi_out(dt_iop_module_t *self,
+                    dt_dev_pixelpipe_iop_t *piece,
+                    dt_iop_roi_t *roi_out,
+                    const dt_iop_roi_t *const roi_in)
 {
   *roi_out = *roi_in;
   dt_iop_rawprepare_data_t *d = piece->data;
@@ -284,11 +282,10 @@ void modify_roi_out(
   roi_out->height -= (int)roundf((float)y * scale);
 }
 
-void modify_roi_in(
-        dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        const dt_iop_roi_t *const roi_out,
-        dt_iop_roi_t *roi_in)
+void modify_roi_in(dt_iop_module_t *self,
+                   dt_dev_pixelpipe_iop_t *piece,
+                   const dt_iop_roi_t *const roi_out,
+                   dt_iop_roi_t *roi_in)
 {
   *roi_in = *roi_out;
   dt_iop_rawprepare_data_t *d = piece->data;
@@ -301,11 +298,10 @@ void modify_roi_in(
   roi_in->height += (int)roundf((float)y * scale);
 }
 
-void output_format(
-        dt_iop_module_t *self,
-        dt_dev_pixelpipe_t *pipe,
-        dt_dev_pixelpipe_iop_t *piece,
-        dt_iop_buffer_dsc_t *dsc)
+void output_format(dt_iop_module_t *self,
+                   dt_dev_pixelpipe_t *pipe,
+                   dt_dev_pixelpipe_iop_t *piece,
+                   dt_iop_buffer_dsc_t *dsc)
 {
   default_output_format(self, pipe, piece, dsc);
 
@@ -315,10 +311,9 @@ void output_format(
   dsc->rawprepare.raw_white_point = d->rawprepare.raw_white_point;
 }
 
-static void _adjust_xtrans_filters(
-        dt_dev_pixelpipe_t *pipe,
-        const uint32_t crop_x,
-        const uint32_t crop_y)
+static void _adjust_xtrans_filters(dt_dev_pixelpipe_t *pipe,
+                                   const uint32_t crop_x,
+                                   const uint32_t crop_y)
 {
   for(int i = 0; i < 6; ++i)
   {
@@ -337,13 +332,12 @@ static int _BL(const dt_iop_roi_t *const roi_out,
   return ((((row + roi_out->y + d->top) & 1) << 1) + ((col + roi_out->x + d->left) & 1));
 }
 
-void process(
-        dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        const void *const ivoid,
-        void *const ovoid,
-        const dt_iop_roi_t *const roi_in,
-        const dt_iop_roi_t *const roi_out)
+void process(dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_rawprepare_data_t *const d = piece->data;
 
@@ -469,13 +463,12 @@ void process(
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(
-        dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        cl_mem dev_in,
-        cl_mem dev_out,
-        const dt_iop_roi_t *const roi_in,
-        const dt_iop_roi_t *const roi_out)
+int process_cl(dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
 {
   dt_iop_rawprepare_data_t *d = piece->data;
   dt_iop_rawprepare_global_data_t *gd = self->global_data;
@@ -535,8 +528,11 @@ int process_cl(
   const int height = roi_out->height;
 
   size_t sizes[] = { ROUNDUPDWD(roi_in->width, devid), ROUNDUPDHT(roi_in->height, devid), 1 };
-  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_out), CLARG((width)), CLARG((height)),
-    CLARG(csx), CLARG(csy), CLARG(dev_sub), CLARG(dev_div), CLARG(roi_out->x), CLARG(roi_out->y));
+  dt_opencl_set_kernel_args(devid, kernel, 0,
+    CLARG(dev_in), CLARG(dev_out),
+    CLARG(width), CLARG(height),
+    CLARG(csx), CLARG(csy),
+    CLARG(dev_sub), CLARG(dev_div), CLARG(roi_out->x), CLARG(roi_out->y));
   if(gainmap_args)
   {
     const int map_size[2] = { d->gainmaps[0]->map_points_h, d->gainmaps[0]->map_points_v };
@@ -544,7 +540,7 @@ int process_cl(
     const float rel_to_map[2] = { 1.0f / d->gainmaps[0]->map_spacing_h, 1.0f / d->gainmaps[0]->map_spacing_v };
     const float map_origin[2] = { d->gainmaps[0]->map_origin_h, d->gainmaps[0]->map_origin_v };
 
-     for(int i = 0; i < 4; i++)
+    for(int i = 0; i < 4; i++)
     {
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
       dev_gainmap[i] = dt_opencl_alloc_device(devid, map_size[0], map_size[1], sizeof(float));
@@ -554,8 +550,7 @@ int process_cl(
       if(err != CL_SUCCESS) goto finish;
     }
 
-    dt_opencl_set_kernel_args
-      (devid, kernel, 10,
+    dt_opencl_set_kernel_args(devid, kernel, 10,
        CLARG(dev_gainmap[0]), CLARG(dev_gainmap[1]), CLARG(dev_gainmap[2]), CLARG(dev_gainmap[3]),
        CLARG(map_size), CLARG(im_to_rel), CLARG(rel_to_map), CLARG(map_origin));
   }
@@ -598,13 +593,12 @@ static int _image_is_normalized(const dt_image_t *const image)
   return image->buf_dsc.channels == 1 && image->buf_dsc.datatype == TYPE_FLOAT;
 }
 
-static gboolean _image_set_rawcrops(
-        dt_iop_module_t *self,
-        const dt_imgid_t imgid,
-        const int left,
-        const int right,
-        const int top,
-        const int bottom)
+static gboolean _image_set_rawcrops(dt_iop_module_t *self,
+                                    const dt_imgid_t imgid,
+                                    const int left,
+                                    const int right,
+                                    const int top,
+                                    const int bottom)
 {
   dt_image_t *img = &self->dev->image_storage;
 
@@ -697,11 +691,10 @@ static gboolean _check_gain_maps(dt_iop_module_t *self, dt_dng_gain_map_t **gain
   return TRUE;
 }
 
-void commit_params(
-        dt_iop_module_t *self,
-        dt_iop_params_t *params,
-        dt_dev_pixelpipe_t *pipe,
-        dt_dev_pixelpipe_iop_t *piece)
+void commit_params(dt_iop_module_t *self,
+                   dt_iop_params_t *params,
+                   dt_dev_pixelpipe_t *pipe,
+                   dt_dev_pixelpipe_iop_t *piece)
 {
   const dt_iop_rawprepare_params_t *const p = (dt_iop_rawprepare_params_t *)params;
   dt_iop_rawprepare_data_t *d = piece->data;
