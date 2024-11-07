@@ -1695,7 +1695,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     {
       // we have no auto-apply order, so apply iop order, depending of the workflow
       if(is_scene_referred || is_workflow_none)
-        iop_list = dt_ioppr_get_iop_order_list_version(DT_DEFAULT_IOP_ORDER_RAW);
+        iop_list = dt_ioppr_get_iop_order_list_version((iformat & FOR_LDR)
+                                                       ? DT_DEFAULT_IOP_ORDER_JPG
+                                                       : DT_DEFAULT_IOP_ORDER_RAW);
       else
         iop_list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_LEGACY);
     }

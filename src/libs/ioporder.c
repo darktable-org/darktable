@@ -161,7 +161,7 @@ void gui_reset(dt_lib_module_t *self)
 
   const dt_iop_order_t iop_order =
     is_ldr
-    ? DT_IOP_ORDER_V30_JPG
+    ? DT_DEFAULT_IOP_ORDER_JPG
     : DT_DEFAULT_IOP_ORDER_RAW;
 
   GList *iop_order_list = dt_ioppr_get_iop_order_list_version(iop_order);
@@ -200,8 +200,17 @@ void init_presets(dt_lib_module_t *self)
 
   list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V30);
   params = dt_ioppr_serialize_iop_order_list(list, &size);
-  dt_lib_presets_add(_("v3.0 for RAW input"), self->plugin_name, self->version(),
-                     (const char *)params, (int32_t)size, TRUE, FALSE);
+  dt_lib_presets_add(_("v3.0 for RAW input"),
+                     self->plugin_name, self->version(),
+                     (const char *)params, (int32_t)size, TRUE, 0);
+  free(params);
+  dt_ioppr_iop_order_list_free(list);
+
+  list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V30_JPG);
+  params = dt_ioppr_serialize_iop_order_list(list, &size);
+  dt_lib_presets_add(_("v3.0 for JPEG/non-RAW input"),
+                     self->plugin_name, self->version(),
+                     (const char *)params, (int32_t)size, TRUE, 0);
   free(params);
   dt_ioppr_iop_order_list_free(list);
 
@@ -215,9 +224,10 @@ void init_presets(dt_lib_module_t *self)
   free(params);
   dt_ioppr_iop_order_list_free(list);
 
-  list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V30_JPG);
+  list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V31_JPG);
   params = dt_ioppr_serialize_iop_order_list(list, &size);
-  dt_lib_presets_add(_("v3.0 for JPEG/non-RAW input"), self->plugin_name, self->version(),
+  dt_lib_presets_add(_("v3.1 for JPEG/non-RAW input"),
+                     self->plugin_name, self->version(),
                      (const char *)params, (int32_t)size, TRUE,
                      is_display_referred ? 0 : FOR_LDR | FOR_NOT_MONO);
   free(params);
