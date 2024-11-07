@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2023 darktable developers.
+    Copyright (C) 2013-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -162,7 +162,7 @@ int write_image(dt_imageio_module_data_t *webp, const char *filename, const void
   cmsSaveProfileToMem(out_profile, NULL, &len);
   if(len > 0)
   {
-    buf = (uint8_t *)g_malloc(len);
+    buf = (uint8_t *)g_try_malloc(len);
     if(buf)
     {
       cmsSaveProfileToMem(out_profile, buf, &len);
