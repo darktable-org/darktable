@@ -23,6 +23,7 @@
 #include "common/darktable.h"
 #include "common/iop_order.h"
 #include "common/styles.h"
+#include "common/image_cache.h"
 #include "common/debug.h"
 #include "develop/imageop.h"
 #include "develop/pixelpipe.h"
@@ -1223,11 +1224,14 @@ static void _ioppr_reset_iop_order(GList *iop_order_list)
 {
   // iop-order must start with a number > 0 and be incremented. There is no
   // other constraints.
-  int iop_order = 1;
+  int iop_order = 100;
   for(const GList *l = iop_order_list; l; l = g_list_next(l))
   {
     dt_iop_order_entry_t *e = l->data;
-    e->o.iop_order = iop_order++;
+    e->o.iop_order = iop_order;
+    // keep some spaces between modules to ensure that we can insert some
+    // modules in the middle if needed. (see dt_ioppr_check_duplicate_iop_order).
+    iop_order += 100;
   }
 }
 
@@ -1784,7 +1788,7 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list,
           dt_iop_module_t *mod_next = modules1->data;
           if(mod->iop_order != mod_next->iop_order)
           {
-            mod->iop_order += (mod_next->iop_order - mod->iop_order) / 2.0;
+            mod->iop_order += (mod_next->iop_order - mod->iop_order) / 2;
           }
           else
           {
@@ -1794,7 +1798,7 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list,
         }
         else
         {
-          mod->iop_order += 1.0;
+          mod->iop_order += 1;
         }
       }
       else if(!mod_prev->enabled
@@ -1803,13 +1807,15 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list,
         can_move = TRUE;
 
         GList *modules1 = g_list_previous(modules);
-        if(modules1) modules1 = g_list_previous(modules1);
+        if(modules1)
+          modules1 = g_list_previous(modules1);
+
         if(modules1)
         {
           dt_iop_module_t *mod_next = modules1->data;
           if(mod_prev->iop_order != mod_next->iop_order)
           {
-            mod_prev->iop_order -= (mod_prev->iop_order - mod_next->iop_order) / 2.0;
+            mod_prev->iop_order -= (mod_prev->iop_order - mod_next->iop_order) / 2;
           }
           else
           {
@@ -1823,7 +1829,7 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list,
         }
         else
         {
-          mod_prev->iop_order -= 0.5;
+          mod_prev->iop_order -= 1;
         }
       }
 
