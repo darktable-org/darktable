@@ -446,19 +446,26 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img,
 
   rgbe_header_info info;
   if(RGBE_ReadHeader(f, &img->width, &img->height, &info) != RGBE_RETURN_SUCCESS)
-    goto rgbe_failed;
+  {
+    fclose(f);
+    return DT_IMAGEIO_LOAD_FAILED;
+  }
 
   const size_t npixels = (size_t)img->width * img->height;
 
   // The decoder writes three RGB channels to rgbe_buf, so size = number of pixels * 3
   float *rgbe_buf = dt_alloc_align_float(npixels * 3);
   if(!rgbe_buf)
-    goto rgbe_failed;
+  {
+    fclose(f);
+    return DT_IMAGEIO_LOAD_FAILED;
+  }
 
   if(RGBE_ReadPixels_RLE(f, rgbe_buf, img->width, img->height) != RGBE_RETURN_SUCCESS)
   {
     dt_free_align(rgbe_buf);
-    goto rgbe_corrupt;
+    fclose(f);
+    return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
   fclose(f);
@@ -467,7 +474,9 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img,
   img->buf_dsc.datatype = TYPE_FLOAT;
   float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!mipbuf)
-    goto error_cache_full;
+  {
+    return DT_IMAGEIO_CACHE_FULL;
+  }
 
   // repair nan/inf etc
   DT_OMP_FOR()
@@ -508,18 +517,6 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img,
   img->flags |= DT_IMAGE_HDR;
   img->loader = LOADER_RGBE;
   return DT_IMAGEIO_OK;
-
-rgbe_failed:
-  fclose(f);
-  return DT_IMAGEIO_LOAD_FAILED;
-
-rgbe_corrupt:
-  fclose(f);
-  return DT_IMAGEIO_FILE_CORRUPTED;
-
-error_cache_full:
-  fclose(f);
-  return DT_IMAGEIO_CACHE_FULL;
 }
 
 #undef RGBE_RETURN_SUCCESS
