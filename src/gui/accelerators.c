@@ -1688,7 +1688,8 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column,
         field_text = g_strdup_printf("%.3f", s->speed);
         if(s->speed == 1.0) weight = PANGO_WEIGHT_LIGHT;
       }
-      editable = TRUE;
+      if(s->action->type != DT_ACTION_TYPE_COMMAND)
+        editable = TRUE;
       break;
     case SHORTCUT_VIEW_INSTANCE:
       if(_shortcut_is_speed(s)) break;
@@ -1716,8 +1717,13 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column,
     }
     if(!s->views) editable = FALSE; //disabled default shortcuts
   }
-  g_object_set(cell, "text", field_text, "editable",
-               editable, "underline", underline, "weight", weight, NULL);
+  g_object_set(cell, "text", field_text,
+                     "editable", editable,
+                     "cell-background-rgba", &(GdkRGBA){ 1, 1, 1, .05 },
+                     "cell-background-set", editable,
+                     "underline", underline,
+                     "weight", weight,
+                     NULL);
   g_free(field_text);
 }
 
