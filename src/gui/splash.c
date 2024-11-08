@@ -132,6 +132,8 @@ void darktable_splash_screen_create(GtkWindow *parent_window,
   // the splash screen is enabled in the config or we are told to
   // create it regardless.
   if(splash_screen
+     || dt_check_gimpmode("file")
+     || dt_check_gimpmode("thumb")
      || (!dt_conf_get_bool("show_splash_screen") && !force))
   {
     return;
@@ -337,8 +339,9 @@ void darktable_exit_screen_create(GtkWindow *parent_window,
   // run if the splash screen is enabled in the config or we are told
   // to create it regardless
   if(exit_screen
-     || (!dt_conf_get_bool("show_splash_screen")
-         && !force))
+     || dt_check_gimpmode("file")
+     || dt_check_gimpmode("thumb")
+     || (!dt_conf_get_bool("show_splash_screen") && !force))
   {
     return;
   }
