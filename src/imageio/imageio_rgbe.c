@@ -455,13 +455,6 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img,
   if(!rgbe_buf)
     goto rgbe_failed;
 
-  img->buf_dsc.channels = 4;
-  img->buf_dsc.datatype = TYPE_FLOAT;
-  float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
-  if(!mipbuf)
-    goto error_cache_full;
-
-
   if(RGBE_ReadPixels_RLE(f, rgbe_buf, img->width, img->height) != RGBE_RETURN_SUCCESS)
   {
     dt_free_align(rgbe_buf);
@@ -469,6 +462,12 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img,
   }
 
   fclose(f);
+
+  img->buf_dsc.channels = 4;
+  img->buf_dsc.datatype = TYPE_FLOAT;
+  float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
+  if(!mipbuf)
+    goto error_cache_full;
 
   // repair nan/inf etc
   DT_OMP_FOR()
