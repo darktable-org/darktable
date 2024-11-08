@@ -1335,6 +1335,17 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     }
   }
 
+  /* We now have all command line options ready and check for gimp API questions.
+      Return right now if
+        - we check for API version
+        - we check for "file" or "thumb" and the file is not physically available
+      and let the caller check again and write out protocol messages.
+  */
+  if(dt_check_gimpmode("version")
+    || (dt_check_gimpmode("file") && !dt_check_gimpmode_ok("file"))
+    || (dt_check_gimpmode("thumb") && !dt_check_gimpmode_ok("thumb")))
+    return 0;
+
   if(darktable.unmuted)
   {
     char *theversion = _get_version_string();
