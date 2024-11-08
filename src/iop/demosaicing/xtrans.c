@@ -41,7 +41,6 @@ static inline const short *_hexmap(const int row,
 */
 static void xtrans_markesteijn_interpolate(float *out,
                                            const float *const in,
-                                           const dt_iop_roi_t *const roi_out,
                                            const dt_iop_roi_t *const roi_in,
                                            const uint8_t (*const xtrans)[6],
                                            const int passes)
@@ -56,13 +55,13 @@ static void xtrans_markesteijn_interpolate(float *out,
   // green pixels (initialized here only to avoid compiler warning)
   unsigned short sgrow = 0, sgcol = 0;
 
-  const int width = roi_out->width;
-  const int height = roi_out->height;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
   const unsigned ndir = 4 << (passes > 1);
 
   const size_t buffer_size = (size_t)TS * TS * (ndir * 4 + 3) * sizeof(float);
   size_t padded_buffer_size;
-  char *const all_buffers = (char *)dt_alloc_perthread(buffer_size, sizeof(char), &padded_buffer_size);
+  char *const all_buffers = dt_alloc_perthread(buffer_size, sizeof(char), &padded_buffer_size);
   if(!all_buffers)
   {
     dt_print(DT_DEBUG_ALWAYS, "[demosaic] not able to allocate Markesteijn buffers");
@@ -515,10 +514,9 @@ static void xtrans_markesteijn_interpolate(float *out,
 #undef TS
 
 #define TS 122
-static void xtrans_fdc_interpolate(dt_iop_module_t *self,
+static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
                                    float *out,
                                    const float *const in,
-                                   const dt_iop_roi_t *const roi_out,
                                    const dt_iop_roi_t *const roi_in,
                                    const uint8_t (*const xtrans)[6])
 {
@@ -534,8 +532,8 @@ static void xtrans_fdc_interpolate(dt_iop_module_t *self,
   // green pixels (initialized here only to avoid compiler warning)
   unsigned short sgrow = 0, sgcol = 0;
 
-  const int width = roi_out->width;
-  const int height = roi_out->height;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
   static const int ndir = 4;
 
   static const float complex Minv[3][8] = {
@@ -1065,7 +1063,7 @@ static void xtrans_fdc_interpolate(dt_iop_module_t *self,
 
   const size_t buffer_size = (size_t)TS * TS * (ndir * 4 + 7) * sizeof(float);
   size_t padded_buffer_size;
-  char *const all_buffers = (char *)dt_alloc_perthread(buffer_size, sizeof(char), &padded_buffer_size);
+  char *const all_buffers = dt_alloc_perthread(buffer_size, sizeof(char), &padded_buffer_size);
   if(!all_buffers)
   {
     dt_print(DT_DEBUG_ALWAYS, "[demosaic] not able to allocate FDC base buffers");
@@ -1634,14 +1632,14 @@ static void xtrans_fdc_interpolate(dt_iop_module_t *self,
 #undef TS
 
 #ifdef HAVE_OPENCL
-static cl_int process_markesteijn_cl(dt_iop_module_t *self,
-                                     dt_dev_pixelpipe_iop_t *piece,
+static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
+                                     const dt_dev_pixelpipe_iop_t *piece,
                                      cl_mem dev_in,
                                      cl_mem dev_out,
                                      const dt_iop_roi_t *const roi_in)
 {
-  dt_iop_demosaic_data_t *data = piece->data;
-  dt_iop_demosaic_global_data_t *gd = self->global_data;
+  const dt_iop_demosaic_data_t *data = piece->data;
+  const dt_iop_demosaic_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
@@ -1664,8 +1662,8 @@ static cl_int process_markesteijn_cl(dt_iop_module_t *self,
   dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
   if(dev_xtrans == NULL) return err;
 
-    int width = roi_in->width;
-    int height = roi_in->height;
+    const int width = roi_in->width;
+    const int height = roi_in->height;
     const int passes = ((data->demosaicing_method & ~DT_DEMOSAIC_DUAL) == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ? 3 : 1;
     const int ndir = passes > 1 ? 8 : 4 ;
     const int pad_tile = (passes == 1) ? 12 : 17;

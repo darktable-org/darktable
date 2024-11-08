@@ -31,19 +31,18 @@ static float slider2contrast(float slider)
 static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece,
                           float *const restrict high_data,
                           const float *const restrict raw_data,
-                          const dt_iop_roi_t *const roi_out,
-                          const dt_iop_roi_t *const roi_in,
+                          const dt_iop_roi_t *const roi,
                           const uint32_t filters,
                           const uint8_t (*const xtrans)[6],
                           const gboolean dual_mask,
                           const float dual_threshold)
 {
-  if((roi_in->width < 16) || (roi_in->height < 16)) return;
+  if(roi->width < 16 || roi->height < 16) return;
 
   // If the threshold is zero and we don't want to see the blend mask we don't do anything
   if(dual_threshold <= 0.0f) return;
 
-  const size_t msize = roi_in->width * roi_in->height;
+  const size_t msize = roi->width * roi->height;
   float *vng_image = NULL;
 
   const float contrastf = slider2contrast(dual_threshold);
@@ -62,8 +61,8 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece,
     vng_image = dt_alloc_align_float((size_t) 4 * msize);
     if(!vng_image) goto error;
 
-    vng_interpolate(vng_image, raw_data, roi_out, roi_in, filters, xtrans, FALSE);
-    color_smoothing(vng_image, roi_in, DT_DEMOSAIC_SMOOTH_2);
+    vng_interpolate(vng_image, raw_data, roi, filters, xtrans, FALSE);
+    color_smoothing(vng_image, roi, DT_DEMOSAIC_SMOOTH_2);
 
     DT_OMP_FOR_SIMD(aligned(mask, vng_image, high_data : 64))
     for(int idx = 0; idx < msize; idx++)
@@ -82,8 +81,8 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece,
 }
 
 #ifdef HAVE_OPENCL
-gboolean dual_demosaic_cl(dt_iop_module_t *self,
-                          dt_dev_pixelpipe_iop_t *piece,
+gboolean dual_demosaic_cl(const dt_iop_module_t *self,
+                          const dt_dev_pixelpipe_iop_t *piece,
                           cl_mem high_image,
                           cl_mem low_image,
                           cl_mem out,
@@ -95,7 +94,7 @@ gboolean dual_demosaic_cl(dt_iop_module_t *self,
   const int height = roi_in->height;
 
   dt_iop_demosaic_data_t *data = piece->data;
-  dt_iop_demosaic_global_data_t *gd = self->global_data;
+  const dt_iop_demosaic_global_data_t *gd = self->global_data;
 
   const float contrastf = slider2contrast(data->dual_thrs);
 
