@@ -3398,10 +3398,6 @@ static gboolean _second_window_draw_callback(GtkWidget *widget,
 
   if(dev->preview2.pipe->backbuf)  // do we have an image?
   {
-    // draw image
-    dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
-    cairo_paint(cri);
-
     _view_paint_surface(cri, dev->preview2.orig_width, dev->preview2.orig_height,
                         &dev->preview2, DT_WINDOW_SECOND);
   }

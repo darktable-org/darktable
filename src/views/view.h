@@ -610,7 +610,8 @@ typedef enum _window_t
 {
   DT_WINDOW_MAIN,
   DT_WINDOW_SECOND,
-  DT_WINDOW_SLIDESHOW
+  DT_WINDOW_SLIDESHOW,
+  DT_WINDOW_DIFFERENCE,
 } dt_window_t;
 
 void dt_view_paint_buffer(cairo_t *cr,

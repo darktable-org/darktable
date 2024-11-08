@@ -39,6 +39,10 @@ DT_MODULE(1)
 // undo/redo support.
 #define SNAPSHOT_ID_OFFSET 0xFFFFFF00
 
+#define BUTTON_TOOLTIP _("click to overlay snapshot on current image\n" \
+                         "shift+click to show difference\n"             \
+                         "ctrl+click to edit snapshot label")
+
 /* a snapshot */
 typedef struct dt_lib_snapshot_t
 {
@@ -79,6 +83,7 @@ typedef struct dt_lib_snapshots_t
   gboolean dragging, vertical, inverted, panning;
   double vp_width, vp_height, vp_xpointer, vp_ypointer, vp_xrotate, vp_yrotate;
   gboolean on_going;
+  gboolean difference;
 
   GtkWidget *take_button;
 } dt_lib_snapshots_t;
@@ -246,8 +251,6 @@ void gui_post_expose(dt_lib_module_t *self,
 
     const double size = DT_PIXEL_APPLY_DPI(d->inverted ? -15 : 15);
 
-    // clear background
-    dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
     if(d->vertical)
     {
       if(d->inverted)
@@ -263,11 +266,11 @@ void gui_post_expose(dt_lib_module_t *self,
         cairo_rectangle(cri, 0, 0, width, ly);
     }
     cairo_clip(cri);
-    cairo_fill(cri);
 
     if(snap->buf)
     {
-      dt_view_paint_surface(cri, width, height, &dev->full, DT_WINDOW_MAIN,
+      dt_view_paint_surface(cri, width, height, &dev->full,
+                            d->difference ? DT_WINDOW_DIFFERENCE : DT_WINDOW_MAIN,
                             snap->buf, snap->scale, snap->width, snap->height,
                             snap->zoom_x, snap->zoom_y);
     }
@@ -524,6 +527,8 @@ static gboolean _lib_button_button_pressed_callback(GtkWidget *widget,
     gtk_widget_grab_focus(d->snapshot[index].entry);
   }
 
+  d->difference = dt_modifier_is(event->state, GDK_SHIFT_MASK);
+
   gtk_widget_set_focus_on_click(widget, FALSE);
   return gtk_widget_has_focus(d->snapshot[index].entry);
 }
@@ -574,7 +579,7 @@ static void _clear_snapshot_entry(dt_lib_snapshot_t *s)
   if(s->button)
   {
     GtkWidget *lstatus = _lib_snapshot_button_get_item(s->button, _SNAPSHOT_BUTTON_STATUS);
-    gtk_widget_set_tooltip_text(s->button, "");
+    gtk_widget_set_tooltip_text(s->button, BUTTON_TOOLTIP);
     gtk_widget_set_tooltip_text(lstatus, "");
     gtk_widget_hide(s->button);
     gtk_widget_hide(s->restore_button);
@@ -700,7 +705,7 @@ static void _signal_image_changed(gpointer instance, dt_lib_module_t *self)
     {
       g_strlcpy(stat, " ", sizeof(stat));
 
-      gtk_widget_set_tooltip_text(b, "");
+      gtk_widget_set_tooltip_text(b, BUTTON_TOOLTIP);
       gtk_widget_set_tooltip_text(st, "");
     }
     else
