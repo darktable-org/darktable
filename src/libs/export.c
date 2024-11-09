@@ -1232,6 +1232,13 @@ void gui_init(dt_lib_module_t *self)
 
   d->format = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(d->format, NULL, N_("file format"));
+  gtk_widget_set_tooltip_markup(GTK_WIDGET(d->format),
+    _("images will be exported according to the format specified here\n\n"
+      "when exporting to AVIF, EXR, JPEG XL, or XCF, selecting specific\n"
+      "metadata is not currently possible\n\n"
+      "for these formats, no metadata fields will be included\n"
+      "unless the user selects <b>all</b> of the metadata checkboxes in\n"
+      "the export module preferences"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->format, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->format), "value-changed",
                    G_CALLBACK(_format_changed), (gpointer)d);
