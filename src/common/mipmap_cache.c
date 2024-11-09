@@ -538,7 +538,7 @@ static void _mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
            || dt_imageio_jpeg_decompress(&jpg, (uint8_t *)entry->data + sizeof(*dsc)))
         {
           dt_print(DT_DEBUG_ALWAYS,
-                   "[mipmap_cache] failed to decompress thumbnail for image %" PRIu32 " from `%s'!",
+                   "[mipmap_cache] failed to decompress thumbnail for ID=%d from `%s'!",
                    get_imgid(entry->key), filename);
           goto read_error;
         }
@@ -956,7 +956,7 @@ void dt_mipmap_cache_get_with_caller(
         }
         else
         {
-          // dt_print(DT_DEBUG_ALWAYS, "[mipmap read get] error loading image: %d", ret);
+          dt_print(DT_DEBUG_PIPE, "[mipmap read get] error loading ID=%d", imgid);
           //
           // we can only return a zero dimension buffer if the buffer has been allocated.
           // in case dsc couldn't be allocated and points to the static buffer, it contains
@@ -1040,7 +1040,7 @@ void dt_mipmap_cache_get_with_caller(
       dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
       dt_imageio_retval_t ret = img->load_status;
       dt_image_cache_read_release(darktable.image_cache, img);
-      // dt_print(DT_DEBUG_ALWAYS, "[mipmap cache get] got a zero-sized image for img %u mip %d!", imgid, mip);
+      dt_print(DT_DEBUG_PIPE, "[mipmap cache get] got a zero-sized ID=%d mip %d!", imgid, mip);
       if(mip < DT_MIPMAP_F)
       {
         switch(ret)
@@ -1275,12 +1275,13 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf,
   // writing during raw loading, to write to width/height.
   const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
 
-  dt_iop_roi_t roi_in, roi_out;
+  dt_iop_roi_t roi_in;
   roi_in.x = roi_in.y = 0;
   roi_in.width = image->width;
   roi_in.height = image->height;
   roi_in.scale = 1.0f;
 
+  dt_iop_roi_t roi_out;
   roi_out.x = roi_out.y = 0;
 
   // now let's figure out the scaling...
@@ -1316,26 +1317,36 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf,
   {
     if(image->buf_dsc.filters != 9u && image->buf_dsc.datatype == TYPE_FLOAT)
     {
+      dt_print_pipe(DT_DEBUG_PIPE,
+        "mipmap mosaic_half_size_f", NULL, NULL, DT_DEVICE_CPU, &roi_in, &roi_out);
       dt_iop_clip_and_zoom_mosaic_half_size_f((float *const)out, (const float *const)buf.buf, &roi_out, &roi_in,
                                               roi_out.width, roi_in.width, image->buf_dsc.filters);
     }
     else if(image->buf_dsc.filters != 9u && image->buf_dsc.datatype == TYPE_UINT16)
     {
+      dt_print_pipe(DT_DEBUG_PIPE,
+        "mipmap mosaic_half_size", NULL, NULL, DT_DEVICE_CPU, &roi_in, &roi_out);
       dt_iop_clip_and_zoom_mosaic_half_size((uint16_t * const)out, (const uint16_t *)buf.buf, &roi_out, &roi_in,
                                             roi_out.width, roi_in.width, image->buf_dsc.filters);
     }
     else if(image->buf_dsc.filters == 9u && image->buf_dsc.datatype == TYPE_UINT16)
     {
+      dt_print_pipe(DT_DEBUG_PIPE,
+        "mipmap mosaic_third_size_xtrans", NULL, NULL, DT_DEVICE_CPU, &roi_in, &roi_out);
       dt_iop_clip_and_zoom_mosaic_third_size_xtrans((uint16_t * const)out, (const uint16_t *)buf.buf, &roi_out,
                                                     &roi_in, roi_out.width, roi_in.width, image->buf_dsc.xtrans);
     }
     else if(image->buf_dsc.filters == 9u && image->buf_dsc.datatype == TYPE_FLOAT)
     {
+      dt_print_pipe(DT_DEBUG_PIPE,
+        "mipmap mosaic_third_size_xtrans_f", NULL, NULL, DT_DEVICE_CPU, &roi_in, &roi_out);
       dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(out, (const float *)buf.buf, &roi_out, &roi_in,
                                                       roi_out.width, roi_in.width, image->buf_dsc.xtrans);
     }
     else
     {
+      dt_print_pipe(DT_DEBUG_ALWAYS,
+        "mipmap unreachable_codepath", NULL, NULL, DT_DEVICE_CPU, &roi_in, &roi_out);
       dt_unreachable_codepath();
     }
   }
@@ -1542,15 +1553,14 @@ static void _init_8(uint8_t *buf,
       *iscale = 1.0f;
       *color_space = dt_mipmap_cache_get_colorspace();
     }
+    dt_print(DT_DEBUG_PIPE, "[mipmap init 8] export ID=%d finished (sizes %d %d => %d %d)!",
+      imgid, wd, ht, dat.head.width, dat.head.height);
   }
-
-  // dt_print(DT_DEBUG_ALWAYS, "[mipmap init 8] export image %u finished (sizes %d %d => %d %d)!", imgid, wd, ht,
-  // dat.head.width, dat.head.height);
 
   // any errors?
   if(res)
   {
-    // dt_print(DT_DEBUG_ALWAYS, "[mipmap_cache] could not process thumbnail!");
+    dt_print(DT_DEBUG_PIPE, "[mipmap_cache] could not process thumbnail!");
     *width = *height = 0;
     *iscale = 0.0f;
     *color_space = DT_COLORSPACE_NONE;
