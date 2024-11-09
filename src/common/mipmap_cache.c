@@ -57,7 +57,7 @@
 // the number of pixels in the largest static image is the smallest number of pixels we
 // can allocate for the mipmap buffer, since that gets filled in after we attempt to read
 // from the image file on disk
-#define MIN_IMG_PIXELS  540
+#define MIN_IMG_PIXELS  (29*29)
 
 typedef enum dt_mipmap_buffer_dsc_flags
 {
@@ -142,29 +142,36 @@ static const int dt_mipmap_cache_exif_data_adobergb_length
     __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__ }
 
 #define ERROR_IMAGE \
-  { __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__, \
-    __,__,__,__,__,__,__,__,__,__,__,XX,__,__,__,__,__,__,__,__,__,__,__, \
-    __,__,__,__,__,__,__,__,__,__,XX,XX,XX,__,__,__,__,__,__,__,__,__,__, \
-    __,__,__,__,__,__,__,__,__,__,XX,__,XX,__,__,__,__,__,__,__,__,__,__, \
-    __,__,__,__,__,__,__,__,__,XX,XX,__,XX,XX,__,__,__,__,__,__,__,__,__, \
-    __,__,__,__,__,__,__,__,__,XX,XX,__,XX,XX,__,__,__,__,__,__,__,__,__, \
-    __,__,__,__,__,__,__,__,XX,XX,__,__,__,XX,XX,__,__,__,__,__,__,__,__, \
-    __,__,__,__,__,__,__,__,XX,XX,__,__,__,XX,XX,__,__,__,__,__,__,__,__, \
-    __,__,__,__,__,__,__,XX,XX,XX,__,__,__,XX,XX,XX,__,__,__,__,__,__,__, \
-    __,__,__,__,__,__,__,XX,XX,XX,__,__,__,XX,XX,XX,__,__,__,__,__,__,__, \
-    __,__,__,__,__,__,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,__,__,__,__,__,__, \
-    __,__,__,__,__,__,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,__,__,__,__,__,__, \
-    __,__,__,__,__,XX,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,XX,__,__,__,__,__, \
-    __,__,__,__,__,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,__,__,__,__,__, \
-    __,__,__,__,XX,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,XX,__,__,__,__, \
-    __,__,__,__,XX,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,XX,__,__,__,__, \
-    __,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__, \
-    __,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__, \
-    __,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__, \
-    __,__,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,__,__, \
-    __,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__, \
-    __,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__, \
-    __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__ }
+  { __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,__,__,__,__,__,XX,__,__,__,__,__,__,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,__,__,__,__,XX,XX,XX,__,__,__,__,__,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,__,__,__,__,XX,XX,XX,__,__,__,__,__,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,__,__,__,XX,XX,XX,XX,XX,__,__,__,__,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,__,__,__,XX,XX,__,XX,XX,__,__,__,__,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,__,__,XX,XX,__,__,__,XX,XX,__,__,__,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,__,__,XX,XX,__,__,__,XX,XX,__,__,__,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,__,XX,XX,XX,__,__,__,XX,XX,XX,__,__,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,__,XX,XX,XX,__,__,__,XX,XX,XX,__,__,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,__,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,__,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,__,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,XX,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,XX,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,__,XX,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,XX,__,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,XX,XX,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,XX,XX,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,__,XX,XX,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,XX,XX,__,__,__,__,__,__,__, \
+    __,__,__,__,__,__,XX,XX,XX,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,__,__, \
+    __,__,__,__,__,__,XX,XX,XX,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,__,__, \
+    __,__,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,__, \
+    __,__,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__,__, \
+    __,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__, \
+    __,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,__, \
+    __,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__, \
+    __,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__, \
+    __,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__, \
+    __,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,__, \
+    __,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__, \
+    __,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,XX,__, \
+    __,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__ }
+
 
 struct dt_mipmap_buffer_dsc
 {
@@ -266,7 +273,7 @@ static inline void error_image_8(dt_mipmap_buffer_t *buf)
 {
   if(!buf->buf) return;
   struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)buf->buf - 1;
-  dsc->width = dsc->height = 23;
+  dsc->width = dsc->height = 29;
   dsc->iscale = 1.0f;
   buf->color_space = dsc->color_space = DT_COLORSPACE_DISPLAY;
   assert(dsc->size >= dsc->width * dsc->height * sizeof(uint32_t));
@@ -283,7 +290,7 @@ void error_image_f(dt_mipmap_buffer_t *buf)
 {
   if(!buf->buf) return;
   struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)buf->buf - 1;
-  dsc->width = dsc->height = 23;
+  dsc->width = dsc->height = 29;
   dsc->iscale = 1.0f;
   buf->color_space = dsc->color_space = DT_COLORSPACE_DISPLAY;
   assert(dsc->size >= dsc->width * dsc->height * 4 * sizeof(float));
