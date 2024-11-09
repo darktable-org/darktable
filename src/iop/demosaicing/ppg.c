@@ -16,34 +16,33 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-DT_OMP_DECLARE_SIMD(aligned(in, out))
+DT_OMP_DECLARE_SIMD(aligned(in, out:64))
 static void demosaic_ppg(float *const out,
                          const float *const in,
-                         const dt_iop_roi_t *const roi_out,
                          const dt_iop_roi_t *const roi_in,
                          const uint32_t filters,
                          const float thrs)
 {
   // these may differ a little, if you're unlucky enough to split a bayer block with cropping or similar.
   // we never want to access the input out of bounds though:
-  assert(roi_in->width >= roi_out->width);
-  assert(roi_in->height >= roi_out->height);
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
   // border interpolate
   float sum[8];
-  for(int j = 0; j < roi_out->height; j++)
-    for(int i = 0; i < roi_out->width; i++)
+  for(int j = 0; j < height; j++)
+    for(int i = 0; i < width; i++)
     {
-      if(i == 3 && j >= 3 && j < roi_out->height - 3) i = roi_out->width - 3;
-      if(i == roi_out->width) break;
+      if(i == 3 && j >= 3 && j < height - 3) i = width - 3;
+      if(i == width) break;
       memset(sum, 0, sizeof(float) * 8);
       for(int y = j - 1; y != j + 2; y++)
         for(int x = i - 1; x != i + 2; x++)
         {
-          const int yy = y + roi_out->y, xx = x + roi_out->x;
-          if((yy >= 0) && (xx >= 0) && (yy < roi_in->height) && (xx < roi_in->width))
+          if((y >= 0) && (x >= 0) && (y < height) && (x < width))
           {
             const int f = FC(y, x, filters);
-            sum[f] += in[(size_t)yy * roi_in->width + xx];
+            sum[f] += in[(size_t)y * width + x];
             sum[f + 4]++;
           }
         }
@@ -51,29 +50,28 @@ static void demosaic_ppg(float *const out,
       for(int c = 0; c < 3; c++)
       {
         if(c != f && sum[c + 4] > 0.0f)
-          out[4 * ((size_t)j * roi_out->width + i) + c] = fmaxf(0.0f, sum[c] / sum[c + 4]);
+          out[4 * ((size_t)j * width + i) + c] = fmaxf(0.0f, sum[c] / sum[c + 4]);
         else
-          out[4 * ((size_t)j * roi_out->width + i) + c]
-              = fmaxf(0.0f, in[((size_t)j + roi_out->y) * roi_in->width + i + roi_out->x]);
+          out[4 * ((size_t)j * width + i) + c]
+              = fmaxf(0.0f, in[(size_t)j * width + i]);
       }
     }
-  const int median = thrs > 0.0f;
-  // if(median) fbdd_green(out, in, roi_out, roi_in, filters);
+  const gboolean median = thrs > 0.0f;
   const float *input = in;
   if(median)
   {
-    float *med_in = (float *)dt_alloc_align_float((size_t)roi_in->height * roi_in->width);
+    float *med_in = dt_alloc_align_float((size_t)height * width);
     pre_median(med_in, in, roi_in, filters, 1, thrs);
     input = med_in;
   }
 // for all pixels except those in the 3 pixel border:
 // interpolate green from input into out float array, or copy color.
   DT_OMP_FOR()
-  for(int j = 3; j < roi_out->height - 3; j++)
+  for(int j = 3; j < height - 3; j++)
   {
-    float *buf = out + (size_t)4 * roi_out->width * j + 4 * 3;
-    const float *buf_in = input + (size_t)roi_in->width * (j + roi_out->y) + 3 + roi_out->x;
-    for(int i = 3; i < roi_out->width - 3; i++)
+    float *buf = out + (size_t)4 * width * j + 4 * 3;
+    const float *buf_in = input + (size_t)width * j + 3;
+    for(int i = 3; i < width - 3; i++)
     {
       const int c = FC(j, i, filters);
       dt_aligned_pixel_t color;
@@ -83,25 +81,25 @@ static void demosaic_ppg(float *const out,
       {
         color[c] = pc;
         // get stuff (hopefully from cache)
-        const float pym = buf_in[-roi_in->width * 1];
-        const float pym2 = buf_in[-roi_in->width * 2];
-        const float pym3 = buf_in[-roi_in->width * 3];
-        const float pyM = buf_in[+roi_in->width * 1];
-        const float pyM2 = buf_in[+roi_in->width * 2];
-        const float pyM3 = buf_in[+roi_in->width * 3];
-        const float pxm = buf_in[-1];
-        const float pxm2 = buf_in[-2];
-        const float pxm3 = buf_in[-3];
-        const float pxM = buf_in[+1];
-        const float pxM2 = buf_in[+2];
-        const float pxM3 = buf_in[+3];
+        const float pym   = buf_in[-width * 1];
+        const float pym2  = buf_in[-width * 2];
+        const float pym3  = buf_in[-width * 3];
+        const float pyM   = buf_in[width * 1];
+        const float pyM2  = buf_in[width * 2];
+        const float pyM3  = buf_in[width * 3];
+        const float pxm   = buf_in[-1];
+        const float pxm2  = buf_in[-2];
+        const float pxm3  = buf_in[-3];
+        const float pxM   = buf_in[+1];
+        const float pxM2  = buf_in[+2];
+        const float pxM3  = buf_in[+3];
 
         const float guessx = (pxm + pc + pxM) * 2.0f - pxM2 - pxm2;
         const float diffx = (fabsf(pxm2 - pc) + fabsf(pxM2 - pc) + fabsf(pxm - pxM)) * 3.0f
-                            + (fabsf(pxM3 - pxM) + fabsf(pxm3 - pxm)) * 2.0f;
+                          + (fabsf(pxM3 - pxM) + fabsf(pxm3 - pxm)) * 2.0f;
         const float guessy = (pym + pc + pyM) * 2.0f - pyM2 - pym2;
         const float diffy = (fabsf(pym2 - pc) + fabsf(pyM2 - pc) + fabsf(pym - pyM)) * 3.0f
-                            + (fabsf(pyM3 - pyM) + fabsf(pym3 - pym)) * 2.0f;
+                          + (fabsf(pyM3 - pyM) + fabsf(pym3 - pym)) * 2.0f;
         if(diffx > diffy)
         {
           // use guessy
@@ -132,10 +130,10 @@ static void demosaic_ppg(float *const out,
 // for all pixels except the outermost row/column:
 // interpolate colors using out as input into float out array
   DT_OMP_FOR()
-  for(int j = 1; j < roi_out->height - 1; j++)
+  for(int j = 1; j < height - 1; j++)
   {
-    float *buf = out + (size_t)4 * roi_out->width * j + 4;
-    for(int i = 1; i < roi_out->width - 1; i++)
+    float *buf = out + (size_t)4 * width * j + 4;
+    for(int i = 1; i < width - 1; i++)
     {
       // also prefetch direct nbs top/bottom
       const int c = FC(j, i, filters);
@@ -147,8 +145,8 @@ static void demosaic_ppg(float *const out,
       {
         // calculate red and blue for green pixels:
         // need 4-nbhood:
-        const float *nt = buf - 4 * roi_out->width;
-        const float *nb = buf + 4 * roi_out->width;
+        const float *nt = buf - 4 * width;
+        const float *nb = buf + 4 * width;
         const float *nl = buf - 4;
         const float *nr = buf + 4;
         if(FC(j, i + 1, filters) == 0) // red nb in same row
@@ -166,10 +164,10 @@ static void demosaic_ppg(float *const out,
       else
       {
         // get 4-star-nbhood:
-        const float *ntl = buf - 4 - 4 * roi_out->width;
-        const float *ntr = buf + 4 - 4 * roi_out->width;
-        const float *nbl = buf - 4 + 4 * roi_out->width;
-        const float *nbr = buf + 4 + 4 * roi_out->width;
+        const float *ntl = buf - 4 - 4 * width;
+        const float *ntr = buf + 4 - 4 * width;
+        const float *nbl = buf - 4 + 4 * width;
+        const float *nbr = buf + 4 + 4 * width;
 
         if(c == 0)
         {

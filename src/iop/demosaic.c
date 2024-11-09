@@ -588,9 +588,6 @@ void process(dt_iop_module_t *self,
 
   dt_dev_clear_scharr_mask(piece->pipe);
 
-  dt_iop_roi_t roo = *roi_out;
-  roo.x = roo.y = 0;
-
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
 
@@ -647,17 +644,7 @@ void process(dt_iop_module_t *self,
   const gboolean direct = roi_out->width == width && roi_out->height == height && feqf(roi_in->scale, roi_out->scale, 1e-8f);
 
   if(!direct)
-  {
-    // demosaic and then clip and zoom
-    // we demosaic at 1:1 the size of input roi, so make sure
-    // we fit these bounds exactly, to avoid crashes.
-    // FIXME: instead of fighting with roi_out data for the CPU demosaicers we should rework all
-    // CPU demosaicer code using only roi_in as we do already for OpenCL code path.
-    roo.width = width;
-    roo.height = height;
-    roo.scale = 1.0f;
     out = dt_alloc_align_float((size_t)4 * width * height);
-  }
 
   if(is_bayer && d->green_eq != DT_IOP_GREEN_EQ_NO)
   {
@@ -716,7 +703,7 @@ void process(dt_iop_module_t *self,
     else if(demosaicing_method == DT_IOP_DEMOSAIC_LMMSE)
       lmmse_demosaic(piece, out, in, roi_in, piece->pipe->dsc.filters, d->lmmse_refine);
     else if(base_demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
-      demosaic_ppg(out, in, &roo, roi_in, piece->pipe->dsc.filters, d->median_thrs);
+      demosaic_ppg(out, in, roi_in, piece->pipe->dsc.filters, d->median_thrs);
     else
       amaze_demosaic(piece, in, out, roi_in, piece->pipe->dsc.filters);
   }
@@ -735,7 +722,11 @@ void process(dt_iop_module_t *self,
   dt_print_pipe(DT_DEBUG_PIPE, direct ? "demosaic inplace" : "demosaic clip_and_zoom", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out);
   if(!direct)
   {
-    dt_iop_clip_and_zoom_roi((float *)o, out, roi_out, &roo); // rou_out->scale is always 1.0
+    dt_iop_roi_t roo = *roi_out;
+    roo.width = width;
+    roo.height = height;
+    roo.scale = 1.0f;
+    dt_iop_clip_and_zoom_roi((float *)o, out, roi_out, &roo);
     dt_free_align(out);
   }
 }
