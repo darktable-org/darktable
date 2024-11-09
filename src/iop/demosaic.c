@@ -268,7 +268,6 @@ void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
                     const float *const in,
                     float *out,
                     const dt_iop_roi_t *const roi_in,
-                    const dt_iop_roi_t *const roi_out,
                     const uint32_t filters);
 
 #include "iop/demosaicing/basics.c"
@@ -719,7 +718,7 @@ void process(dt_iop_module_t *self,
     else if(base_demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
       demosaic_ppg(out, in, &roo, roi_in, piece->pipe->dsc.filters, d->median_thrs);
     else
-      amaze_demosaic(piece, in, out, roi_in, &roo, piece->pipe->dsc.filters);
+      amaze_demosaic(piece, in, out, roi_in, piece->pipe->dsc.filters);
   }
 
   if(piece->pipe->want_detail_mask)
