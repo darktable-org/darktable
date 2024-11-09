@@ -340,7 +340,7 @@ int legacy_params(dt_iop_module_t *self,
     dt_iop_demosaic_params_v4_t *n = malloc(sizeof(dt_iop_demosaic_params_v4_t));
     n->green_eq = o->green_eq;
     n->median_thrs = o->median_thrs;
-    n->color_smoothing = 0;
+    n->color_smoothing = DT_DEMOSAIC_SMOOTH_OFF;
     n->demosaicing_method = DT_IOP_DEMOSAIC_PPG;
     n->lmmse_refine = DT_LMMSE_REFINE_1;
     n->dual_thrs = 0.20f;
@@ -633,11 +633,11 @@ void process(dt_iop_module_t *self,
   {
     dt_print_pipe(DT_DEBUG_PIPE, "demosaic approx zoom", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out);
     if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME || demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR)
-      dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(out, in, &roo, roi_in, roi_out->width, width);
+      dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(out, in, roi_out, roi_in, roi_out->width, width);
     else if(is_xtrans)
-      dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(out, in, &roo, roi_in, roi_out->width, width, xtrans);
+      dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(out, in, roi_out, roi_in, roi_out->width, width, xtrans);
     else
-      dt_iop_clip_and_zoom_demosaic_half_size_f(out, in, &roo, roi_in, roi_out->width, width, piece->pipe->dsc.filters);
+      dt_iop_clip_and_zoom_demosaic_half_size_f(out, in, roi_out, roi_in, roi_out->width, width, piece->pipe->dsc.filters);
 
     return;
   }
@@ -736,7 +736,7 @@ void process(dt_iop_module_t *self,
   dt_print_pipe(DT_DEBUG_PIPE, direct ? "demosaic inplace" : "demosaic clip_and_zoom", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out);
   if(!direct)
   {
-    dt_iop_clip_and_zoom_roi((float *)o, out, roi_out, &roo);
+    dt_iop_clip_and_zoom_roi((float *)o, out, roi_out, &roo); // rou_out->scale is always 1.0
     dt_free_align(out);
   }
 }
@@ -1082,13 +1082,13 @@ void commit_params(dt_iop_module_t *self,
   if(passing || bayer4)
   {
     d->green_eq = DT_IOP_GREEN_EQ_NO;
-    d->color_smoothing = 0;
+    d->color_smoothing = DT_DEMOSAIC_SMOOTH_OFF;
   }
 
   if(use_method & DT_DEMOSAIC_DUAL)
   {
     dt_dev_pixelpipe_usedetails(piece->pipe);
-    d->color_smoothing = 0;
+    d->color_smoothing = DT_DEMOSAIC_SMOOTH_OFF;
   }
   d->demosaicing_method = use_method;
 

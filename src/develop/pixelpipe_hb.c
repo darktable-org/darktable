@@ -150,7 +150,7 @@ void dt_print_pipe_ext(const char *title,
   vsnprintf(vbuf, sizeof(vbuf), msg, ap);
   va_end(ap);
 
-  dt_print_ext("%-25s %-3s %-16s %-22s %2s %s%s%s%s",
+  dt_print_ext("%-25s %-3s %-16s %-22s %4s %s%s%s%s",
                vtit, dev, pname, vmod, order, roi, roo, masking, vbuf);
 }
 
