@@ -601,7 +601,7 @@ static gboolean _area_mapping_active(const dt_iop_channelmixer_rgb_gui_data_t *g
 
 static const char *_area_mapping_section_text(const dt_iop_channelmixer_rgb_gui_data_t *g)
 {
-  return _area_mapping_active(g) ? _("area color mapping (active)") : _("area color mapping");
+  return _area_mapping_active(g) ? _("(active) area color mapping") : _("area color mapping");
 }
 
 static gboolean _get_white_balance_coeff(dt_iop_module_t *self,
