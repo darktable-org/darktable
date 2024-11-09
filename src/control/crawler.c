@@ -141,7 +141,7 @@ GList *dt_control_crawler_run(void)
 
   int image_count = 0;
   double start_time = dt_get_wtime();
-  double last_time = start_time - 0.99; // wait 10ms before first update to ensure visibility
+  double last_time = start_time - 0.19; // wait 10ms before first update to ensure visibility
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -150,12 +150,13 @@ GList *dt_control_crawler_run(void)
     const int version = sqlite3_column_int(stmt, 2);
     const gchar *image_path = (char *)sqlite3_column_text(stmt, 3);
     int flags = sqlite3_column_int(stmt, 4);
+    ++image_count;
 
-    // update the progress message once per second
-    double fraction = (++image_count) / (double)total_images;
+    // update the progress message - five times per second for first four seconds, then once per second
     double curr_time = dt_get_wtime();
-    if(curr_time >= last_time + 1.0)
+    if(curr_time >= last_time + ((curr_time - start_time > 4.0) ? 1.0 : 0.2))
     {
+      double fraction = image_count / (double)total_images;
       darktable_splash_screen_set_progress_percent(_("checking for updated sidecar files (%d%%)"),
                                                    fraction,
                                                    curr_time - start_time);
