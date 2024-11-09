@@ -3,13 +3,13 @@
 # This file is distributed under the same license as the darktable package.
 # Victor Forsiuk <vvforce@gmail.com>, 2023-2024.
 #
-#: ../src/common/darktable.c:1834
+#: ../src/common/darktable.c:1845
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-07 19:50+0100\n"
-"PO-Revision-Date: 2024-11-07 22:43+0200\n"
+"POT-Creation-Date: 2024-11-09 18:58+0100\n"
+"PO-Revision-Date: 2024-11-09 21:31+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -1507,8 +1507,8 @@ msgstr "LUT 3D root folder"
 #: ../src/gui/presets.c:422 ../src/imageio/storage/disk.c:196
 #: ../src/imageio/storage/disk.c:276 ../src/imageio/storage/gallery.c:148
 #: ../src/imageio/storage/gallery.c:212 ../src/imageio/storage/latex.c:144
-#: ../src/imageio/storage/latex.c:198 ../src/libs/import.c:1857
-#: ../src/libs/import.c:1970 ../src/libs/import.c:2028 ../src/libs/styles.c:442
+#: ../src/imageio/storage/latex.c:198 ../src/libs/import.c:1860
+#: ../src/libs/import.c:1973 ../src/libs/import.c:2031 ../src/libs/styles.c:442
 #: ../src/lua/preferences.c:668
 msgid "select directory"
 msgstr "Select directory"
@@ -1629,8 +1629,8 @@ msgstr ""
 "times faster"
 
 #: ../build/bin/preferences_gen.h:6219
-msgid "OpenCL"
-msgstr "OpenCL"
+msgid "OpenCL GPU acceleration"
+msgstr "OpenCL GPU acceleration"
 
 #: ../build/bin/preferences_gen.h:6238
 msgid "activate OpenCL support"
@@ -1638,10 +1638,12 @@ msgstr "Activate OpenCL support"
 
 #: ../build/bin/preferences_gen.h:6251
 msgid ""
-"if found, use OpenCL runtime on your system to speed up processing.\n"
+"if found, use OpenCL runtime on your system to speed up processing by using "
+"your graphics card(s).\n"
 "can be switched on and off at any time."
 msgstr ""
-"If found, use OpenCL runtime on your system to speed up processing.\n"
+"If found, use OpenCL runtime on your system to speed up processing by using "
+"your graphics card(s).\n"
 "Can be switched on and off at any time."
 
 #: ../build/bin/preferences_gen.h:6255 ../build/bin/preferences_gen.h:6300
@@ -1688,16 +1690,16 @@ msgstr ""
 " - 'Very fast GPU': process both pixelpipes sequentially on the GPU."
 
 #: ../build/bin/preferences_gen.h:6327
-msgid "use all device memory"
-msgstr "Use all device memory"
+msgid "use all GPU memory"
+msgstr "Use all GPU memory"
 
 #: ../build/bin/preferences_gen.h:6340
 msgid ""
-"if enabled darktable will use all device memory except a safety margin "
-"(headroom, default is 600MB)"
+"if enabled darktable will use all graphics device memory except a safety "
+"margin (headroom, default is 600MB)"
 msgstr ""
-"If enabled Darktable will use all device memory except a safety margin "
-"(headroom, default is 600MB)"
+"If enabled Darktable will use all graphics device memory except a safety "
+"margin (headroom, default is 600MB)"
 
 #: ../build/bin/preferences_gen.h:6359
 msgid "OpenCL drivers"
@@ -2738,7 +2740,7 @@ msgid "landscape"
 msgstr "Landscape"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:356
-#: ../src/iop/relight.c:269 ../src/libs/export.c:1282
+#: ../src/iop/relight.c:269 ../src/libs/export.c:1289
 #: ../src/libs/metadata_view.c:163 ../src/libs/print_settings.c:2556
 msgid "width"
 msgstr "Width"
@@ -2746,7 +2748,7 @@ msgstr "Width"
 #: ../build/lib/darktable/plugins/introspection_borders.c:357
 #: ../build/lib/darktable/plugins/introspection_overlay.c:305
 #: ../build/lib/darktable/plugins/introspection_watermark.c:326
-#: ../src/libs/export.c:1288 ../src/libs/metadata_view.c:164
+#: ../src/libs/export.c:1295 ../src/libs/metadata_view.c:164
 #: ../src/libs/print_settings.c:2560
 msgid "height"
 msgstr "Height"
@@ -4161,8 +4163,8 @@ msgstr "Enable highlight reconstruction"
 #: ../src/common/variables.c:184 ../src/common/variables.c:877
 #: ../src/develop/imageop_gui.c:209 ../src/imageio/format/avif.c:934
 #: ../src/imageio/format/pdf.c:653 ../src/imageio/format/pdf.c:672
-#: ../src/imageio/format/tiff.c:928 ../src/libs/export.c:1355
-#: ../src/libs/export.c:1364 ../src/libs/export.c:1373
+#: ../src/imageio/format/tiff.c:928 ../src/libs/export.c:1362
+#: ../src/libs/export.c:1371 ../src/libs/export.c:1380
 #: ../src/libs/metadata_view.c:699
 msgid "no"
 msgstr "No"
@@ -4494,7 +4496,7 @@ msgstr "Corrections"
 #: ../src/iop/colorbalance.c:1852 ../src/iop/denoiseprofile.c:3770
 #: ../src/iop/exposure.c:1165 ../src/iop/levels.c:696
 #: ../src/iop/profile_gamma.c:657 ../src/libs/copy_history.c:370
-#: ../src/libs/export.c:1427 ../src/libs/image.c:674
+#: ../src/libs/export.c:1434 ../src/libs/image.c:674
 #: ../src/libs/print_settings.c:2894 ../src/libs/styles.c:875
 #: ../src/views/darkroom.c:2324
 msgid "mode"
@@ -4955,7 +4957,7 @@ msgstr "Black level"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:106
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:179
-#: ../src/iop/rawprepare.c:920
+#: ../src/iop/rawprepare.c:913
 msgid "white point"
 msgstr "White point"
 
@@ -5466,8 +5468,8 @@ msgstr "Dropdown"
 #: ../src/imageio/storage/latex.c:145 ../src/iop/lut3d.c:1555
 #: ../src/libs/collect.c:435 ../src/libs/collect.c:3389
 #: ../src/libs/copy_history.c:122 ../src/libs/export_metadata.c:276
-#: ../src/libs/geotagging.c:944 ../src/libs/import.c:1858
-#: ../src/libs/import.c:1971 ../src/libs/import.c:2070
+#: ../src/libs/geotagging.c:944 ../src/libs/import.c:1861
+#: ../src/libs/import.c:1974 ../src/libs/import.c:2073
 #: ../src/libs/metadata.c:468 ../src/libs/metadata_view.c:1263
 #: ../src/libs/modulegroups.c:3622 ../src/libs/recentcollect.c:232
 #: ../src/libs/styles.c:443 ../src/libs/styles.c:491 ../src/libs/styles.c:584
@@ -6338,79 +6340,79 @@ msgid "error loading file `%s'"
 msgstr "Error loading file `%s'"
 
 #. initialize the database
-#: ../src/common/darktable.c:1510
+#: ../src/common/darktable.c:1521
 msgid "opening image library"
 msgstr "Opening image library"
 
-#: ../src/common/darktable.c:1523
+#: ../src/common/darktable.c:1534
 msgid "forwarding image(s) to running instance"
 msgstr "Forwarding image(s) to running instance"
 
-#: ../src/common/darktable.c:1555
+#: ../src/common/darktable.c:1566
 msgid "preparing database"
 msgstr "Preparing database"
 
-#: ../src/common/darktable.c:1673
+#: ../src/common/darktable.c:1684
 msgid "initializing GraphicsMagick"
 msgstr "Initializing GraphicsMagick"
 
 #. ImageMagick init
-#: ../src/common/darktable.c:1685
+#: ../src/common/darktable.c:1696
 msgid "initializing ImageMagick"
 msgstr "Initializing ImageMagick"
 
-#: ../src/common/darktable.c:1690
+#: ../src/common/darktable.c:1701
 msgid "initializing libheif"
 msgstr "Initializing libheif"
 
-#: ../src/common/darktable.c:1694
+#: ../src/common/darktable.c:1705
 msgid "starting OpenCL"
 msgstr "Starting OpenCL"
 
-#: ../src/common/darktable.c:1707
+#: ../src/common/darktable.c:1718
 msgid "loading noise profiles"
 msgstr "Loading noise profiles"
 
-#: ../src/common/darktable.c:1727
+#: ../src/common/darktable.c:1738
 msgid "synchronizing local copies"
 msgstr "Synchronizing local copies"
 
 #. Initialize the camera control.  this is done late so that the
 #. gui can react to the signal sent but before switching to
 #. lighttable!
-#: ../src/common/darktable.c:1734
+#: ../src/common/darktable.c:1745
 msgid "initializing camera control"
 msgstr "Initializing camera control"
 
-#: ../src/common/darktable.c:1744
+#: ../src/common/darktable.c:1755
 msgid "initializing GUI"
 msgstr "Initializing GUI"
 
-#: ../src/common/darktable.c:1768
+#: ../src/common/darktable.c:1779
 msgid "loading processing modules"
 msgstr "Loading processing modules"
 
-#: ../src/common/darktable.c:1831
+#: ../src/common/darktable.c:1842
 msgid "initializing Lua"
 msgstr "Initializing Lua"
 
-#: ../src/common/darktable.c:1850
+#: ../src/common/darktable.c:1861
 msgid "importing image"
 msgstr "Importing image"
 
-#: ../src/common/darktable.c:1869
+#: ../src/common/darktable.c:1880
 msgid "configuration information"
 msgstr "Configuration information"
 
-#: ../src/common/darktable.c:1871
+#: ../src/common/darktable.c:1882
 msgid "_show this message again"
 msgstr "_Show this message again"
 
-#: ../src/common/darktable.c:1871
+#: ../src/common/darktable.c:1882
 msgid "_dismiss"
 msgstr "_Dismiss"
 
-#: ../src/common/darktable.c:2366
+#: ../src/common/darktable.c:2377
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
@@ -6418,11 +6420,11 @@ msgstr ""
 "The RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
 
-#: ../src/common/darktable.c:2368
+#: ../src/common/darktable.c:2379
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr "See Preferences/Darkroom/Demosaicing for zoomed out Darkroom mode"
 
-#: ../src/common/darktable.c:2374
+#: ../src/common/darktable.c:2385
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
@@ -6430,7 +6432,7 @@ msgstr ""
 "The user interface and the underlying internals for tuning Darktable "
 "performance have changed."
 
-#: ../src/common/darktable.c:2376
+#: ../src/common/darktable.c:2387
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
@@ -6438,15 +6440,15 @@ msgstr ""
 "You won't find headroom and friends any longer, instead in Preferences/"
 "Processing use:"
 
-#: ../src/common/darktable.c:2378
+#: ../src/common/darktable.c:2389
 msgid "1) darktable resources"
 msgstr "1) Darktable resources"
 
-#: ../src/common/darktable.c:2380
+#: ../src/common/darktable.c:2391
 msgid "2) tune OpenCL performance"
 msgstr "2) Tune OpenCL performance"
 
-#: ../src/common/darktable.c:2387
+#: ../src/common/darktable.c:2398
 msgid ""
 "some global config parameters relevant for OpenCL performance are not used "
 "any longer."
@@ -6454,7 +6456,7 @@ msgstr ""
 "Some global config parameters relevant for OpenCL performance are not used "
 "any longer."
 
-#: ../src/common/darktable.c:2389
+#: ../src/common/darktable.c:2400
 msgid ""
 "instead you will find 'per device' data in 'cldevice_v5_canonical-name'. "
 "content is:"
@@ -6462,8 +6464,8 @@ msgstr ""
 "Instead you will find 'per device' data in 'cldevice_v5_canonical-name'. "
 "Content is:"
 
-#: ../src/common/darktable.c:2391 ../src/common/darktable.c:2410
-#: ../src/common/darktable.c:2425
+#: ../src/common/darktable.c:2402 ../src/common/darktable.c:2421
+#: ../src/common/darktable.c:2436
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
@@ -6471,17 +6473,17 @@ msgstr ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
 
-#: ../src/common/darktable.c:2393 ../src/common/darktable.c:2412
+#: ../src/common/darktable.c:2404 ../src/common/darktable.c:2423
 msgid "you may tune as before except 'magic'"
 msgstr "You may tune as before except 'magic'"
 
-#: ../src/common/darktable.c:2399
+#: ../src/common/darktable.c:2410
 msgid ""
 "your OpenCL compiler settings for all devices have been reset to default."
 msgstr ""
 "Your OpenCL compiler settings for all devices have been reset to default."
 
-#: ../src/common/darktable.c:2406
+#: ../src/common/darktable.c:2417
 msgid ""
 "OpenCL global config parameters 'per device' data has been recreated with an "
 "updated name."
@@ -6489,37 +6491,37 @@ msgstr ""
 "OpenCL global config parameters 'per device' data has been recreated with an "
 "updated name."
 
-#: ../src/common/darktable.c:2408 ../src/common/darktable.c:2423
+#: ../src/common/darktable.c:2419 ../src/common/darktable.c:2434
 msgid ""
 "you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"
 msgstr ""
 "You will find 'per device' data in 'cldevice_v5_canonical-name'. Content is:"
 
-#: ../src/common/darktable.c:2414
+#: ../src/common/darktable.c:2425
 msgid ""
 "If you're using device names in 'opencl_device_priority' you should update "
 "them to the new names."
 msgstr ""
 "If you're using device names in 'opencl_device_priority' you should update "
 "them to the new names."
-
-#: ../src/common/darktable.c:2421
-msgid ""
-"OpenCL 'per device' config data have been automatically extended by 'unified-"
-"fraction'."
-msgstr ""
-"OpenCL 'per device' config data have been automatically extended by 'unified-"
-"fraction'."
 
 #: ../src/common/darktable.c:2432
 msgid ""
+"OpenCL 'per device' config data have been automatically extended by 'unified-"
+"fraction'."
+msgstr ""
+"OpenCL 'per device' config data have been automatically extended by 'unified-"
+"fraction'."
+
+#: ../src/common/darktable.c:2443
+msgid ""
 "OpenCL 'per device' compiler settings might have been updated.\n"
 "\n"
 msgstr ""
 "OpenCL 'per device' compiler settings might have been updated.\n"
 "\n"
 
-#: ../src/common/darktable.c:2437
+#: ../src/common/darktable.c:2448
 msgid ""
 "OpenCL mandatory timeout has been updated to 1000.\n"
 "\n"
@@ -6859,7 +6861,7 @@ msgstr[1] "Delete empty directories?"
 
 #: ../src/common/film.c:368 ../src/gui/preferences.c:832
 #: ../src/gui/styles_dialog.c:586 ../src/libs/geotagging.c:841
-#: ../src/libs/import.c:1907
+#: ../src/libs/import.c:1910
 msgid "name"
 msgstr "Name"
 
@@ -7101,12 +7103,12 @@ msgid "v3.0 JPEG"
 msgstr "V3.0 JPEG"
 
 #: ../src/common/iop_order.c:64
-msgid "v3.1 RAW"
-msgstr "V3.1 RAW"
+msgid "v5.0 RAW"
+msgstr "V5.0 RAW"
 
 #: ../src/common/iop_order.c:65
-msgid "v3.1 JPEG"
-msgstr "V3.1 JPEG"
+msgid "v5.0 JPEG"
+msgstr "V5.0 JPEG"
 
 #: ../src/common/iop_profile.c:1141
 #, c-format
@@ -7253,7 +7255,7 @@ msgstr "Building OpenCL program %s for %s"
 msgid "mm"
 msgstr "mm"
 
-#: ../src/common/pdf.h:89 ../src/libs/export.c:584 ../src/libs/export.c:1300
+#: ../src/common/pdf.h:89 ../src/libs/export.c:584 ../src/libs/export.c:1307
 #: ../src/libs/print_settings.c:81
 msgid "cm"
 msgstr "cm"
@@ -7425,8 +7427,8 @@ msgstr "m"
 #: ../src/common/variables.c:184 ../src/common/variables.c:875
 #: ../src/develop/imageop_gui.c:210 ../src/imageio/format/avif.c:934
 #: ../src/imageio/format/pdf.c:653 ../src/imageio/format/pdf.c:672
-#: ../src/imageio/format/tiff.c:928 ../src/libs/export.c:1355
-#: ../src/libs/export.c:1364 ../src/libs/export.c:1373
+#: ../src/imageio/format/tiff.c:928 ../src/libs/export.c:1362
+#: ../src/libs/export.c:1371 ../src/libs/export.c:1380
 #: ../src/libs/metadata_view.c:699
 msgid "yes"
 msgstr "Yes"
@@ -7766,12 +7768,12 @@ msgstr "_Close"
 #. setup selection accelerators
 #. action-box
 #: ../src/control/crawler.c:815 ../src/dtgtk/thumbtable.c:2951
-#: ../src/libs/import.c:2093 ../src/libs/select.c:142
+#: ../src/libs/import.c:2096 ../src/libs/select.c:142
 msgid "select all"
 msgstr "Select all"
 
 #: ../src/control/crawler.c:816 ../src/dtgtk/thumbtable.c:2953
-#: ../src/libs/import.c:2097 ../src/libs/select.c:146
+#: ../src/libs/import.c:2100 ../src/libs/select.c:146
 msgid "select none"
 msgstr "Select none"
 
@@ -9747,11 +9749,11 @@ msgstr ""
 "<b>Move segment</b>: drag, <b>Add node</b>: Ctrl+click\n"
 "<b>Remove path</b>: right-click"
 
-#: ../src/develop/pixelpipe_hb.c:491
+#: ../src/develop/pixelpipe_hb.c:501
 msgid "enabled as required"
 msgstr "Enabled as required"
 
-#: ../src/develop/pixelpipe_hb.c:492
+#: ../src/develop/pixelpipe_hb.c:502
 msgid ""
 "history had module disabled but it is required for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -9759,11 +9761,11 @@ msgstr ""
 "History had module disabled but it is required for this type of image.\n"
 "Likely introduced by applying a preset, style or history copy&paste"
 
-#: ../src/develop/pixelpipe_hb.c:499
+#: ../src/develop/pixelpipe_hb.c:509
 msgid "disabled as not appropriate"
 msgstr "Disabled as not appropriate"
 
-#: ../src/develop/pixelpipe_hb.c:500
+#: ../src/develop/pixelpipe_hb.c:510
 msgid ""
 "history had module enabled but it is not allowed for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -9771,7 +9773,7 @@ msgstr ""
 "History had module enabled but it is not allowed for this type of image.\n"
 "Likely introduced by applying a preset, style or history copy&paste"
 
-#: ../src/develop/pixelpipe_hb.c:1121
+#: ../src/develop/pixelpipe_hb.c:1130
 #, c-format
 msgid ""
 "fatal pixelpipe abort due to non-aligned buffers\n"
@@ -9782,11 +9784,11 @@ msgstr ""
 "in module '%s'\n"
 "Please report on GitHub"
 
-#: ../src/develop/pixelpipe_hb.c:1515
+#: ../src/develop/pixelpipe_hb.c:1522
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr "Fatal input misalignment, please report on GitHub\n"
 
-#: ../src/develop/pixelpipe_hb.c:2806
+#: ../src/develop/pixelpipe_hb.c:2811
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -9806,7 +9808,7 @@ msgstr ""
 "  - Some drivers don't support needed number of events.\n"
 "  - Too small headroom settings while using 'Use all device memory'."
 
-#: ../src/develop/pixelpipe_hb.c:2973
+#: ../src/develop/pixelpipe_hb.c:2978
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -13729,7 +13731,7 @@ msgstr "Select preset(s) to import"
 
 #: ../src/gui/preferences.c:1060 ../src/libs/collect.c:435
 #: ../src/libs/copy_history.c:122 ../src/libs/geotagging.c:945
-#: ../src/libs/import.c:1858 ../src/libs/import.c:1971 ../src/libs/styles.c:584
+#: ../src/libs/import.c:1861 ../src/libs/import.c:1974 ../src/libs/styles.c:584
 msgid "_open"
 msgstr "_Open"
 
@@ -14023,15 +14025,15 @@ msgstr "Store new preset.."
 msgid "update preset"
 msgstr "Update preset"
 
-#: ../src/gui/splash.c:149
+#: ../src/gui/splash.c:152
 msgid "darktable starting"
 msgstr "Darktable starting"
 
-#: ../src/gui/splash.c:156
+#: ../src/gui/splash.c:159
 msgid "initializing"
 msgstr "Initializing"
 
-#: ../src/gui/splash.c:191
+#: ../src/gui/splash.c:194
 msgid ""
 "Photography workflow\n"
 "application and\n"
@@ -14042,7 +14044,7 @@ msgstr ""
 "RAW developer"
 
 #. put the darktable wordmark and description in a vertical stack
-#: ../src/gui/splash.c:212
+#: ../src/gui/splash.c:215
 msgid ""
 "Photography workflow application\n"
 "and RAW developer"
@@ -14052,19 +14054,19 @@ msgstr ""
 
 #. ensure that text is vertically centered
 #. with respect to logo
-#: ../src/gui/splash.c:222
+#: ../src/gui/splash.c:225
 msgid "get ready to unleash your creativity"
 msgstr "Get ready to unleash your creativity"
 
-#: ../src/gui/splash.c:344
+#: ../src/gui/splash.c:361
 msgid "darktable shutdown"
 msgstr "Darktable shutdown"
 
-#: ../src/gui/splash.c:359
+#: ../src/gui/splash.c:376
 msgid "darktable is now shutting down"
 msgstr "Darktable is now shutting down"
 
-#: ../src/gui/splash.c:361
+#: ../src/gui/splash.c:378
 msgid "please wait while background jobs finish"
 msgstr "Please wait while background jobs finish"
 
@@ -14516,8 +14518,8 @@ msgstr ""
 "Examples: 10 mm, 1 inch"
 
 #. dpi
-#: ../src/imageio/format/pdf.c:638 ../src/libs/export.c:1277
-#: ../src/libs/export.c:1305
+#: ../src/imageio/format/pdf.c:638 ../src/libs/export.c:1284
+#: ../src/libs/export.c:1312
 msgid "dpi"
 msgstr "dpi"
 
@@ -15409,7 +15411,7 @@ msgstr "Finer"
 msgid "finest"
 msgstr "Finest"
 
-#: ../src/iop/atrous.c:1702 ../src/libs/export.c:1298 ../src/libs/export.c:1314
+#: ../src/iop/atrous.c:1702 ../src/libs/export.c:1305 ../src/libs/export.c:1321
 msgid "x"
 msgstr "x"
 
@@ -18339,26 +18341,26 @@ msgstr "Output intent"
 msgid "rendering intent"
 msgstr "Rendering intent"
 
-#: ../src/iop/colorout.c:845 ../src/libs/export.c:1417
+#: ../src/iop/colorout.c:845 ../src/libs/export.c:1424
 #: ../src/libs/print_settings.c:2494 ../src/libs/print_settings.c:2843
 #: ../src/views/darkroom.c:2457 ../src/views/lighttable.c:1176
 msgid "perceptual"
 msgstr "Perceptual"
 
-#: ../src/iop/colorout.c:846 ../src/libs/export.c:1418
+#: ../src/iop/colorout.c:846 ../src/libs/export.c:1425
 #: ../src/libs/print_settings.c:2495 ../src/libs/print_settings.c:2844
 #: ../src/views/darkroom.c:2458 ../src/views/lighttable.c:1177
 msgid "relative colorimetric"
 msgstr "Relative colorimetric"
 
-#: ../src/iop/colorout.c:847 ../src/libs/export.c:1419
+#: ../src/iop/colorout.c:847 ../src/libs/export.c:1426
 #: ../src/libs/print_settings.c:2496 ../src/libs/print_settings.c:2845
 #: ../src/views/darkroom.c:2459 ../src/views/lighttable.c:1178
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Saturation"
 
-#: ../src/iop/colorout.c:848 ../src/libs/export.c:1420
+#: ../src/iop/colorout.c:848 ../src/libs/export.c:1427
 #: ../src/libs/print_settings.c:2497 ../src/libs/print_settings.c:2846
 #: ../src/views/darkroom.c:2460 ../src/views/lighttable.c:1179
 msgid "absolute colorimetric"
@@ -18777,7 +18779,7 @@ msgstr "Variance blue: "
 msgid "variance computed on the blue channel"
 msgstr "Variance computed on the blue channel"
 
-#: ../src/iop/denoiseprofile.c:3763 ../src/libs/export.c:1379
+#: ../src/iop/denoiseprofile.c:3763 ../src/libs/export.c:1386
 #: ../src/libs/print_settings.c:2437 ../src/libs/print_settings.c:2793
 msgid "profile"
 msgstr "Profile"
@@ -19664,7 +19666,7 @@ msgstr ""
 "Decrease if shadows and/or highlights are over-saturated."
 
 #. Add export intent combo
-#: ../src/iop/filmic.c:1594 ../src/libs/export.c:1398
+#: ../src/iop/filmic.c:1594 ../src/libs/export.c:1405
 #: ../src/libs/print_settings.c:2492 ../src/libs/print_settings.c:2839
 #: ../src/views/darkroom.c:2463 ../src/views/lighttable.c:1182
 msgid "intent"
@@ -20719,7 +20721,7 @@ msgstr "Find lens"
 
 #. scale
 #: ../src/iop/lens.cc:4516 ../src/iop/overlay.c:1105 ../src/iop/vignette.c:1046
-#: ../src/iop/watermark.c:1364 ../src/libs/export.c:1323
+#: ../src/iop/watermark.c:1364 ../src/libs/export.c:1330
 msgid "scale"
 msgstr "Scale"
 
@@ -21848,58 +21850,58 @@ msgstr ""
 msgid "passthrough"
 msgstr "Passthrough"
 
-#: ../src/iop/rawprepare.c:627
+#: ../src/iop/rawprepare.c:621
 msgid "invalid crop parameters"
 msgstr "Invalid crop parameters"
 
-#: ../src/iop/rawprepare.c:628
+#: ../src/iop/rawprepare.c:622
 msgid ""
 "please reset to defaults, update your preset or set to something correct"
 msgstr ""
 "Please reset to defaults, update your preset or set to something correct"
 
-#: ../src/iop/rawprepare.c:896
+#: ../src/iop/rawprepare.c:889
 msgid "black level 0"
 msgstr "Black level 0"
 
-#: ../src/iop/rawprepare.c:897
+#: ../src/iop/rawprepare.c:890
 msgid "black level 1"
 msgstr "Black level 1"
 
-#: ../src/iop/rawprepare.c:898
+#: ../src/iop/rawprepare.c:891
 msgid "black level 2"
 msgstr "Black level 2"
 
-#: ../src/iop/rawprepare.c:899
+#: ../src/iop/rawprepare.c:892
 msgid "black level 3"
 msgstr "Black level 3"
 
-#: ../src/iop/rawprepare.c:926
+#: ../src/iop/rawprepare.c:919
 msgid "raw flat field correction to compensate for lens shading"
 msgstr "Raw flat field correction to compensate for lens shading"
 
-#: ../src/iop/rawprepare.c:931
+#: ../src/iop/rawprepare.c:924
 msgctxt "section"
 msgid "crop"
 msgstr "Crop"
 
-#: ../src/iop/rawprepare.c:934
+#: ../src/iop/rawprepare.c:927
 msgid "crop left border"
 msgstr "Crop left border"
 
-#: ../src/iop/rawprepare.c:938
+#: ../src/iop/rawprepare.c:931
 msgid "crop top border"
 msgstr "Crop top border"
 
-#: ../src/iop/rawprepare.c:942
+#: ../src/iop/rawprepare.c:935
 msgid "crop right border"
 msgstr "Crop right border"
 
-#: ../src/iop/rawprepare.c:946
+#: ../src/iop/rawprepare.c:939
 msgid "crop bottom border"
 msgstr "Crop bottom border"
 
-#: ../src/iop/rawprepare.c:955
+#: ../src/iop/rawprepare.c:948
 msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
@@ -24017,40 +24019,60 @@ msgstr "Format options"
 msgid "file format"
 msgstr "File format"
 
-#: ../src/libs/export.c:1252
+#: ../src/libs/export.c:1236
+msgid ""
+"images will be exported according to the format specified here\n"
+"\n"
+"when exporting to AVIF, EXR, JPEG XL, or XCF, selecting specific\n"
+"metadata is not currently possible\n"
+"\n"
+"for these formats, no metadata fields will be included\n"
+"unless the user selects <b>all</b> of the metadata checkboxes in\n"
+"the export module preferences"
+msgstr ""
+"Images will be exported according to the format specified here\n"
+"\n"
+"When exporting to AVIF, EXR, JPEG XL, or XCF, selecting specific\n"
+"metadata is not currently possible\n"
+"\n"
+"For these formats, no metadata fields will be included\n"
+"unless the user selects <b>all</b> of the metadata checkboxes in\n"
+"the Export module preferences"
+
+#: ../src/libs/export.c:1259
 msgctxt "section"
 msgid "global options"
 msgstr "Global options"
 
-#: ../src/libs/export.c:1255
+#: ../src/libs/export.c:1262
 msgid "set size"
 msgstr "Set size"
 
-#: ../src/libs/export.c:1256
+#: ../src/libs/export.c:1263
 msgid "choose a method for setting the output size"
 msgstr "Choose a method for setting the output size"
 
-#: ../src/libs/export.c:1259
+#: ../src/libs/export.c:1266
 msgid "in pixels (for file)"
 msgstr "In pixels (for file)"
 
-#: ../src/libs/export.c:1260
+#: ../src/libs/export.c:1267
 msgid "in cm (for print)"
 msgstr "In cm (for print)"
 
-#: ../src/libs/export.c:1261
+#: ../src/libs/export.c:1268
 msgid "in inch (for print)"
 msgstr "In inch (for print)"
 
-#: ../src/libs/export.c:1262
+#: ../src/libs/export.c:1269
 msgid "by scale (for file)"
 msgstr "By scale (for file)"
 
-#: ../src/libs/export.c:1265
+#: ../src/libs/export.c:1272
 msgid "print width"
 msgstr "Print width"
 
-#: ../src/libs/export.c:1267 ../src/libs/export.c:1284
+#: ../src/libs/export.c:1274 ../src/libs/export.c:1291
 msgid ""
 "maximum output width limit.\n"
 "click middle mouse button to reset to 0."
@@ -24058,11 +24080,11 @@ msgstr ""
 "Maximum output width limit.\n"
 "Click middle mouse button to reset to 0."
 
-#: ../src/libs/export.c:1271
+#: ../src/libs/export.c:1278
 msgid "print height"
 msgstr "Print height"
 
-#: ../src/libs/export.c:1273 ../src/libs/export.c:1290
+#: ../src/libs/export.c:1280 ../src/libs/export.c:1297
 msgid ""
 "maximum output height limit.\n"
 "click middle mouse button to reset to 0."
@@ -24070,19 +24092,19 @@ msgstr ""
 "Maximum output height limit.\n"
 "Click middle mouse button to reset to 0."
 
-#: ../src/libs/export.c:1279
+#: ../src/libs/export.c:1286
 msgid "resolution in dot per inch"
 msgstr "Resolution in dot per inch"
 
-#: ../src/libs/export.c:1303
+#: ../src/libs/export.c:1310
 msgid "@"
 msgstr "@"
 
-#: ../src/libs/export.c:1317 ../src/libs/tools/global_toolbox.c:214
+#: ../src/libs/export.c:1324 ../src/libs/tools/global_toolbox.c:214
 msgid "px"
 msgstr "px"
 
-#: ../src/libs/export.c:1325
+#: ../src/libs/export.c:1332
 msgid ""
 "it can be an integer, decimal number or simple fraction.\n"
 "zero or empty values are equal to 1.\n"
@@ -24092,36 +24114,36 @@ msgstr ""
 "Zero or empty values are equal to 1.\n"
 "Click middle mouse button to reset to 1."
 
-#: ../src/libs/export.c:1351
+#: ../src/libs/export.c:1358
 msgid "allow upscaling"
 msgstr "Allow upscaling"
 
-#: ../src/libs/export.c:1360
+#: ../src/libs/export.c:1367
 msgid "high quality resampling"
 msgstr "High quality resampling"
 
-#: ../src/libs/export.c:1361
+#: ../src/libs/export.c:1368
 msgid "do high quality resampling during export"
 msgstr "Do high quality resampling during export"
 
-#: ../src/libs/export.c:1369
+#: ../src/libs/export.c:1376
 msgid "store masks"
 msgstr "Store masks"
 
-#: ../src/libs/export.c:1370
+#: ../src/libs/export.c:1377
 msgid "store masks as layers in exported images. only works for some formats."
 msgstr "Store masks as layers in exported images. Only works for some formats."
 
-#: ../src/libs/export.c:1381 ../src/libs/export.c:1416
+#: ../src/libs/export.c:1388 ../src/libs/export.c:1423
 #: ../src/libs/print_settings.c:2796 ../src/libs/print_settings.c:2842
 msgid "image settings"
 msgstr "Image settings"
 
-#: ../src/libs/export.c:1391 ../src/libs/print_settings.c:2830
+#: ../src/libs/export.c:1398 ../src/libs/print_settings.c:2830
 msgid "output ICC profiles"
 msgstr "output ICC profiles"
 
-#: ../src/libs/export.c:1399
+#: ../src/libs/export.c:1406
 msgid ""
 "• perceptual: smoothly moves out-of-gamut colors into gamut, preserving "
 "gradations,\n"
@@ -24159,38 +24181,38 @@ msgstr ""
 "destination medium and do nothing else. Mainly used when proofing colors.\n"
 "(not suited for photography)."
 
-#: ../src/libs/export.c:1428 ../src/libs/print_settings.c:2895
+#: ../src/libs/export.c:1435 ../src/libs/print_settings.c:2895
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr ""
 "Whether the style items are appended to the history or replacing the history"
 
-#: ../src/libs/export.c:1431 ../src/libs/print_settings.c:2897
+#: ../src/libs/export.c:1438 ../src/libs/print_settings.c:2897
 msgid "replace history"
 msgstr "Replace history"
 
-#: ../src/libs/export.c:1431 ../src/libs/print_settings.c:2897
+#: ../src/libs/export.c:1438 ../src/libs/print_settings.c:2897
 msgid "append history"
 msgstr "Append history"
 
-#: ../src/libs/export.c:1438
+#: ../src/libs/export.c:1445
 msgid "select style to be applied on export"
 msgstr "Select style to be applied on export"
 
-#: ../src/libs/export.c:1441
+#: ../src/libs/export.c:1448
 msgid "temporary style to use while exporting"
 msgstr "Temporary style to use while exporting"
 
-#: ../src/libs/export.c:1442 ../src/libs/print_settings.c:2852
+#: ../src/libs/export.c:1449 ../src/libs/print_settings.c:2852
 msgid "style"
 msgstr "Style"
 
-#: ../src/libs/export.c:1468
+#: ../src/libs/export.c:1475
 msgctxt "actionbutton"
 msgid "export"
 msgstr "Export"
 
-#: ../src/libs/export.c:1470
+#: ../src/libs/export.c:1477
 msgid "export with current settings"
 msgstr "Export with current settings"
 
@@ -25386,7 +25408,7 @@ msgstr "Duplicate virgin"
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "Device \"%s\" connected on port \"%s\"."
 
-#: ../src/libs/import.c:296 ../src/libs/import.c:371 ../src/libs/import.c:2059
+#: ../src/libs/import.c:296 ../src/libs/import.c:371 ../src/libs/import.c:2062
 msgid "copy & import from camera"
 msgstr "Copy & import from camera"
 
@@ -25416,98 +25438,98 @@ msgstr "Tethering and importing is disabled for this camera"
 msgid "mount camera"
 msgstr "Mount camera"
 
-#: ../src/libs/import.c:998
+#: ../src/libs/import.c:1001
 #, c-format
 msgid "%d image out of %d selected"
 msgid_plural "%d images out of %d selected"
 msgstr[0] "%d image out of %d selected"
 msgstr[1] "%d images out of %d selected"
 
-#: ../src/libs/import.c:1459
+#: ../src/libs/import.c:1462
 msgid "choose the root of the folder tree below"
 msgstr "Choose the root of the folder tree below"
 
-#: ../src/libs/import.c:1462
+#: ../src/libs/import.c:1465
 msgid "places"
 msgstr "Places"
 
-#: ../src/libs/import.c:1470
+#: ../src/libs/import.c:1473
 msgid "restore all default places you have removed"
 msgstr "Restore all default places you have removed"
 
-#: ../src/libs/import.c:1477
+#: ../src/libs/import.c:1480
 msgid "remove the selected custom place"
 msgstr "Remove the selected custom place"
 
-#: ../src/libs/import.c:1484
+#: ../src/libs/import.c:1487
 msgid "add a custom place"
 msgstr "Add a custom place"
 
-#: ../src/libs/import.c:1492
+#: ../src/libs/import.c:1495
 msgid "you can add custom places using the plus icon"
 msgstr "You can add custom places using the plus icon"
 
-#: ../src/libs/import.c:1524
+#: ../src/libs/import.c:1527
 msgid "select a folder to see the content"
 msgstr "Select a folder to see the content"
 
-#: ../src/libs/import.c:1527
+#: ../src/libs/import.c:1530
 msgid "folders"
 msgstr "Folders"
 
-#: ../src/libs/import.c:1603
+#: ../src/libs/import.c:1606
 msgid "home"
 msgstr "Home"
 
-#: ../src/libs/import.c:1617
+#: ../src/libs/import.c:1620
 msgid "pictures"
 msgstr "Pictures"
 
-#: ../src/libs/import.c:1904
+#: ../src/libs/import.c:1907
 msgid "mark already imported images"
 msgstr "Mark already imported images"
 
-#: ../src/libs/import.c:1918
+#: ../src/libs/import.c:1921
 msgid "modified"
 msgstr "Modified"
 
-#: ../src/libs/import.c:1925
+#: ../src/libs/import.c:1928
 msgid "file 'modified date/time', may be different from 'Exif date/time'"
 msgstr "File 'modified date/time', may be different from 'Exif date/time'"
 
-#: ../src/libs/import.c:1937
+#: ../src/libs/import.c:1940
 msgid "show/hide thumbnails"
 msgstr "Show/hide thumbnails"
 
-#: ../src/libs/import.c:2011
+#: ../src/libs/import.c:2014
 msgid "naming rules"
 msgstr "Naming rules"
 
-#: ../src/libs/import.c:2057
+#: ../src/libs/import.c:2060
 msgid "add to library"
 msgstr "Add to library"
 
-#: ../src/libs/import.c:2058
+#: ../src/libs/import.c:2061
 msgid "copy & import"
 msgstr "Copy & import"
 
-#: ../src/libs/import.c:2101
+#: ../src/libs/import.c:2104
 msgid "select new"
 msgstr "Select new"
 
-#: ../src/libs/import.c:2152
+#: ../src/libs/import.c:2155
 msgid "please wait while prefetching the list of images from camera..."
 msgstr "Please wait while prefetching the list of images from camera..."
 
-#: ../src/libs/import.c:2302
+#: ../src/libs/import.c:2305
 msgid "invalid override date/time format"
 msgstr "Invalid override date/time format"
 
-#: ../src/libs/import.c:2370
+#: ../src/libs/import.c:2373
 msgid "import base directory"
 msgstr "Import base directory"
 
-#: ../src/libs/import.c:2371
+#: ../src/libs/import.c:2374
 msgid ""
 "before copying images to the darktable base directory make sure it is "
 "defined as you prefer.\n"
@@ -25523,27 +25545,27 @@ msgstr ""
 "Inspect darktable preferences -> import.\n"
 "Check and possibly correct the 'base directory naming pattern'"
 
-#: ../src/libs/import.c:2375
+#: ../src/libs/import.c:2378
 msgid "_come back & check"
 msgstr "_Come back & check"
 
-#: ../src/libs/import.c:2375
+#: ../src/libs/import.c:2378
 msgid "_understood & done"
 msgstr "_Understood & done"
 
-#: ../src/libs/import.c:2441
+#: ../src/libs/import.c:2444
 msgid "add to library..."
 msgstr "Add to library..."
 
-#: ../src/libs/import.c:2443
+#: ../src/libs/import.c:2446
 msgid "add existing images to the library"
 msgstr "Add existing images to the library"
 
-#: ../src/libs/import.c:2450
+#: ../src/libs/import.c:2453
 msgid "copy & import..."
 msgstr "Copy & import..."
 
-#: ../src/libs/import.c:2452
+#: ../src/libs/import.c:2455
 msgid ""
 "copy and optionally rename images before adding them to the library\n"
 "patterns can be defined to rename the images and specify the destination "
@@ -25553,7 +25575,7 @@ msgstr ""
 "Patterns can be defined to rename the images and specify the destination "
 "folders"
 
-#: ../src/libs/import.c:2475
+#: ../src/libs/import.c:2478
 msgid "parameters"
 msgstr "Parameters"
 
@@ -25566,12 +25588,12 @@ msgid "v3.0 for JPEG/non-RAW input"
 msgstr "V3.0 for JPEG/non-RAW input"
 
 #: ../src/libs/ioporder.c:220
-msgid "v3.1 for RAW input"
-msgstr "V3.1 for RAW input"
+msgid "v5.0 for RAW input"
+msgstr "V5.0 for RAW input"
 
 #: ../src/libs/ioporder.c:229
-msgid "v3.1 for JPEG/non-RAW input"
-msgstr "V3.1 for JPEG/non-RAW input"
+msgid "v5.0 for JPEG/non-RAW input"
+msgstr "V5.0 for JPEG/non-RAW input"
 
 #: ../src/libs/lib.c:371
 msgid "deleting preset for obsolete module"
@@ -28771,6 +28793,21 @@ msgstr "Switch to a classic window which will stay open after key release"
 #: ../src/views/view.c:1534
 msgid "mouse actions"
 msgstr "Mouse actions"
+
+#~ msgid "OpenCL"
+#~ msgstr "OpenCL"
+
+#~ msgid "v3.1 RAW"
+#~ msgstr "V3.1 RAW"
+
+#~ msgid "v3.1 JPEG"
+#~ msgstr "V3.1 JPEG"
+
+#~ msgid "v3.1 for RAW input"
+#~ msgstr "V3.1 for RAW input"
+
+#~ msgid "v3.1 for JPEG/non-RAW input"
+#~ msgstr "V3.1 for JPEG/non-RAW input"
 
 #~ msgid "v3.0 for RAW input (default)"
 #~ msgstr "V3.0 for RAW input (default)"
