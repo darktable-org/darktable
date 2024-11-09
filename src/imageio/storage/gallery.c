@@ -389,7 +389,7 @@ int store(dt_imageio_module_storage_t *self,
   snprintf(pair->line, sizeof(pair->line),
            "\n"
            "      <figure>\n"
-           "      <img class=\"thumbnail\" src=\"%s\" alt=\"img%d\" class= onclick=\"openSwipe(%d)\">\n"
+           "      <img class=\"thumbnail\" src=\"%s\" alt=\"img%d\" onclick=\"openSwipe(%d)\">\n"
            "      %s"
            "      %s"
            "      </figure>\n",
