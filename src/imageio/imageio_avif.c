@@ -46,7 +46,9 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
 
   if(decoder == NULL || avif_image == NULL)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to create decoder or image struct for `%s'", filename);
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[avif_open] failed to create decoder or image struct for '%s'",
+             filename);
     ret = DT_IMAGEIO_LOAD_FAILED;
     goto out;
   }
@@ -57,7 +59,10 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   result = avifDecoderReadFile(decoder, avif_image, filename);
   if(result != AVIF_RESULT_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to parse `%s': %s", filename, avifResultToString(result));
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[avif_open] failed to parse '%s': %s",
+             filename,
+             avifResultToString(result));
     ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto out;
   }
@@ -79,8 +84,10 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
       result = avifGetExifTiffHeaderOffset(exif->data, exif->size, &offset);
       if(result != AVIF_RESULT_OK)
       {
-        dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to read tiff header `%s': %s",
-          filename, avifResultToString(result));
+        dt_print(DT_DEBUG_IMAGEIO,
+                 "[avif_open] failed to read tiff header from '%s': %s",
+                 filename,
+                 avifResultToString(result));
         ret = DT_IMAGEIO_LOAD_FAILED;
         goto out;
       }
@@ -91,14 +98,16 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
 
   /* Override any Exif orientation from AVIF irot/imir transformations */
   /* TODO: Add user crop from AVIF clap transformation */
-  const int angle = avif_image->transformFlags & AVIF_TRANSFORM_IROT ? avif_image->irot.angle : 0;
+  const int angle = avif_image->transformFlags & AVIF_TRANSFORM_IROT
+                    ? avif_image->irot.angle
+                    : 0;
   const int flip = avif_image->transformFlags & AVIF_TRANSFORM_IMIR
 #if AVIF_VERSION <= 110100
-                       ? avif_image->imir.mode
+                   ? avif_image->imir.mode
 #else
-                       ? avif_image->imir.axis
+                   ? avif_image->imir.axis
 #endif
-                       : -1;
+                   : -1;
   img->orientation = dt_image_transformation_to_flip_bits(angle, flip);
 
   /* This will set the depth from the avif */
@@ -110,8 +119,10 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   result = avifRGBImageAllocatePixels(&rgb);
   if(result != AVIF_RESULT_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to allocate pixels `%s' : %s",
-      filename, avifResultToString(result));
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[avif_open] failed to allocate pixels for '%s' : %s",
+             filename,
+             avifResultToString(result));
     ret = DT_IMAGEIO_LOAD_FAILED;
     goto out;
   }
@@ -122,15 +133,17 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   result = avifImageYUVToRGB(avif_image, &rgb);
   if(result != AVIF_RESULT_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to convert `%s' from YUV to RGB: %s",
-      filename, avifResultToString(result));
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[avif_open] failed to convert '%s' from YUV to RGB: %s",
+             filename,
+             avifResultToString(result));
     ret = DT_IMAGEIO_LOAD_FAILED;
     goto out;
   }
 
   const size_t width = rgb.width;
   const size_t height = rgb.height;
-  /* If `> 8', all plane ptrs are 'uint16_t *' */
+  /* If '> 8', all plane ptrs are 'uint16_t *' */
   const size_t bit_depth = rgb.depth;
 
   /* Initialize cached image buffer */
@@ -144,7 +157,9 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(mipbuf == NULL)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to allocate mipmap buffer for `%s'", filename);
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[avif_open] failed to allocate mipmap buffer for '%s'",
+             filename);
     ret = DT_IMAGEIO_CACHE_FULL;
     goto out;
   }
@@ -170,7 +185,8 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
     {
       for(size_t x = 0; x < width; x++)
       {
-          uint16_t *in_pixel = (uint16_t *)&in[(y * rowbytes) + (3 * sizeof(uint16_t) * x)];
+          uint16_t *in_pixel = (uint16_t *)&in[(y * rowbytes)
+                                               + (3 * sizeof(uint16_t) * x)];
           float *out_pixel = &mipbuf[(size_t)4 * ((y * width) + x)];
 
           /* max_channel_f is 255.0f for 8bit */
@@ -190,7 +206,8 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
     {
       for(size_t x = 0; x < width; x++)
       {
-          uint8_t *in_pixel = (uint8_t *)&in[(y * rowbytes) + (3 * sizeof(uint8_t) * x)];
+          uint8_t *in_pixel = (uint8_t *)&in[(y * rowbytes)
+                                             + (3 * sizeof(uint8_t) * x)];
           float *out_pixel = &mipbuf[(size_t)4 * ((y * width) + x)];
 
           /* max_channel_f is 255.0f for 8bit */
@@ -203,7 +220,9 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
     break;
   }
   default:
-    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] invalid bit depth for `%s'", filename);
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[avif_open] invalid bit depth for '%s'",
+             filename);
     ret = DT_IMAGEIO_CACHE_FULL;
     goto out;
   }
@@ -231,7 +250,9 @@ out:
   return ret;
 }
 
-int dt_imageio_avif_read_profile(const char *filename, uint8_t **out, dt_colorspaces_cicp_t *cicp)
+int dt_imageio_avif_read_profile(const char *filename,
+                                 uint8_t **out,
+                                 dt_colorspaces_cicp_t *cicp)
 {
   /* set default return values */
   int size = 0;
@@ -246,14 +267,19 @@ int dt_imageio_avif_read_profile(const char *filename, uint8_t **out, dt_colorsp
 
   if(decoder == NULL || avif_image == NULL)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "[avif read profile] failed to create decoder or image struct for `%s'", filename);
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[avif read profile] failed to create decoder or image struct for '%s'",
+             filename);
     goto out;
   }
 
   result = avifDecoderReadFile(decoder, avif_image, filename);
   if(result != AVIF_RESULT_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "[avif read profile] failed to parse `%s': %s", filename, avifResultToString(result));
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[avif read profile] failed to parse '%s': %s",
+             filename,
+             avifResultToString(result));
     goto out;
   }
 
@@ -288,9 +314,13 @@ int dt_imageio_avif_read_profile(const char *filename, uint8_t **out, dt_colorsp
 
       if(over)
       {
-        dt_print(DT_DEBUG_IMAGEIO, "[avif_open] overriding nclx color profile for `%s': 1/%d/%d to 1/%d/%d",
-                 filename, avif_image->transferCharacteristics, avif_image->matrixCoefficients,
-                 cicp->transfer_characteristics, cicp->matrix_coefficients);
+        dt_print(DT_DEBUG_IMAGEIO,
+                 "[avif_open] overriding nclx color profile for '%s': 1/%d/%d to 1/%d/%d",
+                 filename,
+                 avif_image->transferCharacteristics,
+                 avif_image->matrixCoefficients,
+                 cicp->transfer_characteristics,
+                 cicp->matrix_coefficients);
       }
     }
   }
