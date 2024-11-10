@@ -53,7 +53,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
     goto out;
   }
 
-  /* Be permissive so we can load even slightly-offspec files */
+  // Be permissive so we can load even slightly-offspec files
   decoder->strictFlags = AVIF_STRICT_DISABLED;
 
   result = avifDecoderReadFile(decoder, avif_image, filename);
@@ -67,13 +67,14 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
     goto out;
   }
 
-  /* Read Exif blob if Exiv2 did not succeed */
+  // Read Exif blob if Exiv2 did not succeed
+  // (for example, because it was built without the required feature)
   if(!img->exif_inited)
   {
     avifRWData *exif = &avif_image->exif;
     if(exif && exif->size > 0)
     {
-      /* Workaround for non-zero offset not handled by libavif as of 0.11.1 */
+      // Workaround for non-zero offset not handled by libavif as of 0.11.1
       size_t offset = 0;
 #if AVIF_VERSION <= 110100
       while(offset < exif->size - 1
@@ -96,8 +97,8 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
     }
   }
 
-  /* Override any Exif orientation from AVIF irot/imir transformations */
-  /* TODO: Add user crop from AVIF clap transformation */
+  // Override any Exif orientation from AVIF irot/imir transformations
+  // TODO: Add user crop from AVIF clap transformation
   const int angle = avif_image->transformFlags & AVIF_TRANSFORM_IROT
                     ? avif_image->irot.angle
                     : 0;
@@ -110,7 +111,6 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
                    : -1;
   img->orientation = dt_image_transformation_to_flip_bits(angle, flip);
 
-  /* This will set the depth from the avif */
   avifRGBImageSetDefaults(&rgb, avif_image);
 
   rgb.format = AVIF_RGB_FORMAT_RGB;
@@ -143,13 +143,10 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
 
   const size_t width = rgb.width;
   const size_t height = rgb.height;
-  /* If '> 8', all plane ptrs are 'uint16_t *' */
   const size_t bit_depth = rgb.depth;
 
-  /* Initialize cached image buffer */
   img->width = width;
   img->height = height;
-
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
   img->buf_dsc.cst = IOP_CS_RGB;
@@ -164,7 +161,6 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
     goto out;
   }
 
-  /* This can be LDR or HDR, it depends on the ICC profile. */
   img->buf_dsc.filters = 0u;
   img->flags &= ~DT_IMAGE_RAW;
   img->flags &= ~DT_IMAGE_S_RAW;
@@ -189,11 +185,11 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
                                                + (3 * sizeof(uint16_t) * x)];
           float *out_pixel = &mipbuf[(size_t)4 * ((y * width) + x)];
 
-          /* max_channel_f is 255.0f for 8bit */
+          // max_channel_f is 1023.0f for 10bit, 4095.0f for 12bit
           out_pixel[0] = ((float)in_pixel[0]) * (1.0f / max_channel_f);
           out_pixel[1] = ((float)in_pixel[1]) * (1.0f / max_channel_f);
           out_pixel[2] = ((float)in_pixel[2]) * (1.0f / max_channel_f);
-          out_pixel[3] = 0.0f; /* alpha */
+          out_pixel[3] = 0.0f; // alpha
       }
     }
     break;
@@ -210,11 +206,11 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
                                              + (3 * sizeof(uint8_t) * x)];
           float *out_pixel = &mipbuf[(size_t)4 * ((y * width) + x)];
 
-          /* max_channel_f is 255.0f for 8bit */
+          // max_channel_f is 255.0f for 8bit
           out_pixel[0] = (float)(in_pixel[0]) * (1.0f / max_channel_f);
           out_pixel[1] = (float)(in_pixel[1]) * (1.0f / max_channel_f);
           out_pixel[2] = (float)(in_pixel[2]) * (1.0f / max_channel_f);
-          out_pixel[3] = 0.0f; /* alpha */
+          out_pixel[3] = 0.0f; // alpha
       }
     }
     break;
@@ -227,7 +223,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
     goto out;
   }
 
-  /* Get the ICC profile if available */
+  // Get the ICC profile if available
   avifRWData *icc = &avif_image->icc;
   if(icc->size && icc->data)
   {
@@ -250,11 +246,12 @@ out:
   return ret;
 }
 
+
 int dt_imageio_avif_read_profile(const char *filename,
                                  uint8_t **out,
                                  dt_colorspaces_cicp_t *cicp)
 {
-  /* set default return values */
+  // Set default return values
   int size = 0;
   *out = NULL;
   cicp->color_primaries = AVIF_COLOR_PRIMARIES_UNSPECIFIED;
@@ -299,15 +296,15 @@ int dt_imageio_avif_read_profile(const char *filename,
     cicp->transfer_characteristics = avif_image->transferCharacteristics;
     cicp->matrix_coefficients = avif_image->matrixCoefficients;
 
-    /* fix up mistagged legacy AVIFs */
+    // Fix up mistagged legacy AVIFs
     if(avif_image->colorPrimaries == AVIF_COLOR_PRIMARIES_BT709)
     {
       gboolean over = FALSE;
-      /* mistagged Rec. 709 AVIFs exported before dt 3.6 */
+      // Detect mistagged Rec. 709 AVIFs exported before darktable 3.6
       if(avif_image->transferCharacteristics == AVIF_TRANSFER_CHARACTERISTICS_BT470M
          && avif_image->matrixCoefficients == AVIF_MATRIX_COEFFICIENTS_BT709)
       {
-        /* must be actual Rec. 709 instead of 2.2 gamma*/
+        // Must be actual Rec. 709 instead of 2.2 gamma
         cicp->transfer_characteristics = AVIF_TRANSFER_CHARACTERISTICS_BT709;
         over = TRUE;
       }
