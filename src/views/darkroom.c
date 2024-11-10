@@ -409,7 +409,8 @@ static inline gboolean _preview2_request(dt_develop_t *dev)
      && GTK_IS_WIDGET(dev->preview2.widget);
 }
 
-static void _module_gui_post_expose(dt_iop_module_t *module, cairo_t *cri,
+static void _module_gui_post_expose(dt_iop_module_t *module,
+                                    cairo_t *cri,
                                     float width, float height,
                                     float x, float y, float zoom_scale)
 {
@@ -439,13 +440,12 @@ static void _view_paint_surface(cairo_t *cr,
   dt_pthread_mutex_unlock(&p->backbuf_mutex);
 }
 
-void expose(
-    dt_view_t *self,
-    cairo_t *cri,
-    const int32_t width,
-    const int32_t height,
-    int32_t pointerx,
-    int32_t pointery)
+void expose(dt_view_t *self,
+            cairo_t *cri,
+            const int32_t width,
+            const int32_t height,
+            int32_t pointerx,
+            int32_t pointery)
 {
   cairo_set_source_rgb(cri, .2, .2, .2);
 
@@ -672,12 +672,11 @@ void expose(
 
   cairo_reset_clip(cri);
 
+  dt_iop_module_t *dmod = dev->gui_module;
+
   // display mask if we have a current module activated or if the
   // masks manager module is expanded
-  const gboolean display_masks =
-    (dev->gui_module
-      && dev->gui_module->enabled
-      && dt_dev_modulegroups_test_activated(darktable.develop))
+  const gboolean display_masks = (dmod && dmod->enabled && dt_dev_modulegroups_test_activated(darktable.develop))
     || dt_lib_gui_get_expanded(dt_lib_get_module("masks"));
 
   if(dev->form_visible && display_masks)
@@ -686,26 +685,25 @@ void expose(
         "expose masks",
          port->pipe, dev->gui_module, DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d",
          width, height, pointerx, pointery);
-    dt_masks_events_post_expose(dev->gui_module, cri, width, height, pzx, pzy, zoom_scale);
+    dt_masks_events_post_expose(dmod, cri, width, height, pzx, pzy, zoom_scale);
   }
 
   // if dragging the rotation line, do it and nothing else
   if(dev->proxy.rotate
      && (darktable.control->button_down_which == 3
-         || dev->gui_module == dev->proxy.rotate))
+         || dmod == dev->proxy.rotate))
   {
     // reminder, we want this to be exposed always for guidings
     _module_gui_post_expose(dev->proxy.rotate, cri, wd, ht, pzx, pzy, zoom_scale);
   }
   else
   {
-    gboolean guides = FALSE;
+    gboolean guides = TRUE;
     // true if anything could be exposed
-    if(dev->gui_module && dev->gui_module != dev->proxy.rotate)
+    if(dmod && dmod != dev->proxy.rotate)
     {
       // the cropping.exposer->gui_post_expose needs special care
-      if(expose_full
-         && dev->gui_module->operation_tags_filter() & IOP_TAG_CROPPING)
+      if(expose_full && dmod->operation_tags_filter() & IOP_TAG_CROPPING)
       {
         dt_print_pipe(DT_DEBUG_EXPOSE,
                       "expose cropper",
@@ -713,7 +711,7 @@ void expose(
                       DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d",
                       width, height, pointerx, pointery);
         _module_gui_post_expose(dev->cropping.exposer, cri, wd, ht, pzx, pzy, zoom_scale);
-        guides = TRUE;
+        guides = FALSE;
       }
 
       // gui active module
@@ -721,16 +719,18 @@ void expose(
       {
         dt_print_pipe(DT_DEBUG_EXPOSE,
                       "expose module",
-                      port->pipe, dev->gui_module,
+                      port->pipe, dmod,
                       DT_DEVICE_NONE, NULL, NULL,
                       "%dx%d, px=%d py=%d",
                       width, height, pointerx, pointery);
-        _module_gui_post_expose(dev->gui_module, cri, wd, ht, pzx, pzy, zoom_scale);
-        guides = TRUE;
+        _module_gui_post_expose(dmod, cri, wd, ht, pzx, pzy, zoom_scale);
+
+        // avoid drawing later if we just did via post_expose
+        if(dmod->flags() & IOP_FLAGS_GUIDES_SPECIAL_DRAW)
+          guides = FALSE;
       }
     }
-
-    if(!guides)
+    if(guides)
       dt_guides_draw(cri, 0.0f, 0.0f, wd, ht, zoom_scale);
   }
 
@@ -2808,7 +2808,7 @@ void leave(dt_view_t *self)
   DT_CONTROL_SIGNAL_DISCONNECT(_darkroom_ui_pipe_finish_signal_callback, self);
   DT_CONTROL_SIGNAL_DISCONNECT(_darkroom_ui_preview2_pipe_finish_signal_callback, self);
   DT_CONTROL_SIGNAL_DISCONNECT(_display_module_trouble_message_callback, self);
-  
+
   // store groups for next time:
   dt_conf_set_int("plugins/darkroom/groups", dt_dev_modulegroups_get(darktable.develop));
 
