@@ -90,13 +90,13 @@ static void PNGwriteRawProfile(png_struct *ping,
 
   text[0].text = png_malloc(ping, allocated_length);
   text[0].key = png_malloc(ping, 80);
-  text[0].key[0] = '\0';
   if(!text[0].text || !text[0].key)
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[png] out of memory adding profile to image");
     goto cleanup;
   }
+  text[0].key[0] = '\0';
 
   g_strlcat(text[0].key, "Raw profile type ", 80);
   g_strlcat(text[0].key, profile_type, 80);

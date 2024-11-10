@@ -124,7 +124,7 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
   if(profile_data == NULL) profile_data = (uint8_t *)MagickGetImageProfile(image, "icm", &profile_length);
   if(profile_data)
   {
-    img->profile = (uint8_t *)g_malloc0(profile_length);
+    img->profile = g_try_malloc0(profile_length);
     if(img->profile)
     {
       memcpy(img->profile, profile_data, profile_length);

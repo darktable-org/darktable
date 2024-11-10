@@ -235,7 +235,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
       {
         if(icc_size)
         {
-          img->profile = (uint8_t *)g_malloc0(icc_size);
+          img->profile = g_try_malloc0(icc_size);
           if(img->profile)
           {
             JxlDecoderGetColorAsICCProfile(decoder,
