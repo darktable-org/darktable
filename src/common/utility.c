@@ -1040,7 +1040,7 @@ char *dt_filename_change_extension(const char *filename, const char *ext)
   if(!dot) return NULL;
   const int name_lgth = dot - filename + 1;
   const int ext_lgth = strlen(ext);
-  char *output = g_malloc(name_lgth + ext_lgth + 1);
+  char *output = g_try_malloc(name_lgth + ext_lgth + 1);
   if(output)
   {
     memcpy(output, filename, name_lgth);

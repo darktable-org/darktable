@@ -303,7 +303,7 @@ int dt_imageio_png_read_profile(const char *filename,
   if(png_get_valid(image.png_ptr, image.info_ptr, PNG_INFO_iCCP) != 0
      && png_get_iCCP(image.png_ptr, image.info_ptr, &name, NULL, &profile, &proflen) != 0)
   {
-    *out = (uint8_t *)g_malloc(proflen);
+    *out = g_try_malloc(proflen);
     if(*out)
       memcpy(*out, profile, proflen);
   }

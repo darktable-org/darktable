@@ -527,7 +527,7 @@ int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
     cmsSaveProfileToMem(profile, 0, &profile_len);
     if(profile_len > 0)
     {
-      *out = (uint8_t *)g_malloc(profile_len);
+      *out = g_try_malloc(profile_len);
       if(*out)
         cmsSaveProfileToMem(profile, *out, &profile_len);
     }
@@ -536,7 +536,7 @@ int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
   {
     if(profile_len > 0)
     {
-      *out = (uint8_t *)g_malloc(profile_len);
+      *out = g_try_malloc(profile_len);
       if(*out)
         memcpy(*out, profile, profile_len);
     }
