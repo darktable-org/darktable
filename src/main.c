@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 #endif
 #ifdef _WIN32
   // on Windows we have a hard time showing stuff printed to stdout/stderr to the user.
-  // because of that we write it to a log file.
+  // because of that we write it to a log file (unless Windows Terminal is used)
   char datetime[DT_DATETIME_EXIF_LENGTH];
   dt_datetime_now_to_exif(datetime);
 
@@ -50,17 +50,36 @@ int main(int argc, char *argv[])
   int err_type = GetFileType(GetStdHandle(STD_ERROR_HANDLE));
   gboolean redirect_output = ((out_type != FILE_TYPE_DISK && out_type != FILE_TYPE_PIPE) &&
                               (err_type != FILE_TYPE_DISK && err_type != FILE_TYPE_PIPE));
+  const gboolean running_in_wt = (getenv("WT_SESSION") != NULL);
 
-  for(int k = 1; k < argc; k++)
+  if (running_in_wt)
   {
-    // For simple arguments do not redirect stdout
-    if(!strcmp(argv[k], "--help") ||
-       !strcmp(argv[k], "-h") ||
-       !strcmp(argv[k], "/?") ||
-       !strcmp(argv[k], "--version"))
+    // Let's assume that Windows Terminal is good enough to display debug output, and perhaps that
+    // the user runs DT from a terminal because they actually expect to see something being printed out.
+    // Windows Terminal is available on Windows 11 by default.
+    redirect_output = FALSE;
+  }
+  else
+  {
+    for(int k = 1; k < argc; k++)
     {
-      redirect_output = FALSE;
-      break;
+      // For simple arguments do not redirect stdout
+      if(!strcmp(argv[k], "--help") ||
+         !strcmp(argv[k], "-h") ||
+         !strcmp(argv[k], "/?") ||
+         !strcmp(argv[k], "--version"))
+      {
+        redirect_output = FALSE;
+        break;
+      }
+      if (strcmp(argv[k], "-d") || strcmp(argv[k], "--debug"))
+      {
+        if (running_in_wt)
+        {
+          redirect_output = FALSE;
+          break;
+        }
+      }
     }
   }
 
