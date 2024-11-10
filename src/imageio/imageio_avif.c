@@ -30,7 +30,7 @@
 #include "common/image.h"
 #include "common/exif.h"
 #include "control/conf.h"
-#include "develop/develop.h"
+#include "develop/imageop.h"  // for IOP_CS_RGB
 #include "imageio_common.h"
 #include "imageio_avif.h"
 
