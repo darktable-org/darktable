@@ -57,7 +57,8 @@ int main(int argc, char *argv[])
     if(!strcmp(argv[k], "--help") ||
        !strcmp(argv[k], "-h") ||
        !strcmp(argv[k], "/?") ||
-       !strcmp(argv[k], "--version"))
+       !strcmp(argv[k], "--version") ||
+       !strcmp(argv[k], "--gimp"))
     {
       redirect_output = FALSE;
       break;
