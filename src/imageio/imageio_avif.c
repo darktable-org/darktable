@@ -38,11 +38,6 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
                                          const char *filename,
                                          dt_mipmap_buffer_t *mbuf)
 {
-  // We shouldn't expect AVIF images in files with an extension other than .avif
-  char *ext = g_strrstr(filename, ".");
-  if(ext && g_ascii_strcasecmp(ext, ".avif"))
-    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
-
   dt_imageio_retval_t ret;
   avifImage *avif_image = avifImageCreateEmpty();
   avifDecoder *decoder = avifDecoderCreate();
