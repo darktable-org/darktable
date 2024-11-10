@@ -705,7 +705,7 @@ void gui_init(dt_lib_module_t *self)
     g_object_set_data(G_OBJECT(textview), "tv_index", GINT_TO_POINTER(i));
     g_object_set_data(G_OBJECT(textview), "tv_multiple", GINT_TO_POINTER(FALSE));
 
-    GtkWidget *unchanged = gtk_label_new("<leave unchanged>");
+    GtkWidget *unchanged = gtk_label_new(_("<leave unchanged>"));
     gtk_widget_set_name(unchanged, "dt-metadata-multi");
     gtk_text_view_add_child_in_window(GTK_TEXT_VIEW(textview), unchanged, GTK_TEXT_WINDOW_WIDGET, 0, 0);
 
