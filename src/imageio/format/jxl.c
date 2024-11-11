@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021-2023 darktable developers.
+    Copyright (C) 2021-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -289,7 +289,7 @@ int write_image(struct dt_imageio_module_data_t *data,
     if(!cmsSaveProfileToMem(out_profile, NULL, &icc_size))
       JXL_FAIL("error finding ICC data length");
     if(icc_size > 0)
-      icc_buf = g_malloc(icc_size);
+      icc_buf = g_try_malloc(icc_size);
     if(!icc_buf)
       JXL_FAIL("could not allocate ICC buffer of size %u", icc_size);
 
@@ -312,7 +312,7 @@ int write_image(struct dt_imageio_module_data_t *data,
   {
     // Prepend the 4 byte (zero) offset to the blob before writing
     // (as required in the equivalent HEIF/JPEG XS Exif box specs)
-    exif_buf = g_malloc0(exif_len + 4);
+    exif_buf = g_try_malloc0(exif_len + 4);
     if(!exif_buf)
       JXL_FAIL("could not allocate Exif buffer of size %zu", (size_t)(exif_len + 4));
     memmove(exif_buf + 4, exif, exif_len);
@@ -339,7 +339,7 @@ int write_image(struct dt_imageio_module_data_t *data,
 
   // Fix pixel stride
   const size_t pixels_size = width * height * 3 * sizeof(float);
-  pixels = g_malloc(pixels_size);
+  pixels = g_try_malloc(pixels_size);
   if(!pixels)
     JXL_FAIL("could not allocate output pixel buffer of size %zu", pixels_size);
 
@@ -366,7 +366,7 @@ int write_image(struct dt_imageio_module_data_t *data,
   // TODO: Can we better estimate what the optimal size of chunks is for this image?
   size_t chunk_size = 1 << 16;
   size_t out_len = chunk_size;
-  out_buf = g_malloc(out_len);
+  out_buf = g_try_malloc(out_len);
   if(!out_buf) JXL_FAIL("could not allocate codestream buffer of size %zu", out_len);
   uint8_t *out_cur = out_buf;
   size_t out_avail = out_len;

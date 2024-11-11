@@ -415,7 +415,14 @@ void process(dt_iop_module_t *self,
 
   /* create a cairo memory surface that is later used for reading
    * overlay overlay data */
-  guint8 *image = (guint8 *)g_malloc0_n(roi_out->height, stride);
+  guint8 *image = (guint8 *)g_try_malloc0_n(roi_out->height, stride);
+  if(!image)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[overlay] out of memory - could not allocate %d*%d",
+             roi_out->height, stride);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
+    return;
+  }
   cairo_surface_t *surface =
     cairo_image_surface_create_for_data(image, CAIRO_FORMAT_ARGB32,
                                         roi_out->width,

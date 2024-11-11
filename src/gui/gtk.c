@@ -2793,7 +2793,7 @@ static void _ui_log_redraw_callback(gpointer instance,
   if(dc->log_ack != dc->log_pos)
   {
     const int32_t first_message = MAX(dc->log_ack, dc->log_pos - (DT_CTL_LOG_SIZE-1));
-    gchar *message = g_malloc(ALLMESSSIZE);
+    gchar *message = g_try_malloc(ALLMESSSIZE);
     if(message)
     {
       message[0] = 0;
@@ -2831,7 +2831,7 @@ static void _ui_toast_redraw_callback(gpointer instance,
   if(dc->toast_ack != dc->toast_pos)
   {
     const int32_t first_message = MAX(dc->toast_ack, dc->toast_pos - (DT_CTL_TOAST_SIZE-1));
-    gchar *message = g_malloc(ALLMESSSIZE);
+    gchar *message = g_try_malloc(ALLMESSSIZE);
     if(message)
     {
       message[0] = 0;

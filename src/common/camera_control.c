@@ -2080,11 +2080,14 @@ static void _camera_poll_events(const dt_camctl_t *c,
               const char *nameEnd = strchr(nameStart, '"');
               if (nameEnd != NULL)
               {
-                char *name = g_malloc0(nameEnd - nameStart + 1);
-                strncpy(name, nameStart, nameEnd - nameStart);
-                name[nameEnd - nameStart] = '\0';
-                _camera_configuration_single_update(c, cam, name);
-                dt_free_align(name);
+                char *name = g_try_malloc0(nameEnd - nameStart + 1);
+                if(name)
+                {
+                  strncpy(name, nameStart, nameEnd - nameStart);
+                  name[nameEnd - nameStart] = '\0';
+                  _camera_configuration_single_update(c, cam, name);
+                  g_free(name);
+                }
                 return;
               }
             }

@@ -2385,7 +2385,7 @@ static void _pop_menu_dictionary(GtkWidget *treeview, GdkEventButton *event, dt_
 
     if(d->collection[0])
     {
-      char *collection = g_malloc(4096);
+      char *collection = g_try_malloc(4096);
       if(collection)
       {
         dt_collection_serialize(collection, 4096, FALSE);

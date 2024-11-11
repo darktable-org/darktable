@@ -217,7 +217,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   avifRWData *icc = &avif_image->icc;
   if(icc->size && icc->data)
   {
-    img->profile = (uint8_t *)g_malloc0(icc->size);
+    img->profile = g_try_malloc0(icc->size);
     if(img->profile)
     {
       memcpy(img->profile, icc->data, icc->size);
@@ -265,7 +265,7 @@ int dt_imageio_avif_read_profile(const char *filename, uint8_t **out, dt_colorsp
   avifRWData *icc = &avif_image->icc;
   if(icc->size && icc->data)
   {
-    *out = (uint8_t *)g_malloc0(icc->size);
+    *out = g_try_malloc0(icc->size);
     if(*out)
     {
       memcpy(*out, icc->data, icc->size);
