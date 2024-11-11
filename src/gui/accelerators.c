@@ -1619,7 +1619,6 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column,
   const field_id field = GPOINTER_TO_INT(data);
   gchar *field_text = NULL;
   gboolean editable = FALSE;
-  PangoUnderline underline = PANGO_UNDERLINE_NONE;
   int weight = PANGO_WEIGHT_NORMAL;
 
   if(_is_shortcut_category(data_ptr))
@@ -1688,7 +1687,7 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column,
         field_text = g_strdup_printf("%.3f", s->speed);
         if(s->speed == 1.0) weight = PANGO_WEIGHT_LIGHT;
       }
-      editable = TRUE;
+      if(s->action->type != DT_ACTION_TYPE_COMMAND) editable = TRUE;
       break;
     case SHORTCUT_VIEW_INSTANCE:
       if(_shortcut_is_speed(s)) break;
@@ -1716,8 +1715,11 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column,
     }
     if(!s->views) editable = FALSE; //disabled default shortcuts
   }
-  g_object_set(cell, "text", field_text, "editable",
-               editable, "underline", underline, "weight", weight, NULL);
+  g_object_set(cell, "text", field_text,
+                     "editable", editable,
+                     "underline", PANGO_UNDERLINE_NONE,
+                     "weight", editable && weight != PANGO_WEIGHT_LIGHT ? PANGO_WEIGHT_BOLD : weight,
+                     NULL);
   g_free(field_text);
 }
 
@@ -2465,11 +2467,9 @@ static gboolean _visible_shortcuts(GtkTreeModel *model,
   return FALSE;
 }
 
-static void _resize_shortcuts_view(GtkWidget *view,
-                                   GdkRectangle *allocation,
-                                   gpointer data)
+static void _resize_shortcuts_view(GtkWidget *view, GParamSpec *pspec, gpointer user_data)
 {
-  dt_conf_set_int("shortcuts/window_split", gtk_paned_get_position(GTK_PANED(data)));
+  dt_conf_set_int("shortcuts/window_split", gtk_paned_get_position(GTK_PANED(view)));
 }
 
 const dt_input_device_t DT_ALL_DEVICES = UINT8_MAX;
@@ -2988,7 +2988,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
 
   const int split_position = dt_conf_get_int("shortcuts/window_split");
   if(split_position) gtk_paned_set_position(GTK_PANED(container), split_position);
-  g_signal_connect(G_OBJECT(shortcuts_view), "size-allocate",
+  g_signal_connect(G_OBJECT(container), "notify::position",
                    G_CALLBACK(_resize_shortcuts_view), container);
 
   GtkWidget *button_bar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0), *button = NULL;
