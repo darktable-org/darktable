@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-10 13:19-0300\n"
-"PO-Revision-Date: 2024-11-10 13:18-0300\n"
+"POT-Creation-Date: 2024-11-11 16:55-0300\n"
+"PO-Revision-Date: 2024-11-11 16:55-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -1650,7 +1650,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6219
 msgid "OpenCL GPU acceleration"
-msgstr ""
+msgstr "Aceleração OpenCL com GPU"
 
 #: ../build/bin/preferences_gen.h:6238
 msgid "activate OpenCL support"
@@ -4021,7 +4021,7 @@ msgstr "percentil abaixo"
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:86
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:145
 #: ../build/lib/darktable/plugins/introspection_retouch.c:458
-#: ../src/gui/presets.c:62 ../src/iop/watermark.c:1338
+#: ../src/gui/presets.c:62 ../src/iop/watermark.c:1355
 #: ../src/libs/colorpicker.c:320 ../src/libs/image.c:693
 #: ../src/libs/modulegroups.c:2334
 msgid "color"
@@ -6875,29 +6875,29 @@ msgstr ""
 "o filtro guiado independente de exposição não conseguiu alocar memória, "
 "verifique sua configuração de RAM"
 
-#: ../src/common/exif.cc:1941
+#: ../src/common/exif.cc:1947
 #, c-format
 msgid "detected OtherIlluminant in `%s`, please report via darktable github"
 msgstr ""
 "OtherIlluminant detctado em `%s`, por favor reporte via github do darktable"
 
-#: ../src/common/exif.cc:1990
+#: ../src/common/exif.cc:1996
 #, c-format
 msgid "special exif illuminants in `%s`, please report via darktable github"
 msgstr ""
 "iluminantes especiais exif em `%s`, por favor reporte via github do darktable"
 
-#: ../src/common/exif.cc:2018
+#: ../src/common/exif.cc:2024
 #, c-format
 msgid "forward matrix in `%s`, please report via darktable github"
 msgstr "matriz forward em `%s`, por favor reporte via github do darktable"
 
-#: ../src/common/exif.cc:5749
+#: ../src/common/exif.cc:5755
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "não foi possível abrir o arquivo XMP '%s': '%s'"
 
-#: ../src/common/exif.cc:5808
+#: ../src/common/exif.cc:5814
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "não foi possível escrever o arquivo XMP '%s': '%s'"
@@ -9207,8 +9207,8 @@ msgid "adjust the fulcrum used by some blending operations"
 msgstr "ajusta o pivô (fulcrum) usado por algumas operações de mesclagem"
 
 #. Add opacity/scale sliders to table
-#: ../src/develop/blend_gui.c:3623 ../src/iop/overlay.c:1094
-#: ../src/iop/watermark.c:1354 ../src/libs/masks.c:111
+#: ../src/develop/blend_gui.c:3623 ../src/iop/overlay.c:1101
+#: ../src/iop/watermark.c:1371 ../src/libs/masks.c:111
 msgid "opacity"
 msgstr "opacidade"
 
@@ -20886,8 +20886,8 @@ msgid "find lens"
 msgstr "encontrar lentes"
 
 #. scale
-#: ../src/iop/lens.cc:4516 ../src/iop/overlay.c:1105 ../src/iop/vignette.c:1046
-#: ../src/iop/watermark.c:1364 ../src/libs/export.c:1330
+#: ../src/iop/lens.cc:4516 ../src/iop/overlay.c:1112 ../src/iop/vignette.c:1046
+#: ../src/iop/watermark.c:1381 ../src/libs/export.c:1330
 msgid "scale"
 msgstr "escala"
 
@@ -21806,7 +21806,7 @@ msgid "image %d does not exist"
 msgstr "imagem %d não existe"
 
 #. TRANSLATORS: This text must be very narrow, check in the GUI that it is not truncated
-#: ../src/iop/overlay.c:788
+#: ../src/iop/overlay.c:795
 msgid ""
 "drop\n"
 "image\n"
@@ -21819,7 +21819,7 @@ msgstr ""
 "de filme\n"
 "aqui"
 
-#: ../src/iop/overlay.c:1001
+#: ../src/iop/overlay.c:1008
 #, c-format
 msgid ""
 "cannot use image %d as an overlay as it is using the current image as an "
@@ -21828,12 +21828,12 @@ msgstr ""
 "não é possível usar a imagem %d como sobreposição porque ela mesma está "
 "usando a imagem corrente como sobreposição"
 
-#: ../src/iop/overlay.c:1098 ../src/iop/watermark.c:1357
+#: ../src/iop/overlay.c:1105 ../src/iop/watermark.c:1374
 msgctxt "section"
 msgid "placement"
 msgstr "posicionamento"
 
-#: ../src/iop/overlay.c:1113
+#: ../src/iop/overlay.c:1120
 msgid ""
 "choose how to scale the overlay\n"
 "• image: scale overlay relative to whole image\n"
@@ -21852,31 +21852,31 @@ msgstr ""
 "• opções avançadas: escolher dimensões da sobreposição e da imagem "
 "independentemente"
 
-#: ../src/iop/overlay.c:1124
+#: ../src/iop/overlay.c:1131
 msgid "reference image dimension against which to scale the overlay"
 msgstr ""
 "dimensão da imagem de referência contra a qual a sobreposição terá a escala "
 "ajustada"
 
-#: ../src/iop/overlay.c:1128
+#: ../src/iop/overlay.c:1135
 msgid "overlay dimension to scale"
 msgstr "dimensão da sobreposição para ajuste de escala"
 
-#: ../src/iop/overlay.c:1132 ../src/iop/watermark.c:1387
+#: ../src/iop/overlay.c:1139 ../src/iop/watermark.c:1404
 #: ../src/libs/print_settings.c:2694
 msgid "alignment"
 msgstr "alinhamento"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/overlay.c:1156
+#: ../src/iop/overlay.c:1163
 msgid "the opacity of the overlay"
 msgstr "a opacidade da sobreposição"
 
-#: ../src/iop/overlay.c:1157
+#: ../src/iop/overlay.c:1164
 msgid "the scale of the overlay"
 msgstr "a escala da sobreposição"
 
-#: ../src/iop/overlay.c:1158
+#: ../src/iop/overlay.c:1165
 msgid "the rotation of the overlay"
 msgstr "a rotação da sobreposição"
 
@@ -23036,7 +23036,7 @@ msgstr "curva de tons para canal a"
 msgid "tonecurve for b channel"
 msgstr "curva de tons para canal b"
 
-#: ../src/iop/tonecurve.c:1285 ../src/iop/watermark.c:1345
+#: ../src/iop/tonecurve.c:1285 ../src/iop/watermark.c:1362
 #: ../src/libs/colorpicker.c:673
 msgid "pick color"
 msgstr "seleciona cor"
@@ -23493,21 +23493,21 @@ msgstr "marca d'água"
 msgid "overlay an SVG watermark like a signature on the image"
 msgstr "sobrepõe uma marca d'água SVG como uma assinatura na imagem"
 
-#: ../src/iop/watermark.c:1296
+#: ../src/iop/watermark.c:1313
 msgid "marker"
 msgstr "marcador"
 
-#: ../src/iop/watermark.c:1299
+#: ../src/iop/watermark.c:1316
 #, c-format
 msgid "SVG watermarks in %s/watermarks or %s/watermarks"
 msgstr "marcas d'água SVG em %s/watermarks ou %s/watermarks"
 
 #. Simple text
-#: ../src/iop/watermark.c:1309 ../src/iop/watermark.c:1310
+#: ../src/iop/watermark.c:1326 ../src/iop/watermark.c:1327
 msgid "text"
 msgstr "texto"
 
-#: ../src/iop/watermark.c:1311
+#: ../src/iop/watermark.c:1328
 msgid ""
 "text string, tag: $(WATERMARK_TEXT)\n"
 "use $(NL) to insert a line break"
@@ -23515,16 +23515,16 @@ msgstr ""
 "texto, etiqueta: $(WATERMARK_TEXT)\n"
 "use $(NL) para inserir uma quebra de linha"
 
-#: ../src/iop/watermark.c:1315
+#: ../src/iop/watermark.c:1332
 msgid "content"
 msgstr "conteúdo"
 
 #. Text font
-#: ../src/iop/watermark.c:1320
+#: ../src/iop/watermark.c:1337
 msgid "font"
 msgstr "fonte"
 
-#: ../src/iop/watermark.c:1325
+#: ../src/iop/watermark.c:1342
 msgid ""
 "text font, tags:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
@@ -23536,7 +23536,7 @@ msgstr ""
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
 
-#: ../src/iop/watermark.c:1340
+#: ../src/iop/watermark.c:1357
 msgid ""
 "watermark color, tag:\n"
 "$(WATERMARK_COLOR)"
@@ -23544,15 +23544,15 @@ msgstr ""
 "cor da marca d'água, etiqueta:\n"
 "$(WATERMARK_COLOR)"
 
-#: ../src/iop/watermark.c:1342
+#: ../src/iop/watermark.c:1359
 msgid "select watermark color"
 msgstr "seleciona cor da marca d'água"
 
-#: ../src/iop/watermark.c:1344
+#: ../src/iop/watermark.c:1361
 msgid "pick color from image"
 msgstr "seleciona cor a partir da imagem"
 
-#: ../src/iop/watermark.c:1370
+#: ../src/iop/watermark.c:1387
 msgid ""
 "choose how to scale the watermark\n"
 "• image: scale watermark relative to whole image\n"
@@ -23571,26 +23571,26 @@ msgstr ""
 "• opções avançadas: escolher dimensões da marca d'água e da imagem "
 "independentemente"
 
-#: ../src/iop/watermark.c:1379
+#: ../src/iop/watermark.c:1396
 msgid "reference image dimension against which to scale the watermark"
 msgstr ""
 "dimensão da imagem de referência contra a qual a marca d'água terá a escala "
 "ajustada"
 
-#: ../src/iop/watermark.c:1383
+#: ../src/iop/watermark.c:1400
 msgid "watermark dimension to scale"
 msgstr "dimensão da marca d'água para ajuste de escala"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1408
+#: ../src/iop/watermark.c:1425
 msgid "the opacity of the watermark"
 msgstr "a opacidade da marca d'água"
 
-#: ../src/iop/watermark.c:1409
+#: ../src/iop/watermark.c:1426
 msgid "the scale of the watermark"
 msgstr "a escala da marca d'água"
 
-#: ../src/iop/watermark.c:1410
+#: ../src/iop/watermark.c:1427
 msgid "the rotation of the watermark"
 msgstr "a rotação da marca d'água"
 
@@ -24236,6 +24236,14 @@ msgid ""
 "unless the user selects <b>all</b> of the metadata checkboxes in\n"
 "the export module preferences"
 msgstr ""
+"as imagens serão exportadas de acordo com o formato especificado aqui\n"
+"\n"
+"quando exportando para AVIF, EXR, JPEG XL ou XCF, a seleção de medadados\n"
+"específicos não é atualmente possível\n"
+"\n"
+"para esses formatos, nenhum campo de metadados será incluído a não ser que o "
+"usuário selecione <b>todos</b> os botões de metadados nas preferências de "
+"exportação"
 
 #: ../src/libs/export.c:1259
 msgctxt "section"
@@ -26218,6 +26226,10 @@ msgstr ""
 "neste caso, clique-direito dá a possibilidade de escolher uma das opções "
 "disponíveis.\n"
 "pressione esc para sair da janela pop-up"
+
+#: ../src/libs/metadata.c:708
+msgid "<leave unchanged>"
+msgstr "<manter sem mudanças>"
 
 #: ../src/libs/metadata.c:743
 msgid "write metadata for selected images"
