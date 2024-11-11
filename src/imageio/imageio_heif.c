@@ -113,7 +113,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
       const size_t exif_size = heif_image_handle_get_metadata_size(handle, exif_id);
       if(exif_size > 4)
       {
-        uint8_t *exif_data = g_malloc0(exif_size);
+        uint8_t *exif_data = g_try_malloc0(exif_size);
         if(exif_data)
         {
           err = heif_image_handle_get_metadata(handle, exif_id, exif_data);
@@ -266,7 +266,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   size_t icc_size = heif_image_handle_get_raw_color_profile_size(handle);
   if(icc_size)
   {
-    img->profile = (uint8_t *)g_malloc0(icc_size);
+    img->profile = g_try_malloc0(icc_size);
     if(img->profile)
     {
       err = heif_image_handle_get_raw_color_profile(handle, img->profile);

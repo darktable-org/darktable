@@ -229,7 +229,7 @@ static size_t _lib_location_curl_write_data(void *buffer,
 {
   dt_lib_location_t *lib = (dt_lib_location_t *)userp;
 
-  char *newdata = g_malloc0(lib->response_size + nmemb + 1);
+  char *newdata = g_try_malloc0(lib->response_size + nmemb + 1);
   if(newdata)
   {
     if(lib->response != NULL)
