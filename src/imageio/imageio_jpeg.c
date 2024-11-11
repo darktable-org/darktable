@@ -750,24 +750,28 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img,
                                          const char *filename,
                                          dt_mipmap_buffer_t *mbuf)
 {
-  // Sometimes there are cases when images are in JPEG format, but their file extensions do not
-  // correspond to this format. For example, there are reports of such a situation with iPhone photos:
+  // Sometimes there are cases when images are in JPEG format, but their
+  // file extensions do not correspond to this format. For example,
+  // there are reports of such an issue with some iPhone photos:
   // https://discuss.pixls.us/t/darktable-not-presenting-heic-files-for-selection/33699
-  // So we have to abandon pre-filtering by checking file extensions.
+  // So please don't add the file extension check here,
+  // even if you thought it was a good idea.
 
-  if(!img->exif_inited) (void)dt_exif_read(img, filename);
+  if(!img->exif_inited)
+    (void)dt_exif_read(img, filename);
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg))
     return DT_IMAGEIO_FILE_CORRUPTED;
+
   img->width = jpg.width;
   img->height = jpg.height;
-
   uint8_t *tmp = dt_alloc_align_uint8(4 * jpg.width * jpg.height);
   if(!tmp)
   {
     return DT_IMAGEIO_LOAD_FAILED;
   }
+
   if(dt_imageio_jpeg_read(&jpg, tmp))
   {
     dt_free_align(tmp);
@@ -783,12 +787,21 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img,
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-  dt_imageio_flip_buffers_ui8_to_float((float *)buf, tmp, 0.0f, 255.0f, 4, jpg.width, jpg.height, jpg.width,
-                                       jpg.height, 4 * jpg.width, 0);
+  dt_imageio_flip_buffers_ui8_to_float((float *)buf,  // output buffer
+                                       tmp,           // input buffer
+                                       0.0f,          // black
+                                       255.0f,        // white
+                                       4,             // channels
+                                       jpg.width,     // width
+                                       jpg.height,    // height
+                                       jpg.width,     // flipped width
+                                       jpg.height,    // flipped height
+                                       4 * jpg.width, // stride
+                                       0);            // orientation
 
   dt_free_align(tmp);
 
-  img->buf_dsc.cst = IOP_CS_RGB; // jpeg is always RGB
+  img->buf_dsc.cst = IOP_CS_RGB; // JPEG is always RGB
   img->buf_dsc.filters = 0u;
   img->flags &= ~DT_IMAGE_RAW;
   img->flags &= ~DT_IMAGE_S_RAW;
