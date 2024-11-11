@@ -25,7 +25,6 @@
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/image_cache.h"
-#include "common/image_compression.h"
 #include "common/mipmap_cache.h"
 #include "common/styles.h"
 #include "control/conf.h"

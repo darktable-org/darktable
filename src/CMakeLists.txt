@@ -50,7 +50,6 @@ FILE(GLOB SOURCE_FILES
   "common/history_snapshot.c"
   "common/image.c"
   "common/image_cache.c"
-  "common/image_compression.c"
   "common/imagebuf.c"
   "common/import_session.c"
   "common/interpolation.c"
