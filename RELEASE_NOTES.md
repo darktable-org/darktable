@@ -213,6 +213,9 @@ changes (where available).
   to do it as losslessly as possible. That is now consistent with the
   behavior of integral JPEG XL formats.
 
+- Improved visibility of shortcuts that can be changed by users by
+  using bold text.
+
 ## Bug Fixes
 
 - Fixed a performance regression for redrawing mipmaps.
