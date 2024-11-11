@@ -753,32 +753,7 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img,
   // Sometimes there are cases when images are in JPEG format, but their file extensions do not
   // correspond to this format. For example, there are reports of such a situation with iPhone photos:
   // https://discuss.pixls.us/t/darktable-not-presenting-heic-files-for-selection/33699
-
-  // So we have to abandon pre-filtering by checking file extensions. Instead, to quickly check whether it
-  // makes sense to work with this file further (whether it's in JPEG format), we check for magic bytes.
-
-  const uint8_t jpeg_magicbytes[3] = { 0xFF, 0xD8, 0xFF };
-  uint8_t first3bytes[3] = { 0 };
-
-  FILE *f = g_fopen(filename, "rb");
-  if(!f)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[jpeg_open] Error: failed to open '%s' for reading", filename);
-    return DT_IMAGEIO_FILE_NOT_FOUND;
-  }
-
-  if(fread(first3bytes, 1, 3, f) != 3)
-  {
-    fclose(f);
-    dt_print(DT_DEBUG_ALWAYS, "[jpeg_open] Error: file is empty or read error.");
-    return DT_IMAGEIO_FILE_NOT_FOUND;
-  }
-  fclose(f);
-
-  if(memcmp(first3bytes, jpeg_magicbytes, 3) != 0)
-  {
-    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
-  }
+  // So we have to abandon pre-filtering by checking file extensions.
 
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
