@@ -64,6 +64,7 @@ typedef struct dt_lib_colorpicker_t
   GtkWidget *add_sample_button;
   GtkWidget *display_samples_check_box;
   dt_colorpicker_sample_t primary_sample;
+  dt_colorpicker_sample_t *target_sample;
 } dt_lib_colorpicker_t;
 
 const char *name(dt_lib_module_t *self)
@@ -90,6 +91,48 @@ int position(const dt_lib_module_t *self)
 {
   return 800;
 }
+
+#if 0
+// kept for debug session
+static void _dump_sample(char* ctx, dt_colorpicker_sample_t *sample)
+{
+  const gboolean isbox = sample->size == DT_LIB_COLORPICKER_SIZE_BOX;
+  printf(">>> %s KIND : %s (%lx)\n", ctx, isbox ? "box" : "point", (uint64_t)sample);
+  printf("   ");
+  if(isbox)
+  {
+    for(int k = 0; k < 8; k++)
+      printf("%1.2f ", sample->box[k]);
+  }
+  else
+  {
+    printf("%1.2f %1.2f", sample->point[0], sample->point[1]);
+  }
+  printf("\n");
+}
+
+static void _dump(char* ctx, dt_lib_module_t *self)
+{
+  dt_lib_colorpicker_t *data = self->data;
+
+  {
+    char *txt = g_strdup_printf("primary sample (%s)", ctx);
+    _dump_sample(txt, &data->primary_sample);
+    g_free(txt);
+  }
+
+  int k = 0;
+  for(GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
+      samples;
+      samples = g_slist_next(samples))
+  {
+    char *txt = g_strdup_printf("live sample (%d)", ++k);
+    dt_colorpicker_sample_t *sample = samples->data;
+    _dump_sample(txt, sample);
+    g_free(txt);
+  }
+}
+#endif
 
 // GUI callbacks
 
@@ -219,6 +262,9 @@ static gboolean _large_patch_toggle(GtkWidget *widget,
 static void _picker_button_toggled(GtkToggleButton *button,
                                    dt_lib_colorpicker_t *data)
 {
+  // reset copy target
+  data->target_sample = NULL;
+
   gtk_widget_set_sensitive(GTK_WIDGET(data->add_sample_button),
                            gtk_toggle_button_get_active(button));
 }
@@ -458,18 +504,52 @@ static gboolean _live_sample_button(GtkWidget *widget,
     // copy to active picker
     dt_lib_module_t *self = darktable.lib->proxy.colorpicker.module;
     dt_iop_color_picker_t *picker = darktable.lib->proxy.colorpicker.picker_proxy;
+    dt_lib_colorpicker_t *data = self->data;
 
-    // no active picker, too much iffy GTK work to activate a default
-    if(!picker) return FALSE;
+    const gboolean is_active =
+      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->picker_button));
+    const gboolean simulate_event = !is_active || data->target_sample;
 
-    if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
-      _set_sample_point(self, sample->point);
-    else if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
-      _set_sample_box_area(self, sample->box);
+    if(data->target_sample)
+    {
+      // we have a target sample, so we are editing a live sample.
+      // copy back the edited sample (primary_sample) into the target
+      // sample on which we clicked.
+      memcpy(&sample->point,
+             &data->primary_sample.point,
+             sizeof(data->primary_sample.point));
+      memcpy(&sample->box,
+             &data->primary_sample.box,
+             sizeof(data->primary_sample.box));
+
+      sample->size = data->primary_sample.size;
+      data->target_sample = NULL;
+    }
     else
-      return FALSE;
+    {
+      // we don't have a target sample, copy the sample into
+      // the primary sample to be edied.
+      data->target_sample = sample;
+      darktable.lib->proxy.colorpicker.module = self;
 
-    if(picker->module)
+      if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
+        _set_sample_point(self, sample->point);
+      else if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
+        _set_sample_box_area(self, sample->box);
+    }
+
+    if(simulate_event)
+    {
+      dt_gui_simulate_button_event
+        (data->picker_button,
+         GDK_BUTTON_PRESS,
+         /* button 1 to create use a point and 3 for a box */
+         data->primary_sample.size == DT_LIB_COLORPICKER_SIZE_POINT
+         ? 1
+         : 3);
+    }
+
+    if(picker && picker->module)
     {
       picker->module->dev->preview_pipe->status = DT_DEV_PIXELPIPE_DIRTY;
     }
@@ -490,6 +570,9 @@ static void _add_sample(GtkButton *widget,
 
   dt_lib_colorpicker_t *data = self->data;
   dt_colorpicker_sample_t *sample = malloc(sizeof(dt_colorpicker_sample_t));
+
+  // reset copy target
+  data->target_sample = NULL;
 
   memcpy(sample, &data->primary_sample, sizeof(dt_colorpicker_sample_t));
   sample->locked = FALSE;
