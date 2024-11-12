@@ -23,6 +23,17 @@
 
 G_BEGIN_DECLS
 
+typedef struct dt_metadata_t2
+{
+  uint32_t key;
+  gchar *tagname;
+  gchar *name;
+  uint32_t type;
+  gboolean is_visible;
+  gboolean is_private;
+  uint32_t display_order;
+} dt_metadata_t2;
+
 typedef enum dt_metadata_t
 {
   // do change the order. Must match with dt_metadata_def[] in metadata.c.
@@ -64,6 +75,8 @@ typedef enum dt_metadata_flag_t
   DT_METADATA_FLAG_IMPORTED = 1 << 2    // metadata value changed
 }
 dt_metadata_flag_t;
+
+GList *dt_metadata_get_list();
 
 /** return the number of user metadata (!= DT_METADATA_TYPE_INTERNAL) */
 unsigned int dt_metadata_get_nb_user_metadata();

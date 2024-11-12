@@ -27,6 +27,8 @@
 
 #include <stdlib.h>
 
+static GList *_metadata_list = NULL;
+
 // this array should contain all dt metadata
 // add the new metadata at the end when needed
 // Dependencies
@@ -35,32 +37,38 @@
 //    libs/metadata.c increment version.
 // CAUTION : key, subkey (last term of key) & name must be unique
 
-static const struct
+// static const struct
+// {
+//   char *key;
+//   char *name;
+//   int type;
+//   uint32_t display_order;
+// } dt_metadata_def[] = {
+//   // clang-format off
+//   {"Xmp.dc.creator", N_("creator"), DT_METADATA_TYPE_USER, 2},
+//   {"Xmp.dc.publisher", N_("publisher"), DT_METADATA_TYPE_USER, 3},
+//   {"Xmp.dc.title", N_("title"), DT_METADATA_TYPE_USER, 0},
+//   {"Xmp.dc.description", N_("description"), DT_METADATA_TYPE_USER, 1},
+//   {"Xmp.dc.rights", N_("rights"), DT_METADATA_TYPE_USER, 4},
+//   {"Xmp.acdsee.notes", N_("notes"), DT_METADATA_TYPE_USER, 5},
+//   {"Xmp.darktable.version_name", N_("version name"), DT_METADATA_TYPE_OPTIONAL, 6},
+//   {"Xmp.darktable.image_id", N_("image id"), DT_METADATA_TYPE_INTERNAL, 7},
+//   {"Xmp.xmpMM.PreservedFileName", N_("preserved filename"), DT_METADATA_TYPE_OPTIONAL, 8}
+//   // clang-format on
+// };
+
+GList *dt_metadata_get_list()
 {
-  char *key;
-  char *name;
-  int type;
-  uint32_t display_order;
-} dt_metadata_def[] = {
-  // clang-format off
-  {"Xmp.dc.creator", N_("creator"), DT_METADATA_TYPE_USER, 2},
-  {"Xmp.dc.publisher", N_("publisher"), DT_METADATA_TYPE_USER, 3},
-  {"Xmp.dc.title", N_("title"), DT_METADATA_TYPE_USER, 0},
-  {"Xmp.dc.description", N_("description"), DT_METADATA_TYPE_USER, 1},
-  {"Xmp.dc.rights", N_("rights"), DT_METADATA_TYPE_USER, 4},
-  {"Xmp.acdsee.notes", N_("notes"), DT_METADATA_TYPE_USER, 5},
-  {"Xmp.darktable.version_name", N_("version name"), DT_METADATA_TYPE_OPTIONAL, 6},
-  {"Xmp.darktable.image_id", N_("image id"), DT_METADATA_TYPE_INTERNAL, 7},
-  {"Xmp.xmpMM.PreservedFileName", N_("preserved filename"), DT_METADATA_TYPE_OPTIONAL, 8}
-  // clang-format on
-};
+  return _metadata_list;
+}
 
 unsigned int dt_metadata_get_nb_user_metadata()
 {
   unsigned int nb = 0;
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  for(GList *iter = _metadata_list; iter; iter = iter->next)
   {
-    if(dt_metadata_def[i].type != DT_METADATA_TYPE_INTERNAL)
+    dt_metadata_t2 *metadata = iter->data;
+    if(metadata->type != DT_METADATA_TYPE_INTERNAL)
       nb++;
   }
   return nb;
@@ -68,12 +76,13 @@ unsigned int dt_metadata_get_nb_user_metadata()
 
 const char *dt_metadata_get_name_by_display_order(const uint32_t order)
 {
-  if(order < DT_METADATA_NUMBER)
+  if(order < g_list_length(_metadata_list))
   {
-    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    for(GList *iter = _metadata_list; iter; iter = iter->next)
     {
-      if(order == dt_metadata_def[i].display_order)
-        return dt_metadata_def[i].name;
+      dt_metadata_t2 *metadata = iter->data;
+      if(order == metadata->display_order)
+        return metadata->name;
     }
   }
   return NULL;
@@ -81,12 +90,15 @@ const char *dt_metadata_get_name_by_display_order(const uint32_t order)
 
 dt_metadata_t dt_metadata_get_keyid_by_display_order(const uint32_t order)
 {
-  if(order < DT_METADATA_NUMBER)
+  if(order < g_list_length(_metadata_list))
   {
-    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    unsigned int i = 0;
+    for(GList *iter = _metadata_list; iter; iter = iter->next)
     {
-      if(order == dt_metadata_def[i].display_order)
+      dt_metadata_t2 *metadata = iter->data;
+      if(order == metadata->display_order)
         return i;
+      i++;
     }
   }
   return -1;
@@ -95,22 +107,27 @@ dt_metadata_t dt_metadata_get_keyid_by_display_order(const uint32_t order)
 dt_metadata_t dt_metadata_get_keyid_by_name(const char* name)
 {
   if(!name) return -1;
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  unsigned int i = 0;
+
+  for(GList *iter = _metadata_list; iter; iter = iter->next)
   {
-    if(strncmp(name, dt_metadata_def[i].name, strlen(dt_metadata_def[i].name)) == 0)
+    dt_metadata_t2 *metadata = iter->data;
+    if(strncmp(name, metadata->name, strlen(metadata->name)) == 0)
       return i;
+    i++;
   }
   return -1;
 }
 
 int dt_metadata_get_type_by_display_order(const uint32_t order)
 {
-  if(order < DT_METADATA_NUMBER)
+  if(order < g_list_length(_metadata_list))
   {
-    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    for(GList *iter = _metadata_list; iter; iter = iter->next)
     {
-      if(order == dt_metadata_def[i].display_order)
-        return dt_metadata_def[i].type;
+      dt_metadata_t2 *metadata = iter->data;
+      if(order == metadata->display_order)
+        return metadata->type;
     }
   }
   return 0;
@@ -118,8 +135,8 @@ int dt_metadata_get_type_by_display_order(const uint32_t order)
 
 const char *dt_metadata_get_name(const uint32_t keyid)
 {
-  if(keyid < DT_METADATA_NUMBER)
-    return dt_metadata_def[keyid].name;
+  if(keyid < g_list_length(_metadata_list))
+    return ((dt_metadata_t2 *)g_list_nth_data(_metadata_list, keyid))->name;
   else
     return NULL;
 }
@@ -127,27 +144,32 @@ const char *dt_metadata_get_name(const uint32_t keyid)
 dt_metadata_t dt_metadata_get_keyid(const char* key)
 {
   if(!key) return -1;
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  unsigned int i = 0;
+  for(GList *iter = _metadata_list; iter; iter = iter->next)
   {
-    if(strncmp(key, dt_metadata_def[i].key, strlen(dt_metadata_def[i].key)) == 0)
+    dt_metadata_t2 *metadata = iter->data;
+    if(strncmp(key, metadata->tagname, strlen(metadata->tagname)) == 0)
       return i;
+    i++;
   }
+
   return -1;
 }
 
 const char *dt_metadata_get_key(const uint32_t keyid)
 {
-  if(keyid < DT_METADATA_NUMBER)
-    return dt_metadata_def[keyid].key;
+  if(keyid < g_list_length(_metadata_list))
+    return ((dt_metadata_t2 *)g_list_nth_data(_metadata_list, keyid))->tagname;
   else
     return NULL;
 }
 
 const char *dt_metadata_get_subkey(const uint32_t keyid)
 {
-  if(keyid < DT_METADATA_NUMBER)
+  if(keyid < g_list_length(_metadata_list))
   {
-    char *t = g_strrstr(dt_metadata_def[keyid].key, ".");
+    dt_metadata_t2 *metadata = (dt_metadata_t2 *)g_list_nth_data(_metadata_list, keyid);
+    char *t = g_strrstr(metadata->tagname, ".");
     if(t) return t + 1;
   }
   return NULL;
@@ -157,11 +179,12 @@ const char *dt_metadata_get_key_by_subkey(const char *subkey)
 {
   if(subkey)
   {
-    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    for(GList *iter = _metadata_list; iter; iter = iter->next)
     {
-      char *t = g_strrstr(dt_metadata_def[i].key, ".");
+      dt_metadata_t2 *metadata = iter->data;
+      char *t = g_strrstr(metadata->tagname, ".");
       if(t && !g_strcmp0(t + 1, subkey))
-        return dt_metadata_def[i].key;
+        return metadata->tagname;
     }
   }
   return NULL;
@@ -169,32 +192,66 @@ const char *dt_metadata_get_key_by_subkey(const char *subkey)
 
 int dt_metadata_get_type(const uint32_t keyid)
 {
-  if(keyid < DT_METADATA_NUMBER)
-    return dt_metadata_def[keyid].type;
+  if(keyid < g_list_length(_metadata_list))
+    return ((dt_metadata_t2 *)g_list_nth_data(_metadata_list, keyid))->type;
   else
     return 0;
 }
 
 void dt_metadata_init()
 {
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  sqlite3_stmt *stmt;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                          "SELECT key, tagname, name, type, visible, private, display_order"
+                          " FROM data.meta_data"
+                          " ORDER BY display_order",
+                          -1, &stmt, NULL);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const int type = dt_metadata_get_type(i);
-    const char *name = (gchar *)dt_metadata_get_name(i);
-    char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-    if(!dt_conf_key_exists(setting))
-    {
-      // per default should be imported - ignored if "write_sidecar_files" set
-      uint32_t flag = DT_METADATA_FLAG_IMPORTED;
-      if(type == DT_METADATA_TYPE_OPTIONAL)
-      {
-        // per default this one should be hidden
-        flag |= DT_METADATA_FLAG_HIDDEN;
-      }
-      dt_conf_set_int(setting, flag);
-    }
-    g_free(setting);
+    int key = sqlite3_column_int(stmt, 0);
+    char *tagname = (char *)sqlite3_column_text(stmt, 1);
+    char *name = (char *)sqlite3_column_text(stmt, 2);
+    int type = sqlite3_column_int(stmt, 3);
+    gboolean visible = (gboolean) sqlite3_column_int(stmt, 4);
+    gboolean private = (gboolean) sqlite3_column_int(stmt, 5);
+    int display_order = sqlite3_column_int(stmt, 6);
+
+    dt_metadata_t2 *metadata = calloc(1, sizeof(dt_metadata_t2));
+    metadata->key = key;
+    metadata->tagname = g_strdup(tagname);
+    metadata->name = g_strdup(name);
+    metadata->type = type;
+    metadata->is_visible = visible;
+    metadata->is_private = private;
+    metadata->display_order = display_order;
+    _metadata_list = g_list_append(_metadata_list, metadata);
   }
+
+  sqlite3_finalize(stmt);
+
+
+
+
+  // for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  // {
+  //   const int type = dt_metadata_get_type(i);
+  //   const char *name = (gchar *)dt_metadata_get_name(i);
+  //   char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
+  //   if(!dt_conf_key_exists(setting))
+  //   {
+  //     // per default should be imported - ignored if "write_sidecar_files" set
+  //     uint32_t flag = DT_METADATA_FLAG_IMPORTED;
+  //     if(type == DT_METADATA_TYPE_OPTIONAL)
+  //     {
+  //       // per default this one should be hidden
+  //       flag |= DT_METADATA_FLAG_HIDDEN;
+  //     }
+  //     dt_conf_set_int(setting, flag);
+  //   }
+  //   g_free(setting);
+  // }
 }
 
 typedef struct dt_undo_metadata_t

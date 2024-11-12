@@ -90,25 +90,62 @@ static gchar *_get_buffer_text(GtkTextView *textview)
   return gtk_text_buffer_get_text(buffer, &start, &end, TRUE);
 }
 
-static void _textbuffer_changed(GtkTextBuffer *buffer, dt_lib_metadata_t *d)
+static GtkLabel *_get_label_from_grid_at_row(const uint32_t row, dt_lib_module_t *self)
 {
+  GtkWidget *cell = gtk_grid_get_child_at(GTK_GRID(self->widget), 0, row);
+  GtkLabel *label = g_object_get_data(G_OBJECT(cell), "label");
+  return label;
+}
+
+static GtkTextView *_get_textview_from_grid_at_row(const uint32_t row, dt_lib_module_t *self)
+{
+  GtkWidget *cell = gtk_grid_get_child_at(GTK_GRID(self->widget), 1, row);
+  GtkTextView *textview = g_object_get_data(G_OBJECT(cell), "textview");
+  return textview;
+}
+
+// static void _get_grid_row_for_key(uint32_t key,
+//                                   dt_lib_module_t *self,
+//                                   GtkLabel *label,
+//                                   GtkTextView *textview)
+// {
+//   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+
+//   for(unsigned int row = 0; row < d->num_grid_rows; row++)
+//   {
+//     GtkWidget *cell = gtk_grid_get_child_at(GTK_GRID(self->widget), 1, row);
+//     uint32_t row_key = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(cell), "key"));
+//     if(row_key != key) continue;
+
+//     *textview = g_object_get_data(G_OBJECT(cell), "textview");
+//   }
+// }
+
+static void _textbuffer_changed(GtkTextBuffer *buffer, dt_lib_module_t *self)
+{
+  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
   if(darktable.gui->reset) return;
 
   gboolean changed = FALSE;
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  for(unsigned int row = 0; row < d->num_grid_rows; row++)
   {
-    if(d->label[i])
+    GtkLabel *label = _get_label_from_grid_at_row(row, self);
+    GtkTextView *textview = _get_textview_from_grid_at_row(row, self);
+
+    
+    if(label)
     {
-      gchar *metadata = _get_buffer_text(d->textview[i]);
-      const gboolean leave_unchanged = _is_leave_unchanged(d->textview[i]);
-      const gboolean this_changed = d->metadata_list[i] && !leave_unchanged
-                                  ? strcmp(metadata, d->metadata_list[i]->data)
+      gchar *metadata = _get_buffer_text(textview);
+      const gchar *text_orig = (gchar *)g_object_get_data(G_OBJECT(textview), "text_orig");
+      const gboolean leave_unchanged = _is_leave_unchanged(textview);
+      const gboolean this_changed = text_orig && !leave_unchanged
+                                  ? strcmp(metadata, text_orig)
                                   : metadata[0] != 0;
       g_free(metadata);
 
-      gtk_widget_set_name(d->label[i], this_changed ? "dt-metadata-changed" : NULL);
+      gtk_widget_set_name(GTK_WIDGET(label), this_changed ? "dt-metadata-changed" : NULL);
 
-      gtk_container_foreach(GTK_CONTAINER(d->textview[i]),
+      gtk_container_foreach(GTK_CONTAINER(textview),
                             (GtkCallback)gtk_widget_set_visible,
                             GINT_TO_POINTER(leave_unchanged && !this_changed));
 
@@ -124,15 +161,76 @@ static int _textview_index(GtkTextView *textview)
   return GPOINTER_TO_INT(g_object_get_data(G_OBJECT(textview), "tv_index"));
 }
 
-static void _fill_text_view(const uint32_t i,
-                            const uint32_t count,
-                            dt_lib_module_t *self)
+static GtkTextView *_get_textview_by_key(const uint32_t key,
+                                         dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = self->data;
 
-  g_object_set_data(G_OBJECT(d->textview[i]), "tv_multiple", GINT_TO_POINTER(count == 1));
-  GtkTextBuffer *buffer = gtk_text_view_get_buffer(d->textview[i]);
-  gtk_text_buffer_set_text(buffer, count <= 1 ? "" : (char *)d->metadata_list[i]->data, -1);
+  // find textview by metadata key
+  for(int row = 0; row < d->num_grid_rows; row++)
+  {
+    GtkWidget *cell = gtk_grid_get_child_at(GTK_GRID(self->widget), 1, row);
+    const uint32_t metadata_key = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(cell), "key"));
+    if(metadata_key == key)
+    {
+      GtkTextView *textview = g_object_get_data(G_OBJECT(cell), "textview");
+      return textview;
+    }
+  }
+
+  return NULL;
+}
+
+// static void _fill_text_view(GtkTextView *textview,
+//                             const char *text,
+//                             const uint32_t count)
+// {
+//   g_object_set_data(G_OBJECT(textview), "tv_multiple", GINT_TO_POINTER(count == 1));
+//   GtkTextBuffer *buffer = gtk_text_view_get_buffer(textview);
+//   gtk_text_buffer_set_text(buffer, count <= 1 ? "" : text, -1);
+// }
+
+static void _clear_grid(dt_lib_module_t *self)
+{
+  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+
+  for(unsigned int row = 0; row < d->num_grid_rows; row++)
+  {
+    GtkWidget *cell = gtk_grid_get_child_at(GTK_GRID(self->widget), 1, row);
+    GtkTextView *textview = g_object_get_data(G_OBJECT(cell), "textview");
+    g_object_set_data(G_OBJECT(textview), "tv_multiple", GINT_TO_POINTER(FALSE));
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(textview);
+    gtk_text_buffer_set_text(buffer, "", -1);
+  }
+}
+
+static void _fill_tv(gpointer key, gpointer value, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+
+  const uint32_t metadata_key = GPOINTER_TO_INT(key);
+  GList *texts = value;
+  const uint32_t count = g_list_length(texts);
+
+  GtkTextView *textview = _get_textview_by_key(metadata_key, self);
+
+  if(textview)
+  {
+    g_object_set_data(G_OBJECT(textview), "tv_multiple", GINT_TO_POINTER(count > 1));
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(textview);
+
+    if(count > 1)
+      gtk_text_buffer_set_text(buffer, "", -1);
+    else
+    {
+      gtk_text_buffer_set_text(buffer, count > 1 ? "" : texts->data, -1);
+      gchar *text_orig = (gchar *)g_object_get_data(G_OBJECT(textview), "text_orig");
+      g_free(text_orig);
+      g_object_set_data(G_OBJECT(textview), "text_orig", g_strdup(texts->data));
+    }
+  }
+
+  g_list_free_full(texts, g_free);
 }
 
 static void _write_metadata(dt_lib_module_t *self);
@@ -167,17 +265,10 @@ void gui_update(dt_lib_module_t *self)
     }
   }
 
-  _write_metadata(self);
+// _write_metadata(self);
   d->last_act_on = imgs;
 
-  GList *metadata[DT_METADATA_NUMBER];
-  uint32_t metadata_count[DT_METADATA_NUMBER];
-
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
-  {
-    metadata[i] = NULL;
-    metadata_count[i] = 0;
-  }
+  GHashTable *metadata_texts = g_hash_table_new(NULL, NULL);
 
   // using dt_metadata_get() is not possible here. we want to do all
   // this in a single pass, everything else takes ages.
@@ -189,10 +280,10 @@ void gui_update(dt_lib_module_t *self)
     sqlite3_stmt *stmt;
     // clang-format off
     gchar *query = g_strdup_printf(
-                            "SELECT key, value, COUNT(id) AS ct FROM main.meta_data"
+                            "SELECT key, value"
+                            " FROM main.meta_data"
                             " WHERE id IN (%s)"
-                            " GROUP BY key, value"
-                            " ORDER BY value",
+                            " GROUP BY key, value",
                             images);
     // clang-format on
     g_free(images);
@@ -203,13 +294,20 @@ void gui_update(dt_lib_module_t *self)
       if(sqlite3_column_bytes(stmt, 1))
       {
         const uint32_t key = (uint32_t)sqlite3_column_int(stmt, 0);
-        if(key >= DT_METADATA_NUMBER)
-          continue;
         char *value = g_strdup((char *)sqlite3_column_text(stmt, 1));
-        const uint32_t count = (uint32_t)sqlite3_column_int(stmt, 2);
-        metadata_count[key] = (count == imgs_count) ? 2 : 1;
-        // if = all images have the same metadata
-        metadata[key] = g_list_append(metadata[key], value);
+
+        if(g_hash_table_contains(metadata_texts, GINT_TO_POINTER(key)))
+        {
+          GList *texts = g_hash_table_lookup(metadata_texts,
+                                             GINT_TO_POINTER(key));
+          g_hash_table_replace(metadata_texts,
+                               GINT_TO_POINTER(key),
+                               g_list_append(texts, value));
+        }
+        else
+          g_hash_table_insert(metadata_texts,
+                              GINT_TO_POINTER(key),
+                              g_list_append(NULL, value));
       }
     }
     sqlite3_finalize(stmt);
@@ -217,18 +315,26 @@ void gui_update(dt_lib_module_t *self)
   }
 
   ++darktable.gui->reset;
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
-  {
-    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
-    if(dt_metadata_get_type(keyid) == DT_METADATA_TYPE_INTERNAL)
-      continue;
-    g_list_free_full(d->metadata_list[i], g_free);
-    d->metadata_list[i] = metadata[keyid];
-    _fill_text_view(i, metadata_count[keyid], self);
-  }
+  _clear_grid(self);
+  g_hash_table_foreach(metadata_texts, _fill_tv, self);
+
+
+
+  // for(unsigned int row = 0; row < d->num_grid_rows; row++)
+  // {
+  //   GtkWidget *cell = gtk_grid_get_child_at(GTK_GRID(self->widget), 1, row);
+  //   const uint32_t metadata_key = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(cell), "key"));
+  //   GtkTextView *textview = g_object_get_data(G_OBJECT(cell), "textview");
+
+  //   g_list_free_full(d->metadata_list[row], g_free);
+  //   d->metadata_list[row] = metadata[metadata_key];
+  //   _fill_text_view(textview, metadata[metadata_key]->data, metadata_count[metadata_key]);
+  // }
   --darktable.gui->reset;
 
-  _textbuffer_changed(NULL, self->data);
+  g_hash_table_destroy(metadata_texts);
+
+  _textbuffer_changed(NULL, self);
 
   gtk_widget_set_sensitive(self->widget, imgs_count > 0);
 }
@@ -261,19 +367,18 @@ static void _metadata_set_list(const int i,
                                GList **key_value,
                                dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = self->data;
-
   GtkWidget *cell = gtk_grid_get_child_at(GTK_GRID(self->widget), 1, i);
-  const uint32_t keyid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(cell), "id"));
+  const char *tagname = (char *)g_object_get_data(G_OBJECT(cell), "tagname");
   GtkTextView *textview = g_object_get_data(G_OBJECT(cell), "textview");
 
   gchar *metadata = _get_buffer_text(GTK_TEXT_VIEW(textview));
-  const gboolean this_changed = d->metadata_list[i]
-                                && !_is_leave_unchanged(d->textview[i])
-                              ? strcmp(metadata, d->metadata_list[i]->data)
+  const gchar *text_orig = g_object_get_data(G_OBJECT(textview), "text_orig");
+  const gboolean this_changed = text_orig
+                                && !_is_leave_unchanged(textview)
+                              ? strcmp(metadata, text_orig)
                               : metadata[0] != 0;
   if(this_changed)
-    _append_kv(key_value, dt_metadata_get_key(keyid), metadata);
+    _append_kv(key_value, tagname, metadata);
   else
     g_free(metadata);
 }
@@ -682,34 +787,33 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(0));
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
 
-  sqlite3_stmt *stmt;
-  // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                          "SELECT id, name, title, type, visible, private"
-                          " FROM data.meta_data"
-                          " WHERE type <> 2"
-                          " AND visible = 1"
-                          " ORDER BY display_order",
-                          -1, &stmt, NULL);
 
-  d->num_grid_rows = 0;
   int i = 0;
 
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  for(GList *metadata_iter = dt_metadata_get_list(); metadata_iter; metadata_iter = metadata_iter->next)
   {
-    int id = sqlite3_column_int(stmt, 0);
-    char *title = (char *)sqlite3_column_text(stmt, 2);
+    dt_metadata_t2 *metadata = metadata_iter->data;
 
-    d->label[i] = dt_ui_label_new(_(title));
+    if(metadata->type == DT_METADATA_TYPE_INTERNAL)
+      continue;
+
+    gchar *label_text = g_strdup_printf("%s (%d)", metadata->name, metadata->key);
+
+    // GtkWidget *label = dt_ui_label_new(metadata->name);
+    GtkWidget *label = dt_ui_label_new(label_text);
+    g_free(label_text);
+
+    d->label[i] = label;
     gtk_widget_set_halign(d->label[i], GTK_ALIGN_FILL);
     GtkWidget *labelev = gtk_event_box_new();
     gtk_widget_set_tooltip_text(labelev, _("double-click to reset"));
     gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
     gtk_container_add(GTK_CONTAINER(labelev), d->label[i]);
+    g_object_set_data(G_OBJECT(labelev), "label", GINT_TO_POINTER(label));
     gtk_grid_attach(grid, labelev, 0, i, 1, 1);
 
     GtkWidget *textview = gtk_text_view_new();
-    dt_action_define(DT_ACTION(self), NULL, title, textview, &dt_action_def_entry);
+    dt_action_define(DT_ACTION(self), NULL, metadata->name, textview, &dt_action_def_entry);
     gtk_widget_set_tooltip_text(textview,
               _("metadata text"
               "\nctrl+enter inserts a new line (caution, may not be compatible with standard metadata)"
@@ -720,15 +824,17 @@ void gui_init(dt_lib_module_t *self)
     g_object_set_data(G_OBJECT(buffer), "buffer_tv", GINT_TO_POINTER(textview));
     g_object_set_data(G_OBJECT(textview), "tv_index", GINT_TO_POINTER(i));
     g_object_set_data(G_OBJECT(textview), "tv_multiple", GINT_TO_POINTER(FALSE));
+    g_object_set_data(G_OBJECT(textview), "text_orig", NULL);
 
     GtkWidget *unchanged = gtk_label_new(_("<leave unchanged>"));
     gtk_widget_set_name(unchanged, "dt-metadata-multi");
     gtk_text_view_add_child_in_window(GTK_TEXT_VIEW(textview), unchanged, GTK_TEXT_WINDOW_WIDGET, 0, 0);
 
-    d->setting_name[i] = g_strdup_printf("plugins/lighttable/metadata/%s_text_height", title);
+    d->setting_name[i] = g_strdup_printf("plugins/lighttable/metadata/%s_text_height", metadata->name);
 
     GtkWidget *swindow = dt_ui_resize_wrap(GTK_WIDGET(textview), 100, d->setting_name[i]);
-    g_object_set_data(G_OBJECT(swindow), "id", GINT_TO_POINTER(id));
+    g_object_set_data(G_OBJECT(swindow), "key", GINT_TO_POINTER(metadata->key));
+    g_object_set_data(G_OBJECT(swindow), "tagname", GINT_TO_POINTER(metadata->tagname));
     g_object_set_data(G_OBJECT(swindow), "textview", GINT_TO_POINTER(textview));
 
     gtk_grid_attach(grid, swindow, 1, i, 1, 1);
@@ -750,15 +856,13 @@ void gui_init(dt_lib_module_t *self)
     g_signal_connect(textview, "focus", G_CALLBACK(_textview_focus), self);
     g_signal_connect(textview, "populate-popup", G_CALLBACK(_populate_popup_multi), self);
     g_signal_connect(labelev, "button-press-event", G_CALLBACK(_metadata_reset), textview);
-    g_signal_connect(buffer, "changed", G_CALLBACK(_textbuffer_changed), d);
+    g_signal_connect(buffer, "changed", G_CALLBACK(_textbuffer_changed), self);
     d->textview[i] = GTK_TEXT_VIEW(textview);
     gtk_widget_set_hexpand(textview, TRUE);
     gtk_widget_set_vexpand(textview, TRUE);
     i++;
     d->num_grid_rows++;
   }
-
-  sqlite3_finalize(stmt);
 
   // apply button
   d->apply_button = dt_action_button_new(self, N_("apply"), _apply_button_clicked, self,
