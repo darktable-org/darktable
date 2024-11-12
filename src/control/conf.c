@@ -16,10 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "common/calculator.h"
 #include "common/darktable.h"
 #include "common/file_location.h"

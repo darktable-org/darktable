@@ -24,9 +24,6 @@
 #pragma GCC optimize("finite-math-only", "fp-contract=fast", "fast-math", "no-math-errno")
 #endif
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/chromatic_adaptation.h"

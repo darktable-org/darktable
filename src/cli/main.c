@@ -35,7 +35,6 @@
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/points.h"
-#include "config.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
 #include "imageio/imageio_common.h"

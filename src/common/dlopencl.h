@@ -20,10 +20,6 @@
 
 #ifdef HAVE_OPENCL
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <CL/cl.h>
 
 typedef cl_int (*dt_clGetPlatformIDs_t)(cl_uint, cl_platform_id *, cl_uint *);

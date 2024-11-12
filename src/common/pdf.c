@@ -26,10 +26,6 @@
 // or use
 // gcc -W -Wall -std=c99 -lz -lm `pkg-config --cflags --libs glib-2.0` -g -O3 -fopenmp -DSTANDALONE -o darktable-pdf pdf.c
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #define _XOPEN_SOURCE 700
 #include <errno.h>
 #include <stdio.h>

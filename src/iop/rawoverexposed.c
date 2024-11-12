@@ -16,10 +16,6 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "common/darktable.h"    // for darktable, darktable_t, dt_alloc_a...
 #include "common/image.h"        // for dt_image_t, ::DT_IMAGE_4BAYER
 #include "common/imagebuf.h"     // for dt_iop_image_copy_by_size
