@@ -21,8 +21,6 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/exif.h"
-#include "control/conf.h"
-#include "develop/develop.h"
 #include "imageio_common.h"
 
 #include <assert.h>
