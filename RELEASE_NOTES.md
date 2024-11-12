@@ -277,6 +277,9 @@ changes (where available).
 - Various fixes In the demosicer module. Non-usable options are hidden
   now. Fixed dual demosaicing for xtrans sensors and OpenCL code.
 
+- Fixed a bug in the history module where style creation fails if a
+  style with that name already exists.
+
 ## Lua
 
 ### API Version
