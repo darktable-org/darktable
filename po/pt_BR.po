@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-11 16:55-0300\n"
-"PO-Revision-Date: 2024-11-11 16:55-0300\n"
+"POT-Creation-Date: 2024-11-12 05:28-0300\n"
+"PO-Revision-Date: 2024-11-11 19:30-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -3583,7 +3583,7 @@ msgstr "modo de processamento"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:255
 #: ../src/develop/blend_gui.c:2346 ../src/iop/channelmixer.c:614
-#: ../src/iop/channelmixerrgb.c:4608 ../src/iop/colorchecker.c:1405
+#: ../src/iop/channelmixerrgb.c:4608 ../src/iop/colorchecker.c:1571
 #: ../src/iop/colorize.c:356 ../src/iop/colorzones.c:2632
 #: ../src/iop/exposure.c:1247
 msgid "lightness"
@@ -4363,7 +4363,7 @@ msgstr "densidade"
 #: ../src/develop/blend_gui.c:2362 ../src/iop/basicadj.c:654
 #: ../src/iop/channelmixer.c:613 ../src/iop/colisa.c:282
 #: ../src/iop/colorbalance.c:2002 ../src/iop/colorbalancergb.c:1828
-#: ../src/iop/colorchecker.c:1440 ../src/iop/colorcontrast.c:82
+#: ../src/iop/colorchecker.c:1606 ../src/iop/colorcontrast.c:82
 #: ../src/iop/colorcorrection.c:266 ../src/iop/colorequal.c:3108
 #: ../src/iop/colorize.c:350 ../src/iop/lowpass.c:581 ../src/iop/soften.c:353
 #: ../src/iop/velvia.c:75 ../src/iop/vibrance.c:72 ../src/iop/vignette.c:1049
@@ -7234,17 +7234,17 @@ msgstr "id da imagem"
 msgid "preserved filename"
 msgstr "nomes preservado de arquivo"
 
-#: ../src/common/mipmap_cache.c:1300 ../src/imageio/imageio.c:1074
+#: ../src/common/mipmap_cache.c:1307 ../src/imageio/imageio.c:1071
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "imagem `%s' não disponível!"
 
-#: ../src/common/mipmap_cache.c:1303 ../src/imageio/imageio.c:1078
+#: ../src/common/mipmap_cache.c:1310 ../src/imageio/imageio.c:1079
 #, c-format
 msgid "unable to load image `%s'!"
 msgstr "não fi possível carregar a imagem `%s'!"
 
-#: ../src/common/mipmap_cache.c:1305 ../src/imageio/imageio.c:1080
+#: ../src/common/mipmap_cache.c:1312 ../src/imageio/imageio.c:1082
 #, c-format
 msgid "image '%s' not supported"
 msgstr "imagem `%s` não é suportada"
@@ -10017,7 +10017,7 @@ msgstr "intervalo de data-hora para adicionar ao valor mínimo"
 msgid "fixed"
 msgstr "fixa"
 
-#: ../src/dtgtk/range.c:491 ../src/iop/colorchecker.c:1450
+#: ../src/dtgtk/range.c:491 ../src/iop/colorchecker.c:1616
 msgid "relative"
 msgstr "relativa"
 
@@ -12828,11 +12828,11 @@ msgstr "segundo"
 msgid "last but one"
 msgstr "penúltimo"
 
-#: ../src/gui/accelerators.c:1770 ../src/gui/accelerators.c:1835
+#: ../src/gui/accelerators.c:1772 ../src/gui/accelerators.c:1837
 msgid "(unchanged)"
 msgstr "(não modificado)"
 
-#: ../src/gui/accelerators.c:1952
+#: ../src/gui/accelerators.c:1954
 msgid ""
 "define a shortcut by pressing a key, optionally combined with modifier keys "
 "(ctrl/shift/alt)\n"
@@ -12857,27 +12857,27 @@ msgstr ""
 "\n"
 "clique-direito para cancelar"
 
-#: ../src/gui/accelerators.c:2025
+#: ../src/gui/accelerators.c:2027
 msgid "removing shortcut"
 msgstr "removendo atalho"
 
-#: ../src/gui/accelerators.c:2027
+#: ../src/gui/accelerators.c:2029
 msgid "disable the selected default shortcut?"
 msgstr "excluir os atalhos default selecionados?"
 
-#: ../src/gui/accelerators.c:2028
+#: ../src/gui/accelerators.c:2030
 msgid "restore the selected default shortcut?"
 msgstr "restaurar os atalhos efault selecionados?"
 
-#: ../src/gui/accelerators.c:2029
+#: ../src/gui/accelerators.c:2031
 msgid "remove the selected shortcut?"
 msgstr "excluir os atalhos selecionados?"
 
-#: ../src/gui/accelerators.c:2118
+#: ../src/gui/accelerators.c:2120
 msgid "command"
 msgstr "comando"
 
-#: ../src/gui/accelerators.c:2119
+#: ../src/gui/accelerators.c:2121
 msgid "preset"
 msgstr "predefinição"
 
@@ -14785,7 +14785,7 @@ msgstr "gráfico"
 msgid "XCF"
 msgstr "XCF"
 
-#: ../src/imageio/imageio.c:1097
+#: ../src/imageio/imageio.c:1099
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -14794,17 +14794,17 @@ msgstr ""
 "falha ao reservar memória para %s, favor reduza as threads usadas para "
 "exportação ou acrescente mais memória."
 
-#: ../src/imageio/imageio.c:1099
+#: ../src/imageio/imageio.c:1101
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "exporta miniatura"
 
-#: ../src/imageio/imageio.c:1099
+#: ../src/imageio/imageio.c:1101
 msgctxt "noun"
 msgid "export"
 msgstr "exporta"
 
-#: ../src/imageio/imageio.c:1116
+#: ../src/imageio/imageio.c:1118
 #, c-format
 msgid "cannot find the style '%s' to apply during export"
 msgstr ""
@@ -17966,36 +17966,40 @@ msgstr "definido pelo perfil, Lab"
 msgid "it8 skin tones"
 msgstr "tons de pele it8"
 
-#: ../src/iop/colorchecker.c:322
+#: ../src/iop/colorchecker.c:472
+msgid "expanded color checker"
+msgstr "cartão de cores expandido"
+
+#: ../src/iop/colorchecker.c:488
 msgid "Helmholtz/Kohlrausch monochrome"
 msgstr "monocromático Helmholtz/Kohlrausch"
 
-#: ../src/iop/colorchecker.c:339
+#: ../src/iop/colorchecker.c:505
 msgid "Fuji Astia emulation"
 msgstr "emulação de Fuji Astia"
 
-#: ../src/iop/colorchecker.c:353
+#: ../src/iop/colorchecker.c:519
 msgid "Fuji Classic Chrome emulation"
 msgstr "emulação de Fuji Classic Chrome"
 
-#: ../src/iop/colorchecker.c:367
+#: ../src/iop/colorchecker.c:533
 msgid "Fuji Monochrome emulation"
 msgstr "emulação de Fuji Monochrome"
 
-#: ../src/iop/colorchecker.c:381
+#: ../src/iop/colorchecker.c:547
 msgid "Fuji Provia emulation"
 msgstr "emulação de Fuji Provia"
 
-#: ../src/iop/colorchecker.c:395
+#: ../src/iop/colorchecker.c:561
 msgid "Fuji Velvia emulation"
 msgstr "emulação de Fuji Velvia"
 
-#: ../src/iop/colorchecker.c:831 ../src/iop/colorchecker.c:1393
+#: ../src/iop/colorchecker.c:997 ../src/iop/colorchecker.c:1559
 #, c-format
 msgid "patch #%d"
 msgstr "patch #%d"
 
-#: ../src/iop/colorchecker.c:1244
+#: ../src/iop/colorchecker.c:1410
 #, c-format
 msgid ""
 "(%2.2f %2.2f %2.2f)\n"
@@ -18012,15 +18016,15 @@ msgstr ""
 "clique-direito para remover patch\n"
 "shift+clique enquanto escolhe cor para substituir patch"
 
-#: ../src/iop/colorchecker.c:1388
+#: ../src/iop/colorchecker.c:1554
 msgid "patch"
 msgstr "patch"
 
-#: ../src/iop/colorchecker.c:1389
+#: ../src/iop/colorchecker.c:1555
 msgid "color checker patch"
 msgstr "patch da tabela de cores"
 
-#: ../src/iop/colorchecker.c:1403
+#: ../src/iop/colorchecker.c:1569
 msgid ""
 "adjust target color Lab 'L' channel\n"
 "lower values darken target color while higher brighten it"
@@ -18029,7 +18033,7 @@ msgstr ""
 "valores mais baixos escurecem a cor enquanto valores mais autos a tornam "
 "mais brilhante"
 
-#: ../src/iop/colorchecker.c:1411
+#: ../src/iop/colorchecker.c:1577
 msgid ""
 "adjust target color Lab 'a' channel\n"
 "lower values shift target color towards greens while higher shift towards "
@@ -18039,11 +18043,11 @@ msgstr ""
 "valores mais baixos deslocam a cor alvo para os verdes enquanto valores mais "
 "altos deslocam para magentas."
 
-#: ../src/iop/colorchecker.c:1414
+#: ../src/iop/colorchecker.c:1580
 msgid "green-magenta offset"
 msgstr "contraste verde-magenta"
 
-#: ../src/iop/colorchecker.c:1423
+#: ../src/iop/colorchecker.c:1589
 msgid ""
 "adjust target color Lab 'b' channel\n"
 "lower values shift target color towards blues while higher shift towards "
@@ -18053,11 +18057,11 @@ msgstr ""
 "valores menores deslocam a cor alvo para azuis enquanto valores mais altos "
 "deslocam para amarelos"
 
-#: ../src/iop/colorchecker.c:1426
+#: ../src/iop/colorchecker.c:1592
 msgid "blue-yellow offset"
 msgstr "contraste azul-amarelo"
 
-#: ../src/iop/colorchecker.c:1435
+#: ../src/iop/colorchecker.c:1601
 msgid ""
 "adjust target color saturation\n"
 "adjusts 'a' and 'b' channels of target color in Lab space simultaneously\n"
@@ -18068,11 +18072,11 @@ msgstr ""
 "valores mais baixos levam à saturação mais baixa enquanto valores mais altos "
 "levam à saturação mais alta"
 
-#: ../src/iop/colorchecker.c:1444
+#: ../src/iop/colorchecker.c:1610
 msgid "target color"
 msgstr "cor alvo"
 
-#: ../src/iop/colorchecker.c:1447
+#: ../src/iop/colorchecker.c:1613
 msgid ""
 "control target color of the patches\n"
 "relative - target color is relative from the patch original color\n"
@@ -18082,7 +18086,7 @@ msgstr ""
 "relativo - a cor alvo é relativa à cor original do patch\n"
 "absoluto - a cor alvo é um valor Lab absoluto"
 
-#: ../src/iop/colorchecker.c:1451
+#: ../src/iop/colorchecker.c:1617
 msgid "absolute"
 msgstr "absoluto"
 
