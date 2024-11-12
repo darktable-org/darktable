@@ -287,10 +287,10 @@ void darktable_splash_screen_set_progress_percent(const char *msg,
     gtk_label_set_text(GTK_LABEL(progress_text), text);
     g_free(text);
 
-    if(elapsed >= 2.0 && fraction > 0.02)
+    if(elapsed >= 2.0 || fraction > 0.01)
     {
       const double total = elapsed / fraction;
-      const double remain = total - elapsed;
+      const double remain = (total - elapsed) + 0.5;  // round to full seconds rather than truncating
       const int minutes = remain / 60;
       const int seconds = remain - (60 * minutes);
       char *rem_text = g_strdup_printf(" %4d:%02d", minutes, seconds);
