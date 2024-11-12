@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -80,10 +80,10 @@ int position(const dt_lib_module_t *self)
   return 1001;
 }
 
-static void _dropdown_changed(GtkComboBox *widget, gpointer user_data)
-{
-  dt_lib_viewswitcher_t *d = (dt_lib_viewswitcher_t *)user_data;
+#define SHORTCUT_TOOLTIP(v, w) dt_action_define(&darktable.control->actions_global, "switch views", v->module_name, w, NULL);
 
+static void _dropdown_changed(GtkComboBox *widget, dt_lib_viewswitcher_t *d)
+{
   GtkTreeIter iter;
   if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(d->dropdown), &iter))
   {
@@ -91,6 +91,7 @@ static void _dropdown_changed(GtkComboBox *widget, gpointer user_data)
     GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(d->dropdown));
     gtk_tree_model_get(model, &iter, VIEW_COLUMN, &view, -1);
     _switch_view(view);
+    SHORTCUT_TOOLTIP(view, d->dropdown);
   }
 }
 
@@ -120,7 +121,7 @@ void gui_init(dt_lib_module_t *self)
       gtk_box_pack_start(GTK_BOX(self->widget), w, FALSE, FALSE, 0);
       d->labels = g_list_append(d->labels, gtk_bin_get_child(GTK_BIN(w)));
 
-      dt_action_define(&darktable.control->actions_global, "switch views", view->module_name, w, NULL);
+      SHORTCUT_TOOLTIP(view, w);
 
       /* create space if more views */
       if(view_iter->next != NULL)
@@ -145,7 +146,7 @@ void gui_init(dt_lib_module_t *self)
                                         "sensitive", SENSITIVE_COLUMN, NULL);
 
         gtk_list_store_append(model, &tree_iter);
-        gtk_list_store_set(model, &tree_iter, TEXT_COLUMN, /*italic*/ _("other"), VIEW_COLUMN, NULL, SENSITIVE_COLUMN, 0, -1);
+        gtk_list_store_set(model, &tree_iter, TEXT_COLUMN, _("other"), VIEW_COLUMN, NULL, SENSITIVE_COLUMN, 0, -1);
 
         gtk_box_pack_start(GTK_BOX(self->widget), d->dropdown, FALSE, FALSE, 0);
         g_signal_connect(G_OBJECT(d->dropdown), "changed", G_CALLBACK(_dropdown_changed), d);
@@ -171,10 +172,8 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static void _lib_viewswitcher_enter_leave_notify_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
+static void _lib_viewswitcher_enter_leave_notify_callback(GtkWidget *w, GdkEventCrossing *e, GtkLabel *l)
 {
-  GtkLabel *l = (GtkLabel *)user_data;
-
   /* if not active view lets highlight */
   if(e->type == GDK_ENTER_NOTIFY &&
      strcmp(g_object_get_data(G_OBJECT(w), "view-label"), dt_view_manager_name(darktable.view_manager)))
@@ -191,6 +190,7 @@ static void _lib_viewswitcher_view_cannot_change_callback(gpointer instance, dt_
   g_signal_handlers_block_by_func(d->dropdown, _dropdown_changed, d);
   gtk_combo_box_set_active(GTK_COMBO_BOX(d->dropdown), 0);
   gtk_widget_set_state_flags(d->dropdown, GTK_STATE_FLAG_SELECTED, FALSE);
+  g_hash_table_remove(darktable.control->widgets, d->dropdown);
   g_signal_handlers_unblock_by_func(d->dropdown, _dropdown_changed, d);
 }
 
@@ -220,13 +220,14 @@ static void _lib_viewswitcher_view_changed_callback(gpointer instance, dt_view_t
   {
     gtk_combo_box_set_active(GTK_COMBO_BOX(d->dropdown), 0);
     gtk_widget_set_state_flags(d->dropdown, GTK_STATE_FLAG_NORMAL, TRUE);
+    g_hash_table_remove(darktable.control->widgets, d->dropdown);
   }
   else
   {
     GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(d->dropdown));
     GtkTreeIter iter;
     uint32_t index = 0;
-    if(gtk_tree_model_get_iter_first(model, &iter) == TRUE) do
+    if(gtk_tree_model_get_iter_first(model, &iter)) do
     {
       gchar *str;
       gtk_tree_model_get(model, &iter, TEXT_COLUMN, &str, -1);
@@ -234,11 +235,12 @@ static void _lib_viewswitcher_view_changed_callback(gpointer instance, dt_view_t
       {
         gtk_combo_box_set_active(GTK_COMBO_BOX(d->dropdown), index);
         gtk_widget_set_state_flags(d->dropdown, GTK_STATE_FLAG_SELECTED, TRUE);
+        SHORTCUT_TOOLTIP(new_view, d->dropdown);
         break;
       }
       g_free(str);
       index++;
-    } while(gtk_tree_model_iter_next(model, &iter) == TRUE);
+    } while(gtk_tree_model_iter_next(model, &iter));
   }
 
   g_signal_handlers_unblock_by_func(d->dropdown, _dropdown_changed, d);
