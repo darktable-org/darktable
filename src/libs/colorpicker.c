@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -713,7 +713,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(sample_row), label, TRUE, TRUE, 0);
 
   data->add_sample_button = dtgtk_button_new(dtgtk_cairo_paint_square_plus, 0, NULL);
-  ;
+
   gtk_widget_set_sensitive(data->add_sample_button, FALSE);
   g_signal_connect(G_OBJECT(data->add_sample_button), "clicked",
                    G_CALLBACK(_add_sample), self);
@@ -734,6 +734,8 @@ void gui_init(dt_lib_module_t *self)
 
   data->display_samples_check_box =
     gtk_check_button_new_with_label(_("display samples on image/vectorscope"));
+  dt_action_define(DT_ACTION(self), NULL, N_("display samples"),
+                   data->display_samples_check_box, &dt_action_def_toggle);
   gtk_label_set_ellipsize
     (GTK_LABEL(gtk_bin_get_child(GTK_BIN(data->display_samples_check_box))),
      PANGO_ELLIPSIZE_MIDDLE);
@@ -745,6 +747,8 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *restrict_button =
     gtk_check_button_new_with_label(_("restrict scope to selection"));
+  dt_action_define(DT_ACTION(self), NULL, N_("restrict scope"),
+                   restrict_button, &dt_action_def_toggle);
   gtk_label_set_ellipsize
     (GTK_LABEL(gtk_bin_get_child(GTK_BIN(restrict_button))),
      PANGO_ELLIPSIZE_MIDDLE);
