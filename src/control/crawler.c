@@ -106,6 +106,10 @@ static void _set_modification_time(char *filename,
   if(info) g_clear_object(&info);
 }
 
+// pregress update intervals in seconds
+#define FAST_UPDATE 0.2
+#define SLOW_UPDATE 1.0
+
 GList *dt_control_crawler_run(void)
 {
   sqlite3_stmt *stmt, *inner_stmt;
@@ -140,8 +144,11 @@ GList *dt_control_crawler_run(void)
   dt_database_start_transaction(darktable.db);
 
   int image_count = 0;
-  double start_time = dt_get_wtime();
-  double last_time = start_time - 0.99; // wait 10ms before first update to ensure visibility
+  const double start_time = dt_get_wtime();
+  // set the "previous update" time to 10ms after a notional previous
+  // update to ensure visibility of the first update (which might not
+  // appear when done with zero delay) while minimizing the delay
+  double last_time = start_time - (FAST_UPDATE-0.01);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -150,12 +157,13 @@ GList *dt_control_crawler_run(void)
     const int version = sqlite3_column_int(stmt, 2);
     const gchar *image_path = (char *)sqlite3_column_text(stmt, 3);
     int flags = sqlite3_column_int(stmt, 4);
+    ++image_count;
 
-    // update the progress message once per second
-    double fraction = (++image_count) / (double)total_images;
-    double curr_time = dt_get_wtime();
-    if(curr_time >= last_time + 1.0)
+    // update the progress message - five times per second for first four seconds, then once per second
+    const double curr_time = dt_get_wtime();
+    if(curr_time >= last_time + ((curr_time - start_time > 4.0) ? SLOW_UPDATE : FAST_UPDATE))
     {
+      const double fraction = image_count / (double)total_images;
       darktable_splash_screen_set_progress_percent(_("checking for updated sidecar files (%d%%)"),
                                                    fraction,
                                                    curr_time - start_time);
