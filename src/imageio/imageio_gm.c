@@ -54,43 +54,52 @@ static gboolean _supported_image(const gchar *filename)
 }
 
 
-dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
+dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img,
+                                       const char *filename,
+                                       dt_mipmap_buffer_t *mbuf)
 {
   int err = DT_IMAGEIO_LOAD_FAILED;
+
+  if(!_supported_image(filename))
+    return DT_IMAGEIO_LOAD_FAILED;
+
+  if(!img->exif_inited)
+    (void)dt_exif_read(img, filename);
+
   ExceptionInfo exception;
-  Image *image = NULL;
-  ImageInfo *image_info = NULL;
-  uint32_t width, height;
-
-  if(!_supported_image(filename)) return DT_IMAGEIO_LOAD_FAILED;
-
-  if(!img->exif_inited) (void)dt_exif_read(img, filename);
-
   GetExceptionInfo(&exception);
-  image_info = CloneImageInfo((ImageInfo *)NULL);
+  ImageInfo *image_info = CloneImageInfo((ImageInfo *)NULL);
 
   g_strlcpy(image_info->filename, filename, sizeof(image_info->filename));
 
-  image = ReadImage(image_info, &exception);
-  if(exception.severity != UndefinedException) CatchException(&exception);
+  Image *image = ReadImage(image_info, &exception);
+
+  if(exception.severity != UndefinedException)
+    CatchException(&exception);
+
   if(!image)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[GraphicsMagick_open] image `%s' not found", img->filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[GraphicsMagick_open] image '%s' not found",
+             img->filename);
     err = DT_IMAGEIO_FILE_NOT_FOUND;
     goto error;
   }
 
-  dt_print(DT_DEBUG_IMAGEIO, "[GraphicsMagick_open] image `%s' loading", img->filename);
+  dt_print(DT_DEBUG_IMAGEIO,
+           "[GraphicsMagick_open] image '%s' loading",
+           img->filename);
 
   if(IsCMYKColorspace(image->colorspace))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[GraphicsMagick_open] error: CMYK images are not supported.");
+    dt_print(DT_DEBUG_ALWAYS,
+             "[GraphicsMagick_open] error: CMYK images are not supported");
     err =  DT_IMAGEIO_LOAD_FAILED;
     goto error;
   }
 
-  width = image->columns;
-  height = image->rows;
+  uint32_t width = image->columns;
+  uint32_t height = image->rows;
 
   img->width = width;
   img->height = height;
@@ -101,7 +110,9 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
   float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!mipbuf)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[GraphicsMagick_open] could not alloc full buffer for image `%s'", img->filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[GraphicsMagick_open] could not alloc full buffer for image '%s'",
+             img->filename);
     err = DT_IMAGEIO_CACHE_FULL;
     goto error;
   }
@@ -109,18 +120,35 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
   for(uint32_t row = 0; row < height; row++)
   {
     float *bufprt = mipbuf + (size_t)4 * row * img->width;
-    int ret = DispatchImage(image, 0, row, width, 1, "RGBP", FloatPixel, bufprt, &exception);
-    if(exception.severity != UndefinedException) CatchException(&exception);
+    int ret = DispatchImage(image,
+                            0,
+                            row,
+                            width,
+                            1,
+                            "RGBP",
+                            FloatPixel,
+                            bufprt,
+                            &exception);
+
+    if(exception.severity != UndefinedException)
+      CatchException(&exception);
+
     if(ret != MagickPass)
     {
-      dt_print(DT_DEBUG_ALWAYS, "[GraphicsMagick_open] error reading image `%s'", img->filename);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[GraphicsMagick_open] error reading image '%s'",
+               img->filename);
       err = DT_IMAGEIO_LOAD_FAILED;
       goto error;
     }
   }
 
   size_t profile_length;
-  const uint8_t *profile_data = (const uint8_t *)GetImageProfile(image, "ICM", &profile_length);
+  const uint8_t *profile_data;
+  profile_data = (const uint8_t *)GetImageProfile(image,
+                                                  "ICM",
+                                                  &profile_length);
+
   if(profile_data)
   {
     img->profile = g_try_malloc0(profile_length);
@@ -131,8 +159,12 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
     }
   }
 
-  if(image) DestroyImage(image);
-  if(image_info) DestroyImageInfo(image_info);
+  if(image)
+    DestroyImage(image);
+
+  if(image_info)
+    DestroyImageInfo(image_info);
+
   DestroyExceptionInfo(&exception);
 
   img->buf_dsc.cst = IOP_CS_RGB;
@@ -146,9 +178,14 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
   return DT_IMAGEIO_OK;
 
 error:
-  if(image) DestroyImage(image);
-  if(image_info) DestroyImageInfo(image_info);
+  if(image)
+    DestroyImage(image);
+
+  if(image_info)
+    DestroyImageInfo(image_info);
+
   DestroyExceptionInfo(&exception);
+
   return err;
 }
 #endif
