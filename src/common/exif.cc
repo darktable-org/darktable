@@ -19,10 +19,6 @@
 #include "common/dtpthread.h"
 #define __STDC_FORMAT_MACROS
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <errno.h>
 #include <glib.h>
 #include <sqlite3.h>

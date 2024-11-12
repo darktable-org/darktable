@@ -18,10 +18,10 @@
 
 #ifdef HAVE_OPENCL
 
-#include "common/bilateral.h"
-#include "common/bilateralcl.h"
 #include "common/darktable.h" // for CLAMPS, dt_print, darktable, darktable_t
 #include "common/opencl.h"    // for dt_opencl_set_kernel_arg, dt_opencl_cr...
+#include "common/bilateral.h"
+#include "common/bilateralcl.h"
 #include <glib.h>             // for MAX
 #include <math.h>             // for roundf
 #include <stdlib.h>           // for free, malloc

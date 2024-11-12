@@ -26,10 +26,6 @@
 #pragma GCC optimize ("no-finite-math-only")
 #endif
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "bauhaus/bauhaus.h"
 #include "common/interpolation.h"
 #include "common/file_location.h"

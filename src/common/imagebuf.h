@@ -17,10 +17,6 @@
 */
 
 #pragma once
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "develop/imageop.h" // for dt_iop_roi_t
 
 G_BEGIN_DECLS

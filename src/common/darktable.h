@@ -40,9 +40,6 @@
 
 #include "external/ThreadSafetyAnalysis.h"
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "common/database.h"
 #include "common/dtpthread.h"
 #include "common/dttypes.h"

@@ -16,8 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "config.h"
-
 #include "common/cache.h"
 #include "common/darktable.h"
 #include "common/dtpthread.h"

@@ -50,10 +50,6 @@
         will fill in the zeros / DT_DISTANCE_TRANSFORM_MAX
    The returned float of this function is the maximum calculated distance
 */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <math.h>
 #include "common/math.h"
 #include "common/distance_transform.h"

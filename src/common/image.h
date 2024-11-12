@@ -18,10 +18,6 @@
 
 #pragma once
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "common/color_harmony.h"
 #include "common/colorspaces.h"
 #include "common/dtpthread.h"

@@ -17,10 +17,6 @@
 */
 
 #pragma once
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #ifdef HAVE_OPENCL
 #include <CL/cl.h>           // for cl_mem
 #endif
