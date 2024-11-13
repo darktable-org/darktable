@@ -76,7 +76,11 @@ typedef enum dt_metadata_flag_t
 }
 dt_metadata_flag_t;
 
+/** return the list of metadata items */
 GList *dt_metadata_get_list();
+
+/** sort the list by display_order */
+void dt_metadata_sort_list();
 
 /** return the number of user metadata (!= DT_METADATA_TYPE_INTERNAL) */
 unsigned int dt_metadata_get_nb_user_metadata();

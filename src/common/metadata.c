@@ -62,6 +62,16 @@ GList *dt_metadata_get_list()
   return _metadata_list;
 }
 
+static gint _compare_display_order(gconstpointer a, gconstpointer b)
+{
+  return ((dt_metadata_t2 *) a)->display_order - ((dt_metadata_t2 *) b)->display_order;
+}
+
+void dt_metadata_sort_list()
+{
+  _metadata_list = g_list_sort(_metadata_list, _compare_display_order);
+}
+
 unsigned int dt_metadata_get_nb_user_metadata()
 {
   unsigned int nb = 0;
@@ -144,13 +154,11 @@ const char *dt_metadata_get_name(const uint32_t keyid)
 dt_metadata_t dt_metadata_get_keyid(const char* key)
 {
   if(!key) return -1;
-  unsigned int i = 0;
   for(GList *iter = _metadata_list; iter; iter = iter->next)
   {
     dt_metadata_t2 *metadata = iter->data;
     if(strncmp(key, metadata->tagname, strlen(metadata->tagname)) == 0)
-      return i;
-    i++;
+      return metadata->key;
   }
 
   return -1;
@@ -231,7 +239,7 @@ void dt_metadata_init()
 
   sqlite3_finalize(stmt);
 
-
+  dt_metadata_sort_list();
 
 
   // for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
