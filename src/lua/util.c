@@ -21,7 +21,6 @@
 #include <glib.h>
 #include <stdlib.h>
 #include <string.h>
-#include <uuid.h>
 
 static int message(lua_State *L)
 {
