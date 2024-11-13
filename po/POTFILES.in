@@ -172,6 +172,7 @@ src/external/lua-scripts/lib/dtutils/file.lua
 src/external/lua-scripts/lib/dtutils/log.lua
 src/external/lua-scripts/lib/dtutils/string.lua
 src/external/lua-scripts/lib/dtutils/system.lua
+src/external/lua-scripts/official/apply_camera_style.lua
 src/external/lua-scripts/official/check_for_updates.lua
 src/external/lua-scripts/official/copy_paste_metadata.lua
 src/external/lua-scripts/official/delete_long_tags.lua
