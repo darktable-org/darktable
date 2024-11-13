@@ -792,6 +792,32 @@ static float _exposure_proxy_get_black(dt_iop_module_t *self)
   return p->black;
 }
 
+static void _exposure_proxy_handle_event(GdkEvent *event, gboolean blackwhite)
+{
+  dt_iop_module_t *self = darktable.develop->proxy.exposure.module;
+  if(self && self->gui_data)
+  {
+    static gboolean black = FALSE;
+    if(event->type == GDK_BUTTON_PRESS || event->type == GDK_SCROLL)
+      black = blackwhite;
+
+    if(black)
+      event->button.x *= -1;
+
+    const dt_iop_exposure_params_t *p = self->params;
+    dt_iop_exposure_gui_data_t *g = self->gui_data;
+    GtkWidget *widget = black ? g->black :
+                        p->mode == EXPOSURE_MODE_DEFLICKER
+                        ? g->deflicker_target_level : g->exposure;
+    gtk_widget_realize(widget);
+    gtk_widget_event(widget, event);
+
+    gchar *text = dt_bauhaus_slider_get_text(widget, dt_bauhaus_slider_get(widget));
+    dt_action_widget_toast(DT_ACTION(self), widget, "%s", text);
+    g_free(text);
+  }
+}
+
 static void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_exposure_gui_data_t *g = self->gui_data;
@@ -1263,6 +1289,7 @@ void gui_init(dt_iop_module_t *self)
   instance->get_exposure = _exposure_proxy_get_exposure;
   instance->set_black = _exposure_proxy_set_black;
   instance->get_black = _exposure_proxy_get_black;
+  instance->handle_event = _exposure_proxy_handle_event;
 }
 
 void gui_cleanup(dt_iop_module_t *self)
