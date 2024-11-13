@@ -194,10 +194,6 @@ typedef struct dt_lib_histogram_t
   GtkWidget *colorspace_button;        // GtkButton -- vectorscope colorspace
   GtkWidget *color_harmony_button
     [DT_COLOR_HARMONY_N - 1];  // GtkButton -- RYB vectorscope color harmonies
-  // drag to change parameters
-  gboolean dragging;
-  int32_t button_down_x, button_down_y;
-  float button_down_value;
   // depends on mouse position
   dt_lib_histogram_highlight_t highlight;
   // state set by buttons
@@ -1640,45 +1636,24 @@ static gboolean _drawable_draw_callback(GtkWidget *widget,
 
 static gboolean _drawable_motion_notify_callback(GtkWidget *widget,
                                                  GdkEventMotion *event,
-                                                 gpointer user_data)
+                                                 dt_lib_histogram_t *d)
 {
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   dt_develop_t *dev = darktable.develop;
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
 
-  if(d->dragging)
+  if(event->state & GDK_BUTTON1_MASK)
   {
-    // FIXME: dragging the vectorscope could change white balance
-    const gboolean width_wise =
-      (d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM
-       || d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_VERT);
-    const float diff = width_wise
-      ? event->x - d->button_down_x : d->button_down_y - event->y;
-    const int range = width_wise ? allocation.width : allocation.height;
-    // FIXME: see dt_bauhaus_slider_postponed_value_change(): delay
-    // processing until the pixelpipe can update based on
-    // dev->preview_average_delay for smoother interaction
-    if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
-    {
-      const float exposure =
-        d->button_down_value + diff * 4.0f
-        / (float)range * dt_accel_get_speed_multiplier(widget, event->state);
-      dt_dev_exposure_set_exposure(dev, exposure);
-    }
-    else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
-    {
-      const float black = d->button_down_value - diff * .1f
-        / (float)range * dt_accel_get_speed_multiplier(widget, event->state);
-      dt_dev_exposure_set_black(dev, black);
-    }
+    if(d->scope_type != DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM
+       && d->scope_orient != DT_LIB_HISTOGRAM_ORIENT_VERT)
+      event->x = -event->y;
+
+    dt_dev_exposure_handle_event((GdkEvent *)event, FALSE);
   }
   else
   {
-    const float x = event->x;
-    const float y = event->y;
-    const float posx = x / (float)(allocation.width);
-    const float posy = y / (float)(allocation.height);
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
+    const float posx = event->x / (float)(allocation.width);
+    const float posy = event->y / (float)(allocation.height);
     const dt_lib_histogram_highlight_t prior_highlight = d->highlight;
     const gboolean hooks_available = (dt_view_get_current() == DT_VIEW_DARKROOM)
       && dt_dev_exposure_hooks_available(dev);
@@ -1746,34 +1721,15 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget,
 
 static gboolean _drawable_button_press_callback(GtkWidget *widget,
                                                 GdkEventButton *event,
-                                                gpointer user_data)
+                                                dt_lib_histogram_t *d)
 {
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
-  dt_develop_t *dev = darktable.develop;
-
   if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
   {
-    if(event->type == GDK_2BUTTON_PRESS)
-    {
-      dt_dev_exposure_reset_defaults(dev);
-    }
-    else
-    {
-      // FIXME: should change cursor from "grab" to "grabbing", but
-      // this would mean rewriting dt_control_change_cursor() to use
-      // gdk_cursor_new_from_name()
-      if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
-      {
-        d->button_down_value = dt_dev_exposure_get_exposure(dev);
-      }
-      else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
-      {
-        d->button_down_value = dt_dev_exposure_get_black(dev);
-      }
-      d->dragging = TRUE;
-      d->button_down_x = event->x;
-      d->button_down_y = event->y;
-    }
+    if(d->scope_type != DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM
+       && d->scope_orient != DT_LIB_HISTOGRAM_ORIENT_VERT)
+      event->x = -event->y;
+
+    dt_dev_exposure_handle_event((GdkEvent *)event, d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT);
   }
 
   return TRUE;
@@ -1797,9 +1753,8 @@ static void _color_harmony_changed_record(dt_lib_histogram_t *d);
 
 static gboolean _eventbox_scroll_callback(GtkWidget *widget,
                                           GdkEventScroll *event,
-                                          gpointer user_data)
+                                          dt_lib_histogram_t *d)
 {
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   int delta_y = 0;
   if(dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_MOD1_MASK))
   {
@@ -1813,24 +1768,9 @@ static gboolean _eventbox_scroll_callback(GtkWidget *widget,
   {
     if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
     {
-      dt_develop_t *dev = darktable.develop;
-      // FIXME: see dt_bauhaus_slider_postponed_value_change(): delay
-      // processing until the pixelpipe can update based on
-      // dev->preview_average_delay for smoother interaction
-      if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
-      {
-        const float ce = dt_dev_exposure_get_exposure(dev);
-        dt_dev_exposure_set_exposure
-          (dev,
-           ce - 0.15f * delta_y * dt_accel_get_speed_multiplier(widget, event->state));
-      }
-      else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
-      {
-        const float cb = dt_dev_exposure_get_black(dev);
-        dt_dev_exposure_set_black
-          (dev,
-           cb + 0.001f * delta_y * dt_accel_get_speed_multiplier(widget, event->state));
-      }
+      gboolean black = d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
+      if(black) { event->delta_x *= -1; event->delta_y *= -1; }
+      dt_dev_exposure_handle_event((GdkEvent *)event, black);
     }
     else if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     {
@@ -1872,25 +1812,20 @@ static gboolean _eventbox_scroll_callback(GtkWidget *widget,
 
 static gboolean _drawable_button_release_callback(GtkWidget *widget,
                                                   GdkEventButton *event,
-                                                  gpointer user_data)
+                                                  dt_lib_histogram_t *d)
 {
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
-  d->dragging = FALSE;
-  // hack to recalculate the highlight as mouse may be over a different part of the widget
-  // FIXME: generate an event instead?
-  _drawable_motion_notify_callback(widget, (GdkEventMotion *)event, user_data);
+  dt_dev_exposure_handle_event((GdkEvent *)event, FALSE);
   return TRUE;
 }
 
 static gboolean _drawable_leave_notify_callback(GtkWidget *widget,
                                                 GdkEventCrossing *event,
-                                                gpointer user_data)
+                                                dt_lib_histogram_t *d)
 {
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   // if dragging, gtk keeps up motion notifications until mouse button
   // is released, at which point we'll get another leave event for
   // drawable if pointer is still outside of the widget
-  if(!d->dragging && d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
+  if(!(event->state & GDK_BUTTON1_MASK) && d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
   {
     d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
     dt_control_change_cursor(GDK_LEFT_PTR);
@@ -2323,7 +2258,6 @@ static void _lib_histogram_cycle_mode_callback(dt_action_t *action)
   // either here or on pointer motion. Really right solution is
   // probably separate widgets for the drag areas which generate
   // enter/leave events.
-  d->dragging = FALSE;
   d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
   dt_control_change_cursor(GDK_LEFT_PTR);
 

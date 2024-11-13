@@ -2139,10 +2139,9 @@ static gboolean _popup_draw(GtkWidget *widget,
   dt_bauhaus_widget_t *w = bh->current;
 
   // dimensions of the popup
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
+  const int width = gtk_widget_get_allocated_width(widget);
   const GtkBorder *padding = &pop->padding;
-  const int w2 = allocation.width - padding->left - padding->right;
+  const int w2 = width - padding->left - padding->right;
   const int h2 = pop->position.height - padding->top - padding->bottom;
 
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
@@ -2162,8 +2161,8 @@ static gboolean _popup_draw(GtkWidget *widget,
   gtk_style_context_get_color(context, state, fg_color);
 
   // draw background
-  gtk_render_background(context, cr, 0, - pop->offcut, allocation.width, pop->position.height);
-  gtk_render_frame(context, cr, 0, - pop->offcut, allocation.width, pop->position.height);
+  gtk_render_background(context, cr, 0, - pop->offcut, width, pop->position.height);
+  gtk_render_frame(context, cr, 0, - pop->offcut, width, pop->position.height);
 
   // translate to account for the widget spacing
   cairo_translate(cr, padding->left, padding->top - pop->offcut);
@@ -2208,7 +2207,7 @@ static gboolean _popup_draw(GtkWidget *widget,
                 ? _slider_get_line_offset(d->oldpos, scale,
                                           bh->mouse_x / w2,
                                           bh->mouse_y / h2,
-                                          ht / (float)h2, allocation.width, w)
+                                          ht / (float)h2, width, w)
                 : 0.0f;
       _slider_draw_line(cr, d->oldpos, mouse_off, scale, w2, h2, ht, w);
       cairo_stroke(cr);
@@ -2920,7 +2919,8 @@ static gboolean _widget_scroll(GtkWidget *widget,
 
     if(w->type == DT_BAUHAUS_SLIDER)
     {
-      gboolean force = darktable.control->element == DT_ACTION_ELEMENT_FORCE;
+      gboolean force = darktable.control->element == DT_ACTION_ELEMENT_FORCE
+                       && event->window == gtk_widget_get_window(widget);
       if(force && dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
       {
         _slider_zoom_range(w, delta_y);
@@ -3375,16 +3375,15 @@ static gboolean _widget_button_press(GtkWidget *widget,
   _request_focus(w);
   gtk_widget_grab_focus(widget);
 
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  const int w3 = allocation.width - w->margin.left - w->padding.left
-                                  - w->margin.right - w->padding.right;
+  const int width = gtk_widget_get_allocated_width(widget);
+  const int w3 = width - w->margin.left - w->padding.left
+                       - w->margin.right - w->padding.right;
   const double ex = event->x - w->margin.left - w->padding.left;
   const double ey = event->y - w->margin.top - w->padding.top;
 
-  if(w->quad_paint
-     && event->x > allocation.width - _widget_get_quad_width(w)
-     - w->margin.right - w->padding.right)
+  if(w->quad_paint && event->window == gtk_widget_get_window(widget)
+     && event->x > width - _widget_get_quad_width(w)
+                         - w->margin.right - w->padding.right)
   {
     dt_bauhaus_widget_press_quad(widget);
   }
@@ -3414,7 +3413,7 @@ static gboolean _widget_button_press(GtkWidget *widget,
   {
     dt_bauhaus_slider_data_t *d = &w->data.slider;
     d->is_dragging = -1;
-    if(!dt_modifier_is(event->state, 0))
+    if(!dt_modifier_is(event->state, 0) || event->window != gtk_widget_get_window(widget))
       darktable.bauhaus->mouse_x = ex;
     else if(ey > darktable.bauhaus->line_height / 2.0f)
     {
@@ -3457,16 +3456,15 @@ static gboolean _widget_motion_notify(GtkWidget *widget,
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
 
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  const int w3 = allocation.width - w->margin.left - w->padding.left
-    - w->margin.right - w->padding.right;
+  const int width = gdk_window_get_width(event->window);
+  const int w3 = width - w->margin.left - w->padding.left
+                       - w->margin.right - w->padding.right;
   const double ex = event->x - w->margin.left - w->padding.left;
 
   if(w->type == DT_BAUHAUS_COMBOBOX)
   {
     darktable.control->element =
-      event->x <= allocation.width - _widget_get_quad_width(w) || !w->quad_paint
+      event->x <= width - _widget_get_quad_width(w) || !w->quad_paint
       ? DT_ACTION_ELEMENT_SELECTION : DT_ACTION_ELEMENT_BUTTON;
   }
   else if(d->is_dragging && event->state & GDK_BUTTON1_MASK)
