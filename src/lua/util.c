@@ -23,16 +23,6 @@
 #include <string.h>
 #include <uuid.h>
 
-static int gen_uuid(lua_State *L)
-{
-  uuid_t uuid;
-  char uuid_string[37];
-  uuid_generate(uuid);
-  uuid_unparse_upper(uuid, uuid_string);
-  lua_pushstring(L, uuid_string);
-  return 1;
-}
-
 static int message(lua_State *L)
 {
   const char *sender = luaL_checkstring(L, 1);
@@ -55,9 +45,6 @@ int dt_lua_init_util(lua_State *L)
 {
   dt_lua_push_darktable_lib(L);
   dt_lua_goto_subtable(L, "util");
-
-  lua_pushcfunction(L, gen_uuid);
-  lua_setfield(L, -2, "gen_uuid");
 
   lua_pushcfunction(L, message);
   lua_setfield(L, -2, "message");
