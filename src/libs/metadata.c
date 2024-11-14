@@ -346,8 +346,8 @@ static void _metadata_set_list(const int i,
                                dt_lib_module_t *self)
 {
   GtkWidget *cell = gtk_grid_get_child_at(GTK_GRID(self->widget), 1, i);
-  const char *tagname = (char *)g_object_get_data(G_OBJECT(cell), "tagname");
   GtkTextView *textview = g_object_get_data(G_OBJECT(cell), "textview");
+  const char *tagname = (char *)g_object_get_data(G_OBJECT(textview), "tagname");
 
   gchar *metadata = _get_buffer_text(GTK_TEXT_VIEW(textview));
   const gchar *text_orig = g_object_get_data(G_OBJECT(textview), "text_orig");
@@ -778,18 +778,12 @@ void gui_init(dt_lib_module_t *self)
     if(metadata->type == DT_METADATA_TYPE_INTERNAL)
       continue;
 
-    gchar *label_text = g_strdup_printf("%s (%d)", metadata->name, metadata->key);
-
-    // GtkWidget *label = dt_ui_label_new(metadata->name);
-    GtkWidget *label = dt_ui_label_new(label_text);
-    g_free(label_text);
-
-    d->label[i] = label;
-    gtk_widget_set_halign(d->label[i], GTK_ALIGN_FILL);
+    GtkWidget *label = dt_ui_label_new(metadata->name);
+    gtk_widget_set_halign(label, GTK_ALIGN_FILL);
     GtkWidget *labelev = gtk_event_box_new();
     gtk_widget_set_tooltip_text(labelev, _("double-click to reset"));
     gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), d->label[i]);
+    gtk_container_add(GTK_CONTAINER(labelev), label);
     g_object_set_data(G_OBJECT(labelev), "label", GINT_TO_POINTER(label));
     gtk_grid_attach(grid, labelev, 0, i, 1, 1);
 
@@ -806,6 +800,8 @@ void gui_init(dt_lib_module_t *self)
     g_object_set_data(G_OBJECT(textview), "tv_index", GINT_TO_POINTER(i));
     g_object_set_data(G_OBJECT(textview), "tv_multiple", GINT_TO_POINTER(FALSE));
     g_object_set_data(G_OBJECT(textview), "text_orig", NULL);
+    g_object_set_data(G_OBJECT(textview), "tagname", metadata->tagname);
+
 
     GtkWidget *unchanged = gtk_label_new(_("<leave unchanged>"));
     gtk_widget_set_name(unchanged, "dt-metadata-multi");
@@ -815,7 +811,6 @@ void gui_init(dt_lib_module_t *self)
 
     GtkWidget *swindow = dt_ui_resize_wrap(GTK_WIDGET(textview), 100, d->setting_name[i]);
     g_object_set_data(G_OBJECT(swindow), "key", GINT_TO_POINTER(metadata->key));
-    g_object_set_data(G_OBJECT(swindow), "tagname", metadata->tagname);
     g_object_set_data(G_OBJECT(swindow), "textview", textview);
 
     gtk_grid_attach(grid, swindow, 1, i, 1, 1);
@@ -838,7 +833,6 @@ void gui_init(dt_lib_module_t *self)
     g_signal_connect(textview, "populate-popup", G_CALLBACK(_populate_popup_multi), self);
     g_signal_connect(labelev, "button-press-event", G_CALLBACK(_metadata_reset), textview);
     g_signal_connect(buffer, "changed", G_CALLBACK(_textbuffer_changed), self);
-    d->textview[i] = GTK_TEXT_VIEW(textview);
     gtk_widget_set_hexpand(textview, TRUE);
     gtk_widget_set_vexpand(textview, TRUE);
     i++;
@@ -990,9 +984,73 @@ void *legacy_params(dt_lib_module_t *self,
 
 void *get_params(dt_lib_module_t *self, int *size)
 {
-  dt_lib_metadata_t *d = self->data;
+  // dt_lib_metadata_t *d = self->data;
 
   *size = 0;
+
+  const int metadata_nb = g_list_length(dt_metadata_get_list());
+
+  char **metadata_tagnames = calloc(metadata_nb, sizeof(char *));
+  int32_t *metadata_tagname_len = calloc(metadata_nb, sizeof(int32_t));
+  char **metadata_texts = calloc(metadata_nb, sizeof(char *));
+  int32_t *metadata_len = calloc(metadata_nb, sizeof(int32_t));
+
+  int i = 0;
+  for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
+  {
+    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+
+    if(metadata->type == DT_METADATA_TYPE_INTERNAL)
+      continue;
+
+    GtkTextView *textview = _get_textview_by_key(metadata->key, self);
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(textview);
+    GtkTextIter start, end;
+    gtk_text_buffer_get_bounds(buffer, &start, &end);
+    const gchar *tagname = g_object_get_data(G_OBJECT(textview), "tagname");
+    metadata_tagnames[i] = g_strdup(tagname);
+    metadata_tagname_len[i] = strlen(metadata_tagnames[i]) + 1;
+     metadata_texts[i] = gtk_text_buffer_get_text(buffer, &start, &end, TRUE);
+    if(!metadata_texts[i]) metadata_texts[i] = g_strdup("");
+    metadata_len[i] = strlen(metadata_texts[i]) + 1;
+    *size = *size + metadata_tagname_len[i] + metadata_len[i];
+    i++;
+  }
+
+  printf("hugo: size: %d\n", *size);
+
+  char *params = malloc(*size);
+  int pos = 0;
+
+  for(int j = 0; j < i; j++)
+  {
+    const int tagname_len = metadata_tagname_len[j];
+    const char *tagname = metadata_tagnames[j];
+    const int len = metadata_len[j];
+    const char *text = metadata_texts[j];
+    
+    printf("hugo: %d %s : %d  %s\n", tagname_len, tagname, len, text);
+
+    memcpy(params + pos, metadata_tagnames[j], metadata_tagname_len[j]);
+    pos += metadata_tagname_len[j];
+    memcpy(params + pos, metadata_texts[j], metadata_len[j]);
+    pos += metadata_len[j];
+    g_free(metadata_texts[j]);
+  }
+
+  free(metadata_tagname_len);
+  free(metadata_tagnames);
+  free(metadata_texts);
+  free(metadata_len);
+
+  g_assert(pos == *size);
+
+  return params;
+
+
+
+
+/*
   char *metadata[DT_METADATA_NUMBER];
   int32_t metadata_len[DT_METADATA_NUMBER];
 
@@ -1028,6 +1086,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   g_assert(pos == *size);
 
   return params;
+*/
 }
 
 // WARNING: also change src/libs/import.c when changing this!
