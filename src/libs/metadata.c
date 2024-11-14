@@ -33,7 +33,7 @@
 #endif
 #include <gdk/gdkkeysyms.h>
 
-DT_MODULE(4)
+DT_MODULE(5)
 
 typedef enum dt_metadata_pref_cols_t
 {
@@ -878,14 +878,19 @@ void gui_cleanup(dt_lib_module_t *self)
 
 static void add_rights_preset(dt_lib_module_t *self, char *name, char *string)
 {
-  // to be adjusted the nb of metadata items changes
-  const unsigned int metadata_nb = dt_metadata_get_nb_user_metadata();
-  const unsigned int params_size = strlen(string) + metadata_nb;
+  const char *tagname = "Xmp.dc.rights";
+  const uint32_t tagname_len = strlen(tagname) + 1;
+  const uint32_t string_len = strlen(string) + 1;
+
+  const unsigned int params_size = tagname_len + string_len;
 
   char *params = calloc(sizeof(char), params_size);
   if(params)
   {
-    memcpy(params + 4, string, params_size - metadata_nb);
+    int pos = 0;
+    memcpy(params + pos, tagname, tagname_len);
+    pos += tagname_len;
+    memcpy(params + pos, string, string_len);
     dt_lib_presets_add(name, self->plugin_name, self->version(),
                        params, params_size, TRUE, 0);
     free(params);
@@ -894,8 +899,6 @@ static void add_rights_preset(dt_lib_module_t *self, char *name, char *string)
 
 void init_presets(dt_lib_module_t *self)
 {
-  // <title>\0<description>\0<rights>\0<creator>\0<publisher>
-
   add_rights_preset(self, _("CC BY"),
                     _("Creative Commons Attribution (CC BY)"));
   add_rights_preset(self, _("CC BY-SA"),
@@ -979,13 +982,150 @@ void *legacy_params(dt_lib_module_t *self,
     *new_version = 4;
     return new_params;
   }
+  else if(old_version == 4)
+  {
+    char **metadata_tagnames = calloc(DT_METADATA_NUMBER, sizeof(char *));
+    int32_t *metadata_tagname_len = calloc(DT_METADATA_NUMBER, sizeof(int32_t));
+    char **metadata_texts = calloc(DT_METADATA_NUMBER, sizeof(char *));
+    int32_t *metadata_len = calloc(DT_METADATA_NUMBER, sizeof(int32_t));
+
+    char *buf = (char *)old_params;
+    int i = 0;
+
+    // creator
+    if(strlen(buf) > 0)
+    {
+      metadata_tagnames[i] = "Xmp.dc.creator";
+      metadata_tagname_len[i] = strlen(metadata_tagnames[i]) + 1;
+      metadata_texts[i] = buf;
+      metadata_len[i] = strlen(buf) + 1;
+      buf += metadata_len[i];
+      i++;
+    }
+    else
+      buf++;
+
+    // publisher
+    if(strlen(buf) > 0)
+    {
+      metadata_tagnames[i] = "Xmp.dc.publisher";
+      metadata_tagname_len[i] = strlen(metadata_tagnames[i]) + 1;
+      metadata_texts[i] = buf;
+      metadata_len[i] = strlen(buf) + 1;
+      buf += metadata_len[i];
+      i++;
+    }
+    else
+      buf++;
+
+    // title
+    if(strlen(buf) > 0)
+    {
+      metadata_tagnames[i] = "Xmp.dc.title";
+      metadata_tagname_len[i] = strlen(metadata_tagnames[i]) + 1;
+      metadata_texts[i] = buf;
+      metadata_len[i] = strlen(buf) + 1;
+      buf += metadata_len[i];
+      i++;
+    }
+    else
+      buf++;
+
+    // description
+    if(strlen(buf) > 0)
+    {
+      metadata_tagnames[i] = "Xmp.dc.description";
+      metadata_tagname_len[i] = strlen(metadata_tagnames[i]) + 1;
+      metadata_texts[i] = buf;
+      metadata_len[i] = strlen(buf) + 1;
+      buf += metadata_len[i];
+      i++;
+    }
+    else
+      buf++;
+
+    // rights
+    if(strlen(buf) > 0)
+    {
+      metadata_tagnames[i] = "Xmp.dc.rights";
+      metadata_tagname_len[i] = strlen(metadata_tagnames[i]) + 1;
+      metadata_texts[i] = buf;
+      metadata_len[i] = strlen(buf) + 1;
+      buf += metadata_len[i];
+      i++;
+    }
+    else
+      buf++;
+
+    // notes
+    if(strlen(buf) > 0)
+    {
+      metadata_tagnames[i] = "Xmp.acdsee.notes";
+      metadata_tagname_len[i] = strlen(metadata_tagnames[i]) + 1;
+      metadata_texts[i] = buf;
+      metadata_len[i] = strlen(buf) + 1;
+      buf += metadata_len[i];
+      i++;
+    }
+    else
+      buf++;
+
+    // version name
+    if(strlen(buf) > 0)
+    {
+      metadata_tagnames[i] = "Xmp.darktable.version_name";
+      metadata_tagname_len[i] = strlen(metadata_tagnames[i]) + 1;
+      metadata_texts[i] = buf;
+      metadata_len[i] = strlen(buf) + 1;
+      buf += metadata_len[i];
+      i++;
+    }
+    else
+      buf++;
+
+    // preserved filename
+    if(strlen(buf) > 0)
+    {
+      metadata_tagnames[i] = "Xmp.xmpMM.PreservedFileName";
+      metadata_tagname_len[i] = strlen(metadata_tagnames[i]) + 1;
+      metadata_texts[i] = buf;
+      metadata_len[i] = strlen(buf) + 1;
+      buf += metadata_len[i];
+      i++;
+    }
+    else
+      buf++;
+
+    // calculate new buffer size
+    size_t new_params_size = 0;
+    for(int j = 0; j < i; j++)
+      new_params_size += metadata_tagname_len[j] + metadata_len[j];
+
+    char *new_params = calloc(sizeof(char), new_params_size);
+
+    size_t pos = 0;
+    for(int j = 0; j < i; j++)
+    {
+      memcpy(new_params + pos, metadata_tagnames[j], metadata_tagname_len[j]);
+      pos += metadata_tagname_len[j];
+      memcpy(new_params + pos, metadata_texts[j], metadata_len[j]);
+      pos += metadata_len[j];
+    }
+
+    free(metadata_tagname_len);
+    free(metadata_tagnames);
+    free(metadata_texts);
+    free(metadata_len);
+
+    *new_size = new_params_size;
+    *new_version = 5;
+    return new_params;
+  }
   return NULL;
 }
 
 void *get_params(dt_lib_module_t *self, int *size)
 {
-  // dt_lib_metadata_t *d = self->data;
-
   *size = 0;
 
   const int metadata_nb = g_list_length(dt_metadata_get_list());
@@ -1017,20 +1157,11 @@ void *get_params(dt_lib_module_t *self, int *size)
     i++;
   }
 
-  printf("hugo: size: %d\n", *size);
-
   char *params = malloc(*size);
   int pos = 0;
 
   for(int j = 0; j < i; j++)
   {
-    const int tagname_len = metadata_tagname_len[j];
-    const char *tagname = metadata_tagnames[j];
-    const int len = metadata_len[j];
-    const char *text = metadata_texts[j];
-    
-    printf("hugo: %d %s : %d  %s\n", tagname_len, tagname, len, text);
-
     memcpy(params + pos, metadata_tagnames[j], metadata_tagname_len[j]);
     pos += metadata_tagname_len[j];
     memcpy(params + pos, metadata_texts[j], metadata_len[j]);
@@ -1046,47 +1177,6 @@ void *get_params(dt_lib_module_t *self, int *size)
   g_assert(pos == *size);
 
   return params;
-
-
-
-
-/*
-  char *metadata[DT_METADATA_NUMBER];
-  int32_t metadata_len[DT_METADATA_NUMBER];
-
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
-  {
-    if(dt_metadata_get_type_by_display_order(i) == DT_METADATA_TYPE_INTERNAL)
-      continue;
-    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer((GtkTextView *)d->textview[i]);
-    GtkTextIter start, end;
-    gtk_text_buffer_get_bounds(buffer, &start, &end);
-    metadata[keyid] = gtk_text_buffer_get_text(buffer, &start, &end, TRUE);
-    if(!metadata[keyid]) metadata[keyid] = g_strdup("");
-    metadata_len[keyid] = strlen(metadata[keyid]) + 1;
-    *size = *size + metadata_len[keyid];
-  }
-
-  char *params = (char *)malloc(*size);
-  if(!params)
-    return NULL;
-
-  int pos = 0;
-
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
-  {
-    if(dt_metadata_get_type_by_display_order(i) == DT_METADATA_TYPE_INTERNAL)
-      continue;
-    memcpy(params + pos, metadata[i], metadata_len[i]);
-    pos += metadata_len[i];
-    g_free(metadata[i]);
-  }
-
-  g_assert(pos == *size);
-
-  return params;
-*/
 }
 
 // WARNING: also change src/libs/import.c when changing this!
