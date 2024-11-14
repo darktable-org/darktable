@@ -46,11 +46,7 @@ typedef enum dt_metadata_pref_cols_t
 
 typedef struct dt_lib_metadata_t
 {
-  GtkTextView *textview[DT_METADATA_NUMBER];
-  GtkWidget *swindow[DT_METADATA_NUMBER];
   GList *metadata_list[DT_METADATA_NUMBER];
-  char *setting_name[DT_METADATA_NUMBER];
-  GtkWidget *label[DT_METADATA_NUMBER];
   GtkWidget *button_box, *apply_button, *cancel_button;
   GList *last_act_on;
   int num_grid_rows;
@@ -103,23 +99,6 @@ static GtkTextView *_get_textview_from_grid_at_row(const uint32_t row, dt_lib_mo
   GtkTextView *textview = g_object_get_data(G_OBJECT(cell), "textview");
   return textview;
 }
-
-// static void _get_grid_row_for_key(uint32_t key,
-//                                   dt_lib_module_t *self,
-//                                   GtkLabel *label,
-//                                   GtkTextView *textview)
-// {
-//   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-
-//   for(unsigned int row = 0; row < d->num_grid_rows; row++)
-//   {
-//     GtkWidget *cell = gtk_grid_get_child_at(GTK_GRID(self->widget), 1, row);
-//     uint32_t row_key = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(cell), "key"));
-//     if(row_key != key) continue;
-
-//     *textview = g_object_get_data(G_OBJECT(cell), "textview");
-//   }
-// }
 
 static void _textbuffer_changed(GtkTextBuffer *buffer, dt_lib_module_t *self)
 {
@@ -768,9 +747,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(0));
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
 
-
   int i = 0;
-
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
     dt_metadata_t2 *metadata = iter->data;
@@ -784,7 +761,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_set_tooltip_text(labelev, _("double-click to reset"));
     gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
     gtk_container_add(GTK_CONTAINER(labelev), label);
-    g_object_set_data(G_OBJECT(labelev), "label", GINT_TO_POINTER(label));
+    g_object_set_data(G_OBJECT(labelev), "label", label);
     gtk_grid_attach(grid, labelev, 0, i, 1, 1);
 
     GtkWidget *textview = gtk_text_view_new();
@@ -796,26 +773,23 @@ void gui_init(dt_lib_module_t *self)
               "\nin that case, right-click gives the possibility to choose one of them"
               "\nescape to exit the popup window"));
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
-    g_object_set_data(G_OBJECT(buffer), "buffer_tv", GINT_TO_POINTER(textview));
     g_object_set_data(G_OBJECT(textview), "tv_index", GINT_TO_POINTER(i));
     g_object_set_data(G_OBJECT(textview), "tv_multiple", GINT_TO_POINTER(FALSE));
     g_object_set_data(G_OBJECT(textview), "text_orig", NULL);
     g_object_set_data(G_OBJECT(textview), "tagname", metadata->tagname);
 
-
     GtkWidget *unchanged = gtk_label_new(_("<leave unchanged>"));
     gtk_widget_set_name(unchanged, "dt-metadata-multi");
     gtk_text_view_add_child_in_window(GTK_TEXT_VIEW(textview), unchanged, GTK_TEXT_WINDOW_WIDGET, 0, 0);
 
-    d->setting_name[i] = g_strdup_printf("plugins/lighttable/metadata/%s_text_height", metadata->name);
-
-    GtkWidget *swindow = dt_ui_resize_wrap(GTK_WIDGET(textview), 100, d->setting_name[i]);
+    gchar *setting_name = g_strdup_printf("plugins/lighttable/metadata/%s_text_height", metadata->name);
+    GtkWidget *swindow = dt_ui_resize_wrap(GTK_WIDGET(textview), 100, setting_name);
+    g_free(setting_name);
     g_object_set_data(G_OBJECT(swindow), "key", GINT_TO_POINTER(metadata->key));
     g_object_set_data(G_OBJECT(swindow), "textview", textview);
 
     gtk_grid_attach(grid, swindow, 1, i, 1, 1);
     gtk_widget_set_hexpand(swindow, TRUE);
-    d->swindow[i] = swindow;
 
     //workaround for a Gtk issue where the textview does not wrap correctly
     //while resizing the panel or typing into the widget
