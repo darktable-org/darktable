@@ -1186,32 +1186,51 @@ int set_params(dt_lib_module_t *self,
   if(!params) return 1;
   dt_lib_metadata_t *d = self->data;
 
+  const int metadata_nb = g_list_length(dt_metadata_get_list());
+
+  char **metadata_tagnames = calloc(metadata_nb, sizeof(char *));
+  int32_t *metadata_tagname_len = calloc(metadata_nb, sizeof(int32_t));
+  char **metadata_texts = calloc(metadata_nb, sizeof(char *));
+  int32_t *metadata_len = calloc(metadata_nb, sizeof(int32_t));
+
   char *buf = (char *)params;
-  char *metadata[DT_METADATA_NUMBER];
-  uint32_t metadata_len[DT_METADATA_NUMBER];
-  uint32_t total_len = 0;
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  size_t pos = 0;
+
+  int i = 0;
+  while(pos < size)
   {
-    if(dt_metadata_get_type_by_display_order(i) == DT_METADATA_TYPE_INTERNAL)
-      continue;
-    metadata[i] = buf;
-    if(!metadata[i]) return 1;
-    metadata_len[i] = strlen(metadata[i]) + 1;
-    buf += metadata_len[i];
-    total_len +=  metadata_len[i];
+    char *tagname = buf + pos;
+    pos += strlen(tagname) + 1;
+    char *text = buf + pos;
+    pos += strlen(text) + 1;
+
+    metadata_tagnames[i] = tagname;
+    metadata_tagname_len[i] = strlen(tagname) + 1;
+    metadata_texts[i] = text;
+    metadata_len[i] = strlen(text) + 1;
+    i++;
   }
 
-  if(size != total_len)
+  if(pos != size)
+  {
+    free(metadata_tagname_len);
+    free(metadata_tagnames);
+    free(metadata_texts);
+    free(metadata_len);
     return 1;
+  }
 
   GList *key_value = NULL;
 
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  for(unsigned int j = 0; j < i; j++)
   {
-    if(dt_metadata_get_type_by_display_order(i) == DT_METADATA_TYPE_INTERNAL)
-      continue;
-    if(metadata[i][0] != '\0') _append_kv(&key_value, dt_metadata_get_key(i), metadata[i]);
+    _append_kv(&key_value, metadata_tagnames[j], metadata_texts[j]);
   }
+
+  free(metadata_tagname_len);
+  free(metadata_tagnames);
+  free(metadata_texts);
+  free(metadata_len);
 
   GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
   dt_metadata_set_list(imgs, key_value, TRUE);
