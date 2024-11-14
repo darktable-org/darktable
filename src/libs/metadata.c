@@ -258,7 +258,7 @@ void gui_update(dt_lib_module_t *self)
     }
   }
 
-// _write_metadata(self);
+  _write_metadata(self);
   d->last_act_on = imgs;
 
   GHashTable *metadata_texts = g_hash_table_new(NULL, NULL);
@@ -500,20 +500,15 @@ static void _update_layout(dt_lib_module_t *self)
 
 void gui_reset(dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = self->data;
-
   ++darktable.gui->reset;
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    const gchar *name = dt_metadata_get_name_by_display_order(i);
-    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-    g_free(setting);
-    const int type = dt_metadata_get_type_by_display_order(i);
-    // we don't want to lose hidden information
-    if(!hidden && type != DT_METADATA_TYPE_INTERNAL)
+    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+
+    if(metadata->is_visible && metadata->type != DT_METADATA_TYPE_INTERNAL)
     {
-      GtkTextBuffer *buffer = gtk_text_view_get_buffer(d->textview[i]);
+      GtkTextView *textview = _get_textview_by_key(metadata->key, self);
+      GtkTextBuffer *buffer = gtk_text_view_get_buffer(textview);
       gtk_text_buffer_set_text(buffer, "", -1);
     }
   }
@@ -873,11 +868,15 @@ void gui_init(dt_lib_module_t *self)
 void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = self->data;
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  for(unsigned int row = 0; row < d->num_grid_rows; row++)
   {
-    g_free(d->setting_name[i]);
-    g_list_free_full(d->metadata_list[i], g_free);
+    GtkWidget *cell = gtk_grid_get_child_at(GTK_GRID(self->widget), 1, row);
+    GtkTextView *textview = g_object_get_data(G_OBJECT(cell), "textview");
+    gchar *text_orig = g_object_get_data(G_OBJECT(textview), "text_orig");
+    g_free(text_orig);
+    g_object_set_data(G_OBJECT(textview), "text_orig", NULL);
   }
+
   g_list_free(d->last_act_on);
   free(self->data);
   self->data = NULL;
