@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-09 18:58+0100\n"
-"PO-Revision-Date: 2024-11-10 17:13+0100\n"
+"POT-Creation-Date: 2024-11-14 08:11+0100\n"
+"PO-Revision-Date: 2024-11-14 21:18+0100\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -1534,7 +1534,7 @@ msgstr "3D LUT-Ordner"
 #: ../src/imageio/storage/disk.c:276 ../src/imageio/storage/gallery.c:148
 #: ../src/imageio/storage/gallery.c:212 ../src/imageio/storage/latex.c:144
 #: ../src/imageio/storage/latex.c:198 ../src/libs/import.c:1860
-#: ../src/libs/import.c:1973 ../src/libs/import.c:2031 ../src/libs/styles.c:442
+#: ../src/libs/import.c:1973 ../src/libs/import.c:2031 ../src/libs/styles.c:432
 #: ../src/lua/preferences.c:668
 msgid "select directory"
 msgstr "Ordner wählen"
@@ -1906,8 +1906,7 @@ msgid "will ask for confirmation before exporting files in overwrite mode"
 msgstr ""
 "Es wird immer nachgefragt, bevor im Überschreiben-Modus exportiert wird"
 
-#. italic
-#: ../build/bin/preferences_gen.h:7068 ../src/libs/tools/viewswitcher.c:148
+#: ../build/bin/preferences_gen.h:7068 ../src/libs/tools/viewswitcher.c:149
 msgid "other"
 msgstr "weitere"
 
@@ -1939,7 +1938,7 @@ msgstr ""
 msgid "storage"
 msgstr "Speichern"
 
-#: ../build/bin/preferences_gen.h:7182 ../src/control/crawler.c:746
+#: ../build/bin/preferences_gen.h:7182 ../src/control/crawler.c:754
 msgid "database"
 msgstr "Datenbank"
 
@@ -2189,7 +2188,7 @@ msgstr ""
 #. tags
 #: ../build/bin/preferences_gen.h:7823 ../src/develop/lightroom.c:1573
 #: ../src/gui/import_metadata.c:476 ../src/libs/export_metadata.c:322
-#: ../src/libs/image.c:622 ../src/libs/metadata_view.c:178
+#: ../src/libs/image.c:620 ../src/libs/metadata_view.c:178
 msgid "tags"
 msgstr "Tags"
 
@@ -3600,7 +3599,7 @@ msgstr "Modus"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:255
 #: ../src/develop/blend_gui.c:2346 ../src/iop/channelmixer.c:614
-#: ../src/iop/channelmixerrgb.c:4608 ../src/iop/colorchecker.c:1405
+#: ../src/iop/channelmixerrgb.c:4608 ../src/iop/colorchecker.c:1571
 #: ../src/iop/colorize.c:356 ../src/iop/colorzones.c:2632
 #: ../src/iop/exposure.c:1247
 msgid "lightness"
@@ -4043,8 +4042,8 @@ msgstr "Prozent unten"
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:86
 #: ../build/lib/darktable/plugins/introspection_enlargecanvas.c:145
 #: ../build/lib/darktable/plugins/introspection_retouch.c:458
-#: ../src/gui/presets.c:62 ../src/iop/watermark.c:1338
-#: ../src/libs/colorpicker.c:320 ../src/libs/image.c:693
+#: ../src/gui/presets.c:62 ../src/iop/watermark.c:1355
+#: ../src/libs/colorpicker.c:320 ../src/libs/image.c:663
 #: ../src/libs/modulegroups.c:2334
 msgid "color"
 msgstr "Farbe"
@@ -4388,7 +4387,7 @@ msgstr "Dichte"
 #: ../src/develop/blend_gui.c:2362 ../src/iop/basicadj.c:654
 #: ../src/iop/channelmixer.c:613 ../src/iop/colisa.c:282
 #: ../src/iop/colorbalance.c:2002 ../src/iop/colorbalancergb.c:1828
-#: ../src/iop/colorchecker.c:1440 ../src/iop/colorcontrast.c:82
+#: ../src/iop/colorchecker.c:1606 ../src/iop/colorcontrast.c:82
 #: ../src/iop/colorcorrection.c:266 ../src/iop/colorequal.c:3108
 #: ../src/iop/colorize.c:350 ../src/iop/lowpass.c:581 ../src/iop/soften.c:353
 #: ../src/iop/velvia.c:75 ../src/iop/vibrance.c:72 ../src/iop/vignette.c:1049
@@ -4569,8 +4568,8 @@ msgstr "Korrekturen"
 #: ../src/iop/colorbalance.c:1852 ../src/iop/denoiseprofile.c:3770
 #: ../src/iop/exposure.c:1165 ../src/iop/levels.c:696
 #: ../src/iop/profile_gamma.c:657 ../src/libs/copy_history.c:370
-#: ../src/libs/export.c:1434 ../src/libs/image.c:674
-#: ../src/libs/print_settings.c:2894 ../src/libs/styles.c:875
+#: ../src/libs/export.c:1434 ../src/libs/image.c:644
+#: ../src/libs/print_settings.c:2894 ../src/libs/styles.c:864
 #: ../src/views/darkroom.c:2324
 msgid "mode"
 msgstr "Modus"
@@ -5552,8 +5551,8 @@ msgstr "Dropdown"
 #: ../src/libs/import.c:1974 ../src/libs/import.c:2073
 #: ../src/libs/metadata.c:468 ../src/libs/metadata_view.c:1263
 #: ../src/libs/modulegroups.c:3622 ../src/libs/recentcollect.c:232
-#: ../src/libs/styles.c:443 ../src/libs/styles.c:491 ../src/libs/styles.c:584
-#: ../src/libs/styles.c:647 ../src/libs/tagging.c:1535
+#: ../src/libs/styles.c:433 ../src/libs/styles.c:481 ../src/libs/styles.c:574
+#: ../src/libs/styles.c:637 ../src/libs/tagging.c:1535
 #: ../src/libs/tagging.c:1626 ../src/libs/tagging.c:1717
 #: ../src/libs/tagging.c:1853 ../src/libs/tagging.c:2137
 #: ../src/libs/tagging.c:2593 ../src/libs/tagging.c:2629
@@ -5565,7 +5564,7 @@ msgstr "abbre_chen"
 #: ../src/gui/styles_dialog.c:556 ../src/libs/collect.c:3390
 #: ../src/libs/export_metadata.c:277 ../src/libs/metadata.c:469
 #: ../src/libs/metadata_view.c:1264 ../src/libs/recentcollect.c:233
-#: ../src/libs/styles.c:443 ../src/libs/tagging.c:1718
+#: ../src/libs/styles.c:433 ../src/libs/tagging.c:1718
 #: ../src/libs/tagging.c:1854 ../src/libs/tagging.c:2138
 #: ../src/libs/tagging.c:3588
 msgid "_save"
@@ -6259,7 +6258,7 @@ msgstr "alle Farbmarkierungen entfernt"
 
 #: ../src/common/colorlabels.c:379
 #: ../src/external/lua-scripts/tools/executable_manager.lua:224
-#: ../src/gui/accelerators.c:192 ../src/libs/image.c:668
+#: ../src/gui/accelerators.c:192 ../src/libs/image.c:638
 msgid "clear"
 msgstr "löschen"
 
@@ -6917,27 +6916,27 @@ msgstr ""
 "schneller belichtungsunabhängiger geführter Filter konnte keinen Speicher "
 "allokieren, überprüfe die RAM-Einstellungen"
 
-#: ../src/common/exif.cc:1941
+#: ../src/common/exif.cc:1947
 #, c-format
 msgid "detected OtherIlluminant in `%s`, please report via darktable github"
 msgstr "OtherIlluminant in „%s“ entdeckt, bitte über darktable github melden"
 
-#: ../src/common/exif.cc:1990
+#: ../src/common/exif.cc:1996
 #, c-format
 msgid "special exif illuminants in `%s`, please report via darktable github"
 msgstr "spezielle Exif-Lichtquelle in „%s“, bitte über darktable github melden"
 
-#: ../src/common/exif.cc:2018
+#: ../src/common/exif.cc:2024
 #, c-format
 msgid "forward matrix in `%s`, please report via darktable github"
 msgstr "Forward Matrix in `%s`, bitte über darktable github melden"
 
-#: ../src/common/exif.cc:5749
+#: ../src/common/exif.cc:5755
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "konnte XMP Datei „%s“ nicht lesen: „%s“"
 
-#: ../src/common/exif.cc:5808
+#: ../src/common/exif.cc:5814
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "konnte XMP Datei „%s“ nicht schreiben: „%s“"
@@ -7214,7 +7213,6 @@ msgid "v5.0 RAW"
 msgstr "v5.0 RAW"
 
 #: ../src/common/iop_order.c:65
-#| msgid "v3.0 JPEG"
 msgid "v5.0 JPEG"
 msgstr "v5.0 JPEG"
 
@@ -7277,17 +7275,17 @@ msgstr "Bild-ID"
 msgid "preserved filename"
 msgstr "erhaltener Dateiname"
 
-#: ../src/common/mipmap_cache.c:1299 ../src/imageio/imageio.c:1074
+#: ../src/common/mipmap_cache.c:1307 ../src/imageio/imageio.c:1070
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "Bild „%s” ist nicht verfügbar!"
 
-#: ../src/common/mipmap_cache.c:1302 ../src/imageio/imageio.c:1078
+#: ../src/common/mipmap_cache.c:1310 ../src/imageio/imageio.c:1078
 #, c-format
 msgid "unable to load image `%s'!"
 msgstr "Bild „%s“ kann nicht geladen werden!"
 
-#: ../src/common/mipmap_cache.c:1304 ../src/imageio/imageio.c:1080
+#: ../src/common/mipmap_cache.c:1312 ../src/imageio/imageio.c:1081
 #, c-format
 msgid "image '%s' not supported"
 msgstr "Bild „%s“ nicht unterstützt"
@@ -7753,18 +7751,18 @@ msgstr "zeige Tastenbelegungsübersicht"
 msgid "working..."
 msgstr "arbeite…"
 
-#: ../src/control/crawler.c:159
+#: ../src/control/crawler.c:167
 #, c-format
 msgid "checking for updated sidecar files (%d%%)"
 msgstr "Prüfung auf aktualisierte XMP-Dateien (%d%%)"
 
-#: ../src/control/crawler.c:448
+#: ../src/control/crawler.c:456
 #, c-format
 msgid "ERROR: %s NOT synced XMP → DB"
 msgstr "ERROR: %s XMP → DB nicht synchronisiert"
 
-#: ../src/control/crawler.c:449 ../src/control/crawler.c:515
-#: ../src/control/crawler.c:584
+#: ../src/control/crawler.c:457 ../src/control/crawler.c:523
+#: ../src/control/crawler.c:592
 msgid ""
 "ERROR: cannot write the database. the destination may be full, offline or "
 "read-only."
@@ -7772,18 +7770,18 @@ msgstr ""
 "Fehler: In die Datenbank kann nicht geschrieben werden. Das Ziel kann "
 "gesperrt sein."
 
-#: ../src/control/crawler.c:456
+#: ../src/control/crawler.c:464
 #, c-format
 msgid "SUCCESS: %s synced XMP → DB"
 msgstr "SUCCESS: %s XMP → DB synchronisiert"
 
-#: ../src/control/crawler.c:478
+#: ../src/control/crawler.c:486
 #, c-format
 msgid "ERROR: %s NOT synced DB → XMP"
 msgstr "ERROR: %s DB → XMP nicht synchronisiert"
 
-#: ../src/control/crawler.c:480 ../src/control/crawler.c:539
-#: ../src/control/crawler.c:605
+#: ../src/control/crawler.c:488 ../src/control/crawler.c:547
+#: ../src/control/crawler.c:613
 #, c-format
 msgid ""
 "ERROR: cannot write %s \n"
@@ -7792,133 +7790,133 @@ msgstr ""
 "Fehler: kann %s nicht schreiben \n"
 "Das Ziel kann voll, offline oder schreibgeschützt sein."
 
-#: ../src/control/crawler.c:486
+#: ../src/control/crawler.c:494
 #, c-format
 msgid "SUCCESS: %s synced DB → XMP"
 msgstr "SUCCESS: %s DB → XMP synchronisiert"
 
-#: ../src/control/crawler.c:512
+#: ../src/control/crawler.c:520
 #, c-format
 msgid "ERROR: %s NOT synced new (XMP) → old (DB)"
 msgstr "ERROR: %s neu (XMP) → alt (DB) nicht synchronisiert"
 
-#: ../src/control/crawler.c:522
+#: ../src/control/crawler.c:530
 #, c-format
 msgid "SUCCESS: %s synced new (XMP) → old (DB)"
 msgstr "SUCCESS: %s neu (XMP) → alt (DB) synchronisiert"
 
-#: ../src/control/crawler.c:536
+#: ../src/control/crawler.c:544
 #, c-format
 msgid "ERROR: %s NOT synced new (DB) → old (XMP)"
 msgstr "ERROR: %s neu (DB) → alt (XMP) nicht synchronisiert"
 
-#: ../src/control/crawler.c:544
+#: ../src/control/crawler.c:552
 #, c-format
 msgid "SUCCESS: %s synced new (DB) → old (XMP)"
 msgstr "SUCCESS: %s neu (DB) → alt (XMP) synchronisiert"
 
-#: ../src/control/crawler.c:553 ../src/control/crawler.c:621
+#: ../src/control/crawler.c:561 ../src/control/crawler.c:629
 #, c-format
 msgid "EXCEPTION: %s has inconsistent timestamps"
 msgstr "EXCEPTION: %s hat inkonsistente Zeitstempel"
 
-#: ../src/control/crawler.c:581
+#: ../src/control/crawler.c:589
 #, c-format
 msgid "ERROR: %s NOT synced old (XMP) → new (DB)"
 msgstr "ERROR: %s alt (XMP) → neu (DB) nicht synchronisiert"
 
-#: ../src/control/crawler.c:590
+#: ../src/control/crawler.c:598
 #, c-format
 msgid "SUCCESS: %s synced old (XMP) → new (DB)"
 msgstr "SUCCESS: %s alt (XMP) → neu (DB) synchronisiert"
 
-#: ../src/control/crawler.c:602
+#: ../src/control/crawler.c:610
 #, c-format
 msgid "ERROR: %s NOT synced old (DB) → new (XMP)"
 msgstr "ERROR: %s alt (DB) → neu (XMP) nicht synchronisiert"
 
-#: ../src/control/crawler.c:611
+#: ../src/control/crawler.c:619
 #, c-format
 msgid "SUCCESS: %s synced old (DB) → new (XMP)"
 msgstr "SUCCESS: %s alt (DB) → neu (XMP) synchronisiert"
 
-#: ../src/control/crawler.c:693
+#: ../src/control/crawler.c:701
 #, c-format
 msgid "%id %02dh %02dm %02ds"
 msgstr "%it %02dh %02dm %02ds"
 
-#: ../src/control/crawler.c:745
+#: ../src/control/crawler.c:753
 msgid "XMP"
 msgstr "XMP"
 
-#: ../src/control/crawler.c:762 ../src/imageio/storage/disk.c:265
+#: ../src/control/crawler.c:770 ../src/imageio/storage/disk.c:265
 #: ../src/imageio/storage/gallery.c:201 ../src/imageio/storage/latex.c:189
 #: ../src/imageio/storage/latex.c:207
 msgid "path"
 msgstr "Pfad"
 
-#: ../src/control/crawler.c:771
+#: ../src/control/crawler.c:779
 msgid "XMP timestamp"
 msgstr "XMP Zeitstempel"
 
-#: ../src/control/crawler.c:776
+#: ../src/control/crawler.c:784
 msgid "database timestamp"
 msgstr "Datenbank-Zeitstempel"
 
-#: ../src/control/crawler.c:781
+#: ../src/control/crawler.c:789
 msgid "newest"
 msgstr "Neueste"
 
-#: ../src/control/crawler.c:787
+#: ../src/control/crawler.c:795
 msgid "time difference"
 msgstr "Zeitdifferenz"
 
-#: ../src/control/crawler.c:799
+#: ../src/control/crawler.c:807
 msgid "updated XMP sidecar files found"
 msgstr "aktualisierte XMP Dateien gefunden"
 
-#: ../src/control/crawler.c:800
+#: ../src/control/crawler.c:808
 msgid "_close"
 msgstr "_Schließen"
 
 #. setup selection accelerators
 #. action-box
-#: ../src/control/crawler.c:815 ../src/dtgtk/thumbtable.c:2951
+#: ../src/control/crawler.c:823 ../src/dtgtk/thumbtable.c:2951
 #: ../src/libs/import.c:2096 ../src/libs/select.c:142
 msgid "select all"
 msgstr "alles auswählen"
 
-#: ../src/control/crawler.c:816 ../src/dtgtk/thumbtable.c:2953
+#: ../src/control/crawler.c:824 ../src/dtgtk/thumbtable.c:2953
 #: ../src/libs/import.c:2100 ../src/libs/select.c:146
 msgid "select none"
 msgstr "nichts auswählen"
 
-#: ../src/control/crawler.c:817 ../src/dtgtk/thumbtable.c:2955
+#: ../src/control/crawler.c:825 ../src/dtgtk/thumbtable.c:2955
 #: ../src/libs/select.c:150
 msgid "invert selection"
 msgstr "Auswahl invertieren"
 
-#: ../src/control/crawler.c:829
+#: ../src/control/crawler.c:837
 msgid "on the selection:"
 msgstr "für Auswahl:"
 
-#: ../src/control/crawler.c:830
+#: ../src/control/crawler.c:838
 msgid "keep the XMP edit"
 msgstr "XMP Bearbeitung behalten"
 
-#: ../src/control/crawler.c:831
+#: ../src/control/crawler.c:839
 msgid "keep the database edit"
 msgstr "Bearbeitung aus Datenbank behalten"
 
-#: ../src/control/crawler.c:832
+#: ../src/control/crawler.c:840
 msgid "keep the newest edit"
 msgstr "neueste Bearbeitung behalten"
 
-#: ../src/control/crawler.c:833
+#: ../src/control/crawler.c:841
 msgid "keep the oldest edit"
 msgstr "älteste Bearbeitung behalten"
 
-#: ../src/control/crawler.c:858
+#: ../src/control/crawler.c:866
 msgid "synchronization log"
 msgstr "Synchonisationsprotokoll"
 
@@ -8076,8 +8074,8 @@ msgstr "_dauerhaft löschen"
 msgid "_remove from library"
 msgstr "aus Bibliothek entfe_rnen"
 
-#: ../src/control/jobs/control_jobs.c:1065 ../src/libs/styles.c:492
-#: ../src/libs/styles.c:648
+#: ../src/control/jobs/control_jobs.c:1065 ../src/libs/styles.c:482
+#: ../src/libs/styles.c:638
 msgid "_skip"
 msgstr "über_springen"
 
@@ -8378,7 +8376,7 @@ msgstr[1] ""
 msgid "local copy images"
 msgstr "Bilder lokal kopieren"
 
-#: ../src/control/jobs/control_jobs.c:2276 ../src/libs/image.c:682
+#: ../src/control/jobs/control_jobs.c:2276 ../src/libs/image.c:652
 msgid "refresh EXIF"
 msgstr "EXIF aktualisieren"
 
@@ -9264,8 +9262,8 @@ msgid "adjust the fulcrum used by some blending operations"
 msgstr "Pivot anpassen, der von einigen Überblendoperationen verwendet wird"
 
 #. Add opacity/scale sliders to table
-#: ../src/develop/blend_gui.c:3623 ../src/iop/overlay.c:1094
-#: ../src/iop/watermark.c:1354 ../src/libs/masks.c:111
+#: ../src/develop/blend_gui.c:3623 ../src/iop/overlay.c:1101
+#: ../src/iop/watermark.c:1371 ../src/libs/masks.c:111
 msgid "opacity"
 msgstr "Deckkraft"
 
@@ -9404,8 +9402,8 @@ msgstr "abwärtsschieben"
 
 #. delete button label and tooltip will be updated based on trash pref
 #: ../src/develop/imageop.c:1045 ../src/develop/imageop.c:3972
-#: ../src/gui/accelerators.c:177 ../src/libs/image.c:305
-#: ../src/libs/image.c:521
+#: ../src/gui/accelerators.c:177 ../src/libs/image.c:304
+#: ../src/libs/image.c:520
 msgid "delete"
 msgstr "löschen"
 
@@ -9513,7 +9511,7 @@ msgid "new"
 msgstr "neu"
 
 #: ../src/develop/imageop.c:3974 ../src/libs/duplicate.c:412
-#: ../src/libs/image.c:542 ../src/libs/modulegroups.c:3995
+#: ../src/libs/image.c:541 ../src/libs/modulegroups.c:3995
 msgid "duplicate"
 msgstr "duplizieren"
 
@@ -10082,7 +10080,7 @@ msgstr "zum min Wert zu addierendes Intervall "
 msgid "fixed"
 msgstr "absolut"
 
-#: ../src/dtgtk/range.c:491 ../src/iop/colorchecker.c:1450
+#: ../src/dtgtk/range.c:491 ../src/iop/colorchecker.c:1616
 msgid "relative"
 msgstr "relativ"
 
@@ -10150,7 +10148,7 @@ msgstr ""
 
 #. apply button
 #: ../src/dtgtk/range.c:1064 ../src/gui/accelerators.c:184
-#: ../src/libs/metadata.c:742 ../src/libs/styles.c:926
+#: ../src/libs/metadata.c:742 ../src/libs/styles.c:915
 msgid "apply"
 msgstr "anwenden"
 
@@ -10388,6 +10386,7 @@ msgstr "unbearbeitete auswählen"
 #. if order function given, sort by it by passing the table and keys a, b,
 #. otherwise just sort the keys
 #. return the iterator function
+#. seed with os.time in seconds and add an extra degree of random for multiple calls in the same second
 #.
 #. This file is part of darktable,
 #. Copyright (c) 2014 Jérémy Rosen
@@ -10642,37 +10641,37 @@ msgstr "unbearbeitete auswählen"
 #. JOBCODE - wont be implemented
 #. populate the substitution list
 #. do category substitutions separately
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:862
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:870
 #: ../src/gui/gtkentry.c:173
 msgid "$(ROLL.NAME) - roll of the input image"
 msgstr "$(ROLL.NAME) – Filmrolle des Input Bildes"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:863
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:871
 #: ../src/gui/gtkentry.c:174
 msgid "$(FILE.FOLDER) - folder containing the input image"
 msgstr "$(FILE.FOLDER) – Ordner des Input Bildes"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:864
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:872
 #: ../src/gui/gtkentry.c:175
 msgid "$(FILE.NAME) - basename of the input image"
 msgstr "$(FILE.NAME) – Basisname des Input Bildes"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:865
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:873
 #: ../src/gui/gtkentry.c:176
 msgid "$(FILE.EXTENSION) - extension of the input image"
 msgstr "$(FILE.EXTENSION) – Erweiterung des Input Bildes"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:866
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:874
 #: ../src/gui/gtkentry.c:247
 msgid "$(ID) - image ID"
 msgstr "$(ID) - Bild-ID"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:867
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:875
 #: ../src/gui/gtkentry.c:177
 msgid "$(VERSION) - duplicate version"
 msgstr "$(VERSION) – Version des Duplikats"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:868
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:876
 #: ../src/gui/gtkentry.c:178
 msgid ""
 "$(VERSION.IF_MULTI) - same as $(VERSION) but null string if only one version "
@@ -10681,243 +10680,243 @@ msgstr ""
 "$(VERSION.IF_MULTI) - identisch mit $(VERSION) falls mehre Versionen "
 "existieren, sonst leer"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:869
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:877
 #: ../src/gui/gtkentry.c:179
 msgid "$(VERSION.NAME) - version name from metadata"
 msgstr "$(VERSION.NAME) - Versionsname aus den Metadaten"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:870
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:878
 #: ../src/gui/gtkentry.c:261
 msgid "$(DARKTABLE.VERSION) - current darktable version"
 msgstr "$(DARKTABLE.VERSION) - aktuelle darktable Version"
 
 #. _("$(DARKTABLE.NAME) - darktable name"),  -- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:872
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:880
 #: ../src/gui/gtkentry.c:181
 msgid ""
 "$(SEQUENCE[n,m]) - sequence number, n: number of digits, m: start number"
 msgstr ""
 "$(SEQUENCE[n,m]) - Sequenznummer, n: Anzahl der Ziffern, m: Startnummer"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:873
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:881
 #: ../src/gui/gtkentry.c:183
 msgid "$(WIDTH.SENSOR) - image sensor width"
 msgstr "$(WIDTH.SENSOR) - Breite des Bildsensors"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:874
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:882
 #: ../src/gui/gtkentry.c:188
 msgid "$(HEIGHT.SENSOR) - image sensor height"
 msgstr "$(HEIGHT.SENSOR) - Höhe des Bildsensors"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:875
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:883
 #: ../src/gui/gtkentry.c:184
 msgid "$(WIDTH.RAW) - RAW image width"
 msgstr "$(WIDTH.RAW) - Breite des RAW"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:876
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:884
 #: ../src/gui/gtkentry.c:189
 msgid "$(HEIGHT.RAW) - RAW image height"
 msgstr "$(HEIGHT.RAW) - Höhe des RAW"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:877
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:885
 #: ../src/gui/gtkentry.c:185
 msgid "$(WIDTH.CROP) - image width after crop"
 msgstr "$(WIDTH.CROP) - Bildbreite nach dem Zuschneiden"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:878
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:886
 #: ../src/gui/gtkentry.c:190
 msgid "$(HEIGHT.CROP) - image height after crop"
 msgstr "$(HEIGHT.CROP) - Bildhöhe nach dem Zuschneiden"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:879
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:887
 #: ../src/gui/gtkentry.c:186
 msgid "$(WIDTH.EXPORT) - exported image width"
 msgstr "$(WIDTH.EXPORT) - Breite des exportierten Bilds"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:880
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:888
 #: ../src/gui/gtkentry.c:191
 msgid "$(HEIGHT.EXPORT) - exported image height"
 msgstr "$(HEIGHT.EXPORT) - Höhe des exportierten Bilds"
 
 #. _("$(WIDTH.MAX) - maximum image export width"),  -- not implemented
 #. _("$(HEIGHT.MAX) - maximum image export height"),  -- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:883
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:891
 #: ../src/gui/gtkentry.c:192
 msgid "$(YEAR) - year"
 msgstr "$(YEAR) – Jahr"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:884
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:892
 #: ../src/gui/gtkentry.c:193
 msgid "$(YEAR.SHORT) - year without century"
 msgstr "$(YEAR.SHORT) - Jahr 2stellig"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:885
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:893
 #: ../src/gui/gtkentry.c:194
 msgid "$(MONTH) - month"
 msgstr "$(MONTH) – Monat"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:886
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:894
 #: ../src/gui/gtkentry.c:196
 msgid "$(MONTH.LONG) - full month name according to the current locale"
 msgstr "$(MONTH.LONG) - Monat lang gem. Ländereinstellungen"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:887
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:895
 #: ../src/gui/gtkentry.c:195
 msgid "$(MONTH.SHORT) - abbreviated month name according to the current locale"
 msgstr "$(MONTH.SHORT) - Monat kurz gem. Ländereinstellungen"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:888
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:896
 #: ../src/gui/gtkentry.c:197
 msgid "$(DAY) - day"
 msgstr "$(DAY) – Tag"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:889
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:897
 #: ../src/gui/gtkentry.c:198
 msgid "$(HOUR) - hour"
 msgstr "$(HOUR) – Stunde"
 
 #. _("$(HOUR.AMPM) - hour, 12-hour clock"),  -- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:891
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:899
 #: ../src/gui/gtkentry.c:200
 msgid "$(MINUTE) - minute"
 msgstr "$(MINUTE) – Minute"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:892
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:900
 #: ../src/gui/gtkentry.c:201
 msgid "$(SECOND) - second"
 msgstr "$(SECOND) – Sekunde"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:893
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:901
 #: ../src/gui/gtkentry.c:202
 msgid "$(MSEC) - millisecond"
 msgstr "$(MSEC) - Millisekunde"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:894
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:902
 #: ../src/gui/gtkentry.c:205
 msgid "$(EXIF.YEAR) - EXIF year"
 msgstr "$(EXIF.YEAR) – Exif-Jahr"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:895
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:903
 #: ../src/gui/gtkentry.c:206
 msgid "$(EXIF.YEAR.SHORT) - EXIF year without century"
 msgstr "$(EXIF.YEAR.SHORT) – Exif-Jahr 2stellig"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:896
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:904
 #: ../src/gui/gtkentry.c:207
 msgid "$(EXIF.MONTH) - EXIF month"
 msgstr "$(EXIF.MONTH) – Exif-Monat"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:897
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:905
 #: ../src/gui/gtkentry.c:209
 msgid ""
 "$(EXIF.MONTH.LONG) - full EXIF month name according to the current locale"
 msgstr "$(EXIF.MONTH.LONG) - EXIF Monat lang gem. Ländereinstellungen"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:898
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:906
 #: ../src/gui/gtkentry.c:208
 msgid ""
 "$(EXIF.MONTH.SHORT) - abbreviated EXIF month name according to the current "
 "locale"
 msgstr "$(EXIF.MONTH.SHORT) - EXIF-Monat kurz gem. Ländereinstellungen"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:899
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:907
 #: ../src/gui/gtkentry.c:210
 msgid "$(EXIF.DAY) - EXIF day"
 msgstr "$(EXIF.DAY) – Exif-Tag"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:900
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:908
 #: ../src/gui/gtkentry.c:211
 msgid "$(EXIF.HOUR) - EXIF hour"
 msgstr "$(EXIF.HOUR) – Exif-Stunde"
 
 #. _("$(EXIF.HOUR.AMPM) - EXIF hour, 12-hour clock") ..  "\n" .. -- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:902
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:910
 #: ../src/gui/gtkentry.c:213
 msgid "$(EXIF.MINUTE) - EXIF minute"
 msgstr "$(EXIF.MINUTE) – Exif-Minute"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:903
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:911
 #: ../src/gui/gtkentry.c:214
 msgid "$(EXIF.SECOND) - EXIF second"
 msgstr "$(EXIF.SECOND) – Exif-Sekunde"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:904
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:912
 #: ../src/gui/gtkentry.c:215
 msgid "$(EXIF.MSEC) - EXIF millisecond"
 msgstr "$(EXIF.MSEC) – Exif-Millisekunde"
 
 #. _("$(EXIF.DATE.REGIONAL) - localized EXIF date"),  -- not implemented
 #. _("$(EXIF.TIME.REGIONAL) - localized EXIF time"),  -- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:907
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:915
 #: ../src/gui/gtkentry.c:216
 msgid "$(EXIF.ISO) - ISO value"
 msgstr "$(EXIF.ISO) – ISO-Wert"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:908
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:916
 #: ../src/gui/gtkentry.c:219
 msgid "$(EXIF.EXPOSURE) - EXIF exposure"
 msgstr "$(EXIF.EXPOSURE) – Exif-Belichtung"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:909
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:917
 #: ../src/gui/gtkentry.c:217
 msgid "$(EXIF.EXPOSURE.BIAS) - EXIF exposure bias"
 msgstr "$(EXIF.EXPOSURE.BIAS) – Exif-Belichtungskorrektur"
 
 #. _("$(EXIF.EXPOSURE.PROGRAM) - EXIF exposure program"),  -- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:911
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:919
 #: ../src/gui/gtkentry.c:220
 msgid "$(EXIF.APERTURE) - EXIF aperture"
 msgstr "$(EXIF.APERTURE) – Exif-Blende"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:912
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:920
 #: ../src/gui/gtkentry.c:221
 msgid "$(EXIF.CROP_FACTOR) - EXIF crop factor"
 msgstr "$(EXIF.CROP_FACTOR) - EXIF crop factor"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:913
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:921
 #: ../src/gui/gtkentry.c:222
 msgid "$(EXIF.FOCAL.LENGTH) - EXIF focal length"
 msgstr "$(EXIF.FOCAL.LENGTH) - EXIF focal length"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:914
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:922
 #: ../src/gui/gtkentry.c:223
 msgid "$(EXIF.FOCAL.LENGTH.EQUIV) - EXIF 35 mm equivalent focal length"
 msgstr "$(EXIF.FOCAL.LENGTH.EQUIV) - EXIF 35 mm Äquivalenzbrennweite"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:915
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:923
 #: ../src/gui/gtkentry.c:224
 msgid "$(EXIF.FOCUS.DISTANCE) - EXIF focal distance"
 msgstr "$(EXIF.FOCUS.DISTANCE) - EXIF focal distance"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:916
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:924
 #: ../src/gui/gtkentry.c:225
 msgid "$(EXIF.MAKER) - camera maker"
 msgstr "$(EXIF.MAKER) – Kamerahersteller"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:917
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:925
 #: ../src/gui/gtkentry.c:226
 msgid "$(EXIF.MODEL) - camera model"
 msgstr "$(EXIF.MODEL) – Kameramodell"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:918
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:926
 #: ../src/gui/gtkentry.c:227
 msgid "$(EXIF.WHITEBALANCE) - EXIF selected white balance"
 msgstr "$(EXIF.WHITEBALANCE) - EXIF-Weißabgleich"
 
 #. not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:919
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:927
 #: ../src/gui/gtkentry.c:228
 msgid "$(EXIF.METERING) - EXIF exposure metering mode"
 msgstr "$(EXIF.METERING) - EXIF-Belichtungsmessungsmodus"
 
 #. not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:920
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:928
 #: ../src/gui/gtkentry.c:229
 msgid "$(EXIF.LENS) - lens"
 msgstr "$(EXIF.LENS) – Objektiv"
 
 #. _("$(EXIF.FLASH.ICON) - icon indicating whether flash was used") ..  -- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:922
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:930
 #: ../src/gui/gtkentry.c:231
 msgid "$(EXIF.FLASH) - was flash used (yes/no/--)"
 msgstr "$(EXIF.FLASH) - wurde Blitzlicht verwendet (ja/nein/—)"
@@ -10927,86 +10926,86 @@ msgstr "$(EXIF.FLASH) - wurde Blitzlicht verwendet (ja/nein/—)"
 #. _("$(GPS.LATITUDE) - latitude"),-- not implemented
 #. _("$(GPS.ELEVATION) - elevation"),-- not implemented
 #. _("$(GPS.LOCATION.ICON) - icon indicating whether GPS location is known"),-- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:927
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:935
 #: ../src/gui/gtkentry.c:236
 msgid "$(LONGITUDE) - longitude"
 msgstr "$(LONGITUDE) – geographische Länge"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:928
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:936
 #: ../src/gui/gtkentry.c:237
 msgid "$(LATITUDE) - latitude"
 msgstr "$(LATITUDE) – geografische Breite"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:929
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:937
 #: ../src/gui/gtkentry.c:238
 msgid "$(ELEVATION) - elevation"
 msgstr "$(ELEVATION) – Höhe"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:930
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:938
 #: ../src/gui/gtkentry.c:239
 msgid "$(STARS) - star rating as number (-1 for rejected)"
 msgstr "$(STARS) - Stern-Rating als Zahl (-1 für abgelehnt)"
 
 #. _("$(RATING.ICONS) - star/reject rating in icon form"),-- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:932
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:940
 #: ../src/gui/gtkentry.c:241
 msgid "$(LABELS) - color labels as text"
 msgstr "$(LABELS) - Farbmarkierung als Text"
 
 #. _("$(LABELS.ICONS) - color labels as icons"),-- not implemented
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:934
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:942
 #: ../src/gui/gtkentry.c:248
 msgid "$(TITLE) - title from metadata"
 msgstr "$(TITLE) – Titel aus den Metadaten"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:935
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:943
 #: ../src/gui/gtkentry.c:249
 msgid "$(DESCRIPTION) - description from metadata"
 msgstr "$(DESCRIPTION) - Beschreibung aus den Metadaten"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:936
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:944
 #: ../src/gui/gtkentry.c:250
 msgid "$(CREATOR) - creator from metadata"
 msgstr "$(CREATOR) – Urheber aus den Metadaten"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:937
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:945
 #: ../src/gui/gtkentry.c:251
 msgid "$(PUBLISHER) - publisher from metadata"
 msgstr "$(PUBLISHER) – Herausgeber aus den Metadaten"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:938
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:946
 #: ../src/gui/gtkentry.c:252
 msgid "$(RIGHTS) - rights from metadata"
 msgstr "$(RIGHTS) – Rechte aus den Metadaten"
 
 #. _("$(TAGS) - tags as set in metadata settings"),
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:940
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:948
 #: ../src/gui/gtkentry.c:258
 msgid "$(CATEGORY[n,category]) - subtag of level n in hierarchical tags"
 msgstr "$(CATEGORY[n,category]) – Tag der Ebene 0 in hierarchischem Tagging"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:941
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:949
 #: ../src/gui/gtkentry.c:262
 msgid "$(SIDECAR_TXT) - contents of .txt sidecar file, if present"
 msgstr "$(SIDECAR_TXT) - Inhalt der .txt-Sidecar-Datei, falls vorhanden"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:942
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:950
 #: ../src/gui/gtkentry.c:254
 msgid "$(FOLDER.PICTURES) - pictures folder"
 msgstr "$(PICTURES.FOLDER) – Bilder-Ordner"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:943
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:951
 #: ../src/gui/gtkentry.c:255
 msgid "$(FOLDER.HOME) - home folder"
 msgstr "$(FOLDER.HOME) – Nutzer-Ordner"
 
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:944
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:952
 #: ../src/gui/gtkentry.c:256
 msgid "$(FOLDER.DESKTOP) - desktop folder"
 msgstr "$(FOLDER.DESKTOP) – Desktop-Ordner"
 
 #. _("$(OPENCL.ACTIVATED) - whether OpenCL is activated"),
-#: ../src/external/lua-scripts/lib/dtutils/string.lua:946
+#: ../src/external/lua-scripts/lib/dtutils/string.lua:954
 #: ../src/gui/gtkentry.c:253
 msgid "$(USERNAME) - login name"
 msgstr "$(USERNAME) - Login-Name"
@@ -11020,6 +11019,139 @@ msgstr "$(USERNAME) - Login-Name"
 #. replace the substitution variables in a string
 #. escape % from windows shell
 #. On Windows we don't need any command. (start e.g. has problems with spaces in the filename, even if we put quoter around them.) https://stackoverflow.com/questions/13691827/opening-file-with-spaces-in-windows-via-command-prompt
+#.
+#.
+#. apply_camera_style.lua - apply camera style to matching images
+#.
+#. Copyright (C) 2024 Bill Ferguson <wpferguson@gmail.com>.
+#.
+#. This program is free software: you can redistribute it and/or modify
+#. it under the terms of the GNU General Public License as published by
+#. the Free Software Foundation; either version 3 of the License, or
+#. (at your option) any later version.
+#.
+#. This program is distributed in the hope that it will be useful,
+#. but WITHOUT ANY WARRANTY; without even the implied warranty of
+#. MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#. GNU General Public License for more details.
+#.
+#. You should have received a copy of the GNU General Public License
+#. along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#.
+#.
+#. apply_camera_style - apply darktable camera style to matching images
+#.
+#. apply a camera style corresponding to the camera used to
+#. take the image to provide a starting point for editing that
+#. is similar to the SOOC jpeg.
+#.
+#. ADDITIONAL SOFTWARE NEEDED FOR THIS SCRIPT
+#. none
+#.
+#. USAGE
+#. start the script from script_manager
+#.
+#. BUGS, COMMENTS, SUGGESTIONS
+#. Bill Ferguson <wpferguson@gmail.com>
+#.
+#. CHANGES
+#.
+#. local df = require "lib/dtutils.file"
+#. local ds = require "lib/dtutils.string"
+#. local dtsys = require "lib/dtutils.system"
+#. local debug = require "darktable.debug"
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. C O N S T A N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. path separator
+#. command separator
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A P I  C H E C K
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. styles use filmic V7 which appeared in darktable 4.4
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. I 1 8 N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. S C R I P T  M A N A G E R  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - - - -
+#. function to destory the script
+#. set to hide for libs since we can't destroy them commpletely yet
+#. how to restart the (lib) script after it's been hidden - i.e. make it visible again
+#. only required for libs since the destroy_method only hides them
+#: ../src/external/lua-scripts/official/apply_camera_style.lua:92
+msgid "apply camera style"
+msgstr "Kamera Stile anwenden"
+
+#. name of script
+#: ../src/external/lua-scripts/official/apply_camera_style.lua:93
+msgid "apply darktable camera style to matching images"
+msgstr "darktable Kamera Stile auf passende Bilder anwenden"
+
+#. purpose of script
+#. your name and optionally e-mail address
+#. URL to help/documentation
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. L O G  L E V E L
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. N A M E  S P A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. G L O B A L  V A R I A B L E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. P R E F E R E N C E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. A L I A S E S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. F U N C T I O N S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. -----------------
+#. helper functions
+#. -----------------
+#. -----------------
+#. script functions
+#. -----------------
+#. strip off series
+#. match a character
+#. handle EOS R case
+#. escape dashes
+#. until we end up with a set, I'll defer set processing, i.e. [...]
+#. anchor the pattern to ensure we don't short match
+#. separate the styles into
+#.
+#. acs.styles -
+#. maker -
+#. styles {}
+#. patterns {}
+#. strip off the maker name
+#: ../src/external/lua-scripts/official/apply_camera_style.lua:376
+msgid "applying camera styles to images"
+msgstr "darktable Kamera Stile auf Bilder anwenden"
+
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. M A I N  P R O G R A M
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. U S E R  I N T E R F A C E
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. D A R K T A B L E  I N T E G R A T I O N
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#. E V E N T S
+#. - - - - - - - - - - - - - - - - - - - - - - -
+#: ../src/external/lua-scripts/official/apply_camera_style.lua:469
+msgid "apply darktable camera styles to collection"
+msgstr "darktable Kamera Stile auf Sammlung anwenden"
+
+#: ../src/external/lua-scripts/official/apply_camera_style.lua:475
+msgid "apply darktable camera styles to selection"
+msgstr "darktable Kamera Stile auf Auswahl anwenden"
+
 #.
 #. This file is part of darktable,
 #. copyright (c) 2015 Tobias Ellinghaus
@@ -12306,7 +12438,7 @@ msgstr "Script-Ordner auswählen"
 #: ../src/iop/channelmixerrgb.c:4446 ../src/iop/clipping.c:2106
 #: ../src/iop/colorbalancergb.c:1782 ../src/iop/colorequal.c:3025
 #: ../src/iop/filmicrgb.c:4381 ../src/iop/negadoctor.c:841
-#: ../src/iop/toneequal.c:3313 ../src/libs/image.c:498
+#: ../src/iop/toneequal.c:3313 ../src/libs/image.c:497
 #: ../src/views/lighttable.c:1256
 msgid "page"
 msgstr "Seite"
@@ -12892,11 +13024,11 @@ msgstr "zweite"
 msgid "last but one"
 msgstr "vorletzte"
 
-#: ../src/gui/accelerators.c:1770 ../src/gui/accelerators.c:1835
+#: ../src/gui/accelerators.c:1772 ../src/gui/accelerators.c:1837
 msgid "(unchanged)"
 msgstr "<nicht geändert>"
 
-#: ../src/gui/accelerators.c:1952
+#: ../src/gui/accelerators.c:1954
 msgid ""
 "define a shortcut by pressing a key, optionally combined with modifier keys "
 "(ctrl/shift/alt)\n"
@@ -12922,27 +13054,27 @@ msgstr ""
 "\n"
 "Rechtsklick zum Abbrechen"
 
-#: ../src/gui/accelerators.c:2025
+#: ../src/gui/accelerators.c:2027
 msgid "removing shortcut"
 msgstr "Shortcut wird entfernt"
 
-#: ../src/gui/accelerators.c:2027
+#: ../src/gui/accelerators.c:2029
 msgid "disable the selected default shortcut?"
 msgstr "selektierten Default Shortcut deaktivieren?"
 
-#: ../src/gui/accelerators.c:2028
+#: ../src/gui/accelerators.c:2030
 msgid "restore the selected default shortcut?"
 msgstr "selektierten Default Shortcut wiederherstellen?"
 
-#: ../src/gui/accelerators.c:2029
+#: ../src/gui/accelerators.c:2031
 msgid "remove the selected shortcut?"
 msgstr "selektierten Shortcut entfernen?"
 
-#: ../src/gui/accelerators.c:2118
+#: ../src/gui/accelerators.c:2120
 msgid "command"
 msgstr "Befehl"
 
-#: ../src/gui/accelerators.c:2119
+#: ../src/gui/accelerators.c:2121
 msgid "preset"
 msgstr "Voreinstellung"
 
@@ -13115,7 +13247,7 @@ msgstr "wiederherstellen…"
 msgid "restore default shortcuts or previous state"
 msgstr "Shortcuts auf Standard oder vorliegen Stand zurücksetzen"
 
-#: ../src/gui/accelerators.c:3018 ../src/libs/styles.c:912
+#: ../src/gui/accelerators.c:3018 ../src/libs/styles.c:901
 #: ../src/libs/tagging.c:3369
 msgid "import..."
 msgstr "importieren…"
@@ -13124,7 +13256,7 @@ msgstr "importieren…"
 msgid "fully or partially import shortcuts from file"
 msgstr "Shortcuts teilweise oder vollständig aus Datei importieren"
 
-#: ../src/gui/accelerators.c:3023 ../src/libs/styles.c:919
+#: ../src/gui/accelerators.c:3023 ../src/libs/styles.c:908
 #: ../src/libs/tagging.c:3372
 msgid "export..."
 msgstr "exportieren…"
@@ -13904,7 +14036,7 @@ msgstr "Voreinstellung(en) zum importieren wählen"
 
 #: ../src/gui/preferences.c:1060 ../src/libs/collect.c:435
 #: ../src/libs/copy_history.c:122 ../src/libs/geotagging.c:945
-#: ../src/libs/import.c:1861 ../src/libs/import.c:1974 ../src/libs/styles.c:584
+#: ../src/libs/import.c:1861 ../src/libs/import.c:1974 ../src/libs/styles.c:574
 msgid "_open"
 msgstr "Ö_ffnen"
 
@@ -13914,7 +14046,7 @@ msgstr "darktable Voreinstellungsdatei"
 
 #: ../src/gui/preferences.c:1074 ../src/iop/lut3d.c:1586
 #: ../src/libs/copy_history.c:161 ../src/libs/geotagging.c:961
-#: ../src/libs/styles.c:598
+#: ../src/libs/styles.c:588
 msgid "all files"
 msgstr "alle Dateien"
 
@@ -13930,7 +14062,7 @@ msgstr "RAW"
 msgid "HDR"
 msgstr "HDR"
 
-#: ../src/gui/presets.c:62 ../src/iop/monochrome.c:77 ../src/libs/image.c:689
+#: ../src/gui/presets.c:62 ../src/iop/monochrome.c:77 ../src/libs/image.c:659
 #: ../src/libs/metadata_view.c:358
 msgid "monochrome"
 msgstr "Monochrom"
@@ -14250,8 +14382,8 @@ msgstr "darktable wird jetzt abgeschaltet"
 msgid "please wait while background jobs finish"
 msgstr "Bitte warten, während die Hintergrundaufgaben beendet werden"
 
-#: ../src/gui/styles_dialog.c:232 ../src/libs/styles.c:489
-#: ../src/libs/styles.c:645
+#: ../src/gui/styles_dialog.c:232 ../src/libs/styles.c:479
+#: ../src/libs/styles.c:635
 msgid "overwrite style?"
 msgstr "Stil überschreiben?"
 
@@ -14428,7 +14560,7 @@ msgid "trades off quality and file size for quicker encoding time"
 msgstr "tauscht Qualität und Dateigröße gegen eine kürzere Kodierungszeit aus"
 
 #: ../src/imageio/format/copy.c:109 ../src/libs/copy_history.c:341
-#: ../src/libs/image.c:655
+#: ../src/libs/image.c:625
 msgid "copy"
 msgstr "kopieren"
 
@@ -14853,7 +14985,7 @@ msgstr "Grafik"
 msgid "XCF"
 msgstr "XCF"
 
-#: ../src/imageio/imageio.c:1097
+#: ../src/imageio/imageio.c:1098
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -14862,17 +14994,17 @@ msgstr ""
 "Fehler beim Reservieren von Speicher zum %s, bitte die Anzahl Threads für "
 "den Export herabsetzen oder mehr Speicher kaufen."
 
-#: ../src/imageio/imageio.c:1099
+#: ../src/imageio/imageio.c:1100
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "Vorschaubild Export"
 
-#: ../src/imageio/imageio.c:1099
+#: ../src/imageio/imageio.c:1100
 msgctxt "noun"
 msgid "export"
 msgstr "Exportieren"
 
-#: ../src/imageio/imageio.c:1116
+#: ../src/imageio/imageio.c:1117
 #, c-format
 msgid "cannot find the style '%s' to apply during export"
 msgstr "Stil „%s” kann zum Exportieren nicht gefunden werden"
@@ -14920,8 +15052,8 @@ msgstr "umbenennen"
 
 #. DT_COPY_HISTORY_APPEND
 #: ../src/imageio/storage/disk.c:284 ../src/imageio/storage/piwigo.c:1184
-#: ../src/libs/copy_history.c:375 ../src/libs/image.c:678
-#: ../src/libs/styles.c:879
+#: ../src/libs/copy_history.c:375 ../src/libs/image.c:648
+#: ../src/libs/styles.c:868
 msgid "overwrite"
 msgstr "überschreiben"
 
@@ -15209,7 +15341,7 @@ msgstr "Korrekturen oder Effekte"
 #: ../src/iop/channelmixerrgb.c:243 ../src/iop/clipping.c:360
 #: ../src/iop/clipping.c:362 ../src/iop/colorbalancergb.c:184
 #: ../src/iop/colorequal.c:217 ../src/iop/colorin.c:134 ../src/iop/crop.c:134
-#: ../src/iop/crop.c:136 ../src/iop/demosaic.c:294
+#: ../src/iop/crop.c:136 ../src/iop/demosaic.c:293
 #: ../src/iop/denoiseprofile.c:780 ../src/iop/denoiseprofile.c:782
 #: ../src/iop/diffuse.c:144 ../src/iop/diffuse.c:146
 #: ../src/iop/enlargecanvas.c:84 ../src/iop/enlargecanvas.c:86
@@ -16354,7 +16486,7 @@ msgstr "Korrektur der chromatischen Aberration für Bayer Sensoren"
 
 #: ../src/iop/cacorrect.c:85 ../src/iop/cacorrect.c:87
 #: ../src/iop/cacorrectrgb.c:171 ../src/iop/cacorrectrgb.c:173
-#: ../src/iop/demosaic.c:292 ../src/iop/highlights.c:180
+#: ../src/iop/demosaic.c:291 ../src/iop/highlights.c:180
 #: ../src/iop/highlights.c:182 ../src/iop/hotpixels.c:76
 #: ../src/iop/hotpixels.c:78 ../src/iop/rawdenoise.c:144
 #: ../src/iop/rawdenoise.c:146 ../src/iop/rawprepare.c:174
@@ -16364,7 +16496,7 @@ msgid "linear, raw, scene-referred"
 msgstr "linear, RAW, szenenbezogen"
 
 #: ../src/iop/cacorrect.c:86 ../src/iop/cacorrectrgb.c:172
-#: ../src/iop/demosaic.c:293 ../src/iop/invert.c:137
+#: ../src/iop/demosaic.c:292 ../src/iop/invert.c:137
 #: ../src/iop/rawdenoise.c:145 ../src/iop/rawprepare.c:175
 #: ../src/iop/temperature.c:254
 msgid "linear, raw"
@@ -18046,36 +18178,40 @@ msgstr "durch Profil vorgegeben, Lab"
 msgid "it8 skin tones"
 msgstr "IT8 Hautfarben"
 
-#: ../src/iop/colorchecker.c:322
+#: ../src/iop/colorchecker.c:472
+msgid "expanded color checker"
+msgstr "Erweiterte Farbfelder"
+
+#: ../src/iop/colorchecker.c:488
 msgid "Helmholtz/Kohlrausch monochrome"
 msgstr "Helmholtz/Kohlrausch monochrom"
 
-#: ../src/iop/colorchecker.c:339
+#: ../src/iop/colorchecker.c:505
 msgid "Fuji Astia emulation"
 msgstr "Fuji Astia Emulation"
 
-#: ../src/iop/colorchecker.c:353
+#: ../src/iop/colorchecker.c:519
 msgid "Fuji Classic Chrome emulation"
 msgstr "Fuji Classic Chrome Emulation"
 
-#: ../src/iop/colorchecker.c:367
+#: ../src/iop/colorchecker.c:533
 msgid "Fuji Monochrome emulation"
 msgstr "Fuji Monochrome Emulation"
 
-#: ../src/iop/colorchecker.c:381
+#: ../src/iop/colorchecker.c:547
 msgid "Fuji Provia emulation"
 msgstr "Fuji Provia Emulation"
 
-#: ../src/iop/colorchecker.c:395
+#: ../src/iop/colorchecker.c:561
 msgid "Fuji Velvia emulation"
 msgstr "Fuji Velvia Emulation"
 
-#: ../src/iop/colorchecker.c:831 ../src/iop/colorchecker.c:1393
+#: ../src/iop/colorchecker.c:997 ../src/iop/colorchecker.c:1559
 #, c-format
 msgid "patch #%d"
 msgstr "Feld #%d"
 
-#: ../src/iop/colorchecker.c:1244
+#: ../src/iop/colorchecker.c:1410
 #, c-format
 msgid ""
 "(%2.2f %2.2f %2.2f)\n"
@@ -18093,15 +18229,15 @@ msgstr ""
 "Shift+Taste drücken während Farbwahl mittels Pipette, um die Farbe des "
 "Feldes zu ersetzen."
 
-#: ../src/iop/colorchecker.c:1388
+#: ../src/iop/colorchecker.c:1554
 msgid "patch"
 msgstr "Feld"
 
-#: ../src/iop/colorchecker.c:1389
+#: ../src/iop/colorchecker.c:1555
 msgid "color checker patch"
 msgstr "Farbfeld"
 
-#: ../src/iop/colorchecker.c:1403
+#: ../src/iop/colorchecker.c:1569
 msgid ""
 "adjust target color Lab 'L' channel\n"
 "lower values darken target color while higher brighten it"
@@ -18109,7 +18245,7 @@ msgstr ""
 "Zielfarbe einstellen: Lab „L“ Kanal\n"
 "niedrigere Werte verdunkeln die Zielfarbe, höhere hellen sie auf"
 
-#: ../src/iop/colorchecker.c:1411
+#: ../src/iop/colorchecker.c:1577
 msgid ""
 "adjust target color Lab 'a' channel\n"
 "lower values shift target color towards greens while higher shift towards "
@@ -18119,11 +18255,11 @@ msgstr ""
 "niedrigere Werte verschieben die Zielfarbe in Richtung Grün, höhere in "
 "Richtung Magenta"
 
-#: ../src/iop/colorchecker.c:1414
+#: ../src/iop/colorchecker.c:1580
 msgid "green-magenta offset"
 msgstr "Grün-Magenta Kompensation"
 
-#: ../src/iop/colorchecker.c:1423
+#: ../src/iop/colorchecker.c:1589
 msgid ""
 "adjust target color Lab 'b' channel\n"
 "lower values shift target color towards blues while higher shift towards "
@@ -18133,11 +18269,11 @@ msgstr ""
 "niedrigere Werte verschieben die Zielfarbe in Richtung Blau, höhere in "
 "Richtung Gelb"
 
-#: ../src/iop/colorchecker.c:1426
+#: ../src/iop/colorchecker.c:1592
 msgid "blue-yellow offset"
 msgstr "Blau-Gelb Kompensation"
 
-#: ../src/iop/colorchecker.c:1435
+#: ../src/iop/colorchecker.c:1601
 msgid ""
 "adjust target color saturation\n"
 "adjusts 'a' and 'b' channels of target color in Lab space simultaneously\n"
@@ -18149,11 +18285,11 @@ msgstr ""
 "niedrigere Werte führen zu geringerer Sättigung, höhere Werte zu höherer "
 "Sättigung"
 
-#: ../src/iop/colorchecker.c:1444
+#: ../src/iop/colorchecker.c:1610
 msgid "target color"
 msgstr "Zielfarbe"
 
-#: ../src/iop/colorchecker.c:1447
+#: ../src/iop/colorchecker.c:1613
 msgid ""
 "control target color of the patches\n"
 "relative - target color is relative from the patch original color\n"
@@ -18163,7 +18299,7 @@ msgstr ""
 "relativ - Zielfarbe ist relativ zur Originalfarbe des Feldes\n"
 "absolut - Zielfarbe ist der absolute Lab-Wert"
 
-#: ../src/iop/colorchecker.c:1451
+#: ../src/iop/colorchecker.c:1617
 msgid "absolute"
 msgstr "absolut"
 
@@ -18396,7 +18532,7 @@ msgstr ""
 "Konvertiert RGB Eingangswerte in den Arbeitsfarbraum\n"
 "basierend auf Farbprofilen "
 
-#: ../src/iop/colorin.c:131 ../src/iop/colorout.c:89 ../src/iop/demosaic.c:291
+#: ../src/iop/colorin.c:131 ../src/iop/colorout.c:89 ../src/iop/demosaic.c:290
 #: ../src/iop/rawprepare.c:173
 msgid "mandatory"
 msgstr "obligatorisch"
@@ -18663,7 +18799,7 @@ msgstr "ob und wie Ersatzfarben bevorzugt werden"
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "der Farbton, der gegenüber anderen bevorzugt werden soll"
 
-#: ../src/iop/colorreconstruction.c:1257 ../src/iop/demosaic.c:1359
+#: ../src/iop/colorreconstruction.c:1257 ../src/iop/demosaic.c:1349
 #: ../src/iop/highlights.c:1267
 msgid "not applicable"
 msgstr "nicht anwendbar"
@@ -18877,22 +19013,22 @@ msgid "threshold for defringe, higher values mean less defringing"
 msgstr ""
 "Schwellwert der Farbsaumentfernung, höhere Werte führen zu weniger Änderung"
 
-#: ../src/iop/demosaic.c:285
+#: ../src/iop/demosaic.c:284
 msgid "demosaic"
 msgstr "Entrastern"
 
-#: ../src/iop/demosaic.c:290
+#: ../src/iop/demosaic.c:289
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
 "Rekonstruktion der RGB Pixel aus Helligkeitswerten eines Sensors mit "
 "Farbfiltermatrix"
 
-#: ../src/iop/demosaic.c:1167
+#: ../src/iop/demosaic.c:1157
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "„%s” Farbmatrix für 4-Bayer-Bild nicht gefunden!"
 
-#: ../src/iop/demosaic.c:1319
+#: ../src/iop/demosaic.c:1309
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -18904,7 +19040,7 @@ msgstr ""
 "LMMSE ist für High ISO Bilder geeignet.\n"
 "Dual-Demosaic verdoppelt die Verarbeitungszeit."
 
-#: ../src/iop/demosaic.c:1323
+#: ../src/iop/demosaic.c:1313
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -18914,14 +19050,14 @@ msgstr ""
 "Chromi sind langsam.\n"
 "Dual-Demosaic verdoppelt die Verarbeitungszeit."
 
-#: ../src/iop/demosaic.c:1329
+#: ../src/iop/demosaic.c:1319
 msgid "Bayer4 sensor demosaicing methods."
 msgstr "Bayer4 Demosaicing Methoden"
 
 # WTF? Wer bitte soll das verstehen?
 # stimmt - wo kommt das vor?
 # wo ist der Vorschlag für bessere Übersetzung?
-#: ../src/iop/demosaic.c:1333
+#: ../src/iop/demosaic.c:1323
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -18931,7 +19067,7 @@ msgstr ""
 "Auf 0.0 setzen zum Ausschalten.\n"
 "Auf 1.0 setzen, um Kanten zu ignorieren."
 
-#: ../src/iop/demosaic.c:1338
+#: ../src/iop/demosaic.c:1328
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -18941,11 +19077,11 @@ msgstr ""
 "0.0 für hochfrequente Inhalte\n"
 "1.0 für gleichmäßige Inhalte"
 
-#: ../src/iop/demosaic.c:1344
+#: ../src/iop/demosaic.c:1334
 msgid "toggle mask visualization"
 msgstr "Maskendarstellung ein/ausschalten"
 
-#: ../src/iop/demosaic.c:1347
+#: ../src/iop/demosaic.c:1337
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -18954,15 +19090,15 @@ msgstr ""
 "Ausgabe,\n"
 "Verfeinerung fügt einige Neuberechnungen der roten und blauen Kanäle hinzu"
 
-#: ../src/iop/demosaic.c:1350
+#: ../src/iop/demosaic.c:1340
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "wie viele Median-Schritte zur Farbglättung nach dem Demosaicing"
 
-#: ../src/iop/demosaic.c:1353
+#: ../src/iop/demosaic.c:1343
 msgid "green channels matching method"
 msgstr "Methode zum Abgleichen des Grünkanals"
 
-#: ../src/iop/demosaic.c:1360
+#: ../src/iop/demosaic.c:1350
 msgid "demosaicing is only used for color raw images"
 msgstr "Demosaicing funktioniert nur mit RAW-Bildern."
 
@@ -21016,8 +21152,8 @@ msgid "find lens"
 msgstr "Objektiv finden"
 
 #. scale
-#: ../src/iop/lens.cc:4516 ../src/iop/overlay.c:1105 ../src/iop/vignette.c:1046
-#: ../src/iop/watermark.c:1364 ../src/libs/export.c:1330
+#: ../src/iop/lens.cc:4516 ../src/iop/overlay.c:1112 ../src/iop/vignette.c:1046
+#: ../src/iop/watermark.c:1381 ../src/libs/export.c:1330
 msgid "scale"
 msgstr "Skalierung"
 
@@ -21943,7 +22079,7 @@ msgid "image %d does not exist"
 msgstr "Bild %d ist nicht vorhanden"
 
 #. TRANSLATORS: This text must be very narrow, check in the GUI that it is not truncated
-#: ../src/iop/overlay.c:788
+#: ../src/iop/overlay.c:795
 msgid ""
 "drop\n"
 "image\n"
@@ -21955,7 +22091,7 @@ msgstr ""
 "hier\n"
 "ablegen"
 
-#: ../src/iop/overlay.c:1001
+#: ../src/iop/overlay.c:1008
 #, c-format
 msgid ""
 "cannot use image %d as an overlay as it is using the current image as an "
@@ -21964,12 +22100,12 @@ msgstr ""
 "Das Bild %d kann nicht als Overlay verwendet werden, da es das aktuelle Bild "
 "direkt oder indirekt als Overlay verwendet."
 
-#: ../src/iop/overlay.c:1098 ../src/iop/watermark.c:1357
+#: ../src/iop/overlay.c:1105 ../src/iop/watermark.c:1374
 msgctxt "section"
 msgid "placement"
 msgstr "Platzierung"
 
-#: ../src/iop/overlay.c:1113
+#: ../src/iop/overlay.c:1120
 msgid ""
 "choose how to scale the overlay\n"
 "• image: scale overlay relative to whole image\n"
@@ -21989,29 +22125,29 @@ msgstr ""
 " - Höhe: skaliert die Höhe des Overlays auf die Bildhöhe\n"
 " - Erweiterte Optionen: Unabhängige Wahl der Overlay- und Bildgröße"
 
-#: ../src/iop/overlay.c:1124
+#: ../src/iop/overlay.c:1131
 msgid "reference image dimension against which to scale the overlay"
 msgstr "Referenzdimension des Bildes für die Skalierung des Overlays"
 
-#: ../src/iop/overlay.c:1128
+#: ../src/iop/overlay.c:1135
 msgid "overlay dimension to scale"
 msgstr "Overlaydimension für Skalierung"
 
-#: ../src/iop/overlay.c:1132 ../src/iop/watermark.c:1387
+#: ../src/iop/overlay.c:1139 ../src/iop/watermark.c:1404
 #: ../src/libs/print_settings.c:2694
 msgid "alignment"
 msgstr "Position"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/overlay.c:1156
+#: ../src/iop/overlay.c:1163
 msgid "the opacity of the overlay"
 msgstr "Deckkraft des Overlays"
 
-#: ../src/iop/overlay.c:1157
+#: ../src/iop/overlay.c:1164
 msgid "the scale of the overlay"
 msgstr "Skalierung des Overlays"
 
-#: ../src/iop/overlay.c:1158
+#: ../src/iop/overlay.c:1165
 msgid "the rotation of the overlay"
 msgstr "Drehung des Overlays"
 
@@ -23177,7 +23313,7 @@ msgstr "Farbkurve für a-Kanal"
 msgid "tonecurve for b channel"
 msgstr "Farbkurve für b-Kanal"
 
-#: ../src/iop/tonecurve.c:1285 ../src/iop/watermark.c:1345
+#: ../src/iop/tonecurve.c:1285 ../src/iop/watermark.c:1362
 #: ../src/libs/colorpicker.c:673
 msgid "pick color"
 msgstr "Farbe wählen"
@@ -23645,21 +23781,21 @@ msgid "overlay an SVG watermark like a signature on the image"
 msgstr "SVG Wasserzeichen über das Bild legen"
 
 # nicht so wirklich schön
-#: ../src/iop/watermark.c:1296
+#: ../src/iop/watermark.c:1313
 msgid "marker"
 msgstr "Wasserzeichen"
 
-#: ../src/iop/watermark.c:1299
+#: ../src/iop/watermark.c:1316
 #, c-format
 msgid "SVG watermarks in %s/watermarks or %s/watermarks"
 msgstr "SVG-Wasserzeichen in %s/watermarks oder %s/watermarks"
 
 #. Simple text
-#: ../src/iop/watermark.c:1309 ../src/iop/watermark.c:1310
+#: ../src/iop/watermark.c:1326 ../src/iop/watermark.c:1327
 msgid "text"
 msgstr "Text"
 
-#: ../src/iop/watermark.c:1311
+#: ../src/iop/watermark.c:1328
 msgid ""
 "text string, tag: $(WATERMARK_TEXT)\n"
 "use $(NL) to insert a line break"
@@ -23667,16 +23803,16 @@ msgstr ""
 "Text, Platzhalter: $(WATERMARK_TEXT)\n"
 "$(NL) für einen Zeilenumbruch verwenden"
 
-#: ../src/iop/watermark.c:1315
+#: ../src/iop/watermark.c:1332
 msgid "content"
 msgstr "Inhalt"
 
 #. Text font
-#: ../src/iop/watermark.c:1320
+#: ../src/iop/watermark.c:1337
 msgid "font"
 msgstr "Schriftart"
 
-#: ../src/iop/watermark.c:1325
+#: ../src/iop/watermark.c:1342
 msgid ""
 "text font, tags:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
@@ -23688,7 +23824,7 @@ msgstr ""
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
 
-#: ../src/iop/watermark.c:1340
+#: ../src/iop/watermark.c:1357
 msgid ""
 "watermark color, tag:\n"
 "$(WATERMARK_COLOR)"
@@ -23696,15 +23832,15 @@ msgstr ""
 "Wasserzeichenfarbe, Platzhalter:\n"
 "$(WATERMARK_COLOR)"
 
-#: ../src/iop/watermark.c:1342
+#: ../src/iop/watermark.c:1359
 msgid "select watermark color"
 msgstr "Wasserzeichen-Farbton wählen"
 
-#: ../src/iop/watermark.c:1344
+#: ../src/iop/watermark.c:1361
 msgid "pick color from image"
 msgstr "Farbe aus dem Bild übernehmen"
 
-#: ../src/iop/watermark.c:1370
+#: ../src/iop/watermark.c:1387
 msgid ""
 "choose how to scale the watermark\n"
 "• image: scale watermark relative to whole image\n"
@@ -23724,24 +23860,24 @@ msgstr ""
 " - Höhe: skaliert die Höhe des Wasserzeichens auf die Bildhöhe\n"
 " - Erweiterte Optionen: Unabhängige Wahl der Wasserzeichen- und Bildgröße"
 
-#: ../src/iop/watermark.c:1379
+#: ../src/iop/watermark.c:1396
 msgid "reference image dimension against which to scale the watermark"
 msgstr "Referenzdimension des Bildes für die Skalierung des Wasserzeichens"
 
-#: ../src/iop/watermark.c:1383
+#: ../src/iop/watermark.c:1400
 msgid "watermark dimension to scale"
 msgstr "Dimension des Wasserzeichens für Skalierung"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1408
+#: ../src/iop/watermark.c:1425
 msgid "the opacity of the watermark"
 msgstr "Deckkraft des Wasserzeichens"
 
-#: ../src/iop/watermark.c:1409
+#: ../src/iop/watermark.c:1426
 msgid "the scale of the watermark"
 msgstr "Größe des Wasserzeichens"
 
-#: ../src/iop/watermark.c:1410
+#: ../src/iop/watermark.c:1427
 msgid "the rotation of the watermark"
 msgstr "Drehung des Wasserzeichens"
 
@@ -24058,7 +24194,7 @@ msgstr "Dateien"
 #: ../src/libs/collect.c:3330 ../src/libs/export_metadata.c:301
 #: ../src/libs/filtering.c:899 ../src/libs/filtering.c:971
 #: ../src/libs/filtering.c:1650 ../src/libs/filtering.c:1995
-#: ../src/libs/image.c:503 ../src/libs/image.c:641 ../src/libs/image.c:653
+#: ../src/libs/image.c:502 ../src/libs/image.c:603 ../src/libs/image.c:622
 #: ../src/libs/metadata.c:515 ../src/libs/metadata_view.c:1297
 msgid "metadata"
 msgstr "Metadaten"
@@ -24178,9 +24314,17 @@ msgstr "Live-Messwerte"
 msgid "display samples on image/vectorscope"
 msgstr "Messpunkte im Bild/Vektorscope anzeigen"
 
-#: ../src/libs/colorpicker.c:747
+#: ../src/libs/colorpicker.c:737
+msgid "display samples"
+msgstr "Messpunkte anzeigen"
+
+#: ../src/libs/colorpicker.c:749
 msgid "restrict scope to selection"
 msgstr "Histogramm/Scope auf Auswahl beschränken"
+
+#: ../src/libs/colorpicker.c:750
+msgid "restrict scope"
+msgstr "Histogramm/Scope beschränken"
 
 #: ../src/libs/copy_history.c:61
 msgid "history stack"
@@ -24238,7 +24382,7 @@ msgstr "selektiv einfügen…"
 msgid "choose which modules to paste to the target image(s)"
 msgstr "auswählen, welche Module des Verlaufsstapels eingefügt werden"
 
-#: ../src/libs/copy_history.c:353 ../src/libs/image.c:663
+#: ../src/libs/copy_history.c:353 ../src/libs/image.c:633
 msgid "paste"
 msgstr "einfügen"
 
@@ -24260,13 +24404,13 @@ msgid ""
 "all selected images"
 msgstr "Verlaufsstapel aller ausgewählten Bilder verwerfen"
 
-#: ../src/libs/copy_history.c:371 ../src/libs/styles.c:876
+#: ../src/libs/copy_history.c:371 ../src/libs/styles.c:865
 msgid "how to handle existing history"
 msgstr ""
 "wie soll mit einem vorhandenen\n"
 "Verlauf umgegangen werden"
 
-#: ../src/libs/copy_history.c:374 ../src/libs/styles.c:879
+#: ../src/libs/copy_history.c:374 ../src/libs/styles.c:868
 msgid "append"
 msgstr "hinzufügen"
 
@@ -24635,7 +24779,7 @@ msgstr ""
 "Wenn der Remote-Speicher darktable XMP Metadaten nicht versteht, können "
 "stattdessen berechnete Metadaten verwendet werden."
 
-#: ../src/libs/export_metadata.c:319 ../src/libs/image.c:631
+#: ../src/libs/export_metadata.c:319 ../src/libs/image.c:621
 msgid "geo tags"
 msgstr "Geo-Tags"
 
@@ -25081,7 +25225,7 @@ msgstr "Vergleichsoperator"
 msgid "filter by images rating"
 msgstr "Filtern nach Rating"
 
-#: ../src/libs/filters/rating.c:209 ../src/libs/image.c:604
+#: ../src/libs/filters/rating.c:209 ../src/libs/image.c:618
 #: ../src/libs/tools/ratings.c:56
 msgid "ratings"
 msgstr "Bewertungen"
@@ -25196,7 +25340,7 @@ msgid "points"
 msgstr "Punkte"
 
 #: ../src/libs/geotagging.c:845 ../src/libs/geotagging.c:1897
-#: ../src/libs/image.c:502
+#: ../src/libs/image.c:501
 msgid "images"
 msgstr "Bilder"
 
@@ -25609,173 +25753,177 @@ msgstr ""
 msgid "actions on selection"
 msgstr "Aktionen auf Auswahl"
 
-#: ../src/libs/image.c:304
+#: ../src/libs/image.c:303
 msgid "delete (trash)"
 msgstr "löschen (Papierkorb)"
 
-#: ../src/libs/image.c:307
+#: ../src/libs/image.c:306
 msgid "physically delete from disk (using trash if possible)"
 msgstr ""
 "physisch von der Festplatte löschen (Papierkorb verwenden, falls möglich)"
 
-#: ../src/libs/image.c:308
+#: ../src/libs/image.c:307
 msgid "physically delete from disk immediately"
 msgstr "physisch sofort von der Festplatte löschen"
 
-#: ../src/libs/image.c:514 ../src/libs/modulegroups.c:3991
-#: ../src/libs/styles.c:905
+#: ../src/libs/image.c:513 ../src/libs/modulegroups.c:3991
+#: ../src/libs/styles.c:894
 msgid "remove"
 msgstr "entfernen"
 
-#: ../src/libs/image.c:516
+#: ../src/libs/image.c:515
 msgid "remove images from the image library, without deleting"
 msgstr "Bilder aus der Bildbibliothek entfernen, ohne sie zu löschen"
 
-#: ../src/libs/image.c:525
+#: ../src/libs/image.c:524
 msgid "move..."
 msgstr "verschieben"
 
-#: ../src/libs/image.c:527
+#: ../src/libs/image.c:526
 msgid "move to other folder"
 msgstr "in anderen Ordner verschieben"
 
-#: ../src/libs/image.c:530
+#: ../src/libs/image.c:529
 msgid "copy..."
 msgstr "kopieren…"
 
-#: ../src/libs/image.c:532
+#: ../src/libs/image.c:531
 msgid "copy to other folder"
 msgstr "in anderen Ordner kopieren"
 
-#: ../src/libs/image.c:536
+#: ../src/libs/image.c:535
 msgid "create HDR"
 msgstr "HDR erzeugen"
 
-#: ../src/libs/image.c:538
+#: ../src/libs/image.c:537
 msgid "create a high dynamic range image from selected shots"
 msgstr "Hochkontrastbild (HDRI) aus ausgewählten Bildern erzeugen"
 
-#: ../src/libs/image.c:543
+#: ../src/libs/image.c:542
 msgid "add a duplicate to the image library, including its history stack"
 msgstr ""
 "füge ein Duplikat zur Bildbibliothek hinzu, inklusive des Verlaufsstapels"
 
-#: ../src/libs/image.c:550 ../src/libs/image.c:555
+#: ../src/libs/image.c:549 ../src/libs/image.c:554
 msgid "rotate selected images 90 degrees CCW"
 msgstr "Ausgewählte Bilder um 90° gegen den Uhrzeigersinn drehen"
 
-#: ../src/libs/image.c:561 ../src/libs/image.c:566
+#: ../src/libs/image.c:560 ../src/libs/image.c:565
 msgid "rotate selected images 90 degrees CW"
 msgstr "Ausgewählte Bilder um 90° im Uhrzeigersinn drehen"
 
-#: ../src/libs/image.c:569
+#: ../src/libs/image.c:568
 msgid "reset rotation"
 msgstr "Drehung entfernen"
 
-#: ../src/libs/image.c:571
+#: ../src/libs/image.c:570
 msgid "reset rotation to EXIF data"
 msgstr "Drehung auf EXIF-Angabe zurücksetzen"
 
-#: ../src/libs/image.c:574
+#: ../src/libs/image.c:573
 msgid "copy locally"
 msgstr "lokal kopieren"
 
-#: ../src/libs/image.c:576
+#: ../src/libs/image.c:575
 msgid "copy the image locally"
 msgstr "Bild in lokalen Cache kopieren"
 
-#: ../src/libs/image.c:580
+#: ../src/libs/image.c:579
 msgid "resync local copy"
 msgstr "Kopie zurückspielen"
 
-#: ../src/libs/image.c:582
+#: ../src/libs/image.c:581
 msgid "synchronize the image's XMP and remove the local copy"
 msgstr "XMP des Bildes synchronisieren und lokale Kopie entfernen"
 
-#: ../src/libs/image.c:586
+#: ../src/libs/image.c:585
 msgctxt "selected images action"
 msgid "group"
 msgstr "gruppieren"
 
-#: ../src/libs/image.c:588
+#: ../src/libs/image.c:587
 msgid "add selected images to expanded group or create a new one"
 msgstr ""
 "ausgewählte Bilder zur eingeblendeten Gruppe hinzufügen oder neue Gruppe "
 "erstellen"
 
-#: ../src/libs/image.c:592
+#: ../src/libs/image.c:591
 msgid "ungroup"
 msgstr "Gruppe auflösen"
 
-#: ../src/libs/image.c:594
+#: ../src/libs/image.c:593
 msgid "remove selected images from the group"
 msgstr "Ausgewählte Bilder aus der Gruppe entfernen"
 
-#: ../src/libs/image.c:606
+#: ../src/libs/image.c:613 ../src/libs/metadata_view.c:144
+msgid "flags"
+msgstr "Flags"
+
+#: ../src/libs/image.c:618
 msgid "select ratings metadata"
 msgstr "Bewertungemetadaten auswählen"
 
-#: ../src/libs/image.c:613
+#: ../src/libs/image.c:619
 msgid "colors"
 msgstr "Farben"
 
-#: ../src/libs/image.c:615
+#: ../src/libs/image.c:619
 msgid "select colors metadata"
 msgstr "Farbmetadaten auswählen"
 
-#: ../src/libs/image.c:624
+#: ../src/libs/image.c:620
 msgid "select tags metadata"
 msgstr "Tag Metadaten auswählen"
 
-#: ../src/libs/image.c:633
+#: ../src/libs/image.c:621
 msgid "select geo tags metadata"
 msgstr "Geo-Tag Metadaten auswählen"
 
-#: ../src/libs/image.c:644
+#: ../src/libs/image.c:622
 msgid "select darktable metadata (from metadata editor module)"
 msgstr "wähle darktable Metadaten (aus dem Metadaten-Editor-Modul)"
 
-#: ../src/libs/image.c:657
+#: ../src/libs/image.c:627
 msgid "set the selected image as source of metadata"
 msgstr "wählt das ausgewählte Bild als Metadatenquelle"
 
-#: ../src/libs/image.c:664
+#: ../src/libs/image.c:634
 msgid "paste selected metadata on selected images"
 msgstr "ausgewählte Metadaten für ausgewählte Bilder schreiben"
 
-#: ../src/libs/image.c:669
+#: ../src/libs/image.c:639
 msgid "clear selected metadata on selected images"
 msgstr "ausgewählte Metadaten für ausgewählte Bilder löschen"
 
-#: ../src/libs/image.c:675
+#: ../src/libs/image.c:645
 msgid "how to handle existing metadata"
 msgstr "wie mit vorhandenen Metadaten umgegangen werden soll"
 
-#: ../src/libs/image.c:678
+#: ../src/libs/image.c:648
 msgid "merge"
 msgstr "zusammenfügen"
 
-#: ../src/libs/image.c:683
+#: ../src/libs/image.c:653
 msgid ""
 "update all image information to match changes to file\n"
 "warning: resets star ratings unless you select\n"
-"'ignore EXIF rating' in the 'import' module\n"
+"'ignore EXIF rating' in the 'import' module"
 msgstr ""
 "alle Bildinformationen aktualisieren, um Änderungen an der Datei anzupassen\n"
 "Warnung: setzt die Sternebewertungen zurück, es sei denn, die Option\n"
-"‚Ignoriere Bewertung aus EXIF Daten’ im ‚Import‘-Modul ist aktiv\n"
+"‚Ignoriere Bewertung aus EXIF Daten’ im ‚Import‘-Modul ist aktiv"
 
-#: ../src/libs/image.c:690
+#: ../src/libs/image.c:660
 msgid "set selection as monochrome images and activate monochrome workflow"
 msgstr ""
 "Auswahl als monochrome Bilder kennzeichnen und monochromen Workflow "
 "aktivieren."
 
-#: ../src/libs/image.c:694
+#: ../src/libs/image.c:664
 msgid "set selection as color images"
 msgstr "Auswahl als Farbbilder kennzeichnen."
 
-#: ../src/libs/image.c:702
+#: ../src/libs/image.c:672
 msgid "duplicate virgin"
 msgstr "unbearbeitet duplizieren"
 
@@ -26394,6 +26542,10 @@ msgstr ""
 "werden. \n"
 "Mit Escape die Auswahl abbrechen."
 
+#: ../src/libs/metadata.c:708
+msgid "<leave unchanged>"
+msgstr "<ungeändert belassen>"
+
 #: ../src/libs/metadata.c:743
 msgid "write metadata for selected images"
 msgstr "Metadaten für ausgewählte Bilder schreiben"
@@ -26493,10 +26645,6 @@ msgstr "Exportzeitstempel"
 #: ../src/libs/metadata_view.c:143
 msgid "print timestamp"
 msgstr "Druckzeitstempel"
-
-#: ../src/libs/metadata_view.c:144
-msgid "flags"
-msgstr "Flags"
 
 #: ../src/libs/metadata_view.c:158
 msgid "35mm equiv focal length"
@@ -27430,28 +27578,28 @@ msgstr ""
 "Stile auf die aktuell ausgewählten Bilder\n"
 "anwenden oder Stile verwalten"
 
-#: ../src/libs/styles.c:249
+#: ../src/libs/styles.c:247
 msgid "no images selected"
 msgstr "Keine Bilder ausgewählt!"
 
-#: ../src/libs/styles.c:376
+#: ../src/libs/styles.c:370
 msgid "remove style?"
 msgid_plural "remove styles?"
 msgstr[0] "Stil löschen?"
 msgstr[1] "Stile löschen?"
 
-#: ../src/libs/styles.c:377
+#: ../src/libs/styles.c:371
 #, c-format
 msgid "do you really want to remove %d style?"
 msgid_plural "do you really want to remove %d styles?"
 msgstr[0] "%d Stil wirklich löschen?"
 msgstr[1] "%d Stile wirklich löschen?"
 
-#: ../src/libs/styles.c:493 ../src/libs/styles.c:649
+#: ../src/libs/styles.c:483 ../src/libs/styles.c:639
 msgid "_overwrite"
 msgstr "über_schreiben"
 
-#: ../src/libs/styles.c:500 ../src/libs/styles.c:654
+#: ../src/libs/styles.c:490 ../src/libs/styles.c:644
 #, c-format
 msgid ""
 "style `%s' already exists.\n"
@@ -27460,24 +27608,24 @@ msgstr ""
 "Der Stil „%s” existiert bereits.\n"
 "Soll er überschrieben werden?\n"
 
-#: ../src/libs/styles.c:503 ../src/libs/styles.c:656
+#: ../src/libs/styles.c:493 ../src/libs/styles.c:646
 msgid "apply this option to all existing styles"
 msgstr "Diese Option auf alle vorhandenen Stile anwenden."
 
-#: ../src/libs/styles.c:566
+#: ../src/libs/styles.c:556
 #, c-format
 msgid "style %s was successfully exported"
 msgstr "Stil „%s” erfolgreich exportiert"
 
-#: ../src/libs/styles.c:583
+#: ../src/libs/styles.c:573
 msgid "select style"
 msgstr "Stil auswählen"
 
-#: ../src/libs/styles.c:593
+#: ../src/libs/styles.c:583
 msgid "darktable style files"
 msgstr "darktable-Stil-Datei"
 
-#: ../src/libs/styles.c:845
+#: ../src/libs/styles.c:832
 msgid ""
 "available styles,\n"
 "double-click to apply"
@@ -27485,47 +27633,47 @@ msgstr ""
 "verfügbare Stile,\n"
 "Doppelklick zum Anwenden"
 
-#: ../src/libs/styles.c:854 ../src/libs/styles.c:855
+#: ../src/libs/styles.c:841 ../src/libs/styles.c:842
 msgid "filter style names"
 msgstr "Stile nach Namen filtern"
 
-#: ../src/libs/styles.c:866
+#: ../src/libs/styles.c:853 ../src/libs/styles.c:854
 msgid "create duplicate"
 msgstr "Duplikat erzeugen"
 
-#: ../src/libs/styles.c:873
+#: ../src/libs/styles.c:862
 msgid "creates a duplicate of the image before applying style"
 msgstr "Erzeuge ein Duplikat des Bildes, bevor der Stil angewendet wird."
 
-#: ../src/libs/styles.c:891
+#: ../src/libs/styles.c:880
 msgid "create..."
 msgstr "erzeugen…"
 
-#: ../src/libs/styles.c:893
+#: ../src/libs/styles.c:882
 msgid "create styles from history stack of selected images"
 msgstr "Stile aus den Verlaufsstapeln ausgewählter Bilder erzeugen"
 
-#: ../src/libs/styles.c:898 ../src/libs/tagging.c:2350
+#: ../src/libs/styles.c:887 ../src/libs/tagging.c:2350
 msgid "edit..."
 msgstr "bearbeiten…"
 
-#: ../src/libs/styles.c:900
+#: ../src/libs/styles.c:889
 msgid "edit the selected styles in list above"
 msgstr "ausgewählte Stile bearbeiten"
 
-#: ../src/libs/styles.c:907
+#: ../src/libs/styles.c:896
 msgid "removes the selected styles in list above"
 msgstr "ausgewählte Stile entfernen"
 
-#: ../src/libs/styles.c:914
+#: ../src/libs/styles.c:903
 msgid "import styles from a style files"
 msgstr "Stile aus einer Stil-Datei importieren"
 
-#: ../src/libs/styles.c:921
+#: ../src/libs/styles.c:910
 msgid "export the selected styles into a style files"
 msgstr "ausgewählte Stile in eine Stil-Datei exportieren"
 
-#: ../src/libs/styles.c:928
+#: ../src/libs/styles.c:917
 msgid "apply the selected styles in list above to selected images"
 msgstr "ausgewählte Stile auf ausgewählte Bilder anwenden"
 
