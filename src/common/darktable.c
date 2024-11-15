@@ -1288,11 +1288,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                 darktable.gimp.error = FALSE;
             }
           }
-
-          if(!darktable.gimp.error)
-          {
-            dbfilename_from_command = ":memory:";
-          }
         }
       }
       else if(!strcmp(argv[k], "--"))
