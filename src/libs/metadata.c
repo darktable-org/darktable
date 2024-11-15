@@ -47,6 +47,7 @@ typedef enum dt_metadata_pref_cols_t
 typedef struct dt_lib_metadata_t
 {
   GList *metadata_list[DT_METADATA_NUMBER];
+  GList *setting_names;
   GtkWidget *button_box, *apply_button, *cancel_button;
   GList *last_act_on;
   int num_grid_rows;
@@ -737,6 +738,13 @@ static gboolean _metadata_reset(GtkWidget *label,
   return TRUE;
 }
 
+static const char *_get_tag_subkey(const char *tagname)
+{
+  const char *t = g_strrstr(tagname, ".");
+  if(t) return t + 1;
+  return NULL;
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = calloc(1, sizeof(dt_lib_metadata_t));
@@ -757,6 +765,7 @@ void gui_init(dt_lib_module_t *self)
 
     GtkWidget *label = dt_ui_label_new(metadata->name);
     gtk_widget_set_halign(label, GTK_ALIGN_FILL);
+    gtk_widget_set_valign(label, GTK_ALIGN_START);
     GtkWidget *labelev = gtk_event_box_new();
     gtk_widget_set_tooltip_text(labelev, _("double-click to reset"));
     gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
@@ -782,9 +791,9 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_set_name(unchanged, "dt-metadata-multi");
     gtk_text_view_add_child_in_window(GTK_TEXT_VIEW(textview), unchanged, GTK_TEXT_WINDOW_WIDGET, 0, 0);
 
-    gchar *setting_name = g_strdup_printf("plugins/lighttable/metadata/%s_text_height", metadata->name);
+    gchar *setting_name = g_strdup_printf("plugins/lighttable/metadata/%s_text_height", _get_tag_subkey(metadata->tagname));
     GtkWidget *swindow = dt_ui_resize_wrap(GTK_WIDGET(textview), 100, setting_name);
-    g_free(setting_name);
+    d->setting_names = g_list_append(d->setting_names, setting_name);
     g_object_set_data(G_OBJECT(swindow), "key", GINT_TO_POINTER(metadata->key));
     g_object_set_data(G_OBJECT(swindow), "textview", textview);
 
@@ -845,6 +854,7 @@ void gui_cleanup(dt_lib_module_t *self)
     g_object_set_data(G_OBJECT(textview), "text_orig", NULL);
   }
 
+  g_list_free_full(d->setting_names, g_free);
   g_list_free(d->last_act_on);
   free(self->data);
   self->data = NULL;
@@ -861,7 +871,7 @@ static void add_rights_preset(dt_lib_module_t *self, char *name, char *string)
   char *params = calloc(sizeof(char), params_size);
   if(params)
   {
-    int pos = 0;
+    size_t pos = 0;
     memcpy(params + pos, tagname, tagname_len);
     pos += tagname_len;
     memcpy(params + pos, string, string_len);
@@ -887,6 +897,20 @@ void init_presets(dt_lib_module_t *self)
                     _("Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"));
   add_rights_preset(self, _("all rights reserved"),
                     _("all rights reserved"));
+}
+
+static size_t _build_tag(char *buf,
+                         const char *tagname,
+                         const char **tagname_ptr,
+                         size_t *tagname_len_ptr,
+                         const char **text_ptr,
+                         size_t *text_len_ptr)
+{
+  *tagname_ptr = tagname;
+  *tagname_len_ptr = strlen(tagname) + 1;
+  *text_ptr = buf;
+  *text_len_ptr = strlen(buf) + 1;
+  return *text_len_ptr;
 }
 
 void *legacy_params(dt_lib_module_t *self,
@@ -958,10 +982,11 @@ void *legacy_params(dt_lib_module_t *self,
   }
   else if(old_version == 4)
   {
-    char **metadata_tagnames = calloc(DT_METADATA_NUMBER, sizeof(char *));
-    int32_t *metadata_tagname_len = calloc(DT_METADATA_NUMBER, sizeof(int32_t));
-    char **metadata_texts = calloc(DT_METADATA_NUMBER, sizeof(char *));
-    int32_t *metadata_len = calloc(DT_METADATA_NUMBER, sizeof(int32_t));
+    //<tagname>\0<tagvalue>\0<tagname>\0</tagvalue>\0 ...
+    const char **metadata_tagnames = calloc(DT_METADATA_NUMBER, sizeof(char *));
+    size_t *metadata_tagname_len = calloc(DT_METADATA_NUMBER, sizeof(size_t));
+    const char **metadata_texts = calloc(DT_METADATA_NUMBER, sizeof(char *));
+    size_t *metadata_len = calloc(DT_METADATA_NUMBER, sizeof(size_t));
 
     char *buf = (char *)old_params;
     int i = 0;
@@ -969,11 +994,12 @@ void *legacy_params(dt_lib_module_t *self,
     // creator
     if(strlen(buf) > 0)
     {
-      metadata_tagnames[i] = "Xmp.dc.creator";
-      metadata_tagname_len[i] = strlen(metadata_tagnames[i]) + 1;
-      metadata_texts[i] = buf;
-      metadata_len[i] = strlen(buf) + 1;
-      buf += metadata_len[i];
+      buf += _build_tag(buf,
+                        "Xmp.dc.creator",
+                        &metadata_tagnames[i],
+                        &metadata_tagname_len[i],
+                        &metadata_texts[i],
+                        &metadata_len[i]);
       i++;
     }
     else
@@ -982,11 +1008,12 @@ void *legacy_params(dt_lib_module_t *self,
     // publisher
     if(strlen(buf) > 0)
     {
-      metadata_tagnames[i] = "Xmp.dc.publisher";
-      metadata_tagname_len[i] = strlen(metadata_tagnames[i]) + 1;
-      metadata_texts[i] = buf;
-      metadata_len[i] = strlen(buf) + 1;
-      buf += metadata_len[i];
+      buf += _build_tag(buf,
+                        "Xmp.dc.publisher",
+                        &metadata_tagnames[i],
+                        &metadata_tagname_len[i],
+                        &metadata_texts[i],
+                        &metadata_len[i]);
       i++;
     }
     else
@@ -995,11 +1022,12 @@ void *legacy_params(dt_lib_module_t *self,
     // title
     if(strlen(buf) > 0)
     {
-      metadata_tagnames[i] = "Xmp.dc.title";
-      metadata_tagname_len[i] = strlen(metadata_tagnames[i]) + 1;
-      metadata_texts[i] = buf;
-      metadata_len[i] = strlen(buf) + 1;
-      buf += metadata_len[i];
+      buf += _build_tag(buf,
+                        "Xmp.dc.title",
+                        &metadata_tagnames[i],
+                        &metadata_tagname_len[i],
+                        &metadata_texts[i],
+                        &metadata_len[i]);
       i++;
     }
     else
@@ -1008,11 +1036,12 @@ void *legacy_params(dt_lib_module_t *self,
     // description
     if(strlen(buf) > 0)
     {
-      metadata_tagnames[i] = "Xmp.dc.description";
-      metadata_tagname_len[i] = strlen(metadata_tagnames[i]) + 1;
-      metadata_texts[i] = buf;
-      metadata_len[i] = strlen(buf) + 1;
-      buf += metadata_len[i];
+      buf += _build_tag(buf,
+                        "Xmp.dc.description",
+                        &metadata_tagnames[i],
+                        &metadata_tagname_len[i],
+                        &metadata_texts[i],
+                        &metadata_len[i]);
       i++;
     }
     else
@@ -1021,11 +1050,12 @@ void *legacy_params(dt_lib_module_t *self,
     // rights
     if(strlen(buf) > 0)
     {
-      metadata_tagnames[i] = "Xmp.dc.rights";
-      metadata_tagname_len[i] = strlen(metadata_tagnames[i]) + 1;
-      metadata_texts[i] = buf;
-      metadata_len[i] = strlen(buf) + 1;
-      buf += metadata_len[i];
+      buf += _build_tag(buf,
+                        "Xmp.dc.rights",
+                        &metadata_tagnames[i],
+                        &metadata_tagname_len[i],
+                        &metadata_texts[i],
+                        &metadata_len[i]);
       i++;
     }
     else
@@ -1034,11 +1064,12 @@ void *legacy_params(dt_lib_module_t *self,
     // notes
     if(strlen(buf) > 0)
     {
-      metadata_tagnames[i] = "Xmp.acdsee.notes";
-      metadata_tagname_len[i] = strlen(metadata_tagnames[i]) + 1;
-      metadata_texts[i] = buf;
-      metadata_len[i] = strlen(buf) + 1;
-      buf += metadata_len[i];
+      buf += _build_tag(buf,
+                        "Xmp.acdsee.notes",
+                        &metadata_tagnames[i],
+                        &metadata_tagname_len[i],
+                        &metadata_texts[i],
+                        &metadata_len[i]);
       i++;
     }
     else
@@ -1047,11 +1078,12 @@ void *legacy_params(dt_lib_module_t *self,
     // version name
     if(strlen(buf) > 0)
     {
-      metadata_tagnames[i] = "Xmp.darktable.version_name";
-      metadata_tagname_len[i] = strlen(metadata_tagnames[i]) + 1;
-      metadata_texts[i] = buf;
-      metadata_len[i] = strlen(buf) + 1;
-      buf += metadata_len[i];
+      buf += _build_tag(buf,
+                        "Xmp.darktable.version_name",
+                        &metadata_tagnames[i],
+                        &metadata_tagname_len[i],
+                        &metadata_texts[i],
+                        &metadata_len[i]);
       i++;
     }
     else
@@ -1060,11 +1092,12 @@ void *legacy_params(dt_lib_module_t *self,
     // preserved filename
     if(strlen(buf) > 0)
     {
-      metadata_tagnames[i] = "Xmp.xmpMM.PreservedFileName";
-      metadata_tagname_len[i] = strlen(metadata_tagnames[i]) + 1;
-      metadata_texts[i] = buf;
-      metadata_len[i] = strlen(buf) + 1;
-      buf += metadata_len[i];
+      buf += _build_tag(buf,
+                        "Xmp.xmpMM.PerservedFileName",
+                        &metadata_tagnames[i],
+                        &metadata_tagname_len[i],
+                        &metadata_texts[i],
+                        &metadata_len[i]);
       i++;
     }
     else
