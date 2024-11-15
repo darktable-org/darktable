@@ -89,19 +89,19 @@ unsigned int dt_metadata_get_nb_user_metadata();
 const char *dt_metadata_get_name_by_display_order(const uint32_t order);
 
 /** return the metadata keyid by display order */
-dt_metadata_t dt_metadata_get_keyid_by_display_order(const uint32_t order);
+uint32_t dt_metadata_get_keyid_by_display_order(const uint32_t order);
 
 /** return the metadata keyid by name */
-dt_metadata_t dt_metadata_get_keyid_by_name(const char* name);
+uint32_t dt_metadata_get_keyid_by_name(const char* name);
 
 /** return the metadata type by display order */
-int dt_metadata_get_type_by_display_order(const uint32_t order);
+uint32_t dt_metadata_get_type_by_display_order(const uint32_t order);
 
 /** return the metadata name of the metadata keyid */
 const char *dt_metadata_get_name(const uint32_t keyid);
 
 /** return the keyid of the metadata key */
-dt_metadata_t dt_metadata_get_keyid(const char* key);
+uint32_t dt_metadata_get_keyid(const char* key);
 
 /** return the key of the metadata keyid */
 const char *dt_metadata_get_key(const uint32_t keyid);
@@ -113,7 +113,7 @@ const char *dt_metadata_get_subkey(const uint32_t keyid);
 const char *dt_metadata_get_key_by_subkey(const char *subkey);
 
 /** return the type of the metadata keyid */
-int dt_metadata_get_type(const uint32_t keyid);
+uint32_t dt_metadata_get_type(const uint32_t keyid);
 
 /** init metadata flags */
 void dt_metadata_init();

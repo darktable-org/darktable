@@ -441,6 +441,7 @@ static void _update_layout(dt_lib_module_t *self)
 
   GtkWidget *first = NULL, *previous = NULL;
 
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
     dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
@@ -476,11 +477,13 @@ static void _update_layout(dt_lib_module_t *self)
       }
     }
   }
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 }
 
 void gui_reset(dt_lib_module_t *self)
 {
   ++darktable.gui->reset;
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
     dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
@@ -492,6 +495,7 @@ void gui_reset(dt_lib_module_t *self)
       gtk_text_buffer_set_text(buffer, "", -1);
     }
   }
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   --darktable.gui->reset;
 
   _write_metadata(self);
@@ -756,6 +760,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
 
   int i = 0;
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
     dt_metadata_t2 *metadata = iter->data;
@@ -821,6 +826,7 @@ void gui_init(dt_lib_module_t *self)
     i++;
     d->num_grid_rows++;
   }
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
   // apply button
   d->apply_button = dt_action_button_new(self, N_("apply"), _apply_button_clicked, self,
@@ -1135,6 +1141,7 @@ void *get_params(dt_lib_module_t *self, int *size)
 {
   *size = 0;
 
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   const int metadata_nb = g_list_length(dt_metadata_get_list());
 
   char **metadata_tagnames = calloc(metadata_nb, sizeof(char *));
@@ -1163,6 +1170,7 @@ void *get_params(dt_lib_module_t *self, int *size)
     *size = *size + metadata_tagname_len[i] + metadata_len[i];
     i++;
   }
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
   char *params = malloc(*size);
   int pos = 0;
@@ -1193,7 +1201,9 @@ int set_params(dt_lib_module_t *self,
   if(!params) return 1;
   dt_lib_metadata_t *d = self->data;
 
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   const int metadata_nb = g_list_length(dt_metadata_get_list());
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
   char **metadata_tagnames = calloc(metadata_nb, sizeof(char *));
   int32_t *metadata_tagname_len = calloc(metadata_nb, sizeof(int32_t));
