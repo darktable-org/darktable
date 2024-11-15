@@ -51,6 +51,7 @@ typedef struct dt_colorpicker_sample_t
   gboolean pick_output;
   // NOTE: only applies to live samples
   gboolean locked;
+  gboolean copied;
 
   /** The actual picked colors */
   // picked color in display profile, as picked from preview pixelpipe
@@ -76,4 +77,3 @@ typedef struct dt_colorpicker_sample_t
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

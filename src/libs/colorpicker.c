@@ -164,6 +164,23 @@ static gboolean _sample_draw_callback(GtkWidget *widget,
     }
   }
 
+  // if the sample is locked we want to add a lock
+  if(sample->copied)
+  {
+    const int border = DT_PIXEL_APPLY_DPI(2);
+    const int icon_width = width - 2 * border;
+    const int icon_height = height - 2 * border;
+    if(icon_width > 0 && icon_height > 0)
+    {
+      GdkRGBA fg_color;
+      gtk_style_context_get_color(gtk_widget_get_style_context(widget),
+                                  gtk_widget_get_state_flags(widget), &fg_color);
+
+      gdk_cairo_set_source_rgba(cr, &fg_color);
+      dtgtk_cairo_paint_store(cr, border, border, icon_width, icon_height, 0, NULL);
+    }
+  }
+
   return FALSE;
 }
 
@@ -262,8 +279,15 @@ static gboolean _large_patch_toggle(GtkWidget *widget,
 static void _picker_button_toggled(GtkToggleButton *button,
                                    dt_lib_colorpicker_t *data)
 {
+  const gboolean is_active = gtk_toggle_button_get_active(button);
+
   // reset copy target
-  data->target_sample = NULL;
+  if(!is_active && data->target_sample)
+  {
+    gtk_widget_queue_draw(data->target_sample->container);
+    data->target_sample->copied = FALSE;
+    data->target_sample = NULL;
+  }
 
   gtk_widget_set_sensitive(GTK_WIDGET(data->add_sample_button),
                            gtk_toggle_button_get_active(button));
@@ -523,13 +547,15 @@ static gboolean _live_sample_button(GtkWidget *widget,
              sizeof(data->primary_sample.box));
 
       sample->size = data->primary_sample.size;
+      data->target_sample->copied = FALSE;
       data->target_sample = NULL;
     }
     else
     {
       // we don't have a target sample, copy the sample into
-      // the primary sample to be edied.
+      // the primary sample to be edited.
       data->target_sample = sample;
+      sample->copied = TRUE;
       darktable.lib->proxy.colorpicker.module = self;
 
       if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
@@ -572,10 +598,15 @@ static void _add_sample(GtkButton *widget,
   dt_colorpicker_sample_t *sample = malloc(sizeof(dt_colorpicker_sample_t));
 
   // reset copy target
-  data->target_sample = NULL;
+  if(data->target_sample)
+  {
+    data->target_sample->copied = FALSE;
+    data->target_sample = NULL;
+  }
 
   memcpy(sample, &data->primary_sample, sizeof(dt_colorpicker_sample_t));
   sample->locked = FALSE;
+  sample->copied = FALSE;
 
   sample->container = gtk_event_box_new();
   gtk_widget_add_events(sample->container,
