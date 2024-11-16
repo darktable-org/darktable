@@ -320,6 +320,9 @@ changes (where available).
 
 ### Other Lua changes
 
+- Lua scripts are now better integrated into Darktable and can be
+  fully translated. The design for the scripts manager has been
+  reworked to be more in line with the current Darktable GUI modules.
 
 ## Notes
 
