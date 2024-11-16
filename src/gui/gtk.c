@@ -1509,7 +1509,12 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   dt_osx_focus_window();
 #endif
   /* start the event loop */
-  gtk_main();
+  if(darktable.control->running)
+  {
+    g_atomic_int_set(&darktable.gui_running, 1);
+    gtk_main();
+    g_atomic_int_set(&darktable.gui_running, 0);
+  }
 
   if(darktable.gui->surface)
   {

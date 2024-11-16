@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2013-2020 darktable developers.
+   Copyright (C) 2013-2024 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -69,7 +69,7 @@ typedef struct
 
   dt_pthread_mutex_t mutex;          // mutex protecting the lua condition variable
   pthread_cond_t cond;               // condition variable to wait for the lua lock
-  bool exec_lock;                    // true if some lua code is running. this is logically a mutex
+  volatile bool exec_lock;           // true if some lua code is running. this is logically a mutex
 
   bool ending;                       // true if we are in the process of terminating DT
 
