@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -69,12 +69,12 @@ typedef enum dt_spot_mode_t
 
 typedef struct dt_iop_exposure_params_t
 {
-  dt_iop_exposure_mode_t mode; // $DEFAULT: EXPOSURE_MODE_MANUAL
-  float black;    // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "black level correction"
-  float exposure; // $MIN: -18.0 $MAX: 18.0 $DEFAULT: 0.0
-  float deflicker_percentile;   // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "percentile"
-  float deflicker_target_level; // $MIN: -18.0 $MAX: 18.0 $DEFAULT: -4.0 $DESCRIPTION: "target level"
-  gboolean compensate_exposure_bias; // $DEFAULT: FALSE $DESCRIPTION: "compensate exposure bias"
+  dt_iop_exposure_mode_t mode;      // $DEFAULT: EXPOSURE_MODE_MANUAL
+  float black;                      // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "black level correction"
+  float exposure;                   // $MIN: -18.0 $MAX: 18.0 $DEFAULT: 0.0
+  float deflicker_percentile;       // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "percentile"
+  float deflicker_target_level;     // $MIN: -18.0 $MAX: 18.0 $DEFAULT: -4.0 $DESCRIPTION: "target level"
+  gboolean compensate_exposure_bias;// $DEFAULT: FALSE $DESCRIPTION: "compensate exposure bias"
 } dt_iop_exposure_params_t;
 
 typedef struct dt_iop_exposure_gui_data_t
@@ -151,19 +151,9 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-static void _exposure_proxy_set_exposure(dt_iop_module_t *self,
-                                         const float exposure);
-
 static float _exposure_proxy_get_exposure(dt_iop_module_t *self);
-
-static void _exposure_proxy_set_black(dt_iop_module_t *self,
-                                      const float black);
-
-static float _exposure_proxy_get_black(dt_iop_module_t *self);
 static void _paint_hue(dt_iop_module_t *self);
-
-static void _exposure_set_black(dt_iop_module_t *self,
-                                const float black);
+static void _exposure_set_black(dt_iop_module_t *self, const float black);
 
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
@@ -409,14 +399,12 @@ static double _raw_to_ev(const uint32_t raw,
 }
 
 static void _compute_correction(dt_iop_module_t *self,
-                                dt_iop_params_t *p1,
+                                dt_iop_exposure_params_t *p,
                                 dt_dev_pixelpipe_t *pipe,
                                 const uint32_t *const histogram,
                                 const dt_dev_histogram_stats_t *const histogram_stats,
                                 float *correction)
 {
-  const dt_iop_exposure_params_t *const p = (const dt_iop_exposure_params_t *const)p1;
-
   *correction = EXPOSURE_CORRECTION_UNDEFINED;
 
   if(histogram == NULL) return;
@@ -451,7 +439,7 @@ static gboolean _show_computed(gpointer user_data);
 static void _process_common_setup(dt_iop_module_t *self,
                                   dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t*)self->gui_data;
+  dt_iop_exposure_gui_data_t *g = self->gui_data;
   dt_iop_exposure_data_t *d = piece->data;
 
   d->black = d->params.black;
@@ -720,31 +708,6 @@ static void _exposure_set_white(dt_iop_module_t *self,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _exposure_proxy_set_exposure(dt_iop_module_t *self,
-                                         const float exposure)
-{
-  dt_iop_exposure_params_t *p = self->params;
-
-  if(p->mode == EXPOSURE_MODE_DEFLICKER)
-  {
-    dt_iop_exposure_gui_data_t *g = self->gui_data;
-
-    p->deflicker_target_level = exposure;
-
-    ++darktable.gui->reset;
-    dt_bauhaus_slider_set(g->deflicker_target_level, p->deflicker_target_level);
-    --darktable.gui->reset;
-
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-  }
-  else
-  {
-    const float white = exposure2white(exposure);
-    _exposure_set_white(self, white);
-    _autoexp_disable(self);
-  }
-}
-
 static float _exposure_proxy_get_exposure(dt_iop_module_t *self)
 {
   dt_iop_exposure_params_t *p = self->params;
@@ -779,17 +742,37 @@ static void _exposure_set_black(dt_iop_module_t *self,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _exposure_proxy_set_black(dt_iop_module_t *self,
-                                      const float black)
-{
-  _autoexp_disable(self);
-  _exposure_set_black(self, black);
-}
-
 static float _exposure_proxy_get_black(dt_iop_module_t *self)
 {
   dt_iop_exposure_params_t *p = self->params;
   return p->black;
+}
+
+
+static void _exposure_proxy_handle_event(GdkEvent *event, const gboolean blackwhite)
+{
+  dt_iop_module_t *self = darktable.develop->proxy.exposure.module;
+  if(self && self->gui_data)
+  {
+    static gboolean black = FALSE;
+    if(event->type == GDK_BUTTON_PRESS || event->type == GDK_SCROLL)
+      black = blackwhite;
+
+    if(black)
+      event->button.x *= -1;
+
+    const dt_iop_exposure_params_t *p = self->params;
+    dt_iop_exposure_gui_data_t *g = self->gui_data;
+    GtkWidget *widget = black ? g->black :
+                        p->mode == EXPOSURE_MODE_DEFLICKER
+                        ? g->deflicker_target_level : g->exposure;
+    gtk_widget_realize(widget);
+    gtk_widget_event(widget, event);
+
+    gchar *text = dt_bauhaus_slider_get_text(widget, dt_bauhaus_slider_get(widget));
+    dt_action_widget_toast(DT_ACTION(self), widget, "%s", text);
+    g_free(text);
+  }
 }
 
 static void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
@@ -965,7 +948,7 @@ static gboolean _show_computed(gpointer user_data)
 
 static gboolean _target_color_draw(GtkWidget *widget,
                                    cairo_t *crf,
-                                   dt_iop_module_t *self)
+                                   const dt_iop_module_t *self)
 {
   dt_iop_exposure_gui_data_t *g = self->gui_data;
 
@@ -1259,10 +1242,9 @@ void gui_init(dt_iop_module_t *self)
   */
   dt_dev_proxy_exposure_t *instance = &darktable.develop->proxy.exposure;
   instance->module = self;
-  instance->set_exposure = _exposure_proxy_set_exposure;
   instance->get_exposure = _exposure_proxy_get_exposure;
-  instance->set_black = _exposure_proxy_set_black;
   instance->get_black = _exposure_proxy_get_black;
+  instance->handle_event = _exposure_proxy_handle_event;
 }
 
 void gui_cleanup(dt_iop_module_t *self)
