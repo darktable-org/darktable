@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
     Copyright (c) 2012 James C. McPherson
 
     darktable is free software: you can redistribute it and/or modify
@@ -272,6 +272,8 @@ gboolean dt_control_running()
 {
   // FIXME: when shutdown, run_mutex is not inited anymore!
   dt_control_t *s = darktable.control;
+  if(!s)
+    return FALSE;
   dt_pthread_mutex_lock(&s->run_mutex);
   const gboolean running = s->running;
   dt_pthread_mutex_unlock(&s->run_mutex);
@@ -280,21 +282,29 @@ gboolean dt_control_running()
 
 void dt_control_quit()
 {
-  dt_gui_gtk_quit();
   // thread safe quit, 1st pass:
-  dt_pthread_mutex_lock(&darktable.control->cond_mutex);
-  dt_pthread_mutex_lock(&darktable.control->run_mutex);
-  darktable.control->running = FALSE;
-  dt_pthread_mutex_unlock(&darktable.control->run_mutex);
-  dt_pthread_mutex_unlock(&darktable.control->cond_mutex);
-
-  gtk_main_quit();
+  if(darktable.control)
+  {
+    dt_pthread_mutex_lock(&darktable.control->cond_mutex);
+    dt_pthread_mutex_lock(&darktable.control->run_mutex);
+    darktable.control->running = FALSE;
+    dt_pthread_mutex_unlock(&darktable.control->run_mutex);
+    dt_pthread_mutex_unlock(&darktable.control->cond_mutex);
+  }
+  if(g_atomic_int_get(&darktable.gui_running))
+  {
+    dt_gui_gtk_quit();
+    gtk_main_quit();
+  }
 }
 
 void dt_control_shutdown(dt_control_t *s)
 {
+  if(!s)
+    return;
   dt_pthread_mutex_lock(&s->cond_mutex);
   dt_pthread_mutex_lock(&s->run_mutex);
+  gboolean was_running = s->running;
   s->running = FALSE;
   dt_pthread_mutex_unlock(&s->run_mutex);
   dt_pthread_mutex_unlock(&s->cond_mutex);
@@ -304,6 +314,9 @@ void dt_control_shutdown(dt_control_t *s)
 #ifdef HAVE_GPHOTO2
   pthread_join(s->update_gphoto_thread, NULL);
 #endif
+  if(!was_running)
+    return;		// if not running, there are no threads to join
+
   /* then wait for kick_on_workers_thread */
   pthread_join(s->kick_on_workers_thread, NULL);
 
@@ -319,6 +332,8 @@ void dt_control_shutdown(dt_control_t *s)
 
 void dt_control_cleanup(dt_control_t *s)
 {
+  if(!s)
+    return;
   // vacuum TODO: optional?
   // DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "PRAGMA incremental_vacuum(0)", NULL, NULL, NULL);
   // DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "vacuum", NULL, NULL, NULL);
