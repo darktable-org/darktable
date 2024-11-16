@@ -21,6 +21,7 @@ mkdir {build,AppDir}
 
 # For AppImage we have to install app in /usr subfolder of the AppDir
 export DESTDIR=../AppDir
+
 # The CLI parameters of this script will be passed verbatim to build.sh.
 # This allows you to conveniently manage the enabling/disabling of various features.
 # For example, you can easily build darktable with support for ImageMagick instead of GraphicsMagick
@@ -62,4 +63,5 @@ fi
   --deploy-deps-only ../AppDir/usr/lib/x86_64-linux-gnu/darktable/plugins/imageio/storage \
   --deploy-deps-only ../AppDir/usr/lib/x86_64-linux-gnu/darktable/plugins/lighttable \
   --deploy-deps-only ../AppDir/usr/lib/x86_64-linux-gnu/darktable/views \
+  --custom-apprun ../packaging/AppImage/AppRun \
   --output appimage
