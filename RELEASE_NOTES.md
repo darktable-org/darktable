@@ -239,6 +239,11 @@ changes (where available).
 - Increase maximum focal length for filtering auto-applied presets to
   2000mm.
 
+- Added an expanded color-checker preset to the Color Look Up Table
+  module with seven-level red/green/blue/gray ramps, IT8/CC24-like
+  skin tones, and miscellaneous color patches for more targeted color
+  adjustments across the full spectrum.
+
 ## Bug Fixes
 
 - Fixed a performance regression for redrawing mipmaps.
