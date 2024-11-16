@@ -547,6 +547,11 @@ void dt_gui_cursor_clear_busy();
 // (i.e. the current function will do a lot of work before returning)
 void dt_gui_process_events();
 
+// Simulate a mouse button event (button is 1, 2, 3 - mouse button) sent to a Widget
+void dt_gui_simulate_button_event(GtkWidget *widget,
+                                  const GdkEventType eventtype,
+                                  const int button);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif /* __cplusplus */

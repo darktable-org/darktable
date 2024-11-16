@@ -4426,6 +4426,40 @@ void dt_gui_process_events()
     continue;
 }
 
+void dt_gui_simulate_button_event(GtkWidget *widget,
+                                  const GdkEventType eventtype,
+                                  const int button)
+{
+  gboolean res = FALSE;
+
+  // Create the event GdkEventButton
+  GdkEventButton event;
+  memset(&event, 0, sizeof(event));
+
+  event.type = eventtype;
+  event.window = gtk_widget_get_window(widget);
+  event.send_event = TRUE;
+  event.time = GDK_CURRENT_TIME;
+  event.x = 0;  // not important in this case
+  event.y = 0;  // not important in this case
+  event.button = button;
+  event.device =
+    gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
+
+  if (event.window != NULL)
+  {
+    g_object_ref(event.window);
+  }
+
+  // send signal
+  g_signal_emit_by_name(G_OBJECT(widget), "button-press-event", &event, &res, NULL);
+
+  if (event.window != NULL)
+  {
+    g_object_unref(event.window);
+  }
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
