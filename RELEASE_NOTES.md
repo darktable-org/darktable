@@ -216,6 +216,29 @@ changes (where available).
 - Improved visibility of shortcuts that can be changed by users by
   using bold text.
 
+- The histogram-exposure interface now supports all standard bauhaus
+  features (<kbd>Ctrl+click</kbd>, <kbd>Right-click</kbd>...).
+
+- Introduce image module order v5.0 to have the final-scale done before
+  color-out to fix some issues with color difference between darkroom
+  view and exported files.
+
+- Add support for editing any live color-picker samples. Using
+  <kbd>Right-click</kbd> on a sample it is possible to edit it
+  (changing location and/or size of the box) and either add a new
+  sample based on the edit or store the edit into an existing live
+  sample.
+
+- Added more substitution variables for using EXIF data fields,
+  enabled autocompletion of variables in the watermark module.
+
+  The new variables are $(EXIF.FLASH), $(EXIF.METERING),
+  $(EXIF.EXPOSURE.PROGRAM), $(EXIF.WHITEBALANCE) and
+  $(GPS.LOCATION.ICON).
+
+- Increase maximum focal length for filtering auto-applied presets to
+  2000mm.
+
 ## Bug Fixes
 
 - Fixed a performance regression for redrawing mipmaps.
@@ -279,6 +302,8 @@ changes (where available).
 
 - Fixed a bug in the history module where style creation fails if a
   style with that name already exists.
+
+- Fixed guides drawing in case a module is expanded and active.
 
 ## Lua
 
