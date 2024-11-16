@@ -2866,78 +2866,24 @@ gboolean dt_dev_is_current_image(const dt_develop_t *dev,
   return (dev->image_storage.id == imgid) ? TRUE : FALSE;
 }
 
-static dt_dev_proxy_exposure_t *find_last_exposure_instance(dt_develop_t *dev)
+static dt_dev_proxy_exposure_t *_dev_exposure_proxy_available(dt_develop_t *dev)
 {
-  if(!dev->proxy.exposure.module) return NULL;
+  if(!dev->proxy.exposure.module || dt_view_get_current() != DT_VIEW_DARKROOM) return NULL;
 
   dt_dev_proxy_exposure_t *instance = &dev->proxy.exposure;
-
-  return instance;
-};
-
-gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev)
-{
-  dt_dev_proxy_exposure_t *instance = find_last_exposure_instance(dev);
-
-  /* check if exposure iop module has registered its hooks */
-  if(instance
-     && instance->module
-     && instance->set_black
-     && instance->get_black && instance->set_exposure
-     && instance->get_exposure)
-    return TRUE;
-
-  return FALSE;
-}
-
-void dt_dev_exposure_reset_defaults(dt_develop_t *dev)
-{
-  dt_dev_proxy_exposure_t *instance = find_last_exposure_instance(dev);
-
-  if(!(instance && instance->module)) return;
-
-  dt_iop_module_t *exposure = instance->module;
-  memcpy(exposure->params, exposure->default_params, exposure->params_size);
-  dt_iop_gui_update(exposure);
-  dt_dev_add_history_item(exposure->dev, exposure, TRUE);
-}
-
-void dt_dev_exposure_set_exposure(dt_develop_t *dev,
-                                  const float exposure)
-{
-  dt_dev_proxy_exposure_t *instance = find_last_exposure_instance(dev);
-
-  if(instance && instance->module && instance->set_exposure)
-    instance->set_exposure(instance->module, exposure);
+  return instance && instance->module ? instance : NULL;
 }
 
 float dt_dev_exposure_get_exposure(dt_develop_t *dev)
 {
-  dt_dev_proxy_exposure_t *instance = find_last_exposure_instance(dev);
-
-  if(instance && instance->module && instance->get_exposure)
-    return instance->get_exposure(instance->module);
-
-  return 0.0;
-}
-
-void dt_dev_exposure_set_black(dt_develop_t *dev,
-                               const float black)
-{
-  dt_dev_proxy_exposure_t *instance = find_last_exposure_instance(dev);
-
-  if(instance && instance->module && instance->set_black)
-    instance->set_black(instance->module, black);
+  const dt_dev_proxy_exposure_t *instance = _dev_exposure_proxy_available(dev);
+  return instance && instance->get_exposure && instance->module->enabled ? instance->get_exposure(instance->module) : 0.0f;
 }
 
 float dt_dev_exposure_get_black(dt_develop_t *dev)
 {
-  dt_dev_proxy_exposure_t *instance = find_last_exposure_instance(dev);
-
-  if(instance && instance->module && instance->get_black)
-    return instance->get_black(instance->module);
-
-  return 0.0;
+  const dt_dev_proxy_exposure_t *instance = _dev_exposure_proxy_available(dev);
+  return instance && instance->get_black  && instance->module->enabled ? instance->get_black(instance->module) : 0.0f;
 }
 
 void dt_dev_modulegroups_set(dt_develop_t *dev,

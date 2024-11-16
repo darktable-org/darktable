@@ -102,10 +102,9 @@ typedef enum dt_clipping_preview_mode_t
 typedef struct dt_dev_proxy_exposure_t
 {
   struct dt_iop_module_t *module;
-  void (*set_exposure)(struct dt_iop_module_t *exp, const float exposure);
   float (*get_exposure)(struct dt_iop_module_t *exp);
-  void (*set_black)(struct dt_iop_module_t *exp, const float black);
   float (*get_black)(struct dt_iop_module_t *exp);
+  void (*handle_event)(GdkEvent *event, gboolean blackwhite);
 } dt_dev_proxy_exposure_t;
 
 struct dt_dev_pixelpipe_t;
@@ -457,24 +456,16 @@ void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
 
 void dt_dev_configure(dt_dev_viewport_t *port);
 
-/*
- * exposure plugin hook, set the exposure and the black level
- */
-
-/** check if exposure iop hooks are available */
-gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev);
-/** reset exposure to defaults */
-void dt_dev_exposure_reset_defaults(dt_develop_t *dev);
-/** set exposure */
-void dt_dev_exposure_set_exposure(dt_develop_t *dev,
-                                  const float exposure);
-/** get exposure */
+/** get exposure level */
 float dt_dev_exposure_get_exposure(dt_develop_t *dev);
-/** set exposure black level */
-void dt_dev_exposure_set_black(dt_develop_t *dev,
-                               const float black);
 /** get exposure black level */
 float dt_dev_exposure_get_black(dt_develop_t *dev);
+
+inline void dt_dev_exposure_handle_event(GdkEvent *event, gboolean blackwhite)
+{
+  if(darktable.develop->proxy.exposure.handle_event)
+    darktable.develop->proxy.exposure.handle_event(event, blackwhite);
+}
 
 /*
  * modulegroups plugin hooks
