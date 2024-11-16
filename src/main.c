@@ -114,7 +114,8 @@ int main(int argc, char *argv[])
 
   if(dt_check_gimpmode("version")
     || (dt_check_gimpmode("file") && !dt_check_gimpmode_ok("file"))
-    || (dt_check_gimpmode("thumb") && !dt_check_gimpmode_ok("thumb")))
+    || (dt_check_gimpmode("thumb") && !dt_check_gimpmode_ok("thumb"))
+    || darktable.gimp.error)
   {
     fprintf(stdout, "\n<<<gimp\nerror\ngimp>>>\n");
     exit(1);
@@ -131,22 +132,13 @@ int main(int argc, char *argv[])
   {
     const dt_imgid_t id = dt_gimp_load_image(darktable.gimp.path);
     if(dt_is_valid_imgid(id))
-    {
-      if(!dt_export_gimp_file(id))
-        darktable.gimp.error = TRUE;
-    }
+      darktable.gimp.error = !dt_export_gimp_file(id);
     else
       darktable.gimp.error = TRUE;
   }
 
   if(!darktable.gimp.mode || dt_check_gimpmode_ok("file"))
     dt_gui_gtk_run(darktable.gui);
-
-  if(dt_check_gimpmode_ok("file"))
-  {
-    if(!dt_export_gimp_file(darktable.gimp.imgid))
-      darktable.gimp.error = TRUE;
-  }
 
   dt_cleanup();
 

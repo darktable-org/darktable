@@ -241,7 +241,6 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
   if(old_view
       && new_view
       && dt_check_gimpmode("file")
-      && !darktable.gimp.error
       && dt_view_get_current() == DT_VIEW_DARKROOM)
     return FALSE;
 

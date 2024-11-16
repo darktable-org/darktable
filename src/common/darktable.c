@@ -1336,14 +1336,16 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   }
 
   /* We now have all command line options ready and check for gimp API questions.
-      Return right now if
-        - we check for API version
-        - we check for "file" or "thumb" and the file is not physically available
+      Return right now if we
+        - check for API version
+        - check for "file" or "thumb" and the file is not physically available
+        - have an undefined gimp mode
       and let the caller check again and write out protocol messages.
   */
   if(dt_check_gimpmode("version")
     || (dt_check_gimpmode("file") && !dt_check_gimpmode_ok("file"))
-    || (dt_check_gimpmode("thumb") && !dt_check_gimpmode_ok("thumb")))
+    || (dt_check_gimpmode("thumb") && !dt_check_gimpmode_ok("thumb"))
+    || darktable.gimp.error)
     return 0;
 
   if(darktable.unmuted)
@@ -1608,7 +1610,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   GList *changed_xmp_files = NULL;
   if(init_gui)
   {
-    if(dt_conf_get_bool("run_crawler_on_start"))
+    if(dt_conf_get_bool("run_crawler_on_start") && !darktable.gimp.mode)
     {
       darktable_splash_screen_create(FALSE,TRUE); // force the splash screen for the crawl even if user-disabled
       // scan for cases where the database and xmp files have different timestamps
@@ -1875,7 +1877,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
     // there might be some info created in dt_configure_runtime_performance() for feedback
     gboolean not_again = TRUE;
-    if(last_configure_version && config_info[0])
+    if(last_configure_version && config_info[0] && !darktable.gimp.mode)
       not_again = dt_gui_show_standalone_yes_no_dialog
         (_("configuration information"),
          config_info,
@@ -1899,7 +1901,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     if(changed_xmp_files)
       dt_control_crawler_show_image_list(changed_xmp_files);
     darktable_splash_screen_destroy();
-    dt_start_backtumbs_crawler();
+    if(!darktable.gimp.mode)
+     dt_start_backtumbs_crawler();
   }
 
   // fire up a background job to perform sidecar writes
