@@ -416,7 +416,7 @@ dt_imgid_t dt_load_from_string(const gchar *input,
                                const gboolean open_image_in_dr,
                                gboolean *single_image)
 {
-  dt_imgid_t id = NO_IMGID;
+  dt_imgid_t imgid = NO_IMGID;
   if(input == NULL || input[0] == '\0') return NO_IMGID;
 
   char *filename = dt_util_normalize_path(input);
@@ -448,20 +448,20 @@ dt_imgid_t dt_load_from_string(const gchar *input,
     gchar *directory = g_path_get_dirname((const gchar *)filename);
     dt_film_t film;
     const dt_filmid_t filmid = dt_film_new(&film, directory);
-    id = dt_image_import(filmid, filename, TRUE, TRUE);
+    imgid = dt_image_import(filmid, filename, TRUE, TRUE);
     g_free(directory);
-    if(dt_is_valid_imgid(id))
+    if(dt_is_valid_imgid(imgid))
     {
       dt_film_open(filmid);
       // make sure buffers are loaded (load full for testing)
       dt_mipmap_buffer_t buf;
-      dt_mipmap_cache_get(darktable.mipmap_cache, &buf, id,
+      dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid,
                           DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
-      gboolean loaded = (buf.buf != NULL);
+      const gboolean loaded = (buf.buf != NULL);
       dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
       if(!loaded)
       {
-        id = NO_IMGID;
+        imgid = NO_IMGID;
         if(buf.loader_status == DT_IMAGEIO_UNSUPPORTED_FORMAT || buf.loader_status == DT_IMAGEIO_UNSUPPORTED_FEATURE)
           dt_control_log(_("file `%s' has unsupported format!"), filename);
         else
@@ -471,7 +471,7 @@ dt_imgid_t dt_load_from_string(const gchar *input,
       {
         if(open_image_in_dr)
         {
-          dt_control_set_mouse_over_id(id);
+          dt_control_set_mouse_over_id(imgid);
           dt_ctl_switch_mode_to("darkroom");
         }
       }
@@ -483,7 +483,7 @@ dt_imgid_t dt_load_from_string(const gchar *input,
     if(single_image) *single_image = TRUE;
   }
   g_free(filename);
-  return id;
+  return imgid;
 }
 
 static void dt_codepaths_init()
@@ -1288,11 +1288,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                 darktable.gimp.error = FALSE;
             }
           }
-
-          if(!darktable.gimp.error)
-          {
-            dbfilename_from_command = ":memory:";
-          }
         }
       }
       else if(!strcmp(argv[k], "--"))
@@ -1336,14 +1331,16 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   }
 
   /* We now have all command line options ready and check for gimp API questions.
-      Return right now if
-        - we check for API version
-        - we check for "file" or "thumb" and the file is not physically available
+      Return right now if we
+        - check for API version
+        - check for "file" or "thumb" and the file is not physically available
+        - have an undefined gimp mode
       and let the caller check again and write out protocol messages.
   */
   if(dt_check_gimpmode("version")
     || (dt_check_gimpmode("file") && !dt_check_gimpmode_ok("file"))
-    || (dt_check_gimpmode("thumb") && !dt_check_gimpmode_ok("thumb")))
+    || (dt_check_gimpmode("thumb") && !dt_check_gimpmode_ok("thumb"))
+    || darktable.gimp.error)
     return 0;
 
   if(darktable.unmuted)
@@ -1608,7 +1605,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   GList *changed_xmp_files = NULL;
   if(init_gui)
   {
-    if(dt_conf_get_bool("run_crawler_on_start"))
+    if(dt_conf_get_bool("run_crawler_on_start") && !darktable.gimp.mode)
     {
       darktable_splash_screen_create(FALSE,TRUE); // force the splash screen for the crawl even if user-disabled
       // scan for cases where the database and xmp files have different timestamps
@@ -1860,7 +1857,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #ifndef USE_LUA      // may cause UI hang since after LUA init
       darktable_splash_screen_set_progress(_("importing image"));
 #endif
-      (void)dt_load_from_string(argv[1], TRUE, NULL);
+      dt_load_from_string(argv[1], TRUE, NULL);
     }
     else if(argc >= 2)
     {
@@ -1875,7 +1872,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
     // there might be some info created in dt_configure_runtime_performance() for feedback
     gboolean not_again = TRUE;
-    if(last_configure_version && config_info[0])
+    if(last_configure_version && config_info[0] && !darktable.gimp.mode)
       not_again = dt_gui_show_standalone_yes_no_dialog
         (_("configuration information"),
          config_info,
@@ -1899,7 +1896,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     if(changed_xmp_files)
       dt_control_crawler_show_image_list(changed_xmp_files);
     darktable_splash_screen_destroy();
-    dt_start_backtumbs_crawler();
+    if(!darktable.gimp.mode)
+     dt_start_backtumbs_crawler();
   }
 
   // fire up a background job to perform sidecar writes
