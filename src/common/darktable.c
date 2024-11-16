@@ -416,7 +416,7 @@ dt_imgid_t dt_load_from_string(const gchar *input,
                                const gboolean open_image_in_dr,
                                gboolean *single_image)
 {
-  dt_imgid_t id = NO_IMGID;
+  dt_imgid_t imgid = NO_IMGID;
   if(input == NULL || input[0] == '\0') return NO_IMGID;
 
   char *filename = dt_util_normalize_path(input);
@@ -448,20 +448,20 @@ dt_imgid_t dt_load_from_string(const gchar *input,
     gchar *directory = g_path_get_dirname((const gchar *)filename);
     dt_film_t film;
     const dt_filmid_t filmid = dt_film_new(&film, directory);
-    id = dt_image_import(filmid, filename, TRUE, TRUE);
+    imgid = dt_image_import(filmid, filename, TRUE, TRUE);
     g_free(directory);
-    if(dt_is_valid_imgid(id))
+    if(dt_is_valid_imgid(imgid))
     {
       dt_film_open(filmid);
       // make sure buffers are loaded (load full for testing)
       dt_mipmap_buffer_t buf;
-      dt_mipmap_cache_get(darktable.mipmap_cache, &buf, id,
+      dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid,
                           DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
-      gboolean loaded = (buf.buf != NULL);
+      const gboolean loaded = (buf.buf != NULL);
       dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
       if(!loaded)
       {
-        id = NO_IMGID;
+        imgid = NO_IMGID;
         if(buf.loader_status == DT_IMAGEIO_UNSUPPORTED_FORMAT || buf.loader_status == DT_IMAGEIO_UNSUPPORTED_FEATURE)
           dt_control_log(_("file `%s' has unsupported format!"), filename);
         else
@@ -471,7 +471,7 @@ dt_imgid_t dt_load_from_string(const gchar *input,
       {
         if(open_image_in_dr)
         {
-          dt_control_set_mouse_over_id(id);
+          dt_control_set_mouse_over_id(imgid);
           dt_ctl_switch_mode_to("darkroom");
         }
       }
@@ -483,7 +483,7 @@ dt_imgid_t dt_load_from_string(const gchar *input,
     if(single_image) *single_image = TRUE;
   }
   g_free(filename);
-  return id;
+  return imgid;
 }
 
 static void dt_codepaths_init()
@@ -1860,7 +1860,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #ifndef USE_LUA      // may cause UI hang since after LUA init
       darktable_splash_screen_set_progress(_("importing image"));
 #endif
-      (void)dt_load_from_string(argv[1], TRUE, NULL);
+      dt_load_from_string(argv[1], TRUE, NULL);
     }
     else if(argc >= 2)
     {
