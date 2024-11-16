@@ -52,6 +52,7 @@ thumb <path> <dim> Write a thumbnail jpg file to a temporary location.
 
 #define DT_GIMP_VERSION 1
 
+// returns TRUE in case of success
 gboolean dt_export_gimp_file(const dt_imgid_t id);
 
 dt_imgid_t dt_gimp_load_darkroom(const char *file);

@@ -26,6 +26,7 @@
 #include "common/l10n.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "common/gimp.h"
 #include "gui/guides.h"
 #include "gui/splash.h"
 #include "bauhaus/bauhaus.h"
@@ -864,12 +865,25 @@ gboolean dt_gui_quit_callback(GtkWidget *widget,
                               GdkEvent *event,
                               gpointer user_data)
 {
+  const dt_view_type_flags_t cv = dt_view_get_current();
   // if we are in lighttable preview mode, then just exit preview instead of closing dt
-  if(dt_view_get_current() == DT_VIEW_LIGHTTABLE
+  if(cv == DT_VIEW_LIGHTTABLE
       && dt_view_lighttable_preview_state(darktable.view_manager))
     dt_view_lighttable_set_preview_state(darktable.view_manager, FALSE, FALSE, FALSE);
   else
+  {
+    /* Always write current history if we quit while in darkroom
+       For some reason this is required if we started darktable with a single
+       file as an argument.
+    */
+    if(cv == DT_VIEW_DARKROOM)
+      dt_dev_write_history(darktable.develop);
+
+    if(dt_check_gimpmode_ok("file"))
+      darktable.gimp.error = !dt_export_gimp_file(darktable.gimp.imgid);
+
     dt_control_quit();
+  }
 
   return TRUE;
 }
@@ -887,6 +901,13 @@ static void _gui_switch_view_key_accel_callback(dt_action_t *action)
 
 static void _quit_callback(dt_action_t *action)
 {
+  if(darktable.develop && dt_view_get_current() == DT_VIEW_DARKROOM)
+  {
+    dt_dev_write_history(darktable.develop);
+    if(dt_check_gimpmode_ok("file"))
+      darktable.gimp.error = !dt_export_gimp_file(darktable.gimp.imgid);
+  }
+
   dt_control_quit();
 }
 
