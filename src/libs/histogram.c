@@ -1638,8 +1638,6 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget,
                                                  GdkEventMotion *event,
                                                  dt_lib_histogram_t *d)
 {
-  dt_develop_t *dev = darktable.develop;
-
   if(event->state & GDK_BUTTON1_MASK)
   {
     if(d->scope_type != DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM
@@ -1655,8 +1653,6 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget,
     const float posx = event->x / (float)(allocation.width);
     const float posy = event->y / (float)(allocation.height);
     const dt_lib_histogram_highlight_t prior_highlight = d->highlight;
-    const gboolean hooks_available = (dt_view_get_current() == DT_VIEW_DARKROOM)
-      && dt_dev_exposure_hooks_available(dev);
 
     // FIXME: make just one tooltip for the widget depending on
     // whether it is draggable or not, and set it when enter the view
@@ -1677,15 +1673,13 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget,
                               _("shift+scroll to change width"),
                               _("alt+scroll to cycle"));
     }
-    else if(hooks_available)
+    // only visualize effect if there is a proxy for the exposure module.
+    else
     {
       if((posx < 0.2f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM)
-         || ((d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM
-              || d->scope_type == DT_LIB_HISTOGRAM_SCOPE_PARADE)
-             && ((posy > 7.0f/9.0f
-                  && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
-                 || (posx < 2.0f/9.0f
-                     && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_VERT))))
+         || ((d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM || d->scope_type == DT_LIB_HISTOGRAM_SCOPE_PARADE)
+             && ((posy > 7.0f/9.0f && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
+               ||(posx < 2.0f/9.0f && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_VERT))))
       {
         d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
         dt_util_str_cat(&tip, "\n%s\n%s",
