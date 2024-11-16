@@ -305,6 +305,9 @@ changes (where available).
 
 - Fixed guides drawing in case a module is expanded and active.
 
+- Ensure that the list of images in the culling view remains up to
+  date when hidden.
+
 ## Lua
 
 ### API Version
