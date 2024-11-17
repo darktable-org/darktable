@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef HAVE_GRAPHICSMAGICK
 #include "imageio_gm.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
@@ -188,7 +187,6 @@ error:
 
   return err;
 }
-#endif
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
