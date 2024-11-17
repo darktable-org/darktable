@@ -244,6 +244,14 @@ changes (where available).
   skin tones, and miscellaneous color patches for more targeted color
   adjustments across the full spectrum.
 
+- Added support for exif tags 'AnalogBalance' used for color
+  calibration and LinearResponseLimit used in highlights
+  reconstruction.
+
+- If we find currently unsupported color calibration data in DNG
+  specific tags, we tag the image by darktable|issue|no-samples for
+  better support.
+
 ## Bug Fixes
 
 - Fixed a performance regression for redrawing mipmaps.
@@ -313,6 +321,11 @@ changes (where available).
 - Ensure that the list of images in the culling view remains up to
   date when hidden.
 
+- Fixed minor glitches in color calibration module.
+
+- Fixed issues with wrong corrections in highlight opposed OpenCL
+  code.
+
 ## Lua
 
 ### API Version
@@ -328,7 +341,7 @@ changes (where available).
   the inter-script-communication event.
 
 - Added new EXIF data fields to dt_lua_image_t:
-  
+
   - exif_whitebalance
 
   - exif_flash
