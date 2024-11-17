@@ -4207,7 +4207,7 @@ void dt_shortcut_key_press(const dt_input_device_t id,
   }
   else if(g_slist_find_custom(_hold_keys, &this_key, _cmp_key))
   {} // ignore repeating hold key
-  else
+  else if(darktable.view_manager && darktable.view_manager->current_view)
   {
     if(id) _sc.mods = _key_modifiers_clean(dt_key_modifier_state());
 
