@@ -1714,12 +1714,7 @@ void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
   if(thumb->expose_again_timeout_id != 0)
     g_source_remove(thumb->expose_again_timeout_id);
 
-  DT_CONTROL_SIGNAL_DISCONNECT(_dt_selection_changed_callback, thumb);
-  DT_CONTROL_SIGNAL_DISCONNECT(_dt_active_images_callback, thumb);
-  DT_CONTROL_SIGNAL_DISCONNECT(_dt_mipmaps_updated_callback, thumb);
-  DT_CONTROL_SIGNAL_DISCONNECT(_dt_preview_updated_callback, thumb);
-  DT_CONTROL_SIGNAL_DISCONNECT(_dt_image_info_changed_callback, thumb);
-  DT_CONTROL_SIGNAL_DISCONNECT(_dt_collection_changed_callback, thumb);
+  DT_CONTROL_SIGNAL_DISCONNECT_ALL(thumb, "thumbnail");
   dt_thumbnail_surface_destroy(thumb);
   if(thumb->w_main) gtk_widget_destroy(thumb->w_main);
   if(thumb->filename) g_free(thumb->filename);

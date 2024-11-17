@@ -588,8 +588,6 @@ void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_monochrome_gui_data_t *g = self->gui_data;
   cmsDeleteTransform(g->xform);
-
-  IOP_GUI_FREE;
 }
 
 // clang-format off

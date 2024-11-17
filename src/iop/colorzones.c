@@ -2780,8 +2780,6 @@ void gui_cleanup(dt_iop_module_t *self)
 
   for(int ch = 0; ch < DT_IOP_COLORZONES_MAX_CHANNELS; ch++)
     dt_draw_curve_destroy(g->minmax_curve[ch]);
-
-  IOP_GUI_FREE;
 }
 
 void init_global(dt_iop_module_so_t *self)

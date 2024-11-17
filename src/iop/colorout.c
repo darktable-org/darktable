@@ -277,9 +277,9 @@ static void output_profile_changed(GtkWidget *widget, dt_iop_module_t *self)
            dt_colorspaces_get_name(p->type, p->filename));
 }
 
-static void _signal_profile_changed(gpointer instance, gpointer user_data)
+static void _signal_profile_changed(gpointer instance, dt_iop_module_t *self)
 {
-  dt_develop_t *dev = (dt_develop_t *)user_data;
+  dt_develop_t *dev = self->dev;
   if(!dev->gui_attached || dev->gui_leaving) return;
   dt_dev_reprocess_center(dev);
 }
@@ -871,17 +871,9 @@ void gui_init(dt_iop_module_t *self)
                    G_CALLBACK(output_profile_changed), (gpointer)self);
 
   // reload the profiles when the display or softproof profile changed!
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_CHANGED, _signal_profile_changed, self->dev);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_CONTROL_PROFILE_CHANGED, _signal_profile_changed);
   // update the gui when the preferences changed (i.e. show intent when using lcms2)
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE, _preference_changed, self);
-}
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  DT_CONTROL_SIGNAL_DISCONNECT(_signal_profile_changed, self->dev);
-  DT_CONTROL_SIGNAL_DISCONNECT(_preference_changed, self);
-
-  IOP_GUI_FREE;
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PREFERENCES_CHANGE, _preference_changed);
 }
 
 // clang-format off

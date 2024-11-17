@@ -1371,6 +1371,7 @@ void dt_lib_cleanup(dt_lib_t *lib)
     {
       if(module->data != NULL)
       {
+        DT_CONTROL_SIGNAL_DISCONNECT_ALL(module, module->plugin_name);
         module->gui_cleanup(module);
         module->data = NULL;
       }

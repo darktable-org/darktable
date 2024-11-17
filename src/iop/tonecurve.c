@@ -1353,8 +1353,6 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_draw_curve_destroy(g->minmax_curve[ch_L]);
   dt_draw_curve_destroy(g->minmax_curve[ch_a]);
   dt_draw_curve_destroy(g->minmax_curve[ch_b]);
-
-  IOP_GUI_FREE;
 }
 
 static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget,

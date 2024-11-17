@@ -466,7 +466,7 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
   if(self->enabled)
   {
     // once the pipe is recomputed, we want to update final sizes
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _event_preview_updated_callback, self);
+    DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _event_preview_updated_callback);
     if(in)
     {
       // got focus, grab stuff to gui:
@@ -1318,8 +1318,6 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_iop_crop_gui_data_t *g = self->gui_data;
   g_list_free_full(g->aspect_list, _aspect_free);
   g->aspect_list = NULL;
-
-  IOP_GUI_FREE;
 }
 
 static _grab_region_t _gui_get_grab(float pzx,
