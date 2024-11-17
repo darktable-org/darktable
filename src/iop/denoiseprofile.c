@@ -3870,8 +3870,6 @@ void gui_cleanup(dt_iop_module_t *self)
   g_list_free_full(g->profiles, dt_noiseprofile_free);
   dt_draw_curve_destroy(g->transition_curve);
   // nothing else necessary, gtk will clean up the slider.
-
-  IOP_GUI_FREE;
 }
 
 // clang-format off

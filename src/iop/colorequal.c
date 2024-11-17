@@ -2914,8 +2914,6 @@ void gui_cleanup(dt_iop_module_t *self)
 
   dt_conf_set_int("plugins/darkroom/colorequal/gui_page",
                   gtk_notebook_get_current_page (g->notebook));
-
-  IOP_GUI_FREE;
 }
 
 void gui_update(dt_iop_module_t *self)

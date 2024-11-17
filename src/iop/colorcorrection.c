@@ -275,8 +275,6 @@ void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_colorcorrection_gui_data_t *g = self->gui_data;
   cmsDeleteTransform(g->xform);
-
-  IOP_GUI_FREE;
 }
 
 static gboolean dt_iop_colorcorrection_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)

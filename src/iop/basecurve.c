@@ -2191,8 +2191,6 @@ void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_basecurve_gui_data_t *g = self->gui_data;
   dt_draw_curve_destroy(g->minmax_curve);
-
-  IOP_GUI_FREE;
 }
 
 // clang-format off

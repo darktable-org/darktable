@@ -257,11 +257,6 @@ void gui_init(dt_iop_module_t *self)
 }
 
 
-void gui_cleanup(dt_iop_module_t *self)
-{
-  IOP_GUI_FREE;
-}
-
 //----------------------------------------------------------------------
 // module local functions and structures required by process function
 //----------------------------------------------------------------------

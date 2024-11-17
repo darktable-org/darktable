@@ -1259,8 +1259,6 @@ void gui_cleanup(dt_iop_module_t *self)
   g->deflicker_histogram = NULL;
 
   g_idle_remove_by_data(self);
-
-  IOP_GUI_FREE;
 }
 
 // clang-format off

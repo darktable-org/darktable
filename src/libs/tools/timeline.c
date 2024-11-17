@@ -1420,7 +1420,7 @@ void gui_init(dt_lib_module_t *self)
   /* initialize view manager proxy */
   darktable.view_manager->proxy.timeline.module = self;
 
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _lib_timeline_collection_changed, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _lib_timeline_collection_changed);
 
   dt_action_register(DT_ACTION(self), N_("start selection"), _selection_start, GDK_KEY_bracketleft, 0);
   dt_action_register(DT_ACTION(self), N_("stop selection"), _selection_stop, GDK_KEY_bracketright, 0);
@@ -1431,7 +1431,6 @@ void gui_cleanup(dt_lib_module_t *self)
   /* cleanup */
   dt_lib_timeline_t *strip = self->data;
   if(strip->blocks) g_list_free_full(strip->blocks, _block_free);
-  DT_CONTROL_SIGNAL_DISCONNECT(_lib_timeline_collection_changed, self);
   /* unset viewmanager proxy */
   darktable.view_manager->proxy.timeline.module = NULL;
   free(self->data);

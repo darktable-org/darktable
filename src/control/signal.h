@@ -300,8 +300,10 @@ void dt_control_signal_raise(const struct dt_control_signal_t *ctlsig, const dt_
 /* connects a callback to a signal */
 void dt_control_signal_connect(const struct dt_control_signal_t *ctlsig, const dt_signal_t signal,
                                GCallback cb, gpointer user_data);
-/* disconnects a callback from a sink */
+/* disconnects a callback from a signal */
 void dt_control_signal_disconnect(const struct dt_control_signal_t *ctlsig, GCallback cb, gpointer user_data);
+/* disconnects all callbacks with the same object from their signals */
+guint dt_control_signal_disconnect_all(const struct dt_control_signal_t *ctlsig, gpointer user_data);
 /* blocks a callback */
 void dt_control_signal_block_by_func(const struct dt_control_signal_t *ctlsig, GCallback cb, gpointer user_data);
 /* unblocks a callback */
@@ -328,14 +330,28 @@ void dt_control_signal_unblock_by_func(const struct dt_control_signal_t *ctlsig,
     dt_control_signal_connect(darktable.signals, signal, G_CALLBACK(cb), user_data);                                       \
   } while (0)
 
+// for use in libs, iops and views. automatically get disconnected on cleanup
+#define DT_CONTROL_SIGNAL_HANDLE(signal, cb) DT_CONTROL_SIGNAL_CONNECT(signal, cb, self)
+
 #define DT_CONTROL_SIGNAL_DISCONNECT(cb, user_data)                                                                        \
   do                                                                                                                       \
   {                                                                                                                        \
     if(darktable.unmuted_signal_dbg_acts & DT_DEBUG_SIGNAL_ACT_DISCONNECT)                                                 \
     {                                                                                                                      \
-      dt_print(DT_DEBUG_SIGNAL, "[signal] disconnect %s; %s:%d, function: %s()", #cb, __FILE__, __LINE__, __FUNCTION__); \
+      dt_print(DT_DEBUG_SIGNAL, "[signal] disconnect %s; %s:%d, function: %s()", #cb, __FILE__, __LINE__, __FUNCTION__);   \
     }                                                                                                                      \
     dt_control_signal_disconnect(darktable.signals, G_CALLBACK(cb), user_data);                                            \
+  } while (0)
+
+#define DT_CONTROL_SIGNAL_DISCONNECT_ALL(user_data, name)                                                                  \
+  do                                                                                                                       \
+  {                                                                                                                        \
+    guint num = dt_control_signal_disconnect_all(darktable.signals, (gpointer)user_data);                                  \
+    if(num && darktable.unmuted_signal_dbg_acts & DT_DEBUG_SIGNAL_ACT_DISCONNECT)                                          \
+    {                                                                                                                      \
+      dt_print(DT_DEBUG_SIGNAL, "[signal] disconnect %d signals for %s; %s:%d, function: %s()",                            \
+               num, name, __FILE__, __LINE__, __FUNCTION__);                                                               \
+    }                                                                                                                      \
   } while (0)
 
 G_END_DECLS

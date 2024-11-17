@@ -402,6 +402,13 @@ void dt_control_signal_disconnect(const struct dt_control_signal_t *ctlsig, GCal
                                        0, NULL, cb, user_data);
 }
 
+guint dt_control_signal_disconnect_all(const struct dt_control_signal_t *ctlsig, gpointer user_data)
+{
+  _print_trace(-1, DT_DEBUG_SIGNAL_ACT_DISCONNECT, "disconnect");
+  return g_signal_handlers_disconnect_matched(G_OBJECT(ctlsig->sink), G_SIGNAL_MATCH_DATA, 0,
+                                              0, NULL, NULL, user_data);
+}
+
 void dt_control_signal_block_by_func(const struct dt_control_signal_t *ctlsig, GCallback cb, gpointer user_data)
 {
   g_signal_handlers_block_by_func(G_OBJECT(ctlsig->sink), cb, user_data);

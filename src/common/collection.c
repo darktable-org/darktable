@@ -106,10 +106,7 @@ const dt_collection_t *dt_collection_new(const dt_collection_t *clone)
 
 void dt_collection_free(const dt_collection_t *collection)
 {
-  DT_CONTROL_SIGNAL_DISCONNECT(_dt_collection_recount_callback_tag, (gpointer)collection);
-  DT_CONTROL_SIGNAL_DISCONNECT(_dt_collection_recount_callback_filmroll, (gpointer)collection);
-  DT_CONTROL_SIGNAL_DISCONNECT(_dt_collection_recount_callback_2, (gpointer)collection);
-  DT_CONTROL_SIGNAL_DISCONNECT(_dt_collection_filmroll_imported_callback, (gpointer)collection);
+  DT_CONTROL_SIGNAL_DISCONNECT_ALL(collection, "collection");
 
   g_free(collection->query);
   g_free(collection->query_no_group);

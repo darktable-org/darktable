@@ -4452,7 +4452,7 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_lens_gui_data_t *g = IOP_GUI_ALLOC(lens);
 
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _develop_ui_pipe_finished_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _develop_ui_pipe_finished_callback);
 
   dt_iop_gui_enter_critical_section(self); // not actually needed,
                                            // we're the only one with
@@ -4698,7 +4698,7 @@ void gui_init(dt_iop_module_t *self)
 
   /* add signal handler for preview pipe finish to update message on
      corrections done */
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _have_corrections_done, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _have_corrections_done);
 }
 
 void gui_focus(dt_iop_module_t *self, gboolean in)
@@ -4784,14 +4784,6 @@ void gui_update(dt_iop_module_t *self)
   }
 
   gui_changed(self, NULL, NULL);
-}
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  DT_CONTROL_SIGNAL_DISCONNECT(_have_corrections_done, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_develop_ui_pipe_finished_callback, self);
-
-  IOP_GUI_FREE;
 }
 
 }

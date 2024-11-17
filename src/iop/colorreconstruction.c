@@ -1267,8 +1267,6 @@ void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_colorreconstruct_gui_data_t *g = self->gui_data;
   dt_iop_colorreconstruct_bilateral_dump(g->can);
-
-  IOP_GUI_FREE;
 }
 
 // clang-format off

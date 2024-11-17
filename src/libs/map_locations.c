@@ -976,18 +976,15 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(_selection_changed), self);
 
   // connect geotag changed signal
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_GEOTAG_CHANGED, _view_map_geotag_changed, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_GEOTAG_CHANGED, _view_map_geotag_changed);
   // connect location changed signal
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_LOCATION_CHANGED, _view_map_location_changed, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_LOCATION_CHANGED, _view_map_location_changed);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
   free(self->data);
   self->data = NULL;
-
-  DT_CONTROL_SIGNAL_DISCONNECT(_view_map_geotag_changed, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_view_map_location_changed, self);
 }
 
 // clang-format off

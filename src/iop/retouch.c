@@ -2768,8 +2768,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->sl_mask_opacity, TRUE, TRUE, 0);
 
   /* add signal handler for preview pipe finish to redraw the preview */
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
-                            rt_develop_ui_pipe_finished_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, rt_develop_ui_pipe_finished_callback);
 }
 
 void gui_reset(dt_iop_module_t *self)
@@ -2786,13 +2785,6 @@ void reload_defaults(dt_iop_module_t *self)
   // set the algo to the default one
   dt_iop_retouch_params_t *p = self->default_params;
   p->algorithm = dt_conf_get_int("plugins/darkroom/retouch/default_algo");
-}
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  DT_CONTROL_SIGNAL_DISCONNECT(rt_develop_ui_pipe_finished_callback, self);
-
-  IOP_GUI_FREE;
 }
 
 static void rt_compute_roi_in(dt_iop_module_t *self,

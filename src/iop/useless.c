@@ -701,13 +701,7 @@ void gui_init(dt_iop_module_t *self)
 void gui_cleanup(dt_iop_module_t *self)
 {
   // This only needs to be provided if gui_init allocates any memory
-  // or resources besides self->widget and gui_data_t. The default
-  // function (if an explicit one isn't provided here) takes care of
-  // gui_data_t (and gtk destroys the widget anyway). If you override
-  // the default, you have to do whatever you have to do, and also
-  // call IOP_GUI_FREE to clean up gui_data_t.
-
-  IOP_GUI_FREE;
+  // or resources besides self->widget and gui_data_t.
 }
 
 /** additional, optional callbacks to capture darkroom center events. */

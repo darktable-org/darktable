@@ -3381,10 +3381,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
   /* connect to mouse over id */
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _lib_tagging_redraw_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_TAG_CHANGED, _lib_tagging_tags_changed_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_SELECTION_CHANGED, _lib_selection_changed_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _collection_updated_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _lib_tagging_redraw_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_TAG_CHANGED, _lib_tagging_tags_changed_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_SELECTION_CHANGED, _lib_selection_changed_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _collection_updated_callback);
 
   d->collection = g_malloc(4096);
   _update_layout(self);
@@ -3400,10 +3400,6 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = self->data;
 
-  DT_CONTROL_SIGNAL_DISCONNECT(_lib_tagging_redraw_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_lib_tagging_tags_changed_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_lib_selection_changed_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_collection_updated_callback, self);
   g_free(d->collection);
   if(d->drag.tagname) g_free(d->drag.tagname);
   if(d->drag.path) gtk_tree_path_free(d->drag.path);

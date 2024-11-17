@@ -80,9 +80,6 @@ DT_MODULE(1)
 static void _update_softproof_gamut_checking(dt_develop_t *d);
 
 /* signal handler for filmstrip image switching */
-static void _view_darkroom_filmstrip_activate_callback(gpointer instance,
-                                                       const dt_imgid_t imgid,
-                                                       gpointer user_data);
 
 static void _dev_change_image(dt_develop_t *dev, const dt_imgid_t imgid);
 
@@ -1245,12 +1242,11 @@ static gboolean _dev_load_requested_image(gpointer user_data)
 
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance,
                                                        const dt_imgid_t imgid,
-                                                       gpointer user_data)
+                                                       const dt_view_t *self)
 {
   if(dt_is_valid_imgid(imgid))
   {
     // switch images in darkroom mode:
-    const dt_view_t *self = (dt_view_t *)user_data;
     dt_develop_t *dev = self->data;
 
     _dev_change_image(dev, imgid);
@@ -1938,7 +1934,7 @@ static void _preference_changed(gpointer instance,
 }
 
 static void _preference_changed_button_hide(gpointer instance,
-                                            dt_develop_t *dev)
+                                            const dt_develop_t *dev)
 {
   for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
   {
@@ -2778,8 +2774,7 @@ void gui_init(dt_view_t *self)
                                        darktable.view_manager->guides_toggle,
                                        DT_VIEW_DARKROOM | DT_VIEW_TETHERING);
     // we want to update button state each time the view change
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
-                              _guides_view_changed, dev);
+    DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, _guides_view_changed);
   }
 
   darktable.view_manager->proxy.darkroom.get_layout = _lib_darkroom_get_layout;
@@ -2871,12 +2866,12 @@ void enter(dt_view_t *self)
   dt_undo_clear(darktable.undo, DT_UNDO_DEVELOP);
 
   /* connect to ui pipe finished signal for redraw */
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
-                            _darkroom_ui_pipe_finish_signal_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED,
-                            _darkroom_ui_preview2_pipe_finish_signal_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_TROUBLE_MESSAGE,
-                            _display_module_trouble_message_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
+                           _darkroom_ui_pipe_finish_signal_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED,
+                           _darkroom_ui_preview2_pipe_finish_signal_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_TROUBLE_MESSAGE,
+                           _display_module_trouble_message_callback);
 
   dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode", dt_get_wtime());
   dt_develop_t *dev = self->data;
@@ -2966,8 +2961,8 @@ void enter(dt_view_t *self)
   dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, -1.f, TRUE, 0.0f, 0.0f, TRUE);
 
   /* connect signal for filmstrip image activate */
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
-                            _view_darkroom_filmstrip_activate_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
+                           _view_darkroom_filmstrip_activate_callback);
   dt_collection_hint_message(darktable.collection);
 
   dt_ui_scrollbars_show(darktable.gui->ui, dt_conf_get_bool("darkroom/ui/scrollbars"));
@@ -2992,8 +2987,7 @@ void enter(dt_view_t *self)
   dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
 
   // connect to preference change for module header button hiding
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE,
-                            _preference_changed_button_hide, dev);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PREFERENCES_CHANGE, _preference_changed_button_hide);
   dt_iop_color_picker_init();
 
   dt_image_check_camera_missing_sample(&dev->image_storage);
@@ -3012,12 +3006,7 @@ void leave(dt_view_t *self)
   if(darktable.lib->proxy.colorpicker.picker_proxy)
     dt_iop_color_picker_reset(darktable.lib->proxy.colorpicker.picker_proxy->module, FALSE);
 
-  /* disconnect from filmstrip image activate */
-  DT_CONTROL_SIGNAL_DISCONNECT(_view_darkroom_filmstrip_activate_callback, self);
-  /* disconnect from pipe finish signal */
-  DT_CONTROL_SIGNAL_DISCONNECT(_darkroom_ui_pipe_finish_signal_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_darkroom_ui_preview2_pipe_finish_signal_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_display_module_trouble_message_callback, self);
+  DT_CONTROL_SIGNAL_DISCONNECT_ALL(self, "darkroom");
 
   // store groups for next time:
   dt_conf_set_int("plugins/darkroom/groups", dt_dev_modulegroups_get(darktable.develop));
@@ -3029,8 +3018,6 @@ void leave(dt_view_t *self)
     dt_conf_set_string("plugins/darkroom/active", "");
 
   dt_develop_t *dev = self->data;
-
-  DT_CONTROL_SIGNAL_DISCONNECT(_preference_changed_button_hide, dev);
 
   // reset color assessment mode
   if(dev->full.iso_12646)

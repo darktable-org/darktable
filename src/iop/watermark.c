@@ -1439,8 +1439,6 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_iop_watermark_gui_data_t *g = self->gui_data;
   g_list_free_full(g->watermarks_filenames, g_free);
   g->watermarks_filenames = NULL;
-
-  IOP_GUI_FREE;
 }
 
 // clang-format off

@@ -167,16 +167,13 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_show_all(self->widget);
 
   /* connect to history change signal for updating the history view */
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE, _lib_history_will_change_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _lib_history_change_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_MODULE_REMOVE, _lib_history_module_remove_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE, _lib_history_will_change_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _lib_history_change_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_MODULE_REMOVE, _lib_history_module_remove_callback);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  DT_CONTROL_SIGNAL_DISCONNECT(_lib_history_change_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_lib_history_will_change_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_lib_history_module_remove_callback, self);
   g_free(self->data);
   self->data = NULL;
 }

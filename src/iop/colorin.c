@@ -2084,8 +2084,6 @@ void gui_cleanup(dt_iop_module_t *self)
     g_free(g->image_profiles->data);
     g->image_profiles = g_list_delete_link(g->image_profiles, g->image_profiles);
   }
-
-  IOP_GUI_FREE;
 }
 
 // clang-format off

@@ -2066,12 +2066,6 @@ void gui_init(dt_iop_module_t *self)
   self->widget = GTK_WIDGET(g->notebook);
 }
 
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  IOP_GUI_FREE;
-}
-
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

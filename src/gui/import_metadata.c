@@ -508,9 +508,7 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
 
 void dt_import_metadata_cleanup(dt_import_metadata_t *metadata)
 {
-  DT_CONTROL_SIGNAL_DISCONNECT(_metadata_prefs_changed, metadata);
-  DT_CONTROL_SIGNAL_DISCONNECT(_metadata_list_changed, metadata);
-  DT_CONTROL_SIGNAL_DISCONNECT(_metadata_presets_changed, metadata);
+  DT_CONTROL_SIGNAL_DISCONNECT_ALL(metadata, "metadata");
 }
 
 void dt_import_metadata_update(dt_import_metadata_t *metadata)

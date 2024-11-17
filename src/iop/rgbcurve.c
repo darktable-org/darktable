@@ -1612,8 +1612,6 @@ void gui_cleanup(dt_iop_module_t *self)
 
   for(int k = 0; k < DT_IOP_RGBCURVE_MAX_CHANNELS; k++)
     dt_draw_curve_destroy(g->minmax_curve[k]);
-
-  IOP_GUI_FREE;
 }
 
 void init_pipe(dt_iop_module_t *self,

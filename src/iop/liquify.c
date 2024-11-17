@@ -3681,11 +3681,6 @@ void gui_reset(dt_iop_module_t *self)
   btn_make_radio_callback(NULL, NULL, self);
 }
 
-void gui_cleanup(dt_iop_module_t *self)
-{
-  IOP_GUI_FREE;
-}
-
 // defgroup Button paint functions
 
 #define PREAMBLE                                       \

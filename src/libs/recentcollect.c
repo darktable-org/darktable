@@ -342,7 +342,7 @@ void gui_init(dt_lib_module_t *self)
   _lib_recentcollection_updated(NULL, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL, -1, self);
 
   /* connect collection changed signal */
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _lib_recentcollection_updated, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _lib_recentcollection_updated);
 
   darktable.view_manager->proxy.module_recentcollect.module = self;
 }
@@ -351,7 +351,6 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   const int curr_pos = dt_ui_thumbtable(darktable.gui->ui)->offset;
   dt_conf_set_int("plugins/lighttable/collect/history_pos0", curr_pos);
-  DT_CONTROL_SIGNAL_DISCONNECT(_lib_recentcollection_updated, self);
   free(self->data);
   self->data = NULL;
 }

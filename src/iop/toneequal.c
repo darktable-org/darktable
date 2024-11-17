@@ -2531,7 +2531,7 @@ static void _set_distort_signal(dt_iop_module_t *self)
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   if(self->enabled && !g->distort_signal_actif)
   {
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_DISTORT, _develop_distort_callback, self);
+    DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_DISTORT, _develop_distort_callback);
     g->distort_signal_actif = TRUE;
   }
 }
@@ -3516,9 +3516,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 
   // Force UI redraws when pipe starts/finishes computing and switch cursors
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _develop_preview_pipe_finished_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _develop_ui_pipe_finished_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _develop_ui_pipe_started_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _develop_preview_pipe_finished_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _develop_ui_pipe_finished_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _develop_ui_pipe_started_callback);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
@@ -3529,11 +3529,6 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_conf_set_int("plugins/darkroom/toneequal/gui_page",
                   gtk_notebook_get_current_page (g->notebook));
 
-  DT_CONTROL_SIGNAL_DISCONNECT(_develop_ui_pipe_finished_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_develop_ui_pipe_started_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_develop_preview_pipe_finished_callback, self);
-  _unset_distort_signal(self);
-
   dt_free_align(g->thumb_preview_buf);
   dt_free_align(g->full_preview_buf);
 
@@ -3541,8 +3536,6 @@ void gui_cleanup(dt_iop_module_t *self)
   if(g->layout) g_object_unref(g->layout);
   if(g->cr)     cairo_destroy(g->cr);
   if(g->cst)    cairo_surface_destroy(g->cst);
-
-  IOP_GUI_FREE;
 }
 
 // clang-format off

@@ -941,8 +941,6 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_iop_rawdenoise_gui_data_t *g = self->gui_data;
   dt_conf_set_int("plugins/darkroom/rawdenoise/gui_channel", g->channel);
   dt_draw_curve_destroy(g->transition_curve);
-
-  IOP_GUI_FREE;
 }
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

@@ -142,7 +142,7 @@ OPTIONAL(void, gui_changed, struct dt_iop_module_t *self,
                             GtkWidget *widget,
                             void *previous);
 /** destroy widget. */
-DEFAULT(void, gui_cleanup, struct dt_iop_module_t *self);
+OPTIONAL(void, gui_cleanup, struct dt_iop_module_t *self);
 /** optional method called after darkroom expose. */
 OPTIONAL(void, gui_post_expose, struct dt_iop_module_t *self,
                                 cairo_t *cr,
