@@ -81,13 +81,13 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece,
 }
 
 #ifdef HAVE_OPENCL
-gboolean dual_demosaic_cl(const dt_iop_module_t *self,
-                          const dt_dev_pixelpipe_iop_t *piece,
-                          cl_mem high_image,
-                          cl_mem low_image,
-                          cl_mem out,
-                          const dt_iop_roi_t *const roi_in,
-                          const int dual_mask)
+int dual_demosaic_cl(const dt_iop_module_t *self,
+                     const dt_dev_pixelpipe_iop_t *piece,
+                     cl_mem high_image,
+                     cl_mem low_image,
+                     cl_mem out,
+                     const dt_iop_roi_t *const roi_in,
+                     const int dual_mask)
 {
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
