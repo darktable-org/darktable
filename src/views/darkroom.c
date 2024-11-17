@@ -1934,8 +1934,9 @@ static void _preference_changed(gpointer instance,
 }
 
 static void _preference_changed_button_hide(gpointer instance,
-                                            const dt_develop_t *dev)
+                                            const dt_view_t *self)
 {
+  dt_develop_t *dev = self->data;
   for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
   {
     dt_iop_module_t *module = modules->data;
