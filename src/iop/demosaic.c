@@ -867,13 +867,19 @@ int process_cl(dt_iop_module_t *self,
   {
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     cl_mem low_image = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
-    if(low_image)
+    cl_mem cp_image = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
+    if(low_image && cp_image)
     {
-      err = process_vng_cl(self, piece, in_image, low_image, roi_in, FALSE);
+      size_t origin[] = { 0, 0, 0 };
+      size_t region[] = { width, height, 1 };
+      err = dt_opencl_enqueue_copy_image(devid, out_image, cp_image, origin, origin, region);
+      if(err == CL_SUCCESS)
+        err = process_vng_cl(self, piece, in_image, low_image, roi_in, FALSE);
       if(err == CL_SUCCESS)
         err = color_smoothing_cl(self, piece, low_image, low_image, roi_in, DT_DEMOSAIC_SMOOTH_2);
       if(err == CL_SUCCESS)
-        err = dual_demosaic_cl(self, piece, out_image, low_image, out_image, roi_in, showmask);
+        err = dual_demosaic_cl(self, piece, cp_image, low_image, out_image, roi_in, showmask);
+      dt_opencl_release_mem_object(cp_image);
       dt_opencl_release_mem_object(low_image);
     }
     if(err != CL_SUCCESS) goto finish;
