@@ -317,9 +317,33 @@ changes (where available).
 
 ### API Version
 
-- API version is now 9.3.0
+- API version is now 9.4.0
+
+### New Features
+
+- Added new event, inter-script-communication, to permit sending messages
+  from one running script to another running script.
+
+- Added new function darktable.util.message(), for sending messages using
+  the inter-script-communication event.
+
+- Added new EXIF data fields to dt_lua_image_t:
+  
+  - exif_whitebalance
+
+  - exif_flash
+
+  - exif_exposure_program
+
+  - exif_metering_mode
+
+- Added new event, image-group-information-changed, that is raised any time
+  an images group information changes.
 
 ### Bug Fixes
+
+- Fixed a bug with dt_imageio_module_format_t.write_image so it returns
+  true on success and false on failure.
 
 ### Add action support for Lua
 
