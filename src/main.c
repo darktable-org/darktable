@@ -39,10 +39,14 @@ int main(int argc, char *argv[])
   dt_osx_prepare_environment();
 #endif
 #ifdef _WIN32
-  // on Windows we have a hard time showing stuff printed to stdout/stderr to the user.
-  // because of that we write it to a log file.
+  // On Windows we have a hard time showing stuff printed to stdout/stderr to the user.
+  // Because of that we write it to a log file.
   char datetime[DT_DATETIME_EXIF_LENGTH];
   dt_datetime_now_to_exif(datetime);
+
+  // Users are more accustomed to the ISO 8601 format than to separating
+  // the year, month, and day with a colon (which is the Exif convention)
+  datetime[4] = datetime[7] = '-';
 
   // Make sure to not redirect output when the output is already
   // being redirected, either to a file or a pipe.
