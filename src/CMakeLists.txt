@@ -146,8 +146,6 @@ FILE(GLOB SOURCE_FILES
   "gui/splash.c"
   "gui/styles_dialog.c"
   "imageio/imageio.c"
-  "imageio/imageio_gm.c"
-  "imageio/imageio_im.c"
   "imageio/imageio_jpeg.c"
   "imageio/imageio_module.c"
   "imageio/imageio_pfm.c"
@@ -561,6 +559,7 @@ if(USE_GRAPHICSMAGICK)
     set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} bmp dcm fit fits fts gif jng jp2 jpc jpf jpx miff mng pam webp jxl CACHE INTERNAL "")
     include_directories(SYSTEM ${GraphicsMagick_INCLUDE_DIRS})
     list(APPEND LIBS ${GraphicsMagick_LIBRARIES})
+    list(APPEND SOURCES "imageio/imageio_gm.c")
   endif(GraphicsMagick_FOUND)
 endif(USE_GRAPHICSMAGICK)
 
@@ -569,6 +568,7 @@ if(USE_IMAGEMAGICK AND NOT GraphicsMagick_FOUND)
   find_package(PkgConfig)
   pkg_check_modules(ImageMagick MagickWand)
   if(ImageMagick_FOUND)
+    list(APPEND SOURCES "imageio/imageio_im.c")
     if(ImageMagick_VERSION VERSION_GREATER 7)
       add_definitions(-DHAVE_IMAGEMAGICK7)
       set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} qoi CACHE INTERNAL "")

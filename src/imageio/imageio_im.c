@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef HAVE_IMAGEMAGICK
 #include "common/darktable.h"
 #include "imageio_common.h"
 #include "imageio_gm.h"
@@ -152,7 +151,6 @@ error:
   DestroyMagickWand(image);
   return err;
 }
-#endif
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
