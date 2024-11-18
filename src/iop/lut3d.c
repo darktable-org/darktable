@@ -223,11 +223,20 @@ int legacy_params(dt_iop_module_t *self,
 
   return 1;
 }
+
 // From `HaldCLUT_correct.c' by Eskil Steenberg (http://www.quelsolaar.com) (BSD licensed)
-void correct_pixel_trilinear(const float *const in, float *const out,
-                             const size_t pixel_nb, const float *const restrict clut, const uint16_t level)
+static void _correct_pixel_trilinear(const float *const in,
+                                     float *const out,
+                                     const size_t pixel_nb,
+                                     const float *const restrict clut,
+                                     const uint16_t level)
 {
-  const int level2 = level * level;
+  const int level_minus_2 = (level - 2);
+  const size_t level2 = level * level;
+  const float flevel_1 = (float)(level - 1);
+  const size_t level1_stride = 3 * level;
+  const size_t level2_stride = 3 * level2;
+  const size_t level12_stride = 3 * (level + level2);
 
   DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)(pixel_nb * 4); k+=4)
@@ -235,62 +244,52 @@ void correct_pixel_trilinear(const float *const in, float *const out,
     const float *const input = in + k;
     float *const output = ((float *const)out) + k;
 
-    int rgbi[3], i, j;
-    float tmp[6];
+    DT_ALIGNED_PIXEL int rgbi[4];
     dt_aligned_pixel_t rgbd;
+    dt_aligned_pixel_t tmp1, tmp2, tmp3;
 
+    // scale the input according to grid size
+    for_each_channel(c, aligned(input))
+      rgbd[c] = CLIP(input[c]) * flevel_1;
+    // quantize to grid
     for_each_channel(c)
-      rgbd[c] = CLIP(input[c]) * (float)(level - 1);
+      rgbi[c] = (int)rgbd[c];
+    for_each_channel(c)
+      rgbi[c] = CLAMP(rgbi[c], 0, level_minus_2);
+    // compute deltas for each channel
+    for_each_channel(c)
+      rgbd[c] -= rgbi[c]; // delta red/green/blue
 
-    rgbi[0] = CLAMP((int)rgbd[0], 0, level - 2);
-    rgbi[1] = CLAMP((int)rgbd[1], 0, level - 2);
-    rgbi[2] = CLAMP((int)rgbd[2], 0, level - 2);
+    size_t color = rgbi[0] + level * rgbi[1] + level2 * rgbi[2];
 
-    rgbd[0] = rgbd[0] - rgbi[0]; // delta red
-    rgbd[1] = rgbd[1] - rgbi[1]; // delta green
-    rgbd[2] = rgbd[2] - rgbi[2]; // delta blue
+    const size_t i = color * 3;  // P000
 
-  // indexes of P000 to P111 in clut
-    const int color = rgbi[0] + rgbi[1] * level + rgbi[2] * level * level;
-    i = color * 3;  // P000
-    j = (color + 1) * 3;  // P100
+    const float one_minus_rgbd0 = 1.0f - rgbd[0];
+    const float one_minus_rgbd1 = 1.0f - rgbd[1];
 
-    tmp[0] = clut[i] * (1 - rgbd[0]) + clut[j] * rgbd[0];
-    tmp[1] = clut[i+1] * (1 - rgbd[0]) + clut[j+1] * rgbd[0];
-    tmp[2] = clut[i+2] * (1 - rgbd[0]) + clut[j+2] * rgbd[0];
+    // process indexes of P000 to P111 in clut
+    for_each_channel(c) // P000 and P100
+      tmp1[c] = clut[i+c] * one_minus_rgbd0 + clut[i+3+c] * rgbd[0];
 
-    i = (color + level) * 3;  // P010
-    j = (color + level + 1) * 3;  //P110
+    for_each_channel(c) // P010 and P110
+      tmp2[c] = clut[i+level1_stride+c] * one_minus_rgbd0 + clut[i+level1_stride+3+c] * rgbd[0];
 
-    tmp[3] = clut[i] * (1 - rgbd[0]) + clut[j] * rgbd[0];
-    tmp[4] = clut[i+1] * (1 - rgbd[0]) + clut[j+1] * rgbd[0];
-    tmp[5] = clut[i+2] * (1 - rgbd[0]) + clut[j+2] * rgbd[0];
+    for_each_channel(c) // blend P000/P100 with P010/P110
+      tmp3[c] = tmp1[c] * one_minus_rgbd1 + tmp2[c] * rgbd[1];
 
-    output[0] = tmp[0] * (1 - rgbd[1]) + tmp[3] * rgbd[1];
-    output[1] = tmp[1] * (1 - rgbd[1]) + tmp[4] * rgbd[1];
-    output[2] = tmp[2] * (1 - rgbd[1]) + tmp[5] * rgbd[1];
+    for_each_channel(c) // P001 and P101
+      tmp1[c] = clut[i+level2_stride+c] * one_minus_rgbd0 + clut[i+level2_stride+3+c] * rgbd[0];
 
-    i = (color + level2) * 3;  // P001
-    j = (color + level2 + 1) * 3;  // P101
+    for_each_channel(c) // P011 and P111
+      tmp2[c] = clut[i+level12_stride+c] * one_minus_rgbd0 + clut[i+level12_stride+3+c] * rgbd[0];
 
-    tmp[0] = clut[i] * (1 - rgbd[0]) + clut[j] * rgbd[0];
-    tmp[1] = clut[i+1] * (1 - rgbd[0]) + clut[j+1] * rgbd[0];
-    tmp[2] = clut[i+2] * (1 - rgbd[0]) + clut[j+2] * rgbd[0];
+    for_each_channel(c) // blend P001/P101 and P011/P111
+      tmp1[c] = tmp1[c] * one_minus_rgbd1 + tmp2[c] * rgbd[1];
 
-    i = (color + level + level2) * 3;  // P011
-    j = (color + level + level2 + 1) * 3;  // P111
-
-    tmp[3] = clut[i] * (1 - rgbd[0]) + clut[j] * rgbd[0];
-    tmp[4] = clut[i+1] * (1 - rgbd[0]) + clut[j+1] * rgbd[0];
-    tmp[5] = clut[i+2] * (1 - rgbd[0]) + clut[j+2] * rgbd[0];
-
-    tmp[0] = tmp[0] * (1 - rgbd[1]) + tmp[3] * rgbd[1];
-    tmp[1] = tmp[1] * (1 - rgbd[1]) + tmp[4] * rgbd[1];
-    tmp[2] = tmp[2] * (1 - rgbd[1]) + tmp[5] * rgbd[1];
-
-    output[0] = output[0] * (1 - rgbd[2]) + tmp[0] * rgbd[2];
-    output[1] = output[1] * (1 - rgbd[2]) + tmp[1] * rgbd[2];
-    output[2] = output[2] * (1 - rgbd[2]) + tmp[2] * rgbd[2];
+    for_each_channel(c, aligned(output))
+      output[c] = tmp3[c] * (1.0f - rgbd[2]) + tmp1[c] * rgbd[2];
+    // not using non-temporal writes here, as those are substantially slower when in==out....
+    // (which is the case when performing a colorspace conversion)
  }
 }
 
@@ -302,7 +301,11 @@ static void _correct_pixel_tetrahedral(const float *const in,
                                        const float *const restrict clut,
                                        const uint16_t level)
 {
-  const int level2 = level * level;
+  const size_t level2 = level * level;
+  const size_t level1_stride = 3 * level;
+  const size_t level2_stride = 3 * level2;
+  const size_t level12_stride = 3 * (level + level2);
+  const float flevel_1 = (float)(level - 1);
 
   DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)(pixel_nb * 4); k+=4)
@@ -310,72 +313,78 @@ static void _correct_pixel_tetrahedral(const float *const in,
     const float *const input = in + k;
     float *const output = ((float *const)out) + k;
 
-    int rgbi[3];
+    dt_aligned_pixel_t rgbi;
     dt_aligned_pixel_t rgbd;
     for_each_channel(c)
-      rgbd[c] = CLIP(input[c]) * (float)(level - 1);
+      rgbd[c] = CLIP(input[c]) * flevel_1;
 
-    rgbi[0] = CLAMP((int)rgbd[0], 0, level - 2);
-    rgbi[1] = CLAMP((int)rgbd[1], 0, level - 2);
-    rgbi[2] = CLAMP((int)rgbd[2], 0, level - 2);
-
-    rgbd[0] = rgbd[0] - rgbi[0]; // delta red
-    rgbd[1] = rgbd[1] - rgbi[1]; // delta green
-    rgbd[2] = rgbd[2] - rgbi[2]; // delta blue
+    for_each_channel(c)
+    {
+      rgbi[c] = CLAMP((int)rgbd[c], 0, level - 2);
+      rgbd[c] = rgbd[c] - rgbi[c]; // delta red/green/blue
+    }
 
   // indexes of P000 to P111 in clut
-    const int color = rgbi[0] + rgbi[1] * level + rgbi[2] * level * level;
-    const int i000 = color * 3;                     // P000
-    const int i100 = i000 + 3;                      // P100
-    const int i010 = (color + level) * 3;           // P010
-    const int i110 = i010 + 3;                      // P110
-    const int i001 = (color + level2) * 3;          // P001
-    const int i101 = i001 + 3;                      // P101
-    const int i011 = (color + level + level2) * 3;  // P011
-    const int i111 = i011 + 3;                      // P111
+    const size_t color = rgbi[0] + rgbi[1] * level + rgbi[2] * level2;
+    const size_t i000 = color * 3;                     // P000
+    const size_t i100 = i000 + 3;                      // P100
+    const size_t i010 = i000 + level1_stride;          // P010
+    const size_t i110 = i010 + 3;                      // P110
+    const size_t i001 = i000 + level2_stride;          // P001
+    const size_t i101 = i001 + 3;                      // P101
+    const size_t i011 = i000 + level12_stride;         // P011
+    const size_t i111 = i011 + 3;                      // P111
 
     if(rgbd[0] > rgbd[1])
     {
       if(rgbd[1] > rgbd[2])
       {
-        output[0] = (1-rgbd[0])*clut[i000] + (rgbd[0]-rgbd[1])*clut[i100] + (rgbd[1]-rgbd[2])*clut[i110] + rgbd[2]*clut[i111];
-        output[1] = (1-rgbd[0])*clut[i000+1] + (rgbd[0]-rgbd[1])*clut[i100+1] + (rgbd[1]-rgbd[2])*clut[i110+1] + rgbd[2]*clut[i111+1];
-        output[2] = (1-rgbd[0])*clut[i000+2] + (rgbd[0]-rgbd[1])*clut[i100+2] + (rgbd[1]-rgbd[2])*clut[i110+2] + rgbd[2]*clut[i111+2];
+        // rgbd[0] > rgbd[1] > rgbd[2]
+        for_each_channel(c, aligned(output))
+          output[c] = ((1-rgbd[0])*clut[i000+c] + (rgbd[0]-rgbd[1])*clut[i100+c]
+                      + (rgbd[1]-rgbd[2])*clut[i110+c] + rgbd[2]*clut[i111+c]);
       }
       else if(rgbd[0] > rgbd[2])
       {
-        output[0] = (1-rgbd[0])*clut[i000] + (rgbd[0]-rgbd[2])*clut[i100] + (rgbd[2]-rgbd[1])*clut[i101] + rgbd[1]*clut[i111];
-        output[1] = (1-rgbd[0])*clut[i000+1] + (rgbd[0]-rgbd[2])*clut[i100+1] + (rgbd[2]-rgbd[1])*clut[i101+1] + rgbd[1]*clut[i111+1];
-        output[2] = (1-rgbd[0])*clut[i000+2] + (rgbd[0]-rgbd[2])*clut[i100+2] + (rgbd[2]-rgbd[1])*clut[i101+2] + rgbd[1]*clut[i111+2];
+        // rgbd[0] > rgbd[2] >= rgbd[1]
+        for_each_channel(c, aligned(output))
+          output[c] = ((1-rgbd[0])*clut[i000+c] + (rgbd[0]-rgbd[2])*clut[i100+c]
+                      + (rgbd[2]-rgbd[1])*clut[i101+c] + rgbd[1]*clut[i111+c]);
       }
       else
       {
-        output[0] = (1-rgbd[2])*clut[i000] + (rgbd[2]-rgbd[0])*clut[i001] + (rgbd[0]-rgbd[1])*clut[i101] + rgbd[1]*clut[i111];
-        output[1] = (1-rgbd[2])*clut[i000+1] + (rgbd[2]-rgbd[0])*clut[i001+1] + (rgbd[0]-rgbd[1])*clut[i101+1] + rgbd[1]*clut[i111+1];
-        output[2] = (1-rgbd[2])*clut[i000+2] + (rgbd[2]-rgbd[0])*clut[i001+2] + (rgbd[0]-rgbd[1])*clut[i101+2] + rgbd[1]*clut[i111+2];
+        // rgbd[2] >= rgbd[0] > rgbd[2]
+        for_each_channel(c, aligned(output))
+          output[c] = ((1-rgbd[2])*clut[i000+c] + (rgbd[2]-rgbd[0])*clut[i001+c]
+                      + (rgbd[0]-rgbd[1])*clut[i101+c] + rgbd[1]*clut[i111+c]);
       }
     }
     else
     {
       if(rgbd[2] > rgbd[1])
       {
-        output[0] = (1-rgbd[2])*clut[i000] + (rgbd[2]-rgbd[1])*clut[i001] + (rgbd[1]-rgbd[0])*clut[i011] + rgbd[0]*clut[i111];
-        output[1] = (1-rgbd[2])*clut[i000+1] + (rgbd[2]-rgbd[1])*clut[i001+1] + (rgbd[1]-rgbd[0])*clut[i011+1] + rgbd[0]*clut[i111+1];
-        output[2] = (1-rgbd[2])*clut[i000+2] + (rgbd[2]-rgbd[1])*clut[i001+2] + (rgbd[1]-rgbd[0])*clut[i011+2] + rgbd[0]*clut[i111+2];
+        // rgbd[2] > rgbd[1] >= rgbd[0]
+        for_each_channel(c, aligned(output))
+          output[c] = ((1-rgbd[2])*clut[i000+c] + (rgbd[2]-rgbd[1])*clut[i001+c]
+                      + (rgbd[1]-rgbd[0])*clut[i011+c] + rgbd[0]*clut[i111+c]);
       }
       else if(rgbd[2] > rgbd[0])
       {
-        output[0] = (1-rgbd[1])*clut[i000] + (rgbd[1]-rgbd[2])*clut[i010] + (rgbd[2]-rgbd[0])*clut[i011] + rgbd[0]*clut[i111];
-        output[1] = (1-rgbd[1])*clut[i000+1] + (rgbd[1]-rgbd[2])*clut[i010+1] + (rgbd[2]-rgbd[0])*clut[i011+1] + rgbd[0]*clut[i111+1];
-        output[2] = (1-rgbd[1])*clut[i000+2] + (rgbd[1]-rgbd[2])*clut[i010+2] + (rgbd[2]-rgbd[0])*clut[i011+2] + rgbd[0]*clut[i111+2];
+        // rgbd[1] >= rgbd[2] > rgbd[0]
+        for_each_channel(c, aligned(output))
+          output[c] = ((1-rgbd[1])*clut[i000+c] + (rgbd[1]-rgbd[2])*clut[i010+c]
+                      + (rgbd[2]-rgbd[0])*clut[i011+c] + rgbd[0]*clut[i111+c]);
       }
       else
       {
-        output[0] = (1-rgbd[1])*clut[i000] + (rgbd[1]-rgbd[0])*clut[i010] + (rgbd[0]-rgbd[2])*clut[i110] + rgbd[2]*clut[i111];
-        output[1] = (1-rgbd[1])*clut[i000+1] + (rgbd[1]-rgbd[0])*clut[i010+1] + (rgbd[0]-rgbd[2])*clut[i110+1] + rgbd[2]*clut[i111+1];
-        output[2] = (1-rgbd[1])*clut[i000+2] + (rgbd[1]-rgbd[0])*clut[i010+2] + (rgbd[0]-rgbd[2])*clut[i110+2] + rgbd[2]*clut[i111+2];
+        // rgbd[1] >= rgbd[0] >= rgbd[2]
+        for_each_channel(c, aligned(output))
+          output[c] = ((1-rgbd[1])*clut[i000+c] + (rgbd[1]-rgbd[0])*clut[i010+c]
+                      + (rgbd[0]-rgbd[2])*clut[i110+c] + rgbd[2]*clut[i111+c]);
       }
     }
+    // not using non-temporal writes here, as those are substantially slower when in==out....
+    // (which is the case when performing a colorspace conversion)
   }
 }
 
@@ -388,6 +397,7 @@ static void _correct_pixel_pyramid(const float *const in,
                                    const uint16_t level)
 {
   const int level2 = level * level;
+  const float flevel_1 = (float)(level - 1);
 
   DT_OMP_FOR()
   for(size_t k = 0; k < (size_t)(pixel_nb * 4); k+=4)
@@ -395,57 +405,56 @@ static void _correct_pixel_pyramid(const float *const in,
     const float *const input = in + k;
     float *const output = ((float *const)out) + k;
 
-    int rgbi[3];
+    DT_ALIGNED_PIXEL int rgbi[4];
     dt_aligned_pixel_t rgbd;
+    // scale the input according to grid size
     for_each_channel(c)
-      rgbd[c] = CLIP(input[c]) * (float)(level - 1);
-
-    rgbi[0] = CLAMP((int)rgbd[0], 0, level - 2);
-    rgbi[1] = CLAMP((int)rgbd[1], 0, level - 2);
-    rgbi[2] = CLAMP((int)rgbd[2], 0, level - 2);
-
-    rgbd[0] = rgbd[0] - rgbi[0]; // delta red
-    rgbd[1] = rgbd[1] - rgbi[1]; // delta green
-    rgbd[2] = rgbd[2] - rgbi[2]; // delta blue
+      rgbd[c] = CLIP(input[c]) * flevel_1;
+    // clip coordinates to LUT grid
+    for_each_channel(c)
+      rgbi[c] = (int)rgbd[c];
+    for_each_channel(c)
+      rgbi[c] = CLAMP(rgbi[c], 0, level - 2);
+    // compute deltas for each channel
+    for_each_channel(c)
+      rgbd[c] -= rgbi[c];
 
   // indexes of P000 to P111 in clut
-    const int color = rgbi[0] + rgbi[1] * level + rgbi[2] * level * level;
-    const int i000 = color * 3;                     // P000
-    const int i100 = i000 + 3;                      // P100
-    const int i010 = (color + level) * 3;           // P010
-    const int i110 = i010 + 3;                      // P110
-    const int i001 = (color + level2) * 3;          // P001
-    const int i101 = i001 + 3;                      // P101
-    const int i011 = (color + level + level2) * 3;  // P011
-    const int i111 = i011 + 3;                      // P111
+    const int color = rgbi[0] + rgbi[1] * level + rgbi[2] * level2;
+    const size_t i000 = color * 3;                     // P000
+    const size_t i100 = i000 + 3;                      // P100
+    const size_t i010 = (color + level) * 3;           // P010
+    const size_t i110 = i010 + 3;                      // P110
+    const size_t i001 = (color + level2) * 3;          // P001
+    const size_t i101 = i001 + 3;                      // P101
+    const size_t i011 = (color + level + level2) * 3;  // P011
+    const size_t i111 = i011 + 3;                      // P111
 
+    dt_aligned_pixel_t outpx;
     if(rgbd[1] > rgbd[0] && rgbd[2] > rgbd[0])
     {
-      output[0] = clut[i000] + (clut[i111]-clut[i011])*rgbd[0] + (clut[i010]-clut[i000])*rgbd[1] + (clut[i001]-clut[i000])*rgbd[2]
-        + (clut[i011]-clut[i001]-clut[i010]+clut[i000])*rgbd[1]*rgbd[2];
-      output[1] = clut[i000+1] + (clut[i111+1]-clut[i011+1])*rgbd[0] + (clut[i010+1]-clut[i000+1])*rgbd[1] + (clut[i001+1]-clut[i000+1])*rgbd[2]
-        + (clut[i011+1]-clut[i001+1]-clut[i010+1]+clut[i000+1])*rgbd[1]*rgbd[2];
-      output[2] = clut[i000+2] + (clut[i111+2]-clut[i011+2])*rgbd[0] + (clut[i010+2]-clut[i000+2])*rgbd[1] + (clut[i001+2]-clut[i000+2])*rgbd[2]
-        + (clut[i011+2]-clut[i001+2]-clut[i010+2]+clut[i000+2])*rgbd[1]*rgbd[2];
+      for_each_channel(c)
+        outpx[c] = (clut[i000+c] + (clut[i111+c]-clut[i011+c])*rgbd[0]
+                    + (clut[i010+c]-clut[i000+c])*rgbd[1] + (clut[i001+c]-clut[i000+c])*rgbd[2]
+                    + (clut[i011+c]-clut[i001+c]-clut[i010+c]+clut[i000+c])*rgbd[1]*rgbd[2]);
     }
     else if(rgbd[0] > rgbd[1] && rgbd[2] > rgbd[1])
     {
-      output[0] = clut[i000] + (clut[i100]-clut[i000])*rgbd[0] + (clut[i111]-clut[i101])*rgbd[1] + (clut[i001]-clut[i000])*rgbd[2]
-        + (clut[i101]-clut[i001]-clut[i100]+clut[i000])*rgbd[0]*rgbd[2];
-      output[1] = clut[i000+1] + (clut[i100+1]-clut[i000+1])*rgbd[0] + (clut[i111+1]-clut[i101+1])*rgbd[1] + (clut[i001+1]-clut[i000+1])*rgbd[2]
-        + (clut[i101+1]-clut[i001+1]-clut[i100+1]+clut[i000+1])*rgbd[0]*rgbd[2];
-      output[2] = clut[i000+2] + (clut[i100+2]-clut[i000+2])*rgbd[0] + (clut[i111]-clut[i101+2])*rgbd[1] + (clut[i001+2]-clut[i000+2])*rgbd[2]
-        + (clut[i101+2]-clut[i001+2]-clut[i100+2]+clut[i000+2])*rgbd[0]*rgbd[2];
+      for_each_channel(c)
+        outpx[c] = (clut[i000+c] + (clut[i100+c]-clut[i000+c])*rgbd[0]
+                    + (clut[i111+c]-clut[i101+c])*rgbd[1] + (clut[i001+c]-clut[i000+c])*rgbd[2]
+                    + (clut[i101+c]-clut[i001+c]-clut[i100+c]+clut[i000+c])*rgbd[0]*rgbd[2]);
     }
     else
     {
-      output[0] = clut[i000] + (clut[i100]-clut[i000])*rgbd[0] + (clut[i010]-clut[i000])*rgbd[1] + (clut[i111]-clut[i110])*rgbd[2]
-        + (clut[i110]-clut[i100]-clut[i010]+clut[i000])*rgbd[0]*rgbd[1];
-      output[1] = clut[i000+1] + (clut[i100+1]-clut[i000+1])*rgbd[0] + (clut[i010+1]-clut[i000+1])*rgbd[1] + (clut[i111+1]-clut[i110+1])*rgbd[2]
-        + (clut[i110+1]-clut[i100+1]-clut[i010+1]+clut[i000+1])*rgbd[0]*rgbd[1];
-      output[2] = clut[i000+2] + (clut[i100+2]-clut[i000+2])*rgbd[0] + (clut[i010+2]-clut[i000+2])*rgbd[1] + (clut[i111+2]-clut[i110+2])*rgbd[2]
-        + (clut[i110+2]-clut[i100+2]-clut[i010+2]+clut[i000+2])*rgbd[0]*rgbd[1];
+      for_each_channel(c)
+         outpx[c] = clut[i000+c] + (clut[i100+c]-clut[i000+c])*rgbd[0]
+                  + (clut[i010+c]-clut[i000+c])*rgbd[1] + (clut[i111+c]-clut[i110+c])*rgbd[2]
+                  + (clut[i110+c]-clut[i100+c]-clut[i010+c]+clut[i000+c])*rgbd[0]*rgbd[1];
     }
+    // not using non-temporal writes here, as those are substantially slower when in==out....
+    // (which is the case when performing a colorspace conversion)
+    copy_pixel(output, outpx);
   }
 }
 
@@ -1089,7 +1098,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       if(interpolation == DT_IOP_TETRAHEDRAL)
         _correct_pixel_tetrahedral(obuf, obuf, (size_t)width * height, clut, level);
       else if(interpolation == DT_IOP_TRILINEAR)
-        correct_pixel_trilinear(obuf, obuf, (size_t)width * height, clut, level);
+        _correct_pixel_trilinear(obuf, obuf, (size_t)width * height, clut, level);
       else
         _correct_pixel_pyramid(obuf, obuf, (size_t)width * height, clut, level);
       dt_ioppr_transform_image_colorspace_rgb(obuf, obuf, width, height,
@@ -1100,7 +1109,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       if(interpolation == DT_IOP_TETRAHEDRAL)
         _correct_pixel_tetrahedral(ibuf, obuf, (size_t)width * height, clut, level);
       else if(interpolation == DT_IOP_TRILINEAR)
-        correct_pixel_trilinear(ibuf, obuf, (size_t)width * height, clut, level);
+        _correct_pixel_trilinear(ibuf, obuf, (size_t)width * height, clut, level);
       else
         _correct_pixel_pyramid(ibuf, obuf, (size_t)width * height, clut, level);
     }
