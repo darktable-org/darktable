@@ -461,11 +461,7 @@ float dt_dev_exposure_get_exposure(dt_develop_t *dev);
 /** get exposure black level */
 float dt_dev_exposure_get_black(dt_develop_t *dev);
 
-inline void dt_dev_exposure_handle_event(GdkEvent *event, gboolean blackwhite)
-{
-  if(darktable.develop->proxy.exposure.handle_event)
-    darktable.develop->proxy.exposure.handle_event(event, blackwhite);
-}
+void dt_dev_exposure_handle_event(GdkEvent *event, gboolean blackwhite);
 
 /*
  * modulegroups plugin hooks
