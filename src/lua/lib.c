@@ -47,6 +47,8 @@ static int visible_member(lua_State *L)
   else
   {
     dt_lib_set_visible(module, lua_toboolean(L, 3));
+    // force a reload of visible modules
+    dt_view_manager_switch_by_view(darktable.view_manager, dt_view_manager_get_current_view(darktable.view_manager));
     return 0;
   }
 }
