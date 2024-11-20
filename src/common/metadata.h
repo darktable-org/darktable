@@ -31,6 +31,7 @@ typedef struct dt_metadata_t2
   uint32_t type;
   gboolean is_visible;
   gboolean is_private;
+  gboolean dt_default;
   uint32_t display_order;
 } dt_metadata_t2;
 

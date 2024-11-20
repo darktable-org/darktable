@@ -288,7 +288,8 @@ void dt_metadata_init()
   sqlite3_stmt *stmt;
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                          "SELECT key, tagname, name, type, visible, private, display_order"
+                          "SELECT key, tagname, name, type, visible, private,"
+                          " dt_default, display_order"
                           " FROM data.meta_data"
                           " ORDER BY display_order",
                           -1, &stmt, NULL);
@@ -302,7 +303,8 @@ void dt_metadata_init()
     int type = sqlite3_column_int(stmt, 3);
     gboolean visible = (gboolean) sqlite3_column_int(stmt, 4);
     gboolean private = (gboolean) sqlite3_column_int(stmt, 5);
-    int display_order = sqlite3_column_int(stmt, 6);
+    int dt_default = sqlite3_column_int(stmt, 6);
+    int display_order = sqlite3_column_int(stmt, 7);
 
     dt_metadata_t2 *metadata = calloc(1, sizeof(dt_metadata_t2));
     metadata->key = key;
@@ -311,6 +313,7 @@ void dt_metadata_init()
     metadata->type = type;
     metadata->is_visible = visible;
     metadata->is_private = private;
+    metadata->dt_default = dt_default;
     metadata->display_order = display_order;
     _metadata_list = g_list_append(_metadata_list, metadata);
   }
