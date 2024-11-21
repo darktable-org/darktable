@@ -122,7 +122,7 @@ typedef struct dt_gui_gtk_t
   int32_t hide_tooltips;
 
   gboolean grouping;
-  int32_t expanded_group_id;
+  dt_imgid_t expanded_group_id;
 
   gboolean show_overlays;
   gboolean show_focus_peaking;
