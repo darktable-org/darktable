@@ -1738,7 +1738,7 @@ void dt_masks_iop_value_changed_callback(GtkWidget *widget,
   dt_masks_iop_update(module);
 }
 
-void dt_masks_iop_update(struct dt_iop_module_t *module)
+void dt_masks_iop_update(dt_iop_module_t *module)
 {
   if(!module) return;
 
@@ -1751,7 +1751,7 @@ void dt_masks_form_remove(dt_iop_module_t *module,
                           dt_masks_form_t *form)
 {
   if(!form) return;
-  const int id = form->formid;
+  const dt_mask_id_t id = form->formid;
   if(grp && !(grp->type & DT_MASKS_GROUP)) return;
 
   if(!(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
@@ -1994,54 +1994,14 @@ void dt_masks_group_ungroup(dt_masks_form_t *dest_grp,
   }
 }
 
-int dt_masks_group_get_hash_buffer_length(dt_masks_form_t *form)
+dt_hash_t dt_masks_group_hash(dt_hash_t hash, dt_masks_form_t *form)
 {
-  if(!form) return 0;
-  int pos = 0;
+  if(!form) return hash;
   // basic infos
-  pos += sizeof(dt_masks_type_t);
-  pos += sizeof(int);
-  pos += sizeof(int);
-  pos += 2 * sizeof(float);
-
-  for(GList *forms = form->points;
-      forms;
-      forms = g_list_next(forms))
-  {
-    if(form->type & DT_MASKS_GROUP)
-    {
-      dt_masks_point_group_t *grpt = forms->data;
-      dt_masks_form_t *f = dt_masks_get_from_id(darktable.develop, grpt->formid);
-      if(f)
-      {
-        // state & opacity
-        pos += sizeof(int);
-        pos += sizeof(float);
-        // the form itself
-        pos += dt_masks_group_get_hash_buffer_length(f);
-      }
-    }
-    else if(form->functions)
-    {
-      pos += form->functions->point_struct_size;
-    }
-  }
-  return pos;
-}
-
-char *dt_masks_group_get_hash_buffer(dt_masks_form_t *form, char *str)
-{
-  if(!form) return str;
-  int pos = 0;
-  // basic infos
-  memcpy(str + pos, &form->type, sizeof(dt_masks_type_t));
-  pos += sizeof(dt_masks_type_t);
-  memcpy(str + pos, &form->formid, sizeof(int));
-  pos += sizeof(int);
-  memcpy(str + pos, &form->version, sizeof(int));
-  pos += sizeof(int);
-  memcpy(str + pos, &form->source, sizeof(float) * 2);
-  pos += 2 * sizeof(float);
+  hash = dt_hash(hash, &form->type, sizeof(dt_masks_type_t));
+  hash = dt_hash(hash, &form->formid, sizeof(dt_mask_id_t));
+  hash = dt_hash(hash, &form->version, sizeof(int));
+  hash = dt_hash(hash, &form->source, sizeof(float) * 2);
 
   for(const GList *forms = form->points; forms; forms = g_list_next(forms))
   {
@@ -2052,21 +2012,17 @@ char *dt_masks_group_get_hash_buffer(dt_masks_form_t *form, char *str)
       if(f)
       {
         // state & opacity
-        memcpy(str + pos, &grpt->state, sizeof(int));
-        pos += sizeof(int);
-        memcpy(str + pos, &grpt->opacity, sizeof(float));
-        pos += sizeof(float);
-        // the form itself
-        str = dt_masks_group_get_hash_buffer(f, str + pos) - pos;
+        hash = dt_hash(hash, &grpt->state, sizeof(int));
+        hash = dt_hash(hash, &grpt->opacity, sizeof(float));
+        hash = dt_masks_group_hash(hash, f);
       }
     }
     else if(form->functions)
     {
-      memcpy(str + pos,forms->data, form->functions->point_struct_size);
-      pos += form->functions->point_struct_size;
+      hash = dt_hash(hash, forms->data, form->functions->point_struct_size);
     }
   }
-  return str + pos;
+  return hash;
 }
 
 // adds formid to used array
