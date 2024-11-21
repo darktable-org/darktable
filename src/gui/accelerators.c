@@ -3611,11 +3611,7 @@ static gboolean _shortcut_closest_match(GSequenceIter **current,
 static gboolean _shortcut_match(dt_shortcut_t *f,
                                 gchar **fb_log)
 {
-  if(!darktable.view_manager->current_view)
-    return FALSE;
-
-  f->views =
-    darktable.view_manager->current_view->view(darktable.view_manager->current_view);
+  f->views = dt_view_get_current();
   gpointer v = GINT_TO_POINTER(f->views);
 
   GSequenceIter *existing =
@@ -3974,7 +3970,7 @@ float dt_action_process(const gchar *action,
   }
 
   const dt_view_type_flags_t vws = _find_views(ac);
-  if(!(vws & darktable.view_manager->current_view->view(darktable.view_manager->current_view)))
+  if(!(vws & dt_view_get_current()))
   {
     if(DT_PERFORM_ACTION(move_size))
       dt_print(DT_DEBUG_ALWAYS,
@@ -4207,7 +4203,7 @@ void dt_shortcut_key_press(const dt_input_device_t id,
   }
   else if(g_slist_find_custom(_hold_keys, &this_key, _cmp_key))
   {} // ignore repeating hold key
-  else if(darktable.view_manager && darktable.view_manager->current_view)
+  else
   {
     if(id) _sc.mods = _key_modifiers_clean(dt_key_modifier_state());
 
@@ -4215,7 +4211,7 @@ void dt_shortcut_key_press(const dt_input_device_t id,
       = { .key_device = id,
           .key = key,
           .mods = _sc.mods,
-          .views = darktable.view_manager->current_view->view(darktable.view_manager->current_view) };
+          .views = dt_view_get_current() };
 
     dt_shortcut_t *s = NULL;
     GSequenceIter *existing
@@ -4350,7 +4346,7 @@ static void _delay_for_double_triple(guint time, guint is_key)
     _sc.press += DT_SHORTCUT_DOUBLE & is_key;
     _sc.click += DT_SHORTCUT_DOUBLE & ~is_key;
 
-    _sc.views = darktable.view_manager->current_view->view(darktable.view_manager->current_view);
+    _sc.views = dt_view_get_current();
     GSequenceIter *multi =
       g_sequence_search(darktable.control->shortcuts, &_sc, _shortcut_compare_func,
                         GINT_TO_POINTER(_sc.views));
