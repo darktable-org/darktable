@@ -25884,7 +25884,7 @@ msgid ""
 msgstr ""
 "posodobi vse informacije o sliki, da se ujemajo s spremembami datoteke\n"
 "opozorilo: ponastavi ocene z zvezdicami, razen če izberete\n"
-"'prezri oceno EXIF' v modulu 'uvoz'\n"
+"'prezri oceno EXIF' v modulu 'uvoz'"
 
 #: ../src/libs/image.c:660
 msgid "set selection as monochrome images and activate monochrome workflow"
