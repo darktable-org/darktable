@@ -2174,14 +2174,7 @@ void dt_iop_commit_params(dt_iop_module_t *module,
       dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, blendop_params->mask_id);
       if(grp)
       {
-        const size_t mlen = dt_masks_group_get_hash_buffer_length(grp);
-        char *str = malloc(mlen);
-        if(str)
-        {
-          dt_masks_group_get_hash_buffer(grp, str);
-          phash = dt_hash(phash, str, mlen);
-          free(str);
-        }
+        phash = dt_masks_group_hash(phash, grp);
       }
 
       if(blendop_params->mask_mode & DEVELOP_MASK_RASTER && new_raster)
