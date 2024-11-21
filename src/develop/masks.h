@@ -622,9 +622,7 @@ void dt_masks_iop_combo_populate(GtkWidget *w,
                                  struct dt_iop_module_t **m);
 void dt_masks_iop_use_same_as(struct dt_iop_module_t *module,
                               struct dt_iop_module_t *src);
-int dt_masks_group_get_hash_buffer_length(dt_masks_form_t *form);
-char *dt_masks_group_get_hash_buffer(dt_masks_form_t *form,
-                                     char *str);
+dt_hash_t dt_masks_group_hash(dt_hash_t hash, dt_masks_form_t *form);
 
 void dt_masks_form_remove(struct dt_iop_module_t *module,
                           dt_masks_form_t *grp,
