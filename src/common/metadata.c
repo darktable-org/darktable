@@ -69,35 +69,52 @@ static gint _compare_display_order(gconstpointer a, gconstpointer b)
 
 void dt_metadata_sort_list()
 {
-  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   _metadata_list = g_list_sort(_metadata_list, _compare_display_order);
-  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 }
 
 unsigned int dt_metadata_get_nb_user_metadata()
 {
   unsigned int nb = 0;
-  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = _metadata_list; iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = iter->data;
+    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
     if(metadata->type != DT_METADATA_TYPE_INTERNAL)
       nb++;
   }
-  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   return nb;
+}
+
+const dt_metadata_t2 *dt_get_metadata_by_keyid(const uint32_t keyid)
+{
+  for(GList *iter = _metadata_list; iter; iter = iter->next)
+  {
+    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+    if(metadata->key == keyid)
+      return metadata;
+  }
+  return NULL;
+}
+
+const dt_metadata_t2 *dt_get_metadata_by_tagname(const char *tagname)
+{
+  for(GList *iter = _metadata_list; iter; iter = iter->next)
+  {
+    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+    if(!g_strcmp0(metadata->tagname, tagname))
+      return metadata;
+  }
+  return NULL;
 }
 
 const char *dt_metadata_get_name_by_display_order(const uint32_t order)
 {
   const char *result = NULL;
 
-  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   if(order < g_list_length(_metadata_list))
   {
     for(GList *iter = _metadata_list; iter; iter = iter->next)
     {
-      dt_metadata_t2 *metadata = iter->data;
+      dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
       if(order == metadata->display_order)
       {
         result = metadata->name;
@@ -105,7 +122,6 @@ const char *dt_metadata_get_name_by_display_order(const uint32_t order)
       }
     }
   }
-  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   return result;
 }
 
@@ -113,13 +129,12 @@ uint32_t dt_metadata_get_keyid_by_display_order(const uint32_t order)
 {
   uint32_t result = -1;
   
-  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   if(order < g_list_length(_metadata_list))
   {
     uint32_t i = 0;
     for(GList *iter = _metadata_list; iter; iter = iter->next)
     {
-      dt_metadata_t2 *metadata = iter->data;
+      dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
       if(order == metadata->display_order)
       {
         result = i;
@@ -128,7 +143,6 @@ uint32_t dt_metadata_get_keyid_by_display_order(const uint32_t order)
       i++;
     }
   }
-  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   return result;
 }
 
@@ -139,10 +153,9 @@ uint32_t dt_metadata_get_keyid_by_name(const char* name)
   if(!name) return -1;
   uint32_t i = 0;
 
-  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = _metadata_list; iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = iter->data;
+    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
     if(strncmp(name, metadata->name, strlen(metadata->name)) == 0)
     {
       result = i;
@@ -150,7 +163,6 @@ uint32_t dt_metadata_get_keyid_by_name(const char* name)
     }
     i++;
   }
-  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   return result;
 }
 
@@ -158,12 +170,11 @@ uint32_t dt_metadata_get_type_by_display_order(const uint32_t order)
 {
   uint32_t result = 0;
 
-  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   if(order < g_list_length(_metadata_list))
   {
     for(GList *iter = _metadata_list; iter; iter = iter->next)
     {
-      dt_metadata_t2 *metadata = iter->data;
+      dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
       if(order == metadata->display_order)
       {
         result = metadata->type;
@@ -171,7 +182,6 @@ uint32_t dt_metadata_get_type_by_display_order(const uint32_t order)
       }
     }
   }
-  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   return result;
 }
 
@@ -179,17 +189,15 @@ const char *dt_metadata_get_name(const uint32_t keyid)
 {
   const char *result = NULL;
 
-  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = _metadata_list; iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = iter->data;
+    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
     if(metadata->key == keyid)
     {
       result = metadata->name;
       break;
     }
   }
-  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   return result;
 }
 
@@ -198,17 +206,15 @@ uint32_t dt_metadata_get_keyid(const char* key)
   uint32_t result = -1;
 
   if(!key) return -1;
-  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = _metadata_list; iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = iter->data;
+    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
     if(strncmp(key, metadata->tagname, strlen(metadata->tagname)) == 0)
     {
       result = metadata->key;
       break;
     }
   }
-  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   return result;
 }
 
@@ -216,17 +222,15 @@ const char *dt_metadata_get_key(const uint32_t keyid)
 {
   const char *result = NULL;
 
-  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = _metadata_list; iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = iter->data;
+    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
     if(metadata->key == keyid)
     {
       result = metadata->tagname;
       break;
     }
   }
-  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   return result;
 }
 
@@ -234,9 +238,7 @@ const char *dt_metadata_get_subkey(const uint32_t keyid)
 {
   if(keyid < g_list_length(_metadata_list))
   {
-    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
     dt_metadata_t2 *metadata = (dt_metadata_t2 *)g_list_nth_data(_metadata_list, keyid);
-    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     char *t = g_strrstr(metadata->tagname, ".");
     if(t) return t + 1;
   }
@@ -249,10 +251,9 @@ const char *dt_metadata_get_key_by_subkey(const char *subkey)
 
   if(subkey)
   {
-    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
     for(GList *iter = _metadata_list; iter; iter = iter->next)
     {
-      dt_metadata_t2 *metadata = iter->data;
+      dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
       char *t = g_strrstr(metadata->tagname, ".");
       if(t && !g_strcmp0(t + 1, subkey))
       {
@@ -260,7 +261,6 @@ const char *dt_metadata_get_key_by_subkey(const char *subkey)
         break;
       }
     }
-    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   }
   return result;
 }
@@ -269,18 +269,23 @@ uint32_t dt_metadata_get_type(const uint32_t keyid)
 {
   uint32_t result = 0;
 
-  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = _metadata_list; iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = iter->data;
+    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
     if(metadata->key == keyid)
     {
       result = metadata->type;
       break;
     }
   }
-  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   return result;
+}
+
+const char *dt_metadata_get_tag_subkey(const char *tagname)
+{
+  const char *t = g_strrstr(tagname, ".");
+  if(t) return t + 1;
+  return NULL;
 }
 
 void dt_metadata_init()
@@ -883,21 +888,20 @@ void dt_metadata_clear(const GList *imgs, const gboolean undo_on)
 {
   // do not clear internal or hidden metadata
   GList *metadata = NULL;
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+  for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    if(dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
+    const dt_metadata_t2 *md = (dt_metadata_t2 *)iter->data;
+    if(md->type != DT_METADATA_TYPE_INTERNAL)
     {
-      const gchar *name = dt_metadata_get_name(i);
-      char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-      const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-      g_free(setting);
-      if(!hidden)
+      if(md->is_visible)
       {
         // caution: metadata is a simple list here
-        metadata = g_list_prepend(metadata, g_strdup_printf("%u", i));
+        metadata = g_list_prepend(metadata, g_strdup_printf("%u", md->key));
       }
     }
   }
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
   if(metadata)
   {

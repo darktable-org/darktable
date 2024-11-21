@@ -742,13 +742,6 @@ static gboolean _metadata_reset(GtkWidget *label,
   return TRUE;
 }
 
-static const char *_get_tag_subkey(const char *tagname)
-{
-  const char *t = g_strrstr(tagname, ".");
-  if(t) return t + 1;
-  return NULL;
-}
-
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = calloc(1, sizeof(dt_lib_metadata_t));
@@ -763,7 +756,7 @@ void gui_init(dt_lib_module_t *self)
   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = iter->data;
+    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
 
     if(metadata->type == DT_METADATA_TYPE_INTERNAL)
       continue;
@@ -796,7 +789,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_set_name(unchanged, "dt-metadata-multi");
     gtk_text_view_add_child_in_window(GTK_TEXT_VIEW(textview), unchanged, GTK_TEXT_WINDOW_WIDGET, 0, 0);
 
-    gchar *setting_name = g_strdup_printf("plugins/lighttable/metadata/%s_text_height", _get_tag_subkey(metadata->tagname));
+    gchar *setting_name = g_strdup_printf("plugins/lighttable/metadata/%s_text_height", dt_metadata_get_tag_subkey(metadata->tagname));
     GtkWidget *swindow = dt_ui_resize_wrap(GTK_WIDGET(textview), 100, setting_name);
     d->setting_names = g_list_append(d->setting_names, setting_name);
     g_object_set_data(G_OBJECT(swindow), "key", GINT_TO_POINTER(metadata->key));

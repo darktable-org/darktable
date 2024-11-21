@@ -582,10 +582,12 @@ static bool _exif_decode_xmp_data(dt_image_t *img,
     if(version == -1 || version > 0)
     {
       if(!exif_read) dt_metadata_clear(imgs, FALSE);
-      for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+
+      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+      for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
       {
-        const gchar *key = dt_metadata_get_key(i);
-        if(FIND_XMP_TAG(key))
+        dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+        if(FIND_XMP_TAG(metadata->tagname))
         {
           char *value = strdup(pos->toString().c_str());
           char *adr = value;
@@ -596,10 +598,11 @@ static bool _exif_decode_xmp_data(dt_image_t *img,
             while(*value != ' ' && *value) value++;
             while(*value == ' ') value++;
           }
-          dt_metadata_set_import(img->id, key, value);
+          dt_metadata_set_import(img->id, metadata->tagname, value);
           free(adr);
         }
       }
+      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     }
 
     // If XMP file(s) are found, read the rating from here.
@@ -2180,20 +2183,20 @@ void dt_exif_apply_default_metadata(dt_image_t *img)
   if(dt_conf_get_bool("ui_last/import_apply_metadata")
      && !(img->job_flags & DT_IMAGE_JOB_NO_METADATA))
   {
-    char *str;
+    gchar *str;
 
-    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+    for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
     {
-      if(dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
+      dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+
+      if(metadata->dt_default)
       {
-        const char *name = dt_metadata_get_name(i);
-        char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-        const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-        g_free(setting);
         // don't import hidden stuff
-        if(!hidden)
+        if(metadata->is_visible)
         {
-          setting = g_strdup_printf("ui_last/import_last_%s", name);
+          const char *name = dt_metadata_get_tag_subkey(metadata->tagname);
+          gchar *setting = g_strdup_printf("ui_last/import_last_%s", name);
           str = dt_conf_get_string(setting);
           if(str && str[0])
           {
@@ -2213,13 +2216,14 @@ void dt_exif_apply_default_metadata(dt_image_t *img)
               g_free(str);
               str = result;
             }
-            dt_metadata_set(img->id, dt_metadata_get_key(i), str, FALSE);
+            dt_metadata_set(img->id, metadata->tagname, str, FALSE);
             g_free(str);
           }
           g_free(setting);
         }
       }
     }
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
     str = dt_conf_get_string("ui_last/import_last_tags");
     if(dt_is_valid_imgid(img->id)
@@ -4794,22 +4798,23 @@ static void _set_xmp_dt_metadata(Exiv2::XmpData &xmpData,
                               "SELECT key, value FROM main.meta_data WHERE id = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int keyid = sqlite3_column_int(stmt, 0);
+    const dt_metadata_t2 *metadata = dt_get_metadata_by_keyid(keyid);
     if(export_flag
-       && (dt_metadata_get_type(keyid) != DT_METADATA_TYPE_INTERNAL))
+       && metadata
+       && metadata->type != DT_METADATA_TYPE_INTERNAL)
     {
-      const gchar *name = dt_metadata_get_name(keyid);
-      gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-      const uint32_t flag =  dt_conf_get_int(setting);
-      g_free(setting);
-      if(!(flag & (DT_METADATA_FLAG_PRIVATE | DT_METADATA_FLAG_HIDDEN)))
-        xmpData[dt_metadata_get_key(keyid)] = sqlite3_column_text(stmt, 1);
+      if(metadata->is_visible && !metadata->is_private)
+        xmpData[metadata->tagname] = sqlite3_column_text(stmt, 1);
     }
     else
-      xmpData[dt_metadata_get_key(keyid)] = sqlite3_column_text(stmt, 1);
+      xmpData[metadata->tagname] = sqlite3_column_text(stmt, 1);
   }
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);  
   sqlite3_finalize(stmt);
 
   // Color labels
