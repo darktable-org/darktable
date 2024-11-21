@@ -1607,7 +1607,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   {
     if(dt_conf_get_bool("run_crawler_on_start") && !darktable.gimp.mode)
     {
-      darktable_splash_screen_create(FALSE,TRUE); // force the splash screen for the crawl even if user-disabled
+      darktable_splash_screen_create(NULL, TRUE); // force the splash screen for the crawl even if user-disabled
       // scan for cases where the database and xmp files have different timestamps
       changed_xmp_files = dt_control_crawler_run();
     }
