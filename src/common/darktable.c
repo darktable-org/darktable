@@ -1814,15 +1814,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // init the gui part of views
     dt_view_manager_gui_init(darktable.view_manager);
 
-    // Save the default shortcuts
-    dt_shortcuts_save(".defaults", FALSE);
-
-    // Then load any shortcuts if available (wipe defaults first if requested)
-    dt_shortcuts_load(NULL, !dt_conf_get_bool("accel/load_defaults"));
-
-    // Save the shortcuts including defaults
-    dt_shortcuts_save(NULL, TRUE);
-
     // now that other initialization is complete, we can show the main window
     // we need to do this before Lua is started or we'll either get a hang, or
     // the module groups don't get set up correctly
@@ -1844,9 +1835,20 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   if(init_gui)
   {
-    // we have to call dt_ctl_switch_mode_to() here already to not run
-    // into a lua deadlock.  having another call later is ok
     dt_ctl_switch_mode_to("lighttable");
+
+    // Save the default shortcuts
+    dt_shortcuts_save(".defaults", FALSE);
+
+    // Then load any shortcuts if available (wipe defaults first if requested)
+    dt_shortcuts_load(NULL, !dt_conf_get_bool("accel/load_defaults"));
+
+    // Save the shortcuts including defaults
+    dt_shortcuts_save(NULL, TRUE);
+
+    // connect the shortcut dispatcher
+    g_signal_connect(dt_ui_main_window(darktable.gui->ui), "event",
+                     G_CALLBACK(dt_shortcut_dispatcher), NULL);
 
 #ifndef MAC_INTEGRATION
     // load image(s) specified on cmdline.  this has to happen after
