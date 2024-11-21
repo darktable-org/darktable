@@ -1362,14 +1362,14 @@
   <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/extended_pattern</name>
     <type>longstring</type>
-    <default>$(FILE_NAME).$(FILE_EXTENSION)$(NL)&lt;b&gt;$(EXIF.EXPOSURE)&lt;/b&gt; • &lt;b&gt;f/$(EXIF.APERTURE)&lt;/b&gt; • &lt;b&gt;$(EXIF.FOCAL.LENGTH)&lt;/b&gt;mm • &lt;b&gt;$(EXIF.ISO)&lt;/b&gt; ISO $(GPS.LOCATION.ICON) $(EXIF.FLASH.ICON) $(SIDECAR_TXT)</default>
+    <default>$(FILE_NAME).$(FILE_EXTENSION)$(NL)&lt;b&gt;$(EXIF.EXPOSURE)&lt;/b&gt; • &lt;b&gt;f/$(EXIF.APERTURE)&lt;/b&gt; • &lt;b&gt;$(EXIF.FOCAL.LENGTH)&lt;/b&gt;mm • ISO &lt;b&gt;$(EXIF.ISO)&lt;/b&gt; $(GPS.LOCATION.ICON) $(EXIF.FLASH.ICON) $(SIDECAR_TXT)</default>
     <shortdescription>pattern for the thumbnail extended overlay text</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/thumbnail_tooltip_pattern</name>
     <type>longstring</type>
-    <default>&lt;b&gt;$(FILE_NAME).$(FILE_EXTENSION)&lt;/b&gt;$(NL)$(EXIF.DATE.REGIONAL) $(EXIF.TIME.REGIONAL) $(GPS.LOCATION.ICON) $(EXIF.FLASH.ICON)$(NL)&lt;b&gt;$(EXIF.EXPOSURE)&lt;/b&gt; • &lt;b&gt;f/$(EXIF.APERTURE)&lt;/b&gt; • &lt;b&gt;$(EXIF.FOCAL.LENGTH)&lt;/b&gt;mm • &lt;b&gt;$(EXIF.ISO)&lt;/b&gt; ISO</default>
+    <default>&lt;b&gt;$(FILE_NAME).$(FILE_EXTENSION)&lt;/b&gt;$(NL)$(EXIF.DATE.REGIONAL) $(EXIF.TIME.REGIONAL) $(GPS.LOCATION.ICON) $(EXIF.FLASH.ICON)$(NL)&lt;b&gt;$(EXIF.EXPOSURE)&lt;/b&gt; • &lt;b&gt;f/$(EXIF.APERTURE)&lt;/b&gt; • &lt;b&gt;$(EXIF.FOCAL.LENGTH)&lt;/b&gt;mm • ISO &lt;b&gt;$(EXIF.ISO)&lt;/b&gt;</default>
     <shortdescription>pattern for the thumbnail tooltip (empty to disable)</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
   </dtconfig>
@@ -1431,7 +1431,7 @@
   <dtconfig prefs="darkroom" section="general">
     <name>plugins/darkroom/image_infos_pattern</name>
     <type>longstring</type>
-    <default>$(EXIF.EXPOSURE) • f/$(EXIF.APERTURE) • $(EXIF.FOCAL.LENGTH) mm • $(EXIF.ISO) ISO $(GPS.LOCATION.ICON) $(EXIF.FLASH.ICON)</default>
+    <default>$(EXIF.EXPOSURE) • f/$(EXIF.APERTURE) • $(EXIF.FOCAL.LENGTH) mm • ISO $(EXIF.ISO) $(GPS.LOCATION.ICON) $(EXIF.FLASH.ICON)</default>
     <shortdescription>pattern for the image information line</shortdescription>
     <longdescription>see manual for a list of the tags you can use.</longdescription>
   </dtconfig>
@@ -2247,13 +2247,13 @@
     <name>darkroom/ui/iso12464_border</name>
     <type min="1.0" max="5.0">float</type>
     <default>4.0</default>
-    <shortdescription>total width of border in iso 12646 mode (cm)</shortdescription>
+    <shortdescription>total width of border in ISO 12646 mode (cm)</shortdescription>
   </dtconfig>
   <dtconfig>
     <name>darkroom/ui/iso12464_ratio</name>
     <type min="0.1" max="0.9">float</type>
     <default>0.40</default>
-    <shortdescription>fraction of white border part in iso 12646 mode</shortdescription>
+    <shortdescription>fraction of white border part in ISO 12646 mode</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig prefs="darkroom" section="general">
@@ -2411,8 +2411,8 @@
     <name>plugins/darkroom/demosaic/fdc_xover_iso</name>
     <type>int</type>
     <default>1600</default>
-    <shortdescription>crossover iso for X-Trans fdc demosaicing</shortdescription>
-    <longdescription>up to, and including, this iso, X-Trans frequency domain chroma demosaicing uses the hybrid mode for determining chroma; for all higher iso values the pure fdc is used.</longdescription>
+    <shortdescription>crossover ISO for X-Trans FDC demosaicing</shortdescription>
+    <longdescription>up to, and including, this ISO, X-Trans frequency domain chroma demosaicing uses the hybrid mode for determining chroma; for all higher ISO values the pure FDC is used.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/denoiseprofile/show_compute_variance_mode</name>
