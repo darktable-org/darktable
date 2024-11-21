@@ -50,7 +50,8 @@ static void _remove_preset_flag(const dt_imgid_t imgid)
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
   // clear flag
-  image->flags &= ~DT_IMAGE_AUTO_PRESETS_APPLIED;
+  if(image)
+    image->flags &= ~DT_IMAGE_AUTO_PRESETS_APPLIED;
 
   // write through to sql+xmp
   dt_image_cache_write_release_info(darktable.image_cache, image,

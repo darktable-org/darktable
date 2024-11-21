@@ -47,7 +47,7 @@ static void _insert_in_list(GList **list,
   const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   if(image)
   {
-    const int img_group_id = image->group_id;
+    const dt_imgid_t img_group_id = image->group_id;
     dt_image_cache_read_release(darktable.image_cache, image);
 
     if(!darktable.gui

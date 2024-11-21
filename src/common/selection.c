@@ -31,10 +31,10 @@ typedef struct dt_selection_t
 
   /* this stores the last single clicked image id indicating
      the start of a selection range */
-  int32_t last_single_id;
+  dt_imgid_t last_single_id;
 } dt_selection_t;
 
-const dt_collection_t *dt_selection_get_collection(struct dt_selection_t *selection)
+const dt_collection_t *dt_selection_get_collection(dt_selection_t *selection)
 {
   return selection->collection;
 }
@@ -52,11 +52,12 @@ static void _selection_raise_signal()
 static void _selection_update_collection(gpointer instance,
                                          const dt_collection_change_t query_change,
                                          const dt_collection_properties_t changed_property,
-                                         gpointer imgs, int next,
+                                         gpointer imgs,
+                                         int next,
                                          gpointer user_data);
 
 static void _selection_select(dt_selection_t *selection,
-                              dt_imgid_t imgid)
+                              const dt_imgid_t imgid)
 {
   if(dt_is_valid_imgid(imgid))
   {
