@@ -321,30 +321,20 @@ void dt_metadata_init()
     metadata->dt_default = dt_default;
     metadata->display_order = display_order;
     _metadata_list = g_list_append(_metadata_list, metadata);
+
+    const char *metadata_name = dt_metadata_get_tag_subkey(metadata->tagname);
+    char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", metadata_name);
+    if(!dt_conf_key_exists(setting))
+    {
+      // per default should be imported - ignored if "write_sidecar_files" set
+      uint32_t flag = DT_METADATA_FLAG_IMPORTED;
+      dt_conf_set_int(setting, flag);
+    }
+    g_free(setting);
   }
   dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
   sqlite3_finalize(stmt);
-
-
-  // for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
-  // {
-  //   const int type = dt_metadata_get_type(i);
-  //   const char *name = (gchar *)dt_metadata_get_name(i);
-  //   char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-  //   if(!dt_conf_key_exists(setting))
-  //   {
-  //     // per default should be imported - ignored if "write_sidecar_files" set
-  //     uint32_t flag = DT_METADATA_FLAG_IMPORTED;
-  //     if(type == DT_METADATA_TYPE_OPTIONAL)
-  //     {
-  //       // per default this one should be hidden
-  //       flag |= DT_METADATA_FLAG_HIDDEN;
-  //     }
-  //     dt_conf_set_int(setting, flag);
-  //   }
-  //   g_free(setting);
-  // }
 }
 
 typedef struct dt_undo_metadata_t
