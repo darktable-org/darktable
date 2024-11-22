@@ -2657,6 +2657,7 @@ static void _apply_preferences(const char *pref,
   _set_default_preferences(self);
 
   // set the presets
+  // TODO: splitting on "," fails if the user has entered a metadata value with a comma!
   GList *prefs = dt_util_str_to_glist(",", pref);
   for(GList *iter = prefs; iter; iter = g_list_next(iter))
   {
@@ -2685,8 +2686,6 @@ static void _apply_preferences(const char *pref,
     else if(g_strcmp0(metadata_name, "tags"))
     {
       // metadata
-      const int j = dt_metadata_get_keyid_by_name(metadata_name);
-      if(j == -1) continue;
       gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag",
                                        metadata_name);
       const uint32_t flag = (dt_conf_get_int(setting) & ~DT_METADATA_FLAG_IMPORTED) |

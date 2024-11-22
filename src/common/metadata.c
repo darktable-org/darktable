@@ -146,26 +146,6 @@ uint32_t dt_metadata_get_keyid_by_display_order(const uint32_t order)
   return result;
 }
 
-uint32_t dt_metadata_get_keyid_by_name(const char* name)
-{
-  uint32_t result = -1;
-
-  if(!name) return -1;
-  uint32_t i = 0;
-
-  for(GList *iter = _metadata_list; iter; iter = iter->next)
-  {
-    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
-    if(strncmp(name, metadata->name, strlen(metadata->name)) == 0)
-    {
-      result = i;
-      break;
-    }
-    i++;
-  }
-  return result;
-}
-
 uint32_t dt_metadata_get_type_by_display_order(const uint32_t order)
 {
   uint32_t result = 0;
