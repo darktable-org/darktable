@@ -21,6 +21,7 @@ typedef struct dt_import_metadata_t
   GtkWidget *box;   // widget where to put the metadata widgets
   GtkWidget *apply_metadata;
   GtkWidget *grid;
+  int num_grid_rows;
   GtkListStore *m_model;
   GtkListStore *t_model;
 } dt_import_metadata_t;
