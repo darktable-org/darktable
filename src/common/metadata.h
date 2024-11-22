@@ -87,10 +87,10 @@ void dt_metadata_sort_list();
 unsigned int dt_metadata_get_nb_user_metadata();
 
 /** return the metadata by keyid */
-const dt_metadata_t2 *dt_get_metadata_by_keyid(const uint32_t keyid);
+const dt_metadata_t2 *dt_metadata_get_metadata_by_keyid(const uint32_t keyid);
 
 /** return the metadata by tagname */
-const dt_metadata_t2 *dt_get_metadata_by_tagname(const char *tagname);
+const dt_metadata_t2 *dt_metadata_get_metadata_by_tagname(const char *tagname);
 
 /** return the metadata key by display order */
 const char *dt_metadata_get_name_by_display_order(const uint32_t order);

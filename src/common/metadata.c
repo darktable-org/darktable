@@ -84,7 +84,7 @@ unsigned int dt_metadata_get_nb_user_metadata()
   return nb;
 }
 
-const dt_metadata_t2 *dt_get_metadata_by_keyid(const uint32_t keyid)
+const dt_metadata_t2 *dt_metadata_get_metadata_by_keyid(const uint32_t keyid)
 {
   for(GList *iter = _metadata_list; iter; iter = iter->next)
   {
@@ -95,7 +95,7 @@ const dt_metadata_t2 *dt_get_metadata_by_keyid(const uint32_t keyid)
   return NULL;
 }
 
-const dt_metadata_t2 *dt_get_metadata_by_tagname(const char *tagname)
+const dt_metadata_t2 *dt_metadata_get_metadata_by_tagname(const char *tagname)
 {
   for(GList *iter = _metadata_list; iter; iter = iter->next)
   {
@@ -804,14 +804,14 @@ void dt_metadata_set_import(const dt_imgid_t imgid, const char *key, const char 
 {
   if(!key || !dt_is_valid_imgid(imgid)) return;
 
-  const int keyid = dt_metadata_get_keyid(key);
+  const dt_metadata_t2 *md = dt_metadata_get_metadata_by_tagname(key);
 
-  if(keyid != -1) // known key
+  if(md) // known key
   {
     gboolean imported = (dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER);
-    if(!imported && dt_metadata_get_type(keyid) != DT_METADATA_TYPE_INTERNAL)
+    if(!imported && md->type != DT_METADATA_TYPE_INTERNAL)
     {
-      const gchar *name = dt_metadata_get_name(keyid);
+      const gchar *name = dt_metadata_get_tag_subkey(md->tagname);
       char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
       imported = dt_conf_get_int(setting) & DT_METADATA_FLAG_IMPORTED;
       g_free(setting);
@@ -824,7 +824,7 @@ void dt_metadata_set_import(const dt_imgid_t imgid, const char *key, const char 
       {
         GList *undo = NULL;
 
-        const gchar *ckey = g_strdup_printf("%d", keyid);
+        const gchar *ckey = g_strdup_printf("%d", md->key);
         const gchar *cvalue = _cleanup_metadata_value(value);
         GList *metadata = NULL;
         metadata = g_list_append(metadata, (gpointer)ckey);

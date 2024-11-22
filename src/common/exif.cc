@@ -776,27 +776,37 @@ static bool _exif_decode_iptc_data(dt_image_t *img,
     if(FIND_IPTC_TAG("Iptc.Application2.Caption"))
     {
       std::string str = pos->print(/*&iptcData*/);
+      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
       dt_metadata_set_import(img->id, "Xmp.dc.description", str.c_str());
+      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     }
     if(FIND_IPTC_TAG("Iptc.Application2.Copyright"))
     {
       std::string str = pos->print(/*&iptcData*/);
+      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
       dt_metadata_set_import(img->id, "Xmp.dc.rights", str.c_str());
+      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     }
     if(FIND_IPTC_TAG("Iptc.Application2.Byline"))
     {
       std::string str = pos->print(/*&iptcData*/);
+      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
       dt_metadata_set_import(img->id, "Xmp.dc.creator", str.c_str());
+      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     }
     else if(FIND_IPTC_TAG("Iptc.Application2.Writer"))
     {
       std::string str = pos->print(/*&iptcData*/);
+      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
       dt_metadata_set_import(img->id, "Xmp.dc.creator", str.c_str());
+      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     }
     else if(FIND_IPTC_TAG("Iptc.Application2.Contact"))
     {
       std::string str = pos->print(/*&iptcData*/);
+      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
       dt_metadata_set_import(img->id, "Xmp.dc.creator", str.c_str());
+      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     }
     if(FIND_IPTC_TAG("Iptc.Application2.DateCreated"))
     {
@@ -1765,12 +1775,16 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if(FIND_EXIF_TAG("Exif.Image.Artist"))
     {
       std::string str = pos->print(&exifData);
+      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
       dt_metadata_set_import(img->id, "Xmp.dc.creator", str.c_str());
+      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     }
     else if(FIND_EXIF_TAG("Exif.Canon.OwnerName"))
     {
       std::string str = pos->print(&exifData);
+      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
       dt_metadata_set_import(img->id, "Xmp.dc.creator", str.c_str());
+      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     }
 
     // FIXME: Should the UserComment go into the description? Or do we
@@ -1781,18 +1795,26 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       Exiv2::CommentValue value(str);
       std::string str2 = value.comment();
       if(str2 != "binary comment")
+      {
+        dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
         dt_metadata_set_import(img->id, "Xmp.dc.description", str2.c_str());
+        dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+      }
     }
     else if(FIND_EXIF_TAG("Exif.Image.ImageDescription"))
     {
       std::string str = pos->print(&exifData);
+      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
       dt_metadata_set_import(img->id, "Xmp.dc.description", str.c_str());
+      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     }
 
     if(FIND_EXIF_TAG("Exif.Image.Copyright"))
     {
       std::string str = pos->print(&exifData);
+      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
       dt_metadata_set_import(img->id, "Xmp.dc.rights", str.c_str());
+      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     }
 
     if(!dt_conf_get_bool("ui_last/ignore_exif_rating"))
@@ -2190,37 +2212,34 @@ void dt_exif_apply_default_metadata(dt_image_t *img)
     {
       dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
 
-      if(metadata->dt_default)
+      // don't import hidden stuff
+      if(metadata->is_visible)
       {
-        // don't import hidden stuff
-        if(metadata->is_visible)
+        const char *name = dt_metadata_get_tag_subkey(metadata->tagname);
+        gchar *setting = g_strdup_printf("ui_last/import_last_%s", name);
+        str = dt_conf_get_string(setting);
+        if(str && str[0])
         {
-          const char *name = dt_metadata_get_tag_subkey(metadata->tagname);
-          gchar *setting = g_strdup_printf("ui_last/import_last_%s", name);
-          str = dt_conf_get_string(setting);
-          if(str && str[0])
+          // calculated metadata
+          dt_variables_params_t *params;
+          dt_variables_params_init(&params);
+          params->filename = img->filename;
+          params->jobcode = "import";
+          params->sequence = 0;
+          params->imgid = img->id;
+          params->img = (void *)img;
+          // at this time only Exif info is available
+          gchar *result = dt_variables_expand(params, str, FALSE);
+          dt_variables_params_destroy(params);
+          if(result && result[0])
           {
-            // calculated metadata
-            dt_variables_params_t *params;
-            dt_variables_params_init(&params);
-            params->filename = img->filename;
-            params->jobcode = "import";
-            params->sequence = 0;
-            params->imgid = img->id;
-            params->img = (void *)img;
-            // at this time only Exif info is available
-            gchar *result = dt_variables_expand(params, str, FALSE);
-            dt_variables_params_destroy(params);
-            if(result && result[0])
-            {
-              g_free(str);
-              str = result;
-            }
-            dt_metadata_set(img->id, metadata->tagname, str, FALSE);
             g_free(str);
+            str = result;
           }
-          g_free(setting);
+          dt_metadata_set(img->id, metadata->tagname, str, FALSE);
+          g_free(str);
         }
+        g_free(setting);
       }
     }
     dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
@@ -4803,7 +4822,7 @@ static void _set_xmp_dt_metadata(Exiv2::XmpData &xmpData,
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int keyid = sqlite3_column_int(stmt, 0);
-    const dt_metadata_t2 *metadata = dt_get_metadata_by_keyid(keyid);
+    const dt_metadata_t2 *metadata = dt_metadata_get_metadata_by_keyid(keyid);
     if(export_flag
        && metadata
        && metadata->type != DT_METADATA_TYPE_INTERNAL)
