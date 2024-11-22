@@ -1618,46 +1618,6 @@ static float _curve_log10(const float inval,
     return (expf(M_LN10 * inval * 3.0f) - 1.0f) / 999.0f;
 }
 
-GtkWidget *dt_bauhaus_slider_new(dt_iop_module_t *self)
-{
-  return dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.1, 0.5, 3);
-}
-
-GtkWidget *dt_bauhaus_slider_new_with_range(dt_iop_module_t *self,
-                                            const float min,
-                                            const float max,
-                                            const float step,
-                                            const float defval,
-                                            const int digits)
-{
-  return dt_bauhaus_slider_new_with_range_and_feedback
-    (self, min, max, step, defval, digits, 1);
-}
-
-GtkWidget *dt_bauhaus_slider_new_action(dt_action_t *self,
-                                        const float min,
-                                        const float max,
-                                        const float step,
-                                        const float defval,
-                                        const int digits)
-{
-  return dt_bauhaus_slider_new_with_range((dt_iop_module_t *)self,
-                                          min, max, step, defval, digits);
-}
-
-GtkWidget *dt_bauhaus_slider_new_with_range_and_feedback(dt_iop_module_t *self,
-                                                         const float min,
-                                                         const float max,
-                                                         const float step,
-                                                         const float defval,
-                                                         const int digits,
-                                                         const int feedback)
-{
-  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(g_object_new(DT_BAUHAUS_WIDGET_TYPE, NULL));
-  return dt_bauhaus_slider_from_widget(w, self, min, max, step, defval, digits, feedback);
-}
-
-
 GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* w,
                                          dt_iop_module_t *self,
                                          const float min,
