@@ -663,7 +663,7 @@ void dt_control_log(const char *msg, ...)
 
   const int old_idx = (dc->log_pos - 1) & (DT_CTL_LOG_SIZE-1);
   const gboolean timeout = dc->log_message_timeout_id;
-  if(timeout || g_strcmp0(escaped_msg, dc->log_message[old_idx]))
+  if(!timeout || g_strcmp0(escaped_msg, dc->log_message[old_idx]))
   {
     g_strlcpy(dc->log_message[dc->log_pos & (DT_CTL_LOG_SIZE-1)], escaped_msg, DT_CTL_LOG_MSG_SIZE);
     dc->log_pos++;
