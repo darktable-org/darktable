@@ -1755,18 +1755,18 @@ static gboolean _eventbox_scroll_callback(GtkWidget *widget,
     // bubble to adjusting the overall widget size
     gtk_widget_event(d->scope_draw, (GdkEvent*)event);
   }
+  else if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
+  {
+    gboolean black = d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
+    if(black) { event->delta_x *= -1; event->delta_y *= -1; }
+    dt_dev_exposure_handle_event((GdkEvent *)event, black);
+  }
   // note we are using unit rather than smooth scroll events, as
   // exposure changes can get laggy if handling a multitude of smooth
   // scroll events
   else if(dt_gui_get_scroll_unit_delta(event, &delta_y) && delta_y != 0)
   {
-    if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
-    {
-      gboolean black = d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
-      if(black) { event->delta_x *= -1; event->delta_y *= -1; }
-      dt_dev_exposure_handle_event((GdkEvent *)event, black);
-    }
-    else if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
+    if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     {
       if(dt_modifier_is(event->state, GDK_SHIFT_MASK)) // SHIFT+SCROLL
       {
