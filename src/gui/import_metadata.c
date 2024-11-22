@@ -532,6 +532,7 @@ void dt_import_metadata_update(dt_import_metadata_t *metadata)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), flag & DT_METADATA_FLAG_IMPORTED);
     g_signal_handlers_unblock_by_func(w, _import_metadata_toggled, metadata);
     g_free(setting);
+    i++;
   }
   dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 

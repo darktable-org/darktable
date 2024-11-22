@@ -98,9 +98,6 @@ const char *dt_metadata_get_name_by_display_order(const uint32_t order);
 /** return the metadata keyid by display order */
 uint32_t dt_metadata_get_keyid_by_display_order(const uint32_t order);
 
-/** return the metadata keyid by name */
-uint32_t dt_metadata_get_keyid_by_name(const char* name);
-
 /** return the metadata type by display order */
 uint32_t dt_metadata_get_type_by_display_order(const uint32_t order);
 
