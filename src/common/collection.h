@@ -99,7 +99,7 @@ typedef enum dt_collection_properties_t
 
   //  keep DT_COLLECTION_PROP_GROUPING to avoid breaking all presets based on
   //  filters defined after GROUPING here.
-  DT_COLLECTION_PROP_GROUPING = DT_COLLECTION_PROP_METADATA + 1000, //+ DT_METADATA_NUMBER,
+  DT_COLLECTION_PROP_GROUPING = DT_COLLECTION_PROP_METADATA + 1000,
   DT_COLLECTION_PROP_LOCAL_COPY,
 
   DT_COLLECTION_PROP_HISTORY,
