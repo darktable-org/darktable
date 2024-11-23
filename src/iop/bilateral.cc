@@ -48,7 +48,7 @@ extern "C" {
  * as c++ code, under new bsd license.
  */
 
-#define MAX_DIRECT_STAMP_RADIUS 6.0f
+#define MAX_DIRECT_STAMP_RADIUS 6
 
 DT_MODULE_INTROSPECTION(1, dt_iop_bilateral_params_t)
 
@@ -165,13 +165,13 @@ void process(dt_iop_module_t *self,
   }
 
   // if rad <= 6 use naive version!
-  const int rad = (int)(3.0f * fmaxf(sigma[0], sigma[1]) + 1.0f);
-  if(rad <= MAX_DIRECT_STAMP_RADIUS
-     && (piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL))
+  const int prad = (int)(3.0f * fmaxf(sigma[0], sigma[1]) + 1.0f);
+  const int rad = MIN(prad, MIN(roi_out->width, roi_out->height) - 2 * prad);
+  const gboolean thumb = piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL;
+  if(rad < 1 || (rad <= MAX_DIRECT_STAMP_RADIUS && thumb))
   {
     // no use denoising the thumbnail. takes ages without permutohedral
-    dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid,
-                              roi_out->width, roi_out->height, 4);
+    dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid, roi_out->width, roi_out->height, 4);
   }
   else if(rad <= MAX_DIRECT_STAMP_RADIUS)
   {
@@ -333,7 +333,8 @@ void tiling_callback(dt_iop_module_t *self,
   dt_iop_bilateral_data_t *data = (dt_iop_bilateral_data_t *)piece->data;
   float sigma[5];
   _compute_sigmas(sigma, data, roi_in->scale, piece->iscale);
-  const int rad = (int)(3.0f * fmaxf(sigma[0], sigma[1]) + 1.0f);
+  const int prad = (int)(3.0f * fmaxf(sigma[0], sigma[1]) + 1.0f);
+  const int rad = MIN(prad, MIN(roi_out->width, roi_out->height) - 2 * prad);
   if(rad <= MAX_DIRECT_STAMP_RADIUS)
     tiling->factor = 2.0f;  // direct stamp, no intermediate buffers used
   else
