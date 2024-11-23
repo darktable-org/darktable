@@ -2388,7 +2388,7 @@ static void _list_view(dt_lib_collect_rule_t *dr)
          || property == DT_COLLECTION_PROP_ORDER
          || property == DT_COLLECTION_PROP_RATING
          || (property >= DT_COLLECTION_PROP_METADATA
-             && property < DT_COLLECTION_PROP_METADATA + 1000 /*DT_METADATA_NUMBER*/)))
+             && property < DT_COLLECTION_PROP_METADATA + 1000)))
   {
     gchar *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
     if(g_str_has_suffix(needle, "%"))
@@ -3189,7 +3189,7 @@ static void metadata_changed(gpointer instance,
   const int prop = _combo_get_active_collection(d->rule[d->active_rule].combo);
   if(type == DT_METADATA_SIGNAL_HIDDEN
      || (prop >= DT_COLLECTION_PROP_METADATA
-         && prop < DT_COLLECTION_PROP_METADATA + 1000 /*DT_METADATA_NUMBER*/))
+         && prop < DT_COLLECTION_PROP_METADATA + 1000))
   {
     dt_collection_update_query(darktable.collection,
                                DT_COLLECTION_CHANGE_RELOAD,
@@ -3345,12 +3345,10 @@ static void _populate_collect_combo(GtkWidget *w)
     {
       dt_metadata_t2 *metadata = iter->data;
       if(metadata->type != DT_METADATA_TYPE_INTERNAL && metadata->is_visible)
-      {
         dt_bauhaus_combobox_add_full(w, metadata->name,
                                     DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                     GUINT_TO_POINTER(DT_COLLECTION_PROP_METADATA + metadata->key + 1),
                                     NULL, TRUE);
-      }
     }
     dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
