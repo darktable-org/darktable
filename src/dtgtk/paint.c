@@ -3449,6 +3449,22 @@ void dtgtk_cairo_paint_filtering_menu(cairo_t *cr, gint x, gint y, gint w, gint 
   FINISH
 }
 
+void dtgtk_cairo_paint_snapshots_restore(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+      cairo_move_to(cr, 0.5, 0.05);
+      cairo_line_to(cr, 0.5, 0.95);
+      cairo_move_to(cr, 0.3, 0.6);
+      cairo_line_to(cr, 0.5, 0.95);
+      cairo_line_to(cr, 0.7, 0.6);
+      cairo_move_to(cr, 0.2, 0.95);
+      cairo_line_to(cr, 0.8, 0.95);
+      cairo_stroke(cr);
+
+  FINISH
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
