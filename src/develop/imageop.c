@@ -2310,6 +2310,15 @@ static gboolean _presets_scroll_callback(GtkWidget *widget,
   return TRUE;
 }
 
+gboolean dt_iop_has_focus(dt_iop_module_t *module)
+{
+  return module
+        && module->dev
+        && module->dev->gui_attached
+        && module == module->dev->gui_module
+        && dt_dev_modulegroups_test_activated(darktable.develop);
+}
+
 void dt_iop_request_focus(dt_iop_module_t *module)
 {
   dt_develop_t *dev = darktable.develop;

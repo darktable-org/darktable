@@ -412,6 +412,8 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
 
 /** requests the focus for this plugin (to draw overlays over the center image) */
 void dt_iop_request_focus(dt_iop_module_t *module);
+/** returns TRUE if tested module has focus */
+gboolean dt_iop_has_focus(dt_iop_module_t *module);
 /** allocate and load default settings from introspection. */
 void dt_iop_default_init(dt_iop_module_t *module);
 /** loads default settings from database. */
