@@ -83,9 +83,6 @@ GList *dt_metadata_get_list();
 /** sort the list by display_order */
 void dt_metadata_sort_list();
 
-/** return the number of user metadata (!= DT_METADATA_TYPE_INTERNAL) */
-unsigned int dt_metadata_get_nb_user_metadata();
-
 /** return the metadata by keyid */
 const dt_metadata_t2 *dt_metadata_get_metadata_by_keyid(const uint32_t keyid);
 
@@ -109,9 +106,6 @@ uint32_t dt_metadata_get_keyid(const char* key);
 
 /** return the key of the metadata keyid */
 const char *dt_metadata_get_key(const uint32_t keyid);
-
-/** return the metadata subeky of the metadata keyid */
-const char *dt_metadata_get_subkey(const uint32_t keyid);
 
 /** return the key of the metadata subkey */
 const char *dt_metadata_get_key_by_subkey(const char *subkey);
