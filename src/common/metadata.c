@@ -72,18 +72,6 @@ void dt_metadata_sort_list()
   _metadata_list = g_list_sort(_metadata_list, _compare_display_order);
 }
 
-unsigned int dt_metadata_get_nb_user_metadata()
-{
-  unsigned int nb = 0;
-  for(GList *iter = _metadata_list; iter; iter = iter->next)
-  {
-    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
-    if(metadata->type != DT_METADATA_TYPE_INTERNAL)
-      nb++;
-  }
-  return nb;
-}
-
 const dt_metadata_t2 *dt_metadata_get_metadata_by_keyid(const uint32_t keyid)
 {
   for(GList *iter = _metadata_list; iter; iter = iter->next)
@@ -212,17 +200,6 @@ const char *dt_metadata_get_key(const uint32_t keyid)
     }
   }
   return result;
-}
-
-const char *dt_metadata_get_subkey(const uint32_t keyid)
-{
-  if(keyid < g_list_length(_metadata_list))
-  {
-    dt_metadata_t2 *metadata = (dt_metadata_t2 *)g_list_nth_data(_metadata_list, keyid);
-    char *t = g_strrstr(metadata->tagname, ".");
-    if(t) return t + 1;
-  }
-  return NULL;
 }
 
 const char *dt_metadata_get_key_by_subkey(const char *subkey)
