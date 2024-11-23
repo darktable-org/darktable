@@ -657,22 +657,7 @@ const char *dt_collection_name_untranslated(const dt_collection_properties_t pro
     case DT_COLLECTION_PROP_LAST:
       return NULL;
     default:
-    {
-      if(prop >= DT_COLLECTION_PROP_METADATA
-         && prop < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)
-      {
-        const int i = prop - DT_COLLECTION_PROP_METADATA;
-        const int type = dt_metadata_get_type_by_display_order(i);
-        if(type != DT_METADATA_TYPE_INTERNAL)
-        {
-          char *name = (gchar *)dt_metadata_get_name_by_display_order(i);
-          char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-          const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-          free(setting);
-          if(!hidden) col_name = name;
-        }
-      }
-    }
+      return NULL;
   }
   return col_name;
 }
@@ -2263,11 +2248,10 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
     default:
       {
-        if(property >= DT_COLLECTION_PROP_METADATA
-           && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)
+        if(property >= DT_COLLECTION_PROP_METADATA && property < DT_COLLECTION_PROP_METADATA + 1000)
         {
-          const int keyid =
-            dt_metadata_get_keyid_by_display_order(property - DT_COLLECTION_PROP_METADATA);
+          // metadata
+          const int keyid = property - DT_COLLECTION_PROP_METADATA;
           if(strcmp(escaped_text, _("not defined")) != 0)
             // clang-format off
             query = g_strdup_printf

@@ -2192,35 +2192,26 @@ static void _list_view(dt_lib_collect_rule_t *dr)
         break;
 
       default:
-        if(property >= DT_COLLECTION_PROP_METADATA
-           && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)
+        if(property >= DT_COLLECTION_PROP_METADATA && property < DT_COLLECTION_PROP_METADATA + 1000)
         {
-          const int keyid = dt_metadata_get_keyid_by_display_order
-            (property - DT_COLLECTION_PROP_METADATA);
-          const char *name = (gchar *)dt_metadata_get_name(keyid);
-          char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-          const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-          g_free(setting);
-          if(!hidden)
-          {
-            // clang-format off
-            snprintf(query, sizeof(query),
-                     "SELECT"
-                     " CASE WHEN value IS NULL THEN '%s' ELSE value END AS value,"
-                     " 1, COUNT(*) AS count,"
-                     " CASE WHEN value IS NULL THEN 0 ELSE 1 END AS force_order"
-                     " FROM main.images AS mi"
-                     " LEFT JOIN (SELECT id AS meta_data_id, value"
-                     "            FROM main.meta_data"
-                     "            WHERE key = %d)"
-                     "  ON id = meta_data_id"
-                     " WHERE %s"
-                     " GROUP BY lower(value)"
-                     " ORDER BY force_order ASC, lower(value) %s",
-                     _("not defined"), keyid, where_ext,
-                     sort_descending ? "DESC" : "ASC");
-            // clang-format on
-          }
+          const int keyid = property - DT_COLLECTION_PROP_METADATA;
+          // clang-format off
+          snprintf(query, sizeof(query),
+                    "SELECT"
+                    " CASE WHEN value IS NULL THEN '%s' ELSE value END AS value,"
+                    " 1, COUNT(*) AS count,"
+                    " CASE WHEN value IS NULL THEN 0 ELSE 1 END AS force_order"
+                    " FROM main.images AS mi"
+                    " LEFT JOIN (SELECT id AS meta_data_id, value"
+                    "            FROM main.meta_data"
+                    "            WHERE key = %d)"
+                    "  ON id = meta_data_id"
+                    " WHERE %s"
+                    " GROUP BY lower(value)"
+                    " ORDER BY force_order ASC, lower(value) %s",
+                    _("not defined"), keyid, where_ext,
+                    sort_descending ? "DESC" : "ASC");
+          // clang-format on
         }
         else
         // filmroll
@@ -2397,7 +2388,7 @@ static void _list_view(dt_lib_collect_rule_t *dr)
          || property == DT_COLLECTION_PROP_ORDER
          || property == DT_COLLECTION_PROP_RATING
          || (property >= DT_COLLECTION_PROP_METADATA
-             && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)))
+             && property < DT_COLLECTION_PROP_METADATA + 1000 /*DT_METADATA_NUMBER*/)))
   {
     gchar *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
     if(g_str_has_suffix(needle, "%"))
@@ -3198,7 +3189,7 @@ static void metadata_changed(gpointer instance,
   const int prop = _combo_get_active_collection(d->rule[d->active_rule].combo);
   if(type == DT_METADATA_SIGNAL_HIDDEN
      || (prop >= DT_COLLECTION_PROP_METADATA
-         && prop < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER))
+         && prop < DT_COLLECTION_PROP_METADATA + 1000 /*DT_METADATA_NUMBER*/))
   {
     dt_collection_update_query(darktable.collection,
                                DT_COLLECTION_CHANGE_RELOAD,
@@ -3345,23 +3336,23 @@ static void _populate_collect_combo(GtkWidget *w)
 
     dt_bauhaus_combobox_add_section(w, _("metadata"));
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TAG);
-
-    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
-    {
-      const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
-      const gchar *name = dt_metadata_get_name(keyid);
-      gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-      const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-      g_free(setting);
-      const int meta_type = dt_metadata_get_type(keyid);
-      if(meta_type != DT_METADATA_TYPE_INTERNAL && !hidden)
-      {
-        ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + i);
-      }
-    }
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GEOTAGGING);
+
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+    for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
+    {
+      dt_metadata_t2 *metadata = iter->data;
+      if(metadata->type != DT_METADATA_TYPE_INTERNAL && metadata->is_visible)
+      {
+        dt_bauhaus_combobox_add_full(w, metadata->name,
+                                    DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                    GUINT_TO_POINTER(DT_COLLECTION_PROP_METADATA + metadata->key + 1),
+                                    NULL, TRUE);
+      }
+    }
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
     dt_bauhaus_combobox_add_section(w, _("times"));
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_DAY);
@@ -4030,19 +4021,14 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_METERING_MODE);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_GROUP_ID);
 
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+  for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    if(dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
-    {
-      const char *name = dt_metadata_get_name(i);
-      gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-      const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-      g_free(setting);
-
-      if(!hidden)
-        luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_METADATA + i);
-    }
+    dt_metadata_t2 *metadata = iter->data;
+    if(metadata->type != DT_METADATA_TYPE_INTERNAL && metadata->is_visible)
+      luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_METADATA + metadata->key);
   }
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_LENS);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_FOCAL_LENGTH);
