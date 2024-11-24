@@ -3345,6 +3345,7 @@ static void _populate_collect_combo(GtkWidget *w)
     {
       dt_metadata_t2 *metadata = iter->data;
       if(metadata->type != DT_METADATA_TYPE_INTERNAL && metadata->is_visible)
+        // metadata name is user defined, so no localization here
         dt_bauhaus_combobox_add_full(w, metadata->name,
                                     DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                     GUINT_TO_POINTER(DT_COLLECTION_PROP_METADATA + metadata->key + 1),

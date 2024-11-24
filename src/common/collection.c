@@ -337,15 +337,15 @@ int dt_collection_update(const dt_collection_t *collection)
     {
       dt_util_str_cat
         (&selq_post,
-        " LEFT OUTER JOIN main.meta_data AS mt ON sel.id = mt.id AND mt.key = %d",
-        DT_METADATA_XMP_DC_TITLE);
+        " LEFT OUTER JOIN main.meta_data AS mt ON sel.id = mt.id"
+         " AND mt.key = (SELECT key FROM data.meta_data WHERE tagname = 'Xmp.dc.title')");
     }
     if(collection->params.sorts[DT_COLLECTION_SORT_DESCRIPTION])
     {
       dt_util_str_cat
         (&selq_post,
-        " LEFT OUTER JOIN main.meta_data AS md ON sel.id = md.id AND md.key = %d",
-        DT_METADATA_XMP_DC_DESCRIPTION);
+        " LEFT OUTER JOIN main.meta_data AS md ON sel.id = md.id"
+        " AND md.key = (SELECT key FROM data.meta_data WHERE tagname = 'Xmp.dc.description')");
     }
   }
 

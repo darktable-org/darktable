@@ -981,11 +981,26 @@ void *legacy_params(dt_lib_module_t *self,
   }
   else if(old_version == 4)
   {
-    //<tagname>\0<tagvalue>\0<tagname>\0</tagvalue>\0 ...
-    const char **metadata_tagnames = calloc(DT_METADATA_NUMBER, sizeof(char *));
-    size_t *metadata_tagname_len = calloc(DT_METADATA_NUMBER, sizeof(size_t));
-    const char **metadata_texts = calloc(DT_METADATA_NUMBER, sizeof(char *));
-    size_t *metadata_len = calloc(DT_METADATA_NUMBER, sizeof(size_t));
+    enum dt_metadata_v4_t
+    {
+      DT_METADATA_XMP_DC_CREATOR_V4,
+      DT_METADATA_XMP_DC_PUBLISHER_V4,
+      DT_METADATA_XMP_DC_TITLE_V4,
+      DT_METADATA_XMP_DC_DESCRIPTION_V4,
+      DT_METADATA_XMP_DC_RIGHTS_V4,
+      DT_METADATA_XMP_ACDSEE_NOTES_V4,
+      DT_METADATA_XMP_VERSION_NAME_V4,
+      DT_METADATA_XMP_IMAGE_ID_V4,
+      DT_METADATA_XMP_PRESERVED_FILENAME_V4,
+      DT_METADATA_NUMBER_V4
+    };
+
+    // new format:
+    // <tagname>\0<tagvalue>\0<tagname>\0</tagvalue>\0 ...
+    const char **metadata_tagnames = calloc(DT_METADATA_NUMBER_V4, sizeof(char *));
+    size_t *metadata_tagname_len = calloc(DT_METADATA_NUMBER_V4, sizeof(size_t));
+    const char **metadata_texts = calloc(DT_METADATA_NUMBER_V4, sizeof(char *));
+    size_t *metadata_len = calloc(DT_METADATA_NUMBER_V4, sizeof(size_t));
 
     char *buf = (char *)old_params;
     int i = 0;
