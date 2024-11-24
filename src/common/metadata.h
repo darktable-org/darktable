@@ -53,6 +53,10 @@ typedef enum dt_metadata_t
 }
 dt_metadata_t;
 
+// we need a max number of metadata fields to maintain the enums in
+// src/common/collection.h and src/libs/metadata_view.c
+#define DT_METADATA_MAX_NUMBER 50
+
 typedef enum dt_metadata_type_t
 {
   DT_METADATA_TYPE_USER,     // metadata for users

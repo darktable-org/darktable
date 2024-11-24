@@ -2192,7 +2192,7 @@ static void _list_view(dt_lib_collect_rule_t *dr)
         break;
 
       default:
-        if(property >= DT_COLLECTION_PROP_METADATA && property < DT_COLLECTION_PROP_METADATA + 1000)
+        if(property >= DT_COLLECTION_PROP_METADATA && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_MAX_NUMBER)
         {
           const int keyid = property - DT_COLLECTION_PROP_METADATA;
           // clang-format off
@@ -2388,7 +2388,7 @@ static void _list_view(dt_lib_collect_rule_t *dr)
          || property == DT_COLLECTION_PROP_ORDER
          || property == DT_COLLECTION_PROP_RATING
          || (property >= DT_COLLECTION_PROP_METADATA
-             && property < DT_COLLECTION_PROP_METADATA + 1000)))
+             && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_MAX_NUMBER)))
   {
     gchar *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
     if(g_str_has_suffix(needle, "%"))
@@ -3189,7 +3189,7 @@ static void metadata_changed(gpointer instance,
   const int prop = _combo_get_active_collection(d->rule[d->active_rule].combo);
   if(type == DT_METADATA_SIGNAL_HIDDEN
      || (prop >= DT_COLLECTION_PROP_METADATA
-         && prop < DT_COLLECTION_PROP_METADATA + 1000))
+         && prop < DT_COLLECTION_PROP_METADATA + DT_METADATA_MAX_NUMBER))
   {
     dt_collection_update_query(darktable.collection,
                                DT_COLLECTION_CHANGE_RELOAD,
