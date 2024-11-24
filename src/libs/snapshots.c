@@ -554,7 +554,8 @@ static void _init_snapshot_entry(dt_lib_module_t *self, dt_lib_snapshot_t *s)
   g_signal_connect(G_OBJECT(s->entry), "activate",
                    G_CALLBACK(_entry_activated_callback), self);
 
-  s->restore_button = dtgtk_button_new(dtgtk_cairo_paint_snapshots_restore, 0, NULL);
+  s->restore_button = dtgtk_button_new(dtgtk_cairo_paint_snapshots_restore, CPF_NONE, NULL);
+  gtk_widget_set_name(s->restore_button, "non-flat");
   gtk_widget_set_tooltip_text(s->restore_button,
                               _("restore snapshot into current history"));
   g_signal_connect(G_OBJECT(s->restore_button), "clicked",
