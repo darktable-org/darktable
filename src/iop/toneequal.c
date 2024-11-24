@@ -663,7 +663,7 @@ static float get_luminance_from_buffer(const float *const buffer,
                             y };		        // padding for vectorization
 
   float luminance = 0.0f;
-  if(x > 0 && x < width - 2)
+  if(x > 1 && x < width - 2)
   {
     // no clamping needed on x, which allows us to vectorize
     // apply the convolution
@@ -770,6 +770,8 @@ static float gaussian_func(const float radius, const float denominator)
   return expf(- radius * radius / denominator);
 }
 
+#define DT_TONEEQ_MIN_EV (-8.0f)
+#define DT_TONEEQ_MAX_EV (0.0f)
 #define DT_TONEEQ_USE_LUT TRUE
 #if DT_TONEEQ_USE_LUT
 
@@ -783,18 +785,18 @@ static inline void apply_toneequalizer(const float *const restrict in,
                                        const dt_iop_roi_t *const roi_out,
                                        const dt_iop_toneequalizer_data_t *const d)
 {
-  const size_t num_elem = (size_t)roi_in->width * roi_in->height;
-  const int min_ev = -8;
-  const int max_ev = 0;
+  const size_t npixels = (size_t)roi_in->width * roi_in->height;
   const float* restrict lut = d->correction_lut;
+  const float lutres = LUT_RESOLUTION;
 
   DT_OMP_FOR()
-  for(size_t k = 0; k < num_elem; ++k)
+  for(size_t k = 0; k < npixels; k++)
   {
-    // The radial-basis interpolation is valid in [-8; 0] EV and can
-    // quickely diverge outside
-    const float exposure = fast_clamp(log2f(luminance[k]), min_ev, max_ev);
-    float correction = lut[(unsigned)roundf((exposure - min_ev) * LUT_RESOLUTION)];
+    // The radial-basis interpolation is valid in [-8; 0] EV and can quickly diverge outside.
+    // Note: not doing an explicit lut[index] check is safe as long we take care of proper
+    // DT_TONEEQ_MIN_EV and DT_TONEEQ_MAX_EV and allocated lut size LUT_RESOLUTION+1
+    const float exposure = fast_clamp(log2f(luminance[k]), DT_TONEEQ_MIN_EV, DT_TONEEQ_MAX_EV);
+    const float correction = lut[(unsigned)roundf((exposure - DT_TONEEQ_MIN_EV) * lutres)];
     // apply correction
     for_each_channel(c)
       out[4 * k + c] = correction * in[4 * k + c];
@@ -818,7 +820,7 @@ static inline void apply_toneequalizer(const float *const restrict in,
   const float sigma = d->smoothing;
   const float gauss_denom = gaussian_denom(sigma);
 
-  DT_OMP_FOR()
+  DT_OMP_FOR(shared(centers_ops))
   for(size_t k = 0; k < num_elem; ++k)
   {
     // build the correction for the current pixel
@@ -827,19 +829,18 @@ static inline void apply_toneequalizer(const float *const restrict in,
 
     // The radial-basis interpolation is valid in [-8; 0] EV and can
     // quickely diverge outside
-    const float exposure = fast_clamp(log2f(luminance[k]), -8.0f, 0.0f);
+    const float exposure = fast_clamp(log2f(luminance[k]), DT_TONEEQ_MIN_EV, DT_TONEEQ_MAX_EV);
 
     DT_OMP_SIMD(aligned(luminance, centers_ops, factors:64) safelen(PIXEL_CHAN) reduction(+:result))
     for(int i = 0; i < PIXEL_CHAN; ++i)
       result += gaussian_func(exposure - centers_ops[i], gauss_denom) * factors[i];
 
     // the user-set correction is expected in [-2;+2] EV, so is the interpolated one
-    float correction = fast_clamp(result, 0.25f, 4.0f);
+    const float correction = fast_clamp(result, 0.25f, 4.0f);
 
     // apply correction
     for_each_channel(c)
       out[4 * k + c] = correction * in[4 * k + c];
-    }
   }
 }
 #endif // USE_LUT
@@ -853,7 +854,7 @@ static inline float pixel_correction(const float exposure,
   // as the sum of the contribution of each luminance channel
   float result = 0.0f;
   const float gauss_denom = gaussian_denom(sigma);
-  const float expo = fast_clamp(exposure, -8.0f, 0.0f);
+  const float expo = fast_clamp(exposure, DT_TONEEQ_MIN_EV, DT_TONEEQ_MAX_EV);
 
   DT_OMP_SIMD(aligned(centers_ops, factors:64) safelen(PIXEL_CHAN) reduction(+:result))
   for(int i = 0; i < PIXEL_CHAN; ++i)
@@ -999,8 +1000,7 @@ void toneeq_process(dt_iop_module_t *self,
                     const dt_iop_roi_t *const roi_in,
                     const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_toneequalizer_data_t *const d =
-    (const dt_iop_toneequalizer_data_t *const)piece->data;
+  const dt_iop_toneequalizer_data_t *const d = piece->data;
   dt_iop_toneequalizer_gui_data_t *const g = self->gui_data;
 
   const float *const restrict in = (float *const)ivoid;
@@ -1010,7 +1010,6 @@ void toneeq_process(dt_iop_module_t *self,
   const size_t width = roi_in->width;
   const size_t height = roi_in->height;
   const size_t num_elem = width * height;
-  const size_t ch = 4;
 
   // Get the hash of the upstream pipe to track changes
   const int position = self->iop_order;
@@ -1126,7 +1125,7 @@ void toneeq_process(dt_iop_module_t *self,
       hash_set_get(&g->thumb_preview_hash, &saved_hash, &self->gui_lock);
 
       dt_iop_gui_enter_critical_section(self);
-      const int luminance_valid = g->luminance_valid;
+      const gboolean luminance_valid = g->luminance_valid;
       dt_iop_gui_leave_critical_section(self);
 
       if(saved_hash != hash || !luminance_valid)
@@ -1157,7 +1156,7 @@ void toneeq_process(dt_iop_module_t *self,
   {
     if(g->mask_display)
     {
-      display_luminance_mask(in, luminance, out, roi_in, roi_out, ch);
+      display_luminance_mask(in, luminance, out, roi_in, roi_out, 4);
       piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
     }
     else
@@ -1190,7 +1189,7 @@ void modify_roi_in(dt_iop_module_t *self,
   // Pad the zoomed-in view to avoid weird stuff with local averages
   // at the borders of the preview
 
-  dt_iop_toneequalizer_data_t *const d = (dt_iop_toneequalizer_data_t *const)piece->data;
+  dt_iop_toneequalizer_data_t *const d = piece->data;
 
   // Get the scaled window radius for the box average
   const int max_size = (piece->iwidth > piece->iheight) ? piece->iwidth : piece->iheight;
@@ -1233,15 +1232,16 @@ static void compute_correction_lut(float* restrict lut,
                                    const float *const restrict factors)
 {
   const float gauss_denom = gaussian_denom(sigma);
-  const int min_ev = -8;
-  assert(PIXEL_CHAN == -min_ev);
+  assert(PIXEL_CHAN == 8);
+
+  DT_OMP_FOR(shared(centers_ops))
   for(int j = 0; j <= LUT_RESOLUTION * PIXEL_CHAN; j++)
   {
     // build the correction for each pixel
     // as the sum of the contribution of each luminance channelcorrection
-    float exposure = (float)j / (float)LUT_RESOLUTION + min_ev;
+    const float exposure = (float)j / (float)LUT_RESOLUTION + DT_TONEEQ_MIN_EV;
     float result = 0.0f;
-    for(int i = 0; i < PIXEL_CHAN; ++i)
+    for(int i = 0; i < PIXEL_CHAN; i++)
       result += gaussian_func(exposure - centers_ops[i], gauss_denom) * factors[i];
     // the user-set correction is expected in [-2;+2] EV, so is the interpolated one
     lut[j] = fast_clamp(result, 0.25f, 4.0f);
@@ -1304,22 +1304,18 @@ static int compute_channels_factors(const float factors[PIXEL_CHAN],
 
 
 __DT_CLONE_TARGETS__
-static int compute_channels_gains(const float in[CHANNELS],
+static void compute_channels_gains(const float in[CHANNELS],
                                   float out[CHANNELS])
 {
   // Helper function to compute the new channels gains (log) from the factors (linear)
   assert(PIXEL_CHAN == 8);
 
-  const int valid = 1;
-
   for(int i = 0; i < CHANNELS; ++i)
     out[i] = log2f(in[i]);
-
-  return valid;
 }
 
 
-static int commit_channels_gains(const float factors[CHANNELS],
+static void commit_channels_gains(const float factors[CHANNELS],
                                  dt_iop_toneequalizer_params_t *p)
 {
   p->noise = factors[0];
@@ -1331,8 +1327,6 @@ static int commit_channels_gains(const float factors[CHANNELS],
   p->highlights = factors[6];
   p->whites = factors[7];
   p->speculars = factors[8];
-
-  return 1;
 }
 
 
@@ -1507,6 +1501,8 @@ static inline void compute_lut_correction(dt_iop_toneequalizer_gui_data_t *g,
   // Compute the LUT of the exposure corrections in EV,
   // offset and scale it for display in GUI widget graph
 
+  if(g == NULL) return;
+
   float *const restrict LUT = g->gui_lut;
   const float *const restrict factors = g->factors;
   const float sigma = g->sigma;
@@ -1554,7 +1550,7 @@ static inline gboolean update_curve_lut(dt_iop_module_t *self)
   {
     float factors[CHANNELS] DT_ALIGNED_ARRAY;
     dt_simd_memcpy(g->temp_user_params, factors, CHANNELS);
-    valid = pseudo_solve(g->interpolation_matrix, factors, CHANNELS, PIXEL_CHAN, 1);
+    valid = pseudo_solve(g->interpolation_matrix, factors, CHANNELS, PIXEL_CHAN, TRUE);
     dt_simd_memcpy(factors, g->factors, PIXEL_CHAN);
     g->factors_valid = TRUE;
     g->lut_valid = FALSE;
@@ -1640,7 +1636,7 @@ void commit_params(dt_iop_module_t *self,
 
     float A[CHANNELS * PIXEL_CHAN] DT_ALIGNED_ARRAY;
     build_interpolation_matrix(A, p->smoothing);
-    pseudo_solve(A, factors, CHANNELS, PIXEL_CHAN, 0);
+    pseudo_solve(A, factors, CHANNELS, PIXEL_CHAN, FALSE);
 
     dt_simd_memcpy(factors, d->factors, PIXEL_CHAN);
   }
@@ -1777,14 +1773,12 @@ static void smoothing_callback(GtkWidget *slider, dt_iop_module_t *self)
   get_channels_factors(factors, p);
 
   // Solve the interpolation by least-squares to check the validity of the smoothing param
-  const int valid = update_curve_lut(self);
-
-  if(!valid)
+  if(!update_curve_lut(self))
     dt_control_log
       (_("the interpolation is unstable, decrease the curve smoothing"));
 
   // Redraw graph before launching computation
-  update_curve_lut(self);
+  // Don't do this again: update_curve_lut(self);
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 
@@ -2122,11 +2116,11 @@ int mouse_leave(dt_iop_module_t *self)
 }
 
 
-static inline int set_new_params_interactive(const float control_exposure,
-                                             const float exposure_offset,
-                                             const float blending_sigma,
-                                             dt_iop_toneequalizer_gui_data_t *g,
-                                             dt_iop_toneequalizer_params_t *p)
+static inline gboolean set_new_params_interactive(const float control_exposure,
+                                                  const float exposure_offset,
+                                                  const float blending_sigma,
+                                                  dt_iop_toneequalizer_gui_data_t *g,
+                                                  dt_iop_toneequalizer_params_t *p)
 {
   // Apply an exposure offset optimized smoothly over all the exposure channels,
   // taking user instruction to apply exposure_offset EV at control_exposure EV,
@@ -2147,8 +2141,7 @@ static inline int set_new_params_interactive(const float control_exposure,
   float factors[CHANNELS] DT_ALIGNED_ARRAY;
   dt_simd_memcpy(g->temp_user_params, factors, CHANNELS);
   if(g->user_param_valid)
-    g->user_param_valid = pseudo_solve(g->interpolation_matrix, factors,
-                                       CHANNELS, PIXEL_CHAN, 1);;
+    g->user_param_valid = pseudo_solve(g->interpolation_matrix, factors, CHANNELS, PIXEL_CHAN, TRUE);
   if(!g->user_param_valid)
     dt_control_log(_("the interpolation is unstable, decrease the curve smoothing"));
 
@@ -2157,7 +2150,7 @@ static inline int set_new_params_interactive(const float control_exposure,
     g->user_param_valid = compute_channels_factors(factors, g->temp_user_params, g->sigma);
   if(!g->user_param_valid) dt_control_log(_("some parameters are out-of-bounds"));
 
-  const int commit = g->user_param_valid;
+  const gboolean commit = g->user_param_valid;
 
   if(commit)
   {
@@ -2236,7 +2229,7 @@ int scrolled(dt_iop_module_t *self,
 
   // Get the desired correction on exposure channels
   dt_iop_gui_enter_critical_section(self);
-  const int commit = set_new_params_interactive(g->cursor_exposure, offset,
+  const gboolean commit = set_new_params_interactive(g->cursor_exposure, offset,
                                                 g->sigma * g->sigma / 2.0f, g, p);
   dt_iop_gui_leave_critical_section(self);
 
@@ -3092,7 +3085,7 @@ static gboolean area_button_press(GtkWidget *widget,
   {
     if(self->enabled)
     {
-      g->area_dragging = 1;
+      g->area_dragging = TRUE;
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
     }
     else
@@ -3134,7 +3127,7 @@ static gboolean area_motion_notify(GtkWidget *widget,
   }
 
   dt_iop_gui_enter_critical_section(self);
-  g->area_x = (event->x - g->inset);
+  g->area_x = event->x - g->inset;
   g->area_y = event->y;
   g->area_cursor_valid = (g->area_x > 0.0f
                           && g->area_x < g->graph_width
@@ -3187,7 +3180,7 @@ static gboolean area_button_release(GtkWidget *widget,
       dt_dev_add_history_item(darktable.develop, self, FALSE);
 
       dt_iop_gui_enter_critical_section(self);
-      g->area_dragging= 0;
+      g->area_dragging = FALSE;
       dt_iop_gui_leave_critical_section(self);
 
       return TRUE;
