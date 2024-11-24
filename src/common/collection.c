@@ -2248,7 +2248,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
     default:
       {
-        if(property >= DT_COLLECTION_PROP_METADATA && property < DT_COLLECTION_PROP_METADATA + 1000)
+        if(property >= DT_COLLECTION_PROP_METADATA && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_MAX_NUMBER)
         {
           // metadata
           const int keyid = property - DT_COLLECTION_PROP_METADATA;

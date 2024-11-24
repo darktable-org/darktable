@@ -54,7 +54,9 @@ typedef enum dt_metadata_pref_cols_t
 typedef struct dt_lib_metadata_view_t
 {
   GtkWidget *grid;
+  GList *labels;
   GList *metadata;
+  uint32_t metadata_count;
   GObject *filmroll_event;
 } dt_lib_metadata_view_t;
 
@@ -112,7 +114,7 @@ enum
   md_xmp_metadata,
 
   /* geotagging */
-  md_geotagging_lat = md_xmp_metadata + DT_METADATA_NUMBER,
+  md_geotagging_lat = md_xmp_metadata + DT_METADATA_MAX_NUMBER,
   md_geotagging_lon,
   md_geotagging_ele,
 
@@ -124,60 +126,6 @@ enum
   md_size
 };
 
-// We have to maintain the correspondence between the displayed metadata list
-// and the list returned by the SQL query that counts the distinctive values
-// of metadata fields for the selected images. If you make changes to this
-// list, don't forget to make changes to the SQL query as well.
-static const char *_labels[] = {
-  /* internal */
-  N_("filmroll"),
-  N_("image id"),
-  N_("group id"),
-  N_("filename"),
-  N_("version"),
-  N_("full path"),
-  N_("local copy"),
-  N_("import timestamp"),
-  N_("change timestamp"),
-  N_("export timestamp"),
-  N_("print timestamp"),
-  N_("flags"),
-
-  /* exif */
-  N_("model"),
-  N_("maker"),
-  N_("lens"),
-  N_("aperture"),
-  N_("exposure"),
-  N_("exposure bias"),
-  N_("exposure program"),
-  N_("white balance"),
-  N_("flash"),
-  N_("metering mode"),
-  N_("focal length"),
-  N_("35mm equiv focal length"),
-  N_("crop factor"),
-  N_("focus distance"),
-  N_("ISO"),
-  N_("datetime"),
-  N_("width"),
-  N_("height"),
-  N_("export width"),
-  N_("export height"),
-
-  /* xmp */
-  //FIXME: reserve DT_METADATA_NUMBER places
-  "","","","","","","","","",
-
-  /* geotagging */
-  N_("latitude"),
-  N_("longitude"),
-  N_("elevation"),
-
-  /* tags */
-  N_("tags"),
-  N_("categories"),
-};
 
 static gboolean _dndactive = FALSE;
 
@@ -201,26 +149,93 @@ int position(const dt_lib_module_t *self)
   return 299;
 }
 
-static gboolean _is_metadata_ui(const int i)
+static gboolean _is_metadata_ui(const int i, dt_lib_module_t *self)
 {
-  // internal metadata are not to be shown on the ui
-  if(i >= md_xmp_metadata && i < md_xmp_metadata + DT_METADATA_NUMBER)
-  {
-    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i - md_xmp_metadata);
-    return !(dt_metadata_get_type(keyid) == DT_METADATA_TYPE_INTERNAL);
-  }
+  dt_lib_metadata_view_t *d = self->data;
+
+  if(i >= md_xmp_metadata && i < md_xmp_metadata + DT_METADATA_MAX_NUMBER)
+    return (i - md_xmp_metadata) < d->metadata_count;
   else return TRUE;
 }
 
-static const char *_get_label(const int i)
+static void _lib_metadata_init_labels(dt_lib_module_t *self)
 {
-  if(i >= md_xmp_metadata && i < md_xmp_metadata + DT_METADATA_NUMBER)
+  // We have to maintain the correspondence between the displayed metadata list
+  // and the list returned by the SQL query that counts the distinctive values
+  // of metadata fields for the selected images. If you make changes to this
+  // list, don't forget to make changes to the SQL query as well.
+
+  dt_lib_metadata_view_t *d = self->data;
+
+  d->labels = NULL;
+  d->metadata_count = 0;
+
+  /* internal */
+  d->labels = g_list_append(d->labels, N_("filmroll"));
+  d->labels = g_list_append(d->labels, N_("image id"));
+  d->labels = g_list_append(d->labels, N_("group id"));
+  d->labels = g_list_append(d->labels, N_("filename"));
+  d->labels = g_list_append(d->labels, N_("version"));
+  d->labels = g_list_append(d->labels, N_("full path"));
+  d->labels = g_list_append(d->labels, N_("local copy"));
+  d->labels = g_list_append(d->labels, N_("import timestamp"));
+  d->labels = g_list_append(d->labels, N_("change timestamp"));
+  d->labels = g_list_append(d->labels, N_("export timestamp"));
+  d->labels = g_list_append(d->labels, N_("print timestamp"));
+  d->labels = g_list_append(d->labels, N_("flags"));
+
+  /* exif */
+  d->labels = g_list_append(d->labels, N_("model"));
+  d->labels = g_list_append(d->labels, N_("maker"));
+  d->labels = g_list_append(d->labels, N_("lens"));
+  d->labels = g_list_append(d->labels, N_("aperture"));
+  d->labels = g_list_append(d->labels, N_("exposure"));
+  d->labels = g_list_append(d->labels, N_("exposure bias"));
+  d->labels = g_list_append(d->labels, N_("exposure program"));
+  d->labels = g_list_append(d->labels, N_("white balance"));
+  d->labels = g_list_append(d->labels, N_("flash"));
+  d->labels = g_list_append(d->labels, N_("metering mode"));
+  d->labels = g_list_append(d->labels, N_("focal length"));
+  d->labels = g_list_append(d->labels, N_("35mm equiv focal length"));
+  d->labels = g_list_append(d->labels, N_("crop factor"));
+  d->labels = g_list_append(d->labels, N_("focus distance"));
+  d->labels = g_list_append(d->labels, N_("ISO"));
+  d->labels = g_list_append(d->labels, N_("datetime"));
+  d->labels = g_list_append(d->labels, N_("width"));
+  d->labels = g_list_append(d->labels, N_("height"));
+  d->labels = g_list_append(d->labels, N_("export width"));
+  d->labels = g_list_append(d->labels, N_("export height"));
+
+  /* metadata */
+  unsigned int i = 0;
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+  for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i - md_xmp_metadata);
-    return(dt_metadata_get_name(keyid));
+    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+
+    if(metadata->type != DT_METADATA_TYPE_INTERNAL)
+    {
+      d->labels = g_list_append(d->labels, metadata->name);
+      i++;
+    }
   }
-  else return _labels[i];
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+  d->metadata_count = i;
+
+  // fill the metadata rest
+  while(i++ < DT_METADATA_MAX_NUMBER)
+    d->labels = g_list_append(d->labels, "");
+
+  /* geotagging */
+  d->labels = g_list_append(d->labels, N_("latitude"));
+  d->labels = g_list_append(d->labels, N_("longitude"));
+  d->labels = g_list_append(d->labels, N_("elevation"));
+
+  /* tags */
+  d->labels = g_list_append(d->labels, N_("tags"));
+  d->labels = g_list_append(d->labels, N_("categories"));
 }
+
 
 #define NODATA_STRING "-"
 
@@ -228,16 +243,19 @@ static const char *_get_label(const int i)
 static void _lib_metadata_init_queue(dt_lib_module_t *self)
 {
   dt_lib_metadata_view_t *d = self->data;
+
+  _lib_metadata_init_labels(self);
+
   d->metadata = NULL;
   for(int i = md_size - 1; i >= 0; i--)
   {
     dt_lib_metadata_info_t *m = g_malloc0(sizeof(dt_lib_metadata_info_t));
     if(m)
     {
-      m->name = (char *)_get_label(i);
+      m->name = g_list_nth_data(d->labels, i);
       m->value = g_strdup(NODATA_STRING);
       m->index = m->order = i;
-      m->visible = _is_metadata_ui(i);
+      m->visible = _is_metadata_ui(i, self);
       d->metadata = g_list_prepend(d->metadata, m);
     }
   }
@@ -269,9 +287,7 @@ static dt_lib_metadata_info_t *_get_metadata_per_index(const int index, dt_lib_m
   {
     dt_lib_metadata_info_t *m = meta->data;
     if(m->index == index)
-    {
       return m;
-    }
   }
   return NULL;
 }
@@ -476,6 +492,8 @@ static int lua_update_metadata(lua_State*L);
 /* update all values to reflect mouse over image id or no data at all */
 void gui_update(dt_lib_module_t *self)
 {
+  dt_lib_metadata_view_t *d = self->data;
+
   dt_imgid_t mouse_over_id = dt_control_get_mouse_over_id();
   int32_t count = 0;
 
@@ -523,9 +541,32 @@ void gui_update(dt_lib_module_t *self)
   if(count > 1)
   {
     if(!images) images = dt_act_on_get_query(FALSE);
+
+    gchar *metadata_subquery = g_strdup("");
+    uint32_t i = 0;
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+    for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
+    {
+      dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+
+      if(metadata->type != DT_METADATA_TYPE_INTERNAL)
+      {
+        dt_util_str_cat(&metadata_subquery,
+                        "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = %d WHERE images.id in (%s)), ",
+                        metadata->key,
+                        images);
+        i++;
+      }
+    }
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+
+    // fill the metadata rest
+    while(i++ < DT_METADATA_MAX_NUMBER)
+      dt_util_str_cat(&metadata_subquery, "2, "); // can by anything, corresponds to XMP field that is defined but not actually displayed
+
     sqlite3_stmt *stmt = NULL;
     // We have to maintain a correspondence between the list of fields in this SQL query
-    // and the list of metadata fields defined by the enum and _labels[] array above.
+    // and the list of metadata fields defined by the enum and _lib_metadata_init_labels() above.
     // clang-format off
     gchar *query = g_strdup_printf("SELECT COUNT(DISTINCT film_id), "
                                          "2, " //id always different
@@ -559,21 +600,16 @@ void gui_update(dt_lib_module_t *self)
                                          "COUNT(DISTINCT height), "
                                          "COUNT(DISTINCT IFNULL(output_width, '')), " //exported width
                                          "COUNT(DISTINCT IFNULL(output_height, '')), " //exported height
-                                         "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 2 WHERE images.id in (%s)), " //title
-                                         "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 3 WHERE images.id in (%s)), " //description
-                                         "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 0 WHERE images.id in (%s)), " //creator
-                                         "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 1 WHERE images.id in (%s)), " //publisher
-                                         "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 4 WHERE images.id in (%s)), " //rights
-                                         "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 5 WHERE images.id in (%s)), " //notes
-                                         "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 6 WHERE images.id in (%s)), " //version name
-                                         "2, " // can by anything, corresponds to XMP field that is defined but not actually displayed
+                                         "%s " // metadata_subquery
                                          "COUNT(DISTINCT IFNULL(latitude, '')), "
                                          "COUNT(DISTINCT IFNULL(longitude, '')), "
                                          "COUNT(DISTINCT IFNULL(altitude, '')) "
                                          "FROM main.images "
                                          "WHERE id IN (%s)",
-                                   images, images, images, images, images, images, images, images);
+                                   metadata_subquery, images);
     // clang-format on
+
+    g_free(metadata_subquery);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
@@ -1014,24 +1050,42 @@ void gui_update(dt_lib_module_t *self)
     }
 
     //cases not handled by switch
-    if(md >= md_xmp_metadata && md < (md_xmp_metadata + DT_METADATA_NUMBER))
+    if(md >= md_xmp_metadata && md < (md_xmp_metadata + DT_METADATA_MAX_NUMBER))
     {
       g_strlcpy(text, NODATA_STRING, sizeof(text));
 
-      const uint32_t keyid = dt_metadata_get_keyid_by_display_order((uint32_t)(md - md_xmp_metadata));
-      const gboolean hidden = dt_metadata_get_type(keyid) == DT_METADATA_TYPE_INTERNAL;
-      if(! hidden)
+      if(md - md_xmp_metadata <= d->metadata_count)
       {
-        const gchar *const key = dt_metadata_get_key(keyid);
-        GList *res = dt_metadata_get(img->id, key, NULL);
-        if(res)
+        uint32_t i = 0;
+        dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+        dt_metadata_t2 *metadata = NULL;
+        for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
         {
-          g_strlcpy(text, (char *)res->data, sizeof(text));
-          _filter_non_printable(text, sizeof(text));
-          g_list_free_full(res, &g_free);
+          dt_metadata_t2 *m = (dt_metadata_t2 *)iter->data;
+          if(m->type != DT_METADATA_TYPE_INTERNAL)
+          {
+            if(i == md - md_xmp_metadata)
+            {
+              metadata = m;
+              break;
+            }
+            i++;
+          }
         }
-        _metadata_update_value(md, text, self);
+
+        if(metadata)
+        {
+          GList *res = dt_metadata_get(img->id, metadata->tagname, NULL);
+          if(res)
+          {
+            g_strlcpy(text, (char *)res->data, sizeof(text));
+            _filter_non_printable(text, sizeof(text));
+            g_list_free_full(res, &g_free);
+          }
+        }
+        dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
       }
+      _metadata_update_value(md, text, self);
     }
   }
   dt_image_cache_read_release(darktable.image_cache, img);
@@ -1114,7 +1168,7 @@ static char *_get_current_configuration(dt_lib_module_t *self)
   for(GList *meta = d->metadata; meta; meta= g_list_next(meta))
   {
     dt_lib_metadata_info_t *m = meta->data;
-    if(_is_metadata_ui(m->index))
+    if(_is_metadata_ui(m->index, self))
       dt_util_str_cat(&pref, "%s%s,", m->visible ? "" : "|", m->name);
   }
   if(pref)
@@ -1281,7 +1335,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   for(GList *meta = d->metadata; meta; meta = g_list_next(meta))
   {
     dt_lib_metadata_info_t *m = meta->data;
-    if(!_is_metadata_ui(m->index))
+    if(!_is_metadata_ui(m->index, self))
       continue;
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter,
@@ -1331,7 +1385,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
     for(GList *meta = d->metadata; meta; meta= g_list_next(meta))
     {
       dt_lib_metadata_info_t *m = meta->data;
-      if(!_is_metadata_ui(m->index))
+      if(!_is_metadata_ui(m->index, self))
         continue;
       gtk_list_store_set(store, &iter,
                          DT_METADATA_PREF_COL_INDEX, m->index,
@@ -1408,7 +1462,7 @@ static void _display_default(dt_lib_module_t *self)
   {
     dt_lib_metadata_info_t *m = meta->data;
     m->order = m->index;
-    m->visible = _is_metadata_ui(m->index);
+    m->visible = _is_metadata_ui(m->index, self);
   }
   _lib_metadata_refill_grid(self);
 }
@@ -1481,7 +1535,7 @@ void gui_reset(dt_lib_module_t *self)
   {
     dt_lib_metadata_info_t *m = meta->data;
     m->order = m->index;
-    m->visible = _is_metadata_ui(m->index);
+    m->visible = _is_metadata_ui(m->index, self);
   }
   _lib_metadata_refill_grid(self);
   _save_preferences(self);
