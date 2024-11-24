@@ -326,6 +326,9 @@ changes (where available).
 - Fixed issues with wrong corrections in highlight opposed OpenCL
   code.
 
+- Fixed surface blur radius calculation possibly resulting in garbled
+  output.
+
 ## Lua
 
 ### API Version
