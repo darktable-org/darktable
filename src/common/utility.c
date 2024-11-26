@@ -933,14 +933,19 @@ void dt_copy_file(const char *const sourcefile, const char *destination)
     rewind(fin);
 
     content = (char *)g_try_malloc_n(filesize, sizeof(char));
-    if(content == NULL) goto END;
-    if(fread(content, sizeof(char), filesize, fin) != filesize) goto END;
-    if(fwrite(content, sizeof(char), filesize, fout) != filesize) goto END;
+    if(content == NULL)
+      goto END;
+    if(fread(content, sizeof(char), filesize, fin) != filesize)
+      goto END;
+    if(fwrite(content, sizeof(char), filesize, fout) != filesize)
+      goto END;
   }
 
 END:
-  if(fout != NULL) fclose(fout);
-  if(fin != NULL) fclose(fin);
+  if(fout != NULL)
+    fclose(fout);
+  if(fin != NULL)
+    fclose(fin);
 
   g_free(content);
 }
