@@ -102,7 +102,7 @@ typedef struct dt_iop_crop_gui_data_t
   float clip_max_x, clip_max_y, clip_max_w, clip_max_h;
   dt_hash_t clip_max_pipe_hash;
 
-  int cropping;
+  _grab_region_t cropping;
   gboolean shift_hold;
   gboolean ctrl_hold;
   gboolean preview_ready;
@@ -179,7 +179,7 @@ static void _commit_box(dt_iop_module_t *self,
   if(darktable.gui->reset) return;
   if(self->dev->preview_pipe->status != DT_DEV_PIXELPIPE_VALID) return;
 
-  g->cropping = 0;
+  g->cropping = GRAB_CENTER;
   const dt_boundingbox_t old = { p->cx, p->cy, p->cw, p->ch };
   const float eps = 1e-6f; // threshold to avoid rounding errors
   if(!self->enabled)
@@ -952,6 +952,18 @@ static void _event_aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *sel
   --darktable.gui->reset;
 }
 
+static void _update_sliders_and_limit(dt_iop_crop_gui_data_t *g)
+{
+  dt_bauhaus_slider_set(g->cx, g->clip_x);
+  dt_bauhaus_slider_set(g->cy, g->clip_y);
+  dt_bauhaus_slider_set(g->cw, g->clip_x + g->clip_w);
+  dt_bauhaus_slider_set(g->ch, g->clip_y + g->clip_h);
+  dt_bauhaus_slider_set_soft_max(g->cx, g->clip_x + g->clip_w - 0.1f);
+  dt_bauhaus_slider_set_soft_max(g->cy, g->clip_y + g->clip_h - 0.1f);
+  dt_bauhaus_slider_set_soft_min(g->ch, g->clip_y + 0.1f);
+  dt_bauhaus_slider_set_soft_min(g->cw, g->clip_x + 0.1f);
+}
+
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_crop_gui_data_t *g = self->gui_data;
@@ -983,14 +995,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
 
   // update all sliders, as their values may have change to keep aspect ratio
-  dt_bauhaus_slider_set(g->cx, g->clip_x);
-  dt_bauhaus_slider_set_soft_min(g->cw, g->clip_x + 0.10);
-  dt_bauhaus_slider_set(g->cy, g->clip_y);
-  dt_bauhaus_slider_set_soft_min(g->ch, g->clip_y + 0.10);
-  dt_bauhaus_slider_set(g->cw, g->clip_x + g->clip_w);
-  dt_bauhaus_slider_set_soft_max(g->cx, g->clip_x + g->clip_w - 0.10);
-  dt_bauhaus_slider_set(g->ch, g->clip_y + g->clip_h);
-  dt_bauhaus_slider_set_soft_max(g->cy, g->clip_y + g->clip_h - 0.10);
+  _update_sliders_and_limit(g);
 
   --darktable.gui->reset;
 
@@ -1058,6 +1063,7 @@ void gui_update(dt_iop_module_t *self)
   g->clip_h = p->ch - p->cy;
 
   dt_gui_update_collapsible_section(&g->cs);
+  gui_changed(self, NULL, NULL);
 }
 
 static void _event_key_swap(dt_iop_module_t *self)
@@ -1454,8 +1460,7 @@ void gui_post_expose(dt_iop_module_t *self,
   }
 
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) / zoom_scale);
-  const double alpha =
-    CLAMP(1.0 - (g_get_monotonic_time() - g->focus_time) / 2e6f, 0.0, 1.0);
+  const double alpha = CLIP(1.0 - (g_get_monotonic_time() - g->focus_time) / 2e6f);
   dt_draw_set_color_overlay(cr, TRUE, alpha);
   const double border = DT_PIXEL_APPLY_DPI(MIN(30.0, MIN(wd, ht) / 3.0)) / zoom_scale;
 
@@ -1640,16 +1645,7 @@ int mouse_moved(dt_iop_module_t *self,
     // clipping parameters get set from the sliders when the iop loses
     // focus, at which time the final selected crop is applied.
     ++darktable.gui->reset;
-
-    dt_bauhaus_slider_set(g->cx, g->clip_x);
-    dt_bauhaus_slider_set_soft_min(g->cw, g->clip_x + 0.10);
-    dt_bauhaus_slider_set(g->cy, g->clip_y);
-    dt_bauhaus_slider_set_soft_min(g->ch, g->clip_y + 0.10);
-    dt_bauhaus_slider_set(g->cw, g->clip_x + g->clip_w);
-    dt_bauhaus_slider_set_soft_max(g->cx, g->clip_x + g->clip_w - 0.10);
-    dt_bauhaus_slider_set(g->ch, g->clip_y + g->clip_h);
-    dt_bauhaus_slider_set_soft_max(g->cy, g->clip_y + g->clip_h - 0.10);
-
+    _update_sliders_and_limit(g);
     --darktable.gui->reset;
 
     dt_control_queue_redraw_center();
