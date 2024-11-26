@@ -920,22 +920,22 @@ char *dt_read_file(const char *const filename, size_t *filesize)
   return NULL;
 }
 
-void dt_copy_file(const char *const sourcefile, const char *dst)
+void dt_copy_file(const char *const sourcefile, const char *destination)
 {
   char *content = NULL;
   FILE *fin = g_fopen(sourcefile, "rb");
-  FILE *fout = g_fopen(dst, "wb");
+  FILE *fout = g_fopen(destination, "wb");
 
   if(fin && fout)
   {
     fseek(fin, 0, SEEK_END);
-    const size_t end = ftell(fin);
+    const size_t filesize = ftell(fin);
     rewind(fin);
 
-    content = (char *)g_try_malloc_n(end, sizeof(char));
+    content = (char *)g_try_malloc_n(filesize, sizeof(char));
     if(content == NULL) goto END;
-    if(fread(content, sizeof(char), end, fin) != end) goto END;
-    if(fwrite(content, sizeof(char), end, fout) != end) goto END;
+    if(fread(content, sizeof(char), filesize, fin) != filesize) goto END;
+    if(fwrite(content, sizeof(char), filesize, fout) != filesize) goto END;
   }
 
 END:
