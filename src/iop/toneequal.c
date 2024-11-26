@@ -1551,7 +1551,7 @@ static inline gboolean update_curve_lut(dt_iop_module_t *self)
     float factors[CHANNELS] DT_ALIGNED_ARRAY;
     dt_simd_memcpy(g->temp_user_params, factors, CHANNELS);
     valid = pseudo_solve(g->interpolation_matrix, factors, CHANNELS, PIXEL_CHAN, TRUE);
-    dt_simd_memcpy(factors, g->factors, PIXEL_CHAN);
+    if(valid) dt_simd_memcpy(factors, g->factors, PIXEL_CHAN);
     g->factors_valid = TRUE;
     g->lut_valid = FALSE;
   }
