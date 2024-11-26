@@ -199,7 +199,7 @@ static inline void variance_analyse(const float *const restrict guide, // I
     ab[2*idx+1] = b;
   }
 
-  if(input != NULL) dt_free_align(input);
+  dt_free_align(input);
 }
 
 

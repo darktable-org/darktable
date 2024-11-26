@@ -306,6 +306,8 @@ typedef struct dt_iop_toneequalizer_gui_data_t
                                 // interactive view are in bounds
   gboolean factors_valid;       // TRUE if radial-basis coeffs are ready
 
+  gboolean commit_ok;           // to be checked in process for correct smoothing pseudo_solve
+                                // set while committing
   gboolean distort_signal_actif;
 } dt_iop_toneequalizer_gui_data_t;
 
@@ -990,6 +992,10 @@ static inline void display_luminance_mask(const float *const restrict in,
     }
 }
 
+static inline void _bad_curve(void)
+{
+  dt_control_log(_("the interpolation is unstable, decrease the curve smoothing"));
+}
 
 __DT_CLONE_TARGETS__
 static
@@ -1010,6 +1016,9 @@ void toneeq_process(dt_iop_module_t *self,
   const size_t width = roi_in->width;
   const size_t height = roi_in->height;
   const size_t num_elem = width * height;
+
+  const gboolean is_preview = piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW;
+  const gboolean is_full = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
 
   // Get the hash of the upstream pipe to track changes
   const int position = self->iop_order;
@@ -1039,7 +1048,7 @@ void toneeq_process(dt_iop_module_t *self,
       dt_iop_gui_leave_critical_section(self);
     }
 
-    if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
+    if(is_full)
     {
       // For DT_DEV_PIXELPIPE_FULL, we cache the luminance mask for performance
       // but it's not accessed from GUI
@@ -1057,7 +1066,7 @@ void toneeq_process(dt_iop_module_t *self,
       luminance = g->full_preview_buf;
       cached = TRUE;
     }
-    else if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
+    else if(is_preview)
     {
       // For DT_DEV_PIXELPIPE_PREVIEW, we need to cache it too to
       // compute the full image stats upon user request in GUI threads
@@ -1103,7 +1112,7 @@ void toneeq_process(dt_iop_module_t *self,
   {
     // caching path : store the luminance mask for GUI access
 
-    if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
+    if(is_full)
     {
       dt_hash_t saved_hash;
       hash_set_get(&g->ui_preview_hash, &saved_hash, &self->gui_lock);
@@ -1119,7 +1128,7 @@ void toneeq_process(dt_iop_module_t *self,
         hash_set_get(&hash, &g->ui_preview_hash, &self->gui_lock);
       }
     }
-    else if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
+    else if(is_preview)
     {
       dt_hash_t saved_hash;
       hash_set_get(&g->thumb_preview_hash, &saved_hash, &self->gui_lock);
@@ -1152,19 +1161,15 @@ void toneeq_process(dt_iop_module_t *self,
   }
 
   // Display output
-  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+  if(g && is_full && g->mask_display)
   {
-    if(g->mask_display)
-    {
-      display_luminance_mask(in, luminance, out, roi_in, roi_out, 4);
-      piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
-    }
-    else
-      apply_toneequalizer(in, luminance, out, roi_in, roi_out, d);
+    display_luminance_mask(in, luminance, out, roi_in, roi_out, 4);
+    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
   }
   else
   {
     apply_toneequalizer(in, luminance, out, roi_in, roi_out, d);
+    if(g && !g->commit_ok && is_preview) _bad_curve();
   }
 
   if(!cached) dt_free_align(luminance);
@@ -1355,6 +1360,7 @@ static void gui_cache_init(dt_iop_module_t *self)
   g->graph_valid = FALSE;          // TRUE if the UI graph view is ready
   g->user_param_valid = FALSE;     // TRUE if users params set in interactive view are in bounds
   g->factors_valid = TRUE;         // TRUE if radial-basis coeffs are ready
+  g->commit_ok = TRUE;
 
   g->valid_nodes_x = FALSE;        // TRUE if x coordinates of graph nodes have been inited
   g->valid_nodes_y = FALSE;        // TRUE if y coordinates of graph nodes have been inited
@@ -1517,15 +1523,12 @@ static inline void compute_lut_correction(dt_iop_toneequalizer_gui_data_t *g,
   }
 }
 
-
-
 static inline gboolean update_curve_lut(dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_params_t *p = self->params;
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
-  if(g == NULL) return FALSE;
-
+  if(g == NULL) return TRUE;
   gboolean valid = TRUE;
 
   dt_iop_gui_enter_critical_section(self);
@@ -1610,9 +1613,7 @@ void commit_params(dt_iop_module_t *self,
   d->contrast_boost = exp2f(p->contrast_boost);
   d->exposure_boost = exp2f(p->exposure_boost);
 
-  /*
-   * Perform a radial-based interpolation using a series gaussian functions
-   */
+  /* Perform a radial-based interpolation using a series gaussian functions. */
   if(self->dev->gui_attached && g)
   {
     dt_iop_gui_enter_critical_section(self);
@@ -1621,9 +1622,8 @@ void commit_params(dt_iop_module_t *self,
     g->sigma = p->smoothing;
     g->user_param_valid = FALSE; // force updating channels factors
     dt_iop_gui_leave_critical_section(self);
-
-    update_curve_lut(self);
-
+    const gboolean curve_ok = update_curve_lut(self);
+    g->commit_ok = piece->enabled && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) ? curve_ok : TRUE;
     dt_iop_gui_enter_critical_section(self);
     dt_simd_memcpy(g->factors, d->factors, PIXEL_CHAN);
     dt_iop_gui_leave_critical_section(self);
@@ -1766,19 +1766,14 @@ static void smoothing_callback(GtkWidget *slider, dt_iop_module_t *self)
   if(darktable.gui->reset) return;
   dt_iop_toneequalizer_params_t *p = self->params;
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
-
+  g->user_param_valid = FALSE;
   p->smoothing= powf(sqrtf(2.0f), 1.0f +  dt_bauhaus_slider_get(slider));
 
-  float factors[CHANNELS] DT_ALIGNED_ARRAY;
-  get_channels_factors(factors, p);
-
   // Solve the interpolation by least-squares to check the validity of the smoothing param
+  // and possibly warn
   if(!update_curve_lut(self))
-    dt_control_log
-      (_("the interpolation is unstable, decrease the curve smoothing"));
-
+    _bad_curve();
   // Redraw graph before launching computation
-  // Don't do this again: update_curve_lut(self);
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 
@@ -2118,9 +2113,7 @@ int mouse_leave(dt_iop_module_t *self)
 
 static inline gboolean set_new_params_interactive(const float control_exposure,
                                                   const float exposure_offset,
-                                                  const float blending_sigma,
-                                                  dt_iop_toneequalizer_gui_data_t *g,
-                                                  dt_iop_toneequalizer_params_t *p)
+                                                  dt_iop_module_t *self)
 {
   // Apply an exposure offset optimized smoothly over all the exposure channels,
   // taking user instruction to apply exposure_offset EV at control_exposure EV,
@@ -2129,6 +2122,9 @@ static inline gboolean set_new_params_interactive(const float control_exposure,
   // Raise the user params accordingly to control correction and
   // distance from cursor exposure to blend smoothly the desired
   // correction
+  dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+  dt_iop_toneequalizer_params_t *p = self->params;
+  const float blending_sigma = g->sigma * g->sigma / 2.0f;
   const float std = gaussian_denom(blending_sigma);
   if(g->user_param_valid)
   {
@@ -2143,7 +2139,7 @@ static inline gboolean set_new_params_interactive(const float control_exposure,
   if(g->user_param_valid)
     g->user_param_valid = pseudo_solve(g->interpolation_matrix, factors, CHANNELS, PIXEL_CHAN, TRUE);
   if(!g->user_param_valid)
-    dt_control_log(_("the interpolation is unstable, decrease the curve smoothing"));
+    _bad_curve();
 
   // Compute new user params for channels and store them locally
   if(g->user_param_valid)
@@ -2229,8 +2225,7 @@ int scrolled(dt_iop_module_t *self,
 
   // Get the desired correction on exposure channels
   dt_iop_gui_enter_critical_section(self);
-  const gboolean commit = set_new_params_interactive(g->cursor_exposure, offset,
-                                                g->sigma * g->sigma / 2.0f, g, p);
+  const gboolean commit = set_new_params_interactive(g->cursor_exposure, offset, self);
   dt_iop_gui_leave_critical_section(self);
 
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
@@ -3110,7 +3105,7 @@ static gboolean area_motion_notify(GtkWidget *widget,
   if(!self->enabled) return FALSE;
 
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
-  dt_iop_toneequalizer_params_t *p = self->params;
+  if(!g) return FALSE;
 
   if(g->area_dragging)
   {
@@ -3121,8 +3116,7 @@ static gboolean area_motion_notify(GtkWidget *widget,
     const float cursor_exposure = g->area_x / g->graph_width * 8.0f - 8.0f;
 
     // Get the desired correction on exposure channels
-    g->area_dragging = set_new_params_interactive(cursor_exposure, offset,
-                                                  g->sigma * g->sigma / 2.0f, g, p);
+    g->area_dragging = set_new_params_interactive(cursor_exposure, offset, self);
     dt_iop_gui_leave_critical_section(self);
   }
 
