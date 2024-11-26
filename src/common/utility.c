@@ -934,11 +934,26 @@ void dt_copy_file(const char *const sourcefile, const char *destination)
 
     content = (char *)g_try_malloc_n(filesize, sizeof(char));
     if(content == NULL)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_copy_file] failure to allocate memory for copying file '%s'",
+               sourcefile);
       goto END;
+    }
     if(fread(content, sizeof(char), filesize, fin) != filesize)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_copy_file] error reading file '%s' for copying",
+               sourcefile);
       goto END;
+    }
     if(fwrite(content, sizeof(char), filesize, fout) != filesize)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_copy_file] error writing file '%s' during copying",
+               destination);
       goto END;
+    }
   }
 
 END:
