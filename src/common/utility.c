@@ -931,7 +931,8 @@ void dt_copy_file(const char *const sourcefile, const char *dst)
     fseek(fin, 0, SEEK_END);
     const size_t end = ftell(fin);
     rewind(fin);
-    content = (char *)g_malloc_n(end, sizeof(char));
+
+    content = (char *)g_try_malloc_n(end, sizeof(char));
     if(content == NULL) goto END;
     if(fread(content, sizeof(char), end, fin) != end) goto END;
     if(fwrite(content, sizeof(char), end, fout) != end) goto END;
