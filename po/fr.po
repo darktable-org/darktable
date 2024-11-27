@@ -9009,7 +9009,7 @@ msgid ""
 "ctrl+click or right-click to select an area"
 msgstr ""
 "Choisit une couleur dans l’image,\n"
-"Ctrl+clic ou clic droit pour sélectionner une zone."
+"Ctrl+clic ou clic-droit pour sélectionner une zone."
 
 #: ../src/develop/blend_gui.c:2597 ../src/iop/colorzones.c:2650
 #: ../src/iop/rgbcurve.c:1513
@@ -9482,7 +9482,7 @@ msgid ""
 "right-click creates new instance"
 msgstr ""
 "Instances multiples,\n"
-"clic droit pour créer une nouvelle instance."
+"clic-droit pour créer une nouvelle instance."
 
 #: ../src/develop/imageop.c:3163
 msgid ""
@@ -9490,7 +9490,7 @@ msgid ""
 "right-click to apply on new instance"
 msgstr ""
 "Préréglages,\n"
-"clic droit pour appliquer sur une nouvelle instance."
+"clic-droit pour appliquer sur une nouvelle instance."
 
 #: ../src/develop/imageop.c:3401 ../src/develop/imageop.c:3423
 msgid "ERROR"
@@ -9860,7 +9860,7 @@ msgid ""
 "<b>cancel</b>: right-click"
 msgstr ""
 "<b>Ajouter un nœud</b> : clic • <b>Ajouter un nœud dur</b> : Ctrl+clic\n"
-"<b>Annuler</b> : clic droit"
+"<b>Annuler</b> : clic-droit"
 
 #: ../src/develop/masks/path.c:3989
 msgid ""
@@ -9868,14 +9868,14 @@ msgid ""
 "<b>finish path</b>: right-click"
 msgstr ""
 "<b>Ajouter un nœud</b> : clic • <b>Ajouter un nœud dur</b> : Ctrl+clic\n"
-"<b>Terminer le chemin</b> : clic droit"
+"<b>Terminer le chemin</b> : clic-droit"
 
 #: ../src/develop/masks/path.c:3994
 msgid ""
 "<b>move node</b>: drag, <b>remove node</b>: right-click\n"
 "<b>switch smooth/sharp mode</b>: ctrl+click"
 msgstr ""
-"<b>Déplacer un nœud</b> : déplacer • <b>Supprimer un nœud</b> : clic droit\n"
+"<b>Déplacer un nœud</b> : déplacer • <b>Supprimer un nœud</b> : clic-droit\n"
 "<b>Passer au mode doux ou dur</b> : Ctrl+clic"
 
 #: ../src/develop/masks/path.c:3999
@@ -9885,7 +9885,7 @@ msgid ""
 msgstr ""
 "<b>Courbe du nœud</b> : déplacer, <b>forcer la symétrie</b> : Ctrl+déplacer\n"
 "<b>Déplacer un seul nœud</b> : Shift+déplacer, <b>Réinitialiser la courbe</"
-"b> : clic droit"
+"b> : clic-droit"
 
 #: ../src/develop/masks/path.c:4004
 msgid ""
@@ -9893,7 +9893,7 @@ msgid ""
 "<b>remove path</b>: right-click"
 msgstr ""
 "<b>Déplacer un segment</b> : déplacer • <b>Ajouter un nœud</b> : Ctrl+clic\n"
-"<b>Supprimer le chemin</b> : clic droit"
+"<b>Supprimer le chemin</b> : clic-droit"
 
 #: ../src/develop/pixelpipe_hb.c:501
 msgid "enabled as required"
@@ -10015,7 +10015,7 @@ msgid ""
 msgstr ""
 "Entrer la valeur minimale.\n"
 "Utiliser « min » s’il n’y a pas de borne,\n"
-"clic droit pour sélectionner depuis les valeurs existantes."
+"clic-droit pour sélectionner depuis les valeurs existantes."
 
 #: ../src/dtgtk/range.c:415
 msgid ""
@@ -10025,7 +10025,7 @@ msgid ""
 msgstr ""
 "Entrer la valeur maximale.\n"
 "Utiliser « max » s’il n’y a pas de borne,\n"
-"clic droit pour sélectionner depuis les valeurs existantes."
+"clic-droit pour sélectionner depuis les valeurs existantes."
 
 #: ../src/dtgtk/range.c:421
 msgid ""
@@ -10033,7 +10033,7 @@ msgid ""
 "right-click to select from existing values"
 msgstr ""
 "Entrer la valeur,\n"
-"clic droit pour sélectionner depuis les valeurs existantes."
+"clic-droit pour sélectionner depuis les valeurs existantes."
 
 #: ../src/dtgtk/range.c:426
 msgid ""
@@ -12982,7 +12982,7 @@ msgid ""
 "%sright-click to type a specific value between <b>%s</b> and <b>%s</b>\n"
 "or hold ctrl+shift while dragging to ignore soft limits."
 msgstr ""
-"%sclic droit pour définir une valeur entre <b>%s</b> et <b>%s</b>\n"
+"%sClic-droit pour définir une valeur entre <b>%s</b> et <b>%s</b>\n"
 "ou maintenir Ctrl+Shift lors du déplacement pour ignorer les limites souples."
 
 #: ../src/gui/accelerators.c:1192
@@ -15483,7 +15483,7 @@ msgid ""
 "the image"
 msgstr ""
 "Degrés de rotation.\n"
-"Si sur l’image : clic droit et déplacer pour définir un angle de rotation."
+"Si sur l’image : clic-droit et déplacer pour définir un angle de rotation."
 
 #: ../src/iop/ashift.c:6089 ../src/iop/ashift.c:6091
 msgid "apply lens shift correction in one direction"
@@ -24385,7 +24385,7 @@ msgid ""
 "ctrl+click or right-click to select an area"
 msgstr ""
 "Active la pipette de couleur.\n"
-"Ctrl+clic ou clic droit pour sélectionner une zone."
+"Ctrl+clic ou clic-droit pour sélectionner une zone."
 
 #: ../src/libs/colorpicker.c:720
 msgid "add sample"
@@ -26637,7 +26637,7 @@ msgstr ""
 "Ctrl+Entrée insère une nouvelle ligne (peut ne pas être compatible avec le "
 "standard des métadonnées).\n"
 "Si « Laisser non modifié » les images ont des métadonnées différentes,\n"
-"dans ce cas, un clic droit donne la possibilité de choisir l’une d’elles.\n"
+"dans ce cas, un clic-droit donne la possibilité de choisir l’une d’elles.\n"
 "Touche Échap pour quitter le dialogue."
 
 #: ../src/libs/metadata.c:708
@@ -28976,7 +28976,7 @@ msgid ""
 "right-click for profile options"
 msgstr ""
 "Basculer l’épreuvage écran,\n"
-"Clic-droit pour les options de profil."
+"clic-droit pour les options de profil."
 
 #: ../src/views/darkroom.c:2436
 msgid ""
@@ -28984,7 +28984,7 @@ msgid ""
 "right-click for profile options"
 msgstr ""
 "Basculer la vérification de gamut,\n"
-"Clic-droit pour les options de profil."
+"clic-droit pour les options de profil."
 
 #: ../src/views/darkroom.c:2463 ../src/views/darkroom.c:2465
 #: ../src/views/darkroom.c:2479 ../src/views/darkroom.c:2480
@@ -29040,7 +29040,7 @@ msgid ""
 "right-click for guides options"
 msgstr ""
 "Basculer les lignes guides,\n"
-"Clic-droit pour les options des guides."
+"clic-droit pour les options des guides."
 
 #. Fullscreen preview key
 #: ../src/views/darkroom.c:2607
@@ -29438,7 +29438,7 @@ msgstr "Double clic gauche"
 
 #: ../src/views/view.c:1387
 msgid "right double-click"
-msgstr "Double clic droit"
+msgstr "Double clic-droit"
 
 #: ../src/views/view.c:1390
 msgid "drag and drop"
