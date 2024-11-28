@@ -8,9 +8,9 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-06-02 18:53+0200\n"
-"PO-Revision-Date: 2024-06-03 11:13+0200\n"
+"PO-Revision-Date: 2024-10-11 \n"
 "Last-Translator: Petr Stasiak <petr@stasiak.cz>\n"
-"Language-Team: \n"
+"Language-Team:  <>\n"
 "Language: cs_CZ\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -182,7 +182,7 @@ msgstr "vybrat pouze obrázky, které ještě nebyly importovány"
 
 #: ../build/bin/conf_gen.h:984
 msgid "ignore non-raw images"
-msgstr "ignorovat ne-RAW obrázky"
+msgstr "ignorovat ne-raw obrázky"
 
 #: ../build/bin/conf_gen.h:985
 msgid ""
@@ -202,7 +202,7 @@ msgstr "použít některá metadata na všechny nově importované obrázky."
 
 #: ../build/bin/conf_gen.h:998
 msgid "recursive directory"
-msgstr "procházet složku rekursivně"
+msgstr "procházet složku rekurzivně"
 
 #: ../build/bin/conf_gen.h:999
 msgid "recursive directory traversal when importing filmrolls"
@@ -320,7 +320,7 @@ msgstr "5K"
 #: ../build/bin/conf_gen.h:1359
 msgctxt "preferences"
 msgid "off"
-msgstr "vyp"
+msgstr "vyp."
 
 #: ../build/bin/conf_gen.h:1360
 msgctxt "preferences"
@@ -1070,7 +1070,7 @@ msgstr "určuje, zda se mají zobrazovat posuvníky"
 
 #: ../build/bin/preferences_gen.h:4659
 msgid "show image time with milliseconds"
-msgstr "zobrazit čas obrázku v milisekundách"
+msgstr "zobrazit čas obrázku včetně milisekund"
 
 #: ../build/bin/preferences_gen.h:4672
 msgid "defines whether time should be displayed with milliseconds"
@@ -1231,7 +1231,7 @@ msgid ""
 "by default scrolling up increases these parameters"
 msgstr ""
 "při použití rolovacího kolečka myši ke změně parametrů masky, rolováním dolů "
-"zvětšíte velikost masky, velikost prolnutí, krytí, tvrdost štětce a "
+"zvětšíte velikost masky, velikost ohraničení, krytí, tvrdost štětce a "
 "přechodové zakřivení\n"
 "ve výchozím nastavení rolování nahoru tyto parametry zvyšuje"
 
@@ -1274,7 +1274,7 @@ msgstr "ohraničení obrazu v režimu editor"
 #: ../build/bin/preferences_gen.h:8438 ../build/bin/preferences_gen.h:8484
 #, c-format
 msgid "double click to reset to `%d'"
-msgstr "dvojklik pro reset na `%d'"
+msgstr "dvojklikem vraťte na `%d'"
 
 #: ../build/bin/preferences_gen.h:5227
 msgid ""
@@ -1483,8 +1483,8 @@ msgstr "Kořenová složka LUT 3D"
 #: ../src/imageio/storage/disk.c:277 ../src/imageio/storage/gallery.c:149
 #: ../src/imageio/storage/gallery.c:213 ../src/imageio/storage/latex.c:145
 #: ../src/imageio/storage/latex.c:199 ../src/libs/import.c:1828
-#: ../src/libs/import.c:1941 ../src/libs/import.c:1999 ../src/libs/styles.c:432
-#: ../src/lua/preferences.c:668
+#: ../src/libs/import.c:1941 ../src/libs/import.c:1999
+#: ../src/libs/styles.c:432 ../src/lua/preferences.c:668
 msgid "select directory"
 msgstr "vybrat složku"
 
@@ -1523,8 +1523,8 @@ msgid ""
 "one if there is one available. (restart required)\n"
 "this option is taken into account when the \"auto-apply pixel workflow "
 "defaults\" is set to \"display-referred\".\n"
-"to prevent auto-apply basecurve presets \"auto-apply pixel workflow "
-"defaults\" should be set to \"none\""
+"to prevent auto-apply basecurve presets \"auto-apply pixel workflow defaults"
+"\" should be set to \"none\""
 msgstr ""
 "ve výchozím nastavení použijte základní křivku pro jednotlivé kamery namísto "
 "obecné křivky výrobce, pokud je k dispozici. (vyžadován restart)\n"
@@ -1548,7 +1548,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6014
 msgid "show warning messages"
-msgstr "zobrazit varovné zprávy"
+msgstr "zobrazovat varovné zprávy"
 
 #: ../build/bin/preferences_gen.h:6027
 msgid ""
@@ -1557,10 +1557,11 @@ msgid ""
 "these messages can be false-positive and should be disregarded if you know "
 "what you are doing. this option will hide them all the time."
 msgstr ""
-"zobrazovat zprávy v modulech, které upozorňují začínající uživatele na "
-"nestandardní a možná škodlivá nastavení.\n"
-"tyto zprávy mohou být falešně pozitivní a měli byste je ignorovat, pokud "
-"víte, co děláte. tato možnost je vždy skryje."
+"Zobrazovat v modulech hlášení upozorňující začínající uživatele na "
+"nestandardní a\n"
+"potenciálně škodlivá nastavení. Pokud víte, co děláte. zde můžete tato "
+"hlášení nadobro\n"
+"vypnout."
 
 #: ../build/bin/preferences_gen.h:6036
 msgid "CPU / memory"
@@ -1582,26 +1583,25 @@ msgid ""
 " - 'large': is the best option if you are mainly using darktable and want it "
 "to take most of your systems resources for performance."
 msgstr ""
-"definuje, kolik může darktable vzít z vašich systémových prostředků:\n"
-" - 'výchozí': darktable zabírá ~50 % vašich systémových prostředků, což je "
-"dost na výkon.\n"
-" - 'small': měl by být použit, pokud současně spouštíte aplikace zabírající "
-"velkou část systémové paměti nebo aplikace OpenCL/GL, jako jsou hry nebo "
-"Hugin.\n"
-" - 'large': je nejlepší volbou, pokud používáte hlavně darktable a chcete, "
-"aby zabral většinu vašich systémových prostředků na výkon."
+"Určuje, kolik si může Darktable alokovat systémových prostředků:\n"
+" - \"výchozí\": Darktable zabere cca 50 % toho, co je k dispozici (což "
+"typicky stačí).\n"
+" - \"small\": Použijte, pokud současně spouštíte další náročné aplikace, "
+"jako jsou hry nebo Hugin.\n"
+" - \"large\": Dovolí využít Darktable všechny dostupné systémové prostředky "
+"pro zvýšení výkonu."
 
 #: ../build/bin/preferences_gen.h:6091
 msgid "prefer performance over quality"
-msgstr "preferovat rychlost před kvalitou"
+msgstr "upřednostnit rychlost před kvalitou"
 
 #: ../build/bin/preferences_gen.h:6104
 msgid ""
 "if switched on, thumbnails and previews are rendered at lower quality but 4 "
 "times faster"
 msgstr ""
-"pokud je tato funkce zapnutá, miniatury a náhledy se vykreslují v nižší "
-"kvalitě, ale 4krát rychleji"
+"Pokud je zapnuto, miniatury a náhledy se vykreslují v nižší kvalitě, ale "
+"čtyřikrát rychleji."
 
 #: ../build/bin/preferences_gen.h:6113
 msgid "OpenCL"
@@ -1616,9 +1616,9 @@ msgid ""
 "if found, use OpenCL runtime on your system to speed up processing.\n"
 "can be switched on and off at any time."
 msgstr ""
-"pokud je nalezen, použijte ve svém systému runtime OpenCL pro urychlení "
+"Pokud je k dispozici OpenCL, Darktable jej využije pro urychlení "
 "zpracování.\n"
-"lze kdykoli zapnout a vypnout."
+"Lze kdykoli zapnout a vypnout."
 
 #: ../build/bin/preferences_gen.h:6149 ../build/bin/preferences_gen.h:6194
 #: ../build/bin/preferences_gen.h:6238 ../build/bin/preferences_gen.h:6289
@@ -1643,7 +1643,7 @@ msgstr "nedostupné v tomto systému"
 
 #: ../build/bin/preferences_gen.h:6176
 msgid "OpenCL scheduling profile"
-msgstr "Plánovací profil OpenCL"
+msgstr "plánovací profil OpenCL"
 
 #: ../build/bin/preferences_gen.h:6190
 msgid ""
@@ -1655,12 +1655,13 @@ msgid ""
 "GPUs,\n"
 " - 'very fast GPU': process both pixelpipes sequentially on the GPU."
 msgstr ""
-"definuje, jak jsou naplánovány úlohy náhledu a úplného zobrazení v systémech "
-"podporujících OpenCL:\n"
-"  - 'výchozí': GPU zpracovává plné a CPU náhledy (přizpůsobitelné "
-"konfiguračními parametry),\n"
-"  - „více GPU“: zpracujte obě úlohy paralelně na dvou různých GPU,\n"
-"  - 'velmi rychlý GPU': zpracujte obě úlohy postupně na GPU."
+"Stanovuje způsob, jakým se plánuje vykresování náhledů a celých fotografií "
+"na systémech\n"
+"s podporou OpenCL:\n"
+"  - \"výchozí\": GPU zpracovává celé fotografie a CPU jen náhledy "
+"(konfigurovatelné),\n"
+"  - \"více GPU\": obě úlohy běží paralelně na dvou různých GPU,\n"
+"  - \"velmi rychlý GPU\": úlohy běží na GPU sériově"
 
 #: ../build/bin/preferences_gen.h:6221
 msgid "use all device memory"
@@ -1671,8 +1672,9 @@ msgid ""
 "if enabled darktable will use all device memory except a safety margin "
 "(headroom, default is 600MB)"
 msgstr ""
-"je-li povoleno, darktable bude využívat veškerou paměť zařízení kromě "
-"bezpečnostní rezervy (volný prostor, výchozí je 600 MB)"
+"Je-li povoleno, Darktable využije veškerou dostupnou paměť, s výjimkou "
+"bezpečnostní\n"
+"rezervy (600 MB ve výchozím nastavení)."
 
 #: ../build/bin/preferences_gen.h:6253
 msgid "OpenCL drivers"
@@ -1680,13 +1682,12 @@ msgstr "OpenCL ovladače"
 
 #: ../build/bin/preferences_gen.h:6272
 msgid "Intel GPU"
-msgstr "GPU Intel"
+msgstr "Intel GPU"
 
 #: ../build/bin/preferences_gen.h:6285
 msgid "Intel(R) OpenCL Graphics for all supported platforms (vendor provided)"
 msgstr ""
-"Intel(R) OpenCL Graphics pro všechny podporované platformy (poskytován "
-"dodavatelem)"
+"Intel(R) OpenCL Graphics pro všechny podporované platformy (od výrobce)"
 
 #: ../build/bin/preferences_gen.h:6316
 msgid "Nvidia CUDA"
@@ -1694,7 +1695,7 @@ msgstr "Nvidia CUDA"
 
 #: ../build/bin/preferences_gen.h:6329
 msgid "Nvidia CUDA based OpenCL (vendor provided)"
-msgstr "OpenCL založené na Nvidia CUDA (poskytován dodavatelem)"
+msgstr "OpenCL založené na Nvidia CUDA (od výrobce)"
 
 #: ../build/bin/preferences_gen.h:6360
 msgid "AMD ROCm"
@@ -1702,7 +1703,7 @@ msgstr "AMD ROCm"
 
 #: ../build/bin/preferences_gen.h:6373
 msgid "AMD Accelerated Parallel Processing (vendor provided)"
-msgstr "AMD Akcelerované paralelní zpracování (poskytován dodavatelem)"
+msgstr "AMD Accelerated Parallel Processing (od výrobce)"
 
 #: ../build/bin/preferences_gen.h:6404
 msgid "RustiCL (experimental)"
@@ -1713,8 +1714,9 @@ msgid ""
 "RustiCL Mesa OpenCL, still unstable. if you want to use this, you should "
 "disable the vendor driver"
 msgstr ""
-"RustiCL Mesa OpenCL, stále nestabilní. pokud jej chcete použít, měli byste "
-"vypnout ovladač dodavatele"
+"RustiCL Mesa OpenCL. Nestabilní. Pokud jej chcete používat, měli byste "
+"vypnout ovladač\n"
+"od výrobce."
 
 #: ../build/bin/preferences_gen.h:6448
 msgid "Apple"
@@ -1722,7 +1724,7 @@ msgstr "Apple"
 
 #: ../build/bin/preferences_gen.h:6461
 msgid "Apple OpenCL (vendor provided)"
-msgstr "Apple OpenCL (poskytován dodavatelem)"
+msgstr "Apple OpenCL (od výrobce)"
 
 #: ../build/bin/preferences_gen.h:6492
 msgid "Microsoft OpenCLOn12"
@@ -1733,8 +1735,9 @@ msgid ""
 "Microsoft OpenCLOn12, only use this if the vendor provided driver does not "
 "work or there is none provided."
 msgstr ""
-"Microsoft OpenCLOn12, použijte pouze v případě, že ovladač poskytnutý "
-"dodavatelem nefunguje nebo není k dispozici."
+"Microsoft OpenCLOn12. Použijte pouze v případě, že ovladač od výrobce "
+"nefunguje nebo\n"
+"není k dispozici."
 
 #: ../build/bin/preferences_gen.h:6536
 msgid "other platforms"
@@ -1745,8 +1748,9 @@ msgid ""
 "if set, all unspecified platforms are accepted. only do this if no vendor "
 "driver is available"
 msgstr ""
-"pokud je nastaveno, jsou akceptovány všechny nespecifikované platformy. "
-"použijte pouze v případě, že není k dispozici žádný ovladač dodavatele"
+"Pokud je nastaveno, jsou akceptovány všechny nespecifikované platformy. "
+"Použijte pouze\n"
+"v případě, že není k dispozici žádný ovladač od výrobce."
 
 #: ../build/bin/preferences_gen.h:6581
 msgid "security"
@@ -1754,30 +1758,28 @@ msgstr "zabezpečení"
 
 #: ../build/bin/preferences_gen.h:6602
 msgid "ask before removing images from the library"
-msgstr "zeptejte se před odebráním obrázků z knihovny"
+msgstr "zeptat se před vymazáním obrázku z knihovny"
 
 #: ../build/bin/preferences_gen.h:6615
 msgid "always ask the user before removing image information from the library"
-msgstr ""
-"před odebráním informací o obrázku z knihovny se vždy zeptejte uživatele"
+msgstr "Vyžadovat potvrzení před odebráním fotografií z knihovny."
 
 #: ../build/bin/preferences_gen.h:6636
 msgid "ask before deleting images from disk"
-msgstr "zeptat se před smazáním obrázků z disku"
+msgstr "zeptat se před smazáním obrázku z disku"
 
 #: ../build/bin/preferences_gen.h:6649
 msgid "always ask the user before any image file is deleted"
-msgstr ""
-"vždy se zeptejtat uživatele před smazáním jakéhokoli obrazového souboru"
+msgstr "Vyžadovat potvrzení před smazáním fotografie."
 
 #: ../build/bin/preferences_gen.h:6670
 msgid "ask before discarding history stack"
-msgstr "zeptat se před smazáním zásobníku historie"
+msgstr "zeptat se před smazáním historie úprav"
 
 #: ../build/bin/preferences_gen.h:6683
 msgid "always ask the user before history stack is discarded on any image"
 msgstr ""
-"vždy se zeptat uživatele před smazáním zásobníku historie pro každý obrázek"
+"Vyžadovat potvrzení před smazáním historie úprav jakéhokoliv z obrázků."
 
 #: ../build/bin/preferences_gen.h:6704
 msgid "try to use trash when deleting images"
@@ -1788,8 +1790,8 @@ msgid ""
 "send files to trash instead of permanently deleting files on system that "
 "supports it"
 msgstr ""
-"přesunout soubory do koše při permanentním mazání souborů v systémech, které "
-"to podporují"
+"Namísto smazání se pokusí přesunout obrázky do koše, tam, kde to systém "
+"podporuje."
 
 #: ../build/bin/preferences_gen.h:6738
 msgid "ask before moving images from film roll folder"
@@ -1797,7 +1799,7 @@ msgstr "zeptat se před přesunutím obrázků ze složky filmového pásu"
 
 #: ../build/bin/preferences_gen.h:6751
 msgid "always ask the user before any image file is moved."
-msgstr "vždy se zeptat uživatele před přesunutím obrázku."
+msgstr "Vyžadovat potvrzení před před přesunutím obrázku."
 
 #: ../build/bin/preferences_gen.h:6772
 msgid "ask before copying images to new film roll folder"
@@ -1805,20 +1807,20 @@ msgstr "zeptat se před kopírováním obrázků do nové složky filmového pá
 
 #: ../build/bin/preferences_gen.h:6785
 msgid "always ask the user before any image file is copied."
-msgstr ""
-"vždy se zeptejte uživatele před zkopírováním jakéhokoli obrazového souboru."
+msgstr "Vyžadovat potvrzení před před kopírováním obrázku."
 
 #: ../build/bin/preferences_gen.h:6806
 msgid "ask before removing empty folders"
-msgstr "zeptejte se před odstraněním prázdných složek"
+msgstr "zeptat se před odstraněním prázdných složek"
 
 #: ../build/bin/preferences_gen.h:6819
 msgid ""
 "always ask the user before removing any empty folder. this can happen after "
 "moving or deleting images."
 msgstr ""
-"před odstraněním prázdné složky se vždy zeptejte uživatele. k tomu může "
-"dojít po přesunutí nebo vymazání snímků."
+"Vyžadovat potvrzení před odstraněním prázdné složky. K tomu může dojít po "
+"přesunutí\n"
+"nebo vymazání snímků."
 
 #: ../build/bin/preferences_gen.h:6840
 msgid "ask before deleting a tag"
@@ -2427,7 +2429,7 @@ msgstr "specifický"
 #: ../src/imageio/format/avif.c:827 ../src/imageio/format/j2k.c:681
 #: ../src/libs/live_view.c:361
 msgid "off"
-msgstr "vyp"
+msgstr "vyp."
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:367
 msgid "largest area"
@@ -2751,7 +2753,7 @@ msgstr "iterace"
 #: ../build/lib/darktable/plugins/introspection_cacorrect.c:109
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:205
 msgid "once"
-msgstr "jendou"
+msgstr "jednou"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrect.c:110
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:206
@@ -2808,7 +2810,7 @@ msgstr "režim korekce"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:85
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:144
 msgid "very large chromatic aberration"
-msgstr "velmi velká chromatická aberace"
+msgstr "velmi výrazná chromatická aberace"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:260
@@ -3138,7 +3140,7 @@ msgstr "vstupní sytost"
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:126
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:211
 msgid "contrast fulcrum"
-msgstr "opěrný bod kontrastu"
+msgstr "referenční úroveň kontrastu"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:132
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:215
@@ -3201,17 +3203,17 @@ msgstr "odstín"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:298
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:509
 msgid "shadows fall-off"
-msgstr "stíny klesají"
+msgstr "spád stínů"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:304
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:513
 msgid "white fulcrum"
-msgstr "bílý opěrný bod"
+msgstr "referenční úroveň bílé"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:310
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:517
 msgid "highlights fall-off"
-msgstr "světla klesají"
+msgstr "spád světel"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:316
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:358
@@ -3256,7 +3258,7 @@ msgstr "globální chroma"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:305
 #: ../src/iop/colorbalance.c:2049
 msgid "mid-tones"
-msgstr "střední-tony"
+msgstr "střední tóny"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:340
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:537
@@ -3272,12 +3274,12 @@ msgstr "posun odstínu"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:370
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:557
 msgid "global brilliance"
-msgstr "globální lesk"
+msgstr "globální jas"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:394
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:573
 msgid "mask middle-gray fulcrum"
-msgstr "maska středošedý opěrný bod"
+msgstr "střední šedá"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:400
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:577
@@ -3287,7 +3289,7 @@ msgstr "globální živost"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:406
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:581
 msgid "contrast gray fulcrum"
-msgstr "šedý opěrný bod kontrastu"
+msgstr "střední šedá"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:412
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:585
@@ -3328,7 +3330,7 @@ msgstr "kontrast modrá-žlutá"
 #: ../build/lib/darktable/plugins/introspection_colorin.c:150
 #: ../build/lib/darktable/plugins/introspection_colorin.c:233
 msgid "gamut clipping"
-msgstr "ořezávání rozsahu"
+msgstr "ořez rozsahu"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:304
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:202
@@ -3519,7 +3521,7 @@ msgstr "světlost"
 #: ../src/iop/denoiseprofile.c:3505 ../src/iop/rawdenoise.c:752
 #: ../src/iop/sigmoid.c:299
 msgid "smooth"
-msgstr "plynulé"
+msgstr "vyhlazený"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:268
 msgid "strong"
@@ -3712,7 +3714,7 @@ msgstr "zachovat stíny"
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:149
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:316
 msgid "bias correction"
-msgstr "korekce zkreslení"
+msgstr "barevná korekce stínů"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:155
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:320
@@ -3760,11 +3762,11 @@ msgstr "nelokální prostředky auto"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:404
 msgid "wavelets"
-msgstr "vlnky"
+msgstr "vlnkový rozklad"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:405
 msgid "wavelets auto"
-msgstr "vlnky auto"
+msgstr "vlnkový rozklad (auto)"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:406
 msgid "compute variance"
@@ -4904,8 +4906,9 @@ msgstr "vestavěná GainMap"
 #: ../build/lib/darktable/plugins/introspection_relight.c:43
 #: ../build/lib/darktable/plugins/introspection_relight.c:98
 #: ../src/common/collection.c:644 ../src/gui/preferences.c:834
-#: ../src/gui/presets.c:698 ../src/iop/basicadj.c:628 ../src/iop/exposure.c:122
-#: ../src/iop/exposure.c:1131 ../src/libs/metadata_view.c:151
+#: ../src/gui/presets.c:698 ../src/iop/basicadj.c:628
+#: ../src/iop/exposure.c:122 ../src/iop/exposure.c:1131
+#: ../src/libs/metadata_view.c:151
 msgid "exposure"
 msgstr "expozice"
 
@@ -5139,12 +5142,12 @@ msgstr "průměr vyhlazování"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:210
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:333
 msgid "edges refinement/feathering"
-msgstr "zjemnění hran/opeření"
+msgstr "ladění detekce hran"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:216
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:337
 msgid "mask quantization"
-msgstr "kvantování masky"
+msgstr "kvantizace masky"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:222
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:341
@@ -7279,12 +7282,12 @@ msgstr "přímé slunce"
 
 #: ../src/common/wb_presets.c:45
 msgid "cloudy"
-msgstr "zataženo"
+msgstr "oblačno"
 
 #. "Shadows" should be switched to this:
 #: ../src/common/wb_presets.c:47
 msgid "shade"
-msgstr "odstín"
+msgstr "stín"
 
 #: ../src/common/wb_presets.c:48
 msgid "incandescent"
@@ -8151,11 +8154,11 @@ msgstr "import obrázku"
 
 #: ../src/develop/blend.c:308
 msgid "detail mask blending error"
-msgstr "chyba prolnutí masky detailů"
+msgstr "chyba maskování podle detailů"
 
 #: ../src/develop/blend.c:930
 msgid "detail mask CL blending problem"
-msgstr "maska detailů CL problém prolnutí"
+msgstr "chyba maskování podle detailů (CL)"
 
 #: ../src/develop/blend_gui.c:47 ../src/libs/live_view.c:335
 msgctxt "blendmode"
@@ -8175,7 +8178,7 @@ msgstr "rozdíl"
 #: ../src/develop/blend_gui.c:54
 msgctxt "blendmode"
 msgid "normal bounded"
-msgstr "normálně ohraničené"
+msgstr "normální ohraničené"
 
 #: ../src/develop/blend_gui.c:56 ../src/libs/live_view.c:343
 msgctxt "blendmode"
@@ -8190,27 +8193,27 @@ msgstr "ztmavit"
 #: ../src/develop/blend_gui.c:60 ../src/libs/live_view.c:340
 msgctxt "blendmode"
 msgid "screen"
-msgstr "obrazovka"
+msgstr "stínítko"
 
 #: ../src/develop/blend_gui.c:63 ../src/libs/live_view.c:339
 msgctxt "blendmode"
 msgid "multiply"
-msgstr "násobit"
+msgstr "násobek"
 
 #: ../src/develop/blend_gui.c:65
 msgctxt "blendmode"
 msgid "divide"
-msgstr "dělení"
+msgstr "podíl"
 
 #: ../src/develop/blend_gui.c:67
 msgctxt "blendmode"
 msgid "addition"
-msgstr "přidat"
+msgstr "přičíst"
 
 #: ../src/develop/blend_gui.c:69
 msgctxt "blendmode"
 msgid "subtract"
-msgstr "odčítat"
+msgstr "odečíst"
 
 #: ../src/develop/blend_gui.c:71
 msgctxt "blendmode"
@@ -8225,7 +8228,7 @@ msgstr "harmonický průměr"
 #: ../src/develop/blend_gui.c:76 ../src/libs/live_view.c:341
 msgctxt "blendmode"
 msgid "overlay"
-msgstr "překrytí"
+msgstr "překryv"
 
 #: ../src/develop/blend_gui.c:78
 msgctxt "blendmode"
@@ -8250,7 +8253,7 @@ msgstr "lieární světlo"
 #: ../src/develop/blend_gui.c:86
 msgctxt "blendmode"
 msgid "pinlight"
-msgstr "špendlík"
+msgstr "bodové světlo"
 
 #: ../src/develop/blend_gui.c:89
 msgctxt "blendmode"
@@ -8320,7 +8323,7 @@ msgstr "barva"
 #: ../src/develop/blend_gui.c:118
 msgctxt "blendmode"
 msgid "coloradjustment"
-msgstr "nastavení barvy"
+msgstr "úprava barvy"
 
 #. * deprecated blend modes: make them available as legacy
 #. * history stacks might want them
@@ -8332,12 +8335,12 @@ msgstr "rozdíl (zastaralý)"
 #: ../src/develop/blend_gui.c:126
 msgctxt "blendmode"
 msgid "subtract inverse (deprecated)"
-msgstr "odečíst inverzně (zastaralé)"
+msgstr "invertovaný odečet (zastaralé)"
 
 #: ../src/develop/blend_gui.c:128
 msgctxt "blendmode"
 msgid "divide inverse (deprecated)"
-msgstr "dělit inverzní (zastaralé)"
+msgstr "invertovaný podíl (zastaralé)"
 
 #: ../src/develop/blend_gui.c:130
 msgctxt "blendmode"
@@ -8373,12 +8376,12 @@ msgstr "RGB (scéna)"
 #. DEVELOP_MASK_ENABLED
 #: ../src/develop/blend_gui.c:155 ../src/develop/blend_gui.c:3475
 msgid "uniformly"
-msgstr "jednotně"
+msgstr "jednotná maska"
 
 #: ../src/develop/blend_gui.c:157 ../src/develop/blend_gui.c:2793
 #: ../src/develop/blend_gui.c:3485 ../src/develop/imageop.c:2663
 msgid "drawn mask"
-msgstr "nakreslená maska"
+msgstr "kreslená maska"
 
 #: ../src/develop/blend_gui.c:159 ../src/develop/blend_gui.c:2565
 #: ../src/develop/blend_gui.c:3496 ../src/develop/imageop.c:2665
@@ -8396,19 +8399,19 @@ msgstr "kreslená a parametrická maska"
 
 #: ../src/develop/blend_gui.c:168
 msgid "exclusive"
-msgstr "výhradní"
+msgstr "exkluzivně"
 
 #: ../src/develop/blend_gui.c:169
 msgid "inclusive"
-msgstr "včetně"
+msgstr "inkluzivně"
 
 #: ../src/develop/blend_gui.c:170
 msgid "exclusive & inverted"
-msgstr "exkluzivní & obrácený"
+msgstr "exkluzivně a invertovat"
 
 #: ../src/develop/blend_gui.c:171
 msgid "inclusive & inverted"
-msgstr "včetně a invertováno"
+msgstr "inkluzivně a invertovat"
 
 #: ../src/develop/blend_gui.c:175
 msgid "output before blur"
@@ -8430,7 +8433,7 @@ msgstr "vstup po rozostření"
 #: ../src/gui/accelerators.c:161 ../src/gui/accelerators.c:249
 #: ../src/imageio/format/avif.c:827 ../src/libs/live_view.c:362
 msgid "on"
-msgstr "zap"
+msgstr "zap."
 
 #: ../src/develop/blend_gui.c:1021 ../src/develop/blend_gui.c:2643
 #: ../src/develop/imageop.c:2791
@@ -8452,7 +8455,7 @@ msgstr " (log)"
 
 #: ../src/develop/blend_gui.c:2041
 msgid "reset to default blend colorspace"
-msgstr "obnovit výchozí prolnutý barevného prostoru"
+msgstr "vrátit výchozí barevný prostor míchání"
 
 #: ../src/develop/blend_gui.c:2097
 msgid "reset and hide output channels"
@@ -8469,7 +8472,7 @@ msgstr "L"
 
 #: ../src/develop/blend_gui.c:2343
 msgid "sliders for L channel"
-msgstr "posuvníky pro kanál L"
+msgstr "maska podle kanálu L"
 
 #: ../src/develop/blend_gui.c:2348 ../src/iop/tonecurve.c:1285
 msgid "a"
@@ -8477,7 +8480,7 @@ msgstr "a"
 
 #: ../src/develop/blend_gui.c:2348
 msgid "sliders for a channel"
-msgstr "posuvníky pro kanál"
+msgstr "maska podle kanálu a"
 
 #: ../src/develop/blend_gui.c:2352
 msgid "green/red"
@@ -8489,7 +8492,7 @@ msgstr "b"
 
 #: ../src/develop/blend_gui.c:2353
 msgid "sliders for b channel"
-msgstr "posuvníky pro kanál b"
+msgstr "maska podle kanálu b"
 
 #: ../src/develop/blend_gui.c:2357
 msgid "blue/yellow"
@@ -8501,7 +8504,7 @@ msgstr "C"
 
 #: ../src/develop/blend_gui.c:2358
 msgid "sliders for chroma channel (of LCh)"
-msgstr "posuvníky pro chroma kanál (LCh)"
+msgstr "maska podle chromy (LCh)"
 
 #: ../src/develop/blend_gui.c:2364
 msgid "h"
@@ -8509,7 +8512,7 @@ msgstr "h"
 
 #: ../src/develop/blend_gui.c:2364
 msgid "sliders for hue channel (of LCh)"
-msgstr "posuvníky pro kanál odstínu (of LCh)"
+msgstr "maska podle odstínu (LCh)"
 
 #: ../src/develop/blend_gui.c:2372 ../src/develop/blend_gui.c:2420
 msgid "g"
@@ -8517,7 +8520,7 @@ msgstr "g"
 
 #: ../src/develop/blend_gui.c:2372 ../src/develop/blend_gui.c:2420
 msgid "sliders for gray value"
-msgstr "posuvníky pro hodnotu šedé"
+msgstr "maska podle úrovně šedé"
 
 #: ../src/develop/blend_gui.c:2378 ../src/develop/blend_gui.c:2426
 #: ../src/iop/channelmixerrgb.c:4685 ../src/iop/denoiseprofile.c:3691
@@ -8528,7 +8531,7 @@ msgstr "R"
 
 #: ../src/develop/blend_gui.c:2378 ../src/develop/blend_gui.c:2426
 msgid "sliders for red channel"
-msgstr "posuvníky pro červený kanál"
+msgstr "maska podle červeného kanálu"
 
 #: ../src/develop/blend_gui.c:2384 ../src/develop/blend_gui.c:2432
 #: ../src/iop/channelmixerrgb.c:4686 ../src/iop/denoiseprofile.c:3692
@@ -8539,7 +8542,7 @@ msgstr "G"
 
 #: ../src/develop/blend_gui.c:2384 ../src/develop/blend_gui.c:2432
 msgid "sliders for green channel"
-msgstr "posuvníky pro zelený kanál"
+msgstr "maska podle zeleného kanálu"
 
 #: ../src/develop/blend_gui.c:2390 ../src/develop/blend_gui.c:2438
 #: ../src/iop/channelmixerrgb.c:4687 ../src/iop/denoiseprofile.c:3693
@@ -8550,7 +8553,7 @@ msgstr "B"
 
 #: ../src/develop/blend_gui.c:2390 ../src/develop/blend_gui.c:2438
 msgid "sliders for blue channel"
-msgstr "posuvníky pro modrý kanál"
+msgstr "maska podle modrého kanálu"
 
 #: ../src/develop/blend_gui.c:2396
 msgid "H"
@@ -8558,7 +8561,7 @@ msgstr "H"
 
 #: ../src/develop/blend_gui.c:2396
 msgid "sliders for hue channel (of HSL)"
-msgstr "posuvníky pro kanál odstínu (HSL)"
+msgstr "maska podle odstínu (HSL)"
 
 #: ../src/develop/blend_gui.c:2403
 msgid "S"
@@ -8566,11 +8569,11 @@ msgstr "S"
 
 #: ../src/develop/blend_gui.c:2403
 msgid "sliders for chroma channel (of HSL)"
-msgstr "posuvníky pro chroma kanál (z HSL)"
+msgstr "maska podle chromy (HSL)"
 
 #: ../src/develop/blend_gui.c:2410
 msgid "sliders for value channel (of HSL)"
-msgstr "posuvníky pro kanál hodnoty (HSL)"
+msgstr "maska podle hodnoty (HSL)"
 
 #: ../src/develop/blend_gui.c:2444
 msgid "Jz"
@@ -8578,7 +8581,7 @@ msgstr "Jz"
 
 #: ../src/develop/blend_gui.c:2444
 msgid "sliders for value channel (of JzCzhz)"
-msgstr "posuvníky pro kanál hodnoty (of JzCzhz)"
+msgstr "maska podle hodnoty (JzCzhz)"
 
 #: ../src/develop/blend_gui.c:2451
 msgid "Cz"
@@ -8586,7 +8589,7 @@ msgstr "Cz"
 
 #: ../src/develop/blend_gui.c:2451
 msgid "sliders for chroma channel (of JzCzhz)"
-msgstr "posuvníky pro chroma kanál (z JzCzhz)"
+msgstr "maska podle chromy (JzCzhz)"
 
 #: ../src/develop/blend_gui.c:2458
 msgid "hz"
@@ -8594,7 +8597,7 @@ msgstr "hz"
 
 #: ../src/develop/blend_gui.c:2458
 msgid "sliders for hue channel (of JzCzhz)"
-msgstr "posuvníky pro kanál odstínu (of JzCzhz)"
+msgstr "maska podle odstínu (JzCzhz)"
 
 #: ../src/develop/blend_gui.c:2468
 msgid ""
@@ -8603,10 +8606,10 @@ msgid ""
 "* range defined by lower markers: do not blend at all\n"
 "* range between adjacent upper/lower markers: blend gradually"
 msgstr ""
-"nastavení na základě vstupu přijatého tímto modulem:\n"
-"* rozsah definovaný horními značkami: zcela prolnout\n"
-"* rozsah definovaný spodními značkami: vůbec se neslévejte\n"
-"* rozsah mezi sousedními horními/spodními značkami: promíchejte postupně"
+"Úpravy na základě vstupu přijatého tímto modulem:\n"
+"* rozsah definovaný horními značkami: úplné prolnutí\n"
+"* rozsah definovaný spodními značkami: žádné prolnutí\n"
+"* rozsah mezi sousedními horními/spodními značkami: postupné prolínání"
 
 #: ../src/develop/blend_gui.c:2472
 msgid ""
@@ -8615,14 +8618,14 @@ msgid ""
 "* range defined by lower markers: do not blend at all\n"
 "* range between adjacent upper/lower markers: blend gradually"
 msgstr ""
-"úprava založená na nemíchaném výstupu tohoto modulu:\n"
-"* rozsah definovaný horními značkami: zcela prolnout\n"
-"* rozsah definovaný spodními značkami: vůbec se neslévejte\n"
-"* rozsah mezi sousedními horními/spodními značkami: promíchejte postupně"
+"Úpravy na základě nemaskovaného výstupu tohoto modulu:\n"
+"* rozsah definovaný horními značkami: úplné prolnutí\n"
+"* rozsah definovaný spodními značkami: žádné prolnutí\n"
+"* rozsah mezi sousedními horními/spodními značkami: postupné prolínání"
 
 #: ../src/develop/blend_gui.c:2569
 msgid "reset blend mask settings"
-msgstr "resetujte nastavení masky prolnutí"
+msgstr "reset nastavení masky"
 
 #: ../src/develop/blend_gui.c:2580 ../src/iop/atrous.c:1796
 #: ../src/iop/colorzones.c:2638 ../src/iop/denoiseprofile.c:3688
@@ -8637,8 +8640,8 @@ msgid ""
 "pick GUI color from image\n"
 "ctrl+click or right-click to select an area"
 msgstr ""
-"vyberte barvu GUI z obrázku\n"
-"ctrl+klik nebo klik pravým tlačítkem vyberte oblast"
+"Vybere barvu z obrázku.\n"
+"Ctrl+klik nebo kliknutím pravým tlačítkem vyberte oblast."
 
 #: ../src/develop/blend_gui.c:2598 ../src/iop/colorzones.c:2659
 #: ../src/iop/rgbcurve.c:1517
@@ -8651,9 +8654,9 @@ msgid ""
 "drag to use the input image\n"
 "ctrl+drag to use the output image"
 msgstr ""
-"nastavte rozsah podle oblasti z obrázku\n"
-"přetažením použijete vstupní obrázek\n"
-"ctrl+přetažení použijete výstupní obrázek"
+"Nastavit rozsah podle oblasti z obrázku:\n"
+"* pouhým táhnutím se bere oblast ze vstupního obrázku\n"
+"* tažením společně s ctrl se použije výstupní obrázek"
 
 #: ../src/develop/blend_gui.c:2610
 msgid "set range"
@@ -8665,7 +8668,7 @@ msgstr "obrátit polaritu všech kanálů"
 
 #: ../src/develop/blend_gui.c:2637
 msgid "toggle polarity. best seen by enabling 'display mask'"
-msgstr "přepnout polaritu. nejlépe viditelné povolením „masky displeje“"
+msgstr "přepnout polaritu (lépe viditelné, když je maska zobrazena)"
 
 #: ../src/develop/blend_gui.c:2666
 msgid ""
@@ -8674,27 +8677,28 @@ msgid ""
 "press 'c' to toggle view of channel data.\n"
 "press 'm' to toggle mask view."
 msgstr ""
-"dvojklik pro reset.\n"
-"tlačítko 'a' přepíná dostupné režimy posuvníku.\n"
-"tlačítko 'c' přepíná zobrazení kanálu dat.\n"
-"tlačítko 'm' přepíná zobrazení masky."
+"Dvojklikem resetujte.\n"
+"Tlačítko 'a' přepíná dostupné režimy posuvníku.\n"
+"Tlačítko 'c' přepíná zobrazení kanálu dat.\n"
+"Tlačítko 'm' přepíná zobrazení masky."
 
 #: ../src/develop/blend_gui.c:2693 ../src/develop/blend_gui.c:3614
 #: ../src/iop/basicadj.c:630 ../src/iop/colorbalancergb.c:2134
 #: ../src/iop/colorequal.c:2649 ../src/iop/exposure.c:1134
-#: ../src/iop/exposure.c:1149 ../src/iop/filmic.c:1516 ../src/iop/filmic.c:1529
-#: ../src/iop/filmic.c:1571 ../src/iop/filmicrgb.c:4406
-#: ../src/iop/filmicrgb.c:4417 ../src/iop/filmicrgb.c:4451
-#: ../src/iop/filmicrgb.c:4461 ../src/iop/graduatednd.c:1069
-#: ../src/iop/negadoctor.c:1025 ../src/iop/profile_gamma.c:635
-#: ../src/iop/profile_gamma.c:641 ../src/iop/relight.c:254
-#: ../src/iop/soften.c:360 ../src/iop/toneequal.c:3346
-#: ../src/iop/toneequal.c:3349 ../src/iop/toneequal.c:3352
-#: ../src/iop/toneequal.c:3355 ../src/iop/toneequal.c:3358
-#: ../src/iop/toneequal.c:3361 ../src/iop/toneequal.c:3364
-#: ../src/iop/toneequal.c:3367 ../src/iop/toneequal.c:3370
-#: ../src/iop/toneequal.c:3492 ../src/iop/toneequal.c:3501
-#: ../src/iop/toneequal.c:3514 ../src/views/darkroom.c:2365
+#: ../src/iop/exposure.c:1149 ../src/iop/filmic.c:1516
+#: ../src/iop/filmic.c:1529 ../src/iop/filmic.c:1571
+#: ../src/iop/filmicrgb.c:4406 ../src/iop/filmicrgb.c:4417
+#: ../src/iop/filmicrgb.c:4451 ../src/iop/filmicrgb.c:4461
+#: ../src/iop/graduatednd.c:1069 ../src/iop/negadoctor.c:1025
+#: ../src/iop/profile_gamma.c:635 ../src/iop/profile_gamma.c:641
+#: ../src/iop/relight.c:254 ../src/iop/soften.c:360
+#: ../src/iop/toneequal.c:3346 ../src/iop/toneequal.c:3349
+#: ../src/iop/toneequal.c:3352 ../src/iop/toneequal.c:3355
+#: ../src/iop/toneequal.c:3358 ../src/iop/toneequal.c:3361
+#: ../src/iop/toneequal.c:3364 ../src/iop/toneequal.c:3367
+#: ../src/iop/toneequal.c:3370 ../src/iop/toneequal.c:3492
+#: ../src/iop/toneequal.c:3501 ../src/iop/toneequal.c:3514
+#: ../src/views/darkroom.c:2365
 msgid " EV"
 msgstr " EV"
 
@@ -8705,7 +8709,7 @@ msgstr " EV"
 #: ../src/develop/blend_gui.c:3666 ../src/develop/blend_gui.c:3678
 #: ../src/develop/blend_gui.c:3689 ../src/develop/blend_gui.c:3700
 msgid "blend"
-msgstr "prolnutí"
+msgstr "míchání"
 
 #: ../src/develop/blend_gui.c:2695
 msgid "boost factor"
@@ -8730,16 +8734,16 @@ msgstr "nepoužívá se žádná maska"
 
 #: ../src/develop/blend_gui.c:2804
 msgid "toggle polarity of drawn mask"
-msgstr "přepnout polaritu nakreslené masky"
+msgstr "přepnout polaritu kreslené masky"
 
 #: ../src/develop/blend_gui.c:2813
 msgid "show and edit mask elements"
-msgstr "zobrazit a upravit masky prvků"
+msgstr "zobrazit a upravit prvky masky"
 
 #: ../src/develop/blend_gui.c:2814
 msgid "show and edit in restricted mode (no moving/resizing of shapes)"
 msgstr ""
-"zobrazit a upravit v omezeném režimu (žádné přesouvání/změna velikosti tvarů)"
+"zobrazit a upravovat v omezeném režimu (žádné přesouvání/změna velikosti tvarů)"
 
 #: ../src/develop/blend_gui.c:2821 ../src/libs/masks.c:1005
 #: ../src/libs/masks.c:1803 ../src/libs/masks.c:1807
@@ -8753,7 +8757,7 @@ msgstr "přidat více gradientů"
 #: ../src/develop/blend_gui.c:2829 ../src/iop/retouch.c:2462
 #: ../src/libs/masks.c:985 ../src/libs/masks.c:1839 ../src/libs/masks.c:1843
 msgid "add brush"
-msgstr "přidat štětec"
+msgstr "přidat tah štětcem"
 
 #: ../src/develop/blend_gui.c:2830 ../src/iop/retouch.c:2462
 msgid "add multiple brush strokes"
@@ -8785,7 +8789,7 @@ msgstr "přidat více elips"
 #: ../src/iop/spots.c:896 ../src/libs/masks.c:990 ../src/libs/masks.c:1830
 #: ../src/libs/masks.c:1834
 msgid "add circle"
-msgstr "přidat kružnici"
+msgstr "přidat kruh"
 
 #: ../src/develop/blend_gui.c:2854 ../src/iop/retouch.c:2477
 #: ../src/iop/spots.c:896
@@ -8833,15 +8837,15 @@ msgstr "zastaralé"
 #: ../src/develop/blend_gui.c:3225
 #, c-format
 msgid "unknown blend mode '%d' in module '%s'"
-msgstr "neznámý režim prolnutí '%d' v modulu '%s'"
+msgstr "neznámý režim míchání '%d' v modulu '%s'"
 
 #: ../src/develop/blend_gui.c:3534
 msgid "blending options"
-msgstr "možnosti prolnutí"
+msgstr "možnosti míchání"
 
 #: ../src/develop/blend_gui.c:3553
 msgid "blend mask"
-msgstr "míchání masky"
+msgstr "nastavení masky"
 
 #: ../src/develop/blend_gui.c:3557
 msgid "display mask and/or color channel"
@@ -8854,26 +8858,25 @@ msgid ""
 "shift+click to display channel.\n"
 "hover over parametric mask slider to select channel for display"
 msgstr ""
-"maska displeje a/nebo barevný kanál.\n"
-"ctrl+klik zobrazí masku,\n"
+"Zobrazit masku a/nebo barevný kanál.\n"
+"Ctrl+klik zobrazí masku.\n"
 "Shift+klik zobrazí kanál.\n"
-"najeďte myší na posuvník parametrické masky a vyberte kanál pro zobrazení"
+"Pro výběr kanálu k zobrazení najeďte myší nad posuvník parametrické masky."
 
 #: ../src/develop/blend_gui.c:3569
 msgid "temporarily switch off blend mask"
-msgstr "dočasně vypnout míchací masku"
+msgstr "dočasně vypnout masku"
 
 #: ../src/develop/blend_gui.c:3574
 msgid ""
 "temporarily switch off blend mask.\n"
 "only for module in focus"
 msgstr ""
-"dočasně vypněte míchací masku.\n"
-"pouze pro vybraný modul"
+"Dočasně vypne masku (dokud je modul vybraný)."
 
 #: ../src/develop/blend_gui.c:3586
 msgid "choose blending mode"
-msgstr "zvolte režim prolnutí"
+msgstr "zvolte režim míchání"
 
 #: ../src/develop/blend_gui.c:3596
 msgid "toggle blend order"
@@ -8885,9 +8888,9 @@ msgid ""
 "by default the output will be blended on top of the input,\n"
 "order can be reversed by clicking on the icon (input on top of output)"
 msgstr ""
-"přepínat pořadí prolnutí mezi vstupem a výstupem modulu,\n"
-"ve výchozím nastavení bude výstup smíchán se vstupem,\n"
-"pořadí lze zvrátit kliknutím na ikonu (vstup nad výstupem)"
+"Přepne pořadí míchání vstupu a výstupu z modulu.\n"
+"Ve výchozím stavu je výstup aplikován na vstup do modulu.\n"
+"Pořadí lze zvrátit kliknutím na ikonu."
 
 #: ../src/develop/blend_gui.c:3613
 msgid "fulcrum"
@@ -8895,7 +8898,7 @@ msgstr "opěrný bod"
 
 #: ../src/develop/blend_gui.c:3617
 msgid "adjust the fulcrum used by some blending operations"
-msgstr "upravit opěrný bod používaný některými operacemi prolnutí"
+msgstr "Upraví opěrný bod používaný některými operacemi maskování."
 
 #. Add opacity/scale sliders to table
 #: ../src/develop/blend_gui.c:3625 ../src/iop/overlay.c:1059
@@ -8905,7 +8908,7 @@ msgstr "neprůhlednost"
 
 #: ../src/develop/blend_gui.c:3628
 msgid "set the opacity of the blending"
-msgstr "nastavte neprůhlednost prolnutí"
+msgstr "nastavte neprůhlednost maskování"
 
 #: ../src/develop/blend_gui.c:3633 ../src/libs/history.c:959
 msgid "combine masks"
@@ -8916,11 +8919,11 @@ msgid ""
 "how to combine individual drawn mask and different channels of parametric "
 "mask"
 msgstr ""
-"jak kombinovat jednotlivé nakreslené masky a různé kanály parametrické masky"
+"Jak kombinovat jednotlivé nakreslené masky a různé kanály parametrické masky."
 
 #: ../src/develop/blend_gui.c:3642
 msgid "details threshold"
-msgstr "prahová hodnota detailů"
+msgstr "práh úrovně detailů"
 
 #: ../src/develop/blend_gui.c:3646
 msgid ""
@@ -8928,25 +8931,25 @@ msgid ""
 "positive values select areas with strong details,\n"
 "negative values select flat areas"
 msgstr ""
-"upravit práh pro masku podrobností (pomocí nezpracovaných dat),\n"
-"kladné hodnoty vybírají oblasti se silnými detaily,\n"
-"záporné hodnoty vybírají rovné plochy"
+"Maskování podle úrovně detailů (ve vstupních datech):\n"
+"* kladné hodnoty maskují oblasti s výraznými detaily\n"
+"* záporné hodnoty maskují hladké plochy"
 
 #: ../src/develop/blend_gui.c:3654 ../src/libs/history.c:962
 msgid "feathering guide"
-msgstr "průvodce opeřením"
+msgstr "vodítko hran masky"
 
 #: ../src/develop/blend_gui.c:3657
 msgid ""
 "choose to guide mask by input or output image and\n"
 "choose to apply feathering before or after mask blur"
 msgstr ""
-"zvolte vodítko masky podle vstupního nebo výstupního obrázku a\n"
-"zvolte použití opeření před nebo po rozmazání masky"
+"Vyberte, zda chcete ohraničení masky vést podle vstupu\n"
+"nebo výstupu, a zda před nebo až po rozostření okrajů."
 
 #: ../src/develop/blend_gui.c:3666 ../src/libs/history.c:961
 msgid "feathering radius"
-msgstr "poloměr opeření"
+msgstr "poloměr ohraničení"
 
 #: ../src/develop/blend_gui.c:3667 ../src/develop/blend_gui.c:3679
 #: ../src/iop/colorbalancergb.c:2164 ../src/iop/colorequal.c:2664
@@ -8957,7 +8960,7 @@ msgstr " px"
 
 #: ../src/develop/blend_gui.c:3669
 msgid "spatial radius of feathering"
-msgstr "prostorový poloměr opeření"
+msgstr "poloměr ohraničení masky"
 
 #: ../src/develop/blend_gui.c:3678
 msgid "blurring radius"
@@ -8965,7 +8968,7 @@ msgstr "poloměr rozostření"
 
 #: ../src/develop/blend_gui.c:3681
 msgid "radius for gaussian blur of blend mask"
-msgstr "poloměr pro gaussovské rozostření prolnuté masky"
+msgstr "poloměr pro gaussovské rozostření masky"
 
 #: ../src/develop/blend_gui.c:3689 ../src/iop/retouch.c:2734
 #: ../src/libs/history.c:957
@@ -8977,8 +8980,8 @@ msgid ""
 "shifts and tilts the tone curve of the blend mask to adjust its brightness\n"
 "without affecting fully transparent/fully opaque regions"
 msgstr ""
-"posune a nakloní tónovou křivku masky prolnutí, aby se upravil její jas\n"
-"bez ovlivnění plně průhledných/zcela neprůhledných oblastí"
+"Posouvá a naklání tónovou křivku masky, čímž reguluje její efekt\n"
+"bez ovlivnění plně průhledných/zcela neprůhledných oblastí."
 
 #: ../src/develop/blend_gui.c:3700 ../src/libs/history.c:965
 msgid "mask contrast"
@@ -8988,11 +8991,11 @@ msgstr "kontrast masky"
 msgid ""
 "gives the tone curve of the blend mask an s-like shape to adjust its contrast"
 msgstr ""
-"dává tónové křivce prolnuté masky tvar podobný S pro úpravu jejího kontrastu"
+"Dává tónové křivce masky tvar podobný S, čímž ovlivňuje její kontrast."
 
 #: ../src/develop/blend_gui.c:3708
 msgid "mask refinement"
-msgstr "zdokonalení masky"
+msgstr "ladění masky"
 
 #: ../src/develop/develop.c:735
 msgid ""
@@ -9178,7 +9181,7 @@ msgid ""
 "ctrl+click to %s"
 msgstr ""
 "%s\n"
-"ctrl+click na %s"
+"ctrl+klik: %s"
 
 #: ../src/develop/lightroom.c:1137
 msgid "cannot find Lightroom XMP!"
@@ -9271,7 +9274,7 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>velikost</b>: posouvání, <b>velikost prolnutí</b>: shift+rolování\n"
+"<b>velikost</b>: posouvání, <b>velikost ohraničení</b>: shift+rolování\n"
 "<b>neprůhlednost</b>: ctrl+scroll (%d%%)"
 
 #: ../src/develop/masks/ellipse.c:450 ../src/develop/masks/ellipse.c:509
@@ -9297,7 +9300,7 @@ msgstr "[ELIPSA] změna neprůhlednosti"
 
 #: ../src/develop/masks/ellipse.c:1974
 msgid "[ELLIPSE] switch feathering mode"
-msgstr "[ELIPSA] přepne režim prolnutí"
+msgstr "[ELIPSA] přepne režim ohraničení"
 
 #: ../src/develop/masks/ellipse.c:1984
 #, c-format
@@ -9310,7 +9313,7 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>velikost</b>: posuv, <b>prolnutí</b>: shift+rolování\n"
+"<b>velikost</b>: posuv, <b>velikost ohraničení</b>: shift+rolování\n"
 "<b>rotace</b>: ctrl+shift+scroll, <b>neprůhlednost</b>: ctrl+scroll (%d%%)"
 
 #: ../src/develop/masks/ellipse.c:2026
@@ -9321,11 +9324,11 @@ msgstr "<b>rotace</b>: ctrl+přetáhnout"
 #, c-format
 msgid ""
 "<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
-"<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: "
-"ctrl+scroll (%d%%)"
+"<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: ctrl"
+"+scroll (%d%%)"
 msgstr ""
-"<b>režim prolnutí</b>: shift+kliknutí, <b>otočení</b>: ctrl+přetažení\n"
-"<b>velikost</b>: rolování, <b>velikost prolnutí</b>: shift+scroll, "
+"<b>režim ohraničení</b>: shift+kliknutí, <b>otočení</b>: ctrl+přetažení\n"
+"<b>velikost</b>: rolování, <b>velikost ohraničení</b>: shift+scroll, "
 "<b>neprůhlednost</b>: ctrl+scroll (%d%%)"
 
 #: ../src/develop/masks/gradient.c:131 ../src/develop/masks/gradient.c:175
@@ -9691,13 +9694,14 @@ msgstr "relativní"
 msgid "selected"
 msgstr "vybrané"
 
-#: ../src/dtgtk/range.c:628 ../src/dtgtk/range.c:1767 ../src/dtgtk/range.c:1818
-#: ../src/libs/colorpicker.c:53
+#: ../src/dtgtk/range.c:628 ../src/dtgtk/range.c:1767
+#: ../src/dtgtk/range.c:1818 ../src/libs/colorpicker.c:53
 msgid "min"
 msgstr "min"
 
-#: ../src/dtgtk/range.c:634 ../src/dtgtk/range.c:1779 ../src/dtgtk/range.c:1830
-#: ../src/libs/colorpicker.c:53 ../src/libs/filters/rating_range.c:309
+#: ../src/dtgtk/range.c:634 ../src/dtgtk/range.c:1779
+#: ../src/dtgtk/range.c:1830 ../src/libs/colorpicker.c:53
+#: ../src/libs/filters/rating_range.c:309
 msgid "max"
 msgstr "max"
 
@@ -11568,7 +11572,7 @@ msgstr "nastavení darktable"
 
 #: ../src/gui/preferences.c:559
 msgid "darktable needs to be restarted for settings to take effect"
-msgstr "darktable musí být restartování, aby se změny projevily"
+msgstr "Aby se změny projevily, bude potřeba darktable restartovat."
 
 #. exif
 #: ../src/gui/preferences.c:818 ../src/gui/presets.c:658
@@ -11614,7 +11618,8 @@ msgstr "vybrat preset(y) pro import"
 
 #: ../src/gui/preferences.c:1042 ../src/libs/collect.c:429
 #: ../src/libs/copy_history.c:115 ../src/libs/geotagging.c:930
-#: ../src/libs/import.c:1829 ../src/libs/import.c:1942 ../src/libs/styles.c:574
+#: ../src/libs/import.c:1829 ../src/libs/import.c:1942
+#: ../src/libs/styles.c:574
 msgid "_open"
 msgstr "_otevřít"
 
@@ -11667,9 +11672,9 @@ msgstr "opravdu vymazat preset `%s'?"
 #. clang-format on
 #. create a shortcut for the new entry
 #. then show edit dialog
-#: ../src/gui/presets.c:202 ../src/gui/presets.c:1033 ../src/gui/presets.c:1036
-#: ../src/gui/presets.c:1039 ../src/libs/lib.c:172 ../src/libs/lib.c:189
-#: ../src/libs/lib.c:197 ../src/libs/lib.c:200
+#: ../src/gui/presets.c:202 ../src/gui/presets.c:1033
+#: ../src/gui/presets.c:1036 ../src/gui/presets.c:1039 ../src/libs/lib.c:172
+#: ../src/libs/lib.c:189 ../src/libs/lib.c:197 ../src/libs/lib.c:200
 msgid "new preset"
 msgstr "nový preset"
 
@@ -12832,19 +12837,20 @@ msgstr "korektivní nebo kreativní"
 
 #: ../src/iop/ashift.c:132 ../src/iop/ashift.c:134 ../src/iop/basicadj.c:174
 #: ../src/iop/bilateral.cc:105 ../src/iop/bilateral.cc:107
-#: ../src/iop/blurs.c:93 ../src/iop/blurs.c:94 ../src/iop/channelmixerrgb.c:239
-#: ../src/iop/channelmixerrgb.c:241 ../src/iop/clipping.c:364
-#: ../src/iop/clipping.c:366 ../src/iop/colorbalancergb.c:185
-#: ../src/iop/colorin.c:137 ../src/iop/colorequal.c:196 ../src/iop/crop.c:135
-#: ../src/iop/crop.c:137 ../src/iop/demosaic.c:296
-#: ../src/iop/denoiseprofile.c:780 ../src/iop/denoiseprofile.c:782
-#: ../src/iop/diffuse.c:144 ../src/iop/diffuse.c:146
-#: ../src/iop/enlargecanvas.c:84 ../src/iop/enlargecanvas.c:86
-#: ../src/iop/exposure.c:132 ../src/iop/exposure.c:134 ../src/iop/flip.c:111
-#: ../src/iop/flip.c:112 ../src/iop/hazeremoval.c:113
-#: ../src/iop/hazeremoval.c:115 ../src/iop/lens.cc:269 ../src/iop/lens.cc:271
-#: ../src/iop/liquify.c:298 ../src/iop/liquify.c:300 ../src/iop/overlay.c:156
-#: ../src/iop/overlay.c:158 ../src/iop/primaries.c:81 ../src/iop/primaries.c:83
+#: ../src/iop/blurs.c:93 ../src/iop/blurs.c:94
+#: ../src/iop/channelmixerrgb.c:239 ../src/iop/channelmixerrgb.c:241
+#: ../src/iop/clipping.c:364 ../src/iop/clipping.c:366
+#: ../src/iop/colorbalancergb.c:185 ../src/iop/colorin.c:137
+#: ../src/iop/colorequal.c:196 ../src/iop/crop.c:135 ../src/iop/crop.c:137
+#: ../src/iop/demosaic.c:296 ../src/iop/denoiseprofile.c:780
+#: ../src/iop/denoiseprofile.c:782 ../src/iop/diffuse.c:144
+#: ../src/iop/diffuse.c:146 ../src/iop/enlargecanvas.c:84
+#: ../src/iop/enlargecanvas.c:86 ../src/iop/exposure.c:132
+#: ../src/iop/exposure.c:134 ../src/iop/flip.c:111 ../src/iop/flip.c:112
+#: ../src/iop/hazeremoval.c:113 ../src/iop/hazeremoval.c:115
+#: ../src/iop/lens.cc:269 ../src/iop/lens.cc:271 ../src/iop/liquify.c:298
+#: ../src/iop/liquify.c:300 ../src/iop/overlay.c:156 ../src/iop/overlay.c:158
+#: ../src/iop/primaries.c:81 ../src/iop/primaries.c:83
 #: ../src/iop/retouch.c:210 ../src/iop/retouch.c:212
 #: ../src/iop/scalepixels.c:88 ../src/iop/scalepixels.c:90
 #: ../src/iop/sigmoid.c:209 ../src/iop/splittoning.c:106
@@ -13085,8 +13091,8 @@ msgstr "přidat nebo odstranit místní kontrast, sharpness, acutance"
 #: ../src/iop/enlargecanvas.c:83 ../src/iop/exposure.c:131
 #: ../src/iop/filmicrgb.c:352 ../src/iop/graduatednd.c:146
 #: ../src/iop/negadoctor.c:146 ../src/iop/overlay.c:155
-#: ../src/iop/rgbcurve.c:146 ../src/iop/rgblevels.c:125 ../src/iop/shadhi.c:144
-#: ../src/iop/sigmoid.c:209 ../src/iop/tonecurve.c:183
+#: ../src/iop/rgbcurve.c:146 ../src/iop/rgblevels.c:125
+#: ../src/iop/shadhi.c:144 ../src/iop/sigmoid.c:209 ../src/iop/tonecurve.c:183
 #: ../src/iop/toneequal.c:332
 msgid "corrective and creative"
 msgstr "korektivní a kreativní"
@@ -13175,7 +13181,7 @@ msgstr "hrubý"
 #: ../src/iop/atrous.c:1393 ../src/iop/atrous.c:1639
 #: ../src/iop/denoiseprofile.c:3496 ../src/iop/rawdenoise.c:743
 msgid "fine"
-msgstr "jemně"
+msgstr "jemný"
 
 #: ../src/iop/atrous.c:1405
 msgid "contrasty"
@@ -13184,7 +13190,7 @@ msgstr "kontrastní"
 #: ../src/iop/atrous.c:1411 ../src/iop/denoiseprofile.c:3510
 #: ../src/iop/rawdenoise.c:757
 msgid "noisy"
-msgstr "zašumněný"
+msgstr "zašuměný"
 
 #. case atrous_s:
 #: ../src/iop/atrous.c:1414
@@ -13227,7 +13233,8 @@ msgstr "jemnější"
 msgid "finest"
 msgstr "nejlepší"
 
-#: ../src/iop/atrous.c:1709 ../src/libs/export.c:1239 ../src/libs/export.c:1255
+#: ../src/iop/atrous.c:1709 ../src/libs/export.c:1239
+#: ../src/libs/export.c:1255
 msgid "x"
 msgstr "x"
 
@@ -13362,8 +13369,8 @@ msgstr ""
 #: ../src/iop/highlights.c:179 ../src/iop/hotpixels.c:75
 #: ../src/iop/invert.c:136 ../src/iop/lens.cc:268 ../src/iop/nlmeans.c:89
 #: ../src/iop/profile_gamma.c:102 ../src/iop/rawdenoise.c:144
-#: ../src/iop/retouch.c:209 ../src/iop/scalepixels.c:87 ../src/iop/sharpen.c:96
-#: ../src/iop/spots.c:69 ../src/iop/temperature.c:250
+#: ../src/iop/retouch.c:209 ../src/iop/scalepixels.c:87
+#: ../src/iop/sharpen.c:96 ../src/iop/spots.c:69 ../src/iop/temperature.c:250
 msgid "corrective"
 msgstr "korektivní"
 
@@ -13455,9 +13462,10 @@ msgstr "použít obvyklé úpravy obrazu"
 #: ../src/iop/colorize.c:98 ../src/iop/colormapping.c:153
 #: ../src/iop/colorzones.c:146 ../src/iop/grain.c:395 ../src/iop/highpass.c:78
 #: ../src/iop/levels.c:140 ../src/iop/liquify.c:297 ../src/iop/lowlight.c:92
-#: ../src/iop/lowpass.c:106 ../src/iop/monochrome.c:100 ../src/iop/soften.c:103
-#: ../src/iop/splittoning.c:105 ../src/iop/velvia.c:98 ../src/iop/vibrance.c:97
-#: ../src/iop/vignette.c:120 ../src/iop/watermark.c:422
+#: ../src/iop/lowpass.c:106 ../src/iop/monochrome.c:100
+#: ../src/iop/soften.c:103 ../src/iop/splittoning.c:105 ../src/iop/velvia.c:98
+#: ../src/iop/vibrance.c:97 ../src/iop/vignette.c:120
+#: ../src/iop/watermark.c:422
 msgid "creative"
 msgstr "kreativní"
 
@@ -13545,7 +13553,8 @@ msgstr "pracovat s místním a globálním kontrastem odděleně"
 #: ../src/iop/defringe.c:86 ../src/iop/grain.c:396 ../src/iop/grain.c:398
 #: ../src/iop/levels.c:143 ../src/iop/lowlight.c:93 ../src/iop/lowlight.c:95
 #: ../src/iop/monochrome.c:103 ../src/iop/nlmeans.c:90 ../src/iop/nlmeans.c:92
-#: ../src/iop/shadhi.c:147 ../src/iop/tonecurve.c:186 ../src/iop/vibrance.c:100
+#: ../src/iop/shadhi.c:147 ../src/iop/tonecurve.c:186
+#: ../src/iop/vibrance.c:100
 msgid "non-linear, Lab, display-referred"
 msgstr "nelineární, Lab, s odkazem na displej"
 
@@ -13623,9 +13632,10 @@ msgstr ""
 #: ../src/iop/bilateral.cc:106 ../src/iop/blurs.c:93
 #: ../src/iop/channelmixer.c:141 ../src/iop/denoiseprofile.c:781
 #: ../src/iop/diffuse.c:145 ../src/iop/enlargecanvas.c:85
-#: ../src/iop/exposure.c:133 ../src/iop/overlay.c:157 ../src/iop/primaries.c:82
-#: ../src/iop/scalepixels.c:89 ../src/iop/soften.c:105
-#: ../src/iop/splittoning.c:107 ../src/iop/velvia.c:100
+#: ../src/iop/exposure.c:133 ../src/iop/overlay.c:157
+#: ../src/iop/primaries.c:82 ../src/iop/scalepixels.c:89
+#: ../src/iop/soften.c:105 ../src/iop/splittoning.c:107
+#: ../src/iop/velvia.c:100
 msgid "linear, RGB"
 msgstr "lineární, RGB"
 
@@ -14981,8 +14991,8 @@ msgstr "anamorfní"
 msgid "3:1, panorama"
 msgstr "3:1, panoramatický"
 
-#: ../src/iop/clipping.c:2193 ../src/iop/clipping.c:2205 ../src/iop/crop.c:1192
-#: ../src/iop/crop.c:1209
+#: ../src/iop/clipping.c:2193 ../src/iop/clipping.c:2205
+#: ../src/iop/crop.c:1192 ../src/iop/crop.c:1209
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr "neplatný formát poměru pro „%s“. mělo by to být \"číslo:číslo\""
@@ -15312,8 +15322,8 @@ msgid ""
 "offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance|"
 "saturation"
 msgstr ""
-"posun síly sklonu|cdl|grading barev|kontrast|chroma_světel|odstín|živost|"
-"saturace"
+"posun síly sklonu|cdl|grading barev|kontrast|chroma_světel|odstín|"
+"živost|saturace"
 
 #: ../src/iop/colorbalancergb.c:182
 msgid ""
@@ -15325,7 +15335,7 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:535
 msgid "add basic colorfulness (legacy)"
-msgstr "přidat základní barevnost (dědictví)"
+msgstr "přidat základní barevnost (starší metoda)"
 
 #: ../src/iop/colorbalancergb.c:544
 msgid "basic colorfulness: natural skin"
@@ -15355,128 +15365,128 @@ msgstr "hlavní"
 
 #: ../src/iop/colorbalancergb.c:1918
 msgid "global grading"
-msgstr "globální korekce"
+msgstr "Globální úpravy"
 
 #: ../src/iop/colorbalancergb.c:1922
 msgid "rotate all hues by an angle, at the same luminance"
-msgstr "otočit všechny odstíny o úhel při stejné svítivosti"
+msgstr "Posune všechny odstíny o zvolený úhel při zachování jasu."
 
 #: ../src/iop/colorbalancergb.c:1928
 msgid "increase colorfulness mostly on low-chroma colors"
-msgstr "zvýšit barevnost především u barev s nízkou sytostí"
+msgstr "Ovlivňuje barevnost především u barev s nízkou chromou."
 
 #: ../src/iop/colorbalancergb.c:1934
 msgid "increase the contrast at constant chromaticity"
-msgstr "zvýšit kontrast při konstantní chromatičnosti"
+msgstr "Ovlivňuje kontrast při zachování chromy."
 
 #: ../src/iop/colorbalancergb.c:1936
 msgctxt "section"
 msgid "linear chroma grading"
-msgstr "lineární barevný grading"
+msgstr "lineární grading chromy"
 
 #: ../src/iop/colorbalancergb.c:1943
 msgid "increase colorfulness at same luminance globally"
-msgstr "zvýšit barevnost při stejné svítivosti globálně"
+msgstr "Ovlivňuje celkovou barevnost při zachování jasu."
 
 #: ../src/iop/colorbalancergb.c:1948
 msgid "increase colorfulness at same luminance mostly in shadows"
-msgstr "zvýšit barevnost při stejné svítivosti většinou ve stínech"
+msgstr "Ovlivňuje barevnost stínů při zachování jasu."
 
 #: ../src/iop/colorbalancergb.c:1953
 msgid "increase colorfulness at same luminance mostly in mid-tones"
-msgstr "zvýšit barevnost při stejné svítivosti většinou ve středních tónech"
+msgstr "Ovlivňuje barevnost středních tónů při zachování jasu."
 
 #: ../src/iop/colorbalancergb.c:1958
 msgid "increase colorfulness at same luminance mostly in highlights"
-msgstr "zvýšit barevnost při stejné svítivosti většinou ve světlech"
+msgstr "Ovlivňuje barevnost světel při zachování jasu."
 
 #: ../src/iop/colorbalancergb.c:1960
 msgctxt "section"
 msgid "perceptual saturation grading"
-msgstr "grading percepční saturace"
+msgstr "percepční grading sytosti"
 
 #: ../src/iop/colorbalancergb.c:1966
 msgid "add or remove saturation by an absolute amount"
-msgstr "přidat nebo odstranit sytost o absolutní množství"
+msgstr "Ovlivňuje celkovou sytost."
 
 #: ../src/iop/colorbalancergb.c:1971 ../src/iop/colorbalancergb.c:1976
 #: ../src/iop/colorbalancergb.c:1981
 msgid ""
 "increase or decrease saturation proportionally to the original pixel "
 "saturation"
-msgstr "zvýšit nebo snížit sytost úměrně původní sytosti bodů"
+msgstr "Ovlivňuje sytost úměrně originálu."
 
 #: ../src/iop/colorbalancergb.c:1983
 msgctxt "section"
 msgid "perceptual brilliance grading"
-msgstr "grading percepční brilantnosti"
+msgstr "percepční grading jasu"
 
 #: ../src/iop/colorbalancergb.c:1984
 msgid "brilliance"
-msgstr "lesk"
+msgstr "jas"
 
 #: ../src/iop/colorbalancergb.c:1989
 msgid "add or remove brilliance by an absolute amount"
-msgstr "přidat nebo odebrat lesk o absolutní hodnotu"
+msgstr "Ovlivňuje celkový jas."
 
 #: ../src/iop/colorbalancergb.c:1994 ../src/iop/colorbalancergb.c:1999
 #: ../src/iop/colorbalancergb.c:2004
 msgid ""
 "increase or decrease brilliance proportionally to the original pixel "
 "brilliance"
-msgstr "zvýšit nebo snížit lesk úměrně k původnímu lesku bodů"
+msgstr "Ovliňuje jas úměrně originálu."
 
 #. Page 4-ways
 #: ../src/iop/colorbalancergb.c:2007
 msgid "4 ways"
-msgstr "4 směry"
+msgstr "čtyřsměrný grading"
 
 #: ../src/iop/colorbalancergb.c:2007
 msgid "selective color grading"
-msgstr "selektivní korekce barev"
+msgstr "Selektivní grading barev"
 
 #: ../src/iop/colorbalancergb.c:2009
 msgctxt "section"
 msgid "global offset"
-msgstr "globální posun"
+msgstr "globální offset"
 
 #: ../src/iop/colorbalancergb.c:2016
 msgid "global luminance offset"
-msgstr "globální posun jasu"
+msgstr "Globální korekce jasu"
 
 #: ../src/iop/colorbalancergb.c:2021
 msgid "hue of the global color offset"
-msgstr "odstín globálního barevného offsetu"
+msgstr "Globální korekce odstínu"
 
 #: ../src/iop/colorbalancergb.c:2027
 msgid "chroma of the global color offset"
-msgstr "chroma globálního barevného offsetu"
+msgstr "Chroma globální korekce odstínu"
 
 #: ../src/iop/colorbalancergb.c:2029
 msgctxt "section"
 msgid "shadows lift"
-msgstr "zdůraznit stíny"
+msgstr "stíny"
 
 #: ../src/iop/colorbalancergb.c:2030
 msgid "lift"
-msgstr "zvednutí"
+msgstr "projasnění"
 
 #: ../src/iop/colorbalancergb.c:2036
 msgid "luminance gain in shadows"
-msgstr "zisk jasu ve stínech"
+msgstr "Úroveň jasu ve stínech"
 
 #: ../src/iop/colorbalancergb.c:2041
 msgid "hue of the color gain in shadows"
-msgstr "odstín získu barvy ve stínech"
+msgstr "Odstín stínů"
 
 #: ../src/iop/colorbalancergb.c:2047
 msgid "chroma of the color gain in shadows"
-msgstr "chroma barevného zisku ve stínech"
+msgstr "Chroma korekce stínů"
 
 #: ../src/iop/colorbalancergb.c:2049
 msgctxt "section"
 msgid "highlights gain"
-msgstr "zdůraznění světel"
+msgstr "světla"
 
 #: ../src/iop/colorbalancergb.c:2050
 msgid "gain"
@@ -15484,20 +15494,20 @@ msgstr "zesílení"
 
 #: ../src/iop/colorbalancergb.c:2056
 msgid "luminance gain in highlights"
-msgstr "zisk jasu ve světlech"
+msgstr "Úroveň jasu ve světlech"
 
 #: ../src/iop/colorbalancergb.c:2061
 msgid "hue of the color gain in highlights"
-msgstr "odstín barevného zisku ve světlech"
+msgstr "Odstín světel"
 
 #: ../src/iop/colorbalancergb.c:2067
 msgid "chroma of the color gain in highlights"
-msgstr "chroma barevného zisku ve světlech"
+msgstr "Chroma korekce světel"
 
 #: ../src/iop/colorbalancergb.c:2069
 msgctxt "section"
 msgid "power"
-msgstr "výkon"
+msgstr "střední tóny"
 
 #: ../src/iop/colorbalancergb.c:2070
 msgid "power"
@@ -15505,15 +15515,15 @@ msgstr "střední tóny"
 
 #: ../src/iop/colorbalancergb.c:2076
 msgid "luminance exponent in mid-tones"
-msgstr "exponent jasu ve středních tónech"
+msgstr "Úroveň jasu ve středních tónech"
 
 #: ../src/iop/colorbalancergb.c:2081
 msgid "hue of the color exponent in mid-tones"
-msgstr "odstín barevného exponentu ve středních tónech"
+msgstr "Odstín středních tónů"
 
 #: ../src/iop/colorbalancergb.c:2087
 msgid "chroma of the color exponent in mid-tones"
-msgstr "chroma barevného exponentu ve středních tónech"
+msgstr "Chroma korekce středních tónů"
 
 #. Page masks
 #: ../src/iop/colorbalancergb.c:2090
@@ -15522,11 +15532,11 @@ msgstr "masky"
 
 #: ../src/iop/colorbalancergb.c:2090
 msgid "isolate luminances"
-msgstr "izolovat jasy"
+msgstr "Maskování na základě jasu"
 
 #: ../src/iop/colorbalancergb.c:2094
 msgid "choose in which uniform color space the saturation is computed"
-msgstr "vyberte, ve kterém jednotném barevném prostoru se saturace vypočítá"
+msgstr "Vyberte, ve kterém jednotném barevném prostoru se saturace vypočítá."
 
 #: ../src/iop/colorbalancergb.c:2096
 msgctxt "section"
@@ -15535,15 +15545,15 @@ msgstr "rozsahy jasu"
 
 #: ../src/iop/colorbalancergb.c:2109
 msgid "weight of the shadows over the whole tonal range"
-msgstr "váha stínů v celém tonálním rozsahu"
+msgstr "Váha stínů v celém tonálním rozsahu"
 
 #: ../src/iop/colorbalancergb.c:2117
 msgid "position of the middle-gray reference for masking"
-msgstr "poloha středově šedé reference pro maskování"
+msgstr "Poloha střední šedé pro maskování"
 
 #: ../src/iop/colorbalancergb.c:2125
 msgid "weights of highlights over the whole tonal range"
-msgstr "váhy světel v celém tonálním rozsahu"
+msgstr "Váha světel v celém tonálním rozsahu"
 
 #: ../src/iop/colorbalancergb.c:2130
 msgctxt "section"
@@ -15552,11 +15562,13 @@ msgstr "práh"
 
 #: ../src/iop/colorbalancergb.c:2135
 msgid "peak white luminance value used to normalize the power function"
-msgstr "špičková hodnota bílého jasu použitá k normalizaci funkce výkonu"
+msgstr ""
+"Maximální hodnota bílého bodu využitá k normalizaci transformační funkce"
 
 #: ../src/iop/colorbalancergb.c:2141
 msgid "peak gray luminance value used to normalize the power function"
-msgstr "špičková hodnota šedého jasu použitá k normalizaci funkce výkonu"
+msgstr ""
+"Maximální hodnota střední šedé využitá k normalizaci transformační funkce"
 
 #: ../src/iop/colorbalancergb.c:2143
 msgctxt "section"
@@ -15569,7 +15581,7 @@ msgstr "barva šachovnice 1"
 
 #: ../src/iop/colorbalancergb.c:2149 ../src/iop/colorbalancergb.c:2158
 msgid "select color of the checkerboard from a swatch"
-msgstr "vyberte barvu šachovnice ze vzorníku"
+msgstr "Vyberte barvu šachovnice ze vzorníku"
 
 #: ../src/iop/colorbalancergb.c:2155
 msgid "checkerboard color 2"
@@ -15594,8 +15606,8 @@ msgstr "provádět korekce barevného prostoru a aplikovat vzhled"
 #: ../src/iop/colorchecker.c:131 ../src/iop/colorchecker.c:133
 #: ../src/iop/colorize.c:99 ../src/iop/colormapping.c:154
 #: ../src/iop/colorout.c:90 ../src/iop/colorreconstruction.c:121
-#: ../src/iop/colorzones.c:147 ../src/iop/defringe.c:84 ../src/iop/levels.c:141
-#: ../src/iop/monochrome.c:101 ../src/iop/shadhi.c:145
+#: ../src/iop/colorzones.c:147 ../src/iop/defringe.c:84
+#: ../src/iop/levels.c:141 ../src/iop/monochrome.c:101 ../src/iop/shadhi.c:145
 #: ../src/iop/tonecurve.c:184 ../src/iop/vibrance.c:98
 msgid "linear or non-linear, Lab, display-referred"
 msgstr "lineární nebo nelineární, Lab, s odkazem na displej"
@@ -16498,7 +16510,7 @@ msgstr "demosaicing se používá pouze pro barevné RAW obrázky"
 
 #: ../src/iop/denoiseprofile.c:766
 msgid "wavelets: chroma only"
-msgstr "vlnky: pouze chroma"
+msgstr "vlnkový rozklad: pouze chroma"
 
 #: ../src/iop/denoiseprofile.c:772
 msgid "denoise (profiled)"
@@ -16579,7 +16591,7 @@ msgstr ""
 "měl by být povolen v první instanci\n"
 "pro lepší odstranění šumu. \n"
 "měla by být zakázána, pokud byla \n"
-"s režimem prolnutí barev použita dřívější instance."
+"s režimem prolínání barev použita dřívější instance."
 
 #: ../src/iop/denoiseprofile.c:3821
 msgid ""
@@ -16614,8 +16626,8 @@ msgid ""
 "wavelets work best for `color' blending"
 msgstr ""
 "metoda použitá v odšumovacím jádru.\n"
-"nelokální prostředky fungují nejlépe pro „lehké“ prolnutí,\n"
-"vlnky fungují nejlépe pro prolnutí „barvy“"
+"nelokální prostředky fungují nejlépe pro redukci černobílého šumu,\n"
+"vlnkový rozklad funguje nejlépe pro redukci barevného šumu"
 
 #: ../src/iop/denoiseprofile.c:3837
 msgid ""
@@ -18508,8 +18520,9 @@ msgid "find lens"
 msgstr "najít objektiv"
 
 #. scale
-#: ../src/iop/lens.cc:4527 ../src/iop/overlay.c:1070 ../src/iop/vignette.c:1050
-#: ../src/iop/watermark.c:1369 ../src/libs/export.c:1264
+#: ../src/iop/lens.cc:4527 ../src/iop/overlay.c:1070
+#: ../src/iop/vignette.c:1050 ../src/iop/watermark.c:1369
+#: ../src/libs/export.c:1264
 msgid "scale"
 msgstr "měřítko"
 
@@ -18691,18 +18704,18 @@ msgstr "kliknutím upravte uzly"
 #: ../src/iop/liquify.c:3572
 msgid ""
 "<b>add point</b>: click and drag\n"
-"<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: "
-"ctrl+scroll"
+"<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: ctrl"
+"+scroll"
 msgstr ""
 "<b>přidat bod</b>: klik a přetáhnout\n"
-"<b>velikost</b>: rolování - <b>síla</b>: shift+scrolování - <b>směr</b>: "
-"ctrl+scrolování"
+"<b>velikost</b>: rolování - <b>síla</b>: shift+scrolování - <b>směr</b>: ctrl"
+"+scrolování"
 
 #: ../src/iop/liquify.c:3575
 msgid ""
 "<b>add line</b>: click\n"
-"<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: "
-"ctrl+scroll"
+"<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: ctrl"
+"+scroll"
 msgstr ""
 "<b>přidat řádek</b>: klik\n"
 "<b>velikost</b>: scrolování - <b>síla</b>: shift+scrolování - <b>směr</b>: "
@@ -18711,8 +18724,8 @@ msgstr ""
 #: ../src/iop/liquify.c:3578
 msgid ""
 "<b>add curve</b>: click\n"
-"<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: "
-"ctrl+scroll"
+"<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: ctrl"
+"+scroll"
 msgstr ""
 "<b>přidat křivku</b>: klik\n"
 "<b>velikost</b>: scrolování - <b>síla</b>: shift+scrolování - <b>směr</b>: "
@@ -18782,7 +18795,7 @@ msgid ""
 "right click"
 msgstr ""
 "<b>přesunout</b>: klik a přetáhnout - <b>zobrazit/skrýt ovládací prvky "
-"prolnutí</b>: klik\n"
+"prolínání</b>: klik\n"
 "<b>automaticky vyhladit, vrcholové, vyhlazené, symetrické</b>: ctrl+klik - "
 "<b>odstranit</b>: pravý klik"
 
@@ -19743,7 +19756,7 @@ msgstr "retušovat"
 #: ../src/iop/retouch.c:202
 msgid "split-frequency|healing|cloning|stamp|blur|fill|wavelets|spot removal"
 msgstr ""
-"dělená frekvence|léčení|klonování|razítko|rozmazání|výplň|vlnky|odstranění "
+"dělená frekvence|léčení|klonování|razítko|rozmazání|výplň|vlnkový rozklad|odstranění "
 "skvrn"
 
 #: ../src/iop/retouch.c:208
@@ -20182,7 +20195,7 @@ msgstr "prahová hodnota pro aktivaci doostření"
 
 #: ../src/iop/sigmoid.c:195
 msgid "sigmoid"
-msgstr "sigmatu"
+msgstr "sigmoida"
 
 #: ../src/iop/sigmoid.c:200
 msgid "tone mapping|view transform|display transform"
@@ -20662,11 +20675,11 @@ msgstr "jednoduchá tónová křivka"
 
 #: ../src/iop/toneequal.c:503
 msgid "mask blending: all purposes"
-msgstr "prolnutí masky: všechny účely"
+msgstr "maska: všestranná"
 
 #: ../src/iop/toneequal.c:510
 msgid "mask blending: people with backlight"
-msgstr "prolnutí masky: lidé s podsvícením"
+msgstr "maska: lidé se světlem v zádech"
 
 #: ../src/iop/toneequal.c:527
 msgid "compress shadows/highlights (EIGF): strong"
@@ -20896,11 +20909,11 @@ msgid ""
 "lower values give smoother gradients and better smoothing\n"
 "but may lead to inaccurate edges taping and halos"
 msgstr ""
-"přesnost opeření:\n"
+"přesnost vodítka masky:\n"
 "vyšší hodnoty nutí masku, aby blíže sledovala okraje\n"
 "ale může zrušit účinek vyhlazení\n"
 "nižší hodnoty poskytují hladší přechody a lepší vyhlazení\n"
-"ale může to vést k nepřesnému lepení hran a halo"
+"ale může to vést k nepřesnému sledování hran a efektu záře"
 
 #: ../src/iop/toneequal.c:3476
 msgctxt "section"
@@ -20925,7 +20938,7 @@ msgid ""
 msgstr ""
 "0 deaktivuje kvantizaci.\n"
 "vyšší hodnoty posterizují masku jasu a pomáhají tak navádění\n"
-"při použití vysokých hodnot prolnutí vytváří hladké plochy po částech"
+"při použití vysokých hodnot prolínání vytváří celistvé hladké plochy"
 
 #: ../src/iop/toneequal.c:3504
 msgid ""
@@ -21072,12 +21085,12 @@ msgstr "přidat určitou úroveň náhodného šumu, aby se zabránilo pruhován
 #: ../src/iop/vignette.c:1100
 #, c-format
 msgid "[%s on node] change vignette/feather size"
-msgstr "[%s na uzlu] změnit velikost viněty/prolnutí"
+msgstr "[%s na uzlu] změnit velikost viněty/ohraničení"
 
 #: ../src/iop/vignette.c:1103
 #, c-format
 msgid "[%s on node] change vignette/feather size keeping ratio"
-msgstr "[%s na uzlu] změnit poměr zachování velikosti viněty/prolnutí"
+msgstr "[%s na uzlu] změnit poměr zachování velikosti viněty/ohraničení"
 
 #: ../src/iop/vignette.c:1106
 #, c-format
@@ -22426,9 +22439,10 @@ msgstr "ok"
 
 #. predefined selections
 #: ../src/libs/filters/history.c:38 ../src/libs/filters/local_copy.c:38
-#: ../src/libs/filters/module_order.c:155 ../src/libs/filters/rating_range.c:59
-#: ../src/libs/filters/rating_range.c:83 ../src/libs/filters/rating_range.c:131
-#: ../src/libs/filters/ratio.c:70 ../src/libs/filters/ratio.c:83
+#: ../src/libs/filters/module_order.c:155
+#: ../src/libs/filters/rating_range.c:59 ../src/libs/filters/rating_range.c:83
+#: ../src/libs/filters/rating_range.c:131 ../src/libs/filters/ratio.c:70
+#: ../src/libs/filters/ratio.c:83
 msgid "all images"
 msgstr "všechny obrázky"
 
@@ -22467,7 +22481,8 @@ msgid "rejected only"
 msgstr "pouze odmítnuté"
 
 #: ../src/libs/filters/rating.c:212 ../src/libs/filters/rating_range.c:62
-#: ../src/libs/filters/rating_range.c:86 ../src/libs/filters/rating_range.c:158
+#: ../src/libs/filters/rating_range.c:86
+#: ../src/libs/filters/rating_range.c:158
 msgid "all except rejected"
 msgstr "vše kromě odmítnutých"
 
@@ -22882,15 +22897,15 @@ msgstr "režim masky"
 
 #: ../src/libs/history.c:952
 msgid "blend mode"
-msgstr "režim prolnutí"
+msgstr "režim míchání"
 
 #: ../src/libs/history.c:954
 msgid "blend operation"
-msgstr "operace prolnutí"
+msgstr "operace míchání"
 
 #: ../src/libs/history.c:956
 msgid "blend fulcrum"
-msgstr "opěrný bod prolnutí"
+msgstr "opěrný bod míchání"
 
 #: ../src/libs/history.c:964
 msgid "mask blur"
@@ -22945,7 +22960,7 @@ msgstr "opravdu chcete vymazat historii aktuálního obrázku?"
 
 #: ../src/libs/image.c:74
 msgid "actions on selection"
-msgstr "akce na výběru"
+msgstr "akce nad výběrem"
 
 #: ../src/libs/image.c:304
 msgid "delete (trash)"
@@ -22953,11 +22968,11 @@ msgstr "smazat (koš)"
 
 #: ../src/libs/image.c:307
 msgid "physically delete from disk (using trash if possible)"
-msgstr "fyzicky odstranit z disku (pomocí koše, pokud je to možné)"
+msgstr "smazat z disku (vyhodit do koše, je-li to možné)"
 
 #: ../src/libs/image.c:308
 msgid "physically delete from disk immediately"
-msgstr "okamžitě fyzicky odstranit z disku"
+msgstr "definitivně smazat z disku"
 
 #: ../src/libs/image.c:509 ../src/libs/modulegroups.c:3998
 #: ../src/libs/styles.c:925
@@ -22966,7 +22981,7 @@ msgstr "odstranit"
 
 #: ../src/libs/image.c:511
 msgid "remove images from the image library, without deleting"
-msgstr "odstranit obrázky z knihovny obrázků bez odstranění s disku"
+msgstr "odstranit obrázky z knihovny bez odstranění z disku"
 
 #: ../src/libs/image.c:520
 msgid "move..."
@@ -25620,7 +25635,7 @@ msgstr "kontrola rozsahu"
 
 #: ../src/views/darkroom.c:688
 msgid "soft proof"
-msgstr "měkký obtah"
+msgstr "kontrolní náhled"
 
 #. fail :(
 #: ../src/views/darkroom.c:728 ../src/views/print.c:312
@@ -25829,30 +25844,30 @@ msgstr ""
 
 #: ../src/views/darkroom.c:2397
 msgid "softproof"
-msgstr "jemný obrys"
+msgstr "kontrolní náhled"
 
 #: ../src/views/darkroom.c:2400
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
 msgstr ""
-"přepnout jemný obrys\n"
-"kliknutím pravým tlačítkem zobrazíte možnosti profilu"
+"zapnout kontrolní náhled\n"
+"kliknutím pravým tlačítkem zobrazíte nastavení barevných profilů"
 
 #: ../src/views/darkroom.c:2411
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
 msgstr ""
-"přepnout kontrolu rozsahu\n"
-"kliknutím pravým tlačítkem zobrazíte možnosti profilu"
+"zapnout kontrolu gamutu\n"
+"kliknutím pravým tlačítkem zobrazíte nastavení barevných profilů"
 
 #: ../src/views/darkroom.c:2438 ../src/views/darkroom.c:2440
 #: ../src/views/darkroom.c:2454 ../src/views/darkroom.c:2455
 #: ../src/views/darkroom.c:2456 ../src/views/darkroom.c:2457
 #: ../src/views/lighttable.c:1182 ../src/views/lighttable.c:1184
 msgid "profiles"
-msgstr "profily"
+msgstr "barevné profily"
 
 #: ../src/views/darkroom.c:2440 ../src/views/lighttable.c:1184
 msgid "preview intent"
@@ -26673,7 +26688,6 @@ msgstr "akce myši"
 #~ msgid "sRGB (e.g. JPG)"
 #~ msgstr "sRGB (např. JPG)"
 
-#, c-format
 #~ msgid "could not send %s to trash%s%s"
 #~ msgstr "nelze přesunout %s do koše %s%s"
 
@@ -26689,7 +26703,6 @@ msgstr "akce myši"
 #~ msgid "stop process"
 #~ msgstr "zastavit proces"
 
-#, c-format
 #~ msgid "skipped blending in module '%s': roi's do not match"
 #~ msgstr "vynechané prolnutí v modulu '%s': ROI se neshodují"
 
@@ -26717,7 +26730,6 @@ msgstr "akce myši"
 #~ msgid "3:2"
 #~ msgstr "3:2"
 
-#, c-format
 #~ msgid "ICC profiles in %s or %s"
 #~ msgstr "Profily ICC v %s nebo %s"
 
@@ -26853,7 +26865,6 @@ msgstr "akce myši"
 #~ msgid "size is relative to"
 #~ msgstr "velikost je relativní k"
 
-#, c-format
 #~ msgid "output ICC profiles in %s or %s"
 #~ msgstr "výstupní ICC profily z %s nebo %s"
 
@@ -26869,11 +26880,9 @@ msgstr "akce myši"
 #~ msgid "legacy flag. set for all new images"
 #~ msgstr "starší příznak. nastavit pro všechny nové obrázky"
 
-#, c-format
 #~ msgid "** %s"
 #~ msgstr "** %s"
 
-#, c-format
 #~ msgid "at least one new tagname (%s) already exists, aborting."
 #~ msgstr "alespoň jeden nový štítek (%s) již existuje, storno."
 
@@ -26883,15 +26892,12 @@ msgstr "akce myši"
 #~ msgid "toggle sticky preview mode with focus detection"
 #~ msgstr "přepnout režim rychlého náhledu s detekcí zaostření"
 
-#, c-format
 #~ msgid "display ICC profiles in %s or %s"
 #~ msgstr "profily ICC displeje v %s nebo %s"
 
-#, c-format
 #~ msgid "preview display ICC profiles in %s or %s"
 #~ msgstr "zobrazit profily ICC v %s nebo %s"
 
-#, c-format
 #~ msgid "softproof ICC profiles in %s or %s"
 #~ msgstr "profily ICC jemný obrys z %s nebo %s"
 
@@ -26904,7 +26910,6 @@ msgstr "akce myši"
 #~ msgid "eigf"
 #~ msgstr "eigf"
 
-#, c-format
 #~ msgid "darktable » %s"
 #~ msgstr "darktable » %s"
 
@@ -26919,7 +26924,6 @@ msgstr "akce myši"
 #~ "<h1>Děkuji,</h1><p>vše mělo fungovat. Nyní můžete <b>zavřít</b> prohlížeč "
 #~ "a <b>vrátit se</b> do darktable.</p>"
 
-#, c-format
 #~ msgid "unsupported working profile %s has been replaced by Rec2020 RGB!\n"
 #~ msgstr "nepodporovaný pracovní profil %s byl nahrazen Rec2020 RGB!\n"
 
@@ -27242,15 +27246,12 @@ msgstr "akce myši"
 #~ msgid "brilliance shadows"
 #~ msgstr "lesklé stíny"
 
-#, c-format
 #~ msgid "error: can't open xmp file %s"
 #~ msgstr "chyba: nelze otevřít xmp soubor %s"
 
-#, c-format
 #~ msgid "%d image of %d (#%d) in current collection is selected"
 #~ msgstr "Je vybrán obrázek %d z %d (#%d) v aktuální kolekci"
 
-#, c-format
 #~ msgid "%d image of %d in current collection is selected"
 #~ msgid_plural "%d images of %d in current collection are selected"
 #~ msgstr[0] "Je vybrán obrázek %d z %d v aktuální kolekci"
@@ -27269,7 +27270,6 @@ msgstr "akce myši"
 #~ "klikněte na později a budete znovu dotázán během příštího zavírání "
 #~ "darktable"
 
-#, c-format
 #~ msgid ""
 #~ "the database could use some maintenance\n"
 #~ "\n"
@@ -27340,7 +27340,6 @@ msgstr "akce myši"
 #~ msgid "xcf"
 #~ msgstr "xcf"
 
-#, no-c-format
 #~ msgid "preview is only possible for zoom lower than 200%%"
 #~ msgstr "náhled je možný pouze pro zoom menší než 200 %%"
 
@@ -27362,7 +27361,6 @@ msgstr "akce myši"
 #~ "které nelze vyřešit, a alternativní moduly, které je řeší.\n"
 #~ " budou odstraněny pro nové úpravy v příštím vydání."
 
-#, c-format
 #~ msgid "double click to reset to `%f'"
 #~ msgstr "dvojitým kliknutím resetujete na ,%f'"
 
@@ -27528,7 +27526,6 @@ msgstr "akce myši"
 #~ msgid "increase or decrease the sharpness of the highest frequencies"
 #~ msgstr "zvýšit nebo snížit ostrost nejvyšších frekvencí"
 
-#, c-format
 #~ msgid ""
 #~ "no history compression of 1 image.\n"
 #~ "see tag: darktable|problem|history-compress"
@@ -27565,12 +27562,10 @@ msgstr "akce myši"
 #~ msgid "switch dual threshold"
 #~ msgstr "přepnout duální práh"
 
-#, c-format
 #~ msgctxt "accel"
 #~ msgid "styles/apply %s"
 #~ msgstr "styly/použít %s"
 
-#, c-format
 #~ msgctxt "accel"
 #~ msgid "apply %s"
 #~ msgstr "použít %s"
@@ -27660,7 +27655,7 @@ msgstr "akce myši"
 #~ msgstr "zobrazit okno akcelerátory"
 
 #~ msgid "display blending mask"
-#~ msgstr "zobrazit masku prolínání"
+#~ msgstr "zobrazit masku"
 
 #~ msgid "grey"
 #~ msgstr "šedá"
@@ -28053,11 +28048,9 @@ msgstr "akce myši"
 #~ "percentage of bright values clipped out, toggle color picker to activate"
 #~ msgstr "procento hodnot jasu oříznuto, aktivujte přepnutím výběru barvy"
 
-#, c-format
 #~ msgid "%.0f ISO"
 #~ msgstr "%.0f ISO"
 
-#, c-format
 #~ msgid "%.0f mired"
 #~ msgstr "%.0f mired"
 
