@@ -1385,8 +1385,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
   if(modules)
   {
-    module = (dt_iop_module_t *)modules->data;
-    piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
+    module = modules->data;
+    piece = pieces->data;
     // skip this module?
     if(_skip_piece_on_tags(piece))
       return _dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_format,
@@ -1801,8 +1801,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                dt_iop_colorspace_to_name(cst_from),
                dt_iop_colorspace_to_name(cst_to),
                work_profile ? dt_colorspaces_get_name(work_profile->type, work_profile->filename) : "no work profile");
-          success_opencl = dt_ioppr_transform_image_colorspace_cl
-            (module, piece->pipe->devid,
+          success_opencl = dt_ioppr_transform_image_colorspace_cl(
+             module, piece->pipe->devid,
              cl_mem_input, cl_mem_input,
              roi_in.width, roi_in.height,
              input_cst_cl,
@@ -1905,7 +1905,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
             dt_opencl_dump_pipe_pfm(module->op, pipe->devid, cl_mem_input,
                                     TRUE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
 
-          const int err = module->process_cl(module, piece, cl_mem_input, *cl_mem_output,
+          const cl_int err = module->process_cl(module, piece, cl_mem_input, *cl_mem_output,
                                               &roi_in, roi_out);
           success_opencl = (err == CL_SUCCESS);
 
@@ -2004,13 +2004,13 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         if(success_opencl && _transform_for_blend(module, piece))
         {
 
-          success_opencl = dt_ioppr_transform_image_colorspace_cl
-            (module, piece->pipe->devid, cl_mem_input, cl_mem_input,
+          success_opencl = dt_ioppr_transform_image_colorspace_cl(
+             module, piece->pipe->devid, cl_mem_input, cl_mem_input,
              roi_in.width, roi_in.height,
              input_cst_cl, blend_cst, &input_cst_cl, work_profile);
 
-          success_opencl &= dt_ioppr_transform_image_colorspace_cl
-            (module, piece->pipe->devid, *cl_mem_output, *cl_mem_output,
+          success_opencl &= dt_ioppr_transform_image_colorspace_cl(
+             module, piece->pipe->devid, *cl_mem_output, *cl_mem_output,
              roi_out->width, roi_out->height,
              pipe->dsc.cst, blend_cst, &pipe->dsc.cst, work_profile);
 
@@ -2036,8 +2036,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         /* process blending */
         if(success_opencl)
         {
-          success_opencl = dt_develop_blend_process_cl
-            (module, piece, cl_mem_input, *cl_mem_output,
+          success_opencl = dt_develop_blend_process_cl(
+             module, piece, cl_mem_input, *cl_mem_output,
              &roi_in, roi_out);
           pixelpipe_flow |= (PIXELPIPE_FLOW_BLENDED_ON_GPU);
           pixelpipe_flow &= ~(PIXELPIPE_FLOW_BLENDED_ON_CPU);
@@ -2094,8 +2094,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                "transform colorspace", piece->pipe, module, pipe->devid, &roi_in, NULL, " %s -> %s",
                dt_iop_colorspace_to_name(cst_from),
                dt_iop_colorspace_to_name(cst_to));
-          dt_ioppr_transform_image_colorspace
-            (module, input, input, roi_in.width, roi_in.height,
+          dt_ioppr_transform_image_colorspace(
+             module, input, input, roi_in.width, roi_in.height,
              input_format->cst, cst_to,
              &input_format->cst, work_profile);
         }
@@ -2122,7 +2122,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                         dt_iop_colorspace_to_name(cst_to),
                         cst_to != cst_out ? " -> " : "",
                         cst_to != cst_out ? dt_iop_colorspace_to_name(cst_out) : "");
-          const int err = module->process_tiling_cl(module, piece, input, *output, &roi_in, roi_out, in_bpp);
+          const cl_int err = module->process_tiling_cl(module, piece, input, *output, &roi_in, roi_out, in_bpp);
           success_opencl = (err == CL_SUCCESS);
 
           if(!success_opencl)
@@ -2639,7 +2639,7 @@ void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op)
     piece = NULL;
     nodes = g_list_next(nodes);
     if(!nodes) break;
-    piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
+    piece = nodes->data;
   }
 }
 
