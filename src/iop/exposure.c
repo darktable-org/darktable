@@ -1110,6 +1110,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->exposure, 3);
   dt_bauhaus_slider_set_format(g->exposure, _(" EV"));
   dt_bauhaus_slider_set_soft_range(g->exposure, -3.0, 4.0);
+  dt_bauhaus_widget_set_quad_tooltip(g->exposure, _("set the exposure adjustment using the selected area"));
 
   GtkWidget *vbox_deflicker = self->widget =
     gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
