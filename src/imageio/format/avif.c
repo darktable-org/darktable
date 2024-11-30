@@ -542,7 +542,8 @@ int write_image(struct dt_imageio_module_data_t *data,
       break;
 
     case AVIF_COMP_LOSSY:
-      encoder->speed = AVIF_SPEED_DEFAULT;
+      // See https://github.com/darktable-org/darktable/issues/17921
+      encoder->speed = AVIF_SPEED_FASTEST;
 
 #if AVIF_VERSION >= 1000000
       encoder->quality = d->quality;
