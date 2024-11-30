@@ -2827,13 +2827,6 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/imageio/format/avif/speed</name>
-    <type min="0" max="10">int</type>
-    <default>6</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/imageio/format/xcf/bpp</name>
     <type>
       <enum>
