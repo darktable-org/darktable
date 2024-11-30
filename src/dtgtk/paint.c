@@ -903,14 +903,10 @@ void dtgtk_cairo_paint_masks_intersection(cairo_t *cr, gint x, gint y, gint w, g
   cairo_restore(cr);
 
   // we draw the intersection of the 2 circles we slightly different radius so they are more visible
-  cairo_push_group(cr);
   cairo_arc(cr, padding_left + r * 1.3, h / 2.0, r * 0.85, 0, 2.0 * M_PI);
-  cairo_fill(cr);
-  cairo_set_operator(cr, CAIRO_OPERATOR_IN);
+  cairo_clip(cr);
   cairo_arc(cr, padding_left + r * 2.3, h / 2.0, r * 0.85, 0, 2.0 * M_PI);
   cairo_fill(cr);
-  cairo_pop_group_to_source(cr);
-  cairo_paint(cr);
 }
 
 void dtgtk_cairo_paint_masks_difference(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
@@ -2172,28 +2168,21 @@ void dtgtk_cairo_paint_intersection(cairo_t *cr, gint x, gint y, gint w, gint h,
   if(cairo_pattern_get_rgba(cairo_get_source(cr), &r, &g, &b, &alpha) != CAIRO_STATUS_SUCCESS)
     goto final;
 
-  cairo_set_source_rgba(cr, r, g, b, 1.0);
+  cairo_set_source_rgb(cr, r, g, b);
 
   const double radius = 0.3;
 
   // we draw the outline of the 2 circles
-  cairo_push_group(cr);
   cairo_arc(cr, radius, 0.5, radius, 0, 2.0 * M_PI);
   cairo_stroke(cr);
   cairo_arc(cr, radius * 2.4, 0.5, radius, 0, 2.0 * M_PI);
   cairo_stroke(cr);
 
   // we draw the intersection of the 2 circles
-  cairo_push_group(cr);
   cairo_arc(cr, radius, 0.5, radius * 1.2, 0, 2.0 * M_PI);
-  cairo_fill(cr);
-  cairo_set_operator(cr, CAIRO_OPERATOR_IN);
+  cairo_clip(cr);
   cairo_arc(cr, radius * 2.4, 0.5, radius * 1.2, 0, 2.0 * M_PI);
   cairo_fill(cr);
-  cairo_pop_group_to_source(cr);
-  cairo_paint(cr);
-  cairo_pop_group_to_source(cr);
-  cairo_paint_with_alpha(cr, alpha);
 final:
   FINISH
 }
