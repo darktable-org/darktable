@@ -67,12 +67,81 @@ static gint _compare_display_order(gconstpointer a, gconstpointer b)
   return ((dt_metadata_t2 *) a)->display_order - ((dt_metadata_t2 *) b)->display_order;
 }
 
-void dt_metadata_sort_list()
+void dt_metadata_sort()
 {
   _metadata_list = g_list_sort(_metadata_list, _compare_display_order);
 }
 
-const dt_metadata_t2 *dt_metadata_get_metadata_by_keyid(const uint32_t keyid)
+gboolean dt_metadata_add_metadata(dt_metadata_t2 *metadata)
+{
+  gboolean success = FALSE;
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "INSERT INTO data.meta_data "
+                              " (key, tagname, name, type, visible, private, dt_default, display_order)"
+                              " VALUES(NULL, ?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, metadata->tagname, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, metadata->name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, metadata->type);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, metadata->is_visible);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, metadata->is_private);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 6, metadata->dt_default);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, metadata->display_order);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  // get the new key
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT key FROM data.meta_data WHERE tagname = ?1", -1,
+                              &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, metadata->tagname, -1, SQLITE_TRANSIENT);
+  success = sqlite3_step(stmt) == SQLITE_ROW;
+  if(success)
+  {
+    metadata->key = sqlite3_column_int(stmt, 0);
+    _metadata_list = g_list_prepend(_metadata_list, metadata);
+  }
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  return success;
+}
+
+void dt_metadata_delete_metadata(const uint32_t key)
+{
+  for(GList *iter = _metadata_list; iter; iter = iter->next)
+  {
+    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+    if(metadata->key == key)
+    {
+      // first remove the assignments
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "DELETE FROM main.meta_data WHERE key=?1",
+                                  -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, key);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+
+      // now the metadata entry
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "DELETE FROM data.meta_data WHERE key=?1",
+                                  -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, key);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+
+      _metadata_list = g_list_remove_link(_metadata_list, iter);
+      g_free(metadata->tagname);
+      g_free(metadata->name);
+      free(metadata);
+      break;
+    }
+  }
+}
+
+dt_metadata_t2 *dt_metadata_get_metadata_by_keyid(const uint32_t keyid)
 {
   for(GList *iter = _metadata_list; iter; iter = iter->next)
   {
@@ -83,7 +152,7 @@ const dt_metadata_t2 *dt_metadata_get_metadata_by_keyid(const uint32_t keyid)
   return NULL;
 }
 
-const dt_metadata_t2 *dt_metadata_get_metadata_by_tagname(const char *tagname)
+dt_metadata_t2 *dt_metadata_get_metadata_by_tagname(const char *tagname)
 {
   for(GList *iter = _metadata_list; iter; iter = iter->next)
   {
@@ -245,6 +314,14 @@ const char *dt_metadata_get_tag_subkey(const char *tagname)
   return NULL;
 }
 
+static void _free_metadata_entry(dt_metadata_t2 *metadata, gpointer user_data)
+{
+  g_free(metadata->tagname);
+  metadata->tagname = NULL;
+  g_free(metadata->name);
+  metadata->name = NULL;
+}
+
 void dt_metadata_init()
 {
   sqlite3_stmt *stmt;
@@ -257,6 +334,8 @@ void dt_metadata_init()
                           -1, &stmt, NULL);
 
   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+  g_list_foreach(_metadata_list, (GFunc)_free_metadata_entry, NULL);
+  _metadata_list = NULL;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int key = sqlite3_column_int(stmt, 0);
@@ -277,7 +356,7 @@ void dt_metadata_init()
     metadata->is_private = private;
     metadata->dt_default = dt_default;
     metadata->display_order = display_order;
-    _metadata_list = g_list_append(_metadata_list, metadata);
+    _metadata_list = g_list_prepend(_metadata_list, metadata);
 
     const char *metadata_name = dt_metadata_get_tag_subkey(metadata->tagname);
     char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", metadata_name);
@@ -289,6 +368,7 @@ void dt_metadata_init()
     }
     g_free(setting);
   }
+  _metadata_list = g_list_reverse(_metadata_list);
   dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
   sqlite3_finalize(stmt);
