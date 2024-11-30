@@ -186,8 +186,12 @@ static void _metadata_prefs_changed(gpointer instance, dt_import_metadata_t *met
 
 static void _metadata_list_changed(gpointer instance, int type, dt_import_metadata_t *metadata)
 {
-  if(type == DT_METADATA_SIGNAL_HIDDEN || type == DT_METADATA_SIGNAL_SHOWN)
+  if(type == DT_METADATA_SIGNAL_PREF_CHANGED)
     _update_layout(metadata);
+
+
+    // || type == DT_METADATA_SIGNAL_METADATA_ADD
+    // || type == DT_METADATA_SIGNAL_METADATA_DEL)
 }
 
 static void _fill_textview(gpointer key, gpointer value, gpointer user_data)

@@ -67,9 +67,10 @@ dt_metadata_type_t;
 
 typedef enum dt_metadata_signal_t
 {
-  DT_METADATA_SIGNAL_SHOWN,       // metadata set as shown
-  DT_METADATA_SIGNAL_HIDDEN,      // metadata set as hidden
-  DT_METADATA_SIGNAL_NEW_VALUE    // metadata value changed
+  DT_METADATA_SIGNAL_NEW_VALUE,     // metadata value changed
+  DT_METADATA_SIGNAL_PREF_CHANGED,  // metadata preferences changed
+  DT_METADATA_SIGNAL_METADATA_ADD,  // metadata added
+  DT_METADATA_SIGNAL_METADATA_DEL   // metadata deleted
 }
 dt_metadata_signal_t;
 
@@ -85,13 +86,19 @@ dt_metadata_flag_t;
 GList *dt_metadata_get_list();
 
 /** sort the list by display_order */
-void dt_metadata_sort_list();
+void dt_metadata_sort();
+
+/** add a metadata entry */
+gboolean dt_metadata_add_metadata(dt_metadata_t2 *metadata);
+
+/** delete the metadata entry with the given key */
+void dt_metadata_delete_metadata(const uint32_t key);
 
 /** return the metadata by keyid */
-const dt_metadata_t2 *dt_metadata_get_metadata_by_keyid(const uint32_t keyid);
+dt_metadata_t2 *dt_metadata_get_metadata_by_keyid(const uint32_t keyid);
 
 /** return the metadata by tagname */
-const dt_metadata_t2 *dt_metadata_get_metadata_by_tagname(const char *tagname);
+dt_metadata_t2 *dt_metadata_get_metadata_by_tagname(const char *tagname);
 
 /** return the metadata key by display order */
 const char *dt_metadata_get_name_by_display_order(const uint32_t order);
