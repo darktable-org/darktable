@@ -245,7 +245,7 @@ changes (where available).
   adjustments across the full spectrum.
 
 - Added support for EXIF tags 'AnalogBalance' used for color
-  calibration and LinearResponseLimit used in highlights
+  calibration and 'LinearResponseLimit' used in highlights
   reconstruction.
 
 - If we find currently unsupported color calibration data in DNG
