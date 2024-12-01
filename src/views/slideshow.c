@@ -43,11 +43,11 @@ typedef enum dt_slideshow_event_t
 
 typedef enum dt_slideshow_slot_t
 {
-  S_LEFT = 0,
-  S_LEFT_M = 1,
-  S_CURRENT = 2,
-  S_RIGHT_M = 3,
-  S_RIGHT = 4,
+  S_LEFT      = 0,
+  S_LEFT_M    = 1,
+  S_CURRENT   = 2,
+  S_RIGHT_M   = 3,
+  S_RIGHT     = 4,
   S_SLOT_LAST = 5
 } dt_slideshow_slot_t;
 
@@ -107,18 +107,20 @@ static dt_imgid_t _get_image_at_rank(const int rank)
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rank);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, 1);
-    if(sqlite3_step(stmt) == SQLITE_ROW) id = sqlite3_column_int(stmt, 0);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      id = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
   }
 
   return id;
 }
 
-static dt_slideshow_slot_t _get_slot_for_image(const dt_slideshow_t *d, const dt_imgid_t imgid)
+static dt_slideshow_slot_t _get_slot_for_image(const dt_slideshow_t *d,
+                                               const dt_imgid_t imgid)
 {
   dt_slideshow_slot_t slt = -1;
 
-  for(dt_slideshow_slot_t slot = S_LEFT; slot < S_SLOT_LAST; slot++)
+  for(dt_slideshow_slot_t slot=S_LEFT; slot<S_SLOT_LAST; slot++)
   {
     if(d->buf[slot].imgid == imgid)
     {
@@ -143,15 +145,16 @@ static void _shift_left(dt_slideshow_t *d)
 {
   uint8_t *tmp_buf = d->buf[S_LEFT].buf;
 
-  for(dt_slideshow_slot_t slot = S_LEFT; slot < S_RIGHT; slot++)
+  for(dt_slideshow_slot_t slot=S_LEFT; slot<S_RIGHT; slot++)
   {
-    memcpy(&d->buf[slot], &d->buf[slot + 1], sizeof(dt_slideshow_buf_t));
+    memcpy(&d->buf[slot], &d->buf[slot+1], sizeof(dt_slideshow_buf_t));
   }
 
   _init_slot(&d->buf[S_RIGHT]);
-  d->buf[S_RIGHT].rank = d->buf[S_CURRENT].rank + 2;
-  d->buf[S_RIGHT].imgid
-      = d->buf[S_RIGHT].rank <= d->col_count ? _get_image_at_rank(d->buf[S_RIGHT].rank) : NO_IMGID;
+  d->buf[S_RIGHT].rank  = d->buf[S_CURRENT].rank + 2;
+  d->buf[S_RIGHT].imgid = d->buf[S_RIGHT].rank <= d->col_count
+    ? _get_image_at_rank(d->buf[S_RIGHT].rank)
+    : NO_IMGID;
   d->id_displayed = -1;
   d->id_preview_displayed = -1;
   dt_free_align(tmp_buf);
@@ -161,14 +164,16 @@ static void _shift_right(dt_slideshow_t *d)
 {
   uint8_t *tmp_buf = d->buf[S_RIGHT].buf;
 
-  for(dt_slideshow_slot_t slot = S_RIGHT; slot > S_LEFT; slot--)
+  for(dt_slideshow_slot_t slot=S_RIGHT; slot>S_LEFT; slot--)
   {
-    memcpy(&d->buf[slot], &d->buf[slot - 1], sizeof(dt_slideshow_buf_t));
+    memcpy(&d->buf[slot], &d->buf[slot-1], sizeof(dt_slideshow_buf_t));
   }
 
   _init_slot(&d->buf[S_LEFT]);
   d->buf[S_LEFT].rank = d->buf[S_CURRENT].rank - 2;
-  d->buf[S_LEFT].imgid = d->buf[S_LEFT].rank >= 0 ? _get_image_at_rank(d->buf[S_LEFT].rank) : NO_IMGID;
+  d->buf[S_LEFT].imgid = d->buf[S_LEFT].rank >= 0
+    ? _get_image_at_rank(d->buf[S_LEFT].rank)
+    : NO_IMGID;
   d->id_displayed = -1;
   d->id_preview_displayed = -1;
   dt_free_align(tmp_buf);
@@ -179,13 +184,15 @@ static void _requeue_job(dt_slideshow_t *d)
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, _process_job_create(d));
 }
 
-static void _set_delay(dt_slideshow_t *d, const int value)
+static void _set_delay(dt_slideshow_t *d,
+                       const int value)
 {
   d->delay = CLAMP(d->delay + value, 1, 60);
   dt_conf_set_int("slideshow_delay", d->delay);
 }
 
-static int _process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
+static int _process_image(dt_slideshow_t *d,
+                          dt_slideshow_slot_t slot)
 {
   dt_pthread_mutex_lock(&d->lock);
   d->exporting++;
@@ -197,8 +204,21 @@ static int _process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
 
   dt_pthread_mutex_unlock(&d->lock);
 
-  dt_dev_image(imgid, d->width / darktable.gui->ppd, d->height / darktable.gui->ppd, -1, &buf, NULL, &width,
-               &height, NULL, NULL, -1, NULL, DT_DEVICE_NONE, FALSE);
+  dt_dev_image
+    (imgid,
+     d->width / darktable.gui->ppd,
+     d->height / darktable.gui->ppd,
+     -1,
+     &buf,
+     NULL,
+     &width,
+     &height,
+     NULL,
+     NULL,
+     -1,
+     NULL,
+     DT_DEVICE_NONE,
+     FALSE);
 
   dt_pthread_mutex_lock(&d->lock);
 
@@ -207,11 +227,14 @@ static int _process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
 
   // check if we have not moved the slideshow forward or backward, if the
   // slot is not the same, check for a possible new slot for this image.
-  if(d->buf[slt].imgid != imgid) slt = _get_slot_for_image(d, imgid);
+  if(d->buf[slt].imgid != imgid)
+    slt = _get_slot_for_image(d, imgid);
 
   // also ensure that the screen has not been resized, otherwise we discard
   // the image. it will get regenerated in another later job.
-  if(slt != -1 && d->width == s_width && d->height == s_height)
+  if(slt != -1
+     && d->width == s_width
+     && d->height == s_height)
   {
     d->buf[slt].width = width;
     d->buf[slt].height = height;
@@ -230,16 +253,20 @@ static int _process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
   return 0;
 }
 
-static gboolean _is_slot_waiting(const dt_slideshow_t *d, const dt_slideshow_slot_t slot)
+static gboolean _is_slot_waiting(const dt_slideshow_t *d,
+                                 const dt_slideshow_slot_t slot)
 {
-  return d->buf[slot].invalidated && d->buf[slot].buf == NULL && dt_is_valid_imgid(d->buf[slot].imgid)
+  return d->buf[slot].invalidated
+         && d->buf[slot].buf == NULL
+         && dt_is_valid_imgid(d->buf[slot].imgid)
          && d->buf[slot].rank >= 0;
 }
 
 static gboolean _is_idle(const dt_slideshow_t *d)
 {
   gboolean idle = TRUE;
-  for(dt_slideshow_slot_t slot = S_LEFT; slot < S_SLOT_LAST; slot++) idle &= !_is_slot_waiting(d, slot);
+  for(dt_slideshow_slot_t slot=S_LEFT; slot<S_SLOT_LAST; slot++)
+    idle &= !_is_slot_waiting(d, slot);
   return idle;
 }
 
@@ -247,7 +274,8 @@ static gboolean _auto_advance(gpointer user_data)
 {
   dt_slideshow_t *d = (dt_slideshow_t *)user_data;
   if(!d->auto_advance) return FALSE;
-  if(!_is_idle(d)) return TRUE; // never try to advance if still exporting, but call me back again
+  if(!_is_idle(d))
+    return TRUE; // never try to advance if still exporting, but call me back again
   _step_state(d, S_REQUEST_STEP);
   return FALSE;
 }
@@ -258,7 +286,7 @@ static int32_t _process_job_run(dt_job_t *job)
 
   dt_pthread_mutex_lock(&d->lock);
 
-  if(_is_slot_waiting(d, S_CURRENT))
+  if(_is_slot_waiting(d,S_CURRENT))
   {
     dt_pthread_mutex_unlock(&d->lock);
     _process_image(d, S_CURRENT);
@@ -290,7 +318,8 @@ static int32_t _process_job_run(dt_job_t *job)
   }
 
   // any other slot to fill?
-  if(!_is_idle(d)) _requeue_job(d);
+  if(!_is_idle(d))
+    _requeue_job(d);
 
   return 0;
 }
@@ -305,7 +334,8 @@ static dt_job_t *_process_job_create(dt_slideshow_t *d)
 }
 
 // state machine stepping
-static void _step_state(dt_slideshow_t *d, const dt_slideshow_event_t event)
+static void _step_state(dt_slideshow_t *d,
+                        const dt_slideshow_event_t event)
 {
   dt_pthread_mutex_lock(&d->lock);
 
@@ -317,8 +347,9 @@ static void _step_state(dt_slideshow_t *d, const dt_slideshow_event_t event)
     {
       _shift_left(d);
       d->buf[S_RIGHT].rank = d->buf[S_CURRENT].rank + 2;
-      d->buf[S_RIGHT].imgid
-          = d->buf[S_RIGHT].rank < d->col_count ? _get_image_at_rank(d->buf[S_RIGHT].rank) : NO_IMGID;
+      d->buf[S_RIGHT].imgid = d->buf[S_RIGHT].rank < d->col_count
+        ? _get_image_at_rank(d->buf[S_RIGHT].rank)
+        : NO_IMGID;
       d->buf[S_RIGHT].invalidated = TRUE;
       dt_free_align(d->buf[S_RIGHT].buf);
       d->buf[S_RIGHT].buf = NULL;
@@ -337,7 +368,9 @@ static void _step_state(dt_slideshow_t *d, const dt_slideshow_event_t event)
     {
       _shift_right(d);
       d->buf[S_LEFT].rank = d->buf[S_CURRENT].rank - 2;
-      d->buf[S_LEFT].imgid = d->buf[S_LEFT].rank >= 0 ? _get_image_at_rank(d->buf[S_LEFT].rank) : NO_IMGID;
+      d->buf[S_LEFT].imgid = d->buf[S_LEFT].rank >= 0
+        ? _get_image_at_rank(d->buf[S_LEFT].rank)
+        : NO_IMGID;
       d->buf[S_LEFT].invalidated = TRUE;
       dt_free_align(d->buf[S_LEFT].buf);
       d->buf[S_LEFT].buf = NULL;
@@ -373,7 +406,7 @@ void init(dt_view_t *self)
   self->data = calloc(1, sizeof(dt_slideshow_t));
   dt_slideshow_t *lib = self->data;
   dt_pthread_mutex_init(&lib->lock, 0);
-  lib->zoom_level = 1.0; // 初始化缩放级别为1.0（原始大小）
+  lib->zoom_level = 1.0; // 鍒濆鍖栫缉鏀剧骇鍒负1.0锛堝師濮嬪ぇ灏忥級
 }
 
 
@@ -420,7 +453,8 @@ void enter(dt_view_t *self)
   GdkRectangle rect;
 
   GdkDisplay *display = gtk_widget_get_display(window);
-  GdkMonitor *mon = gdk_display_get_monitor_at_window(display, gtk_widget_get_window(window));
+  GdkMonitor *mon = gdk_display_get_monitor_at_window(display,
+                                                      gtk_widget_get_window(window));
   gdk_monitor_get_geometry(mon, &rect);
 
   dt_pthread_mutex_lock(&d->lock);
@@ -428,7 +462,7 @@ void enter(dt_view_t *self)
   d->width = rect.width * darktable.gui->ppd;
   d->height = rect.height * darktable.gui->ppd;
 
-  for(dt_slideshow_slot_t slot = S_LEFT; slot < S_SLOT_LAST; slot++)
+  for(dt_slideshow_slot_t slot=S_LEFT; slot<S_SLOT_LAST; slot++)
   {
     _init_slot(&d->buf[slot]);
   }
@@ -453,15 +487,18 @@ void enter(dt_view_t *self)
     sqlite3_finalize(stmt);
   }
 
-  const int rank = selrank == -1 ? dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui)) : selrank;
+  const int rank =
+    selrank == -1
+    ? dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui))
+    : selrank;
 
-  d->buf[S_LEFT].rank = rank - 2;
-  d->buf[S_LEFT_M].rank = rank - 1;
+  d->buf[S_LEFT].rank    = rank - 2;
+  d->buf[S_LEFT_M].rank  = rank - 1;
   d->buf[S_CURRENT].rank = rank;
   d->buf[S_RIGHT_M].rank = rank + 1;
-  d->buf[S_RIGHT].rank = rank + 2;
+  d->buf[S_RIGHT].rank   = rank + 2;
 
-  for(dt_slideshow_slot_t slot = S_LEFT; slot < S_SLOT_LAST; slot++)
+  for(dt_slideshow_slot_t slot=S_LEFT; slot<S_SLOT_LAST; slot++)
     d->buf[slot].imgid = _get_image_at_rank(d->buf[slot].rank);
 
   d->col_count = dt_collection_get_count(darktable.collection);
@@ -476,9 +513,7 @@ void enter(dt_view_t *self)
   // start first job
   dt_control_queue_redraw_center();
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, _process_job_create(d));
-  dt_control_log(
-      _("waiting to start slideshow\nclick the left mouse button on the next image\nright-click on the previous "
-        "image\npress the spacebar to automatically play\nuse the q and e keys to zoom in and out of the image"));
+  dt_control_log(_("waiting to start slideshow\nclick the left mouse button on the next image\nright-click on the previous image\npress the spacebar to automatically play\nuse the q and e keys to zoom in and out of the image"));
 }
 
 void leave(dt_view_t *self)
@@ -494,11 +529,12 @@ void leave(dt_view_t *self)
   // otherwise we will crash releasing lock and memory.
   while(d->exporting > 0) sleep(1);
 
-  dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), d->buf[S_CURRENT].rank, FALSE);
+  dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui),
+                           d->buf[S_CURRENT].rank, FALSE);
 
   dt_pthread_mutex_lock(&d->lock);
 
-  for(dt_slideshow_slot_t slot = S_LEFT; slot < S_SLOT_LAST; slot++)
+  for(dt_slideshow_slot_t slot=S_LEFT; slot<S_SLOT_LAST; slot++)
   {
     dt_free_align(d->buf[slot].buf);
     d->buf[slot].buf = NULL;
@@ -506,7 +542,11 @@ void leave(dt_view_t *self)
   dt_pthread_mutex_unlock(&d->lock);
 }
 
-void expose(dt_view_t *self, cairo_t *cr, const int32_t width, const int32_t height, const int32_t pointerx,
+void expose(dt_view_t *self,
+            cairo_t *cr,
+            const int32_t width,
+            const int32_t height,
+            const int32_t pointerx,
             const int32_t pointery)
 {
   // draw front buffer.
@@ -516,7 +556,8 @@ void expose(dt_view_t *self, cairo_t *cr, const int32_t width, const int32_t hei
   dt_slideshow_buf_t *slot = &(d->buf[S_CURRENT]);
   const dt_imgid_t imgid = slot->imgid;
 
-  if(d->width < slot->width || d->height < slot->height)
+  if(d->width < slot->width
+     || d->height < slot->height)
   {
     slot->invalidated = TRUE;
     _requeue_job(d);
@@ -529,10 +570,8 @@ void expose(dt_view_t *self, cairo_t *cr, const int32_t width, const int32_t hei
 
   // redraw even if the current displayed image is imgid as we want the
   // "working..." label to be cleared.
-  if(slot->buf && dt_is_valid_imgid(imgid) && !slot->invalidated)
-  {
-    double scale
-        = MIN((double)width / (slot->width * d->zoom_level), (double)height / (slot->height * d->zoom_level));
+  if(slot->buf && dt_is_valid_imgid(imgid) && !slot->invalidated) {
+    double scale = MIN((double)width / (slot->width * d->zoom_level), (double)height / (slot->height * d->zoom_level));
     cairo_scale(cr, scale, scale);
     cairo_surface_t *surface = dt_view_create_surface(slot->buf, slot->width, slot->height);
     cairo_set_source_surface(cr, surface, -0.5 * slot->width, -0.5 * slot->height);
@@ -544,15 +583,17 @@ void expose(dt_view_t *self, cairo_t *cr, const int32_t width, const int32_t hei
   {
     // get a small preview
     dt_mipmap_buffer_t buf;
-    dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, width / 8, height / 8);
+    dt_mipmap_size_t mip =
+      dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, width / 8, height / 8);
     dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BLOCKING, 'r');
     if(buf.buf)
     {
       double scale = MIN((double)width / buf.width, (double)height / buf.height);
       cairo_scale(cr, scale, scale);
-      GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf.buf, GDK_COLORSPACE_RGB, TRUE, 8, buf.width, buf.height,
-                                                   buf.width * 4, NULL, NULL);
-      gdk_cairo_set_source_pixbuf(cr, pixbuf, -0.5 * buf.width, -0.5 * buf.height);
+      GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data
+          (buf.buf, GDK_COLORSPACE_RGB, TRUE, 8, buf.width, buf.height,
+           buf.width * 4, NULL, NULL);
+      gdk_cairo_set_source_pixbuf(cr, pixbuf, - 0.5 * buf.width, -0.5 * buf.height);
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_GOOD);
       cairo_paint(cr);
       g_object_unref(pixbuf);
@@ -580,7 +621,11 @@ static gboolean _hide_mouse(gpointer user_data)
 }
 
 
-void mouse_moved(dt_view_t *self, const double x, const double y, const double pressure, const int which)
+void mouse_moved(dt_view_t *self,
+                 const double x,
+                 const double y,
+                 const double pressure,
+                 const int which)
 {
   dt_slideshow_t *d = self->data;
 
@@ -592,14 +637,23 @@ void mouse_moved(dt_view_t *self, const double x, const double y, const double p
 }
 
 
-int button_released(dt_view_t *self, const double x, const double y, const int which, const uint32_t state)
+int button_released(dt_view_t *self,
+                    const double x,
+                    const double y,
+                    const int which,
+                    const uint32_t state)
 {
   return 0;
 }
 
 
-int button_pressed(dt_view_t *self, const double x, const double y, const double pressure, const int which,
-                   const int type, const uint32_t state)
+int button_pressed(dt_view_t *self,
+                   const double x,
+                   const double y,
+                   const double pressure,
+                   const int which,
+                   const int type,
+                   const uint32_t state)
 {
   dt_slideshow_t *d = self->data;
 
@@ -632,7 +686,9 @@ static void _slow_down_callback(dt_action_t *action)
 {
   dt_slideshow_t *d = dt_action_view(action)->data;
   _set_delay(d, 1);
-  dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay),
+  dt_control_log(ngettext("slideshow delay set to %d second",
+                          "slideshow delay set to %d seconds",
+                          d->delay),
                  d->delay);
 }
 
@@ -640,7 +696,9 @@ static void _speed_up_callback(dt_action_t *action)
 {
   dt_slideshow_t *d = dt_action_view(action)->data;
   _set_delay(d, -1);
-  dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay),
+  dt_control_log(ngettext("slideshow delay set to %d second",
+                          "slideshow delay set to %d seconds",
+                          d->delay),
                  d->delay);
 }
 
@@ -670,37 +728,43 @@ static void _exit_callback(dt_action_t *action)
 
 static void _zoom_in_callback(dt_action_t *action)
 {
-  dt_slideshow_t *d = dt_action_view(action)->data;
-  dt_pthread_mutex_lock(&d->lock);
-  d->zoom_level *= 1.1; // Enlarge by 10%
-  dt_pthread_mutex_unlock(&d->lock);
-  dt_control_queue_redraw_center();
+    dt_slideshow_t *d = dt_action_view(action)->data;
+    dt_pthread_mutex_lock(&d->lock);
+    d->zoom_level *= 1.1; // Enlarge by 10%
+    dt_pthread_mutex_unlock(&d->lock);
+    dt_control_queue_redraw_center();
 }
 
 static void _zoom_out_callback(dt_action_t *action)
 {
-  dt_slideshow_t *d = dt_action_view(action)->data;
-  dt_pthread_mutex_lock(&d->lock);
-  d->zoom_level *= 0.9; // Reduce by 10%
-  dt_pthread_mutex_unlock(&d->lock);
-  dt_control_queue_redraw_center();
+    dt_slideshow_t *d = dt_action_view(action)->data;
+    dt_pthread_mutex_lock(&d->lock);
+    d->zoom_level *= 0.9; // Reduce by 10%
+    dt_pthread_mutex_unlock(&d->lock);
+    dt_control_queue_redraw_center();
 }
 
 void gui_init(dt_view_t *self)
 {
-  dt_action_register(DT_ACTION(self), N_("start and stop"), _start_stop_callback, GDK_KEY_space, 0);
-  dt_action_register(DT_ACTION(self), N_("exit slideshow"), _exit_callback, GDK_KEY_Escape, 0);
+  dt_action_register(DT_ACTION(self), N_("start and stop"),
+                     _start_stop_callback, GDK_KEY_space, 0);
+  dt_action_register(DT_ACTION(self), N_("exit slideshow"),
+                     _exit_callback, GDK_KEY_Escape, 0);
 
   dt_action_t *ac;
-  ac = dt_action_register(DT_ACTION(self), N_("slow down"), _slow_down_callback, GDK_KEY_Up, 0);
+  ac = dt_action_register(DT_ACTION(self), N_("slow down"),
+                          _slow_down_callback, GDK_KEY_Up, 0);
   dt_shortcut_register(ac, 0, 0, GDK_KEY_KP_Add, 0);
   dt_shortcut_register(ac, 0, 0, GDK_KEY_plus, 0);
-  ac = dt_action_register(DT_ACTION(self), N_("speed up"), _speed_up_callback, GDK_KEY_Down, 0);
+  ac = dt_action_register(DT_ACTION(self), N_("speed up"),
+                          _speed_up_callback, GDK_KEY_Down, 0);
   dt_shortcut_register(ac, 0, 0, GDK_KEY_KP_Subtract, 0);
   dt_shortcut_register(ac, 0, 0, GDK_KEY_minus, 0);
 
-  dt_action_register(DT_ACTION(self), N_("step forward"), _step_forward_callback, GDK_KEY_Right, 0);
-  dt_action_register(DT_ACTION(self), N_("step back"), _step_back_callback, GDK_KEY_Left, 0);
+  dt_action_register(DT_ACTION(self), N_("step forward"),
+                     _step_forward_callback, GDK_KEY_Right, 0);
+  dt_action_register(DT_ACTION(self), N_("step back"),
+                     _step_back_callback, GDK_KEY_Left, 0);
 
   dt_action_register(DT_ACTION(self), N_("zoom in"), _zoom_in_callback, GDK_KEY_q, 0);
   dt_action_register(DT_ACTION(self), N_("zoom out"), _zoom_out_callback, GDK_KEY_e, 0);
@@ -709,8 +773,10 @@ void gui_init(dt_view_t *self)
 GSList *mouse_actions(const dt_view_t *self)
 {
   GSList *lm = NULL;
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, 0, _("go to next image"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0, _("go to previous image"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, 0,
+                                     _("go to next image"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0,
+                                     _("go to previous image"));
   return lm;
 }
 
