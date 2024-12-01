@@ -199,13 +199,16 @@ struct dt_dbus_t *dt_dbus_init()
                                   _on_name_lost, dbus, NULL);
 
   dbus->dbus_connection = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
-  g_object_set(G_OBJECT(dbus->dbus_connection), "exit-on-close", FALSE, (gchar *)0);
+  if(dbus->dbus_connection)
+    g_object_set(G_OBJECT(dbus->dbus_connection), "exit-on-close", FALSE, (gchar *)0);
 
   return dbus;
 }
 
 void dt_dbus_destroy(const dt_dbus_t *dbus)
 {
+  if(!dbus) return;
+
   g_bus_unown_name(dbus->owner_id);
   if(dbus->introspection_data)
     g_dbus_node_info_unref(dbus->introspection_data);
@@ -217,7 +220,7 @@ void dt_dbus_destroy(const dt_dbus_t *dbus)
 
 gboolean dt_dbus_connected(const dt_dbus_t *dbus)
 {
-  return dbus->connected;
+  return dbus && dbus->connected;
 }
 
 // clang-format off
