@@ -45,7 +45,7 @@ jobs:
 
   Linux:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
-    name: Linux.${{ matrix.distro }}.${{ matrix.compiler.compiler }}.${{ matrix.btype }}
+    name: Linux_${{ matrix.distro }}_${{ matrix.compiler.compiler }}_${{ matrix.btype }}
     runs-on: ubuntu-latest
     container:
       image: ${{ matrix.distro }}
@@ -192,7 +192,7 @@ jobs:
 
   Windows:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
-    name: Windows.${{ matrix.msystem }}.${{ matrix.btype }}
+    name: Windows_${{ matrix.msystem }}_${{ matrix.btype }}
     runs-on: windows-latest
     strategy:
       fail-fast: true
@@ -305,7 +305,7 @@ jobs:
 
   macOS:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
-    name: macOS.${{ matrix.build.os }}.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}.${{ matrix.btype }}
+    name: macOS_${{ matrix.build.os }}_${{ matrix.compiler.compiler }}_${{ matrix.build.xcode }}_${{ matrix.btype }}
     runs-on: ${{ matrix.build.os }}
     strategy:
       fail-fast: true
