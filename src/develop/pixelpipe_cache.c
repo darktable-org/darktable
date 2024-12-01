@@ -84,7 +84,7 @@ gboolean dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_t *pipe,
 
 void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_t *pipe)
 {
-  dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
+  dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
 
   if(pipe->type == DT_DEV_PIXELPIPE_FULL)
   {
@@ -104,37 +104,41 @@ void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_t *pipe)
 
 static dt_hash_t _dev_pixelpipe_cache_basichash(const dt_imgid_t imgid,
                                                 dt_dev_pixelpipe_t *pipe,
-                                                const int position)
+                                                const int order)
 {
   /* What do we use for the basic hash
        1) imgid as all structures using the hash might possibly contain data from other images
-       2) pipe->type for the cache it's important to keep status of fast mode included here
-           also, we might use the hash also for different pipe.
-       3) pipe->want_detail_mask make sure old cachelines from before activating details are
+       2) pipe->type as we want to keep status of fast mode included
+       3) pipe->want_detail_mask makes sure old cachelines from before activating details are
           not valid any more.
-          Do we have to keep the roi of details mask? No as that is always defined by roi_in
+          Do we have to keep the roi of details mask? No, as that is always defined by roi_in
           of the mask writing module (rawprepare or demosaic)
+       4) The piece->hash of enabled modules within the given limit excluding the skipped
   */
   const uint32_t hashing_pipemode[3] = {(uint32_t)imgid,
                                         (uint32_t)pipe->type,
                                         (uint32_t)pipe->want_detail_mask };
   dt_hash_t hash = dt_hash(DT_INITHASH, &hashing_pipemode, sizeof(hashing_pipemode));
 
-  // go through all modules up to position and compute a hash using the operation and params.
+  // go through all modules up to iop_order and compute a hash using the operation and params.
   GList *pieces = pipe->nodes;
-  for(int k = 0; k < position && pieces; k++)
+  while(pieces)
   {
-    dt_dev_pixelpipe_iop_t *piece = pieces->data;
-    dt_develop_t *dev = piece->module->dev;
+    const dt_dev_pixelpipe_iop_t *piece = pieces->data;
+    const dt_iop_module_t *mod = piece->module;
 
     // don't take skipped modules into account
-    const gboolean skipped = dt_iop_module_is_skipped(dev, piece->module)
-      && (pipe->type & DT_DEV_PIXELPIPE_BASIC);
+    const gboolean skipped = dt_iop_module_is_skipped(mod->dev, mod)
+                          && (pipe->type & DT_DEV_PIXELPIPE_BASIC);
 
-    if(!skipped)
+    const gboolean relevant = mod->iop_order > 0
+                           && mod->iop_order <= order
+                           && piece->enabled;
+
+    if(!skipped && relevant)
     {
       hash = dt_hash(hash, &piece->hash, sizeof(piece->hash));
-      if(piece->module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
+      if(mod->request_color_pick != DT_REQUEST_COLORPICK_OFF)
       {
         if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
         {
@@ -154,9 +158,9 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(const dt_imgid_t imgid,
 dt_hash_t dt_dev_pixelpipe_cache_hash(const dt_imgid_t imgid,
                                       const dt_iop_roi_t *roi,
                                       dt_dev_pixelpipe_t *pipe,
-                                      const int position)
+                                      const int order)
 {
-  dt_hash_t hash = _dev_pixelpipe_cache_basichash(imgid, pipe, position);
+  dt_hash_t hash = _dev_pixelpipe_cache_basichash(imgid, pipe, order);
   // also include roi data
   // FIXME include full roi data in cachelines
   hash = dt_hash(hash, roi, sizeof(dt_iop_roi_t));
@@ -172,7 +176,7 @@ gboolean dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_t *pipe,
      || (hash == INVALID_CACHEHASH))
     return FALSE;
 
-  dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
+  dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
   cache->tests++;
   // search for hash in cache and make the sizes are identical
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
@@ -189,7 +193,7 @@ gboolean dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_t *pipe,
 // While looking for the oldest cacheline we always ignore the first two lines as they are used
 // for swapping buffers while in entries==DT_PIPECACHE_MIN or masking mode
 static int _get_oldest_cacheline(dt_dev_pixelpipe_cache_t *cache,
-                                 dt_dev_pixelpipe_cache_test_t mode)
+                                 const dt_dev_pixelpipe_cache_test_t mode)
 {
   // we never want the latest used cacheline! It was <= 0 and the weight has increased just now
   int age = 1;
@@ -226,7 +230,7 @@ static int __get_cacheline(dt_dev_pixelpipe_cache_t *cache)
 
 static int _get_cacheline(dt_dev_pixelpipe_t *pipe)
 {
-  dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
+  dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
   // If pipe has only two cachelines or we are in masking or nocache mode
   // we just toggle between the first two cachelines.
   // These are also taken if there is no valid cacheline returned
@@ -239,13 +243,13 @@ static int _get_cacheline(dt_dev_pixelpipe_t *pipe)
 
 // return TRUE in case of a hit
 static gboolean _get_by_hash(dt_dev_pixelpipe_t *pipe,
-                             dt_iop_module_t *module,
+                             const dt_iop_module_t *module,
                              const dt_hash_t hash,
                              const size_t size,
                              void **data,
                              dt_iop_buffer_dsc_t **dsc)
 {
-  dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
+  dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
     if(cache->hash[k] == hash)
@@ -288,7 +292,7 @@ gboolean dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_t *pipe,
                                     dt_iop_module_t *module,
                                     const gboolean important)
 {
-  dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
+  dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
   cache->calls++;
   for(int k = 0; k < cache->entries; k++)
     cache->used[k]++; // age all entries
@@ -364,7 +368,7 @@ static void _mark_invalid_cacheline(const dt_dev_pixelpipe_cache_t *cache, const
 void dt_dev_pixelpipe_cache_invalidate_later(const dt_dev_pixelpipe_t *pipe,
                                              const int32_t order)
 {
-  const dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
+  const dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
   int invalidated = 0;
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
@@ -390,7 +394,7 @@ void dt_dev_pixelpipe_important_cacheline(const dt_dev_pixelpipe_t *pipe,
                                           const void *data,
                                           const size_t size)
 {
-  const dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
+  const dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
     if((cache->data[k] == data)
@@ -403,7 +407,7 @@ void dt_dev_pixelpipe_important_cacheline(const dt_dev_pixelpipe_t *pipe,
 void dt_dev_pixelpipe_invalidate_cacheline(const dt_dev_pixelpipe_t *pipe,
                                            const void *data)
 {
-  const dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
+  const dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
     if(cache->data[k] == data) _mark_invalid_cacheline(cache, k);
@@ -427,8 +431,8 @@ static void _cline_stats(dt_dev_pixelpipe_cache_t *cache)
   cache->lused = cache->linvalid = cache->limportant = 0;
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
-    if(cache->data[k] != NULL) cache->lused++;
-    if((cache->data[k] != NULL) && (cache->hash[k] == INVALID_CACHEHASH)) cache->linvalid++;
+    if(cache->data[k]) cache->lused++;
+    if(cache->data[k] && (cache->hash[k] == INVALID_CACHEHASH)) cache->linvalid++;
     if(cache->used[k] < 0) cache->limportant++;
   }
 }
