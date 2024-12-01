@@ -104,11 +104,16 @@ int main(int argc, char *argv[])
   g_setenv("GTK_CSD", "0", TRUE);
 #endif
 
-  if(dt_init(argc, argv, TRUE, TRUE, NULL)) exit(1);
+  if(dt_init(argc, argv, TRUE, TRUE, NULL))
+  {
+    if(darktable.gimp.mode)
+      printf("\n<<<gimp\nerror\ngimp>>>\n");
+    exit(1);
+  }
 
   if(dt_check_gimpmode_ok("version"))
   {
-    fprintf(stdout, "\n<<<gimp\n%d\ngimp>>>\n", DT_GIMP_VERSION);
+    printf("\n<<<gimp\n%d\ngimp>>>\n", DT_GIMP_VERSION);
     exit(0);
   }
 
@@ -117,7 +122,7 @@ int main(int argc, char *argv[])
     || (dt_check_gimpmode("thumb") && !dt_check_gimpmode_ok("thumb"))
     || darktable.gimp.error)
   {
-    fprintf(stdout, "\n<<<gimp\nerror\ngimp>>>\n");
+    printf("\n<<<gimp\nerror\ngimp>>>\n");
     exit(1);
   }
 
@@ -143,7 +148,7 @@ int main(int argc, char *argv[])
   dt_cleanup();
 
   if(darktable.gimp.mode && darktable.gimp.error)
-    fprintf(stdout, "\n<<<gimp\nerror\ngimp>>>\n");
+    printf("\n<<<gimp\nerror\ngimp>>>\n");
 
 #ifdef _WIN32
   if(redirect_output)

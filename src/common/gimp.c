@@ -63,14 +63,14 @@ gboolean dt_export_gimp_file(const dt_imgid_t imgid)
                   NULL,  // icc_filename
                   DT_INTENT_PERCEPTUAL,
                   NULL);  // &metadata
-  fprintf(stdout, "<<<gimp\n%s%s\n", path, thumb ? ".jpg" : ".exr");
+  printf("<<<gimp\n%s%s\n", path, thumb ? ".jpg" : ".exr");
   if(thumb)
   {
     dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-    fprintf(stdout, "%i %i\n", image->width, image->height);
+    printf("%i %i\n", image->width, image->height);
     dt_image_cache_read_release(darktable.image_cache, image);
   }
-  fprintf(stdout, "gimp>>>\n");
+  printf("gimp>>>\n");
   return TRUE;
 }
 
