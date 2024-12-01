@@ -57,7 +57,7 @@ jobs:
           - "ubuntu:24.10"
         compiler:
           - { compiler: GNU14,  CC: gcc-14,   CXX: g++-14,     packages: gcc-14 g++-14 }
-          - { compiler: LLVM18, CC: clang-18, CXX: clang++-18, packages: clang-18 libomp-18-dev llvm-18-dev libc++-18-dev libc++abi1-18 lld-18 clang-tools-18 mlir-18-tools libmlir-18-dev}
+          - { compiler: LLVM19, CC: clang-19, CXX: clang++-19, packages: clang-19 libomp-19-dev llvm-19-dev libc++-19-dev libc++abi1-19 lld-19 clang-tools-19 mlir-19-tools libmlir-19-dev}
         btype:
           - Release
         target:
