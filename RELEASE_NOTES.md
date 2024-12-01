@@ -310,7 +310,7 @@ changes (where available).
 - Fixed a bug in color calibration module where switching between
   various illuminants could lead to unpredictable settings.
 
-- Various fixes In the demosicer module. Non-usable options are hidden
+- Various fixes In the demosaic module. Non-usable options are hidden
   now. Fixed dual demosaicing for xtrans sensors and OpenCL code.
 
 - Fixed a bug in the history module where style creation fails if a
