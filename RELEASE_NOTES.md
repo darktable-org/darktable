@@ -244,7 +244,7 @@ changes (where available).
   skin tones, and miscellaneous color patches for more targeted color
   adjustments across the full spectrum.
 
-- Added support for exif tags 'AnalogBalance' used for color
+- Added support for EXIF tags 'AnalogBalance' used for color
   calibration and LinearResponseLimit used in highlights
   reconstruction.
 
@@ -267,7 +267,7 @@ changes (where available).
 - Fixed printer discovery in the print module, which could cause
   available printers to be missed.
 
-- Work around out-of-spec ExIF date field caused by buggy software.
+- Work around out-of-spec EXIF date field caused by buggy software.
 
 - Fixed reading embedded color profiles from PNG images.
 
