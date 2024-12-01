@@ -920,26 +920,47 @@ char *dt_read_file(const char *const filename, size_t *filesize)
   return NULL;
 }
 
-void dt_copy_file(const char *const sourcefile, const char *dst)
+void dt_copy_file(const char *const sourcefile, const char *destination)
 {
   char *content = NULL;
   FILE *fin = g_fopen(sourcefile, "rb");
-  FILE *fout = g_fopen(dst, "wb");
+  FILE *fout = g_fopen(destination, "wb");
 
   if(fin && fout)
   {
     fseek(fin, 0, SEEK_END);
-    const size_t end = ftell(fin);
+    const size_t filesize = ftell(fin);
     rewind(fin);
-    content = (char *)g_malloc_n(end, sizeof(char));
-    if(content == NULL) goto END;
-    if(fread(content, sizeof(char), end, fin) != end) goto END;
-    if(fwrite(content, sizeof(char), end, fout) != end) goto END;
+
+    content = (char *)g_try_malloc_n(filesize, sizeof(char));
+    if(content == NULL)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_copy_file] failure to allocate memory for copying file '%s'",
+               sourcefile);
+      goto END;
+    }
+    if(fread(content, sizeof(char), filesize, fin) != filesize)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_copy_file] error reading file '%s' for copying",
+               sourcefile);
+      goto END;
+    }
+    if(fwrite(content, sizeof(char), filesize, fout) != filesize)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_copy_file] error writing file '%s' during copying",
+               destination);
+      goto END;
+    }
   }
 
 END:
-  if(fout != NULL) fclose(fout);
-  if(fin != NULL) fclose(fin);
+  if(fout != NULL)
+    fclose(fout);
+  if(fin != NULL)
+    fclose(fin);
 
   g_free(content);
 }
@@ -1040,7 +1061,7 @@ char *dt_filename_change_extension(const char *filename, const char *ext)
   if(!dot) return NULL;
   const int name_lgth = dot - filename + 1;
   const int ext_lgth = strlen(ext);
-  char *output = g_malloc(name_lgth + ext_lgth + 1);
+  char *output = g_try_malloc(name_lgth + ext_lgth + 1);
   if(output)
   {
     memcpy(output, filename, name_lgth);

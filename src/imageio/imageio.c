@@ -25,7 +25,6 @@
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/image_cache.h"
-#include "common/image_compression.h"
 #include "common/mipmap_cache.h"
 #include "common/styles.h"
 #include "control/conf.h"
@@ -349,13 +348,13 @@ static const dt_magic_bytes_t _magic_signatures[] = {
   { DT_FILETYPE_OTHER_LDR, FALSE, 0, 4, dt_imageio_open_exotic,
     { 0x80, 0x2A, 0x5F, 0xD7 } },
   // ASCII NetPNM (pbm)
-  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_pnm,
+  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_exotic,
     { 'P', '1', 0x0A } },
   // ASCII NetPNM (pgm)
-  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_pnm,
+  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_exotic,
     { 'P', '2', 0x0A } },
   // ASCII NetPNM (ppm)
-  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_pnm,
+  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_exotic,
     { 'P', '3', 0x0A } },
   // binary NetPNM (pbm)
   { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_pnm,
@@ -366,6 +365,9 @@ static const dt_magic_bytes_t _magic_signatures[] = {
   // binary NetPNM (ppm)
   { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_pnm,
     { 'P', '6', 0x0A } },
+  // binary NetPNM "Portable Arbitrary Map" (pam)
+  { DT_FILETYPE_PNM, FALSE, 0, 3, dt_imageio_open_exotic,
+    { 'P', '7', 0x0A } },
   // Windows BMP bitmap image
   { DT_FILETYPE_BMP, FALSE, 0, 2, dt_imageio_open_exotic,
     { 'B', 'M' } },
@@ -1064,15 +1066,17 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
   if(!buf.buf || !buf.width || !buf.height)
   {
-    dt_print(DT_DEBUG_ALWAYS,
-             "[dt_imageio_export_with_flags] mipmap allocation for `%s' failed (status %d)",
-             filename,img->load_status);
     if(img->load_status == DT_IMAGEIO_FILE_NOT_FOUND)
       dt_control_log(_("image `%s' is not available!"), img->filename);
     else if(img->load_status == DT_IMAGEIO_LOAD_FAILED
             || img->load_status == DT_IMAGEIO_IOERROR
             || img->load_status == DT_IMAGEIO_CACHE_FULL)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_imageio_export_with_flags] mipmap allocation for `%s' failed (status %d)",
+               filename,img->load_status);
       dt_control_log(_("unable to load image `%s'!"), img->filename);
+    }
     else
       dt_control_log(_("image '%s' not supported"), img->filename);
     goto error_early;
@@ -1596,7 +1600,10 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
 
   // check for known magic numbers and call the appropriate loader if we recognize a magic number
   ret = _open_by_magic_number(img, filename, buf);
-  if(ret == DT_IMAGEIO_UNRECOGNIZED)
+
+  // Go to fallback path if we didn't recognize the magic bytes (UNRECOGNIZED)
+  // or the main loader has rejected the file (UNSUPPORTED_FORMAT)
+  if((ret == DT_IMAGEIO_UNRECOGNIZED) || (ret == DT_IMAGEIO_UNSUPPORTED_FORMAT))
   {
     // special case - most camera RAW files are TIFF containers, so if we have an LDR file extension,
     // try loading the file as TIFF
@@ -1620,9 +1627,6 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
       ret = dt_imageio_open_heif(img, filename, buf);
 
     if(!_image_handled(ret))
-      ret = dt_imageio_open_webp(img, filename, buf);
-
-    if(!_image_handled(ret))
       ret = dt_imageio_open_exr(img, filename, buf);
 
     if(!_image_handled(ret))
@@ -1632,13 +1636,7 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
       ret = dt_imageio_open_j2k(img, filename, buf);
 
     if(!_image_handled(ret))
-      ret = dt_imageio_open_jpegxl(img, filename, buf);
-
-    if(!_image_handled(ret))
       ret = dt_imageio_open_jpeg(img, filename, buf);
-
-    if(!_image_handled(ret))
-      ret = dt_imageio_open_qoi(img, filename, buf);
 
     if(!_image_handled(ret))
       ret = dt_imageio_open_pnm(img, filename, buf);

@@ -129,7 +129,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   if(exif && exif_len > 0)
   {
     // Prepend the libexif expected "Exif\0\0" APP1 prefix (see GIMP parasites.txt)
-    uint8_t *exif_buf = g_malloc0(exif_len + 6);
+    uint8_t *exif_buf = g_try_malloc0(exif_len + 6);
     if(!exif_buf)
     {
       dt_print(DT_DEBUG_ALWAYS, "[xcf] error: can't allocate %d bytes of memory", exif_len + 6);

@@ -53,6 +53,11 @@ changes (where available).
   script to auto-apply the appropriate style on import and manually
   apply styles to a collection of previously-imported images.
 
+- Added an optional splash screen showing startup progress (including
+  estimated time remaining during the scan for updated sidecar files) to
+  dramatically reduce the time between invoking darktable and something
+  appearing on screen when the user has a large library.
+
 - The user interface now gives feedback while processing bulk image
   operations such as rating, tagging, applying styles, and edit
   history management (and undoing those operations), rather than
@@ -208,6 +213,45 @@ changes (where available).
   to do it as losslessly as possible. That is now consistent with the
   behavior of integral JPEG XL formats.
 
+- Improved visibility of shortcuts that can be changed by users by
+  using bold text.
+
+- The histogram-exposure interface now supports all standard bauhaus
+  features (<kbd>Ctrl+click</kbd>, <kbd>Right-click</kbd>...).
+
+- Introduce image module order v5.0 to have the final-scale done before
+  color-out to fix some issues with color difference between darkroom
+  view and exported files.
+
+- Add support for editing any live color-picker samples. Using
+  <kbd>Right-click</kbd> on a sample it is possible to edit it
+  (changing location and/or size of the box) and either add a new
+  sample based on the edit or store the edit into an existing live
+  sample.
+
+- Added more substitution variables for using EXIF data fields,
+  enabled autocompletion of variables in the watermark module.
+
+  The new variables are $(EXIF.FLASH), $(EXIF.METERING),
+  $(EXIF.EXPOSURE.PROGRAM), $(EXIF.WHITEBALANCE) and
+  $(GPS.LOCATION.ICON).
+
+- Increase maximum focal length for filtering auto-applied presets to
+  2000mm.
+
+- Added an expanded color-checker preset to the Color Look Up Table
+  module with seven-level red/green/blue/gray ramps, IT8/CC24-like
+  skin tones, and miscellaneous color patches for more targeted color
+  adjustments across the full spectrum.
+
+- Added support for exif tags 'AnalogBalance' used for color
+  calibration and LinearResponseLimit used in highlights
+  reconstruction.
+
+- If we find currently unsupported color calibration data in DNG
+  specific tags, we tag the image by darktable|issue|no-samples for
+  better support.
+
 ## Bug Fixes
 
 - Fixed a performance regression for redrawing mipmaps.
@@ -266,18 +310,64 @@ changes (where available).
 - Fixed a bug in color calibration module where switching between
   various illuminants could lead to unpredictable settings.
 
+- Various fixes In the demosicer module. Non-usable options are hidden
+  now. Fixed dual demosaicing for xtrans sensors and OpenCL code.
+
+- Fixed a bug in the history module where style creation fails if a
+  style with that name already exists.
+
+- Fixed guides drawing in case a module is expanded and active.
+
+- Ensure that the list of images in the culling view remains up to
+  date when hidden.
+
+- Fixed minor glitches in color calibration module.
+
+- Fixed issues with wrong corrections in highlight opposed OpenCL
+  code.
+
+- Fixed surface blur radius calculation possibly resulting in garbled
+  output.
+
 ## Lua
 
 ### API Version
 
-- API version is now 9.3.0
+- API version is now 9.4.0
+
+### New Features
+
+- Added new event, inter-script-communication, to permit sending messages
+  from one running script to another running script.
+
+- Added new function darktable.util.message(), for sending messages using
+  the inter-script-communication event.
+
+- Added new EXIF data fields to dt_lua_image_t:
+
+  - exif_whitebalance
+
+  - exif_flash
+
+  - exif_exposure_program
+
+  - exif_metering_mode
+
+- Added new event, image-group-information-changed, that is raised any time
+  an images group information changes.
 
 ### Bug Fixes
+
+- Fixed a bug with dt_imageio_module_format_t.write_image so it returns
+  true on success and false on failure.
 
 ### Add action support for Lua
 
 ### Other Lua changes
 
+- Lua scripts are now better integrated into Darktable and can be
+  fully translated. The design for the scripts manager has been
+  reworked to be more in line with the current Darktable GUI modules.
 
 ## Notes
 
@@ -293,10 +383,6 @@ changes (where available).
 
 ### Mandatory
 
-- Minimum libpng version 1.5.x is now required
-- Bump Exiv2 requirement to 0.27.2
-- Minimum pugixml version 1.5 is now required
-- Minimum libcurl version 7.56 is now required
 - Bump SQLite requirement to 3.26
 
 ### Optional

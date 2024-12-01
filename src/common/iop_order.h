@@ -137,8 +137,13 @@ typedef enum dt_iop_order_t
   DT_IOP_ORDER_LEGACY  = 1, // up to dt 2.6.3
   DT_IOP_ORDER_V30     = 2, // starts with dt 3.0
   DT_IOP_ORDER_V30_JPG = 3, // same as previous but tuned for non-linear input
-  DT_IOP_ORDER_LAST    = 4
+  DT_IOP_ORDER_V50     = 4, // starts with dt 5.0
+  DT_IOP_ORDER_V50_JPG = 5, // same as previous but tuned for non-linear input
+  DT_IOP_ORDER_LAST    = 6
 } dt_iop_order_t;
+
+#define DT_DEFAULT_IOP_ORDER_RAW DT_IOP_ORDER_V50
+#define DT_DEFAULT_IOP_ORDER_JPG DT_IOP_ORDER_V50_JPG
 
 typedef struct dt_iop_order_entry_t
 {

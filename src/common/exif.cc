@@ -911,11 +911,14 @@ static gboolean _check_dng_opcodes(Exiv2::ExifData &exifData,
     pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.OpcodeList2"));
   if(pos != exifData.end())
   {
-    uint8_t *data = (uint8_t *)g_malloc(pos->size());
-    pos->copy(data, Exiv2::invalidByteOrder);
-    dt_dng_opcode_process_opcode_list_2(data, pos->size(), img);
-    g_free(data);
-    has_opcodes = TRUE;
+    uint8_t *data = (uint8_t *)g_try_malloc(pos->size());
+    if(data)
+    {
+      pos->copy(data, Exiv2::invalidByteOrder);
+      dt_dng_opcode_process_opcode_list_2(data, pos->size(), img);
+      g_free(data);
+      has_opcodes = TRUE;
+    }
   }
 
   Exiv2::ExifData::const_iterator posb =
@@ -927,11 +930,14 @@ static gboolean _check_dng_opcodes(Exiv2::ExifData &exifData,
     posb = exifData.findKey(Exiv2::ExifKey("Exif.Image.OpcodeList3"));
   if(posb != exifData.end())
   {
-    uint8_t *data = (uint8_t *)g_malloc(posb->size());
-    posb->copy(data, Exiv2::invalidByteOrder);
-    dt_dng_opcode_process_opcode_list_3(data, posb->size(), img);
-    g_free(data);
-    has_opcodes = TRUE;
+    uint8_t *data = (uint8_t *)g_try_malloc(posb->size());
+    if(data)
+    {
+      posb->copy(data, Exiv2::invalidByteOrder);
+      dt_dng_opcode_process_opcode_list_3(data, posb->size(), img);
+      g_free(data);
+      has_opcodes = TRUE;
+    }
   }
   return has_opcodes;
 }
@@ -3879,7 +3885,10 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
         //  All iop-order version before 3 are legacy one. Starting
         //  with version 3 we have the first attempts to propose the
         //  final v3 iop-order.
-        iop_order_version = pos->toLong() < 3 ? DT_IOP_ORDER_LEGACY : DT_IOP_ORDER_V30;
+        iop_order_version = pos->toLong() < 3
+          ? DT_IOP_ORDER_LEGACY
+          : DT_DEFAULT_IOP_ORDER_RAW;
+
         iop_order_list = dt_ioppr_get_iop_order_list_version(iop_order_version);
       }
       else

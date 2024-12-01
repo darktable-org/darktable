@@ -23,6 +23,7 @@
 #include "common/darktable.h"
 #include "common/iop_order.h"
 #include "common/styles.h"
+#include "common/image_cache.h"
 #include "common/debug.h"
 #include "develop/imageop.h"
 #include "develop/pixelpipe.h"
@@ -59,7 +60,9 @@ const char *iop_order_string[] =
   N_("custom"),
   N_("legacy"),
   N_("v3.0 RAW"),
-  N_("v3.0 JPEG")
+  N_("v3.0 JPEG"),
+  N_("v5.0 RAW"),
+  N_("v5.0 JPEG")
 };
 
 const char *dt_iop_order_string(const dt_iop_order_t order)
@@ -290,6 +293,122 @@ const dt_iop_order_entry_t v30_order[] = {
   { { 0.0f }, "", 0 }
 };
 
+const dt_iop_order_entry_t v50_order[] = {
+  { { 1.0 }, "rawprepare", 0},
+  { { 2.0 }, "invert", 0},
+  { { 3.0f }, "temperature", 0},
+  { { 4.0f }, "highlights", 0},
+  { { 5.0f }, "cacorrect", 0},
+  { { 6.0f }, "hotpixels", 0},
+  { { 7.0f }, "rawdenoise", 0},
+  { { 8.0f }, "demosaic", 0},
+  { { 9.0f }, "denoiseprofile", 0},
+  { {10.0f }, "bilateral", 0},
+  { {11.0f }, "rotatepixels", 0},
+  { {12.0f }, "scalepixels", 0},
+  { {13.0f }, "lens", 0},
+  { {13.5f }, "cacorrectrgb", 0}, // correct chromatic aberrations
+                                  // after lens correction so that
+                                  // lensfun does not reintroduce
+                                  // chromatic aberrations when trying
+                                  // to correct them
+  { {14.0f }, "hazeremoval", 0},
+  { {15.0f }, "ashift", 0},
+  { {16.0f }, "flip", 0},
+  { {16.5f }, "enlargecanvas", 0},
+  { {16.7f }, "overlay", 0},
+  { {17.0f }, "clipping", 0},
+  { {18.0f }, "liquify", 0},
+  { {19.0f }, "spots", 0},
+  { {20.0f }, "retouch", 0},
+  { {21.0f }, "exposure", 0},
+  { {22.0f }, "mask_manager", 0},
+  { {23.0f }, "tonemap", 0},
+  { {24.0f }, "toneequal", 0},       // last module that need enlarged
+                                     // roi_in
+  { {24.5f }, "crop", 0},            // should go after all modules
+                                     // that may need a wider roi_in
+  { {25.0f }, "graduatednd", 0},
+  { {26.0f }, "profile_gamma", 0},
+  { {27.0f }, "equalizer", 0},
+  { {28.0f }, "colorin", 0},
+  { {28.5f }, "channelmixerrgb", 0},
+  { {28.5f }, "diffuse", 0},
+  { {28.5f }, "censorize", 0},
+  { {28.5f }, "negadoctor", 0},      // Cineon film encoding comes
+                                     // after scanner input color
+                                     // profile
+  { {28.5f }, "blurs", 0},           // physically-accurate blurs (motion and lens)
+  { {28.5f }, "primaries", 0},
+  { {29.0f }, "nlmeans", 0},         // signal processing (denoising)
+                                     //    -> needs a signal as scene-referred as possible (even if it works in Lab)
+  { {30.0f }, "colorchecker", 0},    // calibration to "neutral" exchange colour space
+                                  //    -> improve colour calibration of colorin and reproductibility
+                                  //    of further edits (styles etc.)
+  { {31.0f }, "defringe", 0},        // desaturate fringes in Lab, so needs properly calibrated colours
+                                  //    in order for chromaticity to be meaningful,
+  { {32.0f }, "atrous", 0},          // frequential operation, needs a signal as scene-referred as possible to avoid halos
+  { {33.0f }, "lowpass", 0},         // same
+  { {34.0f }, "highpass", 0},        // same
+  { {35.0f }, "sharpen", 0},         // same, worst than atrous in same use-case, less control overall
+
+  { {37.0f }, "colortransfer", 0},   // probably better if source and destination colours are neutralized in the same
+                                  //    colour exchange space, hence after colorin and colorcheckr,
+                                  //    but apply after frequential ops in case it does non-linear witchcraft,
+                                  //    just to be safe
+  { {38.0f }, "colormapping", 0},    // same
+  { {39.0f }, "channelmixer", 0},    // does exactly the same thing as colorin, aka RGB to RGB matrix conversion,
+                                  //    but coefs are user-defined instead of calibrated and read from ICC profile.
+                                  //    Really versatile yet under-used module, doing linear ops,
+                                  //    very good in scene-referred workflow
+  { {40.0f }, "basicadj", 0},        // module mixing view/model/control at once, usage should be discouraged
+  { {41.0f }, "colorbalance", 0},    // scene-referred color manipulation
+  { {41.2f }, "colorequal", 0},
+  { {41.5f }, "colorbalancergb", 0},    // scene-referred color manipulation
+  { {42.0f }, "rgbcurve", 0},        // really versatile way to edit colour in scene-referred and display-referred workflow
+  { {43.0f }, "rgblevels", 0},       // same
+  { {44.0f }, "basecurve", 0},       // conversion from scene-referred to display referred, reverse-engineered
+                                  //    on camera JPEG default look
+  { {45.0f }, "filmic", 0},          // same, but different (parametric) approach
+  { {45.3f }, "sigmoid", 0},
+  { {46.0f }, "filmicrgb", 0},       // same, upgraded
+  { {36.0f }, "lut3d", 0},           // apply a creative style or film emulation, possibly non-linear
+  { {47.0f }, "colisa", 0},          // edit contrast while damaging colour
+  { {48.0f }, "tonecurve", 0},       // same
+  { {49.0f }, "levels", 0},          // same
+  { {50.0f }, "shadhi", 0},          // same
+  { {51.0f }, "zonesystem", 0},      // same
+  { {52.0f }, "globaltonemap", 0},   // same
+  { {53.0f }, "relight", 0},         // flatten local contrast while pretending do add lightness
+  { {54.0f }, "bilat", 0},           // improve clarity/local contrast after all the bad things we have done
+                                  //    to it with tonemapping
+  { {55.0f }, "colorcorrection", 0}, // now that the colours have been damaged by contrast manipulations,
+                                  // try to recover them - global adjustment of white balance for shadows and highlights
+  { {56.0f }, "colorcontrast", 0},   // adjust chrominance globally
+  { {57.0f }, "velvia", 0},          // same
+  { {58.0f }, "vibrance", 0},        // same, but more subtle
+  { {60.0f }, "colorzones", 0},      // same, but locally
+  { {61.0f }, "bloom", 0},           // creative module
+  { {62.0f }, "colorize", 0},        // creative module
+  { {63.0f }, "lowlight", 0},        // creative module
+  { {64.0f }, "monochrome", 0},      // creative module
+  { {65.0f }, "grain", 0},           // creative module
+  { {66.0f }, "soften", 0},          // creative module
+  { {67.0f }, "splittoning", 0},     // creative module
+  { {68.0f }, "vignette", 0},        // creative module
+  { {69.0f }, "colorreconstruct", 0},// try to salvage blown areas before ICC intents in LittleCMS2 do things with them.
+  { {69.4f }, "finalscale", 0},
+  { {70.0f }, "colorout", 0},
+  { {71.0f }, "clahe", 0},
+  { {73.0f }, "overexposed", 0},
+  { {74.0f }, "rawoverexposed", 0},
+  { {75.0f }, "dither", 0},
+  { {76.0f }, "borders", 0},
+  { {77.0f }, "watermark", 0},
+  { {78.0f }, "gamma", 0},
+  { { 0.0f }, "", 0 }
+};
+
 // default order for JPEG/TIFF/PNG files, non-linear before colorin
 const dt_iop_order_entry_t v30_jpg_order[] = {
   // the following modules are not used anyway for non-RAW images :
@@ -409,6 +528,135 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 0.0f }, "", 0 }
 };
 
+// default order for JPEG/TIFF/PNG files, non-linear before colorin
+const dt_iop_order_entry_t v50_jpg_order[] = {
+  // the following modules are not used anyway for non-RAW images :
+  { { 1.0 }, "rawprepare", 0 },
+  { { 2.0 }, "invert", 0 },
+  { { 3.0f }, "temperature", 0 },
+  { { 4.0f }, "highlights", 0 },
+  { { 5.0f }, "cacorrect", 0 },
+  { { 6.0f }, "hotpixels", 0 },
+  { { 7.0f }, "rawdenoise", 0 },
+  { { 8.0f }, "demosaic", 0 },
+  // all the modules between [8; 28] expect linear RGB, so they need to be moved after colorin
+  { { 28.0f }, "colorin", 0 },
+  // moved modules : (copy-pasted in the same order)
+  { { 28.0f }, "denoiseprofile", 0},
+  { { 28.0f }, "bilateral", 0},
+  { { 28.0f }, "rotatepixels", 0},
+  { { 28.0f }, "scalepixels", 0},
+  { { 28.0f }, "lens", 0},
+  { { 28.0f }, "cacorrectrgb", 0}, // correct chromatic aberrations after lens correction so that lensfun
+                                  // does not reintroduce chromatic aberrations when trying to correct them
+  { { 28.0f }, "hazeremoval", 0},
+  { { 28.0f }, "ashift", 0},
+  { { 28.0f }, "flip", 0},
+  { { 28.0f }, "enlargecanvas", 0},
+  { { 28.0f }, "overlay", 0},
+  { { 28.0f }, "clipping", 0},
+  { { 28.0f }, "liquify", 0},
+  { { 28.0f }, "spots", 0},
+  { { 28.0f }, "retouch", 0},
+  { { 28.0f }, "exposure", 0},
+  { { 28.0f }, "mask_manager", 0},
+  { { 28.0f }, "tonemap", 0},
+  { { 28.0f }, "toneequal", 0},       // last module that need enlarged roi_in
+  { { 28.0f }, "crop", 0},            // should go after all modules
+                                      // that may need a wider roi_in
+  { { 28.0f }, "graduatednd", 0},
+  { { 28.0f }, "profile_gamma", 0},
+  { { 28.0f }, "equalizer", 0},
+  // from there, it's the same as the raw order
+  { { 28.5f }, "channelmixerrgb", 0 },
+  { { 28.5f }, "diffuse", 0 },
+  { { 28.5f }, "censorize", 0 },
+  { { 28.5f }, "negadoctor", 0 },   // Cineon film encoding comes after scanner input color profile
+  { { 28.5f }, "blurs", 0 },        // physically-accurate blurs (motion and lens)
+  { { 28.5f }, "primaries", 0},
+  { { 29.0f }, "nlmeans", 0 },      // signal processing (denoising)
+                                    //    -> needs a signal as scene-referred as possible (even if it works in Lab)
+  { { 30.0f }, "colorchecker", 0 }, // calibration to "neutral" exchange colour space
+                                    //    -> improve colour calibration of colorin and reproductibility
+                                    //    of further edits (styles etc.)
+  { { 31.0f }, "defringe", 0 },     // desaturate fringes in Lab, so needs properly calibrated colours
+                                    //    in order for chromaticity to be meaningful,
+  { { 32.0f }, "atrous", 0 }, // frequential operation, needs a signal as scene-referred as possible to avoid halos
+  { { 33.0f }, "lowpass", 0 },       // same
+  { { 34.0f }, "highpass", 0 },      // same
+  { { 35.0f }, "sharpen", 0 },       // same, worst than atrous in same use-case, less control overall
+
+  { { 37.0f }, "colortransfer", 0 }, // probably better if source and destination colours are neutralized in the
+                                     // same
+                                     //    colour exchange space, hence after colorin and colorcheckr,
+                                     //    but apply after frequential ops in case it does non-linear witchcraft,
+                                     //    just to be safe
+  { { 38.0f }, "colormapping", 0 },  // same
+  { { 39.0f }, "channelmixer", 0 },  // does exactly the same thing as colorin, aka RGB to RGB matrix conversion,
+                                     //    but coefs are user-defined instead of calibrated and read from ICC
+                                    //    profile. Really versatile yet under-used module, doing linear ops, very
+                                    //    good in scene-referred workflow
+  { { 40.0f }, "basicadj", 0 },        // module mixing view/model/control at once, usage should be discouraged
+  { { 41.0f }, "colorbalance", 0 },    // scene-referred color manipulation
+  { { 41.2f }, "colorequal", 0 },
+  { { 41.5f }, "colorbalancergb", 0 }, // scene-referred color manipulation
+  { { 42.0f }, "rgbcurve", 0 },      // really versatile way to edit colour in scene-referred and display-referred
+                                     // workflow
+  { { 43.0f }, "rgblevels", 0 },     // same
+  { { 44.0f }, "basecurve", 0 },     // conversion from scene-referred to display referred, reverse-engineered
+                                     //    on camera JPEG default look
+  { { 45.0f }, "filmic", 0 },        // same, but different (parametric) approach
+  { { 45.3f }, "sigmoid", 0},
+  { { 46.0f }, "filmicrgb", 0 },     // same, upgraded
+  { { 36.0f }, "lut3d", 0 },         // apply a creative style or film emulation, possibly non-linear
+  { { 47.0f }, "colisa", 0 },        // edit contrast while damaging colour
+  { { 48.0f }, "tonecurve", 0 },     // same
+  { { 49.0f }, "levels", 0 },        // same
+  { { 50.0f }, "shadhi", 0 },        // same
+  { { 51.0f }, "zonesystem", 0 },    // same
+  { { 52.0f }, "globaltonemap", 0 }, // same
+  { { 53.0f }, "relight", 0 },       // flatten local contrast while pretending do add lightness
+  { { 54.0f }, "bilat", 0 },         // improve clarity/local contrast after all the bad things we have done
+                                     //    to it with tonemapping
+  { { 55.0f }, "colorcorrection", 0 },  // now that the colours have been damaged by contrast manipulations,
+                                        // try to recover them - global adjustment of white balance for shadows and
+                                        // highlights
+  { { 56.0f }, "colorcontrast", 0 },    // adjust chrominance globally
+  { { 57.0f }, "velvia", 0 },           // same
+  { { 58.0f }, "vibrance", 0 },         // same, but more subtle
+  { { 60.0f }, "colorzones", 0 },       // same, but locally
+  { { 61.0f }, "bloom", 0 },            // creative module
+  { { 62.0f }, "colorize", 0 },         // creative module
+  { { 63.0f }, "lowlight", 0 },         // creative module
+  { { 64.0f }, "monochrome", 0 },       // creative module
+  { { 65.0f }, "grain", 0 },            // creative module
+  { { 66.0f }, "soften", 0 },           // creative module
+  { { 67.0f }, "splittoning", 0 },      // creative module
+  { { 68.0f }, "vignette", 0 },         // creative module
+  { { 69.0f }, "colorreconstruct", 0 }, // try to salvage blown areas before ICC intents in LittleCMS2 do things
+                                        // with them.
+  { { 69.5f }, "finalscale", 0 },
+  { { 70.0f }, "colorout", 0 },
+  { { 71.0f }, "clahe", 0 },
+  { { 73.0f }, "overexposed", 0 },
+  { { 74.0f }, "rawoverexposed", 0 },
+  { { 75.0f }, "dither", 0 },
+  { { 76.0f }, "borders", 0 },
+  { { 77.0f }, "watermark", 0 },
+  { { 78.0f }, "gamma", 0 },
+  { { 0.0f }, "", 0 }
+};
+
+const dt_iop_order_entry_t *const _iop_order_tables[DT_IOP_ORDER_LAST] =
+{
+  NULL,
+  legacy_order,
+  v30_order,
+  v30_jpg_order,
+  v50_order,
+  v50_jpg_order
+};
+
 static void *_dup_iop_order_entry(const void *src, gpointer data);
 
 static int _count_entries_operation(GList *e_list, const char *operation);
@@ -457,12 +705,38 @@ static GList *_insert_before(GList *iop_order_list,
   return iop_order_list;
 }
 
+dt_iop_order_t _ioppr_get_default_iop_order_version(const dt_imgid_t imgid)
+{
+  const gboolean is_display_referred = dt_is_display_referred();
+  gboolean is_ldr = FALSE;
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT flags"
+                              " FROM main.images"
+                              " WHERE id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int flags = sqlite3_column_int(stmt, 0);
+    is_ldr = flags & DT_IMAGE_HDR;
+  }
+  sqlite3_finalize(stmt);
+
+  const dt_iop_order_t iop_order_version =
+    is_display_referred
+    ? DT_IOP_ORDER_LEGACY
+    : (is_ldr
+       ? DT_DEFAULT_IOP_ORDER_JPG
+       : DT_DEFAULT_IOP_ORDER_RAW);
+
+  return iop_order_version;
+}
 
 dt_iop_order_t dt_ioppr_get_iop_order_version(const dt_imgid_t imgid)
 {
-  const gboolean is_display_referred = dt_is_display_referred();
-  dt_iop_order_t iop_order_version =
-    is_display_referred ? DT_IOP_ORDER_LEGACY : DT_IOP_ORDER_V30;
+  dt_iop_order_t iop_order_version = _ioppr_get_default_iop_order_version(imgid);
 
   // check current iop order version
   sqlite3_stmt *stmt;
@@ -623,16 +897,17 @@ gint dt_sort_iop_list_by_order_f(gconstpointer a, gconstpointer b)
   return 0;
 }
 
-dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
+gboolean _check_iop_list_equal(GList *iop_order_list,
+                               const dt_iop_order_entry_t order_table[])
 {
-  // first check if this is the v30 order RAW
   int k = 0;
   GList *l = iop_order_list;
   gboolean ok = TRUE;
+
   while(l)
   {
     const dt_iop_order_entry_t *const restrict entry = l->data;
-    if(strcmp(v30_order[k].operation, entry->operation))
+    if(strcmp(order_table[k].operation, entry->operation))
     {
       ok = FALSE;
       break;
@@ -641,7 +916,7 @@ dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
     {
       // skip all the other instance of same module if any
       while(g_list_next(l)
-            && !strcmp(v30_order[k].operation,
+            && !strcmp(order_table[k].operation,
                        ((dt_iop_order_entry_t *)(g_list_next(l)->data))->operation))
         l = g_list_next(l);
     }
@@ -650,61 +925,18 @@ dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
     l = g_list_next(l);
   }
 
-  if(ok) return DT_IOP_ORDER_V30;
+  return ok;
+}
 
-  // then check if this is the v30 order JPG
-  k = 0;
-  l = iop_order_list;
-  ok = TRUE;
-  while(l)
+dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list)
+{
+  for(dt_iop_order_t O = DT_IOP_ORDER_LEGACY; O < DT_IOP_ORDER_LAST; O++)
   {
-    const dt_iop_order_entry_t *const restrict entry = l->data;
-    if(strcmp(v30_jpg_order[k].operation, entry->operation))
+    if(_check_iop_list_equal(iop_order_list, _iop_order_tables[O]))
     {
-      ok = FALSE;
-      break;
+      return O;
     }
-    else
-    {
-      // skip all the other instance of same module if any
-      while(g_list_next(l)
-            && !strcmp(v30_jpg_order[k].operation,
-                       ((dt_iop_order_entry_t *)(g_list_next(l)->data))->operation))
-        l = g_list_next(l);
-    }
-
-    k++;
-    l = g_list_next(l);
   }
-
-  if(ok) return DT_IOP_ORDER_V30_JPG;
-
-  // then check if this is the legacy order
-  k = 0;
-  l = iop_order_list;
-  ok = TRUE;
-  while(l)
-  {
-    const dt_iop_order_entry_t *const restrict entry = l->data;
-    if(strcmp(legacy_order[k].operation, entry->operation))
-    {
-      ok = FALSE;
-      break;
-    }
-    else
-    {
-      // skip all the other instance of same module if any
-      while(g_list_next(l)
-            && !strcmp(legacy_order[k].operation,
-                       ((dt_iop_order_entry_t *)(g_list_next(l)->data))->operation))
-        l = g_list_next(l);
-    }
-
-    k++;
-    l = g_list_next(l);
-  }
-
-  if(ok) return DT_IOP_ORDER_LEGACY;
 
   return DT_IOP_ORDER_CUSTOM;
 }
@@ -847,22 +1079,15 @@ GList *_table_to_list(const dt_iop_order_entry_t entries[])
 
 GList *dt_ioppr_get_iop_order_list_version(const dt_iop_order_t version)
 {
-  GList *iop_order_list = NULL;
-
-  if(version == DT_IOP_ORDER_LEGACY)
+  if(version >= DT_IOP_ORDER_LEGACY
+     && version < DT_IOP_ORDER_LAST)
   {
-    iop_order_list = _table_to_list(legacy_order);
+    return _table_to_list(_iop_order_tables[version]);
   }
-  else if(version == DT_IOP_ORDER_V30)
+  else
   {
-    iop_order_list = _table_to_list(v30_order);
+    return NULL;
   }
-  else if(version == DT_IOP_ORDER_V30_JPG)
-  {
-    iop_order_list = _table_to_list(v30_jpg_order);
-  }
-
-  return iop_order_list;
 }
 
 void dt_ioppr_iop_order_list_free(GList *iop_order_list)
@@ -954,17 +1179,10 @@ GList *dt_ioppr_get_iop_order_list(const dt_imgid_t imgid,
           _insert_before(iop_order_list, "colorbalancergb", "colorequal");
         }
       }
-      else if(version == DT_IOP_ORDER_LEGACY)
+      else if(version >= DT_IOP_ORDER_LEGACY
+              && version < DT_IOP_ORDER_LAST)
       {
-        iop_order_list = _table_to_list(legacy_order);
-      }
-      else if(version == DT_IOP_ORDER_V30)
-      {
-        iop_order_list = _table_to_list(v30_order);
-      }
-      else if(version == DT_IOP_ORDER_V30_JPG)
-      {
-        iop_order_list = _table_to_list(v30_jpg_order);
+        iop_order_list = _table_to_list(_iop_order_tables[version]);
       }
       else
         dt_print(DT_DEBUG_ALWAYS,
@@ -986,18 +1204,12 @@ GList *dt_ioppr_get_iop_order_list(const dt_imgid_t imgid,
   // history has been reset.
   if(!iop_order_list)
   {
-    dt_iop_order_t iop_order_version =
-      dt_is_display_referred()
-      ? DT_IOP_ORDER_LEGACY
-      : DT_IOP_ORDER_V30;
-
-    if(iop_order_version == DT_IOP_ORDER_LEGACY)
-      iop_order_list = _table_to_list(legacy_order);
-    else
-      iop_order_list = _table_to_list(v30_order);
+    const dt_iop_order_t iop_order_version = _ioppr_get_default_iop_order_version(imgid);
+    iop_order_list = _table_to_list(_iop_order_tables[iop_order_version]);
   }
 
-  if(sorted) iop_order_list = g_list_sort(iop_order_list, dt_sort_iop_list_by_order);
+  if(sorted)
+    iop_order_list = g_list_sort(iop_order_list, dt_sort_iop_list_by_order);
 
   return iop_order_list;
 }
@@ -1006,11 +1218,14 @@ static void _ioppr_reset_iop_order(GList *iop_order_list)
 {
   // iop-order must start with a number > 0 and be incremented. There is no
   // other constraints.
-  int iop_order = 1;
+  int iop_order = 100;
   for(const GList *l = iop_order_list; l; l = g_list_next(l))
   {
     dt_iop_order_entry_t *e = l->data;
-    e->o.iop_order = iop_order++;
+    e->o.iop_order = iop_order;
+    // keep some spaces between modules to ensure that we can insert some
+    // modules in the middle if needed. (see dt_ioppr_check_duplicate_iop_order).
+    iop_order += 100;
   }
 }
 
@@ -1076,7 +1291,9 @@ void dt_ioppr_set_default_iop_order(dt_develop_t *dev,
 
   _ioppr_reset_iop_order(iop_order_list);
 
-  if(dev->iop_order_list) g_list_free_full(dev->iop_order_list, free);
+  if(dev->iop_order_list)
+    g_list_free_full(dev->iop_order_list, free);
+
   dev->iop_order_list = iop_order_list;
 
   // we now set the module list given to this iop-order
@@ -1549,11 +1766,13 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list,
     gboolean reset_list = FALSE;
     dt_iop_module_t *mod = modules->data;
 
-    if(mod->iop_order == mod_prev->iop_order && mod->iop_order != INT_MAX)
+    if(mod->iop_order == mod_prev->iop_order
+       && mod->iop_order != INT_MAX)
     {
       gboolean can_move = FALSE;
 
-      if(!mod->enabled && _ioppr_search_history_by_module(history_list, mod) == NULL)
+      if(!mod->enabled
+         && _ioppr_search_history_by_module(history_list, mod) == NULL)
       {
         can_move = TRUE;
 
@@ -1563,7 +1782,7 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list,
           dt_iop_module_t *mod_next = modules1->data;
           if(mod->iop_order != mod_next->iop_order)
           {
-            mod->iop_order += (mod_next->iop_order - mod->iop_order) / 2.0;
+            mod->iop_order += (mod_next->iop_order - mod->iop_order) / 2;
           }
           else
           {
@@ -1573,7 +1792,7 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list,
         }
         else
         {
-          mod->iop_order += 1.0;
+          mod->iop_order += 1;
         }
       }
       else if(!mod_prev->enabled
@@ -1582,13 +1801,15 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list,
         can_move = TRUE;
 
         GList *modules1 = g_list_previous(modules);
-        if(modules1) modules1 = g_list_previous(modules1);
+        if(modules1)
+          modules1 = g_list_previous(modules1);
+
         if(modules1)
         {
           dt_iop_module_t *mod_next = modules1->data;
           if(mod_prev->iop_order != mod_next->iop_order)
           {
-            mod_prev->iop_order -= (mod_prev->iop_order - mod_next->iop_order) / 2.0;
+            mod_prev->iop_order -= (mod_prev->iop_order - mod_next->iop_order) / 2;
           }
           else
           {
@@ -1602,7 +1823,7 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list,
         }
         else
         {
-          mod_prev->iop_order -= 0.5;
+          mod_prev->iop_order -= 1;
         }
       }
 

@@ -17,52 +17,45 @@
 */
 
 
-/** 1:1 demosaic from in to out, in is full buf, out is translated/cropped (scale == 1.0!) */
-static void passthrough_monochrome(
-        float *out,
-        const float *const in,
-        dt_iop_roi_t *const roi_out,
-        const dt_iop_roi_t *const roi_in)
+static void passthrough_monochrome(float *out,
+                                   const float *const in,
+                                   const dt_iop_roi_t *const roi_in)
 {
-  // we never want to access the input out of bounds though:
-  assert(roi_in->width >= roi_out->width);
-  assert(roi_in->height >= roi_out->height);
+  const int width = roi_in->width;
+  const int height = roi_in->height;
 
   DT_OMP_FOR(collapse(2))
-  for(int j = 0; j < roi_out->height; j++)
+  for(int j = 0; j < height; j++)
   {
-    for(int i = 0; i < roi_out->width; i++)
+    for(int i = 0; i < width; i++)
     {
       for(int c = 0; c < 3; c++)
       {
-        out[(size_t)4 * ((size_t)j * roi_out->width + i) + c]
-            = in[(size_t)((size_t)j + roi_out->y) * roi_in->width + i + roi_out->x];
+        out[(size_t)4 * ((size_t)j * width + i) + c] = in[(size_t)j * width + i];
       }
     }
   }
 }
 
-static void passthrough_color(
-        float *out,
-        const float *const in,
-        dt_iop_roi_t *const roi_out,
-        const dt_iop_roi_t *const roi_in,
-        const uint32_t filters,
-        const uint8_t (*const xtrans)[6])
+static void passthrough_color(float *out,
+                              const float *const in,
+                              const dt_iop_roi_t *const roi_in,
+                              const uint32_t filters,
+                              const uint8_t (*const xtrans)[6])
 {
-  assert(roi_in->width >= roi_out->width);
-  assert(roi_in->height >= roi_out->height);
+  const int width = roi_in->width;
+  const int height = roi_in->height;
 
   if(filters != 9u)
   {
     DT_OMP_FOR(collapse(2))
-    for(int row = 0; row < (roi_out->height); row++)
+    for(int row = 0; row < height; row++)
     {
-      for(int col = 0; col < (roi_out->width); col++)
+      for(int col = 0; col < width; col++)
       {
-        const float val = in[col + roi_out->x + ((row + roi_out->y) * roi_in->width)];
-        const uint32_t offset = (size_t)4 * ((size_t)row * roi_out->width + col);
-        const uint32_t ch = FC(row + roi_out->y, col + roi_out->x, filters);
+        const float val = in[(size_t)col + row * width];
+        const size_t offset = (size_t)4 * ((size_t)row * width + col);
+        const size_t ch = FC(row, col, filters);
 
         out[offset] = out[offset + 1] = out[offset + 2] = 0.0f;
         out[offset + ch] = val;
@@ -72,13 +65,13 @@ static void passthrough_color(
   else
   {
     DT_OMP_FOR(collapse(2))
-    for(int row = 0; row < (roi_out->height); row++)
+    for(int row = 0; row < height; row++)
     {
-      for(int col = 0; col < (roi_out->width); col++)
+      for(int col = 0; col < width; col++)
       {
-        const float val = in[col + roi_out->x + ((row + roi_out->y) * roi_in->width)];
-        const uint32_t offset = (size_t)4 * ((size_t)row * roi_out->width + col);
-        const uint32_t ch = FCxtrans(row, col, roi_in, xtrans);
+        const float val = in[(size_t)col + row * width];
+        const size_t offset = (size_t)4 * ((size_t)row * width + col);
+        const size_t ch = FCxtrans(row, col, roi_in, xtrans);
 
         out[offset] = out[offset + 1] = out[offset + 2] = 0.0f;
         out[offset + ch] = val;

@@ -155,9 +155,16 @@ void gui_reset(dt_lib_module_t *self)
 {
   dt_lib_ioporder_t *d = self->data;
 
-  // the module reset is use to select the v3.0 iop-order
+  // the module reset is use to select the proper default iop-order
 
-  GList *iop_order_list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V30);
+  const gboolean is_ldr = dt_image_is_ldr(&darktable.develop->image_storage);
+
+  const dt_iop_order_t iop_order =
+    is_ldr
+    ? DT_DEFAULT_IOP_ORDER_JPG
+    : DT_DEFAULT_IOP_ORDER_RAW;
+
+  GList *iop_order_list = dt_ioppr_get_iop_order_list_version(iop_order);
 
   if(iop_order_list)
   {
@@ -167,7 +174,7 @@ void gui_reset(dt_lib_module_t *self)
 
     dt_dev_pixelpipe_rebuild(darktable.develop);
 
-    d->current_mode = DT_IOP_ORDER_V30;
+    d->current_mode = iop_order;
     dt_lib_gui_set_label(self, _(dt_iop_order_string(d->current_mode)));
     g_list_free_full(iop_order_list, free);
   }
@@ -193,15 +200,34 @@ void init_presets(dt_lib_module_t *self)
 
   list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V30);
   params = dt_ioppr_serialize_iop_order_list(list, &size);
-  dt_lib_presets_add(_("v3.0 for RAW input (default)"), self->plugin_name, self->version(),
-                     (const char *)params, (int32_t)size, TRUE,
-                     is_display_referred ? 0 : FOR_RAW | FOR_MATRIX);
+  dt_lib_presets_add(_("v3.0 for RAW input"),
+                     self->plugin_name, self->version(),
+                     (const char *)params, (int32_t)size, TRUE, 0);
   free(params);
   dt_ioppr_iop_order_list_free(list);
 
   list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V30_JPG);
   params = dt_ioppr_serialize_iop_order_list(list, &size);
-  dt_lib_presets_add(_("v3.0 for JPEG/non-RAW input"), self->plugin_name, self->version(),
+  dt_lib_presets_add(_("v3.0 for JPEG/non-RAW input"),
+                     self->plugin_name, self->version(),
+                     (const char *)params, (int32_t)size, TRUE, 0);
+  free(params);
+  dt_ioppr_iop_order_list_free(list);
+
+  // make it the default for new RAW
+  list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V50);
+  params = dt_ioppr_serialize_iop_order_list(list, &size);
+  dt_lib_presets_add(_("v5.0 for RAW input"),
+                     self->plugin_name, self->version(),
+                     (const char *)params, (int32_t)size, TRUE,
+                     is_display_referred ? 0 : FOR_RAW | FOR_MATRIX);
+  free(params);
+  dt_ioppr_iop_order_list_free(list);
+
+  list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V50_JPG);
+  params = dt_ioppr_serialize_iop_order_list(list, &size);
+  dt_lib_presets_add(_("v5.0 for JPEG/non-RAW input"),
+                     self->plugin_name, self->version(),
                      (const char *)params, (int32_t)size, TRUE,
                      is_display_referred ? 0 : FOR_LDR | FOR_NOT_MONO);
   free(params);

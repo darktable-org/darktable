@@ -225,7 +225,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img,
   /* Get the ICC profile if available */
   if(image->icc_profile_len > 0 && image->icc_profile_buf)
   {
-    uint8_t *profile = (uint8_t *)g_malloc0(image->icc_profile_len);
+    uint8_t *profile = g_try_malloc0(image->icc_profile_len);
     if(profile)
     {
       img->profile = profile;

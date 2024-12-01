@@ -594,9 +594,10 @@ void init_presets(dt_iop_module_so_t *self)
 
 static gboolean _area_mapping_active(const dt_iop_channelmixer_rgb_gui_data_t *g)
 {
-  return g && g->spot_mode && dt_bauhaus_combobox_get(g->spot_mode) != DT_SPOT_MODE_MEASURE &&
-    ((g->lightness_spot && dt_bauhaus_slider_get_val(g->lightness_spot) != 50.0f) ||
-     (g->chroma_spot && dt_bauhaus_slider_get_val(g->chroma_spot) != 0.0f));
+  return g  && g->spot_mode
+            && dt_bauhaus_combobox_get(g->spot_mode) != DT_SPOT_MODE_MEASURE
+            && ((g->lightness_spot && dt_bauhaus_slider_get_val(g->lightness_spot) != 50.0f) ||
+                (g->chroma_spot && dt_bauhaus_slider_get_val(g->chroma_spot) != 0.0f));
 }
 
 static const char *_area_mapping_section_text(const dt_iop_channelmixer_rgb_gui_data_t *g)
@@ -1010,6 +1011,7 @@ static inline void _auto_detect_WB(const float *const restrict in,
       Edge-Based Color Constancy, Joost van de Weijer, Theo Gevers, Arjan Gijsenij
       https://hal.inria.fr/inria-00548686/document
     */
+    const float D50[2] = { D50xyY.x, D50xyY.y };
 // Convert RGB to xy
   DT_OMP_FOR(collapse(2))
   for(size_t i = 0; i < height; i++)
@@ -1033,7 +1035,6 @@ static inline void _auto_detect_WB(const float *const restrict in,
       XYZ[1] /= sum;   // y
 
       // Shift the chromaticity plane so the D50 point (target) becomes the origin
-      const float D50[2] = { D50xyY.x, D50xyY.y };
       const float norm = dt_fast_hypotf(D50[0], D50[1]);
 
       temp[index    ] = (XYZ[0] - D50[0]) / norm;
@@ -1151,7 +1152,6 @@ static inline void _auto_detect_WB(const float *const restrict in,
       }
   }
 
-  const float D50[2] = { D50xyY.x, D50xyY.y };
   const float norm_D50 = dt_fast_hypotf(D50[0], D50[1]);
 
   for(size_t c = 0; c < 2; c++)
@@ -1206,7 +1206,6 @@ static void _declare_cat_on_pipe(dt_iop_module_t *self, const gboolean preset)
 static void _update_illuminants(dt_iop_module_t *self);
 static void _update_approx_cct(dt_iop_module_t *self);
 static void _update_illuminant_color(dt_iop_module_t *self);
-static void _paint_temperature_background(dt_iop_module_t *self);
 
 static void _check_if_close_to_daylight(const float x,
                                         const float y,
@@ -1247,8 +1246,7 @@ static void _check_if_close_to_daylight(const float x,
 
   // Compute the error between the reference illuminant and the test
   // illuminant derivated from the CCT with daylight model
-  const float delta_daylight =
-    dt_fast_hypotf((uv_test[0] - uv_ref[0]), (uv_test[1] - uv_ref[1]));
+  const float delta_daylight = dt_fast_hypotf(uv_test[0] - uv_ref[0], uv_test[1] - uv_ref[1]);
 
   // Compute the test chromaticity from the blackbody model
   illuminant_to_xy(DT_ILLUMINANT_BB, NULL, NULL, &xy_test[0], &xy_test[1], t,
@@ -1257,8 +1255,7 @@ static void _check_if_close_to_daylight(const float x,
 
   // Compute the error between the reference illuminant and the test
   // illuminant derivated from the CCT with black body model
-  const float delta_bb =
-    dt_fast_hypotf((uv_test[0] - uv_ref[0]), (uv_test[1] - uv_ref[1]));
+  const float delta_bb = dt_fast_hypotf(uv_test[0] - uv_ref[0], uv_test[1] - uv_ref[1]);
 
   // Check the error between original and test chromaticity
   if(delta_bb < 0.005f || delta_daylight < 0.005f)
@@ -2296,7 +2293,7 @@ void process(dt_iop_module_t *self,
 #if HAVE_OPENCL
 int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
-               cl_mem dev_in,
+               const cl_mem dev_in,
                cl_mem dev_out,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
@@ -2497,8 +2494,6 @@ static inline void _init_bounding_box(dt_iop_channelmixer_rgb_gui_data_t *g,
 
   _update_bounding_box(g, 0.f, 0.f);
 }
-
-
 
 int mouse_moved(dt_iop_module_t *self,
                 const float pzx,
@@ -2965,21 +2960,17 @@ static void _commit_profile_callback(GtkWidget *widget,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+#ifdef AI_ACTIVATED
 static void _develop_ui_pipe_finished_callback(gpointer instance, dt_iop_module_t *self)
 {
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
+  if(!g) return;
 
-  if(g == NULL) return;
-
-#ifdef AI_ACTIVATED
   dt_iop_channelmixer_rgb_params_t *p = self->params;
 
   if(p->illuminant != DT_ILLUMINANT_DETECT_EDGES
      && p->illuminant != DT_ILLUMINANT_DETECT_SURFACES)
-  {
-    gui_changed(self, NULL, NULL);
     return;
-  }
 
   dt_iop_gui_enter_critical_section(self);
   p->x = g->XYZ[0];
@@ -3004,26 +2995,24 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, dt_iop_module_
   _update_illuminants(self);
   _update_approx_cct(self);
   _update_illuminant_color(self);
-  _paint_temperature_background(self);
 
   --darktable.gui->reset;
 
   gui_changed(self, NULL, NULL);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
-#else // non AI_ACTIVATED
-  gui_changed(self, NULL, NULL);
-#endif
 }
+#endif
 
 static void _preview_pipe_finished_callback(gpointer instance, dt_iop_module_t *self)
 {
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
+  if(!g) return;
 
   dt_iop_gui_enter_critical_section(self);
   gtk_label_set_markup(GTK_LABEL(g->label_delta_E), g->delta_E_label_text);
   dt_iop_gui_leave_critical_section(self);
-  if(g) _set_trouble_messages(self);
+  _set_trouble_messages(self);
 }
 
 void commit_params(dt_iop_module_t *self,
@@ -3390,11 +3379,10 @@ static void _paint_hue(dt_iop_module_t *self)
   gtk_widget_queue_draw(g->target_spot);
 }
 
-static void _convert_GUI_colors
-  (dt_iop_channelmixer_rgb_params_t *p,
-   const dt_iop_order_iccprofile_info_t *const work_profile,
-   const dt_aligned_pixel_t LMS,
-   dt_aligned_pixel_t RGB)
+static void _convert_GUI_colors(dt_iop_channelmixer_rgb_params_t *p,
+                                const dt_iop_order_iccprofile_info_t *const work_profile,
+                                const dt_aligned_pixel_t LMS,
+                                dt_aligned_pixel_t RGB)
 {
   if(p->adaptation != DT_ADAPTATION_RGB)
   {
@@ -3427,15 +3415,14 @@ static void _convert_GUI_colors
   }
 }
 
-static void _update_RGB_slider_stop
-  (dt_iop_channelmixer_rgb_params_t *p,
-   const dt_iop_order_iccprofile_info_t *const work_profile,
-   GtkWidget *w,
-   const float stop,
-   const float c,
-   const float r,
-   const float g,
-   const float b)
+static void _update_RGB_slider_stop(dt_iop_channelmixer_rgb_params_t *p,
+                                    const dt_iop_order_iccprofile_info_t *const work_profile,
+                                    GtkWidget *w,
+                                    const float stop,
+                                    const float c,
+                                    const float r,
+                                    const float g,
+                                    const float b)
 {
   const dt_aligned_pixel_t LMS = { 0.5f * (c * r + 1 - r),
                                    0.5f * (c * g + 1 - g),
@@ -3503,8 +3490,6 @@ static void _paint_temperature_background(dt_iop_module_t *self)
     illuminant_CCT_to_RGB(t, RGB);
     dt_bauhaus_slider_set_stop(g->temperature, stop, RGB[0], RGB[1], RGB[2]);
   }
-
-  gtk_widget_queue_draw(g->temperature);
 }
 
 
@@ -3724,7 +3709,6 @@ static void _illum_xy_callback(GtkWidget *slider,
   dt_bauhaus_slider_set(g->temperature, p->temperature);
   _update_approx_cct(self);
   _update_illuminant_color(self);
-  _paint_temperature_background(self);
   --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -3954,9 +3938,7 @@ static void _spot_settings_changed_callback(GtkWidget *slider,
   // update the "active" flag in the GUI
   dt_gui_collapsible_section_set_label(&g->csspot, _area_mapping_section_text(g));
 
-  ++darktable.gui->reset;
   _paint_hue(self);
-  --darktable.gui->reset;
 
   // Re-run auto illuminant if color picker is active and mode is correct
   const dt_spot_mode_t mode = dt_bauhaus_combobox_get(g->spot_mode);
@@ -4094,10 +4076,7 @@ void gui_changed(dt_iop_module_t *self,
       dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
     dt_bauhaus_slider_set(g->illum_y, Lch[1]);
 
-    // Redraw the temperature background color taking new soft bounds
-    // into account
     dt_bauhaus_slider_set(g->temperature, p->temperature);
-    _paint_temperature_background(self);
   }
 
   if(w == g->adaptation)
@@ -4178,9 +4157,7 @@ static void _auto_set_illuminant(dt_iop_module_t *self,
   // Write report in GUI
   gchar *str = g_strdup_printf(_("L: \t%.1f %%\nh: \t%.1f °\nc: \t%.1f"),
                                Lch[0], Lch[2] * 360.f, Lch[1]);
-  ++darktable.gui->reset;
   gtk_label_set_text(GTK_LABEL(g->Lch_origin), str);
-  --darktable.gui->reset;
   g_free(str);
 
   const dt_spot_mode_t mode = dt_bauhaus_combobox_get(g->spot_mode);
@@ -4396,7 +4373,6 @@ static void _auto_set_illuminant(dt_iop_module_t *self,
     _update_approx_cct(self);
     _update_illuminant_color(self);
     _paint_hue(self);
-    _paint_temperature_background(self);
     gtk_widget_queue_draw(g->origin_spot);
 
     --darktable.gui->reset;
@@ -4437,7 +4413,9 @@ void gui_init(dt_iop_module_t *self)
 
   g->XYZ[0] = NAN;
 
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _develop_ui_pipe_finished_callback, self);
+#ifdef AI_ACTIVATED
+   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _develop_ui_pipe_finished_callback, self);
+#endif
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _preview_pipe_finished_callback, self);
 
   // Init GTK notebook
@@ -4496,6 +4474,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->temperature, 3000., 7000.);
   dt_bauhaus_slider_set_digits(g->temperature, 0);
   dt_bauhaus_slider_set_format(g->temperature, " K");
+  _paint_temperature_background(self);
 
   g->illum_x = dt_bauhaus_slider_new_with_range_and_feedback
     (self, 0., ILLUM_X_MAX, 0, 0, 1, 0);
@@ -4783,7 +4762,9 @@ void gui_cleanup(dt_iop_module_t *self)
   }
 
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+#ifdef AI_ACTIVATED
   DT_CONTROL_SIGNAL_DISCONNECT(_develop_ui_pipe_finished_callback, self);
+#endif
   DT_CONTROL_SIGNAL_DISCONNECT(_preview_pipe_finished_callback, self);
 
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;

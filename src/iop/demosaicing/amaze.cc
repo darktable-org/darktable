@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -127,23 +127,19 @@ static inline float _xdivf(float d, int n)
 
 
 void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
-                       const float *const in,
-                       float *out,
-                       const dt_iop_roi_t *const roi_in,
-                       const dt_iop_roi_t *const roi_out,
-                       const uint32_t filters)
+                    const float *const in,
+                    float *out,
+                    const dt_iop_roi_t *const roi_in,
+                    const uint32_t filters)
 {
-  int winx = roi_out->x;
-  int winy = roi_out->y;
-  int winw = roi_in->width;
-  int winh = roi_in->height;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
 
-  const int width = winw, height = winh;
   const float clip_pt = dt_iop_get_processed_minimum(piece);
   const float clip_pt8 = 0.8f * clip_pt;
 
 // this allows to pass AMAZETS to the code. On some machines larger AMAZETS is faster
-// If AMAZETS is undefined it will be set to 160, which is the fastest on modern x86/64 machines
+// If AMAZETS is undefined it will be set to 160, which is the fastest on machines with 1GB cache per thread.
 #ifndef AMAZETS
 #define AMAZETS 160
 #endif
@@ -277,25 +273,25 @@ void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
 // use collapse(2) to collapse the 2 loops to one large loop, so there is better scaling
     DT_OMP_PRAGMA(for SIMD() schedule(static) collapse(2) nowait)
 
-    for(int top = winy - 16; top < winy + height; top += ts - 32)
+    for(int top = -16; top < height; top += ts - 32)
     {
-      for(int left = winx - 16; left < winx + width; left += ts - 32)
+      for(int left = -16; left < width; left += ts - 32)
       {
         memset(&nyquist[3 * tsh], 0, sizeof(unsigned char) * (ts - 6) * tsh);
         // location of tile bottom edge
-        const int bottom = MIN(top + ts, winy + height + 16);
+        const int bottom = MIN(top + ts, height + 16);
         // location of tile right edge
-        const int right = MIN(left + ts, winx + width + 16);
+        const int right = MIN(left + ts, width + 16);
         // tile width  (=ts except for right edge of image)
         const int rr1 = bottom - top;
         // tile height (=ts except for bottom edge of image)
         const int cc1 = right - left;
         // bookkeeping for borders
         // min and max row/column in the tile
-        const int rrmin = top < winy ? 16 : 0;
-        const int ccmin = left < winx ? 16 : 0;
-        const int rrmax = bottom > (winy + height) ? winy + height - top : rr1;
-        const int ccmax = right > (winx + width) ? winx + width - left : cc1;
+        const int rrmin = top < 0 ? 16 : 0;
+        const int ccmin = left < 0 ? 16 : 0;
+        const int rrmax = bottom > height ? height - top : rr1;
+        const int ccmax = right > width ? width - left : cc1;
 
 // rgb from input CFA data
 // rgb values should be floating point number between 0 and 1
@@ -333,7 +329,7 @@ void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
           for(int rr = 0; rr < 16; rr++)
             for(int cc = ccmin; cc < ccmax; cc++)
             {
-              cfa[(rrmax + rr) * ts + cc] = (in[(winy + height - rr - 2) * width + (left + cc)]);
+              cfa[(rrmax + rr) * ts + cc] = (in[(height - rr - 2) * width + (left + cc)]);
               rgbgreen[(rrmax + rr) * ts + cc] = cfa[(rrmax + rr) * ts + cc];
             }
         }
@@ -354,7 +350,7 @@ void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
           for(int rr = rrmin; rr < rrmax; rr++)
             for(int cc = 0; cc < 16; cc++)
             {
-              cfa[rr * ts + ccmax + cc] = (in[(top + rr) * width + ((winx + width - cc - 2))]);
+              cfa[rr * ts + ccmax + cc] = (in[(top + rr) * width + ((width - cc - 2))]);
               rgbgreen[rr * ts + ccmax + cc] = cfa[rr * ts + ccmax + cc];
             }
         }
@@ -365,7 +361,7 @@ void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
           for(int rr = 0; rr < 16; rr++)
             for(int cc = 0; cc < 16; cc++)
             {
-              cfa[(rr)*ts + cc] = (in[(winy + 32 - rr) * width + (winx + 32 - cc)]);
+              cfa[(rr)*ts + cc] = (in[(32 - rr) * width + (32 - cc)]);
               rgbgreen[(rr)*ts + cc] = cfa[(rr)*ts + cc];
             }
         }
@@ -376,7 +372,7 @@ void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
             for(int cc = 0; cc < 16; cc++)
             {
               cfa[(rrmax + rr) * ts + ccmax + cc]
-                  = (in[(winy + height - rr - 2) * width + ((winx + width - cc - 2))]);
+                  = (in[(height - rr - 2) * width + ((width - cc - 2))]);
               rgbgreen[(rrmax + rr) * ts + ccmax + cc] = cfa[(rrmax + rr) * ts + ccmax + cc];
             }
         }
@@ -386,7 +382,7 @@ void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
           for(int rr = 0; rr < 16; rr++)
             for(int cc = 0; cc < 16; cc++)
             {
-              cfa[(rr)*ts + ccmax + cc] = (in[(winy + 32 - rr) * width + ((winx + width - cc - 2))]);
+              cfa[(rr)*ts + ccmax + cc] = (in[(32 - rr) * width + ((width - cc - 2))]);
               rgbgreen[(rr)*ts + ccmax + cc] = cfa[(rr)*ts + ccmax + cc];
             }
         }
@@ -396,7 +392,7 @@ void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
           for(int rr = 0; rr < 16; rr++)
             for(int cc = 0; cc < 16; cc++)
             {
-              cfa[(rrmax + rr) * ts + cc] = (in[(winy + height - rr - 2) * width + ((winx + 32 - cc))]);
+              cfa[(rrmax + rr) * ts + cc] = (in[(height - rr - 2) * width + ((32 - cc))]);
               rgbgreen[(rrmax + rr) * ts + cc] = cfa[(rrmax + rr) * ts + cc];
             }
         }
@@ -1221,11 +1217,11 @@ void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
           {
             for(; indx < rr * ts + cc1 - 16 - (cc1 & 1); indx++, col++)
             {
-              if(col < roi_out->width && row < roi_out->height)
+              if(col < width && row < height)
               {
                 const float temp = 1.f / (hvwt[(indx - v1) >> 1] + 2.f - hvwt[(indx + 1) >> 1]
                                     - hvwt[(indx - 1) >> 1] + hvwt[(indx + v1) >> 1]);
-                out[(row * roi_out->width + col) * 4]
+                out[(row * width + col) * 4]
                     = _clampnan(rgbgreen[indx]
                                    - ((hvwt[(indx - v1) >> 1]) * Dgrb[0][(indx - v1) >> 1]
                                       + (1.f - hvwt[(indx + 1) >> 1]) * Dgrb[0][(indx + 1) >> 1]
@@ -1234,7 +1230,7 @@ void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
                                          * temp,
                                0.0, 1.0);
 
-                out[(row * roi_out->width + col) * 4 + 2]
+                out[(row * width + col) * 4 + 2]
                     = _clampnan(rgbgreen[indx]
                                    - ((hvwt[(indx - v1) >> 1]) * Dgrb[1][(indx - v1) >> 1]
                                       + (1.f - hvwt[(indx + 1) >> 1]) * Dgrb[1][(indx + 1) >> 1]
@@ -1246,22 +1242,22 @@ void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
 
               indx++;
               col++;
-              if(col < roi_out->width && row < roi_out->height)
+              if(col < width && row < height)
               {
-                out[(row * roi_out->width + col) * 4]
+                out[(row * width + col) * 4]
                     = _clampnan(rgbgreen[indx] - Dgrb[0][indx >> 1], 0.0, 1.0);
-                out[(row * roi_out->width + col) * 4 + 2]
+                out[(row * width + col) * 4 + 2]
                     = _clampnan(rgbgreen[indx] - Dgrb[1][indx >> 1], 0.0, 1.0);
               }
             }
 
             if(cc1 & 1)
             { // width of tile is odd
-              if(col < roi_out->width && row < roi_out->height)
+              if(col < width && row < height)
               {
                 const float temp = 1.f / (hvwt[(indx - v1) >> 1] + 2.f - hvwt[(indx + 1) >> 1]
                                     - hvwt[(indx - 1) >> 1] + hvwt[(indx + v1) >> 1]);
-                out[(row * roi_out->width + col) * 4]
+                out[(row * width + col) * 4]
                     = _clampnan(rgbgreen[indx]
                                    - ((hvwt[(indx - v1) >> 1]) * Dgrb[0][(indx - v1) >> 1]
                                       + (1.f - hvwt[(indx + 1) >> 1]) * Dgrb[0][(indx + 1) >> 1]
@@ -1269,7 +1265,7 @@ void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
                                       + (hvwt[(indx + v1) >> 1]) * Dgrb[0][(indx + v1) >> 1])
                                          * temp,
                                0.0, 1.0);
-                out[(row * roi_out->width + col) * 4 + 2]
+                out[(row * width + col) * 4 + 2]
                     = _clampnan(rgbgreen[indx]
                                    - ((hvwt[(indx - v1) >> 1]) * Dgrb[1][(indx - v1) >> 1]
                                       + (1.f - hvwt[(indx + 1) >> 1]) * Dgrb[1][(indx + 1) >> 1]
@@ -1284,22 +1280,22 @@ void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
           {
             for(; indx < rr * ts + cc1 - 16 - (cc1 & 1); indx++, col++)
             {
-              if(col < roi_out->width && row < roi_out->height)
+              if(col < width && row < height)
               {
-                out[(row * roi_out->width + col) * 4]
+                out[(row * width + col) * 4]
                     = _clampnan(rgbgreen[indx] - Dgrb[0][indx >> 1], 0.0f, 1.0f);
-                out[(row * roi_out->width + col) * 4 + 2]
+                out[(row * width + col) * 4 + 2]
                     = _clampnan(rgbgreen[indx] - Dgrb[1][indx >> 1], 0.0f, 1.0f);
               }
 
               indx++;
               col++;
-              if(col < roi_out->width && row < roi_out->height)
+              if(col < width && row < height)
               {
                 const float temp = 1.f / (hvwt[(indx - v1) >> 1] + 2.f - hvwt[(indx + 1) >> 1]
                                     - hvwt[(indx - 1) >> 1] + hvwt[(indx + v1) >> 1]);
 
-                out[(row * roi_out->width + col) * 4]
+                out[(row * width + col) * 4]
                     = _clampnan(rgbgreen[indx]
                                    - ((hvwt[(indx - v1) >> 1]) * Dgrb[0][(indx - v1) >> 1]
                                       + (1.0f - hvwt[(indx + 1) >> 1]) * Dgrb[0][(indx + 1) >> 1]
@@ -1308,7 +1304,7 @@ void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
                                          * temp,
                                0.0f, 1.0f);
 
-                out[(row * roi_out->width + col) * 4 + 2]
+                out[(row * width + col) * 4 + 2]
                     = _clampnan(rgbgreen[indx]
                                    - ((hvwt[(indx - v1) >> 1]) * Dgrb[1][(indx - v1) >> 1]
                                       + (1.0f - hvwt[(indx + 1) >> 1]) * Dgrb[1][(indx + 1) >> 1]
@@ -1321,11 +1317,11 @@ void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
 
             if(cc1 & 1)
             { // width of tile is odd
-              if(col < roi_out->width && row < roi_out->height)
+              if(col < width && row < height)
               {
-                out[(row * roi_out->width + col) * 4]
+                out[(row * width + col) * 4]
                     = _clampnan(rgbgreen[indx] - Dgrb[0][indx >> 1], 0.0f, 1.0f);
-                out[(row * roi_out->width + col) * 4 + 2]
+                out[(row * width + col) * 4 + 2]
                     = _clampnan(rgbgreen[indx] - Dgrb[1][indx >> 1], 0.0f, 1.0f);
               }
             }
@@ -1340,8 +1336,8 @@ void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
           {
             const int col = cc + left;
             const int indx = rr * ts + cc;
-            if(col < roi_out->width && row < roi_out->height)
-              out[(row * roi_out->width + col) * 4 + 1] = _clampnan(rgbgreen[indx], 0.0f, 1.0f);
+            if(col < width && row < height)
+              out[(row * width + col) * 4 + 1] = _clampnan(rgbgreen[indx], 0.0f, 1.0f);
           }
         }
       }

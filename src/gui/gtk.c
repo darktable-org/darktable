@@ -26,6 +26,7 @@
 #include "common/l10n.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "common/gimp.h"
 #include "gui/guides.h"
 #include "gui/splash.h"
 #include "bauhaus/bauhaus.h"
@@ -864,12 +865,25 @@ gboolean dt_gui_quit_callback(GtkWidget *widget,
                               GdkEvent *event,
                               gpointer user_data)
 {
+  const dt_view_type_flags_t cv = dt_view_get_current();
   // if we are in lighttable preview mode, then just exit preview instead of closing dt
-  if(dt_view_get_current() == DT_VIEW_LIGHTTABLE
+  if(cv == DT_VIEW_LIGHTTABLE
       && dt_view_lighttable_preview_state(darktable.view_manager))
     dt_view_lighttable_set_preview_state(darktable.view_manager, FALSE, FALSE, FALSE);
   else
+  {
+    /* Always write current history if we quit while in darkroom
+       For some reason this is required if we started darktable with a single
+       file as an argument.
+    */
+    if(cv == DT_VIEW_DARKROOM)
+      dt_dev_write_history(darktable.develop);
+
+    if(dt_check_gimpmode_ok("file"))
+      darktable.gimp.error = !dt_export_gimp_file(darktable.gimp.imgid);
+
     dt_control_quit();
+  }
 
   return TRUE;
 }
@@ -887,6 +901,13 @@ static void _gui_switch_view_key_accel_callback(dt_action_t *action)
 
 static void _quit_callback(dt_action_t *action)
 {
+  if(darktable.develop && dt_view_get_current() == DT_VIEW_DARKROOM)
+  {
+    dt_dev_write_history(darktable.develop);
+    if(dt_check_gimpmode_ok("file"))
+      darktable.gimp.error = !dt_export_gimp_file(darktable.gimp.imgid);
+  }
+
   dt_control_quit();
 }
 
@@ -1361,8 +1382,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   widget = dt_ui_main_window(darktable.gui->ui);
   g_signal_connect(G_OBJECT(widget), "configure-event",
                    G_CALLBACK(_window_configure), NULL);
-  g_signal_connect(G_OBJECT(widget), "event",
-                   G_CALLBACK(dt_shortcut_dispatcher), NULL);
   g_signal_override_class_handler("query-tooltip", gtk_widget_get_type(),
                                   G_CALLBACK(dt_shortcut_tooltip_callback));
 
@@ -1488,7 +1507,12 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   dt_osx_focus_window();
 #endif
   /* start the event loop */
-  gtk_main();
+  if(darktable.control->running)
+  {
+    g_atomic_int_set(&darktable.gui_running, 1);
+    gtk_main();
+    g_atomic_int_set(&darktable.gui_running, 0);
+  }
 
   if(darktable.gui->surface)
   {
@@ -2793,7 +2817,7 @@ static void _ui_log_redraw_callback(gpointer instance,
   if(dc->log_ack != dc->log_pos)
   {
     const int32_t first_message = MAX(dc->log_ack, dc->log_pos - (DT_CTL_LOG_SIZE-1));
-    gchar *message = g_malloc(ALLMESSSIZE);
+    gchar *message = g_try_malloc(ALLMESSSIZE);
     if(message)
     {
       message[0] = 0;
@@ -2831,7 +2855,7 @@ static void _ui_toast_redraw_callback(gpointer instance,
   if(dc->toast_ack != dc->toast_pos)
   {
     const int32_t first_message = MAX(dc->toast_ack, dc->toast_pos - (DT_CTL_TOAST_SIZE-1));
-    gchar *message = g_malloc(ALLMESSSIZE);
+    gchar *message = g_try_malloc(ALLMESSSIZE);
     if(message)
     {
       message[0] = 0;
@@ -2916,11 +2940,11 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title,
   if(darktable.gui)
   {
     GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
-    gtk_window_set_transient_for(GTK_WINDOW(window), win);
     gtk_window_set_modal(GTK_WINDOW(window), TRUE);
 
-    if(gtk_widget_get_visible(GTK_WIDGET(win)))
+    if(win && gtk_widget_get_visible(GTK_WIDGET(win)))
     {
+      gtk_window_set_transient_for(GTK_WINDOW(window), win);
       gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER_ON_PARENT);
     }
     else
@@ -4403,6 +4427,40 @@ void dt_gui_process_events()
   unsigned max_iter = 200;
   while(g_main_context_iteration(NULL, FALSE) && --max_iter > 0)
     continue;
+}
+
+void dt_gui_simulate_button_event(GtkWidget *widget,
+                                  const GdkEventType eventtype,
+                                  const int button)
+{
+  gboolean res = FALSE;
+
+  // Create the event GdkEventButton
+  GdkEventButton event;
+  memset(&event, 0, sizeof(event));
+
+  event.type = eventtype;
+  event.window = gtk_widget_get_window(widget);
+  event.send_event = TRUE;
+  event.time = GDK_CURRENT_TIME;
+  event.x = 0;  // not important in this case
+  event.y = 0;  // not important in this case
+  event.button = button;
+  event.device =
+    gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
+
+  if (event.window != NULL)
+  {
+    g_object_ref(event.window);
+  }
+
+  // send signal
+  g_signal_emit_by_name(G_OBJECT(widget), "button-press-event", &event, &res, NULL);
+
+  if (event.window != NULL)
+  {
+    g_object_unref(event.window);
+  }
 }
 
 // clang-format off

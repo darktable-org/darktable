@@ -50,7 +50,8 @@ static void _remove_preset_flag(const dt_imgid_t imgid)
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
   // clear flag
-  image->flags &= ~DT_IMAGE_AUTO_PRESETS_APPLIED;
+  if(image)
+    image->flags &= ~DT_IMAGE_AUTO_PRESETS_APPLIED;
 
   // write through to sql+xmp
   dt_image_cache_write_release_info(darktable.image_cache, image,
@@ -476,7 +477,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
     }
 
     // do some checking...
-    if(mod_src->iop_order <= 0.0 || mod_src->iop_order == INT_MAX)
+    if(mod_src->iop_order <= 0 || mod_src->iop_order == INT_MAX)
       dt_print(DT_DEBUG_ALWAYS,
                "[dt_history_merge_module_into_history]"
                " invalid source module %s %s(%d)(%i)",
@@ -484,7 +485,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
                mod_src->iop_order, mod_src->multi_priority);
 
     if(module_duplicate
-       && (module_duplicate->iop_order <= 0.0
+       && (module_duplicate->iop_order <= 0
            || module_duplicate->iop_order == INT_MAX))
       dt_print(DT_DEBUG_ALWAYS,
                "[dt_history_merge_module_into_history]"
@@ -492,7 +493,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
                module_duplicate->op, module_duplicate->multi_name,
                module_duplicate->iop_order, module_duplicate->multi_priority);
 
-    if(module->iop_order <= 0.0 || module->iop_order == INT_MAX)
+    if(module->iop_order <= 0 || module->iop_order == INT_MAX)
       dt_print(DT_DEBUG_ALWAYS,
                "[dt_history_merge_module_into_history]"
                " invalid iop_order for module %s %s(%d)(%i)",

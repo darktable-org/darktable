@@ -106,11 +106,15 @@ static void _set_modification_time(char *filename,
   if(info) g_clear_object(&info);
 }
 
+// pregress update intervals in seconds
+#define FAST_UPDATE 0.2
+#define SLOW_UPDATE 1.0
+
 GList *dt_control_crawler_run(void)
 {
   sqlite3_stmt *stmt, *inner_stmt;
   GList *result = NULL;
-  gboolean look_for_xmp = (dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER);
+  const gboolean look_for_xmp = dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER;
 
   int total_images = 1;
   // clang-format off
@@ -140,8 +144,11 @@ GList *dt_control_crawler_run(void)
   dt_database_start_transaction(darktable.db);
 
   int image_count = 0;
-  double start_time = dt_get_wtime();
-  double last_time = start_time - 0.99; // wait 10ms before first update to ensure visibility
+  const double start_time = dt_get_wtime();
+  // set the "previous update" time to 10ms after a notional previous
+  // update to ensure visibility of the first update (which might not
+  // appear when done with zero delay) while minimizing the delay
+  double last_time = start_time - (FAST_UPDATE-0.01);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -150,12 +157,13 @@ GList *dt_control_crawler_run(void)
     const int version = sqlite3_column_int(stmt, 2);
     const gchar *image_path = (char *)sqlite3_column_text(stmt, 3);
     int flags = sqlite3_column_int(stmt, 4);
+    ++image_count;
 
-    // update the progress message once per second
-    double fraction = (++image_count) / (double)total_images;
-    double curr_time = dt_get_wtime();
-    if(curr_time >= last_time + 1.0)
+    // update the progress message - five times per second for first four seconds, then once per second
+    const double curr_time = dt_get_wtime();
+    if(curr_time >= last_time + ((curr_time - start_time > 4.0) ? SLOW_UPDATE : FAST_UPDATE))
     {
+      const double fraction = image_count / (double)total_images;
       darktable_splash_screen_set_progress_percent(_("checking for updated sidecar files (%d%%)"),
                                                    fraction,
                                                    curr_time - start_time);
@@ -375,7 +383,7 @@ static void _select_invert_callback(GtkButton *button, gpointer user_data)
 }
 
 
-static void _db_update_timestamp(const int id, const time_t timestamp)
+static void _db_update_timestamp(const dt_imgid_t id, const time_t timestamp)
 {
   // Update DB writing timestamp with XMP file timestamp
   sqlite3_stmt *stmt;
@@ -400,7 +408,8 @@ static void _get_crawler_entry_from_model(GtkTreeModel *model,
                      DT_CONTROL_CRAWLER_COL_ID,         &entry->id,
                      DT_CONTROL_CRAWLER_COL_XMP_PATH,   &entry->xmp_path,
                      DT_CONTROL_CRAWLER_COL_TS_DB_INT,  &entry->timestamp_db,
-                     DT_CONTROL_CRAWLER_COL_TS_XMP_INT, &entry->timestamp_xmp, -1);
+                     DT_CONTROL_CRAWLER_COL_TS_XMP_INT, &entry->timestamp_xmp,
+                     -1); // marks list end
 }
 
 
@@ -437,7 +446,7 @@ static void sync_xmp_to_db(GtkTreeModel *model,
                            gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
-  dt_control_crawler_result_t entry = { 0 };
+  dt_control_crawler_result_t entry = { NO_IMGID };
   _get_crawler_entry_from_model(model, iter, &entry);
   _db_update_timestamp(entry.id, entry.timestamp_xmp);
 
@@ -466,7 +475,7 @@ static void sync_db_to_xmp(GtkTreeModel *model,
                            gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
-  dt_control_crawler_result_t entry = { 0 };
+  dt_control_crawler_result_t entry = { NO_IMGID };
   _get_crawler_entry_from_model(model, iter, &entry);
 
   // write the XMP and make sure it get the last modified timestamp of the db
@@ -495,7 +504,7 @@ static void sync_newest_to_oldest(GtkTreeModel *model,
                                   gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
-  dt_control_crawler_result_t entry = { 0 };
+  dt_control_crawler_result_t entry = { NO_IMGID };
   _get_crawler_entry_from_model(model, iter, &entry);
 
   gboolean error = FALSE;
@@ -566,7 +575,7 @@ static void sync_oldest_to_newest(GtkTreeModel *model,
                                   gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
-  dt_control_crawler_result_t entry = { 0 };
+  dt_control_crawler_result_t entry = { NO_IMGID };
   _get_crawler_entry_from_model(model, iter, &entry);
   gboolean error = FALSE;
 
@@ -895,8 +904,8 @@ static inline gboolean _still_thumbing(void)
 }
 
 static void _update_img_thumbs(const dt_imgid_t imgid,
-                              const dt_mipmap_size_t max_mip,
-                              const int64_t stamp)
+                               const dt_mipmap_size_t max_mip,
+                               const int64_t stamp)
 {
   for(dt_mipmap_size_t k = max_mip; k >= DT_MIPMAP_1; k--)
   {

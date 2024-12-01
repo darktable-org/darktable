@@ -225,7 +225,7 @@ static void _gui_styles_new_style_response(GtkDialog *dialog,
     if(newname && *newname)
     {
       /* show prompt dialog when style already exists */
-      if(g->newname && (dt_styles_exists(newname)) != 0)
+      if(newname && (dt_styles_exists(newname)) != 0)
       {
         /* on button yes delete style name for overwriting */
         if(dt_gui_show_yes_no_dialog

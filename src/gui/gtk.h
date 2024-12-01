@@ -122,7 +122,7 @@ typedef struct dt_gui_gtk_t
   int32_t hide_tooltips;
 
   gboolean grouping;
-  int32_t expanded_group_id;
+  dt_imgid_t expanded_group_id;
 
   gboolean show_overlays;
   gboolean show_focus_peaking;
@@ -546,6 +546,11 @@ void dt_gui_cursor_clear_busy();
 // should be called after making Gtk calls if we won't resume the main event loop for a while
 // (i.e. the current function will do a lot of work before returning)
 void dt_gui_process_events();
+
+// Simulate a mouse button event (button is 1, 2, 3 - mouse button) sent to a Widget
+void dt_gui_simulate_button_event(GtkWidget *widget,
+                                  const GdkEventType eventtype,
+                                  const int button);
 
 #ifdef __cplusplus
 } // extern "C"

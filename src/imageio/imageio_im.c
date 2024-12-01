@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef HAVE_IMAGEMAGICK
 #include "common/darktable.h"
 #include "imageio_common.h"
 #include "imageio_gm.h"
@@ -124,7 +123,7 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
   if(profile_data == NULL) profile_data = (uint8_t *)MagickGetImageProfile(image, "icm", &profile_length);
   if(profile_data)
   {
-    img->profile = (uint8_t *)g_malloc0(profile_length);
+    img->profile = g_try_malloc0(profile_length);
     if(img->profile)
     {
       memcpy(img->profile, profile_data, profile_length);
@@ -152,7 +151,6 @@ error:
   DestroyMagickWand(image);
   return err;
 }
-#endif
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

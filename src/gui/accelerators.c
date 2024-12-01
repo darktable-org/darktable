@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1054,7 +1054,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
          _("start typing for incremental search"),
          _("click to filter shortcuts list"),
          _selected_shortcut ?
-         _("\nright click to show action of selected shortcut")
+         _("\nright-click to show action of selected shortcut")
          : "",
          def || action->type > DT_ACTION_TYPE_SECTION ?
          _("\ndouble-click to define new shortcut")
@@ -1113,7 +1113,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
                                             add_remove_qap == CPF_DIRECTION_UP   ? _("ctrl+click to add to quick access panel\n") :
                                             add_remove_qap == CPF_DIRECTION_DOWN ? _("ctrl+click to remove from quick access panel\n")  : "",
                                             _("scroll to change default speed"),
-                                            _("right click to exit mapping mode"));
+                                            _("right-click to exit mapping mode"));
     }
     else if(DT_IS_BAUHAUS_WIDGET(widget)
             && DT_BAUHAUS_WIDGET(widget)->type == DT_BAUHAUS_SLIDER
@@ -1619,7 +1619,6 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column,
   const field_id field = GPOINTER_TO_INT(data);
   gchar *field_text = NULL;
   gboolean editable = FALSE;
-  PangoUnderline underline = PANGO_UNDERLINE_NONE;
   int weight = PANGO_WEIGHT_NORMAL;
 
   if(_is_shortcut_category(data_ptr))
@@ -1688,7 +1687,7 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column,
         field_text = g_strdup_printf("%.3f", s->speed);
         if(s->speed == 1.0) weight = PANGO_WEIGHT_LIGHT;
       }
-      editable = TRUE;
+      if(s->action->type != DT_ACTION_TYPE_COMMAND) editable = TRUE;
       break;
     case SHORTCUT_VIEW_INSTANCE:
       if(_shortcut_is_speed(s)) break;
@@ -1716,8 +1715,11 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column,
     }
     if(!s->views) editable = FALSE; //disabled default shortcuts
   }
-  g_object_set(cell, "text", field_text, "editable",
-               editable, "underline", underline, "weight", weight, NULL);
+  g_object_set(cell, "text", field_text,
+                     "editable", editable,
+                     "underline", PANGO_UNDERLINE_NONE,
+                     "weight", editable && weight != PANGO_WEIGHT_LIGHT ? PANGO_WEIGHT_BOLD : weight,
+                     NULL);
   g_free(field_text);
 }
 
@@ -2465,11 +2467,9 @@ static gboolean _visible_shortcuts(GtkTreeModel *model,
   return FALSE;
 }
 
-static void _resize_shortcuts_view(GtkWidget *view,
-                                   GdkRectangle *allocation,
-                                   gpointer data)
+static void _resize_shortcuts_view(GtkWidget *view, GParamSpec *pspec, gpointer user_data)
 {
-  dt_conf_set_int("shortcuts/window_split", gtk_paned_get_position(GTK_PANED(data)));
+  dt_conf_set_int("shortcuts/window_split", gtk_paned_get_position(GTK_PANED(view)));
 }
 
 const dt_input_device_t DT_ALL_DEVICES = UINT8_MAX;
@@ -2988,7 +2988,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
 
   const int split_position = dt_conf_get_int("shortcuts/window_split");
   if(split_position) gtk_paned_set_position(GTK_PANED(container), split_position);
-  g_signal_connect(G_OBJECT(shortcuts_view), "size-allocate",
+  g_signal_connect(G_OBJECT(container), "notify::position",
                    G_CALLBACK(_resize_shortcuts_view), container);
 
   GtkWidget *button_bar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0), *button = NULL;
@@ -3611,11 +3611,7 @@ static gboolean _shortcut_closest_match(GSequenceIter **current,
 static gboolean _shortcut_match(dt_shortcut_t *f,
                                 gchar **fb_log)
 {
-  if(!darktable.view_manager->current_view)
-    return FALSE;
-
-  f->views =
-    darktable.view_manager->current_view->view(darktable.view_manager->current_view);
+  f->views = dt_view_get_current();
   gpointer v = GINT_TO_POINTER(f->views);
 
   GSequenceIter *existing =
@@ -3974,7 +3970,7 @@ float dt_action_process(const gchar *action,
   }
 
   const dt_view_type_flags_t vws = _find_views(ac);
-  if(!(vws & darktable.view_manager->current_view->view(darktable.view_manager->current_view)))
+  if(!(vws & dt_view_get_current()))
   {
     if(DT_PERFORM_ACTION(move_size))
       dt_print(DT_DEBUG_ALWAYS,
@@ -4215,7 +4211,7 @@ void dt_shortcut_key_press(const dt_input_device_t id,
       = { .key_device = id,
           .key = key,
           .mods = _sc.mods,
-          .views = darktable.view_manager->current_view->view(darktable.view_manager->current_view) };
+          .views = dt_view_get_current() };
 
     dt_shortcut_t *s = NULL;
     GSequenceIter *existing
@@ -4350,7 +4346,7 @@ static void _delay_for_double_triple(guint time, guint is_key)
     _sc.press += DT_SHORTCUT_DOUBLE & is_key;
     _sc.click += DT_SHORTCUT_DOUBLE & ~is_key;
 
-    _sc.views = darktable.view_manager->current_view->view(darktable.view_manager->current_view);
+    _sc.views = dt_view_get_current();
     GSequenceIter *multi =
       g_sequence_search(darktable.control->shortcuts, &_sc, _shortcut_compare_func,
                         GINT_TO_POINTER(_sc.views));

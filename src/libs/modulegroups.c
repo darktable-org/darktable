@@ -2733,7 +2733,7 @@ static void _dt_dev_image_changed_callback(gpointer instance,
 {
   dt_lib_modulegroups_t *d = self->data;
   dt_develop_t *dev = darktable.develop;
-  if(!dev || dev->image_storage.id <= 0) return;
+  if(!dev || !dt_is_valid_imgid(dev->image_storage.id)) return;
 
   const dt_image_t *image =
     dt_image_cache_get(darktable.image_cache, dev->image_storage.id, 'r');

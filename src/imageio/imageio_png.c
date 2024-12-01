@@ -35,7 +35,8 @@ gboolean dt_imageio_png_read_header(const char *filename, dt_imageio_png_t *png)
 {
   png->f = g_fopen(filename, "rb");
 
-  if(!png->f) return FALSE;
+  if(!png->f)
+    return FALSE;
 
 #define NUM_BYTES_CHECK (8)
 
@@ -57,7 +58,7 @@ gboolean dt_imageio_png_read_header(const char *filename, dt_imageio_png_t *png)
     return FALSE;
   }
 
-  /* TODO: gate by version once known cICP chunk read support is added to libpng */
+  // TODO: gate by version once known cICP chunk read support is added to libpng
 #ifdef PNG_STORE_UNKNOWN_CHUNKS_SUPPORTED
   png_set_keep_unknown_chunks(png->png_ptr, 3, (png_const_bytep) "cICP", 1);
 #endif
@@ -91,7 +92,8 @@ gboolean dt_imageio_png_read_header(const char *filename, dt_imageio_png_t *png)
   // image input transformations
 
   // palette => rgb
-  if(png->color_type == PNG_COLOR_TYPE_PALETTE) png_set_palette_to_rgb(png->png_ptr);
+  if(png->color_type == PNG_COLOR_TYPE_PALETTE)
+    png_set_palette_to_rgb(png->png_ptr);
 
   // 1, 2, 4 bit => 8 bit
   if(png->color_type == PNG_COLOR_TYPE_GRAY && png->bit_depth < 8)
@@ -101,7 +103,8 @@ gboolean dt_imageio_png_read_header(const char *filename, dt_imageio_png_t *png)
   }
 
   // strip alpha channel
-  if(png->color_type & PNG_COLOR_MASK_ALPHA) png_set_strip_alpha(png->png_ptr);
+  if(png->color_type & PNG_COLOR_MASK_ALPHA)
+    png_set_strip_alpha(png->png_ptr);
 
   // grayscale => rgb
   if(png->color_type == PNG_COLOR_TYPE_GRAY || png->color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
@@ -157,26 +160,42 @@ gboolean dt_imageio_png_read_image(dt_imageio_png_t *png, void *out)
 
 
 
-dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
+dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img,
+                                        const char *filename,
+                                        dt_mipmap_buffer_t *mbuf)
 {
-  const char *ext = filename + strlen(filename);
-  while(*ext != '.' && ext > filename) ext--;
-  if(strncmp(ext, ".png", 4) && strncmp(ext, ".PNG", 4))
-    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
-  if(!img->exif_inited) (void)dt_exif_read(img, filename);
+  if(!img->exif_inited)
+    (void)dt_exif_read(img, filename);
 
   dt_imageio_png_t image;
-  uint8_t *buf = NULL;
-  uint32_t width, height;
-  uint16_t bpp;
-
-
   if(!dt_imageio_png_read_header(filename, &image))
     return DT_IMAGEIO_UNSUPPORTED_FORMAT;
 
-  width = img->width = image.width;
-  height = img->height = image.height;
-  bpp = image.bit_depth;
+  uint8_t *buf = dt_alloc_aligned((size_t)image.height *
+                                  png_get_rowbytes(image.png_ptr, image.info_ptr));
+
+  if(!buf)
+  {
+    fclose(image.f);
+    png_destroy_read_struct(&image.png_ptr, &image.info_ptr, NULL);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[png_open] could not alloc intermediate buffer for image '%s'",
+             img->filename);
+    return DT_IMAGEIO_CACHE_FULL;
+  }
+
+  if(!dt_imageio_png_read_image(&image, (void *)buf))
+  {
+    dt_free_align(buf);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[png_open] could not read image '%s'",
+             img->filename);
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  }
+
+  uint32_t width = img->width = image.width;
+  uint32_t height = img->height = image.height;
+  png_byte bpp = image.bit_depth;
 
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
@@ -186,25 +205,10 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   {
     fclose(image.f);
     png_destroy_read_struct(&image.png_ptr, &image.info_ptr, NULL);
-    dt_print(DT_DEBUG_ALWAYS, "[png_open] could not alloc full buffer for image `%s'", img->filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[png_open] could not alloc full buffer for image '%s'",
+             img->filename);
     return DT_IMAGEIO_CACHE_FULL;
-  }
-
-  buf = dt_alloc_aligned((size_t)image.height * png_get_rowbytes(image.png_ptr, image.info_ptr));
-
-  if(!buf)
-  {
-    fclose(image.f);
-    png_destroy_read_struct(&image.png_ptr, &image.info_ptr, NULL);
-    dt_print(DT_DEBUG_ALWAYS, "[png_open] could not alloc intermediate buffer for image `%s'", img->filename);
-    return DT_IMAGEIO_CACHE_FULL;
-  }
-
-  if(!dt_imageio_png_read_image(&image, (void *)buf))
-  {
-    dt_free_align(buf);
-    dt_print(DT_DEBUG_ALWAYS, "[png_open] could not read image `%s'", img->filename);
-    return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
   const size_t npixels = (size_t)width * height;
@@ -251,9 +255,11 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   return DT_IMAGEIO_OK;
 }
 
-int dt_imageio_png_read_profile(const char *filename, uint8_t **out, dt_colorspaces_cicp_t *cicp)
+int dt_imageio_png_read_profile(const char *filename,
+                                uint8_t **out,
+                                dt_colorspaces_cicp_t *cicp)
 {
-  /* set default return values */
+  // set default return values
   *out = NULL;
   cicp->color_primaries = DT_CICP_COLOR_PRIMARIES_UNSPECIFIED;
   cicp->transfer_characteristics = DT_CICP_TRANSFER_CHARACTERISTICS_UNSPECIFIED;
@@ -270,15 +276,15 @@ int dt_imageio_png_read_profile(const char *filename, uint8_t **out, dt_colorspa
   if(!dt_imageio_png_read_header(filename, &image))
     return 0;
 
-  /* TODO: also add check for known cICP chunk read support once added to libpng */
+  // TODO: also add check for known cICP chunk read support once added to libpng
 #ifdef PNG_STORE_UNKNOWN_CHUNKS_SUPPORTED
   png_unknown_chunkp unknowns = NULL;
   const int num = png_get_unknown_chunks(image.png_ptr, image.info_ptr, &unknowns);
   for(size_t c = 0; c < num; ++c)
     if(!strcmp((const char *)unknowns[c].name, "cICP"))
     {
-      /* only RGB (i.e. matrix coeffs 0 in data[2]) and full range (1 in data[3]) pixel values are supported by the
-       * loader above and dt color management */
+      // only RGB (matrix coeffs 0 in data[2]) and full range (1 in data[3])
+      // pixel values are supported by the loader above and dt color management
       if(!unknowns[c].data[2] && unknowns[c].data[3])
       {
         cicp->color_primaries = (dt_colorspaces_cicp_color_primaries_t)unknowns[c].data[0];
@@ -286,7 +292,9 @@ int dt_imageio_png_read_profile(const char *filename, uint8_t **out, dt_colorspa
         cicp->matrix_coefficients = (dt_colorspaces_cicp_matrix_coefficients_t)unknowns[c].data[2];
       }
       else
-        dt_print(DT_DEBUG_IMAGEIO, "[png_open] encountered YUV and/or narrow-range image `%s', assuming unknown CICP", filename);
+        dt_print(DT_DEBUG_IMAGEIO,
+                 "[png_open] encountered YUV and/or narrow-range image '%s', assuming unknown CICP",
+                 filename);
       break;
     }
 #endif
@@ -295,7 +303,7 @@ int dt_imageio_png_read_profile(const char *filename, uint8_t **out, dt_colorspa
   if(png_get_valid(image.png_ptr, image.info_ptr, PNG_INFO_iCCP) != 0
      && png_get_iCCP(image.png_ptr, image.info_ptr, &name, NULL, &profile, &proflen) != 0)
   {
-    *out = (uint8_t *)g_malloc(proflen);
+    *out = g_try_malloc(proflen);
     if(*out)
       memcpy(*out, profile, proflen);
   }

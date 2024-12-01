@@ -46,6 +46,7 @@ static GtkWidget *splash_screen = NULL;
 static GtkWidget *progress_text = NULL;
 static GtkWidget *remaining_text = NULL;
 static gboolean showing_remaining = FALSE;
+static GtkBox *remaining_box = NULL;
 
 static GtkWidget *exit_screen = NULL;
 
@@ -131,6 +132,8 @@ void darktable_splash_screen_create(GtkWindow *parent_window,
   // the splash screen is enabled in the config or we are told to
   // create it regardless.
   if(splash_screen
+     || dt_check_gimpmode("file")
+     || dt_check_gimpmode("thumb")
      || (!dt_conf_get_bool("show_splash_screen") && !force))
   {
     return;
@@ -237,9 +240,23 @@ void darktable_splash_screen_create(GtkWindow *parent_window,
   gtk_widget_show(hbar);
   gtk_box_pack_start(content, hbar, FALSE, FALSE, 0);
   gtk_box_pack_start(content, progress_text, FALSE, FALSE, 0);
-  gtk_box_pack_start(content, remaining_text, FALSE, FALSE, 0);
+
+  GtkWidget *clock;
+  gchar *clock_file = g_strdup_printf("%s/pixmaps/clock.svg", darktable.datadir);
+  GdkPixbuf *clock_image = gdk_pixbuf_new_from_file_at_size(clock_file, -1, 20, NULL);
+  clock = gtk_image_new_from_pixbuf(clock_image);
+  g_free(clock_file);
+  g_object_unref(clock_image);
+
+  remaining_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  gtk_box_pack_start(remaining_box, GTK_WIDGET(clock), FALSE, FALSE, 0);
+  gtk_box_pack_start(remaining_box, remaining_text, FALSE, FALSE, 0);
+  gtk_box_pack_start(content, GTK_WIDGET(remaining_box), FALSE, FALSE, 0);
+  gtk_widget_set_halign(GTK_WIDGET(remaining_box), GTK_ALIGN_CENTER);
+
   gtk_window_set_decorated(GTK_WINDOW(splash_screen), FALSE);
   gtk_widget_show_all(splash_screen);
+  gtk_widget_hide(GTK_WIDGET(remaining_box));
   gtk_window_set_keep_above(GTK_WINDOW(splash_screen), TRUE);
   _process_all_gui_events();
 }
@@ -252,7 +269,7 @@ void darktable_splash_screen_set_progress(const char *msg)
     gtk_widget_show(progress_text);
     if(showing_remaining)
     {
-      gtk_label_set_text(GTK_LABEL(remaining_text), "");
+      gtk_widget_hide(GTK_WIDGET(remaining_box));
       showing_remaining = FALSE;
     }
     _process_all_gui_events();
@@ -269,21 +286,20 @@ void darktable_splash_screen_set_progress_percent(const char *msg,
     char *text = g_strdup_printf(msg, percent);
     gtk_label_set_text(GTK_LABEL(progress_text), text);
     g_free(text);
-    gtk_widget_show(progress_text);
 
-    if(elapsed >= 2.0 && fraction > 0.001)
+    if(elapsed >= 2.0 || fraction > 0.01)
     {
       const double total = elapsed / fraction;
-      const double remain = total - elapsed;
+      const double remain = (total - elapsed) + 0.5;  // round to full seconds rather than truncating
       const int minutes = remain / 60;
       const int seconds = remain - (60 * minutes);
-      char *rem_text = g_strdup_printf("⏲%4d:%02d", minutes, seconds);
+      char *rem_text = g_strdup_printf(" %4d:%02d", minutes, seconds);
       gtk_label_set_text(GTK_LABEL(remaining_text), rem_text);
       g_free(rem_text);
     }
     else
     {
-      gtk_label_set_text(GTK_LABEL(remaining_text), "⏲  --:--");
+      gtk_label_set_text(GTK_LABEL(remaining_text), "   --:--");
     }
     gtk_widget_show_all(splash_screen);
     showing_remaining = TRUE;
@@ -323,8 +339,9 @@ void darktable_exit_screen_create(GtkWindow *parent_window,
   // run if the splash screen is enabled in the config or we are told
   // to create it regardless
   if(exit_screen
-     || (!dt_conf_get_bool("show_splash_screen")
-         && !force))
+     || dt_check_gimpmode("file")
+     || dt_check_gimpmode("thumb")
+     || (!dt_conf_get_bool("show_splash_screen") && !force))
   {
     return;
   }
