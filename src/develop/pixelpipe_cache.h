@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2022 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -65,9 +65,9 @@ typedef enum dt_dev_pixelpipe_cache_test_t
 gboolean dt_dev_pixelpipe_cache_init(struct dt_dev_pixelpipe_t *pipe, const int entries, const size_t size, const size_t limit);
 void dt_dev_pixelpipe_cache_cleanup(struct dt_dev_pixelpipe_t *pipe);
 
-/** creates a hopefully unique hash from the complete module stack up to the module-th, including current viewport. */
+/** creates a hopefully unique hash from the complete module stack up to the modules iop_order, including current viewport. */
 dt_hash_t dt_dev_pixelpipe_cache_hash(const dt_imgid_t imgid, const struct dt_iop_roi_t *roi,
-                                     struct dt_dev_pixelpipe_t *pipe, const int position);
+                                     struct dt_dev_pixelpipe_t *pipe, const int order);
 
 /** returns a float data buffer in 'data' for the given hash from the cache, dsc is updated too.
   If the hash does not match any cache line, use an old buffer or allocate a fresh one.
