@@ -406,7 +406,7 @@ void init(dt_view_t *self)
   self->data = calloc(1, sizeof(dt_slideshow_t));
   dt_slideshow_t *lib = self->data;
   dt_pthread_mutex_init(&lib->lock, 0);
-  lib->zoom_level = 1.0; // 初始化缩放级别为1.0（原始大小）
+  lib->zoom_level = 1.0; // Initialize zoom level to 1.0 (original size)
 }
 
 
