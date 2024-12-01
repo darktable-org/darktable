@@ -187,7 +187,7 @@ changes (where available).
 - Tag names can now easily be copied to the clipboard via popup
   context menu in the tagging module.
 
-- The piwigo export storage now supports to specify a file name
+- The Piwigo export storage now supports to specify a file name
   pattern for the exported file.
 
 - The directory where darktable will write the log file under Windows
@@ -288,8 +288,8 @@ changes (where available).
 - Properly reset darktable internal tag darktable|style|<name> and
   darktable|changed when resetting history.
 
-- Fixed crash in the piwigo export storage when not logged in to the
-  piwigo server.
+- Fixed crash in the Piwigo export storage when not logged in to the
+  Piwigo server.
 
 - Fixed a bug in the export module where it was impossible to export a
   file again if "on conflict: overwrite if changed" was selected.
