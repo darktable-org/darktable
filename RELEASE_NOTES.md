@@ -202,7 +202,7 @@ changes (where available).
 
 - Add a visible indicator to the color calibration module when its
   color mapping section has non-neutral settings which will affect
-  color rendition..
+  color rendition.
 
 - Added new substitution variables $(IMAGE.TAGS.HIERARCHY) to insert
   tags with full hierarchy and $(IMAGE.ID.NEXT) to insert the image ID
