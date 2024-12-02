@@ -1266,116 +1266,105 @@ static void _free_metadata_queue(dt_lib_metadata_info_t *m)
   g_free(m);
 }
 
-static void _metadata_changed(gpointer instance, int signal_type, dt_lib_module_t *self)
+static void _metadata_changed(gpointer instance, int type, dt_lib_module_t *self)
 {
   dt_lib_metadata_view_t *d = self->data;
+
+  if(type != DT_METADATA_SIGNAL_PREF_CHANGED)
+    return;
 
   gboolean needs_update = FALSE;
   uint32_t order = 0;
 
-  switch(signal_type)
-  {
-    case DT_METADATA_SIGNAL_PREF_CHANGED:
-      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-      for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
-      {
-        const dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+  GList *new_metadata_keys = NULL;
 
-        if(metadata->type != DT_METADATA_TYPE_INTERNAL)
-        {
-          for(GList *md_iter = d->metadata; md_iter; md_iter = md_iter->next)
-          {
-            dt_lib_metadata_info_t *m = md_iter->data;
-            if(m->key == metadata->key && g_strcmp0(m->name, metadata->name))
-            {
-              g_free(m->name);
-              m->name = g_strdup(metadata->name);
-              needs_update = TRUE;
-              break;
-            }
-          }
-        }
-      }
-      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
-      break;
-
-    case DT_METADATA_SIGNAL_METADATA_ADD:
-      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-      for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
-      {
-        const dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
-
-        if(metadata->type != DT_METADATA_TYPE_INTERNAL)
-        {
-          gboolean found = FALSE;
-          for(GList *md_iter = d->metadata; md_iter; md_iter = md_iter->next)
-          {
-            const dt_lib_metadata_info_t *m = md_iter->data;
-            if(m->key == metadata->key)
-            {
-              found = TRUE;
-              break;
-            }
-          }
-
-          if(!found)
-          {
-            // new metadata entry
-            d->metadata = g_list_sort(d->metadata, _lib_metadata_sort_index);
-            d->metadata = g_list_reverse(d->metadata);
-            dt_lib_metadata_info_t *last = d->metadata->data;
-
-            dt_lib_metadata_info_t *m = calloc(1, sizeof(dt_lib_metadata_info_t));
-            if(m)
-            {
-              m->name = g_strdup(metadata->name);
-              m->value = g_strdup(NODATA_STRING);
-              m->index = m->order = last->index + 1;
-              m->visible = TRUE;
-              m->setting = g_strdup(dt_metadata_get_tag_subkey(metadata->tagname));
-              m->key = metadata->key;
-              d->metadata = g_list_prepend(d->metadata, m);
-    
-              _add_grid_row(m, 0, self);
-              d->metadata_count++;
-              needs_update = TRUE;
-            }
-          }
-        }
-      }
-      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
-      break;
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   
-    case DT_METADATA_SIGNAL_METADATA_DEL:
-      order = 0;
+  for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
+  {
+    const dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+
+    gboolean found = FALSE;
+    if(metadata->type != DT_METADATA_TYPE_INTERNAL)
+    {
       for(GList *md_iter = d->metadata; md_iter; md_iter = md_iter->next)
       {
         dt_lib_metadata_info_t *m = md_iter->data;
-        m->order = order++;
-
-        if(m->key == -1)
-          continue;
-
-        dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-        const dt_metadata_t2 *metadata = dt_metadata_get_metadata_by_keyid(m->key);
-        dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
-
-        if(!metadata)
+        if(m->key == metadata->key)
         {
-          GList *tmp_iter = md_iter->prev;
-          gtk_grid_remove_row(GTK_GRID(d->grid), m->order);
-          d->metadata = g_list_remove_link(d->metadata, md_iter);
-          _free_metadata_queue(m);
-          md_iter = tmp_iter;
-          order--;
-          needs_update = TRUE;
+          found = TRUE;
+
+          if(g_strcmp0(m->name, metadata->name))
+          {
+            // display name changed
+            g_free(m->name);
+            m->name = g_strdup(metadata->name);
+            needs_update = TRUE;
+            break;
+          }
         }
       }
-      break;
 
-    default:
-      break;
+      if(!found)
+        // new metadata, store the new key
+        new_metadata_keys = g_list_prepend(new_metadata_keys, GINT_TO_POINTER(metadata->key));
+    }
   }
+
+  if(new_metadata_keys)
+  {
+    // new metadata entries found
+    d->metadata = g_list_sort(d->metadata, _lib_metadata_sort_index);
+    d->metadata = g_list_reverse(d->metadata);
+    dt_lib_metadata_info_t *last = d->metadata->data;
+
+    for(GList *iter = new_metadata_keys; iter; iter = iter->next)
+    {
+      const uint32_t key = GPOINTER_TO_INT(iter->data);
+      const dt_metadata_t2 *metadata = dt_metadata_get_metadata_by_keyid(key);
+      dt_lib_metadata_info_t *m = calloc(1, sizeof(dt_lib_metadata_info_t));
+      if(m)
+      {
+        m->name = g_strdup(metadata->name);
+        m->value = g_strdup(NODATA_STRING);
+        m->index = m->order = last->index + 1;
+        m->visible = TRUE;
+        m->setting = g_strdup(dt_metadata_get_tag_subkey(metadata->tagname));
+        m->key = metadata->key;
+        d->metadata = g_list_prepend(d->metadata, m);
+
+        _add_grid_row(m, 0, self);
+        d->metadata_count++;
+        needs_update = TRUE;
+      }
+    }
+    g_list_free(new_metadata_keys);
+  }
+
+  // check for deleted metadata
+  order = 0;
+  for(GList *md_iter = d->metadata; md_iter; md_iter = md_iter->next)
+  {
+    dt_lib_metadata_info_t *m = md_iter->data;
+    m->order = order++;
+
+    if(m->key == -1)
+      continue;
+
+    const dt_metadata_t2 *metadata = dt_metadata_get_metadata_by_keyid(m->key);
+    if(!metadata)
+    {
+      GList *tmp_iter = md_iter->prev;
+      gtk_grid_remove_row(GTK_GRID(d->grid), m->order);
+      d->metadata = g_list_remove_link(d->metadata, md_iter);
+      _free_metadata_queue(m);
+      md_iter = tmp_iter;
+      order--;
+      needs_update = TRUE;
+    }
+  }
+
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
   if(needs_update)
     _lib_metadata_refill_grid(self);
