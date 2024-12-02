@@ -605,8 +605,8 @@ int write_image(struct dt_imageio_module_data_t *data,
   }
 
   dt_print(DT_DEBUG_IMAGEIO,
-           "[avif quality: %u => maxQuantizer: %u, minQuantizer: %u, "
-           "tileColsLog2: %u, tileRowsLog2: %u, threads: %u]",
+           "[avif quality: %u => maxQuantizer: %i, minQuantizer: %i, "
+           "tileColsLog2: %i, tileRowsLog2: %i, threads: %i]",
            d->quality,
            encoder->maxQuantizer,
            encoder->minQuantizer,
