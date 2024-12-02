@@ -491,6 +491,14 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
     const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, final_width);
 
     guint8 *image_buffer = calloc(stride * final_height, sizeof(guint8));
+    if(!image_buffer)
+    {
+      dt_print(DT_DEBUG_ALWAYS, "warning: unable to allocate rasterization buffer for SVG '%s'", dtlogo);
+      g_free(logo);
+      g_free(dtlogo);
+      g_object_unref(svg);
+      return NULL;
+    }
     if(darktable.gui)
       surface = dt_cairo_image_surface_create_for_data(image_buffer, CAIRO_FORMAT_ARGB32, final_width,
                                                       final_height, stride);
