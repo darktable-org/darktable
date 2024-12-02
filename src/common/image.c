@@ -2869,13 +2869,22 @@ gboolean dt_image_write_sidecar_file(const dt_imgid_t imgid)
 
   gboolean error = FALSE;
 
+  dt_image_path_append_version(imgid, filename, sizeof(filename));
+  g_strlcat(filename, ".xmp", sizeof(filename));
+
   // the sidecar is written only if required
   if((xmp_mode == DT_WRITE_XMP_ALWAYS)
      || ((xmp_mode == DT_WRITE_XMP_LAZY) && _any_altered_data(imgid)))
   {
-    dt_image_path_append_version(imgid, filename, sizeof(filename));
-    g_strlcat(filename, ".xmp", sizeof(filename));
     error = dt_exif_xmp_write(imgid, filename, TRUE);
+  }
+  else if(xmp_mode == DT_WRITE_XMP_LAZY)
+  {
+    // image not alterred and XMP only after edit, we need here to
+    // delete the XMP.
+    GFile *xmp = g_file_new_for_path(filename);
+    g_file_delete(xmp, NULL, NULL);
+    g_object_unref(xmp);
   }
 
   /* The timestamp must be put into db
