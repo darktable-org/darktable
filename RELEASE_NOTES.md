@@ -391,48 +391,21 @@ changes (where available).
 
 ## RawSpeed changes
 
-- Fujifilm X-Trans 4 based and newer cameras now use the vendor supplied crop
+- Fujifilm GFX cameras now use the vendor supplied crop
 
-## Camera support, compared to 4.6
+## Camera support, compared to 4.8
 
 ### Base Support
 
-- Canon EOS R100 (requires LibRaw 202403 and later)
-- Canon EOS R50 (requires LibRaw 202403 and later)
-- Canon EOS R6 Mark II (requires LibRaw 202403 and later)
-- Canon EOS R8 (requires LibRaw 202403 and later)
-- Canon EOS Ra (requires LibRaw 202403 and later)
-- Fujifilm FinePix S9600fd
-- Fujifilm X100VI (compressed)
-- GoPro FUSION (DNG)
-- Leica SL3 (DNG)
-- OM System OM-1 Mark II
-- Panasonic DC-TZ95D (4:3)
-- Panasonic DMC-FX150 (4:3, 3:2, 16:9)
-- Panasonic DMC-FZ28 (3:2)
-- Phase One P25+
-- Phase One P45+
-- Ricoh GR III HDF (DNG)
-- Ricoh GR IIIx HDF (DNG)
-- Sony ILCE-9M3
-- Sony UMC-R10C
+- ???
 
 ### White Balance Presets
 
-- Canon EOS R6 Mark II (requires LibRaw 202403 and later)
-- Fujifilm X-H2
-- OM System OM-1 Mark II
-- OM System OM-5
+- ???
 
 ### Noise Profiles
 
-- Canon EOS R6 Mark II (requires LibRaw 202403 and later)
-- Fujifilm GFX 50R
-- OM System OM-1 Mark II
-- OM System OM-5
-- Phase One IQ180
-- Sony ILCE-9M3
-- Sony ZV-1
+- ???
 
 ### Missing Compression Mode Support
 
