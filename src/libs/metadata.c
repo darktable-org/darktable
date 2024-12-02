@@ -842,9 +842,6 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
       valid = gtk_tree_model_iter_next(model, &iter);
     }
 
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_PREF_CHANGED);
-
-
     // ---------------------------------------------------------------------------
     // Test ADD
     // dt_metadata_t2 *md = calloc(1, sizeof(dt_metadata_t2));
@@ -867,60 +864,59 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
     //   _add_grid_row(md, d->num_grid_rows, self);
     //   gtk_widget_show_all(d->grid);
     //   gtk_widget_set_no_show_all(d->grid, TRUE);
-    //   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_METADATA_ADD);
     // }
 
     // ---------------------------------------------------------------------------
     // Test DEL
-    // const uint32_t key = 11;
+    const uint32_t key = 11;
 
-    // // check for images with that metadata assigned
-    // sqlite3_stmt *stmt = NULL;
-    // uint32_t count = 0;
-    // DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-    //                             "SELECT COUNT(*) FROM main.meta_data where key=?1",
-    //                             -1, &stmt, NULL);
-    // DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, key);
-    // if(sqlite3_step(stmt) == SQLITE_ROW)
-    //   count = sqlite3_column_int(stmt, 0);
-    // sqlite3_finalize(stmt);
+    // check for images with that metadata assigned
+    sqlite3_stmt *stmt = NULL;
+    uint32_t count = 0;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT COUNT(*) FROM main.meta_data where key=?1",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, key);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      count = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
 
-    // if(count > 0)
-    // {
-    //   gchar *msg = g_strdup_printf(
-    //     ngettext("this metadata is currently assigned to %d image. The assignment will be removed.",
-    //              "this metadata is currently assigned to %d images. The assignments will be removed.",
-    //              count), count);
+    gboolean confirm_delete = TRUE;
+    if(count > 0)
+    {
+      gchar *msg = g_strdup_printf(
+        ngettext("this metadata is currently assigned to %d image. The assignment will be removed.",
+                 "this metadata is currently assigned to %d images. The assignments will be removed.",
+                 count), count);
 
-    //   gboolean confirm = dt_gui_show_yes_no_dialog(_("delete metadata"), msg);
-    //   g_free(msg);
+      confirm_delete = dt_gui_show_yes_no_dialog(_("delete metadata"), msg);
+      g_free(msg);
+    }
 
-    //   if(confirm)
-    //   {
-    //     dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-    //     dt_metadata_delete_metadata(key);
-    //     dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+    if(confirm_delete)
+    {
+      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+      dt_metadata_delete_metadata(key);
+      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
-    //     // remove the corresponding row from the grid
-    //     uint32_t row = 0;
-    //     while(row < d->num_grid_rows)
-    //     {
-    //       GtkWidget *tv_cell = gtk_grid_get_child_at(GTK_GRID(d->grid), 1, row);
-    //       const uint32_t keyid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(tv_cell), "key"));
-          
-    //       if(keyid == key)
-    //       {
-    //         gtk_grid_remove_row(GTK_GRID(d->grid), row);
-    //         d->num_grid_rows--;
-    //         break;
-    //       }
-    //       row++;
-    //     }
-    //     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_METADATA_DEL);
-    //   }
-    // }
+      // remove the corresponding row from the grid
+      uint32_t row = 0;
+      while(row < d->num_grid_rows)
+      {
+        GtkWidget *tv_cell = gtk_grid_get_child_at(GTK_GRID(d->grid), 1, row);
+        const uint32_t keyid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(tv_cell), "key"));
+        
+        if(keyid == key)
+        {
+          gtk_grid_remove_row(GTK_GRID(d->grid), row);
+          d->num_grid_rows--;
+          break;
+        }
+        row++;
+      }
+    }
 
-
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_PREF_CHANGED);
     _update_layout(self);
   }
 

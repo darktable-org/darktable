@@ -54,7 +54,7 @@ typedef enum dt_metadata_t
 dt_metadata_t;
 
 // we need a max number of metadata fields to maintain the enums in
-// src/common/collection.h and src/libs/metadata_view.c
+// src/common/collection.h
 #define DT_METADATA_MAX_NUMBER 50
 
 typedef enum dt_metadata_type_t
@@ -68,17 +68,13 @@ dt_metadata_type_t;
 typedef enum dt_metadata_signal_t
 {
   DT_METADATA_SIGNAL_NEW_VALUE,     // metadata value changed
-  DT_METADATA_SIGNAL_PREF_CHANGED,  // metadata preferences changed
-  DT_METADATA_SIGNAL_METADATA_ADD,  // metadata added
-  DT_METADATA_SIGNAL_METADATA_DEL   // metadata deleted
+  DT_METADATA_SIGNAL_PREF_CHANGED   // metadata preferences changed
 }
 dt_metadata_signal_t;
 
 typedef enum dt_metadata_flag_t
 {
-  DT_METADATA_FLAG_HIDDEN = 1 << 0,     // metadata set as shown
-  DT_METADATA_FLAG_PRIVATE = 1 << 1,    // metadata set as hidden
-  DT_METADATA_FLAG_IMPORTED = 1 << 2    // metadata value changed
+  DT_METADATA_FLAG_IMPORTED = 1 << 2    // metadata import
 }
 dt_metadata_flag_t;
 

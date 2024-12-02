@@ -72,6 +72,19 @@ void dt_metadata_sort()
   _metadata_list = g_list_sort(_metadata_list, _compare_display_order);
 }
 
+static void _set_default_import_flag(dt_metadata_t2 *metadata)
+{
+    const char *metadata_name = dt_metadata_get_tag_subkey(metadata->tagname);
+    char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", metadata_name);
+    if(!dt_conf_key_exists(setting))
+    {
+      // per default should be imported - ignored if "write_sidecar_files" set
+      uint32_t flag = DT_METADATA_FLAG_IMPORTED;
+      dt_conf_set_int(setting, flag);
+    }
+    g_free(setting);
+}
+
 gboolean dt_metadata_add_metadata(dt_metadata_t2 *metadata)
 {
   gboolean success = FALSE;
@@ -102,6 +115,7 @@ gboolean dt_metadata_add_metadata(dt_metadata_t2 *metadata)
   {
     metadata->key = sqlite3_column_int(stmt, 0);
     _metadata_list = g_list_prepend(_metadata_list, metadata);
+    _set_default_import_flag(metadata);
   }
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -131,6 +145,12 @@ void dt_metadata_delete_metadata(const uint32_t key)
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, key);
       sqlite3_step(stmt);
       sqlite3_finalize(stmt);
+
+      // unset the import flag
+      const char *metadata_name = dt_metadata_get_tag_subkey(metadata->tagname);
+      char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", metadata_name);
+      dt_conf_set_int(setting, 0);
+      g_free(setting);
 
       _metadata_list = g_list_remove_link(_metadata_list, iter);
       g_free(metadata->tagname);
@@ -357,16 +377,7 @@ void dt_metadata_init()
     metadata->dt_default = dt_default;
     metadata->display_order = display_order;
     _metadata_list = g_list_prepend(_metadata_list, metadata);
-
-    const char *metadata_name = dt_metadata_get_tag_subkey(metadata->tagname);
-    char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", metadata_name);
-    if(!dt_conf_key_exists(setting))
-    {
-      // per default should be imported - ignored if "write_sidecar_files" set
-      uint32_t flag = DT_METADATA_FLAG_IMPORTED;
-      dt_conf_set_int(setting, flag);
-    }
-    g_free(setting);
+    _set_default_import_flag(metadata);
   }
   _metadata_list = g_list_reverse(_metadata_list);
   dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);

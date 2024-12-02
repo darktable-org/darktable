@@ -3154,9 +3154,7 @@ static void _metadata_changed(gpointer instance,
   dt_lib_module_t *dm = (dt_lib_module_t *)self;
   dt_lib_collect_t *d = dm->data;
 
-  if(type == DT_METADATA_SIGNAL_PREF_CHANGED
-    || type == DT_METADATA_SIGNAL_METADATA_ADD
-    || type == DT_METADATA_SIGNAL_METADATA_DEL)
+  if(type == DT_METADATA_SIGNAL_PREF_CHANGED)
   {
     // metadata preferences have changed - update the collection list
     for(int i = 0; i < MAX_RULES; i++)
@@ -3189,8 +3187,6 @@ static void _metadata_changed(gpointer instance,
   // update collection if metadata have been hidden or a metadata collection is active
   const int prop = _combo_get_active_collection(d->rule[d->active_rule].combo);
   if(type == DT_METADATA_SIGNAL_PREF_CHANGED
-     || type == DT_METADATA_SIGNAL_METADATA_ADD
-     || type == DT_METADATA_SIGNAL_METADATA_DEL
      || (prop >= DT_COLLECTION_PROP_METADATA
          && prop < DT_COLLECTION_PROP_METADATA + DT_METADATA_MAX_NUMBER))
   {
