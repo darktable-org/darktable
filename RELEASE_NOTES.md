@@ -181,8 +181,8 @@ changes (where available).
   synchronizing the last edited module on current edited module to the
   selection.
 
-- Expose encoding speed control for AVIF export: trades off export
-  time for file size and quality.
+- Adjusted the internal AVIF encoder parameter to significantly boost
+  encoding speed without compromising the output quality.
 
 - Tag names can now easily be copied to the clipboard via popup
   context menu in the tagging module.
