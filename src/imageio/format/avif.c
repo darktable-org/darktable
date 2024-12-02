@@ -530,8 +530,10 @@ int write_image(struct dt_imageio_module_data_t *data,
   switch(d->compression_type)
   {
     case AVIF_COMP_LOSSLESS:
-      /* It isn't recommend to use the extremities */
-      encoder->speed = AVIF_SPEED_SLOWEST + 1;
+      // See https://github.com/darktable-org/darktable/issues/17921
+      // Other reasonably good speed values ​​are 6 and 7, they create slightly
+      // smaller files, but at the cost of a noticable increase in export time.
+      encoder->speed = 8;
 
 #if AVIF_VERSION >= 1000000
       encoder->quality = AVIF_QUALITY_LOSSLESS;
