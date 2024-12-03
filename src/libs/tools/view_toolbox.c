@@ -88,13 +88,13 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
+void view_enter(dt_lib_module_t *self, dt_view_t *old_view, dt_view_t *new_view)
 {
   dt_lib_view_toolbox_t *d = self->data;
   dt_view_type_flags_t nv= new_view->view(new_view);
   for(const GList *child_elt = d->child_views; child_elt; child_elt = g_list_next(child_elt))
   {
-    child_data_t* child_data = (child_data_t*)child_elt->data;
+    child_data_t* child_data = child_elt->data;
     if(child_data->views & nv)
     {
       gtk_widget_show_all(child_data->child);
