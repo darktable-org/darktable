@@ -221,10 +221,21 @@ static void button_clicked(GtkWidget *widget,
     gchar *dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
     char *composed = g_build_filename(dir, filename, NULL);
 
-    // composed can now contain '\': on Windows it's the path separator,
-    // on other platforms it can be part of a regular folder name.
-    // This would later clash with variable substitution, so we have to escape them
+#ifdef _WIN32
+    // Windows does not support forward slashes in filename,
+    // but they can also be used as path separators.
+    // To keep it consistent with Unix, we can just replace backslashes
+    // with forward slashes.
+    // This also means that we do not have problems with variable substitution.
+    // TODO: Of course it would be better if we supported "natural"
+    // Windows style path names.
+    gchar *escaped = dt_util_str_replace(composed, "\\", "/");
+#else
+    // On Unix, the backslash _can_ be part of a regular folder name.
+    // So it has to be escaped, because it would clash with variable
+    // substitution.
     gchar *escaped = dt_util_str_replace(composed, "\\", "\\\\");
+#endif
 
     gtk_entry_set_text(GTK_ENTRY(d->entry), escaped);
     // the signal handler will write this to conf
