@@ -167,7 +167,8 @@ static int write_image(lua_State *L)
   gboolean result = dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, FALSE, export_masks,
                                       icc_type, icc_filename, DT_INTENT_LAST, NULL, NULL, 1, 1, NULL);
   dt_lua_lock();
-  lua_pushboolean(L, result);
+  // mitigate 17938 by returning sane values (true for success, false for failure)
+  lua_pushboolean(L, !result);
   format->free_params(format, fdata);
   return 1;
 }
