@@ -239,7 +239,7 @@ static void _lib_metadata_init_queue(dt_lib_module_t *self)
   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+    dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
 
     if(metadata->type != DT_METADATA_TYPE_INTERNAL)
     {
@@ -549,7 +549,7 @@ void gui_update(dt_lib_module_t *self)
     dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
     for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
     {
-      dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+      dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
 
       if(metadata->type != DT_METADATA_TYPE_INTERNAL)
       {
@@ -1063,10 +1063,10 @@ void gui_update(dt_lib_module_t *self)
       {
         uint32_t i = 0;
         dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-        dt_metadata_t2 *metadata = NULL;
+        dt_metadata_t *metadata = NULL;
         for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
         {
-          dt_metadata_t2 *m = (dt_metadata_t2 *)iter->data;
+          dt_metadata_t *m = (dt_metadata_t *)iter->data;
           if(m->type != DT_METADATA_TYPE_INTERNAL)
           {
             if(i == md - md_xmp_metadata)
@@ -1282,7 +1282,7 @@ static void _metadata_changed(gpointer instance, int type, dt_lib_module_t *self
   
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    const dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+    const dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
 
     gboolean found = FALSE;
     if(metadata->type != DT_METADATA_TYPE_INTERNAL)
@@ -1321,7 +1321,7 @@ static void _metadata_changed(gpointer instance, int type, dt_lib_module_t *self
     for(GList *iter = new_metadata_keys; iter; iter = iter->next)
     {
       const uint32_t key = GPOINTER_TO_INT(iter->data);
-      const dt_metadata_t2 *metadata = dt_metadata_get_metadata_by_keyid(key);
+      const dt_metadata_t *metadata = dt_metadata_get_metadata_by_keyid(key);
       dt_lib_metadata_info_t *m = calloc(1, sizeof(dt_lib_metadata_info_t));
       if(m)
       {
@@ -1351,7 +1351,7 @@ static void _metadata_changed(gpointer instance, int type, dt_lib_module_t *self
     if(m->key == -1)
       continue;
 
-    const dt_metadata_t2 *metadata = dt_metadata_get_metadata_by_keyid(m->key);
+    const dt_metadata_t *metadata = dt_metadata_get_metadata_by_keyid(m->key);
     if(!metadata)
     {
       GList *tmp_iter = md_iter->prev;

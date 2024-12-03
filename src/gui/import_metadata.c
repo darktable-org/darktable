@@ -146,7 +146,7 @@ static void _update_layout(dt_import_metadata_t *metadata)
   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    dt_metadata_t2 *md = (dt_metadata_t2 *)iter->data;
+    dt_metadata_t *md = (dt_metadata_t *)iter->data;
     const gboolean internal = md->type == DT_METADATA_TYPE_INTERNAL;
     const gboolean visible = !internal && md->is_visible;
 
@@ -406,7 +406,7 @@ static void _fill_metadata_grid(dt_import_metadata_t *metadata)
   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    dt_metadata_t2 *md = (dt_metadata_t2 *)iter->data;
+    dt_metadata_t *md = (dt_metadata_t *)iter->data;
 
     gtk_grid_insert_row(GTK_GRID(metadata->grid), i + DT_META_META_VALUE);
 
@@ -537,7 +537,7 @@ void dt_import_metadata_update(dt_import_metadata_t *metadata)
   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    dt_metadata_t2 *md = iter->data;
+    dt_metadata_t *md = iter->data;
 
     GtkWidget *w = gtk_grid_get_child_at(GTK_GRID(metadata->grid), 1, i + DT_META_META_VALUE);
     const gchar *metadata_name = dt_metadata_get_tag_subkey(md->tagname);

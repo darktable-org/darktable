@@ -609,7 +609,7 @@ int dt_lua_init_image(lua_State *L)
   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = iter->data;
+    dt_metadata_t *metadata = iter->data;
 
     if(metadata->type != DT_METADATA_TYPE_INTERNAL)
     {

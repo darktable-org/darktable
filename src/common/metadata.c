@@ -29,34 +29,6 @@
 
 static GList *_metadata_list = NULL;
 
-// this array should contain all dt metadata
-// add the new metadata at the end when needed
-// Dependencies
-//    Must match with dt_metadata_t in metadata.h.
-//    Exif.cc: add the new metadata into dt_xmp_keys[]
-//    libs/metadata.c increment version.
-// CAUTION : key, subkey (last term of key) & name must be unique
-
-// static const struct
-// {
-//   char *key;
-//   char *name;
-//   int type;
-//   uint32_t display_order;
-// } dt_metadata_def[] = {
-//   // clang-format off
-//   {"Xmp.dc.creator", N_("creator"), DT_METADATA_TYPE_USER, 2},
-//   {"Xmp.dc.publisher", N_("publisher"), DT_METADATA_TYPE_USER, 3},
-//   {"Xmp.dc.title", N_("title"), DT_METADATA_TYPE_USER, 0},
-//   {"Xmp.dc.description", N_("description"), DT_METADATA_TYPE_USER, 1},
-//   {"Xmp.dc.rights", N_("rights"), DT_METADATA_TYPE_USER, 4},
-//   {"Xmp.acdsee.notes", N_("notes"), DT_METADATA_TYPE_USER, 5},
-//   {"Xmp.darktable.version_name", N_("version name"), DT_METADATA_TYPE_OPTIONAL, 6},
-//   {"Xmp.darktable.image_id", N_("image id"), DT_METADATA_TYPE_INTERNAL, 7},
-//   {"Xmp.xmpMM.PreservedFileName", N_("preserved filename"), DT_METADATA_TYPE_OPTIONAL, 8}
-//   // clang-format on
-// };
-
 GList *dt_metadata_get_list()
 {
   return _metadata_list;
@@ -64,7 +36,7 @@ GList *dt_metadata_get_list()
 
 static gint _compare_display_order(gconstpointer a, gconstpointer b)
 {
-  return ((dt_metadata_t2 *) a)->display_order - ((dt_metadata_t2 *) b)->display_order;
+  return ((dt_metadata_t *) a)->display_order - ((dt_metadata_t *) b)->display_order;
 }
 
 void dt_metadata_sort()
@@ -72,7 +44,7 @@ void dt_metadata_sort()
   _metadata_list = g_list_sort(_metadata_list, _compare_display_order);
 }
 
-static void _set_default_import_flag(dt_metadata_t2 *metadata)
+static void _set_default_import_flag(dt_metadata_t *metadata)
 {
     const char *metadata_name = dt_metadata_get_tag_subkey(metadata->tagname);
     char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", metadata_name);
@@ -85,7 +57,7 @@ static void _set_default_import_flag(dt_metadata_t2 *metadata)
     g_free(setting);
 }
 
-gboolean dt_metadata_add_metadata(dt_metadata_t2 *metadata)
+gboolean dt_metadata_add_metadata(dt_metadata_t *metadata)
 {
   gboolean success = FALSE;
 
@@ -126,7 +98,7 @@ void dt_metadata_delete_metadata(const uint32_t key)
 {
   for(GList *iter = _metadata_list; iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+    dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
     if(metadata->key == key)
     {
       // first remove the assignments
@@ -161,22 +133,22 @@ void dt_metadata_delete_metadata(const uint32_t key)
   }
 }
 
-dt_metadata_t2 *dt_metadata_get_metadata_by_keyid(const uint32_t keyid)
+dt_metadata_t *dt_metadata_get_metadata_by_keyid(const uint32_t keyid)
 {
   for(GList *iter = _metadata_list; iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+    dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
     if(metadata->key == keyid)
       return metadata;
   }
   return NULL;
 }
 
-dt_metadata_t2 *dt_metadata_get_metadata_by_tagname(const char *tagname)
+dt_metadata_t *dt_metadata_get_metadata_by_tagname(const char *tagname)
 {
   for(GList *iter = _metadata_list; iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+    dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
     if(!g_strcmp0(metadata->tagname, tagname))
       return metadata;
   }
@@ -191,7 +163,7 @@ const char *dt_metadata_get_name_by_display_order(const uint32_t order)
   {
     for(GList *iter = _metadata_list; iter; iter = iter->next)
     {
-      dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+      dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
       if(order == metadata->display_order)
       {
         result = metadata->name;
@@ -211,7 +183,7 @@ uint32_t dt_metadata_get_keyid_by_display_order(const uint32_t order)
     uint32_t i = 0;
     for(GList *iter = _metadata_list; iter; iter = iter->next)
     {
-      dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+      dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
       if(order == metadata->display_order)
       {
         result = i;
@@ -231,7 +203,7 @@ uint32_t dt_metadata_get_type_by_display_order(const uint32_t order)
   {
     for(GList *iter = _metadata_list; iter; iter = iter->next)
     {
-      dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+      dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
       if(order == metadata->display_order)
       {
         result = metadata->type;
@@ -248,7 +220,7 @@ const char *dt_metadata_get_name(const uint32_t keyid)
 
   for(GList *iter = _metadata_list; iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+    dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
     if(metadata->key == keyid)
     {
       result = metadata->name;
@@ -265,7 +237,7 @@ uint32_t dt_metadata_get_keyid(const char* key)
   if(!key) return -1;
   for(GList *iter = _metadata_list; iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+    dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
     if(strncmp(key, metadata->tagname, strlen(metadata->tagname)) == 0)
     {
       result = metadata->key;
@@ -281,7 +253,7 @@ const char *dt_metadata_get_key(const uint32_t keyid)
 
   for(GList *iter = _metadata_list; iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+    dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
     if(metadata->key == keyid)
     {
       result = metadata->tagname;
@@ -299,7 +271,7 @@ const char *dt_metadata_get_key_by_subkey(const char *subkey)
   {
     for(GList *iter = _metadata_list; iter; iter = iter->next)
     {
-      dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+      dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
       char *t = g_strrstr(metadata->tagname, ".");
       if(t && !g_strcmp0(t + 1, subkey))
       {
@@ -317,7 +289,7 @@ uint32_t dt_metadata_get_type(const uint32_t keyid)
 
   for(GList *iter = _metadata_list; iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+    dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
     if(metadata->key == keyid)
     {
       result = metadata->type;
@@ -334,7 +306,7 @@ const char *dt_metadata_get_tag_subkey(const char *tagname)
   return NULL;
 }
 
-static void _free_metadata_entry(dt_metadata_t2 *metadata, gpointer user_data)
+static void _free_metadata_entry(dt_metadata_t *metadata, gpointer user_data)
 {
   g_free(metadata->tagname);
   metadata->tagname = NULL;
@@ -367,7 +339,7 @@ void dt_metadata_init()
     int dt_default = sqlite3_column_int(stmt, 6);
     int display_order = sqlite3_column_int(stmt, 7);
 
-    dt_metadata_t2 *metadata = calloc(1, sizeof(dt_metadata_t2));
+    dt_metadata_t *metadata = calloc(1, sizeof(dt_metadata_t));
     metadata->key = key;
     metadata->tagname = g_strdup(tagname);
     metadata->name = g_strdup(name);
@@ -842,7 +814,7 @@ void dt_metadata_set_import(const dt_imgid_t imgid, const char *key, const char 
 {
   if(!key || !dt_is_valid_imgid(imgid)) return;
 
-  const dt_metadata_t2 *md = dt_metadata_get_metadata_by_tagname(key);
+  const dt_metadata_t *md = dt_metadata_get_metadata_by_tagname(key);
 
   if(md) // known key
   {
@@ -929,7 +901,7 @@ void dt_metadata_clear(const GList *imgs, const gboolean undo_on)
   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    const dt_metadata_t2 *md = (dt_metadata_t2 *)iter->data;
+    const dt_metadata_t *md = (dt_metadata_t *)iter->data;
     if(md->type != DT_METADATA_TYPE_INTERNAL)
     {
       if(md->is_visible)
