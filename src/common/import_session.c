@@ -227,7 +227,7 @@ dt_filmid_t dt_import_session_film_id(const dt_import_session_t *self)
 {
   if(self->film) return self->film->id;
 
-  return NO_FILMID;
+  return -1;
 }
 
 
