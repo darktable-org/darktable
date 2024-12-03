@@ -140,7 +140,7 @@ void _track_pts_free(dt_gpx_track_point_t *trkpt)
   g_free(trkpt);
 }
 
-void dt_gpx_destroy(struct dt_gpx_t *gpx)
+void dt_gpx_destroy(dt_gpx_t *gpx)
 {
   g_assert(gpx != NULL);
 
@@ -150,7 +150,7 @@ void dt_gpx_destroy(struct dt_gpx_t *gpx)
   g_free(gpx);
 }
 
-gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_image_geoloc_t *geoloc)
+gboolean dt_gpx_get_location(dt_gpx_t *gpx, GDateTime *timestamp, dt_image_geoloc_t *geoloc)
 {
   g_assert(gpx != NULL);
 
@@ -464,7 +464,7 @@ GList *dt_gpx_get_trkseg(struct dt_gpx_t *gpx)
                       : NULL;
 }
 
-GList *dt_gpx_get_trkpts(struct dt_gpx_t *gpx, const guint segid)
+GList *dt_gpx_get_trkpts(dt_gpx_t *gpx, const guint segid)
 {
   if(gpx == NULL)
     return NULL;

@@ -47,10 +47,10 @@ void dt_import_session_set_exif_basic_info(struct dt_import_session_t *self, con
 void dt_import_session_set_filename(struct dt_import_session_t *self, const char *filename);
 
 /** \brief current film id for the import session */
-int32_t dt_import_session_film_id(struct dt_import_session_t *self);
+dt_filmid_t dt_import_session_film_id(const struct dt_import_session_t *self);
 
 /** \brief get import session name */
-const char *dt_import_session_name(struct dt_import_session_t *self);
+const char *dt_import_session_name(const struct dt_import_session_t *self);
 /** \brief get import session filename.
     \param[in] current If TRUE the current filename will be returned without evaluating a new filename.
  */
