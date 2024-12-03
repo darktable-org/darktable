@@ -469,7 +469,7 @@ static void _update_layout(dt_lib_module_t *self)
   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+    dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
 
     const gboolean visible = metadata->type != DT_METADATA_TYPE_INTERNAL &&
                              metadata->is_visible;
@@ -518,7 +518,7 @@ void gui_reset(dt_lib_module_t *self)
   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+    dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
 
     if(metadata->is_visible && metadata->type != DT_METADATA_TYPE_INTERNAL)
     {
@@ -580,7 +580,7 @@ static gboolean _metadata_reset(GtkWidget *label,
   return TRUE;
 }
 
-static void _add_grid_row(dt_metadata_t2 *metadata, int row, dt_lib_module_t *self)
+static void _add_grid_row(dt_metadata_t *metadata, int row, dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
@@ -724,7 +724,7 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *metadata_iter = dt_metadata_get_list(); metadata_iter; metadata_iter = metadata_iter->next)
   {
-    dt_metadata_t2 *metadata = (dt_metadata_t2 *)metadata_iter->data;
+    dt_metadata_t *metadata = (dt_metadata_t *)metadata_iter->data;
     if(metadata->type != DT_METADATA_TYPE_INTERNAL)
     {
       gtk_list_store_append(store, &iter);
@@ -828,7 +828,7 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
       sqlite3_finalize(stmt);
 
       dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-      dt_metadata_t2 *metadata = dt_metadata_get_metadata_by_keyid(key);
+      dt_metadata_t *metadata = dt_metadata_get_metadata_by_keyid(key);
       g_free(metadata->name);
       metadata->name = g_strdup(name);
       metadata->is_visible = is_visible;
@@ -844,77 +844,77 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
 
     // ---------------------------------------------------------------------------
     // Test ADD
-    // dt_metadata_t2 *md = calloc(1, sizeof(dt_metadata_t2));
-    // md->display_order = 11;
-    // md->name = g_strdup("scene");
-    // md->tagname = g_strdup("Xmp.iptc.Scene");
-    // md->is_private = 0;
-    // md->is_visible = 1;
-    // md->type = 0;
-    // md->dt_default = 0;
-    // gboolean db_res = FALSE;
-    // dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-    // db_res = dt_metadata_add_metadata(md);
-    // dt_metadata_sort();
-    // dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+    dt_metadata_t *md = calloc(1, sizeof(dt_metadata_t));
+    md->display_order = 11;
+    md->name = g_strdup("scene");
+    md->tagname = g_strdup("Xmp.iptc.Scene");
+    md->is_private = 0;
+    md->is_visible = 1;
+    md->type = 0;
+    md->dt_default = 0;
+    gboolean db_res = FALSE;
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+    db_res = dt_metadata_add_metadata(md);
+    dt_metadata_sort();
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
-    // if(db_res)
-    // {
-    //   gtk_widget_set_no_show_all(d->grid, FALSE);
-    //   _add_grid_row(md, d->num_grid_rows, self);
-    //   gtk_widget_show_all(d->grid);
-    //   gtk_widget_set_no_show_all(d->grid, TRUE);
-    // }
+    if(db_res)
+    {
+      gtk_widget_set_no_show_all(d->grid, FALSE);
+      _add_grid_row(md, d->num_grid_rows, self);
+      gtk_widget_show_all(d->grid);
+      gtk_widget_set_no_show_all(d->grid, TRUE);
+    }
 
     // ---------------------------------------------------------------------------
     // Test DEL
-    const uint32_t key = 11;
+    // const uint32_t key = 11;
 
-    // check for images with that metadata assigned
-    sqlite3_stmt *stmt = NULL;
-    uint32_t count = 0;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT COUNT(*) FROM main.meta_data where key=?1",
-                                -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, key);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-      count = sqlite3_column_int(stmt, 0);
-    sqlite3_finalize(stmt);
+    // // check for images with that metadata assigned
+    // sqlite3_stmt *stmt = NULL;
+    // uint32_t count = 0;
+    // DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+    //                             "SELECT COUNT(*) FROM main.meta_data where key=?1",
+    //                             -1, &stmt, NULL);
+    // DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, key);
+    // if(sqlite3_step(stmt) == SQLITE_ROW)
+    //   count = sqlite3_column_int(stmt, 0);
+    // sqlite3_finalize(stmt);
 
-    gboolean confirm_delete = TRUE;
-    if(count > 0)
-    {
-      gchar *msg = g_strdup_printf(
-        ngettext("this metadata is currently assigned to %d image. The assignment will be removed.",
-                 "this metadata is currently assigned to %d images. The assignments will be removed.",
-                 count), count);
+    // gboolean confirm_delete = TRUE;
+    // if(count > 0)
+    // {
+    //   gchar *msg = g_strdup_printf(
+    //     ngettext("this metadata is currently assigned to %d image. The assignment will be removed.",
+    //              "this metadata is currently assigned to %d images. The assignments will be removed.",
+    //              count), count);
 
-      confirm_delete = dt_gui_show_yes_no_dialog(_("delete metadata"), msg);
-      g_free(msg);
-    }
+    //   confirm_delete = dt_gui_show_yes_no_dialog(_("delete metadata"), msg);
+    //   g_free(msg);
+    // }
 
-    if(confirm_delete)
-    {
-      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-      dt_metadata_delete_metadata(key);
-      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+    // if(confirm_delete)
+    // {
+    //   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+    //   dt_metadata_delete_metadata(key);
+    //   dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
-      // remove the corresponding row from the grid
-      uint32_t row = 0;
-      while(row < d->num_grid_rows)
-      {
-        GtkWidget *tv_cell = gtk_grid_get_child_at(GTK_GRID(d->grid), 1, row);
-        const uint32_t keyid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(tv_cell), "key"));
+    //   // remove the corresponding row from the grid
+    //   uint32_t row = 0;
+    //   while(row < d->num_grid_rows)
+    //   {
+    //     GtkWidget *tv_cell = gtk_grid_get_child_at(GTK_GRID(d->grid), 1, row);
+    //     const uint32_t keyid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(tv_cell), "key"));
         
-        if(keyid == key)
-        {
-          gtk_grid_remove_row(GTK_GRID(d->grid), row);
-          d->num_grid_rows--;
-          break;
-        }
-        row++;
-      }
-    }
+    //     if(keyid == key)
+    //     {
+    //       gtk_grid_remove_row(GTK_GRID(d->grid), row);
+    //       d->num_grid_rows--;
+    //       break;
+    //     }
+    //     row++;
+    //   }
+    // }
 
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_PREF_CHANGED);
     _update_layout(self);
@@ -951,7 +951,7 @@ void gui_init(dt_lib_module_t *self)
   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+    dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
 
     if(metadata->type == DT_METADATA_TYPE_INTERNAL)
       continue;
@@ -1325,7 +1325,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   int i = 0;
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+    dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
 
     if(metadata->type == DT_METADATA_TYPE_INTERNAL)
       continue;

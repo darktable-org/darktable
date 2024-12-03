@@ -2574,7 +2574,7 @@ static void _set_default_preferences(dt_lib_module_t *self)
   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = iter->data;
+    dt_metadata_t *metadata = iter->data;
     if(metadata->type != DT_METADATA_TYPE_INTERNAL)
     {
       const char *metadata_name = dt_metadata_get_tag_subkey(metadata->tagname);
@@ -2621,7 +2621,7 @@ static char *_get_current_configuration(dt_lib_module_t *self)
   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = iter->data;
+    dt_metadata_t *metadata = iter->data;
 
     if(metadata->type != DT_METADATA_TYPE_INTERNAL)
     {

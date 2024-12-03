@@ -30,6 +30,7 @@
 #include "common/styles.h"
 #include "common/history.h"
 #include "common/metadata.h"
+#include "common/metadata.h"
 #ifdef HAVE_ICU
 #include "common/sqliteicu.h"
 #endif
@@ -3213,38 +3214,38 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
     int visible;
     gchar *query = NULL;
     visible = (dt_conf_get_int("plugins/lighttable/metadata/creator_flag") & 1) ? 0 : 1;
-    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(0, 'Xmp.dc.creator', '%s', 0, %d, 0, 1, 2)",
-                            _("creator"), visible);
+    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(0, 'Xmp.dc.creator', '%s', %d, %d, 0, 1, 2)",
+                            _("creator"), visible, DT_METADATA_TYPE_USER);
     TRY_EXEC(query, "can't insert meta_data_key record");
     g_free(query);
 
     visible = (dt_conf_get_int("plugins/lighttable/metadata/publisher_flag") & 1) ? 0 : 1;
-    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(1, 'Xmp.dc.publisher', '%s', 0, %d, 0, 1, 3)",
-                            _("publisher"), visible);
+    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(1, 'Xmp.dc.publisher', '%s', %d, %d, 0, 1, 3)",
+                            _("publisher"), visible, DT_METADATA_TYPE_USER);
     TRY_EXEC(query, "can't insert meta_data_key record");
     g_free(query);
 
     visible = (dt_conf_get_int("plugins/lighttable/metadata/title_flag") & 1) ? 0 : 1;
-    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(2, 'Xmp.dc.title', '%s', 0, %d, 0, 1, 0)",
-                            _("title"), visible);
+    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(2, 'Xmp.dc.title', '%s', %d, %d, 0, 1, 0)",
+                            _("title"), visible, DT_METADATA_TYPE_USER);
     TRY_EXEC(query, "can't insert meta_data_key record");
     g_free(query);
 
     visible = (dt_conf_get_int("plugins/lighttable/metadata/description_flag") & 1) ? 0 : 1;
-    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(3, 'Xmp.dc.description', '%s', 0, %d, 0, 1, 1)",
-                            _("description"), visible);
+    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(3, 'Xmp.dc.description', '%s', %d, %d, 0, 1, 1)",
+                            _("description"), visible, DT_METADATA_TYPE_USER);
     TRY_EXEC(query, "can't insert meta_data_key record");
     g_free(query);
 
     visible = (dt_conf_get_int("plugins/lighttable/metadata/rights_flag") & 1) ? 0 : 1;
-    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(4, 'Xmp.dc.rights', '%s', 0, %d, 0, 1, 4)",
+    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(4, 'Xmp.dc.rights', '%s', %d, %d, 0, 1, 4)",
                             _("rights"), visible);
     TRY_EXEC(query, "can't insert meta_data_key record");
     g_free(query);
 
     visible = (dt_conf_get_int("plugins/lighttable/metadata/notes_flag") & 1) ? 0 : 1;
-    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(5, 'Xmp.acdsee.notes', '%s', 0, %d, 0, 1, 5)",
-                            _("notes"), visible);
+    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(5, 'Xmp.acdsee.notes', '%s', %d, %d, 0, 1, 5)",
+                            _("notes"), visible, DT_METADATA_TYPE_USER);
     TRY_EXEC(query, "can't insert meta_data_key record");
     g_free(query);
 

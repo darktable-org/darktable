@@ -902,7 +902,7 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = iter->data;
+    dt_metadata_t *metadata = iter->data;
     if(metadata->type != DT_METADATA_TYPE_INTERNAL && metadata->is_visible)
     {
       const gchar *metadata_name = dt_metadata_get_tag_subkey(metadata->tagname);
@@ -981,7 +981,7 @@ static void _populate_rules_combo(GtkWidget *w)
   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = iter->data;
+    dt_metadata_t *metadata = iter->data;
     if(metadata->type != DT_METADATA_TYPE_INTERNAL && metadata->is_visible)
       ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + metadata->key);
   }
@@ -1658,7 +1658,7 @@ static void _topbar_populate_rules_combo(GtkWidget *w, dt_lib_filtering_t *d)
   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    dt_metadata_t2 *metadata = iter->data;
+    dt_metadata_t *metadata = iter->data;
     if(metadata->type != DT_METADATA_TYPE_INTERNAL && metadata->is_visible)
       ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + metadata->key);
   }

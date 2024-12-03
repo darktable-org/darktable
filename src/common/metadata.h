@@ -23,7 +23,7 @@
 
 G_BEGIN_DECLS
 
-typedef struct dt_metadata_t2
+typedef struct dt_metadata_t
 {
   uint32_t key;
   gchar *tagname;
@@ -33,25 +33,7 @@ typedef struct dt_metadata_t2
   gboolean is_private;
   gboolean dt_default;
   uint32_t display_order;
-} dt_metadata_t2;
-
-typedef enum dt_metadata_t
-{
-  // do change the order. Must match with dt_metadata_def[] in metadata.c.
-  // just add new metadata before DT_METADATA_NUMBER when needed
-  // and this must also be synchronized with the collect.c module (legacy_presets).
-  DT_METADATA_XMP_DC_CREATOR,
-  DT_METADATA_XMP_DC_PUBLISHER,
-  DT_METADATA_XMP_DC_TITLE,
-  DT_METADATA_XMP_DC_DESCRIPTION,
-  DT_METADATA_XMP_DC_RIGHTS,
-  DT_METADATA_XMP_ACDSEE_NOTES,
-  DT_METADATA_XMP_VERSION_NAME,
-  DT_METADATA_XMP_IMAGE_ID,
-  DT_METADATA_XMP_PRESERVED_FILENAME,
-  DT_METADATA_NUMBER
-}
-dt_metadata_t;
+} dt_metadata_t;
 
 // we need a max number of metadata fields to maintain the enums in
 // src/common/collection.h
@@ -85,16 +67,16 @@ GList *dt_metadata_get_list();
 void dt_metadata_sort();
 
 /** add a metadata entry */
-gboolean dt_metadata_add_metadata(dt_metadata_t2 *metadata);
+gboolean dt_metadata_add_metadata(dt_metadata_t *metadata);
 
 /** delete the metadata entry with the given key */
 void dt_metadata_delete_metadata(const uint32_t key);
 
 /** return the metadata by keyid */
-dt_metadata_t2 *dt_metadata_get_metadata_by_keyid(const uint32_t keyid);
+dt_metadata_t *dt_metadata_get_metadata_by_keyid(const uint32_t keyid);
 
 /** return the metadata by tagname */
-dt_metadata_t2 *dt_metadata_get_metadata_by_tagname(const char *tagname);
+dt_metadata_t *dt_metadata_get_metadata_by_tagname(const char *tagname);
 
 /** return the metadata key by display order */
 const char *dt_metadata_get_name_by_display_order(const uint32_t order);

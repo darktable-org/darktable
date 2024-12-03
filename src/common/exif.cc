@@ -586,7 +586,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img,
       dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
       for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
       {
-        dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+        dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
         if(FIND_XMP_TAG(metadata->tagname))
         {
           char *value = strdup(pos->toString().c_str());
@@ -2210,7 +2210,7 @@ void dt_exif_apply_default_metadata(dt_image_t *img)
     dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
     for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
     {
-      dt_metadata_t2 *metadata = (dt_metadata_t2 *)iter->data;
+      dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
 
       // don't import hidden stuff
       if(metadata->is_visible)
@@ -4822,7 +4822,7 @@ static void _set_xmp_dt_metadata(Exiv2::XmpData &xmpData,
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int keyid = sqlite3_column_int(stmt, 0);
-    const dt_metadata_t2 *metadata = dt_metadata_get_metadata_by_keyid(keyid);
+    const dt_metadata_t *metadata = dt_metadata_get_metadata_by_keyid(keyid);
     if(export_flag
        && metadata
        && metadata->type != DT_METADATA_TYPE_INTERNAL)
