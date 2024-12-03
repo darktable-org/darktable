@@ -18428,7 +18428,7 @@ msgstr "Règle la saturation globale"
 
 #: ../src/iop/colorequal.c:204 ../src/iop/colorequal.c:2984
 msgid "color equalizer"
-msgstr "Égaliseur de couleur"
+msgstr "Égaliseur de couleurs"
 
 #: ../src/iop/colorequal.c:209
 msgid "color zones|hsl"
