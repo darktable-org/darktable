@@ -141,6 +141,7 @@ FILE(GLOB SOURCE_FILES
   "gui/guides.c"
   "gui/hist_dialog.c"
   "gui/import_metadata.c"
+  "gui/metadata_tags.c"
   "gui/preferences.c"
   "gui/presets.c"
   "gui/splash.c"

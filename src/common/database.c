@@ -3239,7 +3239,7 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
 
     visible = (dt_conf_get_int("plugins/lighttable/metadata/rights_flag") & 1) ? 0 : 1;
     query = g_strdup_printf("INSERT INTO data.meta_data VALUES(4, 'Xmp.dc.rights', '%s', %d, %d, 0, 1, 4)",
-                            _("rights"), visible);
+                            _("rights"), visible, DT_METADATA_TYPE_USER);
     TRY_EXEC(query, "can't insert meta_data_key record");
     g_free(query);
 
