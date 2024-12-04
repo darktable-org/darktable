@@ -587,20 +587,20 @@ void dt_dump_pfm_file(
 {
   static int written = 0;
 
-  char path[PATH_MAX]= { 0 };
-  snprintf(path, sizeof(path), "%s/%s", darktable.tmp_directory, pipe);
+  char *path = g_build_filename(darktable.tmp_directory, pipe, NULL);
+  char *fullname = NULL;
+
   if(!dt_util_test_writable_dir(path))
   {
     if(g_mkdir_with_parents(path, 0750))
     {
       dt_print(DT_DEBUG_ALWAYS, "%20s can't create directory '%s'", head, path);
-      return;
+      goto finalize;
     }
   }
 
-  char fname[PATH_MAX]= { 0 };
-  snprintf(fname, sizeof (fname), "%s/%04d_%s_%s_%s%s.%s",
-     path,
+  char fname[256]= { 0 };
+  snprintf(fname, sizeof(fname), "%04d_%s_%s_%s%s.%s",
      written,
      modname,
      cpu ? "cpu" : "GPU",
@@ -609,13 +609,15 @@ void dt_dump_pfm_file(
      (bpp==2) ? "ppm" : "pfm");
 
   if((width<1) || (height<1) || !data)
-    return;
+    goto finalize;
 
-  FILE *f = g_fopen(fname, "wb");
+  fullname = g_build_filename(path, fname, NULL);
+
+  FILE *f = g_fopen(fullname, "wb");
   if(f == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "%20s can't write file '%s' in wb mode", head, fname);
-    return;
+    dt_print(DT_DEBUG_ALWAYS, "%20s can't write file '%s' in wb mode", head, fullname);
+    goto finalize;
   }
 
   if(bpp==2)
@@ -627,14 +629,18 @@ void dt_dump_pfm_file(
   {
     for(int col = 0; col < width; col++)
     {
-      const size_t blk = (row * width + col) * bpp;
+      const size_t blk = ((size_t)row * width + col) * bpp;
       fwrite(data + blk, (bpp==16) ? 12 : bpp, 1, f);
     }
   }
 
-  dt_print(DT_DEBUG_ALWAYS, "%-20s %s,  %dx%d, bpp=%d", head, fname, width, height, bpp);
+  dt_print(DT_DEBUG_ALWAYS, "%-20s %s,  %dx%d, bpp=%d", head, fullname, width, height, bpp);
   fclose(f);
   written += 1;
+
+finalize:
+  g_free(fullname);
+  g_free(path);
 }
 
 void dt_dump_pfm(
