@@ -2774,7 +2774,7 @@ restart:
                                                                modules, pieces, pos);
   // get status summary of opencl queue by checking the eventlist
   const gboolean oclerr = (pipe->devid > DT_DEVICE_CPU)
-                          ? (dt_opencl_events_flush(pipe->devid, TRUE) != 0)
+                          ? (dt_opencl_events_flush(pipe->devid, TRUE) != CL_SUCCESS)
                           : FALSE;
 
   // Check if we had opencl errors, those can come in two ways:
