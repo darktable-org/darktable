@@ -1605,7 +1605,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   GList *changed_xmp_files = NULL;
   if(init_gui)
   {
-    if(dt_conf_get_bool("run_crawler_on_start") && !darktable.gimp.mode)
+    if(dt_conf_get_bool("run_crawler_on_start") && !dt_gimpmode())
     {
       darktable_splash_screen_create(NULL, TRUE); // force the splash screen for the crawl even if user-disabled
       // scan for cases where the database and xmp files have different timestamps
@@ -1656,7 +1656,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   char *config_info = calloc(1, DT_PERF_INFOSIZE);
   if(last_configure_version != DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION
-    && !darktable.gimp.mode)
+    && !dt_gimpmode())
   {
     dt_configure_runtime_performance(last_configure_version, config_info);
   }
@@ -1873,22 +1873,26 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #endif
 
     // there might be some info created in dt_configure_runtime_performance() for feedback
-    gboolean not_again = TRUE;
-    if(last_configure_version && config_info[0] && !darktable.gimp.mode)
-      not_again = dt_gui_show_standalone_yes_no_dialog
-        (_("configuration information"),
-         config_info,
-         _("_show this message again"), _("_dismiss"));
+    if(!dt_gimpmode())
+    {
+      gboolean not_again = TRUE;
+      if(last_configure_version && config_info[0])
+        not_again = dt_gui_show_standalone_yes_no_dialog(
+          _("configuration information"),
+            config_info,
+          _("_show this message again"), _("_dismiss"));
 
-    if(not_again || (last_configure_version == 0))
-      dt_conf_set_int("performance_configuration_version_completed",
+      if(not_again || (last_configure_version == 0))
+        dt_conf_set_int("performance_configuration_version_completed",
                       DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);
+    }
   }
   free(config_info);
 
   darktable.backthumbs.running = FALSE;
   darktable.backthumbs.capable =
-      dt_worker_threads() > 4
+      (dt_worker_threads() > 4)
+      && !dt_gimpmode()
       && !(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"));
 
   if(init_gui)
@@ -1898,7 +1902,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     if(changed_xmp_files)
       dt_control_crawler_show_image_list(changed_xmp_files);
     darktable_splash_screen_destroy();
-    if(!darktable.gimp.mode)
+    if(!dt_gimpmode())
      dt_start_backtumbs_crawler();
   }
 
@@ -1936,7 +1940,7 @@ void dt_get_sysresource_level()
   static int oldtunehead = -999;
 
   dt_sys_resources_t *res = &darktable.dtresources;
-  const gboolean tunehead = !darktable.gimp.mode && dt_conf_get_bool("opencl_tune_headroom");
+  const gboolean tunehead = !dt_gimpmode() && dt_conf_get_bool("opencl_tune_headroom");
   int level = 1;
   const char *config = dt_conf_get_string_const("resourcelevel");
   /** These levels must correspond with preferences in xml.in
@@ -1947,7 +1951,7 @@ void dt_get_sysresource_level()
         - add a line of fraction in int fractions[] or ref_resources[] above
         - add a line in darktableconfig.xml.in if available via UI
   */
-  if(config && !darktable.gimp.mode)
+  if(config && !dt_gimpmode())
   {
          if(!strcmp(config, "default"))      level = 1;
     else if(!strcmp(config, "small"))        level = 0;

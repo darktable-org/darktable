@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 
   if(dt_init(argc, argv, TRUE, TRUE, NULL))
   {
-    if(darktable.gimp.mode)
+    if(dt_gimpmode())
       printf("\n<<<gimp\nerror\ngimp>>>\n");
     exit(1);
   }
@@ -142,12 +142,12 @@ int main(int argc, char *argv[])
       darktable.gimp.error = TRUE;
   }
 
-  if(!darktable.gimp.mode || dt_check_gimpmode_ok("file"))
+  if(!dt_gimpmode() || dt_check_gimpmode_ok("file"))
     dt_gui_gtk_run(darktable.gui);
 
   dt_cleanup();
 
-  if(darktable.gimp.mode && darktable.gimp.error)
+  if(dt_gimpmode() && darktable.gimp.error)
     printf("\n<<<gimp\nerror\ngimp>>>\n");
 
 #ifdef _WIN32
@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
   }
 #endif
 
-  const int exitcode = darktable.gimp.mode ? (darktable.gimp.error ? 1 : 0) : 0;
+  const int exitcode = dt_gimpmode() ? (darktable.gimp.error ? 1 : 0) : 0;
   exit(exitcode);
 }
 

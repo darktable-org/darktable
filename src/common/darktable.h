@@ -971,6 +971,11 @@ static inline const gchar *NQ_(const gchar *String)
   return context_end ? context_end + 1 : String;
 }
 
+static inline gboolean dt_gimpmode(void)
+{
+  return darktable.gimp.mode ? TRUE : FALSE;
+}
+
 static inline gboolean dt_check_gimpmode(const char *mode)
 {
   return darktable.gimp.mode ? strcmp(darktable.gimp.mode, mode) == 0 : FALSE;
