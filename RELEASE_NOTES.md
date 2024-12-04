@@ -252,6 +252,9 @@ changes (where available).
   specific tags, we tag the image by darktable|issue|no-samples for
   better support.
 
+- Added support for HEIF files with AVC (H.264) compression and .avci
+  file extension.
+
 ## Bug Fixes
 
 - Fixed a performance regression for redrawing mipmaps.
