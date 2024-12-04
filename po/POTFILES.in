@@ -197,6 +197,7 @@ src/gui/gtkentry.c
 src/gui/guides.c
 src/gui/hist_dialog.c
 src/gui/import_metadata.c
+src/gui/metadata_tags.c
 src/gui/preferences.c
 src/gui/presets.c
 src/gui/splash.c
