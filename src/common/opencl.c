@@ -2082,7 +2082,7 @@ static FILE *_fopen_stat(const char *filename, struct stat *st)
 }
 
 static void _opencl_md5sum(const char **files,
-                    char **md5sums)
+                           char **md5sums)
 {
   char kerneldir[PATH_MAX] = { 0 };
   char filename[PATH_MAX] = { 0 };
@@ -2196,15 +2196,15 @@ static gboolean _opencl_load_program(const int dev,
 
   cl_device_id devid = cl->dev[dev].devid;
   (cl->dlocl->symbols->dt_clGetDeviceInfo)
-  (devid, CL_DRIVER_VERSION, end - start, start, &len);
+    (devid, CL_DRIVER_VERSION, end - start, start, &len);
   start += len;
 
   cl_platform_id platform;
   (cl->dlocl->symbols->dt_clGetDeviceInfo)
-  (devid, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &platform, NULL);
+    (devid, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &platform, NULL);
 
   (cl->dlocl->symbols->dt_clGetPlatformInfo)
-  (platform, CL_PLATFORM_VERSION, end - start, start, &len);
+    (platform, CL_PLATFORM_VERSION, end - start, start, &len);
   start += len;
 
   len = g_strlcpy(start, cl->dev[dev].options, end - start);
@@ -2219,7 +2219,7 @@ static gboolean _opencl_load_program(const int dev,
   }
 
   char *source_md5 =
-    g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)file, start - file);
+      g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)file, start - file);
   g_strlcpy(md5sum, source_md5, 33);
   g_free(source_md5);
 
@@ -2266,7 +2266,7 @@ static gboolean _opencl_load_program(const int dev,
         {
           cl->dev[dev].program[prog] = (cl->dlocl->symbols->dt_clCreateProgramWithBinary)(
               cl->dev[dev].context, 1, &(cl->dev[dev].devid), &cached_filesize,
-              (const unsigned char **)&cached_content, NULL, &err);
+                (const unsigned char **)&cached_content, NULL, &err);
           if(err != CL_SUCCESS)
           {
             dt_print(DT_DEBUG_OPENCL,
@@ -2353,7 +2353,7 @@ static gboolean _opencl_build_program(const int dev,
   dt_opencl_t *cl = darktable.opencl;
   cl_program program = cl->dev[dev].program[prog];
   cl_int err = (cl->dlocl->symbols->dt_clBuildProgram)
-    (program, 1, &(cl->dev[dev].devid), cl->dev[dev].options, 0, 0);
+    (program, 1, &(cl->dev[dev].devid), cl->dev[dev].options, NULL, NULL);
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
@@ -2377,7 +2377,7 @@ static gboolean _opencl_build_program(const int dev,
                                                  &ret_val_size);
   if(ret_val_size != SIZE_MAX)
   {
-    build_log = (char *)malloc(sizeof(char) * (ret_val_size + 1));
+    build_log = malloc(sizeof(char) * (ret_val_size + 1));
     if(build_log)
     {
       (cl->dlocl->symbols->dt_clGetProgramBuildInfo)(program, cl->dev[dev].devid,
@@ -2490,11 +2490,12 @@ static gboolean _opencl_build_program(const int dev,
     err = CL_SUCCESS; // all writings done without an error
 
     ret:
-      for(int i = 0; i < numdev; i++)
-        free(binaries[i]);
-      free(binaries);
-      free(binary_sizes);
-      free(devices);
+
+    for(int i = 0; i < numdev; i++)
+      free(binaries[i]);
+    free(binaries);
+    free(binary_sizes);
+    free(devices);
     if(err != CL_SUCCESS)
       dt_print(DT_DEBUG_OPENCL,
                "[dt_opencl_build_program] problems while writing OpenCL kernel files");
@@ -2625,13 +2626,13 @@ int dt_opencl_get_kernel_work_group_size(const int dev,
                                                            kernelworkgroupsize, NULL);
 }
 
-int dt_opencl_set_kernel_arg(const int dev,
-                             const int kernel,
-                             const int num,
-                             const size_t size,
-                             const void *arg)
+cl_int _opencl_set_kernel_arg(const int dev,
+                              const int kernel,
+                              const int num,
+                              const size_t size,
+                              const void *arg)
 {
-  if(!_check_kernel(dev, kernel)) return -1;
+  if(!_check_kernel(dev, kernel)) return CL_INVALID_KERNEL;
 
   dt_opencl_t *cl = darktable.opencl;
   const cl_int err = (cl->dlocl->symbols->dt_clSetKernelArg)
@@ -2639,7 +2640,7 @@ int dt_opencl_set_kernel_arg(const int dev,
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[dt_opencl_set_kernel_arg] error kernel `%s' (%i) on device %d: %s",
+             "[opencl_set_kernel_arg] error kernel `%s' (%i) on device %d: %s",
               darktable.opencl->name_saved[kernel], kernel, dev, cl_errstr(err));
   return err;
 }
@@ -2659,7 +2660,7 @@ static int _opencl_set_kernel_args(const int dev,
     if(marker != test.marker)
     {
       dt_print(DT_DEBUG_OPENCL,
-               "opencl parameters passed to dt_opencl_set_kernel_args or "
+               "opencl parameters passed to opencl_set_kernel_args or "
                "dt_opencl_enqueue_kernel_2d_with_args must be wrapped with"
                " CLARG or CLLOCAL\n");
       err = CL_INVALID_KERNEL_ARGS;
@@ -2671,8 +2672,8 @@ static int _opencl_set_kernel_args(const int dev,
 
     void *ptr = va_arg(ap, void *);
 
-    err = dt_opencl_set_kernel_arg(dev, kernel, num++, size, ptr);
-  } while(!err);
+    err = _opencl_set_kernel_arg(dev, kernel, num++, size, ptr);
+  } while(err == CL_SUCCESS);
 
   return err;
 }
@@ -2709,7 +2710,7 @@ int dt_opencl_enqueue_kernel_ndim_with_local(const int dev,
   char buf[256] = { 0 };
   if(darktable.unmuted & DT_DEBUG_OPENCL)
     (cl->dlocl->symbols->dt_clGetKernelInfo)(cl->dev[dev].kernel[kernel],
-                                             CL_KERNEL_FUNCTION_NAME, 256, buf, NULL);
+                                             CL_KERNEL_FUNCTION_NAME, sizeof(buf), buf, NULL);
   cl_event *eventp = _opencl_events_get_slot(dev, buf);
   cl_int err = (cl->dlocl->symbols->dt_clEnqueueNDRangeKernel)(cl->dev[dev].cmd_queue,
                                                                cl->dev[dev].kernel[kernel],
@@ -3170,7 +3171,7 @@ void dt_opencl_release_mem_object(cl_mem mem)
   if(mem == NULL)
     return;
 
-  dt_opencl_memory_statistics(-1, mem, OPENCL_MEMORY_SUB);
+  dt_opencl_memory_statistics(DT_DEVICE_CPU, mem, OPENCL_MEMORY_SUB);
 
   (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(mem);
 }
@@ -3375,7 +3376,7 @@ size_t dt_opencl_get_mem_object_size(const cl_mem mem)
   return (err == CL_SUCCESS) ? size : 0;
 }
 
-int dt_opencl_get_mem_context_id(const cl_mem mem)
+static int _opencl_get_mem_context_id(const cl_mem mem)
 {
   cl_context context;
   if(mem == NULL) return -1;
@@ -3485,7 +3486,7 @@ void dt_opencl_memory_statistics(int devid,
     return;
 
   if(devid < 0)
-    devid = dt_opencl_get_mem_context_id(mem);
+    devid = _opencl_get_mem_context_id(mem);
 
   if(devid < 0)
     return;
@@ -3804,7 +3805,7 @@ static cl_event *_opencl_events_get_slot(const int devid,
   // handles. In that case first flush existing handles
   if((*numevents - *eventsconsolidated + 1 > cl->dev[devid].event_handles)
      || (*numevents == *maxevents))
-    (void)dt_opencl_events_flush(devid, FALSE);
+    dt_opencl_events_flush(devid, FALSE);
 
   // if no more space left in eventlist: grow buffer
   if(*numevents == *maxevents)
@@ -4027,8 +4028,8 @@ cl_int dt_opencl_events_flush(const int devid,
                               const gboolean reset)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited || devid < 0) return FALSE;
-  if(!cl->dev[devid].use_events) return FALSE;
+  if(!cl->inited || devid < 0) return DT_OPENCL_NODEVICE;
+  if(!cl->dev[devid].use_events) return DT_OPENCL_NODEVICE;
 
   cl_event **eventlist = &(cl->dev[devid].eventlist);
   dt_opencl_eventtag_t **eventtags = &(cl->dev[devid].eventtags);
@@ -4113,7 +4114,7 @@ cl_int dt_opencl_events_flush(const int devid,
     dt_opencl_events_reset(devid);
   }
 
-  return result == CL_COMPLETE ? 0 : result;
+  return (result == CL_COMPLETE) ? CL_SUCCESS : result;
 }
 
 
