@@ -1776,6 +1776,7 @@ void reload_defaults(dt_iop_module_t *self)
 #ifdef HAVE_LIBHEIF
     else if(!strcmp(ext, "heif")
          || !strcmp(ext, "heic")
+         || !strcmp(ext, "avci")
          || !strcmp(ext, "hif")
   #ifndef HAVE_LIBAVIF
          || !strcmp(ext, "avif")
