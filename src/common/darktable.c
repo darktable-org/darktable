@@ -1262,7 +1262,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           argv[k] = NULL;
 
           if(dt_check_gimpmode("version"))
+          {
             darktable.gimp.error = FALSE;
+          }
           else if(dt_check_gimpmode("file") && (argc > k + 1))
           {
             darktable.gimp.path = argv[++k];
@@ -1271,19 +1273,20 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
             if(g_file_test(darktable.gimp.path, G_FILE_TEST_IS_REGULAR))
               darktable.gimp.error = FALSE;
-
           }
           else if(dt_check_gimpmode("thumb") && (argc > k + 2))
           {
             darktable.gimp.path = argv[++k];
             argv[k-1] = NULL;
             argv[k] = NULL;
+
             if(g_file_test(darktable.gimp.path, G_FILE_TEST_IS_REGULAR))
             {
               darktable.gimp.size = atol(argv[k + 1]);
               k++;
               argv[k-1] = NULL;
               argv[k] = NULL;
+
               if(darktable.gimp.size > 0)
                 darktable.gimp.error = FALSE;
             }
@@ -1877,14 +1880,18 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     {
       gboolean not_again = TRUE;
       if(last_configure_version && config_info[0])
+      {
         not_again = dt_gui_show_standalone_yes_no_dialog(
           _("configuration information"),
             config_info,
           _("_show this message again"), _("_dismiss"));
+      }
 
       if(not_again || (last_configure_version == 0))
+      {
         dt_conf_set_int("performance_configuration_version_completed",
                       DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);
+      }
     }
   }
   free(config_info);
@@ -1901,7 +1908,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // files are newer than the db entry
     if(changed_xmp_files)
       dt_control_crawler_show_image_list(changed_xmp_files);
+
     darktable_splash_screen_destroy();
+
     if(!dt_gimpmode())
      dt_start_backtumbs_crawler();
   }
