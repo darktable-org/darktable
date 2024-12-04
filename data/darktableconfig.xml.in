@@ -378,7 +378,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>use all GPU memory</shortdescription>
-    <longdescription>if enabled darktable will use all graphics device memory except a safety margin (headroom, default is 600MB)</longdescription>
+    <longdescription>if enabled darktable will use all graphics device memory except a safety margin (headroom, default is 600MB)\nnot recommended and use with great care as it can crash your system easily!</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true">
     <name>clplatform_intelropenclhdgraphics</name>
