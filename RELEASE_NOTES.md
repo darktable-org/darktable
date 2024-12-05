@@ -204,8 +204,8 @@ changes (where available).
   color mapping section has non-neutral settings which will affect
   color rendition.
 
-- Added new substitution variables $(IMAGE.TAGS.HIERARCHY) to insert
-  tags with full hierarchy and $(IMAGE.ID.NEXT) to insert the image ID
+- Added new substitution variables `$(IMAGE.TAGS.HIERARCHY)` to insert
+  tags with full hierarchy and `$(IMAGE.ID.NEXT)` to insert the image ID
   to be assigned to the image being imported, allowing the image ID to
   be part of the filename generated during a copy&import operation.
 
@@ -232,9 +232,9 @@ changes (where available).
 - Added more substitution variables for using EXIF data fields,
   enabled autocompletion of variables in the watermark module.
 
-  The new variables are $(EXIF.FLASH), $(EXIF.METERING),
-  $(EXIF.EXPOSURE.PROGRAM), $(EXIF.WHITEBALANCE) and
-  $(GPS.LOCATION.ICON).
+  The new variables are `$(EXIF.FLASH)`, `$(EXIF.METERING)`,
+  `$(EXIF.EXPOSURE.PROGRAM)`, `$(EXIF.WHITEBALANCE)` and
+  `$(GPS.LOCATION.ICON)`.
 
 - Increase maximum focal length for filtering auto-applied presets to
   2000mm.
