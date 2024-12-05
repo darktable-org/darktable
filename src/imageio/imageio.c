@@ -234,6 +234,8 @@ static const dt_magic_bytes_t _magic_signatures[] = {
   { DT_FILETYPE_HEIC, TRUE, 4, 8, dt_imageio_open_heif,
     { 'f', 't', 'y', 'p', 'h', 'e', 'i', 'x' } }, // 10-bit
   { DT_FILETYPE_HEIC, FALSE, 4, 8, dt_imageio_open_heif,
+    { 'f', 't', 'y', 'p', 'j', '2', 'k', 'i' } }, // JPEG 2000 encapsulated in HEIF
+  { DT_FILETYPE_HEIC, FALSE, 4, 8, dt_imageio_open_heif,
     { 'f', 't', 'y', 'p', 'a', 'v', 'c', 'i' } }, // AVC (H.264) encoded HEIF
   // AVIF image
   { DT_FILETYPE_AVIF, TRUE, 4, 8, dt_imageio_open_avif,
