@@ -379,7 +379,7 @@ int legacy_params(dt_iop_module_t *self,
   return 1;
 }
 
-static int rt_get_index_from_formid(dt_iop_retouch_params_t *p, const dt_mask_id_t formid)
+static int rt_get_index_from_formid(const dt_iop_retouch_params_t *p, const dt_mask_id_t formid)
 {
   int index = -1;
   if(dt_is_valid_maskid(formid))
@@ -401,7 +401,7 @@ static dt_mask_id_t rt_get_selected_shape_id()
 }
 
 static dt_masks_point_group_t *rt_get_mask_point_group(dt_iop_module_t *self,
-                                                       dt_mask_id_t formid)
+                                                       const dt_mask_id_t formid)
 {
   dt_masks_point_group_t *form_point_group = NULL;
 
@@ -428,12 +428,8 @@ static dt_masks_point_group_t *rt_get_mask_point_group(dt_iop_module_t *self,
 static float rt_get_shape_opacity(dt_iop_module_t *self,
                                   const dt_mask_id_t formid)
 {
-  float opacity = 0.f;
-
   dt_masks_point_group_t *grpt = rt_get_mask_point_group(self, formid);
-  if(grpt) opacity = grpt->opacity;
-
-  return opacity;
+  return grpt ? grpt->opacity : 0.0f;
 }
 
 static void rt_display_selected_fill_color(dt_iop_retouch_gui_data_t *g,
@@ -855,14 +851,14 @@ static void rt_masks_point_denormalize(dt_dev_pixelpipe_iop_t *piece,
   }
 }
 
-static int rt_masks_point_calc_delta(dt_iop_module_t *self,
-                                     dt_dev_pixelpipe_iop_t *piece,
-                                     const dt_iop_roi_t *roi,
-                                     const float *target,
-                                     const float *source,
-                                     float *dx,
-                                     float *dy,
-                                     const int distort_mode)
+static gboolean rt_masks_point_calc_delta(dt_iop_module_t *self,
+                                          dt_dev_pixelpipe_iop_t *piece,
+                                          const dt_iop_roi_t *roi,
+                                          const float *target,
+                                          const float *source,
+                                          float *dx,
+                                          float *dy,
+                                          const int distort_mode)
 {
   // if distort_mode==1 we don't scale at the right place, hence false
   // positions if there's distortion before this module. we keep it
@@ -882,7 +878,7 @@ static int rt_masks_point_calc_delta(dt_iop_module_t *self,
     points[3] = source[1] * piece->pipe->iheight;
   }
 
-  const int res = dt_dev_distort_transform_plus(self->dev, piece->pipe,
+  const gboolean res = dt_dev_distort_transform_plus(self->dev, piece->pipe,
                                                 self->iop_order,
                                                 DT_DEV_TRANSFORM_DIR_BACK_INCL,
                                                 points, 2);
@@ -903,15 +899,15 @@ static int rt_masks_point_calc_delta(dt_iop_module_t *self,
 }
 
 /* returns (dx dy) to get from the source to the destination */
-static int rt_masks_get_delta_to_destination(dt_iop_module_t *self,
-                                             dt_dev_pixelpipe_iop_t *piece,
-                                             const dt_iop_roi_t *roi,
-                                             dt_masks_form_t *form,
-                                             float *dx,
-                                             float *dy,
-                                             const int distort_mode)
+static gboolean rt_masks_get_delta_to_destination(dt_iop_module_t *self,
+                                                  dt_dev_pixelpipe_iop_t *piece,
+                                                  const dt_iop_roi_t *roi,
+                                                  dt_masks_form_t *form,
+                                                  float *dx,
+                                                  float *dy,
+                                                  const int distort_mode)
 {
-  int res = 0;
+  gboolean res = FALSE;
 
   if(form->type & DT_MASKS_PATH)
   {
@@ -1379,10 +1375,10 @@ static gboolean rt_wdbar_motion_notify(GtkWidget *widget,
   return TRUE;
 }
 
-static int rt_scale_has_shapes(dt_iop_retouch_params_t *p,
-                               const int scale)
+static gboolean rt_scale_has_shapes(dt_iop_retouch_params_t *p,
+                                    const int scale)
 {
-  int has_shapes = 0;
+  gboolean has_shapes = FALSE;
 
   for(int i = 0; i < RETOUCH_NO_FORMS && has_shapes == 0; i++)
     has_shapes = (dt_is_valid_maskid(p->rt_forms[i].formid)
@@ -3167,10 +3163,9 @@ static void rt_process_stats(dt_iop_module_t *self,
                              float *const img_src,
                              const int width,
                              const int height,
-                             const int ch,
                              float levels[3])
 {
-  const int size = width * height * ch;
+  const size_t size = (size_t)width * height * 4;
   float l_max = -FLT_MAX;
   float l_min = FLT_MAX;
   float l_sum = 0.f;
@@ -3179,7 +3174,7 @@ static void rt_process_stats(dt_iop_module_t *self,
     dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
   DT_OMP_FOR(reduction(+ : count, l_sum) reduction(max : l_max) reduction(min : l_min))
-  for(int i = 0; i < size; i += ch)
+  for(int i = 0; i < size; i += 4)
   {
     dt_aligned_pixel_t Lab = { 0 };
 
@@ -3212,10 +3207,9 @@ static void rt_adjust_levels(dt_iop_module_t *self,
                              float *img_src,
                              const int width,
                              const int height,
-                             const int ch,
                              const float levels[3])
 {
-  const int size = width * height * ch;
+  const size_t size = (size_t)width * height * 4;
   const dt_iop_order_iccprofile_info_t *const work_profile =
     dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
@@ -3232,7 +3226,7 @@ static void rt_adjust_levels(dt_iop_module_t *self,
   const float in_inv_gamma = powf(10, tmp);
 
   DT_OMP_FOR()
-  for(int i = 0; i < size; i += ch)
+  for(int i = 0; i < size; i += 4)
   {
     if(work_profile)
     {
@@ -3861,7 +3855,7 @@ void process(dt_iop_module_t *self,
   retouch_user_data_t usr_data = { 0 };
   dwt_params_t *dwt_p = NULL;
 
-  const int gui_active = (self->dev) ? (self == self->dev->gui_module) : 0;
+  const gboolean gui_active = self->dev ? self == self->dev->gui_module : FALSE;
   const gboolean display_wavelet_scale =
     (g && gui_active) ? g->display_wavelet_scale : FALSE;
 
@@ -3902,6 +3896,7 @@ void process(dt_iop_module_t *self,
      && (g->mask_display || display_wavelet_scale) && self->dev->gui_attached
      && (self == self->dev->gui_module) && (piece->pipe == self->dev->full.pipe))
   {
+    // clear alpha
     for(size_t j = 0; j < (size_t)roi_rt->width * roi_rt->height * 4; j += 4)
       in_retouch[j + 3] = 0.f;
 
@@ -3945,7 +3940,7 @@ void process(dt_iop_module_t *self,
 
       levels[0] = levels[1] = levels[2] = 0;
       rt_process_stats(self, piece, in_retouch,
-                       roi_rt->width, roi_rt->height, 4, levels);
+                       roi_rt->width, roi_rt->height, levels);
       rt_clamp_minmax(levels, levels);
 
       for(int i = 0; i < 3; i++) g->preview_levels[i] = levels[i];
@@ -3961,7 +3956,7 @@ void process(dt_iop_module_t *self,
      && dwt_p->return_layer < dwt_p->scales + 1)
   {
     rt_adjust_levels(self, piece, in_retouch,
-                     roi_rt->width, roi_rt->height, 4, levels);
+                     roi_rt->width, roi_rt->height, levels);
   }
 
   // copy alpha channel if needed
@@ -4002,9 +3997,7 @@ cl_int rt_process_stats_cl(dt_iop_module_t *self,
 {
   cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
 
-  const int ch = 4;
-
-  float *src_buffer = dt_alloc_align_float((size_t)ch * width * height);
+  float *src_buffer = dt_alloc_align_float((size_t)4 * width * height);
   if(src_buffer == NULL)
   {
     dt_print(DT_DEBUG_ALWAYS, "[retouch] error allocating memory for healing (OpenCL)");
@@ -4013,16 +4006,16 @@ cl_int rt_process_stats_cl(dt_iop_module_t *self,
 
   err = dt_opencl_read_buffer_from_device(devid,
                                           (void *)src_buffer, dev_img, 0,
-                                          (size_t)width * height * ch * sizeof(float),
+                                          (size_t)width * height * 4 * sizeof(float),
                                           CL_TRUE);
   if(err != CL_SUCCESS)
     goto cleanup;
 
   // just call the CPU version for now
-  rt_process_stats(self, piece, src_buffer, width, height, ch, levels);
+  rt_process_stats(self, piece, src_buffer, width, height, levels);
 
   err = dt_opencl_write_buffer_to_device(devid, src_buffer, dev_img, 0,
-                                         sizeof(float) * ch * width * height,
+                                         sizeof(float) * 4 * width * height,
                                          CL_TRUE);
 cleanup:
   dt_free_align(src_buffer);
@@ -4040,9 +4033,7 @@ cl_int rt_adjust_levels_cl(dt_iop_module_t *self,
 {
   cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
 
-  const int ch = 4;
-
-  float *src_buffer = dt_alloc_align_float((size_t)ch * width * height);
+  float *src_buffer = dt_alloc_align_float((size_t)4 * width * height);
   if(src_buffer == NULL)
   {
     dt_print(DT_DEBUG_ALWAYS,
@@ -4051,16 +4042,16 @@ cl_int rt_adjust_levels_cl(dt_iop_module_t *self,
   }
 
   err = dt_opencl_read_buffer_from_device(devid, (void *)src_buffer, dev_img, 0,
-                                          (size_t)width * height * ch * sizeof(float),
+                                          (size_t)width * height * 4 * sizeof(float),
                                           CL_TRUE);
   if(err != CL_SUCCESS)
     goto cleanup;
 
   // just call the CPU version for now
-  rt_adjust_levels(self, piece, src_buffer, width, height, ch, levels);
+  rt_adjust_levels(self, piece, src_buffer, width, height, levels);
 
   err = dt_opencl_write_buffer_to_device(devid, src_buffer, dev_img, 0,
-                                         sizeof(float) * ch * width * height,
+                                         sizeof(float) * 4 * width * height,
                                          CL_TRUE);
 
 cleanup:
@@ -4147,7 +4138,8 @@ static cl_int rt_copy_image_masked_cl(const int devid,
                                       dt_iop_roi_t *const roi_dest,
                                       cl_mem dev_mask_scaled,
                                       dt_iop_roi_t *const roi_mask_scaled,
-                                      const float opacity, const int kernel)
+                                      const float opacity,
+                                      const int kernel)
 {
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
@@ -4157,9 +4149,7 @@ static cl_int rt_copy_image_masked_cl(const int devid,
   if(dev_roi_dest == NULL || dev_roi_mask_scaled == NULL)
     goto cleanup;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, kernel,
-                                         roi_mask_scaled->width,
-                                         roi_mask_scaled->height,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, roi_mask_scaled->width, roi_mask_scaled->height,
                                          CLARG(dev_src), CLARG(dev_dest),
                                          CLARG(dev_roi_dest),
                                          CLARG(dev_mask_scaled),
@@ -4258,9 +4248,7 @@ static cl_int _retouch_fill_cl(const int devid,
   if(dev_roi_layer == NULL || dev_roi_mask_scaled == NULL)
     goto cleanup;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, kernel,
-                                         roi_mask_scaled->width,
-                                         roi_mask_scaled->height,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, roi_mask_scaled->width, roi_mask_scaled->height,
                                          CLARG(dev_layer), CLARG(dev_roi_layer),
                                          CLARG(dev_mask_scaled),
                                          CLARG(dev_roi_mask_scaled),
@@ -4299,8 +4287,7 @@ static cl_int _retouch_blur_cl(const int devid,
   if(blur_type == DT_IOP_RETOUCH_BLUR_BILATERAL)
   {
     const int kernel = gd->kernel_retouch_image_rgb2lab;
-    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, roi_layer->width,
-                                           roi_layer->height,
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, roi_layer->width, roi_layer->height,
                                            CLARG(dev_layer), CLARG((roi_layer->width)),
                                            CLARG((roi_layer->height)));
     if(err != CL_SUCCESS) goto cleanup;
@@ -4356,8 +4343,7 @@ static cl_int _retouch_blur_cl(const int devid,
   if(blur_type == DT_IOP_RETOUCH_BLUR_BILATERAL)
   {
     const int kernel = gd->kernel_retouch_image_lab2rgb;
-    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, roi_layer->width,
-                                           roi_layer->height,
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, roi_layer->width, roi_layer->height,
                                            CLARG(dev_layer),
                                            CLARG((roi_layer->width)),
                                            CLARG((roi_layer->height)));
@@ -4725,11 +4711,10 @@ int process_cl(dt_iop_module_t *self,
      && (piece->pipe == self->dev->full.pipe))
   {
     const int kernel = gd->kernel_retouch_clear_alpha;
-    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel,
-                                           roi_rt->width, roi_rt->height,
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, roi_rt->width, roi_rt->height,
                                            CLARG(in_retouch),
-                                           CLARG((roi_rt->width)),
-                                           CLARG((roi_rt->height)));
+                                           CLARG(roi_rt->width),
+                                           CLARG(roi_rt->height));
     if(err != CL_SUCCESS) goto cleanup;
 
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
