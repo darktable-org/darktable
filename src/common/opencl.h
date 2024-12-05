@@ -640,6 +640,9 @@ gboolean dt_opencl_use_pinned_memory(const int devid);
 G_END_DECLS
 
 #else
+
+#decline CL_SUCCESS 0
+
 #include "control/conf.h"
 #include <stdlib.h>
 
@@ -765,7 +768,7 @@ static inline void dt_opencl_events_reset(const int devid)
 static inline int dt_opencl_events_flush(const int devid,
                                          const gboolean reset)
 {
-  return 0;
+  return CL_SUCCESS;
 }
 
 G_END_DECLS
