@@ -1666,7 +1666,7 @@ gboolean dt_opencl_finish(const int devid)
   // summary statistics
   cl_int success = dt_opencl_events_flush(devid, FALSE);
 
-  return (err == CL_SUCCESS && success == CL_COMPLETE);
+  return (err == CL_SUCCESS && success == CL_SUCCESS);
 }
 
 gboolean dt_opencl_finish_sync_pipe(const int devid,
@@ -4028,8 +4028,8 @@ cl_int dt_opencl_events_flush(const int devid,
                               const gboolean reset)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited || devid < 0) return DT_OPENCL_NODEVICE;
-  if(!cl->dev[devid].use_events) return DT_OPENCL_NODEVICE;
+  if(!cl->inited || devid < 0) return CL_SUCCESS;
+  if(!cl->dev[devid].use_events) return CL_SUCCESS;
 
   cl_event **eventlist = &(cl->dev[devid].eventlist);
   dt_opencl_eventtag_t **eventtags = &(cl->dev[devid].eventtags);
@@ -4041,7 +4041,7 @@ cl_int dt_opencl_events_flush(const int devid,
   cl_int *summary = &(cl->dev[devid].summary);
 
   if(*eventlist == NULL || *numevents == 0)
-    return CL_COMPLETE; // nothing to do, no news is good news
+    return CL_SUCCESS; // nothing to do, no news is good news
 
   // Wait for command queue to terminate (side effect: might adjust *numevents)
   _opencl_events_wait_for(devid);
