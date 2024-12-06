@@ -299,7 +299,9 @@ static int has_txt_member(lua_State *L)
 static int metadata_member(lua_State *L)
 {
   const char *member_name = luaL_checkstring(L, 2);
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   const char *key= dt_metadata_get_key_by_subkey(member_name);
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   if(lua_gettop(L) != 3)
   {
     const dt_image_t *my_image = checkreadimage(L, 1);

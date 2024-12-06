@@ -69,26 +69,11 @@ void dt_metadata_sort();
 /** add a metadata entry */
 gboolean dt_metadata_add_metadata(dt_metadata_t *metadata);
 
-/** delete the metadata entry with the given key */
-void dt_metadata_delete_metadata(const uint32_t key);
-
 /** return the metadata by keyid */
 dt_metadata_t *dt_metadata_get_metadata_by_keyid(const uint32_t keyid);
 
 /** return the metadata by tagname */
 dt_metadata_t *dt_metadata_get_metadata_by_tagname(const char *tagname);
-
-/** return the metadata key by display order */
-const char *dt_metadata_get_name_by_display_order(const uint32_t order);
-
-/** return the metadata keyid by display order */
-uint32_t dt_metadata_get_keyid_by_display_order(const uint32_t order);
-
-/** return the metadata type by display order */
-uint32_t dt_metadata_get_type_by_display_order(const uint32_t order);
-
-/** return the metadata name of the metadata keyid */
-const char *dt_metadata_get_name(const uint32_t keyid);
 
 /** return the keyid of the metadata key */
 uint32_t dt_metadata_get_keyid(const char* key);
@@ -98,9 +83,6 @@ const char *dt_metadata_get_key(const uint32_t keyid);
 
 /** return the key of the metadata subkey */
 const char *dt_metadata_get_key_by_subkey(const char *subkey);
-
-/** return the type of the metadata keyid */
-uint32_t dt_metadata_get_type(const uint32_t keyid);
 
 /** return the last part of the tagname */
 const char *dt_metadata_get_tag_subkey(const char *tagname);

@@ -1343,25 +1343,26 @@ static void _metadata_changed(gpointer instance, int type, dt_lib_module_t *self
 
   // check for deleted metadata
   order = 0;
-  for(GList *md_iter = d->metadata; md_iter; md_iter = md_iter->next)
+  GList *md_iter = d->metadata;
+  while(md_iter)
   {
+    GList *next = md_iter->next;
     dt_lib_metadata_info_t *m = md_iter->data;
     m->order = order++;
 
-    if(m->key == -1)
-      continue;
-
-    const dt_metadata_t *metadata = dt_metadata_get_metadata_by_keyid(m->key);
-    if(!metadata)
+    if(m->key != -1)
     {
-      GList *tmp_iter = md_iter->prev;
-      gtk_grid_remove_row(GTK_GRID(d->grid), m->order);
-      d->metadata = g_list_remove_link(d->metadata, md_iter);
-      _free_metadata_queue(m);
-      md_iter = tmp_iter;
-      order--;
-      needs_update = TRUE;
+      const dt_metadata_t *metadata = dt_metadata_get_metadata_by_keyid(m->key);
+      if(!metadata)
+      {
+        gtk_grid_remove_row(GTK_GRID(d->grid), m->order);
+        d->metadata = g_list_remove_link(d->metadata, md_iter);
+        _free_metadata_queue(m);
+        order--;
+        needs_update = TRUE;
+      }
     }
+    md_iter = next;
   }
 
   dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);

@@ -94,45 +94,6 @@ gboolean dt_metadata_add_metadata(dt_metadata_t *metadata)
   return success;
 }
 
-void dt_metadata_delete_metadata(const uint32_t key)
-{
-  for(GList *iter = _metadata_list; iter; iter = iter->next)
-  {
-    dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
-    if(metadata->key == key)
-    {
-      // first remove the assignments
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "DELETE FROM main.meta_data WHERE key=?1",
-                                  -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, key);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
-
-      // now the metadata entry
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "DELETE FROM data.meta_data WHERE key=?1",
-                                  -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, key);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
-
-      // unset the import flag
-      const char *metadata_name = dt_metadata_get_tag_subkey(metadata->tagname);
-      char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", metadata_name);
-      dt_conf_set_int(setting, 0);
-      g_free(setting);
-
-      _metadata_list = g_list_remove_link(_metadata_list, iter);
-      g_free(metadata->tagname);
-      g_free(metadata->name);
-      free(metadata);
-      break;
-    }
-  }
-}
-
 dt_metadata_t *dt_metadata_get_metadata_by_keyid(const uint32_t keyid)
 {
   for(GList *iter = _metadata_list; iter; iter = iter->next)
@@ -153,81 +114,6 @@ dt_metadata_t *dt_metadata_get_metadata_by_tagname(const char *tagname)
       return metadata;
   }
   return NULL;
-}
-
-const char *dt_metadata_get_name_by_display_order(const uint32_t order)
-{
-  const char *result = NULL;
-
-  if(order < g_list_length(_metadata_list))
-  {
-    for(GList *iter = _metadata_list; iter; iter = iter->next)
-    {
-      dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
-      if(order == metadata->display_order)
-      {
-        result = metadata->name;
-        break;
-      }
-    }
-  }
-  return result;
-}
-
-uint32_t dt_metadata_get_keyid_by_display_order(const uint32_t order)
-{
-  uint32_t result = -1;
-  
-  if(order < g_list_length(_metadata_list))
-  {
-    uint32_t i = 0;
-    for(GList *iter = _metadata_list; iter; iter = iter->next)
-    {
-      dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
-      if(order == metadata->display_order)
-      {
-        result = i;
-        break;
-      }
-      i++;
-    }
-  }
-  return result;
-}
-
-uint32_t dt_metadata_get_type_by_display_order(const uint32_t order)
-{
-  uint32_t result = 0;
-
-  if(order < g_list_length(_metadata_list))
-  {
-    for(GList *iter = _metadata_list; iter; iter = iter->next)
-    {
-      dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
-      if(order == metadata->display_order)
-      {
-        result = metadata->type;
-        break;
-      }
-    }
-  }
-  return result;
-}
-
-const char *dt_metadata_get_name(const uint32_t keyid)
-{
-  const char *result = NULL;
-
-  for(GList *iter = _metadata_list; iter; iter = iter->next)
-  {
-    dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
-    if(metadata->key == keyid)
-    {
-      result = metadata->name;
-      break;
-    }
-  }
-  return result;
 }
 
 uint32_t dt_metadata_get_keyid(const char* key)
@@ -283,22 +169,6 @@ const char *dt_metadata_get_key_by_subkey(const char *subkey)
   return result;
 }
 
-uint32_t dt_metadata_get_type(const uint32_t keyid)
-{
-  uint32_t result = 0;
-
-  for(GList *iter = _metadata_list; iter; iter = iter->next)
-  {
-    dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
-    if(metadata->key == keyid)
-    {
-      result = metadata->type;
-      break;
-    }
-  }
-  return result;
-}
-
 const char *dt_metadata_get_tag_subkey(const char *tagname)
 {
   const char *t = g_strrstr(tagname, ".");
@@ -325,7 +195,6 @@ void dt_metadata_init()
                           " ORDER BY display_order",
                           -1, &stmt, NULL);
 
-  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   g_list_foreach(_metadata_list, (GFunc)_free_metadata_entry, NULL);
   _metadata_list = NULL;
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -352,7 +221,6 @@ void dt_metadata_init()
     _set_default_import_flag(metadata);
   }
   _metadata_list = g_list_reverse(_metadata_list);
-  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
   sqlite3_finalize(stmt);
 }
@@ -556,7 +424,9 @@ GList *dt_metadata_get(const dt_imgid_t imgid,
   sqlite3_stmt *stmt;
   uint32_t local_count = 0;
 
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   const int keyid = dt_metadata_get_keyid(key);
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   // key not found in db. Maybe it's one of our "special" keys (rating, tags and colorlabels)?
   if(keyid == -1)
   {
@@ -814,7 +684,9 @@ void dt_metadata_set_import(const dt_imgid_t imgid, const char *key, const char 
 {
   if(!key || !dt_is_valid_imgid(imgid)) return;
 
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   const dt_metadata_t *md = dt_metadata_get_metadata_by_tagname(key);
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
   if(md) // known key
   {
@@ -853,6 +725,8 @@ void dt_metadata_set_list(const GList *imgs, GList *key_value, const gboolean un
 {
   GList *metadata = NULL;
   GList *kv = key_value;
+
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   while(kv)
   {
     const gchar *key = (const gchar *)kv->data;
@@ -875,6 +749,7 @@ void dt_metadata_set_list(const GList *imgs, GList *key_value, const gboolean un
       kv = g_list_next(kv);
     }
   }
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
   if(metadata && imgs)
   {
