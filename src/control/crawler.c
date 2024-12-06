@@ -1055,6 +1055,7 @@ void dt_update_thumbs_thread(void *p)
       bt->running = FALSE;
   }
   dt_print(DT_DEBUG_CACHE, "[thumb crawler] closing, %d mipmaps updated", updated);
+  bt->capable = FALSE;
 }
 
 // clang-format off

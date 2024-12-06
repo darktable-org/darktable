@@ -2011,7 +2011,13 @@ void dt_cleanup()
 //  if(init_gui)
 //    darktable_exit_screen_create(NULL, FALSE);
 
-  darktable.backthumbs.running = FALSE;
+  if(darktable.backthumbs.running)
+  {
+    // if the backthumbs crawler is running, stop it now and wait for it being terminated.
+    darktable.backthumbs.running = FALSE;
+    for(int i = 0; i < 1000 && darktable.backthumbs.capable; i++)
+      g_usleep(10000);
+  }
   // last chance to ask user for any input...
 
   const gboolean perform_maintenance = dt_database_maybe_maintenance(darktable.db);
