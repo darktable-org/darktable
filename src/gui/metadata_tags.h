@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 */
 
 gchar *dt_metadata_tags_get_selected();
-GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent, gpointer metadata_activated_callback, gpointer user_data);
+GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent, gboolean text_only, gpointer metadata_activated_callback, gpointer user_data);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

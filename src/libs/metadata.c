@@ -26,6 +26,7 @@
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/metadata_tags.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 #ifdef GDK_WINDOWING_QUARTZ
@@ -52,7 +53,11 @@ typedef struct dt_lib_metadata_t
   GHashTable *metadata_counts;
   GList *setting_names;
   GtkWidget *grid, *button_box, *apply_button, *cancel_button;
+  GtkWidget *dialog;
+  GtkListStore *liststore;
+  GtkTreeView *tree_view;
   GList *last_act_on;
+  GList *metadata_to_delete;
   int num_grid_rows;
 } dt_lib_metadata_t;
 
@@ -689,26 +694,122 @@ static void _display_name_edited_callback(GtkCellRenderer *renderer,
   gtk_tree_path_free(path);
 }
 
+static gboolean _find_metadata_iter_per_text(GtkTreeModel *model, GtkTreeIter *iter, gint col, const char *text)
+{
+  if(!text) return FALSE;
+  GtkTreeIter it;
+  gboolean valid = gtk_tree_model_get_iter_first(model, &it);
+  char *name;
+  while(valid)
+  {
+    gtk_tree_model_get(model, &it, col, &name, -1);
+    const gboolean found = g_strcmp0(text, name) == 0;
+    g_free(name);
+    if(found)
+    {
+      if(iter) *iter = it;
+      return TRUE;
+    }
+    valid = gtk_tree_model_iter_next(model, &it);
+  }
+  return FALSE;
+}
+
+static void _add_selected_metadata(gchar *tagname, dt_lib_metadata_t *d)
+{
+  GtkTreeIter iter;
+  if(!_find_metadata_iter_per_text(GTK_TREE_MODEL(d->liststore), NULL, DT_METADATA_PREF_COL_TAGNAME, tagname))
+  {
+    gtk_list_store_append(d->liststore, &iter);
+    gtk_list_store_set(d->liststore, &iter,
+                       DT_METADATA_PREF_COL_KEY, -1,  // -1 indicates a new entry
+                       DT_METADATA_PREF_COL_TAGNAME, tagname,
+                       DT_METADATA_PREF_COL_NAME, dt_metadata_get_tag_subkey(tagname),
+                       DT_METADATA_PREF_COL_VISIBLE, TRUE,
+                       DT_METADATA_PREF_COL_PRIVATE, FALSE,
+                       DT_METADATA_PREF_COL_DT_DEFAULT, FALSE,
+                       -1);
+
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(d->tree_view);
+    gtk_tree_selection_select_iter(selection, &iter);
+  }
+  g_free(tagname);
+}
+
+static void _metadata_activated(GtkTreeView *tree_view,
+                                GtkTreePath *path,
+                                GtkTreeViewColumn *column,
+                                dt_lib_metadata_t *d)
+{
+  gchar *tagname = dt_metadata_tags_get_selected();
+  _add_selected_metadata(tagname, d);
+}
+
+// dialog to add metadata tag into the formula list
+static void _add_tag_button_clicked(GtkButton *button, dt_lib_metadata_t *d)
+{
+  GtkWidget *dialog = dt_metadata_tags_dialog(d->dialog, TRUE, _metadata_activated, d);
+
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
+
+  gtk_widget_show_all(dialog);
+  while(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+  {
+    gchar *tagname = dt_metadata_tags_get_selected();
+    _add_selected_metadata(tagname, d);
+  }
+  gtk_widget_destroy(dialog);
+}
+
+static void _delete_tag_button_clicked(GtkButton *button, dt_lib_metadata_t *d)
+{
+  GtkTreeIter iter;
+  GtkTreeModel *model = GTK_TREE_MODEL(d->liststore);
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(d->tree_view);
+  if(gtk_tree_selection_get_selected(selection, &model, &iter))
+  {
+    uint32_t key;
+    gtk_tree_model_get(model, &iter,
+                       DT_METADATA_PREF_COL_KEY, &key,
+                       -1);
+    if(key != -1)
+      d->metadata_to_delete = g_list_prepend(d->metadata_to_delete,
+                                             GINT_TO_POINTER(key));
+    gtk_list_store_remove(d->liststore, &iter);
+  }
+}
+
 static void _menuitem_preferences(GtkMenuItem *menuitem,
                                   dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+
+  g_list_free(d->metadata_to_delete);
+  d->metadata_to_delete = NULL;
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("metadata settings"), GTK_WINDOW(win),
                                                   GTK_DIALOG_DESTROY_WITH_PARENT,
                                                   _("_cancel"), GTK_RESPONSE_NONE,
                                                   _("_save"), GTK_RESPONSE_ACCEPT, NULL);
+  d->dialog = dialog;
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
   dt_gui_dialog_add_help(GTK_DIALOG(dialog), "metadata_preferences");
+  gtk_window_set_default_size(GTK_WINDOW(dialog), DT_PIXEL_APPLY_DPI(500), DT_PIXEL_APPLY_DPI(400));
   g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
+  gtk_container_set_border_width(GTK_CONTAINER(vbox), 8);
+  gtk_box_pack_start(GTK_BOX(area), vbox, TRUE, TRUE, 0);
 
   GtkWidget *w = gtk_scrolled_window_new(NULL, NULL);
   gtk_widget_set_size_request(w, -1, DT_PIXEL_APPLY_DPI(100));
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w),
-                                 GTK_POLICY_NEVER, GTK_POLICY_NEVER);
-  gtk_box_pack_start(GTK_BOX(area), w, TRUE, TRUE, 0);
+                                 GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_box_pack_start(GTK_BOX(vbox), w, TRUE, TRUE, 0);
 
   GtkListStore *store = gtk_list_store_new(DT_METADATA_PREF_NUM_COLS,
                                            G_TYPE_INT,      // key
@@ -718,6 +819,7 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
                                            G_TYPE_BOOLEAN,  // do not export
                                            G_TYPE_BOOLEAN); // darktable default metadata
 
+  d->liststore = store;
   GtkTreeModel *model = GTK_TREE_MODEL(store);
   GtkTreeIter iter;
 
@@ -741,6 +843,7 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
   dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
   GtkWidget *view = gtk_tree_view_new_with_model(model);
+  d->tree_view = GTK_TREE_VIEW(view);
   g_object_unref(model);
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes
@@ -782,6 +885,19 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
 
   gtk_container_add(GTK_CONTAINER(w), view);
 
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), box, FALSE, TRUE, 0);
+
+  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, 0, NULL);
+  gtk_widget_set_tooltip_text(button, _("add metadata tags"));
+  gtk_box_pack_end(GTK_BOX(box), button, FALSE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_add_tag_button_clicked), (gpointer)d);
+
+  button = dtgtk_button_new(dtgtk_cairo_paint_minus_simple, 0, NULL);
+  gtk_widget_set_tooltip_text(button, _("delete metadata tag"));
+  gtk_box_pack_end(GTK_BOX(box), button, FALSE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_delete_tag_button_clicked), (gpointer)d);
+
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
@@ -791,136 +907,179 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
 
   if(res == GTK_RESPONSE_ACCEPT)
   {
+    // delete metadata
+    GList *keys_str = NULL;
+    for(GList *key_iter = d->metadata_to_delete; key_iter; key_iter = key_iter->next)
+      keys_str = g_list_prepend(keys_str, g_strdup_printf("%d", GPOINTER_TO_INT(key_iter->data)));
+    gchar *keys = dt_util_glist_to_str(",", keys_str);
+    g_list_free_full(keys_str, g_free);
+    gboolean confirm_delete = TRUE;
+    sqlite3_stmt *stmt = NULL;
+
+    if(keys)
+    {
+      // check for images with that metadata assigned
+      uint32_t count = 0;
+      gchar *query = g_strdup_printf("SELECT COUNT(*)"
+                                     " FROM main.meta_data"
+                                     " WHERE key in (%s)",
+                                     keys);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  query,
+                                  -1, &stmt, NULL);
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+        count = sqlite3_column_int(stmt, 0);
+      sqlite3_finalize(stmt);
+      g_free(query);
+
+      if(count > 0)
+      {
+        confirm_delete = dt_gui_show_yes_no_dialog(
+          _("delete metadata"),
+          _("You are about to delete metadata which is currently assigned to images.\n"
+            "The assignments will be removed."));
+      }
+
+      if(!confirm_delete)
+        goto finish;
+
+      // delete the assignments
+      query = g_strdup_printf("DELETE FROM main.meta_data WHERE key IN (%s)",
+                              keys);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  query,
+                                  -1, &stmt, NULL);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+      g_free(query);
+
+      // now the metadata entries
+      query = g_strdup_printf("DELETE FROM data.meta_data WHERE key IN (%s)",
+                              keys);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  query,
+                                  -1, &stmt, NULL);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+      g_free(query);
+
+      g_free(keys);
+
+      // re-initialze the metadata list
+      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+      dt_metadata_init();
+      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+
+      // remove the corresponding rows from the grid
+      for(GList *key_iter = d->metadata_to_delete; key_iter; key_iter = key_iter->next)
+      {
+        const uint32_t key = GPOINTER_TO_INT(key_iter->data);
+        uint32_t row = 0;
+        while(row < d->num_grid_rows)
+        {
+          GtkWidget *tv_cell = gtk_grid_get_child_at(GTK_GRID(d->grid), 1, row);
+          const uint32_t keyid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(tv_cell), "key"));
+          
+          if(keyid == key)
+          {
+            gtk_grid_remove_row(GTK_GRID(d->grid), row);
+            d->num_grid_rows--;
+            break;
+          }
+          row++;
+        }
+      }
+
+      g_list_free(d->metadata_to_delete);
+      d->metadata_to_delete = NULL;
+    }
+
+    // process the remaining list
     gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
     uint32_t display_order = 0;
 
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
     while(valid)
     {
-      uint32_t key = 0;
+      int32_t key = 0;
+      gchar *tagname = NULL;
       gchar *name = NULL;
       gboolean is_visible = FALSE;
       gboolean is_private = FALSE;
 
       gtk_tree_model_get(model, &iter,
                          DT_METADATA_PREF_COL_KEY, &key,
+                         DT_METADATA_PREF_COL_TAGNAME, &tagname,
                          DT_METADATA_PREF_COL_NAME, &name,
                          DT_METADATA_PREF_COL_VISIBLE, &is_visible,
                          DT_METADATA_PREF_COL_PRIVATE, &is_private,
                          -1);
 
-      sqlite3_stmt *stmt;
+      if(key == -1)
+      {
+        // new metadata entry
+        dt_metadata_t *md = calloc(1, sizeof(dt_metadata_t));
+        md->tagname = g_strdup(tagname);
+        md->name = g_strdup(name);
+        md->type = DT_METADATA_TYPE_USER;
+        md->is_visible = is_visible;
+        md->is_private = is_private;
+        md->dt_default = 0;
+        md->display_order = display_order;
 
-      DT_DEBUG_SQLITE3_PREPARE_V2
-        (dt_database_get(darktable.db),
-        "UPDATE data.meta_data"
-        " SET name = ?2"
-        "   , visible = ?3"
-        "   , private = ?4"
-        "   , display_order = ?5"
-        " WHERE key = ?1",
-        -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, key);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, name, -1, SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, is_visible);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, is_private);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, display_order);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
+        gboolean db_res = FALSE;
+        db_res = dt_metadata_add_metadata(md);
 
-      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-      dt_metadata_t *metadata = dt_metadata_get_metadata_by_keyid(key);
-      g_free(metadata->name);
-      metadata->name = g_strdup(name);
-      metadata->is_visible = is_visible;
-      metadata->is_private = is_private;
-      metadata->display_order = display_order;
-      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+        if(db_res)
+        {
+          gtk_widget_set_no_show_all(d->grid, FALSE);
+          _add_grid_row(md, d->num_grid_rows, self);
+          gtk_widget_show_all(d->grid);
+          gtk_widget_set_no_show_all(d->grid, TRUE);
+        }
+      }
+      else
+      {
+        // update
+        DT_DEBUG_SQLITE3_PREPARE_V2
+          (dt_database_get(darktable.db),
+          "UPDATE data.meta_data"
+          " SET name = ?2"
+          "   , visible = ?3"
+          "   , private = ?4"
+          "   , display_order = ?5"
+          " WHERE key = ?1",
+          -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, key);
+        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, name, -1, SQLITE_TRANSIENT);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, is_visible);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, is_private);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, display_order);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
 
+        dt_metadata_t *metadata = dt_metadata_get_metadata_by_keyid(key);
+        g_free(metadata->name);
+        metadata->name = g_strdup(name);
+        metadata->is_visible = is_visible;
+        metadata->is_private = is_private;
+        metadata->display_order = display_order;
+      }
+
+      g_free(tagname);
       g_free(name);
       display_order++;
 
       valid = gtk_tree_model_iter_next(model, &iter);
     }
-
-    // ---------------------------------------------------------------------------
-    // Test ADD
-    dt_metadata_t *md = calloc(1, sizeof(dt_metadata_t));
-    md->display_order = 11;
-    md->name = g_strdup("scene");
-    md->tagname = g_strdup("Xmp.iptc.Scene");
-    md->is_private = 0;
-    md->is_visible = 1;
-    md->type = 0;
-    md->dt_default = 0;
-    gboolean db_res = FALSE;
-    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-    db_res = dt_metadata_add_metadata(md);
     dt_metadata_sort();
     dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
-
-    if(db_res)
-    {
-      gtk_widget_set_no_show_all(d->grid, FALSE);
-      _add_grid_row(md, d->num_grid_rows, self);
-      gtk_widget_show_all(d->grid);
-      gtk_widget_set_no_show_all(d->grid, TRUE);
-    }
-
-    // ---------------------------------------------------------------------------
-    // Test DEL
-    // const uint32_t key = 11;
-
-    // // check for images with that metadata assigned
-    // sqlite3_stmt *stmt = NULL;
-    // uint32_t count = 0;
-    // DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-    //                             "SELECT COUNT(*) FROM main.meta_data where key=?1",
-    //                             -1, &stmt, NULL);
-    // DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, key);
-    // if(sqlite3_step(stmt) == SQLITE_ROW)
-    //   count = sqlite3_column_int(stmt, 0);
-    // sqlite3_finalize(stmt);
-
-    // gboolean confirm_delete = TRUE;
-    // if(count > 0)
-    // {
-    //   gchar *msg = g_strdup_printf(
-    //     ngettext("this metadata is currently assigned to %d image. The assignment will be removed.",
-    //              "this metadata is currently assigned to %d images. The assignments will be removed.",
-    //              count), count);
-
-    //   confirm_delete = dt_gui_show_yes_no_dialog(_("delete metadata"), msg);
-    //   g_free(msg);
-    // }
-
-    // if(confirm_delete)
-    // {
-    //   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-    //   dt_metadata_delete_metadata(key);
-    //   dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
-
-    //   // remove the corresponding row from the grid
-    //   uint32_t row = 0;
-    //   while(row < d->num_grid_rows)
-    //   {
-    //     GtkWidget *tv_cell = gtk_grid_get_child_at(GTK_GRID(d->grid), 1, row);
-    //     const uint32_t keyid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(tv_cell), "key"));
-        
-    //     if(keyid == key)
-    //     {
-    //       gtk_grid_remove_row(GTK_GRID(d->grid), row);
-    //       d->num_grid_rows--;
-    //       break;
-    //     }
-    //     row++;
-    //   }
-    // }
 
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_PREF_CHANGED);
     _update_layout(self);
   }
 
-
+finish:
   gtk_widget_destroy(dialog);
 }
 
@@ -938,6 +1097,7 @@ void gui_init(dt_lib_module_t *self)
 
   d->metadata_texts = g_hash_table_new(NULL, NULL);
   d->metadata_counts = g_hash_table_new(NULL, NULL);
+  d->metadata_to_delete = NULL;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 

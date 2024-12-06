@@ -1762,7 +1762,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_exif_set_exiv2_taglist();
 
   // init metadata flags
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   dt_metadata_init();
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
   darktable_splash_screen_set_progress(_("synchronizing local copies"));
   dt_image_local_copy_synch();
