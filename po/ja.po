@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-12-01 18:37+0100\n"
-"PO-Revision-Date: 2024-12-06 01:55+0900\n"
+"PO-Revision-Date: 2024-12-06 13:25+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -14290,7 +14290,7 @@ msgstr ""
 #. with respect to logo
 #: ../src/gui/splash.c:225
 msgid "get ready to unleash your creativity"
-msgstr "創造力を解き放つ準備をしよう "
+msgstr "創造力を解き放とう"
 
 #: ../src/gui/splash.c:361
 msgid "darktable shutdown"
