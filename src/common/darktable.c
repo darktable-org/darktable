@@ -127,7 +127,7 @@ darktable_t darktable;
 static int usage(const char *argv0)
 {
 #ifdef _WIN32
-  char *logfile = g_build_filename(g_get_user_cache_dir(), "darktable", "darktable-log.txt", NULL);
+  char *logfile = g_build_filename(g_get_home_dir(), "Documents", "darktable", "darktable-log.txt", NULL);
 #endif
   // clang-format off
 
