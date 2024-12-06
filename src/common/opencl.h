@@ -641,7 +641,7 @@ G_END_DECLS
 
 #else
 
-#decline CL_SUCCESS 0
+#define CL_SUCCESS 0
 
 #include "control/conf.h"
 #include <stdlib.h>
