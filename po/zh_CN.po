@@ -9,6 +9,7 @@
 # Song Li <songl@outlook.com>, 2019.
 # Hui Xie <terakey@gmail.com>, 2022.
 # Tianhao Chai <cth451@gmail.com>, 2022.
+# Chenhao Cui<chenhaocui9@gmail.com>, 2024.
 #
 #: ../src/common/darktable.c:1833
 msgid ""
