@@ -588,7 +588,9 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   else if(_has_prefix(variable, "VERSION.NAME")
           || _has_prefix(variable, "VERSION_NAME"))
   {
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
     GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.version_name", NULL);
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     if(res != NULL)
     {
       result = g_strdup((char *)res->data);
@@ -764,7 +766,9 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
           && g_strcmp0(params->jobcode, "infos") == 0)
   {
     escape = FALSE;
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
     GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", NULL);
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     for(GList *res_iter = res; res_iter; res_iter = g_list_next(res_iter))
     {
       const int dot_index = GPOINTER_TO_INT(res_iter->data);
@@ -781,7 +785,9 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     // TODO: currently we concatenate all the color labels with a ','
     // as a separator. Maybe it's better to only use the first/last
     // label?
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
     GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", NULL);
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     if(res != NULL)
     {
       GList *labels = NULL;
@@ -800,7 +806,9 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   else if(_has_prefix(variable, "TITLE")
           || _has_prefix(variable, "Xmp.dc.title"))
   {
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.title", NULL);
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     if(res != NULL)
     {
       result = g_strdup((char *)res->data);
@@ -810,7 +818,9 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   else if(_has_prefix(variable, "DESCRIPTION")
           || _has_prefix(variable, "Xmp.dc.description"))
   {
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.description", NULL);
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     if(res != NULL)
     {
       result = g_strdup((char *)res->data);
@@ -820,7 +830,9 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   else if(_has_prefix(variable, "CREATOR")
           || _has_prefix(variable, "Xmp.dc.creator"))
   {
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.creator", NULL);
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     if(res != NULL)
     {
       result = g_strdup((char *)res->data);
@@ -830,7 +842,9 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   else if(_has_prefix(variable, "PUBLISHER")
           || _has_prefix(variable, "Xmp.dc.publisher"))
   {
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.publisher", NULL);
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     if(res != NULL)
     {
       result = g_strdup((char *)res->data);
@@ -840,7 +854,9 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   else if(_has_prefix(variable, "RIGHTS")
           || _has_prefix(variable, "Xmp.dc.rights"))
   {
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.rights", NULL);
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     if(res != NULL)
     {
       result = g_strdup((char *)res->data);

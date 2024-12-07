@@ -52,7 +52,7 @@ typedef struct dt_lib_metadata_t
   GHashTable *metadata_texts;
   GHashTable *metadata_counts;
   GList *setting_names;
-  GtkWidget *grid, *button_box, *apply_button, *cancel_button;
+  GtkWidget *grid, *button_box, *apply_button, *cancel_button, *delete_button;
   GtkWidget *dialog;
   GtkListStore *liststore;
   GtkTreeView *tree_view;
@@ -269,7 +269,6 @@ void gui_update(dt_lib_module_t *self)
 
   _write_metadata(self);
   d->last_act_on = imgs;
-
 
   // using dt_metadata_get() is not possible here. we want to do all
   // this in a single pass, everything else takes ages.
@@ -781,6 +780,66 @@ static void _delete_tag_button_clicked(GtkButton *button, dt_lib_metadata_t *d)
   }
 }
 
+static void _fill_grid(dt_lib_module_t *self)
+{
+  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+
+  for(int32_t i = d->num_grid_rows - 1; i >= 0; i--)
+    gtk_grid_remove_row(GTK_GRID(d->grid), i);
+
+  g_hash_table_foreach(d->metadata_texts, _free_list_entry, NULL);
+  g_hash_table_destroy(d->metadata_texts);
+  g_hash_table_destroy(d->metadata_counts);
+
+  d->metadata_texts = g_hash_table_new(NULL, NULL);
+  d->metadata_counts = g_hash_table_new(NULL, NULL);
+  d->metadata_to_delete = NULL;
+
+  d->num_grid_rows = 0;
+
+  gtk_widget_set_no_show_all(d->grid, FALSE);
+  
+  int row = 0;
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+  for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
+  {
+    dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
+
+    if(metadata->type == DT_METADATA_TYPE_INTERNAL)
+      continue;
+
+    g_hash_table_insert(d->metadata_texts,
+                        GINT_TO_POINTER(metadata->key),
+                        NULL);
+    g_hash_table_insert(d->metadata_counts,
+                        GINT_TO_POINTER(metadata->key),
+                        GINT_TO_POINTER(0));
+
+    _add_grid_row(metadata, row, self);
+    row++;
+  }
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+
+  gtk_widget_show_all(d->grid);
+  gtk_widget_set_no_show_all(d->grid, TRUE);
+  dt_lib_gui_queue_update(self);
+}
+
+static void _selection_changed(GtkTreeSelection *selection, dt_lib_metadata_t *d)
+{
+  GtkTreeIter iter;
+  GtkTreeModel *model = GTK_TREE_MODEL(d->liststore);
+  if(gtk_tree_selection_get_selected(selection, &model, &iter))
+  {
+    uint32_t dt_default;
+    gtk_tree_model_get(model, &iter,
+                       DT_METADATA_PREF_COL_DT_DEFAULT, &dt_default,
+                       -1);
+    
+    gtk_widget_set_sensitive(d->delete_button, !dt_default);
+  }
+}
+
 static void _menuitem_preferences(GtkMenuItem *menuitem,
                                   dt_lib_module_t *self)
 {
@@ -868,6 +927,12 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
   GtkTreePath *first = gtk_tree_path_new_first ();
   gtk_tree_view_set_cursor(GTK_TREE_VIEW(view), first, column, FALSE);
   gtk_tree_path_free(first);
+  gtk_widget_set_tooltip_text(view,
+                _("drag and drop one row at a time until you get the desired order"));
+
+  // drag & drop
+  gtk_tree_view_set_reorderable(GTK_TREE_VIEW(view), TRUE);
+
   GtkWidget *header = gtk_tree_view_column_get_button(column);
   gtk_widget_set_tooltip_text(header,
                 _("tick if the corresponding metadata is of interest for you"
@@ -897,6 +962,11 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
   gtk_widget_set_tooltip_text(button, _("delete metadata tag"));
   gtk_box_pack_end(GTK_BOX(box), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_delete_tag_button_clicked), (gpointer)d);
+  d->delete_button = button;
+
+  GtkTreeSelection * selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
+  g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(_selection_changed), (gpointer) d);
+  _selection_changed(selection, d);
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
@@ -970,26 +1040,6 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
       dt_metadata_init();
       dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
-      // remove the corresponding rows from the grid
-      for(GList *key_iter = d->metadata_to_delete; key_iter; key_iter = key_iter->next)
-      {
-        const uint32_t key = GPOINTER_TO_INT(key_iter->data);
-        uint32_t row = 0;
-        while(row < d->num_grid_rows)
-        {
-          GtkWidget *tv_cell = gtk_grid_get_child_at(GTK_GRID(d->grid), 1, row);
-          const uint32_t keyid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(tv_cell), "key"));
-          
-          if(keyid == key)
-          {
-            gtk_grid_remove_row(GTK_GRID(d->grid), row);
-            d->num_grid_rows--;
-            break;
-          }
-          row++;
-        }
-      }
-
       g_list_free(d->metadata_to_delete);
       d->metadata_to_delete = NULL;
     }
@@ -1026,17 +1076,7 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
         md->is_private = is_private;
         md->dt_default = 0;
         md->display_order = display_order;
-
-        gboolean db_res = FALSE;
-        db_res = dt_metadata_add_metadata(md);
-
-        if(db_res)
-        {
-          gtk_widget_set_no_show_all(d->grid, FALSE);
-          _add_grid_row(md, d->num_grid_rows, self);
-          gtk_widget_show_all(d->grid);
-          gtk_widget_set_no_show_all(d->grid, TRUE);
-        }
+        dt_metadata_add_metadata(md);
       }
       else
       {
@@ -1075,8 +1115,10 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
     dt_metadata_sort();
     dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_PREF_CHANGED);
+    _fill_grid(self);
     _update_layout(self);
+
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_PREF_CHANGED);
   }
 
 finish:
@@ -1095,10 +1137,6 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_metadata_t *d = calloc(1, sizeof(dt_lib_metadata_t));
   self->data = (void *)d;
 
-  d->metadata_texts = g_hash_table_new(NULL, NULL);
-  d->metadata_counts = g_hash_table_new(NULL, NULL);
-  d->metadata_to_delete = NULL;
-
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   GtkWidget *grid = gtk_grid_new();
@@ -1106,29 +1144,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(0));
   gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(10));
   gtk_container_add(GTK_CONTAINER(self->widget), grid);
+  _fill_grid(self);
 
-  int row = 0;
-  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-  for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
-  {
-    dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
-
-    if(metadata->type == DT_METADATA_TYPE_INTERNAL)
-      continue;
-
-    g_hash_table_insert(d->metadata_texts,
-                        GINT_TO_POINTER(metadata->key),
-                        NULL);
-    g_hash_table_insert(d->metadata_counts,
-                        GINT_TO_POINTER(metadata->key),
-                        GINT_TO_POINTER(0));
-
-    _add_grid_row(metadata, row, self);
-    row++;
-  }
-  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
-
-  // apply button
   d->apply_button = dt_action_button_new(self, N_("apply"), _apply_button_clicked, self,
                                          _("write metadata for selected images"), 0, 0);
   d->cancel_button = dt_action_button_new(self, N_("cancel"), _cancel_button_clicked, self,

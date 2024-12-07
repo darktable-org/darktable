@@ -297,6 +297,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     char *title = NULL, *description = NULL, *tags = NULL;
     GList *res_title, *res_desc, *res_subj;
 
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
     res_title = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
     if(res_title)
     {
@@ -310,6 +311,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     }
 
     res_subj = dt_metadata_get(imgid, "Xmp.dc.subject", NULL);
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     if(res_subj)
     {
       // don't show the internal tags (darktable|...)

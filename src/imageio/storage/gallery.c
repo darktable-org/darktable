@@ -337,6 +337,7 @@ int store(dt_imageio_module_storage_t *self,
 
   if((metadata->flags & DT_META_METADATA) && !(metadata->flags & DT_META_CALCULATED))
   {
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
     res_title = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
     if(res_title)
     {
@@ -348,6 +349,7 @@ int store(dt_imageio_module_storage_t *self,
     {
       description = res_desc->data;
     }
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   }
 
   char relfilename[PATH_MAX] = { 0 }, relthumbfilename[PATH_MAX] = { 0 };
