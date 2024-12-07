@@ -305,7 +305,9 @@ static int metadata_member(lua_State *L)
   if(lua_gettop(L) != 3)
   {
     const dt_image_t *my_image = checkreadimage(L, 1);
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
     GList *res = dt_metadata_get(my_image->id, key, NULL);
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     if(res)
       lua_pushstring(L, (char *)res->data);
     else

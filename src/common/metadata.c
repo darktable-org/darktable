@@ -424,9 +424,7 @@ GList *dt_metadata_get(const dt_imgid_t imgid,
   sqlite3_stmt *stmt;
   uint32_t local_count = 0;
 
-  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   const int keyid = dt_metadata_get_keyid(key);
-  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   // key not found in db. Maybe it's one of our "special" keys (rating, tags and colorlabels)?
   if(keyid == -1)
   {
@@ -684,9 +682,7 @@ void dt_metadata_set_import(const dt_imgid_t imgid, const char *key, const char 
 {
   if(!key || !dt_is_valid_imgid(imgid)) return;
 
-  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   const dt_metadata_t *md = dt_metadata_get_metadata_by_tagname(key);
-  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
   if(md) // known key
   {
@@ -773,7 +769,6 @@ void dt_metadata_clear(const GList *imgs, const gboolean undo_on)
 {
   // do not clear internal or hidden metadata
   GList *metadata = NULL;
-  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
     const dt_metadata_t *md = (dt_metadata_t *)iter->data;
@@ -786,7 +781,6 @@ void dt_metadata_clear(const GList *imgs, const gboolean undo_on)
       }
     }
   }
-  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
   if(metadata)
   {

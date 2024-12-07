@@ -736,8 +736,10 @@ static void _print_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   memcpy(&params->imgs, &ps->imgs, sizeof(ps->imgs));
 
   // what to call the image?
-  GList *res;
-  if((res = dt_metadata_get(imgid, "Xmp.dc.title", NULL)) != NULL)
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+  GList *res = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+  if(res != NULL)
   {
     // FIXME: in metadata_view.c, non-printables are filtered, should
     // we do this here?

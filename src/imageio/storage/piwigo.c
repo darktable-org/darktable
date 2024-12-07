@@ -1291,6 +1291,7 @@ int store(dt_imageio_module_storage_t *self,
   {
     // If title is not existing, then use the filename without
     // extension. If not, then use title instead
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
     GList *title = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
     if(title != NULL)
     {
@@ -1317,6 +1318,7 @@ int store(dt_imageio_module_storage_t *self,
       author = g_strdup(auth->data);
       g_list_free_full(auth, &g_free);
     }
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   }
 
   g_free(filename);

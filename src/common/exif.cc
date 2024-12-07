@@ -581,9 +581,9 @@ static bool _exif_decode_xmp_data(dt_image_t *img,
     // passed to that function.
     if(version == -1 || version > 0)
     {
+      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
       if(!exif_read) dt_metadata_clear(imgs, FALSE);
 
-      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
       for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
       {
         dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
@@ -2753,14 +2753,18 @@ int dt_exif_read_blob(uint8_t **buf,
       static const guint n_keys = G_N_ELEMENTS(keys);
       _remove_exif_keys(exifData, keys, n_keys);
 
+      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
       GList *res = dt_metadata_get(imgid, "Xmp.dc.creator", NULL);
+      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
       if(res != NULL)
       {
         exifData["Exif.Image.Artist"] = (char *)res->data;
         g_list_free_full(res, &g_free);
       }
 
+      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
       res = dt_metadata_get(imgid, "Xmp.dc.description", NULL);
+      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
       if(res != NULL)
       {
         char *desc = (char *)res->data;
@@ -2777,7 +2781,9 @@ int dt_exif_read_blob(uint8_t **buf,
         exifData["Exif.Image.ImageDescription"] = "";
 #endif
 
+      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
       res = dt_metadata_get(imgid, "Xmp.dc.rights", NULL);
+      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
       if(res != NULL)
       {
         exifData["Exif.Image.Copyright"] = (char *)res->data;
@@ -2790,7 +2796,9 @@ int dt_exif_read_blob(uint8_t **buf,
         exifData["Exif.Image.Copyright"] = "";
 #endif
 
+      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
       res = dt_metadata_get(imgid, "Xmp.xmp.Rating", NULL);
+      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
       if(res != NULL)
       {
         const int rating = GPOINTER_TO_INT(res->data) + 1;
