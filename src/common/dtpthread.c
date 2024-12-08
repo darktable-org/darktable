@@ -33,7 +33,7 @@
 
 int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *arg)
 {
-  int ret;
+  int ret = 0;
 
   pthread_attr_t attr;
 
@@ -63,7 +63,13 @@ int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *a
     }
   }
 
-  ret = pthread_create(thread, &attr, start_routine, arg);
+  if(ret == 0)
+    ret = pthread_create(thread, &attr, start_routine, arg);
+
+  if(ret != 0)
+  {
+    fprintf(stderr, "[dt_pthread_create] error: pthread_create() returned %i\n", ret);
+  }
 
   pthread_attr_destroy(&attr);
 
