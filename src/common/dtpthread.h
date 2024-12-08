@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,7 +28,34 @@
 #include <stdlib.h>
 #include <string.h>
 
+// #define MUTEX_REPORTING // uncomment to include runtime report of mutex problems also for release builds
+
+static inline const char *_pthread_ret_mess(int error)
+{
+  switch(error)
+  {
+    case 0:         return "OK";
+    case EBUSY:     return "EBUSY";
+    case EINVAL:    return "EINVAL";
+    case EAGAIN:    return "EAGAIN";
+    case EDEADLK:   return "EDEADLK";
+    case EPERM:     return "EPERM";
+    case ETIMEDOUT: return "ETIMEDOUT";
+    case ESRCH:     return "ESRCH";
+    default:        return "???";
+  }
+}
+
+static inline void _ret_error(const int ret, const char* mess)
+{
+  fprintf(stderr, "\n*** [dt_pthread_mutex_%s = %s] ***\n", mess ? mess : "???", _pthread_ret_mess(ret));
+}
+
 #ifdef _DEBUG
+
+#ifndef MUTEX_REPORTING
+#define MUTEX_REPORTING // make sure we report the BAD variants
+#endif
 
 // copied from darktable.h so we don't need to include the header
 #include <sys/time.h>
@@ -38,7 +65,6 @@ static inline double dt_pthread_get_wtime()
   gettimeofday(&time, NULL);
   return time.tv_sec - 1290608000 + (1.0 / 1000000.0) * time.tv_usec;
 }
-
 
 #define TOPN 3
 typedef struct CAPABILITY("mutex") dt_pthread_mutex_t
@@ -62,10 +88,17 @@ typedef struct dt_pthread_rwlock_t
   char name[256];
 } dt_pthread_rwlock_t;
 
+static inline void _report_ret_error(const int ret, const char* loc, const char* mess)
+{
+  fprintf(stderr, "[dt_pthread_mutex_%s = %s] at: %s\n",
+      mess ? mess : "???", _pthread_ret_mess(ret), loc ? loc : "no location");
+}
+
 static inline int dt_pthread_mutex_destroy(dt_pthread_mutex_t *mutex)
 {
   const int ret = pthread_mutex_destroy(&(mutex->mutex));
-  assert(!ret);
+  if(ret) _report_ret_error(ret, mutex->name, "destroy");
+  assert(ret == 0);
 
 #if 0
   printf("\n[mutex] stats for mutex `%s':\n", mutex->name);
@@ -78,7 +111,6 @@ static inline int dt_pthread_mutex_destroy(dt_pthread_mutex_t *mutex)
   for(int k=0; k<TOPN; k++) printf("[mutex]  %.3f secs : `%s'\n", mutex->top_wait_sum[k],
   mutex->top_wait_name[k]);
 #endif
-
   return ret;
 }
 
@@ -100,9 +132,7 @@ static inline int dt_pthread_mutex_init_with_caller(dt_pthread_mutex_t *mutex,
     return ret;
   }
 #endif
-  const int ret = pthread_mutex_init(&(mutex->mutex), attr);
-  assert(!ret);
-  return ret;
+  return pthread_mutex_init(&(mutex->mutex), attr);
 }
 
 #define dt_pthread_mutex_lock(A) dt_pthread_mutex_lock_with_caller(A, __FILE__, __LINE__, __FUNCTION__)
@@ -112,6 +142,7 @@ static inline int dt_pthread_mutex_lock_with_caller(dt_pthread_mutex_t *mutex, c
 {
   const double t0 = dt_pthread_get_wtime();
   const int ret = pthread_mutex_lock(&(mutex->mutex));
+  if(ret) _report_ret_error(ret, mutex->name, "lock");
   assert(!ret);
   mutex->time_locked = dt_pthread_get_wtime();
   double wait = mutex->time_locked - t0;
@@ -140,8 +171,9 @@ static inline int dt_pthread_mutex_trylock_with_caller(dt_pthread_mutex_t *mutex
 {
   const double t0 = dt_pthread_get_wtime();
   const int ret = pthread_mutex_trylock(&(mutex->mutex));
+  if(ret && (ret != EBUSY)) _report_ret_error(ret, mutex->name, "trylock");
   assert(!ret || (ret == EBUSY));
-  if(ret) return ret;
+
   mutex->time_locked = dt_pthread_get_wtime();
   double wait = mutex->time_locked - t0;
   mutex->time_sum_wait += wait;
@@ -192,13 +224,17 @@ static inline int dt_pthread_mutex_unlock_with_caller(dt_pthread_mutex_t *mutex,
 
   // need to unlock last, to shield our internal data.
   const int ret = pthread_mutex_unlock(&(mutex->mutex));
+  if(ret) _report_ret_error(ret, mutex->name, "unlock");
   assert(!ret);
   return ret;
 }
 
 static inline int dt_pthread_cond_wait(pthread_cond_t *cond, dt_pthread_mutex_t *mutex)
 {
-  return pthread_cond_wait(cond, &(mutex->mutex));
+  const int ret = pthread_cond_wait(cond, &(mutex->mutex));
+  if(ret) _report_ret_error(ret, mutex->name, "cond_wait");
+  assert(!ret);
+  return ret;
 }
 
 
@@ -250,6 +286,7 @@ static inline int dt_pthread_rwlock_rdlock_with_caller(dt_pthread_rwlock_t *rwlo
     snprintf(rwlock->name, sizeof(rwlock->name), "r:%s:%d", file, line);
   return res;
 }
+
 #define dt_pthread_rwlock_wrlock(A) dt_pthread_rwlock_wrlock_with_caller(A, __FILE__, __LINE__)
 static inline int dt_pthread_rwlock_wrlock_with_caller(dt_pthread_rwlock_t *rwlock, const char *file, int line)
 {
@@ -263,6 +300,7 @@ static inline int dt_pthread_rwlock_wrlock_with_caller(dt_pthread_rwlock_t *rwlo
   }
   return res;
 }
+
 #define dt_pthread_rwlock_tryrdlock(A) dt_pthread_rwlock_tryrdlock_with_caller(A, __FILE__, __LINE__)
 static inline int dt_pthread_rwlock_tryrdlock_with_caller(dt_pthread_rwlock_t *rwlock, const char *file, int line)
 {
@@ -276,6 +314,7 @@ static inline int dt_pthread_rwlock_tryrdlock_with_caller(dt_pthread_rwlock_t *r
   }
   return res;
 }
+
 #define dt_pthread_rwlock_trywrlock(A) dt_pthread_rwlock_trywrlock_with_caller(A, __FILE__, __LINE__)
 static inline int dt_pthread_rwlock_trywrlock_with_caller(dt_pthread_rwlock_t *rwlock, const char *file, int line)
 {
@@ -291,7 +330,8 @@ static inline int dt_pthread_rwlock_trywrlock_with_caller(dt_pthread_rwlock_t *r
 }
 
 #undef TOPN
-#else
+
+#else /* Release builds */
 
 typedef struct CAPABILITY("mutex") dt_pthread_mutex_t
 {
@@ -302,32 +342,60 @@ typedef struct CAPABILITY("mutex") dt_pthread_mutex_t
 static inline int dt_pthread_mutex_init(dt_pthread_mutex_t *mutex, const pthread_mutexattr_t *mutexattr)
 {
   return pthread_mutex_init(&mutex->mutex, mutexattr);
-};
+}
 
 static inline int dt_pthread_mutex_lock(dt_pthread_mutex_t *mutex) ACQUIRE(mutex) NO_THREAD_SAFETY_ANALYSIS
 {
+#ifdef MUTEX_REPORTING
+  const int ret = pthread_mutex_lock(&mutex->mutex);
+  if(ret) _ret_error(ret, "lock");
+  return ret;
+#else
   return pthread_mutex_lock(&mutex->mutex);
-};
+#endif
+}
 
 static inline int dt_pthread_mutex_trylock(dt_pthread_mutex_t *mutex) TRY_ACQUIRE(0, mutex)
 {
+#ifdef MUTEX_REPORTING
+  const int ret = pthread_mutex_trylock(&mutex->mutex);
+  if(ret && (ret != EBUSY)) _ret_error(ret, "trylock");
+  return ret;
+#else
   return pthread_mutex_trylock(&mutex->mutex);
-};
+#endif
+}
 
 static inline int dt_pthread_mutex_unlock(dt_pthread_mutex_t *mutex) RELEASE(mutex) NO_THREAD_SAFETY_ANALYSIS
 {
+#ifdef MUTEX_REPORTING
+  const int ret = pthread_mutex_unlock(&mutex->mutex);
+  if(ret) _ret_error(ret, "unlock");
+  return ret;
+#else
   return pthread_mutex_unlock(&mutex->mutex);
-};
+#endif
+}
 
 static inline int dt_pthread_mutex_destroy(dt_pthread_mutex_t *mutex)
 {
-  return pthread_mutex_destroy(&mutex->mutex);
-};
+  int ret = pthread_mutex_destroy(&(mutex->mutex));
+#ifdef MUTEX_REPORTING
+  if(ret) _ret_error(ret, "destroy");
+#endif
+  return ret;
+}
 
 static inline int dt_pthread_cond_wait(pthread_cond_t *cond, dt_pthread_mutex_t *mutex)
 {
+#ifdef MUTEX_REPORTING
+  const int ret = pthread_cond_wait(cond, &mutex->mutex);
+  if(ret) _ret_error(ret, "cond_wait");
+  return ret;
+#else
   return pthread_cond_wait(cond, &mutex->mutex);
-};
+#endif
+}
 
 #define dt_pthread_rwlock_t pthread_rwlock_t
 #define dt_pthread_rwlock_init pthread_rwlock_init
@@ -345,21 +413,41 @@ static inline int dt_pthread_cond_wait(pthread_cond_t *cond, dt_pthread_mutex_t 
 
 #endif
 
+/* shared for _DEBUG and release builds */
+
 // if at all possible, do NOT use.
 static inline int dt_pthread_mutex_BAD_lock(dt_pthread_mutex_t *mutex)
 {
+#ifdef MUTEX_REPORTING
+  const int ret = pthread_mutex_lock(&mutex->mutex);
+  if(ret) _ret_error(ret, "BAD_lock");
+  return ret;
+#else
   return pthread_mutex_lock(&mutex->mutex);
-};
+#endif
+}
 
 static inline int dt_pthread_mutex_BAD_trylock(dt_pthread_mutex_t *mutex)
 {
+#ifdef MUTEX_REPORTING
+  const int ret = pthread_mutex_trylock(&mutex->mutex);
+  if(ret && (ret != EBUSY)) _ret_error(ret, "BAD_trylock");
+  return ret;
+#else
   return pthread_mutex_trylock(&mutex->mutex);
-};
+#endif
+}
 
 static inline int dt_pthread_mutex_BAD_unlock(dt_pthread_mutex_t *mutex)
 {
+#ifdef MUTEX_REPORTING
+  const int ret = pthread_mutex_unlock(&mutex->mutex);
+  if(ret) _ret_error(ret, "BAD_unlock");
+  return ret;
+#else
   return pthread_mutex_unlock(&mutex->mutex);
-};
+#endif
+}
 
 int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *arg);
 

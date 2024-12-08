@@ -1590,8 +1590,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     if(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"))
       dt_gui_presets_init(); // init preset db schema.
 
-    darktable.control->running = FALSE;
-    dt_pthread_mutex_init(&darktable.control->run_mutex, NULL);
+    g_atomic_int_set(&darktable.control->running, DT_CONTROL_STATE_DISABLED);
     dt_pthread_mutex_init(&darktable.control->log_mutex, NULL);
   }
 
@@ -2011,7 +2010,13 @@ void dt_cleanup()
 //  if(init_gui)
 //    darktable_exit_screen_create(NULL, FALSE);
 
-  darktable.backthumbs.running = FALSE;
+  if(darktable.backthumbs.running)
+  {
+    // if the backthumbs crawler is running, stop it now and wait for it being terminated.
+    darktable.backthumbs.running = FALSE;
+    for(int i = 0; i < 1000 && darktable.backthumbs.capable; i++)
+      g_usleep(10000);
+  }
   // last chance to ask user for any input...
 
   const gboolean perform_maintenance = dt_database_maybe_maintenance(darktable.db);
