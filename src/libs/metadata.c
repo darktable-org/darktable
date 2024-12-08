@@ -59,6 +59,7 @@ typedef struct dt_lib_metadata_t
   GList *last_act_on;
   GList *metadata_to_delete;
   int num_grid_rows;
+  gboolean needs_rebuild;
 } dt_lib_metadata_t;
 
 const char *name(dt_lib_module_t *self)
@@ -780,6 +781,12 @@ static void _delete_tag_button_clicked(GtkButton *button, dt_lib_metadata_t *d)
   }
 }
 
+static void _drag_data_inserted(GtkTreeModel *tree_model, GtkTreePath *path, GtkTreeIter *iter, dt_lib_metadata_t *d)
+{
+  d->needs_rebuild = TRUE;
+}
+
+
 static void _fill_grid(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
@@ -932,6 +939,7 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
 
   // drag & drop
   gtk_tree_view_set_reorderable(GTK_TREE_VIEW(view), TRUE);
+  g_signal_connect(G_OBJECT(model), "row-inserted", G_CALLBACK(_drag_data_inserted), d);
 
   GtkWidget *header = gtk_tree_view_column_get_button(column);
   gtk_widget_set_tooltip_text(header,
@@ -972,6 +980,8 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
   dt_osx_disallow_fullscreen(dialog);
 #endif
   gtk_widget_show_all(dialog);
+
+  d->needs_rebuild = FALSE;
 
   int res = gtk_dialog_run(GTK_DIALOG(dialog));
 
@@ -1042,6 +1052,8 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
 
       g_list_free(d->metadata_to_delete);
       d->metadata_to_delete = NULL;
+
+      d->needs_rebuild = TRUE;
     }
 
     // process the remaining list
@@ -1077,6 +1089,8 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
         md->dt_default = 0;
         md->display_order = display_order;
         dt_metadata_add_metadata(md);
+
+        d->needs_rebuild = TRUE;
       }
       else
       {
@@ -1115,7 +1129,8 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
     dt_metadata_sort();
     dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
-    _fill_grid(self);
+    if(d->needs_rebuild)
+      _fill_grid(self);
     _update_layout(self);
 
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_PREF_CHANGED);
