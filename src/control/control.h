@@ -126,6 +126,14 @@ void dt_control_hinter_message(const struct dt_control_t *s, const char *message
  * distributes the jobs on all processors,
  * performs scheduling.
  */
+
+typedef enum dt_control_state_t
+{
+  DT_CONTROL_STATE_DISABLED = 0,
+  DT_CONTROL_STATE_RUNNING  = 1,
+  DT_CONTROL_STATE_CLEANUP  = -1
+} dt_control_state_t;
+
 typedef struct dt_control_t
 {
   gboolean accel_initialising;
@@ -178,9 +186,10 @@ typedef struct dt_control_t
   double last_expose_time;
 
   // job management
-  gboolean running;
+  gint running;
+  gboolean cups_started;
   gboolean export_scheduled;
-  dt_pthread_mutex_t queue_mutex, cond_mutex, run_mutex;
+  dt_pthread_mutex_t queue_mutex, cond_mutex;
   pthread_cond_t cond;
   int32_t num_threads;
   pthread_t *thread, kick_on_workers_thread, update_gphoto_thread;

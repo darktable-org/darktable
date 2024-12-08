@@ -128,7 +128,7 @@ static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *crf, dt_l
 {
   dt_lib_ratings_t *d = self->data;
 
-  if(!darktable.control->running) return TRUE;
+  if(!dt_control_running()) return TRUE;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
