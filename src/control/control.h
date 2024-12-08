@@ -187,6 +187,7 @@ typedef struct dt_control_t
 
   // job management
   gint running;
+  gboolean cups_started;
   gboolean export_scheduled;
   dt_pthread_mutex_t queue_mutex, cond_mutex;
   pthread_cond_t cond;

@@ -193,6 +193,7 @@ static int _detect_printers_callback(dt_job_t *job)
     res=1;
   }
 #endif
+  darktable.control->cups_started = TRUE;
   return !res;
 }
 
