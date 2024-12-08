@@ -201,6 +201,7 @@ void dt_control_init(dt_control_t *s)
   s->widget_definitions = g_ptr_array_new ();
   s->input_drivers = NULL;
   s->running = DT_CONTROL_STATE_DISABLED;
+  s->cups_started = FALSE;
 
   dt_action_define_fallback(DT_ACTION_TYPE_IOP, &dt_action_def_iop);
   dt_action_define_fallback(DT_ACTION_TYPE_LIB, &dt_action_def_lib);
@@ -297,6 +298,15 @@ void dt_control_quit()
   if(dt_control_running())
   {
     dt_control_t *dc = darktable.control;
+
+#ifdef HAVE_PRINT
+    dt_printers_abort_discovery();
+    // Cups timeout could be pretty long, at least 30seconds
+    // but don't rely on cups returning correctly so a timeout
+    for(int i = 0; i < 40000 && !dc->cups_started; i++)
+      g_usleep(1000);
+#endif
+
     dt_pthread_mutex_lock(&dc->cond_mutex);
     // set the "pending cleanup work" flag to be handled in dt_control_shutdown()
     g_atomic_int_set(&dc->running, DT_CONTROL_STATE_CLEANUP);
