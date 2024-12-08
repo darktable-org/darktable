@@ -200,6 +200,7 @@ void dt_control_init(dt_control_t *s)
   s->confirm_mapping = TRUE;
   s->widget_definitions = g_ptr_array_new ();
   s->input_drivers = NULL;
+  s->running = DT_CONTROL_STATE_DISABLED;
 
   dt_action_define_fallback(DT_ACTION_TYPE_IOP, &dt_action_def_iop);
   dt_action_define_fallback(DT_ACTION_TYPE_LIB, &dt_action_def_lib);
@@ -234,7 +235,6 @@ void dt_control_init(dt_control_t *s)
   dt_pthread_mutex_init(&s->cond_mutex, NULL);
   dt_pthread_mutex_init(&s->queue_mutex, NULL);
   dt_pthread_mutex_init(&s->res_mutex, NULL);
-  dt_pthread_mutex_init(&s->run_mutex, NULL);
   dt_pthread_mutex_init(&s->global_mutex, NULL);
   dt_pthread_mutex_init(&s->progress_system.mutex, NULL);
 
@@ -268,28 +268,38 @@ void dt_control_change_cursor(dt_cursor_t curs)
   }
 }
 
+/* Some implementation and how-to use notes about control->running
+  It is declared as a global gint with states defined in dt_control_state_t and may only be
+    written/read or modified via atomic intructions to avoid a protecting mutex.
+
+  We have gboolean dt_control_running() checking for a running control system all over the code.
+
+  dt_control_quit() is called whenever we want to close darktable.
+    It is triggered either by callbacks from the gui frontend (ctrl-q or click on close button)
+    or from lua.
+    By setting control->running to DT_CONTROL_STATE_CLEANUP here we
+      a) make sure the system recognizes this a not running any more and
+      b) leave a note about pending cleanup
+
+  dt_control_shutdown() is called when darktable closes, it checks for pending work (threads to be joined)
+    via DT_CONTROL_STATE_CLEANUP before doing so.
+*/
+
 gboolean dt_control_running()
 {
-  // FIXME: when shutdown, run_mutex is not inited anymore!
   dt_control_t *dc = darktable.control;
-  if(!dc)
-    return FALSE;
-  dt_pthread_mutex_lock(&dc->run_mutex);
-  const gboolean running = dc->running;
-  dt_pthread_mutex_unlock(&dc->run_mutex);
-  return running;
+  const gint status = dc ? g_atomic_int_get(&dc->running) : DT_CONTROL_STATE_DISABLED;
+  return status == DT_CONTROL_STATE_RUNNING;
 }
 
 void dt_control_quit()
 {
-  // thread safe quit, 1st pass:
-  dt_control_t *dc = darktable.control;
-  if(dc)
+  if(dt_control_running())
   {
+    dt_control_t *dc = darktable.control;
     dt_pthread_mutex_lock(&dc->cond_mutex);
-    dt_pthread_mutex_lock(&dc->run_mutex);
-    dc->running = FALSE;
-    dt_pthread_mutex_unlock(&dc->run_mutex);
+    // set the "pending cleanup work" flag to be handled in dt_control_shutdown()
+    g_atomic_int_set(&dc->running, DT_CONTROL_STATE_CLEANUP);
     dt_pthread_mutex_unlock(&dc->cond_mutex);
   }
 
@@ -304,30 +314,36 @@ void dt_control_shutdown(dt_control_t *s)
 {
   if(!s)
     return;
-  dt_pthread_mutex_lock(&s->cond_mutex);
-  dt_pthread_mutex_lock(&s->run_mutex);
-  const gboolean was_running = s->running;
-  s->running = FALSE;
-  dt_pthread_mutex_unlock(&s->run_mutex);
-  dt_pthread_mutex_unlock(&s->cond_mutex);
-  pthread_cond_broadcast(&s->cond);
 
+  dt_pthread_mutex_lock(&s->cond_mutex);
+  const gboolean cleanup = g_atomic_int_exchange(&s->running, DT_CONTROL_STATE_DISABLED) == DT_CONTROL_STATE_CLEANUP;
+  pthread_cond_broadcast(&s->cond);
+  dt_pthread_mutex_unlock(&s->cond_mutex);
+
+  int err = 0; // collect all joining errors
   /* first wait for gphoto device updater */
 #ifdef HAVE_GPHOTO2
-  pthread_join(s->update_gphoto_thread, NULL);
+   err = pthread_join(s->update_gphoto_thread, NULL);
 #endif
-  if(!was_running)
-    return;		// if not running, there are no threads to join
+
+  if(!cleanup)
+    return;   // if not running there are no threads to join
+
+  dt_print(DT_DEBUG_CONTROL, "[dt_control_shutdown] closing control threads");
 
   /* then wait for kick_on_workers_thread */
-  pthread_join(s->kick_on_workers_thread, NULL);
+  if(!err) err |= pthread_join(s->kick_on_workers_thread, NULL);
 
   for(int k = 0; k < s->num_threads; k++)
     // pthread_kill(s->thread[k], 9);
-    pthread_join(s->thread[k], NULL);
+    if(!err) err |= pthread_join(s->thread[k], NULL);
+
   for(int k = 0; k < DT_CTL_WORKER_RESERVED; k++)
     // pthread_kill(s->thread_res[k], 9);
-    pthread_join(s->thread_res[k], NULL);
+    if(!err) err |= pthread_join(s->thread_res[k], NULL);
+
+  if(err != 0)
+    dt_print(DT_DEBUG_ALWAYS, "[dt_control_shutdown] couldn't join all threads, problems ahead");
 
 }
 
@@ -344,7 +360,6 @@ void dt_control_cleanup(dt_control_t *s)
   dt_pthread_mutex_destroy(&s->log_mutex);
   dt_pthread_mutex_destroy(&s->toast_mutex);
   dt_pthread_mutex_destroy(&s->res_mutex);
-  dt_pthread_mutex_destroy(&s->run_mutex);
   dt_pthread_mutex_destroy(&s->progress_system.mutex);
   if(s->widgets) g_hash_table_destroy(s->widgets);
   if(s->shortcuts) g_sequence_free(s->shortcuts);

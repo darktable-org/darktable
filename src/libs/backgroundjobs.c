@@ -252,7 +252,7 @@ static void _lib_backgroundjobs_cancellable(dt_lib_module_t *self, dt_lib_backgr
 {
   // add a cancel button to the gui. when clicked we want dt_control_progress_cancel(darktable.control,
   // progress); to be called
-  if(!darktable.control->running) return;
+  if(!dt_control_running()) return;
 
   _cancellable_gui_thread_t *params = malloc(sizeof(_cancellable_gui_thread_t));
   if(!params) return;
@@ -281,7 +281,7 @@ static void _lib_backgroundjobs_updated(dt_lib_module_t *self, dt_lib_background
                                         double value)
 {
   // update the progress bar
-  if(!darktable.control->running) return;
+  if(!dt_control_running()) return;
 
   _update_gui_thread_t *params = malloc(sizeof(_update_gui_thread_t));
   if(!params) return;
@@ -311,7 +311,7 @@ static void _lib_backgroundjobs_message_updated(dt_lib_module_t *self, dt_lib_ba
                                                 const char *message)
 {
   // update the progress bar
-  if(!darktable.control->running) return;
+  if(!dt_control_running()) return;
 
   _update_label_gui_thread_t *params = malloc(sizeof(_update_label_gui_thread_t));
   if(!params) return;
