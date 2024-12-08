@@ -10,11 +10,15 @@ source "$HERE"/apprun-hooks/"linuxdeploy-plugin-gtk.sh"
 
 if [[ ! -z $APPIMAGE ]] ; then
   BINARY_NAME=$(basename "$ARGV0")
-  if [[ -e "$HERE/usr/bin/$BINARY_NAME" ]] ; then
-    exec "$HERE/usr/bin/$BINARY_NAME" "$@"
+  if [[ ! -z "$1" ]] && [[ -e "$HERE/usr/bin/$1" ]] ; then
+    EXECFILE="$HERE/usr/bin/$1" ; shift
+  elif [[ -e "$HERE/usr/bin/$BINARY_NAME" ]] ; then
+    EXECFILE="$HERE/usr/bin/$BINARY_NAME"
   else
-    exec "$HERE/usr/bin/darktable" "$@"
+    EXECFILE="$HERE/usr/bin/darktable"
   fi
 else
-  exec "$HERE/usr/bin/darktable" "$@"
+  EXECFILE="$HERE/usr/bin/darktable"
 fi
+
+exec "$EXECFILE" "$@"
