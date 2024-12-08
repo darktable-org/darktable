@@ -409,7 +409,7 @@ gboolean dt_control_add_job(dt_control_t *control,
     return TRUE;
   }
 
-  if(!control->running || queue_id == DT_JOB_QUEUE_SYNCHRONOUS)
+  if(!dt_control_running() || queue_id == DT_JOB_QUEUE_SYNCHRONOUS)
   {
     // whatever we are adding here won't be scheduled as the system isn't running. execute it synchronous instead.
     dt_pthread_mutex_lock(&job->wait_mutex); // is that even needed?
@@ -637,19 +637,21 @@ void dt_control_jobs_init(dt_control_t *control)
   control->num_threads = dt_worker_threads();
   control->thread = (pthread_t *)calloc(control->num_threads, sizeof(pthread_t));
   control->job = (dt_job_t **)calloc(control->num_threads, sizeof(dt_job_t *));
-  dt_pthread_mutex_lock(&control->run_mutex);
-  control->running = TRUE;
-  dt_pthread_mutex_unlock(&control->run_mutex);
+
+  g_atomic_int_set(&control->running, DT_CONTROL_STATE_RUNNING);
+
+  int err = 0; // collected errors while creating all threads
+
   for(int k = 0; k < control->num_threads; k++)
   {
     worker_thread_parameters_t *params = calloc(1, sizeof(worker_thread_parameters_t));
     params->self = control;
     params->threadid = k;
-    dt_pthread_create(&control->thread[k], _control_work, params);
+    err |= dt_pthread_create(&control->thread[k], _control_work, params);
   }
 
   /* create queue kicker thread */
-  dt_pthread_create(&control->kick_on_workers_thread, _control_worker_kicker, control);
+  err |= dt_pthread_create(&control->kick_on_workers_thread, _control_worker_kicker, control);
 
   for(int k = 0; k < DT_CTL_WORKER_RESERVED; k++)
   {
@@ -658,18 +660,22 @@ void dt_control_jobs_init(dt_control_t *control)
     worker_thread_parameters_t *params = calloc(1, sizeof(worker_thread_parameters_t));
     params->self = control;
     params->threadid = k;
-    dt_pthread_create(&control->thread_res[k], _control_work_res, params);
+    err |= dt_pthread_create(&control->thread_res[k], _control_work_res, params);
   }
   /* create thread taking care of connecting gphoto2 devices */
 #ifdef HAVE_GPHOTO2
-  dt_pthread_create(&control->update_gphoto_thread, dt_update_cameras_thread, control);
+  err |= dt_pthread_create(&control->update_gphoto_thread, dt_update_cameras_thread, control);
 #endif
+  if(err != 0)
+    dt_print(DT_DEBUG_ALWAYS, "[dt_control_jobs_init] couldn't create all threads, problems ahead");
 }
 
 void dt_control_jobs_cleanup(dt_control_t *control)
 {
   free(control->job);
+  control->job = NULL;
   free(control->thread);
+  control->thread = NULL;
 }
 
 // clang-format off
