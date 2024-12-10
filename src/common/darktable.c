@@ -1590,7 +1590,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     if(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"))
       dt_gui_presets_init(); // init preset db schema.
 
-    g_atomic_int_set(&darktable.control->running, DT_CONTROL_STATE_DISABLED);
+    dt_atomic_set_int(&darktable.control->running, DT_CONTROL_STATE_DISABLED);
     dt_pthread_mutex_init(&darktable.control->log_mutex, NULL);
   }
 

@@ -186,7 +186,7 @@ typedef struct dt_control_t
   double last_expose_time;
 
   // job management
-  gint running;
+  dt_atomic_int running;
   gboolean cups_started;
   gboolean export_scheduled;
   dt_pthread_mutex_t queue_mutex, cond_mutex;
