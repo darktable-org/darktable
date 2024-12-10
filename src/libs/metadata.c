@@ -748,7 +748,7 @@ static void _metadata_activated(GtkTreeView *tree_view,
 // dialog to add metadata tag into the formula list
 static void _add_tag_button_clicked(GtkButton *button, dt_lib_metadata_t *d)
 {
-  GtkWidget *dialog = dt_metadata_tags_dialog(d->dialog, TRUE, _metadata_activated, d);
+  GtkWidget *dialog = dt_metadata_tags_dialog(d->dialog, _metadata_activated, d);
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
@@ -1034,7 +1034,8 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
       g_free(query);
 
       // now the metadata entries
-      query = g_strdup_printf("DELETE FROM data.meta_data WHERE key IN (%s)",
+      query = g_strdup_printf("DELETE FROM data.meta_data "
+                              "WHERE dt_default = 0 AND key IN (%s)",
                               keys);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   query,
