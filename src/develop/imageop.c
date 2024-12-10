@@ -2511,8 +2511,8 @@ static gboolean _iop_plugin_body_button_press(GtkWidget *w,
 }
 
 static gboolean _iop_plugin_header_button_release(GtkWidget *w,
-                                                GdkEventButton *e,
-                                                gpointer user_data)
+                                                  GdkEventButton *e,
+                                                  gpointer user_data)
 {
   if(e->type == GDK_2BUTTON_PRESS || e->type == GDK_3BUTTON_PRESS) return TRUE;
 

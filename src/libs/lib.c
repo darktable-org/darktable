@@ -597,7 +597,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
 static int _lib_position(const dt_lib_module_t *module)
 {
   int pos = module->position ? module->position(module) + 1 : 0;
-  
+
   gchar *key = _get_lib_view_path(module, NULL, "_position");
   if(key && dt_conf_key_exists(key))
     pos = dt_conf_get_int(key);
@@ -959,8 +959,8 @@ gboolean dt_lib_gui_get_expanded(dt_lib_module_t *module)
 }
 
 static gboolean _lib_plugin_header_button_release(GtkWidget *w,
-                                                GdkEventButton *e,
-                                                gpointer user_data)
+                                                  GdkEventButton *e,
+                                                  gpointer user_data)
 {
   if(e->type == GDK_2BUTTON_PRESS || e->type == GDK_3BUTTON_PRESS) return TRUE;
 
