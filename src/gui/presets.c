@@ -1257,15 +1257,14 @@ static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
                                         GdkEventButton *event,
                                         dt_iop_module_t *module)
 {
-  static guint click_time = 0;
-  if(event->type == GDK_BUTTON_PRESS)
-    click_time = event->time;
+  static guint click_time = G_MAXINT;
+  gboolean long_click = dt_gui_long_click(event->time, click_time);
 
   gchar *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
 
   if(event->button == 1 || (module->flags() & IOP_FLAGS_ONE_INSTANCE))
   {
-    if(event->type == GDK_BUTTON_PRESS)
+    if(click_time > event->time)
     {
       GtkContainer *menu = GTK_CONTAINER(gtk_widget_get_parent(GTK_WIDGET(menuitem)));
       for(GList *c = gtk_container_get_children(menu); c; c = g_list_delete_link(c, c))
@@ -1277,11 +1276,8 @@ static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
   }
   else if(event->button == 3 && event->type == GDK_BUTTON_RELEASE)
   {
-    if(dt_gui_long_click(event->time, click_time))
-    {
+    if(long_click)
       dt_shortcut_copy_lua((dt_action_t*)module, name);
-      return TRUE;
-    }
     else
     {
       dt_iop_module_t *new_module = dt_iop_gui_duplicate(module, FALSE);
@@ -1298,7 +1294,8 @@ static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
     dt_iop_connect_accels_multi(module->so);
   }
 
-  return dt_gui_long_click(event->time, click_time); // keep menu open on long click
+  click_time = event->type == GDK_BUTTON_PRESS ? event->time : G_MAXINT;
+  return long_click; // keep menu open on long click
 }
 
 // need to catch "activate" signal as well to handle keyboard
