@@ -59,6 +59,7 @@ jobs:
             libfuse2 \
             libgdk-pixbuf2.0-dev \
             libglib2.0-dev \
+            libgmic-dev \
             libgraphicsmagick1-dev \
             libgtk-3-dev \
             libinih-dev \
@@ -98,7 +99,6 @@ jobs:
           sudo apt-get update
           sudo apt-get -y install \
             libavif-dev \
-            libgmic-dev \
             libgphoto2-dev \
             libheif-dev \
             libimath-dev \
