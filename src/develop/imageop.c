@@ -2510,7 +2510,7 @@ static gboolean _iop_plugin_body_button_press(GtkWidget *w,
   return FALSE;
 }
 
-static gboolean _iop_plugin_header_button_press(GtkWidget *w,
+static gboolean _iop_plugin_header_button_release(GtkWidget *w,
                                                 GdkEventButton *e,
                                                 gpointer user_data)
 {
@@ -2966,7 +2966,7 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
   g_signal_connect(button, "enter-notify-event",
                    G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(element));
-  g_signal_connect(button, "button-press-event", G_CALLBACK(callback), module);
+  g_signal_connect(button, "button-release-event", G_CALLBACK(callback), module);
   dt_action_define(&module->so->actions, NULL, NULL, button, NULL);
   gtk_widget_show(button);
 
@@ -3073,8 +3073,8 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   module->header = header;
 
   /* setup the header box */
-  g_signal_connect(G_OBJECT(header_evb), "button-press-event",
-                   G_CALLBACK(_iop_plugin_header_button_press), module);
+  g_signal_connect(G_OBJECT(header_evb), "button-release-event",
+                   G_CALLBACK(_iop_plugin_header_button_release), module);
   gtk_widget_add_events(header_evb, GDK_POINTER_MOTION_MASK);
   g_signal_connect(G_OBJECT(header_evb), "enter-notify-event",
                    G_CALLBACK(_header_motion_notify_show_callback), module);
