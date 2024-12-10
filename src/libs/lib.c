@@ -958,7 +958,7 @@ gboolean dt_lib_gui_get_expanded(dt_lib_module_t *module)
   return dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander));
 }
 
-static gboolean _lib_plugin_header_button_press(GtkWidget *w,
+static gboolean _lib_plugin_header_button_release(GtkWidget *w,
                                                 GdkEventButton *e,
                                                 gpointer user_data)
 {
@@ -1224,8 +1224,8 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   }
 
   /* setup the header box */
-  g_signal_connect(G_OBJECT(header_evb), "button-press-event",
-                   G_CALLBACK(_lib_plugin_header_button_press),
+  g_signal_connect(G_OBJECT(header_evb), "button-release-event",
+                   G_CALLBACK(_lib_plugin_header_button_release),
                    module);
   g_signal_connect(G_OBJECT(header_evb), "enter-notify-event",
                    G_CALLBACK(_header_enter_notify_callback),
@@ -1244,8 +1244,8 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   module->arrow = dtgtk_button_new(dtgtk_cairo_paint_solid_arrow, 0, NULL);
 
   gtk_widget_set_tooltip_text(module->arrow, _("show module"));
-  g_signal_connect(G_OBJECT(module->arrow), "button-press-event",
-                    G_CALLBACK(_lib_plugin_header_button_press), module);
+  g_signal_connect(G_OBJECT(module->arrow), "button-release-event",
+                    G_CALLBACK(_lib_plugin_header_button_release), module);
   dt_action_define(&module->actions, NULL, NULL, module->arrow, NULL);
   gtk_box_pack_start(GTK_BOX(header), module->arrow, FALSE, FALSE, 0);
 
