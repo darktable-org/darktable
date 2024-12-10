@@ -200,7 +200,7 @@ void dt_control_init(dt_control_t *s)
   s->confirm_mapping = TRUE;
   s->widget_definitions = g_ptr_array_new ();
   s->input_drivers = NULL;
-  s->running = DT_CONTROL_STATE_DISABLED;
+  dt_atomic_set_int(&s->running, DT_CONTROL_STATE_DISABLED);
   s->cups_started = FALSE;
 
   dt_action_define_fallback(DT_ACTION_TYPE_IOP, &dt_action_def_iop);
@@ -289,7 +289,7 @@ void dt_control_change_cursor(dt_cursor_t curs)
 gboolean dt_control_running()
 {
   dt_control_t *dc = darktable.control;
-  const gint status = dc ? g_atomic_int_get(&dc->running) : DT_CONTROL_STATE_DISABLED;
+  const int status = dc ? dt_atomic_get_int(&dc->running) : DT_CONTROL_STATE_DISABLED;
   return status == DT_CONTROL_STATE_RUNNING;
 }
 
@@ -309,7 +309,7 @@ void dt_control_quit()
 
     dt_pthread_mutex_lock(&dc->cond_mutex);
     // set the "pending cleanup work" flag to be handled in dt_control_shutdown()
-    g_atomic_int_set(&dc->running, DT_CONTROL_STATE_CLEANUP);
+    dt_atomic_set_int(&dc->running, DT_CONTROL_STATE_CLEANUP);
     dt_pthread_mutex_unlock(&dc->cond_mutex);
   }
 
@@ -326,7 +326,7 @@ void dt_control_shutdown(dt_control_t *s)
     return;
 
   dt_pthread_mutex_lock(&s->cond_mutex);
-  const gboolean cleanup = g_atomic_int_exchange(&s->running, DT_CONTROL_STATE_DISABLED) == DT_CONTROL_STATE_CLEANUP;
+  const gboolean cleanup = dt_atomic_exch_int(&s->running, DT_CONTROL_STATE_DISABLED) == DT_CONTROL_STATE_CLEANUP;
   pthread_cond_broadcast(&s->cond);
   dt_pthread_mutex_unlock(&s->cond_mutex);
 
@@ -342,19 +342,20 @@ void dt_control_shutdown(dt_control_t *s)
   dt_print(DT_DEBUG_CONTROL, "[dt_control_shutdown] closing control threads");
 
   /* then wait for kick_on_workers_thread */
-  if(!err) err |= pthread_join(s->kick_on_workers_thread, NULL);
+  err = pthread_join(s->kick_on_workers_thread, NULL);
+  dt_print(DT_DEBUG_CONTROL, "[dt_control_shutdown] joined kicker%s", err ? ", error" : "");
 
-  for(int k = 0; k < s->num_threads; k++)
-    // pthread_kill(s->thread[k], 9);
-    if(!err) err |= pthread_join(s->thread[k], NULL);
+  for(int k = 0; k < s->num_threads-1; k++)
+  {
+    err = pthread_join(s->thread[k], NULL);
+    dt_print(DT_DEBUG_CONTROL, "[dt_control_shutdown] joined num_thread %i%s", k, err ? ", error" : "");
+  }
 
   for(int k = 0; k < DT_CTL_WORKER_RESERVED; k++)
-    // pthread_kill(s->thread_res[k], 9);
-    if(!err) err |= pthread_join(s->thread_res[k], NULL);
-
-  if(err != 0)
-    dt_print(DT_DEBUG_ALWAYS, "[dt_control_shutdown] couldn't join all threads, problems ahead");
-
+  {
+    err = pthread_join(s->thread_res[k], NULL);
+    dt_print(DT_DEBUG_CONTROL, "[dt_control_shutdown] joined worker %i%s", k, err ? ", error" : "");
+  }
 }
 
 void dt_control_cleanup(dt_control_t *s)
