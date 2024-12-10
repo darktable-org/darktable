@@ -17,7 +17,7 @@
 */
 
 gchar *dt_metadata_tags_get_selected();
-GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent, gboolean text_only, gpointer metadata_activated_callback, gpointer user_data);
+GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent, gpointer metadata_activated_callback, gpointer user_data);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

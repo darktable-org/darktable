@@ -78,7 +78,7 @@ gchar *dt_metadata_tags_get_selected()
   return NULL;
 }
 
-GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent, gboolean text_only, gpointer metadata_activated_callback, gpointer user_data)
+GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent, gpointer metadata_activated_callback, gpointer user_data)
 {
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("select tag"), GTK_WINDOW(parent),
                                                   GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -131,17 +131,12 @@ GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent, gboolean text_only, gpoint
       type++;
     }
 
-    if(!text_only
-       || !g_strcmp0(type, "XmpText")
-       || !g_strcmp0(type, "XmpBag")
-       || !g_strcmp0(type, "Ascii")
-       || !g_strcmp0(type, "Comment"))
-      gtk_list_store_set(liststore,
-                        &iter,
-                        DT_METADATA_TAGS_COL_XMP, tagname,
-                        DT_METADATA_TAGS_COL_TYPE, type,
-                        DT_METADATA_TAGS_COL_VISIBLE, TRUE,
-                        -1);
+    gtk_list_store_set(liststore,
+                      &iter,
+                      DT_METADATA_TAGS_COL_XMP, tagname,
+                      DT_METADATA_TAGS_COL_TYPE, type,
+                      DT_METADATA_TAGS_COL_VISIBLE, TRUE,
+                      -1);
 
     if(type)
     {

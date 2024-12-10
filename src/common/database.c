@@ -3215,55 +3215,55 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
     gchar *query = NULL;
     visible = (dt_conf_get_int("plugins/lighttable/metadata/creator_flag") & 1) ? 0 : 1;
     query = g_strdup_printf("INSERT INTO data.meta_data VALUES(0, 'Xmp.dc.creator', '%s', %d, %d, 0, 1, 2)",
-                            _("creator"), visible, DT_METADATA_TYPE_USER);
+                            _("creator"), DT_METADATA_TYPE_USER, visible);
     TRY_EXEC(query, "can't insert meta_data_key record");
     g_free(query);
 
     visible = (dt_conf_get_int("plugins/lighttable/metadata/publisher_flag") & 1) ? 0 : 1;
     query = g_strdup_printf("INSERT INTO data.meta_data VALUES(1, 'Xmp.dc.publisher', '%s', %d, %d, 0, 1, 3)",
-                            _("publisher"), visible, DT_METADATA_TYPE_USER);
+                            _("publisher"), DT_METADATA_TYPE_USER, visible);
     TRY_EXEC(query, "can't insert meta_data_key record");
     g_free(query);
 
     visible = (dt_conf_get_int("plugins/lighttable/metadata/title_flag") & 1) ? 0 : 1;
     query = g_strdup_printf("INSERT INTO data.meta_data VALUES(2, 'Xmp.dc.title', '%s', %d, %d, 0, 1, 0)",
-                            _("title"), visible, DT_METADATA_TYPE_USER);
+                            _("title"), DT_METADATA_TYPE_USER, visible);
     TRY_EXEC(query, "can't insert meta_data_key record");
     g_free(query);
 
     visible = (dt_conf_get_int("plugins/lighttable/metadata/description_flag") & 1) ? 0 : 1;
     query = g_strdup_printf("INSERT INTO data.meta_data VALUES(3, 'Xmp.dc.description', '%s', %d, %d, 0, 1, 1)",
-                            _("description"), visible, DT_METADATA_TYPE_USER);
+                            _("description"), DT_METADATA_TYPE_USER, visible);
     TRY_EXEC(query, "can't insert meta_data_key record");
     g_free(query);
 
     visible = (dt_conf_get_int("plugins/lighttable/metadata/rights_flag") & 1) ? 0 : 1;
     query = g_strdup_printf("INSERT INTO data.meta_data VALUES(4, 'Xmp.dc.rights', '%s', %d, %d, 0, 1, 4)",
-                            _("rights"), visible, DT_METADATA_TYPE_USER);
+                            _("rights"), DT_METADATA_TYPE_USER, visible);
     TRY_EXEC(query, "can't insert meta_data_key record");
     g_free(query);
 
     visible = (dt_conf_get_int("plugins/lighttable/metadata/notes_flag") & 1) ? 0 : 1;
     query = g_strdup_printf("INSERT INTO data.meta_data VALUES(5, 'Xmp.acdsee.notes', '%s', %d, %d, 0, 1, 5)",
-                            _("notes"), visible, DT_METADATA_TYPE_USER);
+                            _("notes"), DT_METADATA_TYPE_USER, visible);
     TRY_EXEC(query, "can't insert meta_data_key record");
     g_free(query);
 
     visible = (dt_conf_get_int("plugins/lighttable/metadata/version name_flag") & 1) ? 0 : 1;
-    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(6, 'Xmp.darktable.version_name', '%s', 0, %d, 0, 1, 6)",
-                            _("version name"), visible);
+    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(6, 'Xmp.darktable.version_name', '%s', %d, %d, 0, 1, 6)",
+                            _("version name"), DT_METADATA_TYPE_OPTIONAL, visible);
     TRY_EXEC(query, "can't insert meta_data_key record");
     g_free(query);
 
     visible = 0;
-    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(7, 'Xmp.darktable.image_id', '%s', 1, %d, 0, 1, 7)",
-                            _("image id"), visible);
+    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(7, 'Xmp.darktable.image_id', '%s', %d, %d, 0, 1, 7)",
+                            _("image id"), DT_METADATA_TYPE_INTERNAL, visible);
     TRY_EXEC(query, "can't insert meta_data_key record");
     g_free(query);
 
     visible = (dt_conf_get_int("plugins/lighttable/metadata/preserved filename_flag") & 1) ? 0 : 1;
-    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(8, 'Xmp.xmpMM.PreservedFileName', '%s', 0, %d, 0, 1, 8)",
-                            _("preserved filename"), visible);
+    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(8, 'Xmp.xmpMM.PreservedFileName', '%s', %d, %d, 0, 1, 8)",
+                            _("preserved filename"), DT_METADATA_TYPE_OPTIONAL, visible);
     TRY_EXEC(query, "can't insert meta_data_key record");
     g_free(query);
 

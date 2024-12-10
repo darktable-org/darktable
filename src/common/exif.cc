@@ -4831,15 +4831,22 @@ static void _set_xmp_dt_metadata(Exiv2::XmpData &xmpData,
   {
     int keyid = sqlite3_column_int(stmt, 0);
     const dt_metadata_t *metadata = dt_metadata_get_metadata_by_keyid(keyid);
-    if(export_flag
-       && metadata
-       && metadata->type != DT_METADATA_TYPE_INTERNAL)
+    if(metadata)
     {
-      if(metadata->is_visible && !metadata->is_private)
+      if(export_flag
+        && metadata->type != DT_METADATA_TYPE_INTERNAL)
+      {
+        if(metadata->is_visible && !metadata->is_private)
+          xmpData[metadata->tagname] = sqlite3_column_text(stmt, 1);
+        else
+        {
+          Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey(metadata->tagname));
+          if(pos != xmpData.end()) xmpData.erase(pos);
+        }
+      }
+      else
         xmpData[metadata->tagname] = sqlite3_column_text(stmt, 1);
     }
-    else
-      xmpData[metadata->tagname] = sqlite3_column_text(stmt, 1);
   }
   dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);  
   sqlite3_finalize(stmt);
