@@ -2515,6 +2515,7 @@ static gboolean _iop_plugin_header_button_release(GtkWidget *w,
                                                   gpointer user_data)
 {
   if(e->type == GDK_2BUTTON_PRESS || e->type == GDK_3BUTTON_PRESS) return TRUE;
+  if(GTK_IS_BUTTON(gtk_get_event_widget((GdkEvent*)e))) return FALSE;
 
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
 
@@ -2966,7 +2967,7 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
   g_signal_connect(button, "enter-notify-event",
                    G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(element));
-  g_signal_connect(button, "button-release-event", G_CALLBACK(callback), module);
+  g_signal_connect(button, "button-press-event", G_CALLBACK(callback), module);
   dt_action_define(&module->so->actions, NULL, NULL, button, NULL);
   gtk_widget_show(button);
 
