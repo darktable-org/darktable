@@ -891,15 +891,16 @@ void dt_lib_unload_module(dt_lib_module_t *module)
     g_module_close(module->module);
 }
 
-static void dt_lib_gui_reset_callback(GtkButton *button,
-                                      gpointer user_data)
+gboolean _lib_gui_reset_callback(GtkButton *button,
+                                 gpointer user_data)
 {
   dt_lib_module_t *module = (dt_lib_module_t *)user_data;
   module->gui_reset(module);
+  return TRUE;
 }
 
-static void presets_popup_callback(GtkButton *button,
-                                   dt_lib_module_t *module)
+gboolean _presets_popup_callback(GtkButton *button,
+                                 dt_lib_module_t *module)
 {
   dt_lib_module_info_t *mi = calloc(1, sizeof(dt_lib_module_info_t));
 
@@ -918,6 +919,8 @@ static void presets_popup_callback(GtkButton *button,
 
   if(button)
     dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
+
+  return TRUE;
 }
 
 
@@ -1015,7 +1018,7 @@ static gboolean _lib_plugin_header_button_release(GtkWidget *w,
   else if(e->button == 3)
   {
     if(gtk_widget_get_sensitive(module->presets_button))
-      presets_popup_callback(NULL, module);
+      _presets_popup_callback(NULL, module);
 
     return TRUE;
   }
@@ -1198,7 +1201,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
       // because not automatically registered via lib if presets btn
       // has been loaded to be shown outside expander
       g_signal_connect(G_OBJECT(module->presets_button), "clicked",
-                       G_CALLBACK(presets_popup_callback), module);
+                       G_CALLBACK(_presets_popup_callback), module);
     }
     module->expander = NULL;
     return NULL;
@@ -1270,7 +1273,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   module->presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
   gtk_widget_set_tooltip_text(module->presets_button, _("presets and preferences"));
   g_signal_connect(G_OBJECT(module->presets_button), "clicked",
-                   G_CALLBACK(presets_popup_callback), module);
+                   G_CALLBACK(_presets_popup_callback), module);
   g_signal_connect(G_OBJECT(module->presets_button), "enter-notify-event",
                    G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_PRESETS));
@@ -1284,11 +1287,12 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   /* add reset button if module has implementation */
   module->reset_button = dtgtk_button_new(dtgtk_cairo_paint_reset, 0, NULL);
   g_signal_connect(G_OBJECT(module->reset_button), "clicked",
-                   G_CALLBACK(dt_lib_gui_reset_callback), module);
+                   G_CALLBACK(_lib_gui_reset_callback), module);
   g_signal_connect(G_OBJECT(module->reset_button), "enter-notify-event",
                    G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_RESET));
-  if(!module->gui_reset) gtk_widget_set_sensitive(module->reset_button, FALSE);
+  if(!module->gui_reset)
+    gtk_widget_set_sensitive(module->reset_button, FALSE);
   dt_action_define(&module->actions, NULL, NULL, module->reset_button, NULL);
   gtk_box_pack_end(GTK_BOX(header), module->reset_button, FALSE, FALSE, 0);
 
@@ -1496,7 +1500,10 @@ void dt_lib_colorpicker_set_box_area(dt_lib_t *lib,
 void dt_lib_colorpicker_set_point(dt_lib_t *lib,
                                   const float pos[2])
 {
-  if(!lib->proxy.colorpicker.module || !lib->proxy.colorpicker.set_sample_point) return;
+  if(!lib->proxy.colorpicker.module
+     || !lib->proxy.colorpicker.set_sample_point)
+    return;
+
   lib->proxy.colorpicker.set_sample_point(lib->proxy.colorpicker.module, pos);
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 }
@@ -1506,7 +1513,10 @@ void dt_lib_colorpicker_setup(dt_lib_t *lib,
                               const gboolean pick_output)
 
 {
-  if(!lib->proxy.colorpicker.module || !lib->proxy.colorpicker.setup_sample) return;
+  if(!lib->proxy.colorpicker.module
+     || !lib->proxy.colorpicker.setup_sample)
+    return;
+
   lib->proxy.colorpicker.setup_sample(lib->proxy.colorpicker.module, denoise, pick_output);
 }
 
@@ -1543,11 +1553,12 @@ static float _action_process(gpointer target,
       show_module_callback(module);
       break;
     case DT_ACTION_ELEMENT_RESET:
-      if(module->gui_reset) dt_lib_gui_reset_callback(NULL, module);
+      if(module->gui_reset)
+        _lib_gui_reset_callback(NULL, module);
       break;
     case DT_ACTION_ELEMENT_PRESETS:
       if(module->get_params || module->set_preferences)
-        presets_popup_callback(NULL, module);
+        _presets_popup_callback(NULL, module);
       break;
     }
   }
