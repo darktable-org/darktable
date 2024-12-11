@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2023 darktable developers.
+    Copyright (C) 2012-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -177,6 +177,14 @@ static void title_changed_callback(GtkEntry *entry, gpointer user_data)
   dt_conf_set_string("plugins/imageio/storage/latex/title", gtk_entry_get_text(entry));
 }
 
+static void _setup_variables_completion(gpointer instance, int type, dt_imageio_module_storage_t *self)
+{
+  latex_t *d = self->gui_data;
+
+  if(type == DT_METADATA_SIGNAL_PREF_CHANGED)
+    dt_gtkentry_setup_variables_completion(d->entry);
+}
+
 void gui_init(dt_imageio_module_storage_t *self)
 {
   latex_t *d = malloc(sizeof(latex_t));
@@ -186,7 +194,8 @@ void gui_init(dt_imageio_module_storage_t *self)
                                            _("enter the path where to put exported images\nvariables support bash like string manipulation\n"
                                              "type '$(' to activate the completion and see the list of variables"),
                                            dt_conf_get_string_const("plugins/imageio/storage/latex/file_directory")));
-  dt_gtkentry_setup_completion(d->entry, dt_gtkentry_get_default_path_compl_list());
+  dt_gtkentry_setup_variables_completion(d->entry);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_METADATA_CHANGED, _setup_variables_completion, self);
 
   GtkWidget *widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
   gtk_widget_set_name(widget, "non-flat");

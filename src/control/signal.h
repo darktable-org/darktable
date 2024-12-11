@@ -96,7 +96,9 @@ typedef enum dt_signal_t
   // if locid <> 0 it the new selected location on map
   DT_SIGNAL_GEOTAG_CHANGED,
 
-  /** \brief This signal is raised when metadata status (shown/hidden) or value has changed */
+  /** \brief This signal is raised when metadata preferences or value has changed
+  1 : int the type of the change
+  */
   DT_SIGNAL_METADATA_CHANGED,
 
   /** \brief This signal is raised when any of image info has changed  */

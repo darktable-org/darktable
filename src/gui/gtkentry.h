@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2020 darktable developers.
+    Copyright (C) 2012-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,12 +36,8 @@ typedef enum
   COMPL_DESCRIPTION
 } dtGtkEntryCompletionSpecCol;
 
-void dt_gtkentry_setup_completion(GtkEntry *entry, const dt_gtkentry_completion_spec *compl_list);
+void dt_gtkentry_setup_variables_completion(GtkEntry *entry);
 
-const dt_gtkentry_completion_spec *dt_gtkentry_get_default_path_compl_list();
-
-gchar *dt_gtkentry_build_completion_tooltip_text(const gchar *header,
-                                                 const dt_gtkentry_completion_spec *compl_list);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
