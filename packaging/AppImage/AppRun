@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
 
-# The purpose of this custom AppRun script is to allow symlinking the AppImage
-# and invoking the corresponding binary depending on which symlink was used
-# to invoke the AppImage
+# The purpose of this custom AppRun script is to allow the user to specify
+# which binary from the multi-binary AppImage to run. This can be done in
+# one of two ways:
+# - The binary name can be specified as the first command line argument.
+# If there is a binary with that name inside the AppImage, it will be run
+# instead of the default one.
+# - The user can create a symlink to the AppImage file and run it via the
+# symlink. If inside the AppImage there is a binary with a name that matches
+# the symlink name, it will be launched instead of the default one.
 
 HERE="$(dirname "$(readlink -f "${0}")")"
 
