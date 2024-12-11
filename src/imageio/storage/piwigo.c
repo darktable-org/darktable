@@ -1006,6 +1006,14 @@ static void _filname_pattern_entry_changed_callback(GtkEntry *entry,
   dt_conf_set_string("plugins/imageio/storage/export/piwigo/filename_pattern", gtk_entry_get_text(entry));
 }
 
+static void _setup_variables_completion(gpointer instance, int type, dt_imageio_module_storage_t *self)
+{
+  dt_storage_piwigo_gui_data_t *ui = self->gui_data;
+
+  if(type == DT_METADATA_SIGNAL_PREF_CHANGED)
+    dt_gtkentry_setup_variables_completion(ui->filename_pattern_entry);
+}
+
 void gui_init(dt_imageio_module_storage_t *self)
 {
   self->gui_data = g_malloc0(sizeof(dt_storage_piwigo_gui_data_t));
@@ -1138,8 +1146,9 @@ void gui_init(dt_imageio_module_storage_t *self)
                  "variables support bash like string manipulation\n"
                  "type '$(' to activate the completion and see the list of variables"),
                dt_conf_get_string_const("plugins/imageio/storage/export/piwigo/filename_pattern")));
-  dt_gtkentry_setup_completion(ui->filename_pattern_entry, dt_gtkentry_get_default_path_compl_list());
+  dt_gtkentry_setup_variables_completion(ui->filename_pattern_entry);
   gtk_editable_set_position(GTK_EDITABLE(ui->filename_pattern_entry), -1);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_METADATA_CHANGED, _setup_variables_completion, self);
 
   // action on conflict
   ui->conflict_action = dt_bauhaus_combobox_new(NULL);

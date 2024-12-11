@@ -803,66 +803,6 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     }
     g_list_free(res);
   }
-  else if(_has_prefix(variable, "TITLE")
-          || _has_prefix(variable, "Xmp.dc.title"))
-  {
-    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.title", NULL);
-    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
-    if(res != NULL)
-    {
-      result = g_strdup((char *)res->data);
-    }
-    g_list_free_full(res, &g_free);
-  }
-  else if(_has_prefix(variable, "DESCRIPTION")
-          || _has_prefix(variable, "Xmp.dc.description"))
-  {
-    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.description", NULL);
-    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
-    if(res != NULL)
-    {
-      result = g_strdup((char *)res->data);
-    }
-    g_list_free_full(res, &g_free);
-  }
-  else if(_has_prefix(variable, "CREATOR")
-          || _has_prefix(variable, "Xmp.dc.creator"))
-  {
-    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.creator", NULL);
-    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
-    if(res != NULL)
-    {
-      result = g_strdup((char *)res->data);
-    }
-    g_list_free_full(res, &g_free);
-  }
-  else if(_has_prefix(variable, "PUBLISHER")
-          || _has_prefix(variable, "Xmp.dc.publisher"))
-  {
-    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.publisher", NULL);
-    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
-    if(res != NULL)
-    {
-      result = g_strdup((char *)res->data);
-    }
-    g_list_free_full(res, &g_free);
-  }
-  else if(_has_prefix(variable, "RIGHTS")
-          || _has_prefix(variable, "Xmp.dc.rights"))
-  {
-    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.rights", NULL);
-    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
-    if(res != NULL)
-    {
-      result = g_strdup((char *)res->data);
-    }
-    g_list_free_full(res, &g_free);
-  }
   else if(_has_prefix(variable, "OPENCL.ACTIVATED")
           || _has_prefix(variable, "OPENCL_ACTIVATED"))
   {
@@ -998,6 +938,29 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
           || _has_prefix(variable, "DARKTABLE_NAME"))
     result = g_strdup(PACKAGE_NAME);
   else
+  {
+    // metadata
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+    for(GList* iter = dt_metadata_get_list(); iter; iter = iter->next)
+    {
+      dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
+      gchar *prefix = g_utf8_strup(dt_metadata_get_tag_subkey(metadata->tagname), -1);
+      gboolean found = FALSE;
+      if(_has_prefix(variable, prefix))
+      {
+        GList *res = dt_metadata_get(params->imgid, metadata->tagname, NULL);
+        if(res != NULL)
+          	result = g_strdup((char *)res->data);
+        g_list_free_full(res, g_free);
+        found = TRUE;
+      }
+      g_free(prefix);
+      if(found) break;
+    }
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+  }
+  
+  if(!result)
   {
     // go past what looks like an invalid variable. we only expect to
     // see [a-zA-Z]* in a variable name.
