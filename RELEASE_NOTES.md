@@ -117,12 +117,12 @@ changes (where available).
 
 - Drag&drop utility module headers to reposition them across the left
   and right panels (lighttable) as well as vertically (all
-  views). Hold <kbd>Ctrl+Shift</kbd> to avoid expanding/collapsing
-  them before dragging. Each view can have a different layout.
+  views). Each view can have a different layout.
 
 - Drag&drop of processing modules in the darkroom right panel has been
   improved to auto-scroll when reaching the top or bottom and to not
-  get confused when images get dragged into the area.
+  get confused when images get dragged into the area. This functionality
+  no longer requires <kbd>Ctrl+Shift</kbd> modifiers.
 
 - Improved the message displayed at startup when the database is
   locked by another instance of darktable.
