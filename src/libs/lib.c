@@ -899,6 +899,13 @@ gboolean _lib_gui_reset_callback(GtkButton *button,
   return TRUE;
 }
 
+gboolean _lib_gui_button_reset_release_event(GtkButton *button,
+                                             GdkEventButton *event,
+                                             dt_lib_module_t *module)
+{
+  return _lib_gui_reset_callback(button, module);
+}
+
 gboolean _presets_popup_callback(GtkButton *button,
                                  dt_lib_module_t *module)
 {
@@ -923,6 +930,12 @@ gboolean _presets_popup_callback(GtkButton *button,
   return TRUE;
 }
 
+gboolean _lib_gui_button_presets_release_event(GtkButton *button,
+                                               GdkEventButton *event,
+                                               gpointer user_data)
+{
+  return _presets_popup_callback(button, user_data);
+}
 
 void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
 {
@@ -1274,6 +1287,8 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_widget_set_tooltip_text(module->presets_button, _("presets and preferences"));
   g_signal_connect(G_OBJECT(module->presets_button), "clicked",
                    G_CALLBACK(_presets_popup_callback), module);
+  g_signal_connect(G_OBJECT(module->presets_button), "button-release-event",
+                   G_CALLBACK(_lib_gui_button_presets_release_event), module);
   g_signal_connect(G_OBJECT(module->presets_button), "enter-notify-event",
                    G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_PRESETS));
@@ -1288,6 +1303,8 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   module->reset_button = dtgtk_button_new(dtgtk_cairo_paint_reset, 0, NULL);
   g_signal_connect(G_OBJECT(module->reset_button), "clicked",
                    G_CALLBACK(_lib_gui_reset_callback), module);
+  g_signal_connect(G_OBJECT(module->reset_button), "button-release-event",
+                   G_CALLBACK(_lib_gui_button_reset_release_event), module);
   g_signal_connect(G_OBJECT(module->reset_button), "enter-notify-event",
                    G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_RESET));
