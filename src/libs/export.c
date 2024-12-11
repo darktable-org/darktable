@@ -645,7 +645,6 @@ void gui_reset(dt_lib_module_t *self)
   // style
   // set it to none if the var is not set or the style doesn't exist anymore
   const char *style = dt_conf_get_string_const(CONFIG_PREFIX "style");
-  fprintf(stderr,"style=%s\n",style);
   if(style == NULL || !style[0] || !dt_styles_exists(style))
     style = "";
   g_free(d->style_name);
