@@ -21,7 +21,7 @@
 #include <glib.h>
 
 struct dt_control_t;
-struct _dt_job_t;
+struct dt_job_t;
 
 struct _dt_progress_t;
 typedef struct _dt_progress_t dt_progress_t;
@@ -43,7 +43,7 @@ void dt_control_progress_make_cancellable(struct dt_control_t *control, dt_progr
                                           dt_progress_cancel_callback_t cancel, void *data);
 /** convenience function to cancel a job when the progress gets cancelled. */
 void dt_control_progress_attach_job(struct dt_control_t *control, dt_progress_t *progress,
-                                    struct _dt_job_t *job);
+                                    struct dt_job_t *job);
 /** cancel the job linked to with dt_control_progress_attach_job(). don't forget to call
  * dt_control_progress_destroy() afterwards. */
 void dt_control_progress_cancel(struct dt_control_t *control, dt_progress_t *progress);

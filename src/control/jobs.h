@@ -22,6 +22,7 @@
 #include <inttypes.h>
 #include <stddef.h>
 #include <views/view.h>
+#include "control/progress.h"
 
 #define DT_CONTROL_DESCRIPTION_LEN 256
 // reserved workers
@@ -52,11 +53,35 @@ typedef enum dt_job_queue_t
   DT_JOB_QUEUE_SYNCHRONOUS = 1000 // don't queue, run immediately and don't return until done
 } dt_job_queue_t;
 
-typedef struct _dt_job_t dt_job_t;
+typedef struct dt_job_t _dt_job_t;
 
-typedef int32_t (*dt_job_execute_callback)(dt_job_t *);
-typedef void (*dt_job_state_change_callback)(dt_job_t *, dt_job_state_t state);
+typedef int32_t (*dt_job_execute_callback)(_dt_job_t *);
+typedef void (*dt_job_state_change_callback)(_dt_job_t *, dt_job_state_t state);
 typedef void (*dt_job_destroy_callback)(void *data);
+
+typedef struct dt_job_t
+{
+  dt_job_execute_callback execute;
+  void *params;
+  size_t params_size;
+  dt_job_destroy_callback params_destroy;
+  int32_t result;
+
+  dt_pthread_mutex_t state_mutex;
+  dt_pthread_mutex_t wait_mutex;
+
+  dt_job_state_t state;
+  unsigned char priority;
+  dt_job_queue_t queue;
+
+  dt_job_state_change_callback state_changed_cb;
+
+  dt_progress_t *progress;
+
+  char description[DT_CONTROL_DESCRIPTION_LEN];
+  dt_view_type_flags_t view_creator;
+  gboolean is_synchronous;
+} dt_job_t;
 
 /** create a new initialized job */
 dt_job_t *dt_control_job_create(dt_job_execute_callback execute, const char *msg, ...) __attribute__((format(printf, 2, 3)));
@@ -67,8 +92,6 @@ void dt_control_job_set_state_callback(dt_job_t *job, dt_job_state_change_callba
 /** cancel a job, running or in queue. */
 void dt_control_job_cancel(dt_job_t *job);
 dt_job_state_t dt_control_job_get_state(dt_job_t *job);
-/** wait for a job to finish execution. */
-void dt_control_job_wait(dt_job_t *job);
 /** set job params and a callback to destroy those params */
 void dt_control_job_set_params(dt_job_t *job, void *params, dt_job_destroy_callback callback);
 /** set job params (with size params_size) and a callback to destroy those params.
@@ -92,9 +115,6 @@ gboolean dt_control_add_job_res(struct dt_control_t *s, dt_job_t *job, int32_t r
 
 dt_view_type_flags_t dt_control_job_get_view_creator(const dt_job_t *job);
 gboolean dt_control_job_is_synchronous(const dt_job_t *job);
-void dt_control_job_set_synchronous(dt_job_t *job, gboolean sync);
-
-int32_t dt_control_get_threadid();
 
 #ifdef HAVE_GPHOTO2
 #include "control/jobs/camera_jobs.h"

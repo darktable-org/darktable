@@ -289,8 +289,8 @@ void dt_control_change_cursor(dt_cursor_t curs)
 gboolean dt_control_running()
 {
   dt_control_t *dc = darktable.control;
-  const int status = dc ? dt_atomic_get_int(&dc->running) : DT_CONTROL_STATE_DISABLED;
-  return status == DT_CONTROL_STATE_RUNNING;
+  return dc ? dt_atomic_get_int(&dc->running) == DT_CONTROL_STATE_RUNNING
+            : FALSE;
 }
 
 void dt_control_quit()
