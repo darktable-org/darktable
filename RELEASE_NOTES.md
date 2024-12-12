@@ -252,8 +252,11 @@ changes (where available).
   specific tags, we tag the image by darktable|issue|no-samples for
   better support.
 
-- Added support for HEIF files with AVC (H.264) compression and .avci
-  file extension.
+- Added read support for HEIF files with AVC (H.264) compression and
+  .avci file extension.
+
+- Added read support for JPEG 2000 encoded images in HEIF containers
+  with .hej2 file extension.
 
 ## Bug Fixes
 
