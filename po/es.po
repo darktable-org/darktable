@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 4.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-12-05 23:29-0600\n"
-"PO-Revision-Date: 2024-12-06 00:04-0600\n"
+"POT-Creation-Date: 2024-12-06 21:23-0600\n"
+"PO-Revision-Date: 2024-12-13 00:45-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -6466,8 +6466,9 @@ msgstr "Añadir imágenes existentes a la fototeca"
 
 # dt•v5.0
 #: ../src/common/darktable.c:1540
+#, fuzzy
 msgid "forwarding image(s) to running instance"
-msgstr ""
+msgstr "Reenviando imagen(es) a la instancia en ejecución"
 
 # dt•v5.0
 #: ../src/common/darktable.c:1572
@@ -6881,7 +6882,8 @@ msgstr ""
 "En el caso de que sea una base de datos grande, pudiera llevar mucho "
 "tiempo .\n"
 "\n"
-"¿Desea continuar o salir ahora para hacer una copia de seguridad?\n"
+"¿Desea continuar y actualizar o cerrar ahora para hacer una copia de "
+"seguridad?\n"
 
 #: ../src/common/database.c:4039
 msgid "darktable - schema migration"
@@ -6973,21 +6975,26 @@ msgstr ""
 
 # dt•v5.0
 #: ../src/common/exif.cc:1947
-#, c-format
+#, fuzzy, c-format
 msgid "detected OtherIlluminant in `%s`, please report via darktable github"
 msgstr ""
+"Se detectó OtherIlluminant en `%s`, por favor informa a través de GitHub de "
+"darktable"
 
 # dt•v5.0
 #: ../src/common/exif.cc:1996
-#, c-format
+#, fuzzy, c-format
 msgid "special exif illuminants in `%s`, please report via darktable github"
 msgstr ""
+"Iluminantes EXIF especiales en `%s`, por favor informa a través de GitHub de "
+"darktable"
 
 # dt•v5.0
 #: ../src/common/exif.cc:2024
-#, c-format
+#, fuzzy, c-format
 msgid "forward matrix in `%s`, please report via darktable github"
 msgstr ""
+"Matriz de avance en `%s`, por favor informa a través de GitHub de darktable"
 
 #: ../src/common/exif.cc:5755
 #, c-format
@@ -9522,9 +9529,9 @@ msgstr "«%s» está desactivado"
 
 # dt•v5.0
 #: ../src/develop/imageop.c:2149
-#, c-format
+#, fuzzy, c-format
 msgid "'%s' has an introspection error"
-msgstr ""
+msgstr "'%s' tiene un error de introspección"
 
 #: ../src/develop/imageop.c:2757
 msgid "unknown mask"
@@ -10019,17 +10026,25 @@ msgstr ""
 
 # dt•v5.0
 #: ../src/develop/pixelpipe_hb.c:1130
-#, c-format
+#, fuzzy, c-format
 msgid ""
 "fatal pixelpipe abort due to non-aligned buffers\n"
 "in module '%s'\n"
 "please report on GitHub"
 msgstr ""
+"Abortar pixelpipe fatal debido a buffers desalineados\n"
+" en el módulo '%s'\n"
+" por favor informa en GitHub"
 
 # dt•v5.0
 #: ../src/develop/pixelpipe_hb.c:1522
+#, fuzzy
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr ""
+"Desalineación de entrada fatal, por favor informa en GitHub\n"
+"  \n"
+"Haz clic en <b>?</b> y luego en un elemento en pantalla para abrir la página "
+"del manual\n"
 
 #: ../src/develop/pixelpipe_hb.c:2808
 msgid ""
@@ -10315,8 +10330,11 @@ msgstr "si aún no se ha importado alguna imagen"
 
 # dt•v5.0
 #: ../src/dtgtk/thumbtable.c:1254
+#, fuzzy
 msgid "click on <b>?</b> then an on-screen item to open manual page"
 msgstr ""
+"Haz clic en <b>?</b> y luego en un elemento en pantalla para abrir la página "
+"del manual"
 
 #: ../src/dtgtk/thumbtable.c:1255
 msgid "you can do so in the import module"
@@ -10324,8 +10342,10 @@ msgstr "puede hacerse con el módulo importar"
 
 # dt•v5.0
 #: ../src/dtgtk/thumbtable.c:1256
+#, fuzzy
 msgid "press and hold '<b>h</b>' to show all active keyboard shortcuts"
 msgstr ""
+"Presiona y mantén '<b>h</b>' para mostrar todos los atajos de teclado activos"
 
 # dt•v5.0
 #: ../src/dtgtk/thumbtable.c:1257
@@ -10357,8 +10377,9 @@ msgstr "Mostrar preferencias generales"
 
 # dt•v5.0
 #: ../src/dtgtk/thumbtable.c:1263
+#, fuzzy
 msgid "click on the keyboard icon to define shortcuts"
-msgstr ""
+msgstr "Haz clic en el ícono de teclado para definir atajos "
 
 # dt•v5.0
 #: ../src/dtgtk/thumbtable.c:1265
@@ -10370,13 +10391,16 @@ msgstr ""
 
 # dt•v5.0
 #: ../src/dtgtk/thumbtable.c:1266
+#, fuzzy
 msgid "set module-specific preferences through module's menu"
 msgstr ""
+"Configura preferencias específicas del módulo a través del menú del módulo"
 
 # dt•v5.0
 #: ../src/dtgtk/thumbtable.c:1267
+#, fuzzy
 msgid "hover over an image and use keyboard shortcuts"
-msgstr ""
+msgstr "Pasa el cursor sobre una imagen y utiliza atajos de teclado"
 
 # dt•v5.0
 #: ../src/dtgtk/thumbtable.c:1268
@@ -10388,18 +10412,21 @@ msgstr ""
 
 # dt•v5.0
 #: ../src/dtgtk/thumbtable.c:1269
+#, fuzzy
 msgid "make default raw development look more like your"
-msgstr ""
+msgstr "Haz que el desarrollo RAW predeterminado se parezca más a tu"
 
 # dt•v5.0
 #: ../src/dtgtk/thumbtable.c:1270
+#, fuzzy
 msgid "hover over any button for its description and shortcuts"
-msgstr ""
+msgstr "Pasa el cursor sobre cualquier botón para su descripción y atajos"
 
 # dt•v5.0
 #: ../src/dtgtk/thumbtable.c:1271
+#, fuzzy
 msgid "camera's JPEG by applying a camera-specific style"
-msgstr ""
+msgstr "JPEG de la cámara aplicando un estilo específico de la cámara"
 
 #: ../src/dtgtk/thumbtable.c:1672
 msgid ""
@@ -11054,8 +11081,9 @@ msgstr "$(EXIF.LENS) → lentes"
 #. _("$(EXIF.FLASH.ICON) - icon indicating whether flash was used") ..  -- not implemented
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:930
 #: ../src/gui/gtkentry.c:231
+#, fuzzy
 msgid "$(EXIF.FLASH) - was flash used (yes/no/--)"
-msgstr ""
+msgstr "$(EXIF.FLASH) - se utilizó flash (sí/no/--)"
 
 #. not implemented
 #. _("$(GPS.LONGITUDE) - longitude"),-- not implemented
@@ -11124,8 +11152,9 @@ msgstr ""
 # dt•v5.0
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:949
 #: ../src/gui/gtkentry.c:262
+#, fuzzy
 msgid "$(SIDECAR_TXT) - contents of .txt sidecar file, if present"
-msgstr ""
+msgstr "$(SIDECAR_TXT) - contenido del archivo de lado .txt, si está presente"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:950
 #: ../src/gui/gtkentry.c:254
@@ -11416,9 +11445,11 @@ msgstr "copiar metadatos"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/official/copy_paste_metadata.lua:44
+#, fuzzy
 msgid ""
 "adds keyboard shortcuts and buttons to copy/paste metadata between images"
 msgstr ""
+"Agrega atajos de teclado y botones para copiar/pegar metadatos entre imágenes"
 
 # dt•v5.0
 #. function to destory the script
@@ -11492,8 +11523,9 @@ msgstr "borrar etiqueta"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/official/delete_long_tags.lua:48
+#, fuzzy
 msgid "delete all tags longer than a set length"
-msgstr ""
+msgstr "Eliminar todas las etiquetas que superen una longitud establecida"
 
 # dt•v5.0
 #. function to destory the script
@@ -11584,8 +11616,9 @@ msgstr "borrar etiqueta"
 #. plugin name
 #: ../src/external/lua-scripts/official/enfuse.lua:55
 #: ../src/external/lua-scripts/official/enfuse.lua:75
+#, fuzzy
 msgid "enfuse"
-msgstr ""
+msgstr "enfuse"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/official/enfuse.lua:56
@@ -11614,10 +11647,13 @@ msgstr "exposición"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/official/enfuse.lua:139
+#, fuzzy
 msgid ""
 "center also known as mean of gaussian weighting function (0 <= mean <= 1); "
 "default: 0.5"
 msgstr ""
+"centro, también conocido como media de la función de ponderación gaussiana "
+"(0 <= media <= 1); predeterminado: 0.5 "
 
 # dt•v5.0
 #: ../src/external/lua-scripts/official/enfuse.lua:147
@@ -11627,10 +11663,13 @@ msgstr "compensación"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/official/enfuse.lua:148
+#, fuzzy
 msgid ""
 "optimum exposure value, usually the maximum of the weighting function (0 <= "
 "optimum <=1); default 0.5"
 msgstr ""
+"valor de exposición óptimo, generalmente el máximo de la función de "
+"ponderación (0 <= óptimo <= 1); predeterminado 0.5"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/official/enfuse.lua:157
@@ -11664,8 +11703,9 @@ msgstr "Ejecutar autoenfoque"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/official/enfuse.lua:174
+#, fuzzy
 msgid "enfuse not installed"
-msgstr ""
+msgstr "enfuse no instalado"
 
 # dt•v5.0
 #. remember exposure_mu
@@ -11683,9 +11723,9 @@ msgstr "Error al imprimir «%s» en «%s»"
 #. alternatively raws will be exported as tiff
 #. windows os.tmpname() defaults to root directory
 #: ../src/external/lua-scripts/official/enfuse.lua:215
-#, lua-format
+#, fuzzy, lua-format
 msgid "converting raw file '%s' to tiff..."
-msgstr ""
+msgstr "convirtiendo archivo RAW '%s' a TIFF..."
 
 # dt•v5.0
 #. other images will be skipped
@@ -11697,21 +11737,23 @@ msgstr "%d/%d omitiendo «%s»"
 # dt•v5.0
 #. bail out if there is nothing to do
 #: ../src/external/lua-scripts/official/enfuse.lua:232
+#, fuzzy
 msgid "no suitable images selected, nothing to do for enfuse"
-msgstr ""
+msgstr "no se seleccionaron imágenes adecuadas, nada que hacer para enfuse "
 
 # dt•v5.0
 #: ../src/external/lua-scripts/official/enfuse.lua:238
-#, lua-format
+#, fuzzy, lua-format
 msgid "%d image(s) skipped"
-msgstr ""
+msgstr "%d imagen(es) omitidas"
 
 # dt•v5.0
 #. call enfuse on the response file
 #. TODO: find something nicer
 #: ../src/external/lua-scripts/official/enfuse.lua:258
+#, fuzzy
 msgid "enfuse failed, see terminal output for details"
-msgstr ""
+msgstr "enfuse falló, consulta la salida del terminal para más detalles"
 
 # dt•v5.0
 #. remove the response file
@@ -11725,15 +11767,18 @@ msgstr "El estilo %s fue importado correctamente"
 # dt•v5.0
 #. normally printing to stdout is bad, but we allow enfuse to show its output, so adding one extra line is ok
 #: ../src/external/lua-scripts/official/enfuse.lua:272
-#, lua-format
+#, fuzzy, lua-format
 msgid "enfuse: done, resulting image '%s' has been imported with id %d"
-msgstr ""
+msgstr "enfuse: hecho, la imagen resultante '%s' ha sido importada con id %d"
 
 # dt•v5.0
 #. ... and tell dt about it all
 #: ../src/external/lua-scripts/official/enfuse.lua:306
+#, fuzzy
 msgid "could not find enfuse executable, not loading enfuse exporter..."
 msgstr ""
+"no se pudo encontrar el ejecutable de enfuse, no se carga el exportador de "
+"enfuse..."
 
 # dt•v5.0
 #. vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
@@ -11790,32 +11835,44 @@ msgstr "Eliminar los metadatos de todas las imágenes seleccionadas"
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:68
+#, fuzzy
 msgid "create txt sidecars to display with images"
-msgstr ""
+msgstr "crear archivos de lado .txt para mostrar con imágenes"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:69
+#, fuzzy
 msgid ""
 "the txt files created get shown when the lighttable is zoomed in to one "
 "image. also enable the txt overlay setting in the gui tab"
 msgstr ""
+"los archivos .txt creados se muestran cuando la mesa de luz está ampliada a "
+"una imagen. también habilita la configuración de superposición de .txt en la "
+"pestaña de la interfaz gráfica"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:75
+#, fuzzy
 msgid "command to generate the txt sidecar"
-msgstr ""
+msgstr "comando para generar el archivo de lado .txt"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:76
+#, fuzzy
 msgid ""
 "the output of this command gets written to the txt file. use $(FILE_NAME) "
 "for the image file"
 msgstr ""
+"la salida de este comando se escribe en el archivo .txt. usa $(FILE_NAME) "
+"para el archivo de imagen"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:82
+#, fuzzy
 msgid "the command for txt sidecars looks bad. better check the preferences"
 msgstr ""
+"el comando para archivos de lado .txt se ve mal. mejor verifica las "
+"preferencias"
 
 # dt•v5.0
 #. no need to waste processing time if the image has a txt file already
@@ -11946,8 +12003,11 @@ msgstr "Patrón de nombres utilizado para importar una sesión"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:68
+#, fuzzy
 msgid "import filters are applied after completion of the import dialog"
 msgstr ""
+"los filtros de importación se aplican después de completar el diálogo de "
+"importación"
 
 # dt•v5.0
 #. the first entry in the list is hard coded to "" so it's possible to have no filter
@@ -12066,20 +12126,21 @@ msgstr "atajos de teclado con varios duplicados del módulo"
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/save_selection.lua:77
-#, lua-format
+#, fuzzy, lua-format
 msgid "save to buffer %d"
-msgstr ""
+msgstr "guardar en el búfer %d"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/official/save_selection.lua:80
-#, lua-format
+#, fuzzy, lua-format
 msgid "restore from buffer %d"
-msgstr ""
+msgstr "restaurar del búfer %d"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/official/save_selection.lua:86
+#, fuzzy
 msgid "switch selection with temporary buffer"
-msgstr ""
+msgstr "cambiar selección con búfer temporal"
 
 # dt•v5.0
 #.
@@ -12143,8 +12204,9 @@ msgstr "vista de mapa"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:66
+#, fuzzy
 msgid "can be an absolute pathname or the tool may be in the PATH"
-msgstr ""
+msgstr "puede ser una ruta absoluta o la herramienta puede estar en el PATH"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:74
@@ -12178,15 +12240,17 @@ msgstr "fecha (exportado)"
 # dt•v5.0
 #. convert to PDF
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:179
+#, fuzzy
 msgid "problem running pdflatex"
-msgstr ""
+msgstr "problema al ejecutar pdflatex"
 
 # dt•v5.0
 #. this one is probably usefull to the user
 #. open the PDF
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:189
+#, fuzzy
 msgid "problem running pdf viewer"
-msgstr ""
+msgstr "problema al ejecutar el visor de PDF"
 
 # dt•v5.0
 #. this one is probably usefull to the user
@@ -12230,8 +12294,10 @@ msgstr "gestor de archivos"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/executable_manager.lua:50
+#, fuzzy
 msgid "manage the list of external executables used by the lua scripts"
 msgstr ""
+"gestionar la lista de ejecutables externos utilizados por los scripts lua"
 
 # dt•v5.0
 #. function to destory the script
@@ -12247,8 +12313,9 @@ msgstr ""
 #. use grep and just return the answers
 #. Module name
 #: ../src/external/lua-scripts/tools/executable_manager.lua:118
+#, fuzzy
 msgid "executables"
-msgstr ""
+msgstr "ejecutables"
 
 # dt•v5.0
 #. Visible name
@@ -12264,8 +12331,9 @@ msgstr ""
 #. grep the executable_paths statements out of the darktablerc file
 #. check if we have something to manage and exit if not
 #: ../src/external/lua-scripts/tools/executable_manager.lua:157
+#, fuzzy
 msgid "no executable paths found, exiting..."
-msgstr ""
+msgstr "no se encontraron rutas de ejecutables, saliendo..."
 
 # dt•v5.0
 #. build a table of the path preferences
@@ -12277,8 +12345,9 @@ msgstr "seleccionar imagen"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/executable_manager.lua:173
+#, fuzzy
 msgid "search path for executable"
-msgstr ""
+msgstr "ruta de búsqueda para ejecutable"
 
 # dt•v5.0
 #. create a stack widget to hold the executable path widgets
@@ -12313,13 +12382,16 @@ msgstr "Eliminar esta regla"
 #. print the documentation for the library
 #. print the documentation for each of the functions
 #: ../src/external/lua-scripts/tools/get_lib_manpages.lua:91
+#, fuzzy
 msgid "get library man pages"
-msgstr ""
+msgstr "obtener páginas de manual de la biblioteca"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/get_lib_manpages.lua:92
+#, fuzzy
 msgid "output the internal library documentation as man pages"
 msgstr ""
+"salida de la documentación interna de la biblioteca como páginas de manual"
 
 # dt•v5.0
 #.
@@ -12339,8 +12411,9 @@ msgstr "añadir a la fototeca"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/get_libdoc.lua:66
+#, fuzzy
 msgid "retrieve and print the documentation to the console"
-msgstr ""
+msgstr "recuperar e imprimir la documentación en la consola"
 
 # dt•v5.0
 #.
@@ -12555,9 +12628,12 @@ msgstr "No disponible"
 #. skip plugins
 #: ../src/external/lua-scripts/tools/script_manager.lua:732
 #: ../src/external/lua-scripts/tools/script_manager.lua:847
+#, fuzzy
 msgid ""
 "ERROR: git not found.  Install or specify the location of the git executable."
 msgstr ""
+"ERROR: git no encontrado. Instala o especifica la ubicación del ejecutable "
+"de git."
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:746
@@ -12567,13 +12643,15 @@ msgstr "El estilo %s fue importado correctamente"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:886
+#, fuzzy
 msgid "no scripts found to install"
-msgstr ""
+msgstr "no se encontraron scripts para instalar"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:891
+#, fuzzy
 msgid "failed to download scripts"
-msgstr ""
+msgstr "falló al descargar scripts"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:1043
@@ -12612,8 +12690,9 @@ msgstr "guiones de Lua"
 #. probably upgraded from an earlier api version so get back to master
 #. to use the latest version of script_manager to get the proper API
 #: ../src/external/lua-scripts/tools/script_manager.lua:1243
+#, fuzzy
 msgid "lua API version reset, please restart darktable"
-msgstr ""
+msgstr "Versión de la API de lua restablecida, por favor reinicia darktable"
 
 # dt•v5.0
 #. do nothing, we are fine
@@ -12622,9 +12701,10 @@ msgstr ""
 #. stay on master
 #. checkout the appropriate branch for API version if it exists
 #: ../src/external/lua-scripts/tools/script_manager.lua:1290
+#, fuzzy
 msgid ""
 "you must restart darktable to use the correct version of the lua scripts"
-msgstr ""
+msgstr "Debes reiniciar darktable para usar la versión correcta de los guiones"
 
 # dt•v5.0
 #. - - - - - - - - - - - - - - - - - - - - - - -
@@ -12657,9 +12737,12 @@ msgstr "Atenúa la pureza del color primario rojo"
 # dt•v5.0
 #. add additional scripts
 #: ../src/external/lua-scripts/tools/script_manager.lua:1338
+#, fuzzy
 msgid ""
 "enter the URL of the git repository containing the scripts you wish to add"
 msgstr ""
+"Ingresa la URL del repositorio git que contiene los guiones que deseas "
+"agregar"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:1343
@@ -12675,13 +12758,15 @@ msgstr "introduzca un nombre para el nuevo estilo"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:1349
+#, fuzzy
 msgid "URL to download additional scripts from"
-msgstr ""
+msgstr "URL para descargar guiones adicionales"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:1351
+#, fuzzy
 msgid "new folder to place scripts in"
-msgstr ""
+msgstr "Nueva carpeta para colocar los guiones"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:1354
@@ -12691,8 +12776,9 @@ msgstr "propiedades adicionales"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:1362
+#, fuzzy
 msgid "enable \"disable scripts\" button"
-msgstr ""
+msgstr "Habilitar el botón \"deshabilitar guiones\""
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:1374
@@ -12703,8 +12789,9 @@ msgstr "desactivar herramientas"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:1380
+#, fuzzy
 msgid "lua scripts will not run the next time darktable is started"
-msgstr ""
+msgstr "Los guiones no se ejecutarán la próxima vez que se inicie darktable"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:1394
@@ -12734,13 +12821,15 @@ msgstr "página"
 # dt•v5.0
 #. configure options
 #: ../src/external/lua-scripts/tools/script_manager.lua:1481
+#, fuzzy
 msgid "scripts per page"
-msgstr ""
+msgstr "guiones por página"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:1482
+#, fuzzy
 msgid "select number of start/stop buttons to display"
-msgstr ""
+msgstr "Selecciona el número de botones de inicio/parada a mostrar"
 
 # dt•v5.0
 #: ../src/external/lua-scripts/tools/script_manager.lua:1493
@@ -13814,6 +13903,7 @@ msgstr "controles de pliegue"
 
 # dt•v5.0
 #: ../src/gui/gtk.c:1964
+#, fuzzy
 msgid ""
 "this is the first time you pressed the shortcut\n"
 "to collapse all side and top/bottom panels.\n"
@@ -13822,6 +13912,12 @@ msgid ""
 "\n"
 "do you want to collapse all panels now?"
 msgstr ""
+"Esta es la primera vez que presionaste el atajo\n"
+" para colapsar todos los paneles laterales y superior/inferior.\n"
+" por defecto, esta es la tecla TAB.\n"
+" presionarla nuevamente restaurará los paneles.\n"
+"\n"
+"¿Quieres colapsar todos los paneles ahora?"
 
 # dt•v5.0
 #: ../src/gui/gtk.c:2361
@@ -13830,8 +13926,11 @@ msgstr "Restaurar valores predeterminados"
 
 # dt•v5.0
 #: ../src/gui/gtk.c:2362
+#, fuzzy
 msgid "restore the default visibility and position of all modules in this view"
 msgstr ""
+"Restaurar la visibilidad y posición predeterminadas de todos los módulos en "
+"esta vista"
 
 # dt•v5.0
 #: ../src/gui/gtk.c:2440
@@ -13841,9 +13940,8 @@ msgstr "pulsación derecha para reiniciar curvatura"
 
 # dt•v5.0
 #: ../src/gui/gtk.c:2449
-#, fuzzy
 msgid "show/hide modules"
-msgstr "Mostrar módulo"
+msgstr "Mostrar/ocultar módulo"
 
 #. ask the user if darktable.org may be accessed
 #: ../src/gui/gtk.c:3244
@@ -13903,8 +14001,9 @@ msgstr "$(EXIF.DATE.REGIONAL) → fecha local Exif"
 
 # dt•v5.0
 #: ../src/gui/gtkentry.c:204
+#, fuzzy
 msgid "$(EXIF.TIME.REGIONAL) - localized EXIF time"
-msgstr ""
+msgstr "(EXIF.TIME.REGIONAL)−tiempoEXIFlocalizado"
 
 #: ../src/gui/gtkentry.c:212
 msgid "$(EXIF.HOUR.AMPM) - EXIF hour, 12-hour clock"
@@ -13918,8 +14017,9 @@ msgstr "$(EXIF.EXPOSURE.BIAS) → Compensación de exposición Exif"
 
 # dt•v5.0
 #: ../src/gui/gtkentry.c:230
+#, fuzzy
 msgid "$(EXIF.FLASH.ICON) - icon indicating whether flash was used"
-msgstr ""
+msgstr "(EXIF.FLASH.ICON) - ícono que indica si se utilizó flash"
 
 # dt•v5.0
 #: ../src/gui/gtkentry.c:232
@@ -13938,8 +14038,9 @@ msgstr "$(GPS.ELEVATION) → elevación"
 
 # dt•v5.0
 #: ../src/gui/gtkentry.c:235
+#, fuzzy
 msgid "$(GPS.LOCATION.ICON) - icon indicating whether GPS location is known"
-msgstr ""
+msgstr "(GPS.LOCATION.ICON)−ıˊconoqueindicasiseconocelaubicacioˊnGPS"
 
 #: ../src/gui/gtkentry.c:240
 msgid "$(RATING.ICONS) - star/reject rating in icon form"
@@ -13970,8 +14071,10 @@ msgstr "$(IMAGE.ID) → Id. de la imagen"
 
 # dt•v5.0
 #: ../src/gui/gtkentry.c:246
+#, fuzzy
 msgid "$(IMAGE.ID.NEXT) - next image ID to be assigned on import"
 msgstr ""
+"(IMAGE.ID.NEXT) - siguiente ID de imagen que se asignará en la importación"
 
 #: ../src/gui/gtkentry.c:257
 msgid "$(OPENCL.ACTIVATED) - whether OpenCL is activated"
@@ -14197,17 +14300,22 @@ msgstr "Lista de etiquetas separadas por coma"
 
 # dt•v5.0
 #: ../src/gui/preferences.c:280
+#, fuzzy
 msgid "reset panels in all views"
-msgstr ""
+msgstr "Restablecer paneles en todas las vistas"
 
 # dt•v5.0
 #: ../src/gui/preferences.c:281
+#, fuzzy
 msgid ""
 "are you sure?\n"
 "\n"
 "you will not be able to restore your current panel layout and module "
 "selection."
 msgstr ""
+"¿Estás seguro?\n"
+"\n"
+"No podrás restaurar tu diseño actual de paneles y selección de módulos."
 
 #. language
 #: ../src/gui/preferences.c:305
@@ -14272,8 +14380,11 @@ msgstr "reiniciar parámetros lib"
 
 # dt•v5.0
 #: ../src/gui/preferences.c:420
+#, fuzzy
 msgid "reset hidden panels, their sizes and selected modules in all views"
 msgstr ""
+"Restablecer paneles ocultos, sus tamaños y módulos seleccionados en todas "
+"las vistas"
 
 #. checkbox to allow user to modify theme with user.css
 #: ../src/gui/preferences.c:425
@@ -14674,26 +14785,34 @@ msgstr "puntuación inicial"
 
 # dt•v5.0
 #: ../src/gui/splash.c:194
+#, fuzzy
 msgid ""
 "Photography workflow\n"
 "application and\n"
 "RAW developer"
 msgstr ""
+"Flujo de trabajo fotográfico\n"
+" aplicación y\n"
+" desarrollador de imágenes en bruto"
 
 # dt•v5.0
 #. put the darktable wordmark and description in a vertical stack
 #: ../src/gui/splash.c:215
+#, fuzzy
 msgid ""
 "Photography workflow application\n"
 "and RAW developer"
 msgstr ""
+"Aplicación de flujo de trabajo fotográfico\n"
+" y desarrollador de imágenes en bruto"
 
 # dt•v5.0
 #. ensure that text is vertically centered
 #. with respect to logo
 #: ../src/gui/splash.c:225
+#, fuzzy
 msgid "get ready to unleash your creativity"
-msgstr ""
+msgstr "Prepárate para desatar tu creatividad"
 
 # dt•v5.0
 #: ../src/gui/splash.c:361
@@ -14709,8 +14828,9 @@ msgstr "darktable: ventana de atajos"
 
 # dt•v5.0
 #: ../src/gui/splash.c:378
+#, fuzzy
 msgid "please wait while background jobs finish"
-msgstr ""
+msgstr "Por favor, espera mientras finalizan los trabajos en segundo plano"
 
 #: ../src/gui/styles_dialog.c:232 ../src/libs/styles.c:479
 #: ../src/libs/styles.c:635
@@ -16545,27 +16665,38 @@ msgstr ""
 # dt•v5.0
 #. add the tooltips
 #: ../src/iop/blurs.c:792
+#, fuzzy
 msgid ""
 "size of the blur in pixels\n"
 "<b>caution</b>: doubling the radius quadruples the run-time!"
 msgstr ""
+"Tamaño del desenfoque en píxeles\n"
+"<b>cuidado</b>: ¡duplicar el radio cuadruplica el tiempo de ejecución!"
 
 # dt•v5.0
 #: ../src/iop/blurs.c:794
+#, fuzzy
 msgid "shifts towards a star shape as value approaches blades-1"
 msgstr ""
+"se desplaza hacia una forma de estrella a medida que el valor se acerca a "
+"cuchillas-1"
 
 # dt•v5.0
 #: ../src/iop/blurs.c:796
+#, fuzzy
 msgid ""
 "adjust straightness of edges from 0=perfect circle\n"
 "to 1=completely straight"
 msgstr ""
+"ajustar la rectitud de los bordes de 0=círculo perfecto\n"
+" a 1=completamente recto"
 
 # dt•v5.0
 #: ../src/iop/blurs.c:797
+#, fuzzy
 msgid "set amount by which to rotate shape around its center"
 msgstr ""
+"Establecer la cantidad por la cual rotar la forma alrededor de su centro"
 
 # dt•v5.0
 #: ../src/iop/blurs.c:799
@@ -16575,17 +16706,23 @@ msgstr "Orientación de la página del PDF"
 
 # dt•v5.0
 #: ../src/iop/blurs.c:800
+#, fuzzy
 msgid ""
 "amount to curve the motion relative\n"
 "to its overall orientation"
 msgstr ""
+"Cantidad para curvar el movimiento relativo\n"
+" a su orientación general"
 
 # dt•v5.0
 #: ../src/iop/blurs.c:801
+#, fuzzy
 msgid ""
 "select which portion of the path to use,\n"
 "allowing the path to become asymmetric"
 msgstr ""
+"Selecciona qué porción del camino usar,\n"
+" permitiendo que el camino se vuelva asimétrico"
 
 #: ../src/iop/borders.c:309
 msgid "framing"
@@ -18596,7 +18733,7 @@ msgstr "parche #%d"
 
 # dt•v5.0
 #: ../src/iop/colorchecker.c:1410
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "(%2.2f %2.2f %2.2f)\n"
 "altered patches are marked with an outline\n"
@@ -21863,25 +22000,23 @@ msgstr "Marcar varios puntos"
 
 # dt•v5.0
 #: ../src/iop/liquify.c:3650
-#, fuzzy
 msgid ""
 "<b>add node</b>: ctrl+click - <b>remove path</b>: right-click\n"
 "<b>toggle line/curve</b>: ctrl+alt+click"
 msgstr ""
-"<b>Añadir nodo</b>: Ctrl+Clic, <b>Eliminar ruta</b>: Clic secundario\n"
+"<b>Añadir nodo</b>: Ctrl+Clic  <b>Eliminar ruta</b>: Clic secundario\n"
 "<b>Alternar modo (línea/curva) </b>: Ctrl+Alt+Clic"
 
 # dt•v5.0
 #: ../src/iop/liquify.c:3653
-#, fuzzy
 msgid ""
 "<b>move</b>: click and drag - <b>show/hide feathering controls</b>: click\n"
 "<b>autosmooth, cusp, smooth, symmetrical</b>: ctrl+click - <b>remove</b>: "
 "right-click"
 msgstr ""
-"<b>Mover</b>: Clic+Arrastre, <b>Mostrar u ocultar control de difuminado</b>: "
-"Pulsado\n"
-"<b>Suavizado automático, cúspide, suavizado, simétrico</b>: Ctrl+Clic, "
+"<b>Mover</b>: Clic+Arrastre   <b>Mostrar u ocultar control de difuminado</"
+"b>: Pulsado\n"
+"<b>Suavizado automático, cúspide, suavizado, simétrico</b>: Ctrl+Clic  "
 "<b>Eliminar</b>: Clic secundario"
 
 #: ../src/iop/liquify.c:3657 ../src/iop/liquify.c:3659
@@ -24519,10 +24654,13 @@ msgstr "colección"
 
 # dt•v5.0
 #: ../src/libs/collect.c:169
+#, fuzzy
 msgid ""
 "define search criteria for images\n"
 "to be displayed or edited"
 msgstr ""
+"Definir criterios de búsqueda para imágenes\n"
+" a mostrar o editar"
 
 # dt•v5.0
 #: ../src/libs/collect.c:433
@@ -24934,10 +25072,13 @@ msgstr "administrador de duplicado"
 
 # dt•v5.0
 #: ../src/libs/duplicate.c:65
+#, fuzzy
 msgid ""
 "create/rename/remove multiple\n"
 "edits of the current image"
 msgstr ""
+"Crear/renombrar/eliminar múltiples\n"
+" ediciones de la imagen actual"
 
 #: ../src/libs/duplicate.c:408
 msgid "create a 'virgin' duplicate of the image without any development"
@@ -24984,11 +25125,13 @@ msgstr "in"
 
 # dt•v5.0
 #: ../src/libs/export.c:1070
-#, c-format
+#, fuzzy, c-format
 msgid ""
 "style to be applied on export:\n"
 "<b>%s</b>"
 msgstr ""
+"Estilo a aplicar en la exportación:\n"
+"<b>%s</b>"
 
 #: ../src/libs/export.c:1121 ../src/views/darkroom.c:1384
 msgid "no styles have been created yet"
@@ -25014,6 +25157,7 @@ msgstr "formato de archivo"
 
 # dt•v5.0
 #: ../src/libs/export.c:1236
+#, fuzzy
 msgid ""
 "images will be exported according to the format specified here\n"
 "\n"
@@ -25024,6 +25168,15 @@ msgid ""
 "unless the user selects <b>all</b> of the metadata checkboxes in\n"
 "the export module preferences"
 msgstr ""
+"Las imágenes se exportarán de acuerdo con el formato especificado aquí\n"
+"\n"
+" al exportar a AVIF, EXR, JPEG XL o XCF, seleccionar metadatos específicos "
+"no es actualmente posible\n"
+"\n"
+" para estos formatos, no se incluirán campos de metadatos\n"
+" a menos que el usuario seleccione <b>todos</b> los cuadros de verificación "
+"de metadatos en\n"
+" las preferencias del módulo de exportación"
 
 #: ../src/libs/export.c:1259
 msgctxt "section"
@@ -25398,11 +25551,15 @@ msgstr "filtros en la colección"
 
 # dt•v5.0
 #: ../src/libs/filtering.c:278
+#, fuzzy
 msgid ""
 "refine the set of images to display or edit.\n"
 "filters can be pinned to the top toolbar, where\n"
 "they will also be visible in the darkroom"
 msgstr ""
+"Refinar el conjunto de imágenes a mostrar o editar.\n"
+" los filtros se pueden anclar en la barra de herramientas superior, donde\n"
+" también serán visibles en el cuarto oscuro"
 
 #: ../src/libs/filtering.c:313
 msgid "initial setting"
@@ -26020,18 +26177,21 @@ msgstr ""
 
 # dt•v5.0
 #: ../src/libs/histogram.c:1661
+#, fuzzy
 msgid "use buttons at top of graph to change type"
-msgstr ""
+msgstr "Usar botones en la parte superior del gráfico para cambiar el tipo"
 
 # dt•v5.0
 #: ../src/libs/histogram.c:1662
+#, fuzzy
 msgid "click on ❓ and then graph for documentation"
-msgstr ""
+msgstr "Haz clic en ❓ y luego en gráfico para documentación"
 
 # dt•v5.0
 #: ../src/libs/histogram.c:1663
+#, fuzzy
 msgid "use color picker module to restrict area"
-msgstr ""
+msgstr "Usar el módulo de selector de color para restringir el área"
 
 #: ../src/libs/histogram.c:1671
 msgid "scroll to coarse-rotate"
@@ -26132,11 +26292,15 @@ msgstr "alternar armonías de color"
 
 # dt•v5.0
 #: ../src/libs/history.c:101
+#, fuzzy
 msgid ""
 "display the sequence of edit actions\n"
 "and allow temporarily returning to\n"
 "an earlier state of the edit"
 msgstr ""
+"Mostrar la secuencia de acciones de edición\n"
+" y permitir volver temporalmente a\n"
+" un estado anterior de la edición"
 
 #: ../src/libs/history.c:138
 msgid "compress history stack"
@@ -26396,11 +26560,17 @@ msgstr "integrar"
 
 # dt•v5.0
 #: ../src/libs/image.c:653
+#, fuzzy
 msgid ""
 "update all image information to match changes to file\n"
 "warning: resets star ratings unless you select\n"
 "'ignore EXIF rating' in the 'import' module"
 msgstr ""
+"Actualizar toda la información de la imagen para que coincida con los "
+"cambios en el archivo\n"
+" advertencia: restablece las calificaciones de estrellas a menos que "
+"selecciones\n"
+" 'ignorar calificación EXIF' en el módulo 'importar'"
 
 #: ../src/libs/image.c:660
 msgid "set selection as monochrome images and activate monochrome workflow"
@@ -26508,7 +26678,6 @@ msgstr "Imágenes"
 
 # dt•v5.0
 #: ../src/libs/import.c:1907
-#, fuzzy
 msgid "mark already imported images"
 msgstr "Marca las imágenes ya importadas"
 
@@ -26607,9 +26776,8 @@ msgstr "parámetros"
 
 # dt•v5.0
 #: ../src/libs/ioporder.c:203
-#, fuzzy
 msgid "v3.0 for RAW input"
-msgstr "v3.0 para JPEG o no en bruto"
+msgstr "v3.0 para imagen en bruto"
 
 #: ../src/libs/ioporder.c:211
 msgid "v3.0 for JPEG/non-RAW input"
@@ -26617,15 +26785,13 @@ msgstr "v3.0 para JPEG o no en bruto"
 
 # dt•v5.0
 #: ../src/libs/ioporder.c:220
-#, fuzzy
 msgid "v5.0 for RAW input"
-msgstr "v3.0 para JPEG o no en bruto"
+msgstr "v5.0 para imagen en bruto"
 
 # dt•v5.0
 #: ../src/libs/ioporder.c:229
-#, fuzzy
 msgid "v5.0 for JPEG/non-RAW input"
-msgstr "v3.0 para JPEG o no en bruto"
+msgstr "v5.0 para imagen JPEG o no en bruto"
 
 #: ../src/libs/lib.c:371
 msgid "deleting preset for obsolete module"
@@ -26893,10 +27059,13 @@ msgstr "Elegir la fuente del mapa. Algunas entradas podrían no funcionar"
 
 # dt•v5.0
 #: ../src/libs/masks.c:68
+#, fuzzy
 msgid ""
 "manipulate the drawn shapes used\n"
 "for masks on the processing modules"
 msgstr ""
+"Manipular las formas dibujadas utilizadas\n"
+" para máscaras en los módulos de procesamiento"
 
 #: ../src/libs/masks.c:114
 msgid "feather"
@@ -27966,10 +28135,13 @@ msgstr "Preferencias de colecciones recientes"
 
 # dt•v5.0
 #: ../src/libs/select.c:45
+#, fuzzy
 msgid ""
 "modify which of the displayed\n"
 "images are selected"
 msgstr ""
+"Modificar cuáles de las imágenes mostradas\n"
+" están seleccionadas"
 
 #: ../src/libs/select.c:143
 msgid "select all images in current collection"
@@ -28021,11 +28193,15 @@ msgstr "instantáneas"
 
 # dt•v5.0
 #: ../src/libs/snapshots.c:103
+#, fuzzy
 msgid ""
 "remember a specific edit state and\n"
 "allow comparing it against another\n"
 "or returning to that version"
 msgstr ""
+"Recordar un estado de edición específico y\n"
+" permitir compararlo con otro\n"
+" o volver a esa versión"
 
 #: ../src/libs/snapshots.c:154
 msgctxt "snapshot sign"
@@ -29014,7 +29190,7 @@ msgstr "opciones de Lua"
 
 # dt•v5.0
 #: ../src/views/darkroom.c:517
-#, c-format
+#, fuzzy, c-format
 msgid ""
 "file `%s' is not available, switching to lighttable now.\n"
 "\n"
@@ -29022,32 +29198,49 @@ msgid ""
 "files\n"
 "can be accessed in the same locations as when you imported this image."
 msgstr ""
+"El archivo %s' no está disponible, cambiando a la mesa de luz ahora.\n"
+"\n"
+" si se almacena en una unidad externa, asegúrate de que la unidad esté "
+"conectada y los archivos\n"
+" se puedan acceder en las mismas ubicaciones que cuando importaste esta "
+"imagen.   El archivo %s' parece estar dañado, cambiando a la mesa de luz "
+"ahora.\n"
+"\n"
+" por favor verifica que se haya copiado correctamente y completamente de la "
+"cámara."
 
 # dt•v5.0
 #: ../src/views/darkroom.c:524
-#, c-format
+#, fuzzy, c-format
 msgid ""
 "file `%s' appears corrupt, switching to lighttable now.\n"
 "\n"
 "please check that it was correctly and completely copied from the camera."
 msgstr ""
+"El archivo %s' no está en ningún formato reconocido, cambiando a la mesa de "
+"luz ahora.   El archivo %s' es de un modelo de cámara no compatible, "
+"cambiando a la mesa de luz ahora."
 
 # dt•v5.0
 #: ../src/views/darkroom.c:530
-#, c-format
+#, fuzzy, c-format
 msgid "file `%s' is not in any recognized format, switching to lighttable now."
 msgstr ""
+"El archivo `%s' no está en ningún formato reconocido, cambiando a la mesa de "
+"luz ahora."
 
 # dt•v5.0
 #: ../src/views/darkroom.c:535
-#, c-format
+#, fuzzy, c-format
 msgid ""
 "file `%s' is from an unsupported camera model, switching to lighttable now."
 msgstr ""
+"El archivo `%s' es de un modelo de cámara no compatible, cambiando a la mesa "
+"de luz ahora."
 
 # dt•v5.0
 #: ../src/views/darkroom.c:540
-#, c-format
+#, fuzzy, c-format
 msgid ""
 "file `%s' uses an unsupported feature, switching to lighttable now.\n"
 "\n"
@@ -29057,15 +29250,26 @@ msgid ""
 "support/\n"
 "and the release notes for this version of darktable)"
 msgstr ""
+"El archivo `%s' utiliza una característica no compatible, cambiando a la "
+"mesa de luz ahora.\n"
+"\n"
+"Por favor, verifica que el formato de imagen y el modo de compresión que "
+"seleccionaste en los menús de tu\n"
+"cámara sean compatibles (consulta https://www.darktable.org/resources/camera-"
+"support/\n"
+"y las notas de la versión de esta versión de darktable)."
 
 # dt•v5.0
 #: ../src/views/darkroom.c:548
-#, c-format
+#, fuzzy, c-format
 msgid ""
 "error while reading file `%s', switching to lighttable now.\n"
 "\n"
 "please check that the file has not been truncated."
 msgstr ""
+"Error al leer el archivo `%s', cambiando a la mesa de luz ahora.\n"
+"\n"
+"Por favor, verifica que el archivo no haya sido truncado."
 
 #: ../src/views/darkroom.c:554
 #, c-format
@@ -29155,11 +29359,13 @@ msgstr "cache local"
 
 # dt•v5.0
 #: ../src/views/darkroom.c:833
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "image `%s' could not be loaded\n"
 "%s"
-msgstr "La imagen «%s» no está disponible"
+msgstr ""
+"No fue posible cargar la imagen «%s»\n"
+"%s"
 
 #: ../src/views/darkroom.c:2253 ../src/views/darkroom.c:2254
 msgid "quick access to presets"
@@ -29202,7 +29408,6 @@ msgstr "procesado de alta calidad"
 
 # dt•v5.0
 #: ../src/views/darkroom.c:2296
-#, fuzzy
 msgid ""
 "toggle high quality processing. if activated darktable processes image data "
 "as it does while exporting"
@@ -29212,7 +29417,6 @@ msgstr ""
 
 # dt•v5.0
 #: ../src/views/darkroom.c:2312
-#, fuzzy
 msgid ""
 "toggle indication of raw overexposure\n"
 "right-click for options"
@@ -29280,12 +29484,11 @@ msgstr ""
 
 # dt•v5.0
 #: ../src/views/darkroom.c:2362
-#, fuzzy
 msgid ""
 "toggle clipping indication\n"
 "right-click for options"
 msgstr ""
-"Activar el indicador de recorte de la imagen virgen en las luces/sombras.\n"
+"Activar el indicador de recorte en las luces/sombras.\n"
 "Pulse botón secundario para ver más opciones."
 
 #: ../src/views/darkroom.c:2377
@@ -29373,23 +29576,21 @@ msgstr "prueba en pantalla"
 
 # dt•v5.0
 #: ../src/views/darkroom.c:2428
-#, fuzzy
 msgid ""
 "toggle softproofing\n"
 "right-click for profile options"
 msgstr ""
-"Activar las pruebas en pantalla\n"
-"Pulse botón secundario para ver las opciones de perfil"
+"Activar las pruebas en pantalla.\n"
+"Pulse el botón secundario para ver las opciones de perfil."
 
 # dt•v5.0
 #: ../src/views/darkroom.c:2439
-#, fuzzy
 msgid ""
 "toggle gamut checking\n"
 "right-click for profile options"
 msgstr ""
-"Activar la revisión de gama\n"
-"Pulse botón secundario para ver las opciones del perfil"
+"Activar la revisión de gama.\n"
+"Pulse el botón secundario para ver las opciones del perfil."
 
 #: ../src/views/darkroom.c:2466 ../src/views/darkroom.c:2468
 #: ../src/views/darkroom.c:2482 ../src/views/darkroom.c:2483
@@ -29442,13 +29643,12 @@ msgstr "histograma y selector de color de perfiles ICC"
 
 # dt•v5.0
 #: ../src/views/darkroom.c:2594
-#, fuzzy
 msgid ""
 "toggle guide lines\n"
 "right-click for guides options"
 msgstr ""
 "Activar/desactivar la retícula.\n"
-"Pulse botón secundario para ver las opciones disponibles."
+"Pulse el botón secundario para ver las opciones disponibles."
 
 #. Fullscreen preview key
 #: ../src/views/darkroom.c:2610
@@ -29539,9 +29739,8 @@ msgstr "Cambiar la precisión del control deslizante con un atajo de teclado"
 
 # dt•v5.0
 #: ../src/views/darkroom.c:2661
-#, fuzzy
 msgid "synchronize selection"
-msgstr "registro de sincronización"
+msgstr "Sincronizar selección"
 
 #: ../src/views/darkroom.c:3311
 msgid "keyboard shortcut slider precision: fine"
