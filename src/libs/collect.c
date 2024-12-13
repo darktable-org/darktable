@@ -1312,8 +1312,11 @@ static void _expand_select_tree_path(GtkTreePath *path1,
       p3 = gtk_tree_model_get_path(d->treefilter, &parent);
   }
   gtk_tree_view_expand_to_path(d->view, p3 ? p3 : p1);
-  gtk_tree_view_scroll_to_cell(d->view, p1, NULL, TRUE, 0.5, 0.5);
 
+  // force scrolling of the treeview for proper refresh
+  gtk_tree_view_scroll_to_point(d->view, 0, 0);
+  gtk_tree_view_scroll_to_cell(d->view, p1, NULL, TRUE, 0.5, 0.5);
+  
   if(path2)
     gtk_tree_selection_select_range(gtk_tree_view_get_selection(d->view), p1, p2);
   else
@@ -3757,7 +3760,7 @@ void gui_init(dt_lib_module_t *self)
                      dt_ui_resize_wrap(GTK_WIDGET(view), 200,
                                        "plugins/lighttable/collect/windowheight"), TRUE,
                      TRUE, 0);
-
+                   
   // the bottom buttons for the rules
   d->history_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_set_homogeneous(GTK_BOX(d->history_box), TRUE);
