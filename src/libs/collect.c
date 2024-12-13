@@ -707,6 +707,21 @@ static dt_lib_collect_t *get_collect(dt_lib_collect_rule_t *r)
   return d;
 }
 
+static void _scroll_to_position(GtkTreeView *treeview,
+                                GtkTreePath *path,
+                                GtkTreeViewColumn *column,
+                                gboolean use_align,
+                                float row_align,
+                                float col_align)
+{
+  // Force scrolling of the treeview for proper refresh.
+  // This is a workaround for a (possible) GTK bug. When returning from darkroom
+  // the treeview is not scrolled to the previous position. Triggering a scroll
+  // refreshes the treeview.
+  gtk_tree_view_scroll_to_point(treeview, 0, 0);
+  gtk_tree_view_scroll_to_cell(treeview, path, column, use_align, row_align, col_align);
+}
+
 static gboolean list_select(GtkTreeModel *model,
                             GtkTreePath *path,
                             GtkTreeIter *iter,
@@ -724,7 +739,7 @@ static gboolean list_select(GtkTreeModel *model,
   if(strcmp(haystack, needle) == 0)
   {
     gtk_tree_selection_select_path(gtk_tree_view_get_selection(d->view), path);
-    gtk_tree_view_scroll_to_cell(d->view, path, NULL, FALSE, 0.2, 0);
+    _scroll_to_position(d->view, path, NULL, FALSE, 0.2, 0);
   }
 
   g_free(haystack);
@@ -1312,14 +1327,8 @@ static void _expand_select_tree_path(GtkTreePath *path1,
       p3 = gtk_tree_model_get_path(d->treefilter, &parent);
   }
   gtk_tree_view_expand_to_path(d->view, p3 ? p3 : p1);
+  _scroll_to_position(d->view, p1, NULL, TRUE, 0.5, 0.5);
 
-  // Force scrolling of the treeview for proper refresh.
-  // This is a workaround for a (possible) GTK bug. When returning from darkroom
-  // the treeview is not scrolled to the previous position. Triggering a scroll
-  // refreshes the treeview.
-  gtk_tree_view_scroll_to_point(d->view, 0, 0);
-  gtk_tree_view_scroll_to_cell(d->view, p1, NULL, TRUE, 0.5, 0.5);
-  
   if(path2)
     gtk_tree_selection_select_range(gtk_tree_view_get_selection(d->view), p1, p2);
   else
