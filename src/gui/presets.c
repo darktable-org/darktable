@@ -1262,7 +1262,7 @@ static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
 
   gchar *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
 
-  if(event->button == 1 || (module->flags() & IOP_FLAGS_ONE_INSTANCE))
+  if(event->button == 1)
   {
     if(click_time > event->time)
     {
@@ -1276,7 +1276,7 @@ static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
   }
   else if(event->button == 3 && event->type == GDK_BUTTON_RELEASE)
   {
-    if(long_click)
+    if(long_click || (module->flags() & IOP_FLAGS_ONE_INSTANCE))
       dt_shortcut_copy_lua((dt_action_t*)module, name);
     else
     {
