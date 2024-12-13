@@ -63,7 +63,6 @@ jobs:
             libgraphicsmagick1-dev \
             libgtk-3-dev \
             libinih-dev \
-            libjpeg-dev \
             libjson-glib-dev \
             liblcms2-dev \
             liblensfun-dev \
@@ -102,6 +101,7 @@ jobs:
             libgphoto2-dev \
             libheif-dev \
             libimath-dev \
+            libjpeg-turbo8-dev \
             libopenexr-dev \
             libjxl-dev \
             x11proto-dev \
