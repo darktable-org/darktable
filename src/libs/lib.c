@@ -1203,7 +1203,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
       // FIXME separately define as darkroom widget shortcut/action,
       // because not automatically registered via lib if presets btn
       // has been loaded to be shown outside expander
-      g_signal_connect(G_OBJECT(module->presets_button), "clicked",
+      g_signal_connect(G_OBJECT(module->presets_button), "button-press-event",
                        G_CALLBACK(_presets_popup_callback), module);
     }
     module->expander = NULL;
