@@ -2434,11 +2434,11 @@ gboolean dt_dev_get_zoom_bounds(dt_dev_viewport_t *port,
   if(port->zoom == DT_ZOOM_FIT)
     return FALSE;
 
-  int procw = 0, proch = 0;
+  dt_dev_zoom_t zoom;
+  int closeup, procw = 0, proch = 0;
+  dt_dev_get_viewport_params(port, &zoom, &closeup, zoom_x, zoom_y);
   dt_dev_get_processed_size(port, &procw, &proch);
   const float scale = dt_dev_get_zoom_scale(port, port->zoom, 1<<port->closeup, 0);
-
-  dt_dev_get_viewport_params(port, NULL, NULL, zoom_x, zoom_y);
 
   *boxw = procw ? port->width / (procw * scale) : 1.0f;
   *boxh = proch ? port->height / (proch * scale) : 1.0f;
