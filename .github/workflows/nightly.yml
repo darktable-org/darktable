@@ -69,7 +69,6 @@ jobs:
             liblensfun-bin \
             liblensfun-data-v1 \
             liblensfun1 \
-            libopenjp2-7-dev \
             libosmgpsmap-1.0-dev \
             libpango1.0-dev \
             libpng-dev \
@@ -102,8 +101,9 @@ jobs:
             libheif-dev \
             libimath-dev \
             libjpeg-turbo8-dev \
-            libopenexr-dev \
             libjxl-dev \
+            libopenexr-dev \
+            libopenjp2-7-dev \
             x11proto-dev \
             libxfixes-dev;
       - name: Build and install a more recent version of exiv2
