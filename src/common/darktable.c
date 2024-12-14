@@ -2060,12 +2060,6 @@ void dt_cleanup()
   // we can no longer call dt_gui_process_events after this point, as that will cause a segfault
   // if some delayed event fires
 
-  dt_image_cache_cleanup(darktable.image_cache);
-  free(darktable.image_cache);
-  darktable.image_cache = NULL;
-  dt_mipmap_cache_cleanup(darktable.mipmap_cache);
-  free(darktable.mipmap_cache);
-  darktable.mipmap_cache = NULL;
   if(init_gui)
   {
     dt_imageio_cleanup(darktable.imageio);
@@ -2080,6 +2074,13 @@ void dt_cleanup()
     free(darktable.gui);
     darktable.gui = NULL;
   }
+
+  dt_image_cache_cleanup(darktable.image_cache);
+  free(darktable.image_cache);
+  darktable.image_cache = NULL;
+  dt_mipmap_cache_cleanup(darktable.mipmap_cache);
+  free(darktable.mipmap_cache);
+  darktable.mipmap_cache = NULL;
 
   dt_colorspaces_cleanup(darktable.color_profiles);
   dt_conf_cleanup(darktable.conf);
