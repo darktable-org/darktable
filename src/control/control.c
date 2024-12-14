@@ -202,6 +202,7 @@ void dt_control_init(dt_control_t *s)
   s->input_drivers = NULL;
   dt_atomic_set_int(&s->running, DT_CONTROL_STATE_DISABLED);
   dt_atomic_set_int(&s->pending_jobs, 0);
+  dt_atomic_set_int(&s->quitting, 0);
   s->cups_started = FALSE;
 
   dt_action_define_fallback(DT_ACTION_TYPE_IOP, &dt_action_def_iop);
@@ -295,9 +296,14 @@ gboolean dt_control_running()
 
 void dt_control_quit()
 {
+  dt_control_t *control = darktable.control;
+  if(!control) return;
+
+  const gboolean quitting = dt_atomic_exch_int(&control->quitting, 1) == 1;
+  if(quitting) return;
+
   if(dt_control_running())
   {
-    dt_control_t *control = darktable.control;
 #ifdef HAVE_PRINT
     dt_printers_abort_discovery();
     // Cups timeout could be pretty long, at least 30seconds
