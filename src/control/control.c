@@ -201,6 +201,7 @@ void dt_control_init(dt_control_t *s)
   s->widget_definitions = g_ptr_array_new ();
   s->input_drivers = NULL;
   dt_atomic_set_int(&s->running, DT_CONTROL_STATE_DISABLED);
+  dt_atomic_set_int(&s->pending_jobs, 0);
   s->cups_started = FALSE;
 
   dt_action_define_fallback(DT_ACTION_TYPE_IOP, &dt_action_def_iop);
@@ -328,8 +329,9 @@ void dt_control_shutdown(dt_control_t *control)
   pthread_cond_broadcast(&control->cond);
   dt_pthread_mutex_unlock(&control->cond_mutex);
 
-  dt_print(DT_DEBUG_CONTROL, "[dt_control_shutdown] closing control threads%s",
-    cleanup ? " in cleanup mode" : "");
+  dt_print(DT_DEBUG_CONTROL, "[dt_control_shutdown] closing control threads%s, %d pending jobs",
+    cleanup ? " in cleanup mode" : "",
+    dt_control_jobs_pending(control));
 
   if(!cleanup)
     return;   // if not running there are no threads to join

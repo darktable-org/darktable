@@ -315,6 +315,7 @@ static void _control_job_execute(_dt_job_t *job)
 
   _control_job_set_state(job, DT_JOB_STATE_FINISHED);
   _control_job_print(job, "run_job-", "", DT_CTL_WORKER_RESERVED + _control_get_threadid());
+  dt_atomic_add_int(&darktable.control->pending_jobs, -1);
 }
 
 static gboolean _control_run_job(dt_control_t *control)
@@ -433,6 +434,7 @@ gboolean dt_control_add_job(dt_control_t *control,
       }
     }
 
+    dt_atomic_add_int(&darktable.control->pending_jobs, 1);
     // if the job is already in the queue -> move it to the top
     for(GList *iter = *queue; iter; iter = g_list_next(iter))
     {
@@ -447,6 +449,7 @@ gboolean dt_control_add_job(dt_control_t *control,
         job_for_disposal = job;
 
         job = other_job;
+        dt_atomic_add_int(&darktable.control->pending_jobs, -1);
         break; // there can't be any further copy in the list
       }
     }
@@ -463,6 +466,7 @@ gboolean dt_control_add_job(dt_control_t *control,
       dt_control_job_dispose(last->data);
       *queue = g_list_delete_link(*queue, last);
       length--;
+      dt_atomic_add_int(&darktable.control->pending_jobs, -1);
     }
 
     control->queue_length[queue_id] = length;
@@ -478,6 +482,7 @@ gboolean dt_control_add_job(dt_control_t *control,
       job->priority = DT_CONTROL_FG_PRIORITY;
     *queue = g_list_append(*queue, job);
     control->queue_length[queue_id]++;
+    dt_atomic_add_int(&darktable.control->pending_jobs, 1);
   }
   _control_job_set_state(job, DT_JOB_STATE_QUEUED);
   dt_pthread_mutex_unlock(&control->queue_mutex);
@@ -635,6 +640,11 @@ void dt_control_jobs_cleanup(dt_control_t *control)
   control->job = NULL;
   free(control->thread);
   control->thread = NULL;
+}
+
+int dt_control_jobs_pending(dt_control_t *control)
+{
+  return control ? dt_atomic_get_int(&control->pending_jobs) : 0;
 }
 
 // clang-format off
