@@ -54,7 +54,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   struct heif_context* ctx = heif_context_alloc();
   if(!ctx)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
+    dt_print(DT_DEBUG_ALWAYS,
              "Unable to allocate HEIF context");
     return DT_IMAGEIO_CACHE_FULL;
   }
@@ -85,7 +85,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   const int num_images = heif_context_get_number_of_top_level_images(ctx);
   if(num_images == 0)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
+    dt_print(DT_DEBUG_ALWAYS,
              "No images found in HEIF file [%s]",
              filename);
     ret = DT_IMAGEIO_FILE_CORRUPTED;
@@ -96,7 +96,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   err = heif_context_get_primary_image_handle(ctx, &handle);
   if(err.code != heif_error_Ok)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
+    dt_print(DT_DEBUG_ALWAYS,
              "Failed to read primary image from HEIF file [%s]",
              filename);
     ret = DT_IMAGEIO_UNSUPPORTED_FEATURE;
@@ -176,7 +176,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   heif_decoding_options_free(decode_options);
   if(err.code != heif_error_Ok)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
+    dt_print(DT_DEBUG_ALWAYS,
              "Failed to decode HEIF file [%s]",
              filename);
     ret = DT_IMAGEIO_FILE_CORRUPTED;
@@ -207,7 +207,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(mipbuf == NULL)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
+    dt_print(DT_DEBUG_ALWAYS,
              "Failed to allocate mipmap buffer for HEIF image [%s]",
              filename);
     ret = DT_IMAGEIO_CACHE_FULL;
@@ -308,7 +308,7 @@ int dt_imageio_heif_read_profile(const char *filename,
   struct heif_context* ctx = heif_context_alloc();
   if(!ctx)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
+    dt_print(DT_DEBUG_ALWAYS,
              "Unable to allocate HEIF context");
     goto out;
   }
@@ -316,7 +316,7 @@ int dt_imageio_heif_read_profile(const char *filename,
   err = heif_context_read_from_file(ctx, filename, NULL);
   if(err.code != heif_error_Ok)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
+    dt_print(DT_DEBUG_ALWAYS,
              "Failed to read HEIF file [%s]",
              filename);
     goto out;
@@ -326,7 +326,7 @@ int dt_imageio_heif_read_profile(const char *filename,
   const int num_images = heif_context_get_number_of_top_level_images(ctx);
   if(num_images == 0)
   {
-        dt_print(DT_DEBUG_IMAGEIO,
+        dt_print(DT_DEBUG_ALWAYS,
              "No images found in HEIF file [%s]",
              filename);
     goto out;
@@ -336,7 +336,7 @@ int dt_imageio_heif_read_profile(const char *filename,
   err = heif_context_get_primary_image_handle(ctx, &handle);
   if(err.code != heif_error_Ok)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
+    dt_print(DT_DEBUG_ALWAYS,
              "Failed to read primary image from HEIF file [%s]",
              filename);
     goto out;
