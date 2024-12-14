@@ -711,8 +711,7 @@ void expose(dt_view_t *self,
         "expose masks",
          port->pipe, dev->gui_module, DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d",
          width, height, pointerx, pointery);
-    _get_zoom_pos(&dev->full, pointerx, pointery, &pzx, &pzy, &zoom_scale);
-    dt_masks_events_post_expose(dmod, cri, width, height, pzx, pzy, zoom_scale);
+    dt_masks_events_post_expose(dmod, cri, width, height, 0.0f, 0.0f, zoom_scale);
   }
 
   // if dragging the rotation line, do it and nothing else
@@ -721,8 +720,11 @@ void expose(dt_view_t *self,
          || dmod == dev->proxy.rotate))
   {
     // reminder, we want this to be exposed always for guidings
-    _get_zoom_pos(&dev->full, pointerx, pointery, &pzx, &pzy, &zoom_scale);
-    _module_gui_post_expose(dev->proxy.rotate, cri, wd, ht, pzx, pzy, zoom_scale);
+    if(dev->proxy.rotate && dev->proxy.rotate->gui_post_expose)
+    {
+      _get_zoom_pos(&dev->full, pointerx, pointery, &pzx, &pzy, &zoom_scale);
+      _module_gui_post_expose(dev->proxy.rotate, cri, wd, ht, pzx, pzy, zoom_scale);
+    }
   }
   else
   {
@@ -741,8 +743,11 @@ void expose(dt_view_t *self,
                       port->pipe, dev->cropping.exposer,
                       DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d",
                       width, height, pointerx, pointery);
-        _get_zoom_pos(&dev->full, pointerx, pointery, &pzx, &pzy, &zoom_scale);
-        _module_gui_post_expose(dev->cropping.exposer, cri, wd, ht, pzx, pzy, zoom_scale);
+        if(dev->cropping.exposer && dev->cropping.exposer->gui_post_expose)
+        {
+          _get_zoom_pos(&dev->full, pointerx, pointery, &pzx, &pzy, &zoom_scale);
+          _module_gui_post_expose(dev->cropping.exposer, cri, wd, ht, pzx, pzy, zoom_scale);
+        }
         guides = FALSE;
       }
 
@@ -755,9 +760,11 @@ void expose(dt_view_t *self,
                       DT_DEVICE_NONE, NULL, NULL,
                       "%dx%d, px=%d py=%d",
                       width, height, pointerx, pointery);
-        _get_zoom_pos(&dev->full, pointerx, pointery, &pzx, &pzy, &zoom_scale);
-        _module_gui_post_expose(dmod, cri, wd, ht, pzx, pzy, zoom_scale);
-
+        if(dmod->gui_post_expose)
+        {
+          _get_zoom_pos(&dev->full, pointerx, pointery, &pzx, &pzy, &zoom_scale);
+          _module_gui_post_expose(dmod, cri, wd, ht, pzx, pzy, zoom_scale);
+        }
         // avoid drawing later if we just did via post_expose
         if(dmod->flags() & IOP_FLAGS_GUIDES_SPECIAL_DRAW)
           guides = FALSE;
