@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2836,6 +2836,32 @@ void dt_dev_get_pointer_zoom_pos(dt_dev_viewport_t *port,
   int closeup = 0, procw = 0, proch = 0;
   float zoom2_x = 0.0f, zoom2_y = 0.0f;
   dt_dev_get_viewport_params(port, &zoom, &closeup, &zoom2_x, &zoom2_y);
+  dt_dev_get_processed_size(port, &procw, &proch);
+  const float scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 0);
+  const double tb = port->border_size;
+  // offset from center now (current zoom_{x,y} points there)
+  const float mouse_off_x = px - tb - .5 * port->width;
+  const float mouse_off_y = py - tb - .5 * port->height;
+  zoom2_x += mouse_off_x / (procw * scale);
+  zoom2_y += mouse_off_y / (proch * scale);
+  *zoom_x = zoom2_x + 0.5f;
+  *zoom_y = zoom2_y + 0.5f;
+  *zoom_scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 1);
+}
+
+void dt_dev_get_pointer_zoom_pos_from_bounds(dt_dev_viewport_t *port,
+                                             const float px,
+                                             const float py,
+                                             const float zbound_x,
+                                             const float zbound_y,
+                                             float *zoom_x,
+                                             float *zoom_y,
+                                             float *zoom_scale)
+{
+  dt_dev_zoom_t zoom;
+  int closeup = 0, procw = 0, proch = 0;
+  float zoom2_x = zbound_x, zoom2_y = zbound_y;
+  dt_dev_get_viewport_params(port, &zoom, &closeup, NULL, NULL);
   dt_dev_get_processed_size(port, &procw, &proch);
   const float scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 0);
   const double tb = port->border_size;
