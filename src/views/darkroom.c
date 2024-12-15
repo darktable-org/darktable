@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -113,10 +113,10 @@ static int display_image_cb(lua_State *L)
 
 #endif
 
-// helper to let us get the pointer's zoom position only when actually
+// helpers to let us get the pointer's zoom position only when actually
 // used, while only calling the underlying function once per GUI
 // callback if it happens to be used more than once
-// the variable passed as zoom_x must be initialized to FLT_MAX as
+// the variable passed as zoom_x/zbound_x must be initialized to FLT_MAX as
 // a signal that the zoom values are not yet valid and need to be computed
 static void _get_zoom_pos(dt_dev_viewport_t *port,
                           const double x,
@@ -128,6 +128,25 @@ static void _get_zoom_pos(dt_dev_viewport_t *port,
   if(*zoom_x == FLT_MAX)
   {
     dt_dev_get_pointer_zoom_pos(port, x, y, zoom_x, zoom_y, zoom_scale);
+  }
+}
+
+static void _get_zoom_pos_bnd(dt_dev_viewport_t *port,
+                              const double x,
+                              const double y,
+                              float zbound_x,
+                              float zbound_y,
+                              float *zoom_x,
+                              float *zoom_y,
+                              float *zoom_scale)
+{
+  if(zbound_x == FLT_MAX)
+  {
+    dt_dev_get_pointer_zoom_pos(port, x, y, zoom_x, zoom_y, zoom_scale);
+  }
+  else
+  {
+    dt_dev_get_pointer_zoom_pos_from_bounds(port, x, y, zbound_x, zbound_y, zoom_x, zoom_y, zoom_scale);
   }
 }
 
@@ -484,9 +503,14 @@ void expose(dt_view_t *self,
 
   // adjust scroll bars
   float zoom_x, zoom_y, boxw, boxh;
+  float zbound_x = FLT_MAX, zbound_y = 0.0f;
   if(!dt_dev_get_zoom_bounds(port, &zoom_x, &zoom_y, &boxw, &boxh))
     boxw = boxh = 1.0f;
-
+  else
+  {
+    zbound_x = zoom_x;
+    zbound_y = zoom_y;
+  }
   /* If boxw and boxh very closely match the zoomed size in the
       darktable window we might have resizing with every expose
       because adding a slider will change the image area and might
@@ -722,7 +746,7 @@ void expose(dt_view_t *self,
     // reminder, we want this to be exposed always for guidings
     if(dev->proxy.rotate && dev->proxy.rotate->gui_post_expose)
     {
-      _get_zoom_pos(&dev->full, pointerx, pointery, &pzx, &pzy, &zoom_scale);
+      _get_zoom_pos_bnd(&dev->full, pointerx, pointery, zbound_x, zbound_y, &pzx, &pzy, &zoom_scale);
       _module_gui_post_expose(dev->proxy.rotate, cri, wd, ht, pzx, pzy, zoom_scale);
     }
   }
@@ -745,7 +769,7 @@ void expose(dt_view_t *self,
                       width, height, pointerx, pointery);
         if(dev->cropping.exposer && dev->cropping.exposer->gui_post_expose)
         {
-          _get_zoom_pos(&dev->full, pointerx, pointery, &pzx, &pzy, &zoom_scale);
+          _get_zoom_pos_bnd(&dev->full, pointerx, pointery, zbound_x, zbound_y, &pzx, &pzy, &zoom_scale);
           _module_gui_post_expose(dev->cropping.exposer, cri, wd, ht, pzx, pzy, zoom_scale);
         }
         guides = FALSE;
@@ -762,7 +786,7 @@ void expose(dt_view_t *self,
                       width, height, pointerx, pointery);
         if(dmod->gui_post_expose)
         {
-          _get_zoom_pos(&dev->full, pointerx, pointery, &pzx, &pzy, &zoom_scale);
+          _get_zoom_pos_bnd(&dev->full, pointerx, pointery, zbound_x, zbound_y, &pzx, &pzy, &zoom_scale);
           _module_gui_post_expose(dmod, cri, wd, ht, pzx, pzy, zoom_scale);
         }
         // avoid drawing later if we just did via post_expose
