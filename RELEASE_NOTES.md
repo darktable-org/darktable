@@ -467,4 +467,17 @@ Support for the following cameras is suspended because no samples are available 
 
 ## Translations
 
-- ???
+## Translations
+- Czech
+- German
+- European Spanish
+- Finnish
+- French
+- Japanese
+- Dutch
+- Brazilian Portuguese
+- Slovenian
+- Albanian
+- Ukrainian
+- Chinese (Simplified)
+- Chinese (Traditional)
