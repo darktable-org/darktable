@@ -9,12 +9,21 @@ The checksums are:
 ```
 $ sha256sum darktable-5.0.0.tar.xz
 ??? darktable-5.0.0.tar.xz
+
 $ sha256sum darktable-5.0.0-x86_64.dmg
 ??? darktable-5.0.0-x86_64.dmg
+
 $ sha256sum darktable-5.0.0-arm64.dmg
 ??? darktable-5.0.0-arm64.dmg
+
+$ sha256sum darktable-5.0.0-arm64-13.5.dmg
+??? darktable-5.0.0-arm64-13.5.dmg
+
 $ sha256sum darktable-5.0.0-win64.exe
 ??? darktable-5.0.0-win64.exe
+
+$ sha256sum darktable-4.8.1-x86_64.AppImage
+???  darktable-5.0.0-x86_64.AppImage
 ```
 
 When updating from the stable 4.8 series, please bear in mind that your edits will be preserved during this process, but the new library and configuration will no longer be usable with 4.8.
@@ -25,10 +34,9 @@ You are strongly advised to take a backup first.
 
 Since darktable 4.8:
 
-- ??? commits to darktable+rawspeed
-- ??? pull requests handled
-- ??? issues closed
-
+- 1198 commits to darktable+rawspeed
+-  505 pull requests handled
+-   45 issues closed
 
 _Please note that the darktable documentation is not currently complete for release 5.0
 and contributions are greatly appreciated. Please see the
@@ -403,15 +411,33 @@ changes (where available).
 
 ### Base Support
 
-- ???
+- Fujifilm X-M5 (compressed)
+- Fujifilm X-T50 (compressed)
+- Leica D-Lux 8 (DNG)
+- Leica M11-D (DNG)
+- Leica Q3 43 (DNG)
+- Minolta Alpha Sweet Digital
+- Minolta Alpha-7 Digital
+- Nikon Z50_2 (14bit-compressed)
+- Nikon Z6_3 (14bit-compressed)
+- Panasonic DC-FZ80D (4:3)
+- Panasonic DC-FZ82D (4:3)
+- Panasonic DC-FZ85 (4:3)
+- Panasonic DC-FZ85D (4:3)
+- Panasonic DC-G100D (4:3)
+- Phase One P20+
+- Sony ILCE-1M2
 
 ### White Balance Presets
 
-- ???
+- Nikon Z6_3
+- Sony ILCE-6700
 
 ### Noise Profiles
 
-- ???
+- Canon PowerShot G1 X
+- Leica M11
+- Nikon Z6_3
 
 ### Missing Compression Mode Support
 
