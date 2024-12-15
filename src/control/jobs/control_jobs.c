@@ -207,7 +207,7 @@ static int32_t _generic_dt_control_fileop_images_job_run
 
   gboolean completeSuccess = TRUE;
   double prev_time = 0;
-  while(t && !_job_cancelled(job))
+  while(dt_control_running() && t && !_job_cancelled(job))
   {
     completeSuccess &= (fileop_callback(GPOINTER_TO_INT(t->data), film_id) != -1);
     t = g_list_next(t);
@@ -622,7 +622,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     (dt_control_merge_hdr_format_t){.parent = { 0 }, .d = &d };
 
   int num = 1;
-  while(t)
+  while(t && dt_control_running())
   {
     if(d.abort) goto end;
 
@@ -641,7 +641,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     num++;
   }
 
-  if(d.abort) goto end;
+  if(d.abort || !dt_control_running()) goto end;
 
 // normalize by white level to make clipping at 1.0 work as expected
 
@@ -761,7 +761,7 @@ static int32_t dt_control_flip_images_job_run(dt_job_t *job)
                                               "flipping %d images", total), total);
   dt_control_job_set_progress_message(job, message);
   double prev_time = 0;
-  for(; t && !_job_cancelled(job); t = g_list_next(t))
+  for(; dt_control_running() && t && !_job_cancelled(job); t = g_list_next(t))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
     dt_image_flip(imgid, cw);
@@ -942,7 +942,7 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
 
   double fraction = 0.0;
   double prev_time = 0;
-  for(; t && !_job_cancelled(job); t = g_list_next(t))
+  for(; dt_control_running() && t && !_job_cancelled(job); t = g_list_next(t))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
     const int32_t exist_count = _count_images_using_overlay(imgid);
@@ -1527,7 +1527,7 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
 
   dt_control_job_set_progress_message(job, message);
   double prev_time = 0;
-  while(t)
+  while(t && dt_control_running())
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
     if(dt_is_valid_imgid(imgid))
@@ -1871,7 +1871,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 
   double prev_time = 0;
 
-  while(t && !_job_cancelled(job))
+  while(dt_control_running() && t && !_job_cancelled(job))
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
     t = g_list_next(t);
@@ -2887,7 +2887,7 @@ static int32_t _control_import_job_run(dt_job_t *job)
   double update_interval = INIT_UPDATE_INTERVAL;
   char *prev_filename = NULL;
   char *prev_output = NULL;
-  for(GList *img = t; img && !_job_cancelled(job); img = g_list_next(img))
+  for(GList *img = t; dt_control_running() && img && !_job_cancelled(job); img = g_list_next(img))
   {
     if(data->session)
     {
@@ -3016,7 +3016,7 @@ void dt_control_import(GList *imgs,
                      _control_import_job_create(imgs, datetime_override,
                                                 inplace, wait ? &wait : NULL));
   // if import in place single image => synchronous import
-  while(wait)
+  while(wait && dt_control_running())
     g_usleep(100);
 }
 
