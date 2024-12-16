@@ -241,7 +241,7 @@ static void _lib_metadata_init_queue(dt_lib_module_t *self)
   {
     dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
 
-    if(metadata->type != DT_METADATA_TYPE_INTERNAL)
+    if(!metadata->internal)
     {
       dt_lib_metadata_info_t *m = g_malloc0(sizeof(dt_lib_metadata_info_t));
       if(m)
@@ -551,7 +551,7 @@ void gui_update(dt_lib_module_t *self)
     {
       dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
 
-      if(metadata->type != DT_METADATA_TYPE_INTERNAL)
+      if(!metadata->internal)
       {
         dt_util_str_cat(&metadata_subquery,
                         "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = %d WHERE images.id in (%s)), ",
@@ -1067,7 +1067,7 @@ void gui_update(dt_lib_module_t *self)
         for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
         {
           dt_metadata_t *m = (dt_metadata_t *)iter->data;
-          if(m->type != DT_METADATA_TYPE_INTERNAL)
+          if(!m->internal)
           {
             if(i == md - md_xmp_metadata)
             {
@@ -1285,7 +1285,7 @@ static void _metadata_changed(gpointer instance, int type, dt_lib_module_t *self
     const dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
 
     gboolean found = FALSE;
-    if(metadata->type != DT_METADATA_TYPE_INTERNAL)
+    if(!metadata->internal)
     {
       for(GList *md_iter = d->metadata; md_iter; md_iter = md_iter->next)
       {

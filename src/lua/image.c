@@ -615,7 +615,7 @@ int dt_lua_init_image(lua_State *L)
   {
     dt_metadata_t *metadata = iter->data;
 
-    if(metadata->type != DT_METADATA_TYPE_INTERNAL)
+    if(!metadata->internal)
     {
       lua_pushcfunction(L, metadata_member);
       dt_lua_type_register(L, dt_lua_image_t, dt_metadata_get_tag_subkey(metadata->tagname));

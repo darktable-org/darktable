@@ -2213,7 +2213,7 @@ void dt_exif_apply_default_metadata(dt_image_t *img)
       dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
 
       // don't import hidden stuff
-      if(metadata->is_visible)
+      if(metadata->visible)
       {
         const char *name = dt_metadata_get_tag_subkey(metadata->tagname);
         gchar *setting = g_strdup_printf("ui_last/import_last_%s", name);
@@ -4834,9 +4834,9 @@ static void _set_xmp_dt_metadata(Exiv2::XmpData &xmpData,
     if(metadata)
     {
       if(export_flag
-        && metadata->type != DT_METADATA_TYPE_INTERNAL)
+        && !metadata->internal)
       {
-        if(metadata->is_visible && !metadata->is_private)
+        if(metadata->visible && !metadata->priv)
           xmpData[metadata->tagname] = sqlite3_column_text(stmt, 1);
         else
         {

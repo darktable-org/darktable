@@ -43,7 +43,6 @@ typedef enum dt_metadata_pref_cols_t
   DT_METADATA_PREF_COL_NAME,        // displayed name
   DT_METADATA_PREF_COL_VISIBLE,     // visibility
   DT_METADATA_PREF_COL_PRIVATE,     // do not export
-  DT_METADATA_PREF_COL_DT_DEFAULT,  // darktable default metadata, cannot be deleted
   DT_METADATA_PREF_NUM_COLS
 } dt_metadata_pref_cols_t;
 
@@ -476,8 +475,7 @@ static void _update_layout(dt_lib_module_t *self)
   {
     dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
 
-    const gboolean visible = metadata->type != DT_METADATA_TYPE_INTERNAL &&
-                             metadata->is_visible;
+    const gboolean visible = !metadata->internal && metadata->visible;
 
     int row = 0;
     while(row < d->num_grid_rows)
@@ -525,7 +523,7 @@ void gui_reset(dt_lib_module_t *self)
   {
     dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
 
-    if(metadata->is_visible && metadata->type != DT_METADATA_TYPE_INTERNAL)
+    if(!metadata->internal && metadata->visible)
     {
       GtkTextView *textview = _get_textview_by_key(metadata->key, self);
       GtkTextBuffer *buffer = gtk_text_view_get_buffer(textview);
@@ -727,7 +725,6 @@ static void _add_selected_metadata(gchar *tagname, dt_lib_metadata_t *d)
                        DT_METADATA_PREF_COL_NAME, dt_metadata_get_tag_subkey(tagname),
                        DT_METADATA_PREF_COL_VISIBLE, TRUE,
                        DT_METADATA_PREF_COL_PRIVATE, FALSE,
-                       DT_METADATA_PREF_COL_DT_DEFAULT, FALSE,
                        -1);
 
     GtkTreeSelection *selection = gtk_tree_view_get_selection(d->tree_view);
@@ -812,7 +809,7 @@ static void _fill_grid(dt_lib_module_t *self)
   {
     dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
 
-    if(metadata->type == DT_METADATA_TYPE_INTERNAL)
+    if(metadata->internal)
       continue;
 
     g_hash_table_insert(d->metadata_texts,
@@ -830,21 +827,6 @@ static void _fill_grid(dt_lib_module_t *self)
   gtk_widget_show_all(d->grid);
   gtk_widget_set_no_show_all(d->grid, TRUE);
   dt_lib_gui_queue_update(self);
-}
-
-static void _selection_changed(GtkTreeSelection *selection, dt_lib_metadata_t *d)
-{
-  GtkTreeIter iter;
-  GtkTreeModel *model = GTK_TREE_MODEL(d->liststore);
-  if(gtk_tree_selection_get_selected(selection, &model, &iter))
-  {
-    uint32_t dt_default;
-    gtk_tree_model_get(model, &iter,
-                       DT_METADATA_PREF_COL_DT_DEFAULT, &dt_default,
-                       -1);
-    
-    gtk_widget_set_sensitive(d->delete_button, !dt_default);
-  }
 }
 
 static void _menuitem_preferences(GtkMenuItem *menuitem,
@@ -882,8 +864,7 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
                                            G_TYPE_STRING,   // xmp tag name
                                            G_TYPE_STRING,   // displayed name
                                            G_TYPE_BOOLEAN,  // visibility
-                                           G_TYPE_BOOLEAN,  // do not export
-                                           G_TYPE_BOOLEAN); // darktable default metadata
+                                           G_TYPE_BOOLEAN); // do not export
 
   d->liststore = store;
   GtkTreeModel *model = GTK_TREE_MODEL(store);
@@ -893,16 +874,15 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
   for(GList *metadata_iter = dt_metadata_get_list(); metadata_iter; metadata_iter = metadata_iter->next)
   {
     dt_metadata_t *metadata = (dt_metadata_t *)metadata_iter->data;
-    if(metadata->type != DT_METADATA_TYPE_INTERNAL)
+    if(!metadata->internal)
     {
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(store, &iter,
                          DT_METADATA_PREF_COL_KEY, metadata->key,
                          DT_METADATA_PREF_COL_TAGNAME, metadata->tagname,
                          DT_METADATA_PREF_COL_NAME, metadata->name,
-                         DT_METADATA_PREF_COL_VISIBLE, metadata->is_visible,
-                         DT_METADATA_PREF_COL_PRIVATE, metadata->is_private,
-                         DT_METADATA_PREF_COL_DT_DEFAULT, metadata->dt_default,
+                         DT_METADATA_PREF_COL_VISIBLE, metadata->visible,
+                         DT_METADATA_PREF_COL_PRIVATE, metadata->priv,
                          -1);
     }
   }
@@ -972,10 +952,6 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_delete_tag_button_clicked), (gpointer)d);
   d->delete_button = button;
 
-  GtkTreeSelection * selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
-  g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(_selection_changed), (gpointer) d);
-  _selection_changed(selection, d);
-
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
@@ -1034,8 +1010,7 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
       g_free(query);
 
       // now the metadata entries
-      query = g_strdup_printf("DELETE FROM data.meta_data "
-                              "WHERE dt_default = 0 AND key IN (%s)",
+      query = g_strdup_printf("DELETE FROM data.meta_data WHERE key IN (%s)",
                               keys);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   query,
@@ -1067,15 +1042,15 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
       int32_t key = 0;
       gchar *tagname = NULL;
       gchar *name = NULL;
-      gboolean is_visible = FALSE;
-      gboolean is_private = FALSE;
+      gboolean visible = FALSE;
+      gboolean private = FALSE;
 
       gtk_tree_model_get(model, &iter,
                          DT_METADATA_PREF_COL_KEY, &key,
                          DT_METADATA_PREF_COL_TAGNAME, &tagname,
                          DT_METADATA_PREF_COL_NAME, &name,
-                         DT_METADATA_PREF_COL_VISIBLE, &is_visible,
-                         DT_METADATA_PREF_COL_PRIVATE, &is_private,
+                         DT_METADATA_PREF_COL_VISIBLE, &visible,
+                         DT_METADATA_PREF_COL_PRIVATE, &private,
                          -1);
 
       if(key == -1)
@@ -1084,10 +1059,9 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
         dt_metadata_t *md = calloc(1, sizeof(dt_metadata_t));
         md->tagname = g_strdup(tagname);
         md->name = g_strdup(name);
-        md->type = DT_METADATA_TYPE_USER;
-        md->is_visible = is_visible;
-        md->is_private = is_private;
-        md->dt_default = 0;
+        md->internal = FALSE;
+        md->visible = visible;
+        md->priv = private;
         md->display_order = display_order;
         dt_metadata_add_metadata(md);
 
@@ -1107,8 +1081,8 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
           -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, key);
         DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, name, -1, SQLITE_TRANSIENT);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, is_visible);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, is_private);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, visible);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, private);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, display_order);
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
@@ -1116,8 +1090,8 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
         dt_metadata_t *metadata = dt_metadata_get_metadata_by_keyid(key);
         g_free(metadata->name);
         metadata->name = g_strdup(name);
-        metadata->is_visible = is_visible;
-        metadata->is_private = is_private;
+        metadata->visible = visible;
+        metadata->priv = private;
         metadata->display_order = display_order;
       }
 
@@ -1520,7 +1494,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   {
     dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
 
-    if(metadata->type == DT_METADATA_TYPE_INTERNAL)
+    if(metadata->internal)
       continue;
 
     GtkTextView *textview = _get_textview_by_key(metadata->key, self);

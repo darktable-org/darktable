@@ -2575,7 +2575,7 @@ static void _set_default_preferences(dt_lib_module_t *self)
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
     dt_metadata_t *metadata = iter->data;
-    if(metadata->type != DT_METADATA_TYPE_INTERNAL)
+    if(!metadata->internal)
     {
       const char *metadata_name = dt_metadata_get_tag_subkey(metadata->tagname);
       char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", metadata_name);
@@ -2623,7 +2623,7 @@ static char *_get_current_configuration(dt_lib_module_t *self)
   {
     dt_metadata_t *metadata = iter->data;
 
-    if(metadata->type != DT_METADATA_TYPE_INTERNAL)
+    if(!metadata->internal)
     {
       const char *metadata_name = dt_metadata_get_tag_subkey(metadata->tagname);
       gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag",
