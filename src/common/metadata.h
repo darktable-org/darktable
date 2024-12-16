@@ -28,24 +28,15 @@ typedef struct dt_metadata_t
   uint32_t key;
   gchar *tagname;
   gchar *name;
-  uint32_t type;
-  gboolean is_visible;
-  gboolean is_private;
-  gboolean dt_default;
+  uint32_t internal;
+  gboolean visible;
+  gboolean priv;
   uint32_t display_order;
 } dt_metadata_t;
 
-// we need a max number of metadata fields to maintain the enums in
+// we need a max number of metadata fields to maintain the enum in
 // src/common/collection.h
 #define DT_METADATA_MAX_NUMBER 50
-
-typedef enum dt_metadata_type_t
-{
-  DT_METADATA_TYPE_USER,     // metadata for users
-  DT_METADATA_TYPE_OPTIONAL, // metadata hidden by default
-  DT_METADATA_TYPE_INTERNAL  // metadata for dt internal usage - the user cannot see it
-}
-dt_metadata_type_t;
 
 typedef enum dt_metadata_signal_t
 {

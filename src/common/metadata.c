@@ -64,16 +64,15 @@ gboolean dt_metadata_add_metadata(dt_metadata_t *metadata)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO data.meta_data "
-                              " (key, tagname, name, type, visible, private, dt_default, display_order)"
-                              " VALUES(NULL, ?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+                              " (key, tagname, name, internal, visible, private, display_order)"
+                              " VALUES(NULL, ?1, ?2, ?3, ?4, ?5, ?6)",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, metadata->tagname, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, metadata->name, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, metadata->type);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, metadata->is_visible);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, metadata->is_private);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 6, metadata->dt_default);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, metadata->display_order);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, metadata->internal);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, metadata->visible);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, metadata->priv);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 6, metadata->display_order);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
@@ -189,8 +188,7 @@ void dt_metadata_init()
   sqlite3_stmt *stmt;
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                          "SELECT key, tagname, name, type, visible, private,"
-                          " dt_default, display_order"
+                          "SELECT key, tagname, name, internal, visible, private, display_order"
                           " FROM data.meta_data"
                           " ORDER BY display_order",
                           -1, &stmt, NULL);
@@ -202,20 +200,18 @@ void dt_metadata_init()
     int key = sqlite3_column_int(stmt, 0);
     char *tagname = (char *)sqlite3_column_text(stmt, 1);
     char *name = (char *)sqlite3_column_text(stmt, 2);
-    int type = sqlite3_column_int(stmt, 3);
+    int internal = sqlite3_column_int(stmt, 3);
     gboolean visible = (gboolean) sqlite3_column_int(stmt, 4);
     gboolean private = (gboolean) sqlite3_column_int(stmt, 5);
-    int dt_default = sqlite3_column_int(stmt, 6);
-    int display_order = sqlite3_column_int(stmt, 7);
+    int display_order = sqlite3_column_int(stmt, 6);
 
     dt_metadata_t *metadata = calloc(1, sizeof(dt_metadata_t));
     metadata->key = key;
     metadata->tagname = g_strdup(tagname);
     metadata->name = g_strdup(name);
-    metadata->type = type;
-    metadata->is_visible = visible;
-    metadata->is_private = private;
-    metadata->dt_default = dt_default;
+    metadata->internal = internal;
+    metadata->visible = visible;
+    metadata->priv = private;
     metadata->display_order = display_order;
     _metadata_list = g_list_prepend(_metadata_list, metadata);
     _set_default_import_flag(metadata);
@@ -687,7 +683,7 @@ void dt_metadata_set_import(const dt_imgid_t imgid, const char *key, const char 
   if(md) // known key
   {
     gboolean imported = (dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER);
-    if(!imported && md->type != DT_METADATA_TYPE_INTERNAL)
+    if(!imported && !md->internal)
     {
       const gchar *name = dt_metadata_get_tag_subkey(md->tagname);
       char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
@@ -772,9 +768,9 @@ void dt_metadata_clear(const GList *imgs, const gboolean undo_on)
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
     const dt_metadata_t *md = (dt_metadata_t *)iter->data;
-    if(md->type != DT_METADATA_TYPE_INTERNAL)
+    if(!md->internal)
     {
-      if(md->is_visible)
+      if(md->visible)
       {
         // caution: metadata is a simple list here
         metadata = g_list_prepend(metadata, g_strdup_printf("%u", md->key));

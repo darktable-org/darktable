@@ -257,7 +257,7 @@ void dt_gtkentry_setup_variables_completion(GtkEntry *entry)
   for(GList *md_iter = dt_metadata_get_list(); md_iter; md_iter = md_iter->next)
   {
     dt_metadata_t *metadata = (dt_metadata_t *)md_iter->data;
-    if(metadata->type != DT_METADATA_TYPE_INTERNAL)
+    if(!metadata->internal)
     {
       gchar *varname = g_utf8_strup(dt_metadata_get_tag_subkey(metadata->tagname), -1);
       gchar *description = g_strdup_printf("$(%s) - %s", varname, _("from metadata"));

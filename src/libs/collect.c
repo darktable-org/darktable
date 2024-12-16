@@ -3343,7 +3343,7 @@ static void _populate_collect_combo(GtkWidget *w)
     for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
     {
       dt_metadata_t *metadata = iter->data;
-      if(metadata->type != DT_METADATA_TYPE_INTERNAL && metadata->is_visible)
+      if(!metadata->internal && metadata->visible)
         // metadata name is user defined, so no localization here
         dt_bauhaus_combobox_add_full(w, metadata->name,
                                     DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
@@ -4023,7 +4023,7 @@ void init(struct dt_lib_module_t *self)
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
     dt_metadata_t *metadata = iter->data;
-    if(metadata->type != DT_METADATA_TYPE_INTERNAL && metadata->is_visible)
+    if(!metadata->internal && metadata->visible)
       luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_METADATA + metadata->key);
   }
   dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);

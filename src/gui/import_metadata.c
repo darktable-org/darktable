@@ -147,8 +147,7 @@ static void _update_layout(dt_import_metadata_t *metadata)
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
     dt_metadata_t *md = (dt_metadata_t *)iter->data;
-    const gboolean internal = md->type == DT_METADATA_TYPE_INTERNAL;
-    const gboolean visible = !internal && md->is_visible;
+    const gboolean visible = !md->internal && md->visible;
 
     // update the label
     w = gtk_grid_get_child_at(GTK_GRID(metadata->grid), 0, i + DT_META_META_VALUE);
