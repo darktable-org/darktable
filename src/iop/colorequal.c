@@ -250,7 +250,6 @@ typedef struct dt_iop_colorequal_gui_data_t
   GtkWidget *chroma_size, *param_size, *use_filter;
 
   GtkWidget *hue_shift;
-  gboolean picking;
 
   // Array-like re-indexing of the above for efficient uniform
   // handling in loops. Populate the array in gui_init()
@@ -2278,7 +2277,6 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
     dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
     dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
     dt_bauhaus_widget_set_quad_active(g->hue_shift, FALSE);
-    g->picking = FALSE;
     g->mask_mode = 0;
     if(buttons) dt_dev_reprocess_center(self->dev);
   }
@@ -2537,7 +2535,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
 
   dt_free_align(g->LUT);
 
-  if(self->enabled && dt_iop_has_focus(self) && g->picking)
+  if(self->enabled && dt_iop_has_focus(self) && self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
     _draw_color_picker(self, cr, p, g, (double)graph_width, (double)graph_height);
 
   cairo_restore(cr);
@@ -2600,16 +2598,6 @@ void color_picker_apply(dt_iop_module_t *self,
   }
   else
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
-}
-
-static void _picker_callback(GtkWidget *quad, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_colorequal_gui_data_t *g = self->gui_data;
-
-  g->picking = dt_bauhaus_widget_get_quad_active(quad);
-
-  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 static void _masking_callback_p(GtkWidget *quad, dt_iop_module_t *self)
@@ -3060,9 +3048,7 @@ void gui_init(dt_iop_module_t *self)
 
   dt_bauhaus_widget_set_quad_tooltip(g->hue_shift,
     _("pick hue from image and visualize it\nctrl+click to select an area"));
-  g_signal_connect(G_OBJECT(g->hue_shift), "quad-pressed", G_CALLBACK(_picker_callback), self);
   gtk_widget_set_name(g->hue_shift, "keep-active");
-  g->picking = FALSE;
 
   g->stack = GTK_STACK(gtk_stack_new());
   dt_gui_box_add(box, g->stack);
@@ -3171,11 +3157,7 @@ void gui_init(dt_iop_module_t *self)
   g->threshold = dt_bauhaus_slider_from_params(self, "threshold");
   dt_bauhaus_slider_set_digits(g->threshold, 3);
   dt_bauhaus_slider_set_format(g->threshold, "%");
-  dt_bauhaus_widget_set_quad_paint(g->threshold, dtgtk_cairo_paint_showmask, 0, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->threshold, TRUE);
-  dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
-  g_signal_connect(G_OBJECT(g->threshold), "quad-pressed", G_CALLBACK(_masking_callback_t), self);
-  dt_bauhaus_widget_set_quad_tooltip(g->threshold,
+  dt_bauhaus_widget_set_quad(g->threshold, dtgtk_cairo_paint_showmask, TRUE, _masking_callback_t,
     _("visualize weighting function on changed output and view weighting curve.\n"
       "red shows possibly changed data, blueish parts will not be changed."));
 
@@ -3197,11 +3179,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->param_size, _(_(" px")));
   gtk_widget_set_tooltip_text(g->param_size, _("set radius of applied parameters for the guided filter"));
 
-  dt_bauhaus_widget_set_quad_paint(g->param_size, dtgtk_cairo_paint_showmask, 0, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->param_size, TRUE);
-  dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
-  g_signal_connect(G_OBJECT(g->param_size), "quad-pressed", G_CALLBACK(_masking_callback_p), self);
-  dt_bauhaus_widget_set_quad_tooltip(g->param_size,
+  dt_bauhaus_widget_set_quad(g->param_size, dtgtk_cairo_paint_showmask, TRUE, _masking_callback_p,
     _("visualize changed output for the selected tab.\n"
       "red shows increased values, blue decreased."));
 

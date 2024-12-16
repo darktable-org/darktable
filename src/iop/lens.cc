@@ -4492,12 +4492,9 @@ void gui_init(dt_iop_module_t *self)
   // scale
   g->scale = dt_bauhaus_slider_from_params(self, N_("scale"));
   dt_bauhaus_slider_set_digits(g->scale, 3);
-  dt_bauhaus_widget_set_quad_paint(g->scale, dtgtk_cairo_paint_refresh, 0, NULL);
-  g_signal_connect(G_OBJECT(g->scale), "quad-pressed",
-                   G_CALLBACK(_autoscale_pressed_lf), self);
   gtk_widget_set_tooltip_text(g->scale, _("auto scale"));
-  dt_bauhaus_widget_set_quad_tooltip(g->scale,
-    _("automatic scale to available image size due to Lensfun data"));
+  dt_bauhaus_widget_set_quad(g->scale, dtgtk_cairo_paint_refresh, FALSE, _autoscale_pressed_lf,
+                             _("automatic scale to available image size due to Lensfun data"));
 
   // reverse direction
   g->reverse = dt_bauhaus_combobox_from_params(self, "inverse");
@@ -4574,13 +4571,9 @@ void gui_init(dt_iop_module_t *self)
 
   g->scale_md = dt_bauhaus_slider_from_params(sect, "scale_md");
   dt_bauhaus_slider_set_digits(g->scale_md, 4);
-  dt_bauhaus_widget_set_quad_paint(g->scale_md,
-                                   dtgtk_cairo_paint_refresh, 0, NULL);
-  g_signal_connect(G_OBJECT(g->scale_md), "quad-pressed",
-                   G_CALLBACK(_autoscale_pressed_md), self);
   gtk_widget_set_tooltip_text(g->scale_md, _("image scaling"));
-  dt_bauhaus_widget_set_quad_tooltip(g->scale_md,
-    _("automatic scale to available image size"));
+  dt_bauhaus_widget_set_quad(g->scale_md, dtgtk_cairo_paint_refresh, FALSE, _autoscale_pressed_md,
+                             _("automatic scale to available image size"));
 
   // main widget
   GtkWidget *main_box = self->widget =
@@ -4638,16 +4631,10 @@ void gui_init(dt_iop_module_t *self)
   g->v_strength = dt_bauhaus_slider_from_params(sect, "v_strength");
   gtk_widget_set_tooltip_text(g->v_strength,
       _("amount of the applied optical vignetting correction"));
-  dt_bauhaus_widget_set_quad_tooltip(g->v_strength,
-    _("show applied optical vignette correction mask"));
   dt_bauhaus_slider_set_format(g->v_strength, "%");
   dt_bauhaus_slider_set_digits(g->v_strength, 1);
-  dt_bauhaus_widget_set_quad_paint(g->v_strength,
-                                   dtgtk_cairo_paint_showmask, 0, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->v_strength, TRUE);
-  dt_bauhaus_widget_set_quad_active(g->v_strength, FALSE);
-  g_signal_connect(G_OBJECT(g->v_strength), "quad-pressed",
-                   G_CALLBACK(_visualize_callback), self);
+  dt_bauhaus_widget_set_quad(g->v_strength, dtgtk_cairo_paint_showmask, TRUE, _visualize_callback,
+                             _("show applied optical vignette correction mask"));
 
   g->v_radius = dt_bauhaus_slider_from_params(sect, "v_radius");
   gtk_widget_set_tooltip_text(g->v_radius,
