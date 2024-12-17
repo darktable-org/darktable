@@ -714,12 +714,13 @@ static void _scroll_to_position(GtkTreeView *treeview,
                                 float row_align,
                                 float col_align)
 {
-  // Force scrolling of the treeview for proper refresh.
-  // This is a workaround for a (possible) GTK bug. When returning from darkroom
-  // the treeview is not scrolled to the previous position. Triggering a scroll
-  // refreshes the treeview.
-  gtk_tree_view_scroll_to_point(treeview, 0, 0);
   gtk_tree_view_scroll_to_cell(treeview, path, column, use_align, row_align, col_align);
+
+  // Force value refresh of the vertical scrollbar.
+  // This is a workaround for a (possible) GTK bug. When returning from darkroom
+  // the treeview is not scrolled to the previous position.
+  g_signal_emit_by_name(gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(treeview)),
+                                                       "value-changed");
 }
 
 static gboolean list_select(GtkTreeModel *model,
