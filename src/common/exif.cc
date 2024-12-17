@@ -420,12 +420,7 @@ const char *dt_xmp_keys[]
         "Xmp.darktable.change_timestamp",     "Xmp.darktable.export_timestamp",
         "Xmp.darktable.print_timestamp",      "Xmp.darktable.version_name",
         "Xmp.darktable.harmony_guide_type",   "Xmp.darktable.harmony_guide_rotation",
-        "Xmp.darktable.harmony_guide_width",
-        "Xmp.acdsee.notes",                   "Xmp.dc.creator",
-        "Xmp.dc.publisher",                   "Xmp.dc.title",
-        "Xmp.dc.description",                 "Xmp.dc.rights",
-        "Xmp.dc.format",                      "Xmp.xmpMM.DerivedFrom",
-        "Xmp.xmpMM.PreservedFileName" };
+        "Xmp.darktable.harmony_guide_width" };
 
 // The number of XmpBag XmpSeq keys that dt uses
 static const guint dt_xmp_keys_n = G_N_ELEMENTS(dt_xmp_keys);
