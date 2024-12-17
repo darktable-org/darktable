@@ -1566,6 +1566,7 @@ void gui_cleanup(dt_lib_module_t *self)
   DT_CONTROL_SIGNAL_DISCONNECT(_image_selection_changed_callback, self);
   DT_CONTROL_SIGNAL_DISCONNECT(_mouse_over_image_callback, self);
   DT_CONTROL_SIGNAL_DISCONNECT(_collection_updated_callback, self);
+  DT_CONTROL_SIGNAL_DISCONNECT(_export_enable_callback, self);
 
   for(const GList *it = darktable.imageio->plugins_storage; it; it = g_list_next(it))
   {
