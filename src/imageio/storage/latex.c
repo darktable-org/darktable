@@ -214,6 +214,7 @@ void gui_init(dt_imageio_module_storage_t *self)
 
 void gui_cleanup(dt_imageio_module_storage_t *self)
 {
+  DT_CONTROL_SIGNAL_DISCONNECT(_setup_variables_completion, self);
   free(self->gui_data);
 }
 

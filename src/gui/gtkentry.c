@@ -230,6 +230,9 @@ static gboolean _on_match_func(GtkEntryCompletion *completion, const gchar *key,
  */
 void dt_gtkentry_setup_variables_completion(GtkEntry *entry)
 {
+  if(!entry)
+    return;
+    
   GtkEntryCompletion *completion = gtk_entry_get_completion(entry);
   if(completion)
   {

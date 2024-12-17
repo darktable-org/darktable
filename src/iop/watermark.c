@@ -1294,13 +1294,9 @@ void init(dt_iop_module_t *self)
 
 static void _setup_variables_completion(gpointer instance, int type, dt_iop_module_t *self)
 {
-  if(type != DT_METADATA_SIGNAL_PREF_CHANGED)
-    return;
-
   dt_iop_watermark_gui_data_t *g = self->gui_data;
 
-  if(g)
-  {
+  if(type == DT_METADATA_SIGNAL_PREF_CHANGED) {
     ++darktable.gui->reset;
     dt_gtkentry_setup_variables_completion(GTK_ENTRY(g->text));
     --darktable.gui->reset;
@@ -1452,6 +1448,7 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
+  DT_CONTROL_SIGNAL_DISCONNECT(_setup_variables_completion, self);
   dt_iop_watermark_gui_data_t *g = self->gui_data;
   g_list_free_full(g->watermarks_filenames, g_free);
   g->watermarks_filenames = NULL;
