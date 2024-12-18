@@ -476,8 +476,8 @@ static void _window_position(const int offset)
     gtk_widget_set_app_paintable(pop->window, TRUE);
     GdkScreen *screen = gtk_widget_get_screen(pop->window);
     GdkVisual *visual = gdk_screen_get_rgba_visual(screen);
-    pop->offcut = -10000;
-    height = -2 * pop->offcut;
+    pop->offcut = -height;
+    height *= 2;
     gtk_widget_set_visual(pop->window, visual);
   }
 #endif
