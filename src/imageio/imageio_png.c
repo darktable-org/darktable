@@ -31,6 +31,12 @@
 #include "imageio_common.h"
 #include "imageio_png.h"
 
+
+// Reading of PNG files also takes place in the LUT 3D module in order to obtain
+// LUTs encoded in this format. To minimize code duplication, we put the code
+// common to both uses (reading the header and reading the image itself) into
+// two functions, dt_imageio_png_read_header and dt_imageio_png_read_image.
+
 gboolean dt_imageio_png_read_header(const char *filename, dt_imageio_png_t *png)
 {
   png->f = g_fopen(filename, "rb");
