@@ -2310,6 +2310,17 @@ static gboolean _presets_scroll_callback(GtkWidget *widget,
   return TRUE;
 }
 
+// Make sure we don't dereference if not in UI mode any more
+gboolean dt_iop_has_focus(dt_iop_module_t *module)
+{
+  return module
+      && module->dev
+      && module->dev->gui_attached
+      && module == module->dev->gui_module
+      && darktable.gui
+      && dt_dev_modulegroups_test_activated(darktable.develop);
+}
+
 void dt_iop_request_focus(dt_iop_module_t *module)
 {
   dt_develop_t *dev = darktable.develop;
@@ -2320,7 +2331,8 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   if(!darktable.lib->proxy.colorpicker.restrict_histogram)
     dt_iop_color_picker_reset(NULL, TRUE);
 
-  if(darktable.gui->reset
+  if(!darktable.gui
+     || darktable.gui->reset
      || (out_focus_module == module))
     return;
 

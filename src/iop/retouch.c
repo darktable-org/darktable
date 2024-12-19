@@ -3861,9 +3861,7 @@ void process(dt_iop_module_t *self,
   retouch_user_data_t usr_data = { 0 };
   dwt_params_t *dwt_p = NULL;
 
-  const int gui_active = (self->dev) ? (self == self->dev->gui_module) : 0;
-  const gboolean display_wavelet_scale =
-    (g && gui_active) ? g->display_wavelet_scale : FALSE;
+  const gboolean display_wavelet_scale = g && dt_iop_has_focus(self) ? g->display_wavelet_scale : FALSE;
 
   // we will do all the clone, heal, etc on the input image,
   // this way the source for one algorithm can be the destination from a previous one
@@ -3882,8 +3880,7 @@ void process(dt_iop_module_t *self,
   usr_data.mask_display = FALSE;
   usr_data.suppress_mask = (g
                             && g->suppress_mask
-                            && self->dev->gui_attached
-                            && (self == self->dev->gui_module)
+                            && dt_iop_has_focus(self)
                             && (piece->pipe == self->dev->full.pipe));
   usr_data.display_scale = p->curr_scale;
 
@@ -3899,8 +3896,8 @@ void process(dt_iop_module_t *self,
 
   // check if this module should expose mask.
   if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) && g
-     && (g->mask_display || display_wavelet_scale) && self->dev->gui_attached
-     && (self == self->dev->gui_module) && (piece->pipe == self->dev->full.pipe))
+     && (g->mask_display || display_wavelet_scale)
+     && dt_iop_has_focus(self) && (piece->pipe == self->dev->full.pipe))
   {
     for(size_t j = 0; j < (size_t)roi_rt->width * roi_rt->height * 4; j += 4)
       in_retouch[j + 3] = 0.f;
@@ -3914,7 +3911,7 @@ void process(dt_iop_module_t *self,
   if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
   {
     // check if the image support this number of scales
-    if(gui_active)
+    if(dt_iop_has_focus(self))
     {
       const int max_scales = dwt_get_max_scale(dwt_p);
       if(dwt_p->scales > max_scales)
@@ -4673,8 +4670,7 @@ int process_cl(dt_iop_module_t *self,
   retouch_user_data_t usr_data = { 0 };
   dwt_params_cl_t *dwt_p = NULL;
 
-  const gboolean gui_active = (self->dev) ? (self == self->dev->gui_module) : FALSE;
-  const gboolean display_wavelet_scale = g && gui_active ? g->display_wavelet_scale : FALSE;
+  const gboolean display_wavelet_scale = g && dt_iop_has_focus(self) ? g->display_wavelet_scale : FALSE;
 
   // we will do all the clone, heal, etc on the input image, this way
   // the source for one algorithm can be the destination from a
@@ -4698,8 +4694,7 @@ int process_cl(dt_iop_module_t *self,
   usr_data.mask_display = FALSE;
   usr_data.suppress_mask = (g
                             && g->suppress_mask
-                            && self->dev->gui_attached
-                            && (self == self->dev->gui_module)
+                            && dt_iop_has_focus(self)
                             && (piece->pipe == self->dev->full.pipe));
   usr_data.display_scale = p->curr_scale;
 
@@ -4720,8 +4715,7 @@ int process_cl(dt_iop_module_t *self,
   // check if this module should expose mask.
   if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
      && g && g->mask_display
-     && self->dev->gui_attached
-     && (self == self->dev->gui_module)
+     && dt_iop_has_focus(self)
      && (piece->pipe == self->dev->full.pipe))
   {
     const int kernel = gd->kernel_retouch_clear_alpha;
@@ -4740,7 +4734,7 @@ int process_cl(dt_iop_module_t *self,
   if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
   {
     // check if the image support this number of scales
-    if(gui_active)
+    if(dt_iop_has_focus(self))
     {
       const int max_scales = dwt_get_max_scale_cl(dwt_p);
       if(dwt_p->scales > max_scales)

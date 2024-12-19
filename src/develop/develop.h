@@ -616,7 +616,7 @@ void dt_dev_init_chroma(dt_develop_t *dev);
 void dt_dev_clear_chroma_troubles(dt_develop_t *dev);
 static inline struct dt_iop_module_t *dt_dev_gui_module(void)
 {
-  return darktable.develop ? darktable.develop->gui_module : NULL;
+  return (darktable.develop && darktable.gui) ? darktable.develop->gui_module : NULL;
 }
 
 #ifdef __cplusplus

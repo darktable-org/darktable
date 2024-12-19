@@ -585,8 +585,9 @@ void process(dt_iop_module_t *self,
   // display selection if requested
   if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
      && g
-     && g->display_mask && self->dev->gui_attached
-     && (self == self->dev->gui_module) && (piece->pipe == self->dev->full.pipe))
+     && g->display_mask
+     && dt_iop_has_focus(self)
+     && (piece->pipe == self->dev->full.pipe))
     process_display(self, piece, ivoid, ovoid, roi_in, roi_out);
   else if(d->mode == DT_IOP_COLORZONES_MODE_SMOOTH)
     process_v3(self, piece, ivoid, ovoid, roi_in, roi_out);
