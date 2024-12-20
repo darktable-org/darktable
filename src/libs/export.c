@@ -46,6 +46,14 @@
 
 DT_MODULE(8)
 
+typedef enum dt_export_batch_cols_t
+{
+  DT_EXPORT_BATCH_COL_ACTIVE = 0,   // active preset for batch export
+  DT_EXPORT_BATCH_COL_NAME,         // preset name
+  DT_EXPORT_BATCH_NUM_COLS
+} dt_export_batch_cols_t;
+
+
 #define EXPORT_MAX_IMAGE_SIZE UINT16_MAX
 #define CONFIG_PREFIX "plugins/lighttable/export/"
 
@@ -59,6 +67,8 @@ typedef struct dt_lib_export_t
   int format_lut[128];
   uint32_t max_allowed_width , max_allowed_height;
   GtkWidget *upscale, *profile, *intent, *style, *style_mode;
+  dt_gui_collapsible_section_t cs;
+  GtkWidget *batch_treeview;
   GtkButton *export_button;
   GtkWidget *storage_extra_container, *format_extra_container;
   GtkWidget *high_quality;
@@ -1170,7 +1180,7 @@ static void _on_storage_list_changed(gpointer instance,
   dt_bauhaus_combobox_set(d->storage, dt_imageio_get_index_of_storage(storage));
 }
 
-void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
+static void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 {
   dt_lib_export_t *d = self->data;
   const gchar *name = dt_bauhaus_combobox_get_text(d->storage);
@@ -1178,6 +1188,57 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
     && !g_strcmp0(name, _("file on disk")); // FIXME: NO!!!!!one!
   d->metadata_export =
     dt_lib_export_metadata_configuration_dialog(d->metadata_export, ondisk);
+}
+
+static void _batch_export_toggled_callback(GtkCellRendererToggle *cell_renderer,
+                                           gchar *path_str,
+                                           gpointer user_data)
+{
+  GtkListStore *store = (GtkListStore *)user_data;
+  GtkTreeIter iter;
+  GtkTreePath *path = gtk_tree_path_new_from_string(path_str);
+  gboolean toggle;
+
+  gtk_tree_model_get_iter(GTK_TREE_MODEL(store), &iter, path);
+  gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, DT_EXPORT_BATCH_COL_ACTIVE, &toggle, -1);
+  gtk_list_store_set(store, &iter, DT_EXPORT_BATCH_COL_ACTIVE, !toggle, -1);
+  gtk_tree_path_free(path);
+}
+
+static void _fill_batch_export_list(dt_lib_module_t *self)
+{
+  dt_lib_export_t *d = self->data;
+
+  GtkListStore *store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(d->batch_treeview)));
+  gtk_list_store_clear(store);
+  GtkTreeIter iter;
+  
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "SELECT name"
+      " FROM data.presets"
+      " WHERE operation='export'"
+      " AND op_version = ?1"
+      " ORDER BY name", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, self->version());
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const char *name = (char *)sqlite3_column_text(stmt, 0);
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter,
+                        DT_EXPORT_BATCH_COL_ACTIVE, FALSE,
+                        DT_EXPORT_BATCH_COL_NAME, name,
+                        -1);
+  }
+  sqlite3_finalize(stmt);
+}
+
+static void _export_presets_changed_callback(gpointer instance, gpointer module, dt_lib_module_t *self)
+{
+  if(!g_strcmp0(module, "export"))
+    _fill_batch_export_list(self);
 }
 
 void set_preferences(void *menu, dt_lib_module_t *self)
@@ -1462,12 +1523,12 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->style_mode, FALSE, TRUE, 0);
 
   //  Set callback signals
-
   g_signal_connect(G_OBJECT(d->profile), "value-changed",
                    G_CALLBACK(_profile_changed), (gpointer)d);
 
+
   GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
   // Export button
   d->export_button = GTK_BUTTON(dt_action_button_new
@@ -1476,6 +1537,39 @@ void gui_init(dt_lib_module_t *self)
                                  _("export with current settings"),
                                  GDK_KEY_e, GDK_CONTROL_MASK));
   gtk_box_pack_start(hbox, GTK_WIDGET(d->export_button), TRUE, TRUE, 0);
+
+  // batch export
+  dt_gui_new_collapsible_section(&d->cs,
+                                 "plugins/lighttable/export/batch_export_expanded",
+                                 _("batch export"),
+                                 GTK_BOX(self->widget),
+                                 DT_ACTION(self));
+  GtkListStore *store = gtk_list_store_new(DT_EXPORT_BATCH_NUM_COLS,
+                                           G_TYPE_BOOLEAN,
+                                           G_TYPE_STRING);
+  GtkTreeModel *model = GTK_TREE_MODEL(store);
+  GtkWidget *view = gtk_tree_view_new_with_model(model);
+  g_object_unref(model);
+  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(view), FALSE);
+  gtk_tree_selection_set_mode(gtk_tree_view_get_selection
+                              (GTK_TREE_VIEW(view)), GTK_SELECTION_NONE);
+
+  GtkTreeViewColumn *column = gtk_tree_view_column_new();
+  gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
+  GtkCellRenderer *renderer = gtk_cell_renderer_toggle_new();
+  g_signal_connect(renderer, "toggled", G_CALLBACK(_batch_export_toggled_callback), store);
+  gtk_tree_view_column_pack_start(column, renderer, FALSE);
+  gtk_tree_view_column_add_attribute(column, renderer, "active", DT_EXPORT_BATCH_COL_ACTIVE);
+
+  column = gtk_tree_view_column_new();
+  gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_column_pack_start(column, renderer, TRUE);
+  gtk_tree_view_column_add_attribute(column, renderer, "text", DT_EXPORT_BATCH_COL_NAME);
+
+  gtk_box_pack_start(d->cs.container, view, FALSE, FALSE, 0);
+  d->batch_treeview = view;
+  _fill_batch_export_list(self);
 
   gtk_widget_add_events(d->width, GDK_BUTTON_PRESS_MASK);
   gtk_widget_add_events(d->height, GDK_BUTTON_PRESS_MASK);
@@ -1556,6 +1650,7 @@ void gui_init(dt_lib_module_t *self)
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _mouse_over_image_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _collection_updated_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_IMAGEIO_STORAGE_EXPORT_ENABLE, _export_enable_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PRESETS_CHANGED, _export_presets_changed_callback);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
