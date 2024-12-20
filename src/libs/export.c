@@ -312,8 +312,10 @@ static void _scale_optim()
   free(scale_str);
 }
 
-static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
+static void _export_with_current_settings(dt_lib_module_t *self)
 {
+  dt_lib_export_t *d = self->data;
+
   /* write current history changes so nothing gets lost, do that only
      in the darkroom as there is nothing to be saved when in the
      lighttable (and it would write over current history stack) */
@@ -411,6 +413,78 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
   _scale_optim();
   gtk_entry_set_text(GTK_ENTRY(d->scale),
                      dt_conf_get_string_const(CONFIG_PREFIX "resizing_factor"));
+}
+
+static void _export_with_preset(const gchar *preset_name, dt_lib_module_t *self)
+{
+  // get current settings from the GUI
+  int params_size;
+  void *params = get_params(self, &params_size);
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "SELECT op_params"
+      " FROM data.presets"
+      " WHERE operation='export'"
+      " AND name = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, preset_name, -1, SQLITE_TRANSIENT);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const void *op_params = (void *)sqlite3_column_blob(stmt, 0);
+    const size_t op_params_size = sqlite3_column_bytes(stmt, 0);
+
+    set_params(self, op_params, op_params_size);
+    _export_with_current_settings(self);
+  }
+  sqlite3_finalize(stmt);
+
+  // restore previous settings
+  set_params(self, params, params_size);
+}
+
+static void _export_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
+{
+  dt_lib_export_t *d = (dt_lib_export_t *)self->data;
+
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->batch_treeview));
+  GtkTreeIter iter;
+  int batch_count = 0;
+  GList *batch_names = NULL;
+
+  gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
+  while(valid)
+  {
+    gboolean active;
+    char *name;
+
+    gtk_tree_model_get(model, &iter,
+                       DT_EXPORT_BATCH_COL_ACTIVE, &active,
+                       DT_EXPORT_BATCH_COL_NAME, &name,
+                       -1);
+
+    if(active)
+    {
+      batch_count++;
+      batch_names = g_list_prepend(batch_names, g_strdup(name));
+    }
+
+    valid = gtk_tree_model_iter_next(model, &iter);
+  }
+
+  if(batch_count == 0)
+    _export_with_current_settings(self);
+  else
+  {
+    for(GList *batch_iter = batch_names; batch_iter; batch_iter = g_list_next(batch_iter))
+    {
+      const char *preset_name = (char *)batch_iter->data;
+      _export_with_preset(preset_name, self);
+    }
+  }
+  
+  g_list_free_full(batch_names, g_free);
 }
 
 static void _scale_changed(GtkEntry *spin,
@@ -1533,7 +1607,7 @@ void gui_init(dt_lib_module_t *self)
   // Export button
   d->export_button = GTK_BUTTON(dt_action_button_new
                                 (self, NC_("actionbutton", "export"),
-                                 _export_button_clicked, d,
+                                 _export_button_clicked, self,
                                  _("export with current settings"),
                                  GDK_KEY_e, GDK_CONTROL_MASK));
   gtk_box_pack_start(hbox, GTK_WIDGET(d->export_button), TRUE, TRUE, 0);
@@ -1544,6 +1618,7 @@ void gui_init(dt_lib_module_t *self)
                                  _("batch export"),
                                  GTK_BOX(self->widget),
                                  DT_ACTION(self));
+  gtk_widget_set_tooltip_text(d->cs.expander, _("export the selected images with multiple presets"));
   GtkListStore *store = gtk_list_store_new(DT_EXPORT_BATCH_NUM_COLS,
                                            G_TYPE_BOOLEAN,
                                            G_TYPE_STRING);
@@ -2296,6 +2371,7 @@ int set_params(dt_lib_module_t *self,
   const char *buf = (const char *)params;
 
   //??? WARNING: Any change here must be also done on get_params AND init_presets
+  //             AND _export_with_preset
   //             if some parameters are added before fname & sname
   const int max_width = *(const int *)buf;
   buf += sizeof(int32_t);
