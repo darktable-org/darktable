@@ -487,8 +487,8 @@ void dt_film_remove(const dt_filmid_t id)
   {
     const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
     dt_image_local_copy_reset(imgid);
-    dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
     dt_image_cache_remove(imgid);
+    dt_mipmap_cache_remove(imgid);
   }
   sqlite3_finalize(stmt);
 

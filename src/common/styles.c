@@ -975,7 +975,7 @@ void _styles_apply_to_image_ext(const char *name,
     }
 
     /* remove old obsolete thumbnails */
-    dt_mipmap_cache_remove(darktable.mipmap_cache, newimgid);
+    dt_mipmap_cache_remove(newimgid);
     dt_image_update_final_size(newimgid);
 
     /* update the aspect ratio. recompute only if really needed for performance reasons */

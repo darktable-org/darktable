@@ -32,7 +32,7 @@ static int32_t _image_load_job_run(dt_job_t *job)
 
   // hook back into mipmap_cache:
   dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, params->imgid, params->mip, DT_MIPMAP_BLOCKING, 'r');
+  dt_mipmap_cache_get(&buf, params->imgid, params->mip, DT_MIPMAP_BLOCKING, 'r');
 
   if(buf.buf && buf.height && buf.width)
   {
@@ -42,7 +42,7 @@ static int32_t _image_load_job_run(dt_job_t *job)
 
   // drop read lock, as this is only speculative async loading.
   // moved this after the if, because the if never worked because the cache was released.
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(&buf);
   return 0;
 }
 

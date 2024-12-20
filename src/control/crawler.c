@@ -910,8 +910,8 @@ static void _update_img_thumbs(const dt_imgid_t imgid,
   for(dt_mipmap_size_t k = max_mip; k >= DT_MIPMAP_1; k--)
   {
     dt_mipmap_buffer_t buf;
-    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, k, DT_MIPMAP_BLOCKING, 'r');
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_get(&buf, imgid, k, DT_MIPMAP_BLOCKING, 'r');
+    dt_mipmap_cache_release(&buf);
   }
 
   // we have written all thumbs now so it's safe to write timestamp, hash and mipsize
@@ -927,7 +927,7 @@ static void _update_img_thumbs(const dt_imgid_t imgid,
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  dt_mimap_cache_evict(darktable.mipmap_cache, imgid);
+  dt_mipmap_cache_evict(imgid);
   dt_history_hash_set_mipmap(imgid);
 }
 

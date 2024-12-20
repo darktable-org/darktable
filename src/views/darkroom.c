@@ -1009,7 +1009,7 @@ static gboolean _dev_load_requested_image(gpointer user_data)
   // be sure light table will update the thumbnail
   if(!dt_history_hash_is_mipmap_synced(old_imgid))
   {
-    dt_mipmap_cache_remove(darktable.mipmap_cache, old_imgid);
+    dt_mipmap_cache_remove(old_imgid);
     dt_image_update_final_size(old_imgid);
     dt_image_synch_xmp(old_imgid);
     dt_history_hash_set_mipmap(old_imgid);
@@ -2856,7 +2856,7 @@ void leave(dt_view_t *self)
   // be sure light table will regenerate the thumbnail:
   if(!dt_history_hash_is_mipmap_synced(imgid))
   {
-    dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+    dt_mipmap_cache_remove(imgid);
     dt_image_update_final_size(imgid);
     dt_image_synch_xmp(imgid);
     dt_history_hash_set_mipmap(imgid);

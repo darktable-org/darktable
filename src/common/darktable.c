@@ -455,10 +455,9 @@ dt_imgid_t dt_load_from_string(const gchar *input,
       dt_film_open(filmid);
       // make sure buffers are loaded (load full for testing)
       dt_mipmap_buffer_t buf;
-      dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid,
-                          DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
-      const gboolean loaded = (buf.buf != NULL);
-      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+      dt_mipmap_cache_get(&buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+      const gboolean loaded = buf.buf != NULL;
+      dt_mipmap_cache_release(&buf);
       if(!loaded)
       {
         imgid = NO_IMGID;
@@ -1725,8 +1724,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // image dimensions stored in here:
   dt_image_cache_init();
 
-  darktable.mipmap_cache = (dt_mipmap_cache_t *)calloc(1, sizeof(dt_mipmap_cache_t));
-  dt_mipmap_cache_init(darktable.mipmap_cache);
+  dt_mipmap_cache_init();
 
   // set up memory.darktable_iop_names table
   dt_iop_set_darktable_iop_table();
@@ -2055,9 +2053,8 @@ void dt_cleanup()
   // if some delayed event fires
 
   dt_image_cache_cleanup();
-  dt_mipmap_cache_cleanup(darktable.mipmap_cache);
-  free(darktable.mipmap_cache);
-  darktable.mipmap_cache = NULL;
+  dt_mipmap_cache_cleanup();
+
   if(init_gui)
   {
     dt_imageio_cleanup(darktable.imageio);

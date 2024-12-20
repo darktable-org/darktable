@@ -319,8 +319,7 @@ void dt_dev_process_image_job(dt_develop_t *dev,
   dt_get_perf_times(&start);
 
   dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_get(darktable.mipmap_cache,
-                      &buf, dev->image_storage.id,
+  dt_mipmap_cache_get(&buf, dev->image_storage.id,
                       port ? DT_MIPMAP_FULL     : DT_MIPMAP_F,
                       port ? DT_MIPMAP_BLOCKING : DT_MIPMAP_BEST_EFFORT,
                       'r');
@@ -384,7 +383,7 @@ void dt_dev_process_image_job(dt_develop_t *dev,
 restart:
   if(dev->gui_leaving)
   {
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(&buf);
     dt_control_log_busy_leave();
     dt_control_toast_busy_leave();
     pipe->status = DT_DEV_PIXELPIPE_INVALID;
@@ -442,7 +441,7 @@ restart:
     // interrupted because image changed?
     if(dev->image_force_reload || pipe->loading || pipe->input_changed)
     {
-      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+      dt_mipmap_cache_release(&buf);
       dt_control_log_busy_leave();
       dt_control_toast_busy_leave();
       pipe->status = DT_DEV_PIXELPIPE_INVALID;
@@ -467,7 +466,7 @@ restart:
   pipe->status = DT_DEV_PIXELPIPE_VALID;
   pipe->loading = FALSE;
   dev->image_invalid_cnt = 0;
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(&buf);
   // if a widget needs to be redraw there's the DT_SIGNAL_*_PIPE_FINISHED signals
   dt_control_log_busy_leave();
   dt_control_toast_busy_leave();
@@ -514,9 +513,8 @@ static inline void _dt_dev_load_raw(dt_develop_t *dev,
   dt_mipmap_buffer_t buf;
   dt_times_t start;
   dt_get_perf_times(&start);
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL,
-                      DT_MIPMAP_BLOCKING, 'r');
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_get(&buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+  dt_mipmap_cache_release(&buf);
   dt_show_times(&start, "[dt_dev_load_raw] loading the image.");
 
   const dt_image_t *image = dt_image_cache_get(imgid, 'r');

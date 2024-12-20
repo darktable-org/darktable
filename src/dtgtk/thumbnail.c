@@ -442,13 +442,12 @@ static void _get_dimensions_for_img_to_fit(const dt_thumbnail_t *thumb,
   for(int k = DT_MIPMAP_7; k >= DT_MIPMAP_0; k--)
   {
     dt_mipmap_buffer_t tmp;
-    dt_mipmap_cache_get(darktable.mipmap_cache, &tmp, thumb->imgid, k,
-                        DT_MIPMAP_TESTLOCK, 'r');
+    dt_mipmap_cache_get(&tmp, thumb->imgid, k, DT_MIPMAP_TESTLOCK, 'r');
     if(tmp.buf)
     {
       const int mipw = tmp.width;
       const int miph = tmp.height;
-      dt_mipmap_cache_release(darktable.mipmap_cache, &tmp);
+      dt_mipmap_cache_release(&tmp);
       if(mipw > 0 && miph > 0)
       {
         ar = (float)mipw / miph;

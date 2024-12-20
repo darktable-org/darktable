@@ -1270,8 +1270,7 @@ _intent_callback(GtkWidget *widget, dt_lib_module_t *self)
 static void _set_orientation(dt_lib_print_settings_t *ps, dt_imgid_t imgid)
 {
   dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf,
-                      imgid, DT_MIPMAP_0, DT_MIPMAP_BEST_EFFORT, 'r');
+  dt_mipmap_cache_get(&buf, imgid, DT_MIPMAP_0, DT_MIPMAP_BEST_EFFORT, 'r');
 
   // If there's a mipmap available, figure out orientation based upon
   // its dimensions. Otherwise, don't touch orientation until the
@@ -1283,7 +1282,7 @@ static void _set_orientation(dt_lib_print_settings_t *ps, dt_imgid_t imgid)
     dt_bauhaus_combobox_set(ps->orientation, ps->prt.page.landscape == TRUE ? 1 : 0);
   }
 
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(&buf);
   dt_control_queue_redraw_center();
 }
 
