@@ -131,8 +131,8 @@ typedef struct dt_lib_module_info_t
   dt_lib_module_t *module;
 } dt_lib_module_info_t;
 
-void dt_lib_init(dt_lib_t *lib);
-void dt_lib_cleanup(dt_lib_t *lib);
+void dt_lib_init(void);
+void dt_lib_cleanup(void);
 
 /** creates a label widget for the expander, with callback to enable/disable this module. */
 GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module);

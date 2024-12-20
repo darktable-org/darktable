@@ -1813,8 +1813,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   if(init_gui)
   {
-    darktable.lib = (dt_lib_t *)calloc(1, sizeof(dt_lib_t));
-    dt_lib_init(darktable.lib);
+    dt_lib_init();
 
     // init the gui part of views
     dt_view_manager_gui_init(darktable.view_manager);
@@ -2044,8 +2043,7 @@ void dt_cleanup()
     dt_ctl_switch_mode_to("");
     dt_dbus_destroy(darktable.dbus);
 
-    dt_lib_cleanup(darktable.lib);
-    free(darktable.lib);
+    dt_lib_cleanup();
   }
 #ifdef USE_LUA
   dt_lua_finalize();

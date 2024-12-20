@@ -1346,10 +1346,9 @@ static void _preferences_changed(gpointer instance, gpointer self)
   }
 }
 
-void dt_lib_init(dt_lib_t *lib)
+void dt_lib_init()
 {
-  // Setting everything to null initially
-  memset(lib, 0, sizeof(dt_lib_t));
+  dt_lib_t *lib = darktable.lib = (dt_lib_t *)calloc(1, sizeof(dt_lib_t));
   darktable.lib->plugins = dt_module_load_modules("/plugins/lighttable",
                                                   sizeof(dt_lib_module_t),
                                                   dt_lib_load_module,
@@ -1358,8 +1357,9 @@ void dt_lib_init(dt_lib_t *lib)
   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE, _preferences_changed, lib);
 }
 
-void dt_lib_cleanup(dt_lib_t *lib)
+void dt_lib_cleanup()
 {
+  dt_lib_t *lib = darktable.lib;
   DT_CONTROL_SIGNAL_DISCONNECT(_preferences_changed, lib);
   while(lib->plugins)
   {
@@ -1376,6 +1376,8 @@ void dt_lib_cleanup(dt_lib_t *lib)
     }
     lib->plugins = g_list_delete_link(lib->plugins, lib->plugins);
   }
+  free(lib);
+  darktable.lib = NULL;
 }
 
 void dt_lib_presets_add(const char *name,
