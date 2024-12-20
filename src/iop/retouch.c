@@ -379,7 +379,7 @@ int legacy_params(dt_iop_module_t *self,
   return 1;
 }
 
-static int rt_get_index_from_formid(dt_iop_retouch_params_t *p, const dt_mask_id_t formid)
+static int rt_get_index_from_formid(const dt_iop_retouch_params_t *p, const dt_mask_id_t formid)
 {
   int index = -1;
   if(dt_is_valid_maskid(formid))
@@ -401,7 +401,7 @@ static dt_mask_id_t rt_get_selected_shape_id()
 }
 
 static dt_masks_point_group_t *rt_get_mask_point_group(dt_iop_module_t *self,
-                                                       dt_mask_id_t formid)
+                                                       const dt_mask_id_t formid)
 {
   dt_masks_point_group_t *form_point_group = NULL;
 
@@ -428,12 +428,8 @@ static dt_masks_point_group_t *rt_get_mask_point_group(dt_iop_module_t *self,
 static float rt_get_shape_opacity(dt_iop_module_t *self,
                                   const dt_mask_id_t formid)
 {
-  float opacity = 0.f;
-
   dt_masks_point_group_t *grpt = rt_get_mask_point_group(self, formid);
-  if(grpt) opacity = grpt->opacity;
-
-  return opacity;
+  return (grpt) ? grpt->opacity : 0.0f;
 }
 
 static void rt_display_selected_fill_color(dt_iop_retouch_gui_data_t *g,
@@ -3170,7 +3166,7 @@ static void rt_process_stats(dt_iop_module_t *self,
                              const int ch,
                              float levels[3])
 {
-  const int size = width * height * ch;
+  const size_t size = (size_t)width * height * ch;
   float l_max = -FLT_MAX;
   float l_min = FLT_MAX;
   float l_sum = 0.f;
@@ -3347,7 +3343,8 @@ static void rt_copy_in_to_out(const float *const in,
   }
 }
 
-static void rt_build_scaled_mask(float *const mask,
+// Return TRUE in case of an error
+static gboolean rt_build_scaled_mask(float *const mask,
                                  dt_iop_roi_t *const roi_mask,
                                  float **mask_scaled,
                                  dt_iop_roi_t *roi_mask_scaled,
@@ -3359,7 +3356,7 @@ static void rt_build_scaled_mask(float *const mask,
   float *mask_tmp = NULL;
 
   const int padding = (algo == DT_IOP_RETOUCH_HEAL) ? 1 : 0;
-
+  gboolean error = FALSE;
   *roi_mask_scaled = *roi_mask;
 
   roi_mask_scaled->x = roi_mask->x * roi_in->scale;
@@ -3378,6 +3375,7 @@ static void rt_build_scaled_mask(float *const mask,
   mask_tmp = dt_alloc_align_float((size_t)roi_mask_scaled->width * roi_mask_scaled->height);
   if(mask_tmp == NULL)
   {
+    error = TRUE;
     dt_print(DT_DEBUG_ALWAYS, "[retouch] rt_build_scaled_mask: error allocating memory");
     goto cleanup;
   }
@@ -3405,6 +3403,7 @@ static void rt_build_scaled_mask(float *const mask,
 
 cleanup:
   *mask_scaled = mask_tmp;
+  return error;
 }
 
 // img_src and mask_scaled must have the same roi
@@ -4116,10 +4115,9 @@ static cl_int rt_build_scaled_mask_cl(const int devid,
                                       const int dy,
                                       const int algo)
 {
-  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  cl_int err = rt_build_scaled_mask(mask, roi_mask, mask_scaled, roi_mask_scaled, roi_in, dx, dy, algo)
+                ? CL_MEM_OBJECT_ALLOCATION_FAILURE : CL_SUCCESS;
 
-  rt_build_scaled_mask(mask, roi_mask, mask_scaled,
-                       roi_mask_scaled, roi_in, dx, dy, algo);
   if(*mask_scaled == NULL)
     goto cleanup;
 
