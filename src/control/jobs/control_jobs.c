@@ -2840,7 +2840,7 @@ static int32_t _control_import_job_run(dt_job_t *job)
   char message[512] = { 0 };
 
 #ifdef USE_LUA
-  if(!data->session)
+  if(dt_lua_running() && !data->session)
   {
     params->index = _apply_lua_filter(params->index);
     if(!params->index) return 0;

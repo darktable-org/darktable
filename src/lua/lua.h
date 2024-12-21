@@ -84,6 +84,7 @@ typedef struct
 
 
 void dt_lua_redraw_screen();
+gboolean dt_lua_running(void);
 
 #else
 /* defines to easily have a few lua types when lua is not available */
@@ -95,6 +96,8 @@ typedef struct
 {
   int unused; // if this is empty clang++ complains that the struct has size 0 in C and size 1 in C++
 } dt_lua_state_t;
+
+static inline gboolean dt_lua_running() { return FALSE; }
 #endif
 
 // clang-format off

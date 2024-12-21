@@ -268,6 +268,14 @@ void dt_lua_finalize()
   darktable.lua_state.state = NULL;
   // never unlock
 }
+
+gboolean dt_lua_running()
+{
+  return
+      g_atomic_int_get(&_lua_fully_initialized)
+      && !darktable.lua_state.ending
+      && darktable.lua_state.state != NULL;
+}
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

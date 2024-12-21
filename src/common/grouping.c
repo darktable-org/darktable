@@ -48,13 +48,14 @@ void dt_grouping_add_to_group(const dt_imgid_t group_id,
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
 
 #ifdef USE_LUA
-    dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
-      0, NULL, NULL,
-      LUA_ASYNC_TYPENAME, "const char*", "image-group-information-changed",
-      LUA_ASYNC_TYPENAME, "const char*", "add",
-      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(image_id),
-      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(group_id),
-      LUA_ASYNC_DONE);
+    if(dt_lua_running())
+      dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+        0, NULL, NULL,
+        LUA_ASYNC_TYPENAME, "const char*", "image-group-information-changed",
+        LUA_ASYNC_TYPENAME, "const char*", "add",
+        LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(image_id),
+        LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(group_id),
+        LUA_ASYNC_DONE);
 #endif
   }
 }
@@ -107,7 +108,8 @@ dt_imgid_t dt_grouping_remove_from_group(const dt_imgid_t image_id)
       sqlite3_step(stmt);
       sqlite3_finalize(stmt);
 #ifdef USE_LUA
-      dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      if(dt_lua_running())
+        dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
           0, NULL, NULL,
           LUA_ASYNC_TYPENAME, "const char*", "image-group-information-changed",
           LUA_ASYNC_TYPENAME, "const char*", "remove-leader",
@@ -136,13 +138,14 @@ dt_imgid_t dt_grouping_remove_from_group(const dt_imgid_t image_id)
       // refresh also the group leader which may be alone now
       imgs = g_list_prepend(imgs, GINT_TO_POINTER(img_group_id));
 #ifdef USE_LUA
-    dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
-      0, NULL, NULL,
-      LUA_ASYNC_TYPENAME, "const char*", "image-group-information-changed",
-      LUA_ASYNC_TYPENAME, "const char*", "remove",
-      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(image_id),
-      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(img_group_id),
-      LUA_ASYNC_DONE);
+      if(dt_lua_running())
+        dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+          0, NULL, NULL,
+          LUA_ASYNC_TYPENAME, "const char*", "image-group-information-changed",
+          LUA_ASYNC_TYPENAME, "const char*", "remove",
+          LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(image_id),
+          LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(img_group_id),
+          LUA_ASYNC_DONE);
 #endif
     }
   }
@@ -182,7 +185,8 @@ dt_imgid_t dt_grouping_change_representative(const dt_imgid_t image_id)
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
 
 #ifdef USE_LUA
-  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+  if(dt_lua_running())
+    dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
       0, NULL, NULL,
       LUA_ASYNC_TYPENAME, "const char*", "image-group-information-changed",
       LUA_ASYNC_TYPENAME, "const char*", "leader-change",

@@ -1493,32 +1493,36 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   dt_dev_cleanup(&dev);
   dt_mipmap_cache_release(&buf);
 
-  if(!thumbnail_export && strcmp(format->mime(format_params), "memory")
+  if(!thumbnail_export
+    && strcmp(format->mime(format_params), "memory")
     && !(format->flags(format_params) & FORMAT_FLAGS_NO_TMPFILE))
   {
 #ifdef USE_LUA
-    //Synchronous calling of lua intermediate-export-image events
-    dt_lua_lock();
+    if(dt_lua_running())
+    {
+      //Synchronous calling of lua intermediate-export-image events
+      dt_lua_lock();
 
-    lua_State *L = darktable.lua_state.state;
+      lua_State *L = darktable.lua_state.state;
 
-    luaA_push(L, dt_lua_image_t, &imgid);
+      luaA_push(L, dt_lua_image_t, &imgid);
 
-    lua_pushstring(L, filename);
+      lua_pushstring(L, filename);
 
-    luaA_push_type(L, format->parameter_lua_type, format_params);
+      luaA_push_type(L, format->parameter_lua_type, format_params);
 
-    if(storage)
-      luaA_push_type(L, storage->parameter_lua_type, storage_params);
-    else
-      lua_pushnil(L);
+      if(storage)
+        luaA_push_type(L, storage->parameter_lua_type, storage_params);
+      else
+        lua_pushnil(L);
 
-    dt_lua_event_trigger(L, "intermediate-export-image", 4);
+      dt_lua_event_trigger(L, "intermediate-export-image", 4);
 
-    dt_lua_unlock();
+      dt_lua_unlock();
+    }
 #endif
-
-    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_EXPORT_TMPFILE, imgid, filename, format,
+    if(dt_control_running())
+      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_EXPORT_TMPFILE, imgid, filename, format,
                             format_params, storage, storage_params);
   }
 
