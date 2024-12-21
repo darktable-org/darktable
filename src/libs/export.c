@@ -450,41 +450,30 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->batch_treeview));
   GtkTreeIter iter;
-  int batch_count = 0;
-  GList *batch_names = NULL;
+  gboolean batch_used = FALSE;
 
   gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
   while(valid)
   {
     gboolean active;
-    char *name;
+    char *preset_name;
 
     gtk_tree_model_get(model, &iter,
                        DT_EXPORT_BATCH_COL_ACTIVE, &active,
-                       DT_EXPORT_BATCH_COL_NAME, &name,
+                       DT_EXPORT_BATCH_COL_NAME, &preset_name,
                        -1);
 
     if(active)
     {
-      batch_count++;
-      batch_names = g_list_prepend(batch_names, g_strdup(name));
+      _export_with_preset(preset_name, self);
+      batch_used = TRUE;
     }
 
     valid = gtk_tree_model_iter_next(model, &iter);
   }
 
-  if(batch_count == 0)
+  if(!batch_used)
     _export_with_current_settings(self);
-  else
-  {
-    for(GList *batch_iter = batch_names; batch_iter; batch_iter = g_list_next(batch_iter))
-    {
-      const char *preset_name = (char *)batch_iter->data;
-      _export_with_preset(preset_name, self);
-    }
-  }
-  
-  g_list_free_full(batch_names, g_free);
 }
 
 static void _scale_changed(GtkEntry *spin,
