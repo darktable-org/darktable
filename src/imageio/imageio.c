@@ -1115,7 +1115,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
     if(!style_items)
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "[imageio] cannot find the style '%s' to apply during export",
+               "[dt_imageio_export_with_flags] cannot find the style '%s' to apply during export",
                format_params->style);
       if(darktable.gui)
         dt_control_log(_("cannot find the style '%s' to apply during export"),
@@ -1288,7 +1288,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   const int processed_height = floor(scale * pipe.processed_height);
   const gboolean size_warning = processed_width < 1 || processed_height < 1;
   dt_print(DT_DEBUG_IMAGEIO,
-           "[dt_imageio_export] %s%s imgid %d, %ix%i --> %ix%i (scale=%.4f, maxscale=%.4f)."
+           "[dt_imageio_export_with_flags] process pipe %s%s imgid=%d, %ix%i --> %ix%i (scale=%.4f, maxscale=%.4f)."
            " upscale=%s, hq=%s",
            size_warning ? "**missing size** " : "",
            thumbnail_export ? "thumbnail" : "export", imgid,
@@ -1351,12 +1351,12 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
                   : "[dev_process_export] pixel pipeline processing");
 
   uint8_t *outbuf = pipe.backbuf;
+
+  dt_print(DT_DEBUG_IMAGEIO,
+             "[dt_imageio_export_with_flags] %svalid output buffer. bpp=%d",
+             (outbuf == NULL) ? "NOT a " : "", bpp);
   if(outbuf == NULL)
-  {
-    dt_print(DT_DEBUG_IMAGEIO,
-             "[dt_imageio_export_with_flags] no valid output buffer");
     goto error;
-  }
 
   // downconversion to low-precision formats:
   if(bpp == 8)

@@ -743,8 +743,7 @@ void dt_start_backtumbs_crawler(void)
 {
   // don't write thumbs if using memory database or on a non-sufficient system
   if(!darktable.backthumbs.running && darktable.backthumbs.capable)
-    dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_BG,
-                   _backthumbs_job_create());
+    dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, _backthumbs_job_create());
 }
 
 static char *_get_version_string(void)
@@ -1580,7 +1579,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   if(init_gui)
   {
-    dt_control_init(darktable.control);
+    dt_control_init();
 
     // initialize undo struct
     darktable.undo = dt_undo_init();
@@ -1710,8 +1709,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable_splash_screen_set_progress(_("starting OpenCL"));
   darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
   if(init_gui)
-    dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_BG,
-                       _detect_opencl_job_create(exclude_opencl));
+    dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, _detect_opencl_job_create(exclude_opencl));
   else
     dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
 
@@ -1875,8 +1873,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       // fire up a background job to import them after switching to
       // lighttable showing the filmroll for the first one
       _switch_to_new_filmroll(argv[1]);
-      dt_control_add_job(darktable.control,
-                         DT_JOB_QUEUE_USER_BG, dt_pathlist_import_create(argc,argv));
+      dt_control_add_job(DT_JOB_QUEUE_USER_BG, dt_pathlist_import_create(argc,argv));
     }
 #endif
 
@@ -2071,10 +2068,8 @@ void dt_cleanup()
     dt_imageio_cleanup(darktable.imageio);
     free(darktable.imageio);
     darktable.imageio = NULL;
-    dt_control_shutdown(darktable.control);
-    dt_control_cleanup(darktable.control);
-    free(darktable.control);
-    darktable.control = NULL;
+    dt_control_shutdown();
+    dt_control_cleanup();
     dt_undo_cleanup(darktable.undo);
     darktable.undo = NULL;
     free(darktable.gui);

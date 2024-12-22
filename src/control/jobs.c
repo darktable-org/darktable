@@ -77,6 +77,20 @@ static inline gboolean _control_job_equal(_dt_job_t *j1, _dt_job_t *j2)
           && (g_strcmp0(j1->description, j2->description) == 0));
 }
 
+static __thread int threadid = -1;
+
+static inline int32_t _control_get_threadid()
+{
+  if(threadid > -1) return threadid;
+  return darktable.control->num_threads;
+}
+
+static inline int32_t _control_get_threadid_res()
+{
+  if(threadid > -1) return threadid;
+  return DT_CTL_WORKER_RESERVED;
+}
+
 static void _control_job_set_state(_dt_job_t *job,
                                     dt_job_state_t state)
 {
@@ -132,6 +146,7 @@ void *dt_control_job_get_params(const _dt_job_t *job)
 dt_job_t *dt_control_job_create(dt_job_execute_callback execute,
                                 const char *msg, ...)
 {
+  if(!dt_control_running()) return NULL;
   _dt_job_t *job = calloc(1, sizeof(_dt_job_t));
   if(!job) return NULL;
 
@@ -159,7 +174,7 @@ gboolean dt_control_job_is_synchronous(const dt_job_t *job)
   return job->is_synchronous;
 }
 
-void dt_control_job_set_synchronous(dt_job_t *job, gboolean sync)
+static void _control_job_set_synchronous(dt_job_t *job, gboolean sync)
 {
    job->is_synchronous = sync;
 }
@@ -178,14 +193,6 @@ void dt_control_job_dispose(_dt_job_t *job)
   free(job);
 }
 
-void dt_control_job_set_state_callback(_dt_job_t *job, dt_job_state_change_callback cb)
-{
-  // once the job got added to the queue it may not be changed from the outside
-  if(dt_control_job_get_state(job) != DT_JOB_STATE_INITIALIZED)
-    return; // get_state returns DISPOSED when job == NULL
-  job->state_changed_cb = cb;
-}
-
 // We don't want to log dt_get_wtime() as we already show the stamp
 static void _control_job_print(_dt_job_t *job, const char *info, const char *err, int32_t res)
 {
@@ -197,34 +204,6 @@ static void _control_job_print(_dt_job_t *job, const char *info, const char *err
 void dt_control_job_cancel(_dt_job_t *job)
 {
   _control_job_set_state(job, DT_JOB_STATE_CANCELLED);
-}
-
-void dt_control_job_wait(_dt_job_t *job)
-{
-  if(!job) return;
-  dt_job_state_t state = dt_control_job_get_state(job);
-
-  // NOTE: could also use signals.
-
-  // if the job is merely queued and hasn't started yet, we
-  // need to wait until it is actually started before attempting
-  // to grab the mutex, or it will always succeed immediately
-  while(state == DT_JOB_STATE_QUEUED)
-  {
-    g_usleep(100000); // wait 0.1 seconds
-    state = dt_control_job_get_state(job);
-  }
-
-  /* if job execution is not finished let's wait for it */
-  if(state == DT_JOB_STATE_RUNNING || state == DT_JOB_STATE_CANCELLED)
-  {
-    // once the job finishes, it unlocks the mutex
-    // so by locking the mutex here, we will only get the lock once the job
-    // has finished and unlocked it.
-    dt_pthread_mutex_lock(&job->wait_mutex);
-    // yay, the job finished, we got the lock. nothing more to do.
-    dt_pthread_mutex_unlock(&job->wait_mutex);
-  }
 }
 
 static gboolean _control_run_job_res(dt_control_t *control, int32_t res)
@@ -311,7 +290,7 @@ static _dt_job_t *_control_schedule_job(dt_control_t *control)
   if(winner_queue == DT_JOB_QUEUE_USER_EXPORT) control->export_scheduled = TRUE;
 
   // and place it in scheduled job array (for job deduping)
-  control->job[dt_control_get_threadid()] = job;
+  control->job[_control_get_threadid()] = job;
 
   // increment the priorities of the others
   for(int i = 0; i < DT_JOB_QUEUE_MAX; i++)
@@ -327,7 +306,7 @@ static _dt_job_t *_control_schedule_job(dt_control_t *control)
 
 static void _control_job_execute(_dt_job_t *job)
 {
-  _control_job_print(job, "run_job+", "", DT_CTL_WORKER_RESERVED + dt_control_get_threadid());
+  _control_job_print(job, "run_job+", "", DT_CTL_WORKER_RESERVED + _control_get_threadid());
 
   _control_job_set_state(job, DT_JOB_STATE_RUNNING);
 
@@ -335,7 +314,7 @@ static void _control_job_execute(_dt_job_t *job)
   job->result = job->execute(job);
 
   _control_job_set_state(job, DT_JOB_STATE_FINISHED);
-  _control_job_print(job, "run_job-", "", DT_CTL_WORKER_RESERVED + dt_control_get_threadid());
+  _control_job_print(job, "run_job-", "", DT_CTL_WORKER_RESERVED + _control_get_threadid());
 }
 
 static gboolean _control_run_job(dt_control_t *control)
@@ -353,20 +332,22 @@ static gboolean _control_run_job(dt_control_t *control)
 
   // remove the job from scheduled job array (for job deduping)
   dt_pthread_mutex_lock(&control->queue_mutex);
-  control->job[dt_control_get_threadid()] = NULL;
+  control->job[_control_get_threadid()] = NULL;
   if(job->queue == DT_JOB_QUEUE_USER_EXPORT) control->export_scheduled = FALSE;
   dt_pthread_mutex_unlock(&control->queue_mutex);
 
   // and free it
   dt_control_job_dispose(job);
+  dt_atomic_sub_int(&control->pending_jobs, 1);
 
   return FALSE;
 }
 
-gboolean dt_control_add_job_res(dt_control_t *control,
-                                _dt_job_t *job,
-                                int32_t res)
+gboolean dt_control_add_job_res(_dt_job_t *job, int32_t res)
 {
+  dt_control_t *control = darktable.control;
+  if(!control) return TRUE;
+
   if(((unsigned int)res) >= DT_CTL_WORKER_RESERVED || !job)
   {
     dt_control_job_dispose(job);
@@ -399,10 +380,11 @@ gboolean dt_control_add_job_res(dt_control_t *control,
   return FALSE;
 }
 
-gboolean dt_control_add_job(dt_control_t *control,
-                            dt_job_queue_t queue_id,
-                            _dt_job_t *job)
+gboolean dt_control_add_job(dt_job_queue_t queue_id, _dt_job_t *job)
 {
+  dt_control_t *control = darktable.control;
+  if(!control) return TRUE;
+
   if((((unsigned int)queue_id) >= DT_JOB_QUEUE_MAX && queue_id != DT_JOB_QUEUE_SYNCHRONOUS) || !job)
   {
     dt_control_job_dispose(job);
@@ -413,7 +395,7 @@ gboolean dt_control_add_job(dt_control_t *control,
   {
     // whatever we are adding here won't be scheduled as the system isn't running. execute it synchronous instead.
     dt_pthread_mutex_lock(&job->wait_mutex); // is that even needed?
-    dt_control_job_set_synchronous(job, TRUE);
+    _control_job_set_synchronous(job, TRUE);
     _control_job_execute(job);
     dt_pthread_mutex_unlock(&job->wait_mutex);
 
@@ -432,6 +414,7 @@ gboolean dt_control_add_job(dt_control_t *control,
 
   _control_job_print(job, "add_job", "", (int32_t)length);
 
+  dt_atomic_add_int(&control->pending_jobs, 1);
   if(queue_id == DT_JOB_QUEUE_SYSTEM_FG)
   {
     // this is a stack with limited size and bubble up and all that stuff
@@ -449,6 +432,7 @@ gboolean dt_control_add_job(dt_control_t *control,
 
         _control_job_set_state(job, DT_JOB_STATE_DISCARDED);
         dt_control_job_dispose(job);
+        dt_atomic_sub_int(&control->pending_jobs, 1);
 
         return 0; // there can't be any further copy
       }
@@ -457,13 +441,14 @@ gboolean dt_control_add_job(dt_control_t *control,
     // if the job is already in the queue -> move it to the top
     for(GList *iter = *queue; iter; iter = g_list_next(iter))
     {
-      _dt_job_t *other_job = (_dt_job_t *)iter->data;
+      _dt_job_t *other_job = iter->data;
       if(_control_job_equal(job, other_job))
       {
         _control_job_print(other_job, "add_job", "found job already in queue", -1);
 
         *queue = g_list_delete_link(*queue, iter);
         length--;
+        dt_atomic_sub_int(&control->pending_jobs, 1);
 
         job_for_disposal = job;
 
@@ -480,10 +465,11 @@ gboolean dt_control_add_job(dt_control_t *control,
     if(length > DT_CONTROL_MAX_JOBS)
     {
       GList *last = g_list_last(*queue);
-      _control_job_set_state((_dt_job_t *)last->data, DT_JOB_STATE_DISCARDED);
-      dt_control_job_dispose((_dt_job_t *)last->data);
+      _control_job_set_state(last->data, DT_JOB_STATE_DISCARDED);
+      dt_control_job_dispose(last->data);
       *queue = g_list_delete_link(*queue, last);
       length--;
+      dt_atomic_sub_int(&control->pending_jobs, 1);
     }
 
     control->queue_length[queue_id] = length;
@@ -515,18 +501,18 @@ gboolean dt_control_add_job(dt_control_t *control,
   return FALSE;
 }
 
-static __thread int threadid = -1;
-
-int32_t dt_control_get_threadid()
+gboolean dt_control_jobs_pending()
 {
-  if(threadid > -1) return threadid;
-  return darktable.control->num_threads;
-}
+  dt_control_t *control = darktable.control;
+  if(!control) return FALSE;
 
-static inline int32_t _control_get_threadid_res()
-{
-  if(threadid > -1) return threadid;
-  return DT_CTL_WORKER_RESERVED;
+  int pending = dt_atomic_get_int(&control->pending_jobs);
+  if(darktable.backthumbs.running)
+    pending--;
+#ifdef HAVE_PRINT
+  pending--;
+#endif
+  return pending > 0;
 }
 
 static void *_control_work_res(void *ptr)
@@ -535,7 +521,7 @@ static void *_control_work_res(void *ptr)
   omp_set_num_threads(dt_get_num_threads());
 #endif
   worker_thread_parameters_t *params = (worker_thread_parameters_t *)ptr;
-  dt_control_t *s = params->self;
+  dt_control_t *control = params->self;
   threadid = params->threadid;
   char name[16] = {0};
   snprintf(name, sizeof(name), "worker res %d", threadid);
@@ -544,15 +530,14 @@ static void *_control_work_res(void *ptr)
   int32_t threadid_res = _control_get_threadid_res();
   while(dt_control_running())
   {
-    // dt_print(DT_DEBUG_CONTROL, "[control_work] %d", threadid_res);
-    if(_control_run_job_res(s, threadid_res))
+    if(_control_run_job_res(control, threadid_res))
     {
       // wait for a new job.
       int old;
       pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old);
-      dt_pthread_mutex_lock(&s->cond_mutex);
-      dt_pthread_cond_wait(&s->cond, &s->cond_mutex);
-      dt_pthread_mutex_unlock(&s->cond_mutex);
+      dt_pthread_mutex_lock(&control->cond_mutex);
+      dt_pthread_cond_wait(&control->cond, &control->cond_mutex);
+      dt_pthread_mutex_unlock(&control->cond_mutex);
       int tmp;
       pthread_setcancelstate(old, &tmp);
     }
@@ -589,7 +574,6 @@ static void *_control_work(void *ptr)
   // int32_t threadid = dt_control_get_threadid();
   while(dt_control_running())
   {
-    // dt_print(DT_DEBUG_CONTROL, "[control_work] %d", threadid);
     if(_control_run_job(control))
     {
       // wait for a new job.
@@ -631,8 +615,9 @@ double dt_control_job_get_progress(dt_job_t *job)
 
 
 // moved out of control.c to be able to make some helper functions static
-void dt_control_jobs_init(dt_control_t *control)
+void dt_control_jobs_init()
 {
+  dt_control_t *control = darktable.control;
   // start threads
   control->num_threads = dt_worker_threads();
   control->thread = (pthread_t *)calloc(control->num_threads, sizeof(pthread_t));
@@ -640,18 +625,16 @@ void dt_control_jobs_init(dt_control_t *control)
 
   g_atomic_int_set(&control->running, DT_CONTROL_STATE_RUNNING);
 
-  int err = 0; // collected errors while creating all threads
-
   for(int k = 0; k < control->num_threads; k++)
   {
     worker_thread_parameters_t *params = calloc(1, sizeof(worker_thread_parameters_t));
     params->self = control;
     params->threadid = k;
-    err |= dt_pthread_create(&control->thread[k], _control_work, params);
+    dt_pthread_create(&control->thread[k], _control_work, params);
   }
 
   /* create queue kicker thread */
-  err |= dt_pthread_create(&control->kick_on_workers_thread, _control_worker_kicker, control);
+  dt_pthread_create(&control->kick_on_workers_thread, _control_worker_kicker, control);
 
   for(int k = 0; k < DT_CTL_WORKER_RESERVED; k++)
   {
@@ -660,18 +643,17 @@ void dt_control_jobs_init(dt_control_t *control)
     worker_thread_parameters_t *params = calloc(1, sizeof(worker_thread_parameters_t));
     params->self = control;
     params->threadid = k;
-    err |= dt_pthread_create(&control->thread_res[k], _control_work_res, params);
+    dt_pthread_create(&control->thread_res[k], _control_work_res, params);
   }
   /* create thread taking care of connecting gphoto2 devices */
 #ifdef HAVE_GPHOTO2
-  err |= dt_pthread_create(&control->update_gphoto_thread, dt_update_cameras_thread, control);
+  dt_pthread_create(&control->update_gphoto_thread, dt_update_cameras_thread, control);
 #endif
-  if(err != 0)
-    dt_print(DT_DEBUG_ALWAYS, "[dt_control_jobs_init] couldn't create all threads, problems ahead");
 }
 
-void dt_control_jobs_cleanup(dt_control_t *control)
+void dt_control_jobs_cleanup()
 {
+  dt_control_t *control = darktable.control;
   free(control->job);
   control->job = NULL;
   free(control->thread);

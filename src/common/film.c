@@ -322,7 +322,7 @@ dt_filmid_t dt_film_import(const char *dirname)
                         "DELETE FROM main.selected_images", NULL, NULL, NULL);
 
   // launch import job
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, dt_film_import1_create(film));
+  dt_control_add_job(DT_JOB_QUEUE_USER_BG, dt_film_import1_create(film));
 
   return filmid;
 }

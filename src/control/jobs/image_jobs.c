@@ -26,7 +26,7 @@ typedef struct dt_image_load_t
   dt_mipmap_size_t mip;
 } dt_image_load_t;
 
-static int32_t dt_image_load_job_run(dt_job_t *job)
+static int32_t _image_load_job_run(dt_job_t *job)
 {
   dt_image_load_t *params = dt_control_job_get_params(job);
 
@@ -48,7 +48,7 @@ static int32_t dt_image_load_job_run(dt_job_t *job)
 
 dt_job_t *dt_image_load_job_create(dt_imgid_t id, dt_mipmap_size_t mip)
 {
-  dt_job_t *job = dt_control_job_create(&dt_image_load_job_run, "load image %d mip %d", id, mip);
+  dt_job_t *job = dt_control_job_create(&_image_load_job_run, "load imgid=%d mip %d", id, mip);
   if(!job) return NULL;
   dt_image_load_t *params = calloc(1, sizeof(dt_image_load_t));
   if(!params)
@@ -68,7 +68,7 @@ typedef struct dt_image_import_t
   gchar *filename;
 } dt_image_import_t;
 
-static int32_t dt_image_import_job_run(dt_job_t *job)
+static dt_filmid_t _image_import_job_run(dt_job_t *job)
 {
   char message[512] = { 0 };
   dt_image_import_t *params = dt_control_job_get_params(job);
@@ -87,7 +87,7 @@ static int32_t dt_image_import_job_run(dt_job_t *job)
   return 0;
 }
 
-static void dt_image_import_job_cleanup(void *p)
+static void _image_import_job_cleanup(void *p)
 {
   dt_image_import_t *params = p;
 
@@ -99,7 +99,7 @@ static void dt_image_import_job_cleanup(void *p)
 dt_job_t *dt_image_import_job_create(dt_filmid_t filmid, const char *filename)
 {
   dt_image_import_t *params;
-  dt_job_t *job = dt_control_job_create(&dt_image_import_job_run, "import image");
+  dt_job_t *job = dt_control_job_create(&_image_import_job_run, "import image");
   if(!job) return NULL;
   params = calloc(1, sizeof(dt_image_import_t));
   if(!params)
@@ -108,7 +108,7 @@ dt_job_t *dt_image_import_job_create(dt_filmid_t filmid, const char *filename)
     return NULL;
   }
   dt_control_job_add_progress(job, _("import image"), FALSE);
-  dt_control_job_set_params(job, params, dt_image_import_job_cleanup);
+  dt_control_job_set_params(job, params, _image_import_job_cleanup);
   params->filename = g_strdup(filename);
   params->film_id = filmid;
   return job;

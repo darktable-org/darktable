@@ -110,8 +110,9 @@ const dt_action_def_t dt_action_def_modifiers
       _action_elements_modifiers,
       NULL, TRUE };
 
-void dt_control_init(dt_control_t *s)
+void dt_control_init()
 {
+  dt_control_t *s = darktable.control;
   s->actions_global = (dt_action_t){ DT_ACTION_TYPE_GLOBAL,
     "global",
     C_("accel", "global"),
@@ -201,6 +202,8 @@ void dt_control_init(dt_control_t *s)
   s->widget_definitions = g_ptr_array_new ();
   s->input_drivers = NULL;
   dt_atomic_set_int(&s->running, DT_CONTROL_STATE_DISABLED);
+  dt_atomic_set_int(&s->pending_jobs, 0);
+  dt_atomic_set_int(&s->quitting, 0);
   s->cups_started = FALSE;
 
   dt_action_define_fallback(DT_ACTION_TYPE_IOP, &dt_action_def_iop);
@@ -240,7 +243,7 @@ void dt_control_init(dt_control_t *s)
   dt_pthread_mutex_init(&s->progress_system.mutex, NULL);
 
   // start threads
-  dt_control_jobs_init(s);
+  dt_control_jobs_init();
 
   s->button_down = 0;
   s->button_down_which = 0;
@@ -288,30 +291,33 @@ void dt_control_change_cursor(dt_cursor_t curs)
 
 gboolean dt_control_running()
 {
-  dt_control_t *dc = darktable.control;
-  const int status = dc ? dt_atomic_get_int(&dc->running) : DT_CONTROL_STATE_DISABLED;
-  return status == DT_CONTROL_STATE_RUNNING;
+  dt_control_t *control = darktable.control;
+  return control ? dt_atomic_get_int(&control->running) == DT_CONTROL_STATE_RUNNING : FALSE;
 }
 
 void dt_control_quit()
 {
-  if(dt_control_running())
-  {
-    dt_control_t *dc = darktable.control;
+  dt_control_t *control = darktable.control;
+  if(!dt_control_running()) return;
+
+  // make sure the rest is done only once
+  if(dt_atomic_exch_int(&control->quitting, 1) == 1) return;
 
 #ifdef HAVE_PRINT
-    dt_printers_abort_discovery();
-    // Cups timeout could be pretty long, at least 30seconds
-    // but don't rely on cups returning correctly so a timeout
-    for(int i = 0; i < 40000 && !dc->cups_started; i++)
-      g_usleep(1000);
+  dt_printers_abort_discovery();
+  // Cups timeout could be pretty long, at least 30seconds
+  // but don't rely on cups returning correctly so a timeout
+  for(int i = 0; i < 40000 && !control->cups_started; i++)
+    g_usleep(1000);
 #endif
 
-    dt_pthread_mutex_lock(&dc->cond_mutex);
-    // set the "pending cleanup work" flag to be handled in dt_control_shutdown()
-    dt_atomic_set_int(&dc->running, DT_CONTROL_STATE_CLEANUP);
-    dt_pthread_mutex_unlock(&dc->cond_mutex);
-  }
+  // FIXME leave a note about pending background jobs, possibly delay
+
+  dt_pthread_mutex_lock(&control->cond_mutex);
+  // set the "pending cleanup work" flag to be handled in dt_control_shutdown()
+  dt_atomic_set_int(&control->running, DT_CONTROL_STATE_CLEANUP);
+  dt_pthread_mutex_unlock(&control->cond_mutex);
+
 
   if(g_atomic_int_get(&darktable.gui_running))
   {
@@ -320,15 +326,18 @@ void dt_control_quit()
   }
 }
 
-void dt_control_shutdown(dt_control_t *s)
+void dt_control_shutdown()
 {
-  if(!s)
-    return;
+  dt_control_t *control = darktable.control;
+  if(!control) return;
 
-  dt_pthread_mutex_lock(&s->cond_mutex);
-  const gboolean cleanup = dt_atomic_exch_int(&s->running, DT_CONTROL_STATE_DISABLED) == DT_CONTROL_STATE_CLEANUP;
-  pthread_cond_broadcast(&s->cond);
-  dt_pthread_mutex_unlock(&s->cond_mutex);
+  dt_pthread_mutex_lock(&control->cond_mutex);
+  const gboolean cleanup = dt_atomic_exch_int(&control->running, DT_CONTROL_STATE_DISABLED) == DT_CONTROL_STATE_CLEANUP;
+  pthread_cond_broadcast(&control->cond);
+  dt_pthread_mutex_unlock(&control->cond_mutex);
+
+  dt_print(DT_DEBUG_CONTROL, "[dt_control_shutdown] closing control threads%s",
+    cleanup ? " in cleanup mode" : "");
 
 #ifdef HAVE_GPHOTO2
   /* first and always wait for gphoto device updater */
@@ -348,23 +357,25 @@ void dt_control_shutdown(dt_control_t *s)
     dt_pthread_join(control->thread_res[k]);
 }
 
-void dt_control_cleanup(dt_control_t *s)
+void dt_control_cleanup()
 {
-  if(!s)
-    return;
+  dt_control_t *control = darktable.control;
+  if(!control) return;
   // vacuum TODO: optional?
   // DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "PRAGMA incremental_vacuum(0)", NULL, NULL, NULL);
   // DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "vacuum", NULL, NULL, NULL);
-  dt_control_jobs_cleanup(s);
-  dt_pthread_mutex_destroy(&s->queue_mutex);
-  dt_pthread_mutex_destroy(&s->cond_mutex);
-  dt_pthread_mutex_destroy(&s->log_mutex);
-  dt_pthread_mutex_destroy(&s->toast_mutex);
-  dt_pthread_mutex_destroy(&s->res_mutex);
-  dt_pthread_mutex_destroy(&s->progress_system.mutex);
-  if(s->widgets) g_hash_table_destroy(s->widgets);
-  if(s->shortcuts) g_sequence_free(s->shortcuts);
-  if(s->input_drivers) g_slist_free_full(s->input_drivers, g_free);
+  dt_control_jobs_cleanup();
+  dt_pthread_mutex_destroy(&control->queue_mutex);
+  dt_pthread_mutex_destroy(&control->cond_mutex);
+  dt_pthread_mutex_destroy(&control->log_mutex);
+  dt_pthread_mutex_destroy(&control->toast_mutex);
+  dt_pthread_mutex_destroy(&control->res_mutex);
+  dt_pthread_mutex_destroy(&control->progress_system.mutex);
+  if(control->widgets) g_hash_table_destroy(control->widgets);
+  if(control->shortcuts) g_sequence_free(control->shortcuts);
+  if(control->input_drivers) g_slist_free_full(control->input_drivers, g_free);
+  free(control);
+  darktable.control = NULL;
 }
 
 

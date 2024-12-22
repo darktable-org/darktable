@@ -439,7 +439,7 @@ try_again:
       {
         // file exists, skip
         dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-        dt_print(DT_DEBUG_ALWAYS, "[export_job] skipping `%s'", filename);
+        dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_disk] skipping `%s' because of same-name conflict", filename);
         dt_control_log(ngettext("%d/%d skipping `%s'", "%d/%d skipping `%s'", num),
                        num, total, filename);
         return 0;
@@ -464,7 +464,7 @@ try_again:
         if(export_timestamp > change_timestamp)
         {
           dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-          dt_print(DT_DEBUG_ALWAYS, "[export_job] skipping (not modified since export) `%s'", filename);
+          dt_print(DT_DEBUG_IMAGEIO, "[imageio_storage_disk] skipping (not modified since export) `%s'", filename);
           dt_control_log(ngettext("%d/%d skipping (not modified since export) `%s'",
                                   "%d/%d skipping (not modified since export) `%s'", num),
                          num, total, filename);
@@ -477,22 +477,20 @@ try_again:
   if(fail) return 1;
 
   /* export image to file */
-  if(dt_imageio_export(imgid, filename, format, fdata, high_quality,
-                       upscale, TRUE, export_masks, icc_type,
-                       icc_filename, icc_intent, self, sdata,
-                       num, total, metadata) != 0)
-  {
-    dt_print(DT_DEBUG_ALWAYS,
-             "[imageio_storage_disk] could not export to file: `%s'!",
-             filename);
+  dt_print(DT_DEBUG_IMAGEIO, "[imageio_storage_disk] start dt_imageio_export to `%s'", filename);
+  const gboolean export_error = dt_imageio_export(imgid, filename, format, fdata, high_quality,
+                                    upscale, TRUE, export_masks, icc_type,
+                                    icc_filename, icc_intent, self, sdata,
+                                    num, total, metadata);
+  if(export_error)
     dt_control_log(_("could not export to file `%s'!"), filename);
-    return 1;
-  }
-
-  dt_print(DT_DEBUG_ALWAYS, "[export_job] exported to `%s'", filename);
-  dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
+  else
+    dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
                  num, total, filename);
-  return 0;
+
+  dt_print(DT_DEBUG_IMAGEIO, "[imageio_storage_disk] %d/%d export to `%s' %s",
+            num, total, filename, export_error ? "failed" : "done");
+  return export_error ? 1 : 0;
 }
 
 size_t params_size(dt_imageio_module_storage_t *self)
