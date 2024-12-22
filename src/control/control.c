@@ -330,32 +330,22 @@ void dt_control_shutdown(dt_control_t *s)
   pthread_cond_broadcast(&s->cond);
   dt_pthread_mutex_unlock(&s->cond_mutex);
 
-  int err = 0; // collect all joining errors
-  /* first wait for gphoto device updater */
 #ifdef HAVE_GPHOTO2
-   err = pthread_join(s->update_gphoto_thread, NULL);
+  /* first and always wait for gphoto device updater */
+  dt_pthread_join(control->update_gphoto_thread);
 #endif
 
   if(!cleanup)
     return;   // if not running there are no threads to join
 
-  dt_print(DT_DEBUG_CONTROL, "[dt_control_shutdown] closing control threads");
+  /* wait for kick_on_workers_thread */
+  dt_pthread_join(control->kick_on_workers_thread);
 
-  /* then wait for kick_on_workers_thread */
-  err = pthread_join(s->kick_on_workers_thread, NULL);
-  dt_print(DT_DEBUG_CONTROL, "[dt_control_shutdown] joined kicker%s", err ? ", error" : "");
-
-  for(int k = 0; k < s->num_threads-1; k++)
-  {
-    err = pthread_join(s->thread[k], NULL);
-    dt_print(DT_DEBUG_CONTROL, "[dt_control_shutdown] joined num_thread %i%s", k, err ? ", error" : "");
-  }
+  for(int k = 0; k < control->num_threads-1; k++)
+    dt_pthread_join(control->thread[k]);
 
   for(int k = 0; k < DT_CTL_WORKER_RESERVED; k++)
-  {
-    err = pthread_join(s->thread_res[k], NULL);
-    dt_print(DT_DEBUG_CONTROL, "[dt_control_shutdown] joined worker %i%s", k, err ? ", error" : "");
-  }
+    dt_pthread_join(control->thread_res[k]);
 }
 
 void dt_control_cleanup(dt_control_t *s)
