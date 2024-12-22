@@ -190,7 +190,7 @@ GList *dt_grouping_get_group_images(const dt_imgid_t imgid)
   const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   if(image)
   {
-    const int img_group_id = image->group_id;
+    const dt_imgid_t img_group_id = image->group_id;
     dt_image_cache_read_release(darktable.image_cache, image);
     if(darktable.gui && darktable.gui->grouping && darktable.gui->expanded_group_id != img_group_id)
     {
@@ -221,7 +221,7 @@ void dt_grouping_add_grouped_images(GList **images)
     const dt_image_t *image = dt_image_cache_get(darktable.image_cache, GPOINTER_TO_INT(imgs->data), 'r');
     if(image)
     {
-      const int img_group_id = image->group_id;
+      const dt_imgid_t img_group_id = image->group_id;
       dt_image_cache_read_release(darktable.image_cache, image);
       if(darktable.gui && darktable.gui->grouping && darktable.gui->expanded_group_id != img_group_id
          && dt_selection_get_collection(darktable.selection))

@@ -277,7 +277,7 @@ void dt_color_picker_backtransform_box(dt_develop_t *dev,
   const float wdp = MAX(1, dev->preview_pipe->processed_width);
   const float htp = MAX(1, dev->preview_pipe->processed_height);
 
-  int out_num = num == 2 ? 4 : 1;
+  const int out_num = num == 2 ? 4 : 1;
 
   for(int i = 0; i < out_num; i++)
   {

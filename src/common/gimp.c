@@ -25,27 +25,25 @@ gboolean dt_export_gimp_file(const dt_imgid_t imgid)
 {
   const gboolean thumb = dt_check_gimpmode("thumb");
   char *tmp_directory = g_dir_make_tmp("darktable_XXXXXX", NULL);
-  char path[PATH_MAX]= { 0 };
-
-  snprintf(path, sizeof(path), "%s/%s", tmp_directory, thumb ? "thumb" : "image");
+  char *path = g_build_filename(tmp_directory, thumb ? "thumb" : "image", NULL);
   g_free(tmp_directory);
+
+  gboolean res = FALSE;
 
   // init the export data structures
   dt_imageio_module_storage_t *storage = dt_imageio_get_storage_by_name("disk");
-  if(storage == NULL) return FALSE;
+  if(storage == NULL) goto finalize;
 
   dt_imageio_module_data_t *sdata = storage->get_params(storage);
-  if(sdata == NULL) return FALSE;
+  if(sdata == NULL) goto finalize;
 
-  // and now for the really ugly hacks. don't tell your children about this one or they won't sleep at night
-  // any longer ...
   g_strlcpy((char *)sdata, path, DT_MAX_PATH_FOR_PARAMS);
 
   dt_imageio_module_format_t *format = dt_imageio_get_format_by_name(thumb ? "jpeg" : "exr");
-  if(format == NULL) return FALSE;
+  if(format == NULL) goto finalize;
 
   dt_imageio_module_data_t *fdata = format->get_params(format);
-  if(fdata == NULL) return FALSE;
+  if(fdata == NULL) goto finalize;
 
   // For disk exporting and used formats we dont have to check dimensions
   const size_t dim = MIN(MAX(darktable.gimp.size, 32), 1024);
@@ -63,15 +61,19 @@ gboolean dt_export_gimp_file(const dt_imgid_t imgid)
                   NULL,  // icc_filename
                   DT_INTENT_PERCEPTUAL,
                   NULL);  // &metadata
-  fprintf(stdout, "<<<gimp\n%s%s\n", path, thumb ? ".jpg" : ".exr");
+  printf("<<<gimp\n%s%s\n", path, thumb ? ".jpg" : ".exr");
   if(thumb)
   {
     dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-    fprintf(stdout, "%i %i\n", image->width, image->height);
+    printf("%i %i\n", image->width, image->height);
     dt_image_cache_read_release(darktable.image_cache, image);
   }
-  fprintf(stdout, "gimp>>>\n");
-  return TRUE;
+  printf("gimp>>>\n");
+  res = TRUE;
+
+finalize:
+  g_free(path);
+  return res;
 }
 
 dt_imgid_t dt_gimp_load_image(const char *file)

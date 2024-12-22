@@ -2174,14 +2174,7 @@ void dt_iop_commit_params(dt_iop_module_t *module,
       dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, blendop_params->mask_id);
       if(grp)
       {
-        const size_t mlen = dt_masks_group_get_hash_buffer_length(grp);
-        char *str = malloc(mlen);
-        if(str)
-        {
-          dt_masks_group_get_hash_buffer(grp, str);
-          phash = dt_hash(phash, str, mlen);
-          free(str);
-        }
+        phash = dt_masks_group_hash(phash, grp);
       }
 
       if(blendop_params->mask_mode & DEVELOP_MASK_RASTER && new_raster)
@@ -2517,11 +2510,12 @@ static gboolean _iop_plugin_body_button_press(GtkWidget *w,
   return FALSE;
 }
 
-static gboolean _iop_plugin_header_button_press(GtkWidget *w,
-                                                GdkEventButton *e,
-                                                gpointer user_data)
+static gboolean _iop_plugin_header_button_release(GtkWidget *w,
+                                                  GdkEventButton *e,
+                                                  gpointer user_data)
 {
   if(e->type == GDK_2BUTTON_PRESS || e->type == GDK_3BUTTON_PRESS) return TRUE;
+  if(GTK_IS_BUTTON(gtk_get_event_widget((GdkEvent*)e))) return FALSE;
 
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
 
@@ -3080,8 +3074,8 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   module->header = header;
 
   /* setup the header box */
-  g_signal_connect(G_OBJECT(header_evb), "button-press-event",
-                   G_CALLBACK(_iop_plugin_header_button_press), module);
+  g_signal_connect(G_OBJECT(header_evb), "button-release-event",
+                   G_CALLBACK(_iop_plugin_header_button_release), module);
   gtk_widget_add_events(header_evb, GDK_POINTER_MOTION_MASK);
   g_signal_connect(G_OBJECT(header_evb), "enter-notify-event",
                    G_CALLBACK(_header_motion_notify_show_callback), module);
@@ -3224,7 +3218,7 @@ GtkWidget *dt_iop_gui_get_pluginui(dt_iop_module_t *module)
   return dtgtk_expander_get_frame(DTGTK_EXPANDER(module->expander));
 }
 
-gboolean dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
+gboolean dt_iop_breakpoint(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe)
 {
   if(pipe != dev->preview_pipe
      && pipe != dev->preview2.pipe)
@@ -3846,7 +3840,7 @@ gboolean dt_iop_have_required_input_format(const int req_ch,
   }
 }
 
-gboolean dt_iop_canvas_not_sensitive(const struct dt_develop_t *dev)
+gboolean dt_iop_canvas_not_sensitive(const dt_develop_t *dev)
 {
   return dt_iop_color_picker_is_visible(dev)
          || darktable.lib->proxy.snapshots.enabled;
@@ -3864,12 +3858,13 @@ void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data)
   dt_dev_add_history_item_target(darktable.develop, module, TRUE, widget);
 }
 
-gboolean dt_iop_module_is_skipped(const struct dt_develop_t *dev,
+gboolean dt_iop_module_is_skipped(const dt_develop_t *dev,
                                   const dt_iop_module_t *module)
 {
   return dev->gui_module
       && dev->gui_module != module
-      && (dev->gui_module->operation_tags_filter() & module->operation_tags());
+      && (dev->gui_module->operation_tags_filter() & module->operation_tags())
+      && (dev->gui_module->iop_order < module->iop_order);
 }
 
 enum

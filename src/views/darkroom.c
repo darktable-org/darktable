@@ -703,7 +703,10 @@ void expose(dt_view_t *self,
     if(dmod && dmod != dev->proxy.rotate)
     {
       // the cropping.exposer->gui_post_expose needs special care
-      if(expose_full && dmod->operation_tags_filter() & IOP_TAG_CROPPING)
+      if(expose_full
+        && (dmod->operation_tags_filter() & IOP_TAG_CROPPING)
+        && dev->cropping.exposer
+        && (dmod->iop_order < dev->cropping.exposer->iop_order))
       {
         dt_print_pipe(DT_DEBUG_EXPOSE,
                       "expose cropper",

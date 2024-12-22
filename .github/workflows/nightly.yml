@@ -59,17 +59,16 @@ jobs:
             libfuse2 \
             libgdk-pixbuf2.0-dev \
             libglib2.0-dev \
+            libgmic-dev \
             libgraphicsmagick1-dev \
             libgtk-3-dev \
             libinih-dev \
-            libjpeg-dev \
             libjson-glib-dev \
             liblcms2-dev \
             liblensfun-dev \
             liblensfun-bin \
             liblensfun-data-v1 \
             liblensfun1 \
-            libopenjp2-7-dev \
             libosmgpsmap-1.0-dev \
             libpango1.0-dev \
             libpng-dev \
@@ -98,12 +97,13 @@ jobs:
           sudo apt-get update
           sudo apt-get -y install \
             libavif-dev \
-            libgmic-dev \
             libgphoto2-dev \
             libheif-dev \
             libimath-dev \
-            libopenexr-dev \
+            libjpeg-turbo8-dev \
             libjxl-dev \
+            libopenexr-dev \
+            libopenjp2-7-dev \
             x11proto-dev \
             libxfixes-dev;
       - name: Build and install a more recent version of exiv2
@@ -281,7 +281,7 @@ jobs:
       matrix:
         build:
           - { os: macos-13, xcode: 15.2, deployment: 13.5 } # LLVM16, x86_64
-          - { os: macos-14, xcode: 15.4, deployment: 14.0 } # LLVM16, arm64
+          - { os: macos-14, xcode: 16.1, deployment: 14.0 } # LLVM16, arm64
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Release ]

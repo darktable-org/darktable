@@ -190,7 +190,7 @@ void *legacy_params(dt_imageio_module_storage_t *self,
 static void button_clicked(GtkWidget *widget,
                            dt_imageio_module_storage_t *self)
 {
-  disk_t *d = (disk_t *)self->gui_data;
+  disk_t *d = self->gui_data;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
         _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
@@ -294,7 +294,7 @@ void gui_cleanup(dt_imageio_module_storage_t *self)
 
 void gui_reset(dt_imageio_module_storage_t *self)
 {
-  disk_t *d = (disk_t *)self->gui_data;
+  disk_t *d = self->gui_data;
   gtk_entry_set_text(d->entry,
                      dt_confgen_get("plugins/imageio/storage/disk/file_directory",
                                     DT_DEFAULT));
@@ -354,21 +354,31 @@ try_again:
     d->vp->imgid = imgid;
     d->vp->sequence = num;
 
-    gchar *result_filename = dt_variables_expand(d->vp, pattern, TRUE);
-    g_strlcpy(filename, result_filename, sizeof(filename));
-    g_free(result_filename);
-
-    // if filenamepattern is a directory just add ${FILE_NAME} as
-    // default..  this can happen if the filename component of the
-    // pattern is an empty variable
-    char last_char = *(filename + strlen(filename) - 1);
-    if(last_char == '/' || last_char == '\\')
+    if(dt_gimpmode())
     {
-      // add to the end of the original pattern without caring about a
-      // potentially added "_$(SEQUENCE)"
-      if(snprintf(pattern, sizeof(pattern), "%s"
+      /* we certainly don't want to use any variable based expansion of the given filename
+         while in gimp mode but just keep it.
+      */
+      g_strlcpy(filename, pattern, sizeof(filename));
+    }
+    else
+    {
+      gchar *result_filename = dt_variables_expand(d->vp, pattern, TRUE);
+      g_strlcpy(filename, result_filename, sizeof(filename));
+      g_free(result_filename);
+
+      // if filenamepattern is a directory just add ${FILE_NAME} as
+      // default..  this can happen if the filename component of the
+      // pattern is an empty variable
+      const char last_char = *(filename + strlen(filename) - 1);
+      if(last_char == '/' || last_char == '\\')
+      {
+        // add to the end of the original pattern without caring about a
+        // potentially added "_$(SEQUENCE)"
+        if(snprintf(pattern, sizeof(pattern), "%s"
                   G_DIR_SEPARATOR_S "$(FILE_NAME)", d->filename) < sizeof(pattern))
-        goto try_again;
+          goto try_again;
+      }
     }
 
     // get the directory path of the output file
@@ -445,8 +455,8 @@ try_again:
       {
         // get the image data
         const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-        GTimeSpan change_timestamp = img->change_timestamp;
-        GTimeSpan export_timestamp = img->export_timestamp;
+        const GTimeSpan change_timestamp = img->change_timestamp;
+        const GTimeSpan export_timestamp = img->export_timestamp;
         dt_image_cache_read_release(darktable.image_cache, img);
 
         // check if the export timestamp in the database is more recent than the change
@@ -529,7 +539,7 @@ int set_params(dt_imageio_module_storage_t *self,
                const int size)
 {
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)params;
-  disk_t *g = (disk_t *)self->gui_data;
+  disk_t *g = self->gui_data;
 
   if(size != self->params_size(self)) return 1;
 
@@ -541,7 +551,7 @@ int set_params(dt_imageio_module_storage_t *self,
 
 char *ask_user_confirmation(dt_imageio_module_storage_t *self)
 {
-  disk_t *g = (disk_t *)self->gui_data;
+  disk_t *g = self->gui_data;
   if(dt_bauhaus_combobox_get(g->onsave_action) == DT_EXPORT_ONCONFLICT_OVERWRITE
      && dt_conf_get_bool("plugins/lighttable/export/ask_before_export_overwrite"))
   {

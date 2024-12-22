@@ -78,7 +78,7 @@ static gboolean _import_session_initialize_filmroll(dt_import_session_t *self, c
     return TRUE;
   }
   /* open one or initialize a filmroll for the session */
-  self->film = (dt_film_t *)g_malloc0(sizeof(dt_film_t));
+  self->film = g_malloc0(sizeof(dt_film_t));
   const dt_filmid_t film_id = dt_film_new(self->film, path);
   if(!dt_is_valid_filmid(film_id))
   {
@@ -151,11 +151,9 @@ static char *_import_session_filename_pattern()
 }
 
 
-struct dt_import_session_t *dt_import_session_new()
+dt_import_session_t *dt_import_session_new()
 {
-  dt_import_session_t *is;
-
-  is = (dt_import_session_t *)g_malloc0(sizeof(dt_import_session_t));
+  dt_import_session_t *is = g_malloc0(sizeof(dt_import_session_t));
 
   dt_variables_params_init(&is->vp);
 
@@ -165,7 +163,7 @@ struct dt_import_session_t *dt_import_session_new()
 }
 
 
-void dt_import_session_destroy(struct dt_import_session_t *self)
+void dt_import_session_destroy(dt_import_session_t *self)
 {
   if(--self->ref != 0) return;
 
@@ -177,17 +175,17 @@ void dt_import_session_destroy(struct dt_import_session_t *self)
   g_free(self);
 }
 
-void dt_import_session_ref(struct dt_import_session_t *self)
+void dt_import_session_ref(dt_import_session_t *self)
 {
   self->ref++;
 }
 
-void dt_import_session_unref(struct dt_import_session_t *self)
+void dt_import_session_unref(dt_import_session_t *self)
 {
   self->ref--;
 }
 
-void dt_import_session_import(struct dt_import_session_t *self)
+void dt_import_session_import(dt_import_session_t *self)
 {
   const dt_imgid_t imgid = dt_image_import(self->film->id, self->current_filename, TRUE, TRUE);
   if(dt_is_valid_imgid(imgid))
@@ -198,7 +196,7 @@ void dt_import_session_import(struct dt_import_session_t *self)
 }
 
 
-void dt_import_session_set_name(struct dt_import_session_t *self, const char *name)
+void dt_import_session_set_name(dt_import_session_t *self, const char *name)
 {
   /* free previous jobcode name */
   g_free((void *)self->vp->jobcode);
@@ -207,25 +205,25 @@ void dt_import_session_set_name(struct dt_import_session_t *self, const char *na
 }
 
 
-void dt_import_session_set_time(struct dt_import_session_t *self, const char *time)
+void dt_import_session_set_time(dt_import_session_t *self, const char *time)
 {
   dt_variables_set_time(self->vp, time);
 }
 
 
-void dt_import_session_set_exif_basic_info(struct dt_import_session_t *self, const dt_image_basic_exif_t *basic_exif)
+void dt_import_session_set_exif_basic_info(dt_import_session_t *self, const dt_image_basic_exif_t *basic_exif)
 {
   dt_variables_set_exif_basic_info(self->vp, basic_exif);
 }
 
 
-void dt_import_session_set_filename(struct dt_import_session_t *self, const char *filename)
+void dt_import_session_set_filename(dt_import_session_t *self, const char *filename)
 {
   self->vp->filename = filename;
 }
 
 
-int32_t dt_import_session_film_id(struct dt_import_session_t *self)
+dt_filmid_t dt_import_session_film_id(const dt_import_session_t *self)
 {
   if(self->film) return self->film->id;
 
@@ -233,7 +231,7 @@ int32_t dt_import_session_film_id(struct dt_import_session_t *self)
 }
 
 
-const char *dt_import_session_name(struct dt_import_session_t *self)
+const char *dt_import_session_name(const dt_import_session_t *self)
 {
   return self->vp->jobcode;
 }
@@ -244,18 +242,16 @@ const char *dt_import_session_name(struct dt_import_session_t *self)
  *
  * The returned string should be freed with g_free() when no longer needed.
  */
-static char *_import_session_filename_from_pattern(struct dt_import_session_t *self, gchar *pattern)
+static char *_import_session_filename_from_pattern(dt_import_session_t *self, gchar *pattern)
 {
-  gchar *result_fname = NULL;
-
-  result_fname = dt_variables_expand(self->vp, pattern, TRUE);
+  gchar *result_fname = dt_variables_expand(self->vp, pattern, TRUE);
   return g_strchomp(result_fname);
 }
 
 /* This returns a unique filename using session path **and** the filename.
    If use_filename is true we will use the original filename otherwise use the pattern.
 */
-const char *dt_import_session_filename(struct dt_import_session_t *self, gboolean use_filename)
+const char *dt_import_session_filename(dt_import_session_t *self, const gboolean use_filename)
 {
   gchar *result_fname = NULL;
 
@@ -316,7 +312,7 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
   return self->current_filename;
 }
 
-static const char *_import_session_path(struct dt_import_session_t *self, gboolean use_current_path)
+static const char *_import_session_path(dt_import_session_t *self, const gboolean use_current_path)
 {
   const gboolean currentok = dt_util_test_writable_dir(self->current_path);
 
@@ -384,7 +380,7 @@ static const char *_import_session_path(struct dt_import_session_t *self, gboole
   return self->current_path;
 }
 
-const char *dt_import_session_path(struct dt_import_session_t *self, gboolean use_current_path)
+const char *dt_import_session_path(dt_import_session_t *self, const gboolean use_current_path)
 {
   const char *path = _import_session_path(self, use_current_path);
   if(path == NULL)

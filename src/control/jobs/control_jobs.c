@@ -2740,7 +2740,7 @@ static int _control_import_image_copy(const char *filename,
 
     const dt_imgid_t imgid = dt_image_import(dt_import_session_film_id(session),
                                              output, FALSE, FALSE);
-    if(!imgid) dt_control_log(_("error loading file `%s'"), output);
+    if(!dt_is_valid_imgid(imgid)) dt_control_log(_("error loading file `%s'"), output);
     else
     {
       GError *error = NULL;

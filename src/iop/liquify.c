@@ -1711,7 +1711,11 @@ static void update_warp_count(dt_iop_module_t *self)
     }
   char str[10];
   snprintf(str, sizeof(str), "%u | %u", warp, node);
-  gtk_label_set_text(g->label, str);
+  // update the label, but only if it has changed -- otherwise we get
+  // into an infinite redraw loop while the module is visible and
+  // expanded
+  if(strcmp(str,gtk_label_get_text(g->label)) != 0)
+    gtk_label_set_text(g->label, str);
 }
 
 static GList *interpolate_paths(dt_iop_liquify_params_t *p)

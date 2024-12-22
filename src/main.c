@@ -67,6 +67,8 @@ int main(int argc, char *argv[])
 
   if(redirect_output)
   {
+    // NOTE! If the log file path is changed, reflect the changes at least
+    // in the console message in 'usage()' of 'common\darktable.c'
     char *logdir = g_build_filename(g_get_home_dir(), "Documents", "Darktable", NULL);
     char *logfile = g_build_filename(logdir, "darktable-log.txt", NULL);
 
@@ -104,11 +106,16 @@ int main(int argc, char *argv[])
   g_setenv("GTK_CSD", "0", TRUE);
 #endif
 
-  if(dt_init(argc, argv, TRUE, TRUE, NULL)) exit(1);
+  if(dt_init(argc, argv, TRUE, TRUE, NULL))
+  {
+    if(dt_gimpmode())
+      printf("\n<<<gimp\nerror\ngimp>>>\n");
+    exit(1);
+  }
 
   if(dt_check_gimpmode_ok("version"))
   {
-    fprintf(stdout, "\n<<<gimp\n%d\ngimp>>>\n", DT_GIMP_VERSION);
+    printf("\n<<<gimp\n%d\ngimp>>>\n", DT_GIMP_VERSION);
     exit(0);
   }
 
@@ -117,7 +124,7 @@ int main(int argc, char *argv[])
     || (dt_check_gimpmode("thumb") && !dt_check_gimpmode_ok("thumb"))
     || darktable.gimp.error)
   {
-    fprintf(stdout, "\n<<<gimp\nerror\ngimp>>>\n");
+    printf("\n<<<gimp\nerror\ngimp>>>\n");
     exit(1);
   }
 
@@ -137,13 +144,13 @@ int main(int argc, char *argv[])
       darktable.gimp.error = TRUE;
   }
 
-  if(!darktable.gimp.mode || dt_check_gimpmode_ok("file"))
+  if(!dt_gimpmode() || dt_check_gimpmode_ok("file"))
     dt_gui_gtk_run(darktable.gui);
 
   dt_cleanup();
 
-  if(darktable.gimp.mode && darktable.gimp.error)
-    fprintf(stdout, "\n<<<gimp\nerror\ngimp>>>\n");
+  if(dt_gimpmode() && darktable.gimp.error)
+    printf("\n<<<gimp\nerror\ngimp>>>\n");
 
 #ifdef _WIN32
   if(redirect_output)
@@ -155,7 +162,7 @@ int main(int argc, char *argv[])
   }
 #endif
 
-  const int exitcode = darktable.gimp.mode ? (darktable.gimp.error ? 1 : 0) : 0;
+  const int exitcode = dt_gimpmode() ? (darktable.gimp.error ? 1 : 0) : 0;
   exit(exitcode);
 }
 

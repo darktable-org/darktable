@@ -296,6 +296,9 @@ int dt_lua_init_database(lua_State *L)
   lua_pushcfunction(L, dt_lua_duplicate_image);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, type_id, "duplicate");
+  lua_pushcfunction(L, dt_lua_duplicate_image_with_history);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "duplicate_with_history");
   lua_pushcfunction(L, dt_lua_delete_image);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, type_id, "delete");

@@ -9,12 +9,21 @@ The checksums are:
 ```
 $ sha256sum darktable-5.0.0.tar.xz
 ??? darktable-5.0.0.tar.xz
+
 $ sha256sum darktable-5.0.0-x86_64.dmg
 ??? darktable-5.0.0-x86_64.dmg
+
 $ sha256sum darktable-5.0.0-arm64.dmg
 ??? darktable-5.0.0-arm64.dmg
+
+$ sha256sum darktable-5.0.0-arm64-13.5.dmg
+??? darktable-5.0.0-arm64-13.5.dmg
+
 $ sha256sum darktable-5.0.0-win64.exe
 ??? darktable-5.0.0-win64.exe
+
+$ sha256sum darktable-4.8.1-x86_64.AppImage
+???  darktable-5.0.0-x86_64.AppImage
 ```
 
 When updating from the stable 4.8 series, please bear in mind that your edits will be preserved during this process, but the new library and configuration will no longer be usable with 4.8.
@@ -25,10 +34,9 @@ You are strongly advised to take a backup first.
 
 Since darktable 4.8:
 
-- ??? commits to darktable+rawspeed
-- ??? pull requests handled
-- ??? issues closed
-
+- 1198 commits to darktable+rawspeed
+-  505 pull requests handled
+-   45 issues closed
 
 _Please note that the darktable documentation is not currently complete for release 5.0
 and contributions are greatly appreciated. Please see the
@@ -117,12 +125,12 @@ changes (where available).
 
 - Drag&drop utility module headers to reposition them across the left
   and right panels (lighttable) as well as vertically (all
-  views). Hold <kbd>Ctrl+Shift</kbd> to avoid expanding/collapsing
-  them before dragging. Each view can have a different layout.
+  views). Each view can have a different layout.
 
 - Drag&drop of processing modules in the darkroom right panel has been
   improved to auto-scroll when reaching the top or bottom and to not
-  get confused when images get dragged into the area.
+  get confused when images get dragged into the area. This functionality
+  no longer requires <kbd>Ctrl+Shift</kbd> modifiers.
 
 - Improved the message displayed at startup when the database is
   locked by another instance of darktable.
@@ -181,13 +189,13 @@ changes (where available).
   synchronizing the last edited module on current edited module to the
   selection.
 
-- Expose encoding speed control for AVIF export: trades off export
-  time for file size and quality.
+- Adjusted the internal AVIF encoder parameter to significantly boost
+  encoding speed without compromising the output quality.
 
 - Tag names can now easily be copied to the clipboard via popup
   context menu in the tagging module.
 
-- The piwigo export storage now supports to specify a file name
+- The Piwigo export storage now supports to specify a file name
   pattern for the exported file.
 
 - The directory where darktable will write the log file under Windows
@@ -202,10 +210,10 @@ changes (where available).
 
 - Add a visible indicator to the color calibration module when its
   color mapping section has non-neutral settings which will affect
-  color rendition..
+  color rendition.
 
-- Added new substitution variables $(IMAGE.TAGS.HIERARCHY) to insert
-  tags with full hierarchy and $(IMAGE.ID.NEXT) to insert the image ID
+- Added new substitution variables `$(IMAGE.TAGS.HIERARCHY)` to insert
+  tags with full hierarchy and `$(IMAGE.ID.NEXT)` to insert the image ID
   to be assigned to the image being imported, allowing the image ID to
   be part of the filename generated during a copy&import operation.
 
@@ -232,9 +240,9 @@ changes (where available).
 - Added more substitution variables for using EXIF data fields,
   enabled autocompletion of variables in the watermark module.
 
-  The new variables are $(EXIF.FLASH), $(EXIF.METERING),
-  $(EXIF.EXPOSURE.PROGRAM), $(EXIF.WHITEBALANCE) and
-  $(GPS.LOCATION.ICON).
+  The new variables are `$(EXIF.FLASH)`, `$(EXIF.METERING)`,
+  `$(EXIF.EXPOSURE.PROGRAM)`, `$(EXIF.WHITEBALANCE)` and
+  `$(GPS.LOCATION.ICON)`.
 
 - Increase maximum focal length for filtering auto-applied presets to
   2000mm.
@@ -244,13 +252,19 @@ changes (where available).
   skin tones, and miscellaneous color patches for more targeted color
   adjustments across the full spectrum.
 
-- Added support for exif tags 'AnalogBalance' used for color
-  calibration and LinearResponseLimit used in highlights
+- Added support for EXIF tags 'AnalogBalance' used for color
+  calibration and 'LinearResponseLimit' used in highlights
   reconstruction.
 
 - If we find currently unsupported color calibration data in DNG
   specific tags, we tag the image by darktable|issue|no-samples for
   better support.
+
+- Added read support for HEIF files with AVC (H.264) compression and
+  .avci file extension.
+
+- Added read support for JPEG 2000 encoded images in HEIF containers
+  with .hej2 file extension.
 
 ## Bug Fixes
 
@@ -267,7 +281,7 @@ changes (where available).
 - Fixed printer discovery in the print module, which could cause
   available printers to be missed.
 
-- Work around out-of-spec ExIF date field caused by buggy software.
+- Work around out-of-spec EXIF date field caused by buggy software.
 
 - Fixed reading embedded color profiles from PNG images.
 
@@ -288,8 +302,8 @@ changes (where available).
 - Properly reset darktable internal tag darktable|style|<name> and
   darktable|changed when resetting history.
 
-- Fixed crash in the piwigo export storage when not logged in to the
-  piwigo server.
+- Fixed crash in the Piwigo export storage when not logged in to the
+  Piwigo server.
 
 - Fixed a bug in the export module where it was impossible to export a
   file again if "on conflict: overwrite if changed" was selected.
@@ -310,7 +324,7 @@ changes (where available).
 - Fixed a bug in color calibration module where switching between
   various illuminants could lead to unpredictable settings.
 
-- Various fixes In the demosicer module. Non-usable options are hidden
+- Various fixes In the demosaic module. Non-usable options are hidden
   now. Fixed dual demosaicing for xtrans sensors and OpenCL code.
 
 - Fixed a bug in the history module where style creation fails if a
@@ -325,6 +339,9 @@ changes (where available).
 
 - Fixed issues with wrong corrections in highlight opposed OpenCL
   code.
+
+- Fixed surface blur radius calculation possibly resulting in garbled
+  output.
 
 ## Lua
 
@@ -380,10 +397,6 @@ changes (where available).
 
 ### Mandatory
 
-- Minimum libpng version 1.5.x is now required
-- Bump Exiv2 requirement to 0.27.2
-- Minimum pugixml version 1.5 is now required
-- Minimum libcurl version 7.56 is now required
 - Bump SQLite requirement to 3.26
 
 ### Optional
@@ -392,48 +405,39 @@ changes (where available).
 
 ## RawSpeed changes
 
-- Fujifilm X-Trans 4 based and newer cameras now use the vendor supplied crop
+- Fujifilm GFX cameras now use the vendor supplied crop
 
-## Camera support, compared to 4.6
+## Camera support, compared to 4.8
 
 ### Base Support
 
-- Canon EOS R100 (requires LibRaw 202403 and later)
-- Canon EOS R50 (requires LibRaw 202403 and later)
-- Canon EOS R6 Mark II (requires LibRaw 202403 and later)
-- Canon EOS R8 (requires LibRaw 202403 and later)
-- Canon EOS Ra (requires LibRaw 202403 and later)
-- Fujifilm FinePix S9600fd
-- Fujifilm X100VI (compressed)
-- GoPro FUSION (DNG)
-- Leica SL3 (DNG)
-- OM System OM-1 Mark II
-- Panasonic DC-TZ95D (4:3)
-- Panasonic DMC-FX150 (4:3, 3:2, 16:9)
-- Panasonic DMC-FZ28 (3:2)
-- Phase One P25+
-- Phase One P45+
-- Ricoh GR III HDF (DNG)
-- Ricoh GR IIIx HDF (DNG)
-- Sony ILCE-9M3
-- Sony UMC-R10C
+- Fujifilm X-M5 (compressed)
+- Fujifilm X-T50 (compressed)
+- Leica D-Lux 8 (DNG)
+- Leica M11-D (DNG)
+- Leica Q3 43 (DNG)
+- Minolta Alpha Sweet Digital
+- Minolta Alpha-7 Digital
+- Nikon Z50_2 (14bit-compressed)
+- Nikon Z6_3 (14bit-compressed)
+- Panasonic DC-FZ80D (4:3)
+- Panasonic DC-FZ82D (4:3)
+- Panasonic DC-FZ85 (4:3)
+- Panasonic DC-FZ85D (4:3)
+- Panasonic DC-G100D (4:3)
+- Phase One P20+
+- Sony ILCE-1M2
 
 ### White Balance Presets
 
-- Canon EOS R6 Mark II (requires LibRaw 202403 and later)
-- Fujifilm X-H2
-- OM System OM-1 Mark II
-- OM System OM-5
+- Nikon Z6_3
+- Sony ILCE-6700
 
 ### Noise Profiles
 
-- Canon EOS R6 Mark II (requires LibRaw 202403 and later)
-- Fujifilm GFX 50R
-- OM System OM-1 Mark II
-- OM System OM-5
-- Phase One IQ180
-- Sony ILCE-9M3
-- Sony ZV-1
+- Canon PowerShot G1 X
+- Leica M11
+- Nikon Z6_3
 
 ### Missing Compression Mode Support
 

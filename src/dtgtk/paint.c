@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 #define PREAMBLE(scaling, line_scaling, x_offset, y_offset) {  \
                   cairo_save(cr);                                                            \
                   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);                              \
-                  const float s = ((w < h) ? w : h) * scaling;                               \
+                  const double s = ((w < h) ? w : h) * scaling;                               \
                   cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0)); \
                   cairo_scale(cr, s, s);                                                     \
                   cairo_translate(cr, x_offset, y_offset);                                   \
@@ -93,9 +93,9 @@ static void _draw_triangle(cairo_t *cr, const gint flags)  // create triangle fo
   cairo_matrix_t hflip_matrix;
   cairo_matrix_init(&hflip_matrix, -1, 0, 0, 1, 1, 0);
 
-  double C = cosf(-(M_PI / 2.0f)), S = sinf(-(M_PI / 2.0f)); // -90 degrees
-  C = flags & CPF_DIRECTION_DOWN ? cosf(-(M_PI * 1.5f)) : C;
-  S = flags & CPF_DIRECTION_DOWN ? sinf(-(M_PI * 1.5f)) : S;
+  double C = cos(-(M_PI / 2.0)), S = sin(-(M_PI / 2.0)); // -90 degrees
+  C = flags & CPF_DIRECTION_DOWN ? cos(-(M_PI * 1.5)) : C;
+  S = flags & CPF_DIRECTION_DOWN ? sin(-(M_PI * 1.5)) : S;
   cairo_matrix_t rotation_matrix;
   cairo_matrix_init(&rotation_matrix, C, S, -S, C, 0.5 - C * 0.5 + S * 0.5, 0.5 - S * 0.5 - C * 0.5);
 
@@ -141,9 +141,9 @@ void dtgtk_cairo_paint_arrow(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
   cairo_matrix_t hflip_matrix;
   cairo_matrix_init(&hflip_matrix, -1, 0, 0, 1, 1, 0);
 
-  double C = cosf(-(M_PI / 2.0)), S = sinf(-(M_PI / 2.0)); // -90 degrees
-  C = flags & CPF_DIRECTION_UP ? cosf(-(M_PI * 1.5f)) : C;
-  S = flags & CPF_DIRECTION_UP ? sinf(-(M_PI * 1.5f)) : S;
+  double C = cos(-(M_PI / 2.0)), S = sin(-(M_PI / 2.0)); // -90 degrees
+  C = flags & CPF_DIRECTION_UP ? cos(-(M_PI * 1.5)) : C;
+  S = flags & CPF_DIRECTION_UP ? sin(-(M_PI * 1.5)) : S;
   cairo_matrix_t rotation_matrix;
   cairo_matrix_init(&rotation_matrix, C, S, -S, C, 0.5 - C * 0.5 + S * 0.5, 0.5 - S * 0.5 - C * 0.5);
 
@@ -168,9 +168,9 @@ void dtgtk_cairo_paint_solid_arrow(cairo_t *cr, gint x, int y, gint w, gint h, g
   cairo_matrix_t hflip_matrix;
   cairo_matrix_init(&hflip_matrix, -1, 0, 0, 1, 1, 0);
 
-  double C = cosf(-(M_PI / 2.0f)), S = sinf(-(M_PI / 2.0f)); // -90 degrees
-  C = flags & CPF_DIRECTION_DOWN ? cosf(-(M_PI * 1.5f)) : C;
-  S = flags & CPF_DIRECTION_DOWN ? sinf(-(M_PI * 1.5f)) : S;
+  double C = cos(-(M_PI / 2.0f)), S = sin(-(M_PI / 2.0f)); // -90 degrees
+  C = flags & CPF_DIRECTION_DOWN ? cos(-(M_PI * 1.5)) : C;
+  S = flags & CPF_DIRECTION_DOWN ? sin(-(M_PI * 1.5)) : S;
   cairo_matrix_t rotation_matrix;
   cairo_matrix_init(&rotation_matrix, C, S, -S, C, 0.5 - C * 0.5 + S * 0.5, 0.5 - S * 0.5 - C * 0.5);
 
@@ -254,7 +254,7 @@ void dtgtk_cairo_paint_flip(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
 {
   PREAMBLE(1, 1, 0, 0)
 
-  double C = cosf(-1.570796327f), S = sinf(-1.570796327f);
+  const double C = cos(-1.570796327), S = sin(-1.570796327);
   cairo_matrix_t rotation_matrix;
   cairo_matrix_init(&rotation_matrix, C, S, -S, C, 0.5 - C * 0.5 + S * 0.5, 0.5 - S * 0.5 - C * 0.5);
 
@@ -588,8 +588,7 @@ void dtgtk_cairo_paint_masks_gradient(cairo_t *cr, gint x, gint y, gint w, gint 
 
   cairo_rectangle(cr, 0.1, 0.1, 0.9, 0.9);
   cairo_stroke_preserve(cr);
-  cairo_pattern_t *pat = NULL;
-  pat = cairo_pattern_create_linear(0.5, 0.1, 0.5, 0.9);
+  cairo_pattern_t *pat = cairo_pattern_create_linear(0.5, 0.1, 0.5, 0.9);
   cairo_pattern_add_color_stop_rgba(pat, 0.1, 0.6, 0.6, 0.6, 0.9);
   cairo_pattern_add_color_stop_rgba(pat, 0.9, 0.2, 0.2, 0.2, 0.9);
   cairo_set_source(cr, pat);
@@ -621,8 +620,7 @@ void dtgtk_cairo_paint_masks_vertgradient(cairo_t *cr, gint x, gint y, gint w, g
 
   cairo_rectangle(cr, 0.1, 0.1, 0.9, 0.9);
   cairo_stroke_preserve(cr);
-  cairo_pattern_t *pat = NULL;
-  pat = cairo_pattern_create_linear(0.1, 0.5, 0.9, 0.5);
+  cairo_pattern_t *pat = cairo_pattern_create_linear(0.1, 0.5, 0.9, 0.5);
   cairo_pattern_add_color_stop_rgba(pat, 0.1, 0.6, 0.6, 0.6, 0.9);
   cairo_pattern_add_color_stop_rgba(pat, 1.0, 0.2, 0.2, 0.2, 0.9);
   cairo_rectangle(cr, 0.1, 0.1, 0.8, 0.8);
@@ -728,17 +726,18 @@ void _gradient_arc(cairo_t *cr, double lw, int nb_steps, double x_center, double
   cairo_set_line_width(cr, lw);
 
   double *portions = malloc(sizeof(double) * (1 + nb_steps));
+  if(!portions) return;
 
   // note: cairo angles seems to be shifted by M_PI relatively to the unit circle
   angle_from = angle_from + M_PI;
   angle_to = angle_to + M_PI;
-  double step = (angle_to - angle_from) / nb_steps;
+  const double step = (angle_to - angle_from) / nb_steps;
   for(int i = 0; i < nb_steps; i++) portions[i] = angle_from + i * step;
   portions[nb_steps] = angle_to;
 
   for(int i = 0; i < nb_steps; i++)
   {
-    double color = color_from + i * (color_to - color_from) / nb_steps;
+    const double color = color_from + i * (color_to - color_from) / nb_steps;
     cairo_set_source_rgba(cr, color, color, color, alpha);
     cairo_arc(cr, x_center, y_center, radius, portions[i], portions[i + 1]);
     cairo_stroke(cr);
@@ -750,12 +749,11 @@ void dtgtk_cairo_paint_masks_parametric(cairo_t *cr, gint x, gint y, gint w, gin
 {
   PREAMBLE(0.95, 1, 0, 0)
 
-  cairo_pattern_t *p = cairo_get_source (cr);
   double r, g, b, a;
-  double start;
-  cairo_pattern_get_rgba (p, &r, &g, &b, &a);
+  if(cairo_pattern_get_rgba(cairo_get_source(cr), &r, &g, &b, &a) != CAIRO_STATUS_SUCCESS)
+    goto final;
 
-  start = ((flags & CPF_PRELIGHT) && (r < 0.5)) ? 0.8 :  r / 4.0;
+  const double start = ((flags & CPF_PRELIGHT) && (r < 0.5)) ? 0.8 :  r / 4.0;
    _gradient_arc(cr, 0.125, 16, 0.5, 0.5, 0.5, -M_PI / 3.0, M_PI + M_PI / 3.0, start, r, a);
 
   // draw one tick up right
@@ -769,6 +767,7 @@ void dtgtk_cairo_paint_masks_parametric(cairo_t *cr, gint x, gint y, gint w, gin
   cairo_line_to(cr, 1.275, 0.75);
   cairo_fill(cr);
 
+final:
   FINISH
 }
 
@@ -777,12 +776,11 @@ void dtgtk_cairo_paint_masks_drawn_and_parametric(cairo_t *cr, gint x, gint y, g
 {
   PREAMBLE(1.05, 1, -0.1, -0.05)
 
-  cairo_pattern_t *p = cairo_get_source (cr);
   double r, g, b, a;
-  double start;
-  cairo_pattern_get_rgba (p, &r, &g, &b, &a);
+  if(cairo_pattern_get_rgba(cairo_get_source(cr), &r, &g, &b, &a) != CAIRO_STATUS_SUCCESS)
+    goto final;
 
-  start = ((flags & CPF_PRELIGHT) && (r < 0.5)) ? 0.8 :  r / 4.0;
+  const double start = ((flags & CPF_PRELIGHT) && (r < 0.5)) ? 0.8 :  r / 4.0;
   cairo_save(cr);
   _gradient_arc(cr, 0.125, 16, 0.75, 0.6, 0.4, -M_PI / 3.0, M_PI + M_PI / 3.0, start, r, a);
 
@@ -825,6 +823,7 @@ void dtgtk_cairo_paint_masks_drawn_and_parametric(cairo_t *cr, gint x, gint y, g
   cairo_line_to(cr, 0.95, 0.95);
   cairo_stroke(cr);
 
+final:
   FINISH
 }
 
@@ -875,53 +874,51 @@ void dtgtk_cairo_paint_masks_inverse(cairo_t *cr, gint x, gint y, gint w, gint h
 void dtgtk_cairo_paint_masks_union(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   // note : as the icon is not square, we don't want PREAMBLE macro
-  // we want 2 round of radius R that intersect in the middle,
-  // so the width needs R + R*0.8 + R*0.8 + R = R*3.6
-  // with a safety belt of 5% to be sure the stroke is draw inside the area
-  const float r = fminf(w / 3.6, h / 2.0) * 0.95;
-  const float padding_left = (w - r * 3.6) / 2.0;
+  // we want 2 circles of radius R that intersect in the middle,
+  // so the width needs R + R*0.7 + R*0.7 + R = R*3.4
+  // with a safety belt of 5% to be sure the stroke is drawn inside the area
+  const double r = fmin(w / 3.4, h / 2.0) * 0.95;
+  const double padding_left = (w - r * 3.4) / 2.0;
   cairo_arc(cr, padding_left + r, h / 2.0, r, 0, 2.0 * M_PI);
-  cairo_arc(cr, padding_left + r * 2.6, h / 2.0, r, 0, 2.0 * M_PI);
+  cairo_arc(cr, padding_left + r * 2.4, h / 2.0, r, 0, 2.0 * M_PI);
   cairo_fill(cr);
 }
 
 void dtgtk_cairo_paint_masks_intersection(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   // note : as the icon is not square, we don't want PREAMBLE macro
-  // we want 2 round of radius R that intersect in the middle,
-  // so the width needs R + R*0.8 + R*0.8 + R = R*3.6
+  // we want 2 circles of radius R that intersect in the middle,
+  // so the width needs R + R*0.7 + R*0.7 + R = R*3.4
   // with a safety belt of *0.95 to be sure the stroke is draw inside the area
-  const float r = fminf(w / 3.6, h / 2.0) * 0.95;
-  const float padding_left = (w - r * 3.6) / 2.0;
+  const double r = fmin(w / 3.4, h / 2.0) * 0.95;
+  const double padding_left = (w - r * 3.4) / 2.0;
 
   // we draw the outline of the 2 circles
   cairo_save(cr);
   cairo_set_line_width(cr, cairo_get_line_width(cr) * 0.5);
   cairo_arc(cr, padding_left + r, h / 2.0, r, 0, 2.0 * M_PI);
   cairo_stroke(cr);
-  cairo_arc(cr, padding_left + r * 2.6, h / 2.0, r, 0, 2.0 * M_PI);
-  cairo_stroke(cr);
-  cairo_restore(cr);
+  cairo_arc(cr, padding_left + r * 2.4, h / 2.0, r, 0, 2.0 * M_PI);
+  cairo_stroke_preserve(cr);
 
-  // we draw the intersection of the 2 circles we slightly different radius so they are more visible
-  cairo_push_group(cr);
-  cairo_arc(cr, padding_left + r * 1.3, h / 2.0, r * 0.85, 0, 2.0 * M_PI);
+  // we limit drawing to the area of the 2nd circle
+  cairo_clip(cr);
+
+  // we redraw the 1st circle
+  cairo_arc(cr, padding_left + r, h / 2.0, r, 0, 2.0 * M_PI);
+  // and fill - clipping to the area of the 2nd circle means the intersection only
   cairo_fill(cr);
-  cairo_set_operator(cr, CAIRO_OPERATOR_IN);
-  cairo_arc(cr, padding_left + r * 2.3, h / 2.0, r * 0.85, 0, 2.0 * M_PI);
-  cairo_fill(cr);
-  cairo_pop_group_to_source(cr);
-  cairo_paint(cr);
+  cairo_restore(cr);
 }
 
 void dtgtk_cairo_paint_masks_difference(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   // note : as the icon is not square, we don't want PREAMBLE macro
   // we want 2 round of radius R that intersect in the middle,
-  // so the width needs R + R*0.8 + R*0.8 + R = R*3.6
+  // so the width needs R + R*0.7 + R*0.7 + R = R*3.4
   // with a safety belt of *0.95 to be sure the stroke is draw inside the area
-  const float r = fminf(w / 3.6, h / 2.0) * 0.95;
-  const float padding_left = (w - r * 3.6) / 2.0;
+  const double r = fmin(w / 3.4, h / 2.0) * 0.95;
+  const double padding_left = (w - r * 3.4) / 2.0;
 
   // we draw and fill the first circle
   cairo_arc(cr, padding_left + r, h / 2.0, r, 0, 2.0 * M_PI);
@@ -929,13 +926,13 @@ void dtgtk_cairo_paint_masks_difference(cairo_t *cr, gint x, gint y, gint w, gin
 
   // then erase the second circle
   cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
-  cairo_arc(cr, padding_left + r * 2.6, h / 2.0, r, 0, 2.0 * M_PI);
+  cairo_arc(cr, padding_left + r * 2.4, h / 2.0, r, 0, 2.0 * M_PI);
   cairo_fill(cr);
 
   // last we draw the outline of the second circle
   cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
   cairo_set_line_width(cr, cairo_get_line_width(cr) * 0.5);
-  cairo_arc(cr, padding_left + r * 2.6, h / 2.0, r, 0, 2.0 * M_PI);
+  cairo_arc(cr, padding_left + r * 2.4, h / 2.0, r, 0, 2.0 * M_PI);
   cairo_stroke(cr);
 }
 
@@ -943,25 +940,25 @@ void dtgtk_cairo_paint_masks_sum(cairo_t *cr, gint x, gint y, gint w, gint h, gi
 {
   // note : as the icon is not square, we don't want PREAMBLE macro
   // we want 2 round of radius R that intersect in the middle,
-  // so the width needs R + R*0.8 + R*0.8 + R = R*3.6
+  // so the width needs R + R*0.7 + R*0.7 + R = R*3.4
   // with a safety belt of *0.95 to be sure the stroke is draw inside the area
-  const float r = fminf(w / 3.6, h / 2.0) * 0.95;
-  const float padding_left = (w - r * 3.6) / 2.0;
+  const double r = fmin(w / 3.4, h / 2.0) * 0.95;
+  const double padding_left = (w - r * 3.4) / 2.0;
 
   // we draw the outline of the 2 circles
   cairo_save(cr);
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, .3);
   cairo_arc(cr, padding_left + r, h / 2.0, r, 0, 2.0 * M_PI);
-  cairo_arc(cr, padding_left + r * 2.6, h / 2.0, r, 0, 2.0 * M_PI);
+  cairo_arc(cr, padding_left + r * 2.4, h / 2.0, r, 0, 2.0 * M_PI);
   cairo_fill(cr);
   cairo_restore(cr);
 
   // we draw the intersection of the 2 circles we slightly different radius so they are more visible
   cairo_push_group(cr);
-  cairo_arc(cr, padding_left + r * 1.3, h / 2.0, r * 0.85, 0, 2.0 * M_PI);
+  cairo_arc(cr, padding_left + r * 1.2, h / 2.0, r * 0.85, 0, 2.0 * M_PI);
   cairo_fill(cr);
   cairo_set_operator(cr, CAIRO_OPERATOR_IN);
-  cairo_arc(cr, padding_left + r * 2.3, h / 2.0, r * 0.85, 0, 2.0 * M_PI);
+  cairo_arc(cr, padding_left + r * 2.2, h / 2.0, r * 0.85, 0, 2.0 * M_PI);
   cairo_fill(cr);
   cairo_pop_group_to_source(cr);
   cairo_paint(cr);
@@ -971,10 +968,10 @@ void dtgtk_cairo_paint_masks_exclusion(cairo_t *cr, gint x, gint y, gint w, gint
 {
   // note : as the icon is not square, we don't want PREAMBLE macro
   // we want 2 round of radius R that intersect in the middle,
-  // so the width needs R + R*0.8 + R*0.8 + R = R*3.6
+  // so the width needs R + R*0.7 + R*0.7 + R = R*3.4
   // with a safety belt of *0.95 to be sure the stroke is draw inside the area
-  const float r = fminf(w / 3.6, h / 2.0) * 0.95;
-  const float padding_left = (w - r * 3.6) / 2.0;
+  const double r = fmin(w / 3.4, h / 2.0) * 0.95;
+  const double padding_left = (w - r * 3.4) / 2.0;
 
   // we draw the first circle without the excluded area
   cairo_save(cr);
@@ -982,16 +979,16 @@ void dtgtk_cairo_paint_masks_exclusion(cairo_t *cr, gint x, gint y, gint w, gint
   cairo_arc(cr, padding_left + r, h / 2.0, r, 0, 2.0 * M_PI);
   cairo_fill(cr);
   cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
-  cairo_arc(cr, padding_left + r * 2.3, h / 2.0, r * 0.85, 0, 2.0 * M_PI);
+  cairo_arc(cr, padding_left + r * 2.2, h / 2.0, r * 0.85, 0, 2.0 * M_PI);
   cairo_fill(cr);
   cairo_restore(cr);
 
   // same for the second circle
   cairo_push_group(cr);
-  cairo_arc(cr, padding_left + r * 2.6, h / 2.0, r, 0, 2.0 * M_PI);
+  cairo_arc(cr, padding_left + r * 2.4, h / 2.0, r, 0, 2.0 * M_PI);
   cairo_fill(cr);
   cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
-  cairo_arc(cr, padding_left + r * 1.3, h / 2.0, r * 0.85, 0, 2.0 * M_PI);
+  cairo_arc(cr, padding_left + r * 1.2, h / 2.0, r * 0.85, 0, 2.0 * M_PI);
   cairo_fill(cr);
   cairo_pop_group_to_source(cr);
   cairo_paint(cr);
@@ -1171,12 +1168,11 @@ void dtgtk_cairo_paint_waveform_scope(cairo_t *cr, gint x, gint y, gint w, gint 
 {
   PREAMBLE(1, 1, 0, 0)
 
-  cairo_pattern_t *p_src = cairo_get_source(cr);
   double r, g, b, a;
-  cairo_pattern_get_rgba(p_src, &r, &g, &b, &a);
+  if(cairo_pattern_get_rgba(cairo_get_source(cr), &r, &g, &b, &a) != CAIRO_STATUS_SUCCESS)
+    goto final;
 
-  cairo_pattern_t *pat;
-  pat = cairo_pattern_create_linear(0.0, 0.0, 0.0, 1.0);
+  cairo_pattern_t *pat = cairo_pattern_create_linear(0.0, 0.0, 0.0, 1.0);
 
   cairo_pattern_add_color_stop_rgba(pat, 0.0, r, g, b, a * 0.0);
   cairo_pattern_add_color_stop_rgba(pat, 0.1, r, g, b, a * 0.1);
@@ -1202,6 +1198,7 @@ void dtgtk_cairo_paint_waveform_scope(cairo_t *cr, gint x, gint y, gint w, gint 
 
   cairo_pattern_destroy(pat);
 
+final:
   FINISH
 }
 
@@ -1243,12 +1240,11 @@ void dtgtk_cairo_paint_waveform_overlaid(cairo_t *cr, gint x, gint y, gint w, gi
 {
   PREAMBLE(1, 1, 0, 0)
 
-  cairo_pattern_t *p_src = cairo_get_source(cr);
   double r, g, b, a;
-  cairo_pattern_get_rgba(p_src, &r, &g, &b, &a);
+  if(cairo_pattern_get_rgba(cairo_get_source(cr), &r, &g, &b, &a) != CAIRO_STATUS_SUCCESS)
+    goto final;
 
-  cairo_pattern_t *pat;
-  pat = cairo_pattern_create_linear(0.0, 0.0, 0.0, 1.0);
+  cairo_pattern_t *pat = cairo_pattern_create_linear(0.0, 0.0, 0.0, 1.0);
 
   cairo_pattern_add_color_stop_rgba(pat, 0.0, r, g * 0.7, b * 0.9, a * 0.2);
   cairo_pattern_add_color_stop_rgba(pat, 0.4, r * 0.9, g, b * 0.9, a * 0.8);
@@ -1261,6 +1257,7 @@ void dtgtk_cairo_paint_waveform_overlaid(cairo_t *cr, gint x, gint y, gint w, gi
 
   cairo_pattern_destroy(pat);
 
+final:
   FINISH
 }
 
@@ -1268,9 +1265,7 @@ void dtgtk_cairo_paint_rgb_parade(cairo_t *cr, gint x, gint y, gint w, gint h, g
 {
   PREAMBLE(1, 1, 0, 0)
 
-  cairo_pattern_t *pat;
-
-  pat = cairo_pattern_create_linear(0.0, 0.0, 0.0, 1.0);
+  cairo_pattern_t *pat = cairo_pattern_create_linear(0.0, 0.0, 0.0, 1.0);
   cairo_pattern_add_color_stop_rgba(pat, 0.0, 0.8, 0.3, 0.3, 0.2);
   cairo_pattern_add_color_stop_rgba(pat, 0.4, 0.8, 0.3, 0.3, 0.7);
   cairo_pattern_add_color_stop_rgba(pat, 1.0, 0.8, 0.3, 0.3, 0.3);
@@ -1387,7 +1382,7 @@ void dtgtk_cairo_paint_color_harmony(cairo_t *cr, gint x, gint y, gint w, gint h
 
   for(int i = 0; i < ch->sectors; i++)
   {
-    float angle = ch->angle[i] * 360.0 * degrees;
+    const double angle = (double)ch->angle[i] * 360.0 * degrees;
     cairo_save(cr);
     cairo_rotate(cr, angle);
     cairo_move_to(cr, 0.0, 0.0);
@@ -1403,8 +1398,8 @@ void dtgtk_cairo_paint_color_harmony(cairo_t *cr, gint x, gint y, gint w, gint h
 
 void dtgtk_cairo_paint_filmstrip(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  gdouble sw = 0.6;
-  gdouble bend = 0.3;
+  const double sw = 0.6;
+  const double bend = 0.3;
 
   PREAMBLE(1, 1, 0, 0)
 
@@ -1621,7 +1616,7 @@ void dtgtk_cairo_paint_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
 
   cairo_push_group(cr);
 
-  double r = 0.4;
+  const double r = 0.4;
 
   /* fill base color */
   cairo_arc(cr, 0.5, 0.5, r, 0.0, 2.0 * M_PI);
@@ -1836,9 +1831,9 @@ void dtgtk_cairo_paint_altered(cairo_t *cr, gint x, gint y, gint w, gint h, gint
 {
   PREAMBLE(0.5 * 0.95, 1, 0.5, 0.5)
 
-  const float r = 1.;
+  const double r = 1.;
   cairo_arc(cr, 0, 0, r, 0, 2.0f * M_PI);
-  const float dx = r * cosf(M_PI / 8.0f), dy = r * sinf(M_PI / 8.0f);
+  const double dx = r * cos(M_PI / 8.0f), dy = r * sin(M_PI / 8.0f);
   cairo_move_to(cr,  - dx,  - dy);
   cairo_curve_to(cr, 0, -2.0 * dy, 0, 2.0 * dy, dx, dy);
   cairo_move_to(cr, -.2 * dx,  .8 * dy);
@@ -1878,7 +1873,7 @@ void dtgtk_cairo_paint_label_flower(cairo_t *cr, gint x, gint y, gint w, gint h,
 {
   PREAMBLE(1.1, 1, 0, 0)
 
-  const float r = 0.18;
+  const double r = 0.18;
 
   if(flags & CPF_LABEL_RED)
   {
@@ -2012,12 +2007,12 @@ void dtgtk_cairo_paint_preferences(cairo_t *cr, gint x, gint y, gint w, gint h, 
 
   cairo_rotate(cr, M_PI / 12.);
 
-  const float big_r = 1.f;
-  const float tin_r = 0.8f;
+  const double big_r = 1.f;
+  const double tin_r = 0.8f;
 
   for(int i = 0; i < 12; i++)
   {
-    const float radius = (i % 2 == 0) ? big_r : tin_r;
+    const double radius = (i % 2 == 0) ? big_r : tin_r;
     cairo_arc(cr, 0.0, 0.0, radius, i * M_PI / 6., (i + 1) * M_PI / 6.);
   }
   cairo_close_path(cr);
@@ -2159,7 +2154,7 @@ void dtgtk_cairo_paint_union(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
 {
   PREAMBLE(1, 1, 0, 0)
 
-  const float r = 0.3;
+  const double r = 0.3;
   cairo_arc(cr, r, 0.5, r, 0, 2.0 * M_PI);
   cairo_arc(cr, r * 2.4, 0.5, r, 0, 2.0 * M_PI);
   cairo_fill(cr);
@@ -2172,31 +2167,27 @@ void dtgtk_cairo_paint_intersection(cairo_t *cr, gint x, gint y, gint w, gint h,
   PREAMBLE(1, 1, 0, 0)
 
   double r, g, b, alpha;
-  cairo_pattern_get_rgba (cairo_get_source(cr), &r, &g, &b, &alpha);
-  cairo_set_source_rgba(cr, r, g, b, 1.0);
+  if(cairo_pattern_get_rgba(cairo_get_source(cr), &r, &g, &b, &alpha) != CAIRO_STATUS_SUCCESS)
+    goto final;
 
-  const float radius = 0.3;
+  cairo_set_source_rgb(cr, r, g, b);
+
+  const double radius = 0.3;
 
   // we draw the outline of the 2 circles
-  cairo_push_group(cr);
   cairo_arc(cr, radius, 0.5, radius, 0, 2.0 * M_PI);
   cairo_stroke(cr);
   cairo_arc(cr, radius * 2.4, 0.5, radius, 0, 2.0 * M_PI);
-  cairo_stroke(cr);
+  cairo_stroke_preserve(cr);
 
-  // we draw the intersection of the 2 circles
-  cairo_push_group(cr);
-  cairo_arc(cr, radius, 0.5, radius * 1.2, 0, 2.0 * M_PI);
-  cairo_fill(cr);
-  cairo_set_operator(cr, CAIRO_OPERATOR_IN);
-  cairo_arc(cr, radius * 2.4, 0.5, radius * 1.2, 0, 2.0 * M_PI);
-  cairo_fill(cr);
-  cairo_pop_group_to_source(cr);
-  cairo_paint(cr);
-  cairo_pop_group_to_source(cr);
-  
-  cairo_paint_with_alpha(cr, alpha);
+  // we limit drawing to the area of the 2nd circle
+  cairo_clip(cr);
 
+  // we redraw the 1st circle
+  cairo_arc(cr, radius, 0.5, radius, 0, 2.0 * M_PI);
+  // and fill - clipping to the area of the 2nd circle means the intersection only
+  cairo_fill(cr);
+final:
   FINISH
 }
 
@@ -2293,7 +2284,7 @@ void dtgtk_cairo_paint_bulb(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
 {
   PREAMBLE(0.95, 1, 0, -0.05)
 
-  const float line_width = 0.1;
+  const double line_width = 0.1;
 
   // glass
   cairo_arc_negative(cr, 0.5, 0.38, 0.4, 1., M_PI - 1.);
@@ -2327,7 +2318,7 @@ void dtgtk_cairo_paint_bulb_mod(cairo_t *cr, gint x, gint y, gint w, gint h, gin
 {
   PREAMBLE(0.95, 1, 0, -0.05)
 
-  const float line_width = 0.1;
+  const double line_width = 0.1;
 
   cairo_rectangle(cr, 0.78, 0.950, .22, 0.22);
   if(flags & CPF_ACTIVE)
@@ -2373,7 +2364,7 @@ void dtgtk_cairo_paint_rawoverexposed(cairo_t *cr, gint x, gint y, gint w, gint 
 
   cairo_save(cr);
 
-  const float alpha = (flags & CPF_ACTIVE ? 1.0 : 0.4);
+  const double alpha = (flags & CPF_ACTIVE) ? 1.0 : 0.4;
 
   // draw 4 CFA-like colored squares
   cairo_set_source_rgba(cr, 0.3, 0.3, 0.3, alpha); // red
@@ -2590,13 +2581,13 @@ void dtgtk_cairo_paint_modulegroup_favorites(cairo_t *cr, gint x, gint y, gint w
 {
   PREAMBLE(1.2, 1, 0, 0)
 
-  const float r1 = 0.2;
-  const float r2 = 0.4;
-  const float d = 2.0 * M_PI * 0.1f;
-  const float dx[10] = { sinf(0.0),   sinf(d),     sinf(2 * d), sinf(3 * d), sinf(4 * d),
-                         sinf(5 * d), sinf(6 * d), sinf(7 * d), sinf(8 * d), sinf(9 * d) };
-  const float dy[10] = { cosf(0.0),   cosf(d),     cosf(2 * d), cosf(3 * d), cosf(4 * d),
-                         cosf(5 * d), cosf(6 * d), cosf(7 * d), cosf(8 * d), cosf(9 * d) };
+  const double r1 = 0.2;
+  const double r2 = 0.4;
+  const double d = 2.0 * M_PI * 0.1;
+  const double dx[10] = { sin(0.0),   sin(d),     sin(2 * d), sin(3 * d), sin(4 * d),
+                          sin(5 * d), sin(6 * d), sin(7 * d), sin(8 * d), sin(9 * d) };
+  const double dy[10] = { cos(0.0),   cos(d),     cos(2 * d), cos(3 * d), cos(4 * d),
+                          cos(5 * d), cos(6 * d), cos(7 * d), cos(8 * d), cos(9 * d) };
   cairo_move_to(cr, 0.5 + r1 * dx[0], 0.5 - r1 * dy[0]);
   for(int k = 1; k < 10; k++)
     if(k & 1)
@@ -2615,10 +2606,12 @@ void dtgtk_cairo_paint_modulegroup_basics(cairo_t *cr, gint x, gint y, gint w, g
 
   // the colors
   double r, g, b, a;
-  cairo_pattern_get_rgba(cairo_get_source(cr), &r, &g, &b, &a);
-  double na = a * 0.7;
+  if(cairo_pattern_get_rgba(cairo_get_source(cr), &r, &g, &b, &a) != CAIRO_STATUS_SUCCESS)
+    goto final;
+
+  const double na = a * 0.7;
   // the stroke width
-  double sw = cairo_get_line_width(cr);
+  const double sw = cairo_get_line_width(cr);
 
   // background sliders
   cairo_set_source_rgba(cr, r, g, b, na);
@@ -2663,6 +2656,7 @@ void dtgtk_cairo_paint_modulegroup_basics(cairo_t *cr, gint x, gint y, gint w, g
   cairo_close_path(cr);
   cairo_fill(cr);
 
+final:
   FINISH
 }
 
@@ -2686,8 +2680,7 @@ void dtgtk_cairo_paint_modulegroup_tone(cairo_t *cr, gint x, gint y, gint w, gin
   cairo_stroke(cr);
 
   /* fill circle */
-  cairo_pattern_t *pat = NULL;
-  pat = cairo_pattern_create_linear(0, 0, 1, 0);
+  cairo_pattern_t *pat = cairo_pattern_create_linear(0, 0, 1, 0);
   cairo_pattern_add_color_stop_rgba(pat, 0, 1, 1, 1, 1);
   cairo_pattern_add_color_stop_rgba(pat, 1, 1, 1, 1, 0);
   cairo_set_source(cr, pat);
@@ -2707,9 +2700,8 @@ void dtgtk_cairo_paint_modulegroup_color(cairo_t *cr, gint x, gint y, gint w, gi
   cairo_stroke(cr);
 
   /* fill circle */
-  float a = 0.6;
-  cairo_pattern_t *pat = NULL;
-  pat = cairo_pattern_create_linear(0, 0, 1, 0);
+  const double a = 0.6;
+  cairo_pattern_t *pat = cairo_pattern_create_linear(0, 0, 1, 0);
   cairo_pattern_add_color_stop_rgba(pat, 0.0, 1, 0, 0, a);
   cairo_pattern_add_color_stop_rgba(pat, 0.1, 1, 0, 0, a);
   cairo_pattern_add_color_stop_rgba(pat, 0.5, 0, 1, 0, a);
@@ -2797,9 +2789,8 @@ void dtgtk_cairo_paint_modulegroup_grading(cairo_t *cr, gint x, gint y, gint w, 
   cairo_clip(cr);
 
   /* fill circle */
-  float a = 0.6;
-  cairo_pattern_t *pat = NULL;
-  pat = cairo_pattern_create_linear(0, 0, 1, 0);
+  const double a = 0.6;
+  cairo_pattern_t *pat = cairo_pattern_create_linear(0, 0, 1, 0);
   cairo_pattern_add_color_stop_rgba(pat, 0.00, 1, 0, 0, a);
   cairo_pattern_add_color_stop_rgba(pat, 0.10, 1, 0, 0, a);
   cairo_pattern_add_color_stop_rgba(pat, 0.40, 1, 1, 0, a);
@@ -3011,13 +3002,13 @@ void dtgtk_cairo_paint_display_wavelet_scale(cairo_t *cr, gint x, gint y, gint w
 
   if(flags & CPF_ACTIVE)
   {
-    float x1 = 0.2f;
-    float y1 = 1.f;
+    double x1 = 0.2;
+    double y1 = 1.;
 
     cairo_move_to(cr, x1, y1);
 
     const int steps = 4;
-    const float delta = 1. / (float)steps;
+    const double delta = 1. / (double)steps;
     for(int i = 0; i < steps; i++)
     {
       y1 -= delta;
@@ -3446,6 +3437,22 @@ void dtgtk_cairo_paint_filtering_menu(cairo_t *cr, gint x, gint y, gint w, gint 
   cairo_move_to(cr, 0.75, 0.6);
   cairo_line_to(cr, 1.0, 0.6);
   cairo_stroke(cr);
+  FINISH
+}
+
+void dtgtk_cairo_paint_snapshots_restore(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+      cairo_move_to(cr, 0.5, 0.05);
+      cairo_line_to(cr, 0.5, 0.95);
+      cairo_move_to(cr, 0.3, 0.6);
+      cairo_line_to(cr, 0.5, 0.95);
+      cairo_line_to(cr, 0.7, 0.6);
+      cairo_move_to(cr, 0.2, 0.95);
+      cairo_line_to(cr, 0.8, 0.95);
+      cairo_stroke(cr);
+
   FINISH
 }
 

@@ -127,7 +127,7 @@ darktable_t darktable;
 static int usage(const char *argv0)
 {
 #ifdef _WIN32
-  char *logfile = g_build_filename(g_get_user_cache_dir(), "darktable", "darktable-log.txt", NULL);
+  char *logfile = g_build_filename(g_get_home_dir(), "Documents", "Darktable", "darktable-log.txt", NULL);
 #endif
   // clang-format off
 
@@ -587,20 +587,20 @@ void dt_dump_pfm_file(
 {
   static int written = 0;
 
-  char path[PATH_MAX]= { 0 };
-  snprintf(path, sizeof(path), "%s/%s", darktable.tmp_directory, pipe);
+  char *path = g_build_filename(darktable.tmp_directory, pipe, NULL);
+  char *fullname = NULL;
+
   if(!dt_util_test_writable_dir(path))
   {
     if(g_mkdir_with_parents(path, 0750))
     {
       dt_print(DT_DEBUG_ALWAYS, "%20s can't create directory '%s'", head, path);
-      return;
+      goto finalize;
     }
   }
 
-  char fname[PATH_MAX]= { 0 };
-  snprintf(fname, sizeof (fname), "%s/%04d_%s_%s_%s%s.%s",
-     path,
+  char fname[256]= { 0 };
+  snprintf(fname, sizeof(fname), "%04d_%s_%s_%s%s.%s",
      written,
      modname,
      cpu ? "cpu" : "GPU",
@@ -609,13 +609,15 @@ void dt_dump_pfm_file(
      (bpp==2) ? "ppm" : "pfm");
 
   if((width<1) || (height<1) || !data)
-    return;
+    goto finalize;
 
-  FILE *f = g_fopen(fname, "wb");
+  fullname = g_build_filename(path, fname, NULL);
+
+  FILE *f = g_fopen(fullname, "wb");
   if(f == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "%20s can't write file '%s' in wb mode", head, fname);
-    return;
+    dt_print(DT_DEBUG_ALWAYS, "%20s can't write file '%s' in wb mode", head, fullname);
+    goto finalize;
   }
 
   if(bpp==2)
@@ -627,14 +629,18 @@ void dt_dump_pfm_file(
   {
     for(int col = 0; col < width; col++)
     {
-      const size_t blk = (row * width + col) * bpp;
+      const size_t blk = ((size_t)row * width + col) * bpp;
       fwrite(data + blk, (bpp==16) ? 12 : bpp, 1, f);
     }
   }
 
-  dt_print(DT_DEBUG_ALWAYS, "%-20s %s,  %dx%d, bpp=%d", head, fname, width, height, bpp);
+  dt_print(DT_DEBUG_ALWAYS, "%-20s %s,  %dx%d, bpp=%d", head, fullname, width, height, bpp);
   fclose(f);
   written += 1;
+
+finalize:
+  g_free(fullname);
+  g_free(path);
 }
 
 void dt_dump_pfm(
@@ -1262,7 +1268,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           argv[k] = NULL;
 
           if(dt_check_gimpmode("version"))
+          {
             darktable.gimp.error = FALSE;
+          }
           else if(dt_check_gimpmode("file") && (argc > k + 1))
           {
             darktable.gimp.path = argv[++k];
@@ -1271,19 +1279,20 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
             if(g_file_test(darktable.gimp.path, G_FILE_TEST_IS_REGULAR))
               darktable.gimp.error = FALSE;
-
           }
           else if(dt_check_gimpmode("thumb") && (argc > k + 2))
           {
             darktable.gimp.path = argv[++k];
             argv[k-1] = NULL;
             argv[k] = NULL;
+
             if(g_file_test(darktable.gimp.path, G_FILE_TEST_IS_REGULAR))
             {
               darktable.gimp.size = atol(argv[k + 1]);
               k++;
               argv[k-1] = NULL;
               argv[k] = NULL;
+
               if(darktable.gimp.size > 0)
                 darktable.gimp.error = FALSE;
             }
@@ -1581,8 +1590,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     if(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"))
       dt_gui_presets_init(); // init preset db schema.
 
-    darktable.control->running = FALSE;
-    dt_pthread_mutex_init(&darktable.control->run_mutex, NULL);
+    dt_atomic_set_int(&darktable.control->running, DT_CONTROL_STATE_DISABLED);
     dt_pthread_mutex_init(&darktable.control->log_mutex, NULL);
   }
 
@@ -1605,9 +1613,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   GList *changed_xmp_files = NULL;
   if(init_gui)
   {
-    if(dt_conf_get_bool("run_crawler_on_start") && !darktable.gimp.mode)
+    if(dt_conf_get_bool("run_crawler_on_start") && !dt_gimpmode())
     {
-      darktable_splash_screen_create(FALSE,TRUE); // force the splash screen for the crawl even if user-disabled
+      darktable_splash_screen_create(NULL, TRUE); // force the splash screen for the crawl even if user-disabled
       // scan for cases where the database and xmp files have different timestamps
       changed_xmp_files = dt_control_crawler_run();
     }
@@ -1656,7 +1664,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   char *config_info = calloc(1, DT_PERF_INFOSIZE);
   if(last_configure_version != DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION
-    && !darktable.gimp.mode)
+    && !dt_gimpmode())
   {
     dt_configure_runtime_performance(last_configure_version, config_info);
   }
@@ -1814,15 +1822,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // init the gui part of views
     dt_view_manager_gui_init(darktable.view_manager);
 
-    // Save the default shortcuts
-    dt_shortcuts_save(".defaults", FALSE);
-
-    // Then load any shortcuts if available (wipe defaults first if requested)
-    dt_shortcuts_load(NULL, !dt_conf_get_bool("accel/load_defaults"));
-
-    // Save the shortcuts including defaults
-    dt_shortcuts_save(NULL, TRUE);
-
     // now that other initialization is complete, we can show the main window
     // we need to do this before Lua is started or we'll either get a hang, or
     // the module groups don't get set up correctly
@@ -1844,9 +1843,20 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   if(init_gui)
   {
-    // we have to call dt_ctl_switch_mode_to() here already to not run
-    // into a lua deadlock.  having another call later is ok
     dt_ctl_switch_mode_to("lighttable");
+
+    // Save the default shortcuts
+    dt_shortcuts_save(".defaults", FALSE);
+
+    // Then load any shortcuts if available (wipe defaults first if requested)
+    dt_shortcuts_load(NULL, !dt_conf_get_bool("accel/load_defaults"));
+
+    // Save the shortcuts including defaults
+    dt_shortcuts_save(NULL, TRUE);
+
+    // connect the shortcut dispatcher
+    g_signal_connect(dt_ui_main_window(darktable.gui->ui), "event",
+                     G_CALLBACK(dt_shortcut_dispatcher), NULL);
 
 #ifndef MAC_INTEGRATION
     // load image(s) specified on cmdline.  this has to happen after
@@ -1871,22 +1881,30 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #endif
 
     // there might be some info created in dt_configure_runtime_performance() for feedback
-    gboolean not_again = TRUE;
-    if(last_configure_version && config_info[0] && !darktable.gimp.mode)
-      not_again = dt_gui_show_standalone_yes_no_dialog
-        (_("configuration information"),
-         config_info,
-         _("_show this message again"), _("_dismiss"));
+    if(!dt_gimpmode())
+    {
+      gboolean not_again = TRUE;
+      if(last_configure_version && config_info[0])
+      {
+        not_again = dt_gui_show_standalone_yes_no_dialog(
+          _("configuration information"),
+            config_info,
+          _("_show this message again"), _("_dismiss"));
+      }
 
-    if(not_again || (last_configure_version == 0))
-      dt_conf_set_int("performance_configuration_version_completed",
+      if(not_again || (last_configure_version == 0))
+      {
+        dt_conf_set_int("performance_configuration_version_completed",
                       DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);
+      }
+    }
   }
   free(config_info);
 
   darktable.backthumbs.running = FALSE;
   darktable.backthumbs.capable =
-      dt_worker_threads() > 4
+      (dt_worker_threads() > 4)
+      && !dt_gimpmode()
       && !(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"));
 
   if(init_gui)
@@ -1895,8 +1913,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // files are newer than the db entry
     if(changed_xmp_files)
       dt_control_crawler_show_image_list(changed_xmp_files);
+
     darktable_splash_screen_destroy();
-    if(!darktable.gimp.mode)
+
+    if(!dt_gimpmode())
      dt_start_backtumbs_crawler();
   }
 
@@ -1934,7 +1954,7 @@ void dt_get_sysresource_level()
   static int oldtunehead = -999;
 
   dt_sys_resources_t *res = &darktable.dtresources;
-  const gboolean tunehead = !darktable.gimp.mode && dt_conf_get_bool("opencl_tune_headroom");
+  const gboolean tunehead = !dt_gimpmode() && dt_conf_get_bool("opencl_tune_headroom");
   int level = 1;
   const char *config = dt_conf_get_string_const("resourcelevel");
   /** These levels must correspond with preferences in xml.in
@@ -1945,7 +1965,7 @@ void dt_get_sysresource_level()
         - add a line of fraction in int fractions[] or ref_resources[] above
         - add a line in darktableconfig.xml.in if available via UI
   */
-  if(config && !darktable.gimp.mode)
+  if(config && !dt_gimpmode())
   {
          if(!strcmp(config, "default"))      level = 1;
     else if(!strcmp(config, "small"))        level = 0;
@@ -1990,7 +2010,13 @@ void dt_cleanup()
 //  if(init_gui)
 //    darktable_exit_screen_create(NULL, FALSE);
 
-  darktable.backthumbs.running = FALSE;
+  if(darktable.backthumbs.running)
+  {
+    // if the backthumbs crawler is running, stop it now and wait for it being terminated.
+    darktable.backthumbs.running = FALSE;
+    for(int i = 0; i < 1000 && darktable.backthumbs.capable; i++)
+      g_usleep(10000);
+  }
   // last chance to ask user for any input...
 
   const gboolean perform_maintenance = dt_database_maybe_maintenance(darktable.db);

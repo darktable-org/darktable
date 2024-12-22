@@ -336,13 +336,6 @@ int dt_opencl_get_kernel_work_group_size(const int dev,
                                          const int kernel,
                                          size_t *kernelworkgroupsize);
 
-/** attach arg. */
-int dt_opencl_set_kernel_arg(const int dev,
-                             const int kernel,
-                             const int num,
-                             const size_t size,
-                             const void *arg);
-
 /** wrap opencl arguments */
 /** the magic number is used for parameter checking; don't use it in your code! */
 #define CLWRAP(size, ptr) (const size_t)0xF111E8, (const size_t)size, (const void *)ptr
@@ -595,8 +588,6 @@ void dt_opencl_dump_pipe_pfm(const char* mod,
                              const gboolean input,
                              const char *pipe);
 
-int dt_opencl_get_mem_context_id(cl_mem mem);
-
 void dt_opencl_memory_statistics(int devid,
                                  cl_mem mem,
                                  dt_opencl_memory_t action);
@@ -649,6 +640,9 @@ gboolean dt_opencl_use_pinned_memory(const int devid);
 G_END_DECLS
 
 #else
+
+#define CL_SUCCESS 0
+
 #include "control/conf.h"
 #include <stdlib.h>
 
@@ -774,7 +768,7 @@ static inline void dt_opencl_events_reset(const int devid)
 static inline int dt_opencl_events_flush(const int devid,
                                          const gboolean reset)
 {
-  return 0;
+  return CL_SUCCESS;
 }
 
 G_END_DECLS

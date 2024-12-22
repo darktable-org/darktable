@@ -390,7 +390,7 @@ if(USE_HEIF)
       list(APPEND LIBS heif)
       add_definitions(-DHAVE_LIBHEIF=1)
       list(APPEND SOURCES "imageio/imageio_heif.c")
-      set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} heif heic hif CACHE INTERNAL "")
+      set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} heif heic hif hej2 avci CACHE INTERNAL "")
       if(NOT libavif_FOUND)
         # libheif can handle avif, too
         set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} avif CACHE INTERNAL "")

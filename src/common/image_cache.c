@@ -242,7 +242,11 @@ dt_image_t *dt_image_cache_get(dt_image_cache_t *cache,
                                const dt_imgid_t imgid,
                                const char mode)
 {
-  if(!dt_is_valid_imgid(imgid)) return NULL;
+  if(!dt_is_valid_imgid(imgid))
+  {
+    dt_print(DT_DEBUG_CACHE, "[dt_image_cache_get] failed as not a valid imgid=%d", imgid);
+    return NULL;
+  }
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, mode);
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = entry->data;
@@ -254,9 +258,18 @@ dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache,
                                    const dt_imgid_t imgid,
                                    const char mode)
 {
-  if(!dt_is_valid_imgid(imgid)) return NULL;
+  if(!dt_is_valid_imgid(imgid))
+  {
+    dt_print(DT_DEBUG_CACHE, "[dt_image_cache_testget] failed as not a valid imgid=%d", imgid);
+    return NULL;
+  }
   dt_cache_entry_t *entry = dt_cache_testget(&cache->cache, imgid, mode);
-  if(!entry) return 0;
+  if(!entry)
+  {
+    dt_print(DT_DEBUG_CACHE, "[dt_image_cache_testget] for imgid=%d failed in dt_cache_testget", imgid);
+    return NULL;
+  }
+
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = entry->data;
   img->cache_entry = entry;
@@ -267,7 +280,7 @@ dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache,
 void dt_image_cache_read_release(dt_image_cache_t *cache,
                                  const dt_image_t *img)
 {
-  if(!img || img->id <= 0) return;
+  if(!img || !dt_is_valid_imgid(img->id)) return;
   // just force the dt_image_t struct to make sure it has been locked before.
   dt_cache_release(&cache->cache, img->cache_entry);
 }
@@ -282,24 +295,30 @@ void dt_image_cache_write_release_info(dt_image_cache_t *cache,
                                        const dt_image_cache_write_mode_t mode,
                                        const char *info)
 {
+  if(!img)  // nothing to release
+    return;
+
+  if(!dt_is_valid_imgid(img->id))
+  {
+    dt_cache_release(&cache->cache, img->cache_entry);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[image_cache_write_release] from `%s`. FATAL invalid image id %d",
+             info, img->id);
+    return;
+  }
+
   const double start = dt_get_debug_wtime();
   union {
       struct dt_image_raw_parameters_t s;
       uint32_t u;
   } flip;
+
   if(img->aspect_ratio < .0001)
   {
     if(img->orientation < ORIENTATION_SWAP_XY)
-      img->aspect_ratio = (float )img->width / (float )img->height;
+      img->aspect_ratio = (float )img->width / (float )(MAX(1, img->height));
     else
-      img->aspect_ratio = (float )img->height / (float )img->width;
-  }
-  if(!dt_is_valid_imgid(img->id))
-  {
-    dt_print(DT_DEBUG_ALWAYS,
-             "[image_cache_write_release] from `%s`. FATAL invalid image id %d",
-             info, img->id);
-    return;
+      img->aspect_ratio = (float )img->height / (float )(MAX(1, img->width));
   }
 
   sqlite3_stmt *stmt;

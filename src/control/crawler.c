@@ -114,7 +114,7 @@ GList *dt_control_crawler_run(void)
 {
   sqlite3_stmt *stmt, *inner_stmt;
   GList *result = NULL;
-  gboolean look_for_xmp = (dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER);
+  const gboolean look_for_xmp = dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER;
 
   int total_images = 1;
   // clang-format off
@@ -383,7 +383,7 @@ static void _select_invert_callback(GtkButton *button, gpointer user_data)
 }
 
 
-static void _db_update_timestamp(const int id, const time_t timestamp)
+static void _db_update_timestamp(const dt_imgid_t id, const time_t timestamp)
 {
   // Update DB writing timestamp with XMP file timestamp
   sqlite3_stmt *stmt;
@@ -408,7 +408,8 @@ static void _get_crawler_entry_from_model(GtkTreeModel *model,
                      DT_CONTROL_CRAWLER_COL_ID,         &entry->id,
                      DT_CONTROL_CRAWLER_COL_XMP_PATH,   &entry->xmp_path,
                      DT_CONTROL_CRAWLER_COL_TS_DB_INT,  &entry->timestamp_db,
-                     DT_CONTROL_CRAWLER_COL_TS_XMP_INT, &entry->timestamp_xmp, -1);
+                     DT_CONTROL_CRAWLER_COL_TS_XMP_INT, &entry->timestamp_xmp,
+                     -1); // marks list end
 }
 
 
@@ -445,7 +446,7 @@ static void sync_xmp_to_db(GtkTreeModel *model,
                            gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
-  dt_control_crawler_result_t entry = { 0 };
+  dt_control_crawler_result_t entry = { NO_IMGID };
   _get_crawler_entry_from_model(model, iter, &entry);
   _db_update_timestamp(entry.id, entry.timestamp_xmp);
 
@@ -474,7 +475,7 @@ static void sync_db_to_xmp(GtkTreeModel *model,
                            gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
-  dt_control_crawler_result_t entry = { 0 };
+  dt_control_crawler_result_t entry = { NO_IMGID };
   _get_crawler_entry_from_model(model, iter, &entry);
 
   // write the XMP and make sure it get the last modified timestamp of the db
@@ -503,7 +504,7 @@ static void sync_newest_to_oldest(GtkTreeModel *model,
                                   gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
-  dt_control_crawler_result_t entry = { 0 };
+  dt_control_crawler_result_t entry = { NO_IMGID };
   _get_crawler_entry_from_model(model, iter, &entry);
 
   gboolean error = FALSE;
@@ -574,7 +575,7 @@ static void sync_oldest_to_newest(GtkTreeModel *model,
                                   gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
-  dt_control_crawler_result_t entry = { 0 };
+  dt_control_crawler_result_t entry = { NO_IMGID };
   _get_crawler_entry_from_model(model, iter, &entry);
   gboolean error = FALSE;
 
@@ -903,8 +904,8 @@ static inline gboolean _still_thumbing(void)
 }
 
 static void _update_img_thumbs(const dt_imgid_t imgid,
-                              const dt_mipmap_size_t max_mip,
-                              const int64_t stamp)
+                               const dt_mipmap_size_t max_mip,
+                               const int64_t stamp)
 {
   for(dt_mipmap_size_t k = max_mip; k >= DT_MIPMAP_1; k--)
   {
@@ -1054,6 +1055,7 @@ void dt_update_thumbs_thread(void *p)
       bt->running = FALSE;
   }
   dt_print(DT_DEBUG_CACHE, "[thumb crawler] closing, %d mipmaps updated", updated);
+  bt->capable = FALSE;
 }
 
 // clang-format off

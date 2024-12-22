@@ -861,9 +861,9 @@ void dt_gui_gtk_quit()
   gtk_widget_hide(dt_ui_main_window(darktable.gui->ui));
 }
 
-gboolean dt_gui_quit_callback(GtkWidget *widget,
-                              GdkEvent *event,
-                              gpointer user_data)
+static gboolean _gui_quit_callback(GtkWidget *widget,
+                                   GdkEvent *event,
+                                   gpointer user_data)
 {
   const dt_view_type_flags_t cv = dt_view_get_current();
   // if we are in lighttable preview mode, then just exit preview instead of closing dt
@@ -1382,8 +1382,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   widget = dt_ui_main_window(darktable.gui->ui);
   g_signal_connect(G_OBJECT(widget), "configure-event",
                    G_CALLBACK(_window_configure), NULL);
-  g_signal_connect(G_OBJECT(widget), "event",
-                   G_CALLBACK(dt_shortcut_dispatcher), NULL);
   g_signal_override_class_handler("query-tooltip", gtk_widget_get_type(),
                                   G_CALLBACK(dt_shortcut_tooltip_callback));
 
@@ -1509,7 +1507,7 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   dt_osx_focus_window();
 #endif
   /* start the event loop */
-  if(darktable.control->running)
+  if(dt_control_running())
   {
     g_atomic_int_set(&darktable.gui_running, 1);
     gtk_main();
@@ -1663,7 +1661,7 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   gtk_window_set_title(GTK_WINDOW(widget), "darktable");
 
   g_signal_connect(G_OBJECT(widget), "delete_event",
-                   G_CALLBACK(dt_gui_quit_callback), NULL);
+                   G_CALLBACK(_gui_quit_callback), NULL);
   g_signal_connect(G_OBJECT(widget), "focus-in-event",
                    G_CALLBACK(_focus_in_out_event), widget);
   g_signal_connect(G_OBJECT(widget), "focus-out-event",
