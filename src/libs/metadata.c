@@ -26,6 +26,7 @@
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/gtkentry.h"
 #include "gui/metadata_tags.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
@@ -1021,8 +1022,17 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
 
       g_free(keys);
 
-      // re-initialze the metadata list
       dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+      // remove the metadata from the variables substitution list
+      for(GList *key_iter = d->metadata_to_delete; key_iter; key_iter = key_iter->next)
+      {
+        uint32_t keyid = GPOINTER_TO_INT(key_iter->data);
+        dt_metadata_t *metadata = dt_metadata_get_metadata_by_keyid(keyid);
+        if(metadata)
+          dt_gtkentry_variables_remove_metadata(metadata);
+      }
+
+      // re-initialze the metadata list
       dt_metadata_init();
       dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
@@ -1064,6 +1074,7 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
         md->priv = private;
         md->display_order = display_order;
         dt_metadata_add_metadata(md);
+        dt_gtkentry_variables_add_metadata(md);
 
         d->needs_rebuild = TRUE;
       }

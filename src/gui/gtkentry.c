@@ -18,7 +18,20 @@
 
 #include "gtkentry.h"
 #include "common/darktable.h"
-#include "common/metadata.h"
+
+typedef struct completion_spec
+{
+  gchar *varname;
+  gchar *description;
+} dt_gtkentry_completion_spec;
+
+typedef enum
+{
+  COMPL_ID = 0,
+  COMPL_VARNAME,
+  COMPL_DESCRIPTION
+} dtGtkEntryCompletionSpecCol;
+
 
 static dt_gtkentry_completion_spec _default_path_compl_list[]
   = { { "ROLL.NAME", N_("$(ROLL.NAME) - roll of the input image") },
@@ -109,6 +122,9 @@ static dt_gtkentry_completion_spec _default_path_compl_list[]
       { NULL, NULL } };
 
 
+static GtkListStore *_completion_model = NULL;
+
+
 /**
  * Called when the user selects an entry from the autocomplete list.
  *
@@ -119,7 +135,9 @@ static dt_gtkentry_completion_spec _default_path_compl_list[]
  *
  * @return Currently always true
  */
-static gboolean _on_match_select(GtkEntryCompletion *widget, GtkTreeModel *model, GtkTreeIter *iter,
+static gboolean _on_match_select(GtkEntryCompletion *widget,
+                                 GtkTreeModel *model,
+                                 GtkTreeIter *iter,
                                  gpointer user_data)
 {
 
@@ -169,7 +187,9 @@ static gboolean _on_match_select(GtkEntryCompletion *widget, GtkTreeModel *model
  * @param iter       Item in list of autocomplete database to compare key against.
  * @param user_data  Unused.
  */
-static gboolean _on_match_func(GtkEntryCompletion *completion, const gchar *key, GtkTreeIter *iter,
+static gboolean _on_match_func(GtkEntryCompletion *completion,
+                               const gchar *key,
+                               GtkTreeIter *iter,
                                gpointer user_data)
 {
   gboolean ret = FALSE;
@@ -223,36 +243,23 @@ static gboolean _on_match_func(GtkEntryCompletion *completion, const gchar *key,
   return ret;
 }
 
-/**
- * This function initializes entry with the variables table.
- *
- * @param[in] entry GtkEntry
- */
-void dt_gtkentry_setup_variables_completion(GtkEntry *entry)
+static void _init_completion_model()
 {
-  if(!entry)
-    return;
-    
-  GtkEntryCompletion *completion = gtk_entry_get_completion(entry);
-  if(completion)
-  {
-    g_object_unref(completion);
-    gtk_entry_set_completion(entry, NULL);
-  }
- 
-  completion = gtk_entry_completion_new();
-  GtkListStore *model = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+  _completion_model = gtk_list_store_new(3,
+                                         G_TYPE_INT,
+                                         G_TYPE_STRING,
+                                         G_TYPE_STRING);
   GtkTreeIter iter;
-
-  gtk_entry_completion_set_text_column(completion, COMPL_DESCRIPTION);
-  gtk_entry_set_completion(entry, completion);
-  g_signal_connect(G_OBJECT(completion), "match-selected", G_CALLBACK(_on_match_select), NULL);
 
   /* Populate the completion database. */
   for(const dt_gtkentry_completion_spec *l = _default_path_compl_list; l && l->varname; l++)
   {
-    gtk_list_store_append(model, &iter);
-    gtk_list_store_set(model, &iter, COMPL_VARNAME, l->varname, COMPL_DESCRIPTION, _(l->description), -1);
+    gtk_list_store_append(_completion_model, &iter);
+    gtk_list_store_set(_completion_model, &iter,
+                       COMPL_ID, -1,  // -1 = internal
+                       COMPL_VARNAME, l->varname,
+                       COMPL_DESCRIPTION, _(l->description),
+                       -1);
   }
 
   // metadata
@@ -261,20 +268,61 @@ void dt_gtkentry_setup_variables_completion(GtkEntry *entry)
   {
     dt_metadata_t *metadata = (dt_metadata_t *)md_iter->data;
     if(!metadata->internal)
-    {
-      gchar *varname = g_utf8_strup(dt_metadata_get_tag_subkey(metadata->tagname), -1);
-      gchar *description = g_strdup_printf("$(%s) - %s", varname, _("from metadata"));
-      gtk_list_store_append(model, &iter);
-      gtk_list_store_set(model, &iter, COMPL_VARNAME, varname, COMPL_DESCRIPTION, description, -1);
-      g_free(varname);
-      g_free(description);
-    }
+      dt_gtkentry_variables_add_metadata(metadata);
   }
   dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+}
 
-  gtk_entry_completion_set_model(completion, GTK_TREE_MODEL(model));
+void dt_gtkentry_setup_variables_completion(GtkEntry *entry)
+{
+  if(!_completion_model)
+    _init_completion_model();
+ 
+  GtkEntryCompletion *completion = gtk_entry_completion_new();
+  gtk_entry_completion_set_text_column(completion, COMPL_DESCRIPTION);
+  gtk_entry_set_completion(entry, completion);
+  g_signal_connect(G_OBJECT(completion), "match-selected", G_CALLBACK(_on_match_select), NULL);
+
+  gtk_entry_completion_set_model(completion, GTK_TREE_MODEL(_completion_model));
   gtk_entry_completion_set_match_func(completion, _on_match_func, NULL, NULL);
-  g_object_unref(model);
+}
+
+void dt_gtkentry_variables_add_metadata(dt_metadata_t *metadata)
+{
+  GtkTreeIter iter;
+
+  gchar *varname = g_utf8_strup(dt_metadata_get_tag_subkey(metadata->tagname), -1);
+  gchar *description = g_strdup_printf("$(%s) - %s", varname, _("from metadata"));
+  gtk_list_store_append(_completion_model, &iter);
+  gtk_list_store_set(_completion_model, &iter,
+                      COMPL_ID, metadata->key,
+                      COMPL_VARNAME, varname,
+                      COMPL_DESCRIPTION, description,
+                      -1);
+  g_free(varname);
+  g_free(description);
+}
+
+void dt_gtkentry_variables_remove_metadata(dt_metadata_t *metadata)
+{
+  GtkTreeIter iter;
+  
+  gboolean valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(_completion_model), &iter);
+  while(valid)
+  {
+    int32_t id;
+    gtk_tree_model_get(GTK_TREE_MODEL(_completion_model), &iter,
+                       COMPL_ID, &id,
+                       -1);
+    
+    if(id == metadata->key)
+    {
+      gtk_list_store_remove(_completion_model, &iter);
+      break;
+    }
+
+    valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(_completion_model), &iter);
+  }
 }
 
 

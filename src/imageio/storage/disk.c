@@ -263,14 +263,6 @@ static void onsave_action_toggle_callback(GtkWidget *widget,
                   dt_bauhaus_combobox_get(widget));
 }
 
-static void _setup_variables_completion(gpointer instance, int type, dt_imageio_module_storage_t *self)
-{
-  disk_t *d = self->gui_data;
-
-  if(type == DT_METADATA_SIGNAL_PREF_CHANGED)
-    dt_gtkentry_setup_variables_completion(d->entry);
-}
-
 void gui_init(dt_imageio_module_storage_t *self)
 {
   disk_t *d = malloc(sizeof(disk_t));
@@ -285,7 +277,6 @@ void gui_init(dt_imageio_module_storage_t *self)
                dt_conf_get_string_const("plugins/imageio/storage/disk/file_directory")));
   dt_gtkentry_setup_variables_completion(d->entry);
   gtk_editable_set_position(GTK_EDITABLE(d->entry), -1);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_METADATA_CHANGED, _setup_variables_completion, self);
   
   GtkWidget *widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
   gtk_widget_set_name(widget, "non-flat");
@@ -305,7 +296,6 @@ void gui_init(dt_imageio_module_storage_t *self)
 
 void gui_cleanup(dt_imageio_module_storage_t *self)
 {
-  DT_CONTROL_SIGNAL_DISCONNECT(_setup_variables_completion, self);
   free(self->gui_data);
 }
 
