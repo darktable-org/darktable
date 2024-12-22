@@ -2277,6 +2277,13 @@
     <shortdescription>duration of the UI transitions in ms</shortdescription>
     <longdescription>how long the transitions take (in ms) for expanding or collapsing modules and other UI elements</longdescription>
   </dtconfig>
+  <dtconfig prefs="misc" section="interface">
+    <name>darkroom/ui/closing</name>
+    <type min="0" max="300">int</type>
+    <default>30</default>
+    <shortdescription>timeout for closing the main window in seconds</shortdescription>
+    <longdescription>if darktable still processes time consuming jobs in the background - like exporting or exif reading as examples - the main window will stay open for the given time so you could discard those jobs.</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>ui/style/preview_size</name>
     <type min="100" max="500">int</type>

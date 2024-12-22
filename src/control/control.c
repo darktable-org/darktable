@@ -311,7 +311,16 @@ void dt_control_quit()
     g_usleep(1000);
 #endif
 
-  // FIXME leave a note about pending background jobs, possibly delay
+  const int timeout = 1000 * dt_conf_get_int("darkroom/ui/closing");
+  for(int i = 0; i < timeout && dt_control_jobs_pending(); i++)
+  {
+    if(!(i % 1000))
+      dt_toast_markup_log(_("received request to close darktable while there are background jobs running.\n"
+                            "you could discard those jobs within the next %d seconds, all remaining jobs\n"
+                            "will continue being processed after the main window has closed"), (timeout - i) / 1000);
+    g_usleep(1000);
+    dt_gui_process_events();
+  }
 
   dt_pthread_mutex_lock(&control->cond_mutex);
   // set the "pending cleanup work" flag to be handled in dt_control_shutdown()
