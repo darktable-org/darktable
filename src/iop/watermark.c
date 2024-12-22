@@ -1292,17 +1292,6 @@ void init(dt_iop_module_t *self)
   g_strlcpy(d->font, "DejaVu Sans 10", sizeof(d->font));
 }
 
-static void _setup_variables_completion(gpointer instance, int type, dt_iop_module_t *self)
-{
-  dt_iop_watermark_gui_data_t *g = self->gui_data;
-
-  if(type == DT_METADATA_SIGNAL_PREF_CHANGED) {
-    ++darktable.gui->reset;
-    dt_gtkentry_setup_variables_completion(GTK_ENTRY(g->text));
-    --darktable.gui->reset;
-  }
-}
-
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_watermark_gui_data_t *g = IOP_GUI_ALLOC(watermark);
@@ -1343,7 +1332,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_entry_set_placeholder_text(GTK_ENTRY(g->text), _("content"));
   gtk_grid_attach(grid, label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(grid, g->text, label, GTK_POS_RIGHT, 2, 1);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_METADATA_CHANGED, _setup_variables_completion, self);
 
   // Text font
   label = dtgtk_reset_label_new(_("font"), self, &p->font, sizeof(p->font));
@@ -1448,7 +1436,6 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  DT_CONTROL_SIGNAL_DISCONNECT(_setup_variables_completion, self);
   dt_iop_watermark_gui_data_t *g = self->gui_data;
   g_list_free_full(g->watermarks_filenames, g_free);
   g->watermarks_filenames = NULL;

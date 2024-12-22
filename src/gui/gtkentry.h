@@ -24,19 +24,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct completion_spec
-{
-  gchar *varname;
-  gchar *description;
-} dt_gtkentry_completion_spec;
+#include "common/metadata.h"
 
-typedef enum
-{
-  COMPL_VARNAME = 0,
-  COMPL_DESCRIPTION
-} dtGtkEntryCompletionSpecCol;
-
+/** initialize entry with the variables table */
 void dt_gtkentry_setup_variables_completion(GtkEntry *entry);
+
+/** add a metadata to the variables substitution */
+void dt_gtkentry_variables_add_metadata(dt_metadata_t *metadata);
+
+/** remove a metadata from the variables substitution */
+void dt_gtkentry_variables_remove_metadata(dt_metadata_t *metadata);
 
 
 // clang-format off
