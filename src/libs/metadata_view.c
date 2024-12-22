@@ -198,15 +198,6 @@ int position(const dt_lib_module_t *self)
   return 299;
 }
 
-static gboolean _is_metadata_ui(const int i, dt_lib_module_t *self)
-{
-  dt_lib_metadata_view_t *d = self->data;
-
-  if(i >= md_xmp_metadata)
-    return (i - md_xmp_metadata) < d->metadata_count;
-  else return TRUE;
-}
-
 
 #define NODATA_STRING "-"
 
@@ -226,7 +217,7 @@ static void _lib_metadata_init_queue(dt_lib_module_t *self)
       m->name = g_strdup(_labels[i]);
       m->value = g_strdup(NODATA_STRING);
       m->index = m->order = i;
-      m->visible = _is_metadata_ui(i, self);
+      m->visible = TRUE;
       m->setting = g_strdup(_labels[i]);
       m->key = -1;  // we don't need an id for internal items
       d->metadata = g_list_prepend(d->metadata, m);
@@ -249,7 +240,7 @@ static void _lib_metadata_init_queue(dt_lib_module_t *self)
         m->name = g_strdup(metadata->name);
         m->value = g_strdup(NODATA_STRING);
         m->index = m->order = i;
-        m->visible = _is_metadata_ui(i, self);
+        m->visible = TRUE;
         m->setting = g_strdup(dt_metadata_get_tag_subkey(metadata->tagname));
         m->key = metadata->key;
         d->metadata = g_list_prepend(d->metadata, m);
@@ -1175,8 +1166,7 @@ static char *_get_current_configuration(dt_lib_module_t *self)
   for(GList *meta = d->metadata; meta; meta= g_list_next(meta))
   {
     dt_lib_metadata_info_t *m = meta->data;
-    if(_is_metadata_ui(m->index, self))
-      dt_util_str_cat(&pref, "%s%s,", m->visible ? "" : "|", m->setting);
+    dt_util_str_cat(&pref, "%s%s,", m->visible ? "" : "|", m->setting);
   }
   if(pref)
   {
@@ -1463,8 +1453,6 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   for(GList *meta = d->metadata; meta; meta = g_list_next(meta))
   {
     dt_lib_metadata_info_t *m = meta->data;
-    if(!_is_metadata_ui(m->index, self))
-      continue;
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter,
                        DT_METADATA_PREF_COL_INDEX, m->index,
@@ -1513,8 +1501,6 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
     for(GList *meta = d->metadata; meta; meta= g_list_next(meta))
     {
       dt_lib_metadata_info_t *m = meta->data;
-      if(!_is_metadata_ui(m->index, self))
-        continue;
       gtk_list_store_set(store, &iter,
                          DT_METADATA_PREF_COL_INDEX, m->index,
                          DT_METADATA_PREF_COL_NAME_L, _(m->name),
@@ -1590,7 +1576,7 @@ static void _display_default(dt_lib_module_t *self)
   {
     dt_lib_metadata_info_t *m = meta->data;
     m->order = m->index;
-    m->visible = _is_metadata_ui(m->index, self);
+    m->visible = TRUE;
   }
   _lib_metadata_refill_grid(self);
 }
@@ -1657,7 +1643,7 @@ void gui_reset(dt_lib_module_t *self)
   {
     dt_lib_metadata_info_t *m = meta->data;
     m->order = m->index;
-    m->visible = _is_metadata_ui(m->index, self);
+    m->visible = TRUE;
   }
   _lib_metadata_refill_grid(self);
   _save_preferences(self);
@@ -1743,31 +1729,16 @@ static int lua_register_info(lua_State *L)
   {
     dt_lib_metadata_view_t *d = self->data;
     dt_lib_metadata_info_t *m = g_malloc0(sizeof(dt_lib_metadata_info_t));
-    m->name = (char *)key;
+    m->name = g_strdup((char *)key);
     m->value = g_strdup(NODATA_STRING);
+    m->key = -1;
+    m->setting = g_strdup((char *)key);
     const int index = g_list_length(d->metadata);
     m->index = m->order = index;
     m->visible = TRUE;
 
-    GtkWidget *w_name = gtk_label_new(_(m->name));
-    gtk_widget_set_halign(w_name, GTK_ALIGN_START);
-    gtk_label_set_xalign(GTK_LABEL(w_name), 0.0f);
-    gtk_label_set_ellipsize(GTK_LABEL(w_name), PANGO_ELLIPSIZE_END);
-    gtk_widget_set_tooltip_text(w_name, _(m->name));
-
-    gboolean validated = g_utf8_validate(m->value, -1, NULL);
-    const gchar *str = validated ? m->value : NODATA_STRING;
-
-    GtkWidget *w_value= gtk_label_new(str);
-    gtk_widget_set_name(w_value, "brightbg");
-    gtk_label_set_selectable(GTK_LABEL(w_value), TRUE);
-    gtk_widget_set_halign(w_value, GTK_ALIGN_FILL);
-    gtk_label_set_xalign(GTK_LABEL(w_value), 0.0f);
-    gtk_label_set_ellipsize(GTK_LABEL(w_value), PANGO_ELLIPSIZE_MIDDLE);
-    gtk_grid_attach(GTK_GRID(d->grid), w_name, 0, index, 1, 1);
-    gtk_grid_attach(GTK_GRID(d->grid), w_value, 1, index, 1, 1);
-
     d->metadata = g_list_append(d->metadata, m);
+    _add_grid_row(m, 0, self);
 
     {
       lua_getfield(L, -1, "indexes");
@@ -1847,7 +1818,9 @@ static int lua_destroy_info(lua_State *L)
     {
       dt_lib_metadata_info_t *m = tbr->data;
       d->metadata = g_list_remove_link(d->metadata, tbr);
+      g_free(m->name);
       g_free(m->value);
+      g_free(m->setting);
       if(m->tooltip) g_free(m->tooltip);
       g_free(m);
       g_list_free(tbr);
