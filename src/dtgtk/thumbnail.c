@@ -146,14 +146,14 @@ static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
     tt = g_strdup_printf("\n\u2022 <b>%s (%s)</b>", _("current"), _("leader"));
   else
   {
-    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->groupid, 'r');
+    const dt_image_t *img = dt_image_cache_get(thumb->groupid, 'r');
     if(img)
     {
       tt = g_strdup_printf
         ("%s\n\u2022 <b>%s (%s)</b>",
          _("\nclick here to set this image as group leader\n"),
          img->filename, _("leader"));
-      dt_image_cache_read_release(darktable.image_cache, img);
+      dt_image_cache_read_release(img);
     }
   }
 
@@ -223,7 +223,7 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
 
   const int old_rating = thumb->rating;
   thumb->rating = 0;
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
+  const dt_image_t *img = dt_image_cache_get(thumb->imgid, 'r');
   if(img)
   {
     thumb->has_localcopy = (img->flags & DT_IMAGE_LOCAL_COPY);
@@ -236,7 +236,7 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
 
     thumb->groupid = img->group_id;
 
-    dt_image_cache_read_release(darktable.image_cache, img);
+    dt_image_cache_read_release(img);
   }
   // if the rating as changed, update the rejected
   if(old_rating != thumb->rating)
@@ -461,11 +461,11 @@ static void _get_dimensions_for_img_to_fit(const dt_thumbnail_t *thumb,
   {
     // let's try with the aspect_ratio store in image structure, even
     // if it's less accurate
-    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
+    const dt_image_t *img = dt_image_cache_get(thumb->imgid, 'r');
     if(img)
     {
       ar = img->aspect_ratio;
-      dt_image_cache_read_release(darktable.image_cache, img);
+      dt_image_cache_read_release(img);
     }
   }
 
@@ -502,7 +502,7 @@ static void _get_dimensions_for_zoomed_img(dt_thumbnail_t *thumb,
   // the max zoom, but also to ensure that final_width and height are
   // available.
   const float zoom_100 = dt_thumbnail_get_zoom100(thumb);
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
+  const dt_image_t *img = dt_image_cache_get(thumb->imgid, 'r');
   if(img)
   {
     if(img->final_width > 0 && img->final_height > 0)
@@ -510,7 +510,7 @@ static void _get_dimensions_for_zoomed_img(dt_thumbnail_t *thumb,
       iw = img->final_width;
       ih = img->final_height;
     }
-    dt_image_cache_read_release(darktable.image_cache, img);
+    dt_image_cache_read_release(img);
   }
 
   // scale first to "img to fit", then apply the zoom ratio to get the
@@ -1650,7 +1650,7 @@ dt_thumbnail_t *dt_thumbnail_new(const int width,
   thumb->expose_again_timeout_id = 0;
 
   // we read and cache all the infos from dt_image_t that we need
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
+  const dt_image_t *img = dt_image_cache_get(thumb->imgid, 'r');
   if(img)
   {
     thumb->filename = g_strdup(img->filename);
@@ -1659,7 +1659,7 @@ dt_thumbnail_t *dt_thumbnail_new(const int width,
       thumb->has_audio = (img->flags & DT_IMAGE_HAS_WAV);
       thumb->has_localcopy = (img->flags & DT_IMAGE_LOCAL_COPY);
     }
-    dt_image_cache_read_release(darktable.image_cache, img);
+    dt_image_cache_read_release(img);
   }
   if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED
      || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
@@ -2265,7 +2265,7 @@ float dt_thumbnail_get_zoom_ratio(dt_thumbnail_t *thumb)
 // force the reload of image infos
 void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
 {
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
+  const dt_image_t *img = dt_image_cache_get(thumb->imgid, 'r');
   if(img)
   {
     if(thumb->over != DT_THUMBNAIL_OVERLAYS_NONE)
@@ -2275,7 +2275,7 @@ void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
       thumb->has_localcopy = (img->flags & DT_IMAGE_LOCAL_COPY);
     }
 
-    dt_image_cache_read_release(darktable.image_cache, img);
+    dt_image_cache_read_release(img);
   }
   if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED
      || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED

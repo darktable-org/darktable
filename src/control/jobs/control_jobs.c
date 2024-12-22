@@ -360,7 +360,7 @@ static int32_t _control_write_sidecar_files_job_run(dt_job_t *job)
       sqlite3_reset(stmt);
       sqlite3_clear_bindings(stmt);
     }
-    dt_image_cache_read_release(darktable.image_cache, img);
+    dt_image_cache_read_release(img);
     const double fraction = ++count / (double)nb_imgs;
     _update_progress(job, fraction, &prev_time);
   }
@@ -448,9 +448,9 @@ static int   _control_merge_hdr_process(dt_imageio_module_data_t *datai,
   dt_control_merge_hdr_t *d = data->d;
 
   // just take a copy. also do it after blocking read, so filters will make sense.
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  const dt_image_t *img = dt_image_cache_get(imgid, 'r');
   const dt_image_t image = *img;
-  dt_image_cache_read_release(darktable.image_cache, img);
+  dt_image_cache_read_release(img);
 
   if(!d->pixels)
   {
@@ -729,8 +729,7 @@ static int32_t _control_duplicate_images_job_run(dt_job_t *job)
         dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL, TRUE, TRUE, TRUE);
 
       // a duplicate should keep the change time stamp of the original
-      dt_image_cache_set_change_timestamp_from_image(darktable.image_cache,
-                                                     newimgid, imgid);
+      dt_image_cache_set_change_timestamp_from_image(newimgid, imgid);
 
       _collection_update(&last_coll_update, &update_interval);
     }
@@ -1390,13 +1389,13 @@ static int32_t _control_gpx_apply_job_run(dt_job_t *job)
     dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
 
     /* get image */
-    const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+    const dt_image_t *cimg = dt_image_cache_get(imgid, 'r');
     if(!cimg) continue;
 
     GDateTime *exif_time = dt_datetime_img_to_gdatetime(cimg, tz_camera);
 
     /* release the lock */
-    dt_image_cache_read_release(darktable.image_cache, cimg);
+    dt_image_cache_read_release(cimg);
     if(!exif_time) continue;
     GDateTime *utc_time = g_date_time_to_timezone(exif_time, darktable.utc_tz);
     g_date_time_unref(exif_time);
@@ -1530,17 +1529,14 @@ static int32_t _control_refresh_exif_run(dt_job_t *job)
       char sourcefile[PATH_MAX];
       dt_image_full_path(imgid, sourcefile, sizeof(sourcefile), &from_cache);
 
-      dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+      dt_image_t *img = dt_image_cache_get(imgid, 'w');
       if(img)
       {
         img->job_flags |= DT_IMAGE_JOB_NO_METADATA; // no metadata refresh, only EXIF
         dt_exif_read(img, sourcefile);
-        dt_image_cache_write_release_info(darktable.image_cache, img,
-                                          DT_IMAGE_CACHE_SAFE,
-                                          "dt_control_refresh_exif_run");
+        dt_image_cache_write_release_info(img, DT_IMAGE_CACHE_SAFE, "dt_control_refresh_exif_run");
+        DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
       }
-
-      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
     }
 
     t = g_list_next(t);
@@ -1873,8 +1869,7 @@ static int32_t _control_export_job_run(dt_job_t *job)
     dt_control_job_set_progress_message(job, message);
 
     // check if image still exists:
-    const dt_image_t *image =
-      dt_image_cache_get(darktable.image_cache, (int32_t)imgid, 'r');
+    const dt_image_t *image = dt_image_cache_get(imgid, 'r');
     if(image)
     {
       char imgfilename[PATH_MAX] = { 0 };
@@ -1885,11 +1880,11 @@ static int32_t _control_export_job_run(dt_job_t *job)
         dt_control_log(_("image `%s' is currently unavailable"), image->filename);
         dt_print(DT_DEBUG_ALWAYS, "image `%s' is currently unavailable", imgfilename);
         // dt_image_remove(imgid);
-        dt_image_cache_read_release(darktable.image_cache, image);
+        dt_image_cache_read_release(image);
       }
       else
       {
-        dt_image_cache_read_release(darktable.image_cache, image);
+        dt_image_cache_read_release(image);
         if(mstorage->store(mstorage, sdata, imgid, mformat, fdata,
                            num, total, settings->high_quality, settings->upscale,
                            settings->export_masks, settings->icc_type,
@@ -1905,7 +1900,7 @@ static int32_t _control_export_job_run(dt_job_t *job)
           if(dt_tag_attach(etagid, imgid, FALSE, FALSE)) tag_change = TRUE;
 
           /* register export timestamp in cache */
-          dt_image_cache_set_export_timestamp(darktable.image_cache, imgid);
+          dt_image_cache_set_export_timestamp(imgid);
         }
       }
     }

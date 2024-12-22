@@ -47,16 +47,14 @@ void dt_history_item_free(gpointer data)
 
 static void _remove_preset_flag(const dt_imgid_t imgid)
 {
-  dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+  dt_image_t *image = dt_image_cache_get(imgid, 'w');
 
   // clear flag
   if(image)
     image->flags &= ~DT_IMAGE_AUTO_PRESETS_APPLIED;
 
   // write through to sql+xmp
-  dt_image_cache_write_release_info(darktable.image_cache, image,
-                                    DT_IMAGE_CACHE_SAFE,
-                                    "_remove_preset_flag");
+  dt_image_cache_write_release_info(image, DT_IMAGE_CACHE_SAFE, "_remove_preset_flag");
 }
 
 void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
@@ -139,7 +137,7 @@ void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
 
   /* unset change timestamp */
-  dt_image_cache_unset_change_timestamp(darktable.image_cache, imgid);
+  dt_image_cache_unset_change_timestamp(imgid);
 
   // signal that the mipmap need to be updated
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
@@ -173,7 +171,7 @@ gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
                                    const gboolean history_only)
 {
   dt_lock_image(imgid);
-  dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+  dt_image_t *img = dt_image_cache_get(imgid, 'w');
   if(img)
   {
     dt_undo_lt_history_t *hist = dt_history_snapshot_item_init();
@@ -182,8 +180,7 @@ gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
 
     if(dt_exif_xmp_read(img, filename, history_only))
     {
-      dt_image_cache_write_release_info
-        (darktable.image_cache, img,
+      dt_image_cache_write_release_info(img,
          // ugly but if not history_only => called from crawler - do not write the xmp
          history_only ? DT_IMAGE_CACHE_SAFE : DT_IMAGE_CACHE_RELAXED,
          "dt_history_load_and_apply");
@@ -201,8 +198,7 @@ gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
     if(dt_dev_is_current_image(darktable.develop, imgid))
       dt_dev_reload_history_items(darktable.develop);
 
-    dt_image_cache_write_release_info
-      (darktable.image_cache, img,
+    dt_image_cache_write_release_info(img,
        // ugly but if not history_only => called from crawler - do not write the xmp
        history_only ? DT_IMAGE_CACHE_SAFE : DT_IMAGE_CACHE_RELAXED,
        "dt_history_load_and_apply");
@@ -981,7 +977,7 @@ gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
   dt_tag_new("darktable|changed", &tagid);
   dt_tag_attach(tagid, dest_imgid, FALSE, FALSE);
   /* set change_timestamp */
-  dt_image_cache_set_change_timestamp(darktable.image_cache, dest_imgid);
+  dt_image_cache_set_change_timestamp(dest_imgid);
 
   /* if current image in develop reload history */
   if(dt_dev_is_current_image(darktable.develop, dest_imgid))

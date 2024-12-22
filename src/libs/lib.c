@@ -71,7 +71,7 @@ gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module,
 }
 
 /** calls module->cleanup and closes the dl connection. */
-static void dt_lib_unload_module(dt_lib_module_t *module);
+static void _lib_unload_module(dt_lib_module_t *module);
 
 gchar *dt_lib_get_active_preset_name(dt_lib_module_info_t *minfo)
 {
@@ -879,7 +879,7 @@ static void dt_lib_init_module(void *m)
   }
 }
 
-void dt_lib_unload_module(dt_lib_module_t *module)
+void _lib_unload_module(dt_lib_module_t *module)
 {
   if(module->module)
     g_module_close(module->module);
@@ -1371,7 +1371,7 @@ void dt_lib_cleanup(dt_lib_t *lib)
         module->gui_cleanup(module);
         module->data = NULL;
       }
-      dt_lib_unload_module(module);
+      _lib_unload_module(module);
       free(module);
     }
     lib->plugins = g_list_delete_link(lib->plugins, lib->plugins);

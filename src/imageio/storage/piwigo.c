@@ -1292,7 +1292,7 @@ int store(dt_imageio_module_storage_t *self,
   char *description = NULL;
   char *author = NULL;
 
-  dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  dt_image_t *img = dt_image_cache_get(imgid, 'r');
 
   char *filename = _get_filename(img, format, fdata);
 
@@ -1345,7 +1345,7 @@ int store(dt_imageio_module_storage_t *self,
 
   g_free(filename);
 
-  dt_image_cache_read_release(darktable.image_cache, img);
+  dt_image_cache_read_release(img);
 
   if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale,
                        TRUE, export_masks, icc_type, icc_filename,

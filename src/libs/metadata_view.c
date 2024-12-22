@@ -626,13 +626,13 @@ void gui_update(dt_lib_module_t *self)
   g_free(images);
 
   dt_imgid_t img_id = mouse_over_id;
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, img_id, 'r');
+  const dt_image_t *img = dt_image_cache_get(img_id, 'r');
 
   if(!img) goto fill_minuses;
 
   if(img->film_id == -1)
   {
-    dt_image_cache_read_release(darktable.image_cache, img);
+    dt_image_cache_read_release(img);
     goto fill_minuses;
   }
 
@@ -1034,7 +1034,7 @@ void gui_update(dt_lib_module_t *self)
       }
     }
   }
-  dt_image_cache_read_release(darktable.image_cache, img);
+  dt_image_cache_read_release(img);
 
   if(dt_is_valid_imgid(mouse_over_id))
   {
@@ -1078,9 +1078,9 @@ static void _jump_to()
   if(dt_is_valid_imgid(imgid))
   {
     char path[512];
-    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+    const dt_image_t *img = dt_image_cache_get(imgid, 'r');
     dt_image_film_roll_directory(img, path, sizeof(path));
-    dt_image_cache_read_release(darktable.image_cache, img);
+    dt_image_cache_read_release(img);
     char collect[1024];
     snprintf(collect, sizeof(collect), "1:0:0:%s$", path);
     dt_collection_deserialize(collect, FALSE);

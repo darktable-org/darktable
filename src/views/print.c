@@ -320,20 +320,20 @@ gboolean try_enter(dt_view_t *self)
   }
 
   // this loads the image from db if needed:
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  const dt_image_t *img = dt_image_cache_get(imgid, 'r');
   // get image and check if it has been deleted from disk first!
 
   char imgfilename[PATH_MAX] = { 0 };
   gboolean from_cache = TRUE;
-  dt_image_full_path(img->id, imgfilename, sizeof(imgfilename), &from_cache);
-  if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
+  if(img) dt_image_full_path(img->id, imgfilename, sizeof(imgfilename), &from_cache);
+  if(!img || !g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
   {
     dt_control_log(_("image `%s' is currently unavailable"), img->filename);
-    dt_image_cache_read_release(darktable.image_cache, img);
+    dt_image_cache_read_release(img);
     return 1;
   }
   // and drop the lock again.
-  dt_image_cache_read_release(darktable.image_cache, img);
+  dt_image_cache_read_release(img);
 
   // we need to setup the selected image
   prt->imgs->imgid_to_load = imgid;

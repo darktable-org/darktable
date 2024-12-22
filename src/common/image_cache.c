@@ -205,10 +205,12 @@ static void _image_cache_deallocate(void *data, dt_cache_entry_t *entry)
   g_free(img->profile);
   g_list_free_full(img->dng_gain_maps, g_free);
   g_free(img);
+  entry->data = NULL;
 }
 
-void dt_image_cache_init(dt_image_cache_t *cache)
+void dt_image_cache_init()
 {
+  dt_image_cache_t *cache = darktable.image_cache = calloc(1, sizeof(dt_image_cache_t));
   // the image cache does no serialization.
   // (unsafe. data should be in db/xmp, not in any other additional cache,
   // also, it should be relatively fast to get the image_t structs from sql.)
@@ -224,29 +226,29 @@ void dt_image_cache_init(dt_image_cache_t *cache)
   dt_print(DT_DEBUG_CACHE, "[image_cache] has %d entries", num);
 }
 
-void dt_image_cache_cleanup(dt_image_cache_t *cache)
+void dt_image_cache_cleanup()
 {
-  dt_cache_cleanup(&cache->cache);
-}
-
-void dt_image_cache_print(dt_image_cache_t *cache)
-{
-  dt_print(DT_DEBUG_ALWAYS,
-           "[image cache] fill %.2f/%.2f MB (%.2f%%)",
+  dt_image_cache_t *cache = darktable.image_cache;
+  if(!cache) return;
+  dt_print(DT_DEBUG_CACHE,
+           "[image cache cleaup report] fill %.2f/%.2f MB (%.2f%%)",
            cache->cache.cost / (1024.0 * 1024.0),
            cache->cache.cost_quota / (1024.0 * 1024.0),
            (float)cache->cache.cost / (float)cache->cache.cost_quota);
+  dt_cache_cleanup(&cache->cache);
+  free(cache);
+  darktable.image_cache = NULL;
 }
 
-dt_image_t *dt_image_cache_get(dt_image_cache_t *cache,
-                               const dt_imgid_t imgid,
+dt_image_t *dt_image_cache_get(const dt_imgid_t imgid,
                                const char mode)
 {
+  dt_image_cache_t *cache = darktable.image_cache;
+  assert(cache);
+
   if(!dt_is_valid_imgid(imgid))
-  {
-    dt_print(DT_DEBUG_CACHE, "[dt_image_cache_get] failed as not a valid imgid=%d", imgid);
     return NULL;
-  }
+
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, mode);
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = entry->data;
@@ -254,10 +256,12 @@ dt_image_t *dt_image_cache_get(dt_image_cache_t *cache,
   return img;
 }
 
-dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache,
-                                   const dt_imgid_t imgid,
+dt_image_t *dt_image_cache_testget(const dt_imgid_t imgid,
                                    const char mode)
 {
+  dt_image_cache_t *cache = darktable.image_cache;
+  assert(cache);
+
   if(!dt_is_valid_imgid(imgid))
   {
     dt_print(DT_DEBUG_CACHE, "[dt_image_cache_testget] failed as not a valid imgid=%d", imgid);
@@ -277,12 +281,12 @@ dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache,
 }
 
 // drops the read lock on an image struct
-void dt_image_cache_read_release(dt_image_cache_t *cache,
-                                 const dt_image_t *img)
+void dt_image_cache_read_release(const dt_image_t *img)
 {
   if(!img || !dt_is_valid_imgid(img->id)) return;
   // just force the dt_image_t struct to make sure it has been locked before.
-  dt_cache_release(&cache->cache, img->cache_entry);
+  dt_image_cache_t *cache = darktable.image_cache;
+  if(cache) dt_cache_release(&cache->cache, img->cache_entry);
 }
 
 // drops the write privileges on an image struct.
@@ -290,13 +294,15 @@ void dt_image_cache_read_release(dt_image_cache_t *cache,
 // a) mode == DT_IMAGE_CACHE_SAFE
 // b) sidecar writing is desired via conf setting
 // also to xmp sidecar files.
-void dt_image_cache_write_release_info(dt_image_cache_t *cache,
-                                       dt_image_t *img,
+void dt_image_cache_write_release_info(dt_image_t *img,
                                        const dt_image_cache_write_mode_t mode,
                                        const char *info)
 {
   if(!img)  // nothing to release
     return;
+
+  dt_image_cache_t *cache = darktable.image_cache;
+  assert(cache);
 
   if(!dt_is_valid_imgid(img->id))
   {
@@ -428,44 +434,45 @@ void dt_image_cache_write_release_info(dt_image_cache_t *cache,
   dt_cache_release(&cache->cache, img->cache_entry);
 }
 
-void dt_image_cache_write_release(dt_image_cache_t *cache,
-                                  dt_image_t *img,
-                                  const dt_image_cache_write_mode_t mode)
+void dt_image_cache_write_release(dt_image_t *img, const dt_image_cache_write_mode_t mode)
 {
-  dt_image_cache_write_release_info(cache, img, mode, NULL);
+  dt_image_cache_write_release_info(img, mode, NULL);
 }
 
 // remove the image from the cache
-void dt_image_cache_remove(dt_image_cache_t *cache,
-                           const dt_imgid_t imgid)
+void dt_image_cache_remove(const dt_imgid_t imgid)
 {
-  dt_cache_remove(&cache->cache, imgid);
+  dt_image_cache_t *cache = darktable.image_cache;
+  if(cache) dt_cache_remove(&cache->cache, imgid);
 }
 
 /* set timestamps */
-void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache,
-                                         const dt_imgid_t imgid)
+void dt_image_cache_set_change_timestamp(const dt_imgid_t imgid)
 {
-  if(!dt_is_valid_imgid(imgid)) return;
+  dt_image_cache_t *cache = darktable.image_cache;
+  assert(cache);
+
+  if(!cache || !dt_is_valid_imgid(imgid)) return;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'w');
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = entry->data;
   img->cache_entry = entry;
   img->change_timestamp = dt_datetime_now_to_gtimespan();
-  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
+  dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
 }
 
-void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache,
-                                                    const dt_imgid_t imgid,
+void dt_image_cache_set_change_timestamp_from_image(const dt_imgid_t imgid,
                                                     const dt_imgid_t sourceid)
 {
-  if(!dt_is_valid_imgid(imgid) || !dt_is_valid_imgid(sourceid)) return;
+  dt_image_cache_t *cache = darktable.image_cache;
+  assert(cache);
+  if(!cache || !dt_is_valid_imgid(imgid) || !dt_is_valid_imgid(sourceid)) return;
 
   // get source timestamp
-  const dt_image_t *simg = dt_image_cache_get(cache, sourceid, 'r');
+  const dt_image_t *simg = dt_image_cache_get(sourceid, 'r');
   const GTimeSpan change_timestamp = simg->change_timestamp;
-  dt_image_cache_read_release(cache, simg);
+  dt_image_cache_read_release(simg);
 
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'w');
   if(!entry) return;
@@ -473,46 +480,49 @@ void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache,
   dt_image_t *img = entry->data;
   img->cache_entry = entry;
   img->change_timestamp = change_timestamp;
-  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
+  dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
 }
 
-void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache,
-                                           const dt_imgid_t imgid)
+void dt_image_cache_unset_change_timestamp(const dt_imgid_t imgid)
 {
-  if(!dt_is_valid_imgid(imgid)) return;
+  dt_image_cache_t *cache = darktable.image_cache;
+  assert(cache);
+  if(!cache || !dt_is_valid_imgid(imgid)) return;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'w');
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = entry->data;
   img->cache_entry = entry;
   img->change_timestamp = 0;
-  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
+  dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
 }
 
-void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache,
-                                         const dt_imgid_t imgid)
+void dt_image_cache_set_export_timestamp(const dt_imgid_t imgid)
 {
-  if(!dt_is_valid_imgid(imgid)) return;
+  dt_image_cache_t *cache = darktable.image_cache;
+  assert(cache);
+  if(!cache || !dt_is_valid_imgid(imgid)) return;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'w');
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = entry->data;
   img->cache_entry = entry;
   img->export_timestamp = dt_datetime_now_to_gtimespan();
-  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
+  dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
 }
 
-void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache,
-                                        const dt_imgid_t imgid)
+void dt_image_cache_set_print_timestamp(const dt_imgid_t imgid)
 {
-  if(!dt_is_valid_imgid(imgid)) return;
+  dt_image_cache_t *cache = darktable.image_cache;
+  assert(cache);
+  if(!cache || !dt_is_valid_imgid(imgid)) return;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'w');
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = entry->data;
   img->cache_entry = entry;
   img->print_timestamp = dt_datetime_now_to_gtimespan();
-  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
+  dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
 }
 
 // clang-format off
