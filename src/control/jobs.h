@@ -62,7 +62,7 @@ typedef void (*dt_job_destroy_callback)(void *data);
 dt_job_t *dt_control_job_create(dt_job_execute_callback execute, const char *msg, ...) __attribute__((format(printf, 2, 3)));
 /** destroy a job object and free its memory. this does NOT remove it from any job queues! */
 void dt_control_job_dispose(dt_job_t *job);
-/** cancel a job, running or in queue. */
+/** cancel a job, running or in queue. This includes destroying the progress structure */
 void dt_control_job_cancel(dt_job_t *job);
 dt_job_state_t dt_control_job_get_state(dt_job_t *job);
 /** set job params and a callback to destroy those params */

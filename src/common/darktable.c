@@ -1456,7 +1456,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
     // make sure that we have no stale global progress bar
     // visible. thus it's run as early as possible
-    dt_control_progress_init(darktable.control);
+    dt_control_progress_init();
 
     // ensure that we can load the Gtk theme early enough that the splash screen
     // doesn't change as we progress through startup

@@ -98,7 +98,7 @@ static void _control_job_set_state(_dt_job_t *job,
   dt_pthread_mutex_lock(&job->state_mutex);
   if(state >= DT_JOB_STATE_FINISHED  && job->state != DT_JOB_STATE_RUNNING && job->progress)
   {
-    dt_control_progress_destroy(darktable.control, job->progress);
+    dt_control_progress_destroy(job->progress);
     job->progress = NULL;
   }
   job->state = state;
@@ -183,7 +183,7 @@ void dt_control_job_dispose(_dt_job_t *job)
 {
   if(!job) return;
   if(job->progress)
-    dt_control_progress_destroy(darktable.control, job->progress);
+    dt_control_progress_destroy(job->progress);
   job->progress = NULL;
   _control_job_set_state(job, DT_JOB_STATE_DISPOSED);
   if(job->params_destroy)
@@ -193,12 +193,26 @@ void dt_control_job_dispose(_dt_job_t *job)
   free(job);
 }
 
+static inline const char *_queuename(dt_job_queue_t id)
+{
+  switch(id)
+  {
+    case DT_JOB_QUEUE_USER_FG:      return "DT_JOB_QUEUE_USER_FG";
+    case DT_JOB_QUEUE_SYSTEM_FG:    return "DT_JOB_QUEUE_SYSTEM_FG";
+    case DT_JOB_QUEUE_USER_BG:      return "DT_JOB_QUEUE_USER_BG";
+    case DT_JOB_QUEUE_USER_EXPORT:  return "DT_JOB_QUEUE_USER_EXPORT";
+    case DT_JOB_QUEUE_SYSTEM_BG:    return "DT_JOB_QUEUE_SYSTEM_BG";
+    case DT_JOB_QUEUE_SYNCHRONOUS:  return "DT_JOB_QUEUE_SYNCHRONOUS";
+    default:                        return "???";
+  }
+}
+
 // We don't want to log dt_get_wtime() as we already show the stamp
 static void _control_job_print(_dt_job_t *job, const char *info, const char *err, int32_t res)
 {
   if(!job) return;
-  dt_print(DT_DEBUG_CONTROL, "[%s]\t%02d %s %s | queue: %d | priority: %d",
-    info, res, err, job->description, job->queue, job->priority);
+  dt_print(DT_DEBUG_CONTROL, "[%s]\t%02d %s %s | queue: %s | priority: %d",
+    info, res, err, job->description, _queuename(job->queue), job->priority);
 }
 
 void dt_control_job_cancel(_dt_job_t *job)
@@ -590,21 +604,21 @@ static void *_control_work(void *ptr)
 void dt_control_job_add_progress(dt_job_t *job, const char *message, gboolean cancellable)
 {
   if(!job) return;
-  job->progress = dt_control_progress_create(darktable.control, TRUE, message);
+  job->progress = dt_control_progress_create(TRUE, message);
   if(cancellable)
-    dt_control_progress_attach_job(darktable.control, job->progress, job);
+    dt_control_progress_attach_job(job->progress, job);
 }
 
 void dt_control_job_set_progress_message(dt_job_t *job, const char *message)
 {
   if(!job || !job->progress) return;
-  dt_control_progress_set_message(darktable.control, job->progress, message);
+  dt_control_progress_set_message(job->progress, message);
 }
 
 void dt_control_job_set_progress(dt_job_t *job, double value)
 {
   if(!job || !job->progress) return;
-  dt_control_progress_set_progress(darktable.control, job->progress, value);
+  dt_control_progress_set_progress(job->progress, value);
 }
 
 double dt_control_job_get_progress(dt_job_t *job)
