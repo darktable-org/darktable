@@ -31,6 +31,12 @@
 #include "imageio_common.h"
 #include "imageio_png.h"
 
+
+// Reading of PNG files also takes place in the LUT 3D module in order to obtain
+// LUTs encoded in this format. To minimize code duplication, we put the code
+// common to both uses (reading the header and reading the image itself) into
+// two functions, dt_imageio_png_read_header and dt_imageio_png_read_image.
+
 gboolean dt_imageio_png_read_header(const char *filename, dt_imageio_png_t *png)
 {
   png->f = g_fopen(filename, "rb");
@@ -102,9 +108,10 @@ gboolean dt_imageio_png_read_header(const char *filename, dt_imageio_png_t *png)
     png->bit_depth = 8;
   }
 
-  // strip alpha channel
-  if(png->color_type & PNG_COLOR_MASK_ALPHA)
-    png_set_strip_alpha(png->png_ptr);
+  // To ensure that 4 channels will not be decoded instead of expected 3 we
+  // need to call png_set_strip_alpha. It wouldn't hurt if we always call
+  // this function. It just doesn't do anything when it's not needed.
+  png_set_strip_alpha(png->png_ptr);
 
   // grayscale => rgb
   if(png->color_type == PNG_COLOR_TYPE_GRAY || png->color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
