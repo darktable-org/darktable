@@ -2040,7 +2040,6 @@ void dt_cleanup()
 
     dt_ctl_switch_mode_to("");
     dt_dbus_destroy(darktable.dbus);
-
     dt_lib_cleanup();
   }
 #ifdef USE_LUA
@@ -2049,24 +2048,41 @@ void dt_cleanup()
   dt_view_manager_cleanup(darktable.view_manager);
   free(darktable.view_manager);
   darktable.view_manager = NULL;
-  // we can no longer call dt_gui_process_events after this point, as that will cause a segfault
-  // if some delayed event fires
 
-  dt_image_cache_cleanup();
-  dt_mipmap_cache_cleanup();
+/* How is darktable shutdown working safely?
+
+  dt_control_quit() is called via user request, it sets control->running anatomically
+    to DT_CONTROL_STATE_CLEANUP implying that dt_control_running() will not be TRUE any more.
+    It finally calls gtk_main_quit() so with current code we don't have gtk events after that.
+  Quitting gtk also means **we are exactly here** to continue the shutdown.
+  Anything requiring a still active UI must be done before ...
+
+  dt_control_shutdown() first waits for all threads to be joined, that means waiting for
+  all pipelined control jobs being fully processed.
+  So we have to ensure a full software stack including image_cache, mipmap_cache and darktable.imageio
+  available until dt_control_shutdown() has finished.
+
+  After that we are sure there are no background threads running any more so we can
+  safely remove all mentioned subsystems and continue.
+*/
 
   if(init_gui)
   {
+    dt_control_shutdown();
+
     dt_imageio_cleanup(darktable.imageio);
     free(darktable.imageio);
     darktable.imageio = NULL;
-    dt_control_shutdown();
+
     dt_control_cleanup();
     dt_undo_cleanup(darktable.undo);
     darktable.undo = NULL;
     free(darktable.gui);
     darktable.gui = NULL;
   }
+
+  dt_image_cache_cleanup();
+  dt_mipmap_cache_cleanup();
 
   dt_colorspaces_cleanup(darktable.color_profiles);
   dt_conf_cleanup(darktable.conf);
