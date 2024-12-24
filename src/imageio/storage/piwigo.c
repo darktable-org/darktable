@@ -690,7 +690,7 @@ static void _piwigo_conflict_changed(GtkWidget *widget,
 }
 
 /** Refresh albums */
-static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui,
+static gboolean _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui,
                                    const gchar *select_album)
 {
   gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), FALSE);
@@ -699,7 +699,7 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui,
   if(ui->api == NULL || ui->api->authenticated == FALSE)
   {
     _piwigo_authenticate(ui);
-    if(ui->api == NULL || !ui->api->authenticated) return;
+    if(ui->api == NULL || !ui->api->authenticated) return FALSE;
   }
 
   int index = 0;
@@ -781,6 +781,8 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui,
   gtk_widget_set_sensitive(GTK_WIDGET(ui->parent_album_list), TRUE);
   dt_bauhaus_combobox_set(ui->album_list, index);
   dt_bauhaus_combobox_set(ui->parent_album_list, 0);
+
+  return TRUE;
 }
 
 
@@ -966,20 +968,25 @@ static gboolean _piwigo_api_upload_photo(dt_storage_piwigo_params_t *p,
 }
 
 // Login button pressed...
-static void _piwigo_login_clicked(GtkButton *button,
-                                  gpointer data)
+static void _piwigo_login_clicked(GtkButton *button, dt_imageio_module_storage_t *self)
 {
-  dt_storage_piwigo_gui_data_t *ui = (dt_storage_piwigo_gui_data_t *)data;
+  login(self);
+}
+
+gboolean login(dt_imageio_module_storage_t *self)
+{
+  dt_storage_piwigo_gui_data_t *ui = self->gui_data;
   _piwigo_ctx_destroy(&ui->api);
 
   gchar *last_album = dt_conf_get_string("storage/piwigo/last_album");
-  _piwigo_refresh_albums(ui, last_album);
+  gboolean res = _piwigo_refresh_albums(ui, last_album);
   g_free(last_album);
+
+  return res;
 }
 
 // Refresh button pressed...
-static void _piwigo_refresh_clicked(GtkButton *button,
-                                    gpointer data)
+static void _piwigo_refresh_clicked(GtkButton *button, gpointer data)
 {
   dt_storage_piwigo_gui_data_t *ui = (dt_storage_piwigo_gui_data_t *)data;
 
@@ -1087,7 +1094,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   button = gtk_button_new_with_label(_("login"));
   gtk_widget_set_tooltip_text(button, _("Piwigo login"));
   g_signal_connect(G_OBJECT(button), "clicked",
-                   G_CALLBACK(_piwigo_login_clicked), (gpointer)ui);
+                   G_CALLBACK(_piwigo_login_clicked), self);
   gtk_box_pack_start(GTK_BOX(self->widget), button, FALSE, FALSE, 0);
 
   // status area
