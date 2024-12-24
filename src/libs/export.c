@@ -69,7 +69,7 @@ typedef struct dt_lib_export_t
   GtkWidget *upscale, *profile, *intent, *style, *style_mode;
   dt_gui_collapsible_section_t cs;
   GtkWidget *batch_treeview;
-  GtkButton *export_button;
+  GtkButton *export_button, *batch_export_button;
   GtkWidget *storage_extra_container, *format_extra_container;
   GtkWidget *high_quality;
   GtkWidget *export_masks;
@@ -100,7 +100,6 @@ static void _get_max_output_dimension(dt_lib_export_t *d,
                                       uint32_t *height);
 static void _resync_print_dimensions(dt_lib_export_t *self);
 static void _resync_pixel_dimensions(dt_lib_export_t *self);
-static gboolean _batch_preset_active(dt_lib_module_t *self);
 
 #define INCH_TO_CM (2.54f)
 
@@ -217,7 +216,7 @@ void gui_update(dt_lib_module_t *self)
                            has_act_on
                            && format_index != -1
                            && storage_index != -1
-                           && (export_enabled || _batch_preset_active(self)));
+                           && export_enabled);
 }
 
 static void _image_selection_changed_callback(gpointer instance,
@@ -457,11 +456,15 @@ static void _export_with_preset(const gchar *preset_name, dt_lib_module_t *self)
 
 static void _export_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 {
+  _export_with_current_settings(self);
+}
+
+static void _batch_export_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
+{
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
 
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->batch_treeview));
   GtkTreeIter iter;
-  gboolean batch_used = FALSE;
 
   gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
   while(valid)
@@ -475,16 +478,10 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
                        -1);
 
     if(active)
-    {
       _export_with_preset(preset_name, self);
-      batch_used = TRUE;
-    }
 
     valid = gtk_tree_model_iter_next(model, &iter);
   }
-
-  if(!batch_used)
-    _export_with_current_settings(self);
 }
 
 static void _scale_changed(GtkEntry *spin,
@@ -1291,22 +1288,6 @@ static gboolean _batch_preset_active(dt_lib_module_t *self)
   return batch_preset_active;
 }
 
-static void _set_export_button_label(dt_lib_module_t *self)
-{
-  dt_lib_export_t *d = self->data;
-
-  if(_batch_preset_active(self))
-  {
-    gtk_button_set_label(d->export_button, _("batch export"));
-    gtk_widget_set_tooltip_text(GTK_WIDGET(d->export_button), _("batch export with all selected presets"));
-  }
-  else
-  {
-    gtk_button_set_label(d->export_button, _("export"));
-    gtk_widget_set_tooltip_text(GTK_WIDGET(d->export_button), _("export with current settings"));
-  }  
-}
-
 static void _batch_export_toggled_callback(GtkCellRendererToggle *cell_renderer,
                                            gchar *path_str,
                                            gpointer user_data)
@@ -1331,8 +1312,8 @@ static void _batch_export_toggled_callback(GtkCellRendererToggle *cell_renderer,
   gchar *setting = g_strdup_printf(CONFIG_PREFIX "batch_%s", name);
   dt_conf_set_bool(setting, toggle);
   g_free(setting);
-  _set_export_button_label(self);
-  dt_lib_gui_queue_update(self);  
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->batch_export_button), _batch_preset_active(self));
 }
 
 static void _fill_batch_export_list(dt_lib_module_t *self)
@@ -1342,6 +1323,7 @@ static void _fill_batch_export_list(dt_lib_module_t *self)
   GtkListStore *store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(d->batch_treeview)));
   gtk_list_store_clear(store);
   GtkTreeIter iter;
+  gboolean has_active = FALSE;
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
@@ -1365,9 +1347,11 @@ static void _fill_batch_export_list(dt_lib_module_t *self)
                         DT_EXPORT_BATCH_COL_ACTIVE, active,
                         DT_EXPORT_BATCH_COL_NAME, name,
                         -1);
+    has_active |= active;
   }
   sqlite3_finalize(stmt);
-  _set_export_button_label(self);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->batch_export_button), has_active);
 }
 
 static void _export_presets_changed_callback(gpointer instance, gpointer module, dt_lib_module_t *self)
@@ -1661,22 +1645,10 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->profile), "value-changed",
                    G_CALLBACK(_profile_changed), (gpointer)d);
 
-
-  GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  gtk_box_pack_end(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, TRUE, 0);
-
-  // Export button
-  d->export_button = GTK_BUTTON(dt_action_button_new
-                                (self, NC_("actionbutton", "export"),
-                                 _export_button_clicked, self,
-                                 NULL,
-                                 GDK_KEY_e, GDK_CONTROL_MASK));
-  gtk_box_pack_start(hbox, GTK_WIDGET(d->export_button), TRUE, TRUE, 0);
-
-  // batch export
+  // multi-preset export
   dt_gui_new_collapsible_section(&d->cs,
                                  "plugins/lighttable/export/batch_export_expanded",
-                                 _("batch presets"),
+                                 _("multi-preset export"),
                                  GTK_BOX(self->widget),
                                  DT_ACTION(self));
   gtk_widget_set_tooltip_text(d->cs.expander, _("export the selected images with multiple presets"));
@@ -1704,8 +1676,27 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_column_add_attribute(column, renderer, "text", DT_EXPORT_BATCH_COL_NAME);
 
   gtk_box_pack_start(d->cs.container, view, FALSE, FALSE, 0);
+
+  // multi-preset export button
+  GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  gtk_box_pack_start(GTK_BOX(d->cs.container), GTK_WIDGET(hbox), FALSE, TRUE, 0);
+  d->batch_export_button = GTK_BUTTON(gtk_button_new_with_label(_("start export")));
+  gtk_box_pack_start(hbox, GTK_WIDGET(d->batch_export_button), TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(d->batch_export_button), "clicked",
+                   G_CALLBACK(_batch_export_button_clicked), self);
+
   d->batch_treeview = view;
   _fill_batch_export_list(self);
+
+   // Export button
+  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  gtk_box_pack_end(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, TRUE, 0);
+  d->export_button = GTK_BUTTON(dt_action_button_new
+                                (self, NC_("actionbutton", "start export"),
+                                 _export_button_clicked, self,
+                                 NULL,
+                                 GDK_KEY_e, GDK_CONTROL_MASK));
+  gtk_box_pack_start(hbox, GTK_WIDGET(d->export_button), TRUE, TRUE, 0);
 
   gtk_widget_add_events(d->width, GDK_BUTTON_PRESS_MASK);
   gtk_widget_add_events(d->height, GDK_BUTTON_PRESS_MASK);
