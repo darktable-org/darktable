@@ -75,6 +75,7 @@ typedef struct dt_lib_export_t
   GtkWidget *export_masks;
   char *metadata_export;
   char *style_name;
+  dt_imageio_module_storage_t *storage_module; 
 } dt_lib_export_t;
 
 
@@ -99,6 +100,7 @@ static void _get_max_output_dimension(dt_lib_export_t *d,
                                       uint32_t *height);
 static void _resync_print_dimensions(dt_lib_export_t *self);
 static void _resync_pixel_dimensions(dt_lib_export_t *self);
+static gboolean _batch_preset_active(dt_lib_module_t *self);
 
 #define INCH_TO_CM (2.54f)
 
@@ -210,12 +212,12 @@ void gui_update(dt_lib_module_t *self)
   gboolean export_enabled = TRUE;
   if(storage->export_enabled)
     export_enabled = storage->export_enabled(storage);
-
+  
   gtk_widget_set_sensitive(GTK_WIDGET(d->export_button),
                            has_act_on
                            && format_index != -1
                            && storage_index != -1
-                           && export_enabled);
+                           && (export_enabled || _batch_preset_active(self)));
 }
 
 static void _image_selection_changed_callback(gpointer instance,
@@ -239,8 +241,7 @@ static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
   dt_lib_gui_queue_update(self);
 }
 
-static void _export_enable_callback(gpointer instance,
-                                    dt_lib_module_t *self)
+static void _export_enable_callback(gpointer instance, dt_lib_module_t *self)
 {
   dt_lib_gui_queue_update(self);
 }
@@ -417,6 +418,8 @@ static void _export_with_current_settings(dt_lib_module_t *self)
 
 static void _export_with_preset(const gchar *preset_name, dt_lib_module_t *self)
 {
+  dt_lib_export_t *d = self->data;
+
   // get current settings from the GUI
   int params_size;
   void *params = get_params(self, &params_size);
@@ -436,7 +439,15 @@ static void _export_with_preset(const gchar *preset_name, dt_lib_module_t *self)
     const size_t op_params_size = sqlite3_column_bytes(stmt, 0);
 
     set_params(self, op_params, op_params_size);
-    _export_with_current_settings(self);
+    
+    gboolean login = TRUE;
+    if(d->storage_module->login)
+      login = d->storage_module->login(d->storage_module);
+
+    if(login)
+      _export_with_current_settings(self);
+    else
+      dt_control_log(_("could not login to storage `%s'!"), d->storage_module->name(d->storage_module));
   }
   sqlite3_finalize(stmt);
 
@@ -877,6 +888,7 @@ static void set_storage_by_name(dt_lib_export_t *d,
 {
   int k = -1;
   dt_imageio_module_storage_t *module = NULL;
+  d->storage_module = NULL;
 
   for(const GList *it = darktable.imageio->plugins_storage; it; it = g_list_next(it))
   {
@@ -906,7 +918,7 @@ static void set_storage_by_name(dt_lib_export_t *d,
   }
   dt_bauhaus_combobox_set(d->storage, k);
   dt_conf_set_string(CONFIG_PREFIX "storage_name", module->plugin_name);
-
+  d->storage_module = module;
 
   // Check if plugin recommends a max dimension and set
   // if not implemented the stored conf values are used..
@@ -1253,14 +1265,14 @@ static void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
     dt_lib_export_metadata_configuration_dialog(d->metadata_export, ondisk);
 }
 
-static void _set_export_button_label(dt_lib_module_t *self)
+static gboolean _batch_preset_active(dt_lib_module_t *self)
 {
   dt_lib_export_t *d = self->data;
 
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->batch_treeview));
   gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
-  gboolean batch_export = FALSE;
+  gboolean batch_preset_active = FALSE;
   
   while(valid)
   {
@@ -1270,13 +1282,20 @@ static void _set_export_button_label(dt_lib_module_t *self)
                        -1);
     if(active)
     {
-      batch_export = TRUE;
+      batch_preset_active = TRUE;
       break;
     }
     valid = gtk_tree_model_iter_next(model, &iter);
   }
 
-  if(batch_export)
+  return batch_preset_active;
+}
+
+static void _set_export_button_label(dt_lib_module_t *self)
+{
+  dt_lib_export_t *d = self->data;
+
+  if(_batch_preset_active(self))
   {
     gtk_button_set_label(d->export_button, _("batch export"));
     gtk_widget_set_tooltip_text(GTK_WIDGET(d->export_button), _("batch export with all selected presets"));
@@ -1307,12 +1326,13 @@ static void _batch_export_toggled_callback(GtkCellRendererToggle *cell_renderer,
                      DT_EXPORT_BATCH_COL_NAME, &name,
                      -1);
   toggle = !toggle;
+  gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_EXPORT_BATCH_COL_ACTIVE, toggle, -1);
+  gtk_tree_path_free(path);
   gchar *setting = g_strdup_printf(CONFIG_PREFIX "batch_%s", name);
   dt_conf_set_bool(setting, toggle);
   g_free(setting);
-  gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_EXPORT_BATCH_COL_ACTIVE, toggle, -1);
-  gtk_tree_path_free(path);
   _set_export_button_label(self);
+  dt_lib_gui_queue_update(self);  
 }
 
 static void _fill_batch_export_list(dt_lib_module_t *self)
