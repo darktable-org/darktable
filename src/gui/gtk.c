@@ -1140,15 +1140,16 @@ static void _osx_ctl_switch_mode_to(GtkWidget *mi,
   dt_ctl_switch_mode_to((const char*) mode);
 }
 
-static void _osx_add_view_menu_item(GtkWidget* menu,
-                                    const char* label,
-                                    gpointer mode)
+static GtkWidget *_osx_add_view_menu_item(GtkWidget* menu,
+                                          const char* label,
+                                          gpointer mode)
 {
   GtkWidget *mi = gtk_menu_item_new_with_label(label);
   gtk_menu_shell_append(GTK_MENU_SHELL (menu), mi);
   gtk_widget_show(mi);
   g_signal_connect(G_OBJECT(mi), "activate",
                    G_CALLBACK(_osx_ctl_switch_mode_to), mode);
+  return mi;
 }
 
 static void _open_url(GtkWidget *widget, gpointer url)
@@ -1205,25 +1206,42 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 #ifdef MAC_INTEGRATION
   GtkosxApplication *OSXApp = g_object_new(GTKOSX_TYPE_APPLICATION, NULL);
 
+  GtkAccelGroup *accel_group = gtk_accel_group_new();
+  gtk_window_add_accel_group(GTK_WINDOW(OSXApp), accel_group);
+
   // View menu
   GtkWidget *view_root_menu = gtk_menu_item_new_with_label(C_("menu", "Views"));
   gtk_widget_show(view_root_menu);
 
   GtkWidget *view_menu = gtk_menu_new();
-  _osx_add_view_menu_item(view_menu, C_("menu", "lighttable"), "lighttable");
-  _osx_add_view_menu_item(view_menu, C_("menu", "darkroom"), "darkroom");
+  GtkWidget *mi;
+  mi = _osx_add_view_menu_item(view_menu, C_("menu", "lighttable"), "lighttable");
+  gtk_widget_add_accelerator(mi, "activate", accel_group,
+                             GDK_KEY_l, 0, GTK_ACCEL_VISIBLE);
+
+  mi = _osx_add_view_menu_item(view_menu, C_("menu", "darkroom"), "darkroom");
+  gtk_widget_add_accelerator(mi, "activate", accel_group,
+                             GDK_KEY_d, 0, GTK_ACCEL_VISIBLE);
 
   GtkWidget *sep = gtk_separator_menu_item_new();
   gtk_menu_shell_append(GTK_MENU_SHELL (view_menu), sep);
   gtk_widget_show(sep);
 
-  _osx_add_view_menu_item(view_menu, C_("menu", "slideshow"), "slideshow");
+  mi = _osx_add_view_menu_item(view_menu, C_("menu", "slideshow"), "slideshow");
+  gtk_widget_add_accelerator(mi, "activate", accel_group,
+                             GDK_KEY_s, 0, GTK_ACCEL_VISIBLE);
 #ifdef HAVE_MAP
-  _osx_add_view_menu_item(view_menu, C_("menu", "map"), "map");
+  mi = _osx_add_view_menu_item(view_menu, C_("menu", "map"), "map");
+  gtk_widget_add_accelerator(mi, "activate", accel_group,
+                             GDK_KEY_m, 0, GTK_ACCEL_VISIBLE);
 #endif
-  _osx_add_view_menu_item(view_menu, C_("menu", "print"), "print");
+  mi = _osx_add_view_menu_item(view_menu, C_("menu", "print"), "print");
+  gtk_widget_add_accelerator(mi, "activate", accel_group,
+                             GDK_KEY_p, 0, GTK_ACCEL_VISIBLE);
 #ifdef HAVE_GPHOTO2
-  _osx_add_view_menu_item(view_menu, C_("menu", "tethering"), "tethering");
+  mi = _osx_add_view_menu_item(view_menu, C_("menu", "tethering"), "tethering");
+  gtk_widget_add_accelerator(mi, "activate", accel_group,
+                             GDK_KEY_t, 0, GTK_ACCEL_VISIBLE);
 #endif
 
   gtk_menu_item_set_submenu(GTK_MENU_ITEM (view_root_menu), view_menu);
@@ -1265,6 +1283,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   gtkosx_application_insert_app_menu_item(OSXApp, mi_about, 0);
 
   GtkWidget *mi_prefs = gtk_menu_item_new_with_label(C_("menu", "Preferences"));
+  gtk_widget_add_accelerator(mi_prefs, "activate", accel_group,
+                             GDK_KEY_comma, GDK_META_MASK, GTK_ACCEL_VISIBLE);
   g_signal_connect(G_OBJECT(mi_prefs), "activate",
                    G_CALLBACK(dt_gui_preferences_show), NULL);
   gtkosx_application_insert_app_menu_item(OSXApp, mi_prefs, 1);
