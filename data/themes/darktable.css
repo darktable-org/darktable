@@ -656,12 +656,19 @@ dialog .sidebar row:selected:hover label,
   background-color: shade(@collapsible_bg_color, 1.04);
 }
 
+.dt_section_expander {
+  padding: 0.07em 0 0.07em 1.7em;  
+}
+
 .dt_section_expander,
 .dt_section_expander label
 {
   background-color: @collapsible_bg_color;
   border: none;
   margin-top: 0.14em;
+}
+
+.dt_section_expander label {
   padding: 0.07em 0;
 }
 
