@@ -635,7 +635,7 @@ int dt_opencl_local_buffer_opt(const int devid,
 void dt_opencl_write_device_config(const int devid);
 gboolean dt_opencl_read_device_config(const int devid);
 gboolean dt_opencl_avoid_atomics(const int devid);
-int dt_opencl_micro_nap(const int devid);
+void dt_opencl_micro_nap(const int devid);
 gboolean dt_opencl_use_pinned_memory(const int devid);
 
 G_END_DECLS

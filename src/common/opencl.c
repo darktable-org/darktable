@@ -311,10 +311,11 @@ gboolean dt_opencl_avoid_atomics(const int devid)
   return (!_cldev_running(devid)) ? FALSE : cl->dev[devid].avoid_atomics;
 }
 
-int dt_opencl_micro_nap(const int devid)
+void dt_opencl_micro_nap(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
-  return (!_cldev_running(devid)) ? 0 : cl->dev[devid].micro_nap;
+  if(_cldev_running(devid))
+    dt_iop_nap(cl->dev[devid].micro_nap);
 }
 
 gboolean dt_opencl_use_pinned_memory(const int devid)
