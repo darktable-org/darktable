@@ -166,12 +166,6 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-static int _gui_has_focus(dt_iop_module_t *self)
-{
-  return (self->dev->gui_module == self
-          && dt_dev_modulegroups_test_activated(darktable.develop));
-}
-
 static void _commit_box(dt_iop_module_t *self,
                         dt_iop_crop_gui_data_t *g,
                         dt_iop_crop_params_t *p)
@@ -421,7 +415,7 @@ void commit_params(dt_iop_module_t *self,
   dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)p1;
   dt_iop_crop_data_t *d = piece->data;
 
-  if(_gui_has_focus(self) && (pipe->type & DT_DEV_PIXELPIPE_BASIC))
+  if(dt_iop_has_focus(self) && (pipe->type & DT_DEV_PIXELPIPE_BASIC))
   {
     d->cx = 0.0f;
     d->cy = 0.0f;

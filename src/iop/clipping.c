@@ -391,12 +391,6 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-static int gui_has_focus(dt_iop_module_t *self)
-{
-  return (self->dev->gui_module == self
-          && dt_dev_modulegroups_test_activated(darktable.develop));
-}
-
 static void keystone_get_matrix(const dt_boundingbox_t k_space, float kxa, float kxb, float kxc, float kxd, float kya,
                                 float kyb, float kyc, float kyd, float *a, float *b, float *d, float *e,
                                 float *g, float *h)
@@ -1328,7 +1322,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     d->k_apply = 0;
   }
 
-  if(gui_has_focus(self))
+  if(dt_iop_has_focus(self))
   {
     d->cx = 0.0f;
     d->cy = 0.0f;

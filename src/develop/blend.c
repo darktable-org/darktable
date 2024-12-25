@@ -504,9 +504,7 @@ void dt_develop_blend_process(dt_iop_module_t *self,
                               const dt_iop_roi_t *const roi_in,
                               const dt_iop_roi_t *const roi_out)
 {
-  if(piece->pipe->bypass_blendif
-     && self->dev->gui_attached
-     && (self == self->dev->gui_module))
+  if(piece->pipe->bypass_blendif && dt_iop_has_focus(self))
     return;
 
   const dt_develop_blend_params_t *const d = piece->blendop_data;
@@ -545,10 +543,7 @@ void dt_develop_blend_process(dt_iop_module_t *self,
     return;
   }
 
-  const gboolean valid_request =
-      self->dev->gui_attached
-      && (self == self->dev->gui_module)
-      && (piece->pipe == self->dev->full.pipe);
+  const gboolean valid_request = dt_iop_has_focus(self) && (piece->pipe == self->dev->full.pipe);
 
   // does user want us to display a specific channel?
   const dt_dev_pixelpipe_display_mask_t request_mask_display =
@@ -934,9 +929,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
                                      const dt_iop_roi_t *roi_in,
                                      const dt_iop_roi_t *roi_out)
 {
-  if(piece->pipe->bypass_blendif
-      && self->dev->gui_attached
-      && (self == self->dev->gui_module))
+  if(piece->pipe->bypass_blendif && dt_iop_has_focus(self))
     return TRUE;
 
   dt_develop_blend_params_t *const d = piece->blendop_data;
@@ -971,10 +964,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
   // only non-zero if mask_display was set by an _earlier_ module
   const dt_dev_pixelpipe_display_mask_t mask_display = piece->pipe->mask_display;
 
-  const gboolean valid_request =
-      self->dev->gui_attached
-      && (self == self->dev->gui_module)
-      && (piece->pipe == self->dev->full.pipe);
+  const gboolean valid_request = dt_iop_has_focus(self) && (piece->pipe == self->dev->full.pipe);
 
   // does user want us to display a specific channel?
   const dt_dev_pixelpipe_display_mask_t request_mask_display =
