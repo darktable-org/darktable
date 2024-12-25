@@ -532,8 +532,8 @@ static void _gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
   // we remove the plugin effectively
   if(!dt_iop_is_hidden(module))
   {
-    dt_iop_gui_cleanup_module(module);
     gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
+    dt_iop_gui_cleanup_module(module);
   }
 
   // we remove all references in the history stack and dev->iop
