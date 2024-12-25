@@ -233,7 +233,7 @@ GTimeSpan dt_datetime_now_to_gtimespan(void)
 void dt_datetime_exif_to_img(dt_image_t *img,
                              const char *exif)
 {
-  if(!exif) return;
+  if(!exif || !img) return;
   GDateTime *gdt = dt_datetime_exif_to_gdatetime(exif, darktable.utc_tz);
   if(gdt)
   {
@@ -247,7 +247,7 @@ gboolean dt_datetime_img_to_exif(char *exif,
                                  const size_t exif_size,
                                  const dt_image_t *img)
 {
-  return dt_datetime_gtimespan_to_exif(exif, exif_size, img->exif_datetime_taken);
+  return img ? dt_datetime_gtimespan_to_exif(exif, exif_size, img->exif_datetime_taken) : FALSE;
 }
 
 GDateTime *dt_datetime_exif_to_gdatetime(const char *exif,

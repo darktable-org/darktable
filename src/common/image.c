@@ -1100,11 +1100,11 @@ void dt_image_set_raw_aspect_ratio(const dt_imgid_t imgid)
       image->aspect_ratio = (float )image->p_width / (float )(MAX(1, image->p_height));
     else
       image->aspect_ratio = (float )image->p_height / (float )(MAX(1, image->p_width));
-  }
-  /* store */
-  dt_image_cache_write_release_info(darktable.image_cache, image,
+    /* store */
+    dt_image_cache_write_release_info(darktable.image_cache, image,
                                     DT_IMAGE_CACHE_SAFE,
                                     "dt_image_set_raw_aspect_ratio");
+  }
 }
 
 void dt_image_set_aspect_ratio_to(const dt_imgid_t imgid,
@@ -1163,17 +1163,19 @@ void dt_image_reset_aspect_ratio(const dt_imgid_t imgid, const gboolean raise)
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
   /* set image aspect ratio */
-  if(image) image->aspect_ratio = 0.f;
-
-  /* store in db, but don't synch XMP */
-  dt_image_cache_write_release_info(darktable.image_cache, image,
+  if(image)
+  {
+    image->aspect_ratio = 0.f;
+    /* store in db, but don't synch XMP */
+    dt_image_cache_write_release_info(darktable.image_cache, image,
                                     DT_IMAGE_CACHE_RELAXED,
                                     "dt_image_reset_aspect_ratio");
 
-  if(image && raise && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
+  if(raise && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
                                DT_COLLECTION_PROP_ASPECT_RATIO,
                                g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
+  }
 }
 
 float dt_image_set_aspect_ratio(const dt_imgid_t imgid, const gboolean raise)
