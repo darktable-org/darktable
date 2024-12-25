@@ -582,8 +582,6 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
     const int width = roi_in->width;
     const int height = roi_in->height;
 
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-
     dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
     if(dev_tmp == NULL) goto error;
 
