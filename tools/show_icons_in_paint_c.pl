@@ -7,6 +7,9 @@ $BORDER = 4;
 $FONTSIZE = 12;
 $ALIGNMENT_CROSS = false;
 
+$BG_COLOR = 0.42;
+$FG_COLOR = 0.94;
+
 my $srcdir = $ARGV[0];
 my $argc = @ARGV;
 
@@ -119,7 +122,7 @@ int main(){
 	cairo_set_font_size (cr, $FONTSIZE);
 
 	cairo_rectangle(cr, 0.0, 0.0, width, height);
-	cairo_set_source_rgb(cr, .15, .15, .15);
+	cairo_set_source_rgb(cr, $BG_COLOR, $BG_COLOR, $BG_COLOR);
 	cairo_fill(cr);
 EOF
 
@@ -142,7 +145,7 @@ foreach my $line (@codelines){
 	# add description text
 	print TESTC <<EOF;
 	cairo_save(cr);
-	cairo_set_source_rgb(cr, .79, .79, .79);
+	cairo_set_source_rgb(cr, $FG_COLOR, $FG_COLOR, $FG_COLOR);
 	cairo_move_to (cr, $BORDER, $BORDER+$row*($ICONHEIGHT+$BORDER)+0.8*$ICONHEIGHT);
 	cairo_show_text(cr, "$description");
 	cairo_restore(cr);
@@ -154,7 +157,7 @@ EOF
 		print TESTC <<EOF;
 		cairo_save(cr);
 		cairo_rectangle(cr, textwidth+2*$BORDER+$column*($ICONWIDTH+$BORDER), $BORDER+$row*($ICONHEIGHT+$BORDER), $ICONWIDTH, $ICONHEIGHT);
-		cairo_set_source_rgb(cr, .17, .17, .17);
+		cairo_set_source_rgb(cr, $BG_COLOR+0.02, $BG_COLOR+0.02, $BG_COLOR+0.02);
 		cairo_fill(cr);
 EOF
 		if($ALIGNMENT_CROSS eq true){
@@ -170,7 +173,7 @@ EOF
 		cairo_move_to(cr, textwidth+2*$BORDER+$column*($ICONWIDTH+$BORDER), $BORDER+$row*($ICONHEIGHT+$BORDER)+0.5*$ICONHEIGHT);
 		cairo_line_to(cr, textwidth+2*$BORDER+$column*($ICONWIDTH+$BORDER)+$ICONWIDTH, $BORDER+$row*($ICONHEIGHT+$BORDER)+0.5*$ICONHEIGHT);
 		cairo_stroke(cr);
-		cairo_set_source_rgb(cr, .79, .79, .79);
+		cairo_set_source_rgb(cr, $FG_COLOR, $FG_COLOR, $FG_COLOR);
 		$code(cr, textwidth+3*$BORDER+$column*($ICONWIDTH+$BORDER), 2*$BORDER+$row*($ICONHEIGHT+$BORDER), $ICONWIDTH-2*$BORDER, $ICONHEIGHT-2*$BORDER, $direction, $data);
 		cairo_restore(cr);
 EOF
