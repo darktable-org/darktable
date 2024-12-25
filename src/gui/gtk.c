@@ -1215,11 +1215,11 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   GtkWidget *view_menu = gtk_menu_new();
   GtkWidget *mi;
-  mi = _osx_add_view_menu_item(view_menu, C_("menu", "lighttable"), "lighttable");
+  mi = _osx_add_view_menu_item(view_menu, C_("menu", "Lighttable"), "lighttable");
   gtk_widget_add_accelerator(mi, "activate", accel_group,
                              GDK_KEY_l, 0, GTK_ACCEL_VISIBLE);
 
-  mi = _osx_add_view_menu_item(view_menu, C_("menu", "darkroom"), "darkroom");
+  mi = _osx_add_view_menu_item(view_menu, C_("menu", "Darkroom"), "darkroom");
   gtk_widget_add_accelerator(mi, "activate", accel_group,
                              GDK_KEY_d, 0, GTK_ACCEL_VISIBLE);
 
@@ -1227,19 +1227,19 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   gtk_menu_shell_append(GTK_MENU_SHELL (view_menu), sep);
   gtk_widget_show(sep);
 
-  mi = _osx_add_view_menu_item(view_menu, C_("menu", "slideshow"), "slideshow");
+  mi = _osx_add_view_menu_item(view_menu, C_("menu", "Slideshow"), "slideshow");
   gtk_widget_add_accelerator(mi, "activate", accel_group,
                              GDK_KEY_s, 0, GTK_ACCEL_VISIBLE);
 #ifdef HAVE_MAP
-  mi = _osx_add_view_menu_item(view_menu, C_("menu", "map"), "map");
+  mi = _osx_add_view_menu_item(view_menu, C_("menu", "Map"), "map");
   gtk_widget_add_accelerator(mi, "activate", accel_group,
                              GDK_KEY_m, 0, GTK_ACCEL_VISIBLE);
 #endif
-  mi = _osx_add_view_menu_item(view_menu, C_("menu", "print"), "print");
+  mi = _osx_add_view_menu_item(view_menu, C_("menu", "Print"), "print");
   gtk_widget_add_accelerator(mi, "activate", accel_group,
                              GDK_KEY_p, 0, GTK_ACCEL_VISIBLE);
 #ifdef HAVE_GPHOTO2
-  mi = _osx_add_view_menu_item(view_menu, C_("menu", "tethering"), "tethering");
+  mi = _osx_add_view_menu_item(view_menu, C_("menu", "Tethering"), "tethering");
   gtk_widget_add_accelerator(mi, "activate", accel_group,
                              GDK_KEY_t, 0, GTK_ACCEL_VISIBLE);
 #endif
