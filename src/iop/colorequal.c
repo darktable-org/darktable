@@ -2537,7 +2537,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
 
   dt_free_align(g->LUT);
 
-  if(self->enabled && (self == self->dev->gui_module) && g->picking)
+  if(self->enabled && dt_iop_has_focus(self) && g->picking)
     _draw_color_picker(self, cr, p, g, (double)graph_width, (double)graph_height);
 
   cairo_restore(cr);
