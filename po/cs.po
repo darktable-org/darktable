@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: darktable 5.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-12-01 18:37+0100\n"
-"PO-Revision-Date: 2024-12-15 12:04+0100\n"
+"PO-Revision-Date: 2024-12-31 17:47+0100\n"
 "Last-Translator: Jan Šmucr <jan.smucr@gmail.com>\n"
 "Language-Team: Jan Šmucr <jan.smucr@gmail.com>, Petr Stasiak <petr@stasiak."
 "cz>\n"
@@ -6229,15 +6229,15 @@ msgstr "exportní profil"
 #: ../src/common/colorspaces.c:1427 ../src/common/colorspaces.c:1772
 #: ../src/views/darkroom.c:2481
 msgid "softproof profile"
-msgstr "profil jemný obrys"
+msgstr "softproof profil"
 
 #: ../src/common/colorspaces.c:1437 ../src/common/colorspaces.c:1754
 msgid "system display profile"
-msgstr "profil zobrazení systému"
+msgstr "systémový barevný profil"
 
 #: ../src/common/colorspaces.c:1442 ../src/common/colorspaces.c:1776
 msgid "system display profile (second window)"
-msgstr "profil zobrazení systému (druhé okno)"
+msgstr "systémový barevný profil (druhé okno)"
 
 #: ../src/common/colorspaces.c:1455
 msgid "sRGB (web-safe)"
@@ -18620,7 +18620,7 @@ msgstr "chybějící výstupní profil byl nahrazen sRGB!"
 
 #: ../src/iop/colorout.c:675
 msgid "missing softproof profile has been replaced by sRGB!"
-msgstr "chybějící profil jemný obrys byl nahrazen sRGB!"
+msgstr "chybějící softproof profil byl nahrazen sRGB!"
 
 #: ../src/iop/colorout.c:718
 msgid "unsupported output profile has been replaced by sRGB!"
@@ -22981,7 +22981,7 @@ msgstr "podle fotoaparátu"
 #: ../src/iop/temperature.c:1692
 msgctxt "white balance"
 msgid "as shot to reference"
-msgstr "jako snímek podle fotoaparátu"
+msgstr "jako snímek, podle fotoaparátu"
 
 #: ../src/iop/temperature.c:1998 ../src/iop/temperature.c:2016
 msgid "green channel coefficient"
@@ -28463,15 +28463,17 @@ msgstr "druhé okno"
 
 #: ../src/views/darkroom.c:2272
 msgid "display a second darkroom image window"
-msgstr "zobrazit druhé okno s darkroomem"
+msgstr "zobrazit druhé okno s náhledem"
 
+# white frame around the image
 #: ../src/views/darkroom.c:2278
 msgid "color assessment"
-msgstr "hodnocení barev"
+msgstr "režim kontroly barev"
 
+# white frame around the image (tooltip)
 #: ../src/views/darkroom.c:2280
 msgid "toggle ISO 12646 color assessment conditions"
-msgstr "přepnout podmínky hodnocení barev ISO 12646"
+msgstr "Přepnout do režimu kontroly barev podle ISO 12646"
 
 #: ../src/views/darkroom.c:2289
 msgid "high quality processing"
@@ -28639,14 +28641,14 @@ msgstr ""
 
 #: ../src/views/darkroom.c:2422
 msgid "softproof"
-msgstr "kontrolní náhled"
+msgstr "softproof náhled"
 
 #: ../src/views/darkroom.c:2425
 msgid ""
 "toggle softproofing\n"
 "right-click for profile options"
 msgstr ""
-"Zapnout kontrolní náhled.\n"
+"Zapnout softproof náhled.\n"
 "Kliknutím pravým tlačítkem zobrazíte nastavení barevných profilů."
 
 #: ../src/views/darkroom.c:2436
@@ -28670,35 +28672,37 @@ msgstr "náhledový záměr"
 
 #: ../src/views/darkroom.c:2479 ../src/views/lighttable.c:1188
 msgid "display profile"
-msgstr "profil displeje"
+msgstr "barevný profil"
 
 #: ../src/views/darkroom.c:2480 ../src/views/lighttable.c:1191
 msgid "preview display profile"
-msgstr "ukázat profil displeje"
+msgstr "barevný profil (druhé okno)"
 
 #: ../src/views/darkroom.c:2482
 msgid "histogram profile"
 msgstr "profil histogramu"
 
+# white frame around the image (second window, tooltip)
 #: ../src/views/darkroom.c:2489
 msgid "second preview window ISO 12646 color assessment"
-msgstr "druhé okno náhledu barvy podle ISO 12646"
+msgstr "Přepnout do režimu kontroly barev podle ISO 12646 (druhé okno)"
 
+# white frame around the image (second window)
 #: ../src/views/darkroom.c:2491
 msgid "color assessment second preview"
-msgstr "posouzení barev druhý náhled"
+msgstr "režim kontroly barev (druhé okno)"
 
 #: ../src/views/darkroom.c:2550 ../src/views/lighttable.c:1225
 msgid "display ICC profiles"
-msgstr "zobrazení ICC profilů"
+msgstr "ICC profily"
 
 #: ../src/views/darkroom.c:2554 ../src/views/lighttable.c:1229
 msgid "preview display ICC profiles"
-msgstr "náhled ICC profilů displeje"
+msgstr "ICC profily (druhé okno)"
 
 #: ../src/views/darkroom.c:2558
 msgid "softproof ICC profiles"
-msgstr "měkké ICC profily"
+msgstr "softproof ICC profily"
 
 #: ../src/views/darkroom.c:2562
 msgid "histogram and color picker ICC profiles"
