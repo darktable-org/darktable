@@ -174,11 +174,13 @@ Required dependencies (minimum version):
 * GLib 2.56
 * SQLite 3.26
 * libcurl 7.56
+* libpng 1.5.0 *(for PNG import & export, also for reading LUT files in PNG format)*
 * Exiv2 0.27.2 *(but at least 0.27.4 built with ISO BMFF support needed for Canon CR3 raw import)*
 * pugixml 1.5
 
 Required dependencies (no version requirement):
 * Lensfun *(for automatic lens correction)* (Note: alpha 0.3.95 and git master branch are not supported)
+* LibTIFF *(for TIFF import & export)*
 * Little CMS 2
 
 Optional dependencies (minimum version):
