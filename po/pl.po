@@ -4,8 +4,8 @@ msgstr ""
 "Project-Id-Version: darktable 1.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-12-01 18:37+0100\n"
-"PO-Revision-Date: 2024-12-26 19:20+0100\n"
-"Last-Translator: Wiktor <kontakt.bajdero@gmail.com>\n"
+"PO-Revision-Date: 2024-12-27 20:01+0100\n"
+"Last-Translator: Wojciech Nagrodzki <https://wnagrodzki.eu>\n"
 "Language-Team: Polish < >\n"
 "Language: pl_PL\n"
 "MIME-Version: 1.0\n"
@@ -170,10 +170,8 @@ msgid "max"
 msgstr "maks"
 
 #: ../build/bin/conf_gen.h:970
-#, fuzzy
-#| msgid "select only new pictures"
 msgid "select only new images"
-msgstr "tylko nowe zdjęcia"
+msgstr "wybierz tylko nowe zdjęcia"
 
 #: ../build/bin/conf_gen.h:971
 msgid "only select images that have not already been imported"
@@ -872,10 +870,8 @@ msgid "session options"
 msgstr "opcje sesji"
 
 #: ../build/bin/preferences_gen.h:4310
-#, fuzzy
-#| msgid "select directory"
 msgid "base filmroll's directory"
-msgstr "wybierz katalog"
+msgstr "katalog bazowy rolki filmu"
 
 #: ../build/bin/preferences_gen.h:4325 ../build/bin/preferences_gen.h:4364
 #: ../build/bin/preferences_gen.h:4398 ../build/bin/preferences_gen.h:4437
@@ -932,19 +928,15 @@ msgstr "kliknij dwukrotnie, aby zresetować do „%s”"
 
 #: ../build/bin/preferences_gen.h:4328
 msgid "directory where new imported filmrolls are created"
-msgstr ""
+msgstr "katalog gdzie nowo zaimportowane rolki filmu są tworzone"
 
 #: ../build/bin/preferences_gen.h:4349
-#, fuzzy
-#| msgid "filmroll"
 msgid "filmroll name"
-msgstr "rolka filmu"
+msgstr "nazwa rolki filmu"
 
 #: ../build/bin/preferences_gen.h:4367
-#, fuzzy
-#| msgid "name of the import job"
 msgid "name of the imported filmroll"
-msgstr "nazwa zadania importu"
+msgstr "nazwa zaimportowanej rolki filmu"
 
 #: ../build/bin/preferences_gen.h:4388
 msgid "keep original filename"
@@ -1174,10 +1166,8 @@ msgstr ""
 "pełnego podglądu bardzo się poprawi."
 
 #: ../build/bin/preferences_gen.h:4876
-#, fuzzy
-#| msgid "creating complete lighttable thumbnail cache\n"
 msgid "enable smooth scrolling for lighttable thumbnails"
-msgstr "tworzenie kompletnego cache miniaturek stołu podświetlanego\n"
+msgstr "aktywuj płynne przewijanie miniaturek stołu podświetlanego"
 
 #: ../build/bin/preferences_gen.h:4889
 msgid ""
@@ -1186,6 +1176,10 @@ msgid ""
 "disabled, the lighttable scrolls full rows of thumbnails, as befits a scroll "
 "wheel."
 msgstr ""
+"jeśli włączone, przewijanie stołu podświetlanego przewija o pewną liczbę "
+"pikseli, jak to jest oczekiwane od gładzika.\n"
+"jeśli wyłączone, stół podświetlany przewija pełne rzędy miniatur, jak to "
+"jest oczekiwane od kółka przewijania."
 
 #: ../build/bin/preferences_gen.h:4910
 msgid "generate thumbnails in background"
@@ -1399,16 +1393,12 @@ msgid "scroll processing modules to the top when expanded"
 msgstr "przewiń do modułów podczas rozwijania/zwijania"
 
 #: ../build/bin/preferences_gen.h:5669
-#, fuzzy
-#| msgid "show right-side buttons in processing module headers"
 msgid "swap the utility and processing modules panels"
-msgstr "pokazuj przyciski z prawej strony nagłówków modułów"
+msgstr "zamień panele modułów narzędziowych i produkcyjnych miejscami"
 
 #: ../build/bin/preferences_gen.h:5682
-#, fuzzy
-#| msgid "scroll processing modules to the top when expanded"
 msgid "move the list of processing modules to the left of the screen"
-msgstr "przewiń do modułów podczas rozwijania/zwijania"
+msgstr "przenieś listę modułów produkcyjnych na lewą stronę ekranu"
 
 #: ../build/bin/preferences_gen.h:5703
 msgid "show right-side buttons in processing module headers"
@@ -1614,16 +1604,7 @@ msgid "darktable resources"
 msgstr "zasoby darktable"
 
 #: ../build/bin/preferences_gen.h:6176
-#, fuzzy, no-c-format
-#| msgid ""
-#| "defines how much darktable may take from your system resources:\n"
-#| " - 'default': darktable takes ~50% of your systems resources, which is "
-#| "enough to be performant.\n"
-#| " - 'small': should be used if you are simultaneously running applications "
-#| "taking large parts of your systems memory or OpenCL/GL applications like "
-#| "games or Hugin.\n"
-#| " - 'large': is the best option if you are mainly using darktable and want "
-#| "it to take most of your systems resources for performance."
+#, no-c-format
 msgid ""
 "defines how much darktable may take from your system resources:\n"
 " - 'default': darktable takes ~50% of your systems resources, which is "
@@ -1636,11 +1617,11 @@ msgid ""
 "resources for performance."
 msgstr ""
 "ustala ile zasobów systemowych może zająć darktable.\n"
-"- 'domyślne': zajmuje ~50% zasobów i pozwala darktable pracować normalnie.\n"
+"- 'domyślne': zajmuje ~50% zasobów i pozwala darktable pracować wydajnie.\n"
 "- 'mało': do użycia gdy obok darktable pracują programy zajmujące dużo RAMu "
 "lub OpenCL/GL, takie jak gry, czy Hugin.\n"
-"- dużo: najlepsze, gdy używasz głównie darktable i chcesz, by wykorzystał "
-"jak najlepiej zasoby komputera."
+"- 'dużo': najlepsze, jeśli nie korzystasz z innych aplikacji w tym samym "
+"czasie co darktable i chcesz, by wykorzystał jak najlepiej zasoby komputera."
 
 #: ../build/bin/preferences_gen.h:6197
 msgid "prefer performance over quality"
@@ -1656,24 +1637,20 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6219
 msgid "OpenCL GPU acceleration"
-msgstr ""
+msgstr "akceleracja GPU OpenCL"
 
 #: ../build/bin/preferences_gen.h:6238
 msgid "activate OpenCL support"
 msgstr "włącz obsługę OpenCL"
 
 #: ../build/bin/preferences_gen.h:6251
-#, fuzzy
-#| msgid ""
-#| "if found, use OpenCL runtime on your system to speed up processing.\n"
-#| "can be switched on and off at any time."
 msgid ""
 "if found, use OpenCL runtime on your system to speed up processing by using "
 "your graphics card(s).\n"
 "can be switched on and off at any time."
 msgstr ""
-"używaj OpenCL do przyspieszenia przetwarzania, jeśli zostanie wykryty w "
-"systemie.\n"
+"używaj środowiska uruchomieniowego OpenCL w systemie do przyspieszenia "
+"przetwarzania, jeśli zostanie wykryty w systemie.\n"
 "może być włączone lub wyłączone w dowolnym momencie."
 
 #: ../build/bin/preferences_gen.h:6255 ../build/bin/preferences_gen.h:6300
@@ -1721,16 +1698,10 @@ msgstr ""
 "sekwencyjnie na GPU."
 
 #: ../build/bin/preferences_gen.h:6327
-#, fuzzy
-#| msgid "use all device memory"
 msgid "use all GPU memory"
-msgstr "użyj całej pamięci urządzenia"
+msgstr "użyj całej pamięci GPU"
 
 #: ../build/bin/preferences_gen.h:6340
-#, fuzzy
-#| msgid ""
-#| "if enabled darktable will use all device memory except a safety margin "
-#| "(headroom, default is 600MB)"
 msgid ""
 "if enabled darktable will use all graphics device memory except a safety "
 "margin (headroom, default is 600MB)"
@@ -2063,13 +2034,15 @@ msgstr "interfejs"
 
 #: ../build/bin/preferences_gen.h:7467
 msgid "show splash screen at startup"
-msgstr ""
+msgstr "pokazuj ekran powitalny przy starcie"
 
 #: ../build/bin/preferences_gen.h:7480
 msgid ""
 "display a small window showing the progress of darktable startup before the "
 "main window appears"
 msgstr ""
+"wyświetla małe okno pokazujące postęp uruchamiania darktable przed "
+"pojawieniem się głównego okna"
 
 #: ../build/bin/preferences_gen.h:7501
 msgid "load default shortcuts at startup"
@@ -2304,10 +2277,8 @@ msgid "slideshow view"
 msgstr "pokaz slajdów"
 
 #: ../build/bin/preferences_gen.h:8136
-#, fuzzy
-#| msgid "waiting time between each picture in slideshow"
 msgid "waiting time between each image in slideshow"
-msgstr "opóźnienie pomiędzy zdjęciami w pokazie slajdów"
+msgstr "czas oczekiwania pomiędzy zdjęciami w pokazie slajdów"
 
 #: ../build/bin/preferences_gen.h:8196
 msgid "do not set the 'uncategorized' entry for tags"
@@ -3951,10 +3922,8 @@ msgid "Floyd-Steinberg 4-bit RGB"
 msgstr "Floyd-Steinberg 4-bit RGB"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:198
-#, fuzzy
-#| msgid "Floyd-Steinberg 2-bit gray"
 msgid "Floyd-Steinberg 6-bit gray"
-msgstr "Floyd-Steinberg 2-bit szary"
+msgstr "Floyd-Steinberg 6-bit szary"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:199
 msgid "Floyd-Steinberg 8-bit RGB"
@@ -4305,35 +4274,24 @@ msgid "flip horizontally"
 msgstr "odbicie w poziomie"
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:104
-#, fuzzy
-#| msgid "translators"
 msgid "transpose"
-msgstr "tłumacze"
+msgstr "transpozycja"
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:107
-#, fuzzy
-#| msgid "rotate by 180"
 msgid "rotate 180°"
-msgstr "obrót o 180"
+msgstr "obrót o 180°"
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:109
-#, fuzzy
-#| msgid "rotate by -90"
 msgid "rotate 90°"
-msgstr "obrót o -90"
+msgstr "obrót o 90°"
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:110
-#, fuzzy
-#| msgid "rotate by -90"
 msgid "rotate -90°"
-msgstr "obrót o -90"
+msgstr "obrót o -90°"
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:111
-#, fuzzy
-#| msgctxt "blendoperation"
-#| msgid "reverse"
 msgid "transverse"
-msgstr "odwracanie"
+msgstr "poprzeczny"
 
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:60
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:125
@@ -4567,8 +4525,6 @@ msgstr "geometria docelowa"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:268
 #: ../build/lib/darktable/plugins/introspection_lens.cc:453
-#, fuzzy
-#| msgid "TCA overwrite"
 msgid "TCA override"
 msgstr "nadpisanie poprzecznej aberracji chromatycznej"
 
@@ -6394,10 +6350,9 @@ msgid "error loading directory `%s'"
 msgstr "błąd przy wczytywaniu katalogu „%s”"
 
 #: ../src/common/darktable.c:466
-#, fuzzy, c-format
-#| msgid "file `%s' has unknown format!"
+#, c-format
 msgid "file `%s' has unsupported format!"
-msgstr "format pliku „%s” jest nieznany!"
+msgstr "format pliku „%s” jest niewspierany!"
 
 #: ../src/common/darktable.c:468
 #, c-format
@@ -6412,90 +6367,64 @@ msgstr "błąd przy wczytywaniu pliku „%s”"
 
 #. initialize the database
 #: ../src/common/darktable.c:1518
-#, fuzzy
-#| msgid "add existing images to the library"
 msgid "opening image library"
-msgstr "dodaj istniejące zdjęcia do biblioteki"
+msgstr "otwieranie biblioteki zdjęć"
 
 #: ../src/common/darktable.c:1531
 msgid "forwarding image(s) to running instance"
-msgstr ""
+msgstr "przekazywanie obraz(ów) do działającej instancji"
 
 #: ../src/common/darktable.c:1563
-#, fuzzy
-#| msgid "_upgrade database"
 msgid "preparing database"
-msgstr "_uaktualnienie bazy danych"
+msgstr "przygotowywanie bazy danych"
 
 #: ../src/common/darktable.c:1681
-#, fuzzy
-#| msgid "GraphicsMagick"
 msgid "initializing GraphicsMagick"
-msgstr "GraphicsMagick"
+msgstr "inicjalizacja GraphicsMagick"
 
 #. ImageMagick init
 #: ../src/common/darktable.c:1693
-#, fuzzy
-#| msgid "ImageMagick"
 msgid "initializing ImageMagick"
-msgstr "ImageMagick"
+msgstr "inicjalizacja ImageMagick"
 
 #: ../src/common/darktable.c:1698
-#, fuzzy
-#| msgid "reinitialising input devices"
 msgid "initializing libheif"
-msgstr "ponownie zainicjuj urządzenia wejściowe"
+msgstr "inicjalizacja libheif"
 
 #: ../src/common/darktable.c:1702
 msgid "starting OpenCL"
-msgstr ""
+msgstr "uruchamianie OpenCL"
 
 #: ../src/common/darktable.c:1715
-#, fuzzy
-#| msgid "denoise (profiled)"
 msgid "loading noise profiles"
-msgstr "odszumianie (profilowane)"
+msgstr "ładowanie profili szumów"
 
 #: ../src/common/darktable.c:1735
-#, fuzzy
-#| msgid "synchronization log"
 msgid "synchronizing local copies"
-msgstr "log synchronizacji"
+msgstr "synchronizowanie kopii lokalnych"
 
 #. Initialize the camera control.  this is done late so that the
 #. gui can react to the signal sent but before switching to
 #. lighttable!
 #: ../src/common/darktable.c:1742
-#, fuzzy
-#| msgctxt "section"
-#| msgid "camera control"
 msgid "initializing camera control"
-msgstr "kontrola aparatu"
+msgstr "inicjalizacja kontroli aparatu"
 
 #: ../src/common/darktable.c:1752
-#, fuzzy
-#| msgid "initial rating"
 msgid "initializing GUI"
-msgstr "wstępna ocena przy imporcie"
+msgstr "inicjalizacja graficznego interfejsu użytkownika"
 
 #: ../src/common/darktable.c:1776
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "processing modules"
 msgid "loading processing modules"
-msgstr "moduły"
+msgstr "ładowanie modułów przetwarzania"
 
 #: ../src/common/darktable.c:1830
-#, fuzzy
-#| msgid "initial rating"
 msgid "initializing Lua"
-msgstr "wstępna ocena przy imporcie"
+msgstr "inicjalizacja Lua"
 
 #: ../src/common/darktable.c:1860
-#, fuzzy
-#| msgid "importing image %s"
 msgid "importing image"
-msgstr "importowanie zdjęcia %s"
+msgstr "importowanie zdjęcia"
 
 #: ../src/common/darktable.c:1879
 msgid "configuration information"
@@ -6623,36 +6552,11 @@ msgid ""
 "OpenCL mandatory timeout has been updated to 1000.\n"
 "\n"
 msgstr ""
+"obowiązkowy limit czasu OpenCL został zaktualizowany do 1000.\n"
+"\n"
 
 #: ../src/common/database.c:3748
-#, fuzzy, c-format
-#| msgid ""
-#| "\n"
-#| "  Sorry, darktable could not be started (database is locked)\n"
-#| "\n"
-#| "  How to solve this problem?\n"
-#| "\n"
-#| "  1 - If another darktable instance is already open, \n"
-#| "      click cancel and either use that instance or close it before "
-#| "attempting to rerun darktable \n"
-#| "      (process ID <i><b>%d</b></i> created the database locks)\n"
-#| "\n"
-#| "  2 - If you can't find a running instance of darktable, try restarting "
-#| "your session or your computer. \n"
-#| "      This will close all running programs and hopefully close the "
-#| "databases correctly. \n"
-#| "\n"
-#| "  3 - If you have done this or are certain that no other instances of "
-#| "darktable are running, \n"
-#| "      this probably means that the last instance was ended abnormally. \n"
-#| "      Click on the \"delete database lock files\" button to remove the "
-#| "files <i>data.db.lock</i> and <i>library.db.lock</i>.  \n"
-#| "\n"
-#| "\n"
-#| "      <i><u>Caution!</u> Do not delete these files without first "
-#| "undertaking the above checks, \n"
-#| "      otherwise you risk generating serious inconsistencies in your "
-#| "database.</i>\n"
+#, c-format
 msgid ""
 "\n"
 "  Sorry, darktable could not be started (database is locked)\n"
@@ -6690,19 +6594,29 @@ msgid ""
 "</i>\n"
 msgstr ""
 "\n"
-" nie można uruchomić darktable (baza jest zablokowana)\n"
+"  Przepraszamy, nie można uruchomić darktable (baza jest zablokowana)\n"
 "\n"
-" Możliwe rozwiązania:\n"
+"  Jak rozwiązać ten problem?\n"
 "\n"
-" 1 - jeśli uruchomiona jest inna instancja darktable,\n"
-"      kliknij anuluj i albo użyj tamej kopii, albo ją zamknij i spróbuj "
+"  1 - Jeśli uruchomiona jest inna instancja darktable,\n"
+"      kliknij anuluj i albo użyj tamtej kopii, albo ją zamknij i spróbuj "
 "ponownie uruchomić darktable\n"
-"      (blokada bazy utworzona przez process ID <i><b>%d</b></i>)\n"
-" 2 - jeśli nie możesz znaleźć działającej kopii darktable, spróbuj "
-"zrestartować sesję na swoim komputerze.\n"
-"      Zamknie to wszystkie działające programy i prawdopodobnie dobrze "
-"zamknie bazy danych.\n"
-" 3 - jeśli wykonałeś powyższe czynności i jesteś pewien, że nie działają "
+"      (blokada bazy utworzona przez proces o ID <i><b>%d</b></i>)\n"
+"\n"
+"  2 - Jeśli zamknąłeś darktable w ciągu ostatnich kilku minut, może ono "
+"nadal działać w tle.\n"
+"      Aby wyeksportować obrazy, zaktualizuj pliki pomocnicze XMP albo "
+"przeprowadź konserwację bazy danych.\n"
+"      Spróbuj ponownie gdy przetwarzanie zostanie zakończone.\n"
+"\n"
+"  3 - Jeśli nie jesteś pewny swoich umiejętności pracy z procesami systemu "
+"operacyjnego\n"
+"      byłoby bezpieczniej zrestartować sesję użytkownika albo uruchomić "
+"komputer po pewnym czasie (kilku minutach).\n"
+"      To zamknie wszystkie działające aplikacje i miejmy nadzieję poprawnie "
+"zamknie bazę danych.\n"
+"\n"
+"  4 - jeśli wykonałeś powyższe czynności i jesteś pewien, że nie działają "
 "żadne inne instancje darktable,\n"
 "      oznacza to, że ostatnia instancja zakończyła pracę nieprawidłowo.\n"
 "      Kliknij na \"usuń pliki blokady baz danych\", aby usunąć pliki <i>data."
@@ -6767,13 +6681,7 @@ msgid "error"
 msgstr "błąd"
 
 #: ../src/common/database.c:3804
-#, fuzzy, c-format
-#| msgid ""
-#| "\n"
-#| "at least one file could not be removed.\n"
-#| "you may try to manually delete the files <i>data.db.lock</i> and "
-#| "<i>library.db.lock</i>\n"
-#| "in folder <a href=\"file:///%s\">%s</a>.\n"
+#, c-format
 msgid ""
 "\n"
 "at least one file could not be deleted.\n"
@@ -6782,7 +6690,7 @@ msgid ""
 "in folder <a href=\"file:///%s\">%s</a>.\n"
 msgstr ""
 "\n"
-"przynajmniej jeden plik powinien zostać usunięty.\n"
+"przynajmniej jeden plik nie mógł zostać usunięty.\n"
 "być może trzeba ręcznie usunąć <i>data.db.lock</i> i <i>library.db.lock</i>\n"
 "w folderze <a href=\"file:///%s\">%s</a>.\n"
 
@@ -6937,16 +6845,18 @@ msgstr ""
 #, c-format
 msgid "detected OtherIlluminant in `%s`, please report via darktable github"
 msgstr ""
+"wykryto OtherIlluminant in `%s`, prosimy o zgłaszanie przez darktable github"
 
 #: ../src/common/exif.cc:1996
 #, c-format
 msgid "special exif illuminants in `%s`, please report via darktable github"
 msgstr ""
+"specjalne iluminanty exif w `%s`, prosimy o zgłaszanie przez darktable github"
 
 #: ../src/common/exif.cc:2024
 #, c-format
 msgid "forward matrix in `%s`, please report via darktable github"
-msgstr ""
+msgstr "forward matrix w `%s`, prosimy o zgłaszanie przez darktable github"
 
 #: ../src/common/exif.cc:5755
 #, c-format
@@ -6963,19 +6873,13 @@ msgid "fast guided filter failed to allocate memory, check your RAM settings"
 msgstr "błąd alokacji pamięci dla filtra prowadzonego, sprawdź ustawienia RAM"
 
 #: ../src/common/film.c:341
-#, fuzzy
-#| msgid "do you want to remove this empty directory?"
-#| msgid_plural "do you want to remove these empty directories?"
 msgid "do you want to delete this empty directory?"
 msgid_plural "do you want to delete these empty directories?"
-msgstr[0] "na pewno chcesz usunąć ten pusty katalog?"
-msgstr[1] "na pewno chcesz usunąć te puste katalogi?"
-msgstr[2] "na pewno chcesz usunąć te puste katalogi?"
+msgstr[0] "czy chcesz usunąć ten pusty katalog?"
+msgstr[1] "czy chcesz usunąć te puste katalogi?"
+msgstr[2] "czy chcesz usunąć te puste katalogi?"
 
 #: ../src/common/film.c:348
-#, fuzzy
-#| msgid "remove empty directory?"
-#| msgid_plural "remove empty directories?"
 msgid "delete empty directory?"
 msgid_plural "delete empty directories?"
 msgstr[0] "usunąć pusty katalog?"
@@ -7207,10 +7111,6 @@ msgstr ""
 "została pominięta."
 
 #: ../src/common/import_session.c:300
-#, fuzzy
-#| msgid ""
-#| "couldn't expand to a unique filename for session, please check your "
-#| "import session settings."
 msgid ""
 "couldn't expand to a unique filename for session, please check your import "
 "session settings"
@@ -7236,16 +7136,12 @@ msgid "v3.0 JPEG"
 msgstr "v3.0 JPEG"
 
 #: ../src/common/iop_order.c:64
-#, fuzzy
-#| msgid "v3.0 RAW"
 msgid "v5.0 RAW"
-msgstr "v3.0 raw"
+msgstr "v5.0 raw"
 
 #: ../src/common/iop_order.c:65
-#, fuzzy
-#| msgid "v3.0 JPEG"
 msgid "v5.0 JPEG"
-msgstr "v3.0 JPEG"
+msgstr "v5.0 JPEG"
 
 #: ../src/common/iop_profile.c:1141
 #, c-format
@@ -7302,10 +7198,8 @@ msgid "image id"
 msgstr "id obrazu"
 
 #: ../src/common/metadata.c:54
-#, fuzzy
-#| msgid "preset name"
 msgid "preserved filename"
-msgstr "nazwa presetu"
+msgstr "zachowana nazwa pliku"
 
 #: ../src/common/mipmap_cache.c:1307 ../src/imageio/imageio.c:1070
 #, c-format
@@ -7313,16 +7207,14 @@ msgid "image `%s' is not available!"
 msgstr "zdjęcie „%s” jest niedostępny!"
 
 #: ../src/common/mipmap_cache.c:1310 ../src/imageio/imageio.c:1078
-#, fuzzy, c-format
-#| msgid "error loading file `%s'"
+#, c-format
 msgid "unable to load image `%s'!"
-msgstr "błąd przy wczytywaniu pliku „%s”"
+msgstr "nie można załadować zjęcia „%s”!"
 
 #: ../src/common/mipmap_cache.c:1312 ../src/imageio/imageio.c:1081
-#, fuzzy, c-format
-#| msgid "png bit depth %d is not supported"
+#, c-format
 msgid "image '%s' not supported"
-msgstr "png o głębi %d bitów nie jest obsługiwany"
+msgstr "obraz '%s' nie jest wspierany"
 
 #: ../src/common/noiseprofiles.c:26
 msgid "generic poissonian"
@@ -7782,10 +7674,9 @@ msgid "working..."
 msgstr "pracuje..."
 
 #: ../src/control/crawler.c:167
-#, fuzzy, c-format
-#| msgid "updated XMP sidecar files found"
+#, c-format
 msgid "checking for updated sidecar files (%d%%)"
-msgstr "znaleziono zaktualizowany plik poboczny XMP"
+msgstr "sprawdzanie zaktualizowanych plików pobocznych (%d%%)"
 
 #: ../src/control/crawler.c:457
 #, c-format
@@ -7998,20 +7889,16 @@ msgstr ""
 "przenoszenia.."
 
 #: ../src/control/jobs/control_jobs.c:332
-#, fuzzy, c-format
-#| msgid "write sidecar files"
+#, c-format
 msgid "writing sidecar file"
 msgid_plural "writing %zu sidecar files"
-msgstr[0] "zapisz pliki poboczne"
-msgstr[1] "zapisz pliki poboczne"
-msgstr[2] "zapisz pliki poboczne"
+msgstr[0] "zapisywanie pliku pobocznego"
+msgstr[1] "zapisywanie %zu plików pobocznych"
+msgstr[2] "zapisywanie %zu plików pobocznych"
 
 #: ../src/control/jobs/control_jobs.c:497
-#, fuzzy
-#| msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
 msgid "unable to allocate memory for HDR merge"
-msgstr ""
-"dyfuzja/wyostrzenie nie mógł zaalokować pamięci, sprawdź ustawienia RAM"
+msgstr "nie udało się zaalokować pamięci dla scalania HDR"
 
 #: ../src/control/jobs/control_jobs.c:506
 msgid "exposure bracketing only works on raw images."
@@ -8211,31 +8098,28 @@ msgstr[1] "przenoszenie do kosza %d zdjęć"
 msgstr[2] "przenoszenie do kosza %d zdjęć"
 
 #: ../src/control/jobs/control_jobs.c:1591
-#, fuzzy, c-format
-#| msgid "adding time offset to %d image"
+#, c-format
 msgid "pasting history to %d image"
 msgid_plural "pasting history to %d images"
-msgstr[0] "dodawanie różnicy czasu do %d zdjęcia"
-msgstr[1] "dodawanie różnicy czasu do %d zdjęcia"
-msgstr[2] "dodawanie różnicy czasu do %d zdjęcia"
+msgstr[0] "wklejanie historii do %d zdjęcia"
+msgstr[1] "wklejanie historii do %d zdjęć"
+msgstr[2] "wklejanie historii do %d zdjęć"
 
 #: ../src/control/jobs/control_jobs.c:1615
 msgid "skipped pasting history into image being edited"
-msgstr ""
+msgstr "pominięto wklejanie historii do edytowanego obrazu"
 
 #: ../src/control/jobs/control_jobs.c:1653
-#, fuzzy, c-format
-#| msgid "refreshing info for %d image"
-#| msgid_plural "refreshing info for %d images"
+#, c-format
 msgid "compressing history for %d image"
 msgid_plural "compressing history for %d images"
-msgstr[0] "przenoszenie do kosza %d zdjęcia"
-msgstr[1] "przenoszenie do kosza %d zdjęć"
-msgstr[2] "przenoszenie do kosza %d zdjęć"
+msgstr[0] "kompresowanie historii dla %d zdjęcia"
+msgstr[1] "kompresowanie historii dla %d zdjęć"
+msgstr[2] "kompresowanie historii dla %d zdjęć"
 
 #: ../src/control/jobs/control_jobs.c:1668
 msgid "skipped compressing history for image being edited"
-msgstr ""
+msgstr "pominięto kompresowanie historii dla edytowanego obrazu"
 
 #: ../src/control/jobs/control_jobs.c:1679
 #, c-format
@@ -8246,28 +8130,24 @@ msgstr[1] "brak kompresji historii %d obrazów"
 msgstr[2] "brak kompresji historii %d obrazów"
 
 #: ../src/control/jobs/control_jobs.c:1692
-#, fuzzy, c-format
-#| msgid "refreshing info for %d image"
-#| msgid_plural "refreshing info for %d images"
+#, c-format
 msgid "discarding history for %d image"
 msgid_plural "discarding history for %d images"
-msgstr[0] "przenoszenie do kosza %d zdjęcia"
-msgstr[1] "przenoszenie do kosza %d zdjęć"
-msgstr[2] "przenoszenie do kosza %d zdjęć"
+msgstr[0] "porzucanie historii dla %d zdjęcia"
+msgstr[1] "porzucanie historii dla %d zdjęć"
+msgstr[2] "porzucanie historii dla %d zdjęć"
 
 #: ../src/control/jobs/control_jobs.c:1705
 msgid "skipped discarding history for image being edited"
-msgstr ""
+msgstr "pominięto porzucanie historii dla edytowanego obrazu"
 
 #: ../src/control/jobs/control_jobs.c:1733
-#, fuzzy, c-format
-#| msgid "applying rating %d to %d image"
-#| msgid_plural "applying rating %d to %d images"
+#, c-format
 msgid "applying style(s) for %d image"
 msgid_plural "applying style(s) for %d images"
-msgstr[0] "dodawanie oceny %d dla %d zdjęcia"
-msgstr[1] "dodawanie oceny %d dla %d zdjęć"
-msgstr[2] "dodawanie oceny %d dla %d zdjęć"
+msgstr[0] "stosowanie stylu/styli dla %d zdjęcia"
+msgstr[1] "stosowanie stylu/styli dla %d zdjęć"
+msgstr[2] "stosowanie stylu/styli dla %d zdjęć"
 
 #: ../src/control/jobs/control_jobs.c:1830
 #, c-format
@@ -8476,16 +8356,12 @@ msgid "no styles selected!"
 msgstr "nie wybrano stylów!"
 
 #: ../src/control/jobs/control_jobs.c:2378
-#, fuzzy
-#| msgid "no image selected!"
 msgid "no images selected!"
-msgstr "nie wybrano zdjęć!"
+msgstr "nie wybrano żadnych zdjęć!"
 
 #: ../src/control/jobs/control_jobs.c:2388
-#, fuzzy
-#| msgid "apply auto levels"
 msgid "apply style(s)"
-msgstr "ustaw poziomy automatycznie"
+msgstr "zastosuj styl/style"
 
 #: ../src/control/jobs/control_jobs.c:2464
 #, c-format
@@ -8588,10 +8464,8 @@ msgid "import image"
 msgstr "import zdjęcia"
 
 #: ../src/control/jobs/sidecar_jobs.c:170
-#, fuzzy
-#| msgid "write sidecar files"
 msgid "synchronize sidecars"
-msgstr "zapisz pliki poboczne"
+msgstr "zsynchronizuj pliki poboczne"
 
 #: ../src/develop/blend.c:306
 msgid "detail mask blending error"
@@ -9500,7 +9374,7 @@ msgstr " '%s' jest wyłączona"
 #: ../src/develop/imageop.c:2149
 #, c-format
 msgid "'%s' has an introspection error"
-msgstr ""
+msgstr "'%s' zawiera błąd introspekcji"
 
 #: ../src/develop/imageop.c:2757
 msgid "unknown mask"
@@ -9565,12 +9439,6 @@ msgid "unsupported input"
 msgstr "niewspierane wejście"
 
 #: ../src/develop/imageop.c:3826
-#, fuzzy
-#| msgid ""
-#| "you have placed this module at\n"
-#| "a position in the pipeline where\n"
-#| "the data format does not match\n"
-#| "it's requirements."
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -9952,10 +9820,6 @@ msgstr ""
 "<b>przełącznik węzła: gładki/ostry</b>: ctrl+klik"
 
 #: ../src/develop/masks/path.c:3999
-#, fuzzy
-#| msgid ""
-#| "<b>node curvature</b>: drag\n"
-#| "<b>reset curvature</b>: right-click"
 msgid ""
 "<b>node curvature</b>: drag, <b>force symmetry</b>: ctrl+drag,\n"
 "<b>move single handle</b>: shift+drag, <b>reset curvature</b>: right-click"
@@ -10005,10 +9869,14 @@ msgid ""
 "in module '%s'\n"
 "please report on GitHub"
 msgstr ""
+"katastrofalne przerwanie pracy pixelpipe z powodu niewyrównanych buforów\n"
+"w module '%s'\n"
+"prosimy o zgłaszanie przez GitHub"
 
 #: ../src/develop/pixelpipe_hb.c:1522
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr ""
+"katastrofalne niedopasowanie wejścia, prosimy o zgłaszanie przez GitHub\n"
 
 #: ../src/develop/pixelpipe_hb.c:2808
 msgid ""
@@ -10271,7 +10139,7 @@ msgstr "dopasuj"
 
 #: ../src/dtgtk/thumbtable.c:1249
 msgid "here"
-msgstr ""
+msgstr "tutaj"
 
 #: ../src/dtgtk/thumbtable.c:1250 ../src/views/slideshow.c:427
 msgid "there are no images in this collection"
@@ -10279,7 +10147,7 @@ msgstr "brak zdjęć w tej kolekcji"
 
 #: ../src/dtgtk/thumbtable.c:1252
 msgid "need help?"
-msgstr ""
+msgstr "potrzebujesz pomocy?"
 
 #: ../src/dtgtk/thumbtable.c:1253
 msgid "if you have not imported any images yet"
@@ -10288,6 +10156,8 @@ msgstr "jeśli nie zaimportowano jeszcze zdjęć"
 #: ../src/dtgtk/thumbtable.c:1254
 msgid "click on <b>?</b> then an on-screen item to open manual page"
 msgstr ""
+"kliknij na <b>?</b> a następnie element na ekranie, aby otworzyć stronę "
+"podręcznika"
 
 #: ../src/dtgtk/thumbtable.c:1255
 msgid "you can do so in the import module"
@@ -10296,70 +10166,63 @@ msgstr "możesz to zrobić w module importu"
 #: ../src/dtgtk/thumbtable.c:1256
 msgid "press and hold '<b>h</b>' to show all active keyboard shortcuts"
 msgstr ""
+"naciśnij i przytrzymaj '<b>h</b>' aby pokazać wszystkie aktywne skróty "
+"klawiaturowe"
 
 #: ../src/dtgtk/thumbtable.c:1257
-#, fuzzy
-#| msgid "access the online user manual?"
 msgid "to open the online manual click "
-msgstr "otworzyć podręcznik użytkownika online?"
+msgstr "aby otworzyć podręcznik użytkownika kliknij "
 
 #: ../src/dtgtk/thumbtable.c:1258
 msgid "try to relax the filter settings in the top panel"
 msgstr "spróbuj dostosować ustawienia filtrów w górnym panelu"
 
 #: ../src/dtgtk/thumbtable.c:1259
-#, fuzzy
-#| msgid "or add images in the collections module in the left panel"
 msgid "or add images in the collections module"
-msgstr "lub dodaj obrazy w module kolekcji w lewym panelu"
+msgstr "lub dodaj obrazy w module kolekcji"
 
 #: ../src/dtgtk/thumbtable.c:1260
-#, fuzzy
-#| msgid "error starting darktable"
 msgid "personalize darktable"
-msgstr "błąd uruchamiania darktable"
+msgstr "spersonalizuj darktable"
 
 #: ../src/dtgtk/thumbtable.c:1261
-#, fuzzy
-#| msgid "show global preferences"
 msgid "click on the gear icon for global preferences"
-msgstr "wyświetl ustawienia ogólne"
+msgstr "kliknij na ikonę koła zębatego aby wyświetlić ustawienia ogólne"
 
 #: ../src/dtgtk/thumbtable.c:1263
 msgid "click on the keyboard icon to define shortcuts"
-msgstr ""
+msgstr "kliknij na ikonę klawiatury aby zdefiniować skróty klawiaturowe"
 
 #: ../src/dtgtk/thumbtable.c:1265
-#, fuzzy
-#| msgid "try the 'no-click' workflow: hover on an image and use"
 msgid "try the 'no-click' workflow"
-msgstr "spróbuj 'bez-klikania': najedź kursorem na obraz i użyj"
+msgstr "spróbuj 'bez-klikania'"
 
 #: ../src/dtgtk/thumbtable.c:1266
 msgid "set module-specific preferences through module's menu"
-msgstr ""
+msgstr "ustaw preferencje specyficzne dla modułu poprzez menu modułu"
 
 #: ../src/dtgtk/thumbtable.c:1267
 msgid "hover over an image and use keyboard shortcuts"
-msgstr ""
+msgstr "najedź na obraz i użyj skrótów klawiaturowych"
 
 #: ../src/dtgtk/thumbtable.c:1268
-#, fuzzy
-#| msgid "keyboard shortcuts to apply ratings, colors, styles, etc."
 msgid "to apply ratings, colors, styles, etc."
-msgstr "skróty klawiaturowe do ustawiania ocen, kolorów, styli etc."
+msgstr "aby przypisać ocenę, kolorową etykietę, zastosować style itp."
 
 #: ../src/dtgtk/thumbtable.c:1269
 msgid "make default raw development look more like your"
 msgstr ""
+"spraw, aby domyślne wywoływanie plików RAW wyglądało bardziej jak twoje"
 
 #: ../src/dtgtk/thumbtable.c:1270
 msgid "hover over any button for its description and shortcuts"
 msgstr ""
+"najedź kursorem na dowolny przycisk, aby wyświetlić jego opis i skróty "
+"klawiaturowe"
 
 #: ../src/dtgtk/thumbtable.c:1271
 msgid "camera's JPEG by applying a camera-specific style"
-msgstr ""
+msgstr "JPEG z aparatu poprzez zastosowanie stylu specyficznego dla aparatu"
 
 #: ../src/dtgtk/thumbtable.c:1672
 msgid ""
@@ -10980,16 +10843,12 @@ msgstr "$(EXIF.MODEL) - model aparatu"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:926
 #: ../src/gui/gtkentry.c:227
-#, fuzzy
-#| msgid "$(EXIF.FOCUS.DISTANCE) - EXIF focal distance"
 msgid "$(EXIF.WHITEBALANCE) - EXIF selected white balance"
-msgstr "$(EXIF.FOCUS_DISTANCE) - odległość EXIF"
+msgstr "$(EXIF.WHITEBALANCE) - balans bieli z EXIF"
 
 #. not implemented
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:927
 #: ../src/gui/gtkentry.c:228
-#, fuzzy
-#| msgid "$(EXIF.EXPOSURE) - EXIF exposure"
 msgid "$(EXIF.METERING) - EXIF exposure metering mode"
 msgstr "$(EXIF.EXPOSURE) - ekspozycja EXIF"
 
@@ -11003,7 +10862,7 @@ msgstr "$(EXIF.LENS) - obiektyw"
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:930
 #: ../src/gui/gtkentry.c:231
 msgid "$(EXIF.FLASH) - was flash used (yes/no/--)"
-msgstr ""
+msgstr "$(EXIF.FLASH) - czy lampa błyskowa była użyta (tak/nie/--)"
 
 #. not implemented
 #. _("$(GPS.LONGITUDE) - longitude"),-- not implemented
@@ -11072,7 +10931,7 @@ msgstr ""
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:949
 #: ../src/gui/gtkentry.c:262
 msgid "$(SIDECAR_TXT) - contents of .txt sidecar file, if present"
-msgstr ""
+msgstr "$(SIDECAR_TXT) - zawartość pliku pobocznego .txt, jeżeli istnieje"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:950
 #: ../src/gui/gtkentry.c:254
@@ -11165,17 +11024,13 @@ msgstr "$(USERNAME) - nazwa użytkownika"
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/apply_camera_style.lua:92
-#, fuzzy
-#| msgid "duplicate style"
 msgid "apply camera style"
-msgstr "zduplikuj styl"
+msgstr "zastosuj styl aparatu"
 
 #. name of script
 #: ../src/external/lua-scripts/official/apply_camera_style.lua:93
-#, fuzzy
-#| msgid "apply geo-location to matching images"
 msgid "apply darktable camera style to matching images"
-msgstr "zastosuj geolokację do pasujących zdjęć"
+msgstr "zastosuj style aparatu darktable do pasujących zdjęć"
 
 #. purpose of script
 #. your name and optionally e-mail address
@@ -11218,11 +11073,8 @@ msgstr "zastosuj geolokację do pasujących zdjęć"
 #. patterns {}
 #. strip off the maker name
 #: ../src/external/lua-scripts/official/apply_camera_style.lua:376
-#, fuzzy
-#| msgid "applying rating %d to %d image"
-#| msgid_plural "applying rating %d to %d images"
 msgid "applying camera styles to images"
-msgstr "dodawanie oceny %d dla %d zdjęcia"
+msgstr "stosowanie styli aparatu do obrazów"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. M A I N  P R O G R A M
@@ -11238,13 +11090,11 @@ msgstr "dodawanie oceny %d dla %d zdjęcia"
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/official/apply_camera_style.lua:469
 msgid "apply darktable camera styles to collection"
-msgstr ""
+msgstr "zastosuj style aparatu darktable do kolekcji"
 
 #: ../src/external/lua-scripts/official/apply_camera_style.lua:475
-#, fuzzy
-#| msgid "apply the same date/time to selected images"
 msgid "apply darktable camera styles to selection"
-msgstr "zastosuj tę samą datę/czas do wybranych zdjęć"
+msgstr "zastosuj style aparatu darktable do zaznaczenia"
 
 #.
 #. This file is part of darktable,
@@ -11277,13 +11127,11 @@ msgstr "zastosuj tę samą datę/czas do wybranych zdjęć"
 #. return data structure for script_manager
 #: ../src/external/lua-scripts/official/check_for_updates.lua:48
 msgid "check for updates"
-msgstr ""
+msgstr "sprawdź aktualizacje"
 
 #: ../src/external/lua-scripts/official/check_for_updates.lua:49
-#, fuzzy
-#| msgid "check for database maintenance"
 msgid "check for newer darktable releases"
-msgstr "sprawdź konieczność konserwacji bazy danych"
+msgstr "sprawdź nowsze wersje darktable"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -11354,16 +11202,15 @@ msgstr "sprawdź konieczność konserwacji bazy danych"
 #.
 #. return data structure for script_manager
 #: ../src/external/lua-scripts/official/copy_paste_metadata.lua:43
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "copy metadata"
 msgid "copy paste metadata"
-msgstr "kopiuj metadane"
+msgstr "kopiuj wklej metadane"
 
 #: ../src/external/lua-scripts/official/copy_paste_metadata.lua:44
 msgid ""
 "adds keyboard shortcuts and buttons to copy/paste metadata between images"
 msgstr ""
+"dodaje skróty klawiaturowe i przyciski do kopiowania/wklejania metadanych "
+"między obrazami"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -11373,34 +11220,23 @@ msgstr ""
 #. (title, description, creator, publisher and rights) that are already set
 #: ../src/external/lua-scripts/official/copy_paste_metadata.lua:136
 #: ../src/external/lua-scripts/official/copy_paste_metadata.lua:154
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "copy metadata"
 msgid "copy metadata"
 msgstr "kopiuj metadane"
 
 #: ../src/external/lua-scripts/official/copy_paste_metadata.lua:138
-#, fuzzy
-#| msgid ""
-#| "copy history stack of\n"
-#| "first selected image"
 msgid "copy metadata of the first selected image"
 msgstr ""
-"kopiuje całą historię edycji\n"
+"kopiuje metadane\n"
 "pierwszego z wybranych zdjęć"
 
 #: ../src/external/lua-scripts/official/copy_paste_metadata.lua:144
 #: ../src/external/lua-scripts/official/copy_paste_metadata.lua:160
-#, fuzzy
-#| msgid "update metadata"
 msgid "paste metadata"
-msgstr "aktualizuj metadane"
+msgstr "wklej metadane"
 
 #: ../src/external/lua-scripts/official/copy_paste_metadata.lua:146
-#, fuzzy
-#| msgid "write metadata for selected images"
 msgid "paste metadata to the selected images"
-msgstr "zapisuje metadane dla wybranych zdjęć"
+msgstr "wklej metadane do wybranych zdjęć"
 
 #.
 #. This file is part of darktable,
@@ -11433,14 +11269,12 @@ msgstr "zapisuje metadane dla wybranych zdjęć"
 #.
 #. return data structure for script_manager
 #: ../src/external/lua-scripts/official/delete_long_tags.lua:47
-#, fuzzy
-#| msgid "delete tag"
 msgid "delete long tags"
-msgstr "usuń etykietę"
+msgstr "usuń długie etykiety"
 
 #: ../src/external/lua-scripts/official/delete_long_tags.lua:48
 msgid "delete all tags longer than a set length"
-msgstr ""
+msgstr "usuń wszystkie etykiety dłuższe niż ustalona długość"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -11479,10 +11313,8 @@ msgstr ""
 #. return data structure for script_manager
 #: ../src/external/lua-scripts/official/delete_unused_tags.lua:51
 #: ../src/external/lua-scripts/official/delete_unused_tags.lua:52
-#, fuzzy
-#| msgid "delete tag"
 msgid "delete unused tags"
-msgstr "usuń etykietę"
+msgstr "usuń nieużywane etykiety"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -11531,13 +11363,11 @@ msgstr "usuń etykietę"
 #: ../src/external/lua-scripts/official/enfuse.lua:55
 #: ../src/external/lua-scripts/official/enfuse.lua:75
 msgid "enfuse"
-msgstr ""
+msgstr "enfuse"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:56
-#, fuzzy
-#| msgid "exposure bias"
 msgid "exposure blend images"
-msgstr "korekcja ekspozycji"
+msgstr "mieszanie ekspozycji obrazów"
 
 #. name
 #. expandable
@@ -11553,72 +11383,61 @@ msgstr "korekcja ekspozycji"
 #. initialize exposure_mu value and depth setting in config to sane defaults (would be 0 otherwise)
 #. set up some widgets, initialized from config
 #: ../src/external/lua-scripts/official/enfuse.lua:138
-#, fuzzy
-#| msgid "exposure"
 msgid "exposure mu"
-msgstr "ekspozycja"
+msgstr "mu (μ) ekspozycja"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:139
 msgid ""
 "center also known as mean of gaussian weighting function (0 <= mean <= 1); "
 "default: 0.5"
 msgstr ""
+"środek, znany również jako średnia funkcji wagowej Gaussa (0 <= średnia <= "
+"1); domyślnie: 0.5"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:147
-#, fuzzy
-#| msgid "exposure bias"
 msgid "exposure optimum"
-msgstr "korekcja ekspozycji"
+msgstr "optimum ekspozycji"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:148
 msgid ""
 "optimum exposure value, usually the maximum of the weighting function (0 <= "
 "optimum <=1); default 0.5"
 msgstr ""
+"optymalna wartość ekspozycji, zwykle maksimum funkcji wagowej (0 <= optimum "
+"<=1); domyślnie 0.5"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:157
-#, fuzzy
-#| msgid "bit depth"
 msgid "depth"
-msgstr "rozdzielczość bitowa"
+msgstr "głębokość"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:158
-#, fuzzy
-#| msgid "bits per channel of the embedded images"
 msgid "the number of bits per channel of the output image"
-msgstr "ilość bitów na kanał osadzonych zdjęć"
+msgstr "ilość bitów na kanał dla zdjęcia wyjściowego"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:166
-#, fuzzy
-#| msgid "colorspace"
 msgid "blend colorspace"
-msgstr "przestrzeń kolorów"
+msgstr "mieszanie przestrzeni kolorów"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:167
-#, fuzzy
-#| msgid "reset to default blend colorspace"
 msgid "force blending in selected colorspace"
-msgstr "zresetuj do domyślnej przestrzeni kolorów mieszania"
+msgstr "wymuś mieszanie w wybranej przestrzeni kolorów"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:174
-#, fuzzy
-#| msgid "run autofocus"
 msgid "run enfuse"
-msgstr "uruchom autofokus"
+msgstr "uruchom enfuse"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:174
 msgid "enfuse not installed"
-msgstr ""
+msgstr "enfuse nie jest zainstalowane"
 
 #. remember exposure_mu
 #. TODO: find a way to save it whenever the value changes
 #. create a temp response file
 #. windows os.tmpname() defaults to root directory
 #: ../src/external/lua-scripts/official/enfuse.lua:192
-#, fuzzy, lua-format
-#| msgid "error while printing `%s' on `%s'"
+#, lua-format
 msgid "error writing to '%s'"
-msgstr "błąd przy drukowaniu „%s” na „%s”"
+msgstr "błąd zapisu do '%s'"
 
 #. add all filenames to the response file
 #. only use ldr files as enfuse can't open raws
@@ -11627,51 +11446,51 @@ msgstr "błąd przy drukowaniu „%s” na „%s”"
 #: ../src/external/lua-scripts/official/enfuse.lua:215
 #, lua-format
 msgid "converting raw file '%s' to tiff..."
-msgstr ""
+msgstr "konwertowanie pliku raw '%s' do tiff..."
 
 #. other images will be skipped
 #: ../src/external/lua-scripts/official/enfuse.lua:225
-#, fuzzy, lua-format
-#| msgid "%d/%d skipping `%s'"
-#| msgid_plural "%d/%d skipping `%s'"
+#, lua-format
 msgid "skipping %s..."
-msgstr "%d/%d pomijam `%s'"
+msgstr "pomijanie %s..."
 
 #. bail out if there is nothing to do
 #: ../src/external/lua-scripts/official/enfuse.lua:232
 msgid "no suitable images selected, nothing to do for enfuse"
-msgstr ""
+msgstr "nie wybrano odpowiednich zdjęć, enfuse nie ma z czym pracować"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:238
 #, lua-format
 msgid "%d image(s) skipped"
-msgstr ""
+msgstr "pominięto %d zdjęć"
 
 #. call enfuse on the response file
 #. TODO: find something nicer
 #: ../src/external/lua-scripts/official/enfuse.lua:258
 msgid "enfuse failed, see terminal output for details"
-msgstr ""
+msgstr "enfuse nie powiodło się, sprawdź szczegóły w terminalu"
 
 #. remove the response file
 #. import resulting tiff
 #. tell the user that everything worked
 #: ../src/external/lua-scripts/official/enfuse.lua:270
-#, fuzzy
-#| msgid "style %s was successfully imported"
 msgid "enfuse was successful, resulting image has been imported"
-msgstr "import stylu  %s zakończony powodzeniem"
+msgstr "enfuse powiodło się, wygenerowany obraz został zaimportowany"
 
 #. normally printing to stdout is bad, but we allow enfuse to show its output, so adding one extra line is ok
 #: ../src/external/lua-scripts/official/enfuse.lua:272
 #, lua-format
 msgid "enfuse: done, resulting image '%s' has been imported with id %d"
 msgstr ""
+"enfuse: zakończono, wygenerowany obraz '%s' został zaimportowany z "
+"identyfikatorem %d"
 
 #. ... and tell dt about it all
 #: ../src/external/lua-scripts/official/enfuse.lua:306
 msgid "could not find enfuse executable, not loading enfuse exporter..."
 msgstr ""
+"nie można znaleźć pliku wykonywalnego enfuse, eksporter enfuse nie zostanie "
+"załadowany..."
 
 #. vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
 #. kate: hl Lua;
@@ -11711,16 +11530,12 @@ msgstr ""
 #. * make filenames with double quotes (") work
 #. return data structure for script_manager
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:54
-#, fuzzy
-#| msgid "delete image area"
 msgid "generate image text"
-msgstr "usuń obszar obrazu"
+msgstr "generuj tekst dla obrazu"
 
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:55
-#, fuzzy
-#| msgid "remove metadata from selected images"
 msgid "overlay metadata on the selected image(s)"
-msgstr "usuwa metadane z wybranych zdjęć"
+msgstr "nałóż metadane na wybrane zdjęcia"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -11728,27 +11543,33 @@ msgstr "usuwa metadane z wybranych zdjęć"
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:68
 msgid "create txt sidecars to display with images"
-msgstr ""
+msgstr "utwórz pliki poboczne txt do wyświetlania z obrazami"
 
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:69
 msgid ""
 "the txt files created get shown when the lighttable is zoomed in to one "
 "image. also enable the txt overlay setting in the gui tab"
 msgstr ""
+"utworzone pliki txt są wyświetlane, gdy stół podświetlany wyświetla jeden "
+"obraz pełnoekranowo. włącz również ustawienie nakładki txt w zakładce "
+"interfejsu użytkownika"
 
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:75
 msgid "command to generate the txt sidecar"
-msgstr ""
+msgstr "polecenie do generowania pliku pobocznego txt"
 
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:76
 msgid ""
 "the output of this command gets written to the txt file. use $(FILE_NAME) "
 "for the image file"
 msgstr ""
+"wyjście tego polecenia jest zapisywane do pliku txt. użyj $(FILE_NAME) dla "
+"pliku obrazu"
 
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:82
 msgid "the command for txt sidecars looks bad. better check the preferences"
 msgstr ""
+"polecenie dla plików pobocznych txt wygląda źle. lepiej sprawdź ustawienia"
 
 #. no need to waste processing time if the image has a txt file already
 #. there should be at least one "$(FILE_NAME)" in the command. warn if not, but only once
@@ -11792,26 +11613,20 @@ msgstr ""
 #.
 #. return data structure for script_manager
 #: ../src/external/lua-scripts/official/image_path_in_ui.lua:47
-#, fuzzy
-#| msgid "image hint"
 msgid "image path in UI"
-msgstr "sugerowany rodzaj obrazu"
+msgstr "ścieżka obrazu w interfejsie użytkownika"
 
 #: ../src/external/lua-scripts/official/image_path_in_ui.lua:48
-#, fuzzy
-#| msgid "pretty print the image location"
 msgid "print the image path in the UI"
-msgstr "pokazuj lokalizację zdjęcia w czytelniejszy sposób"
+msgstr "wyświetl ścieżkę obrazu w interfejsie użytkownika"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/image_path_in_ui.lua:66
-#, fuzzy
-#| msgid "selected image"
 msgid "selected images path"
-msgstr "wybrany obraz"
+msgstr "ścieżka wybranych zdjęć"
 
 #.
 #. vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
@@ -11847,17 +11662,12 @@ msgstr "wybrany obraz"
 #. it is important to add them AFTER this one!
 #.
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:44
-#, fuzzy
-#| msgid "file manager"
 msgid "import filter manager"
-msgstr "manager plików"
+msgstr "importuj managera plików"
 
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:45
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "import folder"
 msgid "manage import filters"
-msgstr "importuj folder"
+msgstr "zarządzaj filtrami importu"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -11867,21 +11677,16 @@ msgstr "importuj folder"
 #. the dropdown to select the active filter from the import dialog
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:60
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:66
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "import folder"
 msgid "import filter"
-msgstr "importuj folder"
+msgstr "filtr importu"
 
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:60
-#, fuzzy
-#| msgid "file naming pattern used for a import session"
 msgid "the name of the filter used for importing images"
-msgstr "wzorzec nazywania plików używany w sesji importu"
+msgstr "nazwa filtra użytego do importowania zdjęć"
 
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:68
 msgid "import filters are applied after completion of the import dialog"
-msgstr ""
+msgstr "filtry importu są stosowane po zamknięciu okna importu"
 
 #. the first entry in the list is hard coded to "" so it's possible to have no filter
 #. this is just a wrapper which calls the active import filter
@@ -11919,18 +11724,12 @@ msgstr ""
 #. * require this script from your main lua file AFTER import_filter_manager.lua
 #.
 #: ../src/external/lua-scripts/official/import_filters.lua:42
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "import folder"
 msgid "import filters"
-msgstr "importuj folder"
+msgstr "filtry importu"
 
 #: ../src/external/lua-scripts/official/import_filters.lua:43
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "import folder"
 msgid "import filtering"
-msgstr "importuj folder"
+msgstr "filtrowanie importu"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -11985,16 +11784,12 @@ msgstr "importuj folder"
 #.
 #. return data structure for script_manager
 #: ../src/external/lua-scripts/official/save_selection.lua:52
-#, fuzzy
-#| msgid "start selection"
 msgid "save selection"
-msgstr "rozpocznij zaznaczenie"
+msgstr "zapisz zaznaczenie"
 
 #: ../src/external/lua-scripts/official/save_selection.lua:53
-#, fuzzy
-#| msgid "shortcuts with multiple instances"
 msgid "shortcuts providing multiple selection buffers"
-msgstr "skróty klawiszowe dla wielu instancji"
+msgstr "skróty dostarczające bufory wielokrotnego wyboru"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -12003,16 +11798,16 @@ msgstr "skróty klawiszowe dla wielu instancji"
 #: ../src/external/lua-scripts/official/save_selection.lua:77
 #, lua-format
 msgid "save to buffer %d"
-msgstr ""
+msgstr "zapisz do bufora %d"
 
 #: ../src/external/lua-scripts/official/save_selection.lua:80
 #, lua-format
 msgid "restore from buffer %d"
-msgstr ""
+msgstr "przywróć z bufora %d"
 
 #: ../src/external/lua-scripts/official/save_selection.lua:86
 msgid "switch selection with temporary buffer"
-msgstr ""
+msgstr "zamień zaznaczenie z tymczasowym buforem"
 
 #.
 #. vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
@@ -12053,37 +11848,29 @@ msgstr ""
 #.
 #. return data structure for script_manager
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:52
-#, fuzzy
-#| msgid "selection"
 msgid "selection to PDF"
-msgstr "wybór"
+msgstr "zaznaczenie do PDF"
 
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:53
-#, fuzzy
-#| msgid "write metadata for selected images"
 msgid "generate a pdf file of selected images"
-msgstr "zapisuje metadane dla wybranych zdjęć"
+msgstr "generuj plik PDF z zaznaczonych zdjęć"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
 #. how to restart the (lib) script after it's been hidden - i.e. make it visible again
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:65
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "map view"
 msgid "a pdf viewer"
-msgstr "widok mapy"
+msgstr "przeglądarka PDF"
 
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:66
 msgid "can be an absolute pathname or the tool may be in the PATH"
 msgstr ""
+"może to być bezwzględną ścieżką lub narzędzie może znajdować się w PATH"
 
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:74
-#, fuzzy
-#| msgid "timeline"
 msgid "thumbs per line"
-msgstr "oś czasu"
+msgstr "miniatur w linii"
 
 #. The soft minimum value for the slider, the slider can't go beyond this point
 #. The soft maximum value for the slider, the slider can't go beyond this point
@@ -12091,36 +11878,30 @@ msgstr "oś czasu"
 #. The hard maximum value for the slider, the user can't manually enter a value beyond this point
 #. The current value of the slider
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:83
-#, fuzzy
-#| msgid "title"
 msgid "title:"
-msgstr "tytuł"
+msgstr "tytuł:"
 
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:85
-#, fuzzy
-#| msgid "thumbnails"
 msgid "thumbnails per row:"
-msgstr "miniaturki"
+msgstr "miniatur w wierszu:"
 
 #. fact is that latex will get confused if the filename has multiple dots.
 #. so \includegraphics{file.01.jpg} wont work. We need to output the filename
 #. and extention separated, e.g: \includegraphics{{file.01}.jpg}
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:132
-#, fuzzy
-#| msgid "export timestamp"
 msgid "export thumbnails to pdf"
-msgstr "znacznik czasu eksportu"
+msgstr "eksportuj miniatury do PDF"
 
 #. convert to PDF
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:179
 msgid "problem running pdflatex"
-msgstr ""
+msgstr "problem z uruchomieniem pdflatex"
 
 #. this one is probably usefull to the user
 #. open the PDF
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:189
 msgid "problem running pdf viewer"
-msgstr ""
+msgstr "problem z uruchomieniem pdf viewer"
 
 #. this one is probably usefull to the user
 #. finally do some clean-up
@@ -12157,14 +11938,13 @@ msgstr ""
 #.
 #. return data structure for script_manager
 #: ../src/external/lua-scripts/tools/executable_manager.lua:49
-#, fuzzy
-#| msgid "file manager"
 msgid "executable manager"
-msgstr "manager plików"
+msgstr "manager plików wykonywalnych"
 
 #: ../src/external/lua-scripts/tools/executable_manager.lua:50
 msgid "manage the list of external executables used by the lua scripts"
 msgstr ""
+"zarządzaj listą zewnętrznych plików wykonywalnych używanych przez skrypty lua"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -12180,7 +11960,7 @@ msgstr ""
 #. Module name
 #: ../src/external/lua-scripts/tools/executable_manager.lua:118
 msgid "executables"
-msgstr ""
+msgstr "pliki wykonywalne"
 
 #. Visible name
 #. expandable
@@ -12196,39 +11976,32 @@ msgstr ""
 #. check if we have something to manage and exit if not
 #: ../src/external/lua-scripts/tools/executable_manager.lua:157
 msgid "no executable paths found, exiting..."
-msgstr ""
+msgstr "nie znaleziono ścieżek plików wykonywalnych, zamykanie..."
 
 #. build a table of the path preferences
 #. preferences are stored with forward slashes
 #: ../src/external/lua-scripts/tools/executable_manager.lua:173
-#, fuzzy
-#| msgid "select an image"
 msgid "select an executable"
-msgstr "wybierz zdjęcie"
+msgstr "wybierz plik wykonywalny"
 
 #: ../src/external/lua-scripts/tools/executable_manager.lua:173
 msgid "search path for executable"
-msgstr ""
+msgstr "ścieżka wyszukiwania dla pliku wykonywalnego"
 
 #. create a stack widget to hold the executable path widgets
 #. create a combobox to for indexing into the stack of widgets
 #: ../src/external/lua-scripts/tools/executable_manager.lua:202
-#, fuzzy
-#| msgid "enable"
 msgid "executable"
-msgstr "włącz"
+msgstr "plik wykonywalny"
 
 #: ../src/external/lua-scripts/tools/executable_manager.lua:203
-#, fuzzy
-#| msgid "select file to import"
 msgid "select executable to modify"
-msgstr "wybierz plik do zaimportowania"
+msgstr "wybierz plik wykonywalny do modyfikacji"
 
 #: ../src/external/lua-scripts/tools/executable_manager.lua:225
-#, fuzzy, lua-format
-#| msgid "clear this rule"
+#, lua-format
 msgid "clear path for %s"
-msgstr "usuń tę regułę"
+msgstr "wyczyść ścieżkę dla %s"
 
 #. register the lib
 #.
@@ -12243,11 +12016,12 @@ msgstr "usuń tę regułę"
 #. print the documentation for each of the functions
 #: ../src/external/lua-scripts/tools/get_lib_manpages.lua:91
 msgid "get library man pages"
-msgstr ""
+msgstr "pobierz strony podręcznika (man) dla biblioteki"
 
 #: ../src/external/lua-scripts/tools/get_lib_manpages.lua:92
 msgid "output the internal library documentation as man pages"
 msgstr ""
+"wygeneruj dokumentację wewnętrznej biblioteki jako strony podręcznika (man)"
 
 #.
 #. get_libdoc.lua - retrieve the included library documentation and output it
@@ -12260,14 +12034,12 @@ msgstr ""
 #. print the documentation for the library
 #. print the documentation for each of the functions
 #: ../src/external/lua-scripts/tools/get_libdoc.lua:65
-#, fuzzy
-#| msgid "add to library"
 msgid "get library docs"
-msgstr "dodaj do biblioteki"
+msgstr "pobierz dokumentację biblioteki"
 
 #: ../src/external/lua-scripts/tools/get_libdoc.lua:66
 msgid "retrieve and print the documentation to the console"
-msgstr ""
+msgstr "pobierz i wyświetl dokumentację w konsoli"
 
 #.
 #. This file is part of darktable,
@@ -12330,16 +12102,12 @@ msgstr ""
 #. P R E F E R E N C E S
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #: ../src/external/lua-scripts/tools/script_manager.lua:104
-#, fuzzy
-#| msgid "look for updated XMP files on startup"
 msgid "check for updated scripts on start up"
-msgstr "wyszukuj zaktualizowane pliki XMP przy starcie"
+msgstr "sprawdź aktualizacje skryptów przy uruchamianiu"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:105
-#, fuzzy
-#| msgid "automatically update module name"
 msgid "automatically update scripts to correct version"
-msgstr "automatycznie aktualizuj nazwę modułu"
+msgstr "automatycznie aktualizuj skrypty do poprawnej wersji"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. L O G  L E V E L
@@ -12408,21 +12176,16 @@ msgstr "automatycznie aktualizuj nazwę modułu"
 #. script handling
 #. ----------------
 #: ../src/external/lua-scripts/tools/script_manager.lua:408
-#, fuzzy
-#| msgid "contributors"
 msgid "contributed"
 msgstr "współautorzy"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:410
-#, fuzzy
-#| msgctxt "section"
-#| msgid "live samples"
 msgid "examples"
-msgstr "próbka na żywo"
+msgstr "przykłady"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:412
 msgid "official"
-msgstr ""
+msgstr "oficjalny"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:414
 #: ../src/iop/retouch.c:2483 ../src/iop/retouch.c:2489
@@ -12438,10 +12201,8 @@ msgstr "narzędzia"
 #. slurp the file
 #. assume that the second block comment is the documentation
 #: ../src/external/lua-scripts/tools/script_manager.lua:502
-#, fuzzy
-#| msgid "not available"
 msgid "no documentation available"
-msgstr "niedostępne"
+msgstr "brak dostępnej dokumentacji"
 
 #. status of start function
 #. error message returned if module doesn't start
@@ -12484,26 +12245,25 @@ msgstr "niedostępne"
 msgid ""
 "ERROR: git not found.  Install or specify the location of the git executable."
 msgstr ""
+"BŁĄD: nie znaleziono git. Zainstaluj lub podaj lokalizację pliku "
+"wykonywalnego git."
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:746
-#, fuzzy
-#| msgid "style %s was successfully imported"
 msgid "lua scripts successfully updated"
-msgstr "import stylu  %s zakończony powodzeniem"
+msgstr "skrypty lua zostały pomyślnie zaktualizowane"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:886
 msgid "no scripts found to install"
-msgstr ""
+msgstr "nie znaleziono skryptów do zainstalowania"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:891
 msgid "failed to download scripts"
-msgstr ""
+msgstr "nie udało się pobrać skryptów"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1043
-#, fuzzy, lua-format
-#| msgid "image rated to %s"
+#, lua-format
 msgid "page %d of %d"
-msgstr "zdjęcie ocenione na %s"
+msgstr "strona %d z %d"
 
 #. no change
 #. force the buttons to repopulate
@@ -12516,11 +12276,8 @@ msgstr "zdjęcie ocenione na %s"
 #. Module name
 #: ../src/external/lua-scripts/tools/script_manager.lua:1198
 #: ../src/external/lua-scripts/tools/script_manager.lua:1472
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "Lua scripts"
 msgid "scripts"
-msgstr "skrypty Lua"
+msgstr "skrypty"
 
 #. Visible name
 #. expandable
@@ -12538,6 +12295,7 @@ msgstr "skrypty Lua"
 #: ../src/external/lua-scripts/tools/script_manager.lua:1243
 msgid "lua API version reset, please restart darktable"
 msgstr ""
+"wersja API lua została zresetowana, proszę uruchomić ponownie darktable"
 
 #. do nothing, we are fine
 #. we are on a dev API version, so checkout the dev
@@ -12548,97 +12306,76 @@ msgstr ""
 msgid ""
 "you must restart darktable to use the correct version of the lua scripts"
 msgstr ""
+"musisz ponownie uruchomić darktable, aby użyć poprawnej wersji skryptów Lua"
 
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. U S E R  I N T E R F A C E
 #. - - - - - - - - - - - - - - - - - - - - - - -
 #. update the scripts
 #: ../src/external/lua-scripts/tools/script_manager.lua:1316
-#, fuzzy
-#| msgid "select parts to paste"
 msgid "scripts to update"
-msgstr "wybierz części do wklejenia"
+msgstr "skrypty do zaktualizowania"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1317
-#, fuzzy
-#| msgid "select the interpolation method"
 msgid "select the scripts installation to update"
-msgstr "wybierz metodę interpolacji"
+msgstr "wybierz instalację skryptów do zaktualizowania"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1326
 #: ../src/external/lua-scripts/tools/script_manager.lua:1388
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "Lua scripts"
 msgid "update scripts"
-msgstr "skrypty Lua"
+msgstr "zaktualizuj skrypty"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1327
-#, fuzzy
-#| msgid "attenuate the purity of the red primary"
 msgid "update the lua scripts from the repository"
-msgstr "tłumienie czystości barwy podstawowej czerwonej"
+msgstr "zaktualizuj skrypty Lua z repozytorium"
 
 #. add additional scripts
 #: ../src/external/lua-scripts/tools/script_manager.lua:1338
 msgid ""
 "enter the URL of the git repository containing the scripts you wish to add"
 msgstr ""
+"wprowadź URL repozytorium git zawierającego skrypty, które chcesz dodać"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1343
-#, fuzzy
-#| msgid "move to other folder"
 msgid "name of new folder"
-msgstr "przenosi do innego katalogu"
+msgstr "nazwa nowego folderu"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1344
-#, fuzzy
-#| msgid "enter a name for the new style"
 msgid "enter a folder name for the additional scripts"
-msgstr "wprowadź nazwę dla nowego stylu"
+msgstr "wprowadź nazwę folderu dla dodatkowych skryptów"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1349
 msgid "URL to download additional scripts from"
-msgstr ""
+msgstr "URL do pobrania dodatkowych skryptów"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1351
 msgid "new folder to place scripts in"
-msgstr ""
+msgstr "nowy folder, w którym mają zostać umieszczone skrypty"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1354
-#, fuzzy
-#| msgctxt "section"
-#| msgid "additional properties"
 msgid "install additional scripts"
-msgstr "dodatkowe właściwości"
+msgstr "zainstaluj dodatkowe skrypty"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1362
 msgid "enable \"disable scripts\" button"
-msgstr ""
+msgstr "włącz przycisk \"wyłącz skrypty\""
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1374
 #: ../src/external/lua-scripts/tools/script_manager.lua:1399
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "Lua scripts"
 msgid "disable scripts"
-msgstr "skrypty Lua"
+msgstr "wyłącz skrypty"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1380
 msgid "lua scripts will not run the next time darktable is started"
-msgstr ""
+msgstr "skrypty Lua nie będą uruchamiane przy następnym uruchomieniu darktable"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1394
-#, fuzzy
-#| msgid "add more images"
 msgid "add more scripts"
-msgstr "dodaj więcej obrazów"
+msgstr "dodaj więcej skryptów"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1410
-#, fuzzy
-#| msgid "select the saturation of filter"
 msgid "select the script folder"
-msgstr "nasycenie filtra"
+msgstr "wybierz folder skryptów"
 
 #. a script "button" consists of:
 #. a button to start and stop the script
@@ -12656,23 +12393,19 @@ msgstr "strona"
 #. configure options
 #: ../src/external/lua-scripts/tools/script_manager.lua:1481
 msgid "scripts per page"
-msgstr ""
+msgstr "skryptów na stronę"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1482
 msgid "select number of start/stop buttons to display"
-msgstr ""
+msgstr "wybierz liczbę przycisków start/stop do wyświetlenia"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1493
-#, fuzzy
-#| msgid "change number of images per row"
 msgid "change number of buttons"
-msgstr "zmień liczbę zdjęć w wierszu"
+msgstr "zmień liczbę przycisków"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1503
-#, fuzzy
-#| msgid "navigation"
 msgid "configuration"
-msgstr "nawigacja"
+msgstr "konfiguracja"
 
 #. stack for the options
 #. main menu
@@ -12683,24 +12416,16 @@ msgid "action"
 msgstr "akcja"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1531
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "Lua scripts"
 msgid "install/update scripts"
-msgstr "skrypty Lua"
+msgstr "zainstaluj/zaktualizuj skrypty"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1531
-#, fuzzy
-#| msgid "configure metadata"
 msgid "configure"
-msgstr "konfiguruj metadane"
+msgstr "konfiguruj"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1531
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "Lua scripts"
 msgid "start/stop scripts"
-msgstr "skrypty Lua"
+msgstr "uruchom/zatrzymaj skrypty"
 
 #: ../src/generate-cache/main.c:50
 #, c-format
@@ -12728,32 +12453,21 @@ msgid "warning: did you want to swap these boundaries?\n"
 msgstr "uwaga: czy chcesz zamienić te ograniczenia?\n"
 
 #: ../src/generate-cache/main.c:227
-#, fuzzy, c-format
-#| msgid ""
-#| "warning: disk backend for thumbnail cache is disabled "
-#| "(cache_disk_backend)\n"
-#| "if you want to pre-generate thumbnails and for darktable to use them, you "
-#| "need to enable disk backend for thumbnail cache\n"
-#| "no thumbnails to be generated, done.\n"
+#, c-format
 msgid ""
 "warning: disk backend for thumbnail cache is disabled (cache_disk_backend).\n"
 "if you want to pre-generate thumbnails and for darktable to use them, you "
 "need to enable disk backend for thumbnail cache.\n"
 "no thumbnails to be generated, done.\n"
 msgstr ""
-"uwaga: zapisywanie miniaturek na dysku jest wyłączone (cache_disk_backend)\n"
-"jeśli chcesz wygenerować miniaturki i żeby darktable mogł ich używać, musisz "
-"włączyć zapis miniaturek na dysku\n"
-"brak miniaturek do wygenerowania, zakończone.\n"
+"uwaga: dyskowa pamięć podręczna dla miniatur jest nieaktywna "
+"(cache_disk_backend)\n"
+"jeśli chcesz wygenerować miniaturki tak aby darktable z nich korzystało, "
+"musisz aktywować dyskową pamięć podręczna dla miniatur\n"
+"brak miniatur do wygenerowania, zakończono.\n"
 
 #: ../src/generate-cache/main.c:238
-#, fuzzy, c-format
-#| msgid ""
-#| "warning: disk backend for full preview cache is disabled "
-#| "(cache_disk_backend_full)\n"
-#| "if you want to pre-generate full previews and for darktable to use them, "
-#| "you need to enable disk backend for full preview cache\n"
-#| "no full previews to be generated, done.\n"
+#, c-format
 msgid ""
 "warning: disk backend for full preview cache is disabled "
 "(cache_disk_backend_full).\n"
@@ -12761,11 +12475,11 @@ msgid ""
 "need to enable disk backend for full preview cache.\n"
 "no full previews to be generated, done.\n"
 msgstr ""
-"uwaga: zapisywanie pełnego podglądu na dysku jest wyłączone "
+"uwaga: dyskowa pamięć podręczna dla pełnych podglądów jest nieaktywna "
 "(cache_disk_backend_full)\n"
-"jeśli chcesz wygenerować podglądy i żeby darktable mógł ich używać, musisz "
-"włączyć zapis pełnego podglądu na dysku\n"
-"brak podglądów do wygenerowania, zakończone.\n"
+"jeśli chcesz wygenerować pełne podglądy tak aby darktable mógł ich używać, "
+"musisz aktywować dyskową pamięć podręczną dla pełnych podglądów\n"
+"brak podglądów do wygenerowania, zakończono.\n"
 
 #: ../src/generate-cache/main.c:248
 #, c-format
@@ -13128,10 +12842,6 @@ msgid "click to filter shortcuts list"
 msgstr "kliknij, aby filtrować listę skrótów"
 
 #: ../src/gui/accelerators.c:1057
-#, fuzzy
-#| msgid ""
-#| "\n"
-#| "right click to show action of selected shortcut"
 msgid ""
 "\n"
 "right-click to show action of selected shortcut"
@@ -13176,8 +12886,6 @@ msgid "scroll to change default speed"
 msgstr "przewiń by zmienić domyślną prędkość"
 
 #: ../src/gui/accelerators.c:1116
-#, fuzzy
-#| msgid "right click to exit mapping mode"
 msgid "right-click to exit mapping mode"
 msgstr "kliknij prawym, żeby wyjść z trybu mapowania"
 
@@ -13735,10 +13443,8 @@ msgid "tabs"
 msgstr "karty"
 
 #: ../src/gui/gtk.c:1963
-#, fuzzy
-#| msgid "collapsing controls"
 msgid "collapsing panels"
-msgstr "widoczność przycisków ukrywania"
+msgstr "widoczność paneli"
 
 #: ../src/gui/gtk.c:1964
 msgid ""
@@ -13749,28 +13455,29 @@ msgid ""
 "\n"
 "do you want to collapse all panels now?"
 msgstr ""
+"jest to pierwsze naciśnięcie skrótu\n"
+"zwijającego wszystkie boczne i górne/dolne panele.\n"
+"domyślnie jest to klawisz TAB.\n"
+"Ponowne jego naciśnięcie spowoduje przywrócenie paneli.\n"
+"\n"
+"Czy chcesz teraz zwinąć wszystkie panele?"
 
 #: ../src/gui/gtk.c:2361
-#, fuzzy
-#| msgid "preserve details"
 msgid "restore defaults"
-msgstr "ochrona detali"
+msgstr "przywróć domyślne"
 
 #: ../src/gui/gtk.c:2362
 msgid "restore the default visibility and position of all modules in this view"
 msgstr ""
+"przywróć domyślną widoczność i położenie wszystkich modułów w tym widoku"
 
 #: ../src/gui/gtk.c:2440
-#, fuzzy
-#| msgid "right-click to reset curvature"
 msgid "right-click to show/hide modules"
-msgstr "kliknij prawym przyciskiem z ctrl, by zresetować wartość zmiękczania"
+msgstr "kliknij prawym przyciskiem myszy, by wyświetlić/ukryć moduł"
 
 #: ../src/gui/gtk.c:2449
-#, fuzzy
-#| msgid "show module"
 msgid "show/hide modules"
-msgstr "wyświetl moduł"
+msgstr "wyświetl/ukryj moduł"
 
 #. ask the user if darktable.org may be accessed
 #: ../src/gui/gtk.c:3244
@@ -13824,50 +13531,40 @@ msgid "$(HOUR.AMPM) - hour, 12-hour clock"
 msgstr "$(HOUR.AMPM) - godzina w systemie 12-godzinnym"
 
 #: ../src/gui/gtkentry.c:203
-#, fuzzy
-#| msgid "$(EXIF.DAY) - EXIF day"
 msgid "$(EXIF.DATE.REGIONAL) - localized EXIF date"
-msgstr "$(EXIF.DAY) - dzień z EXIF"
+msgstr "$(EXIF.DATE.REGIONAL) - data lokalna z EXIF"
 
 #: ../src/gui/gtkentry.c:204
 msgid "$(EXIF.TIME.REGIONAL) - localized EXIF time"
-msgstr ""
+msgstr "$(EXIF.TIME.REGIONAL) - czas lokalny z EXIF"
 
 #: ../src/gui/gtkentry.c:212
 msgid "$(EXIF.HOUR.AMPM) - EXIF hour, 12-hour clock"
 msgstr "$(EXIF.HOUR.AMPM) - godzina z EXIF 12-godzinna"
 
 #: ../src/gui/gtkentry.c:218
-#, fuzzy
-#| msgid "$(EXIF.EXPOSURE.BIAS) - EXIF exposure bias"
 msgid "$(EXIF.EXPOSURE.PROGRAM) - EXIF exposure program"
-msgstr "$($(EXIF.EXPOSURE.BIAS) - przesunięcie ekspozycji EXIF"
+msgstr "$(EXIF.EXPOSURE.PROGRAM) - program ekspozycji z EXIF"
 
 #: ../src/gui/gtkentry.c:230
 msgid "$(EXIF.FLASH.ICON) - icon indicating whether flash was used"
-msgstr ""
+msgstr "$(EXIF.FLASH.ICON) - ikona wskazująca czy użyto lampy błyskowej"
 
 #: ../src/gui/gtkentry.c:232
-#, fuzzy
-#| msgid "$(LONGITUDE) - longitude"
 msgid "$(GPS.LONGITUDE) - longitude"
-msgstr "$(LONGITUDE) - długość geograficzna"
+msgstr "$(GPS.LONGITUDE) - długość geograficzna"
 
 #: ../src/gui/gtkentry.c:233
-#, fuzzy
-#| msgid "$(LATITUDE) - latitude"
 msgid "$(GPS.LATITUDE) - latitude"
-msgstr "$(LATITUDE) - szerokość geograficzna"
+msgstr "$(GPS.LATITUDE) - szerokość geograficzna"
 
 #: ../src/gui/gtkentry.c:234
-#, fuzzy
-#| msgid "$(ELEVATION) - elevation"
 msgid "$(GPS.ELEVATION) - elevation"
-msgstr "$(ELEVATION) - elewacja"
+msgstr "$(GPS.ELEVATION) - wysokość"
 
 #: ../src/gui/gtkentry.c:235
 msgid "$(GPS.LOCATION.ICON) - icon indicating whether GPS location is known"
-msgstr ""
+msgstr "$(GPS.LOCATION.ICON) - ikona wskazująca czy znana jest lokalizacja GPS"
 
 #: ../src/gui/gtkentry.c:240
 msgid "$(RATING.ICONS) - star/reject rating in icon form"
@@ -13878,28 +13575,26 @@ msgid "$(LABELS.ICONS) - color labels as icons"
 msgstr "$(LABELS.ICONS) - kolorowe etykiety jako ikony"
 
 #: ../src/gui/gtkentry.c:243
-#, fuzzy
-#| msgid "$(TAGS) - tags as set in metadata settings"
 msgid ""
 "$(IMAGE.TAGS.HIERARCHY) - tags as set in metadata settings, preserving "
 "hierarchy"
-msgstr "$(TAGS) - etykiety zgodnie z ustawieniami metadanych"
+msgstr ""
+"$(IMAGE.TAGS.HIERARCHY) - etykiety zgodnie z ustawieniami metadanych, z "
+"zachowaniem hierarchii"
 
 #: ../src/gui/gtkentry.c:244
-#, fuzzy
-#| msgid "$(TAGS) - tags as set in metadata settings"
 msgid "$(IMAGE.TAGS) - tags as set in metadata settings, flattened"
-msgstr "$(TAGS) - etykiety zgodnie z ustawieniami metadanych"
+msgstr "$(IMAGE.TAGS) - etykiety zgodnie z ustawieniami metadanych"
 
 #: ../src/gui/gtkentry.c:245
-#, fuzzy
-#| msgid "$(ID) - image ID"
 msgid "$(IMAGE.ID) - image ID"
-msgstr "$(ID) – identyfikator zdjęcia"
+msgstr "$(IMAGE.ID) – identyfikator obrazu"
 
 #: ../src/gui/gtkentry.c:246
 msgid "$(IMAGE.ID.NEXT) - next image ID to be assigned on import"
 msgstr ""
+"$(IMAGE.ID.NEXT) - następny identyfikator obrazu do przypisania podczas "
+"importu"
 
 #: ../src/gui/gtkentry.c:257
 msgid "$(OPENCL.ACTIVATED) - whether OpenCL is activated"
@@ -14123,7 +13818,7 @@ msgstr "lista etykiet oddzielonych przecinkami"
 
 #: ../src/gui/preferences.c:280
 msgid "reset panels in all views"
-msgstr ""
+msgstr "zresetuj panele we wszyskich widokach"
 
 #: ../src/gui/preferences.c:281
 msgid ""
@@ -14132,6 +13827,9 @@ msgid ""
 "you will not be able to restore your current panel layout and module "
 "selection."
 msgstr ""
+"czy jesteś pewien?\n"
+"\n"
+"nie będziesz w stanie przywrócić bieżącego układu paneli i wyboru modułów."
 
 #. language
 #: ../src/gui/preferences.c:305
@@ -14187,15 +13885,13 @@ msgstr ""
 "(wymaga restartu)"
 
 #: ../src/gui/preferences.c:419
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "reset lib parameters"
 msgid "reset view panels"
-msgstr "zresetuj parametry biblioteki"
+msgstr "zresetuj panele widoku"
 
 #: ../src/gui/preferences.c:420
 msgid "reset hidden panels, their sizes and selected modules in all views"
 msgstr ""
+"zresetuj ukryte panele, ich rozmiary i wybrane moduły we wszystkich widokach"
 
 #. checkbox to allow user to modify theme with user.css
 #: ../src/gui/preferences.c:425
@@ -14574,17 +14270,12 @@ msgid "update preset"
 msgstr "aktualizuj preset"
 
 #: ../src/gui/splash.c:152
-#, fuzzy
-#| msgctxt "menu"
-#| msgid "darktable Manual"
 msgid "darktable starting"
-msgstr "Instrukcja obsługi darktable"
+msgstr "uruchamianie darktable"
 
 #: ../src/gui/splash.c:159
-#, fuzzy
-#| msgid "initial rating"
 msgid "initializing"
-msgstr "wstępna ocena przy imporcie"
+msgstr "inicjalizowania"
 
 #: ../src/gui/splash.c:194
 msgid ""
@@ -14592,6 +14283,8 @@ msgid ""
 "application and\n"
 "RAW developer"
 msgstr ""
+"Aplikacja do obróbki zdjęć\n"
+"oraz wywoływania plików RAW"
 
 #. put the darktable wordmark and description in a vertical stack
 #: ../src/gui/splash.c:215
@@ -14599,28 +14292,26 @@ msgid ""
 "Photography workflow application\n"
 "and RAW developer"
 msgstr ""
+"Aplikacja do obróbki zdjęć\n"
+"oraz wywoływania plików RAW"
 
 #. ensure that text is vertically centered
 #. with respect to logo
 #: ../src/gui/splash.c:225
 msgid "get ready to unleash your creativity"
-msgstr ""
+msgstr "przygotuj się, aby uwolnić swoją kreatywność"
 
 #: ../src/gui/splash.c:361
-#, fuzzy
-#| msgid "darktable » %s"
 msgid "darktable shutdown"
-msgstr "darktable » %s"
+msgstr "zamykanie darktable"
 
 #: ../src/gui/splash.c:376
-#, fuzzy
-#| msgid "darktable - accels window"
 msgid "darktable is now shutting down"
-msgstr "darktable - okno skrótów"
+msgstr "darktable jest teraz zamykane"
 
 #: ../src/gui/splash.c:378
 msgid "please wait while background jobs finish"
-msgstr ""
+msgstr "proszę czekać, podczas gdy zadania w tle kończą się"
 
 #: ../src/gui/styles_dialog.c:232 ../src/libs/styles.c:479
 #: ../src/libs/styles.c:635
@@ -14792,14 +14483,13 @@ msgstr ""
 #. default
 #. digits
 #: ../src/imageio/format/avif.c:1015
-#, fuzzy
-#| msgid "decoding speed"
 msgid "encoding speed"
-msgstr "szybkość dekodowania"
+msgstr "szybkość kodowania"
 
 #: ../src/imageio/format/avif.c:1018
 msgid "trades off quality and file size for quicker encoding time"
 msgstr ""
+"w ramach kompromisu wymienia jakość i rozmiar pliku na szybszy czas kodowania"
 
 #: ../src/imageio/format/copy.c:109 ../src/libs/copy_history.c:341
 #: ../src/libs/image.c:625
@@ -14952,12 +14642,6 @@ msgid "floating point"
 msgstr "zmiennoprzecinkowa"
 
 #: ../src/imageio/format/jxl.c:609
-#, fuzzy
-#| msgid ""
-#| "the quality of the output image\n"
-#| "0-29 = very lossy\n"
-#| "30-99 = JPEG quality comparable\n"
-#| "100 = lossless (integer bit depth only)"
 msgid ""
 "the quality of the output image\n"
 "0-29 = very lossy\n"
@@ -14965,9 +14649,9 @@ msgid ""
 "100 = lossless"
 msgstr ""
 "jakość wyjściowego obrazu\n"
-"0-29 - bardzo stratny\n"
-"30-99 - porównywalne do JPEG\n"
-"100 - bezstratny (głębia bitowa integer)"
+"0-29 = bardzo stratny\n"
+"30-99 = porównywalne do JPEG\n"
+"100 = bezstratny"
 
 #: ../src/imageio/format/jxl.c:618
 msgid "encoding color profile"
@@ -15511,26 +15195,20 @@ msgid "click login button to start"
 msgstr "kliknij „zaloguj”, aby rozpocząć"
 
 #: ../src/imageio/storage/piwigo.c:1165 ../src/imageio/storage/piwigo.c:1174
-#, fuzzy
-#| msgid "file naming pattern"
 msgid "filename pattern"
-msgstr "wzorzec nazywania plików"
+msgstr "wzorzec nazwy pliku"
 
 #: ../src/imageio/storage/piwigo.c:1167
-#, fuzzy
-#| msgid ""
-#| "enter the path where to put exported images\n"
-#| "variables support bash like string manipulation\n"
-#| "type '$(' to activate the completion and see the list of variables"
 msgid ""
 "enter the filename pattern for the exported images\n"
 "leave empty to use the image filename\n"
 "variables support bash like string manipulation\n"
 "type '$(' to activate the completion and see the list of variables"
 msgstr ""
-"wprowadź ścieżkę dla eksportowanych obrazów\n"
+"wprowadź wzorzec nazwy pliku dla eksportowanych obrazów\n"
+"pole pozostaw puste aby użyć nazwy obrazu\n"
 "zmienne obsługują manipulacje łańcuchami podobnie jak bash\n"
-"\"$\" aktywuje dopełnienie i wyświetla listę zmiennych"
+"wpisz '$(' aby aktywować uzupełnianie i wyświetlić listę zmiennych"
 
 #: ../src/imageio/storage/piwigo.c:1181
 msgid "don't check"
@@ -15541,10 +15219,8 @@ msgid "update metadata"
 msgstr "aktualizuj metadane"
 
 #: ../src/imageio/storage/piwigo.c:1282
-#, fuzzy
-#| msgid "could not upload to Piwigo!"
 msgid "not logged in to Piwigo server!"
-msgstr "nie można wysłać na Piwigo!"
+msgstr "niezalogowano do serwera Piwigo!"
 
 #: ../src/imageio/storage/piwigo.c:1375
 msgid "cannot create a new Piwigo album!"
@@ -16269,11 +15945,6 @@ msgid "apply auto exposure based on the entire image"
 msgstr "zastosuj automatyczną ekspozycję w oparciu o całe zdjęcie"
 
 #: ../src/iop/basicadj.c:669
-#, fuzzy
-#| msgid ""
-#| "apply auto exposure based on a region defined by the user\n"
-#| "click and drag to draw the area\n"
-#| "right click to cancel"
 msgid ""
 "apply auto exposure based on a region defined by the user\n"
 "click and drag to draw the area\n"
@@ -16461,38 +16132,46 @@ msgid ""
 "size of the blur in pixels\n"
 "<b>caution</b>: doubling the radius quadruples the run-time!"
 msgstr ""
+"rozmiar rozmycia w pikselach\n"
+"<b>uwaga</b>: podwojenie promienia poczwórnie zwiększa czas działania!"
 
 #: ../src/iop/blurs.c:794
 msgid "shifts towards a star shape as value approaches blades-1"
 msgstr ""
+"przesuwa się w kierunku kształtu gwiazdy, gdy wartość zbliża się do listki "
+"przysłony-1"
 
 #: ../src/iop/blurs.c:796
 msgid ""
 "adjust straightness of edges from 0=perfect circle\n"
 "to 1=completely straight"
 msgstr ""
+"dostosowuje prostoliniowość krawędzi od 0 = idealne koło\n"
+"do 1 = całkowicie proste"
 
 #: ../src/iop/blurs.c:797
 msgid "set amount by which to rotate shape around its center"
-msgstr ""
+msgstr "ustaw wartość, o którą kształt ma być obracany wokół swojego środka"
 
 #: ../src/iop/blurs.c:799
-#, fuzzy
-#| msgid "paper orientation of the PDF"
 msgid "orientation of the motion's path"
-msgstr "orientacja papieru pliku PDF"
+msgstr "orientacja ścieżki ruchu"
 
 #: ../src/iop/blurs.c:800
 msgid ""
 "amount to curve the motion relative\n"
 "to its overall orientation"
 msgstr ""
+"wartość zakrzywienia ruchu względem\n"
+"jego ogólnej orientacji"
 
 #: ../src/iop/blurs.c:801
 msgid ""
 "select which portion of the path to use,\n"
 "allowing the path to become asymmetric"
 msgstr ""
+"wybierz, którą część ścieżki chcesz użyć,\n"
+"umożliwiając jej asymetrię"
 
 #: ../src/iop/borders.c:309
 msgid "framing"
@@ -16503,8 +16182,6 @@ msgid "borders|enlarge canvas|expand canvas"
 msgstr "granice|powiększ płótno|rozszerz płótno"
 
 #: ../src/iop/borders.c:319
-#, fuzzy
-#| msgid "add solid borders or margins around the picture"
 msgid "add solid borders or margins around the image"
 msgstr "dodaje obramowanie lub margines wokół zdjęcia"
 
@@ -16533,16 +16210,12 @@ msgid "aspect"
 msgstr "proporcje"
 
 #: ../src/iop/borders.c:937
-#, fuzzy
-#| msgid ""
-#| "select the aspect ratio\n"
-#| "(right click on slider below to type your own w:h)"
 msgid ""
 "select the aspect ratio\n"
 "(right-click on slider below to type your own w:h)"
 msgstr ""
-"wybierz proporcję \n"
-"(kliknij prawym na suwak, by wprowadzić własną (szer:wys))"
+"wybierz proporcję\n"
+"(kliknij prawym na suwak, by wprowadzić własną szer:wys)"
 
 #: ../src/iop/borders.c:941
 msgid "3:1"
@@ -16623,15 +16296,11 @@ msgid "custom..."
 msgstr "własne..."
 
 #: ../src/iop/borders.c:964
-#, fuzzy
-#| msgid ""
-#| "set the custom aspect ratio\n"
-#| "(right click to enter number or w:h)"
 msgid ""
 "set the custom aspect ratio\n"
 "(right-click to enter number or w:h)"
 msgstr ""
-"wybierz niestandardową proporcję \n"
+"wybierz niestandardową proporcję\n"
 "(kliknij prawym by wpisać liczbę, lub wys:szer)"
 
 #: ../src/iop/borders.c:969
@@ -16643,10 +16312,6 @@ msgid "horizontal position"
 msgstr "pozycja w poziomie"
 
 #: ../src/iop/borders.c:972
-#, fuzzy
-#| msgid ""
-#| "select the horizontal position ratio relative to top\n"
-#| "(right click on slider below to type your own x:w)"
 msgid ""
 "select the horizontal position ratio relative to top\n"
 "(right-click on slider below to type your own x:w)"
@@ -16683,10 +16348,6 @@ msgid "vertical position"
 msgstr "pozycja w pionie"
 
 #: ../src/iop/borders.c:983
-#, fuzzy
-#| msgid ""
-#| "select the vertical position ratio relative to left\n"
-#| "(right click on slider below to type your own y:h)"
 msgid ""
 "select the vertical position ratio relative to left\n"
 "(right-click on slider below to type your own y:h)"
@@ -16703,8 +16364,6 @@ msgid "size of the frame line in percent of min border width"
 msgstr "rozmiar linii ramki w procentach najmniejszej szerokości obramowania"
 
 #: ../src/iop/borders.c:1003
-#, fuzzy
-#| msgid "offset of the frame line beginning on picture side"
 msgid "offset of the frame line beginning on image side"
 msgstr "odległość linii ramki od brzegu zdjęcia"
 
@@ -17044,10 +16703,8 @@ msgid "swap G and R"
 msgstr "zamień zielony i czerwony"
 
 #: ../src/iop/channelmixerrgb.c:605
-#, fuzzy
-#| msgid "area color mapping"
 msgid "area color mapping (active)"
-msgstr "miejscowe mapowanie kolorów"
+msgstr "miejscowe mapowanie kolorów (aktywne)"
 
 #: ../src/iop/channelmixerrgb.c:605
 msgid "area color mapping"
@@ -17528,10 +17185,8 @@ msgid "Xrite ColorChecker 24 pre-2014"
 msgstr "Xrite ColorChecker 24 (przed 2014)"
 
 #: ../src/iop/channelmixerrgb.c:4683
-#, fuzzy
-#| msgid "Xrite ColorChecker 24 post-2014"
 msgid "Xrite/Calibrite ColorChecker 24 post-2014"
-msgstr "Xrite ColorChecker 24 (po 2014)"
+msgstr "Xrite/Calibrite ColorChecker 24 (po 2014)"
 
 #: ../src/iop/channelmixerrgb.c:4684
 msgid "Datacolor SpyderCheckr 24 pre-2018"
@@ -18438,10 +18093,8 @@ msgid "it8 skin tones"
 msgstr "it8 odcienie skóry"
 
 #: ../src/iop/colorchecker.c:472
-#, fuzzy
-#| msgid "color checker patch"
 msgid "expanded color checker"
-msgstr "próbka koloru"
+msgstr "rozszerzony wzornik barw"
 
 #: ../src/iop/colorchecker.c:488
 msgid "Helmholtz/Kohlrausch monochrome"
@@ -18473,14 +18126,7 @@ msgid "patch #%d"
 msgstr "próbka nr %d"
 
 #: ../src/iop/colorchecker.c:1410
-#, fuzzy, c-format
-#| msgid ""
-#| "(%2.2f %2.2f %2.2f)\n"
-#| "altered patches are marked with an outline\n"
-#| "click to select\n"
-#| "double-click to reset\n"
-#| "right click to delete patch\n"
-#| "shift+click while color picking to replace patch"
+#, c-format
 msgid ""
 "(%2.2f %2.2f %2.2f)\n"
 "altered patches are marked with an outline\n"
@@ -18675,11 +18321,6 @@ msgid "options"
 msgstr "opcje"
 
 #: ../src/iop/colorequal.c:3038
-#, fuzzy
-#| msgid ""
-#| "double-click to reset the curve\n"
-#| "middle click to toggle sliders visibility\n"
-#| "alt+scroll to change page"
 msgid ""
 "double-click to reset the curve\n"
 "middle-click to toggle sliders visibility\n"
@@ -18777,16 +18418,12 @@ msgid "set radius of applied parameters for the guided filter"
 msgstr "określ promień zastosowanych parametrów dla filtra prowadzonego"
 
 #: ../src/iop/colorequal.c:3211
-#, fuzzy
-#| msgid ""
-#| "visualize changed output for the selected tab.\n"
-#| "red shows increased data, blue decreased."
 msgid ""
 "visualize changed output for the selected tab.\n"
 "red shows increased values, blue decreased."
 msgstr ""
 "pokaż zmienione wyjście dla zaznaczonej zakładki.\n"
-"czerwony oznacza powiększenie informacji, niebieski zredukowanie."
+"czerwony pokazuje zwiększone wartości, niebieski zmniejszone."
 
 #: ../src/iop/colorin.c:124
 msgid "input color profile"
@@ -19546,19 +19183,13 @@ msgid "finetune denoising strength"
 msgstr "dostrój siłę odszumiania"
 
 #: ../src/iop/denoiseprofile.c:3847
-#, fuzzy
-#| msgid ""
-#| "controls the way parameters are autoset\n"
-#| "increase if shadows are not denoised enough\n"
-#| "or if chroma noise remains.\n"
-#| "this can happen if your picture is underexposed."
 msgid ""
 "controls the way parameters are autoset.\n"
 "increase if shadows are not denoised enough\n"
 "or if chroma noise remains.\n"
 "this can happen if your image is underexposed."
 msgstr ""
-"ustala jak działa automatyczne ustawianie parametrów\n"
+"ustala jak działa automatyczne ustawianie parametrów.\n"
 "zwiększ, jeśli cienie nie są dostatecznie odszumione\n"
 "lub jeśli szum kolorowy wciąż jest widoczny.\n"
 "to może mieć miejsce, jeśli obraz jest niedoświetlony."
@@ -20075,10 +19706,8 @@ msgstr ""
 "to przydaje się, jeśli zdjęcie zrobione było \"z ekspozycją w prawo\"(ETTR)."
 
 #: ../src/iop/exposure.c:1113
-#, fuzzy
-#| msgid "set the opacity on the selected shape"
 msgid "set the exposure adjustment using the selected area"
-msgstr "ustaw krycie wybranego kształtu"
+msgstr "ustaw korekcje ekspozycji za pomocą wybranego obszaru"
 
 #: ../src/iop/exposure.c:1124
 #, no-c-format
@@ -20246,12 +19875,6 @@ msgid "auto tune levels"
 msgstr "ustaw poziomy automatycznie"
 
 #: ../src/iop/filmic.c:1532
-#, fuzzy
-#| msgid ""
-#| "try to optimize the settings with some guessing.\n"
-#| "this will fit the luminance range inside the histogram bounds.\n"
-#| "works better for landscapes and evenly-lit pictures\n"
-#| "but fails for high-keys and low-keys."
 msgid ""
 "try to optimize the settings with some guessing.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -20522,12 +20145,6 @@ msgid "toggle axis labels and values display"
 msgstr "pokaż/ukryj opisy osi i wyświetlanie wartości"
 
 #: ../src/iop/filmicrgb.c:4334
-#, fuzzy
-#| msgid ""
-#| "cycle through graph views.\n"
-#| "left click: cycle forward.\n"
-#| "right click: cycle backward.\n"
-#| "double-click: reset to look view."
 msgid ""
 "cycle through graph views.\n"
 "left-click: cycle forward.\n"
@@ -20560,14 +20177,6 @@ msgstr ""
 "luminancji."
 
 #: ../src/iop/filmicrgb.c:4430
-#, fuzzy
-#| msgid ""
-#| "try to optimize the settings with some statistical assumptions.\n"
-#| "this will fit the luminance range inside the histogram bounds.\n"
-#| "works better for landscapes and evenly-lit pictures\n"
-#| "but fails for high-keys, low-keys and high-ISO pictures.\n"
-#| "this is not an artificial intelligence, but a simple guess.\n"
-#| "ensure you understand its assumptions before using it."
 msgid ""
 "try to optimize the settings with some statistical assumptions.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -20796,12 +20405,6 @@ msgstr ""
 "to również pomaga w trudnych przypadkach prześwietleń w kolorze magenta."
 
 #: ../src/iop/filmicrgb.c:4623
-#, fuzzy
-#| msgid ""
-#| "add statistical noise in reconstructed highlights.\n"
-#| "this avoids highlights to look too smooth\n"
-#| "when the picture is noisy overall,\n"
-#| "so they blend with the rest of the picture."
 msgid ""
 "add statistical noise in reconstructed highlights.\n"
 "this avoids highlights to look too smooth\n"
@@ -21059,10 +20662,8 @@ msgid "dehaze|defog|smoke|smog"
 msgstr "usuwanie mgły|usuwanie zamglenia|dym|smog"
 
 #: ../src/iop/hazeremoval.c:112
-#, fuzzy
-#| msgid "remove fog and atmospheric hazing from pictures"
 msgid "remove fog and atmospheric hazing from images"
-msgstr "usuwa zamglenia z obrazów"
+msgstr "usuwa zamglenia ze zdjęć"
 
 #: ../src/iop/hazeremoval.c:251
 msgid "amount of haze reduction"
@@ -21678,10 +21279,6 @@ msgid "draw multiple points"
 msgstr "rysuj wiele punktów"
 
 #: ../src/iop/liquify.c:3650
-#, fuzzy
-#| msgid ""
-#| "<b>add node</b>: ctrl+click - <b>remove path</b>: right click\n"
-#| "<b>toggle line/curve</b>: ctrl+alt+click"
 msgid ""
 "<b>add node</b>: ctrl+click - <b>remove path</b>: right-click\n"
 "<b>toggle line/curve</b>: ctrl+alt+click"
@@ -21690,12 +21287,6 @@ msgstr ""
 "<b>przełącznik węzła: linie/łuki</b>: Ctrl+Alt+klik"
 
 #: ../src/iop/liquify.c:3653
-#, fuzzy
-#| msgid ""
-#| "<b>move</b>: click and drag - <b>show/hide feathering controls</b>: "
-#| "click\n"
-#| "<b>autosmooth, cusp, smooth, symmetrical</b>: ctrl+click - <b>remove</b>: "
-#| "right click"
 msgid ""
 "<b>move</b>: click and drag - <b>show/hide feathering controls</b>: click\n"
 "<b>autosmooth, cusp, smooth, symmetrical</b>: ctrl+click - <b>remove</b>: "
@@ -22357,16 +21948,13 @@ msgstr ""
 "tutaj"
 
 #: ../src/iop/overlay.c:1008
-#, fuzzy, c-format
-#| msgid ""
-#| "cannot use image %d as an overlay as it is using the current image as an "
-#| "overlay itself"
+#, c-format
 msgid ""
 "cannot use image %d as an overlay as it is using the current image as an "
 "overlay, directly or indirectly"
 msgstr ""
 "nie można użyć obrazu %d jako nakładki, ponieważ już używa bieżącego obrazu "
-"jako własnej nakładki"
+"jako własnej nakładki, bezpośrednio lub pośrednio"
 
 #: ../src/iop/overlay.c:1105 ../src/iop/watermark.c:1374
 msgctxt "section"
@@ -22533,8 +22121,6 @@ msgid "raw denoise"
 msgstr "odszumianie (raw)"
 
 #: ../src/iop/rawdenoise.c:142
-#, fuzzy
-#| msgid "denoise the raw picture early in the pipeline"
 msgid "denoise the raw image early in the pipeline"
 msgstr "odszumia obraz raw na wczesnym etapie przetwarzania"
 
@@ -22971,11 +22557,6 @@ msgid "auto region"
 msgstr "automatyczny region"
 
 #: ../src/iop/rgblevels.c:1115
-#, fuzzy
-#| msgid ""
-#| "apply auto levels based on a region defined by the user\n"
-#| "click and drag to draw the area\n"
-#| "right click to cancel"
 msgid ""
 "apply auto levels based on a region defined by the user\n"
 "click and drag to draw the area\n"
@@ -23353,11 +22934,6 @@ msgid "number of strokes:"
 msgstr "liczba kresek:"
 
 #: ../src/iop/spots.c:875
-#, fuzzy
-#| msgid ""
-#| "click on a shape and drag on canvas.\n"
-#| "use the mouse wheel to adjust size.\n"
-#| "right click to remove a shape."
 msgid ""
 "click on a shape and drag on canvas.\n"
 "use the mouse wheel to adjust size.\n"
@@ -24035,8 +23611,6 @@ msgid "watermark"
 msgstr "znak wodny"
 
 #: ../src/iop/watermark.c:413
-#, fuzzy
-#| msgid "overlay an SVG watermark like a signature on the picture"
 msgid "overlay an SVG watermark like a signature on the image"
 msgstr "nakłada znak wodny SVG, np. podpis na zdjęciu"
 
@@ -24055,16 +23629,12 @@ msgid "text"
 msgstr "tekst"
 
 #: ../src/iop/watermark.c:1328
-#, fuzzy
-#| msgid ""
-#| "text string, tag:\n"
-#| "$(WATERMARK_TEXT)"
 msgid ""
 "text string, tag: $(WATERMARK_TEXT)\n"
 "use $(NL) to insert a line break"
 msgstr ""
-"tekst, tag:\n"
-"$(WATERMARK_TEXT)"
+"tekst, tag: $(WATERMARK_TEXT)\n"
+"użyj $(NL), aby wstawić znak nowej linii"
 
 #: ../src/iop/watermark.c:1332
 msgid "content"
@@ -24299,13 +23869,12 @@ msgid ""
 "define search criteria for images\n"
 "to be displayed or edited"
 msgstr ""
+"zdefiniuj kryteria wyszukiwania dla zdjęć,\n"
+"które mają być wyświetlane lub edytowane"
 
 #: ../src/libs/collect.c:433
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "spot path tool"
 msgid "update path to files"
-msgstr "plamy: narzędzie ścieżka"
+msgstr "zaktualizuj ścieżkę do plików"
 
 #: ../src/libs/collect.c:517
 #, c-format
@@ -24313,10 +23882,8 @@ msgid "problem selecting new path for the filmroll in %s"
 msgstr "problem przy wybieraniu nowej ścieżki dla rolki filmu %s"
 
 #: ../src/libs/collect.c:589
-#, fuzzy
-#| msgid "paste parts..."
 msgid "update path to files..."
-msgstr "wklej elementy..."
+msgstr "zaktualizuj ścieżkę do plików..."
 
 #: ../src/libs/collect.c:594
 msgid "remove..."
@@ -24573,38 +24140,30 @@ msgid "display samples on image/vectorscope"
 msgstr "pokaż próbki na obrazie/ wektoroskopie"
 
 #: ../src/libs/colorpicker.c:851
-#, fuzzy
-#| msgid "display scopes"
 msgid "display samples"
-msgstr "wyświetl zakresy"
+msgstr "pokaż próbki"
 
 #: ../src/libs/colorpicker.c:863
 msgid "restrict scope to selection"
 msgstr "ogranicz zakres do wybranych"
 
 #: ../src/libs/colorpicker.c:864
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "unrestricted"
 msgid "restrict scope"
-msgstr "swobodny"
+msgstr "ogranicz zakres"
 
 #: ../src/libs/copy_history.c:61
 msgid "history stack"
 msgstr "historia"
 
 #: ../src/libs/copy_history.c:66
-#, fuzzy
-#| msgid ""
-#| "paste history stack to\n"
-#| "all selected images"
 msgid ""
 "perform actions on the history\n"
 "stacks (edit histories) of the\n"
 "currently selected images"
 msgstr ""
-"wkleja całą historię edycji\n"
-"do wszystkich wybranych zdjęć"
+"wykonaj akcje na historii edycji\n"
+"dla wszystkich\n"
+"aktualnie wybranych zdjęć"
 
 #: ../src/libs/copy_history.c:121
 msgid "open sidecar file"
@@ -24711,7 +24270,7 @@ msgstr "manager duplikatów"
 msgid ""
 "create/rename/remove multiple\n"
 "edits of the current image"
-msgstr ""
+msgstr "utwórz/zmień nazwę/usuwaj wiele edycji bieżącego obrazu"
 
 #: ../src/libs/duplicate.c:408
 msgid "create a 'virgin' duplicate of the image without any development"
@@ -24726,13 +24285,14 @@ msgid "export"
 msgstr "eksportuj"
 
 #: ../src/libs/export.c:167
-#, fuzzy
-#| msgid "delete the currently selected image area"
 msgid ""
 "create new files for the\n"
 "currently selected images\n"
 "which apply your edits"
-msgstr "usuń bieżący obszar obrazu"
+msgstr ""
+"utwórz nowe pliki\n"
+"dla aktualnie wybranych obrazów,\n"
+"które zastosują Twoje edycje"
 
 #: ../src/libs/export.c:327
 msgid "invalid format for export selected"
@@ -24762,6 +24322,8 @@ msgid ""
 "style to be applied on export:\n"
 "<b>%s</b>"
 msgstr ""
+"styl do zastosowania przy eksporcie:\n"
+"<b>%s</b>"
 
 #: ../src/libs/export.c:1121 ../src/views/darkroom.c:1381
 msgid "no styles have been created yet"
@@ -24796,6 +24358,14 @@ msgid ""
 "unless the user selects <b>all</b> of the metadata checkboxes in\n"
 "the export module preferences"
 msgstr ""
+"obrazy będą eksportowane zgodnie z formatem określonym tutaj.\n"
+"\n"
+"podczas eksportu do AVIF, EXR, JPEG XL lub XCF,\n"
+"wybór konkretnych metadanych nie jest obecnie możliwy.\n"
+"\n"
+"dla tych formatów żadne pola metadanych nie będą uwzględnione,\n"
+"chyba że użytkownik zaznaczy <b>wszystkie</b> pola metadanych\n"
+"w preferencjach modułu eksportu"
 
 #: ../src/libs/export.c:1259
 msgctxt "section"
@@ -24953,10 +24523,8 @@ msgid "append history"
 msgstr "dodaj do historii"
 
 #: ../src/libs/export.c:1445
-#, fuzzy
-#| msgid "select file to export"
 msgid "select style to be applied on export"
-msgstr "wybierz plik do eksportu"
+msgstr "wybierz styl, który ma zostać zastosowany podczas eksportu"
 
 #: ../src/libs/export.c:1448
 msgid "temporary style to use while exporting"
@@ -25169,6 +24737,9 @@ msgid ""
 "filters can be pinned to the top toolbar, where\n"
 "they will also be visible in the darkroom"
 msgstr ""
+"dopracuj zestaw obrazów do wyświetlenia lub edytowania.\n"
+"filtry mogą być przypięte do górnego zasobnika, gdzie\n"
+"będą będą również widoczne w ciemni"
 
 #: ../src/libs/filtering.c:313
 msgid "initial setting"
@@ -25384,19 +24955,14 @@ msgid "rules"
 msgstr "reguły"
 
 #: ../src/libs/filters/colors.c:306
-#, fuzzy
-#| msgid ""
-#| "filter by images color label\n"
-#| "and (∩): images having all selected color labels\n"
-#| "or (∪): images with at least one of the selected color labels"
 msgid ""
 "filter by images color label\n"
 "intersection: images having all selected color labels\n"
 "union: images with at least one of the selected color labels"
 msgstr ""
 "filtruj przez kolorowe etykiety\n"
-"i (∩): obrazy posiadające wybrane kolory etykiet łącznie\n"
-"lub (∪): obrazy posiadające co najmniej jeden wybrany kolor etykiety."
+"przecięcie (∩): obrazy posiadające wybrane kolory etykiet łącznie\n"
+"suma (∪): obrazy posiadające co najmniej jeden wybrany kolor etykiety"
 
 #: ../src/libs/filters/filename.c:369
 msgid ""
@@ -25547,12 +25113,12 @@ msgstr ""
 "jest wyszarzony podczas wyszukiwania"
 
 #: ../src/libs/geotagging.c:146
-#, fuzzy
-#| msgid "set star rating for selected images"
 msgid ""
 "set geolocation information for\n"
 "the currently selected images"
-msgstr "ustal ocenę dla wybranych obrazów"
+msgstr ""
+"ustaw informacje o geolokalizacji dla\n"
+"aktualnie wybranych obrazów"
 
 #: ../src/libs/geotagging.c:374
 msgid "apply offset and geo-location"
@@ -25781,15 +25347,15 @@ msgstr ""
 
 #: ../src/libs/histogram.c:1661
 msgid "use buttons at top of graph to change type"
-msgstr ""
+msgstr "użyj przycisków na górze wykresu, aby zmienić typ"
 
 #: ../src/libs/histogram.c:1662
 msgid "click on ❓ and then graph for documentation"
-msgstr ""
+msgstr "kliknij na ❓, a następnie na wykres, aby zobaczyć dokumentację"
 
 #: ../src/libs/histogram.c:1663
 msgid "use color picker module to restrict area"
-msgstr ""
+msgstr "użyj próbnika koloru aby ograniczyć obszar"
 
 #: ../src/libs/histogram.c:1671
 msgid "scroll to coarse-rotate"
@@ -25894,6 +25460,9 @@ msgid ""
 "and allow temporarily returning to\n"
 "an earlier state of the edit"
 msgstr ""
+"wyświetl historię edycji\n"
+"i pozwól na tymczasowy powrót\n"
+"do wcześniejszego stanu edycji"
 
 #: ../src/libs/history.c:138
 msgid "compress history stack"
@@ -26154,6 +25723,10 @@ msgid ""
 "warning: resets star ratings unless you select\n"
 "'ignore EXIF rating' in the 'import' module"
 msgstr ""
+"zaktualizuj wszystkie informacje o obrazie, aby odzwierciedlały zmiany w "
+"pliku\n"
+"ostrzeżenie: resetuje oceny gwiazdkowe chyba,\n"
+"że w module \"import\" zaznaczysz \"ignoruj ocenę exif\""
 
 #: ../src/libs/image.c:660
 msgid "set selection as monochrome images and activate monochrome workflow"
@@ -26221,22 +25794,16 @@ msgid "places"
 msgstr "miejsca"
 
 #: ../src/libs/import.c:1473
-#, fuzzy
-#| msgid "restore all default places you have removed by right-click"
 msgid "restore all default places you have removed"
-msgstr "przywróć wszystkie domyślne miejsca, usunięte prawym klikiem"
+msgstr "przywróć wszystkie domyślne miejsca, które usunąłeś"
 
 #: ../src/libs/import.c:1480
-#, fuzzy
-#| msgid "remove the selected shortcut?"
 msgid "remove the selected custom place"
-msgstr "usunąć zaznaczony skrót?"
+msgstr "usuń zaznaczone własne miejsce"
 
 #: ../src/libs/import.c:1487
-#, fuzzy
-#| msgid "add sample"
 msgid "add a custom place"
-msgstr "dodaj próbkę"
+msgstr "dodaj własne miejsce"
 
 #: ../src/libs/import.c:1495
 msgid "you can add custom places using the plus icon"
@@ -26259,8 +25826,6 @@ msgid "pictures"
 msgstr "zdjęcia"
 
 #: ../src/libs/import.c:1907
-#, fuzzy
-#| msgid "mark already imported pictures"
 msgid "mark already imported images"
 msgstr "zaznacz już zaimportowane zdjęcia"
 
@@ -26354,26 +25919,20 @@ msgid "parameters"
 msgstr "parametry"
 
 #: ../src/libs/ioporder.c:203
-#, fuzzy
-#| msgid "v3.0 for JPEG/non-RAW input"
 msgid "v3.0 for RAW input"
-msgstr "wer. 3.0 dla wejścia JPEG/nie-raw"
+msgstr "wer. 3.0 dla wejścia RAW"
 
 #: ../src/libs/ioporder.c:211
 msgid "v3.0 for JPEG/non-RAW input"
 msgstr "wer. 3.0 dla wejścia JPEG/nie-raw"
 
 #: ../src/libs/ioporder.c:220
-#, fuzzy
-#| msgid "v3.0 for JPEG/non-RAW input"
 msgid "v5.0 for RAW input"
-msgstr "wer. 3.0 dla wejścia JPEG/nie-raw"
+msgstr "wer. 5.0 dla wejścia RAW"
 
 #: ../src/libs/ioporder.c:229
-#, fuzzy
-#| msgid "v3.0 for JPEG/non-RAW input"
 msgid "v5.0 for JPEG/non-RAW input"
-msgstr "wer. 3.0 dla wejścia JPEG/nie-raw"
+msgstr "wer. 5.0 dla wejścia JPEG/nie-raw"
 
 #: ../src/libs/lib.c:371
 msgid "deleting preset for obsolete module"
@@ -26392,10 +25951,8 @@ msgid "show module"
 msgstr "wyświetl moduł"
 
 #: ../src/libs/lib.c:1271
-#, fuzzy
-#| msgid "darktable preferences"
 msgid "presets and preferences"
-msgstr "ustawienia darktable"
+msgstr "presety i ustawienia"
 
 #: ../src/libs/lib.c:1576
 msgid "utility module"
@@ -26642,6 +26199,8 @@ msgid ""
 "manipulate the drawn shapes used\n"
 "for masks on the processing modules"
 msgstr ""
+"modyfikuj rysowane kształty używane\n"
+"jako maski w modułach przetwarzania"
 
 #: ../src/libs/masks.c:114
 msgid "feather"
@@ -26726,12 +26285,12 @@ msgid "metadata editor"
 msgstr "edytor metadanych"
 
 #: ../src/libs/metadata.c:65
-#, fuzzy
-#| msgid "write metadata for selected images"
 msgid ""
 "modify text metadata fields of\n"
 "the currently selected images"
-msgstr "zapisuje metadane dla wybranych zdjęć"
+msgstr ""
+"modyfikuj pola metadanych tekstowych\n"
+"dla aktualnie wybranych zdjęć"
 
 #: ../src/libs/metadata.c:465 ../src/libs/metadata_view.c:1260
 msgid "metadata settings"
@@ -27207,18 +26766,12 @@ msgstr ""
 "będą one usunięte dla nowych edycji w kolejnym wydaniu darktable."
 
 #: ../src/libs/modulegroups.c:2866
-#, fuzzy
-#| msgid ""
-#| "add a custom place\n"
-#| "\n"
-#| "right-click on a place to remove it"
 msgid ""
 "quick access panel\n"
 "right-click tab icon to add/remove widgets"
 msgstr ""
-"dodaj własne miejsce\n"
-"\n"
-"prawy klik na miejscu usuwa je"
+"panel szybkiego dostępu\n"
+"kliknij prawym na ikonę zakładki aby dodać/usunąć widżety"
 
 #: ../src/libs/modulegroups.c:2869
 msgid "quick access panel"
@@ -27685,12 +27238,12 @@ msgid "recently used collections"
 msgstr "ostatnio używane kolekcje"
 
 #: ../src/libs/recentcollect.c:73
-#, fuzzy
-#| msgid "prefer a history button in the collections module"
 msgid ""
 "select among the most recent search\n"
 "criteria set in the collections module"
-msgstr "preferuj przycisk historii w module kolekcji"
+msgstr ""
+"wybierz spośród najnowszych kryteriów\n"
+"wyszukiwania ustawionych w module kolekcji"
 
 #: ../src/libs/recentcollect.c:115
 msgid " and "
@@ -27714,6 +27267,8 @@ msgid ""
 "modify which of the displayed\n"
 "images are selected"
 msgstr ""
+"modyfikuj, które z wyświetlanych\n"
+"obrazów są zaznaczone"
 
 #: ../src/libs/select.c:143
 msgid "select all images in current collection"
@@ -27769,6 +27324,9 @@ msgid ""
 "allow comparing it against another\n"
 "or returning to that version"
 msgstr ""
+"zapamiętaj konkretny stan edycji\n"
+"i umożliw porównanie go z innym\n"
+"lub powrót do tej wersji"
 
 #: ../src/libs/snapshots.c:154
 msgctxt "snapshot sign"
@@ -27809,18 +27367,16 @@ msgid "toggle last snapshot"
 msgstr "pokaż/ukryj ostatnią migawkę"
 
 #: ../src/libs/styles.c:60
-#, fuzzy
-#| msgid "delete the currently selected image area"
 msgid ""
 "apply styles to the currently selected\n"
 "images or manage your styles"
-msgstr "usuń bieżący obszar obrazu"
+msgstr ""
+"zastosuj style do aktualnie wybranych obrazów\n"
+"lub zarządzaj swoimi stylami"
 
 #: ../src/libs/styles.c:247
-#, fuzzy
-#| msgid "no image selected!"
 msgid "no images selected"
-msgstr "nie wybrano zdjęć!"
+msgstr "nie wybrano zdjęć"
 
 #: ../src/libs/styles.c:370
 msgid "remove style?"
@@ -27924,12 +27480,12 @@ msgid "tagging"
 msgstr "etykiety"
 
 #: ../src/libs/tagging.c:114
-#, fuzzy
-#| msgid "delete the currently selected image area"
 msgid ""
 "add or remove keywords for\n"
 "the currently selected images"
-msgstr "usuń bieżący obszar obrazu"
+msgstr ""
+"dodaj lub usuń słowa kluczowe\n"
+"dla aktualnie wybranych obrazów"
 
 #: ../src/libs/tagging.c:1297
 msgid "attach tag to all"
@@ -27944,10 +27500,8 @@ msgid "find tag"
 msgstr "znajdź etykietę"
 
 #: ../src/libs/tagging.c:1313 ../src/libs/tagging.c:2382
-#, fuzzy
-#| msgid "copy & import"
 msgid "copy to clipboard"
-msgstr "kopiuj i importuj"
+msgstr "kopiuj do schowka"
 
 #: ../src/libs/tagging.c:1533
 msgid "delete tag?"
@@ -28569,16 +28123,6 @@ msgid "enable this, then click on a control element to see its online help"
 msgstr "włącz to, a następnie kliknij na elemencie, żeby zobaczyć pomoc online"
 
 #: ../src/libs/tools/global_toolbox.c:493
-#, fuzzy
-#| msgid ""
-#| "define shortcuts\n"
-#| "ctrl+click to switch off overwrite confirmations\n"
-#| "\n"
-#| "hover over a widget and press keys with mouse click and scroll or move "
-#| "combinations\n"
-#| "repeat same combination again to delete mapping\n"
-#| "click on a widget, module or screen area to open the dialog for further "
-#| "configuration"
 msgid ""
 "define keyboard shortcuts for on-screen controls\n"
 "ctrl+click to switch off overwrite confirmations\n"
@@ -28596,12 +28140,21 @@ msgid ""
 "\n"
 "right-click to exit mapping mode"
 msgstr ""
-"zdefiniuj skróty klawiszowe\n"
-"kliknij z Ctrl aby wyłączyć potwierdzenie nadpisywania\n"
+"zdefiniuj skróty klawiaturowe dla elementów sterujących na ekranie \n"
+"kliknięcie z ctrl, aby wyłączyć potwierdzenia nadpisania\n"
 "\n"
-"powtórz tę samą kombinację aby usunąć przypisanie\n"
-"kliknij na widżet, moduł lub obszar ekranu aby otworzyć okno dialogowe z "
-"konfiguracją"
+"po aktywowaniu:\n"
+"\n"
+"- najedź kursorem na element sterujący (przycisk, suwak itp.)\n"
+"  i naciśnij kombinację klawiszy (opcjonalnie z kliknięciem myszy,\n"
+"  przesunięciem lub przewijaniem, trzymając wciśnięte klawisze),\n"
+"  aby zdefiniować skrót dla tego elementu,\n"
+"- wpisz istniejącą kombinację, aby usunąć to przypisanie\n"
+"\n"
+"kliknij element sterujący, moduł lub obszar ekranu, aby otworzyć\n"
+"okno dialogowe z bardziej szczegółową konfiguracją\n"
+"\n"
+"kliknij prawym przyciskiem myszy, aby wyjść z trybu mapowania"
 
 #: ../src/libs/tools/global_toolbox.c:519
 msgid "show global preferences"
@@ -28766,6 +28319,12 @@ msgid ""
 "files\n"
 "can be accessed in the same locations as when you imported this image."
 msgstr ""
+"plik `%s` jest niedostępny, teraz przełączam do stołu podświetlanego.\n"
+"\n"
+"jeśli plik jest przechowywany na zewnętrznym dysku, upewnij się, że dysk "
+"jest podłączony,\n"
+"a pliki są dostępne w tych samych lokalizacjach, co podczas importu tego "
+"obrazu."
 
 #: ../src/views/darkroom.c:524
 #, c-format
@@ -28774,17 +28333,24 @@ msgid ""
 "\n"
 "please check that it was correctly and completely copied from the camera."
 msgstr ""
+"plik `%s` wydaje się uszkodzony, teraz przełączam do stołu podświetlanego.\n"
+"\n"
+"proszę sprawdzić, czy plik został poprawnie i w pełni skopiowany z aparatu."
 
 #: ../src/views/darkroom.c:530
 #, c-format
 msgid "file `%s' is not in any recognized format, switching to lighttable now."
 msgstr ""
+"plik `%s` nie jest w żadnym rozpoznawalnym formacie, teraz przełączam do "
+"stołu podświetlanego."
 
 #: ../src/views/darkroom.c:535
 #, c-format
 msgid ""
 "file `%s' is from an unsupported camera model, switching to lighttable now."
 msgstr ""
+"plik `%s` pochodzi z nieobsługiwanego modelu aparatu, teraz przełączam do "
+"stołu podświetlanego."
 
 #: ../src/views/darkroom.c:540
 #, c-format
@@ -28797,6 +28363,13 @@ msgid ""
 "support/\n"
 "and the release notes for this version of darktable)"
 msgstr ""
+"plik `%s` używa nieobsługiwanej funkcji, teraz przełączam do stołu "
+"podświetlanego.\n"
+"\n"
+"proszę sprawdzić, czy format obrazu i tryb kompresji wybrany w menu aparatu "
+"są obsługiwane\n"
+"(zobacz https://www.darktable.org/resources/camera-support/ \n"
+"oraz notatki do wersji darktable)"
 
 #: ../src/views/darkroom.c:548
 #, c-format
@@ -28805,6 +28378,9 @@ msgid ""
 "\n"
 "please check that the file has not been truncated."
 msgstr ""
+"błąd podczas odczytu pliku `%s`, teraz przełączam do stołu podświetlanego.\n"
+"\n"
+"proszę sprawdzić, czy plik nie został obcięty."
 
 #: ../src/views/darkroom.c:554
 #, c-format
@@ -28847,58 +28423,45 @@ msgid "no image to open!"
 msgstr "brak obrazu do otwarcia!"
 
 #: ../src/views/darkroom.c:805
-#, fuzzy
-#| msgid "color not found"
 msgid "file not found"
-msgstr "kolor nieznaleziony"
+msgstr "nie znaleziono pliku"
 
 #: ../src/views/darkroom.c:809
-#, fuzzy
-#| msgid "use guided filter"
 msgid "unspecified failure"
-msgstr "użyj filtra prowadzonego"
+msgstr "nieokreślona awaria"
 
 #: ../src/views/darkroom.c:812
-#, fuzzy
-#| msgid "unsupported input"
 msgid "unsupported file format"
-msgstr "niewspierane wejście"
+msgstr "niewspierany format pliku"
 
 #: ../src/views/darkroom.c:815
-#, fuzzy
-#| msgid "camera model"
 msgid "unsupported camera model"
-msgstr "model aparatu"
+msgstr "niewspierany model aparatu"
 
 #: ../src/views/darkroom.c:818
-#, fuzzy
-#| msgid "unsupported input"
 msgid "unsupported feature in file"
-msgstr "niewspierane wejście"
+msgstr "nieobsługiwana funkcja w pliku"
 
 #: ../src/views/darkroom.c:821
 msgid "file appears corrupt"
-msgstr ""
+msgstr "plik wydaje się uszkodzony"
 
 #: ../src/views/darkroom.c:824
-#, fuzzy
-#| msgid "error"
 msgid "I/O error"
-msgstr "błąd"
+msgstr "błąd wejścia/wyjścia"
 
 #: ../src/views/darkroom.c:827
-#, fuzzy
-#| msgid "cache locally"
 msgid "cache full"
-msgstr "przechowuj lokalną kopię"
+msgstr "pamięć podręczna jest pełna"
 
 #: ../src/views/darkroom.c:830
-#, fuzzy, c-format
-#| msgid "image `%s' is not available!"
+#, c-format
 msgid ""
 "image `%s' could not be loaded\n"
 "%s"
-msgstr "zdjęcie „%s” jest niedostępny!"
+msgstr ""
+"zdjęcie `%s' nie mogło być załadowane\n"
+"%s"
 
 #: ../src/views/darkroom.c:2250 ../src/views/darkroom.c:2251
 msgid "quick access to presets"
@@ -28914,10 +28477,8 @@ msgstr "szybki dostęp do utworzonych stylów"
 
 #. ensure that we get strings from the style files shipped with darktable localized
 #: ../src/views/darkroom.c:2265
-#, fuzzy
-#| msgid "darktable style files"
 msgid "darktable camera styles"
-msgstr "plik stylów darktable"
+msgstr "style aparatu darktable"
 
 #: ../src/views/darkroom.c:2270
 msgid "second window"
@@ -28940,22 +28501,14 @@ msgid "high quality processing"
 msgstr "przetwarzanie wysokiej jakości"
 
 #: ../src/views/darkroom.c:2293
-#, fuzzy
-#| msgid ""
-#| "toggle high quality processing, if activated darktable processes image "
-#| "data as it does while exporting"
 msgid ""
 "toggle high quality processing. if activated darktable processes image data "
 "as it does while exporting"
 msgstr ""
-"przełącz przetwarzanie wysokiej jakości, jeśli aktywne, darktable przetwarza "
+"przełącz przetwarzanie wysokiej jakości. jeśli aktywne, darktable przetwarza "
 "dane obrazu tak samo jak podczas eksportu"
 
 #: ../src/views/darkroom.c:2309
-#, fuzzy
-#| msgid ""
-#| "toggle indication of raw overexposure\n"
-#| "right click for options"
 msgid ""
 "toggle indication of raw overexposure\n"
 "right-click for options"
@@ -29022,10 +28575,6 @@ msgstr ""
 "0.0 - poziom czerni"
 
 #: ../src/views/darkroom.c:2359
-#, fuzzy
-#| msgid ""
-#| "toggle clipping indication\n"
-#| "right click for options"
 msgid ""
 "toggle clipping indication\n"
 "right-click for options"
@@ -29115,10 +28664,6 @@ msgid "softproof"
 msgstr "korekta ekranowa"
 
 #: ../src/views/darkroom.c:2425
-#, fuzzy
-#| msgid ""
-#| "toggle softproofing\n"
-#| "right click for profile options"
 msgid ""
 "toggle softproofing\n"
 "right-click for profile options"
@@ -29127,10 +28672,6 @@ msgstr ""
 "kliknij prawym przyciskiem, by wyświetlić opcje"
 
 #: ../src/views/darkroom.c:2436
-#, fuzzy
-#| msgid ""
-#| "toggle gamut checking\n"
-#| "right click for profile options"
 msgid ""
 "toggle gamut checking\n"
 "right-click for profile options"
@@ -29186,10 +28727,6 @@ msgid "histogram and color picker ICC profiles"
 msgstr "profile ICC dla histogramu i próbnika koloru"
 
 #: ../src/views/darkroom.c:2591
-#, fuzzy
-#| msgid ""
-#| "toggle guide lines\n"
-#| "right click for guides options"
 msgid ""
 "toggle guide lines\n"
 "right-click for guides options"
@@ -29285,10 +28822,8 @@ msgid "change keyboard shortcut slider precision"
 msgstr "zmień skok skrótu klawiszowego dla suwaków"
 
 #: ../src/views/darkroom.c:2658
-#, fuzzy
-#| msgid "synchronization log"
 msgid "synchronize selection"
-msgstr "log synchronizacji"
+msgstr "synchronizuj zaznaczenie"
 
 #: ../src/views/darkroom.c:3308
 msgid "keyboard shortcut slider precision: fine"
@@ -29508,10 +29043,8 @@ msgid "print"
 msgstr "wydruk"
 
 #: ../src/views/print.c:307
-#, fuzzy
-#| msgid "no OpenCL devices found"
 msgid "no printers found!"
-msgstr "nie znaleziono urządzeń z OpenCL"
+msgstr "nie znaleziono żadnych drukarek!"
 
 #: ../src/views/slideshow.c:360
 msgid "end of images"
@@ -29581,20 +29114,14 @@ msgid "no camera with tethering support available for use..."
 msgstr "brak aparatu obsługującego tethering..."
 
 #: ../src/views/view.c:1371
-#, fuzzy
-#| msgid "left click"
 msgid "left-click"
 msgstr "lewy klik"
 
 #: ../src/views/view.c:1374
-#, fuzzy
-#| msgid "right click"
 msgid "right-click"
 msgstr "prawy klik"
 
 #: ../src/views/view.c:1377
-#, fuzzy
-#| msgid "middle click"
 msgid "middle-click"
 msgstr "środkowy klik"
 
@@ -29611,14 +29138,10 @@ msgid "drag and drop"
 msgstr "przeciąganie i upuszczanie"
 
 #: ../src/views/view.c:1392
-#, fuzzy
-#| msgid "left click+drag"
 msgid "left-click+drag"
 msgstr "przeciąganie z lewym"
 
 #: ../src/views/view.c:1395
-#, fuzzy
-#| msgid "right click+drag"
 msgid "right-click+drag"
 msgstr "przeciąganie z prawym"
 
