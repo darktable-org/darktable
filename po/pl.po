@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-12-01 18:37+0100\n"
-"PO-Revision-Date: 2024-12-27 20:01+0100\n"
+"PO-Revision-Date: 2024-12-27 20:37+0100\n"
 "Last-Translator: Wojciech Nagrodzki <https://wnagrodzki.eu>\n"
 "Language-Team: Polish < >\n"
 "Language: pl_PL\n"
@@ -969,7 +969,7 @@ msgid ""
 "card"
 msgstr ""
 "przy imporcie z aparatu lub karty zachowaj oryginalną nazwę pliku zamiast "
-"używać wzorca."
+"używać wzorca"
 
 #: ../build/bin/preferences_gen.h:4422
 msgid "file naming pattern"
@@ -1192,7 +1192,7 @@ msgid ""
 msgstr ""
 "jeśli 'włącz zapis na dysku dla bufora miniatur' aktywne, miniatury/mipmapy "
 "mniejsze lub równe wybranemu rozmiarowi są generowane, gdy użytkownik nie "
-"wykonuje akcji w stole podświetlanym"
+"wykonuje akcji w stole podświetlanym."
 
 #: ../build/bin/preferences_gen.h:4945
 msgid "reset cached thumbnails"
@@ -2118,7 +2118,7 @@ msgstr "położenie modułu analizy obrazu"
 
 #: ../build/bin/preferences_gen.h:7730
 msgid "position the scopes at the top-left or top-right of the screen"
-msgstr "Umieść wykresy w górnym-lewym lub górnym-prawym rogu ekranu"
+msgstr "umieść wykresy w górnym-lewym lub górnym-prawym rogu ekranu"
 
 #: ../build/bin/preferences_gen.h:7751
 msgid "method to use for getting the display profile"
@@ -4305,7 +4305,7 @@ msgstr "cel"
 
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:151
 msgid "reinhard"
-msgstr "Reinhard"
+msgstr "reinhard"
 
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:152
 #: ../src/iop/filmic.c:162
@@ -5145,7 +5145,7 @@ msgstr "odzyskaj czystość barwy"
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:194
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:289
 msgid "base primaries"
-msgstr "Barwy podstawowe"
+msgstr "barwy podstawowe"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:303
 msgid "per channel"
@@ -6444,7 +6444,7 @@ msgid ""
 "better quality and performance."
 msgstr ""
 "demozaikowanie RCD jest domyślne, zamiast PPG, z powodu wyższej jakości i "
-"wydajności"
+"wydajności."
 
 #: ../src/common/darktable.c:2379
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
@@ -6456,14 +6456,14 @@ msgid ""
 "performance have changed."
 msgstr ""
 "interfejs użytkownika i mechanizmy wewnętrzne dla optymalizacji wydajności "
-"darktable zostały zmienione"
+"darktable zostały zmienione."
 
 #: ../src/common/darktable.c:2387
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
 msgstr ""
-"Nie znajdziesz już zapasu i przyjaciół, zamiast tego w preferencjach/"
+"nie znajdziesz już zapasu i przyjaciół, zamiast tego w preferencjach/"
 "przetwarzaniu użyj:"
 
 #: ../src/common/darktable.c:2389
@@ -6507,8 +6507,8 @@ msgstr "możesz regulować tak jak poprzednio, z wyjątkiem \"magia\""
 msgid ""
 "your OpenCL compiler settings for all devices have been reset to default."
 msgstr ""
-"Twoje ustawienia OpenCL zostały przywrócone do domyślnych dla wszystkich "
-"urządzeń"
+"twoje ustawienia OpenCL zostały przywrócone do domyślnych dla wszystkich "
+"urządzeń."
 
 #: ../src/common/darktable.c:2417
 msgid ""
@@ -7116,7 +7116,7 @@ msgid ""
 "session settings"
 msgstr ""
 "nie można rozszerzyć do unikalnej nazwy pliku dla sesji, proszę sprawdzić "
-"ustawienia sesji importu."
+"ustawienia sesji importu"
 
 #: ../src/common/import_session.c:393
 msgid "requested session path not available. device not mounted?"
@@ -7239,13 +7239,13 @@ msgid ""
 "  - no OpenCL driver installed,\n"
 "  - multiple drivers installed per platform\n"
 msgstr ""
-"Wykrywanie platformy sprzętowej zawiodło. możliwe powody:\n"
-"- brakujący OpenCL ICD (ocl-icd)\n"
-"-poprzedzające błędy OpenCL skutkujące zablokowaniem urządzeń,\n"
-"-problemy z zarządzaniem energii\n"
-"-błędy w sterownikach,\n"
-"-brak zainstalowanego sterownika OpenCL\n"
-"-zainstalowane wiele sterowników do jednej platformy\n"
+"wykrywanie platformy sprzętowej zawiodło. możliwe powody:\n"
+"  - brakujący OpenCL ICD (ocl-icd)\n"
+"  - poprzedzające błędy OpenCL skutkujące zablokowaniem urządzeń,\n"
+"  - problemy z zarządzaniem energii\n"
+"  - błędy w sterownikach,\n"
+"  - brak zainstalowanego sterownika OpenCL\n"
+"  - zainstalowane wiele sterowników do jednej platformy\n"
 
 #: ../src/common/opencl.c:1293
 msgid "no devices found for unknown platform"
@@ -9263,7 +9263,7 @@ msgid ""
 "choose to apply feathering before or after mask blur"
 msgstr ""
 "kontrola maski przez obraz wejściowy lub wyjściowy\n"
-"aplikuj kontrolowane rozmycie przed lub po zwykłym rozmyciu maski."
+"aplikuj kontrolowane rozmycie przed lub po zwykłym rozmyciu maski"
 
 #: ../src/develop/blend_gui.c:3664 ../src/libs/history.c:964
 msgid "feathering radius"
@@ -9274,7 +9274,7 @@ msgstr "promień wtapiania"
 #: ../src/iop/colorequal.c:3203 ../src/iop/diffuse.c:1788
 #: ../src/iop/diffuse.c:1798 ../src/iop/retouch.c:2724
 msgid " px"
-msgstr "px"
+msgstr " px"
 
 #: ../src/develop/blend_gui.c:3667
 msgid "spatial radius of feathering"
@@ -9369,7 +9369,7 @@ msgstr "'%s' jest włączona"
 #: ../src/develop/imageop.c:1144 ../src/develop/imageop.c:2939
 #, c-format
 msgid "'%s' is switched off"
-msgstr " '%s' jest wyłączona"
+msgstr "'%s' jest wyłączona"
 
 #: ../src/develop/imageop.c:2149
 #, c-format
@@ -9891,13 +9891,13 @@ msgid ""
 msgstr ""
 "napotkano błędy OpenCL; wyłączono OpenCL dla tej sesji! potencjalne "
 "przyczyny:\n"
-"- wyczerpanie zasobów OpenCL w związku z preferencjami. przetestuj dla "
+"  - wyczerpanie zasobów OpenCL w związku z preferencjami. przetestuj dla "
 "ustawień domyślnych,\n"
-"-błędy w sterowniku dla któregoś z urządzeń. uruchom darktable z opcją `-d "
-"opencl' aby rozpoznać problem,\n"
-"-któryś ze sterowików nie obsługuje wymaganej liczby zdarzeń,\n"
-"-zbyt małe ustawienie marginesu pamięci gdy użyta opcja 'użyj całej pamięci "
-"urządzenia'."
+"  - błędy w sterowniku dla któregoś z urządzeń. uruchom darktable z opcją `-"
+"d opencl' aby rozpoznać problem,\n"
+"  - któryś ze sterowików nie obsługuje wymaganej liczby zdarzeń,\n"
+"  - zbyt małe ustawienie marginesu pamięci gdy użyta opcja 'użyj całej "
+"pamięci urządzenia'."
 
 #: ../src/develop/pixelpipe_hb.c:2975
 #, c-format
@@ -10065,11 +10065,11 @@ msgstr ""
 
 #: ../src/dtgtk/range.c:979
 msgid "years: "
-msgstr "lata:"
+msgstr "lata: "
 
 #: ../src/dtgtk/range.c:987
 msgid "months: "
-msgstr "miesiące:"
+msgstr "miesiące: "
 
 #: ../src/dtgtk/range.c:995
 msgid "days: "
@@ -10082,7 +10082,7 @@ msgstr "czas"
 
 #: ../src/dtgtk/range.c:1055
 msgid "current date: "
-msgstr "bieżąca data:"
+msgstr "bieżąca data: "
 
 #: ../src/dtgtk/range.c:1059 ../src/dtgtk/range.c:1785
 #: ../src/dtgtk/range.c:1836
@@ -12516,7 +12516,8 @@ msgstr ""
 "Zbigniew Malach (Zbyma72age) <zbigniew.malach@gmail.com>\n"
 "Tomasz Goliński <tomaszg@math.uwb.edu.pl>\n"
 "Łukasz Karcz <pan.karcz@gmail.com>\n"
-"Wiktor Nowak <kontakt.bajdero@gmail.com>"
+"Wiktor Nowak <kontakt.bajdero@gmail.com>\n"
+"Wojciech Nagrodzki <https://wnagrodzki.eu>"
 
 #: ../src/gui/accelerators.c:72
 msgid "in active view"
@@ -12762,7 +12763,7 @@ msgstr "długi"
 #: ../src/gui/accelerators.c:736
 msgctxt "accel"
 msgid "double-click"
-msgstr "podwójny klik "
+msgstr "podwójny klik"
 
 #: ../src/gui/accelerators.c:737
 msgctxt "accel"
@@ -13140,7 +13141,7 @@ msgid ""
 "incrementally search the list of shortcuts\n"
 "press up or down keys to cycle through matches"
 msgstr ""
-"Przyrostowo przeszukaj listę skrótów\n"
+"przyrostowo przeszukaj listę skrótów\n"
 "naciśnij w górę lub w dół, aby przełączyć między wyszukaniami"
 
 #: ../src/gui/accelerators.c:2848 ../src/views/view.c:1573
@@ -13164,7 +13165,7 @@ msgid ""
 "incrementally search the list of actions\n"
 "press up or down keys to cycle through matches"
 msgstr ""
-"Przyrostowo przeszukaj listę działań\n"
+"przyrostowo przeszukaj listę działań\n"
 "naciśnij w górę lub w dół, aby przełączyć między wyszukaniami"
 
 #: ../src/gui/accelerators.c:2961 ../src/gui/guides.c:719
@@ -13231,9 +13232,9 @@ msgid ""
 "\n"
 "<i>click <b> three times </b> to dismiss this notice permanently</i>"
 msgstr ""
-"Zalecany sposób przypisywania skrótów do elementów interfejsu to tryb "
+"zalecany sposób przypisywania skrótów do elementów interfejsu to tryb "
 "<b>wizualne mapowanie skrótów</b>.\n"
-"Jest włączany przez przełączenie przycisku <i>\"klawiatura\"</i> obok "
+"jest włączany przez przełączenie przycisku <i>\"klawiatura\"</i> obok "
 "preferencji w górnym panelu. w tym trybie kliknięcie na element lub obszar "
 "uruchomi ten konfigurator z adekwatną selekcją dla zaawansowanej "
 "konfiguracji.\n"
@@ -13805,7 +13806,7 @@ msgstr ""
 " to powoduje również wywołanie akcji 'wyszukuj zaktualizowane pliki XMP'\n"
 " oraz 'wczytaj plik poboczny'\n"
 " UWAGA: niezaznaczone metadane zostaną wyczyszczone gdy plik XMP jest "
-"aktualizowany"
+"aktualizowany."
 
 #. tags
 #: ../src/gui/import_metadata.c:469
@@ -14697,7 +14698,7 @@ msgstr "szybkość dekodowania"
 
 #: ../src/imageio/format/jxl.c:652
 msgid "the preferred decoding speed with some sacrifice of quality"
-msgstr "Preferowana prędkość dekodowania, z niewielkim pogorszeniem jakości"
+msgstr "preferowana prędkość dekodowania, z niewielkim pogorszeniem jakości"
 
 #: ../src/imageio/format/pdf.c:200 ../src/imageio/format/pdf.c:497
 msgid "invalid paper size"
@@ -14758,7 +14759,7 @@ msgid ""
 "format: size + unit\n"
 "examples: 10 mm, 1 inch"
 msgstr ""
-"Margines w PDF\n"
+"margines w PDF\n"
 "format: rozmiar + jednostka\n"
 "przykłady: 10 mm, 1 cal"
 
@@ -14865,7 +14866,7 @@ msgstr "PPM (16-bitowy)"
 msgid "not a B&W image, will not export as grayscale"
 msgstr ""
 "obraz nie jest w skali szarości, więc nie można wyeksportować jako skala "
-"szarości."
+"szarości"
 
 #: ../src/imageio/format/tiff.c:907
 msgid "deflate with predictor"
@@ -14883,7 +14884,7 @@ msgid ""
 msgstr ""
 "dla stratnych, 0 daje minimalny rozmiar a 100 maksymalną jakość.\n"
 "dla bezstratnych, 0 jest najszybsze, ale daje większe pliki w porównaniu do "
-"najwolniejszego 100"
+"najwolniejszego 100."
 
 #: ../src/imageio/format/webp.c:436
 msgid "image hint"
@@ -16227,7 +16228,7 @@ msgstr "95:33"
 
 #: ../src/iop/borders.c:943
 msgid "CinemaScope 2.39:1"
-msgstr "cinemascope 2.39:1"
+msgstr "CinemaScope 2.39:1"
 
 #: ../src/iop/borders.c:944
 msgid "2:1"
@@ -16949,7 +16950,7 @@ msgstr "balans bieli pomyślnie odczytany z obrazu raw"
 #. We need to recompute only the full preview
 #: ../src/iop/channelmixerrgb.c:4003
 msgid "auto-detection of white balance started…"
-msgstr "rozpoczęto autodetekcję balansu bieli"
+msgstr "rozpoczęto autodetekcję balansu bieli…"
 
 #: ../src/iop/channelmixerrgb.c:4114
 msgid ""
@@ -17082,7 +17083,7 @@ msgid ""
 "compute the target by taking the channel mixing into account.\n"
 "if disabled, only the CAT is considered."
 msgstr ""
-"Oblicz wzorzec biorąc mikser kanałów pod uwagę.\n"
+"oblicz wzorzec biorąc mikser kanałów pod uwagę.\n"
 "jeśli wyłączony, tylko CAT jest uwzględniany."
 
 #: ../src/iop/channelmixerrgb.c:4550 ../src/iop/exposure.c:1194
@@ -17092,7 +17093,7 @@ msgstr "wejście"
 
 #: ../src/iop/channelmixerrgb.c:4557 ../src/iop/exposure.c:1202
 msgid "the input color that should be mapped to the target"
-msgstr "kolor wejściowy do mapowania na wzorzec."
+msgstr "kolor wejściowy do mapowania na wzorzec"
 
 #: ../src/iop/channelmixerrgb.c:4563
 msgid ""
@@ -17106,7 +17107,7 @@ msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:4566 ../src/iop/exposure.c:1210
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
-msgstr "Te koordynaty LCh są obliczane z koordynatów CIE Lab 1976"
+msgstr "te koordynaty LCh są obliczane z koordynatów CIE Lab 1976"
 
 #: ../src/iop/channelmixerrgb.c:4574 ../src/iop/exposure.c:1217
 msgctxt "section"
@@ -18332,7 +18333,7 @@ msgstr ""
 
 #: ../src/iop/colorequal.c:3065
 msgid "shift nodes to lower or higher hue"
-msgstr "przesuń "
+msgstr "przesuń węzły w kierunku niższego lub wyższego odcienia"
 
 #: ../src/iop/colorequal.c:3068
 msgid ""
@@ -18850,7 +18851,7 @@ msgstr "2:1, Univisium"
 
 #: ../src/iop/crop.c:1154
 msgid "CinemaScope"
-msgstr "cinemascope"
+msgstr "CinemaScope"
 
 #: ../src/iop/crop.c:1157
 msgid "65:24, XPan"
@@ -18967,9 +18968,9 @@ msgid ""
 "set to 0.0 for high frequency content\n"
 "set to 1.0 for flat content"
 msgstr ""
-"Próg kontrastu dla podwójnego demozaikowania.\n"
-"ustaw na 0,0 dla obrazów z dużą szczegółowością tekstur\n"
-"ustaw na 1,0 dla obrazów z gładkimi teksturami."
+"próg kontrastu dla podwójnego demozaikowania.\n"
+"ustaw na 0.0 dla obrazów z dużą szczegółowością tekstur\n"
+"ustaw na 1.0 dla obrazów z gładkimi teksturami"
 
 #: ../src/iop/demosaic.c:1340
 msgid "toggle mask visualization"
@@ -19008,7 +19009,7 @@ msgstr "odszumianie (profilowane)"
 msgid "denoise using noise statistics profiled on sensors"
 msgstr ""
 "wykonuje odszumianie używając statystyk szumu profilowanych na sensorach "
-"aparatów."
+"aparatów"
 
 #: ../src/iop/denoiseprofile.c:2825
 #, c-format
@@ -19285,11 +19286,11 @@ msgstr "odszumianie: grube"
 
 #: ../src/iop/diffuse.c:496
 msgid "sharpen demosaicing: no AA filter"
-msgstr "Wyostrzanie demozaikowania: brak filtra antyaliasingowego"
+msgstr "wyostrzanie demozaikowania: brak filtra antyaliasingowego"
 
 #: ../src/iop/diffuse.c:522
 msgid "sharpen demosaicing: AA filter"
-msgstr "Wyostrzanie demozaikowania: filtr antyaliasingowy"
+msgstr "wyostrzanie demozaikowania: filtr antyaliasingowy"
 
 #: ../src/iop/diffuse.c:549
 msgid "simulate watercolor"
@@ -19358,7 +19359,7 @@ msgstr ""
 "wartości różne od 0 określają rozmiar detali podlegających wzmocnieniu "
 "dyfuzji\n"
 "dla usuwania rozmycia i odszumiania, ustaw na 0\n"
-"zwiększ dla efektu na kontraście lokalnym"
+"zwiększ dla efektu na kontraście lokalnym."
 
 #: ../src/iop/diffuse.c:1800
 msgid ""
@@ -19372,7 +19373,7 @@ msgstr ""
 "wysokie wartości dają głębszą dyfuzję\n"
 "niskie wartości dają dyfuzję bliższą centralnego promienia\n"
 "jeśli planujesz wyostrzanie,\n"
-"promień powinien być bliski promienia krążka rozmycia obiektywu"
+"promień powinien być bliski promienia krążka rozmycia obiektywu."
 
 #: ../src/iop/diffuse.c:1807
 msgctxt "section"
@@ -19517,7 +19518,7 @@ msgid ""
 msgstr ""
 "zwiększ lub zmniejsz ostrość najwyższych częstotliwości.\n"
 "może być użyte do zachowania detali po dodaniu poświaty,\n"
-"jako niezależne narzędzie wyostrzania, ustaw ujemną wartość"
+"jako niezależne narzędzie wyostrzania, ustaw ujemną wartość."
 
 #: ../src/iop/diffuse.c:1906
 msgid ""
@@ -19527,7 +19528,7 @@ msgid ""
 msgstr ""
 "określ czułość funkcji kary  za wariancję dla krawędzi\n"
 "zwiększ, by wykluczyć więcej krawędzi z efektu dyfuzji, \n"
-"jeśli pojawią się frędzle lub aureole"
+"jeśli pojawią się frędzle lub aureole."
 
 #: ../src/iop/diffuse.c:1913
 msgid ""
@@ -19539,7 +19540,7 @@ msgstr ""
 "próg wariancji pomiędzy wzmacnianiem krawędzi a funkcją kary\n"
 "zmniejsz jeśli oczekujesz wyróżnienia pikseli na gładkich powierzchniach\n"
 "zwiększ jeśli pojawia się niechciany szum na gładkich powierzchniach\n"
-"lub jeśli ciemne obszary wydają się zbyt wyostrzone w porównaniu z jasnymi"
+"lub jeśli ciemne obszary wydają się zbyt wyostrzone w porównaniu z jasnymi."
 
 #: ../src/iop/diffuse.c:1919
 msgctxt "section"
@@ -19617,28 +19618,28 @@ msgid ""
 "how much to enlarge the canvas to the left as a percentage of the original "
 "image width"
 msgstr ""
-"O ile powiększyć obszar roboczy w lewo, jako procent oryginalnej szerokości"
+"o ile powiększyć obszar roboczy w lewo, jako procent oryginalnej szerokości"
 
 #: ../src/iop/enlargecanvas.c:433
 msgid ""
 "how much to enlarge the canvas to the right as a percentage of the original "
 "image width"
 msgstr ""
-"O ile powiększyć obszar roboczy w prawo, jako procent oryginalnej szerokości"
+"o ile powiększyć obszar roboczy w prawo, jako procent oryginalnej szerokości"
 
 #: ../src/iop/enlargecanvas.c:439
 msgid ""
 "how much to enlarge the canvas to the top as a percentage of the original "
 "image height"
 msgstr ""
-"O ile powiększyć obszar roboczy w górę, jako procent oryginalnej wysokości"
+"o ile powiększyć obszar roboczy w górę, jako procent oryginalnej wysokości"
 
 #: ../src/iop/enlargecanvas.c:445
 msgid ""
 "how much to enlarge the canvas to the bottom as a percentage of the original "
 "image height"
 msgstr ""
-"O ile powiększyć obszar roboczy w dół, jako procent oryginalnej wysokości"
+"o ile powiększyć obszar roboczy w dół, jako procent oryginalnej wysokości"
 
 #: ../src/iop/enlargecanvas.c:449
 msgid "select the color of the enlarged canvas"
@@ -20778,7 +20779,7 @@ msgstr ""
 #: ../src/iop/highlights.c:1240
 msgid "set strength of rebuilding in regions with all photosites clipped."
 msgstr ""
-"ustal siłę rekonstrukcji w regionach z przepaleniem na wszystkich kanałach"
+"ustal siłę rekonstrukcji w regionach z przepaleniem na wszystkich kanałach."
 
 #: ../src/iop/highlights.c:1242
 msgid "show the effect that is added to already reconstructed data."
@@ -20815,7 +20816,7 @@ msgid ""
 "large values bring huge performance penalties"
 msgstr ""
 "zwiększ aby skorygować większy obszar prześwietlenia.\n"
-"duże wartości mogą mocno spowolnić przetwarzanie."
+"duże wartości mogą mocno spowolnić przetwarzanie"
 
 #: ../src/iop/highlights.c:1268
 msgid "this module does not work with monochrome RAW files"
@@ -21142,7 +21143,7 @@ msgstr "stromość efektu korekcji poza promieniem"
 
 #: ../src/iop/levels.c:112
 msgid "this module is deprecated. please use the RGB levels module instead."
-msgstr "ten moduł jest przestarzały. lepiej użyć modułu poziomy RGB"
+msgstr "ten moduł jest przestarzały. lepiej użyć modułu poziomy RGB."
 
 #: ../src/iop/levels.c:117 ../src/iop/levels.c:642 ../src/iop/rgblevels.c:1021
 #: ../src/iop/rgblevels.c:1056
@@ -22711,7 +22712,7 @@ msgid ""
 msgstr ""
 "aplikuj przekształcenie widoku aby obraz był możliwy do wyświetlenia\n"
 "na ekranie, lub wydruku. używa silnej i gładkiej\n"
-"krzywej tonalnej z opcjonalnymi opcjami zachowania koloru"
+"krzywej tonalnej z opcjonalnymi opcjami zachowania koloru."
 
 #: ../src/iop/sigmoid.c:261
 msgid "neutral gray"
@@ -22751,7 +22752,7 @@ msgid ""
 "the per-channel processing method."
 msgstr ""
 "opcjonalna korekcja obrotu odcienia (hue) wprowadzonego przez\n"
-"metody przetwarzania działające na poszczególnych kanałach"
+"metody przetwarzania działające na poszczególnych kanałach."
 
 #: ../src/iop/sigmoid.c:932 ../src/iop/sigmoid.c:936
 msgid "primaries"
@@ -22811,15 +22812,15 @@ msgid ""
 "can be used creatively for a faded look."
 msgstr ""
 "luminancja czerni docelowego monitora, lub wydruku.\n"
-"Może być użyte artystycznie jako wyblakłość"
+"Może być użyte artystycznie jako wyblakłość."
 
 #: ../src/iop/sigmoid.c:989
 msgid ""
 "the white luminance of the target display or print.\n"
 "can be used creatively for a faded look or blowing out whites earlier."
 msgstr ""
-"Luminancja bieli docelowego monitora, lub wydruku.\n"
-"może być użyte artystycznie dla wyblakłości lub wypalenia bieli"
+"luminancja bieli docelowego monitora, lub wydruku.\n"
+"może być użyte artystycznie dla wyblakłości lub wypalenia bieli."
 
 #: ../src/iop/soften.c:80
 msgid "soften"
@@ -24440,7 +24441,7 @@ msgid ""
 msgstr ""
 "może być wartością całkowitą lub ułamkiem.\n"
 "zero i pusta wartość są równoważne wartości 1\n"
-"kliknij środkowym przyciskiem myszy aby ustawić na 0"
+"kliknij środkowym przyciskiem myszy aby ustawić na 1."
 
 #: ../src/libs/export.c:1358
 msgid "allow upscaling"
@@ -24899,7 +24900,7 @@ msgstr "dodaj nową regułę do kolekcji obrazów"
 
 #: ../src/libs/filtering.c:2271 ../src/libs/tools/filter.c:116
 msgid "sort by"
-msgstr "sortowanie:"
+msgstr "sortuj według"
 
 #: ../src/libs/filtering.c:2279
 msgid "new sort"
@@ -25363,7 +25364,7 @@ msgstr "przewiń rolką aby zgrubnie obrócić"
 
 #: ../src/libs/histogram.c:1672
 msgid "ctrl+scroll to fine rotate"
-msgstr "Przewiń z Ctrl aby dokładnie obrócić"
+msgstr "przewiń z Ctrl aby dokładnie obrócić"
 
 #: ../src/libs/histogram.c:1673
 msgid "shift+scroll to change width"
@@ -27581,7 +27582,7 @@ msgstr "kategoria"
 
 #: ../src/libs/tagging.c:1758 ../src/libs/tagging.c:1907
 msgid "synonyms: "
-msgstr "synonimy:"
+msgstr "synonimy: "
 
 #: ../src/libs/tagging.c:1775 ../src/libs/tagging.c:1929
 #: ../src/libs/tagging.c:2180
@@ -27781,11 +27782,11 @@ msgid ""
 msgstr ""
 "słownik etykiet,\n"
 "wciśnij Enter lub kliknij podwójnie by załączyć zaznaczoną etykietę do "
-"zaznaczonych obrazów,\n"
-"shift+Enter przerzuca kursor na wpis,\n"
-"shift+click aby rozwinąć zaznaczoną etykietę,\n"
-"prawy klik dla pozostałych akcji na zaznaczonej etykiecie,\n"
-"wciśnij shift+Tab aby przenieść kursor do wpisu,"
+"zaznaczonych obrazów\n"
+"shift+Enter przerzuca kursor na wpis\n"
+"shift+click aby rozwinąć zaznaczoną etykietę\n"
+"prawy klik dla pozostałych akcji na zaznaczonej etykiecie\n"
+"wciśnij shift+Tab aby przenieść kursor do wpisu"
 
 #: ../src/libs/tagging.c:3366
 msgid ""
