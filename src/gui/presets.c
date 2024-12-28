@@ -1253,18 +1253,28 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget 
   return applied;
 }
 
+static guint _click_time = G_MAXUINT;
+
+static gboolean _menuitem_motion_preset(GtkMenuItem *menuitem,
+                                        GdkEventMotion *event,
+                                        dt_iop_module_t *module)
+{
+  if(!_click_time) _click_time = G_MAXUINT;
+
+  return FALSE;
+}
+
 static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
                                         GdkEventButton *event,
                                         dt_iop_module_t *module)
 {
-  static guint click_time = G_MAXINT;
-  gboolean long_click = dt_gui_long_click(event->time, click_time);
+  gboolean long_click = dt_gui_long_click(event->time, _click_time);
 
   gchar *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
 
   if(event->button == 1)
   {
-    if(click_time > event->time)
+    if(_click_time > event->time)
     {
       GtkContainer *menu = GTK_CONTAINER(gtk_widget_get_parent(GTK_WIDGET(menuitem)));
       for(GList *c = gtk_container_get_children(menu); c; c = g_list_delete_link(c, c))
@@ -1274,7 +1284,7 @@ static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
       dt_gui_presets_apply_preset(name, module);
     }
   }
-  else if(event->button == 3 && event->type == GDK_BUTTON_RELEASE)
+  else if(event->button == 3 && event->type == GDK_BUTTON_RELEASE && _click_time)
   {
     if(long_click || (module->flags() & IOP_FLAGS_ONE_INSTANCE))
       dt_shortcut_copy_lua((dt_action_t*)module, name);
@@ -1294,7 +1304,7 @@ static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
     dt_iop_connect_accels_multi(module->so);
   }
 
-  click_time = event->type == GDK_BUTTON_PRESS ? event->time : G_MAXINT;
+  _click_time = event->type == GDK_BUTTON_PRESS ? event->time : G_MAXUINT;
   return long_click; // keep menu open on long click
 }
 
@@ -1321,6 +1331,8 @@ static void _menuitem_connect_preset(GtkWidget *mi,
                    G_CALLBACK(_menuitem_button_preset), iop);
   g_signal_connect(G_OBJECT(mi), "button-release-event",
                    G_CALLBACK(_menuitem_button_preset), iop);
+  g_signal_connect(G_OBJECT(mi), "motion-notify-event",
+                   G_CALLBACK(_menuitem_motion_preset), iop);
   gtk_widget_set_has_tooltip(mi, TRUE);
 }
 
@@ -1818,6 +1830,8 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
     // the specific parameters
     if(module->set_preferences) module->set_preferences(GTK_MENU_SHELL(menu), module);
   }
+
+  _click_time = 0;
 
   return menu;
 }
