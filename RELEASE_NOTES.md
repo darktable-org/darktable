@@ -72,6 +72,9 @@ changes (where available).
 - Fix crash when attempting to move up the top or only shape in a
   group in the mask manager.
 
+- Fix collection module when using the "module" filter which was
+  listing none of the processing modules.
+
 ## Lua
 
 ### API Version
