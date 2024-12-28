@@ -69,6 +69,9 @@ changes (where available).
   tree was not scrolled to the previous position when returning from
   darkroom.
 
+- Fix crash when attempting to move up the top or only shape in a
+  group in the mask manager.
+
 ## Lua
 
 ### API Version
@@ -88,6 +91,7 @@ changes (where available).
 ### Other Lua changes
 
 - N/A
+
 ## Notes
 
 - When exporting to AVIF, EXR, JPEG XL, or XCF, selecting specific
