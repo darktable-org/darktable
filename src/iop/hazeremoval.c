@@ -343,22 +343,43 @@ static void _transition_map(const const_rgb_image img1,
 // which are larger or equal the pivot
 static float *_partition(float *first,
                          float *last,
-                         const float val)
+                         const float val,
+                         const gboolean compatibility_mode)
 {
-  for(; first != last; ++first)
+  if(compatibility_mode)
   {
-    if(!((*first) < val)) break;
-  }
-  if(first == last) return first;
-  for(float *i = first + 1; i != last; ++i)
-  {
-    if((*i) < val)
+    for(; first != last; ++first)
     {
-      _pointer_swap_f(i, first);
-      ++first;
+      if(!((*first) < val)) break;
     }
+    if(first == last) return first;
+    for(float *i = first + 1; i != last; ++i)
+    {
+      if((*i) < val)
+      {
+        _pointer_swap_f(i, first);
+        ++first;
+      }
+    }
+    return first;
   }
-  return first;
+  last++;
+  while(TRUE)
+  {
+    // scan from start until we find an element which needs to be swapped to the second half
+    do{
+      first++;
+    }while(first < last && *first < val);
+    // scan from end until we find an element which needs to be swapped to the first half
+    do{
+      last--;
+    }while(first < last && *last > val);
+    // if we didn't find anything to swap, return that position as the partitioning location
+    if(first >= last)
+      return first;
+    // swap the out-of-place elements
+    _pointer_swap_f(first, last);
+  }
 }
 
 // quick select algorithm, arranges the range [first, last) such that
@@ -372,11 +393,11 @@ void _quick_select(float *first,
                    const gboolean compatibility_mode)
 {
   if(first == last) return;
-  for(;;)
+  for(;last > first+1;)
   {
     // select pivot by median of three heuristic for better performance
     float *p1 = first;
-    float *p3 = first + (last - first) / 2;
+    float *p3 = compatibility_mode ? first + (last - first) / 2 : nth;
     float *pivot = last - 1; // put median in last to avoid additional swap
 
     if(!(*p1 < *pivot))
@@ -386,7 +407,7 @@ void _quick_select(float *first,
     if(!(*pivot < *p3))
       _pointer_swap_f(pivot, p3);
 
-    float *new_pivot = _partition(first, last - 1, *(last - 1));
+    float *new_pivot = _partition(first, last - 1, last[-1], compatibility_mode);
     if(compatibility_mode)
       pivot = p3; // old code simply assumed pivot would end up in middle
     else
