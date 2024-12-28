@@ -611,14 +611,16 @@ static void _tree_moveup(GtkButton *button, dt_lib_module_t *self)
       _lib_masks_get_values(model, &iter, NULL, &grid, &id);
 
       GtkTreeIter *prev_iter = gtk_tree_iter_copy(&iter);
-      gtk_tree_model_iter_previous(model, prev_iter);
-      dt_mask_id_t prev_grid = INVALID_MASKID;
-      dt_mask_id_t prev_id = INVALID_MASKID;
-      _lib_masks_get_values(model, prev_iter, NULL, &prev_grid, &prev_id);
-
-      if(_is_last_tree_item(model, &iter))
+      if(gtk_tree_model_iter_previous(model, prev_iter))
       {
-        _swap_last_secondlast_item_visibility(lm, &iter, id, prev_id);
+        dt_mask_id_t prev_grid = INVALID_MASKID;
+        dt_mask_id_t prev_id = INVALID_MASKID;
+        _lib_masks_get_values(model, prev_iter, NULL, &prev_grid, &prev_id);
+
+        if(_is_last_tree_item(model, &iter))
+        {
+          _swap_last_secondlast_item_visibility(lm, &iter, id, prev_id);
+        }
       }
 
       gtk_tree_iter_free(prev_iter);
