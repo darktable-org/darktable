@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-12-01 18:37+0100\n"
-"PO-Revision-Date: 2024-12-28 16:20+0100\n"
+"PO-Revision-Date: 2024-12-28 17:43+0100\n"
 "Last-Translator: Wojciech Nagrodzki <https://wnagrodzki.eu>\n"
 "Language-Team: Polish < >\n"
 "Language: pl_PL\n"
@@ -219,11 +219,12 @@ msgstr "prawa autorskie przypisywane podczas importu"
 
 #: ../build/bin/conf_gen.h:1019
 msgid "comma separated tags to be applied when importing"
-msgstr "etykiety do przypisania podczas importu (oddzielone przecinkami)"
+msgstr ""
+"tagi oddzielone przecinkami, które mają zostać zastosowane podczas importu"
 
 #: ../build/bin/conf_gen.h:1026
 msgid "import tags from XMP"
-msgstr "importuj etykiety z XMP"
+msgstr "importuj tagi z XMP"
 
 #: ../build/bin/conf_gen.h:1054
 msgid "initial rating"
@@ -1853,7 +1854,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6946
 msgid "ask before deleting a tag"
-msgstr "pytaj przed usunięciem etykiety"
+msgstr "zapytaj przed usunięciem tagu"
 
 #: ../build/bin/preferences_gen.h:6979
 msgid "ask before deleting a style"
@@ -1975,18 +1976,19 @@ msgid ""
 " - 'on import': immediately after importing the image\n"
 " - 'after edit': after any user change on the image or adding tags."
 msgstr ""
-"pliki poboczne XMP przechowują informację o wszystkich etapach wywoływania, "
-"aby umożliwić bezproblemowy ponowny import zdjęć.\n"
+"pliki poboczne XMP przechowują informacje o wszystkich krokach wywoływania, "
+"umożliwiając bezbłędny ponowny import plików graficznych\n"
 "\n"
-"w zależności od wybranego trybu pliki poboczne będą zapisywane:\n"
-"- \"nigdy\": wszystkie informacje o edycji będą wyłącznie w bazie danych\n"
-"- \"przy imporcie\": bezpośrednio po zaimportowaniu zdjęcia\n"
-"- \"po edycji\": po dowolnej zmianie, dokonanej przez użytkownika, w tym po "
-"dodaniu etykiety."
+"w zależności od wybranego trybu, pliki poboczne będą tworzone:\n"
+" - 'nigdy': wszystkie informacje o rozwoju będą przechowywane tylko w bazie "
+"danych biblioteki\n"
+" - 'przy imporcie': natychmiast po zaimportowaniu obrazu\n"
+" - 'po edycji': po każdej zmianie dokonanej przez użytkownika na obrazie lub "
+"po dodaniu tagów."
 
 #: ../build/bin/preferences_gen.h:7322
 msgid "store XMP tags in compressed format"
-msgstr "zapisuj skompresowane etykiety XMP"
+msgstr "przechowuj tagi XMP w formacie skompresowanym"
 
 #: ../build/bin/preferences_gen.h:7336
 msgid ""
@@ -2154,7 +2156,7 @@ msgstr ""
 #: ../src/gui/import_metadata.c:476 ../src/libs/export_metadata.c:322
 #: ../src/libs/image.c:620 ../src/libs/metadata_view.c:178
 msgid "tags"
-msgstr "etykiety"
+msgstr "tagi"
 
 #: ../build/bin/preferences_gen.h:7842
 msgid "omit hierarchy in simple tag lists"
@@ -2282,25 +2284,25 @@ msgstr "czas oczekiwania pomiędzy zdjęciami w pokazie slajdów"
 
 #: ../build/bin/preferences_gen.h:8196
 msgid "do not set the 'uncategorized' entry for tags"
-msgstr "nie ustawiaj wartości 'brak kategorii' dla etykiet"
+msgstr "nie ustawiaj wartości 'brak kategorii' dla tagów"
 
 #: ../build/bin/preferences_gen.h:8209
 msgid ""
 "do not set the 'uncategorized' entry for tags which do not have children"
 msgstr ""
-"nie ustawiaj wartości 'brak kategorii' dla etykiet, które nie mają dzieci"
+"nie ustawiaj wartości 'brak kategorii' dla tagów, które nie mają podtagów"
 
 #: ../build/bin/preferences_gen.h:8230
 msgid "tags case sensitivity"
-msgstr "rozróżnianie wielkości liter w etykietach"
+msgstr "wrażliwość tagów na wielkość liter"
 
 #: ../build/bin/preferences_gen.h:8244
 msgid ""
 "tags case sensitivity. without the Sqlite ICU extension, insensitivity works "
 "only for the 26 latin letters"
 msgstr ""
-"czy wielkość liter w etykietach ma znaczenie. Bez rozszerzenia Sqlite ICU "
-"niewrażliwość na wielkość liter działa tylko na 26 liter łacińskich"
+"wrażliwość tagów na wielkość liter. bez rozszerzenia Sqlite ICU, "
+"niewrażliwość na wielkość liter działa tylko dla 26 liter łacińskich."
 
 #: ../build/bin/preferences_gen.h:8265 ../build/bin/preferences_gen.h:8408
 msgid "number of collections to be stored"
@@ -2341,21 +2343,21 @@ msgid ""
 "associated tags, 99: 99% matching associated tags, 100: no matching tag to "
 "show only recent tags (faster)"
 msgstr ""
-"poziom pewności wymagany do załączenia etykiety na liście sugerowanych, 0: "
-"wszystkie skojarzone etykiety, 99: 99% skojarzonych etykiet, 100: żadna "
-"skojarzona etykieta, wyświetl tylko ostatnie (szybsze)"
+"poziom pewności wymagany do uwzględnienia tagu na liście sugerowanych, 0: "
+"wszystkie powiązane tagi, 99: 99% dopasowanych tagów, 100: brak dopasowanego "
+"tagu (wyświetlane są tylko ostatnio używane tagi, szybsze)"
 
 #: ../build/bin/preferences_gen.h:8535
 msgid "number of recently attached tags"
-msgstr "liczba ostatnio dodanych etykiet"
+msgstr "liczba ostatnio dodanych tagów"
 
 #: ../build/bin/preferences_gen.h:8559
 msgid ""
 "number of recently attached tags which are included in the suggestions list. "
 "the value `-1' disables the recent list"
 msgstr ""
-"liczba ostatnio dodanych etykiet do wyświetlenia na liście sugerowanych. "
-"Wartość \"-1\" wyłącza wyświetlanie ostatnio dodanych etykiet"
+"liczba ostatnio dodanych tagów, które są uwzględnione na liście "
+"sugerowanych. Wartość `-1` wyłącza listę ostatnich tagów."
 
 #: ../build/bin/tools/darktable_authors.h:6
 msgid "developers"
@@ -5716,7 +5718,7 @@ msgstr "aparat"
 #: ../src/common/collection.c:603 ../src/libs/export_metadata.c:176
 #: ../src/libs/tagging.c:3395
 msgid "tag"
-msgstr "etykieta"
+msgstr "tag"
 
 #: ../src/common/collection.c:605
 msgid "capture date"
@@ -5753,7 +5755,7 @@ msgstr "historia"
 #: ../src/libs/filtering.c:68 ../src/libs/filters/colors.c:301
 #: ../src/libs/filters/colors.c:312 ../src/libs/tools/colorlabels.c:143
 msgid "color label"
-msgstr "kolorowe etykiety"
+msgstr "kolorowa etykieta"
 
 #. iso
 #: ../src/common/collection.c:625 ../src/gui/preferences.c:848
@@ -5851,7 +5853,7 @@ msgstr "modyfikowane"
 #: ../src/libs/collect.c:1470 ../src/libs/collect.c:1614
 #: ../src/libs/collect.c:2798
 msgid "not tagged"
-msgstr "bez etykiet"
+msgstr "nie otagowane"
 
 #: ../src/common/collection.c:1524 ../src/libs/collect.c:1470
 #: ../src/libs/map_locations.c:742
@@ -10925,8 +10927,7 @@ msgstr "$(RIGHTS) - uprawnienia z metadanych"
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:948
 #: ../src/gui/gtkentry.c:258
 msgid "$(CATEGORY[n,category]) - subtag of level n in hierarchical tags"
-msgstr ""
-"$(CATEGORY[n,category]) - podetykieta poziomu n w etykietach hierarchicznych"
+msgstr "$(CATEGORY[n,category]) - podtag poziomu n w tagach hierarchicznych"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:949
 #: ../src/gui/gtkentry.c:262
@@ -11270,11 +11271,11 @@ msgstr "wklej metadane do wybranych zdjęć"
 #. return data structure for script_manager
 #: ../src/external/lua-scripts/official/delete_long_tags.lua:47
 msgid "delete long tags"
-msgstr "usuń długie etykiety"
+msgstr "usuń długie tagi"
 
 #: ../src/external/lua-scripts/official/delete_long_tags.lua:48
 msgid "delete all tags longer than a set length"
-msgstr "usuń wszystkie etykiety dłuższe niż ustalona długość"
+msgstr "usuń wszystkie tagi dłuższe niż ustalona długość"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -11314,7 +11315,7 @@ msgstr "usuń wszystkie etykiety dłuższe niż ustalona długość"
 #: ../src/external/lua-scripts/official/delete_unused_tags.lua:51
 #: ../src/external/lua-scripts/official/delete_unused_tags.lua:52
 msgid "delete unused tags"
-msgstr "usuń nieużywane etykiety"
+msgstr "usuń nieużywane tagi"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -13580,12 +13581,12 @@ msgid ""
 "$(IMAGE.TAGS.HIERARCHY) - tags as set in metadata settings, preserving "
 "hierarchy"
 msgstr ""
-"$(IMAGE.TAGS.HIERARCHY) - etykiety zgodnie z ustawieniami metadanych, z "
+"$(IMAGE.TAGS.HIERARCHY) - tagi zgodnie z ustawieniami metadanych, z "
 "zachowaniem hierarchii"
 
 #: ../src/gui/gtkentry.c:244
 msgid "$(IMAGE.TAGS) - tags as set in metadata settings, flattened"
-msgstr "$(IMAGE.TAGS) - etykiety zgodnie z ustawieniami metadanych"
+msgstr "$(IMAGE.TAGS) - tagi zgodnie z ustawieniami metadanych, spłaszczone"
 
 #: ../src/gui/gtkentry.c:245
 msgid "$(IMAGE.ID) - image ID"
@@ -13603,7 +13604,7 @@ msgstr "$(OPENCL.ACTIVATED) - wskazuje czy OpenCL jest aktywny"
 
 #: ../src/gui/gtkentry.c:259
 msgid "$(TAGS) - tags as set in metadata settings"
-msgstr "$(TAGS) - etykiety zgodnie z ustawieniami metadanych"
+msgstr "$(TAGS) - tagi zgodnie z ustawieniami metadanych"
 
 #: ../src/gui/gtkentry.c:260
 msgid "$(DARKTABLE.NAME) - darktable name"
@@ -13811,11 +13812,11 @@ msgstr ""
 #. tags
 #: ../src/gui/import_metadata.c:469
 msgid "tag presets"
-msgstr "presety etykiet"
+msgstr "presety tagów"
 
 #: ../src/gui/import_metadata.c:483
 msgid "comma separated list of tags"
-msgstr "lista etykiet oddzielonych przecinkami"
+msgstr "lista tagów oddzielonych przecinkami"
 
 #: ../src/gui/preferences.c:280
 msgid "reset panels in all views"
@@ -24261,7 +24262,7 @@ msgstr ""
 
 #: ../src/libs/copy_history.c:386
 msgid "write history stack and tags to XMP sidecar files"
-msgstr "zapisuje historię edycji i etykiety do pobocznych plików XMP"
+msgstr "zapisuje historię edycji i tagi do pobocznych plików XMP"
 
 #: ../src/libs/duplicate.c:60
 msgid "duplicate manager"
@@ -24546,7 +24547,7 @@ msgstr "eksportuje używając bieżących ustawień"
 
 #: ../src/libs/export_metadata.c:148
 msgid "select tag"
-msgstr "wybierz etykietę"
+msgstr "wybierz tag"
 
 #: ../src/libs/export_metadata.c:150
 msgid "_add"
@@ -24565,8 +24566,8 @@ msgid ""
 "list of available tags. click 'add' button or double-click on tag to add the "
 "selected one"
 msgstr ""
-"lista dostępnych etykiet. kliknij 'dodaj' lub dwukrotnie kliknij na "
-"etykiecie aby dodać wybraną"
+"lista dostępnych tagów. kliknij 'dodaj' lub dwukrotnie kliknij na tag aby "
+"dodać wybrany"
 
 #: ../src/libs/export_metadata.c:274
 msgid "edit metadata exportation"
@@ -24610,23 +24611,23 @@ msgstr ""
 
 #: ../src/libs/export_metadata.c:319 ../src/libs/image.c:621
 msgid "geo tags"
-msgstr "etykiety geolokacji"
+msgstr "geotagi"
 
 #: ../src/libs/export_metadata.c:320
 msgid "export geo tags"
-msgstr "eksportuj etykiety geolokacji"
+msgstr "eksportuj geotagi"
 
 #: ../src/libs/export_metadata.c:323
 msgid "export tags (to Xmp.dc.Subject)"
-msgstr "eksportuj etykiety (do Xmp.dc.Subject)"
+msgstr "eksportuj tagi (do Xmp.dc.Subject)"
 
 #: ../src/libs/export_metadata.c:331
 msgid "private tags"
-msgstr "prywatne etykiety"
+msgstr "tagi prywatne"
 
 #: ../src/libs/export_metadata.c:332
 msgid "export private tags"
-msgstr "eksportuj prywatne etykiety"
+msgstr "eksportuj tagi prywatne"
 
 #: ../src/libs/export_metadata.c:334
 msgid "synonyms"
@@ -24634,7 +24635,7 @@ msgstr "synonimy"
 
 #: ../src/libs/export_metadata.c:335
 msgid "export tags synonyms"
-msgstr "eksportuj synonimy etykiet"
+msgstr "eksportuj synonimy tagów"
 
 #: ../src/libs/export_metadata.c:337
 msgid "omit hierarchy"
@@ -24650,11 +24651,11 @@ msgstr ""
 
 #: ../src/libs/export_metadata.c:341
 msgid "hierarchical tags"
-msgstr "etykiety hierarchiczne"
+msgstr "tagi hierarchiczne"
 
 #: ../src/libs/export_metadata.c:342
 msgid "export hierarchical tags (to Xmp.lr.Hierarchical Subject)"
-msgstr "eksportuj hierarchiczne etykiety (do Xmp.lr.Hierarchical Subject)"
+msgstr "eksportuj tagi hierarchiczne (do Xmp.lr.Hierarchical Subject)"
 
 #: ../src/libs/export_metadata.c:344
 msgid "develop history"
@@ -24674,7 +24675,7 @@ msgstr "ustawienia per metadane"
 
 #: ../src/libs/export_metadata.c:364
 msgid "redefined tag"
-msgstr "przedefiniowana etykieta"
+msgstr "przedefiniowany tag"
 
 #: ../src/libs/export_metadata.c:370
 msgid "formula"
@@ -24706,11 +24707,11 @@ msgstr ""
 
 #: ../src/libs/export_metadata.c:430
 msgid "add an output metadata tag"
-msgstr "dodaj etykietę metadanych wyjściowych"
+msgstr "dodaj tag metadanych wyjściowych"
 
 #: ../src/libs/export_metadata.c:435
 msgid "delete metadata tag"
-msgstr "usuń etykietę metadanych"
+msgstr "usuń tag metadanych"
 
 #: ../src/libs/filtering.c:58 ../src/libs/metadata_view.c:138
 msgid "full path"
@@ -25688,11 +25689,11 @@ msgstr "wybierz metadane koloru"
 
 #: ../src/libs/image.c:620
 msgid "select tags metadata"
-msgstr "wybierz metadane etykiet"
+msgstr "wybierz metadane tagów"
 
 #: ../src/libs/image.c:621
 msgid "select geo tags metadata"
-msgstr "wybierz metadane etykiet geo"
+msgstr "wybierz metadane geotagów"
 
 #: ../src/libs/image.c:622
 msgid "select darktable metadata (from metadata editor module)"
@@ -27478,7 +27479,7 @@ msgstr "aplikuje wybrane style do wybranego obrazu"
 
 #: ../src/libs/tagging.c:109
 msgid "tagging"
-msgstr "etykiety"
+msgstr "tagowanie"
 
 #: ../src/libs/tagging.c:114
 msgid ""
@@ -27490,15 +27491,15 @@ msgstr ""
 
 #: ../src/libs/tagging.c:1297
 msgid "attach tag to all"
-msgstr "dołącz etykietę do wszystkich wybranych zdjęć"
+msgstr "przypisz tag do wszystkich"
 
 #: ../src/libs/tagging.c:1305 ../src/libs/tagging.c:2323
 msgid "detach tag"
-msgstr "odłącz etykietę"
+msgstr "odłącz tag"
 
 #: ../src/libs/tagging.c:1309
 msgid "find tag"
-msgstr "znajdź etykietę"
+msgstr "znajdź tag"
 
 #: ../src/libs/tagging.c:1313 ../src/libs/tagging.c:2382
 msgid "copy to clipboard"
@@ -27506,7 +27507,7 @@ msgstr "kopiuj do schowka"
 
 #: ../src/libs/tagging.c:1533
 msgid "delete tag?"
-msgstr "usunąć etykietę?"
+msgstr "usunąć tag?"
 
 #: ../src/libs/tagging.c:1543 ../src/libs/tagging.c:1634
 #: ../src/libs/tagging.c:1861 ../src/libs/tagging.c:2145
@@ -27523,19 +27524,19 @@ msgid_plural ""
 "do you really want to delete the tag `%s'?\n"
 "%d images are assigned this tag!"
 msgstr[0] ""
-"całkowicie usunąć etykietę „%s”?\n"
-"%d obraz jest skojarzony z tą etykietą!"
+"czy na pewno chcesz usunąć tag %s?\n"
+"%d obraz jest przypisany do tego tagu!"
 msgstr[1] ""
-"całkowicie usunąć etykietę „%s”?\n"
-"%d obrazy są skojarzone z tą etykietą!"
+"czy na pewno chcesz usunąć tag %s?\n"
+"%d obrazy są przypisane do tego tagu!"
 msgstr[2] ""
-"całkowicie usunąć etykietę „%s”?\n"
-"%d obrazów jest skojarzonych z tą etykietą!"
+"czy na pewno chcesz usunąć tag %s?\n"
+"%d obrazów jest przypisanych do tego tagu!"
 
 #: ../src/libs/tagging.c:1584
 #, c-format
 msgid "tag %s removed"
-msgstr "etykieta „%s” usuięta"
+msgstr "tag %s usunięty"
 
 #: ../src/libs/tagging.c:1624
 msgid "delete node?"
@@ -27545,9 +27546,9 @@ msgstr "usunąć węzeł?"
 #, c-format
 msgid "<u>%d</u> tag will be deleted"
 msgid_plural "<u>%d</u> tags will be deleted"
-msgstr[0] "<u>%d</u> etykieta zostanie usunięta"
-msgstr[1] "<u>%d</u> etykiety zostaną usunięte"
-msgstr[2] "<u>%d</u> etykiet zostanie usuniętych"
+msgstr[0] "<u>%d</u> tag zostanie usunięty"
+msgstr[1] "<u>%d</u> tagi zostaną usunięte"
+msgstr[2] "<u>%d</u> tagów zostanie usuniętych"
 
 #: ../src/libs/tagging.c:1646 ../src/libs/tagging.c:1873
 #: ../src/libs/tagging.c:2157
@@ -27561,11 +27562,11 @@ msgstr[2] "<u>%d</u> zdjęć zostanie zaktualizowanych"
 #: ../src/libs/tagging.c:1672
 #, c-format
 msgid "%d tags removed"
-msgstr "usunięto %d etykiet"
+msgstr "usunięto %d tagów"
 
 #: ../src/libs/tagging.c:1715
 msgid "create tag"
-msgstr "utwórz etykietę"
+msgstr "utwórz tag"
 
 #: ../src/libs/tagging.c:1728 ../src/libs/tagging.c:1881
 msgid "name: "
@@ -27587,32 +27588,32 @@ msgstr "synonimy: "
 #: ../src/libs/tagging.c:1775 ../src/libs/tagging.c:1929
 #: ../src/libs/tagging.c:2180
 msgid "empty tag is not allowed, aborting"
-msgstr "pusta etykieta jest niedozwolona"
+msgstr "pusty tag nie jest dozwolony, anulowanie"
 
 #: ../src/libs/tagging.c:1786
 msgid "tag name already exists. aborting."
-msgstr "etykieta o tej nazwie już istnieje."
+msgstr "nazwa tagu już istnieje. anulowanie."
 
 #: ../src/libs/tagging.c:1868 ../src/libs/tagging.c:2152
 #, c-format
 msgid "<u>%d</u> tag will be updated"
 msgid_plural "<u>%d</u> tags will be updated"
-msgstr[0] "<u>%d</u> etykieta zostanie zaktualizowana"
-msgstr[1] "<u>%d</u> etykiety zostaną zaktualizowane"
-msgstr[2] "<u>%d</u> etykiet zostanie zaktualizowanych"
+msgstr[0] "<u>%d</u> tag zostanie zaktualizowany"
+msgstr[1] "<u>%d</u> tagi zostaną zaktualizowane"
+msgstr[2] "<u>%d</u> tagów zostanie zaktualizowanych"
 
 #: ../src/libs/tagging.c:1931
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierarchy use rename path instead. Aborting."
 msgstr ""
-"znak '|' jest niedozwolony przy zmianie nazwy etykiety. aby zmienić "
-"hierarchię dla etykiety, użyj zmiany ścieżki. Anulowano."
+"znak '|' nie jest dozwolony przy zmianie nazwy tagu.\n"
+"aby zmodyfikować hierarchię, użyj opcji zmiany ścieżki. anulowanie."
 
 #: ../src/libs/tagging.c:1970 ../src/libs/tagging.c:2083
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
-msgstr "istnieje już przynajmniej jedna etykieta o nazwie „%s”"
+msgstr "przynajmniej jedna nowa nazwa tagu (%s) już istnieje, anulowanie."
 
 #: ../src/libs/tagging.c:2135
 msgid "change path"
@@ -27620,24 +27621,26 @@ msgstr "zmień ścieżkę"
 
 #: ../src/libs/tagging.c:2182
 msgid "'|' misplaced, empty tag is not allowed, aborting"
-msgstr "Zła pozycja znaku '|', pusta etykieta jest niedozwolona"
+msgstr ""
+"znak '|' nie jest w odpowiednim miejscu, pusty tag nie jest dozwolony, "
+"anulowanie"
 
 #: ../src/libs/tagging.c:2293
 #, c-format
 msgid "tag %s created"
-msgstr "etykieta „%s” utworzona"
+msgstr "tag %s utworzony"
 
 #: ../src/libs/tagging.c:2319
 msgid "attach tag"
-msgstr "dołącz etykietę"
+msgstr "przypisz tag"
 
 #: ../src/libs/tagging.c:2332
 msgid "create tag..."
-msgstr "utwórz etykietę..."
+msgstr "utwórz tag..."
 
 #: ../src/libs/tagging.c:2338
 msgid "delete tag"
-msgstr "usuń etykietę"
+msgstr "usuń tag"
 
 #: ../src/libs/tagging.c:2345
 msgid "delete node"
@@ -27649,7 +27652,7 @@ msgstr "zmień ścieżkę..."
 
 #: ../src/libs/tagging.c:2367
 msgid "set as a tag"
-msgstr "ustaw jako etykietę"
+msgstr "ustaw jako tag"
 
 #: ../src/libs/tagging.c:2378
 msgid "copy to entry"
@@ -27657,7 +27660,7 @@ msgstr "kopiuj do pola nazwy etykiety"
 
 #: ../src/libs/tagging.c:2402
 msgid "go to tag collection"
-msgstr "otwórz kolekcję zdjęć z etykietą"
+msgstr "przejdź do kolekcji tagów"
 
 #: ../src/libs/tagging.c:2408
 msgid "go back to work"
@@ -27678,7 +27681,7 @@ msgstr "wybierz słowo kluczowe"
 
 #: ../src/libs/tagging.c:2605
 msgid "error importing tags"
-msgstr "błąd importu etykiet"
+msgstr "błąd podczas importowania tagów"
 
 #: ../src/libs/tagging.c:2607
 #, c-format
@@ -27691,7 +27694,7 @@ msgstr "wybierz plik do eksportu"
 
 #: ../src/libs/tagging.c:2642
 msgid "error exporting tags"
-msgstr "błąd eksportu etykiet"
+msgstr "błąd podczas eksportowania tagów"
 
 #: ../src/libs/tagging.c:2644
 #, c-format
@@ -27710,10 +27713,10 @@ msgid ""
 "right-click for other actions on attached tag,\n"
 "Tab to give the focus to entry"
 msgstr ""
-"dołączone etykiety\n"
-"kliknij podwójnie lub wciśnij Delete aby odłączyć\n"
-"kliknij prawym dla pozostałych akcji na etykiecie,\n"
-"wciśnij Tab aby przenieść kursor do pola"
+"przypisane tagi\n"
+"naciśnij Delete lub kliknij dwukrotnie, aby odłączyć\n"
+"kliknij prawym, aby wykonać inne akcje na przypisanym tagu,\n"
+"wciśnij Tab aby przenieść kursor do pola wpisu"
 
 #: ../src/libs/tagging.c:3230
 msgid "attach"
@@ -27721,7 +27724,7 @@ msgstr "dołącz"
 
 #: ../src/libs/tagging.c:3231
 msgid "attach tag to all selected images"
-msgstr "dołącza etykiety do wybranych zdjęć"
+msgstr "przypisz tag do wszystkich wybranych obrazów"
 
 #: ../src/libs/tagging.c:3234
 msgid "detach"
@@ -27729,7 +27732,7 @@ msgstr "odłącz"
 
 #: ../src/libs/tagging.c:3235
 msgid "detach tag from all selected images"
-msgstr "odłącza etykiety od wybranych zdjęć"
+msgstr "odłącz tag od wszystkich wybranych obrazów"
 
 #: ../src/libs/tagging.c:3248
 msgid "toggle list with / without hierarchy"
@@ -27749,11 +27752,11 @@ msgstr "sortowanie"
 
 #: ../src/libs/tagging.c:3252
 msgid "toggle show or not darktable tags"
-msgstr "przełącza widoczność etykiet"
+msgstr "przełącz widoczność tagów darktable"
 
 #: ../src/libs/tagging.c:3252
 msgid "dttags"
-msgstr "etykiety"
+msgstr "dttags"
 
 #: ../src/libs/tagging.c:3267
 msgid ""
@@ -27762,10 +27765,10 @@ msgid ""
 "press Tab or Down key to go to the first matching tag\n"
 "press shift+Tab to select the first attached user tag"
 msgstr ""
-"wprowadź nazwę etykiety\n"
-"wciśnij ENTER aby utworzyć nową etykietę dla zaznaczonych obrazów\n"
-"wciśnij Tab lub strzałkę w dół aby przejść do pierwszej zgodnej etykiety\n"
-"wciśnij shift+Tab aby wybrać pierwszą załączoną etykietę użytkownika"
+"wprowadź nazwę tagu\n"
+"naciśnij Enter aby utworzyć nowy tag i przypisać go do wybranych obrazów\n"
+"naciśnij Tab lub strzałkę w dół, aby przejść do pierwszego pasującego tagu\n"
+"naciśnij shift+Tab, aby wybrać pierwszy przypisany tag użytkownika"
 
 #: ../src/libs/tagging.c:3278 ../src/libs/tagging.c:3284
 msgid "clear entry"
@@ -27780,29 +27783,29 @@ msgid ""
 "right-click for other actions on selected tag\n"
 "shift+Tab to give the focus to entry"
 msgstr ""
-"słownik etykiet,\n"
-"wciśnij Enter lub kliknij podwójnie by załączyć zaznaczoną etykietę do "
-"zaznaczonych obrazów\n"
-"shift+Enter przerzuca kursor na wpis\n"
-"shift+click aby rozwinąć zaznaczoną etykietę\n"
-"prawy klik dla pozostałych akcji na zaznaczonej etykiecie\n"
-"wciśnij shift+Tab aby przenieść kursor do wpisu"
+"słownik tagów,\n"
+"naciśnij Enter lub kliknij dwukrotnie, aby przypisać wybrany tag do "
+"wybranych obrazów\n"
+"shift+Enter działa tak samo, a także przenosi kursor na pole wpisu\n"
+"shift+kliknięcie, aby w pełni rozwinąć wybrany tag\n"
+"kliknij prawym, aby wykonać inne akcje na wybranym tagu\n"
+"shift+Tab aby przenieść kursor na pole wpisu"
 
 #: ../src/libs/tagging.c:3366
 msgid ""
 "create a new tag with the\n"
 "name you entered"
 msgstr ""
-"tworzy nową etykietę\n"
+"tworzy nowy tag\n"
 "z wprowadzoną nazwą"
 
 #: ../src/libs/tagging.c:3369
 msgid "import tags from a Lightroom keyword file"
-msgstr "importuje etykiety z pliku słów kluczowych Lightrooma"
+msgstr "importuje tagi z pliku słów kluczowych Lightroom"
 
 #: ../src/libs/tagging.c:3372
 msgid "export all tags to a Lightroom keyword file"
-msgstr "eksportuje wszystkie etykiety do pliku słów kluczowych Lightrooma"
+msgstr "eksportuje wszystkie tagi do pliku słów kluczowych Lightroom"
 
 #: ../src/libs/tagging.c:3376
 msgid "toggle list / tree view"
@@ -27822,18 +27825,18 @@ msgstr "sugestia"
 
 #: ../src/libs/tagging.c:3396
 msgid "redo last tag"
-msgstr "powtórz ostatnią etykietę"
+msgstr "powtórz ostatni tag"
 
 #: ../src/libs/tagging.c:3481
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
-"skrót etykiety jest nieaktywny w widoku drzewa etykiet. przełącz do widoku "
-"listy"
+"skrót tagu nie jest aktywny w widoku drzewa tagów. proszę przełączyć się na "
+"widok listy"
 
 #: ../src/libs/tagging.c:3585
 msgid "tagging settings"
-msgstr "ustawienia etykietowania"
+msgstr "ustawienia tagowania"
 
 #: ../src/libs/tools/colorlabels.c:61
 msgid "colorlabels"
