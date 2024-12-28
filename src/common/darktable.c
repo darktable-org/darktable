@@ -1731,9 +1731,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.mipmap_cache = (dt_mipmap_cache_t *)calloc(1, sizeof(dt_mipmap_cache_t));
   dt_mipmap_cache_init(darktable.mipmap_cache);
 
-  // set up memory.darktable_iop_names table
-  dt_iop_set_darktable_iop_table();
-
   // set up the list of exiv2 metadata
   dt_exif_set_exiv2_taglist();
 

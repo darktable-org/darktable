@@ -489,9 +489,6 @@ dt_iop_module_t *dt_iop_gui_get_previous_visible_module(const dt_iop_module_t *m
 /** returns the next visible module on the module list */
 dt_iop_module_t *dt_iop_gui_get_next_visible_module(const dt_iop_module_t *module);
 
-// initializes memory.darktable_iop_names
-void dt_iop_set_darktable_iop_table();
-
 /** adds keyboard accels to the first module in the pipe to handle
  * where there are multiple instances */
 void dt_iop_connect_accels_multi(dt_iop_module_so_t *module);
