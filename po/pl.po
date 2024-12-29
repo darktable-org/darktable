@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-12-01 18:37+0100\n"
-"PO-Revision-Date: 2024-12-29 10:45+0100\n"
+"PO-Revision-Date: 2024-12-29 10:51+0100\n"
 "Last-Translator: Wojciech Nagrodzki <https://wnagrodzki.eu>\n"
 "Language-Team: Polish < >\n"
 "Language: pl_PL\n"
@@ -4280,12 +4280,12 @@ msgstr "brak obrotu"
 #: ../build/lib/darktable/plugins/introspection_flip.c:102
 #: ../src/iop/flip.c:471 ../src/iop/flip.c:615
 msgid "flip vertically"
-msgstr "odbicie w pionie"
+msgstr "odwróć w pionie"
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:103
 #: ../src/iop/flip.c:467 ../src/iop/flip.c:611
 msgid "flip horizontally"
-msgstr "odbicie w poziomie"
+msgstr "odwróć w poziomie"
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:104
 msgid "transpose"
@@ -13700,11 +13700,11 @@ msgstr "prowadnice"
 
 #: ../src/gui/guides.c:710 ../src/iop/clipping.c:2111
 msgid "flip"
-msgstr "odbicie"
+msgstr "odwracanie"
 
 #: ../src/gui/guides.c:710
 msgid "flip guides"
-msgstr "odbij prowadnice"
+msgstr "odwróć prowadnice"
 
 #: ../src/gui/guides.c:713
 msgid "horizontally"
@@ -25988,7 +25988,7 @@ msgstr "przybliżenie podglądu"
 
 #: ../src/libs/live_view.c:295
 msgid "flip live view horizontally"
-msgstr "odbija podgląd w poziomie"
+msgstr "odwróć podgląd na żywo w poziomie"
 
 #: ../src/libs/live_view.c:301
 msgid "move focus point in (big steps)"
