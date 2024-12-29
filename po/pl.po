@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-12-01 18:37+0100\n"
-"PO-Revision-Date: 2024-12-29 11:02+0100\n"
+"PO-Revision-Date: 2024-12-29 11:13+0100\n"
 "Last-Translator: Wojciech Nagrodzki <https://wnagrodzki.eu>\n"
 "Language-Team: Polish < >\n"
 "Language: pl_PL\n"
@@ -9861,8 +9861,8 @@ msgid ""
 "likely introduced by applying a preset, style or history copy&paste"
 msgstr ""
 "moduł był wyłączony w Historii, ale jest wymagany dla tego typu obrazu.\n"
-"Prawdopodobnie wynika to z nałożenia stylu bądź skopiowania historii z "
-"innego obrazu"
+"prawdopodobnie wynika to z zastosowania presetu, stylu bądź skopiowania "
+"historii z innego obrazu"
 
 #: ../src/develop/pixelpipe_hb.c:509
 msgid "disabled as not appropriate"
@@ -9875,8 +9875,8 @@ msgid ""
 msgstr ""
 "moduł był wyłączony w Historii, ale nie jest dozwolony dla tego typu "
 "obrazu.\n"
-"Prawdopodobnie wynika to z nałożenia stylu bądź skopiowania historii z "
-"innego obrazu"
+"Prawdopodobnie wynika to z zastosowania presetu, stylu bądź skopiowania "
+"historii z innego obrazu"
 
 #: ../src/develop/pixelpipe_hb.c:1130
 #, c-format
@@ -13043,7 +13043,7 @@ msgstr "komenda"
 
 #: ../src/gui/accelerators.c:2121
 msgid "preset"
-msgstr "styl"
+msgstr "preset"
 
 #: ../src/gui/accelerators.c:2502
 msgid "restore shortcuts"
@@ -13804,7 +13804,7 @@ msgid ""
 msgstr ""
 "metadane do zastosowania domyślnie\n"
 "kliknij podwójne na etykiecie by wyczyścić odpowiadające pole\n"
-"kliknij podwojnie na \"styl\" by wyczyścić wszystkie pola"
+"kliknij podwojnie na \"preset\" by wyczyścić wszystkie pola"
 
 #: ../src/gui/import_metadata.c:430
 msgid "from XMP"
@@ -13969,7 +13969,7 @@ msgid ""
 "incrementally search the list of presets\n"
 "press up or down keys to cycle through matches"
 msgstr ""
-"przyrostowo przeszukaj listę styli\n"
+"przyrostowo przeszukaj listę presetów\n"
 "naciśnij w górę lub w dół, aby przełączyć między wyszukaniami"
 
 #: ../src/gui/preferences.c:884
@@ -14050,19 +14050,19 @@ msgstr "na pewno usunąć preset „%s”?"
 #: ../src/gui/presets.c:1038 ../src/libs/lib.c:183 ../src/libs/lib.c:200
 #: ../src/libs/lib.c:208 ../src/libs/lib.c:211
 msgid "new preset"
-msgstr "nowe ustawienia"
+msgstr "nowy preset"
 
 #: ../src/gui/presets.c:210
 msgid "please give preset a name"
-msgstr "proszę nadać nazwę ustawieniu"
+msgstr "proszę nadać nazwę presetowi"
 
 #: ../src/gui/presets.c:215
 msgid "unnamed preset"
-msgstr "ustawienie bez nazwy"
+msgstr "preset bez nazwy"
 
 #: ../src/gui/presets.c:244
 msgid "overwrite preset?"
-msgstr "nadpisać zapisane ustawienie?"
+msgstr "nadpisać preset?"
 
 #: ../src/gui/presets.c:245
 #, c-format
@@ -14070,7 +14070,7 @@ msgid ""
 "preset `%s' already exists.\n"
 "do you want to overwrite?"
 msgstr ""
-"zapisane ustawienie „%s” już istnieje.\n"
+"preset „%s” już istnieje.\n"
 "czy chcesz je nadpisać?"
 
 #: ../src/gui/presets.c:423 ../src/imageio/storage/disk.c:197
@@ -14099,7 +14099,7 @@ msgstr "_skasuj"
 
 #: ../src/gui/presets.c:589
 msgid "name of the preset"
-msgstr "nazwa ustawienia"
+msgstr "nazwa presetu"
 
 #: ../src/gui/presets.c:598
 msgid "description or further information"
@@ -14129,7 +14129,7 @@ msgstr "wyświetlaj ten preset tylko dla pasujących obrazów"
 msgid ""
 "be very careful with this option. this might be the last time you see your "
 "preset."
-msgstr "proszę zachować ostrożność. ustawienie może zostać utracone na zawsze."
+msgstr "proszę zachować ostrożność. preset może zostać utracony na zawsze."
 
 #: ../src/gui/presets.c:658
 #, no-c-format
@@ -14271,7 +14271,7 @@ msgstr "nieaktywne: błędna wersja modułu"
 
 #: ../src/gui/presets.c:1778 ../src/libs/lib.c:545
 msgid "edit this preset.."
-msgstr "edytuj to ustawienie.."
+msgstr "edytuj ten preset.."
 
 #: ../src/gui/presets.c:1783 ../src/libs/lib.c:549
 msgid "delete this preset"
@@ -25952,7 +25952,7 @@ msgstr "wer. 5.0 dla wejścia JPEG/nie-raw"
 
 #: ../src/libs/lib.c:371
 msgid "deleting preset for obsolete module"
-msgstr "usuwanie ustawień przestarzałego modułu"
+msgstr "usuwanie presetu przestarzałego modułu"
 
 #: ../src/libs/lib.c:536
 msgid "manage presets..."
@@ -26510,7 +26510,7 @@ msgstr "zaznaczony do skasowania"
 
 #: ../src/libs/metadata_view.c:354
 msgid "auto-applying presets applied"
-msgstr "zastosowano ustawienia automatyczne"
+msgstr "automatyczne stosowanie presetu"
 
 #: ../src/libs/metadata_view.c:356
 msgid "has .txt"
@@ -26575,7 +26575,7 @@ msgid ""
 msgstr ""
 "przeciągnij i upuść jeden wiersz na raz do uzyskania pożądanej kolejności\n"
 "odznacz aby ukryć metadane, które Cię nie interesują\n"
-"jeśli potrzebujesz innych ustawień, użyj styli"
+"jeśli potrzebujesz innych ustawień, użyj presetów"
 
 #: ../src/libs/metadata_view.c:1458
 msgid "jump to film roll"
@@ -26903,7 +26903,7 @@ msgstr "_zmień nazwę"
 
 #: ../src/libs/modulegroups.c:3630
 msgid "new preset name:"
-msgstr "nazwa nowego stylu:"
+msgstr "nazwa nowego presetu:"
 
 #: ../src/libs/modulegroups.c:3631
 msgid "a preset with this name already exists!"
