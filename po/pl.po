@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-12-01 18:37+0100\n"
-"PO-Revision-Date: 2024-12-29 11:00+0100\n"
+"PO-Revision-Date: 2024-12-29 11:02+0100\n"
 "Last-Translator: Wojciech Nagrodzki <https://wnagrodzki.eu>\n"
 "Language-Team: Polish < >\n"
 "Language: pl_PL\n"
@@ -25606,7 +25606,7 @@ msgstr "usuń"
 
 #: ../src/libs/image.c:515
 msgid "remove images from the image library, without deleting"
-msgstr "usuń obrazy z bazy danych, bez fizycznego usunięcia"
+msgstr "usuń obrazy z biblioteki obrazów, bez fizycznego usunięcia"
 
 #: ../src/libs/image.c:524
 msgid "move..."
@@ -25634,7 +25634,7 @@ msgstr "tworzy obraz hdr z wybranych zdjęć"
 
 #: ../src/libs/image.c:542
 msgid "add a duplicate to the image library, including its history stack"
-msgstr "dodaje duplikat do kolekcji, razem z jego historią"
+msgstr "dodaje duplikat do biblioteki obrazów, razem z jego historią"
 
 #: ../src/libs/image.c:549 ../src/libs/image.c:554
 msgid "rotate selected images 90 degrees CCW"
