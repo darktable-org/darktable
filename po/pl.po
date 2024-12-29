@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-12-01 18:37+0100\n"
-"PO-Revision-Date: 2024-12-29 10:57+0100\n"
+"PO-Revision-Date: 2024-12-29 11:00+0100\n"
 "Last-Translator: Wojciech Nagrodzki <https://wnagrodzki.eu>\n"
 "Language-Team: Polish < >\n"
 "Language: pl_PL\n"
@@ -447,7 +447,7 @@ msgstr ""
 #: ../build/bin/conf_gen.h:2040
 msgctxt "preferences"
 msgid "thumbnail"
-msgstr "miniaturka"
+msgstr "miniatura"
 
 #: ../build/bin/conf_gen.h:2041
 msgctxt "preferences"
@@ -1085,7 +1085,7 @@ msgstr "ustala, czy czas powinien być wyświetlony w milisekundach"
 
 #: ../build/bin/preferences_gen.h:4719
 msgid "thumbnails"
-msgstr "miniaturki"
+msgstr "miniatury"
 
 #: ../build/bin/preferences_gen.h:4738
 msgid "use raw file instead of embedded JPEG from size"
@@ -1107,7 +1107,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4773
 msgid "high quality processing from size"
-msgstr "generuj wysokiej jakości miniaturki od rozmiaru"
+msgstr "przetwarzanie w wysokiej jakości od rozmiaru"
 
 #: ../build/bin/preferences_gen.h:4787
 msgid ""
@@ -1638,7 +1638,7 @@ msgid ""
 "if switched on, thumbnails and previews are rendered at lower quality but 4 "
 "times faster"
 msgstr ""
-"jeśli włączone, miniaturki i podgląd będą renderowane z niższą jakością, ale "
+"jeśli włączone, miniatury i podgląd będą renderowane z niższą jakością, ale "
 "4x szybciej"
 
 #: ../build/bin/preferences_gen.h:6219
@@ -12477,7 +12477,7 @@ msgid ""
 msgstr ""
 "uwaga: dyskowa pamięć podręczna dla miniatur jest nieaktywna "
 "(cache_disk_backend)\n"
-"jeśli chcesz wygenerować miniaturki tak aby darktable z nich korzystało, "
+"jeśli chcesz wygenerować miniatury tak aby darktable z nich korzystało, "
 "musisz aktywować dyskową pamięć podręczna dla miniatur\n"
 "brak miniatur do wygenerowania, zakończono.\n"
 
@@ -25855,7 +25855,7 @@ msgstr "plikowa 'data/czas modyfikacji' może różnio"
 
 #: ../src/libs/import.c:1940
 msgid "show/hide thumbnails"
-msgstr "pokaż/ukryj miniaturki"
+msgstr "pokaż/ukryj miniatury"
 
 #: ../src/libs/import.c:2014
 msgid "naming rules"
