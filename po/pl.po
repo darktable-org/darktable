@@ -25979,12 +25979,12 @@ msgstr "podgląd na żywo"
 
 #: ../src/libs/live_view.c:289 ../src/libs/live_view.c:290
 msgid "toggle live view"
-msgstr "przełącz podgląd"
+msgstr "przełącz podgląd na żywo"
 
 #. TODO: see _zoom_live_view_clicked
 #: ../src/libs/live_view.c:291 ../src/libs/live_view.c:292
 msgid "zoom live view"
-msgstr "przybliżenie podglądu"
+msgstr "przybliżenie podglądu na żywo"
 
 #: ../src/libs/live_view.c:295
 msgid "flip live view horizontally"
