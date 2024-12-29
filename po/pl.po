@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-12-01 18:37+0100\n"
-"PO-Revision-Date: 2024-12-29 10:51+0100\n"
+"PO-Revision-Date: 2024-12-29 10:57+0100\n"
 "Last-Translator: Wojciech Nagrodzki <https://wnagrodzki.eu>\n"
 "Language-Team: Polish < >\n"
 "Language: pl_PL\n"
@@ -1044,7 +1044,8 @@ msgstr "dwukrotne przyznanie jednej gwiazdki nie wyzeruje oceny"
 #: ../build/bin/preferences_gen.h:4642
 msgid ""
 "defines whether rating an image one star twice will zero out star rating"
-msgstr "określa, czy dwukrotne przyznanie jednej gwiazdki wyzeruje ocenę"
+msgstr ""
+"określa, czy dwukrotne przyznanie jednej gwiazdki wyzeruje ocenę gwiazdkową"
 
 #: ../build/bin/preferences_gen.h:4663 ../build/bin/preferences_gen.h:5320
 msgid "show scrollbars for central view"
@@ -28280,7 +28281,7 @@ msgstr "przybornik modułu"
 #. connect callbacks
 #: ../src/libs/tools/ratings.c:97
 msgid "set star rating for selected images"
-msgstr "ustal ocenę dla wybranych obrazów"
+msgstr "ustal ocenę gwiazdkową dla wybranych obrazów"
 
 #: ../src/libs/tools/timeline.c:102
 msgid "timeline"
