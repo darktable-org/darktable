@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-12-01 18:37+0100\n"
-"PO-Revision-Date: 2024-12-29 10:38+0100\n"
+"PO-Revision-Date: 2024-12-29 10:45+0100\n"
 "Last-Translator: Wojciech Nagrodzki <https://wnagrodzki.eu>\n"
 "Language-Team: Polish < >\n"
 "Language: pl_PL\n"
@@ -2272,7 +2272,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:8076
 msgid "map / geolocalization view"
-msgstr "mapa / geolokacja"
+msgstr "mapa / widok geolokalizacji"
 
 #: ../build/bin/preferences_gen.h:8095
 msgid "pretty print the image location"
