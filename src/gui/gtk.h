@@ -534,8 +534,8 @@ void dt_gui_update_collapsible_section(dt_gui_collapsible_section_t *cs);
 void dt_gui_hide_collapsible_section(dt_gui_collapsible_section_t *cs);
 
 // is delay between first and second click/press longer than double-click time?
-gboolean dt_gui_long_click(const int second,
-                           const int first);
+gboolean dt_gui_long_click(const guint second,
+                           const guint first);
 
 // control whether the mouse pointer displays as a "busy" cursor, e.g. watch or timer
 // the calls may be nested, but must be matched
