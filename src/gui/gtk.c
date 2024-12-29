@@ -4367,12 +4367,12 @@ void dt_gui_collapsible_section_set_label(dt_gui_collapsible_section_t *cs,
   dt_control_queue_redraw_widget(cs->label);
 }
 
-gboolean dt_gui_long_click(const int second,
-                           const int first)
+gboolean dt_gui_long_click(const guint second,
+                           const guint first)
 {
   int delay = 0;
   g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);
-  return second - first > delay;
+  return second - delay > first;
 }
 
 static int busy_nest_count = 0;
