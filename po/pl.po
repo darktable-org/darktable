@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-12-01 18:37+0100\n"
-"PO-Revision-Date: 2024-12-28 17:43+0100\n"
+"PO-Revision-Date: 2024-12-29 10:38+0100\n"
 "Last-Translator: Wojciech Nagrodzki <https://wnagrodzki.eu>\n"
 "Language-Team: Polish < >\n"
 "Language: pl_PL\n"
@@ -171,11 +171,11 @@ msgstr "maks"
 
 #: ../build/bin/conf_gen.h:970
 msgid "select only new images"
-msgstr "wybierz tylko nowe zdjęcia"
+msgstr "wybierz tylko nowe obrazy"
 
 #: ../build/bin/conf_gen.h:971
 msgid "only select images that have not already been imported"
-msgstr "wybierz tylko niezaimportowane zdjęcia"
+msgstr "wybierz tylko te obrazy, które nie zostały jeszcze zaimportowane"
 
 #: ../build/bin/conf_gen.h:977
 msgid "ignore non-raw images"
@@ -232,7 +232,9 @@ msgstr "wstępna ocena przy imporcie"
 
 #: ../build/bin/conf_gen.h:1055
 msgid "initial star rating for all images when importing a filmroll"
-msgstr "wstępna ocena nadawana wszystkim zdjęciom podczas importu rolek filmu"
+msgstr ""
+"wstępna ocena gwiazdkowa dla wszystkich obrazów podczas importowania rolki "
+"filmowej"
 
 #: ../build/bin/conf_gen.h:1061
 msgid "ignore EXIF rating"
@@ -416,7 +418,7 @@ msgstr "maksymalne obrazy"
 
 #: ../build/bin/conf_gen.h:2021
 msgid "the maximum number of image thumbnails drawn on the map"
-msgstr "maksymalna liczba zdjęć rysowana na mapie"
+msgstr "maksymalna liczba miniatur obrazów rysowanych na mapie"
 
 #: ../build/bin/conf_gen.h:2027
 msgid "group size factor"
@@ -427,8 +429,8 @@ msgid ""
 "increase or decrease the spatial size of images groups on the map. can "
 "influence the calculation time"
 msgstr ""
-"zwiększ lub zmniejsz odległość pomiędzy grupami zdjęć na mapie. ma wpływ na "
-"czas obliczeń"
+"zwiększ lub zmniejsz rozmiar przestrzenny grup obrazów na mapie. może to "
+"wpłynąć na czas obliczeń"
 
 #: ../build/bin/conf_gen.h:2034
 msgid "min images per group"
@@ -439,7 +441,8 @@ msgid ""
 "the minimum number of images to set up an images group. can influence the "
 "calculation time."
 msgstr ""
-"minimalna ilość zdjęć do utworzenia grupy. może mieć wpływ na czas obliczeń."
+"minimalna ilość obrazów do utworzenia grupy obrazów. może to wpłynąć na czas "
+"obliczeń."
 
 #: ../build/bin/conf_gen.h:2040
 msgctxt "preferences"
@@ -449,7 +452,7 @@ msgstr "miniaturka"
 #: ../build/bin/conf_gen.h:2041
 msgctxt "preferences"
 msgid "count"
-msgstr "licznik zdjęć"
+msgstr "licznik obrazów"
 
 #: ../build/bin/conf_gen.h:2044
 msgid "thumbnail display"
@@ -460,8 +463,8 @@ msgid ""
 "three options are available: images thumbnails, only the count of images of "
 "the group or nothing"
 msgstr ""
-"dostępne są trzy opcje: miniaturki zdjęć, tylko licznik zdjęć w grupie lub "
-"puste"
+"dostępne są trzy opcje: miniatury obrazów, tylko liczba obrazów w grupie lub "
+"brak"
 
 #: ../build/bin/conf_gen.h:2058
 msgid "max polygon points"
@@ -1095,11 +1098,11 @@ msgid ""
 "should choose the *always* option.\n"
 "(more comments in the manual)"
 msgstr ""
-"jeśli rozmiar miniaturki jest większy, niż ta wartość, przetwarzany będzie "
+"jeśli rozmiar miniatury jest większy, niż ta wartość, przetwarzany będzie "
 "plik RAW, zamiast osadzonego podglądu JPEG (lepiej, ale wolniej)\n"
-"jeśli chcesz generować wszystkie miniaturki i pre-renderowane zdjęcia w "
+"jeśli chcesz, aby wszystkie miniatury i wstępnie renderowane obrazy były w "
 "najlepszej jakości, wybierz opcję *zawsze*\n"
-"(więcej informacji w instrukcji)"
+"(więcej komentarzy w podręczniku)"
 
 #: ../build/bin/preferences_gen.h:4773
 msgid "high quality processing from size"
@@ -1113,12 +1116,12 @@ msgid ""
 "should choose the *always* option.\n"
 "(more comments in the manual)"
 msgstr ""
-"jeśli rozmiar miniaturki jest większy niż podana wartość, zostanie ona "
+"jeśli rozmiar miniatury jest większy niż podana wartość, zostanie ona "
 "utworzona przy pomocy renderowania o pełnej jakości (lepsze, ale "
 "wolniejsze)\n"
-"jeśli chcesz, aby wszystkie miniaturki i prerenderowane zdjęcia były w "
+"jeśli chcesz, aby wszystkie miniatury i wstępnie renderowane obrazy były w "
 "najlepszej jakości, wybierz opcję *zawsze*\n"
-"(zajrzyj do dokumentacji po więcej szczegółów)"
+"(więcej komentarzy w podręczniku)"
 
 #: ../build/bin/preferences_gen.h:4808
 msgid "enable disk backend for thumbnail cache"
@@ -1135,14 +1138,15 @@ msgid ""
 "to generate all thumbnails of your entire collection offline, run 'darktable-"
 "generate-cache'."
 msgstr ""
-"jeśli włączone, zapisuje miniaturki na dysku (.cache/darktable/), przy "
-"pozbywaniu się ich z pamięci podręcznej.\n"
-"może to zająć dużo miejsca (kilka gigabajtów przy 20tys. zdjęć) i nigdy nie "
-"kasuje zapisanych miniaturek. \n"
-"można je jednak bezpiecznie kasować ręcznie. wydajność trybu stołu "
-"podświetlanego przy przeglądaniu w dużej ilości bardzo się poprawi.\n"
-"aby wygenerować wszystkie miniaturki dla całej kolekcji, uruchom „darktable-"
-"generate-cache”."
+"jeśli włączone, zapisuje miniatury na dysk (.cache/darktable/) w momencie "
+"ich usunięcia z pamięci podręcznej.\n"
+"należy pamiętać, że może to zająć dużo miejsca (kilka gigabajtów dla 20 "
+"tysięcy obrazów) i nigdy nie usuwa ponownie zapisanych miniatur.\n"
+"można je jednak bezpiecznie usunąć ręcznie, jeśli chcesz.\n"
+"przeglądanie wielu obrazów znacznie przyspieszy w trybie stołu "
+"podświetlanego.\n"
+"aby wygenerować wszystkie miniatury całej kolekcji w trybie offline, uruchom "
+"polecenie 'darktable-generate-cache'."
 
 #: ../build/bin/preferences_gen.h:4842
 msgid "enable disk backend for full preview cache"
@@ -1158,13 +1162,13 @@ msgid ""
 "light table performance will be increased greatly when zooming image in full "
 "preview mode."
 msgstr ""
-"jeśli włączone, zapisuje pełny podgląd na dysku (.cache/darktable/), gdy "
-"zabraknie miejsca w pamięci podręcznej.\n"
-"może to zająć dużo miejsca (kilka gigabajtów przy 20tys. zdjęć) i nigdy nie "
-"kasuje zapisanych miniaturek.\n"
-"można je jednak bezpiecznie kasować ręcznie.\n"
-"wydajność trybu stołu podświetlanego przy powiększaniu zdjęć w trybie "
-"pełnego podglądu bardzo się poprawi."
+"jeśli włączone, zapisuje pełne podglądy na dysk (.cache/darktable/) w "
+"momencie ich usunięcia z pamięci podręcznej.\n"
+"należy pamiętać, że może to zająć dużo miejsca (kilka gigabajtów dla 20 "
+"tysięcy obrazów) i nigdy nie usuwa ponownie zapisanych pełnych podglądów.\n"
+"można je jednak bezpiecznie usunąć ręcznie, jeśli chcesz.\n"
+"wydajność stołu podświetlanego zostanie znacznie zwiększona podczas "
+"powiększania obrazu w trybie pełnego podglądu."
 
 #: ../build/bin/preferences_gen.h:4876
 msgid "enable smooth scrolling for lighttable thumbnails"
@@ -1273,7 +1277,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5201
 msgid "pattern for the image information line"
-msgstr "wzór linii informacji o zdjęciu"
+msgstr "wzorzec dla linii tekstu z informacjami o obrazie"
 
 #: ../build/bin/preferences_gen.h:5221
 msgid "see manual for a list of the tags you can use."
@@ -1282,11 +1286,11 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5242
 msgid "position of the image information line"
-msgstr "położenie linii informacji o zdjęciu"
+msgstr "położenie linii tekstu z informacjami o obrazie"
 
 #: ../build/bin/preferences_gen.h:5276
 msgid "border around image in darkroom mode"
-msgstr "ramka wokół zdjęcia w trybie ciemni"
+msgstr "ramka wokół obrazu w trybie ciemni"
 
 #: ../build/bin/preferences_gen.h:5296 ../build/bin/preferences_gen.h:7256
 #: ../build/bin/preferences_gen.h:7377 ../build/bin/preferences_gen.h:7692
@@ -1302,8 +1306,8 @@ msgid ""
 "process the image in darkroom mode with a small border. set to 0 if you "
 "don't want any border."
 msgstr ""
-"szerokość ramki wokół zdjęcia w trybie ciemni. ustaw 0, jeśli nie chcesz "
-"ramki."
+"obrabiaj obraz w trybie ciemni z małą ramką dookoła. ustaw 0, jeśli nie "
+"chcesz żadnej ramki."
 
 #: ../build/bin/preferences_gen.h:5354
 msgid "reduce resolution of preview image"
@@ -1317,15 +1321,15 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5389
 msgid "show loading screen between images"
-msgstr "pokaż ekran ładowania pomiędzy zdjęciami"
+msgstr "pokaż ekran ładowania pomiędzy obrazami"
 
 #: ../build/bin/preferences_gen.h:5402
 msgid ""
 "show gray loading screen when navigating between images in the darkroom\n"
 "disable to just show a toast message"
 msgstr ""
-"pokaż szary ekran ładowania podczas ładowania zdjęcia w ciemni\n"
-"odznacz, żeby pokazać samą wiadomość"
+"pokaż szary ekran ładowania podczas przechodzenia między obrazami w ciemni\n"
+"wyłącz, żeby pokazać tylko sam komunikat"
 
 #: ../build/bin/preferences_gen.h:5411
 msgid "modules"
@@ -1474,7 +1478,7 @@ msgstr "przetwarzanie"
 
 #: ../build/bin/preferences_gen.h:5853
 msgid "image processing"
-msgstr "przetwarzanie zdjęcia"
+msgstr "przetwarzanie obrazu"
 
 #: ../build/bin/preferences_gen.h:5872
 msgid "always use LittleCMS 2 to apply output color profile"
@@ -1790,19 +1794,21 @@ msgstr "zabezpieczenia"
 
 #: ../build/bin/preferences_gen.h:6708
 msgid "ask before removing images from the library"
-msgstr "pytaj przed usuwaniem zdjęć z biblioteki"
+msgstr "zapytaj przed usuwaniem obrazów z biblioteki"
 
 #: ../build/bin/preferences_gen.h:6721
 msgid "always ask the user before removing image information from the library"
-msgstr "zawsze pytaj przed usunięciem zdjęć z biblioteki"
+msgstr ""
+"zawsze pytaj użytkownika przed usunięciem informacji o obrazie z biblioteki"
 
 #: ../build/bin/preferences_gen.h:6742
 msgid "ask before deleting images from disk"
-msgstr "pytaj przed usuwaniem zdjęć z dysku"
+msgstr "zapytaj przed usunięciem pliku graficznego z dysku"
 
 #: ../build/bin/preferences_gen.h:6755
 msgid "always ask the user before any image file is deleted"
-msgstr "zawsze pytaj przed usuwaniem zdjęć"
+msgstr ""
+"zawsze pytaj użytkownika przed usunięciem jakiegokolwiek pliku graficznego"
 
 #: ../build/bin/preferences_gen.h:6776
 msgid "ask before discarding history stack"
@@ -1814,7 +1820,7 @@ msgstr "zawsze pytaj przed porzucaniem historii edycji"
 
 #: ../build/bin/preferences_gen.h:6810
 msgid "try to use trash when deleting images"
-msgstr "próbuj korzystać z kosza przy usuwaniu zdjęć"
+msgstr "spróbuj używać kosza podczas usuwania plików graficznych"
 
 #: ../build/bin/preferences_gen.h:6823
 msgid ""
@@ -1826,19 +1832,25 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6844
 msgid "ask before moving images from film roll folder"
-msgstr "pytaj przed przenoszeniem zdjęć z katalogu rolki filmu"
+msgstr ""
+"zapytaj przed przeniesieniem plików graficznych z folderu rolki filmowej."
 
 #: ../build/bin/preferences_gen.h:6857
 msgid "always ask the user before any image file is moved."
-msgstr "zawsze pytaj przed przenoszeniem zdjęć."
+msgstr ""
+"zawsze pytaj użytkownika przed przeniesieniem jakiegokolwiek pliku "
+"graficznego"
 
 #: ../build/bin/preferences_gen.h:6878
 msgid "ask before copying images to new film roll folder"
-msgstr "pytaj przed kopiowaniem zdjęć do nowego katalogu rolki filmu"
+msgstr ""
+"zapytaj przed skopiowaniem plików graficznych do nowego folderu rolki "
+"filmowej"
 
 #: ../build/bin/preferences_gen.h:6891
 msgid "always ask the user before any image file is copied."
-msgstr "zawsze pytaj przed kopiowaniem zdjęć."
+msgstr ""
+"zawsze pytaj użytkownika przed skopiowaniem jakiegokolwiek pliku graficznego."
 
 #: ../build/bin/preferences_gen.h:6912
 msgid "ask before removing empty folders"
@@ -1849,8 +1861,8 @@ msgid ""
 "always ask the user before removing any empty folder. this can happen after "
 "moving or deleting images."
 msgstr ""
-"zawsze pytaj przed usuwaniem pustego foldera. może to nastąpić po "
-"przeniesieniu lub usunięciu zdjęć."
+"zawsze pytaj użytkownika przed usunięciem jakiegokolwiek pustego folderu. "
+"może to wystąpić po przeniesieniu lub usunięciu plików graficznych."
 
 #: ../build/bin/preferences_gen.h:6946
 msgid "ask before deleting a tag"
@@ -1901,8 +1913,8 @@ msgid ""
 "this external program is used to play audio files some cameras record to "
 "keep notes for images"
 msgstr ""
-"ten zewnętrzny program będzie używany do odtwarzania plików audio, które "
-"niektóre aparaty nagrywają, aby przechowywać notatki do zdjęć"
+"ten zewnętrzny program służy do odtwarzania plików audio, które niektóre "
+"aparaty nagrywają, aby przechowywać notatki do zdjęć"
 
 #: ../build/bin/preferences_gen.h:7180
 msgid "storage"
@@ -2254,8 +2266,8 @@ msgid ""
 "visually assigned to those specific instances\n"
 "otherwise shortcuts will always be assigned to the preferred instance"
 msgstr ""
-"jeśli do zdjęcia przypisane jest kilka instancji, pozwala to na przypisanie "
-"skrótu do tych określonych instancji\n"
+"jeśli do obrazu przypisanych jest kilka instancji, ta opcja pozwala na "
+"wizualne przypisanie skrótów do konkretnych instancji\n"
 "w przeciwnym razie skróty zawsze będą przypisywane do preferowanej instancji"
 
 #: ../build/bin/preferences_gen.h:8076
@@ -2264,15 +2276,15 @@ msgstr "mapa / geolokacja"
 
 #: ../build/bin/preferences_gen.h:8095
 msgid "pretty print the image location"
-msgstr "pokazuj lokalizację zdjęcia w czytelniejszy sposób"
+msgstr "pokazuj lokalizację pliku graficznego w czytelniejszy sposób"
 
 #: ../build/bin/preferences_gen.h:8108
 msgid ""
 "show a more readable representation of the location in the image information "
 "module"
 msgstr ""
-"wyświetlaj czytelniejszą reprezentację lokalizacji w module informacyjnym "
-"zdjęcia"
+"wyświetlaj czytelniejszą reprezentację lokalizacji w module informacji o "
+"obrazie"
 
 #: ../build/bin/preferences_gen.h:8117
 msgid "slideshow view"
@@ -2280,7 +2292,7 @@ msgstr "pokaz slajdów"
 
 #: ../build/bin/preferences_gen.h:8136
 msgid "waiting time between each image in slideshow"
-msgstr "czas oczekiwania pomiędzy zdjęciami w pokazie slajdów"
+msgstr "czas oczekiwania pomiędzy obrazami w pokazie slajdów"
 
 #: ../build/bin/preferences_gen.h:8196
 msgid "do not set the 'uncategorized' entry for tags"
@@ -5393,19 +5405,19 @@ msgstr "Wirtualny stół podświetlany wyświetlający kolekcję"
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:6
 msgid "Virtual dark room with an opened image"
-msgstr "Wirtualna ciemnia z otwartym zdjęciem"
+msgstr "Wirtualna ciemnia z otwartym obrazem"
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:7
 msgid "Virtual dark room, sharpening an image"
-msgstr "Wirtualna ciemnia, wyostrzanie zdjęcia"
+msgstr "Wirtualna ciemnia, wyostrzanie obrazu"
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:8
 msgid "Show images on a map"
-msgstr "Pokaż zdjęcia na mapie"
+msgstr "Pokaż obrazy na mapie"
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:9
 msgid "Print your images"
-msgstr "Drukuj swoje zdjęcia"
+msgstr "Drukuj swoje obrazy"
 
 #: ../src/bauhaus/bauhaus.c:881 ../src/bauhaus/bauhaus.c:3956
 #: ../src/iop/colorequal.c:3075
@@ -5606,7 +5618,7 @@ msgstr "błąd: nie można otworzyć pliku %s"
 #: ../src/cli/main.c:589
 #, c-format
 msgid "no images to export, aborting\n"
-msgstr "nie wybrano zdjęć do eksportu, przerywam\n"
+msgstr "brak obrazów do eksportu, anulowanie\n"
 
 #: ../src/cli/main.c:606
 #, c-format
@@ -5722,11 +5734,11 @@ msgstr "tag"
 
 #: ../src/common/collection.c:605
 msgid "capture date"
-msgstr "czas zdjęcia"
+msgstr "data zrobienia zdjęcia"
 
 #: ../src/common/collection.c:607 ../src/libs/filtering.c:61
 msgid "capture time"
-msgstr "czas zdjęcia"
+msgstr "czas zrobienia zdjęcia"
 
 #: ../src/common/collection.c:609 ../src/libs/filtering.c:62
 msgid "import time"
@@ -6320,7 +6332,7 @@ msgstr "HLG P3"
 #: ../src/common/cups_print.c:421
 #, c-format
 msgid "file `%s' to print not found for image %d on `%s'"
-msgstr "plik „%s” do wydruku nie znaleziony dla zdjęcia %d na „%s”"
+msgstr "plik `%s' do wydruku nie został znaleziony dla obrazu %d na `%s'"
 
 #: ../src/common/cups_print.c:440
 msgid "failed to create temporary file for printing options"
@@ -6370,7 +6382,7 @@ msgstr "błąd przy wczytywaniu pliku „%s”"
 #. initialize the database
 #: ../src/common/darktable.c:1518
 msgid "opening image library"
-msgstr "otwieranie biblioteki zdjęć"
+msgstr "otwieranie biblioteki obrazów"
 
 #: ../src/common/darktable.c:1531
 msgid "forwarding image(s) to running instance"
@@ -6426,7 +6438,7 @@ msgstr "inicjalizacja Lua"
 
 #: ../src/common/darktable.c:1860
 msgid "importing image"
-msgstr "importowanie zdjęcia"
+msgstr "importowanie obrazu"
 
 #: ../src/common/darktable.c:1879
 msgid "configuration information"
@@ -6908,43 +6920,43 @@ msgstr "nie udało się przetworzyć pliku GPX"
 
 #: ../src/common/history.c:919
 msgid "you need to copy history from an image before you paste it onto another"
-msgstr "przed wklejeniem historii do zdjęcia trzeba ją skopiować z innego"
+msgstr "musisz skopiować historię z obrazu, zanim wkleisz ją na inny"
 
 #: ../src/common/image.c:333
 msgid "orphaned image"
-msgstr "osierocone zdjęcie"
+msgstr "osierocony obraz"
 
 #: ../src/common/image.c:659
 #, c-format
 msgid "geo-location undone for %d image"
 msgid_plural "geo-location undone for %d images"
-msgstr[0] "geolokacja cofnięta dla %d obrazu"
+msgstr[0] "geolokalizacja cofnięta dla %d obrazu"
 msgstr[1] "geolokalizacja cofnięta dla %d obrazów"
-msgstr[2] "geolokalizacja wycofana z %d obrazów"
+msgstr[2] "geolokalizacja cofnięta dla %d obrazów"
 
 #: ../src/common/image.c:661
 #, c-format
 msgid "geo-location re-applied to %d image"
 msgid_plural "geo-location re-applied to %d images"
-msgstr[0] "geolokacja ponownie zaaplikowana do %d obrazu"
-msgstr[1] "geolokacja ponownie zaaplikowana do %d obrazów"
-msgstr[2] "geolokacja zaaplikowana do %d obrazów"
+msgstr[0] "geolokalizacja ponownie zaaplikowana do %d obrazu"
+msgstr[1] "geolokalizacja ponownie zaaplikowana do %d obrazów"
+msgstr[2] "geolokalizacja zaaplikowana do %d obrazów"
 
 #: ../src/common/image.c:683
 #, c-format
 msgid "date/time undone for %d image"
 msgid_plural "date/time undone for %d images"
-msgstr[0] "przesunięcie czasu wycofane z %d zdjęcia"
-msgstr[1] "przesunięcie czasu wycofane z %d zdjęć"
-msgstr[2] "przesunięcie czasu wycofane z %d zdjęć"
+msgstr[0] "data/godzina cofnięta dla %d obrazu"
+msgstr[1] "data/godzina cofnięta dla %d obrazów"
+msgstr[2] "data/godzina cofnięta dla %d obrazów"
 
 #: ../src/common/image.c:685
 #, c-format
 msgid "date/time re-applied to %d image"
 msgid_plural "date/time re-applied to %d images"
-msgstr[0] "dodano ponownie przesunięcie czasu do %d zdjęcia"
-msgstr[1] "dodano ponownie przesunięcie czasu do %d zdjęć"
-msgstr[2] "dodane przesunięcie czasu do %d zdjęć"
+msgstr[0] "data/godzina ponownie zaaplikowana do %d obrazu"
+msgstr[1] "data/godzina ponownie zaaplikowana do %d obrazów"
+msgstr[2] "data/godzina ponownie zaaplikowana do %d obrazów"
 
 #: ../src/common/image.c:2332
 #, c-format
@@ -7206,7 +7218,7 @@ msgstr "zachowana nazwa pliku"
 #: ../src/common/mipmap_cache.c:1307 ../src/imageio/imageio.c:1070
 #, c-format
 msgid "image `%s' is not available!"
-msgstr "zdjęcie „%s” jest niedostępny!"
+msgstr "obraz `%s' jest niedostępny!"
 
 #: ../src/common/mipmap_cache.c:1310 ../src/imageio/imageio.c:1078
 #, c-format
@@ -7329,34 +7341,34 @@ msgstr "GNOME Keyring nie jest już obsługiwany. skonfiguruj inny"
 #, c-format
 msgid "rejecting %d image"
 msgid_plural "rejecting %d images"
-msgstr[0] "odrzucanie %d zdjęcia"
-msgstr[1] "odrzucanie %d zdjęć"
-msgstr[2] "odrzucanie %d zdjęć"
+msgstr[0] "odrzucanie %d obrazu"
+msgstr[1] "odrzucanie %d obrazów"
+msgstr[2] "odrzucanie %d obrazów"
 
 #: ../src/common/ratings.c:143
 #, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
-msgstr[0] "dodawanie oceny %d dla %d zdjęcia"
-msgstr[1] "dodawanie oceny %d dla %d zdjęć"
-msgstr[2] "dodawanie oceny %d dla %d zdjęć"
+msgstr[0] "dodawanie oceny %d dla %d obrazu"
+msgstr[1] "dodawanie oceny %d dla %d obrazów"
+msgstr[2] "dodawanie oceny %d dla %d obrazów"
 
 #: ../src/common/ratings.c:232
 msgid "no images selected to apply rating"
-msgstr "nie wybrano zdjęć, aby dodać oceny"
+msgstr "nie wybrano żadnych obrazów do nadania oceny"
 
 #: ../src/common/ratings.c:289 ../src/libs/metadata_view.c:370
 msgid "image rejected"
-msgstr "zdjęcie odrzucone"
+msgstr "obraz odrzucony"
 
 #: ../src/common/ratings.c:291
 msgid "image rated to 0 star"
-msgstr "zdjęcie ma 0 gwiazdek"
+msgstr "obraz oceniony na 0 gwiazdek"
 
 #: ../src/common/ratings.c:293
 #, c-format
 msgid "image rated to %s"
-msgstr "zdjęcie ocenione na %s"
+msgstr "obraz oceniony na %s"
 
 #: ../src/common/ratings.c:322
 #: ../src/external/lua-scripts/tools/executable_manager.lua:220
@@ -7417,7 +7429,7 @@ msgstr "utworzenie stylu o nazwie „%s” zakończone powodzeniem"
 
 #: ../src/common/styles.c:658 ../src/dtgtk/culling.c:1056
 msgid "no image selected!"
-msgstr "nie wybrano zdjęć!"
+msgstr "nie wybrano żadnych obrazów!"
 
 #: ../src/common/styles.c:739
 #, c-format
@@ -7427,7 +7439,7 @@ msgstr "moduł „%s” niedopasowanie wersji: %d != %d"
 #: ../src/common/styles.c:1025
 #, c-format
 msgid "applied style `%s' on current image"
-msgstr "zastosowano styl „%s” na obecnym zdjęciu"
+msgstr "zastosowano styl `%s' na obecnym obrazie"
 
 #: ../src/common/styles.c:1285
 #, c-format
@@ -7870,7 +7882,7 @@ msgstr[2] "%d/%d zaimportowano do %s"
 
 #: ../src/control/jobs/camera_jobs.c:331
 msgid "starting to import images from camera"
-msgstr "rozpoczęcie importu zdjęć z aparatu"
+msgstr "rozpoczynanie importu zdjęć z aparatu"
 
 #: ../src/control/jobs/camera_jobs.c:336
 #, c-format
@@ -7908,15 +7920,15 @@ msgstr "bracketing ekspozycji działa tylko na zdjęciach raw."
 
 #: ../src/control/jobs/control_jobs.c:514
 msgid "images have to be of same size and orientation!"
-msgstr "zdjęcia muszą być takiego samego rozmiaru i orientacji!"
+msgstr "obrazy muszą mieć ten sam rozmiar i orientację!"
 
 #: ../src/control/jobs/control_jobs.c:608
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
-msgstr[0] "łączenie %d zdjęcia"
-msgstr[1] "łączenie %d zdjęć"
-msgstr[2] "łączenie %d zdjęć"
+msgstr[0] "łączenie %d obrazu"
+msgstr[1] "łączenie %d obrazów"
+msgstr[2] "łączenie %d obrazów"
 
 #: ../src/control/jobs/control_jobs.c:682
 #, c-format
@@ -7927,41 +7939,41 @@ msgstr "zapisano połączony HDR „%s”"
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
-msgstr[0] "duplikowanie %d zdjęcia"
-msgstr[1] "duplikowanie %d zdjęć"
-msgstr[2] "duplikowanie %d zdjęć"
+msgstr[0] "duplikowanie %d obrazu"
+msgstr[1] "duplikowanie %d obrazów"
+msgstr[2] "duplikowanie %d obrazów"
 
 #: ../src/control/jobs/control_jobs.c:760
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
-msgstr[0] "odbijanie %d zdjęcia"
-msgstr[1] "odbijanie %d zdjęć"
-msgstr[2] "odbijanie %d zdjęć"
+msgstr[0] "odwracanie %d obrazu"
+msgstr[1] "odwracanie %d obrazów"
+msgstr[2] "odwracanie %d obrazów"
 
 #: ../src/control/jobs/control_jobs.c:795
 #, c-format
 msgid "set %d color image"
 msgid_plural "setting %d color images"
-msgstr[0] "ustaw %d zdjęcie jako kolorowe"
-msgstr[1] "ustaw %d zdjęcia jako kolorowe"
-msgstr[2] "ustaw %d zdjęć jako kolorowe"
+msgstr[0] "ustaw %d obraz jako kolorowy"
+msgstr[1] "ustaw %d obrazy jako kolorowe"
+msgstr[2] "ustaw %d obrazy jako kolorowe"
 
 #: ../src/control/jobs/control_jobs.c:799
 #, c-format
 msgid "set %d monochrome image"
 msgid_plural "setting %d monochrome images"
-msgstr[0] "ustaw %d zdjęcie jako monochromatyczne"
-msgstr[1] "ustaw %d zdjęcia jako monochromatyczne"
-msgstr[2] "ustaw %d zdjęć jako monochromatyczne"
+msgstr[0] "ustaw %d obraz jako monochromatyczny"
+msgstr[1] "ustaw %d obrazy jako monochromatyczne"
+msgstr[2] "ustaw %d obrazy jako monochromatyczne"
 
 #: ../src/control/jobs/control_jobs.c:909
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
-msgstr[0] "usuwanie %d zdjęcia"
-msgstr[1] "usuwanie %d zdjęć"
-msgstr[2] "usuwanie %d zdjęć"
+msgstr[0] "usuwanie %d obrazu"
+msgstr[1] "usuwanie %d obrazów"
+msgstr[2] "usuwanie %d obrazów"
 
 #: ../src/control/jobs/control_jobs.c:954
 #, c-format
@@ -8027,17 +8039,17 @@ msgstr "błąd kasowania"
 #, c-format
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
-msgstr[0] "przenoszenie do kosza %d zdjęcia"
-msgstr[1] "przenoszenie do kosza %d zdjęć"
-msgstr[2] "przenoszenie do kosza %d zdjęć"
+msgstr[0] "przenoszenie do kosza %d pliku graficznego"
+msgstr[1] "przenoszenie do kosza %d plików graficznych"
+msgstr[2] "przenoszenie do kosza %d plików graficznych"
 
 #: ../src/control/jobs/control_jobs.c:1228
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
-msgstr[0] "usuwanie %d zdjęcia"
-msgstr[1] "usuwanie %d zdjęć"
-msgstr[2] "usuwanie %d zdjęć"
+msgstr[0] "usuwanie %d obrazu"
+msgstr[1] "usuwanie %d obrazów"
+msgstr[2] "usuwanie %d obrazów"
 
 #: ../src/control/jobs/control_jobs.c:1262
 #, c-format
@@ -8051,61 +8063,61 @@ msgstr[2] "nie można skasować '%s' używanych jako nakładki w %d"
 #, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
-msgstr[0] "zastosowano dopasowaną lokalizację GPX dla %d zdjęcia"
-msgstr[1] "zastosowano dopasowaną lokalizację GPX dla %d zdjęć"
-msgstr[2] "zastosowano dopasowaną lokalizację GPX dla %d zdjęć"
+msgstr[0] "zastosowano dopasowaną lokalizację GPX dla %d obrazu"
+msgstr[1] "zastosowano dopasowaną lokalizację GPX dla %d obrazów"
+msgstr[2] "zastosowano dopasowaną lokalizację GPX dla %d obrazów"
 
 #: ../src/control/jobs/control_jobs.c:1448
 #, c-format
 msgid "moving %d image"
-msgstr "przenoszenie %d zdjęcia"
+msgstr "przenoszenie %d pliku graficznego"
 
 #: ../src/control/jobs/control_jobs.c:1449
 #, c-format
 msgid "moving %d images"
-msgstr "przenoszenie %d zdjęć"
+msgstr "przenoszenie %d plików graficznych"
 
 #: ../src/control/jobs/control_jobs.c:1455
 #, c-format
 msgid "copying %d image"
-msgstr "kopiowanie %d zdjęcia"
+msgstr "kopiowanie %d pliku graficznego"
 
 #: ../src/control/jobs/control_jobs.c:1456
 #, c-format
 msgid "copying %d images"
-msgstr "kopiowanie %d zdjęć"
+msgstr "kopiowanie %d plików graficznych"
 
 #: ../src/control/jobs/control_jobs.c:1471
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
-msgstr[0] "tworzenie lokalnej kopii %d zdjęcia"
-msgstr[1] "tworzenie lokalnej kopii %d zdjęć"
-msgstr[2] "tworzenie lokalnej kopii %d zdjęć"
+msgstr[0] "tworzenie lokalnej kopii %d pliku graficznego"
+msgstr[1] "tworzenie lokalnej kopii %d plików graficznych"
+msgstr[2] "tworzenie lokalnej kopii %d plików graficznych"
 
 #: ../src/control/jobs/control_jobs.c:1475
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
-msgstr[0] "usuwanie lokalnej kopii %d zdjęcia"
-msgstr[1] "usuwanie lokalnej kopii %d zdjęć"
-msgstr[2] "usuwanie lokalnej kopii %d zdjęć"
+msgstr[0] "usuwanie lokalnej kopii %d pliku graficznego"
+msgstr[1] "usuwanie lokalnej kopii %d plików graficznych"
+msgstr[2] "usuwanie lokalnej kopii %d plików graficznych"
 
 #: ../src/control/jobs/control_jobs.c:1524
 #, c-format
 msgid "refreshing info for %d image"
 msgid_plural "refreshing info for %d images"
-msgstr[0] "przenoszenie do kosza %d zdjęcia"
-msgstr[1] "przenoszenie do kosza %d zdjęć"
-msgstr[2] "przenoszenie do kosza %d zdjęć"
+msgstr[0] "przenoszenie do kosza %d pliku graficznego"
+msgstr[1] "przenoszenie do kosza %d plików graficznych"
+msgstr[2] "przenoszenie do kosza %d plików graficznych"
 
 #: ../src/control/jobs/control_jobs.c:1591
 #, c-format
 msgid "pasting history to %d image"
 msgid_plural "pasting history to %d images"
-msgstr[0] "wklejanie historii do %d zdjęcia"
-msgstr[1] "wklejanie historii do %d zdjęć"
-msgstr[2] "wklejanie historii do %d zdjęć"
+msgstr[0] "wklejanie historii do %d obrazu"
+msgstr[1] "wklejanie historii do %d obrazów"
+msgstr[2] "wklejanie historii do %d obrazów"
 
 #: ../src/control/jobs/control_jobs.c:1615
 msgid "skipped pasting history into image being edited"
@@ -8115,9 +8127,9 @@ msgstr "pominięto wklejanie historii do edytowanego obrazu"
 #, c-format
 msgid "compressing history for %d image"
 msgid_plural "compressing history for %d images"
-msgstr[0] "kompresowanie historii dla %d zdjęcia"
-msgstr[1] "kompresowanie historii dla %d zdjęć"
-msgstr[2] "kompresowanie historii dla %d zdjęć"
+msgstr[0] "kompresowanie historii dla %d obrazu"
+msgstr[1] "kompresowanie historii dla %d obrazów"
+msgstr[2] "kompresowanie historii dla %d obrazów"
 
 #: ../src/control/jobs/control_jobs.c:1668
 msgid "skipped compressing history for image being edited"
@@ -8135,9 +8147,9 @@ msgstr[2] "brak kompresji historii %d obrazów"
 #, c-format
 msgid "discarding history for %d image"
 msgid_plural "discarding history for %d images"
-msgstr[0] "porzucanie historii dla %d zdjęcia"
-msgstr[1] "porzucanie historii dla %d zdjęć"
-msgstr[2] "porzucanie historii dla %d zdjęć"
+msgstr[0] "porzucanie historii dla %d obrazu"
+msgstr[1] "porzucanie historii dla %d obrazów"
+msgstr[2] "porzucanie historii dla %d obrazów"
 
 #: ../src/control/jobs/control_jobs.c:1705
 msgid "skipped discarding history for image being edited"
@@ -8147,21 +8159,21 @@ msgstr "pominięto porzucanie historii dla edytowanego obrazu"
 #, c-format
 msgid "applying style(s) for %d image"
 msgid_plural "applying style(s) for %d images"
-msgstr[0] "stosowanie stylu/styli dla %d zdjęcia"
-msgstr[1] "stosowanie stylu/styli dla %d zdjęć"
-msgstr[2] "stosowanie stylu/styli dla %d zdjęć"
+msgstr[0] "stosowanie stylu/styli dla %d obrazu"
+msgstr[1] "stosowanie stylu/styli dla %d obrazów"
+msgstr[2] "stosowanie stylu/styli dla %d obrazów"
 
 #: ../src/control/jobs/control_jobs.c:1830
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
-msgstr[0] "eksportowanie %d zdjęcia..."
-msgstr[1] "eksportowanie %d zdjęć..."
-msgstr[2] "eksportowanie %d zdjęć..."
+msgstr[0] "eksportowanie %d obrazu..."
+msgstr[1] "eksportowanie %d obrazów..."
+msgstr[2] "eksportowanie %d obrazów..."
 
 #: ../src/control/jobs/control_jobs.c:1832
 msgid "no image to export"
-msgstr "nie wybrano zdjęć do eksportu"
+msgstr "brak obrazów do eksportu"
 
 #: ../src/control/jobs/control_jobs.c:1882
 #, c-format
@@ -8172,35 +8184,35 @@ msgstr "eksportowanie %d / %d do %s"
 #: ../src/views/print.c:331
 #, c-format
 msgid "image `%s' is currently unavailable"
-msgstr "zdjęcie „%s” jest obecnie niedostępny"
+msgstr "plik graficzny `%s' jest obecnie niedostępny"
 
 #: ../src/control/jobs/control_jobs.c:2005
 msgid "merge HDR image"
-msgstr "połącz zdjęcie HDR"
+msgstr "scal obraz HDR"
 
 #: ../src/control/jobs/control_jobs.c:2023
 msgid "duplicate images"
-msgstr "zduplikuj zdjęcie"
+msgstr "zduplikuj obrazy"
 
 #: ../src/control/jobs/control_jobs.c:2033
 msgid "flip images"
-msgstr "odbij zdjęcia"
+msgstr "odwróć obrazy"
 
 #: ../src/control/jobs/control_jobs.c:2042
 msgid "set monochrome images"
-msgstr "oznacz obraz jako monochromatyczny"
+msgstr "ustaw obrazy jako monochromatyczne"
 
 #: ../src/control/jobs/control_jobs.c:2050
 msgid "remove images"
-msgstr "usuń zdjęcia"
+msgstr "usuń obrazy"
 
 #: ../src/control/jobs/control_jobs.c:2063
 msgid "remove image?"
-msgstr "usunąć zdjęcie?"
+msgstr "usunąć obraz?"
 
 #: ../src/control/jobs/control_jobs.c:2063
 msgid "remove images?"
-msgstr "usunąć zdjęcia?"
+msgstr "usunąć obrazy?"
 
 #: ../src/control/jobs/control_jobs.c:2064
 #, c-format
@@ -8211,29 +8223,29 @@ msgid_plural ""
 "do you really want to remove %d images from darktable\n"
 "(without deleting files on disk)?"
 msgstr[0] ""
-"na pewno chcesz usunąć %d wybrane zdjęcie z darktable\n"
-"(bez usuwania z dysku)?"
+"na pewno chcesz usunąć %d obraz z darktable\n"
+"(bez usuwania pliku na dysku)?"
 msgstr[1] ""
-"na pewno chcesz usunąć %d wybrane zdjęcia z darktable\n"
-"(bez usuwania z dysku)?"
+"na pewno chcesz usunąć %d obrazy z darktable\n"
+"(bez usuwania pliku na dysku)?"
 msgstr[2] ""
-"na pewno chcesz usunąć %d wybranych zdjęć z darktable\n"
-"(bez usuwania z dysku)?"
+"na pewno chcesz usunąć %d obrazy z darktable\n"
+"(bez usuwania pliku na dysku)?"
 
 #. first get all selected images, to avoid the set changing during ui interaction
 #: ../src/control/jobs/control_jobs.c:2080
 #: ../src/control/jobs/control_jobs.c:2113
 msgid "delete images"
-msgstr "kasować zdjęć"
+msgstr "usuń pliki graficzne"
 
 #: ../src/control/jobs/control_jobs.c:2096
 #: ../src/control/jobs/control_jobs.c:2126
 msgid "delete image?"
-msgstr "skasować zdjęcia?"
+msgstr "usunąć plik graficzny?"
 
 #: ../src/control/jobs/control_jobs.c:2096
 msgid "delete images?"
-msgstr "skasować zdjęcia?"
+msgstr "usunąć pliki graficzne?"
 
 #: ../src/control/jobs/control_jobs.c:2097
 #, c-format
@@ -8244,38 +8256,38 @@ msgid_plural ""
 "do you really want to physically delete %d images\n"
 "(using trash if possible)?"
 msgstr[0] ""
-"czy na pewno chcesz skasować %d wybrane zdjęcie z dysku?\n"
-"(użyję kosza, jeśli możliwe)"
+"czy na pewno chcesz fizycznie usunąć %d plik graficzny z dysku?\n"
+"(używając kosza, jeśli to możliwe)"
 msgstr[1] ""
-"czy na pewno chcesz skasować %d wybrane zdjęcia z dysku?\n"
-"(użyję kosza, jeśli możliwe)"
+"czy na pewno chcesz fizycznie usunąć %d pliki graficzne z dysku?\n"
+"(używając kosza, jeśli to możliwe)"
 msgstr[2] ""
-"czy na pewno chcesz skasować %d wybranych zdjęć z dysku?\n"
-"(użyję kosza, jeśli możliwe)"
+"czy na pewno chcesz fizycznie usunąć %d plików graficznych z dysku?\n"
+"(używając kosza, jeśli to możliwe)"
 
 #: ../src/control/jobs/control_jobs.c:2099
 #, c-format
 msgid "do you really want to physically delete %d image from disk?"
 msgid_plural "do you really want to physically delete %d images from disk?"
-msgstr[0] "czy na pewno chcesz skasować %d wybrane zdjęcie z dysku?"
-msgstr[1] "czy na pewno chcesz skasować %d wybrane zdjęcia z dysku?"
-msgstr[2] "czy na pewno chcesz skasować %d wybranych zdjęć z dysku?"
+msgstr[0] "czy na pewno chcesz fizycznie usunąć %d plik graficzny z dysku?"
+msgstr[1] "czy na pewno chcesz fizycznie usunąć %d pliki graficzne z dysku?"
+msgstr[2] "czy na pewno chcesz fizycznie usunąć %d plików graficznych z dysku?"
 
 #: ../src/control/jobs/control_jobs.c:2127
 msgid ""
 "do you really want to physically delete selected image (using trash if "
 "possible)?"
 msgstr ""
-"czy na pewno chcesz skasować wybrane zdjęcie (o ile możliwe – z użyciem "
-"kosza)?"
+"czy na pewno chcesz fizycznie usunąć %d wybrany plik graficzny z dysku "
+"(używając kosza, jeśli to możliwe)?"
 
 #: ../src/control/jobs/control_jobs.c:2128
 msgid "do you really want to physically delete selected image from disk?"
-msgstr "czy na pewno chcesz skasować wybrane zdjęcia?"
+msgstr "czy na pewno chcesz fizycznie usunąć wybrane pliki graficzne z dysku?"
 
 #: ../src/control/jobs/control_jobs.c:2144
 msgid "move images"
-msgstr "przenoszenie zdjęć"
+msgstr "przenoszenie plików graficznych"
 
 #: ../src/control/jobs/control_jobs.c:2156
 #: ../src/control/jobs/control_jobs.c:2213
@@ -8285,9 +8297,9 @@ msgstr "_wybierz jako cel"
 #: ../src/control/jobs/control_jobs.c:2176
 msgid "move image?"
 msgid_plural "move images?"
-msgstr[0] "przenieść zdjęcie?"
-msgstr[1] "przenieść zdjęcia?"
-msgstr[2] "przenieść zdjęcia?"
+msgstr[0] "przenieść plik graficzny?"
+msgstr[1] "przenieść pliki graficzne?"
+msgstr[2] "przenieść plików graficznych?"
 
 #: ../src/control/jobs/control_jobs.c:2177
 #, c-format
@@ -8298,38 +8310,39 @@ msgid_plural ""
 "do you really want to physically move %d images to %s?\n"
 "(all duplicates will be moved along)"
 msgstr[0] ""
-"czy na pewno fizycznie przenieść %d wybrane zdjęcie do %s?\n"
+"czy na pewno chcesz fizycznie przenieść %d obraz do %s?\n"
 "(wszystkie duplikaty również zostaną przeniesione)"
 msgstr[1] ""
-"czy na pewno fizycznie przenieść %d wybrane zdjęcia do %s?\n"
+"czy na pewno chcesz fizycznie przenieść %d obrazy do %s?\n"
 "(wszystkie duplikaty również zostaną przeniesione)"
 msgstr[2] ""
-"czy na pewno fizycznie przenieść %d wybranych zdjęć do %s?\n"
+"czy na pewno chcesz fizycznie przenieść %d obrazów do %s?\n"
 "(wszystkie duplikaty również zostaną przeniesione)"
 
 #: ../src/control/jobs/control_jobs.c:2200
 msgid "copy images"
-msgstr "kopiowanie zdjęć"
+msgstr "kopiowanie plików graficznych"
 
 #: ../src/control/jobs/control_jobs.c:2236
 msgid "copy image?"
 msgid_plural "copy images?"
-msgstr[0] "skopiować zdjęcie?"
-msgstr[1] "skopiować zdjęcia?"
-msgstr[2] "skopiować zdjęcia?"
+msgstr[0] "skopiować plik graficzny?"
+msgstr[1] "skopiować pliki graficzne?"
+msgstr[2] "skopiować plików graficznych?"
 
 #: ../src/control/jobs/control_jobs.c:2237
 #, c-format
 msgid "do you really want to physically copy %d image to %s?"
 msgid_plural "do you really want to physically copy %d images to %s?"
-msgstr[0] "czy na pewno chcesz fizycznie skopiować %d wybrane zdjęcie do %s?"
-msgstr[1] "czy na pewno chcesz fizycznie skopiować %d wybrane zdjęcia do %s?"
-msgstr[2] "czy na pewno chcesz fizycznie skopiować %d wybranych zdjęć do %s?"
+msgstr[0] "czy na pewno chcesz fizycznie skopiować %d plik graficzny do %s?"
+msgstr[1] "czy na pewno chcesz fizycznie skopiować %d pliki graficzne do %s?"
+msgstr[2] ""
+"czy na pewno chcesz fizycznie skopiować %d plików graficznych do %s?"
 
 #: ../src/control/jobs/control_jobs.c:2256
 #: ../src/control/jobs/control_jobs.c:2266
 msgid "local copy images"
-msgstr "kopia lokalna zdjęć"
+msgstr "kopia lokalna obrazów"
 
 #: ../src/control/jobs/control_jobs.c:2276 ../src/libs/image.c:652
 msgid "refresh EXIF"
@@ -8351,15 +8364,15 @@ msgstr "porzuć historię"
 
 #: ../src/control/jobs/control_jobs.c:2368
 msgid "no images nor styles selected!"
-msgstr "nie wybrano żadnych zdjęć ani stylów!"
+msgstr "nie wybrano żadnych obrazów ani stylów!"
 
 #: ../src/control/jobs/control_jobs.c:2373
 msgid "no styles selected!"
-msgstr "nie wybrano stylów!"
+msgstr "nie wybrano żadnych stylów!"
 
 #: ../src/control/jobs/control_jobs.c:2378
 msgid "no images selected!"
-msgstr "nie wybrano żadnych zdjęć!"
+msgstr "nie wybrano żadnych obrazów!"
 
 #: ../src/control/jobs/control_jobs.c:2388
 msgid "apply style(s)"
@@ -8374,47 +8387,47 @@ msgstr ""
 
 #: ../src/control/jobs/control_jobs.c:2481
 msgid "export images"
-msgstr "eksport zdjęć"
+msgstr "eksport obrazów"
 
 #: ../src/control/jobs/control_jobs.c:2535
 #, c-format
 msgid "adding time offset to %d image"
-msgstr "dodawanie różnicy czasu do %d zdjęcia"
+msgstr "dodawanie różnicy czasu do %d obrazu"
 
 #: ../src/control/jobs/control_jobs.c:2536
 #, c-format
 msgid "setting date/time of %d image"
-msgstr "ustawienie daty/czasu %d zdjęcia"
+msgstr "ustawianie daty/czasu dla %d obrazu"
 
 #: ../src/control/jobs/control_jobs.c:2538
 #, c-format
 msgid "adding time offset to %d images"
-msgstr "dodawanie różnicy czasu do %d zdjęć"
+msgstr "dodawanie różnicy czasu do %d obrazów"
 
 #: ../src/control/jobs/control_jobs.c:2539
 #, c-format
 msgid "setting date/time of %d images"
-msgstr "ustawienie daty/czasu %d zdjęć"
+msgstr "ustawienie daty/czasu dla %d obrazów"
 
 #: ../src/control/jobs/control_jobs.c:2585
 #, c-format
 msgid "added time offset to %d image"
-msgstr "dodane przesunięcie czasu do %d zdjęcia"
+msgstr "dodano przesunięcie czasu do %d obrazu"
 
 #: ../src/control/jobs/control_jobs.c:2586
 #, c-format
 msgid "set date/time of %d image"
-msgstr "ustawienie daty/czasu %d zdjęcia"
+msgstr "ustawiono datę/czas dla %d obrazu"
 
 #: ../src/control/jobs/control_jobs.c:2588
 #, c-format
 msgid "added time offset to %d images"
-msgstr "dodane przesunięcie czasu do %d zdjęć"
+msgstr "dodano przesunięcie czasu do %d obrazów"
 
 #: ../src/control/jobs/control_jobs.c:2589
 #, c-format
 msgid "set date/time of %d images"
-msgstr "ustawienie daty/czasu %d zdjęć"
+msgstr "ustawiono datę/czas %d obrazu"
 
 #: ../src/control/jobs/control_jobs.c:2632
 msgid "time offset"
@@ -8428,29 +8441,29 @@ msgstr "zapisz pliki poboczne"
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
-msgstr[0] "importowanie %d zdjęcia"
-msgstr[1] "importowanie %d zdjęć"
-msgstr[2] "importowanie %d zdjęć"
+msgstr[0] "importowanie %d obrazu"
+msgstr[1] "importowanie %d obrazów"
+msgstr[2] "importowanie %d obrazów"
 
 #: ../src/control/jobs/control_jobs.c:2930
 #, c-format
 msgid "importing %d/%d image"
 msgid_plural "importing %d/%d images"
-msgstr[0] "importowanie %d/%d zdjęcia"
-msgstr[1] "importowanie %d/%d zdjęć"
-msgstr[2] "importowanie %d/%d zdjęć"
+msgstr[0] "importowanie %d/%d obrazu"
+msgstr[1] "importowanie %d/%d obrazów"
+msgstr[2] "importowanie %d/%d obrazów"
 
 #: ../src/control/jobs/control_jobs.c:2939
 #, c-format
 msgid "imported %d image"
 msgid_plural "imported %d images"
-msgstr[0] "zaimportowano %d zdjęcia"
-msgstr[1] "zaimportowano %d zdjęć"
-msgstr[2] "zaimportowano %d zdjęć"
+msgstr[0] "zaimportowano %d obraz"
+msgstr[1] "zaimportowano %d obrazy"
+msgstr[2] "zaimportowano %d obrazów"
 
 #: ../src/control/jobs/film_jobs.c:73 ../src/control/jobs/film_jobs.c:110
 msgid "import images"
-msgstr "import zdjęć"
+msgstr "import obrazów"
 
 #: ../src/control/jobs/film_jobs.c:240
 msgid "no supported images were found to be imported"
@@ -8957,8 +8970,8 @@ msgid ""
 "pick GUI color from image\n"
 "ctrl+click or right-click to select an area"
 msgstr ""
-"pobierz kolor interfejsu ze zdjęcia\n"
-"kliknij z ctrl, lub kliknij prawym przyciskiem, aby zaznaczyć obszar"
+"wybierz kolor interfejsu graficznego użytkownika z obrazu\n"
+"ctrl+kliknij lub kliknij prawym przyciskiem myszy, aby wybrać obszar"
 
 #: ../src/develop/blend_gui.c:2597 ../src/iop/colorzones.c:2650
 #: ../src/iop/rgbcurve.c:1513
@@ -8971,9 +8984,9 @@ msgid ""
 "drag to use the input image\n"
 "ctrl+drag to use the output image"
 msgstr ""
-"wybierz zakres na podstawie obszaru ze zdjęcia\n"
-"kliknij i przeciągnij, żeby użyć wejściowego zdjęcia\n"
-"kliknij i przeciągnij z ctrl, żeby użyć wyjściowego zdjęcia"
+"ustaw zakres na podstawie obszaru z obrazu\n"
+"przeciągnij myszką, aby użyć obrazu wejściowego\n"
+"ctrl+przeciągnij myszką, aby użyć obrazu wyjściowego"
 
 #: ../src/develop/blend_gui.c:2609
 msgid "set range"
@@ -9940,7 +9953,7 @@ msgstr "dotarłeś do końca kolekcji"
 #: ../src/dtgtk/culling.c:415
 #, c-format
 msgid "zooming is limited to %d images"
-msgstr "powiększanie jest ograniczone do %d zdjęć"
+msgstr "powiększanie jest ograniczone do %d obrazów"
 
 #: ../src/dtgtk/range.c:218 ../src/dtgtk/range.c:223
 msgid "invalid"
@@ -10130,7 +10143,7 @@ msgstr ""
 #. and the number of grouped images
 #: ../src/dtgtk/thumbnail.c:191
 msgid "grouped images"
-msgstr "zgrupowane zdjęcia"
+msgstr "zgrupowane obrazy"
 
 #: ../src/dtgtk/thumbnail.c:836 ../src/dtgtk/thumbnail.c:1613
 #: ../src/iop/ashift.c:6065 ../src/iop/ashift.c:6154 ../src/iop/ashift.c:6156
@@ -10145,7 +10158,7 @@ msgstr "tutaj"
 
 #: ../src/dtgtk/thumbtable.c:1250 ../src/views/slideshow.c:427
 msgid "there are no images in this collection"
-msgstr "brak zdjęć w tej kolekcji"
+msgstr "w tej kolekcji nie ma obrazów"
 
 #: ../src/dtgtk/thumbtable.c:1252
 msgid "need help?"
@@ -10153,7 +10166,7 @@ msgstr "potrzebujesz pomocy?"
 
 #: ../src/dtgtk/thumbtable.c:1253
 msgid "if you have not imported any images yet"
-msgstr "jeśli nie zaimportowano jeszcze zdjęć"
+msgstr "jeśli jeszcze nie zaimportowałeś żadnych obrazów"
 
 #: ../src/dtgtk/thumbtable.c:1254
 msgid "click on <b>?</b> then an on-screen item to open manual page"
@@ -10282,11 +10295,11 @@ msgstr "wklej selektywnie"
 
 #: ../src/dtgtk/thumbtable.c:2945
 msgid "duplicate image"
-msgstr "zduplikuj zdjęcie"
+msgstr "zduplikuj obraz"
 
 #: ../src/dtgtk/thumbtable.c:2947
 msgid "duplicate image virgin"
-msgstr "zduplikuj zdjęcie bez obróbki"
+msgstr "zduplikuj obraz bez obróbki"
 
 #: ../src/dtgtk/thumbtable.c:2957 ../src/libs/select.c:154
 msgid "select film roll"
@@ -10588,27 +10601,27 @@ msgstr "wybierz niezmieniane"
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:870
 #: ../src/gui/gtkentry.c:173
 msgid "$(ROLL.NAME) - roll of the input image"
-msgstr "$(ROLL.NAME) - rolka zdjęcia wejściowego"
+msgstr "$(ROLL.NAME) - rolka obrazu wejściowego"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:871
 #: ../src/gui/gtkentry.c:174
 msgid "$(FILE.FOLDER) - folder containing the input image"
-msgstr "$(FILE.FOLDER) - katalog zawierający wejściowe zdjęcie"
+msgstr "$(FILE.FOLDER) - folder zawierający obraz wejściowy"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:872
 #: ../src/gui/gtkentry.c:175
 msgid "$(FILE.NAME) - basename of the input image"
-msgstr "$(FILE.NAME) - nazwa wejściowego zdjęcia (bez rozszerzenia)"
+msgstr "$(FILE.NAME) - nazwa obrazu wejściowego (bez rozszerzenia)"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:873
 #: ../src/gui/gtkentry.c:176
 msgid "$(FILE.EXTENSION) - extension of the input image"
-msgstr "$(FILE.EXTENSION) - rozszerzenie wejściowego zdjęcia"
+msgstr "$(FILE.EXTENSION) - rozszerzenie obrazu wejściowego"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:874
 #: ../src/gui/gtkentry.c:247
 msgid "$(ID) - image ID"
-msgstr "$(ID) – identyfikator zdjęcia"
+msgstr "$(ID) – identyfikator obrazu"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:875
 #: ../src/gui/gtkentry.c:177
@@ -10665,7 +10678,7 @@ msgstr "$(HEIGHT.RAW) – wysokość zdjęcia raw"
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:885
 #: ../src/gui/gtkentry.c:185
 msgid "$(WIDTH.CROP) - image width after crop"
-msgstr "$(WIDTH.CROP) - szerokość zdjęcia po przycięciu"
+msgstr "$(WIDTH.CROP) - szerokość obrazu po przycięciu"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:886
 #: ../src/gui/gtkentry.c:190
@@ -10889,7 +10902,7 @@ msgstr "$(ELEVATION) - elewacja"
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:938
 #: ../src/gui/gtkentry.c:239
 msgid "$(STARS) - star rating as number (-1 for rejected)"
-msgstr "$(STARS) - ocena zdjęcia (-1 dla odrzuconych)"
+msgstr "$(STARS) - ocena gwiazdkowa jako liczba (-1 dla odrzuconych)"
 
 #. _("$(RATING.ICONS) - star/reject rating in icon form"),-- not implemented
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:940
@@ -11226,9 +11239,7 @@ msgstr "kopiuj metadane"
 
 #: ../src/external/lua-scripts/official/copy_paste_metadata.lua:138
 msgid "copy metadata of the first selected image"
-msgstr ""
-"kopiuje metadane\n"
-"pierwszego z wybranych zdjęć"
+msgstr "kopiuje metadane pierwszego z wybranych obrazów"
 
 #: ../src/external/lua-scripts/official/copy_paste_metadata.lua:144
 #: ../src/external/lua-scripts/official/copy_paste_metadata.lua:160
@@ -11237,7 +11248,7 @@ msgstr "wklej metadane"
 
 #: ../src/external/lua-scripts/official/copy_paste_metadata.lua:146
 msgid "paste metadata to the selected images"
-msgstr "wklej metadane do wybranych zdjęć"
+msgstr "wklej metadane do wybranych obrazów"
 
 #.
 #. This file is part of darktable,
@@ -11413,7 +11424,7 @@ msgstr "głębokość"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:158
 msgid "the number of bits per channel of the output image"
-msgstr "ilość bitów na kanał dla zdjęcia wyjściowego"
+msgstr "ilość bitów na kanał dla obrazu wyjściowego"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:166
 msgid "blend colorspace"
@@ -11458,12 +11469,12 @@ msgstr "pomijanie %s..."
 #. bail out if there is nothing to do
 #: ../src/external/lua-scripts/official/enfuse.lua:232
 msgid "no suitable images selected, nothing to do for enfuse"
-msgstr "nie wybrano odpowiednich zdjęć, enfuse nie ma z czym pracować"
+msgstr "nie wybrano odpowiednich obrazów, enfuse nie ma z czym pracować"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:238
 #, lua-format
 msgid "%d image(s) skipped"
-msgstr "pominięto %d zdjęć"
+msgstr "pominięto %d obrazów"
 
 #. call enfuse on the response file
 #. TODO: find something nicer
@@ -11536,7 +11547,7 @@ msgstr "generuj tekst dla obrazu"
 
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:55
 msgid "overlay metadata on the selected image(s)"
-msgstr "nałóż metadane na wybrane zdjęcia"
+msgstr "nałóż metadane na wybrany(e) obraz(y)"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -11627,7 +11638,7 @@ msgstr "wyświetl ścieżkę obrazu w interfejsie użytkownika"
 #. only required for libs since the destroy_method only hides them
 #: ../src/external/lua-scripts/official/image_path_in_ui.lua:66
 msgid "selected images path"
-msgstr "ścieżka wybranych zdjęć"
+msgstr "ścieżka wybranych obrazów"
 
 #.
 #. vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
@@ -11683,7 +11694,7 @@ msgstr "filtr importu"
 
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:60
 msgid "the name of the filter used for importing images"
-msgstr "nazwa filtra użytego do importowania zdjęć"
+msgstr "nazwa filtra użytego do importowania obrazów"
 
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:68
 msgid "import filters are applied after completion of the import dialog"
@@ -11854,7 +11865,7 @@ msgstr "zaznaczenie do PDF"
 
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:53
 msgid "generate a pdf file of selected images"
-msgstr "generuj plik PDF z zaznaczonych zdjęć"
+msgstr "generuj plik PDF z zaznaczonych obrazów"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -12446,7 +12457,9 @@ msgstr "nie można utworzyć katalogu „%s”!\n"
 #: ../src/generate-cache/main.c:83
 #, c-format
 msgid "warning: no images are matching the requested image id range\n"
-msgstr "uwaga: żadne zdjęcia nie spełniają żądanego zakresu id zdjęć\n"
+msgstr ""
+"ostrzeżenie: brak obrazów pasujących do żądanego zakresu identyfikatorów "
+"obrazów\n"
 
 #: ../src/generate-cache/main.c:86
 #, c-format
@@ -13522,11 +13535,11 @@ msgstr "$(JOBCODE) - kod pracy dla importowania"
 
 #: ../src/gui/gtkentry.c:182
 msgid "$(WIDTH.MAX) - maximum image export width"
-msgstr "$(WIDTH.MAX) - największa szerokość eksportowanego zdjęcia"
+msgstr "$(WIDTH.MAX) - maksymalna szerokość eksportowanego obrazu"
 
 #: ../src/gui/gtkentry.c:187
 msgid "$(HEIGHT.MAX) - maximum image export height"
-msgstr "$(HEIGHT.MAX) - największa wysokość eksportowanego zdjęcia"
+msgstr "$(HEIGHT.MAX) - maksymalna wysokość eksportowanego obrazu"
 
 #: ../src/gui/gtkentry.c:199
 msgid "$(HOUR.AMPM) - hour, 12-hour clock"
@@ -13775,7 +13788,7 @@ msgstr "maska"
 
 #: ../src/gui/hist_dialog.c:360
 msgid "can't copy history out of unaltered image"
-msgstr "nie można skopiować historii niezmodyfikowanego zdjęcia"
+msgstr "nie można skopiować historii niezmodyfikowanego obrazu"
 
 #. grid headers
 #: ../src/gui/import_metadata.c:417
@@ -13803,11 +13816,11 @@ msgid ""
 "actions.\n"
 "CAUTION: not selected metadata are cleaned up when XMP file is updated."
 msgstr ""
-"wybrane metadane są importowane ze zdjęcia i nadpisują domyślne wartości.\n"
-" to powoduje również wywołanie akcji 'wyszukuj zaktualizowane pliki XMP'\n"
-" oraz 'wczytaj plik poboczny'\n"
-" UWAGA: niezaznaczone metadane zostaną wyczyszczone gdy plik XMP jest "
-"aktualizowany."
+"wybrane metadane są importowane z obrazu i nadpisują domyślne wartości.\n"
+"to powoduje również wywołanie akcji 'wyszukuj zaktualizowane pliki XMP'\n"
+"oraz 'wczytaj plik poboczny'\n"
+"UWAGA: niezaznaczone metadane zostaną wyczyszczone podczas aktualizacji "
+"pliku XMP."
 
 #. tags
 #: ../src/gui/import_metadata.c:469
@@ -14105,11 +14118,11 @@ msgstr ""
 
 #: ../src/gui/presets.c:611
 msgid "auto apply this preset to matching images"
-msgstr "automatycznie zastosuj to ustawienie do pasujących zdjęć"
+msgstr "automatycznie zastosuj ten preset do pasujących obrazów"
 
 #: ../src/gui/presets.c:615
 msgid "only show this preset for matching images"
-msgstr "wyświetlaj to ustawienie tylko dla pasujących zdjęć"
+msgstr "wyświetlaj ten preset tylko dla pasujących obrazów"
 
 #: ../src/gui/presets.c:617
 msgid ""
@@ -14372,7 +14385,7 @@ msgstr "zatrzymaj"
 
 #: ../src/gui/styles_dialog.c:863
 msgid "can't create style out of unaltered image"
-msgstr "nie można utworzyć stylu na podstawie niezmienianego zdjęcia"
+msgstr "nie można utworzyć stylu na podstawie niezmienianego obrazu"
 
 #: ../src/imageio/format/avif.c:91 ../src/imageio/format/jxl.c:581
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:688
@@ -14418,7 +14431,7 @@ msgstr "skala szarości"
 
 #: ../src/imageio/format/avif.c:933 ../src/imageio/format/tiff.c:927
 msgid "saving as grayscale will reduce the size for black & white images"
-msgstr "zapis w skali szarości zredukuje rozmiar zdjęć czarno-białych"
+msgstr "zapis w skali szarości zredukuje rozmiar czarno-białych obrazów"
 
 #.
 #. * Tiling combo box
@@ -14772,20 +14785,20 @@ msgstr "dpi"
 
 #: ../src/imageio/format/pdf.c:642
 msgid "dpi of the images inside the PDF"
-msgstr "dpi zdjęć wewnątrz PDF"
+msgstr "dpi obrazów wewnątrz PDF"
 
 #. rotate images yes|no
 #: ../src/imageio/format/pdf.c:648
 msgid "rotate images"
-msgstr "obracanie zdjęć"
+msgstr "obracanie obrazów"
 
 #: ../src/imageio/format/pdf.c:649
 msgid ""
 "images can be rotated to match the PDF orientation to waste less space when "
 "printing"
 msgstr ""
-"zdjęcia mogą być obracane, żeby pasować do orientacji pdf, żeby marnować "
-"mniej przestrzeni przy wydruku"
+"obrazy można obracać, aby dopasować je do orientacji PDF i ograniczyć "
+"marnowanie miejsca podczas drukowania"
 
 #. pages all|single images|contact sheet
 #: ../src/imageio/format/pdf.c:658
@@ -14798,7 +14811,7 @@ msgstr "które strony powinny być dodane do pliku PDF"
 
 #: ../src/imageio/format/pdf.c:662
 msgid "single images"
-msgstr "pojedyncze zdjęcia"
+msgstr "pojedyncze obrazy"
 
 #: ../src/imageio/format/pdf.c:662
 msgid "contact sheet"
@@ -14812,11 +14825,11 @@ msgstr "osadź profil ICC"
 
 #: ../src/imageio/format/pdf.c:669
 msgid "images can be tagged with their ICC profile"
-msgstr "zdjęcia mogą być tagowane profilem ICC"
+msgstr "obrazy mogą być tagowane profilem ICC"
 
 #: ../src/imageio/format/pdf.c:688
 msgid "bits per channel of the embedded images"
-msgstr "ilość bitów na kanał osadzonych zdjęć"
+msgstr "ilość bitów na kanał osadzonych obrazów"
 
 #: ../src/imageio/format/pdf.c:694
 msgid ""
@@ -14824,7 +14837,7 @@ msgid ""
 "uncompressed -- fast but big files\n"
 "deflate -- smaller files but slower"
 msgstr ""
-"metoda używana do kompresji zdjęć\n"
+"metoda używana do kompresji obrazów\n"
 "nieskompresowane -- szybkie, ale duże pliki\n"
 "deflate -- mniejsze pliki, ale wolniejsze"
 
@@ -14844,7 +14857,7 @@ msgid ""
 "debug -- only show the outlines and bounding boxes"
 msgstr ""
 "zwykły -- po prostu umieść zdjęcia w pliku PDF\n"
-"szkic -- zdjęcia zastępowane są ramkami\n"
+"szkic -- obrazy zastępowane są ramkami\n"
 "debugowanie -- wyświetlaj tylko zarys i ograniczające ramki"
 
 #: ../src/imageio/format/pdf.c:710 ../src/libs/tools/lighttable.c:325
@@ -14898,10 +14911,10 @@ msgid ""
 "photo: outdoor photograph, with natural lighting\n"
 "graphic: discrete tone image (graph, map-tile etc)"
 msgstr ""
-"podpowiedź rodzaju obrazu dla kodera.\n"
+"wskazówka dotycząca charakterystyki obrazu dla kodera wewnętrznego.\n"
 "obraz: obraz cyfrowy, np. portret, zdjęcie w pomieszczeniu\n"
-"fotografia: zdjęcie na wolnym powietrzu, w naturalnym oświetleniu\n"
-"grafika: obraz zawierający tony dyskretne (wykres, mapka itp.)"
+"zdjęcie: fotografia plenerowa, z naturalnym oświetleniem\n"
+"grafika: obraz z dyskretną tonacją (wykres, kafelek mapy itp.)"
 
 #: ../src/imageio/format/webp.c:442
 msgid "picture"
@@ -15040,8 +15053,8 @@ msgid ""
 "\n"
 "do you really want to continue?"
 msgstr ""
-"zdjęcia zostaną wyeksportowane w trybie z nadpisywaniem, co spowoduje "
-"nadpisanie istniejących plików\n"
+"zamierzasz eksportować w trybie nadpisywania, co spowoduje nadpisanie "
+"istniejących obrazów\n"
 "\n"
 "czy na pewno chcesz kontynuować?"
 
@@ -15061,7 +15074,7 @@ msgstr "nie można uruchomić klienta e-mail"
 
 #: ../src/imageio/storage/email.c:315 ../src/imageio/storage/email.c:405
 msgid "images exported from darktable"
-msgstr "zdjęcia wyeksportowane z darktable"
+msgstr "obrazy wyeksportowane z darktable"
 
 #: ../src/imageio/storage/email.c:384 ../src/imageio/storage/email.c:463
 msgid "could not launch email client!"
@@ -15316,7 +15329,7 @@ msgstr "oczekiwanie na dane - proszę powtórzyć"
 
 #: ../src/iop/ashift.c:3238
 msgid "could not detect structural data in image"
-msgstr "nie udało się wykryć informacji o strukturze na zdjęciu"
+msgstr "nie udało się wykryć danych strukturalnych w obrazie"
 
 #: ../src/iop/ashift.c:3250
 msgid "could not run outlier removal"
@@ -15371,8 +15384,9 @@ msgid ""
 "right-click and drag to define a horizontal or vertical line by drawing on "
 "the image"
 msgstr ""
-"obróć zdjęcie prawym klikiem i przeciągnij, żeby zdefiniować poziomą lub "
-"pionową linię przez rysowanie na zdjęciu"
+"obróć obraz\n"
+"kliknij prawym i przeciągnij, aby zdefiniować linię poziomą lub pionową, "
+"rysując na obrazie."
 
 #: ../src/iop/ashift.c:6089 ../src/iop/ashift.c:6091
 msgid "apply lens shift correction in one direction"
@@ -15380,7 +15394,7 @@ msgstr "zastosuj korektę przesunięcia obiektywu w jednym kierunku"
 
 #: ../src/iop/ashift.c:6093
 msgid "shear the image along one diagonal"
-msgstr "nachyl zdjęcie w kierunku jednej przekątnej"
+msgstr "nachyl obraz w kierunku jednej przekątnej"
 
 #: ../src/iop/ashift.c:6094 ../src/iop/clipping.c:2136
 msgid "automatically crop to avoid black edges"
@@ -15415,7 +15429,7 @@ msgstr ""
 
 #: ../src/iop/ashift.c:6109
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
-msgstr "popraw proporcje zdjęcia przez skalowanie w pionie i poziomie"
+msgstr "dostosuj proporcje obrazu przez skalowanie w pionie i poziomie"
 
 #: ../src/iop/ashift.c:6111
 msgid ""
@@ -15459,10 +15473,10 @@ msgid ""
 "shift+click for an additional detail enhancement\n"
 "ctrl+shift+click for a combination of both methods"
 msgstr ""
-"przeanalizuj strukturę linii na zdjęciu\n"
-"kliknij z ctrl dla dodatkowego wzmocnienia krawędzi\n"
-"kliknij z shift dla dodatkowego wzmocnienia detali\n"
-"kliknij z ctrl+shift dla połączenia obu metod"
+"automatycznie analizuj strukturę linii w obrazie\n"
+"ctrl+kliknij, aby dodać wzmocnienie krawędzi\n"
+"shift+kliknij, aby dodać wzmocnienie detali\n"
+"ctrl+shift+kliknij, aby zastosować kombinację obu metod"
 
 #: ../src/iop/ashift.c:6131
 msgid "manually define perspective rectangle"
@@ -15855,8 +15869,8 @@ msgid ""
 "fuse this image stopped up/down a couple of times with itself, to compress "
 "high dynamic range. expose for the highlights before use."
 msgstr ""
-"połączyć to zdjęcie rozjaśnione/przyciemnione o kilka EV z samym sobą, aby "
-"skompresować wysoką rozpiętość tonalną. naświetl na światła przed użyciem."
+"złóż ten obraz, rozjaśniony/przyciemniony o kilka EV, sam ze sobą, aby "
+"skompresować wysoką rozpiętość tonalną. eksponuj na światła przed użyciem."
 
 #: ../src/iop/basecurve.c:2161
 msgid "how many stops to shift the individual exposures apart"
@@ -15944,7 +15958,7 @@ msgstr "korekcja ożywienia"
 
 #: ../src/iop/basicadj.c:662
 msgid "apply auto exposure based on the entire image"
-msgstr "zastosuj automatyczną ekspozycję w oparciu o całe zdjęcie"
+msgstr "zastosuj automatyczną ekspozycję w oparciu o cały obraz"
 
 #: ../src/iop/basicadj.c:669
 msgid ""
@@ -16185,7 +16199,7 @@ msgstr "granice|powiększ płótno|rozszerz płótno"
 
 #: ../src/iop/borders.c:319
 msgid "add solid borders or margins around the image"
-msgstr "dodaje obramowanie lub margines wokół zdjęcia"
+msgstr "dodaje obramowanie lub margines wokół obrazu"
 
 #: ../src/iop/borders.c:321 ../src/iop/borders.c:323 ../src/iop/lut3d.c:145
 msgid "linear or non-linear, RGB, display-referred"
@@ -16367,7 +16381,7 @@ msgstr "rozmiar linii ramki w procentach najmniejszej szerokości obramowania"
 
 #: ../src/iop/borders.c:1003
 msgid "offset of the frame line beginning on image side"
-msgstr "odległość linii ramki od brzegu zdjęcia"
+msgstr "odległość linii ramki od brzegu obrazu"
 
 #: ../src/iop/borders.c:1022
 msgid "select border color"
@@ -17340,7 +17354,7 @@ msgstr "zmień kadr i skoryguj perspektywę"
 #: ../src/iop/clipping.c:1424 ../src/iop/clipping.c:2139 ../src/iop/crop.c:526
 #: ../src/iop/crop.c:1139
 msgid "original image"
-msgstr "oryginalne zdjęcie"
+msgstr "obraz oryginalny"
 
 #: ../src/iop/clipping.c:1728 ../src/iop/crop.c:835
 msgid "invalid ratio format. it should be \"number:number\""
@@ -17377,8 +17391,7 @@ msgstr "kąt"
 #: ../src/iop/clipping.c:2123
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr ""
-"kliknij prawym z klawiszem shift i przeciągnij na zdjęciu, aby dodać prostą "
-"linię"
+"kliknij prawym i przeciągnij myszką na zdjęciu, aby narysować prostą linię"
 
 #: ../src/iop/clipping.c:2126
 msgid "keystone"
@@ -18341,8 +18354,8 @@ msgid ""
 "pick hue from image and visualize it\n"
 "ctrl+click to select an area"
 msgstr ""
-"pobierz barwę ze zdjęcia i zwizualizuj\n"
-"kliknij z ctrl, aby zaznaczyć obszar"
+"pobierz barwę z obrazu i zwizualizuj\n"
+"ctrl+klik, aby zaznaczyć obszar"
 
 #: ../src/iop/colorequal.c:3090
 msgid "change hue hue-wise"
@@ -18770,10 +18783,10 @@ msgid ""
 "ctrl+drag to create a positive curve\n"
 "shift+drag to create a negative curve"
 msgstr ""
-"utwórz krzywą w oparciu o obszar ze zdjęcia\n"
-"przeciągnij, żeby utworzyć płaską krzywą\n"
-"przeciągnij z ctrl, żeby utworzyć dodatnią krzywą\n"
-"przeciągnij z shift, żeby utworzyć ujemną krzywą"
+"utwórz krzywą w oparciu o obszar z obrazu\n"
+"przeciągnij myszką, aby utworzyć płaską krzywą\n"
+"ctrl+przeciągnij myszką, aby utworzyć dodatnią krzywą\n"
+"shift+przeciągnij myszką, aby utworzyć ujemną krzywą"
 
 #: ../src/iop/colorzones.c:2665 ../src/iop/rgbcurve.c:1528
 msgid "create curve"
@@ -19720,8 +19733,8 @@ msgstr "w którym miejscu histogramu wykonać pomiar. Np. 50% dla mediany"
 msgid ""
 "where to place the exposure level for processed pics, EV below overexposure."
 msgstr ""
-"jaką otrzymać ekspozycję przetworzonego zdjęcia, ilość stopni EV poniżej "
-"prześwietlenia."
+"gdzie ustawić poziom ekspozycji dla przetworzonych zdjęć, ilość stopni EV "
+"poniżej prześwietlenia."
 
 #: ../src/iop/exposure.c:1134
 msgid "computed EC: "
@@ -20465,7 +20478,7 @@ msgstr "obrót|odwrócenie|odbicie"
 
 #: ../src/iop/flip.c:111
 msgid "flip or rotate image by step of 90 degrees"
-msgstr "obróć lub odbij zdjęcie o 90 stopni"
+msgstr "odwróć lub obróć obraz o 90 stopni"
 
 #: ../src/iop/flip.c:475
 msgid "rotate by -90 degrees"
@@ -20665,7 +20678,7 @@ msgstr "usuwanie mgły|usuwanie zamglenia|dym|smog"
 
 #: ../src/iop/hazeremoval.c:112
 msgid "remove fog and atmospheric hazing from images"
-msgstr "usuwa zamglenia ze zdjęć"
+msgstr "usuwa mgłę i zmętnienie z obrazów"
 
 #: ../src/iop/hazeremoval.c:251
 msgid "amount of haze reduction"
@@ -21167,15 +21180,15 @@ msgstr "ustaw poziomy automatycznie"
 
 #: ../src/iop/levels.c:658 ../src/iop/rgblevels.c:1077
 msgid "pick black point from image"
-msgstr "pobierz punkt czerni ze zdjęcia"
+msgstr "pobierz punkt czerni z obrazu"
 
 #: ../src/iop/levels.c:662 ../src/iop/rgblevels.c:1085
 msgid "pick medium gray point from image"
-msgstr "pobierz punkt średniej szarości ze zdjęcia"
+msgstr "pobierz punkt średniej szarości z obrazu"
 
 #: ../src/iop/levels.c:666 ../src/iop/rgblevels.c:1093
 msgid "pick white point from image"
-msgstr "pobierz punkt bieli ze zdjęcia"
+msgstr "pobierz punkt bieli z obrazu"
 
 #: ../src/iop/levels.c:680
 msgid "black percentile"
@@ -21743,7 +21756,7 @@ msgstr "wybierz kolor cieni z palety"
 
 #: ../src/iop/negadoctor.c:926
 msgid "pick shadows color from image"
-msgstr "wybierz kolor cieni ze zdjęcia"
+msgstr "wybierz kolor cieni z obrazu"
 
 #: ../src/iop/negadoctor.c:932
 msgid "shadows red offset"
@@ -22304,7 +22317,7 @@ msgid ""
 "to add a shape select an algorithm and a shape type and click on the image.\n"
 "shapes are added to the current scale"
 msgstr ""
-"aby dodać kształt, wybierz algorytm i typ kształtu i kliknij na zdjęcie.\n"
+"aby dodać kształt, wybierz algorytm i typ kształtu i kliknij na obraz.\n"
 "kształty są dodawane do bieżącej skali"
 
 #: ../src/iop/retouch.c:2449 ../src/iop/retouch.c:2582
@@ -22441,7 +22454,7 @@ msgstr "wybierz kolor wypełniania"
 
 #: ../src/iop/retouch.c:2704
 msgid "pick fill color from image"
-msgstr "pobierz kolor wypełniania ze zdjęcia"
+msgstr "pobierz kolor wypełniania z obrazu"
 
 #: ../src/iop/retouch.c:2705
 msgid "pick fill color"
@@ -22484,7 +22497,7 @@ msgstr "kształty"
 #: ../src/iop/retouch.c:3931 ../src/iop/retouch.c:4901
 #, c-format
 msgid "max scale is %i for this image size"
-msgstr "maksymalna skala dla tego zdjęcia to %i"
+msgstr "maksymalna skala dla tego obrazu to %i"
 
 #: ../src/iop/rgbcurve.c:122
 msgid "rgb curve"
@@ -22829,7 +22842,7 @@ msgstr "zmiękczenie"
 
 #: ../src/iop/soften.c:102
 msgid "create a softened image using the Orton effect"
-msgstr "„zmiękcza” zdjęcie używając efektu Ortona"
+msgstr "„zmiękcza” obraz używając efektu Ortona"
 
 #: ../src/iop/soften.c:351
 msgid "the size of blur"
@@ -23582,7 +23595,7 @@ msgstr ""
 
 #: ../src/iop/vignette.c:1085
 msgid "enable to have the ratio automatically follow the image size"
-msgstr "włącza automatyczne dostosowanie proporcji do rozmiaru zdjęcia"
+msgstr "włącza automatyczne dostosowanie proporcji do rozmiaru obrazu"
 
 #: ../src/iop/vignette.c:1086
 msgid "width-to-height ratio"
@@ -23614,7 +23627,7 @@ msgstr "znak wodny"
 
 #: ../src/iop/watermark.c:413
 msgid "overlay an SVG watermark like a signature on the image"
-msgstr "nakłada znak wodny SVG, np. podpis na zdjęciu"
+msgstr "nakłada znak wodny SVG, np. podpis na obrazie"
 
 #: ../src/iop/watermark.c:1313
 msgid "marker"
@@ -23673,7 +23686,7 @@ msgstr "wybór koloru znaku wodnego"
 
 #: ../src/iop/watermark.c:1361
 msgid "pick color from image"
-msgstr "pobierz kolor ze zdjęcia"
+msgstr "pobierz kolor z obrazu"
 
 #: ../src/iop/watermark.c:1387
 msgid ""
@@ -23871,7 +23884,7 @@ msgid ""
 "define search criteria for images\n"
 "to be displayed or edited"
 msgstr ""
-"zdefiniuj kryteria wyszukiwania dla zdjęć,\n"
+"zdefiniuj kryteria wyszukiwania dla obrazów,\n"
 "które mają być wyświetlane lub edytowane"
 
 #: ../src/libs/collect.c:433
@@ -23920,7 +23933,7 @@ msgid ""
 msgstr ""
 "użyj <, <=, >, >=, <>, =, [;] jako operatorów\n"
 "ocena gwiazdkowa: 0-5\n"
-"zdjęcia odrzucone: -1"
+"obrazy odrzucone: -1"
 
 #: ../src/libs/collect.c:2478
 msgid ""
@@ -24165,7 +24178,7 @@ msgid ""
 msgstr ""
 "wykonaj akcje na historii edycji\n"
 "dla wszystkich\n"
-"aktualnie wybranych zdjęć"
+"aktualnie wybranych obrazów"
 
 #: ../src/libs/copy_history.c:121
 msgid "open sidecar file"
@@ -24178,15 +24191,15 @@ msgstr "błąd przy wczytywaniu pliku „%s”"
 
 #: ../src/libs/copy_history.c:243
 msgid "delete images' history?"
-msgstr "skasować historię zdjęcia?"
+msgstr "skasować historię obrazu?"
 
 #: ../src/libs/copy_history.c:244
 #, c-format
 msgid "do you really want to clear history of %d selected image?"
 msgid_plural "do you really want to clear history of %d selected images?"
-msgstr[0] "czy na pewno wyczyścić historię %d wybranego zdjęcia?"
-msgstr[1] "czy na pewno wyczyścić historię %d wybranych zdjęć?"
-msgstr[2] "czy na pewno wyczyścić historię %d wybranych zdjęć?"
+msgstr[0] "czy na pewno wyczyścić historię %d wybranego obrazu?"
+msgstr[1] "czy na pewno wyczyścić historię %d wybranych obrazów?"
+msgstr[2] "czy na pewno wyczyścić historię %d wybranych obrazów?"
 
 #: ../src/libs/copy_history.c:335
 msgid "selective copy..."
@@ -24202,7 +24215,7 @@ msgid ""
 "first selected image"
 msgstr ""
 "kopiuje całą historię edycji\n"
-"pierwszego z wybranych zdjęć"
+"pierwszego z wybranych obrazów"
 
 #: ../src/libs/copy_history.c:347
 msgid "selective paste..."
@@ -24222,7 +24235,7 @@ msgid ""
 "all selected images"
 msgstr ""
 "wkleja całą historię edycji\n"
-"do wszystkich wybranych zdjęć"
+"do wszystkich wybranych obrazów"
 
 #: ../src/libs/copy_history.c:361
 msgid ""
@@ -24230,7 +24243,7 @@ msgid ""
 "all selected images"
 msgstr ""
 "porzuca historię edycji\n"
-"wszystkich wybranych zdjęć"
+"wszystkich wybranych obrazów"
 
 #: ../src/libs/copy_history.c:366
 msgid ""
@@ -24238,7 +24251,7 @@ msgid ""
 "all selected images"
 msgstr ""
 "porzuca historię edycji\n"
-"wszystkich wybranych zdjęć"
+"wszystkich wybranych obrazów"
 
 #: ../src/libs/copy_history.c:371 ../src/libs/styles.c:865
 msgid "how to handle existing history"
@@ -24258,7 +24271,7 @@ msgid ""
 "and apply it to selected images"
 msgstr ""
 "otwiera poboczny plik XMP\n"
-"i stosuje go do wybranych zdjęć"
+"i stosuje go do wybranych obrazów"
 
 #: ../src/libs/copy_history.c:386
 msgid "write history stack and tags to XMP sidecar files"
@@ -24276,11 +24289,11 @@ msgstr "utwórz/zmień nazwę/usuwaj wiele edycji bieżącego obrazu"
 
 #: ../src/libs/duplicate.c:408
 msgid "create a 'virgin' duplicate of the image without any development"
-msgstr "tworzy „dziewiczy” duplikat zdjęcia przed modyfikacjami"
+msgstr "tworzy „dziewiczy” duplikat obrazu przed modyfikacjami"
 
 #: ../src/libs/duplicate.c:413
 msgid "create a duplicate of the image with same history stack"
-msgstr "tworzy duplikat zdjęcia z tą samą historią"
+msgstr "tworzy duplikat obrazu z tą samą historią"
 
 #: ../src/libs/export.c:162
 msgid "export"
@@ -24469,7 +24482,7 @@ msgstr ""
 #: ../src/libs/export.c:1388 ../src/libs/export.c:1423
 #: ../src/libs/print_settings.c:2796 ../src/libs/print_settings.c:2842
 msgid "image settings"
-msgstr "ustawienia zdjęcia"
+msgstr "ustawienia obrazu"
 
 #: ../src/libs/export.c:1398 ../src/libs/print_settings.c:2830
 msgid "output ICC profiles"
@@ -24868,7 +24881,7 @@ msgstr "bieżąca kolejność"
 
 #: ../src/libs/filtering.c:1987
 msgid "determine the sort order of shown images"
-msgstr "wybierz porządek sortowania filtrowanych zdjęć"
+msgstr "wybierz porządek sortowania pokazywanych obrazów"
 
 #: ../src/libs/filtering.c:2007
 msgid "sort direction"
@@ -24909,7 +24922,7 @@ msgstr "nowe sortowanie"
 
 #: ../src/libs/filtering.c:2280
 msgid "append new sort to order images"
-msgstr "dodaj nowe sortowanie do zdjęć"
+msgstr "dodaj nowe sortowanie do obrazów"
 
 #: ../src/libs/filtering.c:2283
 msgid "revert to a previous set of sort orders"
@@ -25082,19 +25095,19 @@ msgstr "nakrycie"
 
 #: ../src/libs/filters/rating_range.c:313
 msgid "rating filter"
-msgstr "filtr oceny zdjęcia"
+msgstr "filtr oceny obrazów"
 
 #: ../src/libs/filters/ratio.c:72 ../src/libs/filters/ratio.c:84
 msgid "portrait images"
-msgstr "zdjęcia pionowe"
+msgstr "obrazy pionowe"
 
 #: ../src/libs/filters/ratio.c:73 ../src/libs/filters/ratio.c:85
 msgid "square images"
-msgstr "kwadratowe zdjęcia"
+msgstr "obrazy kwadratowe"
 
 #: ../src/libs/filters/ratio.c:74 ../src/libs/filters/ratio.c:86
 msgid "landscape images"
-msgstr "poziome zdjęcia"
+msgstr "obrazy poziome"
 
 #: ../src/libs/filters/search.c:180
 #, no-c-format
@@ -25124,23 +25137,23 @@ msgstr ""
 
 #: ../src/libs/geotagging.c:374
 msgid "apply offset and geo-location"
-msgstr "zastosuj przesunięcie i geolokację"
+msgstr "zastosuj przesunięcie i geolokalizację"
 
 #: ../src/libs/geotagging.c:375 ../src/libs/geotagging.c:1934
 msgid "apply geo-location"
-msgstr "zastosuj geolokację"
+msgstr "zastosuj geolokalizację"
 
 #: ../src/libs/geotagging.c:377
 msgid ""
 "apply offset and geo-location to matching images\n"
 "double operation: two ctrl-z to undo"
 msgstr ""
-"zastosuj przesunięcie i geolokację do pasujących obrazów\n"
+"zastosuj przesunięcie i geolokalizację do pasujących obrazów\n"
 "operacja podwójna: aby anulować, wciśnij Ctrl-Z dwukrotnie"
 
 #: ../src/libs/geotagging.c:379 ../src/libs/geotagging.c:1935
 msgid "apply geo-location to matching images"
-msgstr "zastosuj geolokację do pasujących zdjęć"
+msgstr "zastosuj geolokalizację do pasujących obrazów"
 
 #: ../src/libs/geotagging.c:820
 msgid "GPX file track segments"
@@ -25161,7 +25174,7 @@ msgstr "punkty"
 #: ../src/libs/geotagging.c:845 ../src/libs/geotagging.c:1897
 #: ../src/libs/image.c:501
 msgid "images"
-msgstr "zdjęcia"
+msgstr "obrazy"
 
 #: ../src/libs/geotagging.c:942
 msgid "open GPX file"
@@ -25213,7 +25226,7 @@ msgstr "zastosuj różnicę"
 
 #: ../src/libs/geotagging.c:1783
 msgid "apply offset to selected images"
-msgstr "zastosuj różnicę czasu do wybranych zdjęć"
+msgstr "zastosuj różnicę czasu do wybranych obrazów"
 
 #: ../src/libs/geotagging.c:1786
 msgid "apply date/time"
@@ -25221,7 +25234,7 @@ msgstr "zastosuj datę/czas"
 
 #: ../src/libs/geotagging.c:1787
 msgid "apply the same date/time to selected images"
-msgstr "zastosuj tę samą datę/czas do wybranych zdjęć"
+msgstr "zastosuj tę samą datę/czas do wybranych obrazów"
 
 #: ../src/libs/geotagging.c:1797
 msgid ""
@@ -25239,7 +25252,7 @@ msgstr "zastosuj plik ścieżki GPX..."
 
 #: ../src/libs/geotagging.c:1840
 msgid "parses a GPX file and updates location of selected images"
-msgstr "przetwarza plik GPX i aktualizuje lokalizację wybranych zdjęć"
+msgstr "przetwarza plik GPX i aktualizuje lokalizację wybranych obrazów"
 
 #: ../src/libs/geotagging.c:1851
 msgctxt "section"
@@ -25268,23 +25281,23 @@ msgstr ""
 
 #: ../src/libs/geotagging.c:1914
 msgid "preview images"
-msgstr "podgląd zdjęć"
+msgstr "podgląd obrazów"
 
 #: ../src/libs/geotagging.c:1919
 msgid "show on map matching images"
-msgstr "pokaż na mapie pasujące zdjęcia"
+msgstr "pokaż na mapie pasujące obrazy"
 
 #: ../src/libs/geotagging.c:1922
 msgid "select images"
-msgstr "wybierz zdjęcia"
+msgstr "wybierz obrazy"
 
 #: ../src/libs/geotagging.c:1923
 msgid "select matching images"
-msgstr "wybierz pasujące zdjęcia"
+msgstr "wybierz pasujące obrazy"
 
 #: ../src/libs/geotagging.c:1931
 msgid "number of matching images versus selected images"
-msgstr "liczba pasujących zdjęć a liczba wybranych zdjęć"
+msgstr "liczba pasujących obrazów versus liczba wybranych obrazów"
 
 #: ../src/libs/histogram.c:111
 msgid "monochromatic"
@@ -25563,11 +25576,11 @@ msgstr "parametryczna maska wejściowa:"
 
 #: ../src/libs/history.c:1336
 msgid "delete image's history?"
-msgstr "skasować historię zdjęcia?"
+msgstr "skasować historię obrazu?"
 
 #: ../src/libs/history.c:1337
 msgid "do you really want to clear history of current image?"
-msgstr "czy na pewno wyczyścić historię wybranego zdjęcia?"
+msgstr "czy na pewno chcesz wyczyścić historię wybranego obrazu?"
 
 #: ../src/libs/image.c:74
 msgid "actions on selection"
@@ -25592,7 +25605,7 @@ msgstr "usuń"
 
 #: ../src/libs/image.c:515
 msgid "remove images from the image library, without deleting"
-msgstr "usuń zdjęcia z bazy danych, bez fizycznego usunięcia"
+msgstr "usuń obrazy z bazy danych, bez fizycznego usunięcia"
 
 #: ../src/libs/image.c:524
 msgid "move..."
@@ -25636,7 +25649,7 @@ msgstr "resetuj obrót"
 
 #: ../src/libs/image.c:570
 msgid "reset rotation to EXIF data"
-msgstr "przywraca domyślny obrót zdjęcia"
+msgstr "zresetuj obrót do danych EXIF"
 
 #: ../src/libs/image.c:573
 msgid "copy locally"
@@ -25652,7 +25665,7 @@ msgstr "synch. kopię lokalną"
 
 #: ../src/libs/image.c:581
 msgid "synchronize the image's XMP and remove the local copy"
-msgstr "synchronizuje dane XMP zdjęcia i usuwa kopię lokalną"
+msgstr "synchronizuje dane XMP obrazu i usuwa kopię lokalną"
 
 #: ../src/libs/image.c:585
 msgctxt "selected images action"
@@ -25661,7 +25674,7 @@ msgstr "grupuj"
 
 #: ../src/libs/image.c:587
 msgid "add selected images to expanded group or create a new one"
-msgstr "dodaje wybrane zdjęcia do widocznej grupy lub tworzy nową"
+msgstr "dodaje wybrane obrazy do widocznej grupy lub tworzy nową"
 
 #: ../src/libs/image.c:591
 msgid "ungroup"
@@ -25669,7 +25682,7 @@ msgstr "rozgrupuj"
 
 #: ../src/libs/image.c:593
 msgid "remove selected images from the group"
-msgstr "usuwa wybrane zdjęcia z grupy"
+msgstr "usuwa wybrane obrazy z grupy"
 
 #: ../src/libs/image.c:613 ../src/libs/metadata_view.c:144
 msgid "flags"
@@ -25705,11 +25718,11 @@ msgstr "ustaw wybrany obraz jako źródło metadanych"
 
 #: ../src/libs/image.c:634
 msgid "paste selected metadata on selected images"
-msgstr "zapisuje metadane dla wybranych zdjęć"
+msgstr "zapisuje metadane dla wybranych obrazów"
 
 #: ../src/libs/image.c:639
 msgid "clear selected metadata on selected images"
-msgstr "czyści metadane dla wybranych zdjęć"
+msgstr "czyści metadane dla wybranych obrazów"
 
 #: ../src/libs/image.c:645
 msgid "how to handle existing metadata"
@@ -25738,7 +25751,7 @@ msgstr ""
 
 #: ../src/libs/image.c:664
 msgid "set selection as color images"
-msgstr "oznacz wybrane zdjęcia jako kolorowe"
+msgstr "oznacz wybrane obrazy jako kolorowe"
 
 #: ../src/libs/image.c:672
 msgid "duplicate virgin"
@@ -25755,7 +25768,7 @@ msgstr "kopiuj i importuj z aparatu"
 
 #: ../src/libs/import.c:310 ../src/libs/import.c:375
 msgid "tethered shoot"
-msgstr "robienie zdjęć"
+msgstr "robienie zdjęć za pomocą tetheringu"
 
 #: ../src/libs/import.c:320 ../src/libs/import.c:377
 msgid "unmount camera"
@@ -25783,9 +25796,9 @@ msgstr "zamontuj aparat"
 #, c-format
 msgid "%d image out of %d selected"
 msgid_plural "%d images out of %d selected"
-msgstr[0] "wybrano 1 zdjęcie"
-msgstr[1] "wybrane zdjęcia: %d z %d"
-msgstr[2] "wybrane zdjęcia: %d z %d"
+msgstr[0] "wybrany %d obraz z %d"
+msgstr[1] "wybrane %d obrazy z %d"
+msgstr[2] "wybrane %d obrazów z %d"
 
 #: ../src/libs/import.c:1462
 msgid "choose the root of the folder tree below"
@@ -26292,7 +26305,7 @@ msgid ""
 "the currently selected images"
 msgstr ""
 "modyfikuj pola metadanych tekstowych\n"
-"dla aktualnie wybranych zdjęć"
+"dla aktualnie wybranych obrazów"
 
 #: ../src/libs/metadata.c:465 ../src/libs/metadata_view.c:1260
 msgid "metadata settings"
@@ -26326,7 +26339,7 @@ msgid ""
 "tick if you want to keep this information private (not exported with images)"
 msgstr ""
 "zaznacz, jeśli chcesz, żeby informacje pozostały prywatne (nie będą "
-"eksportowane ze zdjęciami)"
+"eksportowane z obrazami)"
 
 #: ../src/libs/metadata.c:698
 msgid ""
@@ -26350,7 +26363,7 @@ msgstr "<zostaw niezmienione>"
 
 #: ../src/libs/metadata.c:743
 msgid "write metadata for selected images"
-msgstr "zapisuje metadane dla wybranych zdjęć"
+msgstr "zapisuje metadane dla wybranych obrazów"
 
 #: ../src/libs/metadata.c:744
 msgid "cancel"
@@ -26510,9 +26523,9 @@ msgstr "ma .wav"
 #, c-format
 msgid "image has %d star"
 msgid_plural "image has %d stars"
-msgstr[0] "zdjęcie ma %d gwiazdkę"
-msgstr[1] "zdjęcie ma %d gwiazdki"
-msgstr[2] "zdjęcie ma %d gwiazdek"
+msgstr[0] "obraz ma %d gwiazdkę"
+msgstr[1] "obraz ma %d gwiazdki"
+msgstr[2] "obraz ma %d gwiazdek"
 
 #: ../src/libs/metadata_view.c:451
 #, c-format
@@ -27013,7 +27026,7 @@ msgstr "nie można otworzyć profilu drukarki „%s”!"
 #: ../src/libs/print_settings.c:406
 #, c-format
 msgid "error getting output profile for image %d"
-msgstr "błąd pobierania profilu wyjściowego dla zdjęcia %d"
+msgstr "błąd pobierania profilu wyjściowego dla obrazu %d"
 
 #: ../src/libs/print_settings.c:418
 #, c-format
@@ -27026,11 +27039,11 @@ msgstr "nie udało się utworzyć tymczasowego pliku pdf do drukowania"
 
 #: ../src/libs/print_settings.c:627
 msgid "maximum image per page reached"
-msgstr "osiągnięto maksymalną ilość zdjęć na stronę"
+msgstr "osiągnięto maksymalną ilość obrazów na stronę"
 
 #: ../src/libs/print_settings.c:712
 msgid "cannot print until a picture is selected"
-msgstr "nie można wydrukować, nim nie zostanie wybrane zdjęcie"
+msgstr "nie można wydrukować, dopóki nie zostanie wybrany obraz"
 
 #: ../src/libs/print_settings.c:717
 msgid "cannot print until a printer is selected"
@@ -27044,7 +27057,7 @@ msgstr "nie można wydrukować, nim nie zostanie wybrany papier"
 #: ../src/libs/print_settings.c:750
 #, c-format
 msgid "cannot get image %d for printing"
-msgstr "nie można otrzymać zdjęcia %d do wydruku"
+msgstr "nie można otrzymać obrazu %d do wydruku"
 
 #: ../src/libs/print_settings.c:922
 #, c-format
@@ -27093,7 +27106,7 @@ msgstr "jednostki pomiaru"
 
 #: ../src/libs/print_settings.c:2553
 msgid "image width/height"
-msgstr "szerokość/wysokość zdjęcia"
+msgstr "szerokość/wysokość obrazu"
 
 #: ../src/libs/print_settings.c:2558
 msgid " x "
@@ -27111,9 +27124,9 @@ msgid ""
 " a too large value may result in poor print quality"
 msgstr ""
 "skalowanie zdjęcia względem DPI drukarki:\n"
-" < 1 oznacza, że zdjęcie jest zmniejszane (najlepsza jakość)\n"
-" > 1 oznacza, że zdjęcie jest powiększane\n"
-"zbyt duża wartość może oznaczać słabą jakość wydruku"
+" < 1 oznacza, że obraz jest zmniejszany (najlepsza jakość)\n"
+" > 1 oznacza, że obraz jest powiększany\n"
+"zbyt duża wartość może oznaczać słabą jakość wydruku"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
 #: ../src/libs/print_settings.c:2586
@@ -27149,7 +27162,7 @@ msgstr "wyświetl siatkę"
 
 #: ../src/libs/print_settings.c:2647
 msgid "snap to grid"
-msgstr "wyrównaj zdjęcia do siatki"
+msgstr "wyrównaj do siatki"
 
 #: ../src/libs/print_settings.c:2660
 msgid "borderless mode required"
@@ -27169,7 +27182,7 @@ msgstr ""
 #: ../src/libs/print_settings.c:2670
 msgctxt "section"
 msgid "image layout"
-msgstr "układ zdjęcia"
+msgstr "układ obrazu"
 
 #: ../src/libs/print_settings.c:2711
 msgid "new image area"
@@ -27274,18 +27287,18 @@ msgstr ""
 
 #: ../src/libs/select.c:143
 msgid "select all images in current collection"
-msgstr "wybiera wszystkie zdjęcia w bieżącej kolekcji"
+msgstr "wybiera wszystkie obrazy w bieżącej kolekcji"
 
 #: ../src/libs/select.c:147
 msgid "clear selection"
-msgstr "odznacz wszystkie zdjęcia"
+msgstr "wyczyść zaznaczenie"
 
 #: ../src/libs/select.c:151
 msgid ""
 "select unselected images\n"
 "in current collection"
 msgstr ""
-"zaznacza niezaznaczone zdjęcia\n"
+"zaznacza niezaznaczone obrazy\n"
 "w bieżącej kolekcji"
 
 #: ../src/libs/select.c:155
@@ -27293,15 +27306,15 @@ msgid ""
 "select all images which are in the same\n"
 "film roll as the selected images"
 msgstr ""
-"wybierz wszystkie zdjęcia, które są na tej samej\n"
-"rolce filmu, co zaznaczone zdjęcia"
+"wybierz wszystkie obrazy, które są na tej samej\n"
+"rolce filmu, co zaznaczone obrazy"
 
 #: ../src/libs/select.c:159
 msgid ""
 "select untouched images in\n"
 "current collection"
 msgstr ""
-"zaznacza niezmieniane zdjęcia\n"
+"zaznacza niezmieniane obrazy\n"
 "w obecnej kolekcji"
 
 #: ../src/libs/session.c:47
@@ -27378,7 +27391,7 @@ msgstr ""
 
 #: ../src/libs/styles.c:247
 msgid "no images selected"
-msgstr "nie wybrano zdjęć"
+msgstr "nie wybrano obrazów"
 
 #: ../src/libs/styles.c:370
 msgid "remove style?"
@@ -27443,7 +27456,7 @@ msgstr "zduplikuj"
 
 #: ../src/libs/styles.c:862
 msgid "creates a duplicate of the image before applying style"
-msgstr "tworzy duplikat zdjęcia przed zastosowaniem stylu"
+msgstr "tworzy duplikat obrazu przed zastosowaniem stylu"
 
 #: ../src/libs/styles.c:880
 msgid "create..."
@@ -27451,7 +27464,7 @@ msgstr "utwórz..."
 
 #: ../src/libs/styles.c:882
 msgid "create styles from history stack of selected images"
-msgstr "tworzy style na podstawie historii edycji wybranych zdjęć"
+msgstr "tworzy style na podstawie historii edycji wybranych obrazów"
 
 #: ../src/libs/styles.c:887 ../src/libs/tagging.c:2350
 msgid "edit..."
@@ -27555,9 +27568,9 @@ msgstr[2] "<u>%d</u> tagów zostanie usuniętych"
 #, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated"
-msgstr[0] "<u>%d</u> zdjęcie zostanie zaktualizowane"
-msgstr[1] "<u>%d</u> zdjęcia zostaną zaktualizowane"
-msgstr[2] "<u>%d</u> zdjęć zostanie zaktualizowanych"
+msgstr[0] "<u>%d</u> obraz zostanie zaktualizowany"
+msgstr[1] "<u>%d</u> obrazy zostaną zaktualizowane"
+msgstr[2] "<u>%d</u> obrazów zostanie zaktualizowanych"
 
 #: ../src/libs/tagging.c:1672
 #, c-format
@@ -27848,16 +27861,16 @@ msgid ""
 "toggle color label of selected images\n"
 "<i>%s</i>"
 msgstr ""
-"przełącz kolorową etykietę dla wybranych zdjęć\n"
+"przełącz kolorową etykietę dla wybranych obrazów\n"
 "<i>%s</i>"
 
 #: ../src/libs/tools/colorlabels.c:106
 msgid "toggle color label of selected images"
-msgstr "przełącz kolorową etykietę dla wybranych zdjęć"
+msgstr "przełącz kolorową etykietę dla wybranych obrazów"
 
 #: ../src/libs/tools/colorlabels.c:132
 msgid "clear color labels of selected images"
-msgstr "wyczyść kolorową etykietę dla wybranych zdjęć"
+msgstr "wyczyść kolorową etykietę dla wybranych obrazów"
 
 #: ../src/libs/tools/colorlabels.c:241
 msgid "enter a description of how you use this color label"
@@ -28035,7 +28048,7 @@ msgstr "czas dostępny tylko przy wybranej opcji"
 #: ../src/libs/tools/global_toolbox.c:274
 #: ../src/libs/tools/global_toolbox.c:460
 msgid "culling overlays"
-msgstr "nakładki dla selekcji zdjęć"
+msgstr "nakładki dla selekcji obrazów"
 
 #: ../src/libs/tools/global_toolbox.c:276
 msgid "preview overlays"
@@ -28052,12 +28065,12 @@ msgstr "grupowanie"
 #: ../src/libs/tools/global_toolbox.c:394
 #: ../src/libs/tools/global_toolbox.c:540
 msgid "expand grouped images"
-msgstr "wyświetl zgrupowane zdjęcia"
+msgstr "wyświetl zgrupowane obrazy"
 
 #: ../src/libs/tools/global_toolbox.c:396
 #: ../src/libs/tools/global_toolbox.c:542
 msgid "collapse grouped images"
-msgstr "ukryj zgrupowane zdjęcia"
+msgstr "ukryj zgrupowane obrazy"
 
 #: ../src/libs/tools/global_toolbox.c:403
 msgid "thumbnail overlays options"
@@ -28219,15 +28232,15 @@ msgstr "kliknij, żeby wejść do układku powiększanego stołu podświetlanego
 
 #: ../src/libs/tools/lighttable.c:383
 msgid "toggle culling mode"
-msgstr "przełącz tryb selekcji zdjęć"
+msgstr "przełącz tryb selekcji obrazów"
 
 #: ../src/libs/tools/lighttable.c:391
 msgid "toggle culling dynamic mode"
-msgstr "przełącz dynamiczny tryb selekcji zdjęć"
+msgstr "przełącz dynamiczny tryb selekcji obrazów"
 
 #: ../src/libs/tools/lighttable.c:438
 msgid "toggle culling zoom mode"
-msgstr "przełącz sposób przybliżania dla selekcji zdjęć"
+msgstr "przełącz sposób przybliżania dla selekcji obrazów"
 
 #: ../src/libs/tools/lighttable.c:440
 msgid "exit current layout"
@@ -28464,7 +28477,7 @@ msgid ""
 "image `%s' could not be loaded\n"
 "%s"
 msgstr ""
-"zdjęcie `%s' nie mogło być załadowane\n"
+"obraz `%s' nie mógł być załadowany\n"
 "%s"
 
 #: ../src/views/darkroom.c:2250 ../src/views/darkroom.c:2251
@@ -28490,7 +28503,7 @@ msgstr "drugie okno"
 
 #: ../src/views/darkroom.c:2272
 msgid "display a second darkroom image window"
-msgstr "wyświetl dodatkowe okno podglądu zdjęcia w ciemni"
+msgstr "wyświetl dodatkowe okno podglądu obrazu w ciemni"
 
 #: ../src/views/darkroom.c:2278
 msgid "color assessment"
@@ -28766,11 +28779,11 @@ msgstr "oddal"
 #. Shortcut to skip images
 #: ../src/views/darkroom.c:2630
 msgid "image forward"
-msgstr "następne zdjęcie"
+msgstr "następny obraz"
 
 #: ../src/views/darkroom.c:2631
 msgid "image back"
-msgstr "poprzednie zdjęcie"
+msgstr "poprzedni obraz"
 
 #. cycle overlay colors
 #: ../src/views/darkroom.c:2634
@@ -28892,7 +28905,7 @@ msgstr "otwórz obraz w trybie ciemni"
 
 #: ../src/views/lighttable.c:881
 msgid "switch to next/previous image"
-msgstr "przełącz na następne/poprzednie zdjęcie"
+msgstr "przełącz na następny/poprzedni obraz"
 
 #: ../src/views/lighttable.c:884 ../src/views/lighttable.c:915
 #, no-c-format
@@ -28905,11 +28918,11 @@ msgstr "przewijanie kolekcji"
 
 #: ../src/views/lighttable.c:891
 msgid "change number of images per row"
-msgstr "zmień liczbę zdjęć w wierszu"
+msgstr "zmień liczbę obrazów w wierszu"
 
 #: ../src/views/lighttable.c:894
 msgid "select an image"
-msgstr "wybierz zdjęcie"
+msgstr "wybierz obraz"
 
 #: ../src/views/lighttable.c:896
 msgid "select range from last image"
@@ -28921,23 +28934,23 @@ msgstr "dodaj lub usuń z zaznaczenia"
 
 #: ../src/views/lighttable.c:902
 msgid "change image order"
-msgstr "zmień kolejność zdjęć"
+msgstr "zmień kolejność obrazów"
 
 #: ../src/views/lighttable.c:909
 msgid "zoom all the images"
-msgstr "przybliż wszystkie zdjęcia"
+msgstr "przybliż wszystkie obrazy"
 
 #: ../src/views/lighttable.c:910
 msgid "pan inside all the images"
-msgstr "przesuwanie zawartości wszystkich zdjęć"
+msgstr "przesuwanie zawartości wszystkich obrazów"
 
 #: ../src/views/lighttable.c:912
 msgid "zoom current image"
-msgstr "przybliż bieżące zdjęcie"
+msgstr "przybliż bieżący obraz"
 
 #: ../src/views/lighttable.c:913
 msgid "pan inside current image"
-msgstr "przesuwanie zawartości bieżącego zdjęcia"
+msgstr "przesuwanie zawartości bieżącego obrazu"
 
 #: ../src/views/lighttable.c:918
 #, no-c-format
@@ -28966,7 +28979,7 @@ msgstr "porzuć"
 
 #: ../src/views/lighttable.c:1267
 msgid "align images to grid"
-msgstr "wyrównaj zdjęcia do siatki"
+msgstr "wyrównaj obrazy do siatki"
 
 #: ../src/views/lighttable.c:1268
 msgid "reset first image offset"
@@ -28974,11 +28987,11 @@ msgstr "zlikwiduj przesunięcie pierwszego obrazu"
 
 #: ../src/views/lighttable.c:1269
 msgid "select toggle image"
-msgstr "zaznacz/odznacz zdjęcia"
+msgstr "zaznacz/odznacz obrazy"
 
 #: ../src/views/lighttable.c:1270
 msgid "select single image"
-msgstr "zaznacz pojedyncze zdjęcie"
+msgstr "zaznacz pojedynczy obraz"
 
 #. zoom for full culling & preview
 #: ../src/views/lighttable.c:1277
@@ -29031,7 +29044,7 @@ msgstr "przewiń mocno w dół"
 
 #: ../src/views/map.c:3212
 msgid "[on image] open in darkroom"
-msgstr "[na zdjęciu] otwórz w trybie ciemni"
+msgstr "[na obrazie] otwórz w trybie ciemni"
 
 #: ../src/views/map.c:3214
 msgid "[on map] zoom map"
@@ -29039,7 +29052,7 @@ msgstr "[na mapie] przybliż mapę"
 
 #: ../src/views/map.c:3216
 msgid "move image location"
-msgstr "przesuń lokalizację zdjęcia"
+msgstr "przesuń lokalizację obrazu"
 
 #: ../src/views/print.c:54
 msgctxt "view"
@@ -29052,12 +29065,13 @@ msgstr "nie znaleziono żadnych drukarek!"
 
 #: ../src/views/slideshow.c:360
 msgid "end of images"
-msgstr "koniec zdjęć"
+msgstr "koniec obrazów"
 
 #: ../src/views/slideshow.c:381
 msgid "end of images. press any key to return to lighttable mode"
 msgstr ""
-"koniec zdjęć. naciśnij dowolny klawisz, aby powrócić do stołu podświetlanego"
+"koniec obrazów. naciśnij dowolny klawisz, aby powrócić do stołu "
+"podświetlanego"
 
 #: ../src/views/slideshow.c:514
 msgid "waiting to start slideshow"
@@ -29102,11 +29116,11 @@ msgstr "poprzedni krok"
 
 #: ../src/views/slideshow.c:758
 msgid "go to next image"
-msgstr "przejdź do następnego zdjęcia"
+msgstr "przejdź do następnego obrazu"
 
 #: ../src/views/slideshow.c:760
 msgid "go to previous image"
-msgstr "przejdź do poprzedniego zdjęcia"
+msgstr "przejdź do poprzedniego obrazu"
 
 #: ../src/views/tethering.c:163
 #, c-format
