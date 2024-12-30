@@ -286,17 +286,17 @@ static char *_variables_get_latitude(dt_variables_params_t *params)
 }
 
 /**
- * @param char **variable - The variable to read parameters from
- * @param GList **params - a pointer to a GList where the parameters are stored in
- * @param size_t max_param - The maximum number of parameters to read
- * @return The number of parameters, -1 if any error
+ * get n,m from a variable with [n,m], i.e. $(SEQUENCE[4,1])
+ * param_m may be NULL if only n is needed, i.e. $(IMAGE_ID[4])
  */
-static int _get_parameters(char **variable, GList **params, size_t max_param)
+static void _get_parameters_n_m(char **variable, gchar **param_n, gchar **param_m)
 {
-  if(*variable[0] != '[') return -1;
+  *param_n = NULL;
+  if(param_m) *param_m = NULL;
 
+  if(*variable[0] != '[') return;
   (*variable)++;
-  if(*variable[0] == ',') return -1;
+  if(*variable[0] == ',') return;
 
   gchar *parameters = g_strdup(*variable);
   char *end = g_strstr_len(parameters, -1, "]");
@@ -305,38 +305,19 @@ static int _get_parameters(char **variable, GList **params, size_t max_param)
     end[0] = '\0';
     (*variable) += strlen(parameters) + 1;
 
-    size_t count = 0;
-    char *token = strtok(parameters, ",");
-    while (token != NULL && count < max_param)
+    gchar **res = g_strsplit(parameters, ",", 2);
+    gchar **p = res;
+    int n = 0;
+    while(*p && n < 2)
     {
-      *params = g_list_prepend(*params, g_strdup(token));
-      count++;
-      token = strtok(NULL, ",");
+      gchar **target = (n == 0)? param_n : param_m;
+      if(target) *target = g_strdup(*p);
+      p++;
+      n++;
     }
-
-    *params = g_list_reverse(*params);
-    g_free(parameters);
-    return count;
+    g_strfreev(res);
   }
-
-  return -1;
-}
-
-static gboolean _is_number(const char *str)
-{
-  if(*str == '-' || *str == '+')
-    str++;
-
-  if(!g_ascii_isdigit(*str))
-    return FALSE;  // don't take empty strings
-
-  while(*str)
-  {
-    if(!g_ascii_isdigit(*str))
-      return FALSE;
-    str++;
-  }
-  return TRUE;
+  g_free(parameters);
 }
 
 static uint8_t _get_var_parameter(char **variable, const int default_value)
@@ -344,15 +325,12 @@ static uint8_t _get_var_parameter(char **variable, const int default_value)
   uint8_t val = default_value;
   if(*variable[0] == '[')
   {
-    GList *parameters = NULL;
-    const int num = _get_parameters(variable, &parameters, 1);
-    if(num == 1)
-    {
-      const gchar *val_s = g_list_nth_data(parameters, 0);
-      if(_is_number(val_s))
-        val = (uint8_t)strtol(val_s, NULL, 10);
-    }
-    g_list_free_full(parameters, g_free);
+    gchar *val_s;
+    _get_parameters_n_m(variable, &val_s, NULL);
+    int n = g_ascii_strtoll(val_s, NULL, 10);
+    if(n > 0)
+      val = n;
+    g_free(val_s);
   }
   return val;
 }
@@ -699,32 +677,30 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     if(g_ascii_isdigit(*variable[0]))
     {
       nb_digit = (uint8_t)*variable[0] & 0b1111;
-      (*variable) ++;
+      (*variable)++;
     }
     // new $(SEQUENCE[n,m]) syntax
     // allows \[[0-9]+,[0-9]+] (PCRE)
     // everything else will be ignored
     else if(*variable[0] == '[')
     {
-      GList *parameters = NULL;
-      const int num = _get_parameters(variable, &parameters, 2);
+      gchar *nb_digit_s, *shift_s;
+      _get_parameters_n_m(variable, &nb_digit_s, &shift_s);
 
-      if(num >= 1)
+      if(nb_digit_s)
       {
-        const gchar *nb_digit_s = g_list_nth_data(parameters, 0);
-        if(_is_number(nb_digit_s))
-        {
-          nb_digit = (uint8_t)strtol(nb_digit_s, NULL, 10);
-
-          if(num == 2)
-          {
-            const gchar *shift_s = g_list_nth_data(parameters, 1);
-            if(_is_number(shift_s))
-              shift = (guint)strtol(shift_s, NULL, 10);
-          }
-        }
+        int nb = g_ascii_strtoll(nb_digit_s, NULL, 10);
+        if(nb > 0) nb_digit = nb;
       }
-      g_list_free_full(parameters, g_free);
+
+      if(shift_s)
+      {
+        int nb = g_ascii_strtoll(shift_s, NULL, 10);
+        if(nb > 0) shift = nb;
+      }
+
+      g_free(nb_digit_s);
+      g_free(shift_s);
     }
     result = g_strdup_printf("%.*u", nb_digit,
                              params->sequence >= 0
@@ -926,7 +902,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     if(g_ascii_isdigit(*variable[0]))
     {
       const uint8_t level = (uint8_t)*variable[0] & 0b1111;
-      (*variable) ++;
+      (*variable)++;
       if(*variable[0] == '(')
       {
         char *category = g_strdup(*variable + 1);
@@ -950,25 +926,23 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     // $(CATEGORY[n,category]) with category as above (new syntax)
     else if(*variable[0] == '[')
     {
-      GList *parameters = NULL;
-      const int num = _get_parameters(variable, &parameters, 2);
-      if(num == 2)
+      gchar *level_s, *category;
+      _get_parameters_n_m(variable, &level_s, &category);
+
+      if(level_s && category && g_ascii_isdigit(*level_s))
       {
-        const gchar *level_s = g_list_nth_data(parameters, 0);
-        if(g_ascii_isdigit(*level_s))
+        const uint8_t level = (uint8_t)*level_s & 0b1111;
+        gchar *cat = g_strdup_printf("%s|", category);
+        char *tag = dt_tag_get_subtags(params->imgid, cat, (int)level);
+        g_free(cat);
+        if(tag)
         {
-          const uint8_t level = (uint8_t)*level_s & 0b1111;
-          gchar *cat = g_strdup_printf("%s|", (char *)g_list_nth_data(parameters, 1));
-          char *tag = dt_tag_get_subtags(params->imgid, cat, (int)level);
-          g_free(cat);
-          if(tag)
-          {
-            result = g_strdup(tag);
-            g_free(tag);
-          }
+          result = g_strdup(tag);
+          g_free(tag);
         }
       }
-      g_list_free_full(parameters, g_free);
+      g_free(level_s);
+      g_free(category);
     }
   }
   else if(_has_prefix(variable, "IMAGE.TAGS.HIERARCHY"))
