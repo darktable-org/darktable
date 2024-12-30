@@ -3814,8 +3814,8 @@ static void camera_menu_fill(dt_iop_module_t *self,
   if(g->camera_menu)
   {
     gtk_widget_destroy(GTK_WIDGET(g->camera_menu));
-    g->camera_menu = NULL;
   }
+  g->camera_menu = GTK_MENU(gtk_menu_new());
 
   /* Count all existing camera makers and create a sorted list */
   makers = g_ptr_array_new();
@@ -3852,7 +3852,6 @@ static void camera_menu_fill(dt_iop_module_t *self,
     gtk_menu_shell_append(GTK_MENU_SHELL(submenu), item);
   }
 
-  g->camera_menu = GTK_MENU(gtk_menu_new());
   for(i = 0; i < makers->len; i++)
   {
     GtkWidget *item = (GtkWidget *)
@@ -3894,8 +3893,11 @@ static void _camera_menusearch_clicked(GtkWidget *button, dt_iop_module_t *self)
   if(!camlist) return;
   camera_menu_fill(self, camlist);
 
-  dt_gui_menu_popup(GTK_MENU(g->camera_menu), button,
-                    GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
+  // dt_gui_menu_popup unrefs the menu!  So we need to clear the pointer in g
+  // before invoking the popup or we'll get a crash next time....
+  GtkMenu *menu = GTK_MENU(g->camera_menu);
+  g->camera_menu = NULL;
+  dt_gui_menu_popup(menu, button, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
 }
 
 static void _camera_autosearch_clicked(GtkWidget *button, dt_iop_module_t *self)
@@ -3929,8 +3931,11 @@ static void _camera_autosearch_clicked(GtkWidget *button, dt_iop_module_t *self)
     lf_free(camlist);
   }
 
-  dt_gui_menu_popup(GTK_MENU(g->camera_menu), button,
-                    GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
+  // dt_gui_menu_popup unrefs the menu!  So we need to clear the pointer in g
+  // before invoking the popup or we'll get a crash next time....
+  GtkMenu *menu = GTK_MENU(g->camera_menu);
+  g->camera_menu = NULL;
+  dt_gui_menu_popup(menu, button, GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 }
 
 /* -- end camera -- */
@@ -4192,8 +4197,8 @@ static void _lens_menu_fill(dt_iop_module_t *self,
   if(g->lens_menu)
   {
     gtk_widget_destroy(GTK_WIDGET(g->lens_menu));
-    g->lens_menu = NULL;
   }
+  g->lens_menu = GTK_MENU(gtk_menu_new());
 
   /* Count all existing lens makers and create a sorted list */
   makers = g_ptr_array_new();
@@ -4222,7 +4227,6 @@ static void _lens_menu_fill(dt_iop_module_t *self,
     gtk_menu_shell_append(GTK_MENU_SHELL(submenu), item);
   }
 
-  g->lens_menu = GTK_MENU(gtk_menu_new());
   for(i = 0; i < makers->len; i++)
   {
     GtkWidget *item = gtk_menu_item_new_with_label
@@ -4255,8 +4259,11 @@ static void _lens_menusearch_clicked(GtkWidget *button, dt_iop_module_t *self)
   _lens_menu_fill(self, lenslist);
   lf_free(lenslist);
 
-  dt_gui_menu_popup(GTK_MENU(g->lens_menu), button,
-                    GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
+  // dt_gui_menu_popup unrefs the menu!  So we need to clear the pointer in g
+  // before invoking the popup or we'll get a crash next time....
+  GtkMenu *menu = GTK_MENU(g->lens_menu);
+  g->lens_menu = NULL;
+  dt_gui_menu_popup(menu, button, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
 }
 
 static void _lens_autosearch_clicked(GtkWidget *button, dt_iop_module_t *self)
@@ -4280,8 +4287,11 @@ static void _lens_autosearch_clicked(GtkWidget *button, dt_iop_module_t *self)
   _lens_menu_fill(self, lenslist);
   lf_free(lenslist);
 
-  dt_gui_menu_popup(GTK_MENU(g->lens_menu), button,
-                    GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
+  // dt_gui_menu_popup unrefs the menu!  So we need to clear the pointer in g
+  // before invoking the popup or we'll get a crash next time....
+  GtkMenu *menu = GTK_MENU(g->lens_menu);
+  g->lens_menu = NULL;
+  dt_gui_menu_popup(menu, button, GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 }
 
 /* -- end lens -- */
