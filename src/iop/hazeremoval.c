@@ -367,13 +367,15 @@ static float *_partition(float *first,
   while(TRUE)
   {
     // scan from start until we find an element which needs to be swapped to the second half
-    do{
+    do
+    {
       first++;
-    }while(first < last && *first < val);
+    } while(first < last && *first < val);
     // scan from end until we find an element which needs to be swapped to the first half
-    do{
+    do
+    {
       last--;
-    }while(first < last && *last > val);
+    } while(first < last && *last > val);
     // if we didn't find anything to swap, return that position as the partitioning location
     if(first >= last)
       return first;
