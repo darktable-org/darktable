@@ -151,6 +151,7 @@ src/develop/imageop_gui.c
 src/develop/lightroom.c
 src/develop/masks/brush.c
 src/develop/masks/circle.c
+src/develop/masks/point.c
 src/develop/masks/ellipse.c
 src/develop/masks/gradient.c
 src/develop/masks/group.c

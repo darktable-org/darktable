@@ -1669,6 +1669,34 @@ static gboolean _blendop_masks_add_shape(GtkWidget *widget,
   return TRUE;
 }
 
+
+static gboolean _blendop_masks_add_cursor(GtkWidget *widget,
+                                         GdkEventButton *event,
+                                         dt_iop_module_t *self)
+{
+  if(darktable.gui->reset
+     || event->button != GDK_BUTTON_PRIMARY)
+    return TRUE;
+
+  dt_iop_gui_blend_data_t *bd = self->blend_data;
+
+
+  // _blendop_masks_modes_toggle(NULL, self, DEVELOP_MASK_MASK);
+
+  // we want to be sure that the iop has focus
+  dt_iop_request_focus(self);
+  dt_iop_color_picker_reset(self, FALSE);
+  bd->masks_shown = DT_MASKS_EDIT_FULL;
+  // we create the new form
+  dt_masks_form_t *form = dt_masks_create(DT_MASKS_POINT);
+  dt_masks_change_form_gui(form);
+  darktable.develop->form_gui->creation_module = self;
+
+  dt_control_queue_redraw_center();
+
+  return TRUE;
+}
+
 static gboolean _blendop_masks_show_and_edit(GtkWidget *widget,
                                              GdkEventButton *event,
                                              dt_iop_module_t *self)
@@ -3111,8 +3139,7 @@ void dt_iop_gui_init_ai_mask(GtkWidget *blendw, dt_iop_module_t *module)
                                       G_CALLBACK(_masks_ai_execute), FALSE, 0, 0,
                                       NULL, 0, box);
 
-    bd->ai_threshold =
-      dt_bauhaus_slider_new_with_range(module, 0.0f, 100.0f, 0, 0.0f, 1);
+    bd->ai_threshold = dt_bauhaus_slider_new_with_range(module, 0.0f, 100.0f, 0, 0.0f, 1);
     dt_bauhaus_slider_set_format(bd->ai_threshold, _(" %"));
     dt_bauhaus_widget_set_label(bd->ai_threshold,
                                 N_("blend"), N_("threshold"));
@@ -3125,6 +3152,15 @@ void dt_iop_gui_init_ai_mask(GtkWidget *blendw, dt_iop_module_t *module)
                      G_CALLBACK(_masks_ai_threshold_update), bd);
 
     gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(bd->ai_threshold), TRUE, FALSE, 0);
+
+
+
+    bd->ai_cursor_add = dt_iop_togglebutton_new(module, "blend`shapes",
+                                                  N_("add cursor"),
+                                                  NULL,
+                                                  G_CALLBACK(_blendop_masks_add_cursor),// G_CALLBACK(_blendop_masks_add_shape),
+                                                  FALSE, 0, 0,
+                                                  dtgtk_cairo_paint_masks_circle, box);
 
     gtk_box_pack_start(GTK_BOX(bd->ai_box), GTK_WIDGET(hbox2), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->ai_box), GTK_WIDGET(box), TRUE, TRUE, 0);
