@@ -3662,6 +3662,7 @@ GtkWidget *gui_tool_box(dt_lib_module_t *self)
                                             ? CPF_DIRECTION_DOWN
                                             : CPF_DIRECTION_UP,
                                             NULL);
+  gtk_widget_set_tooltip_text(sortb, _("toggle collection sort order ascending/descending"));                                            
   dt_gui_add_class(sortb, "dt_ignore_fg_state");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(sortb), sort_descend);
   g_signal_connect(G_OBJECT(sortb),
