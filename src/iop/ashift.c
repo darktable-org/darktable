@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2016-2024 darktable developers.
+  Copyright (C) 2016-2025 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -4571,6 +4571,9 @@ int mouse_moved(dt_iop_module_t *self,
                 const int which,
                 const float zoom_scale)
 {
+  if(!self->enabled)
+    return FALSE;
+
   dt_iop_ashift_gui_data_t *g = self->gui_data;
 
   if(g->straightening)

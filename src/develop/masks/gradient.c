@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2024 darktable developers.
+    Copyright (C) 2013-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -541,9 +541,6 @@ static int _gradient_events_mouse_moved(dt_iop_module_t *module,
                                         dt_masks_form_gui_t *gui,
                                         const int index)
 {
-  float wd, ht, iwidth, iheight;
-  dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
-
   if(gui->creation && gui->form_dragging)
   {
     dt_control_queue_redraw_center();
@@ -555,6 +552,9 @@ static int _gradient_events_mouse_moved(dt_iop_module_t *module,
     dt_masks_point_gradient_t *gradient = form->points->data;
 
     // we change the center value
+    float wd, ht, iwidth, iheight;
+    dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
+
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
@@ -570,6 +570,8 @@ static int _gradient_events_mouse_moved(dt_iop_module_t *module,
   {
     dt_masks_point_gradient_t *gradient = form->points->data;
 
+    float wd, ht, iwidth, iheight;
+    dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
     const float x = pzx * wd;
     const float y = pzy * ht;
 
@@ -609,6 +611,8 @@ static int _gradient_events_mouse_moved(dt_iop_module_t *module,
   }
   else if(!gui->creation)
   {
+    float wd, ht, iwidth, iheight;
+    dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
     const float as = dt_masks_sensitive_dist(zoom_scale);
     const float as2 = sqf(as);
     const float x = pzx * wd;

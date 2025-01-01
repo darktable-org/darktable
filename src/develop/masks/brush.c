@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2024 darktable developers.
+    Copyright (C) 2013-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2152,8 +2152,6 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
                                      dt_masks_form_gui_t *gui,
                                      const int index)
 {
-  const float as = dt_masks_sensitive_dist(zoom_scale);
-
   if(!gui) return 0;
 
   dt_masks_form_gui_points_t *gpt = g_list_nth_data(gui->points, index);
@@ -2331,6 +2329,8 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module,
 
   pzx *= wd;
   pzy *= ht;
+
+  const float as = dt_masks_sensitive_dist(zoom_scale);
 
   if((gui->group_selected == index) && gui->point_edited >= 0)
   {
