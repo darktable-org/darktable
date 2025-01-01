@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2023 darktable developers.
+    Copyright (C) 2016-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -310,6 +310,15 @@ OPTIONAL(void, distort_mask, struct dt_iop_module_t *self,
                              float *const out,
                              const struct dt_iop_roi_t *const roi_in,
                              const struct dt_iop_roi_t *const roi_out);
+
+// The following function is used like distort_transform, but based on
+// the overall geometric distortion (as produced by e.g. rotate and perspective)
+// without regard for any local distortions such as liquify's warps.
+// If not provided by a module, distort_transform will be called instead.
+OPTIONAL(gboolean, geometry_transform, struct dt_iop_module_t *self,
+                                       struct dt_dev_pixelpipe_iop_t *piece,
+                                       float *points,
+                                       size_t points_count);
 
 // introspection related callbacks, will be auto-implemented if
 // DT_MODULE_INTROSPECTION() is used,

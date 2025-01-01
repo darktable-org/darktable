@@ -2722,6 +2722,38 @@ static gboolean _dev_distort_transform_locked(dt_develop_t *dev,
   return TRUE;
 }
 
+// running with the history locked
+static gboolean _dev_geometry_transform_all_locked(dt_develop_t *dev,
+                                                   dt_dev_pixelpipe_t *pipe,
+                                                   float *points,
+                                                   const size_t points_count)
+{
+  GList *modules = pipe->iop;
+  GList *pieces = pipe->nodes;
+  while(modules)
+  {
+    if(!pieces)
+    {
+      return FALSE;
+    }
+    dt_iop_module_t *module = modules->data;
+    dt_dev_pixelpipe_iop_t *piece = pieces->data;
+    if(piece->enabled
+       && piece->data
+       && !(dt_iop_module_is_skipped(dev, module)
+            && (pipe->type & DT_DEV_PIXELPIPE_BASIC)))
+    {
+      if(module->geometry_transform)
+        module->geometry_transform(module, piece, points, points_count);
+      else
+        module->distort_transform(module, piece, points, points_count);
+    }
+    modules = g_list_next(modules);
+    pieces = g_list_next(pieces);
+  }
+  return TRUE;
+}
+
 void dt_dev_zoom_move(dt_dev_viewport_t *port,
                       dt_dev_zoom_t zoom,
                       float scale,
@@ -2736,7 +2768,7 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
   dt_pthread_mutex_lock(&dev->history_mutex);
 
   float pts[2] = { port->zoom_x, port->zoom_y };
-  _dev_distort_transform_locked(darktable.develop, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
+  _dev_geometry_transform_all_locked(darktable.develop, port->pipe, pts, 1);
 
   const float old_pts0 = pts[0];
   const float old_pts1 = pts[1];
@@ -2966,8 +2998,7 @@ void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
   if(x && y && port->pipe)
   {
     float pts[2] = { port->zoom_x, port->zoom_y };
-    dt_dev_distort_transform_plus(darktable.develop, port->pipe,
-                                  0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
+    dt_dev_geometry_transform(darktable.develop, port->pipe, pts, 1);
     *x = pts[0] / port->pipe->processed_width - 0.5f;
     *y = pts[1] / port->pipe->processed_height - 0.5f;
   }
@@ -3305,6 +3336,18 @@ gboolean dt_dev_distort_backtransform_plus(dt_develop_t *dev,
   dt_pthread_mutex_unlock(&dev->history_mutex);
   return success;
 }
+
+gboolean dt_dev_geometry_transform(dt_develop_t *dev,
+                                   dt_dev_pixelpipe_t *pipe,
+                                   float *points,
+                                   const size_t points_count)
+{
+  dt_pthread_mutex_lock(&dev->history_mutex);
+  _dev_geometry_transform_all_locked(dev, pipe, points, points_count);
+  dt_pthread_mutex_unlock(&dev->history_mutex);
+  return TRUE;
+}
+
 
 dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev,
                                                     dt_dev_pixelpipe_t *pipe,
