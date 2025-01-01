@@ -97,6 +97,7 @@ typedef enum dt_develop_mask_mode_t
   DEVELOP_MASK_MASK = 1 << 1,                                                        // drawn mask
   DEVELOP_MASK_CONDITIONAL = 1 << 2,                                                 // parametric mask
   DEVELOP_MASK_RASTER = 1 << 3,                                                      // raster mask
+  DEVELOP_MASK_AI = 1 << 4,
   DEVELOP_MASK_MASK_CONDITIONAL = (DEVELOP_MASK_MASK | DEVELOP_MASK_CONDITIONAL)     // drawn & parametric
 } dt_develop_mask_mode_t;
 
@@ -294,6 +295,7 @@ typedef struct dt_iop_gui_blend_data_t
   gboolean masks_support;
   gboolean masks_inited;
   gboolean raster_inited;
+  gboolean ai_masks_inited;
 
   dt_develop_blend_colorspace_t csp;
   dt_iop_module_t *module;
@@ -308,6 +310,7 @@ typedef struct dt_iop_gui_blend_data_t
   GtkBox *blendif_box;
   GtkBox *masks_box;
   GtkBox *raster_box;
+  GtkBox *ai_box;
 
   GtkWidget *selected_mask_mode;
   GtkWidget *colorpicker;
@@ -350,6 +353,9 @@ typedef struct dt_iop_gui_blend_data_t
 
   GtkWidget *raster_combo;
   GtkWidget *raster_polarity;
+
+  GtkWidget *ai_threshold;
+  GtkWidget *execute_ai;
 
   int control_button_pressed;
   dt_pthread_mutex_t lock;

@@ -279,6 +279,8 @@ void dtgtk_cairo_paint_masks_parametric(cairo_t *cr, gint x, gint y, gint w, gin
 void dtgtk_cairo_paint_masks_drawn_and_parametric(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint a raster mask icon */
 void dtgtk_cairo_paint_masks_raster(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint a AI mask icon */
+void dtgtk_cairo_paint_masks_ai(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint a mask brush icon */
 void dtgtk_cairo_paint_masks_brush(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a vertical gradient icon for masks selection */
