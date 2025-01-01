@@ -4209,6 +4209,10 @@ start:
                                            readonly_db_text,
                                            _("_quit darktable"),
                                            NULL);
+      // There is no REAL need to free the string before exiting, but we do it
+      // to avoid creating a code pattern that could be mistakenly copy-pasted
+      // somewhere else where freeing memory would actually be needed.
+      g_free(readonly_db_text);
     }
     exit(1);
   }
