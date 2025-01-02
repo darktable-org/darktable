@@ -745,7 +745,8 @@ static void _import_add_file_callback(GObject *direnum,
     g_object_unref(gfolder);
     g_object_unref(direnum);
     g_list_free_full(file_list, g_object_unref);
-    dt_print(DT_DEBUG_ALWAYS,
+    if(error->code != G_IO_ERROR_CANCELLED)
+      dt_print(DT_DEBUG_ALWAYS,
              "[_import_add_file_callback] error: %s", error->message);
     g_error_free(error);
     return;
