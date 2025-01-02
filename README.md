@@ -305,7 +305,7 @@ git submodule update --init
 #### Easy way
 
 WARNING: If you have previously built darktable, don't forget to first completely remove (`rm -R`) the `build`
-and `/opt/darktable` directories to avoid conflicting files from different versions. Many weird behaviours and transient
+and `/opt/darktable` directories to avoid conflicting files from different versions. Many weird behaviors and transient
 bugs have been reported that can be traced to the build cache not properly invalidating the changed dependencies, so
 the safest way is to completely remove previously built binaries and start again from scratch.
 
