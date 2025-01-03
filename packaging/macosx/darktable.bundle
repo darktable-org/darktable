@@ -43,5 +43,4 @@
   <data dest="${bundle}/Contents/Resources/share/applications/defaults.list">${project}/defaults.list</data>
   <data dest="${bundle}/Contents/Resources/share/applications/open.desktop">${project}/open.desktop</data>
   <icon-theme icons="all">Adwaita</icon-theme>
-  <icon-theme icons="all">Tango</icon-theme>
 </app-bundle>
