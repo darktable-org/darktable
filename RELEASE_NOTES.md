@@ -75,6 +75,10 @@ changes (where available).
 - Fix collection module when using the "module" filter which was
   listing none of the processing modules.
 
+- Fix iop-order user presets use. It was not possible to get a user's
+  iop-order preset to be applied as the darktable internal presets
+  where always picked up first.
+
 ## Lua
 
 ### API Version
