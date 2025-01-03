@@ -1663,8 +1663,11 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
        "       AND ?10 BETWEEN focal_length_min AND focal_length_max"
        "       AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))"
        "       AND operation = 'ioporder'"
-       " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
+       " ORDER BY writeprotect ASC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
        -1, &stmt, NULL);
+    // NOTE: the order "writeprotect ASC" is very important as it ensure that
+    //       user's defined presets are listed first and will be used instead of
+    //       the darktable internal ones.
     // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, -1, SQLITE_TRANSIENT);
@@ -1687,6 +1690,8 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
+      dt_print(DT_DEBUG_PARAMS,
+               "[dev_auto_apply_presets] found iop-order preset, apply it on %d", imgid);
       const char *params = (char *)sqlite3_column_blob(stmt, 0);
       const int32_t params_len = sqlite3_column_bytes(stmt, 0);
       iop_list = dt_ioppr_deserialize_iop_order_list(params, params_len);
@@ -1695,11 +1700,19 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     {
       // we have no auto-apply order, so apply iop order, depending of the workflow
       if(is_scene_referred || is_workflow_none)
+      {
+        dt_print(DT_DEBUG_PARAMS,
+                 "[dev_auto_apply_presets] no iop-order preset, use DT_IOP_ORDER_{JPG/RAW} on %d", imgid);
         iop_list = dt_ioppr_get_iop_order_list_version((iformat & FOR_LDR)
                                                        ? DT_DEFAULT_IOP_ORDER_JPG
                                                        : DT_DEFAULT_IOP_ORDER_RAW);
+      }
       else
+      {
+        dt_print(DT_DEBUG_PARAMS,
+                 "[dev_auto_apply_presets] no iop-order preset, use DT_IOP_ORDER_LEGACY on %d", imgid);
         iop_list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_LEGACY);
+      }
     }
 
     // add multi-instance entries that could have been added if more
