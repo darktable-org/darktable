@@ -1663,8 +1663,11 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
        "       AND ?10 BETWEEN focal_length_min AND focal_length_max"
        "       AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))"
        "       AND operation = 'ioporder'"
-       " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
+       " ORDER BY writeprotect ASC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
        -1, &stmt, NULL);
+    // NOTE: the order "writeprotect ASC" is very important as it ensure that
+    //       user's defined presets are listed first and will be used instead of
+    //       the darktable internal ones.
     // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, -1, SQLITE_TRANSIENT);
