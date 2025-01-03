@@ -2876,7 +2876,7 @@ gboolean dt_image_write_sidecar_file(const dt_imgid_t imgid)
   if((xmp_mode == DT_WRITE_XMP_ALWAYS)
      || ((xmp_mode == DT_WRITE_XMP_LAZY) && _any_altered_data(imgid)))
   {
-    error = dt_exif_xmp_write(imgid, filename, TRUE);
+    error = dt_exif_xmp_write(imgid, filename, FALSE);
   }
   else if(xmp_mode == DT_WRITE_XMP_LAZY)
   {
