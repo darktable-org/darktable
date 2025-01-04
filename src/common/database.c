@@ -5036,7 +5036,6 @@ gboolean dt_database_snapshot(const struct dt_database_t *db)
     return FALSE;
   }
   g_rename(lib_tmpbackup_file, lib_backup_file);
-  g_chmod(lib_backup_file, S_IRUSR);
   g_free(lib_tmpbackup_file);
   g_free(lib_backup_file);
 
@@ -5054,7 +5053,6 @@ gboolean dt_database_snapshot(const struct dt_database_t *db)
     return FALSE;
   }
   g_rename(dat_tmpbackup_file, dat_backup_file);
-  g_chmod(dat_backup_file, S_IRUSR);
   g_free(dat_tmpbackup_file);
   g_free(dat_backup_file);
 
