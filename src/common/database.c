@@ -4075,12 +4075,11 @@ void dt_database_backup(const char *filename)
     if(g_file_test(filename, G_FILE_TEST_EXISTS))
     {
       copy_status = g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
-      if(copy_status) copy_status = g_chmod(backup, S_IRUSR) == 0;
     }
     else
     {
       // there is nothing to backup, create an empty file to prevent further backup attempts
-      int fd = g_open(backup, O_CREAT, S_IRUSR);
+      const int fd = g_open(backup, O_CREAT, S_IWUSR);
       if(fd < 0 || !g_close(fd, &gerror)) copy_status = FALSE;
     }
     if(!copy_status) dt_print(DT_DEBUG_ALWAYS, "[backup failed] %s -> %s", filename, backup);
