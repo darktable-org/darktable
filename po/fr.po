@@ -6424,7 +6424,7 @@ msgstr "Erreur de chargement du fichier « %s »"
 #. initialize the database
 #: ../src/common/darktable.c:1518
 msgid "opening image library"
-msgstr "Ouverture de la bibliothèque d’image"
+msgstr "Ouverture de la bibliothèque d’images"
 
 #: ../src/common/darktable.c:1531
 msgid "forwarding image(s) to running instance"
