@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2024 darktable developers.
+    Copyright (C) 2014-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@
 #include "common/variables.h"
 #include "control/jobs.h"
 #include "dtgtk/resetlabel.h"
+#include "dtgtk/stylemenu.h"
 #include "gui/accelerators.h"
 #include "gui/drag_and_drop.h"
 #include "gui/gtk.h"
@@ -39,6 +40,8 @@
 #include "libs/lib_api.h"
 
 DT_MODULE(4)
+
+#define PRINT_CONFIG_PREFIX "plugins/print/print/"
 
 const char *name(dt_lib_module_t *self)
 {
@@ -761,13 +764,13 @@ static void _print_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   g_free(message);
 
   // FIXME: getting this from conf as w/prior code, but switch to getting from ps
-  params->style = dt_conf_get_string("plugins/print/print/style");
+  params->style = dt_conf_get_string(PRINT_CONFIG_PREFIX "style");
   params->style_append = ps->v_style_append;
 
   // FIXME: getting these from conf as w/prior code, but switch to getting them from ps
-  params->buf_icc_type = dt_conf_get_int("plugins/print/print/icctype");
-  params->buf_icc_profile = dt_conf_get_string("plugins/print/print/iccprofile");
-  params->buf_icc_intent = dt_conf_get_int("plugins/print/print/iccintent");
+  params->buf_icc_type = dt_conf_get_int(PRINT_CONFIG_PREFIX "icctype");
+  params->buf_icc_profile = dt_conf_get_string(PRINT_CONFIG_PREFIX "iccprofile");
+  params->buf_icc_intent = dt_conf_get_int(PRINT_CONFIG_PREFIX "iccintent");
 
   params->p_icc_type = ps->v_picctype;
   params->p_icc_profile = g_strdup(ps->v_piccprofile);
@@ -789,7 +792,7 @@ static void _set_printer(const dt_lib_module_t *self,
   if(ps->prt.printer.is_turboprint)
     dt_bauhaus_combobox_set(ps->pprofile, 0);
 
-  dt_conf_set_string("plugins/print/print/printer", printer_name);
+  dt_conf_set_string(PRINT_CONFIG_PREFIX "printer", printer_name);
 
   // add papers for the given printer
   dt_bauhaus_combobox_clear(ps->papers);
@@ -800,7 +803,7 @@ static void _set_printer(const dt_lib_module_t *self,
     const dt_paper_info_t *p = papers->data;
     dt_bauhaus_combobox_add(ps->papers, p->common_name);
   }
-  const char *default_paper = dt_conf_get_string_const("plugins/print/print/paper");
+  const char *default_paper = dt_conf_get_string_const(PRINT_CONFIG_PREFIX "paper");
   if(!dt_bauhaus_combobox_set_from_text(ps->papers, default_paper))
     dt_bauhaus_combobox_set(ps->papers, 0);
 
@@ -813,7 +816,7 @@ static void _set_printer(const dt_lib_module_t *self,
     const dt_medium_info_t *m = media->data;
     dt_bauhaus_combobox_add(ps->media, m->common_name);
   }
-  const char *default_medium = dt_conf_get_string_const("plugins/print/print/medium");
+  const char *default_medium = dt_conf_get_string_const(PRINT_CONFIG_PREFIX "medium");
   if(!dt_bauhaus_combobox_set_from_text(ps->media, default_medium))
     dt_bauhaus_combobox_set(ps->media, 0);
 
@@ -848,7 +851,7 @@ _paper_changed(GtkWidget *combo, const dt_lib_module_t *self)
 
   dt_printing_setup_page(&ps->imgs, width, height, ps->prt.printer.resolution);
 
-  dt_conf_set_string("plugins/print/print/paper", paper_name);
+  dt_conf_set_string(PRINT_CONFIG_PREFIX "paper", paper_name);
   dt_view_print_settings(darktable.view_manager, &ps->prt, &ps->imgs);
 
   _update_slider(ps);
@@ -868,7 +871,7 @@ _media_changed(GtkWidget *combo, const dt_lib_module_t *self)
   if(medium)
     memcpy(&ps->prt.medium, medium, sizeof(dt_medium_info_t));
 
-  dt_conf_set_string("plugins/print/print/medium", medium_name);
+  dt_conf_set_string(PRINT_CONFIG_PREFIX "medium", medium_name);
   dt_view_print_settings(darktable.view_manager, &ps->prt, &ps->imgs);
 
   _update_slider(ps);
@@ -934,7 +937,7 @@ _top_border_callback(GtkWidget *spin, dt_lib_module_t *self)
   dt_lib_print_settings_t *ps = self->data;
   const double value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spin));
 
-  dt_conf_set_float("plugins/print/print/top_margin", value);
+  dt_conf_set_float(PRINT_CONFIG_PREFIX "top_margin", value);
 
   ps->prt.page.margin_top = _to_mm(ps, value);
 
@@ -948,9 +951,9 @@ _top_border_callback(GtkWidget *spin, dt_lib_module_t *self)
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_left), value);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right), value);
 
-    dt_conf_set_float("plugins/print/print/bottom_margin", value);
-    dt_conf_set_float("plugins/print/print/left_margin", value);
-    dt_conf_set_float("plugins/print/print/right_margin", value);
+    dt_conf_set_float(PRINT_CONFIG_PREFIX "bottom_margin", value);
+    dt_conf_set_float(PRINT_CONFIG_PREFIX "left_margin", value);
+    dt_conf_set_float(PRINT_CONFIG_PREFIX "right_margin", value);
   }
 
   _update_slider(ps);
@@ -962,7 +965,7 @@ _bottom_border_callback(GtkWidget *spin, dt_lib_module_t *self)
   dt_lib_print_settings_t *ps = self->data;
   const double value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spin));
 
-  dt_conf_set_float("plugins/print/print/bottom_margin", value);
+  dt_conf_set_float(PRINT_CONFIG_PREFIX "bottom_margin", value);
 
   ps->prt.page.margin_bottom = _to_mm(ps, value);
   _update_slider(ps);
@@ -974,7 +977,7 @@ _left_border_callback(GtkWidget *spin, dt_lib_module_t *self)
   dt_lib_print_settings_t *ps = self->data;
   const double value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spin));
 
-  dt_conf_set_float("plugins/print/print/left_margin", value);
+  dt_conf_set_float(PRINT_CONFIG_PREFIX "left_margin", value);
 
   ps->prt.page.margin_left = _to_mm(ps, value);
   _update_slider(ps);
@@ -986,7 +989,7 @@ _right_border_callback(GtkWidget *spin, dt_lib_module_t *self)
   dt_lib_print_settings_t *ps = self->data;
   const double value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spin));
 
-  dt_conf_set_float("plugins/print/print/right_margin", value);
+  dt_conf_set_float(PRINT_CONFIG_PREFIX "right_margin", value);
 
   ps->prt.page.margin_right = _to_mm(ps, value);
   _update_slider(ps);
@@ -999,7 +1002,7 @@ _lock_callback(GtkWidget *button, dt_lib_module_t *self)
 
   ps->lock_activated = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
 
-  dt_conf_set_bool("plugins/print/print/lock_borders", ps->lock_activated);
+  dt_conf_set_bool(PRINT_CONFIG_PREFIX "lock_borders", ps->lock_activated);
 
   gtk_widget_set_sensitive(GTK_WIDGET(ps->b_bottom), !ps->lock_activated);
   gtk_widget_set_sensitive(GTK_WIDGET(ps->b_left), !ps->lock_activated);
@@ -1076,7 +1079,7 @@ static void _grid_size_changed(GtkWidget *widget, dt_lib_module_t *self)
 
   dt_lib_print_settings_t *ps = self->data;
   const float value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->grid_size));
-  dt_conf_set_float("plugins/print/print/grid_size", _to_mm(ps, value));
+  dt_conf_set_float(PRINT_CONFIG_PREFIX "grid_size", _to_mm(ps, value));
 
   dt_control_queue_redraw_center();
 }
@@ -1088,12 +1091,12 @@ _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
 
   dt_lib_print_settings_t *ps = self->data;
 
-  const float grid_size = dt_conf_get_float("plugins/print/print/grid_size");
+  const float grid_size = dt_conf_get_float(PRINT_CONFIG_PREFIX "grid_size");
 
   const int unit = dt_bauhaus_combobox_get(combo);
   if(unit < 0) return; // shouldn't happen, but it could be -1 if nothing is selected
   ps->unit = unit;
-  dt_conf_set_string("plugins/print/print/unit", _unit_names[unit]);
+  dt_conf_set_string(PRINT_CONFIG_PREFIX "unit", _unit_names[unit]);
 
   const double margin_top = ps->prt.page.margin_top;
   const double margin_left = ps->prt.page.margin_left;
@@ -1148,25 +1151,75 @@ _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
   _fill_box_values(ps);
 }
 
-static void
-_style_callback(GtkWidget *widget, dt_lib_module_t *self)
+static void _update_style_label(dt_lib_print_settings_t *ps, const char *name)
 {
-  dt_lib_print_settings_t *ps = self->data;
-
-  if(dt_bauhaus_combobox_get(ps->style) == 0)
+  if(!ps)
+    return;
+  if(ps->style_mode)
   {
-    dt_conf_set_string("plugins/print/print/style", "");
-    gtk_widget_set_sensitive(GTK_WIDGET(ps->style_mode), FALSE);
+    gtk_widget_set_visible(GTK_WIDGET(ps->style_mode), (name && name[0] != '\0'));
+    gtk_widget_set_sensitive(GTK_WIDGET(ps->style_mode), (name && name[0] != '\0'));
+  }
+
+  // We use the string "none" to indicate that we don't apply any style to the export
+  char *localized_style = (name && name[0]) ? dt_util_localize_segmented_name(name) : g_strdup(_("none"));
+
+  // Use only the leaf part of the segmented style name in the tooltip
+  char *leaf = strrchr(localized_style, '|');
+  leaf = leaf ? leaf+1 : localized_style;
+  gtk_label_set_text(GTK_LABEL(ps->style), leaf);
+  char *tooltip = g_strdup_printf(_("style to be applied on print:\n<b>%s</b>"),
+                                  localized_style);
+  g_free(localized_style);
+  gtk_widget_set_tooltip_markup(ps->style, tooltip);
+  g_free(tooltip);
+  g_free(ps->v_style);
+  ps->v_style = g_strdup(name && name[0] ? name : "");
+  dt_conf_set_string(PRINT_CONFIG_PREFIX "style", (name && name[0]) ? name : "");
+}
+
+static void _update_style(const dt_stylemenu_data_t *menu_data)
+{
+  _update_style_label(menu_data->user_data,menu_data->name);
+}
+
+static void _apply_style_activate_callback(GtkMenuItem *menuitem,
+                                           const dt_stylemenu_data_t *menu_data)
+{
+  if(gtk_get_current_event()->type == GDK_KEY_PRESS)
+  {
+    _update_style(menu_data);
+  }
+}
+
+static gboolean _apply_style_button_callback(GtkMenuItem *menuitem,
+                                             GdkEventButton *event,
+                                             const dt_stylemenu_data_t *menu_data)
+{
+  if(event->button == 1)
+  {
+    _update_style(menu_data);
   }
   else
   {
-    const gchar *style = dt_bauhaus_combobox_get_text(ps->style);
-    dt_conf_set_string("plugins/print/print/style", style);
-    gtk_widget_set_sensitive(GTK_WIDGET(ps->style_mode), TRUE);
+    //??? dt_shortcut_copy_lua(NULL, name);
   }
+  return FALSE;
+}
 
-  g_free(ps->v_style);
-  ps->v_style = dt_conf_get_string("plugins/print/print/style");
+static void _style_popupmenu_callback(GtkWidget *w, gpointer user_data)
+{
+  /* if we got any styles, lets popup menu for selection */
+  GtkMenuShell *menu = dtgtk_build_style_menu_hierarchy(TRUE,
+                                                        _apply_style_activate_callback,
+                                                        _apply_style_button_callback,
+                                                        user_data);
+  if(menu)
+  {
+    dt_gui_menu_popup(GTK_MENU(menu), w, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST);
+  }
+  else
+    dt_control_log(_("no styles have been created yet"));
 }
 
 static void
@@ -1179,7 +1232,7 @@ _style_mode_changed(GtkWidget *widget, dt_lib_module_t *self)
   else
     ps->v_style_append = TRUE;
 
-  dt_conf_set_bool("plugins/print/print/style_append", ps->v_style_append);
+  dt_conf_set_bool(PRINT_CONFIG_PREFIX "style_append", ps->v_style_append);
 }
 
 static void
@@ -1192,16 +1245,16 @@ _profile_changed(GtkWidget *widget, dt_lib_module_t *self)
     dt_lib_export_profile_t *pp = prof->data;
     if(pp->pos == pos)
     {
-      dt_conf_set_int("plugins/print/print/icctype", pp->type);
-      dt_conf_set_string("plugins/print/print/iccprofile", pp->filename);
+      dt_conf_set_int(PRINT_CONFIG_PREFIX "icctype", pp->type);
+      dt_conf_set_string(PRINT_CONFIG_PREFIX "iccprofile", pp->filename);
       g_free(ps->v_iccprofile);
       ps->v_icctype = pp->type;
       ps->v_iccprofile = g_strdup(pp->filename);
       return;
     }
   }
-  dt_conf_set_int("plugins/print/print/icctype", DT_COLORSPACE_NONE);
-  dt_conf_set_string("plugins/print/print/iccprofile", "");
+  dt_conf_set_int(PRINT_CONFIG_PREFIX "icctype", DT_COLORSPACE_NONE);
+  dt_conf_set_string(PRINT_CONFIG_PREFIX "iccprofile", "");
   g_free(ps->v_iccprofile);
   ps->v_icctype = DT_COLORSPACE_NONE;
   ps->v_iccprofile = g_strdup("");
@@ -1252,7 +1305,7 @@ _printer_bpc_callback(GtkWidget *widget, dt_lib_module_t *self)
   dt_lib_print_settings_t *ps = self->data;
   ps->v_black_point_compensation =
     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ps->black_point_compensation));
-  dt_conf_set_bool("plugins/print/print/black_point_compensation",
+  dt_conf_set_bool(PRINT_CONFIG_PREFIX "black_point_compensation",
                    ps->v_black_point_compensation);
 }
 
@@ -1262,7 +1315,7 @@ _intent_callback(GtkWidget *widget, dt_lib_module_t *self)
   dt_lib_print_settings_t *ps = self->data;
   const int pos = dt_bauhaus_combobox_get(widget);
   // record the intent that will override the out rendering module on export
-  dt_conf_set_int("plugins/print/print/iccintent", pos - 1);
+  dt_conf_set_int(PRINT_CONFIG_PREFIX "iccintent", pos - 1);
   ps->v_intent = pos - 1;
 }
 
@@ -1407,7 +1460,7 @@ void view_enter(struct dt_lib_module_t *self,
   {
     // The printer list was filled by dt_printers_discovery() in a background job.
     // Now we fill the printer combo with the found printers.
-    char *default_printer = dt_conf_get_string("plugins/print/print/printer");
+    char *default_printer = dt_conf_get_string(PRINT_CONFIG_PREFIX "printer");
 
     for(const GList *iter = d->printer_list; iter; iter = g_list_next(iter))
     {
@@ -2346,7 +2399,7 @@ void gui_init(dt_lib_module_t *self)
 
   d->imgs.motion_over = -1;
 
-  const char *str = dt_conf_get_string_const("plugins/print/print/unit");
+  const char *str = dt_conf_get_string_const(PRINT_CONFIG_PREFIX "unit");
   const char **names = _unit_names;
   for(_unit_t i=0; *names; names++, i++)
     if(g_strcmp0(str, *names) == 0)
@@ -2356,10 +2409,10 @@ void gui_init(dt_lib_module_t *self)
 
   // set all margins + unit from settings
 
-  const float top_b = dt_conf_get_float("plugins/print/print/top_margin");
-  const float bottom_b = dt_conf_get_float("plugins/print/print/bottom_margin");
-  const float left_b = dt_conf_get_float("plugins/print/print/left_margin");
-  const float right_b = dt_conf_get_float("plugins/print/print/right_margin");
+  const float top_b = dt_conf_get_float(PRINT_CONFIG_PREFIX "top_margin");
+  const float bottom_b = dt_conf_get_float(PRINT_CONFIG_PREFIX "bottom_margin");
+  const float left_b = dt_conf_get_float(PRINT_CONFIG_PREFIX "left_margin");
+  const float right_b = dt_conf_get_float(PRINT_CONFIG_PREFIX "right_margin");
 
   d->prt.page.margin_top = _to_mm(d, top_b);
   d->prt.page.margin_bottom = _to_mm(d, bottom_b);
@@ -2508,7 +2561,7 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_printer_bpc_callback), (gpointer)self);
 
   d->v_black_point_compensation =
-    dt_conf_get_bool("plugins/print/print/black_point_compensation");
+    dt_conf_get_bool(PRINT_CONFIG_PREFIX "black_point_compensation");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->black_point_compensation),
                                d->v_black_point_compensation);
 
@@ -2626,7 +2679,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_halign(GTK_WIDGET(hboxdim), GTK_ALIGN_CENTER);
   gtk_widget_set_halign(GTK_WIDGET(hboxinfo), GTK_ALIGN_CENTER);
 
-  const gboolean lock_active = dt_conf_get_bool("plugins/print/print/lock_borders");
+  const gboolean lock_active = dt_conf_get_bool(PRINT_CONFIG_PREFIX "lock_borders");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->lock_button), lock_active);
 
   // grid & snap grid
@@ -2641,7 +2694,7 @@ void gui_init(dt_lib_module_t *self)
 
     gtk_spin_button_set_value
       (GTK_SPIN_BUTTON(d->grid_size),
-       dt_conf_get_float("plugins/print/print/grid_size") * units[d->unit]);
+       dt_conf_get_float(PRINT_CONFIG_PREFIX "grid_size") * units[d->unit]);
 
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
@@ -2796,8 +2849,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->profile), TRUE, TRUE, 0);
   dt_bauhaus_combobox_add(d->profile, _("image settings"));
 
-  const int icctype = dt_conf_get_int("plugins/print/print/icctype");
-  const gchar *iccprofile = dt_conf_get_string_const("plugins/print/print/iccprofile");
+  const int icctype = dt_conf_get_int(PRINT_CONFIG_PREFIX "icctype");
+  const gchar *iccprofile = dt_conf_get_string_const(PRINT_CONFIG_PREFIX "iccprofile");
   combo_idx = -1;
   n = 0;
 
@@ -2818,8 +2871,8 @@ void gui_init(dt_lib_module_t *self)
 
   if(combo_idx == -1)
   {
-    dt_conf_set_int("plugins/print/print/icctype", DT_COLORSPACE_NONE);
-    dt_conf_set_string("plugins/print/print/iccprofile", "");
+    dt_conf_set_int(PRINT_CONFIG_PREFIX "icctype", DT_COLORSPACE_NONE);
+    dt_conf_set_string(PRINT_CONFIG_PREFIX "iccprofile", "");
     g_free(d->v_iccprofile);
     d->v_icctype = DT_COLORSPACE_NONE;
     d->v_iccprofile = g_strdup("");
@@ -2838,7 +2891,7 @@ void gui_init(dt_lib_module_t *self)
   //  Add export intent combo
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->intent, self, NULL, N_("intent"), NULL,
-                               dt_conf_get_int("plugins/print/print/iccintent") + 1,
+                               dt_conf_get_int(PRINT_CONFIG_PREFIX "iccintent") + 1,
                                _intent_callback, self,
                                N_("image settings"),
                                N_("perceptual"),
@@ -2849,56 +2902,39 @@ void gui_init(dt_lib_module_t *self)
 
   //  Add export style combo
 
-  d->style = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_widget_set_label(d->style, NULL, N_("style"));
+  const char *current_style_name = dt_conf_get_string_const(PRINT_CONFIG_PREFIX "style");
 
-  dt_bauhaus_combobox_add(d->style, _("none"));
+  GtkWidget *styles_button = dtgtk_button_new(dtgtk_cairo_paint_styles, 0, NULL);
+  gtk_widget_set_halign(styles_button,GTK_ALIGN_END);
+  g_signal_connect(G_OBJECT(styles_button), "clicked", G_CALLBACK(_style_popupmenu_callback), (gpointer)d);
+  gtk_widget_set_tooltip_text(styles_button, _("select style to be applied on printing"));
+  GtkBox *style_box = (GtkBox*)gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(style_box), _("temporary style to use while printing"));
+  GtkWidget *styles_label = gtk_label_new(_("style"));
+  gtk_box_pack_start(style_box, styles_label, FALSE, FALSE, 0);
+  GtkWidget *current_style = gtk_label_new("");
+  gtk_widget_set_halign(current_style,GTK_ALIGN_END);
+  gtk_label_set_justify(GTK_LABEL(current_style), GTK_JUSTIFY_RIGHT);
+  gtk_label_set_ellipsize(GTK_LABEL(current_style), PANGO_ELLIPSIZE_MIDDLE);
+  gtk_box_pack_start(style_box, current_style, TRUE, TRUE, 0);
+  gtk_box_pack_start(style_box, styles_button, FALSE, FALSE, 0);
 
-  GList *styles = dt_styles_get_list("");
-  const char *current_style = dt_conf_get_string_const("plugins/print/print/style");
-  combo_idx = -1; n=0;
-
-  for(const GList *st_iter = styles; st_iter; st_iter = g_list_next(st_iter))
-  {
-    dt_style_t *style=(dt_style_t *)st_iter->data;
-    dt_bauhaus_combobox_add(d->style, style->name);
-    n++;
-    if(g_strcmp0(style->name,current_style)==0)
-    {
-      g_free(d->v_style);
-      d->v_style = g_strdup(current_style);
-      combo_idx=n;
-    }
-  }
-  g_list_free_full(styles, dt_style_free);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->style), TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(d->style, _("temporary style to use while printing"));
-
-  // style not found, maybe a style has been removed? revert to none
-  if(combo_idx == -1)
-  {
-    dt_conf_set_string("plugins/print/print/style", "");
-    g_free(d->v_style);
-    d->v_style = g_strdup("");
-    combo_idx=0;
-  }
-  dt_bauhaus_combobox_set(d->style, combo_idx);
-
-  g_signal_connect (G_OBJECT (d->style), "value-changed",
-                    G_CALLBACK (_style_callback),
-                    (gpointer)self);
+  d->style = GTK_WIDGET(current_style);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(style_box), FALSE, TRUE, 0);
 
   //  Whether to add/replace style items
 
-  d->v_style_append = dt_conf_get_bool("plugins/print/print/style_append");
+  d->v_style_append = dt_conf_get_bool(PRINT_CONFIG_PREFIX "style_append");
   DT_BAUHAUS_COMBOBOX_NEW_FULL
     (d->style_mode, self, NULL, N_("mode"),
      _("whether the style items are appended to the history or replacing the history"),
      d->v_style_append?1:0, _style_mode_changed, self,
      N_("replace history"), N_("append history"));
+  gtk_widget_set_visible(GTK_WIDGET(d->style_mode), current_style_name[0]?FALSE:TRUE);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), current_style_name[0]?FALSE:TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->style_mode), TRUE, TRUE, 0);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), combo_idx==0?FALSE:TRUE);
+  _update_style_label(d, current_style_name ? current_style_name : "");
 
   // Print button
 
@@ -3436,7 +3472,7 @@ void gui_reset(dt_lib_module_t *self)
   dt_bauhaus_combobox_set(ps->profile, 0);
   dt_bauhaus_combobox_set(ps->pprofile, 0);
   dt_bauhaus_combobox_set(ps->pintent, 0);
-  dt_bauhaus_combobox_set(ps->style, 0);
+//  dt_bauhaus_combobox_set(ps->style, 0);
   dt_bauhaus_combobox_set(ps->intent, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->black_point_compensation), TRUE);
   gtk_widget_set_sensitive(GTK_WIDGET(ps->pintent), TRUE);
