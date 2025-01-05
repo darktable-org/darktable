@@ -79,6 +79,8 @@ changes (where available).
   iop-order preset to be applied as the darktable internal presets
   where always picked up first.
 
+- Fixed a crash in variable expansion for $(SEQUENCE[n,m]).
+
 ## Lua
 
 ### API Version
