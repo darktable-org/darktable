@@ -217,7 +217,6 @@ Support for the following cameras is suspended because no samples are available 
 - Leaf Aptus-II 5(LI300059)/Mamiya 645 AFD
 - Leaf Credo 60
 - Leaf Credo 80
-- Minolta DiMAGE 5
 - Olympus SP320
 - Phase One IQ250
 - Sinar Hy6/ Sinarback eXact
