@@ -1439,8 +1439,7 @@ static gboolean _event_button_press(GtkWidget *widget,
       }
     }
 
-    if(event->button == 1
-       && event->type == GDK_BUTTON_PRESS
+    if(event->type == GDK_BUTTON_PRESS
        && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
       return FALSE;
   }
@@ -1523,7 +1522,8 @@ static gboolean _event_button_release(GtkWidget *widget,
 
   if(cv != DT_VIEW_DARKROOM
      && cv != DT_VIEW_LIGHTTABLE
-     && cv != DT_VIEW_MAP)
+     && cv != DT_VIEW_MAP
+     && cv != DT_VIEW_PRINT)
     return FALSE;
 
   dt_set_backthumb_time(0.0);
@@ -1576,6 +1576,7 @@ static gboolean _event_button_release(GtkWidget *widget,
       else
       {
         dt_selection_select_single(darktable.selection, id);
+        DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
       }
     }
   }
