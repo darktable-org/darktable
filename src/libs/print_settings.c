@@ -1335,6 +1335,7 @@ static void _print_settings_activate_callback(gpointer instance,
     if(ps->has_changed)
     {
       dt_printing_setup_image(&ps->imgs, 0, imgid, 100, 100, ps->imgs.box[0].alignment);
+      dt_control_queue_redraw_center();
     }
     else
     {
