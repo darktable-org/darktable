@@ -4075,15 +4075,15 @@ void dt_database_backup(const char *filename)
     if(g_file_test(filename, G_FILE_TEST_EXISTS))
     {
       copy_status = g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
-      if(copy_status) copy_status = g_chmod(backup, S_IRUSR) == 0;
     }
     else
     {
       // there is nothing to backup, create an empty file to prevent further backup attempts
-      int fd = g_open(backup, O_CREAT, S_IRUSR);
+      const int fd = g_open(backup, O_CREAT, S_IWUSR);
       if(fd < 0 || !g_close(fd, &gerror)) copy_status = FALSE;
     }
-    if(!copy_status) dt_print(DT_DEBUG_ALWAYS, "[backup failed] %s -> %s", filename, backup);
+    if(!copy_status)
+      dt_print(DT_DEBUG_ALWAYS, "[backup failed] %s -> %s", filename, backup);
 
     g_object_unref(src);
     g_object_unref(dest);
@@ -4421,7 +4421,8 @@ start:
 
       //here were sure that response is either accept (restore from snap) or reject (just delete the damaged db)
       dt_print(DT_DEBUG_ALWAYS, "[init] deleting `%s' on user request: %s",
-        dbfilename_data, g_unlink(dbfilename_data) == 0 ? "ok" : "failed" );
+               dbfilename_data,
+               g_unlink(dbfilename_data) == 0 ? "ok" : "failed" );
 
       if(resp == GTK_RESPONSE_ACCEPT && data_snap)
       {
@@ -4434,7 +4435,8 @@ start:
           if(g_file_test(data_snap, G_FILE_TEST_EXISTS))
           {
             copy_status = g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
-            if(copy_status) copy_status = g_chmod(dbfilename_data, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) == 0;
+            if(copy_status)
+              copy_status = g_chmod(dbfilename_data, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) == 0;
           }
           else
           {
@@ -4443,7 +4445,7 @@ start:
             if(fd < 0 || !g_close(fd, &gerror)) copy_status = FALSE;
           }
           dt_print(DT_DEBUG_ALWAYS, "[init] restoring `%s' from `%s' :%s",
-                 dbfilename_data, data_snap, copy_status ? "success!" : "failed!");
+                   dbfilename_data, data_snap, copy_status ? "success!" : "failed!");
           g_object_unref(src);
           g_object_unref(dest);
         }
@@ -4964,20 +4966,20 @@ static void _print_backup_progress(int remaining, int total)
 }
 
 static int _backup_db(
-  sqlite3 *src_db,               /* Database handle to back up */
-  const char *src_db_name,       /* Database name to back up */
-  const char *dest_filename,      /* Name of file to back up to */
-  void(*xProgress)(int, int)  /* Progress function to invoke */
+  sqlite3 *src_db,            // Database handle to back up
+  const char *src_db_name,    // Database name to back up
+  const char *dest_filename,  // Name of file to back up to
+  void(*xProgress)(int, int)  // Progress function to invoke
 )
 {
-  sqlite3 *dest_db;             /* Database connection opened on zFilename */
+  sqlite3 *dest_db;           // Database connection opened on dest_filename
 
-  /* Open the database file identified by zFilename. */
+  // Open the database file identified by dest_filename
   int rc = sqlite3_open(dest_filename, &dest_db);
 
   if(rc == SQLITE_OK)
   {
-    /* Open the sqlite3_backup object used to accomplish the transfer */
+    // Open the sqlite3_backup object used to accomplish the transfer
     sqlite3_backup *sb_dest = sqlite3_backup_init(dest_db, "main", src_db, src_db_name);
     if(sb_dest)
     {
@@ -4994,20 +4996,20 @@ static int _backup_db(
             sqlite3_backup_remaining(sb_dest),
             sqlite3_backup_pagecount(sb_dest)
           );
-        if( rc==SQLITE_OK || rc==SQLITE_BUSY || rc==SQLITE_LOCKED )
+        if(rc==SQLITE_OK || rc==SQLITE_BUSY || rc==SQLITE_LOCKED)
         {
           sqlite3_sleep(25);
         }
       }
-      while( rc==SQLITE_OK || rc==SQLITE_BUSY || rc==SQLITE_LOCKED );
+      while(rc==SQLITE_OK || rc==SQLITE_BUSY || rc==SQLITE_LOCKED);
 
-      /* Release resources allocated by backup_init(). */
+      // Release resources allocated by backup_init()
       (void)sqlite3_backup_finish(sb_dest);
     }
     rc = sqlite3_errcode(dest_db);
   }
-  /* Close the database connection opened on database file zFilename
-  ** and return the result of this function. */
+  // Close the database connection opened on database file dest_filename
+  // and return the result of this function
   (void)sqlite3_close(dest_db);
   return rc;
 }
@@ -5028,7 +5030,7 @@ gboolean dt_database_snapshot(const struct dt_database_t *db)
   gchar *lib_tmpbackup_file = g_strdup_printf(temp_pattern, db->dbfilename_library, date_suffix);
 
   int rc = _backup_db(db->handle, "main", lib_tmpbackup_file, _print_backup_progress);
-  if(!(rc==SQLITE_OK))
+  if(rc != SQLITE_OK)
   {
     g_unlink(lib_tmpbackup_file);
     g_free(lib_tmpbackup_file);
@@ -5037,7 +5039,6 @@ gboolean dt_database_snapshot(const struct dt_database_t *db)
     return FALSE;
   }
   g_rename(lib_tmpbackup_file, lib_backup_file);
-  g_chmod(lib_backup_file, S_IRUSR);
   g_free(lib_tmpbackup_file);
   g_free(lib_backup_file);
 
@@ -5047,7 +5048,7 @@ gboolean dt_database_snapshot(const struct dt_database_t *db)
   g_free(date_suffix);
 
   rc = _backup_db(db->handle, "data", dat_tmpbackup_file, _print_backup_progress);
-  if(!(rc==SQLITE_OK))
+  if(rc != SQLITE_OK)
   {
     g_unlink(dat_tmpbackup_file);
     g_free(dat_tmpbackup_file);
@@ -5055,7 +5056,6 @@ gboolean dt_database_snapshot(const struct dt_database_t *db)
     return FALSE;
   }
   g_rename(dat_tmpbackup_file, dat_backup_file);
-  g_chmod(dat_backup_file, S_IRUSR);
   g_free(dat_tmpbackup_file);
   g_free(dat_backup_file);
 
