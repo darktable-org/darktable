@@ -1439,8 +1439,7 @@ static gboolean _event_button_press(GtkWidget *widget,
       }
     }
 
-    if(event->button == 1
-       && event->type == GDK_BUTTON_PRESS
+    if(event->type == GDK_BUTTON_PRESS
        && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
       return FALSE;
   }
