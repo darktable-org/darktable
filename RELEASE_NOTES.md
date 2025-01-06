@@ -81,6 +81,11 @@ changes (where available).
 
 - Fixed a crash in variable expansion for $(SEQUENCE[n,m]).
 
+- Fixed handling on click from filmstrip when in map and print
+  view. On map we now properly center the image on the map. On the
+  print view, we use the selected image as content of the main print
+  area.
+
 ## Lua
 
 ### API Version
