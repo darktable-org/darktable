@@ -1124,7 +1124,7 @@ static gboolean _dev_load_requested_image(gpointer user_data)
       {
         dt_iop_gui_init(module);
 
-        /* add module to right panel */
+        /* add module to right panel with safe header buttons */
         dt_iop_gui_set_expander(module);
         dt_iop_gui_update_blending(module);
       }
@@ -1134,6 +1134,8 @@ static gboolean _dev_load_requested_image(gpointer user_data)
       //  update the module header to ensure proper multi-name display
       if(!dt_iop_is_hidden(module))
       {
+        // Make sure module header buttons are reset to a safe state
+        dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
         snprintf(option, sizeof(option), "plugins/darkroom/%s/expanded", module->op);
         module->expanded = dt_conf_get_bool(option);
         dt_iop_gui_update_expanded(module);
