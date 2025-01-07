@@ -5692,8 +5692,8 @@ msgstr ""
 #: ../src/cli/main.c:702
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr ""
-"Impossible d’obtenir les paramètres du module de stockage, exportation "
-"abandonnée."
+"Impossible d’obtenir les paramètres du module de stockage, export "
+"abandonné."
 
 #: ../src/cli/main.c:718
 #, c-format
@@ -5703,8 +5703,8 @@ msgstr "Extension inconnue « .%s »"
 #: ../src/cli/main.c:728
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
-"Impossible d’obtenir les paramètres du module de format, exportation "
-"abandonnée."
+"Impossible d’obtenir les paramètres du module de format, export "
+"abandonné."
 
 #: ../src/common/camera_control.c:207
 #, c-format
@@ -5792,7 +5792,7 @@ msgstr "Date de modification"
 
 #: ../src/common/collection.c:613 ../src/libs/filtering.c:64
 msgid "export time"
-msgstr "Date d’exportation"
+msgstr "Date d’export"
 
 #: ../src/common/collection.c:615 ../src/libs/filtering.c:65
 msgid "print time"
@@ -6258,7 +6258,7 @@ msgstr "Profil de travail"
 #: ../src/common/colorspaces.c:1422 ../src/common/colorspaces.c:1770
 #: ../src/iop/colorout.c:858
 msgid "export profile"
-msgstr "Profil d’exportation"
+msgstr "Profil d’export"
 
 #: ../src/common/colorspaces.c:1427 ../src/common/colorspaces.c:1772
 #: ../src/views/darkroom.c:2481
@@ -6424,7 +6424,7 @@ msgstr "Erreur de chargement du fichier « %s »"
 #. initialize the database
 #: ../src/common/darktable.c:1518
 msgid "opening image library"
-msgstr "Ouverture de la bibliothèque d’image"
+msgstr "Ouverture de la bibliothèque d’images"
 
 #: ../src/common/darktable.c:1531
 msgid "forwarding image(s) to running instance"
@@ -8215,8 +8215,8 @@ msgstr[1] "Applique un style à %d images"
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
-msgstr[0] "Exportation de %d image."
-msgstr[1] "Exportation de %d images."
+msgstr[0] "Export de %d image."
+msgstr[1] "Export de %d images."
 
 #: ../src/control/jobs/control_jobs.c:1832
 msgid "no image to export"
@@ -8225,7 +8225,7 @@ msgstr "Aucune image à exporter"
 #: ../src/control/jobs/control_jobs.c:1882
 #, c-format
 msgid "exporting %d / %d to %s"
-msgstr "Exportation %d / %d vers « %s »"
+msgstr "Export %d / %d vers « %s »"
 
 #: ../src/control/jobs/control_jobs.c:1897 ../src/views/darkroom.c:795
 #: ../src/views/print.c:331
@@ -8416,7 +8416,7 @@ msgstr "Appliquer un style"
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "Impossible d’obtenir les paramètres du module de stockage « %s », "
-"exportation abandonnée."
+"export abandonné."
 
 #: ../src/control/jobs/control_jobs.c:2481
 msgid "export images"
@@ -15041,7 +15041,7 @@ msgid ""
 "or buy more memory."
 msgstr ""
 "Échec de l’allocation de mémoire pour « %s », merci de diminuer le nombre de "
-"fils utilisés pour l’exportation ou d’acheter de la mémoire."
+"fils utilisés pour l’export ou d’acheter de la mémoire."
 
 #: ../src/imageio/imageio.c:1100
 msgctxt "noun"
@@ -15057,7 +15057,7 @@ msgstr "L’image"
 #, c-format
 msgid "cannot find the style '%s' to apply during export"
 msgstr ""
-"Impossible de trouver le style « %s » à appliquer pendant l’exportation"
+"Impossible de trouver le style « %s » à appliquer pendant l’export"
 
 #: ../src/imageio/imageio_libraw.c:327
 msgid ""
@@ -15135,8 +15135,8 @@ msgstr[1] "%d/%d, « %s » sautés"
 #, c-format
 msgid "%d/%d skipping (not modified since export) `%s'"
 msgid_plural "%d/%d skipping (not modified since export) `%s'"
-msgstr[0] "%d/%d sauter (non modifié depuis la dernière exportation) « %s »"
-msgstr[1] "%d/%d sauter (non modifié depuis la dernière exportation) « %s »"
+msgstr[0] "%d/%d sauter (non modifié depuis le dernier export) « %s »"
+msgstr[1] "%d/%d sauter (non modifié depuis le dernier export) « %s »"
 
 #: ../src/imageio/storage/disk.c:483 ../src/imageio/storage/email.c:192
 #: ../src/imageio/storage/gallery.c:456 ../src/imageio/storage/latex.c:376
@@ -15153,7 +15153,7 @@ msgid ""
 "\n"
 "do you really want to continue?"
 msgstr ""
-"L’exportation est en mode « écraser », ce qui écrasera toutes les images du "
+"L’export est en mode « écraser », ce qui écrasera toutes les images du "
 "même nom.\n"
 "\n"
 "Continuer ?"
@@ -18808,7 +18808,7 @@ msgstr "Colorimétrie absolue"
 
 #: ../src/iop/colorout.c:866
 msgid "export ICC profiles"
-msgstr "Profils ICC d’exportation"
+msgstr "Profils ICC d’export"
 
 #: ../src/iop/colorreconstruction.c:114
 msgid "color reconstruction"
@@ -24574,7 +24574,7 @@ msgstr "Stockage invalide pour l'export sélectionné"
 
 #: ../src/libs/export.c:343
 msgid "export to disk"
-msgstr "Exportation sur disque"
+msgstr "Export sur disque"
 
 #: ../src/libs/export.c:537
 #, c-format
@@ -24592,7 +24592,7 @@ msgid ""
 "style to be applied on export:\n"
 "<b>%s</b>"
 msgstr ""
-"Style à appliquer lors de l'exportation :\n"
+"Style à appliquer lors de l'export :\n"
 "<b>%s</b>"
 
 #: ../src/libs/export.c:1121 ../src/views/darkroom.c:1381
@@ -24636,7 +24636,7 @@ msgstr ""
 "Pour ces formats, aucune métadonnées se sera incluses sauf\n"
 "si <b>toutes</b> les cases à cocher de métadonnées sont sélectionnées dans "
 "les préférences du\n"
-"module d'exportation."
+"module d'export."
 
 #: ../src/libs/export.c:1259
 msgctxt "section"
@@ -24723,7 +24723,7 @@ msgstr "Échantillonnage de haute qualité"
 
 #: ../src/libs/export.c:1368
 msgid "do high quality resampling during export"
-msgstr "Ré-échantillonnage de haute qualité lors de l’exportation"
+msgstr "Ré-échantillonnage de haute qualité lors de l’export"
 
 #: ../src/libs/export.c:1376
 msgid "store masks"
@@ -24802,11 +24802,11 @@ msgstr "Ajouter à l’historique"
 
 #: ../src/libs/export.c:1445
 msgid "select style to be applied on export"
-msgstr "Sélectionner le style à appliquer à l'exportation"
+msgstr "Sélectionner le style à appliquer à l'export"
 
 #: ../src/libs/export.c:1448
 msgid "temporary style to use while exporting"
-msgstr "Style temporaire à utiliser à l’exportation"
+msgstr "Style temporaire à utiliser à l’export"
 
 #: ../src/libs/export.c:1449 ../src/libs/print_settings.c:2852
 msgid "style"
@@ -24847,7 +24847,7 @@ msgstr ""
 
 #: ../src/libs/export_metadata.c:274
 msgid "edit metadata exportation"
-msgstr "Modification de l’exportation des métadonnées"
+msgstr "Modification de l’export des métadonnées"
 
 #: ../src/libs/export_metadata.c:293
 msgid "general settings"
@@ -24984,7 +24984,7 @@ msgstr ""
 
 #: ../src/libs/export_metadata.c:430
 msgid "add an output metadata tag"
-msgstr "Ajoute une métadonnée à l’exportation"
+msgstr "Ajoute une métadonnée à l’export"
 
 #: ../src/libs/export_metadata.c:435
 msgid "delete metadata tag"
@@ -26750,7 +26750,7 @@ msgstr "Date changement"
 
 #: ../src/libs/metadata_view.c:142
 msgid "export timestamp"
-msgstr "Date exportation"
+msgstr "Date export"
 
 #: ../src/libs/metadata_view.c:143
 msgid "print timestamp"
@@ -27543,7 +27543,7 @@ msgstr "Paramètres d’impression"
 
 #: ../src/libs/print_settings.c:2874
 msgid "temporary style to use while printing"
-msgstr "Style temporaire à utiliser lors de l’exportation"
+msgstr "Style temporaire à utiliser lors de l’export"
 
 #: ../src/libs/print_settings.c:2906
 msgid "print with current settings"
@@ -27995,11 +27995,11 @@ msgstr "« %zd » mots-clés importés"
 
 #: ../src/libs/tagging.c:2628
 msgid "select file to export to"
-msgstr "Sélectionne le fichier pour l’exportation"
+msgstr "Sélectionne le fichier pour l’export"
 
 #: ../src/libs/tagging.c:2642
 msgid "error exporting tags"
-msgstr "Erreur lors de l’exportation de mots-clés"
+msgstr "Erreur lors de l’export de mots-clés"
 
 #: ../src/libs/tagging.c:2644
 #, c-format
@@ -28818,7 +28818,7 @@ msgid ""
 "as it does while exporting"
 msgstr ""
 "Bascule le traitement haute qualité.\n"
-"Si activé Darktable développe l'image comme lors de l'exportation."
+"Si activé Darktable développe l'image comme lors de l'export."
 
 #: ../src/views/darkroom.c:2309
 msgid ""
@@ -30473,7 +30473,7 @@ msgstr "Actions de la souris"
 #~ "La correction des AC supporte seulement les capteurs Bayer RGB standards"
 
 # Dans le module aberrations chromatiques raw :
-# À des niveaux de zoom élevés Darktable sautera le module dans le pipeline graphique, et un message “sauté en zoomant” apparaîtra en haut du module. Cette limitation ne s’applique qu’au travail interactif et non à l’exportation finale.
+# À des niveaux de zoom élevés Darktable sautera le module dans le pipeline graphique, et un message “sauté en zoomant” apparaîtra en haut du module. Cette limitation ne s’applique qu’au travail interactif et non à l’export final.
 #  et non "sauter en zoomant "
 #~ msgid "bypassed while zooming in"
 #~ msgstr "Sauté en zoomant"
@@ -30507,7 +30507,7 @@ msgstr "Actions de la souris"
 #~ "l’ensemble (ou une grande majorité) des données du capteur est "
 #~ "nécessaire.\n"
 #~ "La prévisualisation dans la chambre noire serait alors très différente de "
-#~ "l’exportation, le module est donc contourné."
+#~ "l’export, le module est donc contourné."
 
 #~ msgid "crop from top"
 #~ msgstr "Rogner depuis le haut"
@@ -31063,7 +31063,7 @@ msgstr "Actions de la souris"
 #~ msgstr "Laplacien guidé (AI)"
 
 #~ msgid "last export time"
-#~ msgstr "Date exportation"
+#~ msgstr "Date export"
 
 #~ msgid "date taken"
 #~ msgstr "Date de prise"
@@ -32904,7 +32904,7 @@ msgstr "Actions de la souris"
 #~ msgstr "Deux passes"
 
 #~ msgid "edit metadata exportation details"
-#~ msgstr "Modification de l’exportation des métadonnées"
+#~ msgstr "Modification de l’export des métadonnées"
 
 #~ msgid "import settings"
 #~ msgstr "Préférences d’importation"
@@ -33161,7 +33161,7 @@ msgstr "Actions de la souris"
 #~ msgstr "Développement de haute qualité lors du diaporama"
 
 #~ msgid "same option as for export, but applies to slideshow."
-#~ msgstr "Même option que pour l’exportation, mais pour le diaporama."
+#~ msgstr "Même option que pour l’export, mais pour le diaporama."
 
 #, fuzzy
 #~ msgid "new_location"
@@ -33483,7 +33483,7 @@ msgstr "Actions de la souris"
 
 #~ msgctxt "accel"
 #~ msgid "export profile"
-#~ msgstr "Profil d’exportation"
+#~ msgstr "Profil d’export"
 
 #~ msgctxt "accel"
 #~ msgid "spatial extent"
@@ -35104,7 +35104,7 @@ msgstr "Actions de la souris"
 #~ "Subject."
 
 #~ msgid "request exportation of synonyms"
-#~ msgstr "Demander l’exportation des synonymes"
+#~ msgstr "Demander l’export des synonymes"
 
 #~ msgid ""
 #~ "darktable doesn't export the synonyms per default. this option allows to "
