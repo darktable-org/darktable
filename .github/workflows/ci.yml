@@ -21,6 +21,7 @@ on:
         - "data/watermarks/**"
         - "tools/*"
         - "**.md"
+        - ".github/workflows/nightly.yml"
   pull_request:
     branches:
       - master
@@ -36,6 +37,7 @@ on:
         - "data/watermarks/**"
         - "tools/*"
         - "**.md"
+        - ".github/workflows/nightly.yml"
   workflow_dispatch:
 
 permissions:
