@@ -34,6 +34,17 @@ export DESTDIR=../AppDir
 cd build
 sed -i 's/\/usr\/bin\///' ../AppDir/usr/share/applications/org.darktable.darktable.desktop
 
+# The caller of the script should run `sudo lensfun-update-data` before making
+# AppImage, for the nightly builds we did this in the GitHub Action.
+# Ideally, we should include the latest lens data at the time of the build.
+# So we assume that before calling this script, there was a call to
+# lensfun-update-data, which downloaded the updates to /var/lib/lensfun-updates.
+# It might be worth adding more complex logic here to find where the latest
+# data is located on the build host, but for now we'll rely on the user of this
+# script to read this comment and act accordingly.
+mkdir -p ../AppDir/usr/share/lensfun
+cp -a /var/lib/lensfun-updates/* ../AppDir/usr/share/lensfun
+
 # Since linuxdeploy is itself an AppImage, we don't rely on it being installed on the build system, but download it every time
 # we run this script. If that doesn't suit you (for example, you want to build an AppImage without an Internet connection),
 # you can edit this script accordingly, and call linuxdeploy and its plugin from where you put them.
