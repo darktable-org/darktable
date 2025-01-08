@@ -1140,6 +1140,10 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
+  d->metadata_texts = g_hash_table_new(NULL, NULL);
+  d->metadata_counts = g_hash_table_new(NULL, NULL);
+  d->metadata_to_delete = NULL;
+
   GtkWidget *grid = gtk_grid_new();
   d->grid = grid;
   gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(0));
