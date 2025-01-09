@@ -30,7 +30,6 @@ jobs:
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
-      DARKTABLE_CLI: ${{ github.workspace }}/AppDir/usr/bin/darktable-cli
       BRANCH: ${{ matrix.branch.code }}
       BUILD_NAME: ${{ matrix.branch.label }}
     steps:
@@ -141,7 +140,6 @@ jobs:
           cd src
           bash tools/appimage-build-script.sh
       - name: Package upload
-        if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
           path: ${{ github.workspace }}/src/build/Darktable-*.AppImage*
@@ -245,7 +243,6 @@ jobs:
           git submodule update
           popd
       - name: Update lensfun data
-        if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         continue-on-error: true
         run: |
           lensfun-update-data
@@ -255,7 +252,6 @@ jobs:
           cmake -E make_directory "${INSTALL_PREFIX}"
           $(cygpath ${SRC_DIR})/.ci/ci-script.sh
       - name: Package
-        if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         run: |
           cd "${BUILD_DIR}"
           cmake --build "${BUILD_DIR}" --target package
@@ -265,7 +261,6 @@ jobs:
           echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')" >> $GITHUB_ENV
           ([[ ${MSYSTEM_CARCH} == x86_64 ]] && echo "SYSTEM=win64" || echo "SYSTEM=woa64") >> $GITHUB_ENV
       - name: Package upload
-        if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
           path: ${{ env.BUILD_DIR }}/darktable-${{ env.VERSION }}-${{ env.SYSTEM }}.exe
@@ -347,7 +342,6 @@ jobs:
           cd ${{ env.SRC_DIR }}
           echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-${{ env.ARCHITECTURE }}" >> $GITHUB_ENV
       - name: Package upload
-        if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
           path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.dmg
