@@ -129,6 +129,7 @@ typedef struct dt_opencl_device_t
   const char *fullname;
   const char *cname;
   const char *options;
+  const char *cflags;
   cl_int summary;
   size_t memory_in_use;
   size_t peak_memory;
