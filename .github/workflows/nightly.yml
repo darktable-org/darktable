@@ -30,7 +30,6 @@ jobs:
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
-      DARKTABLE_CLI: ${{ github.workspace }}/AppDir/usr/bin/darktable-cli
       BRANCH: ${{ matrix.branch.code }}
       BUILD_NAME: ${{ matrix.branch.label }}
     steps:
