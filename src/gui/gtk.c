@@ -2395,8 +2395,10 @@ static gboolean _side_panel_draw(GtkWidget *widget,
                                  cairo_t *cr,
                                  gpointer user_data)
 {
-  if(darktable.gui->ui->thumbtable->manual_button.x != -1)
-    gtk_widget_queue_draw(darktable.gui->ui->center);
+// manual_button.x seems to always be 0, which means that anything which causes a widget redraw in either
+// side panel results in an expensive redraw request on the center view
+//  if(darktable.gui->ui->thumbtable->manual_button.x != -1)
+//    gtk_widget_queue_draw(darktable.gui->ui->center);
   return FALSE;
 }
 
