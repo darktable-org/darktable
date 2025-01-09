@@ -2395,10 +2395,12 @@ static gboolean _side_panel_draw(GtkWidget *widget,
                                  cairo_t *cr,
                                  gpointer user_data)
 {
-// manual_button.x seems to always be 0, which means that anything which causes a widget redraw in either
-// side panel results in an expensive redraw request on the center view
-//  if(darktable.gui->ui->thumbtable->manual_button.x != -1)
-//    gtk_widget_queue_draw(darktable.gui->ui->center);
+  // in lighttable view, if there are no thumbs displayed in the center view, we have lines to
+  // modules which need to be updated as we expand and collapse modules in the side panels
+  if(darktable.collection
+     && dt_view_get_current() == DT_VIEW_LIGHTTABLE
+     && dt_collection_get_count(darktable.collection) == 0)
+    gtk_widget_queue_draw(darktable.gui->ui->center);
   return FALSE;
 }
 
