@@ -837,14 +837,10 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     goto end;
   }
 
-  dt_sys_resources_t *resrc = &darktable.dtresources;
   dt_print_nts(DT_DEBUG_OPENCL,
                "   ASYNC PIXELPIPE:          %s\n", cl->dev[dev].asyncmode ? "YES" : "NO");
   dt_print_nts(DT_DEBUG_OPENCL,
                "   PINNED MEMORY TRANSFER:   %s\n", cl->dev[dev].pinned_memory ? "YES" : "NO");
-  if(resrc->tunehead)
-    dt_print_nts(DT_DEBUG_OPENCL,
-               "   USE HEADROOM:             %iMb\n", cl->dev[dev].headroom);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   AVOID ATOMICS:            %s\n", cl->dev[dev].avoid_atomics ? "YES" : "NO");
   dt_print_nts(DT_DEBUG_OPENCL,
@@ -1449,6 +1445,8 @@ finally:
   if(cl->inited)
   {
     dt_capabilities_add("opencl");
+    if(cl->num_devs > 1)
+      dt_capabilities_add("multiopencl");
     cl->blendop = dt_develop_blend_init_cl_global();
     cl->bilateral = dt_bilateral_init_cl_global();
     cl->gaussian = dt_gaussian_init_cl_global();
@@ -3543,7 +3541,8 @@ void dt_opencl_check_tuning(const int devid)
   if(!_cldev_running(devid)) return;
 
   const int level = res->level;
-  const gboolean tunehead = level >= 0
+  const gboolean tunehead = cl->num_devs > 1
+                          && level >= 0
                           && !dt_gimpmode()
                           && dt_conf_get_bool("opencl_tune_headroom");
 
