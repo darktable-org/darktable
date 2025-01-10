@@ -131,8 +131,7 @@ jobs:
           git config submodule.src/tests/integration.update none
           git submodule update
           popd
-      - name: Update lensfun data
-        continue-on-error: true
+      - name: Update Lensfun data
         run: |
           sudo lensfun-update-data
       - name: Build and Install
@@ -242,8 +241,7 @@ jobs:
           git config submodule.src/tests/integration.update none
           git submodule update
           popd
-      - name: Update lensfun data
-        continue-on-error: true
+      - name: Update Lensfun data
         run: |
           lensfun-update-data
       - name: Build and Install
