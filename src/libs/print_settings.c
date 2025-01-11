@@ -3287,8 +3287,7 @@ int set_params(dt_lib_module_t *self,
   dt_bauhaus_combobox_set (ps->pintent, pintent);
   ps->prt.printer.intent = pintent;
 
-  if(style[0] != '\0')
-    dt_bauhaus_combobox_set_from_text(ps->style, style);
+  _update_style_label(ps,style);
   dt_bauhaus_combobox_set (ps->style_mode, style_mode);
 
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_top), b_top * units[ps->unit]);
@@ -3314,7 +3313,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   const char *media = dt_bauhaus_combobox_get_text(ps->media);
   const int32_t profile_pos = dt_bauhaus_combobox_get(ps->profile);
   const int32_t intent =  dt_bauhaus_combobox_get(ps->intent);
-  const char *style = dt_bauhaus_combobox_get_text(ps->style);
+  const char *style = gtk_label_get_text(GTK_LABEL(ps->style));
   const int32_t style_mode = dt_bauhaus_combobox_get(ps->style_mode);
   const int32_t pprofile_pos = dt_bauhaus_combobox_get(ps->pprofile);
   const int32_t pintent =  dt_bauhaus_combobox_get(ps->pintent);
@@ -3472,7 +3471,7 @@ void gui_reset(dt_lib_module_t *self)
   dt_bauhaus_combobox_set(ps->profile, 0);
   dt_bauhaus_combobox_set(ps->pprofile, 0);
   dt_bauhaus_combobox_set(ps->pintent, 0);
-//  dt_bauhaus_combobox_set(ps->style, 0);
+  _update_style_label(ps,"");
   dt_bauhaus_combobox_set(ps->intent, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->black_point_compensation), TRUE);
   gtk_widget_set_sensitive(GTK_WIDGET(ps->pintent), TRUE);
