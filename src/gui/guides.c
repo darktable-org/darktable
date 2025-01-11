@@ -738,7 +738,7 @@ GtkWidget *dt_guides_popover(dt_view_t *self, GtkWidget *button)
 
   GtkWidget *contrast = darktable.view_manager->guides_contrast = dt_bauhaus_slider_new_action(DT_ACTION(self), 0, 1, 0.005, 0.5, 3);
   dt_bauhaus_widget_set_label(contrast, N_("guide lines"), N_("contrast"));
-  gtk_widget_set_tooltip_text(contrast, N_("set the contrast between the lightest and darkest part of the guide overlays"));
+  gtk_widget_set_tooltip_text(contrast, _("set the contrast between the lightest and darkest part of the guide overlays"));
   dt_bauhaus_slider_set(contrast, dt_conf_get_float("darkroom/ui/overlay_contrast"));
   gtk_box_pack_start(GTK_BOX(vbox), contrast, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(contrast), "value-changed", G_CALLBACK(_settings_contrast_changed), NULL);
@@ -942,4 +942,3 @@ void dt_guides_update_popover_values()
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
