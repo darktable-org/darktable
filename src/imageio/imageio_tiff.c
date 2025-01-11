@@ -411,13 +411,6 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
     return DT_IMAGEIO_UNSUPPORTED_FEATURE;
   }
 
-  /* we only support 1, 3 or 4 samples per pixel */
-  if(t.spp != 1 && t.spp != 3 && t.spp != 4)
-  {
-    TIFFClose(t.tiff);
-    return DT_IMAGEIO_UNSUPPORTED_FEATURE;
-  }
-
   /* don't depend on planar config if spp == 1 */
   if(t.spp > 1 && config != PLANARCONFIG_CONTIG)
   {
