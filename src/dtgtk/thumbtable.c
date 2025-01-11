@@ -1479,6 +1479,19 @@ static gboolean _event_button_press(GtkWidget *widget,
     return TRUE;
   }
 
+  if(table->mode != DT_THUMBTABLE_MODE_ZOOM)
+    return TRUE;
+
+  if(event->button == 1
+     && event->type == GDK_BUTTON_PRESS)
+  {
+    table->dragging = TRUE;
+    table->drag_dx = table->drag_dy = 0;
+    table->drag_initial_imgid = id;
+    table->drag_thumb = _thumbtable_get_thumb(table, id);
+    if(table->drag_thumb)
+      table->drag_thumb->moved = FALSE;
+  }
   return TRUE;
 }
 
@@ -1575,8 +1588,12 @@ static gboolean _event_button_release(GtkWidget *widget,
       }
       else
       {
-        dt_selection_select_single(darktable.selection, id);
-        DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
+        if(table->mode != DT_THUMBTABLE_MODE_ZOOM
+           || !table->drag_thumb->moved)
+        {
+          dt_selection_select_single(darktable.selection, id);
+          DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
+        }
       }
     }
   }
@@ -1584,7 +1601,7 @@ static gboolean _event_button_release(GtkWidget *widget,
   //  Left now if not in zoom mode
 
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM)
-    return FALSE;
+    return TRUE;
 
   // in some case, image_over_id can get out of sync at the end of dragging
   // this happen esp. if the pointer as been out of the center area during drag
