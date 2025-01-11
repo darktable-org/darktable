@@ -99,7 +99,7 @@ static inline int _read_chunky_8(tiff_t *t)
       /* set rgb to first sample from scanline */
       out[0] = ((float)in[0]) * (1.0f / 255.0f);
 
-      if(t->spp == 1)
+      if(t->spp < 3)  // mono, maybe plus alpha channel
       {
         out[1] = out[2] = out[0];
       }
@@ -130,7 +130,7 @@ static inline int _read_chunky_16(tiff_t *t)
     {
       out[0] = ((float)in[0]) * (1.0f / 65535.0f);
 
-      if(t->spp == 1)
+      if(t->spp < 3)  // mono, maybe plus alpha channel
       {
         out[1] = out[2] = out[0];
       }
@@ -165,7 +165,7 @@ static inline int _read_chunky_h(tiff_t *t)
       out[0] = _half_to_float(in[0]);
 #endif
 
-      if(t->spp == 1)
+      if(t->spp < 3)  // mono, maybe plus alpha channel
       {
         out[1] = out[2] = out[0];
       }
@@ -201,7 +201,7 @@ static inline int _read_chunky_f(tiff_t *t)
     {
       out[0] = in[0];
 
-      if(t->spp == 1)
+      if(t->spp < 3)  // mono, maybe plus alpha channel
       {
         out[1] = out[2] = out[0];
       }
@@ -237,7 +237,7 @@ static inline int _read_chunky_8_Lab(tiff_t *t, uint16_t photometric)
     {
       out[0] = ((float)in[0]) * (100.0f/255.0f);
 
-      if(t->spp == 1)
+      if(t->spp < 3)  // mono, maybe plus alpha channel
       {
         out[1] = out[2] = 0;
       }
@@ -293,7 +293,7 @@ static inline int _read_chunky_16_Lab(tiff_t *t, uint16_t photometric)
     {
       out[0] = ((float)in[0]) * (100.0f/range);
 
-      if(t->spp == 1)
+      if(t->spp < 3)  // mono, maybe plus alpha channel
       {
         out[1] = out[2] = 0;
       }
