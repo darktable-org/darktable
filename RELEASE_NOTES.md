@@ -61,7 +61,8 @@ changes (where available).
 
 ## Other Changes
 
-- N/A
+- Harmonized style selection in print settings with the update made in
+  the export module for release 5.0.
 
 ## Bug Fixes
 
