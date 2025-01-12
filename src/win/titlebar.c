@@ -26,37 +26,32 @@
 #ifdef _WIN32
 void dt_win_set_titlebar_color(GtkWidget *widget)
 {
-  HWND hwnd;
-  GdkWindow *window = NULL;
-  GtkStyleContext *style;
-  GdkRGBA *color = NULL;
-  gboolean use_dark_mode = FALSE;
-
-  gtk_widget_realize(widget); // creates GdkWindow but does not show the dialog
-  window = gtk_widget_get_window(GTK_WIDGET(widget));
+  if(!gtk_widget_get_realized(widget))
+    gtk_widget_realize(widget);
+  
+  GdkWindow *window = gtk_widget_get_window(widget);
   if(window)
   {
     // if the background color is below the threshold, then we're
     // likely in dark mode
-    style = gtk_widget_get_style_context(widget);
-    gtk_style_context_get(style, gtk_style_context_get_state(style),
-                          GTK_STYLE_PROPERTY_BACKGROUND_COLOR, &color,
-                          NULL);
-    if(color)
+    GtkStyleContext *style = gtk_widget_get_style_context(widget);
+    if(style)
     {
-      if(color->red * color->alpha < 0.5
-          && color->green * color->alpha < 0.5
-          && color->blue * color->alpha < 0.5)
+      GdkRGBA color;
+      if(gtk_style_context_lookup_color(style, "bg_color", &color))
       {
-        use_dark_mode = TRUE;
+        gboolean use_dark_mode = (color.red * color.alpha < 0.5 &&
+                                  color.green * color.alpha < 0.5 &&
+                                  color.blue * color.alpha < 0.5);
+
+        HWND hwnd = (HWND)gdk_win32_window_get_handle(window);
+        if(hwnd)
+        {
+          DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE,
+                                &use_dark_mode, sizeof(use_dark_mode));
+        }
       }
-
-      gdk_rgba_free(color);
     }
-
-    hwnd = (HWND) gdk_win32_window_get_handle(window);
-    DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE,
-                          &use_dark_mode, sizeof(use_dark_mode));
   }
 }
 #endif
