@@ -1320,9 +1320,26 @@ static void _fill_batch_export_list(dt_lib_module_t *self)
 {
   dt_lib_export_t *d = self->data;
 
-  GtkListStore *store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(d->batch_treeview)));
-  gtk_list_store_clear(store);
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->batch_treeview));
   GtkTreeIter iter;
+
+  // save all preset names from the store to check if presets were renamed/deleted
+  GList *nonexistent_presets = NULL;
+  gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
+  while(valid)
+  {
+    char *preset_name;
+
+    gtk_tree_model_get(model, &iter,
+                       DT_EXPORT_BATCH_COL_NAME, &preset_name,
+                       -1);
+
+    nonexistent_presets = g_list_prepend(nonexistent_presets, g_strdup(preset_name));
+    valid = gtk_tree_model_iter_next(model, &iter);
+  }
+
+  // clear and refill the store
+  gtk_list_store_clear(GTK_LIST_STORE(model));
   gboolean has_active = FALSE;
 
   sqlite3_stmt *stmt;
@@ -1342,16 +1359,40 @@ static void _fill_batch_export_list(dt_lib_module_t *self)
     gboolean active = dt_conf_get_bool(setting);
     g_free(setting);
 
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter,
+    gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter,
                         DT_EXPORT_BATCH_COL_ACTIVE, active,
                         DT_EXPORT_BATCH_COL_NAME, name,
                         -1);
     has_active |= active;
+
+    // remove unchanged preset names from the list so the list will
+    // contain only preset names which no longer exist
+    for(GList *preset_iter = nonexistent_presets; preset_iter; preset_iter = g_list_next(preset_iter))
+    {
+      const gchar *preset_name = (gchar *)preset_iter->data;
+      if(!g_strcmp0(preset_name, name))
+      {
+        nonexistent_presets = g_list_remove_link(nonexistent_presets, preset_iter);
+        g_list_free_full(preset_iter, g_free);
+        break;
+      }
+    }
   }
   sqlite3_finalize(stmt);
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->batch_export_button), has_active);
+
+  // remove non-existent entries from config
+  for(GList *preset_iter = nonexistent_presets; preset_iter; preset_iter = g_list_next(preset_iter))
+  {
+      const gchar *preset_name = (gchar *)preset_iter->data;
+      gchar *setting = g_strdup_printf(CONFIG_PREFIX "batch_%s", preset_name);
+      dt_conf_remove_key(setting);
+      g_free(setting);
+  }
+
+  g_list_free_full(nonexistent_presets, g_free);
 }
 
 static void _export_presets_changed_callback(gpointer instance, gpointer module, dt_lib_module_t *self)
