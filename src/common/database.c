@@ -4577,7 +4577,7 @@ start:
 
     dtwin_set_titlebar_color(content_area);
     gtk_widget_show_all(content_area);
- 
+
     const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
 
     gtk_widget_destroy(dialog);

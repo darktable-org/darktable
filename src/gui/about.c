@@ -60,7 +60,7 @@ void darktable_show_about_dialog()
                                           _("translator-credits"));
 
   gtk_window_set_transient_for(GTK_WINDOW(dialog),
-                               GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));  
+                               GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
   dtwin_set_titlebar_color(dialog);
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);

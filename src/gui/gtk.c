@@ -1733,9 +1733,6 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   // initialization is complete
 //  gtk_widget_hide(dt_ui_main_window(gui->ui));  //FIXME: on some systems, the main window never un-hides later...
 
-  // set the titlebar color on win32
-  // dt_gui_set_tittlebar_color(dt_ui_main_window(gui->ui));
-
   // finally, process all accumulated GUI events so that everything is properly
   // set up before proceeding
   for(int i = 0; i < 5; i++)

@@ -2525,7 +2525,7 @@ static void _restore_clicked(GtkButton *button, gpointer user_data)
 
   dtwin_set_titlebar_color(GTK_WIDGET(content_area));
   gtk_widget_show_all(GTK_WIDGET(content_area));
-  
+
   const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
   const gboolean wipe = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(clear));
 
