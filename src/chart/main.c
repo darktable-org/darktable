@@ -24,6 +24,7 @@
 #include "chart/thinplate.h"
 #include "chart/tonecurve.h"
 #include "common/exif.h"
+#include "win/titlebar.h"
 
 #include <gtk/gtk.h>
 #include <stdio.h>
@@ -36,7 +37,6 @@
 
 #ifdef _WIN32
 #include "win/main_wrapper.h"
-#include "win/dtwin.h"
 #endif
 
 const double thrs = 200.0;
@@ -576,9 +576,7 @@ static char *get_export_filename(dt_lut_t *self, const char *extension, char **n
   gtk_file_chooser_set_extra_widget(GTK_FILE_CHOOSER(dialog), grid);
 
   char *filename = NULL;
-#ifdef _WIN32
   dtwin_set_titlebar_color(dialog);
-#endif
   int res = gtk_dialog_run(GTK_DIALOG(dialog));
   if(res == GTK_RESPONSE_ACCEPT)
   {

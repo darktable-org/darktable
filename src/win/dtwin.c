@@ -17,11 +17,8 @@
 */
 
 #include "dtwin.h"
-#include <dwmapi.h>
-#include <gdk/gdkwin32.h>
 #include <setjmp.h>
 #include <windows.h>
-
 
 // Required by (at least) clang 10.0 as packaged by MSYS2 MinGW64.
 #ifdef __clang__
@@ -382,45 +379,6 @@ boolean dt_win_file_trash(GFile *file, GCancellable *cancellable, GError **error
 
   g_free(wfilename);
   return success;
-}
-
-// This is taken from: https://gitlab.gnome.org/GNOME/gimp/-/blob/master/app/widgets/gimpwidgets-utils.c#L2655
-// Set win32 title bar color based on theme (background color)
-// Note: This function explicitly realizes the widget 
-void dtwin_set_titlebar_color(GtkWidget *widget)
-{
-  HWND hwnd;
-  GdkWindow *window = NULL;
-  GtkStyleContext *style;
-  GdkRGBA *color = NULL;
-  gboolean use_dark_mode = FALSE;
-
-  gtk_widget_realize(widget); // creates GdkWindow but does not show the dialog
-  window = gtk_widget_get_window(GTK_WIDGET(widget));
-  if(window)
-  {
-    // if the background color is below the threshold, then we're
-    // likely in dark mode
-    style = gtk_widget_get_style_context(widget);
-    gtk_style_context_get(style, gtk_style_context_get_state(style),
-                          GTK_STYLE_PROPERTY_BACKGROUND_COLOR, &color,
-                          NULL);
-    if(color)
-    {
-      if(color->red * color->alpha < 0.5
-          && color->green * color->alpha < 0.5
-          && color->blue * color->alpha < 0.5)
-      {
-        use_dark_mode = TRUE;
-      }
-
-      gdk_rgba_free(color);
-    }
-
-    hwnd = (HWND) gdk_win32_window_get_handle(window);
-    DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE,
-                          &use_dark_mode, sizeof(use_dark_mode));
-  }
 }
 
 // clang-format off

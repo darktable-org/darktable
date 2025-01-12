@@ -38,14 +38,12 @@
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 #include "views/view.h"
+#include "win/titlebar.h"
 #ifndef _WIN32
 #include <gio/gunixmounts.h>
 #endif
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
-#endif
-#ifdef _WIN32
-#include "win/dtwin.h"
 #endif
 
 DT_MODULE(3)
@@ -3414,9 +3412,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem,
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
-#ifdef _WIN32
   dtwin_set_titlebar_color(dialog);
-#endif
   gtk_widget_show_all(dialog);
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);

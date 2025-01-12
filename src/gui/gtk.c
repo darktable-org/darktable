@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -49,6 +49,7 @@
 #include "views/view.h"
 #include "gui/about.h"
 #include "gui/preferences.h"
+#include "win/titlebar.h"
 
 #include <gdk/gdkkeysyms.h>
 #ifdef GDK_WINDOWING_WAYLAND
@@ -64,9 +65,6 @@
 #endif
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
-#endif
-#ifdef _WIN32
-#include "win/dtwin.h"
 #endif
 #include <pthread.h>
 
@@ -1877,9 +1875,7 @@ static void _init_main_table(GtkWidget *container)
   /* initialize right panel */
   _ui_init_panel_right(darktable.gui->ui, container);
 
-#ifdef _WIN32
   dtwin_set_titlebar_color(container);
-#endif
   gtk_widget_show_all(container);
 
    dt_action_define(&darktable.control->actions_focus, NULL,
@@ -3013,9 +3009,7 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title,
     gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
   }
 
-#ifdef _WIN32
   dtwin_set_titlebar_color(window);
-#endif
   gtk_widget_show_all(window);
 
   // to prevent the splash screen from hiding the yes/no dialog
@@ -3103,9 +3097,7 @@ char *dt_gui_show_standalone_string_dialog(const char *title,
     gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
   }
 
-#ifdef _WIN32
   dtwin_set_titlebar_color(window);
-#endif
   gtk_widget_show_all(window);
   gtk_main();
 
@@ -3149,9 +3141,7 @@ gboolean dt_gui_show_yes_no_dialog(const char *title,
     dt_osx_disallow_fullscreen(dialog);
 #endif
 
-#ifdef _WIN32
   dtwin_set_titlebar_color(dialog);
-#endif
   const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
   g_free(question);

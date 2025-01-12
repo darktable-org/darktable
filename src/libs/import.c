@@ -39,11 +39,11 @@
 #include "imageio/imageio_common.h"  // for dt_imageio_is_raw_by_extension()
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#include "win/titlebar.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
 #ifdef _WIN32
-#include "win/dtwin.h"
 //MSVCRT does not have strptime implemented
 #include "win/strptime.h"
 #endif
@@ -2185,17 +2185,13 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   if(d->import_case != DT_IMPORT_INPLACE)
   {
     _set_expander_content(rbox, self);
-#ifdef _WIN32
     dtwin_set_titlebar_color(d->from.dialog);
-#endif
     gtk_widget_show_all(d->from.dialog);
     dt_gui_update_collapsible_section(&d->from.cs);
   }
   else
   {
-#ifdef _WIN32
     dtwin_set_titlebar_color(d->from.dialog);
-#endif
     gtk_widget_show_all(d->from.dialog);
   }
 
@@ -2276,9 +2272,7 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
 {
   dt_lib_import_t *d = self->data;
 
-#ifdef _WIN32
   dtwin_set_titlebar_color(d->from.dialog);
-#endif
   while(gtk_dialog_run(GTK_DIALOG(d->from.dialog)) == GTK_RESPONSE_ACCEPT)
   {
     // reset filter so that view isn't empty

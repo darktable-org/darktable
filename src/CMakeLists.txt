@@ -198,6 +198,9 @@ if(WIN32)
   list(APPEND SOURCE_FILES "win/scandir.c")
   list(APPEND HEADER_FILES "win/scandir.h")
 
+  list(APPEND SOURCE_FILES "win/titlebar.c")
+  list(APPEND HEADER_FILES "win/titlebar.h")
+
   list(APPEND SOURCE_FILES "common/pwstorage/backend_windows_credentials.c")
   list(APPEND HEADER_FILES "common/pwstorage/backend_windows_credentials.h")
 

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2020 darktable developers.
+    Copyright (C) 2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,11 +19,12 @@
 #pragma once
 
 #include <gtk/gtk.h>
-#include <windows.h>
 
-const wchar_t *dtwin_get_locale();
-void dtwin_set_thread_name(DWORD dwThreadID, const char *threadName);
-boolean dt_win_file_trash(GFile *file, GCancellable *cancellable, GError **error);
+#ifdef _WIN32
+void dtwin_set_titlebar_color(GtkWidget *widget);
+#else
+#define dtwin_set_titlebar_color(widget) ((void)0)
+#endif
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

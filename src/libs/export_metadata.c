@@ -29,11 +29,9 @@
 #include "imageio/imageio_module.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#include "win/titlebar.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
-#endif
-#ifdef _WIN32
-#include "win/dtwin.h"
 #endif
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
@@ -214,9 +212,7 @@ static void _add_tag_button_clicked(GtkButton *button, dt_lib_export_metadata_t 
   #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
   #endif
-#ifdef _WIN32
     dtwin_set_titlebar_color(dialog);
-#endif
     gtk_widget_show_all(dialog);
   while(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
   {
@@ -445,9 +441,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
-#ifdef _WIN32
   dtwin_set_titlebar_color(dialog);
-#endif
   gtk_widget_show_all(dialog);
 
   char *newlist = metadata_presets;

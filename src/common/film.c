@@ -26,6 +26,7 @@
 #include "control/control.h"
 #include "control/jobs.h"
 #include "views/view.h"
+#include "win/titlebar.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -44,9 +45,6 @@
 #endif
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
-#endif
-#ifdef _WIN32
-#include "win/dtwin.h"
 #endif
 
 void dt_film_init(dt_film_t *film)
@@ -378,9 +376,7 @@ static gboolean ask_and_delete(gpointer user_data)
 
   gtk_container_add(GTK_CONTAINER(content_area), scroll);
 
-#ifdef _WIN32
   dtwin_set_titlebar_color(dialog);
-#endif
   gtk_widget_show_all(dialog); // needed for the content area!
 
   const gint res = gtk_dialog_run(GTK_DIALOG(dialog));

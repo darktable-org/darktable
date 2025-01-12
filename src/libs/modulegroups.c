@@ -31,11 +31,9 @@
 #include "gui/presets.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#include "win/titlebar.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
-#endif
-#ifdef _WIN32
-#include "win/dtwin.h"
 #endif
 
 DT_MODULE(1)
@@ -3644,9 +3642,7 @@ static void _manage_editor_preset_action(GtkWidget *btn,
   gtk_box_pack_start(GTK_BOX(content_area), lb, FALSE, TRUE, 0);
   gtk_widget_show_all(content_area);
   gtk_entry_set_text(GTK_ENTRY(tb), new_name);
-#ifdef _WIN32
   dtwin_set_titlebar_color(dialog);
-#endif
   res = gtk_dialog_run(GTK_DIALOG(dialog));
 
   g_free(new_name);

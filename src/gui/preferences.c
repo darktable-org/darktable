@@ -34,14 +34,12 @@
 #include "gui/presets.h"
 #include "libs/lib.h"
 #include "preferences_gen.h"
+#include "win/titlebar.h"
 #ifdef USE_LUA
 #include "lua/preferences.h"
 #endif
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
-#endif
-#ifdef _WIN32
-#include "win/dtwin.h"
 #endif
 #define ICON_SIZE 13
 
@@ -558,9 +556,7 @@ void dt_gui_preferences_show()
   GtkGrid* lua_grid = init_tab_lua(_preferences_dialog, stack);
 #endif
 
-#ifdef _WIN32
   dtwin_set_titlebar_color(_preferences_dialog);
-#endif
   gtk_widget_show_all(_preferences_dialog);
 
   //open in the appropriate tab if currently in darkroom or lighttable view

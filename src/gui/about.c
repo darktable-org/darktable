@@ -18,11 +18,9 @@
 
 #include "gui/gtk.h"
 #include "about.h"
+#include "win/titlebar.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
-#endif
-#ifdef _WIN32
-#include "win/dtwin.h"
 #endif
 
 void darktable_show_about_dialog()
@@ -63,9 +61,7 @@ void darktable_show_about_dialog()
 
   gtk_window_set_transient_for(GTK_WINDOW(dialog),
                                GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));  
-#ifdef _WIN32
   dtwin_set_titlebar_color(dialog);
-#endif
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
 }

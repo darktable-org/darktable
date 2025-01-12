@@ -28,14 +28,12 @@
 #include "control/jobs.h"
 #include "gui/accelerators.h"
 #include "libs/lib_api.h"
+#include "win/titlebar.h"
 #ifdef HAVE_MAP
 #include "views/view.h"
 #endif
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
-#endif
-#ifdef _WIN32
-#include "win/dtwin.h"
 #endif
 
 #include <gdk/gdkkeysyms.h>
@@ -894,9 +892,7 @@ static void _preview_gpx_file(GtkWidget *widget, dt_lib_module_t *self)
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
-#ifdef _WIN32
   dtwin_set_titlebar_color(dialog);
-#endif
   gtk_widget_show_all(dialog);
   gtk_dialog_run(GTK_DIALOG(dialog));
 
@@ -970,9 +966,7 @@ static void _choose_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
   if(!d->imgs)
     _setup_selected_images_list(self);
 
-#ifdef _WIN32
   dtwin_set_titlebar_color(filechooser);
-#endif
   int res = gtk_dialog_run(GTK_DIALOG(filechooser));
   while(res == GTK_RESPONSE_ACCEPT)
   {

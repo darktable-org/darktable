@@ -31,11 +31,9 @@
 #include "gui/guides.h"
 #include "gui/presets.h"
 #include "libs/modulegroups.h"
+#include "win/titlebar.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
-#endif
-#ifdef _WIN32
-#include "win/dtwin.h"
 #endif
 #include <assert.h>
 #include <stdlib.h>
@@ -217,9 +215,7 @@ static void _edit_preset_response(GtkDialog *dialog,
 
         gtk_window_set_title(GTK_WINDOW(dlg_changename), _("unnamed preset"));
 
-#ifdef _WIN32
         dtwin_set_titlebar_color(dlg_changename);
-#endif
         gtk_dialog_run(GTK_DIALOG(dlg_changename));
         gtk_widget_destroy(dlg_changename);
         return;
@@ -907,9 +903,7 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
   }
 
   g_signal_connect(dialog, "response", G_CALLBACK(_edit_preset_response), g);
-#ifdef _WIN32
   dtwin_set_titlebar_color(dialog);
-#endif
   gtk_widget_show_all(dialog);
 }
 
@@ -1533,9 +1527,7 @@ static void _menuitem_manage_quick_presets(GtkMenuItem *menuitem,
   gtk_window_set_resizable(GTK_WINDOW(dialog), TRUE);
 
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
-#ifdef _WIN32
   dtwin_set_titlebar_color(dialog);
-#endif
   gtk_widget_show_all(dialog);
 }
 

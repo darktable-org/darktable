@@ -28,11 +28,9 @@
 #include "gui/hist_dialog.h"
 #include "gui/styles.h"
 #include "gui/draw.h"
+#include "win/titlebar.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
-#endif
-#ifdef _WIN32
-#include "win/dtwin.h"
 #endif
 
 typedef enum _style_items_columns_t
@@ -370,9 +368,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
 
   g_signal_connect(dialog, "response", G_CALLBACK(_gui_hist_copy_response), d);
 
-#ifdef _WIN32
   dtwin_set_titlebar_color(GTK_WIDGET(dialog));
-#endif
   gtk_widget_show_all(GTK_WIDGET(dialog));
 
   while(1)
