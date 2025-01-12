@@ -64,6 +64,8 @@ changes (where available).
 - Harmonized style selection in print settings with the update made in
   the export module for release 5.0.
 
+- Darktable now includes the Lensfun database into the AppImage.
+
 ## Bug Fixes
 
 - Fixed a scrolling bug in the collections module where the collection
@@ -86,6 +88,18 @@ changes (where available).
   view. On map we now properly center the image on the map. On the
   print view, we use the selected image as content of the main print
   area.
+
+- Fixed a regression introduced in 5.0.0 where we lost the ability to
+  read 2-channel TIFF files and files with more than 4 channels. This
+  fix allows them to be read by the TIFF loader, whereas previously
+  the TIFF loader rejected such files and they were loaded by a
+  fallback loader (GraphicsMagick or ImageMagick).
+
+- Fixed not being able to pan with a mouse in the zoomable layout.
+
+- Fixed possibly collapsing the module header when restoring defaults.
+
+- Fixed a case of XMP being written without actual image modification.
 
 ## Lua
 
