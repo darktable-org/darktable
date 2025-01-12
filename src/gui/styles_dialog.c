@@ -32,6 +32,9 @@
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
+#ifdef _WIN32
+#include "win/dtwin.h"
+#endif
 
 /* creates a styles dialog, if edit equals true id=styleid else id=imgid */
 static void _gui_styles_dialog_run(gboolean edit,
@@ -264,6 +267,9 @@ static void _gui_styles_new_style_response(GtkDialog *dialog,
       dt_osx_disallow_fullscreen(dlg_changename);
 #endif
       gtk_window_set_title(GTK_WINDOW(dlg_changename), _("unnamed style"));
+#ifdef _WIN32
+      dtwin_set_titlebar_color(dlg_changename);
+#endif
       gtk_dialog_run(GTK_DIALOG(dlg_changename));
       gtk_widget_destroy(dlg_changename);
       return;
@@ -344,6 +350,9 @@ static void _gui_styles_edit_style_response(GtkDialog *dialog,
       dt_osx_disallow_fullscreen(dlg_changename);
 #endif
       gtk_window_set_title(GTK_WINDOW(dlg_changename), _("unnamed style"));
+#ifdef _WIN32
+      dtwin_set_titlebar_color(dlg_changename);
+#endif
       gtk_dialog_run(GTK_DIALOG(dlg_changename));
       gtk_widget_destroy(dlg_changename);
       return;
@@ -883,6 +892,9 @@ static void _gui_styles_dialog_run(gboolean edit,
   else
     g_signal_connect(dialog, "response", G_CALLBACK(_gui_styles_new_style_response), sd);
 
+#ifdef _WIN32
+  dtwin_set_titlebar_color(GTK_WIDGET(dialog));
+#endif
   gtk_widget_show_all(GTK_WIDGET(dialog));
   gtk_dialog_run(GTK_DIALOG(dialog));
 

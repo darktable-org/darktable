@@ -24,6 +24,7 @@
 const wchar_t *dtwin_get_locale();
 void dtwin_set_thread_name(DWORD dwThreadID, const char *threadName);
 boolean dt_win_file_trash(GFile *file, GCancellable *cancellable, GError **error);
+void dtwin_set_titlebar_color(GtkWidget *widget);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

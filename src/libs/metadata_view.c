@@ -36,6 +36,9 @@
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
+#ifdef _WIN32
+#include "win/dtwin.h"
+#endif
 #ifdef USE_LUA
 #include "lua/call.h"
 #include "lua/image.h"
@@ -1320,6 +1323,9 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
+#endif
+#ifdef _WIN32
+  dtwin_set_titlebar_color(dialog);
 #endif
   gtk_widget_show_all(dialog);
 

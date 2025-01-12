@@ -461,6 +461,9 @@ void dt_gui_show_help(GtkWidget *widget);
 void dt_gui_load_theme(const char *theme); // read them and add user tweaks
 void dt_gui_apply_theme();                 // apply the loaded theme to darktable's windows
 
+// set light or dark color of the titlebar on win32
+void dtwin_set_titlebar_color(GtkWidget *widget);
+
 // reload GUI scalings
 void dt_configure_ppd_dpi(dt_gui_gtk_t *gui);
 

@@ -34,6 +34,9 @@
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
+#ifdef _WIN32
+#include "win/dtwin.h"
+#endif
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -173,6 +176,9 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
                                    _("error loading file '%s'"), dtfilename);
 #ifdef GDK_WINDOWING_QUARTZ
       dt_osx_disallow_fullscreen(dialog);
+#endif
+#ifdef _WIN32
+      dtwin_set_titlebar_color(dialog);
 #endif
       gtk_dialog_run(GTK_DIALOG(dialog));
       gtk_widget_destroy(dialog);

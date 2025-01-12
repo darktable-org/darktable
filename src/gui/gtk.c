@@ -65,6 +65,9 @@
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
+#ifdef _WIN32
+#include "win/dtwin.h"
+#endif
 #include <pthread.h>
 
 /*
@@ -1732,6 +1735,9 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   // initialization is complete
 //  gtk_widget_hide(dt_ui_main_window(gui->ui));  //FIXME: on some systems, the main window never un-hides later...
 
+  // set the titlebar color on win32
+  // dt_gui_set_tittlebar_color(dt_ui_main_window(gui->ui));
+
   // finally, process all accumulated GUI events so that everything is properly
   // set up before proceeding
   for(int i = 0; i < 5; i++)
@@ -1871,6 +1877,9 @@ static void _init_main_table(GtkWidget *container)
   /* initialize right panel */
   _ui_init_panel_right(darktable.gui->ui, container);
 
+#ifdef _WIN32
+  dtwin_set_titlebar_color(container);
+#endif
   gtk_widget_show_all(container);
 
    dt_action_define(&darktable.control->actions_focus, NULL,
@@ -3004,6 +3013,9 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title,
     gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
   }
 
+#ifdef _WIN32
+  dtwin_set_titlebar_color(window);
+#endif
   gtk_widget_show_all(window);
 
   // to prevent the splash screen from hiding the yes/no dialog
@@ -3091,6 +3103,9 @@ char *dt_gui_show_standalone_string_dialog(const char *title,
     gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
   }
 
+#ifdef _WIN32
+  dtwin_set_titlebar_color(window);
+#endif
   gtk_widget_show_all(window);
   gtk_main();
 
@@ -3134,6 +3149,9 @@ gboolean dt_gui_show_yes_no_dialog(const char *title,
     dt_osx_disallow_fullscreen(dialog);
 #endif
 
+#ifdef _WIN32
+  dtwin_set_titlebar_color(dialog);
+#endif
   const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
   g_free(question);

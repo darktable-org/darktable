@@ -31,6 +31,9 @@
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
+#ifdef _WIN32
+#include "win/dtwin.h"
+#endif
 #include <gdk/gdkkeysyms.h>
 
 DT_MODULE(4)
@@ -544,6 +547,9 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
+#endif
+#ifdef _WIN32
+  dtwin_set_titlebar_color(dialog);
 #endif
   gtk_widget_show_all(dialog);
 
