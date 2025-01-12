@@ -1558,7 +1558,7 @@ static void _pop_menu_dictionary_delete_tag(GtkWidget *menuitem, dt_lib_module_t
   #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
   #endif
-    dtwin_set_titlebar_color(dialog);
+    dt_win_set_titlebar_color(dialog);
     gtk_widget_show_all(dialog);
 
     res = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -1654,7 +1654,7 @@ static void _pop_menu_dictionary_delete_node(GtkWidget *menuitem, dt_lib_module_
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
-  dtwin_set_titlebar_color(dialog);
+  dt_win_set_titlebar_color(dialog);
   gtk_widget_show_all(dialog);
 
   res = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -1768,7 +1768,7 @@ static void _pop_menu_dictionary_create_tag(GtkWidget *menuitem, dt_lib_module_t
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
-  dtwin_set_titlebar_color(dialog);
+  dt_win_set_titlebar_color(dialog);
   gtk_widget_show_all(dialog);
 
   if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
@@ -1920,7 +1920,7 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
-  dtwin_set_titlebar_color(dialog);
+  dt_win_set_titlebar_color(dialog);
   gtk_widget_show_all(dialog);
 
   if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
@@ -2173,7 +2173,7 @@ static void _pop_menu_dictionary_change_path(GtkWidget *menuitem, dt_lib_module_
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
-  dtwin_set_titlebar_color(dialog);
+  dt_win_set_titlebar_color(dialog);
   gtk_widget_show_all(dialog);
 
   if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
@@ -3599,7 +3599,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
-  dtwin_set_titlebar_color(dialog);
+  dt_win_set_titlebar_color(dialog);
   gtk_widget_show_all(dialog);
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);

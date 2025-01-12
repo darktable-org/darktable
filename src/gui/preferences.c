@@ -556,7 +556,7 @@ void dt_gui_preferences_show()
   GtkGrid* lua_grid = init_tab_lua(_preferences_dialog, stack);
 #endif
 
-  dtwin_set_titlebar_color(_preferences_dialog);
+  dt_win_set_titlebar_color(_preferences_dialog);
   gtk_widget_show_all(_preferences_dialog);
 
   //open in the appropriate tab if currently in darkroom or lighttable view

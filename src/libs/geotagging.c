@@ -892,7 +892,7 @@ static void _preview_gpx_file(GtkWidget *widget, dt_lib_module_t *self)
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
-  dtwin_set_titlebar_color(dialog);
+  dt_win_set_titlebar_color(dialog);
   gtk_widget_show_all(dialog);
   gtk_dialog_run(GTK_DIALOG(dialog));
 
@@ -966,7 +966,7 @@ static void _choose_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
   if(!d->imgs)
     _setup_selected_images_list(self);
 
-  dtwin_set_titlebar_color(filechooser);
+  dt_win_set_titlebar_color(filechooser);
   int res = gtk_dialog_run(GTK_DIALOG(filechooser));
   while(res == GTK_RESPONSE_ACCEPT)
   {

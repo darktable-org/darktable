@@ -21,9 +21,9 @@
 #include <gtk/gtk.h>
 
 #ifdef _WIN32
-void dtwin_set_titlebar_color(GtkWidget *widget);
+void dt_win_set_titlebar_color(GtkWidget *widget);
 #else
-#define dtwin_set_titlebar_color(widget) ((void)0)
+#define dt_win_set_titlebar_color(widget) ((void)0)
 #endif
 
 // clang-format off

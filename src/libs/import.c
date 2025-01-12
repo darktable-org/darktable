@@ -2185,13 +2185,13 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   if(d->import_case != DT_IMPORT_INPLACE)
   {
     _set_expander_content(rbox, self);
-    dtwin_set_titlebar_color(d->from.dialog);
+    dt_win_set_titlebar_color(d->from.dialog);
     gtk_widget_show_all(d->from.dialog);
     dt_gui_update_collapsible_section(&d->from.cs);
   }
   else
   {
-    dtwin_set_titlebar_color(d->from.dialog);
+    dt_win_set_titlebar_color(d->from.dialog);
     gtk_widget_show_all(d->from.dialog);
   }
 
@@ -2272,7 +2272,7 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
 {
   dt_lib_import_t *d = self->data;
 
-  dtwin_set_titlebar_color(d->from.dialog);
+  dt_win_set_titlebar_color(d->from.dialog);
   while(gtk_dialog_run(GTK_DIALOG(d->from.dialog)) == GTK_RESPONSE_ACCEPT)
   {
     // reset filter so that view isn't empty

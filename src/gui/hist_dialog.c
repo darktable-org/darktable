@@ -368,7 +368,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
 
   g_signal_connect(dialog, "response", G_CALLBACK(_gui_hist_copy_response), d);
 
-  dtwin_set_titlebar_color(GTK_WIDGET(dialog));
+  dt_win_set_titlebar_color(GTK_WIDGET(dialog));
   gtk_widget_show_all(GTK_WIDGET(dialog));
 
   while(1)

@@ -3642,7 +3642,7 @@ static void _manage_editor_preset_action(GtkWidget *btn,
   gtk_box_pack_start(GTK_BOX(content_area), lb, FALSE, TRUE, 0);
   gtk_widget_show_all(content_area);
   gtk_entry_set_text(GTK_ENTRY(tb), new_name);
-  dtwin_set_titlebar_color(dialog);
+  dt_win_set_titlebar_color(dialog);
   res = gtk_dialog_run(GTK_DIALOG(dialog));
 
   g_free(new_name);

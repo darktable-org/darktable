@@ -1872,7 +1872,7 @@ static void _init_main_table(GtkWidget *container)
   /* initialize right panel */
   _ui_init_panel_right(darktable.gui->ui, container);
 
-  dtwin_set_titlebar_color(container);
+  dt_win_set_titlebar_color(container);
   gtk_widget_show_all(container);
 
    dt_action_define(&darktable.control->actions_focus, NULL,
@@ -3006,7 +3006,7 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title,
     gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
   }
 
-  dtwin_set_titlebar_color(window);
+  dt_win_set_titlebar_color(window);
   gtk_widget_show_all(window);
 
   // to prevent the splash screen from hiding the yes/no dialog
@@ -3094,7 +3094,7 @@ char *dt_gui_show_standalone_string_dialog(const char *title,
     gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
   }
 
-  dtwin_set_titlebar_color(window);
+  dt_win_set_titlebar_color(window);
   gtk_widget_show_all(window);
   gtk_main();
 
@@ -3138,7 +3138,7 @@ gboolean dt_gui_show_yes_no_dialog(const char *title,
     dt_osx_disallow_fullscreen(dialog);
 #endif
 
-  dtwin_set_titlebar_color(dialog);
+  dt_win_set_titlebar_color(dialog);
   const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
   g_free(question);

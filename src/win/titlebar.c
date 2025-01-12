@@ -24,7 +24,7 @@
 // Set win32 title bar color based on theme (background color)
 // Note: This function explicitly realizes the widget 
 #ifdef _WIN32
-void dtwin_set_titlebar_color(GtkWidget *widget)
+void dt_win_set_titlebar_color(GtkWidget *widget)
 {
   HWND hwnd;
   GdkWindow *window = NULL;

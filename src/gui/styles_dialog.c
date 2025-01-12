@@ -265,7 +265,7 @@ static void _gui_styles_new_style_response(GtkDialog *dialog,
       dt_osx_disallow_fullscreen(dlg_changename);
 #endif
       gtk_window_set_title(GTK_WINDOW(dlg_changename), _("unnamed style"));
-      dtwin_set_titlebar_color(dlg_changename);
+      dt_win_set_titlebar_color(dlg_changename);
       gtk_dialog_run(GTK_DIALOG(dlg_changename));
       gtk_widget_destroy(dlg_changename);
       return;
@@ -346,7 +346,7 @@ static void _gui_styles_edit_style_response(GtkDialog *dialog,
       dt_osx_disallow_fullscreen(dlg_changename);
 #endif
       gtk_window_set_title(GTK_WINDOW(dlg_changename), _("unnamed style"));
-      dtwin_set_titlebar_color(dlg_changename);
+      dt_win_set_titlebar_color(dlg_changename);
       gtk_dialog_run(GTK_DIALOG(dlg_changename));
       gtk_widget_destroy(dlg_changename);
       return;
@@ -886,7 +886,7 @@ static void _gui_styles_dialog_run(gboolean edit,
   else
     g_signal_connect(dialog, "response", G_CALLBACK(_gui_styles_new_style_response), sd);
 
-  dtwin_set_titlebar_color(GTK_WIDGET(dialog));
+  dt_win_set_titlebar_color(GTK_WIDGET(dialog));
   gtk_widget_show_all(GTK_WIDGET(dialog));
   gtk_dialog_run(GTK_DIALOG(dialog));
 

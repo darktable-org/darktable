@@ -672,7 +672,7 @@ static void _show_shortcuts_prefs(GtkWidget *w)
     gtk_window_resize(GTK_WINDOW(shortcuts_dialog), _shortcuts_dialog_posize.w, _shortcuts_dialog_posize.h);
   }
   g_signal_connect(G_OBJECT(shortcuts_dialog), "configure-event", G_CALLBACK(_resize_shortcuts_dialog), NULL);
-  dtwin_set_titlebar_color(shortcuts_dialog);
+  dt_win_set_titlebar_color(shortcuts_dialog);
   gtk_widget_show_all(shortcuts_dialog); // separately show_all content later, otherwise activates first treeview
 
   //grab the content area of the dialog

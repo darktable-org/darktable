@@ -3412,7 +3412,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem,
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
-  dtwin_set_titlebar_color(dialog);
+  dt_win_set_titlebar_color(dialog);
   gtk_widget_show_all(dialog);
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);

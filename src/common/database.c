@@ -4401,7 +4401,7 @@ start:
       g_free(label_text);
       gtk_container_add(GTK_CONTAINER (content_area), label);
 
-      dtwin_set_titlebar_color(content_area);
+      dt_win_set_titlebar_color(content_area);
       gtk_widget_show_all(content_area);
 
       const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -4575,7 +4575,7 @@ start:
     g_free(label_text);
     gtk_container_add(GTK_CONTAINER (content_area), label);
 
-    dtwin_set_titlebar_color(content_area);
+    dt_win_set_titlebar_color(content_area);
     gtk_widget_show_all(content_area);
 
     const int resp = gtk_dialog_run(GTK_DIALOG(dialog));

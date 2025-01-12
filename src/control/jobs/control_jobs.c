@@ -1073,7 +1073,7 @@ static gboolean _dt_delete_dialog_main_thread(gpointer user_data)
         ? _("trashing error")
         : _("deletion error"));
 
-  dtwin_set_titlebar_color(dialog);
+  dt_win_set_titlebar_color(dialog);
   modal_dialog->dialog_result = gtk_dialog_run(GTK_DIALOG(dialog));
 
   if(!modal_dialog->send_to_trash)

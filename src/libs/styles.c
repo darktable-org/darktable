@@ -495,7 +495,7 @@ static void _export_clicked(GtkWidget *w, dt_lib_styles_t *d)
 
             gtk_container_add(GTK_CONTAINER(content_area), label);
             gtk_container_add(GTK_CONTAINER(content_area), overwrite_dialog_check_button);
-            dtwin_set_titlebar_color(dialog_overwrite_export);
+            dt_win_set_titlebar_color(dialog_overwrite_export);
             gtk_widget_show_all(dialog_overwrite_export);
 
             // disable check button and skip button when only one style is selected
@@ -649,7 +649,7 @@ static void _import_clicked(GtkWidget *w, dt_lib_styles_t *d)
 
             gtk_container_add(GTK_CONTAINER(content_area), label);
             gtk_container_add(GTK_CONTAINER(content_area), overwrite_dialog_check_button);
-            dtwin_set_titlebar_color(dialog_overwrite_import);
+            dt_win_set_titlebar_color(dialog_overwrite_import);
             gtk_widget_show_all(dialog_overwrite_import);
 
             // disable check button and skip button when dealing with one style
