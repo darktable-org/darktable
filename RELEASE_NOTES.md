@@ -101,6 +101,9 @@ changes (where available).
 
 - Fixed a case of XMP being written without actual image modification.
 
+- Fixed a crash of Darktable when reimporting XMP having overlay
+  images referenced.
+
 ## Lua
 
 ### API Version
