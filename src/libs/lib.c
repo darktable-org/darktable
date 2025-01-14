@@ -977,12 +977,13 @@ static gboolean _lib_plugin_arrow_button_press(GtkWidget *w,
     {
       const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
       gboolean all_other_closed = TRUE;
+      uint32_t side = dt_lib_get_container(module);
       for(const GList *it = darktable.lib->plugins; it; it = g_list_next(it))
       {
         dt_lib_module_t *m = it->data;
 
         if(m != module
-           && module->container(module) == m->container(m)
+           && dt_lib_get_container(m) == side
            && m->expandable(m) && dt_lib_is_visible_in_view(m, v))
         {
           all_other_closed = all_other_closed
@@ -1037,12 +1038,13 @@ static void show_module_callback(dt_lib_module_t *module)
   {
     const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
     gboolean all_other_closed = TRUE;
+    uint32_t side = dt_lib_get_container(module);
     for(const GList *it = darktable.lib->plugins; it; it = g_list_next(it))
     {
       dt_lib_module_t *m = it->data;
 
       if(m != module
-         && module->container(module) == m->container(m)
+         && dt_lib_get_container(m) == side
          && m->expandable(m)
          && dt_lib_is_visible_in_view(m, v))
       {
