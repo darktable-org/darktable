@@ -1164,8 +1164,8 @@ static void _open_url(GtkWidget *widget, gpointer url)
 // This is taken from: https://gitlab.gnome.org/GNOME/gimp/-/blob/master/app/widgets/gimpwidgets-utils.c#L2655
 // Set win32 title bar color based on theme (background color).
 #ifdef _WIN32
-static gboolean _window_set_titlebar_color(GtkWidget *widget,
-                                           GdkEvent *event)
+static gboolean _window_set_titlebar_color_callback(GtkWidget *widget,
+                                                    GdkEvent *event)
 {
   GdkWindow *window = gtk_widget_get_window(widget);
   if(window)
@@ -1332,6 +1332,14 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
                    G_CALLBACK(_osx_openfile_callback), NULL);
 #endif
 
+#ifdef _WIN32
+  // set win32 title bar color based on theme (background color)
+  g_signal_override_class_handler("map", gtk_window_get_type(),
+                                  G_CALLBACK(_window_set_titlebar_color_callback));
+  g_signal_override_class_handler("style-updated", gtk_window_get_type(),
+                                  G_CALLBACK(_window_set_titlebar_color_callback));
+#endif
+
   GtkWidget *widget;
   if(!gui->ui)
     gui->ui = g_malloc0(sizeof(dt_ui_t));
@@ -1437,12 +1445,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   widget = dt_ui_main_window(darktable.gui->ui);
   g_signal_connect(G_OBJECT(widget), "configure-event",
                    G_CALLBACK(_window_configure), NULL);
-#ifdef _WIN32
-  g_signal_override_class_handler("configure-event", gtk_window_get_type(),
-                                  G_CALLBACK(_window_set_titlebar_color));
-  g_signal_override_class_handler("style-updated", gtk_window_get_type(),
-                                  G_CALLBACK(_window_set_titlebar_color));
-#endif
   g_signal_override_class_handler("query-tooltip", gtk_widget_get_type(),
                                   G_CALLBACK(dt_shortcut_tooltip_callback));
 
