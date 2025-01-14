@@ -1162,9 +1162,7 @@ static void _open_url(GtkWidget *widget, gpointer url)
 #endif
 
 // This is taken from: https://gitlab.gnome.org/GNOME/gimp/-/blob/master/app/widgets/gimpwidgets-utils.c#L2655
-// Set win32 title bar color based on theme (background color)
-// Note: Works only on Windows 10 version 1809+
-//       (when dark mode support was officially introduced)
+// Set win32 title bar color based on theme (background color).
 #ifdef _WIN32
 static gboolean _window_set_titlebar_color(GtkWidget *widget,
                                            GdkEvent *event)
@@ -1172,23 +1170,37 @@ static gboolean _window_set_titlebar_color(GtkWidget *widget,
   GdkWindow *window = gtk_widget_get_window(widget);
   if(window)
   {
-    // if the background color is below the threshold, then we're
-    // likely in dark mode
     GtkStyleContext *style = gtk_widget_get_style_context(widget);
     if(style)
     {
-      GdkRGBA color;
-      if(gtk_style_context_lookup_color(style, "bg_color", &color))
+      GdkRGBA bg_color;
+      if(gtk_style_context_lookup_color(style, "bg_color", &bg_color))
       {
-        gboolean use_dark_mode = (color.red * color.alpha < 0.5 &&
-                                  color.green * color.alpha < 0.5 &&
-                                  color.blue * color.alpha < 0.5);
-
         HWND hwnd = (HWND)gdk_win32_window_get_handle(window);
         if(hwnd)
         {
-          DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE,
-                                &use_dark_mode, sizeof(use_dark_mode));
+          // attempt to set the title bar color to theme bg_color.
+          // this is supported starting with Windows 11 Build 22000
+          COLORREF titlebar_color = RGB((BYTE)(bg_color.red * 255),
+                                        (BYTE)(bg_color.green * 255),
+                                        (BYTE)(bg_color.blue * 255));
+
+          HRESULT hr = DwmSetWindowAttribute(hwnd, DWMWA_CAPTION_COLOR,
+                                             &titlebar_color, sizeof(titlebar_color));
+          if (FAILED(hr)) {
+            // if setting title bar color failed,
+            // attempt to set it light/dark depending to theme bg_color.
+            // this is supported starting with Windows 10 version 1809.
+            //
+            // if the background color is below the threshold (currently 0.5),
+            // then we're likely in dark mode
+            gboolean use_dark_mode = (bg_color.red * bg_color.alpha < 0.5 &&
+                                      bg_color.green * bg_color.alpha < 0.5 &&
+                                      bg_color.blue * bg_color.alpha < 0.5);
+
+            DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE,
+                                  &use_dark_mode, sizeof(use_dark_mode));
+          }
         }
       }
     }
