@@ -1438,9 +1438,9 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   g_signal_connect(G_OBJECT(widget), "configure-event",
                    G_CALLBACK(_window_configure), NULL);
 #ifdef _WIN32
-  g_signal_override_class_handler("realize", gtk_window_get_type(),
-                                  G_CALLBACK(_window_set_titlebar_color));
   g_signal_override_class_handler("configure-event", gtk_window_get_type(),
+                                  G_CALLBACK(_window_set_titlebar_color));
+  g_signal_override_class_handler("style-updated", gtk_window_get_type(),
                                   G_CALLBACK(_window_set_titlebar_color));
 #endif
   g_signal_override_class_handler("query-tooltip", gtk_widget_get_type(),
