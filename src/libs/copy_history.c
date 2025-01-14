@@ -31,7 +31,6 @@
 #include "gui/hist_dialog.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
-#include "win/titlebar.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -175,7 +174,6 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 #ifdef GDK_WINDOWING_QUARTZ
       dt_osx_disallow_fullscreen(dialog);
 #endif
-      dt_win_set_titlebar_color(dialog);
       gtk_dialog_run(GTK_DIALOG(dialog));
       gtk_widget_destroy(dialog);
     }

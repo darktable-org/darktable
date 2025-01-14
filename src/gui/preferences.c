@@ -34,7 +34,6 @@
 #include "gui/presets.h"
 #include "libs/lib.h"
 #include "preferences_gen.h"
-#include "win/titlebar.h"
 #ifdef USE_LUA
 #include "lua/preferences.h"
 #endif
@@ -556,7 +555,6 @@ void dt_gui_preferences_show()
   GtkGrid* lua_grid = init_tab_lua(_preferences_dialog, stack);
 #endif
 
-  dt_win_set_titlebar_color(_preferences_dialog);
   gtk_widget_show_all(_preferences_dialog);
 
   //open in the appropriate tab if currently in darkroom or lighttable view

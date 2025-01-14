@@ -49,7 +49,6 @@
 #include "views/view.h"
 #include "gui/about.h"
 #include "gui/preferences.h"
-#include "win/titlebar.h"
 
 #include <gdk/gdkkeysyms.h>
 #ifdef GDK_WINDOWING_WAYLAND
@@ -65,6 +64,10 @@
 #endif
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
+#endif
+#ifdef _WIN32
+#include <dwmapi.h>
+#include <gdk/gdkwin32.h>
 #endif
 #include <pthread.h>
 
@@ -1158,6 +1161,45 @@ static void _open_url(GtkWidget *widget, gpointer url)
 }
 #endif
 
+// This is taken from: https://gitlab.gnome.org/GNOME/gimp/-/blob/master/app/widgets/gimpwidgets-utils.c#L2655
+// Set win32 title bar color based on theme (background color)
+// Note: Works only on Windows 10 version 1809+
+//       (when dark mode support was officially introduced)
+#ifdef _WIN32
+static gboolean _window_set_titlebar_color(GtkWidget *widget,
+                                           GdkEvent *event)
+{
+  GdkWindow *window = gtk_widget_get_window(widget);
+  if(window)
+  {
+    // if the background color is below the threshold, then we're
+    // likely in dark mode
+    GtkStyleContext *style = gtk_widget_get_style_context(widget);
+    if(style)
+    {
+      GdkRGBA color;
+      if(gtk_style_context_lookup_color(style, "bg_color", &color))
+      {
+        gboolean use_dark_mode = (color.red * color.alpha < 0.5 &&
+                                  color.green * color.alpha < 0.5 &&
+                                  color.blue * color.alpha < 0.5);
+
+        HWND hwnd = (HWND)gdk_win32_window_get_handle(window);
+        if(hwnd)
+        {
+          DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE,
+                                &use_dark_mode, sizeof(use_dark_mode));
+        }
+      }
+    }
+  }
+
+  gboolean ret = FALSE;
+  g_signal_chain_from_overridden_handler(widget, event, &ret);
+  return ret;
+}
+#endif
+
 int dt_gui_theme_init(dt_gui_gtk_t *gui)
 {
   if(gui->gtkrc[0] != '\0')
@@ -1383,6 +1425,12 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   widget = dt_ui_main_window(darktable.gui->ui);
   g_signal_connect(G_OBJECT(widget), "configure-event",
                    G_CALLBACK(_window_configure), NULL);
+#ifdef _WIN32
+  g_signal_override_class_handler("realize", gtk_window_get_type(),
+                                  G_CALLBACK(_window_set_titlebar_color));
+  g_signal_override_class_handler("configure-event", gtk_window_get_type(),
+                                  G_CALLBACK(_window_set_titlebar_color));
+#endif
   g_signal_override_class_handler("query-tooltip", gtk_widget_get_type(),
                                   G_CALLBACK(dt_shortcut_tooltip_callback));
 
@@ -1872,7 +1920,6 @@ static void _init_main_table(GtkWidget *container)
   /* initialize right panel */
   _ui_init_panel_right(darktable.gui->ui, container);
 
-  dt_win_set_titlebar_color(container);
   gtk_widget_show_all(container);
 
    dt_action_define(&darktable.control->actions_focus, NULL,
@@ -3006,7 +3053,6 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title,
     gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
   }
 
-  dt_win_set_titlebar_color(window);
   gtk_widget_show_all(window);
 
   // to prevent the splash screen from hiding the yes/no dialog
@@ -3094,7 +3140,6 @@ char *dt_gui_show_standalone_string_dialog(const char *title,
     gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
   }
 
-  dt_win_set_titlebar_color(window);
   gtk_widget_show_all(window);
   gtk_main();
 
@@ -3138,7 +3183,6 @@ gboolean dt_gui_show_yes_no_dialog(const char *title,
     dt_osx_disallow_fullscreen(dialog);
 #endif
 
-  dt_win_set_titlebar_color(dialog);
   const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
   g_free(question);

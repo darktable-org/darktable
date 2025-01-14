@@ -30,7 +30,6 @@
 #include "gui/styles.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
-#include "win/titlebar.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -495,7 +494,6 @@ static void _export_clicked(GtkWidget *w, dt_lib_styles_t *d)
 
             gtk_container_add(GTK_CONTAINER(content_area), label);
             gtk_container_add(GTK_CONTAINER(content_area), overwrite_dialog_check_button);
-            dt_win_set_titlebar_color(dialog_overwrite_export);
             gtk_widget_show_all(dialog_overwrite_export);
 
             // disable check button and skip button when only one style is selected
@@ -649,7 +647,6 @@ static void _import_clicked(GtkWidget *w, dt_lib_styles_t *d)
 
             gtk_container_add(GTK_CONTAINER(content_area), label);
             gtk_container_add(GTK_CONTAINER(content_area), overwrite_dialog_check_button);
-            dt_win_set_titlebar_color(dialog_overwrite_import);
             gtk_widget_show_all(dialog_overwrite_import);
 
             // disable check button and skip button when dealing with one style

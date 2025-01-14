@@ -27,7 +27,6 @@
 #include "gui/presets.h"
 #include "dtgtk/expander.h"
 #include "bauhaus/bauhaus.h"
-#include "win/titlebar.h"
 
 #include <assert.h>
 #include <gtk/gtk.h>
@@ -2523,7 +2522,6 @@ static void _restore_clicked(GtkButton *button, gpointer user_data)
        "(instead of just restoring changed ones)"));
   gtk_container_add(content_area, clear);
 
-  dt_win_set_titlebar_color(GTK_WIDGET(content_area));
   gtk_widget_show_all(GTK_WIDGET(content_area));
 
   const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -2625,7 +2623,6 @@ static void _export_clicked(GtkButton *button, gpointer user_data)
   g_signal_connect(combo_dev, "changed", G_CALLBACK(_import_export_dev_changed), combo_id);
   g_signal_connect(combo_id, "changed", G_CALLBACK(_export_id_changed), count);
 
-  dt_win_set_titlebar_color(GTK_WIDGET(content_area));
   gtk_widget_show_all(GTK_WIDGET(content_area));
 
   gtk_combo_box_set_active(GTK_COMBO_BOX(combo_dev), 0);
@@ -2715,7 +2712,6 @@ static void _import_clicked(GtkButton *button, gpointer user_data)
                    combo_from_id);
   g_signal_connect(combo_from_id, "changed", G_CALLBACK(_import_id_changed), combo_to_id);
 
-  dt_win_set_titlebar_color(GTK_WIDGET(content_area));
   gtk_widget_show_all(GTK_WIDGET(content_area));
 
   gtk_combo_box_set_active(GTK_COMBO_BOX(combo_dev), 0);

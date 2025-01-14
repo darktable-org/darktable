@@ -34,7 +34,6 @@
 #endif
 #include "control/conf.h"
 #include "control/control.h"
-#include "win/titlebar.h"
 
 #include <gio/gio.h>
 #include <glib.h>
@@ -4401,7 +4400,6 @@ start:
       g_free(label_text);
       gtk_container_add(GTK_CONTAINER (content_area), label);
 
-      dt_win_set_titlebar_color(content_area);
       gtk_widget_show_all(content_area);
 
       const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -4575,7 +4573,6 @@ start:
     g_free(label_text);
     gtk_container_add(GTK_CONTAINER (content_area), label);
 
-    dt_win_set_titlebar_color(content_area);
     gtk_widget_show_all(content_area);
 
     const int resp = gtk_dialog_run(GTK_DIALOG(dialog));

@@ -26,7 +26,6 @@
 #include "control/control.h"
 #include "control/jobs.h"
 #include "views/view.h"
-#include "win/titlebar.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -376,7 +375,6 @@ static gboolean ask_and_delete(gpointer user_data)
 
   gtk_container_add(GTK_CONTAINER(content_area), scroll);
 
-  dt_win_set_titlebar_color(dialog);
   gtk_widget_show_all(dialog); // needed for the content area!
 
   const gint res = gtk_dialog_run(GTK_DIALOG(dialog));
