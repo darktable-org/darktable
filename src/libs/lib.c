@@ -976,7 +976,7 @@ static gboolean _lib_plugin_arrow_button_press(GtkWidget *w,
             !dt_modifier_is(e->state, GDK_SHIFT_MASK))
     {
       const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
-      uint32_t side = dt_lib_get_container(module);
+      const uint32_t side = dt_lib_get_container(module);
       gboolean all_other_closed = TRUE;
       for(const GList *it = darktable.lib->plugins; it; it = g_list_next(it))
       {
@@ -1037,7 +1037,7 @@ static void show_module_callback(dt_lib_module_t *module)
   if(dt_conf_get_bool("lighttable/ui/single_module"))
   {
     const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
-    uint32_t side = dt_lib_get_container(module);
+    const uint32_t side = dt_lib_get_container(module);
     gboolean all_other_closed = TRUE;
     for(const GList *it = darktable.lib->plugins; it; it = g_list_next(it))
     {
