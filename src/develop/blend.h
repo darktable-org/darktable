@@ -284,7 +284,7 @@ extern const dt_introspection_type_enum_tuple_t dt_develop_combine_masks_names[]
 extern const dt_introspection_type_enum_tuple_t dt_develop_feathering_guide_names[];
 extern const dt_introspection_type_enum_tuple_t dt_develop_invert_mask_names[];
 
-#define DEVELOP_MASKS_NB_SHAPES 5
+#define DEVELOP_MASKS_NB_SHAPES 6
 
 /** blend gui data */
 typedef struct dt_iop_gui_blend_data_t

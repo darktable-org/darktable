@@ -143,7 +143,7 @@ void process(dt_iop_module_t *self,
   const float scale = 1.0f / exp2f(-1.0f * (fmin(100.0f, data->strength + 1.0f) / 100.0f));
 
   const float threshold = data->threshold;
-/* get the thresholded lights into buffer */
+  /* get the thresholded lights into buffer */
   DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   {
@@ -157,7 +157,7 @@ void process(dt_iop_module_t *self,
 
   dt_box_mean(blurlightness, roi_out->height, roi_out->width, 1, hr, BOX_ITERATIONS);
 
-/* screen blend lightness with original */
+  /* screen blend lightness with original */
   DT_OMP_FOR()
   for(size_t k = 0; k < npixels; k++)
   {
