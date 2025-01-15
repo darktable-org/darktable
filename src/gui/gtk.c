@@ -1174,35 +1174,40 @@ static void _window_set_titlebar_color_callback(GtkWidget *widget,
     GtkStyleContext *style = gtk_widget_get_style_context(widget);
     if(style)
     {
-      GdkRGBA bg_color;
-      if(gtk_style_context_lookup_color(style, "bg_color", &bg_color))
+      GdkRGBA *bg_color = NULL;
+      gtk_style_context_get(style, GTK_STATE_FLAG_NORMAL, 
+                            GTK_STYLE_PROPERTY_BACKGROUND_COLOR, &bg_color, NULL);
+      if(bg_color)
       {
         HWND hwnd = (HWND)gdk_win32_window_get_handle(window);
         if(hwnd)
         {
-          // attempt to set the title bar color to theme bg_color.
+          // attempt to set the title bar color to theme's background color.
           // this is supported starting with Windows 11 Build 22000
-          COLORREF titlebar_color = RGB((BYTE)(bg_color.red * 255),
-                                        (BYTE)(bg_color.green * 255),
-                                        (BYTE)(bg_color.blue * 255));
+          COLORREF titlebar_color = RGB((BYTE)(bg_color->red * 255),
+                                        (BYTE)(bg_color->green * 255),
+                                        (BYTE)(bg_color->blue * 255));
 
           HRESULT hr = DwmSetWindowAttribute(hwnd, DWMWA_CAPTION_COLOR,
                                              &titlebar_color, sizeof(titlebar_color));
-          if (FAILED(hr)) {
+          if(FAILED(hr))
+          {
             // if setting title bar color failed,
-            // attempt to set it light/dark depending to theme bg_color.
+            // attempt to set it light/dark depending to theme's background color.
             // this is supported starting with Windows 10 version 1809.
             //
             // if the background color is below the threshold (currently 0.5),
             // then we're likely in dark mode
-            gboolean use_dark_mode = (bg_color.red * bg_color.alpha < 0.5 &&
-                                      bg_color.green * bg_color.alpha < 0.5 &&
-                                      bg_color.blue * bg_color.alpha < 0.5);
+            gboolean use_dark_mode = (bg_color->red   * bg_color->alpha < 0.5 &&
+                                      bg_color->green * bg_color->alpha < 0.5 &&
+                                      bg_color->blue  * bg_color->alpha < 0.5);
 
             DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE,
                                   &use_dark_mode, sizeof(use_dark_mode));
           }
         }
+
+        gdk_rgba_free(bg_color);
       }
     }
   }
