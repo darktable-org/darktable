@@ -1165,8 +1165,7 @@ static void _open_url(GtkWidget *widget, gpointer url)
 // https://gitlab.gnome.org/GNOME/gimp/-/blob/master/app/widgets/gimpwidgets-utils.c#L2655
 // Set win32 title bar color based on theme (background color).
 #ifdef _WIN32
-static void _window_set_titlebar_color_callback(GtkWidget *widget,
-                                                GdkEvent *event)
+static void _window_set_titlebar_color_callback(GtkWidget *widget)
 {
   GdkWindow *window = gtk_widget_get_window(widget);
   if(window)
