@@ -1,4 +1,4 @@
-We're proud to announce the new feature release of darktable, 5.0.1!
+We're proud to announce the new bug-fix release of darktable, 5.0.1!
 
 The github release is here: [https://github.com/darktable-org/darktable/releases/tag/release-5.0.1](https://github.com/darktable-org/darktable/releases/tag/release-5.0.1).
 
