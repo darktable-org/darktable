@@ -235,15 +235,24 @@ static void _styles_row_activated_callback(GtkTreeView *view,
 
   if(name)
   {
-    GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
-    if(imgs)
+    // When module is on darkroom, use specific apply routine
+    if(dt_view_get_current() == DT_VIEW_DARKROOM)
     {
-      GList *styles = g_list_prepend(NULL, g_strdup(name));
-      gboolean duplicate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate));
-      dt_control_apply_styles(imgs, styles, duplicate);
+      dt_styles_apply_to_dev(name, darktable.develop->image_storage.id);
     }
     else
-      dt_control_log(_("no images selected"));
+    {
+      GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
+      if(imgs)
+      {
+        GList *styles = g_list_prepend(NULL, g_strdup(name));
+        const gboolean duplicate =
+          gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate));
+        dt_control_apply_styles(imgs, styles, duplicate);
+      }
+      else
+        dt_control_log(_("no images selected"));
+    }
   }
 }
 
@@ -278,14 +287,29 @@ static void _apply_clicked(GtkWidget *w, dt_lib_styles_t *d)
 
   if(style_names == NULL) return;
 
-  GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
-  if(!g_list_is_empty(imgs))
+  // When module is on darkroom, use specific apply routine
+  if(dt_view_get_current() == DT_VIEW_DARKROOM)
   {
-    gboolean duplicate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate));
-    dt_control_apply_styles(imgs, style_names, duplicate);
+    for(GList *s = g_list_first(style_names);
+        s;
+        s = g_list_next(s))
+    {
+      const char *name = (char *)s->data;
+      dt_styles_apply_to_dev(name, darktable.develop->image_storage.id);
+    }
   }
   else
-    g_list_free_full(style_names, g_free);
+  {
+    GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
+    if(!g_list_is_empty(imgs))
+    {
+      const gboolean duplicate =
+        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate));
+      dt_control_apply_styles(imgs, style_names, duplicate);
+    }
+    else
+      g_list_free_full(style_names, g_free);
+  }
 }
 
 static void _create_clicked(GtkWidget *w, dt_lib_styles_t *d)
