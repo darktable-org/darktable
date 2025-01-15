@@ -104,6 +104,9 @@ changes (where available).
 - Fixed a crash of Darktable when reimporting XMP having overlay
   images referenced.
 
+- Fixed the support for single lib module opened at a time when in
+  darkroom.
+
 ## Lua
 
 ### API Version
