@@ -107,6 +107,10 @@ changes (where available).
 - Fixed the support for single lib module opened at a time when in
   darkroom.
 
+- Fixed xmp sidecar writing while working as a gimp plugin.
+
+- Fixed issues when applying a style in darkroom using the Styles module.
+
 ## Lua
 
 ### API Version
