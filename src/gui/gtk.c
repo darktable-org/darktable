@@ -880,7 +880,10 @@ static gboolean _gui_quit_callback(GtkWidget *widget,
       dt_dev_write_history(darktable.develop);
 
     if(dt_check_gimpmode_ok("file"))
+    {
       darktable.gimp.error = !dt_export_gimp_file(darktable.gimp.imgid);
+      dt_image_write_sidecar_file(darktable.gimp.imgid);
+    }
 
     dt_control_quit();
   }
@@ -905,7 +908,10 @@ static void _quit_callback(dt_action_t *action)
   {
     dt_dev_write_history(darktable.develop);
     if(dt_check_gimpmode_ok("file"))
+    {
       darktable.gimp.error = !dt_export_gimp_file(darktable.gimp.imgid);
+      dt_image_write_sidecar_file(darktable.gimp.imgid);
+    }
   }
 
   dt_control_quit();
