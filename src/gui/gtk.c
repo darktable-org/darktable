@@ -4395,6 +4395,7 @@ void dt_gui_cursor_set_busy()
     GtkWidget *toplevel = darktable.gui->ui->main_window;
     GdkWindow *window = gtk_widget_get_window(toplevel);
     busy_prev_cursor = gdk_window_get_cursor(window);
+    g_object_ref(busy_prev_cursor);
     GdkCursor *watch = gdk_cursor_new_for_display(gtk_widget_get_display(toplevel), GDK_WATCH);
     gdk_window_set_cursor(window, watch);
     g_object_unref(watch);
@@ -4419,6 +4420,7 @@ void dt_gui_cursor_clear_busy()
       GdkWindow *window = gtk_widget_get_window(toplevel);
       gdk_window_set_cursor(window, busy_prev_cursor);
       dt_gui_process_events();
+      g_object_unref(busy_prev_cursor);
       busy_prev_cursor = NULL;
       dt_control_allow_change_cursor();
       gtk_grab_remove(darktable.control->progress_system.proxy.module->widget);
