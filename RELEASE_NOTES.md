@@ -109,7 +109,11 @@ changes (where available).
 
 - Fixed xmp sidecar writing while working as a gimp plugin.
 
-- Fixed issues when applying a style in darkroom using the Styles module.
+- Fixed issues when applying a style in darkroom using the Styles
+  module.
+
+- Fixed a possible crash when using <kbd>Ctrl+z</kbd> reproduced on
+  macOS.
 
 ## Lua
 
