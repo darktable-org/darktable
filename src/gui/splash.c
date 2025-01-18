@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024 darktable developers.
+    Copyright (C) 2024-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -252,7 +252,6 @@ void darktable_splash_screen_create(GtkWindow *parent_window,
   gtk_window_set_decorated(GTK_WINDOW(splash_screen), FALSE);
   gtk_widget_show_all(splash_screen);
   gtk_widget_hide(GTK_WIDGET(remaining_box));
-  gtk_window_set_keep_above(GTK_WINDOW(splash_screen), TRUE);
   _process_all_gui_events();
 }
 
@@ -312,20 +311,6 @@ void darktable_splash_screen_destroy()
     gtk_widget_destroy(splash_screen);
     splash_screen = NULL;
   }
-}
-
-void darktable_splash_screen_get_geometry(gint *x,
-                                          gint *y,
-                                          gint *width,
-                                          gint *height)
-{
-  if(splash_screen)
-  {
-    gtk_window_get_position(GTK_WINDOW(splash_screen), x, y);
-    gtk_window_get_size(GTK_WINDOW(splash_screen), width, height);
-  }
-  else
-    *x = *y = *width = *height = -1;
 }
 
 void darktable_exit_screen_create(GtkWindow *parent_window,
