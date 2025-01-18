@@ -775,8 +775,8 @@ int dt_gui_gtk_load_config()
   const gint x = MAX(0, dt_conf_get_int("ui_last/window_x"));
   const gint y = MAX(0, dt_conf_get_int("ui_last/window_y"));
 
-  gtk_window_move(GTK_WINDOW(widget), x, y);
   gtk_window_resize(GTK_WINDOW(widget), width, height);
+  gtk_window_move(GTK_WINDOW(widget), x, y);
   const gboolean fullscreen = dt_conf_get_bool("ui_last/fullscreen");
 
   if(fullscreen)
@@ -1789,20 +1789,13 @@ static void _init_widgets(dt_gui_gtk_t *gui)
 
   // Showing everything, to ensure proper instantiation and initialization
   // then we hide the scroll bars and popup messages again
-  // before doing this, request that the window be minimized (some WMs
-  // don't support this, so we can hide it below, but that had issues)
-//  gtk_window_iconify(GTK_WINDOW(dt_ui_main_window(gui->ui)));
-// unfortunately, on some systems the above results in a window which can only be manually deiconified....
   gtk_widget_show_all(dt_ui_main_window(gui->ui));
   gtk_widget_set_visible(dt_ui_log_msg(gui->ui), FALSE);
   gtk_widget_set_visible(dt_ui_toast_msg(gui->ui), FALSE);
   gtk_widget_set_visible(gui->scrollbars.hscrollbar, FALSE);
   gtk_widget_set_visible(gui->scrollbars.vscrollbar, FALSE);
-
-  // if the WM doesn't support minimization, we want to hide the
-  // window so that we don't actually see it until the rest of the
-  // initialization is complete
-//  gtk_widget_hide(dt_ui_main_window(gui->ui));  //FIXME: on some systems, the main window never un-hides later...
+  // hide the main window, so that it doesn't cover up the splash screen
+  gtk_widget_set_visible(dt_ui_main_window(gui->ui), FALSE);
 
   // finally, process all accumulated GUI events so that everything is properly
   // set up before proceeding
