@@ -260,11 +260,11 @@ void dt_control_allow_change_cursor()
 
 void dt_control_change_cursor(dt_cursor_t curs)
 {
-  if(!darktable.control->lock_cursor_shape)
+  GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
+  if(!darktable.control->lock_cursor_shape && window)
   {
-    GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
-    GdkCursor *cursor = gdk_cursor_new_for_display(gdk_display_get_default(), curs);
-    gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
+    GdkCursor *cursor = gdk_cursor_new_for_display(gdk_window_get_display(window), curs);
+    gdk_window_set_cursor(window, cursor);
     g_object_unref(cursor);
   }
 }

@@ -178,9 +178,11 @@ static void _expander_resize(GtkWidget *widget, GdkRectangle *allocation, gpoint
     return;
 
   _scroll_widget = widget;
-  gtk_widget_add_tick_callback(widget, _expander_scroll,
-                               GINT_TO_POINTER(gdk_frame_clock_get_frame_time(gtk_widget_get_frame_clock(widget))
-                               + dt_conf_get_int("darkroom/ui/transition_duration") * 1000), NULL);
+  GdkFrameClock *clock = gtk_widget_get_frame_clock(widget);
+  if(clock)
+    gtk_widget_add_tick_callback(widget, _expander_scroll,
+                                GINT_TO_POINTER(gdk_frame_clock_get_frame_time(clock)
+                                + dt_conf_get_int("darkroom/ui/transition_duration") * 1000), NULL);
 }
 
 void dtgtk_expander_set_drag_hover(GtkDarktableExpander *expander, gboolean allow, gboolean below, guint time)

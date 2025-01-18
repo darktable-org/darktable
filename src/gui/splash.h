@@ -21,8 +21,6 @@ void darktable_splash_screen_set_progress(const char *msg);
 void darktable_splash_screen_set_progress_percent(const char *msg, double fraction, double elapsed);
 void darktable_splash_screen_destroy();
 
-void darktable_splash_screen_get_geometry(gint *x, gint *y, gint *width, gint *height);
-
 void darktable_exit_screen_create(GtkWindow *parent, gboolean force);
 void darktable_exit_screen_destroy();
 
