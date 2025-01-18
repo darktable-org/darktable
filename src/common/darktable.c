@@ -1618,6 +1618,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       darktable_splash_screen_create(NULL, TRUE); // force the splash screen for the crawl even if user-disabled
       // scan for cases where the database and xmp files have different timestamps
       changed_xmp_files = dt_control_crawler_run();
+      if(!dt_conf_get_bool("show_splash_screen"))
+        darktable_splash_screen_destroy();
     }
   }
 
@@ -1813,20 +1815,19 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   if(init_gui)
   {
+//    darktable_splash_screen_set_progress(_("loading utility modules"));
     darktable.lib = (dt_lib_t *)calloc(1, sizeof(dt_lib_t));
     dt_lib_init(darktable.lib);
 
     // init the gui part of views
+//    darktable_splash_screen_set_progress(_("loading views"));
     dt_view_manager_gui_init(darktable.view_manager);
 
-    // now that other initialization is complete, we can show the main window
+    // start by loading the main window position as stored in the config file
     // we need to do this before Lua is started or we'll either get a hang, or
     // the module groups don't get set up correctly
-
-    // start by restoring the main window position as stored in the config file
     dt_gui_gtk_load_config();
-    gtk_widget_show_all(dt_ui_main_window(darktable.gui->ui));
-    // give Gtk a chance to actually process the resizing
+
     dt_gui_process_events();
   }
 
@@ -1911,6 +1912,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     if(changed_xmp_files)
       dt_control_crawler_show_image_list(changed_xmp_files);
 
+    gtk_widget_show_all(dt_ui_main_window(darktable.gui->ui));
     darktable_splash_screen_destroy();
 
     if(!dt_gimpmode())

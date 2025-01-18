@@ -257,7 +257,6 @@ void darktable_splash_screen_create(GtkWindow *parent_window,
   gtk_window_set_decorated(GTK_WINDOW(splash_screen), FALSE);
   gtk_widget_show_all(splash_screen);
   gtk_widget_hide(GTK_WIDGET(remaining_box));
-  gtk_window_set_keep_above(GTK_WINDOW(splash_screen), TRUE);
   _process_all_gui_events();
 }
 
