@@ -775,8 +775,8 @@ int dt_gui_gtk_load_config()
   const gint x = MAX(0, dt_conf_get_int("ui_last/window_x"));
   const gint y = MAX(0, dt_conf_get_int("ui_last/window_y"));
 
-  gtk_window_resize(GTK_WINDOW(widget), width, height);
   gtk_window_move(GTK_WINDOW(widget), x, y);
+  gtk_window_resize(GTK_WINDOW(widget), width, height);
   const gboolean fullscreen = dt_conf_get_bool("ui_last/fullscreen");
 
   if(fullscreen)
