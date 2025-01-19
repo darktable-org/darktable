@@ -410,8 +410,6 @@ static void _delete_clicked(GtkWidget *w, dt_lib_styles_t *d)
   if(style_names == NULL) return;
 
   const gint select_cnt = g_list_length(style_names);
-  const gboolean single_raise = (select_cnt == 1);
-
   const gboolean can_delete = _ask_before_delete_style(select_cnt);
 
   if(can_delete)
@@ -420,14 +418,9 @@ static void _delete_clicked(GtkWidget *w, dt_lib_styles_t *d)
 
     for(const GList *style = style_names; style; style = g_list_next(style))
     {
-      dt_styles_delete_by_name_adv((char*)style->data, single_raise);
+      dt_styles_delete_by_name_adv((char*)style->data, !g_list_next(style), TRUE);
     }
 
-    if(!single_raise) {
-      // raise signal at the end of processing all styles if we have more than 1 to delete
-      // this also calls _gui_styles_update_view
-      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_STYLE_CHANGED);
-    }
     dt_database_release_transaction(darktable.db);
   }
   g_list_free_full(style_names, g_free);
@@ -989,7 +982,7 @@ void gui_reset(dt_lib_module_t *self)
     for(const GList *result = all_styles; result; result = g_list_next(result))
     {
       dt_style_t *style = result->data;
-      dt_styles_delete_by_name_adv((char*)style->name, FALSE);
+      dt_styles_delete_by_name_adv((char*)style->name, FALSE, TRUE);
     }
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_STYLE_CHANGED);
   }
