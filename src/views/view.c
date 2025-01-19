@@ -1692,7 +1692,7 @@ void dt_view_paint_surface(cairo_t *cr,
   dt_print_pipe(DT_DEBUG_EXPOSE,
       "dt_view_paint_surface",
         port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
-        "viewport zoom_scale %6.3f backbuf_scale %6.3f "
+        "zoom_scale %7.5f backbuf_scale %7.5f "
         "(x=%6.2f y=%6.2f) -> (x=%+.3f y=%+.3f)",
         zoom_scale, backbuf_scale,
         port->zoom_x, port->zoom_y, zoom_x, zoom_y);
@@ -1741,11 +1741,15 @@ void dt_view_paint_surface(cairo_t *cr,
   const double trans_x = (offset_x - zoom_x) * processed_width * buf_scale - 0.5 * buf_width;
   const double trans_y = (offset_y - zoom_y) * processed_height * buf_scale - 0.5 * buf_height;
 
+  const double z_change = fabs(backbuf_scale / buf_scale - 1.0f);
+  const double h_change = (double)(maxw / 2 / back_scale) - MIN(- trans_x, trans_x + buf_width);
+  const double v_change = (double)(maxh / 2 / back_scale) - MIN(- trans_y, trans_y + buf_height);
+
   if(dev->preview_pipe->output_imgid == dev->image_storage.id
      && (port->pipe->output_imgid != dev->image_storage.id
-         || fabsf(backbuf_scale / buf_scale - 1.0f) > .09f
-         || floor(maxw / 2 / back_scale) - 1 > MIN(- trans_x, trans_x + buf_width)
-         || floor(maxh / 2 / back_scale) - 1 > MIN(- trans_y, trans_y + buf_height))
+      || z_change > 0.09
+      || v_change > 2.0
+      || h_change > 2.0)
      && (port == &dev->full || port == &dev->preview2))
   {
     if(port->pipe->status == DT_DEV_PIXELPIPE_VALID)
@@ -1764,14 +1768,16 @@ void dt_view_paint_surface(cairo_t *cr,
     cairo_paint(cr);
 
     dt_print_pipe(DT_DEBUG_EXPOSE,
-        "dt_view_paint_surface",
+        "  painting",
          dev->preview_pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
-         "size %4lux%-4lu processed %4.0fx%-4.0f "
-         "buf %4dx%-4d scale=%.3f "
-         "zoom (x=%6.2f y=%6.2f) -> offset (x=%+.3f y=%+.3f)",
-         width, height, wd, ht,
+         "zoomed=%.2f horinzontal=%.1f vertical=%.1f wd=%.1f ht=%.1f "
+         "buf %dx%d zoom scale=%.5f "
+         "(%.3f %.3f) trans (%+.3f %+.3f) offset (%+.3f %+.3f)",
+         z_change, h_change, v_change,
+         wd, ht,
          dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height, zoom_scale,
          dev->preview_pipe->backbuf_zoom_x, dev->preview_pipe->backbuf_zoom_y,
+         trans_x, trans_y,
          preview_x, preview_y);
     cairo_surface_destroy(preview);
   }
@@ -1782,14 +1788,13 @@ void dt_view_paint_surface(cairo_t *cr,
      || dev->preview_pipe->output_imgid != dev->image_storage.id)
   {
     dt_print_pipe(DT_DEBUG_EXPOSE,
-        "dt_view_paint_surface",
+        "  painting",
          port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
-         "size %4lux%-4lu processed %4dx%-4d "
-         "buf %4dx%-4d scale=%.3f "
-         "zoom (x=%6.2f y=%6.2f) -> offset (x=%+.3f y=%+.3f)",
-         width, height, processed_width, processed_height,
-         buf_width, buf_height, buf_scale,
+         "buf %dx%d scale=%.5f "
+         "zoom (%.3f %.3f) trans (%+.3f %+.3f) offset (%+.3f %+.3f)",
+         buf_width, buf_height, back_scale / zoom_scale,
          buf_zoom_x, buf_zoom_y,
+         trans_x, trans_y,
          offset_x, offset_y);
     cairo_scale(cr, back_scale / zoom_scale, back_scale / zoom_scale);
     cairo_translate(cr, trans_x, trans_y);
