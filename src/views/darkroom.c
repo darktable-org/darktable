@@ -718,7 +718,7 @@ void expose(dt_view_t *self,
       }
 
       // gui active module
-      if(dt_dev_modulegroups_test_activated(darktable.develop))
+      if(dmod->gui_post_expose && dt_dev_modulegroups_test_activated(darktable.develop))
       {
         dt_print_pipe(DT_DEBUG_EXPOSE,
                       "expose module",
