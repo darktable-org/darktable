@@ -1316,6 +1316,8 @@ static void _remove_shortcut(GSequenceIter *shortcut)
   dt_shortcut_t *s = g_sequence_get(shortcut);
   if(!s) return;
 
+  _selected_shortcut = NULL;
+
   gboolean disabled = s->views == DT_VIEW_NONE;
   if(s->is_default)
   {
