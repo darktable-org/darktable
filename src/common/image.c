@@ -863,8 +863,8 @@ void dt_image_update_final_size(const dt_imgid_t imgid)
       DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_UPDATE);
       DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
     }
+    dt_print(DT_DEBUG_PIPE, "[dt_image_update_final_size] for ID=%i, updated to %ix%i", imgid, ww, hh);
   }
-  dt_print(DT_DEBUG_PIPE, "[dt_image_update_final_size] for ID=%i, updated to %ix%i", imgid, ww, hh);
 }
 
 gboolean dt_image_get_final_size(const dt_imgid_t imgid, int *width, int *height)
