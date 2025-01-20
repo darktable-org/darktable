@@ -306,6 +306,15 @@ void darktable_splash_screen_set_progress_percent(const char *msg,
   }
 }
 
+void darktable_splash_screen_raise()
+{
+  if(splash_screen)
+  {
+    gdk_window_raise(gtk_widget_get_window(splash_screen));
+    _process_all_gui_events();
+  }
+}
+
 void darktable_splash_screen_destroy()
 {
   if(splash_screen)

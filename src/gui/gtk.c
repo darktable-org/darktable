@@ -1449,7 +1449,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
                                                 widgets.right_scrolled_window);
   gtk_container_set_focus_vadjustment (box, gtk_scrolled_window_get_vadjustment (swin));
   */
-  dt_colorspaces_set_display_profile(DT_COLORSPACE_DISPLAY);
   // update the profile when the window is moved. resize is already handled in configure()
   widget = dt_ui_main_window(darktable.gui->ui);
   g_signal_connect(G_OBJECT(widget), "configure-event",
@@ -1794,16 +1793,10 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   gtk_widget_set_visible(dt_ui_toast_msg(gui->ui), FALSE);
   gtk_widget_set_visible(gui->scrollbars.hscrollbar, FALSE);
   gtk_widget_set_visible(gui->scrollbars.vscrollbar, FALSE);
-  // hide the main window, so that it doesn't cover up the splash screen
-  gtk_widget_set_visible(dt_ui_main_window(gui->ui), FALSE);
-
-  // finally, process all accumulated GUI events so that everything is properly
-  // set up before proceeding
-  for(int i = 0; i < 5; i++)
-  {
-    g_usleep(500);
-    dt_gui_process_events();
-  }
+  // raise the splash screen, so that the main window doesn't cover it
+  // this call also processes all pending GUI events, ensuring that
+  // everyting is properly set up before we return
+  darktable_splash_screen_raise();
 }
 
 static const dt_action_def_t _action_def_focus_tabs;

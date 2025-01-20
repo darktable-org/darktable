@@ -1619,7 +1619,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       // scan for cases where the database and xmp files have different timestamps
       changed_xmp_files = dt_control_crawler_run();
       if(!dt_conf_get_bool("show_splash_screen"))
+      {
         darktable_splash_screen_destroy();
+        dt_gui_process_events(); // ensure that the splash screen is removed right away
+      }
     }
   }
 
@@ -1924,11 +1927,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   if(init_gui)
   {
-    darktable_splash_screen_destroy();
     // unhide the main window and restore its geometry to that saved in the config file
-    gtk_widget_set_visible(dt_ui_main_window(darktable.gui->ui), TRUE);
     dt_gui_gtk_load_config();
-//    gtk_widget_show_all(dt_ui_main_window(darktable.gui->ui));
+    darktable_splash_screen_destroy();
   }
 
   dt_print(DT_DEBUG_CONTROL,
