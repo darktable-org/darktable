@@ -673,6 +673,8 @@ gboolean dt_tag_detach_by_string(const char *name,
     dt_tag_detach(tagid, imgid, undo_on, group_on);
   }
 
+  sqlite3_finalize(stmt);
+
   g_free(n);
 
   return res;
