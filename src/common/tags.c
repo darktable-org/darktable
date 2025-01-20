@@ -644,7 +644,8 @@ gboolean dt_tag_detach_by_string(const char *name,
      "SELECT tagid"
      " FROM main.tagged_images as ti, data.tags as t"
      " WHERE ti.tagid = t.id"
-     "   AND t.name GLOB ?1",
+     "   AND t.name GLOB ?1"
+     "   AND ti.imgid = ?2",
      -1, &stmt,
      NULL);
 
@@ -661,6 +662,7 @@ gboolean dt_tag_detach_by_string(const char *name,
   }
 
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, n, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
 
   gboolean res = FALSE;
 
