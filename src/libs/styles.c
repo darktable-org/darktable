@@ -130,7 +130,7 @@ static gboolean _get_node_for_name(GtkTreeModel *model,
   return FALSE;
 }
 
-gboolean _styles_tooltip_callback(GtkWidget* self,
+gboolean _styles_tooltip_callback(GtkWidget* widget,
                                   gint x,
                                   gint y,
                                   gboolean keyboard_mode,
@@ -142,13 +142,17 @@ gboolean _styles_tooltip_callback(GtkWidget* self,
   GtkTreeIter iter;
   dt_imgid_t imgid = NO_IMGID;
 
-  if(gtk_tree_view_get_tooltip_context(GTK_TREE_VIEW(self), &x, &y, FALSE, &model, &path, &iter))
+  if(gtk_tree_view_get_tooltip_context(GTK_TREE_VIEW(widget), &x, &y, FALSE, &model, &path, &iter))
   {
     gchar *name = NULL;
     gtk_tree_model_get(model, &iter, DT_STYLES_COL_FULLNAME, &name, -1);
 
-    // only on leaf node
-    if(!name) return FALSE;
+    // on non-leaf node open styles section when clicked in shortcut mapping mode
+    if(!name)
+    {
+      dt_action_define(&darktable.control->actions_global, NULL, "styles", widget, NULL);
+      return FALSE;
+    }
 
     GList *selected_image = dt_collection_get_selected(darktable.collection, 1);
 
@@ -159,10 +163,9 @@ gboolean _styles_tooltip_callback(GtkWidget* self,
     }
 
     GtkWidget *ht = dt_gui_style_content_dialog(name, imgid);
-    gtk_widget_show_all(ht);
+    dt_action_define(&darktable.control->actions_global, "styles", name, widget, NULL);
 
-    gtk_tooltip_set_custom(tooltip, ht);
-    return TRUE;
+    return dt_shortcut_tooltip_callback(widget, x, y, keyboard_mode, tooltip, ht);
   }
 
   return FALSE;
@@ -410,8 +413,6 @@ static void _delete_clicked(GtkWidget *w, dt_lib_styles_t *d)
   if(style_names == NULL) return;
 
   const gint select_cnt = g_list_length(style_names);
-  const gboolean single_raise = (select_cnt == 1);
-
   const gboolean can_delete = _ask_before_delete_style(select_cnt);
 
   if(can_delete)
@@ -420,14 +421,9 @@ static void _delete_clicked(GtkWidget *w, dt_lib_styles_t *d)
 
     for(const GList *style = style_names; style; style = g_list_next(style))
     {
-      dt_styles_delete_by_name_adv((char*)style->data, single_raise);
+      dt_styles_delete_by_name_adv((char*)style->data, !g_list_next(style), TRUE);
     }
 
-    if(!single_raise) {
-      // raise signal at the end of processing all styles if we have more than 1 to delete
-      // this also calls _gui_styles_update_view
-      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_STYLE_CHANGED);
-    }
     dt_database_release_transaction(darktable.db);
   }
   g_list_free_full(style_names, g_free);
@@ -989,7 +985,7 @@ void gui_reset(dt_lib_module_t *self)
     for(const GList *result = all_styles; result; result = g_list_next(result))
     {
       dt_style_t *style = result->data;
-      dt_styles_delete_by_name_adv((char*)style->name, FALSE);
+      dt_styles_delete_by_name_adv((char*)style->name, FALSE, TRUE);
     }
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_STYLE_CHANGED);
   }
