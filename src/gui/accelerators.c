@@ -870,8 +870,7 @@ static gboolean _find_relative_instance(dt_action_t *action,
 }
 
 static gchar *_shortcut_lua_command(GtkWidget *widget,
-                                    dt_shortcut_t *s,
-                                    gchar *preset_name)
+                                    dt_shortcut_t *s)
 {
   const dt_action_element_def_t *elements = _action_find_elements(s->action);
 
@@ -924,7 +923,7 @@ static gchar *_shortcut_lua_command(GtkWidget *widget,
 
 void _shortcut_copy_lua(GtkWidget *widget, dt_shortcut_t *shortcut, gchar *preset_name)
 {
-  gchar *lua_command = _shortcut_lua_command(widget, shortcut, preset_name);
+  gchar *lua_command = _shortcut_lua_command(widget, shortcut);
   if(!lua_command) return;
   gtk_clipboard_set_text(gtk_clipboard_get_default(gdk_display_get_default()), lua_command, -1);
   dt_control_log(_("Lua script command copied to clipboard:\n\n<tt>%s</tt>"), lua_command);
@@ -1006,7 +1005,6 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
 
   gchar *original_markup =
     dt_bauhaus_widget_get_tooltip_markup(widget, darktable.control->element);
-  gchar *preset_name = g_object_get_data(G_OBJECT(widget), "dt-preset-name");
   const gchar *widget_name = gtk_widget_get_name(widget);
 
   if(!strcmp(widget_name, "actions_view") || !strcmp(widget_name, "shortcuts_view"))
@@ -1067,21 +1065,6 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
          "\n\nwith fallbacks enabled, the same shortcut can be used with additional modifiers"
          "\nor mouse scroll/clicks/moves to affect a different element or change the effect or speed."
          : "");
-    }
-  }
-  else if(preset_name)
-  {
-    dt_action_t *module = g_object_get_data(G_OBJECT(widget), "dt-preset-module");
-    if(!module)
-    {
-      action = dt_action_locate(&darktable.control->actions_global,
-                                (gchar *[]){"styles", (gchar *)preset_name, NULL}, FALSE);
-    }
-    else
-    {
-      if(module->type == DT_ACTION_TYPE_IOP_INSTANCE)
-        module = &((dt_iop_module_t*)module)->so->actions;
-      action = dt_action_locate(module, (gchar *[]){"preset", preset_name, NULL}, FALSE);
     }
   }
   else
@@ -1185,7 +1168,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
   if(markup_text)
   {
     if(action) lua_shortcut.action = action;
-    gchar *lua_command = _shortcut_lua_command(widget, &lua_shortcut, preset_name);
+    gchar *lua_command = _shortcut_lua_command(widget, &lua_shortcut);
     if(lua_command)
     {
       gchar *lua_escaped = g_markup_printf_escaped("\n\nLua: <tt>%s</tt>%s %s", lua_command,
@@ -1316,6 +1299,8 @@ static void _remove_shortcut(GSequenceIter *shortcut)
   dt_shortcut_t *s = g_sequence_get(shortcut);
   if(!s) return;
 
+  _selected_shortcut = NULL;
+
   gboolean disabled = s->views == DT_VIEW_NONE;
   if(s->is_default)
   {
@@ -1415,7 +1400,8 @@ static gboolean _insert_shortcut(dt_shortcut_t *shortcut,
                                  const gboolean confirm,
                                  const gboolean disable)
 {
-  if(!shortcut->speed && shortcut->effect != DT_ACTION_EFFECT_SET)
+  if((!shortcut->speed && shortcut->effect != DT_ACTION_EFFECT_SET)
+     || shortcut->action->type == DT_ACTION_TYPE_SECTION)
     return FALSE;
 
   dt_shortcut_t *s = calloc(sizeof(dt_shortcut_t), 1);

@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "control/control.h"
 #include "common/act_on.h"
 #include "common/styles.h"
 #include "common/utility.h"
@@ -45,8 +46,6 @@ static gboolean _styles_tooltip_callback(GtkWidget* self,
     dt_dev_write_history(dev);
 
   GtkWidget *ht = dt_gui_style_content_dialog(name, imgid);
-
-  g_object_set_data_full(G_OBJECT(self), "dt-preset-name", g_strdup(name), g_free);
 
   return dt_shortcut_tooltip_callback(self, x, y, keyboard_mode, tooltip, ht);
 }
@@ -94,6 +93,7 @@ static void _build_style_submenus(GtkMenuShell *menu,
       g_signal_connect_data(mi, "query-tooltip",
                             G_CALLBACK(_styles_tooltip_callback),
                             g_strdup(style_name), (GClosureNotify)g_free, 0);
+      dt_action_define(&darktable.control->actions_global, "styles", style_name, GTK_WIDGET(mi), NULL);
     }
     else
       gtk_widget_set_has_tooltip(GTK_WIDGET(mi), FALSE);
