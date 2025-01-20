@@ -72,6 +72,8 @@ typedef struct dt_dev_pixelpipe_iop_t
   dt_iop_buffer_dsc_t dsc_out;
 
   GHashTable *raster_masks;
+
+  gboolean has_proxy;
 } dt_dev_pixelpipe_iop_t;
 
 typedef enum dt_dev_pixelpipe_change_t
@@ -195,6 +197,12 @@ typedef struct dt_dev_pixelpipe_t
   GList *forms;
   // the masks generated in the pipe for later reusal are inside dt_dev_pixelpipe_iop_t
   gboolean store_all_raster_masks;
+
+  gboolean has_proxy;
+  size_t n_masks;
+  uint8_t* proxy_data;
+  size_t proxy_width, proxy_height;
+
 } dt_dev_pixelpipe_t;
 
 struct dt_develop_t;
