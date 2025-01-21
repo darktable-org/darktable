@@ -1798,7 +1798,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         }
 
         // indirectly give gpu some air to breathe (and to do display related stuff)
-        dt_iop_nap(dt_opencl_micro_nap(pipe->devid));
+        dt_opencl_micro_nap(pipe->devid);
 
         // transform to input colorspace
         if(success_opencl)
@@ -2092,7 +2092,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
            return TRUE;
 
         // indirectly give gpu some air to breathe (and to do display related stuff)
-        dt_iop_nap(dt_opencl_micro_nap(pipe->devid));
+        dt_opencl_micro_nap(pipe->devid);
 
         // transform to module input colorspace
         if(success_opencl)
