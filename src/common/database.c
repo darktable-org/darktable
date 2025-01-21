@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -4184,6 +4184,38 @@ start:
     snprintf(dbfilename_data, sizeof(dbfilename_data), "%s%sdata.db", datadir, G_DIR_SEPARATOR_S);
   else
     snprintf(dbfilename_data, sizeof(dbfilename_data), ":memory:");
+
+  // It may happen that we will not have write access to the database restored
+  // from a backup or snapshot. Running darktable with a database that cannot
+  // be written to may result in incorrect operation, the cause of which will
+  // be difficult to diagnose. Let's check if we can continue.
+  if((access(dbfilename_library, F_OK) == 0 && access(dbfilename_library, W_OK) != 0)
+     || (access(dbfilename_data, F_OK) == 0 && access(dbfilename_data, W_OK) != 0))
+  {
+    dt_print(DT_DEBUG_ALWAYS, "at least one of the dt databases (%s, %s) is not writeable",
+                               dbfilename_library, dbfilename_data);
+    if(has_gui)
+    {
+      char *readonly_db_text = g_markup_printf_escaped(
+        _("you do not have write access to at least one of the darktable databases:\n"
+          "\n"
+          "<span style='italic'>%s</span>\n"
+          "<span style='italic'>%s</span>\n"
+          "\n"
+          "please fix this and then run darktable again"),
+        dbfilename_library,
+        dbfilename_data);
+      dt_gui_show_standalone_yes_no_dialog(_("darktable - read-only database detected"),
+                                           readonly_db_text,
+                                           _("_quit darktable"),
+                                           NULL);
+      // There is no REAL need to free the string before exiting, but we do it
+      // to avoid creating a code pattern that could be mistakenly copy-pasted
+      // somewhere else where freeing memory would actually be needed.
+      g_free(readonly_db_text);
+    }
+    exit(1);
+  }
 
   /* create database */
   dt_database_t *db = g_malloc0(sizeof(dt_database_t));
