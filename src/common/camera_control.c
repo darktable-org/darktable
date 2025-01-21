@@ -654,7 +654,7 @@ void dt_camctl_camera_stop_live_view(const dt_camctl_t *c)
   }
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] Stopping live view");
   cam->is_live_viewing = FALSE;
-  pthread_join(cam->live_view_thread, NULL);
+  dt_pthread_join(cam->live_view_thread);
   // tell camera to get back to normal state (close mirror)
   dt_camctl_camera_set_property_int(camctl, NULL, "eosviewfinder", 0);
   dt_camctl_camera_set_property_int(camctl, NULL, "viewfinder", 0);
