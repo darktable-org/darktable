@@ -1101,9 +1101,9 @@ GList *dt_styles_get_item_list(const char *name,
           "        multi_name, FALSE, blendop_version"
           " FROM main.history"
           " WHERE imgid=?2 AND main.history.enabled=1"
-          "   AND (main.history.operation"
-          "        NOT IN (SELECT operation FROM data.style_items WHERE styleid=?1))"
-          " GROUP BY operation HAVING MAX(num) ORDER BY num DESC", -1, &stmt, NULL);
+          "   AND (main.history.operation || multi_name"
+          "        NOT IN (SELECT operation || multi_name FROM data.style_items WHERE styleid=?1))"
+          " GROUP BY (operation || multi_name) HAVING MAX(num) ORDER BY num DESC", -1, &stmt, NULL);
         // clang-format on
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     }
