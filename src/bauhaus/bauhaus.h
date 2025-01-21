@@ -185,7 +185,6 @@ typedef struct dt_bauhaus_popup_t
   GdkRectangle position;
   int offset;
   int offcut;
-  gboolean composited;
 } dt_bauhaus_popup_t;
 
 typedef struct dt_bauhaus_t
