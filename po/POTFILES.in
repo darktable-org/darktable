@@ -1,5 +1,6 @@
 build/bin/conf_gen.h
 build/bin/preferences_gen.h
+build/bin/styles_string.h
 build/bin/tools/darktable_authors.h
 build/lib/darktable/plugins/introspection_ashift.c
 build/lib/darktable/plugins/introspection_atrous.c
