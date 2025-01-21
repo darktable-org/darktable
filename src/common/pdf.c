@@ -278,7 +278,9 @@ static size_t _pdf_stream_encoder_Flate(dt_pdf_t *pdf, const unsigned char *data
   int result;
   uLongf destLen = compressBound(len);
   unsigned char *buffer = malloc(destLen);
-
+  if(!buffer)
+    return 0;
+  
   result = compress(buffer, &destLen, data, len);
 
   if(result != Z_OK)
@@ -786,11 +788,24 @@ float * read_ppm(const char * filename, int * wd, int * ht)
   }
 
   float *image = malloc(sizeof(float) * width * height * 3);
+  if(!image)
+  {
+    fprintf(stderr, "unable to allocate buffer for image data\n");
+    fclose(f);
+    return NULL;
+  }
 
   if(max <= 255)
   {
     // read a 8 bit PPM
     uint8_t *tmp = malloc(sizeof(uint8_t) * width * height * 3);
+    if(!tmp)
+    {
+      fprintf(stderr, "unable to allocate buffer for file data\n");
+      free(image);
+      fclose(f);
+      return NULL;
+    }
     int res = fread(tmp, sizeof(uint8_t) * 3, width * height, f);
     if(res != width * height)
     {
@@ -810,6 +825,13 @@ float * read_ppm(const char * filename, int * wd, int * ht)
   {
     // read a 16 bit PPM
     uint16_t *tmp = malloc(sizeof(uint16_t) * width * height * 3);
+    if(!tmp)
+    {
+      fprintf(stderr, "unable to allocate buffer for file data\n");
+      free(image);
+      fclose(f);
+      return NULL;
+    }
     int res = fread(tmp, sizeof(uint16_t) * 3, width * height, f);
     if(res != width * height)
     {
@@ -819,14 +841,10 @@ float * read_ppm(const char * filename, int * wd, int * ht)
       fclose(f);
       return NULL;
     }
-    // swap byte order
+    // swap byte order and transform values into 0..1 range
     DT_OMP_FOR()
     for(int k = 0; k < 3 * width * height; k++)
-      tmp[k] = ((tmp[k] & 0xff) << 8) | (tmp[k] >> 8);
-    // and transform it into 0..1 range
-    DT_OMP_FOR()
-    for(int i = 0; i < width * height * 3; i++)
-      image[i] = (float)tmp[i] / max;
+      image[k] = (float)(((tmp[k] & 0xff) << 8) | (tmp[k] >> 8)) / max;
     free(tmp);
   }
   fclose(f);

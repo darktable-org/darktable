@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2023 darktable developers.
+    Copyright (C) 2012-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -145,21 +145,27 @@ static dt_bauhaus_combobox_entry_t *_new_combobox_entry
    void (*free_func)(void *))
 {
   dt_bauhaus_combobox_entry_t *entry = calloc(1, sizeof(dt_bauhaus_combobox_entry_t));
-  entry->label = g_strdup(label);
-  entry->alignment = alignment;
-  entry->sensitive = sensitive;
-  entry->data = data;
-  entry->free_func = free_func;
+  if(entry)
+  {
+    entry->label = g_strdup(label);
+    entry->alignment = alignment;
+    entry->sensitive = sensitive;
+    entry->data = data;
+    entry->free_func = free_func;
+  }
   return entry;
 }
 
 static void _free_combobox_entry(gpointer data)
 {
   dt_bauhaus_combobox_entry_t *entry = (dt_bauhaus_combobox_entry_t *)data;
-  g_free(entry->label);
-  if(entry->free_func)
-    entry->free_func(entry->data);
-  free(entry);
+  if(entry)
+  {
+    g_free(entry->label);
+    if(entry->free_func)
+      entry->free_func(entry->data);
+    free(entry);
+  }
 }
 
 static GdkRGBA * _default_color_assign()
@@ -1560,7 +1566,8 @@ void dt_bauhaus_combobox_add_full(GtkWidget *widget,
     data =_combobox_entry(d, d->entries->len - 1)->data + 1;
   dt_bauhaus_combobox_entry_t *entry = _new_combobox_entry(text, align,
                                                            sensitive, data, free_func);
-  g_ptr_array_add(d->entries, entry);
+  if(entry)
+    g_ptr_array_add(d->entries, entry);
   if(d->active < 0)
     d->active = 0;
   if(d->defpos == -1 && sensitive)
@@ -1662,8 +1669,9 @@ void dt_bauhaus_combobox_insert_full(GtkWidget *widget,
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
-  g_ptr_array_insert(d->entries, pos,
-                     _new_combobox_entry(text, align, TRUE, data, free_func));
+  dt_bauhaus_combobox_entry_t *entry = _new_combobox_entry(text, align, TRUE, data, free_func);
+  if(entry)
+    g_ptr_array_insert(d->entries, pos, entry);
   if(d->active < 0) d->active = 0;
 }
 

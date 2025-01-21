@@ -2183,7 +2183,9 @@ static gboolean _opencl_load_program(const int dev,
 
   const size_t filesize = filestat.st_size;
   char *file = malloc(filesize + 2048);
-  size_t rd = fread(file, sizeof(char), filesize, f);
+  size_t rd = 0;
+  if(file)
+    rd = fread(file, sizeof(char), filesize, f);
   fclose(f);
   if(rd != filesize)
   {
@@ -2263,7 +2265,10 @@ static gboolean _opencl_load_program(const int dev,
         size_t cached_filesize = cachedstat.st_size;
 
         unsigned char *cached_content = malloc(cached_filesize + 1);
-        rd = fread(cached_content, sizeof(char), cached_filesize, cached);
+        if(cached_content)
+          rd = fread(cached_content, sizeof(char), cached_filesize, cached);
+        else
+          rd = 0;
         if(rd != cached_filesize)
         {
           dt_print(DT_DEBUG_OPENCL,
