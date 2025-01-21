@@ -1274,20 +1274,20 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   gtk_widget_show(view_root_menu);
 
   GtkWidget *view_menu = gtk_menu_new();
-  _osx_add_view_menu_item(view_menu, C_("menu", "lighttable"), "lighttable");
-  _osx_add_view_menu_item(view_menu, C_("menu", "darkroom"), "darkroom");
+  _osx_add_view_menu_item(view_menu, C_("menu", "Lighttable"), "lighttable");
+  _osx_add_view_menu_item(view_menu, C_("menu", "Darkroom"), "darkroom");
 
   GtkWidget *sep = gtk_separator_menu_item_new();
   gtk_menu_shell_append(GTK_MENU_SHELL (view_menu), sep);
   gtk_widget_show(sep);
 
-  _osx_add_view_menu_item(view_menu, C_("menu", "slideshow"), "slideshow");
+  _osx_add_view_menu_item(view_menu, C_("menu", "Slideshow"), "slideshow");
 #ifdef HAVE_MAP
-  _osx_add_view_menu_item(view_menu, C_("menu", "map"), "map");
+  _osx_add_view_menu_item(view_menu, C_("menu", "Map"), "map");
 #endif
-  _osx_add_view_menu_item(view_menu, C_("menu", "print"), "print");
+  _osx_add_view_menu_item(view_menu, C_("menu", "Print"), "print");
 #ifdef HAVE_GPHOTO2
-  _osx_add_view_menu_item(view_menu, C_("menu", "tethering"), "tethering");
+  _osx_add_view_menu_item(view_menu, C_("menu", "Tethering"), "tethering");
 #endif
 
   gtk_menu_item_set_submenu(GTK_MENU_ITEM (view_root_menu), view_menu);
