@@ -107,7 +107,7 @@ int operation_tags()
 int flags()
 {
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE
-    | IOP_FLAGS_UNSAFE_COPY;
+    | IOP_FLAGS_UNSAFE_COPY | IOP_FLAGS_WRITE_DETAILS;
 }
 
 int default_group()
