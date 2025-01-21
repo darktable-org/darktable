@@ -1071,6 +1071,13 @@ static gboolean _request_color_pick(dt_dev_pixelpipe_t *pipe,
     && module->request_color_pick != DT_REQUEST_COLORPICK_OFF;
 }
 
+// Is it worth to use a dt_iop_flags_t for this ?
+static inline gboolean _piece_may_tile(const dt_dev_pixelpipe_iop_t *piece)
+{
+  return piece->process_tiling_ready
+        && !(piece->pipe->want_detail_mask && piece->module->flags() & IOP_FLAGS_WRITE_DETAILS);
+}
+
 static void _collect_histogram_on_CPU(dt_dev_pixelpipe_t *pipe,
                                       dt_develop_t *dev,
                                       float *input,
@@ -1185,7 +1192,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                      roi_in->width, roi_in->height, in_bpp,
                      TRUE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
 
-  if(!fitting && piece->process_tiling_ready)
+  if(!fitting && _piece_may_tile(piece))
   {
     dt_print_pipe(DT_DEBUG_PIPE,
                         "process tiles",
@@ -1214,7 +1221,8 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
 
     // this code section is for simplistic benchmarking via --bench-module
     if((piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT))
-       && darktable.bench_module)
+       && darktable.bench_module
+       && fitting)
     {
       if(dt_str_commasubstring(darktable.bench_module, module->op))
       {
@@ -1712,7 +1720,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
     if(possible_cl && !fits_on_device)
     {
-      if(!piece->process_tiling_ready)
+      if(!_piece_may_tile(piece))
         possible_cl = FALSE;
 
       const float advantage = darktable.opencl->dev[pipe->devid].advantage;
