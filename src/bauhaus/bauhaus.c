@@ -462,23 +462,18 @@ static void _window_moved_to_rect(GdkWindow *window,
 static void _window_position(const int offset)
 {
   dt_bauhaus_popup_t *pop = &darktable.bauhaus->popup;
-
-  if(pop->composited && gtk_widget_get_visible(pop->window))
-  {
-    pop->offcut += offset;
-    return;
-  }
-
   int height = pop->position.height;
-  pop->offset += offset;
 
-  pop->composited = FALSE;
   // On Xwayland gdk_screen_is_composited is TRUE but popups are opaque
   // So we need to explicitly test for pure wayland
 #ifdef GDK_WINDOWING_WAYLAND
   if(GDK_IS_WAYLAND_DISPLAY(gtk_widget_get_display(pop->window)))
   {
-    pop->composited = TRUE;
+    if(gtk_widget_get_visible(pop->window))
+    {
+      pop->offcut += offset;
+      return;
+    }
     gtk_widget_set_app_paintable(pop->window, TRUE);
     GdkScreen *screen = gtk_widget_get_screen(pop->window);
     GdkVisual *visual = gdk_screen_get_rgba_visual(screen);
@@ -487,6 +482,8 @@ static void _window_position(const int offset)
     gtk_widget_set_visual(pop->window, visual);
   }
 #endif
+
+  pop->offset += offset;
 
   if(pop->offcut > 0)
     pop->offcut = MAX(0, pop->offcut + offset);
