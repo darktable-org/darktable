@@ -1765,20 +1765,15 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   // configure main window position, colors, fonts, etc.
   gint splash_x, splash_y, splash_w, splash_h;
   darktable_splash_screen_get_geometry(&splash_x, &splash_y, &splash_w, &splash_h);
-  if(splash_w == -1)
-  {
-    // use the previously-saved geometry; we'll be setting the window to this size later anyway
-    dt_gui_gtk_load_config();
-  }
-  else
+  if(splash_w != -1)
   {
     // the main window peeks out behind the splash screen so we reduce the dimensions
     if(splash_h > 100 && splash_w > 100)
     {
-      splash_x += 20;
-      splash_y += 50;
-      splash_w -= 100;
-      splash_h -= 100;
+      splash_x += 30;
+      splash_y += 40;
+      splash_w -= 60;
+      splash_h -= 80;
     }
     gtk_window_move(GTK_WINDOW(dt_ui_main_window(gui->ui)), splash_x, splash_y);
     gtk_window_resize(GTK_WINDOW(dt_ui_main_window(gui->ui)), splash_w, splash_h);
@@ -1787,16 +1782,33 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   dt_gui_process_events();
 
   // Showing everything, to ensure proper instantiation and initialization
-  // then we hide the scroll bars and popup messages again
   gtk_widget_show_all(dt_ui_main_window(gui->ui));
+  // then we hide the scroll bars and popup messages again
   gtk_widget_set_visible(dt_ui_log_msg(gui->ui), FALSE);
   gtk_widget_set_visible(dt_ui_toast_msg(gui->ui), FALSE);
   gtk_widget_set_visible(gui->scrollbars.hscrollbar, FALSE);
   gtk_widget_set_visible(gui->scrollbars.vscrollbar, FALSE);
-  // raise the splash screen, so that the main window doesn't cover it
-  // this call also processes all pending GUI events, ensuring that
-  // everyting is properly set up before we return
-  darktable_splash_screen_raise();
+
+  if(splash_w == -1)
+  {
+    // no splash screen: use the previously-saved geometry; we'll be
+    // setting the window to this size later anyway, but this avoids
+    // having it jump around
+    // this call needs to come AFTER the window is realized with
+    // gtk_widget_show_all to avoid having the WM get out of sync with
+    // darktable, especially if the window is maximized or on a
+    // different display
+    dt_gui_gtk_load_config();
+    // and now finally refresh the screen
+    dt_gui_process_events();
+  }
+  else
+  {
+    // raise the splash screen, so that the main window doesn't cover it
+    // this call also processes all pending GUI events, ensuring that
+    // everyting is properly set up before we return
+    darktable_splash_screen_raise();
+  }
 }
 
 static const dt_action_def_t _action_def_focus_tabs;
