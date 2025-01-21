@@ -472,6 +472,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].fullname = NULL;
   cl->dev[dev].cname = NULL;
   cl->dev[dev].options = NULL;
+  cl->dev[dev].cflags = NULL;
   cl->dev[dev].memory_in_use = 0;
   cl->dev[dev].peak_memory = 0;
   cl->dev[dev].used_available = 0;
@@ -951,10 +952,12 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   gchar *my_option = g_strdup(compile_opt);
   dt_conf_set_string(compile_option_name_cname, my_option);
 
-  cl->dev[dev].options = g_strdup_printf("-w %s %s -D%s=1 -I%s",
-                            my_option,
-                            cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : "",
-                            _opencl_get_vendor_by_id(vendor_id), escapedkerneldir);
+  cl->dev[dev].cflags = g_strdup_printf("-w %s%s -D%s=1",
+                                  my_option,
+                                  cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : "",
+                                  _opencl_get_vendor_by_id(vendor_id));
+  cl->dev[dev].options = g_strdup_printf("%s -I%s",
+                             cl->dev[dev].cflags, escapedkerneldir);
 
   dt_print_nts(DT_DEBUG_OPENCL, "   CL COMPILER OPTION:       %s\n", my_option);
   dt_print_nts(DT_DEBUG_OPENCL, "   CL COMPILER COMMAND:      %s\n", cl->dev[dev].options);
@@ -1519,6 +1522,7 @@ finally:
       free((void *)(cl->dev[i].fullname));
       free((void *)(cl->dev[i].cname));
       free((void *)(cl->dev[i].options));
+      free((void *)(cl->dev[i].cflags));
     }
   }
 
@@ -1611,6 +1615,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
       free((void *)(cl->dev[i].fullname));
       free((void *)(cl->dev[i].cname));
       free((void *)(cl->dev[i].options));
+      free((void *)(cl->dev[i].cflags));
     }
     free(cl->dev_priority_image);
     free(cl->dev_priority_preview);
@@ -2178,7 +2183,9 @@ static gboolean _opencl_load_program(const int dev,
 
   const size_t filesize = filestat.st_size;
   char *file = malloc(filesize + 2048);
-  size_t rd = fread(file, sizeof(char), filesize, f);
+  size_t rd = 0;
+  if(file)
+    rd = fread(file, sizeof(char), filesize, f);
   fclose(f);
   if(rd != filesize)
   {
@@ -2195,6 +2202,8 @@ static gboolean _opencl_load_program(const int dev,
   size_t len;
 
   cl_device_id devid = cl->dev[dev].devid;
+
+  // We include driver & platform version in checksum
   (cl->dlocl->symbols->dt_clGetDeviceInfo)
     (devid, CL_DRIVER_VERSION, end - start, start, &len);
   start += len;
@@ -2207,7 +2216,8 @@ static gboolean _opencl_load_program(const int dev,
     (platform, CL_PLATFORM_VERSION, end - start, start, &len);
   start += len;
 
-  len = g_strlcpy(start, cl->dev[dev].options, end - start);
+  // Include compiler flags for checksum
+  len = g_strlcpy(start, cl->dev[dev].cflags, end - start);
   start += len;
 
   /* make sure that the md5sums of all the includes are applied as well */
@@ -2255,7 +2265,10 @@ static gboolean _opencl_load_program(const int dev,
         size_t cached_filesize = cachedstat.st_size;
 
         unsigned char *cached_content = malloc(cached_filesize + 1);
-        rd = fread(cached_content, sizeof(char), cached_filesize, cached);
+        if(cached_content)
+          rd = fread(cached_content, sizeof(char), cached_filesize, cached);
+        else
+          rd = 0;
         if(rd != cached_filesize)
         {
           dt_print(DT_DEBUG_OPENCL,

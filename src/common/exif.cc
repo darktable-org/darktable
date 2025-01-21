@@ -1138,9 +1138,12 @@ static void _find_datetime_taken(Exiv2::ExifData &exifData,
   // Note: We allow a longer "datetime original" field with an unnecessary
   // trailing byte(s) due to buggy software that creates it.
   // See https://github.com/darktable-org/darktable/issues/17389
+  // We also accept the out of spec Exif.Photo.DateTimeOriginal
+  // without a null terminator, which AnalogExif creates.
+  // See https://github.com/darktable-org/darktable/issues/18146
   if((FIND_EXIF_TAG("Exif.Image.DateTimeOriginal")
       || FIND_EXIF_TAG("Exif.Photo.DateTimeOriginal"))
-     && pos->size() >= DT_DATETIME_EXIF_LENGTH)
+     && pos->size() >= DT_DATETIME_EXIF_LENGTH - 1)
   {
     _strlcpy_to_utf8(exif_datetime_taken, DT_DATETIME_EXIF_LENGTH, pos, exifData);
     if(FIND_EXIF_TAG("Exif.Photo.SubSecTimeOriginal")
@@ -1809,6 +1812,16 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if(FIND_EXIF_TAG("Exif.Image.DNGVersion"))
     {
       gboolean missing_sample = FALSE;
+      gboolean modified_dng = FALSE;
+
+      // All known camera vendors writing native dng files support this tag according to specs.
+      if(FIND_EXIF_TAG("Exif.Image.OriginalRawFileName"))
+      {
+        std::string str = pos->print(&exifData);
+        gchar *name = g_ascii_strup(str.c_str(), str.length());
+        modified_dng = !g_str_has_suffix(name, ".DNG");
+        g_free(name);
+      }
 
       // initialize matrixes and data with noop / defaults
       float CM[3][9];
@@ -1944,10 +1957,13 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         // Currently dt does not support DT_LS_Other so we do a fallback but backreport and request samples
         if(illu[k] == DT_LS_Other)
         {
-          dt_control_log(_("detected OtherIlluminant in `%s`, please report via darktable github"), img->filename);
-          dt_print(DT_DEBUG_IMAGEIO, "detected not-implemented OtherIlluminant in `%s`, please report via darktable github", img->filename);
+          if(!modified_dng)
+          {
+            dt_control_log(_("detected OtherIlluminant in `%s`, please report via darktable github"), img->filename);
+            dt_print(DT_DEBUG_IMAGEIO, "detected not-implemented OtherIlluminant in `%s`, please report via darktable github", img->filename);
+            missing_sample = TRUE;
+          }
           illu[k] = DT_LS_D65;
-          missing_sample = TRUE;
         }
 
         if(illu[k] != DT_LS_Unknown)
@@ -1991,7 +2007,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       }
 
       const gboolean interpolate = found_illus > 1 && sel_temp > D65temp && min_temp < D65temp && min_temp > 0;
-      if(interpolate)
+      if(interpolate && !modified_dng)
       {
         dt_control_log(_("special exif illuminants in `%s`, please report via darktable github"), img->filename);
         dt_print(DT_DEBUG_ALWAYS, "special exif illuminants in `%s`, please report via darktable github", img->filename);
@@ -2019,7 +2035,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       {
         const dt_dng_illuminant_t illuminant = illu[sel_illu];
         const gboolean forward_suggested = has_FM[sel_illu];
-        if(forward_suggested)
+        if(forward_suggested && !modified_dng)
         {
           dt_control_log(_("forward matrix in `%s`, please report via darktable github"), img->filename);
           missing_sample = TRUE;

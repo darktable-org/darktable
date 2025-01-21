@@ -507,6 +507,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
     }
     g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
     g_object_set_data(G_OBJECT(mi), "dt-preset-module", minfo->module);
+    dt_action_define(&minfo->module->actions, "preset", name, mi, NULL);
 
     g_signal_connect(G_OBJECT(mi), "activate",
                      G_CALLBACK(_menuitem_activate_preset), minfo);
@@ -976,13 +977,14 @@ static gboolean _lib_plugin_arrow_button_press(GtkWidget *w,
             !dt_modifier_is(e->state, GDK_SHIFT_MASK))
     {
       const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
+      const uint32_t side = dt_lib_get_container(module);
       gboolean all_other_closed = TRUE;
       for(const GList *it = darktable.lib->plugins; it; it = g_list_next(it))
       {
         dt_lib_module_t *m = it->data;
 
         if(m != module
-           && module->container(module) == m->container(m)
+           && dt_lib_get_container(m) == side
            && m->expandable(m) && dt_lib_is_visible_in_view(m, v))
         {
           all_other_closed = all_other_closed
@@ -1036,13 +1038,14 @@ static void show_module_callback(dt_lib_module_t *module)
   if(dt_conf_get_bool("lighttable/ui/single_module"))
   {
     const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
+    const uint32_t side = dt_lib_get_container(module);
     gboolean all_other_closed = TRUE;
     for(const GList *it = darktable.lib->plugins; it; it = g_list_next(it))
     {
       dt_lib_module_t *m = it->data;
 
       if(m != module
-         && module->container(module) == m->container(m)
+         && dt_lib_get_container(m) == side
          && m->expandable(m)
          && dt_lib_is_visible_in_view(m, v))
       {

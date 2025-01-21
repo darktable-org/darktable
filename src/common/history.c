@@ -1051,7 +1051,7 @@ GList *dt_history_get_items(const dt_imgid_t imgid,
      " FROM main.history"
      " WHERE imgid=?1"
      "   AND enabled in (1, ?2)"
-     " GROUP BY num, operation, multi_priority"
+     " GROUP BY operation || multi_name, multi_priority"
      " ORDER BY %s DESC, %s DESC",
      multi_priority_order ? "multi_priority" : "num",
      multi_priority_order ? "num" : "multi_priority");

@@ -2250,7 +2250,6 @@ void dt_iop_gui_update(dt_iop_module_t *module)
       dt_iop_gui_update_expanded(module);
     }
     dt_iop_gui_update_header(module);
-    dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
     dt_guides_update_module_widget(module);
 
     // this signal must be raised only safely when the darkroom and history
@@ -2342,6 +2341,15 @@ static gboolean _presets_scroll_callback(GtkWidget *widget,
   return TRUE;
 }
 
+gboolean dt_iop_has_focus(const dt_iop_module_t *module)
+{
+  return module
+      && module->dev
+      && module->dev->gui_attached
+      && module == module->dev->gui_module
+      && dt_dev_modulegroups_test_activated(darktable.develop);
+}
+
 void dt_iop_request_focus(dt_iop_module_t *module)
 {
   dt_develop_t *dev = darktable.develop;
@@ -2352,8 +2360,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   if(!darktable.lib->proxy.colorpicker.restrict_histogram)
     dt_iop_color_picker_reset(NULL, TRUE);
 
-  if(darktable.gui->reset
-     || (out_focus_module == module))
+  if(darktable.gui->reset || (out_focus_module == module))
     return;
 
   dev->gui_module = module;

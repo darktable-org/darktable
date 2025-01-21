@@ -1025,7 +1025,7 @@ void dt_styles_apply_to_dev(const char *name, const dt_imgid_t imgid)
   dt_control_log(_("applied style `%s' on current image"), name);
 }
 
-void dt_styles_delete_by_name_adv(const char *name, const gboolean raise)
+void dt_styles_delete_by_name_adv(const char *name, const gboolean raise, const gboolean shortcut)
 {
   int id = 0;
   if((id = dt_styles_get_id_by_name(name)) != 0)
@@ -1047,9 +1047,12 @@ void dt_styles_delete_by_name_adv(const char *name, const gboolean raise)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
-    dt_action_t *old = dt_action_locate(&darktable.control->actions_global,
-                                        (gchar *[]){"styles", (gchar *)name, NULL}, FALSE);
-    dt_action_rename(old, NULL);
+    if(shortcut)
+    {
+      dt_action_t *old = dt_action_locate(&darktable.control->actions_global,
+                                          (gchar *[]){"styles", (gchar *)name, NULL}, FALSE);
+      dt_action_rename(old, NULL);
+    }
 
     if(raise)
       DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_STYLE_CHANGED);
@@ -1058,7 +1061,7 @@ void dt_styles_delete_by_name_adv(const char *name, const gboolean raise)
 
 void dt_styles_delete_by_name(const char *name)
 {
-  dt_styles_delete_by_name_adv(name, TRUE);
+  dt_styles_delete_by_name_adv(name, TRUE, FALSE);
 }
 
 GList *dt_styles_get_item_list(const char *name,
@@ -1098,9 +1101,9 @@ GList *dt_styles_get_item_list(const char *name,
           "        multi_name, FALSE, blendop_version"
           " FROM main.history"
           " WHERE imgid=?2 AND main.history.enabled=1"
-          "   AND (main.history.operation"
-          "        NOT IN (SELECT operation FROM data.style_items WHERE styleid=?1))"
-          " GROUP BY operation HAVING MAX(num) ORDER BY num DESC", -1, &stmt, NULL);
+          "   AND (main.history.operation || multi_name"
+          "        NOT IN (SELECT operation || multi_name FROM data.style_items WHERE styleid=?1))"
+          " GROUP BY (operation || multi_name) HAVING MAX(num) ORDER BY num DESC", -1, &stmt, NULL);
         // clang-format on
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     }
