@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -64,6 +64,10 @@
 #endif
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
+#endif
+#ifdef _WIN32
+#include <dwmapi.h>
+#include <gdk/gdkwin32.h>
 #endif
 #include <pthread.h>
 
@@ -1163,6 +1167,60 @@ static void _open_url(GtkWidget *widget, gpointer url)
 }
 #endif
 
+// This is based on GIMP's implementation: 
+// https://gitlab.gnome.org/GNOME/gimp/-/blob/master/app/widgets/gimpwidgets-utils.c#L2655
+// Set win32 title bar color based on theme (background color).
+#ifdef _WIN32
+static void _window_set_titlebar_color_callback(GtkWidget *widget)
+{
+  GdkWindow *window = gtk_widget_get_window(widget);
+  if(window)
+  {
+    GtkStyleContext *style = gtk_widget_get_style_context(widget);
+    if(style)
+    {
+      GdkRGBA *bg_color = NULL;
+      gtk_style_context_get(style, GTK_STATE_FLAG_NORMAL, 
+                            GTK_STYLE_PROPERTY_BACKGROUND_COLOR, &bg_color, NULL);
+      if(bg_color)
+      {
+        HWND hwnd = (HWND)gdk_win32_window_get_handle(window);
+        if(hwnd)
+        {
+          // attempt to set the title bar color to theme's background color.
+          // this is supported starting with Windows 11 Build 22000
+          COLORREF titlebar_color = RGB((BYTE)(bg_color->red * 255),
+                                        (BYTE)(bg_color->green * 255),
+                                        (BYTE)(bg_color->blue * 255));
+
+          HRESULT hr = DwmSetWindowAttribute(hwnd, DWMWA_CAPTION_COLOR,
+                                             &titlebar_color, sizeof(titlebar_color));
+          if(FAILED(hr))
+          {
+            // if setting title bar color failed,
+            // attempt to set it light/dark depending to theme's background color.
+            // this is supported starting with Windows 10 version 1809.
+            //
+            // if the background color is below the threshold (currently 0.5),
+            // then we're likely in dark mode
+            gboolean use_dark_mode = (bg_color->red   * bg_color->alpha < 0.5 &&
+                                      bg_color->green * bg_color->alpha < 0.5 &&
+                                      bg_color->blue  * bg_color->alpha < 0.5);
+
+            DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE,
+                                  &use_dark_mode, sizeof(use_dark_mode));
+          }
+        }
+
+        gdk_rgba_free(bg_color);
+      }
+    }
+  }
+
+  g_signal_chain_from_overridden_handler(widget);
+}
+#endif
+
 int dt_gui_theme_init(dt_gui_gtk_t *gui)
 {
   if(gui->gtkrc[0] != '\0')
@@ -1281,6 +1339,14 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
                    G_CALLBACK(_osx_quit_callback), NULL);
   g_signal_connect(G_OBJECT(OSXApp), "NSApplicationOpenFile",
                    G_CALLBACK(_osx_openfile_callback), NULL);
+#endif
+
+#ifdef _WIN32
+  // set win32 title bar color based on theme (background color)
+  g_signal_override_class_handler("map", gtk_window_get_type(),
+                                  G_CALLBACK(_window_set_titlebar_color_callback));
+  g_signal_override_class_handler("style-updated", gtk_window_get_type(),
+                                  G_CALLBACK(_window_set_titlebar_color_callback));
 #endif
 
   GtkWidget *widget;
