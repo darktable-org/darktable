@@ -119,7 +119,8 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_GUIDES_SPECIAL_DRAW = 1 << 14, // handle the grid drawing directly
   IOP_FLAGS_GUIDES_WIDGET = 1 << 15,     // require the guides widget
   IOP_FLAGS_CROP_EXPOSER = 1 << 16,      // offers crop exposing
-  IOP_FLAGS_EXPAND_ROI_IN = 1 << 17      // we might have to take special care about roi expansion
+  IOP_FLAGS_EXPAND_ROI_IN = 1 << 17,     // we might have to take special care about roi expansion
+  IOP_FLAGS_WRITE_DETAILS = 1 << 18
 } dt_iop_flags_t;
 
 /** status of a module*/
