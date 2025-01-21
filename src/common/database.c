@@ -53,7 +53,7 @@
 #define LAST_FULL_DATABASE_VERSION_DATA    10
 // You HAVE TO bump THESE versions whenever you add an update branches to _upgrade_*_schema_step()!
 #define CURRENT_DATABASE_VERSION_LIBRARY 56
-#define CURRENT_DATABASE_VERSION_DATA    10
+#define CURRENT_DATABASE_VERSION_DATA    11
 
 #define USE_NESTED_TRANSACTIONS
 #define MAX_NESTED_TRANSACTIONS 5
@@ -3171,6 +3171,20 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
              "can't set multi_name_hand_edited column");
 
     new_version = 10;
+  }
+  else if(version == 10)
+  {
+    TRY_EXEC("DELETE FROM styles WHERE name LIKE '_l10n_darktable camera styles|%'",
+             "can't delete darktable camera styles");
+
+    TRY_EXEC("DELETE FROM styles WHERE name LIKE '_l10n_darktable examples|%'",
+             "can't delete darktable example styles");
+
+    TRY_EXEC("DELETE FROM style_items"
+             " WHERE styleid NOT IN (SELECT id FROM styles)",
+             "can't delete darktable camera style_items");
+
+    new_version = 11;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
