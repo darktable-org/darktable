@@ -57,7 +57,7 @@ changes (where available).
 
 ## Performance Improvements
 
-- N/A
+- Improved performance of discarding history of selected images.
 
 ## Other Changes
 
