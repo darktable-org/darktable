@@ -605,7 +605,7 @@ int process_cl(dt_iop_module_t *self,
   dt_iop_colorzones_data_t *d = piece->data;
   dt_iop_colorzones_global_data_t *gd = self->global_data;
   cl_mem dev_L, dev_a, dev_b = NULL;
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
