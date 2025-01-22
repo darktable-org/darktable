@@ -59,6 +59,8 @@ changes (where available).
 
 - Eliminated unnecessary GUI refreshes.
 
+- Improved user interface responsiveness for blending operations.
+
 ## Other Changes
 
 - N/A
