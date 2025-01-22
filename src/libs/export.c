@@ -440,8 +440,8 @@ static void _export_with_preset(const gchar *preset_name, dt_lib_module_t *self)
     set_params(self, op_params, op_params_size);
     
     gboolean login = TRUE;
-    if(d->storage_module->login)
-      login = d->storage_module->login(d->storage_module);
+    if(d->storage_module->storage_login)
+      login = d->storage_module->storage_login(d->storage_module);
 
     if(login)
       _export_with_current_settings(self);
