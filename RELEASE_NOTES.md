@@ -115,6 +115,10 @@ changes (where available).
 - Fixed a possible crash when using <kbd>Ctrl+z</kbd> reproduced on
   macOS.
 
+- Fixed darktable crashing in enlargecanvas module.
+
+- Fixed darktable crashing using details mask due to bad tiling.
+
 ## Lua
 
 ### API Version
