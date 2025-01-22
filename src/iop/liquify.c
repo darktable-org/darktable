@@ -2810,9 +2810,10 @@ int mouse_moved(dt_iop_module_t *self,
                 const int which,
                 const float zoom_scale)
 {
-  if(!self->enabled)
-    return FALSE;
   dt_iop_liquify_gui_data_t *g = self->gui_data;
+  gboolean layer_display = _layers_showing(g);
+  if(!self->enabled && !layer_display)
+    return FALSE;
   dt_iop_liquify_params_t *pa = self->params;
   gboolean handled = FALSE;
   float complex pt = 0.0f;
