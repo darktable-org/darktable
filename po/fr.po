@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-21 21:48+0100\n"
-"PO-Revision-Date: 2025-01-21 21:58+0100\n"
+"POT-Creation-Date: 2025-01-22 09:12+0100\n"
+"PO-Revision-Date: 2025-01-22 09:23+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2414,10 +2414,14 @@ msgid "4-up on US Letter paper"
 msgstr "4-up sur Papier Lettre US"
 
 #: ../build/bin/styles_string.h:4
+msgid "add simulated motion blur to the image"
+msgstr "Ajoute du flou de mouvement simulé à l’image"
+
+#: ../build/bin/styles_string.h:5
 msgid "autumn"
 msgstr "Automne"
 
-#: ../build/bin/styles_string.h:5
+#: ../build/bin/styles_string.h:6
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:290
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:338
@@ -2438,27 +2442,35 @@ msgstr "Automne"
 msgid "blue"
 msgstr "Bleu"
 
-#: ../build/bin/styles_string.h:6
+#: ../build/bin/styles_string.h:7
 msgid "blue LED lighting fix"
 msgstr "Correction pour LED bleue"
 
-#: ../build/bin/styles_string.h:7
+#: ../build/bin/styles_string.h:8
 msgid "blue LED lighting fix (strong)"
 msgstr "Correction pour LED bleue (forte)"
 
-#: ../build/bin/styles_string.h:8
+#: ../build/bin/styles_string.h:9
 msgid "camera styles"
 msgstr "Styles de boîtier"
 
-#: ../build/bin/styles_string.h:9 ../src/libs/image.c:619
+#: ../build/bin/styles_string.h:10 ../src/libs/image.c:619
 msgid "colors"
 msgstr "Couleurs"
 
-#: ../build/bin/styles_string.h:10
+#: ../build/bin/styles_string.h:11
+msgid ""
+"composite four images plus a caption into an image which can be printed "
+"borderless on 8.5x11 paper"
+msgstr ""
+"Compose quatre images et une légende pour impression sans bordure sur un "
+"papier 8.5 x 11"
+
+#: ../build/bin/styles_string.h:12
 msgid "contrast and sharpness"
 msgstr "Contraste et netteté"
 
-#: ../build/bin/styles_string.h:11
+#: ../build/bin/styles_string.h:13
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:284
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:332
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:380
@@ -2470,58 +2482,74 @@ msgstr "Contraste et netteté"
 msgid "cyan"
 msgstr "Cyan"
 
-#: ../build/bin/styles_string.h:12 ../src/libs/collect.c:3388
+#: ../build/bin/styles_string.h:14 ../src/libs/collect.c:3388
 #: ../src/libs/filtering.c:942 ../src/libs/filtering.c:1014
 #: ../src/libs/filtering.c:1691 ../src/libs/filtering.c:1997
 #: ../src/libs/tools/darktable.c:61
 msgid "darktable"
 msgstr "Darktable"
 
-#: ../build/bin/styles_string.h:13
-msgid "day for night"
-msgstr "Nuit pour le jour"
-
-#: ../build/bin/styles_string.h:14
-msgid "day for twilight"
-msgstr "Crépuscule pour le jour"
-
 #: ../build/bin/styles_string.h:15
+msgid "day for night"
+msgstr "Jour en nuit"
+
+#: ../build/bin/styles_string.h:16
+msgid "day for twilight"
+msgstr "Jour en crépuscule"
+
+#: ../build/bin/styles_string.h:17
 msgid "dehaze (strong, luminance only)"
 msgstr "Suppression de la brume (forte, luminance seulement)"
 
-#: ../build/bin/styles_string.h:16
+#: ../build/bin/styles_string.h:18
+msgid ""
+"desaturate and darken red pupils in flash photos.  add drawn masks to limit "
+"affected areas to just the eyes if necessary."
+msgstr ""
+"Désature et assombri les pupilles rouges des photos au flash. Ajouter un "
+"masque dessiné pour limiter l'effet juste aux yeux si nécessaire."
+
+#: ../build/bin/styles_string.h:19
 msgid "effects"
 msgstr "Effets"
 
-#: ../build/bin/styles_string.h:17
+#: ../build/bin/styles_string.h:20
 #: ../src/external/lua-scripts/tools/script_manager.lua:410
 msgid "examples"
 msgstr "Exemples"
 
-#: ../build/bin/styles_string.h:18
+#: ../build/bin/styles_string.h:21
 msgid "extreme local contrast"
 msgstr "Contraste local extrême"
 
-#: ../build/bin/styles_string.h:19
+#: ../build/bin/styles_string.h:22
 msgid "extreme saturation"
 msgstr "Saturation extrêmes"
 
 #. cubic spline
-#: ../build/bin/styles_string.h:20 ../src/iop/filmic.c:1596
+#: ../build/bin/styles_string.h:23 ../src/iop/filmic.c:1596
 msgid "faded"
 msgstr "Délavé"
 
-#: ../build/bin/styles_string.h:21
+#: ../build/bin/styles_string.h:24
+msgid ""
+"fine-tune the selected color by adjusting the 'node placement' slider in "
+"color equalizer"
+msgstr ""
+"Ajuster finement la couleur sélectionnée en ajustant la réglette « Placement "
+"des nœuds » de l'égaliseur de couleurs"
+
+#: ../build/bin/styles_string.h:25
 msgid "fog"
 msgstr "Brume"
 
-#: ../build/bin/styles_string.h:22
+#: ../build/bin/styles_string.h:26
 #: ../build/lib/darktable/plugins/introspection_ashift.c:361
 #: ../build/lib/darktable/plugins/introspection_highlights.c:311
 msgid "generic"
 msgstr "Générique"
 
-#: ../build/bin/styles_string.h:23
+#: ../build/bin/styles_string.h:27
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:278
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:326
@@ -2543,7 +2571,7 @@ msgstr "Générique"
 msgid "green"
 msgstr "Vert"
 
-#: ../build/bin/styles_string.h:24
+#: ../build/bin/styles_string.h:28
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:302
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:350
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:398
@@ -2556,11 +2584,25 @@ msgstr "Vert"
 msgid "magenta"
 msgstr "Magenta"
 
-#: ../build/bin/styles_string.h:25
+#: ../build/bin/styles_string.h:29
+msgid "make a photo taken in daylight look like it was taken in twilight"
+msgstr ""
+"Transforme une image prise de jour pour qu'elle ressemble à une image prise "
+"au crépuscule"
+
+#: ../build/bin/styles_string.h:30
+msgid ""
+"make a photo taken in full daylight look like it was taken at night.  "
+"emulates the cinematic technique of the same name."
+msgstr ""
+"Transforme une image prise de jour pour qu'elle ressemble à une image prise "
+"de nuit. Émule la technique du cinéma du même nom."
+
+#: ../build/bin/styles_string.h:31
 msgid "motion blur"
 msgstr "Flou de mouvement"
 
-#: ../build/bin/styles_string.h:26
+#: ../build/bin/styles_string.h:32
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:266
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:314
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:362
@@ -2571,18 +2613,18 @@ msgstr "Flou de mouvement"
 msgid "orange"
 msgstr "Orange"
 
-#: ../build/bin/styles_string.h:27
+#: ../build/bin/styles_string.h:33
 msgid "pastels"
 msgstr "Pastel"
 
-#: ../build/bin/styles_string.h:28 ../src/common/collection.c:1478
+#: ../build/bin/styles_string.h:34 ../src/common/collection.c:1478
 #: ../src/common/color_vocabulary.c:339 ../src/common/colorlabels.c:384
 #: ../src/iop/colorzones.c:2495 ../src/libs/collect.c:1965
 #: ../src/libs/filters/colors.c:264
 msgid "purple"
 msgstr "Violet"
 
-#: ../build/bin/styles_string.h:29
+#: ../build/bin/styles_string.h:35
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:260
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:308
@@ -2603,23 +2645,29 @@ msgstr "Violet"
 msgid "red"
 msgstr "Rouge"
 
-#: ../build/bin/styles_string.h:30
+#: ../build/bin/styles_string.h:36
 msgid "red-eye reduction"
 msgstr "Atténuation des yeux rouges"
 
-#: ../build/bin/styles_string.h:31
+#: ../build/bin/styles_string.h:37
 msgid "sepia"
 msgstr "Sépia"
 
-#: ../build/bin/styles_string.h:32
+#: ../build/bin/styles_string.h:38
 msgid "sharpen finest details"
 msgstr "Netteté des détails fins"
 
-#: ../build/bin/styles_string.h:33
+#: ../build/bin/styles_string.h:39
+msgid "shift greens to yellow and yellows to orange to simulate fall foliage"
+msgstr ""
+"Décale les verts vers les jaunes et les jaunes vers les oranges pour simuler "
+"le feuillage d'automne"
+
+#: ../build/bin/styles_string.h:40
 msgid "spot color"
 msgstr "Couleur cible"
 
-#: ../build/bin/styles_string.h:34
+#: ../build/bin/styles_string.h:41
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:272
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:320
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:368
@@ -5634,7 +5682,7 @@ msgstr "Réglette"
 msgid "dropdown"
 msgstr "Menu déroulant"
 
-#: ../src/chart/main.c:504 ../src/common/database.c:3789
+#: ../src/chart/main.c:504 ../src/common/database.c:3800
 #: ../src/control/jobs/control_jobs.c:2156
 #: ../src/control/jobs/control_jobs.c:2214 ../src/gui/accelerators.c:2494
 #: ../src/gui/accelerators.c:2576 ../src/gui/accelerators.c:2629
@@ -6716,7 +6764,7 @@ msgid ""
 msgstr "Le timeout obligatoire OpenCL a été mis à jour à 1000.\n"
 
 # dialogue très modifié et ajout d'un 1er message
-#: ../src/common/database.c:3762
+#: ../src/common/database.c:3773
 #, c-format
 msgid ""
 "\n"
@@ -6792,19 +6840,19 @@ msgstr ""
 "\n"
 
 #. clang-format on
-#: ../src/common/database.c:3788
+#: ../src/common/database.c:3799
 msgid "error starting darktable"
 msgstr "Erreur de lancement de Darktable"
 
-#: ../src/common/database.c:3789
+#: ../src/common/database.c:3800
 msgid "_delete database lock files"
 msgstr "_Supprimer les verrous de la base de données"
 
-#: ../src/common/database.c:3795
+#: ../src/common/database.c:3806
 msgid "are you sure?"
 msgstr "Est-ce certain ?"
 
-#: ../src/common/database.c:3796
+#: ../src/common/database.c:3807
 msgid ""
 "\n"
 "do you really want to delete the lock files?\n"
@@ -6812,19 +6860,19 @@ msgstr ""
 "\n"
 "Réellement supprimer les fichiers verrous ?\n"
 
-#: ../src/common/database.c:3796 ../src/gui/gtk.c:3200
+#: ../src/common/database.c:3807 ../src/gui/gtk.c:3200
 msgid "_no"
 msgstr "_Non"
 
-#: ../src/common/database.c:3796 ../src/gui/gtk.c:3199
+#: ../src/common/database.c:3807 ../src/gui/gtk.c:3199
 msgid "_yes"
 msgstr "_Oui"
 
-#: ../src/common/database.c:3812
+#: ../src/common/database.c:3823
 msgid "done"
 msgstr "Terminé"
 
-#: ../src/common/database.c:3813
+#: ../src/common/database.c:3824
 msgid ""
 "\n"
 "successfully deleted the lock files.\n"
@@ -6834,17 +6882,17 @@ msgstr ""
 "Suppression des fichiers verrous réussie,\n"
 "Darktable doit être redémarré.\n"
 
-#: ../src/common/database.c:3814 ../src/common/database.c:3821
+#: ../src/common/database.c:3825 ../src/common/database.c:3832
 #: ../src/gui/accelerators.c:2577 ../src/gui/accelerators.c:2659
 #: ../src/gui/hist_dialog.c:229 ../src/gui/presets.c:567
 msgid "_ok"
 msgstr "_Ok"
 
-#: ../src/common/database.c:3817
+#: ../src/common/database.c:3828
 msgid "error"
 msgstr "Erreur"
 
-#: ../src/common/database.c:3818
+#: ../src/common/database.c:3829
 #, c-format
 msgid ""
 "\n"
@@ -6858,7 +6906,7 @@ msgstr ""
 "Supprimer les fichiers <i>data.db.lock</i> et <i>library.db.lock</i> \n"
 "dans le répertoire <a href=\"file:///%s\">%s</a>. \n"
 
-#: ../src/common/database.c:3935
+#: ../src/common/database.c:3946
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -6867,19 +6915,19 @@ msgstr ""
 "Le fichier de verrouillage de la base de données contient un numéro de "
 "processus actif sur le système (%d)"
 
-#: ../src/common/database.c:3942
+#: ../src/common/database.c:3953
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "Le fichier de verrouillage de la base de données semble être vide"
 
-#: ../src/common/database.c:3952
+#: ../src/common/database.c:3963
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr ""
 "Erreur lors de la lecture du fichier de verrouillage de la base de données : "
 "« %s »"
 
-#: ../src/common/database.c:4022
+#: ../src/common/database.c:4033
 #, c-format
 msgid ""
 "the database schema version of\n"
@@ -6897,16 +6945,16 @@ msgstr ""
 "(cela signifie que la base de données a été créée ou mise à jour pas une "
 "version plus récente de Darktable.\n"
 
-#: ../src/common/database.c:4029
+#: ../src/common/database.c:4040
 msgid "darktable - too new db version"
 msgstr "Darktable - Base de données trop récente"
 
-#: ../src/common/database.c:4030 ../src/common/database.c:4224
+#: ../src/common/database.c:4041 ../src/common/database.c:4235
 msgid "_quit darktable"
 msgstr "_Quitter Darktable"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:4045
+#: ../src/common/database.c:4056
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -6925,21 +6973,21 @@ msgstr ""
 "\n"
 "Continuer ou quitter pour effectuer une sauvegarde.\n"
 
-#: ../src/common/database.c:4053
+#: ../src/common/database.c:4064
 msgid "darktable - schema migration"
 msgstr "Darktable - Migration de la base de données"
 
-#: ../src/common/database.c:4054 ../src/common/database.c:4405
-#: ../src/common/database.c:4420 ../src/common/database.c:4580
-#: ../src/common/database.c:4595
+#: ../src/common/database.c:4065 ../src/common/database.c:4416
+#: ../src/common/database.c:4431 ../src/common/database.c:4591
+#: ../src/common/database.c:4606
 msgid "_close darktable"
 msgstr "_Quitter Darktable"
 
-#: ../src/common/database.c:4054
+#: ../src/common/database.c:4065
 msgid "_upgrade database"
 msgstr "_Mise à jour de la base de données"
 
-#: ../src/common/database.c:4214
+#: ../src/common/database.c:4225
 #, c-format
 msgid ""
 "you do not have write access to at least one of the darktable databases:\n"
@@ -6956,11 +7004,11 @@ msgstr ""
 "\n"
 "Merci de corriger cela avant de relancer Darktable."
 
-#: ../src/common/database.c:4222
+#: ../src/common/database.c:4233
 msgid "darktable - read-only database detected"
 msgstr "Darktable - Bases de données en lecture seule"
 
-#: ../src/common/database.c:4385 ../src/common/database.c:4560
+#: ../src/common/database.c:4396 ../src/common/database.c:4571
 #, c-format
 msgid ""
 "quick_check said:\n"
@@ -6970,21 +7018,21 @@ msgstr ""
 "« %s »\n"
 "\n"
 
-#: ../src/common/database.c:4402 ../src/common/database.c:4417
-#: ../src/common/database.c:4577 ../src/common/database.c:4592
+#: ../src/common/database.c:4413 ../src/common/database.c:4428
+#: ../src/common/database.c:4588 ../src/common/database.c:4603
 msgid "darktable - error opening database"
 msgstr "Darktable - Erreur lors de l’ouverture de la base de données"
 
-#: ../src/common/database.c:4406 ../src/common/database.c:4581
+#: ../src/common/database.c:4417 ../src/common/database.c:4592
 msgid "_attempt restore"
 msgstr "_Essayer de restaurer"
 
-#: ../src/common/database.c:4407 ../src/common/database.c:4421
-#: ../src/common/database.c:4582 ../src/common/database.c:4596
+#: ../src/common/database.c:4418 ../src/common/database.c:4432
+#: ../src/common/database.c:4593 ../src/common/database.c:4607
 msgid "_delete database"
 msgstr "_Effacer la base de données"
 
-#: ../src/common/database.c:4410 ../src/common/database.c:4585
+#: ../src/common/database.c:4421 ../src/common/database.c:4596
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup, attempt an automatic restore\n"
@@ -6997,7 +7045,7 @@ msgstr ""
 "récente\n"
 " • Ou supprimer la base corrompue et redémarrer avec une nouvelle base ?"
 
-#: ../src/common/database.c:4424 ../src/common/database.c:4599
+#: ../src/common/database.c:4435 ../src/common/database.c:4610
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or delete the corrupted database\n"
@@ -7007,7 +7055,7 @@ msgstr ""
 "la base de données depuis une sauvegarde, ou supprimer la base corrompue\n"
 "et redémarrer avec une nouvelle base ?"
 
-#: ../src/common/database.c:4431 ../src/common/database.c:4604
+#: ../src/common/database.c:4442 ../src/common/database.c:4615
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -13275,7 +13323,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:2564 ../src/gui/preferences.c:923
 #: ../src/libs/tools/global_toolbox.c:491
-#: ../src/libs/tools/global_toolbox.c:662
+#: ../src/libs/tools/global_toolbox.c:667
 msgid "shortcuts"
 msgstr "Raccourcis"
 
@@ -13521,32 +13569,32 @@ msgstr "Vues"
 
 #: ../src/gui/gtk.c:1277
 msgctxt "menu"
-msgid "lighttable"
+msgid "Lighttable"
 msgstr "Table lumineuse"
 
 #: ../src/gui/gtk.c:1278
 msgctxt "menu"
-msgid "darkroom"
+msgid "Darkroom"
 msgstr "Chambre noire"
 
 #: ../src/gui/gtk.c:1284
 msgctxt "menu"
-msgid "slideshow"
+msgid "Slideshow"
 msgstr "Diaporama"
 
 #: ../src/gui/gtk.c:1286
 msgctxt "menu"
-msgid "map"
+msgid "Map"
 msgstr "Carte"
 
 #: ../src/gui/gtk.c:1288
 msgctxt "menu"
-msgid "print"
+msgid "Print"
 msgstr "Impression"
 
 #: ../src/gui/gtk.c:1290
 msgctxt "menu"
-msgid "tethering"
+msgid "Tethering"
 msgstr "Capture"
 
 #. Help menu
@@ -28460,12 +28508,12 @@ msgid "grouping"
 msgstr "Groupe"
 
 #: ../src/libs/tools/global_toolbox.c:394
-#: ../src/libs/tools/global_toolbox.c:540
+#: ../src/libs/tools/global_toolbox.c:545
 msgid "expand grouped images"
 msgstr "Montrer les images groupées"
 
 #: ../src/libs/tools/global_toolbox.c:396
-#: ../src/libs/tools/global_toolbox.c:542
+#: ../src/libs/tools/global_toolbox.c:547
 msgid "collapse grouped images"
 msgstr "Cacher les images groupées"
 
@@ -29571,6 +29619,14 @@ msgstr "Créer une fenêtre flottante persistante"
 #: ../src/views/view.c:1533
 msgid "mouse actions"
 msgstr "Actions de la souris"
+
+#~ msgctxt "menu"
+#~ msgid "lighttable"
+#~ msgstr "Table lumineuse"
+
+#~ msgctxt "menu"
+#~ msgid "darkroom"
+#~ msgstr "Chambre noire"
 
 #~ msgid "contributors"
 #~ msgstr "Contributeurs"
