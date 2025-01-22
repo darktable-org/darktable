@@ -22,6 +22,8 @@ function get-l10n()
                         <xsl:output indent="yes" omit-xml-declaration="yes"/>
                         <xsl:template match="info">
                           <xsl:value-of select="name"/>
+                          <xsl:text>&#10;</xsl:text>
+                          <xsl:value-of select="description"/>
                         </xsl:template>
 
                         <xsl:template match="style"/>
