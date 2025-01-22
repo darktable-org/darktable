@@ -2360,6 +2360,13 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   dev->gui_module = module;
   dev->focus_hash = TRUE;
 
+  dt_free_align(dev->full.pipe->bcache_data);
+  dev->full.pipe->bcache_data = NULL;
+  dt_free_align(dev->preview_pipe->bcache_data);
+  dev->preview_pipe->bcache_data = NULL;
+  dt_free_align(dev->preview2.pipe->bcache_data);
+  dev->preview2.pipe->bcache_data = NULL;
+
   /* lets lose the focus of previous focus module*/
   if(out_focus_module)
   {
