@@ -95,7 +95,7 @@ OPTIONAL(char *, ask_user_confirmation, struct dt_imageio_module_storage_t *self
 OPTIONAL(gboolean, export_enabled, struct dt_imageio_module_storage_t *self);
 
 /* for storage modules which require a login */
-OPTIONAL(gboolean, login, struct dt_imageio_module_storage_t *self);
+OPTIONAL(gboolean, storage_login, struct dt_imageio_module_storage_t *self);
 
 #ifdef FULL_API_H
 

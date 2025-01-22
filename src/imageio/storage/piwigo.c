@@ -970,10 +970,10 @@ static gboolean _piwigo_api_upload_photo(dt_storage_piwigo_params_t *p,
 // Login button pressed...
 static void _piwigo_login_clicked(GtkButton *button, dt_imageio_module_storage_t *self)
 {
-  login(self);
+  storage_login(self);
 }
 
-gboolean login(dt_imageio_module_storage_t *self)
+gboolean storage_login(dt_imageio_module_storage_t *self)
 {
   dt_storage_piwigo_gui_data_t *ui = self->gui_data;
   _piwigo_ctx_destroy(&ui->api);
