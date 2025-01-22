@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2016-2024 darktable developers.
+  Copyright (C) 2016-2025 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -4578,6 +4578,9 @@ int mouse_moved(dt_iop_module_t *self,
     dt_control_queue_redraw_center();
     return TRUE;
   }
+
+  if(!self->enabled)
+    return FALSE;
 
   gboolean handled = FALSE;
 

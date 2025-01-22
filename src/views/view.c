@@ -1667,23 +1667,23 @@ void dt_view_paint_surface(cairo_t *cr,
 {
   dt_develop_t *dev = darktable.develop;
 
-  float pts[] = { buf_zoom_x, buf_zoom_y,
-                  dev->preview_pipe->backbuf_zoom_x, dev->preview_pipe->backbuf_zoom_y };
-  dt_dev_distort_transform_plus(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 2);
-
   int processed_width, processed_height;
   dt_dev_get_processed_size(port, &processed_width, &processed_height);
+
+  float pts[] = { buf_zoom_x, buf_zoom_y,
+                  dev->preview_pipe->backbuf_zoom_x, dev->preview_pipe->backbuf_zoom_y,
+                  port->zoom_x, port->zoom_y };
+  dt_dev_distort_transform_plus(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 3);
 
   float offset_x = pts[0] / processed_width - 0.5f;
   float offset_y = pts[1] / processed_height - 0.5f;
   float preview_x = pts[2] / processed_width - 0.5f;
   float preview_y = pts[3] / processed_height - 0.5f;
+  float zoom_x = pts[4] / port->pipe->processed_width - 0.5f;
+  float zoom_y = pts[5] / port->pipe->processed_height - 0.5f;
 
-  dt_dev_zoom_t zoom;
-  int closeup;
-  float zoom_x, zoom_y;
-  dt_dev_get_viewport_params(port, &zoom, &closeup, &zoom_x, &zoom_y);
-
+  dt_dev_zoom_t zoom = port->zoom;
+  int closeup = port->closeup;
   const float ppd           = port->ppd;
   const double tb           = port->border_size;
   const float zoom_scale    = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 1);
