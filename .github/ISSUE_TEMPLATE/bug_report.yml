@@ -20,15 +20,12 @@ body:
         ***
         We appreciate you taking your time to report an issue with darktable. The more details you can provide, the most likely we will be able to assist you.
 
-        Some common issues are addressed in the [FAQ](https://www.darktable.org/about/faq/). 
-        
   - type: textarea
     id: bug_description
     attributes:
       label: Describe the bug
       description: A clear and concise description of what the bug is. Try to be very factual in the description.
       placeholder: |
-        
         What is the issue? What causes the bug?
     validations:
       required: true
@@ -39,7 +36,6 @@ body:
       label: Steps to reproduce
       description: A clear sequence of steps to recreate the issue.
       placeholder: |
-        
         1. Go to '...'
         2. Click on '...'
         3. Scroll down to '...'
@@ -64,14 +60,12 @@ body:
         In case the program crashes, the backtrace file helps a lot to understand the reason. If available please attach below.
         You can also attach a screenshot or screencast or any other useful information.
       placeholder: |
-        
         Drag and drop log file or backtrace file here, if available.
         Copying the contents is okay for short logs (like < 50 lines or so), but please put them in code blocks:
         ```
         log here
         ```
         You can use pastebin.com or similar services for long texts.
-  
   - type: input
     id: commit
     attributes:
@@ -106,7 +100,7 @@ body:
       placeholder: '4.5.0+1317~gbf3c759f02'
     validations:
       required: true
-      
+
   - type: dropdown
     id: OS
     attributes:
@@ -126,7 +120,7 @@ body:
       placeholder: Fedora 39, Ubuntu 23.10, Windows 11 Pro, MacOS 14 Sonoma
     validations:
       required: true
-      
+
   - type: textarea
     id: system
     attributes:
