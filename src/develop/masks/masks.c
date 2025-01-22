@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2024 darktable developers.
+    Copyright (C) 2013-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1104,6 +1104,11 @@ gboolean dt_masks_events_mouse_moved(dt_iop_module_t *module,
                                      const int which,
                                      const float zoom_scale)
 {
+  // if the module is disabled, formms aren't being shown, so there's no point
+  // in passing along mouse events to them
+  if(!module->enabled)
+    return FALSE;
+
   // record mouse position even if there are no masks visible
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
   dt_masks_form_t *form = darktable.develop->form_visible;
