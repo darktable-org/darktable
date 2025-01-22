@@ -4571,9 +4571,6 @@ int mouse_moved(dt_iop_module_t *self,
                 const int which,
                 const float zoom_scale)
 {
-  if(!self->enabled)
-    return FALSE;
-
   dt_iop_ashift_gui_data_t *g = self->gui_data;
 
   if(g->straightening)
@@ -4581,6 +4578,9 @@ int mouse_moved(dt_iop_module_t *self,
     dt_control_queue_redraw_center();
     return TRUE;
   }
+
+  if(!self->enabled)
+    return FALSE;
 
   gboolean handled = FALSE;
 
