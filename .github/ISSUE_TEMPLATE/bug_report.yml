@@ -57,6 +57,7 @@ body:
       description: |
         If you suspect a bug in darktable, it would be nice to have some kind of log file - it's also much more likely that one of the developers will look into your problem soon.
         In most cases '-d common' will be sufficient, '-d opencl' is suggested in case of a suspected problem with OpenCL.
+        If you are on Windows, you can find the log file location [here](https://www.darktable.org/about/faq/#faq-windows-logs).
         In case the program crashes, the backtrace file helps a lot to understand the reason. If available please attach below.
         You can also attach a screenshot or screencast or any other useful information.
       placeholder: |
