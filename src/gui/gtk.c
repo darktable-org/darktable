@@ -2845,7 +2845,7 @@ static void _ui_toast_redraw_callback(gpointer instance,
 {
   dt_control_t *dc = darktable.control;
   // draw toast message, if any
-  dt_pthread_mutex_lock(&darktable.control->toast_mutex);
+  dt_pthread_mutex_lock(&darktable.control->log_mutex);
   if(dc->toast_ack != dc->toast_pos)
   {
     const int32_t first_message = MAX(dc->toast_ack, dc->toast_pos - (DT_CTL_TOAST_SIZE-1));
@@ -2875,7 +2875,7 @@ static void _ui_toast_redraw_callback(gpointer instance,
   {
     if(gtk_widget_get_visible(widget)) gtk_widget_hide(widget);
   }
-  dt_pthread_mutex_unlock(&darktable.control->toast_mutex);
+  dt_pthread_mutex_unlock(&darktable.control->log_mutex);
 }
 #undef ALLMESSSIZE
 

@@ -229,14 +229,12 @@ void dt_control_init(const gboolean withgui)
 
   // s->last_expose_time = dt_get_wtime();
   s->log_pos = s->log_ack = 0;
-  s->log_busy = 0;
+  s->busy = 0;
   s->log_message_timeout_id = 0;
   dt_pthread_mutex_init(&s->log_mutex, NULL);
 
   s->toast_pos = s->toast_ack = 0;
-  s->toast_busy = 0;
   s->toast_message_timeout_id = 0;
-  dt_pthread_mutex_init(&s->toast_mutex, NULL);
 
   pthread_cond_init(&s->cond, NULL);
   dt_pthread_mutex_init(&s->cond_mutex, NULL);
@@ -374,7 +372,6 @@ void dt_control_cleanup(const gboolean withgui)
     dt_pthread_mutex_destroy(&s->queue_mutex);
     dt_pthread_mutex_destroy(&s->cond_mutex);
     dt_pthread_mutex_destroy(&s->log_mutex);
-    dt_pthread_mutex_destroy(&s->toast_mutex);
     dt_pthread_mutex_destroy(&s->res_mutex);
     dt_pthread_mutex_destroy(&s->progress_system.mutex);
     if(s->widgets) g_hash_table_destroy(s->widgets);
@@ -446,7 +443,7 @@ void dt_control_expose(GtkWidget *widget, cairo_t *cr)
 
   // draw busy indicator
   dt_pthread_mutex_lock(&dc->log_mutex);
-  if(dc->log_busy > 0)
+  if(dc->busy > 0)
   {
     dt_control_draw_busy_msg(cr, dc->width, dc->height);
   }
@@ -569,10 +566,10 @@ static gboolean _dt_ctl_log_message_timeout_callback(gpointer data)
 static gboolean _dt_ctl_toast_message_timeout_callback(gpointer data)
 {
   dt_control_t *dc = darktable.control;
-  dt_pthread_mutex_lock(&dc->toast_mutex);
+  dt_pthread_mutex_lock(&dc->log_mutex);
   dc->toast_ack = dc->toast_pos;
   dc->toast_message_timeout_id = 0;
-  dt_pthread_mutex_unlock(&dc->toast_mutex);
+  dt_pthread_mutex_unlock(&dc->log_mutex);
   dt_control_toast_redraw();
   return FALSE;
 }
@@ -615,7 +612,7 @@ void dt_control_button_pressed(double x,
   dt_pthread_mutex_unlock(&dc->log_mutex);
 
   // ack toast message:
-  dt_pthread_mutex_lock(&dc->toast_mutex);
+  dt_pthread_mutex_lock(&dc->log_mutex);
   if(dc->toast_ack != dc->toast_pos)
   {
     if(which == 1 && y > yc - 10.0 && y < yc + 10.0)
@@ -626,11 +623,11 @@ void dt_control_button_pressed(double x,
         dc->toast_message_timeout_id = 0;
       }
       dc->toast_ack = dc->toast_pos;
-      dt_pthread_mutex_unlock(&dc->toast_mutex);
+      dt_pthread_mutex_unlock(&dc->log_mutex);
       return;
     }
   }
-  dt_pthread_mutex_unlock(&dc->toast_mutex);
+  dt_pthread_mutex_unlock(&dc->log_mutex);
 
   if(!dt_view_manager_button_pressed(darktable.view_manager, x, y,
                                      pressure, which, type, state))
@@ -679,7 +676,7 @@ void dt_control_log(const char *msg, ...)
 static void _toast_log(const gboolean markup, const char *msg, va_list ap)
 {
   dt_control_t *dc = darktable.control;
-  dt_pthread_mutex_lock(&dc->toast_mutex);
+  dt_pthread_mutex_lock(&dc->log_mutex);
 
   // if we don't want markup, we escape <>&... so they are not interpreted later
   if(markup)
@@ -697,7 +694,7 @@ static void _toast_log(const gboolean markup, const char *msg, va_list ap)
 
   dc->toast_message_timeout_id
       = g_timeout_add(DT_CTL_TOAST_TIMEOUT, _dt_ctl_toast_message_timeout_callback, NULL);
-  dt_pthread_mutex_unlock(&dc->toast_mutex);
+  dt_pthread_mutex_unlock(&dc->log_mutex);
   // redraw center later in gui thread:
   g_idle_add(_redraw_center, 0);
 }
@@ -729,42 +726,22 @@ static void _control_log_ack_all()
   dt_control_queue_redraw_center();
 }
 
-void dt_control_log_busy_enter()
+void dt_control_busy_enter()
 {
   if(!dt_control_running()) return;
   dt_control_t *dc = darktable.control;
   dt_pthread_mutex_lock(&dc->log_mutex);
-  dc->log_busy++;
+  dc->busy++;
   dt_pthread_mutex_unlock(&dc->log_mutex);
 }
 
-void dt_control_toast_busy_enter()
-{
-  if(!dt_control_running()) return;
-  dt_control_t *dc = darktable.control;
-  dt_pthread_mutex_lock(&dc->toast_mutex);
-  dc->toast_busy++;
-  dt_pthread_mutex_unlock(&dc->toast_mutex);
-}
-
-void dt_control_log_busy_leave()
+void dt_control_busy_leave()
 {
   if(!dt_control_running()) return;
   dt_control_t *dc = darktable.control;
   dt_pthread_mutex_lock(&dc->log_mutex);
-  dc->log_busy--;
+  dc->busy--;
   dt_pthread_mutex_unlock(&dc->log_mutex);
-  /* lets redraw */
-  dt_control_queue_redraw_center();
-}
-
-void dt_control_toast_busy_leave()
-{
-  if(!dt_control_running()) return;
-  dt_control_t *dc = darktable.control;
-  dt_pthread_mutex_lock(&dc->toast_mutex);
-  dc->toast_busy--;
-  dt_pthread_mutex_unlock(&dc->toast_mutex);
   /* lets redraw */
   dt_control_queue_redraw_center();
 }
