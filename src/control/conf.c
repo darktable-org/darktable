@@ -551,6 +551,14 @@ gboolean dt_conf_key_exists(const char *key)
   return (res || dt_confgen_value_exists(key, DT_DEFAULT));
 }
 
+/** remove key from conf */
+void dt_conf_remove_key(const char *key)
+{
+  dt_pthread_mutex_lock(&darktable.conf->mutex);
+  g_hash_table_remove(darktable.conf->table, key);
+  dt_pthread_mutex_unlock(&darktable.conf->mutex);
+}
+
 static void _conf_add(char *key, char *val, dt_conf_dreggn_t *d)
 {
   if(strncmp(key, d->match, strlen(d->match)) == 0)

@@ -412,6 +412,8 @@ static void _edit_preset_response(GtkDialog *dialog,
     sqlite3_finalize(stmt);
 
     if(g->callback) ((void (*)(dt_gui_presets_edit_dialog_t *))g->callback)(g);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_PRESETS_CHANGED,
+                            g_strdup(g->operation));
   }
   else if(response_id == GTK_RESPONSE_YES && g->old_id)
   {
