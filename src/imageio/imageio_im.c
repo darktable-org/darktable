@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2024 darktable developers.
+    Copyright (C) 2020-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -45,7 +45,8 @@ static gboolean _supported_image(const gchar *filename)
   const char *extensions_whitelist[] = { "tiff", "tif", "pbm", "pgm", "ppm", "pnm",
                                          "webp", "jpc", "jp2", "jpf", "jpx", "bmp",
                                          "miff", "dcm", "jng", "mng", "pam", "gif",
-                                         "fits", "fit", "fts", "jxl", "cin", NULL };
+                                         "fits", "fit", "fts", "jxl", "cin", "dpx",
+                                         NULL };
   gboolean supported = FALSE;
   char *ext = g_strrstr(filename, ".");
   if(!ext) return FALSE;
