@@ -159,7 +159,8 @@ typedef enum dt_view_image_over_t
   DT_VIEW_GROUP   =  7,
   DT_VIEW_AUDIO   =  8,
   DT_VIEW_ALTERED =  9,
-  DT_VIEW_END     = 10, // placeholder for the end of the list
+  DT_VIEW_TAGS    = 10,
+  DT_VIEW_END     = 11, // placeholder for the end of the list
 } dt_view_image_over_t;
 
 /** returns an uppercase string of file extension **plus** some flag information **/

@@ -937,12 +937,12 @@ GList *dt_tag_get_list(const dt_imgid_t imgid)
   return dt_util_glist_uniq(tags);
 }
 
-GList *dt_tag_get_hierarchical(const dt_imgid_t imgid)
+GList *dt_tag_get_hierarchical(const dt_imgid_t imgid, const gboolean ignore_dt_tags)
 {
   GList *taglist = NULL;
   GList *tags = NULL;
 
-  const uint32_t count = dt_tag_get_attached(imgid, &taglist, FALSE);
+  const uint32_t count = dt_tag_get_attached(imgid, &taglist, ignore_dt_tags);
 
   if(count < 1)
     return NULL;
