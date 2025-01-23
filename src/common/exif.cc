@@ -4922,7 +4922,7 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData,
     xmpData.add(Exiv2::XmpKey("Xmp.dc.subject"), v1.get());
   g_list_free_full(tags, g_free);
 
-  GList *hierarchical = dt_tag_get_hierarchical(imgid);
+  GList *hierarchical = dt_tag_get_hierarchical(imgid, FALSE);
   for(GList *hier = hierarchical; hier; hier = g_list_next(hier))
   {
     v2->read((char *)hier->data);

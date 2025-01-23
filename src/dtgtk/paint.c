@@ -1872,6 +1872,28 @@ void dtgtk_cairo_paint_altered(cairo_t *cr, gint x, gint y, gint w, gint h, gint
   FINISH
 }
 
+void dtgtk_cairo_paint_tags(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+      cairo_move_to(cr, 0.4, 0.05);
+      cairo_line_to(cr, 0.6, 0.3);
+      cairo_line_to(cr, 0.6, 0.8);
+      cairo_line_to(cr, 0.2, 0.8);
+      cairo_line_to(cr, 0.2, 0.3);
+      cairo_line_to(cr, 0.4, 0.05);
+
+      cairo_move_to(cr, 0.6, 0.1);
+      cairo_line_to(cr, 0.8, 0.4);
+      cairo_line_to(cr, 0.8, 0.9);
+      cairo_line_to(cr, 0.4, 0.9);
+
+      cairo_stroke(cr);
+
+  FINISH
+}
+
+
 void dtgtk_cairo_paint_audio(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
