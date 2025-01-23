@@ -1186,10 +1186,12 @@ static void _update_style(const dt_stylemenu_data_t *menu_data)
 static void _apply_style_activate_callback(GtkMenuItem *menuitem,
                                            const dt_stylemenu_data_t *menu_data)
 {
-  if(gtk_get_current_event()->type == GDK_KEY_PRESS)
+  GdkEvent *event = gtk_get_current_event();
+  if(event && event->type == GDK_KEY_PRESS)
   {
     _update_style(menu_data);
   }
+  gdk_event_free(event);
 }
 
 static gboolean _apply_style_button_callback(GtkMenuItem *menuitem,
