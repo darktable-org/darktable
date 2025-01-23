@@ -290,6 +290,7 @@ static void _dt_style_update_from_image(const int id,
 {
   if(update && dt_is_valid_imgid(imgid))
   {
+    dt_lock_image(imgid);
     GList *list = filter;
     GList *upd = update;
     char query[4096] = { 0 };
@@ -354,6 +355,7 @@ static void _dt_style_update_from_image(const int id,
       list = g_list_next(list);
       upd = g_list_next(upd);
     } while(list);
+    dt_unlock_image(imgid);
   }
 }
 
@@ -413,6 +415,7 @@ void dt_styles_update(const char *name,
   const int id = dt_styles_get_id_by_name(name);
   if(id == 0) return;
 
+  dt_lock_image(imgid);
   gchar *desc = dt_styles_get_description(name);
 
   if((g_strcmp0(name, newname)) || (g_strcmp0(desc, newdescription)))
@@ -466,6 +469,7 @@ void dt_styles_update(const char *name,
   }
 
   dt_gui_style_content_dialog("", -1);
+  dt_unlock_image(imgid);
 
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_STYLE_CHANGED);
 
@@ -492,6 +496,7 @@ void dt_styles_create_from_style(const char *name,
 
   if((id = dt_styles_get_id_by_name(newname)) != 0)
   {
+    dt_lock_image(imgid);
     if(filter)
     {
       char tmp[64];
@@ -551,6 +556,7 @@ void dt_styles_create_from_style(const char *name,
 
     /* backup style to disk */
     dt_styles_save_to_file(newname, NULL, FALSE);
+    dt_unlock_image(imgid);
 
     dt_control_log(_("style named '%s' successfully created"), newname);
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_STYLE_CHANGED);
@@ -567,13 +573,18 @@ gboolean dt_styles_create_from_image(const char *name,
   sqlite3_stmt *stmt;
 
   GList *iop_list = NULL;
+  dt_lock_image(imgid);
   if(copy_iop_order)
   {
     iop_list = dt_ioppr_get_iop_order_list(imgid, FALSE);
   }
 
   /* first create the style header */
-  if(!dt_styles_create_style_header(name, description, iop_list)) return FALSE;
+  if(!dt_styles_create_style_header(name, description, iop_list))
+  {
+    dt_unlock_image(imgid);
+    return FALSE;
+  }
 
   g_list_free_full(iop_list, g_free);
 
@@ -637,10 +648,12 @@ gboolean dt_styles_create_from_image(const char *name,
 
     /* backup style to disk */
     dt_styles_save_to_file(name, NULL, FALSE);
+    dt_unlock_image(imgid);
 
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_STYLE_CHANGED);
     return TRUE;
   }
+  dt_unlock_image(imgid);
   return FALSE;
 }
 
@@ -997,13 +1010,16 @@ void dt_styles_apply_to_image(const char *name,
                               const gboolean overwrite,
                               const dt_imgid_t imgid)
 {
+  dt_lock_image(imgid);
   _styles_apply_to_image_ext(name, duplicate, overwrite, imgid, TRUE);
+  dt_unlock_image(imgid);
 }
 
 void dt_styles_apply_to_dev(const char *name, const dt_imgid_t imgid)
 {
   if(!darktable.develop || !dt_is_valid_imgid(darktable.develop->image_storage.id))
     return;
+  dt_lock_image(imgid);
 
   /* write current history changes so nothing gets lost */
   dt_dev_write_history(darktable.develop);
@@ -1012,6 +1028,7 @@ void dt_styles_apply_to_dev(const char *name, const dt_imgid_t imgid)
 
   /* apply style on image and reload*/
   _styles_apply_to_image_ext(name, FALSE, FALSE, imgid, FALSE);
+  dt_unlock_image(imgid);
   dt_dev_reload_image(darktable.develop, imgid);
 
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
@@ -1072,6 +1089,7 @@ GList *dt_styles_get_item_list(const char *name,
   GList *result = NULL;
   sqlite3_stmt *stmt;
   int id = 0;
+  dt_lock_image(imgid);
   if((id = dt_styles_get_id_by_name(name)) != 0)
   {
     if(dt_is_valid_imgid(imgid))
@@ -1196,6 +1214,7 @@ GList *dt_styles_get_item_list(const char *name,
     }
     sqlite3_finalize(stmt);
   }
+  dt_unlock_image(imgid);
   return g_list_reverse(result);   // list was built in reverse order, so un-reverse it
 }
 

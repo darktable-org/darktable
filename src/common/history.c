@@ -1905,6 +1905,7 @@ gboolean dt_history_paste(const dt_imgid_t imgid,
 gboolean dt_history_delete(const dt_imgid_t imgid,
                            const gboolean undo)
 {
+  dt_lock_image(imgid);
   if(undo)
   {
     dt_undo_lt_history_t *hist = dt_history_snapshot_item_init();
@@ -1924,6 +1925,7 @@ gboolean dt_history_delete(const dt_imgid_t imgid,
   {
     dt_history_delete_on_image_ext(imgid, FALSE, TRUE);
   }
+  dt_unlock_image(imgid);
 
   /* update the aspect ratio if the current sorting is based on
      aspect ratio, otherwise the aspect ratio will be recalculated
