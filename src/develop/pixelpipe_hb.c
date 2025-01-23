@@ -2572,16 +2572,19 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     // as the user is likely to change that one soon (again), so keep it in cache.
     // Also do this if the clbuffer has been actively written
     const gboolean has_focus = module == dt_dev_gui_module();
+    const gboolean last_history = darktable.develop->history_last_module == module;
     if((pipe->type & DT_DEV_PIXELPIPE_BASIC)
         && (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
-        && (has_focus || darktable.develop->history_last_module == module || important_cl))
+        && (has_focus || last_history || important_cl))
     {
       dt_print_pipe(DT_DEBUG_PIPE,
         "importance hints", pipe, module, pipe->devid, &roi_in, NULL, " %s%s%s",
-        darktable.develop->history_last_module == module ? "input_hint " : "",
+        last_history ? "input_hint " : "",
         has_focus ? "focus " : "",
         important_cl ? "cldata" : "");
       dt_dev_pixelpipe_important_cacheline(pipe, input, roi_in.width * roi_in.height * in_bpp);
+      if((pipe->type & DT_DEV_PIXELPIPE_FULL) && last_history)
+        darktable.develop->history_last_module = NULL;
     }
 
     if(module->expanded
