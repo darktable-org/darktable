@@ -102,6 +102,7 @@ typedef struct dt_ui_t
   /* center widget */
   GtkWidget *center;
   GtkWidget *center_base;
+  GtkWidget *snapshot;
 
   /* main widget */
   GtkWidget *main_window;
@@ -711,7 +712,11 @@ static gboolean _draw(GtkWidget *da,
                       cairo_t *cr,
                       gpointer user_data)
 {
-  dt_control_expose(NULL);
+  GtkWidget *ss = dt_ui_snapshot(darktable.gui->ui);
+  darktable.gui->drawing_snapshot = da == ss;
+  if(!darktable.gui->drawing_snapshot) gtk_widget_queue_draw(ss);
+
+  dt_control_expose(da);
   if(darktable.gui->surface)
   {
     cairo_set_source_surface(cr, darktable.gui->surface, 0, 0);
@@ -1388,23 +1393,30 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   _init_widgets(gui);
 
   widget = dt_ui_center(darktable.gui->ui);
-
   g_signal_connect(G_OBJECT(widget), "configure-event",
-                   G_CALLBACK(_configure), gui);
-  g_signal_connect(G_OBJECT(widget), "draw",
-                   G_CALLBACK(_draw), NULL);
-  g_signal_connect(G_OBJECT(widget), "motion-notify-event",
-                   G_CALLBACK(_mouse_moved), gui);
-  g_signal_connect(G_OBJECT(widget), "leave-notify-event",
-                   G_CALLBACK(_center_leave), NULL);
-  g_signal_connect(G_OBJECT(widget), "enter-notify-event",
-                   G_CALLBACK(_center_enter), NULL);
-  g_signal_connect(G_OBJECT(widget), "button-press-event",
-                   G_CALLBACK(_button_pressed), NULL);
-  g_signal_connect(G_OBJECT(widget), "button-release-event",
-                   G_CALLBACK(_button_released), NULL);
-  g_signal_connect(G_OBJECT(widget), "scroll-event",
-                   G_CALLBACK(_scrolled), NULL);
+                  G_CALLBACK(_configure), gui);
+  for(int i = 2; i; i--, widget = dt_ui_snapshot(darktable.gui->ui))
+  {
+    gtk_widget_add_events(widget,
+                          GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
+                          | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK
+                          | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
+
+    g_signal_connect(G_OBJECT(widget), "draw",
+                    G_CALLBACK(_draw), NULL);
+    g_signal_connect(G_OBJECT(widget), "motion-notify-event",
+                    G_CALLBACK(_mouse_moved), gui);
+    g_signal_connect(G_OBJECT(widget), "leave-notify-event",
+                    G_CALLBACK(_center_leave), NULL);
+    g_signal_connect(G_OBJECT(widget), "enter-notify-event",
+                    G_CALLBACK(_center_enter), NULL);
+    g_signal_connect(G_OBJECT(widget), "button-press-event",
+                    G_CALLBACK(_button_pressed), NULL);
+    g_signal_connect(G_OBJECT(widget), "button-release-event",
+                    G_CALLBACK(_button_released), NULL);
+    g_signal_connect(G_OBJECT(widget), "scroll-event",
+                    G_CALLBACK(_scrolled), NULL);
+  }
 
   // TODO: left, right, top, bottom:
   // leave-notify-event
@@ -1859,13 +1871,14 @@ static void _init_main_table(GtkWidget *container)
   gtk_widget_set_hexpand(ocda, TRUE);
   gtk_widget_set_vexpand(ocda, TRUE);
   gtk_widget_set_app_paintable(cda, TRUE);
-  gtk_widget_set_events(cda,
-                        GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
-                        | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK
-                        | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
   gtk_widget_set_can_focus(cda, TRUE);
-  gtk_widget_set_visible(cda, TRUE);
-  gtk_overlay_add_overlay(GTK_OVERLAY(ocda), cda);
+  darktable.gui->ui->snapshot = gtk_drawing_area_new();
+  gtk_widget_set_no_show_all(darktable.gui->ui->snapshot, TRUE);
+  GtkWidget *sidebyside = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(sidebyside), cda, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(sidebyside), darktable.gui->ui->snapshot, TRUE, TRUE, 0);
+  gtk_box_set_homogeneous(GTK_BOX(sidebyside), TRUE);
+  gtk_overlay_add_overlay(GTK_OVERLAY(ocda), sidebyside);
 
   gtk_grid_attach(GTK_GRID(centergrid), ocda, 0, 0, 1, 1);
   darktable.gui->ui->center = cda;
@@ -2331,6 +2344,10 @@ GtkWidget *dt_ui_center(dt_ui_t *ui)
 GtkWidget *dt_ui_center_base(dt_ui_t *ui)
 {
   return ui->center_base;
+}
+GtkWidget *dt_ui_snapshot(dt_ui_t *ui)
+{
+  return ui->snapshot;
 }
 dt_thumbtable_t *dt_ui_thumbtable(struct dt_ui_t *ui)
 {

@@ -431,7 +431,7 @@ void dt_control_draw_busy_msg(cairo_t *cr, int width, int height)
   g_object_unref(layout);
 }
 
-void *dt_control_expose(void *voidptr)
+void *dt_control_expose(GtkWidget *widget)
 {
   int pointerx, pointery;
   if(!darktable.gui->surface) return NULL;
@@ -439,7 +439,6 @@ void *dt_control_expose(void *voidptr)
   dt_control_t *dc = darktable.control;
   const int width = dt_cairo_image_surface_get_width(darktable.gui->surface);
   const int height = dt_cairo_image_surface_get_height(darktable.gui->surface);
-  GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   gdk_window_get_device_position(gtk_widget_get_window(widget),
       gdk_seat_get_pointer(gdk_display_get_default_seat(gtk_widget_get_display(widget))),
       &pointerx, &pointery, NULL);
