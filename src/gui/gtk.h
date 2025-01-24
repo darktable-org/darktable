@@ -113,6 +113,7 @@ typedef struct dt_gui_gtk_t
   dt_gui_scrollbars_t scrollbars;
 
   cairo_surface_t *surface;
+  gboolean drawing_snapshot;
 
   char *last_preset;
 
@@ -372,6 +373,7 @@ gboolean dt_ui_panel_ancestor(struct dt_ui_t *ui,
 /** \brief get the center drawable widget */
 GtkWidget *dt_ui_center(struct dt_ui_t *ui);
 GtkWidget *dt_ui_center_base(struct dt_ui_t *ui);
+GtkWidget *dt_ui_snapshot(struct dt_ui_t *ui);
 /** \brief get the main window widget */
 GtkWidget *dt_ui_main_window(struct dt_ui_t *ui);
 /** \brief get the thumb table */
