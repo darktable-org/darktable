@@ -193,7 +193,9 @@ typedef struct dt_iop_colorequal_global_data_t
   int ce_write_output;
   int ce_write_visual;
   int ce_draw_weight;
-  int kernel_interpolate_bilinear;
+  int ce_bilinear1;
+  int ce_bilinear2;
+  int ce_bilinear4;
 } dt_iop_colorequal_global_data_t;
 
 
@@ -207,7 +209,7 @@ const char *aliases()
   return _("color zones|hsl");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
     (self, _("change saturation, hue and brightness depending on local hue"),
@@ -283,13 +285,12 @@ typedef struct dt_iop_colorequal_gui_data_t
   float points[NODES+1][2];
 } dt_iop_colorequal_gui_data_t;
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 37; // colorequal.cl, from programs.conf
 
-  dt_iop_colorequal_global_data_t *gd
-      = (dt_iop_colorequal_global_data_t *)malloc(sizeof(dt_iop_colorequal_global_data_t));
-  module->data = gd;
+  dt_iop_colorequal_global_data_t *gd = malloc(sizeof(dt_iop_colorequal_global_data_t));
+  self->data = gd;
 
   gd->ce_init_covariance = dt_opencl_create_kernel(program, "init_covariance");
   gd->ce_finish_covariance = dt_opencl_create_kernel(program, "finish_covariance");
@@ -304,12 +305,14 @@ void init_global(dt_iop_module_so_t *module)
   gd->ce_write_output = dt_opencl_create_kernel(program, "write_output");
   gd->ce_write_visual = dt_opencl_create_kernel(program, "write_visual");
   gd->ce_draw_weight = dt_opencl_create_kernel(program, "draw_weight");
-  gd->kernel_interpolate_bilinear = dt_opencl_create_kernel(2, "interpolate_bilinear");
+  gd->ce_bilinear1 = dt_opencl_create_kernel(program, "bilinear1");
+  gd->ce_bilinear2 = dt_opencl_create_kernel(program, "bilinear2");
+  gd->ce_bilinear4 = dt_opencl_create_kernel(program, "bilinear4");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_colorequal_global_data_t *gd = (dt_iop_colorequal_global_data_t *)module->data;
+  dt_iop_colorequal_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->ce_init_covariance);
   dt_opencl_free_kernel(gd->ce_finish_covariance);
   dt_opencl_free_kernel(gd->ce_prepare_prefilter);
@@ -323,10 +326,12 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->ce_write_output);
   dt_opencl_free_kernel(gd->ce_write_visual);
   dt_opencl_free_kernel(gd->ce_draw_weight);
-  dt_opencl_free_kernel(gd->kernel_interpolate_bilinear);
+  dt_opencl_free_kernel(gd->ce_bilinear1);
+  dt_opencl_free_kernel(gd->ce_bilinear2);
+  dt_opencl_free_kernel(gd->ce_bilinear4);
 
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 
@@ -335,14 +340,13 @@ static inline float _get_scaling(const float sigma)
   return MAX(1.0f, MIN(4.0f, floorf(sigma - 1.5f)));
 }
 
-
-void tiling_callback(struct dt_iop_module_t *self,
-                     struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in,
                      const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
-  dt_iop_colorequal_data_t *data = (dt_iop_colorequal_data_t *)piece->data;
+  dt_iop_colorequal_data_t *data = piece->data;
 
   tiling->maxbuf = 1.0f;
   tiling->xalign = 1;
@@ -351,15 +355,15 @@ void tiling_callback(struct dt_iop_module_t *self,
   const int maxradius = MAX(data->chroma_size, data->param_size);
   tiling->overlap = 16 + maxradius; // safe feathering
 
-  tiling->factor = 4.0f;  // in/out buffers plus mainloop incl gaussian
+  tiling->factor = 4.5f;  // in/out buffers plus mainloop incl gaussian
   if(data->use_filter)
   {
     // calculate relative size of downsampled buffers
-    const float sigma = (float)maxradius * roi_in->scale;
+    const float sigma = (float)maxradius * MAX(0.5f, roi_in->scale / piece->iscale);
     const float scaling = _get_scaling(sigma);
     tiling->factor += scaling == 1.0f
-                      ? 3.5f
-                      : (1.5f + 4.0f / sqrf(scaling));
+                      ? 3.0f
+                      : (1.0f + 4.0f / sqrf(scaling));
   }
 }
 
@@ -373,10 +377,8 @@ int legacy_params(dt_iop_module_t *self,
 {
   if(old_version == 1)
   {
-    const dt_iop_colorequal_params_t *o =
-      (dt_iop_colorequal_params_t *)old_params;
-    dt_iop_colorequal_params_t *n =
-      (dt_iop_colorequal_params_t *)malloc(sizeof(dt_iop_colorequal_params_t));
+    const dt_iop_colorequal_params_t *o = old_params;
+    dt_iop_colorequal_params_t *n = malloc(sizeof(dt_iop_colorequal_params_t));
 
     memcpy(n, o, sizeof(dt_iop_colorequal_params_t) - sizeof(float));
     n->hue_shift = 0.0f;
@@ -388,10 +390,8 @@ int legacy_params(dt_iop_module_t *self,
 
   if(old_version == 2)
   {
-    const dt_iop_colorequal_params_t *o =
-      (dt_iop_colorequal_params_t *)old_params;
-    dt_iop_colorequal_params_t *n =
-      (dt_iop_colorequal_params_t *)malloc(sizeof(dt_iop_colorequal_params_t));
+    const dt_iop_colorequal_params_t *o = old_params;
+    dt_iop_colorequal_params_t *n = malloc(sizeof(dt_iop_colorequal_params_t));
 
     memcpy(n, o, sizeof(dt_iop_colorequal_params_t) - sizeof(float));
     n->threshold = 0.024f;  // in v1/2 we had an inflection point of 0.1
@@ -415,10 +415,8 @@ int legacy_params(dt_iop_module_t *self,
 
   if(old_version == 3)
   {
-    const dt_iop_colorequal_params_t *o =
-      (dt_iop_colorequal_params_t *)old_params;
-    dt_iop_colorequal_params_t *n =
-      (dt_iop_colorequal_params_t *)malloc(sizeof(dt_iop_colorequal_params_t));
+    const dt_iop_colorequal_params_t *o = old_params;
+    dt_iop_colorequal_params_t *n = malloc(sizeof(dt_iop_colorequal_params_t));
 
     memcpy(n, o, sizeof(dt_iop_colorequal_params_t) - sizeof(float));
     n->threshold = o->threshold + 0.1f;
@@ -434,15 +432,16 @@ int legacy_params(dt_iop_module_t *self,
 }
 
 void _mean_gaussian(float *const buf,
-                    const size_t width,
-                    const size_t height,
+                    const int width,
+                    const int height,
                     const uint32_t ch,
                     const float sigma)
 {
+  // We use unbounded signals, so don't care for the internal value clipping
   const float range = 1.0e9;
   const dt_aligned_pixel_t max = {range, range, range, range};
   const dt_aligned_pixel_t min = {-range, -range, -range, -range};
-  dt_gaussian_t *g = dt_gaussian_init(width, height, ch, max, min, sigma, 0);
+  dt_gaussian_t *g = dt_gaussian_init(width, height, ch, max, min, sigma, DT_IOP_GAUSSIAN_ZERO);
   if(!g) return;
   if(ch == 4)
     dt_gaussian_blur_4c(g, buf, buf);
@@ -464,8 +463,12 @@ static inline float _deg_to_rad(const float angle)
    and do linear interpolation at runtime. Avoids banding effects and allows a sharp transition.
 */
 static float satweights[2 * SATSIZE + 1];
+static float lastcontrast = NAN;
 static void _init_satweights(const float contrast)
 {
+  if(lastcontrast == contrast)
+    return;
+  lastcontrast = contrast;
   const double factor = -60.0 - 40.0 * (double)contrast;
   for(int i = -SATSIZE; i < SATSIZE + 1; i++)
   {
@@ -482,8 +485,8 @@ static inline float _get_satweight(const float sat)
   return satweights[i] + (isat - base) * (satweights[i+1] - satweights[i]);
 }
 
-DT_OMP_DECLARE_SIMD(aligned(ds_UV))
-static float *const _init_covariance(const size_t ds_pixels, const float *const restrict ds_UV)
+DT_OMP_DECLARE_SIMD(aligned(UV))
+static float *const _init_covariance(const size_t pixels, const float *const restrict UV)
 {
   // Init the symmetric covariance matrix of the guide (4 elements by pixel) :
   // covar = [[ covar(U, U), covar(U, V)],
@@ -491,60 +494,60 @@ static float *const _init_covariance(const size_t ds_pixels, const float *const 
   // with covar(x, y) = avg(x * y) - avg(x) * avg(y), corr(x, y) = x * y
   // so here, we init it with x * y, compute all the avg() at the next step
   // and subtract avg(x) * avg(y) later
-  float *const restrict covariance = dt_alloc_align_float(ds_pixels * 4);
+  float *const restrict covariance = dt_alloc_align_float(pixels * 4);
   if(!covariance)
     return covariance;
 
   DT_OMP_FOR()
-  for(size_t k = 0; k < ds_pixels; k++)
+  for(size_t k = 0; k < pixels; k++)
   {
     // corr(U, U)
-    covariance[4 * k + 0] = ds_UV[2 * k + 0] * ds_UV[2 * k + 0];
+    covariance[4 * k + 0] = UV[2 * k + 0] * UV[2 * k + 0];
     // corr(U, V)
-    covariance[4 * k + 1] = covariance[4 * k + 2] = ds_UV[2 * k] * ds_UV[2 * k + 1];
+    covariance[4 * k + 1] = covariance[4 * k + 2] = UV[2 * k] * UV[2 * k + 1];
     // corr(V, V)
-    covariance[4 * k + 3] = ds_UV[2 * k + 1] * ds_UV[2 * k + 1];
+    covariance[4 * k + 3] = UV[2 * k + 1] * UV[2 * k + 1];
   }
   return covariance;
 }
 
-DT_OMP_DECLARE_SIMD(aligned(ds_UV, covariance: 64))
-static void _finish_covariance(const size_t ds_pixels,
-                               const float *const restrict ds_UV,
+DT_OMP_DECLARE_SIMD(aligned(UV, covariance: 64))
+static void _finish_covariance(const size_t pixels,
+                               const float *const restrict UV,
                                float *const restrict covariance)
 {
   // Finish the UV covariance matrix computation by subtracting avg(x) * avg(y)
   // to avg(x * y) already computed
   DT_OMP_FOR()
-  for(size_t k = 0; k < ds_pixels; k++)
+  for(size_t k = 0; k < pixels; k++)
   {
     // covar(U, U) = var(U)
-    covariance[4 * k + 0] -= ds_UV[2 * k + 0] * ds_UV[2 * k + 0];
+    covariance[4 * k + 0] -= UV[2 * k + 0] * UV[2 * k + 0];
     // covar(U, V)
-    covariance[4 * k + 1] -= ds_UV[2 * k + 0] * ds_UV[2 * k + 1];
-    covariance[4 * k + 2] -= ds_UV[2 * k + 0] * ds_UV[2 * k + 1];
+    covariance[4 * k + 1] -= UV[2 * k + 0] * UV[2 * k + 1];
+    covariance[4 * k + 2] -= UV[2 * k + 0] * UV[2 * k + 1];
     // covar(V, V) = var(V)
-    covariance[4 * k + 3] -= ds_UV[2 * k + 1] * ds_UV[2 * k + 1];
+    covariance[4 * k + 3] -= UV[2 * k + 1] * UV[2 * k + 1];
   }
 }
 
-DT_OMP_DECLARE_SIMD(aligned(ds_UV, covariance, a, b: 64))
-static void _prepare_prefilter(const size_t ds_pixels, const float epsilon,
-                               const float *const restrict ds_UV,
+DT_OMP_DECLARE_SIMD(aligned(UV, covariance, a, b: 64))
+static void _prepare_prefilter(const size_t pixels,
+                               const float *const restrict UV,
                                const float *const restrict covariance,
                                float *const restrict a,
-                               float *const restrict b)
+                               float *const restrict b,
+                               const float eps)
 {
   DT_OMP_FOR()
-  for(size_t k = 0; k < ds_pixels; k++)
+  for(size_t k = 0; k < pixels; k++)
   {
     // Extract the 2×2 covariance matrix sigma = cov(U, V) at current pixel
-    dt_aligned_pixel_t Sigma = { covariance[4 * k + 0], covariance[4 * k + 1],
-                                 covariance[4 * k + 2], covariance[4 * k + 3] };
-
-    // Add the variance threshold : sigma' = sigma + epsilon * Identity
-    Sigma[0] += epsilon;
-    Sigma[3] += epsilon;
+    // and add the variance threshold : sigma' = sigma + epsilon * Identity
+    dt_aligned_pixel_t Sigma = {covariance[4 * k + 0] + eps,
+                                covariance[4 * k + 1],
+                                covariance[4 * k + 2],
+                                covariance[4 * k + 3] + eps};
 
     // Invert the 2×2 sigma matrix algebraically
     // see https://www.mathcentre.ac.uk/resources/uploaded/sigma-matrices7-2009-1.pdf
@@ -573,29 +576,26 @@ static void _prepare_prefilter(const size_t ds_pixels, const float epsilon,
       a[4 * k + 0] = a[4 * k + 1] = a[4 * k + 2] = a[4 * k + 3] = 0.f;
     }
 
-    b[2 * k + 0] = ds_UV[2 * k + 0]
-      - a[4 * k + 0] * ds_UV[2 * k + 0]
-      - a[4 * k + 1] * ds_UV[2 * k + 1];
-    b[2 * k + 1] = ds_UV[2 * k + 1]
-      - a[4 * k + 2] * ds_UV[2 * k + 0]
-      - a[4 * k + 3] * ds_UV[2 * k + 1];
+    b[2 * k + 0] = UV[2 * k + 0]  - a[4 * k + 0] * UV[2 * k + 0]  - a[4 * k + 1] * UV[2 * k + 1];
+    b[2 * k + 1] = UV[2 * k + 1]  - a[4 * k + 2] * UV[2 * k + 0]  - a[4 * k + 3] * UV[2 * k + 1];
   }
 }
 
-DT_OMP_DECLARE_SIMD(aligned(a_full, b_full, saturation, UV: 64))
-static void _apply_prefilter(size_t npixels, float sat_shift,
-                             float *const restrict  UV,
+DT_OMP_DECLARE_SIMD(aligned(a, b, saturation, UV: 64))
+static void _apply_prefilter(size_t npixels,
+                             float sat_shift,
+                             float *const restrict UV,
                              const float *const restrict saturation,
-                             const float *const restrict a_full,
-                             const float *const restrict b_full)
+                             const float *const restrict a,
+                             const float *const restrict b)
 {
   DT_OMP_FOR_SIMD()
   for(size_t k = 0; k < npixels; k++)
   {
     // For each correction factor, we re-express it as a[0] * U + a[1] * V + b
     const float uv[2] = { UV[2 * k + 0], UV[2 * k + 1] };
-    const float cv[2] = { a_full[4 * k + 0] * uv[0] + a_full[4 * k + 1] * uv[1] + b_full[2 * k + 0],
-                          a_full[4 * k + 2] * uv[0] + a_full[4 * k + 3] * uv[1] + b_full[2 * k + 1] };
+    const float cv[2] = { a[4 * k + 0] * uv[0] + a[4 * k + 1] * uv[1] + b[2 * k + 0],
+                          a[4 * k + 2] * uv[0] + a[4 * k + 3] * uv[1] + b[2 * k + 1] };
 
     // we avoid chroma blurring into achromatic areas by interpolating
     // input UV vs corrected UV
@@ -606,11 +606,12 @@ static void _apply_prefilter(size_t npixels, float sat_shift,
 }
 
 static void _prefilter_chromaticity(float *const restrict UV,
-                             float *const restrict saturation,
-                             const dt_iop_roi_t *const roi,
-                             const float csigma,
-                             const float epsilon,
-                             const float sat_shift)
+                                    float *const restrict saturation,
+                                    const int width,
+                                    const int height,
+                                    const float sigma,
+                                    const float eps,
+                                    const float sat_shift)
 {
   // We guide the 3-channels corrections with the 2-channels
   // chromaticity coordinates UV aka we express corrections = a * UV +
@@ -623,16 +624,13 @@ static void _prefilter_chromaticity(float *const restrict UV,
   // chromaticity -> 0 means neutral greys and we want to discard them
   // as much as possible from any color equalization.
 
-  const float sigma = csigma * roi->scale;
-  const size_t width = roi->width;
-  const size_t height = roi->height;
   // possibly downsample for speed-up
-  const size_t pixels = width * height;
+  const size_t pixels = (size_t)width * height;
   const float scaling = _get_scaling(sigma);
-  const float gsigma = MAX(0.2f, 0.5f * sigma / scaling);
-  const size_t ds_height = height / scaling;
-  const size_t ds_width = width / scaling;
-  const size_t ds_pixels = ds_width * ds_height;
+  const float gsigma = MAX(0.2f, sigma / scaling);
+  const int ds_height = height / scaling;
+  const int ds_width = width / scaling;
+  const size_t ds_pixels = (size_t)ds_width * ds_height;
   const gboolean resized = width != ds_width || height != ds_height;
 
   float *ds_UV = UV;
@@ -644,7 +642,7 @@ static void _prefilter_chromaticity(float *const restrict UV,
     interpolate_bilinear(UV, width, height, ds_UV, ds_width, ds_height, 2);
   }
 
-  float *const restrict covariance = _init_covariance(ds_pixels,ds_UV);
+  float *const restrict covariance = _init_covariance(ds_pixels, ds_UV);
   if(!covariance)
   {
     if(ds_UV != UV) dt_free_align(ds_UV);
@@ -657,60 +655,59 @@ static void _prefilter_chromaticity(float *const restrict UV,
   // edges over diagonal ones as the by-the-book box blur (unweighted
   // local average) would.
 
-  // We use unbounded signals, so don't care for the internal value clipping
   _mean_gaussian(ds_UV, ds_width, ds_height, 2, gsigma);
   _mean_gaussian(covariance, ds_width, ds_height, 4, gsigma);
 
   _finish_covariance(ds_pixels, ds_UV, covariance);
 
   // Compute a and b the params of the guided filters
-  float *const restrict a = dt_alloc_align_float(4 * ds_pixels);
-  float *const restrict b = dt_alloc_align_float(2 * ds_pixels);
+  float *const restrict ds_a = dt_alloc_align_float(4 * ds_pixels);
+  float *const restrict ds_b = dt_alloc_align_float(2 * ds_pixels);
 
-  if(a && b)
-    _prepare_prefilter(ds_pixels, epsilon, ds_UV, covariance, a, b);
+  if(ds_a && ds_b)
+    _prepare_prefilter(ds_pixels, ds_UV, covariance, ds_a, ds_b, eps);
 
   dt_free_align(covariance);
   if(ds_UV != UV) dt_free_align(ds_UV);
-  if(!a || !b)
+  if(!ds_a || !ds_b)
   {
-    dt_free_align(a);
-    dt_free_align(b);
+    dt_free_align(ds_a);
+    dt_free_align(ds_b);
     return;
   }
 
   // Compute the averages of a and b for each filter
-  _mean_gaussian(a, ds_width, ds_height, 4, gsigma);
-  _mean_gaussian(b, ds_width, ds_height, 2, gsigma);
+  _mean_gaussian(ds_a, ds_width, ds_height, 4, gsigma);
+  _mean_gaussian(ds_b, ds_width, ds_height, 2, gsigma);
 
   // Upsample a and b to real-size image
-  float *a_full = a;
-  float *b_full = b;
+  float *a = ds_a;
+  float *b = ds_b;
 
   if(resized)
   {
-    a_full = dt_alloc_align_float(pixels * 4);
-    b_full = dt_alloc_align_float(pixels * 2);
-    if(a_full && b_full)
+    a = dt_alloc_align_float(pixels * 4);
+    b = dt_alloc_align_float(pixels * 2);
+    if(a && b)
     {
-      interpolate_bilinear(a, ds_width, ds_height, a_full, width, height, 4);
-      interpolate_bilinear(b, ds_width, ds_height, b_full, width, height, 2);
-      dt_free_align(a);
-      dt_free_align(b);
+      interpolate_bilinear(ds_a, ds_width, ds_height, a, width, height, 4);
+      interpolate_bilinear(ds_b, ds_width, ds_height, b, width, height, 2);
+      dt_free_align(ds_a);
+      dt_free_align(ds_b);
     }
     else
     {
-      dt_free_align(a);
-      dt_free_align(b);
+      dt_free_align(ds_a);
+      dt_free_align(ds_b);
       return;
     }
   }
 
   // Apply the guided filter
-  _apply_prefilter(pixels, sat_shift, UV, saturation, a_full, b_full);
+  _apply_prefilter(pixels, sat_shift, UV, saturation, a, b);
 
-  dt_free_align(a_full);
-  dt_free_align(b_full);
+  dt_free_align(a);
+  dt_free_align(b);
 }
 
 static void _guide_with_chromaticity(float *const restrict UV,
@@ -718,9 +715,10 @@ static void _guide_with_chromaticity(float *const restrict UV,
                               float *const restrict saturation,
                               float *const restrict b_corrections,
                               float *const restrict gradients,
-                              const dt_iop_roi_t *const roi,
-                              const float csigma,
-                              const float epsilon,
+                              const int width,
+                              const int height,
+                              const float sigma,
+                              const float eps,
                               const float bright_shift,
                               const float sat_shift)
 {
@@ -736,16 +734,12 @@ static void _guide_with_chromaticity(float *const restrict UV,
   // as much as possible from any color equalization.
 
   // Downsample for speed-up
-  const float sigma = csigma * roi->scale;
-  const size_t width = roi->width;
-  const size_t height = roi->height;
-  // Downsample for speed-up
-  const size_t pixels = width * height;
+  const size_t pixels = (size_t)width * height;
   const float scaling = _get_scaling(sigma);
-  const float gsigma = MAX(0.2f, 0.5f * sigma / scaling);
-  const size_t ds_height = height / scaling;
-  const size_t ds_width = width / scaling;
-  const size_t ds_pixels = ds_width * ds_height;
+  const float gsigma = MAX(0.2f, sigma / scaling);
+  const int ds_height = height / scaling;
+  const int ds_width = width / scaling;
+  const size_t ds_pixels = (size_t)ds_width * ds_height;
   const gboolean resized = width != ds_width || height != ds_height;
 
   float *ds_UV = UV;
@@ -829,12 +823,12 @@ static void _guide_with_chromaticity(float *const restrict UV,
   }
 
   // Compute a and b the params of the guided filters
-  float *const restrict a = dt_alloc_align_float(4 * ds_pixels);
-  float *const restrict b = dt_alloc_align_float(2 * ds_pixels);
-  if (!a || !b)
+  float *const restrict ds_a = dt_alloc_align_float(4 * ds_pixels);
+  float *const restrict ds_b = dt_alloc_align_float(2 * ds_pixels);
+  if (!ds_a || !ds_b)
   {
-    dt_free_align(a);
-    dt_free_align(b);
+    dt_free_align(ds_a);
+    dt_free_align(ds_b);
     dt_free_align(correlations);
     dt_free_align(covariance);
     if(resized)
@@ -846,19 +840,16 @@ static void _guide_with_chromaticity(float *const restrict UV,
     return;
   }
 
-  DT_OMP_FOR_SIMD(aligned(ds_UV, covariance, correlations, ds_corrections, ds_b_corrections, a, b: 64))
+  DT_OMP_FOR_SIMD(aligned(ds_UV, covariance, correlations, ds_corrections, ds_b_corrections, ds_a, ds_b: 64))
   for(size_t k = 0; k < ds_pixels; k++)
   {
     // Extract the 2×2 covariance matrix sigma = cov(U, V) at current pixel
-    dt_aligned_pixel_t Sigma
-        = { covariance[4 * k + 0],
+    // and add the covariance threshold : sigma' = sigma + epsilon * Identity
+    const dt_aligned_pixel_t Sigma
+        = { covariance[4 * k + 0] + eps,
             covariance[4 * k + 1],
             covariance[4 * k + 2],
-            covariance[4 * k + 3] };
-
-    // Add the covariance threshold : sigma' = sigma + epsilon * Identity
-    Sigma[0] += epsilon;
-    Sigma[3] += epsilon;
+            covariance[4 * k + 3] + eps };
 
     // Invert the 2×2 sigma matrix algebraically
     // see https://www.mathcentre.ac.uk/resources/uploaded/sigma-matrices7-2009-1.pdf
@@ -866,32 +857,19 @@ static void _guide_with_chromaticity(float *const restrict UV,
     // Note : epsilon prevents determinant == 0 so the invert exists all the time
     if(fabsf(det) > 4.f * FLT_EPSILON)
     {
-      dt_aligned_pixel_t sigma_inv
-        = { Sigma[3] / det,
-           -Sigma[1] / det,
-           -Sigma[2] / det,
-            Sigma[0] / det };
-      a[4 * k + 0] = (correlations[4 * k + 0] * sigma_inv[0]
-                    + correlations[4 * k + 1] * sigma_inv[1]);
-      a[4 * k + 1] = (correlations[4 * k + 0] * sigma_inv[2]
-                    + correlations[4 * k + 1] * sigma_inv[3]);
-
-      a[4 * k + 2] = (correlations[4 * k + 2] * sigma_inv[0]
-                    + correlations[4 * k + 3] * sigma_inv[1]);
-      a[4 * k + 3] = (correlations[4 * k + 2] * sigma_inv[2]
-                    + correlations[4 * k + 3] * sigma_inv[3]);
+      const dt_aligned_pixel_t sigma_inv = { Sigma[3] / det, -Sigma[1] / det, -Sigma[2] / det, Sigma[0] / det };
+      ds_a[4 * k + 0] = (correlations[4 * k + 0] * sigma_inv[0] + correlations[4 * k + 1] * sigma_inv[1]);
+      ds_a[4 * k + 1] = (correlations[4 * k + 0] * sigma_inv[2] + correlations[4 * k + 1] * sigma_inv[3]);
+      ds_a[4 * k + 2] = (correlations[4 * k + 2] * sigma_inv[0] + correlations[4 * k + 3] * sigma_inv[1]);
+      ds_a[4 * k + 3] = (correlations[4 * k + 2] * sigma_inv[2] + correlations[4 * k + 3] * sigma_inv[3]);
     }
     else
     {
-      a[4 * k + 0] = a[4 * k + 1] = a[4 * k + 2] = a[4 * k + 3] = 0.f;
+      ds_a[4 * k + 0] = ds_a[4 * k + 1] = ds_a[4 * k + 2] = ds_a[4 * k + 3] = 0.f;
     }
     // b = avg(chan) - dot_product(a_chan * avg(UV))
-    b[2 * k + 0] = ds_corrections[2 * k + 1]
-      - a[4 * k + 0] * ds_UV[2 * k + 0]
-      - a[4 * k + 1] * ds_UV[2 * k + 1];
-    b[2 * k + 1] = ds_b_corrections[k]
-      - a[4 * k + 2] * ds_UV[2 * k + 0]
-      - a[4 * k + 3] * ds_UV[2 * k + 1];
+    ds_b[2 * k + 0] = ds_corrections[2 * k + 1] - ds_a[4 * k + 0] * ds_UV[2 * k + 0]  - ds_a[4 * k + 1] * ds_UV[2 * k + 1];
+    ds_b[2 * k + 1] = ds_b_corrections[k]       - ds_a[4 * k + 2] * ds_UV[2 * k + 0]  - ds_a[4 * k + 3] * ds_UV[2 * k + 1];
   }
 
   if(resized)
@@ -904,48 +882,94 @@ static void _guide_with_chromaticity(float *const restrict UV,
   dt_free_align(covariance);
 
   // Compute the averages of a and b for each filter and blur
-  _mean_gaussian(a, ds_width, ds_height, 4, gsigma);
-  _mean_gaussian(b, ds_width, ds_height, 2, gsigma);
+  _mean_gaussian(ds_a, ds_width, ds_height, 4, gsigma);
+  _mean_gaussian(ds_b, ds_width, ds_height, 2, gsigma);
 
   // Upsample a and b to real-size image
-  float *a_full = a;
-  float *b_full = b;
+  float *a = ds_a;
+  float *b = ds_b;
   if(resized)
   {
-    a_full = dt_alloc_align_float(pixels * 4);
-    b_full = dt_alloc_align_float(pixels * 2);
-    if(a_full && b_full)
+    a = dt_alloc_align_float(pixels * 4);
+    b = dt_alloc_align_float(pixels * 2);
+    if(a && b)
     {
-      interpolate_bilinear(a, ds_width, ds_height, a_full, width, height, 4);
-      interpolate_bilinear(b, ds_width, ds_height, b_full, width, height, 2);
-      dt_free_align(a);
-      dt_free_align(b);
+      interpolate_bilinear(ds_a, ds_width, ds_height, a, width, height, 4);
+      interpolate_bilinear(ds_b, ds_width, ds_height, b, width, height, 2);
+      dt_free_align(ds_a);
+      dt_free_align(ds_b);
     }
     else
     {
-      dt_free_align(a);
-      dt_free_align(b);
+      dt_free_align(ds_a);
+      dt_free_align(ds_b);
       return;
     }
   }
 
   // Apply the guided filter
-  DT_OMP_FOR_SIMD(aligned(a_full, b_full, corrections, saturation, gradients, UV: 64))
+  DT_OMP_FOR_SIMD(aligned(a, b, corrections, saturation, gradients, UV: 64))
   for(size_t k = 0; k < pixels; k++)
   {
     // For each correction factor, we re-express it as a[0] * U + a[1] * V + b
     const float uv[2] = { UV[2 * k + 0], UV[2 * k + 1] };
-    const float cv[2] = { a_full[4 * k + 0] * uv[0] + a_full[4 * k + 1] * uv[1] + b_full[2 * k + 0],
-                          a_full[4 * k + 2] * uv[0] + a_full[4 * k + 3] * uv[1] + b_full[2 * k + 1] };
+    const float cv[2] = { a[4 * k + 0] * uv[0] + a[4 * k + 1] * uv[1] + b[2 * k + 0],
+                          a[4 * k + 2] * uv[0] + a[4 * k + 3] * uv[1] + b[2 * k + 1] };
     corrections[2 * k + 1] = interpolatef(_get_satweight(saturation[k] - sat_shift), cv[0], 1.0f);
-    b_corrections[k] = interpolatef(gradients[k] * _get_satweight(saturation[k] - bright_shift), cv[1], 0.0f);
+    const float gradient_weight = 1.0f - CLIP(gradients[k]);
+    b_corrections[k] = interpolatef(gradient_weight * _get_satweight(saturation[k] - bright_shift), cv[1], 0.0f);
   }
-
-  dt_free_align(a_full);
-  dt_free_align(b_full);
+  dt_free_align(a);
+  dt_free_align(b);
 }
 
-void process(struct dt_iop_module_t *self,
+static void _prepare_process(const float roi_scale,
+                             dt_iop_colorequal_data_t *d,
+
+                             // parameters to be setup
+                             float *white,
+                             float *sat_shift,
+                             float *max_brightness_shift,
+                             float *corr_max_brightness_shift,
+                             float *bright_shift,
+                             float *gradient_amp,
+                             float *hue_sigma,
+                             float *par_sigma,
+                             float *sat_sigma,
+                             float *scharr_sigma)
+{
+  *white = Y_to_dt_UCS_L_star(d->white_level);
+
+  /* We use the logistic weighting function to diminish effects in the guided filter for locations
+     with low chromacity. The logistic function is precalculated for a inflection point of zero
+     so we have to shift the input value (saturation) for both brightness and saturation corrections.
+     The default can be shifted by the threshold slider.
+     Depending on the maximum for the eight brightness sliders we increase the brightness shift, the value
+     of 0.01 has been found by a lot of testing to be safe.
+     As increased param_size leads to propagation of brightness into achromatic parts we have to correct for that too.
+  */
+  *sat_shift = d->threshold;
+  *max_brightness_shift = 0.01f * d->max_brightness;
+  *corr_max_brightness_shift = *max_brightness_shift * MIN(5.0f, sqrtf(d->param_size));
+  *bright_shift = *sat_shift + *corr_max_brightness_shift;
+
+  /* We want information about sharp transitions of saturation for halo suppression.
+     As the scharr operator is faster and more stable for scale changes we use
+       it instead of local variance.
+     We reduce chroma noise effects by using a minimum threshold and by sqaring the gradient.
+     The gradient_amp corrects a gradient of 0.5 to be 1.0 and takes care
+       of maximum changed brightness and roi_scale.
+  */
+  *gradient_amp = 4.0f * sqrtf(d->max_brightness) * sqrf(roi_scale);
+  *hue_sigma = 0.5f * d->chroma_size * roi_scale;
+  *par_sigma = 0.5f * d->param_size * roi_scale;
+  *sat_sigma = MAX(0.5f, roi_scale);
+  *scharr_sigma = MAX(0.5f, roi_scale);
+
+  _init_satweights(d->contrast);
+}
+
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const i,
              void *const o,
@@ -956,19 +980,19 @@ void process(struct dt_iop_module_t *self,
                                         self, piece->colors, i, o, roi_in, roi_out))
     return;
 
-  const int owidth = roi_out->width;
-  const int oheight = roi_out->height;
-  const size_t npixels = (size_t)owidth * oheight;
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+  const size_t npixels = (size_t)width * height;
   float *restrict UV = NULL;
   float *restrict corrections = NULL;
   float *restrict b_corrections = NULL;
-  float *restrict tmp = NULL;
+  float *restrict Lscharr = NULL;
   float *restrict saturation = NULL;
   if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out,
                                  2/*ch per pix*/ | DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL, &UV,
                                  2               | DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL, &corrections,
                                  1               | DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL, &b_corrections,
-                                 1               | DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL, &tmp,
+                                 1               | DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL, &Lscharr,
                                  1               | DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL, &saturation,
                                  0/*end of list*/))
   {
@@ -980,17 +1004,14 @@ void process(struct dt_iop_module_t *self,
     dt_iop_copy_image_roi(o, i, piece->colors, roi_in, roi_out);
     return;
   }
-  dt_iop_colorequal_data_t *d = (dt_iop_colorequal_data_t *)piece->data;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_data_t *d = piece->data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   const int mask_mode = g && fullpipe ? g->mask_mode : 0;
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
   const float *const restrict in = (float*)i;
   float *const restrict out = (float*)o;
-
-
-  _init_satweights(d->contrast);
 
   // STEP 0: prepare the RGB <-> XYZ D65 matrices
   // see colorbalancergb.c process() for the details, it's exactly the same
@@ -1003,29 +1024,9 @@ void process(struct dt_iop_module_t *self,
   dt_colormatrix_mul(input_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in);
   dt_colormatrix_mul(output_matrix, work_profile->matrix_out, XYZ_D65_to_D50_CAT16);
 
-  const float white = Y_to_dt_UCS_L_star(d->white_level);
-
-  /* We use the logistic weighting function to diminish effects in the guided filter for locations
-     with low chromacity. The logistic function is precalculated for a inflection point of zero
-     so we have to shift the input value (saturation) for both brightness and saturation corrections.
-     The default can be shifted by the threshold slider.
-     Depending on the maximum for the eight brightness sliders we increase the brightness shift, the value
-     of 0.01 has been found by a lot of testing to be safe.
-     As increased param_size leads to propagation of brightness into achromatic parts we have to correct for that too.
-  */
-  const float sat_shift = d->threshold;
-  const float max_brightness_shift = 0.01f * d->max_brightness;
-  const float corr_max_brightness_shift = max_brightness_shift * MIN(5.0f, sqrtf(d->param_size));
-  const float bright_shift = sat_shift + corr_max_brightness_shift;
-
-  /* We want information about sharp transitions of saturation for halo suppression.
-     As the scharr operator is faster and more stable for roi->scale changes we use
-       it instead of local variance.
-     We reduce chroma noise effects by using a minimum threshold of 0.02 and by sqaring the gradient.
-     The gradient_amp corrects a gradient of 0.5 to be 1.0 and takes care
-       of maximum changed brightness and roi scale.
-  */
-  const float gradient_amp = 4.0f * sqrtf(d->max_brightness) * sqrf(roi_out->scale);
+  float white, sat_shift, max_brightness_shift, corr_max_brightness_shift, bright_shift, gradient_amp, hue_sigma, par_sigma, sat_sigma, scharr_sigma;
+  _prepare_process(roi_in->scale / piece->iscale, d,
+    &white, &sat_shift, &max_brightness_shift, &corr_max_brightness_shift, &bright_shift, &gradient_amp, &hue_sigma, &par_sigma, &sat_sigma, &scharr_sigma);
 
   // STEP 1: convert image from RGB to darktable UCS LUV and calc saturation
   DT_OMP_FOR()
@@ -1048,23 +1049,22 @@ void process(struct dt_iop_module_t *self,
     saturation[k] = (dmax > NORM_MIN && delta > NORM_MIN) ? delta / dmax : 0.0f;
 
     xyY_to_dt_UCS_UV(xyY, uv);
-    tmp[k] = Y_to_dt_UCS_L_star(xyY[2]);
+    Lscharr[k] = Y_to_dt_UCS_L_star(xyY[2]);
   }
 
-  // We blur the saturation slightly depending on roi_scale
-  _mean_gaussian(saturation, roi_out->width, roi_out->height, 1, roi_out->scale);
+  _mean_gaussian(saturation, width, height, 1, sat_sigma);
 
   // STEP 2 : smoothen UV to avoid discontinuities in hue
   if(d->use_filter && !run_fast)
-    _prefilter_chromaticity(UV, saturation, roi_out, d->chroma_size, d->chroma_feathering, sat_shift);
+    _prefilter_chromaticity(UV, saturation, width, height, hue_sigma, d->chroma_feathering, sat_shift);
 
   // STEP 3 : carry-on with conversion from LUV to HSB
   DT_OMP_FOR()
-  for(int row = 0; row < oheight; row++)
+  for(int row = 0; row < height; row++)
   {
-    for(int col = 0; col < owidth; col++)
+    for(int col = 0; col < width; col++)
     {
-      const size_t k = (size_t)row * owidth + col;
+      const size_t k = (size_t)row * width + col;
 
       const float *const restrict pix_in = DT_IS_ALIGNED_PIXEL(in + k * 4);
       float *const restrict pix_out = DT_IS_ALIGNED_PIXEL(out + k * 4);
@@ -1074,16 +1074,16 @@ void process(struct dt_iop_module_t *self,
 
       // Finish the conversion to dt UCS JCH then HSB
       dt_aligned_pixel_t JCH = { 0.0f, 0.0f, 0.0f, 0.0f };
-      dt_UCS_LUV_to_JCH(tmp[k], white, uv, JCH);
+      dt_UCS_LUV_to_JCH(Lscharr[k], white, uv, JCH);
       dt_UCS_JCH_to_HSB(JCH, pix_out);
 
       // As tmp[k] is not used any longer as L(uminance) we re-use it for the saturation gradient
       if(d->use_filter)
       {
-        const int vrow = MIN(oheight - 2, MAX(1, row));
-        const int vcol = MIN(owidth - 2, MAX(1, col));
-        const size_t kk = vrow * owidth + vcol;
-        tmp[k] = CLIP(1.0f - gradient_amp * sqrf(MAX(0.0f, scharr_gradient(&saturation[kk], owidth) - 0.02f)));
+        const int vrow = MIN(height - 2, MAX(1, row));
+        const int vcol = MIN(width - 2, MAX(1, col));
+        const size_t kk = vrow * width + vcol;
+        Lscharr[k] = gradient_amp * sqrf(MAX(0.0f, scharr_gradient(&saturation[kk], width) - 0.02f));
       }
 
       // Get the boosts - if chroma = 0, we have a neutral grey so set everything to 0
@@ -1110,11 +1110,11 @@ void process(struct dt_iop_module_t *self,
   if(d->use_filter && !run_fast)
   {
     // blur the saturation gradients
-    _mean_gaussian(tmp, roi_out->width, roi_out->height, 1, roi_out->scale);
+    _mean_gaussian(Lscharr, width, height, 1, scharr_sigma);
 
     // STEP 4: apply a guided filter on the corrections, guided with UV chromaticity, to ensure spatially-contiguous corrections.
     // Even if the hue is not perfectly constant this will help avoiding chroma noise.
-    _guide_with_chromaticity(UV, corrections, saturation, b_corrections, tmp, roi_out, d->param_size, d->param_feathering, bright_shift, sat_shift);
+    _guide_with_chromaticity(UV, corrections, saturation, b_corrections, Lscharr, width, height, par_sigma, d->param_feathering, bright_shift, sat_shift);
   }
 
   if(mask_mode == 0)
@@ -1181,25 +1181,24 @@ void process(struct dt_iop_module_t *self,
       pix_out[1] = MAX(0.0f, val - corr);
       pix_out[2] = MAX(0.0f, neg ? val : val - corr);
 
-      const float gv = 1.0f - tmp[k];
-      if(mode == BRIGHTNESS && gv > 0.2f)
+      if(mode == BRIGHTNESS && Lscharr[k] > 0.1f)
       {
         pix_out[0] = pix_out[2] = 0.0f;
-        pix_out[1] = gv;
+        pix_out[1] = Lscharr[k];
       }
     }
 
     if((mode == BRIGHTNESS_GRAD) || (mode == SATURATION_GRAD))
     {
-      const float scaler = (float)roi_out->width * 16.0f;
-      const float eps = 0.5f / (float)roi_out->height;
-      for(int col = 0; col < 16 * roi_out->width; col++)
+      const float scaler = (float)width * 16.0f;
+      const float eps = 0.5f / (float)height;
+      for(int col = 0; col < 16 * width; col++)
       {
         const float weight = _get_satweight((float)col / scaler - (mode == SATURATION_GRAD ? sat_shift : bright_shift));
         if(weight > eps && weight < 1.0f - eps)
         {
-          const int row = (int)((1.0f - weight) * (float)(roi_out->height-1));
-          const size_t k = row * roi_out->width + col / 16;
+          const int row = (int)((1.0f - weight) * (float)(height-1));
+          const size_t k = row * width + col / 16;
           out[4*k] = out[4*k+2] = 0.0f;
           out[4*k+1] = 1.0f;
         }
@@ -1211,29 +1210,47 @@ void process(struct dt_iop_module_t *self,
   dt_free_align(b_corrections);
   dt_free_align(saturation);
   dt_free_align(UV);
-  dt_free_align(tmp);
+  dt_free_align(Lscharr);
 }
 
 #if HAVE_OPENCL
 
-#define CE_CH 2
 int _mean_gaussian_cl(const int devid,
                       cl_mem image,
-                      const size_t width,
-                      const size_t height,
+                      const int width,
+                      const int height,
+                      const int ch,
                       const float sigma)
 {
   const float range = 1.0e9;
   const dt_aligned_pixel_t max = {range, range, range, range};
   const dt_aligned_pixel_t min = {-range, -range, -range, -range};
-  const int ch = dt_opencl_get_image_element_size(image) / sizeof(float);
 
-  dt_gaussian_cl_t *g = dt_gaussian_init_cl(devid, width, height, ch, max, min, sigma, 0);
+  dt_gaussian_cl_t *g = dt_gaussian_init_cl(devid, width, height, ch, max, min, sigma, DT_IOP_GAUSSIAN_ZERO);
   if(!g) return DT_OPENCL_PROCESS_CL;
 
-  cl_int err = dt_gaussian_blur_cl(g, image, image);
+  cl_int err = dt_gaussian_blur_cl_buffer(g, image, image);
   dt_gaussian_free_cl(g);
   return err;
+}
+
+static cl_mem _init_covariance_cl(const int devid,
+                                  dt_iop_colorequal_global_data_t *gd,
+                                  cl_mem UV,
+                                  const int width,
+                                  const int height)
+{
+  cl_mem covariance = dt_opencl_alloc_device_buffer(devid, 4 * sizeof(float) * width * height);
+  if(covariance == NULL) return NULL;
+
+  cl_int err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_init_covariance, width, height,
+                    CLARG(covariance), CLARG(UV), CLARG(width), CLARG(height));
+  if(err != CL_SUCCESS)
+  {
+    dt_opencl_release_mem_object(covariance);
+    covariance = NULL;
+  }
+  return covariance;
 }
 
 static int _prefilter_chromaticity_cl(const int devid,
@@ -1241,71 +1258,68 @@ static int _prefilter_chromaticity_cl(const int devid,
                                       cl_mem UV,
                                       cl_mem saturation,
                                       cl_mem weight,
-                                      const dt_iop_roi_t *const roi,
-                                      const float csigma,
-                                      const float epsilon,
+                                      const int width,
+                                      const int height,
+                                      const float sigma,
+                                      const float eps,
                                       const float sat_shift)
 {
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-  const float sigma = csigma * roi->scale;
-  const int width = roi->width;
-  const int height = roi->height;
+
   const float scaling = _get_scaling(sigma);
-  const float gsigma = MAX(0.2f, 0.5f * sigma / scaling);
+  const float gsigma = MAX(0.2f, sigma / scaling);
   const int ds_height = height / scaling;
   const int ds_width = width / scaling;
   const gboolean resized = width != ds_width || height != ds_height;
 
+  const size_t bsize = (size_t) width * height * sizeof(float);
+  const size_t ds_bsize = (size_t) ds_width * ds_height * sizeof(float);
+
   cl_mem ds_UV = UV;
   cl_mem covariance = NULL;
-  cl_mem covariance_tmp = NULL;
+  cl_mem ds_a = NULL;
+  cl_mem ds_b = NULL;
   cl_mem a = NULL;
   cl_mem b = NULL;
-  cl_mem a_full = NULL;
-  cl_mem b_full = NULL;
-  cl_mem UV_tmp = NULL;
 
   if(resized)
   {
-    ds_UV = dt_opencl_alloc_device(devid, ds_width, ds_height, CE_CH * sizeof(float));
+    ds_UV = dt_opencl_alloc_device_buffer(devid, 2 * ds_bsize);
     if(ds_UV == NULL) return err;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, ds_width, ds_height,
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear2, ds_width, ds_height,
           CLARG(UV), CLARG(width), CLARG(height), CLARG(ds_UV), CLARG(ds_width), CLARG(ds_height));
     if(err != CL_SUCCESS) goto error;
   }
 
-  covariance_tmp = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
-  if(covariance_tmp == NULL) goto error;
+  covariance = _init_covariance_cl(devid, gd, ds_UV, ds_width, ds_height);
+  if(covariance == NULL)
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    goto error;
+  }
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_init_covariance, ds_width, ds_height,
-          CLARG(covariance_tmp), CLARG(ds_UV), CLARG(ds_width), CLARG(ds_height));
+  err = _mean_gaussian_cl(devid, ds_UV, ds_width, ds_height, 2, gsigma);
   if(err != CL_SUCCESS) goto error;
 
-  err = _mean_gaussian_cl(devid, ds_UV, ds_width, ds_height, gsigma);
+  err = _mean_gaussian_cl(devid, covariance, ds_width, ds_height, 4, gsigma);
   if(err != CL_SUCCESS) goto error;
-
-  err = _mean_gaussian_cl(devid, covariance_tmp, ds_width, ds_height, gsigma);
-  if(err != CL_SUCCESS) goto error;
-
-  covariance = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
-  if(covariance == NULL) goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_finish_covariance, ds_width, ds_height,
-          CLARG(covariance), CLARG(covariance_tmp), CLARG(ds_UV),
-          CLARG(ds_width), CLARG(ds_height));
+          CLARG(covariance), CLARG(ds_UV), CLARG(ds_width), CLARG(ds_height));
   if(err != CL_SUCCESS) goto error;
 
-  dt_opencl_release_mem_object(covariance_tmp);
-  covariance_tmp = NULL;
-
-  a = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
-  b = dt_opencl_alloc_device(devid, ds_width, ds_height, CE_CH * sizeof(float));
-  if(a == NULL || b == NULL) goto error;
+  ds_a = dt_opencl_alloc_device_buffer(devid, 4 * ds_bsize);
+  ds_b = dt_opencl_alloc_device_buffer(devid, 2 * ds_bsize);
+  if(ds_a == NULL || ds_b == NULL)
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    goto error;
+  }
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_prepare_prefilter, ds_width, ds_height,
-          CLARG(ds_UV), CLARG(covariance), CLARG(a), CLARG(b),
-          CLARG(epsilon), CLARG(ds_width), CLARG(ds_height));
+          CLARG(ds_UV), CLARG(covariance), CLARG(ds_a), CLARG(ds_b), CLARG(eps),
+          CLARG(ds_width), CLARG(ds_height));
   if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(covariance);
@@ -1316,53 +1330,52 @@ static int _prefilter_chromaticity_cl(const int devid,
     ds_UV = NULL;
   }
 
-  err = _mean_gaussian_cl(devid, a, ds_width, ds_height, gsigma);
+  err = _mean_gaussian_cl(devid, ds_a, ds_width, ds_height, 4, gsigma);
   if(err != CL_SUCCESS) goto error;
 
-  err = _mean_gaussian_cl(devid, b, ds_width, ds_height, gsigma);
+  err = _mean_gaussian_cl(devid, ds_b, ds_width, ds_height, 2, gsigma);
   if(err != CL_SUCCESS) goto error;
 
-  a_full = a;
-  b_full = b;
+  a = ds_a;
+  b = ds_b;
   if(resized)
   {
-    a_full = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
-    b_full = dt_opencl_alloc_device(devid, width, height, CE_CH * sizeof(float));
-    if(a_full == NULL || b_full == NULL) goto error;
+    a = dt_opencl_alloc_device_buffer(devid, 4 * bsize);
+    b = dt_opencl_alloc_device_buffer(devid, 2 * bsize);
+    if(a == NULL || b == NULL)
+    {
+      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+      goto error;
+    }
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, width, height,
-          CLARG(a), CLARG(ds_width), CLARG(ds_height), CLARG(a_full), CLARG(width), CLARG(height));
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear4, width, height,
+          CLARG(ds_a), CLARG(ds_width), CLARG(ds_height), CLARG(a), CLARG(width), CLARG(height));
     if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, width, height,
-          CLARG(b), CLARG(ds_width), CLARG(ds_height), CLARG(b_full), CLARG(width), CLARG(height));
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear2, width, height,
+          CLARG(ds_b), CLARG(ds_width), CLARG(ds_height), CLARG(b), CLARG(width), CLARG(height));
     if(err != CL_SUCCESS) goto error;
 
-    dt_opencl_release_mem_object(a);
-    a = NULL;
-    dt_opencl_release_mem_object(b);
-    b = NULL;
+    dt_opencl_release_mem_object(ds_a);
+    ds_a = NULL;
+    dt_opencl_release_mem_object(ds_b);
+    ds_b = NULL;
   }
 
-  UV_tmp = dt_opencl_duplicate_image(devid, UV);
-  if(UV_tmp == NULL) goto error;
-
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_apply_prefilter, width, height,
-          CLARG(UV_tmp), CLARG(UV), CLARG(saturation), CLARG(a_full), CLARG(b_full), CLARG(weight),
+          CLARG(UV), CLARG(saturation), CLARG(a), CLARG(b), CLARG(weight),
           CLARG(sat_shift), CLARG(width), CLARG(height));
 
 error:
   if(resized)
   {
-    dt_opencl_release_mem_object(a_full);
-    dt_opencl_release_mem_object(b_full);
+    dt_opencl_release_mem_object(a);
+    dt_opencl_release_mem_object(b);
     dt_opencl_release_mem_object(ds_UV);
   }
   dt_opencl_release_mem_object(covariance);
-  dt_opencl_release_mem_object(covariance_tmp);
-  dt_opencl_release_mem_object(UV_tmp);
-  dt_opencl_release_mem_object(a);
-  dt_opencl_release_mem_object(b);
+  dt_opencl_release_mem_object(ds_a);
+  dt_opencl_release_mem_object(ds_b);
   return err;
 }
 
@@ -1374,85 +1387,80 @@ static int _guide_with_chromaticity_cl(const int devid,
                                       cl_mem b_corrections,
                                       cl_mem scharr,
                                       cl_mem weight,
-                                      const dt_iop_roi_t *const roi,
-                                      const float csigma,
-                                      const float epsilon,
+                                      const int width,
+                                      const int height,
+                                      const float sigma,
+                                      const float eps,
                                       const float bright_shift,
                                       const float sat_shift)
 {
-  const float sigma = csigma * roi->scale;
-  const size_t width = roi->width;
-  const size_t height = roi->height;
   const float scaling = _get_scaling(sigma);
-  const float gsigma = MAX(0.2f, 0.5f * sigma / scaling);
-  const size_t ds_height = height / scaling;
-  const size_t ds_width = width / scaling;
+  const float gsigma =  MAX(0.2f, sigma / scaling);
+  const int ds_height = height / scaling;
+  const int ds_width = width / scaling;
   const gboolean resized = width != ds_width || height != ds_height;
+
+  const size_t bsize = (size_t) width * height * sizeof(float);
+  const size_t ds_bsize = (size_t) ds_width * ds_height * sizeof(float);
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   cl_mem ds_UV = UV;
   cl_mem ds_corrections = corrections;
   cl_mem ds_b_corrections = b_corrections;
-  cl_mem corrections_tmp = NULL;
   cl_mem covariance = NULL;
   cl_mem correlations = NULL;
-  cl_mem covariance_tmp = NULL;
-  cl_mem correlations_tmp = NULL;
+  cl_mem ds_a = NULL;
+  cl_mem ds_b = NULL;
   cl_mem a = NULL;
   cl_mem b = NULL;
-  cl_mem a_full = NULL;
-  cl_mem b_full = NULL;
 
   if(resized)
   {
-    ds_UV = dt_opencl_alloc_device(devid, ds_width, ds_height, CE_CH * sizeof(float));
-    ds_corrections = dt_opencl_alloc_device(devid, ds_width, ds_height, CE_CH * sizeof(float));
-    ds_b_corrections = dt_opencl_alloc_device(devid, ds_width, ds_height, sizeof(float));
+    ds_UV = dt_opencl_alloc_device_buffer(devid, 2 * ds_bsize);
+    ds_corrections = dt_opencl_alloc_device_buffer(devid, 2 * ds_bsize);
+    ds_b_corrections = dt_opencl_alloc_device_buffer(devid, ds_bsize);
     if(ds_UV == NULL || ds_corrections == NULL || ds_b_corrections == NULL) goto error;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, ds_width, ds_height,
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear2, ds_width, ds_height,
           CLARG(UV), CLARG(width), CLARG(height), CLARG(ds_UV), CLARG(ds_width), CLARG(ds_height));
     if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, ds_width, ds_height,
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear2, ds_width, ds_height,
           CLARG(corrections), CLARG(width), CLARG(height), CLARG(ds_corrections), CLARG(ds_width), CLARG(ds_height));
     if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, ds_width, ds_height,
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear1, ds_width, ds_height,
           CLARG(b_corrections), CLARG(width), CLARG(height), CLARG(ds_b_corrections), CLARG(ds_width), CLARG(ds_height));
     if(err != CL_SUCCESS) goto error;
   }
 
-  covariance_tmp = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
-  correlations_tmp = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
-  if(covariance_tmp == NULL || correlations_tmp == NULL)
+  covariance = _init_covariance_cl(devid, gd, ds_UV, ds_width, ds_height);
+  correlations = dt_opencl_alloc_device_buffer(devid, 4 * ds_bsize);
+  if(covariance == NULL || correlations == NULL)
   {
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto error;
   }
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_prepare_correlations, ds_width, ds_height,
-          CLARG(ds_corrections), CLARG(ds_b_corrections), CLARG(ds_UV),
-          CLARG(correlations_tmp), CLARG(covariance_tmp),
+          CLARG(ds_corrections), CLARG(ds_b_corrections), CLARG(ds_UV), CLARG(correlations),
           CLARG(ds_width), CLARG(ds_height));
   if(err != CL_SUCCESS) goto error;
 
-  err = _mean_gaussian_cl(devid, ds_UV, ds_width, ds_height, gsigma);
+  err = _mean_gaussian_cl(devid, ds_UV, ds_width, ds_height, 2, gsigma);
   if(err != CL_SUCCESS) goto error;
-  err = _mean_gaussian_cl(devid, covariance_tmp, ds_width, ds_height, gsigma);
+  err = _mean_gaussian_cl(devid, covariance, ds_width, ds_height, 4, gsigma);
   if(err != CL_SUCCESS) goto error;
-  err = _mean_gaussian_cl(devid, ds_corrections, ds_width, ds_height, gsigma);
+  err = _mean_gaussian_cl(devid, ds_corrections, ds_width, ds_height, 2, gsigma);
   if(err != CL_SUCCESS) goto error;
-  err = _mean_gaussian_cl(devid, ds_b_corrections, ds_width, ds_height, 0.1f * gsigma);
+  err = _mean_gaussian_cl(devid, ds_b_corrections, ds_width, ds_height, 1, 0.1f * gsigma);
   if(err != CL_SUCCESS) goto error;
-  err = _mean_gaussian_cl(devid, correlations_tmp, ds_width, ds_height, gsigma);
+  err = _mean_gaussian_cl(devid, correlations, ds_width, ds_height, 4, gsigma);
   if(err != CL_SUCCESS) goto error;
 
-  covariance = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
-  correlations = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
-  a = dt_opencl_alloc_device(devid, ds_width, ds_height, 4 * sizeof(float));
-  b = dt_opencl_alloc_device(devid, ds_width, ds_height, CE_CH * sizeof(float));
-  if(a == NULL || b == NULL || covariance == NULL || correlations == NULL)
+  ds_a = dt_opencl_alloc_device_buffer(devid, 4 * ds_bsize);
+  ds_b = dt_opencl_alloc_device_buffer(devid, 2 * ds_bsize);
+  if(ds_a == NULL || ds_b == NULL)
   {
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto error;
@@ -1460,15 +1468,14 @@ static int _guide_with_chromaticity_cl(const int devid,
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_finish_correlations, ds_width, ds_height,
           CLARG(ds_corrections), CLARG(ds_b_corrections), CLARG(ds_UV),
-          CLARG(correlations_tmp), CLARG(correlations),
-          CLARG(covariance_tmp), CLARG(covariance),
+          CLARG(correlations), CLARG(covariance),
           CLARG(ds_width), CLARG(ds_height));
   if(err != CL_SUCCESS) goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_final_guide, ds_width, ds_height,
           CLARG(covariance), CLARG(correlations), CLARG(ds_corrections), CLARG(ds_b_corrections),
-          CLARG(ds_UV), CLARG(a), CLARG(b),
-          CLARG(epsilon), CLARG(ds_width), CLARG(ds_height));
+          CLARG(ds_UV), CLARG(ds_a), CLARG(ds_b), CLARG(eps),
+          CLARG(ds_width), CLARG(ds_height));
   if(err != CL_SUCCESS) goto error;
 
   if(resized)
@@ -1484,39 +1491,36 @@ static int _guide_with_chromaticity_cl(const int devid,
   correlations = NULL;
   dt_opencl_release_mem_object(covariance);
   covariance = NULL;
-  dt_opencl_release_mem_object(correlations_tmp);
-  correlations_tmp = NULL;
-  dt_opencl_release_mem_object(covariance_tmp);
-  covariance_tmp = NULL;
 
-  err = _mean_gaussian_cl(devid, a, ds_width, ds_height, gsigma);
+  err = _mean_gaussian_cl(devid, ds_a, ds_width, ds_height, 4, gsigma);
   if(err != CL_SUCCESS) goto error;
-  err = _mean_gaussian_cl(devid, b, ds_width, ds_height, gsigma);
+  err = _mean_gaussian_cl(devid, ds_b, ds_width, ds_height, 2, gsigma);
   if(err != CL_SUCCESS) goto error;
 
-  a_full = a;
-  b_full = b;
+  a = ds_a;
+  b = ds_b;
   if(resized)
   {
-    a_full = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
-    b_full = dt_opencl_alloc_device(devid, width, height, CE_CH * sizeof(float));
-    if(a_full == NULL || b_full == NULL) goto error;
+    a = dt_opencl_alloc_device_buffer(devid, 4 * bsize);
+    b = dt_opencl_alloc_device_buffer(devid, 2 * bsize);
+    if(a == NULL || b == NULL)
+    {
+      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+      goto error;
+    }
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, width, height,
-          CLARG(a), CLARG(ds_width), CLARG(ds_height), CLARG(a_full), CLARG(width), CLARG(height));
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear4, width, height,
+          CLARG(ds_a), CLARG(ds_width), CLARG(ds_height), CLARG(a), CLARG(width), CLARG(height));
     if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_interpolate_bilinear, width, height,
-          CLARG(b), CLARG(ds_width), CLARG(ds_height), CLARG(b_full), CLARG(width), CLARG(height));
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_bilinear2, width, height,
+          CLARG(ds_b), CLARG(ds_width), CLARG(ds_height), CLARG(b), CLARG(width), CLARG(height));
     if(err != CL_SUCCESS) goto error;
   }
 
-  corrections_tmp = dt_opencl_duplicate_image(devid, corrections);
-  if(corrections_tmp == NULL) goto error;
-
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_apply_guided, width, height,
-          CLARG(UV), CLARG(saturation), CLARG(scharr), CLARG(a_full), CLARG(b_full),
-          CLARG(corrections_tmp), CLARG(corrections), CLARG(b_corrections), CLARG(weight),
+          CLARG(UV), CLARG(saturation), CLARG(scharr), CLARG(a), CLARG(b),
+          CLARG(corrections), CLARG(b_corrections), CLARG(weight),
           CLARG(sat_shift), CLARG(bright_shift), CLARG(width), CLARG(height));
 
 error:
@@ -1525,22 +1529,18 @@ error:
     dt_opencl_release_mem_object(ds_UV);
     dt_opencl_release_mem_object(ds_corrections);
     dt_opencl_release_mem_object(ds_b_corrections);
-    dt_opencl_release_mem_object(a_full);
-    dt_opencl_release_mem_object(b_full);
+    dt_opencl_release_mem_object(a);
+    dt_opencl_release_mem_object(b);
   }
   dt_opencl_release_mem_object(correlations);
   dt_opencl_release_mem_object(covariance);
-  dt_opencl_release_mem_object(correlations_tmp);
-  dt_opencl_release_mem_object(covariance_tmp);
-  dt_opencl_release_mem_object(corrections_tmp);
-  dt_opencl_release_mem_object(a);
-  dt_opencl_release_mem_object(b);
+  dt_opencl_release_mem_object(ds_a);
+  dt_opencl_release_mem_object(ds_b);
 
   return err;
 }
 
-
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
@@ -1559,8 +1559,9 @@ int process_cl(struct dt_iop_module_t *self,
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   const int devid = piece->pipe->devid;
-  const int owidth = roi_out->width;
-  const int oheight = roi_out->height;
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+  const size_t bsize = (size_t) width * height * sizeof(float);
 
   dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
@@ -1568,23 +1569,9 @@ int process_cl(struct dt_iop_module_t *self,
   const int guiding = d->use_filter;
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
-  const float white = Y_to_dt_UCS_L_star(d->white_level);
-  const float sat_shift = d->threshold;
-  const float max_brightness_shift = 0.01f * d->max_brightness;
-  const float corr_max_brightness_shift = max_brightness_shift * MIN(5.0f, sqrtf(d->param_size));
-  const float bright_shift = sat_shift + corr_max_brightness_shift;
-
-  const float gradient_amp = 4.0f * sqrtf(d->max_brightness) * sqrf(roi_out->scale);
-
-  _init_satweights(d->contrast);
-
-  cl_mem UV = NULL;
-  cl_mem corrections = NULL;
-  cl_mem b_corrections = NULL;
-  cl_mem L = NULL;
-  cl_mem scharr = NULL;
-  cl_mem saturation = NULL;
-  cl_mem dev_tmp = NULL;
+  float white, sat_shift, max_brightness_shift, corr_max_brightness_shift, bright_shift, gradient_amp, hue_sigma, par_sigma, sat_sigma, scharr_sigma;
+  _prepare_process(roi_in->scale / piece->iscale, d,
+    &white, &sat_shift, &max_brightness_shift, &corr_max_brightness_shift, &bright_shift, &gradient_amp, &hue_sigma, &par_sigma, &sat_sigma, &scharr_sigma);
 
   dt_colormatrix_t input_matrix;
   dt_colormatrix_t output_matrix;
@@ -1598,79 +1585,74 @@ int process_cl(struct dt_iop_module_t *self,
   cl_mem LUT_hue = dt_opencl_copy_host_to_device_constant(devid, LUT_ELEM * sizeof(float), d->LUT_hue);
   cl_mem LUT_brightness = dt_opencl_copy_host_to_device_constant(devid, LUT_ELEM * sizeof(float), d->LUT_brightness);
   cl_mem weight = dt_opencl_copy_host_to_device_constant(devid, (2 * SATSIZE + 1) * sizeof(float), satweights);
+
+  cl_mem pixout = dt_opencl_alloc_device_buffer(devid, 4 * bsize);
+  cl_mem UV = dt_opencl_alloc_device_buffer(devid, 2 * bsize);
+  cl_mem corrections = dt_opencl_alloc_device_buffer(devid, 2 * bsize);
+  cl_mem b_corrections = dt_opencl_alloc_device_buffer(devid, bsize);
+  cl_mem Lscharr = dt_opencl_alloc_device_buffer(devid, bsize);
+  cl_mem saturation = dt_opencl_alloc_device_buffer(devid, bsize);
+
   if(input_matrix_cl == NULL || output_matrix_cl == NULL || gamut_LUT == NULL || LUT_saturation == NULL
-      || LUT_hue == NULL || LUT_brightness == NULL || weight == NULL)
+      || LUT_hue == NULL || LUT_brightness == NULL || weight == NULL
+      || pixout == NULL || UV == NULL || corrections == NULL || b_corrections == NULL
+      || Lscharr == NULL || saturation == NULL)
     goto error;
 
-  dev_tmp = dt_opencl_alloc_device(devid, owidth, oheight, 4 * sizeof(float));
-  UV = dt_opencl_alloc_device(devid, owidth, oheight, CE_CH * sizeof(float));
-  corrections = dt_opencl_alloc_device(devid, owidth, oheight, CE_CH * sizeof(float));
-  b_corrections = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
-  L = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
-  scharr = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
-  saturation = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
-
-  if(dev_tmp == NULL || UV == NULL || corrections == NULL || b_corrections == NULL
-      || L == NULL || scharr == NULL || saturation == NULL)
-    goto error;
-
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_sample_input, owidth, oheight,
-          CLARG(dev_in), CLARG(saturation), CLARG(L), CLARG(UV),
-          CLARG(input_matrix_cl), CLARG(owidth),  CLARG(oheight));
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_sample_input, width, height,
+          CLARG(dev_in), CLARG(saturation), CLARG(Lscharr), CLARG(UV), CLARG(pixout),
+          CLARG(input_matrix_cl), CLARG(width),  CLARG(height));
   if(err != CL_SUCCESS) goto error;
 
-  err = _mean_gaussian_cl(devid, saturation, owidth, oheight, roi_out->scale);
+  err = _mean_gaussian_cl(devid, saturation, width, height, 1, sat_sigma);
   if(err != CL_SUCCESS) goto error;
 
   // STEP 2 : smoothen UV to avoid discontinuities in hue
   if(guiding && !run_fast)
   {
-    _prefilter_chromaticity_cl(devid, gd, UV, saturation, weight, roi_out, d->chroma_size, d->chroma_feathering, sat_shift);
+    err = _prefilter_chromaticity_cl(devid, gd, UV, saturation, weight, width, height, hue_sigma, d->chroma_feathering, sat_shift);
     if(err != CL_SUCCESS) goto error;
   }
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_process_data, owidth, oheight,
-                CLARG(UV), CLARG(L), CLARG(saturation),
-                CLARG(scharr), CLARG(corrections), CLARG(b_corrections), CLARG(dev_tmp),
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_process_data, width, height,
+                CLARG(UV), CLARG(Lscharr), CLARG(saturation),
+                CLARG(corrections), CLARG(b_corrections), CLARG(pixout),
                 CLARG(LUT_saturation), CLARG(LUT_hue), CLARG(LUT_brightness),
                 CLARG(white), CLARG(gradient_amp), CLARG(guiding),
-                CLARG(owidth),  CLARG(oheight));
+                CLARG(width),  CLARG(height));
   if(err != CL_SUCCESS) goto error;
-  dt_opencl_release_mem_object(L);
-  L = NULL;
 
   if(guiding && !run_fast)
   {
-    err = _mean_gaussian_cl(devid, scharr, owidth, oheight, roi_out->scale);
+    err = _mean_gaussian_cl(devid, Lscharr, width, height, 1, scharr_sigma);
     if(err != CL_SUCCESS) goto error;
 
-    _guide_with_chromaticity_cl(devid, gd, UV, corrections, saturation, b_corrections, scharr, weight, roi_out, d->param_size, d->param_feathering, bright_shift, sat_shift);
+    err = _guide_with_chromaticity_cl(devid, gd, UV, corrections, saturation, b_corrections, Lscharr, weight, width, height, par_sigma, d->param_feathering, bright_shift, sat_shift);
+    if(err != CL_SUCCESS) goto error;
   }
 
   if(!mask_mode)
   {
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_write_output, owidth, oheight,
-          CLARG(dev_out), CLARG(dev_tmp), CLARG(dev_in),
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_write_output, width, height,
+          CLARG(dev_out), CLARG(pixout),
           CLARG(corrections), CLARG(b_corrections),
           CLARG(output_matrix_cl), CLARG(gamut_LUT), CLARG(white),
-          CLARG(owidth), CLARG(oheight));
-    if(err != CL_SUCCESS) goto error;
+          CLARG(width), CLARG(height));
   }
   else
   {
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
     const int mode = mask_mode - 1;
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_write_visual, owidth, oheight,
-          CLARG(dev_out), CLARG(dev_tmp), CLARG(corrections), CLARG(b_corrections), CLARG(saturation), CLARG(scharr),
-          CLARG(gamut_LUT), CLARG(weight),
-          CLARG(bright_shift), CLARG(sat_shift), CLARG(white), CLARG(mode),
-          CLARG(owidth), CLARG(oheight));
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_write_visual, width, height,
+          CLARG(dev_out), CLARG(pixout), CLARG(corrections), CLARG(b_corrections), CLARG(saturation), CLARG(Lscharr),
+          CLARG(weight), CLARG(bright_shift), CLARG(sat_shift), CLARG(white), CLARG(mode),
+          CLARG(width), CLARG(height));
     if(err != CL_SUCCESS) goto error;
 
     if(mode == BRIGHTNESS_GRAD || mode == SATURATION_GRAD)
     {
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_draw_weight, owidth, 1,
-          CLARG(dev_out), CLARG(weight), CLARG(bright_shift), CLARG(sat_shift), CLARG(mode), CLARG(owidth), CLARG(oheight));
+      err = dt_opencl_enqueue_kernel_1d_args(devid, gd->ce_draw_weight, width,
+          CLARG(dev_out), CLARG(weight), CLARG(bright_shift), CLARG(sat_shift), CLARG(mode), CLARG(width), CLARG(height));
     }
   }
 
@@ -1683,15 +1665,13 @@ error:
   dt_opencl_release_mem_object(LUT_brightness);
   dt_opencl_release_mem_object(weight);
   dt_opencl_release_mem_object(UV);
-  dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(pixout);
   dt_opencl_release_mem_object(corrections);
   dt_opencl_release_mem_object(b_corrections);
-  dt_opencl_release_mem_object(L);
-  dt_opencl_release_mem_object(scharr);
+  dt_opencl_release_mem_object(Lscharr);
   dt_opencl_release_mem_object(saturation);
   return err;
 }
-#undef CE_CH
 
 #endif // OpenCL
 
@@ -1735,7 +1715,7 @@ static inline void _periodic_RBF_interpolate(float nodes[NODES],
     }
 
   // Solve A * x = y for lambdas
-  pseudo_solve((float *)A, nodes, NODES, NODES, 0);
+  pseudo_solve((float *)A, nodes, NODES, NODES, FALSE);
 
   // Interpolate data for all x : generate the LUT
   // WARNING: the LUT spans from [-pi; pi[ for consistency with the output of atan2f()
@@ -1745,7 +1725,7 @@ static inline void _periodic_RBF_interpolate(float nodes[NODES],
     // every degree.  We use un-offset angles here, since thue hue
     // offset is merely a GUI thing, only relevant for user-defined
     // nodes.
-    const float hue = (float)i * M_PI_F / 180.f - M_PI_F;
+    const float hue = (float)i * 360.0f / (float)LUT_ELEM * M_PI_F / 180.f - M_PI_F;
     LUT[i] = 0.f;
 
     for(int k = 0; k < NODES; k++)
@@ -1763,13 +1743,12 @@ static inline void _periodic_RBF_interpolate(float nodes[NODES],
   }
 }
 
-
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = dt_calloc_aligned(sizeof(dt_iop_colorequal_data_t));
-  dt_iop_colorequal_data_t *d = (dt_iop_colorequal_data_t *)piece->data;
+  dt_iop_colorequal_data_t *d = piece->data;
   d->LUT_saturation = dt_alloc_align_float(LUT_ELEM);
   d->LUT_hue = dt_alloc_align_float(LUT_ELEM);
   d->LUT_brightness = dt_alloc_align_float(LUT_ELEM);
@@ -1779,11 +1758,11 @@ void init_pipe(struct dt_iop_module_t *self,
 }
 
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_colorequal_data_t *d = (dt_iop_colorequal_data_t *)piece->data;
+  dt_iop_colorequal_data_t *d = piece->data;
   dt_free_align(d->LUT_saturation);
   dt_free_align(d->LUT_hue);
   dt_free_align(d->LUT_brightness);
@@ -1792,7 +1771,7 @@ void cleanup_pipe(struct dt_iop_module_t *self,
   piece->data = NULL;
 }
 
-static inline void _pack_saturation(struct dt_iop_colorequal_params_t *p,
+static inline void _pack_saturation(dt_iop_colorequal_params_t *p,
                                     float array[NODES])
 {
   array[0] = p->sat_red;
@@ -1805,7 +1784,7 @@ static inline void _pack_saturation(struct dt_iop_colorequal_params_t *p,
   array[7] = p->sat_magenta;
 }
 
-static inline void _pack_hue(struct dt_iop_colorequal_params_t *p,
+static inline void _pack_hue(dt_iop_colorequal_params_t *p,
                              float array[NODES])
 {
   array[0] = p->hue_red;
@@ -1821,7 +1800,7 @@ static inline void _pack_hue(struct dt_iop_colorequal_params_t *p,
     array[i] = array[i] / 180.f * M_PI_F; // Convert to radians
 }
 
-static inline void _pack_brightness(struct dt_iop_colorequal_params_t *p,
+static inline void _pack_brightness(dt_iop_colorequal_params_t *p,
                                     float array[NODES])
 {
   array[0] = p->bright_red;
@@ -1835,13 +1814,13 @@ static inline void _pack_brightness(struct dt_iop_colorequal_params_t *p,
 }
 
 
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorequal_params_t *p = (dt_iop_colorequal_params_t *)p1;
-  dt_iop_colorequal_data_t *d = (dt_iop_colorequal_data_t *)piece->data;
+  dt_iop_colorequal_data_t *d = piece->data;
 
   d->white_level = exp2f(p->white_level);
   d->chroma_size = p->chroma_size;
@@ -2002,8 +1981,8 @@ static inline void _draw_sliders_brightness_gradient
 
 static inline void _init_sliders(dt_iop_module_t *self)
 {
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
-  dt_iop_colorequal_params_t *p = (dt_iop_colorequal_params_t *)self->params;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
+  dt_iop_colorequal_params_t *p = self->params;
 
   // Saturation sliders
   for(int k = 0; k < NODES; k++)
@@ -2100,7 +2079,7 @@ void reload_defaults(dt_iop_module_t *self)
   // we might be called from presets update infrastructure => there is no image
   if(!self->dev || !dt_is_valid_imgid(self->dev->image_storage.id)) return;
 
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
   if(g)
   {
     // reset masking
@@ -2289,9 +2268,9 @@ void init_presets(dt_iop_module_so_t *self)
                              1, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
+void gui_focus(dt_iop_module_t *self, gboolean in)
 {
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
   if(!in)
   {
     dt_iop_color_picker_reset(self, FALSE);
@@ -2369,11 +2348,10 @@ static void _draw_color_picker(dt_iop_module_t *self,
 
 static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
                                          cairo_t *crf,
-                                         gpointer user_data)
+                                         dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
-  dt_iop_colorequal_params_t *p = (dt_iop_colorequal_params_t *)self->params;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
+  dt_iop_colorequal_params_t *p = self->params;
 
   // Cache the graph objects to avoid recomputing all the view at each redraw
   GtkAllocation allocation;
@@ -2420,15 +2398,14 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
   cairo_pattern_t *grad = cairo_pattern_create_linear(margin_left, 0.0, graph_width, 0.0);
   if(g->gamut_LUT)
   {
-    for(int k = 0; k < LUT_ELEM; k++)
+    for(int k = 0; k < 360; k++)
     {
-      const float x = (float)k / (float)(LUT_ELEM);
       const float hue = _deg_to_rad((float)k);
       dt_aligned_pixel_t RGB = { 1.f };
       _build_dt_UCS_HSB_gradients((dt_aligned_pixel_t){ hue, g->max_saturation,
                                                         SLIDER_BRIGHTNESS, 1.0f },
         RGB, g->white_adapted_profile, g->gamut_LUT);
-      cairo_pattern_add_color_stop_rgba(grad, x, RGB[0], RGB[1], RGB[2], 1.0);
+      cairo_pattern_add_color_stop_rgba(grad, (double)k / 360.0, RGB[0], RGB[1], RGB[2], 1.0);
     }
   }
 
@@ -2511,10 +2488,10 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
   _periodic_RBF_interpolate(values, 1.f / smoothing * M_PI_F, g->LUT, 0.0f, clip);
 
   const float dx = p->hue_shift / 360.0f;
-  const int first = -dx * LUT_ELEM;
-  for(int k = first; k < (LUT_ELEM + first); k++)
+  const int first = -dx * 360;
+  for(int k = first; k < (360 + first); k++)
   {
-    const float x = ((float)k / (float)(LUT_ELEM - 1) + dx) * graph_width;
+    const float x = ((float)k / (float)(360 - 1) + dx) * graph_width;
     float hue = _deg_to_rad(k);
     hue = (hue < M_PI_F) ? hue : -2.f * M_PI_F + hue; // The LUT is defined in [-pi; pi[
     const float y = (offset - lookup_gamut(g->LUT, hue) * factor) * graph_height;
@@ -2560,7 +2537,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
 
   dt_free_align(g->LUT);
 
-  if(self->enabled && (self == self->dev->gui_module) && g->picking)
+  if(self->enabled && dt_iop_has_focus(self) && g->picking)
     _draw_color_picker(self, cr, p, g, (double)graph_width, (double)graph_height);
 
   cairo_restore(cr);
@@ -2605,8 +2582,8 @@ void color_picker_apply(dt_iop_module_t *self,
                         GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
-  dt_iop_colorequal_params_t *p = (dt_iop_colorequal_params_t *)self->params;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
+  dt_iop_colorequal_params_t *p = self->params;
 
   if(picker == g->white_level)
   {
@@ -2625,32 +2602,29 @@ void color_picker_apply(dt_iop_module_t *self,
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-static void _picker_callback(GtkWidget *quad, gpointer user_data)
+static void _picker_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
   g->picking = dt_bauhaus_widget_get_quad_active(quad);
 
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-static void _masking_callback_p(GtkWidget *quad, gpointer user_data)
+static void _masking_callback_p(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
   dt_bauhaus_widget_set_quad_active(g->threshold, FALSE);
   g->mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? g->channel + 1 : 0;
   dt_dev_reprocess_center(self->dev);
 }
 
-static void _masking_callback_t(GtkWidget *quad, gpointer user_data)
+static void _masking_callback_t(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
   dt_bauhaus_widget_set_quad_active(g->param_size, FALSE);
   g->mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? GRAD_SWITCH + g->channel + 1 : 0;
   dt_dev_reprocess_center(self->dev);
@@ -2662,7 +2636,7 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
                                           dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
   // The 4th tab is options, in which case we do nothing
   // For the first 3 tabs, update color channel and redraw the graph
@@ -2774,10 +2748,9 @@ static void _area_reset_nodes(dt_iop_colorequal_gui_data_t *g)
 
 static gboolean _area_scrolled_callback(GtkWidget *widget,
                                         GdkEventScroll *event,
-                                        gpointer user_data)
+                                        dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
   GtkWidget *w = dt_modifier_is(event->state, GDK_MOD1_MASK)
                ? GTK_WIDGET(g->notebook)
@@ -2787,10 +2760,9 @@ static gboolean _area_scrolled_callback(GtkWidget *widget,
 
 static gboolean _area_motion_notify_callback(GtkWidget *widget,
                                              GdkEventMotion *event,
-                                             gpointer user_data)
+                                             dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
   if(g->dragging && g->on_node)
     _area_set_pos(g, event->y);
@@ -2813,10 +2785,9 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
 
 static gboolean _area_button_press_callback(GtkWidget *widget,
                                             GdkEventButton *event,
-                                            gpointer user_data)
+                                            dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
   if(event->button == 2
      || (event->button == 1 // Ctrl+Click alias for macOS
@@ -2846,10 +2817,9 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
 
 static gboolean _area_button_release_callback(GtkWidget *widget,
                                               GdkEventButton *event,
-                                              gpointer user_data)
+                                              dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
   if(event->button == 1)
   {
@@ -2862,18 +2832,17 @@ static gboolean _area_button_release_callback(GtkWidget *widget,
 
 static gboolean _area_size_callback(GtkWidget *widget,
                                     GdkEventButton *event,
-                                    gpointer user_data)
+                                    dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
   g->gradients_cached = FALSE;
   return FALSE;
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
-  dt_iop_colorequal_params_t *p = (dt_iop_colorequal_params_t *)self->params;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
+  dt_iop_colorequal_params_t *p = self->params;
 
   // Get the current display profile
   struct dt_iop_order_iccprofile_info_t *work_profile =
@@ -2896,7 +2865,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     if(g->white_adapted_profile != NULL)
       memcpy(input_matrix, g->white_adapted_profile->matrix_in, sizeof(dt_colormatrix_t));
     else
-      dt_print(DT_DEBUG_PIPE, "[colorequal] display color space falls back to sRGB\n");
+      dt_print(DT_DEBUG_PIPE, "[colorequal] display color space falls back to sRGB");
 
     dt_UCS_22_build_gamut_LUT(input_matrix, g->gamut_LUT);
     g->max_saturation = get_minimum_saturation(g->gamut_LUT, 0.2f, 1.f);
@@ -2921,9 +2890,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
   if(g->white_adapted_profile)
@@ -2945,14 +2914,12 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
   dt_conf_set_int("plugins/darkroom/colorequal/gui_page",
                   gtk_notebook_get_current_page (g->notebook));
-
-  IOP_GUI_FREE;
 }
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_colorequal_params_t *p = (dt_iop_colorequal_params_t *)self->params;
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_params_t *p = self->params;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_filter), p->use_filter);
   gui_changed(self, NULL, NULL);
 
@@ -2991,7 +2958,7 @@ static float _action_process_colorequal(gpointer target,
                                         float move_size)
 {
   dt_iop_module_t *self = g_object_get_data(G_OBJECT(target), "iop-instance");
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
   GtkWidget *w = _get_slider(g, element);
   const int index = dt_action_widget(w)->type - DT_ACTION_TYPE_WIDGET - 1;
@@ -3016,7 +2983,7 @@ static const dt_action_def_t _action_def_coloreq
       _action_process_colorequal,
       _action_elements_colorequal };
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_colorequal_gui_data_t *g = IOP_GUI_ALLOC(colorequal);
 
@@ -3066,7 +3033,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), &_action_def_coloreq);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double-click to reset the curve\nmiddle click to toggle sliders visibility\nalt+scroll to change page"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double-click to reset the curve\nmiddle-click to toggle sliders visibility\nalt+scroll to change page"));
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   gtk_widget_add_events(GTK_WIDGET(g->area),
                         GDK_BUTTON_PRESS_MASK
@@ -3240,7 +3207,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->param_size), "quad-pressed", G_CALLBACK(_masking_callback_p), self);
   dt_bauhaus_widget_set_quad_tooltip(g->param_size,
     _("visualize changed output for the selected tab.\n"
-    "red shows increased data, blue decreased."));
+      "red shows increased values, blue decreased."));
 
   _init_sliders(self);
 

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2023 darktable developers.
+    Copyright (C) 2014-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,10 +31,13 @@
 #include "control/control.h"
 #include "crawler.h"
 #include "gui/gtk.h"
+#include "gui/splash.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
 
+// how many seconds may the sidecar file's timestamp differ from that recorded in the database?
+#define MAX_TIME_SKEW 2
 
 typedef enum dt_control_crawler_cols_t
 {
@@ -103,11 +106,26 @@ static void _set_modification_time(char *filename,
   if(info) g_clear_object(&info);
 }
 
+// pregress update intervals in seconds
+#define FAST_UPDATE 0.2
+#define SLOW_UPDATE 1.0
+
 GList *dt_control_crawler_run(void)
 {
   sqlite3_stmt *stmt, *inner_stmt;
   GList *result = NULL;
-  gboolean look_for_xmp = (dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER);
+  const gboolean look_for_xmp = dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER;
+
+  int total_images = 1;
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT COUNT(*) FROM main.images", -1, &stmt, 0);
+  // clang-format on
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    total_images = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+  }
 
   // clang-format off
   sqlite3_prepare_v2(dt_database_get(darktable.db),
@@ -117,13 +135,20 @@ GList *dt_control_crawler_run(void)
                      " ON i.film_id = f.id"
                      " ORDER BY f.id, filename",
                      -1, &stmt, NULL);
-  // clang-format on
   sqlite3_prepare_v2(dt_database_get(darktable.db),
                      "UPDATE main.images SET flags = ?1 WHERE id = ?2", -1,
                      &inner_stmt, NULL);
+  // clang-format on
 
   // let's wrap this into a transaction, it might make it a little faster.
   dt_database_start_transaction(darktable.db);
+
+  int image_count = 0;
+  const double start_time = dt_get_wtime();
+  // set the "previous update" time to 10ms after a notional previous
+  // update to ensure visibility of the first update (which might not
+  // appear when done with zero delay) while minimizing the delay
+  double last_time = start_time - (FAST_UPDATE-0.01);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -132,11 +157,23 @@ GList *dt_control_crawler_run(void)
     const int version = sqlite3_column_int(stmt, 2);
     const gchar *image_path = (char *)sqlite3_column_text(stmt, 3);
     int flags = sqlite3_column_int(stmt, 4);
+    ++image_count;
+
+    // update the progress message - five times per second for first four seconds, then once per second
+    const double curr_time = dt_get_wtime();
+    if(curr_time >= last_time + ((curr_time - start_time > 4.0) ? SLOW_UPDATE : FAST_UPDATE))
+    {
+      const double fraction = image_count / (double)total_images;
+      darktable_splash_screen_set_progress_percent(_("checking for updated sidecar files (%d%%)"),
+                                                   fraction,
+                                                   curr_time - start_time);
+      last_time = curr_time;
+    }
 
     // if the image is missing we ignore it.
     if(!g_file_test(image_path, G_FILE_TEST_EXISTS))
     {
-      dt_print(DT_DEBUG_CONTROL, "[crawler] `%s' (id: %d) is missing.\n", image_path, id);
+      dt_print(DT_DEBUG_CONTROL, "[crawler] `%s' (id: %d) is missing", image_path, id);
       continue;
     }
 
@@ -176,11 +213,9 @@ GList *dt_control_crawler_run(void)
       if(stat_res) continue; // TODO: shall we report these?
 
       // step 1: check if the xmp is newer than our db entry
-      // FIXME: allow for a few seconds difference?
-      if(timestamp < statbuf.st_mtime)
+      if(timestamp + MAX_TIME_SKEW < statbuf.st_mtime)
       {
-        dt_control_crawler_result_t *item
-            = (dt_control_crawler_result_t *)malloc(sizeof(dt_control_crawler_result_t));
+        dt_control_crawler_result_t *item = malloc(sizeof(dt_control_crawler_result_t));
         item->id = id;
         item->timestamp_xmp = statbuf.st_mtime;
         item->timestamp_db = timestamp;
@@ -189,7 +224,7 @@ GList *dt_control_crawler_run(void)
 
         result = g_list_prepend(result, item);
         dt_print(DT_DEBUG_CONTROL,
-                 "[crawler] `%s' (id: %d) is a newer XMP file.\n", xmp_path, id);
+                 "[crawler] `%s' (id: %d) is a newer XMP file", xmp_path, id);
       }
       // older timestamps are the case for all images after the db
       // upgrade. better not report these
@@ -201,56 +236,59 @@ GList *dt_control_crawler_run(void)
     while((c > image_path) && (*c != '.')) c--;
     len = c - image_path + 1;
 
-    char *extra_path = (char *)calloc(len + 3 + 1, sizeof(char));
-    g_strlcpy(extra_path, image_path, len + 1);
-
-    extra_path[len] = 't';
-    extra_path[len + 1] = 'x';
-    extra_path[len + 2] = 't';
-    gboolean has_txt = g_file_test(extra_path, G_FILE_TEST_EXISTS);
-
-    if(!has_txt)
+    char *extra_path = calloc(len + 3 + 1, sizeof(char));
+    if(extra_path)
     {
-      extra_path[len] = 'T';
-      extra_path[len + 1] = 'X';
-      extra_path[len + 2] = 'T';
-      has_txt = g_file_test(extra_path, G_FILE_TEST_EXISTS);
+      g_strlcpy(extra_path, image_path, len + 1);
+
+      extra_path[len] = 't';
+      extra_path[len + 1] = 'x';
+      extra_path[len + 2] = 't';
+      gboolean has_txt = g_file_test(extra_path, G_FILE_TEST_EXISTS);
+
+      if(!has_txt)
+      {
+        extra_path[len] = 'T';
+        extra_path[len + 1] = 'X';
+        extra_path[len + 2] = 'T';
+        has_txt = g_file_test(extra_path, G_FILE_TEST_EXISTS);
+      }
+
+      extra_path[len] = 'w';
+      extra_path[len + 1] = 'a';
+      extra_path[len + 2] = 'v';
+      gboolean has_wav = g_file_test(extra_path, G_FILE_TEST_EXISTS);
+
+      if(!has_wav)
+      {
+        extra_path[len] = 'W';
+        extra_path[len + 1] = 'A';
+        extra_path[len + 2] = 'V';
+        has_wav = g_file_test(extra_path, G_FILE_TEST_EXISTS);
+      }
+
+      // TODO: decide if we want to remove the flag for images that lost
+      // their extra file. currently we do (the else cases)
+      int new_flags = flags;
+      if(has_txt)
+        new_flags |= DT_IMAGE_HAS_TXT;
+      else
+        new_flags &= ~DT_IMAGE_HAS_TXT;
+      if(has_wav)
+        new_flags |= DT_IMAGE_HAS_WAV;
+      else
+        new_flags &= ~DT_IMAGE_HAS_WAV;
+      if(flags != new_flags)
+      {
+        sqlite3_bind_int(inner_stmt, 1, new_flags);
+        sqlite3_bind_int(inner_stmt, 2, id);
+        sqlite3_step(inner_stmt);
+        sqlite3_reset(inner_stmt);
+        sqlite3_clear_bindings(inner_stmt);
+      }
+
+      free(extra_path);
     }
-
-    extra_path[len] = 'w';
-    extra_path[len + 1] = 'a';
-    extra_path[len + 2] = 'v';
-    gboolean has_wav = g_file_test(extra_path, G_FILE_TEST_EXISTS);
-
-    if(!has_wav)
-    {
-      extra_path[len] = 'W';
-      extra_path[len + 1] = 'A';
-      extra_path[len + 2] = 'V';
-      has_wav = g_file_test(extra_path, G_FILE_TEST_EXISTS);
-    }
-
-    // TODO: decide if we want to remove the flag for images that lost
-    // their extra file. currently we do (the else cases)
-    int new_flags = flags;
-    if(has_txt)
-      new_flags |= DT_IMAGE_HAS_TXT;
-    else
-      new_flags &= ~DT_IMAGE_HAS_TXT;
-    if(has_wav)
-      new_flags |= DT_IMAGE_HAS_WAV;
-    else
-      new_flags &= ~DT_IMAGE_HAS_WAV;
-    if(flags != new_flags)
-    {
-      sqlite3_bind_int(inner_stmt, 1, new_flags);
-      sqlite3_bind_int(inner_stmt, 2, id);
-      sqlite3_step(inner_stmt);
-      sqlite3_reset(inner_stmt);
-      sqlite3_clear_bindings(inner_stmt);
-    }
-
-    free(extra_path);
   }
 
   dt_database_release_transaction(darktable.db);
@@ -345,7 +383,7 @@ static void _select_invert_callback(GtkButton *button, gpointer user_data)
 }
 
 
-static void _db_update_timestamp(const int id, const time_t timestamp)
+static void _db_update_timestamp(const dt_imgid_t id, const time_t timestamp)
 {
   // Update DB writing timestamp with XMP file timestamp
   sqlite3_stmt *stmt;
@@ -370,7 +408,8 @@ static void _get_crawler_entry_from_model(GtkTreeModel *model,
                      DT_CONTROL_CRAWLER_COL_ID,         &entry->id,
                      DT_CONTROL_CRAWLER_COL_XMP_PATH,   &entry->xmp_path,
                      DT_CONTROL_CRAWLER_COL_TS_DB_INT,  &entry->timestamp_db,
-                     DT_CONTROL_CRAWLER_COL_TS_XMP_INT, &entry->timestamp_xmp, -1);
+                     DT_CONTROL_CRAWLER_COL_TS_XMP_INT, &entry->timestamp_xmp,
+                     -1); // marks list end
 }
 
 
@@ -407,7 +446,7 @@ static void sync_xmp_to_db(GtkTreeModel *model,
                            gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
-  dt_control_crawler_result_t entry = { 0 };
+  dt_control_crawler_result_t entry = { NO_IMGID };
   _get_crawler_entry_from_model(model, iter, &entry);
   _db_update_timestamp(entry.id, entry.timestamp_xmp);
 
@@ -436,7 +475,7 @@ static void sync_db_to_xmp(GtkTreeModel *model,
                            gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
-  dt_control_crawler_result_t entry = { 0 };
+  dt_control_crawler_result_t entry = { NO_IMGID };
   _get_crawler_entry_from_model(model, iter, &entry);
 
   // write the XMP and make sure it get the last modified timestamp of the db
@@ -465,7 +504,7 @@ static void sync_newest_to_oldest(GtkTreeModel *model,
                                   gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
-  dt_control_crawler_result_t entry = { 0 };
+  dt_control_crawler_result_t entry = { NO_IMGID };
   _get_crawler_entry_from_model(model, iter, &entry);
 
   gboolean error = FALSE;
@@ -498,7 +537,7 @@ static void sync_newest_to_oldest(GtkTreeModel *model,
     error = dt_image_write_sidecar_file(entry.id);
     _set_modification_time(entry.xmp_path, entry.timestamp_db);
 
-    dt_print(DT_DEBUG_ALWAYS, "%s synced DB (new) → XMP (old)\n", entry.image_path);
+    dt_print(DT_DEBUG_ALWAYS, "%s synced DB (new) → XMP (old)", entry.image_path);
     if(error)
     {
       _log_synchronization
@@ -536,7 +575,7 @@ static void sync_oldest_to_newest(GtkTreeModel *model,
                                   gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
-  dt_control_crawler_result_t entry = { 0 };
+  dt_control_crawler_result_t entry = { NO_IMGID };
   _get_crawler_entry_from_model(model, iter, &entry);
   gboolean error = FALSE;
 
@@ -668,8 +707,7 @@ void dt_control_crawler_show_image_list(GList *images)
 {
   if(!images) return;
 
-  dt_control_crawler_gui_t *gui =
-    (dt_control_crawler_gui_t *)malloc(sizeof(dt_control_crawler_gui_t));
+  dt_control_crawler_gui_t *gui = malloc(sizeof(dt_control_crawler_gui_t));
 
   // a list with all the images
   GtkTreeViewColumn *column;
@@ -866,8 +904,8 @@ static inline gboolean _still_thumbing(void)
 }
 
 static void _update_img_thumbs(const dt_imgid_t imgid,
-                              const dt_mipmap_size_t max_mip,
-                              const int64_t stamp)
+                               const dt_mipmap_size_t max_mip,
+                               const int64_t stamp)
 {
   for(dt_mipmap_size_t k = max_mip; k >= DT_MIPMAP_1; k--)
   {
@@ -925,14 +963,14 @@ static int _update_all_thumbs(const dt_mipmap_size_t max_mip)
     else
     {
       missed++;
-      dt_print(DT_DEBUG_CACHE, "[thumb crawler] '%s' ID=%d NOT available\n", path, imgid);
+      dt_print(DT_DEBUG_CACHE, "[thumb crawler] '%s' ID=%d NOT available", path, imgid);
     }
   }
   sqlite3_finalize(stmt);
 
   if(updated)
     dt_print(DT_DEBUG_CACHE,
-      "[thumb crawler] max_mip=%d, %d thumbs updated, %d not found, %s.\n",
+      "[thumb crawler] max_mip=%d, %d thumbs updated, %d not found, %s",
       max_mip, updated, missed,
       _still_thumbing() ? "all done" : "interrupted by user activity");
 
@@ -943,7 +981,7 @@ static void _reinitialize_thumbs_database(void)
 {
   dt_conf_set_bool("backthumbs_initialize", FALSE);
 
-  dt_print(DT_DEBUG_CACHE, "[thumb crawler] initialize database\n");
+  dt_print(DT_DEBUG_CACHE, "[thumb crawler] initialize database");
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -969,7 +1007,7 @@ void dt_set_backthumb_time(const double next)
 void dt_update_thumbs_thread(void *p)
 {
   dt_pthread_setname("thumbs_update");
-  dt_print(DT_DEBUG_CACHE, "[thumb crawler] started\n");
+  dt_print(DT_DEBUG_CACHE, "[thumb crawler] started");
   dt_backthumb_t *bt = &darktable.backthumbs;
 
   bt->idle = (double)dt_conf_get_float("backthumbs_inactivity");
@@ -979,7 +1017,7 @@ void dt_update_thumbs_thread(void *p)
   if(!dwriting || !_valid_mip(bt->mipsize) || !darktable.view_manager)
   {
     bt->running = FALSE;
-    dt_print(DT_DEBUG_CACHE, "[thumb crawler] closing due to preferences setting\n");
+    dt_print(DT_DEBUG_CACHE, "[thumb crawler] closing due to preferences setting");
     return;
   }
   bt->running = TRUE;
@@ -993,7 +1031,7 @@ void dt_update_thumbs_thread(void *p)
     snprintf(dirname, sizeof(dirname), "%s.d/%d", darktable.mipmap_cache->cachedir, k);
     if(g_mkdir_with_parents(dirname, 0750))
     {
-      dt_print(DT_DEBUG_CACHE, "[thumb crawler] can't create mipmap dir '%s'\n", dirname);
+      dt_print(DT_DEBUG_CACHE, "[thumb crawler] can't create mipmap dir '%s'", dirname);
       return;
     }
   }
@@ -1016,7 +1054,8 @@ void dt_update_thumbs_thread(void *p)
     if(!_valid_mip(bt->mipsize))
       bt->running = FALSE;
   }
-  dt_print(DT_DEBUG_CACHE, "[thumb crawler] closing, %d mipmaps updated\n", updated);
+  dt_print(DT_DEBUG_CACHE, "[thumb crawler] closing, %d mipmaps updated", updated);
+  bt->capable = FALSE;
 }
 
 // clang-format off

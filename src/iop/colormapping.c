@@ -147,7 +147,7 @@ const char *name()
   return _("color mapping");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("transfer a color palette and tonal repartition from one image to another"),
                                       _("creative"),
@@ -430,11 +430,11 @@ static void kmeans(const float *col, const int width, const int height, const in
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colormapping_data_t *const restrict data = (dt_iop_colormapping_data_t *)piece->data;
-  dt_iop_colormapping_gui_data_t *const restrict g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
+  dt_iop_colormapping_data_t *const restrict data = piece->data;
+  dt_iop_colormapping_gui_data_t *const restrict g = self->gui_data;
   float *const restrict in = (float *)ivoid;
   float *const restrict out = (float *)ovoid;
 
@@ -563,12 +563,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colormapping_data_t *data = (dt_iop_colormapping_data_t *)piece->data;
-  dt_iop_colormapping_global_data_t *gd = (dt_iop_colormapping_global_data_t *)self->global_data;
-  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
+  dt_iop_colormapping_data_t *data = piece->data;
+  dt_iop_colormapping_global_data_t *gd = self->global_data;
+  dt_iop_colormapping_gui_data_t *g = self->gui_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
@@ -707,9 +707,9 @@ error:
 #endif
 
 
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
   const float scale = piece->iscale / roi_in->scale;
   const float sigma_s = 50.0f / scale;
@@ -730,11 +730,11 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   tiling->yalign = 1;
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)p1;
-  dt_iop_colormapping_data_t *d = (dt_iop_colormapping_data_t *)piece->data;
+  dt_iop_colormapping_data_t *d = piece->data;
 
   memcpy(d, p, sizeof(dt_iop_colormapping_params_t));
 #ifdef HAVE_OPENCL
@@ -745,8 +745,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
-  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
+  dt_iop_colormapping_params_t *p = self->params;
+  dt_iop_colormapping_gui_data_t *g = self->gui_data;
 
   if(w == g->clusters)
   {
@@ -768,7 +768,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 static void acquire_source_button_pressed(GtkButton *button, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
+  dt_iop_colormapping_params_t *p = self->params;
   p->flag |= ACQUIRE;
   p->flag |= GET_SOURCE;
   p->flag &= ~HAS_SOURCE;
@@ -779,7 +779,7 @@ static void acquire_source_button_pressed(GtkButton *button, dt_iop_module_t *se
 static void acquire_target_button_pressed(GtkButton *button, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
+  dt_iop_colormapping_params_t *p = self->params;
   p->flag |= ACQUIRE;
   p->flag |= GET_TARGET;
   p->flag &= ~HAS_TARGET;
@@ -787,42 +787,40 @@ static void acquire_target_button_pressed(GtkButton *button, dt_iop_module_t *se
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_colormapping_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 8; // extended.cl, from programs.conf
-  dt_iop_colormapping_global_data_t *gd
-      = (dt_iop_colormapping_global_data_t *)malloc(sizeof(dt_iop_colormapping_global_data_t));
-  module->data = gd;
+  dt_iop_colormapping_global_data_t *gd = malloc(sizeof(dt_iop_colormapping_global_data_t));
+  self->data = gd;
   gd->kernel_histogram = dt_opencl_create_kernel(program, "colormapping_histogram");
   gd->kernel_mapping = dt_opencl_create_kernel(program, "colormapping_mapping");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_colormapping_global_data_t *gd = (dt_iop_colormapping_global_data_t *)module->data;
+  dt_iop_colormapping_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_histogram);
   dt_opencl_free_kernel(gd->kernel_mapping);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
-void reload_defaults(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_colormapping_params_t *d = module->default_params;
-
-  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)module->gui_data;
-  if(module->dev->gui_attached && g && g->flowback_set)
+  dt_iop_colormapping_params_t *d = self->default_params;
+  dt_iop_colormapping_gui_data_t *g = self->gui_data;
+  if(self->dev->gui_attached && g && g->flowback_set)
   {
     memcpy(d->source_ihist, g->flowback.hist, sizeof(float) * HISTN);
     memcpy(d->source_mean, g->flowback.mean, sizeof(float) * MAXN * 2);
@@ -836,8 +834,8 @@ void reload_defaults(dt_iop_module_t *module)
 
 static gboolean cluster_preview_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
-  dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
-  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
+  dt_iop_colormapping_params_t *p = self->params;
+  dt_iop_colormapping_gui_data_t *g = self->gui_data;
 
   float2 *mean;
   float2 *var;
@@ -899,11 +897,10 @@ static gboolean cluster_preview_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mod
 }
 
 
-static void process_clusters(gpointer instance, gpointer user_data)
+static void process_clusters(gpointer instance, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
-  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
+  dt_iop_colormapping_params_t *p = self->params;
+  dt_iop_colormapping_gui_data_t *g = self->gui_data;
   int new_source_clusters = 0;
 
   if(!g || !g->buffer) return;
@@ -970,7 +967,7 @@ static void process_clusters(gpointer instance, gpointer user_data)
     {
       if(fwrite(&g->flowback, sizeof(g->flowback), 1, f) < 1)
         dt_print(DT_DEBUG_ALWAYS,
-                 "[colormapping] could not write flowback file /tmp/dt_colormapping_loaded\n");
+                 "[colormapping] could not write flowback file /tmp/dt_colormapping_loaded");
       fclose(f);
     }
   }
@@ -984,7 +981,7 @@ static void process_clusters(gpointer instance, gpointer user_data)
 }
 
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_colormapping_gui_data_t *g = IOP_GUI_ALLOC(colormapping);
 
@@ -1037,8 +1034,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->equalization, "%");
 
   /* add signal handler for preview pipe finished: process clusters if requested */
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-                            G_CALLBACK(process_clusters), self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, process_clusters);
 
   FILE *f = g_fopen("/tmp/dt_colormapping_loaded", "rb");
   if(f)
@@ -1048,16 +1044,12 @@ void gui_init(struct dt_iop_module_t *self)
   }
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
-  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
-
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(process_clusters), self);
+  dt_iop_colormapping_gui_data_t *g = self->gui_data;
 
   cmsDeleteTransform(g->xform);
   dt_free_align(g->buffer);
-
-  IOP_GUI_FREE;
 }
 
 // clang-format off

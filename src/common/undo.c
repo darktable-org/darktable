@@ -57,7 +57,7 @@ dt_undo_t *dt_undo_init(void)
 
   udata->group = DT_UNDO_NONE;
   udata->group_indent = 0;
-  dt_print(DT_DEBUG_UNDO, "[undo] init\n");
+  dt_print(DT_DEBUG_UNDO, "[undo] init");
   return udata;
 }
 
@@ -67,7 +67,7 @@ dt_undo_t *dt_undo_init(void)
 void dt_undo_disable_next(dt_undo_t *self)
 {
   self->disable_next = TRUE;
-  dt_print(DT_DEBUG_UNDO, "[undo] disable next\n");
+  dt_print(DT_DEBUG_UNDO, "[undo] disable next");
 }
 
 void dt_undo_cleanup(dt_undo_t *self)
@@ -123,7 +123,7 @@ static void _undo_record(dt_undo_t *self,
     g_list_free_full(self->redo_list, _free_undo_data);
     self->redo_list = NULL;
 
-    dt_print(DT_DEBUG_UNDO, "[undo] record for type %d (length %d)%s\n",
+    dt_print(DT_DEBUG_UNDO, "[undo] record for type %d (length %d)%s",
              type, g_list_length(self->undo_list),
              disable_next ? ", disable next": "");
   }
@@ -139,7 +139,7 @@ void dt_undo_start_group(dt_undo_t *self,
   LOCK;
   if(self->group == DT_UNDO_NONE)
   {
-    dt_print(DT_DEBUG_UNDO, "[undo] start group for type %d\n", type);
+    dt_print(DT_DEBUG_UNDO, "[undo] start group for type %d", type);
     self->group = type;
     self->group_indent = 1;
     _undo_record(self, NULL, type, NULL, TRUE, NULL, NULL);
@@ -158,7 +158,7 @@ void dt_undo_end_group(dt_undo_t *self)
   if(self->group_indent == 0)
   {
     _undo_record(self, NULL, self->group, NULL, TRUE, NULL, NULL);
-    dt_print(DT_DEBUG_UNDO, "[undo] end group for type %d\n", self->group);
+    dt_print(DT_DEBUG_UNDO, "[undo] end group for type %d", self->group);
     self->group = DT_UNDO_NONE;
   }
   UNLOCK;
@@ -200,7 +200,7 @@ static void _undo_do_undo_redo(dt_undo_t *self,
   // check for first item that is matching the given pattern
 
   dt_print(DT_DEBUG_UNDO,
-           "[undo] action %s for %d (from length %d -> to length %d)\n",
+           "[undo] action %s for %d (from length %d -> to length %d)",
            action == DT_ACTION_UNDO ? "UNDO" : "DO",
            filter,
            g_list_length(*from),
@@ -208,7 +208,7 @@ static void _undo_do_undo_redo(dt_undo_t *self,
 
   for(GList *l = *from; l; l = g_list_next(l))
   {
-    dt_undo_item_t *item = (dt_undo_item_t *)l->data;
+    dt_undo_item_t *item = l->data;
 
     if(item->type & filter)
     {
@@ -315,7 +315,7 @@ static void _undo_clear_list(GList **list, const uint32_t filter)
   GList *next;
   for(GList *l = *list; l; l = next)
   {
-    dt_undo_item_t *item = (dt_undo_item_t *)l->data;
+    dt_undo_item_t *item = l->data;
     next = g_list_next(l); // get next node now, because we may delete the current one
     if(item->type & filter)
     {
@@ -325,7 +325,7 @@ static void _undo_clear_list(GList **list, const uint32_t filter)
     }
   };
 
-  dt_print(DT_DEBUG_UNDO, "[undo] clear list for %d (length %d)\n",
+  dt_print(DT_DEBUG_UNDO, "[undo] clear list for %d (length %d)",
            filter, g_list_length(*list));
 }
 
@@ -352,7 +352,7 @@ static void _undo_iterate(GList *list,
   // check for first item that is matching the given pattern
   for(GList *l = list; l; l = g_list_next(l))
   {
-    dt_undo_item_t *item = (dt_undo_item_t *)l->data;
+    dt_undo_item_t *item = l->data;
     if(!item->is_group && (item->type & filter))
     {
       apply(user_data, item->type, item->data);

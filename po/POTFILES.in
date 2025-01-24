@@ -1,5 +1,6 @@
 build/bin/conf_gen.h
 build/bin/preferences_gen.h
+build/bin/styles_string.h
 build/bin/tools/darktable_authors.h
 build/lib/darktable/plugins/introspection_ashift.c
 build/lib/darktable/plugins/introspection_atrous.c
@@ -172,6 +173,7 @@ src/external/lua-scripts/lib/dtutils/file.lua
 src/external/lua-scripts/lib/dtutils/log.lua
 src/external/lua-scripts/lib/dtutils/string.lua
 src/external/lua-scripts/lib/dtutils/system.lua
+src/external/lua-scripts/official/apply_camera_style.lua
 src/external/lua-scripts/official/check_for_updates.lua
 src/external/lua-scripts/official/copy_paste_metadata.lua
 src/external/lua-scripts/official/delete_long_tags.lua
@@ -197,6 +199,7 @@ src/gui/hist_dialog.c
 src/gui/import_metadata.c
 src/gui/preferences.c
 src/gui/presets.c
+src/gui/splash.c
 src/gui/styles_dialog.c
 src/imageio/format/avif.c
 src/imageio/format/copy.c

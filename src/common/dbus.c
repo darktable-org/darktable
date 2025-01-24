@@ -90,8 +90,8 @@ static void _handle_method_call(GDBusConnection *connection,
   {
     const gchar *filename;
     g_variant_get(parameters, "(&s)", &filename);
-    int32_t id = dt_load_from_string(filename, TRUE, NULL);
-    g_dbus_method_invocation_return_value(invocation, g_variant_new("(i)", id));
+    const dt_imgid_t imgid = dt_load_from_string(filename, TRUE, NULL);
+    g_dbus_method_invocation_return_value(invocation, g_variant_new("(i)", imgid));
   }
 #ifdef USE_LUA
   else if(!g_strcmp0(method_name, "Lua"))
@@ -186,7 +186,7 @@ static void _on_name_lost(GDBusConnection *connection, const gchar *name, gpoint
 
 struct dt_dbus_t *dt_dbus_init()
 {
-  dt_dbus_t *dbus = (dt_dbus_t *)g_malloc0(sizeof(dt_dbus_t));
+  dt_dbus_t *dbus = g_malloc0(sizeof(dt_dbus_t));
   if(!dbus) return NULL;
 
   dbus->introspection_data = g_dbus_node_info_new_for_xml(introspection_xml, NULL);
@@ -199,13 +199,16 @@ struct dt_dbus_t *dt_dbus_init()
                                   _on_name_lost, dbus, NULL);
 
   dbus->dbus_connection = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
-  g_object_set(G_OBJECT(dbus->dbus_connection), "exit-on-close", FALSE, (gchar *)0);
+  if(dbus->dbus_connection)
+    g_object_set(G_OBJECT(dbus->dbus_connection), "exit-on-close", FALSE, (gchar *)0);
 
   return dbus;
 }
 
 void dt_dbus_destroy(const dt_dbus_t *dbus)
 {
+  if(!dbus) return;
+
   g_bus_unown_name(dbus->owner_id);
   if(dbus->introspection_data)
     g_dbus_node_info_unref(dbus->introspection_data);
@@ -217,7 +220,7 @@ void dt_dbus_destroy(const dt_dbus_t *dbus)
 
 gboolean dt_dbus_connected(const dt_dbus_t *dbus)
 {
-  return dbus->connected;
+  return dbus && dbus->connected;
 }
 
 // clang-format off

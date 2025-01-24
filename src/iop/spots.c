@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ const char *deprecated_msg()
   return _("this module is deprecated. please use the retouch module instead.");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("remove sensor dust spots"),
                                       _("corrective"),
@@ -117,8 +117,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_spots_params_v1_t;
 
     const dt_iop_spots_params_v1_t *o = (dt_iop_spots_params_v1_t *)old_params;
-    dt_iop_spots_params_v2_t *n =
-      (dt_iop_spots_params_v2_t *)malloc(sizeof(dt_iop_spots_params_v2_t));
+    dt_iop_spots_params_v2_t *n = malloc(sizeof(dt_iop_spots_params_v2_t));
 
     memset(n, 0, sizeof(dt_iop_spots_params_v2_t));
 
@@ -130,8 +129,7 @@ int legacy_params(dt_iop_module_t *self,
       // spots v1 was before raw orientation changes
       form->version = 1;
 
-      dt_masks_point_circle_t *circle =
-        (dt_masks_point_circle_t *)(malloc(sizeof(dt_masks_point_circle_t)));
+      dt_masks_point_circle_t *circle = (malloc(sizeof(dt_masks_point_circle_t)));
       circle->center[0] = o->spot[i].x;
       circle->center[1] = o->spot[i].y;
       circle->radius = o->spot[i].radius;
@@ -156,7 +154,7 @@ int legacy_params(dt_iop_module_t *self,
     int count = 0;
     for(GList *l = self->dev->history; l; l = g_list_next(l))
     {
-      dt_dev_history_item_t *item = (dt_dev_history_item_t *)l->data;
+      dt_dev_history_item_t *item = l->data;
       count++;
       if(!strcmp(item->op_name, "spots")) last_spot_num = item->num;
     }
@@ -170,7 +168,7 @@ int legacy_params(dt_iop_module_t *self,
 
     for(GList *l = self->dev->forms; l; l = g_list_next(l))
     {
-      dt_masks_form_t *form = (dt_masks_form_t *)l->data;
+      dt_masks_form_t *form = l->data;
       if(form && (form->type & DT_MASKS_GROUP))
         bp->mask_id = form->formid;
       if(form)
@@ -185,9 +183,9 @@ int legacy_params(dt_iop_module_t *self,
   return 1;
 }
 
-static void _resynch_params(struct dt_iop_module_t *self)
+static void _resynch_params(dt_iop_module_t *self)
 {
-  dt_iop_spots_params_t *p = (dt_iop_spots_params_t *)self->params;
+  dt_iop_spots_params_t *p = self->params;
   dt_develop_blend_params_t *bp = self->blend_params;
 
   // we create 2 new buffers
@@ -201,7 +199,7 @@ static void _resynch_params(struct dt_iop_module_t *self)
     int i = 0;
     for(GList *forms = grp->points; (i < 64) && forms; forms = g_list_next(forms))
     {
-      dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
+      dt_masks_point_group_t *grpt = forms->data;
       nid[i] = grpt->formid;
       for(int j = 0; j < 64; j++)
       {
@@ -225,7 +223,7 @@ static void _resynch_params(struct dt_iop_module_t *self)
 
 static gboolean _reset_form_creation(GtkWidget *widget, dt_iop_module_t *self)
 {
-  dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
+  dt_iop_spots_gui_data_t *g = self->gui_data;
 
   // we check the nb of shapes limit
   dt_masks_form_t *grp = dt_masks_get_from_id(self->dev, self->blend_params->mask_id);
@@ -272,7 +270,7 @@ static int _shape_is_being_added(dt_iop_module_t *self, const int shape_type)
       GList *forms = self->dev->form_visible->points;
       if(forms)
       {
-        dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
+        dt_masks_point_group_t *grpt = forms->data;
         if(grpt)
         {
           const dt_masks_form_t *form =
@@ -295,13 +293,13 @@ static gboolean _add_shape(GtkWidget *widget,
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
 
   //switch mask edit mode off
-  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
+  dt_iop_gui_blend_data_t *bd = self->blend_data;
   if(bd) bd->masks_shown = DT_MASKS_EDIT_OFF;
 
   if(!_reset_form_creation(widget, self)) return TRUE;
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return FALSE;
 
-  dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
+  dt_iop_spots_gui_data_t *g = self->gui_data;
   // we want to be sure that the iop has focus
   dt_iop_request_focus(self);
   // we create the new form
@@ -339,7 +337,7 @@ static gboolean _add_shape_callback(GtkWidget *widget,
 {
   if(darktable.gui->reset) return FALSE;
 
-  const dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *) self->gui_data;
+  const dt_iop_spots_gui_data_t *g = self->gui_data;
 
   const gboolean creation_continuous = dt_modifier_is(e->state, GDK_CONTROL_MASK);
 
@@ -368,8 +366,8 @@ static gboolean _edit_masks(GtkWidget *widget,
     return FALSE;
   }
 
-  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
-  dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
+  dt_iop_gui_blend_data_t *bd = self->blend_data;
+  dt_iop_spots_gui_data_t *g = self->gui_data;
 
   //hide all shapes and free if some are in creation
   if(darktable.develop->form_gui->creation
@@ -440,8 +438,8 @@ static gboolean masks_form_is_in_roi(dt_iop_module_t *self,
 }
 
 // needed if mask dest is in roi and mask src is not
-void modify_roi_in(struct dt_iop_module_t *self,
-                   struct dt_dev_pixelpipe_iop_t *piece,
+void modify_roi_in(dt_iop_module_t *self,
+                   dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *roi_out,
                    dt_iop_roi_t *roi_in)
 {
@@ -460,7 +458,7 @@ void modify_roi_in(struct dt_iop_module_t *self,
   {
     for(const GList *forms = grp->points; forms; forms = g_list_next(forms))
     {
-      dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
+      dt_masks_point_group_t *grpt = forms->data;
       // we get the spot
       dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, grpt->formid);
       if(form)
@@ -549,19 +547,19 @@ static int masks_get_delta(dt_iop_module_t *self,
 
   if(form->type & DT_MASKS_PATH)
   {
-    dt_masks_point_path_t *pt = (dt_masks_point_path_t *)form->points->data;
+    dt_masks_point_path_t *pt = form->points->data;
 
     res = masks_point_calc_delta(self, piece, roi, pt->corner, form->source, dx, dy);
   }
   else if(form->type & DT_MASKS_CIRCLE)
   {
-    dt_masks_point_circle_t *pt = (dt_masks_point_circle_t *)form->points->data;
+    dt_masks_point_circle_t *pt = form->points->data;
 
     res = masks_point_calc_delta(self, piece, roi, pt->center, form->source, dx, dy);
   }
   else if(form->type & DT_MASKS_ELLIPSE)
   {
-    dt_masks_point_ellipse_t *pt = (dt_masks_point_ellipse_t *)form->points->data;
+    dt_masks_point_ellipse_t *pt = form->points->data;
 
     res = masks_point_calc_delta(self, piece, roi, pt->center, form->source, dx, dy);
   }
@@ -569,7 +567,7 @@ static int masks_get_delta(dt_iop_module_t *self,
   return res;
 }
 
-void _process(struct dt_iop_module_t *self,
+void _process(dt_iop_module_t *self,
               dt_dev_pixelpipe_iop_t *piece,
               const float *const in,
               float *const out,
@@ -577,7 +575,7 @@ void _process(struct dt_iop_module_t *self,
               const dt_iop_roi_t *const roi_out,
               const int ch)
 {
-  dt_iop_spots_params_t *d = (dt_iop_spots_params_t *)piece->data;
+  dt_iop_spots_params_t *d = piece->data;
   dt_develop_blend_params_t *bp = piece->blendop_data;
 
 // we don't modify most of the image:
@@ -592,7 +590,7 @@ void _process(struct dt_iop_module_t *self,
         (pos < 64) && forms;
         pos++, forms = g_list_next(forms))
     {
-      dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
+      dt_masks_point_group_t *grpt = forms->data;
       // we get the spot
       dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, grpt->formid);
       if(!form)
@@ -608,7 +606,7 @@ void _process(struct dt_iop_module_t *self,
 
       if(d->clone_algo[pos] == 1 && (form->type & DT_MASKS_CIRCLE))
       {
-        dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)form->points->data;
+        dt_masks_point_circle_t *circle = form->points->data;
 
         dt_boundingbox_t points;
         masks_point_denormalize(piece, roi_in, circle->center, 1, points);
@@ -724,7 +722,7 @@ void _process(struct dt_iop_module_t *self,
   }
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const i,
              void *const o,
@@ -736,7 +734,7 @@ void process(struct dt_iop_module_t *self,
   _process(self, piece, in, out, roi_in, roi_out, piece->colors);
 }
 
-void distort_mask(struct dt_iop_module_t *self,
+void distort_mask(dt_iop_module_t *self,
                   dt_dev_pixelpipe_iop_t *piece,
                   const float *const in,
                   float *const out,
@@ -747,32 +745,32 @@ void distort_mask(struct dt_iop_module_t *self,
 }
 
 /** init, cleanup, commit to pipeline */
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
   // we don't need global data:
-  module->global_data = NULL; // malloc(sizeof(dt_iop_spots_global_data_t));
-  module->params = calloc(1, sizeof(dt_iop_spots_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_spots_params_t));
+  self->global_data = NULL; // malloc(sizeof(dt_iop_spots_global_data_t));
+  self->params = calloc(1, sizeof(dt_iop_spots_params_t));
+  self->default_params = calloc(1, sizeof(dt_iop_spots_params_t));
   // our module is disabled by default
   // by default:
-  module->default_enabled = FALSE;
-  module->params_size = sizeof(dt_iop_spots_params_t);
-  module->gui_data = NULL;
+  self->default_enabled = FALSE;
+  self->params_size = sizeof(dt_iop_spots_params_t);
+  self->gui_data = NULL;
   // init defaults:
   dt_iop_spots_params_t tmp = (dt_iop_spots_params_t){ { 0 }, { 2 } };
 
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_spots_params_t));
+  memcpy(self->default_params, &tmp, sizeof(dt_iop_spots_params_t));
 }
 
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
+void gui_focus(dt_iop_module_t *self, gboolean in)
 {
   if(self->enabled && !darktable.develop->full.pipe->loading)
   {
-    dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
+    dt_iop_spots_gui_data_t *g = self->gui_data;
 
     if(in)
     {
-      dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
+      dt_iop_gui_blend_data_t *bd = self->blend_data;
 
       // update edit shapes status
       dt_develop_blend_params_t *bp = self->blend_params;
@@ -808,14 +806,14 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   }
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_spots_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -827,7 +825,7 @@ void cleanup_pipe(struct dt_iop_module_t *self,
 void gui_update(dt_iop_module_t *self)
 {
   _resynch_params(self);
-  dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
+  dt_iop_spots_gui_data_t *g = self->gui_data;
   // update clones count
   dt_masks_form_t *grp = dt_masks_get_from_id(self->dev, self->blend_params->mask_id);
   guint nb = 0;
@@ -845,7 +843,7 @@ void gui_update(dt_iop_module_t *self)
                                _shape_is_being_added(self, DT_MASKS_ELLIPSE));
 
   // update edit shapes status
-  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
+  dt_iop_gui_blend_data_t *bd = self->blend_data;
 
   if(darktable.develop->history_updating) bd->masks_shown = DT_MASKS_EDIT_OFF;
 
@@ -875,7 +873,7 @@ void gui_init(dt_iop_module_t *self)
   g->label = GTK_LABEL(dt_ui_label_new("-1"));
   gtk_widget_set_tooltip_text(hbox,
                               _("click on a shape and drag on canvas.\nuse the mouse wheel "
-                                "to adjust size.\nright click to remove a shape."));
+                                "to adjust size.\nright-click to remove a shape."));
 
   g->bt_edit_masks = dt_iop_togglebutton_new(self, NULL, N_("show and edit shapes"), NULL,
                                              G_CALLBACK(_edit_masks), TRUE, 0, 0,
@@ -900,7 +898,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 }
 
-void gui_reset(struct dt_iop_module_t *self)
+void gui_reset(dt_iop_module_t *self)
 {
   // hide the previous masks
   dt_masks_reset_form_gui();

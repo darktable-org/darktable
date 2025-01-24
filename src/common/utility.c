@@ -85,31 +85,30 @@ gchar *dt_util_localize_segmented_name(const char *s)
       end = g_stpcpy(end, dt_util_localize_string(split[i]));
     }
   }
+  g_strfreev(split);
   return localized;
 }
 
-gchar *dt_util_dstrcat(gchar *str, const gchar *format, ...)
+void dt_util_str_cat(gchar **str, const gchar *format, ...)
 {
+  if(!str) return;
+
   va_list args;
-  gchar *ns;
   va_start(args, format);
-  const size_t clen = str ? strlen(str) : 0;
+  const size_t clen = *str ? strlen(*str) : 0;
   const int alen = g_vsnprintf(NULL, 0, format, args);
+  va_end(args);
   const int nsize = alen + clen + 1;
 
   /* realloc for new string */
-  ns = g_realloc(str, nsize);
-  if(str == NULL) ns[0] = '\0';
-  va_end(args);
+  *str = g_realloc(*str, nsize);
 
   /* append string */
   va_start(args, format);
-  g_vsnprintf(ns + clen, alen + 1, format, args);
+  g_vsnprintf(*str + clen, alen + 1, format, args);
   va_end(args);
 
-  ns[nsize - 1] = '\0';
-
-  return ns;
+  (*str)[nsize - 1] = '\0';
 }
 
 guint dt_util_str_occurence(const gchar *haystack, const gchar *needle)
@@ -140,7 +139,7 @@ gchar *dt_util_float_to_str(const gchar *format, const double value)
 #endif
 
   gchar *txt = g_strdup_printf(format, value);
-  
+
 #if defined(WIN32)
   _configthreadlocale(_DISABLE_PER_THREAD_LOCALE);
 #else
@@ -491,7 +490,15 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
                 final_height = dimension.height * factor * ppd;
     const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, final_width);
 
-    guint8 *image_buffer = (guint8 *)calloc(stride * final_height, sizeof(guint8));
+    guint8 *image_buffer = calloc(stride * final_height, sizeof(guint8));
+    if(!image_buffer)
+    {
+      dt_print(DT_DEBUG_ALWAYS, "warning: unable to allocate rasterization buffer for SVG '%s'", dtlogo);
+      g_free(logo);
+      g_free(dtlogo);
+      g_object_unref(svg);
+      return NULL;
+    }
     if(darktable.gui)
       surface = dt_cairo_image_surface_create_for_data(image_buffer, CAIRO_FORMAT_ARGB32, final_width,
                                                       final_height, stride);
@@ -500,7 +507,7 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
                                                        final_height, stride);
     if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
     {
-      dt_print(DT_DEBUG_ALWAYS, "warning: can't load darktable logo from SVG file `%s'\n", dtlogo);
+      dt_print(DT_DEBUG_ALWAYS, "warning: can't load darktable logo from SVG file `%s'", dtlogo);
       cairo_surface_destroy(surface);
       free(image_buffer);
       image_buffer = NULL;
@@ -519,7 +526,7 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
   else
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "warning: can't load darktable logo from SVG file `%s'\n%s\n", dtlogo, error->message);
+             "warning: can't load darktable logo from SVG file `%s'\n%s", dtlogo, error->message);
     g_error_free(error);
   }
 
@@ -907,7 +914,7 @@ char *dt_read_file(const char *const filename, size_t *filesize)
   const size_t end = ftell(fd);
   rewind(fd);
 
-  char *content = (char *)malloc(sizeof(char) * end);
+  char *content = malloc(sizeof(char) * end);
   if(!content) return NULL;
 
   const size_t count = fread(content, sizeof(char), end, fd);
@@ -921,26 +928,47 @@ char *dt_read_file(const char *const filename, size_t *filesize)
   return NULL;
 }
 
-void dt_copy_file(const char *const sourcefile, const char *dst)
+void dt_copy_file(const char *const sourcefile, const char *destination)
 {
   char *content = NULL;
   FILE *fin = g_fopen(sourcefile, "rb");
-  FILE *fout = g_fopen(dst, "wb");
+  FILE *fout = g_fopen(destination, "wb");
 
   if(fin && fout)
   {
     fseek(fin, 0, SEEK_END);
-    const size_t end = ftell(fin);
+    const size_t filesize = ftell(fin);
     rewind(fin);
-    content = (char *)g_malloc_n(end, sizeof(char));
-    if(content == NULL) goto END;
-    if(fread(content, sizeof(char), end, fin) != end) goto END;
-    if(fwrite(content, sizeof(char), end, fout) != end) goto END;
+
+    content = (char *)g_try_malloc_n(filesize, sizeof(char));
+    if(content == NULL)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_copy_file] failure to allocate memory for copying file '%s'",
+               sourcefile);
+      goto END;
+    }
+    if(fread(content, sizeof(char), filesize, fin) != filesize)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_copy_file] error reading file '%s' for copying",
+               sourcefile);
+      goto END;
+    }
+    if(fwrite(content, sizeof(char), filesize, fout) != filesize)
+    {
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dt_copy_file] error writing file '%s' during copying",
+               destination);
+      goto END;
+    }
   }
 
 END:
-  if(fout != NULL) fclose(fout);
-  if(fin != NULL) fclose(fin);
+  if(fout != NULL)
+    fclose(fout);
+  if(fin != NULL)
+    fclose(fin);
 
   g_free(content);
 }
@@ -1041,7 +1069,7 @@ char *dt_filename_change_extension(const char *filename, const char *ext)
   if(!dot) return NULL;
   const int name_lgth = dot - filename + 1;
   const int ext_lgth = strlen(ext);
-  char *output = g_malloc(name_lgth + ext_lgth + 1);
+  char *output = g_try_malloc(name_lgth + ext_lgth + 1);
   if(output)
   {
     memcpy(output, filename, name_lgth);

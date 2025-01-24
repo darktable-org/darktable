@@ -234,7 +234,7 @@ static gchar *_get_tb_removed_metadata_string_values(GList *before, GList *after
     }
     if(!same_key || different_value || !value[0])
     {
-      metadata_list = dt_util_dstrcat(metadata_list, "%d,", atoi(b->data));
+      dt_util_str_cat(&metadata_list, "%d,", atoi(b->data));
     }
     b = g_list_next(b);
     b = g_list_next(b);
@@ -265,7 +265,7 @@ static gchar *_get_tb_added_metadata_string_values(const dt_imgid_t imgid,
     if((!same_key || different_value) && value[0])
     {
       char *escaped_text = sqlite3_mprintf("%q", value);
-      metadata_list = dt_util_dstrcat(metadata_list, "(%d,%d,'%s'),", GPOINTER_TO_INT(imgid), atoi(a->data), escaped_text);
+      dt_util_str_cat(&metadata_list, "(%d,%d,'%s'),", GPOINTER_TO_INT(imgid), atoi(a->data), escaped_text);
       sqlite3_free(escaped_text);
     }
     a = g_list_next(a);
@@ -323,7 +323,7 @@ static void _pop_undo(gpointer user_data,
   {
     for(GList *list = (GList *)data; list; list = g_list_next(list))
     {
-      dt_undo_metadata_t *undometadata = (dt_undo_metadata_t *)list->data;
+      dt_undo_metadata_t *undometadata = list->data;
 
       GList *before = (action == DT_ACTION_UNDO) ? undometadata->after : undometadata->before;
       GList *after = (action == DT_ACTION_UNDO) ? undometadata->before : undometadata->after;
@@ -331,7 +331,7 @@ static void _pop_undo(gpointer user_data,
       *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undometadata->imgid));
     }
 
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   }
 }
 
@@ -581,7 +581,7 @@ static void _metadata_execute(const GList *imgs,
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(images->data);
 
-    dt_undo_metadata_t *undometadata = (dt_undo_metadata_t *)malloc(sizeof(dt_undo_metadata_t));
+    dt_undo_metadata_t *undometadata = malloc(sizeof(dt_undo_metadata_t));
     undometadata->imgid = imgid;
     undometadata->before = dt_metadata_get_list_id(imgid);
     switch(action)

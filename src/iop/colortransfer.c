@@ -292,11 +292,11 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   // FIXME: this returns nan!!
-  dt_iop_colortransfer_data_t *data = (dt_iop_colortransfer_data_t *)piece->data;
+  dt_iop_colortransfer_data_t *data = piece->data;
   float *in = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
@@ -317,7 +317,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       // notify gui that commit_params should let stuff flow back!
       data->flag = ACQUIRED;
-      dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
+      dt_iop_colortransfer_params_t *p = self->params;
       p->flag = ACQUIRE2;
     }
     dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, ch);
@@ -392,24 +392,24 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_colortransfer_data_t));
-  dt_iop_colortransfer_data_t *d = (dt_iop_colortransfer_data_t *)piece->data;
+  dt_iop_colortransfer_data_t *d = piece->data;
   d->flag = NEUTRAL;
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   IOP_GUI_ALLOC(colortransfer);
 

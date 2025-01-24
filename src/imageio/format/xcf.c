@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2023 darktable developers.
+    Copyright (C) 2020-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     profile = malloc(profile_len);
     if(!profile)
     {
-      dt_print(DT_DEBUG_ALWAYS, "[xcf] error: can't allocate %u bytes of memory\n", profile_len);
+      dt_print(DT_DEBUG_ALWAYS, "[xcf] error: can't allocate %u bytes of memory", profile_len);
       return 1;
     }
     cmsSaveProfileToMem(out_profile, profile, &profile_len);
@@ -86,7 +86,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
 
   if(!xcf)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[xcf] error: can't open `%s'\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[xcf] error: can't open `%s'", filename);
     goto exit;
   }
 
@@ -102,7 +102,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     xcf_set(xcf, XCF_PRECISION, profile_is_linear ? XCF_PRECISION_F_32_L : XCF_PRECISION_F_32_G);
   else
   {
-    dt_print(DT_DEBUG_ALWAYS, "[xcf] error: bpp of %d is not supported\n", d->bpp);
+    dt_print(DT_DEBUG_ALWAYS, "[xcf] error: bpp of %d is not supported", d->bpp);
     goto exit;
   }
 
@@ -129,10 +129,10 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   if(exif && exif_len > 0)
   {
     // Prepend the libexif expected "Exif\0\0" APP1 prefix (see GIMP parasites.txt)
-    uint8_t *exif_buf = g_malloc0(exif_len + 6);
+    uint8_t *exif_buf = g_try_malloc0(exif_len + 6);
     if(!exif_buf)
     {
-      dt_print(DT_DEBUG_ALWAYS, "[xcf] error: can't allocate %d bytes of memory\n", exif_len + 6);
+      dt_print(DT_DEBUG_ALWAYS, "[xcf] error: can't allocate %d bytes of memory", exif_len + 6);
       goto exit;
     }
     memcpy(exif_buf, "Exif\0\0", 6);
@@ -168,7 +168,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   if(n_channels > 0)
     for(GList *iter = pipe->nodes; iter; iter = g_list_next(iter))
     {
-      dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)iter->data;
+      dt_dev_pixelpipe_iop_t *piece = iter->data;
 
       GHashTableIter rm_iter;
       gpointer key, value;
@@ -196,18 +196,24 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
         if(d->bpp == 8)
         {
           channel_data = malloc(sizeof(uint8_t) * d->global.width * d->global.height);
-          uint8_t *ch = (uint8_t *)channel_data;
-          DT_OMP_FOR_SIMD()
-          for(size_t i = 0; i < (size_t)d->global.width * d->global.height; ++i)
-            ch[i] = (uint8_t)roundf(CLIP(raster_mask[i]) * 255.0f);
+          if(channel_data)
+          {
+            uint8_t *ch = (uint8_t *)channel_data;
+            DT_OMP_FOR_SIMD()
+              for(size_t i = 0; i < (size_t)d->global.width * d->global.height; ++i)
+                ch[i] = (uint8_t)roundf(CLIP(raster_mask[i]) * 255.0f);
+          }
         }
         else if(d->bpp == 16)
         {
           channel_data = malloc(sizeof(uint16_t) * d->global.width * d->global.height);
-          uint16_t *ch = (uint16_t *)channel_data;
-          DT_OMP_FOR_SIMD()
-          for(size_t i = 0; i < (size_t)d->global.width * d->global.height; ++i)
-            ch[i] = (uint16_t)roundf(CLIP(raster_mask[i]) * 65535.0f);
+          if(channel_data)
+          {
+            uint16_t *ch = (uint16_t *)channel_data;
+            DT_OMP_FOR_SIMD()
+              for(size_t i = 0; i < (size_t)d->global.width * d->global.height; ++i)
+                ch[i] = (uint16_t)roundf(CLIP(raster_mask[i]) * 65535.0f);
+          }
         }
         else if(d->bpp == 32)
         {
@@ -215,7 +221,10 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
           free_channel_data = FALSE;
         }
 
-        xcf_add_data(xcf, channel_data, 1);
+        if(channel_data)
+          xcf_add_data(xcf, channel_data, 1);
+        else
+          dt_print(DT_DEBUG_ALWAYS, "[xcf] out of memory writing image data to %s", filename);
 
         if(free_channel_data)
           free(channel_data);
@@ -240,7 +249,7 @@ size_t params_size(dt_imageio_module_format_t *self)
 
 void *get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_xcf_t *d = (dt_imageio_xcf_t *)calloc(1, sizeof(dt_imageio_xcf_t));
+  dt_imageio_xcf_t *d = calloc(1, sizeof(dt_imageio_xcf_t));
 
   const char *conf_bpp = dt_conf_get_string_const("plugins/imageio/format/xcf/bpp");
   d->bpp = atoi(conf_bpp);
@@ -259,7 +268,7 @@ int set_params(dt_imageio_module_format_t *self, const void *params, int size)
 {
   if(size != params_size(self)) return 1;
   const dt_imageio_xcf_t *d = (dt_imageio_xcf_t *)params;
-  const dt_imageio_xcf_gui_t *g = (dt_imageio_xcf_gui_t *)self->gui_data;
+  const dt_imageio_xcf_gui_t *g = self->gui_data;
 
   if(d->bpp == 16)
     dt_bauhaus_combobox_set(g->bpp, 1);
@@ -335,7 +344,7 @@ static void bpp_combobox_changed(GtkWidget *widget, gpointer user_data)
 
 void gui_init(dt_imageio_module_format_t *self)
 {
-  dt_imageio_xcf_gui_t *gui = (dt_imageio_xcf_gui_t *)malloc(sizeof(dt_imageio_xcf_gui_t));
+  dt_imageio_xcf_gui_t *gui = malloc(sizeof(dt_imageio_xcf_gui_t));
   self->gui_data = (void *)gui;
 
   int bpp = 32;
@@ -362,7 +371,7 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
-  dt_imageio_xcf_gui_t *gui = (dt_imageio_xcf_gui_t *)self->gui_data;
+  dt_imageio_xcf_gui_t *gui = self->gui_data;
   dt_bauhaus_combobox_set(gui->bpp, 2); // bpp = 32
 }
 

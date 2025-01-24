@@ -340,7 +340,7 @@ static void _misc_tree_selection_changed(GtkTreeSelection *sel,
     {
       gchar *val = NULL;
       gtk_tree_model_get(model, &iter, TREE_COL_PATH, &val, -1);
-      if(val) txt = dt_util_dstrcat(txt, "%s%s", (txt == NULL) ? "" : ",", val);
+      if(val) dt_util_str_cat(&txt, "%s%s", (txt == NULL) ? "" : ",", val);
     }
   }
   g_list_free_full(list, (GDestroyNotify)gtk_tree_path_free);
@@ -389,7 +389,7 @@ static void _misc_widget_init(dt_lib_filtering_rule_t *rule,
                               dt_lib_module_t *self,
                               const gboolean top)
 {
-  _widgets_misc_t *misc = (_widgets_misc_t *)g_malloc0(sizeof(_widgets_misc_t));
+  _widgets_misc_t *misc = g_malloc0(sizeof(_widgets_misc_t));
   misc->rule = rule;
   misc->prop = prop;
 

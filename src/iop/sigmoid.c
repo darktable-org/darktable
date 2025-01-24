@@ -117,7 +117,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_sigmoid_params_v1_t;
 
     // Copy the common part of the params struct
-    dt_iop_sigmoid_params_v3_t *n = (dt_iop_sigmoid_params_v3_t *)calloc(1, sizeof(dt_iop_sigmoid_params_v3_t));
+    dt_iop_sigmoid_params_v3_t *n = calloc(1, sizeof(dt_iop_sigmoid_params_v3_t));
     memcpy(n, old_params, sizeof(dt_iop_sigmoid_params_v1_t));
 
     *new_params = n;
@@ -147,7 +147,7 @@ int legacy_params(dt_iop_module_t *self,
       float purity;
     } dt_iop_sigmoid_params_v2_t;
     // Copy the common part of the params struct
-    dt_iop_sigmoid_params_v3_t *n = (dt_iop_sigmoid_params_v3_t *)calloc(1, sizeof(dt_iop_sigmoid_params_v3_t));
+    dt_iop_sigmoid_params_v3_t *n = calloc(1, sizeof(dt_iop_sigmoid_params_v3_t));
     memcpy(n, old_params, sizeof(dt_iop_sigmoid_params_v2_t));
 
     *new_params = n;
@@ -200,7 +200,7 @@ const char *aliases()
   return _("tone mapping|view transform|display transform");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
                                 _("apply a view transform to make a image displayable\n"
@@ -326,7 +326,7 @@ void commit_params(dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_sigmoid_params_t *params = (dt_iop_sigmoid_params_t *)p1;
-  dt_iop_sigmoid_data_t *module_data = (dt_iop_sigmoid_data_t *)piece->data;
+  dt_iop_sigmoid_data_t *module_data = piece->data;
   /* Calculate actual skew log logistic parameters to fulfill the following:
    * f(scene_zero) = display_black_target
    * f(scene_grey) = MIDDLE_GREY
@@ -486,7 +486,7 @@ static dt_colorspaces_color_profile_type_t _get_base_profile_type(const dt_iop_s
   return DT_COLORSPACE_LIN_REC2020;
 }
 
-static const dt_iop_order_iccprofile_info_t * _get_base_profile(struct dt_develop_t *dev,
+static const dt_iop_order_iccprofile_info_t * _get_base_profile(dt_develop_t *dev,
                                                                 const dt_iop_order_iccprofile_info_t *pipe_work_profile,
                                                                 const dt_iop_sigmoid_base_primaries_t base_primaries)
 {
@@ -574,7 +574,7 @@ void process_loglogistic_rgb_ratio(dt_dev_pixelpipe_iop_t *piece,
                                    const dt_iop_roi_t *const roi_in,
                                    const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_sigmoid_data_t *module_data = (dt_iop_sigmoid_data_t *)piece->data;
+  const dt_iop_sigmoid_data_t *module_data = piece->data;
   const float *const in = (const float *)ivoid;
   float *const out = (float *)ovoid;
   const size_t npixels = (size_t)roi_in->width * roi_in->height;
@@ -705,13 +705,13 @@ static inline void _preserve_hue_and_energy(const dt_aligned_pixel_t pix_in,
   }
 }
 
-void process_loglogistic_per_channel(struct dt_develop_t *dev,
+void process_loglogistic_per_channel(dt_develop_t *dev,
                                      dt_dev_pixelpipe_iop_t *piece,
                                      const void *const ivoid, void *const ovoid,
                                      const dt_iop_roi_t *const roi_in,
                                      const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_sigmoid_data_t *module_data = (dt_iop_sigmoid_data_t *)piece->data;
+  const dt_iop_sigmoid_data_t *module_data = piece->data;
 
   const float *const in = (const float *)ivoid;
   float *const out = (float *)ovoid;
@@ -766,7 +766,7 @@ void process_loglogistic_per_channel(struct dt_develop_t *dev,
 }
 
 /** process, all real work is done here. */
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -774,7 +774,7 @@ void process(struct dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
-  dt_iop_sigmoid_data_t *module_data = (dt_iop_sigmoid_data_t *)piece->data;
+  dt_iop_sigmoid_data_t *module_data = piece->data;
 
   if(module_data->color_processing == DT_SIGMOID_METHOD_PER_CHANNEL)
   {
@@ -787,15 +787,15 @@ void process(struct dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_sigmoid_data_t *const d = (dt_iop_sigmoid_data_t *)piece->data;
-  dt_iop_sigmoid_global_data_t *const gd = (dt_iop_sigmoid_global_data_t *)self->global_data;
+  const dt_iop_sigmoid_data_t *const d = piece->data;
+  dt_iop_sigmoid_global_data_t *const gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
@@ -824,7 +824,7 @@ int process_cl(struct dt_iop_module_t *self,
       = dt_opencl_copy_host_to_device_constant(devid, sizeof(rendering_to_pipe), rendering_to_pipe);
   if(dev_pipe_to_base == NULL || dev_base_to_rendering == NULL || dev_rendering_to_pipe == NULL)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_sigmoid] couldn't allocate memory!\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_sigmoid] couldn't allocate memory!");
     goto cleanup;
   }
 
@@ -854,23 +854,23 @@ cleanup:
 }
 #endif // HAVE_OPENCL
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 36; // sigmoid.cl, from programs.conf
-  dt_iop_sigmoid_global_data_t *gd = (dt_iop_sigmoid_global_data_t *)malloc(sizeof(dt_iop_sigmoid_global_data_t));
+  dt_iop_sigmoid_global_data_t *gd = malloc(sizeof(dt_iop_sigmoid_global_data_t));
 
-  module->data = gd;
+  self->data = gd;
   gd->kernel_sigmoid_loglogistic_per_channel = dt_opencl_create_kernel(program, "sigmoid_loglogistic_per_channel");
   gd->kernel_sigmoid_loglogistic_rgb_ratio = dt_opencl_create_kernel(program, "sigmoid_loglogistic_rgb_ratio");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_sigmoid_global_data_t *gd = (dt_iop_sigmoid_global_data_t *)module->data;
+  dt_iop_sigmoid_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_per_channel);
   dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_rgb_ratio);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -880,8 +880,8 @@ void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_sigmoid_gui_data_t *g = (dt_iop_sigmoid_gui_data_t *)self->gui_data;
-  dt_iop_sigmoid_params_t *p = (dt_iop_sigmoid_params_t *)self->params;
+  dt_iop_sigmoid_gui_data_t *g = self->gui_data;
+  dt_iop_sigmoid_params_t *p = self->params;
 
   if(!w || w == g->color_processing_list)
   {
@@ -893,7 +893,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_sigmoid_gui_data_t *g = (dt_iop_sigmoid_gui_data_t *)self->gui_data;
+  dt_iop_sigmoid_gui_data_t *g = self->gui_data;
 
   dt_gui_update_collapsible_section(&g->display_luminance_section);
   dt_gui_update_collapsible_section(&g->primaries_section);

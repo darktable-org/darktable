@@ -651,7 +651,7 @@ void dt_box_mean_horizontal(float *const __restrict__ buf,
         dt_free_align(scratch);
     }
     else
-      dt_print(DT_DEBUG_ALWAYS,"[box_mean] unable to allocate scratch memory\n");
+      dt_print(DT_DEBUG_ALWAYS, "[box_mean] unable to allocate scratch memory");
   }
   else if(ch == (9|BOXFILTER_KAHAN_SUM))
   {
@@ -664,7 +664,7 @@ void dt_box_mean_horizontal(float *const __restrict__ buf,
         dt_free_align(scratch);
     }
     else
-      dt_print(DT_DEBUG_ALWAYS,"[box_mean] unable to allocate scratch memory\n");
+      dt_print(DT_DEBUG_ALWAYS, "[box_mean] unable to allocate scratch memory");
   }
   else
     dt_unreachable_codepath();

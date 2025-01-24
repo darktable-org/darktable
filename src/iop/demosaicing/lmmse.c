@@ -83,7 +83,7 @@ static void _init_lmmse_gamma()
   if(!lmmse_gamma_in || !lmmse_gamma_out)
   {
     _cleanup_lmmse_gamma();
-    dt_print(DT_DEBUG_ALWAYS, "[demosaic lmmse] Can't allocate gamma memory\n");
+    dt_print(DT_DEBUG_ALWAYS, "[demosaic lmmse] Can't allocate gamma memory");
     return;
   }
   DT_OMP_PRAGMA(for)
@@ -116,21 +116,19 @@ static inline float _calc_gamma(float val, float *table)
   return (p1 + p2 * diff);
 }
 
-DT_OMP_DECLARE_SIMD(aligned(in, out))
-static void lmmse_demosaic(
-        dt_dev_pixelpipe_iop_t *piece,
-        float *const restrict out,
-        const float *const restrict in,
-        dt_iop_roi_t *const roi_out,
-        const dt_iop_roi_t *const roi_in,
-        const uint32_t filters,
-        const uint32_t mode)
+DT_OMP_DECLARE_SIMD(aligned(in, out : 64))
+static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece,
+                           float *const restrict out,
+                           const float *const restrict in,
+                           const dt_iop_roi_t *const roi_in,
+                           const uint32_t filters,
+                           const dt_iop_demosaic_lmmse_t mode)
 {
   const int width = roi_in->width;
   const int height = roi_in->height;
 
   rcd_ppg_border(out, in, width, height, filters, BORDER_AROUND);
-  if((width < 2 * BORDER_AROUND) || (height < 2 * BORDER_AROUND))
+  if(width < 2 * BORDER_AROUND || height < 2 * BORDER_AROUND)
     return;
 
   if(!lmmse_gamma_in) _init_lmmse_gamma();
@@ -148,9 +146,9 @@ static void lmmse_demosaic(
   h4 /= hs;
 
   // median filter iterations
-  const int medians = (mode < 2) ? mode : 3;
+  const int medians = (mode < DT_LMMSE_REFINE_2) ? mode : 3;
   // refinement steps
-  const int refine = (mode > 2) ? mode - 2 : 0;
+  const int refine = (mode > DT_LMMSE_REFINE_2) ? mode - 2 : 0;
 
   const float scaler = dt_iop_get_processed_maximum(piece);
   const float revscaler = 1.0f / scaler;

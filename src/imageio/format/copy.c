@@ -32,7 +32,7 @@ DT_MODULE(1)
 // FIXME: we can't rely on darktable to avoid file overwriting -- it doesn't know the filename (extension).
 int write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, dt_imgid_t imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe,
+                void *exif, int exif_len, dt_imgid_t imgid, int num, int total, dt_dev_pixelpipe_t *pipe,
                 const gboolean export_masks)
 {
   int status = 1;
@@ -74,7 +74,7 @@ size_t params_size(dt_imageio_module_format_t *self)
 
 void *get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_module_data_t *d = (dt_imageio_module_data_t *)calloc(1, sizeof(dt_imageio_module_data_t));
+  dt_imageio_module_data_t *d = calloc(1, sizeof(dt_imageio_module_data_t));
   return d;
 }
 

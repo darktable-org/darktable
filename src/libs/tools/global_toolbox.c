@@ -80,10 +80,9 @@ int position(const dt_lib_module_t *self)
   return 1001;
 }
 
-static void _overlays_toggle_button(GtkWidget *w, gpointer user_data)
+static void _overlays_toggle_button(GtkWidget *w, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+  dt_lib_tool_preferences_t *d = self->data;
 
   if(d->disable_over_events) return;
 
@@ -116,10 +115,9 @@ static void _overlays_toggle_button(GtkWidget *w, gpointer user_data)
 #endif // USE_LUA
 }
 
-static void _overlays_toggle_culling_button(GtkWidget *w, gpointer user_data)
+static void _overlays_toggle_culling_button(GtkWidget *w, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+  dt_lib_tool_preferences_t *d = self->data;
 
   if(d->disable_over_events) return;
 
@@ -153,10 +151,9 @@ static void _overlays_toggle_culling_button(GtkWidget *w, gpointer user_data)
 #endif // USE_LUA
 }
 
-static void _overlays_timeout_changed(GtkWidget *w, gpointer user_data)
+static void _overlays_timeout_changed(GtkWidget *w, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+  dt_lib_tool_preferences_t *d = self->data;
 
   const int val = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(w));
 
@@ -178,7 +175,7 @@ static void _overlays_timeout_changed(GtkWidget *w, gpointer user_data)
 
 static void _overlays_show_popup(GtkWidget *button, dt_lib_module_t *self)
 {
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+  dt_lib_tool_preferences_t *d = self->data;
 
   d->disable_over_events = TRUE;
 
@@ -384,7 +381,7 @@ static void _main_icons_register_size(GtkWidget *widget, GdkRectangle *allocatio
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)g_malloc0(sizeof(dt_lib_tool_preferences_t));
+  dt_lib_tool_preferences_t *d = g_malloc0(sizeof(dt_lib_tool_preferences_t));
   self->data = (void *)d;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -517,11 +514,16 @@ void gui_init(dt_lib_module_t *self)
 
   /* create the preference button */
   d->preferences_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, 0, NULL);
-  dt_action_define(&darktable.control->actions_global, NULL, N_("preferences"), d->preferences_button, &dt_action_def_button);
+  ac = dt_action_define(&darktable.control->actions_global, NULL, N_("preferences"), d->preferences_button, &dt_action_def_button);
   gtk_box_pack_end(GTK_BOX(self->widget), d->preferences_button, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(d->preferences_button, _("show global preferences"));
   g_signal_connect(G_OBJECT(d->preferences_button), "clicked", G_CALLBACK(_lib_preferences_button_clicked),
                    NULL);
+
+#ifdef __APPLE__
+  // Register CMD+, for preferences on macOS
+  dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_ACTIVATE, GDK_KEY_comma, GDK_CONTROL_MASK);
+#endif
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -823,7 +825,7 @@ static gboolean _lib_keymap_button_press_release(GtkWidget *button, GdkEventButt
 static int grouping_member(lua_State *L)
 {
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+  dt_lib_tool_preferences_t *d = self->data;
   if(lua_gettop(L) != 3)
   {
     lua_pushboolean(L, darktable.gui->grouping);
@@ -843,7 +845,7 @@ static int grouping_member(lua_State *L)
 static int show_overlays_member(lua_State *L)
 {
   dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+  dt_lib_tool_preferences_t *d = self->data;
   if(lua_gettop(L) != 3)
   {
     lua_pushboolean(L, darktable.gui->show_overlays);

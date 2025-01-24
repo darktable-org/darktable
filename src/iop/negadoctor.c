@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2023 darktable developers.
+    Copyright (C) 2020-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -140,7 +140,7 @@ const char *aliases()
   return _("film|invert|negative|scan");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("invert film negative scans and simulate printing on paper"),
                                       _("corrective and creative"),
@@ -206,8 +206,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_negadoctor_params_v1_t;
 
     const dt_iop_negadoctor_params_v1_t *o = (dt_iop_negadoctor_params_v1_t *)old_params;
-    dt_iop_negadoctor_params_v2_t *n =
-      (dt_iop_negadoctor_params_v2_t *)malloc(sizeof(dt_iop_negadoctor_params_v2_t));
+    dt_iop_negadoctor_params_v2_t *n = malloc(sizeof(dt_iop_negadoctor_params_v2_t));
 
     // WARNING: when copying the arrays in a for loop, gcc wrongly assumed
     //          that n and o were aligned and used AVX instructions for me,
@@ -244,7 +243,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
                    dt_dev_pixelpipe_iop_t *piece)
 {
   const dt_iop_negadoctor_params_t *const p = (dt_iop_negadoctor_params_t *)p1;
-  dt_iop_negadoctor_data_t *const d = (dt_iop_negadoctor_data_t *)piece->data;
+  dt_iop_negadoctor_data_t *const d = piece->data;
 
   // keep WB_high even in B&W mode to apply sepia or warm tone look
   // but premultiply it aheard with Dmax to spare one div per pixel
@@ -326,7 +325,7 @@ static inline void _process_pixel(const dt_aligned_pixel_t pix_in,
     }
 }
 
-void process(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const piece,
+void process(dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const piece,
              const void *const restrict ivoid, void *const restrict ovoid,
              const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
@@ -365,11 +364,11 @@ void process(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const p
 
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
-  const dt_iop_negadoctor_data_t *const d = (dt_iop_negadoctor_data_t *)piece->data;
-  const dt_iop_negadoctor_global_data_t *const gd = (dt_iop_negadoctor_global_data_t *)self->global_data;
+  const dt_iop_negadoctor_data_t *const d = piece->data;
+  const dt_iop_negadoctor_global_data_t *const gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -382,11 +381,11 @@ int process_cl(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const
 #endif
 
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  dt_iop_default_init(module);
+  dt_iop_default_init(self);
 
-  dt_iop_negadoctor_params_t *d = module->default_params;
+  dt_iop_negadoctor_params_t *d = self->default_params;
 
   d->Dmin[0] = 1.00f;
   d->Dmin[1] = 0.45f;
@@ -427,30 +426,29 @@ void init_presets(dt_iop_module_so_t *self)
                              self->version(), &tmq, sizeof(tmq), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
-  dt_iop_negadoctor_global_data_t *gd
-      = (dt_iop_negadoctor_global_data_t *)malloc(sizeof(dt_iop_negadoctor_global_data_t));
+  dt_iop_negadoctor_global_data_t *gd = malloc(sizeof(dt_iop_negadoctor_global_data_t));
 
-  module->data = gd;
+  self->data = gd;
   const int program = 30; // negadoctor.cl, from programs.conf
   gd->kernel_negadoctor = dt_opencl_create_kernel(program, "negadoctor");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_negadoctor_global_data_t *gd = module->data;
+  dt_iop_negadoctor_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_negadoctor);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = g_malloc0(sizeof(dt_iop_negadoctor_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   g_free(piece->data);
   piece->data = NULL;
@@ -468,8 +466,8 @@ static void setup_color_variables(dt_iop_negadoctor_gui_data_t *const g, const g
 
 static void toggle_stock_controls(dt_iop_module_t *const self)
 {
-  dt_iop_negadoctor_gui_data_t *const g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  const dt_iop_negadoctor_params_t *const p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *const g = self->gui_data;
+  const dt_iop_negadoctor_params_t *const p = self->params;
 
   if(p->film_stock == DT_FILMSTOCK_NB)
   {
@@ -486,15 +484,15 @@ static void toggle_stock_controls(dt_iop_module_t *const self)
   else
   {
     // We shouldn't be there
-    dt_print(DT_DEBUG_ALWAYS, "negadoctor film stock: undefined behavior\n");
+    dt_print(DT_DEBUG_ALWAYS, "negadoctor film stock: undefined behavior");
   }
 }
 
 
 static void Dmin_picker_update(dt_iop_module_t *self)
 {
-  dt_iop_negadoctor_gui_data_t *const g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  const dt_iop_negadoctor_params_t *const p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *const g = self->gui_data;
+  const dt_iop_negadoctor_params_t *const p = self->params;
 
   GdkRGBA color;
   color.alpha = 1.0f;
@@ -516,8 +514,8 @@ static void Dmin_picker_update(dt_iop_module_t *self)
 static void Dmin_picker_callback(GtkColorButton *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
+  dt_iop_negadoctor_params_t *p = self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
 
@@ -540,8 +538,8 @@ static void Dmin_picker_callback(GtkColorButton *widget, dt_iop_module_t *self)
 
 static void WB_low_picker_update(dt_iop_module_t *self)
 {
-  dt_iop_negadoctor_gui_data_t *const g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  const dt_iop_negadoctor_params_t *const p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *const g = self->gui_data;
+  const dt_iop_negadoctor_params_t *const p = self->params;
 
   GdkRGBA color;
   color.alpha = 1.0f;
@@ -561,8 +559,8 @@ static void WB_low_picker_update(dt_iop_module_t *self)
 static void WB_low_picker_callback(GtkColorButton *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
+  dt_iop_negadoctor_params_t *p = self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
 
@@ -589,8 +587,8 @@ static void WB_low_picker_callback(GtkColorButton *widget, dt_iop_module_t *self
 
 static void WB_high_picker_update(dt_iop_module_t *self)
 {
-  dt_iop_negadoctor_gui_data_t *const g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  const dt_iop_negadoctor_params_t *const p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *const g = self->gui_data;
+  const dt_iop_negadoctor_params_t *const p = self->params;
 
   GdkRGBA color;
   color.alpha = 1.0f;
@@ -610,8 +608,8 @@ static void WB_high_picker_update(dt_iop_module_t *self)
 static void WB_high_picker_callback(GtkColorButton *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
+  dt_iop_negadoctor_params_t *p = self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
 
@@ -641,8 +639,8 @@ static void WB_high_picker_callback(GtkColorButton *widget, dt_iop_module_t *sel
 static void apply_auto_Dmin(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
+  dt_iop_negadoctor_params_t *p = self->params;
 
   for(int k = 0; k < 4; k++) p->Dmin[k] = self->picked_color[k];
 
@@ -661,8 +659,8 @@ static void apply_auto_Dmin(dt_iop_module_t *self)
 static void apply_auto_Dmax(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
+  dt_iop_negadoctor_params_t *p = self->params;
 
   dt_aligned_pixel_t RGB;
   for(int c = 0; c < 3; c++)
@@ -685,8 +683,8 @@ static void apply_auto_Dmax(dt_iop_module_t *self)
 static void apply_auto_offset(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
+  dt_iop_negadoctor_params_t *p = self->params;
 
   dt_aligned_pixel_t RGB;
   for(int c = 0; c < 3; c++)
@@ -708,8 +706,8 @@ static void apply_auto_offset(dt_iop_module_t *self)
 static void apply_auto_WB_low(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
+  dt_iop_negadoctor_params_t *p = self->params;
 
   dt_aligned_pixel_t RGB_min;
   for(int c = 0; c < 3; c++)
@@ -735,8 +733,8 @@ static void apply_auto_WB_low(dt_iop_module_t *self)
 static void apply_auto_WB_high(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
+  dt_iop_negadoctor_params_t *p = self->params;
 
   dt_aligned_pixel_t RGB_min;
   for(int c = 0; c < 3; c++)
@@ -762,8 +760,8 @@ static void apply_auto_WB_high(dt_iop_module_t *self)
 static void apply_auto_black(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
+  dt_iop_negadoctor_params_t *p = self->params;
 
   dt_aligned_pixel_t RGB;
   for(int c = 0; c < 3; c++)
@@ -788,8 +786,8 @@ static void apply_auto_black(dt_iop_module_t *self)
 static void apply_auto_exposure(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
+  dt_iop_negadoctor_params_t *p = self->params;
 
   dt_aligned_pixel_t RGB;
   for(int c = 0; c < 3; c++)
@@ -814,7 +812,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
   if(darktable.gui->reset) return;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
 
   if     (picker == g->Dmin_sampler)
     apply_auto_Dmin(self);
@@ -831,7 +829,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   else if(picker == g->black)
     apply_auto_black(self);
   else
-    dt_print(DT_DEBUG_ALWAYS, "[negadoctor] unknown color picker\n");
+    dt_print(DT_DEBUG_ALWAYS, "[negadoctor] unknown color picker");
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -1039,8 +1037,8 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
-  dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
+  dt_iop_negadoctor_params_t *p = self->params;
+  dt_iop_negadoctor_gui_data_t *g = self->gui_data;
   if(!w || w == g->film_stock)
   {
     toggle_stock_controls(self);
@@ -1075,8 +1073,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 void gui_update(dt_iop_module_t *const self)
 {
   // let gui slider match current parameters:
-  dt_iop_negadoctor_gui_data_t *const g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
-  const dt_iop_negadoctor_params_t *const p = (dt_iop_negadoctor_params_t *)self->params;
+  dt_iop_negadoctor_gui_data_t *const g = self->gui_data;
+  const dt_iop_negadoctor_params_t *const p = self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
 

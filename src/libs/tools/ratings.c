@@ -37,19 +37,19 @@ typedef struct dt_lib_ratings_t
 } dt_lib_ratings_t;
 
 /* redraw the ratings */
-static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data);
+static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *cr, dt_lib_module_t *self);
 /* motion notify handler*/
 static gboolean _lib_ratings_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event,
-                                                    gpointer user_data);
+                                                    dt_lib_module_t *self);
 /* motion leavel handler */
 static gboolean _lib_ratings_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
-                                                   gpointer user_data);
+                                                   dt_lib_module_t *self);
 /* button press handler */
 static gboolean _lib_ratings_button_press_callback(GtkWidget *widget, GdkEventButton *event,
-                                                   gpointer user_data);
+                                                   dt_lib_module_t *self);
 /* button release handler */
 static gboolean _lib_ratings_button_release_callback(GtkWidget *widget, GdkEventButton *event,
-                                                     gpointer user_data);
+                                                     dt_lib_module_t *self);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -79,7 +79,7 @@ int position(const dt_lib_module_t *self)
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_ratings_t *d = (dt_lib_ratings_t *)g_malloc0(sizeof(dt_lib_ratings_t));
+  dt_lib_ratings_t *d = g_malloc0(sizeof(dt_lib_ratings_t));
   self->data = (void *)d;
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
@@ -124,12 +124,11 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *crf, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_ratings_t *d = (dt_lib_ratings_t *)self->data;
+  dt_lib_ratings_t *d = self->data;
 
-  if(!darktable.control->running) return TRUE;
+  if(!dt_control_running()) return TRUE;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -181,10 +180,9 @@ static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *crf, gpoi
 }
 
 static gboolean _lib_ratings_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event,
-                                                    gpointer user_data)
+                                                    dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_ratings_t *d = (dt_lib_ratings_t *)self->data;
+  dt_lib_ratings_t *d = self->data;
 
   d->pointerx = event->x;
   d->pointery = event->y;
@@ -193,10 +191,9 @@ static gboolean _lib_ratings_motion_notify_callback(GtkWidget *widget, GdkEventM
 }
 
 static gboolean _lib_ratings_button_press_callback(GtkWidget *widget, GdkEventButton *event,
-                                                   gpointer user_data)
+                                                   dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_ratings_t *d = (dt_lib_ratings_t *)self->data;
+  dt_lib_ratings_t *d = self->data;
   if(d->current > 0)
   {
     GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
@@ -209,16 +206,15 @@ static gboolean _lib_ratings_button_press_callback(GtkWidget *widget, GdkEventBu
 }
 
 static gboolean _lib_ratings_button_release_callback(GtkWidget *widget, GdkEventButton *event,
-                                                     gpointer user_data)
+                                                     dt_lib_module_t *self)
 {
   return TRUE;
 }
 
 static gboolean _lib_ratings_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
-                                                   gpointer user_data)
+                                                   dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_ratings_t *d = (dt_lib_ratings_t *)self->data;
+  dt_lib_ratings_t *d = self->data;
   d->pointery = d->pointerx = 0;
   gtk_widget_queue_draw(self->widget);
   return TRUE;

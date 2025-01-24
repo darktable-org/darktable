@@ -64,7 +64,7 @@ dt_job_t *dt_film_import1_create(dt_film_t *film)
 {
   dt_job_t *job = dt_control_job_create(&dt_film_import1_run, "cache load raw images for preview");
   if(!job) return NULL;
-  dt_film_import1_t *params = (dt_film_import1_t *)calloc(1, sizeof(dt_film_import1_t));
+  dt_film_import1_t *params = calloc(1, sizeof(dt_film_import1_t));
   if(!params)
   {
     dt_control_job_dispose(job);
@@ -101,7 +101,7 @@ dt_job_t *dt_pathlist_import_create(int argc, char *argv[])
 {
   dt_job_t *job = dt_control_job_create(&_pathlist_import_run, "import commandline images");
   if(!job) return NULL;
-  dt_film_import1_t *params = (dt_film_import1_t *)calloc(1, sizeof(dt_film_import1_t));
+  dt_film_import1_t *params = calloc(1, sizeof(dt_film_import1_t));
   if(!params)
   {
     dt_control_job_dispose(job);
@@ -364,12 +364,12 @@ static void _film_import1(dt_job_t *job, dt_film_t *film, GList *images)
 
   // only redraw at the end, to not spam the cpu with exposure events
   dt_control_queue_redraw_center();
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, film ? film->id : cfr->id);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_FILMROLLS_IMPORTED, film ? film->id : cfr->id);
 
   //QUESTION: should this come after _apply_filmroll_gpx, since that can change geotags again?
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, all_imgs, 0);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_GEOTAG_CHANGED, all_imgs, 0);
 
   _apply_filmroll_gpx(cfr);
 

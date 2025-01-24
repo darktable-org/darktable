@@ -175,7 +175,7 @@ static void _auto_focus_button_clicked(GtkWidget *widget, gpointer user_data)
   CameraWidgetType property_type;
   if(dt_camctl_camera_get_property_type(darktable.camctl, NULL, property, &property_type))
   {
-    dt_print(DT_DEBUG_CAMCTL, "[camera control] unable to get property type for %s\n", property);
+    dt_print(DT_DEBUG_CAMCTL, "[camera control] unable to get property type for %s", property);
   }
   else
   {
@@ -186,7 +186,7 @@ static void _auto_focus_button_clicked(GtkWidget *widget, gpointer user_data)
     else
     {
       // TODO evaluate if this is the right thing to do in default scenario
-      dt_print(DT_DEBUG_CAMCTL, "[camera control] unable to set %s for property type %d\n", property, property_type);
+      dt_print(DT_DEBUG_CAMCTL, "[camera control] unable to set %s for property type %d", property, property_type);
     }
   }
 }
@@ -515,7 +515,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
             y1 = buf.height;
             break;
           default:
-            dt_print(DT_DEBUG_ALWAYS, "OMFG, the world will collapse, this shouldn't be reachable!\n");
+            dt_print(DT_DEBUG_ALWAYS, "OMFG, the world will collapse, this shouldn't be reachable!");
             dt_pthread_mutex_unlock(&cam->live_view_buffer_mutex);
             return;
         }
@@ -623,7 +623,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
 
 int button_released(struct dt_lib_module_t *self, double x, double y, int which, uint32_t state)
 {
-  dt_lib_live_view_t *d = (dt_lib_live_view_t *)self->data;
+  dt_lib_live_view_t *d = self->data;
   if(d->splitline_dragging == TRUE)
   {
     d->splitline_dragging = FALSE;
@@ -635,7 +635,7 @@ int button_released(struct dt_lib_module_t *self, double x, double y, int which,
 int button_pressed(struct dt_lib_module_t *self, double x, double y, double pressure, int which, int type,
                    uint32_t state)
 {
-  dt_lib_live_view_t *lib = (dt_lib_live_view_t *)self->data;
+  dt_lib_live_view_t *lib = self->data;
   int result = 0;
 
   dt_imgid_t imgid = NO_IMGID;
@@ -684,7 +684,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
 
 int mouse_moved(dt_lib_module_t *self, double x, double y, double pressure, int which)
 {
-  dt_lib_live_view_t *lib = (dt_lib_live_view_t *)self->data;
+  dt_lib_live_view_t *lib = self->data;
   int result = 0;
 
   if(lib->splitline_dragging)

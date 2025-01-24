@@ -179,54 +179,73 @@ static void _get_xmp_tags(const char *prefix,
   {
     for(int i = 0; pl[i].name_ != 0; ++i)
     {
-      char *tag = dt_util_dstrcat(NULL, "Xmp.%s.%s,%s",
+      char *tag = g_strdup_printf("Xmp.%s.%s,%s",
                                   prefix, pl[i].name_, _get_exiv2_type(pl[i].typeId_));
       *taglist = g_list_prepend(*taglist, tag);
     }
   }
 }
 
-static int _illu_to_temp(const dt_dng_illuminant_t illu)
+/*
+  The correction matrices are taken from http://www.brucelindbloom.com - chromatic Adaption.
+  using Bradford method: found Illuminant -> D65
+
+  ISOStudioTungsten, DaylightFluorescent, DayWhiteFluorescent, CoolWhiteFluorescent,
+  WhiteFluorescent and WarmWhiteFluorescent were calculated with xy coord from DNG SDK as reference -> XYZ -> D65
+
+  xy coord and temperatures are the same as in DNG SDK and habe not been changed in dt.
+*/
+
+static const struct dt_dng_illuminant_data_t illuminant_data[DT_LS_Other + 1] =
 {
-  switch(illu)
-  {
-    case DT_LS_StandardLightA:
-    case DT_LS_Tungsten:
-      return 2850;
-    case DT_LS_ISOStudioTungsten:
-      return 3200;
-    case DT_LS_StandardLightB:
-      return 4871;
-    case DT_LS_StandardLightC:
-      return 6774;
-    case DT_LS_D50:
-      return 5000;
-    case DT_LS_D55:
-    case DT_LS_Daylight:
-    case DT_LS_FineWeather:
-    case DT_LS_Flash:
-      return 5500;
-    case DT_LS_D65:
-    case DT_LS_CloudyWeather:
-      return 6500;
-    case DT_LS_D75:
-    case DT_LS_Shade:
-      return 7500;
-    case DT_LS_DaylightFluorescent:
-      return 6430;
-    case DT_LS_DayWhiteFluorescent:
-      return 5000;
-    case DT_LS_CoolWhiteFluorescent:
-      return 4150;
-    case DT_LS_Fluorescent:
-      return 4230;
-    case DT_LS_WhiteFluorescent:
-      return 3450;
-    case DT_LS_WarmWhiteFluorescent:
-      return 2940;
-    default:
-      return 0;
-  }
+  { 0,    "Unknown Illuminant",   {0.0, 0.0},           {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}},
+  { 5500, "Daylight",             {0.3324, 0.3474},     {0.9726856, -0.0135482, 0.0361731, -0.0167463, 1.0049102, 0.0120598, 0.0070026, -0.0116372, 1.1869548}},
+  { 4230, "Fluorescent",          {0.37208, 0.37529},   {0.9212269, -0.0449128, 0.1211620, -0.0553723, 1.0277243, 0.0403563, 0.0235086, -0.0391019, 1.6390644}},
+  { 2850, "Tungsten",             {0.4476, 0.4074},     {0.8446965, -0.1179225, 0.3948108, -0.1366303, 1.1041226, 0.1291718, 0.0798489, -0.1348999, 3.1924009}},
+  { 5500, "Flash",                {0.3324, 0.3474},     {0.9726856, -0.0135482, 0.0361731, -0.0167463, 1.0049102, 0.0120598, 0.0070026, -0.0116372, 1.1869548}},
+  { 0,    "Unknown Illuminant5",  {0.0, 0.0},           {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}},
+  { 0,    "Unknown Illuminant6",  {0.0, 0.0},           {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}},
+  { 0,    "Unknown Illuminant7",  {0.0, 0.0},           {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}},
+  { 0,    "Unknown Illuminant8",  {0.0, 0.0},           {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}},
+  { 5500, "FineWeather",          {0.3324, 0.3474},     {0.9726856, -0.0135482, 0.0361731, -0.0167463, 1.0049102, 0.0120598, 0.0070026, -0.0116372, 1.1869548}},
+  { 6500, "CloudyWeather",        {0.3127, 0.3290},     {1.0, 0.0, 0.0,   0.0, 1.0, 0.0,   0.0, 0.0, 1.0}},
+  { 7500, "Shade",                {0.2990, 0.3149},     {1.0206905, 0.0091588, -0.0228796, 0.0115005, 0.9984917, -0.0076762, -0.0043619, 0.0072053, 0.8853432}},
+  { 6430, "DaylightFluorescent",  {0.31310, 0.33727},   {1.0096114, 0.0061501, 0.0068113, 0.0102539, 0.9888663, 0.0015575, 0.0023119, -0.0044823, 1.0525915}},
+  { 5000, "DayWhiteFluorescent",  {0.34588, 0.35875},   {0.9554129, -0.0231280, 0.0637169, -0.0283629, 1.0099053, 0.0211824, 0.0124188, -0.0206922, 1.3330592}},
+  { 4150, "CoolWhiteFluorescent", {0.37417, 0.37281},   {0.9147843, -0.0492842, 0.1202810, -0.0622085, 1.034984, 0.0404480, 0.0228014, -0.0375807, 1.6259804}},
+  { 3450, "WhiteFluorescent",     {0.40910, 0.39430},   {0.8805388, -0.0774890, 0.2293784, -0.0932136, 1.0589267, 0.0757827, 0.0453660, -0.0760107, 2.2417979}},
+  { 2940, "WarmWhiteFluorescent", {0.44018, 0.40329},   {0.8488316, -0.1107439, 0.3471428, -0.1310107, 1.0986874, 0.1141548, 0.0694025, -0.1167541, 2.9109462}},
+  { 2850, "StandardLightA",       {0.4476, 0.4074},     {0.8446965, -0.1179225, 0.3948108, -0.1366303, 1.1041226, 0.1291718, 0.0798489, -0.1348999, 3.1924009}},
+  { 4871, "StandardLightB",       {0.348483, 0.351747}, {0.9415037, -0.0321240, 0.0584672, -0.0428238, 1.0250998, 0.0203309, 0.0101511, -0.0161170, 1.2847354}},
+  { 6774, "StandardLightC",       {0.310061, 0.316150}, {0.9904476, -0.0071683, -0.0116156, -0.0123712, 1.0155950, -0.0029282, -0.0035635, 0.0067697, 0.9181569}},
+  { 5500, "D55",                  {0.3324, 0.3474},     {0.9726856, -0.0135482, 0.0361731, -0.0167463, 1.0049102, 0.0120598, 0.0070026, -0.0116372, 1.1869548}},
+  { 6500, "D65",                  {0.3127, 0.3290},     {1.0, 0.0, 0.0,   0.0, 1.0, 0.0,   0.0, 0.0, 1.0}},
+  { 7500, "D75",                  {0.2990, 0.3149},     {1.0206905, 0.0091588, -0.0228796, 0.0115005, 0.9984917, -0.0076762, -0.0043619, 0.0072053, 0.8853432}},
+  { 5000, "D50",                  {0.3457, 0.3585},     {0.9555766, -0.0230393, 0.0631636, -0.0282895, 1.0099416, 0.0210077, 0.0122982, -0.0204830, 1.3299098}},
+  { 3200, "ISOStudioTungsten",    {0.40910, 0.39430},   {0.8663030, -0.0913083, 0.2771784, -0.1090504, 1.0746895, 0.0913841, 0.0550856, -0.0924636, 2.5119387}},
+  { 6500, "Other illuminant",     {0.3127, 0.3290},     {1.0, 0.0, 0.0,   0.0, 1.0, 0.0,   0.0, 0.0, 1.0}}
+};
+
+
+static inline const char *_illu_to_str(const dt_dng_illuminant_t illu)
+{
+  return illuminant_data[illu].name;
+}
+
+static inline int _illu_to_temp(const dt_dng_illuminant_t illu)
+{
+  return illuminant_data[illu].temp;
+}
+
+// we append i immediately after the title only if it's in the range 1-3
+static inline void _print_matrix_data(const char *title, const int i, float *M)
+{
+  dt_print(DT_DEBUG_IMAGEIO, "%s%s%s%s = %.4f %.4f %.4f | %.4f %.4f %.4f | %.4f %.4f %.4f",
+    title,
+    i == 1 ? "1" : "",
+    i == 2 ? "2" : "",
+    i == 3 ? "3" : "",
+    M[0], M[1], M[2], M[3], M[4], M[5], M[6], M[7], M[8]);
 }
 
 void dt_exif_set_exiv2_taglist()
@@ -251,7 +270,7 @@ void dt_exif_set_exiv2_taglist()
           const Exiv2::TagInfo *tagInfo = groupList->tagList_();
           while(tagInfo->tag_ != 0xFFFF)
           {
-            char *tag = dt_util_dstrcat(NULL, "Exif.%s.%s,%s",
+            char *tag = g_strdup_printf("Exif.%s.%s,%s",
                                         groupList->groupName_,
                                         tagInfo->name_,
                                         _get_exiv2_type(tagInfo->typeId_));
@@ -266,7 +285,7 @@ void dt_exif_set_exiv2_taglist()
     const Exiv2::DataSet *iptcEnvelopeList = Exiv2::IptcDataSets::envelopeRecordList();
     while(iptcEnvelopeList->number_ != 0xFFFF)
     {
-      char *tag = dt_util_dstrcat(NULL, "Iptc.Envelope.%s,%s%s",
+      char *tag = g_strdup_printf("Iptc.Envelope.%s,%s%s",
                                   iptcEnvelopeList->name_,
                                   _get_exiv2_type(iptcEnvelopeList->type_),
                                   iptcEnvelopeList->repeatable_ ? "-R" : "");
@@ -278,7 +297,7 @@ void dt_exif_set_exiv2_taglist()
       Exiv2::IptcDataSets::application2RecordList();
     while(iptcApplication2List->number_ != 0xFFFF)
     {
-      char *tag = dt_util_dstrcat(NULL, "Iptc.Application2.%s,%s%s",
+      char *tag = g_strdup_printf("Iptc.Application2.%s,%s%s",
                                   iptcApplication2List->name_,
                                   _get_exiv2_type(iptcApplication2List->type_),
                                   iptcApplication2List->repeatable_ ? "-R" : "");
@@ -322,7 +341,7 @@ void dt_exif_set_exiv2_taglist()
   catch (Exiv2::AnyError& e)
   {
     const char *errstring = e.what();
-    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 taglist] %s\n", errstring);
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 taglist] %s", errstring);
   }
 }
 
@@ -532,7 +551,7 @@ static bool _exif_read_xmp_tag(Exiv2::XmpData &xmpData,
   catch(Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
-    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 read_xmp_tag] %s\n", errstring);
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 read_xmp_tag] %s", errstring);
     return false;
   }
 }
@@ -697,7 +716,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img,
     imgs = NULL;
     const char *errstring = e.what();
     dt_print(DT_DEBUG_IMAGEIO,
-             "[exiv2 _exif_decode_xmp_data] %s: %s\n",
+             "[exiv2 _exif_decode_xmp_data] %s: %s",
              img->filename,
              errstring);
     return false;
@@ -716,7 +735,7 @@ static bool _exif_read_iptc_tag(Exiv2::IptcData &iptcData,
   catch(Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
-    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 read_iptc_tag] %s\n", errstring);
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 read_iptc_tag] %s", errstring);
     return false;
   }
 }
@@ -749,7 +768,7 @@ static bool _exif_decode_iptc_data(dt_image_t *img,
         g_free(tag);
         ++pos;
       }
-      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
     }
     if(FIND_IPTC_TAG("Iptc.Application2.Caption"))
     {
@@ -801,7 +820,7 @@ static bool _exif_decode_iptc_data(dt_image_t *img,
   {
     const char *errstring = e.what();
     dt_print(DT_DEBUG_IMAGEIO,
-             "[exiv2 _exif_decode_iptc_data] %s: %s\n",
+             "[exiv2 _exif_decode_iptc_data] %s: %s",
              img->filename,
              errstring);
     return false;
@@ -820,7 +839,7 @@ static bool _exif_read_exif_tag(Exiv2::ExifData &exifData,
   catch(Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
-    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 read_exif_tag] %s\n", errstring);
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 read_exif_tag] %s", errstring);
     return false;
   }
 }
@@ -858,6 +877,26 @@ static bool _check_usercrop(Exiv2::ExifData &exifData,
   return FALSE;
 }
 
+static void _check_linear_response_limit(Exiv2::ExifData &exifData,
+                                         dt_image_t *img)
+{
+  bool found_one = false;
+
+  // currently this only reads the dng tag, could also be used for other raws
+
+  Exiv2::ExifData::const_iterator linr =
+    exifData.findKey(Exiv2::ExifKey("Exif.Image.LinearResponseLimit"));
+  if(linr != exifData.end() && linr->count() == 1)
+  {
+    img->linear_response_limit = linr->toFloat();
+    found_one = true;
+  }
+
+  if(found_one)
+    dt_print(DT_DEBUG_IMAGEIO, "[exif] `%s` has LinearResponseLimit %.4f",
+      img->filename, img->linear_response_limit);
+}
+
 static gboolean _check_dng_opcodes(Exiv2::ExifData &exifData,
                                    dt_image_t *img)
 {
@@ -872,11 +911,14 @@ static gboolean _check_dng_opcodes(Exiv2::ExifData &exifData,
     pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.OpcodeList2"));
   if(pos != exifData.end())
   {
-    uint8_t *data = (uint8_t *)g_malloc(pos->size());
-    pos->copy(data, Exiv2::invalidByteOrder);
-    dt_dng_opcode_process_opcode_list_2(data, pos->size(), img);
-    g_free(data);
-    has_opcodes = TRUE;
+    uint8_t *data = (uint8_t *)g_try_malloc(pos->size());
+    if(data)
+    {
+      pos->copy(data, Exiv2::invalidByteOrder);
+      dt_dng_opcode_process_opcode_list_2(data, pos->size(), img);
+      g_free(data);
+      has_opcodes = TRUE;
+    }
   }
 
   Exiv2::ExifData::const_iterator posb =
@@ -888,11 +930,14 @@ static gboolean _check_dng_opcodes(Exiv2::ExifData &exifData,
     posb = exifData.findKey(Exiv2::ExifKey("Exif.Image.OpcodeList3"));
   if(posb != exifData.end())
   {
-    uint8_t *data = (uint8_t *)g_malloc(posb->size());
-    posb->copy(data, Exiv2::invalidByteOrder);
-    dt_dng_opcode_process_opcode_list_3(data, posb->size(), img);
-    g_free(data);
-    has_opcodes = TRUE;
+    uint8_t *data = (uint8_t *)g_try_malloc(posb->size());
+    if(data)
+    {
+      posb->copy(data, Exiv2::invalidByteOrder);
+      dt_dng_opcode_process_opcode_list_3(data, posb->size(), img);
+      g_free(data);
+      has_opcodes = TRUE;
+    }
   }
   return has_opcodes;
 }
@@ -1074,13 +1119,14 @@ void dt_exif_img_check_additional_tags(dt_image_t *img,
       _check_usercrop(exifData, img);
       _check_dng_opcodes(exifData, img);
       _check_lens_correction_data(exifData, img);
+      _check_linear_response_limit(exifData, img);
     }
     return;
   }
   catch(Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
-    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 reading DefaultUserCrop] %s: %s\n", filename, errstring);
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 reading additional exif tags] %s: %s", filename, errstring);
     return;
   }
 }
@@ -1092,9 +1138,12 @@ static void _find_datetime_taken(Exiv2::ExifData &exifData,
   // Note: We allow a longer "datetime original" field with an unnecessary
   // trailing byte(s) due to buggy software that creates it.
   // See https://github.com/darktable-org/darktable/issues/17389
+  // We also accept the out of spec Exif.Photo.DateTimeOriginal
+  // without a null terminator, which AnalogExif creates.
+  // See https://github.com/darktable-org/darktable/issues/18146
   if((FIND_EXIF_TAG("Exif.Image.DateTimeOriginal")
       || FIND_EXIF_TAG("Exif.Photo.DateTimeOriginal"))
-     && pos->size() >= DT_DATETIME_EXIF_LENGTH)
+     && pos->size() >= DT_DATETIME_EXIF_LENGTH - 1)
   {
     _strlcpy_to_utf8(exif_datetime_taken, DT_DATETIME_EXIF_LENGTH, pos, exifData);
     if(FIND_EXIF_TAG("Exif.Photo.SubSecTimeOriginal")
@@ -1596,7 +1645,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         {
           _strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
         }
-        dt_print(DT_DEBUG_ALWAYS, "[exif] Warning: lens \"%s\" unknown as \"%s\"\n",
+        dt_print(DT_DEBUG_ALWAYS, "[exif] Warning: lens \"%s\" unknown as \"%s\"",
                  img->exif_lens, lens.c_str());
       }
     }
@@ -1759,125 +1808,182 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         dt_image_set_xmp_rating(img, -2);
     }
 
-    // Read embedded color matrix as used in DNGs.
+    // Read embedded color matrix and DNG related tags.
+    if(FIND_EXIF_TAG("Exif.Image.DNGVersion"))
     {
-      float colmatrix[3][12];
-      dt_mark_colormatrix_invalid(&colmatrix[0][0]);
-      dt_mark_colormatrix_invalid(&colmatrix[1][0]);
-      dt_mark_colormatrix_invalid(&colmatrix[2][0]);
+      gboolean missing_sample = FALSE;
+      gboolean modified_dng = FALSE;
+
+      // All known camera vendors writing native dng files support this tag according to specs.
+      if(FIND_EXIF_TAG("Exif.Image.OriginalRawFileName"))
+      {
+        std::string str = pos->print(&exifData);
+        gchar *name = g_ascii_strup(str.c_str(), str.length());
+        modified_dng = !g_str_has_suffix(name, ".DNG");
+        g_free(name);
+      }
+
+      // initialize matrixes and data with noop / defaults
+      float CM[3][9];
+      float FM[3][9];
+      float CC[3][9];
+      float AB[9];
+
+      for(int k = 0; k < 3; k++)    // found illuminants
+        for(int y = 0; y < 3; y++)
+          for(int x = 0; x < 3; x++)
+          {
+            const int i = 3 * y + x;
+            CM[k][i] = FM[k][i] = CC[k][i] = AB[i] = x == y ? 1.0f : 0.0f;
+          }
+
+      // flags about what we got as exif tags
+      gboolean has_CM[3] = { FALSE, FALSE, FALSE };
+      gboolean has_FM[3] = { FALSE, FALSE, FALSE };
+      gboolean has_CC[3] = { FALSE, FALSE, FALSE };
+      gboolean has_AB = FALSE;
+
       dt_dng_illuminant_t illu[3] = { DT_LS_Unknown, DT_LS_Unknown, DT_LS_Unknown };
-      dt_mark_colormatrix_invalid(&img->d65_color_matrix[0]);
+
       // make sure for later testing fallback later via
-      // `find_temperature_from_raw_coeffs` if there is no valid
-      // illuminant
+      // `find_temperature_from_raw_coeffs` if there is no valid illuminant
+      dt_mark_colormatrix_invalid(&img->d65_color_matrix[0]);
 
-      // The correction matrices are taken from
-      // http://www.brucelindbloom.com - chromatic Adaption.
-      // using Bradford method: found Illuminant -> D65
-      const float correctmat[13][9] = {
-        { 0.9555766, -0.0230393, 0.0631636, -0.0282895, 1.0099416, 0.0210077, 0.0122982, -0.0204830,
-          1.3299098 }, // D50
-        { 0.9726856, -0.0135482, 0.0361731, -0.0167463, 1.0049102, 0.0120598, 0.0070026, -0.0116372,
-          1.1869548 }, // D55
-        { 1.0206905, 0.0091588, -0.0228796, 0.0115005, 0.9984917, -0.0076762, -0.0043619, 0.0072053,
-          0.8853432 }, // D75
-        { 0.8446965, -0.1179225, 0.3948108, -0.1366303, 1.1041226, 0.1291718, 0.0798489, -0.1348999,
-          3.1924009 }, // Standard light A
-        { 0.9415037, -0.0321240, 0.0584672, -0.0428238, 1.0250998, 0.0203309, 0.0101511, -0.0161170,
-          1.2847354 }, // Standard light B
-        { 0.9904476, -0.0071683, -0.0116156, -0.0123712, 1.0155950, -0.0029282, -0.0035635, 0.0067697,
-          0.9181569 }, //  Standard light C
-        { 0.9212269, -0.0449128, 0.1211620, -0.0553723, 1.0277243, 0.0403563, 0.0235086, -0.0391019,
-          1.6390644 }, // Fluorescent (F2)
+#if EXIV2_TEST_VERSION(0,27,4)
+      Exiv2::ExifData::const_iterator ab_pos =
+        exifData.findKey(Exiv2::ExifKey("Exif.Image.AnalogBalance"));
+      if(ab_pos != exifData.end() && ab_pos->count() == 3)
+      {
+        AB[0] = ab_pos->toFloat(0);
+        AB[4] = ab_pos->toFloat(1);
+        AB[8] = ab_pos->toFloat(2);
+        has_AB = TRUE;
+      }
+#endif
 
-        // The following are calculated using the same Bradford method,
-        // with xy coord from DNG SDK as reference -> XYZ -> D65
-        { 0.8663030, -0.0913083, 0.2771784, -0.1090504, 1.0746895, 0.0913841, 0.0550856, -0.0924636,
-          2.5119387 }, // ISO Studio Tungsten (3200K first converted to xy as DNG SDK does)
-        { 1.0096114, 0.0061501, 0.0068113, 0.0102539, 0.9888663, 0.0015575, 0.0023119, -0.0044823,
-          1.0525915 }, // DaylightFluorescent (F1)
-        { 0.9554129, -0.0231280, 0.0637169, -0.0283629, 1.0099053, 0.0211824, 0.0124188, -0.0206922,
-          1.3330592 }, // DayWhiteFluorescent (F8)
-        { 0.9147843, -0.0492842, 0.1202810, -0.0622085, 1.034984, 0.0404480, 0.0228014, -0.0375807,
-          1.6259804 }, // CoolWhiteFluorescent (F9)
-        { 0.8805388, -0.0774890, 0.2293784, -0.0932136, 1.0589267, 0.0757827, 0.0453660, -0.0760107,
-          2.2417979 }, // WhiteFluorescent (F3)
-        { 0.8488316, -0.1107439, 0.3471428, -0.1310107, 1.0986874, 0.1141548, 0.0694025, -0.1167541,
-          2.9109462 }  // WarmWhiteFluorescent (F4)
-      };
+      if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant1"))
+        illu[0] = MIN(DT_LS_Other, (dt_dng_illuminant_t) pos->toLong());
+
+      if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant2"))
+        illu[1] = MIN(DT_LS_Other, (dt_dng_illuminant_t) pos->toLong());
+
+#if EXIV2_TEST_VERSION(0,27,4)
+      if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant3"))
+        illu[2] = MIN(DT_LS_Other, (dt_dng_illuminant_t) pos->toLong());
+#endif
 
       Exiv2::ExifData::const_iterator cm1_pos =
         exifData.findKey(Exiv2::ExifKey("Exif.Image.ColorMatrix1"));
-      if((cm1_pos != exifData.end())
-         && (cm1_pos->count() == 9))
+      if(cm1_pos != exifData.end() && cm1_pos->count() == 9)
       {
-        for(int i = 0; i < 9; i++) colmatrix[0][i] = cm1_pos->toFloat(i);
-
-        if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant1"))
-          illu[0] = (dt_dng_illuminant_t) pos->toLong();
+        for(int i = 0; i < 9; i++) CM[0][i] = cm1_pos->toFloat(i);
+        has_CM[0] = TRUE;
 
         Exiv2::ExifData::const_iterator cc1_pos =
           exifData.findKey(Exiv2::ExifKey("Exif.Image.CameraCalibration1"));
-        if((cc1_pos != exifData.end()) && (cc1_pos->count() == 9))
+        if(cc1_pos != exifData.end() && cc1_pos->count() == 9)
         {
-          float camera_matrix[12] = { 0.0f };
-          float tmp[12] = { 0.0f };
-          for(int i = 0; i < 9; i++) camera_matrix[i] = cc1_pos->toFloat(i);
-          mat3mul(tmp, camera_matrix, colmatrix[0]);
-          for(int i = 0; i < 9; i++) colmatrix[0][i] = tmp[i];
+          for(int i = 0; i < 9; i++) CC[0][i] = cc1_pos->toFloat(i);
+          has_CC[0] = TRUE;
+        }
+
+        Exiv2::ExifData::const_iterator fm1_pos =
+          exifData.findKey(Exiv2::ExifKey("Exif.Image.ForwardMatrix1"));
+        if(fm1_pos != exifData.end() && fm1_pos->count() == 9)
+        {
+          for(int i = 0; i < 9; i++) FM[0][i] = fm1_pos->toFloat(i);
+          has_FM[0] = TRUE;
         }
       }
 
       Exiv2::ExifData::const_iterator cm2_pos =
         exifData.findKey(Exiv2::ExifKey("Exif.Image.ColorMatrix2"));
-      if((cm2_pos != exifData.end())
-         && (cm2_pos->count() == 9))
+      if(cm2_pos != exifData.end() && cm2_pos->count() == 9)
       {
-        for(int i = 0; i < 9; i++) colmatrix[1][i] = cm2_pos->toFloat(i);
-
-        if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant2"))
-          illu[1] = (dt_dng_illuminant_t) pos->toLong();
+        for(int i = 0; i < 9; i++) CM[1][i] = cm2_pos->toFloat(i);
+        has_CM[1] = TRUE;
 
         Exiv2::ExifData::const_iterator cc2_pos =
           exifData.findKey(Exiv2::ExifKey("Exif.Image.CameraCalibration2"));
-        if((cc2_pos != exifData.end()) && (cc2_pos->count() == 9))
+        if(cc2_pos != exifData.end() && cc2_pos->count() == 9)
         {
-          float camera_matrix[12] = { 0.0f };
-          float tmp[12] = { 0.0f };
-          for(int i = 0; i < 9; i++) camera_matrix[i] = cc2_pos->toFloat(i);
-          mat3mul(tmp, camera_matrix, colmatrix[1]);
-          for(int i = 0; i < 9; i++) colmatrix[1][i] = tmp[i];
+          for(int i = 0; i < 9; i++) CC[1][i] = cc2_pos->toFloat(i);
+          has_CC[1] = TRUE;
+        }
+
+        Exiv2::ExifData::const_iterator fm2_pos =
+          exifData.findKey(Exiv2::ExifKey("Exif.Image.ForwardMatrix2"));
+        if(fm2_pos != exifData.end() && fm2_pos->count() == 9)
+        {
+          for(int i = 0; i < 9; i++) FM[1][i] = fm2_pos->toFloat(i);
+          has_FM[1] = TRUE;
         }
       }
 
-      // So far the Exif.Image.CalibrationIlluminant3 tag and friends
-      // have not been implemented and there are no images to test.
 #if EXIV2_TEST_VERSION(0,27,4)
       Exiv2::ExifData::const_iterator cm3_pos =
         exifData.findKey(Exiv2::ExifKey("Exif.Image.ColorMatrix3"));
-      if((cm3_pos != exifData.end())
-         && (cm3_pos->count() == 9))
+      if(cm3_pos != exifData.end() && cm3_pos->count() == 9)
       {
-        for(int i = 0; i < 9; i++) colmatrix[2][i] = cm3_pos->toFloat(i);
-
-        if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant3"))
-          illu[2] = (dt_dng_illuminant_t) pos->toLong();
+        for(int i = 0; i < 9; i++) CM[2][i] = cm3_pos->toFloat(i);
+        has_CM[2] = TRUE;
 
         Exiv2::ExifData::const_iterator cc3_pos =
           exifData.findKey(Exiv2::ExifKey("Exif.Image.CameraCalibration3"));
-        if((cc3_pos != exifData.end()) && (cc3_pos->count() == 9))
+        if(cc3_pos != exifData.end() && cc3_pos->count() == 9)
         {
-          float camera_matrix[12] = { 0.0f };
-          float tmp[12] = { 0.0f };
-          for(int i = 0; i < 9; i++) camera_matrix[i] = cc3_pos->toFloat(i);
-          mat3mul(tmp, camera_matrix, colmatrix[2]);
-          for(int i = 0; i < 9; i++) colmatrix[2][i] = tmp[i];
+          for(int i = 0; i < 9; i++) CC[2][i] = cc3_pos->toFloat(i);
+          has_CC[2] = TRUE;
+        }
+
+        Exiv2::ExifData::const_iterator fm3_pos =
+          exifData.findKey(Exiv2::ExifKey("Exif.Image.ForwardMatrix3"));
+        if(fm3_pos != exifData.end() && fm3_pos->count() == 9)
+        {
+          for(int i = 0; i < 9; i++) FM[2][i] = fm3_pos->toFloat(i);
+          has_FM[2] = TRUE;
         }
       }
 #endif
 
+      dt_print(DT_DEBUG_IMAGEIO, "[exif] check dng exif data in `%s`", img->filename);
+      if(has_AB)
+        dt_print(DT_DEBUG_IMAGEIO, "has AnalogBalance %.4f %.4f %.4f", AB[0], AB[4], AB[8]);
+
+      for(int k = 0; k < 3; k++)
+      {
+        const gboolean anymat = has_CM[k] || has_CC[k] || has_FM[k];
+
+        // Currently dt does not support DT_LS_Other so we do a fallback but backreport and request samples
+        if(illu[k] == DT_LS_Other)
+        {
+          if(!modified_dng)
+          {
+            dt_control_log(_("detected OtherIlluminant in `%s`, please report via darktable github"), img->filename);
+            dt_print(DT_DEBUG_IMAGEIO, "detected not-implemented OtherIlluminant in `%s`, please report via darktable github", img->filename);
+            missing_sample = TRUE;
+          }
+          illu[k] = DT_LS_D65;
+        }
+
+        if(illu[k] != DT_LS_Unknown)
+          dt_print(DT_DEBUG_IMAGEIO, "has CalibrationIlluminant%i = %s", k+1, _illu_to_str(illu[k]));
+        else if(anymat)
+          dt_print(DT_DEBUG_IMAGEIO, "undefined CalibrationIlluminant%i", k+1);
+
+        if(has_CM[k]) _print_matrix_data("has ColorMatrix", k+1, CM[k]);
+        if(has_CC[k]) _print_matrix_data("has CameraCalibration", k+1, CC[k]);
+        if(has_FM[k]) _print_matrix_data("has ForwardMatrix", k+1, FM[k]);
+      }
+
+      // Find the best illuminant
+      // Prepare checks for required interpolation
+      // FIXME interpolate the matrixes
       int sel_illu = -1;
+
       int sel_temp = 0;
+      int found_illus = 0;
+      int min_temp = 100000;
       const int D65temp = _illu_to_temp(DT_LS_D65);
       int delta_min = D65temp;
 
@@ -1885,109 +1991,80 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       // We first try to find D65 or take the next higher.
       for(int i = 0; i < 3; ++i)
       {
-        int temp_cur = _illu_to_temp(illu[i]);
-        int delta_cur = abs(temp_cur - D65temp);
-        if((temp_cur > sel_temp) && (delta_cur <= delta_min))
+        if(illu[i] != DT_LS_Unknown)
         {
-          sel_illu = i;
-          sel_temp = temp_cur;
-          delta_min = delta_cur;
+          const int temp_cur = _illu_to_temp(illu[i]);
+          min_temp = MIN(min_temp, temp_cur);
+          const int delta_cur = abs(temp_cur - D65temp);
+          if(temp_cur > sel_temp && delta_cur <= delta_min)
+          {
+            sel_illu = i;
+            sel_temp = temp_cur;
+            delta_min = delta_cur;
+          }
+          found_illus++;
         }
       }
-      // If there is none defined we'll use the first valid color matrix
-      // without correction, i.e. assume D65 (keep dt < 3.8 behavior).
-      // TODO: "Other" illuminant is currently unsupported.
+
+      const gboolean interpolate = found_illus > 1 && sel_temp > D65temp && min_temp < D65temp && min_temp > 0;
+      if(interpolate && !modified_dng)
+      {
+        dt_control_log(_("special exif illuminants in `%s`, please report via darktable github"), img->filename);
+        dt_print(DT_DEBUG_ALWAYS, "special exif illuminants in `%s`, please report via darktable github", img->filename);
+        missing_sample = TRUE;
+      }
+
+
+      // If there is none defined we'll use the first valid color matrix assuming it's D65 (keep dt < 3.8 behavior).
       if(sel_illu == -1)
       {
-        for(int i = 0; i < 3; ++i)
+        for(int i = 0; i < 3; i++)
         {
-          if((illu[i] == DT_LS_Unknown) && dt_is_valid_colormatrix(colmatrix[i][0]))
+          if(illu[i] == DT_LS_Unknown && has_CM[i])
           {
             sel_illu = i;
             sel_temp = D65temp;
+            dt_print(DT_DEBUG_IMAGEIO, "[exif] Unknown Illuminant fallback to D65");
+            illu[i] = DT_LS_D65;
             break;
           }
         }
       }
-      if(sel_illu > -1)
-        dt_print(DT_DEBUG_IMAGEIO,
-                 "[exif] `%s` dng illuminant %i (%iK) selected from"
-                 "  [1] %i (%iK), [2] %i (%iK), [3] %i (%iK)\n",
-                 img->filename, illu[sel_illu], sel_temp,
-                 illu[0], _illu_to_temp(illu[0]),
-                 illu[1], _illu_to_temp(illu[1]),
-                 illu[2], _illu_to_temp(illu[2]));
 
-      // Take the found CalibrationIlluminant / ColorMatrix pair.
-      // D65: just copy. Otherwise multiply by the specific correction matrix.
-      if(sel_illu > -1)
+      if(sel_illu > -1 && sel_illu < 3)
       {
-       // If no supported Illuminant is found/assumed it's better NOT to use any matrix.
-       // The colorin module will write an error message and use a fallback matrix
-       // instead of showing wrong colors.
-        switch(illu[sel_illu])
+        const dt_dng_illuminant_t illuminant = illu[sel_illu];
+        const gboolean forward_suggested = has_FM[sel_illu];
+        if(forward_suggested && !modified_dng)
         {
-          case DT_LS_D50:
-            mat3mul(img->d65_color_matrix, correctmat[0], colmatrix[sel_illu]);
-            break;
-          case DT_LS_D55:
-          case DT_LS_Daylight:
-          case DT_LS_FineWeather:
-          case DT_LS_Flash:
-            mat3mul(img->d65_color_matrix, correctmat[1], colmatrix[sel_illu]);
-            break;
-          case DT_LS_D75:
-          case DT_LS_Shade:
-            mat3mul(img->d65_color_matrix, correctmat[2], colmatrix[sel_illu]);
-            break;
-          case DT_LS_Tungsten:
-          case DT_LS_StandardLightA:
-            mat3mul(img->d65_color_matrix, correctmat[3], colmatrix[sel_illu]);
-            break;
-          case DT_LS_StandardLightB:
-            mat3mul(img->d65_color_matrix, correctmat[4], colmatrix[sel_illu]);
-            break;
-          case DT_LS_StandardLightC:
-            mat3mul(img->d65_color_matrix, correctmat[5], colmatrix[sel_illu]);
-            break;
-          case DT_LS_Fluorescent:
-            mat3mul(img->d65_color_matrix, correctmat[6], colmatrix[sel_illu]);
-            break;
-          case DT_LS_ISOStudioTungsten:
-            mat3mul(img->d65_color_matrix, correctmat[7], colmatrix[sel_illu]);
-            break;
-          case DT_LS_DaylightFluorescent:
-            mat3mul(img->d65_color_matrix, correctmat[8], colmatrix[sel_illu]);
-            break;
-          case DT_LS_DayWhiteFluorescent:
-            mat3mul(img->d65_color_matrix, correctmat[9], colmatrix[sel_illu]);
-            break;
-          case DT_LS_CoolWhiteFluorescent:
-            mat3mul(img->d65_color_matrix, correctmat[10], colmatrix[sel_illu]);
-            break;
-          case DT_LS_WhiteFluorescent:
-            mat3mul(img->d65_color_matrix, correctmat[11], colmatrix[sel_illu]);
-            break;
-          case DT_LS_WarmWhiteFluorescent:
-            mat3mul(img->d65_color_matrix, correctmat[12], colmatrix[sel_illu]);
-            break;
-          case DT_LS_D65:
-          case DT_LS_CloudyWeather:
-          case DT_LS_Unknown: // exceptional fallback to keep dt < 3.8 behavior
-            for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = colmatrix[sel_illu][i];
-            break;
-
-          default:
-            dt_print(DT_DEBUG_ALWAYS,
-                     "[exif] did not find a proper DNG correction matrix"
-                     " for illuminant %i\n",
-                     illu[sel_illu]);
-            break;
+          dt_control_log(_("forward matrix in `%s`, please report via darktable github"), img->filename);
+          missing_sample = TRUE;
         }
-        dt_print(DT_DEBUG_IMAGEIO, "[exif] d65 matrix: %.4f %.4f %.4f | %.4f %.4f %.4f | %.4f %.4f %.4f\n",
-           img->d65_color_matrix[0], img->d65_color_matrix[1], img->d65_color_matrix[2],
-           img->d65_color_matrix[3], img->d65_color_matrix[4], img->d65_color_matrix[5],
-           img->d65_color_matrix[6], img->d65_color_matrix[7], img->d65_color_matrix[8]);
+        dt_print(DT_DEBUG_IMAGEIO,
+          "[exif] %s%s%s: selected from  [1] %s (%iK), [2] %s (%iK), [3] %s (%iK)",
+                 _illu_to_str(illuminant),
+                interpolate ? " (should be interpolated)" : "",
+                forward_suggested ? " (forward)" : "",
+                 _illu_to_str(illu[0]), _illu_to_temp(illu[0]),
+                 _illu_to_str(illu[1]), _illu_to_temp(illu[1]),
+                 _illu_to_str(illu[2]), _illu_to_temp(illu[2]));
+
+        float DT_ALIGNED_ARRAY cameratoXYZ[9];
+        float DT_ALIGNED_ARRAY ABxCC[9];
+
+        mat3mul(ABxCC, AB, CC[sel_illu]);
+        mat3mul(cameratoXYZ, ABxCC, CM[sel_illu]);
+
+        mat3mul(img->d65_color_matrix, illuminant_data[illuminant].CA, cameratoXYZ);
+        _print_matrix_data("dt_image_t d65_color_matrix", 0, img->d65_color_matrix);
+      }
+      if(missing_sample)
+      {
+        guint tagid = 0;
+        char tagname[32];
+        snprintf(tagname, sizeof(tagname), "darktable|issue|no-samples");
+        dt_tag_new(tagname, &tagid);
+        dt_tag_attach(tagid, img->id, FALSE, FALSE);
       }
     }
 
@@ -2036,6 +2113,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       img->flags |= DT_IMAGE_MONOCHROME;
       dt_imageio_update_monochrome_workflow_tag(img->id, DT_IMAGE_MONOCHROME);
     }
+
     // Some files have the colorspace explicitly set. Try to read that.
     // is_ldr -> none
     // 0x01   -> sRGB
@@ -2092,7 +2170,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
   catch(Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
-    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 _exif_decode_exif_data] %s: %s\n", img->filename, errstring);
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 _exif_decode_exif_data] %s: %s", img->filename, errstring);
     return false;
   }
 }
@@ -2109,13 +2187,13 @@ void dt_exif_apply_default_metadata(dt_image_t *img)
       if(dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
       {
         const char *name = dt_metadata_get_name(i);
-        char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+        char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
         const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
         g_free(setting);
         // don't import hidden stuff
         if(!hidden)
         {
-          setting = dt_util_dstrcat(NULL, "ui_last/import_last_%s", name);
+          setting = g_strdup_printf("ui_last/import_last_%s", name);
           str = dt_conf_get_string(setting);
           if(str && str[0])
           {
@@ -2173,7 +2251,7 @@ gboolean dt_exif_read_from_blob(dt_image_t *img,
   catch(Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
-    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 dt_exif_read_from_blob] %s: %s\n", img->filename, errstring);
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 dt_exif_read_from_blob] %s: %s", img->filename, errstring);
     return TRUE;
   }
 }
@@ -2218,7 +2296,7 @@ gboolean dt_exif_get_thumbnail(const char *path,
     *buffer = (uint8_t *)malloc(_size);
     if(!*buffer) {
       dt_print(DT_DEBUG_IMAGEIO,
-               "[exiv2 dt_exif_get_thumbnail] couldn't allocate memory for thumbnail for %s\n",
+               "[exiv2 dt_exif_get_thumbnail] couldn't allocate memory for thumbnail for %s",
                path);
       return TRUE;
     }
@@ -2230,7 +2308,7 @@ gboolean dt_exif_get_thumbnail(const char *path,
   catch(Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "[exiv2 dt_exif_get_thumbnail] %s: %s\n",
+             "[exiv2 dt_exif_get_thumbnail] %s: %s",
              path,
              e.what());
     return TRUE;
@@ -2308,7 +2386,7 @@ gboolean dt_exif_read(dt_image_t *img,
   catch(Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "[exiv2 dt_exif_read] %s: %s\n",
+             "[exiv2 dt_exif_read] %s: %s",
              path,
              e.what());
     return TRUE;
@@ -2370,7 +2448,7 @@ int dt_exif_write_blob(uint8_t *blob,
   catch(Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "[exiv2 dt_exif_write_blob] %s: %s\n",
+             "[exiv2 dt_exif_write_blob] %s: %s",
              path,
              e.what());
     return 0;
@@ -2585,7 +2663,19 @@ int dt_exif_read_blob(uint8_t **buf,
       "Exif.Image.ProfileLookTableDims",
       "Exif.Image.ProfileLookTableData",
       "Exif.Image.ProfileLookTableEncoding",
+
+#if EXIV2_TEST_VERSION(0,27,4)
+      "Exif.Image.ProfileHueSatMapEncoding",
+      "Exif.Image.ColorMatrix3",
+      "Exif.Image.CameraCalibration3",
+      "Exif.Image.CalibrationIlluminant3",
+      "Exif.Image.ReductionMatrix3",
+      "Exif.Image.ProfileHueSatMapData3",
+      "Exif.Image.ForwardMatrix3"
+#else
       "Exif.Image.ProfileHueSatMapEncoding"
+#endif
+
     };
     static const guint n_dngkeys = G_N_ELEMENTS(dngkeys);
     _remove_exif_keys(exifData, dngkeys, n_dngkeys);
@@ -2753,7 +2843,7 @@ int dt_exif_read_blob(uint8_t **buf,
   {
     // std::cerr.rdbuf(savecerr);
     dt_print(DT_DEBUG_IMAGEIO,
-             "[exiv2 dt_exif_read_blob] %s: %s\n",
+             "[exiv2 dt_exif_read_blob] %s: %s",
              path,
              e.what());
     free(*buf);
@@ -2993,7 +3083,7 @@ static void _exif_import_tags(dt_image_t *img,
 
         if(tagid > 0) break;
 
-        dt_print(DT_DEBUG_ALWAYS, "[xmp_import] creating tag: %s\n", tag);
+        dt_print(DT_DEBUG_ALWAYS, "[xmp_import] creating tag: %s", tag);
 
         // Create this tag (increment id, leave icon empty), retry.
         DT_DEBUG_SQLITE3_BIND_TEXT(stmt_ins_tags, 1, tag, -1, SQLITE_TRANSIENT);
@@ -3118,7 +3208,7 @@ static GList *_read_history_v1(const std::string &xmpPacket,
     dt_print(DT_DEBUG_IMAGEIO,
              "XML '%s' parsed with errors\n"
              "Error description: %s\n"
-             "Error offset: %td\n",
+             "Error offset: %td",
              filename,
              result.description(),
              result.offset);
@@ -3164,6 +3254,8 @@ static GList *_read_history_v1(const std::string &xmpPacket,
   for(pugi::xml_node operation_iter: operation.node().children())
   {
     history_entry_t *current_entry = (history_entry_t *)calloc(1, sizeof(history_entry_t));
+    if(!current_entry)
+       break;
     current_entry->blendop_version = 1; // default version in case it's not specified
     history_entries = g_list_append(history_entries, current_entry);
 
@@ -3239,7 +3331,7 @@ static GList *_read_history_v2(Exiv2::XmpData &xmpData,
       if(errno)
       {
         dt_print(DT_DEBUG_IMAGEIO,
-                 "error reading history from '%s' (%s)\n",
+                 "error reading history from '%s' (%s)",
                  key,
                  filename);
         g_list_free_full(history_entries, _free_history_entry);
@@ -3251,7 +3343,7 @@ static GList *_read_history_v2(Exiv2::XmpData &xmpData,
       if(*(key_iter++) != ']')
       {
         dt_print(DT_DEBUG_IMAGEIO,
-                 "error reading history from '%s' (%s)\n",
+                 "error reading history from '%s' (%s)",
                  key,
                  filename);
         g_list_free_full(history_entries, _free_history_entry);
@@ -3265,10 +3357,13 @@ static GList *_read_history_v2(Exiv2::XmpData &xmpData,
       unsigned int length = g_list_length(history_entries);
       if(n > length)
       {
-        current_entry = (history_entry_t *)calloc(1, sizeof(history_entry_t));
-        current_entry->blendop_version = 1; // default version in case it's not specified
-        current_entry->iop_order = -1.0;
-        history_entries = g_list_append(history_entries, current_entry);
+        current_entry = (history_entry_t*)calloc(1, sizeof(history_entry_t));
+	if(current_entry)
+	{
+	  current_entry->blendop_version = 1; // default version in case it's not specified
+	  current_entry->iop_order = -1.0;
+	  history_entries = g_list_append(history_entries, current_entry);
+	}
       }
       else if(n < length)
       {
@@ -3356,7 +3451,7 @@ skip:
     if(!(entry->have_operation && entry->have_params && entry->have_modversion))
     {
       dt_print(DT_DEBUG_IMAGEIO,
-               "[exif] error: reading history from '%s' failed due to missing tags\n",
+               "[exif] error: reading history from '%s' failed due to missing tags",
                filename);
       g_list_free_full(history_entries, _free_history_entry);
       history_entries = NULL;
@@ -3421,8 +3516,9 @@ static GHashTable *_read_masks(Exiv2::XmpData &xmpData,
     {
       for(size_t i = 0; i < cnt; i++)
       {
-        mask_entry_t *entry = (mask_entry_t *)calloc(1, sizeof(mask_entry_t));
-
+        mask_entry_t *entry = (mask_entry_t*)calloc(1, sizeof(mask_entry_t));
+	if(!entry)
+	   break;
         entry->version = version;
         entry->mask_id = mask_id->toLong(i);
         entry->mask_type = mask_type->toLong(i);
@@ -3482,7 +3578,7 @@ static GList *_read_masks_v3(Exiv2::XmpData &xmpData,
       if(errno)
       {
         dt_print(DT_DEBUG_IMAGEIO,
-                 "error reading masks history from '%s' (%s)\n",
+                 "error reading masks history from '%s' (%s)",
                  key,
                  filename);
         g_list_free_full(history_entries, _free_mask_entry);
@@ -3494,7 +3590,7 @@ static GList *_read_masks_v3(Exiv2::XmpData &xmpData,
       if(*(key_iter++) != ']')
       {
         dt_print(DT_DEBUG_IMAGEIO,
-                 "error reading masks history from '%s' (%s)\n",
+                 "error reading masks history from '%s' (%s)",
                  key,
                  filename);
         g_list_free_full(history_entries, _free_mask_entry);
@@ -3508,9 +3604,12 @@ static GList *_read_masks_v3(Exiv2::XmpData &xmpData,
       unsigned int length = g_list_length(history_entries);
       if(n > length)
       {
-        current_entry = (mask_entry_t *)calloc(1, sizeof(mask_entry_t));
-        current_entry->version = version;
-        history_entries = g_list_append(history_entries, current_entry);
+        current_entry = (mask_entry_t*)calloc(1, sizeof(mask_entry_t));
+	if(current_entry)
+	{
+          current_entry->version = version;
+	  history_entries = g_list_append(history_entries, current_entry);
+	}
       }
       else if(n < length)
       {
@@ -3642,7 +3741,7 @@ static void _add_mask_entries_to_db(const dt_imgid_t imgid,
     if((int)(entry->mask_nb * sizeof(dt_masks_point_group_t)) != entry->mask_points_len)
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "[masks] error loading masks from XMP file, bad binary blob size.\n");
+               "[masks] error loading masks from XMP file, bad binary blob size.");
       return;
     }
     for(int i = 0; i < entry->mask_nb; i++)
@@ -3802,7 +3901,10 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
         //  All iop-order version before 3 are legacy one. Starting
         //  with version 3 we have the first attempts to propose the
         //  final v3 iop-order.
-        iop_order_version = pos->toLong() < 3 ? DT_IOP_ORDER_LEGACY : DT_IOP_ORDER_V30;
+        iop_order_version = pos->toLong() < 3
+          ? DT_IOP_ORDER_LEGACY
+          : DT_DEFAULT_IOP_ORDER_RAW;
+
         iop_order_list = dt_ioppr_get_iop_order_list_version(iop_order_version);
       }
       else
@@ -3880,7 +3982,7 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
     else
     {
       dt_print(DT_DEBUG_IMAGEIO,
-               "error: XMP schema version %d in '%s' not supported\n",
+               "error: XMP schema version %d in '%s' not supported",
                xmp_version,
                filename);
       g_hash_table_destroy(mask_entries);
@@ -3896,9 +3998,9 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
     if(sqlite3_step(stmt) != SQLITE_DONE)
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "[exif] error deleting history for image %d\n", img->id);
+               "[exif] error deleting history for image %d", img->id);
       dt_print(DT_DEBUG_ALWAYS,
-               "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+               "[exif]   %s", sqlite3_errmsg(dt_database_get(darktable.db)));
       all_ok = FALSE;
       goto end;
     }
@@ -3943,29 +4045,32 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
             "1e00000006000000cdcccc3e000000400000000000000000";
           const char *no_blend = "gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRyscOAAdeGQQ=";
 
-          history_entry_t *entry = (history_entry_t *)calloc(1, sizeof(history_entry_t));
-          entry->operation = g_strdup("highlights");
-          entry->enabled = TRUE;
-          entry->modversion = 4;
-          entry->params = dt_exif_xmp_decode(default_clip,
-                                             strlen(default_clip),
-                                             &entry->params_len);
-          entry->multi_name = g_strdup("");
-          entry->multi_name_hand_edited = FALSE;
-          entry->multi_priority = 0;
-          entry->blendop_version = 13;
-          entry->blendop_params = dt_exif_xmp_decode(no_blend,
-                                                     strlen(no_blend),
-                                                     &entry->blendop_params_len);
-          // We insert the module in second position, just after rawprepare.
-          // This is to ensure that history_end do include this module.
-          // Just adding one to history_end won't work if the history_end
-          // is not pointing to the last history item.
-          entry->num = 1;
-          entry->iop_order = -1;
+          history_entry_t *entry = (history_entry_t*)calloc(1, sizeof(history_entry_t));
+	  if(entry)
+	  {
+            entry->operation = g_strdup("highlights");
+	    entry->enabled = TRUE;
+	    entry->modversion = 4;
+	    entry->params = dt_exif_xmp_decode(default_clip,
+	                                       strlen(default_clip),
+	                                       &entry->params_len);
+	    entry->multi_name = g_strdup("");
+	    entry->multi_name_hand_edited = FALSE;
+	    entry->multi_priority = 0;
+	    entry->blendop_version = 13;
+	    entry->blendop_params = dt_exif_xmp_decode(no_blend,
+	                                               strlen(no_blend),
+	                                               &entry->blendop_params_len);
+	    // We insert the module in second position, just after rawprepare.
+	    // This is to ensure that history_end do include this module.
+	    // Just adding one to history_end won't work if the history_end
+	    // is not pointing to the last history item.
+	    entry->num = 1;
+	    entry->iop_order = -1;
 
-          add_to_history_end++;
-          history_entries = g_list_append(history_entries, entry);
+	    add_to_history_end++;
+	    history_entries = g_list_append(history_entries, entry);
+	  }
         }
     }
 
@@ -4035,9 +4140,9 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
       if(sqlite3_step(stmt) != SQLITE_DONE)
       {
         dt_print(DT_DEBUG_ALWAYS,
-                 "[exif] error adding history entry for image %d\n", img->id);
+                 "[exif] error adding history entry for image %d", img->id);
         dt_print(DT_DEBUG_ALWAYS,
-                 "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+                 "[exif]   %s", sqlite3_errmsg(dt_database_get(darktable.db)));
         all_ok = FALSE;
         goto end;
       }
@@ -4059,8 +4164,7 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
       {
         history_entry_t *entry = (history_entry_t *)iter->data;
 
-        dt_iop_order_entry_t *e =
-          (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
+        dt_iop_order_entry_t *e = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
         memcpy(e->operation, entry->operation, sizeof(e->operation));
         e->instance = entry->multi_priority;
 
@@ -4078,7 +4182,7 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
           else
           {
             dt_print(DT_DEBUG_ALWAYS,
-                     "[exif] cannot get iop-order for module '%s', XMP may be corrupted\n",
+                     "[exif] cannot get iop-order for module '%s', XMP may be corrupted",
                      entry->operation);
             g_list_free_full(iop_order_list, free);
             g_list_free_full(history_entries, _free_history_entry);
@@ -4153,9 +4257,9 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
         if(sqlite3_step(stmt) != SQLITE_DONE)
         {
           dt_print(DT_DEBUG_ALWAYS,
-                   "[exif] error adding mask history entry for image %d\n", img->id);
+                   "[exif] error adding mask history entry for image %d", img->id);
           dt_print(DT_DEBUG_ALWAYS,
-                   "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+                   "[exif]   %s", sqlite3_errmsg(dt_database_get(darktable.db)));
           all_ok = FALSE;
           goto end;
         }
@@ -4183,9 +4287,9 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
       if(!ok)
       {
         dt_print(DT_DEBUG_ALWAYS,
-                 "[exif] error writing history_end for image %d\n", img->id);
+                 "[exif] error writing history_end for image %d", img->id);
         dt_print(DT_DEBUG_ALWAYS,
-                 "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+                 "[exif]   %s", sqlite3_errmsg(dt_database_get(darktable.db)));
         all_ok = FALSE;
         goto end;
       }
@@ -4207,9 +4311,9 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
       if(sqlite3_step(stmt) != SQLITE_DONE)
       {
         dt_print(DT_DEBUG_ALWAYS,
-                 "[exif] error writing history_end for image %d\n", img->id);
+                 "[exif] error writing history_end for image %d", img->id);
         dt_print(DT_DEBUG_ALWAYS,
-                 "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+                 "[exif]   %s", sqlite3_errmsg(dt_database_get(darktable.db)));
         all_ok = FALSE;
         goto end;
       }
@@ -4217,9 +4321,9 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
     if(!dt_ioppr_write_iop_order_list(iop_order_list, img->id))
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "[exif] error writing iop_list for image %d\n", img->id);
+               "[exif] error writing iop_list for image %d", img->id);
       dt_print(DT_DEBUG_ALWAYS,
-               "[exif]   %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+               "[exif]   %s", sqlite3_errmsg(dt_database_get(darktable.db)));
       all_ok = FALSE;
       goto end;
     }
@@ -4249,7 +4353,7 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
       {
         dt_print(DT_DEBUG_ALWAYS,
                  "[exif] dt_exif_xmp_read for %s, id %i found auto_presets_applied"
-                 " but there was no history\n",
+                 " but there was no history",
                  filename,img->id);
       }
     }
@@ -4303,7 +4407,7 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
     else
     {
       dt_print(DT_DEBUG_IMAGEIO,
-               "[exif] error reading history from '%s'\n",
+               "[exif] error reading history from '%s'",
                filename);
       dt_database_rollback_transaction(darktable.db);
       return TRUE;
@@ -4697,7 +4801,7 @@ static void _set_xmp_dt_metadata(Exiv2::XmpData &xmpData,
        && (dt_metadata_get_type(keyid) != DT_METADATA_TYPE_INTERNAL))
     {
       const gchar *name = dt_metadata_get_name(keyid);
-      gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+      gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
       const uint32_t flag =  dt_conf_get_int(setting);
       g_free(setting);
       if(!(flag & (DT_METADATA_FLAG_PRIVATE | DT_METADATA_FLAG_HIDDEN)))
@@ -4873,7 +4977,7 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData,
 
   const double end = dt_get_debug_wtime();
   dt_print(DT_DEBUG_DEV,
-           "exif_xmp_read_data: %s. imgid=%i, hist=%i, took %.3fs\n",
+           "exif_xmp_read_data: %s. imgid=%i, hist=%i, took %.3fs",
            info,
            imgid,
            history_end,
@@ -5075,7 +5179,7 @@ char *dt_exif_xmp_read_string(const dt_imgid_t imgid)
   catch(Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "[xmp_read_blob] caught exiv2 exception '%s'\n",
+             "[xmp_read_blob] caught exiv2 exception '%s'",
              e.what());
     return NULL;
   }
@@ -5393,7 +5497,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
     catch(Exiv2::AnyError &e)
     {
       dt_print(DT_DEBUG_IMAGEIO,
-               "[xmp_attach] %s: caught exiv2 exception '%s'\n",
+               "[xmp_attach] %s: caught exiv2 exception '%s'",
                input_filename,
                e.what());
     }
@@ -5607,7 +5711,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
         catch(Exiv2::AnyError &e2)
         {
           dt_print(DT_DEBUG_IMAGEIO,
-                   "[dt_exif_xmp_attach_export] without history %s: caught exiv2 exception '%s'\n",
+                   "[dt_exif_xmp_attach_export] without history %s: caught exiv2 exception '%s'",
                    filename,
                    e2.what());
           return TRUE;
@@ -5621,7 +5725,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
   catch(Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "[dt_exif_xmp_attach_export] %s: caught exiv2 exception '%s'\n",
+             "[dt_exif_xmp_attach_export] %s: caught exiv2 exception '%s'",
              filename,
              e.what());
     return TRUE;
@@ -5663,7 +5767,7 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
       else
       {
         dt_print(DT_DEBUG_ALWAYS,
-                 "cannot read XMP file '%s': '%s'\n", filename, strerror(errno));
+                 "cannot read XMP file '%s': '%s'", filename, strerror(errno));
         dt_control_log(_("cannot read XMP file '%s': '%s'"), filename, strerror(errno));
       }
 
@@ -5722,7 +5826,7 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
       else
       {
         dt_print(DT_DEBUG_ALWAYS,
-                 "cannot write XMP file '%s': '%s'\n", filename, strerror(errno));
+                 "cannot write XMP file '%s': '%s'", filename, strerror(errno));
         dt_control_log(_("cannot write XMP file '%s': '%s'"), filename, strerror(errno));
         return TRUE;
       }
@@ -5733,7 +5837,7 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
   catch(Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "[dt_exif_xmp_write] %s: caught exiv2 exception '%s'\n",
+             "[dt_exif_xmp_write] %s: caught exiv2 exception '%s'",
              filename,
              e.what());
     return TRUE;
@@ -5783,7 +5887,7 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
   catch(Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "[exiv2 dt_exif_get_color_space] %s\n",
+             "[exiv2 dt_exif_get_color_space] %s",
              e.what());
     return DT_COLORSPACE_DISPLAY;
   }
@@ -5806,7 +5910,7 @@ void dt_exif_get_basic_data(const uint8_t *data,
   catch(Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "[exiv2 dt_exif_get_basic_data] %s\n",
+             "[exiv2 dt_exif_get_basic_data] %s",
              e.what());
   }
 }

@@ -45,7 +45,7 @@ static gchar *_get_tb_removed_tag_string_values(GList *before,
   {
     if(!g_list_find(a, b->data))
     {
-      tag_list = dt_util_dstrcat(tag_list, "%d,", GPOINTER_TO_INT(b->data));
+      dt_util_str_cat(&tag_list, "%d,", GPOINTER_TO_INT(b->data));
     }
   }
   if(tag_list) tag_list[strlen(tag_list) - 1] = '\0';
@@ -63,8 +63,8 @@ static gchar *_get_tb_added_tag_string_values(const dt_imgid_t img,
     if(!g_list_find(b, a->data))
     {
       // clang-format off
-      tag_list = dt_util_dstrcat
-        (tag_list,
+      dt_util_str_cat
+        (&tag_list,
          "(%d,%d,"
          "  (SELECT (IFNULL(MAX(position),0) & 0xFFFFFFFF00000000) + (1 << 32)"
          "    FROM main.tagged_images)"
@@ -135,7 +135,7 @@ static void _pop_undo(gpointer user_data,
   {
     for(GList *list = (GList *)data; list; list = g_list_next(list))
     {
-      dt_undo_tags_t *undotags = (dt_undo_tags_t *)list->data;
+      dt_undo_tags_t *undotags = list->data;
 
       GList *before = (action == DT_ACTION_UNDO) ? undotags->after : undotags->before;
       GList *after = (action == DT_ACTION_UNDO) ? undotags->before : undotags->after;
@@ -143,7 +143,7 @@ static void _pop_undo(gpointer user_data,
       *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undotags->imgid));
     }
 
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
   }
 }
 
@@ -220,7 +220,7 @@ gboolean dt_tag_new_from_gui(const char *name,
   const gboolean ret = dt_tag_new(name, tagid);
   /* if everything went fine, raise signal of tags change to refresh
    * keywords module in GUI */
-  if(ret) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  if(ret) DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
   return ret;
 }
 
@@ -297,7 +297,7 @@ guint dt_tag_remove_list(GList *tag_list)
   for(GList *taglist = tag_list; taglist ; taglist = g_list_next(taglist))
   {
     const guint tagid = ((dt_tag_t *)taglist->data)->id;
-    flatlist = dt_util_dstrcat(flatlist, "%u,", tagid);
+    dt_util_str_cat(&flatlist, "%u,", tagid);
     count++;
     if(flatlist && count > 1000)
     {
@@ -430,7 +430,7 @@ static gboolean _tag_execute(const GList *tags,
   for(const GList *images = imgs; images; images = g_list_next(images))
   {
     const dt_imgid_t image_id = GPOINTER_TO_INT(images->data);
-    dt_undo_tags_t *undotags = (dt_undo_tags_t *)malloc(sizeof(dt_undo_tags_t));
+    dt_undo_tags_t *undotags = malloc(sizeof(dt_undo_tags_t));
     undotags->imgid = image_id;
     undotags->before = _tag_get_tags(image_id, DT_TAG_TYPE_ALL);
     switch(action)
@@ -644,7 +644,8 @@ gboolean dt_tag_detach_by_string(const char *name,
      "SELECT tagid"
      " FROM main.tagged_images as ti, data.tags as t"
      " WHERE ti.tagid = t.id"
-     "   AND t.name GLOB ?1",
+     "   AND t.name GLOB ?1"
+     "   AND ti.imgid = ?2",
      -1, &stmt,
      NULL);
 
@@ -661,6 +662,7 @@ gboolean dt_tag_detach_by_string(const char *name,
   }
 
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, n, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
 
   gboolean res = FALSE;
 
@@ -670,6 +672,8 @@ gboolean dt_tag_detach_by_string(const char *name,
     const guint tagid = (guint)sqlite3_column_int(stmt, 0);
     dt_tag_detach(tagid, imgid, undo_on, group_on);
   }
+
+  sqlite3_finalize(stmt);
 
   g_free(n);
 
@@ -895,14 +899,14 @@ GList *dt_tag_get_list(const dt_imgid_t imgid)
 
   gboolean omit_tag_hierarchy = dt_conf_get_bool("omit_tag_hierarchy");
 
-  const uint32_t count = dt_tag_get_attached(imgid, &taglist, TRUE);
+  const uint32_t count = dt_tag_get_attached(imgid, &taglist, FALSE);
 
   if(count < 1)
     return NULL;
 
   for(; taglist; taglist = g_list_next(taglist))
   {
-    dt_tag_t *t = (dt_tag_t *)taglist->data;
+    dt_tag_t *t = taglist->data;
     gchar *value = t->tag;
 
     gchar **pch = g_strsplit(value, "|", -1);
@@ -938,14 +942,14 @@ GList *dt_tag_get_hierarchical(const dt_imgid_t imgid)
   GList *taglist = NULL;
   GList *tags = NULL;
 
-  const uint32_t count = dt_tag_get_attached(imgid, &taglist, TRUE);
+  const uint32_t count = dt_tag_get_attached(imgid, &taglist, FALSE);
 
   if(count < 1)
     return NULL;
 
   for(GList *tag_iter = taglist; tag_iter; tag_iter = g_list_next(tag_iter))
   {
-    dt_tag_t *t = (dt_tag_t *)tag_iter->data;
+    dt_tag_t *t = tag_iter->data;
     tags = g_list_prepend(tags, g_strdup(t->tag));
   }
 
@@ -1027,13 +1031,13 @@ GList *dt_tag_get_list_export(const dt_imgid_t imgid,
   {
     for(GList *tagt = sorted_tags; tagt; tagt = g_list_next(tagt))
     {
-      dt_tag_t *t = (dt_tag_t *)sorted_tags->data;
+      dt_tag_t *t = sorted_tags->data;
       t->flags &= ~DT_TF_PRIVATE;
     }
   }
   for(; sorted_tags; sorted_tags = g_list_next(sorted_tags))
   {
-    dt_tag_t *t = (dt_tag_t *)sorted_tags->data;
+    dt_tag_t *t = sorted_tags->data;
     if((export_private_tags || !(t->flags & DT_TF_PRIVATE))
         && !(t->flags & DT_TF_CATEGORY))
     {
@@ -1102,7 +1106,7 @@ GList *dt_tag_get_hierarchical_export(const dt_imgid_t imgid,
 
   for(GList *tag_iter = taglist; tag_iter; tag_iter = g_list_next(tag_iter))
   {
-    dt_tag_t *t = (dt_tag_t *)tag_iter->data;
+    dt_tag_t *t = tag_iter->data;
     if(export_private_tags || !(t->flags & DT_TF_PRIVATE))
     {
       tags = g_list_prepend(tags, g_strdup(t->tag));
@@ -1161,7 +1165,7 @@ GList *dt_tag_get_images_from_list(const GList *img, const gint tagid)
   char *images = NULL;
   for(GList *imgs = (GList *)img; imgs; imgs = g_list_next(imgs))
   {
-    images = dt_util_dstrcat(images, "%d,",GPOINTER_TO_INT(imgs->data));
+    dt_util_str_cat(&images, "%d,",GPOINTER_TO_INT(imgs->data));
   }
   if(images)
   {
@@ -1528,7 +1532,7 @@ static gchar *dt_cleanup_synonyms(gchar *synonyms_entry)
       char *e = g_strstrip(*entry);
       if(*e)
       {
-        synonyms = dt_util_dstrcat(synonyms, "%s, ", e);
+        dt_util_str_cat(&synonyms, "%s, ", e);
       }
       entry++;
     }
@@ -1612,7 +1616,7 @@ void dt_tag_add_synonym(const gint tagid,
   char *synonyms = dt_tag_get_synonyms(tagid);
   if(synonyms)
   {
-    synonyms = dt_util_dstrcat(synonyms, ", %s", synonym);
+    dt_util_str_cat(&synonyms, ", %s", synonym);
   }
   else
   {
@@ -1770,7 +1774,7 @@ ssize_t dt_tag_import(const char *filename)
   g_list_free_full(hierarchy, g_free);
   fclose(fd);
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
 
   return count;
 }
@@ -1912,7 +1916,7 @@ char *dt_tag_get_subtags(const dt_imgid_t imgid,
           valid = FALSE;
       }
       if(valid)
-        tags = dt_util_dstrcat(tags, "%s,", subtag);
+        dt_util_str_cat(&tags, "%s,", subtag);
       g_strfreev(pch);
     }
   }

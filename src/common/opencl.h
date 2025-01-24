@@ -129,6 +129,7 @@ typedef struct dt_opencl_device_t
   const char *fullname;
   const char *cname;
   const char *options;
+  const char *cflags;
   cl_int summary;
   size_t memory_in_use;
   size_t peak_memory;
@@ -336,13 +337,6 @@ int dt_opencl_get_kernel_work_group_size(const int dev,
                                          const int kernel,
                                          size_t *kernelworkgroupsize);
 
-/** attach arg. */
-int dt_opencl_set_kernel_arg(const int dev,
-                             const int kernel,
-                             const int num,
-                             const size_t size,
-                             const void *arg);
-
 /** wrap opencl arguments */
 /** the magic number is used for parameter checking; don't use it in your code! */
 #define CLWRAP(size, ptr) (const size_t)0xF111E8, (const size_t)size, (const void *)ptr
@@ -380,10 +374,17 @@ int dt_opencl_enqueue_kernel_2d_with_local(const int dev,
 /** call kernel with arguments! */
 #define dt_opencl_enqueue_kernel_2d_args(dev, kernel, w, h, ...) \
     dt_opencl_enqueue_kernel_2d_args_internal(dev, kernel, w, h, __VA_ARGS__, CLWRAP(SIZE_MAX, NULL))
+
+#define dt_opencl_enqueue_kernel_1d_args(dev, kernel, x, ...) \
+    dt_opencl_enqueue_kernel_1d_args_internal(dev, kernel, x, __VA_ARGS__, CLWRAP(SIZE_MAX, NULL))
+
 int dt_opencl_enqueue_kernel_2d_args_internal(const int dev,
                                               const int kernel,
                                               const size_t w,
                                               const size_t h, ...);
+int dt_opencl_enqueue_kernel_1d_args_internal(const int dev,
+                                              const int kernel,
+                                              const size_t x, ...);
 
 /** launch kernel with specified dimension and defined local size! */
 int dt_opencl_enqueue_kernel_ndim_with_local(const int dev,
@@ -588,8 +589,6 @@ void dt_opencl_dump_pipe_pfm(const char* mod,
                              const gboolean input,
                              const char *pipe);
 
-int dt_opencl_get_mem_context_id(cl_mem mem);
-
 void dt_opencl_memory_statistics(int devid,
                                  cl_mem mem,
                                  dt_opencl_memory_t action);
@@ -598,7 +597,7 @@ void dt_opencl_memory_statistics(int devid,
 gboolean dt_opencl_image_fits_device(const int devid,
                                      const size_t width,
                                      const size_t height,
-                                     const unsigned bpp,
+                                     const uint32_t bpp,
                                      const float factor,
                                      const size_t overhead);
 /** get available memory for the device */
@@ -636,12 +635,15 @@ int dt_opencl_local_buffer_opt(const int devid,
 void dt_opencl_write_device_config(const int devid);
 gboolean dt_opencl_read_device_config(const int devid);
 gboolean dt_opencl_avoid_atomics(const int devid);
-int dt_opencl_micro_nap(const int devid);
+void dt_opencl_micro_nap(const int devid);
 gboolean dt_opencl_use_pinned_memory(const int devid);
 
 G_END_DECLS
 
 #else
+
+#define CL_SUCCESS 0
+
 #include "control/conf.h"
 #include <stdlib.h>
 
@@ -665,7 +667,7 @@ static inline void dt_opencl_init(dt_opencl_t *cl,
   cl->error_count = 0;
   dt_conf_set_bool("opencl", FALSE);
   dt_print(DT_DEBUG_OPENCL,
-           "[opencl_init] this version of darktable was built without opencl support\n");
+           "[opencl_init] this version of darktable was built without opencl support");
 }
 static inline void dt_opencl_cleanup(dt_opencl_t *cl)
 {
@@ -767,7 +769,7 @@ static inline void dt_opencl_events_reset(const int devid)
 static inline int dt_opencl_events_flush(const int devid,
                                          const gboolean reset)
 {
-  return 0;
+  return CL_SUCCESS;
 }
 
 G_END_DECLS

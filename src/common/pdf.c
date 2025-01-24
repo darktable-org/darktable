@@ -226,7 +226,11 @@ dt_pdf_t *dt_pdf_start(const char *filename, float width, float height, float dp
 
   pdf->n_offsets = 4;
   pdf->offsets = calloc(pdf->n_offsets, sizeof(size_t));
-
+  if(!pdf->offsets)
+  {
+    free(pdf);
+    return NULL;
+  }
   size_t bytes_written = 0;
 
   // file header
@@ -273,8 +277,10 @@ static size_t _pdf_stream_encoder_Flate(dt_pdf_t *pdf, const unsigned char *data
 {
   int result;
   uLongf destLen = compressBound(len);
-  unsigned char *buffer = (unsigned char *)malloc(destLen);
-
+  unsigned char *buffer = malloc(destLen);
+  if(!buffer)
+    return 0;
+  
   result = compress(buffer, &destLen, data, len);
 
   if(result != Z_OK)
@@ -781,12 +787,25 @@ float * read_ppm(const char * filename, int * wd, int * ht)
     return NULL;
   }
 
-  float *image = (float*)malloc(sizeof(float) * width * height * 3);
+  float *image = malloc(sizeof(float) * width * height * 3);
+  if(!image)
+  {
+    fprintf(stderr, "unable to allocate buffer for image data\n");
+    fclose(f);
+    return NULL;
+  }
 
   if(max <= 255)
   {
     // read a 8 bit PPM
-    uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t) * width * height * 3);
+    uint8_t *tmp = malloc(sizeof(uint8_t) * width * height * 3);
+    if(!tmp)
+    {
+      fprintf(stderr, "unable to allocate buffer for file data\n");
+      free(image);
+      fclose(f);
+      return NULL;
+    }
     int res = fread(tmp, sizeof(uint8_t) * 3, width * height, f);
     if(res != width * height)
     {
@@ -805,7 +824,14 @@ float * read_ppm(const char * filename, int * wd, int * ht)
   else
   {
     // read a 16 bit PPM
-    uint16_t *tmp = (uint16_t *)malloc(sizeof(uint16_t) * width * height * 3);
+    uint16_t *tmp = malloc(sizeof(uint16_t) * width * height * 3);
+    if(!tmp)
+    {
+      fprintf(stderr, "unable to allocate buffer for file data\n");
+      free(image);
+      fclose(f);
+      return NULL;
+    }
     int res = fread(tmp, sizeof(uint16_t) * 3, width * height, f);
     if(res != width * height)
     {
@@ -815,14 +841,10 @@ float * read_ppm(const char * filename, int * wd, int * ht)
       fclose(f);
       return NULL;
     }
-    // swap byte order
+    // swap byte order and transform values into 0..1 range
     DT_OMP_FOR()
     for(int k = 0; k < 3 * width * height; k++)
-      tmp[k] = ((tmp[k] & 0xff) << 8) | (tmp[k] >> 8);
-    // and transform it into 0..1 range
-    DT_OMP_FOR()
-    for(int i = 0; i < width * height * 3; i++)
-      image[i] = (float)tmp[i] / max;
+      image[k] = (float)(((tmp[k] & 0xff) << 8) | (tmp[k] >> 8)) / max;
     free(tmp);
   }
   fclose(f);
@@ -867,7 +889,7 @@ int main(int argc, char *argv[])
     int width, height;
     float *image = read_ppm(argv[i + 1], &width, &height);
     if(!image) exit(1);
-    uint16_t *data = (uint16_t *)malloc(sizeof(uint16_t) * 3 * width * height);
+    uint16_t *data = malloc(sizeof(uint16_t) * 3 * width * height);
     if(!data)
     {
       free(image);

@@ -95,7 +95,7 @@ void dt_view_manager_gui_init(dt_view_manager_t *vm)
 {
   for(GList *iter = vm->views; iter; iter = g_list_next(iter))
   {
-    dt_view_t *view = (dt_view_t *)iter->data;
+    dt_view_t *view = iter->data;
     if(view->gui_init) view->gui_init(view);
   }
 }
@@ -217,7 +217,7 @@ gboolean dt_view_manager_switch(dt_view_manager_t *vm,
   {
     for(GList *iter = vm->views; iter; iter = g_list_next(iter))
     {
-      dt_view_t *v = (dt_view_t *)iter->data;
+      dt_view_t *v = iter->data;
       if(!g_ascii_strcasecmp(v->module_name, view_name))
       {
         new_view = v;
@@ -241,7 +241,6 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
   if(old_view
       && new_view
       && dt_check_gimpmode("file")
-      && !darktable.gimp.error
       && dt_view_get_current() == DT_VIEW_DARKROOM)
     return FALSE;
 
@@ -271,7 +270,7 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
           iter;
           iter = g_list_next(iter))
       {
-        dt_lib_module_t *plugin = (dt_lib_module_t *)(iter->data);
+        dt_lib_module_t *plugin = iter->data;
 
         /* does this module belong to current view ?*/
         if(dt_lib_is_visible_in_view(plugin, old_view))
@@ -303,9 +302,8 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
     const gboolean error = new_view->try_enter(new_view);
     if(error)
     {
-      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                    DT_SIGNAL_VIEWMANAGER_VIEW_CANNOT_CHANGE,
-                                    old_view, new_view);
+      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_VIEW_CANNOT_CHANGE,
+                              old_view, new_view);
       return error;
     }
   }
@@ -322,7 +320,7 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
         iter;
         iter = g_list_next(iter))
     {
-      dt_lib_module_t *plugin = (dt_lib_module_t *)(iter->data);
+      dt_lib_module_t *plugin = iter->data;
 
       if(new_view == old_view && !plugin->expandable(plugin)) continue;
 
@@ -349,6 +347,12 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
   /* change current view to the new view */
   vm->current_view = new_view;
 
+  dt_view_type_flags_t view_type = new_view->view(new_view);
+
+  if(new_view != old_view) // implement preference toggle only on view change
+    dt_ui_container_swap_left_right(darktable.gui->ui, view_type == DT_VIEW_DARKROOM
+                                    && dt_conf_get_bool("plugins/darkroom/panel_swap"));
+
   /* restore visible stat of panels for the new view */
   dt_ui_restore_panels(darktable.gui->ui);
 
@@ -363,7 +367,7 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
       iter;
       iter = g_list_previous(iter))
   {
-    dt_lib_module_t *plugin = (dt_lib_module_t *)(iter->data);
+    dt_lib_module_t *plugin = iter->data;
     GtkWidget *w = plugin->widget;
 
     if(plugin->expandable(plugin))
@@ -381,7 +385,7 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
       dt_lib_gui_set_expanded(plugin, expanded);
       dt_lib_set_visible(plugin, TRUE);
     }
-    else if(new_view != old_view && plugin->views(plugin) & new_view->view(new_view))
+    else if(new_view != old_view && plugin->views(plugin) & view_type)
     {
       dt_lib_gui_get_expander(plugin); // connect modulegroups presets button
 
@@ -401,7 +405,6 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
     if(!strcmp(plugin->plugin_name,"module_toolbox")
       || !strcmp(plugin->plugin_name,"view_toolbox"))
     {
-      dt_view_type_flags_t view_type = new_view->view(new_view);
       if(view_type == DT_VIEW_LIGHTTABLE)
                        dt_gui_add_help_link(w, "lighttable_mode");
       if(view_type == DT_VIEW_DARKROOM)
@@ -422,20 +425,19 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
   /* update the scrollbars */
   dt_ui_update_scrollbars(darktable.gui->ui);
 
-  dt_shortcuts_select_view(new_view->view(new_view));
+  dt_shortcuts_select_view(view_type);
 
   /* update sticky accels window */
   if(vm->accels_window.window && vm->accels_window.sticky) dt_view_accels_refresh(vm);
 
   /* raise view changed signal */
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, old_view, new_view);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, old_view, new_view);
 
   // update log visibility
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_LOG_REDRAW);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_LOG_REDRAW);
 
   // update toast visibility
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_TOAST_REDRAW);
   return FALSE;
 }
 
@@ -488,7 +490,7 @@ void dt_view_manager_expose(dt_view_manager_t *vm,
         plugins;
         plugins = g_list_previous(plugins))
     {
-      dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+      dt_lib_module_t *plugin = plugins->data;
 
       /* does this module belong to current view ?*/
       if(plugin->gui_post_expose
@@ -519,7 +521,7 @@ void dt_view_manager_mouse_leave(dt_view_manager_t *vm)
       plugins;
       plugins = g_list_previous(plugins))
   {
-    dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+    dt_lib_module_t *plugin = plugins->data;
 
     /* does this module belong to current view ?*/
     if(plugin->mouse_leave && dt_lib_is_visible_in_view(plugin, v))
@@ -555,7 +557,7 @@ void dt_view_manager_mouse_moved(dt_view_manager_t *vm,
       plugins;
       plugins = g_list_previous(plugins))
   {
-    dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+    dt_lib_module_t *plugin = plugins->data;
 
     /* does this module belong to current view ?*/
     if(plugin->mouse_moved && dt_lib_is_visible_in_view(plugin, v))
@@ -584,7 +586,7 @@ int dt_view_manager_button_released(dt_view_manager_t *vm,
       plugins;
       plugins = g_list_previous(plugins))
   {
-    dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+    dt_lib_module_t *plugin = plugins->data;
 
     /* does this module belong to current view ?*/
     if(plugin->button_released && dt_lib_is_visible_in_view(plugin, v))
@@ -619,7 +621,7 @@ int dt_view_manager_button_pressed(dt_view_manager_t *vm,
       plugins && !handled;
       plugins = g_list_previous(plugins))
   {
-    dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+    dt_lib_module_t *plugin = plugins->data;
 
     /* does this module belong to current view ?*/
     if(plugin->button_pressed && dt_lib_is_visible_in_view(plugin, v))
@@ -643,7 +645,7 @@ void dt_view_manager_configure(dt_view_manager_t *vm,
   for(GList *iter = vm->views; iter; iter = g_list_next(iter))
   {
     // this is necessary for all
-    dt_view_t *v = (dt_view_t *)iter->data;
+    dt_view_t *v = iter->data;
     v->width = width;
     v->height = height;
     if(v->configure)
@@ -731,7 +733,7 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
   const int32_t buf_ht = buf.height;
 
   dt_print(DT_DEBUG_LIGHTTABLE,
-      "dt_view_image_get_surface  id %i, dots %ix%i -> mip %ix%i, found %ix%i\n",
+      "dt_view_image_get_surface  id %i, dots %ix%i -> mip %ix%i, found %ix%i",
       imgid, mipwidth, mipheight, cache->max_width[mip], cache->max_height[mip], buf_wd, buf_ht);
 
   // no image is available at the moment as we didn't get buffer data
@@ -752,7 +754,7 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
 
   // we transfer cached image on a cairo_surface (with colorspace transform if needed)
   cairo_surface_t *tmp_surface = NULL;
-  uint8_t *rgbbuf = (uint8_t *)calloc((size_t)buf_wd * buf_ht * 4, sizeof(uint8_t));
+  uint8_t *rgbbuf = calloc((size_t)buf_wd * buf_ht * 4, sizeof(uint8_t));
   if(rgbbuf)
   {
     gboolean have_lock = FALSE;
@@ -790,7 +792,7 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
         {
           dt_print(DT_DEBUG_ALWAYS,
                   "oops, there seems to be a code path setting an"
-                  " unhandled color space of thumbnails (%s)!\n",
+                  " unhandled color space of thumbnails (%s)!",
                   dt_colorspaces_get_name(buf.color_space, "from file"));
         }
       }
@@ -883,13 +885,13 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
   // logs
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF,
-             "got surface  %ix%i created in %0.04f sec\n",
+             "got surface  %ix%i created in %0.04f sec",
              img_width, img_height, dt_get_wtime() - tt);
 
   // we consider skull as ok as the image hasn't to be reload
   if(ret != DT_VIEW_SURFACE_OK)
     dt_print(DT_DEBUG_LIGHTTABLE,
-      "dt_view_image_get_surface  ID=%i with surface problem %s%s%s\n",
+      "dt_view_image_get_surface  ID=%i with surface problem %s%s%s",
       imgid,
       tmp_surface ? "" : "no tmp_surface, ",
       ret == DT_VIEW_SURFACE_SMALLER ? "DT_VIEW_SURFACE_SMALLER" : "",
@@ -1073,7 +1075,7 @@ GtkWidget *dt_view_filter_get_sort_box(const dt_view_manager_t *vm)
 
 GtkWidget *dt_view_filter_get_count(const dt_view_manager_t *vm)
 {
-  if(vm->proxy.filter.module && vm->proxy.filter.get_count)
+  if(vm && vm->proxy.filter.module && vm->proxy.filter.get_count)
     return vm->proxy.filter.get_count(vm->proxy.filter.module);
   return NULL;
 }
@@ -1086,14 +1088,14 @@ void dt_view_active_images_reset(const gboolean raise)
   darktable.view_manager->active_images = NULL;
 
   if(raise)
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 }
 void dt_view_active_images_add(dt_imgid_t imgid, gboolean raise)
 {
   darktable.view_manager->active_images =
     g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(imgid));
   if(raise)
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 }
 GSList *dt_view_active_images_get()
 {
@@ -1319,11 +1321,16 @@ GSList *dt_mouse_action_create_simple(GSList *actions,
                                       const GdkModifierType accel,
                                       const char *const description)
 {
-  dt_mouse_action_t *a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = type;
-  a->mods = accel;
-  g_strlcpy(a->name, description, sizeof(a->name));
-  return g_slist_append(actions, a);
+  dt_mouse_action_t *a = calloc(1, sizeof(dt_mouse_action_t));
+  if(a)
+  {
+    a->action = type;
+    a->mods = accel;
+    g_strlcpy(a->name, description, sizeof(a->name));
+    return g_slist_append(actions, a);
+  }
+  else
+    return actions;
 }
 
 GSList *dt_mouse_action_create_format(GSList *actions,
@@ -1332,55 +1339,60 @@ GSList *dt_mouse_action_create_format(GSList *actions,
                                       const char *const format_string,
                                       const char *const replacement)
 {
-  dt_mouse_action_t *a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = type;
-  a->mods = accel;
-  g_snprintf(a->name, sizeof(a->name), format_string, replacement);
-  return g_slist_append(actions, a);
+  dt_mouse_action_t *a = calloc(1, sizeof(dt_mouse_action_t));
+  if(a)
+  {
+    a->action = type;
+    a->mods = accel;
+    g_snprintf(a->name, sizeof(a->name), format_string, replacement);
+    return g_slist_append(actions, a);
+  }
+  else
+    return actions;
 }
 
 static gchar *_mouse_action_get_string(dt_mouse_action_t *ma)
 {
   gchar *atxt = NULL;
   if(ma->mods & GDK_SHIFT_MASK  )
-    atxt = dt_util_dstrcat(atxt, "%s+", _("shift"));
+    dt_util_str_cat(&atxt, "%s+", _("shift"));
   if(ma->mods & GDK_CONTROL_MASK)
-    atxt = dt_util_dstrcat(atxt, "%s+", _("ctrl"));
+    dt_util_str_cat(&atxt, "%s+", _("ctrl"));
   if(ma->mods & GDK_MOD1_MASK   )
 #ifdef __APPLE__
-    atxt = dt_util_dstrcat(atxt, "%s+", _("option"));
+    dt_util_str_cat(&atxt, "%s+", _("option"));
 #else
-    atxt = dt_util_dstrcat(atxt, "%s+", _("alt"));
+    dt_util_str_cat(&atxt, "%s+", _("alt"));
 #endif
 
   switch(ma->action)
   {
     case DT_MOUSE_ACTION_LEFT:
-      atxt = dt_util_dstrcat(atxt, _("left click"));
+      dt_util_str_cat(&atxt, _("left-click"));
       break;
     case DT_MOUSE_ACTION_RIGHT:
-      atxt = dt_util_dstrcat(atxt, _("right click"));
+      dt_util_str_cat(&atxt, _("right-click"));
       break;
     case DT_MOUSE_ACTION_MIDDLE:
-      atxt = dt_util_dstrcat(atxt, _("middle click"));
+      dt_util_str_cat(&atxt, _("middle-click"));
       break;
     case DT_MOUSE_ACTION_SCROLL:
-      atxt = dt_util_dstrcat(atxt, _("scroll"));
+      dt_util_str_cat(&atxt, _("scroll"));
       break;
     case DT_MOUSE_ACTION_DOUBLE_LEFT:
-      atxt = dt_util_dstrcat(atxt, _("left double-click"));
+      dt_util_str_cat(&atxt, _("left double-click"));
       break;
     case DT_MOUSE_ACTION_DOUBLE_RIGHT:
-      atxt = dt_util_dstrcat(atxt, _("right double-click"));
+      dt_util_str_cat(&atxt, _("right double-click"));
       break;
     case DT_MOUSE_ACTION_DRAG_DROP:
-      atxt = dt_util_dstrcat(atxt, _("drag and drop"));
+      dt_util_str_cat(&atxt, _("drag and drop"));
       break;
     case DT_MOUSE_ACTION_LEFT_DRAG:
-      atxt = dt_util_dstrcat(atxt, _("left click+drag"));
+      dt_util_str_cat(&atxt, _("left-click+drag"));
       break;
     case DT_MOUSE_ACTION_RIGHT_DRAG:
-      atxt = dt_util_dstrcat(atxt, _("right click+drag"));
+      dt_util_str_cat(&atxt, _("right-click+drag"));
       break;
   }
 
@@ -1655,23 +1667,23 @@ void dt_view_paint_surface(cairo_t *cr,
 {
   dt_develop_t *dev = darktable.develop;
 
-  float pts[] = { buf_zoom_x, buf_zoom_y,
-                  dev->preview_pipe->backbuf_zoom_x, dev->preview_pipe->backbuf_zoom_y };
-  dt_dev_distort_transform_plus(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 2);
-
   int processed_width, processed_height;
   dt_dev_get_processed_size(port, &processed_width, &processed_height);
+
+  float pts[] = { buf_zoom_x, buf_zoom_y,
+                  dev->preview_pipe->backbuf_zoom_x, dev->preview_pipe->backbuf_zoom_y,
+                  port->zoom_x, port->zoom_y };
+  dt_dev_distort_transform_plus(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 3);
 
   float offset_x = pts[0] / processed_width - 0.5f;
   float offset_y = pts[1] / processed_height - 0.5f;
   float preview_x = pts[2] / processed_width - 0.5f;
   float preview_y = pts[3] / processed_height - 0.5f;
+  float zoom_x = pts[4] / port->pipe->processed_width - 0.5f;
+  float zoom_y = pts[5] / port->pipe->processed_height - 0.5f;
 
-  dt_dev_zoom_t zoom;
-  int closeup;
-  float zoom_x, zoom_y;
-  dt_dev_get_viewport_params(port, &zoom, &closeup, &zoom_x, &zoom_y);
-
+  dt_dev_zoom_t zoom = port->zoom;
+  int closeup = port->closeup;
   const float ppd           = port->ppd;
   const double tb           = port->border_size;
   const float zoom_scale    = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 1);
@@ -1681,7 +1693,7 @@ void dt_view_paint_surface(cairo_t *cr,
       "dt_view_paint_surface",
         port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
         "viewport zoom_scale %6.3f backbuf_scale %6.3f "
-        "(x=%6.2f y=%6.2f) -> (x=%+.3f y=%+.3f)\n",
+        "(x=%6.2f y=%6.2f) -> (x=%+.3f y=%+.3f)",
         zoom_scale, backbuf_scale,
         port->zoom_x, port->zoom_y, zoom_x, zoom_y);
 
@@ -1726,10 +1738,19 @@ void dt_view_paint_surface(cairo_t *cr,
   cairo_scale(cr, zoom_scale, zoom_scale);
 
   const double back_scale = (buf_scale == 0 ? 1.0 : backbuf_scale / buf_scale) * (1<<closeup) / ppd;
+  const double trans_x = (offset_x - zoom_x) * processed_width * buf_scale - 0.5 * buf_width;
+  const double trans_y = (offset_y - zoom_y) * processed_height * buf_scale - 0.5 * buf_height;
 
   if(dev->preview_pipe->output_imgid == dev->image_storage.id
+     && (port->pipe->output_imgid != dev->image_storage.id
+         || fabsf(backbuf_scale / buf_scale - 1.0f) > .09f
+         || floor(maxw / 2 / back_scale) - 1 > MIN(- trans_x, trans_x + buf_width)
+         || floor(maxh / 2 / back_scale) - 1 > MIN(- trans_y, trans_y + buf_height))
      && (port == &dev->full || port == &dev->preview2))
   {
+    if(port->pipe->status == DT_DEV_PIXELPIPE_VALID)
+      port->pipe->status = DT_DEV_PIXELPIPE_DIRTY;
+
     // draw preview
     float wd = processed_width * dev->preview_pipe->processed_width / MAX(1, dev->full.pipe->processed_width);
     float ht = processed_height * dev->preview_pipe->processed_width / MAX(1, dev->full.pipe->processed_width);
@@ -1747,7 +1768,7 @@ void dt_view_paint_surface(cairo_t *cr,
          dev->preview_pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
          "size %4lux%-4lu processed %4.0fx%-4.0f "
          "buf %4dx%-4d scale=%.3f "
-         "zoom (x=%6.2f y=%6.2f) -> offset (x=%+.3f y=%+.3f)\n",
+         "zoom (x=%6.2f y=%6.2f) -> offset (x=%+.3f y=%+.3f)",
          width, height, wd, ht,
          dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height, zoom_scale,
          dev->preview_pipe->backbuf_zoom_x, dev->preview_pipe->backbuf_zoom_y,
@@ -1765,15 +1786,13 @@ void dt_view_paint_surface(cairo_t *cr,
          port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
          "size %4lux%-4lu processed %4dx%-4d "
          "buf %4dx%-4d scale=%.3f "
-         "zoom (x=%6.2f y=%6.2f) -> offset (x=%+.3f y=%+.3f)\n",
+         "zoom (x=%6.2f y=%6.2f) -> offset (x=%+.3f y=%+.3f)",
          width, height, processed_width, processed_height,
          buf_width, buf_height, buf_scale,
          buf_zoom_x, buf_zoom_y,
          offset_x, offset_y);
     cairo_scale(cr, back_scale / zoom_scale, back_scale / zoom_scale);
-    cairo_translate(cr, (offset_x - zoom_x) * processed_width * buf_scale - 0.5 * buf_width,
-                        (offset_y - zoom_y) * processed_height * buf_scale - 0.5 * buf_height);
-
+    cairo_translate(cr, trans_x, trans_y);
     cairo_surface_t *surface = dt_view_create_surface(buf, buf_width, buf_height);
     cairo_set_source_surface(cr, surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 DT_MODULE(1)
 
 /* proxy function, to add a widget to toolbox */
-static void _lib_view_toolbox_add(dt_lib_module_t *self, GtkWidget *widget, dt_view_type_flags_t views);
+static void _lib_view_toolbox_add(dt_lib_module_t *self,
+                                  GtkWidget *widget,
+                                  dt_view_type_flags_t views);
 
 
 typedef struct child_data_t
@@ -69,7 +71,7 @@ int position(const dt_lib_module_t *self)
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_view_toolbox_t *d = (dt_lib_view_toolbox_t *)g_malloc0(sizeof(dt_lib_view_toolbox_t));
+  dt_lib_view_toolbox_t *d = g_malloc0(sizeof(dt_lib_view_toolbox_t));
   self->data = (void *)d;
 
   /* the toolbar container */
@@ -82,19 +84,24 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_view_toolbox_t *d = (dt_lib_view_toolbox_t *)self->data;
+  dt_lib_view_toolbox_t *d = self->data;
   g_list_free_full(d->child_views,free);
   g_free(self->data);
   self->data = NULL;
 }
 
-void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
+void view_enter(dt_lib_module_t *self,
+                dt_view_t *old_view,
+                dt_view_t *new_view)
 {
-  dt_lib_view_toolbox_t *d = (dt_lib_view_toolbox_t *)self->data;
+  dt_lib_view_toolbox_t *d = self->data;
   dt_view_type_flags_t nv= new_view->view(new_view);
-  for(const GList *child_elt = d->child_views; child_elt; child_elt = g_list_next(child_elt))
+
+  for(const GList *child_elt = d->child_views;
+      child_elt;
+      child_elt = g_list_next(child_elt))
   {
-    child_data_t* child_data = (child_data_t*)child_elt->data;
+    child_data_t* child_data = child_elt->data;
     if(child_data->views & nv)
     {
       gtk_widget_show_all(child_data->child);
@@ -107,9 +114,11 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
 }
 
 
-static void _lib_view_toolbox_add(dt_lib_module_t *self, GtkWidget *widget, dt_view_type_flags_t views)
+static void _lib_view_toolbox_add(dt_lib_module_t *self,
+                                  GtkWidget *widget,
+                                  dt_view_type_flags_t views)
 {
-  dt_lib_view_toolbox_t *d = (dt_lib_view_toolbox_t *)self->data;
+  dt_lib_view_toolbox_t *d = self->data;
   gtk_box_pack_start(GTK_BOX(d->container), widget, TRUE, FALSE, 0);
   gtk_widget_show_all(widget);
 

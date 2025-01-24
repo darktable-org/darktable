@@ -70,7 +70,7 @@ static void _view_print_settings(const dt_view_t *view,
                                  dt_print_info_t *pinfo,
                                  dt_images_box *imgs)
 {
-  dt_print_t *prt = (dt_print_t *)view->data;
+  dt_print_t *prt = view->data;
 
   prt->pinfo = pinfo;
   prt->imgs = imgs;
@@ -87,7 +87,7 @@ static void _drag_and_drop_received(GtkWidget *widget,
                                     gpointer user_data)
 {
   const dt_view_t *self = (dt_view_t *)user_data;
-  dt_print_t *prt = (dt_print_t *)self->data;
+  dt_print_t *prt = self->data;
 
   const int bidx = dt_printing_get_image_box(prt->imgs, x, y);
 
@@ -122,7 +122,7 @@ static gboolean _drag_motion_received(GtkWidget *widget,
                                       gpointer data)
 {
   const dt_view_t *self = (dt_view_t *)data;
-  dt_print_t *prt = (dt_print_t *)self->data;
+  dt_print_t *prt = self->data;
 
   const int bidx = dt_printing_get_image_box(prt->imgs, x, y);
   prt->imgs->motion_over = bidx;
@@ -144,7 +144,7 @@ void init(dt_view_t *self)
 
 void cleanup(dt_view_t *self)
 {
-  dt_print_t *prt = (dt_print_t *)self->data;
+  dt_print_t *prt = self->data;
   free(prt);
 }
 
@@ -155,7 +155,7 @@ static void _expose_print_page(dt_view_t *self,
                                const int32_t pointerx,
                                const int32_t pointery)
 {
-  dt_print_t *prt = (dt_print_t *)self->data;
+  dt_print_t *prt = self->data;
 
   if(prt->pinfo == NULL)
     return;
@@ -274,7 +274,7 @@ void mouse_moved(dt_view_t *self,
                  double pressure,
                  int which)
 {
-  const dt_print_t *prt = (dt_print_t *)self->data;
+  const dt_print_t *prt = self->data;
 
   // if we are not hovering over a thumbnail in the filmstrip -> show
   // metadata of first opened image.
@@ -355,9 +355,7 @@ void enter(dt_view_t *self)
     dt_view_active_images_add(prt->imgs->imgid_to_load, TRUE);
   }
 
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-                            G_CALLBACK(_print_mipmaps_updated_signal_callback),
-                            (gpointer)self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, _print_mipmaps_updated_signal_callback, self);
 
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 
@@ -377,9 +375,7 @@ void leave(dt_view_t *self)
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
 
   /* disconnect from mipmap updated signal */
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_print_mipmaps_updated_signal_callback),
-                                     (gpointer)self);
+  DT_CONTROL_SIGNAL_DISCONNECT_ALL(self, "print");
 
   dt_printing_clear_boxes(prt->imgs);
 

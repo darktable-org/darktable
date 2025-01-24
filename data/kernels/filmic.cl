@@ -291,9 +291,6 @@ static inline float filmic_spline(const float x,
   return result;
 }
 
-#define NORM_MIN 1.52587890625e-05f // norm can't be < to 2^(-16)
-
-
 static inline float log_tonemapping_v1(const float x,
                                        const float grey, const float black,
                                        const float dynamic_range)

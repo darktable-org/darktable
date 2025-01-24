@@ -157,6 +157,7 @@ static inline gboolean _choleski_decompose_safe(const float *const restrict A,
       }
     }
 
+  if(!valid) dt_print(DT_DEBUG_ALWAYS, "Cholesky decomposition returned NaNs");
   return valid; // success ?
 }
 
@@ -210,8 +211,8 @@ static inline gboolean _triangular_descent_safe(const float *const restrict L,
       valid = FALSE;
     }
   }
-
-  return valid; // success ?
+  if(!valid) dt_print(DT_DEBUG_ALWAYS, "Cholesky LU triangular descent returned NaNs");
+  return valid;
 }
 
 
@@ -264,7 +265,8 @@ static inline gboolean _triangular_ascent_safe(const float *const restrict L,
     }
   }
 
-  return valid; // success ?
+  if(!valid) dt_print(DT_DEBUG_ALWAYS, "Cholesky LU triangular ascent returned NaNs");
+  return valid;
 }
 
 
@@ -291,7 +293,6 @@ static inline gboolean _solve_hermitian(const float *const restrict A,
 
   // clock_t start = clock();
 
-  gboolean valid = FALSE;
   float *const restrict x = dt_alloc_align_float(n);
   float *const restrict L = dt_alloc_align_float(n * n);
 
@@ -306,38 +307,37 @@ static inline gboolean _solve_hermitian(const float *const restrict A,
     return FALSE;
   }
 
+  gboolean valid = FALSE;
+
   // LU decomposition
-  valid = (checks) ? _choleski_decompose_safe(A, L, n) :
-                     _choleski_decompose_fast(A, L, n) ;
-  if(!valid) dt_print(DT_DEBUG_ALWAYS, "Cholesky decomposition returned NaNs\n");
+  valid = checks ? _choleski_decompose_safe(A, L, n)
+                 : _choleski_decompose_fast(A, L, n);
 
   // Triangular descent
   if(valid)
-    valid = (checks) ? _triangular_descent_safe(L, y, x, n) :
-                       _triangular_descent_fast(L, y, x, n) ;
-  if(!valid) dt_print(DT_DEBUG_ALWAYS, "Cholesky LU triangular descent returned NaNs\n");
+    valid = checks  ? _triangular_descent_safe(L, y, x, n)
+                    : _triangular_descent_fast(L, y, x, n);
 
   // Triangular ascent
   if(valid)
-    valid = (checks) ? _triangular_ascent_safe(L, x, y, n) :
-                       _triangular_ascent_fast(L, x, y, n);
-  if(!valid) dt_print(DT_DEBUG_ALWAYS, "Cholesky LU triangular ascent returned NaNs\n");
+    valid = checks  ? _triangular_ascent_safe(L, x, y, n)
+                    : _triangular_ascent_fast(L, x, y, n);
 
   dt_free_align(x);
   dt_free_align(L);
 
   //clock_t end = clock();
-  //dt_print(DT_DEBUG_ALWAYS, "hermitian matrix solving took : %f s\n", ((float) (end - start)) / CLOCKS_PER_SEC);
+  //dt_print(DT_DEBUG_ALWAYS, "hermitian matrix solving took : %f s", ((float) (end - start)) / CLOCKS_PER_SEC);
 
   return valid;
 }
 
 
 __DT_CLONE_TARGETS__
-static inline gboolean _transpose_dot_matrix(float *const restrict A, // input
-                                             float *const restrict A_square, // output
-                                             const size_t m,
-                                             const size_t n)
+static inline void _transpose_dot_matrix(float *const restrict A, // input
+                                         float *const restrict A_square, // output
+                                         const size_t m,
+                                         const size_t n)
 {
   // Construct the square symmetrical definite positive matrix A' A,
   // BUT only compute the lower triangle part for performance
@@ -351,20 +351,17 @@ static inline gboolean _transpose_dot_matrix(float *const restrict A, // input
 
       A_square[i * n + j] = sum;
     }
-
-  return TRUE;
 }
 
 
 __DT_CLONE_TARGETS__
-static inline gboolean _transpose_dot_vector(float *const restrict A, // input
-                                             float *const restrict y, // input
-                                             float *const restrict y_square, // output
-                                             const size_t m,
-                                             const size_t n)
+static inline void _transpose_dot_vector(float *const restrict A, // input
+                                         float *const restrict y, // input
+                                         float *const restrict y_square, // output
+                                         const size_t m,
+                                         const size_t n)
 {
   // Construct the vector A' y
-
   for(size_t i = 0; i < n; ++i)
   {
     float sum = 0.0f;
@@ -373,8 +370,6 @@ static inline gboolean _transpose_dot_vector(float *const restrict A, // input
 
     y_square[i] = sum;
   }
-
-  return TRUE;
 }
 
 
@@ -391,10 +386,9 @@ static inline gboolean pseudo_solve(float *const restrict A,
 
   //clock_t start = clock();
 
-  gboolean valid = TRUE;
-  if(m < n)
+  if(m < n || n < 2 || m < 2)
   {
-    dt_print(DT_DEBUG_ALWAYS, "Pseudo solve: cannot cast %zu × %zu matrice\n", m, n);
+    dt_print(DT_DEBUG_ALWAYS, "Pseudo solve: cannot cast %zu × %zu matrice", m, n);
     return FALSE;
   }
 
@@ -405,6 +399,8 @@ static inline gboolean pseudo_solve(float *const restrict A,
   {
     dt_free_align(A_square);
     dt_free_align(y_square);
+    dt_print(DT_DEBUG_ALWAYS, "Choleski decomposition failed to allocate memory,"
+             " check your RAM settings");
     dt_control_log(_("Choleski decomposition failed to allocate memory,"
                      " check your RAM settings"));
     return FALSE;
@@ -415,25 +411,24 @@ static inline gboolean pseudo_solve(float *const restrict A,
     DT_OMP_PRAGMA(section)
     {
       // Prepare the least squares matrix = A' A
-      valid = _transpose_dot_matrix(A, A_square, m, n);
+      _transpose_dot_matrix(A, A_square, m, n);
     }
-
     DT_OMP_PRAGMA(section)
     {
       // Prepare the y square vector = A' y
-      valid = _transpose_dot_vector(A, y, y_square, m, n);
+      _transpose_dot_vector(A, y, y_square, m, n);
     }
   }
 
   // Solve A' A x = A' y for x
-  valid = _solve_hermitian(A_square, y_square, n, checks);
-  dt_simd_memcpy(y_square, y, n);
+  gboolean valid = _solve_hermitian(A_square, y_square, n, checks);
+  if(valid) dt_simd_memcpy(y_square, y, n);
 
   dt_free_align(y_square);
   dt_free_align(A_square);
 
   //clock_t end = clock();
-  //dt_print(DT_DEBUG_ALWAYS, "hermitian matrix solving took : %f s\n", ((float) (end - start)) / CLOCKS_PER_SEC);
+  //dt_print(DT_DEBUG_ALWAYS, "hermitian matrix solving took : %f s", ((float) (end - start)) / CLOCKS_PER_SEC);
 
   return valid;
 }

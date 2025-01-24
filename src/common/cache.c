@@ -50,7 +50,7 @@ void dt_cache_cleanup(dt_cache_t *cache)
   g_hash_table_destroy(cache->hashtable);
   for(GList *l = cache->lru; l; l = g_list_next(l))
   {
-    dt_cache_entry_t *entry = (dt_cache_entry_t *)l->data;
+    dt_cache_entry_t *entry = l->data;
 
     if(cache->cleanup)
     {
@@ -134,7 +134,7 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache,
     dt_pthread_mutex_unlock(&cache->lock);
     const double end = dt_get_debug_wtime();
     if(end - start > 0.1)
-      dt_print(DT_DEBUG_ALWAYS, "try+ wait time %.06fs mode %c \n", end - start, mode);
+      dt_print(DT_DEBUG_ALWAYS, "try+ wait time %.06fs mode %c", end - start, mode);
 
     if(mode == 'w')
     {
@@ -149,7 +149,7 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache,
   dt_pthread_mutex_unlock(&cache->lock);
   const double end = dt_get_debug_wtime();
   if(end - start > 0.1)
-    dt_print(DT_DEBUG_ALWAYS, "try- wait time %.06fs\n", end - start);
+    dt_print(DT_DEBUG_ALWAYS, "try- wait time %.06fs", end - start);
   return 0;
 }
 
@@ -226,7 +226,7 @@ restart:
   // here dies your 32-bit system:
   dt_cache_entry_t *entry = (dt_cache_entry_t *)g_slice_alloc(sizeof(dt_cache_entry_t));
   const int ret = dt_pthread_rwlock_init(&entry->lock, 0);
-  if(ret) dt_print(DT_DEBUG_ALWAYS, "rwlock init: %d\n", ret);
+  if(ret) dt_print(DT_DEBUG_ALWAYS, "rwlock init: %d", ret);
 
   entry->data = 0;
   entry->data_size = cache->entry_size;
@@ -264,7 +264,7 @@ restart:
   dt_pthread_mutex_unlock(&cache->lock);
   const double end = dt_get_debug_wtime();
   if(end - start > 0.1)
-    dt_print(DT_DEBUG_ALWAYS, "wait time %.06fs\n", end - start);
+    dt_print(DT_DEBUG_ALWAYS, "wait time %.06fs", end - start);
 
   // WARNING: do *NOT* unpoison here. it must be done by the caller!
 
@@ -340,7 +340,7 @@ void dt_cache_gc(dt_cache_t *cache,
   GList *l = cache->lru;
   while(l)
   {
-    dt_cache_entry_t *entry = (dt_cache_entry_t *)l->data;
+    dt_cache_entry_t *entry = l->data;
     assert(entry->link->data == entry);
     l = g_list_next(l); // we might remove this element, so walk to
                         // the next one while we still have the

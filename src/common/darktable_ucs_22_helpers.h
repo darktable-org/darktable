@@ -5,8 +5,6 @@
 #include "common/colorspaces_inline_conversions.h"
 #include "common/chromatic_adaptation.h"
 
-#define LUT_ELEM 360     // gamut LUT number of elements: resolution of 1°
-
 static inline float Delta_H(const float h_1, const float h_2)
 {
   // Compute the difference between 2 angles
@@ -20,7 +18,7 @@ static inline float Delta_H(const float h_1, const float h_2)
 static inline void dt_UCS_22_build_gamut_LUT(dt_colormatrix_t input_matrix, float gamut_LUT[LUT_ELEM])
 {
   /**
-   * @brief Build a LUT of the gamut boundary of the RGB space defined by `input_matrix` in the form
+   * @brief Build a LUT of the gamut boundary of the RGB space defined by `input_matrix` in the form
    * boundary_colorfulness = f(hue). The LUT is sampled for every degree of hue angle between [-180°; 180°[.
    * input_matrix is the RGB -> XYZ D65 conversion matrix. Since all ICC profiles use D50 XYZ, it needs
    * to be premultiplied by the chromatic adaptation transform ahead.
@@ -29,8 +27,9 @@ static inline void dt_UCS_22_build_gamut_LUT(dt_colormatrix_t input_matrix, floa
    * for the details of the computations.
    */
 
-  // init the LUT between -180° and 180° by increments of 1°
+  // init the LUT between -180° and 180°
   for(size_t k = 0; k < LUT_ELEM; k++) gamut_LUT[k] = 0.f;
+  float *const restrict sampler = dt_calloc_align_float(LUT_ELEM);
 
   dt_aligned_pixel_t D65_xyY = { D65xyY.x,  D65xyY.y,  1.f, 0.f };
 
@@ -54,13 +53,11 @@ static inline void dt_UCS_22_build_gamut_LUT(dt_colormatrix_t input_matrix, floa
   const float h_green = atan2f(xyY_green[1] - D65_xyY[1], xyY_green[0] - D65_xyY[0]);
   const float h_blue  = atan2f(xyY_blue[1] - D65_xyY[1], xyY_blue[0] - D65_xyY[0]);
 
-  float *const restrict lut_sampler = dt_calloc_align_float(LUT_ELEM);
-
   // March the gamut boundary in CIE xyY 1931 by angular steps of 0.02°
-  DT_OMP_FOR(reduction(max : lut_sampler[:LUT_ELEM]))
-  for(int i = 0; i < 50 * 360; i++)
+  DT_OMP_FOR(reduction(+: gamut_LUT[:LUT_ELEM], sampler[:LUT_ELEM]))
+  for(int i = 0; i < 50 * LUT_ELEM; i++)
   {
-    const float angle = -M_PI_F + ((float)i) / (50.f * 360.f) * 2.f * M_PI_F;
+    const float angle = -M_PI_F + ((float)i) / (float)(50 * LUT_ELEM) * 2.f * M_PI_F;
     const float tan_angle = tanf(angle);
 
     const float t_1 = Delta_H(angle, h_blue)  / Delta_H(h_red, h_blue);
@@ -99,22 +96,16 @@ static inline void dt_UCS_22_build_gamut_LUT(dt_colormatrix_t input_matrix, floa
 
     // Get the hue angle in darktable UCS
     const float hue = atan2f(UV_star_prime[1], UV_star_prime[0]);
-    int index = roundf((LUT_ELEM - 1) * (hue + M_PI_F) / (2.f * M_PI_F));
+    int index = roundf((float)(LUT_ELEM - 1) * (hue + M_PI_F) / (2.f * M_PI_F));
     index += (index < 0) ? LUT_ELEM : 0;
     index -= (index >= LUT_ELEM) ? LUT_ELEM : 0;
     // Warning: we store M², the square of the colorfulness
-    lut_sampler[index] = fmaxf(lut_sampler[index], UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1]);
+    gamut_LUT[index] += UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1];
+    sampler[index] += 1.0f;
   }
-  // anti-aliasing on the LUT (simple 5-taps 1D box average)
-  for(size_t k = 2; k < LUT_ELEM - 2; k++)
-    gamut_LUT[k] = (lut_sampler[k - 2] + lut_sampler[k - 1] + lut_sampler[k] + lut_sampler[k + 1] + lut_sampler[k + 2]) / 5.f;
-
-  // handle bounds
-  gamut_LUT[0] = (lut_sampler[LUT_ELEM - 2] + lut_sampler[LUT_ELEM - 1] + lut_sampler[0] + lut_sampler[1] + lut_sampler[2]) / 5.f;
-  gamut_LUT[1] = (lut_sampler[LUT_ELEM - 1] + lut_sampler[0] + lut_sampler[1] + lut_sampler[2] + lut_sampler[3]) / 5.f;
-  gamut_LUT[LUT_ELEM - 1] = (lut_sampler[LUT_ELEM - 3] + lut_sampler[LUT_ELEM - 2] + lut_sampler[LUT_ELEM - 1] + lut_sampler[0] + lut_sampler[1]) / 5.f;
-  gamut_LUT[LUT_ELEM - 2] = (lut_sampler[LUT_ELEM - 4] + lut_sampler[LUT_ELEM - 3] + lut_sampler[LUT_ELEM - 2] + lut_sampler[LUT_ELEM - 1] + lut_sampler[0]) / 5.f;
-  dt_free_align(lut_sampler);
+  for(size_t k = 0; k < LUT_ELEM; k++)
+    gamut_LUT[k] = gamut_LUT[k] / fmaxf(1.0f, sampler[k]);
+  dt_free_align(sampler);
 }
 
 
@@ -141,28 +132,21 @@ static inline float get_minimum_saturation(float gamut_LUT[LUT_ELEM], const floa
 static inline float lookup_gamut(const float gamut_lut[LUT_ELEM], const float hue)
 {
   /**
-   * @brief Linearly interpolate the value of the gamut LUT at the hue angle in radians. The LUT needs to be sampled every
-   * degree of angle. WARNING : x should be between [-pi ; pi[, which is the default output of atan2 anyway.
+   * @brief Linearly interpolate the value of the gamut LUT at the hue angle in radians.
+   * WARNING : hue should be between [-pi ; pi[, which is the default output of atan2 anyway.
    */
 
   // convert hue in LUT index coordinate
   const float x_test = (float)LUT_ELEM * (hue + M_PI_F) / (2.f * M_PI_F);
 
-  // find the 2 closest integer coordinates (next/previous)
-  float x_prev = floorf(x_test);
-  float x_next = ceilf(x_test);
+  const float x_prev = floor(x_test);
+  const float x_next = ceil(x_test);
 
   // get the 2 closest LUT elements at integer coordinates
   // cycle on the hue ring if out of bounds
-  int xi = (int)x_prev;
-  if(xi < 0) xi = LUT_ELEM - 1;
-  else if(xi > LUT_ELEM - 1) xi = 0;
-
-  int xii = (int)x_next;
-  if(xii < 0) xii = LUT_ELEM - 1;
-  else if(xii > LUT_ELEM - 1) xii = 0;
-
-  // fetch the corresponding y values
+  const int xi = (int)x_prev & (LUT_ELEM - 1);
+  const int xii = (int)x_next & (LUT_ELEM - 1);
+ // fetch the corresponding y values
   const float y_prev = gamut_lut[xi];
 
   // return y_prev if we are on the same integer LUT element or do linear interpolation
@@ -218,8 +202,7 @@ static inline struct dt_iop_order_iccprofile_info_t * D65_adapt_iccprofile(struc
   if(work_profile) // && !isnan(work_profile->matrix_in[0][0]))
   {
     // Alloc
-    struct dt_iop_order_iccprofile_info_t *white_adapted_profile =
-      (dt_iop_order_iccprofile_info_t *)dt_alloc_aligned(sizeof(dt_iop_order_iccprofile_info_t));
+    struct dt_iop_order_iccprofile_info_t *white_adapted_profile = dt_alloc_aligned(sizeof(dt_iop_order_iccprofile_info_t));
 
     // Init a new temp profile by copying the base profile
     memcpy(white_adapted_profile, work_profile, sizeof(dt_iop_order_iccprofile_info_t));

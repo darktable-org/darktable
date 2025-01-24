@@ -54,7 +54,7 @@ GtkWidget *dtgtk_reset_label_new(const gchar *text, dt_iop_module_t *module, voi
   {
     label->offset = param - (void *)module->default_params;
     if(label->offset < 0 || label->offset + label->size > module->params_size)
-        dt_print(DT_DEBUG_ALWAYS, "[dtgtk_reset_label_new] reference outside %s params\n", module->so->op);
+        dt_print(DT_DEBUG_ALWAYS, "[dtgtk_reset_label_new] reference outside %s params", module->so->op);
   }
 
   label->lb = GTK_LABEL(gtk_label_new(text));

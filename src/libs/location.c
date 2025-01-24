@@ -86,7 +86,7 @@ typedef struct _callback_param_t
 
 /* entry value committed, perform a search */
 static void _lib_location_entry_activated(GtkButton *button,
-                                          gpointer user_data);
+                                          dt_lib_module_t *self);
 
 static gboolean _lib_location_result_item_activated(GtkButton *button,
                                                     GdkEventButton *ev,
@@ -119,7 +119,7 @@ uint32_t container(dt_lib_module_t *self)
 
 void gui_reset(dt_lib_module_t *self)
 {
-  dt_lib_location_t *lib = (dt_lib_location_t *)self->data;
+  dt_lib_location_t *lib = self->data;
   gtk_entry_set_text(lib->search, "");
   clear_search(lib);
 }
@@ -136,6 +136,7 @@ void gui_init(dt_lib_module_t *self)
 {
   self->data = calloc(1, sizeof(dt_lib_location_t));
   dt_lib_location_t *lib = self->data;
+  if(!lib) return;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
@@ -208,14 +209,16 @@ static GtkWidget *_lib_location_place_widget_new(dt_lib_location_t *lib,
   gtk_widget_show_all(eb);
 
   /* connect button press signal for result item */
-  _callback_param_t *param = (_callback_param_t *)malloc(sizeof(_callback_param_t));
-  lib->callback_params = g_list_append(lib->callback_params, param);
-  param->lib = lib;
-  param->result = place;
-  g_signal_connect(G_OBJECT(eb), "button-press-event",
-                   G_CALLBACK(_lib_location_result_item_activated),
-                   (gpointer)param);
-
+  _callback_param_t *param = malloc(sizeof(_callback_param_t));
+  if(param)
+  {
+    lib->callback_params = g_list_append(lib->callback_params, param);
+    param->lib = lib;
+    param->result = place;
+    g_signal_connect(G_OBJECT(eb), "button-press-event",
+                     G_CALLBACK(_lib_location_result_item_activated),
+                     (gpointer)param);
+  }
   return eb;
 }
 
@@ -226,14 +229,16 @@ static size_t _lib_location_curl_write_data(void *buffer,
 {
   dt_lib_location_t *lib = (dt_lib_location_t *)userp;
 
-  char *newdata = g_malloc0(lib->response_size + nmemb + 1);
-  if(lib->response != NULL)
-    memcpy(newdata, lib->response, lib->response_size);
-  memcpy(newdata + lib->response_size, buffer, nmemb);
-  g_free(lib->response);
-  lib->response = newdata;
-  lib->response_size += nmemb;
-
+  char *newdata = g_try_malloc0(lib->response_size + nmemb + 1);
+  if(newdata)
+  {
+    if(lib->response != NULL)
+      memcpy(newdata, lib->response, lib->response_size);
+    memcpy(newdata + lib->response_size, buffer, nmemb);
+    g_free(lib->response);
+    lib->response = newdata;
+    lib->response_size += nmemb;
+  }
   return nmemb;
 }
 
@@ -324,18 +329,17 @@ static void _show_location(dt_lib_location_t *lib,
   lib->marker_type = p->marker_type;
   lib->selected_location = p;
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_LOCATION_CHANGED,
-                                p->marker_type == MAP_DISPLAY_POLYGON
-                                ? p->marker_points
-                                : NULL);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_LOCATION_CHANGED,
+                          p->marker_type == MAP_DISPLAY_POLYGON
+                          ? p->marker_points
+                          : NULL);
 }
 
 /* called when search job has been processed and
    result has been parsed */
-static void _lib_location_search_finish(gpointer user_data)
+static void _lib_location_search_finish(dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_location_t *lib = (dt_lib_location_t *)self->data;
+  dt_lib_location_t *lib = self->data;
 
   /* check if search gave us some result */
   if(!lib->places) return;
@@ -360,15 +364,14 @@ static void _lib_location_search_finish(gpointer user_data)
   }
 }
 
-static gboolean _lib_location_search(gpointer user_data)
+static gboolean _lib_location_search(dt_lib_module_t *self)
 {
   GMarkupParseContext *ctx = NULL;
   CURL *curl = NULL;
   CURLcode res;
   GError *err = NULL;
 
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_location_t *lib = (dt_lib_location_t *)self->data;
+  dt_lib_location_t *lib = self->data;
   gchar *query = NULL, *text = NULL;
 
   /* get escaped search text */
@@ -425,7 +428,7 @@ static gboolean _lib_location_search(gpointer user_data)
 bail_out:
   if(err)
   {
-    dt_print(DT_DEBUG_ALWAYS, "location search: %s\n", err->message);
+    dt_print(DT_DEBUG_ALWAYS, "location search: %s", err->message);
     g_error_free(err);
   }
 
@@ -455,10 +458,9 @@ gboolean _lib_location_result_item_activated(GtkButton *button,
 }
 
 void _lib_location_entry_activated(GtkButton *button,
-                                   gpointer user_data)
+                                   dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_location_t *lib = (dt_lib_location_t *)self->data;
+  dt_lib_location_t *lib = self->data;
   const gchar *text = gtk_entry_get_text(lib->search);
   if(!text || text[0] == '\0') return;
 
@@ -467,8 +469,8 @@ void _lib_location_entry_activated(GtkButton *button,
   // gtk_widget_set_sensitive(lib->result, FALSE);
 
   /* start a bg job for fetching results of a search */
-  g_idle_add_full(G_PRIORITY_DEFAULT_IDLE,
-                  _lib_location_search, user_data, _lib_location_search_finish);
+  g_idle_add_full(G_PRIORITY_DEFAULT_IDLE, (GSourceFunc)_lib_location_search,
+                  self, (GDestroyNotify)_lib_location_search_finish);
 }
 
 
@@ -560,9 +562,12 @@ broken_bbox:
           {
             place->marker_type = MAP_DISPLAY_POINT;
             dt_geo_map_display_point_t *p = malloc(sizeof(dt_geo_map_display_point_t));
-            p->lon = lon;
-            p->lat = lat;
-            place->marker_points = g_list_append(place->marker_points, p);
+            if(p)
+            {
+              p->lon = lon;
+              p->lat = lat;
+              place->marker_points = g_list_append(place->marker_points, p);
+            }
           }
         }
         else if(g_str_has_prefix(*avalue, "LINESTRING")
@@ -630,9 +635,12 @@ broken_bbox:
               break;
             }
             dt_geo_map_display_point_t *p = malloc(sizeof(dt_geo_map_display_point_t));
-            p->lon = lon;
-            p->lat = lat;
-            place->marker_points = g_list_prepend(place->marker_points, p);
+            if(p)
+            {
+              p->lon = lon;
+              p->lat = lat;
+              place->marker_points = g_list_prepend(place->marker_points, p);
+            }
             startptr = endptr+1;
             i++;
           }
@@ -652,7 +660,7 @@ broken_bbox:
         else
         {
           gchar *s = g_strndup(*avalue, 100);
-          dt_print(DT_DEBUG_ALWAYS, "unsupported outline: %s%s\n",
+          dt_print(DT_DEBUG_ALWAYS, "unsupported outline: %s%s",
                    s, strlen(s) == strlen(*avalue) ? "" : " ...");
           g_free(s);
         }
@@ -706,7 +714,7 @@ struct params_fixed_t
 void *get_params(dt_lib_module_t *self,
                  int *size)
 {
-  dt_lib_location_t *lib = (dt_lib_location_t *)self->data;
+  dt_lib_location_t *lib = self->data;
   _lib_location_result_t *location = lib->selected_location;
 
   // we have nothing to store when the user hasn't picked a search result
@@ -718,6 +726,11 @@ void *get_params(dt_lib_module_t *self,
   const size_t size_total = size_fixed + size_name + size_points;
 
   void *params = malloc(size_total);
+  if(!params)
+  {
+    *size = 0;
+    return NULL;
+  }
   struct params_fixed_t *params_fixed = (struct params_fixed_t *)params;
   params_fixed->relevance = location->relevance;
   params_fixed->type = location->type;
@@ -734,7 +747,7 @@ void *get_params(dt_lib_module_t *self,
   float *points = (float *)((uint8_t *)params + size_fixed + size_name);
   for(GList *iter = location->marker_points; iter; iter = g_list_next(iter), points += 2)
   {
-    dt_geo_map_display_point_t *point = (dt_geo_map_display_point_t *)iter->data;
+    dt_geo_map_display_point_t *point = iter->data;
     points[0] = point->lat;
     points[1] = point->lon;
   }
@@ -747,7 +760,7 @@ int set_params(dt_lib_module_t *self,
                const void *params,
                int size)
 {
-  dt_lib_location_t *lib = (dt_lib_location_t *)self->data;
+  dt_lib_location_t *lib = self->data;
 
   const size_t size_fixed = sizeof(struct params_fixed_t);
 
@@ -765,8 +778,12 @@ int set_params(dt_lib_module_t *self,
 
   if(size_points % 2 * sizeof(float) != 0) return 1;
 
-  _lib_location_result_t *location =
-    (_lib_location_result_t *)malloc(sizeof(_lib_location_result_t));
+  _lib_location_result_t *location = malloc(sizeof(_lib_location_result_t));
+  if(!location)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[location] out of memory");
+    return 1;
+  }
 
   location->relevance = params_fixed->relevance;
   location->type = params_fixed->type;
@@ -784,11 +801,13 @@ int set_params(dt_lib_module_t *self,
       (uint8_t *)points < (uint8_t *)params + size;
       points += 2)
   {
-    dt_geo_map_display_point_t *p =
-      (dt_geo_map_display_point_t *)malloc(sizeof(dt_geo_map_display_point_t));
-    p->lat = points[0];
-    p->lon = points[1];
-    location->marker_points = g_list_prepend(location->marker_points, p);
+    dt_geo_map_display_point_t *p = malloc(sizeof(dt_geo_map_display_point_t));
+    if(p)
+    {
+      p->lat = points[0];
+      p->lon = points[1];
+      location->marker_points = g_list_prepend(location->marker_points, p);
+    }
   }
   location->marker_points = g_list_reverse(location->marker_points);
 

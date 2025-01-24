@@ -90,7 +90,7 @@ static void _pop_undo(gpointer user_data,
   {
     for(GList *list = (GList *)data; list; list = g_list_next(list))
     {
-      dt_undo_colorlabels_t *undocolorlabels = (dt_undo_colorlabels_t *)list->data;
+      dt_undo_colorlabels_t *undocolorlabels = list->data;
 
       const uint8_t before = (action == DT_ACTION_UNDO)
         ? undocolorlabels->after : undocolorlabels->before;
@@ -220,8 +220,7 @@ static void _colorlabels_execute(const GList *imgs,
 
     if(undo_on)
     {
-      dt_undo_colorlabels_t *undocolorlabels =
-        (dt_undo_colorlabels_t *)malloc(sizeof(dt_undo_colorlabels_t));
+      dt_undo_colorlabels_t *undocolorlabels = malloc(sizeof(dt_undo_colorlabels_t));
       undocolorlabels->imgid = imgid;
       undocolorlabels->before = before;
       undocolorlabels->after = after;
@@ -253,7 +252,7 @@ void dt_colorlabels_set_labels(const GList *img,
       dt_undo_end_group(darktable.undo);
     }
     dt_collection_hint_message(darktable.collection);
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   }
 }
 
@@ -347,11 +346,11 @@ static float _action_process_color_label(gpointer target,
         for(GList *res_iter = res; res_iter; res_iter = g_list_next(res_iter))
         {
           const GdkRGBA c = darktable.bauhaus->colorlabels[GPOINTER_TO_INT(res_iter->data)];
-          result = dt_util_dstrcat(result,
-                                  "<span foreground='#%02x%02x%02x'>⬤ </span>",
-                                  (guint)(c.red*255),
-                                   (guint)(c.green*255),
-                                   (guint)(c.blue*255));
+          dt_util_str_cat(&result,
+                          "<span foreground='#%02x%02x%02x'>⬤ </span>",
+                          (guint)(c.red*255),
+                          (guint)(c.green*255),
+                          (guint)(c.blue*255));
         }
         g_list_free(res);
         if(result)

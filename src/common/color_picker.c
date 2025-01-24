@@ -277,7 +277,7 @@ void dt_color_picker_backtransform_box(dt_develop_t *dev,
   const float wdp = MAX(1, dev->preview_pipe->processed_width);
   const float htp = MAX(1, dev->preview_pipe->processed_height);
 
-  int out_num = num == 2 ? 4 : 1;
+  const int out_num = num == 2 ? 4 : 1;
 
   for(int i = 0; i < out_num; i++)
   {
@@ -461,7 +461,7 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
       }
       else
         dt_print(DT_DEBUG_ALWAYS,
-                 "[color picker] unable to alloc working memory, denoising skipped\n");
+                 "[color picker] unable to alloc working memory, denoising skipped");
     }
 
     // 4-channel raw images are monochrome, can be read as RGB
@@ -497,7 +497,7 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
     {
       // fallback, but this shouldn't happen
       dt_print(DT_DEBUG_ALWAYS,
-               "[colorpicker] unknown colorspace conversion from %s to %s\n",
+               "[colorpicker] unknown colorspace conversion from %s to %s",
                dt_iop_colorspace_to_name(image_cst), dt_iop_colorspace_to_name(picker_cst));
       _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_rgb_or_lab, 100);
     }
@@ -519,7 +519,7 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
 
   dt_print(DT_DEBUG_PERF,
            "dt_color_picker_helper stats reading %u channels (filters %u) cst %d -> %d "
-           "size %zu denoised %d took %.3f secs (%.3f CPU)\n",
+           "size %zu denoised %d took %.3f secs (%.3f CPU)",
            dsc->channels, dsc->filters, image_cst, picker_cst, _box_size(box), denoise,
            dt_get_lap_time(&start_time.clock), dt_get_lap_utime(&start_time.user));
 }

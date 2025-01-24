@@ -6,12 +6,20 @@ labels: [needs-triage]
 #  -
 
 body:
+  - type: checkboxes
+    id: search
+    attributes:
+      label: Is there an existing issue for this?
+      description: Please check in [GitHub Open and Closed Issues](https://github.com/darktable-org/darktable/issues?q=is%3Aissue).
+      options:
+        - label: I checked and did not find my issue in the already reported ones
+          required: true
   - type: markdown
     attributes:
       value: |
+        ***
         We appreciate you taking your time to report an issue with darktable. The more details you can provide, the most likely we will be able to assist you.
 
-        Before raising a bug/issue please check that it has not already been reported by searching [GitHub Open or Closed Issues](https://github.com/darktable-org/darktable/issues?q=is%3Aissue).
         Some common issues are addressed in the [FAQ](https://www.darktable.org/about/faq/). 
         
   - type: textarea

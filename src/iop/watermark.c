@@ -31,6 +31,7 @@
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
+#include "gui/gtkentry.h"
 #include "iop/iop_api.h"
 #include <assert.h>
 #include <gtk/gtk.h>
@@ -201,9 +202,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_watermark_params_v1_t;
 
     const dt_iop_watermark_params_v1_t *o = (dt_iop_watermark_params_v1_t *)old_params;
-    dt_iop_watermark_params_v6_t *n =
-      (dt_iop_watermark_params_v6_t *)
-      malloc(sizeof(dt_iop_watermark_params_v6_t));
+    dt_iop_watermark_params_v6_t *n = malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
     n->scale = o->scale;
@@ -241,9 +240,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_watermark_params_v2_t;
 
     const dt_iop_watermark_params_v2_t *o = (dt_iop_watermark_params_v2_t *)old_params;
-    dt_iop_watermark_params_v6_t *n =
-      (dt_iop_watermark_params_v6_t *)
-      malloc(sizeof(dt_iop_watermark_params_v6_t));
+    dt_iop_watermark_params_v6_t *n = malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
     n->scale = o->scale;
@@ -283,9 +280,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_watermark_params_v3_t;
 
     const dt_iop_watermark_params_v3_t *o = (dt_iop_watermark_params_v3_t *)old_params;
-    dt_iop_watermark_params_v6_t *n =
-      (dt_iop_watermark_params_v6_t *)
-      malloc(sizeof(dt_iop_watermark_params_v6_t));
+    dt_iop_watermark_params_v6_t *n = malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
     n->scale = o->scale;
@@ -333,7 +328,6 @@ int legacy_params(dt_iop_module_t *self,
 
     const dt_iop_watermark_params_v4_t *o = (dt_iop_watermark_params_v4_t *)old_params;
     dt_iop_watermark_params_v6_t *n =
-      (dt_iop_watermark_params_v6_t *)
       malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
@@ -383,9 +377,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_watermark_params_v5_t;
 
     const dt_iop_watermark_params_v5_t *o = (dt_iop_watermark_params_v5_t *)old_params;
-    dt_iop_watermark_params_v6_t *n =
-      (dt_iop_watermark_params_v6_t *)
-      malloc(sizeof(dt_iop_watermark_params_v6_t));
+    dt_iop_watermark_params_v6_t *n = malloc(sizeof(dt_iop_watermark_params_v6_t));
 
     n->opacity = o->opacity;
     n->scale = o->scale;
@@ -416,9 +408,9 @@ const char *name()
   return _("watermark");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("overlay an SVG watermark like a signature on the picture"),
+  return dt_iop_set_description(self, _("overlay an SVG watermark like a signature on the image"),
                                       _("creative"),
                                       _("non-linear, RGB, display-referred"),
                                       _("non-linear, RGB"),
@@ -571,10 +563,14 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
   return svgdata;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_watermark_data_t *data = (dt_iop_watermark_data_t *)piece->data;
+  dt_iop_watermark_data_t *data = piece->data;
   float *in = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
@@ -637,18 +633,25 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, roi_out->width);
   if(stride == -1)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[watermark] cairo stride error\n");
+    dt_print(DT_DEBUG_ALWAYS, "[watermark] cairo stride error");
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
   /* create a cairo memory surface that is later used for reading watermark overlay data */
   guint8 *image = (guint8 *)g_malloc0_n(roi_out->height, stride);
+  if(!image)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[watermark] out of memory, could not allocate %d*%d",
+             roi_out->height, stride);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
+    return;
+  }
   cairo_surface_t *surface = cairo_image_surface_create_for_data(image, CAIRO_FORMAT_ARGB32, roi_out->width,
                                                                  roi_out->height, stride);
   if((cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) || (image == NULL))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[watermark] cairo surface error: %s\n",
+    dt_print(DT_DEBUG_ALWAYS, "[watermark] cairo surface error: %s",
              cairo_status_to_string(cairo_surface_status(surface)));
     g_free(image);
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
@@ -671,7 +674,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       g_free(image);
       dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
       dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-      dt_print(DT_DEBUG_ALWAYS, "[watermark] error processing svg file: %s\n", error->message);
+      dt_print(DT_DEBUG_ALWAYS, "[watermark] error processing svg file: %s", error->message);
       g_error_free(error);
       return;
     }
@@ -693,7 +696,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       surface_two = cairo_image_surface_create_from_png(filename);
       if((cairo_surface_status(surface_two) != CAIRO_STATUS_SUCCESS))
       {
-        dt_print(DT_DEBUG_ALWAYS, "[watermark] cairo png surface 2 error: %s\n",
+        dt_print(DT_DEBUG_ALWAYS, "[watermark] cairo png surface 2 error: %s",
                  cairo_status_to_string(cairo_surface_status(surface_two)));
         cairo_surface_destroy(surface);
         g_free(image);
@@ -880,12 +883,22 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const int watermark_height = (int)((dimension.height * scale) + 3* svg_offset_y) ;
 
     const int stride_two = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, watermark_width);
-    image_two = (guint8 *)g_malloc0_n(watermark_height, stride_two);
+    image_two = g_try_malloc0_n(watermark_height, stride_two);
+    if(!image_two)
+    {
+      dt_print(DT_DEBUG_ALWAYS, "[watermark] out of memory, could not allocate %d*%d",
+               watermark_height, stride_two);
+      g_object_unref(svg);
+      g_free(image);
+      dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
+      dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+      return;
+    }
     surface_two = cairo_image_surface_create_for_data(image_two, CAIRO_FORMAT_ARGB32, watermark_width,
                                                                    watermark_height, stride_two);
     if((cairo_surface_status(surface_two) != CAIRO_STATUS_SUCCESS) || (image_two == NULL))
     {
-      dt_print(DT_DEBUG_ALWAYS, "[watermark] cairo surface 2 error: %s\n",
+      dt_print(DT_DEBUG_ALWAYS, "[watermark] cairo surface 2 error: %s",
                cairo_status_to_string(cairo_surface_status(surface_two)));
       cairo_surface_destroy(surface);
       g_object_unref(svg);
@@ -1000,13 +1013,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 }
 
-static void _watermark_callback(GtkWidget *tb, gpointer user_data)
+static void _watermark_callback(GtkWidget *tb, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
+  dt_iop_watermark_gui_data_t *g = self->gui_data;
 
   if(darktable.gui->reset) return;
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  dt_iop_watermark_params_t *p = self->params;
   memset(p->filename, 0, sizeof(p->filename));
   int n = dt_bauhaus_combobox_get(g->watermarks);
   g_strlcpy(p->filename, (char *)g_list_nth_data(g->watermarks_filenames, n), sizeof(p->filename));
@@ -1017,8 +1029,8 @@ static void _watermark_callback(GtkWidget *tb, gpointer user_data)
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  dt_iop_watermark_gui_data_t *g = self->gui_data;
+  dt_iop_watermark_params_t *p = self->params;
 
   if(fabsf(p->color[0] - self->picked_color[0]) < 0.0001f
      && fabsf(p->color[1] - self->picked_color[1]) < 0.0001f
@@ -1082,8 +1094,8 @@ static void _load_watermarks(const char *basedir, dt_iop_watermark_gui_data_t *g
 
 static void _refresh_watermarks(dt_iop_module_t *self)
 {
-  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  dt_iop_watermark_gui_data_t *g = self->gui_data;
+  dt_iop_watermark_params_t *p = self->params;
 
   g_signal_handlers_block_by_func(g->watermarks, _watermark_callback, self);
 
@@ -1106,26 +1118,24 @@ static void _refresh_watermarks(dt_iop_module_t *self)
   g_signal_handlers_unblock_by_func(g->watermarks, _watermark_callback, self);
 }
 
-static void _refresh_callback(GtkWidget *tb, gpointer user_data)
+static void _refresh_callback(GtkWidget *tb, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   _refresh_watermarks(self);
 }
 
-static void _alignment_callback(GtkWidget *tb, gpointer user_data)
+static void _alignment_callback(GtkWidget *tb, dt_iop_module_t *self)
 {
   int index = -1;
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
+  dt_iop_watermark_gui_data_t *g = self->gui_data;
 
   if(darktable.gui->reset) return;
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  dt_iop_watermark_params_t *p = self->params;
 
 
   for(int i = 0; i < 9; i++)
   {
     /* block signal handler */
-    g_signal_handlers_block_by_func(g->align[i], _alignment_callback, user_data);
+    g_signal_handlers_block_by_func(g->align[i], _alignment_callback, self);
 
     if(GTK_WIDGET(g->align[i]) == tb)
     {
@@ -1136,27 +1146,25 @@ static void _alignment_callback(GtkWidget *tb, gpointer user_data)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[i]), FALSE);
 
     /* unblock signal handler */
-    g_signal_handlers_unblock_by_func(g->align[i], _alignment_callback, user_data);
+    g_signal_handlers_unblock_by_func(g->align[i], _alignment_callback, self);
   }
   p->alignment = index;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _text_callback(GtkWidget *entry, gpointer user_data)
+static void _text_callback(GtkWidget *entry, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  dt_iop_watermark_params_t *p = self->params;
   g_strlcpy(p->text, gtk_entry_get_text(GTK_ENTRY(entry)), sizeof(p->text));
   dt_conf_set_string("plugins/darkroom/watermark/text", p->text);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _colorpick_color_set(GtkColorButton *widget, gpointer user_data)
+static void _colorpick_color_set(GtkColorButton *widget, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  dt_iop_watermark_params_t *p = self->params;
 
   GdkRGBA c;
   gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(widget), &c);
@@ -1170,11 +1178,10 @@ static void _colorpick_color_set(GtkColorButton *widget, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _fontsel_callback(GtkWidget *button, gpointer user_data)
+static void _fontsel_callback(GtkWidget *button, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  dt_iop_watermark_params_t *p = self->params;
 
   gchar *fontname = gtk_font_chooser_get_font(GTK_FONT_CHOOSER(button));
   g_strlcpy(p->font, fontname, sizeof(p->font));
@@ -1183,11 +1190,13 @@ static void _fontsel_callback(GtkWidget *button, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self,
+                   dt_iop_params_t *p1,
+                   dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)p1;
-  dt_iop_watermark_data_t *d = (dt_iop_watermark_data_t *)piece->data;
+  dt_iop_watermark_data_t *d = piece->data;
 
   d->opacity = p->opacity;
   d->scale = p->scale;
@@ -1207,25 +1216,27 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   memset(d->font, 0, sizeof(d->font));
   g_strlcpy(d->font, p->font, sizeof(d->font));
 
-// dt_print(DT_DEBUG_ALWAYS, "Commit params: %s...\n",d->filename);
+// dt_print(DT_DEBUG_ALWAYS, "Commit params: %s...",d->filename);
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self,
+               dt_dev_pixelpipe_t *pipe,
+               dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_watermark_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  dt_iop_watermark_gui_data_t *g = self->gui_data;
+  dt_iop_watermark_params_t *p = self->params;
   for(int i = 0; i < 9; i++)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[i]), FALSE);
@@ -1253,8 +1264,8 @@ void gui_changed(dt_iop_module_t *self,
                  GtkWidget *w,
                  void *previous)
 {
-  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  dt_iop_watermark_gui_data_t *g = self->gui_data;
+  dt_iop_watermark_params_t *p = self->params;
 
   if(w == g->scale_base)
   {
@@ -1271,20 +1282,20 @@ void gui_changed(dt_iop_module_t *self,
   }
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  dt_iop_default_init(module);
+  dt_iop_default_init(self);
 
-  dt_iop_watermark_params_t *d = module->default_params;
+  dt_iop_watermark_params_t *d = self->default_params;
 
   g_strlcpy(d->filename, "darktable.svg", sizeof(d->filename));
   g_strlcpy(d->font, "DejaVu Sans 10", sizeof(d->font));
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_watermark_gui_data_t *g = IOP_GUI_ALLOC(watermark);
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  dt_iop_watermark_params_t *p = self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -1317,6 +1328,7 @@ void gui_init(struct dt_iop_module_t *self)
                                 _("text string, tag: $(WATERMARK_TEXT)\n"
                                   "use $(NL) to insert a line break"),
                                 dt_conf_get_string_const("plugins/darkroom/watermark/text"));
+  dt_gtkentry_setup_completion(GTK_ENTRY(g->text), dt_gtkentry_get_default_path_compl_list());
   gtk_entry_set_placeholder_text(GTK_ENTRY(g->text), _("content"));
   gtk_grid_attach(grid, label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(grid, g->text, label, GTK_POS_RIGHT, 2, 1);
@@ -1422,13 +1434,11 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->fontsel), "font-set", G_CALLBACK(_fontsel_callback), self);
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
-  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
+  dt_iop_watermark_gui_data_t *g = self->gui_data;
   g_list_free_full(g->watermarks_filenames, g_free);
   g->watermarks_filenames = NULL;
-
-  IOP_GUI_FREE;
 }
 
 // clang-format off

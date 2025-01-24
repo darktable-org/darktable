@@ -93,13 +93,13 @@ you can build the software yourself following the instructions [below](#building
 
 ### Latest release
 
-4.8.1 (stable)
+5.0.0 (stable)
 
-* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-4.8.1/darktable-4.8.1-win64.exe)
-* [Download executable for macOS on Intel](https://github.com/darktable-org/darktable/releases/download/release-4.8.1/darktable-4.8.1-x86_64.dmg)
-* [Download executable for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-4.8.1/darktable-4.8.1-arm64.dmg)
-* [Download executable for macOS 13.5 on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-4.8.1/darktable-4.8.1-arm64-13.5.dmg)
-* [Download AppImage for Linux](https://github.com/darktable-org/darktable/releases/download/release-4.8.1/darktable-4.8.1-x86_64.AppImage)
+* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-5.0.0/darktable-5.0.0-win64.exe)
+* [Download executable for macOS on Intel](https://github.com/darktable-org/darktable/releases/download/release-5.0.0/darktable-5.0.0-x86_64.dmg)
+* [Download executable for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-5.0.0/darktable-5.0.0-arm64.dmg)
+* [Download executable for macOS 13.5 on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-5.0.0/darktable-5.0.0-arm64-13.5.dmg)
+* [Download AppImage for Linux](https://github.com/darktable-org/darktable/releases/download/release-5.0.0/Darktable-5.0.0-x86_64.AppImage)
 * [Install native packages or add a third-party repository for Linux distros](https://software.opensuse.org/download.html?project=graphics:darktable:stable&package=darktable)
 * [Install Flatpak package for Linux](https://flathub.org/apps/details/org.darktable.Darktable)
 * [More information about installing darktable on any system](https://www.darktable.org/install/)
@@ -174,11 +174,13 @@ Required dependencies (minimum version):
 * GLib 2.56
 * SQLite 3.26
 * libcurl 7.56
+* libpng 1.5.0 *(for PNG import & export, also for reading LUT files in PNG format)*
 * Exiv2 0.27.2 *(but at least 0.27.4 built with ISO BMFF support needed for Canon CR3 raw import)*
 * pugixml 1.5
 
 Required dependencies (no version requirement):
 * Lensfun *(for automatic lens correction)* (Note: alpha 0.3.95 and git master branch are not supported)
+* LibTIFF *(for TIFF import & export)*
 * Little CMS 2
 
 Optional dependencies (minimum version):
@@ -277,7 +279,7 @@ See below (in "Using") how to start a test install of the unstable version witho
 
 #### Latest stable release
 
-4.8.1
+5.0.0
 
 The darktable project releases two major versions every year, on Summer and Winter Solstices, tagged with even numbers (e.g. 4.2, 4.4, 4.6, 4.8).
 Minor revisions are tagged with a third digit (e.g. 4.4.1, 4.4.2) and mostly provide bug fixes and camera support.
@@ -287,7 +289,7 @@ You may want to compile these stable releases yourself to get better performance
 git clone --recurse-submodules --depth 1 https://github.com/darktable-org/darktable.git
 cd darktable
 git fetch --tags
-git checkout tags/release-4.8.1
+git checkout tags/release-5.0.0
 ```
 
 ### Get submodules
@@ -303,7 +305,7 @@ git submodule update --init
 #### Easy way
 
 WARNING: If you have previously built darktable, don't forget to first completely remove (`rm -R`) the `build`
-and `/opt/darktable` directories to avoid conflicting files from different versions. Many weird behaviours and transient
+and `/opt/darktable` directories to avoid conflicting files from different versions. Many weird behaviors and transient
 bugs have been reported that can be traced to the build cache not properly invalidating the changed dependencies, so
 the safest way is to completely remove previously built binaries and start again from scratch.
 

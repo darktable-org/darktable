@@ -31,10 +31,10 @@ typedef struct dt_selection_t
 
   /* this stores the last single clicked image id indicating
      the start of a selection range */
-  int32_t last_single_id;
+  dt_imgid_t last_single_id;
 } dt_selection_t;
 
-const dt_collection_t *dt_selection_get_collection(struct dt_selection_t *selection)
+const dt_collection_t *dt_selection_get_collection(dt_selection_t *selection)
 {
   return selection->collection;
 }
@@ -45,18 +45,19 @@ static void _selection_raise_signal()
   dt_act_on_reset_cache(TRUE);
   dt_act_on_reset_cache(FALSE);
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_SELECTION_CHANGED);
 }
 
 /* updates the internal collection of an selection */
 static void _selection_update_collection(gpointer instance,
                                          const dt_collection_change_t query_change,
                                          const dt_collection_properties_t changed_property,
-                                         gpointer imgs, int next,
+                                         gpointer imgs,
+                                         int next,
                                          gpointer user_data);
 
 static void _selection_select(dt_selection_t *selection,
-                              dt_imgid_t imgid)
+                              const dt_imgid_t imgid)
 {
   if(dt_is_valid_imgid(imgid))
   {
@@ -147,8 +148,7 @@ const dt_selection_t *dt_selection_new()
   //TODO: check whether this is actually necessary, since
   //  dt_collection_update_query calls dt_collection_update before
   //  raising the signal
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
-                            G_CALLBACK(_selection_update_collection), (gpointer)s);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _selection_update_collection, s);
 
   return s;
 }
@@ -481,7 +481,7 @@ void dt_selection_select_list(struct dt_selection_t *selection, GList *list)
       imgid = GPOINTER_TO_INT(list->data);
       count++;
       selection->last_single_id = imgid;
-      query = dt_util_dstrcat(query, ",(%d)", imgid);
+      dt_util_str_cat(&query, ",(%d)", imgid);
       list = g_list_next(list);
     }
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);

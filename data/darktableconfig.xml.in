@@ -15,7 +15,7 @@
   <dttab name="processing" title="processing">
     <section name="general" title="image processing"/>
     <section name="cpugpu" title="CPU / memory"/>
-    <section name="opencl" title="OpenCL"/>
+    <section name="opencl" title="OpenCL GPU acceleration"/>
     <section name="platform" title="OpenCL drivers"/>
   </dttab>
   <dttab name="security" title="security">
@@ -99,6 +99,13 @@
     <default>false</default>
     <shortdescription>enable shortcut fallbacks</shortdescription>
     <longdescription>enables default meanings for additional buttons, modifiers or moves when used in combination with a base shortcut</longdescription>
+  </dtconfig>
+  <dtconfig prefs="misc" section="interface">
+    <name>show_splash_screen</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show splash screen at startup</shortdescription>
+    <longdescription>display a small window showing the progress of darktable startup before the main window appears</longdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="interface">
     <name>accel/load_defaults</name>
@@ -215,7 +222,7 @@
     <name>slideshow_delay</name>
     <type>int</type>
     <default>5</default>
-    <shortdescription>waiting time between each picture in slideshow</shortdescription>
+    <shortdescription>waiting time between each image in slideshow</shortdescription>
   </dtconfig>
 <!-- be sure to keep the code in sync when changing this enum, see common/darktable.c void dt_get_sysresource_level() -->
   <dtconfig prefs="processing" section="cpugpu">
@@ -229,7 +236,7 @@
     </type>
     <default>default</default>
     <shortdescription>darktable resources</shortdescription>
-    <longdescription>defines how much darktable may take from your system resources:\n - 'default': darktable takes ~50% of your systems resources, which is enough to be performant.\n - 'small': should be used if you are simultaneously running applications taking large parts of your systems memory or OpenCL/GL applications like games or Hugin.\n - 'large': is the best option if you are mainly using darktable and want it to take most of your systems resources for performance.</longdescription>
+    <longdescription>defines how much darktable may take from your system resources:\n - 'default': darktable takes ~50% of your systems resources, which is enough to be performant.\n - 'small': should be used if you are simultaneously running applications taking large parts of your systems memory or OpenCL/GL applications like games or Hugin.\n - 'large': is the best option if you are not running other applications at the same time as darktable and want it to take most of your systems resources for performance.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu">
     <name>ui/performance</name>
@@ -351,7 +358,7 @@
     <type>bool</type>
     <default>${DEFCONFIG_OPENCL}</default>
     <shortdescription>activate OpenCL support</shortdescription>
-    <longdescription>if found, use OpenCL runtime on your system to speed up processing.\ncan be switched on and off at any time.</longdescription>
+    <longdescription>if found, use OpenCL runtime on your system to speed up processing by using your graphics card(s).\ncan be switched on and off at any time.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="opencl" capability="opencl">
     <name>opencl_scheduling_profile</name>
@@ -370,8 +377,8 @@
     <name>opencl_tune_headroom</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>use all device memory</shortdescription>
-    <longdescription>if enabled darktable will use all device memory except a safety margin (headroom, default is 600MB)</longdescription>
+    <shortdescription>use all GPU memory</shortdescription>
+    <longdescription>if enabled darktable will use all graphics device memory except a safety margin (headroom, default is 600MB)</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true">
     <name>clplatform_intelropenclhdgraphics</name>
@@ -942,7 +949,7 @@
   <dtconfig>
     <name>ui_last/preferences_dialog_height</name>
     <type>int</type>
-    <default>700</default>
+    <default>720</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -971,7 +978,7 @@
     <name>ui_last/import_select_new</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>select only new pictures</shortdescription>
+    <shortdescription>select only new images</shortdescription>
     <longdescription>only select images that have not already been imported</longdescription>
   </dtconfig>
   <dtconfig ui="yes">
@@ -1314,6 +1321,13 @@
     <longdescription>if enabled, write full preview to disk (.cache/darktable/) when evicted from the memory cache.\nnote that this can take a lot of memory (several gigabytes for 20k images) and will never delete cached full previews again.\nit's safe though to delete these manually, if you want.\nlight table performance will be increased greatly when zooming image in full preview mode.</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
+    <name>thumbtable_fractional_scrolling</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>enable smooth scrolling for lighttable thumbnails</shortdescription>
+    <longdescription>if enabled, scrolling the lighttable scrolls by some number of pixels, as expected with a touch pad.\ndisabled, the lighttable scrolls full rows of thumbnails, as befits a scroll wheel.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="lighttable" section="thumbs">
     <name>backthumbs_mipsize</name>
     <type>
       <enum>
@@ -1348,14 +1362,14 @@
   <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/extended_pattern</name>
     <type>longstring</type>
-    <default>$(FILE_NAME).$(FILE_EXTENSION)$(NL)$(EXIF_EXPOSURE) • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH)mm • $(EXIF_ISO) ISO $(SIDECAR_TXT)</default>
+    <default>$(FILE_NAME).$(FILE_EXTENSION)$(NL)&lt;b&gt;$(EXIF.EXPOSURE)&lt;/b&gt; • &lt;b&gt;f/$(EXIF.APERTURE)&lt;/b&gt; • &lt;b&gt;$(EXIF.FOCAL.LENGTH)&lt;/b&gt;mm • ISO &lt;b&gt;$(EXIF.ISO)&lt;/b&gt; $(GPS.LOCATION.ICON) $(EXIF.FLASH.ICON) $(SIDECAR_TXT)</default>
     <shortdescription>pattern for the thumbnail extended overlay text</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/thumbnail_tooltip_pattern</name>
     <type>longstring</type>
-    <default>&lt;b&gt;$(FILE_NAME).$(FILE_EXTENSION)&lt;/b&gt;$(NL)$(EXIF.DATE.REGIONAL) $(EXIF.TIME.REGIONAL)$(NL)$(EXIF_EXPOSURE) • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • $(EXIF_ISO) ISO</default>
+    <default>&lt;b&gt;$(FILE_NAME).$(FILE_EXTENSION)&lt;/b&gt;$(NL)$(EXIF.DATE.REGIONAL) $(EXIF.TIME.REGIONAL) $(GPS.LOCATION.ICON) $(EXIF.FLASH.ICON)$(NL)&lt;b&gt;$(EXIF.EXPOSURE)&lt;/b&gt; • &lt;b&gt;f/$(EXIF.APERTURE)&lt;/b&gt; • &lt;b&gt;$(EXIF.FOCAL.LENGTH)&lt;/b&gt;mm • ISO &lt;b&gt;$(EXIF.ISO)&lt;/b&gt;</default>
     <shortdescription>pattern for the thumbnail tooltip (empty to disable)</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
   </dtconfig>
@@ -1417,7 +1431,7 @@
   <dtconfig prefs="darkroom" section="general">
     <name>plugins/darkroom/image_infos_pattern</name>
     <type>longstring</type>
-    <default>$(EXIF_EXPOSURE) • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • $(EXIF_ISO) ISO</default>
+    <default>$(EXIF.EXPOSURE) • f/$(EXIF.APERTURE) • $(EXIF.FOCAL.LENGTH) mm • ISO $(EXIF.ISO) $(GPS.LOCATION.ICON) $(EXIF.FLASH.ICON)</default>
     <shortdescription>pattern for the image information line</shortdescription>
     <longdescription>see manual for a list of the tags you can use.</longdescription>
   </dtconfig>
@@ -1482,16 +1496,16 @@
     <name>session/base_directory_pattern</name>
     <type>string</type>
     <default>$(PICTURES_FOLDER)/Darktable</default>
-    <shortdescription>base directory naming pattern</shortdescription>
-    <longdescription>part of full import path for an import session</longdescription>
+    <shortdescription>base filmroll's directory</shortdescription>
+    <longdescription>directory where new imported filmrolls are created</longdescription>
   </dtconfig>
 
   <dtconfig prefs="import" section="session">
     <name>session/sub_directory_pattern</name>
     <type>string</type>
     <default>$(YEAR)$(MONTH)$(DAY)_$(JOBCODE)</default>
-    <shortdescription>sub directory naming pattern</shortdescription>
-    <longdescription>part of full import path for an import session</longdescription>
+    <shortdescription>filmroll name</shortdescription>
+    <longdescription>name of the imported filmroll</longdescription>
   </dtconfig>
 
   <dtconfig prefs="import" section="session">
@@ -2233,13 +2247,13 @@
     <name>darkroom/ui/iso12464_border</name>
     <type min="1.0" max="5.0">float</type>
     <default>4.0</default>
-    <shortdescription>total width of border in iso 12646 mode (cm)</shortdescription>
+    <shortdescription>total width of border in ISO 12646 mode (cm)</shortdescription>
   </dtconfig>
   <dtconfig>
     <name>darkroom/ui/iso12464_ratio</name>
     <type min="0.1" max="0.9">float</type>
     <default>0.40</default>
-    <shortdescription>fraction of white border part in iso 12646 mode</shortdescription>
+    <shortdescription>fraction of white border part in ISO 12646 mode</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig prefs="darkroom" section="general">
@@ -2397,8 +2411,8 @@
     <name>plugins/darkroom/demosaic/fdc_xover_iso</name>
     <type>int</type>
     <default>1600</default>
-    <shortdescription>crossover iso for X-Trans fdc demosaicing</shortdescription>
-    <longdescription>up to, and including, this iso, X-Trans frequency domain chroma demosaicing uses the hybrid mode for determining chroma; for all higher iso values the pure fdc is used.</longdescription>
+    <shortdescription>crossover ISO for X-Trans FDC demosaicing</shortdescription>
+    <longdescription>up to, and including, this ISO, X-Trans frequency domain chroma demosaicing uses the hybrid mode for determining chroma; for all higher ISO values the pure FDC is used.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/denoiseprofile/show_compute_variance_mode</name>
@@ -3083,6 +3097,13 @@
     <default>right</default>
     <shortdescription>position of the scopes module</shortdescription>
     <longdescription>position the scopes at the top-left or top-right of the screen</longdescription>
+  </dtconfig>
+  <dtconfig prefs="darkroom" section="modules">
+    <name>plugins/darkroom/panel_swap</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>swap the utility and processing modules panels</shortdescription>
+    <longdescription>move the list of processing modules to the left of the screen</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/histogram/histogram</name>

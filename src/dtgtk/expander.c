@@ -183,23 +183,25 @@ static void _expander_resize(GtkWidget *widget, GdkRectangle *allocation, gpoint
                                + dt_conf_get_int("darkroom/ui/transition_duration") * 1000), NULL);
 }
 
-void dtgtk_expander_set_drag_hover(GtkDarktableExpander *expander, gboolean hover, gboolean below)
+void dtgtk_expander_set_drag_hover(GtkDarktableExpander *expander, gboolean allow, gboolean below, guint time)
 {
   GtkWidget *widget = expander ? GTK_WIDGET(expander) : _drop_widget;
   // don't remove drop zone when switching between last expander and empty space to avoid jitter
-  static guint hovertime;
-  guint time = gtk_get_current_event_time();
-  if(!widget || (!hover && widget == _drop_widget && time == hovertime)) return;
+  static guint last_time;
+  if(!widget || (!allow && !below && widget == _drop_widget && time == last_time)) return;
 
   dt_gui_remove_class(widget, "module_drop_after");
   dt_gui_remove_class(widget, "module_drop_before");
 
-  if(hover)
+  if(allow || below)
   {
     _drop_widget = widget;
-    hovertime = time;
+    _last_expanded = NULL;
+    last_time = time;
 
-    if(below)
+    if(!allow)
+      gtk_widget_queue_resize(widget);
+    else if(below)
       dt_gui_add_class(widget, "module_drop_before");
     else
       dt_gui_add_class(widget, "module_drop_after");
@@ -211,7 +213,7 @@ static void _expander_drag_leave(GtkDarktableExpander *widget,
                            guint time,
                            gpointer user_data)
 {
-  dtgtk_expander_set_drag_hover(widget, FALSE, FALSE);
+  dtgtk_expander_set_drag_hover(widget, FALSE, FALSE, time);
 }
 
 // FIXME: default highlight for the dnd is barely visible
@@ -226,6 +228,7 @@ static void _expander_drag_begin(GtkWidget *widget, GdkDragContext *context, gpo
 
   // hack to render not transparent
   dt_gui_add_class(widget, "module_drag_icon");
+  gtk_widget_size_allocate(widget, &allocation);
   gtk_widget_draw(widget, cr);
   dt_gui_remove_class(widget, "module_drag_icon");
 
@@ -244,6 +247,7 @@ static void _expander_drag_begin(GtkWidget *widget, GdkDragContext *context, gpo
 
 static void _expander_drag_end(GtkWidget *widget, GdkDragContext *context, gpointer user_data)
 {
+  dtgtk_expander_set_drag_hover(NULL, FALSE, FALSE, 0);
   _drop_widget = NULL;
   gtk_widget_set_opacity(widget, 1.0);
 }

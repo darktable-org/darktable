@@ -149,7 +149,7 @@ void cleanup(dt_view_t *self)
 static int32_t _capture_view_get_selected_imgid(const dt_view_t *view)
 {
   g_assert(view != NULL);
-  dt_capture_t *cv = (dt_capture_t *)view->data;
+  dt_capture_t *cv = view->data;
   return cv->image_id;
 }
 
@@ -157,7 +157,7 @@ static void _capture_view_set_jobcode(const dt_view_t *view,
                                       const char *name)
 {
   g_assert(view != NULL);
-  dt_capture_t *cv = (dt_capture_t *)view->data;
+  dt_capture_t *cv = view->data;
   dt_import_session_set_name(cv->session, name);
   dt_film_open(dt_import_session_film_id(cv->session));
   dt_control_log(_("new session initiated '%s'"), name);
@@ -166,7 +166,7 @@ static void _capture_view_set_jobcode(const dt_view_t *view,
 static const char *_capture_view_get_jobcode(const dt_view_t *view)
 {
   g_assert(view != NULL);
-  dt_capture_t *cv = (dt_capture_t *)view->data;
+  dt_capture_t *cv = view->data;
   return dt_import_session_name(cv->session);
 }
 
@@ -211,8 +211,13 @@ static int _tethering_write_image(dt_imageio_module_data_t *data,
 {
   _tethering_format_t *d = (_tethering_format_t *)data;
   d->buf = (float *)malloc(sizeof(float) * 4 * d->head.width * d->head.height);
-  memcpy(d->buf, in, sizeof(float) * 4 * d->head.width * d->head.height);
-  return 0;
+  if(d->buf)
+  {
+    memcpy(d->buf, in, sizeof(float) * 4 * d->head.width * d->head.height);
+    return 0;
+  }
+  else
+    return 1;
 }
 
 #define MARGIN DT_PIXEL_APPLY_DPI(20)
@@ -231,7 +236,7 @@ static void _expose_tethered_mode(dt_view_t *self,
                                   int32_t pointerx,
                                   int32_t pointery)
 {
-  dt_capture_t *lib = (dt_capture_t *)self->data;
+  dt_capture_t *lib = self->data;
   dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
   if(!cam) return;
 
@@ -481,7 +486,7 @@ void expose(dt_view_t *self,
       modules;
       modules = g_list_next(modules))
   {
-    dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
+    dt_lib_module_t *module = modules->data;
     if(module->gui_post_expose && dt_lib_is_visible_in_view(module, self))
       module->gui_post_expose(module, cri, width, height, pointerx, pointery);
   }
@@ -501,7 +506,7 @@ static void _capture_mipmaps_updated_signal_callback(gpointer instance,
                                                      gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
-  struct dt_capture_t *lib = (dt_capture_t *)self->data;
+  struct dt_capture_t *lib = self->data;
 
   lib->image_id = imgid;
   dt_view_active_images_reset(FALSE);
@@ -555,7 +560,7 @@ static void _camera_capture_image_downloaded(const dt_camera_t *camera,
 
 void enter(dt_view_t *self)
 {
-  dt_capture_t *lib = (dt_capture_t *)self->data;
+  dt_capture_t *lib = self->data;
 
   // no active image when entering the tethering view
   lib->image_over = DT_VIEW_DESERT;
@@ -576,29 +581,26 @@ void enter(dt_view_t *self)
   }
 
   /* connect signal for mipmap update for a redraw */
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-                                  G_CALLBACK(_capture_mipmaps_updated_signal_callback),
-                                  (gpointer)self);
-
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, _capture_mipmaps_updated_signal_callback, self);
 
   /* connect signal for fimlstrip image activate */
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
-                                  DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
-                                  G_CALLBACK(_view_capture_filmstrip_activate_callback),
-                                  self);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, _view_capture_filmstrip_activate_callback, self);
 
   // register listener
   lib->listener = g_malloc0(sizeof(dt_camctl_listener_t));
-  lib->listener->data = lib;
-  lib->listener->image_downloaded = _camera_capture_image_downloaded;
-  lib->listener->request_image_path = _camera_request_image_path;
-  lib->listener->request_image_filename = _camera_request_image_filename;
-  dt_camctl_register_listener(darktable.camctl, lib->listener);
+  if(lib->listener)
+  {
+    lib->listener->data = lib;
+    lib->listener->image_downloaded = _camera_capture_image_downloaded;
+    lib->listener->request_image_path = _camera_request_image_path;
+    lib->listener->request_image_filename = _camera_request_image_filename;
+    dt_camctl_register_listener(darktable.camctl, lib->listener);
+  }
 }
 
 void leave(dt_view_t *self)
 {
-  dt_capture_t *cv = (dt_capture_t *)self->data;
+  dt_capture_t *cv = self->data;
 
   dt_camctl_unregister_listener(darktable.camctl, cv->listener);
   g_free(cv->listener);
@@ -607,15 +609,8 @@ void leave(dt_view_t *self)
   /* destroy session, will cleanup empty film roll */
   dt_import_session_destroy(cv->session);
 
-  /* disconnect from mipmap updated signal */
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_capture_mipmaps_updated_signal_callback),
-                                     (gpointer)self);
-
-  /* disconnect from filmstrip image activate */
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_view_capture_filmstrip_activate_callback),
-                                     (gpointer)self);
+  /* disconnect from signals */
+  DT_CONTROL_SIGNAL_DISCONNECT_ALL(self, "tethering");
 }
 
 void reset(dt_view_t *self)
@@ -629,7 +624,7 @@ void mouse_moved(dt_view_t *self,
                  double pressure,
                  int which)
 {
-  dt_capture_t *lib = (dt_capture_t *)self->data;
+  dt_capture_t *lib = self->data;
   dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
   // pan the zoomed live view
   if(cam->live_view_pan && cam->live_view_zoom && cam->is_live_viewing)
@@ -676,7 +671,7 @@ int button_pressed(dt_view_t *self,
                    uint32_t state)
 {
   dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
-  dt_capture_t *lib = (dt_capture_t *)self->data;
+  dt_capture_t *lib = self->data;
 
   if(which == 1 && cam->is_live_viewing && cam->live_view_zoom)
   {

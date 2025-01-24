@@ -47,6 +47,8 @@ static int visible_member(lua_State *L)
   else
   {
     dt_lib_set_visible(module, lua_toboolean(L, 3));
+    // force a reload of visible modules
+    dt_view_manager_switch_by_view(darktable.view_manager, dt_view_manager_get_current_view(darktable.view_manager));
     return 0;
   }
 }
@@ -127,8 +129,7 @@ static int active_preset_member(lua_State *L)
   lua_newtable(L);
   gchar *preset_name;
 
-  dt_lib_module_info_t *mi =
-    (dt_lib_module_info_t *)calloc(1, sizeof(dt_lib_module_info_t));
+  dt_lib_module_info_t *mi = calloc(1, sizeof(dt_lib_module_info_t));
 
   mi->plugin_name = g_strdup(module->plugin_name);
   mi->version = module->version();

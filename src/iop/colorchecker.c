@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2023 darktable developers.
+    Copyright (C) 2016-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -123,7 +123,7 @@ const char *aliases()
   return _("profile|lut|color grading");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
     (self, _("perform color space corrections and apply looks"),
@@ -204,10 +204,8 @@ int legacy_params(dt_iop_module_t *self,
       float target_b[24];
     } dt_iop_colorchecker_params_v1_t;
 
-    const dt_iop_colorchecker_params_v1_t *o =
-      (dt_iop_colorchecker_params_v1_t *)old_params;
-    dt_iop_colorchecker_params_v2_t  *n =
-      (dt_iop_colorchecker_params_v2_t  *)malloc(sizeof(dt_iop_colorchecker_params_v2_t));
+    const dt_iop_colorchecker_params_v1_t *o = old_params;
+    dt_iop_colorchecker_params_v2_t *n = malloc(sizeof(dt_iop_colorchecker_params_v2_t));
 
     n->num_patches = 24;
     for(int k=0; k<24; k++)
@@ -306,6 +304,172 @@ void init_presets(dt_iop_module_so_t *self)
   p.target_b[22] = p.source_b[22] = 9.5750093460083008;
   p.target_b[23] = p.source_b[23] = 41.285167694091797;
   dt_gui_presets_add_generic(_("it8 skin tones"), self->op,
+                             self->version(), &p, sizeof(p),
+                             1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
+  memset(&p, 0, sizeof(p));
+  p.num_patches = 49;
+  // red ramp in first row
+  p.target_L[0] = p.source_L[0] = 10;
+  p.target_L[1] = p.source_L[1] = 20;
+  p.target_L[2] = p.source_L[2] = 30;
+  p.target_L[3] = p.source_L[3] = 50;
+  p.target_L[4] = p.source_L[4] = 70;
+  p.target_L[5] = p.source_L[5] = 80;
+  p.target_L[6] = p.source_L[6] = 90;
+  p.target_a[0] = p.source_a[0] = 48;
+  p.target_a[1] = p.source_a[1] = 72;
+  p.target_a[2] = p.source_a[2] = 72;
+  p.target_a[3] = p.source_a[3] = 72;
+  p.target_a[4] = p.source_a[4] = 72;
+  p.target_a[5] = p.source_a[5] = 72;
+  p.target_a[6] = p.source_a[6] = 72;
+  p.target_b[0] = p.source_b[0] = 16;
+  p.target_b[1] = p.source_b[1] = 24;
+  p.target_b[2] = p.source_b[2] = 24;
+  p.target_b[3] = p.source_b[3] = 24;
+  p.target_b[4] = p.source_b[4] = 24;
+  p.target_b[5] = p.source_b[5] = 24;
+  p.target_b[6] = p.source_b[6] = 24;
+
+  // blue ramp in second row
+  p.target_L[ 7] = p.source_L[ 7] = 10;
+  p.target_L[ 8] = p.source_L[ 8] = 20;
+  p.target_L[ 9] = p.source_L[ 9] = 30;
+  p.target_L[10] = p.source_L[10] = 50;
+  p.target_L[11] = p.source_L[11] = 70;
+  p.target_L[12] = p.source_L[12] = 80;
+  p.target_L[13] = p.source_L[13] = 90;
+  p.target_a[ 7] = p.source_a[ 7] = 7;
+  p.target_a[ 8] = p.source_a[ 8] = 14;
+  p.target_a[ 9] = p.source_a[ 9] = 21;
+  p.target_a[10] = p.source_a[10] = 21;
+  p.target_a[11] = p.source_a[11] = 21;
+  p.target_a[12] = p.source_a[12] = 21;
+  p.target_a[13] = p.source_a[13] = 14;
+  p.target_b[ 7] = p.source_b[ 7] = -25;
+  p.target_b[ 8] = p.source_b[ 8] = -50;
+  p.target_b[ 9] = p.source_b[ 9] = -75;
+  p.target_b[10] = p.source_b[10] = -75;
+  p.target_b[11] = p.source_b[11] = -75;
+  p.target_b[12] = p.source_b[12] = -75;
+  p.target_b[13] = p.source_b[13] = -50;
+
+  // green ramp in third row
+  p.target_L[14] = p.source_L[14] = 10;
+  p.target_L[15] = p.source_L[15] = 20;
+  p.target_L[16] = p.source_L[16] = 30;
+  p.target_L[17] = p.source_L[17] = 50;
+  p.target_L[18] = p.source_L[18] = 70;
+  p.target_L[19] = p.source_L[19] = 80;
+  p.target_L[20] = p.source_L[20] = 90;
+  p.target_a[14] = p.source_a[14] = -20;
+  p.target_a[15] = p.source_a[15] = -40;
+  p.target_a[16] = p.source_a[16] = -40;
+  p.target_a[17] = p.source_a[17] = -40;
+  p.target_a[18] = p.source_a[18] = -40;
+  p.target_a[19] = p.source_a[19] = -40;
+  p.target_a[20] = p.source_a[20] = -40;
+  p.target_b[14] = p.source_b[14] = 16;
+  p.target_b[15] = p.source_b[15] = 32;
+  p.target_b[16] = p.source_b[16] = 32;
+  p.target_b[17] = p.source_b[17] = 32;
+  p.target_b[18] = p.source_b[18] = 32;
+  p.target_b[19] = p.source_b[19] = 32;
+  p.target_b[20] = p.source_b[20] = 32;
+
+  // orange/yellow/cyan tones in fourth row
+  p.target_L[21] = p.source_L[21] = 63;	// orange
+  p.target_a[21] = p.source_a[21] = 36;
+  p.target_b[21] = p.source_b[21] = 57;
+  p.target_L[22] = p.source_L[22] = 72; // orange yellow
+  p.target_a[22] = p.source_a[22] = 19;
+  p.target_b[22] = p.source_b[22] = 68;
+  p.target_L[23] = p.source_L[23] = 82; // yellow
+  p.target_a[23] = p.source_a[23] =  4;
+  p.target_b[23] = p.source_b[23] = 80;
+  p.target_L[24] = p.source_L[24] = 72; // yellow green
+  p.target_a[24] = p.source_a[24] = -24;
+  p.target_b[24] = p.source_b[24] = 57;
+  p.target_L[25] = p.source_L[25] = 43; // foliage
+  p.target_a[25] = p.source_a[25] = -13;
+  p.target_b[25] = p.source_b[25] = 22;
+  p.target_L[26] = p.source_L[26] = 71; // bluish green
+  p.target_a[26] = p.source_a[26] = -33;
+  p.target_b[26] = p.source_b[26] = 0;
+  p.target_L[27] = p.source_L[27] = 51; // cyan
+  p.target_a[27] = p.source_a[27] = -60;
+  p.target_b[27] = p.source_b[27] = -60;
+
+  // fifth row: CC24-like skin tone and misc patches
+  p.target_L[28] = p.source_L[28] = 39;  // CC24 dark skin
+  p.target_a[28] = p.source_a[28] = 14;
+  p.target_b[28] = p.source_b[28] = 14;
+  p.target_L[29] = p.source_L[29] = 65;  // CC24 light skin
+  p.target_a[29] = p.source_a[29] = 19;
+  p.target_b[29] = p.source_b[29] = 17;
+  p.target_L[30] = p.source_L[30] = 49;  // blue sky
+  p.target_a[30] = p.source_a[30] = -4;
+  p.target_b[30] = p.source_b[30] = -23;
+  p.target_L[31] = p.source_L[31] = 55;  // blue flower
+  p.target_a[31] = p.source_a[31] =  9;
+  p.target_b[31] = p.source_b[31] = -25;
+  p.target_L[32] = p.source_L[32] = 52;  // magenta
+  p.target_a[32] = p.source_a[32] = 75;
+  p.target_b[32] = p.source_b[32] = -21;
+  p.target_L[33] = p.source_L[33] = 31;  // purple
+  p.target_a[33] = p.source_a[33] = 50;
+  p.target_b[33] = p.source_b[33] = -50;
+  p.target_L[34] = p.source_L[34] = 41;  // purple red
+  p.target_a[34] = p.source_a[34] = 33;
+  p.target_b[34] = p.source_b[34] = -66;
+  
+  // IT8 skin tones in sixth row
+  p.target_L[35] = p.source_L[35] = 17;
+  p.target_a[35] = p.source_a[35] = 8;
+  p.target_b[35] = p.source_b[35] = 0;
+  p.target_L[36] = p.source_L[36] = 30;
+  p.target_a[36] = p.source_a[36] = 9;
+  p.target_b[36] = p.source_b[36] = 3;
+  p.target_L[37] = p.source_L[37] = 26;
+  p.target_a[37] = p.source_a[37] = 28;
+  p.target_b[37] = p.source_b[37] = 15;
+  p.target_L[38] = p.source_L[38] = 32;
+  p.target_a[38] = p.source_a[38] = 39;
+  p.target_b[38] = p.source_b[38] = 23;
+  p.target_L[39] = p.source_L[39] = 54;
+  p.target_a[39] = p.source_a[39] = 34;
+  p.target_b[39] = p.source_b[39] = 32;
+  p.target_L[40] = p.source_L[40] = 70;
+  p.target_a[40] = p.source_a[40] = 11;
+  p.target_b[40] = p.source_b[40] = 41;
+  p.target_L[41] = p.source_L[41] = 76;
+  p.target_a[41] = p.source_a[41] = 5;
+  p.target_b[41] = p.source_b[41] = 33;
+  
+  // 7-level gray ramp in last row
+  p.target_L[42] = p.source_L[42] = 2.0;
+  p.target_L[43] = p.source_L[43] = 18.0;
+  p.target_L[44] = p.source_L[44] = 34.0;
+  p.target_L[45] = p.source_L[45] = 50.0;
+  p.target_L[46] = p.source_L[46] = 66.0;
+  p.target_L[47] = p.source_L[47] = 82.0;
+  p.target_L[48] = p.source_L[48] = 98.0;
+  p.target_a[42] = p.source_a[42] = 0.0;
+  p.target_a[43] = p.source_a[43] = 0.0;
+  p.target_a[44] = p.source_a[44] = 0.0;
+  p.target_a[45] = p.source_a[45] = 0.0;
+  p.target_a[46] = p.source_a[46] = 0.0;
+  p.target_a[47] = p.source_a[47] = 0.0;
+  p.target_a[48] = p.source_a[48] = 0.0;
+  p.target_b[42] = p.source_b[42] = 0.0;
+  p.target_b[43] = p.source_b[43] = 0.0;
+  p.target_b[44] = p.source_b[44] = 0.0;
+  p.target_b[45] = p.source_b[45] = 0.0;
+  p.target_b[46] = p.source_b[46] = 0.0;
+  p.target_b[47] = p.source_b[47] = 0.0;
+  p.target_b[48] = p.source_b[48] = 0.0;
+  dt_gui_presets_add_generic(_("expanded color checker"), self->op,
                              self->version(), &p, sizeof(p),
                              1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -415,7 +579,7 @@ static inline float kernel(const dt_aligned_pixel_t x,
   return r2*fastlog(MAX(1e-8f,r2));
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -427,8 +591,7 @@ void process(struct dt_iop_module_t *self,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
 
-  const dt_iop_colorchecker_data_t *const data =
-    (dt_iop_colorchecker_data_t *)piece->data;
+  const dt_iop_colorchecker_data_t *const data = piece->data;
   const size_t npixels = (size_t)roi_out->height * (size_t)roi_out->width;
   float *const restrict out = (float*)DT_IS_ALIGNED(ovoid);
 
@@ -501,16 +664,15 @@ void process(struct dt_iop_module_t *self,
 
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorchecker_data_t *d = (dt_iop_colorchecker_data_t *)piece->data;
-  dt_iop_colorchecker_global_data_t *gd =
-    (dt_iop_colorchecker_global_data_t *)self->global_data;
+  dt_iop_colorchecker_data_t *d = piece->data;
+  dt_iop_colorchecker_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_out->width;
@@ -561,13 +723,13 @@ error:
 #endif
 
 
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)p1;
-  dt_iop_colorchecker_data_t *d = (dt_iop_colorchecker_data_t *)piece->data;
+  dt_iop_colorchecker_data_t *d = piece->data;
 
   d->num_patches = MIN(MAX_PATCHES, p->num_patches);
   const unsigned N = MAX(0, d->num_patches);
@@ -797,14 +959,14 @@ void commit_params(struct dt_iop_module_t *self,
   }
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_colorchecker_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -812,17 +974,15 @@ void cleanup_pipe(struct dt_iop_module_t *self,
   piece->data = NULL;
 }
 
-void gui_reset(struct dt_iop_module_t *self)
+void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_color_picker_reset(self, TRUE);
 }
 
-void _colorchecker_rebuild_patch_list(struct dt_iop_module_t *self)
+void _colorchecker_rebuild_patch_list(dt_iop_module_t *self)
 {
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  dt_iop_colorchecker_params_t *p =
-    (dt_iop_colorchecker_params_t *)self->params;
+  dt_iop_colorchecker_params_t *p = self->params;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
 
   if(g->patch >= p->num_patches
      || g->patch < 0)
@@ -846,12 +1006,10 @@ void _colorchecker_rebuild_patch_list(struct dt_iop_module_t *self)
   }
 }
 
-void _colorchecker_update_sliders(struct dt_iop_module_t *self)
+void _colorchecker_update_sliders(dt_iop_module_t *self)
 {
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  dt_iop_colorchecker_params_t *p =
-    (dt_iop_colorchecker_params_t *)self->params;
+  dt_iop_colorchecker_params_t *p = self->params;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
 
   if(g->patch >= p->num_patches
      || g->patch < 0)
@@ -885,10 +1043,9 @@ void _colorchecker_update_sliders(struct dt_iop_module_t *self)
   }
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
 
   _colorchecker_rebuild_patch_list(self);
   _colorchecker_update_sliders(self);
@@ -896,15 +1053,15 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_queue_draw(g->area);
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  module->params = calloc(1, sizeof(dt_iop_colorchecker_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_colorchecker_params_t));
-  module->default_enabled = FALSE;
-  module->params_size = sizeof(dt_iop_colorchecker_params_t);
-  module->gui_data = NULL;
+  self->params = calloc(1, sizeof(dt_iop_colorchecker_params_t));
+  self->default_params = calloc(1, sizeof(dt_iop_colorchecker_params_t));
+  self->default_enabled = FALSE;
+  self->params_size = sizeof(dt_iop_colorchecker_params_t);
+  self->gui_data = NULL;
 
-  dt_iop_colorchecker_params_t *d = module->default_params;
+  dt_iop_colorchecker_params_t *d = self->default_params;
   d->num_patches = colorchecker_patches;
   for(int k = 0; k < d->num_patches; k++)
   {
@@ -914,33 +1071,29 @@ void init(dt_iop_module_t *module)
   }
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
-  dt_iop_colorchecker_global_data_t *gd
-      = (dt_iop_colorchecker_global_data_t *)malloc(sizeof(dt_iop_colorchecker_global_data_t));
-  module->data = gd;
+  dt_iop_colorchecker_global_data_t *gd = malloc(sizeof(dt_iop_colorchecker_global_data_t));
+  self->data = gd;
 
   const int program = 8; // extended.cl, from programs.conf
   gd->kernel_colorchecker = dt_opencl_create_kernel(program, "colorchecker");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_colorchecker_global_data_t *gd =
-    (dt_iop_colorchecker_global_data_t *)module->data;
+  dt_iop_colorchecker_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_colorchecker);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 void color_picker_apply(dt_iop_module_t *self,
                         GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  dt_iop_colorchecker_params_t *p =
-    (dt_iop_colorchecker_params_t *)self->params;
+  dt_iop_colorchecker_params_t *p = self->params;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
   if(p->num_patches <= 0) return;
 
   // determine patch based on color picker result
@@ -974,13 +1127,10 @@ void color_picker_apply(dt_iop_module_t *self,
   }
 }
 
-static void target_L_callback(GtkWidget *slider, gpointer user_data)
+static void target_L_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorchecker_params_t *p =
-    (dt_iop_colorchecker_params_t *)self->params;
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  dt_iop_colorchecker_params_t *p = self->params;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
 
   if(g->patch >= p->num_patches || g->patch < 0)
     return;
@@ -993,13 +1143,10 @@ static void target_L_callback(GtkWidget *slider, gpointer user_data)
 }
 
 static void target_a_callback(GtkWidget *slider,
-                              gpointer user_data)
+                              dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorchecker_params_t *p =
-    (dt_iop_colorchecker_params_t *)self->params;
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  dt_iop_colorchecker_params_t *p = self->params;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
 
   if(g->patch >= p->num_patches
      || g->patch < 0)
@@ -1034,13 +1181,10 @@ static void target_a_callback(GtkWidget *slider,
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void target_b_callback(GtkWidget *slider, gpointer user_data)
+static void target_b_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorchecker_params_t *p =
-    (dt_iop_colorchecker_params_t *)self->params;
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  dt_iop_colorchecker_params_t *p = self->params;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
 
   if(g->patch >= p->num_patches
      || g->patch < 0)
@@ -1073,13 +1217,10 @@ static void target_b_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void target_C_callback(GtkWidget *slider, gpointer user_data)
+static void target_C_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorchecker_params_t *p =
-    (dt_iop_colorchecker_params_t *)self->params;
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  dt_iop_colorchecker_params_t *p = self->params;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
 
   if(g->patch >= p->num_patches
      || g->patch < 0)
@@ -1123,11 +1264,9 @@ static void target_C_callback(GtkWidget *slider, gpointer user_data)
 }
 
 static void target_callback(GtkWidget *combo,
-                            gpointer user_data)
+                            dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
   g->absolute_target = dt_bauhaus_combobox_get(combo);
   ++darktable.gui->reset;
   _colorchecker_update_sliders(self);
@@ -1138,11 +1277,9 @@ static void target_callback(GtkWidget *combo,
   gtk_widget_queue_draw(g->area);
 }
 
-static void patch_callback(GtkWidget *combo, gpointer user_data)
+static void patch_callback(GtkWidget *combo, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
   g->drawn_patch = g->patch = dt_bauhaus_combobox_get(combo);
   ++darktable.gui->reset;
   _colorchecker_update_sliders(self);
@@ -1155,13 +1292,10 @@ static void patch_callback(GtkWidget *combo, gpointer user_data)
 
 static gboolean checker_draw(GtkWidget *widget,
                              cairo_t *crf,
-                             gpointer user_data)
+                             dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  dt_iop_colorchecker_params_t *p =
-    (dt_iop_colorchecker_params_t *)self->params;
+  dt_iop_colorchecker_params_t *p = self->params;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1248,14 +1382,11 @@ static gboolean checker_draw(GtkWidget *widget,
 static gboolean checker_motion_notify(
     GtkWidget *widget,
     GdkEventMotion *event,
-    gpointer user_data)
+    dt_iop_module_t *self)
 {
   // highlight?
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  dt_iop_colorchecker_params_t *p =
-    (dt_iop_colorchecker_params_t *)self->params;
+  dt_iop_colorchecker_params_t *p = self->params;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1280,7 +1411,7 @@ static gboolean checker_motion_notify(
         "altered patches are marked with an outline\n"
         "click to select\n"
         "double-click to reset\n"
-        "right click to delete patch\n"
+        "right-click to delete patch\n"
         "shift+click while color picking to replace patch"),
       p->source_L[patch], p->source_a[patch], p->source_b[patch]);
   gtk_widget_set_tooltip_text(g->area, tooltip);
@@ -1289,13 +1420,10 @@ static gboolean checker_motion_notify(
 
 static gboolean checker_button_press(
     GtkWidget *widget, GdkEventButton *event,
-    gpointer user_data)
+    dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorchecker_gui_data_t *g =
-    (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  dt_iop_colorchecker_params_t *p =
-    (dt_iop_colorchecker_params_t *)self->params;
+  dt_iop_colorchecker_params_t *p = self->params;
+  dt_iop_colorchecker_gui_data_t *g = self->gui_data;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1398,11 +1526,10 @@ static gboolean checker_button_press(
   return FALSE;
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_colorchecker_gui_data_t *g = IOP_GUI_ALLOC(colorchecker);
-  const dt_iop_colorchecker_params_t *const p =
-    (dt_iop_colorchecker_params_t *)self->default_params;
+  const dt_iop_colorchecker_params_t *const p = self->default_params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 

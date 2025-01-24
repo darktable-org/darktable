@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2023 darktable developers.
+    Copyright (C) 2019-2024 darktable developers.
 
     Copyright (c) 2019      Andreas Schneider
 
@@ -144,7 +144,7 @@ void init(dt_imageio_module_format_t *self)
   if(codecName == NULL)
   {
     dt_print(DT_DEBUG_IMAGEIO,
-             "libavif doesn't offer encoding support!\n");
+             "libavif doesn't offer encoding support!");
     self->ready = FALSE;
     return;
   }
@@ -284,7 +284,7 @@ int write_image(struct dt_imageio_module_data_t *data,
 
   dt_print(DT_DEBUG_IMAGEIO,
            "Exporting AVIF image [%s] "
-           "[width: %zu, height: %zu, bit depth: %zu, comp: %s, quality: %u]\n",
+           "[width: %zu, height: %zu, bit depth: %zu, comp: %s, quality: %u]",
            filename,
            width,
            height,
@@ -360,7 +360,7 @@ int write_image(struct dt_imageio_module_data_t *data,
   if(format == AVIF_PIXEL_FORMAT_YUV444 && d->compression_type == AVIF_COMP_LOSSLESS)
     image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_IDENTITY;
 
-  dt_print(DT_DEBUG_IMAGEIO, "[avif colorprofile profile: %s]\n", dt_colorspaces_get_name(cp->type, filename));
+  dt_print(DT_DEBUG_IMAGEIO, "[avif colorprofile profile: %s]", dt_colorspaces_get_name(cp->type, filename));
 
   if(!have_nclx)
   {
@@ -372,7 +372,7 @@ int write_image(struct dt_imageio_module_data_t *data,
       icc_profile_data = malloc(sizeof(uint8_t) * icc_profile_len);
       if(icc_profile_data == NULL)
       {
-        dt_print(DT_DEBUG_IMAGEIO, "Failed to allocate ICC profile\n");
+        dt_print(DT_DEBUG_IMAGEIO, "Failed to allocate ICC profile");
         rc = 1;
         goto out;
       }
@@ -381,7 +381,7 @@ int write_image(struct dt_imageio_module_data_t *data,
       result = avifImageSetProfileICC(image, icc_profile_data, icc_profile_len);
       if(result != AVIF_RESULT_OK)
       {
-        dt_print(DT_DEBUG_IMAGEIO, "avifImageSetProfileICC failed\n");
+        dt_print(DT_DEBUG_IMAGEIO, "avifImageSetProfileICC failed");
         rc = 1;
         goto out;
       }
@@ -414,7 +414,7 @@ int write_image(struct dt_imageio_module_data_t *data,
   result = avifRGBImageAllocatePixels(&rgb);
   if(result != AVIF_RESULT_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "avifRGBImageAllocatePixels failed\n");
+    dt_print(DT_DEBUG_IMAGEIO, "avifRGBImageAllocatePixels failed");
     rc = 1;
     goto out;
   }
@@ -475,7 +475,7 @@ int write_image(struct dt_imageio_module_data_t *data,
   result = avifImageRGBToYUV(image, &rgb);
   if(result != AVIF_RESULT_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "avifImageRGBToYUV failed\n");
+    dt_print(DT_DEBUG_IMAGEIO, "avifImageRGBToYUV failed");
     rc = 1;
     goto out;
   }
@@ -488,7 +488,7 @@ int write_image(struct dt_imageio_module_data_t *data,
     result = avifImageSetMetadataExif(image, exif, exif_len);
     if(result != AVIF_RESULT_OK)
     {
-      dt_print(DT_DEBUG_IMAGEIO, "avifImageSetMetadataExif failed\n");
+      dt_print(DT_DEBUG_IMAGEIO, "avifImageSetMetadataExif failed");
       // as this error does not lead to invalid files keep going
     }
 #else
@@ -509,7 +509,7 @@ int write_image(struct dt_imageio_module_data_t *data,
       g_free(xmp_string);
       if(result != AVIF_RESULT_OK)
       {
-        dt_print(DT_DEBUG_IMAGEIO, "avifImageSetMetadataXMP failed\n");
+        dt_print(DT_DEBUG_IMAGEIO, "avifImageSetMetadataXMP failed");
         // as this error does not lead to invalid files keep going
       }
 #else
@@ -521,7 +521,7 @@ int write_image(struct dt_imageio_module_data_t *data,
   encoder = avifEncoderCreate();
   if(encoder == NULL)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "avifEncoderCreate failed\n");
+    dt_print(DT_DEBUG_IMAGEIO, "avifEncoderCreate failed");
     result = AVIF_RESULT_UNKNOWN_ERROR;
     rc = 1;
     goto out;
@@ -530,8 +530,10 @@ int write_image(struct dt_imageio_module_data_t *data,
   switch(d->compression_type)
   {
     case AVIF_COMP_LOSSLESS:
-      /* It isn't recommend to use the extremities */
-      encoder->speed = AVIF_SPEED_SLOWEST + 1;
+      // See https://github.com/darktable-org/darktable/issues/17921
+      // Other reasonably good speed values ​​are 6 and 7, they create slightly
+      // smaller files, but at the cost of a noticable increase in export time.
+      encoder->speed = 8;
 
 #if AVIF_VERSION >= 1000000
       encoder->quality = AVIF_QUALITY_LOSSLESS;
@@ -542,14 +544,17 @@ int write_image(struct dt_imageio_module_data_t *data,
       break;
 
     case AVIF_COMP_LOSSY:
-      encoder->speed = AVIF_SPEED_DEFAULT;
+      // See https://github.com/darktable-org/darktable/issues/17921
+      encoder->speed = AVIF_SPEED_FASTEST;
 
 #if AVIF_VERSION >= 1000000
       encoder->quality = d->quality;
 #else
-      const int quantizer = ((100 - d->quality) * AVIF_QUANTIZER_WORST_QUALITY + 50) / 100;
-      encoder->minQuantizer = CLAMP(quantizer - 5, AVIF_QUANTIZER_BEST_QUALITY, AVIF_QUANTIZER_WORST_QUALITY);
-      encoder->maxQuantizer = CLAMP(quantizer + 5, AVIF_QUANTIZER_BEST_QUALITY, AVIF_QUANTIZER_WORST_QUALITY);
+      {
+        const int quantizer = ((100 - d->quality) * AVIF_QUANTIZER_WORST_QUALITY + 50) / 100;
+        encoder->minQuantizer = CLAMP(quantizer - 5, AVIF_QUANTIZER_BEST_QUALITY, AVIF_QUANTIZER_WORST_QUALITY);
+        encoder->maxQuantizer = CLAMP(quantizer + 5, AVIF_QUANTIZER_BEST_QUALITY, AVIF_QUANTIZER_WORST_QUALITY);
+      }
 #endif
       break;
   }
@@ -600,8 +605,8 @@ int write_image(struct dt_imageio_module_data_t *data,
   }
 
   dt_print(DT_DEBUG_IMAGEIO,
-           "[avif quality: %u => maxQuantizer: %u, minQuantizer: %u, "
-           "tileColsLog2: %u, tileRowsLog2: %u, threads: %u]\n",
+           "[avif quality: %u => maxQuantizer: %i, minQuantizer: %i, "
+           "tileColsLog2: %i, tileRowsLog2: %i, threads: %i]",
            d->quality,
            encoder->maxQuantizer,
            encoder->minQuantizer,
@@ -614,14 +619,14 @@ int write_image(struct dt_imageio_module_data_t *data,
   result = avifEncoderWrite(encoder, image, &output);
   if(result != AVIF_RESULT_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "avifEncoderWrite failed\n");
+    dt_print(DT_DEBUG_IMAGEIO, "avifEncoderWrite failed");
     rc = 1;
     goto out;
   }
 
   if(output.size == 0 || output.data == NULL)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "avifEncoderWrite returned empty data\n");
+    dt_print(DT_DEBUG_IMAGEIO, "avifEncoderWrite returned empty data");
     result = AVIF_RESULT_UNKNOWN_ERROR;
     rc = 1;
     goto out;
@@ -653,7 +658,7 @@ int write_image(struct dt_imageio_module_data_t *data,
 out:
 
   if(result || rc)
-    dt_print(DT_DEBUG_IMAGEIO, "%s `%s'%s%s\n",
+    dt_print(DT_DEBUG_IMAGEIO, "%s `%s'%s%s",
         image     ? "Write AVIF image error"
                   : "Failed to create AVIF image",
         filename,
@@ -677,7 +682,7 @@ size_t params_size(dt_imageio_module_format_t *self)
 
 void *get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_avif_t *d = (dt_imageio_avif_t *)calloc(1, sizeof(dt_imageio_avif_t));
+  dt_imageio_avif_t *d = calloc(1, sizeof(dt_imageio_avif_t));
 
   if(d == NULL)
   {
@@ -714,7 +719,7 @@ int set_params(dt_imageio_module_format_t *self,
     return 1;
   const dt_imageio_avif_t *d = (dt_imageio_avif_t *)params;
 
-  dt_imageio_avif_gui_t *g = (dt_imageio_avif_gui_t *)self->gui_data;
+  dt_imageio_avif_gui_t *g = self->gui_data;
   dt_bauhaus_combobox_set(g->bit_depth, d->bit_depth);
   dt_bauhaus_combobox_set(g->color_mode, d->color_mode);
   dt_bauhaus_combobox_set(g->tiling, d->tiling);
@@ -804,7 +809,7 @@ static void compression_type_changed(GtkWidget *widget, gpointer user_data)
 {
   const enum avif_compression_type_e compression_type = dt_bauhaus_combobox_get(widget);
   dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)user_data;
-  dt_imageio_avif_gui_t *gui = (dt_imageio_avif_gui_t *)module->gui_data;
+  dt_imageio_avif_gui_t *gui = module->gui_data;
 
   dt_conf_set_int("plugins/imageio/format/avif/compression_type", compression_type);
 
@@ -819,8 +824,7 @@ static void quality_changed(GtkWidget *slider, gpointer user_data)
 
 void gui_init(dt_imageio_module_format_t *self)
 {
-  dt_imageio_avif_gui_t *gui =
-      (dt_imageio_avif_gui_t *)malloc(sizeof(dt_imageio_avif_gui_t));
+  dt_imageio_avif_gui_t *gui = malloc(sizeof(dt_imageio_avif_gui_t));
   const uint32_t bit_depth = dt_conf_get_int("plugins/imageio/format/avif/bpp");
   const enum avif_color_mode_e color_mode = dt_conf_get_bool("plugins/imageio/format/avif/color_mode");
   const enum avif_tiling_e tiling = !dt_conf_get_bool("plugins/imageio/format/avif/tiling");
@@ -951,7 +955,7 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
-  dt_imageio_avif_gui_t *gui = (dt_imageio_avif_gui_t *)self->gui_data;
+  dt_imageio_avif_gui_t *gui = self->gui_data;
 
   const uint32_t bit_depth = dt_confgen_get_int("plugins/imageio/format/avif/bpp", DT_DEFAULT);
   const enum avif_color_mode_e color_mode = dt_confgen_get_bool("plugins/imageio/format/avif/color_mode", DT_DEFAULT);

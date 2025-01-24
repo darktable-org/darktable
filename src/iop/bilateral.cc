@@ -48,7 +48,7 @@ extern "C" {
  * as c++ code, under new bsd license.
  */
 
-#define MAX_DIRECT_STAMP_RADIUS 6.0f
+#define MAX_DIRECT_STAMP_RADIUS 6
 
 DT_MODULE_INTROSPECTION(1, dt_iop_bilateral_params_t)
 
@@ -97,7 +97,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
     (self, _("apply edge-aware surface blur to denoise or smoothen textures"),
@@ -108,7 +108,7 @@ const char **description(struct dt_iop_module_t *self)
 }
 
 static void _compute_sigmas(float sigma[5],
-                            struct dt_iop_bilateral_data_t *data,
+                            dt_iop_bilateral_data_t *data,
                             float scale,
                             float iscale)
 {
@@ -119,7 +119,7 @@ static void _compute_sigmas(float sigma[5],
   sigma[4] = data->sigma[4];
 }
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -165,13 +165,13 @@ void process(struct dt_iop_module_t *self,
   }
 
   // if rad <= 6 use naive version!
-  const int rad = (int)(3.0f * fmaxf(sigma[0], sigma[1]) + 1.0f);
-  if(rad <= MAX_DIRECT_STAMP_RADIUS
-     && (piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL))
+  const int prad = (int)(3.0f * fmaxf(sigma[0], sigma[1]) + 1.0f);
+  const int rad = MIN(prad, MIN(roi_out->width, roi_out->height) - 2 * prad);
+  const gboolean thumb = piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL;
+  if(rad < 1 || (rad <= MAX_DIRECT_STAMP_RADIUS && thumb))
   {
     // no use denoising the thumbnail. takes ages without permutohedral
-    dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid,
-                              roi_out->width, roi_out->height, 4);
+    dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid, roi_out->width, roi_out->height, 4);
   }
   else if(rad <= MAX_DIRECT_STAMP_RADIUS)
   {
@@ -295,7 +295,7 @@ void process(struct dt_iop_module_t *self,
   }
 }
 
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -309,14 +309,14 @@ void commit_params(struct dt_iop_module_t *self,
   d->sigma[4] = p->blue;
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_bilateral_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -324,16 +324,17 @@ void cleanup_pipe(struct dt_iop_module_t *self,
   piece->data = NULL;
 }
 
-void tiling_callback(struct dt_iop_module_t *self,
-                     struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in,
                      const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
   dt_iop_bilateral_data_t *data = (dt_iop_bilateral_data_t *)piece->data;
   float sigma[5];
   _compute_sigmas(sigma, data, roi_in->scale, piece->iscale);
-  const int rad = (int)(3.0f * fmaxf(sigma[0], sigma[1]) + 1.0f);
+  const int prad = (int)(3.0f * fmaxf(sigma[0], sigma[1]) + 1.0f);
+  const int rad = MIN(prad, MIN(roi_out->width, roi_out->height) - 2 * prad);
   if(rad <= MAX_DIRECT_STAMP_RADIUS)
     tiling->factor = 2.0f;  // direct stamp, no intermediate buffers used
   else
@@ -351,7 +352,7 @@ void tiling_callback(struct dt_iop_module_t *self,
 
     dt_print(DT_DEBUG_MEMORY,
              "[bilateral tiling requirements] "
-             "tiling factor=%f, npixels=%lu, estimated hashbytes=%lu\n",
+             "tiling factor=%f, npixels=%lu, estimated hashbytes=%lu",
              tiling->factor, npixels, hash_bytes);
   }
   tiling->overhead = 0;

@@ -186,6 +186,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
 @define-color thumbnail_bg_color @grey_50;
 @define-color thumbnail_star_bg_color @grey_35;
 @define-color thumbnail_star_hover_color @grey_80;
+@define-color thumbnail_localcopy @grey_95;
 @define-color thumbnail_fg_color @grey_55;
 @define-color thumbnail_bg50_color @grey_95;
 @define-color thumbnail_selected_bg_color @grey_70;
@@ -655,12 +656,19 @@ dialog .sidebar row:selected:hover label,
   background-color: shade(@collapsible_bg_color, 1.04);
 }
 
+.dt_section_expander {
+  padding: 0.07em 0 0.07em 1.7em;  
+}
+
 .dt_section_expander,
 .dt_section_expander label
 {
   background-color: @collapsible_bg_color;
   border: none;
   margin-top: 0.14em;
+}
+
+.dt_section_expander label {
   padding: 0.07em 0;
 }
 
@@ -2215,15 +2223,16 @@ Details :
 {
   border-top : 0.07em solid @lighttable_bg_color;
   border-right : 0.07em solid @lighttable_bg_color;
+  color: @thumbnail_localcopy;
 }
 
 .dt_group_right #thumb-localcopy
 {
-  border-right: 0.14em solid rgb(255, 187, 0); /* to not overlay thumb borders */
+  border-right: 0.07em solid rgb(255, 187, 0); /* to not overlay thumb borders */
 }
 .dt_group_top #thumb-localcopy
 {
-  border-top: 0.14em solid rgb(255, 187, 0); /* to not overlay thumb borders */
+  border-top: 0.07em solid rgb(255, 187, 0); /* to not overlay thumb borders */
 }
 
 /*---------------------------------------------------------
@@ -2318,6 +2327,80 @@ Details :
 #footer-toolbar scale
 {
   margin: 0.07em 0.28em;
+}
+
+/* splash screen */
+#splashscreen
+{
+    background-color: @grey_10;
+    border: 5px solid @grey_60;
+}
+#splashscreen-header
+{
+    padding: 0;
+    margin: 0;
+}
+/* make the (nonexistent) title text very small to avoid an obvious bar at top */
+#splashscreen-header label
+{
+    font-size: 1%;
+    padding: 0;
+    margin: 0;
+}
+/* style the darktable logo */
+#splashscreen-logo
+{
+}
+/* position the darktable version number next to the logo */
+#splashscreen-version
+{
+    margin-top: -35pt;
+    margin-right: -110pt;
+    font-size: 15pt;
+}
+/* style the darktable program name */
+#splashscreen-program
+{
+    font-size: 48pt;
+    margin: 2pt;
+}
+/* style the darktable program description */
+#splashscreen-description
+{
+    font-size: 16pt;
+    font-family: DejaVu Serif, serif;
+    padding: 1em;
+    margin: 1em;
+}
+/* style the "get ready" message */
+#splashscreen-prepare
+{
+    font-size: 14pt;
+    font-family: DejaVu Serif, serif;
+}
+/* style the separating bar - without a style, it won't appear or take space! */
+#splashscreen-separator
+{
+    border: 2px solid @grey_80;
+    margin-top: 15pt;
+    margin-bottom: 15pt;
+}
+/* style the progress message */
+#splashscreen-progress
+{
+}
+/* style the time remaining */
+#splashscreen-remaining
+{
+    color: yellow;
+    font-size: 150%;
+}
+
+/* style the message on the exit screen */
+#exitscreen-message
+{
+    font-size: 15pt;
+    margin-bottom: 10pt;
 }
 
 /* ??? TO BE REMOVED ON DT 5.0 : script_manager power button */

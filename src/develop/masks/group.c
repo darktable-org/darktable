@@ -23,7 +23,7 @@
 #include "develop/imageop.h"
 #include "develop/masks.h"
 
-static int _group_events_mouse_scrolled(struct dt_iop_module_t *module,
+static int _group_events_mouse_scrolled(dt_iop_module_t *module,
                                         const float pzx,
                                         const float pzy,
                                         const int up,
@@ -36,8 +36,7 @@ static int _group_events_mouse_scrolled(struct dt_iop_module_t *module,
   if(gui->group_edited >= 0)
   {
     // we get the form
-    dt_masks_point_group_t *fpt =
-      (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
+    dt_masks_point_group_t *fpt = g_list_nth_data(form->points, gui->group_edited);
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if(sel && sel->functions)
       return sel->functions->mouse_scrolled(module, pzx, pzy, up, state, sel,
@@ -46,7 +45,7 @@ static int _group_events_mouse_scrolled(struct dt_iop_module_t *module,
   return 0;
 }
 
-static int _group_events_button_pressed(struct dt_iop_module_t *module,
+static int _group_events_button_pressed(dt_iop_module_t *module,
                                         const float pzx,
                                         const float pzy,
                                         const double pressure,
@@ -84,8 +83,7 @@ static int _group_events_button_pressed(struct dt_iop_module_t *module,
   if(gui->group_edited >= 0)
   {
     // we get the form
-    dt_masks_point_group_t *fpt =
-      (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
+    dt_masks_point_group_t *fpt = g_list_nth_data(form->points, gui->group_edited);
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if(!sel) return 0;
     if(sel->functions)
@@ -95,7 +93,7 @@ static int _group_events_button_pressed(struct dt_iop_module_t *module,
   return 0;
 }
 
-static int _group_events_button_released(struct dt_iop_module_t *module,
+static int _group_events_button_released(dt_iop_module_t *module,
                                          const float pzx,
                                          const float pzy,
                                          const int which,
@@ -108,8 +106,7 @@ static int _group_events_button_released(struct dt_iop_module_t *module,
   if(gui->group_edited >= 0)
   {
     // we get the form
-    dt_masks_point_group_t *fpt =
-      (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
+    dt_masks_point_group_t *fpt = g_list_nth_data(form->points, gui->group_edited);
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if(sel && sel->functions)
       return sel->functions->button_released(module, pzx, pzy, which, state, sel, fpt->parentid,
@@ -131,7 +128,7 @@ static inline gboolean _is_handling_form(dt_masks_form_gui_t *gui)
     || (gui->seg_dragging != -1);
 }
 
-static int _group_events_mouse_moved(struct dt_iop_module_t *module,
+static int _group_events_mouse_moved(dt_iop_module_t *module,
                                      const float pzx,
                                      const float pzy,
                                      const double pressure,
@@ -160,8 +157,7 @@ static int _group_events_mouse_moved(struct dt_iop_module_t *module,
   if(gui->group_edited >= 0 && _is_handling_form(gui))
   {
     // we get the form
-    dt_masks_point_group_t *fpt =
-      (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
+    dt_masks_point_group_t *fpt = g_list_nth_data(form->points, gui->group_edited);
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if(!sel) return 0;
     int rep = 0;
@@ -192,7 +188,7 @@ static int _group_events_mouse_moved(struct dt_iop_module_t *module,
 
   for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts))
   {
-    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
+    dt_masks_point_group_t *fpt = fpts->data;
     dt_masks_form_t *frm = dt_masks_get_from_id(darktable.develop, fpt->formid);
     int inside, inside_border, near, inside_source;
     float dist = FLT_MAX;
@@ -239,7 +235,7 @@ void dt_group_events_post_expose(cairo_t *cr,
   int pos = 0;
   for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts))
   {
-    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
+    dt_masks_point_group_t *fpt = fpts->data;
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if(!sel) return;
     if(sel->functions)
@@ -320,7 +316,7 @@ static int _group_get_mask(const dt_iop_module_t *const module,
   int nb_ok = 0;
   for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts))
   {
-    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
+    dt_masks_point_group_t *fpt = fpts->data;
     dt_masks_form_t *sel = dt_masks_get_from_id(module->dev, fpt->formid);
     if(sel)
     {
@@ -331,7 +327,7 @@ static int _group_get_mask(const dt_iop_module_t *const module,
         double start = dt_get_wtime();
         _inverse_mask(module, piece, sel, &bufs[pos], &w[pos], &h[pos], &px[pos], &py[pos]);
         dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-                 "[masks %s] inverse took %0.04f sec\n",
+                 "[masks %s] inverse took %0.04f sec",
                  sel->name, dt_get_lap_time(&start));
       }
       op[pos] = fpt->opacity;
@@ -444,7 +440,7 @@ static int _group_get_mask(const dt_iop_module_t *const module,
     }
 
     dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-             "[masks %d] combine took %0.04f sec\n",
+             "[masks %d] combine took %0.04f sec",
              i, dt_get_lap_time(&start));
   }
 
@@ -638,7 +634,7 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
   // and we get all masks
   for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts))
   {
-    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
+    dt_masks_point_group_t *fpt = fpts->data;
     dt_masks_form_t *sel = dt_masks_get_from_id(module->dev, fpt->formid);
 
     if(sel)
@@ -698,7 +694,7 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
         }
 
         dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-                 "[masks %d] combine took %0.04f sec\n",
+                 "[masks %d] combine took %0.04f sec",
                  nb_ok, dt_get_lap_time(&start));
 
         nb_ok++;
@@ -735,12 +731,12 @@ int dt_masks_group_render_roi(dt_iop_module_t *module,
   const int ok = dt_masks_get_mask_roi(module, piece, form, roi, buffer);
 
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks] render all masks took %0.04f sec\n",
+           "[masks] render all masks took %0.04f sec",
            dt_get_lap_time(&start));
   return ok;
 }
 
-static GSList *_group_setup_mouse_actions(const struct dt_masks_form_t *const form)
+static GSList *_group_setup_mouse_actions(const dt_masks_form_t *const form)
 {
   GSList *lm = NULL;
   // initialize the mask of seen shapes to the set of flags which
@@ -751,7 +747,7 @@ static GSList *_group_setup_mouse_actions(const struct dt_masks_form_t *const fo
 
   for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts))
   {
-    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
+    dt_masks_point_group_t *fpt = fpts->data;
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if(!sel || (sel->type & ~seen_types) == 0)
       continue;
@@ -771,9 +767,8 @@ static void _group_duplicate_points(dt_develop_t *const dev,
 {
   for(GList *pts = base->points; pts; pts = g_list_next(pts))
   {
-    dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
-    dt_masks_point_group_t *npt =
-      (dt_masks_point_group_t *)malloc(sizeof(dt_masks_point_group_t));
+    dt_masks_point_group_t *pt = pts->data;
+    dt_masks_point_group_t *npt = malloc(sizeof(dt_masks_point_group_t));
 
     npt->formid = dt_masks_form_duplicate(dev, pt->formid);
     npt->parentid = dest->formid;

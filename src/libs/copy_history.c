@@ -80,7 +80,7 @@ uint32_t container(dt_lib_module_t *self)
 
 void gui_update(dt_lib_module_t *self)
 {
-  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
+  dt_lib_copy_history_t *d = self->data;
 
   const int nbimgs = dt_act_on_get_images_nb(TRUE, FALSE);
   const gboolean act_on_any = (nbimgs > 0);
@@ -182,8 +182,8 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
       dt_collection_update_query(darktable.collection,
                                  DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                                  g_list_copy((GList *)imgs));
-      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED,
-                                    g_list_copy((GList *)imgs), 0);
+      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_GEOTAG_CHANGED,
+                              g_list_copy((GList *)imgs), 0);
       dt_control_queue_redraw_center();
     }
     if(!act_on_one)
@@ -206,10 +206,9 @@ static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
     dt_control_compress_history(imgs);
 }
 
-static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
+static void copy_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
+  dt_lib_copy_history_t *d = self->data;
 
   const dt_imgid_t id = dt_act_on_get_main_image();
 
@@ -220,10 +219,9 @@ static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
   }
 }
 
-static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
+static void copy_parts_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
+  dt_lib_copy_history_t *d = self->data;
 
   const dt_imgid_t id = dt_act_on_get_main_image();
 
@@ -256,11 +254,9 @@ static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
   }
 }
 
-static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
+static void paste_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 {
-
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
+  dt_lib_copy_history_t *d = self->data;
 
   const int current_mode = dt_bauhaus_combobox_get(d->pastemode);
 
@@ -326,7 +322,7 @@ int position(const dt_lib_module_t *self)
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)malloc(sizeof(dt_lib_copy_history_t));
+  dt_lib_copy_history_t *d = malloc(sizeof(dt_lib_copy_history_t));
   self->data = (void *)d;
 
   self->widget = gtk_grid_new();
@@ -390,23 +386,13 @@ void gui_init(dt_lib_module_t *self)
      _("write history stack and tags to XMP sidecar files"), 0, 0);
   gtk_grid_attach(grid, d->write_button, 3, line, 3, 1);
 
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
-                            G_CALLBACK(_image_selection_changed_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
-                            G_CALLBACK(_mouse_over_image_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
-                            G_CALLBACK(_collection_updated_callback), self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_SELECTION_CHANGED, _image_selection_changed_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _mouse_over_image_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _collection_updated_callback);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_image_selection_changed_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_mouse_over_image_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_collection_updated_callback), self);
-
   free(self->data);
   self->data = NULL;
 }

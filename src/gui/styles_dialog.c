@@ -225,7 +225,7 @@ static void _gui_styles_new_style_response(GtkDialog *dialog,
     if(newname && *newname)
     {
       /* show prompt dialog when style already exists */
-      if(g->newname && (dt_styles_exists(newname)) != 0)
+      if(newname && (dt_styles_exists(newname)) != 0)
       {
         /* on button yes delete style name for overwriting */
         if(dt_gui_show_yes_no_dialog
@@ -528,8 +528,7 @@ static void _gui_styles_dialog_run(gboolean edit,
   if(name && (dt_styles_exists(name)) == 0) return;
 
   /* initialize the dialog */
-  dt_gui_styles_dialog_t *sd =
-    (dt_gui_styles_dialog_t *)g_malloc0(sizeof(dt_gui_styles_dialog_t));
+  dt_gui_styles_dialog_t *sd = g_malloc0(sizeof(dt_gui_styles_dialog_t));
 
   sd->nameorig = g_strdup(name);
   sd->imgid = imgid;
@@ -772,7 +771,7 @@ static void _gui_styles_dialog_run(gboolean edit,
     {
       for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
       {
-        dt_style_item_t *item = (dt_style_item_t *)items_iter->data;
+        dt_style_item_t *item = items_iter->data;
         const dt_develop_mask_mode_t mask_mode = item->blendop_params->mask_mode;
 
         if(item->num != -1 && item->selimg_num != -1) // defined in style and image
@@ -827,7 +826,7 @@ static void _gui_styles_dialog_run(gboolean edit,
     {
       for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
       {
-        dt_history_item_t *item = (dt_history_item_t *)items_iter->data;
+        dt_history_item_t *item = items_iter->data;
 
         /* lookup history item module */
         gboolean enabled = TRUE;
@@ -981,11 +980,13 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
 
   if(des && strlen(des) > 0)
   {
+    char *localized_des = dt_util_localize_segmented_name(des);
     // If the name and/or description are long and become multi-line, it will look
     // hard to understand what is what, so we add a horizontal separator between them.
     gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
 
-    gchar *esc_des = g_markup_printf_escaped("<b>%s</b>", des);
+    gchar *esc_des = g_markup_printf_escaped("<b>%s</b>", localized_des);
+    g_free(localized_des);
     label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(label), esc_des);
     gtk_label_set_max_width_chars(GTK_LABEL(label), STYLE_TOOLTIP_MAX_WIDTH);
@@ -1001,7 +1002,7 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
   while(l)
   {
     char mn[64];
-    dt_style_item_t *i = (dt_style_item_t *)l->data;
+    dt_style_item_t *i = l->data;
 
     if(i->multi_name && strlen(i->multi_name) > 0)
     {

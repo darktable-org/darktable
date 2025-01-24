@@ -99,7 +99,7 @@ static void load_themes_dir(const char *basedir)
   GDir *dir = g_dir_open(themes_dir, 0, NULL);
   if(dir)
   {
-    dt_print(DT_DEBUG_DEV, "adding themes directory: %s\n", themes_dir);
+    dt_print(DT_DEBUG_DEV, "adding themes directory: %s", themes_dir);
 
     const gchar *d_name;
     while((d_name = g_dir_read_name(dir)))
@@ -192,7 +192,7 @@ static void save_usercss(GtkTextBuffer *buffer)
   GError *error = NULL;
   if(!g_file_set_contents(usercsspath, usercsscontent, -1, &error))
   {
-    dt_print(DT_DEBUG_ALWAYS, "%s: error saving css to %s: %s\n",
+    dt_print(DT_DEBUG_ALWAYS, "%s: error saving css to %s: %s",
              G_STRFUNC, usercsspath, error->message);
     g_clear_error(&error);
   }
@@ -218,7 +218,9 @@ static void save_usercss_callback(GtkWidget *widget, gpointer user_data)
   }
 }
 
-static void usercss_dialog_callback(GtkDialog *dialog, gint response_id, gpointer user_data)
+static void usercss_dialog_callback(GtkDialog *dialog,
+                                    gint response_id,
+                                    gpointer user_data)
 {
   //just save the latest css but don't reload the theme
   dt_gui_themetweak_widgets_t *tw = (dt_gui_themetweak_widgets_t *)user_data;
@@ -230,8 +232,8 @@ static void usercss_dialog_callback(GtkDialog *dialog, gint response_id, gpointe
 
 static void language_callback(GtkWidget *widget, gpointer user_data)
 {
-  int selected = dt_bauhaus_combobox_get(widget);
-  dt_l10n_language_t *language = (dt_l10n_language_t *)g_list_nth_data(darktable.l10n->languages, selected);
+  const int selected = dt_bauhaus_combobox_get(widget);
+  dt_l10n_language_t *language = g_list_nth_data(darktable.l10n->languages, selected);
   if(darktable.l10n->sys_default == selected)
   {
     dt_conf_set_string("ui_last/gui_language", "");
@@ -245,7 +247,9 @@ static void language_callback(GtkWidget *widget, gpointer user_data)
   restart_required = TRUE;
 }
 
-static gboolean reset_language_widget(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
+static gboolean reset_language_widget(GtkWidget *label,
+                                      GdkEventButton *event,
+                                      GtkWidget *widget)
 {
   if(event->type == GDK_2BUTTON_PRESS)
   {
@@ -313,6 +317,7 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   }
 
   dt_bauhaus_combobox_set(widget, darktable.l10n->selected);
+  dt_bauhaus_combobox_set_default(widget, darktable.l10n->sys_default);
   g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(language_callback), 0);
   gtk_widget_set_tooltip_text(labelev,  _("double-click to reset to the system language"));
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
@@ -493,21 +498,6 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
 
 ///////////// end of gui and theme language selection
 
-#if 0
-// FIXME! this makes some systems hang forever. I don't reproduce.
-gboolean preferences_window_deleted(GtkWidget *widget, GdkEvent *event, gpointer data)
-{
-  // redraw the whole UI in case sizes have changed
-  gtk_widget_queue_resize(dt_ui_center(darktable.gui->ui));
-  gtk_widget_queue_resize(dt_ui_main_window(darktable.gui->ui));
-
-  gtk_widget_queue_draw(dt_ui_main_window(darktable.gui->ui));
-  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
-
-  gtk_widget_hide(widget);
-  return TRUE;
-}
-#endif
 
 static void _resize_dialog(GtkWidget *widget)
 {
@@ -523,10 +513,6 @@ void dt_gui_preferences_show()
   _preferences_dialog = gtk_dialog_new_with_buttons(_("darktable preferences"), win,
                                                     GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
                                                     NULL, NULL);
-#if 0
-  // FIXME! this makes some systems hang forever. I don't reproduce.
-  g_signal_connect(G_OBJECT(_preferences_dialog), "delete-event", G_CALLBACK(preferences_window_deleted), NULL);
-#endif
 
   gtk_window_set_default_size(GTK_WINDOW(_preferences_dialog),
                               dt_conf_get_int("ui_last/preferences_dialog_width"),
@@ -556,7 +542,7 @@ void dt_gui_preferences_show()
   gtk_box_pack_start(GTK_BOX(box), stacksidebar, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box), stack, TRUE, TRUE, 0);
 
-  dt_gui_themetweak_widgets_t *tweak_widgets = (dt_gui_themetweak_widgets_t *)malloc(sizeof(dt_gui_themetweak_widgets_t));
+  dt_gui_themetweak_widgets_t *tweak_widgets = malloc(sizeof(dt_gui_themetweak_widgets_t));
 
   restart_required = FALSE;
 
@@ -590,7 +576,7 @@ void dt_gui_preferences_show()
   if(restart_required)
     dt_control_log(_("darktable needs to be restarted for settings to take effect"));
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_PREFERENCES_CHANGE);
 }
 
 static void cairo_destroy_from_pixbuf(guchar *pixels, gpointer data)
@@ -1381,4 +1367,3 @@ GtkWidget *dt_gui_preferences_string(GtkGrid *grid, const char *key, const guint
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

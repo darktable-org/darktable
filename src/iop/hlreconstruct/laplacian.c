@@ -535,7 +535,7 @@ static inline gint wavelets_process(const float *const restrict in,
   float *const tempbuf = dt_alloc_perthread_float(4 * width, &padded_size); //TODO: alloc in caller
   for(int s = 0; s < scales; ++s)
   {
-    //dt_print(DT_DEBUG_ALWAYS, "CPU Wavelet decompose : scale %i\n", s);
+    //dt_print(DT_DEBUG_ALWAYS, "CPU Wavelet decompose : scale %i", s);
     const int mult = 1 << s;
 
     const float *restrict buffer_in;
@@ -583,7 +583,7 @@ static inline gint wavelets_process(const float *const restrict in,
 }
 
 
-static void process_laplacian_bayer(struct dt_iop_module_t *self,
+static void process_laplacian_bayer(dt_iop_module_t *self,
                                     dt_dev_pixelpipe_iop_t *piece,
                                     const void *const restrict ivoid,
                                     void *const restrict ovoid,
@@ -591,7 +591,7 @@ static void process_laplacian_bayer(struct dt_iop_module_t *self,
                                     const dt_iop_roi_t *const roi_out,
                                     const dt_aligned_pixel_t clips)
 {
-  dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
+  dt_iop_highlights_data_t *data = piece->data;
 
   const uint32_t filters = piece->pipe->dsc.filters;
   dt_aligned_pixel_t wb = { 1.f, 1.f, 1.f, 1.f };
@@ -709,7 +709,7 @@ static inline cl_int wavelets_process_cl(const int devid,
   // the wavelets decomposition here is the same as the equalizer/atrous module,
   for(int s = 0; s < scales; ++s)
   {
-    //dt_print(DT_DEBUG_ALWAYS, "GPU Wavelet decompose : scale %i\n", s);
+    //dt_print(DT_DEBUG_ALWAYS, "GPU Wavelet decompose : scale %i", s);
     const int mult = 1 << s;
 
     cl_mem buffer_in;
@@ -778,7 +778,7 @@ static inline cl_int wavelets_process_cl(const int devid,
   return err;
 }
 
-static cl_int process_laplacian_bayer_cl(struct dt_iop_module_t *self,
+static cl_int process_laplacian_bayer_cl(dt_iop_module_t *self,
                                          dt_dev_pixelpipe_iop_t *piece,
                                          cl_mem dev_in,
                                          cl_mem dev_out,
@@ -786,8 +786,8 @@ static cl_int process_laplacian_bayer_cl(struct dt_iop_module_t *self,
                                          const dt_iop_roi_t *const roi_out,
                                          const dt_aligned_pixel_t clips)
 {
-  dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
-  dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)self->global_data;
+  dt_iop_highlights_data_t *data = piece->data;
+  dt_iop_highlights_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 

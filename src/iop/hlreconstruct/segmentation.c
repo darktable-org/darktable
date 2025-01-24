@@ -66,7 +66,7 @@ static inline void _push_stack(int xpos, int ypos, dt_ff_stack_t *stack)
   const int i = stack->pos;
   if(i >= stack->size - 1)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[segmentation stack overflow] %i\n", stack->size);
+    dt_print(DT_DEBUG_ALWAYS, "[segmentation stack overflow] %i", stack->size);
     return;
   }
   stack->el[i].xpos = xpos;
@@ -88,7 +88,7 @@ static inline dt_pos_t * _pop_stack(dt_ff_stack_t *stack)
   if(stack->pos > 0)
     stack->pos--;
   else
-    dt_print(DT_DEBUG_ALWAYS, "[segmentation stack underflow]\n");
+    dt_print(DT_DEBUG_ALWAYS, "[segmentation stack underflow]");
   return &stack->el[stack->pos];
 }
 
@@ -124,7 +124,7 @@ static inline int _test_dilate(const uint32_t *img, const size_t i, const size_t
            img[i-3]    | img[i+3]    |
            img[i+w1-3] | img[i+w1+3] |
            img[i+w2-3] | img[i+w2-2] | img[i+w2+2] | img[i+w2+3] |
-           img[i+w3-2] | img[i+w3-1] | img[i+w3] | img[i+w3+1] | img[i+w3+2]; 
+           img[i+w3-2] | img[i+w3-1] | img[i+w3] | img[i+w3+1] | img[i+w3+2];
   if(retval || (radius < 4)) return retval;
 
   const size_t w4 = 4*w1;
@@ -150,7 +150,7 @@ static inline int _test_dilate(const uint32_t *img, const size_t i, const size_t
            img[i+w2-5] | img[i+w2+5] |
            img[i+w3-4] | img[i+w3+4] |
            img[i+w4-4] | img[i+w4-3] | img[i+w4+3] | img[i+w4+4] |
-           img[i+w5-2] | img[i+w5-1] | img[i+w5] | img[i+w5+1] | img[i+w5+2]; 
+           img[i+w5-2] | img[i+w5-1] | img[i+w5] | img[i+w5+1] | img[i+w5+2];
   if(retval || (radius < 6)) return retval;
 
   const size_t w6 = 6*w1;
@@ -249,7 +249,7 @@ static inline int _test_erode(const uint32_t *img, const size_t i, const size_t 
            img[i-3]    & img[i+3]    &
            img[i+w1-3] & img[i+w1+3] &
            img[i+w2-3] & img[i+w2-2] & img[i+w2+2] & img[i+w2+3] &
-           img[i+w3-2] & img[i+w3-1] & img[i+w3] & img[i+w3+1] & img[i+w3+2]; 
+           img[i+w3-2] & img[i+w3-1] & img[i+w3] & img[i+w3+1] & img[i+w3+2];
   if((retval == 0) || (radius < 4)) return retval;
 
   const size_t w4 = 4*w1;
@@ -258,10 +258,10 @@ static inline int _test_erode(const uint32_t *img, const size_t i, const size_t 
            img[i-w2-4] & img[i-w2+4] &
            img[i-w1-4] & img[i-w1+4] &
            img[i-4]    & img[i+4] &
-           img[i+w1-4] & img[i+w1+4] & 
-           img[i+w2-4] & img[i+w2+4] & 
+           img[i+w1-4] & img[i+w1+4] &
+           img[i+w2-4] & img[i+w2+4] &
            img[i+w3-3] & img[i+w3+3] &
-           img[i+w4-2] & img[i+w4-1] & img[i+w4] & img[i+w4+1] & img[i+w4+2]; 
+           img[i+w4-2] & img[i+w4-1] & img[i+w4] & img[i+w4+1] & img[i+w4+2];
   if((retval == 0) || (radius < 5)) return retval;
 
   const size_t w5 = 5*w1;
@@ -275,7 +275,7 @@ static inline int _test_erode(const uint32_t *img, const size_t i, const size_t 
            img[i+w2-5] & img[i+w2+5] &
            img[i+w3-4] & img[i+w3+4] &
            img[i+w4-4] & img[i+w4-3] & img[i+w4+3] & img[i+w4+4] &
-           img[i+w5-2] & img[i+w5-1] & img[i+w5] & img[i+w5+1] & img[i+w5+2]; 
+           img[i+w5-2] & img[i+w5-1] & img[i+w5] & img[i+w5+1] & img[i+w5+2];
   return retval;
 }
 
@@ -291,7 +291,7 @@ static inline void _eroding(const uint32_t *img,
   {
     for(int col = border; col < w1 - border; col++)
     {
-      const size_t i = (size_t)row*w1 + col; 
+      const size_t i = (size_t)row*w1 + col;
       o[i] = _test_erode(img, i, w1, radius) ? 1 : 0;
     }
   }
@@ -439,7 +439,7 @@ static gboolean _floodfill_segmentize(int yin,
       xp = xr;
       yp = y;
       rp = yp*w + xp;
-      if(xp < w-border-2 && d[rp] == 0) 
+      if(xp < w-border-2 && d[rp] == 0)
       {
         min_x = MIN(min_x, xp);
         max_x = MAX(max_x, xp);
@@ -547,14 +547,14 @@ static gboolean _floodfill_segmentize(int yin,
 // User interface
 void dt_segmentize_plane(dt_iop_segmentation_t *seg)
 {
-  dt_ff_stack_t stack;  
+  dt_ff_stack_t stack;
   const int width = seg->width;
   const int height = seg->height;
   stack.size = (size_t)width * height / 32;
   stack.el = dt_alloc_align_type(dt_pos_t, stack.size);
   if(!stack.el)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[segmentize_plane] can't allocate segmentation stack\n");
+    dt_print(DT_DEBUG_ALWAYS, "[segmentize_plane] can't allocate segmentation stack");
     return;
   }
   const int border = seg->border;
@@ -576,7 +576,7 @@ void dt_segmentize_plane(dt_iop_segmentation_t *seg)
   finish:
 
   if(id >= (seg->slots - 2))
-    dt_print(DT_DEBUG_ALWAYS, "[segmentize_plane] %ix%i number of segments exceeds maximum=%i\n",
+    dt_print(DT_DEBUG_ALWAYS, "[segmentize_plane] %ix%i number of segments exceeds maximum=%i",
              (int)width, (int)height, seg->slots);
 
   dt_free_align(stack.el);
@@ -613,17 +613,17 @@ void dt_segmentation_free_struct(dt_iop_segmentation_t *seg)
   dt_free_align(seg->ymax);
   dt_free_align(seg->val1);
   dt_free_align(seg->val2);
-  memset(seg, 0, sizeof(dt_iop_segmentation_t)); 
+  memset(seg, 0, sizeof(dt_iop_segmentation_t));
 }
 
 // returns TRUE in case of errors
 gboolean dt_segmentation_init_struct(dt_iop_segmentation_t *seg,
-                                 const int width,
-                                 const int height,
-                                 const int border,
-                                 const int islots)
+                                     const int width,
+                                     const int height,
+                                     const int border,
+                                     const int islots)
 {
-  memset(seg, 0, sizeof(dt_iop_segmentation_t)); 
+  memset(seg, 0, sizeof(dt_iop_segmentation_t));
   const int slots = MAX(256, MIN(islots, DT_SEG_ID_MASK - 2));
   const size_t bsize = (size_t) width * height * sizeof(uint32_t);
 

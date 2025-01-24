@@ -77,7 +77,7 @@ const char *aliases()
   return _("chromatic aberrations");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("attenuate chromatic aberration by desaturating edges"),
                                       _("corrective"),
@@ -109,13 +109,13 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_LAB;
 }
 
-void tiling_callback(dt_iop_module_t *module,
+void tiling_callback(dt_iop_module_t *self,
                      dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in,
                      const dt_iop_roi_t *roi_out,
                      dt_develop_tiling_t *tiling)
 {
-  dt_iop_defringe_data_t *p = (dt_iop_defringe_data_t *)piece->data;
+  dt_iop_defringe_data_t *p = piece->data;
 
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -144,7 +144,7 @@ static inline void _fib_latt(int *const x, int *const y, float radius, int step,
   {
     *x = 0;
     *y = 0;
-    dt_print(DT_DEBUG_ALWAYS, "Fibonacci lattice index wrong/out of bounds in defringe module\n");
+    dt_print(DT_DEBUG_ALWAYS, "Fibonacci lattice index wrong/out of bounds in defringe module");
     return;
   }
   float px = step / fib[idx], py = step * (fib[idx + 1] / fib[idx]);
@@ -168,15 +168,15 @@ static inline void _fib_latt(int *const x, int *const y, float radius, int step,
 // most are chosen arbitrarily and/or by experiment/trial+error ... I am sorry ;-)
 // and having everything user-defineable would be just too much
 // -----------------------------------------------------------------------------------------
-void process(struct dt_iop_module_t *module,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const i,
              void *const o,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_defringe_data_t *const d = (dt_iop_defringe_data_t *)piece->data;
-  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, module, piece->colors,
+  const dt_iop_defringe_data_t *const d = piece->data;
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          i, o, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
@@ -204,7 +204,7 @@ void process(struct dt_iop_module_t *module,
   gauss = dt_gaussian_init(width, height, 4, Labmax, Labmin, sigma, order);
   if(!gauss)
   {
-    dt_print(DT_DEBUG_ALWAYS, "Error allocating memory for gaussian blur in defringe module\n");
+    dt_print(DT_DEBUG_ALWAYS, "Error allocating memory for gaussian blur in defringe module");
     goto ERROR_EXIT;
   }
   dt_gaussian_blur_4c(gauss, in, out);
@@ -251,7 +251,7 @@ void process(struct dt_iop_module_t *module,
   xy_small = malloc(sizeof(int) * 2 * samples_small);
   if(!xy_avg || !xy_small)
   {
-    dt_print(DT_DEBUG_ALWAYS, "Error allocating memory for fibonacci lattice in defringe module\n");
+    dt_print(DT_DEBUG_ALWAYS, "Error allocating memory for fibonacci lattice in defringe module");
     goto ERROR_EXIT;
   }
 
@@ -416,10 +416,10 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->thresh_scale, _("threshold for defringe, higher values mean less defringing"));
 }
 
-void gui_update(dt_iop_module_t *module)
+void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_defringe_gui_data_t *g = (dt_iop_defringe_gui_data_t *)module->gui_data;
-  dt_iop_defringe_params_t *p = (dt_iop_defringe_params_t *)module->params;
+  dt_iop_defringe_gui_data_t *g = self->gui_data;
+  dt_iop_defringe_params_t *p = self->params;
   dt_bauhaus_combobox_set(g->mode_select, p->op_mode);
   dt_bauhaus_slider_set(g->radius_scale, p->radius);
   dt_bauhaus_slider_set(g->thresh_scale, p->thresh);

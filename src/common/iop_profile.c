@@ -101,7 +101,7 @@ static void _transform_from_to_rgb_lab_lcms2(const float *const image_in,
     if(rgb_color_space != cmsSigRgbData)
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "working profile color space `%c%c%c%c' not supported\n",
+               "working profile color space `%c%c%c%c' not supported",
                (char)(rgb_color_space>>24),
                (char)(rgb_color_space>>16),
                (char)(rgb_color_space>>8),
@@ -115,7 +115,7 @@ static void _transform_from_to_rgb_lab_lcms2(const float *const image_in,
                                              DT_PROFILE_DIRECTION_WORK)->profile;
     dt_print(DT_DEBUG_ALWAYS,
              "[transform_from_to_rgb_lab_lcms2] unsupported working profile %s"
-             " has been replaced by Rec2020 RGB!\n",
+             " has been replaced by Rec2020 RGB!",
              filename);
   }
 
@@ -159,7 +159,7 @@ static void _transform_from_to_rgb_lab_lcms2(const float *const image_in,
   }
   else
     dt_print(DT_DEBUG_ALWAYS,
-             "[_transform_from_to_rgb_lab_lcms2] cannot create transform\n");
+             "[_transform_from_to_rgb_lab_lcms2] cannot create transform");
 
   if(xform) cmsDeleteTransform(xform);
 }
@@ -193,7 +193,7 @@ static void _transform_rgb_to_rgb_lcms2
   }
   else
   {
-    dt_print(DT_DEBUG_ALWAYS, "[_transform_rgb_to_rgb_lcms2] invalid *from profile* `%s`\n",
+    dt_print(DT_DEBUG_ALWAYS, "[_transform_rgb_to_rgb_lcms2] invalid *from profile* `%s`",
        dt_colorspaces_get_name(type_from, NULL));
   }
 
@@ -206,7 +206,7 @@ static void _transform_rgb_to_rgb_lcms2
   else
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[_transform_rgb_to_rgb_lcms2] invalid *to profile* `%s`\n",
+             "[_transform_rgb_to_rgb_lcms2] invalid *to profile* `%s`",
        dt_colorspaces_get_name(type_to, NULL));
   }
 
@@ -219,7 +219,7 @@ static void _transform_rgb_to_rgb_lcms2
   if(!from_is_rgb)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[_transform_rgb_to_rgb_lcms2] *from profile* color space `%c%c%c%c' not supported\n",
+             "[_transform_rgb_to_rgb_lcms2] *from profile* color space `%c%c%c%c' not supported",
              (char)(rgb_from_color_space >> 24),
              (char)(rgb_from_color_space >> 16),
              (char)(rgb_from_color_space >> 8),
@@ -230,7 +230,7 @@ static void _transform_rgb_to_rgb_lcms2
   if(!to_is_rgb && !to_is_cmyk)
   {
     dt_print(DT_DEBUG_ALWAYS,
-      "[_transform_rgb_to_rgb_lcms2] *to profile* color space `%c%c%c%c' not supported\n",
+      "[_transform_rgb_to_rgb_lcms2] *to profile* color space `%c%c%c%c' not supported",
       (char)(rgb_to_color_space >> 24),
       (char)(rgb_to_color_space >> 16),
       (char)(rgb_to_color_space >> 8),
@@ -270,7 +270,7 @@ static void _transform_rgb_to_rgb_lcms2
     }
   }
   else
-    dt_print(DT_DEBUG_ALWAYS, "[_transform_rgb_to_rgb_lcms2] cannot create transform\n");
+    dt_print(DT_DEBUG_ALWAYS, "[_transform_rgb_to_rgb_lcms2] cannot create transform");
 
   if(xform) cmsDeleteTransform(xform);
 }
@@ -290,7 +290,7 @@ static void _transform_lcms2(struct dt_iop_module_t *self,
   if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_LAB)
   {
     dt_print(DT_DEBUG_DEV,
-             "[_transform_lcms2] transfoming from RGB to Lab (%s %s)\n",
+             "[_transform_lcms2] transfoming from RGB to Lab (%s %s)",
              self->op, self->multi_name);
     _transform_from_to_rgb_lab_lcms2(image_in, image_out, width, height, profile_info->type,
                                      profile_info->filename, profile_info->intent, 1);
@@ -298,7 +298,7 @@ static void _transform_lcms2(struct dt_iop_module_t *self,
   else if(cst_from == IOP_CS_LAB && cst_to == IOP_CS_RGB)
   {
     dt_print(DT_DEBUG_DEV,
-             "[_transform_lcms2] transfoming from Lab to RGB (%s %s)\n",
+             "[_transform_lcms2] transfoming from Lab to RGB (%s %s)",
              self->op, self->multi_name);
     _transform_from_to_rgb_lab_lcms2(image_in, image_out, width, height, profile_info->type,
                                      profile_info->filename, profile_info->intent, -1);
@@ -307,7 +307,7 @@ static void _transform_lcms2(struct dt_iop_module_t *self,
   {
     *converted_cst = cst_from;
     dt_print(DT_DEBUG_ALWAYS,
-             "[_transform_lcms2] invalid conversion from %s to %s\n",
+             "[_transform_lcms2] invalid conversion from %s to %s",
              dt_colorspaces_get_name(cst_from, NULL),
              dt_colorspaces_get_name(cst_to, NULL));
   }
@@ -626,7 +626,7 @@ static inline void _transform_matrix(struct dt_iop_module_t *self,
 
   *converted_cst = cst_from;
   dt_print(DT_DEBUG_ALWAYS,
-             "[_transform_matrix] invalid conversion from %s to %s\n",
+             "[_transform_matrix] invalid conversion from %s to %s",
              dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to));
 }
 
@@ -703,7 +703,7 @@ static gboolean _ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *pro
   cmsColorSpaceSignature rgb_profile_color_space = rgb_profile ? cmsGetColorSpace(rgb_profile) : 0;
 
   if(filename[0])
-    dt_print(DT_DEBUG_PIPE, "[generate_profile_info] profile `%s': color space `%c%c%c%c'\n",
+    dt_print(DT_DEBUG_PIPE, "[generate_profile_info] profile `%s': color space `%c%c%c%c'",
       filename,
       (char)(rgb_profile_color_space>>24),
       (char)(rgb_profile_color_space>>16),
@@ -785,7 +785,7 @@ dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev,
 
   for(GList *profiles = dev->allprofile_info; profiles; profiles = g_list_next(profiles))
   {
-    dt_iop_order_iccprofile_info_t *prof = (dt_iop_order_iccprofile_info_t *)(profiles->data);
+    dt_iop_order_iccprofile_info_t *prof = profiles->data;
     if(prof->type == profile_type && strcmp(prof->filename, profile_filename) == 0)
     {
       profile_info = prof;
@@ -831,7 +831,7 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_iop
 
   for(GList *modules = iop_list; modules; modules = g_list_next(modules))
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
+    dt_iop_module_t *mod = modules->data;
 
     // we reach the module, that's it
     if(dt_iop_module_is(mod->so, module->op)) break;
@@ -881,7 +881,7 @@ dt_ioppr_set_pipe_work_profile_info(struct dt_develop_t *dev,
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[dt_ioppr_set_pipe_work_profile_info] unsupported working profile %s %s, "
-             "it will be replaced with linear Rec2020\n",
+             "it will be replaced with linear Rec2020",
              dt_colorspaces_get_name(type, NULL), filename);
     profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", intent);
   }
@@ -905,7 +905,7 @@ dt_ioppr_set_pipe_input_profile_info(struct dt_develop_t *dev,
   {
     dt_print(DT_DEBUG_PIPE,
              "[dt_ioppr_set_pipe_input_profile_info] profile `%s' in `%s'"
-             " replaced by linear Rec2020\n",
+             " replaced by linear Rec2020",
              dt_colorspaces_get_name(type, NULL), filename);
     profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", intent);
   }
@@ -945,7 +945,7 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
       // ??? this error output has been disabled for a display profile.
       // see discussion in https://github.com/darktable-org/darktable/issues/6774
       dt_print(DT_DEBUG_PIPE,
-         "[dt_ioppr_set_pipe_output_profile_info] profile `%s' in `%s' replaced by sRGB\n",
+         "[dt_ioppr_set_pipe_output_profile_info] profile `%s' in `%s' replaced by sRGB",
          dt_colorspaces_get_name(type, NULL), filename);
     }
     profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", intent);
@@ -1012,7 +1012,7 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,
   dt_iop_module_t *colorin = NULL;
   for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
   {
-    dt_iop_module_so_t *module_so = (dt_iop_module_so_t *)(modules->data);
+    dt_iop_module_so_t *module_so = modules->data;
     if(dt_iop_module_is(module_so, "colorin"))
     {
       colorin_so = module_so;
@@ -1023,7 +1023,7 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,
   {
     for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
-      dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+      dt_iop_module_t *module = modules->data;
       if(dt_iop_module_is(module->so, "colorin"))
       {
         colorin = module;
@@ -1042,11 +1042,11 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,
     }
     else
       dt_print(DT_DEBUG_ALWAYS,
-               "[dt_ioppr_get_work_profile_type] can't get colorin parameters\n");
+               "[dt_ioppr_get_work_profile_type] can't get colorin parameters");
   }
   else
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_ioppr_get_work_profile_type] can't find colorin iop\n");
+             "[dt_ioppr_get_work_profile_type] can't find colorin iop");
 }
 
 void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
@@ -1064,7 +1064,7 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
       modules;
       modules = g_list_previous(modules))
   {
-    dt_iop_module_so_t *module_so = (dt_iop_module_so_t *)(modules->data);
+    dt_iop_module_so_t *module_so = modules->data;
     if(dt_iop_module_is(module_so, "colorout"))
     {
       colorout_so = module_so;
@@ -1075,7 +1075,7 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
   {
     for(const GList *modules = g_list_last(dev->iop); modules; modules = g_list_previous(modules))
     {
-      dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+      dt_iop_module_t *module = modules->data;
       if(dt_iop_module_is(module->so, "colorout"))
       {
         colorout = module;
@@ -1094,11 +1094,11 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
     }
     else
       dt_print(DT_DEBUG_ALWAYS,
-               "[dt_ioppr_get_export_profile_type] can't get colorout parameters\n");
+               "[dt_ioppr_get_export_profile_type] can't get colorout parameters");
   }
   else
     dt_print(DT_DEBUG_ALWAYS,
-             "[dt_ioppr_get_export_profile_type] can't find colorout iop\n");
+             "[dt_ioppr_get_export_profile_type] can't find colorout iop");
 }
 
 void dt_ioppr_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *profile_type,
@@ -1181,7 +1181,7 @@ void dt_ioppr_transform_image_colorspace
     if(!inplace || anyraw)
       dt_print(DT_DEBUG_PIPE,
         "[dt_ioppr_transform_image_colorspace] in `%s%s', profile `%s',"
-        " can't %s from %s to %s\n",
+        " can't %s from %s to %s",
         self->op, dt_iop_get_instance_id(self),
         profile_info
           ? dt_colorspaces_get_name(profile_info->type, profile_info->filename)
@@ -1207,7 +1207,7 @@ void dt_ioppr_transform_image_colorspace
                      cst_from, cst_to, converted_cst, profile_info);
 
   dt_print(DT_DEBUG_PERF,
-             "[dt_ioppr_transform_image_colorspace%s] %s-->%s took %.3f secs (%.3f CPU) [%s%s]\n",
+             "[dt_ioppr_transform_image_colorspace%s] %s-->%s took %.3f secs (%.3f CPU) [%s%s]",
              no_lcms ? "" : "_lcms2",
              dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to),
              dt_get_lap_time(&start_time.clock),
@@ -1218,7 +1218,7 @@ void dt_ioppr_transform_image_colorspace
   {
     dt_print(DT_DEBUG_ALWAYS,
         "[dt_ioppr_transform_image_colorspace%s] in `%s%s', profile `%s',"
-        " can't %s from %s to %s\n",
+        " can't %s from %s to %s",
         no_lcms ? "" : "_lcms2",
         self->op, dt_iop_get_instance_id(self),
         dt_colorspaces_get_name(profile_info->type, profile_info->filename),
@@ -1272,14 +1272,14 @@ void dt_ioppr_transform_image_colorspace_rgb
     _transform_lcms2_rgb(image_in, image_out, width, height, profile_info_from, profile_info_to);
 
   dt_print(DT_DEBUG_PIPE,
-    "dt_ioppr_transform_image_colorspace_rgb%s `%s' -> `%s' [%s]\n",
+    "dt_ioppr_transform_image_colorspace_rgb%s `%s' -> `%s' [%s]",
              no_lcms ? "" : "_lcms2",
              dt_colorspaces_get_name(profile_info_from->type, profile_info_from->filename),
              dt_colorspaces_get_name(profile_info_to->type, profile_info_to->filename),
              message ? message : "");
 
   dt_print(DT_DEBUG_PERF,
-             "[dt_ioppr_transform_image_colorspace_rgb%s] `%s' -> `%s' took %.3f secs (%.3f CPU) [%s]\n",
+             "[dt_ioppr_transform_image_colorspace_rgb%s] `%s' -> `%s' took %.3f secs (%.3f CPU) [%s]",
              no_lcms ? "" : "_lcms2",
              dt_colorspaces_get_name(profile_info_from->type, profile_info_from->filename),
              dt_colorspaces_get_name(profile_info_to->type, profile_info_to->filename),
@@ -1291,8 +1291,7 @@ void dt_ioppr_transform_image_colorspace_rgb
 #ifdef HAVE_OPENCL
 dt_colorspaces_cl_global_t *dt_colorspaces_init_cl_global()
 {
-  dt_colorspaces_cl_global_t *g =
-    (dt_colorspaces_cl_global_t *)malloc(sizeof(dt_colorspaces_cl_global_t));
+  dt_colorspaces_cl_global_t *g = malloc(sizeof(dt_colorspaces_cl_global_t));
 
   const int program = 23; // colorspaces.cl, from programs.conf
   g->kernel_colorspaces_transform_lab_to_rgb_matrix =
@@ -1392,8 +1391,12 @@ cl_int dt_ioppr_build_iccprofile_params_cl(const dt_iop_order_iccprofile_info_t 
   {
     profile_lut_cl = malloc(sizeof(cl_float) * 1 * 6);
 
-    dev_profile_lut = dt_opencl_copy_host_to_device(devid, profile_lut_cl, 1, 1 * 6,
-                                                    sizeof(float));
+    if(profile_lut_cl)
+      dev_profile_lut = dt_opencl_copy_host_to_device(devid, profile_lut_cl, 1, 1 * 6,
+                                                      sizeof(float));
+    else
+      dev_profile_lut = NULL;
+
     if(dev_profile_lut == NULL)
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   }
@@ -1401,7 +1404,7 @@ cl_int dt_ioppr_build_iccprofile_params_cl(const dt_iop_order_iccprofile_info_t 
 cleanup:
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[dt_ioppr_build_iccprofile_params_cl] had error: %s\n", cl_errstr(err));
+             "[dt_ioppr_build_iccprofile_params_cl] had error: %s", cl_errstr(err));
   *_profile_info_cl = profile_info_cl;
   *_profile_lut_cl = profile_lut_cl;
   *_dev_profile_info = dev_profile_info;
@@ -1470,7 +1473,7 @@ gboolean dt_ioppr_transform_image_colorspace_cl
     if(!inplace || cst_to == IOP_CS_RAW || cst_from == IOP_CS_RAW)
       dt_print(DT_DEBUG_PIPE,
         "[dt_ioppr_transform_image_colorspace_cl]%s in `%s%s', profile `%s',"
-        " can't %s from %s to %s\n",
+        " can't %s from %s to %s",
         err == CL_SUCCESS ? "" : " error",
         self->op, dt_iop_get_instance_id(self),
         profile_info
@@ -1515,7 +1518,7 @@ gboolean dt_ioppr_transform_image_colorspace_cl
       *converted_cst = cst_from;
       dt_print(DT_DEBUG_ALWAYS,
                "[dt_ioppr_transform_image_colorspace_cl] in `%s%s', profile `%s',"
-               " can't %s from %s to %s\n",
+               " can't %s from %s to %s",
                self->op, dt_iop_get_instance_id(self),
                dt_colorspaces_get_name(profile_info->type, profile_info->filename),
                inplace ? "convert inplace" : "write converted data",
@@ -1567,7 +1570,7 @@ gboolean dt_ioppr_transform_image_colorspace_cl
       goto cleanup;
 
     dt_print(DT_DEBUG_PERF,
-             "[dt_ioppr_transform_image_colorspace_cl] %s-->%s took %.3f secs (%.3f GPU) [%s%s]\n",
+             "[dt_ioppr_transform_image_colorspace_cl] %s-->%s took %.3f secs (%.3f GPU) [%s%s]",
              dt_iop_colorspace_to_name(cst_from), dt_iop_colorspace_to_name(cst_to),
              dt_get_lap_time(&start_time.clock),
              dt_get_lap_utime(&start_time.user),
@@ -1600,7 +1603,7 @@ gboolean dt_ioppr_transform_image_colorspace_cl
 cleanup:
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[dt_ioppr_transform_image_colorspace_cl] had error: %s\n", cl_errstr(err));
+             "[dt_ioppr_transform_image_colorspace_cl] had error: %s", cl_errstr(err));
 
   dt_free_align(src_buffer);
   if(dev_tmp && inplace)
@@ -1762,13 +1765,13 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
       goto cleanup;
 
   dt_print(DT_DEBUG_PIPE,
-    "dt_ioppr_transform_image_colorspace_rgb_CL `%s' -> `%s' [%s]\n",
+    "dt_ioppr_transform_image_colorspace_rgb_CL `%s' -> `%s' [%s]",
              dt_colorspaces_get_name(profile_info_from->type, profile_info_from->filename),
              dt_colorspaces_get_name(profile_info_to->type, profile_info_to->filename),
             message ? message : "");
 
     dt_print(DT_DEBUG_PERF,
-             "image colorspace transform_rgb_CL  `%s' -> `%s' took %.3f secs (%.3f GPU) [%s]\n",
+             "image colorspace transform_rgb_CL  `%s' -> `%s' took %.3f secs (%.3f GPU) [%s]",
              dt_colorspaces_get_name(profile_info_from->type, profile_info_from->filename),
              dt_colorspaces_get_name(profile_info_to->type, profile_info_to->filename),
              dt_get_lap_time(&start_time.clock),
@@ -1803,7 +1806,7 @@ gboolean dt_ioppr_transform_image_colorspace_rgb_cl
 cleanup:
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[dt_ioppr_transform_image_colorspace_rgb_cl] had error: %s\n", cl_errstr(err));
+             "[dt_ioppr_transform_image_colorspace_rgb_cl] had error: %s", cl_errstr(err));
 
   dt_free_align(src_buffer_in);
   dt_free_align(src_buffer_out);

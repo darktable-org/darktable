@@ -209,10 +209,10 @@ int dt_iop_clip_and_zoom_roi_cl(int devid,
     }
     if(err == CL_SUCCESS)
       dt_print_pipe(DT_DEBUG_OPENCL, "clip and zoom roi", NULL, NULL, devid, roi_in, roi_out,
-          "did fast cpu fallback\n");
+          "did fast cpu fallback");
     else
       dt_print_pipe(DT_DEBUG_OPENCL, "clip and zoom roi", NULL, NULL, devid, roi_in, roi_out,
-          "fast cpu fallback failing: %s\n", cl_errstr(err));
+          "fast cpu fallback failing: %s", cl_errstr(err));
 
     dt_free_align(in);
     dt_free_align(out);
@@ -263,12 +263,12 @@ void dt_iop_clip_and_zoom_mosaic_half_size(uint16_t *const out,
   {
     uint16_t *outc = out + out_stride * y;
 
-    const float fy = (y + roi_out->y) * px_footprint;
+    const float fy = y * px_footprint;
     const int miny = (CLAMPS((int)floorf(fy - px_footprint),
                              0, roi_in->height-3) & ~1u) + rggby;
     const int maxy = MIN(roi_in->height-1, (int)ceilf(fy + px_footprint));
 
-    float fx = roi_out->x * px_footprint;
+    float fx = 0.0f;
     for(int x = 0; x < roi_out->width; x++, fx += px_footprint, outc++)
     {
       const int minx = (CLAMPS((int)floorf(fx - px_footprint),
@@ -295,7 +295,8 @@ void dt_iop_clip_and_zoom_mosaic_half_size(uint16_t *const out,
   }
 }
 
-void dt_iop_clip_and_zoom_mosaic_half_size_f(float *const out, const float *const in,
+void dt_iop_clip_and_zoom_mosaic_half_size_f(float *const out,
+                                             const float *const in,
                                              const dt_iop_roi_t *const roi_out,
                                              const dt_iop_roi_t *const roi_in,
                                              const int32_t out_stride,
@@ -323,7 +324,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size_f(float *const out, const float *cons
   {
     float *outc = out + out_stride * y;
 
-    const float fy = (y + roi_out->y) * px_footprint;
+    const float fy = y * px_footprint;
     int py = (int)fy & ~1;
     const float dy = (fy - py) / 2;
     py = MIN(((roi_in->height - 6) & ~1u), py) + rggby;
@@ -334,7 +335,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size_f(float *const out, const float *cons
     {
       dt_aligned_pixel_t col = { 0, 0, 0, 0 };
 
-      const float fx = (x + roi_out->x) * px_footprint;
+      const float fx = x * px_footprint;
       int px = (int)fx & ~1;
       const float dx = (fx - px) / 2;
       px = MIN(((roi_in->width - 6) & ~1u), px) + rggbx;
@@ -485,10 +486,13 @@ void dt_iop_clip_and_zoom_mosaic_half_size_f(float *const out, const float *cons
  * downscales and clips a Fujifilm X-Trans mosaiced buffer (in) to the given region of interest (r_*)
  * and writes it to out.
  */
-void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const uint16_t *const in,
+void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out,
+                                                   const uint16_t *const in,
                                                    const dt_iop_roi_t *const roi_out,
-                                                   const dt_iop_roi_t *const roi_in, const int32_t out_stride,
-                                                   const int32_t in_stride, const uint8_t (*const xtrans)[6])
+                                                   const dt_iop_roi_t *const roi_in,
+                                                   const int32_t out_stride,
+                                                   const int32_t in_stride,
+                                                   const uint8_t (*const xtrans)[6])
 {
   const float px_footprint = 1.f / roi_out->scale;
   // Use box filter of width px_footprint*2+1 centered on the current
@@ -499,11 +503,11 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans(uint16_t *const out, const ui
   {
     uint16_t *outc = out + out_stride * y;
 
-    const float fy = (y + roi_out->y) * px_footprint;
+    const float fy = y * px_footprint;
     const int miny = MAX(0, (int)roundf(fy - px_footprint));
     const int maxy = MIN(roi_in->height-1, (int)roundf(fy + px_footprint));
 
-    float fx = roi_out->x * px_footprint;
+    float fx = 0.0f;
     for(int x = 0; x < roi_out->width; x++, fx += px_footprint, outc++)
     {
       const int minx = MAX(0, (int)roundf(fx - px_footprint));
@@ -539,11 +543,11 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(float *const out,
   {
     float *outc = out + out_stride * y;
 
-    const float fy = (y + roi_out->y) * px_footprint;
+    const float fy = y * px_footprint;
     const int miny = MAX(0, (int)roundf(fy - px_footprint));
     const int maxy = MIN(roi_in->height-1, (int)roundf(fy + px_footprint));
 
-    float fx = roi_out->x * px_footprint;
+    float fx = 0.0f;
     for(int x = 0; x < roi_out->width; x++, fx += px_footprint, outc++)
     {
       const int minx = MAX(0, (int)roundf(fx - px_footprint));
@@ -565,13 +569,12 @@ void dt_iop_clip_and_zoom_mosaic_third_size_xtrans_f(float *const out,
   }
 }
 
-void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f
-  (float *out,
-   const float *const in,
-   const dt_iop_roi_t *const roi_out,
-   const dt_iop_roi_t *const roi_in,
-   const int32_t out_stride,
-   const int32_t in_stride)
+void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out,
+                                                            const float *const in,
+                                                            const dt_iop_roi_t *const roi_out,
+                                                            const dt_iop_roi_t *const roi_in,
+                                                            const int32_t out_stride,
+                                                            const int32_t in_stride)
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
@@ -584,7 +587,7 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f
   {
     float *outc = out + 4 * (out_stride * y);
 
-    const float fy = (y + roi_out->y) * px_footprint;
+    const float fy = y * px_footprint;
     int py = (int)fy;
     const float dy = fy - py;
     py = MIN(((roi_in->height - 3)), py);
@@ -595,7 +598,7 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f
     {
       float col = 0.0f;
 
-      const float fx = (x + roi_out->x) * px_footprint;
+      const float fx = x * px_footprint;
       int px = (int)fx;
       const float dx = fx - px;
       px = MIN(((roi_in->width - 3)), px);
@@ -706,7 +709,8 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f
   }
 }
 
-void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
+void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out,
+                                               const float *const in,
                                                const dt_iop_roi_t *const roi_out,
                                                const dt_iop_roi_t *const roi_in,
                                                const int32_t out_stride,
@@ -734,7 +738,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in
   {
     float *outc = out + 4 * (out_stride * y);
 
-    const float fy = (y + roi_out->y) * px_footprint;
+    const float fy = y * px_footprint;
     int py = (int)fy & ~1;
     const float dy = (fy - py) / 2;
     py = MIN(((roi_in->height - 6) & ~1u), py) + rggby;
@@ -745,7 +749,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in
     {
       dt_aligned_pixel_t col = { 0, 0, 0, 0 };
 
-      const float fx = (x + roi_out->x) * px_footprint;
+      const float fx = x * px_footprint;
       int px = (int)fx & ~1;
       const float dx = (fx - px) / 2;
       px = MIN(((roi_in->width - 6) & ~1u), px) + rggbx;
@@ -883,7 +887,8 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in
 }
 
 
-void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out, const float *const in,
+void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out,
+                                                       const float *const in,
                                                        const dt_iop_roi_t *const roi_out,
                                                        const dt_iop_roi_t *const roi_in,
                                                        const int32_t out_stride,
@@ -905,7 +910,7 @@ void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out, const float *
   for(int y = 0; y < roi_out->height; y++)
   {
     float *outc = out + 4 * (out_stride * y);
-    const int py = CLAMPS((int)round((y + roi_out->y - 0.5f) * px_footprint),
+    const int py = CLAMPS((int)round((y - 0.5f) * px_footprint),
                           0, roi_in->height - 3);
     const int ymax = MIN(roi_in->height - 3, py + 3 * samples);
 
@@ -913,7 +918,7 @@ void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out, const float *
     {
       dt_aligned_pixel_t col = { 0.0f };
       int num = 0;
-      const int px = CLAMPS((int)round((x + roi_out->x - 0.5f) * px_footprint),
+      const int px = CLAMPS((int)round((x - 0.5f) * px_footprint),
                             0, roi_in->width - 3);
       const int xmax = MIN(roi_in->width - 3, px + 3 * samples);
       for(int yy = py; yy <= ymax; yy += 3)

@@ -322,7 +322,7 @@ static void _iop_color_picker_pickerdata_ready_callback(gpointer instance,
         dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER,
                       "color picker apply",
                       pipe, module, DT_DEVICE_NONE, NULL, NULL,
-                      "%s%s.%s%s. point=%.3f - %.3f. area=%.3f - %.3f / %.3f - %.3f\n",
+                      "%s%s.%s%s. point=%.3f - %.3f. area=%.3f - %.3f / %.3f - %.3f",
                       picker->flags & DT_COLOR_PICKER_POINT ? " point" : "",
                       picker->flags & DT_COLOR_PICKER_AREA  ? " area" : "",
                       picker->flags & DT_COLOR_PICKER_DENOISE ? " denoise" : "",
@@ -355,7 +355,7 @@ static void _color_picker_proxy_preview_pipe_callback(gpointer instance,
   {
     dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_PICKER | DT_DEBUG_VERBOSE,
                   "picker update callback",
-                  NULL, NULL, DT_DEVICE_NONE, NULL, NULL, "\n");
+                  NULL, NULL, DT_DEVICE_NONE, NULL, NULL);
 
     // pixelpipe may have run because sample area changed or an iop,
     // regardless we want to the colorpicker lib, which also can
@@ -373,25 +373,15 @@ static void _color_picker_proxy_preview_pipe_callback(gpointer instance,
 void dt_iop_color_picker_init(void)
 {
   // we have incoming iop picker data
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
-                                  DT_SIGNAL_CONTROL_PICKERDATA_READY,
-                                  G_CALLBACK(_iop_color_picker_pickerdata_ready_callback),
-                                  NULL);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PICKERDATA_READY, _iop_color_picker_pickerdata_ready_callback, NULL);
   // we have new primary picker data as preview pipe has run to conclusion
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
-                                  DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-                                  G_CALLBACK(_color_picker_proxy_preview_pipe_callback),
-                                  NULL);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _color_picker_proxy_preview_pipe_callback, NULL);
 }
 
 void dt_iop_color_picker_cleanup(void)
 {
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT
-    (darktable.signals,
-     G_CALLBACK(_iop_color_picker_pickerdata_ready_callback), NULL);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT
-    (darktable.signals,
-     G_CALLBACK(_color_picker_proxy_preview_pipe_callback), NULL);
+  DT_CONTROL_SIGNAL_DISCONNECT(_iop_color_picker_pickerdata_ready_callback, NULL);
+  DT_CONTROL_SIGNAL_DISCONNECT(_color_picker_proxy_preview_pipe_callback, NULL);
 }
 
 static GtkWidget *_color_picker_new(dt_iop_module_t *module,
@@ -400,8 +390,7 @@ static GtkWidget *_color_picker_new(dt_iop_module_t *module,
                                     const gboolean init_cst,
                                     const dt_iop_colorspace_type_t cst)
 {
-  dt_iop_color_picker_t *color_picker =
-    (dt_iop_color_picker_t *)g_malloc(sizeof(dt_iop_color_picker_t));
+  dt_iop_color_picker_t *color_picker = g_malloc(sizeof(dt_iop_color_picker_t));
 
   if(w == NULL || GTK_IS_BOX(w))
   {

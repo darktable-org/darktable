@@ -50,7 +50,7 @@ typedef enum dt_dng_illuminant_t // from adobes dng_sdk
 	DT_LS_D75                  = 22,
 	DT_LS_D50                  = 23,
 	DT_LS_ISOStudioTungsten    = 24,
-	DT_LS_Other                = 255
+	DT_LS_Other                = 25 // in SDK this is 255, in dt this is the last defined
 } dt_dng_illuminant_t;
 
 // stores hard-coded crop factors for models for which we can't calculate the correct value
@@ -59,6 +59,14 @@ struct dt_model_cropfactor
   const char *model;
   float cropfactor;
 };
+
+typedef struct dt_dng_illuminant_data_t
+{
+    int temp;
+    char name[28];
+    float xy[2];
+    float CA[9];
+} dt_dng_illuminant_data_t;
 
 /** set the list of available tags from Exvi2 */
 void dt_exif_set_exiv2_taglist();

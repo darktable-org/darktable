@@ -17,6 +17,8 @@
 */
 
 #pragma once
+#define NORM_MIN 1.52587890625e-05f // norm can't be < to 2^(-16)
+
 
 constant sampler_t sampleri =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
 
@@ -31,6 +33,8 @@ constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE    
 #ifndef M_PI_F
 #define M_PI_F           3.14159265358979323846f  // should be defined by the OpenCL compiler acc. to standard
 #endif
+
+#define LUT_ELEM 512 // gamut LUT number of elements:
 
 #define RED 0
 #define GREEN 1

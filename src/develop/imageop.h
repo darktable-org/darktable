@@ -119,7 +119,8 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_GUIDES_SPECIAL_DRAW = 1 << 14, // handle the grid drawing directly
   IOP_FLAGS_GUIDES_WIDGET = 1 << 15,     // require the guides widget
   IOP_FLAGS_CROP_EXPOSER = 1 << 16,      // offers crop exposing
-  IOP_FLAGS_EXPAND_ROI_IN = 1 << 17      // we might have to take special care about roi expansion
+  IOP_FLAGS_EXPAND_ROI_IN = 1 << 17,     // we might have to take special care about roi expansion
+  IOP_FLAGS_WRITE_DETAILS = 1 << 18
 } dt_iop_flags_t;
 
 /** status of a module*/
@@ -131,14 +132,7 @@ typedef enum dt_iop_module_state_t
   IOP_STATE_LAST
 } dt_iop_module_state_t;
 
-typedef struct dt_iop_gui_data_t
-{
-  // "base type" for all dt_iop_XXXX_gui_data_t types used by iops to
-  // avoid compiler error about different sizes of empty structs
-  // between C and C++, we need at least one member
-  int dummy;
-} dt_iop_gui_data_t;
-
+typedef void dt_iop_gui_data_t;
 typedef void dt_iop_data_t;
 typedef void dt_iop_global_data_t;
 
@@ -347,7 +341,7 @@ int dt_iop_legacy_params(dt_iop_module_t *module,
                          void **new_params,
                          int new_version);
 /** initialize pipe. */
-void dt_iop_init_pipe(struct dt_iop_module_t *module,
+void dt_iop_init_pipe(dt_iop_module_t *module,
                       struct dt_dev_pixelpipe_t *pipe,
                       struct dt_dev_pixelpipe_iop_t *piece);
 /** checks if iop do have an ui */
@@ -419,6 +413,8 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
 
 /** requests the focus for this plugin (to draw overlays over the center image) */
 void dt_iop_request_focus(dt_iop_module_t *module);
+/** returns TRUE if tested module has focus */
+gboolean dt_iop_has_focus(const dt_iop_module_t *module);
 /** allocate and load default settings from introspection. */
 void dt_iop_default_init(dt_iop_module_t *module);
 /** loads default settings from database. */
@@ -468,10 +464,10 @@ static inline gboolean dt_iop_module_is(const dt_iop_module_so_t *module,
 /** count instances of a module **/
 int dt_iop_count_instances(dt_iop_module_so_t *module);
 /** return preferred module instance for shortcuts **/
-dt_iop_module_t *dt_iop_get_module_preferred_instance(dt_iop_module_so_t *module);
+dt_iop_module_t *dt_iop_get_module_preferred_instance(const dt_iop_module_so_t *module);
 
 /** returns true if module is the first instance of this operation in the pipe */
-gboolean dt_iop_is_first_instance(GList *modules, dt_iop_module_t *module);
+gboolean dt_iop_is_first_instance(GList *modules, const dt_iop_module_t *module);
 
 /** return the instance name for the module, this is either the multi-name
     for instance 0 or if hand-edited. Otherwise the name is the empty string.
@@ -489,15 +485,12 @@ const gchar *dt_iop_get_localized_aliases(const gchar *op);
 void dt_iop_update_multi_priority(dt_iop_module_t *module, int new_priority);
 
 /** iterates over the users hash table and checks if a specific mask is being used */
-gboolean dt_iop_is_raster_mask_used(dt_iop_module_t *module, int id);
+gboolean dt_iop_is_raster_mask_used(const dt_iop_module_t *module, const dt_mask_id_t id);
 
 /** returns the previous visible module on the module list */
-dt_iop_module_t *dt_iop_gui_get_previous_visible_module(dt_iop_module_t *module);
+dt_iop_module_t *dt_iop_gui_get_previous_visible_module(const dt_iop_module_t *module);
 /** returns the next visible module on the module list */
-dt_iop_module_t *dt_iop_gui_get_next_visible_module(dt_iop_module_t *module);
-
-// initializes memory.darktable_iop_names
-void dt_iop_set_darktable_iop_table();
+dt_iop_module_t *dt_iop_gui_get_next_visible_module(const dt_iop_module_t *module);
 
 /** adds keyboard accels to the first module in the pipe to handle
  * where there are multiple instances */
@@ -509,10 +502,10 @@ void dt_iop_connect_accels_all();
 /** queue a refresh of the center (FULL), preview, or second-preview
  * windows, rerunning the pixelpipe from */
 /** the given module */
-void dt_iop_refresh_center(dt_iop_module_t *module);
-void dt_iop_refresh_preview(dt_iop_module_t *module);
-void dt_iop_refresh_preview2(dt_iop_module_t *module);
-void dt_iop_refresh_all(dt_iop_module_t *module);
+void dt_iop_refresh_center(const dt_iop_module_t *module);
+void dt_iop_refresh_preview(const dt_iop_module_t *module);
+void dt_iop_refresh_preview2(const dt_iop_module_t *module);
+void dt_iop_refresh_all(const dt_iop_module_t *module);
 
 /** (un)hide iop module header right side buttons */
 gboolean dt_iop_show_hide_header_buttons(dt_iop_module_t *module,
@@ -547,21 +540,18 @@ const char *dt_iop_colorspace_to_name(const dt_iop_colorspace_type_t type);
 static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, const size_t size)
 {
   // Align so that DT_ALIGNED_ARRAY may be used within gui_data struct
-  module->gui_data = (dt_iop_gui_data_t*)dt_calloc_aligned(size);
+  module->gui_data = dt_calloc_aligned(size);
   dt_pthread_mutex_init(&module->gui_lock, NULL);
   return module->gui_data;
 }
 #define IOP_GUI_ALLOC(module) \
   (dt_iop_##module##_gui_data_t *)_iop_gui_alloc(self,sizeof(dt_iop_##module##_gui_data_t))
 
-#define IOP_GUI_FREE \
-  dt_pthread_mutex_destroy(&self->gui_lock);if(self->gui_data){dt_free_align(self->gui_data);} self->gui_data = NULL
-
 /** check whether we have the required number of channels in the input
  ** data; if not, copy the input buffer to the output buffer, set the
  ** module's trouble message, and return FALSE */
 gboolean dt_iop_have_required_input_format(const int required_ch,
-                                           struct dt_iop_module_t *const module,
+                                           dt_iop_module_t *const module,
                                            const int actual_pipe_ch,
                                            const void *const __restrict__ ivoid,
                                            void *const __restrict__ ovoid,
@@ -577,7 +567,7 @@ void dt_iop_gui_rename_module(dt_iop_module_t *module);
 
 void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data);
 
-gboolean dt_iop_module_is_skipped(const struct dt_develop_t *dev, const struct dt_iop_module_t *module);
+gboolean dt_iop_module_is_skipped(const struct dt_develop_t *dev, const dt_iop_module_t *module);
 
 // copy the RGB channels of a pixel using nontemporal stores if
 // possible; includes the 'alpha' channel as well if faster due to

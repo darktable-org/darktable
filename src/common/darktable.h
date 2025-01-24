@@ -416,6 +416,7 @@ typedef struct darktable_t
   int32_t unmuted_signal_dbg_acts;
   gboolean unmuted_signal_dbg[DT_SIGNAL_COUNT];
   gboolean pipe_cache;
+  int gui_running;		// atomic, access with g_atomic_int_*()
   GTimeZone *utc_tz;
   GDateTime *origin_gdt;
   struct dt_sys_resources_t dtresources;
@@ -449,9 +450,10 @@ void dt_cleanup();
          && !(DT_DEBUG_RESTRICT & (thread) & ~darktable.unmuted)) \
         func(__VA_ARGS__); } while(0)
 
-#define dt_print_pipe(thread, ...) dt_debug_if(thread, dt_print_pipe_ext, __VA_ARGS__)
 #define dt_print(thread, ...) dt_debug_if(thread, dt_print_ext, __VA_ARGS__)
 #define dt_print_nts(thread, ...) dt_debug_if(thread, dt_print_nts_ext, __VA_ARGS__)
+#define dt_print_pipe(thread, title, pipe, module, device, roi_in, roi_out, ...) \
+  dt_debug_if(thread, dt_print_pipe_ext, title, pipe, module, device, roi_in, roi_out, " " __VA_ARGS__)
 
 void dt_print_ext(const char *msg, ...)
   __attribute__((format(printf, 1, 2)));
@@ -883,7 +885,7 @@ static inline gboolean dt_slist_length_equal(GSList *l1, GSList *l2)
 }
 
 // checks internally for DT_DEBUG_MEMORY
-void dt_print_mem_usage();
+void dt_print_mem_usage(char *info);
 
 // try to start the backthumbs crawler
 void dt_start_backtumbs_crawler();
@@ -907,7 +909,7 @@ static inline void dt_unreachable_codepath_with_caller(const char *description,
 {
   dt_print(DT_DEBUG_ALWAYS,
            "[dt_unreachable_codepath] {%s} %s:%d (%s) - we should not be here."
-           " please report this to the developers.",
+           " please report this to the developers",
            description, file, line, function);
   __builtin_unreachable();
 }
@@ -967,6 +969,11 @@ static inline const gchar *NQ_(const gchar *String)
 {
   const gchar *context_end = strchr(String, '|');
   return context_end ? context_end + 1 : String;
+}
+
+static inline gboolean dt_gimpmode(void)
+{
+  return darktable.gimp.mode ? TRUE : FALSE;
 }
 
 static inline gboolean dt_check_gimpmode(const char *mode)

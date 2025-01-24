@@ -35,7 +35,7 @@ static void _logError(const char *action)
                  NULL);
 
   dt_print(DT_DEBUG_PWSTORAGE,
-           "[%s] ERROR: failed to complete windows_credential call: %s\n",
+           "[%s] ERROR: failed to complete windows_credential call: %s",
            action,
            message);
 
@@ -65,7 +65,7 @@ gboolean dt_pwstorage_windows_credentials_set(const backend_windows_credentials_
   while(g_hash_table_iter_next(&iter, &key, &value))
   {
     dt_print(DT_DEBUG_PWSTORAGE,
-             "[pwstorage_windows_credentials_set] storing (%s, %s)\n",
+             "[pwstorage_windows_credentials_set] storing (%s, %s)",
              (gchar *)key,
              (gchar *)value);
 
@@ -76,7 +76,7 @@ gboolean dt_pwstorage_windows_credentials_set(const backend_windows_credentials_
     if(json_parser_load_from_data(json_parser, value, -1, NULL) == FALSE)
     {
       dt_print(DT_DEBUG_PWSTORAGE,
-               "[pwstorage_windows_credentials_set] unable to parse JSON from value (%s)\n",
+               "[pwstorage_windows_credentials_set] unable to parse JSON from value (%s)",
                (gchar *)value);
                
       g_object_unref(json_parser);
@@ -182,11 +182,13 @@ GHashTable *dt_pwstorage_windows_credentials_get(const backend_windows_credentia
       g_object_unref(json_builder);
 
       dt_print(DT_DEBUG_PWSTORAGE,
-               "[pwstorage_windows_credentials_get] reading (%s, %s)\n",
+               "[pwstorage_windows_credentials_get] reading (%s, %s)",
                (gchar *)pcred->Comment,
                json_data);
 
       g_hash_table_insert(table, g_strdup((gchar *)pcred->Comment), g_strdup(json_data));
+
+      g_free(json_data);
     }
   }
   else

@@ -48,7 +48,7 @@ static void dt_imageio_jpeg_init_destination(j_compress_ptr cinfo)
 }
 static boolean dt_imageio_jpeg_empty_output_buffer(j_compress_ptr cinfo)
 {
-  dt_print(DT_DEBUG_ALWAYS, "[imageio_jpeg] output buffer full!\n");
+  dt_print(DT_DEBUG_ALWAYS, "[imageio_jpeg] output buffer full!");
   return FALSE;
 }
 static void dt_imageio_jpeg_term_destination(j_compress_ptr cinfo)
@@ -173,6 +173,8 @@ static int decompress_plain(dt_imageio_jpeg_t *jpg, uint8_t *out)
 {
   JSAMPROW row_pointer[1];
   row_pointer[0] = (uint8_t *)dt_alloc_aligned((size_t)jpg->dinfo.output_width * jpg->dinfo.num_components);
+  if(!row_pointer[0])
+    return 1;
   uint8_t *tmp = out;
   while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
   {
@@ -293,7 +295,7 @@ int dt_imageio_jpeg_compress(const uint8_t *in,
   jpeg_start_compress(&(jpg.cinfo), TRUE);
   uint8_t *row = dt_alloc_align_uint8(3 * width);
   const uint8_t *buf;
-  while(jpg.cinfo.next_scanline < jpg.cinfo.image_height)
+  while(row && jpg.cinfo.next_scanline < jpg.cinfo.image_height)
   {
     JSAMPROW tmp[1];
     buf = in + jpg.cinfo.next_scanline * jpg.cinfo.image_width * 4;
@@ -464,6 +466,8 @@ static boolean read_icc_profile(const j_decompress_ptr dinfo,
 
   /* Allocate space for assembled data */
   icc_data = (JOCTET *)g_malloc(total_length * sizeof(JOCTET));
+  if(!icc_data)
+    return FALSE; /* unable to allocate memory for ICC data */
 
   /* and fill it in */
   for(marker = dinfo->marker_list; marker != NULL; marker = marker->next)
@@ -540,9 +544,12 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename,
     if(len > 0)
     {
       unsigned char *buf = dt_alloc_align_type(unsigned char, len);
-      cmsSaveProfileToMem(out_profile, buf, &len);
-      write_icc_profile(&(jpg.cinfo), buf, len);
-      dt_free_align(buf);
+      if(buf)
+      {
+        cmsSaveProfileToMem(out_profile, buf, &len);
+        write_icc_profile(&(jpg.cinfo), buf, len);
+        dt_free_align(buf);
+      }
     }
   }
 
@@ -550,7 +557,7 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename,
 
   uint8_t *row = dt_alloc_align_uint8(3 * width);
   const uint8_t *buf;
-  while(jpg.cinfo.next_scanline < jpg.cinfo.image_height)
+  while(row && jpg.cinfo.next_scanline < jpg.cinfo.image_height)
   {
     JSAMPROW tmp[1];
     buf = in + jpg.cinfo.next_scanline * jpg.cinfo.image_width * 4;
@@ -629,6 +636,8 @@ static int read_plain(dt_imageio_jpeg_t *jpg, uint8_t *out)
 {
   JSAMPROW row_pointer[1];
   row_pointer[0] = (uint8_t *)dt_alloc_aligned((size_t)jpg->dinfo.output_width * jpg->dinfo.num_components);
+  if(!row_pointer[0])
+    return 1;
   uint8_t *tmp = out;
   while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
   {
@@ -741,45 +750,28 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img,
                                          const char *filename,
                                          dt_mipmap_buffer_t *mbuf)
 {
-  // Sometimes there are cases when images are in JPEG format, but their file extensions do not
-  // correspond to this format. For example, there are reports of such a situation with iPhone photos:
+  // Sometimes there are cases when images are in JPEG format, but their
+  // file extensions do not correspond to this format. For example,
+  // there are reports of such an issue with some iPhone photos:
   // https://discuss.pixls.us/t/darktable-not-presenting-heic-files-for-selection/33699
+  // So please don't add the file extension check here,
+  // even if you thought it was a good idea.
 
-  // So we have to abandon pre-filtering by checking file extensions. Instead, to quickly check whether it
-  // makes sense to work with this file further (whether it's in JPEG format), we check for magic bytes.
-
-  const uint8_t jpeg_magicbytes[3] = { 0xFF, 0xD8, 0xFF };
-  uint8_t first3bytes[3] = { 0 };
-
-  FILE *f = g_fopen(filename, "rb");
-  if(!f)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[jpeg_open] Error: failed to open '%s' for reading\n", filename);
-    return DT_IMAGEIO_FILE_NOT_FOUND;
-  }
-
-  if(fread(first3bytes, 1, 3, f) != 3)
-  {
-    fclose(f);
-    dt_print(DT_DEBUG_ALWAYS, "[jpeg_open] Error: file is empty or read error.\n");
-    return DT_IMAGEIO_FILE_NOT_FOUND;
-  }
-  fclose(f);
-
-  if(memcmp(first3bytes, jpeg_magicbytes, 3) != 0)
-  {
-    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
-  }
-
-  if(!img->exif_inited) (void)dt_exif_read(img, filename);
+  if(!img->exif_inited)
+    (void)dt_exif_read(img, filename);
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg))
     return DT_IMAGEIO_FILE_CORRUPTED;
+
   img->width = jpg.width;
   img->height = jpg.height;
-
   uint8_t *tmp = dt_alloc_align_uint8(4 * jpg.width * jpg.height);
+  if(!tmp)
+  {
+    return DT_IMAGEIO_LOAD_FAILED;
+  }
+
   if(dt_imageio_jpeg_read(&jpg, tmp))
   {
     dt_free_align(tmp);
@@ -795,12 +787,21 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img,
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-  dt_imageio_flip_buffers_ui8_to_float((float *)buf, tmp, 0.0f, 255.0f, 4, jpg.width, jpg.height, jpg.width,
-                                       jpg.height, 4 * jpg.width, 0);
+  dt_imageio_flip_buffers_ui8_to_float((float *)buf,  // output buffer
+                                       tmp,           // input buffer
+                                       0.0f,          // black
+                                       255.0f,        // white
+                                       4,             // channels
+                                       jpg.width,     // width
+                                       jpg.height,    // height
+                                       jpg.width,     // flipped width
+                                       jpg.height,    // flipped height
+                                       4 * jpg.width, // stride
+                                       0);            // orientation
 
   dt_free_align(tmp);
 
-  img->buf_dsc.cst = IOP_CS_RGB; // jpeg is always RGB
+  img->buf_dsc.cst = IOP_CS_RGB; // JPEG is always RGB
   img->buf_dsc.filters = 0u;
   img->flags &= ~DT_IMAGE_RAW;
   img->flags &= ~DT_IMAGE_S_RAW;

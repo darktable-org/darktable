@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021-2023 darktable developers.
+    Copyright (C) 2021-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -88,7 +88,9 @@ const char *extension(dt_imageio_module_data_t *data)
   return "jxl";
 }
 
-int dimension(struct dt_imageio_module_format_t *self, struct dt_imageio_module_data_t *data, uint32_t *width,
+int dimension(struct dt_imageio_module_format_t *self,
+              struct dt_imageio_module_data_t *data,
+              uint32_t *width,
               uint32_t *height)
 {
   // The maximum dimensions supported by jxl images
@@ -102,9 +104,18 @@ int bpp(dt_imageio_module_data_t *data)
   return 32; /* always request float */
 }
 
-int write_image(struct dt_imageio_module_data_t *data, const char *filename, const void *in_tmp,
-                dt_colorspaces_color_profile_type_t over_type, const char *over_filename, void *exif, int exif_len,
-                dt_imgid_t imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe, const gboolean export_masks)
+int write_image(struct dt_imageio_module_data_t *data,
+                const char *filename,
+                const void *in_tmp,
+                dt_colorspaces_color_profile_type_t over_type,
+                const char *over_filename,
+                void *exif,
+                int exif_len,
+                dt_imgid_t imgid,
+                int num,
+                int total,
+                struct dt_dev_pixelpipe_t *pipe,
+                const gboolean export_masks)
 {
   // Return error code by default
   int ret = 1;
@@ -121,7 +132,7 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
     if((JxlEncoderStatus)code != JXL_ENC_SUCCESS)                                                                 \
     {                                                                                                             \
       JxlEncoderError err = JxlEncoderGetError(encoder);                                                          \
-      dt_print(DT_DEBUG_IMAGEIO, "[jxl] libjxl call failed with err %d (src/imageio/format/jxl.c#L%d)\n", err,    \
+      dt_print(DT_DEBUG_IMAGEIO, "[jxl] libjxl call failed with err %d (src/imageio/format/jxl.c#L%d)", err,      \
                __LINE__);                                                                                         \
       goto end;                                                                                                   \
     }                                                                                                             \
@@ -129,7 +140,7 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
 
 #define JXL_FAIL(msg, ...)                                                                                        \
   {                                                                                                               \
-    dt_print(DT_DEBUG_IMAGEIO, "[jxl] " msg "\n", ##__VA_ARGS__);                                                 \
+    dt_print(DT_DEBUG_IMAGEIO, "[jxl] " msg "", ##__VA_ARGS__);                                                   \
     goto end;                                                                                                     \
   }
 
@@ -156,14 +167,19 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   basic_info.bits_per_sample = params->bpp;
   basic_info.exponent_bits_per_sample = 0;
   // For 16-bit we can choose half, but 32-bit is always float
-  if(params->bpp == 16 && params->pixel_type) basic_info.exponent_bits_per_sample = 5;
-  if(params->bpp == 32) basic_info.exponent_bits_per_sample = 8;
+  if(params->bpp == 16 && params->pixel_type)
+    basic_info.exponent_bits_per_sample = 5;
+  if(params->bpp == 32)
+    basic_info.exponent_bits_per_sample = 8;
   if(params->quality == 100)
   {
     // Must preserve original profile for lossless mode
     basic_info.uses_original_profile = JXL_TRUE;
     LIBJXL_ASSERT(JxlEncoderSetFrameDistance(frame_settings, 0.0f));
-    LIBJXL_ASSERT(JxlEncoderSetFrameLossless(frame_settings, JXL_TRUE));
+
+    // Do not enable libjxl lossless mode for float16, see #17487
+    if (!(params->bpp == 16 && params->pixel_type))
+      LIBJXL_ASSERT(JxlEncoderSetFrameLossless(frame_settings, JXL_TRUE));
   }
   else
   {
@@ -268,16 +284,21 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   else
   {
     // If we didn't manage to write the color encoding natively we need to fallback to ICC
-    dt_print(DT_DEBUG_IMAGEIO, "[jxl] could not generate color encoding structure, falling back to ICC\n");
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[jxl] could not generate color encoding structure, falling back to ICC");
 
     cmsUInt32Number icc_size = 0;
     // First find the size of the ICC buffer
-    if(!cmsSaveProfileToMem(out_profile, NULL, &icc_size)) JXL_FAIL("error finding ICC data length");
-    if(icc_size > 0) icc_buf = g_malloc(icc_size);
-    if(!icc_buf) JXL_FAIL("could not allocate ICC buffer of size %u", icc_size);
+    if(!cmsSaveProfileToMem(out_profile, NULL, &icc_size))
+      JXL_FAIL("error finding ICC data length");
+    if(icc_size > 0)
+      icc_buf = g_try_malloc(icc_size);
+    if(!icc_buf)
+      JXL_FAIL("could not allocate ICC buffer of size %u", icc_size);
 
     // Fill the ICC buffer
-    if(!cmsSaveProfileToMem(out_profile, icc_buf, &icc_size)) JXL_FAIL("error writing ICC data");
+    if(!cmsSaveProfileToMem(out_profile, icc_buf, &icc_size))
+      JXL_FAIL("error writing ICC data");
 
     LIBJXL_ASSERT(JxlEncoderSetICCProfile(encoder, icc_buf, icc_size));
   }
@@ -285,7 +306,8 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   // We assume that the user wants the JXL image in a BMFF container.
   // JXL images can be stored without any container so they are smaller, but
   // this removes the possibility of storing extra metadata like Exif and XMP.
-  if(exif && exif_len > 0) LIBJXL_ASSERT(JxlEncoderUseBoxes(encoder));
+  if(exif && exif_len > 0)
+    LIBJXL_ASSERT(JxlEncoderUseBoxes(encoder));
 
   /* TODO: workaround; remove when exiv2 implements JXL BMFF write support and use dt_exif_write_blob() after
    * closing file instead */
@@ -293,8 +315,9 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   {
     // Prepend the 4 byte (zero) offset to the blob before writing
     // (as required in the equivalent HEIF/JPEG XS Exif box specs)
-    exif_buf = g_malloc0(exif_len + 4);
-    if(!exif_buf) JXL_FAIL("could not allocate Exif buffer of size %zu", (size_t)(exif_len + 4));
+    exif_buf = g_try_malloc0(exif_len + 4);
+    if(!exif_buf)
+      JXL_FAIL("could not allocate Exif buffer of size %zu", (size_t)(exif_len + 4));
     memmove(exif_buf + 4, exif, exif_len);
     // Exiv2 < 0.28 doesn't support Brotli compressed boxes
     LIBJXL_ASSERT(JxlEncoderAddBox(encoder, "Exif", exif_buf, exif_len + 4, JXL_FALSE));
@@ -306,10 +329,12 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   {
     xmp_string = dt_exif_xmp_read_string(imgid);
     size_t xmp_len;
-    if(xmp_string && (xmp_len = strlen(xmp_string)) > 0)
+    if(xmp_string
+       && (xmp_len = strlen(xmp_string)) > 0)
     {
       // Exiv2 < 0.28 doesn't support Brotli compressed boxes
-      LIBJXL_ASSERT(JxlEncoderAddBox(encoder, "xml ", (const uint8_t *)xmp_string, xmp_len, JXL_FALSE));
+      LIBJXL_ASSERT(JxlEncoderAddBox(encoder, "xml ",
+                                     (const uint8_t *)xmp_string, xmp_len, JXL_FALSE));
     }
   }
 
@@ -317,8 +342,10 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
 
   // Fix pixel stride
   const size_t pixels_size = width * height * 3 * sizeof(float);
-  pixels = g_malloc(pixels_size);
-  if(!pixels) JXL_FAIL("could not allocate output pixel buffer of size %zu", pixels_size);
+  pixels = g_try_malloc(pixels_size);
+  if(!pixels)
+    JXL_FAIL("could not allocate output pixel buffer of size %zu", pixels_size);
+
   DT_OMP_FOR_SIMD(collapse(2))
   for(uint32_t y = 0; y < height; ++y)
   {
@@ -342,7 +369,7 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   // TODO: Can we better estimate what the optimal size of chunks is for this image?
   size_t chunk_size = 1 << 16;
   size_t out_len = chunk_size;
-  out_buf = g_malloc(out_len);
+  out_buf = g_try_malloc(out_len);
   if(!out_buf) JXL_FAIL("could not allocate codestream buffer of size %zu", out_len);
   uint8_t *out_cur = out_buf;
   size_t out_avail = out_len;
@@ -355,7 +382,9 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
     if(out_status == JXL_ENC_NEED_MORE_OUTPUT)
     {
       const size_t offset = out_cur - out_buf;
-      if(chunk_size < 1 << 20) chunk_size *= 2;
+      if(chunk_size < 1 << 20)
+        chunk_size *= 2;
+
       out_len += chunk_size;
       out_buf = g_realloc(out_buf, out_len);
       if(!out_buf)
@@ -373,7 +402,8 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
 
   // Write codestream contents to file
   out_file = g_fopen(filename, "wb");
-  if(!out_file) JXL_FAIL("could not open output file `%s'", filename);
+  if(!out_file)
+    JXL_FAIL("could not open output file `%s'", filename);
 
   if(fwrite(out_buf, sizeof(uint8_t), out_len, out_file) != out_len)
     JXL_FAIL("could not write bytes to `%s'", filename);
@@ -382,9 +412,12 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   ret = 0;
 
 end:
-  if(runner) JxlResizableParallelRunnerDestroy(runner);
-  if(encoder) JxlEncoderDestroy(encoder);
-  if(out_file) fclose(out_file);
+  if(runner)
+    JxlResizableParallelRunnerDestroy(runner);
+  if(encoder)
+    JxlEncoderDestroy(encoder);
+  if(out_file)
+    fclose(out_file);
   g_free(pixels);
   g_free(icc_buf);
   g_free(exif_buf);
@@ -460,7 +493,7 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
   if(size != self->params_size(self)) return 1;
 
   const dt_imageio_jxl_t *d = (dt_imageio_jxl_t *)params;
-  dt_imageio_jxl_gui_data_t *g = (dt_imageio_jxl_gui_data_t *)self->gui_data;
+  dt_imageio_jxl_gui_data_t *g = self->gui_data;
 
   dt_bauhaus_combobox_set(g->bpp, _bpp_to_enum(d->bpp));
   dt_bauhaus_combobox_set(g->pixel_type, d->pixel_type & 1);
@@ -546,17 +579,21 @@ void gui_init(dt_imageio_module_format_t *self)
   // bits per sample combobox
   const int bpp_enum = _bpp_to_enum(dt_conf_get_int("plugins/imageio/format/jxl/bpp"));
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->bpp, self, NULL, N_("bit depth"), NULL, bpp_enum, bpp_changed, gui,
-                               N_("8 bit"), N_("10 bit"), N_("12 bit"), N_("16 bit"), N_("32 bit (float)"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->bpp, self, NULL, N_("bit depth"),
+                               NULL, bpp_enum, bpp_changed, gui,
+                               N_("8 bit"), N_("10 bit"), N_("12 bit"),
+                               N_("16 bit"), N_("32 bit (float)"));
   gtk_box_pack_start(GTK_BOX(box), gui->bpp, TRUE, TRUE, 0);
 
   // pixel type combobox
   const int pixel_type = dt_conf_get_bool("plugins/imageio/format/jxl/pixel_type") & 1;
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->pixel_type, self, NULL, N_("pixel type"), NULL, pixel_type, pixel_type_changed,
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->pixel_type, self, NULL, N_("pixel type"),
+                               NULL, pixel_type, pixel_type_changed,
                                gui, N_("unsigned integer"), N_("floating point"));
   dt_bauhaus_combobox_set_default(gui->pixel_type,
-                                  dt_confgen_get_bool("plugins/imageio/format/jxl/pixel_type", DT_DEFAULT) & 1);
+                                  dt_confgen_get_bool("plugins/imageio/format/jxl/pixel_type",
+                                                      DT_DEFAULT) & 1);
   gtk_box_pack_start(GTK_BOX(box), gui->pixel_type, TRUE, TRUE, 0);
 
   gtk_widget_set_visible(gui->pixel_type, bpp_enum == 3);
@@ -571,8 +608,9 @@ void gui_init(dt_imageio_module_format_t *self)
       dt_confgen_get_int("plugins/imageio/format/jxl/quality", DT_DEFAULT), 0);
   dt_bauhaus_slider_set(gui->quality, quality);
   dt_bauhaus_widget_set_label(gui->quality, NULL, N_("quality"));
-  gtk_widget_set_tooltip_text(gui->quality, _("the quality of the output image\n0-29 = very lossy\n30-99 = JPEG "
-                                              "quality comparable\n100 = lossless"));
+  gtk_widget_set_tooltip_text(gui->quality,
+                              _("the quality of the output image\n0-29 = very lossy\n30-99 = JPEG "
+                                "quality comparable\n100 = lossless"));
   g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), gui);
   gtk_box_pack_start(GTK_BOX(box), gui->quality, TRUE, TRUE, 0);
 
@@ -586,7 +624,8 @@ void gui_init(dt_imageio_module_format_t *self)
         "or ensure no conversion to keep original image color space (implied for lossless)"),
       original, original_changed, NULL, N_("internal"), N_("original"));
   dt_bauhaus_combobox_set_default(gui->original,
-                                  dt_confgen_get_bool("plugins/imageio/format/jxl/original", DT_DEFAULT) & 1);
+                                  dt_confgen_get_bool("plugins/imageio/format/jxl/original",
+                                                      DT_DEFAULT) & 1);
   gtk_box_pack_start(GTK_BOX(box), gui->original, TRUE, TRUE, 0);
 
   gtk_widget_set_visible(gui->original, quality < 100);
@@ -599,8 +638,9 @@ void gui_init(dt_imageio_module_format_t *self)
       dt_confgen_get_int("plugins/imageio/format/jxl/effort", DT_DEFAULT), 0);
   dt_bauhaus_slider_set(gui->effort, dt_conf_get_int("plugins/imageio/format/jxl/effort"));
   dt_bauhaus_widget_set_label(gui->effort, NULL, N_("encoding effort"));
-  gtk_widget_set_tooltip_text(gui->effort, _("the effort used to encode the image, higher efforts will have "
-                                             "better results at the expense of longer encoding times"));
+  gtk_widget_set_tooltip_text(gui->effort,
+                              _("the effort used to encode the image, higher efforts will have "
+                                "better results at the expense of longer encoding times"));
   g_signal_connect(G_OBJECT(gui->effort), "value-changed", G_CALLBACK(effort_changed), NULL);
   gtk_box_pack_start(GTK_BOX(box), gui->effort, TRUE, TRUE, 0);
 
@@ -611,7 +651,8 @@ void gui_init(dt_imageio_module_format_t *self)
       dt_confgen_get_int("plugins/imageio/format/jxl/tier", DT_DEFAULT), 0);
   dt_bauhaus_slider_set(gui->tier, dt_conf_get_int("plugins/imageio/format/jxl/tier"));
   dt_bauhaus_widget_set_label(gui->tier, NULL, N_("decoding speed"));
-  gtk_widget_set_tooltip_text(gui->tier, _("the preferred decoding speed with some sacrifice of quality"));
+  gtk_widget_set_tooltip_text(gui->tier,
+                              _("the preferred decoding speed with some sacrifice of quality"));
   g_signal_connect(G_OBJECT(gui->tier), "value-changed", G_CALLBACK(tier_changed), NULL);
   gtk_box_pack_start(GTK_BOX(box), gui->tier, TRUE, TRUE, 0);
 }
@@ -623,16 +664,23 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
-  dt_imageio_jxl_gui_data_t *gui = (dt_imageio_jxl_gui_data_t *)self->gui_data;
+  dt_imageio_jxl_gui_data_t *gui = self->gui_data;
 
-  dt_bauhaus_combobox_set(gui->bpp, _bpp_to_enum(dt_confgen_get_int("plugins/imageio/format/jxl/bpp", DT_DEFAULT)));
-  dt_bauhaus_combobox_set(gui->pixel_type,
-                          dt_confgen_get_bool("plugins/imageio/format/jxl/pixel_type", DT_DEFAULT) & 1);
-  dt_bauhaus_slider_set(gui->quality, dt_confgen_get_int("plugins/imageio/format/jxl/quality", DT_DEFAULT));
-  dt_bauhaus_combobox_set(gui->original,
-                          dt_confgen_get_bool("plugins/imageio/format/jxl/original", DT_DEFAULT) & 1);
-  dt_bauhaus_slider_set(gui->effort, dt_confgen_get_int("plugins/imageio/format/jxl/effort", DT_DEFAULT));
-  dt_bauhaus_slider_set(gui->tier, dt_confgen_get_int("plugins/imageio/format/jxl/tier", DT_DEFAULT));
+  dt_bauhaus_combobox_set
+    (gui->bpp,
+     _bpp_to_enum(dt_confgen_get_int("plugins/imageio/format/jxl/bpp", DT_DEFAULT)));
+  dt_bauhaus_combobox_set
+    (gui->pixel_type,
+     dt_confgen_get_bool("plugins/imageio/format/jxl/pixel_type", DT_DEFAULT) & 1);
+  dt_bauhaus_slider_set
+    (gui->quality, dt_confgen_get_int("plugins/imageio/format/jxl/quality", DT_DEFAULT));
+  dt_bauhaus_combobox_set
+    (gui->original,
+     dt_confgen_get_bool("plugins/imageio/format/jxl/original", DT_DEFAULT) & 1);
+  dt_bauhaus_slider_set
+    (gui->effort, dt_confgen_get_int("plugins/imageio/format/jxl/effort", DT_DEFAULT));
+  dt_bauhaus_slider_set
+    (gui->tier, dt_confgen_get_int("plugins/imageio/format/jxl/tier", DT_DEFAULT));
 }
 
 // clang-format off

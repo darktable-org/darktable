@@ -102,7 +102,7 @@ char *dt_sqlite3_escape_wildcards(const char *s)
     if (*t == '%' || *t == '_' || *t == '~')
       count++;
   }
-  char *result = (char*)malloc(count+1);
+  char *result = malloc(count+1);
   if(!result)
     return result;
   char *dest = result;
@@ -234,7 +234,7 @@ dt_filmid_t dt_film_new(dt_film_t *film, const char *directory)
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, film->dirname, -1, SQLITE_STATIC);
     const int rc = sqlite3_step(stmt);
     if(rc != SQLITE_DONE)
-      dt_print(DT_DEBUG_ALWAYS, "[film_new] failed to insert film roll! %s\n",
+      dt_print(DT_DEBUG_ALWAYS, "[film_new] failed to insert film roll! %s",
               sqlite3_errmsg(dt_database_get(darktable.db)));
     sqlite3_finalize(stmt);
     /* requery for filmroll and fetch new id */
@@ -282,7 +282,7 @@ dt_filmid_t dt_film_import(const char *dirname)
   GError *error = NULL;
 
   /* initialize a film object*/
-  dt_film_t *film = (dt_film_t *)malloc(sizeof(dt_film_t));
+  dt_film_t *film = malloc(sizeof(dt_film_t));
   dt_film_init(film);
 
   dt_film_new(film, dirname);
@@ -309,7 +309,7 @@ dt_filmid_t dt_film_import(const char *dirname)
   film->dir = g_dir_open(film->dirname, 0, &error);
   if(error)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[film_import] failed to open directory %s: %s\n",
+    dt_print(DT_DEBUG_ALWAYS, "[film_import] failed to open directory %s: %s",
              film->dirname, error->message);
     g_error_free(error);
     dt_film_cleanup(film);
@@ -338,15 +338,15 @@ static gboolean ask_and_delete(gpointer user_data)
   dialog = gtk_message_dialog_new
     (GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
      GTK_BUTTONS_YES_NO,
-     ngettext("do you want to remove this empty directory?",
-              "do you want to remove these empty directories?", n_empty_dirs));
+     ngettext("do you want to delete this empty directory?",
+              "do you want to delete these empty directories?", n_empty_dirs));
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
 
   gtk_window_set_title(GTK_WINDOW(dialog),
-                       ngettext("remove empty directory?",
-                                "remove empty directories?", n_empty_dirs));
+                       ngettext("delete empty directory?",
+                                "delete empty directories?", n_empty_dirs));
 
   GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
@@ -425,8 +425,7 @@ void dt_film_remove_empty()
     }
   }
   sqlite3_finalize(stmt);
-  if(raise_signal) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                                 DT_SIGNAL_FILMROLLS_REMOVED);
+  if(raise_signal) DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_FILMROLLS_REMOVED);
 
   // dispatch asking for deletion (and subsequent deletion) to the gui thread
   if(empty_dirs)
@@ -503,7 +502,7 @@ void dt_film_remove(const dt_filmid_t id)
   sqlite3_finalize(stmt);
   // dt_control_update_recent_films();
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_FILMROLLS_CHANGED);
 }
 
 GList *dt_film_get_image_ids(const dt_filmid_t filmid)

@@ -25,6 +25,12 @@
 #include "control/signal.h"
 #include "gui/gtk.h"
 
+#ifdef USE_LUA
+#include "lua/call.h"
+#include "lua/events.h"
+#include "lua/image.h"
+#endif
+
 /** add an image to a group */
 void dt_grouping_add_to_group(const dt_imgid_t group_id,
                               const dt_imgid_t image_id)
@@ -38,7 +44,17 @@ void dt_grouping_add_to_group(const dt_imgid_t group_id,
                                     DT_IMAGE_CACHE_SAFE, "dt_grouping_add_to_group");
   GList *imgs = NULL;
   imgs = g_list_prepend(imgs, GINT_TO_POINTER(image_id));
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
+
+#ifdef USE_LUA
+   dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0, NULL, NULL,
+      LUA_ASYNC_TYPENAME, "const char*", "image-group-information-changed",
+      LUA_ASYNC_TYPENAME, "const char*", "add",
+      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(image_id),
+      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(group_id),
+      LUA_ASYNC_DONE);
+#endif
 }
 
 /** remove an image from a group */
@@ -86,6 +102,15 @@ dt_imgid_t dt_grouping_remove_from_group(const dt_imgid_t image_id)
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, image_id);
       sqlite3_step(stmt);
       sqlite3_finalize(stmt);
+#ifdef USE_LUA
+      dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+          0, NULL, NULL,
+          LUA_ASYNC_TYPENAME, "const char*", "image-group-information-changed",
+          LUA_ASYNC_TYPENAME, "const char*", "remove-leader",
+          LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(image_id),
+          LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(new_group_id),
+          LUA_ASYNC_DONE);
+#endif
     }
     else
     {
@@ -104,8 +129,17 @@ dt_imgid_t dt_grouping_remove_from_group(const dt_imgid_t image_id)
     imgs = g_list_prepend(imgs, GINT_TO_POINTER(image_id));
     // refresh also the group leader which may be alone now
     imgs = g_list_prepend(imgs, GINT_TO_POINTER(img_group_id));
+#ifdef USE_LUA
+    dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0, NULL, NULL,
+      LUA_ASYNC_TYPENAME, "const char*", "image-group-information-changed",
+      LUA_ASYNC_TYPENAME, "const char*", "remove",
+      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(image_id),
+      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(img_group_id),
+      LUA_ASYNC_DONE);
+#endif
   }
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
 
   return new_group_id;
 }
@@ -134,7 +168,17 @@ dt_imgid_t dt_grouping_change_representative(const dt_imgid_t image_id)
     imgs = g_list_prepend(imgs, GINT_TO_POINTER(other_id));
   }
   sqlite3_finalize(stmt);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
+
+#ifdef USE_LUA
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0, NULL, NULL,
+      LUA_ASYNC_TYPENAME, "const char*", "image-group-information-changed",
+      LUA_ASYNC_TYPENAME, "const char*", "leader-change",
+      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(image_id),
+      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(image_id),
+      LUA_ASYNC_DONE);
+#endif
 
   return image_id;
 }
@@ -146,7 +190,7 @@ GList *dt_grouping_get_group_images(const dt_imgid_t imgid)
   const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   if(image)
   {
-    const int img_group_id = image->group_id;
+    const dt_imgid_t img_group_id = image->group_id;
     dt_image_cache_read_release(darktable.image_cache, image);
     if(darktable.gui && darktable.gui->grouping && darktable.gui->expanded_group_id != img_group_id)
     {
@@ -177,7 +221,7 @@ void dt_grouping_add_grouped_images(GList **images)
     const dt_image_t *image = dt_image_cache_get(darktable.image_cache, GPOINTER_TO_INT(imgs->data), 'r');
     if(image)
     {
-      const int img_group_id = image->group_id;
+      const dt_imgid_t img_group_id = image->group_id;
       dt_image_cache_read_release(darktable.image_cache, image);
       if(darktable.gui && darktable.gui->grouping && darktable.gui->expanded_group_id != img_group_id
          && dt_selection_get_collection(darktable.selection))

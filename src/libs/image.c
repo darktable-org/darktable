@@ -54,7 +54,7 @@ typedef struct dt_lib_image_t
   GtkWidget *group_button, *ungroup_button, *cache_button, *uncache_button;
   GtkWidget *refresh_button, *set_monochrome_button, *set_color_button;
   GtkWidget *copy_metadata_button, *paste_metadata_button, *clear_metadata_button;
-  GtkWidget *ratings_flag, *colors_flag, *metadata_flag, *geotags_flag, *tags_flag;
+  GtkWidget *rating_flag, *colors_flag, *metadata_flag, *geotags_flag, *tags_flag;
   GtkWidget *page1; // saved here for lua extensions
   dt_imgid_t imageid;
 } dt_lib_image_t;
@@ -188,7 +188,7 @@ static void button_clicked(GtkWidget *widget, gpointer user_data)
 
 void gui_update(dt_lib_module_t *self)
 {
-  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  dt_lib_image_t *d = self->data;
   const int nbimgs = dt_act_on_get_images_nb(FALSE, FALSE);
 
   const gboolean act_on_any = (nbimgs > 0);
@@ -295,10 +295,9 @@ static void _mouse_over_image_callback(gpointer instance,
 }
 
 static void _image_preference_changed(gpointer instance,
-                                      gpointer user_data)
+                                      dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t*)user_data;
-  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  dt_lib_image_t *d = self->data;
   gboolean trash = dt_conf_get_bool("send_to_trash");
   gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->delete_button))),
                      trash ? _("delete (trash)")
@@ -323,7 +322,7 @@ typedef enum dt_metadata_actions_t
 
 static void _execute_metadata(dt_lib_module_t *self, const int action)
 {
-  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  dt_lib_image_t *d = self->data;
   const gboolean rating_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/rating");
   const gboolean colors_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/colors");
   const gboolean dtmetadata_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/metadata");
@@ -361,19 +360,19 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
     {
       GList *metadata = (action == DT_MA_CLEAR) ? NULL : dt_metadata_get_list_id(imageid);
       dt_metadata_set_list_id(imgs, metadata, action != DT_MA_MERGE, TRUE);
-      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
       g_list_free_full(metadata, g_free);
     }
     if(geotag_flag)
     {
-      dt_image_geoloc_t *geoloc = (dt_image_geoloc_t *)malloc(sizeof(dt_image_geoloc_t));
+      dt_image_geoloc_t *geoloc = malloc(sizeof(dt_image_geoloc_t));
       if(action == DT_MA_CLEAR)
         geoloc->longitude = geoloc->latitude = geoloc->elevation = NAN;
       else
         dt_image_get_location(imageid, geoloc);
       dt_image_set_locations(imgs, geoloc, TRUE);
-      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED,
-                                    g_list_copy((GList *)imgs), 0);
+      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_GEOTAG_CHANGED,
+                              g_list_copy((GList *)imgs), 0);
       g_free(geoloc);
     }
     if(dttag_flag)
@@ -381,7 +380,7 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
       // affect only user tags (not dt tags)
       GList *tags = (action == DT_MA_CLEAR) ? NULL : dt_tag_get_tags(imageid, TRUE);
       if(dt_tag_set_tags(tags, imgs, TRUE, action != DT_MA_MERGE, TRUE))
-        DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+        DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
       g_list_free(tags);
     }
 
@@ -406,7 +405,7 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
 static void copy_metadata_callback(GtkWidget *widget,
                                    dt_lib_module_t *self)
 {
-  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  dt_lib_image_t *d = self->data;
 
   d->imageid = dt_act_on_get_main_image();
 
@@ -439,18 +438,18 @@ static void set_color_callback(GtkWidget *widget,
   dt_control_monochrome_images(0);
 }
 
-static void ratings_flag_callback(GtkWidget *widget,
-                                  dt_lib_module_t *self)
+static void rating_flag_callback(GtkWidget *widget,
+                                 dt_lib_module_t *self)
 {
-  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
-  const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->ratings_flag));
+  dt_lib_image_t *d = self->data;
+  const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->rating_flag));
   dt_conf_set_bool("plugins/lighttable/copy_metadata/rating", flag);
 }
 
 static void colors_flag_callback(GtkWidget *widget,
                                  dt_lib_module_t *self)
 {
-  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  dt_lib_image_t *d = self->data;
   const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->colors_flag));
   dt_conf_set_bool("plugins/lighttable/copy_metadata/colors", flag);
 }
@@ -458,7 +457,7 @@ static void colors_flag_callback(GtkWidget *widget,
 static void metadata_flag_callback(GtkWidget *widget,
                                    dt_lib_module_t *self)
 {
-  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  dt_lib_image_t *d = self->data;
   const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->metadata_flag));
   dt_conf_set_bool("plugins/lighttable/copy_metadata/metadata", flag);
 }
@@ -466,7 +465,7 @@ static void metadata_flag_callback(GtkWidget *widget,
 static void geotags_flag_callback(GtkWidget *widget,
                                   dt_lib_module_t *self)
 {
-  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  dt_lib_image_t *d = self->data;
   const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->geotags_flag));
   dt_conf_set_bool("plugins/lighttable/copy_metadata/geotags", flag);
 }
@@ -474,7 +473,7 @@ static void geotags_flag_callback(GtkWidget *widget,
 static void tags_flag_callback(GtkWidget *widget,
                                dt_lib_module_t *self)
 {
-  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  dt_lib_image_t *d = self->data;
   const gboolean flag = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->tags_flag));
   dt_conf_set_bool("plugins/lighttable/copy_metadata/tags", flag);
 }
@@ -490,7 +489,7 @@ static void pastemode_combobox_changed(GtkWidget *widget,
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_image_t *d = (dt_lib_image_t *)malloc(sizeof(dt_lib_image_t));
+  dt_lib_image_t *d = malloc(sizeof(dt_lib_image_t));
   self->data = (void *)d;
 
   static struct dt_action_def_t notebook_def = { };
@@ -599,63 +598,34 @@ void gui_init(dt_lib_module_t *self)
   grid = GTK_GRID(gtk_grid_new());
   gtk_container_add(GTK_CONTAINER(page2), GTK_WIDGET(grid));
   gtk_grid_set_column_homogeneous(grid, TRUE);
-  line = 0;
-
-  GtkWidget *flag = gtk_check_button_new_with_label(_("ratings"));
-  d->ratings_flag = flag;
-  gtk_widget_set_tooltip_text(flag, _("select ratings metadata"));
-  ellipsize_button(flag);
-  gtk_grid_attach(grid, flag, 0, line, 3, 1);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag),
-                               dt_conf_get_bool("plugins/lighttable/copy_metadata/rating"));
-  g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(ratings_flag_callback), self);
-
-  flag = gtk_check_button_new_with_label(_("colors"));
-  d->colors_flag = flag;
-  gtk_widget_set_tooltip_text(flag, _("select colors metadata"));
-  ellipsize_button(flag);
-  gtk_grid_attach(grid, flag, 3, line++, 3, 1);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag),
-                               dt_conf_get_bool("plugins/lighttable/copy_metadata/colors"));
-  g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(colors_flag_callback), self);
-
-  flag = gtk_check_button_new_with_label(_("tags"));
-  d->tags_flag = flag;
-  gtk_widget_set_tooltip_text(flag, _("select tags metadata"));
-  ellipsize_button(flag);
-  gtk_grid_attach(grid, flag, 0, line, 3, 1);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag),
-                               dt_conf_get_bool("plugins/lighttable/copy_metadata/tags"));
-  g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(tags_flag_callback), self);
-
-  flag = gtk_check_button_new_with_label(_("geo tags"));
-  d->geotags_flag = flag;
-  gtk_widget_set_tooltip_text(flag, _("select geo tags metadata"));
-  ellipsize_button(flag);
-  gtk_grid_attach(grid, flag, 3, line++, 3, 1);
-  gtk_toggle_button_set_active
-    (GTK_TOGGLE_BUTTON(flag),
-     dt_conf_get_bool("plugins/lighttable/copy_metadata/geotags"));
-  g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(geotags_flag_callback), self);
-
-  flag = gtk_check_button_new_with_label(_("metadata"));
-  d->metadata_flag = flag;
-  gtk_widget_set_tooltip_text(flag,
-                              _("select darktable metadata (from metadata editor module)"));
-  ellipsize_button(flag);
-  gtk_grid_attach(grid, flag, 0, line++, 3, 1);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag),
-                               dt_conf_get_bool("plugins/lighttable/copy_metadata/metadata"));
-  g_signal_connect(G_OBJECT(flag), "clicked",
-                   G_CALLBACK(metadata_flag_callback), self);
 
   dt_lib_module_t *meta = (dt_lib_module_t *)dt_action_section(DT_ACTION(self),
                                                                N_("metadata"));
+  line = -1;
+#define META_FLAG_BUTTON(label, item, left, tooltip) {            \
+  GtkWidget *flag = gtk_check_button_new_with_label(_(label));    \
+  d->item##_flag = flag;                                          \
+  gtk_widget_set_tooltip_text(flag, tooltip);                     \
+  ellipsize_button(flag);                                         \
+  gtk_grid_attach(grid, flag, left, !left ? ++line : line, 3, 1); \
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag),           \
+    dt_conf_get_bool("plugins/lighttable/copy_metadata/" #item)); \
+  dt_action_define(DT_ACTION(meta), N_("flags"),                  \
+                   label, flag, &dt_action_def_toggle);           \
+  g_signal_connect(G_OBJECT(flag), "clicked",                     \
+                   G_CALLBACK(item##_flag_callback), self); }
+
+  META_FLAG_BUTTON(N_("ratings"),  rating,   0, _("select ratings metadata"));
+  META_FLAG_BUTTON(N_("colors"),   colors,   3, _("select colors metadata"));
+  META_FLAG_BUTTON(N_("tags"),     tags,     0, _("select tags metadata"));
+  META_FLAG_BUTTON(N_("geo tags"), geotags,  3, _("select geo tags metadata"));
+  META_FLAG_BUTTON(N_("metadata"), metadata, 0, _("select darktable metadata (from metadata editor module)"));
+
   d->copy_metadata_button = dt_action_button_new
     (meta, N_("copy"),
      copy_metadata_callback, self,
      _("set the selected image as source of metadata"), 0, 0);
-  gtk_grid_attach(grid, d->copy_metadata_button, 0, line, 2, 1);
+  gtk_grid_attach(grid, d->copy_metadata_button, 0, ++line, 2, 1);
   g_signal_connect(G_OBJECT(d->copy_metadata_button), "clicked",
                    G_CALLBACK(copy_metadata_callback), self);
 
@@ -671,7 +641,7 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *pastemode = NULL;
   DT_BAUHAUS_COMBOBOX_NEW_FULL
-    (pastemode, self, NULL, N_("mode"),
+    (pastemode, meta, NULL, N_("mode"),
      _("how to handle existing metadata"),
      dt_conf_get_int("plugins/lighttable/copy_metadata/pastemode"),
      pastemode_combobox_changed, self,
@@ -679,29 +649,25 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, pastemode, 0, line++, 6, 1);
 
   d->refresh_button = dt_action_button_new
-    (self, N_("refresh EXIF"), button_clicked, GINT_TO_POINTER(14),
+    (meta, N_("refresh EXIF"), button_clicked, GINT_TO_POINTER(14),
      _("update all image information to match changes to file\n"
        "warning: resets star ratings unless you select\n"
-       "'ignore EXIF rating' in the 'import' module\n"), 0, 0);
+       "'ignore EXIF rating' in the 'import' module"), 0, 0);
   gtk_grid_attach(grid, d->refresh_button, 0, line++, 6, 1);
 
   d->set_monochrome_button = dt_action_button_new
-    (self, N_("monochrome"), set_monochrome_callback, self,
+    (meta, N_("monochrome"), set_monochrome_callback, self,
      _("set selection as monochrome images and activate monochrome workflow"), 0, 0);
   gtk_grid_attach(grid, d->set_monochrome_button, 0, line, 3, 1);
 
-  d->set_color_button = dt_action_button_new(self, N_("color"), set_color_callback, self,
+  d->set_color_button = dt_action_button_new(meta, N_("color"), set_color_callback, self,
                                              _("set selection as color images"), 0, 0);
   gtk_grid_attach(grid, d->set_color_button, 3, line++, 3, 1);
 
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
-                            G_CALLBACK(_image_preference_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
-                            G_CALLBACK(_image_selection_changed_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
-                            G_CALLBACK(_mouse_over_image_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
-                            G_CALLBACK(_collection_updated_callback), self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PREFERENCES_CHANGE, _image_preference_changed);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_SELECTION_CHANGED, _image_selection_changed_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _mouse_over_image_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _collection_updated_callback);
 
   dt_action_register(DT_ACTION(self), N_("duplicate virgin"),
                      _duplicate_virgin, GDK_KEY_d, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
@@ -713,22 +679,13 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_reset(dt_lib_module_t *self)
 {
-  dt_lib_image_t *d = (dt_lib_image_t *)self->data;
+  dt_lib_image_t *d = self->data;
   d->imageid = 0;
   dt_lib_gui_queue_update(self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_image_preference_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_image_selection_changed_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_mouse_over_image_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_collection_updated_callback), self);
-
   free(self->data);
   self->data = NULL;
 }
@@ -891,7 +848,7 @@ static int lua_set_action_sensitive(lua_State *L)
   return 0;
 }
 
-void init(struct dt_lib_module_t *self)
+void init(dt_lib_module_t *self)
 {
 
   lua_State *L = darktable.lua_state.state;

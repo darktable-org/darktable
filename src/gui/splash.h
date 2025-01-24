@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,18 +16,18 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+void darktable_splash_screen_create(GtkWindow *parent, gboolean force);
+void darktable_splash_screen_set_progress(const char *msg);
+void darktable_splash_screen_set_progress_percent(const char *msg, double fraction, double elapsed);
+void darktable_splash_screen_destroy();
 
-#include <inttypes.h>
+void darktable_splash_screen_get_geometry(gint *x, gint *y, gint *width, gint *height);
 
-/** K. Roimela, T. Aarnio and J. Itäranta. High Dynamic Range Texture Compression. Proceedings of SIGGRAPH
- * 2006. */
-void dt_image_compress(const float *in, uint8_t *out, const int32_t width, const int32_t height);
-void dt_image_uncompress(const uint8_t *in, float *out, const int32_t width, const int32_t height);
+void darktable_exit_screen_create(GtkWindow *parent, gboolean force);
+void darktable_exit_screen_destroy();
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

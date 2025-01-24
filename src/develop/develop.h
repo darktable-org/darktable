@@ -102,10 +102,9 @@ typedef enum dt_clipping_preview_mode_t
 typedef struct dt_dev_proxy_exposure_t
 {
   struct dt_iop_module_t *module;
-  void (*set_exposure)(struct dt_iop_module_t *exp, const float exposure);
   float (*get_exposure)(struct dt_iop_module_t *exp);
-  void (*set_black)(struct dt_iop_module_t *exp, const float black);
   float (*get_black)(struct dt_iop_module_t *exp);
+  void (*handle_event)(GdkEvent *event, gboolean blackwhite);
 } dt_dev_proxy_exposure_t;
 
 struct dt_dev_pixelpipe_t;
@@ -290,11 +289,16 @@ typedef struct dt_develop_t
 
   dt_dev_chroma_t chroma;
 
-  // for exposing the crop
+  // for exposing and handling the crop
   struct
   {
     // set by dt_dev_pixelpipe_synch() if an enabled crop module is included in history
     struct dt_iop_module_t *exposer;
+
+    // proxy to change crop settings via flip module
+    struct dt_iop_module_t *flip_handler;
+    void (*flip_callback)(struct dt_iop_module_t *crop,
+                          const dt_image_orientation_t flipmode);
   } cropping;
 
   // for the overexposure indicator
@@ -449,6 +453,14 @@ void dt_dev_get_pointer_zoom_pos(dt_dev_viewport_t *port,
                                  float *zoom_x,
                                  float *zoom_y,
                                  float *zoom_scale);
+void dt_dev_get_pointer_zoom_pos_from_bounds(dt_dev_viewport_t *port,
+                                             const float px,
+                                             const float py,
+                                             const float zbound_x,
+                                             const float zbound_y,
+                                             float *zoom_x,
+                                             float *zoom_y,
+                                             float *zoom_scale);
 void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
                                 dt_dev_zoom_t *zoom,
                                 int *closeup,
@@ -457,24 +469,12 @@ void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
 
 void dt_dev_configure(dt_dev_viewport_t *port);
 
-/*
- * exposure plugin hook, set the exposure and the black level
- */
-
-/** check if exposure iop hooks are available */
-gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev);
-/** reset exposure to defaults */
-void dt_dev_exposure_reset_defaults(dt_develop_t *dev);
-/** set exposure */
-void dt_dev_exposure_set_exposure(dt_develop_t *dev,
-                                  const float exposure);
-/** get exposure */
+/** get exposure level */
 float dt_dev_exposure_get_exposure(dt_develop_t *dev);
-/** set exposure black level */
-void dt_dev_exposure_set_black(dt_develop_t *dev,
-                               const float black);
 /** get exposure black level */
 float dt_dev_exposure_get_black(dt_develop_t *dev);
+
+void dt_dev_exposure_handle_event(GdkEvent *event, gboolean blackwhite);
 
 /*
  * modulegroups plugin hooks

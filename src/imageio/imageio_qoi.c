@@ -28,58 +28,42 @@
 #include "imageio/qoi.h"
 
 #include "common/image.h"
-#include "develop/imageop.h"
+#include "develop/imageop.h"         // for IOP_CS_RGB
 #include "imageio/imageio_common.h"
 
 dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
                                         const char *filename,
                                         dt_mipmap_buffer_t *mbuf)
 {
-  // We shouldn't expect QOI images in files with an extension other than .qoi
-  char *ext = g_strrstr(filename, ".");
-  if(ext && g_ascii_strcasecmp(ext, ".qoi"))
-    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
-
   FILE *f = g_fopen(filename, "rb");
   if(!f)
   {
-    dt_print(DT_DEBUG_ALWAYS,"[qoi_open] cannot open file for read: %s\n", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[qoi_open] cannot open file for read: %s",
+             filename);
     return DT_IMAGEIO_FILE_NOT_FOUND;
   }
 
   fseek(f, 0, SEEK_END);
   size_t filesize = ftell(f);
-  fseek(f, 0, SEEK_SET);
+  rewind(f);
 
-  void *read_buffer = g_malloc(filesize);
-
-  // Let's check whether the entire content of the file should be read into the buffer.
-  // If we see that it's a non-QOI file, we'll save time by avoiding unnecessary reading
-  // of a potentially large file into the buffer.
-  if(fread(read_buffer, 1, 4, f) != 4)
+  void *read_buffer = g_try_malloc(filesize);
+  if(!read_buffer)
   {
     fclose(f);
-    g_free(read_buffer);
-    dt_print(DT_DEBUG_ALWAYS, "[qoi_open] failed to read from %s\n", filename);
-    // if we can't read even first 4 bytes, it's more like file disappeared
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    dt_print(DT_DEBUG_ALWAYS,
+             "[qoi_open] failed to allocate read buffer for %s",
+             filename);
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
-  if(memcmp(read_buffer, "qoif", 4) != 0)
+  if(fread(read_buffer, 1, filesize, f) != filesize)
   {
     fclose(f);
     g_free(read_buffer);
     dt_print(DT_DEBUG_ALWAYS,
-             "[qoi_open] no proper file header in %s\n", filename);
-    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
-  }
-
-  if(fread(read_buffer+4, 1, filesize-4, f) != filesize-4)
-  {
-    fclose(f);
-    g_free(read_buffer);
-    dt_print(DT_DEBUG_ALWAYS,
-             "[qoi_open] failed to read %zu bytes from %s\n",
+             "[qoi_open] failed to read entire file (%zu bytes) from %s",
              filesize, filename);
     return DT_IMAGEIO_IOERROR;
   }
@@ -88,10 +72,13 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
   qoi_desc desc;
   uint8_t *int_RGBA_buf = qoi_decode(read_buffer, (int)filesize, &desc, 4);
 
+  g_free(read_buffer);
+
   if(!int_RGBA_buf)
   {
-    g_free(read_buffer);
-    dt_print(DT_DEBUG_ALWAYS,"[qoi_open] failed to decode file: %s\n", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[qoi_open] failed to decode file: %s",
+             filename);
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
@@ -103,9 +90,9 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
   float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!mipbuf)
   {
-    g_free(read_buffer);
+    QOI_FREE(int_RGBA_buf);
     dt_print(DT_DEBUG_ALWAYS,
-             "[qoi_open] could not alloc full buffer for image: %s\n",
+             "[qoi_open] could not alloc full buffer for image: %s",
              img->filename);
     return DT_IMAGEIO_CACHE_FULL;
   }
@@ -127,7 +114,6 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img,
   img->loader = LOADER_QOI;
 
   QOI_FREE(int_RGBA_buf);
-  g_free(read_buffer);
 
   return DT_IMAGEIO_OK;
 }

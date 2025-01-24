@@ -38,7 +38,7 @@
 
 static char JP2_HEAD[] = { 0x0, 0x0, 0x0, 0x0C, 0x6A, 0x50, 0x20, 0x20, 0x0D, 0x0A, 0x87, 0x0A };
 static char JP2_MAGIC[] = { 0x0d, 0x0a, 0x87, 0x0a };
-static char J2K_HEAD[] = { 0xFF, 0x4F, 0xFF, 0x51, 0x00 };
+static char J2K_HEAD[] = { 0xFF, 0x4F, 0xFF, 0x51 };
 // there seems to be no JPIP/JPT magic string, so we can't load it ...
 
 static void color_sycc_to_rgb(opj_image_t *img);
@@ -51,8 +51,8 @@ static void error_callback(const char *msg, void *client_data)
 
 static int get_file_format(const char *filename)
 {
-  static const char *extension[] = { "j2k", "jp2", "jpt", "j2c", "jpc" };
-  static const int format[] = { J2K_CFMT, JP2_CFMT, JPT_CFMT, J2K_CFMT, J2K_CFMT };
+  static const char *extension[] = { "j2k", "jp2", "jpt", "j2c", "jpc", "jpf", "jpx" };
+  static const int format[] = { J2K_CFMT, JP2_CFMT, JPT_CFMT, J2K_CFMT, J2K_CFMT, JP2_CFMT, JP2_CFMT };
   char *ext = strrchr(filename, '.');
   if(ext == NULL) return -1;
   ext++;
@@ -70,7 +70,9 @@ static int get_file_format(const char *filename)
   return -1;
 }
 
-dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
+dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img,
+                                        const char *filename,
+                                        dt_mipmap_buffer_t *mbuf)
 {
   opj_dparameters_t parameters; /* decompression parameters */
   opj_image_t *image = NULL;
@@ -95,18 +97,21 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   fsrc = g_fopen(filename, "rb");
   if(!fsrc)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to open `%s' for reading\n", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[j2k_open] Error: failed to open '%s' for reading", filename);
     return DT_IMAGEIO_FILE_NOT_FOUND;
   }
   if(fread(src_header, 1, 12, fsrc) != 12)
   {
     fclose(fsrc);
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: fread returned a number of elements different from the expected.\n");
+    dt_print(DT_DEBUG_ALWAYS,
+             "[j2k_open] Error: fread returned a number of elements different from the expected.");
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
   fclose(fsrc);
 
-  if(memcmp(JP2_HEAD, src_header, sizeof(JP2_HEAD)) == 0 || memcmp(JP2_MAGIC, src_header, sizeof(JP2_MAGIC)) == 0)
+  if(memcmp(JP2_HEAD, src_header, sizeof(JP2_HEAD)) == 0 ||
+     memcmp(JP2_MAGIC, src_header, sizeof(JP2_MAGIC)) == 0)
   {
     parameters.decod_format = JP2_CFMT; // just in case someone used the wrong extension
   }
@@ -116,7 +121,8 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   }
   else // this will also reject jpt files.
   {
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: `%s' has unsupported file format.\n", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[j2k_open] Error: '%s' has unsupported file format", filename);
     return DT_IMAGEIO_UNSUPPORTED_FORMAT;
   }
 
@@ -137,7 +143,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   d_codec = opj_create_decompress(codec);
   if(!d_codec)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to create the decoder\n");
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to create the decoder");
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
@@ -149,9 +155,12 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   /* Decode JPEG-2000 with using multiple threads */
   if(!opj_codec_set_threads(d_codec, dt_get_num_threads()))
   {
-    /* This may not seem like a critical error but failure to initialise the treads
-     is a symptom of major resource exhaustion, bail out as quickly as possible */
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to setup the threads for decoder %s\n", parameters.infile);
+    // This may not seem like a critical error but failure to initialize
+    // the threads is a sign of major resource exhaustion, better to fail
+    // as soon as possible to save overall stability.
+    dt_print(DT_DEBUG_ALWAYS,
+             "[j2k_open] Error: failed to setup the threads for decoder %s",
+             parameters.infile);
     opj_destroy_codec(d_codec);
     return DT_IMAGEIO_LOAD_FAILED;
   }
@@ -159,7 +168,9 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   /* setup the decoder decoding parameters using user parameters */
   if(!opj_setup_decoder(d_codec, &parameters))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to setup the decoder %s\n", parameters.infile);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[j2k_open] Error: failed to setup the decoder %s",
+             parameters.infile);
     opj_destroy_codec(d_codec);
     return DT_IMAGEIO_LOAD_FAILED;
   }
@@ -167,7 +178,9 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   d_stream = opj_stream_create_default_file_stream(parameters.infile, 1);
   if(!d_stream)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to create the stream from the file %s\n", parameters.infile);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[j2k_open] Error: failed to create the stream from the file %s",
+             parameters.infile);
     opj_destroy_codec(d_codec);
     return DT_IMAGEIO_LOAD_FAILED;
   }
@@ -175,7 +188,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   /* Read the main header of the codestream and if necessary the JP2 boxes*/
   if(!opj_read_header(d_stream, d_codec, &image))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to read the header\n");
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to read the header");
     opj_stream_destroy(d_stream);
     opj_destroy_codec(d_codec);
     opj_image_destroy(image);
@@ -185,7 +198,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   /* Get the decoded image */
   if(!(opj_decode(d_codec, d_stream, image) && opj_end_decompress(d_codec, d_stream)))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to decode image!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to decode image!");
     opj_destroy_codec(d_codec);
     opj_stream_destroy(d_stream);
     opj_image_destroy(image);
@@ -197,7 +210,9 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
 
   if(!image)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to decode image `%s'\n", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[j2k_open] Error: failed to decode image '%s'",
+             filename);
     ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto end_of_the_world;
   }
@@ -210,9 +225,13 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   /* Get the ICC profile if available */
   if(image->icc_profile_len > 0 && image->icc_profile_buf)
   {
-    img->profile = (uint8_t *)g_malloc0(image->icc_profile_len);
-    memcpy(img->profile, image->icc_profile_buf, image->icc_profile_len);
-    img->profile_size = image->icc_profile_len;
+    uint8_t *profile = g_try_malloc0(image->icc_profile_len);
+    if(profile)
+    {
+      img->profile = profile;
+      memcpy(img->profile, image->icc_profile_buf, image->icc_profile_len);
+      img->profile_size = image->icc_profile_len;
+    }
   }
 
   /* create output image */
@@ -223,7 +242,9 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   // some sanity checks
   if(image->numcomps == 0 || image->x1 == 0 || image->y1 == 0)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: invalid raw image parameters in `%s'\n", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[j2k_open] Error: invalid raw image parameters in '%s'",
+             filename);
     ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto end_of_the_world;
   }
@@ -232,14 +253,18 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   {
     if(image->comps[i].w != image->x1 || image->comps[i].h != image->y1)
     {
-      dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: some component has different size in `%s'\n", filename);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[j2k_open] Error: some component has different size in '%s'",
+               filename);
       ret = DT_IMAGEIO_FILE_CORRUPTED;
       goto end_of_the_world;
     }
     if(image->comps[i].prec > 16)
     {
-      dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: precision %d is larger than 16 in `%s'\n", image->comps[1].prec,
-              filename);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[j2k_open] Error: precision %d is larger than 16 in '%s'",
+               image->comps[1].prec,
+               filename);
       ret = DT_IMAGEIO_UNSUPPORTED_FEATURE;
       goto end_of_the_world;
     }
@@ -314,130 +339,6 @@ end_of_the_world:
   return ret;
 }
 
-int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out)
-{
-  opj_dparameters_t parameters; /* decompression parameters */
-  opj_image_t *image = NULL;
-  FILE *fsrc = NULL;
-  unsigned char src_header[12] = { 0 };
-  opj_codec_t *d_codec = NULL;
-  OPJ_CODEC_FORMAT codec;
-  opj_stream_t *d_stream = NULL; /* Stream */
-  unsigned int length = 0;
-  *out = NULL;
-
-  /* set decoding parameters to default values */
-  opj_set_default_decoder_parameters(&parameters);
-
-  g_strlcpy(parameters.infile, filename, sizeof(parameters.infile));
-
-  parameters.decod_format = get_file_format(filename);
-  if(parameters.decod_format == -1)
-    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
-
-  /* read the input file and put it in memory */
-  /* ---------------------------------------- */
-  fsrc = g_fopen(filename, "rb");
-  if(!fsrc)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_read_profile] Error: failed to open `%s' for reading\n", filename);
-    goto another_end_of_the_world;
-  }
-  if(fread(src_header, 1, 12, fsrc) != 12)
-  {
-    fclose(fsrc);
-    dt_print(DT_DEBUG_ALWAYS,
-            "[j2k_read_profile] Error: fread returned a number of elements different from the expected.\n");
-    goto another_end_of_the_world;
-  }
-  fclose(fsrc);
-
-  if(memcmp(JP2_HEAD, src_header, sizeof(JP2_HEAD)) == 0 || memcmp(JP2_MAGIC, src_header, sizeof(JP2_MAGIC)) == 0)
-  {
-    codec = OPJ_CODEC_JP2;
-  }
-  else if(memcmp(J2K_HEAD, src_header, sizeof(J2K_HEAD)) == 0)
-  {
-    codec = OPJ_CODEC_J2K;
-  }
-  else // this will also reject jpt files.
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_read_profile] Error: `%s' has unsupported file format.\n", filename);
-    goto another_end_of_the_world;
-  }
-
-  /* decode the code-stream */
-  /* ---------------------- */
-
-  /* get a decoder handle */
-  d_codec = opj_create_decompress(codec);
-  if(!d_codec)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_read_profile] Error: failed to create the decoder\n");
-    goto another_end_of_the_world;
-  }
-
-  /* setup the decoder decoding parameters using user parameters */
-  if(!opj_setup_decoder(d_codec, &parameters))
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_read_profile] Error: failed to setup the decoder %s\n", parameters.infile);
-    goto another_end_of_the_world;
-  }
-
-  d_stream = opj_stream_create_default_file_stream(parameters.infile, 1);
-  if(!d_stream)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_read_profile] Error: failed to create the stream from the file %s\n", parameters.infile);
-    goto another_end_of_the_world;
-  }
-
-  /* Read the main header of the codestream and if necessary the JP2 boxes*/
-  if(!opj_read_header(d_stream, d_codec, &image))
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_read_profile] Error: failed to read the header\n");
-    opj_stream_destroy(d_stream);
-    goto another_end_of_the_world;
-  }
-
-  /* Get the decoded image */
-  if(!(opj_decode(d_codec, d_stream, image) && opj_end_decompress(d_codec, d_stream)))
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_read_profile] Error: failed to decode image!\n");
-    opj_stream_destroy(d_stream);
-    goto another_end_of_the_world;
-  }
-
-  // FIXME: how to do it without fully-decoding the whole image?
-  // opj_jp2_decode() copies the icc_profile_{buf,len}
-  // from opj_codec_t *d_codec d_codec->color into opj_image_t *image, but
-  // opj_codec_t is private type.
-
-  /* Close the byte stream */
-  opj_stream_destroy(d_stream);
-
-  if(!image)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[j2k_read_profile] Error: failed to decode image `%s'\n", filename);
-    goto another_end_of_the_world;
-  }
-
-  if(image->icc_profile_len > 0 && image->icc_profile_buf)
-  {
-    length = image->icc_profile_len;
-    *out = (uint8_t *)g_malloc(image->icc_profile_len);
-    memcpy(*out, image->icc_profile_buf, image->icc_profile_len);
-  }
-
-another_end_of_the_world:
-  /* free remaining structures */
-  opj_destroy_codec(d_codec);
-
-  /* free image data structure */
-  opj_image_destroy(image);
-
-  return length;
-}
-
 
 // stolen from openjpeg
 /*--------------------------------------------------------
@@ -454,124 +355,110 @@ G: 1.00003  -0.344125      -0.714128     :Cb - 2^(prec - 1)
 B: 0.999823  1.77204       -8.04142e-06  :Cr - 2^(prec - 1)
 
 -----------------------------------------------------------*/
-static void sycc_to_rgb(int offset, int upb, int y, int cb, int cr, int *out_r, int *out_g, int *out_b)
+static void sycc_to_rgb(const int offset,
+                        const int upb,
+                        const int y,
+                        int cb,
+                        int cr,
+                        int *out_r,
+                        int *out_g,
+                        int *out_b)
 {
-  int r, g, b;
-
   cb -= offset;
   cr -= offset;
-  r = y + (int)(1.402 * (float)cr);
-  if(r < 0)
-    r = 0;
-  else if(r > upb)
-    r = upb;
-  *out_r = r;
+  int r = y + (int)(1.402 * (float)cr);
+  *out_r = CLAMP(r, 0, upb);
 
-  g = y - (int)(0.344 * (float)cb + 0.714 * (float)cr);
-  if(g < 0)
-    g = 0;
-  else if(g > upb)
-    g = upb;
-  *out_g = g;
+  int g = y - (int)(0.344 * (float)cb + 0.714 * (float)cr);
+  *out_g = CLAMP(g, 0, upb);
 
-  b = y + (int)(1.772 * (float)cb);
-  if(b < 0)
-    b = 0;
-  else if(b > upb)
-    b = upb;
-  *out_b = b;
+  int b = y + (int)(1.772 * (float)cb);
+  *out_b = CLAMP(b, 0, upb);
 }
 
 static void sycc444_to_rgb(opj_image_t *img)
 {
-  int *d0, *d1, *d2, *r, *g, *b;
-  const int *y, *cb, *cr;
-  size_t maxw, maxh, max;
-  int i, offset, upb;
+  const int prec = img->comps[0].prec;
+  const int offset = 1 << (prec - 1);
+  const int upb = (1 << prec) - 1;
 
-  i = img->comps[0].prec;
-  offset = 1 << (i - 1);
-  upb = (1 << i) - 1;
+  const size_t maxw = img->comps[0].w;
+  const size_t maxh = img->comps[0].h;
+  const size_t max = maxw * maxh;
 
-  maxw = img->comps[0].w;
-  maxh = img->comps[0].h;
-  max = maxw * maxh;
+  const int *y = img->comps[0].data;
+  const int *cb = img->comps[1].data;
+  const int *cr = img->comps[2].data;
 
-  y = img->comps[0].data;
-  cb = img->comps[1].data;
-  cr = img->comps[2].data;
+  int *const r = (int *)calloc(max, sizeof(int));
+  int *const g = (int *)calloc(max, sizeof(int));
+  int *const b = (int *)calloc(max, sizeof(int));
 
-  d0 = r = (int *)calloc(max, sizeof(int));
-  d1 = g = (int *)calloc(max, sizeof(int));
-  d2 = b = (int *)calloc(max, sizeof(int));
-
-  for(i = 0; i < max; ++i)
+  if(!r || !g || !b)
   {
-    sycc_to_rgb(offset, upb, *y, *cb, *cr, r, g, b);
-    ++y;
-    ++cb;
-    ++cr;
-    ++r;
-    ++g;
-    ++b;
+    free(r);
+    free(g);
+    free(b);
+    return;
+  }
+
+  DT_OMP_FOR()
+  for(size_t k = 0; k < max; ++k)
+  {
+    sycc_to_rgb(offset, upb, y[k], cb[k], cr[k], r+k, g+k, b+k);
   }
   free(img->comps[0].data);
-  img->comps[0].data = d0;
+  img->comps[0].data = r;
   free(img->comps[1].data);
-  img->comps[1].data = d1;
+  img->comps[1].data = g;
   free(img->comps[2].data);
-  img->comps[2].data = d2;
+  img->comps[2].data = b;
 } /* sycc444_to_rgb() */
 
 static void sycc422_to_rgb(opj_image_t *img)
 {
-  int *d0, *d1, *d2, *r, *g, *b;
-  const int *y, *cb, *cr;
-  size_t maxw, maxh, max;
-  int offset, upb;
-  int i, j;
+  const int prec = img->comps[0].prec;
+  const int offset = 1 << (prec - 1);
+  const int upb = (1 << prec) - 1;
 
-  i = img->comps[0].prec;
-  offset = 1 << (i - 1);
-  upb = (1 << i) - 1;
+  const size_t maxw = img->comps[0].w;
+  const size_t maxh = img->comps[0].h;
+  const size_t max = maxw * maxh;
 
-  maxw = img->comps[0].w;
-  maxh = img->comps[0].h;
-  max = maxw * maxh;
+  const int *y = img->comps[0].data;
+  const int *cb = img->comps[1].data;
+  const int *cr = img->comps[2].data;
 
-  y = img->comps[0].data;
-  cb = img->comps[1].data;
-  cr = img->comps[2].data;
+  int *const r = (int *)calloc(max, sizeof(int));
+  int *const g = (int *)calloc(max, sizeof(int));
+  int *const b = (int *)calloc(max, sizeof(int));
 
-  d0 = r = (int *)calloc(max, sizeof(int));
-  d1 = g = (int *)calloc(max, sizeof(int));
-  d2 = b = (int *)calloc(max, sizeof(int));
-
-  for(i = 0; i < maxh; ++i)
+  if(!r || !g || !b)
   {
-    for(j = 0; j < maxw; j += 2)
-    {
-      sycc_to_rgb(offset, upb, *y, *cb, *cr, r, g, b);
-      ++y;
-      ++r;
-      ++g;
-      ++b;
+    free(r);
+    free(g);
+    free(b);
+    return;
+  }
 
-      sycc_to_rgb(offset, upb, *y, *cb, *cr, r, g, b);
-      ++y;
-      ++r;
-      ++g;
-      ++b;
-      ++cb;
-      ++cr;
+  DT_OMP_FOR()
+  for(size_t i = 0; i < maxh; ++i)
+  {
+    size_t rowstart = i * maxw;
+    for(size_t j = 0; j < maxw; j += 2)
+    {
+      const int curr_cb = cb[rowstart + j/2];
+      const int curr_cr = cr[rowstart + j/2];
+      sycc_to_rgb(offset, upb, y[rowstart+j], curr_cb, curr_cr, r+rowstart+j, g+rowstart+j, b+rowstart+j);
+      sycc_to_rgb(offset, upb, y[rowstart+j+1], curr_cb, curr_cr, r+rowstart+j+1, g+rowstart+j+1, b+rowstart+j+1);
     }
   }
   free(img->comps[0].data);
-  img->comps[0].data = d0;
+  img->comps[0].data = r;
   free(img->comps[1].data);
-  img->comps[1].data = d1;
+  img->comps[1].data = g;
   free(img->comps[2].data);
-  img->comps[2].data = d2;
+  img->comps[2].data = b;
 
   img->comps[1].w = maxw;
   img->comps[1].h = maxh;
@@ -596,57 +483,41 @@ static void sycc420_to_rgb(opj_image_t *img)
   const int *cb = img->comps[1].data;
   const int *cr = img->comps[2].data;
 
-  int *d0, *d1, *d2, *r, *g, *b;
-  d0 = r = (int *)calloc(max, sizeof(int));
-  d1 = g = (int *)calloc(max, sizeof(int));
-  d2 = b = (int *)calloc(max, sizeof(int));
+  int *const r = (int *)calloc(max, sizeof(int));
+  int *const g = (int *)calloc(max, sizeof(int));
+  int *const b = (int *)calloc(max, sizeof(int));
 
-  for(int i = 0; i < maxh; i += 2)
+  if(!r || !g || !b)
   {
-    const int *ny = y + maxw;
-    int *nr = r + maxw;
-    int *ng = g + maxw;
-    int *nb = b + maxw;
+    free(r);
+    free(g);
+    free(b);
+    return;
+  }
 
-    for(int j = 0; j < maxw; j += 2)
+  DT_OMP_FOR()
+  for(size_t i = 0; i < maxh; i += 2)
+  {
+    const size_t subrow = (i/2) * maxw;
+    const size_t rowstart = i * maxw;
+    const size_t nextrow = (i+1) * maxw;
+
+    for(size_t j = 0; j < maxw; j += 2)
     {
-      sycc_to_rgb(offset, upb, *y, *cb, *cr, r, g, b);
-      ++y;
-      ++r;
-      ++g;
-      ++b;
-
-      sycc_to_rgb(offset, upb, *y, *cb, *cr, r, g, b);
-      ++y;
-      ++r;
-      ++g;
-      ++b;
-
-      sycc_to_rgb(offset, upb, *ny, *cb, *cr, nr, ng, nb);
-      ++ny;
-      ++nr;
-      ++ng;
-      ++nb;
-
-      sycc_to_rgb(offset, upb, *ny, *cb, *cr, nr, ng, nb);
-      ++ny;
-      ++nr;
-      ++ng;
-      ++nb;
-      ++cb;
-      ++cr;
+      const int curr_cb = cb[subrow + j/2];
+      const int curr_cr = cr[subrow + j/2];
+      sycc_to_rgb(offset, upb, y[rowstart+j], curr_cb, curr_cr, r+rowstart+j, g+rowstart+j, b+rowstart+j);
+      sycc_to_rgb(offset, upb, y[rowstart+j+1], curr_cb, curr_cr, r+rowstart+j+1, g+rowstart+j+1, b+rowstart+j+1);
+      sycc_to_rgb(offset, upb, y[nextrow+j], curr_cb, curr_cr, r+nextrow+j, g+nextrow+j, b+nextrow+j);
+      sycc_to_rgb(offset, upb, y[nextrow+j+1], curr_cb, *cr, r+nextrow+j+1, g+nextrow+j+1, b+nextrow+j+1);
     }
-    y += maxw;
-    r += maxw;
-    g += maxw;
-    b += maxw;
   }
   free(img->comps[0].data);
-  img->comps[0].data = d0;
+  img->comps[0].data = r;
   free(img->comps[1].data);
-  img->comps[1].data = d1;
+  img->comps[1].data = g;
   free(img->comps[2].data);
-  img->comps[2].data = d2;
+  img->comps[2].data = b;
 
   img->comps[1].w = maxw;
   img->comps[1].h = maxh;
@@ -685,7 +556,8 @@ static void color_sycc_to_rgb(opj_image_t *img)
   }
   else
   {
-    dt_print(DT_DEBUG_ALWAYS, "%s:%d:color_sycc_to_rgb\n\tCAN NOT CONVERT\n", __FILE__, __LINE__);
+    dt_print(DT_DEBUG_ALWAYS,
+             "%s:%d:color_sycc_to_rgb\n\tCAN NOT CONVERT", __FILE__, __LINE__);
     return;
   }
   img->color_space = OPJ_CLRSPC_SRGB;

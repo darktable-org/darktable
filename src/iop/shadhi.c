@@ -137,7 +137,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_LAB;
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("modify the tonal range of the shadows and highlights\n"
                                         "of an image by enhancing local contrast."),
@@ -184,8 +184,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_shadhi_params_v1_t;
 
     const dt_iop_shadhi_params_v1_t *old = old_params;
-    dt_iop_shadhi_params_v5_t *new =
-      (dt_iop_shadhi_params_v5_t *)malloc(sizeof(dt_iop_shadhi_params_v5_t));
+    dt_iop_shadhi_params_v5_t *new = malloc(sizeof(dt_iop_shadhi_params_v5_t));
     new->order = old->order;
     new->radius = fabs(old->radius);
     new->shadows = 0.5f * old->shadows;
@@ -220,8 +219,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_shadhi_params_v2_t;
 
     const dt_iop_shadhi_params_v2_t *old = old_params;
-    dt_iop_shadhi_params_v5_t *new =
-      (dt_iop_shadhi_params_v5_t *)malloc(sizeof(dt_iop_shadhi_params_v5_t));
+    dt_iop_shadhi_params_v5_t *new = malloc(sizeof(dt_iop_shadhi_params_v5_t));
     new->order = old->order;
     new->radius = fabs(old->radius);
     new->shadows = old->shadows;
@@ -257,8 +255,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_shadhi_params_v3_t;
 
     const dt_iop_shadhi_params_v3_t *old = old_params;
-    dt_iop_shadhi_params_v5_t *new =
-      (dt_iop_shadhi_params_v5_t *)malloc(sizeof(dt_iop_shadhi_params_v5_t));
+    dt_iop_shadhi_params_v5_t *new = malloc(sizeof(dt_iop_shadhi_params_v5_t));
     new->order = old->order;
     new->radius = fabs(old->radius);
     new->shadows = old->shadows;
@@ -295,8 +292,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_shadhi_params_v4_t;
 
     const dt_iop_shadhi_params_v4_t *old = old_params;
-    dt_iop_shadhi_params_v5_t *new =
-      (dt_iop_shadhi_params_v5_t *)malloc(sizeof(dt_iop_shadhi_params_v5_t));
+    dt_iop_shadhi_params_v5_t *new = malloc(sizeof(dt_iop_shadhi_params_v5_t));
     new->order = old->order;
     new->radius = fabs(old->radius);
     new->shadows = old->shadows;
@@ -340,7 +336,7 @@ static inline float sign(float x)
 }
 
 DT_OMP_DECLARE_SIMD(aligned(ivoid, ovoid : 64))
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -351,7 +347,7 @@ void process(struct dt_iop_module_t *self,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
 
-  const dt_iop_shadhi_data_t *const restrict data = (dt_iop_shadhi_data_t *)piece->data;
+  const dt_iop_shadhi_data_t *const restrict data = piece->data;
   const float *const restrict in = (float *)ivoid;
   float *const restrict out = (float *)ovoid;
   const int width = roi_out->width;
@@ -500,11 +496,11 @@ void process(struct dt_iop_module_t *self,
 
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_shadhi_data_t *d = (dt_iop_shadhi_data_t *)piece->data;
-  dt_iop_shadhi_global_data_t *gd = (dt_iop_shadhi_global_data_t *)self->global_data;
+  dt_iop_shadhi_data_t *d = piece->data;
+  dt_iop_shadhi_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
@@ -589,11 +585,11 @@ error:
 }
 #endif
 
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
-  dt_iop_shadhi_data_t *d = (dt_iop_shadhi_data_t *)piece->data;
+  dt_iop_shadhi_data_t *d = piece->data;
 
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -630,11 +626,11 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   return;
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)p1;
-  dt_iop_shadhi_data_t *d = (dt_iop_shadhi_data_t *)piece->data;
+  dt_iop_shadhi_data_t *d = piece->data;
 
   d->order = p->order;
   d->radius = p->radius;
@@ -654,35 +650,34 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 #endif
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_shadhi_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 6; // gaussian.cl, from programs.conf
-  dt_iop_shadhi_global_data_t *gd
-      = (dt_iop_shadhi_global_data_t *)malloc(sizeof(dt_iop_shadhi_global_data_t));
-  module->data = gd;
+  dt_iop_shadhi_global_data_t *gd = malloc(sizeof(dt_iop_shadhi_global_data_t));
+  self->data = gd;
   gd->kernel_shadows_highlights_mix = dt_opencl_create_kernel(program, "shadows_highlights_mix");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_shadhi_global_data_t *gd = (dt_iop_shadhi_global_data_t *)module->data;
+  dt_iop_shadhi_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_shadows_highlights_mix);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_shadhi_gui_data_t *g = IOP_GUI_ALLOC(shadhi);
 

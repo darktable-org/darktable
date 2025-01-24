@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011-2014 ulrich pegelow.
+    copyright (c) 2011-2024 darktable developer.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #include "common.h"
 
 
-/* This is gaussian blur in Lab space. Please mind: in contrast to most of DT's other openCL kernels,
+/* This is gaussian blur space. Please mind: in contrast to most of DT's other openCL kernels,
    the kernels in this package expect part/all of their input/output buffers in form of vectors. This
    is needed to have read-write access to some buffers which openCL does not offer for image object. */
 
@@ -282,6 +282,154 @@ gaussian_column_1c(global float *in, global float *out, unsigned int width, unsi
   }
 }
 
+__kernel void gaussian_kernel_9x9(global float *input,
+                                  global float *output,
+                                  const int width,
+                                  const int height,
+                                  const int ch,
+                                  global const float *kern,
+                                  const float minval,
+                                  const float maxval)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if((col >= width) || (row >= height)) return;
+
+  const int i = mad24(row, width, col);
+  const int w1 = width;
+  const int w2 = 2 * width;
+  const int w3 = 3 * width;
+  const int w4 = 4 * width;
+
+  #define h0 0
+  #define h1 1
+  #define h2 2
+  #define h3 3
+  #define h4 4
+
+  if(ch == 1)
+  {
+    global float *in = input;
+    global float *out = output;
+    float val = 0.0f;
+    if(col >= 4 && row >= 4 && col < width - 4 && row < height - 4)
+    {
+      val =
+            kern[10+4] * (in[i - w4 -h2]  + in[i - w4 +h2]  + in[i - w2 -h4]  + in[i - w2 +h4] + in[i + w2 -h4] + in[i + w2 +h4] + in[i + w4 -h2] + in[i + w4 +h2]) +
+            kern[5 +4] * (in[i - w4 -h1]  + in[i - w4 +h1]  + in[i - w1 -h4]  + in[i - w1 +h4] + in[i + w1 -h4] + in[i + w1 +h4] + in[i + w4 -h1] + in[i + w4 +h1]) +
+            kern[4]    * (in[i - w4 +h0]  + in[i      -h4]  + in[i      +h4]  + in[i + w4 +h0]) +
+            kern[15+3] * (in[i - w3 -h3]  + in[i - w3 +h3]  + in[i + w3 -h3]  + in[i + w3 +h3]) +
+            kern[10+3] * (in[i - w3 -h2]  + in[i - w3 +h2]  + in[i - w2 -h3]  + in[i - w2 +h3] + in[i + w2 -h3] + in[i + w2 +h3] + in[i + w3 -h2] + in[i + w3 +h2]) +
+            kern[ 5+3] * (in[i - w3 -h1]  + in[i - w3 +h1]  + in[i - w1 -h3]  + in[i - w1 +h3] + in[i + w1 -h3] + in[i + w1 +h3] + in[i + w3 -h1] + in[i + w3 +h1]) +
+            kern[   3] * (in[i - w3 +h0]  + in[i      -h3]  + in[i      +h3]  + in[i + w3 +h0]) +
+            kern[10+2] * (in[i - w2 -h2]  + in[i - w2 +h2]  + in[i + w2 -h2]  + in[i + w2 +h2]) +
+            kern[ 5+2] * (in[i - w2 -h1]  + in[i - w2 +h1]  + in[i - w1 -h2]  + in[i - w1 +h2] + in[i + w1 -h2] + in[i + w1 +h2] + in[i + w2 -h1] + in[i + w2 +h1]) +
+            kern[   2] * (in[i - w2 +h0]  + in[i      -h2]  + in[i      +h2]  + in[i + w2 +h0]) +
+            kern[ 5+1] * (in[i - w1 -h1]  + in[i - w1 +h1]  + in[i + w1 -h1]  + in[i + w1 +h1]) +
+            kern[   1] * (in[i - w1 +h0]  + in[i      -h1]  + in[i      +h1]  + in[i + w1 +h0]) +
+            kern[   0] * (in[i      +h0]);
+    }
+    else
+    {
+      for(int ir = -4; ir <= 4; ir++)
+      {
+        const int irow = row+ir;
+        if(irow >= 0 && irow < height)
+        {
+          for(int ic = -4; ic <= 4; ic++)
+          {
+            const int icol = col+ic;
+            if(icol >=0 && icol < width)
+              val += kern[5 * abs(ir) + abs(ic)] * in[mad24(irow, width, icol)];
+          }
+        }
+      }
+    }
+    out[i] = clamp(val, minval, maxval);
+  }
+
+  else if(ch == 2)
+  {
+    global float2 *in = (global float2 *)input;
+    global float2 *out = (global float2 *)output;
+    float2 val = 0.0f;
+    if(col >= 4 && row >= 4 && col < width - 4 && row < height - 4)
+    {
+      val =
+            kern[10+4] * (in[i - w4 -h2]  + in[i - w4 +h2]  + in[i - w2 -h4]  + in[i - w2 +h4] + in[i + w2 -h4] + in[i + w2 +h4] + in[i + w4 -h2] + in[i + w4 +h2]) +
+            kern[5 +4] * (in[i - w4 -h1]  + in[i - w4 +h1]  + in[i - w1 -h4]  + in[i - w1 +h4] + in[i + w1 -h4] + in[i + w1 +h4] + in[i + w4 -h1] + in[i + w4 +h1]) +
+            kern[4]    * (in[i - w4 +h0]  + in[i      -h4]  + in[i      +h4]  + in[i + w4 +h0]) +
+            kern[15+3] * (in[i - w3 -h3]  + in[i - w3 +h3]  + in[i + w3 -h3]  + in[i + w3 +h3]) +
+            kern[10+3] * (in[i - w3 -h2]  + in[i - w3 +h2]  + in[i - w2 -h3]  + in[i - w2 +h3] + in[i + w2 -h3] + in[i + w2 +h3] + in[i + w3 -h2] + in[i + w3 +h2]) +
+            kern[ 5+3] * (in[i - w3 -h1]  + in[i - w3 +h1]  + in[i - w1 -h3]  + in[i - w1 +h3] + in[i + w1 -h3] + in[i + w1 +h3] + in[i + w3 -h1] + in[i + w3 +h1]) +
+            kern[   3] * (in[i - w3 +h0]  + in[i      -h3]  + in[i      +h3]  + in[i + w3 +h0]) +
+            kern[10+2] * (in[i - w2 -h2]  + in[i - w2 +h2]  + in[i + w2 -h2]  + in[i + w2 +h2]) +
+            kern[ 5+2] * (in[i - w2 -h1]  + in[i - w2 +h1]  + in[i - w1 -h2]  + in[i - w1 +h2] + in[i + w1 -h2] + in[i + w1 +h2] + in[i + w2 -h1] + in[i + w2 +h1]) +
+            kern[   2] * (in[i - w2 +h0]  + in[i      -h2]  + in[i      +h2]  + in[i + w2 +h0]) +
+            kern[ 5+1] * (in[i - w1 -h1]  + in[i - w1 +h1]  + in[i + w1 -h1]  + in[i + w1 +h1]) +
+            kern[   1] * (in[i - w1 +h0]  + in[i      -h1]  + in[i      +h1]  + in[i + w1 +h0]) +
+            kern[   0] * (in[i      +h0]);
+    }
+    else
+    {
+      for(int ir = -4; ir <= 4; ir++)
+      {
+        const int irow = row+ir;
+        if(irow >= 0 && irow < height)
+        {
+          for(int ic = -4; ic <= 4; ic++)
+          {
+            const int icol = col+ic;
+            if(icol >=0 && icol < width)
+              val += kern[5 * abs(ir) + abs(ic)] * in[mad24(irow, width, icol)];
+          }
+        }
+      }
+    }
+    out[i] = clamp(val, minval, maxval);
+  }
+
+  else if(ch == 4)
+  {
+    global float4 *in = (global float4 *)input;
+    global float4 *out = (global float4 *)output;
+    float4 val = 0.0f;
+    if(col >= 4 && row >= 4 && col < width - 4 && row < height - 4)
+    {
+      val =
+            kern[10+4] * (in[i - w4 -h2]  + in[i - w4 +h2]  + in[i - w2 -h4]  + in[i - w2 +h4] + in[i + w2 -h4] + in[i + w2 +h4] + in[i + w4 -h2] + in[i + w4 +h2]) +
+            kern[5 +4] * (in[i - w4 -h1]  + in[i - w4 +h1]  + in[i - w1 -h4]  + in[i - w1 +h4] + in[i + w1 -h4] + in[i + w1 +h4] + in[i + w4 -h1] + in[i + w4 +h1]) +
+            kern[4]    * (in[i - w4 +h0]  + in[i      -h4]  + in[i      +h4]  + in[i + w4 +h0]) +
+            kern[15+3] * (in[i - w3 -h3]  + in[i - w3 +h3]  + in[i + w3 -h3]  + in[i + w3 +h3]) +
+            kern[10+3] * (in[i - w3 -h2]  + in[i - w3 +h2]  + in[i - w2 -h3]  + in[i - w2 +h3] + in[i + w2 -h3] + in[i + w2 +h3] + in[i + w3 -h2] + in[i + w3 +h2]) +
+            kern[ 5+3] * (in[i - w3 -h1]  + in[i - w3 +h1]  + in[i - w1 -h3]  + in[i - w1 +h3] + in[i + w1 -h3] + in[i + w1 +h3] + in[i + w3 -h1] + in[i + w3 +h1]) +
+            kern[   3] * (in[i - w3 +h0]  + in[i      -h3]  + in[i      +h3]  + in[i + w3 +h0]) +
+            kern[10+2] * (in[i - w2 -h2]  + in[i - w2 +h2]  + in[i + w2 -h2]  + in[i + w2 +h2]) +
+            kern[ 5+2] * (in[i - w2 -h1]  + in[i - w2 +h1]  + in[i - w1 -h2]  + in[i - w1 +h2] + in[i + w1 -h2] + in[i + w1 +h2] + in[i + w2 -h1] + in[i + w2 +h1]) +
+            kern[   2] * (in[i - w2 +h0]  + in[i      -h2]  + in[i      +h2]  + in[i + w2 +h0]) +
+            kern[ 5+1] * (in[i - w1 -h1]  + in[i - w1 +h1]  + in[i + w1 -h1]  + in[i + w1 +h1]) +
+            kern[   1] * (in[i - w1 +h0]  + in[i      -h1]  + in[i      +h1]  + in[i + w1 +h0]) +
+            kern[   0] * (in[i      +h0]);
+    }
+    else
+    {
+      for(int ir = -4; ir <= 4; ir++)
+      {
+        const int irow = row+ir;
+        if(irow >= 0 && irow < height)
+        {
+          for(int ic = -4; ic <= 4; ic++)
+          {
+            const int icol = col+ic;
+            if(icol >=0 && icol < width)
+              val += kern[5 * abs(ir) + abs(ic)] * in[mad24(irow, width, icol)];
+          }
+        }
+      }
+    }
+    out[i] = clamp(val, minval, maxval);
+  }
+}
 
 
 float
@@ -424,5 +572,3 @@ shadows_highlights_mix(read_only image2d_t in, read_only image2d_t mask, write_o
   io.w = w;
   write_imagef(out, (int2)(x, y), io);
 }
-
-

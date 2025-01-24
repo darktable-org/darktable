@@ -67,7 +67,7 @@ typedef struct dt_lib_select_t
 
 void gui_update(dt_lib_module_t *self)
 {
-  dt_lib_select_t *d = (dt_lib_select_t *)self->data;
+  dt_lib_select_t *d = self->data;
 
   const uint32_t collection_cnt =  dt_collection_get_count_no_group(darktable.collection);
   const uint32_t selected_cnt = dt_collection_get_selected_count();
@@ -131,7 +131,7 @@ int position(const dt_lib_module_t *self)
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_select_t *d = (dt_lib_select_t *)malloc(sizeof(dt_lib_select_t));
+  dt_lib_select_t *d = malloc(sizeof(dt_lib_select_t));
   self->data = d;
   self->widget = gtk_grid_new();
 
@@ -163,16 +163,12 @@ void gui_init(dt_lib_module_t *self)
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->select_none_button))), PANGO_ELLIPSIZE_START);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->select_film_roll_button))), PANGO_ELLIPSIZE_START);
 
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
-                            G_CALLBACK(_image_selection_changed_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
-                            G_CALLBACK(_collection_updated_callback), self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_SELECTION_CHANGED, _image_selection_changed_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _collection_updated_callback);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
   free(self->data);
   self->data = NULL;
 }

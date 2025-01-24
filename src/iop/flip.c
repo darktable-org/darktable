@@ -104,7 +104,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
     (self,
@@ -163,8 +163,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_flip_params_v1_t;
 
     const dt_iop_flip_params_v1_t *o = (dt_iop_flip_params_v1_t *)old_params;
-    dt_iop_flip_params_v2_t *n =
-      (dt_iop_flip_params_v2_t *)malloc(sizeof(dt_iop_flip_params_v2_t));
+    dt_iop_flip_params_v2_t *n = malloc(sizeof(dt_iop_flip_params_v2_t));
 
     // we might be called from presets update infrastructure => there is no image
     dt_image_orientation_t image_orientation = ORIENTATION_NONE;
@@ -220,7 +219,7 @@ gboolean distort_transform(dt_iop_module_t *self,
                            float *const restrict points,
                            const size_t points_count)
 {
-  const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
+  const dt_iop_flip_data_t *d = piece->data;
 
   // nothing to be done if parameters are set to neutral values (no flip or swap)
   if(d->orientation == 0) return TRUE;
@@ -255,7 +254,7 @@ gboolean distort_backtransform(dt_iop_module_t *self,
                                float *const restrict points,
                                const size_t points_count)
 {
-  const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
+  const dt_iop_flip_data_t *d = piece->data;
 
   // nothing to be done if parameters are set to neutral values (no flip or swap)
   if(d->orientation == 0) return TRUE;
@@ -284,14 +283,14 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   return TRUE;
 }
 
-void distort_mask(struct dt_iop_module_t *self,
-                  struct dt_dev_pixelpipe_iop_t *piece,
+void distort_mask(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
                   const float *const in,
                   float *const out,
                   const dt_iop_roi_t *const roi_in,
                   const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
+  const dt_iop_flip_data_t *d = piece->data;
 
   const int bpp = sizeof(float);
   const int stride = bpp * roi_in->width;
@@ -300,12 +299,12 @@ void distort_mask(struct dt_iop_module_t *self,
                           roi_in->width, roi_in->height, stride, d->orientation);
 }
 
-void modify_roi_out(struct dt_iop_module_t *self,
-                    struct dt_dev_pixelpipe_iop_t *piece,
+void modify_roi_out(dt_iop_module_t *self,
+                    dt_dev_pixelpipe_iop_t *piece,
                     dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *roi_in)
 {
-  const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
+  const dt_iop_flip_data_t *d = piece->data;
   *roi_out = *roi_in;
 
   // transform whole buffer roi
@@ -316,12 +315,12 @@ void modify_roi_out(struct dt_iop_module_t *self,
   }
 }
 
-void modify_roi_in(struct dt_iop_module_t *self,
-                   struct dt_dev_pixelpipe_iop_t *piece,
+void modify_roi_in(dt_iop_module_t *self,
+                   dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *roi_out,
                    dt_iop_roi_t *roi_in)
 {
-  const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
+  const dt_iop_flip_data_t *d = piece->data;
   *roi_in = *roi_out;
   // transform aabb back to roi_in
 
@@ -363,14 +362,14 @@ void modify_roi_in(struct dt_iop_module_t *self,
 
 // 3rd (final) pass: you get this input region (may be different from
 // what was requested above), do your best to fill the output region!
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
+  const dt_iop_flip_data_t *d = piece->data;
 
   const int bpp = sizeof(float) * piece->colors;
   const int stride = bpp * roi_in->width;
@@ -382,15 +381,15 @@ void process(struct dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_flip_data_t *data = (dt_iop_flip_data_t *)piece->data;
-  const dt_iop_flip_global_data_t *gd = (dt_iop_flip_global_data_t *)self->global_data;
+  const dt_iop_flip_data_t *data = piece->data;
+  const dt_iop_flip_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -405,27 +404,26 @@ int process_cl(struct dt_iop_module_t *self,
 void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // basic.cl, from programs.conf
-  dt_iop_flip_global_data_t *gd =
-    (dt_iop_flip_global_data_t *)malloc(sizeof(dt_iop_flip_global_data_t));
+  dt_iop_flip_global_data_t *gd = malloc(sizeof(dt_iop_flip_global_data_t));
   self->data = gd;
   gd->kernel_flip = dt_opencl_create_kernel(program, "flip");
 }
 
 void cleanup_global(dt_iop_module_so_t *self)
 {
-  const dt_iop_flip_global_data_t *gd = (dt_iop_flip_global_data_t *)self->data;
+  const dt_iop_flip_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_flip);
   free(self->data);
   self->data = NULL;
 }
 
-void commit_params(struct dt_iop_module_t *self,
+void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   const dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)p1;
-  dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
+  dt_iop_flip_data_t *d = piece->data;
 
   if(p->orientation == ORIENTATION_NULL)
     d->orientation = dt_image_orientation(&self->dev->image_storage);
@@ -433,17 +431,17 @@ void commit_params(struct dt_iop_module_t *self,
     d->orientation = p->orientation;
 
   if(d->orientation == ORIENTATION_NONE)
-    piece->enabled = 0;
+    piece->enabled = FALSE;
 }
 
-void init_pipe(struct dt_iop_module_t *self,
+void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_flip_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self,
+void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
@@ -520,9 +518,23 @@ void reload_defaults(dt_iop_module_t *self)
   }
 }
 
+static void _crop_callback(dt_iop_module_t *self,
+                           const dt_image_orientation_t mode)
+{
+  dt_develop_t *dev = darktable.develop;
+  dt_iop_module_t *cropper = dev->cropping.flip_handler;
+
+  // FIXME: can we "compress" history here by checking for a flip/crop pair on top of history
+  // and a) drop the crop on top of history and b) compress flip in one step
+
+  dt_dev_add_history_item(dev, self, TRUE);
+  if(cropper && dev->cropping.flip_callback)
+    dev->cropping.flip_callback(cropper, mode);
+}
+
 static void do_rotate(dt_iop_module_t *self, uint32_t cw)
 {
-  dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
+  dt_iop_flip_params_t *p = self->params;
   dt_image_orientation_t orientation = p->orientation;
 
   if(orientation == ORIENTATION_NULL)
@@ -545,7 +557,7 @@ static void do_rotate(dt_iop_module_t *self, uint32_t cw)
   orientation ^= ORIENTATION_SWAP_XY;
 
   p->orientation = orientation;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  _crop_callback(self, cw ? ORIENTATION_ROTATE_CW_90_DEG : ORIENTATION_ROTATE_CCW_90_DEG);
 }
 
 static void rotate_cw(GtkWidget *widget, dt_iop_module_t *self)
@@ -560,7 +572,7 @@ static void rotate_ccw(GtkWidget *widget, dt_iop_module_t *self)
 
 static void _flip_h(GtkWidget *widget, dt_iop_module_t *self)
 {
-  dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
+  dt_iop_flip_params_t *p = self->params;
   dt_image_orientation_t orientation = p->orientation;
 
   if(orientation == ORIENTATION_NULL)
@@ -571,12 +583,13 @@ static void _flip_h(GtkWidget *widget, dt_iop_module_t *self)
   else
     p->orientation = orientation ^ ORIENTATION_FLIP_HORIZONTALLY;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  _crop_callback(self, ORIENTATION_FLIP_HORIZONTALLY);
 }
 
 static void _flip_v(GtkWidget *widget, dt_iop_module_t *self)
 {
-  dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
+  dt_iop_flip_params_t *p = self->params;
+
   dt_image_orientation_t orientation = p->orientation;
 
   if(orientation == ORIENTATION_NULL)
@@ -587,13 +600,13 @@ static void _flip_v(GtkWidget *widget, dt_iop_module_t *self)
   else
     p->orientation = orientation ^ ORIENTATION_FLIP_VERTICALLY;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  _crop_callback(self, ORIENTATION_FLIP_VERTICALLY);
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   self->gui_data = NULL;
-  dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
+  dt_iop_flip_params_t *p = self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
@@ -618,7 +631,7 @@ void gui_init(struct dt_iop_module_t *self)
                     self->widget);
 }
 
-void gui_cleanup(struct dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   self->gui_data = NULL;
 }

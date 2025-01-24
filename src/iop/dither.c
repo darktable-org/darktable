@@ -113,7 +113,7 @@ const char *aliases()
   return _("dithering|posterization|reduce bit depth");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("reduce banding and posterization effects in output\n"
                                         "JPEGs by adding random noise, or reduce bit depth"),
@@ -157,7 +157,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_dither_params_v1_t;
 
     const dt_iop_dither_params_v1_t *o = (dt_iop_dither_params_v1_t *)old_params;
-    dt_iop_dither_params_v1_t *n = (dt_iop_dither_params_v1_t *)malloc(sizeof(dt_iop_dither_params_v1_t));
+    dt_iop_dither_params_v1_t *n = malloc(sizeof(dt_iop_dither_params_v1_t));
     memcpy(n, o, sizeof(dt_iop_dither_params_v1_t));
 
     *new_params = n;
@@ -402,7 +402,7 @@ static int _get_dither_parameters(
 
 DT_OMP_DECLARE_SIMD(aligned(ivoid, ovoid : 64))
 static void _process_floyd_steinberg(
-        struct dt_iop_module_t *self,
+        dt_iop_module_t *self,
         dt_dev_pixelpipe_iop_t *piece,
         const void *const ivoid,
         void *const ovoid,
@@ -410,7 +410,7 @@ static void _process_floyd_steinberg(
         const dt_iop_roi_t *const roi_out,
         const gboolean fast_mode)
 {
-  const dt_iop_dither_data_t *const restrict data = (dt_iop_dither_data_t *)piece->data;
+  const dt_iop_dither_data_t *const restrict data = piece->data;
 
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -576,14 +576,14 @@ static void _process_floyd_steinberg(
 }
 
 static void _process_random(
-        struct dt_iop_module_t *self,
+        dt_iop_module_t *self,
         dt_dev_pixelpipe_iop_t *piece,
         const void *const ivoid,
         void *const ovoid,
         const dt_iop_roi_t *const roi_in,
         const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_dither_data_t *const data = (dt_iop_dither_data_t *)piece->data;
+  const dt_iop_dither_data_t *const data = piece->data;
 
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -620,14 +620,14 @@ static void _process_random(
 }
 
 static void _process_posterize(
-        struct dt_iop_module_t *self,
+        dt_iop_module_t *self,
         dt_dev_pixelpipe_iop_t *piece,
         const void *const ivoid,
         void *const ovoid,
         const dt_iop_roi_t *const roi_in,
         const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_dither_data_t *const data = (dt_iop_dither_data_t *)piece->data;
+  const dt_iop_dither_data_t *const data = piece->data;
 
   const size_t width = roi_in->width;
   const size_t height = roi_in->height;
@@ -656,7 +656,7 @@ static void _process_posterize(
 
 
 void process(
-        struct dt_iop_module_t *self,
+        dt_iop_module_t *self,
         dt_dev_pixelpipe_iop_t *piece,
         const void *const ivoid,
         void *const ovoid,
@@ -667,7 +667,7 @@ void process(
                                          ivoid, ovoid, roi_in, roi_out))
     return;
 
-  dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
+  dt_iop_dither_data_t *data = piece->data;
 
   if(data->dither_type == DITHER_RANDOM)
     _process_random(self, piece, ivoid, ovoid, roi_in, roi_out);
@@ -682,8 +682,8 @@ void process(
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_dither_params_t *p = (dt_iop_dither_params_t *)self->params;
-  dt_iop_dither_gui_data_t *g = (dt_iop_dither_gui_data_t *)self->gui_data;
+  dt_iop_dither_params_t *p = self->params;
+  dt_iop_dither_gui_data_t *g = self->gui_data;
 
   if(w == g->dither_type)
   {
@@ -693,11 +693,10 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 #if 0
 static void
-_radius_callback (GtkWidget *slider, gpointer user_data)
+_radius_callback (GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_dither_params_t *p = (dt_iop_dither_params_t *)self->params;
+  dt_iop_dither_params_t *p = self->params;
   p->random.radius = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -705,11 +704,10 @@ _radius_callback (GtkWidget *slider, gpointer user_data)
 
 #if 0
 static void
-_range_callback (GtkWidget *slider, gpointer user_data)
+_range_callback (GtkWidget *slider, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_dither_params_t *p = (dt_iop_dither_params_t *)self->params;
+  dt_iop_dither_params_t *p = self->params;
   p->random.range[0] = dtgtk_gradient_slider_multivalue_get_value(DTGTK_GRADIENT_SLIDER(slider), 0);
   p->random.range[1] = dtgtk_gradient_slider_multivalue_get_value(DTGTK_GRADIENT_SLIDER(slider), 1);
   p->random.range[2] = dtgtk_gradient_slider_multivalue_get_value(DTGTK_GRADIENT_SLIDER(slider), 2);
@@ -719,13 +717,13 @@ _range_callback (GtkWidget *slider, gpointer user_data)
 #endif
 
 void commit_params(
-        struct dt_iop_module_t *self,
+        dt_iop_module_t *self,
         dt_iop_params_t *p1,
         dt_dev_pixelpipe_t *pipe,
         dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_dither_params_t *p = (dt_iop_dither_params_t *)p1;
-  dt_iop_dither_data_t *d = (dt_iop_dither_data_t *)piece->data;
+  dt_iop_dither_data_t *d = piece->data;
 
   d->dither_type = p->dither_type;
   memcpy(&(d->random.range), &(p->random.range), sizeof(p->random.range));
@@ -733,22 +731,22 @@ void commit_params(
   d->random.damping = p->random.damping;
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_dither_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_dither_gui_data_t *g = (dt_iop_dither_gui_data_t *)self->gui_data;
-  dt_iop_dither_params_t *p = (dt_iop_dither_params_t *)self->params;
+  dt_iop_dither_gui_data_t *g = self->gui_data;
+  dt_iop_dither_params_t *p = self->params;
 #if 0
   dt_bauhaus_slider_set(g->radius, p->random.radius);
 
@@ -761,7 +759,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_set_visible(g->random, p->dither_type == DITHER_RANDOM);
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_dither_gui_data_t *g = IOP_GUI_ALLOC(dither);
 

@@ -50,7 +50,8 @@ static void _remove_preset_flag(const dt_imgid_t imgid)
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
   // clear flag
-  image->flags &= ~DT_IMAGE_AUTO_PRESETS_APPLIED;
+  if(image)
+    image->flags &= ~DT_IMAGE_AUTO_PRESETS_APPLIED;
 
   // write through to sql+xmp
   dt_image_cache_write_release_info(darktable.image_cache, image,
@@ -134,13 +135,14 @@ void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
   /* remove darktable|style|* tags */
   dt_tag_detach_by_string("darktable|style|%", imgid, FALSE, FALSE);
   dt_tag_detach_by_string("darktable|changed", imgid, FALSE, FALSE);
+  /* signal that the tags may have changed */
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
 
   /* unset change timestamp */
   dt_image_cache_unset_change_timestamp(darktable.image_cache, imgid);
 
   // signal that the mipmap need to be updated
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
 
   dt_unlock_image(imgid);
 
@@ -163,7 +165,7 @@ void dt_history_delete_on_image_ext(const dt_imgid_t imgid,
 void dt_history_delete_on_image(const dt_imgid_t imgid)
 {
   dt_history_delete_on_image_ext(imgid, TRUE, TRUE);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
 }
 
 gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
@@ -209,7 +211,7 @@ gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
   }
   dt_unlock_image(imgid);
   // signal that the mipmap need to be updated
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
   return FALSE;
 }
 
@@ -235,7 +237,7 @@ static dt_dev_history_item_t *_search_history_by_module(dt_develop_t *dev,
   dt_dev_history_item_t *hist_mod = NULL;
   for(GList *history = dev->history; history; history = g_list_next(history))
   {
-    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+    dt_dev_history_item_t *hist = history->data;
 
     if(hist->module == module)
     {
@@ -254,7 +256,7 @@ static dt_iop_module_t *_search_list_iop_by_module(GList *modules_list,
   dt_iop_module_t *mod_ret = NULL;
   for(GList *modules = modules_list; modules; modules = g_list_next(modules))
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
+    dt_iop_module_t *mod = modules->data;
 
     if(mod == module)
     {
@@ -289,7 +291,7 @@ static void _fill_used_forms(GList *forms_list,
   {
     for(GList *grpts = form->points; grpts; grpts = g_list_next(grpts))
     {
-      dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)grpts->data;
+      dt_masks_point_group_t *grpt = grpts->data;
       _fill_used_forms(forms_list, grpt->formid, used, nb);
     }
   }
@@ -324,7 +326,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
     {
       dt_print(DT_DEBUG_ALWAYS,
                "[dt_history_merge_module_into_history]"
-               " can't find single instance module %s\n",
+               " can't find single instance module %s",
                mod_src->op);
       module_added = FALSE;
     }
@@ -346,7 +348,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
         modules_dest;
         modules_dest = g_list_next(modules_dest))
     {
-      dt_iop_module_t *mod_dest = (dt_iop_module_t *)modules_dest->data;
+      dt_iop_module_t *mod_dest = modules_dest->data;
 
       // look for not yet used module
       if(strcmp(mod_src->op, mod_dest->op) == 0
@@ -411,7 +413,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
       {
         dt_print(DT_DEBUG_ALWAYS,
                  "[dt_history_merge_module_into_history]"
-                 " can't load module %s\n", mod_src->op);
+                 " can't load module %s", mod_src->op);
         module_added = FALSE;
       }
       else
@@ -461,7 +463,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
         modules_dest;
         modules_dest = g_list_next(modules_dest))
     {
-      dt_iop_module_t *mod = (dt_iop_module_t *)(modules_dest->data);
+      dt_iop_module_t *mod = modules_dest->data;
 
       if(module_duplicate != NULL)
       {
@@ -475,26 +477,26 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
     }
 
     // do some checking...
-    if(mod_src->iop_order <= 0.0 || mod_src->iop_order == INT_MAX)
+    if(mod_src->iop_order <= 0 || mod_src->iop_order == INT_MAX)
       dt_print(DT_DEBUG_ALWAYS,
                "[dt_history_merge_module_into_history]"
-               " invalid source module %s %s(%d)(%i)\n",
+               " invalid source module %s %s(%d)(%i)",
                mod_src->op, mod_src->multi_name,
                mod_src->iop_order, mod_src->multi_priority);
 
     if(module_duplicate
-       && (module_duplicate->iop_order <= 0.0
+       && (module_duplicate->iop_order <= 0
            || module_duplicate->iop_order == INT_MAX))
       dt_print(DT_DEBUG_ALWAYS,
                "[dt_history_merge_module_into_history]"
-               " invalid duplicate module module %s %s(%d)(%i)\n",
+               " invalid duplicate module module %s %s(%d)(%i)",
                module_duplicate->op, module_duplicate->multi_name,
                module_duplicate->iop_order, module_duplicate->multi_priority);
 
-    if(module->iop_order <= 0.0 || module->iop_order == INT_MAX)
+    if(module->iop_order <= 0 || module->iop_order == INT_MAX)
       dt_print(DT_DEBUG_ALWAYS,
                "[dt_history_merge_module_into_history]"
-               " invalid iop_order for module %s %s(%d)(%i)\n",
+               " invalid iop_order for module %s %s(%d)(%i)",
                module->op, module->multi_name, module->iop_order,
                module->multi_priority);
 
@@ -518,13 +520,13 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
       {
         nbf = g_list_length(dev_src->forms);
         forms_used_replace = calloc(nbf, sizeof(int));
-
-        _fill_used_forms(dev_src->forms,
-                         mod_src->blend_params->mask_id,
-                         forms_used_replace, nbf);
+        if(forms_used_replace)
+          _fill_used_forms(dev_src->forms,
+                           mod_src->blend_params->mask_id,
+                           forms_used_replace, nbf);
 
         // now copy masks
-        for(int i = 0; i < nbf && forms_used_replace[i] > 0; i++)
+        for(int i = 0; i < nbf && forms_used_replace && forms_used_replace[i] > 0; i++)
         {
           dt_masks_form_t *form =
             dt_masks_get_from_id_ext(dev_src->forms, forms_used_replace[i]);
@@ -548,7 +550,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
           else
             dt_print(DT_DEBUG_ALWAYS,
                      "[dt_history_merge_module_into_history]"
-                     " form %i not found in source image\n",
+                     " form %i not found in source image",
                      forms_used_replace[i]);
         }
       }
@@ -619,7 +621,7 @@ static gboolean _history_copy_and_paste_on_image_merge(const dt_imgid_t imgid,
   if(ops)
   {
     dt_print(DT_DEBUG_IOPORDER,
-             "[history_copy_and_paste_on_image_merge] selected modules\n");
+             "[history_copy_and_paste_on_image_merge] selected modules");
     // copy only selected history entries
     for(const GList *l = g_list_last(ops); l; l = g_list_previous(l))
     {
@@ -654,7 +656,7 @@ static gboolean _history_copy_and_paste_on_image_merge(const dt_imgid_t imgid,
       {
         if(!dt_iop_is_hidden(hist->module))
         {
-          dt_print(DT_DEBUG_IOPORDER, "  module %20s, multiprio %i, num %d\n",
+          dt_print(DT_DEBUG_IOPORDER, "  module %20s, multiprio %i, num %d",
                    hist->module->op, hist->module->multi_priority, num);
 
           // make sure we use the proper params/blend as the module is set with the
@@ -672,13 +674,13 @@ static gboolean _history_copy_and_paste_on_image_merge(const dt_imgid_t imgid,
   }
   else
   {
-    dt_print(DT_DEBUG_IOPORDER, "[history_copy_and_paste_on_image_merge] all modules\n");
+    dt_print(DT_DEBUG_IOPORDER, "[history_copy_and_paste_on_image_merge] all modules");
     // we will copy all modules
     for(GList *modules_src = dev_src->iop;
         modules_src;
         modules_src = g_list_next(modules_src))
     {
-      dt_iop_module_t *mod_src = (dt_iop_module_t *)(modules_src->data);
+      dt_iop_module_t *mod_src = modules_src->data;
 
       // copy from history only if
       if((_search_history_by_module(dev_src, mod_src) != NULL)
@@ -710,7 +712,7 @@ static gboolean _history_copy_and_paste_on_image_merge(const dt_imgid_t imgid,
 
   for(GList *l = mod_list; l; l = g_list_next(l))
   {
-    dt_iop_module_t *mod = (dt_iop_module_t *)l->data;
+    dt_iop_module_t *mod = l->data;
     const gboolean autoinit = GPOINTER_TO_INT(ai->data);
 
     dt_history_merge_module_into_history
@@ -782,14 +784,14 @@ static gboolean _history_copy_and_paste_on_image_overwrite(const dt_imgid_t imgi
     {
       for(GList *modules = darktable.iop; modules; modules = g_list_next(modules))
       {
-        dt_iop_module_so_t *module = (dt_iop_module_so_t *)modules->data;
+        dt_iop_module_so_t *module = modules->data;
 
         if(dt_history_module_skip_copy(module->flags()))
         {
           if(skip_modules)
-            skip_modules = dt_util_dstrcat(skip_modules, ",");
+            dt_util_str_cat(&skip_modules, ",");
 
-          skip_modules = dt_util_dstrcat(skip_modules, "'%s'", module->op);
+          dt_util_str_cat(&skip_modules, "'%s'", module->op);
         }
       }
     }
@@ -971,6 +973,9 @@ gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
                  dt_history_snapshot_undo_lt_history_data_free);
   dt_undo_end_group(darktable.undo);
 
+  /* add possibly new overlay module reference */
+  dt_overlay_add_from_history(dest_imgid);
+
   /* attach changed tag reflecting actual change */
   guint tagid = 0;
   dt_tag_new("darktable|changed", &tagid);
@@ -1000,8 +1005,7 @@ gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
     dt_image_synch_xmp(dest_imgid);
 
   // signal that the mipmap need to be updated
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, dest_imgid);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, dest_imgid);
 
   dt_unlock_image_pair(imgid, dest_imgid);
 
@@ -1047,7 +1051,7 @@ GList *dt_history_get_items(const dt_imgid_t imgid,
      " FROM main.history"
      " WHERE imgid=?1"
      "   AND enabled in (1, ?2)"
-     " GROUP BY num, operation, multi_priority"
+     " GROUP BY operation || multi_name, multi_priority"
      " ORDER BY %s DESC, %s DESC",
      multi_priority_order ? "multi_priority" : "num",
      multi_priority_order ? "num" : "multi_priority");
@@ -1234,7 +1238,8 @@ void dt_history_compress_on_image(const dt_imgid_t imgid)
 
   // delete all mask_manager entries
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-    "DELETE FROM main.history WHERE imgid = ?1 AND operation = ?2", -1, &stmt, NULL);
+    "DELETE FROM main.history"
+    " WHERE imgid = ?1 AND operation = ?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
   sqlite3_step(stmt);
@@ -1265,7 +1270,8 @@ void dt_history_compress_on_image(const dt_imgid_t imgid)
 
   if(masks_count > 0)
   {
-    // Set num in masks history to make sure they are owned by the manager at slot 0.
+    // Set num in masks history to make sure they are owned by the
+    // manager at slot 0.
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
       "UPDATE main.masks_history SET num = 0 WHERE imgid = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -1311,8 +1317,7 @@ void dt_history_compress_on_image(const dt_imgid_t imgid)
 
   dt_database_release_transaction(darktable.db);
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
 }
 
 /* Please note: dt_history_truncate_on_image
@@ -1367,8 +1372,7 @@ void dt_history_truncate_on_image(const dt_imgid_t imgid,
 
   dt_database_release_transaction(darktable.db);
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,
-                                DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
 }
 
 gboolean dt_history_compress(const dt_imgid_t imgid)
@@ -1404,7 +1408,7 @@ gboolean dt_history_compress(const dt_imgid_t imgid)
 
     if((size>0) && (max>0))
     {
-      for(int index=0;index<(max+1);index++)
+      for(int index = 0;index < (max+1); index++)
       {
         sqlite3_stmt *stmt3;
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1472,7 +1476,7 @@ gboolean dt_history_check_module_exists_list(GList *hist,
 {
   for(GList *h = hist; h; h = g_list_next(h))
   {
-    const dt_history_item_t *item = (dt_history_item_t *)(h->data);
+    const dt_history_item_t *item = h->data;
 
     if(!g_strcmp0(item->op, operation) && (item->enabled || !enabled))
       return TRUE;
@@ -1486,10 +1490,9 @@ GList *dt_history_duplicate(GList *hist)
 
   for(GList *h = hist; h; h = g_list_next(h))
   {
-    const dt_dev_history_item_t *old = (dt_dev_history_item_t *)(h->data);
+    const dt_dev_history_item_t *old = h->data;
 
-    dt_dev_history_item_t *new =
-      (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
+    dt_dev_history_item_t *new = malloc(sizeof(dt_dev_history_item_t));
 
     memcpy(new, old, sizeof(dt_dev_history_item_t));
 
@@ -1516,11 +1519,13 @@ GList *dt_history_duplicate(GList *hist)
     if(params_size > 0)
     {
       new->params = malloc(params_size);
-      memcpy(new->params, old->params, params_size);
+      if(new->params)
+        memcpy(new->params, old->params, params_size);
     }
 
     new->blend_params = malloc(sizeof(dt_develop_blend_params_t));
-    memcpy(new->blend_params, old->blend_params, sizeof(dt_develop_blend_params_t));
+    if(new->blend_params)
+      memcpy(new->blend_params, old->blend_params, sizeof(dt_develop_blend_params_t));
 
     if(old->forms)
       new->forms = dt_masks_dup_forms_deep(old->forms, NULL);
@@ -1647,15 +1652,15 @@ void dt_history_hash_write_from_history(const dt_imgid_t imgid,
     }
     if(type & DT_HISTORY_HASH_AUTO)
     {
-      fields = dt_util_dstrcat(fields, "%s,", "auto_hash");
-      values = dt_util_dstrcat(values, "?2,");
-      conflict = dt_util_dstrcat(conflict, "auto_hash=?2,");
+      dt_util_str_cat(&fields, "%s,", "auto_hash");
+      dt_util_str_cat(&values, "?2,");
+      dt_util_str_cat(&conflict, "auto_hash=?2,");
     }
     if(type & DT_HISTORY_HASH_CURRENT)
     {
-      fields = dt_util_dstrcat(fields, "%s,", "current_hash");
-      values = dt_util_dstrcat(values, "?2,");
-      conflict = dt_util_dstrcat(conflict, "current_hash=?2,");
+      dt_util_str_cat(&fields, "%s,", "current_hash");
+      dt_util_str_cat(&values, "?2,");
+      dt_util_str_cat(&conflict, "current_hash=?2,");
     }
     // remove the useless last comma
     if(fields) fields[strlen(fields) - 1] = '\0';
@@ -1882,7 +1887,9 @@ gboolean dt_history_copy_parts(const dt_imgid_t imgid)
     return FALSE;
 }
 
-gboolean dt_history_paste(const dt_imgid_t imgid, const gboolean merge, const gboolean sync)
+gboolean dt_history_paste(const dt_imgid_t imgid,
+                          const gboolean merge,
+                          const gboolean sync)
 {
   gboolean res =
     dt_history_copy_and_paste_on_image(darktable.view_manager->copy_paste.copied_imageid,
@@ -1895,7 +1902,8 @@ gboolean dt_history_paste(const dt_imgid_t imgid, const gboolean merge, const gb
   return !sync && res;
 }
 
-gboolean dt_history_delete(const dt_imgid_t imgid, const gboolean undo)
+gboolean dt_history_delete(const dt_imgid_t imgid,
+                           const gboolean undo)
 {
   if(undo)
   {

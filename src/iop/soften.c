@@ -97,7 +97,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("create a softened image using the Orton effect"),
                                       _("creative"),
@@ -106,7 +106,7 @@ const char **description(struct dt_iop_module_t *self)
                                       _("linear, RGB, display-referred"));
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_soften_data_t *const d = (const dt_iop_soften_data_t *const)piece->data;
@@ -147,11 +147,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_soften_data_t *d = (dt_iop_soften_data_t *)piece->data;
-  dt_iop_soften_global_data_t *gd = (dt_iop_soften_global_data_t *)self->global_data;
+  dt_iop_soften_data_t *d = piece->data;
+  dt_iop_soften_global_data_t *gd = self->global_data;
 
   cl_mem dev_tmp = NULL;
   cl_mem dev_m = NULL;
@@ -269,11 +269,11 @@ error:
 }
 #endif
 
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
-  dt_iop_soften_data_t *d = (dt_iop_soften_data_t *)piece->data;
+  dt_iop_soften_data_t *d = piece->data;
 
   const float w = piece->iwidth * piece->iscale;
   const float h = piece->iheight * piece->iscale;
@@ -297,35 +297,33 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   return;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 9; // soften.cl, from programs.conf
-  dt_iop_soften_global_data_t *gd
-      = (dt_iop_soften_global_data_t *)malloc(sizeof(dt_iop_soften_global_data_t));
-  module->data = gd;
+  dt_iop_soften_global_data_t *gd = malloc(sizeof(dt_iop_soften_global_data_t));
+  self->data = gd;
   gd->kernel_soften_overexposed = dt_opencl_create_kernel(program, "soften_overexposed");
   gd->kernel_soften_hblur = dt_opencl_create_kernel(program, "soften_hblur");
   gd->kernel_soften_vblur = dt_opencl_create_kernel(program, "soften_vblur");
   gd->kernel_soften_mix = dt_opencl_create_kernel(program, "soften_mix");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_soften_global_data_t *gd = (dt_iop_soften_global_data_t *)module->data;
+  dt_iop_soften_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_soften_overexposed);
   dt_opencl_free_kernel(gd->kernel_soften_hblur);
   dt_opencl_free_kernel(gd->kernel_soften_vblur);
   dt_opencl_free_kernel(gd->kernel_soften_mix);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
-
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_soften_params_t *p = (dt_iop_soften_params_t *)p1;
-  dt_iop_soften_data_t *d = (dt_iop_soften_data_t *)piece->data;
+  dt_iop_soften_data_t *d = piece->data;
 
   d->size = p->size;
   d->saturation = p->saturation;
@@ -333,18 +331,18 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->amount = p->amount;
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_soften_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_soften_gui_data_t *g = IOP_GUI_ALLOC(soften);
 

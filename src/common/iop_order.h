@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2023 darktable developers.
+    Copyright (C) 2018-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -137,8 +137,13 @@ typedef enum dt_iop_order_t
   DT_IOP_ORDER_LEGACY  = 1, // up to dt 2.6.3
   DT_IOP_ORDER_V30     = 2, // starts with dt 3.0
   DT_IOP_ORDER_V30_JPG = 3, // same as previous but tuned for non-linear input
-  DT_IOP_ORDER_LAST    = 4
+  DT_IOP_ORDER_V50     = 4, // starts with dt 5.0
+  DT_IOP_ORDER_V50_JPG = 5, // same as previous but tuned for non-linear input
+  DT_IOP_ORDER_LAST    = 6
 } dt_iop_order_t;
+
+#define DT_DEFAULT_IOP_ORDER_RAW DT_IOP_ORDER_V50
+#define DT_DEFAULT_IOP_ORDER_JPG DT_IOP_ORDER_V50_JPG
 
 typedef struct dt_iop_order_entry_t
 {
@@ -179,6 +184,10 @@ GList *dt_ioppr_get_iop_order_list(const dt_imgid_t imgid,
 /** return the iop-order list for the given version, this is used to
  * get the built-in lists */
 GList *dt_ioppr_get_iop_order_list_version(dt_iop_order_t version);
+
+/** free iop-order list returned by above functions */
+void dt_ioppr_iop_order_list_free(GList *iop_order_list);
+
 /** returns the dt_iop_order_entry_t of iop_order_list with operation = op_name */
 dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list,
                                                    const char *op_name,

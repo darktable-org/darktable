@@ -67,9 +67,8 @@ int position(const dt_lib_module_t *self)
   return 999;
 }
 
-static void create_callback(GtkButton *button, gpointer user_data)
+static void create_callback(GtkButton *button, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_session_t *lib = self->data;
 
   dt_conf_set_string("plugins/session/jobcode", gtk_entry_get_text(lib->gui.entry1));

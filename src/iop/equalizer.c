@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -113,15 +113,14 @@ const char *deprecated_msg()
 }
 
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const int chs = piece->colors;
   const int width = roi_in->width, height = roi_in->height;
   const float scale = roi_in->scale;
   dt_iop_image_copy_by_size(ovoid, ivoid, width, height, chs);
-  dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)(piece->data);
-  // dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
+  dt_iop_equalizer_data_t *d = piece->data;
 
   // 1 pixel in this buffer represents 1.0/scale pixels in original image:
   const float l1 = 1.0f + dt_log2f(piece->iscale / scale); // finest level
@@ -169,11 +168,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   free(tmp);
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   // pull in new params to pipe
-  dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)(piece->data);
+  dt_iop_equalizer_data_t *d = piece->data;
   dt_iop_equalizer_params_t *p = (dt_iop_equalizer_params_t *)p1;
 
   for(int ch = 0; ch < 3; ch++)
@@ -184,11 +183,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->num_levels = MIN(DT_IOP_EQUALIZER_MAX_LEVEL, l);
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // create part of the pixelpipe
-  dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)malloc(sizeof(dt_iop_equalizer_data_t));
-  const dt_iop_equalizer_params_t *const default_params = (dt_iop_equalizer_params_t *)self->default_params;
+  dt_iop_equalizer_data_t *d = malloc(sizeof(dt_iop_equalizer_data_t));
+  const dt_iop_equalizer_params_t *const default_params = self->default_params;
   piece->data = (void *)d;
   for(int ch = 0; ch < 3; ch++)
   {
@@ -202,29 +201,29 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
   d->num_levels = MIN(DT_IOP_EQUALIZER_MAX_LEVEL, l);
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
 // clean up everything again.
-  dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)(piece->data);
+  dt_iop_equalizer_data_t *d = piece->data;
   for(int ch = 0; ch < 3; ch++) dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
   // nothing to do, gui curve is read directly from params during expose event.
   // gtk_widget_queue_draw(self->widget);
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  module->params = calloc(1, sizeof(dt_iop_equalizer_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_equalizer_params_t));
-  module->default_enabled = FALSE; // we're a rather slow and rare op.
-  module->params_size = sizeof(dt_iop_equalizer_params_t);
-  module->gui_data = NULL;
-  dt_iop_equalizer_params_t *d = module->default_params;
+  self->params = calloc(1, sizeof(dt_iop_equalizer_params_t));
+  self->default_params = calloc(1, sizeof(dt_iop_equalizer_params_t));
+  self->default_enabled = FALSE; // we're a rather slow and rare op.
+  self->params_size = sizeof(dt_iop_equalizer_params_t);
+  self->gui_data = NULL;
+  dt_iop_equalizer_params_t *d = self->default_params;
   for(int ch = 0; ch < 3; ch++)
   {
     for(int k = 0; k < DT_IOP_EQUALIZER_BANDS; k++)
@@ -233,7 +232,7 @@ void init(dt_iop_module_t *module)
   }
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   IOP_GUI_ALLOC(equalizer);
 

@@ -164,7 +164,7 @@ const char *name()
   return _("chromatic aberrations");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("correct chromatic aberrations"),
                                       _("corrective"),
@@ -660,14 +660,14 @@ static void reduce_chromatic_aberrations(const float* const restrict in,
   reduce_artifacts(in, width, height, sigma, guide, safety, out);
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // ivoid has been copied to ovoid and the module's trouble flag has been set
 
-  dt_iop_cacorrectrgb_params_t *d = (dt_iop_cacorrectrgb_params_t *)piece->data;
+  dt_iop_cacorrectrgb_params_t *d = piece->data;
   // used to adjuste blur level depending on size. Don't amplify noise if magnified > 100%
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
   const int ch = piece->colors;
@@ -686,15 +686,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_cacorrectrgb_gui_data_t *g = (dt_iop_cacorrectrgb_gui_data_t *)self->gui_data;
-  dt_iop_cacorrectrgb_params_t *p = (dt_iop_cacorrectrgb_params_t *)self->params;
+  dt_iop_cacorrectrgb_gui_data_t *g = self->gui_data;
+  dt_iop_cacorrectrgb_params_t *p = self->params;
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->refine_manifolds), p->refine_manifolds);
 }
 
-void reload_defaults(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_cacorrectrgb_params_t *d = (dt_iop_cacorrectrgb_params_t *)module->default_params;
+  dt_iop_cacorrectrgb_params_t *d = self->default_params;
 
   d->guide_channel = DT_CACORRECT_RGB_G;
   d->radius = 5.0f;
@@ -702,7 +702,7 @@ void reload_defaults(dt_iop_module_t *module)
   d->mode = DT_CACORRECT_MODE_STANDARD;
   d->refine_manifolds = FALSE;
 
-  dt_iop_cacorrectrgb_gui_data_t *g = (dt_iop_cacorrectrgb_gui_data_t *)module->gui_data;
+  dt_iop_cacorrectrgb_gui_data_t *g = self->gui_data;
   if(g)
   {
     dt_bauhaus_combobox_set_default(g->guide_channel, d->guide_channel);

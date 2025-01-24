@@ -61,11 +61,16 @@ int dt_apply_printer_profile(void **in, uint32_t width, uint32_t height, int bpp
 
   if(!hTransform)
   {
-    dt_print(DT_DEBUG_ALWAYS, "error printer profile may be corrupted\n");
+    dt_print(DT_DEBUG_ALWAYS, "error printer profile may be corrupted");
     return 1;
   }
 
-  void *out = (void *)malloc((size_t)3 * width * height);
+  void *out = malloc((size_t)3 * width * height);
+  if(!out)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "unable to allocate buffer for printer-proofed image");
+    return 1;
+  }
 
   if(bpp == 8)
   {

@@ -412,6 +412,8 @@ static void _edit_preset_response(GtkDialog *dialog,
     sqlite3_finalize(stmt);
 
     if(g->callback) ((void (*)(dt_gui_presets_edit_dialog_t *))g->callback)(g);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_PRESETS_CHANGED,
+                            g_strdup(g->operation));
   }
   else if(response_id == GTK_RESPONSE_YES && g->old_id)
   {
@@ -913,8 +915,7 @@ void dt_gui_presets_show_iop_edit_dialog(const char *name_in,
                                          const gboolean allow_remove,
                                          GtkWindow *parent)
 {
-  dt_gui_presets_edit_dialog_t *g
-      = (dt_gui_presets_edit_dialog_t *)g_malloc0(sizeof(dt_gui_presets_edit_dialog_t));
+  dt_gui_presets_edit_dialog_t *g = g_malloc0(sizeof(dt_gui_presets_edit_dialog_t));
   g->old_id = -1;
   g->original_name = g_strdup(name_in);
   g->iop = module;
@@ -946,8 +947,7 @@ void dt_gui_presets_show_edit_dialog(const char *name_in,
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    dt_gui_presets_edit_dialog_t *g
-        = (dt_gui_presets_edit_dialog_t *)g_malloc0(sizeof(dt_gui_presets_edit_dialog_t));
+    dt_gui_presets_edit_dialog_t *g = g_malloc0(sizeof(dt_gui_presets_edit_dialog_t));
     g->old_id = rowid;
     g->original_name = g_strdup(name_in);
     g->operation = g_strdup((char *)sqlite3_column_text(stmt, 0));
@@ -1255,19 +1255,28 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module, GtkWidget 
   return applied;
 }
 
+static guint _click_time = G_MAXUINT;
+
+static gboolean _menuitem_motion_preset(GtkMenuItem *menuitem,
+                                        GdkEventMotion *event,
+                                        dt_iop_module_t *module)
+{
+  if(!_click_time) _click_time = G_MAXUINT;
+
+  return FALSE;
+}
+
 static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
                                         GdkEventButton *event,
                                         dt_iop_module_t *module)
 {
-  static guint click_time = 0;
-  if(event->type == GDK_BUTTON_PRESS)
-    click_time = event->time;
+  gboolean long_click = dt_gui_long_click(event->time, _click_time);
 
   gchar *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
 
-  if(event->button == 1 || (module->flags() & IOP_FLAGS_ONE_INSTANCE))
+  if(event->button == 1)
   {
-    if(event->type == GDK_BUTTON_PRESS)
+    if(_click_time > event->time)
     {
       GtkContainer *menu = GTK_CONTAINER(gtk_widget_get_parent(GTK_WIDGET(menuitem)));
       for(GList *c = gtk_container_get_children(menu); c; c = g_list_delete_link(c, c))
@@ -1277,13 +1286,10 @@ static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
       dt_gui_presets_apply_preset(name, module);
     }
   }
-  else if(event->button == 3 && event->type == GDK_BUTTON_RELEASE)
+  else if(event->button == 3 && event->type == GDK_BUTTON_RELEASE && _click_time)
   {
-    if(dt_gui_long_click(event->time, click_time))
-    {
+    if(long_click || (module->flags() & IOP_FLAGS_ONE_INSTANCE))
       dt_shortcut_copy_lua((dt_action_t*)module, name);
-      return TRUE;
-    }
     else
     {
       dt_iop_module_t *new_module = dt_iop_gui_duplicate(module, FALSE);
@@ -1300,7 +1306,8 @@ static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
     dt_iop_connect_accels_multi(module->so);
   }
 
-  return dt_gui_long_click(event->time, click_time); // keep menu open on long click
+  _click_time = event->type == GDK_BUTTON_PRESS ? event->time : G_MAXUINT;
+  return long_click; // keep menu open on long click
 }
 
 // need to catch "activate" signal as well to handle keyboard
@@ -1320,12 +1327,15 @@ static void _menuitem_connect_preset(GtkWidget *mi,
 {
   g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
   g_object_set_data(G_OBJECT(mi), "dt-preset-module", iop);
+  dt_action_define(&iop->so->actions, "preset", name, mi, NULL);
   g_signal_connect(G_OBJECT(mi), "activate",
                    G_CALLBACK(_menuitem_activate_preset), iop);
   g_signal_connect(G_OBJECT(mi), "button-press-event",
                    G_CALLBACK(_menuitem_button_preset), iop);
   g_signal_connect(G_OBJECT(mi), "button-release-event",
                    G_CALLBACK(_menuitem_button_preset), iop);
+  g_signal_connect(G_OBJECT(mi), "motion-notify-event",
+                   G_CALLBACK(_menuitem_motion_preset), iop);
   gtk_widget_set_has_tooltip(mi, TRUE);
 }
 
@@ -1349,7 +1359,7 @@ static gboolean _menuitem_manage_quick_presets_traverse(GtkTreeModel *model,
 
   if(active && preset && iop_name)
   {
-    *txt = dt_util_dstrcat(*txt, "ꬹ%s|%sꬹ", iop_name, preset);
+    dt_util_str_cat(&*txt, "ꬹ%s|%sꬹ", iop_name, preset);
   }
   g_free(iop_name);
   g_free(preset);
@@ -1457,7 +1467,7 @@ static void _menuitem_manage_quick_presets(GtkMenuItem *menuitem,
 
   for(const GList *modules = m2; modules; modules = g_list_next(modules))
   {
-    dt_iop_module_so_t *iop = (dt_iop_module_so_t *)modules->data;
+    dt_iop_module_so_t *iop = modules->data;
     GtkTreeIter toplevel, child;
 
     /* check if module is visible in current layout */
@@ -1549,7 +1559,7 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w)
       modules;
       modules = g_list_previous(modules))
   {
-    dt_iop_module_t *iop = (dt_iop_module_t *)modules->data;
+    dt_iop_module_t *iop = modules->data;
 
     // check if module is visible in current layout
     if(dt_dev_modulegroups_is_visible(darktable.develop, iop->so->op))
@@ -1568,7 +1578,7 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w)
           gchar *key = g_strdup_printf("plugins/darkroom/%s/favorite", iop->so->op);
           const gboolean fav = dt_conf_get_bool(key);
           g_free(key);
-          if(fav) config = dt_util_dstrcat(config, "ꬹ%s|%sꬹ", iop->so->op, name);
+          if(fav) dt_util_str_cat(&config, "ꬹ%s|%sꬹ", iop->so->op, name);
         }
 
         // check that this preset is in the config list
@@ -1823,6 +1833,8 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
     // the specific parameters
     if(module->set_preferences) module->set_preferences(GTK_MENU_SHELL(menu), module);
   }
+
+  _click_time = 0;
 
   return menu;
 }

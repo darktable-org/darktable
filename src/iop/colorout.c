@@ -82,7 +82,7 @@ const char *name()
 }
 
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("convert pipeline reference RGB to any display RGB\n"
                                         "using color profiles to remap RGB values"),
@@ -124,12 +124,12 @@ dt_iop_colorspace_type_t output_colorspace(dt_iop_module_t *self,
   int cst = IOP_CS_RGB;
   if(piece)
   {
-    const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
+    const dt_iop_colorout_data_t *const d = piece->data;
     if(d->type == DT_COLORSPACE_LAB) cst = IOP_CS_LAB;
   }
   else
   {
-    dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
+    dt_iop_colorout_params_t *p = self->params;
     if(p->type == DT_COLORSPACE_LAB) cst = IOP_CS_LAB;
   }
   return cst;
@@ -173,8 +173,7 @@ int legacy_params(dt_iop_module_t *self,
 
 
     const dt_iop_colorout_params_v3_t *o = (dt_iop_colorout_params_v3_t *)old_params;
-    dt_iop_colorout_params_v5_t *n =
-      (dt_iop_colorout_params_v5_t *)malloc(sizeof(dt_iop_colorout_params_v5_t));
+    dt_iop_colorout_params_v5_t *n = malloc(sizeof(dt_iop_colorout_params_v5_t));
     memset(n, 0, sizeof(dt_iop_colorout_params_v5_t));
 
     if(!strcmp(o->iccprofile, "sRGB"))
@@ -212,8 +211,7 @@ int legacy_params(dt_iop_module_t *self,
 
 
     const dt_iop_colorout_params_v4_t *o = (dt_iop_colorout_params_v4_t *)old_params;
-    dt_iop_colorout_params_v5_t *n =
-      (dt_iop_colorout_params_v5_t *)malloc(sizeof(dt_iop_colorout_params_v5_t));
+    dt_iop_colorout_params_v5_t *n = malloc(sizeof(dt_iop_colorout_params_v5_t));
     memset(n, 0, sizeof(dt_iop_colorout_params_v5_t));
 
     n->type = o->type;
@@ -230,61 +228,58 @@ int legacy_params(dt_iop_module_t *self,
 #undef DT_IOP_COLOR_ICC_LEN_V4
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // basic.cl, from programs.conf
-  dt_iop_colorout_global_data_t *gd
-      = (dt_iop_colorout_global_data_t *)malloc(sizeof(dt_iop_colorout_global_data_t));
-  module->data = gd;
+  dt_iop_colorout_global_data_t *gd = malloc(sizeof(dt_iop_colorout_global_data_t));
+  self->data = gd;
   gd->kernel_colorout = dt_opencl_create_kernel(program, "colorout");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_colorout_global_data_t *gd = (dt_iop_colorout_global_data_t *)module->data;
+  dt_iop_colorout_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_colorout);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
-static void intent_changed(GtkWidget *widget, gpointer user_data)
+static void intent_changed(GtkWidget *widget, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
+  dt_iop_colorout_params_t *p = self->params;
   p->intent = (dt_iop_color_intent_t)dt_bauhaus_combobox_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void output_profile_changed(GtkWidget *widget, gpointer user_data)
+static void output_profile_changed(GtkWidget *widget, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
+  dt_iop_colorout_params_t *p = self->params;
   int pos = dt_bauhaus_combobox_get(widget);
 
   for(GList *profiles = darktable.color_profiles->profiles; profiles; profiles = g_list_next(profiles))
   {
-    dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)profiles->data;
+    dt_colorspaces_color_profile_t *pp = profiles->data;
     if(pp->out_pos == pos)
     {
       p->type = pp->type;
       g_strlcpy(p->filename, pp->filename, sizeof(p->filename));
       dt_dev_add_history_item(darktable.develop, self, TRUE);
 
-      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_EXPORT);
+      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_EXPORT);
       return;
     }
   }
 
   dt_print(DT_DEBUG_ALWAYS,
-           "[colorout] color profile %s seems to have disappeared!\n",
+           "[colorout] color profile %s seems to have disappeared!",
            dt_colorspaces_get_name(p->type, p->filename));
 }
 
-static void _signal_profile_changed(gpointer instance, gpointer user_data)
+static void _signal_profile_changed(gpointer instance, dt_iop_module_t *self)
 {
-  dt_develop_t *dev = (dt_develop_t *)user_data;
+  dt_develop_t *dev = self->dev;
   if(!dev->gui_attached || dev->gui_leaving) return;
   dt_dev_reprocess_center(dev);
 }
@@ -318,11 +313,11 @@ static float _lerp_lut(const float *const lut, const float v)
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
-  dt_iop_colorout_global_data_t *gd = (dt_iop_colorout_global_data_t *)self->global_data;
+  dt_iop_colorout_data_t *d = piece->data;
+  dt_iop_colorout_global_data_t *gd = self->global_data;
   cl_mem dev_m = NULL, dev_r = NULL, dev_g = NULL, dev_b = NULL, dev_coeffs = NULL;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
@@ -367,12 +362,12 @@ error:
 }
 #endif
 
-static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self,
+static void process_fastpath_apply_tonecurves(dt_iop_module_t *self,
                                               dt_dev_pixelpipe_iop_t *piece,
                                               void *const ovoid,
                                               const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
+  const dt_iop_colorout_data_t *const d = piece->data;
 
   if(dt_is_valid_colormatrix(d->cmatrix[0][0]))
   {
@@ -528,13 +523,13 @@ static void _transform_lcms(const dt_iop_colorout_data_t *const d,
   dt_omploop_sfence();
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return;
-  const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
+  const dt_iop_colorout_data_t *const d = piece->data;
   const size_t width = roi_out->width;
   const size_t height = roi_out->height;
   const size_t npixels = width * height;
@@ -555,11 +550,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)p1;
-  dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
+  dt_iop_colorout_data_t *d = piece->data;
 
   d->type = p->type;
 
@@ -656,7 +651,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                                         | DT_PROFILE_DIRECTION_DISPLAY2)
                  ->profile;
     dt_control_log(_("missing output profile has been replaced by sRGB!"));
-    dt_print(DT_DEBUG_ALWAYS, "missing output profile `%s' has been replaced by sRGB!\n",
+    dt_print(DT_DEBUG_ALWAYS, "missing output profile `%s' has been replaced by sRGB!",
              dt_colorspaces_get_name(out_type, out_filename));
   }
 
@@ -678,7 +673,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                                              | DT_PROFILE_DIRECTION_DISPLAY2)
                       ->profile;
       dt_control_log(_("missing softproof profile has been replaced by sRGB!"));
-      dt_print(DT_DEBUG_ALWAYS, "missing softproof profile `%s' has been replaced by sRGB!\n",
+      dt_print(DT_DEBUG_ALWAYS, "missing softproof profile `%s' has been replaced by sRGB!",
                dt_colorspaces_get_name(darktable.color_profiles->softproof_type,
                                        darktable.color_profiles->softproof_filename));
     }
@@ -722,7 +717,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   {
     dt_control_log(_("unsupported output profile has been replaced by sRGB!"));
     dt_print(DT_DEBUG_ALWAYS,
-             "unsupported output profile `%s' has been replaced by sRGB!\n",
+             "unsupported output profile `%s' has been replaced by sRGB!",
              out_profile->name);
     output = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_OUT)->profile;
 
@@ -767,16 +762,16 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, p->intent);
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_colorout_data_t));
-  dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
+  dt_iop_colorout_data_t *d = piece->data;
   d->xform = NULL;
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
+  dt_iop_colorout_data_t *d = piece->data;
   if(d->xform)
   {
     cmsDeleteTransform(d->xform);
@@ -787,16 +782,16 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
-  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
+  dt_iop_colorout_gui_data_t *g = self->gui_data;
+  dt_iop_colorout_params_t *p = self->params;
 
   dt_bauhaus_combobox_set(g->output_intent, (int)p->intent);
 
   for(GList *iter = darktable.color_profiles->profiles; iter; iter = g_list_next(iter))
   {
-    dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)iter->data;
+    dt_colorspaces_color_profile_t *pp = iter->data;
     if(pp->out_pos > -1 &&
        p->type == pp->type && (p->type != DT_COLORSPACE_FILE || !strcmp(p->filename, pp->filename)))
     {
@@ -807,22 +802,21 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->output_profile, 0);
   dt_print(DT_DEBUG_ALWAYS,
-           "[colorout] could not find requested profile `%s'!\n",
+           "[colorout] could not find requested profile `%s'!",
            dt_colorspaces_get_name(p->type, p->filename));
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
-  dt_iop_default_init(module);
+  dt_iop_default_init(self);
 
-  module->hide_enable_button = TRUE;
-  module->default_enabled = TRUE;
+  self->hide_enable_button = TRUE;
+  self->default_enabled = TRUE;
 }
 
-static void _preference_changed(gpointer instance, gpointer user_data)
+static void _preference_changed(gpointer instance, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
+  dt_iop_colorout_gui_data_t *g = self->gui_data;
 
   const gboolean force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
   if(force_lcms2)
@@ -837,7 +831,7 @@ static void _preference_changed(gpointer instance, gpointer user_data)
   }
 }
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   const gboolean force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
@@ -865,7 +859,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->output_profile, TRUE, TRUE, 0);
   for(GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
   {
-    dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)l->data;
+    dt_colorspaces_color_profile_t *prof = l->data;
     if(prof->out_pos > -1) dt_bauhaus_combobox_add(g->output_profile, prof->name);
   }
 
@@ -877,19 +871,9 @@ void gui_init(struct dt_iop_module_t *self)
                    G_CALLBACK(output_profile_changed), (gpointer)self);
 
   // reload the profiles when the display or softproof profile changed!
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED,
-                            G_CALLBACK(_signal_profile_changed), self->dev);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_CONTROL_PROFILE_CHANGED, _signal_profile_changed);
   // update the gui when the preferences changed (i.e. show intent when using lcms2)
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
-                            G_CALLBACK(_preference_changed), (gpointer)self);
-}
-
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_signal_profile_changed), self->dev);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_preference_changed), self);
-
-  IOP_GUI_FREE;
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PREFERENCES_CHANGE, _preference_changed);
 }
 
 // clang-format off

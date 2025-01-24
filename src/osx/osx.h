@@ -30,6 +30,7 @@ gboolean dt_osx_file_trash(const char *filename, GError **error);
 char* dt_osx_get_bundle_res_path();
 void dt_osx_prepare_environment();
 void dt_osx_focus_window();
+gboolean dt_osx_open_url(const char *url);
 
 #ifdef __cplusplus
 }

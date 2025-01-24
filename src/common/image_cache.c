@@ -33,7 +33,7 @@ static void _image_cache_allocate(void *data,
 {
   entry->cost = sizeof(dt_image_t);
 
-  dt_image_t *img = (dt_image_t *)g_malloc(sizeof(dt_image_t));
+  dt_image_t *img = g_malloc0(sizeof(dt_image_t));
   dt_image_init(img);
   entry->data = img;
   // load stuff from db and store in cache:
@@ -190,7 +190,7 @@ static void _image_cache_allocate(void *data,
   {
     img->id = NO_IMGID;
     dt_print(DT_DEBUG_ALWAYS,
-             "[image_cache_allocate] failed to open image %" PRIu32 " from database: %s\n",
+             "[image_cache_allocate] failed to open image %" PRIu32 " from database: %s",
              entry->key, sqlite3_errmsg(dt_database_get(darktable.db)));
   }
   sqlite3_finalize(stmt);
@@ -201,7 +201,7 @@ static void _image_cache_allocate(void *data,
 
 static void _image_cache_deallocate(void *data, dt_cache_entry_t *entry)
 {
-  dt_image_t *img = (dt_image_t *)entry->data;
+  dt_image_t *img = entry->data;
   g_free(img->profile);
   g_list_free_full(img->dng_gain_maps, g_free);
   g_free(img);
@@ -221,7 +221,7 @@ void dt_image_cache_init(dt_image_cache_t *cache)
   dt_cache_set_allocate_callback(&cache->cache, &_image_cache_allocate, cache);
   dt_cache_set_cleanup_callback(&cache->cache, &_image_cache_deallocate, cache);
 
-  dt_print(DT_DEBUG_CACHE, "[image_cache] has %d entries\n", num);
+  dt_print(DT_DEBUG_CACHE, "[image_cache] has %d entries", num);
 }
 
 void dt_image_cache_cleanup(dt_image_cache_t *cache)
@@ -232,7 +232,7 @@ void dt_image_cache_cleanup(dt_image_cache_t *cache)
 void dt_image_cache_print(dt_image_cache_t *cache)
 {
   dt_print(DT_DEBUG_ALWAYS,
-           "[image cache] fill %.2f/%.2f MB (%.2f%%)\n",
+           "[image cache] fill %.2f/%.2f MB (%.2f%%)",
            cache->cache.cost / (1024.0 * 1024.0),
            cache->cache.cost_quota / (1024.0 * 1024.0),
            (float)cache->cache.cost / (float)cache->cache.cost_quota);
@@ -242,10 +242,14 @@ dt_image_t *dt_image_cache_get(dt_image_cache_t *cache,
                                const dt_imgid_t imgid,
                                const char mode)
 {
-  if(!dt_is_valid_imgid(imgid)) return NULL;
+  if(!dt_is_valid_imgid(imgid))
+  {
+    dt_print(DT_DEBUG_CACHE, "[dt_image_cache_get] failed as not a valid imgid=%d", imgid);
+    return NULL;
+  }
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, mode);
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
-  dt_image_t *img = (dt_image_t *)entry->data;
+  dt_image_t *img = entry->data;
   img->cache_entry = entry;
   return img;
 }
@@ -254,11 +258,20 @@ dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache,
                                    const dt_imgid_t imgid,
                                    const char mode)
 {
-  if(!dt_is_valid_imgid(imgid)) return NULL;
+  if(!dt_is_valid_imgid(imgid))
+  {
+    dt_print(DT_DEBUG_CACHE, "[dt_image_cache_testget] failed as not a valid imgid=%d", imgid);
+    return NULL;
+  }
   dt_cache_entry_t *entry = dt_cache_testget(&cache->cache, imgid, mode);
-  if(!entry) return 0;
+  if(!entry)
+  {
+    dt_print(DT_DEBUG_CACHE, "[dt_image_cache_testget] for imgid=%d failed in dt_cache_testget", imgid);
+    return NULL;
+  }
+
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
-  dt_image_t *img = (dt_image_t *)entry->data;
+  dt_image_t *img = entry->data;
   img->cache_entry = entry;
   return img;
 }
@@ -267,7 +280,7 @@ dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache,
 void dt_image_cache_read_release(dt_image_cache_t *cache,
                                  const dt_image_t *img)
 {
-  if(!img || img->id <= 0) return;
+  if(!img || !dt_is_valid_imgid(img->id)) return;
   // just force the dt_image_t struct to make sure it has been locked before.
   dt_cache_release(&cache->cache, img->cache_entry);
 }
@@ -282,24 +295,30 @@ void dt_image_cache_write_release_info(dt_image_cache_t *cache,
                                        const dt_image_cache_write_mode_t mode,
                                        const char *info)
 {
+  if(!img)  // nothing to release
+    return;
+
+  if(!dt_is_valid_imgid(img->id))
+  {
+    dt_cache_release(&cache->cache, img->cache_entry);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[image_cache_write_release] from `%s`. FATAL invalid image id %d",
+             info, img->id);
+    return;
+  }
+
   const double start = dt_get_debug_wtime();
   union {
       struct dt_image_raw_parameters_t s;
       uint32_t u;
   } flip;
+
   if(img->aspect_ratio < .0001)
   {
     if(img->orientation < ORIENTATION_SWAP_XY)
-      img->aspect_ratio = (float )img->width / (float )img->height;
+      img->aspect_ratio = (float )img->width / (float )(MAX(1, img->height));
     else
-      img->aspect_ratio = (float )img->height / (float )img->width;
-  }
-  if(!dt_is_valid_imgid(img->id))
-  {
-    dt_print(DT_DEBUG_ALWAYS,
-             "[image_cache_write_release] from `%s`. FATAL invalid image id %d\n",
-             info, img->id);
-    return;
+      img->aspect_ratio = (float )img->height / (float )(MAX(1, img->width));
   }
 
   sqlite3_stmt *stmt;
@@ -388,7 +407,7 @@ void dt_image_cache_write_release_info(dt_image_cache_t *cache,
   const int rc = sqlite3_step(stmt);
   if(rc != SQLITE_DONE)
     dt_print(DT_DEBUG_ALWAYS,
-             "[image_cache_write_release] from `%s' sqlite3 error %d (%s) for imgid %d\n",
+             "[image_cache_write_release] from `%s' sqlite3 error %d (%s) for imgid %d",
              info,
              rc,
              sqlite3_errmsg(dt_database_get(darktable.db)),
@@ -402,7 +421,7 @@ void dt_image_cache_write_release_info(dt_image_cache_t *cache,
     {
       const double spent = dt_get_debug_wtime() - start;
       dt_print(DT_DEBUG_CACHE,
-               "[image_cache_write_release] from `%s', imgid=%i took %.3fs\n",
+               "[image_cache_write_release] from `%s', imgid=%i took %.3fs",
                info, img->id, spent);
     }
   }
@@ -431,7 +450,7 @@ void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache,
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'w');
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
-  dt_image_t *img = (dt_image_t *)entry->data;
+  dt_image_t *img = entry->data;
   img->cache_entry = entry;
   img->change_timestamp = dt_datetime_now_to_gtimespan();
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
@@ -451,7 +470,7 @@ void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache,
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'w');
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
-  dt_image_t *img = (dt_image_t *)entry->data;
+  dt_image_t *img = entry->data;
   img->cache_entry = entry;
   img->change_timestamp = change_timestamp;
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
@@ -464,7 +483,7 @@ void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache,
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'w');
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
-  dt_image_t *img = (dt_image_t *)entry->data;
+  dt_image_t *img = entry->data;
   img->cache_entry = entry;
   img->change_timestamp = 0;
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
@@ -477,7 +496,7 @@ void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache,
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'w');
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
-  dt_image_t *img = (dt_image_t *)entry->data;
+  dt_image_t *img = entry->data;
   img->cache_entry = entry;
   img->export_timestamp = dt_datetime_now_to_gtimespan();
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);
@@ -490,7 +509,7 @@ void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache,
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'w');
   if(!entry) return;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
-  dt_image_t *img = (dt_image_t *)entry->data;
+  dt_image_t *img = entry->data;
   img->cache_entry = entry;
   img->print_timestamp = dt_datetime_now_to_gtimespan();
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_RELAXED);

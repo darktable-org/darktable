@@ -114,7 +114,7 @@ dt_gpx_t *dt_gpx_new(const gchar *filename)
 error:
   if(err)
   {
-    dt_print(DT_DEBUG_ALWAYS, "dt_gpx_new: %s\n", err->message);
+    dt_print(DT_DEBUG_ALWAYS, "dt_gpx_new: %s", err->message);
     dt_control_log("%s", err->message);
     g_error_free(err);
   }
@@ -140,7 +140,7 @@ void _track_pts_free(dt_gpx_track_point_t *trkpt)
   g_free(trkpt);
 }
 
-void dt_gpx_destroy(struct dt_gpx_t *gpx)
+void dt_gpx_destroy(dt_gpx_t *gpx)
 {
   g_assert(gpx != NULL);
 
@@ -150,7 +150,7 @@ void dt_gpx_destroy(struct dt_gpx_t *gpx)
   g_free(gpx);
 }
 
-gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_image_geoloc_t *geoloc)
+gboolean dt_gpx_get_location(dt_gpx_t *gpx, GDateTime *timestamp, dt_image_geoloc_t *geoloc)
 {
   g_assert(gpx != NULL);
 
@@ -159,7 +159,7 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
 
   for(GList *item = gpx->trkpts; item; item = g_list_next(item))
   {
-    dt_gpx_track_point_t *tp = (dt_gpx_track_point_t *)item->data;
+    dt_gpx_track_point_t *tp = item->data;
 
     /* if timestamp is out of time range return false but fill
        closest location value start or end point */
@@ -172,7 +172,7 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
       return FALSE;
     }
 
-    dt_gpx_track_point_t *tp_next = (dt_gpx_track_point_t *)item->next->data;
+    dt_gpx_track_point_t *tp_next = item->next->data;
     /* check if timestamp is within current and next trackpoint */
     const gint cmp_n = g_date_time_compare(timestamp, tp_next->time);
     if(item->next && cmp_n <= 0)
@@ -286,7 +286,7 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx, const gchar *element_na
     if(gpx->current_track_point)
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "broken GPX file, new trkpt element before the previous ended.\n");
+               "broken GPX file, new trkpt element before the previous ended.");
       g_free(gpx->current_track_point);
       _gpx_parse_error(error);
       return;
@@ -323,7 +323,7 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx, const gchar *element_na
       if(isnan(gpx->current_track_point->longitude) || isnan(gpx->current_track_point->latitude))
       {
         dt_print(DT_DEBUG_ALWAYS,
-                 "broken GPX file, failed to get lon/lat attribute values for trkpt\n");
+                 "broken GPX file, failed to get lon/lat attribute values for trkpt");
         gpx->invalid_track_point = TRUE;
         _gpx_parse_error(error);
         return;
@@ -332,7 +332,7 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx, const gchar *element_na
     else
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "broken GPX file, trkpt element doesn't have lon/lat attributes\n");
+               "broken GPX file, trkpt element doesn't have lon/lat attributes");
       _gpx_parse_error(error);
       return;
     }
@@ -370,7 +370,7 @@ end:
 
 element_error:
   dt_print(DT_DEBUG_ALWAYS,
-           "broken GPX file, element '%s' found outside of trkpt.\n", element_name);
+           "broken GPX file, element '%s' found outside of trkpt", element_name);
   _gpx_parse_error(error);
 }
 
@@ -411,7 +411,7 @@ void _gpx_parser_text(GMarkupParseContext *context, const gchar *text, gsize tex
                       GError **error)
 {
   g_return_if_fail(*error == NULL);
- 
+
   dt_gpx_t *gpx = (dt_gpx_t *)user_data;
 
   if(gpx->current_parser_element == GPX_PARSER_ELEMENT_NAME)
@@ -429,7 +429,7 @@ void _gpx_parser_text(GMarkupParseContext *context, const gchar *text, gsize tex
     {
       gpx->invalid_track_point = TRUE;
       dt_print(DT_DEBUG_ALWAYS,
-               "broken GPX file, failed to parse iso8601 time '%s' for trackpoint\n", text);
+               "broken GPX file, failed to parse iso8601 time '%s' for trackpoint", text);
       _gpx_parse_error(error);
       return;
     }
@@ -437,12 +437,12 @@ void _gpx_parser_text(GMarkupParseContext *context, const gchar *text, gsize tex
     if(!gpx->trksegs)
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "broken GPX file, no <trkseg> found\n");
+               "broken GPX file, no <trkseg> found");
       _gpx_parse_error(error);
       return;
     }
 
-    dt_gpx_track_segment_t *ts = (dt_gpx_track_segment_t *)gpx->trksegs->data;
+    dt_gpx_track_segment_t *ts = gpx->trksegs->data;
     if(ts)
     {
       ts->nb_trkpt++;
@@ -464,20 +464,20 @@ GList *dt_gpx_get_trkseg(struct dt_gpx_t *gpx)
                       : NULL;
 }
 
-GList *dt_gpx_get_trkpts(struct dt_gpx_t *gpx, const guint segid)
+GList *dt_gpx_get_trkpts(dt_gpx_t *gpx, const guint segid)
 {
   if(gpx == NULL)
     return NULL;
-    
+
   GList *pts = NULL;
   GList *ts = g_list_nth(gpx->trksegs, segid);
   if(!ts) return pts;
-  dt_gpx_track_segment_t *tsd = (dt_gpx_track_segment_t *)ts->data;
+  dt_gpx_track_segment_t *tsd = ts->data;
   GList *tps = g_list_find(gpx->trkpts, tsd->trkpt);
   if(!tps) return pts;
   for(GList *tp = tps; tp; tp = g_list_next(tp))
   {
-    dt_gpx_track_point_t *tpd = (dt_gpx_track_point_t *)tp->data;
+    dt_gpx_track_point_t *tpd = tp->data;
     if(tpd->segid != segid) return pts;
     dt_geo_map_display_point_t *p = g_malloc0(sizeof(dt_geo_map_display_point_t));
     p->lat = tpd->latitude;

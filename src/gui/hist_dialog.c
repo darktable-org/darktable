@@ -320,17 +320,15 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
 
     for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
     {
-      const dt_history_item_t *item = (dt_history_item_t *)items_iter->data;
+      const dt_history_item_t *item = items_iter->data;
       const int flags = dt_iop_get_module_flags(item->op);
 
       if(!(flags & IOP_FLAGS_HIDDEN))
       {
-        const gboolean is_safe = !dt_history_module_skip_copy(flags);
-
         gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
         gtk_list_store_set
           (GTK_LIST_STORE(liststore), &iter,
-           DT_HIST_ITEMS_COL_ENABLED, iscopy ? is_safe : _gui_is_set(d->selops, item->num),
+           DT_HIST_ITEMS_COL_ENABLED, iscopy ? FALSE : _gui_is_set(d->selops, item->num),
            DT_HIST_ITEMS_COL_AUTOINIT, FALSE,
            DT_HIST_ITEMS_COL_ISACTIVE, item->enabled ? is_active_pb : is_inactive_pb,
            DT_HIST_ITEMS_COL_NAME, item->name,
@@ -349,7 +347,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
                                     dt_iop_order_string(order));
       gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
       gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
-                         DT_HIST_ITEMS_COL_ENABLED, TRUE,
+                         DT_HIST_ITEMS_COL_ENABLED, d->copy_iop_order,
                          DT_HIST_ITEMS_COL_ISACTIVE, is_active_pb,
                          DT_HIST_ITEMS_COL_NAME, label,
                          DT_HIST_ITEMS_COL_NUM, -1,

@@ -86,7 +86,7 @@ static gchar *char2qstring(const gchar *in, gsize *size)
 
   if(error)
   {
-    dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_kwallet] ERROR: error converting string: %s\n", error->message);
+    dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_kwallet] ERROR: error converting string: %s", error->message);
     g_free(out);
     g_error_free(error);
     return NULL;
@@ -115,7 +115,7 @@ static gboolean check_error(GError *error)
 {
   if(error)
   {
-    dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_kwallet] ERROR: failed to complete kwallet call: %s\n",
+    dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_kwallet] ERROR: failed to complete kwallet call: %s",
              error->message);
     g_error_free(error);
     return TRUE;
@@ -161,7 +161,7 @@ static gboolean start_kwallet(backend_kwallet_context_t *context)
 
   if(error_string && error_string[0] != '\0')
   {
-    dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_kwallet] ERROR: error launching kwalletd: %s\n", error_string);
+    dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_kwallet] ERROR: error launching kwalletd: %s", error_string);
     g_free(error_string);
     return FALSE;
   }
@@ -369,7 +369,7 @@ gboolean dt_pwstorage_kwallet_set(const backend_kwallet_context_t *context, cons
 
   while(g_hash_table_iter_next(&iter, &key, &value))
   {
-    dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_kwallet_set] storing (%s, %s)\n", (gchar *)key, (gchar *)value);
+    dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_kwallet_set] storing (%s, %s)", (gchar *)key, (gchar *)value);
     gsize length;
     gchar *new_key = char2qstring(key, &length);
     if(new_key == NULL)
@@ -425,7 +425,7 @@ gboolean dt_pwstorage_kwallet_set(const backend_kwallet_context_t *context, cons
   g_variant_unref(ret);
 
   if(return_code != 0)
-    dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_kwallet_set] Warning: bad return code %d from kwallet\n",
+    dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_kwallet_set] Warning: bad return code %d from kwallet",
              return_code);
 
   return return_code == 0;
@@ -438,7 +438,7 @@ static gchar *array2string(const gchar *pos, guint *length)
   pos += sizeof(gint);
   guint j;
 
-  gunichar2 *tmp_string = (gunichar2 *)malloc(*length);
+  gunichar2 *tmp_string = malloc(*length);
   memcpy(tmp_string, pos, *length);
 
   for(j = 0; j < ((*length) / sizeof(gunichar2)); j++)
@@ -454,7 +454,7 @@ static gchar *array2string(const gchar *pos, guint *length)
 
   if(error)
   {
-    dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_kwallet] ERROR: Error converting string: %s\n", error->message);
+    dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_kwallet] ERROR: Error converting string: %s", error->message);
     g_error_free(error);
     return NULL;
   }
@@ -556,7 +556,7 @@ GHashTable *dt_pwstorage_kwallet_get(const backend_kwallet_context_t *context, c
 
     byte_array += length;
 
-    dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_kwallet_get] reading (%s, %s)\n", (gchar *)key, (gchar *)value);
+    dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_kwallet_get] reading (%s, %s)", (gchar *)key, (gchar *)value);
 
     g_hash_table_insert(table, key, value);
   }

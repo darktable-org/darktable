@@ -344,7 +344,7 @@ const char *aliases()
   return _("tone mapping|curve|view transform|contrast|saturation|highlights");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("apply a view transform to prepare the scene-referred pipeline\n"
                                         "for display on SDR screens and paper prints\n"
@@ -378,7 +378,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 #endif
 
 inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_params_t *const p,
-                                                    struct dt_iop_filmic_rgb_spline_t *const spline);
+                                                    dt_iop_filmic_rgb_spline_t *const spline);
 
 // BEWARE: convert_to_spline_v3 supports up to v6 of params (see legacy_params)
 // convert parameters from spline v1 or v2 to spline v3
@@ -505,8 +505,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_filmicrgb_params_v1_t;
 
     const dt_iop_filmicrgb_params_v1_t *o = (dt_iop_filmicrgb_params_v1_t *)old_params;
-    dt_iop_filmicrgb_params_v6_t *n =
-      (dt_iop_filmicrgb_params_v6_t *)malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
+    dt_iop_filmicrgb_params_v6_t *n = malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
 
     n->grey_point_source = o->grey_point_source;
     n->white_point_source = o->white_point_source;
@@ -577,8 +576,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_filmicrgb_params_v2_t;
 
     const dt_iop_filmicrgb_params_v2_t *o = (dt_iop_filmicrgb_params_v2_t *)old_params;
-    dt_iop_filmicrgb_params_v6_t *n =
-      (dt_iop_filmicrgb_params_v6_t *)malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
+    dt_iop_filmicrgb_params_v6_t *n = malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
 
     n->grey_point_source = o->grey_point_source;
     n->white_point_source = o->white_point_source;
@@ -658,8 +656,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_filmicrgb_params_v3_t;
 
     const dt_iop_filmicrgb_params_v3_t *o = (dt_iop_filmicrgb_params_v3_t *)old_params;
-    dt_iop_filmicrgb_params_v6_t *n =
-      (dt_iop_filmicrgb_params_v6_t *)malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
+    dt_iop_filmicrgb_params_v6_t *n = malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
 
     n->grey_point_source = o->grey_point_source;
     n->white_point_source = o->white_point_source;
@@ -732,8 +729,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_filmicrgb_params_v4_t;
 
     const dt_iop_filmicrgb_params_v4_t *o = (dt_iop_filmicrgb_params_v4_t *)old_params;
-    dt_iop_filmicrgb_params_v6_t *n =
-      (dt_iop_filmicrgb_params_v6_t *)malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
+    dt_iop_filmicrgb_params_v6_t *n = malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
 
     memcpy(n, o, sizeof(dt_iop_filmicrgb_params_v4_t));
     // structure didn't change except the enum instead of gint for internal_version
@@ -796,8 +792,7 @@ int legacy_params(dt_iop_module_t *self,
     } dt_iop_filmicrgb_params_v5_t;
 
     const dt_iop_filmicrgb_params_v5_t *o = (dt_iop_filmicrgb_params_v5_t *)old_params;
-    dt_iop_filmicrgb_params_v6_t *n =
-      (dt_iop_filmicrgb_params_v6_t *)malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
+    dt_iop_filmicrgb_params_v6_t *n = malloc(sizeof(dt_iop_filmicrgb_params_v6_t));
 
     // Copy over the old parameters
     n->grey_point_source = o->grey_point_source;
@@ -2074,13 +2069,13 @@ static inline void restore_ratios(float *const restrict ratios,
   }
 }
 
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
   const int scales = get_scales(roi_in, piece);
   const int max_filter_radius = (1 << scales);
-  const dt_iop_filmicrgb_data_t *const data = (dt_iop_filmicrgb_data_t *)piece->data;
+  const dt_iop_filmicrgb_data_t *const data = piece->data;
   const gboolean run_fast = !data->enable_highlight_reconstruction || piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
   // without reconstruction: in + out + 1ch_mask
@@ -2110,7 +2105,7 @@ void process(dt_iop_module_t *self,
                                         ivoid, ovoid, roi_in, roi_out))
     return;
 
-  const dt_iop_filmicrgb_data_t *const data = (dt_iop_filmicrgb_data_t *)piece->data;
+  const dt_iop_filmicrgb_data_t *const data = piece->data;
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
   const dt_iop_order_iccprofile_info_t *const export_profile = dt_ioppr_get_pipe_output_profile_info(piece->pipe);
 
@@ -2137,7 +2132,7 @@ void process(dt_iop_module_t *self,
   // display mask and exit
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) && mask)
   {
-    dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
+    dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
     if(g->show_mask)
     {
@@ -2371,14 +2366,14 @@ error:
 }
 
 
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_filmicrgb_data_t *const d = (dt_iop_filmicrgb_data_t *)piece->data;
-  dt_iop_filmicrgb_global_data_t *const gd = (dt_iop_filmicrgb_global_data_t *)self->global_data;
+  const dt_iop_filmicrgb_data_t *const d = piece->data;
+  dt_iop_filmicrgb_global_data_t *const gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
@@ -2472,7 +2467,7 @@ int process_cl(struct dt_iop_module_t *self,
   // display mask and exit
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
-    dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
+    dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
     if(g->show_mask)
     {
@@ -2591,12 +2586,23 @@ error:
 }
 #endif
 
+static inline void _compute_output_power(dt_iop_module_t *self,
+                                         dt_iop_filmicrgb_params_t *p)
+{
+  const float min = self->so->get_f("output_power")->Float.Min;
+  const float max = self->so->get_f("output_power")->Float.Max;
+
+  p->output_power =
+    CLAMPF(logf(p->grey_point_target / 100.0f)
+           / logf(-p->black_point_source / (p->white_point_source - p->black_point_source)),
+           min, max);
+}
 
 static void apply_auto_grey(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
-  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
+  dt_iop_filmicrgb_params_t *p = self->params;
+  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
   const dt_iop_order_iccprofile_info_t *const work_profile
       = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
@@ -2607,8 +2613,7 @@ static void apply_auto_grey(dt_iop_module_t *self)
   const float grey_var = log2f(prev_grey / p->grey_point_source);
   p->black_point_source = p->black_point_source - grey_var;
   p->white_point_source = p->white_point_source + grey_var;
-  p->output_power = logf(p->grey_point_target / 100.0f)
-                    / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
+  _compute_output_power(self, p);
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->grey_point_source, p->grey_point_source);
@@ -2624,8 +2629,8 @@ static void apply_auto_grey(dt_iop_module_t *self)
 static void apply_auto_black(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
-  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
+  dt_iop_filmicrgb_params_t *p = self->params;
+  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
   // Black
   const dt_iop_order_iccprofile_info_t *const work_profile
@@ -2636,8 +2641,7 @@ static void apply_auto_black(dt_iop_module_t *self)
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
   p->black_point_source = fmaxf(EVmin, -16.0f);
-  p->output_power = logf(p->grey_point_target / 100.0f)
-                    / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
+  _compute_output_power(self, p);
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->black_point_source, p->black_point_source);
@@ -2652,8 +2656,8 @@ static void apply_auto_black(dt_iop_module_t *self)
 static void apply_auto_white_point_source(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
-  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
+  dt_iop_filmicrgb_params_t *p = self->params;
+  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
   // White
   const dt_iop_order_iccprofile_info_t *const work_profile
@@ -2664,8 +2668,7 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
   EVmax *= (1.0f + p->security_factor / 100.0f);
 
   p->white_point_source = EVmax;
-  p->output_power = logf(p->grey_point_target / 100.0f)
-                    / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
+  _compute_output_power(self, p);
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->white_point_source, p->white_point_source);
@@ -2678,8 +2681,8 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
 
 static void apply_autotune(dt_iop_module_t *self)
 {
-  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
+  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
+  dt_iop_filmicrgb_params_t *p = self->params;
   const dt_iop_order_iccprofile_info_t *const work_profile
       = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
 
@@ -2702,8 +2705,7 @@ static void apply_autotune(dt_iop_module_t *self)
 
   p->black_point_source = fmaxf(EVmin, -16.0f);
   p->white_point_source = EVmax;
-  p->output_power = logf(p->grey_point_target / 100.0f)
-                    / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
+  _compute_output_power(self, p);
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->grey_point_source, p->grey_point_source);
@@ -2719,7 +2721,7 @@ static void apply_autotune(dt_iop_module_t *self)
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
+  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
   if(picker == g->grey_point_source)
     apply_auto_grey(self);
@@ -2731,11 +2733,10 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
     apply_autotune(self);
 }
 
-static void show_mask_callback(GtkToggleButton *button, GdkEventButton *event, gpointer user_data)
+static void show_mask_callback(GtkToggleButton *button, GdkEventButton *event, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
+  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
   ++darktable.gui->reset;
   g->show_mask = !(g->show_mask);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_highlight_mask), g->show_mask);
@@ -2749,7 +2750,7 @@ static void show_mask_callback(GtkToggleButton *button, GdkEventButton *event, g
 // returns true if contrast was clamped, false otherwise
 // used in GUI, to show user when contrast clamping is happening
 inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_params_t *const p,
-                                                    struct dt_iop_filmic_rgb_spline_t *const spline)
+                                                        dt_iop_filmic_rgb_spline_t *const spline)
 {
   float grey_display = 0.4638f;
   gboolean clamping = FALSE;
@@ -3051,7 +3052,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)p1;
-  dt_iop_filmicrgb_data_t *d = (dt_iop_filmicrgb_data_t *)piece->data;
+  dt_iop_filmicrgb_data_t *d = piece->data;
 
   // source and display greys
   float grey_source = 0.1845f, grey_display = 0.4638f;
@@ -3121,9 +3122,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->enable_highlight_reconstruction = p->enable_highlight_reconstruction;
 }
 
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
+void gui_focus(dt_iop_module_t *self, gboolean in)
 {
-  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
+  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
   if(!in)
   {
@@ -3148,8 +3149,8 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
+  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
+  dt_iop_filmicrgb_params_t *p = self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
 
@@ -3168,32 +3169,31 @@ void gui_update(dt_iop_module_t *self)
   gui_changed(self, NULL, NULL);
 }
 
-void reload_defaults(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_filmicrgb_params_t *d = module->default_params;
+  dt_iop_filmicrgb_params_t *d = self->default_params;
 
-  d->black_point_source = module->so->get_f("black_point_source")->Float.Default;
-  d->white_point_source = module->so->get_f("white_point_source")->Float.Default;
-  d->output_power = module->so->get_f("output_power")->Float.Default;
+  d->black_point_source = self->so->get_f("black_point_source")->Float.Default;
+  d->white_point_source = self->so->get_f("white_point_source")->Float.Default;
+  d->output_power = self->so->get_f("output_power")->Float.Default;
 
-  module->default_enabled = FALSE;
+  self->default_enabled = FALSE;
 
   const gboolean is_scene_referred = dt_is_scene_referred();
 
-  if(dt_image_is_matrix_correction_supported(&module->dev->image_storage)
+  if(dt_image_is_matrix_correction_supported(&self->dev->image_storage)
      && is_scene_referred)
   {
     // For scene-referred workflow, auto-enable and adjust based on exposure
     // TODO: fetch actual exposure in module, don't assume 1.
-    const float exposure = 0.7f - dt_image_get_exposure_bias(&module->dev->image_storage);
+    const float exposure = 0.7f - dt_image_get_exposure_bias(&self->dev->image_storage);
 
     // As global exposure increases, white exposure increases faster than black
     // this is probably because raw black/white points offsets the lower bound of the dynamic range to 0
     // so exposure compensation actually increases the dynamic range too (stretches only white).
     d->black_point_source += 0.5f * exposure;
     d->white_point_source += 0.8f * exposure;
-    d->output_power = logf(d->grey_point_target / 100.0f)
-                      / logf(-d->black_point_source / (d->white_point_source - d->black_point_source));
+    _compute_output_power(self, d);
   }
 }
 
@@ -3220,13 +3220,12 @@ void init_presets(dt_iop_module_so_t *self)
   }
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 22; // filmic.cl, from programs.conf
-  dt_iop_filmicrgb_global_data_t *gd
-      = (dt_iop_filmicrgb_global_data_t *)malloc(sizeof(dt_iop_filmicrgb_global_data_t));
+  dt_iop_filmicrgb_global_data_t *gd = malloc(sizeof(dt_iop_filmicrgb_global_data_t));
 
-  module->data = gd;
+  self->data = gd;
   gd->kernel_filmic_rgb_split = dt_opencl_create_kernel(program, "filmicrgb_split");
   gd->kernel_filmic_rgb_chroma = dt_opencl_create_kernel(program, "filmicrgb_chroma");
   gd->kernel_filmic_mask = dt_opencl_create_kernel(program, "filmic_mask_clipped_pixels");
@@ -3243,9 +3242,9 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_filmic_wavelets_detail = dt_opencl_create_kernel(wavelets, "wavelets_detail_level");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_filmicrgb_global_data_t *gd = (dt_iop_filmicrgb_global_data_t *)module->data;
+  dt_iop_filmicrgb_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_filmic_rgb_split);
   dt_opencl_free_kernel(gd->kernel_filmic_rgb_chroma);
   dt_opencl_free_kernel(gd->kernel_filmic_mask);
@@ -3258,8 +3257,8 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_filmic_wavelets_reconstruct);
   dt_opencl_free_kernel(gd->kernel_filmic_compute_ratios);
   dt_opencl_free_kernel(gd->kernel_filmic_restore_ratios);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 
@@ -3297,8 +3296,8 @@ static inline void dt_cairo_draw_arrow(cairo_t *cr, double origin_x, double orig
   }
 }
 
-void filmic_gui_draw_icon(cairo_t *cr, struct dt_iop_filmicrgb_gui_button_data_t *button,
-                          struct dt_iop_filmicrgb_gui_data_t *g)
+void filmic_gui_draw_icon(cairo_t *cr, dt_iop_filmicrgb_gui_button_data_t *button,
+                          dt_iop_filmicrgb_gui_data_t *g)
 {
   if(!g->gui_sizes_inited) return;
 
@@ -3337,11 +3336,10 @@ void filmic_gui_draw_icon(cairo_t *cr, struct dt_iop_filmicrgb_gui_button_data_t
 }
 
 
-static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
-  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
+  dt_iop_filmicrgb_params_t *p = self->params;
+  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
   gboolean contrast_clamped = dt_iop_filmic_rgb_compute_spline(p, &g->spline);
 
   // Cache the graph objects to avoid recomputing all the view at each redraw
@@ -4187,12 +4185,11 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   return FALSE;
 }
 
-static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return TRUE;
 
-  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
+  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
   dt_iop_request_focus(self);
 
@@ -4276,18 +4273,17 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
 
 static gboolean area_enter_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
 {
-  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
+  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
   g->gui_hover = event->type == GDK_ENTER_NOTIFY;
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
   return FALSE;
 }
 
-static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return 1;
 
-  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
+  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
   if(!g->gui_sizes_inited) return FALSE;
 
   // get in-widget coordinates
@@ -4336,8 +4332,8 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
     else if(g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)
     {
       gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("cycle through graph views.\n"
-                                                         "left click: cycle forward.\n"
-                                                         "right click: cycle backward.\n"
+                                                         "left-click: cycle forward.\n"
+                                                         "right-click: cycle backward.\n"
                                                          "double-click: reset to look view."));
     }
     else
@@ -4433,8 +4429,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->auto_button, NULL, N_("auto tune levels"));
   gtk_widget_set_tooltip_text(g->auto_button, _("try to optimize the settings with some statistical assumptions.\n"
                                                 "this will fit the luminance range inside the histogram bounds.\n"
-                                                "works better for landscapes and evenly-lit pictures\n"
-                                                "but fails for high-keys, low-keys and high-ISO pictures.\n"
+                                                "works better for landscapes and evenly-lit images\n"
+                                                "but fails for high-keys, low-keys and high-ISO images.\n"
                                                 "this is not an artificial intelligence, but a simple guess.\n"
                                                 "ensure you understand its assumptions before using it."));
   gtk_box_pack_start(GTK_BOX(self->widget), g->auto_button, FALSE, FALSE, 0);
@@ -4626,8 +4622,8 @@ void gui_init(dt_iop_module_t *self)
   g->noise_level = dt_bauhaus_slider_from_params(self, "noise_level");
   gtk_widget_set_tooltip_text(g->noise_level, _("add statistical noise in reconstructed highlights.\n"
                                                 "this avoids highlights to look too smooth\n"
-                                                "when the picture is noisy overall,\n"
-                                                "so they blend with the rest of the picture."));
+                                                "when the image is noisy overall,\n"
+                                                "so they blend with the rest of the image."));
 
   // Noise distribution
   g->noise_distribution = dt_bauhaus_combobox_from_params(self, "noise_distribution");
@@ -4643,8 +4639,8 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
-  dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
+  dt_iop_filmicrgb_params_t *p = self->params;
+  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
   if(!w || w == g->auto_hardness || w == g->security_factor || w == g->grey_point_source
      || w == g->black_point_source || w == g->white_point_source)
@@ -4679,8 +4675,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     }
 
     if(p->auto_hardness)
-      p->output_power = logf(p->grey_point_target / 100.0f)
-                        / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
+      _compute_output_power(self, p);
 
     gtk_widget_set_visible(GTK_WIDGET(g->output_power), !p->auto_hardness);
     dt_bauhaus_slider_set(g->output_power, p->output_power);

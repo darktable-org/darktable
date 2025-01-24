@@ -80,7 +80,7 @@ const char *name()
   return _("censorize");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("censorize license plates and body parts for privacy"),
                                       _("creative"),
@@ -138,7 +138,7 @@ static inline void make_noise(float *const output,
 }
 
 
-void process(struct dt_iop_module_t *self,
+void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const ivoid,
              void *const ovoid,
@@ -167,7 +167,7 @@ void process(struct dt_iop_module_t *self,
     dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out);
     return;
   }
-  dt_iop_censorize_data_t *data = (dt_iop_censorize_data_t *)piece->data;
+  dt_iop_censorize_data_t *data = piece->data;
   const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)ivoid);
   float *const restrict out = DT_IS_ALIGNED((float *const restrict)ovoid);
 
@@ -279,15 +279,15 @@ void process(struct dt_iop_module_t *self,
 
 // OpenCL not implemented yet, but the following only needs a slight modification to get it working
 #if FALSE
-int process_cl(struct dt_iop_module_t *self,
+int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
                cl_mem dev_in,
                cl_mem dev_out,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_censorize_data_t *d = (dt_iop_censorize_data_t *)piece->data;
-  dt_iop_censorize_global_data_t *gd = (dt_iop_censorize_global_data_t *)self->global_data;
+  dt_iop_censorize_data_t *d = piece->data;
+  dt_iop_censorize_global_data_t *gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
@@ -379,11 +379,11 @@ error:
   return err;
 }
 
-void tiling_callback(struct dt_iop_module_t *self,
-                     struct dt_dev_pixelpipe_iop_t *piece,
+void tiling_callback(dt_iop_module_t *self,
+                     dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in,
                      const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+                     dt_develop_tiling_t *tiling)
 {
   tiling->factor = 3.0f;
   tiling->factor_cl = 5.0f;
@@ -395,26 +395,25 @@ void tiling_callback(struct dt_iop_module_t *self,
   tiling->yalign = 1;
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 6; // gaussian.cl, from programs.conf
-  dt_iop_censorize_global_data_t *gd
-      = (dt_iop_censorize_global_data_t *)malloc(sizeof(dt_iop_censorize_global_data_t));
-  module->data = gd;
+  dt_iop_censorize_global_data_t *gd = malloc(sizeof(dt_iop_censorize_global_data_t));
+  self->data = gd;
   gd->kernel_lowpass_mix = dt_opencl_create_kernel(program, "lowpass_mix");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_censorize_global_data_t *gd = (dt_iop_censorize_global_data_t *)module->data;
+  dt_iop_censorize_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_lowpass_mix);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 #endif
 
-void gui_init(struct dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   dt_iop_censorize_gui_data_t *g = IOP_GUI_ALLOC(censorize);
 

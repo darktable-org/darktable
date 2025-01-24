@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2023 darktable developers.
+    Copyright (C) 2010-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -274,7 +274,7 @@ int write_image(dt_imageio_module_data_t *jpg_tmp,
 
   uint8_t *row = dt_alloc_align_uint8(3 * jpg->global.width);
   const uint8_t *buf;
-  while(jpg->cinfo.next_scanline < jpg->cinfo.image_height)
+  while(row && jpg->cinfo.next_scanline < jpg->cinfo.image_height)
   {
     JSAMPROW tmp[1];
     buf = in + (size_t)jpg->cinfo.next_scanline * jpg->cinfo.image_width * 4;
@@ -334,7 +334,7 @@ int read_image(dt_imageio_module_data_t *jpg_tmp,
   JSAMPROW row_pointer[1];
   row_pointer[0] = (uint8_t *)dt_alloc_aligned((size_t)jpg->dinfo.output_width * jpg->dinfo.num_components);
   uint8_t *tmp = out;
-  while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
+  while(row_pointer[0] && jpg->dinfo.output_scanline < jpg->dinfo.image_height)
   {
     if(jpeg_read_scanlines(&(jpg->dinfo), row_pointer, 1) != 1)
       return 1;
@@ -403,7 +403,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
     } dt_imageio_jpeg_v1_t;
 
     const dt_imageio_jpeg_v1_t *o = (dt_imageio_jpeg_v1_t *)old_params;
-    dt_imageio_jpeg_v2_t *n = (dt_imageio_jpeg_v2_t *)malloc(sizeof(dt_imageio_jpeg_v2_t));
+    dt_imageio_jpeg_v2_t *n = malloc(sizeof(dt_imageio_jpeg_v2_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -438,7 +438,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
   if(old_version == 2)
   {
     const dt_imageio_jpeg_v2_t *o = (dt_imageio_jpeg_v2_t *)old_params;
-    dt_imageio_jpeg_v3_t *n = (dt_imageio_jpeg_v3_t *)malloc(sizeof(dt_imageio_jpeg_v3_t));
+    dt_imageio_jpeg_v3_t *n = malloc(sizeof(dt_imageio_jpeg_v3_t));
 
     n->global.max_width = o->global.max_width;
     n->global.max_height = o->global.max_height;
@@ -466,7 +466,7 @@ void *legacy_params(dt_imageio_module_format_t *self,
 void *get_params(dt_imageio_module_format_t *self)
 {
   // adjust this if more params are stored (subsampling etc)
-  dt_imageio_jpeg_t *d = (dt_imageio_jpeg_t *)calloc(1, sizeof(dt_imageio_jpeg_t));
+  dt_imageio_jpeg_t *d = calloc(1, sizeof(dt_imageio_jpeg_t));
   d->quality = dt_conf_get_int("plugins/imageio/format/jpeg/quality");
   d->subsample = dt_conf_get_int("plugins/imageio/format/jpeg/subsample");
   return d;
@@ -484,7 +484,7 @@ int set_params(dt_imageio_module_format_t *self,
 {
   if(size != self->params_size(self)) return 1;
   const dt_imageio_jpeg_t *d = (dt_imageio_jpeg_t *)params;
-  dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)self->gui_data;
+  dt_imageio_jpeg_gui_data_t *g = self->gui_data;
   dt_bauhaus_slider_set(g->quality, d->quality);
   dt_bauhaus_combobox_set(g->subsample, d->subsample);
   return 0;
@@ -562,8 +562,7 @@ static void subsample_combobox_changed(GtkWidget *widget,
 
 void gui_init(dt_imageio_module_format_t *self)
 {
-  dt_imageio_jpeg_gui_data_t *g =
-    (dt_imageio_jpeg_gui_data_t *)malloc(sizeof(dt_imageio_jpeg_gui_data_t));
+  dt_imageio_jpeg_gui_data_t *g = malloc(sizeof(dt_imageio_jpeg_gui_data_t));
   self->gui_data = g;
 
   const dt_imageio_jpeg_subsample_t subsample =
@@ -614,7 +613,7 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
-  dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)self->gui_data;
+  dt_imageio_jpeg_gui_data_t *g = self->gui_data;
   dt_bauhaus_slider_set(g->quality,
                         dt_confgen_get_int("plugins/imageio/format/jpeg/quality",
                                            DT_DEFAULT));

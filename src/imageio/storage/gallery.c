@@ -107,8 +107,7 @@ void *legacy_params(dt_imageio_module_storage_t *self,
     } dt_imageio_gallery_v1_t;
 
     const dt_imageio_gallery_v1_t *o = (dt_imageio_gallery_v1_t *)old_params;
-    dt_imageio_gallery_v2_t *n =
-      (dt_imageio_gallery_v2_t *)malloc(sizeof(dt_imageio_gallery_v2_t));
+    dt_imageio_gallery_v2_t *n = malloc(sizeof(dt_imageio_gallery_v2_t));
 
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     g_strlcpy(n->title, o->title, sizeof(n->title));
@@ -189,7 +188,7 @@ static void title_changed_callback(GtkEntry *entry,
 
 void gui_init(dt_imageio_module_storage_t *self)
 {
-  gallery_t *d = (gallery_t *)malloc(sizeof(gallery_t));
+  gallery_t *d = malloc(sizeof(gallery_t));
   self->gui_data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -321,7 +320,7 @@ int store(dt_imageio_module_storage_t *self,
   if(g_mkdir_with_parents(dirname, 0755))
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[imageio_storage_gallery] could not create directory: `%s'!\n", dirname);
+             "[imageio_storage_gallery] could not create directory: `%s'!", dirname);
     dt_control_log(_("could not create directory `%s'!"), dirname);
     return 1;
   }
@@ -404,7 +403,7 @@ int store(dt_imageio_module_storage_t *self,
                        icc_filename, icc_intent, self, sdata, num, total, metadata) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
+             "[imageio_storage_gallery] could not export to file: `%s'!", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
     free(pair);
     g_free(esc_relfilename);
@@ -445,7 +444,7 @@ int store(dt_imageio_module_storage_t *self,
                        icc_intent, self, sdata, num, total, NULL) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
+             "[imageio_storage_gallery] could not export to file: `%s'!", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
     return 1;
   }
@@ -453,7 +452,7 @@ int store(dt_imageio_module_storage_t *self,
   fdata->max_width = save_max_width;
   fdata->max_height = save_max_height;
 
-  dt_print(DT_DEBUG_ALWAYS, "[export_job] exported to `%s'\n", filename);
+  dt_print(DT_DEBUG_ALWAYS, "[export_job] exported to `%s'", filename);
   dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
                  num, total, filename);
   return 0;
@@ -620,8 +619,7 @@ void init(dt_imageio_module_storage_t *self)
 
 void *get_params(dt_imageio_module_storage_t *self)
 {
-  dt_imageio_gallery_t *d =
-    (dt_imageio_gallery_t *)calloc(1, sizeof(dt_imageio_gallery_t));
+  dt_imageio_gallery_t *d = calloc(1, sizeof(dt_imageio_gallery_t));
   d->vp = NULL;
   d->l = NULL;
   dt_variables_params_init(&d->vp);

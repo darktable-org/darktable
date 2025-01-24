@@ -45,7 +45,7 @@ static gchar* _dt_full_locale_name(const char *locale)
     if(error)
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "[l10n] couldn't check locale: '%s'\n", error->message);
+               "[l10n] couldn't check locale: '%s'", error->message);
       g_error_free(error);
     }
   }
@@ -143,7 +143,7 @@ static void get_language_names(GList *languages)
     dt_print(DT_DEBUG_ALWAYS,
              "[l10n] error: can't open iso-codes file `%s'\n"
              "                   there won't be nicely translated language names"
-             " in the preferences.\n", filename);
+             " in the preferences", filename);
     goto end;
   }
 
@@ -171,7 +171,7 @@ static void get_language_names(GList *languages)
   if(!json_parser_load_from_file(parser, filename, &error))
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[l10n] error: parsing json from `%s' failed\n%s\n",
+             "[l10n] error: parsing json from `%s' failed\n%s",
              filename, error->message);
     goto end;
   }
@@ -181,7 +181,7 @@ static void get_language_names(GList *languages)
   if(!root)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[l10n] error: can't get root node of `%s'\n", filename);
+             "[l10n] error: can't get root node of `%s'", filename);
     goto end;
   }
 
@@ -190,13 +190,13 @@ static void get_language_names(GList *languages)
   if(!json_reader_read_member(reader, "639-2"))
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[l10n] error: unexpected layout of `%s'\n", filename);
+             "[l10n] error: unexpected layout of `%s'", filename);
     goto end;
   }
 
   if(!json_reader_is_array(reader))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[l10n] error: unexpected layout of `%s'\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[l10n] error: unexpected layout of `%s'", filename);
     goto end;
   }
 
@@ -209,7 +209,7 @@ static void get_language_names(GList *languages)
     if(!json_reader_is_object(reader))
     {
       dt_print(DT_DEBUG_ALWAYS,
-               "[l10n] error: unexpected layout of `%s' (element %d)\n", filename, i);
+               "[l10n] error: unexpected layout of `%s' (element %d)", filename, i);
       free(saved_locale);
       saved_locale = NULL;
       goto end;
@@ -233,7 +233,7 @@ static void get_language_names(GList *languages)
       // check if alpha_2 or alpha_3 is in our translations
       for(GList *iter = languages; iter; iter = g_list_next(iter))
       {
-        dt_l10n_language_t *language = (dt_l10n_language_t *)iter->data;
+        dt_l10n_language_t *language = iter->data;
         if(!g_strcmp0(language->base_code, alpha_2)
            || !g_strcmp0(language->base_code, alpha_3))
         {
@@ -281,7 +281,7 @@ static void get_language_names(GList *languages)
     }
     else
       dt_print(DT_DEBUG_ALWAYS,
-               "[l10n] error: element %d has no name, skipping\n", i);
+               "[l10n] error: element %d has no name, skipping", i);
 
     json_reader_end_element(reader);
   }
@@ -328,7 +328,7 @@ gchar *_l10n_get_language(const gchar *filename)
 
 dt_l10n_t *dt_l10n_init(const gchar *filename, const gboolean init_list)
 {
-  dt_l10n_t *result = (dt_l10n_t *)calloc(1, sizeof(dt_l10n_t));
+  dt_l10n_t *result = calloc(1, sizeof(dt_l10n_t));
   result->selected = -1;
   result->sys_default = -1;
 
@@ -356,7 +356,6 @@ dt_l10n_t *dt_l10n_init(const gchar *filename, const gboolean init_list)
   }
 #endif // defined (_WIN32)
 
-
   // prepare the list of available gui translations from which the
   // user can pick in prefs
   if(init_list)
@@ -364,8 +363,7 @@ dt_l10n_t *dt_l10n_init(const gchar *filename, const gboolean init_list)
     dt_l10n_language_t *selected = NULL;
     dt_l10n_language_t *sys_default = NULL;
 
-    dt_l10n_language_t *language =
-      (dt_l10n_language_t *)calloc(1, sizeof(dt_l10n_language_t));
+    dt_l10n_language_t *language = calloc(1, sizeof(dt_l10n_language_t));
     language->code = g_strdup("C");
     language->base_code = g_strdup("C");
     language->name = g_strdup("English");
@@ -388,7 +386,7 @@ dt_l10n_t *dt_l10n_init(const gchar *filename, const gboolean init_list)
                                            "LC_MESSAGES", GETTEXT_PACKAGE ".mo", NULL);
         if(g_file_test(testname, G_FILE_TEST_EXISTS))
         {
-          language = (dt_l10n_language_t *)calloc(1, sizeof(dt_l10n_language_t));
+          language = calloc(1, sizeof(dt_l10n_language_t));
           result->languages = g_list_prepend(result->languages, language);
 
           // some languages have a regional part in the filename, we
@@ -434,7 +432,7 @@ dt_l10n_t *dt_l10n_init(const gchar *filename, const gboolean init_list)
     }
     else
       dt_print(DT_DEBUG_ALWAYS,
-               "[l10n] error: can't open directory `%s'\n", localedir);
+               "[l10n] error: can't open directory `%s'", localedir);
 
     // default to English if no other language matched
     if(!sys_default)

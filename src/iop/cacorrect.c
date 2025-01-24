@@ -78,7 +78,7 @@ const char *name()
   return _("raw chromatic aberrations");
 }
 
-const char **description(struct dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("correct chromatic aberrations for Bayer sensors"),
                                       _("corrective"),
@@ -120,8 +120,7 @@ int legacy_params(dt_iop_module_t *self,
 
   if(old_version == 1)
   {
-    dt_iop_cacorrect_params_v2_t *n =
-      (dt_iop_cacorrect_params_v2_t *)malloc(sizeof(dt_iop_cacorrect_params_v2_t));
+    dt_iop_cacorrect_params_v2_t *n = malloc(sizeof(dt_iop_cacorrect_params_v2_t));
     n->avoidshift = FALSE;
     n->iterations = 1;
 
@@ -249,13 +248,12 @@ static gboolean _LinEqSolve(ssize_t nDim, double *pfMatr, double *pfVect, double
 // end of linear equation solver
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-void process(
-        struct dt_iop_module_t *self,
-        dt_dev_pixelpipe_iop_t *piece,
-        const void *const ivoid,
-        void *const ovoid,
-        const dt_iop_roi_t *const roi_in,
-        const dt_iop_roi_t *const roi_out)
+void process(dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   const float *const input = (float *)ivoid;
   float *output = (float *) ovoid;
@@ -264,7 +262,7 @@ void process(
 
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
-  dt_iop_cacorrect_data_t *d = (dt_iop_cacorrect_data_t *)piece->data;
+  dt_iop_cacorrect_data_t *d = piece->data;
 
   // the colorshift avoiding requires non-downscaled data for sure so we
   // don't do this for preview
@@ -293,7 +291,7 @@ void process(
   if(!out)
   {
     dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out);
-    dt_print(DT_DEBUG_ALWAYS,"[cacorrect] out of memory, skipping\n");
+    dt_print(DT_DEBUG_ALWAYS,"[cacorrect] out of memory, skipping");
     return;
   }
 
@@ -325,7 +323,7 @@ void process(
     oldraw = dt_calloc_align_float(h_bsize * 2);
     if(!redfactor || !bluefactor || !oldraw)
     {
-      dt_print(DT_DEBUG_ALWAYS,"[cacorrect] out of memory, skipping\n");
+      dt_print(DT_DEBUG_ALWAYS,"[cacorrect] out of memory, skipping");
       goto writeout;
     }
     // copy raw values before ca correction
@@ -349,7 +347,7 @@ void process(
 
   if(!Gtmp || !RawDataTmp)
   {
-    dt_print(DT_DEBUG_ALWAYS,"[cacorrect] out of memory, skipping\n");
+    dt_print(DT_DEBUG_ALWAYS,"[cacorrect] out of memory, skipping");
     goto writeout;
   }
 
@@ -703,7 +701,7 @@ void process(
             else
             {
               processpasstwo = FALSE;
-              dt_print(DT_DEBUG_PIPE, "[cacorrect] blockdenom vanishes\n");
+              dt_print(DT_DEBUG_PIPE, "[cacorrect] blockdenom vanishes");
               break;
             }
           }
@@ -814,7 +812,7 @@ void process(
 
             if(numblox[1] < 10)
             {
-              dt_print(DT_DEBUG_PIPE, "[cacorrect] restrict fit to linear, numblox = %d \n", numblox[1]);
+              dt_print(DT_DEBUG_PIPE, "[cacorrect] restrict fit to linear, numblox = %d ", numblox[1]);
               processpasstwo = FALSE;
             }
           }
@@ -976,7 +974,7 @@ void process(
                 float powHblock = powVblock;
                 for(int j = 0; j < polyord; j++)
                 {
-                  // printf("i= %d j= %d polycoeff= %f \n",i,j,fitparams[0][0][polyord*i+j]);
+                  // printf("i= %d j= %d polycoeff= %f ",i,j,fitparams[0][0][polyord*i+j]);
                   lblockshifts[0][0] += powHblock * fitparams[0][0][polyord * i + j];
                   lblockshifts[0][1] += powHblock * fitparams[0][1][polyord * i + j];
                   lblockshifts[1][0] += powHblock * fitparams[1][0][polyord * i + j];
@@ -1220,14 +1218,18 @@ DT_OMP_PRAGMA(barrier)
 /*==================================================================================
  * end raw therapee code
  *==================================================================================*/
-void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
+void modify_roi_out(dt_iop_module_t *self,
+                    dt_dev_pixelpipe_iop_t *piece,
+                    dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *const roi_in)
 {
   *roi_out = *roi_in;
   roi_out->x = MAX(0, roi_in->x);
   roi_out->y = MAX(0, roi_in->y);
 }
-void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
+void modify_roi_in(dt_iop_module_t *self,
+                   dt_dev_pixelpipe_iop_t *piece,
+                   const dt_iop_roi_t *const roi_out,
                    dt_iop_roi_t *roi_in)
 {
   *roi_in = *roi_out;
@@ -1238,33 +1240,32 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   roi_in->scale = 1.0f;
 }
 
-void distort_mask(
-        struct dt_iop_module_t *self,
-        struct dt_dev_pixelpipe_iop_t *piece,
-        const float *const in,
-        float *const out,
-        const dt_iop_roi_t *const roi_in,
-        const dt_iop_roi_t *const roi_out)
+void distort_mask(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
+                  const float *const in,
+                  float *const out,
+                  const dt_iop_roi_t *const roi_in,
+                  const dt_iop_roi_t *const roi_out)
 {
   dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 }
 
-void reload_defaults(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *self)
 {
   // can't be switched on for non bayer RGB images:
-  if(!dt_image_is_bayerRGB(&module->dev->image_storage))
+  if(!dt_image_is_bayerRGB(&self->dev->image_storage))
   {
-    module->hide_enable_button = TRUE;
-    module->default_enabled = FALSE;
+    self->hide_enable_button = TRUE;
+    self->default_enabled = FALSE;
   }
 }
 
 /** commit is the synch point between core and gui, so it copies params to pipe data. */
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_cacorrect_params_t *p = (dt_iop_cacorrect_params_t *)params;
-  dt_iop_cacorrect_data_t *d = (dt_iop_cacorrect_data_t *) piece->data;
+  dt_iop_cacorrect_data_t *d =  piece->data;
 
   if(!dt_image_is_bayerRGB(&self->dev->image_storage)) piece->enabled = FALSE;
 
@@ -1272,21 +1273,21 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   d->avoidshift = p->avoidshift;
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = malloc(sizeof(dt_iop_cacorrect_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = NULL;
 }
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_cacorrect_gui_data_t *g = (dt_iop_cacorrect_gui_data_t *)self->gui_data;
-  dt_iop_cacorrect_params_t *p = (dt_iop_cacorrect_params_t *)self->params;
+  dt_iop_cacorrect_gui_data_t *g = self->gui_data;
+  dt_iop_cacorrect_params_t *p = self->params;
 
   const gboolean supported = dt_image_is_bayerRGB(&self->dev->image_storage);
   self->hide_enable_button = !supported;

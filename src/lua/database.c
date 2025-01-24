@@ -180,7 +180,7 @@ static int import_images(lua_State *L)
     // force refresh of thumbtable view
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                                g_list_prepend(NULL, GINT_TO_POINTER(result)));
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_FILMROLLS_CHANGED);
     dt_control_queue_redraw_center();
 
   }
@@ -296,6 +296,9 @@ int dt_lua_init_database(lua_State *L)
   lua_pushcfunction(L, dt_lua_duplicate_image);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, type_id, "duplicate");
+  lua_pushcfunction(L, dt_lua_duplicate_image_with_history);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "duplicate_with_history");
   lua_pushcfunction(L, dt_lua_delete_image);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, type_id, "delete");
@@ -326,8 +329,7 @@ int dt_lua_init_database(lua_State *L)
   lua_pushcfunction(L, dt_lua_event_multiinstance_destroy);
   lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
   dt_lua_event_add(L, "post-import-film");
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, G_CALLBACK(on_film_imported),
-                            NULL);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_FILMROLLS_IMPORTED, on_film_imported, NULL);
 
   lua_pushcfunction(L, dt_lua_event_multiinstance_register);
   lua_pushcfunction(L, dt_lua_event_multiinstance_destroy);

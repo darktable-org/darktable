@@ -30,14 +30,11 @@ jobs:
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
-      DARKTABLE_CLI: ${{ github.workspace }}/AppDir/usr/bin/darktable-cli
       BRANCH: ${{ matrix.branch.code }}
       BUILD_NAME: ${{ matrix.branch.label }}
     steps:
       - name: Install compiler ${{ matrix.compiler.compiler }}
         run: |
-          # Remove azure mirror because it is unreliable and sometimes unpredictably leads to failed CI
-          sudo sed -i 's/azure\.//' /etc/apt/sources.list
           sudo apt-get update
           sudo apt-get -y install \
             ${{ matrix.compiler.packages }}
@@ -61,17 +58,16 @@ jobs:
             libfuse2 \
             libgdk-pixbuf2.0-dev \
             libglib2.0-dev \
+            libgmic-dev \
             libgraphicsmagick1-dev \
             libgtk-3-dev \
             libinih-dev \
-            libjpeg-dev \
             libjson-glib-dev \
             liblcms2-dev \
             liblensfun-dev \
             liblensfun-bin \
             liblensfun-data-v1 \
             liblensfun1 \
-            libopenjp2-7-dev \
             libosmgpsmap-1.0-dev \
             libpango1.0-dev \
             libpng-dev \
@@ -100,12 +96,13 @@ jobs:
           sudo apt-get update
           sudo apt-get -y install \
             libavif-dev \
-            libgmic-dev \
             libgphoto2-dev \
             libheif-dev \
             libimath-dev \
-            libopenexr-dev \
+            libjpeg-turbo8-dev \
             libjxl-dev \
+            libopenexr-dev \
+            libopenjp2-7-dev \
             x11proto-dev \
             libxfixes-dev;
       - name: Build and install a more recent version of exiv2
@@ -134,8 +131,7 @@ jobs:
           git config submodule.src/tests/integration.update none
           git submodule update
           popd
-      - name: Update lensfun data
-        continue-on-error: true
+      - name: Update Lensfun data
         run: |
           sudo lensfun-update-data
       - name: Build and Install
@@ -143,7 +139,6 @@ jobs:
           cd src
           bash tools/appimage-build-script.sh
       - name: Package upload
-        if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
           path: ${{ github.workspace }}/src/build/Darktable-*.AppImage*
@@ -246,9 +241,7 @@ jobs:
           git config submodule.src/tests/integration.update none
           git submodule update
           popd
-      - name: Update lensfun data
-        if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
-        continue-on-error: true
+      - name: Update Lensfun data
         run: |
           lensfun-update-data
       - name: Build and Install
@@ -257,7 +250,6 @@ jobs:
           cmake -E make_directory "${INSTALL_PREFIX}"
           $(cygpath ${SRC_DIR})/.ci/ci-script.sh
       - name: Package
-        if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         run: |
           cd "${BUILD_DIR}"
           cmake --build "${BUILD_DIR}" --target package
@@ -267,7 +259,6 @@ jobs:
           echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')" >> $GITHUB_ENV
           ([[ ${MSYSTEM_CARCH} == x86_64 ]] && echo "SYSTEM=win64" || echo "SYSTEM=woa64") >> $GITHUB_ENV
       - name: Package upload
-        if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
           path: ${{ env.BUILD_DIR }}/darktable-${{ env.VERSION }}-${{ env.SYSTEM }}.exe
@@ -283,7 +274,7 @@ jobs:
       matrix:
         build:
           - { os: macos-13, xcode: 15.2, deployment: 13.5 } # LLVM16, x86_64
-          - { os: macos-14, xcode: 15.4, deployment: 14.0 } # LLVM16, arm64
+          - { os: macos-14, xcode: 16.1, deployment: 14.0 } # LLVM16, arm64
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ Release ]
@@ -349,7 +340,6 @@ jobs:
           cd ${{ env.SRC_DIR }}
           echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-${{ env.ARCHITECTURE }}" >> $GITHUB_ENV
       - name: Package upload
-        if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
           path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.dmg

@@ -110,7 +110,7 @@ void dt_lua_event_add(lua_State *L, const char *evt_name)
   if(args != 3)
   {
     lua_pop(L, args);
-    dt_print(DT_DEBUG_LUA, "LUA ERROR : %s: wrong number of args for %s, expected 3, got %d\n", __FUNCTION__, evt_name, args);
+    dt_print(DT_DEBUG_LUA, "LUA ERROR : %s: wrong number of args for %s, expected 3, got %d", __FUNCTION__, evt_name, args);
     return;
   }
 
@@ -128,7 +128,7 @@ void dt_lua_event_add(lua_State *L, const char *evt_name)
     lua_setfield(L, -2, "on_event");
   }
   else{
-    dt_print(DT_DEBUG_LUA, "LUA ERROR :%s: function argument not found for on_event for event %s\n", __FUNCTION__, evt_name);
+    dt_print(DT_DEBUG_LUA, "LUA ERROR :%s: function argument not found for on_event for event %s", __FUNCTION__, evt_name);
     return;
   }
 
@@ -140,7 +140,7 @@ void dt_lua_event_add(lua_State *L, const char *evt_name)
   }
   else
   {
-    dt_print(DT_DEBUG_LUA, "LUA ERROR : %s: function argument not found for on_destroy for event %s\n", __FUNCTION__, evt_name);
+    dt_print(DT_DEBUG_LUA, "LUA ERROR : %s: function argument not found for on_destroy for event %s", __FUNCTION__, evt_name);
     return;
   }
 
@@ -153,7 +153,7 @@ void dt_lua_event_add(lua_State *L, const char *evt_name)
   }
   else
   {
-    dt_print(DT_DEBUG_LUA, "LUA ERROR : %s: function argument not found for on_register for event %s\n", __FUNCTION__, evt_name);
+    dt_print(DT_DEBUG_LUA, "LUA ERROR : %s: function argument not found for on_register for event %s", __FUNCTION__, evt_name);
     return;
   }
 
@@ -662,6 +662,11 @@ int dt_lua_init_events(lua_State *L)
   lua_pushcfunction(L, dt_lua_event_multiinstance_destroy);
   lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
   dt_lua_event_add(L, "pixelpipe-processing-complete");
+
+  lua_pushcfunction(L, dt_lua_event_multiinstance_register);
+  lua_pushcfunction(L, dt_lua_event_multiinstance_destroy);
+  lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
+  dt_lua_event_add(L, "image-group-information-changed");
 
   return 0;
 }
