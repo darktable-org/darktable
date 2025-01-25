@@ -296,30 +296,62 @@ gboolean dt_osx_open_url(const char *url)
 @interface AppDelegate : NSObject <NSApplicationDelegate>
 @end
 
-@implementation AppDelegate {
+@implementation AppDelegate 
+{
     std::vector<std::string> openedFiles;
 }
 
-- (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename {
+- (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename 
+{
     openedFiles.push_back([filename UTF8String]);
     return YES;
 }
 
-- (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
-    // Manually setup argc and argv
-    int argc = o_argc + openedFiles.size();
+- (void)applicationDidFinishLaunching:(NSNotification *)aNotification 
+{
+    // Copy argc and argv from original
+    int argc = o_argc;
+    for (size_t i = 0; i < openedFiles.size(); ++i) 
+    {
+        bool duplicate = false;
+        for (int j = 0; j < o_argc; ++j) 
+        {
+            if (strcmp(openedFiles[i].c_str(), o_argv[j]) == 0) 
+            {
+                duplicate = true;
+                break;
+            }
+        }
+        if (!duplicate) 
+        {
+            argc++;
+        }
+    }
     char** argv = new char*[argc + 1]; // +1 for the NULL terminator
 
     // Copy the original params to argv
-    for (int i = 0; i < o_argc; ++i) {
+    for (int i = 0; i < o_argc; ++i) 
+    {
         argv[i] = strdup(o_argv[i]);
     }
 
-    // TODO: check for duplicates between openedFiles and o_argv
-
-    // Append openedFiles to argv
-    for (size_t i = 0; i < openedFiles.size(); ++i) {
-        argv[o_argc + i] = strdup(openedFiles[i].c_str());
+    // Append openedFiles to argv if they are not duplicates
+    int index = o_argc;
+    for (size_t i = 0; i < openedFiles.size(); ++i) 
+    {
+        bool duplicate = false;
+        for (int j = 0; j < o_argc; ++j) 
+        {
+            if (strcmp(openedFiles[i].c_str(), o_argv[j]) == 0) 
+            {
+                duplicate = true;
+                break;
+            }
+        }
+        if (!duplicate) 
+        {
+            argv[index++] = strdup(openedFiles[i].c_str());
+        }
     }
     argv[argc] = NULL; // NULL terminator for argv
 
@@ -327,7 +359,8 @@ gboolean dt_osx_open_url(const char *url)
     apple_main(argc, argv);
 
     // Clean up
-    for (int i = 0; i < argc; ++i) {
+    for (int i = 0; i < argc; ++i) 
+    {
         free(argv[i]);
     }
     delete[] argv;
@@ -335,8 +368,10 @@ gboolean dt_osx_open_url(const char *url)
 
 @end
 
-int main(int argc, const char * argv[]) {
-    @autoreleasepool {
+int main(int argc, const char * argv[]) 
+{
+    @autoreleasepool 
+    {
         o_argc = argc;
         o_argv = (char**)argv;
         NSApplication *app = [NSApplication sharedApplication];
