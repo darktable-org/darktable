@@ -372,7 +372,6 @@ gboolean dt_supported_image(const gchar *filename)
   return supported;
 }
 
-#ifndef MAC_INTEGRATION
 static gboolean _is_directory(const gchar *input)
 {
   gboolean is_dir = FALSE;
@@ -410,7 +409,6 @@ static void _switch_to_new_filmroll(const gchar *input)
     free(filename);
   }
 }
-#endif
 
 dt_imgid_t dt_load_from_string(const gchar *input,
                                const gboolean open_image_in_dr,
@@ -1538,7 +1536,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     if(init_gui && argc > 1)
     {
       darktable_splash_screen_set_progress(_("forwarding image(s) to running instance"));
-#ifndef MAC_INTEGRATION
+
       // send the images to the other instance via dbus
       dt_print(DT_DEBUG_ALWAYS,
                "[dt_init] trying to open the images in the running instance");
@@ -1560,7 +1558,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         g_free(filename);
       }
       if(connection) g_object_unref(connection);
-#endif
     }
     darktable_splash_screen_destroy(); // dismiss splash screen before potentially showing error dialog
     if(!image_loaded_elsewhere) dt_database_show_error(darktable.db);
@@ -1855,7 +1852,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     g_signal_connect(dt_ui_main_window(darktable.gui->ui), "event",
                      G_CALLBACK(dt_shortcut_dispatcher), NULL);
 
-#ifndef MAC_INTEGRATION
     // load image(s) specified on cmdline.  this has to happen after
     // lua is initialized as image import can run lua code
     if(argc == 2 && !_is_directory(argv[1]))
@@ -1875,7 +1871,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       dt_control_add_job(darktable.control,
                          DT_JOB_QUEUE_USER_BG, dt_pathlist_import_create(argc,argv));
     }
-#endif
 
     // there might be some info created in dt_configure_runtime_performance() for feedback
     if(!dt_gimpmode())

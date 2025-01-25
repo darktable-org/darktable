@@ -39,6 +39,10 @@
 #include "osx.h"
 #include "libintl.h"
 
+extern "C" int apple_main(int argc, char *argv[]);
+
+int o_argc;     // original argc
+char **o_argv;  // original argv
 
 float dt_osx_get_ppd()
 {
@@ -287,6 +291,60 @@ void dt_osx_focus_window()
 gboolean dt_osx_open_url(const char *url)
 {
   return [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@(url)]];
+}
+
+@interface AppDelegate : NSObject <NSApplicationDelegate>
+@end
+
+@implementation AppDelegate {
+    std::vector<std::string> openedFiles;
+}
+
+- (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename {
+    openedFiles.push_back([filename UTF8String]);
+    return YES;
+}
+
+- (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
+    // Manually setup argc and argv
+    int argc = o_argc + openedFiles.size();
+    char** argv = new char*[argc + 1]; // +1 for the NULL terminator
+
+    // Copy the original params to argv
+    for (int i = 0; i < o_argc; ++i) {
+        argv[i] = strdup(o_argv[i]);
+    }
+
+    // TODO: check for duplicates between openedFiles and o_argv
+
+    // Append openedFiles to argv
+    for (size_t i = 0; i < openedFiles.size(); ++i) {
+        argv[o_argc + i] = strdup(openedFiles[i].c_str());
+    }
+    argv[argc] = NULL; // NULL terminator for argv
+
+    // Call main (renamed apple_main()) with the constructed argc and argv
+    apple_main(argc, argv);
+
+    // Clean up
+    for (int i = 0; i < argc; ++i) {
+        free(argv[i]);
+    }
+    delete[] argv;
+}
+
+@end
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        o_argc = argc;
+        o_argv = (char**)argv;
+        NSApplication *app = [NSApplication sharedApplication];
+        AppDelegate *delegate = [[AppDelegate alloc] init];
+        [app setDelegate:delegate];
+        [app run];
+    }
+    return 0;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
