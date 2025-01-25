@@ -696,7 +696,7 @@ void expose(dt_view_t *self,
              darktable.lib->proxy.colorpicker.selected_sample != darktable.lib->proxy.colorpicker.primary_sample)))
   {
     dt_print_pipe(DT_DEBUG_EXPOSE,
-        "expose livesamples FALSE",
+        "expose livesamples",
          port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d",
          width, height, pointerx, pointery);
     _darkroom_pickers_draw(self, cri, wd, ht, zoom_scale,
@@ -711,7 +711,7 @@ void expose(dt_view_t *self,
   if(dt_iop_color_picker_is_visible(dev))
   {
     dt_print_pipe(DT_DEBUG_EXPOSE,
-        "expose livesample TRUE",
+        "expose picker",
          port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "%dx%d, px=%d py=%d",
          width, height, pointerx, pointery);
     GSList samples = { .data = darktable.lib->proxy.colorpicker.primary_sample,
@@ -776,7 +776,7 @@ void expose(dt_view_t *self,
       }
 
       // gui active module
-      if(dt_dev_modulegroups_test_activated(darktable.develop))
+      if(dmod->gui_post_expose && dt_dev_modulegroups_test_activated(darktable.develop))
       {
         dt_print_pipe(DT_DEBUG_EXPOSE,
                       "expose module",
@@ -784,11 +784,8 @@ void expose(dt_view_t *self,
                       DT_DEVICE_NONE, NULL, NULL,
                       "%dx%d, px=%d py=%d",
                       width, height, pointerx, pointery);
-        if(dmod->gui_post_expose)
-        {
-          _get_zoom_pos_bnd(&dev->full, pointerx, pointery, zbound_x, zbound_y, &pzx, &pzy, &zoom_scale);
-          _module_gui_post_expose(dmod, cri, wd, ht, pzx, pzy, zoom_scale);
-        }
+        _get_zoom_pos_bnd(&dev->full, pointerx, pointery, zbound_x, zbound_y, &pzx, &pzy, &zoom_scale);
+        _module_gui_post_expose(dmod, cri, wd, ht, pzx, pzy, zoom_scale);
         // avoid drawing later if we just did via post_expose
         if(dmod->flags() & IOP_FLAGS_GUIDES_SPECIAL_DRAW)
           guides = FALSE;
