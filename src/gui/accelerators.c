@@ -1401,7 +1401,8 @@ static gboolean _insert_shortcut(dt_shortcut_t *shortcut,
                                  const gboolean disable)
 {
   if((!shortcut->speed && shortcut->effect != DT_ACTION_EFFECT_SET)
-     || shortcut->action->type == DT_ACTION_TYPE_SECTION)
+         || (shortcut->action->type == DT_ACTION_TYPE_SECTION // styles
+         && shortcut->action->owner == &darktable.control->actions_global))
     return FALSE;
 
   dt_shortcut_t *s = calloc(sizeof(dt_shortcut_t), 1);
