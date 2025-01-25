@@ -2470,7 +2470,7 @@ gboolean dt_ioppr_check_iop_order_ext(dt_develop_t *dev,
         {
           iop_order_ok = FALSE;
           dt_print(DT_DEBUG_ALWAYS,
-                   "[dt_ioppr_check_iop_order] module not used but enabled!!"
+                   "[dt_ioppr_check_iop_order] module not used but enabled!"
                    " %s %s(%d) image %i (%s)",
                    mod->op, mod->multi_name, mod->iop_order,imgid, msg);
         }
@@ -2540,7 +2540,7 @@ gboolean dt_ioppr_check_iop_order_ext(dt_develop_t *dev,
         iop_order_ok = FALSE;
         dt_print(DT_DEBUG_ALWAYS,
                  "[dt_ioppr_check_iop_order] history module not"
-                 " used but enabled!! %s %s(%d) image %i (%s)",
+                 " used but enabled! %s %s(%d) image %i (%s)",
                  hist->op_name, hist->multi_name, hist->iop_order, imgid, msg);
       }
       if(hist->multi_priority == 0)
