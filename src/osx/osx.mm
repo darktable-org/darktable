@@ -29,6 +29,7 @@
 #include <gio/gio.h>
 #include <glib.h>
 #include <string.h>
+#include <vector>
 #ifdef MAC_INTEGRATION
 #include <gtkosxapplication.h>
 #endif
