@@ -119,6 +119,8 @@ changes (where available).
 
 - Fixed darktable crashing using details mask due to bad tiling.
 
+- Fixed a hash calculation bug leading to pixelpipe instabilities.
+
 ## Lua
 
 ### API Version
