@@ -420,6 +420,8 @@ int button_pressed(struct dt_lib_module_t *self,
       d->vertical = !d->vertical;
       gtk_orientable_set_orientation(GTK_ORIENTABLE(gtk_widget_get_parent(dt_ui_snapshot(darktable.gui->ui))), d->vertical ?  GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL);
       if(_lib_snapshot_rotation_cnt % 2) d->inverted = !d->inverted;
+      if(d->sidebyside)
+        d->snap_requested = TRUE;
 
       d->vp_xpointer = xp;
       d->vp_ypointer = yp;
@@ -734,7 +736,9 @@ static void _sidebyside_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   dt_lib_snapshots_t *d = self->data;
 
   d->sidebyside = !d->sidebyside;
-  gtk_widget_set_visible(dt_ui_snapshot(darktable.gui->ui), d->sidebyside && d->selected >= 0);
+  d->snap_requested = TRUE;
+  gtk_widget_set_visible(dt_ui_snapshot(darktable.gui->ui), 
+                         d->sidebyside && d->selected >= 0);
 }
 
 void gui_init(dt_lib_module_t *self)
