@@ -716,12 +716,7 @@ static gboolean _draw(GtkWidget *da,
   darktable.gui->drawing_snapshot = da == ss;
   if(!darktable.gui->drawing_snapshot) gtk_widget_queue_draw(ss);
 
-  dt_control_expose(da);
-  if(darktable.gui->surface)
-  {
-    cairo_set_source_surface(cr, darktable.gui->surface, 0, 0);
-    cairo_paint(cr);
-  }
+  dt_control_expose(da, cr);
 
   return TRUE;
 }
@@ -956,35 +951,6 @@ static gboolean _configure(GtkWidget *da,
                            GdkEventConfigure *event,
                            gpointer user_data)
 {
-  static int oldw = 0;
-  static int oldh = 0;
-  // make our selves a properly sized pixmap if our window has been resized
-  if(oldw != event->width || oldh != event->height)
-  {
-    // create our new pixmap with the correct size.
-    cairo_surface_t *tmpsurface
-        = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, event->width, event->height);
-    // copy the contents of the old pixmap to the new pixmap.  This keeps ugly uninitialized
-    // pixmaps from being painted upon resize
-    //     int minw = oldw, minh = oldh;
-    //     if(event->width  < minw) minw = event->width;
-    //     if(event->height < minh) minh = event->height;
-
-    cairo_t *cr = cairo_create(tmpsurface);
-    cairo_set_source_surface(cr, darktable.gui->surface, 0, 0);
-    cairo_paint(cr);
-    cairo_destroy(cr);
-
-    // we're done with our old pixmap, so we can get rid of it and
-    // replace it with our properly-sized one.
-    cairo_surface_destroy(darktable.gui->surface);
-    darktable.gui->surface = tmpsurface;
-    dt_colorspaces_set_display_profile(
-        DT_COLORSPACE_DISPLAY); // maybe we are on another screen now with > 50% of the area
-  }
-  oldw = event->width;
-  oldh = event->height;
-
 #ifndef GDK_WINDOWING_QUARTZ
   dt_configure_ppd_dpi((dt_gui_gtk_t *) user_data);
 #endif
@@ -1357,7 +1323,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   GtkWidget *widget;
   if(!gui->ui)
     gui->ui = g_malloc0(sizeof(dt_ui_t));
-  gui->surface = NULL;
   gui->hide_tooltips = dt_conf_get_bool("ui/hide_tooltips") ? 1 : 0;
   gui->grouping = dt_conf_get_bool("ui_last/grouping");
   gui->expanded_group_id = NO_IMGID;
@@ -1575,9 +1540,7 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  darktable.gui->surface
-      = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
-                                      allocation.width, allocation.height);
+
   // need to pre-configure views to avoid crash caused by draw coming
   // before configure-event
   darktable.control->tabborder = 8;
@@ -1596,12 +1559,6 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
     g_atomic_int_set(&darktable.gui_running, 1);
     gtk_main();
     g_atomic_int_set(&darktable.gui_running, 0);
-  }
-
-  if(darktable.gui->surface)
-  {
-    cairo_surface_destroy(darktable.gui->surface);
-    darktable.gui->surface = NULL;
   }
 }
 
