@@ -346,6 +346,9 @@ void dt_dev_process_image_job(dt_develop_t *dev,
   dt_dev_pixelpipe_set_input(pipe, dev, (float *)buf.buf, buf.width, buf.height,
                              port ? 1.0 : buf.iscale);
 
+  // We require calculation of pixelpipe dimensions via dt_dev_pixelpipe_change() in these cases
+  const gboolean initial = pipe->loading || dev->image_force_reload || pipe->input_changed;
+
   if(pipe->loading)
   {
     // init pixel pipeline
@@ -398,10 +401,10 @@ restart:
   if(port == &dev->full)
     pipe->input_timestamp = dev->timestamp;
 
-  // dt_dev_pixelpipe_change() will clear the changed value
-  const dt_dev_pixelpipe_change_t pipe_changed = pipe->changed;
-  // this locks dev->history_mutex.
-  dt_dev_pixelpipe_change(pipe, dev);
+  const gboolean pipe_changed = pipe->changed != DT_DEV_PIPE_UNCHANGED;
+  // dt_dev_pixelpipe_change() locks history mutex while syncing nodes and finally calculates dimensions
+  if(pipe_changed || initial || (port && port->pipe->loading))
+    dt_dev_pixelpipe_change(pipe, dev);
 
   float scale = 1.0f;
   int window_width = G_MAXINT;
@@ -414,7 +417,7 @@ restart:
     // if just changed to an image with a different aspect ratio or
     // altered image orientation, the prior zoom xy could now be beyond
     // the image boundary
-    if(port->pipe->loading || pipe_changed != DT_DEV_PIPE_UNCHANGED)
+    if(port->pipe->loading || pipe_changed)
       dt_dev_zoom_move(port, DT_ZOOM_MOVE, 0.0f, 0, 0.0f, 0.0f, TRUE);
 
     // determine scale according to new dimensions

@@ -1764,7 +1764,7 @@ void dt_view_paint_surface(cairo_t *cr,
     cairo_paint(cr);
 
     dt_print_pipe(DT_DEBUG_EXPOSE,
-        "dt_view_paint_surface",
+        "  painting",
          dev->preview_pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
          "size %4lux%-4lu processed %4.0fx%-4.0f "
          "buf %4dx%-4d scale=%.3f "
@@ -1782,7 +1782,7 @@ void dt_view_paint_surface(cairo_t *cr,
      || dev->preview_pipe->output_imgid != dev->image_storage.id)
   {
     dt_print_pipe(DT_DEBUG_EXPOSE,
-        "dt_view_paint_surface",
+        "  painting",
          port->pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
          "size %4lux%-4lu processed %4dx%-4d "
          "buf %4dx%-4d scale=%.3f "
