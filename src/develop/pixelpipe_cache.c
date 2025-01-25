@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -113,7 +113,7 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(const dt_imgid_t imgid,
           not valid any more.
           Do we have to keep the roi of details mask? No, as that is always defined by roi_in
           of the mask writing module (rawprepare or demosaic)
-       4) The piece->hash of enabled modules within the given limit excluding the skipped
+       4) The piece->hash of modules within the given limit excluding the skipped
   */
   const uint32_t hashing_pipemode[3] = {(uint32_t)imgid,
                                         (uint32_t)pipe->type,
@@ -125,20 +125,18 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(const dt_imgid_t imgid,
   while(pieces)
   {
     const dt_dev_pixelpipe_iop_t *piece = pieces->data;
-    const dt_iop_module_t *mod = piece->module;
+    const dt_iop_module_t *module = piece->module;
+
+    if(module->iop_order > order) break;
 
     // don't take skipped modules into account
-    const gboolean skipped = dt_iop_module_is_skipped(mod->dev, mod)
+    const gboolean skipped = dt_iop_module_is_skipped(module->dev, module)
                           && (pipe->type & DT_DEV_PIXELPIPE_BASIC);
 
-    const gboolean relevant = mod->iop_order > 0
-                           && mod->iop_order <= order
-                           && piece->enabled;
-
-    if(!skipped && relevant)
+    if(!skipped)
     {
       hash = dt_hash(hash, &piece->hash, sizeof(piece->hash));
-      if(mod->request_color_pick != DT_REQUEST_COLORPICK_OFF)
+      if(module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
       {
         if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
         {

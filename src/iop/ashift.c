@@ -1205,7 +1205,7 @@ void modify_roi_out(struct dt_iop_module_t *self,
   if(roi_out->width < 4 || roi_out->height < 4)
   {
     dt_print_pipe(DT_DEBUG_PIPE,
-                  "safety check", piece->pipe, self, DT_DEVICE_NONE, roi_in, roi_out);
+                  "insane data", piece->pipe, self, DT_DEVICE_NONE, roi_in, roi_out);
 
     roi_out->width = roi_in->width;
     roi_out->height = roi_in->height;

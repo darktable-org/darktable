@@ -523,7 +523,7 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
       if(active && hist->iop_order == INT_MAX)
       {
         piece->enabled = FALSE;
-        dt_print_pipe(DT_DEBUG_PARAMS | DT_DEBUG_PIPE, "dt_dev_pixelpipe_synch",
+        dt_print_pipe(DT_DEBUG_PARAMS | DT_DEBUG_PIPE | DT_DEBUG_IOPORDER, "dt_dev_pixelpipe_synch",
           pipe, piece->module, DT_DEVICE_NONE, NULL, NULL,
           "enabled module with iop_order of INT_MAX is disabled");
       }
