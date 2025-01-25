@@ -112,7 +112,6 @@ typedef struct dt_gui_gtk_t
 
   dt_gui_scrollbars_t scrollbars;
 
-  cairo_surface_t *surface;
   gboolean drawing_snapshot;
 
   char *last_preset;

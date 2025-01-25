@@ -1669,6 +1669,8 @@ void dt_view_paint_surface(cairo_t *cr,
 
   int processed_width, processed_height;
   dt_dev_get_processed_size(port, &processed_width, &processed_height);
+  if(!processed_width || !processed_height)
+    return;
 
   float pts[] = { buf_zoom_x, buf_zoom_y,
                   dev->preview_pipe->backbuf_zoom_x, dev->preview_pipe->backbuf_zoom_y,
