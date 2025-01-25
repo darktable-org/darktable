@@ -523,7 +523,7 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
       if(active && hist->iop_order == INT_MAX)
       {
         piece->enabled = FALSE;
-        dt_print_pipe(DT_DEBUG_PARAMS | DT_DEBUG_PIPE, "dt_dev_pixelpipe_synch",
+        dt_print_pipe(DT_DEBUG_PARAMS | DT_DEBUG_PIPE | DT_DEBUG_IOPORDER, "dt_dev_pixelpipe_synch",
           pipe, piece->module, DT_DEVICE_NONE, NULL, NULL,
           "enabled module with iop_order of INT_MAX is disabled");
       }
@@ -635,34 +635,42 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
-
-  dt_print_pipe(DT_DEBUG_PIPE, "pipe state changing",
-      pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "%s%s%s%s",
+  dt_print_pipe(DT_DEBUG_PIPE, "dev_pixelpipe_change",
+      pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "%s%s%s%s%s",
       pipe->changed & DT_DEV_PIPE_ZOOMED      ? "zoomed, " : "",
       pipe->changed & DT_DEV_PIPE_TOP_CHANGED ? "top changed, " : "",
       pipe->changed & DT_DEV_PIPE_SYNCH       ? "synch all, " : "",
-      pipe->changed & DT_DEV_PIPE_REMOVE      ? "pipe remove" : "");
-  // case DT_DEV_PIPE_UNCHANGED: case DT_DEV_PIPE_ZOOMED:
-  if(pipe->changed & DT_DEV_PIPE_TOP_CHANGED)
+      pipe->changed & DT_DEV_PIPE_REMOVE      ? "pipe remove" : "",
+      pipe->changed == DT_DEV_PIPE_UNCHANGED  ? "dimension" : "");
+
+  if(pipe->changed & (DT_DEV_PIPE_TOP_CHANGED | DT_DEV_PIPE_SYNCH | DT_DEV_PIPE_REMOVE))
   {
-    // only top history item changed.
-    dt_dev_pixelpipe_synch_top(pipe, dev);
-  }
-  if(pipe->changed & DT_DEV_PIPE_SYNCH)
-  {
-    // pipeline topology remains intact, only change all params.
-    dt_dev_pixelpipe_synch_all(pipe, dev);
-  }
-  if(pipe->changed & DT_DEV_PIPE_REMOVE)
-  {
-    // modules have been added in between or removed. need to rebuild
-    // the whole pipeline.
-    dt_dev_pixelpipe_cleanup_nodes(pipe);
-    dt_dev_pixelpipe_create_nodes(pipe, dev);
-    dt_dev_pixelpipe_synch_all(pipe, dev);
+    const gboolean sync_all = pipe->changed & (DT_DEV_PIPE_SYNCH | DT_DEV_PIPE_REMOVE);
+    const gboolean sync_remove = pipe->changed & DT_DEV_PIPE_REMOVE;
+
+    if((pipe->changed & DT_DEV_PIPE_TOP_CHANGED) && !sync_all)
+    {
+      // only top history item changed. Not required if we synch_all
+      dt_dev_pixelpipe_synch_top(pipe, dev);
+    }
+
+    if((pipe->changed & DT_DEV_PIPE_SYNCH) && !sync_remove)
+    {
+      // pipeline topology remains intact but change all params. Not required if we rebuild all nodes
+      dt_dev_pixelpipe_synch_all(pipe, dev);
+    }
+
+    if(pipe->changed & DT_DEV_PIPE_REMOVE)
+    {
+      // modules have been added in between or removed. need to rebuild the whole pipeline.
+      dt_dev_pixelpipe_cleanup_nodes(pipe);
+      dt_dev_pixelpipe_create_nodes(pipe, dev);
+      dt_dev_pixelpipe_synch_all(pipe, dev);
+    }
   }
   pipe->changed = DT_DEV_PIPE_UNCHANGED;
   dt_pthread_mutex_unlock(&dev->history_mutex);
+
   dt_dev_pixelpipe_get_dimensions(pipe, dev,
                                   pipe->iwidth, pipe->iheight,
                                   &pipe->processed_width,
@@ -2564,16 +2572,19 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     // as the user is likely to change that one soon (again), so keep it in cache.
     // Also do this if the clbuffer has been actively written
     const gboolean has_focus = module == dt_dev_gui_module();
+    const gboolean last_history = darktable.develop->history_last_module == module;
     if((pipe->type & DT_DEV_PIXELPIPE_BASIC)
         && (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
-        && (has_focus || darktable.develop->history_last_module == module || important_cl))
+        && (has_focus || last_history || important_cl))
     {
       dt_print_pipe(DT_DEBUG_PIPE,
         "importance hints", pipe, module, pipe->devid, &roi_in, NULL, " %s%s%s",
-        darktable.develop->history_last_module == module ? "input_hint " : "",
+        last_history ? "input_hint " : "",
         has_focus ? "focus " : "",
         important_cl ? "cldata" : "");
       dt_dev_pixelpipe_important_cacheline(pipe, input, roi_in.width * roi_in.height * in_bpp);
+      if((pipe->type & DT_DEV_PIXELPIPE_FULL) && last_history)
+        darktable.develop->history_last_module = NULL;
     }
 
     if(module->expanded
@@ -3014,6 +3025,8 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex);
   dt_iop_roi_t roi_in = (dt_iop_roi_t){ 0, 0, width_in, height_in, 1.0 };
+  dt_print_pipe(DT_DEBUG_PIPE,
+                "get dimensions", pipe, NULL, DT_DEVICE_NONE, &roi_in, NULL, "ID=%i", pipe->image.id);
   dt_iop_roi_t roi_out;
   GList *modules = pipe->iop;
   GList *pieces = pipe->nodes;
@@ -3030,8 +3043,7 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
       module->modify_roi_out(module, piece, &roi_out, &roi_in);
       if((darktable.unmuted & DT_DEBUG_PIPE) && memcmp(&roi_out, &roi_in, sizeof(dt_iop_roi_t)))
       dt_print_pipe(DT_DEBUG_PIPE,
-                  "modify roi OUT", pipe, module, DT_DEVICE_NONE, &roi_in, &roi_out, "ID=%i",
-                  pipe->image.id);
+                  "modify roi OUT", pipe, module, DT_DEVICE_NONE, &roi_in, &roi_out);
     }
     else
     {
