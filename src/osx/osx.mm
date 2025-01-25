@@ -343,7 +343,7 @@ gboolean dt_osx_open_url(const char *url)
         bool duplicate = false;
         for (int j = 0; j < o_argc; ++j) 
         {
-            if (strcmp(openedFiles[i].c_str(), o_argv[j]) == 0) 
+            if (!strcmp(openedFiles[i].c_str(), o_argv[j])) 
             {
                 duplicate = true;
                 break;
