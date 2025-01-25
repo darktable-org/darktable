@@ -633,34 +633,42 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
-
-  dt_print_pipe(DT_DEBUG_PIPE, "pipe state changing",
-      pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "%s%s%s%s",
+  dt_print_pipe(DT_DEBUG_PIPE, "dev_pixelpipe_change",
+      pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "%s%s%s%s%s",
       pipe->changed & DT_DEV_PIPE_ZOOMED      ? "zoomed, " : "",
       pipe->changed & DT_DEV_PIPE_TOP_CHANGED ? "top changed, " : "",
       pipe->changed & DT_DEV_PIPE_SYNCH       ? "synch all, " : "",
-      pipe->changed & DT_DEV_PIPE_REMOVE      ? "pipe remove" : "");
-  // case DT_DEV_PIPE_UNCHANGED: case DT_DEV_PIPE_ZOOMED:
-  if(pipe->changed & DT_DEV_PIPE_TOP_CHANGED)
+      pipe->changed & DT_DEV_PIPE_REMOVE      ? "pipe remove" : "",
+      pipe->changed == DT_DEV_PIPE_UNCHANGED  ? "dimension" : "");
+
+  if(pipe->changed & (DT_DEV_PIPE_TOP_CHANGED | DT_DEV_PIPE_SYNCH | DT_DEV_PIPE_REMOVE))
   {
-    // only top history item changed.
-    dt_dev_pixelpipe_synch_top(pipe, dev);
-  }
-  if(pipe->changed & DT_DEV_PIPE_SYNCH)
-  {
-    // pipeline topology remains intact, only change all params.
-    dt_dev_pixelpipe_synch_all(pipe, dev);
-  }
-  if(pipe->changed & DT_DEV_PIPE_REMOVE)
-  {
-    // modules have been added in between or removed. need to rebuild
-    // the whole pipeline.
-    dt_dev_pixelpipe_cleanup_nodes(pipe);
-    dt_dev_pixelpipe_create_nodes(pipe, dev);
-    dt_dev_pixelpipe_synch_all(pipe, dev);
+    const gboolean sync_all = pipe->changed & (DT_DEV_PIPE_SYNCH | DT_DEV_PIPE_REMOVE);
+    const gboolean sync_remove = pipe->changed & DT_DEV_PIPE_REMOVE;
+
+    if((pipe->changed & DT_DEV_PIPE_TOP_CHANGED) && !sync_all)
+    {
+      // only top history item changed. Not required if we synch_all
+      dt_dev_pixelpipe_synch_top(pipe, dev);
+    }
+
+    if((pipe->changed & DT_DEV_PIPE_SYNCH) && !sync_remove)
+    {
+      // pipeline topology remains intact but change all params. Not required if we rebuild all nodes
+      dt_dev_pixelpipe_synch_all(pipe, dev);
+    }
+
+    if(pipe->changed & DT_DEV_PIPE_REMOVE)
+    {
+      // modules have been added in between or removed. need to rebuild the whole pipeline.
+      dt_dev_pixelpipe_cleanup_nodes(pipe);
+      dt_dev_pixelpipe_create_nodes(pipe, dev);
+      dt_dev_pixelpipe_synch_all(pipe, dev);
+    }
   }
   pipe->changed = DT_DEV_PIPE_UNCHANGED;
   dt_pthread_mutex_unlock(&dev->history_mutex);
+
   dt_dev_pixelpipe_get_dimensions(pipe, dev,
                                   pipe->iwidth, pipe->iheight,
                                   &pipe->processed_width,
@@ -2906,6 +2914,8 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex);
   dt_iop_roi_t roi_in = (dt_iop_roi_t){ 0, 0, width_in, height_in, 1.0 };
+  dt_print_pipe(DT_DEBUG_PIPE,
+                "get dimensions", pipe, NULL, DT_DEVICE_NONE, &roi_in, NULL, "ID=%i", pipe->image.id);
   dt_iop_roi_t roi_out;
   GList *modules = pipe->iop;
   GList *pieces = pipe->nodes;
@@ -2922,8 +2932,7 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
       module->modify_roi_out(module, piece, &roi_out, &roi_in);
       if((darktable.unmuted & DT_DEBUG_PIPE) && memcmp(&roi_out, &roi_in, sizeof(dt_iop_roi_t)))
       dt_print_pipe(DT_DEBUG_PIPE,
-                  "modify roi OUT", piece->pipe, module, DT_DEVICE_NONE, &roi_in, &roi_out, "ID=%i",
-                  pipe->image.id);
+                  "modify roi OUT", pipe, module, DT_DEVICE_NONE, &roi_in, &roi_out);
     }
     else
     {
