@@ -66,6 +66,9 @@ changes (where available).
 - Due to an upstream issue, exporting JPEG XL in 16-bit float at
   quality 100 is not currently mathematically lossless.
 
+- Allow reading of files in Cineon format (developed by Kodak) and DPX
+  format (developed by SMPTE) with .cin and .dpx file extensions.
+
 ## Bug Fixes
 
 - N/A
