@@ -40,7 +40,12 @@
 #include "file_location.h"
 #include "whereami.h"
 
-gboolean dt_loc_init(const char *datadir, const char *moduledir, const char *localedir, const char *configdir, const char *cachedir, const char *tmpdir)
+gboolean dt_loc_init(const char *datadir,
+                     const char *moduledir,
+                     const char *localedir,
+                     const char *configdir,
+                     const char *cachedir,
+                     const char *tmpdir)
 {
   // Assemble pathes
   char* application_directory = NULL;
@@ -118,19 +123,23 @@ gchar *dt_loc_get_home_dir(const gchar *user)
 #endif
 }
 
-gchar *dt_loc_init_generic(const char *absolute_value, const char *application_directory, const char *default_value)
+gchar *dt_loc_init_generic(const char *absolute_value,
+                           const char *application_directory,
+                           const char *default_value)
 {
   gchar *result = NULL;
   gchar *path = NULL;
 
   if(absolute_value)
   {
-    // the only adjustment the absolute path needs is transforming the possible tilde '~' to an absolute path
+    // the only adjustment the absolute path needs is
+    // transforming the possible tilde '~' to an absolute path
     path = dt_util_fix_path(absolute_value);
   }
   else
   {
-    // the default_value could be absolute or relative. we decide upon presence of the application_directory.
+    // the default_value could be absolute or relative.
+    // we decide upon presence of the application_directory.
     if(application_directory)
     {
       // default_value is relative.
@@ -147,7 +156,8 @@ gchar *dt_loc_init_generic(const char *absolute_value, const char *application_d
         // <bundleroot>/Contents/Resources/etc
         // <bundleroot>/Contents/Resources/lib
         // <bundleroot>/Contents/Resources/share
-        // so the relative path from the binary directory to the other directories differs to the non-bundle version by
+        // so the relative path from the binary directory to the other directories
+        // differs to the non-bundle version by
         // ../etc -> ../Resources/etc,
         // ../lib -> ../Resources/lib,
         // ../share -> ../Resources/share,
@@ -174,7 +184,8 @@ gchar *dt_loc_init_generic(const char *absolute_value, const char *application_d
   }
 
   // create file if it does not exist
-  if(g_file_test(path, G_FILE_TEST_EXISTS) == FALSE) g_mkdir_with_parents(path, 0700);
+  if(g_file_test(path, G_FILE_TEST_EXISTS) == FALSE)
+    g_mkdir_with_parents(path, 0700);
 
   // removes '.', '..', and extra '/' characters.
   result = g_realpath(path);

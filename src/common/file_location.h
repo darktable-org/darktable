@@ -23,31 +23,51 @@
 
 G_BEGIN_DECLS
 
-/** returns the users home directory */
+// Returns the users home directory
 gchar *dt_loc_get_home_dir(const gchar *user);
 
-/** initializes all dirs */
-gboolean dt_loc_init(const char *datadir, const char *moduledir, const char *localedir, const char *configdir, const char *cachedir, const char *tmpdir);
-/** init systemwide data dir */
-void dt_loc_init_datadir(const char *application_directory, const char *datadir);
-/** init the plugin dir */
-void dt_loc_init_plugindir(const char *application_directory, const char *plugindir);
-/** init the locale dir */
-void dt_loc_init_localedir(const char *application_directory, const char *localedir);
-/** init share dir */
+// Init all dirs
+gboolean dt_loc_init(const char *datadir,
+                     const char *moduledir,
+                     const char *localedir,
+                     const char *configdir,
+                     const char *cachedir,
+                     const char *tmpdir);
+
+// Init systemwide data dir
+void dt_loc_init_datadir(const char *application_directory,
+                         const char *datadir);
+
+// Init the plugin dir
+void dt_loc_init_plugindir(const char *application_directory,
+                           const char *plugindir);
+
+// Init the locale dir
+void dt_loc_init_localedir(const char *application_directory,
+                           const char *localedir);
+
+// Init share dir
 void dt_loc_init_sharedir(const char* application_directory);
-/** init user local dir */
+
+// Init user tmp dir
 gboolean dt_loc_init_tmp_dir(const char *tmpdir);
-/** init user config dir */
+
+// Init user config dir
 gboolean dt_loc_init_user_config_dir(const char *configdir);
-/** init user cache dir */
+
+// Init user cache dir
 gboolean dt_loc_init_user_cache_dir(const char *cachedir);
-/** init specific dir. Value is appended if application_directory is not NULL (relative path resolution). */
-gchar *dt_loc_init_generic(const char *absolute_value, const char *application_directory, const char *default_value);
-/** check if directory open worked. Exit with error message in case it does not.*/
+
+// Init specific dir. Default value is appended to application_directory
+// if application_directory is not NULL.
+gchar *dt_loc_init_generic(const char *absolute_value,
+                           const char *application_directory,
+                           const char *default_value);
+
+// Checking if we can open the directory.
 gboolean dt_check_opendir(const char* text, const char* directory);
 
-/* temporary backward_compatibility*/
+// temporary backward_compatibility
 void dt_loc_get_datadir(char *datadir, size_t bufsize);
 void dt_loc_get_sharedir(char *sharedir, size_t bufsize);
 void dt_loc_get_kerneldir(char *kerneldir, size_t bufsize);
