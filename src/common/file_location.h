@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2020 darktable developers.
+    Copyright (C) 2012-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ G_BEGIN_DECLS
 gchar *dt_loc_get_home_dir(const gchar *user);
 
 /** initializes all dirs */
-void dt_loc_init(const char *datadir, const char *moduledir, const char *localedir, const char *configdir, const char *cachedir, const char *tmpdir);
+gboolean dt_loc_init(const char *datadir, const char *moduledir, const char *localedir, const char *configdir, const char *cachedir, const char *tmpdir);
 /** init systemwide data dir */
 void dt_loc_init_datadir(const char *application_directory, const char *datadir);
 /** init the plugin dir */
@@ -37,15 +37,15 @@ void dt_loc_init_localedir(const char *application_directory, const char *locale
 /** init share dir */
 void dt_loc_init_sharedir(const char* application_directory);
 /** init user local dir */
-void dt_loc_init_tmp_dir(const char *tmpdir);
+gboolean dt_loc_init_tmp_dir(const char *tmpdir);
 /** init user config dir */
-void dt_loc_init_user_config_dir(const char *configdir);
+gboolean dt_loc_init_user_config_dir(const char *configdir);
 /** init user cache dir */
-void dt_loc_init_user_cache_dir(const char *cachedir);
+gboolean dt_loc_init_user_cache_dir(const char *cachedir);
 /** init specific dir. Value is appended if application_directory is not NULL (relative path resolution). */
 gchar *dt_loc_init_generic(const char *absolute_value, const char *application_directory, const char *default_value);
 /** check if directory open worked. Exit with error message in case it does not.*/
-void dt_check_opendir(const char* text, const char* directory);
+gboolean dt_check_opendir(const char* text, const char* directory);
 
 /* temporary backward_compatibility*/
 void dt_loc_get_datadir(char *datadir, size_t bufsize);
@@ -64,4 +64,3 @@ G_END_DECLS
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
