@@ -797,7 +797,7 @@ int process_cl(dt_iop_module_t *self,
   const dt_iop_sigmoid_data_t *const d = piece->data;
   dt_iop_sigmoid_global_data_t *const gd = self->global_data;
 
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -823,10 +823,7 @@ int process_cl(dt_iop_module_t *self,
   cl_mem dev_rendering_to_pipe
       = dt_opencl_copy_host_to_device_constant(devid, sizeof(rendering_to_pipe), rendering_to_pipe);
   if(dev_pipe_to_base == NULL || dev_base_to_rendering == NULL || dev_rendering_to_pipe == NULL)
-  {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_sigmoid] couldn't allocate memory!");
     goto cleanup;
-  }
 
   if(d->color_processing == DT_SIGMOID_METHOD_PER_CHANNEL)
   {

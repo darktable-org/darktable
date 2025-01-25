@@ -1560,7 +1560,7 @@ static void _init_8(uint8_t *buf,
       *iscale = 1.0f;
       *color_space = dt_mipmap_cache_get_colorspace();
     }
-    dt_print(DT_DEBUG_PIPE, "[mipmap init 8] export ID=%d finished (sizes %d %d => %d %d)!",
+    dt_print(DT_DEBUG_PIPE, "[mipmap init 8] export ID=%d finished (sizes %d %d => %d %d)",
       imgid, wd, ht, dat.head.width, dat.head.height);
   }
 

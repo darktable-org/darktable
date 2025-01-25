@@ -4502,7 +4502,7 @@ start:
             if(fd < 0 || !g_close(fd, &gerror)) copy_status = FALSE;
           }
           dt_print(DT_DEBUG_ALWAYS, "[init] restoring `%s' from `%s' :%s",
-                   dbfilename_data, data_snap, copy_status ? "success!" : "failed!");
+                   dbfilename_data, data_snap, copy_status ? "success" : "failed!");
           g_object_unref(src);
           g_object_unref(dest);
         }
