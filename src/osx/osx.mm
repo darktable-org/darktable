@@ -99,14 +99,14 @@ gboolean dt_osx_file_trash(const char *filename, GError **error)
 
     NSURL *url = [NSURL fileURLWithPath:@(filename)];
 
-    if ([fm respondsToSelector:@selector(trashItemAtURL:resultingItemURL:error:)]) {
-      if (![fm trashItemAtURL:url resultingItemURL:nil error:&err]) {
-        if (error != NULL)
+    if([fm respondsToSelector:@selector(trashItemAtURL:resultingItemURL:error:)]) {
+      if(![fm trashItemAtURL:url resultingItemURL:nil error:&err]) {
+        if(error != NULL)
           *error = g_error_new_literal(G_IO_ERROR, err.code == NSFileNoSuchFileError ? G_IO_ERROR_NOT_FOUND : G_IO_ERROR_FAILED, err.localizedDescription.UTF8String);
         return FALSE;
       }
     } else {
-      if (error != NULL)
+      if(error != NULL)
         *error = g_error_new_literal(G_IO_ERROR, G_IO_ERROR_NOT_SUPPORTED, "trash not supported on OS X versions < 10.8");
       return FALSE;
     }
@@ -312,18 +312,18 @@ gboolean dt_osx_open_url(const char *url)
 {
     // Copy argc and argv from original
     int argc = o_argc;
-    for (size_t i = 0; i < openedFiles.size(); ++i) 
+    for(size_t i = 0; i < openedFiles.size(); ++i) 
     {
         bool duplicate = false;
-        for (int j = 0; j < o_argc; ++j) 
+        for(int j = 0; j < o_argc; ++j) 
         {
-            if (strcmp(openedFiles[i].c_str(), o_argv[j]) == 0) 
+            if(strcmp(openedFiles[i].c_str(), o_argv[j]) == 0) 
             {
                 duplicate = true;
                 break;
             }
         }
-        if (!duplicate) 
+        if(!duplicate) 
         {
             argc++;
         }
@@ -331,25 +331,25 @@ gboolean dt_osx_open_url(const char *url)
     char** argv = new char*[argc + 1]; // +1 for the NULL terminator
 
     // Copy the original params to argv
-    for (int i = 0; i < o_argc; ++i) 
+    for(int i = 0; i < o_argc; ++i) 
     {
         argv[i] = strdup(o_argv[i]);
     }
 
     // Append openedFiles to argv if they are not duplicates
     int index = o_argc;
-    for (size_t i = 0; i < openedFiles.size(); ++i) 
+    for(size_t i = 0; i < openedFiles.size(); ++i) 
     {
         bool duplicate = false;
-        for (int j = 0; j < o_argc; ++j) 
+        for(int j = 0; j < o_argc; ++j) 
         {
-            if (!strcmp(openedFiles[i].c_str(), o_argv[j])) 
+            if(!strcmp(openedFiles[i].c_str(), o_argv[j])) 
             {
                 duplicate = true;
                 break;
             }
         }
-        if (!duplicate) 
+        if(!duplicate) 
         {
             argv[index++] = strdup(openedFiles[i].c_str());
         }
@@ -360,7 +360,7 @@ gboolean dt_osx_open_url(const char *url)
     apple_main(argc, argv);
 
     // Clean up
-    for (int i = 0; i < argc; ++i) 
+    for(int i = 0; i < argc; ++i) 
     {
         free(argv[i]);
     }
