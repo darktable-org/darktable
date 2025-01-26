@@ -3534,12 +3534,7 @@ void dt_opencl_memory_statistics(int devid,
    "resourcelevel". We garantee
    - a headroom of DT_OPENCL_DEFAULT_HEADROOM MB in all cases not using tuned cl
    - 256MB to simulate a minimum system
-   - 2GB to simalate a reference system
-
-  Please note, the tuning mode and resourcelevel is set via gui and
-  must *never* change settings valid while processing the pipeline.
-  Thus we have to get level & tune mode and set appropriate data
-  before pipeline is processed.
+   - 2GB to simulate a reference system
 */
 void dt_opencl_check_tuning(const int devid)
 {
@@ -3547,63 +3542,35 @@ void dt_opencl_check_tuning(const int devid)
   dt_opencl_t *cl = darktable.opencl;
   if(!_cldev_running(devid)) return;
 
-  static int oldlevel = -999;
-  static int oldtunehead = -999;
-
-  const gboolean tunehead = res->tunehead;
   const int level = res->level;
+  const gboolean tunehead = level >= 0
+                          && !dt_gimpmode()
+                          && dt_conf_get_bool("opencl_tune_headroom");
 
   cl->dev[devid].tunehead = tunehead;
-
-  const gboolean info = ((oldlevel != level) || (oldtunehead != tunehead));
-  oldlevel = level;
-  oldtunehead = tunehead;
 
   if(level < 0)
   {
     cl->dev[devid].used_available = res->refresource[4*(-level-1) + 3] * 1024lu * 1024lu;
-    if(info)
-      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY,
-               "[dt_opencl_check_tuning] reference mode %i,"
-               " use %luMB (pinning=%s) on device `%s' id=%i",
-               level,
-               cl->dev[devid].used_available / 1024lu / 1024lu,
-               cl->dev[devid].pinned_memory ? "ON" : "OFF",
-               cl->dev[devid].fullname, devid);
-    return;
-  }
-
-  const size_t allmem = cl->dev[devid].max_global_mem;
-  if(cl->dev[devid].tunehead)
-  {
-    const int headroom = (cl->dev[devid].headroom)
-      ? cl->dev[devid].headroom
-      : DT_OPENCL_DEFAULT_HEADROOM;
-
-    const int reserved_mb =
-      MAX(1, headroom) + (cl->dev[devid].clmem_error ? DT_OPENCL_DEFAULT_HEADROOM : 0);
-    const int global_mb = cl->dev[devid].max_global_mem / 1024lu / 1024lu;
-    cl->dev[devid].used_available = (size_t)
-      (MAX(0, global_mb - reserved_mb)) * 1024ul * 1024ul;
   }
   else
   {
-    // calculate data from fractions
-    const size_t default_headroom = DT_OPENCL_DEFAULT_HEADROOM * 1024ul * 1024ul;
-    const size_t disposable = allmem > default_headroom ? allmem - default_headroom : 0;
-    const int fraction = MIN(1024lu, MAX(0, res->fractions[res->group + 3]));
-    cl->dev[devid].used_available =
-      MAX(256ul * 1024ul * 1024ul, disposable / 1024ul * fraction);
+    const size_t allmem = cl->dev[devid].max_global_mem;
+    const size_t lowmem = 256ul * 1024ul * 1024ul;
+    const size_t dhead = DT_OPENCL_DEFAULT_HEADROOM * 1024ul * 1024ul;
+    if(cl->dev[devid].tunehead)
+    {
+      const size_t headroom = (cl->dev[devid].headroom ? 1024ul * 1024ul * cl->dev[devid].headroom : dhead)
+                            + (cl->dev[devid].clmem_error ? dhead : 0);
+      cl->dev[devid].used_available = allmem > headroom ? allmem - headroom : lowmem;
+    }
+    else
+    {
+      const size_t disposable = allmem > dhead ? allmem - dhead : 0;
+      const int fraction = MIN(1024, res->fractions[4*res->level + 3]);
+      cl->dev[devid].used_available = MAX(lowmem, disposable / 1024ul * fraction);
+    }
   }
-
-  if(info)
-    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY,
-             "[dt_opencl_check_tuning] use %luMB (headroom=%s, pinning=%s)"
-             " on device `%s' id=%i",
-             cl->dev[devid].used_available / 1024lu / 1024lu,
-             cl->dev[devid].tunehead ? "ON" : "OFF",
-             cl->dev[devid].pinned_memory  ? "ON" : "OFF",
-             cl->dev[devid].fullname, devid);
 }
 
 cl_ulong dt_opencl_get_device_available(const int devid)

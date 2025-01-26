@@ -752,10 +752,6 @@ static inline size_t dt_opencl_get_device_available(const int devid)
 {
   return 0;
 }
-static inline void dt_opencl_check_tuning(const int devid)
-{
-  return;
-}
 static inline size_t dt_opencl_get_device_memalloc(const int devid)
 {
   return 0;

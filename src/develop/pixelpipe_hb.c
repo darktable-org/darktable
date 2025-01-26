@@ -2785,7 +2785,6 @@ static gboolean _dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe
                                                         const int pos)
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex);
-  darktable.dtresources.group = 4 * darktable.dtresources.level;
 #ifdef HAVE_OPENCL
   dt_opencl_check_tuning(pipe->devid);
 #endif
@@ -2885,9 +2884,12 @@ restart:
 
 #ifdef HAVE_OPENCL
   if(pipe->devid > DT_DEVICE_CPU)
-    dt_print_pipe(DT_DEBUG_PIPE, "pipe starting", pipe, NULL, pipe->devid, &roi, &roi, "ID=%i, %s",
+    dt_print_pipe(DT_DEBUG_PIPE, "pipe starting", pipe, NULL, pipe->devid, &roi, &roi, "ID=%i, %s %luMB%s%s",
       pipe->image.id,
-      darktable.opencl->dev[pipe->devid].cname);
+      darktable.opencl->dev[pipe->devid].cname,
+      darktable.opencl->dev[pipe->devid].used_available / 1024lu / 1024lu,
+      darktable.opencl->dev[pipe->devid].tunehead ? ", tuned" : "",
+      darktable.opencl->dev[pipe->devid].pinned_memory ? ", pinned": "");
   else
     dt_print_pipe(DT_DEBUG_PIPE, "pipe starting", pipe, NULL, pipe->devid, &roi, &roi, "ID=%i",
       pipe->image.id);
