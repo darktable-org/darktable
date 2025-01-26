@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1379,13 +1379,15 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
              (darktable.tmp_directory) ?: "NOT AVAILABLE");
   }
 
-  // get valid directories
-  dt_loc_init(datadir_from_command,
-              moduledir_from_command,
-              localedir_from_command,
-              configdir_from_command,
-              cachedir_from_command,
-              tmpdir_from_command);
+  // Set directories as requested or default.
+  // Set a result flag so if we can't create certain directories, we can
+  // later, after initializing the GUI, show the user a message and exit.
+  const gboolean user_dirs_are_created = dt_loc_init(datadir_from_command,
+                                                     moduledir_from_command,
+                                                     localedir_from_command,
+                                                     configdir_from_command,
+                                                     cachedir_from_command,
+                                                     tmpdir_from_command);
 
   dt_print_mem_usage("at startup");
 
@@ -1509,6 +1511,26 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
     darktable.themes = NULL;
     dt_gui_theme_init(darktable.gui);
+
+    if(!user_dirs_are_created)
+    {
+      char *user_dirs_failure_text = g_markup_printf_escaped(
+        _("you do not have write access to create one of the user directories\n"
+          "\n"
+          "see the log for more details\n"
+          "\n"
+          "please fix this and then run darktable again"));
+      dt_gui_show_standalone_yes_no_dialog(_("darktable - unable to create directories"),
+                                           user_dirs_failure_text,
+                                           _("_quit darktable"),
+                                           NULL);
+      // There is no REAL need to free the string before exiting, but we do it
+      // to avoid creating a code pattern that could be mistakenly copy-pasted
+      // somewhere else where freeing memory would actually be needed.
+      g_free(user_dirs_failure_text);
+      exit(EXIT_FAILURE);
+    }
+
     darktable_splash_screen_create(NULL, FALSE);
   }
 
@@ -2334,13 +2356,6 @@ void dt_configure_runtime_performance(const int old, char *info)
 
   // All runtime conf settings only write data if there is no valid
   // data found in conf
-  if(!dt_conf_key_not_empty("ui/performance"))
-  {
-    dt_conf_set_bool("ui/performance", !sufficient);
-    dt_print(DT_DEBUG_DEV,
-             "[dt_configure_runtime_performance] ui/performance=%s",
-             (sufficient) ? "FALSE" : "TRUE");
-  }
 
   if(!dt_conf_key_not_empty("resourcelevel"))
   {
