@@ -69,6 +69,8 @@ changes (where available).
 - Allow reading of files in Cineon format (developed by Kodak) and DPX
   format (developed by SMPTE) with .cin and .dpx file extensions.
 
+- Removed prefer performance over quality preference setting.
+
 ## Bug Fixes
 
 - N/A
