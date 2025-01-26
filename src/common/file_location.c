@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2023x darktable developers.
+    Copyright (C) 2012-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,7 +40,12 @@
 #include "file_location.h"
 #include "whereami.h"
 
-void dt_loc_init(const char *datadir, const char *moduledir, const char *localedir, const char *configdir, const char *cachedir, const char *tmpdir)
+gboolean dt_loc_init(const char *datadir,
+                     const char *moduledir,
+                     const char *localedir,
+                     const char *configdir,
+                     const char *cachedir,
+                     const char *tmpdir)
 {
   // Assemble pathes
   char* application_directory = NULL;
@@ -62,11 +67,15 @@ void dt_loc_init(const char *datadir, const char *moduledir, const char *localed
   dt_loc_init_datadir(application_directory, datadir);
   dt_loc_init_plugindir(application_directory, moduledir);
   dt_loc_init_localedir(application_directory, localedir);
-  dt_loc_init_user_config_dir(configdir);
-  dt_loc_init_user_cache_dir(cachedir);
   dt_loc_init_sharedir(application_directory);
-  dt_loc_init_tmp_dir(tmpdir);
+
   free(application_directory);
+
+  if(!dt_loc_init_user_config_dir(configdir)) return FALSE;
+  if(!dt_loc_init_user_cache_dir(cachedir)) return FALSE;
+  if(!dt_loc_init_tmp_dir(tmpdir)) return FALSE;
+
+  return TRUE;
 }
 
 gchar *dt_loc_get_home_dir(const gchar *user)
@@ -114,19 +123,23 @@ gchar *dt_loc_get_home_dir(const gchar *user)
 #endif
 }
 
-gchar *dt_loc_init_generic(const char *absolute_value, const char *application_directory, const char *default_value)
+gchar *dt_loc_init_generic(const char *absolute_value,
+                           const char *application_directory,
+                           const char *default_value)
 {
   gchar *result = NULL;
   gchar *path = NULL;
 
   if(absolute_value)
   {
-    // the only adjustment the absolute path needs is transforming the possible tilde '~' to an absolute path
+    // the only adjustment the absolute path needs is
+    // transforming the possible tilde '~' to an absolute path
     path = dt_util_fix_path(absolute_value);
   }
   else
   {
-    // the default_value could be absolute or relative. we decide upon presence of the application_directory.
+    // the default_value could be absolute or relative.
+    // we decide upon presence of the application_directory.
     if(application_directory)
     {
       // default_value is relative.
@@ -143,7 +156,8 @@ gchar *dt_loc_init_generic(const char *absolute_value, const char *application_d
         // <bundleroot>/Contents/Resources/etc
         // <bundleroot>/Contents/Resources/lib
         // <bundleroot>/Contents/Resources/share
-        // so the relative path from the binary directory to the other directories differs to the non-bundle version by
+        // so the relative path from the binary directory to the other directories
+        // differs to the non-bundle version by
         // ../etc -> ../Resources/etc,
         // ../lib -> ../Resources/lib,
         // ../share -> ../Resources/share,
@@ -170,7 +184,8 @@ gchar *dt_loc_init_generic(const char *absolute_value, const char *application_d
   }
 
   // create file if it does not exist
-  if(g_file_test(path, G_FILE_TEST_EXISTS) == FALSE) g_mkdir_with_parents(path, 0700);
+  if(g_file_test(path, G_FILE_TEST_EXISTS) == FALSE)
+    g_mkdir_with_parents(path, 0700);
 
   // removes '.', '..', and extra '/' characters.
   result = g_realpath(path);
@@ -179,26 +194,26 @@ gchar *dt_loc_init_generic(const char *absolute_value, const char *application_d
   return result;
 }
 
-void dt_loc_init_user_config_dir(const char *configdir)
+gboolean dt_loc_init_user_config_dir(const char *configdir)
 {
   char *default_config_dir = g_build_filename(g_get_user_config_dir(), "darktable", NULL);
   darktable.configdir = dt_loc_init_generic(configdir, NULL, default_config_dir);
-  dt_check_opendir("darktable.configdir", darktable.configdir);
   g_free(default_config_dir);
+  return dt_check_opendir("darktable.configdir", darktable.configdir);
 }
 
-void dt_loc_init_tmp_dir(const char *tmpdir)
+gboolean dt_loc_init_tmp_dir(const char *tmpdir)
 {
   darktable.tmpdir = dt_loc_init_generic(tmpdir, NULL, g_get_tmp_dir());
-  dt_check_opendir("darktable.tmpdir", darktable.tmpdir);
+  return dt_check_opendir("darktable.tmpdir", darktable.tmpdir);
 }
 
-void dt_loc_init_user_cache_dir(const char *cachedir)
+gboolean dt_loc_init_user_cache_dir(const char *cachedir)
 {
   char *default_cache_dir = g_build_filename(g_get_user_cache_dir(), "darktable", NULL);
   darktable.cachedir = dt_loc_init_generic(cachedir, NULL, default_cache_dir);
-  dt_check_opendir("darktable.cachedir", darktable.cachedir);
   g_free(default_cache_dir);
+  return dt_check_opendir("darktable.cachedir", darktable.cachedir);
 }
 
 void dt_loc_init_plugindir(const char* application_directory, const char *plugindir)
@@ -207,12 +222,12 @@ void dt_loc_init_plugindir(const char* application_directory, const char *plugin
   dt_check_opendir("darktable.plugindir", darktable.plugindir);
 }
 
-void dt_check_opendir(const char* context, const char* directory)
+gboolean dt_check_opendir(const char* context, const char* directory)
 {
   if(!directory)
   {
     dt_print(DT_DEBUG_ALWAYS, "directory for %s has not been set", context);
-    exit(EXIT_FAILURE);
+    return FALSE;
   }
 
 #if _WIN32
@@ -227,7 +242,7 @@ void dt_check_opendir(const char* context, const char* directory)
   else
   {
     dt_print(DT_DEBUG_ALWAYS, "%s: directory '%s' fails to open", context, directory);
-    exit(EXIT_FAILURE);
+    return FALSE;
   }
 #else
   DIR* dir = opendir(directory);
@@ -239,9 +254,10 @@ void dt_check_opendir(const char* context, const char* directory)
   else
   {
     dt_print(DT_DEBUG_ALWAYS, "opendir '%s' fails with: '%s'", directory, strerror(errno));
-    exit(EXIT_FAILURE);
+    return FALSE;
   }
 #endif
+  return TRUE;
 }
 
 void dt_loc_init_localedir(const char* application_directory, const char *localedir)
@@ -304,4 +320,3 @@ void dt_loc_get_sharedir(char *sharedir, size_t bufsize)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
