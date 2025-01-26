@@ -1291,6 +1291,7 @@ void dt_iop_gui_init(dt_iop_module_t *module)
   ++darktable.gui->reset;
   --darktable.bauhaus->skip_accel;
   if(module->gui_init) module->gui_init(module);
+  dt_pthread_mutex_init(&module->gui_lock, NULL);
   ++darktable.bauhaus->skip_accel;
   --darktable.gui->reset;
 }
@@ -2215,8 +2216,7 @@ void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
   if(module->gui_cleanup) module->gui_cleanup(module);
   gtk_widget_destroy(module->expander ?: module->widget);
   dt_iop_gui_cleanup_blending(module);
-  if(module->gui_data)
-    dt_pthread_mutex_destroy(&module->gui_lock);
+  dt_pthread_mutex_destroy(&module->gui_lock);
   dt_free_align(module->gui_data);
 }
 

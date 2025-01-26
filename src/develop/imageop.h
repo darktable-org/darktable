@@ -541,7 +541,6 @@ static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, const s
 {
   // Align so that DT_ALIGNED_ARRAY may be used within gui_data struct
   module->gui_data = dt_calloc_aligned(size);
-  dt_pthread_mutex_init(&module->gui_lock, NULL);
   return module->gui_data;
 }
 #define IOP_GUI_ALLOC(module) \
