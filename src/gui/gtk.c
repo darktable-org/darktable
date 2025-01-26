@@ -1167,7 +1167,7 @@ static void _open_url(GtkWidget *widget, gpointer url)
 }
 #endif
 
-// This is based on GIMP's implementation: 
+// This is based on GIMP's implementation:
 // https://gitlab.gnome.org/GNOME/gimp/-/blob/master/app/widgets/gimpwidgets-utils.c#L2655
 // Set win32 title bar color based on theme (background color).
 #ifdef _WIN32
@@ -1180,7 +1180,7 @@ static void _window_set_titlebar_color_callback(GtkWidget *widget)
     if(style)
     {
       GdkRGBA *bg_color = NULL;
-      gtk_style_context_get(style, GTK_STATE_FLAG_NORMAL, 
+      gtk_style_context_get(style, GTK_STATE_FLAG_NORMAL,
                             GTK_STYLE_PROPERTY_BACKGROUND_COLOR, &bg_color, NULL);
       if(bg_color)
       {
@@ -1649,13 +1649,7 @@ void dt_configure_ppd_dpi(dt_gui_gtk_t *gui)
 
   gui->ppd = gui->ppd_thb = dt_get_system_gui_ppd(widget);
   gui->filter_image = CAIRO_FILTER_GOOD;
-  if(dt_conf_get_bool("ui/performance"))
-  {
-      gui->ppd_thb *= DT_GUI_THUMBSIZE_REDUCE;
-      gui->filter_image = CAIRO_FILTER_FAST;
-  }
-
-   gui->dpi = dt_get_screen_resolution(widget);
+  gui->dpi = dt_get_screen_resolution(widget);
 
 #ifdef GDK_WINDOWING_QUARTZ
   gui->dpi_factor

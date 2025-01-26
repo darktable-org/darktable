@@ -1052,18 +1052,11 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   if(history_end != -1)
     dt_dev_pop_history_items_ext(&dev, history_end);
 
-  const gboolean buf_is_downscaled =
-    (thumbnail_export && dt_conf_get_bool("ui/performance"));
-
   if(!thumbnail_export)
     dt_set_backthumb_time(600.0); // make sure we don't interfere
 
   dt_mipmap_buffer_t buf;
-  if(buf_is_downscaled)
-    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid,
-                        DT_MIPMAP_F, DT_MIPMAP_BLOCKING, 'r');
-  else
-    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid,
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid,
                         DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
 
   const dt_image_t *img = &dev.image_storage;

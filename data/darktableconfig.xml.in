@@ -238,13 +238,6 @@
     <shortdescription>darktable resources</shortdescription>
     <longdescription>defines how much darktable may take from your system resources:\n - 'default': darktable takes ~50% of your systems resources, which is enough to be performant.\n - 'small': should be used if you are simultaneously running applications taking large parts of your systems memory or OpenCL/GL applications like games or Hugin.\n - 'large': is the best option if you are not running other applications at the same time as darktable and want it to take most of your systems resources for performance.</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing" section="cpugpu">
-    <name>ui/performance</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>prefer performance over quality</shortdescription>
-    <longdescription>if switched on, thumbnails and previews are rendered at lower quality but 4 times faster</longdescription>
-  </dtconfig>
   <dtconfig>
     <name>backthumbs_inactivity</name>
     <type>float</type>
