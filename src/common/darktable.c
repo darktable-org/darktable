@@ -2339,13 +2339,6 @@ void dt_configure_runtime_performance(const int old, char *info)
 
   // All runtime conf settings only write data if there is no valid
   // data found in conf
-  if(!dt_conf_key_not_empty("ui/performance"))
-  {
-    dt_conf_set_bool("ui/performance", !sufficient);
-    dt_print(DT_DEBUG_DEV,
-             "[dt_configure_runtime_performance] ui/performance=%s",
-             (sufficient) ? "FALSE" : "TRUE");
-  }
 
   if(!dt_conf_key_not_empty("resourcelevel"))
   {
