@@ -550,13 +550,13 @@ static size_t _get_mipmap_size()
   const int level = res->level;
   if(level < 0)
     return res->refresource[4*(-level-1) + 2] * 1024lu * 1024lu;
-  const int fraction = res->fractions[res->group + 2];
+  const int fraction = res->fractions[4*level + 2];
   return res->total_memory / 1024lu * fraction;
 }
 
-void check_resourcelevel(const char *key,
-                         int *fractions,
-                         const int level)
+static void _check_resourcelevel(const char *key,
+                                 int *fractions,
+                                 const int level)
 {
   const int g = level * 4;
   gchar out[128] = { 0 };
@@ -1674,10 +1674,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   };
 
   // Allow the settings for each UI performance level to be changed via darktablerc
-  check_resourcelevel("resource_small", fractions, 0);
-  check_resourcelevel("resource_default", fractions, 1);
-  check_resourcelevel("resource_large", fractions, 2);
-  check_resourcelevel("resource_unrestricted", fractions, 3);
+  _check_resourcelevel("resource_small", fractions, 0);
+  _check_resourcelevel("resource_default", fractions, 1);
+  _check_resourcelevel("resource_large", fractions, 2);
+  _check_resourcelevel("resource_unrestricted", fractions, 3);
 
   dt_sys_resources_t *res = &darktable.dtresources;
   res->fractions = fractions;
@@ -1693,6 +1693,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   dt_get_sysresource_level();
   res->mipmap_memory = _get_mipmap_size();
+  dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
+    "  mipmap cache:    %luMB", res->mipmap_memory / 1024lu / 1024lu);
   // initialize collection query
   darktable.collection = dt_collection_new(NULL);
 
@@ -1966,14 +1968,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   return 0;
 }
 
-
 void dt_get_sysresource_level()
 {
   static int oldlevel = -999;
-  static int oldtunehead = -999;
 
   dt_sys_resources_t *res = &darktable.dtresources;
-  const gboolean tunehead = !dt_gimpmode() && dt_conf_get_bool("opencl_tune_headroom");
   int level = 1;
   const char *config = dt_conf_get_string_const("resourcelevel");
   /** These levels must correspond with preferences in xml.in
@@ -1994,37 +1993,24 @@ void dt_get_sysresource_level()
     else if(!strcmp(config, "mini"))         level = -2;
     else if(!strcmp(config, "notebook"))     level = -3;
   }
-  const gboolean mod = ((level != oldlevel) || (oldtunehead != tunehead));
-  res->level = oldlevel = level;
-  oldtunehead = tunehead;
-  res->tunehead = tunehead;
-  if(mod && (darktable.unmuted & (DT_DEBUG_MEMORY | DT_DEBUG_OPENCL | DT_DEBUG_DEV)))
-  {
-    const int oldgrp = res->group;
-    res->group = 4 * level;
-    dt_print(DT_DEBUG_ALWAYS,
-             "[dt_get_sysresource_level] switched to %i as `%s'",
-             level, config);
-    dt_print(DT_DEBUG_ALWAYS,
-             "  total mem:       %luMB",
-             res->total_memory / 1024lu / 1024lu);
-    dt_print(DT_DEBUG_ALWAYS,
-             "  mipmap cache:    %luMB",
-             _get_mipmap_size() / 1024lu / 1024lu);
-    dt_print(DT_DEBUG_ALWAYS,
-             "  available mem:   %luMB",
-             dt_get_available_mem() / 1024lu / 1024lu);
-    dt_print(DT_DEBUG_ALWAYS,
-             "  singlebuff:      %luMB",
-             dt_get_singlebuffer_mem() / 1024lu / 1024lu);
 
-    res->group = oldgrp;
+  if(level != oldlevel)
+  {
+    oldlevel = res->level = level;
+    dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
+             "[dt_get_sysresource_level] switched to `%s'", config);
+    dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
+             "  total mem:       %luMB", res->total_memory / 1024lu / 1024lu);
+    dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
+             "  available mem:   %luMB", dt_get_available_mem() / 1024lu / 1024lu);
+    dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
+             "  singlebuff:      %luMB", dt_get_singlebuffer_mem() / 1024lu / 1024lu);
   }
 }
 
 void dt_cleanup()
 {
-  const int init_gui = (darktable.gui != NULL);
+  const gboolean init_gui = (darktable.gui != NULL);
 
 //  if(init_gui)
 //    darktable_exit_screen_create(NULL, FALSE);
@@ -2326,24 +2312,22 @@ size_t dt_get_available_mem()
 {
   dt_sys_resources_t *res = &darktable.dtresources;
   const int level = res->level;
-  const size_t total_mem = res->total_memory;
   if(level < 0)
     return res->refresource[4*(-level-1)] * 1024lu * 1024lu;
 
-  const int fraction = res->fractions[darktable.dtresources.group];
-  return MAX(512lu * 1024lu * 1024lu, total_mem / 1024lu * fraction);
+  const int fraction = res->fractions[4*level];
+  return MAX(512lu * 1024lu * 1024lu, res->total_memory / 1024lu * fraction);
 }
 
 size_t dt_get_singlebuffer_mem()
 {
   dt_sys_resources_t *res = &darktable.dtresources;
   const int level = res->level;
-  const size_t total_mem = res->total_memory;
   if(level < 0)
     return res->refresource[4*(-level-1) + 1] * 1024lu * 1024lu;
 
-  const int fraction = res->fractions[res->group + 1];
-  return MAX(2lu * 1024lu * 1024lu, total_mem / 1024lu * fraction);
+  const int fraction = res->fractions[4*level + 1];
+  return MAX(2lu * 1024lu * 1024lu, res->total_memory / 1024lu * fraction);
 }
 
 void dt_configure_runtime_performance(const int old, char *info)
