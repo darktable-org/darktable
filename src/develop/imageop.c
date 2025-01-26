@@ -2215,7 +2215,8 @@ void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
   if(module->gui_cleanup) module->gui_cleanup(module);
   gtk_widget_destroy(module->expander ?: module->widget);
   dt_iop_gui_cleanup_blending(module);
-  dt_pthread_mutex_destroy(&module->gui_lock);
+  if(module->gui_data)
+    dt_pthread_mutex_destroy(&module->gui_lock);
   dt_free_align(module->gui_data);
 }
 
