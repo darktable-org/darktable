@@ -49,7 +49,12 @@ The following is a summary of the main features added to darktable
 5.2. Please see the user manual for more details of the individual
 changes (where available).
 
-- N/A
+- View snapshots side-by-side with the current image, instead of as a
+  partial overlay, by clicking the button next to "take snapshot". The
+  center viewport is divided in two equal panels and can be zoomed and
+  panned (by dragging while holding the "a" key) as before. The
+  dividing line can not be moved and any click without "a" rotates the
+  layout.
 
 ## UI/UX Improvements
 
