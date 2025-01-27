@@ -33,7 +33,11 @@
 #include "common/datetime.h"
 #endif
 
+#ifdef __APPLE__
+int apple_main(int argc, char *argv[])
+#else
 int main(int argc, char *argv[])
+#endif
 {
 #ifdef __APPLE__
   dt_osx_prepare_environment();
