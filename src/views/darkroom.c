@@ -667,7 +667,7 @@ void expose(dt_view_t *self,
   if(_preview2_request(dev)) dt_dev_process_preview2(dev);
 
   /* if we are in full preview mode, we don"t want anything else than the image */
-  if(dev->full_preview)
+  if(dev->full_preview || !darktable.develop->preview_pipe->processed_width)
     return;
 
   float wd, ht;

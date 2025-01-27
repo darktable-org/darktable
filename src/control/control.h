@@ -46,7 +46,7 @@ struct dt_lib_backgroundjob_element_t;
 typedef GdkCursorType dt_cursor_t;
 
 // called from gui
-void *dt_control_expose(void *voidptr);
+void dt_control_expose(GtkWidget *widget, cairo_t *cr);
 gboolean dt_control_draw_endmarker(GtkWidget *widget, cairo_t *crf, gpointer user_data);
 void dt_control_button_pressed(double x, double y, double pressure, int which, int type, uint32_t state);
 void dt_control_button_released(double x, double y, int which, uint32_t state);
