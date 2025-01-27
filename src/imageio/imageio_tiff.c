@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -389,7 +389,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
 
   if(inkset == INKSET_CMYK || inkset == INKSET_MULTIINK)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: CMYK (or multiink) TIFFs are not supported.");
+    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: unsupported CMYK (or multi-ink) in '%s'", filename);
     TIFFClose(t.tiff);
     return DT_IMAGEIO_UNSUPPORTED_FEATURE;
   }
@@ -414,7 +414,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   /* don't depend on planar config if spp == 1 */
   if(t.spp > 1 && config != PLANARCONFIG_CONTIG)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: PlanarConfiguration other than chunky is not supported.");
+    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: unsupported non-chunky PlanarConfiguration in '%s'", filename);
     TIFFClose(t.tiff);
     return DT_IMAGEIO_UNSUPPORTED_FEATURE;
   }
@@ -431,7 +431,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   t.mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, t.image);
   if(!t.mipbuf)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: could not alloc full buffer for image `%s'", t.image->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: could not alloc full buffer for '%s'", t.image->filename);
     TIFFClose(t.tiff);
     return DT_IMAGEIO_CACHE_FULL;
   }
@@ -473,7 +473,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
     ok = _read_chunky_f(&t);
   else
   {
-    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: not a supported tiff image format.");
+    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: unsupported TIFF format feature in '%s'", filename);
     ok = 0;
     ret = DT_IMAGEIO_UNSUPPORTED_FEATURE;
   }
