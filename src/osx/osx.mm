@@ -304,7 +304,7 @@ gboolean dt_osx_open_url(const char *url)
 
 - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename 
 {
-    openedFiles.push_back([filename UTF8String]);
+    openedFiles.push_back(std::string((const char*)[filename UTF8String]));
     return YES;
 }
 
