@@ -14730,7 +14730,7 @@ msgstr ""
 #: ../src/imageio/format/tiff.c:905 ../src/imageio/format/webp.c:414
 #: ../src/libs/masks.c:117
 msgid "compression"
-msgstr "Dégradé"
+msgstr "Compression"
 
 #: ../src/imageio/format/avif.c:901
 msgid "the compression for the image"
@@ -15100,12 +15100,12 @@ msgid ""
 msgstr ""
 "Méthode utilisée pour la compression des images :\n"
 " • Non compressée – rapide mais taille importante\n"
-" • Compressée – taille réduite mais plus lent"
+" • Deflate – taille réduite mais plus lent"
 
 # deflate traduit par compression, bof ?
 #: ../src/imageio/format/pdf.c:699 ../src/imageio/format/tiff.c:906
 msgid "deflate"
-msgstr "Compression"
+msgstr "Deflate"
 
 #. image mode normal|draft|debug
 #: ../src/imageio/format/pdf.c:704
@@ -15144,7 +15144,7 @@ msgstr "L'image n'est pas N&B, ne sera pas exportée en échelle de gris"
 
 #: ../src/imageio/format/tiff.c:907
 msgid "deflate with predictor"
-msgstr "Compression avec prédiction"
+msgstr "Deflate avec prédiction"
 
 #: ../src/imageio/format/tiff.c:917
 msgid "compression level"
