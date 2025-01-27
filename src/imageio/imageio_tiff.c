@@ -278,6 +278,10 @@ static inline int _read_chunky_16_Lab(tiff_t *t, uint16_t photometric)
       = dt_colorspaces_get_profile(LAB_CONVERSION_PROFILE, "", DT_PROFILE_DIRECTION_ANY)->profile;
   const cmsHTRANSFORM xform
       = cmsCreateTransform(Lab, TYPE_LabA_FLT, output_profile, TYPE_RGBA_FLT, INTENT_PERCEPTUAL, 0);
+
+  // For CIELab, the L* is encoded in 16 bits as an integer range [0, 65535]
+  // For ICCLab, the L* is encoded in 16 bits as an integer range [0, 65280]
+  // See https://www.alternateff.com/resources/TIFFphotoshop.pdf for reference
   const float range = (photometric == PHOTOMETRIC_CIELAB) ? 65535.0f : 65280.0f;
 
   for(uint32_t row = 0; row < t->height; row++)
