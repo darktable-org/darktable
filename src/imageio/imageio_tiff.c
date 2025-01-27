@@ -412,6 +412,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   if(t.bpp != 8 && t.bpp != 16 && t.bpp != 32)
   {
     TIFFClose(t.tiff);
+    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: unsupported bit depth other than 8, 16 or 32 in '%s'", filename);
     return DT_IMAGEIO_UNSUPPORTED_FEATURE;
   }
 
