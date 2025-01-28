@@ -239,8 +239,6 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,
 
   gtk_widget_set_sensitive(onoff, FALSE);
 
-  g_object_set_data(G_OBJECT(widget), "history_number", GINT_TO_POINTER(num + 1));
-  g_object_set_data(G_OBJECT(widget), "label", (gpointer)label);
   if(selected) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
 
   /* set callback when clicked */
@@ -249,6 +247,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,
 
   /* associate the history number */
   g_object_set_data(G_OBJECT(widget), "history-number", GINT_TO_POINTER(num + 1));
+  g_object_set_data(G_OBJECT(widget), "label", (gpointer)label);
 
   gtk_box_pack_start(GTK_BOX(hbox), numwidget, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
