@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -278,6 +278,10 @@ static inline int _read_chunky_16_Lab(tiff_t *t, uint16_t photometric)
       = dt_colorspaces_get_profile(LAB_CONVERSION_PROFILE, "", DT_PROFILE_DIRECTION_ANY)->profile;
   const cmsHTRANSFORM xform
       = cmsCreateTransform(Lab, TYPE_LabA_FLT, output_profile, TYPE_RGBA_FLT, INTENT_PERCEPTUAL, 0);
+
+  // For CIELab, the L* is encoded in 16 bits as an integer range [0, 65535]
+  // For ICCLab, the L* is encoded in 16 bits as an integer range [0, 65280]
+  // See https://www.alternateff.com/resources/TIFFphotoshop.pdf for reference
   const float range = (photometric == PHOTOMETRIC_CIELAB) ? 65535.0f : 65280.0f;
 
   for(uint32_t row = 0; row < t->height; row++)
@@ -389,7 +393,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
 
   if(inkset == INKSET_CMYK || inkset == INKSET_MULTIINK)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: CMYK (or multiink) TIFFs are not supported.");
+    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: unsupported CMYK (or multi-ink) in '%s'", filename);
     TIFFClose(t.tiff);
     return DT_IMAGEIO_UNSUPPORTED_FEATURE;
   }
@@ -408,13 +412,14 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   if(t.bpp != 8 && t.bpp != 16 && t.bpp != 32)
   {
     TIFFClose(t.tiff);
+    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: unsupported bit depth other than 8, 16 or 32 in '%s'", filename);
     return DT_IMAGEIO_UNSUPPORTED_FEATURE;
   }
 
   /* don't depend on planar config if spp == 1 */
   if(t.spp > 1 && config != PLANARCONFIG_CONTIG)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: PlanarConfiguration other than chunky is not supported.");
+    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: unsupported non-chunky PlanarConfiguration in '%s'", filename);
     TIFFClose(t.tiff);
     return DT_IMAGEIO_UNSUPPORTED_FEATURE;
   }
@@ -431,7 +436,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   t.mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, t.image);
   if(!t.mipbuf)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: could not alloc full buffer for image `%s'", t.image->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: could not alloc full buffer for '%s'", t.image->filename);
     TIFFClose(t.tiff);
     return DT_IMAGEIO_CACHE_FULL;
   }
@@ -473,7 +478,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
     ok = _read_chunky_f(&t);
   else
   {
-    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: not a supported tiff image format.");
+    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: unsupported TIFF format feature in '%s'", filename);
     ok = 0;
     ret = DT_IMAGEIO_UNSUPPORTED_FEATURE;
   }
