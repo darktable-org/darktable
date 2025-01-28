@@ -454,26 +454,6 @@ static gboolean _check_deleted_instances(dt_develop_t *dev,
   return deleted_module_found;
 }
 
-static void _reorder_gui_module_list(dt_develop_t *dev)
-{
-  int pos_module = 0;
-  for(const GList *modules = g_list_last(dev->iop);
-      modules;
-      modules = g_list_previous(modules))
-  {
-    dt_iop_module_t *module = modules->data;
-
-    GtkWidget *expander = module->expander;
-    if(expander)
-    {
-      gtk_box_reorder_child
-        (dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
-         expander,
-         pos_module++);
-    }
-  }
-}
-
 static gboolean _rebuild_multi_priority(GList *history_list)
 {
   gboolean changed = FALSE;
@@ -637,7 +617,7 @@ static void _pop_undo(gpointer user_data,
     dt_dev_pixelpipe_rebuild(dev);
 
     // if dev->iop has changed reflect that on module list
-    if(pipe_remove) _reorder_gui_module_list(dev);
+    if(pipe_remove) dt_dev_reorder_gui_module_list(dev);
 
     // write new history and reload
     dt_dev_write_history(dev);
