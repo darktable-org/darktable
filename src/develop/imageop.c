@@ -1290,8 +1290,8 @@ void dt_iop_gui_init(dt_iop_module_t *module)
 {
   ++darktable.gui->reset;
   --darktable.bauhaus->skip_accel;
-  if(module->gui_init) module->gui_init(module);
   dt_pthread_mutex_init(&module->gui_lock, NULL);
+  if(module->gui_init) module->gui_init(module);
   ++darktable.bauhaus->skip_accel;
   --darktable.gui->reset;
 }
