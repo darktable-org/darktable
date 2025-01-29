@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,8 +20,6 @@
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "control/conf.h"
-#include "control/control.h"
 #include "control/signal.h"
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
@@ -835,6 +833,8 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
+  GtkCellEditable *active_editable = NULL;
+
   g_list_free(d->metadata_to_delete);
   d->metadata_to_delete = NULL;
 
@@ -904,6 +904,7 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
      "text", DT_METADATA_PREF_COL_NAME, NULL);
   g_object_set(renderer, "editable", TRUE, NULL);
   g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(_display_name_edited_callback), store);  
+  dt_gui_commit_on_focus_loss(renderer, &active_editable);
   gtk_tree_view_column_set_expand(column, TRUE);
   gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
   renderer = gtk_cell_renderer_toggle_new();
@@ -964,6 +965,9 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
 
   if(res == GTK_RESPONSE_ACCEPT)
   {
+    if(active_editable)
+      gtk_cell_editable_editing_done(active_editable);
+
     // delete metadata
     GList *keys_str = NULL;
     for(GList *key_iter = d->metadata_to_delete; key_iter; key_iter = key_iter->next)
