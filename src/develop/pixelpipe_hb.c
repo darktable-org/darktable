@@ -1608,7 +1608,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
 
   if(dt_atomic_get_int(&pipe->shutdown))
     return TRUE;
-
+  
   int w = piece->pipe->backbuf_width;
   int h = piece->pipe->backbuf_height;
 
@@ -1621,14 +1621,9 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
     //const dt_develop_blend_params_t *const d = piece->blendop_data;
     //dt_develop_blend_colorspace_t blend_csp = d->blend_cst;
     //(dt_develop_blend_colorspace_t)blend_csp;
-    dt_image_t* image  = dt_image_cache_get(darktable.image_cache, piece->pipe->image.id, 'r');
-    /*
-    / backbuffer (output)
-    uint8_t *backbuf;
-    size_t backbuf_size;
-    int backbuf_width, backbuf_height;
-    */
-    printf("image w:%d, h:%d\n", image->width, image->height);
+    // dt_image_t* image  = dt_image_cache_get(darktable.image_cache, piece->pipe->image.id, 'r');
+    
+    // printf("image w:%d, h:%d\n", image->width, image->height);
     printf("output w:%d, h:%d\n", w, h);
 
     uint8_t* local_copy = (uint8_t*)malloc(4 * sizeof(uint8_t) * stride);
@@ -1678,38 +1673,44 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
 
     run_inference(session, converted_image, h, w, &out, &n_masks);
     
-    //g_ort->ReleaseSessionOptions(session_options);
-    //g_ort->ReleaseSession(session);
-    //g_ort->ReleaseEnv(env);
+    g_ort->ReleaseSessionOptions(session_options);
+    g_ort->ReleaseSession(session);
+    g_ort->ReleaseEnv(env);
 
     //memset(buffer, 0, sizeof(float) * w * h);
-    for (int i = 0; i < stride; i++)
+
+    if (out)
     {
-      new_image[i * 3 + 0] = (uint8_t)(out[i] * 255.0);
-      new_image[i * 3 + 1] = (uint8_t)(out[i] * 255.0);
-      new_image[i * 3 + 2] = (uint8_t)(out[i] * 255.0);
+      for (int i = 0; i < stride; i++)
+      {
+        new_image[i * 3 + 0] = (uint8_t)(out[i] * 255.0);
+        new_image[i * 3 + 1] = (uint8_t)(out[i] * 255.0);
+        new_image[i * 3 + 2] = (uint8_t)(out[i] * 255.0);
+      }
+
+      if (write_image_file(new_image, h, w, "/home/miko/Desktop/test2.png") != 0)
+      {
+        printf("Error writing image\n");
+      }
+
+      pipe->proxy_data = (uint8_t*)malloc(sizeof(uint8_t) * stride * n_masks);
+      for (int i = 0; i < stride; i++){
+        pipe->proxy_data[i] = (uint8_t)(out[i] * 255.0);
+      }
+
+      pipe->proxy_width = w;
+      pipe->proxy_height = h;
+      pipe->n_masks = n_masks;
+
+      
+      free(out);
+      free(new_image);
+      free(converted_image);
     }
-
-    if (write_image_file(new_image, h, w, "/home/miko/Desktop/test2.png") != 0)
-    {
-      printf("Error writing image\n");
-    }
-
-    pipe->proxy_data = (uint8_t*)malloc(sizeof(uint8_t) * stride * n_masks);
-    for (int i = 0; i < stride; i++){
-      pipe->proxy_data[i] = (uint8_t)(out[i] * 255.0);
-    }
-
-    pipe->proxy_width = w;
-    pipe->proxy_height = h;
-
-    
-    free(out);
-    free(new_image);
-    free(converted_image);
 
     printf("Colors %d, Bits per channel %d\n", colors, bpc);
   }
+  
   _collect_histogram_on_CPU(pipe, dev, input, roi_in, module, piece, pixelpipe_flow);
 
   if(dt_atomic_get_int(&pipe->shutdown))
