@@ -3205,67 +3205,33 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
              "name VARCHAR, internal INTEGER, visible INTEGER, private INTEGER, display_order INTEGER)",
              "can't create new meta_data_keys table");
 
-        TRY_EXEC("CREATE UNIQUE INDEX data.meta_data_tagname_idx ON meta_data (tagname)",
+    TRY_EXEC("CREATE UNIQUE INDEX data.meta_data_tagname_idx ON meta_data (tagname)",
              "can't create index `meta_data_name_idx' in database");
 
     TRY_EXEC("CREATE UNIQUE INDEX data.meta_data_name_idx ON meta_data (name)",
              "can't create index `meta_data_title_idx' in database");
 
-    int visible;
-    gchar *query = NULL;
-    visible = (dt_conf_get_int("plugins/lighttable/metadata/creator_flag") & 1) ? 0 : 1;
-    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(0, 'Xmp.dc.creator', '%s', 0, %d, 0, 2)",
-                            _("creator"), visible);
-    TRY_EXEC(query, "can't insert meta_data_key record");
-    g_free(query);
+    const char *metadata_fields[][3] =
+      {
+        {"Xmp.dc.title", _("title"), "plugins/lighttable/metadata/title_flag"},
+        {"Xmp.dc.description", _("description"), "plugins/lighttable/metadata/description_flag"},
+        {"Xmp.dc.creator", _("creator"), "plugins/lighttable/metadata/creator_flag"},
+        {"Xmp.dc.publisher", _("publisher"), "plugins/lighttable/metadata/publisher_flag"},
+        {"Xmp.dc.rights", _("rights"), "plugins/lighttable/metadata/rights_flag"},
+        {"Xmp.acdsee.notes", _("notes"), "plugins/lighttable/metadata/notes_flag"},
+        {"Xmp.darktable.version_name", _("version name"), "plugins/lighttable/metadata/version name_flag"},
+        {"Xmp.darktable.image_id", _("image id"), NULL},
+        {"Xmp.xmpMM.PreservedFileName", _("preserved filename"), "plugins/lighttable/metadata/preserved filename_flag"},
+      };
 
-    visible = (dt_conf_get_int("plugins/lighttable/metadata/publisher_flag") & 1) ? 0 : 1;
-    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(1, 'Xmp.dc.publisher', '%s', 0, %d, 0, 3)",
-                            _("publisher"), visible);
-    TRY_EXEC(query, "can't insert meta_data_key record");
-    g_free(query);
-
-    visible = (dt_conf_get_int("plugins/lighttable/metadata/title_flag") & 1) ? 0 : 1;
-    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(2, 'Xmp.dc.title', '%s', 0, %d, 0, 0)",
-                            _("title"), visible);
-    TRY_EXEC(query, "can't insert meta_data_key record");
-    g_free(query);
-
-    visible = (dt_conf_get_int("plugins/lighttable/metadata/description_flag") & 1) ? 0 : 1;
-    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(3, 'Xmp.dc.description', '%s', 0, %d, 0, 1)",
-                            _("description"), visible);
-    TRY_EXEC(query, "can't insert meta_data_key record");
-    g_free(query);
-
-    visible = (dt_conf_get_int("plugins/lighttable/metadata/rights_flag") & 1) ? 0 : 1;
-    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(4, 'Xmp.dc.rights', '%s', 0, %d, 0, 4)",
-                            _("rights"), visible);
-    TRY_EXEC(query, "can't insert meta_data_key record");
-    g_free(query);
-
-    visible = (dt_conf_get_int("plugins/lighttable/metadata/notes_flag") & 1) ? 0 : 1;
-    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(5, 'Xmp.acdsee.notes', '%s', 0, %d, 0, 5)",
-                            _("notes"), visible);
-    TRY_EXEC(query, "can't insert meta_data_key record");
-    g_free(query);
-
-    visible = (dt_conf_get_int("plugins/lighttable/metadata/version name_flag") & 1) ? 0 : 1;
-    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(6, 'Xmp.darktable.version_name', '%s', 0, %d, 0, 6)",
-                            _("version name"), visible);
-    TRY_EXEC(query, "can't insert meta_data_key record");
-    g_free(query);
-
-    visible = 0;
-    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(7, 'Xmp.darktable.image_id', '%s', 1, %d, 0, 7)",
-                            _("image id"), visible);
-    TRY_EXEC(query, "can't insert meta_data_key record");
-    g_free(query);
-
-    visible = (dt_conf_get_int("plugins/lighttable/metadata/preserved filename_flag") & 1) ? 0 : 1;
-    query = g_strdup_printf("INSERT INTO data.meta_data VALUES(8, 'Xmp.xmpMM.PreservedFileName', '%s', 0, %d, 0, 8)",
-                            _("preserved filename"), visible);
-    TRY_EXEC(query, "can't insert meta_data_key record");
-    g_free(query);
+    for (int i = 0; i < sizeof(metadata_fields) / sizeof(metadata_fields[0]); i++)
+    {
+      gchar *query = g_strdup_printf("INSERT INTO data.meta_data VALUES(%d, '%s', '%s', %d, %d, 0, %d)",
+                                     i, metadata_fields[i][0], metadata_fields[i][1], (i == 7) ? 1 : 0,
+                                     metadata_fields[i][2] ? dt_conf_get_int(metadata_fields[i][2]) & 1 ? 0 : 1 : 0, i);
+      TRY_EXEC(query, "can't insert meta_data_key record");
+      g_free(query);
+    }
 
     new_version = 13;
   }
