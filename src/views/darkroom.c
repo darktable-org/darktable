@@ -683,11 +683,13 @@ void expose(dt_view_t *self,
 
   // don't draw guides and color pickers on image margins
   cairo_rectangle(cri, tb, tb, width - 2.0 * tb, height - 2.0 * tb);
-  cairo_clip(cri);
 
   cairo_translate(cri, 0.5 * width, 0.5 * height);
   cairo_scale(cri, zoom_scale, zoom_scale);
   cairo_translate(cri, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
+
+  cairo_save(cri);
+  cairo_clip(cri);
 
   // Displaying sample areas if enabled
   if(darktable.lib->proxy.colorpicker.live_samples
@@ -719,7 +721,7 @@ void expose(dt_view_t *self,
     _darkroom_pickers_draw(self, cri, wd, ht, zoom_scale, &samples, TRUE);
   }
 
-  cairo_reset_clip(cri);
+  cairo_restore(cri);
 
   dt_iop_module_t *dmod = dev->gui_module;
 

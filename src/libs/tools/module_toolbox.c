@@ -97,6 +97,7 @@ void view_enter(dt_lib_module_t *self,
 {
   dt_lib_module_toolbox_t *d = self->data;
   dt_view_type_flags_t nv= new_view->view(new_view);
+  gtk_widget_set_no_show_all(d->container, TRUE);
   for(const GList *child_elt = d->child_views; child_elt; child_elt = g_list_next(child_elt))
   {
     child_data_t* child_data = child_elt->data;
