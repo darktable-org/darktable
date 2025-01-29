@@ -514,11 +514,16 @@ void gui_init(dt_lib_module_t *self)
 
   /* create the preference button */
   d->preferences_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, 0, NULL);
-  dt_action_define(&darktable.control->actions_global, NULL, N_("preferences"), d->preferences_button, &dt_action_def_button);
+  ac = dt_action_define(&darktable.control->actions_global, NULL, N_("preferences"), d->preferences_button, &dt_action_def_button);
   gtk_box_pack_end(GTK_BOX(self->widget), d->preferences_button, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(d->preferences_button, _("show global preferences"));
   g_signal_connect(G_OBJECT(d->preferences_button), "clicked", G_CALLBACK(_lib_preferences_button_clicked),
                    NULL);
+
+#ifdef __APPLE__
+  // Register CMD+, for preferences on macOS
+  dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_ACTIVATE, GDK_KEY_comma, GDK_CONTROL_MASK);
+#endif
 }
 
 void gui_cleanup(dt_lib_module_t *self)

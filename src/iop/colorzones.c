@@ -605,7 +605,7 @@ int process_cl(dt_iop_module_t *self,
   dt_iop_colorzones_data_t *d = piece->data;
   dt_iop_colorzones_global_data_t *gd = self->global_data;
   cl_mem dev_L, dev_a, dev_b = NULL;
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -2780,8 +2780,6 @@ void gui_cleanup(dt_iop_module_t *self)
 
   for(int ch = 0; ch < DT_IOP_COLORZONES_MAX_CHANNELS; ch++)
     dt_draw_curve_destroy(g->minmax_curve[ch]);
-
-  IOP_GUI_FREE;
 }
 
 void init_global(dt_iop_module_so_t *self)

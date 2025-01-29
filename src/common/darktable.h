@@ -333,9 +333,7 @@ typedef struct dt_sys_resources_t
   size_t mipmap_memory;
   int *fractions;   // fractions are calculated as res=input / 1024  * fraction
   int *refresource; // for the debug resource modes we use fixed settings
-  int group;
   int level;
-  gboolean tunehead;
 } dt_sys_resources_t;
 
 typedef struct dt_backthumb_t

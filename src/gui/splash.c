@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024 darktable developers.
+    Copyright (C) 2024-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 #include "control/conf.h"
 #include "gui/gtk.h"
+#include "dtgtk/button.h"
 #include "splash.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -235,21 +236,15 @@ void darktable_splash_screen_create(GtkWindow *parent_window,
   // and make that the top portion of the splash screen
   gtk_box_pack_start(content, GTK_WIDGET(main_box), FALSE, FALSE, 0);
 #endif
+
   GtkWidget *hbar = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
   gtk_widget_set_name(hbar, "splashscreen-separator");
   gtk_widget_show(hbar);
   gtk_box_pack_start(content, hbar, FALSE, FALSE, 0);
   gtk_box_pack_start(content, progress_text, FALSE, FALSE, 0);
 
-  GtkWidget *clock;
-  gchar *clock_file = g_strdup_printf("%s/pixmaps/clock.svg", darktable.datadir);
-  GdkPixbuf *clock_image = gdk_pixbuf_new_from_file_at_size(clock_file, -1, 20, NULL);
-  clock = gtk_image_new_from_pixbuf(clock_image);
-  g_free(clock_file);
-  g_object_unref(clock_image);
-
   remaining_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  gtk_box_pack_start(remaining_box, GTK_WIDGET(clock), FALSE, FALSE, 0);
+  gtk_box_pack_start(remaining_box, dtgtk_button_new(dtgtk_cairo_paint_clock, 0, 0), FALSE, FALSE, 0);
   gtk_box_pack_start(remaining_box, remaining_text, FALSE, FALSE, 0);
   gtk_box_pack_start(content, GTK_WIDGET(remaining_box), FALSE, FALSE, 0);
   gtk_widget_set_halign(GTK_WIDGET(remaining_box), GTK_ALIGN_CENTER);
@@ -257,7 +252,6 @@ void darktable_splash_screen_create(GtkWindow *parent_window,
   gtk_window_set_decorated(GTK_WINDOW(splash_screen), FALSE);
   gtk_widget_show_all(splash_screen);
   gtk_widget_hide(GTK_WIDGET(remaining_box));
-  gtk_window_set_keep_above(GTK_WINDOW(splash_screen), TRUE);
   _process_all_gui_events();
 }
 
@@ -296,6 +290,7 @@ void darktable_splash_screen_set_progress_percent(const char *msg,
       char *rem_text = g_strdup_printf(" %4d:%02d", minutes, seconds);
       gtk_label_set_text(GTK_LABEL(remaining_text), rem_text);
       g_free(rem_text);
+      gtk_widget_queue_draw(GTK_WIDGET(remaining_box));
     }
     else
     {
@@ -316,20 +311,6 @@ void darktable_splash_screen_destroy()
     gtk_widget_destroy(splash_screen);
     splash_screen = NULL;
   }
-}
-
-void darktable_splash_screen_get_geometry(gint *x,
-                                          gint *y,
-                                          gint *width,
-                                          gint *height)
-{
-  if(splash_screen)
-  {
-    gtk_window_get_position(GTK_WINDOW(splash_screen), x, y);
-    gtk_window_get_size(GTK_WINDOW(splash_screen), width, height);
-  }
-  else
-    *x = *y = *width = *height = -1;
 }
 
 void darktable_exit_screen_create(GtkWindow *parent_window,

@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2016-2024 darktable developers.
+  Copyright (C) 2016-2025 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -1205,7 +1205,7 @@ void modify_roi_out(struct dt_iop_module_t *self,
   if(roi_out->width < 4 || roi_out->height < 4)
   {
     dt_print_pipe(DT_DEBUG_PIPE,
-                  "safety check", piece->pipe, self, DT_DEVICE_NONE, roi_in, roi_out);
+                  "insane data", piece->pipe, self, DT_DEVICE_NONE, roi_in, roi_out);
 
     roi_out->width = roi_in->width;
     roi_out->height = roi_in->height;
@@ -4579,6 +4579,9 @@ int mouse_moved(dt_iop_module_t *self,
     return TRUE;
   }
 
+  if(!self->enabled)
+    return FALSE;
+
   gboolean handled = FALSE;
 
   float wd, ht;
@@ -6158,7 +6161,7 @@ void gui_init(dt_iop_module_t *self)
                        N_("auto"), g->structure_auto, &dt_action_def_toggle);
 
   /* add signal handler for preview pipe finish to redraw the overlay */
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _event_process_after_preview_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _event_process_after_preview_callback);
 
   darktable.develop->proxy.rotate = self;
 }
@@ -6168,15 +6171,11 @@ void gui_cleanup(dt_iop_module_t *self)
   if(darktable.develop->proxy.rotate == self)
     darktable.develop->proxy.rotate = NULL;
 
-  DT_CONTROL_SIGNAL_DISCONNECT(_event_process_after_preview_callback, self);
-
   dt_iop_ashift_gui_data_t *g = self->gui_data;
   if(g->lines) free(g->lines);
   dt_free_align(g->buf);
   if(g->points) free(g->points);
   if(g->points_idx) free(g->points_idx);
-
-  IOP_GUI_FREE;
 }
 
 GSList *mouse_actions(dt_iop_module_t *self)

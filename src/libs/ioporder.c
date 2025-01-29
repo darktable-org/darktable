@@ -137,18 +137,15 @@ void gui_init(dt_lib_module_t *self)
   d->current_mode = -1;
   d->last_custom_iop_order = NULL;
 
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _image_loaded_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_INITIALIZE, _image_loaded_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _image_loaded_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _image_loaded_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_INITIALIZE, _image_loaded_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _image_loaded_callback);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
   free(self->data);
   self->data = NULL;
-  DT_CONTROL_SIGNAL_DISCONNECT(_image_loaded_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_image_loaded_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_image_loaded_callback, self);
 }
 
 void gui_reset(dt_lib_module_t *self)

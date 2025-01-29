@@ -806,7 +806,6 @@ void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_blurs_gui_data_t *g = self->gui_data;
   if(g->img) dt_free_align(g->img);
-  IOP_GUI_FREE;
 }
 
 

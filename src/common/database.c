@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@
 #define LAST_FULL_DATABASE_VERSION_DATA    10
 // You HAVE TO bump THESE versions whenever you add an update branches to _upgrade_*_schema_step()!
 #define CURRENT_DATABASE_VERSION_LIBRARY 56
-#define CURRENT_DATABASE_VERSION_DATA    10
+#define CURRENT_DATABASE_VERSION_DATA    12
 
 #define USE_NESTED_TRANSACTIONS
 #define MAX_NESTED_TRANSACTIONS 5
@@ -3172,6 +3172,31 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
 
     new_version = 10;
   }
+  else if(version == 10)
+  {
+    TRY_EXEC("DELETE FROM styles WHERE name LIKE '_l10n_darktable camera styles|%'",
+             "can't delete darktable camera styles");
+
+    TRY_EXEC("DELETE FROM styles WHERE name LIKE '_l10n_darktable examples|%'",
+             "can't delete darktable example styles");
+
+    TRY_EXEC("DELETE FROM style_items"
+             " WHERE styleid NOT IN (SELECT id FROM styles)",
+             "can't delete darktable camera style_items");
+
+    new_version = 11;
+  }
+  else if(version == 11)
+  {
+    TRY_EXEC("DELETE FROM styles WHERE name LIKE '_l10n_darktable|_l10n_examples|%'",
+             "can't delete darktable example styles");
+
+    TRY_EXEC("DELETE FROM style_items"
+             " WHERE styleid NOT IN (SELECT id FROM styles)",
+             "can't delete darktable camera style_items");
+
+    new_version = 12;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -4185,6 +4210,38 @@ start:
   else
     snprintf(dbfilename_data, sizeof(dbfilename_data), ":memory:");
 
+  // It may happen that we will not have write access to the database restored
+  // from a backup or snapshot. Running darktable with a database that cannot
+  // be written to may result in incorrect operation, the cause of which will
+  // be difficult to diagnose. Let's check if we can continue.
+  if((access(dbfilename_library, F_OK) == 0 && access(dbfilename_library, W_OK) != 0)
+     || (access(dbfilename_data, F_OK) == 0 && access(dbfilename_data, W_OK) != 0))
+  {
+    dt_print(DT_DEBUG_ALWAYS, "at least one of the dt databases (%s, %s) is not writeable",
+                               dbfilename_library, dbfilename_data);
+    if(has_gui)
+    {
+      char *readonly_db_text = g_markup_printf_escaped(
+        _("you do not have write access to at least one of the darktable databases:\n"
+          "\n"
+          "<span style='italic'>%s</span>\n"
+          "<span style='italic'>%s</span>\n"
+          "\n"
+          "please fix this and then run darktable again"),
+        dbfilename_library,
+        dbfilename_data);
+      dt_gui_show_standalone_yes_no_dialog(_("darktable - read-only database detected"),
+                                           readonly_db_text,
+                                           _("_quit darktable"),
+                                           NULL);
+      // There is no REAL need to free the string before exiting, but we do it
+      // to avoid creating a code pattern that could be mistakenly copy-pasted
+      // somewhere else where freeing memory would actually be needed.
+      g_free(readonly_db_text);
+    }
+    exit(1);
+  }
+
   /* create database */
   dt_database_t *db = g_malloc0(sizeof(dt_database_t));
   db->dbfilename_data = g_strdup(dbfilename_data);
@@ -4445,7 +4502,7 @@ start:
             if(fd < 0 || !g_close(fd, &gerror)) copy_status = FALSE;
           }
           dt_print(DT_DEBUG_ALWAYS, "[init] restoring `%s' from `%s' :%s",
-                   dbfilename_data, data_snap, copy_status ? "success!" : "failed!");
+                   dbfilename_data, data_snap, copy_status ? "success" : "failed!");
           g_object_unref(src);
           g_object_unref(dest);
         }

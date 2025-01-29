@@ -163,11 +163,6 @@ static void default_cleanup_pipe(dt_iop_module_t *self,
   free(piece->data);
 }
 
-static void default_gui_cleanup(dt_iop_module_t *self)
-{
-  IOP_GUI_FREE;
-}
-
 static void default_cleanup(dt_iop_module_t *module)
 {
   g_free(module->params);
@@ -1163,10 +1158,6 @@ gboolean dt_iop_so_is_hidden(dt_iop_module_so_t *module)
       dt_print(DT_DEBUG_ALWAYS,
                "Module '%s' is not hidden and lacks implementation of gui_init()...",
                module->op);
-    else if(!module->gui_cleanup)
-      dt_print(DT_DEBUG_ALWAYS,
-               "Module '%s' is not hidden and lacks implementation of gui_cleanup()...",
-               module->op);
     else
       is_hidden = FALSE;
   }
@@ -1299,6 +1290,7 @@ void dt_iop_gui_init(dt_iop_module_t *module)
 {
   ++darktable.gui->reset;
   --darktable.bauhaus->skip_accel;
+  dt_pthread_mutex_init(&module->gui_lock, NULL);
   if(module->gui_init) module->gui_init(module);
   ++darktable.bauhaus->skip_accel;
   --darktable.gui->reset;
@@ -2220,9 +2212,12 @@ void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
 {
   g_slist_free_full(module->widget_list, g_free);
   module->widget_list = NULL;
-  module->gui_cleanup(module);
+  DT_CONTROL_SIGNAL_DISCONNECT_ALL(module, module->so->op);
+  if(module->gui_cleanup) module->gui_cleanup(module);
   gtk_widget_destroy(module->expander ?: module->widget);
   dt_iop_gui_cleanup_blending(module);
+  dt_pthread_mutex_destroy(&module->gui_lock);
+  dt_free_align(module->gui_data);
 }
 
 void dt_iop_gui_update(dt_iop_module_t *module)
@@ -2365,6 +2360,13 @@ void dt_iop_request_focus(dt_iop_module_t *module)
 
   dev->gui_module = module;
   dev->focus_hash = TRUE;
+
+  dt_free_align(dev->full.pipe->bcache_data);
+  dev->full.pipe->bcache_data = NULL;
+  dt_free_align(dev->preview_pipe->bcache_data);
+  dev->preview_pipe->bcache_data = NULL;
+  dt_free_align(dev->preview2.pipe->bcache_data);
+  dev->preview2.pipe->bcache_data = NULL;
 
   /* lets lose the focus of previous focus module*/
   if(out_focus_module)

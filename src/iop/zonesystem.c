@@ -480,7 +480,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->zones, TRUE, TRUE, 0);
 
   /* add signal handler for preview pipe finish to redraw the preview */
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _iop_zonesystem_redraw_preview_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _iop_zonesystem_redraw_preview_callback);
 
 
   g->image = NULL;
@@ -491,15 +491,11 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  DT_CONTROL_SIGNAL_DISCONNECT(_iop_zonesystem_redraw_preview_callback, self);
-
   dt_iop_zonesystem_gui_data_t *g = self->gui_data;
   g_free(g->in_preview_buffer);
   g_free(g->out_preview_buffer);
   if(g->image) cairo_surface_destroy(g->image);
   free(g->image_buffer);
-
-  IOP_GUI_FREE;
 }
 
 #define DT_ZONESYSTEM_INSET DT_PIXEL_APPLY_DPI(5)

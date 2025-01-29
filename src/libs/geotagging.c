@@ -1959,13 +1959,13 @@ void gui_init(dt_lib_module_t *self)
     g_signal_connect(d->dt.widget[i], "key-press-event", G_CALLBACK(_datetime_key_pressed), self);
     g_signal_connect(d->dt.widget[i], "scroll-event", G_CALLBACK(_datetime_scroll_over), self);
   }
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_SELECTION_CHANGED, _selection_changed_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _mouse_over_image_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_IMAGE_INFO_CHANGED, _image_info_changed, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE, _dt_pref_change_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_SELECTION_CHANGED, _selection_changed_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _mouse_over_image_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_IMAGE_INFO_CHANGED, _image_info_changed);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PREFERENCES_CHANGE, _dt_pref_change_callback);
 #ifdef HAVE_MAP
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, _view_changed, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_GEOTAG_CHANGED, _geotag_changed, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, _view_changed);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_GEOTAG_CHANGED, _geotag_changed);
 #endif
 
   _show_milliseconds(d);
@@ -1983,9 +1983,6 @@ void gui_cleanup(dt_lib_module_t *self)
     g_date_time_unref(d->datetime);
   if(d->datetime0)
     g_date_time_unref(d->datetime0);
-  DT_CONTROL_SIGNAL_DISCONNECT(_selection_changed_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_mouse_over_image_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_image_info_changed, self);
   if(d->imgs)
   {
 #ifdef HAVE_MAP
@@ -1997,8 +1994,6 @@ void gui_cleanup(dt_lib_module_t *self)
   d->imgs = 0;
 #ifdef HAVE_MAP
   _remove_tracks_from_map(self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_view_changed, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_geotag_changed, self);
 #endif
   free(self->data);
   self->data = NULL;

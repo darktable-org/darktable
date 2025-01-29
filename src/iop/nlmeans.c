@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -323,7 +323,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
 
       // indirectly give gpu some air to breathe (and to do display related stuff)
-      dt_iop_nap(dt_opencl_micro_nap(devid));
+      dt_opencl_micro_nap(devid);
     }
 
   // normalize and blend

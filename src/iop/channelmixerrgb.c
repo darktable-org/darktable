@@ -4414,9 +4414,9 @@ void gui_init(dt_iop_module_t *self)
   g->XYZ[0] = NAN;
 
 #ifdef AI_ACTIVATED
-   DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _develop_ui_pipe_finished_callback, self);
+   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _develop_ui_pipe_finished_callback);
 #endif
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _preview_pipe_finished_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _preview_pipe_finished_callback);
 
   // Init GTK notebook
   static dt_action_def_t notebook_def = { };
@@ -4762,10 +4762,6 @@ void gui_cleanup(dt_iop_module_t *self)
   }
 
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-#ifdef AI_ACTIVATED
-  DT_CONTROL_SIGNAL_DISCONNECT(_develop_ui_pipe_finished_callback, self);
-#endif
-  DT_CONTROL_SIGNAL_DISCONNECT(_preview_pipe_finished_callback, self);
 
   dt_iop_channelmixer_rgb_gui_data_t *g = self->gui_data;
   dt_conf_set_int("plugins/darkroom/channelmixerrgb/gui_page",
@@ -4778,8 +4774,6 @@ void gui_cleanup(dt_iop_module_t *self)
   }
 
   g_free(g->delta_E_label_text);
-
-  IOP_GUI_FREE;
 }
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

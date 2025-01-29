@@ -1420,6 +1420,31 @@ void dtgtk_cairo_paint_color_harmony(cairo_t *cr, gint x, gint y, gint w, gint h
   FINISH
 }
 
+void dtgtk_cairo_paint_clock(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1.2, 1.2, 0.5, 0.5)
+
+  static int clock = 0;
+
+  cairo_arc(cr, .0, .0, 0.5, 0, 2 * M_PI);
+  cairo_stroke(cr);
+
+  for(int i = 0; i < 12; i++)
+  {
+    cairo_arc(cr, .0, .35, i % 3 ? .03 : .05, 0, 2 * M_PI);
+    cairo_fill(cr);
+    cairo_rotate(cr, M_PI / 6);
+  }
+  cairo_rotate(cr, M_PI / 6 * clock++);
+  cairo_move_to(cr, 0.075, 0.0);
+  cairo_line_to(cr, 0.0, 0.4);
+  cairo_line_to(cr, -0.075, 0.0);
+  cairo_line_to(cr, 0.0, -0.05);
+  cairo_fill(cr);
+
+  FINISH
+}
+
 void dtgtk_cairo_paint_filmstrip(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   const double sw = 0.6;
@@ -1870,6 +1895,28 @@ void dtgtk_cairo_paint_altered(cairo_t *cr, gint x, gint y, gint w, gint h, gint
 
   FINISH
 }
+
+void dtgtk_cairo_paint_tags(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+      cairo_move_to(cr, 0.4, 0.05);
+      cairo_line_to(cr, 0.6, 0.3);
+      cairo_line_to(cr, 0.6, 0.8);
+      cairo_line_to(cr, 0.2, 0.8);
+      cairo_line_to(cr, 0.2, 0.3);
+      cairo_line_to(cr, 0.4, 0.05);
+
+      cairo_move_to(cr, 0.6, 0.1);
+      cairo_line_to(cr, 0.8, 0.4);
+      cairo_line_to(cr, 0.8, 0.9);
+      cairo_line_to(cr, 0.4, 0.9);
+
+      cairo_stroke(cr);
+
+  FINISH
+}
+
 
 void dtgtk_cairo_paint_audio(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {

@@ -260,11 +260,11 @@ void dt_control_allow_change_cursor()
 
 void dt_control_change_cursor(dt_cursor_t curs)
 {
-  if(!darktable.control->lock_cursor_shape)
+  GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
+  if(!darktable.control->lock_cursor_shape && window)
   {
-    GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
-    GdkCursor *cursor = gdk_cursor_new_for_display(gdk_display_get_default(), curs);
-    gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
+    GdkCursor *cursor = gdk_cursor_new_for_display(gdk_window_get_display(window), curs);
+    gdk_window_set_cursor(window, cursor);
     g_object_unref(cursor);
   }
 }
@@ -333,7 +333,7 @@ void dt_control_shutdown(dt_control_t *s)
   int err = 0; // collect all joining errors
   /* first wait for gphoto device updater */
 #ifdef HAVE_GPHOTO2
-   err = pthread_join(s->update_gphoto_thread, NULL);
+   err = dt_pthread_join(s->update_gphoto_thread);
 #endif
 
   if(!cleanup)
@@ -342,18 +342,18 @@ void dt_control_shutdown(dt_control_t *s)
   dt_print(DT_DEBUG_CONTROL, "[dt_control_shutdown] closing control threads");
 
   /* then wait for kick_on_workers_thread */
-  err = pthread_join(s->kick_on_workers_thread, NULL);
+  err = dt_pthread_join(s->kick_on_workers_thread);
   dt_print(DT_DEBUG_CONTROL, "[dt_control_shutdown] joined kicker%s", err ? ", error" : "");
 
   for(int k = 0; k < s->num_threads-1; k++)
   {
-    err = pthread_join(s->thread[k], NULL);
+    err = dt_pthread_join(s->thread[k]);
     dt_print(DT_DEBUG_CONTROL, "[dt_control_shutdown] joined num_thread %i%s", k, err ? ", error" : "");
   }
 
   for(int k = 0; k < DT_CTL_WORKER_RESERVED; k++)
   {
-    err = pthread_join(s->thread_res[k], NULL);
+    err = dt_pthread_join(s->thread_res[k]);
     dt_print(DT_DEBUG_CONTROL, "[dt_control_shutdown] joined worker %i%s", k, err ? ", error" : "");
   }
 }
@@ -391,14 +391,6 @@ gboolean dt_control_configure(GtkWidget *da,
   return TRUE;
 }
 
-static GdkRGBA _lookup_color(GtkStyleContext *context, const char *name)
-{
-  GdkRGBA color, fallback = {1.0, 0.0, 0.0, 1.0};
-  if(!gtk_style_context_lookup_color (context, name, &color))
-    color = fallback;
-  return color;
-}
-
 void dt_control_draw_busy_msg(cairo_t *cr, int width, int height)
 {
   PangoRectangle ink;
@@ -431,60 +423,26 @@ void dt_control_draw_busy_msg(cairo_t *cr, int width, int height)
   g_object_unref(layout);
 }
 
-void *dt_control_expose(void *voidptr)
+void dt_control_expose(GtkWidget *widget, cairo_t *cr)
 {
   int pointerx, pointery;
-  if(!darktable.gui->surface) return NULL;
-
-  dt_control_t *dc = darktable.control;
-  const int width = dt_cairo_image_surface_get_width(darktable.gui->surface);
-  const int height = dt_cairo_image_surface_get_height(darktable.gui->surface);
-  GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   gdk_window_get_device_position(gtk_widget_get_window(widget),
       gdk_seat_get_pointer(gdk_display_get_default_seat(gtk_widget_get_display(widget))),
       &pointerx, &pointery, NULL);
 
-  // create a gtk-independent surface to draw on
-  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-  cairo_t *cr = cairo_create(cst);
+  dt_control_t *dc = darktable.control;
+  dc->width = gtk_widget_get_allocated_width(widget);
+  dc->height = gtk_widget_get_allocated_height(widget);
 
-  // TODO: control_expose: only redraw the part not overlapped by
-  // temporary control panel show!
-  //
-  dc->width = width;
-  dc->height = height;
-
-  GtkStyleContext *context = gtk_widget_get_style_context(widget);
-
-  // look up some colors once
-  const GdkRGBA bg_color = _lookup_color(context, "bg_color");
-
-  gdk_cairo_set_source_rgba(cr, &bg_color);
-  cairo_save(cr);
-  cairo_rectangle(cr, 0, 0, width, height);
-  cairo_clip(cr);
-  cairo_new_path(cr);
-  // draw view
-  dt_view_manager_expose(darktable.view_manager, cr, width, height, pointerx, pointery);
-  cairo_restore(cr);
+  dt_view_manager_expose(darktable.view_manager, cr, dc->width, dc->height, pointerx, pointery);
 
   // draw busy indicator
   dt_pthread_mutex_lock(&dc->log_mutex);
   if(dc->log_busy > 0)
   {
-    dt_control_draw_busy_msg(cr, width, height);
+    dt_control_draw_busy_msg(cr, dc->width, dc->height);
   }
   dt_pthread_mutex_unlock(&dc->log_mutex);
-
-  cairo_destroy(cr);
-
-  cairo_t *cr_pixmap = cairo_create(darktable.gui->surface);
-  cairo_set_source_surface(cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
-
-  cairo_surface_destroy(cst);
-  return NULL;
 }
 
 gboolean dt_control_draw_endmarker(GtkWidget *widget,

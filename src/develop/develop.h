@@ -289,11 +289,16 @@ typedef struct dt_develop_t
 
   dt_dev_chroma_t chroma;
 
-  // for exposing the crop
+  // for exposing and handling the crop
   struct
   {
     // set by dt_dev_pixelpipe_synch() if an enabled crop module is included in history
     struct dt_iop_module_t *exposer;
+
+    // proxy to change crop settings via flip module
+    struct dt_iop_module_t *flip_handler;
+    void (*flip_callback)(struct dt_iop_module_t *crop,
+                          const dt_image_orientation_t flipmode);
   } cropping;
 
   // for the overexposure indicator
@@ -448,6 +453,14 @@ void dt_dev_get_pointer_zoom_pos(dt_dev_viewport_t *port,
                                  float *zoom_x,
                                  float *zoom_y,
                                  float *zoom_scale);
+void dt_dev_get_pointer_zoom_pos_from_bounds(dt_dev_viewport_t *port,
+                                             const float px,
+                                             const float py,
+                                             const float zbound_x,
+                                             const float zbound_y,
+                                             float *zoom_x,
+                                             float *zoom_y,
+                                             float *zoom_scale);
 void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
                                 dt_dev_zoom_t *zoom,
                                 int *closeup,

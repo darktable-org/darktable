@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -346,6 +346,9 @@ void dt_dev_process_image_job(dt_develop_t *dev,
   dt_dev_pixelpipe_set_input(pipe, dev, (float *)buf.buf, buf.width, buf.height,
                              port ? 1.0 : buf.iscale);
 
+  // We require calculation of pixelpipe dimensions via dt_dev_pixelpipe_change() in these cases
+  const gboolean initial = pipe->loading || dev->image_force_reload || pipe->input_changed;
+
   if(pipe->loading)
   {
     // init pixel pipeline
@@ -398,10 +401,10 @@ restart:
   if(port == &dev->full)
     pipe->input_timestamp = dev->timestamp;
 
-  // dt_dev_pixelpipe_change() will clear the changed value
-  const dt_dev_pixelpipe_change_t pipe_changed = pipe->changed;
-  // this locks dev->history_mutex.
-  dt_dev_pixelpipe_change(pipe, dev);
+  const gboolean pipe_changed = pipe->changed != DT_DEV_PIPE_UNCHANGED;
+  // dt_dev_pixelpipe_change() locks history mutex while syncing nodes and finally calculates dimensions
+  if(pipe_changed || initial || (port && port->pipe->loading))
+    dt_dev_pixelpipe_change(pipe, dev);
 
   float scale = 1.0f;
   int window_width = G_MAXINT;
@@ -414,7 +417,7 @@ restart:
     // if just changed to an image with a different aspect ratio or
     // altered image orientation, the prior zoom xy could now be beyond
     // the image boundary
-    if(port->pipe->loading || pipe_changed != DT_DEV_PIPE_UNCHANGED)
+    if(port->pipe->loading || pipe_changed)
       dt_dev_zoom_move(port, DT_ZOOM_MOVE, 0.0f, 0, 0.0f, 0.0f, TRUE);
 
     // determine scale according to new dimensions
@@ -569,8 +572,11 @@ float dt_dev_get_zoom_scale(dt_dev_viewport_t *port,
       break;
   }
 
-  if(preview) zoom_scale *= (float)darktable.develop->full.pipe->processed_width
-                              / darktable.develop->preview_pipe->processed_width;
+  if(!zoom_scale) zoom_scale = 1.0f;
+
+  if(preview && darktable.develop->preview_pipe->processed_width)
+    zoom_scale *= (float)darktable.develop->full.pipe->processed_width
+                  / darktable.develop->preview_pipe->processed_width;
 
   return zoom_scale;
 }
@@ -2434,11 +2440,11 @@ gboolean dt_dev_get_zoom_bounds(dt_dev_viewport_t *port,
   if(port->zoom == DT_ZOOM_FIT)
     return FALSE;
 
-  int procw = 0, proch = 0;
+  dt_dev_zoom_t zoom;
+  int closeup, procw = 0, proch = 0;
+  dt_dev_get_viewport_params(port, &zoom, &closeup, zoom_x, zoom_y);
   dt_dev_get_processed_size(port, &procw, &proch);
   const float scale = dt_dev_get_zoom_scale(port, port->zoom, 1<<port->closeup, 0);
-
-  dt_dev_get_viewport_params(port, NULL, NULL, zoom_x, zoom_y);
 
   *boxw = procw ? port->width / (procw * scale) : 1.0f;
   *boxh = proch ? port->height / (proch * scale) : 1.0f;
@@ -2836,6 +2842,32 @@ void dt_dev_get_pointer_zoom_pos(dt_dev_viewport_t *port,
   int closeup = 0, procw = 0, proch = 0;
   float zoom2_x = 0.0f, zoom2_y = 0.0f;
   dt_dev_get_viewport_params(port, &zoom, &closeup, &zoom2_x, &zoom2_y);
+  dt_dev_get_processed_size(port, &procw, &proch);
+  const float scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 0);
+  const double tb = port->border_size;
+  // offset from center now (current zoom_{x,y} points there)
+  const float mouse_off_x = px - tb - .5 * port->width;
+  const float mouse_off_y = py - tb - .5 * port->height;
+  zoom2_x += mouse_off_x / (procw * scale);
+  zoom2_y += mouse_off_y / (proch * scale);
+  *zoom_x = zoom2_x + 0.5f;
+  *zoom_y = zoom2_y + 0.5f;
+  *zoom_scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 1);
+}
+
+void dt_dev_get_pointer_zoom_pos_from_bounds(dt_dev_viewport_t *port,
+                                             const float px,
+                                             const float py,
+                                             const float zbound_x,
+                                             const float zbound_y,
+                                             float *zoom_x,
+                                             float *zoom_y,
+                                             float *zoom_scale)
+{
+  dt_dev_zoom_t zoom;
+  int closeup = 0, procw = 0, proch = 0;
+  float zoom2_x = zbound_x, zoom2_y = zbound_y;
+  dt_dev_get_viewport_params(port, &zoom, &closeup, NULL, NULL);
   dt_dev_get_processed_size(port, &procw, &proch);
   const float scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 0);
   const double tb = port->border_size;

@@ -1503,7 +1503,7 @@ static gboolean _operation_already_handled(GList *e_list,
 }
 
 // returns the nth module's priority being active or not
-int _get_multi_priority(dt_develop_t *dev,
+static int _get_multi_priority(dt_develop_t *dev,
                         const char *operation,
                         const int n,
                         const gboolean only_disabled)
@@ -1522,9 +1522,9 @@ int _get_multi_priority(dt_develop_t *dev,
   return INT_MAX;
 }
 
-void dt_ioppr_update_for_entries(dt_develop_t *dev,
-                                 GList *entry_list,
-                                 const gboolean append)
+static void _ioppr_update_for_entries(dt_develop_t *dev,
+                                      GList *entry_list,
+                                      const gboolean append)
 {
   // for each priority list to be checked
   for(GList *e_list = entry_list; e_list; e_list = g_list_next(e_list))
@@ -1656,7 +1656,7 @@ void dt_ioppr_update_for_style_items(dt_develop_t *dev,
 
   e_list = g_list_reverse(e_list);  // list was built in reverse order, so un-reverse it
 
-  dt_ioppr_update_for_entries(dev, e_list, append);
+  _ioppr_update_for_entries(dev, e_list, append);
 
   // write back the multi-priority
 
@@ -1703,7 +1703,7 @@ void dt_ioppr_update_for_modules(dt_develop_t *dev,
   }
   e_list = g_list_reverse(e_list);  // list was built in reverse order, so un-reverse it
 
-  dt_ioppr_update_for_entries(dev, e_list, append);
+  _ioppr_update_for_entries(dev, e_list, append);
 
   // write back the multi-priority
 
@@ -2470,7 +2470,7 @@ gboolean dt_ioppr_check_iop_order_ext(dt_develop_t *dev,
         {
           iop_order_ok = FALSE;
           dt_print(DT_DEBUG_ALWAYS,
-                   "[dt_ioppr_check_iop_order] module not used but enabled!!"
+                   "[dt_ioppr_check_iop_order] module not used but enabled!"
                    " %s %s(%d) image %i (%s)",
                    mod->op, mod->multi_name, mod->iop_order,imgid, msg);
         }
@@ -2540,7 +2540,7 @@ gboolean dt_ioppr_check_iop_order_ext(dt_develop_t *dev,
         iop_order_ok = FALSE;
         dt_print(DT_DEBUG_ALWAYS,
                  "[dt_ioppr_check_iop_order] history module not"
-                 " used but enabled!! %s %s(%d) image %i (%s)",
+                 " used but enabled! %s %s(%d) image %i (%s)",
                  hist->op_name, hist->multi_name, hist->iop_order, imgid, msg);
       }
       if(hist->multi_priority == 0)

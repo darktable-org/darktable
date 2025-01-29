@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2024 darktable developers.
+    Copyright (C) 2020-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,16 +36,24 @@
 #include <wand/MagickWand.h>
 #endif
 
-/* we only support images with certain filename extensions via ImageMagick,
- * derived from what it declared as "supported" with ImageMagick; RAWs
- * are excluded as ImageMagick would render them with third party libraries
- * in reduced quality - slow and only 8-bit */
+// We only support images with certain filename extensions via ImageMagick.
+// RAWs are excluded as ImageMagick would render them with third party
+// libraries in reduced quality - slow and only 8-bit.
 static gboolean _supported_image(const gchar *filename)
 {
-  const char *extensions_whitelist[] = { "tiff", "tif", "pbm", "pgm", "ppm", "pnm",
-                                         "webp", "jpc", "jp2", "jpf", "jpx", "bmp",
-                                         "miff", "dcm", "jng", "mng", "pam", "gif",
-                                         "fits", "fit", "fts", "jxl", NULL };
+  const char *extensions_whitelist[] =
+    {
+    "tiff", "tif", // may support more format features than the native loader
+    "pam", "pbm", "pgm", "ppm", "pnm", // PNM-style formats
+    "jpc", "jp2", "jpf", "jpx", // JPEG 2000 extensions
+    "bmp", "miff", "dcm", "jng", "mng", "gif",  // misc exotic formats
+    "fits", "fit", "fts",  // FITS format (common in astro imagery)
+    "cin", "dpx", // Kodak made formats used in film industry for still frames
+    "jxl",  // probably of no practical use
+    "webp", // probably of no practical use
+    NULL
+    };
+
   gboolean supported = FALSE;
   char *ext = g_strrstr(filename, ".");
   if(!ext) return FALSE;

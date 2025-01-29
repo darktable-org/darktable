@@ -3822,15 +3822,15 @@ void gui_init(dt_lib_module_t *self)
                                DT_COLLECTION_CHANGE_RELOAD,
                                DT_COLLECTION_PROP_MODULE, NULL);
 
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, collection_updated, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_FILMROLLS_CHANGED, filmrolls_updated, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE, preferences_changed, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_FILMROLLS_IMPORTED, filmrolls_imported, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_FILMROLLS_REMOVED, filmrolls_removed, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_TAG_CHANGED, tag_changed, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_GEOTAG_CHANGED, _geotag_changed, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_METADATA_CHANGED, metadata_changed, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE, view_set_click, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, collection_updated);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_FILMROLLS_CHANGED, filmrolls_updated);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PREFERENCES_CHANGE, preferences_changed);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_FILMROLLS_IMPORTED, filmrolls_imported);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_FILMROLLS_REMOVED, filmrolls_removed);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_TAG_CHANGED, tag_changed);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_GEOTAG_CHANGED, _geotag_changed);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_METADATA_CHANGED, metadata_changed);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PREFERENCES_CHANGE, view_set_click);
 
   dt_action_register(DT_ACTION(self), N_("jump back to previous collection"),
                      _history_previous, GDK_KEY_k,
@@ -3841,14 +3841,6 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = self->data;
 
-  DT_CONTROL_SIGNAL_DISCONNECT(collection_updated, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(filmrolls_updated, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(filmrolls_imported, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(preferences_changed, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(filmrolls_removed, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(tag_changed, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_geotag_changed, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(view_set_click, self);
   darktable.view_manager->proxy.module_collect.module = NULL;
   free(d->params);
 

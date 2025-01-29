@@ -169,6 +169,7 @@ if(APPLE)
   list(APPEND HEADER_FILES "osx/osx.h")
   list(APPEND SOURCE_FILES "common/pwstorage/backend_apple_keychain.c")
   list(APPEND HEADER_FILES "common/pwstorage/backend_apple_keychain.h")
+  list(APPEND SOURCE_FILES "main.c")
   include(CheckLanguage)
   check_language(OBJCXX)
   if(CMAKE_OBJCXX_COMPILER)
@@ -561,7 +562,7 @@ if(USE_GRAPHICSMAGICK)
   find_package(GraphicsMagick)
   if(GraphicsMagick_FOUND)
     add_definitions(-DHAVE_GRAPHICSMAGICK)
-    set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} bmp dcm fit fits fts gif jng jp2 jpc jpf jpx miff mng pam webp jxl CACHE INTERNAL "")
+    set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} bmp cin dcm dpx fit fits fts gif jng jp2 jpc jpf jpx miff mng pam webp jxl CACHE INTERNAL "")
     include_directories(SYSTEM ${GraphicsMagick_INCLUDE_DIRS})
     list(APPEND LIBS ${GraphicsMagick_LIBRARIES})
     list(APPEND SOURCES "imageio/imageio_gm.c")
@@ -585,7 +586,7 @@ if(USE_IMAGEMAGICK AND NOT GraphicsMagick_FOUND)
       list(APPEND LIBS ${ImageMagick_LIBRARY})
       unset(ImageMagick_LIBRARY CACHE)
     endforeach(lib)
-    set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} bmp dcm fit fits fts gif jng jp2 jpc jpf jpx miff mng pam webp jxl CACHE INTERNAL "")
+    set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} bmp cin dcm dpx fit fits fts gif jng jp2 jpc jpf jpx miff mng pam webp jxl CACHE INTERNAL "")
   endif(ImageMagick_FOUND)
 endif(USE_IMAGEMAGICK AND NOT GraphicsMagick_FOUND)
 
@@ -924,6 +925,23 @@ else(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
   endif(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
 endif(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
 
+file(GLOB darktable_STYLES
+     "${DARKTABLE_DATADIR}/styles/*.dtstyle"
+)
+
+add_custom_command(
+  DEPENDS ${darktable_STYLES} ${CMAKE_SOURCE_DIR}/tools/generate_styles_string.sh
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/styles_string.h
+  COMMAND ${CMAKE_SOURCE_DIR}/tools/generate_styles_string.sh ${DARKTABLE_DATADIR}/styles ${CMAKE_CURRENT_BINARY_DIR}/styles_string.h
+  COMMENT "Generating styles strings for translation"
+)
+
+add_custom_target(
+  generate_styles_string ALL
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/styles_string.h
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
 add_custom_target(
   generate_preferences ALL
   DEPENDS ${CMAKE_SOURCE_DIR}/tools/generate_prefs.xsl ${CMAKE_SOURCE_DIR}/data/darktableconfig.dtd ${DARKTABLE_DATADIR}/darktableconfig.xml ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
@@ -947,6 +965,7 @@ add_library(lib_darktable SHARED ${DARKTABLE_BINDIR}/preferences_gen.h ${DARKTAB
 # since this isn't the same directory we do have to manually set it
 set_source_files_properties(${DARKTABLE_BINDIR}/version_gen.c PROPERTIES GENERATED TRUE)
 
+add_dependencies(lib_darktable generate_styles_string)
 add_dependencies(lib_darktable generate_conf)
 add_dependencies(lib_darktable generate_version)
 add_dependencies(lib_darktable generate_preferences)

@@ -230,8 +230,7 @@ static gboolean _set_max_clip(dt_iop_module_t *self)
 
   // we want to know the size of the actual buffer
   dt_dev_pixelpipe_t *fpipe = self->dev->full.pipe;
-  dt_dev_pixelpipe_iop_t *piece =
-    dt_dev_distort_get_iop_pipe(self->dev, fpipe, self);
+  const dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, fpipe, self);
   if(!piece) return FALSE;
 
   const float wp = piece->buf_out.width;
@@ -466,7 +465,7 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
   if(self->enabled)
   {
     // once the pipe is recomputed, we want to update final sizes
-    DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _event_preview_updated_callback, self);
+    DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _event_preview_updated_callback);
     if(in)
     {
       // got focus, grab stuff to gui:
@@ -530,8 +529,7 @@ static float _aspect_ratio_get(dt_iop_module_t *self, GtkWidget *combo)
   }
 
   // we want to know the size of the actual buffer
-  dt_dev_pixelpipe_iop_t *piece =
-    dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
+  const dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
   if(!piece) return 0.0f;
 
   const int iwd = piece->buf_in.width, iht = piece->buf_in.height;
@@ -1111,6 +1109,23 @@ static gchar *_aspect_format(gchar *original,
     return g_strdup_printf("%s  %4.2f", original, (float)adim / (float)bdim);
 }
 
+static void _crop_handle_flip(dt_iop_module_t *self, const dt_image_orientation_t mode)
+{
+  dt_iop_crop_params_t *p = self ? self->params : NULL;
+  if(!p || (p->cx == 0.f && p->cy == 0.f && p->cw == 1.f && p->ch == 1.f))
+    return;
+
+  const float ocx = p->cx;
+  const float ocy = p->cy;
+  if(mode == ORIENTATION_FLIP_HORIZONTALLY)      {p->cx = 1.f-p->cw; p->cw = 1.f-ocx;}
+  else if(mode == ORIENTATION_FLIP_VERTICALLY)   {p->cy = 1.f-p->ch; p->ch = 1.f-ocy;}
+  else if(mode == ORIENTATION_ROTATE_CW_90_DEG)  {p->cx = 1.f-p->ch; p->ch = p->cw;     p->cw = 1.f-p->cy; p->cy = ocx;}
+  else if(mode == ORIENTATION_ROTATE_CCW_90_DEG) {p->cx = p->cy;     p->cy = 1.f-p->cw; p->cw = p->ch;     p->ch = 1.f-ocx;}
+
+  dt_iop_gui_update(self);
+  dt_dev_add_history_item(darktable.develop, self, self->enabled);
+}
+
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_crop_gui_data_t *g = IOP_GUI_ALLOC(crop);
@@ -1135,6 +1150,7 @@ void gui_init(dt_iop_module_t *self)
     { _("10:8 in print"), 2445, 2032 },
     { _("5:4, 4x5, 8x10"), 5, 4 },
     { _("11x14"), 14, 11 },
+    { _("45x35, portrait"), 45, 35 },
     { _("8.5x11, letter"), 110, 85 },
     { _("4:3, VGA, TV"), 4, 3 },
     { _("5x7"), 7, 5 },
@@ -1302,6 +1318,9 @@ void gui_init(dt_iop_module_t *self)
                               _("the bottom margin cannot overlap with the top margin"));
 
   self->widget = box_enabled;
+
+  darktable.develop->cropping.flip_handler = self;
+  darktable.develop->cropping.flip_callback = _crop_handle_flip;
 }
 
 static void _aspect_free(gpointer data)
@@ -1317,8 +1336,6 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_iop_crop_gui_data_t *g = self->gui_data;
   g_list_free_full(g->aspect_list, _aspect_free);
   g->aspect_list = NULL;
-
-  IOP_GUI_FREE;
 }
 
 static _grab_region_t _gui_get_grab(float pzx,

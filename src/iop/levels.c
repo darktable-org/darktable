@@ -702,8 +702,6 @@ void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_levels_gui_data_t *g = self->gui_data;
   g_list_free(g->modes);
-
-  IOP_GUI_FREE;
 }
 
 static gboolean dt_iop_levels_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)

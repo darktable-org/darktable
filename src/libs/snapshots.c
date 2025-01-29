@@ -76,11 +76,11 @@ typedef struct dt_lib_snapshots_t
   dt_lib_snapshot_t snapshot[MAX_SNAPSHOT];
 
   /* change snapshot overlay controls */
-  gboolean dragging, vertical, inverted, panning;
+  gboolean dragging, vertical, inverted, panning, sidebyside;
   double vp_width, vp_height, vp_xpointer, vp_ypointer, vp_xrotate, vp_yrotate;
   gboolean on_going;
 
-  GtkWidget *take_button;
+  GtkWidget *take_button, *sidebyside_button;
 } dt_lib_snapshots_t;
 
 /* callback for take snapshot */
@@ -188,6 +188,9 @@ void gui_post_expose(dt_lib_module_t *self,
   dt_lib_snapshots_t *d = self->data;
   dt_develop_t *dev = darktable.develop;
 
+  if(d->sidebyside && (!darktable.gui->drawing_snapshot ^ !d->inverted))
+    return;
+
   if(d->selected >= 0)
   {
     dt_lib_snapshot_t *snap = &d->snapshot[d->selected];
@@ -241,8 +244,8 @@ void gui_post_expose(dt_lib_module_t *self,
     d->vp_width = width;
     d->vp_height = height;
 
-    const double lx = width * d->vp_xpointer;
-    const double ly = height * d->vp_ypointer;
+    const double lx = d->sidebyside ? d->inverted ? 0 : width : width * d->vp_xpointer;
+    const double ly = d->sidebyside ? d->inverted ? 0 : height : height * d->vp_ypointer;
 
     const double size = DT_PIXEL_APPLY_DPI(d->inverted ? -15 : 15);
 
@@ -329,7 +332,7 @@ void gui_post_expose(dt_lib_module_t *self,
     }
 
     /* if mouse over control lets draw center rotate control, hide if split is dragged */
-    if(!d->dragging)
+    if(!d->dragging && !d->sidebyside)
     {
       const double s = fmin(24, width * HANDLE_SIZE);
       const gint rx = (d->vertical ? width * d->vp_xpointer : width * 0.5) - (s * 0.5);
@@ -405,6 +408,7 @@ int button_pressed(struct dt_lib_module_t *self,
         || ((!d->vertical && yp > d->vp_ypointer - hhs
              && yp < d->vp_ypointer + hhs)
             && xp > 0.5 - hhs && xp < 0.5 + hhs)
+        || d->sidebyside
         || (d->vp_xrotate > xp - hhs
             && d->vp_xrotate <= xp + hhs
             && d->vp_yrotate > yp - hhs
@@ -414,7 +418,10 @@ int button_pressed(struct dt_lib_module_t *self,
       _lib_snapshot_rotation_cnt++;
 
       d->vertical = !d->vertical;
+      gtk_orientable_set_orientation(GTK_ORIENTABLE(gtk_widget_get_parent(dt_ui_snapshot(darktable.gui->ui))), d->vertical ?  GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL);
       if(_lib_snapshot_rotation_cnt % 2) d->inverted = !d->inverted;
+      if(d->sidebyside)
+        d->snap_requested = TRUE;
 
       d->vp_xpointer = xp;
       d->vp_ypointer = yp;
@@ -724,6 +731,16 @@ static void _signal_image_changed(gpointer instance, dt_lib_module_t *self)
   dt_control_queue_redraw_center();
 }
 
+static void _sidebyside_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
+{
+  dt_lib_snapshots_t *d = self->data;
+
+  d->sidebyside = !d->sidebyside;
+  d->snap_requested = TRUE;
+  gtk_widget_set_visible(dt_ui_snapshot(darktable.gui->ui), 
+                         d->sidebyside && d->selected >= 0);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -804,14 +821,24 @@ void gui_init(dt_lib_module_t *self)
                      dt_ui_resize_wrap(d->snapshots_box, 1,
                                        "plugins/darkroom/snapshots/windowheight"),
                      TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), d->take_button, TRUE, TRUE, 0);
+
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), d->take_button, TRUE, TRUE, 0);
+  d->sidebyside_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_culling_dynamic, 0, NULL);
+  gtk_box_pack_start(GTK_BOX(hbox), d->sidebyside_button, FALSE, TRUE, 0);
+  g_signal_connect(G_OBJECT(d->sidebyside_button), "clicked",
+                   G_CALLBACK(_sidebyside_button_clicked), self);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->sidebyside_button),
+                              _("place the snapshot side-by-side / above-below the current image instead of overlaying"));
+
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
   dt_action_register(DT_ACTION(self), N_("toggle last snapshot"),
                      _lib_snapshots_toggle_last, 0, 0);
 
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, _signal_profile_changed, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _signal_image_changed, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_IMAGE_REMOVED, _signal_image_removed, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, _signal_profile_changed);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _signal_image_changed);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_IMAGE_REMOVED, _signal_image_removed);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -935,6 +962,7 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, dt_lib_modu
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[k].button), FALSE);
   }
   darktable.lib->proxy.snapshots.enabled = d->selected >= 0;
+  gtk_widget_set_visible(dt_ui_snapshot(darktable.gui->ui), d->sidebyside && d->selected >= 0);
 
   --darktable.gui->reset;
 

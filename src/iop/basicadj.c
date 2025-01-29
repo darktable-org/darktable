@@ -679,17 +679,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->sl_clip, _("adjusts clipping value for auto exposure calculation"));
 
   // add signal handler for preview pipe finish
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _develop_ui_pipe_finished_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _develop_ui_pipe_finished_callback);
   // and profile change
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, _signal_profile_user_changed, self);
-}
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  DT_CONTROL_SIGNAL_DISCONNECT(_develop_ui_pipe_finished_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_signal_profile_user_changed, self);
-
-  IOP_GUI_FREE;
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, _signal_profile_user_changed);
 }
 
 static inline int64_t doubleToRawLongBits(double d)
@@ -1175,32 +1167,32 @@ cleanup:
   if(dt_isnan(expcomp))
   {
     expcomp = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] expcomp is NaN!!!");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] expcomp is NaN!");
   }
   if(dt_isnan(black))
   {
     black = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] black is NaN!!!");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] black is NaN!");
   }
   if(dt_isnan(bright))
   {
     bright = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] bright is NaN!!!");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] bright is NaN!");
   }
   if(dt_isnan(contr))
   {
     contr = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] contr is NaN!!!");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] contr is NaN!");
   }
   if(dt_isnan(hlcompr))
   {
     hlcompr = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] hlcompr is NaN!!!");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] hlcompr is NaN!");
   }
   if(dt_isnan(hlcomprthresh))
   {
     hlcomprthresh = 0.f;
-    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] hlcomprthresh is NaN!!!");
+    dt_print(DT_DEBUG_ALWAYS, "[_get_auto_exp] hlcomprthresh is NaN!");
   }
 
   *_expcomp = expcomp;

@@ -386,17 +386,13 @@ void gui_init(dt_lib_module_t *self)
      _("write history stack and tags to XMP sidecar files"), 0, 0);
   gtk_grid_attach(grid, d->write_button, 3, line, 3, 1);
 
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_SELECTION_CHANGED, _image_selection_changed_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _mouse_over_image_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _collection_updated_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_SELECTION_CHANGED, _image_selection_changed_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _mouse_over_image_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _collection_updated_callback);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  DT_CONTROL_SIGNAL_DISCONNECT(_image_selection_changed_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_mouse_over_image_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_collection_updated_callback, self);
-
   free(self->data);
   self->data = NULL;
 }

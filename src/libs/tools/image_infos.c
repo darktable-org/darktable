@@ -137,22 +137,18 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_show_all(self->widget);
 
   /* lets signup for develop image changed signals */
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _lib_imageinfo_update_message, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _lib_imageinfo_update_message);
 
   /* signup for develop initialize to update info of current
      image in darkroom when enter */
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_INITIALIZE, _lib_imageinfo_update_message, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_INITIALIZE, _lib_imageinfo_update_message);
 
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_IMAGE_INFO_CHANGED, _lib_imageinfo_update_message2, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _lib_imageinfo_update_message3, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_IMAGE_INFO_CHANGED, _lib_imageinfo_update_message2);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _lib_imageinfo_update_message3);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  DT_CONTROL_SIGNAL_DISCONNECT(_lib_imageinfo_update_message, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_lib_imageinfo_update_message2, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_lib_imageinfo_update_message3, self);
-
   g_free(self->data);
   self->data = NULL;
 }

@@ -1186,10 +1186,12 @@ static void _update_style(const dt_stylemenu_data_t *menu_data)
 static void _apply_style_activate_callback(GtkMenuItem *menuitem,
                                            const dt_stylemenu_data_t *menu_data)
 {
-  if(gtk_get_current_event()->type == GDK_KEY_PRESS)
+  GdkEvent *event = gtk_get_current_event();
+  if(event && event->type == GDK_KEY_PRESS)
   {
     _update_style(menu_data);
   }
+  gdk_event_free(event);
 }
 
 static gboolean _apply_style_button_callback(GtkMenuItem *menuitem,
@@ -1483,11 +1485,11 @@ void view_enter(struct dt_lib_module_t *self,
 
   // user activated a new image via the filmstrip or user entered view
   // mode which activates an image: get image_id and orientation
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, _print_settings_activate_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, _print_settings_activate_callback);
 
   // when an updated mipmap, we may have new orientation information
   // about the current image.
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, _print_settings_update_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, _print_settings_update_callback);
 
   // NOTE: it would be proper to set image_id here to -1, but this
   // seems to make no difference

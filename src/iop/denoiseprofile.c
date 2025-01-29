@@ -2210,7 +2210,7 @@ static int process_nlmeans_cl(dt_iop_module_t *self,
       dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
 
       // indirectly give gpu some air to breathe (and to do display related stuff)
-      dt_iop_nap(dt_opencl_micro_nap(devid));
+      dt_opencl_micro_nap(devid);
     }
   }
 
@@ -2483,7 +2483,7 @@ static int process_wavelets_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS) goto error;
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(dt_opencl_micro_nap(devid));
+    dt_opencl_micro_nap(devid);
 
     // swap buffers
     cl_mem dev_buf3 = dev_buf2;
@@ -2627,7 +2627,7 @@ static int process_wavelets_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS) goto error;
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(dt_opencl_micro_nap(devid));
+    dt_opencl_micro_nap(devid);
 
     // swap buffers
     cl_mem dev_buf3 = dev_buf2;
@@ -3870,8 +3870,6 @@ void gui_cleanup(dt_iop_module_t *self)
   g_list_free_full(g->profiles, dt_noiseprofile_free);
   dt_draw_curve_destroy(g->transition_curve);
   // nothing else necessary, gtk will clean up the slider.
-
-  IOP_GUI_FREE;
 }
 
 // clang-format off

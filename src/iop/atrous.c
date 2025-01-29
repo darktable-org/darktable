@@ -387,7 +387,7 @@ int process_cl(dt_iop_module_t *self,
   dt_iop_atrous_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   cl_mem dev_filter = NULL;
   cl_mem dev_tmp = NULL;
   cl_mem dev_tmp2 = NULL;
@@ -447,7 +447,7 @@ int process_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS) goto error;
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(darktable.opencl->micro_nap);
+    dt_opencl_micro_nap(devid);
 
     // now immediately run the synthesis for the current scale, accumulating the details into dev_out
     dt_opencl_set_kernel_args(devid, gd->kernel_synthesize, 0,
@@ -462,7 +462,7 @@ int process_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS) goto error;
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(darktable.opencl->micro_nap);
+    dt_opencl_micro_nap(devid);
 
     // swap scratch buffers
     if(scale == 0) dev_buf1 = dev_tmp2;
@@ -577,7 +577,7 @@ int process_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS) goto error;
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(dt_opencl_micro_nap(devid));
+    dt_opencl_micro_nap(devid);
   }
 
   /* now synthesize again */
@@ -606,7 +606,7 @@ int process_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS) goto error;
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(dt_opencl_micro_nap(devid));
+    dt_opencl_micro_nap(devid);
   }
 
   dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
@@ -1836,8 +1836,6 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_iop_atrous_gui_data_t *g = self->gui_data;
   dt_conf_set_int("plugins/darkroom/atrous/gui_channel", g->channel);
   dt_draw_curve_destroy(g->minmax_curve);
-
-  IOP_GUI_FREE;
 }
 
 // clang-format off

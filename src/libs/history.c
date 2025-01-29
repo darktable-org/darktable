@@ -167,16 +167,13 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_show_all(self->widget);
 
   /* connect to history change signal for updating the history view */
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE, _lib_history_will_change_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _lib_history_change_callback, self);
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_MODULE_REMOVE, _lib_history_module_remove_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE, _lib_history_will_change_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _lib_history_change_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_MODULE_REMOVE, _lib_history_module_remove_callback);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  DT_CONTROL_SIGNAL_DISCONNECT(_lib_history_change_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_lib_history_will_change_callback, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_lib_history_module_remove_callback, self);
   g_free(self->data);
   self->data = NULL;
 }
@@ -242,8 +239,6 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,
 
   gtk_widget_set_sensitive(onoff, FALSE);
 
-  g_object_set_data(G_OBJECT(widget), "history_number", GINT_TO_POINTER(num + 1));
-  g_object_set_data(G_OBJECT(widget), "label", (gpointer)label);
   if(selected) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
 
   /* set callback when clicked */
@@ -252,6 +247,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,
 
   /* associate the history number */
   g_object_set_data(G_OBJECT(widget), "history-number", GINT_TO_POINTER(num + 1));
+  g_object_set_data(G_OBJECT(widget), "label", (gpointer)label);
 
   gtk_box_pack_start(GTK_BOX(hbox), numwidget, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
@@ -457,26 +453,6 @@ static gboolean _check_deleted_instances(dt_develop_t *dev,
   return deleted_module_found;
 }
 
-static void _reorder_gui_module_list(dt_develop_t *dev)
-{
-  int pos_module = 0;
-  for(const GList *modules = g_list_last(dev->iop);
-      modules;
-      modules = g_list_previous(modules))
-  {
-    dt_iop_module_t *module = modules->data;
-
-    GtkWidget *expander = module->expander;
-    if(expander)
-    {
-      gtk_box_reorder_child
-        (dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
-         expander,
-         pos_module++);
-    }
-  }
-}
-
 static gboolean _rebuild_multi_priority(GList *history_list)
 {
   gboolean changed = FALSE;
@@ -640,7 +616,7 @@ static void _pop_undo(gpointer user_data,
     dt_dev_pixelpipe_rebuild(dev);
 
     // if dev->iop has changed reflect that on module list
-    if(pipe_remove) _reorder_gui_module_list(dev);
+    if(pipe_remove) dt_dev_reorder_gui_module_list(dev);
 
     // write new history and reload
     dt_dev_write_history(dev);

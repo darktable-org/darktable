@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2024 darktable developers.
+    Copyright (C) 2014-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1685,6 +1685,14 @@ static void set_line_width(cairo_t *cr,
   cairo_set_line_width(cr, width * (dt_iop_canvas_not_sensitive(darktable.develop) ? 0.5 : 1.0));
 }
 
+static gboolean _layers_showing(const dt_iop_liquify_gui_data_t *g)
+{
+  return gtk_toggle_button_get_active(g->btn_node_tool)
+    || gtk_toggle_button_get_active(g->btn_point_tool)
+    || gtk_toggle_button_get_active(g->btn_line_tool)
+    || gtk_toggle_button_get_active(g->btn_curve_tool);
+}
+
 static gboolean detect_drag(const dt_iop_liquify_gui_data_t *g,
                             const double scale,
                             const float complex pt)
@@ -2712,15 +2720,19 @@ void gui_post_expose(dt_iop_module_t *self,
   memcpy(&copy_params, p, sizeof(dt_iop_liquify_params_t));
   dt_iop_gui_leave_critical_section(self);
 
-  // distort all points
-  const distort_params_t d_params = { develop, develop->preview_pipe,
-                                      iscale, 1.0 / scale,
-                                      DT_DEV_TRANSFORM_DIR_ALL };
-  _distort_paths_locked(self, &d_params, &copy_params);
+  // check whether we need to draw an overlay with the warps
+  if(_layers_showing(g))
+  {
+    // distort all points
+    const distort_params_t d_params = { develop, develop->preview_pipe,
+                                        iscale, 1.0 / scale,
+                                        DT_DEV_TRANSFORM_DIR_ALL };
+    _distort_paths_locked(self, &d_params, &copy_params);
 
-  cairo_scale(cr, scale, scale);
+    cairo_scale(cr, scale, scale);
 
-  draw_paths(self, cr, 1.0 / (scale * zoom_scale), &copy_params);
+    draw_paths(self, cr, 1.0 / (scale * zoom_scale), &copy_params);
+  }
 }
 
 static gboolean btn_make_radio_callback(GtkToggleButton *btn,
@@ -2799,6 +2811,9 @@ int mouse_moved(dt_iop_module_t *self,
                 const float zoom_scale)
 {
   dt_iop_liquify_gui_data_t *g = self->gui_data;
+  gboolean layer_display = _layers_showing(g);
+  if(!self->enabled && !layer_display)
+    return FALSE;
   dt_iop_liquify_params_t *pa = self->params;
   gboolean handled = FALSE;
   float complex pt = 0.0f;
@@ -2813,7 +2828,7 @@ int mouse_moved(dt_iop_module_t *self,
   // Don't hit test while dragging, you'd only hit the dragged thing
   // anyway.
 
-  if(!is_dragging(g))
+  if(!is_dragging(g) && _layers_showing(g))
   {
     dt_liquify_hit_t hit = NOWHERE;
     _hit_test_paths(self, pa, pt, &hit);
@@ -2857,7 +2872,7 @@ int mouse_moved(dt_iop_module_t *self,
             && gtk_toggle_button_get_active(g->btn_node_tool))
       dt_control_hinter_message(darktable.control, _("click to edit nodes"));
   }
-  else // we are dragging
+  else if(is_dragging(g)) // we are dragging
   {
     dt_control_hinter_message(darktable.control,
                               dt_liquify_layers[DT_LIQUIFY_LAYER_BACKGROUND].hint);
@@ -3679,11 +3694,6 @@ void gui_reset(dt_iop_module_t *self)
   g->temp = NULL;
   g->status = 0;
   btn_make_radio_callback(NULL, NULL, self);
-}
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  IOP_GUI_FREE;
 }
 
 // defgroup Button paint functions

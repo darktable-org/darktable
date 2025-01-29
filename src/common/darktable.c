@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -372,7 +372,6 @@ gboolean dt_supported_image(const gchar *filename)
   return supported;
 }
 
-#ifndef MAC_INTEGRATION
 static gboolean _is_directory(const gchar *input)
 {
   gboolean is_dir = FALSE;
@@ -410,7 +409,6 @@ static void _switch_to_new_filmroll(const gchar *input)
     free(filename);
   }
 }
-#endif
 
 dt_imgid_t dt_load_from_string(const gchar *input,
                                const gboolean open_image_in_dr,
@@ -550,13 +548,13 @@ static size_t _get_mipmap_size()
   const int level = res->level;
   if(level < 0)
     return res->refresource[4*(-level-1) + 2] * 1024lu * 1024lu;
-  const int fraction = res->fractions[res->group + 2];
+  const int fraction = res->fractions[4*level + 2];
   return res->total_memory / 1024lu * fraction;
 }
 
-void check_resourcelevel(const char *key,
-                         int *fractions,
-                         const int level)
+static void _check_resourcelevel(const char *key,
+                                 int *fractions,
+                                 const int level)
 {
   const int g = level * 4;
   gchar out[128] = { 0 };
@@ -1381,13 +1379,15 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
              (darktable.tmp_directory) ?: "NOT AVAILABLE");
   }
 
-  // get valid directories
-  dt_loc_init(datadir_from_command,
-              moduledir_from_command,
-              localedir_from_command,
-              configdir_from_command,
-              cachedir_from_command,
-              tmpdir_from_command);
+  // Set directories as requested or default.
+  // Set a result flag so if we can't create certain directories, we can
+  // later, after initializing the GUI, show the user a message and exit.
+  const gboolean user_dirs_are_created = dt_loc_init(datadir_from_command,
+                                                     moduledir_from_command,
+                                                     localedir_from_command,
+                                                     configdir_from_command,
+                                                     cachedir_from_command,
+                                                     tmpdir_from_command);
 
   dt_print_mem_usage("at startup");
 
@@ -1511,6 +1511,26 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
     darktable.themes = NULL;
     dt_gui_theme_init(darktable.gui);
+
+    if(!user_dirs_are_created)
+    {
+      char *user_dirs_failure_text = g_markup_printf_escaped(
+        _("you do not have write access to create one of the user directories\n"
+          "\n"
+          "see the log for more details\n"
+          "\n"
+          "please fix this and then run darktable again"));
+      dt_gui_show_standalone_yes_no_dialog(_("darktable - unable to create directories"),
+                                           user_dirs_failure_text,
+                                           _("_quit darktable"),
+                                           NULL);
+      // There is no REAL need to free the string before exiting, but we do it
+      // to avoid creating a code pattern that could be mistakenly copy-pasted
+      // somewhere else where freeing memory would actually be needed.
+      g_free(user_dirs_failure_text);
+      exit(EXIT_FAILURE);
+    }
+
     darktable_splash_screen_create(NULL, FALSE);
   }
 
@@ -1538,7 +1558,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     if(init_gui && argc > 1)
     {
       darktable_splash_screen_set_progress(_("forwarding image(s) to running instance"));
-#ifndef MAC_INTEGRATION
+
       // send the images to the other instance via dbus
       dt_print(DT_DEBUG_ALWAYS,
                "[dt_init] trying to open the images in the running instance");
@@ -1560,7 +1580,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         g_free(filename);
       }
       if(connection) g_object_unref(connection);
-#endif
     }
     darktable_splash_screen_destroy(); // dismiss splash screen before potentially showing error dialog
     if(!image_loaded_elsewhere) dt_database_show_error(darktable.db);
@@ -1618,6 +1637,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       darktable_splash_screen_create(NULL, TRUE); // force the splash screen for the crawl even if user-disabled
       // scan for cases where the database and xmp files have different timestamps
       changed_xmp_files = dt_control_crawler_run();
+      if(!dt_conf_get_bool("show_splash_screen"))
+      {
+        darktable_splash_screen_destroy();
+        dt_gui_process_events(); // ensure that the splash screen is removed right away
+      }
     }
   }
 
@@ -1652,10 +1676,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   };
 
   // Allow the settings for each UI performance level to be changed via darktablerc
-  check_resourcelevel("resource_small", fractions, 0);
-  check_resourcelevel("resource_default", fractions, 1);
-  check_resourcelevel("resource_large", fractions, 2);
-  check_resourcelevel("resource_unrestricted", fractions, 3);
+  _check_resourcelevel("resource_small", fractions, 0);
+  _check_resourcelevel("resource_default", fractions, 1);
+  _check_resourcelevel("resource_large", fractions, 2);
+  _check_resourcelevel("resource_unrestricted", fractions, 3);
 
   dt_sys_resources_t *res = &darktable.dtresources;
   res->fractions = fractions;
@@ -1671,6 +1695,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   dt_get_sysresource_level();
   res->mipmap_memory = _get_mipmap_size();
+  dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
+    "  mipmap cache:    %luMB", res->mipmap_memory / 1024lu / 1024lu);
   // initialize collection query
   darktable.collection = dt_collection_new(NULL);
 
@@ -1818,21 +1844,13 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
     // init the gui part of views
     dt_view_manager_gui_init(darktable.view_manager);
-
-    // now that other initialization is complete, we can show the main window
-    // we need to do this before Lua is started or we'll either get a hang, or
-    // the module groups don't get set up correctly
-
-    // start by restoring the main window position as stored in the config file
-    dt_gui_gtk_load_config();
-    gtk_widget_show_all(dt_ui_main_window(darktable.gui->ui));
-    // give Gtk a chance to actually process the resizing
-    dt_gui_process_events();
   }
 
 /* init lua last, since it's user made stuff it must be in the real environment */
 #ifdef USE_LUA
   darktable_splash_screen_set_progress(_("initializing Lua"));
+  // after the following Lua startup call, we can no longer use dt_gui_process_events() or we hang;
+  // this also means no more calls to darktable_splash_screen_set_progress()
   dt_lua_init(darktable.lua_state.state, lua_command);
 #else
   darktable_splash_screen_set_progress(_(""));
@@ -1855,7 +1873,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     g_signal_connect(dt_ui_main_window(darktable.gui->ui), "event",
                      G_CALLBACK(dt_shortcut_dispatcher), NULL);
 
-#ifndef MAC_INTEGRATION
     // load image(s) specified on cmdline.  this has to happen after
     // lua is initialized as image import can run lua code
     if(argc == 2 && !_is_directory(argv[1]))
@@ -1875,7 +1892,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       dt_control_add_job(darktable.control,
                          DT_JOB_QUEUE_USER_BG, dt_pathlist_import_create(argc,argv));
     }
-#endif
 
     // there might be some info created in dt_configure_runtime_performance() for feedback
     if(!dt_gimpmode())
@@ -1911,8 +1927,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     if(changed_xmp_files)
       dt_control_crawler_show_image_list(changed_xmp_files);
 
-    darktable_splash_screen_destroy();
-
     if(!dt_gimpmode())
      dt_start_backtumbs_crawler();
   }
@@ -1930,10 +1944,16 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_capabilities_add("nonapple");
 #endif
 
-  // if we hid the main window by iconifying it, make sure to restore its geometry
   if(init_gui)
   {
-    gtk_window_deiconify(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
+    // show the main window and restore its geometry to that saved in the config file
+    gtk_widget_show_all(dt_ui_main_window(darktable.gui->ui));
+    dt_gui_gtk_load_config();
+    darktable_splash_screen_destroy();
+
+    // finally set the cursor to be the default.
+    // for some reason this is needed on some systems to pick up the correctly themed cursor
+    dt_control_change_cursor(GDK_LEFT_PTR);
   }
 
   dt_print(DT_DEBUG_CONTROL,
@@ -1944,14 +1964,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   return 0;
 }
 
-
 void dt_get_sysresource_level()
 {
   static int oldlevel = -999;
-  static int oldtunehead = -999;
 
   dt_sys_resources_t *res = &darktable.dtresources;
-  const gboolean tunehead = !dt_gimpmode() && dt_conf_get_bool("opencl_tune_headroom");
   int level = 1;
   const char *config = dt_conf_get_string_const("resourcelevel");
   /** These levels must correspond with preferences in xml.in
@@ -1972,37 +1989,24 @@ void dt_get_sysresource_level()
     else if(!strcmp(config, "mini"))         level = -2;
     else if(!strcmp(config, "notebook"))     level = -3;
   }
-  const gboolean mod = ((level != oldlevel) || (oldtunehead != tunehead));
-  res->level = oldlevel = level;
-  oldtunehead = tunehead;
-  res->tunehead = tunehead;
-  if(mod && (darktable.unmuted & (DT_DEBUG_MEMORY | DT_DEBUG_OPENCL | DT_DEBUG_DEV)))
-  {
-    const int oldgrp = res->group;
-    res->group = 4 * level;
-    dt_print(DT_DEBUG_ALWAYS,
-             "[dt_get_sysresource_level] switched to %i as `%s'",
-             level, config);
-    dt_print(DT_DEBUG_ALWAYS,
-             "  total mem:       %luMB",
-             res->total_memory / 1024lu / 1024lu);
-    dt_print(DT_DEBUG_ALWAYS,
-             "  mipmap cache:    %luMB",
-             _get_mipmap_size() / 1024lu / 1024lu);
-    dt_print(DT_DEBUG_ALWAYS,
-             "  available mem:   %luMB",
-             dt_get_available_mem() / 1024lu / 1024lu);
-    dt_print(DT_DEBUG_ALWAYS,
-             "  singlebuff:      %luMB",
-             dt_get_singlebuffer_mem() / 1024lu / 1024lu);
 
-    res->group = oldgrp;
+  if(level != oldlevel)
+  {
+    oldlevel = res->level = level;
+    dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
+             "[dt_get_sysresource_level] switched to `%s'", config);
+    dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
+             "  total mem:       %luMB", res->total_memory / 1024lu / 1024lu);
+    dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
+             "  available mem:   %luMB", dt_get_available_mem() / 1024lu / 1024lu);
+    dt_print(DT_DEBUG_MEMORY | DT_DEBUG_DEV,
+             "  singlebuff:      %luMB", dt_get_singlebuffer_mem() / 1024lu / 1024lu);
   }
 }
 
 void dt_cleanup()
 {
-  const int init_gui = (darktable.gui != NULL);
+  const gboolean init_gui = (darktable.gui != NULL);
 
 //  if(init_gui)
 //    darktable_exit_screen_create(NULL, FALSE);
@@ -2304,24 +2308,22 @@ size_t dt_get_available_mem()
 {
   dt_sys_resources_t *res = &darktable.dtresources;
   const int level = res->level;
-  const size_t total_mem = res->total_memory;
   if(level < 0)
     return res->refresource[4*(-level-1)] * 1024lu * 1024lu;
 
-  const int fraction = res->fractions[darktable.dtresources.group];
-  return MAX(512lu * 1024lu * 1024lu, total_mem / 1024lu * fraction);
+  const int fraction = res->fractions[4*level];
+  return MAX(512lu * 1024lu * 1024lu, res->total_memory / 1024lu * fraction);
 }
 
 size_t dt_get_singlebuffer_mem()
 {
   dt_sys_resources_t *res = &darktable.dtresources;
   const int level = res->level;
-  const size_t total_mem = res->total_memory;
   if(level < 0)
     return res->refresource[4*(-level-1) + 1] * 1024lu * 1024lu;
 
-  const int fraction = res->fractions[res->group + 1];
-  return MAX(2lu * 1024lu * 1024lu, total_mem / 1024lu * fraction);
+  const int fraction = res->fractions[4*level + 1];
+  return MAX(2lu * 1024lu * 1024lu, res->total_memory / 1024lu * fraction);
 }
 
 void dt_configure_runtime_performance(const int old, char *info)
@@ -2339,13 +2341,6 @@ void dt_configure_runtime_performance(const int old, char *info)
 
   // All runtime conf settings only write data if there is no valid
   // data found in conf
-  if(!dt_conf_key_not_empty("ui/performance"))
-  {
-    dt_conf_set_bool("ui/performance", !sufficient);
-    dt_print(DT_DEBUG_DEV,
-             "[dt_configure_runtime_performance] ui/performance=%s",
-             (sufficient) ? "FALSE" : "TRUE");
-  }
 
   if(!dt_conf_key_not_empty("resourcelevel"))
   {

@@ -119,7 +119,8 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_GUIDES_SPECIAL_DRAW = 1 << 14, // handle the grid drawing directly
   IOP_FLAGS_GUIDES_WIDGET = 1 << 15,     // require the guides widget
   IOP_FLAGS_CROP_EXPOSER = 1 << 16,      // offers crop exposing
-  IOP_FLAGS_EXPAND_ROI_IN = 1 << 17      // we might have to take special care about roi expansion
+  IOP_FLAGS_EXPAND_ROI_IN = 1 << 17,     // we might have to take special care about roi expansion
+  IOP_FLAGS_WRITE_DETAILS = 1 << 18
 } dt_iop_flags_t;
 
 /** status of a module*/
@@ -540,14 +541,10 @@ static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, const s
 {
   // Align so that DT_ALIGNED_ARRAY may be used within gui_data struct
   module->gui_data = dt_calloc_aligned(size);
-  dt_pthread_mutex_init(&module->gui_lock, NULL);
   return module->gui_data;
 }
 #define IOP_GUI_ALLOC(module) \
   (dt_iop_##module##_gui_data_t *)_iop_gui_alloc(self,sizeof(dt_iop_##module##_gui_data_t))
-
-#define IOP_GUI_FREE \
-  dt_pthread_mutex_destroy(&self->gui_lock);if(self->gui_data){dt_free_align(self->gui_data);} self->gui_data = NULL
 
 /** check whether we have the required number of channels in the input
  ** data; if not, copy the input buffer to the output buffer, set the

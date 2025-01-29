@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024 darktable developers.
+    Copyright (C) 2024-25 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -306,14 +306,14 @@ void distort_mask(dt_iop_module_t *self,
 
   dt_iop_border_positions_t binfo;
 
-  float bcolor[4] = { 0 };
-  float fcolor[4] = { 0 };
+  dt_aligned_pixel_t bcolor = { 0 };
+  dt_aligned_pixel_t fcolor = { 0 };
 
   dt_iop_setup_binfo(piece, roi_in, roi_out, pos_v, pos_h,
                      bcolor, fcolor, 0.f, 0.f, &binfo);
 
-  const int border_in_x = binfo.border_in_x;
-  const int border_in_y = binfo.border_in_y;
+  const int border_in_x = CLAMP(binfo.border_in_x, 0, roi_out->width - roi_in->width);
+  const int border_in_y = CLAMP(binfo.border_in_y, 0, roi_out->height - roi_in->height);
 
   // fill the image with 0 so that the added border isn't part of the mask
   dt_iop_image_fill(out, 0.0f, roi_out->width, roi_out->height, 1);
@@ -342,8 +342,8 @@ void process(dt_iop_module_t *self,
 
   _compute_pos(d, &pos_v, &pos_h);
 
-  float fcolor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-  float bcolor[4];
+  dt_aligned_pixel_t fcolor = { 1.0f, 1.0f, 1.0f, 1.0f };
+  dt_aligned_pixel_t bcolor;
 
   bcolor[3] = 1.0f;
 
@@ -384,6 +384,9 @@ void process(dt_iop_module_t *self,
 
   dt_iop_setup_binfo(piece, roi_in, roi_out, pos_v, pos_h,
                      bcolor, fcolor, 0.f, 0.f, &binfo);
+
+  binfo.border_in_x = CLAMP(binfo.border_in_x, 0, roi_out->width - roi_in->width);
+  binfo.border_in_y = CLAMP(binfo.border_in_y, 0, roi_out->height - roi_in->height);
 
   dt_iop_copy_image_with_border((float*)ovoid, (const float*)ivoid, &binfo);
 }
@@ -447,11 +450,6 @@ void gui_init(dt_iop_module_t *self)
 
   g->color = dt_bauhaus_combobox_from_params(self, "color");
   gtk_widget_set_tooltip_text(g->color, _("select the color of the enlarged canvas"));
-}
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

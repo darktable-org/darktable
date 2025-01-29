@@ -812,23 +812,20 @@ void init(dt_view_t *self)
 
 #endif // USE_LUA
   /* connect collection changed signal */
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_COLLECTION_CHANGED, _view_map_collection_changed, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _view_map_collection_changed);
   /* connect selection changed signal */
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_SELECTION_CHANGED, _view_map_selection_changed, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_SELECTION_CHANGED, _view_map_selection_changed);
   /* connect preference changed signal */
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE, _view_map_check_preference_changed, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PREFERENCES_CHANGE, _view_map_check_preference_changed);
 
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_GEOTAG_CHANGED, _view_map_geotag_changed, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_GEOTAG_CHANGED, _view_map_geotag_changed);
 }
 
 void cleanup(dt_view_t *self)
 {
   dt_map_t *lib = self->data;
 
-  DT_CONTROL_SIGNAL_DISCONNECT(_view_map_collection_changed, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_view_map_selection_changed, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_view_map_check_preference_changed, self);
-  DT_CONTROL_SIGNAL_DISCONNECT(_view_map_geotag_changed, self);
+  DT_CONTROL_SIGNAL_DISCONNECT_ALL(self, "map");
 
   if(darktable.gui)
   {
@@ -2266,12 +2263,9 @@ void enter(dt_view_t *self)
   /* add map to center widget */
   gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
                           GTK_WIDGET(lib->map));
-
-  // ensure the log msg widget stay on top
+  // place behind toast/log messages
   gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
-                              gtk_widget_get_parent(dt_ui_log_msg(darktable.gui->ui)), -1);
-  gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
-                              gtk_widget_get_parent(dt_ui_toast_msg(darktable.gui->ui)), -1);
+                              GTK_WIDGET(lib->map), 1);
 
   gtk_widget_show_all(GTK_WIDGET(lib->map));
 
@@ -2291,7 +2285,7 @@ void enter(dt_view_t *self)
   darktable.view_manager->proxy.map.view = self;
 
   /* connect signal for filmstrip image activate */
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, _view_map_filmstrip_activate_callback, self);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, _view_map_filmstrip_activate_callback);
 
   g_timeout_add(250, _view_map_display_selected, self);
 }

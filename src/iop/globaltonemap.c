@@ -570,7 +570,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
 #ifdef HAVE_OPENCL
   if(d->detail != 0.0f)
-    piece->process_cl_ready = (piece->process_cl_ready && !dt_opencl_micro_nap(pipe->devid));
+    piece->process_cl_ready = (piece->process_cl_ready && !dt_opencl_avoid_atomics(pipe->devid));
 #endif
 }
 
@@ -653,11 +653,6 @@ void gui_init(dt_iop_module_t *self)
 
   g->detail = dt_bauhaus_slider_from_params(self, N_("detail"));
   dt_bauhaus_slider_set_digits(g->detail, 3);
-}
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  IOP_GUI_FREE;
 }
 
 // clang-format off

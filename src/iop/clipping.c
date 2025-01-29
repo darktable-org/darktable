@@ -902,7 +902,7 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
   if(roi_out->width < 4 || roi_out->height < 4)
   {
     dt_print_pipe(DT_DEBUG_PIPE,
-      "safety check", piece->pipe, self, DT_DEVICE_NONE, roi_in, roi_out);
+      "insane data", piece->pipe, self, DT_DEVICE_NONE, roi_in, roi_out);
 
     roi_out->x = roi_in->x;
     roi_out->y = roi_in->y;
@@ -1364,7 +1364,7 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
   {
     if(in)
     {
-      DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _event_preview_updated_callback, self);
+      DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _event_preview_updated_callback);
 
       // got focus, grab stuff to gui:
       // need to get gui stuff for the first time for this image,
@@ -1375,7 +1375,7 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
     }
     else
     {
-      DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _event_preview_updated_callback, self);
+      DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _event_preview_updated_callback);
 
       // lost focus, commit current params:
       // if the keystone setting is not finished, we discard it
@@ -2288,8 +2288,6 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_iop_clipping_gui_data_t *g = self->gui_data;
   g_list_free_full(g->aspect_list, free_aspect);
   g->aspect_list = NULL;
-
-  IOP_GUI_FREE;
 }
 
 static _grab_region_t get_grab(float pzx, float pzy, dt_iop_clipping_gui_data_t *g, const float border,
