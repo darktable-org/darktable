@@ -130,10 +130,7 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(const dt_imgid_t imgid,
     if(module->iop_order > order) break;
 
     // don't take skipped modules into account
-    const gboolean skipped = dt_iop_module_is_skipped(module->dev, module)
-                          && (pipe->type & DT_DEV_PIXELPIPE_BASIC);
-
-    if(!skipped)
+    if(!dt_iop_piece_is_skipped(piece))
     {
       hash = dt_hash(hash, &piece->hash, sizeof(piece->hash));
       if(module->request_color_pick != DT_REQUEST_COLORPICK_OFF)

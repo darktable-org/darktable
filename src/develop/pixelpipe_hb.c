@@ -1433,9 +1433,8 @@ static inline gboolean _skip_piece_on_tags(const dt_dev_pixelpipe_iop_t *piece)
   if(!piece->enabled || piece->module->iop_order == INT_MAX)
     return TRUE;
 
-  return dt_iop_module_is_skipped(piece->module->dev, piece->module)
-          && (piece->pipe->type & DT_DEV_PIXELPIPE_BASIC);
-}
+  return dt_iop_piece_is_skipped(piece);
+ }
 
 // recursive helper for process, returns TRUE in case of unfinished work or error
 static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
@@ -1638,7 +1637,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   module->modify_roi_in(module, piece, roi_out, &roi_in);
   if((darktable.unmuted & DT_DEBUG_PIPE) && memcmp(roi_out, &roi_in, sizeof(dt_iop_roi_t)))
     dt_print_pipe(DT_DEBUG_PIPE,
-                  "modify roi IN", pipe, module, DT_DEVICE_NONE, roi_out, &roi_in, "ID=%i",
+                  "modified roi IN", pipe, module, DT_DEVICE_NONE, roi_out, &roi_in, "ID=%i",
                   pipe->image.id);
   // recurse to get actual data of input buffer
 
@@ -3040,12 +3039,12 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
     piece->buf_in = roi_in;
 
     // skip this module?
-    if(!_skip_piece_on_tags(piece))
+    if(!_skip_piece_on_tags(piece) && piece->enabled)
     {
       module->modify_roi_out(module, piece, &roi_out, &roi_in);
       if((darktable.unmuted & DT_DEBUG_PIPE) && memcmp(&roi_out, &roi_in, sizeof(dt_iop_roi_t)))
       dt_print_pipe(DT_DEBUG_PIPE,
-                  "modify roi OUT", pipe, module, DT_DEVICE_NONE, &roi_in, &roi_out);
+                  "modified roi OUT", pipe, module, DT_DEVICE_NONE, &roi_in, &roi_out);
     }
     else
     {

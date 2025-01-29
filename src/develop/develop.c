@@ -2592,6 +2592,7 @@ static gboolean _dev_distort_backtransform_locked(dt_develop_t *dev,
     dt_dev_pixelpipe_iop_t *piece = pieces->data;
     if(piece->enabled
        && piece->data
+       && !dt_iop_piece_is_skipped(piece)
        && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
            || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
                && module->iop_order >= iop_order)
@@ -2600,9 +2601,7 @@ static gboolean _dev_distort_backtransform_locked(dt_develop_t *dev,
            || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL
                && module->iop_order <= iop_order)
            || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL
-               && module->iop_order < iop_order))
-       && !(dt_iop_module_is_skipped(dev, module)
-            && (pipe->type & DT_DEV_PIXELPIPE_BASIC)))
+               && module->iop_order < iop_order)))
     {
       module->distort_backtransform(module, piece, points, points_count);
     }
@@ -2632,6 +2631,7 @@ static gboolean _dev_distort_transform_locked(dt_develop_t *dev,
     dt_dev_pixelpipe_iop_t *piece = pieces->data;
     if(piece->enabled
        && piece->data
+       && !dt_iop_piece_is_skipped(piece)
        && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
            || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
                && module->iop_order >= iop_order)
@@ -2640,9 +2640,7 @@ static gboolean _dev_distort_transform_locked(dt_develop_t *dev,
            || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL
                && module->iop_order <= iop_order)
            || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL
-               && module->iop_order < iop_order))
-       && !(dt_iop_module_is_skipped(dev, module)
-            && (pipe->type & DT_DEV_PIXELPIPE_BASIC)))
+               && module->iop_order < iop_order)))
     {
       module->distort_transform(module, piece, points, points_count);
     }

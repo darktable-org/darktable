@@ -3873,13 +3873,22 @@ void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data)
   dt_dev_add_history_item_target(darktable.develop, module, TRUE, widget);
 }
 
-gboolean dt_iop_module_is_skipped(const dt_develop_t *dev,
-                                  const dt_iop_module_t *module)
+gboolean dt_iop_piece_is_skipped(const dt_dev_pixelpipe_iop_t *piece)
 {
-  return dev->gui_module
-      && dev->gui_module != module
-      && (dev->gui_module->operation_tags_filter() & module->operation_tags())
-      && (dev->gui_module->iop_order < module->iop_order);
+  const dt_iop_module_t *gui_module = dt_dev_gui_module();
+  const gboolean skipped = gui_module
+                        && gui_module != piece->module
+                        && (gui_module->operation_tags_filter() & piece->module->operation_tags())
+                        && (piece->pipe->type & DT_DEV_PIXELPIPE_BASIC);
+
+  if(skipped || (piece->module->iop_order == INT_MAX))
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_IOPORDER,
+      "skip test", piece->pipe, piece->module, piece->pipe->devid, &piece->processed_roi_in, &piece->processed_roi_out,
+      "gui module '%s': %s%s",
+      gui_module ? gui_module->op : "???",
+      skipped ? "skipped " : "",
+      piece->module->iop_order == INT_MAX ? "illegal order" : "");
+  return skipped;
 }
 
 enum

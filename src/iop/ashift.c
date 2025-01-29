@@ -4072,8 +4072,7 @@ static int call_distort_transform(dt_develop_t *dev,
   if(!piece) return ret;
   if(piece->module == self
       // && *piece->enabled see note below
-      && !(dt_iop_module_is_skipped(dev, piece->module)
-            && (pipe->type & DT_DEV_PIXELPIPE_BASIC)))
+      && !dt_iop_piece_is_skipped(piece))
   {
     ret = piece->module->distort_transform(piece->module, piece, points, points_count);
   }

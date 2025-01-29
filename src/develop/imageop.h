@@ -566,7 +566,7 @@ void dt_iop_gui_rename_module(dt_iop_module_t *module);
 
 void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data);
 
-gboolean dt_iop_module_is_skipped(const struct dt_develop_t *dev, const dt_iop_module_t *module);
+gboolean dt_iop_piece_is_skipped(const struct dt_dev_pixelpipe_iop_t *piece);
 
 // copy the RGB channels of a pixel using nontemporal stores if
 // possible; includes the 'alpha' channel as well if faster due to
