@@ -855,7 +855,15 @@ dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
   else if(type & DT_MASKS_GROUP)
     form->functions = &dt_masks_functions_group;
   else if(type & DT_MASKS_POINT)
+  {
     form->functions = &dt_masks_functions_point;
+    dt_masks_fast_sam_data_t *data = malloc(sizeof(dt_masks_fast_sam_data_t));
+    data->proxy_data_initialized = false;
+    data->proxy_data = NULL;
+    data->proxy_width = 1024;
+    data->proxy_height = 1024;
+    form->fast_sam_data = data;
+  }
 
   if(form->functions && form->functions->sanitize_config)
     form->functions->sanitize_config(type);

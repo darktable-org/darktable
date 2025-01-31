@@ -2872,6 +2872,14 @@ void dt_iop_gui_init_masks(GtkWidget *blendw, dt_iop_module_t *module)
                                                   FALSE, 0, 0,
                                                   dtgtk_cairo_paint_masks_brush, abox);
 
+    bd->masks_type[5] = DT_MASKS_POINT;
+    bd->masks_shapes[5] = dt_iop_togglebutton_new(module, "blend`shapes",
+                                                  N_("add point"),
+                                                  N_("add multiple points"),
+                                                  G_CALLBACK(_blendop_masks_add_shape),
+                                                  FALSE, 0, 0,
+                                                  dtgtk_cairo_paint_masks_ai, abox);
+
     bd->masks_type[1] = DT_MASKS_PATH;
     bd->masks_shapes[1] = dt_iop_togglebutton_new(module, "blend`shapes",
                                                   N_("add path"),
