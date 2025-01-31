@@ -304,7 +304,7 @@ typedef struct dt_iop_ashift_line_t
   float weight;
   dt_iop_ashift_linetype_t type;
   // homogeneous coordinates:
-  float L[3];
+  float DT_ALIGNED_PIXEL L[3];
 } dt_iop_ashift_line_t;
 
 typedef struct dt_iop_ashift_points_idx_t
@@ -349,8 +349,8 @@ typedef struct dt_iop_ashift_cropfit_params_t
   float x;
   float y;
   float alpha;
-  float homograph[3][3];
-  float edges[4][3];
+  float DT_ALIGNED_ARRAY homograph[3][3];
+  float DT_ALIGNED_ARRAY edges[4][3];
 } dt_iop_ashift_cropfit_params_t;
 
 typedef struct dt_iop_ashift_gui_data_t
@@ -805,7 +805,9 @@ static void _homography(float *homograph,
 
 
   // three intermediate buffers for matrix calculation ...
-  float m1[3][3], m2[3][3], m3[3][3];
+  float DT_ALIGNED_ARRAY m1[3][3];
+  float DT_ALIGNED_ARRAY m2[3][3];
+  float DT_ALIGNED_ARRAY m3[3][3];
 
   // ... and some pointers to handle them more intuitively
   float (*mwork)[3] = m1;
@@ -985,20 +987,20 @@ static void _homography(float *homograph,
 
 // check if module parameters are set to all neutral values in which case the module's
 // output is identical to its input
-static inline int isneutral(const dt_iop_ashift_data_t *data)
+static inline gboolean _isneutral(const dt_iop_ashift_data_t *data)
 {
   // values lower than this have no visible effect
   const float eps = 1.0e-4f;
 
-  return(fabs(data->rotation) < eps &&
-         fabs(data->lensshift_v) < eps &&
-         fabs(data->lensshift_h) < eps &&
-         fabs(data->shear) < eps &&
-         fabs(data->aspect - 1.0f) < eps &&
-         data->cl < eps &&
-         1.0f - data->cr < eps &&
-         data->ct < eps &&
-         1.0f - data->cb < eps);
+  return(feqf(data->rotation, 0.0f, eps) &&
+         feqf(data->lensshift_v, 0.0f, eps) &&
+         feqf(data->lensshift_h, 0.0f, eps) &&
+         feqf(data->shear, 0, eps) &&
+         feqf(data->aspect, 1.0f, eps) &&
+         feqf(data->cl, 0.0f, eps) &&
+         feqf(data->cr, 1.0f, eps) &&
+         feqf(data->ct, 0.0f, eps) &&
+         feqf(data->cb, 1.0f, eps));
 }
 
 
@@ -1010,7 +1012,7 @@ gboolean distort_transform(dt_iop_module_t *self,
   const dt_iop_ashift_data_t *const data = piece->data;
 
   // nothing to be done if parameters are set to neutral values
-  if(isneutral(data)) return TRUE;
+  if(_isneutral(data)) return TRUE;
 
   float DT_ALIGNED_ARRAY homograph[3][3];
   _homography((float *)homograph, data->rotation, data->lensshift_v, data->lensshift_h,
@@ -1048,7 +1050,7 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   const dt_iop_ashift_data_t *const data = piece->data;
 
   // nothing to be done if parameters are set to neutral values
-  if(isneutral(data)) return TRUE;
+  if(_isneutral(data)) return TRUE;
 
   float DT_ALIGNED_ARRAY ihomograph[3][3];
   _homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h,
@@ -1077,8 +1079,8 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   return TRUE;
 }
 
-void distort_mask(struct dt_iop_module_t *self,
-                  struct dt_dev_pixelpipe_iop_t *piece,
+void distort_mask(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
                   const float *const in,
                   float *const out,
                   const dt_iop_roi_t *const roi_in,
@@ -1087,7 +1089,7 @@ void distort_mask(struct dt_iop_module_t *self,
   const dt_iop_ashift_data_t *const data = piece->data;
 
   // if module is set to neutral parameters we just copy input->output and are done
-  if(isneutral(data))
+  if(_isneutral(data))
   {
     dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, 1);
     return;
@@ -1096,7 +1098,7 @@ void distort_mask(struct dt_iop_module_t *self,
   const struct dt_interpolation *interpolation =
     dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
-  float ihomograph[3][3];
+  float DT_ALIGNED_ARRAY ihomograph[3][3];
   _homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h,
               data->shear, data->f_length_kb,
               data->orthocorr, data->aspect,
@@ -1115,7 +1117,7 @@ void distort_mask(struct dt_iop_module_t *self,
     float *const restrict _out = out + (size_t)j * roi_out->width;
     for(int i = 0; i < roi_out->width; i++)
     {
-      float pin[3], pout[3];
+      float DT_ALIGNED_PIXEL pin[3], DT_ALIGNED_PIXEL pout[3];
 
       // convert output pixel coordinates to original image coordinates
       pout[0] = roi_out->x + i + cx;
@@ -1144,8 +1146,8 @@ void distort_mask(struct dt_iop_module_t *self,
   }
 }
 
-void modify_roi_out(struct dt_iop_module_t *self,
-                    struct dt_dev_pixelpipe_iop_t *piece,
+void modify_roi_out(dt_iop_module_t *self,
+                    dt_dev_pixelpipe_iop_t *piece,
                     dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *roi_in)
 {
@@ -1153,9 +1155,9 @@ void modify_roi_out(struct dt_iop_module_t *self,
   *roi_out = *roi_in;
 
   // nothing more to be done if parameters are set to neutral values
-  if(isneutral(data)) return;
+  if(_isneutral(data)) return;
 
-  float homograph[3][3];
+  float DT_ALIGNED_ARRAY homograph[3][3];
   _homography((float *)homograph, data->rotation, data->lensshift_v, data->lensshift_h,
               data->shear, data->f_length_kb,
               data->orthocorr, data->aspect,
@@ -1168,7 +1170,7 @@ void modify_roi_out(struct dt_iop_module_t *self,
   {
     for(int x = 0; x < roi_in->width; x += roi_in->width - 1)
     {
-      float pin[3], pout[3];
+      float DT_ALIGNED_PIXEL pin[3], DT_ALIGNED_PIXEL pout[3];
 
       // convert from input coordinates to original image coordinates
       pin[0] = roi_in->x + x;
@@ -1192,12 +1194,8 @@ void modify_roi_out(struct dt_iop_module_t *self,
     }
   }
 
-  float width = xM - xm + 1;
-  float height = yM - ym + 1;
-
-  // clipping adjustments
-  width *= data->cr - data->cl;
-  height *= data->cb - data->ct;
+  const float width = (xM - xm + 1.0f) * (data->cr - data->cl);
+  const float height = (yM - ym + 1.0f) * (data->cb - data->ct);
 
   roi_out->width = floorf(width);
   roi_out->height = floorf(height);
@@ -1205,25 +1203,22 @@ void modify_roi_out(struct dt_iop_module_t *self,
   if(roi_out->width < 4 || roi_out->height < 4)
   {
     dt_print_pipe(DT_DEBUG_PIPE,
-                  "safety check", piece->pipe, self, DT_DEVICE_NONE, roi_in, roi_out);
-
-    roi_out->width = roi_in->width;
-    roi_out->height = roi_in->height;
-
-    if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
-       && piece->enabled)
+        "insane data", piece->pipe, self, DT_DEVICE_NONE, roi_in, roi_out);
+    if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
     {
       dt_control_log
         (_("module '%s' has insane data so it is bypassed for now."
            " you should disable it or change parameters\n"),
          self->name());
     }
+    roi_out->width = roi_in->width;
+    roi_out->height = roi_in->height;
     piece->enabled = FALSE;
   }
 }
 
-void modify_roi_in(struct dt_iop_module_t *self,
-                   struct dt_dev_pixelpipe_iop_t *piece,
+void modify_roi_in(dt_iop_module_t *self,
+                   dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *const roi_out,
                    dt_iop_roi_t *roi_in)
 {
@@ -1231,9 +1226,9 @@ void modify_roi_in(struct dt_iop_module_t *self,
   *roi_in = *roi_out;
 
   // nothing more to be done if parameters are set to neutral values
-  if(isneutral(data)) return;
+  if(_isneutral(data)) return;
 
-  float ihomograph[3][3];
+  float DT_ALIGNED_ARRAY ihomograph[3][3];
   _homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h,
               data->shear, data->f_length_kb,
               data->orthocorr, data->aspect,
@@ -1255,7 +1250,7 @@ void modify_roi_in(struct dt_iop_module_t *self,
   {
     for(int x = 0; x < roi_out->width; x += roi_out->width - 1)
     {
-      float pin[3], pout[3];
+      float DT_ALIGNED_PIXEL pin[3], DT_ALIGNED_PIXEL pout[3];
 
       // convert from output image coordinates to original image coordinates
       pout[0] = roi_out->x + x + cx;
@@ -1293,8 +1288,8 @@ void modify_roi_in(struct dt_iop_module_t *self,
   // sanity check.
   roi_in->x       = CLAMP(roi_in->x, 0, (int)floorf(orig_w));
   roi_in->y       = CLAMP(roi_in->y, 0, (int)floorf(orig_h));
-  roi_in->width   = CLAMP(roi_in->width, 1, (int)floorf(orig_w) - roi_in->x);
-  roi_in->height  = CLAMP(roi_in->height, 1, (int)floorf(orig_h) - roi_in->y);
+  roi_in->width   = CLAMP(roi_in->width, 4, (int)floorf(orig_w) - roi_in->x);
+  roi_in->height  = CLAMP(roi_in->height, 4, (int)floorf(orig_h) - roi_in->y);
 }
 
 // simple conversion of rgb image into greyscale variant suitable for
@@ -1308,7 +1303,7 @@ static void rgb2grey256(const float *const in,
   const size_t npixels = (size_t)width * height;
 
   DT_OMP_FOR()
-  for(int index = 0; index < npixels; index++)
+  for(size_t index = 0; index < npixels; index++)
   {
     out[index] = (0.3f * in[4*index+0]
                   + 0.59f * in[4*index+1]
@@ -1365,18 +1360,18 @@ static void edge_enhance_1d(const double *in, double *out,
   for(int j = 0; j < height; j++)
     for(int i = 0; i < width; i++)
     {
-      double val = out[j * width + i];
+      double val = out[(size_t)j * width + i];
 
       if(j < khwidth)
-        val = out[(khwidth - j) * width + i];
+        val = out[(size_t)(khwidth - j) * width + i];
       else if(j >= height - khwidth)
-        val = out[(j - khwidth) * width + i];
+        val = out[(size_t)(j - khwidth) * width + i];
       else if(i < khwidth)
-        val = out[j * width + (khwidth - i)];
+        val = out[(size_t)j * width + (khwidth - i)];
       else if(i >= width - khwidth)
-        val = out[j * width + (i - khwidth)];
+        val = out[(size_t)j * width + (i - khwidth)];
 
-      out[j * width + i] = val;
+      out[(size_t)j * width + i] = val;
 
       // jump over center of image
       if(i == khwidth && j >= khwidth && j < height - khwidth) i = width - khwidth;
@@ -1478,9 +1473,9 @@ static void gamma_correct(const float *const in,
 {
   const size_t npixels = (size_t)width * height;
   DT_OMP_FOR()
-  for(int index = 0; index < 4*npixels; index += 4)
+  for(size_t index = 0; index < 4 * npixels; index += 4)
   {
-    for(int c = 0; c < 3; c++)
+    for_three_channels(c)
       out[index+c] = powf(in[index+c], LSD_GAMMA);
   }
 }
@@ -1500,7 +1495,7 @@ static gboolean line_detect(float *in,
                        float *vweight,
                        float *hweight,
                        const dt_iop_ashift_enhance_t enhance,
-                       const int is_raw)
+                       const gboolean is_raw)
 {
   double *greyscale = NULL;
   double *lsd_lines = NULL;
@@ -1612,12 +1607,9 @@ static gboolean line_detect(float *in,
 
 
       const float angle = atan2f(py2 - py1, px2 - px1) / M_PI * 180.0f;
-      const int vertical =
-        fabsf(fabsf(angle) - 90.0f) < MAX_TANGENTIAL_DEVIATION ? 1 : 0;
-      const int horizontal =
-        fabsf(fabsf(fabsf(angle) - 90.0f) - 90.0f) < MAX_TANGENTIAL_DEVIATION ? 1 : 0;
-
-      const int relevant = ashift_lines[lct].length > MIN_LINE_LENGTH ? 1 : 0;
+      const gboolean vertical = fabsf(fabsf(angle) - 90.0f) < MAX_TANGENTIAL_DEVIATION;
+      const gboolean horizontal = fabsf(fabsf(fabsf(angle) - 90.0f) - 90.0f) < MAX_TANGENTIAL_DEVIATION;
+      const gboolean relevant = ashift_lines[lct].length > MIN_LINE_LENGTH;
 
       // register type of line
       dt_iop_ashift_linetype_t type = ASHIFT_LINE_IRRELEVANT;
@@ -1675,7 +1667,7 @@ static gboolean line_detect(float *in,
   // free intermediate buffers
   free(lsd_lines);
   free(greyscale);
-  return lct > 0 ? TRUE : FALSE;
+  return lct > 0;
 
 error:
   free(lsd_lines);
@@ -1876,7 +1868,7 @@ static void ransac(const dt_iop_ashift_line_t *lines,
     const float *L2 = lines[index_set[1]].L;
 
     // get intersection point (ideally a vantage point)
-    float V[3];
+    float DT_ALIGNED_PIXEL V[3];
     vec3prodn(V, L1, L2);
 
     // catch special cases:
@@ -2189,11 +2181,11 @@ static double model_fitness(double *params, void *data)
   assert(pcount == fit->params_count);
 
   // the possible reference axes
-  const float Av[3] = { 1.0f, 0.0f, 0.0f };
-  const float Ah[3] = { 0.0f, 1.0f, 0.0f };
+  const float DT_ALIGNED_PIXEL Av[3] = { 1.0f, 0.0f, 0.0f };
+  const float DT_ALIGNED_PIXEL Ah[3] = { 0.0f, 1.0f, 0.0f };
 
   // generate homograph out of the parameters
-  float homograph[3][3];
+  float DT_ALIGNED_ARRAY homograph[3][3];
   _homography((float *)homograph, rotation, lensshift_v, lensshift_h, shear, f_length_kb,
               orthocorr, aspect, width, height, ASHIFT_HOMOGRAPH_FORWARD);
 
@@ -2220,12 +2212,13 @@ static double model_fitness(double *params, void *data)
     const float *A = isvertical ? Ah : Av;
 
     // apply homographic transformation to the end points
-    float P1[3], P2[3];
+    float DT_ALIGNED_PIXEL P1[3];
+    float DT_ALIGNED_PIXEL P2[3];
     mat3mulv(P1, (float *)homograph, lines[n].p1);
     mat3mulv(P2, (float *)homograph, lines[n].p2);
 
     // get line connecting the two points
-    float L[3];
+    float DT_ALIGNED_PIXEL L[3];
     vec3prodn(L, P1, P2);
 
     // normalize L so that x^2 + y^2 = 1; makes sure that
@@ -2433,7 +2426,7 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *self,
   // so strongly that it spans an insanely huge area. we check that
   // case and assume values that increase the image area by more than
   // a factor of 4 as being insane.
-  float homograph[3][3];
+  float DT_ALIGNED_ARRAY homograph[3][3];
   _homography((float *)homograph, fit.rotation, fit.lensshift_v, fit.lensshift_h,
               fit.shear, fit.f_length_kb,
               fit.orthocorr, fit.aspect, fit.width, fit.height, ASHIFT_HOMOGRAPH_FORWARD);
@@ -2443,7 +2436,7 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *self,
   for(int y = 0; y < fit.height; y += fit.height - 1)
     for(int x = 0; x < fit.width; x += fit.width - 1)
     {
-      float pi[3], po[3];
+      float DT_ALIGNED_PIXEL pi[3], DT_ALIGNED_PIXEL po[3];
       pi[0] = x;
       pi[1] = y;
       pi[2] = 1.0f;
@@ -2584,17 +2577,17 @@ static double crop_fitness(double *params, void *data)
   const float alpha = dt_isnan(cropfit->alpha) ? params[2] : cropfit->alpha;
 
   // the center of the rectangle in input image coordinates
-  const float Pc[3] = { x * wd, y * ht, 1.0f };
+  const float DT_ALIGNED_PIXEL Pc[3] = { x * wd, y * ht, 1.0f };
 
   // convert to the output image coordinates and normalize
-  float P[3];
+  float DT_ALIGNED_PIXEL P[3];
   mat3mulv(P, (float *)cropfit->homograph, Pc);
   P[0] /= P[2];
   P[1] /= P[2];
   P[2] = 1.0f;
 
   // two auxiliary points (some arbitrary distance away from P) to construct the diagonals
-  const float Pa[2][3] =
+  const float DT_ALIGNED_ARRAY Pa[2][3] =
     { { P[0] + 10.0f * cosf(alpha), P[1] + 10.0f * sinf(alpha), 1.0f },
       { P[0] + 10.0f * cosf(alpha), P[1] - 10.0f * sinf(alpha), 1.0f } };
 
@@ -2693,7 +2686,7 @@ static void do_crop(dt_iop_module_t *self, dt_iop_ashift_params_t *p)
   const float shear = p->shear;
 
   // prepare structure of constant parameters
-  dt_iop_ashift_cropfit_params_t cropfit;
+  dt_iop_ashift_cropfit_params_t DT_ALIGNED_ARRAY cropfit;
   cropfit.width = g->buf_width;
   cropfit.height = g->buf_height;
   _homography((float *)cropfit.homograph, rotation, lensshift_v, lensshift_h,
@@ -2785,7 +2778,7 @@ static void do_crop(dt_iop_module_t *self, dt_iop_ashift_params_t *p)
   const float Pc[3] = { cropfit.x * wd, cropfit.y * ht, 1.0f };
 
   // convert rectangle center to output image coordinates and normalize
-  float P[3];
+  float DT_ALIGNED_PIXEL P[3];
   mat3mulv(P, (float *)cropfit.homograph, Pc);
   P[0] /= P[2];
   P[1] /= P[2];
@@ -2848,7 +2841,7 @@ static void crop_adjust(dt_iop_module_t *self,
 
   const float alpha = atan2f(ht, wd);
 
-  float homograph[3][3];
+  float DT_ALIGNED_ARRAY homograph[3][3];
   _homography((float *)homograph, rotation, lensshift_v, lensshift_h, shear, f_length_kb,
               orthocorr, aspect, wd, ht, ASHIFT_HOMOGRAPH_FORWARD);
 
@@ -2885,7 +2878,7 @@ static void crop_adjust(dt_iop_module_t *self,
     vec3prodn(E[n], V[n], V[(n + 1) % 4]);
 
   // the center of the rectangle in output image coordinates
-  const float P[3] = { newx * owd, newy * oht, 1.0f };
+  const float DT_ALIGNED_PIXEL P[3] = { newx * owd, newy * oht, 1.0f };
 
   // two auxiliary points (some arbitrary distance away from P) to
   // construct the diagonals
@@ -3529,7 +3522,7 @@ void process(dt_iop_module_t *self,
   }
 
   // if module is set to neutral parameters we just copy input->output and are done
-  if(isneutral(data))
+  if(_isneutral(data))
   {
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
@@ -3538,7 +3531,7 @@ void process(dt_iop_module_t *self,
   const struct dt_interpolation *interpolation =
     dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
-  float ihomograph[3][3];
+  float DT_ALIGNED_ARRAY ihomograph[3][3];
   _homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h,
               data->shear, data->f_length_kb,
               data->orthocorr, data->aspect,
@@ -3639,7 +3632,7 @@ int process_cl(dt_iop_module_t *self,
     dt_iop_gui_enter_critical_section(self);
     g->isflipped = isflipped;
 
-    const size_t requested_size = piece->buf_in.width * piece->buf_in.height;
+    const size_t requested_size = (size_t)piece->buf_in.width * piece->buf_in.height;
 
     // save a copy of preview input buffer for parameter fitting
     if(g->buf == NULL || (size_t)g->buf_width * g->buf_height < requested_size)
@@ -3668,7 +3661,7 @@ int process_cl(dt_iop_module_t *self,
   }
 
   // if module is set to neutral parameters we just copy input->output and are done
-  if(isneutral(d))
+  if(_isneutral(d))
   {
     size_t origin[] = { 0, 0, 0 };
     size_t region[] = { roi_out->width, roi_out->height, 1 };
@@ -3677,7 +3670,7 @@ int process_cl(dt_iop_module_t *self,
     return CL_SUCCESS;
   }
 
-  float ihomograph[3][3];
+  float DT_ALIGNED_ARRAY ihomograph[3][3];
   _homography((float *)ihomograph, d->rotation, d->lensshift_v, d->lensshift_h,
               d->shear, d->f_length_kb,
               d->orthocorr, d->aspect,
