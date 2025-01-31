@@ -1162,25 +1162,47 @@ static int _point_get_mask_roi(const dt_iop_module_t *const restrict module,
   printf("I'm on get_mask_roi\n");
   dt_dev_pixelpipe_t* p = piece->pipe;
   dt_masks_point_circle_t *circle = form->points->data;
-  const int wi = piece->pipe->iwidth, hi = piece->pipe->iheight;
+  int wi = piece->pipe->iwidth, hi = piece->pipe->iheight;
   
-  //wi /= 
+  wi /= 4.65;
+  hi /= 4.65;
 
-  printf("Circle position:\nx: %f, y: %f", circle->center[0] * wi, circle->center[1] * hi);
+  printf("Circle position:\nx: %f, y: %f\n", circle->center[0] * wi, circle->center[1] * hi);
 
   if (p->has_proxy){
-    //size_t n_masks = p->n_masks;
+    size_t n_masks = p->n_masks;
     size_t stride = p->proxy_width * p->proxy_height;
-
+    printf("N masks: %ld\n", n_masks);
     for (int i = 0; i < roi->width * roi->height; i++){
       buffer[i] = 0.0f;
     }
 
+    int mask_x = (int)(circle->center[0] * wi);
+    if (mask_x >= roi->width){
+      mask_x = roi->width - 1;
+    }
+
+    int mask_y = (int)(circle->center[1] * hi);
+    if (mask_y >= roi->height){
+      mask_y = roi->height - 1;
+    }
+
+    // for (int  x = 0; x < 10; x ++){
+    //   int x_pos = mask_x - 5 + x;
+    //   if (x_pos < 0) continue;
+    //   if (x_pos >= roi->width) continue;
+    //     
+    //   for (int  y = 0; y < 10; y ++){
+    //     int y_pos = mask_y - 5 + y;
+    //     if (y_pos < 0) continue;
+    //     if (y_pos >= roi->height) continue;
+    //     buffer[x_pos + y_pos * roi->width] = 1.0;
+    //   } 
+    // }
+    
     for (int mask_i = 0; mask_i < 1; mask_i++){
-      //size_t mask_x = (size_t)(circle->center[0] * wi);
-      //size_t mask_y = (size_t)(circle->center[1] * hi);
-      //if (p->proxy_data[mask_i * stride + mask_y* p->proxy_width + mask_x] == 0)
-      //  continue;
+      // if (p->proxy_data[mask_i * stride + mask_y * p->proxy_width + mask_x] == 0) continue;
+
       for (int y = 0; y < p->proxy_height; y++)
       {
         if (y >= roi->height)
@@ -1192,6 +1214,7 @@ static int _point_get_mask_roi(const dt_iop_module_t *const restrict module,
           buffer[x + y * roi->width] += p->proxy_data[mask_i * stride + y * p->proxy_width + x];
         }
       }
+      
     }
     for (int i = 0; i < roi->width * roi->height; i++){
       if (buffer[i] > 0)
