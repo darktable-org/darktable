@@ -121,6 +121,7 @@ FILE(GLOB SOURCE_FILES
   "develop/masks/path.c"
   "develop/pixelpipe.c"
   "develop/tiling.c"
+  "develop/image_file_libpng.c"
   "dtgtk/button.c"
   "dtgtk/culling.c"
   "dtgtk/drawingarea.c"
@@ -978,6 +979,24 @@ target_link_libraries(lib_darktable_imageio_rawspeed PRIVATE rawspeed)
 target_link_libraries(lib_darktable PRIVATE lib_darktable_imageio_rawspeed)
 link_directories(lib_darktable "${ONNXRUNTIME_ROOTDIR}/lib")
 target_link_libraries(lib_darktable PRIVATE "${ONNXRUNTIME_ROOTDIR}/lib/libonnxruntime.so")
+
+
+find_package(JPEG)
+  if(LIBPNG_ROOTDIR)
+    set(PNG_FOUND true)
+    set(PNG_LIBRARIES png16)
+    set(PNG_INCLUDE_DIRS "${LIBPNG_ROOTDIR}/include")
+    set(PNG_LIBDIR "${LIBPNG_ROOTDIR}/lib")
+  else()
+    find_package(PNG)
+  endif()
+
+target_include_directories(lib_darktable PRIVATE ${PNG_INCLUDE_DIRS})
+target_link_libraries(lib_darktable PRIVATE ${PNG_LIBRARIES})
+
+if(PNG_LIBDIR)
+  target_link_directories(lib_darktable PRIVATE ${PNG_LIBDIR})
+endif()
 
 #
 # Install lib_darktable

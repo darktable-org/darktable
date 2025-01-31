@@ -36,6 +36,11 @@
 #include "libs/lib.h"
 #include "gui/color_picker_proxy.h"
 
+#include "onnxruntime_c_api.h"
+#include "common/image_cache.h"
+
+#include "develop/image_file.h"
+
 #include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -236,6 +241,8 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->backbuf_zoom_x = 0.0f;
   pipe->backbuf_zoom_y = 0.0f;
   pipe->output_imgid = NO_IMGID;
+  pipe->has_proxy = FALSE;
+  pipe->n_masks = 0;
 
   memset(&pipe->scharr, 0, sizeof(dt_dev_detail_mask_t));
   pipe->want_detail_mask = FALSE;
@@ -1102,6 +1109,445 @@ static void _collect_histogram_on_CPU(dt_dev_pixelpipe_t *pipe,
   }
 }
 
+#define tcscmp strcmp
+
+const OrtApi* g_ort = NULL;
+float conf = 0.3;
+float iou_threshold = 0.7;
+#define ORT_ABORT_ON_ERROR(expr)                             \
+  do {                                                       \
+    OrtStatus* onnx_status = (expr);                         \
+    if (onnx_status != NULL) {                               \
+      const char* msg = g_ort->GetErrorMessage(onnx_status); \
+      fprintf(stderr, "%s\n", msg);                          \
+      g_ort->ReleaseStatus(onnx_status);                     \
+      abort();                                               \
+    }                                                        \
+  } while (0);
+
+
+typedef struct {
+  float x1;
+  float y1;
+  float x2;
+  float y2;
+  float score;
+  float* mask;
+} TensorBoxes;
+
+float max(float a, float b) {
+    return (a > b) ? a : b;
+}
+
+float min(float a, float b) {
+    return (a < b) ? a : b;
+}
+float IoU(TensorBoxes a, TensorBoxes b) {
+    float x1 = max(a.x1, b.x1);
+    float y1 = max(a.y1, b.y1);
+    float x2 = min(a.x2, b.x2);
+    float y2 = min(a.y2, b.y2);
+
+    float intersection = max(0, x2 - x1 + 1) * max(0, y2 - y1 + 1);
+    float areaA = (a.x2 - a.x1 + 1) * (a.y2 - a.y1 + 1);
+    float areaB = (b.x2 - b.x1 + 1) * (b.y2 - b.y1 + 1);
+
+    return intersection / (areaA + areaB - intersection);
+}
+
+static int compare_scores(const void* a, const void* b) {
+    TensorBoxes* boxA = (TensorBoxes*)a;
+    TensorBoxes* boxB = (TensorBoxes*)b;
+    if (boxA->score == boxB->score){
+      // Sort in descending order of area
+      float A_area = (boxA->x2 - boxA->x1) * (boxA->y2 - boxA->y1);
+      float B_area = (boxB->x2 - boxB->x1) * (boxB->y2 - boxB->y1);
+      if (A_area < B_area) return 1;
+      if (A_area > B_area) return -1;
+      return 0;
+    }
+    // Sort in descending order of score
+    if (boxA->score < boxB->score) return 1;
+    if (boxA->score > boxB->score) return -1;
+    return 0;
+}
+
+// Function to sort an array of TensorBoxes
+static void sort_tensor_boxes_by_score(TensorBoxes* boxes, size_t count) {
+    qsort(boxes, count, sizeof(TensorBoxes), compare_scores);
+}
+
+static size_t NMS(TensorBoxes* boxes, size_t count, TensorBoxes* output) {
+
+  qsort(boxes, count, sizeof(TensorBoxes), compare_scores);
+
+    char* suppressed = (char*)calloc(count, sizeof(char)); // 0 = not suppressed, 1 = suppressed
+    size_t output_count = 0;
+
+    for (size_t i = 0; i < count; i++) {
+        if (suppressed[i]) continue; // Skip if the box is suppressed
+
+        output[output_count++] = boxes[i]; // Add the current box to output
+
+        for (size_t j = i + 1; j < count; j++) {
+            if (suppressed[j]) continue; // Skip if already suppressed
+
+            float iou = IoU(boxes[i], boxes[j]);
+            if (iou > iou_threshold) {
+                suppressed[j] = 1; // Suppress the box
+            }
+        }
+    }
+
+    free(suppressed);
+    return output_count; // Return the number of boxes kept
+}
+
+static void process_mask_native(
+    float *protos,       // [mask_dim, mask_h, mask_w]
+    float *masks_in,     // [n, mask_dim]
+    TensorBoxes* boxes,  // [n]
+    int n,               // Number of masks
+    int mask_dim,        // Channels
+    int mask_h,          // Height of protos
+    int mask_w,          // Width of protos
+    int output_h,        // Desired output height
+    int output_w,        // Desired output width
+    float *output_masks   // [output_h, output_w, n], boolean output
+    
+) {
+    // Allocate intermediate storage for masks [n, mask_h, mask_w]
+    float *masks = (float *)malloc(n * mask_h * mask_w * sizeof(float));
+    printf("Allocated masks");
+    if (!masks) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Flattened version of `protos` reshaped to [mask_dim, mask_h * mask_w]
+    float *protos_flat = (float *)malloc(mask_dim * mask_h * mask_w * sizeof(float));
+    printf("Allocated protos");
+    if (!protos_flat) {
+        fprintf(stderr, "Memory allocation failed\n");
+        free(masks);
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Allocated everything");
+
+    // Flatten protos
+    for (int c = 0; c < mask_dim; ++c) {
+        for (int i = 0; i < mask_h * mask_w; ++i) {
+            protos_flat[c * (mask_h * mask_w) + i] = protos[c * mask_h * mask_w + i];
+        }
+    }
+
+    printf("Flattened protos");
+
+    // Perform masks_in @ protos
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < mask_h * mask_w; ++j) {
+            masks[i * mask_h * mask_w + j] = 0.0f;
+            for (int k = 0; k < mask_dim; ++k) {
+                masks[i * mask_h * mask_w + j] += masks_in[i * mask_dim + k] * protos_flat[k * (mask_h * mask_w) + j];
+            }
+        }
+    }
+
+    printf("Created masks");
+
+    float *max_value = (float *)malloc(n  * sizeof(float));
+    float *min_value = (float *)malloc(n  * sizeof(float));
+
+    // Threshold and create masks
+    for (int i = 0; i < n; ++i) {
+        max_value[i] = 0;
+        min_value[i] = 0;
+        TensorBoxes current_box = boxes[i];
+        if (i == 0){
+          printf("x1 %f, x2 %f, y1 %f, y2 %f\n", current_box.x1, current_box.x2, current_box.y1, current_box.y2);
+        }
+        for (int y = 0; y < output_h; ++y) {
+            for (int x = 0; x < output_w; ++x) {
+                
+                // Calculate the corresponding coordinates in the original mask
+                float src_x = (float)x * mask_w / output_w;
+                float src_y = (float)y * mask_h / output_h;
+
+                // Find the four nearest neighbors
+                int x1 = (int)src_x;
+                int y1 = (int)src_y;
+                int x2 = (x1 + 1 < mask_w) ? x1 + 1 : x1;
+                int y2 = (y1 + 1 < mask_h) ? y1 + 1 : y1;
+
+                // Calculate the distances (weights) for interpolation
+                float dx = src_x - x1;
+                float dy = src_y - y1;
+
+                // Get the pixel values from the original mask
+                float top_left = masks[i * mask_h * mask_w + y1 * mask_w + x1];
+                float top_right = masks[i * mask_h * mask_w + y1 * mask_w + x2];
+                float bottom_left = masks[i * mask_h * mask_w + y2 * mask_w + x1];
+                float bottom_right = masks[i * mask_h * mask_w + y2 * mask_w + x2];
+
+                // Perform bilinear interpolation
+                float interpolated_value = (1 - dx) * (1 - dy) * top_left +
+                                                   dx * (1 - dy) * top_right +
+                                                   (1 - dx) * dy * bottom_left +
+                                                   dx * dy * bottom_right;
+
+                // Set the value in the output mask
+                int idx_out = i * output_h * output_w + y * output_w + x;
+
+                // FIXME
+                // if ((x < current_box.x1) || (x > current_box.x2) || (y < current_box.y1) || (y > current_box.y2))
+                //   interpolated_value = 0.0f;
+
+                output_masks[idx_out] = interpolated_value;
+                if (interpolated_value > max_value[i]) max_value[i] = output_masks[idx_out];
+                if (interpolated_value < min_value[i]) min_value[i] = output_masks[idx_out];
+            }
+        }
+    }
+
+    printf("Loaded masks");
+
+    for (int i = 0; i < n; ++i) {
+        for (int y = 0; y < output_h; ++y) {
+            for (int x = 0; x < output_w; ++x) {
+                int idx_out = i * output_h * output_w + y * output_w + x;
+                if (output_masks[idx_out] > 0.0f)
+                  output_masks[idx_out] = 1.0; // output_masks[idx_out] / max_value[i];
+                else
+                  output_masks[idx_out] = 0.0f;
+            }
+        }
+    }
+
+    printf("Refined masks");
+    // Free allocated memory
+    free(masks);
+    free(protos_flat);
+    free(min_value);
+    free(max_value);
+}
+
+static void prep_out_data(float* input_data[6], int64_t definition_size, int64_t numb_boxes, float** output, size_t output_height, size_t output_width, size_t* n_masks){
+  
+  float* mask = input_data[0];
+  
+  TensorBoxes* boxes = malloc(numb_boxes * sizeof(TensorBoxes));
+
+  size_t coordinates_count = 4;
+  size_t class_count = 1;
+  size_t mask_dim = definition_size - coordinates_count - class_count;
+  size_t b_stride = numb_boxes;
+  size_t counter = 0;
+  for (int64_t i = 0; i < numb_boxes; i++) {
+
+    float score = mask[i + 4 * b_stride];
+    if (score < conf) {
+      continue;
+    }
+    float w = mask[i + (2 * b_stride)];
+    float h = mask[i + (3 * b_stride)];
+
+    if (w < 0 || h < 0) {
+      continue;
+    }
+    
+
+    boxes[counter].x1 = mask[i + (0 * b_stride) ] - (w / 2);
+    boxes[counter].y1 = mask[i + (1 * b_stride) ] - (h / 2);
+    boxes[counter].x2 = mask[i + (0 * b_stride) ] + (w / 2);
+    boxes[counter].y2 = mask[i + (1 * b_stride) ] + (h / 2);
+    
+    boxes[counter].score = score;
+
+    boxes[counter].mask = (float*)malloc(mask_dim * sizeof(float));
+    for (size_t j = 0; j < mask_dim; j++) {
+      boxes[counter].mask[j] = mask[i  + (5 + j) * b_stride ];
+    }
+    counter++;
+  }
+
+  printf("counter: %ld\n", counter);
+  // assert(counter > 0);
+  if (counter == 0){
+    return;
+  }
+  boxes = realloc(boxes, counter * sizeof(TensorBoxes));
+
+  sort_tensor_boxes_by_score(boxes, counter);
+  
+  TensorBoxes* output_boxes = (TensorBoxes*)malloc(counter * sizeof(TensorBoxes));
+  size_t num_boxes = NMS(boxes, counter, output_boxes);
+
+  printf("num_boxes: %ld\n", num_boxes);
+
+  output_boxes = realloc(output_boxes, num_boxes * sizeof(TensorBoxes));
+
+  int mask_h = 256, mask_w = 256;
+
+  // Allocate and initialize inputs
+  float *protos = input_data[5];
+  float *masks_in = (float *)malloc(num_boxes * mask_dim * sizeof(float));
+  float *output_masks = (float *)malloc(output_height * output_width * num_boxes * sizeof(float));
+
+  for (size_t i = 0; i < num_boxes; ++i){
+    for (size_t j = 0; j < mask_dim; ++j){
+      masks_in[i * mask_dim + j] = output_boxes[i].mask[j];
+    }
+  }
+
+  // Call the function
+  printf("Preparing masks\n");
+  
+  process_mask_native(protos, masks_in, output_boxes, num_boxes, mask_dim, mask_h, mask_w, output_height, output_width, output_masks);
+  printf("Masks generated");
+
+  *output = output_masks;
+  *n_masks = num_boxes;
+  printf("Mask loaded");
+
+  for (size_t i = 0; i < counter; i++) {
+    free(boxes[i].mask);
+  }
+  free(boxes);
+  
+}
+
+static void resize_image(const float** input, const int input_height, const int input_width, float** out, size_t output_height, size_t output_width, size_t* output_count)
+{
+  float* output_data = (float*)malloc(3 * output_width * output_width * sizeof(float));
+  size_t out_stride = output_height * output_width;
+  size_t in_stride = input_height * input_width;
+  float height_ratio = (float)input_height / (float)output_height;
+  float width_ratio = (float)input_width / (float)output_width;
+
+  for (size_t c = 0; c < 3; c++){
+    for (size_t i = 0; i < output_height; i++){
+      for (size_t j = 0; j < output_width; j++){
+        size_t input_j = (size_t)((float)j * width_ratio);
+        size_t input_i = (size_t)((float)i * height_ratio);
+        float input_d = (*input)[c * in_stride + input_i * input_width + input_j];
+        output_data[c * out_stride + i * output_width + j] = input_d;
+      }
+    }
+  }
+  *out = output_data;
+  *output_count = out_stride * 3;
+};
+
+void hwc_to_chw(const uint8_t* input, const int h, const int w, float** output, size_t* output_count) {
+  size_t stride = h * w;
+  *output_count = stride * 3;
+  float* output_data = (float*)malloc(3* stride * sizeof(float));
+  assert(output_data != NULL);
+  for (size_t i = 0; i != stride; ++i) {
+    for (size_t c = 0; c != 3; ++c) {
+      
+      output_data[c * stride + i] = ((float)input[i * 3 + c])/255.0; // I'm also converting from 0-255 to 0-1 and RGBA to RGB
+    }
+  }
+  *output = output_data;
+}
+
+int run_inference(OrtSession* session, const float* input_image, const int h, const int w, float** out, size_t * n_masks) {
+  const int input_height = h;
+  const int input_width = w;
+  printf("Roi h:%d, w:%d\n", h, w);
+  float* model_input;
+  size_t model_input_ele_count = 1024 * 1024;
+
+  resize_image(&input_image, input_height, input_width, &model_input, 1024, 1024, &model_input_ele_count);
+
+  OrtMemoryInfo* memory_info;
+  ORT_ABORT_ON_ERROR(g_ort->CreateCpuMemoryInfo(OrtArenaAllocator, OrtMemTypeDefault, &memory_info));
+  const int64_t input_shape[] = {1, 3, 1024, 1024};
+  const size_t input_shape_len = sizeof(input_shape) / sizeof(input_shape[0]);
+  const size_t model_input_len = model_input_ele_count * sizeof(float);
+
+  OrtValue* input_tensor = NULL;
+  ORT_ABORT_ON_ERROR(g_ort->CreateTensorWithDataAsOrtValue(memory_info, model_input, model_input_len, input_shape,
+                                                           input_shape_len, ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
+                                                           &input_tensor));
+  assert(input_tensor != NULL);
+  int is_tensor;
+  ORT_ABORT_ON_ERROR(g_ort->IsTensor(input_tensor, &is_tensor));
+  assert(is_tensor);
+ 
+  OrtAllocator* allocator;
+  ORT_ABORT_ON_ERROR(g_ort->GetAllocatorWithDefaultOptions(&allocator))
+
+  const char* input_names[] = {"images"};
+  const char* output_names[] = {"output0", "output1", "onnx::Shape_1304", "onnx::Shape_1323", "onnx::Concat_1263", "onnx::Shape_1215"};
+  OrtValue* output_tensor[6];
+
+  for (int i = 0; i < 6; i++) {
+    output_tensor[i] = NULL;
+  }
+
+  
+  printf("Running inference\n");
+  ORT_ABORT_ON_ERROR(g_ort->Run(session, NULL, input_names, (const OrtValue* const*)&input_tensor, 1, output_names, 6,
+                                output_tensor));
+  printf("Inference done\n");
+
+  for (int i = 0; i < 6; i++) {
+    assert(output_tensor[i] != NULL);
+    ORT_ABORT_ON_ERROR(g_ort->IsTensor(output_tensor[i], &is_tensor));
+    assert(is_tensor);
+  }
+
+  printf("Tensors are not null and is tensor\n");
+
+  OrtTensorTypeAndShapeInfo* tensor_info;
+  ORT_ABORT_ON_ERROR(g_ort->GetTensorTypeAndShape(output_tensor[0], &tensor_info));
+
+  printf("Gather tensor info");
+  // Get the shape dimensions
+  size_t num_dims;
+  ORT_ABORT_ON_ERROR(g_ort->GetDimensionsCount(tensor_info, &num_dims));
+  printf("Number of dimensions: %zu\n", num_dims);
+
+  int64_t* shape = (int64_t*)malloc(num_dims * sizeof(int64_t));
+  ORT_ABORT_ON_ERROR(g_ort->GetDimensions(tensor_info, shape, num_dims));
+
+  // Get tensor element type
+  ONNXTensorElementDataType data_type;
+  ORT_ABORT_ON_ERROR(g_ort->GetTensorElementType(tensor_info, &data_type));
+
+  // Get the output tensor information
+  int ret = 0;
+  float* output_tensor_data = NULL;
+  ORT_ABORT_ON_ERROR(g_ort->GetTensorMutableData(output_tensor[0], (void**)&output_tensor_data));
+  
+  printf("Base Data gathered\n");
+
+  float* output_tensor_data_t[6];
+  for (int i = 0; i < 6; i++) {
+    output_tensor_data_t[i] = NULL;
+    ORT_ABORT_ON_ERROR(g_ort->GetTensorMutableData(output_tensor[i], (void**)&output_tensor_data_t[i]));
+  }
+
+  printf("Data gathered\n");
+
+  prep_out_data(output_tensor_data_t, shape[1], shape[2], out, input_height, input_width, n_masks);
+
+  for (int i = 0; i < 6; i++) {
+    g_ort->ReleaseValue(output_tensor[i]);
+  }
+
+  g_ort->ReleaseMemoryInfo(memory_info);
+  free(shape);
+  g_ort->ReleaseTensorTypeAndShapeInfo(tensor_info);
+  g_ort->ReleaseValue(input_tensor);
+  free(model_input);
+  
+  return ret;
+}
+
 static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                                           dt_develop_t *dev,
                                           float *input,
@@ -1163,6 +1609,107 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
   if(dt_atomic_get_int(&pipe->shutdown))
     return TRUE;
 
+  int w = piece->pipe->backbuf_width;
+  int h = piece->pipe->backbuf_height;
+
+  size_t stride = w * h;
+  if (stride > 0 && (pipe->has_proxy == FALSE)){
+    pipe->has_proxy = TRUE;
+    int colors = piece->colors;
+    int bpc = piece->bpc;
+    
+    //const dt_develop_blend_params_t *const d = piece->blendop_data;
+    //dt_develop_blend_colorspace_t blend_csp = d->blend_cst;
+    //(dt_develop_blend_colorspace_t)blend_csp;
+    dt_image_t* image  = dt_image_cache_get(darktable.image_cache, piece->pipe->image.id, 'r');
+    /*
+    / backbuffer (output)
+    uint8_t *backbuf;
+    size_t backbuf_size;
+    int backbuf_width, backbuf_height;
+    */
+    printf("image w:%d, h:%d\n", image->width, image->height);
+    printf("output w:%d, h:%d\n", w, h);
+
+    uint8_t* local_copy = (uint8_t*)malloc(4 * sizeof(uint8_t) * stride);
+    memcpy(local_copy, piece->pipe->backbuf, 4 * stride * sizeof(uint8_t));
+    uint8_t* new_image = (uint8_t*)malloc(3 * sizeof(uint8_t) * stride);
+    if (new_image == NULL){
+      printf("malloc new image incorrect\n");
+      return 1;
+    }
+    for (int i = 0; i < stride; i++ ){
+      new_image[i*3 + 0] = local_copy[i*4 + 0];
+      new_image[i*3 + 1] = local_copy[i*4 + 1];
+      new_image[i*3 + 2] = local_copy[i*4 + 2];
+    }
+
+    if (write_image_file(new_image, h, w, "/home/miko/Desktop/test1.png") != 0) {
+        printf("Error writing image\n");
+    }
+    
+    float *converted_image = NULL;
+    size_t output_count;
+
+    hwc_to_chw(new_image, h, w, &converted_image, &output_count);
+    
+    g_ort = OrtGetApiBase()->GetApi(ORT_API_VERSION);
+    if (!g_ort) {
+      fprintf(stderr, "Failed to init ONNX Runtime engine.\n");
+      return -1;
+    }
+
+    char model_path[] = "/home/miko/Documents/OpenSourceProjects/darktable_plugins/fast_sam_example/build/fast_sam_1024.onnx";
+
+
+    OrtEnv* env;
+    ORT_ABORT_ON_ERROR(g_ort->CreateEnv(ORT_LOGGING_LEVEL_WARNING, "test", &env));
+    assert(env != NULL);
+
+    OrtSessionOptions* session_options;
+    ORT_ABORT_ON_ERROR(g_ort->CreateSessionOptions(&session_options));
+
+    OrtSession* session;
+    ORT_ABORT_ON_ERROR(g_ort->CreateSession(env, model_path, session_options, &session));
+    
+    float *out = NULL;
+
+    size_t n_masks = 0;
+
+    run_inference(session, converted_image, h, w, &out, &n_masks);
+    
+    //g_ort->ReleaseSessionOptions(session_options);
+    //g_ort->ReleaseSession(session);
+    //g_ort->ReleaseEnv(env);
+
+    //memset(buffer, 0, sizeof(float) * w * h);
+    for (int i = 0; i < stride; i++)
+    {
+      new_image[i * 3 + 0] = (uint8_t)(out[i] * 255.0);
+      new_image[i * 3 + 1] = (uint8_t)(out[i] * 255.0);
+      new_image[i * 3 + 2] = (uint8_t)(out[i] * 255.0);
+    }
+
+    if (write_image_file(new_image, h, w, "/home/miko/Desktop/test2.png") != 0)
+    {
+      printf("Error writing image\n");
+    }
+
+    pipe->proxy_data = (uint8_t*)malloc(sizeof(uint8_t) * stride * n_masks);
+    for (int i = 0; i < stride; i++){
+      pipe->proxy_data[i] = (uint8_t)(out[i] * 255.0);
+    }
+
+    pipe->proxy_width = w;
+    pipe->proxy_height = h;
+
+    
+    free(out);
+    free(new_image);
+    free(converted_image);
+
+    printf("Colors %d, Bits per channel %d\n", colors, bpc);
+  }
   _collect_histogram_on_CPU(pipe, dev, input, roi_in, module, piece, pixelpipe_flow);
 
   if(dt_atomic_get_int(&pipe->shutdown))

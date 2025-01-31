@@ -24,10 +24,11 @@
 #include "develop/blend.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"
-#include "develop/openmp_maths.h"
+#include "develop/openmp_maths.h" 
 
-#define MIN_POINT_RADIUS 0.0005f
-#define MIN_POINT_BORDER 0.0005f
+
+#define MIN_POINT_RADIUS 0.005f
+#define MIN_POINT_BORDER 0.005f
 
 static inline int _nb_ctrl_point(void)
 {
@@ -117,6 +118,7 @@ static int _point_events_mouse_scrolled(dt_iop_module_t *module,
                                          dt_masks_form_gui_t *gui,
                                          const int index)
 {
+  /*
   const float max_mask_border =
     form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 1.0f;
   const float max_mask_size =
@@ -198,6 +200,7 @@ static int _point_events_mouse_scrolled(dt_iop_module_t *module,
     }
     return 1;
   }
+  */
   return 0;
 }
 
@@ -351,33 +354,6 @@ static int _point_events_button_pressed(dt_iop_module_t *module,
       gui2->form_selected = TRUE; // we also want to be selected after button released
 
       dt_masks_select_form(module, dt_masks_get_from_id(darktable.develop, form->formid));
-    }
-    //spot and retouch manage creation_continuous in their own way
-    if(gui->creation_continuous
-       && (!crea_module
-           || (!dt_iop_module_is(crea_module->so, "spots")
-               && !dt_iop_module_is(crea_module->so, "retouch"))))
-    {
-      if(crea_module)
-      {
-        dt_iop_gui_blend_data_t *bd = crea_module->blend_data;
-        for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
-          if(bd->masks_type[n] == form->type)
-            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), TRUE);
-
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
-        dt_masks_form_t *newform = dt_masks_create(form->type);
-        dt_masks_change_form_gui(newform);
-        darktable.develop->form_gui->creation_module = crea_module;
-        darktable.develop->form_gui->creation_continuous = TRUE;
-        darktable.develop->form_gui->creation_continuous_module = crea_module;
-      }
-      else
-      {
-        dt_masks_form_t *form_new = dt_masks_create(form->type);
-        dt_masks_change_form_gui(form_new);
-        darktable.develop->form_gui->creation_module = gui->creation_continuous_module;
-      }
     }
 
     return 1;
@@ -559,6 +535,7 @@ static int _point_events_mouse_moved(dt_iop_module_t *module,
     dt_control_queue_redraw_center();
     return 1;
   }
+  /*
   else if(gui->point_border_dragging >= 1)
   {
     const float max_mask_border =
@@ -575,6 +552,7 @@ static int _point_events_mouse_moved(dt_iop_module_t *module,
     dt_control_queue_redraw_center();
     return 1;
   }
+  */
   else if(!gui->creation)
   {
     const float as = dt_masks_sensitive_dist(zoom_scale);
@@ -665,7 +643,7 @@ static void _point_draw_lines(const gboolean borders,
   }
   cairo_line_to(cr, points[2], points[3]);
 
-  dt_masks_line_stroke(cr, borders, source, selected, zoom_scale);
+  dt_masks_line_stroke(cr, borders, source, selected, 1.0);
 }
 
 static float *_points_to_transform(const float x,
@@ -1174,43 +1152,82 @@ static int _point_get_mask_roi(const dt_iop_module_t *const restrict module,
                                 const dt_iop_roi_t *const roi,
                                 float *const restrict buffer)
 {
-  double start1 = dt_get_debug_wtime();
-  double start2 = start1;
+  //double start1 = dt_get_debug_wtime();
+  //double start2 = start1;
 
   // we get the point parameters
-  dt_masks_point_circle_t *point = form->points->data;
+
+  //dt_masks_fast_sam_data_t *fast_sam_data = form->fast_sam_data;
+  
+  printf("I'm on get_mask_roi\n");
+  dt_dev_pixelpipe_t* p = piece->pipe;
+  dt_masks_point_circle_t *circle = form->points->data;
   const int wi = piece->pipe->iwidth, hi = piece->pipe->iheight;
-  const float centerx = point->center[0] * wi;
-  const float centery = point->center[1] * hi;
-  const int mindim = MIN(wi, hi);
-  const float radius2 = point->radius * mindim * point->radius * mindim;
-  const float total = (point->radius + point->border) * mindim;
-  const float total2 = total * total;
-  const float border2 = total2 - radius2;
+  
+  //wi /= 
+
+  printf("Circle position:\nx: %f, y: %f", circle->center[0] * wi, circle->center[1] * hi);
+
+  if (p->has_proxy){
+    //size_t n_masks = p->n_masks;
+    size_t stride = p->proxy_width * p->proxy_height;
+
+    for (int i = 0; i < roi->width * roi->height; i++){
+      buffer[i] = 0.0f;
+    }
+
+    for (int mask_i = 0; mask_i < 1; mask_i++){
+      //size_t mask_x = (size_t)(circle->center[0] * wi);
+      //size_t mask_y = (size_t)(circle->center[1] * hi);
+      //if (p->proxy_data[mask_i * stride + mask_y* p->proxy_width + mask_x] == 0)
+      //  continue;
+      for (int y = 0; y < p->proxy_height; y++)
+      {
+        if (y >= roi->height)
+          continue;
+        for (int x = 0; x < p->proxy_width; x ++)
+        {
+          if ( x >= roi->width)
+            continue;
+          buffer[x + y * roi->width] += p->proxy_data[mask_i * stride + y * p->proxy_width + x];
+        }
+      }
+    }
+    for (int i = 0; i < roi->width * roi->height; i++){
+      if (buffer[i] > 0)
+        buffer[i] = 1.0f;
+      else
+        buffer[i] = 0.0f;
+    }
+
+    // return 0;
+  }
+
 
   // we create a buffer of grid points for later interpolation: higher
   // speed and reduced memory footprint; we match size of buffer to
   // bounding box around the shape
-  const int w = roi->width;
-  const int h = roi->height;
-  const int px = roi->x;
-  const int py = roi->y;
-  const float iscale = 1.0f / roi->scale;
-  // scale dependent resolution
-  const int grid = CLAMP((10.0f * roi->scale + 2.0f) / 3.0f, 1, 4);
-  const int gw = (w + grid - 1) / grid + 1;  // grid dimension of total roi
-  const int gh = (h + grid - 1) / grid + 1;  // grid dimension of total roi
-
-  // initialize output buffer with zero
-  memset(buffer, 0, sizeof(float) * w * h);
-
-  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] point init took %0.04f sec",
-           form->name, dt_get_lap_time(&start2));
+  //const int w = roi->width;
+  //const int h = roi->height;
+  //const int px = roi->x;
+  //const int py = roi->y;
+  //const float iscale = 1.0f / roi->scale;
+  //// scale dependent resolution
+  //const int grid = CLAMP((10.0f * roi->scale + 2.0f) / 3.0f, 1, 4);
+  //const int gw = (w + grid - 1) / grid + 1;  // grid dimension of total roi
+  //const int gh = (h + grid - 1) / grid + 1;  // grid dimension of total roi
+//
+  //// initialize output buffer with zero
+  //memset(buffer, 0, sizeof(float) * w * h);
+//
+  //dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
+  //         "[masks %s] point init took %0.04f sec",
+  //         form->name, dt_get_lap_time(&start2));
 
   // we look at the outer point of the shape - no effects outside of
   // this point; we need many points as we do not know how the point
   // might get distorted in the pixelpipe
+  /*
   const size_t circpts = dt_masks_roundup(MIN(360, 2 * M_PI * total2), 8);
   float *const restrict circ = dt_alloc_align_float(circpts * 2);
   if(circ == NULL) return 0;
@@ -1383,19 +1400,21 @@ static int _point_get_mask_roi(const dt_iop_module_t *const restrict module,
   dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
            "[masks %s] point total render took %0.04f sec", form->name,
            dt_get_lap_time(&start1));
-
+  */
   return 1;
 }
 
 static GSList *_point_setup_mouse_actions(const struct dt_masks_form_t *const form)
 {
   GSList *lm = NULL;
+  /*
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
                                      0, _("[POINT] change size"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
                                      GDK_SHIFT_MASK, _("[POINT] change feather size"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
                                      GDK_CONTROL_MASK, _("[POINT] change opacity"));
+  */
   return lm;
 }
 
@@ -1419,8 +1438,7 @@ static void _point_set_hint_message(const dt_masks_form_gui_t *const gui,
 {
   // point has same controls on creation and on edit
   g_snprintf(msgbuf, msgbuf_len,
-             _("<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
-               "<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
+             _("click to add"));
 }
 
 static void _point_duplicate_points(dt_develop_t *dev,
