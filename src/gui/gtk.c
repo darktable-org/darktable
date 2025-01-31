@@ -2429,6 +2429,7 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container,
   gtk_widget_set_name(widget, "plugins_vbox_left");
   gtk_container_add(GTK_CONTAINER(container), widget);
   g_signal_connect_swapped(widget, "draw", G_CALLBACK(_side_panel_draw), NULL);
+  g_signal_connect_swapped(gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(container)), "value-changed", G_CALLBACK(gtk_widget_queue_draw), widget);
 
   GtkWidget *empty = gtk_event_box_new();
   gtk_widget_set_tooltip_text(empty, _("right-click to show/hide modules"));
