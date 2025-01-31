@@ -111,6 +111,7 @@ FILE(GLOB SOURCE_FILES
   "develop/lightroom.c"
   "develop/masks/brush.c"
   "develop/masks/circle.c"
+  "develop/masks/point.c"
   "develop/masks/ellipse.c"
   "develop/masks/gradient.c"
   "develop/masks/group.c"

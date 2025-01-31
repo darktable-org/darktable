@@ -356,6 +356,7 @@ typedef struct dt_iop_gui_blend_data_t
 
   GtkWidget *ai_threshold;
   GtkWidget *execute_ai;
+  GtkWidget *ai_cursor_add;
 
   int control_button_pressed;
   dt_pthread_mutex_t lock;
