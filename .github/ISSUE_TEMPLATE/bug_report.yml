@@ -118,7 +118,7 @@ body:
     attributes:
       label: What is the version of your OS?
       description: Please fill out the distro or OS version from the previous dropdown
-      placeholder: like: Fedora 40, Ubuntu 24.10, Windows 11 Pro, MacOS 14 Sonoma
+      placeholder: "like: Fedora 40, Ubuntu 24.10, Windows 11 Pro, MacOS 14 Sonoma"
     validations:
       required: true
 
