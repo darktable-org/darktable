@@ -327,12 +327,6 @@ typedef struct dt_masks_functions_t
                       const int num_points);
 } dt_masks_functions_t;
 
-typedef struct dt_masks_fast_sam_data_t{
-    bool proxy_data_initialized;
-    uint8_t *proxy_data; // Scaled-down image data
-    int proxy_width;
-    int proxy_height;
-} dt_masks_fast_sam_data_t;
 
 /** structure used to define a form */
 typedef struct dt_masks_form_t
@@ -347,8 +341,6 @@ typedef struct dt_masks_form_t
   char name[128];
   // id used to store the form
   dt_mask_id_t formid;
-  // data for the FastSAM model
-  dt_masks_fast_sam_data_t *fast_sam_data;
   // version of the form
   int version;
 } dt_masks_form_t;
