@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-12-01 18:37+0100\n"
-"PO-Revision-Date: 2024-12-01 21:32+0100\n"
+"PO-Revision-Date: 2025-02-01 18:08+0100\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -1107,8 +1107,8 @@ msgid ""
 "should choose the *always* option.\n"
 "(more comments in the manual)"
 msgstr ""
-"Wenn die Größe des Vorschaubilds größer als dieser Wert ist, dann wird es "
-"mit voller Qualität aus dem RAW berechnet (besser aber langsamer).\n"
+"Wenn die Größe des Vorschaubilds diesen Wert übersteigt, wird es mit voller "
+"Qualität aus dem RAW berechnet (besser aber langsamer).\n"
 "Für die beste Qualität sollte „immer“ ausgewählt sein. (Weitere Infos siehe "
 "Benutzerdokumentation)"
 
@@ -1124,8 +1124,8 @@ msgid ""
 "should choose the *always* option.\n"
 "(more comments in the manual)"
 msgstr ""
-"Wenn die Größe eines Vorschaubilds größer als dieser Wert ist, dann wird es "
-"mit voller Qualität berechnet (besser aber langsamer).\n"
+"Wenn die Größe eines Vorschaubilds diesen Wert übersteigt, wird es mit "
+"voller Qualität berechnet (besser aber langsamer).\n"
 "Für die beste Qualität sollte „immer“ ausgewählt sein. (Weitere Infos siehe "
 "Benutzerdokumentation)"
 
@@ -1206,7 +1206,7 @@ msgid ""
 msgstr ""
 "wenn ‚Festplattencache für Vorschaubilder benutzen‘ aktiviert ist, werden "
 "Vorschaubilder/Mipmaps bis zur ausgewählten Größe generiert, während der "
-"Benutzer im Lighttable inaktiv ist."
+"Benutzer im Leuchttisch inaktiv ist."
 
 #: ../build/bin/preferences_gen.h:4945
 msgid "reset cached thumbnails"
@@ -3630,7 +3630,7 @@ msgstr "Kantenerkennungsradius"
 #: ../src/iop/colorreconstruction.c:1232 ../src/iop/hotpixels.c:444
 #: ../src/iop/sharpen.c:439
 msgid "threshold"
-msgstr "Schwellwert"
+msgstr "Schwellenwert"
 
 #: ../build/lib/darktable/plugins/introspection_defringe.c:59
 #: ../build/lib/darktable/plugins/introspection_defringe.c:110
@@ -3648,7 +3648,7 @@ msgstr "lokales Mittel (langsam)"
 # unschön
 #: ../build/lib/darktable/plugins/introspection_defringe.c:126
 msgid "static threshold (fast)"
-msgstr "statischer Schwellwert (schnell)"
+msgstr "statischer Schwellenwert (schnell)"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:90
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:163
@@ -3684,7 +3684,7 @@ msgstr "LMMSE Verfeinerung"
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:120
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:183
 msgid "dual threshold"
-msgstr "Schwellwert"
+msgstr "Schwellenwert"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:197
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:204
@@ -3756,7 +3756,7 @@ msgstr "Markesteijn 3-Pass"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:225
 msgid "frequency domain chroma"
-msgstr "Frequency Domain Chroma"
+msgstr "Frequency Domain Chroma (FDC)"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:226
 msgid "Markesteijn 3-pass + VNG"
@@ -3913,7 +3913,7 @@ msgstr "Anisotropie 4. Ordnung"
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:171
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:280
 msgid "luminance masking threshold"
-msgstr "Schwellwert Maskierung Luminanz"
+msgstr "Schwellenwert Maskierung Luminanz"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:177
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:284
@@ -4166,7 +4166,7 @@ msgstr "Sättigung bei extremer Luminanz"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:308
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:487
 msgid "shadows ↔ highlights balance"
-msgstr "Schatten ↔ Spitzlichter-Balance"
+msgstr "Schatten ↔ Lichter-Balance"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:314
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:491
@@ -4211,7 +4211,7 @@ msgstr "Kontrast in den Schatten"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:362
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:523
 msgid "contrast in highlights"
-msgstr "Kontrast in den Spitzlichtern"
+msgstr "Kontrast in den Lichtern"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:368
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:527
@@ -4411,7 +4411,7 @@ msgstr "Mittenbetonung"
 #: ../build/lib/darktable/plugins/introspection_highlights.c:244
 #: ../src/views/darkroom.c:2343
 msgid "clipping threshold"
-msgstr "Abschneide-Schwellwert"
+msgstr "Clipping-Schwellenwert"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:161
 #: ../build/lib/darktable/plugins/introspection_highlights.c:256
@@ -4825,7 +4825,7 @@ msgstr "Papiergraduierung (Gamma)"
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:150
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:243
 msgid "paper gloss (specular highlights)"
-msgstr "Papierglanz (Spiegelglanzlichter)"
+msgstr "Papierglanz (Glanzlichter)"
 
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:156
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:247
@@ -5276,7 +5276,7 @@ msgstr "Weißtöne"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:192
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:321
 msgid "speculars"
-msgstr "Spiegellichter"
+msgstr "Glanzlichter"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:198
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:325
@@ -5303,7 +5303,6 @@ msgstr "Maskenkontrastkompensation"
 msgid "mask exposure compensation"
 msgstr "Maskenbelichtungskompensation"
 
-# wtf?
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:240
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:353
 msgid "luminance estimator"
@@ -5429,7 +5428,7 @@ msgid ""
 "view them through lighttable mode and develop/enhance them in darkroom mode."
 msgstr ""
 "darktable verwaltet die RAW-Dateien und Bilder der Kamera in einer "
-"Datenbank, zeigt sie im Lichttisch-Modus an und ermöglicht die Entwicklung/"
+"Datenbank, zeigt sie im Leuchttisch-Modus an und ermöglicht die Entwicklung/"
 "Bearbeitung iim Dunkelkammer-Modus."
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:3
@@ -6827,7 +6826,7 @@ msgstr ""
 "\n"
 "Bei großen Datenbanken kann dies lange dauern\n"
 "\n"
-"Möchtest Du fortfahren oder jetzt beenden, um ein Backup zu erstellen\n"
+"fortfahren oder jetzt beenden, um ein Backup zu erstellen\n"
 
 #: ../src/common/database.c:4039
 msgid "darktable - schema migration"
@@ -9285,7 +9284,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:3640
 msgid "details threshold"
-msgstr "Detail Schwellwert"
+msgstr "Detail Schwellenwert"
 
 #: ../src/develop/blend_gui.c:3644
 msgid ""
@@ -9293,7 +9292,7 @@ msgid ""
 "positive values select areas with strong details,\n"
 "negative values select flat areas"
 msgstr ""
-"Schwellwert für die Detailmaske anpassen (basiert auf den RAW Daten), \n"
+"Schwellenwert für die Detailmaske anpassen (basiert auf den RAW Daten), \n"
 "positive Werte zur Auswahl detailreicher Bereiche, \n"
 "negative Werte zur Auswahl gleichmäßiger Bereiche"
 
@@ -11603,8 +11602,8 @@ msgid ""
 "image. also enable the txt overlay setting in the gui tab"
 msgstr ""
 "die erstellten txt-Dateien werden angezeigt, wenn der Leuchttisch auf ein "
-"Bild gezoomt wird. Aktivieren Sie auch die Einstellung txt overlay in der "
-"Registerkarte gui"
+"Bild gezoomt wird. Bitte auch die Einstellung txt overlay in der "
+"Registerkarte Gui aktivieren"
 
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:75
 msgid "command to generate the txt sidecar"
@@ -13214,8 +13213,7 @@ msgid ""
 "press up or down keys to cycle through matches"
 msgstr ""
 "schrittweise Suche in der Liste der Aktionen\n"
-"Drücken Sie die Aufwärts- oder Abwärts-Taste, um durch die Treffer zu "
-"blättern"
+"Aufwärts- oder Abwärts-Taste drücken, um durch die Treffer zu blättern"
 
 #: ../src/gui/accelerators.c:2961 ../src/gui/guides.c:719
 #: ../src/libs/export_metadata.c:179
@@ -15105,10 +15103,10 @@ msgid ""
 "\n"
 "do you really want to continue?"
 msgstr ""
-"Du exportierst im Überschreibmodus, dadurch werden alle vorhandenen Bilder "
+"Export erfolgt im Überschreibmodus, dadurch werden alle vorhandenen Bilder "
 "überschrieben.\n"
 "\n"
-"Möchtest Du wirklich weitermachen?"
+"Fortsetzen und die vorhanden Bilder überschreiben?"
 
 #: ../src/imageio/storage/email.c:57
 msgid "send as email"
@@ -16194,7 +16192,7 @@ msgstr "Größe der Überstrahlung"
 # unschön
 #: ../src/iop/bloom.c:423
 msgid "the threshold of light"
-msgstr "Schwellwert des Lichts"
+msgstr "Helligkeit, ab der Überstrahlung auftritt"
 
 #: ../src/iop/bloom.c:427
 msgid "the strength of bloom"
@@ -17946,7 +17944,7 @@ msgstr "Farbigkeit bei gleicher Luminanz global erhöhen"
 
 #: ../src/iop/colorbalancergb.c:1815
 msgid "increase colorfulness at same luminance mostly in shadows"
-msgstr "Erhöhung der Farbigkeit bei gleicher Luminanz vor allem in Tiefen"
+msgstr "Erhöhung der Farbigkeit bei gleicher Luminanz vor allem in Schatten"
 
 #: ../src/iop/colorbalancergb.c:1820
 msgid "increase colorfulness at same luminance mostly in mid-tones"
@@ -18114,7 +18112,7 @@ msgstr "Gewichtung der Lichter über den Tonwertbereich"
 #: ../src/iop/colorbalancergb.c:1997
 msgctxt "section"
 msgid "threshold"
-msgstr "Schwellwert"
+msgstr "Schwellenwert"
 
 #: ../src/iop/colorbalancergb.c:2002
 msgid "peak white luminance value used to normalize the power function"
@@ -18356,9 +18354,8 @@ msgid ""
 "drag the line for split-toning. bright means highlights, dark means shadows. "
 "use mouse wheel to change saturation."
 msgstr ""
-"Linie für Teiltonung ziehen. Helles Ende bestimmt die Tonung der "
-"Spitzlichter, das dunkle die Tonung der Schatten. Die Sättigung kann mit dem "
-"Mausrad angepasst werden."
+"Linie für Teiltonung ziehen. Hell bedeutet Lichter, dunkel bedeutet "
+"Schatten. Die Sättigung kann mit dem Mausrad angepasst werden."
 
 #: ../src/iop/colorcorrection.c:267
 msgid "set the global saturation"
@@ -18467,8 +18464,8 @@ msgid ""
 "increase if there is large local variance of hue or strong chroma noise."
 msgstr ""
 "Radius der Chroma-Analyse (Farbton) des geführten Filters einstellen.\n"
-"erhöhen, wenn es eine große lokale Varianz des Farbtons oder starkes Chroma-"
-"Rauschen gibt."
+"erhöhen, wenn es eine große lokale Varianz des Farbtons oder starkes "
+"Farbrauschen gibt."
 
 # unfortunately no explanation available what exactly is shown
 #: ../src/iop/colorequal.c:3185
@@ -18488,7 +18485,7 @@ msgid ""
 " - increase to restrict changes to higher chromaticities\n"
 "   increases contrast and avoids brightness changes in low chromaticity areas"
 msgstr ""
-"Schwellwert der Sättigung für den geführten Filter einstellen.\n"
+"Schwellenwert der Sättigung für den geführten Filter einstellen.\n"
 " - Verringern, um Änderungen in Bereichen mit geringer Farbintensität "
 "zuzulassen\n"
 " - erhöhen, um Änderungen auf Bereiche mit hoher Farbintensität zu "
@@ -18780,7 +18777,7 @@ msgstr "Priorität"
 
 #: ../src/iop/colorreconstruction.c:1251
 msgid "pixels with lightness values above this threshold are corrected"
-msgstr "Pixel mit einer Helligkeit über diesem Schwellwert werden korrigiert"
+msgstr "Pixel mit einer Helligkeit über diesem Schwellenwert werden korrigiert"
 
 #: ../src/iop/colorreconstruction.c:1252
 msgid "how far to look for replacement colors in spatial dimensions"
@@ -18922,8 +18919,8 @@ msgid ""
 "- monotonic is better for accuracy of pure analytical functions (log, gamma, "
 "exp)"
 msgstr ""
-"Ändere die Interpolationsmethode, wenn Du Schwingungen oder Spitzen in der "
-"Kurve siehst.\n"
+"Ändere die Interpolationsmethode, wenn Schwingungen oder Spitzen in der "
+"Kurve auftreten.\n"
 "- „kubischer Spline” ist besser geeignet, um glatte Kurven zu erzeugen, "
 "oszilliert jedoch, wenn die Knoten zu dicht liegen.\n"
 "- „zentripetaler Spline” ist besser geeignet, um Spitzen und Schwingungen "
@@ -19002,7 +18999,7 @@ msgstr ""
 "– lokales Mittel: langsamer, schützt die Sättigung besser als das globale "
 "Mittel indem Pixel aus der Umgebung als Farb-Referenz benutzt werden, so "
 "dass bei Bedarf eine stärkere Entsättigung erreicht werden kann\n"
-"– statisch: schnell, benutzt nur den Schwellwert als statischen Grenzwert"
+"– statisch: schnell, benutzt nur den Schwellenwert als statischen Grenzwert"
 
 #: ../src/iop/defringe.c:413
 msgid "radius for detecting fringe"
@@ -19011,7 +19008,7 @@ msgstr "Radius der Farbsaumerkennung"
 #: ../src/iop/defringe.c:416
 msgid "threshold for defringe, higher values mean less defringing"
 msgstr ""
-"Schwellwert der Farbsaumentfernung, höhere Werte führen zu weniger Änderung"
+"Schwellenwert der Farbsaumentfernung, höhere Werte führen zu weniger Änderung"
 
 #: ../src/iop/demosaic.c:284
 msgid "demosaic"
@@ -19047,7 +19044,7 @@ msgid ""
 "dual demosaicers double processing time."
 msgstr ""
 "X-Trans Sensor Demosaicing Methode, Markesteijn 3-Pass und Frequency Domain "
-"Chromi sind langsam.\n"
+"Chroma (FDC) sind langsam.\n"
 "Dual-Demosaic verdoppelt die Verarbeitungszeit."
 
 #: ../src/iop/demosaic.c:1325
@@ -19063,7 +19060,7 @@ msgid ""
 "set to 0.0 to switch off\n"
 "set to 1.0 to ignore edges"
 msgstr ""
-"Schwellwert für kanten-orientierten Median.\n"
+"Schwellenwert für kanten-orientierten Medianfilter.\n"
 "Auf 0.0 setzen zum Ausschalten.\n"
 "Auf 1.0 setzen, um Kanten zu ignorieren."
 
@@ -19296,7 +19293,7 @@ msgid ""
 msgstr ""
 "Steuert die automatische Einstellung der Parameter. \n"
 "Erhöhen, wenn Schatten nicht ausreichend entrauscht sind \n"
-"oder Chrominanz-Rauschen bestehen bleibt. \n"
+"oder Farbrauschen bestehen bleibt. \n"
 "Dies kann bei Unterbelichtung des Bildes auftreten."
 
 #: ../src/iop/denoiseprofile.c:3852
@@ -19642,7 +19639,7 @@ msgid ""
 "increase if you see noise appear on smooth surfaces or\n"
 "if dark areas seem oversharpened compared to bright areas."
 msgstr ""
-"Definiert die Schwellwert für die Varianz zwischen Kantenverstärkung und "
+"Definiert die Schwellenwert für die Varianz zwischen Kantenverstärkung und "
 "Pönale.\n"
 "Verringern, damit Pixel auf glatten Oberflächen eine Verstärkung erhalten,\n"
 "Erhöhen, wenn Rauschen auf glatten Flächen auftritt oder\n"
@@ -19661,10 +19658,10 @@ msgid ""
 "any higher value excludes pixels with luminance lower than the threshold.\n"
 "this can be used to inpaint highlights."
 msgstr ""
-"Luminanz-Schwellwert für die Maske.\n"
+"Luminanz-Schwellenwert für die Maske.\n"
 "0 deaktiviert die Luminanzmaskierung und wendet das Modul auf das gesamte "
 "Bild an.\n"
-"Jeder höhere Wert schließt Pixel aus, deren Luminanz unter dem Schwellwert "
+"Jeder höhere Wert schließt Pixel aus, deren Luminanz unter dem Schwellenwert "
 "liegt.\n"
 "Dies kann verwendet werden, um Spitzlichter auszufüllen."
 
@@ -19814,8 +19811,8 @@ msgid ""
 "this is useful if you exposed the image to the right."
 msgstr ""
 "Automatisch die kamerainterne Belichtungskorrektur ausgleichen. \n"
-"Dies ist insbesondere bei Aufnahmen nützlich, die so belichtet wurden, daß "
-"die Spitzlichter erhalten bleiben."
+"Dies ist insbesondere bei Aufnahmen nützlich, die bewusst heller belichtet "
+"wurden (ETTR)."
 
 #: ../src/iop/exposure.c:1113
 msgid "set the exposure adjustment using the selected area"
@@ -20042,7 +20039,7 @@ msgid ""
 "at one extremity of the histogram."
 msgstr ""
 "Verschiebt die Breite entlang der Steigung,\n"
-"um Schatten und Spitzlichtern mehr Raum zu geben.\n"
+"um Schatten und Lichtern mehr Raum zu geben.\n"
 "Nützlich falls an einem Ende des Histogramms\n"
 "Details geschützt werden sollen."
 
@@ -20063,7 +20060,7 @@ msgid ""
 "decrease if shadows and/or highlights are over-saturated."
 msgstr ""
 "Entsättigt die Ausgabe des Moduls in Bereichen mit extremer Luminanz.\n"
-"Verringern wenn Schatten/Spitzlichter übersättigt sind."
+"Verringern wenn Schatten/Lichter übersättigt sind."
 
 #. Add export intent combo
 #: ../src/iop/filmic.c:1594 ../src/libs/export.c:1405
@@ -20163,7 +20160,7 @@ msgstr "Filmic RGB"
 #: ../src/iop/filmicrgb.c:344
 msgid "tone mapping|curve|view transform|contrast|saturation|highlights"
 msgstr ""
-"Tonemapping|Tonwertkurve|Bildtransformation|Kontrast|Sättigung|Spitzlichter"
+"Tonemapping|Tonwertkurve|Dynamikkompression|Kontrast|Sättigung|Spitzlichter"
 
 #: ../src/iop/filmicrgb.c:349
 msgid ""
@@ -20320,7 +20317,7 @@ msgstr "Rekonstruieren"
 #: ../src/iop/filmicrgb.c:4441
 msgctxt "section"
 msgid "highlights clipping"
-msgstr "Spitzlichtkompression"
+msgstr "Clipping Spitzlichter"
 
 #: ../src/iop/filmicrgb.c:4449
 msgid ""
@@ -20331,7 +20328,7 @@ msgid ""
 "decrease to include more areas,\n"
 "increase to exclude more areas."
 msgstr ""
-"Setzt die Belichtungswert oberhalb dessen die Spitzlichter rekonstruiert "
+"Setzt den Schwellenwert ab dem ausgebrannte Spitzlichter rekonstruiert "
 "werden. \n"
 "Werte sind relativ zum Weißpunkt. \n"
 "0 EV bedeutet, dass die Schwelle beim Weißpunkt liegt. \n"
@@ -20444,7 +20441,7 @@ msgid ""
 msgstr ""
 "Entsättigt die Ausgabe des Moduls in Bereichen\n"
 "mit extremer Luminanz.\n"
-"Erhöhen wenn Schatten und/oder Spitzlichter\n"
+"Erhöhen wenn Schatten und/oder Lichter\n"
 "nicht ausreichend gesättigt sind."
 
 # Was bedeutet „same as color balance”?
@@ -20464,9 +20461,10 @@ msgid ""
 "may reinforce chromatic aberrations and chroma noise,\n"
 "so ensure they are properly corrected elsewhere."
 msgstr ""
-"Stellt sicher, dass die Originalfarbe erhalten bleibt.\n"
-"Kann chromatische Aberrationen der Linse verstärken.\n"
-"Sättigung muss manuell angepasst werden, wenn dieser Modus aktiviert wird."
+"Stellt sicher, dass Originalfarben erhalten bleiben.\n"
+"Kann chromatische Aberrationen und Farbrauschen verstärken,\n"
+"daher ist darauf zu achten, dass diese an anderer Stelle korrekt korrigiert "
+"werden."
 
 #: ../src/iop/filmicrgb.c:4591
 msgid ""
@@ -20829,8 +20827,8 @@ msgid ""
 "highlights: mode not available for this type of image. falling back to "
 "inpaint opposed."
 msgstr ""
-"Highlights: Modus ist für dieses Bild-Format nicht verfügbar. Fallback auf "
-"„Inpaint Opposed“."
+"Spitzlicht-Rekonstruktion: Modus ist für dieses Bild-Format nicht verfügbar. "
+"Fallback auf „Inpaint Opposed“."
 
 #: ../src/iop/highlights.c:1193
 msgid "highlight reconstruction method"
@@ -20855,7 +20853,7 @@ msgid ""
 "visualize clipped highlights in a false color representation.\n"
 "the effective clipping level also depends on the reconstruction method."
 msgstr ""
-"Visualisierung der beschnittenen Lichter in einer Falschfarbendarstellung.\n"
+"Visualisierung der ausgebrannten Lichter in einer Falschfarbendarstellung.\n"
 "Die effektive Stufe des Clippings hängt auch von der Rekonstruktionsmethode "
 "ab."
 
@@ -20904,8 +20902,8 @@ msgid ""
 "the flat modes ignore narrow unclipped structures (like powerlines) to keep "
 "highlights rebuilt and avoid gradients."
 msgstr ""
-"Approximiert verlorene Daten in Regionen, in denen alle Pixel geclippt sind; "
-"der Effekt hängt von Segmentgröße und Randgradienten ab.\n"
+"Approximiert verlorene Daten in Regionen, in denen alle Pixel ausgebrannt "
+"sind; der Effekt hängt von Segmentgröße und Randgradienten ab.\n"
 "Einen auf die Segmentgröße abgestimmten Modus auswählen - der generische "
 "Modus versucht, die besten Einstellungen für jedes Segment zu finden.\n"
 "Klein bedeutet Bereiche mit einem Durchmesser von weniger als 25 Pixeln, "
@@ -21008,11 +21006,11 @@ msgstr[1] "%d Pixel korrigiert"
 
 #: ../src/iop/hotpixels.c:446
 msgid "lower threshold for hot pixel"
-msgstr "unterer Schwellwert"
+msgstr "unterer Schwellenwert"
 
 #: ../src/iop/hotpixels.c:450
 msgid "strength of hot pixel correction"
-msgstr "Schwellwert zur Korrektur toter Pixel"
+msgstr "Schwellenwert zur Korrektur toter Pixel"
 
 #: ../src/iop/hotpixels.c:466
 msgid ""
@@ -21780,7 +21778,7 @@ msgstr ""
 
 #: ../src/iop/monochrome.c:579
 msgid "how much to keep highlights"
-msgstr "wie sehr sollen Spitzlichter ausgenommen werden"
+msgstr "wie stark sollen Spitzlichter erhalten werden"
 
 #: ../src/iop/negadoctor.c:135
 msgid "negadoctor"
@@ -21881,7 +21879,7 @@ msgstr "Farbstich in den Schatten"
 
 #: ../src/iop/negadoctor.c:921
 msgid "select color of shadows from a swatch"
-msgstr "Farbe der Schatten aus einer Probe entnehmen"
+msgstr "Farbe der Schatten aus einem Bereich entnehmen"
 
 #: ../src/iop/negadoctor.c:926
 msgid "pick shadows color from image"
@@ -21899,12 +21897,10 @@ msgid ""
 "the highlights illuminant white balance will help\n"
 "recovering the global white balance in difficult cases."
 msgstr ""
-"Korrigiert die Farbe in den Schatten, so dass die Schwarzwerte gänzlich "
-"farblos sind. \n"
-"Für die Wiederherstellung des globalen Weißabgleichs, kann es kann in "
-"schwierigen \n"
-"Situationen hilfreich sein, diesen Wert vor dem Weißabgleich der Lichtquelle "
-"zu setzen."
+"korrigiert den Farbstich in den Schatten, so dass die Schwarztöne wirklich "
+"achromatisch sind.\n"
+"Die Einstellung dieses Wertes vor dem Weißabgleich für die Lichter hilft,\n"
+"in schwierigen Fällen einen ausgewogenen globalen Weißabgleich zu erhalten."
 
 #: ../src/iop/negadoctor.c:939
 msgid "shadows green offset"
@@ -21922,11 +21918,11 @@ msgstr "Weißabgleich der Spitzlichter"
 
 #: ../src/iop/negadoctor.c:959
 msgid "select color of illuminant from a swatch"
-msgstr "Farbe der Lichtquelle aus einer Probe entnehmen"
+msgstr "Farbe der Lichtquelle aus einem Bereich entnehmen"
 
 #: ../src/iop/negadoctor.c:964
 msgid "pick illuminant color from image"
-msgstr "Farbe der Lichtquelle aus Bild wählen"
+msgstr "Farbe der Lichtquelle aus Bild übernehmen"
 
 #: ../src/iop/negadoctor.c:970
 msgid "illuminant red gain"
@@ -21940,12 +21936,10 @@ msgid ""
 "the shadows color cast will help\n"
 "recovering the global white balance in difficult cases."
 msgstr ""
-"Korrigiert die Farbe der Lichtquelle, so dass die Weißwerte gänzlich farblos "
-"sind. \n"
-"Für die Wiederherstellung des globalen Weißabgleichs, kann es kann in "
-"schwierigen \n"
-"Situationen hilfreich sein, diesen Wert nach dem Weißabgleich der Schatten "
-"zu setzen."
+"Korrigiert die Farbe der Lichtquelle, so dass die Weißwerte wirklich "
+"achromatisch sind. \n"
+"Die Einstellung dieses Wertes vor dem Weißabgleich für die Schatten hilft,\n"
+"in schwierigen Fällen einen ausgewogenen globalen Weißabgleich zu erhalten."
 
 #: ../src/iop/negadoctor.c:977
 msgid "illuminant green gain"
@@ -21971,8 +21965,8 @@ msgid ""
 "correct the density of black after the inversion,\n"
 "to adjust the global contrast while avoiding clipping shadows."
 msgstr ""
-"Korrigiert die Schwarzdichte nach Invertierung, \n"
-"um den globalen Kontrast anzupassen ohne die Tiefen abzuschneiden."
+"korrigiert die Dichte von Schwarz nach der Inversion,\n"
+"um den Gesamtkontrast anzupassen und das Clipping von Tiefen zu vermeiden."
 
 #: ../src/iop/negadoctor.c:1005
 msgid ""
@@ -22803,7 +22797,7 @@ msgid ""
 "preserve mid-tones"
 msgstr ""
 "komprimiere den Effekt in den\n"
-"Schatten/Spitzlichtern und erhalte die Mitten"
+"Schatten/Lichtern und erhalte die Mitten"
 
 #: ../src/iop/shadhi.c:702
 msgid "adjust saturation of shadows"
@@ -22846,7 +22840,7 @@ msgstr "Stärke des Schärfens"
 
 #: ../src/iop/sharpen.c:441
 msgid "threshold to activate sharpen"
-msgstr "Schwellwert zum Aktivieren des Schärfens"
+msgstr "Schwellenwert zum Aktivieren des Schärfens"
 
 #: ../src/iop/sigmoid.c:195
 msgid "sigmoid"
@@ -25997,7 +25991,7 @@ msgstr "Speicherort hinzufügen"
 
 #: ../src/libs/import.c:1495
 msgid "you can add custom places using the plus icon"
-msgstr "Du kannst eigene Speicherorte mit dem + Icon hinzufügen"
+msgstr "eigene Speicherorte können mit dem + Icon hinzugefügt werden"
 
 #: ../src/libs/import.c:1527
 msgid "select a folder to see the content"
@@ -28783,7 +28777,7 @@ msgid ""
 "1.0 - white level\n"
 "0.0 - black level"
 msgstr ""
-"Schwellwert für Überbelichtungsmarkierung\n"
+"Schwellenwert für Überbelichtungsmarkierung\n"
 "1,0 – Weißwert\n"
 "0,0 – Schwarzwert"
 
@@ -28839,7 +28833,7 @@ msgstr "Violett & Grün"
 
 #: ../src/views/darkroom.c:2391
 msgid "lower threshold"
-msgstr "unterer Schwellwert"
+msgstr "unterer Schwellenwert"
 
 #: ../src/views/darkroom.c:2392
 msgid ""
@@ -28863,7 +28857,7 @@ msgstr ""
 
 #: ../src/views/darkroom.c:2408
 msgid "upper threshold"
-msgstr "oberer Schwellwert"
+msgstr "oberer Schwellenwert"
 
 # wft: peak medium luminance
 #: ../src/views/darkroom.c:2410
