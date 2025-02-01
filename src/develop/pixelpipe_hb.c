@@ -270,8 +270,6 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->input_profile_info = NULL;
   pipe->output_profile_info = NULL;
   pipe->runs = 0;
-  pipe->bcache_data = NULL;
-  pipe->bcache_hash = 0;
   return dt_dev_pixelpipe_cache_init(pipe, entries, size, memlimit);
 }
 
@@ -332,7 +330,6 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   dt_dev_pixelpipe_cleanup_nodes(pipe);
   // so now it's safe to clean up cache:
   dt_dev_pixelpipe_cache_cleanup(pipe);
-  dt_free_align(pipe->bcache_data);
 
   pipe->icc_type = DT_COLORSPACE_NONE;
   g_free(pipe->icc_filename);
@@ -1093,7 +1090,7 @@ static gboolean _request_color_pick(dt_dev_pixelpipe_t *pipe,
 static inline gboolean _piece_may_tile(const dt_dev_pixelpipe_iop_t *piece)
 {
   return piece->process_tiling_ready
-        && !(piece->pipe->want_detail_mask && piece->module->flags() & IOP_FLAGS_WRITE_DETAILS);
+        && !(piece->pipe->want_detail_mask && piece->module->flags());
 }
 
 static void _collect_histogram_on_CPU(dt_dev_pixelpipe_t *pipe,
@@ -1160,16 +1157,6 @@ static inline gboolean _piece_fast_blend(const dt_dev_pixelpipe_iop_t *piece,
       && module == module->dev->gui_module
       && dt_dev_modulegroups_test_activated(darktable.develop)
       && _transform_for_blend(module, piece);
-}
-
-static inline float *_get_fast_blendcache(const size_t nfloats,
-                                          const dt_hash_t phash,
-                                          dt_dev_pixelpipe_t *pipe)
-{
-  dt_free_align(pipe->bcache_data);
-  pipe->bcache_data = dt_alloc_align_float(nfloats);
-  pipe->bcache_hash = phash;
-  return pipe->bcache_data;
 }
 
 static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
@@ -1355,33 +1342,19 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                      roi_in->width, roi_in->height, in_bpp,
                      TRUE, dt_dev_pixelpipe_type_to_str(pipe->type));
 
-  const gboolean relevant = _piece_fast_blend(piece, module);
-  const dt_hash_t phash = relevant ? _piece_process_hash(piece, roi_out, module) : 0;
-  const size_t nfloats = bpp * roi_out->width * roi_out->height / sizeof(float);
-  const gboolean bcaching = relevant ? pipe->bcache_data && phash == pipe->bcache_hash : FALSE;
+  _piece_fast_blend(piece, module);
 
   if(!fitting && _piece_may_tile(piece))
   {
     dt_print_pipe(DT_DEBUG_PIPE,
-                        bcaching ? "from focus cache" : "process tiles",
+                        "process tiles",
                         pipe, module, DT_DEVICE_CPU, roi_in, roi_out, "%s%s%s",
                         dt_iop_colorspace_to_name(cst_to),
                         cst_to != cst_out ? " -> " : "",
                         cst_to != cst_out ? dt_iop_colorspace_to_name(cst_out) : "");
 
-    if(bcaching)
-    {
-      dt_iop_image_copy(*output, pipe->bcache_data, nfloats);
-    }
-    else
-    {
-      module->process_tiling(module, piece, input, *output, roi_in, roi_out, in_bpp);
-      if(relevant)
-      {
-        float *cache = _get_fast_blendcache(nfloats, phash, pipe);
-        if(cache) dt_iop_image_copy(cache, *output, nfloats);
-      }
-    }
+    module->process_tiling(module, piece, input, *output, roi_in, roi_out, in_bpp);
+    
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU
                         | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
     *pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU);
@@ -1389,7 +1362,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
   else
   {
     dt_print_pipe(DT_DEBUG_PIPE,
-       bcaching ? "from focus cache" : "process",
+       "process",
        pipe, module, DT_DEVICE_CPU, roi_in, roi_out, "%s%s%s%s %.fMB",
        dt_iop_colorspace_to_name(cst_to),
        cst_to != cst_out ? " -> " : "",
@@ -1429,19 +1402,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
       }
     }
 
-    if(bcaching)
-    {
-      dt_iop_image_copy(*output, pipe->bcache_data, nfloats);
-    }
-    else
-    {
-      module->process(module, piece, input, *output, roi_in, roi_out);
-      if(relevant)
-      {
-        float *cache = _get_fast_blendcache(nfloats, phash, pipe);
-        if(cache) dt_iop_image_copy(cache, *output, nfloats);
-      }
-    }
+    module->process(module, piece, input, *output, roi_in, roi_out);
 
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU);
     *pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU
@@ -2052,12 +2013,10 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
            meaningful messages in case of error */
         if(success_opencl)
         {
-          const gboolean relevant = _piece_fast_blend(piece, module);
-          const dt_hash_t phash = relevant ? _piece_process_hash(piece, roi_out, module) : 0;
-          const gboolean bcaching = relevant ? pipe->bcache_data && phash == pipe->bcache_hash : FALSE;
+          _piece_fast_blend(piece, module);
 
           dt_print_pipe(DT_DEBUG_PIPE,
-                        bcaching ? "from focus cache" : "process",
+                        "process",
                         pipe, module, pipe->devid, &roi_in, roi_out, "%s%s%s %.1fMB",
                         dt_iop_colorspace_to_name(cst_to),
                         cst_to != cst_out ? " -> " : "",
@@ -2112,19 +2071,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
           cl_int err = CL_SUCCESS;
 
-          if(bcaching)
-          {
-            err = dt_opencl_write_host_to_device(pipe->devid, pipe->bcache_data, *cl_mem_output, roi_out->width, roi_out->height, out_bpp);
-          }
-          else
-          {
-            err = module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
-            if(relevant && (err == CL_SUCCESS))
-            {
-              float *cache = _get_fast_blendcache(out_bpp * roi_out->width * roi_out->height / sizeof(float), phash, pipe);
-              if(cache) err = dt_opencl_read_host_from_device(pipe->devid, cache, *cl_mem_output, roi_out->width, roi_out->height, out_bpp);
-            }
-          }
+          err = module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+          
           success_opencl = (err == CL_SUCCESS);
 
           if(!success_opencl)
@@ -2332,11 +2280,10 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
            meaningful messages in case of error */
         if(success_opencl)
         {
-          const gboolean relevant = _piece_fast_blend(piece, module);
-          const dt_hash_t phash = relevant ? _piece_process_hash(piece, roi_out, module) : 0;
-          const gboolean bcaching = relevant ? pipe->bcache_data && phash == pipe->bcache_hash : FALSE;
+          _piece_fast_blend(piece, module);
+
           dt_print_pipe(DT_DEBUG_PIPE,
-                        bcaching ? "from focus cache" : "process tiled",
+                        "process",
                         pipe, module, pipe->devid, &roi_in, roi_out, "%s%s%s",
                         dt_iop_colorspace_to_name(cst_to),
                         cst_to != cst_out ? " -> " : "",
@@ -2344,20 +2291,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
           cl_int err = CL_SUCCESS;
 
-          if(bcaching)
-          {
-            err = dt_opencl_write_host_to_device(pipe->devid, pipe->bcache_data, *cl_mem_output, roi_out->width, roi_out->height, out_bpp);
-          }
-          else
-          {
-            err = module->process_tiling_cl(module, piece, input, *output, &roi_in, roi_out, in_bpp);
-            if(relevant && (err == CL_SUCCESS))
-            {
-              float *cache = _get_fast_blendcache(out_bpp * roi_out->width * roi_out->height / sizeof(float), phash, pipe);
-              if(cache)
-                err = dt_opencl_read_host_from_device(pipe->devid, cache, *cl_mem_output, roi_out->width, roi_out->height, out_bpp);
-            }
-          }
+          err = module->process_tiling_cl(module, piece, input, *output, &roi_in, roi_out, in_bpp);
+          
           success_opencl = (err == CL_SUCCESS);
 
           if(!success_opencl)
