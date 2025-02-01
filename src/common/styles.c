@@ -109,11 +109,11 @@ static void _apply_style_shortcut_callback(dt_action_t *action)
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(imgs->data);
     g_list_free(imgs);
-    dt_styles_apply_to_dev(action->label, imgid);
+    dt_styles_apply_to_dev(action->id, imgid);
   }
   else
   {
-    GList *styles = g_list_prepend(NULL, g_strdup(action->label));
+    GList *styles = g_list_prepend(NULL, g_strdup(action->id));
     dt_control_apply_styles(imgs, styles, FALSE);
   }
 }
@@ -1024,7 +1024,9 @@ void dt_styles_apply_to_dev(const char *name, const dt_imgid_t imgid)
   // rebuild the accelerators (style might have changed order)
   dt_iop_connect_accels_all();
 
-  dt_control_log(_("applied style `%s' on current image"), name);
+  gchar *local_name = dt_util_localize_segmented_name(name);
+  dt_control_log(_("applied style `%s' on current image"), local_name);
+  g_free(local_name);
 }
 
 void dt_styles_delete_by_name_adv(const char *name, const gboolean raise, const gboolean shortcut)
