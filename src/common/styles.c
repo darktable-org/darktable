@@ -105,15 +105,24 @@ static void _apply_style_shortcut_callback(dt_action_t *action)
 {
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
 
+  const char *style_name = action->label;
+
+  // The style name can be translated when coming from a buily-in
+  // style like the ones for camera style provided by dartktable.
+  // So we check here if we have a non-translated name recorded.
+  char *untranslated = (char *)g_hash_table_lookup(darktable.styles_table, style_name);
+
+  const char *uname = untranslated ? untranslated : style_name;
+
   if(dt_view_get_current() == DT_VIEW_DARKROOM)
   {
     const dt_imgid_t imgid = GPOINTER_TO_INT(imgs->data);
     g_list_free(imgs);
-    dt_styles_apply_to_dev(action->label, imgid);
+    dt_styles_apply_to_dev(uname, imgid);
   }
   else
   {
-    GList *styles = g_list_prepend(NULL, g_strdup(action->label));
+    GList *styles = g_list_prepend(NULL, g_strdup(uname));
     dt_control_apply_styles(imgs, styles, FALSE);
   }
 }
@@ -1022,7 +1031,10 @@ void dt_styles_apply_to_dev(const char *name, const dt_imgid_t imgid)
   // rebuild the accelerators (style might have changed order)
   dt_iop_connect_accels_all();
 
-  dt_control_log(_("applied style `%s' on current image"), name);
+  gchar *translated_name = dt_util_localize_segmented_name(name);
+
+  dt_control_log(_("applied style `%s' on current image"), translated_name);
+  g_free(translated_name);
 }
 
 void dt_styles_delete_by_name_adv(const char *name, const gboolean raise, const gboolean shortcut)
@@ -1697,6 +1709,8 @@ static int32_t dt_styles_get_id_by_name(const char *name)
 
 void dt_init_styles_actions()
 {
+  darktable.styles_table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, free);
+
   GList *result = dt_styles_get_list("");
   if(result)
   {
@@ -1704,7 +1718,15 @@ void dt_init_styles_actions()
     for(GList *res_iter = result; res_iter; res_iter = g_list_next(res_iter))
     {
       dt_style_t *style = res_iter->data;
-      dt_action_register(stl, style->name, _apply_style_shortcut_callback, 0, 0);
+
+      gchar *translated_name = dt_util_localize_segmented_name(style->name);
+      // record the translated name to be able to get back the genuine
+      // style name as found in the db to be able to apply it from
+      // shortcut.
+      g_hash_table_insert(darktable.styles_table, translated_name, g_strdup(style->name));
+
+      // register the shortcut using the translated name
+      dt_action_register(stl, translated_name, _apply_style_shortcut_callback, 0, 0);
     }
     g_list_free_full(result, dt_style_free);
   }

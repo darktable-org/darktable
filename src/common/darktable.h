@@ -365,6 +365,8 @@ typedef struct darktable_t
   GList *iop_order_list;
   GList *iop_order_rules;
   GList *capabilities;
+  GHashTable *styles_table;
+
   JsonParser *noiseprofile_parser;
   struct dt_conf_t *conf;
   struct dt_develop_t *develop;
