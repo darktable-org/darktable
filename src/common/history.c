@@ -746,7 +746,6 @@ static gboolean _history_copy_and_paste_on_image_overwrite(const dt_imgid_t imgi
                                                            const gboolean copy_iop_order,
                                                            const gboolean copy_full)
 {
-  gboolean ret_val = FALSE;
   sqlite3_stmt *stmt;
 
   // replace history stack
@@ -893,15 +892,13 @@ static gboolean _history_copy_and_paste_on_image_overwrite(const dt_imgid_t imgi
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, dest_imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+    return FALSE;
   }
   else
   {
     // since the history and masks where deleted we can do a merge
-    ret_val = _history_copy_and_paste_on_image_merge
-      (imgid, dest_imgid, ops, copy_iop_order, copy_full);
+    return _history_copy_and_paste_on_image_merge(imgid, dest_imgid, ops, copy_iop_order, copy_full);
   }
-
-  return ret_val;
 }
 
 gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
@@ -952,13 +949,9 @@ gboolean dt_history_copy_and_paste_on_image(const dt_imgid_t imgid,
     dt_ioppr_write_iop_order_list(iop_list, dest_imgid);
   }
 
-  gboolean ret_val = FALSE;
-  if(merge)
-    ret_val = _history_copy_and_paste_on_image_merge
-      (imgid, dest_imgid, ops, copy_iop_order, copy_full);
-  else
-    ret_val = _history_copy_and_paste_on_image_overwrite
-      (imgid, dest_imgid, ops, copy_iop_order, copy_full);
+  const gboolean ret_val = merge
+    ? _history_copy_and_paste_on_image_merge(imgid, dest_imgid, ops, copy_iop_order, copy_full)
+    : _history_copy_and_paste_on_image_overwrite(imgid, dest_imgid, ops, copy_iop_order, copy_full);
 
   if(iop_list)
   {
