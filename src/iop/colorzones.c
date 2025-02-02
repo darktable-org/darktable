@@ -2618,13 +2618,7 @@ void gui_init(dt_iop_module_t *self)
   g->edit_by_area = 0;
   g->display_mask = FALSE;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   // tabs
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-
   static dt_action_def_t notebook_def = { };
   g->channel_tabs = dt_ui_notebook_new(&notebook_def);
   dt_action_define_iop(self, NULL, N_("channel"),
@@ -2638,12 +2632,10 @@ void gui_init(dt_iop_module_t *self)
   gtk_notebook_set_current_page(g->channel_tabs, g->channel);
   g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page",
                    G_CALLBACK(_channel_tabs_switch_callback), self);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->channel_tabs), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new("   "), FALSE, FALSE, 0);
 
   // color pickers
   g->colorpicker = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_POINT_AREA,
-                                                hbox, IOP_CS_LCH);
+                                                NULL, IOP_CS_LCH);
   gtk_widget_set_tooltip_text
     (g->colorpicker,
      _("pick GUI color from image\nctrl+click or right-click to select an area"));
@@ -2652,7 +2644,7 @@ void gui_init(dt_iop_module_t *self)
                        g->colorpicker, &dt_action_def_toggle);
   g->colorpicker_set_values = dt_color_picker_new_with_cst(self,
                                                            DT_COLOR_PICKER_AREA,
-                                                           hbox, IOP_CS_LCH);
+                                                           NULL, IOP_CS_LCH);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker_set_values),
                                dtgtk_cairo_paint_colorpicker_set_values, 0, NULL);
   dt_gui_add_class(g->colorpicker_set_values, "dt_transparent_background");
@@ -2671,16 +2663,10 @@ void gui_init(dt_iop_module_t *self)
                                                0,
                                                "plugins/darkroom/colorzones/graphheight"));
 
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->area), TRUE, TRUE, 0);
-
-  GtkWidget *dabox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_widget_set_name(GTK_WIDGET(dabox), "iop-bottom-bar");
   g->bottom_area = gtk_drawing_area_new();
-  gtk_box_pack_start(GTK_BOX(dabox), GTK_WIDGET(g->bottom_area), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(dabox), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 0);
-
-  GtkWidget *hbox_select_by = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_vexpand(g->bottom_area, TRUE);
+  GtkWidget *dabox = dt_gui_vbox(g->bottom_area);
+  gtk_widget_set_name(GTK_WIDGET(dabox), "iop-bottom-bar");
 
   // edit by area
   gchar *label = N_("edit by area");
@@ -2690,7 +2676,6 @@ void gui_init(dt_iop_module_t *self)
                           PANGO_ELLIPSIZE_START);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->chk_edit_by_area), g->edit_by_area);
   gtk_widget_set_tooltip_text(g->chk_edit_by_area, _("edit the curve nodes by area"));
-  gtk_box_pack_start(GTK_BOX(hbox_select_by), g->chk_edit_by_area, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->chk_edit_by_area), "toggled",
                    G_CALLBACK(_edit_by_area_callback), self);
 
@@ -2701,9 +2686,12 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->bt_showmask), "toggled",
                    G_CALLBACK(_display_mask_callback), self);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_showmask), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox_select_by), g->bt_showmask, FALSE, FALSE, 0);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox_select_by, TRUE, TRUE, 0);
+  self->widget = dt_gui_vbox
+    (dt_gui_hbox(dt_gui_expand(g->channel_tabs), gtk_label_new("   "),
+                 g->colorpicker, g->colorpicker_set_values),
+     g->area, dabox,
+     dt_gui_hbox(dt_gui_expand(g->chk_edit_by_area), g->bt_showmask));
 
   // select by which dimension
   g->select_by = dt_bauhaus_combobox_from_params(self, "channel");
@@ -2753,7 +2741,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->interpolator, _("cubic spline"));
   dt_bauhaus_combobox_add(g->interpolator, _("centripetal spline"));
   dt_bauhaus_combobox_add(g->interpolator, _("monotonic spline"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->interpolator, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, g->interpolator);
   gtk_widget_set_tooltip_text(g->interpolator,
       _("change this method if you see oscillations or cusps in the curve\n"
         "- cubic spline is better to produce smooth curves but oscillates when nodes are too close\n"
