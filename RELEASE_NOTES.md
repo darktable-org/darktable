@@ -76,6 +76,22 @@ changes (where available).
 
 - Removed prefer performance over quality preference setting.
 
+- A workaround for old broken AMD opencl drivers that has been in
+  place for 12 years has been disabled by default. Hopefully more
+  recent drivers don't need it anymore and it caused problems with the
+  translation of the user interface during startup, causing part of it
+  to appear in English.  If you have problems with OpenCL that you
+  believe may be caused by this change, please do two things:
+
+    - Add the line opencl_force_c_locale=anything to your
+      ~/.config/darktable/darktablerc file.
+
+    - If that solves your problem, please report the issue to github
+      PR #xxxx, including information on the make of your GPU and the
+      version of your drivers. We can then for the next release either
+      by default reenable the workaround for drivers that need them,
+      or warn people with antiquated drivers that they need to update.
+
 ## Bug Fixes
 
 - N/A
