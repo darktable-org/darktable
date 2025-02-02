@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "imageio_tiff.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
@@ -364,7 +365,10 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   tiff_t t;
   uint16_t config;
   uint16_t photometric;
-  uint16_t inkset;
+
+  // This variable may not be assigned a value in TIFFGetField because
+  // the corresponding tag is optional, so we must initialize this variable.
+  uint16_t inkset = 0;
 
   t.image = img;
 
