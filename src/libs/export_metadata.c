@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2023 darktable developers.
+    Copyright (C) 2019-2025 darktable developers.
 
 
     darktable is free software: you can redistribute it and/or modify
@@ -16,18 +16,11 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
-#include "common/debug.h"
-#include "control/conf.h"
-#include "control/control.h"
-#include "control/signal.h"
 #include "dtgtk/button.h"
-#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/gtkentry.h"
 #include "imageio/imageio_module.h"
-#include "libs/lib.h"
 #include "libs/lib_api.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -264,9 +257,9 @@ static gboolean _focus_out_commit(GtkCellEditable *editable,
                                   GdkEvent        *event,
                                   gpointer         user_data)
 {
-    gtk_cell_editable_editing_done(editable);
-    gtk_cell_editable_remove_widget(editable);
-    return FALSE;
+  gtk_cell_editable_editing_done(editable);
+  gtk_cell_editable_remove_widget(editable);
+  return FALSE;
 }
 
 static void _formula_editing_started(GtkCellRenderer *renderer, GtkCellEditable *editable,
