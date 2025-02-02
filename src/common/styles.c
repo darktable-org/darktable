@@ -1004,9 +1004,11 @@ void dt_styles_apply_to_image(const char *name,
       "[dt_styles_apply_to_image] can't apply '%s' to ID=%d", name, imgid);
     return;
   }
+  dt_lock_image(imgid);
   dt_print(DT_DEBUG_DEV | DT_DEBUG_PIPE,
     "[dt_styles_apply_to_image] apply '%s' to ID=%d", name, imgid);
   _styles_apply_to_image_ext(name, duplicate, overwrite, imgid, TRUE);
+  dt_unlock_image(imgid);
 }
 
 void dt_styles_apply_to_dev(const char *name, const dt_imgid_t imgid)
