@@ -164,7 +164,8 @@ static void usercss_callback(GtkWidget *widget, gpointer user_data)
 static void font_size_changed_callback(GtkWidget *widget,
                                        gpointer user_data)
 {
-  dt_conf_set_float("font_size", gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
+  dt_conf_set_float("font_size",
+                    gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
   reload_ui_last_theme();
 }
 
@@ -185,6 +186,7 @@ static void use_sys_font_callback(GtkWidget *widget,
 {
   dt_conf_set_bool("use_system_font",
                    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+
   if(dt_conf_get_bool("use_system_font"))
     gtk_widget_set_state_flags(GTK_WIDGET(user_data), GTK_STATE_FLAG_INSENSITIVE, TRUE);
   else
@@ -195,18 +197,19 @@ static void use_sys_font_callback(GtkWidget *widget,
 
 static void save_usercss(GtkTextBuffer *buffer)
 {
-  //get file locations
-  char usercsspath[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 };
+  // get file locations
+  char usercsspath[PATH_MAX] = { 0 };
+  char configdir[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
   g_snprintf(usercsspath, sizeof(usercsspath), "%s/user.css", configdir);
 
-  //get the text
+  // get the text
   GtkTextIter start, end;
   gtk_text_buffer_get_start_iter(buffer, &start);
   gtk_text_buffer_get_end_iter(buffer, &end);
   gchar *usercsscontent = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
 
-  //write to file
+  // write to file
   GError *error = NULL;
   if(!g_file_set_contents(usercsspath, usercsscontent, -1, &error))
   {
@@ -227,12 +230,12 @@ static void save_usercss_callback(GtkWidget *widget,
 
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(tw->apply_toggle)))
   {
-    //reload the theme
+    // reload the theme
     reload_ui_last_theme();
   }
   else
   {
-    //toggle the apply button, which will also reload the theme
+    // toggle the apply button, which will also reload the theme
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(tw->apply_toggle), TRUE);
   }
 }
@@ -241,7 +244,7 @@ static void usercss_dialog_callback(GtkDialog *dialog,
                                     gint response_id,
                                     gpointer user_data)
 {
-  //just save the latest css but don't reload the theme
+  // just save the latest css but don't reload the theme
   dt_gui_themetweak_widgets_t *tw = (dt_gui_themetweak_widgets_t *)user_data;
   GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(tw->css_text_view));
   save_usercss(buffer);
@@ -285,14 +288,14 @@ static gboolean _remove_panel_config(gpointer key,
 {
   return (!strcmp(key, "ui/hide_tooltips")
           || (g_str_has_prefix(key, "plugins/")
-           && (g_str_has_suffix(key, "_visible")
-            || g_str_has_suffix(key, "_position")))
+              && (g_str_has_suffix(key, "_visible")
+                  || g_str_has_suffix(key, "_position")))
           || (strstr(key, "/ui/")
-           && !g_str_has_suffix(key, "border_size")
-           && (g_str_has_suffix(key, "_visible")
-            || g_str_has_suffix(key, "_size")
-            || g_str_has_suffix(key, "panel_collaps_state")
-            || g_str_has_suffix(key, "panels_collapse_controls"))));
+              && !g_str_has_suffix(key, "border_size")
+              && (g_str_has_suffix(key, "_visible")
+                  || g_str_has_suffix(key, "_size")
+                  || g_str_has_suffix(key, "panel_collaps_state")
+                  || g_str_has_suffix(key, "panels_collapse_controls"))));
 }
 
 static void _reset_panels_clicked(GtkButton *button, gpointer user_data)
@@ -348,7 +351,10 @@ static void init_tab_general(GtkWidget *dialog,
                    G_CALLBACK(language_callback), 0);
   gtk_widget_set_tooltip_text(labelev,  _("double-click to reset to the system language"));
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-  gtk_widget_set_tooltip_text(widget, _("set the language of the user interface. the system default is marked with an * \n(restart required)"));
+  gtk_widget_set_tooltip_text(widget,
+                              _("set the language of the user interface."
+                                " the system default is marked with an * \n"
+                                "(restart required)"));
   gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
   g_signal_connect(G_OBJECT(labelev), "button-press-event",
@@ -458,7 +464,9 @@ static void init_tab_general(GtkWidget *dialog,
                    G_CALLBACK(dpi_scaling_changed_callback), 0);
 
   GtkWidget *panel_reset = gtk_button_new_with_label(_("reset view panels"));
-  gtk_widget_set_tooltip_text(panel_reset, _("reset hidden panels, their sizes and selected modules in all views"));
+  gtk_widget_set_tooltip_text(panel_reset,
+                              _("reset hidden panels,"
+                                " their sizes and selected modules in all views"));
   g_signal_connect(panel_reset, "clicked",
                    G_CALLBACK(_reset_panels_clicked), NULL);
   gtk_grid_attach(GTK_GRID(grid), panel_reset, 0, line++, 1, 1);
@@ -506,7 +514,8 @@ static void init_tab_general(GtkWidget *dialog,
   gtk_box_pack_end(GTK_BOX(hbox), tw->save_button, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(usercssbox), hbox, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(tw->save_button,
-                              _("click to save and apply the CSS tweaks entered in this editor"));
+                              _("click to save and apply the CSS tweaks"
+                                " entered in this editor"));
   GtkWidget *button = gtk_button_new_with_label(_("?"));
   gtk_widget_set_tooltip_text(button, _("open help page for CSS tweaks"));
   dt_gui_add_help_link(button, "css_tweaks");
@@ -891,13 +900,19 @@ static void init_tab_presets(GtkWidget *stack)
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   GtkTreeView *tree = GTK_TREE_VIEW(gtk_tree_view_new());
   GtkTreeStore *model = gtk_tree_store_new(
-      P_N_COLUMNS, G_TYPE_INT /*rowid*/, G_TYPE_STRING /*operation*/,
+      P_N_COLUMNS, G_TYPE_INT /*rowid*/,
+      G_TYPE_STRING /*operation*/,
       G_TYPE_STRING /*module*/,
-      GDK_TYPE_PIXBUF /*editable*/, G_TYPE_STRING /*name*/,
-      G_TYPE_STRING /*model*/, G_TYPE_STRING /*maker*/,
-      G_TYPE_STRING /*lens*/, G_TYPE_STRING /*iso*/,
-      G_TYPE_STRING /*exposure*/, G_TYPE_STRING /*aperture*/,
-      G_TYPE_STRING /*focal length*/, GDK_TYPE_PIXBUF /*auto*/);
+      GDK_TYPE_PIXBUF /*editable*/,
+      G_TYPE_STRING /*name*/,
+      G_TYPE_STRING /*model*/,
+      G_TYPE_STRING /*maker*/,
+      G_TYPE_STRING /*lens*/,
+      G_TYPE_STRING /*iso*/,
+      G_TYPE_STRING /*exposure*/,
+      G_TYPE_STRING /*aperture*/,
+      G_TYPE_STRING /*focal length*/,
+      GDK_TYPE_PIXBUF /*auto*/);
   GtkCellRenderer *renderer;
   GtkTreeViewColumn *column;
 
@@ -1066,7 +1081,9 @@ static GtkTreeIter edited_iter;
 static void edit_preset_response(dt_gui_presets_edit_dialog_t *g)
 {
   if(!g->old_id)
+  {
     _delete_line_and_empty_parent(g->data, &edited_iter);
+  }
   else
   {
     GdkPixbuf *lock_pixbuf, *check_pixbuf;
@@ -1116,16 +1133,24 @@ static void tree_row_activated_presets(GtkTreeView *tree,
     gint rowid;
     gchar *name, *operation;
     GdkPixbuf *editable;
-    gtk_tree_model_get(model, &edited_iter, P_ROWID_COLUMN, &rowid,
-                       P_NAME_COLUMN, &name, P_OPERATION_COLUMN,
-                       &operation, P_EDITABLE_COLUMN, &editable, -1);
+    gtk_tree_model_get(model, &edited_iter,
+                       P_ROWID_COLUMN, &rowid,
+                       P_NAME_COLUMN, &name,
+                       P_OPERATION_COLUMN, &operation,
+                       P_EDITABLE_COLUMN, &editable,
+                       -1);
     if(editable == NULL)
+    {
       dt_gui_presets_show_edit_dialog(name, operation,
-                                      rowid, G_CALLBACK(edit_preset_response),
+                                      rowid,
+                                      G_CALLBACK(edit_preset_response),
                                       model, TRUE, TRUE, TRUE,
                                       GTK_WINDOW(_preferences_dialog));
+    }
     else
+    {
       g_object_unref(editable);
+    }
     g_free(name);
     g_free(operation);
   }
@@ -1155,8 +1180,12 @@ static gboolean tree_key_press_presets(GtkWidget *widget,
     gint rowid;
     gchar *name, *operation;
     GdkPixbuf *editable;
-    gtk_tree_model_get(model, &iter, P_ROWID_COLUMN, &rowid, P_NAME_COLUMN, &name,
-                       P_MODULE_COLUMN, &operation, P_EDITABLE_COLUMN, &editable, -1);
+    gtk_tree_model_get(model, &iter,
+                       P_ROWID_COLUMN, &rowid,
+                       P_NAME_COLUMN, &name,
+                       P_MODULE_COLUMN, &operation,
+                       P_EDITABLE_COLUMN, &editable,
+                       -1);
     if(editable == NULL)
     {
       if(dt_gui_presets_confirm_and_delete(name, operation, rowid))
@@ -1286,6 +1315,7 @@ static gint compare_rows_presets(GtkTreeModel *model,
 
   gtk_tree_model_get(model, a, P_MODULE_COLUMN, &a_text, -1);
   gtk_tree_model_get(model, b, P_MODULE_COLUMN, &b_text, -1);
+
   if(*a_text == '\0' && *b_text == '\0')
   {
     g_free(a_text);
@@ -1307,7 +1337,8 @@ static void
 _gui_preferences_bool_callback(GtkWidget *widget,
                                gpointer data)
 {
-  dt_conf_set_bool((char *)data, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+  dt_conf_set_bool((char *)data,
+                   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
 }
 
 void dt_gui_preferences_bool_reset(GtkWidget *widget)
@@ -1351,6 +1382,7 @@ GtkWidget *dt_gui_preferences_bool(GtkGrid *grid,
   GtkWidget *w = gtk_check_button_new();
   gtk_widget_set_name(w, key);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), dt_conf_get_bool(key));
+
   gtk_grid_attach(GTK_GRID(grid), labelev, swap ? (col + 1) : col, line, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), w, swap ? col : (col + 1), line, 1, 1);
   g_signal_connect(G_OBJECT(w), "toggled",
@@ -1364,7 +1396,8 @@ static void
 _gui_preferences_int_callback(GtkWidget *widget,
                               gpointer data)
 {
-  dt_conf_set_int((char *)data, gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
+  dt_conf_set_int((char *)data,
+                  gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
 }
 
 void dt_gui_preferences_int_reset(GtkWidget *widget)
