@@ -550,14 +550,16 @@ GtkWidget *(dt_gui_box_add)(const char *file, const int line, const char *functi
 #define dt_gui_box_add(box, ...) dt_gui_box_add(__FILE__, __LINE__, __FUNCTION__, GTK_BOX(box), (gpointer[]){ __VA_ARGS__, (gpointer)-1 })
 #define dt_gui_hbox(...) dt_gui_box_add(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0), __VA_ARGS__)
 #define dt_gui_vbox(...) dt_gui_box_add(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0), __VA_ARGS__)
+#define dt_gui_expand(widget) dt_gui_expand(GTK_WIDGET(widget))
+#define dt_gui_align_right(widget) dt_gui_align_right(GTK_WIDGET(widget))
 
-static inline GtkWidget *dt_gui_expand(GtkWidget *widget)
+static inline GtkWidget *(dt_gui_expand)(GtkWidget *widget)
 {
   gtk_widget_set_hexpand(widget, TRUE);
   return widget;
 }
 
-static inline GtkWidget *dt_gui_align_right(GtkWidget *widget)
+static inline GtkWidget *(dt_gui_align_right)(GtkWidget *widget)
 {
   gtk_widget_set_halign(widget, GTK_ALIGN_END);
   return dt_gui_expand(widget);

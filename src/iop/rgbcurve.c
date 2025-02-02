@@ -1489,8 +1489,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->autoscale,
                               _("choose between linked and independent channels."));
 
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-
   g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
   dt_action_define_iop(self, NULL, N_("channel"),
                        GTK_WIDGET(g->channel_tabs), &dt_action_def_tabs_rgb);
@@ -1499,13 +1497,11 @@ void gui_init(dt_iop_module_t *self)
   dt_ui_notebook_page(g->channel_tabs, N_("B"), _("curve nodes for b channel"));
   g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page",
                    G_CALLBACK(tab_switch_callback), self);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->channel_tabs), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), gtk_grid_new(), TRUE, TRUE, 0);
 
   // color pickers
   g->colorpicker = dt_color_picker_new(self,
                                        DT_COLOR_PICKER_POINT_AREA | DT_COLOR_PICKER_IO,
-                                       hbox);
+                                       NULL);
   gtk_widget_set_tooltip_text(g->colorpicker,
                               _("pick GUI color from image\n"
                                 "ctrl+click or right-click to select an area"));
@@ -1514,7 +1510,7 @@ void gui_init(dt_iop_module_t *self)
                        g->colorpicker, &dt_action_def_toggle);
   g->colorpicker_set_values = dt_color_picker_new(self,
                                                   DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_IO,
-                                                  hbox);
+                                                  NULL);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker_set_values),
                                dtgtk_cairo_paint_colorpicker_set_values, 0, NULL);
   dt_gui_add_class(g->colorpicker_set_values, "dt_transparent_background");
@@ -1531,8 +1527,6 @@ void gui_init(dt_iop_module_t *self)
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_height(0));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("curve"), GTK_WIDGET(g->area), NULL);
-
-  dt_gui_box_add(self->widget, g->area);
 
   // FIXME: that tooltip goes in the way of the numbers when you hover
   // a node to get a reading
@@ -1567,7 +1561,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->interpolator, _("cubic spline"));
   dt_bauhaus_combobox_add(g->interpolator, _("centripetal spline"));
   dt_bauhaus_combobox_add(g->interpolator, _("monotonic spline"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->interpolator, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->interpolator,
       _("change this method if you see oscillations or cusps in the curve\n"
         "- cubic spline is better to produce smooth curves but oscillates when nodes are too close\n"
@@ -1575,6 +1568,11 @@ void gui_init(dt_iop_module_t *self)
         "- monotonic is better for accuracy of pure analytical functions (log, gamma, exp)"));
   g_signal_connect(G_OBJECT(g->interpolator), "value-changed",
                    G_CALLBACK(interpolator_callback), self);
+
+  dt_gui_box_add(self->widget, dt_gui_hbox(dt_gui_expand(g->channel_tabs), 
+                                           dt_gui_expand(gtk_grid_new()),
+                                           g->colorpicker, g->colorpicker_set_values),
+                               g->area, g->interpolator);
 
   g->chk_compensate_middle_grey =
     dt_bauhaus_toggle_from_params(self, "compensate_middle_grey");
