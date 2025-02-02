@@ -260,9 +260,19 @@ static void _formula_edited(GtkCellRenderer *renderer, gchar *path, gchar *new_t
     gtk_list_store_set(d->liststore, &iter, DT_LIB_EXPORT_METADATA_COL_FORMULA, new_text, -1);
 }
 
+static gboolean _focus_out_commit(GtkCellEditable *editable,
+                                  GdkEvent        *event,
+                                  gpointer         user_data)
+{
+    gtk_cell_editable_editing_done(editable);
+    gtk_cell_editable_remove_widget(editable);
+    return FALSE;
+}
+
 static void _formula_editing_started(GtkCellRenderer *renderer, GtkCellEditable *editable,
                                      char *path, dt_lib_export_metadata_t *d)
 {
+  g_signal_connect(editable, "focus-out-event", G_CALLBACK(_focus_out_commit), NULL);
   dt_gtkentry_setup_completion(GTK_ENTRY(editable), dt_gtkentry_get_default_path_compl_list());
 }
 
