@@ -1106,7 +1106,7 @@ gboolean dt_masks_events_mouse_moved(dt_iop_module_t *module,
 {
   // if the module is disabled, formms aren't being shown, so there's no point
   // in passing along mouse events to them
-  if(!module->enabled)
+  if(!module || !module->enabled)
     return FALSE;
 
   // record mouse position even if there are no masks visible
