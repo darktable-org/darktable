@@ -610,8 +610,7 @@ void dt_gui_preferences_show()
   gtk_widget_show_all(_preferences_dialog);
 
   //open in the appropriate tab if currently in darkroom or lighttable view
-  const gchar *current_view =
-    darktable.view_manager->current_view->name(darktable.view_manager->current_view);
+  const gchar *current_view = dt_view_manager_name(darktable.view_manager);
 
   if(strcmp(current_view, _("darkroom")) == 0
      || strcmp(current_view, _("lighttable")) == 0)
