@@ -1112,13 +1112,6 @@ void dt_opencl_init(
   cl->error_count = 0;
   cl->print_statistics = print_statistics;
 
-  // work-around to fix a bug in some AMD OpenCL compilers, which
-  // would fail parsing certain numerical constants if locale is
-  // different from "C".  we save the current locale, set locale to
-  // "C", and restore the previous setting after OpenCL is initialized
-  char *locale = strdup(setlocale(LC_ALL, NULL));
-  setlocale(LC_ALL, "C");
-
   // we might want to show an opencl error
   char *logerror = NULL;
   const gboolean opencl_requested = dt_conf_get_bool("opencl");
@@ -1528,12 +1521,6 @@ finally:
   free(platform_name);
   free(platform_vendor);
   free(platform_key);
-
-  if(locale)
-  {
-    setlocale(LC_ALL, locale);
-    free(locale);
-  }
 
   dt_opencl_update_settings();
 }
@@ -2360,10 +2347,25 @@ static gboolean _opencl_build_program(const int dev,
                                       int loaded_cached)
 {
   if(prog < 0 || prog > DT_OPENCL_MAX_PROGRAMS) return TRUE;
+
+  // work-around to fix a bug in some AMD OpenCL compilers, which
+  // would fail parsing certain numerical constants if locale is
+  // different from "C".  we save the current locale, set locale to
+  // "C", and restore the previous setting after OpenCL is initialized
+  char *locale = strdup(setlocale(LC_ALL, NULL));
+  if(dt_conf_key_exists("opencl_force_c_locale"))
+    setlocale(LC_ALL, "C");
+
   dt_opencl_t *cl = darktable.opencl;
   cl_program program = cl->dev[dev].program[prog];
   cl_int err = (cl->dlocl->symbols->dt_clBuildProgram)
     (program, 1, &(cl->dev[dev].devid), cl->dev[dev].options, NULL, NULL);
+
+  if(locale)
+  {
+    setlocale(LC_ALL, locale);
+    free(locale);
+  }
 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
