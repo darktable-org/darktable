@@ -4473,6 +4473,32 @@ GtkWidget *(dt_gui_box_add)(const char *file, const int line, const char *functi
   return GTK_WIDGET(box);
 }
 
+static gboolean _focus_out_commit(GtkCellEditable *editable,
+                                  GdkEvent *event,
+                                  gpointer user_data)
+{
+  gtk_cell_editable_editing_done(editable);
+  gtk_cell_editable_remove_widget(editable);
+  return FALSE;
+}
+
+static void _commit_on_focus_loss_callback(GtkCellRenderer *renderer,
+                                           GtkCellEditable *editable,
+                                           gchar *path,
+                                           gpointer user_data)
+{
+  GtkCellEditable **active_editable = user_data;
+  if(active_editable)
+    g_set_weak_pointer(active_editable, editable);
+  
+  g_signal_connect(editable, "focus-out-event", G_CALLBACK(_focus_out_commit), NULL);
+}
+
+void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer, GtkCellEditable **active_editable)
+{
+  g_signal_connect(renderer, "editing-started", G_CALLBACK(_commit_on_focus_loss_callback), (gpointer)active_editable);
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

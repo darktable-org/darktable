@@ -1902,23 +1902,6 @@ static void _effect_changed(GtkCellRendererCombo *combo,
   dt_shortcuts_save(NULL, FALSE);
 }
 
-static gboolean _focus_out_commit(GtkCellEditable *editable,
-                                  GdkEvent        *event,
-                                  gpointer         user_data)
-{
-    gtk_cell_editable_editing_done(editable);
-    gtk_cell_editable_remove_widget(editable);
-    return FALSE;
-}
-
-static void _editing_started (GtkCellRenderer *renderer,
-                              GtkCellEditable *editable,
-                              char            *path,
-                              gpointer         user_data)
-{
-  g_signal_connect(editable, "focus-out-event", G_CALLBACK(_focus_out_commit), NULL);
-}
-
 static void _speed_edited(GtkCellRendererText *cell,
                           const gchar *path_string,
                           const gchar *new_text,
@@ -2871,7 +2854,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   g_object_set(renderer, "adjustment", gtk_adjustment_new(1, -1000, 1000, .01, 1, 10),
                          "digits", 3, "xalign", 1.0, NULL);
   g_signal_connect(renderer, "edited", G_CALLBACK(_speed_edited), filtered_shortcuts);
-  g_signal_connect(renderer, "editing-started", G_CALLBACK(_editing_started), NULL);
+  dt_gui_commit_on_focus_loss(renderer, NULL);
   _add_prefs_column(shortcuts_view, renderer, _("speed"), SHORTCUT_VIEW_SPEED);
 
   renderer = gtk_cell_renderer_combo_new();
@@ -2882,7 +2865,6 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
     gtk_list_store_insert_with_values(instances, NULL, -1, 0, relative, -1);
   g_object_set(renderer, "model", instances, "text-column", 0, "has-entry", FALSE, NULL);
   g_signal_connect(renderer, "edited", G_CALLBACK(_instance_edited), filtered_shortcuts);
-  g_signal_connect(renderer, "editing-started", G_CALLBACK(_editing_started), NULL);
   _add_prefs_column(shortcuts_view, renderer, _("instance"), SHORTCUT_VIEW_INSTANCE);
 
   // Adding the shortcuts treeview to its containers
