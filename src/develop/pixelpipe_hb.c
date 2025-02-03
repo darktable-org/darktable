@@ -1498,7 +1498,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   if(dt_atomic_get_int(&pipe->shutdown))
     return TRUE;
 
-  const dt_hash_t hash = dt_dev_pixelpipe_cache_hash(pipe->image.id, roi_out, pipe, module ? module->iop_order : 0);
+  dt_hash_t hash = dt_dev_pixelpipe_cache_hash(pipe->image.id, roi_out, pipe, pos);
 
   // we do not want data from the preview pixelpipe cache
   // for gamma so we can compute the final scope
@@ -2375,7 +2375,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         */
         important_cl =
            (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
-           && (pipe->type & DT_DEV_PIXELPIPE_BASIC)
+           && pipe->type & DT_DEV_PIXELPIPE_BASIC
            && dev->gui_attached
            && ((module == dt_dev_gui_module())
                 || darktable.develop->history_last_module == module
@@ -2586,6 +2586,9 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
       if((pipe->type & DT_DEV_PIXELPIPE_FULL) && last_history)
         darktable.develop->history_last_module = NULL;
     }
+
+    if(pipe->type & DT_DEV_PIXELPIPE_FULL)
+      darktable.develop->history_last_module = NULL;
 
     if(module->expanded
        && (pipe->type & DT_DEV_PIXELPIPE_BASIC)
@@ -2980,7 +2983,7 @@ restart:
 
   // terminate
   dt_pthread_mutex_lock(&pipe->backbuf_mutex);
-  pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(pipe->image.id, &roi, pipe, INT_MAX);
+  pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(pipe->image.id, &roi, pipe, pos);
 
   //FIXME lock/release cache line instead of copying
   if(pipe->type & DT_DEV_PIXELPIPE_SCREEN)
@@ -3176,7 +3179,6 @@ float *dt_dev_get_raster_mask(dt_dev_pixelpipe_iop_t *piece,
           if(!_skip_piece_on_tags(it_piece))
           {
             if(it_piece->module->distort_mask
-              && it_piece->enabled
               // hack against pipes not using finalscale
               && !(dt_iop_module_is(it_piece->module->so, "finalscale")
                     && it_piece->processed_roi_in.width == 0
