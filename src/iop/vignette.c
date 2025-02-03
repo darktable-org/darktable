@@ -818,7 +818,7 @@ void process(dt_iop_module_t *self,
       if(weight > 0.0f)
       {
         // Then apply falloff vignette
-        if (brightness < 0.0f)
+        if(brightness < 0.0f)
         {
           const float falloff = (1.0f + (weight * brightness));
           for_each_channel(c)

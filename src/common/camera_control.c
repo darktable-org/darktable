@@ -2065,20 +2065,20 @@ static void _camera_poll_events(const dt_camctl_t *c,
            "[camera_control] Camera configuration change event '%s', lets update internal "
            "configuration cache", (char*)data);
         // Update individual properties with gp_camera_get_single_config
-        if (strstr((char*)data, "PTP Property") && strstr((char*)data, "changed"))
+        if(strstr((char*)data, "PTP Property") && strstr((char*)data, "changed"))
         {
           // Use the property name if provided (GUI elements use this
           // name and won't update if the numeric code is used
           // instead)
-          if (strstr((char*)data, "changed,"))
+          if(strstr((char*)data, "changed,"))
           {
             char * nameStart = strchr(data + strlen("PTP Property "), '"');
-            if (nameStart != NULL)
+            if(nameStart != NULL)
             {
               // Skip quotation marks
               nameStart += 1;
               const char *nameEnd = strchr(nameStart, '"');
-              if (nameEnd != NULL)
+              if(nameEnd != NULL)
               {
                 char *name = g_try_malloc0(nameEnd - nameStart + 1);
                 if(name)
@@ -2259,7 +2259,7 @@ static void _camera_configuration_single_update(const dt_camctl_t *c,
   dt_camera_t *cam = (dt_camera_t *)camera;
   dt_pthread_mutex_lock(&cam->config_lock);
   CameraWidget *remote;
-  if (gp_camera_get_single_config(camera->gpcam, name, &remote, c->gpcontext) != GP_OK)
+  if(gp_camera_get_single_config(camera->gpcam, name, &remote, c->gpcontext) != GP_OK)
   {
     dt_print(DT_DEBUG_CAMCTL,
              "[camera_control] failed to get config value for property %s", name);

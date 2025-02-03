@@ -453,7 +453,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup_printf("%d", params->data->exif_iso);
   else if(_has_prefix(variable, "NL") && g_strcmp0(params->jobcode, "infos") == 0)
   {
-    if (params->use_html_newline)
+    if(params->use_html_newline)
       result = g_strdup_printf("&#13;");
     else
       result = g_strdup_printf("\n");

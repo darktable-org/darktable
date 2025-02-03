@@ -233,7 +233,7 @@ void free_params(dt_imageio_module_storage_t *self,
 #ifdef _WIN32
 static LPWSTR _convert_to_widechar(UINT codepage, LPSTR str)
 {
-  if (!str) return NULL;
+  if(!str) return NULL;
 
   DWORD length = MultiByteToWideChar(codepage, 0, str, -1, NULL, 0);
   LPWSTR wc_str = g_malloc(length * sizeof(WCHAR));

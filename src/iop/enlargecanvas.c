@@ -253,7 +253,7 @@ int distort_backtransform(dt_iop_module_t *self,
   const int border_size_l = bw * pl;
   const int border_size_t = bh * pt;
 
-  if (border_size_l > 0 || border_size_t > 0)
+  if(border_size_l > 0 || border_size_t > 0)
   {
     float *const pts = DT_IS_ALIGNED(points);
 

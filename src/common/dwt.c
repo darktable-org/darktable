@@ -240,12 +240,12 @@ static void dwt_wavelet_decompose(float *img,
   dt_iop_roi_t roi = { .x = 0, .y = 0, .height = p->height, .width = p->width };
   size_t padded_size;
   const int do_merge = p->merge_from_scale > 0;
-  if (!dt_iop_alloc_image_buffers(NULL, &roi, &roi,
-                                  4 | DT_IMGSZ_INPUT, &buffer[1],
-                                  4 | DT_IMGSZ_INPUT | DT_IMGSZ_CLEARBUF, &layers,
-                                  4 | DT_IMGSZ_WIDTH | DT_IMGSZ_PERTHREAD, &temp, &padded_size,
-                                  (do_merge ? 4 | DT_IMGSZ_INPUT | DT_IMGSZ_CLEARBUF : 0), &merged_layers,
-                                  0, NULL))
+  if(!dt_iop_alloc_image_buffers(NULL, &roi, &roi,
+                                 4 | DT_IMGSZ_INPUT, &buffer[1],
+                                 4 | DT_IMGSZ_INPUT | DT_IMGSZ_CLEARBUF, &layers,
+                                 4 | DT_IMGSZ_WIDTH | DT_IMGSZ_PERTHREAD, &temp, &padded_size,
+                                 (do_merge ? 4 | DT_IMGSZ_INPUT | DT_IMGSZ_CLEARBUF : 0), &merged_layers,
+                                 0, NULL))
   {
     dt_print(DT_DEBUG_ALWAYS,
              "[dwt] unable to alloc working memory, skipping wavelet decomposition");

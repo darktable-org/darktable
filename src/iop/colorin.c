@@ -625,7 +625,7 @@ static inline void _apply_tone_curves(dt_aligned_pixel_t pixel,
   // assures unbounded color management without extrapolation.  Should not be called
   // for linear profiles, as there is no need to apply a tone curve to them.
   for(int c = 0; c < 3; c++)
-    if (d->lut[c][0] >= 0.0f)
+    if(d->lut[c][0] >= 0.0f)
     {
       if(__builtin_expect(pixel[c] < 1.0f, 1))
         pixel[c] = _lerp_lut(d->lut[c], pixel[c]);
@@ -940,7 +940,7 @@ static void process_cmatrix_fastpath(dt_iop_module_t *self,
   for(size_t chunk = 0; chunk < nthreads; chunk++)
   {
     size_t start = chunksize * dt_get_thread_num();
-    if (start >= npixels) continue;  // handle case when chunksize is < 4*nthreads and last thread has no work
+    if(start >= npixels) continue;  // handle case when chunksize is < 4*nthreads and last thread has no work
     size_t end = MIN(start + chunksize, npixels);
     if(clipping)
       _cmatrix_fastpath_clipping(out + 4*start, in + 4*start,
@@ -1066,7 +1066,7 @@ static void process_cmatrix_proper(dt_iop_module_t *self,
   for(size_t chunk = 0; chunk < nthreads; chunk++)
   {
     size_t start = chunksize * dt_get_thread_num();
-    if (start >= npixels) continue;  // handle case when chunksize is < 4*nthreads and last thread has no work
+    if(start >= npixels) continue;  // handle case when chunksize is < 4*nthreads and last thread has no work
     size_t end = MIN(start + chunksize, npixels);
     if(clipping)
       _cmatrix_proper_clipping(out + 4*start, in + 4*start,

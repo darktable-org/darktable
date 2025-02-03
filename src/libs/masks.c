@@ -1325,7 +1325,7 @@ static void _lib_masks_list_recurs(GtkTreeStore *treestore,
     // we just add it to the tree
     GtkTreeIter child;
 
-    if (toplevel)
+    if(toplevel)
     {
       // we are within a group
       gtk_tree_store_prepend(treestore, &child, toplevel);

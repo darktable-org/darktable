@@ -541,7 +541,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
   else if(dt_is_valid_colormatrix(d->cmatrix[0][0]))
   {
-    if (!_transform_cmatrix(d, out, (float*)ivoid, npixels))
+    if(!_transform_cmatrix(d, out, (float*)ivoid, npixels))
       process_fastpath_apply_tonecurves(self, piece, ovoid, roi_out);
   }
   else

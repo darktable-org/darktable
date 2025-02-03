@@ -295,7 +295,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
     // not check and reject the image if it is an animation, but only read
     // the first frame. It hardly makes sense to process such an image, but
     // perhaps the user intends to use darkyable as a DAM for such images.
-    if (status == JXL_DEC_FULL_IMAGE)
+    if(status == JXL_DEC_FULL_IMAGE)
       break;    // Terminate processing
 
   } // end of processing loop

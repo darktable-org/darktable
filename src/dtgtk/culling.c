@@ -1541,7 +1541,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
 
     deviation_tmp = _absmul(planned_total_width_tmp / (float)planned_total_height_tmp, screen_aspect_r);
 
-  } while (deviation_tmp < deviation);
+  } while(deviation_tmp < deviation);
 
   int total_height = 0;
   int total_width = 0;

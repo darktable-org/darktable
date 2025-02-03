@@ -1709,7 +1709,7 @@ dt_thumbnail_t *dt_thumbnail_new(const int width,
 
   // let's see if the images are selected or active or mouse_overed
   _dt_active_images_callback(NULL, thumb);
-  if (sel == DT_THUMBNAIL_SELECTION_UNKNOWN)
+  if(sel == DT_THUMBNAIL_SELECTION_UNKNOWN)
     _dt_selection_changed_callback(NULL, thumb);
   else
     thumb->selected = sel;

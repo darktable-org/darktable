@@ -72,7 +72,7 @@ gchar *dt_util_localize_segmented_name(const char *s)
 {
   gchar **split = g_strsplit(s, "|", 0);
   gchar *localized = NULL;
-  if (split && split[0])
+  if(split && split[0])
   {
     gsize loc_len = 1 + strlen(dt_util_localize_string(split[0]));
     for(int i = 1; split[i] != NULL; i++)

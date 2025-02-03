@@ -517,19 +517,19 @@ void process(dt_iop_module_t *self,
     case DT_SCALE_MAINMENU_ADVANCED:
       wbase = iw;
       hbase = ih;
-      if (data->scale_img == DT_SCALE_IMG_WIDTH)
+      if(data->scale_img == DT_SCALE_IMG_WIDTH)
       {
         sbase = iw;
         scale = (data->scale_svg == DT_SCALE_SVG_WIDTH)
           ? sbase / dimension.width : sbase / dimension.height;
       }
-      else if (data->scale_img == DT_SCALE_IMG_HEIGHT)
+      else if(data->scale_img == DT_SCALE_IMG_HEIGHT)
       {
         sbase = ih;
         scale = (data->scale_svg == DT_SCALE_SVG_WIDTH)
           ? sbase / dimension.width : sbase / dimension.height;
       }
-      else if (data->scale_img == DT_SCALE_IMG_LARGER)
+      else if(data->scale_img == DT_SCALE_IMG_LARGER)
       {
         sbase = (iw > ih) ? iw : ih;
         scale = (data->scale_svg == DT_SCALE_SVG_WIDTH)
@@ -585,17 +585,17 @@ void process(dt_iop_module_t *self,
       svg_calc_heightfromwidth = FALSE;
       break;
     case DT_SCALE_MAINMENU_ADVANCED:
-      if (data->scale_img == DT_SCALE_IMG_WIDTH)
+      if(data->scale_img == DT_SCALE_IMG_WIDTH)
       {
         svg_calc_base = iw * uscale;
         svg_calc_heightfromwidth = (data->scale_svg == DT_SCALE_SVG_WIDTH) ? TRUE : FALSE;
       }
-      else if (data->scale_img == DT_SCALE_IMG_HEIGHT)
+      else if(data->scale_img == DT_SCALE_IMG_HEIGHT)
       {
         svg_calc_base = ih * uscale;
         svg_calc_heightfromwidth = (data->scale_svg == DT_SCALE_SVG_WIDTH) ? TRUE : FALSE;
       }
-      else if (data->scale_img == DT_SCALE_IMG_LARGER)
+      else if(data->scale_img == DT_SCALE_IMG_LARGER)
       {
         svg_calc_base = ((iw > ih) ? iw : ih) * uscale;
         svg_calc_heightfromwidth = (data->scale_svg == DT_SCALE_SVG_WIDTH) ? TRUE : FALSE;

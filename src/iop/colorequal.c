@@ -825,7 +825,7 @@ static void _guide_with_chromaticity(float *const restrict UV,
   // Compute a and b the params of the guided filters
   float *const restrict ds_a = dt_alloc_align_float(4 * ds_pixels);
   float *const restrict ds_b = dt_alloc_align_float(2 * ds_pixels);
-  if (!ds_a || !ds_b)
+  if(!ds_a || !ds_b)
   {
     dt_free_align(ds_a);
     dt_free_align(ds_b);

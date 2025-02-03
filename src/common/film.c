@@ -99,7 +99,7 @@ char *dt_sqlite3_escape_wildcards(const char *s)
   for(const char *t = s; *t; t++)
   {
     count++;
-    if (*t == '%' || *t == '_' || *t == '~')
+    if(*t == '%' || *t == '_' || *t == '~')
       count++;
   }
   char *result = malloc(count+1);
