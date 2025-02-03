@@ -2500,9 +2500,9 @@ static float _calculate_new_scroll_zoom_tscale(const int up,
     SIZE_LARGE
   } image_size;
 
-  if (tscalefit <= 1.0f)
+  if(tscalefit <= 1.0f)
     image_size = SIZE_LARGE;
-  else if (tscalefit <= 2.0f)
+  else if(tscalefit <= 2.0f)
     image_size = SIZE_MEDIUM;
   else
     image_size = SIZE_SMALL;
@@ -2517,11 +2517,11 @@ static float _calculate_new_scroll_zoom_tscale(const int up,
   float tscalenew = up ? tscaleold * step : tscaleold / step;
 
   // when zooming, secure we include 2:1, 1:1 and FIT levels anyway in the zoom stops
-  if ((tscalenew - tscalefit) * (tscaleold - tscalefit) < 0 && image_size != SIZE_SMALL)
+  if((tscalenew - tscalefit) * (tscaleold - tscalefit) < 0 && image_size != SIZE_SMALL)
     tscalenew = tscalefit;
-  else if ((tscalenew - 1.0f) * (tscaleold - 1.0f) < 0)
+  else if((tscalenew - 1.0f) * (tscaleold - 1.0f) < 0)
     tscalenew = 1.0f;
-  else if ((tscalenew - 2.0f) * (tscaleold - 2.0f) < 0)
+  else if((tscalenew - 2.0f) * (tscaleold - 2.0f) < 0)
     tscalenew = 2.0f;
 
   float tscalemax, tscalemin;            // the zoom soft limits

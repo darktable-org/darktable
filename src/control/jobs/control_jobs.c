@@ -1309,7 +1309,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
           for(GList *file_iter = files; file_iter; file_iter = g_list_next(file_iter))
           {
             delete_status = delete_file_from_disk(file_iter->data, &delete_on_error);
-            if (delete_status != _DT_DELETE_STATUS_DELETED)
+            if(delete_status != _DT_DELETE_STATUS_DELETED)
               break;
           }
           g_list_free_full(files, g_free);

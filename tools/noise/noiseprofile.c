@@ -32,20 +32,20 @@ kth_smallest(elem_type a[], int n, int k)
   elem_type x ;
 
   l=0 ; m=n-1 ;
-  while (l<m) {
+  while(l<m) {
     x=a[2*k+1] ;
     i=l ;
     j=m ;
     do {
-      while (a[2*i+1]<x) i++ ;
-      while (x<a[2*j+1]) j-- ;
-      if (i<=j) {
+      while(a[2*i+1]<x) i++ ;
+      while(x<a[2*j+1]) j-- ;
+      if(i<=j) {
         ELEM_SWAP(a[2*i+1],a[2*j+1]) ;
         i++ ; j-- ;
       }
-    } while (i<=j) ;
-    if (j<k) l=i ;
-    if (k<i) m=j ;
+    } while(i<=j) ;
+    if(j<k) l=i ;
+    if(k<i) m=j ;
   }
   return a[2*k+1] ;
 }

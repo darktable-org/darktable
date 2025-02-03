@@ -100,7 +100,7 @@ static void _build_style_submenus(GtkMenuShell *menu,
   }
   else
   {
-    if (!sm)
+    if(!sm)
     {
       // we need a sub-menu, but it doesn't exist yet
       sm = (GtkMenu*)gtk_menu_new();

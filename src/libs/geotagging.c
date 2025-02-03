@@ -1374,7 +1374,7 @@ static void _refresh_image_datetime(dt_lib_module_t *self)
   _display_datetime(&d->dt0, datetime, FALSE, self);
   if(locked)
   {
-    if (datetime)
+    if(datetime)
     {
       GDateTime *datetime2 = g_date_time_add(datetime, d->offset);
       _new_datetime(datetime2, self);

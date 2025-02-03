@@ -480,7 +480,7 @@ static inline void _compute_downsampling_kernel(const struct dt_interpolation *i
   int num_taps = *taps = (int)((w - t) / outoinratio);
   itor->maketaps(kernel, num_taps, itor->width, t, outoinratio);
   // compute the kernel norm if requested
-  if (norm)
+  if(norm)
   {
     float n  = 0.0f;
     for(size_t i = 0; i < num_taps; i++)

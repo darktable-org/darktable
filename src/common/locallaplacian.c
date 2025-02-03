@@ -399,7 +399,7 @@ void local_laplacian_internal(
   for(int l=1;l<=last_level;l++)
   {
     padded[l] = dt_alloc_align_float((size_t)dl(w,l) * dl(h,l));
-    if (!padded[l])
+    if(!padded[l])
     {
       success = FALSE;
       break;
@@ -411,7 +411,7 @@ void local_laplacian_internal(
   for(int l=0;l<=last_level;l++)
   {
     output[l] = dt_alloc_align_float((size_t)dl(w,l) * dl(h,l));
-    if (!output[l])
+    if(!output[l])
     {
       success = FALSE;
       break;

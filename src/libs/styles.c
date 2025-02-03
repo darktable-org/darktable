@@ -616,7 +616,7 @@ static void _import_clicked(GtkWidget *w, dt_lib_styles_t *d)
     {
       /* extract name from xml file */
       gchar *bname = dt_get_style_name(filename->data);
-      if (!bname)
+      if(!bname)
         continue;
 
       // check if style exists

@@ -3039,7 +3039,7 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
     {
       dest_list = above ? dest_list->next : dest_list->prev;
       dest = dest_list->data;
-    } while (!dest->expander || !gtk_widget_get_visible(dest->expander));
+    } while(!dest->expander || !gtk_widget_get_visible(dest->expander));
   }
 
   if(dest == src) return TRUE;

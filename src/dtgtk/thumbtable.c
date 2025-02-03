@@ -1046,7 +1046,7 @@ void dt_thumbtable_zoom_changed(dt_thumbtable_t *table,
 
 static gboolean _event_scroll_compressed(gpointer user_data)
 {
-  if (!user_data) return FALSE;
+  if(!user_data) return FALSE;
   dt_thumbtable_t *table = user_data;
 
   if(table->scroll_value != 0)
@@ -1063,7 +1063,7 @@ static gboolean _event_scroll_compressed(gpointer user_data)
 
     // for fractional scrolling, scroll by a number of pixels proportionate to
     // the delta (which is a float value for most touch pads and some mice)
-    if (dt_conf_get_bool("thumbtable_fractional_scrolling"))
+    if(dt_conf_get_bool("thumbtable_fractional_scrolling"))
     {
       // scale scroll increment for an appropriate scroll speed
       delta *= 50;
@@ -1605,7 +1605,7 @@ static gboolean _event_button_release(GtkWidget *widget,
 
   // in some case, image_over_id can get out of sync at the end of dragging
   // this happen esp. if the pointer as been out of the center area during drag
-  if (dt_control_get_mouse_over_id() != table->drag_initial_imgid
+  if(dt_control_get_mouse_over_id() != table->drag_initial_imgid
       && table->drag_thumb)
   {
     dt_control_set_mouse_over_id(table->drag_initial_imgid);

@@ -4355,7 +4355,7 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
 void dt_gui_collapsible_section_set_label(dt_gui_collapsible_section_t *cs,
                                           const char *label)
 {
-  if (!cs || !cs->label || !label)
+  if(!cs || !cs->label || !label)
     return;
   gtk_label_set_text(GTK_LABEL(cs->label), label);
   dt_control_queue_redraw_widget(cs->label);
@@ -4445,7 +4445,7 @@ void dt_gui_simulate_button_event(GtkWidget *widget,
   event.device =
     gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
 
-  if (event.window != NULL)
+  if(event.window != NULL)
   {
     g_object_ref(event.window);
   }
@@ -4453,7 +4453,7 @@ void dt_gui_simulate_button_event(GtkWidget *widget,
   // send signal
   g_signal_emit_by_name(G_OBJECT(widget), "button-press-event", &event, &res, NULL);
 
-  if (event.window != NULL)
+  if(event.window != NULL)
   {
     g_object_unref(event.window);
   }

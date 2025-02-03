@@ -853,7 +853,7 @@ static float *build_lookup_table(const int distance,
 {
   float complex *clookup = dt_alloc_align_type(float complex, (distance + 2));
   float *lookup = dt_alloc_align_float((size_t)(distance + 2));
-  if (!clookup || !lookup)
+  if(!clookup || !lookup)
   {
     dt_free_align(clookup);
     dt_free_align(lookup);

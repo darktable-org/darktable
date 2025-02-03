@@ -460,7 +460,7 @@ static gboolean _match(const char *value, const char *pattern)
   {
     if(pat[k] == '%')
       pat[k] = '*';
-    else if (pat[k] == '_')
+    else if(pat[k] == '_')
       pat[k] = '.';
     k++;
   }

@@ -275,7 +275,7 @@ int legacy_params(dt_iop_module_t *self,
 
     memcpy(n, o, sizeof(struct dt_iop_borders_params_v3_t));
 
-    if (n->aspect == DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE && !n->max_border_size)
+    if(n->aspect == DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE && !n->max_border_size)
     {
       // the legacy behaviour is, when a constant border is used and the
       // max_border_size flag is set, the width is always used as basis.
@@ -442,7 +442,7 @@ void modify_roi_out(dt_iop_module_t *self,
   const gboolean is_constant_border = d->aspect == DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE;
 
   dt_iop_basis_t basis = d->basis;
-  if (basis == DT_IOP_BORDERS_BASIS_AUTO)
+  if(basis == DT_IOP_BORDERS_BASIS_AUTO)
   {
     // automatic/legacy/default behaviour:
     // for a constant border be sure to base the computation on the
@@ -509,19 +509,19 @@ void modify_roi_out(dt_iop_module_t *self,
     float border_width = (float)*basis_in * (1.0f / (1.0f - size) - 1.0f);
 
     // then make sure we add that amount to the shorter side,
-    if (basis == DT_IOP_BORDERS_BASIS_WIDTH && image_aspect < 1.0f)
+    if(basis == DT_IOP_BORDERS_BASIS_WIDTH && image_aspect < 1.0f)
       DT_IOP_BORDERS_ASSIGN_BASIS(height);
-    else if (basis == DT_IOP_BORDERS_BASIS_HEIGHT && image_aspect > 1.0f)
+    else if(basis == DT_IOP_BORDERS_BASIS_HEIGHT && image_aspect > 1.0f)
       DT_IOP_BORDERS_ASSIGN_BASIS(width);
 
     // but add it to the longer side instead,
     // if the selected aspect ratio would cut off the image.
-    if (basis == DT_IOP_BORDERS_BASIS_WIDTH && image_aspect < aspect)
+    if(basis == DT_IOP_BORDERS_BASIS_WIDTH && image_aspect < aspect)
       DT_IOP_BORDERS_ASSIGN_BASIS(height);
-    else if (basis == DT_IOP_BORDERS_BASIS_HEIGHT && image_aspect > aspect)
+    else if(basis == DT_IOP_BORDERS_BASIS_HEIGHT && image_aspect > aspect)
       DT_IOP_BORDERS_ASSIGN_BASIS(width);
 
-    if (basis == DT_IOP_BORDERS_BASIS_HEIGHT)
+    if(basis == DT_IOP_BORDERS_BASIS_HEIGHT)
       aspect = 1.0f / aspect;
 
     *basis_out = roundf((float)*basis_in + border_width);

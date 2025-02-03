@@ -24,14 +24,14 @@
 
 
 static char* _CFStringCopyUTF8String(CFStringRef aString) {
-  if (aString == NULL) {
+  if(aString == NULL) {
     return NULL;
   }
 
   CFIndex length = CFStringGetLength(aString);
   CFIndex maxSize = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1;
   char *buffer = malloc(maxSize);
-  if (CFStringGetCString(aString, buffer, maxSize, kCFStringEncodingUTF8))
+  if(CFStringGetCString(aString, buffer, maxSize, kCFStringEncodingUTF8))
   {
     return buffer;
   }
@@ -132,7 +132,7 @@ gboolean dt_pwstorage_apple_keychain_set(const backend_apple_keychain_context_t 
 
     OSStatus search_result = SecItemCopyMatching(search_query, NULL);
 
-    if (search_result == errSecItemNotFound)
+    if(search_result == errSecItemNotFound)
     {
       // create new entry
       CFMutableDictionaryRef query = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, NULL, NULL);
@@ -184,15 +184,18 @@ GHashTable *dt_pwstorage_apple_keychain_get(const backend_apple_keychain_context
   OSStatus res = SecItemCopyMatching(query, (CFTypeRef *) &items);
   CFRelease(query);
 
-  if (res == errSecSuccess) {
-    for (int i = 0; i < CFArrayGetCount(items); i++) {
+  if(res == errSecSuccess)
+  {
+    for(int i = 0; i < CFArrayGetCount(items); i++)
+    {
       CFDictionaryRef item = CFArrayGetValueAtIndex(items, i);
 
       const CFStringRef kc_server = CFDictionaryGetValue(item, kSecAttrServer);
       const CFStringRef kc_account = CFDictionaryGetValue(item, kSecAttrAccount);
 
       // retrieve the complete item to get the password
-      CFMutableDictionaryRef pw_query = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, NULL, NULL);
+      CFMutableDictionaryRef pw_query =
+        CFDictionaryCreateMutable(kCFAllocatorDefault, 0, NULL, NULL);
       CFDictionaryAddValue(pw_query, kSecClass, kSecClassInternetPassword);
       CFDictionaryAddValue(pw_query, kSecAttrLabel, label);
       CFDictionaryAddValue(pw_query, kSecAttrServer, kc_server);
@@ -204,9 +207,11 @@ GHashTable *dt_pwstorage_apple_keychain_get(const backend_apple_keychain_context
       OSStatus res_pw = SecItemCopyMatching(pw_query, (CFTypeRef *) &password_data);
       CFRelease(pw_query);
 
-      if (res_pw == errSecSuccess)
+      if(res_pw == errSecSuccess)
       {
-        CFStringRef kc_password = CFStringCreateFromExternalRepresentation(NULL, password_data, kCFStringEncodingUTF8);
+        CFStringRef kc_password =
+          CFStringCreateFromExternalRepresentation(NULL, password_data,
+                                                   kCFStringEncodingUTF8);
 
         gchar *server = _CFStringCopyUTF8String(kc_server);
         gchar *username = _CFStringCopyUTF8String(kc_account);
@@ -231,7 +236,8 @@ GHashTable *dt_pwstorage_apple_keychain_get(const backend_apple_keychain_context
         g_object_unref(json_generator);
         g_object_unref(json_builder);
 
-        dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_apple_keychain_get] reading (%s, %s)", server, json_data);
+        dt_print(DT_DEBUG_PWSTORAGE,
+                 "[pwstorage_apple_keychain_get] reading (%s, %s)", server, json_data);
 
         g_hash_table_insert(table, g_strdup(server), g_strdup(json_data));
 
@@ -256,4 +262,3 @@ GHashTable *dt_pwstorage_apple_keychain_get(const backend_apple_keychain_context
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

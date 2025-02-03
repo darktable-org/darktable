@@ -813,7 +813,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
     }
     else if(!xmlStrcmp(name, (const xmlChar *)"GPSLatitudeRef"))
     {
-      if (g_str_equal("N", (const char *)value))
+      if(g_str_equal("N", (const char *)value))
       {
         data->lat_ref = 1;
         if(!isnan(data->lat))
@@ -832,7 +832,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
     }
     else if(!xmlStrcmp(name, (const xmlChar *)"GPSLongitudeRef"))
     {
-      if (g_str_equal("E", (const char *)value))
+      if(g_str_equal("E", (const char *)value))
       {
         data->lon_ref = 1;
         if(!isnan(data->lon))

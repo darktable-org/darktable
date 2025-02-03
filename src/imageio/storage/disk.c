@@ -199,7 +199,7 @@ static void button_clicked(GtkWidget *widget,
   gchar *old = g_strdup(gtk_entry_get_text(d->entry));
   gchar *dirname;
   gchar *filename;
-  if (g_file_test(old, G_FILE_TEST_IS_DIR))
+  if(g_file_test(old, G_FILE_TEST_IS_DIR))
   {
     // only a directory was specified, no filename
     // so we use the default $(FILE.NAME) for filename.
