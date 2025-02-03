@@ -1019,6 +1019,8 @@ void dt_styles_apply_to_dev(const char *name, const dt_imgid_t imgid)
     return;
   }
 
+  dt_pthread_mutex_lock(&darktable.dev_threadsafe);
+
   dt_print(DT_DEBUG_DEV | DT_DEBUG_PIPE,
     "[dt_styles_apply_to_dev] apply '%s' to darkroom ID=%d", name, imgid);
 
@@ -1029,6 +1031,9 @@ void dt_styles_apply_to_dev(const char *name, const dt_imgid_t imgid)
 
   /* apply style on image and reload*/
   _styles_apply_to_image_ext(name, FALSE, FALSE, imgid, FALSE);
+
+  dt_pthread_mutex_unlock(&darktable.dev_threadsafe);
+
   dt_dev_reload_image(darktable.develop, imgid);
 
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
