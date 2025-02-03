@@ -757,23 +757,6 @@ static void _tree_duplicate_shape(GtkButton *button, dt_lib_module_t *self)
   g_list_free_full(items, (GDestroyNotify)gtk_tree_path_free);
 }
 
-static gboolean _focus_out_commit(GtkCellEditable *editable,
-                                  GdkEvent        *event,
-                                  gpointer         user_data)
-{
-    gtk_cell_editable_editing_done(editable);
-    gtk_cell_editable_remove_widget(editable);
-    return FALSE;
-}
-
-static void _tree_cell_editing_started(GtkCellRenderer *renderer,
-                                       GtkCellEditable *editable,
-                                       char            *path,
-                                       gpointer         user_data)
-{
-  g_signal_connect(editable, "focus-out-event", G_CALLBACK(_focus_out_commit), NULL);
-}
-
 static void _tree_cell_edited(GtkCellRendererText *cell,
                               gchar *path_string,
                               gchar *new_text,
@@ -1870,7 +1853,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_column_add_attribute(col, renderer, "text", TREE_TEXT);
   gtk_tree_view_column_add_attribute(col, renderer, "editable", TREE_EDITABLE);
   g_signal_connect(renderer, "edited", (GCallback)_tree_cell_edited, self);
-  g_signal_connect(renderer, "editing-started", G_CALLBACK(_tree_cell_editing_started), NULL);
+  dt_gui_commit_on_focus_loss(renderer, NULL);
   renderer = gtk_cell_renderer_pixbuf_new();
   gtk_tree_view_column_pack_end(col, renderer, FALSE);
   gtk_tree_view_column_set_attributes(col, renderer, "pixbuf", TREE_IC_USED, NULL);
