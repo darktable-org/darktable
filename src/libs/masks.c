@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2024 darktable developers.
+    Copyright (C) 2013-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,18 +19,14 @@
 #include "develop/masks.h"
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
-#include "common/debug.h"
-#include "common/styles.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/preferences.h"
-#include "gui/styles.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 
@@ -1857,6 +1853,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_column_add_attribute(col, renderer, "text", TREE_TEXT);
   gtk_tree_view_column_add_attribute(col, renderer, "editable", TREE_EDITABLE);
   g_signal_connect(renderer, "edited", (GCallback)_tree_cell_edited, self);
+  dt_gui_commit_on_focus_loss(renderer, NULL);
   renderer = gtk_cell_renderer_pixbuf_new();
   gtk_tree_view_column_pack_end(col, renderer, FALSE);
   gtk_tree_view_column_set_attributes(col, renderer, "pixbuf", TREE_IC_USED, NULL);

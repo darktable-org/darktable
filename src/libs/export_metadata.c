@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2023 darktable developers.
+    Copyright (C) 2019-2025 darktable developers.
 
 
     darktable is free software: you can redistribute it and/or modify
@@ -16,18 +16,11 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
-#include "common/debug.h"
-#include "control/conf.h"
-#include "control/control.h"
-#include "control/signal.h"
 #include "dtgtk/button.h"
-#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/gtkentry.h"
 #include "imageio/imageio_module.h"
-#include "libs/lib.h"
 #include "libs/lib_api.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -260,14 +253,10 @@ static void _formula_edited(GtkCellRenderer *renderer, gchar *path, gchar *new_t
     gtk_list_store_set(d->liststore, &iter, DT_LIB_EXPORT_METADATA_COL_FORMULA, new_text, -1);
 }
 
-static void _formula_editing_started(GtkCellRenderer *renderer, GtkCellEditable *editable,
-                                     char *path, dt_lib_export_metadata_t *d)
-{
-  dt_gtkentry_setup_completion(GTK_ENTRY(editable), dt_gtkentry_get_default_path_compl_list());
-}
-
 char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const gboolean ondisk)
 {
+  GtkCellEditable *active_editable = NULL;
+
   dt_lib_export_metadata_t *d = calloc(1, sizeof(dt_lib_export_metadata_t));
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
@@ -366,7 +355,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   renderer = gtk_cell_renderer_text_new();
   g_object_set(renderer, "editable", TRUE, NULL);
   g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(_formula_edited), (gpointer)d);
-  g_signal_connect(renderer, "editing-started" , G_CALLBACK(_formula_editing_started), (gpointer)d);
+  dt_gui_commit_on_focus_loss(renderer, &active_editable);
   col = gtk_tree_view_column_new_with_attributes(_("formula"), renderer, "text", 2, NULL);
   gtk_tree_view_append_column(view, col);
   gtk_widget_set_tooltip_text(GTK_WIDGET(view),
@@ -444,6 +433,9 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   char *newlist = metadata_presets;
   if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
   {
+    if(active_editable)
+      gtk_cell_editable_editing_done(active_editable);
+
     const gint newflags = (
                     (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(exiftag)) ? DT_META_EXIF : 0) |
                     (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dtmetadata)) ? DT_META_METADATA : 0) |

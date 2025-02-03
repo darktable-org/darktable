@@ -570,6 +570,9 @@ void dt_gui_simulate_button_event(GtkWidget *widget,
                                   const GdkEventType eventtype,
                                   const int button);
 
+// Setup auto-commit on focus loss for editable renderers
+void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer, GtkCellEditable **active_editable);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif /* __cplusplus */
