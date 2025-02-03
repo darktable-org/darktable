@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,11 +19,9 @@
 #include "gui/accelerators.h"
 #include "common/action.h"
 #include "common/darktable.h"
-#include "common/debug.h"
 #include "common/file_location.h"
 #include "common/utility.h"
 #include "control/control.h"
-#include "develop/blend.h"
 #include "gui/presets.h"
 #include "dtgtk/expander.h"
 #include "bauhaus/bauhaus.h"
@@ -31,9 +29,6 @@
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <math.h>
-#ifdef GDK_WINDOWING_QUARTZ
-#include "osx/osx.h"
-#endif
 
 typedef struct dt_shortcut_t
 {
@@ -2859,6 +2854,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   g_object_set(renderer, "adjustment", gtk_adjustment_new(1, -1000, 1000, .01, 1, 10),
                          "digits", 3, "xalign", 1.0, NULL);
   g_signal_connect(renderer, "edited", G_CALLBACK(_speed_edited), filtered_shortcuts);
+  dt_gui_commit_on_focus_loss(renderer, NULL);
   _add_prefs_column(shortcuts_view, renderer, _("speed"), SHORTCUT_VIEW_SPEED);
 
   renderer = gtk_cell_renderer_combo_new();
