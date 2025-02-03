@@ -902,7 +902,7 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
   if(roi_out->width < 4 || roi_out->height < 4)
   {
     dt_print_pipe(DT_DEBUG_PIPE,
-      "insane data", piece->pipe, self, DT_DEVICE_NONE, roi_in, roi_out);
+      "safety check", piece->pipe, self, DT_DEVICE_NONE, roi_in, roi_out);
 
     roi_out->x = roi_in->x;
     roi_out->y = roi_in->y;
