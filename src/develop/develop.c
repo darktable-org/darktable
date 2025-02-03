@@ -2906,7 +2906,7 @@ void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
 gboolean dt_dev_is_current_image(const dt_develop_t *dev,
                                  const dt_imgid_t imgid)
 {
-  return (dev->image_storage.id == imgid) ? TRUE : FALSE;
+  return dev && (dev->image_storage.id == imgid);
 }
 
 static dt_dev_proxy_exposure_t *_dev_exposure_proxy_available(dt_develop_t *dev)
