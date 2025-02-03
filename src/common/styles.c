@@ -867,8 +867,8 @@ void _styles_apply_to_image_ext(const char *name,
     dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 1");
 
     dt_print(DT_DEBUG_IOPORDER,
-             "[styles_apply_to_image_ext] Apply style on image `%s' id %i, history size %i",
-             dev_dest->image_storage.filename, newimgid, dev_dest->history_end);
+             "[styles_apply_to_image_ext] Apply style on ID=%d, history size %i",
+             newimgid, dev_dest->history_end);
 
     // go through all entries in style
     // clang-format off
@@ -997,13 +997,30 @@ void dt_styles_apply_to_image(const char *name,
                               const gboolean overwrite,
                               const dt_imgid_t imgid)
 {
+  if(!dt_is_valid_imgid(imgid)
+    || ((dt_view_get_current() == DT_VIEW_DARKROOM) && dt_dev_is_current_image(darktable.develop, imgid)))
+  {
+    dt_print(DT_DEBUG_DEV | DT_DEBUG_PIPE,
+      "[dt_styles_apply_to_image] can't apply '%s' to ID=%d", name, imgid);
+    return;
+  }
+  dt_print(DT_DEBUG_DEV | DT_DEBUG_PIPE,
+    "[dt_styles_apply_to_image] apply '%s' to ID=%d", name, imgid);
   _styles_apply_to_image_ext(name, duplicate, overwrite, imgid, TRUE);
 }
 
 void dt_styles_apply_to_dev(const char *name, const dt_imgid_t imgid)
 {
-  if(!darktable.develop || !dt_is_valid_imgid(darktable.develop->image_storage.id))
+  if(!dt_is_valid_imgid(imgid)
+   || !((dt_view_get_current() == DT_VIEW_DARKROOM) && dt_dev_is_current_image(darktable.develop, imgid)))
+  {
+    dt_print(DT_DEBUG_DEV | DT_DEBUG_PIPE,
+      "[dt_styles_apply_to_dev] can't apply '%s' to ID=%d", name, imgid);
     return;
+  }
+
+  dt_print(DT_DEBUG_DEV | DT_DEBUG_PIPE,
+    "[dt_styles_apply_to_dev] apply '%s' to darkroom ID=%d", name, imgid);
 
   /* write current history changes so nothing gets lost */
   dt_dev_write_history(darktable.develop);
