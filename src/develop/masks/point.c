@@ -117,6 +117,7 @@ static int _point_events_mouse_scrolled(dt_iop_module_t *module,
                                          dt_masks_form_gui_t *gui,
                                          const int index)
 {
+  /*
   const float max_mask_border =
     form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 1.0f;
   const float max_mask_size =
@@ -198,6 +199,7 @@ static int _point_events_mouse_scrolled(dt_iop_module_t *module,
     }
     return 1;
   }
+  */
   return 0;
 }
 
@@ -351,33 +353,6 @@ static int _point_events_button_pressed(dt_iop_module_t *module,
       gui2->form_selected = TRUE; // we also want to be selected after button released
 
       dt_masks_select_form(module, dt_masks_get_from_id(darktable.develop, form->formid));
-    }
-    //spot and retouch manage creation_continuous in their own way
-    if(gui->creation_continuous
-       && (!crea_module
-           || (!dt_iop_module_is(crea_module->so, "spots")
-               && !dt_iop_module_is(crea_module->so, "retouch"))))
-    {
-      if(crea_module)
-      {
-        dt_iop_gui_blend_data_t *bd = crea_module->blend_data;
-        for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
-          if(bd->masks_type[n] == form->type)
-            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), TRUE);
-
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
-        dt_masks_form_t *newform = dt_masks_create(form->type);
-        dt_masks_change_form_gui(newform);
-        darktable.develop->form_gui->creation_module = crea_module;
-        darktable.develop->form_gui->creation_continuous = TRUE;
-        darktable.develop->form_gui->creation_continuous_module = crea_module;
-      }
-      else
-      {
-        dt_masks_form_t *form_new = dt_masks_create(form->type);
-        dt_masks_change_form_gui(form_new);
-        darktable.develop->form_gui->creation_module = gui->creation_continuous_module;
-      }
     }
 
     return 1;
@@ -543,6 +518,7 @@ static int _point_events_mouse_moved(dt_iop_module_t *module,
     dt_control_queue_redraw_center();
     return 1;
   }
+  /*
   else if(gui->point_dragging >= 1)
   {
     const float max_mask_size =
@@ -575,6 +551,7 @@ static int _point_events_mouse_moved(dt_iop_module_t *module,
     dt_control_queue_redraw_center();
     return 1;
   }
+  */
   else if(!gui->creation)
   {
     const float as = dt_masks_sensitive_dist(zoom_scale);
@@ -1174,215 +1151,46 @@ static int _point_get_mask_roi(const dt_iop_module_t *const restrict module,
                                 const dt_iop_roi_t *const roi,
                                 float *const restrict buffer)
 {
-  double start1 = dt_get_debug_wtime();
-  double start2 = start1;
+  // double start1 = dt_get_debug_wtime();
+  // double start2 = start1;
 
   // we get the point parameters
-  dt_masks_point_circle_t *point = form->points->data;
+  dt_dev_pixelpipe_t* p = piece->pipe;
+  dt_masks_point_circle_t *circle = form->points->data;
   const int wi = piece->pipe->iwidth, hi = piece->pipe->iheight;
-  const float centerx = point->center[0] * wi;
-  const float centery = point->center[1] * hi;
-  const int mindim = MIN(wi, hi);
-  const float radius2 = point->radius * mindim * point->radius * mindim;
-  const float total = (point->radius + point->border) * mindim;
-  const float total2 = total * total;
-  const float border2 = total2 - radius2;
 
-  // we create a buffer of grid points for later interpolation: higher
-  // speed and reduced memory footprint; we match size of buffer to
-  // bounding box around the shape
-  const int w = roi->width;
-  const int h = roi->height;
-  const int px = roi->x;
-  const int py = roi->y;
-  const float iscale = 1.0f / roi->scale;
-  // scale dependent resolution
-  const int grid = CLAMP((10.0f * roi->scale + 2.0f) / 3.0f, 1, 4);
-  const int gw = (w + grid - 1) / grid + 1;  // grid dimension of total roi
-  const int gh = (h + grid - 1) / grid + 1;  // grid dimension of total roi
 
-  // initialize output buffer with zero
-  memset(buffer, 0, sizeof(float) * w * h);
-
-  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] point init took %0.04f sec",
-           form->name, dt_get_lap_time(&start2));
-
-  // we look at the outer point of the shape - no effects outside of
-  // this point; we need many points as we do not know how the point
-  // might get distorted in the pixelpipe
-  const size_t circpts = dt_masks_roundup(MIN(360, 2 * M_PI * total2), 8);
-  float *const restrict circ = dt_alloc_align_float(circpts * 2);
-  if(circ == NULL) return 0;
-
-  DT_OMP_FOR(if(circpts/8 > 1000))
-  for(int n = 0; n < circpts / 8; n++)
-  {
-    const float phi = (2.0f * M_PI * n) / circpts;
-    const float x = total * cosf(phi);
-    const float y = total * sinf(phi);
-    const float cx = centerx;
-    const float cy = centery;
-    const int index_x = 2 * n * 8;
-    const int index_y = 2 * n * 8 + 1;
-    // take advantage of symmetry
-    circ[index_x] = cx + x;
-    circ[index_y] = cy + y;
-    circ[index_x + 2] = cx + x;
-    circ[index_y + 2] = cy - y;
-    circ[index_x + 4] = cx - x;
-    circ[index_y + 4] = cy + y;
-    circ[index_x + 6] = cx - x;
-    circ[index_y + 6] = cy - y;
-    circ[index_x + 8] = cx + y;
-    circ[index_y + 8] = cy + x;
-    circ[index_x + 10] = cx + y;
-    circ[index_y + 10] = cy - x;
-    circ[index_x + 12] = cx - y;
-    circ[index_y + 12] = cy + x;
-    circ[index_x + 14] = cx - y;
-    circ[index_y + 14] = cy - x;
-  }
-
-  // we transform the outer point from input image coordinates to current point in pixelpipe
-  if(!dt_dev_distort_transform_plus(module->dev, piece->pipe, module->iop_order,
-                                    DT_DEV_TRANSFORM_DIR_BACK_INCL, circ,
-                                    circpts))
-  {
-    dt_free_align(circ);
-    return 0;
-  }
-
-  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] point outline took %0.04f sec",
-           form->name, dt_get_lap_time(&start2));
-
-  // we get the min/max values ...
-  float xmin = FLT_MAX, ymin = FLT_MAX, xmax = FLT_MIN, ymax = FLT_MIN;
-  for(int n = 0; n < circpts; n++)
-  {
-    // just in case that transform throws surprising values
-    if(!(dt_isnormal(circ[2 * n]) && dt_isnormal(circ[2 * n + 1]))) continue;
-
-    xmin = MIN(xmin, circ[2 * n]);
-    xmax = MAX(xmax, circ[2 * n]);
-    ymin = MIN(ymin, circ[2 * n + 1]);
-    ymax = MAX(ymax, circ[2 * n + 1]);
-  }
-
-#if 0
-  printf("xmin %f, xmax %f, ymin %f, ymax %f\n", xmin, xmax, ymin, ymax);
-  printf("wi %d, hi %d, iscale %f\n", wi, hi, iscale);
-  printf("w %d, h %d, px %d, py %d\n", w, h, px, py);
-#endif
-
-  // ... and calculate the bounding box with a bit of reserve
-  const int bbxm = CLAMP((int)floorf(xmin / iscale - px) / grid - 1, 0, gw - 1);
-  const int bbXM = CLAMP((int)ceilf(xmax / iscale - px) / grid + 2, 0, gw - 1);
-  const int bbym = CLAMP((int)floorf(ymin / iscale - py) / grid - 1, 0, gh - 1);
-  const int bbYM = CLAMP((int)ceilf(ymax / iscale - py) / grid + 2, 0, gh - 1);
-  const int bbw = bbXM - bbxm + 1;
-  const int bbh = bbYM - bbym + 1;
-
-#if 0
-  printf("bbxm %d, bbXM %d, bbym %d, bbYM %d\n", bbxm, bbXM, bbym, bbYM);
-  printf("gw %d, gh %d, bbw %d, bbh %d\n", gw, gh, bbw, bbh);
-#endif
-
-  dt_free_align(circ);
-
-  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] point bounding box took %0.04f sec",
-           form->name, dt_get_lap_time(&start2));
-
-  // check if there is anything to do at all; only if width and height
-  // of bounding box is 2 or greater the shape lies inside of roi and
-  // requires action
-  if(bbw <= 1 || bbh <= 1)
-    return 1;
-
-  float *const restrict points = dt_alloc_align_float((size_t)bbw * bbh * 2);
-  if(points == NULL) return 0;
-
-  // we populate the grid points in module coordinates
-  DT_OMP_FOR(collapse(2) if(bbw*bbh > 50000))
-  for(int j = bbym; j <= bbYM; j++)
-    for(int i = bbxm; i <= bbXM; i++)
-    {
-      const size_t index = (size_t)(j - bbym) * bbw + i - bbxm;
-      points[index * 2] = (grid * i + px) * iscale;
-      points[index * 2 + 1] = (grid * j + py) * iscale;
+  if (p->has_proxy){
+    size_t n_masks = p->n_masks;
+    size_t stride = p->proxy_width * p->proxy_height;
+    for (int i = 0; i < roi->width * roi->height; i++){
+      buffer[i] = 0.0f;
     }
-
-  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] point grid took %0.04f sec", form->name, dt_get_lap_time(&start2));
-
-  // we back transform all these points to the input image coordinates
-  if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, module->iop_order,
-                                        DT_DEV_TRANSFORM_DIR_BACK_INCL, points,
-                                        (size_t)bbw * bbh))
-  {
-    dt_free_align(points);
-    return 0;
-  }
-
-  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] point transform took %0.04f sec", form->name,
-           dt_get_lap_time(&start2));
-
-  // we calculate the mask values at the transformed points;
-  // for results: re-use the points array
-  DT_OMP_FOR(collapse(2) if(bbh*bbw > 50000) num_threads(MIN(dt_get_num_threads(), (h*w)/20000)))
-  for(int j = 0; j < bbh; j++)
-    for(int i = 0; i < bbw; i++)
-    {
-      const size_t index = (size_t)j * bbw + i;
-      // find the square of the distance from the center
-      const float l2 = sqf(points[2 * index] - centerx)
-        + sqf(points[2 * index + 1] - centery);
-      // quadratic falloff between the point's radius and the radius
-      // of the outside of the feathering
-      const float ratio = (total2 - l2) / border2;
-      // enforce 1.0 inside the point and 0.0 outside the feathering
-      const float f = CLAMP(ratio, 0.0f, 1.0f);
-      points[2*index] = f * f;
+    for (int mask_i = 0; mask_i < n_masks; mask_i++){
+      size_t mask_x = (size_t)(circle->center[0] * wi);
+      size_t mask_y = (size_t)(circle->center[1] * hi);
+      if (p->proxy_data[mask_i * stride + mask_y* p->proxy_width + mask_x] == 0)
+        continue;
+      for (int y = 0; y < p->proxy_height; y++)
+      {
+        if (y >= roi->height)
+          continue;
+        for (int x = 0; x < p->proxy_width; x ++)
+        {
+          if ( x >= roi->width)
+            continue;
+          buffer[x + y * roi->width] += p->proxy_data[mask_i * stride + y * p->proxy_width + x];
+        }
+      }
     }
-
-  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] point draw took %0.04f sec", form->name,
-           dt_get_lap_time(&start2));
-
-  // we fill the pre-initialized output buffer by interpolation;
-  // we only need to take the contents of our bounding box into account
-  const int endx = MIN(w, bbXM * grid);
-  const int endy = MIN(h, bbYM * grid);
-  DT_OMP_FOR()
-  for(int j = bbym * grid; j < endy; j++)
-  {
-    const int jj = j % grid;
-    const int mj = j / grid - bbym;
-    for(int i = bbxm * grid; i < endx; i++)
-    {
-      const int ii = i % grid;
-      const int mi = i / grid - bbxm;
-      const size_t mindex = (size_t)mj * bbw + mi;
-      buffer[(size_t)j * w + i]
-          = (points[mindex * 2] * (grid - ii) * (grid - jj)
-             + points[(mindex + 1) * 2] * ii * (grid - jj)
-             + points[(mindex + bbw) * 2] * (grid - ii) * jj
-             + points[(mindex + bbw + 1) * 2] * ii * jj)
-            / (grid * grid);
+    for (int i = 0; i < roi->width * roi->height; i++){
+      if (buffer[i] > 0)
+        buffer[i] = 1.0f;
+      else
+        buffer[i] = 0.0f;
     }
+    // return 0;
   }
-
-  dt_free_align(points);
-
-  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] point fill took %0.04f sec",
-           form->name, dt_get_lap_time(&start2));
-  dt_print(DT_DEBUG_MASKS | DT_DEBUG_PERF,
-           "[masks %s] point total render took %0.04f sec", form->name,
-           dt_get_lap_time(&start1));
 
   return 1;
 }
@@ -1390,12 +1198,6 @@ static int _point_get_mask_roi(const dt_iop_module_t *const restrict module,
 static GSList *_point_setup_mouse_actions(const struct dt_masks_form_t *const form)
 {
   GSList *lm = NULL;
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
-                                     0, _("[POINT] change size"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
-                                     GDK_SHIFT_MASK, _("[POINT] change feather size"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL,
-                                     GDK_CONTROL_MASK, _("[POINT] change opacity"));
   return lm;
 }
 
@@ -1419,8 +1221,7 @@ static void _point_set_hint_message(const dt_masks_form_gui_t *const gui,
 {
   // point has same controls on creation and on edit
   g_snprintf(msgbuf, msgbuf_len,
-             _("<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
-               "<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
+             _("click to add"));
 }
 
 static void _point_duplicate_points(dt_develop_t *dev,

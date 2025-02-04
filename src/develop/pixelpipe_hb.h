@@ -27,6 +27,8 @@
 #include "develop/pixelpipe_cache.h"
 #include "imageio/imageio_common.h"
 
+#include "onnxruntime_c_api.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -195,6 +197,18 @@ typedef struct dt_dev_pixelpipe_t
   GList *forms;
   // the masks generated in the pipe for later reusal are inside dt_dev_pixelpipe_iop_t
   gboolean store_all_raster_masks;
+
+  // used for ai masking
+  // masks generated?
+  gboolean has_proxy;
+  
+  // number of masks
+  size_t n_masks;
+  // content of thte masks
+  uint8_t* proxy_data;
+  // mask sizes
+  size_t proxy_width, proxy_height;
+
 } dt_dev_pixelpipe_t;
 
 struct dt_develop_t;
