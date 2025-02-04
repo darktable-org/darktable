@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024 darktable developers.
+    Copyright (C) 2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,14 +19,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/darktable.h"
-#include "common/datetime.h"
-#include "common/debug.h"
-#include "common/film.h"
-#include "common/history.h"
-#include "common/iop_order.h"
-#include "common/map_locations.h"
 #include "common/metadata.h"
-#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -34,7 +27,6 @@
 #include "dtgtk/range.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "gui/preferences_dialogs.h"
 #include "libs/collect.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
@@ -43,7 +35,6 @@
 #include <gio/gunixmounts.h>
 #endif
 #ifdef GDK_WINDOWING_QUARTZ
-#include "osx/osx.h"
 #endif
 
 #include <locale.h>
@@ -898,26 +889,6 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
 
   _popup_add_item(spop, _("metadata"), 0, TRUE, NULL, NULL, self, 0.0);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_TAG);
-
-  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-  for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
-  {
-    dt_metadata_t *metadata = iter->data;
-    if(!metadata->internal && metadata->visible)
-    {
-      const gchar *metadata_name = dt_metadata_get_tag_subkey(metadata->tagname);
-      _popup_add_item(spop,
-                      metadata_name,
-                      DT_COLLECTION_PROP_METADATA + metadata->key,
-                      FALSE,
-                      G_CALLBACK(_event_append_rule),
-                      rule,
-                      self,
-                      0.5);
-    }
-  }
-  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
-
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_RATING_RANGE);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_RATING);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_COLORLABEL);
@@ -977,16 +948,6 @@ static void _populate_rules_combo(GtkWidget *w)
 
   dt_bauhaus_combobox_add_section(w, _("metadata"));
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TAG);
-
-  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-  for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
-  {
-    dt_metadata_t *metadata = iter->data;
-    if(!metadata->internal && metadata->visible)
-      ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + metadata->key);
-  }
-  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
-  
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING_RANGE);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);
@@ -1654,16 +1615,6 @@ static void _topbar_populate_rules_combo(GtkWidget *w, dt_lib_filtering_t *d)
   dt_bauhaus_combobox_add_section(w, _("metadata"));
   nb = dt_bauhaus_combobox_length(w);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TAG);
-
-  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-  for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
-  {
-    dt_metadata_t *metadata = iter->data;
-    if(!metadata->internal && metadata->visible)
-      ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + metadata->key);
-  }
-  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
-  
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING_RANGE);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);

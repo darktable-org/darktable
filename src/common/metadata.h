@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 #pragma once
 
 #include "common/darktable.h"
-#include "gui/gtk.h"
 
 G_BEGIN_DECLS
 
@@ -34,9 +33,9 @@ typedef struct dt_metadata_t
   uint32_t display_order;
 } dt_metadata_t;
 
-// we need a max number of metadata fields to maintain the enum in
-// src/common/collection.h
-#define DT_METADATA_MAX_NUMBER 50
+// for compatibility we need to keep the number of metadata fields we had
+// before PR #18036
+#define DT_METADATA_LEGACY_NUMBER 9
 
 typedef enum dt_metadata_signal_t
 {
