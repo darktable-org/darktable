@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,13 +23,11 @@
 #include "common/datetime.h"
 #include "common/debug.h"
 #include "common/film.h"
-#include "common/history.h"
 #include "common/map_locations.h"
 #include "common/metadata.h"
 #include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
-#include "control/jobs.h"
 #include "dtgtk/button.h"
 #include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
@@ -2192,9 +2190,9 @@ static void _list_view(dt_lib_collect_rule_t *dr)
         break;
 
       default:
-        if(property >= DT_COLLECTION_PROP_METADATA && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_MAX_NUMBER)
+        if(property >= DT_COLLECTION_PROP_METADATA_OFFSET)
         {
-          const int keyid = property - DT_COLLECTION_PROP_METADATA;
+          const int keyid = property - DT_COLLECTION_PROP_METADATA_OFFSET;
           // clang-format off
           snprintf(query, sizeof(query),
                     "SELECT"
@@ -2387,8 +2385,7 @@ static void _list_view(dt_lib_collect_rule_t *dr)
          || property == DT_COLLECTION_PROP_MODULE
          || property == DT_COLLECTION_PROP_ORDER
          || property == DT_COLLECTION_PROP_RATING
-         || (property >= DT_COLLECTION_PROP_METADATA
-             && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_MAX_NUMBER)))
+         || property >= DT_COLLECTION_PROP_METADATA_OFFSET))
   {
     gchar *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
     if(g_str_has_suffix(needle, "%"))
@@ -3187,8 +3184,7 @@ static void _metadata_changed(gpointer instance,
   // update collection if metadata have been hidden or a metadata collection is active
   const int prop = _combo_get_active_collection(d->rule[d->active_rule].combo);
   if(type == DT_METADATA_SIGNAL_PREF_CHANGED
-     || (prop >= DT_COLLECTION_PROP_METADATA
-         && prop < DT_COLLECTION_PROP_METADATA + DT_METADATA_MAX_NUMBER))
+     || prop >= DT_COLLECTION_PROP_METADATA_OFFSET)
   {
     dt_collection_update_query(darktable.collection,
                                DT_COLLECTION_CHANGE_RELOAD,
@@ -3346,9 +3342,9 @@ static void _populate_collect_combo(GtkWidget *w)
       if(!metadata->internal && metadata->visible)
         // metadata name is user defined, so no localization here
         dt_bauhaus_combobox_add_full(w, metadata->name,
-                                    DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
-                                    GUINT_TO_POINTER(DT_COLLECTION_PROP_METADATA + metadata->key + 1),
-                                    NULL, TRUE);
+                                     DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                     GUINT_TO_POINTER(DT_COLLECTION_PROP_METADATA_OFFSET + metadata->key + 1),
+                                     NULL, TRUE);
     }
     dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
@@ -4024,7 +4020,7 @@ void init(struct dt_lib_module_t *self)
   {
     dt_metadata_t *metadata = iter->data;
     if(!metadata->internal && metadata->visible)
-      luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_METADATA + metadata->key);
+      luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_METADATA_OFFSET + metadata->key);
   }
   dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 

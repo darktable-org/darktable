@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024 darktable developers.
+    Copyright (C) 2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -132,11 +132,11 @@ GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent, gpointer metadata_activate
     }
 
     gtk_list_store_set(liststore,
-                      &iter,
-                      DT_METADATA_TAGS_COL_XMP, tagname,
-                      DT_METADATA_TAGS_COL_TYPE, type,
-                      DT_METADATA_TAGS_COL_VISIBLE, TRUE,
-                      -1);
+                       &iter,
+                       DT_METADATA_TAGS_COL_XMP, tagname,
+                       DT_METADATA_TAGS_COL_TYPE, type,
+                       DT_METADATA_TAGS_COL_VISIBLE, TRUE,
+                       -1);
 
     if(type)
     {
