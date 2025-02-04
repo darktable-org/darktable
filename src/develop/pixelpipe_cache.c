@@ -126,13 +126,13 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(const dt_imgid_t imgid,
   for(int k = 0; k < position && pieces; k++)
   {
     dt_dev_pixelpipe_iop_t *piece = pieces->data;
-    dt_develop_t *dev = piece->module->dev;
-
+    // As this runs through all pipe nodes - also the ones not commited -
+    // we can safely avoid disabled modules/pieces
+    const gboolean included = piece->module->enabled || piece->enabled;
     // don't take skipped modules into account
-    const gboolean skipped = dt_iop_module_is_skipped(dev, piece->module)
+    const gboolean skipped = dt_iop_module_is_skipped(piece->module->dev, piece->module)
       && (pipe->type & DT_DEV_PIXELPIPE_BASIC);
-
-    if(!skipped)
+    if(!skipped && included)
     {
       hash = dt_hash(hash, &piece->hash, sizeof(piece->hash));
       if(piece->module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
