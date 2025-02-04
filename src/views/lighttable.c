@@ -446,13 +446,15 @@ void enter(dt_view_t *self)
   {
     if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
-      dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
+      dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui),
+                               dt_ui_center_base(darktable.gui->ui),
                                DT_THUMBTABLE_MODE_FILEMANAGER);
       gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
     }
     else if(layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
     {
-      dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
+      dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui),
+                               dt_ui_center_base(darktable.gui->ui),
                                DT_THUMBTABLE_MODE_ZOOM);
       gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
     }
@@ -466,7 +468,9 @@ void enter(dt_view_t *self)
   dt_collection_hint_message(darktable.collection);
 
   // show/hide filmstrip & timeline when entering the view
-  if(layout == DT_LIGHTTABLE_LAYOUT_CULLING || layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC || lib->preview_state)
+  if(layout == DT_LIGHTTABLE_LAYOUT_CULLING
+     || layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC
+     || lib->preview_state)
   {
     dt_lib_set_visible(darktable.view_manager->proxy.timeline.module, FALSE); // not available in this layouts
     dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module,
