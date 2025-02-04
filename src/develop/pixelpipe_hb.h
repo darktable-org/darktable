@@ -27,7 +27,7 @@
 #include "develop/pixelpipe_cache.h"
 #include "imageio/imageio_common.h"
 
-#include "onnxruntime_c_api.h"
+#include "develop/object_detection.h"
 
 #ifdef __cplusplus
 extern "C" {
