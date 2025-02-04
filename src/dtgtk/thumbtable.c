@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024 darktable developers.
+    Copyright (C) 2024-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1046,8 +1046,14 @@ void dt_thumbtable_zoom_changed(dt_thumbtable_t *table,
 
 static gboolean _event_scroll_compressed(gpointer user_data)
 {
-  if (!user_data) return FALSE;
+  if(!user_data)
+    return FALSE;
+
   dt_thumbtable_t *table = user_data;
+
+  // Thumbtable is empty, nothing to scroll
+  if(table->thumb_size == 0)
+    return FALSE;
 
   if(table->scroll_value != 0)
   {
