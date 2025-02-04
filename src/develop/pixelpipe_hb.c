@@ -236,6 +236,8 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->backbuf_zoom_x = 0.0f;
   pipe->backbuf_zoom_y = 0.0f;
   pipe->output_imgid = NO_IMGID;
+  pipe->has_proxy = FALSE;
+  pipe->n_masks = 0;
 
   memset(&pipe->scharr, 0, sizeof(dt_dev_detail_mask_t));
   pipe->want_detail_mask = FALSE;
@@ -1263,7 +1265,7 @@ static void process_mask_native(
                 // FIXME
                 if (((src_x*4) < current_box.x1) || ((src_x*4) > current_box.x2) || ((src_y*4) < current_box.y1) || ((src_y*4) > current_box.y2))
                   interpolated_value = 0.0f;
-                
+
                 output_masks[idx_out] = interpolated_value;
                 if (interpolated_value > max_value[i]) max_value[i] = output_masks[idx_out];
                 if (interpolated_value < min_value[i]) min_value[i] = output_masks[idx_out];
