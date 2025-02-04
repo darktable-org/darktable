@@ -854,6 +854,8 @@ dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
     form->functions = &dt_masks_functions_gradient;
   else if(type & DT_MASKS_GROUP)
     form->functions = &dt_masks_functions_group;
+  else if(type & DT_MASKS_POINT)
+    form->functions = &dt_masks_functions_point;
 
   if(form->functions && form->functions->sanitize_config)
     form->functions->sanitize_config(type);
@@ -1263,7 +1265,8 @@ void dt_masks_events_post_expose(dt_iop_module_t *module,
   // add preview when creating a circle, ellipse and gradient
   if(!(((form->type & DT_MASKS_CIRCLE)
         || (form->type & DT_MASKS_ELLIPSE)
-        || (form->type & DT_MASKS_GRADIENT))
+        || (form->type & DT_MASKS_GRADIENT)
+        || (form->type & DT_MASKS_POINT))
        && gui->creation))
     dt_masks_gui_form_test_create(form, gui, module);
 
@@ -1710,6 +1713,9 @@ void dt_masks_iop_value_changed_callback(GtkWidget *widget,
     {
       // add a brush shape
       _menu_add_shape(module, DT_MASKS_BRUSH);
+    }
+    else if(val == -2000128) {
+      _menu_add_shape(module, DT_MASKS_POINT);
     }
     else if(val < 0)
     {
@@ -2558,6 +2564,12 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui,
       else if(mask_type & DT_MASKS_BRUSH)
       {
         dt_masks_functions_brush.initial_source_pos(iwidth, iheight, &x, &y);
+        x += xpos;
+        y += ypos;
+      }
+      else if(mask_type & DT_MASKS_POINT)
+      {
+        dt_masks_functions_point.initial_source_pos(iwidth, iheight, &x, &y);
         x += xpos;
         y += ypos;
       }

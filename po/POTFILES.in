@@ -157,6 +157,7 @@ src/develop/masks/group.c
 src/develop/masks/masks.c
 src/develop/masks/masks.c
 src/develop/masks/path.c
+src/develop/masks/point.c
 src/develop/pixelpipe_hb.c
 src/develop/tiling.c
 src/dtgtk/culling.c
