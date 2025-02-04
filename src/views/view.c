@@ -1143,19 +1143,22 @@ gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm)
 
 void dt_view_lighttable_culling_init_mode(dt_view_manager_t *vm)
 {
-  if(vm->proxy.lighttable.module)
+  if(vm->proxy.lighttable.module
+    && vm->proxy.lighttable.culling_init_mode)
     vm->proxy.lighttable.culling_init_mode(vm->proxy.lighttable.view);
 }
 
 void dt_view_lighttable_culling_preview_refresh(dt_view_manager_t *vm)
 {
-  if(vm->proxy.lighttable.module)
+  if(vm->proxy.lighttable.module
+     && vm->proxy.lighttable.culling_preview_refresh)
     vm->proxy.lighttable.culling_preview_refresh(vm->proxy.lighttable.view);
 }
 
 void dt_view_lighttable_culling_preview_reload_overlays(dt_view_manager_t *vm)
 {
-  if(vm->proxy.lighttable.module)
+  if(vm->proxy.lighttable.module
+    && vm->proxy.lighttable.culling_preview_reload_overlays)
     vm->proxy.lighttable.culling_preview_reload_overlays(vm->proxy.lighttable.view);
 }
 

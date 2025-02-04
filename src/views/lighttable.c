@@ -439,7 +439,16 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 void enter(dt_view_t *self)
 {
   dt_library_t *lib = self->data;
-  const dt_lighttable_layout_t layout = dt_view_lighttable_get_layout(darktable.view_manager);
+  const dt_lighttable_layout_t layout =
+    dt_view_lighttable_get_layout(darktable.view_manager);
+
+  // enable culling proxy
+  darktable.view_manager->proxy.lighttable.culling_init_mode =
+    _culling_reinit;
+  darktable.view_manager->proxy.lighttable.culling_preview_refresh =
+    _culling_preview_refresh;
+  darktable.view_manager->proxy.lighttable.culling_preview_reload_overlays =
+    _culling_preview_reload_overlays;
 
   // we want to reacquire the thumbtable if needed
   if(!lib->preview_state)
@@ -555,9 +564,6 @@ void init(dt_view_t *self)
   darktable.view_manager->proxy.lighttable.set_preview_state = _preview_set_state;
   darktable.view_manager->proxy.lighttable.view = self;
   darktable.view_manager->proxy.lighttable.change_offset = _lighttable_change_offset;
-  darktable.view_manager->proxy.lighttable.culling_init_mode = _culling_reinit;
-  darktable.view_manager->proxy.lighttable.culling_preview_refresh = _culling_preview_refresh;
-  darktable.view_manager->proxy.lighttable.culling_preview_reload_overlays = _culling_preview_reload_overlays;
 
   // ensure the memory table is up to date
   dt_collection_memory_update();
@@ -583,6 +589,11 @@ void init(dt_view_t *self)
 void leave(dt_view_t *self)
 {
   dt_library_t *lib = self->data;
+
+  // disable culling proxy
+  darktable.view_manager->proxy.lighttable.culling_init_mode = NULL;
+  darktable.view_manager->proxy.lighttable.culling_preview_refresh = NULL;
+  darktable.view_manager->proxy.lighttable.culling_preview_reload_overlays = NULL;
 
   // ensure we have no active image remaining
   if(darktable.view_manager->active_images)
