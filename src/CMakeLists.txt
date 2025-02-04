@@ -1,5 +1,7 @@
 add_subdirectory(external)
 
+set(ONNXRUNTIME_ROOTDIR "/home/miko/Downloads/installers/onnxruntime-linux-x64")
+
 include(CheckCSourceCompiles)
 include(CheckCXXSymbolExists)
 
@@ -159,7 +161,7 @@ FILE(GLOB SOURCE_FILES
   "views/view.c"
   )
 
-FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/OpenCL/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h" "views/*.h")
+  FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/OpenCL/CL/*.h" "external/onnxruntime/include/onnxruntime/core/session/*.h" "control/*.h" "iop/*.h" "libs/*.h" "views/*.h")
 
 if(APPLE)
   list(APPEND SOURCE_FILES "osx/osx.mm")
@@ -227,6 +229,7 @@ endif()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/external)
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/external/OpenCL)
+include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/external/onnxruntime/include/onnxruntime/core/session)
 
 # initial compiler flags
 add_definitions("-DHAVE_CONFIG_H")
@@ -973,7 +976,8 @@ unset(LIB_DEPS)
 add_library(lib_darktable_imageio_rawspeed STATIC imageio/imageio_rawspeed.cc)
 target_link_libraries(lib_darktable_imageio_rawspeed PRIVATE rawspeed)
 target_link_libraries(lib_darktable PRIVATE lib_darktable_imageio_rawspeed)
-
+link_directories(lib_darktable "${ONNXRUNTIME_ROOTDIR}/lib")
+target_link_libraries(lib_darktable PRIVATE "${ONNXRUNTIME_ROOTDIR}/lib/libonnxruntime.so")
 #
 # Install lib_darktable
 #
