@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2022 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -65,7 +65,7 @@ typedef enum dt_dev_pixelpipe_cache_test_t
 gboolean dt_dev_pixelpipe_cache_init(struct dt_dev_pixelpipe_t *pipe, const int entries, const size_t size, const size_t limit);
 void dt_dev_pixelpipe_cache_cleanup(struct dt_dev_pixelpipe_t *pipe);
 
-/** creates a hopefully unique hash from the complete module stack up to the module-th, including current viewport. */
+/** creates a hopefully unique hash from the complete module stack up to the module-th, including the roi. */
 dt_hash_t dt_dev_pixelpipe_cache_hash(const dt_imgid_t imgid, const struct dt_iop_roi_t *roi,
                                      struct dt_dev_pixelpipe_t *pipe, const int position);
 
@@ -75,7 +75,7 @@ dt_hash_t dt_dev_pixelpipe_cache_hash(const dt_imgid_t imgid, const struct dt_io
   Returned flag is TRUE for a new buffer
 */
 gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const dt_hash_t hash,
-                               const size_t size, void **data, struct dt_iop_buffer_dsc_t **dsc, struct dt_iop_module_t *module, const gboolean important);
+                               const size_t size, void **data, struct dt_iop_buffer_dsc_t **dsc, const struct dt_iop_module_t *module, const gboolean important);
 
 /** test availability of a cache line without destroying another, if it is not found. */
 gboolean dt_dev_pixelpipe_cache_available(struct dt_dev_pixelpipe_t *pipe, const dt_hash_t hash, const size_t size);

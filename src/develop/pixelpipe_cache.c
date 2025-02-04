@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -114,6 +114,7 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(const dt_imgid_t imgid,
           not valid any more.
           Do we have to keep the roi of details mask? No as that is always defined by roi_in
           of the mask writing module (rawprepare or demosaic)
+       4) Please note that position is not the iop_order but the n-th node position in the pipe
   */
   const uint32_t hashing_pipemode[3] = {(uint32_t)imgid,
                                         (uint32_t)pipe->type,
@@ -189,7 +190,7 @@ gboolean dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_t *pipe,
 // While looking for the oldest cacheline we always ignore the first two lines as they are used
 // for swapping buffers while in entries==DT_PIPECACHE_MIN or masking mode
 static int _get_oldest_cacheline(dt_dev_pixelpipe_cache_t *cache,
-                                 dt_dev_pixelpipe_cache_test_t mode)
+                                 const dt_dev_pixelpipe_cache_test_t mode)
 {
   // we never want the latest used cacheline! It was <= 0 and the weight has increased just now
   int age = 1;
@@ -212,7 +213,7 @@ static int _get_oldest_cacheline(dt_dev_pixelpipe_cache_t *cache,
   return id;
 }
 
-static int __get_cacheline(dt_dev_pixelpipe_cache_t *cache)
+static int _get_c_cacheline(dt_dev_pixelpipe_cache_t *cache)
 {
   int oldest = _get_oldest_cacheline(cache, DT_CACHETEST_INVALID);
   if(oldest > 0) return oldest;
@@ -233,13 +234,13 @@ static int _get_cacheline(dt_dev_pixelpipe_t *pipe)
   if((cache->entries == DT_PIPECACHE_MIN) || pipe->mask_display || pipe->nocache)
     return cache->calls & 1;
 
-  cache->lastline = __get_cacheline(cache);
+  cache->lastline = _get_c_cacheline(cache);
   return cache->lastline;
 }
 
 // return TRUE in case of a hit
 static gboolean _get_by_hash(dt_dev_pixelpipe_t *pipe,
-                             dt_iop_module_t *module,
+                             const dt_iop_module_t *module,
                              const dt_hash_t hash,
                              const size_t size,
                              void **data,
@@ -285,7 +286,7 @@ gboolean dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_t *pipe,
                                     const size_t size,
                                     void **data,
                                     dt_iop_buffer_dsc_t **dsc,
-                                    dt_iop_module_t *module,
+                                    const dt_iop_module_t *module,
                                     const gboolean important)
 {
   dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
