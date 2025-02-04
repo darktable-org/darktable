@@ -1261,8 +1261,9 @@ static void process_mask_native(
                 // Set the value in the output mask
                 int idx_out = i * output_h * output_w + y * output_w + x;
                 // FIXME
-                // if ((x < current_box.x1) || (x > current_box.x2) || (y < current_box.y1) || (y > current_box.y2))
-                //   interpolated_value = 0.0f;
+                if (((src_x*4) < current_box.x1) || ((src_x*4) > current_box.x2) || ((src_y*4) < current_box.y1) || ((src_y*4) > current_box.y2))
+                  interpolated_value = 0.0f;
+                
                 output_masks[idx_out] = interpolated_value;
                 if (interpolated_value > max_value[i]) max_value[i] = output_masks[idx_out];
                 if (interpolated_value < min_value[i]) min_value[i] = output_masks[idx_out];
@@ -1578,6 +1579,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
     }
     pipe->proxy_width = w;
     pipe->proxy_height = h;
+    pipe->n_masks = n_masks;
     
     free(out);
     free(new_image);

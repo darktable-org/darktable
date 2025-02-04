@@ -1166,11 +1166,35 @@ static int _point_get_mask_roi(const dt_iop_module_t *const restrict module,
     for (int i = 0; i < roi->width * roi->height; i++){
       buffer[i] = 0.0f;
     }
+
+    float *const restrict circ = dt_alloc_align_float(1 * 2);
+    circ[0] = circle->center[0] * wi;
+    circ[1] = circle->center[1] * hi;
+
+    dt_dev_distort_transform_plus(module->dev, piece->pipe, module->iop_order,
+                                  DT_DEV_TRANSFORM_DIR_BACK_INCL, circ,
+                                  1);
+    int mask_x = (int)(circ[0]);
+    int mask_y = (int)(circ[1]);
+
+    const int px = roi->x;
+    const int py = roi->y;
+
+    const float iscale = 1.0f / roi->scale;
+
+    mask_x = mask_x / iscale - px;
+    mask_y = mask_y / iscale - py;
+
     for (int mask_i = 0; mask_i < n_masks; mask_i++){
-      size_t mask_x = (size_t)(circle->center[0] * wi);
-      size_t mask_y = (size_t)(circle->center[1] * hi);
+
+      if (mask_y >= roi->height) continue;
+      if (mask_y < 0) continue;
+      if (mask_x >= roi->width) continue;
+      if (mask_x < 0) continue;
+      
       if (p->proxy_data[mask_i * stride + mask_y* p->proxy_width + mask_x] == 0)
         continue;
+      
       for (int y = 0; y < p->proxy_height; y++)
       {
         if (y >= roi->height)
