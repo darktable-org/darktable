@@ -1133,9 +1133,10 @@ static void _collect_histogram_on_CPU(dt_dev_pixelpipe_t *pipe,
 */
 static inline dt_hash_t _piece_process_hash(const dt_dev_pixelpipe_iop_t *piece,
                                             const dt_iop_roi_t *roi,
-                                            const dt_iop_module_t *module)
+                                            const dt_iop_module_t *module,
+                                            const int position)
 {
-  dt_hash_t phash = dt_dev_pixelpipe_cache_hash(piece->pipe->image.id, roi, piece->pipe, module->iop_order -1);
+  dt_hash_t phash = dt_dev_pixelpipe_cache_hash(piece->pipe->image.id, roi, piece->pipe, position -1);
   phash = dt_hash(phash, roi, sizeof(dt_iop_roi_t));
   phash = dt_hash(phash, &module->so->op, strlen(module->so->op));
   phash = dt_hash(phash, &module->instance, sizeof(module->instance));
@@ -1175,7 +1176,8 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                                           dt_iop_module_t *module,
                                           dt_dev_pixelpipe_iop_t *piece,
                                           dt_develop_tiling_t *tiling,
-                                          dt_pixelpipe_flow_t *pixelpipe_flow)
+                                          dt_pixelpipe_flow_t *pixelpipe_flow,
+                                          const int position)
 {
   if(dt_atomic_get_int(&pipe->shutdown))
     return TRUE;
@@ -1248,7 +1250,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                      TRUE, dt_dev_pixelpipe_type_to_str(pipe->type));
 
   const gboolean relevant = _piece_fast_blend(piece, module);
-  const dt_hash_t phash = relevant ? _piece_process_hash(piece, roi_out, module) : 0;
+  const dt_hash_t phash = relevant ? _piece_process_hash(piece, roi_out, module, position) : 0;
   const size_t nfloats = bpp * roi_out->width * roi_out->height / sizeof(float);
   const gboolean bcaching = relevant ? pipe->bcache_data && phash == pipe->bcache_hash : FALSE;
 
@@ -1945,7 +1947,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         if(success_opencl)
         {
           const gboolean relevant = _piece_fast_blend(piece, module);
-          const dt_hash_t phash = relevant ? _piece_process_hash(piece, roi_out, module) : 0;
+          const dt_hash_t phash = relevant ? _piece_process_hash(piece, roi_out, module, pos) : 0;
           const gboolean bcaching = relevant ? pipe->bcache_data && phash == pipe->bcache_hash : FALSE;
 
           dt_print_pipe(DT_DEBUG_PIPE,
@@ -2225,7 +2227,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         if(success_opencl)
         {
           const gboolean relevant = _piece_fast_blend(piece, module);
-          const dt_hash_t phash = relevant ? _piece_process_hash(piece, roi_out, module) : 0;
+          const dt_hash_t phash = relevant ? _piece_process_hash(piece, roi_out, module, pos) : 0;
           const gboolean bcaching = relevant ? pipe->bcache_data && phash == pipe->bcache_hash : FALSE;
           dt_print_pipe(DT_DEBUG_PIPE,
                         bcaching ? "from focus cache" : "process tiled",
@@ -2469,7 +2471,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         }
         if(_pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output,
                                      out_format,
-                                     roi_out, module, piece, &tiling, &pixelpipe_flow))
+                                     roi_out, module, piece, &tiling, &pixelpipe_flow, pos))
           return TRUE;
       }
 
@@ -2507,7 +2509,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
       if(_pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in,
                                    output, out_format,
-                                   roi_out, module, piece, &tiling, &pixelpipe_flow))
+                                   roi_out, module, piece, &tiling, &pixelpipe_flow, pos))
         return TRUE;
     }
 
@@ -2522,13 +2524,13 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
     if(_pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in,
                                  output, out_format, roi_out,
-                                 module, piece, &tiling, &pixelpipe_flow))
+                                 module, piece, &tiling, &pixelpipe_flow, pos))
       return TRUE;
   }
 #else // HAVE_OPENCL
   if(_pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in,
                                output, out_format, roi_out,
-                               module, piece, &tiling, &pixelpipe_flow))
+                               module, piece, &tiling, &pixelpipe_flow, pos))
     return TRUE;
 #endif // HAVE_OPENCL
 
