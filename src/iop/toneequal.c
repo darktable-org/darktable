@@ -1012,7 +1012,16 @@ void toneeq_process(dt_iop_module_t *self,
   const size_t num_elem = width * height;
 
   // Get the hash of the upstream pipe to track changes
-  const int position = self->iop_order;
+  int position = 0;
+  GList *pieces = piece->pipe->nodes;
+  while(pieces)
+  {
+    position++;
+    const dt_dev_pixelpipe_iop_t *node = pieces->data;
+    if(piece == node) break;
+
+    pieces = g_list_next(pieces);
+  }
   const dt_hash_t hash = dt_dev_pixelpipe_cache_hash(piece->pipe->image.id,
                                                     roi_out, piece->pipe, position);
 

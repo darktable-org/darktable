@@ -104,39 +104,38 @@ void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_t *pipe)
 
 static dt_hash_t _dev_pixelpipe_cache_basichash(const dt_imgid_t imgid,
                                                 dt_dev_pixelpipe_t *pipe,
-                                                const int order)
+                                                const int position)
 {
   /* What do we use for the basic hash
        1) imgid as all structures using the hash might possibly contain data from other images
-       2) pipe->type as we want to keep status of fast mode included
-       3) pipe->want_detail_mask makes sure old cachelines from before activating details are
+       2) pipe->type for the cache it's important to keep status of fast mode included here
+           also, we might use the hash also for different pipe.
+       3) pipe->want_detail_mask make sure old cachelines from before activating details are
           not valid any more.
-          Do we have to keep the roi of details mask? No, as that is always defined by roi_in
+          Do we have to keep the roi of details mask? No as that is always defined by roi_in
           of the mask writing module (rawprepare or demosaic)
-       4) The piece->hash of modules within the given limit excluding the skipped
+       4) Please note that position is not the iop_order but the n-th node position in the pipe
   */
   const uint32_t hashing_pipemode[3] = {(uint32_t)imgid,
                                         (uint32_t)pipe->type,
                                         (uint32_t)pipe->want_detail_mask };
   dt_hash_t hash = dt_hash(DT_INITHASH, &hashing_pipemode, sizeof(hashing_pipemode));
 
-  // go through all modules up to iop_order and compute a hash using the operation and params.
+  // go through all modules up to position and compute a hash using the operation and params.
   GList *pieces = pipe->nodes;
-  while(pieces)
+  for(int k = 0; k < position && pieces; k++)
   {
-    const dt_dev_pixelpipe_iop_t *piece = pieces->data;
-    const dt_iop_module_t *module = piece->module;
-
-    if(module->iop_order > order) break;
-
+    dt_dev_pixelpipe_iop_t *piece = pieces->data;
+    // As this runs through all pipe nodes - also the ones not commited -
+    // we can safely avoid disabled modules/pieces
+    const gboolean included = piece->module->enabled || piece->enabled;
     // don't take skipped modules into account
-    const gboolean skipped = dt_iop_module_is_skipped(module->dev, module)
-                          && (pipe->type & DT_DEV_PIXELPIPE_BASIC);
-
-    if(!skipped)
+    const gboolean skipped = dt_iop_module_is_skipped(piece->module->dev, piece->module)
+      && (pipe->type & DT_DEV_PIXELPIPE_BASIC);
+    if(!skipped && included)
     {
       hash = dt_hash(hash, &piece->hash, sizeof(piece->hash));
-      if(module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
+      if(piece->module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
       {
         if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
         {
@@ -156,9 +155,9 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(const dt_imgid_t imgid,
 dt_hash_t dt_dev_pixelpipe_cache_hash(const dt_imgid_t imgid,
                                       const dt_iop_roi_t *roi,
                                       dt_dev_pixelpipe_t *pipe,
-                                      const int order)
+                                      const int position)
 {
-  dt_hash_t hash = _dev_pixelpipe_cache_basichash(imgid, pipe, order);
+  dt_hash_t hash = _dev_pixelpipe_cache_basichash(imgid, pipe, position);
   // also include roi data
   // FIXME include full roi data in cachelines
   hash = dt_hash(hash, roi, sizeof(dt_iop_roi_t));
@@ -214,7 +213,7 @@ static int _get_oldest_cacheline(dt_dev_pixelpipe_cache_t *cache,
   return id;
 }
 
-static int __get_cacheline(dt_dev_pixelpipe_cache_t *cache)
+static int _get_c_cacheline(dt_dev_pixelpipe_cache_t *cache)
 {
   int oldest = _get_oldest_cacheline(cache, DT_CACHETEST_INVALID);
   if(oldest > 0) return oldest;
@@ -235,7 +234,7 @@ static int _get_cacheline(dt_dev_pixelpipe_t *pipe)
   if((cache->entries == DT_PIPECACHE_MIN) || pipe->mask_display || pipe->nocache)
     return cache->calls & 1;
 
-  cache->lastline = __get_cacheline(cache);
+  cache->lastline = _get_c_cacheline(cache);
   return cache->lastline;
 }
 
@@ -287,7 +286,7 @@ gboolean dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_t *pipe,
                                     const size_t size,
                                     void **data,
                                     dt_iop_buffer_dsc_t **dsc,
-                                    dt_iop_module_t *module,
+                                    const dt_iop_module_t *module,
                                     const gboolean important)
 {
   dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
