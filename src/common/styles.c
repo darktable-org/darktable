@@ -866,9 +866,9 @@ void _styles_apply_to_image_ext(const char *name,
 
     dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 1");
 
-    dt_print(DT_DEBUG_IOPORDER,
-             "[styles_apply_to_image_ext] Apply style on image `%s' id %i, history size %i",
-             dev_dest->image_storage.filename, newimgid, dev_dest->history_end);
+    dt_print(DT_DEBUG_IOPORDER | DT_DEBUG_PIPE,
+             "[styles_apply_to_image_ext] Apply `%s' on ID=%i, history size %i",
+             name, newimgid, dev_dest->history_end);
 
     // go through all entries in style
     // clang-format off
@@ -1004,6 +1004,8 @@ void dt_styles_apply_to_dev(const char *name, const dt_imgid_t imgid)
 {
   if(!darktable.develop || !dt_is_valid_imgid(darktable.develop->image_storage.id))
     return;
+  dt_print(DT_DEBUG_IOPORDER | DT_DEBUG_PIPE,
+      "[dt_styles_apply_to_dev] Apply `%s' on ID=%d", name, imgid);
 
   /* write current history changes so nothing gets lost */
   dt_dev_write_history(darktable.develop);

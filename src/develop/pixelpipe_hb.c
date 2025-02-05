@@ -523,7 +523,7 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
       if(active && hist->iop_order == INT_MAX)
       {
         piece->enabled = FALSE;
-        dt_print_pipe(DT_DEBUG_PARAMS | DT_DEBUG_PIPE | DT_DEBUG_IOPORDER, "dt_dev_pixelpipe_synch",
+        dt_print_pipe(DT_DEBUG_PARAMS | DT_DEBUG_PIPE, "dt_dev_pixelpipe_synch",
           pipe, piece->module, DT_DEVICE_NONE, NULL, NULL,
           "enabled module with iop_order of INT_MAX is disabled");
       }
@@ -1133,9 +1133,10 @@ static void _collect_histogram_on_CPU(dt_dev_pixelpipe_t *pipe,
 */
 static inline dt_hash_t _piece_process_hash(const dt_dev_pixelpipe_iop_t *piece,
                                             const dt_iop_roi_t *roi,
-                                            const dt_iop_module_t *module)
+                                            const dt_iop_module_t *module,
+                                            const int position)
 {
-  dt_hash_t phash = dt_dev_pixelpipe_cache_hash(piece->pipe->image.id, roi, piece->pipe, module->iop_order -1);
+  dt_hash_t phash = dt_dev_pixelpipe_cache_hash(piece->pipe->image.id, roi, piece->pipe, position -1);
   phash = dt_hash(phash, roi, sizeof(dt_iop_roi_t));
   phash = dt_hash(phash, &module->so->op, strlen(module->so->op));
   phash = dt_hash(phash, &module->instance, sizeof(module->instance));
@@ -1175,7 +1176,8 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                                           dt_iop_module_t *module,
                                           dt_dev_pixelpipe_iop_t *piece,
                                           dt_develop_tiling_t *tiling,
-                                          dt_pixelpipe_flow_t *pixelpipe_flow)
+                                          dt_pixelpipe_flow_t *pixelpipe_flow,
+                                          const int position)
 {
   if(dt_atomic_get_int(&pipe->shutdown))
     return TRUE;
@@ -1248,7 +1250,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                      TRUE, dt_dev_pixelpipe_type_to_str(pipe->type));
 
   const gboolean relevant = _piece_fast_blend(piece, module);
-  const dt_hash_t phash = relevant ? _piece_process_hash(piece, roi_out, module) : 0;
+  const dt_hash_t phash = relevant ? _piece_process_hash(piece, roi_out, module, position) : 0;
   const size_t nfloats = bpp * roi_out->width * roi_out->height / sizeof(float);
   const gboolean bcaching = relevant ? pipe->bcache_data && phash == pipe->bcache_hash : FALSE;
 
@@ -1498,7 +1500,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   if(dt_atomic_get_int(&pipe->shutdown))
     return TRUE;
 
-  const dt_hash_t hash = dt_dev_pixelpipe_cache_hash(pipe->image.id, roi_out, pipe, module ? module->iop_order : 0);
+  dt_hash_t hash = dt_dev_pixelpipe_cache_hash(pipe->image.id, roi_out, pipe, pos);
 
   // we do not want data from the preview pixelpipe cache
   // for gamma so we can compute the final scope
@@ -1638,7 +1640,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   module->modify_roi_in(module, piece, roi_out, &roi_in);
   if((darktable.unmuted & DT_DEBUG_PIPE) && memcmp(roi_out, &roi_in, sizeof(dt_iop_roi_t)))
     dt_print_pipe(DT_DEBUG_PIPE,
-                  "modify roi IN", pipe, module, DT_DEVICE_NONE, roi_out, &roi_in, "ID=%i",
+                  "modified roi IN", pipe, module, DT_DEVICE_NONE, roi_out, &roi_in, "ID=%i",
                   pipe->image.id);
   // recurse to get actual data of input buffer
 
@@ -1945,7 +1947,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         if(success_opencl)
         {
           const gboolean relevant = _piece_fast_blend(piece, module);
-          const dt_hash_t phash = relevant ? _piece_process_hash(piece, roi_out, module) : 0;
+          const dt_hash_t phash = relevant ? _piece_process_hash(piece, roi_out, module, pos) : 0;
           const gboolean bcaching = relevant ? pipe->bcache_data && phash == pipe->bcache_hash : FALSE;
 
           dt_print_pipe(DT_DEBUG_PIPE,
@@ -2225,7 +2227,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         if(success_opencl)
         {
           const gboolean relevant = _piece_fast_blend(piece, module);
-          const dt_hash_t phash = relevant ? _piece_process_hash(piece, roi_out, module) : 0;
+          const dt_hash_t phash = relevant ? _piece_process_hash(piece, roi_out, module, pos) : 0;
           const gboolean bcaching = relevant ? pipe->bcache_data && phash == pipe->bcache_hash : FALSE;
           dt_print_pipe(DT_DEBUG_PIPE,
                         bcaching ? "from focus cache" : "process tiled",
@@ -2375,7 +2377,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         */
         important_cl =
            (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
-           && (pipe->type & DT_DEV_PIXELPIPE_BASIC)
+           && pipe->type & DT_DEV_PIXELPIPE_BASIC
            && dev->gui_attached
            && ((module == dt_dev_gui_module())
                 || darktable.develop->history_last_module == module
@@ -2469,7 +2471,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         }
         if(_pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output,
                                      out_format,
-                                     roi_out, module, piece, &tiling, &pixelpipe_flow))
+                                     roi_out, module, piece, &tiling, &pixelpipe_flow, pos))
           return TRUE;
       }
 
@@ -2507,7 +2509,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
       if(_pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in,
                                    output, out_format,
-                                   roi_out, module, piece, &tiling, &pixelpipe_flow))
+                                   roi_out, module, piece, &tiling, &pixelpipe_flow, pos))
         return TRUE;
     }
 
@@ -2522,13 +2524,13 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
     if(_pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in,
                                  output, out_format, roi_out,
-                                 module, piece, &tiling, &pixelpipe_flow))
+                                 module, piece, &tiling, &pixelpipe_flow, pos))
       return TRUE;
   }
 #else // HAVE_OPENCL
   if(_pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in,
                                output, out_format, roi_out,
-                               module, piece, &tiling, &pixelpipe_flow))
+                               module, piece, &tiling, &pixelpipe_flow, pos))
     return TRUE;
 #endif // HAVE_OPENCL
 
@@ -2980,7 +2982,7 @@ restart:
 
   // terminate
   dt_pthread_mutex_lock(&pipe->backbuf_mutex);
-  pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(pipe->image.id, &roi, pipe, INT_MAX);
+  pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(pipe->image.id, &roi, pipe, pos);
 
   //FIXME lock/release cache line instead of copying
   if(pipe->type & DT_DEV_PIXELPIPE_SCREEN)
@@ -3045,7 +3047,7 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe,
       module->modify_roi_out(module, piece, &roi_out, &roi_in);
       if((darktable.unmuted & DT_DEBUG_PIPE) && memcmp(&roi_out, &roi_in, sizeof(dt_iop_roi_t)))
       dt_print_pipe(DT_DEBUG_PIPE,
-                  "modify roi OUT", pipe, module, DT_DEVICE_NONE, &roi_in, &roi_out);
+                  "modified roi OUT", pipe, module, DT_DEVICE_NONE, &roi_in, &roi_out);
     }
     else
     {
@@ -3176,7 +3178,6 @@ float *dt_dev_get_raster_mask(dt_dev_pixelpipe_iop_t *piece,
           if(!_skip_piece_on_tags(it_piece))
           {
             if(it_piece->module->distort_mask
-              && it_piece->enabled
               // hack against pipes not using finalscale
               && !(dt_iop_module_is(it_piece->module->so, "finalscale")
                     && it_piece->processed_roi_in.width == 0
