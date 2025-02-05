@@ -197,6 +197,15 @@ void cleanup(dt_view_t *self)
     else
       dt_conf_set_bool("second_window/last_visible", FALSE);
 
+#ifdef __APPLE__
+    gtk_window_unfullscreen(GTK_WINDOW(dev->second_wnd));
+
+    // Process pending events to handle state changes
+    while (gtk_events_pending()) {
+      gtk_main_iteration();
+    }
+#endif
+
     gtk_widget_destroy(dev->second_wnd);
     dev->second_wnd = NULL;
     dev->preview2.widget = NULL;
@@ -1474,6 +1483,15 @@ static void _second_window_quickbutton_clicked(GtkWidget *w,
   if(dev->second_wnd && !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)))
   {
     _darkroom_ui_second_window_write_config(dev->second_wnd);
+
+#ifdef __APPLE__
+    gtk_window_unfullscreen(GTK_WINDOW(dev->second_wnd));
+
+    // Process pending events to handle state changes
+    while (gtk_events_pending()) {
+      gtk_main_iteration();
+    }
+#endif
 
     gtk_widget_destroy(dev->second_wnd);
     dev->second_wnd = NULL;
