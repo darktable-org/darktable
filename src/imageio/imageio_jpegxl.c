@@ -174,6 +174,14 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img,
         return DT_IMAGEIO_FILE_CORRUPTED;
       }
 
+      // Orientation values in JXL basic info match Exif definitions
+      img->orientation = dt_image_orientation_to_flip_bits(basicinfo.orientation);
+
+      // We don't re-orient the data during decoding, this will be done later
+      // by darktable according to the metadata value (this value can be
+      // either the one obtained above or the value read from Exif data)
+      JxlDecoderSetKeepOrientation(decoder, JXL_TRUE);
+
       uint32_t num_threads =
         JxlResizableParallelRunnerSuggestThreads(basicinfo.xsize,
                                                  basicinfo.ysize);
