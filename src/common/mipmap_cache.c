@@ -1152,7 +1152,7 @@ void dt_mipmap_cache_get_with_caller(
     flags == DT_MIPMAP_PREFETCH_DISK ? "DT_MIPMAP_PREFETCH_DISK" : "",
     flags == DT_MIPMAP_BLOCKING ? "DT_MIPMAP_BLOCKING" : "",
     flags == DT_MIPMAP_BEST_EFFORT ? "DT_MIPMAP_BEST_EFFORT" : "",
-    imgid, mip, mode, buf->buf);
+    imgid, mip, mode, (buf ? buf->buf : NULL));
 }
 
 void dt_mipmap_cache_release_with_caller(dt_mipmap_cache_t *cache,
