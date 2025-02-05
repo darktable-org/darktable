@@ -2589,9 +2589,6 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         darktable.develop->history_last_module = NULL;
     }
 
-    if(pipe->type & DT_DEV_PIXELPIPE_FULL)
-      darktable.develop->history_last_module = NULL;
-
     if(module->expanded
        && (pipe->type & DT_DEV_PIXELPIPE_BASIC)
        && (module->request_histogram & DT_REQUEST_EXPANDED))
