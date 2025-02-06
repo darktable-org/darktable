@@ -3879,11 +3879,6 @@ static gboolean _second_window_delete_callback(GtkWidget *widget,
   // We need to unfullscreen the window and consume all pending events first before
   // destroying the window
   gtk_window_unfullscreen(GTK_WINDOW(widget));
-  while (gtk_events_pending()) {
-    gtk_main_iteration();
-  }
-
-  gtk_widget_destroy(widget);
 
   dev->second_wnd = NULL;
   dev->preview2.widget = NULL;
