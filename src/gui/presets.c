@@ -37,7 +37,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#define MAX_FOCAL_LEN 2000
+#define MAX_FOCAL_LEN 100000
 
 const int dt_gui_presets_exposure_value_cnt = 22;
 const float dt_gui_presets_exposure_value[]
@@ -127,7 +127,7 @@ void dt_gui_presets_add_with_blendop(const char *name,
       "                    writeprotect, autoapply, filter, def, format)"
       " VALUES (?1, '', ?2, ?3, ?4, ?5, ?6, ?7, 0, '', '%', '%', '%', 0,"
       "         340282346638528859812000000000000000000, 0, 10000000, 0, 100000000, 0,"
-      "         1000, 1, 0, 0, 0, 0)",
+      "         ?8, 1, 0, 0, 0, 0)",
       -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
@@ -138,6 +138,7 @@ void dt_gui_presets_add_with_blendop(const char *name,
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, blend_params, sizeof(dt_develop_blend_params_t),
                              SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, dt_develop_blend_version());
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 8, MAX_FOCAL_LEN);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 }
