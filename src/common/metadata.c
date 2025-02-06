@@ -152,6 +152,7 @@ const char *dt_metadata_get_key_by_subkey(const char *subkey)
 {
   const char *result = NULL;
 
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   if(subkey)
   {
     for(GList *iter = _metadata_list; iter; iter = iter->next)
@@ -165,6 +166,8 @@ const char *dt_metadata_get_key_by_subkey(const char *subkey)
       }
     }
   }
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+
   return result;
 }
 
@@ -410,6 +413,18 @@ gchar *_cleanup_metadata_value(const gchar *value)
   c = g_strdup(c ? c : ""); // avoid NULL value
   g_free(v);
   return c;
+}
+
+GList *dt_metadata_get_lock(const dt_imgid_t imgid,
+                            const char *key,
+                            uint32_t *count)
+{
+  GList *res = NULL;
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+  res = dt_metadata_get(imgid, key, count);
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+
+  return res;
 }
 
 GList *dt_metadata_get(const dt_imgid_t imgid,
@@ -672,6 +687,13 @@ void dt_metadata_set(const dt_imgid_t imgid,
       }
     }
   }
+}
+
+void dt_metadata_set_import_lock(const dt_imgid_t imgid, const char *key, const char *value)
+{
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+  dt_metadata_set_import(imgid, key, value);
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 }
 
 void dt_metadata_set_import(const dt_imgid_t imgid, const char *key, const char *value)

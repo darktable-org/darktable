@@ -132,17 +132,13 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img,
     {
       if(Imf::hasOwner(header))
       {
-        dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-        dt_metadata_set_import(img->id, "Xmp.dc.rights",
-                               Imf::owner(header).c_str());
-        dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+        dt_metadata_set_import_lock(img->id, "Xmp.dc.rights",
+                                    Imf::owner(header).c_str());
       }
       if(Imf::hasComments(header))
       {
-        dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-        dt_metadata_set_import(img->id, "Xmp.dc.description",
-                               Imf::comments(header).c_str());
-        dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+        dt_metadata_set_import_lock(img->id, "Xmp.dc.description",
+                                    Imf::comments(header).c_str());
       }
       if(Imf::hasCapDate(header))
       {

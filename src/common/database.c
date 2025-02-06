@@ -3213,10 +3213,10 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
 
     const char *metadata_fields[][3] =
       {
-        {"Xmp.dc.title", _("title"), "plugins/lighttable/metadata/title_flag"},
-        {"Xmp.dc.description", _("description"), "plugins/lighttable/metadata/description_flag"},
         {"Xmp.dc.creator", _("creator"), "plugins/lighttable/metadata/creator_flag"},
         {"Xmp.dc.publisher", _("publisher"), "plugins/lighttable/metadata/publisher_flag"},
+        {"Xmp.dc.title", _("title"), "plugins/lighttable/metadata/title_flag"},
+        {"Xmp.dc.description", _("description"), "plugins/lighttable/metadata/description_flag"},
         {"Xmp.dc.rights", _("rights"), "plugins/lighttable/metadata/rights_flag"},
         {"Xmp.acdsee.notes", _("notes"), "plugins/lighttable/metadata/notes_flag"},
         {"Xmp.darktable.version_name", _("version name"), "plugins/lighttable/metadata/version name_flag"},
@@ -3224,11 +3224,14 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
         {"Xmp.xmpMM.PreservedFileName", _("preserved filename"), "plugins/lighttable/metadata/preserved filename_flag"},
       };
 
+    const int display_order[] = {2,3,0,1,4,5,6,7,8};
+
     for (int i = 0; i < sizeof(metadata_fields) / sizeof(metadata_fields[0]); i++)
     {
       gchar *query = g_strdup_printf("INSERT INTO data.meta_data VALUES(%d, '%s', '%s', %d, %d, 0, %d)",
                                      i, metadata_fields[i][0], metadata_fields[i][1], (i == 7) ? 1 : 0,
-                                     metadata_fields[i][2] ? dt_conf_get_int(metadata_fields[i][2]) & 1 ? 0 : 1 : 0, i);
+                                     metadata_fields[i][2] ? dt_conf_get_int(metadata_fields[i][2]) & 1 ? 0 : 1 : 0,
+                                     display_order[i]);
       TRY_EXEC(query, "can't insert meta_data_key record");
       g_free(query);
     }
