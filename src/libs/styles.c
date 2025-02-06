@@ -572,7 +572,9 @@ static void _export_clicked(GtkWidget *w, dt_lib_styles_t *d)
       {
         dt_styles_save_to_file((char*)style->data, filedir, FALSE);
       }
-      dt_control_log(_("style %s was successfully exported"), (char*)style->data);
+      gchar *local_name = dt_util_localize_segmented_name((char*)style->data);
+      dt_control_log(_("style %s was successfully exported"), local_name);
+      g_free(local_name);
     }
     dt_conf_set_folder_from_file_chooser("ui_last/export_path", GTK_FILE_CHOOSER(filechooser));
     g_free(filedir);
