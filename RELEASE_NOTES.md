@@ -121,6 +121,9 @@ changes (where available).
 
 - Fixed a hash calculation bug leading to pixelpipe instabilities.
 
+- Fixed issue to handle auto-presets when the focal length is greater
+  then 1000.
+
 ## Lua
 
 ### API Version
