@@ -988,9 +988,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
       if(!xmlStrncmp(ttlNode->name, (const xmlChar *)"li", 2))
       {
         xmlChar *cvalue = xmlNodeListGetString(doc, ttlNode->xmlChildrenNode, 1);
-        dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-        dt_metadata_set_import(imgid, "Xmp.dc.title", (char *)cvalue);
-        dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+        dt_metadata_set_import_lock(imgid, "Xmp.dc.title", (char *)cvalue);
         xmlFree(cvalue);
       }
       ttlNode = ttlNode->next;
@@ -1004,9 +1002,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
       if(!xmlStrncmp(desNode->name, (const xmlChar *)"li", 2))
       {
         xmlChar *cvalue = xmlNodeListGetString(doc, desNode->xmlChildrenNode, 1);
-        dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-        dt_metadata_set_import(imgid, "Xmp.dc.description", (char *)cvalue);
-        dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+        dt_metadata_set_import_lock(imgid, "Xmp.dc.description", (char *)cvalue);
         xmlFree(cvalue);
       }
       desNode = desNode->next;
@@ -1020,9 +1016,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
       if(!xmlStrncmp(creNode->name, (const xmlChar *)"li", 2))
       {
         xmlChar *cvalue = xmlNodeListGetString(doc, creNode->xmlChildrenNode, 1);
-        dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-        dt_metadata_set_import(imgid, "Xmp.dc.creator", (char *)cvalue);
-        dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+        dt_metadata_set_import_lock(imgid, "Xmp.dc.creator", (char *)cvalue);
         xmlFree(cvalue);
       }
       creNode = creNode->next;
@@ -1036,9 +1030,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const dt_imgid_t
       if(!xmlStrncmp(rigNode->name, (const xmlChar *)"li", 2))
       {
         xmlChar *cvalue = xmlNodeListGetString(doc, rigNode->xmlChildrenNode, 1);
-        dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-        dt_metadata_set_import(imgid, "Xmp.dc.rights", (char *)cvalue);
-        dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+        dt_metadata_set_import_lock(imgid, "Xmp.dc.rights", (char *)cvalue);
         xmlFree(cvalue);
       }
       rigNode = rigNode->next;
