@@ -1266,6 +1266,8 @@ static gboolean _menuitem_motion_preset(GtkMenuItem *menuitem,
   return FALSE;
 }
 
+gpointer _active_menu_item = NULL;
+
 static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
                                         GdkEventButton *event,
                                         dt_iop_module_t *module)
@@ -1278,10 +1280,10 @@ static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
   {
     if(_click_time > event->time)
     {
-      GtkContainer *menu = GTK_CONTAINER(gtk_widget_get_parent(GTK_WIDGET(menuitem)));
-      for(GList *c = gtk_container_get_children(menu); c; c = g_list_delete_link(c, c))
-        if(GTK_IS_CHECK_MENU_ITEM(c->data))
-          gtk_check_menu_item_set_active(c->data, c->data == menuitem);
+      if(_active_menu_item)
+        gtk_check_menu_item_set_active(_active_menu_item, FALSE);
+      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menuitem), TRUE);
+      g_set_weak_pointer(&_active_menu_item, menuitem);
 
       dt_gui_presets_apply_preset(name, module);
     }
@@ -1702,6 +1704,9 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
   // collect all presets for op from db
   gboolean found = FALSE;
   int last_wp = -1;
+  gchar **prev_split = NULL;
+  GtkWidget *submenu = GTK_WIDGET(menu);
+  GSList *menu_stack = NULL; // stack of submenus
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const int chk_writeprotect = sqlite3_column_int(stmt, 2);
@@ -1718,6 +1723,7 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
     {
       last_wp = chk_writeprotect;
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+      *prev_split[0] = '\0'; // make first level mismatch so we start over
     }
     const void *op_params = (void *)sqlite3_column_blob(stmt, 1);
     const int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
@@ -1732,6 +1738,26 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
     if(darktable.gui->last_preset && strcmp(darktable.gui->last_preset, name) == 0)
       found = TRUE;
 
+    gchar **split = g_strsplit(name, "|", -1), **s = split, **p = prev_split;
+    for(; p && *(p+1) && *(s+1) && !g_strcmp0(*s, *p); p++, s++)
+      ;
+    for(; p && *(p+1); p++)
+    {
+      submenu = menu_stack->data;
+      menu_stack = g_slist_delete_link(menu_stack, menu_stack); // pop
+    }
+    for(; *(s+1); s++)
+    {
+      menu_stack = g_slist_prepend(menu_stack, submenu); // push
+
+      GtkWidget *sm = gtk_menu_item_new_with_label(*s);
+      gtk_menu_shell_append(GTK_MENU_SHELL(submenu), sm);
+      submenu = gtk_menu_new();
+      gtk_menu_item_set_submenu(GTK_MENU_ITEM(sm), submenu);
+    }
+    g_strfreev(prev_split);
+    prev_split = split;
+
     if(module
        && (op_params_size == 0
            || !memcmp(module->default_params, op_params,
@@ -1742,9 +1768,9 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
 
     gchar *label;
     if(isdefault)
-      label = g_strdup_printf("%s %s", name, _("(default)"));
+      label = g_strdup_printf("%s %s", *s, _("(default)"));
     else
-      label = g_strdup(name);
+      label = g_strdup(*s);
     mi = gtk_check_menu_item_new_with_label(label);
     dt_gui_add_class(mi, "dt_transparent_background");
     g_free(label);
@@ -1764,6 +1790,7 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
       writeprotect = sqlite3_column_int(stmt, 2);
       dt_gui_add_class(mi, "active_menu_item");
       gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), TRUE);
+      g_set_weak_pointer(&_active_menu_item, mi);
     }
 
     if(isdisabled)
@@ -1776,10 +1803,12 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
       gtk_widget_set_tooltip_text(mi, (const char *)sqlite3_column_text(stmt, 3));
       _menuitem_connect_preset(mi, name, module);
     }
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+    gtk_menu_shell_append(GTK_MENU_SHELL(submenu), mi);
     cnt++;
   }
   sqlite3_finalize(stmt);
+  g_slist_free(menu_stack);
+  g_strfreev(prev_split);
 
   if(cnt > 0) gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
 
