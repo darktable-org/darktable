@@ -164,7 +164,7 @@ void cleanup(dt_view_t *self)
     else
       dt_conf_set_bool("second_window/last_visible", FALSE);
 
-    gtk_widget_destroy(dev->second_wnd);
+    gtk_window_close(GTK_WINDOW(dev->second_wnd)); // Use close so that _second_window_delete_callback can clean up
     dev->second_wnd = NULL;
     dev->preview2.widget = NULL;
   }
@@ -1392,7 +1392,7 @@ static void _second_window_quickbutton_clicked(GtkWidget *w, dt_develop_t *dev)
   {
     _darkroom_ui_second_window_write_config(dev->second_wnd);
 
-    gtk_widget_destroy(dev->second_wnd);
+    gtk_window_close(GTK_WINDOW(dev->second_wnd)); // Use close so that _second_window_delete_callback can clean up
     dev->second_wnd = NULL;
     dev->preview2.widget = NULL;
   }
@@ -3560,7 +3560,13 @@ static gboolean _second_window_delete_callback(GtkWidget *widget,
                                                GdkEvent *event,
                                                dt_develop_t *dev)
 {
-  _darkroom_ui_second_window_write_config(dev->second_wnd);
+  // We need to be careful when using the second window reference from dev. It could be null at this point
+  _darkroom_ui_second_window_write_config(widget);
+
+  // There's a bug in GTK+3 where fullscreen GTK window on macOS may cause EXC_BAD_ACCESS.
+  // We need to unfullscreen the window and consume all pending events first before
+  // destroying the window
+  gtk_window_unfullscreen(GTK_WINDOW(widget));
 
   dev->second_wnd = NULL;
   dev->preview2.widget = NULL;
