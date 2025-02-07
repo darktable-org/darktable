@@ -124,6 +124,8 @@ changes (where available).
 - Fixed issue to handle auto-presets when the focal length is greater
   then 1000.
 
+- Fixed crash on macOS when closing the darkroom's second window.
+
 ## Lua
 
 ### API Version
