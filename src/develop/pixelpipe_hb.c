@@ -1250,7 +1250,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                      TRUE, dt_dev_pixelpipe_type_to_str(pipe->type));
 
   const gboolean relevant = _piece_fast_blend(piece, module);
-  const dt_hash_t phash = relevant ? _piece_process_hash(piece, roi_out, module, position) : 0;
+  const dt_hash_t phash = relevant ? _piece_process_hash(piece, roi_out, module, position) : DT_INVALID_CACHEHASH;
   const size_t nfloats = bpp * roi_out->width * roi_out->height / sizeof(float);
   const gboolean bcaching = relevant ? pipe->bcache_data && phash == pipe->bcache_hash : FALSE;
 
@@ -1947,7 +1947,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         if(success_opencl)
         {
           const gboolean relevant = _piece_fast_blend(piece, module);
-          const dt_hash_t phash = relevant ? _piece_process_hash(piece, roi_out, module, pos) : 0;
+          const dt_hash_t phash = relevant ? _piece_process_hash(piece, roi_out, module, pos) : DT_INVALID_CACHEHASH;
           const gboolean bcaching = relevant ? pipe->bcache_data && phash == pipe->bcache_hash : FALSE;
 
           dt_print_pipe(DT_DEBUG_PIPE,
