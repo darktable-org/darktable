@@ -95,6 +95,11 @@ changes (where available).
       by default reenable the workaround for drivers that need them,
       or warn people with antiquated drivers that they need to update.
 
+- When part of a module has scrolled off the top of the panel, now its
+  header will remain visible, so it for example can be clicked on to
+  collapse the module. This is especially useful when dealing with
+  long modules with masks.
+
 ## Bug Fixes
 
 - N/A
