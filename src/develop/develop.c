@@ -3376,7 +3376,7 @@ dt_hash_t dt_dev_hash_distort_plus(dt_develop_t *dev,
     if(!pieces)
     {
       dt_pthread_mutex_unlock(&dev->history_mutex);
-      return 0;
+      return DT_INVALID_CACHEHASH;
     }
     dt_iop_module_t *module = modules->data;
     dt_dev_pixelpipe_iop_t *piece = pieces->data;
