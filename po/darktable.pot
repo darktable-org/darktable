@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-07 18:39+0100\n"
+"POT-Creation-Date: 2025-02-07 18:49+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -24460,8 +24460,8 @@ msgstr ""
 
 #: ../src/libs/metadata.c:1000
 msgid ""
-"You are about to delete metadata which is currently assigned to images.\n"
-"The assignments will be removed."
+"you are about to delete metadata which is currently assigned to images.\n"
+"the assignments will be removed."
 msgstr ""
 
 #: ../src/libs/metadata.c:1159
