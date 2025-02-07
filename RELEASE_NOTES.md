@@ -56,6 +56,9 @@ changes (where available).
   dividing line can not be moved and any click without "a" rotates the
   layout.
 
+- The metadata module is now fully configurable and allows to add and
+  maintain any tags which are supported by exiv2.
+
 ## UI/UX Improvements
 
 - N/A
