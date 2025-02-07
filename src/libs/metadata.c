@@ -482,7 +482,7 @@ static void _update_layout(dt_lib_module_t *self)
       GtkWidget *lb_cell = gtk_grid_get_child_at(GTK_GRID(d->grid), 0, row);
       GtkWidget *tv_cell = gtk_grid_get_child_at(GTK_GRID(d->grid), 1, row);
       const uint32_t key = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(tv_cell), "key"));
-      
+
       if(key == metadata->key)
       {
         gtk_widget_set_visible(lb_cell, visible);
@@ -490,7 +490,7 @@ static void _update_layout(dt_lib_module_t *self)
 
         GtkWidget *label = g_object_get_data(G_OBJECT(lb_cell), "label");
         gtk_label_set_label(GTK_LABEL(label), metadata->name);
-      
+
         if(visible)
         {
           GtkWidget *current = g_object_get_data(G_OBJECT(tv_cell), "textview");
@@ -801,7 +801,7 @@ static void _fill_grid(dt_lib_module_t *self)
   d->num_grid_rows = 0;
 
   gtk_widget_set_no_show_all(d->grid, FALSE);
-  
+
   int row = 0;
   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
@@ -903,7 +903,7 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
     (_("display name"), renderer,
      "text", DT_METADATA_PREF_COL_NAME, NULL);
   g_object_set(renderer, "editable", TRUE, NULL);
-  g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(_display_name_edited_callback), store);  
+  g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(_display_name_edited_callback), store);
   dt_gui_commit_on_focus_loss(renderer, &active_editable);
   gtk_tree_view_column_set_expand(column, TRUE);
   gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
