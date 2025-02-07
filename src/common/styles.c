@@ -958,7 +958,10 @@ void _styles_apply_to_image_ext(const char *name,
     /* add tag */
     guint tagid = 0;
     gchar ntag[512] = { 0 };
-    g_snprintf(ntag, sizeof(ntag), "darktable|style|%s", name);
+    gchar *local_name = dt_util_localize_segmented_name(name, FALSE);
+    g_snprintf(ntag, sizeof(ntag), "darktable|style|%s", local_name);
+    g_free(local_name);
+
     if(dt_tag_new(ntag, &tagid)) dt_tag_attach(tagid, newimgid, FALSE, FALSE);
     if(dt_tag_new("darktable|changed", &tagid))
     {
@@ -1024,7 +1027,7 @@ void dt_styles_apply_to_dev(const char *name, const dt_imgid_t imgid)
   // rebuild the accelerators (style might have changed order)
   dt_iop_connect_accels_all();
 
-  gchar *local_name = dt_util_localize_segmented_name(name);
+  gchar *local_name = dt_util_localize_segmented_name(name, TRUE);
   dt_control_log(_("applied style `%s' on current image"), local_name);
   g_free(local_name);
 }
@@ -1595,7 +1598,7 @@ static void dt_style_save(StyleData *style)
   if((id = dt_styles_get_id_by_name(style->info->name->str)) != 0)
   {
     g_list_foreach(style->plugins, (GFunc)dt_style_plugin_save, GINT_TO_POINTER(id));
-    gchar *local_name = dt_util_localize_segmented_name(style->info->name->str);
+    gchar *local_name = dt_util_localize_segmented_name(style->info->name->str, TRUE);
     dt_control_log(_("style %s was successfully imported"), local_name);
     g_free(local_name);
   }

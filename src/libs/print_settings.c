@@ -1162,7 +1162,9 @@ static void _update_style_label(dt_lib_print_settings_t *ps, const char *name)
   }
 
   // We use the string "none" to indicate that we don't apply any style to the export
-  char *localized_style = (name && name[0]) ? dt_util_localize_segmented_name(name) : g_strdup(_("none"));
+  char *localized_style = (name && name[0])
+    ? dt_util_localize_segmented_name(name, TRUE)
+    : g_strdup(_("none"));
 
   // Use only the leaf part of the segmented style name in the tooltip
   char *leaf = strrchr(localized_style, '|');

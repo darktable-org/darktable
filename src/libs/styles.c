@@ -572,7 +572,7 @@ static void _export_clicked(GtkWidget *w, dt_lib_styles_t *d)
       {
         dt_styles_save_to_file((char*)style->data, filedir, FALSE);
       }
-      gchar *local_name = dt_util_localize_segmented_name((char*)style->data);
+      gchar *local_name = dt_util_localize_segmented_name((char*)style->data, TRUE);
       dt_control_log(_("style %s was successfully exported"), local_name);
       g_free(local_name);
     }
