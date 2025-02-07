@@ -588,7 +588,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   else if(_has_prefix(variable, "VERSION.NAME")
           || _has_prefix(variable, "VERSION_NAME"))
   {
-    GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.version_name", NULL);
+    GList *res = dt_metadata_get_lock(params->imgid, "Xmp.darktable.version_name", NULL);
     if(res != NULL)
     {
       result = g_strdup((char *)res->data);
@@ -764,7 +764,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
           && g_strcmp0(params->jobcode, "infos") == 0)
   {
     escape = FALSE;
-    GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", NULL);
+    GList *res = dt_metadata_get_lock(params->imgid, "Xmp.darktable.colorlabels", NULL);
     for(GList *res_iter = res; res_iter; res_iter = g_list_next(res_iter))
     {
       const int dot_index = GPOINTER_TO_INT(res_iter->data);
@@ -781,7 +781,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     // TODO: currently we concatenate all the color labels with a ','
     // as a separator. Maybe it's better to only use the first/last
     // label?
-    GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", NULL);
+    GList *res = dt_metadata_get_lock(params->imgid, "Xmp.darktable.colorlabels", NULL);
     if(res != NULL)
     {
       GList *labels = NULL;
@@ -796,56 +796,6 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
       g_list_free(labels);
     }
     g_list_free(res);
-  }
-  else if(_has_prefix(variable, "TITLE")
-          || _has_prefix(variable, "Xmp.dc.title"))
-  {
-    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.title", NULL);
-    if(res != NULL)
-    {
-      result = g_strdup((char *)res->data);
-    }
-    g_list_free_full(res, &g_free);
-  }
-  else if(_has_prefix(variable, "DESCRIPTION")
-          || _has_prefix(variable, "Xmp.dc.description"))
-  {
-    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.description", NULL);
-    if(res != NULL)
-    {
-      result = g_strdup((char *)res->data);
-    }
-    g_list_free_full(res, &g_free);
-  }
-  else if(_has_prefix(variable, "CREATOR")
-          || _has_prefix(variable, "Xmp.dc.creator"))
-  {
-    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.creator", NULL);
-    if(res != NULL)
-    {
-      result = g_strdup((char *)res->data);
-    }
-    g_list_free_full(res, &g_free);
-  }
-  else if(_has_prefix(variable, "PUBLISHER")
-          || _has_prefix(variable, "Xmp.dc.publisher"))
-  {
-    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.publisher", NULL);
-    if(res != NULL)
-    {
-      result = g_strdup((char *)res->data);
-    }
-    g_list_free_full(res, &g_free);
-  }
-  else if(_has_prefix(variable, "RIGHTS")
-          || _has_prefix(variable, "Xmp.dc.rights"))
-  {
-    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.rights", NULL);
-    if(res != NULL)
-    {
-      result = g_strdup((char *)res->data);
-    }
-    g_list_free_full(res, &g_free);
   }
   else if(_has_prefix(variable, "OPENCL.ACTIVATED")
           || _has_prefix(variable, "OPENCL_ACTIVATED"))
@@ -982,6 +932,29 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
           || _has_prefix(variable, "DARKTABLE_NAME"))
     result = g_strdup(PACKAGE_NAME);
   else
+  {
+    // metadata
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+    for(GList* iter = dt_metadata_get_list(); iter; iter = iter->next)
+    {
+      dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
+      gchar *prefix = g_utf8_strup(dt_metadata_get_tag_subkey(metadata->tagname), -1);
+      gboolean found = FALSE;
+      if(_has_prefix(variable, prefix))
+      {
+        GList *res = dt_metadata_get(params->imgid, metadata->tagname, NULL);
+        if(res != NULL)
+          	result = g_strdup((char *)res->data);
+        g_list_free_full(res, g_free);
+        found = TRUE;
+      }
+      g_free(prefix);
+      if(found) break;
+    }
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+  }
+  
+  if(!result)
   {
     // go past what looks like an invalid variable. we only expect to
     // see [a-zA-Z]* in a variable name.

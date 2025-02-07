@@ -20,6 +20,7 @@
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
 #include "gui/gtkentry.h"
+#include "gui/metadata_tags.h"
 #include "imageio/imageio_module.h"
 #include "libs/lib_api.h"
 #ifdef GDK_WINDOWING_QUARTZ
@@ -43,14 +44,8 @@ typedef struct dt_lib_export_metadata_t
   GtkTreeView *view;
   GtkListStore *liststore;
   GtkWidget *dialog;
-  GtkTreeView *sel_view;
-  GtkWidget *sel_entry;
-  const gchar *sel_entry_text;
-  GList *taglist;
   GtkWidget *private, *synonyms, *omithierarchy;
 } dt_lib_export_metadata_t;
-
-const GList *dt_exif_get_exiv2_taglist();
 
 // find a string on the list
 static gboolean _find_metadata_iter_per_text(GtkTreeModel *model, GtkTreeIter *iter, gint col, const char *text)
@@ -75,25 +70,21 @@ static gboolean _find_metadata_iter_per_text(GtkTreeModel *model, GtkTreeIter *i
 }
 
 // add selected metadata tag to formula list
-static void _add_selected_metadata(GtkTreeView *view, dt_lib_export_metadata_t *d)
+static void _add_selected_metadata(gchar *tagname, dt_lib_export_metadata_t *d)
 {
   GtkTreeIter iter;
-  GtkTreeModel *model = gtk_tree_view_get_model(view);
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
-  if(gtk_tree_selection_get_selected(selection, &model, &iter))
+  if(!_find_metadata_iter_per_text(GTK_TREE_MODEL(d->liststore), NULL, DT_LIB_EXPORT_METADATA_COL_XMP, tagname))
   {
-    char *tagname;
-    gtk_tree_model_get(model, &iter, DT_LIB_EXPORT_METADATA_COL_XMP, &tagname, -1);
-    if(!_find_metadata_iter_per_text(GTK_TREE_MODEL(d->liststore), NULL, DT_LIB_EXPORT_METADATA_COL_XMP, tagname))
-    {
-      gtk_list_store_append(d->liststore, &iter);
-      gtk_list_store_set(d->liststore, &iter, DT_LIB_EXPORT_METADATA_COL_XMP, tagname,
-                            DT_LIB_EXPORT_METADATA_COL_FORMULA, "", -1);
-      selection = gtk_tree_view_get_selection(d->view);
-      gtk_tree_selection_select_iter(selection, &iter);
-    }
-    g_free(tagname);
+    gtk_list_store_append(d->liststore, &iter);
+    gtk_list_store_set(d->liststore,
+                       &iter,
+                       DT_LIB_EXPORT_METADATA_COL_XMP, tagname,
+                       DT_LIB_EXPORT_METADATA_COL_FORMULA, "",
+                       -1);
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(d->view);
+    gtk_tree_selection_select_iter(selection, &iter);
   }
+  g_free(tagname);
 }
 
 // choice of a metadata tag
@@ -102,112 +93,24 @@ static void _metadata_activated(GtkTreeView *tree_view,
                                 GtkTreeViewColumn *column,
                                 dt_lib_export_metadata_t *d)
 {
-  _add_selected_metadata(tree_view, d);
-}
-
-// routine to set individual visibility flag
-static gboolean _set_matching_tag_visibility(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, dt_lib_export_metadata_t *d)
-{
-  gboolean visible;
-  gchar *tagname = NULL;
-  gtk_tree_model_get(model, iter, DT_LIB_EXPORT_METADATA_COL_XMP, &tagname, -1);
-  if(!d->sel_entry_text[0])
-    visible = TRUE;
-  else
-  {
-    gchar *haystack = g_utf8_strdown(tagname, -1);
-    gchar *needle = g_utf8_strdown(d->sel_entry_text, -1);
-    visible = (g_strrstr(haystack, needle) != NULL);
-    g_free(haystack);
-    g_free(needle);
-  }
-  gtk_list_store_set(GTK_LIST_STORE(model), iter, DT_LIB_EXPORT_METADATA_COL_VISIBLE, visible, -1);
-  g_free(tagname);
-  return FALSE;
-}
-
-// set the metadata tag visibility aligned with filter
-static void _tag_name_changed(GtkEntry *entry, dt_lib_export_metadata_t *d)
-{
-  d->sel_entry_text = gtk_entry_get_text(GTK_ENTRY(d->sel_entry));
-  GtkTreeModel *model = gtk_tree_view_get_model(d->sel_view);
-  GtkTreeModel *store = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model));
-  gtk_tree_model_foreach(store, (GtkTreeModelForeachFunc)_set_matching_tag_visibility, d);
+  gchar *tagname = dt_metadata_tags_get_selected();
+  _add_selected_metadata(tagname, d);
 }
 
 // dialog to add metadata tag into the formula list
 static void _add_tag_button_clicked(GtkButton *button, dt_lib_export_metadata_t *d)
 {
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("select tag"), GTK_WINDOW(d->dialog),
-                                                  GTK_DIALOG_DESTROY_WITH_PARENT,
-                                                  _("_add"), GTK_RESPONSE_ACCEPT,
-                                                  _("_done"), GTK_RESPONSE_NONE, NULL);
-  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_NONE);
-  gtk_window_set_default_size(GTK_WINDOW(dialog), DT_PIXEL_APPLY_DPI(500), DT_PIXEL_APPLY_DPI(300));
-  GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
-  gtk_container_set_border_width(GTK_CONTAINER(vbox), 8);
-  gtk_box_pack_start(GTK_BOX(area), vbox, TRUE, TRUE, 0);
+  GtkWidget *dialog = dt_metadata_tags_dialog(d->dialog, _metadata_activated, d);
 
-  GtkWidget *entry = gtk_entry_new();
-  d->sel_entry = entry;
-  gtk_entry_set_text(GTK_ENTRY(entry), "");
-  gtk_widget_set_tooltip_text(entry, _("list filter"));
-  gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
-  gtk_box_pack_start(GTK_BOX(vbox), entry, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(entry), "changed", G_CALLBACK(_tag_name_changed), d);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
 
-  GtkWidget *w = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_box_pack_start(GTK_BOX(vbox), w, TRUE, TRUE, 0);
-  GtkTreeView *view = GTK_TREE_VIEW(gtk_tree_view_new());
-  d->sel_view = view;
-  gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(view));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("list of available tags. click 'add' button or double-click on tag to add the selected one"));
-  gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
-  GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-  GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes(_("tag"), renderer, "text", 0, NULL);
-  gtk_tree_view_append_column(view, col);
-  renderer = gtk_cell_renderer_text_new();
-  col = gtk_tree_view_column_new_with_attributes(_("type"), renderer, "text", 1, NULL);
-  gtk_tree_view_append_column(view, col);
-  GtkListStore *liststore = gtk_list_store_new(4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN);
-  GtkTreeModel *model = gtk_tree_model_filter_new(GTK_TREE_MODEL(liststore), NULL);
-  gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(model), DT_LIB_EXPORT_METADATA_COL_VISIBLE);
-
-  // populate the metadata tag list with exiv2 information
-  for(GList *tag = d->taglist; tag; tag = g_list_next(tag))
-  {
-    GtkTreeIter iter;
-    gtk_list_store_append(liststore, &iter);
-    const char *tagname = tag->data;
-    char *type = g_strstr_len(tagname, -1, ",");
-    if(type)
-    {
-      type[0] = '\0';
-      type++;
-    }
-    gtk_list_store_set(liststore, &iter, DT_LIB_EXPORT_METADATA_COL_XMP, tagname, DT_LIB_EXPORT_METADATA_COL_TYPE, type,
-        DT_LIB_EXPORT_METADATA_COL_VISIBLE, TRUE, -1);
-    if(type)
-    {
-      type--;
-      type[0] = ',';
-    }
-  }
-
-  gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(liststore), DT_LIB_EXPORT_METADATA_COL_XMP, GTK_SORT_ASCENDING);
-  gtk_tree_view_set_model(view, model);
-  g_object_unref(model);
-  g_signal_connect(G_OBJECT(view), "row-activated", G_CALLBACK(_metadata_activated), d);
-
-  #ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-  #endif
-    gtk_widget_show_all(dialog);
+  gtk_widget_show_all(dialog);
   while(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
   {
-    _add_selected_metadata(view, d);
+    gchar *tagname = dt_metadata_tags_get_selected();
+    _add_selected_metadata(tagname, d);
   }
   gtk_widget_destroy(dialog);
 }
@@ -373,7 +276,6 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(liststore), DT_LIB_EXPORT_METADATA_COL_XMP, GTK_SORT_ASCENDING);
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(liststore));
   g_object_unref(liststore);
-  d->taglist = (GList *)dt_exif_get_exiv2_taglist();
   GList *list = dt_util_str_to_glist("\1", metadata_presets);
   int32_t flags = 0;
   if(!g_list_is_empty(list))

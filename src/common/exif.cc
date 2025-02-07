@@ -16,6 +16,7 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/dtpthread.h"
 #define __STDC_FORMAT_MACROS
 
 #ifdef HAVE_CONFIG_H
@@ -420,12 +421,7 @@ const char *dt_xmp_keys[]
         "Xmp.darktable.change_timestamp",     "Xmp.darktable.export_timestamp",
         "Xmp.darktable.print_timestamp",      "Xmp.darktable.version_name",
         "Xmp.darktable.harmony_guide_type",   "Xmp.darktable.harmony_guide_rotation",
-        "Xmp.darktable.harmony_guide_width",
-        "Xmp.acdsee.notes",                   "Xmp.dc.creator",
-        "Xmp.dc.publisher",                   "Xmp.dc.title",
-        "Xmp.dc.description",                 "Xmp.dc.rights",
-        "Xmp.dc.format",                      "Xmp.xmpMM.DerivedFrom",
-        "Xmp.xmpMM.PreservedFileName" };
+        "Xmp.darktable.harmony_guide_width" };
 
 // The number of XmpBag XmpSeq keys that dt uses
 static const guint dt_xmp_keys_n = G_N_ELEMENTS(dt_xmp_keys);
@@ -468,6 +464,24 @@ static void _exif_value_str(const int value,
   g_free(str_value);
 }
 
+static void _deleteXmpTag(Exiv2::XmpData &xmp, const char *tag)
+{
+  Exiv2::XmpData::iterator pos = xmp.findKey(Exiv2::XmpKey(tag));
+
+  while(pos != xmp.end())
+  {
+    std::string key = pos->key();
+    const char *ckey = key.c_str();
+    size_t len = key.size();
+
+    // Stop iterating once the key no longer matches what we are
+    // trying to delete. This assumes sorted input.
+    if(!(g_str_has_prefix(ckey, tag)
+      && (ckey[len] == '[' || ckey[len] == '\0')))
+      break;
+    pos = xmp.erase(pos);
+  }
+}
 
 // Function to remove known dt keys and subtrees from xmpdata, so not
 // to append them twice. This should work because dt first reads all
@@ -475,24 +489,19 @@ static void _exif_value_str(const int value,
 static void _remove_known_keys(Exiv2::XmpData &xmp)
 {
   xmp.sortByKey();
+
+  // dt internal tags
   for(unsigned int i = 0; i < dt_xmp_keys_n; i++)
+    _deleteXmpTag(xmp, dt_xmp_keys[i]);
+
+  // now the tags from the metadata editor
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+  for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    Exiv2::XmpData::iterator pos = xmp.findKey(Exiv2::XmpKey(dt_xmp_keys[i]));
-
-    while(pos != xmp.end())
-    {
-      std::string key = pos->key();
-      const char *ckey = key.c_str();
-      size_t len = key.size();
-
-      // Stop iterating once the key no longer matches what we are
-      // trying to delete. This assumes sorted input.
-      if(!(g_str_has_prefix(ckey, dt_xmp_keys[i])
-           && (ckey[len] == '[' || ckey[len] == '\0')))
-        break;
-      pos = xmp.erase(pos);
-    }
+    const dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
+    _deleteXmpTag(xmp, metadata->tagname);
   }
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 }
 
 static void _remove_exif_keys(Exiv2::ExifData &exif,
@@ -581,11 +590,13 @@ static bool _exif_decode_xmp_data(dt_image_t *img,
     // passed to that function.
     if(version == -1 || version > 0)
     {
+      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
       if(!exif_read) dt_metadata_clear(imgs, FALSE);
-      for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+
+      for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
       {
-        const gchar *key = dt_metadata_get_key(i);
-        if(FIND_XMP_TAG(key))
+        dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
+        if(FIND_XMP_TAG(metadata->tagname))
         {
           char *value = strdup(pos->toString().c_str());
           char *adr = value;
@@ -596,10 +607,11 @@ static bool _exif_decode_xmp_data(dt_image_t *img,
             while(*value != ' ' && *value) value++;
             while(*value == ' ') value++;
           }
-          dt_metadata_set_import(img->id, key, value);
+          dt_metadata_set_import(img->id, metadata->tagname, value);
           free(adr);
         }
       }
+      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     }
 
     // If XMP file(s) are found, read the rating from here.
@@ -773,27 +785,27 @@ static bool _exif_decode_iptc_data(dt_image_t *img,
     if(FIND_IPTC_TAG("Iptc.Application2.Caption"))
     {
       std::string str = pos->print(/*&iptcData*/);
-      dt_metadata_set_import(img->id, "Xmp.dc.description", str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.description", str.c_str());
     }
     if(FIND_IPTC_TAG("Iptc.Application2.Copyright"))
     {
       std::string str = pos->print(/*&iptcData*/);
-      dt_metadata_set_import(img->id, "Xmp.dc.rights", str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.rights", str.c_str());
     }
     if(FIND_IPTC_TAG("Iptc.Application2.Byline"))
     {
       std::string str = pos->print(/*&iptcData*/);
-      dt_metadata_set_import(img->id, "Xmp.dc.creator", str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.creator", str.c_str());
     }
     else if(FIND_IPTC_TAG("Iptc.Application2.Writer"))
     {
       std::string str = pos->print(/*&iptcData*/);
-      dt_metadata_set_import(img->id, "Xmp.dc.creator", str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.creator", str.c_str());
     }
     else if(FIND_IPTC_TAG("Iptc.Application2.Contact"))
     {
       std::string str = pos->print(/*&iptcData*/);
-      dt_metadata_set_import(img->id, "Xmp.dc.creator", str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.creator", str.c_str());
     }
     if(FIND_IPTC_TAG("Iptc.Application2.DateCreated"))
     {
@@ -1762,12 +1774,12 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if(FIND_EXIF_TAG("Exif.Image.Artist"))
     {
       std::string str = pos->print(&exifData);
-      dt_metadata_set_import(img->id, "Xmp.dc.creator", str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.creator", str.c_str());
     }
     else if(FIND_EXIF_TAG("Exif.Canon.OwnerName"))
     {
       std::string str = pos->print(&exifData);
-      dt_metadata_set_import(img->id, "Xmp.dc.creator", str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.creator", str.c_str());
     }
 
     // FIXME: Should the UserComment go into the description? Or do we
@@ -1778,18 +1790,18 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       Exiv2::CommentValue value(str);
       std::string str2 = value.comment();
       if(str2 != "binary comment")
-        dt_metadata_set_import(img->id, "Xmp.dc.description", str2.c_str());
+        dt_metadata_set_import_lock(img->id, "Xmp.dc.description", str2.c_str());
     }
     else if(FIND_EXIF_TAG("Exif.Image.ImageDescription"))
     {
       std::string str = pos->print(&exifData);
-      dt_metadata_set_import(img->id, "Xmp.dc.description", str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.description", str.c_str());
     }
 
     if(FIND_EXIF_TAG("Exif.Image.Copyright"))
     {
       std::string str = pos->print(&exifData);
-      dt_metadata_set_import(img->id, "Xmp.dc.rights", str.c_str());
+      dt_metadata_set_import_lock(img->id, "Xmp.dc.rights", str.c_str());
     }
 
     if(!dt_conf_get_bool("ui_last/ignore_exif_rating"))
@@ -2180,46 +2192,44 @@ void dt_exif_apply_default_metadata(dt_image_t *img)
   if(dt_conf_get_bool("ui_last/import_apply_metadata")
      && !(img->job_flags & DT_IMAGE_JOB_NO_METADATA))
   {
-    char *str;
+    gchar *str;
 
-    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+    for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
     {
-      if(dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
+      dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
+
+      // don't import hidden stuff
+      if(metadata->visible)
       {
-        const char *name = dt_metadata_get_name(i);
-        char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-        const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-        g_free(setting);
-        // don't import hidden stuff
-        if(!hidden)
+        const char *name = dt_metadata_get_tag_subkey(metadata->tagname);
+        gchar *setting = g_strdup_printf("ui_last/import_last_%s", name);
+        str = dt_conf_get_string(setting);
+        if(str && str[0])
         {
-          setting = g_strdup_printf("ui_last/import_last_%s", name);
-          str = dt_conf_get_string(setting);
-          if(str && str[0])
+          // calculated metadata
+          dt_variables_params_t *params;
+          dt_variables_params_init(&params);
+          params->filename = img->filename;
+          params->jobcode = "import";
+          params->sequence = 0;
+          params->imgid = img->id;
+          params->img = (void *)img;
+          // at this time only Exif info is available
+          gchar *result = dt_variables_expand(params, str, FALSE);
+          dt_variables_params_destroy(params);
+          if(result && result[0])
           {
-            // calculated metadata
-            dt_variables_params_t *params;
-            dt_variables_params_init(&params);
-            params->filename = img->filename;
-            params->jobcode = "import";
-            params->sequence = 0;
-            params->imgid = img->id;
-            params->img = (void *)img;
-            // at this time only Exif info is available
-            gchar *result = dt_variables_expand(params, str, FALSE);
-            dt_variables_params_destroy(params);
-            if(result && result[0])
-            {
-              g_free(str);
-              str = result;
-            }
-            dt_metadata_set(img->id, dt_metadata_get_key(i), str, FALSE);
             g_free(str);
+            str = result;
           }
-          g_free(setting);
+          dt_metadata_set(img->id, metadata->tagname, str, FALSE);
+          g_free(str);
         }
+        g_free(setting);
       }
     }
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
     str = dt_conf_get_string("ui_last/import_last_tags");
     if(dt_is_valid_imgid(img->id)
@@ -2730,14 +2740,14 @@ int dt_exif_read_blob(uint8_t **buf,
       static const guint n_keys = G_N_ELEMENTS(keys);
       _remove_exif_keys(exifData, keys, n_keys);
 
-      GList *res = dt_metadata_get(imgid, "Xmp.dc.creator", NULL);
+      GList *res = dt_metadata_get_lock(imgid, "Xmp.dc.creator", NULL);
       if(res != NULL)
       {
         exifData["Exif.Image.Artist"] = (char *)res->data;
         g_list_free_full(res, &g_free);
       }
 
-      res = dt_metadata_get(imgid, "Xmp.dc.description", NULL);
+      res = dt_metadata_get_lock(imgid, "Xmp.dc.description", NULL);
       if(res != NULL)
       {
         char *desc = (char *)res->data;
@@ -2754,7 +2764,7 @@ int dt_exif_read_blob(uint8_t **buf,
         exifData["Exif.Image.ImageDescription"] = "";
 #endif
 
-      res = dt_metadata_get(imgid, "Xmp.dc.rights", NULL);
+      res = dt_metadata_get_lock(imgid, "Xmp.dc.rights", NULL);
       if(res != NULL)
       {
         exifData["Exif.Image.Copyright"] = (char *)res->data;
@@ -2767,7 +2777,7 @@ int dt_exif_read_blob(uint8_t **buf,
         exifData["Exif.Image.Copyright"] = "";
 #endif
 
-      res = dt_metadata_get(imgid, "Xmp.xmp.Rating", NULL);
+      res = dt_metadata_get_lock(imgid, "Xmp.xmp.Rating", NULL);
       if(res != NULL)
       {
         const int rating = GPOINTER_TO_INT(res->data) + 1;
@@ -4794,22 +4804,30 @@ static void _set_xmp_dt_metadata(Exiv2::XmpData &xmpData,
                               "SELECT key, value FROM main.meta_data WHERE id = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int keyid = sqlite3_column_int(stmt, 0);
-    if(export_flag
-       && (dt_metadata_get_type(keyid) != DT_METADATA_TYPE_INTERNAL))
+    const dt_metadata_t *metadata = dt_metadata_get_metadata_by_keyid(keyid);
+    if(metadata)
     {
-      const gchar *name = dt_metadata_get_name(keyid);
-      gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-      const uint32_t flag =  dt_conf_get_int(setting);
-      g_free(setting);
-      if(!(flag & (DT_METADATA_FLAG_PRIVATE | DT_METADATA_FLAG_HIDDEN)))
-        xmpData[dt_metadata_get_key(keyid)] = sqlite3_column_text(stmt, 1);
+      if(export_flag
+        && !metadata->internal)
+      {
+        if(metadata->visible && !metadata->priv)
+          xmpData[metadata->tagname] = sqlite3_column_text(stmt, 1);
+        else
+        {
+          Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey(metadata->tagname));
+          if(pos != xmpData.end()) xmpData.erase(pos);
+        }
+      }
+      else
+        xmpData[metadata->tagname] = sqlite3_column_text(stmt, 1);
     }
-    else
-      xmpData[dt_metadata_get_key(keyid)] = sqlite3_column_text(stmt, 1);
   }
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);  
   sqlite3_finalize(stmt);
 
   // Color labels
