@@ -100,6 +100,12 @@ changes (where available).
   collapse the module. This is especially useful when dealing with
   long modules with masks.
 
+- Presets can now be arranged in sub menus, like styles can, by
+  inserting | in their name between levels. The shortcuts
+  dialog/preferences tab now show these collapsible hierarchies for
+  styles and presets too (and the bug that style shortcuts were not
+  translated is fixed).
+
 ## Bug Fixes
 
 - N/A
