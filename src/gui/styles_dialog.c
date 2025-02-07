@@ -965,7 +965,7 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
 #define STYLE_TOOLTIP_MAX_WIDTH 30
 
   // Style name
-  char *localized_name = dt_util_localize_segmented_name(name);
+  char *localized_name = dt_util_localize_segmented_name(name, TRUE);
   gchar *esc_name = g_markup_printf_escaped("<b>%s</b>", localized_name);
   free(localized_name);
   label = gtk_label_new(NULL);
@@ -980,7 +980,7 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
 
   if(des && strlen(des) > 0)
   {
-    char *localized_des = dt_util_localize_segmented_name(des);
+    char *localized_des = dt_util_localize_segmented_name(des, TRUE);
     // If the name and/or description are long and become multi-line, it will look
     // hard to understand what is what, so we add a horizontal separator between them.
     gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);

@@ -30,7 +30,8 @@ const char *dt_util_localize_string(const char *s);
 
 /** localize a name with possibly multiple components separated by vertical bars */
 /** caller must g_free() return value */
-gchar *dt_util_localize_segmented_name(const char *s);
+gchar *dt_util_localize_segmented_name(const char *s,
+                                       const gboolean with_space);
 
 /** dynamically allocate and concatenate string */
 void dt_util_str_cat(gchar **str, const gchar *format, ...) __attribute__((format(printf, 2, 3)));

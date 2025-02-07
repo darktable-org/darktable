@@ -75,7 +75,7 @@ typedef struct dt_lib_export_t
   GtkWidget *export_masks;
   char *metadata_export;
   char *style_name;
-  dt_imageio_module_storage_t *storage_module; 
+  dt_imageio_module_storage_t *storage_module;
 } dt_lib_export_t;
 
 
@@ -211,7 +211,7 @@ void gui_update(dt_lib_module_t *self)
   gboolean export_enabled = TRUE;
   if(storage->export_enabled)
     export_enabled = storage->export_enabled(storage);
-  
+
   gtk_widget_set_sensitive(GTK_WIDGET(d->export_button),
                            has_act_on
                            && format_index != -1
@@ -438,7 +438,7 @@ static void _export_with_preset(const gchar *preset_name, dt_lib_module_t *self)
     const size_t op_params_size = sqlite3_column_bytes(stmt, 0);
 
     set_params(self, op_params, op_params_size);
-    
+
     gboolean login = TRUE;
     if(d->storage_module->storage_login)
       login = d->storage_module->storage_login(d->storage_module);
@@ -1142,7 +1142,9 @@ static void _update_style_label(dt_lib_export_t *d, const char *name)
   gtk_widget_set_visible(GTK_WIDGET(d->style_mode), name[0] != '\0');
 
   // We use the string "none" to indicate that we don't apply any style to the export
-  char *localized_style = name[0] ? dt_util_localize_segmented_name(name) : g_strdup(_("none"));
+  char *localized_style = name[0]
+    ? dt_util_localize_segmented_name(name, TRUE)
+    : g_strdup(_("none"));
 
   // Use only the leaf part of the segmented style name in the tooltip
   char *leaf = strrchr(localized_style, '|');
@@ -1272,7 +1274,7 @@ static gboolean _batch_preset_active(dt_lib_module_t *self)
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->batch_treeview));
   gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
   gboolean batch_preset_active = FALSE;
-  
+
   while(valid)
   {
     gboolean active;

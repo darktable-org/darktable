@@ -68,20 +68,24 @@ const char *dt_util_localize_string(const char *s)
     return s;
 }
 
-gchar *dt_util_localize_segmented_name(const char *s)
+gchar *dt_util_localize_segmented_name(const char *s,
+                                       const gboolean with_space)
 {
+  const char *sep = with_space ? " | " : "|";
+  const int sep_len = strlen(sep);
+
   gchar **split = g_strsplit(s, "|", 0);
   gchar *localized = NULL;
   if(split && split[0])
   {
     gsize loc_len = 1 + strlen(dt_util_localize_string(split[0]));
     for(int i = 1; split[i] != NULL; i++)
-      loc_len += strlen(dt_util_localize_string(split[i])) + strlen(" | ");
+      loc_len += strlen(dt_util_localize_string(split[i])) + sep_len;
     localized = g_new0(gchar, loc_len);
     gchar *end = g_stpcpy(localized, dt_util_localize_string(split[0]));
     for(int i = 1; split[i] != NULL; i++)
     {
-      end = g_stpcpy(end, " | ");
+      end = g_stpcpy(end, sep);
       end = g_stpcpy(end, dt_util_localize_string(split[i]));
     }
   }
