@@ -341,7 +341,7 @@ static float _action_process_color_label(gpointer target,
       const dt_imgid_t imgid = GPOINTER_TO_INT(imgs->data);
       if(imgid == darktable.develop->preview_pipe->output_imgid)
       {
-        GList *res = dt_metadata_get(imgid, "Xmp.darktable.colorlabels", NULL);
+        GList *res = dt_metadata_get_lock(imgid, "Xmp.darktable.colorlabels", NULL);
         gchar *result = NULL;
         for(GList *res_iter = res; res_iter; res_iter = g_list_next(res_iter))
         {

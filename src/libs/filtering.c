@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024 darktable developers.
+    Copyright (C) 2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,14 +19,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/darktable.h"
-#include "common/datetime.h"
-#include "common/debug.h"
-#include "common/film.h"
-#include "common/history.h"
-#include "common/iop_order.h"
-#include "common/map_locations.h"
 #include "common/metadata.h"
-#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -34,7 +27,6 @@
 #include "dtgtk/range.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "gui/preferences_dialogs.h"
 #include "libs/collect.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
@@ -43,7 +35,6 @@
 #include <gio/gunixmounts.h>
 #endif
 #ifdef GDK_WINDOWING_QUARTZ
-#include "osx/osx.h"
 #endif
 
 #include <locale.h>
@@ -898,19 +889,6 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
 
   _popup_add_item(spop, _("metadata"), 0, TRUE, NULL, NULL, self, 0.0);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_TAG);
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
-  {
-    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
-    const gchar *name = dt_metadata_get_name(keyid);
-    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-    g_free(setting);
-    const int meta_type = dt_metadata_get_type(keyid);
-    if(meta_type != DT_METADATA_TYPE_INTERNAL && !hidden)
-    {
-      ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_METADATA + i);
-    }
-  }
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_RATING_RANGE);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_RATING);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_COLORLABEL);
@@ -970,19 +948,6 @@ static void _populate_rules_combo(GtkWidget *w)
 
   dt_bauhaus_combobox_add_section(w, _("metadata"));
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TAG);
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
-  {
-    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
-    const gchar *name = dt_metadata_get_name(keyid);
-    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-    g_free(setting);
-    const int meta_type = dt_metadata_get_type(keyid);
-    if(meta_type != DT_METADATA_TYPE_INTERNAL && !hidden)
-    {
-      ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + i);
-    }
-  }
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING_RANGE);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);
@@ -1650,19 +1615,6 @@ static void _topbar_populate_rules_combo(GtkWidget *w, dt_lib_filtering_t *d)
   dt_bauhaus_combobox_add_section(w, _("metadata"));
   nb = dt_bauhaus_combobox_length(w);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TAG);
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
-  {
-    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
-    const gchar *name = dt_metadata_get_name(keyid);
-    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-    g_free(setting);
-    const int meta_type = dt_metadata_get_type(keyid);
-    if(meta_type != DT_METADATA_TYPE_INTERNAL && !hidden)
-    {
-      ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + i);
-    }
-  }
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING_RANGE);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);

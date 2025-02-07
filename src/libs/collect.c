@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,13 +23,11 @@
 #include "common/datetime.h"
 #include "common/debug.h"
 #include "common/film.h"
-#include "common/history.h"
 #include "common/map_locations.h"
 #include "common/metadata.h"
 #include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
-#include "control/jobs.h"
 #include "dtgtk/button.h"
 #include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
@@ -2192,35 +2190,26 @@ static void _list_view(dt_lib_collect_rule_t *dr)
         break;
 
       default:
-        if(property >= DT_COLLECTION_PROP_METADATA
-           && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)
+        if(property >= DT_COLLECTION_PROP_METADATA_OFFSET)
         {
-          const int keyid = dt_metadata_get_keyid_by_display_order
-            (property - DT_COLLECTION_PROP_METADATA);
-          const char *name = (gchar *)dt_metadata_get_name(keyid);
-          char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-          const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-          g_free(setting);
-          if(!hidden)
-          {
-            // clang-format off
-            snprintf(query, sizeof(query),
-                     "SELECT"
-                     " CASE WHEN value IS NULL THEN '%s' ELSE value END AS value,"
-                     " 1, COUNT(*) AS count,"
-                     " CASE WHEN value IS NULL THEN 0 ELSE 1 END AS force_order"
-                     " FROM main.images AS mi"
-                     " LEFT JOIN (SELECT id AS meta_data_id, value"
-                     "            FROM main.meta_data"
-                     "            WHERE key = %d)"
-                     "  ON id = meta_data_id"
-                     " WHERE %s"
-                     " GROUP BY lower(value)"
-                     " ORDER BY force_order ASC, lower(value) %s",
-                     _("not defined"), keyid, where_ext,
-                     sort_descending ? "DESC" : "ASC");
-            // clang-format on
-          }
+          const int keyid = property - DT_COLLECTION_PROP_METADATA_OFFSET;
+          // clang-format off
+          snprintf(query, sizeof(query),
+                    "SELECT"
+                    " CASE WHEN value IS NULL THEN '%s' ELSE value END AS value,"
+                    " 1, COUNT(*) AS count,"
+                    " CASE WHEN value IS NULL THEN 0 ELSE 1 END AS force_order"
+                    " FROM main.images AS mi"
+                    " LEFT JOIN (SELECT id AS meta_data_id, value"
+                    "            FROM main.meta_data"
+                    "            WHERE key = %d)"
+                    "  ON id = meta_data_id"
+                    " WHERE %s"
+                    " GROUP BY lower(value)"
+                    " ORDER BY force_order ASC, lower(value) %s",
+                    _("not defined"), keyid, where_ext,
+                    sort_descending ? "DESC" : "ASC");
+          // clang-format on
         }
         else
         // filmroll
@@ -2396,8 +2385,7 @@ static void _list_view(dt_lib_collect_rule_t *dr)
          || property == DT_COLLECTION_PROP_MODULE
          || property == DT_COLLECTION_PROP_ORDER
          || property == DT_COLLECTION_PROP_RATING
-         || (property >= DT_COLLECTION_PROP_METADATA
-             && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)))
+         || property >= DT_COLLECTION_PROP_METADATA_OFFSET))
   {
     gchar *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
     if(g_str_has_suffix(needle, "%"))
@@ -3156,17 +3144,16 @@ static void _geotag_changed(gpointer instance,
   }
 }
 
-static void metadata_changed(gpointer instance,
+static void _metadata_changed(gpointer instance,
                              int type,
                              gpointer self)
 {
   dt_lib_module_t *dm = (dt_lib_module_t *)self;
   dt_lib_collect_t *d = dm->data;
 
-  if(type == DT_METADATA_SIGNAL_HIDDEN
-     || type == DT_METADATA_SIGNAL_SHOWN)
+  if(type == DT_METADATA_SIGNAL_PREF_CHANGED)
   {
-    // hidden/shown metadata have changed - update the collection list
+    // metadata preferences have changed - update the collection list
     for(int i = 0; i < MAX_RULES; i++)
     {
       g_signal_handlers_block_matched(d->rule[i].combo,
@@ -3196,9 +3183,8 @@ static void metadata_changed(gpointer instance,
 
   // update collection if metadata have been hidden or a metadata collection is active
   const int prop = _combo_get_active_collection(d->rule[d->active_rule].combo);
-  if(type == DT_METADATA_SIGNAL_HIDDEN
-     || (prop >= DT_COLLECTION_PROP_METADATA
-         && prop < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER))
+  if(type == DT_METADATA_SIGNAL_PREF_CHANGED
+     || prop >= DT_COLLECTION_PROP_METADATA_OFFSET)
   {
     dt_collection_update_query(darktable.collection,
                                DT_COLLECTION_CHANGE_RELOAD,
@@ -3345,23 +3331,22 @@ static void _populate_collect_combo(GtkWidget *w)
 
     dt_bauhaus_combobox_add_section(w, _("metadata"));
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TAG);
-
-    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
-    {
-      const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
-      const gchar *name = dt_metadata_get_name(keyid);
-      gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-      const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-      g_free(setting);
-      const int meta_type = dt_metadata_get_type(keyid);
-      if(meta_type != DT_METADATA_TYPE_INTERNAL && !hidden)
-      {
-        ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + i);
-      }
-    }
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GEOTAGGING);
+
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+    for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
+    {
+      dt_metadata_t *metadata = iter->data;
+      if(!metadata->internal && metadata->visible)
+        // metadata name is user defined, so no localization here
+        dt_bauhaus_combobox_add_full(w, metadata->name,
+                                     DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                     GUINT_TO_POINTER(DT_COLLECTION_PROP_METADATA_OFFSET + metadata->key + 1),
+                                     NULL, TRUE);
+    }
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
     dt_bauhaus_combobox_add_section(w, _("times"));
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_DAY);
@@ -3829,7 +3814,7 @@ void gui_init(dt_lib_module_t *self)
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_FILMROLLS_REMOVED, filmrolls_removed);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_TAG_CHANGED, tag_changed);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_GEOTAG_CHANGED, _geotag_changed);
-  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_METADATA_CHANGED, metadata_changed);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_METADATA_CHANGED, _metadata_changed);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PREFERENCES_CHANGE, view_set_click);
 
   dt_action_register(DT_ACTION(self), N_("jump back to previous collection"),
@@ -4030,19 +4015,14 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_METERING_MODE);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_GROUP_ID);
 
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+  for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    if(dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
-    {
-      const char *name = dt_metadata_get_name(i);
-      gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-      const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-      g_free(setting);
-
-      if(!hidden)
-        luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_METADATA + i);
-    }
+    dt_metadata_t *metadata = iter->data;
+    if(!metadata->internal && metadata->visible)
+      luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_METADATA_OFFSET + metadata->key);
   }
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_LENS);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_FOCAL_LENGTH);

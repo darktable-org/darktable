@@ -923,6 +923,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_pthread_mutex_init(&(darktable.capabilities_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.exiv2_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.readFile_mutex), NULL);
+  dt_pthread_mutex_init(&(darktable.metadata_threadsafe), NULL);
   darktable.control = (dt_control_t *)calloc(1, sizeof(dt_control_t));
 
   // database
@@ -1761,7 +1762,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_exif_set_exiv2_taglist();
 
   // init metadata flags
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
   dt_metadata_init();
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
   darktable_splash_screen_set_progress(_("synchronizing local copies"));
   dt_image_local_copy_synch();
@@ -2171,6 +2174,7 @@ void dt_cleanup()
   dt_pthread_mutex_destroy(&(darktable.capabilities_threadsafe));
   dt_pthread_mutex_destroy(&(darktable.exiv2_threadsafe));
   dt_pthread_mutex_destroy(&(darktable.readFile_mutex));
+  dt_pthread_mutex_destroy(&(darktable.metadata_threadsafe));
 
   dt_exif_cleanup();
 

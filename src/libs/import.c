@@ -2571,11 +2571,13 @@ static void _set_default_preferences(dt_lib_module_t *self)
     }
   }
   // metadata
-  for(int i = 0; i < DT_METADATA_NUMBER; i++)
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+  for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    if(dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
+    dt_metadata_t *metadata = iter->data;
+    if(!metadata->internal)
     {
-      const char *metadata_name = dt_metadata_get_name(i);
+      const char *metadata_name = dt_metadata_get_tag_subkey(metadata->tagname);
       char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", metadata_name);
       const uint32_t flag = (dt_conf_get_int(setting) | DT_METADATA_FLAG_IMPORTED);
       dt_conf_set_int(setting, flag);
@@ -2585,6 +2587,8 @@ static void _set_default_preferences(dt_lib_module_t *self)
       g_free(setting);
     }
   }
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+
   // tags
   {
     dt_conf_set_bool("ui_last/import_last_tags_imported", TRUE);
@@ -2614,11 +2618,14 @@ static char *_get_current_configuration(dt_lib_module_t *self)
     }
   }
 
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+  for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    if(dt_metadata_get_type_by_display_order(i) != DT_METADATA_TYPE_INTERNAL)
+    dt_metadata_t *metadata = iter->data;
+
+    if(!metadata->internal)
     {
-      const char *metadata_name = dt_metadata_get_name_by_display_order(i);
+      const char *metadata_name = dt_metadata_get_tag_subkey(metadata->tagname);
       gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag",
                                        metadata_name);
       const gboolean imported = dt_conf_get_int(setting) & DT_METADATA_FLAG_IMPORTED;
@@ -2631,6 +2638,8 @@ static char *_get_current_configuration(dt_lib_module_t *self)
       g_free(setting);
     }
   }
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
+
   // must be the last (comma separated list)
   const gboolean imported = dt_conf_get_bool("ui_last/import_last_tags_imported");
   const char *tags_value = dt_conf_get_string_const("ui_last/import_last_tags");
@@ -2648,6 +2657,7 @@ static void _apply_preferences(const char *pref,
   _set_default_preferences(self);
 
   // set the presets
+  // TODO: splitting on "," fails if the user has entered a metadata value with a comma!
   GList *prefs = dt_util_str_to_glist(",", pref);
   for(GList *iter = prefs; iter; iter = g_list_next(iter))
   {
@@ -2676,8 +2686,6 @@ static void _apply_preferences(const char *pref,
     else if(g_strcmp0(metadata_name, "tags"))
     {
       // metadata
-      const int j = dt_metadata_get_keyid_by_name(metadata_name);
-      if(j == -1) continue;
       gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag",
                                        metadata_name);
       const uint32_t flag = (dt_conf_get_int(setting) & ~DT_METADATA_FLAG_IMPORTED) |

@@ -337,15 +337,15 @@ int dt_collection_update(const dt_collection_t *collection)
     {
       dt_util_str_cat
         (&selq_post,
-        " LEFT OUTER JOIN main.meta_data AS mt ON sel.id = mt.id AND mt.key = %d",
-        DT_METADATA_XMP_DC_TITLE);
+        " LEFT OUTER JOIN main.meta_data AS mt ON sel.id = mt.id"
+         " AND mt.key = (SELECT key FROM data.meta_data WHERE tagname = 'Xmp.dc.title')");
     }
     if(collection->params.sorts[DT_COLLECTION_SORT_DESCRIPTION])
     {
       dt_util_str_cat
         (&selq_post,
-        " LEFT OUTER JOIN main.meta_data AS md ON sel.id = md.id AND md.key = %d",
-        DT_METADATA_XMP_DC_DESCRIPTION);
+        " LEFT OUTER JOIN main.meta_data AS md ON sel.id = md.id"
+        " AND md.key = (SELECT key FROM data.meta_data WHERE tagname = 'Xmp.dc.description')");
     }
   }
 
@@ -657,22 +657,7 @@ const char *dt_collection_name_untranslated(const dt_collection_properties_t pro
     case DT_COLLECTION_PROP_LAST:
       return NULL;
     default:
-    {
-      if(prop >= DT_COLLECTION_PROP_METADATA
-         && prop < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)
-      {
-        const int i = prop - DT_COLLECTION_PROP_METADATA;
-        const int type = dt_metadata_get_type_by_display_order(i);
-        if(type != DT_METADATA_TYPE_INTERNAL)
-        {
-          char *name = (gchar *)dt_metadata_get_name_by_display_order(i);
-          char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-          const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-          free(setting);
-          if(!hidden) col_name = name;
-        }
-      }
-    }
+      return NULL;
   }
   return col_name;
 }
@@ -2263,11 +2248,10 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
     default:
       {
-        if(property >= DT_COLLECTION_PROP_METADATA
-           && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)
+        if(property >= DT_COLLECTION_PROP_METADATA_OFFSET)
         {
-          const int keyid =
-            dt_metadata_get_keyid_by_display_order(property - DT_COLLECTION_PROP_METADATA);
+          // metadata
+          const int keyid = property - DT_COLLECTION_PROP_METADATA_OFFSET;
           if(strcmp(escaped_text, _("not defined")) != 0)
             // clang-format off
             query = g_strdup_printf

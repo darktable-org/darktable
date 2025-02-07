@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2023 darktable developers.
+    Copyright (C) 2012-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -186,7 +186,7 @@ void gui_init(dt_imageio_module_storage_t *self)
                                            _("enter the path where to put exported images\nvariables support bash like string manipulation\n"
                                              "type '$(' to activate the completion and see the list of variables"),
                                            dt_conf_get_string_const("plugins/imageio/storage/latex/file_directory")));
-  dt_gtkentry_setup_completion(d->entry, dt_gtkentry_get_default_path_compl_list());
+  dt_gtkentry_setup_variables_completion(d->entry);
 
   GtkWidget *widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
   gtk_widget_set_name(widget, "non-flat");
@@ -297,6 +297,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     char *title = NULL, *description = NULL, *tags = NULL;
     GList *res_title, *res_desc, *res_subj;
 
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
     res_title = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
     if(res_title)
     {
@@ -310,6 +311,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     }
 
     res_subj = dt_metadata_get(imgid, "Xmp.dc.subject", NULL);
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
     if(res_subj)
     {
       // don't show the internal tags (darktable|...)

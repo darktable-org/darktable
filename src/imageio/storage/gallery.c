@@ -200,7 +200,7 @@ void gui_init(dt_imageio_module_storage_t *self)
         " string manipulation\n"
         "type '$(' to activate the completion and see the list of variables"),
       dt_conf_get_string_const("plugins/imageio/storage/gallery/file_directory")));
-  dt_gtkentry_setup_completion(d->entry, dt_gtkentry_get_default_path_compl_list());
+  dt_gtkentry_setup_variables_completion(d->entry);
 
   GtkWidget *widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
   gtk_widget_set_name(widget, "non-flat");
@@ -337,6 +337,7 @@ int store(dt_imageio_module_storage_t *self,
 
   if((metadata->flags & DT_META_METADATA) && !(metadata->flags & DT_META_CALCULATED))
   {
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
     res_title = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
     if(res_title)
     {
@@ -348,6 +349,7 @@ int store(dt_imageio_module_storage_t *self,
     {
       description = res_desc->data;
     }
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   }
 
   char relfilename[PATH_MAX] = { 0 }, relthumbfilename[PATH_MAX] = { 0 };

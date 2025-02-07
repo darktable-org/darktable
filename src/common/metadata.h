@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,84 +19,63 @@
 #pragma once
 
 #include "common/darktable.h"
-#include "gui/gtk.h"
 
 G_BEGIN_DECLS
 
-typedef enum dt_metadata_t
+typedef struct dt_metadata_t
 {
-  // do change the order. Must match with dt_metadata_def[] in metadata.c.
-  // just add new metadata before DT_METADATA_NUMBER when needed
-  // and this must also be synchronized with the collect.c module (legacy_presets).
-  DT_METADATA_XMP_DC_CREATOR,
-  DT_METADATA_XMP_DC_PUBLISHER,
-  DT_METADATA_XMP_DC_TITLE,
-  DT_METADATA_XMP_DC_DESCRIPTION,
-  DT_METADATA_XMP_DC_RIGHTS,
-  DT_METADATA_XMP_ACDSEE_NOTES,
-  DT_METADATA_XMP_VERSION_NAME,
-  DT_METADATA_XMP_IMAGE_ID,
-  DT_METADATA_XMP_PRESERVED_FILENAME,
-  DT_METADATA_NUMBER
-}
-dt_metadata_t;
+  uint32_t key;
+  gchar *tagname;
+  gchar *name;
+  uint32_t internal;
+  gboolean visible;
+  gboolean priv;
+  uint32_t display_order;
+} dt_metadata_t;
 
-typedef enum dt_metadata_type_t
-{
-  DT_METADATA_TYPE_USER,     // metadata for users
-  DT_METADATA_TYPE_OPTIONAL, // metadata hidden by default
-  DT_METADATA_TYPE_INTERNAL  // metadata for dt internal usage - the user cannot see it
-}
-dt_metadata_type_t;
+// for compatibility we need to keep the number of metadata fields we had
+// before PR #18036
+#define DT_METADATA_LEGACY_NUMBER 9
 
 typedef enum dt_metadata_signal_t
 {
-  DT_METADATA_SIGNAL_SHOWN,       // metadata set as shown
-  DT_METADATA_SIGNAL_HIDDEN,      // metadata set as hidden
-  DT_METADATA_SIGNAL_NEW_VALUE    // metadata value changed
+  DT_METADATA_SIGNAL_NEW_VALUE,     // metadata value changed
+  DT_METADATA_SIGNAL_PREF_CHANGED   // metadata preferences changed
 }
 dt_metadata_signal_t;
 
 typedef enum dt_metadata_flag_t
 {
-  DT_METADATA_FLAG_HIDDEN = 1 << 0,     // metadata set as shown
-  DT_METADATA_FLAG_PRIVATE = 1 << 1,    // metadata set as hidden
-  DT_METADATA_FLAG_IMPORTED = 1 << 2    // metadata value changed
+  DT_METADATA_FLAG_IMPORTED = 1 << 2    // metadata import
 }
 dt_metadata_flag_t;
 
-/** return the number of user metadata (!= DT_METADATA_TYPE_INTERNAL) */
-unsigned int dt_metadata_get_nb_user_metadata();
+/** return the list of metadata items */
+GList *dt_metadata_get_list();
 
-/** return the metadata key by display order */
-const char *dt_metadata_get_name_by_display_order(const uint32_t order);
+/** sort the list by display_order */
+void dt_metadata_sort();
 
-/** return the metadata keyid by display order */
-dt_metadata_t dt_metadata_get_keyid_by_display_order(const uint32_t order);
+/** add a metadata entry */
+gboolean dt_metadata_add_metadata(dt_metadata_t *metadata);
 
-/** return the metadata keyid by name */
-dt_metadata_t dt_metadata_get_keyid_by_name(const char* name);
+/** return the metadata by keyid */
+dt_metadata_t *dt_metadata_get_metadata_by_keyid(const uint32_t keyid);
 
-/** return the metadata type by display order */
-int dt_metadata_get_type_by_display_order(const uint32_t order);
-
-/** return the metadata name of the metadata keyid */
-const char *dt_metadata_get_name(const uint32_t keyid);
+/** return the metadata by tagname */
+dt_metadata_t *dt_metadata_get_metadata_by_tagname(const char *tagname);
 
 /** return the keyid of the metadata key */
-dt_metadata_t dt_metadata_get_keyid(const char* key);
+uint32_t dt_metadata_get_keyid(const char* key);
 
 /** return the key of the metadata keyid */
 const char *dt_metadata_get_key(const uint32_t keyid);
 
-/** return the metadata subeky of the metadata keyid */
-const char *dt_metadata_get_subkey(const uint32_t keyid);
-
 /** return the key of the metadata subkey */
 const char *dt_metadata_get_key_by_subkey(const char *subkey);
 
-/** return the type of the metadata keyid */
-int dt_metadata_get_type(const uint32_t keyid);
+/** return the last part of the tagname */
+const char *dt_metadata_get_tag_subkey(const char *tagname);
 
 /** init metadata flags */
 void dt_metadata_init();
@@ -104,8 +83,11 @@ void dt_metadata_init();
 /** Set metadata for a specific image, or all selected for an invalid id */
 void dt_metadata_set(const dt_imgid_t imgid, const char *key, const char *value, const gboolean undo_on); // duplicate.c, lua/image.c
 
+/** Set imported metadata for a specific image (with mutex lock) */
+void dt_metadata_set_import_lock(const dt_imgid_t imgid, const char *key, const char *value);
+
 /** Set imported metadata for a specific image */
-void dt_metadata_set_import(const dt_imgid_t imgid, const char *key, const char *value); // exif.cc, ligthroom.c
+void dt_metadata_set_import(const dt_imgid_t imgid, const char *key, const char *value);
 
 /** Set metadata (named keys) for a specific image, or all selected for id == -1. */
 /** list is a set of key, value */
@@ -118,8 +100,12 @@ void dt_metadata_set_list_id(const GList *img, const GList *metadata, const gboo
                              const gboolean undo_on);
 /** Get metadata (named keys) for a specific image, or all selected for an invalid imgid
     For keys which return a string, the caller has to make sure that it
+    is freed after usage. With mutex lock. */
+GList *dt_metadata_get_lock(const dt_imgid_t imgid, const char *key, uint32_t *count);
+/** Get metadata (named keys) for a specific image, or all selected for an invalid imgid
+    For keys which return a string, the caller has to make sure that it
     is freed after usage. */
-GList *dt_metadata_get(const dt_imgid_t imgid, const char *key, uint32_t *count); // exif.cc, variables.c, facebook.c, flicker.c, gallery.c, googlephoto.c, latex.c, piwigo.c, watermark.c, metadata_view.c, libs/metadata.c, print_settings.c, lua/image.c
+GList *dt_metadata_get(const dt_imgid_t imgid, const char *key, uint32_t *count);
 
 /** Get metadata (id keys) for a specific image. The caller has to free the list after usage. */
 GList *dt_metadata_get_list_id(const dt_imgid_t imgid); // libs/image.c

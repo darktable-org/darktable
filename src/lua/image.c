@@ -303,7 +303,7 @@ static int metadata_member(lua_State *L)
   if(lua_gettop(L) != 3)
   {
     const dt_image_t *my_image = checkreadimage(L, 1);
-    GList *res = dt_metadata_get(my_image->id, key, NULL);
+    GList *res = dt_metadata_get_lock(my_image->id, key, NULL);
     if(res)
       lua_pushstring(L, (char *)res->data);
     else
@@ -606,14 +606,18 @@ int dt_lua_init_image(lua_State *L)
   lua_pushcfunction(L, change_timestamp_member);
   dt_lua_type_register(L, dt_lua_image_t, "change_timestamp");
   // metadata
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+  for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
-    if(dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
+    dt_metadata_t *metadata = iter->data;
+
+    if(!metadata->internal)
     {
       lua_pushcfunction(L, metadata_member);
-      dt_lua_type_register(L, dt_lua_image_t, dt_metadata_get_subkey(i));
+      dt_lua_type_register(L, dt_lua_image_t, dt_metadata_get_tag_subkey(metadata->tagname));
     }
   }
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   // constant functions (i.e class methods)
   lua_pushcfunction(L, dt_lua_duplicate_image);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);

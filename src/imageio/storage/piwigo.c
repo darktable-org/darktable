@@ -1138,7 +1138,7 @@ void gui_init(dt_imageio_module_storage_t *self)
                  "variables support bash like string manipulation\n"
                  "type '$(' to activate the completion and see the list of variables"),
                dt_conf_get_string_const("plugins/imageio/storage/export/piwigo/filename_pattern")));
-  dt_gtkentry_setup_completion(ui->filename_pattern_entry, dt_gtkentry_get_default_path_compl_list());
+  dt_gtkentry_setup_variables_completion(ui->filename_pattern_entry);
   gtk_editable_set_position(GTK_EDITABLE(ui->filename_pattern_entry), -1);
 
   // action on conflict
@@ -1291,6 +1291,7 @@ int store(dt_imageio_module_storage_t *self,
   {
     // If title is not existing, then use the filename without
     // extension. If not, then use title instead
+    dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
     GList *title = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
     if(title != NULL)
     {
@@ -1317,6 +1318,7 @@ int store(dt_imageio_module_storage_t *self,
       author = g_strdup(auth->data);
       g_list_free_full(auth, &g_free);
     }
+    dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   }
 
   g_free(filename);
