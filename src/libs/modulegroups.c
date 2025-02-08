@@ -2927,6 +2927,7 @@ void gui_init(dt_lib_module_t *self)
   d->current = dt_conf_get_int("plugins/darkroom/groups");
   if(d->current == DT_MODULEGROUP_NONE) _lib_modulegroups_update_iop_visibility(self);
   gtk_widget_show_all(self->widget);
+  gtk_widget_set_no_show_all(d->deprecated, TRUE);
   gtk_widget_set_no_show_all(d->hbox_buttons, TRUE);
   gtk_widget_set_no_show_all(d->hbox_search_box, TRUE);
 
