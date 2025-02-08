@@ -277,7 +277,7 @@ See below (in "Using") how to start a test install of the unstable version witho
 
 #### Latest stable release
 
-5.0.0
+5.0.1
 
 The darktable project releases two major versions every year, on Summer and Winter Solstices, tagged with even numbers (e.g. 4.2, 4.4, 4.6, 4.8).
 Minor revisions are tagged with a third digit (e.g. 4.4.1, 4.4.2) and mostly provide bug fixes and camera support.
@@ -287,7 +287,7 @@ You may want to compile these stable releases yourself to get better performance
 git clone --recurse-submodules --depth 1 https://github.com/darktable-org/darktable.git
 cd darktable
 git fetch --tags
-git checkout tags/release-5.0.0
+git checkout tags/release-5.0.1
 ```
 
 ### Get submodules

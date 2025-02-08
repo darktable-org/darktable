@@ -22,7 +22,7 @@ $ sha256sum darktable-5.0.1-arm64-13.5.dmg
 $ sha256sum darktable-5.0.1-win64.exe
 ??? darktable-5.0.1-win64.exe
 
-$ sha256sum darktable-4.8.1-x86_64.AppImage
+$ sha256sum darktable-5.0.1-x86_64.AppImage
 ???  darktable-5.0.1-x86_64.AppImage
 ```
 
@@ -32,11 +32,11 @@ You are strongly advised to take a backup first.
 
 #### Important note: to make sure that Darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
 
-Since Darktable 4.8:
+Since Darktable 5.0.0:
 
-- 1198 commits to Darktable+rawspeed
--  505 pull requests handled
--   45 issues closed
+- 105 commits to Darktable+rawspeed
+-  57 pull requests handled
+-  15 issues closed
 
 _Please note that the Darktable documentation is not currently complete for release 5.0
 and contributions are greatly appreciated. Please see the
@@ -46,7 +46,7 @@ for more information on how to contribute._
 ## The Big Ones
 
 The following is a summary of the main features added to Darktable
-5.0. Please see the user manual for more details of the individual
+5.0.1. Please see the user manual for more details of the individual
 changes (where available).
 
 - N/A
@@ -59,14 +59,14 @@ changes (where available).
 
 - Improved performance of discarding history of selected images.
 
-- Center collapsible module section labels.
-
 ## Other Changes
 
 - Harmonized style selection in print settings with the update made in
   the export module for release 5.0.
 
 - Darktable now includes the Lensfun database into the AppImage.
+
+- Center collapsible module section labels.
 
 ## Bug Fixes
 
@@ -177,7 +177,8 @@ changes (where available).
   metadata fields unless the user selects all of the checkboxes in the
   export module's preference options.
 
-- Release 4.8 drops support for macOS versions older than 13.5.
+- Starting with release 4.8, macOS versions older than 13.5 are not
+  supported.
 
 ## Changed Dependencies
 
@@ -187,43 +188,29 @@ changes (where available).
 
 ### Optional
 
-- n/a
+- N/A
 
 ## RawSpeed changes
 
 - Fujifilm GFX cameras now use the vendor supplied crop
 
-## Camera support, compared to 4.8
+## Camera support, compared to 5.0.1
 
 ### Base Support
 
-- Fujifilm X-M5 (compressed)
-- Fujifilm X-T50 (compressed)
-- Leica D-Lux 8 (DNG)
-- Leica M11-D (DNG)
-- Leica Q3 43 (DNG)
-- Minolta Alpha Sweet Digital
-- Minolta Alpha-7 Digital
-- Nikon Z50_2 (14bit-compressed)
-- Nikon Z6_3 (14bit-compressed)
-- Panasonic DC-FZ80D (4:3)
-- Panasonic DC-FZ82D (4:3)
-- Panasonic DC-FZ85 (4:3)
-- Panasonic DC-FZ85D (4:3)
-- Panasonic DC-G100D (4:3)
-- Phase One P20+
-- Sony ILCE-1M2
+- Leica SL3-S (DNG)
+- Minolta DiMAGE 5
+- Panasonic DC-S5D (3:2)
 
 ### White Balance Presets
 
-- Nikon Z6_3
-- Sony ILCE-6700
+- N/A
 
 ### Noise Profiles
 
-- Canon PowerShot G1 X
-- Leica M11
-- Nikon Z6_3
+- Fujifilm GFX100 II
+- Fujifilm X-S20
+- Fujifilm X100VI
 
 ### Missing Compression Mode Support
 
@@ -264,6 +251,7 @@ Support for the following cameras is suspended because no samples are available 
 - German
 - Hungarian
 - Japanese
+- Polish
 - Slovenian
 - Swedish
 - Ukrainian
