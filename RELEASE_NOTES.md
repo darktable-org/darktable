@@ -144,6 +144,11 @@ changes (where available).
 - Fixed a crash when the currently active module instance is being
   deleted.
 
+- We now support the correct orientation for JPEG XL if it was
+  specified in the format's metadata but not in Exif (or Exif is
+  missing). We also avoid over-transformation if it is specified in
+  both the basic data and Exif.
+
 ## Lua
 
 ### API Version
