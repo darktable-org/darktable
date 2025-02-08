@@ -30,22 +30,22 @@ When updating from the stable 4.8 series, please bear in mind that your edits wi
 
 You are strongly advised to take a backup first.
 
-#### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
+#### Important note: to make sure that Darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
 
-Since darktable 4.8:
+Since Darktable 4.8:
 
-- 1198 commits to darktable+rawspeed
+- 1198 commits to Darktable+rawspeed
 -  505 pull requests handled
 -   45 issues closed
 
-_Please note that the darktable documentation is not currently complete for release 5.0
+_Please note that the Darktable documentation is not currently complete for release 5.0
 and contributions are greatly appreciated. Please see the
 [project documentation](https://github.com/darktable-org/dtdocs#contributing)
 for more information on how to contribute._
 
 ## The Big Ones
 
-The following is a summary of the main features added to darktable
+The following is a summary of the main features added to Darktable
 5.0. Please see the user manual for more details of the individual
 changes (where available).
 
@@ -58,6 +58,8 @@ changes (where available).
 ## Performance Improvements
 
 - Improved performance of discarding history of selected images.
+
+- Center collapsible module section labels.
 
 ## Other Changes
 
@@ -79,7 +81,7 @@ changes (where available).
   listing none of the processing modules.
 
 - Fix iop-order user presets use. It was not possible to get a user's
-  iop-order preset to be applied as the darktable internal presets
+  iop-order preset to be applied as the Darktable internal presets
   where always picked up first.
 
 - Fixed a crash in variable expansion for $(SEQUENCE[n,m]).
@@ -115,9 +117,9 @@ changes (where available).
 - Fixed a possible crash when using <kbd>Ctrl+z</kbd> reproduced on
   macOS.
 
-- Fixed darktable crashing in enlargecanvas module.
+- Fixed Darktable crashing in enlarge-canvas module.
 
-- Fixed darktable crashing using details mask due to bad tiling.
+- Fixed Darktable crashing using details mask due to bad tiling.
 
 - Fixed a hash calculation bug leading to pixelpipe instabilities.
 
@@ -125,6 +127,22 @@ changes (where available).
   then 1000.
 
 - Fixed crash on macOS when closing the darkroom's second window.
+
+- Fixed possible jump in filmstrip when entering darkroom from full
+  preview.
+
+- Fixed a performance regression in haze removal module.
+
+- Fixed reading palette-based PNG with transparency.
+
+- Fixed possible crash in lens correction module when changing camera
+  and/or lens model.
+
+- Fixed crash after deleting style or preset that was selected in
+  shortcuts dialog.
+
+- Fixed a crash when the currently active module instance is being
+  deleted.
 
 ## Lua
 
@@ -150,7 +168,7 @@ changes (where available).
 
 - When exporting to AVIF, EXR, JPEG XL, or XCF, selecting specific
   metadata (e.g. geo-tag or creator) is not currently possible. For
-  AVIF, EXR, JPEG XL, and XCF formats, darktable will not include any
+  AVIF, EXR, JPEG XL, and XCF formats, Darktable will not include any
   metadata fields unless the user selects all of the checkboxes in the
   export module's preference options.
 
