@@ -280,9 +280,13 @@ static gboolean _adjust_header_position(GtkWidget *widget, cairo_t *cr, GtkWidge
   GtkAdjustment *adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw));
   gdouble value = gtk_adjustment_get_value(adjustment);
 
-  gtk_widget_set_margin_top(header,
-    CLAMP(value - allocation.y, 0, allocation.height - gtk_widget_get_allocated_height(header)));
-  dt_gui_widget_reallocate_now(widget);
+  int curr_margin_top = gtk_widget_get_margin_top(header);
+  int new_margin_top = CLAMP(value - allocation.y, 0, allocation.height - gtk_widget_get_allocated_height(header));
+  if(new_margin_top != curr_margin_top)
+  {
+    gtk_widget_set_margin_top(header, new_margin_top);
+    dt_gui_widget_reallocate_now(widget);
+  }
 
   return FALSE;
 }
