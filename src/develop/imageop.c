@@ -2503,10 +2503,9 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module,
     while(iop)
     {
       dt_iop_module_t *m = iop->data;
-      if(m != module && m->expander && (dt_iop_shown_in_group(m, current_group) || !group_only))
+      if(m != module && (dt_iop_shown_in_group(m, current_group) || !group_only))
       {
         all_other_closed = all_other_closed && !m->expanded;
-        gtk_widget_set_margin_top(DTGTK_EXPANDER(m->expander)->header_evb, 0); // don't scroll to module if at top
         _gui_set_single_expanded(m, FALSE);
       }
 

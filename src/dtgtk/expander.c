@@ -68,7 +68,6 @@ GtkWidget *dtgtk_expander_get_body_event_box(GtkDarktableExpander *expander)
 static GtkWidget *_scroll_widget = NULL;
 static GtkWidget *_last_expanded = NULL;
 static GtkWidget *_drop_widget = NULL;
-static GtkWidget *_collapsing_top = NULL;
 static GtkAllocation _start_pos = {0};
 
 void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expanded)
@@ -90,11 +89,6 @@ void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expand
         gtk_widget_get_allocation(_last_expanded, &_start_pos);
         _start_pos.x = gtk_adjustment_get_value(gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw)));
       }
-    }
-    else
-    {
-      if(gtk_widget_get_margin_top(expander->header_evb) > 0)
-        _collapsing_top = GTK_WIDGET(expander);
     }
 
     GtkWidget *frame = expander->body;
@@ -175,18 +169,14 @@ static gboolean _expander_scroll(GtkWidget *widget, GdkFrameClock *frame_clock, 
 
 static void _expander_resize(GtkWidget *widget, GdkRectangle *allocation, gpointer user_data)
 {
-  GtkDarktableExpander *expander = DTGTK_EXPANDER(widget);
-  gtk_widget_set_margin_top(expander->frame, gtk_widget_get_allocated_height(expander->header));
 
   if(widget == _scroll_widget ||
      _drop_widget ? widget != _drop_widget :
-     _collapsing_top ? widget != _collapsing_top :
      ((!(gtk_widget_get_state_flags(user_data) & GTK_STATE_FLAG_SELECTED) ||
        gtk_widget_get_allocated_height(widget) == _start_pos.height) &&
       (!darktable.lib->gui_module || darktable.lib->gui_module->expander != widget)))
     return;
 
-  _collapsing_top = NULL;
   _scroll_widget = widget;
   GdkFrameClock *clock = gtk_widget_get_frame_clock(widget);
   if(clock)
@@ -268,25 +258,6 @@ static void dtgtk_expander_init(GtkDarktableExpander *expander)
 {
 }
 
-static gboolean _adjust_header_position(GtkWidget *widget, cairo_t *cr, GtkWidget *header)
-{
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  if(allocation.height <= 1) return FALSE;
-
-  GtkWidget *sw = gtk_widget_get_ancestor(widget, GTK_TYPE_SCROLLED_WINDOW);
-  if(!sw) return FALSE;
-
-  GtkAdjustment *adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw));
-  gdouble value = gtk_adjustment_get_value(adjustment);
-
-  gtk_widget_set_margin_top(header,
-    CLAMP(value - allocation.y, 0, allocation.height - gtk_widget_get_allocated_height(header)));
-  dt_gui_widget_reallocate_now(widget);
-
-  return FALSE;
-}
-
 // public functions
 GtkWidget *dtgtk_expander_new(GtkWidget *header, GtkWidget *body)
 {
@@ -312,13 +283,8 @@ GtkWidget *dtgtk_expander_new(GtkWidget *header, GtkWidget *body)
   gtk_revealer_set_reveal_child(GTK_REVEALER(expander->frame), TRUE);
   gtk_container_add(GTK_CONTAINER(expander->frame), frame);
 
-  GtkWidget *overlay = gtk_overlay_new();
-  gtk_container_add(GTK_CONTAINER(overlay), expander->frame);
-  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), expander->header_evb);
-  gtk_widget_set_valign(expander->header_evb, GTK_ALIGN_START);
-  gtk_container_add(GTK_CONTAINER(expander), overlay);
-  if(!g_strcmp0(gtk_widget_get_name(header), "module-header"))
-    g_signal_connect(expander, "draw", G_CALLBACK(_adjust_header_position), expander->header_evb);
+  gtk_box_pack_start(GTK_BOX(expander), expander->header_evb, TRUE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(expander), expander->frame, TRUE, FALSE, 0);
 
   g_signal_connect(expander->header_evb, "drag-begin", G_CALLBACK(_expander_drag_begin), NULL);
   g_signal_connect(expander->header_evb, "drag-end", G_CALLBACK(_expander_drag_end), NULL);
