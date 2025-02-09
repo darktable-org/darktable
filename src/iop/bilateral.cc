@@ -37,7 +37,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-extern "C" {
+G_BEGIN_DECLS
 
 /**
  * implementation of the 5d-color bilateral filter using andrew adams
@@ -383,7 +383,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->blue, 4);
 }
 
-} // extern "C"
+G_END_DECLS
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -24,9 +24,7 @@
 #include <gtk/gtk.h>
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 #define DT_GUI_IOP_MODULE_CONTROL_SPACING 0
 
@@ -573,9 +571,7 @@ void dt_gui_simulate_button_event(GtkWidget *widget,
 // Setup auto-commit on focus loss for editable renderers
 void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer, GtkCellEditable **active_editable);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

@@ -20,9 +20,7 @@
 
 #include <gtk/gtk.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+G_BEGIN_DECLS
 
 float dt_osx_get_ppd();
 void dt_osx_disallow_fullscreen(GtkWidget *widget);
@@ -32,9 +30,8 @@ void dt_osx_prepare_environment();
 void dt_osx_focus_window();
 gboolean dt_osx_open_url(const char *url);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

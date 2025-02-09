@@ -22,9 +22,7 @@
 
 #ifdef FULL_API_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+G_BEGIN_DECLS
 
 #include <glib.h>
 #include <cairo/cairo.h>
@@ -104,9 +102,7 @@ DEFAULT(gboolean, preset_autoapply, struct dt_lib_module_t *self);
 
 #pragma GCC visibility pop
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif // FULL_API_H
 

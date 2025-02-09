@@ -20,9 +20,7 @@
 
 #ifdef FULL_API_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+G_BEGIN_DECLS
 
 #include <cairo/cairo.h>
 #include <glib.h>
@@ -68,9 +66,7 @@ OPTIONAL(GSList *, mouse_actions, const struct dt_view_t *self);
 
 #pragma GCC visibility pop
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif // FULL_API_H
 

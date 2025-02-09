@@ -140,9 +140,7 @@ typedef unsigned int u_int;
 // for signal debugging symbols
 #include "control/signal.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 /* Create cloned functions for various CPU SSE generations */
 /* See for instructions https://hannes.hauswedell.net/post/2017/12/09/fmv/ */
@@ -983,9 +981,7 @@ static inline gboolean dt_check_gimpmode_ok(const char *mode)
   return darktable.gimp.mode ? !darktable.gimp.error && strcmp(darktable.gimp.mode, mode) == 0 : FALSE;
 }
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

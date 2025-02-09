@@ -23,9 +23,7 @@
 #include "develop/pixelpipe.h"
 
 /** wrapper around exiv2, C++ */
-#ifdef __cplusplus
-extern "C" {
-#endif
+G_BEGIN_DECLS
 
 typedef enum dt_dng_illuminant_t // from adobes dng_sdk
 {
@@ -135,9 +133,7 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
 /** look for basic info in data. used import jobs */
 void dt_exif_get_basic_data(const uint8_t *data, size_t size, dt_image_basic_exif_t *basic_exif);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

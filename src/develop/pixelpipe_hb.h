@@ -27,19 +27,9 @@
 #include "develop/pixelpipe_cache.h"
 #include "imageio/imageio_common.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 #define DT_PIPECACHE_MIN 2
-
-/**
- * struct used by iop modules to connect to pixelpipe.
- * data can be used to store whatever private data and
- * will be freed at the end.
- */
-struct dt_iop_module_t;
-struct dt_iop_order_iccprofile_info_t;
 
 typedef struct dt_dev_pixelpipe_iop_t
 {
@@ -76,12 +66,12 @@ typedef struct dt_dev_pixelpipe_iop_t
 
 typedef enum dt_dev_pixelpipe_change_t
 {
-  DT_DEV_PIPE_UNCHANGED = 0,        // no event
+  DT_DEV_PIPE_UNCHANGED   = 0,      // no event
   DT_DEV_PIPE_TOP_CHANGED = 1 << 0, // only params of top element changed
-  DT_DEV_PIPE_REMOVE = 1 << 1,      // possibly elements of the pipe have to be removed
-  DT_DEV_PIPE_SYNCH
-  = 1 << 2, // all nodes up to end need to be synched, but no removal of module pieces is necessary
-  DT_DEV_PIPE_ZOOMED = 1 << 3 // zoom event, preview pipe does not need changes
+  DT_DEV_PIPE_REMOVE      = 1 << 1, // possibly elements of the pipe have to be removed
+  DT_DEV_PIPE_SYNCH       = 1 << 2, // all nodes up to end need to be synched,
+                                    // but no removal of module pieces is necessary
+  DT_DEV_PIPE_ZOOMED      = 1 << 3  // zoom event, preview pipe does not need changes
 } dt_dev_pixelpipe_change_t;
 
 typedef enum dt_dev_pixelpipe_status_t
@@ -335,9 +325,7 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
                                   float *src,
                                   const struct dt_iop_module_t *target_module);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

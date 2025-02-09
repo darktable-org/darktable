@@ -18,9 +18,7 @@
 
 #pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+G_BEGIN_DECLS
 
 #include "common/image.h"
 #include "common/mipmap_cache.h"
@@ -34,9 +32,7 @@ uint32_t dt_rawspeed_crop_dcraw_filters(uint32_t filters, uint32_t crop_x, uint3
 dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filename,
                                              dt_mipmap_buffer_t *buf);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

@@ -25,9 +25,7 @@
 #include <glib.h>
 #include <inttypes.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 /** return value of image io functions. */
 typedef enum dt_imageio_retval_t
@@ -634,9 +632,7 @@ int32_t dt_image_get_exposure_program_id(const char *name);
 int32_t dt_image_get_metering_mode_id(const char *name);
 int32_t dt_image_get_camera_id(const char *maker, const char *model);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
