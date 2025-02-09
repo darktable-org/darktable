@@ -37,9 +37,7 @@
 
 #pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+G_BEGIN_DECLS
 
 typedef unsigned long long fsblkcnt_t;
 typedef unsigned long long fsfilcnt_t;
@@ -61,9 +59,7 @@ struct statvfs
 
 int statvfs(const char *path, struct statvfs *buf);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

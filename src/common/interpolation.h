@@ -19,7 +19,7 @@
 #pragma once
 
 #include "common/opencl.h"
-#include "develop/pixelpipe_hb.h"
+#include "develop/pixelpipe.h"
 
 G_BEGIN_DECLS
 

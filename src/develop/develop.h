@@ -29,11 +29,7 @@
 #include "control/settings.h"
 #include "develop/imageop.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
-struct dt_iop_module_t;
+G_BEGIN_DECLS
 
 typedef struct dt_dev_history_item_t
 {
@@ -632,9 +628,7 @@ static inline struct dt_iop_module_t *dt_dev_gui_module(void)
   return darktable.develop ? darktable.develop->gui_module : NULL;
 }
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

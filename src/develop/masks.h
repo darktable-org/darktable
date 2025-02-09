@@ -29,9 +29,7 @@
 
 #define DEVELOP_MASKS_VERSION (6)
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 /**forms types */
 typedef enum dt_masks_type_t
@@ -1143,9 +1141,7 @@ static inline void dt_masks_get_image_size(float *width,
   if(iheight) *iheight = preview->iheight;
 }
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

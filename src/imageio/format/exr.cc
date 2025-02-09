@@ -40,9 +40,7 @@
 #include <memory>
 #include <utility>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+G_BEGIN_DECLS
 
 DT_MODULE(5)
 
@@ -628,9 +626,7 @@ void gui_reset(dt_imageio_module_format_t *self)
   dt_bauhaus_combobox_set(gui->compression, dt_confgen_get_int("plugins/imageio/format/exr/compression", DT_DEFAULT));
 }
 
-#ifdef __cplusplus
-} // extern "C"
-#endif
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

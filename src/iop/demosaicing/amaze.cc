@@ -28,7 +28,7 @@
 #include "develop/imageop_math.h"
 #include "common/math.h"
 
-extern "C" {
+G_BEGIN_DECLS
 
 static inline float _clampnan(const float x, const float m, const float M)
 {
@@ -1351,7 +1351,8 @@ void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
 /*==================================================================================
  * end of raw therapee code
  *==================================================================================*/
-}
+
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

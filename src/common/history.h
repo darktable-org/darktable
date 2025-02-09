@@ -24,9 +24,7 @@
 #include "develop/imageop.h"
 #include "develop/blend.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 struct dt_develop_t;
 struct dt_iop_module_t;
@@ -188,9 +186,7 @@ void dt_history_hash_read(const dt_imgid_t imgid,
 /** release memory for hash values */
 void dt_history_hash_free(dt_history_hash_values_t *hash);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
