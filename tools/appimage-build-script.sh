@@ -59,7 +59,7 @@ wget -c --no-verbose "https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-
 chmod +x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-gtk.sh
 
 export DEPLOY_GTK_VERSION=3
-export VERSION=$(sh ../tools/get_git_version_string.sh)
+export LINUXDEPLOY_OUTPUT_VERSION=$(sh ../tools/get_git_version_string.sh)
 export DISABLE_COPYRIGHT_FILES_DEPLOYMENT=1
 
 # Instruct LDAI (LinuxDeploy AppImage plugin) to embed AppImage update information
