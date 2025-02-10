@@ -1,3 +1,4 @@
+
 We're proud to announce the new bug-fix release of darktable, 5.0.1!
 
 The github release is here: [https://github.com/darktable-org/darktable/releases/tag/release-5.0.1](https://github.com/darktable-org/darktable/releases/tag/release-5.0.1).
@@ -8,22 +9,22 @@ The checksums are:
 
 ```
 $ sha256sum darktable-5.0.1.tar.xz
-??? darktable-5.0.1.tar.xz
+4a918d094ebba983ef67a10cc715c3d7e8ca738009920a9ff65d33417b6dd984  darktable-5.0.1.tar.xz
 
 $ sha256sum darktable-5.0.1-x86_64.dmg
-??? darktable-5.0.1-x86_64.dmg
+ce05f2a9efa4cde090a939e42813ee98cf98f5b5e6a14304c9d8c3d71a589a01  darktable-5.0.1-x86_64.dmg
 
 $ sha256sum darktable-5.0.1-arm64.dmg
-??? darktable-5.0.1-arm64.dmg
+66296ab8d26e4ac14061a5407eafe0f31ddb7ac1de9995bd2e05043e9c0b0c60  darktable-5.0.1-arm64.dmg
 
 $ sha256sum darktable-5.0.1-arm64-13.5.dmg
-??? darktable-5.0.1-arm64-13.5.dmg
+19878fca36ab52d6b629ae6b372345665809df3941fd9e168b470237ed6cb4b9  darktable-5.0.1-arm64-13.5.dmg
 
 $ sha256sum darktable-5.0.1-win64.exe
-??? darktable-5.0.1-win64.exe
+2ea64535f1d42793f2ef53aec971eca43818748aba036b5e778624297ea0fb34  darktable-5.0.1-win64.exe
 
 $ sha256sum darktable-5.0.1-x86_64.AppImage
-???  darktable-5.0.1-x86_64.AppImage
+2f928bdf70a1a3b4bd8786c890f070268f06b28963a70e324c97ffd3be09f5f0  darktable-5.0.1-x86_64.AppImage
 ```
 
 When updating from the stable 4.8 series, please bear in mind that your edits will be preserved during this process, but the new library and configuration will no longer be usable with 4.8.
@@ -171,14 +172,20 @@ changes (where available).
 
 ## Notes
 
+- The AppImage package is compatible with distribution releases that
+  have glibc version 2.35 or higher. For example, if we consider some
+  popular distributions, Ubuntu 22.04, Debian 12, Fedora 36 and newer
+  releases are compatible.
+
+- The macOS `*-x86_64.dmg` and `*-arm64-13.5.dmg` packages require at
+  least macOS 13.5 (Ventura), the `*-arm64.dmg` package requires at
+  least macOS 14.0 (Sonoma).
+
 - When exporting to AVIF, EXR, JPEG XL, or XCF, selecting specific
   metadata (e.g. geo-tag or creator) is not currently possible. For
   AVIF, EXR, JPEG XL, and XCF formats, Darktable will not include any
   metadata fields unless the user selects all of the checkboxes in the
   export module's preference options.
-
-- Starting with release 4.8, macOS versions older than 13.5 are not
-  supported.
 
 ## Changed Dependencies
 
@@ -194,7 +201,7 @@ changes (where available).
 
 - Fujifilm GFX cameras now use the vendor supplied crop
 
-## Camera support, compared to 5.0.1
+## Camera support, compared to 5.0.0
 
 ### Base Support
 
