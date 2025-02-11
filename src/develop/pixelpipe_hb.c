@@ -263,7 +263,7 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->output_profile_info = NULL;
   pipe->runs = 0;
   pipe->bcache_data = NULL;
-  pipe->bcache_hash = 0;
+  pipe->bcache_hash = DT_INVALID_CACHEHASH;
   return dt_dev_pixelpipe_cache_init(pipe, entries, size, memlimit);
 }
 
@@ -435,7 +435,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe,
     piece->module = module;
     piece->pipe = pipe;
     piece->data = NULL;
-    piece->hash = 0;
+    piece->hash = DT_INVALID_CACHEHASH;
     piece->process_cl_ready = FALSE;
     piece->process_tiling_ready = FALSE;
     piece->raster_masks = g_hash_table_new_full(g_direct_hash,
@@ -579,7 +579,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
   {
     dt_dev_pixelpipe_iop_t *piece = nodes->data;
-    piece->hash = 0;
+    piece->hash = DT_INVALID_CACHEHASH;
     piece->enabled = piece->module->default_enabled;
     dt_iop_commit_params(piece->module,
                          piece->module->default_params,
@@ -2227,7 +2227,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         if(success_opencl)
         {
           const gboolean relevant = _piece_fast_blend(piece, module);
-          const dt_hash_t phash = relevant ? _piece_process_hash(piece, roi_out, module, pos) : 0;
+          const dt_hash_t phash = relevant ? _piece_process_hash(piece, roi_out, module, pos) : DT_INVALID_CACHEHASH;
           const gboolean bcaching = relevant ? pipe->bcache_data && phash == pipe->bcache_hash : FALSE;
           dt_print_pipe(DT_DEBUG_PIPE,
                         bcaching ? "from focus cache" : "process tiled",

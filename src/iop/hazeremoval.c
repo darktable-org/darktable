@@ -587,7 +587,7 @@ void process(dt_iop_module_t *self,
     // cases we make sure that the preview pipe has left us with
     // proper readings for distance_max and A0.  If data are not yet
     // there we need to wait (with timeout).
-    if(hash != 0
+    if(hash != DT_INVALID_CACHEHASH
        && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order,
                                       DT_DEV_TRANSFORM_DIR_BACK_INCL,
                                       &self->gui_lock, &g->hash))
@@ -846,7 +846,7 @@ int process_cl(dt_iop_module_t *self,
     // cases we make sure that the preview pipe has left us with
     // proper readings for distance_max and A0.  If data are not yet
     // there we need to wait (with timeout).
-    if(hash != 0
+    if(hash != DT_INVALID_CACHEHASH
        && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe,
                                       self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL,
                                       &self->gui_lock, &g->hash))

@@ -216,7 +216,7 @@ static inline void process_drago(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     // is -FLT_MAX which initiates special handling below to avoid inconsistent results. in all
     // other cases we make sure that the preview pipe has left us with proper readings for
     // lwmax. if data are not yet there we need to wait (with timeout).
-    if(hash != 0 && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &self->gui_lock, &g->hash))
+    if(hash != DT_INVALID_CACHEHASH && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &self->gui_lock, &g->hash))
       dt_control_log(_("inconsistent output"));
 
     dt_iop_gui_enter_critical_section(self);
@@ -371,7 +371,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       dt_iop_gui_enter_critical_section(self);
       const dt_hash_t hash = g->hash;
       dt_iop_gui_leave_critical_section(self);
-      if(hash != 0 && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &self->gui_lock, &g->hash))
+      if(hash != DT_INVALID_CACHEHASH && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &self->gui_lock, &g->hash))
         dt_control_log(_("inconsistent output"));
 
       dt_iop_gui_enter_critical_section(self);
@@ -630,7 +630,7 @@ void gui_update(dt_iop_module_t *self)
 
   dt_iop_gui_enter_critical_section(self);
   g->lwmax = -FLT_MAX;
-  g->hash = 0;
+  g->hash = DT_INVALID_CACHEHASH;
   dt_iop_gui_leave_critical_section(self);
 }
 
@@ -639,7 +639,7 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_global_tonemap_gui_data_t *g = IOP_GUI_ALLOC(global_tonemap);
 
   g->lwmax = -FLT_MAX;
-  g->hash = 0;
+  g->hash = DT_INVALID_CACHEHASH;
 
   g->operator = dt_bauhaus_combobox_from_params(self, N_("operator"));
   gtk_widget_set_tooltip_text(g->operator, _("the global tonemap operator"));
