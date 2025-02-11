@@ -1193,7 +1193,7 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_gui_enter_critical_section(self);
   dt_iop_colorreconstruct_bilateral_dump(g->can);
   g->can = NULL;
-  g->hash = 0;
+  g->hash = DT_INVALID_CACHEHASH;
   dt_iop_gui_leave_critical_section(self);
 }
 
@@ -1225,7 +1225,7 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_colorreconstruct_gui_data_t *g = IOP_GUI_ALLOC(colorreconstruct);
 
   g->can = NULL;
-  g->hash = 0;
+  g->hash = DT_INVALID_CACHEHASH;
 
   GtkWidget *box_enabled = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
