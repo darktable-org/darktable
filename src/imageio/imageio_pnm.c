@@ -215,17 +215,29 @@ dt_imageio_retval_t dt_imageio_open_pnm(dt_image_t *img, const char *filename, d
 
   char head[2] = { 'X', 'X' };
   ret = fscanf(f, "%c%c ", head, head + 1);
-  if(ret != 2 || head[0] != 'P') goto end;
+  if(ret != 2 || head[0] != 'P')
+  {
+    fclose(f);
+    return DT_IMAGEIO_LOAD_FAILED;
+  }
 
   char width_string[10] = { 0 };
   char height_string[10] = { 0 };
   ret = fscanf(f, "%9s %9s ", width_string, height_string);
-  if(ret != 2) goto end;
+  if(ret != 2)
+  {
+    fclose(f);
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  }
 
   errno = 0;
   img->width = strtol(width_string, NULL, 0);
   img->height = strtol(height_string, NULL, 0);
-  if(errno != 0 || img->width <= 0 || img->height <= 0) goto end;
+  if(errno != 0 || img->width <= 0 || img->height <= 0)
+  {
+    fclose(f);
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  }
 
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
@@ -233,8 +245,8 @@ dt_imageio_retval_t dt_imageio_open_pnm(dt_image_t *img, const char *filename, d
   float *buf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!buf)
   {
-    result = DT_IMAGEIO_CACHE_FULL;
-    goto end;
+    fclose(f);
+    return DT_IMAGEIO_CACHE_FULL;
   }
 
   // we don't support ASCII variants or P7 anymaps! thanks to magic numbers those shouldn't reach us anyway.
@@ -245,7 +257,6 @@ dt_imageio_retval_t dt_imageio_open_pnm(dt_image_t *img, const char *filename, d
   else if(head[1] == '6')
     result = _read_ppm(img, f, buf);
 
-end:
   fclose(f);
 
   if(result == DT_IMAGEIO_OK)
