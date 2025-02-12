@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1634,9 +1634,6 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
 
     if(!_image_handled(ret))
       ret = dt_imageio_open_jpeg(img, filename, buf);
-
-    if(!_image_handled(ret))
-      ret = dt_imageio_open_pnm(img, filename, buf);
 
     // final fallback that tries to open file via GraphicsMagick or ImageMagick
     if(!_image_handled(ret))
