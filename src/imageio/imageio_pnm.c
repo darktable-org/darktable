@@ -208,10 +208,6 @@ static dt_imageio_retval_t _read_ppm(dt_image_t *img, FILE*f, float *buf)
 
 dt_imageio_retval_t dt_imageio_open_pnm(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
-  const char *ext = filename + strlen(filename);
-  while(*ext != '.' && ext > filename) ext--;
-  if(strcasecmp(ext, ".pbm") && strcasecmp(ext, ".pgm") && strcasecmp(ext, ".pnm") && strcasecmp(ext, ".ppm"))
-    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
   FILE *f = g_fopen(filename, "rb");
   if(!f) return DT_IMAGEIO_FILE_NOT_FOUND;
   int ret = 0;
