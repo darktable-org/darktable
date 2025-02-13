@@ -20,6 +20,29 @@ ipairs = function(t)
   end
 end
 
+
+local dt = require "darktable"
+if dt.configuration.running_os == "windows" then
+  -- Lua on Windows opens a cmd terminal window whenver
+  -- a subprocess is started. We need to use Win32 APIs
+  -- which do not do this, and replace the standard Lua functions.
+
+  -- os.execute = dt.windows.os_execute
+
+  io.close = dt.windows.close
+  io.flush = dt.windows.flush
+  io.input = dt.windows.input
+  io.lines = dt.windows.lines
+  io.open = dt.windows.open
+  io.output = dt.windows.output
+  io.popen = dt.windows.popen
+  io.read = dt.windows.read
+  io.tmpfile = dt.windows.tmpfile
+  io.type = dt.windows.type
+  io.write = dt.windows.write
+  end
+
+
 -- script installer
 
 local _scripts_install = {}

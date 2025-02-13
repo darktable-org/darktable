@@ -157,6 +157,9 @@ FILE(GLOB SOURCE_FILES
   "imageio/imageio_tiff.c"
   "libs/lib.c"
   "views/view.c"
+  if(WIN32)
+    "lua/windows.c"
+  endif(WIN32)
   )
 
 FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/OpenCL/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h" "views/*.h")
