@@ -271,19 +271,15 @@ static void _refine_with_detail_mask(dt_iop_module_t *self,
   const gboolean detail = (level > 0.0f);
   const float threshold = _detail_mask_threshold(level, detail);
 
-  float *lum = NULL;
-  float *warp_mask = NULL;
-
   dt_dev_pixelpipe_t *p = piece->pipe;
   if(p->scharr.data == NULL) goto error;
 
-  lum = dt_masks_calc_detail_mask(piece, threshold, detail);
-  if(!lum) goto error;
+  float *lum = dt_masks_calc_detail_mask(piece, threshold, detail);
+  if(lum == NULL) goto error;
 
   // here we have the slightly blurred full detail mask available
-  warp_mask = dt_dev_distort_detail_mask(piece, lum, self);
+  float *warp_mask = dt_dev_distort_detail_mask(piece, lum, self);
   dt_free_align(lum);
-  lum = NULL;
 
   if(warp_mask == NULL) goto error;
 
@@ -304,8 +300,6 @@ static void _refine_with_detail_mask(dt_iop_module_t *self,
        "refine with detail mask",
        piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out, "no mask data available");
   dt_control_log(_("detail mask blending error"));
-  dt_free_align(warp_mask);
-  dt_free_align(lum);
 }
 
 static size_t
@@ -884,13 +878,12 @@ static void _refine_with_detail_mask_cl(dt_iop_module_t *self,
 
   // here we have the slightly blurred full detail mask available
   float *warp_mask = dt_dev_distort_detail_mask(piece, lum, self);
+  dt_free_align(lum);
   if(warp_mask == NULL)
   {
     err = DT_OPENCL_PROCESS_CL;
     goto error;
   }
-  dt_free_align(lum);
-
   dt_print_pipe(DT_DEBUG_PIPE,
        "refine with detail mask",
        piece->pipe, self, piece->pipe->devid, roi_in, roi_out);
@@ -909,7 +902,6 @@ static void _refine_with_detail_mask_cl(dt_iop_module_t *self,
        "refine with detail_mask",
         piece->pipe, self, piece->pipe->devid, roi_in, roi_out, "OpenCL error: %s", cl_errstr(err));
 
-  dt_free_align(lum);
   dt_opencl_release_mem_object(tmp);
   dt_opencl_release_mem_object(blur);
   dt_opencl_release_mem_object(out);
