@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2024 darktable developers.
+    Copyright (C) 2013-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -702,6 +702,7 @@ gboolean dt_masks_calc_scharr_mask(dt_dev_detail_mask_t *details,
 float *dt_masks_calc_detail_mask(struct dt_dev_pixelpipe_iop_t *piece,
                                  const float threshold,
                                  const gboolean detail);
+float *dt_masks_get_ai_segments(struct dt_dev_pixelpipe_iop_t *piece, const int cnt, const int *list);
 
 /** return the list of possible mouse actions */
 GSList *dt_masks_mouse_actions(dt_masks_form_t *form);

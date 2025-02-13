@@ -99,6 +99,18 @@ typedef struct dt_dev_detail_mask_t
   float *data;
 } dt_dev_detail_mask_t;
 
+typedef struct dt_dev_segmentation_t
+{
+  dt_hash_t hash;   // based on model, input dimension and maxsegments
+  int iwidth;       // dimension of pipe image data to generate the AI masks
+  int iheight;
+  int model;        // the model chosen; valid after AI algorithm
+  int segments;     // available segments after the AI algorithm
+  int swidth;       // dimension of each AI segment mask
+  int sheight;
+  uint8_t *map;
+} dt_dev_segmentation_t;
+
 /**
  * this encapsulates the pixelpipe.
  * a develop module will need several of these:
@@ -154,6 +166,9 @@ typedef struct dt_dev_pixelpipe_t
   // as we have to scale the mask later we keep size at that stage
   gboolean want_detail_mask;
   struct dt_dev_detail_mask_t scharr;
+
+  gboolean want_segmentation;
+  struct dt_dev_segmentation_t segmentation;
 
   // avoid cached data for processed module
   gboolean nocache;
@@ -277,6 +292,10 @@ void dt_dev_pixelpipe_rebuild(struct dt_develop_t *dev);
 
 // switch on details mask processing
 void dt_dev_pixelpipe_usedetails(dt_dev_pixelpipe_t *pipe);
+
+void dt_dev_pixelpipe_segmentation(dt_dev_pixelpipe_t *pipe);
+void dt_dev_clear_segmentation(dt_dev_pixelpipe_t *pipe);
+
 // process region of interest of pixels. returns TRUE if pipe was altered during processing.
 gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
                              struct dt_develop_t *dev,
@@ -334,6 +353,11 @@ void dt_print_pipe_ext(const char *title,
 float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
                                   float *src,
                                   const struct dt_iop_module_t *target_module);
+
+float *dt_dev_distort_segmentation_mask(struct dt_dev_pixelpipe_iop_t *piece,
+                                        const struct dt_iop_module_t *target_module,
+                                        const int tested,
+                                        const int *list);
 
 #ifdef __cplusplus
 } // extern "C"

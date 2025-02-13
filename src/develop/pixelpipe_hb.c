@@ -240,6 +240,9 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   memset(&pipe->scharr, 0, sizeof(dt_dev_detail_mask_t));
   pipe->want_detail_mask = FALSE;
 
+  memset(&pipe->segmentation, 0, sizeof(dt_dev_segmentation_t));
+  pipe->want_segmentation = FALSE;
+
   pipe->processing = FALSE;
   dt_atomic_set_int(&pipe->shutdown,FALSE);
   pipe->opencl_error = FALSE;
@@ -325,6 +328,7 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   // so now it's safe to clean up cache:
   dt_dev_pixelpipe_cache_cleanup(pipe);
   dt_free_align(pipe->bcache_data);
+  dt_dev_clear_segmentation(pipe);
 
   pipe->icc_type = DT_COLORSPACE_NONE;
   g_free(pipe->icc_filename);
@@ -378,6 +382,9 @@ void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
 
   dt_dev_clear_scharr_mask(pipe);
   pipe->want_detail_mask = FALSE;
+
+  dt_dev_clear_segmentation(pipe);
+  pipe->want_segmentation = FALSE;
 
   // also cleanup iop here
   if(pipe->iop)
@@ -571,6 +578,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   double start = dt_get_debug_wtime();
 
   dev->cropping.exposer = NULL;
+  pipe->want_segmentation = FALSE;
   dt_print_pipe(DT_DEBUG_PARAMS, "synch all module defaults",
     pipe, NULL, DT_DEVICE_NONE, NULL, NULL);
 
@@ -677,6 +685,15 @@ void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
                                   &pipe->processed_height);
 }
 
+void dt_dev_pixelpipe_segmentation(dt_dev_pixelpipe_t *pipe)
+{
+  if(!pipe->want_segmentation)
+  {
+    dt_dev_pixelpipe_cache_invalidate_later(pipe, 0);
+  }
+  pipe->want_segmentation = TRUE;
+}
+
 void dt_dev_pixelpipe_usedetails(dt_dev_pixelpipe_t *pipe)
 {
   if(!pipe->want_detail_mask)
@@ -684,6 +701,7 @@ void dt_dev_pixelpipe_usedetails(dt_dev_pixelpipe_t *pipe)
     dt_dev_pixelpipe_cache_invalidate_later(pipe, 0);
   }
   pipe->want_detail_mask = TRUE;
+  dt_dev_pixelpipe_segmentation(pipe); // just for now until dt_dev_pixelpipe_usesegmentation() is used by recipients
 }
 
 static void _dump_pipe_pfm_diff(const char *mod,
@@ -1081,7 +1099,6 @@ static gboolean _request_color_pick(dt_dev_pixelpipe_t *pipe,
     && module->request_color_pick != DT_REQUEST_COLORPICK_OFF;
 }
 
-// Is it worth to use a dt_iop_flags_t for this ?
 static inline gboolean _piece_may_tile(const dt_dev_pixelpipe_iop_t *piece)
 {
   return piece->process_tiling_ready
@@ -3275,6 +3292,13 @@ void dt_dev_clear_scharr_mask(dt_dev_pixelpipe_t *pipe)
   memset(&pipe->scharr, 0, sizeof(dt_dev_detail_mask_t));
 }
 
+void dt_dev_clear_segmentation(dt_dev_pixelpipe_t *pipe)
+{
+  dt_dev_segmentation_t *seg = &pipe->segmentation;
+  dt_free_align(seg->map);
+  memset(seg, 0, sizeof(dt_dev_segmentation_t));
+}
+
 gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
                                   float *const rgb,
                                   const dt_iop_roi_t *const roi,
@@ -3471,6 +3495,81 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
     pipe, target_module, DT_DEVICE_NONE, NULL, NULL,
     "from %p (%ix%i) distorted to %p (%ix%i)",
     pipe->scharr.data, pipe->scharr.roi.width, pipe->scharr.roi.height,
+    resmask, final_roi->width, final_roi->height);
+
+  if(!correct)
+  {
+    dt_free_align(resmask);
+    resmask = NULL;
+  }
+
+  return resmask;
+}
+
+// this expects a mask prepared by rawprepare or demosaic and distorts it
+// through all pipeline modules until target
+float *dt_dev_distort_segmentation_mask(dt_dev_pixelpipe_iop_t *piece,
+                                        const dt_iop_module_t *target_module,
+                                        const int tested,
+                                        const int *list)
+{
+  float *src = dt_masks_get_ai_segments(piece, tested, list);
+  if(!src) return NULL;
+
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
+  dt_dev_segmentation_t *seg = &pipe->segmentation;
+
+  float *resmask = src;
+  float *inmask  = src;
+  dt_iop_roi_t *final_roi = &piece->processed_roi_in;
+
+  GList *iter;
+  for(iter = pipe->nodes; iter; iter = g_list_next(iter))
+  {
+    dt_dev_pixelpipe_iop_t *it_piece = iter->data;
+    if(!_skip_piece_on_tags(it_piece))
+    {
+      // hack against pipes not using finalscale
+      if(it_piece->module->distort_mask
+            && !(dt_iop_module_is(it_piece->module->so, "finalscale")
+                  && it_piece->processed_roi_in.width == 0
+                  && it_piece->processed_roi_in.height == 0))
+      {
+        float *tmp = dt_alloc_align_float((size_t)it_piece->processed_roi_out.width
+                                            * it_piece->processed_roi_out.height);
+        dt_print_pipe(DT_DEBUG_MASKS | DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
+             "distort segmentation mask", pipe, it_piece->module, DT_DEVICE_NONE, &it_piece->processed_roi_in, &it_piece->processed_roi_out);
+
+        it_piece->module->distort_mask(it_piece->module, it_piece, inmask, tmp,
+                                       &it_piece->processed_roi_in,
+                                       &it_piece->processed_roi_out);
+        resmask = tmp;
+        if(inmask != src) dt_free_align(inmask);
+        inmask = tmp;
+        final_roi = &it_piece->processed_roi_out;
+      }
+      else if(!it_piece->module->distort_mask
+              && (it_piece->processed_roi_in.width != it_piece->processed_roi_out.width
+                  || it_piece->processed_roi_in.height != it_piece->processed_roi_out.height
+                  || it_piece->processed_roi_in.x != it_piece->processed_roi_out.x
+                  || it_piece->processed_roi_in.y != it_piece->processed_roi_out.y))
+            dt_print_pipe(DT_DEBUG_ALWAYS,
+                      "distort segmentation mask",
+                      pipe, it_piece->module, DT_DEVICE_NONE,
+                      &it_piece->processed_roi_in, &it_piece->processed_roi_out,
+                      "misses distort_mask()");
+
+      if(it_piece->module == target_module) break;
+    }
+  }
+  const gboolean correct =  piece->processed_roi_out.width == final_roi->width
+                        &&  piece->processed_roi_out.height == final_roi->height;
+
+  dt_print_pipe(DT_DEBUG_MASKS | DT_DEBUG_PIPE,
+    correct ? "got segmentation mask" : "SEGMENTATION SIZE MISMATCH",
+    pipe, target_module, DT_DEVICE_NONE, NULL, NULL,
+    "from %p (%ix%i) distorted to %p (%ix%i)",
+    seg->map, seg->swidth, seg->sheight,
     resmask, final_roi->width, final_roi->height);
 
   if(!correct)

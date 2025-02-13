@@ -337,6 +337,7 @@ typedef struct dt_develop_t
   {
     GtkWidget *button;
     gboolean enabled;
+    gboolean segmentation;
   } late_scaling;
 
   // the display profile related things (softproof, gamut check, profiles ...)

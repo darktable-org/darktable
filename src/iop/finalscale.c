@@ -63,7 +63,7 @@ static inline gboolean _gui_fullpipe(dt_dev_pixelpipe_iop_t *piece)
   return piece->pipe->type & (DT_DEV_PIXELPIPE_FULL
                               | DT_DEV_PIXELPIPE_PREVIEW2
                               | DT_DEV_PIXELPIPE_IMAGE)
-    && darktable.develop->late_scaling.enabled;
+    && (darktable.develop->late_scaling.enabled || darktable.develop->late_scaling.segmentation);
 }
 
 void modify_roi_in(dt_iop_module_t *self,

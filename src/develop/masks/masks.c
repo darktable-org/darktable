@@ -2785,6 +2785,7 @@ void dt_masks_line_stroke(cairo_t *cr,
 }
 
 #include "detail.c"
+#include "segmentation.c"
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

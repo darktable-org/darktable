@@ -91,6 +91,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { { 6.0f }, "hotpixels", 0},
   { { 7.0f }, "rawdenoise", 0},
   { { 8.0f }, "demosaic", 0},
+  { { 8.5f }, "segmentation", 0},
   { { 9.0f }, "mask_manager", 0},
   { {10.0f }, "denoiseprofile", 0},
   { {11.0f }, "tonemap", 0},
@@ -178,14 +179,15 @@ const dt_iop_order_entry_t legacy_order[] = {
 
 // default order for RAW files, assumed to be linear from start
 const dt_iop_order_entry_t v30_order[] = {
-  { { 1.0 }, "rawprepare", 0},
-  { { 2.0 }, "invert", 0},
+  { { 1.0f }, "rawprepare", 0},
+  { { 2.0f }, "invert", 0},
   { { 3.0f }, "temperature", 0},
   { { 4.0f }, "highlights", 0},
   { { 5.0f }, "cacorrect", 0},
   { { 6.0f }, "hotpixels", 0},
   { { 7.0f }, "rawdenoise", 0},
   { { 8.0f }, "demosaic", 0},
+  { { 8.3f }, "segmentation", 0},
   { { 9.0f }, "denoiseprofile", 0},
   { {10.0f }, "bilateral", 0},
   { {11.0f }, "rotatepixels", 0},
@@ -302,6 +304,7 @@ const dt_iop_order_entry_t v50_order[] = {
   { { 6.0f }, "hotpixels", 0},
   { { 7.0f }, "rawdenoise", 0},
   { { 8.0f }, "demosaic", 0},
+  { { 8.5f }, "segmentation", 0},
   { { 9.0f }, "denoiseprofile", 0},
   { {10.0f }, "bilateral", 0},
   { {11.0f }, "rotatepixels", 0},
@@ -412,14 +415,15 @@ const dt_iop_order_entry_t v50_order[] = {
 // default order for JPEG/TIFF/PNG files, non-linear before colorin
 const dt_iop_order_entry_t v30_jpg_order[] = {
   // the following modules are not used anyway for non-RAW images :
-  { { 1.0 }, "rawprepare", 0 },
-  { { 2.0 }, "invert", 0 },
+  { { 1.0f }, "rawprepare", 0 },
+  { { 2.0f }, "invert", 0 },
   { { 3.0f }, "temperature", 0 },
   { { 4.0f }, "highlights", 0 },
   { { 5.0f }, "cacorrect", 0 },
   { { 6.0f }, "hotpixels", 0 },
   { { 7.0f }, "rawdenoise", 0 },
   { { 8.0f }, "demosaic", 0 },
+  { { 8.5f }, "segmentation", 0},
   // all the modules between [8; 28] expect linear RGB, so they need to be moved after colorin
   { { 28.0f }, "colorin", 0 },
   // moved modules : (copy-pasted in the same order)
@@ -539,6 +543,7 @@ const dt_iop_order_entry_t v50_jpg_order[] = {
   { { 6.0f }, "hotpixels", 0 },
   { { 7.0f }, "rawdenoise", 0 },
   { { 8.0f }, "demosaic", 0 },
+  { { 8.5f }, "segmentation", 0},
   // all the modules between [8; 28] expect linear RGB, so they need to be moved after colorin
   { { 28.0f }, "colorin", 0 },
   // moved modules : (copy-pasted in the same order)

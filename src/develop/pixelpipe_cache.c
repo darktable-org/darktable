@@ -113,10 +113,13 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(const dt_imgid_t imgid,
           Do we have to keep the roi of details mask? No as that is always defined by roi_in
           of the mask writing module (rawprepare or demosaic)
        4) Please note that position is not the iop_order but the n-th node position in the pipe
+       5) Include segmentation stuff
   */
-  const uint32_t hashing_pipemode[3] = {(uint32_t)imgid,
+  const uint32_t hashing_pipemode[5] = {(uint32_t)imgid,
                                         (uint32_t)pipe->type,
-                                        (uint32_t)pipe->want_detail_mask };
+                                        (uint32_t)pipe->want_detail_mask,
+                                        (uint32_t)pipe->want_segmentation,
+                                        (uint32_t)pipe->segmentation.model };
   dt_hash_t hash = dt_hash(DT_INITHASH, &hashing_pipemode, sizeof(hashing_pipemode));
 
   // go through all modules up to position and compute a hash using the operation and params.
