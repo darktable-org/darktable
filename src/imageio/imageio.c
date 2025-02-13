@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -249,10 +249,14 @@ static const dt_magic_bytes_t _magic_signatures[] = {
   { DT_FILETYPE_OPENEXR, TRUE, 0, 4, dt_imageio_open_exr,
     { 'v', '/', '1', 0x01 } },
   // RGBE (.hdr)  image
-  { DT_FILETYPE_RGBE, TRUE, 0, 11, dt_imageio_open_rgbe,
-    { '#', '?', 'R', 'A', 'D', 'I', 'A', 'N', 'C', 'E', 0x0A } },
-  { DT_FILETYPE_RGBE, TRUE, 0, 7, dt_imageio_open_rgbe,
-    { '#', '?', 'R', 'G', 'B', 'E', 0x0A } },
+//  { DT_FILETYPE_RGBE, TRUE, 0, 11, dt_imageio_open_rgbe,
+//    { '#', '?', 'R', 'A', 'D', 'I', 'A', 'N', 'C', 'E', 0x0A } },
+//  { DT_FILETYPE_RGBE, TRUE, 0, 7, dt_imageio_open_rgbe,
+//    { '#', '?', 'R', 'G', 'B', 'E', 0x0A } },
+  // the least restrictive RGBE signature, see
+  // https://discourse.radiance-online.org/t/correct-magic-number-for-hdr-files/6299/4
+  { DT_FILETYPE_RGBE, TRUE, 0, 2, dt_imageio_open_rgbe,
+    { '#', '?' } },
   // original v1 CRW
   { DT_FILETYPE_CRW, TRUE, 0, 14, dt_imageio_open_rawspeed,
     { 'I', 'I', 0x1A, 0x00, 0x00, 0x00, 'H', 'E', 'A', 'P', 'C', 'C', 'D', 'R' } },
