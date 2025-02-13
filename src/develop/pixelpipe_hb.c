@@ -3393,6 +3393,8 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
                                   float *src,
                                   const dt_iop_module_t *target_module)
 {
+  if(!src) return NULL;
+
   dt_dev_pixelpipe_t *pipe = piece->pipe;
   gboolean valid = FALSE;
   const gboolean raw_img = dt_image_is_raw(&pipe->image);
@@ -3475,7 +3477,7 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
 
   if(!correct)
   {
-    dt_free_align(resmask);
+    if(resmask != src) dt_free_align(resmask);
     resmask = NULL;
   }
 
