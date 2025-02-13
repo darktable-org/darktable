@@ -265,6 +265,7 @@ void gui_post_expose(dt_lib_module_t *self,
       else
         cairo_rectangle(cri, 0, 0, width, ly);
     }
+    cairo_save(cri);
     cairo_clip(cri);
     cairo_fill(cri);
 
@@ -275,7 +276,7 @@ void gui_post_expose(dt_lib_module_t *self,
                             snap->zoom_x, snap->zoom_y);
     }
 
-    cairo_reset_clip(cri);
+    cairo_restore(cri);
 
     // draw the split line using the selected overlay color
     dt_draw_set_color_overlay(cri, TRUE, 0.7);
