@@ -168,6 +168,13 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img,
   if(_ignore_image(filename))
     return DT_IMAGEIO_UNSUPPORTED_FORMAT;
 
+  if(!img)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[dt_imageio_open_rawspeed] failed to get dt_image_t for '%s' at %p",
+      filename, mbuf);
+    return DT_IMAGEIO_LOAD_FAILED;
+  }
+
   if(!img->exif_inited)
     (void)dt_exif_read(img, filename);
 

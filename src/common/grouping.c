@@ -39,6 +39,7 @@ void dt_grouping_add_to_group(const dt_imgid_t group_id,
   dt_grouping_remove_from_group(image_id);
 
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, image_id, 'w');
+  if(!img) return;
   img->group_id = group_id;
   dt_image_cache_write_release_info(darktable.image_cache, img,
                                     DT_IMAGE_CACHE_SAFE, "dt_grouping_add_to_group");
@@ -65,7 +66,7 @@ dt_imgid_t dt_grouping_remove_from_group(const dt_imgid_t image_id)
   GList *imgs = NULL;
 
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, image_id, 'r');
-  const int img_group_id = img->group_id;
+  const dt_imgid_t img_group_id = img ? img->group_id : NO_IMGID;
   dt_image_cache_read_release(darktable.image_cache, img);
   if(img_group_id == image_id)
   {
@@ -84,10 +85,13 @@ dt_imgid_t dt_grouping_remove_from_group(const dt_imgid_t image_id)
       if(!dt_is_valid_imgid(new_group_id))
         new_group_id = other_id;
       dt_image_t *other_img = dt_image_cache_get(darktable.image_cache, other_id, 'w');
-      other_img->group_id = new_group_id;
-      dt_image_cache_write_release_info(darktable.image_cache, other_img,
+      if(other_img)
+      {
+        other_img->group_id = new_group_id;
+        dt_image_cache_write_release_info(darktable.image_cache, other_img,
                                         DT_IMAGE_CACHE_SAFE, "dt_grouping_add_to_group");
-      imgs = g_list_prepend(imgs, GINT_TO_POINTER(other_id));
+        imgs = g_list_prepend(imgs, GINT_TO_POINTER(other_id));
+      }
     }
     sqlite3_finalize(stmt);
     if(dt_is_valid_imgid(new_group_id))
@@ -122,13 +126,15 @@ dt_imgid_t dt_grouping_remove_from_group(const dt_imgid_t image_id)
   {
     // change the group_id for this image.
     dt_image_t *wimg = dt_image_cache_get(darktable.image_cache, image_id, 'w');
-    new_group_id = wimg->group_id;
-    wimg->group_id = image_id;
-    dt_image_cache_write_release_info(darktable.image_cache, wimg,
+    if(wimg)
+    {
+      new_group_id = wimg->group_id;
+      wimg->group_id = image_id;
+      dt_image_cache_write_release_info(darktable.image_cache, wimg,
                                       DT_IMAGE_CACHE_SAFE, "dt_grouping_add_to_group");
-    imgs = g_list_prepend(imgs, GINT_TO_POINTER(image_id));
-    // refresh also the group leader which may be alone now
-    imgs = g_list_prepend(imgs, GINT_TO_POINTER(img_group_id));
+      imgs = g_list_prepend(imgs, GINT_TO_POINTER(image_id));
+      // refresh also the group leader which may be alone now
+      imgs = g_list_prepend(imgs, GINT_TO_POINTER(img_group_id));
 #ifdef USE_LUA
     dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
       0, NULL, NULL,
@@ -138,6 +144,7 @@ dt_imgid_t dt_grouping_remove_from_group(const dt_imgid_t image_id)
       LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(img_group_id),
       LUA_ASYNC_DONE);
 #endif
+    }
   }
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
 
@@ -150,8 +157,10 @@ dt_imgid_t dt_grouping_change_representative(const dt_imgid_t image_id)
   sqlite3_stmt *stmt;
 
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, image_id, 'r');
-  const dt_imgid_t group_id = img->group_id;
+  const dt_imgid_t group_id = img ? img->group_id : NO_IMGID;
   dt_image_cache_read_release(darktable.image_cache, img);
+ if(!dt_is_valid_imgid(group_id))
+    return group_id;
 
   GList *imgs = NULL;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.images WHERE group_id = ?1", -1,
@@ -161,11 +170,14 @@ dt_imgid_t dt_grouping_change_representative(const dt_imgid_t image_id)
   {
     const dt_imgid_t other_id = sqlite3_column_int(stmt, 0);
     dt_image_t *other_img = dt_image_cache_get(darktable.image_cache, other_id, 'w');
-    other_img->group_id = image_id;
-    dt_image_cache_write_release_info(darktable.image_cache, other_img,
+    if(other_img)
+    {
+      other_img->group_id = image_id;
+      dt_image_cache_write_release_info(darktable.image_cache, other_img,
                                       DT_IMAGE_CACHE_SAFE,
                                       "dt_grouping_change_representative");
-    imgs = g_list_prepend(imgs, GINT_TO_POINTER(other_id));
+      imgs = g_list_prepend(imgs, GINT_TO_POINTER(other_id));
+    }
   }
   sqlite3_finalize(stmt);
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);

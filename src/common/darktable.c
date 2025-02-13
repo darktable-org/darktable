@@ -2038,6 +2038,7 @@ void dt_cleanup()
 #endif
 
 #ifdef USE_LUA
+  // send the exit event to all the running scripts letting them know that darktable is ending
   dt_lua_finalize_early();
 #endif
 
@@ -2052,30 +2053,44 @@ void dt_cleanup()
     dt_ctl_switch_mode_to("");
     dt_dbus_destroy(darktable.dbus);
 
-    dt_lib_cleanup(darktable.lib);
-    free(darktable.lib);
+/* How is darktable shutdown working safely?
+1. dt_control_quit() is called via user request, it sets control->running anatomically
+     to DT_CONTROL_STATE_CLEANUP implying that dt_control_running() will not be TRUE any more.
+     It finally calls gtk_main_quit() so with current code we don't have gtk events after that.
+
+2. Quitting gtk also means **we are exactly here** to continue the shutdown. Anything requiring a
+     still active UI must be done before ...
+
+3. dt_control_shutdown() first waits for all threads to be joined, that means waiting for all pending
+     jobs to be done completely.
+
+4. So we have to ensure:
+   1) a full working software stack including image_cache, mipmap_cache and darktable.imageio to allow
+        processing the pixelpipe and full access to all images.
+   2) The pipeline processing uses access to gui related data - focus, active module ...
+        so make sure to avoid those too.
+   3) As lua events might be fired by the backthreads it's state mutex must still be unlocked.
+
+5. After dt_control_shutdown() has finished we are sure there are no background threads running any
+     more so we can safely close all mentioned subsystems and continue.
+*/
+    dt_control_shutdown(darktable.control);
   }
 #ifdef USE_LUA
   dt_lua_finalize();
 #endif
-  dt_view_manager_cleanup(darktable.view_manager);
-  free(darktable.view_manager);
-  darktable.view_manager = NULL;
-  // we can no longer call dt_gui_process_events after this point, as that will cause a segfault
-  // if some delayed event fires
 
-  dt_image_cache_cleanup(darktable.image_cache);
-  free(darktable.image_cache);
-  darktable.image_cache = NULL;
-  dt_mipmap_cache_cleanup(darktable.mipmap_cache);
-  free(darktable.mipmap_cache);
-  darktable.mipmap_cache = NULL;
   if(init_gui)
   {
+    dt_lib_cleanup(darktable.lib);
+    free(darktable.lib);
+    darktable.lib = NULL;
+    dt_view_manager_cleanup(darktable.view_manager);
+    free(darktable.view_manager);
+    darktable.view_manager = NULL;
     dt_imageio_cleanup(darktable.imageio);
     free(darktable.imageio);
     darktable.imageio = NULL;
-    dt_control_shutdown(darktable.control);
     dt_control_cleanup(darktable.control);
     free(darktable.control);
     darktable.control = NULL;
@@ -2084,6 +2099,14 @@ void dt_cleanup()
     free(darktable.gui);
     darktable.gui = NULL;
   }
+
+  dt_image_cache_cleanup(darktable.image_cache);
+  free(darktable.image_cache);
+  darktable.image_cache = NULL;
+
+  dt_mipmap_cache_cleanup(darktable.mipmap_cache);
+  free(darktable.mipmap_cache);
+  darktable.mipmap_cache = NULL;
 
   dt_colorspaces_cleanup(darktable.color_profiles);
   dt_conf_cleanup(darktable.conf);
