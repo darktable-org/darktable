@@ -851,29 +851,28 @@ void dt_image_update_final_size(const dt_imgid_t imgid)
                                     &ww, &hh);
 
     dt_image_t *imgtmp = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-    if(!imgtmp || (ww == imgtmp->final_width && hh == imgtmp->final_height))
+    if(imgtmp)
     {
-      dt_cache_release(&darktable.image_cache->cache, imgtmp->cache_entry);
-    }
-    else
-    {
+      const gboolean changed = (ww != imgtmp->final_width) || (hh != imgtmp->final_height);
       imgtmp->final_width = ww;
       imgtmp->final_height = hh;
       dt_image_cache_write_release(darktable.image_cache, imgtmp, DT_IMAGE_CACHE_RELAXED);
-      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_UPDATE);
-      DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
-      dt_print(DT_DEBUG_PIPE, "updated final size for ID=%i to %ix%i", imgid, ww, hh);
+      if(changed)
+      {
+        dt_print(DT_DEBUG_PIPE, "updated final size for ID=%i, updated to %ix%i", imgid, ww, hh);
+        DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_METADATA_UPDATE);
+        DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
+      }
     }
   }
 }
 
 gboolean dt_image_get_final_size(const dt_imgid_t imgid, int *width, int *height)
 {
+  if(!dt_is_valid_imgid(imgid)) return TRUE;
   // get the img strcut
-  dt_image_t *imgtmp = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-  dt_image_t img = *imgtmp;
-  dt_image_cache_read_release(darktable.image_cache, imgtmp);
-  if(!imgtmp)
+  dt_image_t *timg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  if(!timg)
   {
     *width = 0;
     *height = 0;
@@ -881,13 +880,15 @@ gboolean dt_image_get_final_size(const dt_imgid_t imgid, int *width, int *height
   }
 
   // if we already have computed them
-  if(img.final_height > 0 && img.final_width > 0)
+  const gboolean available = timg->final_height > 0 && timg->final_width > 0;
+  if(available)
   {
-    *width = img.final_width;
-    *height = img.final_height;
+    *width = timg->final_width;
+    *height = timg->final_height;
     dt_print(DT_DEBUG_PIPE, "[dt_image_get_final_size] for ID=%i from cache %ix%i", imgid, *width, *height);
-    return FALSE;
   }
+  dt_image_cache_read_release(darktable.image_cache, timg);
+  if(available) return FALSE;
 
   // we have to do the costly pipe run to get the final image size
   dt_print(DT_DEBUG_PIPE, "[dt_image_get_final_size] calculate it for ID=%i", imgid);
@@ -896,8 +897,9 @@ gboolean dt_image_get_final_size(const dt_imgid_t imgid, int *width, int *height
   dt_dev_load_image(&dev, imgid);
 
   dt_dev_pixelpipe_t pipe;
-  int wd = dev.image_storage.width, ht = dev.image_storage.height;
-  gboolean res = dt_dev_pixelpipe_init_dummy(&pipe, wd, ht);
+  int wd = dev.image_storage.width;
+  int ht = dev.image_storage.height;
+  const gboolean res = dt_dev_pixelpipe_init_dummy(&pipe, wd, ht);
   if(res)
   {
     // set mem pointer to 0, won't be used.
@@ -909,16 +911,17 @@ gboolean dt_image_get_final_size(const dt_imgid_t imgid, int *width, int *height
                                     &pipe.processed_height);
     wd = pipe.processed_width;
     ht = pipe.processed_height;
-    res = TRUE;
     dt_dev_pixelpipe_cleanup(&pipe);
   }
   dt_dev_cleanup(&dev);
 
-  imgtmp = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-  imgtmp->final_width = *width = wd;
-  imgtmp->final_height = *height = ht;
-  dt_image_cache_write_release(darktable.image_cache, imgtmp, DT_IMAGE_CACHE_RELAXED);
-
+  dt_image_t * imgwr = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+  if(imgwr)
+  {
+    imgwr->final_width = *width = wd;
+    imgwr->final_height = *height = ht;
+    dt_image_cache_write_release(darktable.image_cache, imgwr, DT_IMAGE_CACHE_RELAXED);
+  }
   return res;
 }
 
@@ -1097,11 +1100,11 @@ void dt_image_set_raw_aspect_ratio(const dt_imgid_t imgid)
       image->aspect_ratio = (float )image->p_width / (float )(MAX(1, image->p_height));
     else
       image->aspect_ratio = (float )image->p_height / (float )(MAX(1, image->p_width));
-  }
-  /* store */
-  dt_image_cache_write_release_info(darktable.image_cache, image,
+    /* store */
+    dt_image_cache_write_release_info(darktable.image_cache, image,
                                     DT_IMAGE_CACHE_SAFE,
                                     "dt_image_set_raw_aspect_ratio");
+  }
 }
 
 void dt_image_set_aspect_ratio_to(const dt_imgid_t imgid,
@@ -1160,17 +1163,19 @@ void dt_image_reset_aspect_ratio(const dt_imgid_t imgid, const gboolean raise)
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
   /* set image aspect ratio */
-  if(image) image->aspect_ratio = 0.f;
-
-  /* store in db, but don't synch XMP */
-  dt_image_cache_write_release_info(darktable.image_cache, image,
+  if(image)
+  {
+    image->aspect_ratio = 0.f;
+    /* store in db, but don't synch XMP */
+    dt_image_cache_write_release_info(darktable.image_cache, image,
                                     DT_IMAGE_CACHE_RELAXED,
                                     "dt_image_reset_aspect_ratio");
 
-  if(image && raise && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
+  if(raise && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
                                DT_COLLECTION_PROP_ASPECT_RATIO,
                                g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
+  }
 }
 
 float dt_image_set_aspect_ratio(const dt_imgid_t imgid, const gboolean raise)

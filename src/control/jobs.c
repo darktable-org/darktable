@@ -132,6 +132,7 @@ void *dt_control_job_get_params(const _dt_job_t *job)
 dt_job_t *dt_control_job_create(dt_job_execute_callback execute,
                                 const char *msg, ...)
 {
+  if(!dt_control_running()) return NULL;
   _dt_job_t *job = calloc(1, sizeof(_dt_job_t));
   if(!job) return NULL;
 
@@ -367,6 +368,7 @@ gboolean dt_control_add_job_res(dt_control_t *control,
                                 _dt_job_t *job,
                                 int32_t res)
 {
+  if(!control) return TRUE;
   if(((unsigned int)res) >= DT_CTL_WORKER_RESERVED || !job)
   {
     dt_control_job_dispose(job);
@@ -383,7 +385,6 @@ gboolean dt_control_add_job_res(dt_control_t *control,
     dt_control_job_dispose(control->job_res[res]);
   }
 
-  dt_print(DT_DEBUG_CONTROL, "[add_job_res] %d | ", res);
   _control_job_print(job, "add_job_res", "", res);
 
   _control_job_set_state(job, DT_JOB_STATE_QUEUED);
@@ -403,6 +404,7 @@ gboolean dt_control_add_job(dt_control_t *control,
                             dt_job_queue_t queue_id,
                             _dt_job_t *job)
 {
+  if(!control) return TRUE;
   if((((unsigned int)queue_id) >= DT_JOB_QUEUE_MAX && queue_id != DT_JOB_QUEUE_SYNCHRONOUS) || !job)
   {
     dt_control_job_dispose(job);

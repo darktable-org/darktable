@@ -2189,6 +2189,11 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
 void dt_exif_apply_default_metadata(dt_image_t *img)
 {
+  if(!img)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[dt_exif_apply_default_metadata] failed as no img was provided");
+    return;
+  }
   if(dt_conf_get_bool("ui_last/import_apply_metadata")
      && !(img->job_flags & DT_IMAGE_JOB_NO_METADATA))
   {
@@ -2250,6 +2255,11 @@ gboolean dt_exif_read_from_blob(dt_image_t *img,
                                 uint8_t *blob,
                                 const int size)
 {
+  if(!img)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[exiv2 dt_exif_read_from_blob] failed as no img was provided");
+    return TRUE;
+  }
   try
   {
     Exiv2::ExifData exifData;
@@ -2331,6 +2341,11 @@ gboolean dt_exif_get_thumbnail(const char *path,
 gboolean dt_exif_read(dt_image_t *img,
                       const char *path)
 {
+  if(!img)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[dt_exif_read] failed as no img was provided");
+    return TRUE;
+  }
   // At least set 'datetime taken' to something useful in case there is
   // no Exif data in this file (pfm, png, ...)
   struct stat statbuf;
@@ -2788,7 +2803,7 @@ int dt_exif_read_blob(uint8_t **buf,
       // GPS data
       _remove_exif_geotag(exifData);
       const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-      if(!std::isnan(cimg->geoloc.longitude) && !std::isnan(cimg->geoloc.latitude))
+      if(cimg && !std::isnan(cimg->geoloc.longitude) && !std::isnan(cimg->geoloc.latitude))
       {
         exifData["Exif.GPSInfo.GPSVersionID"] = "02 02 00 00";
         exifData["Exif.GPSInfo.GPSLongitudeRef"] = (cimg->geoloc.longitude < 0) ? "W" : "E";
@@ -2809,7 +2824,7 @@ int dt_exif_read_blob(uint8_t **buf,
         g_free(long_str);
         g_free(lat_str);
       }
-      if(!std::isnan(cimg->geoloc.elevation))
+      if(cimg && !std::isnan(cimg->geoloc.elevation))
       {
         exifData["Exif.GPSInfo.GPSVersionID"] = "02 02 00 00";
         exifData["Exif.GPSInfo.GPSAltitudeRef"] = (cimg->geoloc.elevation < 0) ? "1" : "0";
@@ -3811,6 +3826,11 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
                           const char *filename,
                           const int history_only)
 {
+  if(!img)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[dt_exif_xmp_read] failed as no img was provided for '%s'", filename);
+    return TRUE;
+  }
   // Exclude pfm to avoid stupid errors on the console
   const char *c = filename + strlen(filename) - 4;
   if(c >= filename && !strcmp(c, ".pfm")) return TRUE;

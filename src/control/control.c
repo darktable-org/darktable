@@ -201,6 +201,7 @@ void dt_control_init(dt_control_t *s)
   s->widget_definitions = g_ptr_array_new ();
   s->input_drivers = NULL;
   dt_atomic_set_int(&s->running, DT_CONTROL_STATE_DISABLED);
+  dt_atomic_set_int(&s->quitting, 0);
   s->cups_started = FALSE;
 
   dt_action_define_fallback(DT_ACTION_TYPE_IOP, &dt_action_def_iop);
@@ -295,9 +296,12 @@ gboolean dt_control_running()
 
 void dt_control_quit()
 {
-  if(dt_control_running())
-  {
-    dt_control_t *dc = darktable.control;
+  // Make sure we proceed further only if control is running
+  if(!dt_control_running()) return;
+
+  dt_control_t *dc = darktable.control;
+  // make sure the rest is done only once
+  if(dt_atomic_exch_int(&dc->quitting, 1) == 1) return;
 
 #ifdef HAVE_PRINT
     dt_printers_abort_discovery();
@@ -311,7 +315,6 @@ void dt_control_quit()
     // set the "pending cleanup work" flag to be handled in dt_control_shutdown()
     dt_atomic_set_int(&dc->running, DT_CONTROL_STATE_CLEANUP);
     dt_pthread_mutex_unlock(&dc->cond_mutex);
-  }
 
   if(g_atomic_int_get(&darktable.gui_running))
   {
@@ -901,7 +904,7 @@ int dt_control_key_pressed_override(guint key, guint state)
   return 0;
 }
 
-void dt_control_hinter_message(const struct dt_control_t *s, const char *message)
+void dt_control_hinter_message(const dt_control_t *s, const char *message)
 {
   if(s->proxy.hinter.module)
     return s->proxy.hinter.set_message(s->proxy.hinter.module, message);
