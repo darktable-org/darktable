@@ -77,7 +77,8 @@ static dt_imageio_retval_t _read_pgm(dt_image_t *img, FILE*f, float *buf)
   dt_imageio_retval_t result = DT_IMAGEIO_OK;
 
   unsigned int max;
-  // We expect at most a 5-digit number (65535) + a newline + '\0', so 7 characters.
+  // We expect at most a 5-digit number (65535) + a newline + '\0',
+  // so 7 characters.
   char maxvalue_string[7];
   if(fgets(maxvalue_string,7,f))
     max = atoi(maxvalue_string);
@@ -122,6 +123,9 @@ static dt_imageio_retval_t _read_pgm(dt_image_t *img, FILE*f, float *buf)
       for(size_t x = 0; x < img->width; x++)
       {
         uint16_t intvalue = line[x];
+        // PGM files are big endian, the most significant byte is first
+        // in the case where the value must be represented by two bytes.
+        // See http://netpbm.sourceforge.net/doc/pgm.html
         if(G_BYTE_ORDER != G_BIG_ENDIAN)
           intvalue = GUINT16_SWAP_LE_BE(intvalue);
         float value = (float)intvalue / (float)max;
@@ -142,7 +146,8 @@ static dt_imageio_retval_t _read_ppm(dt_image_t *img, FILE*f, float *buf)
   dt_imageio_retval_t result = DT_IMAGEIO_OK;
 
   unsigned int max;
-  // We expect at most a 5-digit number (65535) + a newline + '\0', so 7 characters.
+  // We expect at most a 5-digit number (65535) + a newline + '\0',
+  // so 7 characters.
   char maxvalue_string[7];
   if(fgets(maxvalue_string,7,f))
     max = atoi(maxvalue_string);
@@ -191,7 +196,9 @@ static dt_imageio_retval_t _read_ppm(dt_image_t *img, FILE*f, float *buf)
         for(int c = 0; c < 3; c++)
         {
           uint16_t intvalue = line[x * 3 + c];
-          // PPM files are big endian! http://netpbm.sourceforge.net/doc/ppm.html
+          // PPM files are big endian, the most significant byte is first
+          // in the case where the value must be represented by two bytes.
+          // See http://netpbm.sourceforge.net/doc/ppm.html
           if(G_BYTE_ORDER != G_BIG_ENDIAN)
             intvalue = GUINT16_SWAP_LE_BE(intvalue);
           float value = (float)intvalue / (float)max;
@@ -206,12 +213,10 @@ static dt_imageio_retval_t _read_ppm(dt_image_t *img, FILE*f, float *buf)
   return result;
 }
 
-dt_imageio_retval_t dt_imageio_open_pnm(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
+dt_imageio_retval_t dt_imageio_open_pnm(dt_image_t *img,
+                                        const char *filename,
+                                        dt_mipmap_buffer_t *mbuf)
 {
-  const char *ext = filename + strlen(filename);
-  while(*ext != '.' && ext > filename) ext--;
-  if(strcasecmp(ext, ".pbm") && strcasecmp(ext, ".pgm") && strcasecmp(ext, ".pnm") && strcasecmp(ext, ".ppm"))
-    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
   FILE *f = g_fopen(filename, "rb");
   if(!f) return DT_IMAGEIO_FILE_NOT_FOUND;
   int ret = 0;
@@ -219,17 +224,29 @@ dt_imageio_retval_t dt_imageio_open_pnm(dt_image_t *img, const char *filename, d
 
   char head[2] = { 'X', 'X' };
   ret = fscanf(f, "%c%c ", head, head + 1);
-  if(ret != 2 || head[0] != 'P') goto end;
+  if(ret != 2 || head[0] != 'P')
+  {
+    fclose(f);
+    return DT_IMAGEIO_LOAD_FAILED;
+  }
 
   char width_string[10] = { 0 };
   char height_string[10] = { 0 };
   ret = fscanf(f, "%9s %9s ", width_string, height_string);
-  if(ret != 2) goto end;
+  if(ret != 2)
+  {
+    fclose(f);
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  }
 
   errno = 0;
   img->width = strtol(width_string, NULL, 0);
   img->height = strtol(height_string, NULL, 0);
-  if(errno != 0 || img->width <= 0 || img->height <= 0) goto end;
+  if(errno != 0 || img->width <= 0 || img->height <= 0)
+  {
+    fclose(f);
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  }
 
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
@@ -237,11 +254,12 @@ dt_imageio_retval_t dt_imageio_open_pnm(dt_image_t *img, const char *filename, d
   float *buf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!buf)
   {
-    result = DT_IMAGEIO_CACHE_FULL;
-    goto end;
+    fclose(f);
+    return DT_IMAGEIO_CACHE_FULL;
   }
 
-  // we don't support ASCII variants or P7 anymaps! thanks to magic numbers those shouldn't reach us anyway.
+  // We don't support ASCII variants or P7 anymaps!
+  // Thanks to magic numbers those shouldn't reach us anyway.
   if(head[1] == '4')
     result = _read_pbm(img, f, buf);
   else if(head[1] == '5')
@@ -249,7 +267,6 @@ dt_imageio_retval_t dt_imageio_open_pnm(dt_image_t *img, const char *filename, d
   else if(head[1] == '6')
     result = _read_ppm(img, f, buf);
 
-end:
   fclose(f);
 
   if(result == DT_IMAGEIO_OK)
@@ -259,6 +276,12 @@ end:
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_S_RAW;
     img->flags &= ~DT_IMAGE_HDR;
+
+    // The most common and generally assumed interpretation of the
+    // image data in PNM seems to be that the values ​​are non-linear.
+    // This is why we set the so called 'LDR' flag, which essentially,
+    // in the absence of metadata, signals darktable the need to treat
+    // the image data as non-linear.
     img->flags |= DT_IMAGE_LDR;
     img->loader = LOADER_PNM;
   }
