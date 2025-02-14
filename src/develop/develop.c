@@ -599,7 +599,7 @@ float dt_dev_get_zoom_scale(dt_dev_viewport_t *port,
     zoom_scale *= (float)darktable.develop->full.pipe->processed_width
                   / darktable.develop->preview_pipe->processed_width;
 
-  return zoom_scale;
+  return zoom_scale ?: 1.0f;
 }
 
 float dt_dev_get_zoom_scale_full(void)
