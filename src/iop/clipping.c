@@ -3014,11 +3014,11 @@ int mouse_moved(dt_iop_module_t *self,
       dt_control_change_cursor(GDK_BOTTOM_LEFT_CORNER);
     else if(grab == GRAB_NONE)
     {
-      dt_control_hinter_message(darktable.control, _("<b>commit</b>: double-click, <b>straighten</b>: right-drag"));
+      dt_control_hinter_message(_("<b>commit</b>: double-click, <b>straighten</b>: right-drag"));
       dt_control_change_cursor(GDK_LEFT_PTR);
     }
     if(grab != GRAB_NONE)
-      dt_control_hinter_message(darktable.control, _("<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
+      dt_control_hinter_message(_("<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
                                                      "<b>straighten</b>: right-drag"));
     dt_control_queue_redraw_center();
   }
@@ -3059,24 +3059,24 @@ int mouse_moved(dt_iop_module_t *self,
       }
       if(g->k_selected >= 0)
       {
-        dt_control_hinter_message(darktable.control, _("<b>move control point</b>: drag"));
+        dt_control_hinter_message(_("<b>move control point</b>: drag"));
         dt_control_change_cursor(GDK_CROSS);
       }
       else if(g->k_selected_segment >= 0)
       {
-        dt_control_hinter_message(darktable.control, _("<b>move line</b>: drag, <b>toggle symmetry</b>: click ꝏ"));
+        dt_control_hinter_message(_("<b>move line</b>: drag, <b>toggle symmetry</b>: click ꝏ"));
         dt_control_change_cursor(GDK_CROSS);
       }
       else
       {
-        dt_control_hinter_message(darktable.control, _("<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click ꝏ\n"
+        dt_control_hinter_message(_("<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click ꝏ\n"
                                                        "<b>move line/control point</b>: drag"));
         dt_control_change_cursor(GDK_FLEUR);
       }
     }
     else
     {
-      dt_control_hinter_message(darktable.control, _("<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</b>: ctrl+drag\n"
+      dt_control_hinter_message(_("<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</b>: ctrl+drag\n"
                                                      "<b>straighten</b>: right-drag, <b>commit</b>: double-click"));
     }
     dt_control_queue_redraw_center();

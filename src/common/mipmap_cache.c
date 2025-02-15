@@ -891,7 +891,7 @@ void dt_mipmap_cache_get_with_caller(
     // and opposite: prefetch without locking
     if(mip > DT_MIPMAP_FULL || (int)mip < DT_MIPMAP_0)
       return; // remove the (int) once we no longer have to support gcc < 4.8 :/
-    dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_FG, dt_image_load_job_create(imgid, mip));
+    dt_control_add_job(DT_JOB_QUEUE_SYSTEM_FG, dt_image_load_job_create(imgid, mip));
   }
   else if(flags == DT_MIPMAP_PREFETCH_DISK)
   {
@@ -903,7 +903,7 @@ void dt_mipmap_cache_get_with_caller(
     snprintf(filename, sizeof(filename), "%s.d/%d/%"PRIu32".jpg", cache->cachedir, (int)mip, key);
     // don't attempt to load if disk cache doesn't exist
     if(!g_file_test(filename, G_FILE_TEST_EXISTS)) return;
-    dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_FG, dt_image_load_job_create(imgid, mip));
+    dt_control_add_job(DT_JOB_QUEUE_SYSTEM_FG, dt_image_load_job_create(imgid, mip));
   }
   else if(flags == DT_MIPMAP_BLOCKING)
   {

@@ -552,7 +552,7 @@ static void _camera_capture_image_downloaded(const dt_camera_t *camera,
   dt_capture_t *lib = (dt_capture_t *)data;
 
   /* create an import job of downloaded image */
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG,
+  dt_control_add_job(DT_JOB_QUEUE_USER_BG,
                      dt_image_import_job_create(dt_import_session_film_id(lib->session),
                                                 filename));
 }

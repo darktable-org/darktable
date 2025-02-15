@@ -1420,7 +1420,7 @@ static gboolean _blendop_masks_modes_none_clicked(GtkWidget *button,
     dt_iop_add_remove_mask_indicator(module, FALSE);
 
     /* and finally remove hinter messages */
-    dt_control_hinter_message(darktable.control, "");
+    dt_control_hinter_message("");
   }
 
   return TRUE;
@@ -1707,7 +1707,7 @@ static gboolean _blendop_masks_show_and_edit(GtkWidget *widget,
     {
       bd->masks_shown = DT_MASKS_EDIT_OFF;
       /* remove hinter messages */
-      dt_control_hinter_message(darktable.control, "");
+      dt_control_hinter_message("");
     }
 
     gtk_toggle_button_set_active

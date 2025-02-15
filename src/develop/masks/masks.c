@@ -168,7 +168,7 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui,
     sel->functions->set_hint_message(gui, form, opacity, msg, sizeof(msg));
   }
 
-  dt_control_hinter_message(darktable.control, msg);
+  dt_control_hinter_message(msg);
 }
 
 void dt_masks_init_form_gui(dt_masks_form_gui_t *gui)
@@ -1085,7 +1085,7 @@ gboolean dt_masks_events_mouse_leave(dt_iop_module_t *module)
     gui->posx = (.5f + zoom_x) * wd;
     gui->posy = (.5f + zoom_y) * ht;
 
-    dt_control_hinter_message(darktable.control, "");
+    dt_control_hinter_message("");
   }
   return FALSE;
 }

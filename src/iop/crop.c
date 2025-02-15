@@ -1684,22 +1684,18 @@ int mouse_moved(dt_iop_module_t *self,
       dt_control_change_cursor(GDK_BOTTOM_LEFT_CORNER);
     else if(grab == GRAB_NONE)
     {
-      dt_control_hinter_message(darktable.control, "");
+      dt_control_hinter_message("");
       dt_control_change_cursor(GDK_LEFT_PTR);
     }
     if(grab != GRAB_NONE)
-      dt_control_hinter_message
-        (darktable.control,
-         _("<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"));
+      dt_control_hinter_message(_("<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"));
     dt_control_queue_redraw_center();
   }
   else
   {
     dt_control_change_cursor(GDK_FLEUR);
     g->cropping = GRAB_CENTER;
-    dt_control_hinter_message
-      (darktable.control,
-       _("<b>move</b>: drag, <b>move vertically</b>: shift+drag, "
+    dt_control_hinter_message(_("<b>move</b>: drag, <b>move vertically</b>: shift+drag, "
          "<b>move horizontally</b>: ctrl+drag"));
     dt_control_queue_redraw_center();
   }
