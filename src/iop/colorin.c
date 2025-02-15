@@ -1374,7 +1374,7 @@ void commit_params(dt_iop_module_t *self,
   if(type == DT_COLORSPACE_EMBEDDED_ICC)
   {
     // embedded color profile
-    const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, pipe->image.id, 'r');
+    const dt_image_t *cimg = dt_image_cache_get(pipe->image.id, 'r');
     if(cimg == NULL || cimg->profile == NULL)
       type = DT_COLORSPACE_EMBEDDED_MATRIX;
     else
@@ -1382,13 +1382,13 @@ void commit_params(dt_iop_module_t *self,
       d->input = dt_colorspaces_get_rgb_profile_from_mem(cimg->profile, cimg->profile_size);
       d->clear_input = TRUE;
     }
-    dt_image_cache_read_release(darktable.image_cache, cimg);
+    dt_image_cache_read_release(cimg);
   }
   if(type == DT_COLORSPACE_EMBEDDED_MATRIX)
   {
     // embedded matrix, hopefully D65
-    const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, pipe->image.id, 'r');
-    if(!dt_is_valid_colormatrix(cimg->d65_color_matrix[0]))
+    const dt_image_t *cimg = dt_image_cache_get(pipe->image.id, 'r');
+    if(!cimg || !dt_is_valid_colormatrix(cimg->d65_color_matrix[0]))
       type = DT_COLORSPACE_STANDARD_MATRIX;
     else
     {
@@ -1396,7 +1396,7 @@ void commit_params(dt_iop_module_t *self,
         ((float(*)[3])cimg->d65_color_matrix);
       d->clear_input = TRUE;
     }
-    dt_image_cache_read_release(darktable.image_cache, cimg);
+    dt_image_cache_read_release(cimg);
   }
   if(type == DT_COLORSPACE_STANDARD_MATRIX)
   {
@@ -1708,8 +1708,7 @@ void reload_defaults(dt_iop_module_t *self)
 
   // some file formats like jpeg can have an embedded color profile
   // currently we only support jpeg, j2k, tiff, png, avif, and heif
-  dt_image_t *img = dt_image_cache_get(darktable.image_cache,
-                                       self->dev->image_storage.id, 'w');
+  dt_image_t *img = dt_image_cache_get(self->dev->image_storage.id, 'w');
 
   if(!img->profile)
   {
@@ -1911,7 +1910,7 @@ void reload_defaults(dt_iop_module_t *self)
   else // no ICC tag nor colorprofile was found - ICC spec says untagged files are sRGB
     d->type = DT_COLORSPACE_SRGB;
 
-  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+  dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
 
   update_profile_list(self);
 }
@@ -1930,9 +1929,8 @@ static void update_profile_list(dt_iop_module_t *self)
   int pos = -1;
   // some file formats like jpeg can have an embedded color profile
   // currently we only support jpeg, j2k, tiff and png
-  const dt_image_t *cimg =
-    dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'r');
-  if(cimg->profile)
+  const dt_image_t *cimg = dt_image_cache_get(self->dev->image_storage.id, 'r');
+  if(cimg && cimg->profile)
   {
     dt_colorspaces_color_profile_t *prof = calloc(1, sizeof(dt_colorspaces_color_profile_t));
     g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_EMBEDDED_ICC, ""),
@@ -1941,7 +1939,7 @@ static void update_profile_list(dt_iop_module_t *self)
     g->image_profiles = g_list_append(g->image_profiles, prof);
     prof->in_pos = ++pos;
   }
-  dt_image_cache_read_release(darktable.image_cache, cimg);
+  dt_image_cache_read_release(cimg);
   // use the matrix embedded in some DNGs and EXRs
   if(dt_is_valid_colormatrix(self->dev->image_storage.d65_color_matrix[0]))
   {

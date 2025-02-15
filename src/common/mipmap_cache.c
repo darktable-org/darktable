@@ -929,11 +929,11 @@ void dt_mipmap_cache_get_with_caller(
         // load the image:
         // make sure we access the r/w lock as shortly as possible!
         dt_image_t DT_ALIGNED_ARRAY buffered_image;
-        const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+        const dt_image_t *cimg = dt_image_cache_get(imgid, 'r');
         buffered_image = *cimg;
-        // dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
-        // dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
-        dt_image_cache_read_release(darktable.image_cache, cimg);
+        // dt_image_t *img = dt_image_cache_write_get(cimg);
+        // dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
+        dt_image_cache_read_release(cimg);
 
         char filename[PATH_MAX] = { 0 };
         gboolean from_cache = TRUE;
@@ -953,13 +953,13 @@ void dt_mipmap_cache_get_with_caller(
         if(ret == DT_IMAGEIO_OK)
         {
           // swap back new image data:
-          dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+          dt_image_t *img = dt_image_cache_get(imgid, 'w');
           *img = buffered_image;
           img->load_status = DT_IMAGEIO_OK;
           // dt_print(DT_DEBUG_ALWAYS, "[mipmap read get] initializing full buffer img %u with %u %u -> %d %d (%p)",
           // imgid, data[0], data[1], img->width, img->height, data);
           // don't write xmp for this (we only changed db stuff):
-          dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+          dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
         }
         else
         {
@@ -976,10 +976,10 @@ void dt_mipmap_cache_get_with_caller(
             buf->color_space = DT_COLORSPACE_NONE;
           }
           // record the error code in the cache, so that later lookups know it actually failed
-          dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+          dt_image_t *img = dt_image_cache_get(imgid, 'w');
           img->load_status = ret;
           // don't write xmp for this (we only changed db stuff):
-          dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+          dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
         }
       }
       else if(mip == DT_MIPMAP_F)
@@ -1044,9 +1044,9 @@ void dt_mipmap_cache_get_with_caller(
     else if(dsc->width == 0 || dsc->height == 0)
     {
       // get the loading status of the image from the cache, so that we can assign an appropriate static image
-      dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-      dt_imageio_retval_t ret = img->load_status;
-      dt_image_cache_read_release(darktable.image_cache, img);
+      dt_image_t *img = dt_image_cache_get(imgid, 'r');
+      dt_imageio_retval_t ret = img ? img->load_status : DT_IMAGEIO_FILE_NOT_FOUND;
+      dt_image_cache_read_release(img);
       dt_print(DT_DEBUG_PIPE, "[mipmap cache get] got a zero-sized ID=%d mip %d!", imgid, mip);
       if(mip < DT_MIPMAP_F)
       {
@@ -1280,7 +1280,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf,
 
   // lock image after we have the buffer, we might need to lock the image struct for
   // writing during raw loading, to write to width/height.
-  const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  const dt_image_t *image = dt_image_cache_get(imgid, 'r');
 
   dt_iop_roi_t roi_in;
   roi_in.x = roi_in.y = 0;
@@ -1310,7 +1310,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf,
       dt_control_log(_("unable to load image `%s'!"), image->filename);
     else
       dt_control_log(_("image '%s' not supported"), image->filename);
-    dt_image_cache_read_release(darktable.image_cache, image);
+    dt_image_cache_read_release(image);
     *width = *height = 0;
     *iscale = 0.0f;
     return;
@@ -1371,7 +1371,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf,
   *height = roi_out.height;
   *iscale = (float)image->width / (float)roi_out.width;
 
-  dt_image_cache_read_release(darktable.image_cache, image);
+  dt_image_cache_read_release(image);
 }
 
 
@@ -1437,11 +1437,11 @@ static void _init_8(uint8_t *buf,
   const gboolean altered = dt_image_altered(imgid);
   gboolean res = TRUE;
 
-  const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  const dt_image_t *cimg = dt_image_cache_get(imgid, 'r');
   // the orientation for this camera is not read correctly from exiv2, so we need
   // to go the full path (as the thumbnail will be flipped the wrong way round)
   const int incompatible = !strncmp(cimg->exif_maker, "Phase One", 9);
-  dt_image_cache_read_release(darktable.image_cache, cimg);
+  dt_image_cache_read_release(cimg);
 
   const char *min = dt_conf_get_string_const("plugins/lighttable/thumbnail_raw_min_level");
   const dt_mipmap_size_t min_s = dt_mipmap_cache_get_min_mip_from_pref(min);
@@ -1485,10 +1485,10 @@ static void _init_8(uint8_t *buf,
       if(!res)
       {
         // if the thumbnail is not large enough, we compute one
-        const dt_image_t *img2 = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+        const dt_image_t *img2 = dt_image_cache_get(imgid, 'r');
         const int imgwd = img2->width;
         const int imght = img2->height;
-        dt_image_cache_read_release(darktable.image_cache, img2);
+        dt_image_cache_read_release(img2);
         if(thumb_width < wd
            && thumb_height < ht
            && thumb_width < imgwd - 4

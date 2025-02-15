@@ -343,12 +343,11 @@ static void _deflicker_prepare_histogram(dt_iop_module_t *self,
                                          uint32_t **histogram,
                                          dt_dev_histogram_stats_t *histogram_stats)
 {
-  const dt_image_t *img =
-    dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'r');
+  const dt_image_t *img = dt_image_cache_get(self->dev->image_storage.id, 'r');
   dt_image_t image = *img;
-  dt_image_cache_read_release(darktable.image_cache, img);
+  dt_image_cache_read_release(img);
 
-  if(image.buf_dsc.channels != 1 || image.buf_dsc.datatype != TYPE_UINT16) return;
+  if(!img || image.buf_dsc.channels != 1 || image.buf_dsc.datatype != TYPE_UINT16) return;
 
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf,

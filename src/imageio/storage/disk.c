@@ -461,10 +461,11 @@ try_again:
       if(g_file_test(filename, G_FILE_TEST_EXISTS))
       {
         // get the image data
-        const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-        const GTimeSpan change_timestamp = img->change_timestamp;
-        const GTimeSpan export_timestamp = img->export_timestamp;
-        dt_image_cache_read_release(darktable.image_cache, img);
+        const dt_image_t *img = dt_image_cache_get(imgid, 'r');
+        const GTimeSpan change_timestamp = img ? img->change_timestamp : 0;
+        const GTimeSpan export_timestamp = img ? img->export_timestamp : 0;
+
+        dt_image_cache_read_release(img);
 
         // check if the export timestamp in the database is more recent than the change
         // date, if yes skip the image

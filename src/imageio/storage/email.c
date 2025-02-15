@@ -287,10 +287,9 @@ void finalize_store(dt_imageio_module_storage_t *self,
     m_fd[index].lpFileType = NULL;
     m_fd[index].nPosition = (ULONG) -1;
 
-    const dt_image_t *img =
-      dt_image_cache_get(darktable.image_cache, attachment->imgid, 'r');
+    const dt_image_t *img = dt_image_cache_get(attachment->imgid, 'r');
     dt_image_print_exif(img, exif, sizeof(exif));
-    dt_image_cache_read_release(darktable.image_cache, img);
+    dt_image_cache_read_release(img);
 
     gchar *imgbody = g_strdup_printf(imageBodyFormat, filename, exif);
     if(body != NULL)
@@ -311,7 +310,7 @@ void finalize_store(dt_imageio_module_storage_t *self,
 
   MapiMessage m_msg;
   ZeroMemory(&m_msg, sizeof (m_msg));
-  m_msg.lpszSubject = (LPSTR) _convert_to_widechar(CP_UTF8, 
+  m_msg.lpszSubject = (LPSTR) _convert_to_widechar(CP_UTF8,
                                                    _("images exported from darktable"));
   m_msg.lpszNoteText = (LPSTR) _convert_to_widechar(CP_ACP, body);
 
@@ -411,10 +410,9 @@ void finalize_store(dt_imageio_module_storage_t *self,
     gchar exif[256] = { 0 };
     _email_attachment_t *attachment = (_email_attachment_t *)iter->data;
     gchar *filename = g_path_get_basename(attachment->file);
-    const dt_image_t *img =
-      dt_image_cache_get(darktable.image_cache, attachment->imgid, 'r');
+    const dt_image_t *img = dt_image_cache_get(attachment->imgid, 'r');
     dt_image_print_exif(img, exif, sizeof(exif));
-    dt_image_cache_read_release(darktable.image_cache, img);
+    dt_image_cache_read_release(img);
 
     gchar *imgbody = g_strdup_printf(imageBodyFormat, filename, exif);
     if(body != NULL)

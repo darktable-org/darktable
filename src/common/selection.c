@@ -61,11 +61,11 @@ static void _selection_select(dt_selection_t *selection,
 {
   if(dt_is_valid_imgid(imgid))
   {
-    const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+    const dt_image_t *image = dt_image_cache_get(imgid, 'r');
     if(image)
     {
       const dt_imgid_t img_group_id = image->group_id;
-      dt_image_cache_read_release(darktable.image_cache, image);
+      dt_image_cache_read_release(image);
 
       gchar *query = NULL;
       if(!darktable.gui
@@ -214,11 +214,11 @@ void dt_selection_deselect(dt_selection_t *selection,
 
   if(dt_is_valid_imgid(imgid))
   {
-    const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+    const dt_image_t *image = dt_image_cache_get(imgid, 'r');
     if(image)
     {
       const dt_imgid_t img_group_id = image->group_id;
-      dt_image_cache_read_release(darktable.image_cache, image);
+      dt_image_cache_read_release(image);
 
       gchar *query = NULL;
       if(!darktable.gui
