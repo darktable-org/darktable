@@ -966,7 +966,7 @@ void _styles_apply_to_image_ext(const char *name,
     if(dt_tag_new("darktable|changed", &tagid))
     {
       dt_tag_attach(tagid, newimgid, FALSE, FALSE);
-      dt_image_cache_set_change_timestamp(darktable.image_cache, imgid);
+      dt_image_cache_set_change_timestamp(imgid);
     }
 
     /* if current image in develop reload history */

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -300,7 +300,8 @@ typedef struct dt_image_t
   float aspect_ratio;
 
   // used by library
-  int32_t num, flags, film_id, version;
+  int32_t num, flags, version;
+  dt_filmid_t film_id;
   dt_imgid_t id;
   dt_imgid_t group_id;
   //timestamps

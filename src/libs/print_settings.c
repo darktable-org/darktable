@@ -608,14 +608,15 @@ static int _print_job_run(dt_job_t *job)
   snprintf (tag, sizeof(tag), "darktable|printed|%s", params->prt.printer.name);
   dt_tag_new(tag, &tagid);
 
-  for(int k=0; k<params->imgs.count; k++)
+  for(int k=0; k < params->imgs.count; k++)
   {
     if(dt_is_valid_imgid(params->imgs.box[k].imgid))
+    {
       if(dt_tag_attach(tagid, params->imgs.box[k].imgid, FALSE, FALSE))
         DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
-
-    /* register print timestamp in cache */
-    dt_image_cache_set_print_timestamp(darktable.image_cache, params->imgs.box[k].imgid);
+      /* register print timestamp in cache */
+      dt_image_cache_set_print_timestamp(params->imgs.box[k].imgid);
+    }
   }
 
   return 0;
@@ -746,7 +747,7 @@ static void _print_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   }
   else
   {
-    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+    const dt_image_t *img = dt_image_cache_get(imgid, 'r');
     if(!img)
     {
       // in this case no need to release from cache what we couldn't get
@@ -755,7 +756,7 @@ static void _print_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
       return;
     }
     params->job_title = g_strdup(img->filename);
-    dt_image_cache_read_release(darktable.image_cache, img);
+    dt_image_cache_read_release(img);
   }
   // FIXME: ellipsize title/printer as the export completed message is ellipsized
   gchar *message = g_strdup_printf(_("processing `%s' for `%s'"),

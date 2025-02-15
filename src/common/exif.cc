@@ -2805,7 +2805,7 @@ int dt_exif_read_blob(uint8_t **buf,
 
       // GPS data
       _remove_exif_geotag(exifData);
-      const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+      const dt_image_t *cimg = dt_image_cache_get(imgid, 'r');
       if(cimg && !std::isnan(cimg->geoloc.longitude) && !std::isnan(cimg->geoloc.latitude))
       {
         exifData["Exif.GPSInfo.GPSVersionID"] = "02 02 00 00";
@@ -2853,7 +2853,7 @@ int dt_exif_read_blob(uint8_t **buf,
       if(g_strcmp0(&datetime[DT_DATETIME_EXIF_LENGTH], "000"))
         exifData["Exif.Photo.SubSecTimeOriginal"] = &datetime[DT_DATETIME_EXIF_LENGTH];
 
-      dt_image_cache_read_release(darktable.image_cache, cimg);
+      dt_image_cache_read_release(cimg);
     }
 
     Exiv2::Blob blob;

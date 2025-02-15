@@ -1247,7 +1247,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->dual_thrs, isdual);
   gtk_widget_set_visible(g->lmmse_refine, islmmse);
 
-  dt_image_t *img = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'w');
+  dt_image_t *img = dt_image_cache_get(self->dev->image_storage.id, 'w');
   int mono_changed = img->flags & DT_IMAGE_MONOCHROME_BAYER;
   if(p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME
        || p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX)
@@ -1256,7 +1256,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     img->flags &= ~DT_IMAGE_MONOCHROME_BAYER;
   const int mask_bw = dt_image_monochrome_flags(img);
   mono_changed ^= img->flags & DT_IMAGE_MONOCHROME_BAYER;
-  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+  dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
 
   if(mono_changed)
   {

@@ -519,9 +519,9 @@ static inline void _dt_dev_load_raw(dt_develop_t *dev,
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   dt_show_times(&start, "[dt_dev_load_raw] loading the image.");
 
-  const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  const dt_image_t *image = dt_image_cache_get(imgid, 'r');
   dev->image_storage = *image;
-  dt_image_cache_read_release(darktable.image_cache, image);
+  dt_image_cache_read_release(image);
 
 //  dev->requested_id = (dev->image_storage.load_status == DT_IMAGEIO_OK) ? dev->image_storage.id : 0;
   dev->requested_id = dev->image_storage.id;
@@ -1014,7 +1014,7 @@ static void _dev_add_history_item(dt_develop_t *dev,
   const gboolean tag_change = dt_tag_attach(tagid, imgid, FALSE, FALSE);
 
   /* register change timestamp in cache */
-  dt_image_cache_set_change_timestamp(darktable.image_cache, imgid);
+  dt_image_cache_set_change_timestamp(imgid);
 
   // invalidate buffers and force redraw of darkroom
   if(!dev->history_postpone_invalidate
@@ -1461,7 +1461,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   if(!dt_is_valid_imgid(imgid)) return FALSE;
 
   gboolean run = FALSE;
-  dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+  dt_image_t *image = dt_image_cache_get(imgid, 'w');
   if(!(image->flags & DT_IMAGE_AUTO_PRESETS_APPLIED)) run = TRUE;
 
   const gboolean is_raw = dt_image_is_raw(image);
@@ -1529,7 +1529,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
       }
     }
 
-    dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
+    dt_image_cache_write_release(image, DT_IMAGE_CACHE_RELAXED);
     return FALSE;
   }
 
@@ -1733,7 +1733,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
   // make sure these end up in the image_cache; as the history is not correct right now
   // we don't write the sidecar here but later in dt_dev_read_history_ext
-  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
+  dt_image_cache_write_release(image, DT_IMAGE_CACHE_RELAXED);
 
   return TRUE;
 }
@@ -2345,13 +2345,10 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     dt_history_hash_write_from_history(imgid, flags);
     // As we have a proper history right now and this is first_run we
     // possibly write the xmp now
-    dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+    dt_image_t *image = dt_image_cache_get(imgid, 'w');
     // depending on the xmp_writing mode we either us safe or relaxed
     const gboolean always = (dt_image_get_xmp_mode() == DT_WRITE_XMP_ALWAYS);
-    dt_image_cache_write_release
-      (darktable.image_cache,
-       image,
-       always ? DT_IMAGE_CACHE_SAFE : DT_IMAGE_CACHE_RELAXED);
+    dt_image_cache_write_release(image, always ? DT_IMAGE_CACHE_SAFE : DT_IMAGE_CACHE_RELAXED);
   }
   else if(legacy_params)
   {
