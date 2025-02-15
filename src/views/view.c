@@ -720,26 +720,25 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
   *surface = NULL;
 
   // get mipmap cache image
-  dt_mipmap_cache_t *cache = darktable.mipmap_cache;
   const int32_t mipwidth = width * darktable.gui->ppd;
   const int32_t mipheight = height * darktable.gui->ppd;
-  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(cache, mipwidth, mipheight);
+  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(mipwidth, mipheight);
 
   // if needed, we load the mimap buffer
   dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_get(cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
+  dt_mipmap_cache_get(&buf, imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
 
   const int32_t buf_wd = buf.width;
   const int32_t buf_ht = buf.height;
 
   dt_print(DT_DEBUG_LIGHTTABLE,
       "dt_view_image_get_surface  id %i, dots %ix%i -> mip %ix%i, found %ix%i",
-      imgid, mipwidth, mipheight, cache->max_width[mip], cache->max_height[mip], buf_wd, buf_ht);
+      imgid, mipwidth, mipheight, darktable.mipmap_cache->max_width[mip], darktable.mipmap_cache->max_height[mip], buf_wd, buf_ht);
 
   // no image is available at the moment as we didn't get buffer data
   if(!buf.buf)
   {
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(&buf);
     return DT_VIEW_SURFACE_KO;
   }
 
@@ -879,7 +878,7 @@ dt_view_surface_value_t dt_view_image_get_surface(const dt_imgid_t imgid,
   else
     ret = DT_VIEW_SURFACE_OK;
 
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(&buf);
   if(rgbbuf) free(rgbbuf);
 
   // logs
