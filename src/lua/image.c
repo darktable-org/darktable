@@ -97,7 +97,7 @@ static int drop_cache(lua_State *L)
 {
   dt_lua_image_t imgid = NO_IMGID;
   luaA_to(L, dt_lua_image_t, &imgid, -1);
-  dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+  dt_mipmap_cache_remove(imgid);
   return 0;
 }
 
@@ -137,8 +137,8 @@ static int generate_cache(lua_State *L)
     if(dt_util_test_image_file(filename)) continue;
     // else, generate thumbnail and store in mipmap cache.
     dt_mipmap_buffer_t buf;
-    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, k, DT_MIPMAP_BLOCKING, 'r');
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_get(&buf, imgid, k, DT_MIPMAP_BLOCKING, 'r');
+    dt_mipmap_cache_release(&buf);
   }
   // thumbnail in sync with image
   dt_history_hash_set_mipmap(imgid);

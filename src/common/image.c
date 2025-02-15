@@ -982,7 +982,7 @@ void dt_image_set_flip(const dt_imgid_t imgid,
 
   dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
 
-  dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+  dt_mipmap_cache_remove(imgid);
   dt_image_update_final_size(imgid);
   dt_image_synch_xmp(imgid);
 }
@@ -1171,20 +1171,13 @@ float dt_image_set_aspect_ratio(const dt_imgid_t imgid, const gboolean raise)
   dt_mipmap_buffer_t buf;
   float aspect_ratio = 0.0;
 
-  // mipmap cache must be initialized, otherwise we'll update next call
-  if(darktable.mipmap_cache)
+  dt_mipmap_cache_get(&buf, imgid, DT_MIPMAP_0, DT_MIPMAP_BLOCKING, 'r');
+  if(buf.buf && buf.height && buf.width)
   {
-    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_0,
-                        DT_MIPMAP_BLOCKING, 'r');
-
-    if(buf.buf && buf.height && buf.width)
-    {
-      aspect_ratio = (float)buf.width / (float)buf.height;
-      dt_image_set_aspect_ratio_to(imgid, aspect_ratio, raise);
-    }
-
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    aspect_ratio = (float)buf.width / (float)buf.height;
+    dt_image_set_aspect_ratio_to(imgid, aspect_ratio, raise);
   }
+  dt_mipmap_cache_release(&buf);
 
   return aspect_ratio;
 }
@@ -1508,7 +1501,7 @@ void dt_image_remove(const dt_imgid_t imgid)
   sqlite3_finalize(stmt);
 
   // also clear all thumbnails in mipmap_cache.
-  dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+  dt_mipmap_cache_remove(imgid);
 
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_IMAGE_REMOVED, imgid, 0);
 }
@@ -1971,7 +1964,7 @@ static dt_imgid_t _image_import_internal(const dt_filmid_t film_id,
   dt_tag_attach(tagid, id, FALSE, FALSE);
 
   // make sure that there are no stale thumbnails left
-  dt_mipmap_cache_remove(darktable.mipmap_cache, id);
+  dt_mipmap_cache_remove(id);
 
   // Always keep write timestamp in database and possibly write xmp
   dt_image_synch_all_xmp(normalized_filename);
@@ -2509,7 +2502,7 @@ dt_imgid_t dt_image_copy_rename(const dt_imgid_t imgid,
       if(dt_is_valid_imgid(newid))
       {
         // also copy over on-disk thumbnails, if any
-        dt_mipmap_cache_copy_thumbnails(darktable.mipmap_cache, newid, imgid);
+        dt_mipmap_cache_copy_thumbnails(newid, imgid);
         // clang-format off
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "INSERT INTO main.color_labels (imgid, color)"

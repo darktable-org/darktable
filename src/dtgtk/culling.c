@@ -1131,7 +1131,7 @@ static void _thumbs_prefetch(dt_culling_t *table)
     maxh = MAX(maxh, th->height);
   }
   dt_mipmap_size_t mip =
-    dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, maxw, maxh);
+    dt_mipmap_cache_get_matching_size(maxw, maxh);
 
   // prefetch next image
   gchar *query;
@@ -1167,7 +1167,7 @@ static void _thumbs_prefetch(dt_culling_t *table)
   {
     const dt_imgid_t id = sqlite3_column_int(stmt, 0);
     if(dt_is_valid_imgid(id))
-      dt_mipmap_cache_get(darktable.mipmap_cache, NULL, id, mip, DT_MIPMAP_PREFETCH, 'r');
+      dt_mipmap_cache_get(NULL, id, mip, DT_MIPMAP_PREFETCH, 'r');
   }
   sqlite3_finalize(stmt);
   g_free(query);
@@ -1204,7 +1204,7 @@ static void _thumbs_prefetch(dt_culling_t *table)
   {
     const dt_imgid_t id = sqlite3_column_int(stmt, 0);
     if(dt_is_valid_imgid(id))
-      dt_mipmap_cache_get(darktable.mipmap_cache, NULL, id, mip, DT_MIPMAP_PREFETCH, 'r');
+      dt_mipmap_cache_get(NULL, id, mip, DT_MIPMAP_PREFETCH, 'r');
   }
   sqlite3_finalize(stmt);
 }
@@ -1869,7 +1869,7 @@ void dt_culling_full_redraw(dt_culling_t *table, const gboolean force)
 
   dt_print(DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF, "[dt_culling_full_redraw] done in %0.04f sec", dt_get_wtime() - start);
 
-  if(darktable.unmuted & DT_DEBUG_CACHE) dt_mipmap_cache_print(darktable.mipmap_cache);
+  if(darktable.unmuted & DT_DEBUG_CACHE) dt_mipmap_cache_print();
 }
 
 gboolean dt_culling_key_move(dt_culling_t *table, dt_culling_move_t move)

@@ -110,12 +110,12 @@ static int generate_thumbnail_cache(const dt_mipmap_size_t min_mip, const dt_mip
 
       // else, generate thumbnail and store in mipmap cache.
       dt_mipmap_buffer_t buf;
-      dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, k, DT_MIPMAP_BLOCKING, 'r');
-      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+      dt_mipmap_cache_get(&buf, imgid, k, DT_MIPMAP_BLOCKING, 'r');
+      dt_mipmap_cache_release(&buf);
     }
 
     // and immediately write thumbs to disc and remove from mipmap cache.
-    dt_mimap_cache_evict(darktable.mipmap_cache, imgid);
+    dt_mipmap_cache_evict(imgid);
     // thumbnail in sync with image
     dt_history_hash_set_mipmap(imgid);
   }
