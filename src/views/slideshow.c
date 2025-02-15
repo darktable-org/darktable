@@ -180,7 +180,7 @@ static void _shift_right(dt_slideshow_t *d)
 
 static void _requeue_job(dt_slideshow_t *d)
 {
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, _process_job_create(d));
+  dt_control_add_job(DT_JOB_QUEUE_USER_BG, _process_job_create(d));
 }
 
 static void _set_delay(dt_slideshow_t *d,
@@ -510,7 +510,7 @@ void enter(dt_view_t *self)
 
   // start first job
   dt_control_queue_redraw_center();
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, _process_job_create(d));
+  dt_control_add_job(DT_JOB_QUEUE_USER_BG, _process_job_create(d));
   dt_control_log(_("waiting to start slideshow"));
 }
 

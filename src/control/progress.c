@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2023 darktable developers.
+    Copyright (C) 2014-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -248,7 +248,7 @@ static void global_progress_end(dt_control_t *control, dt_progress_t *progress)
 #endif
 }
 
-void dt_control_progress_init(dt_control_t *control)
+void dt_control_progress_init(void)
 {
 #ifndef _WIN32
 
@@ -259,7 +259,7 @@ void dt_control_progress_init(dt_control_t *control)
 
 #else
 
-  if(darktable.dbus->dbus_connection)
+  if(darktable.dbus && darktable.dbus->dbus_connection)
   {
     GError *error = NULL;
 
@@ -295,10 +295,13 @@ void dt_control_progress_init(dt_control_t *control)
 #endif // _WIN32
 }
 
-dt_progress_t *dt_control_progress_create(dt_control_t *control, gboolean has_progress_bar,
+dt_progress_t *dt_control_progress_create(const gboolean has_progress_bar,
                                           const gchar *message)
 {
   // create the object
+  dt_control_t *control = darktable.control;
+  if(!control) return NULL;
+
   dt_progress_t *progress = calloc(1, sizeof(dt_progress_t));
   dt_pthread_mutex_init(&(progress->mutex), NULL);
 
@@ -323,8 +326,9 @@ dt_progress_t *dt_control_progress_create(dt_control_t *control, gboolean has_pr
   return progress;
 }
 
-void dt_control_progress_destroy(dt_control_t *control, dt_progress_t *progress)
+void dt_control_progress_destroy(dt_progress_t *progress)
 {
+  dt_control_t *control = darktable.control;
   if(!control || !progress) return;
   dt_pthread_mutex_lock(&control->progress_system.mutex);
 
@@ -345,9 +349,11 @@ void dt_control_progress_destroy(dt_control_t *control, dt_progress_t *progress)
   free(progress);
 }
 
-void dt_control_progress_make_cancellable(dt_control_t *control, dt_progress_t *progress,
-                                          dt_progress_cancel_callback_t cancel, void *data)
+void dt_control_progress_make_cancellable(dt_progress_t *progress,
+                                          dt_progress_cancel_callback_t cancel,
+                                          void *data)
 {
+  dt_control_t *control = darktable.control;
   if(!control || !progress) return;
   // set the value
   dt_pthread_mutex_lock(&progress->mutex);
@@ -369,13 +375,13 @@ static void _control_progress_cancel_callback(dt_progress_t *progress, void *dat
   dt_control_job_cancel((dt_job_t *)data);
 }
 
-void dt_control_progress_attach_job(dt_control_t *control, dt_progress_t *progress, dt_job_t *job)
+void dt_control_progress_attach_job(dt_progress_t *progress, dt_job_t *job)
 {
-  if(control && progress && job)
-    dt_control_progress_make_cancellable(control, progress, &_control_progress_cancel_callback, job);
+  if(progress && job)
+    dt_control_progress_make_cancellable(progress, &_control_progress_cancel_callback, job);
 }
 
-void dt_control_progress_cancel(dt_control_t *control, dt_progress_t *progress)
+void dt_control_progress_cancel(dt_progress_t *progress)
 {
   if(!progress) return;
   dt_pthread_mutex_lock(&progress->mutex);
@@ -410,8 +416,9 @@ Otherwise, do the cancel callback in mutex locked state as the progress struct w
   // the gui doesn't need to know I guess, it wouldn't to anything with that bit of information
 }
 
-void dt_control_progress_set_progress(dt_control_t *control, dt_progress_t *progress, const double value)
+void dt_control_progress_set_progress(dt_progress_t *progress, double value)
 {
+  dt_control_t *control = darktable.control;
   if(!control || !progress) return;
 
   dt_pthread_mutex_lock(&progress->mutex);
@@ -446,8 +453,9 @@ const gchar *dt_control_progress_get_message(dt_progress_t *progress)
   return res;
 }
 
-void dt_control_progress_set_message(dt_control_t *control, dt_progress_t *progress, const char *message)
+void dt_control_progress_set_message(dt_progress_t *progress, const char *message)
 {
+  dt_control_t *control = darktable.control;
   if(!control || !progress) return;
   dt_pthread_mutex_lock(&progress->mutex);
   g_free(progress->message);

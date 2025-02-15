@@ -327,7 +327,7 @@ static void free_params_wrapper(struct dt_imageio_module_storage_t *self,
   }
   dt_control_job_set_params(job, t, free_param_wrapper_destroy);
   t->data = (lua_storage_t *)data;
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_BG, job);
+  dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, job);
 }
 
 static int set_params_wrapper(struct dt_imageio_module_storage_t *self,

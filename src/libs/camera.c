@@ -221,7 +221,7 @@ static void _capture_button_clicked(GtkWidget *widget, gpointer user_data)
 
   /* create a capture background job */
   jobcode = dt_view_tethering_get_job_code(darktable.view_manager);
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
+  dt_control_add_job(DT_JOB_QUEUE_USER_FG,
                      dt_camera_capture_job_create(jobcode, delay, count, brackets, steps));
 }
 

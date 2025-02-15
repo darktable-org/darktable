@@ -2311,7 +2311,7 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
 #ifdef HAVE_GPHOTO2
       if(d->import_case == DT_IMPORT_CAMERA)
       {
-        dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG,
+        dt_control_add_job(DT_JOB_QUEUE_USER_BG,
                            dt_camera_import_job_create(imgs, d->camera, datetime_override));
       }
       else

@@ -53,7 +53,7 @@ static int lua_print_hinter(lua_State *L)
     char msg[256];
     if(snprintf(msg, sizeof(msg), "%s", luaL_checkstring(L, -1)) > 0)
     {
-      dt_control_hinter_message(darktable.control, msg);
+      dt_control_hinter_message(msg);
     }
   }
   else
