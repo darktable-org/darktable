@@ -108,6 +108,8 @@ static char *_expand_source(dt_variables_params_t *params, char **source, char e
 
 static gboolean _is_flash_fired(const dt_image_t *img)
 {
+  if(img->exif_flash[0] == '\0') // string is empty
+    return FALSE;                // so we can't claim that flash fired
   if(g_strrstr(img->exif_flash, "did not fire"))
     return FALSE;
   if(img->exif_flash[0] == 'N')  // "No", that is no flash function present
