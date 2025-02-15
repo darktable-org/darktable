@@ -77,7 +77,7 @@ static gchar* _dt_full_locale_name(const char *locale)
 #endif
 }
 
-static void set_locale(const char *ui_lang, const char *old_env)
+static void _set_locale(const char *ui_lang, const char *old_env, const gboolean gui)
 {
   if(ui_lang && *ui_lang)
   {
@@ -88,7 +88,7 @@ static void set_locale(const char *ui_lang, const char *old_env)
       g_free(full_locale);
     }
     g_setenv("LANGUAGE", ui_lang, TRUE);
-    gtk_disable_setlocale();
+    if(gui) gtk_disable_setlocale();
   }
   else if(old_env && *old_env)
     g_setenv("LANGUAGE", old_env, TRUE);
@@ -98,7 +98,7 @@ static void set_locale(const char *ui_lang, const char *old_env)
   setlocale(LC_ALL, "");
 }
 
-static gint sort_languages(gconstpointer a, gconstpointer b)
+static gint _sort_languages(gconstpointer a, gconstpointer b)
 {
   gchar *name_a = g_utf8_casefold(dt_l10n_get_name((const dt_l10n_language_t *)a), -1);
   gchar *name_b = g_utf8_casefold(dt_l10n_get_name((const dt_l10n_language_t *)b), -1);
@@ -111,7 +111,7 @@ static gint sort_languages(gconstpointer a, gconstpointer b)
   return result;
 }
 
-static void get_language_names(GList *languages)
+static void _dt_get_language_names(GList *languages)
 {
 #ifdef HAVE_ISO_CODES
 
@@ -445,14 +445,14 @@ dt_l10n_t *dt_l10n_init(const gchar *filename, const gboolean init_list)
     }
 
     // now try to find language names and translations!
-    get_language_names(result->languages);
+    _dt_get_language_names(result->languages);
 
     // set the requested gui language.  this has to happen before
     // sorting the list as the sort result may depend on the language.
-    set_locale(ui_lang, old_env);
+    _set_locale(ui_lang, old_env, TRUE);
 
     // sort the list of languages
-    result->languages = g_list_sort(result->languages, sort_languages);
+    result->languages = g_list_sort(result->languages, _sort_languages);
 
     // find the index of the selected and default languages
     int i = 0;
@@ -467,7 +467,7 @@ dt_l10n_t *dt_l10n_init(const gchar *filename, const gboolean init_list)
       result->selected = result->sys_default;
   }
   else
-    set_locale(ui_lang, old_env);
+    _set_locale(ui_lang, old_env, FALSE);
 
   g_free(ui_lang);
 
