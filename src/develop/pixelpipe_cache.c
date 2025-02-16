@@ -360,7 +360,7 @@ static void _mark_invalid_cacheline(const dt_dev_pixelpipe_cache_t *cache, const
   cache->ioporder[k] = 0;
 }
 
-void dt_dev_pixelpipe_cache_invalidate_later(const dt_dev_pixelpipe_t *pipe,
+void dt_dev_pixelpipe_cache_invalidate_later(dt_dev_pixelpipe_t *pipe,
                                              const int32_t order)
 {
   const dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
@@ -373,14 +373,19 @@ void dt_dev_pixelpipe_cache_invalidate_later(const dt_dev_pixelpipe_t *pipe,
       invalidated++;
     }
   }
-  if(invalidated)
+
+  const gboolean bcache = pipe->bcache_data != NULL && pipe->bcache_hash != DT_INVALID_CACHEHASH;
+  pipe->bcache_hash = DT_INVALID_CACHEHASH;
+
+  if(invalidated || bcache)
     dt_print_pipe(DT_DEBUG_PIPE,
     order ? "pipecache invalidate" : "pipecache flush",
     pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
-    "%i cachelines after ioporder=%i", invalidated, order);
+    "%i cachelines after ioporder=%i%s",
+    invalidated, order, bcache ? ", blend cache" : "");
 }
 
-void dt_dev_pixelpipe_cache_flush(const dt_dev_pixelpipe_t *pipe)
+void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_t *pipe)
 {
   dt_dev_pixelpipe_cache_invalidate_later(pipe, 0);
 }

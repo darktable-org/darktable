@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2024 darktable developers.
+    Copyright (C) 2018-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -280,8 +280,8 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   GtkStyleContext *context;
 
   // Event for equalizer drawing
-  float nodes_x[CHANNELS];
-  float nodes_y[CHANNELS];
+  float nodes_x[CHANNELS] DT_ALIGNED_ARRAY;
+  float nodes_y[CHANNELS] DT_ALIGNED_ARRAY;
   float area_x; // x coordinate of cursor over graph/drawing area
   float area_y; // y coordinate
   int area_active_node;
@@ -632,8 +632,8 @@ static void invalidate_luminance_cache(dt_iop_module_t *const self)
   g->max_histogram = 1;
   g->luminance_valid = FALSE;
   g->histogram_valid = FALSE;
-  g->thumb_preview_hash = 0;
-  g->ui_preview_hash = 0;
+  g->thumb_preview_hash = DT_INVALID_CACHEHASH;
+  g->ui_preview_hash = DT_INVALID_CACHEHASH;
   dt_iop_gui_leave_critical_section(self);
   dt_iop_refresh_all(self);
 }
@@ -950,8 +950,7 @@ static inline void display_luminance_mask(const float *const restrict in,
                                           const float *const restrict luminance,
                                           float *const restrict out,
                                           const dt_iop_roi_t *const roi_in,
-                                          const dt_iop_roi_t *const roi_out,
-                                          const size_t ch)
+                                          const dt_iop_roi_t *const roi_out)
 {
   const size_t offset_x = (roi_in->x < roi_out->x) ? -roi_in->x + roi_out->x : 0;
   const size_t offset_y = (roi_in->y < roi_out->y) ? -roi_in->y + roi_out->y : 0;
@@ -979,14 +978,14 @@ static inline void display_luminance_mask(const float *const restrict in,
                 fmaxf(luminance[(i + offset_y) * in_width  + (j + offset_x)] - 0.00390625f,
                       0.f) / 0.99609375f,
                 1.f));
-      const size_t index = (i * out_width + j) * ch;
+      const size_t index = (i * out_width + j) * 4;
       // set gray level for the mask
       for_each_channel(c,aligned(out))
       {
         out[index + c] = intensity;
       }
       // copy alpha channel
-      out[index + 3] = in[((i + offset_y) * in_width + (j + offset_x)) * ch + 3];
+      out[index + 3] = in[((i + offset_y) * in_width + (j + offset_x)) * 4 + 3];
     }
 }
 
@@ -1118,7 +1117,7 @@ void toneeq_process(dt_iop_module_t *self,
       hash_set_get(&g->ui_preview_hash, &saved_hash, &self->gui_lock);
 
       dt_iop_gui_enter_critical_section(self);
-      const int luminance_valid = g->luminance_valid;
+      const gboolean luminance_valid = g->luminance_valid;
       dt_iop_gui_leave_critical_section(self);
 
       if(hash != saved_hash || !luminance_valid)
@@ -1165,7 +1164,7 @@ void toneeq_process(dt_iop_module_t *self,
   {
     if(g->mask_display)
     {
-      display_luminance_mask(in, luminance, out, roi_in, roi_out, 4);
+      display_luminance_mask(in, luminance, out, roi_in, roi_out);
       piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
     }
     else
@@ -1291,9 +1290,9 @@ static void get_channels_factors(float factors[CHANNELS],
 
 
 __DT_CLONE_TARGETS__
-static int compute_channels_factors(const float factors[PIXEL_CHAN],
-                                    float out[CHANNELS],
-                                    const float sigma)
+static gboolean compute_channels_factors(const float factors[PIXEL_CHAN],
+                                         float out[CHANNELS],
+                                         const float sigma)
 {
   // Input factors are the weights for the radial-basis curve
   // approximation of user params Output factors are the gains of the
@@ -1308,7 +1307,7 @@ static int compute_channels_factors(const float factors[PIXEL_CHAN],
     // need to check for validity here
     out[i] = pixel_correction(centers_params[i], factors, sigma);
   }
-  return 1;
+  return TRUE;
 }
 
 
@@ -1561,6 +1560,7 @@ static inline gboolean update_curve_lut(dt_iop_module_t *self)
     dt_simd_memcpy(g->temp_user_params, factors, CHANNELS);
     valid = pseudo_solve(g->interpolation_matrix, factors, CHANNELS, PIXEL_CHAN, TRUE);
     if(valid) dt_simd_memcpy(factors, g->factors, PIXEL_CHAN);
+    else dt_print(DT_DEBUG_PIPE, "tone equalizer pseudo solve problem");
     g->factors_valid = TRUE;
     g->lut_valid = FALSE;
   }
@@ -1672,7 +1672,7 @@ void cleanup_pipe(dt_iop_module_t *self,
   piece->data = NULL;
 }
 
-void show_guiding_controls(dt_iop_module_t *self)
+static void show_guiding_controls(dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   const dt_iop_toneequalizer_params_t *p = self->params;
@@ -2207,12 +2207,12 @@ int scrolled(dt_iop_module_t *self,
   // if GUI buffers not ready, exit but still handle the cursor
   dt_iop_gui_enter_critical_section(self);
 
-  const int fail = (!g->cursor_valid
-                    || !g->luminance_valid
-                    || !g->interpolation_valid
-                    || !g->user_param_valid
-                    || dev->full.pipe->processing
-                    || !g->has_focus);
+  const gboolean fail = !g->cursor_valid
+                     || !g->luminance_valid
+                     || !g->interpolation_valid
+                     || !g->user_param_valid
+                     || dev->full.pipe->processing
+                     || !g->has_focus;
 
   dt_iop_gui_leave_critical_section(self);
   if(fail) return 1;
@@ -2370,10 +2370,10 @@ void gui_post_expose(dt_iop_module_t *self,
 
   dt_iop_gui_enter_critical_section(self);
 
-  const int fail = (!g->cursor_valid
-                    || !g->interpolation_valid
-                    || dev->full.pipe->processing
-                    || !g->has_focus);
+  const gboolean fail = !g->cursor_valid
+                     || !g->interpolation_valid
+                     || dev->full.pipe->processing
+                     || !g->has_focus;
 
   dt_iop_gui_leave_critical_section(self);
 
@@ -2951,9 +2951,9 @@ static gboolean area_draw(GtkWidget *widget,
   return TRUE;
 }
 
-static gboolean dt_iop_toneequalizer_bar_draw(GtkWidget *widget,
-                                              cairo_t *crf,
-                                              dt_iop_module_t *self)
+static gboolean _toneequalizer_bar_draw(GtkWidget *widget,
+                                        cairo_t *crf,
+                                        dt_iop_module_t *self)
 {
   // Draw the widget equalizer view
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
@@ -3457,7 +3457,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->bar), TRUE, TRUE, 0);
   gtk_widget_set_can_focus(GTK_WIDGET(g->bar), TRUE);
   g_signal_connect(G_OBJECT(g->bar), "draw",
-                   G_CALLBACK(dt_iop_toneequalizer_bar_draw), self);
+                   G_CALLBACK(_toneequalizer_bar_draw), self);
   gtk_widget_set_tooltip_text
     (GTK_WIDGET(g->bar),
      _("mask histogram span between the first and last deciles.\n"

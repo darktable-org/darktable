@@ -1160,6 +1160,9 @@ static void _collect_histogram_on_CPU(dt_dev_pixelpipe_t *pipe,
 
   The validating hash is almost dt_dev_pixelpipe_cache_hash() except it
   does *not* include the blending paramters for the module in focus.
+
+  As modules might change internal mask visualizing modes not visible via parameters
+  we clear the blending cache line whenever we invalidate pixelpipe cache lines.
 */
 static inline dt_hash_t _piece_process_hash(const dt_dev_pixelpipe_iop_t *piece,
                                             const dt_iop_roi_t *roi,
@@ -1179,6 +1182,7 @@ static inline gboolean _piece_fast_blend(const dt_dev_pixelpipe_iop_t *piece,
                                          const dt_iop_module_t *module)
 {
   return (piece->pipe->type & DT_DEV_PIXELPIPE_SCREEN)
+      && darktable.pipe_cache
       && module->dev
       && module->dev->gui_attached
       && module == module->dev->gui_module
@@ -1191,7 +1195,7 @@ static inline float *_get_fast_blendcache(const size_t nfloats,
                                           dt_dev_pixelpipe_t *pipe)
 {
   dt_free_align(pipe->bcache_data);
-  pipe->bcache_data = dt_alloc_align_float(nfloats);
+  pipe->bcache_data = phash != DT_INVALID_CACHEHASH ? dt_alloc_align_float(nfloats) : NULL;
   pipe->bcache_hash = phash;
   return pipe->bcache_data;
 }
@@ -1293,13 +1297,13 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
     ? _piece_process_hash(piece, roi_out, module, position)
     : DT_INVALID_CACHEHASH;
   const gboolean bcaching = relevant
-    ? pipe->bcache_data && phash == pipe->bcache_hash
+    ? pipe->bcache_data && phash == pipe->bcache_hash && phash != DT_INVALID_CACHEHASH
     : FALSE;
 
   if(!fitting && _piece_may_tile(piece))
   {
     dt_print_pipe(DT_DEBUG_PIPE,
-                  bcaching ? "from focus cache" : "process tiles",
+                  bcaching ? "from focus cache tile" : "process tiles",
                   pipe, module, DT_DEVICE_CPU, roi_in, roi_out, "%s%s%s",
                   dt_iop_colorspace_to_name(cst_to),
                   cst_to != cst_out ? " -> " : "",
@@ -1314,8 +1318,13 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
       module->process_tiling(module, piece, input, *output, roi_in, roi_out, in_bpp);
       if(relevant)
       {
-        float *cache = _get_fast_blendcache(nfloats, phash, pipe);
-        if(cache) dt_iop_image_copy(cache, *output, nfloats);
+        if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
+        {
+          float *cache = _get_fast_blendcache(nfloats, phash, pipe);
+          if(cache) dt_iop_image_copy(cache, *output, nfloats);
+        }
+        else
+          pipe->bcache_hash = DT_INVALID_CACHEHASH;
       }
     }
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU
@@ -1375,8 +1384,13 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
       module->process(module, piece, input, *output, roi_in, roi_out);
       if(relevant)
       {
-        float *cache = _get_fast_blendcache(nfloats, phash, pipe);
-        if(cache) dt_iop_image_copy(cache, *output, nfloats);
+        if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
+        {
+          float *cache = _get_fast_blendcache(nfloats, phash, pipe);
+          if(cache) dt_iop_image_copy(cache, *output, nfloats);
+        }
+        else
+          pipe->bcache_hash = DT_INVALID_CACHEHASH;
       }
     }
 
@@ -2019,7 +2033,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
             ? _piece_process_hash(piece, roi_out, module, pos)
             : DT_INVALID_CACHEHASH;
           const gboolean bcaching = relevant
-            ? pipe->bcache_data && phash == pipe->bcache_hash
+            ? pipe->bcache_data && phash == pipe->bcache_hash && phash != DT_INVALID_CACHEHASH
             : FALSE;
 
           dt_print_pipe(DT_DEBUG_PIPE,
@@ -2090,12 +2104,15 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                      &roi_in, roi_out);
             if(relevant && (err == CL_SUCCESS))
             {
-              float *cache = _get_fast_blendcache(out_bpp * roi_out->width * roi_out->height / sizeof(float), phash, pipe);
-              if(cache)
-                err = dt_opencl_read_host_from_device(pipe->devid, cache,
-                                                      *cl_mem_output,
-                                                      roi_out->width, roi_out->height,
-                                                      out_bpp);
+              if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
+              {
+                float *cache = _get_fast_blendcache(out_bpp * roi_out->width * roi_out->height / sizeof(float), phash, pipe);
+                if(cache)
+                  err = dt_opencl_read_host_from_device(pipe->devid, cache, *cl_mem_output,
+                                                        roi_out->width, roi_out->height, out_bpp);
+              }
+              else
+                pipe->bcache_hash = DT_INVALID_CACHEHASH;
             }
           }
           success_opencl = (err == CL_SUCCESS);
@@ -2327,11 +2344,11 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
             ? _piece_process_hash(piece, roi_out, module, pos)
             : DT_INVALID_CACHEHASH;
           const gboolean bcaching = relevant
-            ? pipe->bcache_data && phash == pipe->bcache_hash
+            ? pipe->bcache_data && phash == pipe->bcache_hash && phash != DT_INVALID_CACHEHASH
             : FALSE;
 
           dt_print_pipe(DT_DEBUG_PIPE,
-                        bcaching ? "from focus cache" : "process tiled",
+                        bcaching ? "from focus cache tile" : "process tiled",
                         pipe, module, pipe->devid, &roi_in, roi_out, "%s%s%s",
                         dt_iop_colorspace_to_name(cst_to),
                         cst_to != cst_out ? " -> " : "",
@@ -2351,11 +2368,15 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                             *output, &roi_in, roi_out, in_bpp);
             if(relevant && (err == CL_SUCCESS))
             {
-              float *cache = _get_fast_blendcache(out_bpp * roi_out->width * roi_out->height / sizeof(float), phash, pipe);
-              if(cache)
-                err = dt_opencl_read_host_from_device(pipe->devid, cache, *cl_mem_output,
-                                                      roi_out->width, roi_out->height,
-                                                      out_bpp);
+              if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
+              {
+                float *cache = _get_fast_blendcache(out_bpp * roi_out->width * roi_out->height / sizeof(float), phash, pipe);
+                if(cache)
+                  err = dt_opencl_read_host_from_device(pipe->devid, cache, *cl_mem_output,
+                                                        roi_out->width, roi_out->height, out_bpp);
+              }
+              else
+                pipe->bcache_hash = DT_INVALID_CACHEHASH;
             }
           }
           success_opencl = (err == CL_SUCCESS);
