@@ -1248,11 +1248,9 @@ static GdkPixbuf *_draw_image(const dt_imgid_t imgid,
 
   if(thumbnail == DT_MAP_THUMB_THUMB)
   {
-    dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache,
-                                                             _thumb_size, _thumb_size);
+    dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(_thumb_size, _thumb_size);
     dt_mipmap_buffer_t buf;
-    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, mip,
-                        blocking ? DT_MIPMAP_BLOCKING : DT_MIPMAP_BEST_EFFORT, 'r');
+    dt_mipmap_cache_get(&buf, imgid, mip, blocking ? DT_MIPMAP_BLOCKING : DT_MIPMAP_BEST_EFFORT, 'r');
 
     if(buf.buf && buf.width > 0)
     {
@@ -1271,7 +1269,7 @@ static GdkPixbuf *_draw_image(const dt_imgid_t imgid,
       source = gdk_pixbuf_new_from_data(buf.buf, GDK_COLORSPACE_RGB, TRUE,
                                         8, buf.width, buf.height,
                                         buf.width * 4, NULL, NULL);
-      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+      dt_mipmap_cache_release(&buf);
       if(!source) goto map_changed_failure;
       // now we want a slightly larger pixbuf that we can put the image on
       thumb = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, w + 2 * _thumb_border,

@@ -180,7 +180,7 @@ static void _shift_right(dt_slideshow_t *d)
 
 static void _requeue_job(dt_slideshow_t *d)
 {
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, _process_job_create(d));
+  dt_control_add_job(DT_JOB_QUEUE_USER_BG, _process_job_create(d));
 }
 
 static void _set_delay(dt_slideshow_t *d,
@@ -510,7 +510,7 @@ void enter(dt_view_t *self)
 
   // start first job
   dt_control_queue_redraw_center();
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, _process_job_create(d));
+  dt_control_add_job(DT_JOB_QUEUE_USER_BG, _process_job_create(d));
   dt_control_log(_("waiting to start slideshow"));
 }
 
@@ -585,9 +585,8 @@ void expose(dt_view_t *self,
   {
     // get a small preview
     dt_mipmap_buffer_t buf;
-    dt_mipmap_size_t mip =
-      dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, width / 8, height / 8);
-    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BLOCKING, 'r');
+    dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(width / 8, height / 8);
+    dt_mipmap_cache_get(&buf, imgid, mip, DT_MIPMAP_BLOCKING, 'r');
     if(buf.buf)
     {
       double scale = MIN((double)width / buf.width, (double)height / buf.height);
@@ -602,7 +601,7 @@ void expose(dt_view_t *self,
     }
 
     d->id_preview_displayed = imgid;
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(&buf);
   }
 
   cairo_restore(cr);

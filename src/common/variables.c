@@ -168,7 +168,7 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
   {
     const dt_image_t *img = params->img
       ? (dt_image_t *)params->img
-      : dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
+      : dt_image_cache_get(params->imgid, 'r');
 
     params->data->datetime = dt_datetime_img_to_gdatetime(img, darktable.utc_tz);
     if(params->data->datetime)
@@ -226,7 +226,7 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
       }
     }
 
-    if(params->img == NULL) dt_image_cache_read_release(darktable.image_cache, img);
+    if(params->img == NULL) dt_image_cache_read_release(img);
   }
   else
   { // session data
@@ -590,11 +590,11 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     gchar buffer[1024];
     const dt_image_t *img = params->img
       ? (dt_image_t *)params->img
-      : dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
+      : dt_image_cache_get(params->imgid, 'r');
 
     dt_image_print_exif(img, buffer, sizeof(buffer));
     if(params->img == NULL)
-      dt_image_cache_read_release(darktable.image_cache, img);
+      dt_image_cache_read_release(img);
     result = g_strdup(buffer);
   }
   else if(_has_prefix(variable, "VERSION.NAME")

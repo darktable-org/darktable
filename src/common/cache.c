@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -78,10 +78,9 @@ int32_t dt_cache_contains(dt_cache_t *cache,
   return result;
 }
 
-int dt_cache_for_all
-  (dt_cache_t *cache,
-   int (*process)(const uint32_t key, const void *data, void *user_data),
-   void *user_data)
+int dt_cache_for_all(dt_cache_t *cache,
+                     int (*process)(const uint32_t key, const void *data, void *user_data),
+                     void *user_data)
 {
   dt_pthread_mutex_lock(&cache->lock);
   GHashTableIter iter;
@@ -173,11 +172,9 @@ restart:
   if(res)
   { // yay, found. read lock and pass on.
     dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
-    int result;
-    if(mode == 'w')
-      result = dt_pthread_rwlock_trywrlock_with_caller(&entry->lock, file, line);
-    else
-      result = dt_pthread_rwlock_tryrdlock_with_caller(&entry->lock, file, line);
+    const int result = (mode == 'w')
+                      ? dt_pthread_rwlock_trywrlock_with_caller(&entry->lock, file, line)
+                      : dt_pthread_rwlock_tryrdlock_with_caller(&entry->lock, file, line);
     if(result)
     { // need to give up mutex so other threads have a chance to get in between and
       // free the lock we're trying to acquire:
@@ -224,9 +221,8 @@ restart:
   }
 
   // here dies your 32-bit system:
-  dt_cache_entry_t *entry = (dt_cache_entry_t *)g_slice_alloc(sizeof(dt_cache_entry_t));
-  const int ret = dt_pthread_rwlock_init(&entry->lock, 0);
-  if(ret) dt_print(DT_DEBUG_ALWAYS, "rwlock init: %d", ret);
+  dt_cache_entry_t *entry = g_slice_alloc(sizeof(dt_cache_entry_t));
+  dt_pthread_rwlock_init(&entry->lock, 0);
 
   entry->data = 0;
   entry->data_size = cache->entry_size;
@@ -248,8 +244,7 @@ restart:
   ASAN_POISON_MEMORY_REGION(entry->data, entry->data_size);
 
   // if allocate callback is given, always return a write lock
-  const int write = ((mode == 'w') || cache->allocate);
-
+  const gboolean write = ((mode == 'w') || cache->allocate);
   // write lock in case the caller requests it:
   if(write)
     dt_pthread_rwlock_wrlock_with_caller(&entry->lock, file, line);
@@ -290,8 +285,7 @@ restart:
     return 1;
   }
   // need write lock to be able to delete:
-  const int result = dt_pthread_rwlock_trywrlock(&entry->lock);
-  if(result)
+  if(dt_pthread_rwlock_trywrlock(&entry->lock))
   {
     dt_pthread_mutex_unlock(&cache->lock);
     g_usleep(5);
@@ -308,7 +302,7 @@ restart:
     goto restart;
   }
 
-  gboolean removed = g_hash_table_remove(cache->hashtable, GINT_TO_POINTER(key));
+  const gboolean removed = g_hash_table_remove(cache->hashtable, GINT_TO_POINTER(key));
   (void)removed; // make non-assert compile happy
   assert(removed);
   cache->lru = g_list_delete_link(cache->lru, entry->link);

@@ -241,10 +241,10 @@ void gui_update(dt_lib_module_t *self)
     const dt_imgid_t imgid = dt_act_on_get_main_image();
     if(dt_is_valid_imgid(imgid))
     {
-      dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+      dt_image_t *img = dt_image_cache_get(imgid, 'r');
       const gboolean is_bw = (dt_image_monochrome_flags(img) != 0);
       const int img_group_id = img->group_id;
-      dt_image_cache_read_release(darktable.image_cache, img);
+      dt_image_cache_read_release(img);
       gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), !is_bw);
       gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), is_bw);
       sqlite3_stmt *stmt;

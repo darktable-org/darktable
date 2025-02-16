@@ -458,14 +458,14 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
   if(dt_is_valid_imgid(imgid))
   {
     cairo_save(cr);
-    const dt_image_t *img = dt_image_cache_testget(darktable.image_cache, imgid, 'r');
+    const dt_image_t *img = dt_image_cache_testget(imgid, 'r');
     // if the user points at this image, we really want it:
-    if(!img) img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+    if(!img) img = dt_image_cache_get(imgid, 'r');
 
     const float imgwd = 0.97f;
     dt_mipmap_buffer_t buf;
-    dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, imgwd * w, imgwd * h);
-    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, mip, 0, 'r');
+    dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(imgwd * w, imgwd * h);
+    dt_mipmap_cache_get(&buf, imgid, mip, 0, 'r');
 
     float scale = 1.0;
     cairo_surface_t *surface = NULL;
@@ -543,8 +543,8 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
       cairo_surface_destroy(surface);
     }
     cairo_restore(cr);
-    if(buf.buf) dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-    if(img) dt_image_cache_read_release(darktable.image_cache, img);
+    if(buf.buf) dt_mipmap_cache_release(&buf);
+    if(img) dt_image_cache_read_release(img);
 
     // ON CANVAS CONTROLS
     if(use_splitline)

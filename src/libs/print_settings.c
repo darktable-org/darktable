@@ -608,14 +608,15 @@ static int _print_job_run(dt_job_t *job)
   snprintf (tag, sizeof(tag), "darktable|printed|%s", params->prt.printer.name);
   dt_tag_new(tag, &tagid);
 
-  for(int k=0; k<params->imgs.count; k++)
+  for(int k=0; k < params->imgs.count; k++)
   {
     if(dt_is_valid_imgid(params->imgs.box[k].imgid))
+    {
       if(dt_tag_attach(tagid, params->imgs.box[k].imgid, FALSE, FALSE))
         DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_TAG_CHANGED);
-
-    /* register print timestamp in cache */
-    dt_image_cache_set_print_timestamp(darktable.image_cache, params->imgs.box[k].imgid);
+      /* register print timestamp in cache */
+      dt_image_cache_set_print_timestamp(params->imgs.box[k].imgid);
+    }
   }
 
   return 0;
@@ -746,7 +747,7 @@ static void _print_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   }
   else
   {
-    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+    const dt_image_t *img = dt_image_cache_get(imgid, 'r');
     if(!img)
     {
       // in this case no need to release from cache what we couldn't get
@@ -755,7 +756,7 @@ static void _print_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
       return;
     }
     params->job_title = g_strdup(img->filename);
-    dt_image_cache_read_release(darktable.image_cache, img);
+    dt_image_cache_read_release(img);
   }
   // FIXME: ellipsize title/printer as the export completed message is ellipsized
   gchar *message = g_strdup_printf(_("processing `%s' for `%s'"),
@@ -777,7 +778,7 @@ static void _print_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   params->p_icc_intent = ps->v_pintent;
   params->black_point_compensation = ps->v_black_point_compensation;
 
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_EXPORT, job);
+  dt_control_add_job(DT_JOB_QUEUE_USER_EXPORT, job);
 }
 
 static void _set_printer(const dt_lib_module_t *self,
@@ -1326,8 +1327,7 @@ _intent_callback(GtkWidget *widget, dt_lib_module_t *self)
 static void _set_orientation(dt_lib_print_settings_t *ps, dt_imgid_t imgid)
 {
   dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf,
-                      imgid, DT_MIPMAP_0, DT_MIPMAP_BEST_EFFORT, 'r');
+  dt_mipmap_cache_get(&buf, imgid, DT_MIPMAP_0, DT_MIPMAP_BEST_EFFORT, 'r');
 
   // If there's a mipmap available, figure out orientation based upon
   // its dimensions. Otherwise, don't touch orientation until the
@@ -1339,7 +1339,7 @@ static void _set_orientation(dt_lib_print_settings_t *ps, dt_imgid_t imgid)
     dt_bauhaus_combobox_set(ps->orientation, ps->prt.page.landscape == TRUE ? 1 : 0);
   }
 
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(&buf);
   dt_control_queue_redraw_center();
 }
 

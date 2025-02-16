@@ -2046,14 +2046,14 @@ static void _update_color_harmony_gui(dt_lib_module_t *self)
 
   const dt_imgid_t imgid = darktable.develop->image_storage.id;
 
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  const dt_image_t *img = dt_image_cache_get(imgid, 'r');
 
   dt_color_harmony_init(&d->harmony_guide);
 
   if(img)
   {
     memcpy(&d->harmony_guide, &img->color_harmony_guide, sizeof(dt_color_harmony_guide_t));
-    dt_image_cache_read_release(darktable.image_cache, img);
+    dt_image_cache_read_release(img);
   }
 
   // restore rotation/width default
@@ -2119,15 +2119,13 @@ static void _color_harmony_changed_record(dt_lib_histogram_t *d)
 
   const dt_imgid_t imgid = darktable.develop->image_storage.id;
 
-  dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+  dt_image_t *img = dt_image_cache_get(imgid, 'w');
 
   memcpy(&img->color_harmony_guide,
          &d->harmony_guide,
          sizeof(dt_color_harmony_guide_t));
 
-  dt_image_cache_write_release_info
-    (darktable.image_cache, img,
-     DT_IMAGE_CACHE_SAFE, "histogram color_harmony_changed_record");
+  dt_image_cache_write_release_info(img, DT_IMAGE_CACHE_SAFE, "histogram color_harmony_changed_record");
 }
 
 static gboolean _color_harmony_clicked(GtkWidget *button,

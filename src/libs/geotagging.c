@@ -785,10 +785,10 @@ static void _refresh_selected_images_datetime(dt_lib_module_t *self)
   for(GList *i = d->imgs; i; i = g_list_next(i))
   {
     dt_sel_img_t *img = i->data;
-    const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, img->imgid, 'r');
+    const dt_image_t *cimg = dt_image_cache_get(img->imgid, 'r');
     if(!cimg) continue;
     dt_datetime_img_to_exif(img->dt, sizeof(img->dt), cimg);
-    dt_image_cache_read_release(darktable.image_cache, cimg);
+    dt_image_cache_read_release(cimg);
   }
 }
 
@@ -926,11 +926,11 @@ static void _setup_selected_images_list(dt_lib_module_t *self)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const dt_imgid_t imgid = sqlite3_column_int(stmt, 0);
-    const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+    const dt_image_t *cimg = dt_image_cache_get(imgid, 'r');
     char dt[DT_DATETIME_LENGTH];
     if(!cimg) continue;
     dt_datetime_img_to_exif(dt, sizeof(dt), cimg);
-    dt_image_cache_read_release(darktable.image_cache, cimg);
+    dt_image_cache_read_release(cimg);
 
     dt_sel_img_t *img = g_malloc0(sizeof(dt_sel_img_t));
     if(!img) continue;

@@ -2702,7 +2702,7 @@ gboolean dt_collection_hint_message_internal(void *message)
   }
   g_free(message);
 
-  dt_control_hinter_message(darktable.control, "");
+  dt_control_hinter_message("");
 
   return FALSE;
 }

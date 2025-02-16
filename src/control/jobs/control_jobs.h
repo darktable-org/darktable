@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,34 +28,34 @@
 
 G_BEGIN_DECLS
 
-void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz, GList *imgs);
+void dt_control_gpx_apply(const gchar *filename, const int32_t filmid, const gchar *tz, GList *imgs);
 
 void dt_control_datetime(const GTimeSpan offset, const char *datetime, GList *imgs);
 
-void dt_control_write_sidecar_files();
-void dt_control_delete_images();
-void dt_control_delete_image(dt_imgid_t imgid);
-void dt_control_duplicate_images(gboolean virgin);
+void dt_control_write_sidecar_files(void);
+void dt_control_delete_images(void);
+void dt_control_delete_image(const dt_imgid_t imgid);
+void dt_control_duplicate_images(const gboolean virgin);
 void dt_control_flip_images(const int32_t cw);
 void dt_control_monochrome_images(const int32_t mode);
-gboolean dt_control_remove_images();
-void dt_control_move_images();
-void dt_control_copy_images();
+gboolean dt_control_remove_images(void);
+void dt_control_move_images(void);
+void dt_control_copy_images(void);
 void dt_control_compress_history(GList *imgs);
 void dt_control_discard_history(GList *imgs);
 void dt_control_paste_history(GList *imgs);
 void dt_control_paste_parts_history(GList *imgs);
-void dt_control_apply_styles(GList *imgs, GList *styles, gboolean duplicate);
-void dt_control_set_local_copy_images();
-void dt_control_reset_local_copy_images();
-void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index,
-                       gboolean high_quality, gboolean upscale, gboolean dimensions_scale, gboolean export_masks,
-                       char *style, gboolean style_append,
+void dt_control_apply_styles(GList *imgs, GList *styles, const gboolean duplicate);
+void dt_control_set_local_copy_images(void);
+void dt_control_reset_local_copy_images(void);
+void dt_control_export(GList *imgid_list, const int max_width, const int max_height, const int format_index, const int storage_index,
+                       const gboolean high_quality, const gboolean upscale, const gboolean dimensions_scale, const gboolean export_masks,
+                       char *style, const gboolean style_append,
                        dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
                        dt_iop_color_intent_t icc_intent, const gchar *metadata_export);
-void dt_control_merge_hdr();
+void dt_control_merge_hdr(void);
 void dt_control_import(GList *imgs, const char *datetime_override, const gboolean inplace);
-void dt_control_refresh_exif();
+void dt_control_refresh_exif(void);
 
 G_END_DECLS
 

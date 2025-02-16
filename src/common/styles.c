@@ -966,7 +966,7 @@ void _styles_apply_to_image_ext(const char *name,
     if(dt_tag_new("darktable|changed", &tagid))
     {
       dt_tag_attach(tagid, newimgid, FALSE, FALSE);
-      dt_image_cache_set_change_timestamp(darktable.image_cache, imgid);
+      dt_image_cache_set_change_timestamp(imgid);
     }
 
     /* if current image in develop reload history */
@@ -978,7 +978,7 @@ void _styles_apply_to_image_ext(const char *name,
     }
 
     /* remove old obsolete thumbnails */
-    dt_mipmap_cache_remove(darktable.mipmap_cache, newimgid);
+    dt_mipmap_cache_remove(newimgid);
     dt_image_update_final_size(newimgid);
 
     /* update the aspect ratio. recompute only if really needed for performance reasons */

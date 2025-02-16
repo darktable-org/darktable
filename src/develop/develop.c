@@ -223,26 +223,20 @@ void dt_dev_cleanup(dt_develop_t *dev)
 void dt_dev_process_image(dt_develop_t *dev)
 {
   if(!dev->gui_attached || dev->full.pipe->processing) return;
-  const gboolean err
-      = dt_control_add_job_res(darktable.control,
-                               dt_dev_process_image_job_create(dev), DT_CTL_WORKER_ZOOM_1);
+  const gboolean err = dt_control_add_job_res(dt_dev_process_image_job_create(dev), DT_CTL_WORKER_ZOOM_1);
   if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_image] job queue exceeded!");
 }
 
 void dt_dev_process_preview(dt_develop_t *dev)
 {
   if(!dev->gui_attached) return;
-  const gboolean err = dt_control_add_job_res(darktable.control,
-                                         dt_dev_process_preview_job_create(dev),
-                                         DT_CTL_WORKER_ZOOM_FILL);
+  const gboolean err = dt_control_add_job_res(dt_dev_process_preview_job_create(dev), DT_CTL_WORKER_ZOOM_FILL);
   if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_preview] job queue exceeded!");
 }
 
 void dt_dev_process_preview2(dt_develop_t *dev)
 {
-  const gboolean err = dt_control_add_job_res(darktable.control,
-                                         dt_dev_process_preview2_job_create(dev),
-                                         DT_CTL_WORKER_ZOOM_2);
+  const gboolean err = dt_control_add_job_res(dt_dev_process_preview2_job_create(dev), DT_CTL_WORKER_ZOOM_2);
   if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_preview2] job queue exceeded!");
 }
 
@@ -322,8 +316,7 @@ void dt_dev_process_image_job(dt_develop_t *dev,
   dt_get_perf_times(&start);
 
   dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_get(darktable.mipmap_cache,
-                      &buf, dev->image_storage.id,
+  dt_mipmap_cache_get(&buf, dev->image_storage.id,
                       port ? DT_MIPMAP_FULL     : DT_MIPMAP_F,
                       port ? DT_MIPMAP_BLOCKING : DT_MIPMAP_BEST_EFFORT,
                       'r');
@@ -390,7 +383,7 @@ void dt_dev_process_image_job(dt_develop_t *dev,
 restart:
   if(dev->gui_leaving)
   {
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(&buf);
     dt_control_log_busy_leave();
     dt_control_toast_busy_leave();
     pipe->status = DT_DEV_PIXELPIPE_INVALID;
@@ -448,7 +441,7 @@ restart:
     // interrupted because image changed?
     if(dev->image_force_reload || pipe->loading || pipe->input_changed)
     {
-      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+      dt_mipmap_cache_release(&buf);
       dt_control_log_busy_leave();
       dt_control_toast_busy_leave();
       pipe->status = DT_DEV_PIXELPIPE_INVALID;
@@ -473,7 +466,7 @@ restart:
   pipe->status = DT_DEV_PIXELPIPE_VALID;
   pipe->loading = FALSE;
   dev->image_invalid_cnt = 0;
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(&buf);
   // if a widget needs to be redraw there's the DT_SIGNAL_*_PIPE_FINISHED signals
   dt_control_log_busy_leave();
   dt_control_toast_busy_leave();
@@ -520,14 +513,13 @@ static inline void _dt_dev_load_raw(dt_develop_t *dev,
   dt_mipmap_buffer_t buf;
   dt_times_t start;
   dt_get_perf_times(&start);
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL,
-                      DT_MIPMAP_BLOCKING, 'r');
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_get(&buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+  dt_mipmap_cache_release(&buf);
   dt_show_times(&start, "[dt_dev_load_raw] loading the image.");
 
-  const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  const dt_image_t *image = dt_image_cache_get(imgid, 'r');
   dev->image_storage = *image;
-  dt_image_cache_read_release(darktable.image_cache, image);
+  dt_image_cache_read_release(image);
 
 //  dev->requested_id = (dev->image_storage.load_status == DT_IMAGEIO_OK) ? dev->image_storage.id : 0;
   dev->requested_id = dev->image_storage.id;
@@ -1020,7 +1012,7 @@ static void _dev_add_history_item(dt_develop_t *dev,
   const gboolean tag_change = dt_tag_attach(tagid, imgid, FALSE, FALSE);
 
   /* register change timestamp in cache */
-  dt_image_cache_set_change_timestamp(darktable.image_cache, imgid);
+  dt_image_cache_set_change_timestamp(imgid);
 
   // invalidate buffers and force redraw of darkroom
   if(!dev->history_postpone_invalidate
@@ -1467,7 +1459,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   if(!dt_is_valid_imgid(imgid)) return FALSE;
 
   gboolean run = FALSE;
-  dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+  dt_image_t *image = dt_image_cache_get(imgid, 'w');
   if(!(image->flags & DT_IMAGE_AUTO_PRESETS_APPLIED)) run = TRUE;
 
   const gboolean is_raw = dt_image_is_raw(image);
@@ -1535,7 +1527,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
       }
     }
 
-    dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
+    dt_image_cache_write_release(image, DT_IMAGE_CACHE_RELAXED);
     return FALSE;
   }
 
@@ -1739,7 +1731,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
   // make sure these end up in the image_cache; as the history is not correct right now
   // we don't write the sidecar here but later in dt_dev_read_history_ext
-  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
+  dt_image_cache_write_release(image, DT_IMAGE_CACHE_RELAXED);
 
   return TRUE;
 }
@@ -2351,13 +2343,10 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     dt_history_hash_write_from_history(imgid, flags);
     // As we have a proper history right now and this is first_run we
     // possibly write the xmp now
-    dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+    dt_image_t *image = dt_image_cache_get(imgid, 'w');
     // depending on the xmp_writing mode we either us safe or relaxed
     const gboolean always = (dt_image_get_xmp_mode() == DT_WRITE_XMP_ALWAYS);
-    dt_image_cache_write_release
-      (darktable.image_cache,
-       image,
-       always ? DT_IMAGE_CACHE_SAFE : DT_IMAGE_CACHE_RELAXED);
+    dt_image_cache_write_release(image, always ? DT_IMAGE_CACHE_SAFE : DT_IMAGE_CACHE_RELAXED);
   }
   else if(legacy_params)
   {
