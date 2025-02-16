@@ -126,7 +126,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   {
     //single image to load xmp to, assume we want to load from same dir
     const dt_imgid_t imgid = GPOINTER_TO_INT(imgs->data);
-    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+    const dt_image_t *img = dt_image_cache_get(imgid, 'r');
     if(img && img->film_id != -1)
     {
       char pathname[PATH_MAX] = { 0 };
@@ -140,7 +140,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
       dt_conf_get_folder_to_file_chooser("ui_last/import_path",
                                          GTK_FILE_CHOOSER(filechooser));
     }
-    dt_image_cache_read_release(darktable.image_cache, img);
+    dt_image_cache_read_release(img);
   }
   else
   {

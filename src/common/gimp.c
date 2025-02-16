@@ -64,9 +64,9 @@ gboolean dt_export_gimp_file(const dt_imgid_t imgid)
   printf("<<<gimp\n%s%s\n", path, thumb ? ".jpg" : ".exr");
   if(thumb)
   {
-    dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+    dt_image_t *image = dt_image_cache_get(imgid, 'r');
     printf("%i %i\n", image->width, image->height);
-    dt_image_cache_read_release(darktable.image_cache, image);
+    dt_image_cache_read_release(image);
   }
   printf("gimp>>>\n");
   res = TRUE;

@@ -2842,7 +2842,7 @@ int mouse_moved(dt_iop_module_t *self,
       if(last_hovered)
         last_hovered->header.hovered = 0;
       // change in hover display
-      dt_control_hinter_message(darktable.control, dt_liquify_layers[hit.layer].hint);
+      dt_control_hinter_message(dt_liquify_layers[hit.layer].hint);
       // also use when dragging later
       dt_liquify_layers[DT_LIQUIFY_LAYER_BACKGROUND].hint =
         dt_liquify_layers[hit.layer].hint;
@@ -2870,12 +2870,11 @@ int mouse_moved(dt_iop_module_t *self,
     }
     else if(hit.elem == DT_LIQUIFY_LAYER_BACKGROUND
             && gtk_toggle_button_get_active(g->btn_node_tool))
-      dt_control_hinter_message(darktable.control, _("click to edit nodes"));
+      dt_control_hinter_message(_("click to edit nodes"));
   }
   else if(is_dragging(g)) // we are dragging
   {
-    dt_control_hinter_message(darktable.control,
-                              dt_liquify_layers[DT_LIQUIFY_LAYER_BACKGROUND].hint);
+    dt_control_hinter_message(dt_liquify_layers[DT_LIQUIFY_LAYER_BACKGROUND].hint);
 
     dt_liquify_path_data_t *d = g->dragging.elem;
     dt_liquify_path_data_t *n = node_next(pa, d);
@@ -3549,7 +3548,7 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn,
 
   g->creation_continuous = event != NULL && dt_modifier_is(event->state, GDK_CONTROL_MASK);
 
-  dt_control_hinter_message(darktable.control, "");
+  dt_control_hinter_message("");
 
   // if we are on a preview, it means that a form (point, line, curve)
   // has been started, but no node has yet been placed.  in this case

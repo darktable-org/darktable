@@ -214,7 +214,7 @@ void dt_printers_discovery(void (*cb)(dt_printer_info_t *pr, void *user_data), v
     prtctl->user_data = user_data;
 
     dt_control_job_set_params(job, prtctl, g_free);
-    dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_BG, job);
+    dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, job);
   }
 }
 

@@ -224,7 +224,7 @@ static void _lib_backgroundjobs_destroyed(dt_lib_module_t *self, dt_lib_backgrou
 static void _lib_backgroundjobs_cancel_callback_new(GtkWidget *w, gpointer user_data)
 {
   dt_progress_t *progress = (dt_progress_t *)user_data;
-  dt_control_progress_cancel(darktable.control, progress);
+  dt_control_progress_cancel(progress);
 }
 
 typedef struct _cancellable_gui_thread_t

@@ -453,10 +453,9 @@ dt_imgid_t dt_load_from_string(const gchar *input,
       dt_film_open(filmid);
       // make sure buffers are loaded (load full for testing)
       dt_mipmap_buffer_t buf;
-      dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid,
-                          DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
-      const gboolean loaded = (buf.buf != NULL);
-      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+      dt_mipmap_cache_get(&buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+      const gboolean loaded = buf.buf != NULL;
+      dt_mipmap_cache_release(&buf);
       if(!loaded)
       {
         imgid = NO_IMGID;
@@ -741,8 +740,7 @@ void dt_start_backtumbs_crawler(void)
 {
   // don't write thumbs if using memory database or on a non-sufficient system
   if(!darktable.backthumbs.running && darktable.backthumbs.capable)
-    dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_BG,
-                   _backthumbs_job_create());
+    dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, _backthumbs_job_create());
 }
 
 static char *_get_version_string(void)
@@ -916,15 +914,15 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   pthread_mutexattr_settype(&recursive_locking, PTHREAD_MUTEX_RECURSIVE);
   for(int k=0; k<DT_IMAGE_DBLOCKS; k++)
   {
-    dt_pthread_mutex_init(&(darktable.db_image[k]),&(recursive_locking));
+    dt_pthread_mutex_init(&darktable.db_image[k], &recursive_locking);
   }
-  dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
-  dt_pthread_mutex_init(&(darktable.dev_threadsafe), NULL);
-  dt_pthread_mutex_init(&(darktable.capabilities_threadsafe), NULL);
-  dt_pthread_mutex_init(&(darktable.exiv2_threadsafe), NULL);
-  dt_pthread_mutex_init(&(darktable.readFile_mutex), NULL);
-  dt_pthread_mutex_init(&(darktable.metadata_threadsafe), NULL);
-  darktable.control = (dt_control_t *)calloc(1, sizeof(dt_control_t));
+  dt_pthread_mutex_init(&darktable.plugin_threadsafe, NULL);
+  dt_pthread_mutex_init(&darktable.dev_threadsafe, NULL);
+  dt_pthread_mutex_init(&darktable.capabilities_threadsafe, NULL);
+  dt_pthread_mutex_init(&darktable.exiv2_threadsafe, NULL);
+  dt_pthread_mutex_init(&darktable.readFile_mutex, NULL);
+  dt_pthread_mutex_init(&darktable.metadata_threadsafe, NULL);
+  darktable.control = calloc(1, sizeof(dt_control_t));
 
   // database
   char *dbfilename_from_command = NULL;
@@ -1458,7 +1456,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
     // make sure that we have no stale global progress bar
     // visible. thus it's run as early as possible
-    dt_control_progress_init(darktable.control);
+    dt_control_progress_init();
 
     // ensure that we can load the Gtk theme early enough that the splash screen
     // doesn't change as we progress through startup
@@ -1598,20 +1596,15 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
 
+  dt_control_init(init_gui);
   if(init_gui)
   {
-    dt_control_init(darktable.control);
-
-    // initialize undo struct
     darktable.undo = dt_undo_init();
   }
   else
   {
     if(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"))
       dt_gui_presets_init(); // init preset db schema.
-
-    dt_atomic_set_int(&darktable.control->running, DT_CONTROL_STATE_DISABLED);
-    dt_pthread_mutex_init(&darktable.control->log_mutex, NULL);
   }
 
   // import default styles from shared directory
@@ -1737,8 +1730,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable_splash_screen_set_progress(_("starting OpenCL"));
   darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
   if(init_gui)
-    dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_BG,
-                       _detect_opencl_job_create(exclude_opencl));
+    dt_control_add_job(DT_JOB_QUEUE_SYSTEM_BG, _detect_opencl_job_create(exclude_opencl));
   else
     dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
 
@@ -1752,11 +1744,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   // must come before mipmap_cache, because that one will need to access
   // image dimensions stored in here:
-  darktable.image_cache = (dt_image_cache_t *)calloc(1, sizeof(dt_image_cache_t));
-  dt_image_cache_init(darktable.image_cache);
+  dt_image_cache_init();
 
-  darktable.mipmap_cache = (dt_mipmap_cache_t *)calloc(1, sizeof(dt_mipmap_cache_t));
-  dt_mipmap_cache_init(darktable.mipmap_cache);
+  dt_mipmap_cache_init();
 
   // set up the list of exiv2 metadata
   dt_exif_set_exiv2_taglist();
@@ -1892,8 +1882,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       // fire up a background job to import them after switching to
       // lighttable showing the filmroll for the first one
       _switch_to_new_filmroll(argv[1]);
-      dt_control_add_job(darktable.control,
-                         DT_JOB_QUEUE_USER_BG, dt_pathlist_import_create(argc,argv));
+      dt_control_add_job(DT_JOB_QUEUE_USER_BG, dt_pathlist_import_create(argc,argv));
     }
 
     // there might be some info created in dt_configure_runtime_performance() for feedback
@@ -2074,7 +2063,7 @@ void dt_cleanup()
 5. After dt_control_shutdown() has finished we are sure there are no background threads running any
      more so we can safely close all mentioned subsystems and continue.
 */
-    dt_control_shutdown(darktable.control);
+    dt_control_shutdown();
   }
 #ifdef USE_LUA
   dt_lua_finalize();
@@ -2091,22 +2080,18 @@ void dt_cleanup()
     dt_imageio_cleanup(darktable.imageio);
     free(darktable.imageio);
     darktable.imageio = NULL;
-    dt_control_cleanup(darktable.control);
-    free(darktable.control);
-    darktable.control = NULL;
+    dt_control_cleanup(TRUE);
     dt_undo_cleanup(darktable.undo);
     darktable.undo = NULL;
     free(darktable.gui);
     darktable.gui = NULL;
   }
+  else
+    dt_control_cleanup(FALSE);
 
-  dt_image_cache_cleanup(darktable.image_cache);
-  free(darktable.image_cache);
-  darktable.image_cache = NULL;
 
-  dt_mipmap_cache_cleanup(darktable.mipmap_cache);
-  free(darktable.mipmap_cache);
-  darktable.mipmap_cache = NULL;
+  dt_image_cache_cleanup();
+  dt_mipmap_cache_cleanup();
 
   dt_colorspaces_cleanup(darktable.color_profiles);
   dt_conf_cleanup(darktable.conf);

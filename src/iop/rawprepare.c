@@ -627,10 +627,10 @@ static gboolean _image_set_rawcrops(dt_iop_module_t *self,
 
   // we update p_width & height both in the image_storage for fast access within the pipeline
   // and the database so we can access that also via dt_image_cache_get()
-  dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+  dt_image_t *image = dt_image_cache_get(imgid, 'w');
   image->p_width = img->p_width = img->width - (cropvalid ? left + right : 0);
   image->p_height = img->p_height = img->height - (cropvalid ? top + bottom : 0);
-  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
+  dt_image_cache_write_release(image, DT_IMAGE_CACHE_RELAXED);
 
   return TRUE;
 }

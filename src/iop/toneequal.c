@@ -2025,8 +2025,7 @@ static void switch_cursors(dt_iop_module_t *self)
     // if pipe is clean and idle and cursor is on preview,
     // hide GTK cursor because we display our custom one
     dt_control_change_cursor(GDK_BLANK_CURSOR);
-    dt_control_hinter_message(darktable.control,
-                              _("scroll over image to change tone exposure\n"
+    dt_control_hinter_message(_("scroll over image to change tone exposure\n"
                                 "shift+scroll for large steps; "
                                 "ctrl+scroll for small steps"));
 
@@ -2577,8 +2576,7 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
   }
   else
   {
-    dt_control_hinter_message(darktable.control,
-                              _("scroll over image to change tone exposure\n"
+    dt_control_hinter_message(_("scroll over image to change tone exposure\n"
                                 "shift+scroll for large steps; "
                                 "ctrl+scroll for small steps"));
     // listen to distort change again

@@ -45,25 +45,24 @@ static const dt_image_t *checkreadimage(lua_State *L, int index)
 {
   dt_lua_image_t imgid;
   luaA_to(L, dt_lua_image_t, &imgid, index);
-  return dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  return dt_image_cache_get(imgid, 'r');
 }
 
 static void releasereadimage(lua_State *L, const dt_image_t *image)
 {
-  dt_image_cache_read_release(darktable.image_cache, image);
+  dt_image_cache_read_release(image);
 }
 
 static dt_image_t *checkwriteimage(lua_State *L, int index)
 {
   dt_lua_image_t imgid;
   luaA_to(L, dt_lua_image_t, &imgid, index);
-  return dt_image_cache_get(darktable.image_cache, imgid, 'w');
+  return dt_image_cache_get(imgid, 'w');
 }
 
 static void releasewriteimage(lua_State *L, dt_image_t *image)
 {
-  dt_image_cache_write_release_info(darktable.image_cache, image,
-    DT_IMAGE_CACHE_SAFE, "lua releasewriteimage");
+  dt_image_cache_write_release_info(image, DT_IMAGE_CACHE_SAFE, "lua releasewriteimage");
 }
 
 void dt_lua_image_push(lua_State *L, const dt_imgid_t imgid)
@@ -98,7 +97,7 @@ static int drop_cache(lua_State *L)
 {
   dt_lua_image_t imgid = NO_IMGID;
   luaA_to(L, dt_lua_image_t, &imgid, -1);
-  dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+  dt_mipmap_cache_remove(imgid);
   return 0;
 }
 
@@ -138,8 +137,8 @@ static int generate_cache(lua_State *L)
     if(dt_util_test_image_file(filename)) continue;
     // else, generate thumbnail and store in mipmap cache.
     dt_mipmap_buffer_t buf;
-    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, k, DT_MIPMAP_BLOCKING, 'r');
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_get(&buf, imgid, k, DT_MIPMAP_BLOCKING, 'r');
+    dt_mipmap_cache_release(&buf);
   }
   // thumbnail in sync with image
   dt_history_hash_set_mipmap(imgid);
@@ -444,9 +443,9 @@ int group_with(lua_State *L)
   dt_lua_image_t second_image;
   luaA_to(L, dt_lua_image_t, &second_image, 2);
 
-  const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, second_image, 'r');
+  const dt_image_t *cimg = dt_image_cache_get(second_image, 'r');
   const dt_imgid_t group_id = cimg->group_id;
-  dt_image_cache_read_release(darktable.image_cache, cimg);
+  dt_image_cache_read_release(cimg);
 
   dt_grouping_add_to_group(group_id, first_image);
   return 0;
@@ -465,9 +464,9 @@ int get_group(lua_State *L)
 {
   dt_lua_image_t first_image;
   luaA_to(L, dt_lua_image_t, &first_image, 1);
-  const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, first_image, 'r');
+  const dt_image_t *cimg = dt_image_cache_get(first_image, 'r');
   const dt_imgid_t group_id = cimg->group_id;
-  dt_image_cache_read_release(darktable.image_cache, cimg);
+  dt_image_cache_read_release(cimg);
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT id FROM main.images WHERE group_id = ?1", -1,

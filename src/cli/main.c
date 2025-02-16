@@ -600,7 +600,7 @@ int main(int argc, char *arg[])
     for(GList *iter = id_list; iter; iter = g_list_next(iter))
     {
       int id = GPOINTER_TO_INT(iter->data);
-      dt_image_t *image = dt_image_cache_get(darktable.image_cache, id, 'w');
+      dt_image_t *image = dt_image_cache_get(id, 'w');
       if(dt_exif_xmp_read(image, xmp_filename, 1))
       {
         fprintf(stderr, _("error: can't open XMP file %s"), xmp_filename);
@@ -612,7 +612,7 @@ int main(int argc, char *arg[])
         exit(1);
       }
       // don't write new xmp:
-      dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
+      dt_image_cache_write_release(image, DT_IMAGE_CACHE_RELAXED);
     }
   }
 

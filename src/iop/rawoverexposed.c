@@ -131,11 +131,11 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
 
   dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+  dt_mipmap_cache_get(&buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
   if(!buf.buf)
   {
     dt_control_log(_("failed to get raw buffer from image `%s'"), image->filename);
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(&buf);
     return;
   }
 
@@ -217,7 +217,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   dt_free_align(coordbuf);
 
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(&buf);
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
@@ -242,11 +242,11 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const dt_image_t *const image = &(dev->image_storage);
 
   dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+  dt_mipmap_cache_get(&buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
   if(!buf.buf)
   {
     dt_control_log(_("failed to get raw buffer from image `%s'"), image->filename);
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(&buf);
     goto error;
   }
 
@@ -358,7 +358,7 @@ error:
   dt_opencl_release_mem_object(dev_coord);
   dt_free_align(coordbuf);
   dt_opencl_release_mem_object(dev_raw);
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(&buf);
   return err;
 }
 #endif
@@ -377,7 +377,7 @@ void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   int raw_width = 0;
   int raw_height = 0;
 
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+  dt_mipmap_cache_get(&buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
 
   if(buf.buf)
   {
@@ -385,7 +385,7 @@ void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     raw_height = buf.height;
   }
 
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(&buf);
 
   tiling->factor = 2.5f;  // in + out + coordinates
   tiling->maxbuf = 1.0f;

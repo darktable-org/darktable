@@ -43,14 +43,14 @@ typedef struct dt_undo_ratings_t
 int dt_ratings_get(const dt_imgid_t imgid)
 {
   int stars = 0;
-  dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  dt_image_t *image = dt_image_cache_get(imgid, 'r');
   if(image)
   {
     if(image->flags & DT_IMAGE_REJECTED)
       stars = DT_VIEW_REJECT;
     else
       stars = DT_VIEW_RATINGS_MASK & image->flags;
-    dt_image_cache_read_release(darktable.image_cache, image);
+    dt_image_cache_read_release(image);
   }
   return stars;
 }
@@ -58,7 +58,7 @@ int dt_ratings_get(const dt_imgid_t imgid)
 static void _ratings_apply_to_image(const dt_imgid_t imgid, const int rating)
 {
   int new_rating = rating;
-  dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+  dt_image_t *image = dt_image_cache_get(imgid, 'w');
 
   if(image)
   {
@@ -73,8 +73,7 @@ static void _ratings_apply_to_image(const dt_imgid_t imgid, const int rating)
         | (DT_VIEW_RATINGS_MASK & new_rating);
     }
     // synch through:
-    dt_image_cache_write_release_info(darktable.image_cache, image,
-                                      DT_IMAGE_CACHE_SAFE, "_ratings_apply_to_image");
+    dt_image_cache_write_release_info(image, DT_IMAGE_CACHE_SAFE, "_ratings_apply_to_image");
   }
 }
 
@@ -278,11 +277,11 @@ static float _action_process_rating(gpointer target,
       const int id = GPOINTER_TO_INT(imgs->data);
       if(id == darktable.develop->preview_pipe->output_imgid)
       {
-        const dt_image_t *img = dt_image_cache_get(darktable.image_cache, id, 'r');
+        const dt_image_t *img = dt_image_cache_get(id, 'r');
         if(img)
         {
           const int r = img->flags & DT_IMAGE_REJECTED ? DT_VIEW_REJECT : (img->flags & DT_VIEW_RATINGS_MASK);
-          dt_image_cache_read_release(darktable.image_cache, img);
+          dt_image_cache_read_release(img);
 
           // translate in human readable value
           if(r == DT_VIEW_REJECT)

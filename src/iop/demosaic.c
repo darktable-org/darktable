@@ -209,7 +209,7 @@ typedef struct dt_iop_demosaic_data_t
 static gboolean _get_thumb_quality(const int width, const int height)
 {
   // we check if we need ultra-high quality thumbnail for this size
-  const dt_mipmap_size_t level = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, width, height);
+  const dt_mipmap_size_t level = dt_mipmap_cache_get_matching_size(width, height);
   const char *min = dt_conf_get_string_const("plugins/lighttable/thumbnail_hq_min_level");
   const dt_mipmap_size_t min_s = dt_mipmap_cache_get_min_mip_from_pref(min);
 
@@ -1247,7 +1247,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->dual_thrs, isdual);
   gtk_widget_set_visible(g->lmmse_refine, islmmse);
 
-  dt_image_t *img = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'w');
+  dt_image_t *img = dt_image_cache_get(self->dev->image_storage.id, 'w');
   int mono_changed = img->flags & DT_IMAGE_MONOCHROME_BAYER;
   if(p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME
        || p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX)
@@ -1256,7 +1256,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     img->flags &= ~DT_IMAGE_MONOCHROME_BAYER;
   const int mask_bw = dt_image_monochrome_flags(img);
   mono_changed ^= img->flags & DT_IMAGE_MONOCHROME_BAYER;
-  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+  dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
 
   if(mono_changed)
   {

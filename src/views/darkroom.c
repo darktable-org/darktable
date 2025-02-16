@@ -544,9 +544,9 @@ void expose(dt_view_t *self,
   {
     gchar *load_txt;
     float fontsize;
-    dt_image_t *img = dt_image_cache_get(darktable.image_cache, dev->image_storage.id, 'r');;
+    dt_image_t *img = dt_image_cache_get(dev->image_storage.id, 'r');;
     dt_imageio_retval_t status = img->load_status;
-    dt_image_cache_read_release(darktable.image_cache, img);
+    dt_image_cache_read_release(img);
 
     if(dev->image_invalid_cnt)
     {
@@ -851,7 +851,7 @@ gboolean try_enter(dt_view_t *self)
   }
 
   // this loads the image from db if needed:
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  const dt_image_t *img = dt_image_cache_get(imgid, 'r');
   // get image and check if it has been deleted from disk first!
 
   char imgfilename[PATH_MAX] = { 0 };
@@ -860,7 +860,7 @@ gboolean try_enter(dt_view_t *self)
   if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
   {
     dt_control_log(_("image `%s' is currently unavailable"), img->filename);
-    dt_image_cache_read_release(darktable.image_cache, img);
+    dt_image_cache_read_release(img);
     return TRUE;
   }
   else if(img->load_status != DT_IMAGEIO_OK)
@@ -895,11 +895,11 @@ gboolean try_enter(dt_view_t *self)
       break;
     }
     dt_control_log(_("image `%s' could not be loaded\n%s"), img->filename, reason);
-    dt_image_cache_read_release(darktable.image_cache, img);
+    dt_image_cache_read_release(img);
     return TRUE;
   }
   // and drop the lock again.
-  dt_image_cache_read_release(darktable.image_cache, img);
+  dt_image_cache_read_release(img);
   darktable.develop->image_storage.id = imgid;
 
   dt_dev_reset_chroma(darktable.develop);
@@ -1077,7 +1077,7 @@ static gboolean _dev_load_requested_image(gpointer user_data)
   // be sure light table will update the thumbnail
   if(!dt_history_hash_is_mipmap_synced(old_imgid))
   {
-    dt_mipmap_cache_remove(darktable.mipmap_cache, old_imgid);
+    dt_mipmap_cache_remove(old_imgid);
     dt_image_update_final_size(old_imgid);
     dt_image_synch_xmp(old_imgid);
     dt_history_hash_set_mipmap(old_imgid);
@@ -3093,7 +3093,7 @@ void leave(dt_view_t *self)
   // be sure light table will regenerate the thumbnail:
   if(!dt_history_hash_is_mipmap_synced(imgid))
   {
-    dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+    dt_mipmap_cache_remove(imgid);
     dt_image_update_final_size(imgid);
     dt_image_synch_xmp(imgid);
     dt_history_hash_set_mipmap(imgid);

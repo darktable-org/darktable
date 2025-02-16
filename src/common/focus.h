@@ -207,9 +207,9 @@ static void dt_focus_draw_clusters(cairo_t *cr, int width, int height, dt_imgid_
   cairo_save(cr);
   cairo_translate(cr, width / 2.0, height / 2.0f);
 
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  const dt_image_t *img = dt_image_cache_get(imgid, 'r');
   dt_image_t image = *img;
-  dt_image_cache_read_release(darktable.image_cache, img);
+  dt_image_cache_read_release(img);
 
   // FIXME: get those from rawprepare IOP somehow !!!
   int wd = buffer_width + image.crop_x;
