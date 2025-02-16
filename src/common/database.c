@@ -53,8 +53,9 @@
 // is created by running the upgrade steps.
 #define LAST_FULL_DATABASE_VERSION_LIBRARY 55
 #define LAST_FULL_DATABASE_VERSION_DATA    10
+
 // You HAVE TO bump THESE versions whenever you add an update branches to _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 56
+#define CURRENT_DATABASE_VERSION_LIBRARY 57
 #define CURRENT_DATABASE_VERSION_DATA    13
 
 #define USE_NESTED_TRANSACTIONS
@@ -2947,6 +2948,12 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     sqlite3_exec(db->handle, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
     new_version = 56;
+  }
+  else if(version == 56)
+  {
+    TRY_EXEC("ALTER TABLE main.images ADD COLUMN flash_tagvalue INTEGER DEFAULT -1",
+             "[init] can't add `flash_tagvalue' column to images table in database\n");
+    new_version = 57;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop

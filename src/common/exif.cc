@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2009-2024 darktable developers.
+   Copyright (C) 2009-2025 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1744,6 +1744,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if(FIND_EXIF_TAG("Exif.Photo.Flash"))
     {
       const int value = pos->toLong();
+      img->exif_flash_tagvalue = value;
       if(value != 0)
       {
         _strlcpy_to_utf8(img->exif_flash, sizeof(img->exif_flash), pos, exifData);
