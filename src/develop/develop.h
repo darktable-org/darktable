@@ -325,7 +325,10 @@ typedef struct dt_develop_t
   // ISO 12646-compliant colour assessment conditions
   struct
   {
-    GtkWidget *button; // yes, ugliness is the norm. what did you expect ?
+    GtkWidget *floating_window, *button; // yes, ugliness is the norm. what did you expect ?
+
+    float border_width;
+    float border_ratio;
   } iso_12646;
 
   // late scaling down from full roi

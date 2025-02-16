@@ -1517,12 +1517,42 @@ static gboolean _toolbar_show_popup(gpointer user_data)
   return FALSE;
 }
 
-static void _full_iso12646_callback(GtkToggleButton *checkbutton,
-                                    dt_develop_t *dev)
+static void _full_iso12646_callback(GtkToggleButton *checkbutton, dt_develop_t *dev)
 {
   dev->full.iso_12646 = gtk_toggle_button_get_active(checkbutton);
   dt_conf_set_bool("full_window/iso_12646", dev->full.iso_12646);
   dt_dev_configure(&dev->full);
+}
+
+static void _iso12646_border_width_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_develop_t *dev = (dt_develop_t *) user_data;
+  dev->iso_12646.border_width = dt_bauhaus_slider_get(slider);
+  dt_conf_set_float("darkroom/ui/iso12464_border", dev->iso_12646.border_width);
+  if (dev->full.iso_12646)
+  {
+    dt_dev_configure(&dev->full);
+    dt_dev_reprocess_center(dev);
+  }
+  else
+  {
+    gtk_button_clicked(GTK_BUTTON(dev->iso_12646.button));
+  }
+}
+
+static void _iso12646_border_ratio_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_develop_t *dev = (dt_develop_t *) user_data;
+  dev->iso_12646.border_ratio = dt_bauhaus_slider_get(slider);
+  dt_conf_set_float("darkroom/ui/iso12464_ratio", dev->iso_12646.border_ratio);
+  if (dev->full.iso_12646)
+  {
+    dt_dev_reprocess_center(dev);
+  }
+  else
+  {
+    gtk_button_clicked(GTK_BUTTON(dev->iso_12646.button));
+  }
 }
 
 static void _latescaling_quickbutton_clicked(GtkWidget *w,
@@ -2427,18 +2457,53 @@ void gui_init(dt_view_t *self)
                                    dev->second_wnd_button, DT_VIEW_DARKROOM);
 
   /* Enable ISO 12646-compliant colour assessment conditions */
-  GtkWidget *full_iso12646 = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, 0, NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(full_iso12646), dev->full.iso_12646);
-  ac = dt_action_define(DT_ACTION(self), NULL, N_("color assessment"),
-                        full_iso12646, &dt_action_def_toggle);
-  gtk_widget_set_tooltip_text(full_iso12646,
-                              _("toggle ISO 12646 color assessment conditions"));
-  dt_shortcut_register(ac, 0, 0, GDK_KEY_b, GDK_CONTROL_MASK);
-  g_signal_connect(G_OBJECT(full_iso12646), "toggled",
-                   G_CALLBACK(_full_iso12646_callback), dev);
+  {
+    dev->iso_12646.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, 0, NULL);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->iso_12646.button), dev->full.iso_12646);
+    ac = dt_action_define(DT_ACTION(self), NULL, N_("color assessment"),
+                          dev->iso_12646.button, &dt_action_def_toggle);
+    gtk_widget_set_tooltip_text(dev->iso_12646.button,
+                                _("toggle ISO 12646 color assessment conditions"));
+    dt_shortcut_register(ac, 0, 0, GDK_KEY_b, GDK_CONTROL_MASK);
+    g_signal_connect(G_OBJECT(dev->iso_12646.button), "toggled",
+                     G_CALLBACK(_full_iso12646_callback), dev);
 
-  dt_view_manager_module_toolbox_add(darktable.view_manager,
-                                     full_iso12646, DT_VIEW_DARKROOM);
+    dt_view_manager_module_toolbox_add(darktable.view_manager,
+                                       dev->iso_12646.button, DT_VIEW_DARKROOM);
+    /* add pop-up window */
+    dev->iso_12646.floating_window = gtk_popover_new(dev->iso_12646.button);
+    connect_button_press_release(dev->iso_12646.button, dev->iso_12646.floating_window);
+
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_container_add(GTK_CONTAINER(dev->iso_12646.floating_window), vbox);
+
+    /* border_width */
+    dev->iso_12646.border_width = dt_conf_get_float("darkroom/ui/iso12464_border");
+    GtkWidget *border_width_slider = dt_bauhaus_slider_new_action(DT_ACTION(self), 0., 5., 0.1, 4., 1);
+    dt_bauhaus_slider_set(border_width_slider, dev->iso_12646.border_width);
+    dt_bauhaus_slider_set_format(border_width_slider, _(" cm"));
+    dt_bauhaus_widget_set_label(border_width_slider, N_("iso_12646"), N_("border width"));
+    gtk_widget_set_tooltip_text(border_width_slider,
+                                _("The border width pecifies the total width of the border for the ISO assessment mode.\n"
+                                  "This includes the outer grey part plus the inner white frame.\n"
+                                  "Default value: 4.0 cm"));
+    g_signal_connect(G_OBJECT(border_width_slider), "value-changed", G_CALLBACK(_iso12646_border_width_callback), dev);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(border_width_slider), TRUE, TRUE, 0);
+
+    /* border_ratio */
+    dev->iso_12646.border_ratio = dt_conf_get_float("darkroom/ui/iso12464_ratio");
+    GtkWidget *border_ratio_slider = dt_bauhaus_slider_new_action(DT_ACTION(self), 0., 1., 0.05, 0.4, 2);
+    dt_bauhaus_slider_set(border_ratio_slider, dev->iso_12646.border_ratio);
+    dt_bauhaus_slider_set_format(border_ratio_slider, "");
+    dt_bauhaus_widget_set_label(border_ratio_slider, N_("iso_12646"), N_("border ratio"));
+    gtk_widget_set_tooltip_text(border_ratio_slider,
+                                _("The border ratio pecifies the fraction of the white part of the border.\n"
+                                  "The default is 0.4, so the defaults white part of the border is 0.4 * 4 cm."));
+    g_signal_connect(G_OBJECT(border_ratio_slider), "value-changed", G_CALLBACK(_iso12646_border_ratio_callback), dev);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(border_ratio_slider), TRUE, TRUE, 0);
+
+    gtk_widget_show_all(vbox);
+  }
 
   /* Enable late-scaling button */
   dev->late_scaling.button =
@@ -3182,6 +3247,7 @@ void leave(dt_view_t *self)
   gtk_widget_hide(dev->overexposed.floating_window);
   gtk_widget_hide(dev->rawoverexposed.floating_window);
   gtk_widget_hide(dev->profile.floating_window);
+  gtk_widget_hide(dev->iso_12646.floating_window);
 
   dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
 
