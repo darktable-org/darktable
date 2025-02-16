@@ -81,10 +81,10 @@ gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const dt_ha
 gboolean dt_dev_pixelpipe_cache_available(struct dt_dev_pixelpipe_t *pipe, const dt_hash_t hash, const size_t size);
 
 /** invalidates all cachelines. */
-void dt_dev_pixelpipe_cache_flush(const struct dt_dev_pixelpipe_t *pipe);
+void dt_dev_pixelpipe_cache_flush(struct dt_dev_pixelpipe_t *pipe);
 
 /** invalidates all cachelines for modules with at least the same iop_order */
-void dt_dev_pixelpipe_cache_invalidate_later(const struct dt_dev_pixelpipe_t *pipe, const int32_t order);
+void dt_dev_pixelpipe_cache_invalidate_later(struct dt_dev_pixelpipe_t *pipe, const int32_t order);
 
 /** makes this buffer very important after it has been pulled from the cache. */
 void dt_dev_pixelpipe_important_cacheline(const struct dt_dev_pixelpipe_t *pipe, const void *data, const size_t size);
