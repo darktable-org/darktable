@@ -1,8 +1,10 @@
 ---
 AccessModifierOffset: -2
 ConstructorInitializerIndentWidth: 2
+AlignAfterOpenBracket: Align
 AlignEscapedNewlinesLeft: false
 AlignTrailingComments: true
+AllowAllArgumentsOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortBlocksOnASingleLine: false # otherwise the braces behind if(...) get moved up
 AllowShortFunctionsOnASingleLine: false # change to SFS_Emtpy once it is supported
@@ -13,8 +15,9 @@ AlwaysBreakBeforeMultilineStrings: false
 BreakBeforeBinaryOperators: true
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializersBeforeComma: true
-BinPackParameters: true
-ColumnLimit:     115   # needed for the modelines
+BinPackArguments: false # Each parameter on its own line
+BinPackParameters: false # Each parameter on its own line
+ColumnLimit: 90
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 DerivePointerBinding: false
 #ExperimentalAutoDetectBinPacking: false
@@ -27,7 +30,7 @@ PenaltyBreakComment: 60
 PenaltyBreakString: 1000
 PenaltyBreakFirstLessLess: 120
 PenaltyExcessCharacter: 50
-PenaltyReturnTypeOnItsOwnLine: 60
+PenaltyReturnTypeOnItsOwnLine: 200
 PointerBindsToType: false
 SpaceAfterCStyleCast: false
 SpacesBeforeTrailingComments: 1
