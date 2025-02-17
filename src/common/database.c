@@ -2951,6 +2951,9 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   }
   else if(version == 56)
   {
+    // The default value of -1 means that we have no information
+    // (the corresponding Exif tag has been removed or Exif has been
+    // removed altogether or the image format does not support Exif)
     TRY_EXEC("ALTER TABLE main.images ADD COLUMN flash_tagvalue INTEGER DEFAULT -1",
              "[init] can't add `flash_tagvalue' column to images table in database\n");
     new_version = 57;

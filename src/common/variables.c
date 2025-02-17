@@ -183,6 +183,8 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
     params->data->elevation = img->geoloc.elevation;
 
 
+    // We don't want to claim that the flash did not fire when the photo is
+    // clearly taken with a flash, but information about this is not available
     if(img->exif_flash_tagvalue == -1)
     {
        params->data->exif_flash_icon = "";
