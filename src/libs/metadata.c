@@ -894,7 +894,7 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
   g_object_unref(model);
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes
-    (_("xmp tagname"), renderer,
+    (_("XMP tag name"), renderer,
      "text", DT_METADATA_PREF_COL_TAGNAME, NULL);
   gtk_tree_view_column_set_expand(column, TRUE);
   gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
