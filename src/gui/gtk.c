@@ -865,6 +865,20 @@ void dt_gui_gtk_quit()
   gtk_widget_hide(dt_ui_main_window(darktable.gui->ui));
 }
 
+static void _quit_callback(dt_action_t *action)
+{
+  if(darktable.develop && dt_view_get_current() == DT_VIEW_DARKROOM)
+  {
+    dt_dev_write_history(darktable.develop);
+    dt_image_write_sidecar_file(darktable.develop->image_storage.id);
+  }
+
+  if(dt_check_gimpmode_ok("file"))
+    darktable.gimp.error = !dt_export_gimp_file(darktable.gimp.imgid);
+
+  dt_control_quit();
+}
+
 static gboolean _gui_quit_callback(GtkWidget *widget,
                                    GdkEvent *event,
                                    gpointer user_data)
@@ -875,22 +889,7 @@ static gboolean _gui_quit_callback(GtkWidget *widget,
       && dt_view_lighttable_preview_state(darktable.view_manager))
     dt_view_lighttable_set_preview_state(darktable.view_manager, FALSE, FALSE, FALSE);
   else
-  {
-    /* Always write current history if we quit while in darkroom
-       For some reason this is required if we started darktable with a single
-       file as an argument.
-    */
-    if(cv == DT_VIEW_DARKROOM)
-      dt_dev_write_history(darktable.develop);
-
-    if(dt_check_gimpmode_ok("file"))
-    {
-      darktable.gimp.error = !dt_export_gimp_file(darktable.gimp.imgid);
-      dt_image_write_sidecar_file(darktable.gimp.imgid);
-    }
-
-    dt_control_quit();
-  }
+    _quit_callback(NULL);
 
   return TRUE;
 }
@@ -906,21 +905,6 @@ static void _gui_switch_view_key_accel_callback(dt_action_t *action)
   dt_ctl_switch_mode_to(action->id);
 }
 
-static void _quit_callback(dt_action_t *action)
-{
-  if(darktable.develop && dt_view_get_current() == DT_VIEW_DARKROOM)
-  {
-    dt_dev_write_history(darktable.develop);
-    if(dt_check_gimpmode_ok("file"))
-    {
-      darktable.gimp.error = !dt_export_gimp_file(darktable.gimp.imgid);
-      dt_image_write_sidecar_file(darktable.gimp.imgid);
-    }
-  }
-
-  dt_control_quit();
-}
-
 #ifdef MAC_INTEGRATION
 static gboolean _osx_quit_callback(GtkosxApplication *OSXapp,
                                    gpointer user_data)
@@ -931,7 +915,7 @@ static gboolean _osx_quit_callback(GtkosxApplication *OSXapp,
     if(gtk_window_get_modal(GTK_WINDOW(window->data))
        && gtk_widget_get_visible(GTK_WIDGET(window->data)))
       break;
-  if(window == NULL) dt_control_quit();
+  if(window == NULL) _quit_callback(NULL);
   g_list_free(windows);
   return TRUE;
 }
@@ -4490,7 +4474,7 @@ static void _commit_on_focus_loss_callback(GtkCellRenderer *renderer,
   GtkCellEditable **active_editable = user_data;
   if(active_editable)
     g_set_weak_pointer(active_editable, editable);
-  
+
   g_signal_connect(editable, "focus-out-event", G_CALLBACK(_focus_out_commit), NULL);
 }
 
