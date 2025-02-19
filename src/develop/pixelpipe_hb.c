@@ -1303,7 +1303,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
   if(!fitting && _piece_may_tile(piece))
   {
     dt_print_pipe(DT_DEBUG_PIPE,
-                  bcaching ? "from focus cache tile" : "process tiles",
+                  bcaching ? "from blend cache tile" : "process tiles",
                   pipe, module, DT_DEVICE_CPU, roi_in, roi_out, "%s%s%s",
                   dt_iop_colorspace_to_name(cst_to),
                   cst_to != cst_out ? " -> " : "",
@@ -1333,9 +1333,8 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
   }
   else
   {
-    dt_print_pipe
-      (DT_DEBUG_PIPE,
-       bcaching ? "from focus cache" : "process",
+    dt_print_pipe(DT_DEBUG_PIPE,
+       bcaching ? "from blend cache" : "process",
        pipe, module, DT_DEVICE_CPU, roi_in, roi_out, "%s%s%s%s %.fMB",
        dt_iop_colorspace_to_name(cst_to),
        cst_to != cst_out ? " -> " : "",
@@ -1872,9 +1871,10 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     /* test for a possible opencl path after checking some module
        specific pre-requisites */
     gboolean possible_cl =
-      (module->process_cl && piece->process_cl_ready
-       && !((pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2))
-            && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL)));
+        module->process_cl
+        && piece->process_cl_ready
+        && !((pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2))
+            && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL));
 
     const uint32_t m_bpp = MAX(in_bpp, bpp);
     const size_t m_width = MAX(roi_in.width, roi_out->width);
@@ -2037,7 +2037,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
             : FALSE;
 
           dt_print_pipe(DT_DEBUG_PIPE,
-                        bcaching ? "from focus cache" : "process",
+                        bcaching ? "from blend cache" : "process",
                         pipe, module, pipe->devid, &roi_in, roi_out, "%s%s%s %.1fMB",
                         dt_iop_colorspace_to_name(cst_to),
                         cst_to != cst_out ? " -> " : "",
@@ -2062,8 +2062,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
               for(int i = 0; i < counter; i++)
               {
                 if(success)
-                  success = (module->process_cl(module, piece, cl_mem_input, *cl_mem_output,
-                                                &roi_in, roi_out)) == CL_SUCCESS;
+                  success = module->process_cl(module, piece, cl_mem_input, *cl_mem_output,
+                                                &roi_in, roi_out) == CL_SUCCESS;
               }
               if(success)
               {
@@ -2348,7 +2348,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
             : FALSE;
 
           dt_print_pipe(DT_DEBUG_PIPE,
-                        bcaching ? "from focus cache tile" : "process tiled",
+                        bcaching ? "from blend cache tile" : "process tiles",
                         pipe, module, pipe->devid, &roi_in, roi_out, "%s%s%s",
                         dt_iop_colorspace_to_name(cst_to),
                         cst_to != cst_out ? " -> " : "",
@@ -2356,11 +2356,10 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
           cl_int err = CL_SUCCESS;
 
+          const size_t nfloats = out_bpp * roi_out->width * roi_out->height / sizeof(float);
           if(bcaching)
           {
-            err = dt_opencl_write_host_to_device(pipe->devid,
-                                                 pipe->bcache_data, *cl_mem_output,
-                                                 roi_out->width, roi_out->height, out_bpp);
+            dt_iop_image_copy(*output, pipe->bcache_data, nfloats);
           }
           else
           {
@@ -2370,10 +2369,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
             {
               if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
               {
-                float *cache = _get_fast_blendcache(out_bpp * roi_out->width * roi_out->height / sizeof(float), phash, pipe);
-                if(cache)
-                  err = dt_opencl_read_host_from_device(pipe->devid, cache, *cl_mem_output,
-                                                        roi_out->width, roi_out->height, out_bpp);
+                float *cache = _get_fast_blendcache(nfloats, phash, pipe);
+                if(cache) dt_iop_image_copy(cache, *output, nfloats);
               }
               else
                 pipe->bcache_hash = DT_INVALID_CACHEHASH;
