@@ -321,11 +321,13 @@ static const dt_magic_bytes_t _magic_signatures[] = {
     { 'I', 'I', '*', 0x00 }, "SONY" },
   { DT_FILETYPE_ARW, FALSE, 0, 4, dt_imageio_open_rawspeed,
     { 'M', 'M', 0x00, '*' }, "SONY" },
+  // DNG and many raw formats have a TIFF container, so we place
+  // the signature for the actual TIFF format (as least specific) last.
   // little-endian (Intel) TIFF
-  { DT_FILETYPE_TIFF, FALSE, 0, 4, NULL, // may be DNG or any of many camera raw types
+  { DT_FILETYPE_TIFF, FALSE, 0, 4, dt_imageio_open_tiff,
     { 'I', 'I', '*', 0x00 } },
   // big-endian (Motorola) TIFF
-  { DT_FILETYPE_TIFF, FALSE, 0, 4, NULL, // may be DNG or any of many camera raw types
+  { DT_FILETYPE_TIFF, FALSE, 0, 4, dt_imageio_open_tiff,
     { 'M', 'M', 0x00, '*' } },
   // little-endian (Intel) BigTIFF
   { DT_FILETYPE_BIGTIFF, FALSE, 0, 4, dt_imageio_open_tiff,
