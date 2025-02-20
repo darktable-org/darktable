@@ -1998,7 +1998,7 @@ void gui_post_expose(struct dt_lib_module_t *self,
       {
         // if the image is missing, we reload it again
         g_timeout_add(250, _expose_again, ps);
-        if(!ps->busy) dt_control_log_busy_enter();
+        if(!ps->busy) dt_control_busy_enter();
         ps->busy = TRUE;
       }
       else
@@ -2016,7 +2016,7 @@ void gui_post_expose(struct dt_lib_module_t *self,
         cairo_paint_with_alpha(cr, alpha);
         cairo_surface_destroy(surf);
         cairo_restore(cr);
-        if(ps->busy) dt_control_log_busy_leave();
+        if(ps->busy) dt_control_busy_leave();
         ps->busy = FALSE;
       }
     }
