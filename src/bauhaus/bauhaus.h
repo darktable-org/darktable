@@ -276,12 +276,12 @@ void dt_bauhaus_widget_set_quad_visibility(GtkWidget *w,
 void dt_bauhaus_widget_set_quad_tooltip(GtkWidget *w,
                                         const gchar *text);
 // helper macro to set all quad properties at once
-inline void dt_bauhaus_widget_set_quad(GtkWidget *w,
-                                       dt_iop_module_t *self,
-                                       dt_bauhaus_quad_paint_f paint,
-                                       int toggle,
-                                       void (*callback)(GtkWidget *a, dt_iop_module_t *b),
-                                       const gchar *tooltip)
+static inline void dt_bauhaus_widget_set_quad(GtkWidget *w,
+                                              dt_iop_module_t *self,
+                                              dt_bauhaus_quad_paint_f paint,
+                                              int toggle,
+                                              void (*callback)(GtkWidget *a, dt_iop_module_t *b),
+                                              const gchar *tooltip)
 {
   dt_bauhaus_widget_set_quad_paint(w, paint, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(w, toggle);
