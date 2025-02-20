@@ -275,6 +275,19 @@ void dt_bauhaus_widget_set_quad_visibility(GtkWidget *w,
 // set a tooltip for the quad button:
 void dt_bauhaus_widget_set_quad_tooltip(GtkWidget *w,
                                         const gchar *text);
+// helper macro to set all quad properties at once
+inline void dt_bauhaus_widget_set_quad(GtkWidget *w,
+                                       dt_iop_module_t *self,
+                                       dt_bauhaus_quad_paint_f paint,
+                                       int toggle,
+                                       void (*callback)(GtkWidget *a, dt_iop_module_t *b),
+                                       const gchar *tooltip)
+{
+  dt_bauhaus_widget_set_quad_paint(w, paint, 0, NULL);
+  dt_bauhaus_widget_set_quad_toggle(w, toggle);
+  g_signal_connect(G_OBJECT(w), "quad-pressed", G_CALLBACK(callback), self);
+  if(tooltip) dt_bauhaus_widget_set_quad_tooltip(w, tooltip);
+}
 // get the tooltip for widget or quad button:
 gchar *dt_bauhaus_widget_get_tooltip_markup(GtkWidget *widget,
                                             dt_action_element_t element);
