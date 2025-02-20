@@ -376,7 +376,7 @@ static void _expose_tethered_mode(dt_view_t *self,
     {
       // if the image is missing, we reload it again
       g_timeout_add(250, _expose_again, NULL);
-      if(!lib->busy) dt_control_log_busy_enter();
+      if(!lib->busy) dt_control_busy_enter();
       lib->busy = TRUE;
     }
     else
@@ -388,7 +388,7 @@ static void _expose_tethered_mode(dt_view_t *self,
       cairo_set_source_surface(cr, surf, 0.0, 0.0);
       cairo_paint(cr);
       cairo_surface_destroy(surf);
-      if(lib->busy) dt_control_log_busy_leave();
+      if(lib->busy) dt_control_busy_leave();
       lib->busy = FALSE;
     }
 

@@ -58,10 +58,8 @@ gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer 
 void dt_control_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_toast_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_toast_markup_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
-void dt_control_log_busy_enter(void);
-void dt_control_toast_busy_enter(void);
-void dt_control_log_busy_leave(void);
-void dt_control_toast_busy_leave(void);
+void dt_control_busy_enter();
+void dt_control_busy_leave();
 void dt_control_draw_busy_msg(cairo_t *cr, int width, int height);
 // disable the possibility to change the cursor shape with dt_control_change_cursor
 void dt_control_forbid_change_cursor(void);
@@ -167,19 +165,18 @@ typedef struct dt_control_t
   dt_imgid_t last_clicked_filmstrip_id;
   gboolean lock_cursor_shape;
 
+  int busy;
+  dt_pthread_mutex_t log_mutex;
+
   // message log
   int32_t log_pos, log_ack;
   char log_message[DT_CTL_LOG_SIZE][DT_CTL_LOG_MSG_SIZE];
   guint log_message_timeout_id;
-  int log_busy;
-  dt_pthread_mutex_t log_mutex;
 
   // toast log
   int32_t toast_pos, toast_ack;
   char toast_message[DT_CTL_TOAST_SIZE][DT_CTL_TOAST_MSG_SIZE];
   guint toast_message_timeout_id;
-  int toast_busy;
-  dt_pthread_mutex_t toast_mutex;
 
   // gui settings
   dt_pthread_mutex_t global_mutex, image_mutex;
