@@ -103,7 +103,7 @@ changes (where available).
 
 ## Bug Fixes
 
-- N/A
+- Fixed sidecar writing if quitting from darkroom.
 
 ## Lua
 
