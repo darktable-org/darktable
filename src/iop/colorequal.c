@@ -3157,7 +3157,7 @@ void gui_init(dt_iop_module_t *self)
   g->threshold = dt_bauhaus_slider_from_params(self, "threshold");
   dt_bauhaus_slider_set_digits(g->threshold, 3);
   dt_bauhaus_slider_set_format(g->threshold, "%");
-  dt_bauhaus_widget_set_quad(g->threshold, dtgtk_cairo_paint_showmask, TRUE, _masking_callback_t,
+  dt_bauhaus_widget_set_quad(g->threshold, self, dtgtk_cairo_paint_showmask, TRUE, _masking_callback_t,
     _("visualize weighting function on changed output and view weighting curve.\n"
       "red shows possibly changed data, blueish parts will not be changed."));
 
@@ -3179,7 +3179,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->param_size, _(_(" px")));
   gtk_widget_set_tooltip_text(g->param_size, _("set radius of applied parameters for the guided filter"));
 
-  dt_bauhaus_widget_set_quad(g->param_size, dtgtk_cairo_paint_showmask, TRUE, _masking_callback_p,
+  dt_bauhaus_widget_set_quad(g->param_size, self, dtgtk_cairo_paint_showmask, TRUE, _masking_callback_p,
     _("visualize changed output for the selected tab.\n"
       "red shows increased values, blue decreased."));
 

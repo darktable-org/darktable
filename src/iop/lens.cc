@@ -4493,7 +4493,7 @@ void gui_init(dt_iop_module_t *self)
   g->scale = dt_bauhaus_slider_from_params(self, N_("scale"));
   dt_bauhaus_slider_set_digits(g->scale, 3);
   gtk_widget_set_tooltip_text(g->scale, _("auto scale"));
-  dt_bauhaus_widget_set_quad(g->scale, dtgtk_cairo_paint_refresh, FALSE, _autoscale_pressed_lf,
+  dt_bauhaus_widget_set_quad(g->scale, self, dtgtk_cairo_paint_refresh, FALSE, _autoscale_pressed_lf,
                              _("automatic scale to available image size due to Lensfun data"));
 
   // reverse direction
@@ -4572,7 +4572,7 @@ void gui_init(dt_iop_module_t *self)
   g->scale_md = dt_bauhaus_slider_from_params(sect, "scale_md");
   dt_bauhaus_slider_set_digits(g->scale_md, 4);
   gtk_widget_set_tooltip_text(g->scale_md, _("image scaling"));
-  dt_bauhaus_widget_set_quad(g->scale_md, dtgtk_cairo_paint_refresh, FALSE, _autoscale_pressed_md,
+  dt_bauhaus_widget_set_quad(g->scale_md, self, dtgtk_cairo_paint_refresh, FALSE, _autoscale_pressed_md,
                              _("automatic scale to available image size"));
 
   // main widget
@@ -4633,7 +4633,7 @@ void gui_init(dt_iop_module_t *self)
       _("amount of the applied optical vignetting correction"));
   dt_bauhaus_slider_set_format(g->v_strength, "%");
   dt_bauhaus_slider_set_digits(g->v_strength, 1);
-  dt_bauhaus_widget_set_quad(g->v_strength, dtgtk_cairo_paint_showmask, TRUE, _visualize_callback,
+  dt_bauhaus_widget_set_quad(g->v_strength, self, dtgtk_cairo_paint_showmask, TRUE, _visualize_callback,
                              _("show applied optical vignette correction mask"));
 
   g->v_radius = dt_bauhaus_slider_from_params(sect, "v_radius");

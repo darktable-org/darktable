@@ -3477,7 +3477,7 @@ void gui_init(dt_iop_module_t *self)
     (g->exposure_boost,
      _("use this to slide the mask average exposure along channels\n"
        "for a better control of the exposure correction with the available nodes."));
-  dt_bauhaus_widget_set_quad(g->exposure_boost, dtgtk_cairo_paint_wand, FALSE, auto_adjust_exposure_boost,
+  dt_bauhaus_widget_set_quad(g->exposure_boost, self, dtgtk_cairo_paint_wand, FALSE, auto_adjust_exposure_boost,
                              _("auto-adjust the average exposure"));
 
   g->contrast_boost = dt_bauhaus_slider_from_params(self, "contrast_boost");
@@ -3489,7 +3489,7 @@ void gui_init(dt_iop_module_t *self)
        "and dilate the mask contrast around -4EV\n"
        "this allows to spread the exposure histogram over more channels\n"
        "for a better control of the exposure correction."));
-  dt_bauhaus_widget_set_quad(g->contrast_boost, dtgtk_cairo_paint_wand, FALSE, auto_adjust_contrast_boost,
+  dt_bauhaus_widget_set_quad(g->contrast_boost, self, dtgtk_cairo_paint_wand, FALSE, auto_adjust_contrast_boost,
                              _("auto-adjust the contrast"));
 
   // start building top level widget

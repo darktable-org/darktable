@@ -1974,19 +1974,19 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->shadows_weight, 4);
   dt_bauhaus_slider_set_format(g->shadows_weight, "%");
   gtk_widget_set_tooltip_text(g->shadows_weight, _("weight of the shadows over the whole tonal range"));
-  dt_bauhaus_widget_set_quad(g->shadows_weight, dtgtk_cairo_paint_showmask, TRUE, mask_callback, NULL);
+  dt_bauhaus_widget_set_quad(g->shadows_weight, self, dtgtk_cairo_paint_showmask, TRUE, mask_callback, NULL);
 
   g->mask_grey_fulcrum = dt_bauhaus_slider_from_params(self, "mask_grey_fulcrum");
   dt_bauhaus_slider_set_digits(g->mask_grey_fulcrum, 4);
   dt_bauhaus_slider_set_format(g->mask_grey_fulcrum, "%");
   gtk_widget_set_tooltip_text(g->mask_grey_fulcrum, _("position of the middle-gray reference for masking"));
-  dt_bauhaus_widget_set_quad(g->mask_grey_fulcrum, dtgtk_cairo_paint_showmask, TRUE, mask_callback, NULL);
+  dt_bauhaus_widget_set_quad(g->mask_grey_fulcrum, self, dtgtk_cairo_paint_showmask, TRUE, mask_callback, NULL);
 
   g->highlights_weight = dt_bauhaus_slider_from_params(self, "highlights_weight");
   dt_bauhaus_slider_set_digits(g->highlights_weight, 4);
   dt_bauhaus_slider_set_format(g->highlights_weight, "%");
   gtk_widget_set_tooltip_text(g->highlights_weight, _("weights of highlights over the whole tonal range"));
-  dt_bauhaus_widget_set_quad(g->highlights_weight, dtgtk_cairo_paint_showmask, TRUE, mask_callback, NULL);
+  dt_bauhaus_widget_set_quad(g->highlights_weight, self, dtgtk_cairo_paint_showmask, TRUE, mask_callback, NULL);
 
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "threshold")));
 

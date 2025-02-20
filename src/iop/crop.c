@@ -1273,7 +1273,7 @@ void gui_init(dt_iop_module_t *self)
        "the list is sorted: from most square to least square\n"
        "to enter custom aspect ratio open the combobox and type ratio in x:y"
        " or decimal format"));
-  dt_bauhaus_widget_set_quad(g->aspect_presets, dtgtk_cairo_paint_aspectflip, FALSE, _event_aspect_flip, NULL);
+  dt_bauhaus_widget_set_quad(g->aspect_presets, self, dtgtk_cairo_paint_aspectflip, FALSE, _event_aspect_flip, NULL);
   gtk_box_pack_start(GTK_BOX(box_enabled), g->aspect_presets, TRUE, TRUE, 0);
 
   // we put margins values under an expander

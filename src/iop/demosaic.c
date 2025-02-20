@@ -1333,7 +1333,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->dual_thrs, 2);
   gtk_widget_set_tooltip_text(g->dual_thrs, _("contrast threshold for dual demosaic.\nset to 0.0 for high frequency content\n"
                                                 "set to 1.0 for flat content"));
-  dt_bauhaus_widget_set_quad(g->dual_thrs, dtgtk_cairo_paint_showmask, TRUE, _visualize_callback,
+  dt_bauhaus_widget_set_quad(g->dual_thrs, self, dtgtk_cairo_paint_showmask, TRUE, _visualize_callback,
                              _("toggle mask visualization"));
 
   g->lmmse_refine = dt_bauhaus_combobox_from_params(self, "lmmse_refine");

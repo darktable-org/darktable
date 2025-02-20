@@ -1160,7 +1160,7 @@ void gui_init(dt_iop_module_t *self)
                               _("manually adjust the clipping threshold mostly used against magenta highlights.\n"
                                 "you might use this for tuning 'laplacian', 'inpaint opposed' or 'segmentation' modes,\n"
                                 "especially if camera white point is incorrect."));
-  dt_bauhaus_widget_set_quad(g->clip, dtgtk_cairo_paint_showmask, TRUE, _quad_callback,
+  dt_bauhaus_widget_set_quad(g->clip, self, dtgtk_cairo_paint_showmask, TRUE, _quad_callback,
     _("visualize clipped highlights in a false color representation.\n"
       "the effective clipping level also depends on the reconstruction method."));
 
@@ -1168,7 +1168,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->combine, 0);
   gtk_widget_set_tooltip_text(g->combine, _("combine closely related clipped segments by morphological operations.\n"
                                             "this often leads to improved color reconstruction for tiny segments before dark background."));
-  dt_bauhaus_widget_set_quad(g->combine, dtgtk_cairo_paint_showmask, TRUE, _quad_callback,
+  dt_bauhaus_widget_set_quad(g->combine, self, dtgtk_cairo_paint_showmask, TRUE, _quad_callback,
     _("visualize the combined segments in a false color representation."));
 
   g->candidating = dt_bauhaus_slider_from_params(self, "candidating");
@@ -1176,7 +1176,7 @@ void gui_init(dt_iop_module_t *self)
                                                 "increase to favor candidates found in segmentation analysis, decrease for opposed means inpainting."));
   dt_bauhaus_slider_set_format(g->candidating, "%");
   dt_bauhaus_slider_set_digits(g->candidating, 0);
-  dt_bauhaus_widget_set_quad(g->candidating, dtgtk_cairo_paint_showmask, TRUE, _quad_callback,
+  dt_bauhaus_widget_set_quad(g->candidating, self, dtgtk_cairo_paint_showmask, TRUE, _quad_callback,
     _("visualize segments that are considered to have a good candidate in a false color representation."));
 
   g->recovery = dt_bauhaus_combobox_from_params(self, "recovery");
@@ -1189,7 +1189,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->strength, _("set strength of rebuilding in regions with all photosites clipped."));
   dt_bauhaus_slider_set_format(g->strength, "%");
   dt_bauhaus_slider_set_digits(g->strength, 0);
-  dt_bauhaus_widget_set_quad(g->strength, dtgtk_cairo_paint_showmask, TRUE, _quad_callback,
+  dt_bauhaus_widget_set_quad(g->strength, self, dtgtk_cairo_paint_showmask, TRUE, _quad_callback,
     _("show the effect that is added to already reconstructed data."));
 
   g->noise_level = dt_bauhaus_slider_from_params(self, "noise_level");
