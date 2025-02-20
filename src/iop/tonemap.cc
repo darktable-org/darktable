@@ -26,9 +26,6 @@
 
 #define __STDC_FORMAT_MACROS
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -47,7 +44,8 @@
 
 #include "iop/Permutohedral.h"
 
-extern "C" {
+G_BEGIN_DECLS
+
 DT_MODULE_INTROSPECTION(1, dt_iop_tonemapping_params_t)
 
 typedef struct dt_iop_tonemapping_params_t
@@ -230,7 +228,8 @@ void gui_init(dt_iop_module_t *self)
   g->Fsize = dt_bauhaus_slider_from_params(self, "Fsize");
   dt_bauhaus_slider_set_format(g->Fsize, "%");
 }
-}
+
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

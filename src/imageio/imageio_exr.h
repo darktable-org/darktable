@@ -21,15 +21,11 @@
 #include "common/image.h"
 #include "common/mipmap_cache.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+G_BEGIN_DECLS
 
 dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

@@ -74,9 +74,7 @@ skip_error:
   #define OPTIONAL(return_type, function_name, ...) return_type function_name(__VA_ARGS__)
   #define REQUIRED(return_type, function_name, ...) return_type function_name(__VA_ARGS__)
   #define DEFAULT(return_type, function_name, ...) return_type function_name(__VA_ARGS__)
-  #ifdef __cplusplus
-  extern "C" {
-  #endif
+  G_BEGIN_DECLS
   // these 2 functions are defined by DT_MODULE() macro.
   #pragma GCC visibility push(default)
   // returns the version of dt's module interface at the time this module was build
@@ -84,9 +82,7 @@ skip_error:
   // returns the version of this module
   int dt_module_mod_version();
   #pragma GCC visibility pop
-  #ifdef __cplusplus
-  }
-  #endif
+  G_END_DECLS
 #endif
 
 // clang-format off

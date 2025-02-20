@@ -21,9 +21,7 @@
 
 #ifdef FULL_API_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+G_BEGIN_DECLS
 
 #include <glib.h>
 #include <stdint.h>
@@ -101,9 +99,7 @@ OPTIONAL(gboolean, storage_login, struct dt_imageio_module_storage_t *self);
 
 #pragma GCC visibility pop
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif // FULL_API_H
 

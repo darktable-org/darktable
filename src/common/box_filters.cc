@@ -20,9 +20,6 @@
 #pragma GCC optimize ("finite-math-only", "no-math-errno", "fp-contract=fast", "fast-math")
 #endif
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>

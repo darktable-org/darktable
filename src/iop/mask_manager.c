@@ -25,10 +25,6 @@
  * We start at version 2 so previous version of dt can add records in history with NULL params
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "common/imagebuf.h"
 #include "develop/develop.h"
 

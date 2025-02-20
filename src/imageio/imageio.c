@@ -16,9 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "common/colorlabels.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"

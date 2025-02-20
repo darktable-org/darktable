@@ -26,10 +26,6 @@
 #pragma GCC optimize ("no-finite-math-only")
 #endif
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "bauhaus/bauhaus.h"
 #include "common/interpolation.h"
 #include "common/file_location.h"
@@ -58,7 +54,7 @@
 #define MAXKNOTS 16
 #define VIGSPLINES 512
 
-extern "C" {
+G_BEGIN_DECLS
 
 #if LF_VERSION < ((0 << 24) | (2 << 16) | (9 << 8) | 0)
 #define LF_SEARCH_SORT_AND_UNIQUIFY 2
@@ -4753,7 +4749,8 @@ void gui_update(dt_iop_module_t *self)
   gui_changed(self, NULL, NULL);
 }
 
-}
+
+G_END_DECLS
 
 #undef VIGSPLINES
 // clang-format off

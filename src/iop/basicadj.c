@@ -20,10 +20,6 @@
     auto exposure is based on RawTherapee's Auto Levels
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/math.h"

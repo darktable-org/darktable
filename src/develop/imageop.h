@@ -33,17 +33,6 @@
 #include <arm_neon.h>
 #endif
 
-G_BEGIN_DECLS
-
-/** region of interest, needed by pixelpipe.h */
-typedef struct dt_iop_roi_t
-{
-  int x, y, width, height;
-  float scale;
-} dt_iop_roi_t;
-
-G_END_DECLS
-
 #include "develop/pixelpipe.h"
 #include "dtgtk/togglebutton.h"
 
@@ -58,13 +47,6 @@ G_END_DECLS
 #endif
 
 G_BEGIN_DECLS
-
-struct dt_develop_t;
-struct dt_dev_pixelpipe_t;
-struct dt_dev_pixelpipe_iop_t;
-struct dt_develop_blend_params_t;
-struct dt_develop_tiling_t;
-struct dt_iop_color_picker_t;
 
 /** module group */
 typedef enum dt_iop_group_t

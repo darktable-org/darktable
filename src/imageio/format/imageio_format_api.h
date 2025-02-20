@@ -20,9 +20,7 @@
 
 #ifdef FULL_API_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+G_BEGIN_DECLS
 
 #include <stddef.h>
 #include <stdint.h>
@@ -96,9 +94,7 @@ OPTIONAL(int, read_image, struct dt_imageio_module_data_t *data, uint8_t *out);
 
 #pragma GCC visibility pop
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif // FULL_API_H
 

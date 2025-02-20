@@ -21,9 +21,7 @@
 #include "common/darktable.h"
 #include <gtk/gtk.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 /** array of names and constant to ease label manipulation */
 typedef enum dt_colorlables_enum
@@ -66,9 +64,7 @@ gboolean dt_colorlabels_check_label(const dt_imgid_t imgid,
 
 extern const struct dt_action_def_t dt_action_def_color_label;
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

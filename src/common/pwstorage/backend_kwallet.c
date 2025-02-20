@@ -53,10 +53,6 @@
 // http://websvn.kde.org/trunk/KDE/kdelibs/kdeui/util/org.kde.KWallet.xml?revision=1054210&view=markup
 // http://websvn.kde.org/trunk/KDE/kdelibs/kdeui/util/kwallet.cpp?revision=1107541&view=markup
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "backend_kwallet.h"
 #include "control/conf.h"
 

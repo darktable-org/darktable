@@ -18,10 +18,6 @@
 
 #include "common/extra_optimizations.h"
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "bauhaus/bauhaus.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"

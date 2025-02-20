@@ -16,14 +16,15 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "develop/imageop_math.h"
-#include <assert.h> // for assert
-#include <glib.h> // for MIN, MAX, CLAMP, inline
-#include <math.h> // for round, floorf, fmaxf
 #include "common/darktable.h"        // for darktable, darktable_t, dt_code...
 #include "common/interpolation.h"    // for dt_interpolation_new, dt_interp...
 #include "develop/imageop.h"         // for dt_iop_roi_t
+#include "develop/imageop_math.h"
 #include "imageio/imageio_common.h"          // for FILTERS_ARE_4BAYER
+
+#include <assert.h> // for assert
+#include <glib.h> // for MIN, MAX, CLAMP, inline
+#include <math.h> // for round, floorf, fmaxf
 
 void dt_iop_flip_and_zoom_8(const uint8_t *in,
                             const int32_t iw,
