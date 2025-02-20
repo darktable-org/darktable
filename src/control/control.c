@@ -302,17 +302,27 @@ void dt_control_quit()
   if(dt_atomic_exch_int(&dc->quitting, 1) == 1) return;
 
 #ifdef HAVE_PRINT
-    dt_printers_abort_discovery();
-    // Cups timeout could be pretty long, at least 30seconds
-    // but don't rely on cups returning correctly so a timeout
-    for(int i = 0; i < 40000 && !dc->cups_started; i++)
-      g_usleep(1000);
+  dt_printers_abort_discovery();
+  // Cups timeout could be pretty long, at least 30seconds
+  // but don't rely on cups returning correctly so a timeout
+  for(int i = 0; i < 40000 && !dc->cups_started; i++)
+    g_usleep(1000);
 #endif
 
-    dt_pthread_mutex_lock(&dc->cond_mutex);
-    // set the "pending cleanup work" flag to be handled in dt_control_shutdown()
-    dt_atomic_set_int(&dc->running, DT_CONTROL_STATE_CLEANUP);
-    dt_pthread_mutex_unlock(&dc->cond_mutex);
+  if(dt_control_jobs_pending())
+     dt_control_log(_("<span foreground='#FF0000' background='#000000'>"
+                      "darktable will be locked until background work has been done"
+                      "</span>"));
+  for(int i = 0; i < 50 && dt_control_jobs_pending(); i++)
+  {
+    g_usleep(100000);
+    dt_gui_process_events();
+  }
+
+  dt_pthread_mutex_lock(&dc->cond_mutex);
+  // set the "pending cleanup work" flag to be handled in dt_control_shutdown()
+  dt_atomic_set_int(&dc->running, DT_CONTROL_STATE_CLEANUP);
+  dt_pthread_mutex_unlock(&dc->cond_mutex);
 
   if(g_atomic_int_get(&darktable.gui_running))
   {
@@ -760,12 +770,14 @@ void dt_control_navigation_redraw()
 
 void dt_control_log_redraw()
 {
-  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_LOG_REDRAW);
+  if(dt_control_running())
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_LOG_REDRAW);
 }
 
 void dt_control_toast_redraw()
 {
-  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_TOAST_REDRAW);
+  if(dt_control_running())
+    DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_TOAST_REDRAW);
 }
 
 static int _widget_queue_draw(void *widget)
@@ -893,6 +905,8 @@ gboolean dt_control_key_pressed_override(guint key, guint state)
 
 void dt_control_hinter_message(const char *message)
 {
+  if(!dt_control_running())
+    return;
   dt_control_t *s = darktable.control;
   if(s && s->proxy.hinter.module)
     return s->proxy.hinter.set_message(s->proxy.hinter.module, message);
