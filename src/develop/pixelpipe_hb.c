@@ -2745,16 +2745,18 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                     roi_out->width, roi_out->height, bpp);
 #endif
 
-    if((*out_format)->datatype == TYPE_FLOAT
-       && (*out_format)->channels == 4)
+    int ch = (*out_format)->channels;
+    if((*out_format)->datatype == TYPE_FLOAT && (ch == 1 || ch == 4))
     {
-      gboolean hasinf = FALSE, hasnan = FALSE;
-      dt_aligned_pixel_t min = { FLT_MAX };
-      dt_aligned_pixel_t max = { -FLT_MAX };
+      int m = ch - 1;
 
-      for(int k = 0; k < 4 * roi_out->width * roi_out->height; k++)
+      gboolean hasinf = FALSE, hasnan = FALSE;
+      dt_aligned_pixel_t min = { FLT_MAX, FLT_MAX, FLT_MAX };
+      dt_aligned_pixel_t max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+
+      for(int k = 0; k < ch * roi_out->width * roi_out->height; k++)
       {
-        if((k & 3) < 3)
+        if((k & m) < 3)
         {
           const float f = ((float *)(*output))[k];
           if(dt_isnan(f))
@@ -2763,8 +2765,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
             hasinf = TRUE;
           else
           {
-            min[k & 3] = fmin(f, min[k & 3]);
-            max[k & 3] = fmax(f, max[k & 3]);
+            min[k & m] = fminf(f, min[k & m]);
+            max[k & m] = fmaxf(f, max[k & m]);
           }
         }
       }
@@ -2778,46 +2780,17 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                  "[dev_pixelpipe] module `%s%s' outputs non-finite floats! [%s]",
                  module->op, dt_iop_get_instance_id(module),
                  dt_dev_pixelpipe_type_to_str(pipe->type));
-      dt_print(DT_DEBUG_ALWAYS,
-               "[dev_pixelpipe] module `%s%s' min: (%f; %f; %f) max: (%f; %f; %f) [%s]",
-                module->op, dt_iop_get_instance_id(module),
-                min[0], min[1], min[2], max[0], max[1], max[2],
+      if(ch == 4)
+        dt_print(DT_DEBUG_ALWAYS,
+                "[dev_pixelpipe] module `%s%s' min: (%f; %f; %f) max: (%f; %f; %f) [%s]",
+                  module->op, dt_iop_get_instance_id(module),
+                  min[0], min[1], min[2], max[0], max[1], max[2],
+                  dt_dev_pixelpipe_type_to_str(pipe->type));
+      else
+        dt_print(DT_DEBUG_ALWAYS,
+                "[dev_pixelpipe] module `%s%s' min: (%f) max: (%f) [%s]",
+                module->op, dt_iop_get_instance_id(module), min[0], max[0],
                 dt_dev_pixelpipe_type_to_str(pipe->type));
-    }
-    else if((*out_format)->datatype == TYPE_FLOAT && (*out_format)->channels == 1)
-    {
-      gboolean hasinf = FALSE, hasnan = FALSE;
-      float min = FLT_MAX;
-      float max = -FLT_MAX;
-
-      for(int k = 0; k < roi_out->width * roi_out->height; k++)
-      {
-        const float f = ((float *)(*output))[k];
-        if(dt_isnan(f))
-          hasnan = TRUE;
-        else if(dt_isinf(f))
-          hasinf = TRUE;
-        else
-        {
-          min = fmin(f, min);
-          max = fmax(f, max);
-        }
-      }
-
-      if(hasnan)
-        dt_print(DT_DEBUG_ALWAYS,
-                 "[dev_pixelpipe] module `%s%s' outputs NaNs! [%s]",
-                 module->op, dt_iop_get_instance_id(module),
-                 dt_dev_pixelpipe_type_to_str(pipe->type));
-      if(hasinf)
-        dt_print(DT_DEBUG_ALWAYS,
-                 "[dev_pixelpipe] module `%s%s' outputs non-finite floats! [%s]",
-                 module->op, dt_iop_get_instance_id(module),
-                 dt_dev_pixelpipe_type_to_str(pipe->type));
-      dt_print(DT_DEBUG_ALWAYS,
-               "[dev_pixelpipe] module `%s%s' min: (%f) max: (%f) [%s]",
-               module->op, dt_iop_get_instance_id(module), min, max,
-               dt_dev_pixelpipe_type_to_str(pipe->type));
     }
   }
 

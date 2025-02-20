@@ -20,10 +20,6 @@
 
 #ifdef HAVE_OPENCL
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <glib.h>
 
 #ifndef __APPLE__

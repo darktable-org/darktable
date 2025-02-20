@@ -16,9 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "common/exif.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_jpeg.h"

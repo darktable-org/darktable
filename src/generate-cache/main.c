@@ -34,7 +34,6 @@
 #include "common/mipmap_cache.h" // for dt_mipmap_size_t, etc
 #include "common/file_location.h"
 #include "common/history.h"      // for dt_history_hash_set_mipmap
-#include "config.h"              // for GETTEXT_PACKAGE, etc
 #include "control/conf.h"        // for dt_conf_get_bool
 
 #ifdef __APPLE__

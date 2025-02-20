@@ -21,9 +21,7 @@
 #include "common/cache.h"
 #include "common/image.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 typedef struct dt_image_cache_t
 {
@@ -80,9 +78,7 @@ void dt_image_cache_unset_change_timestamp(const dt_imgid_t imgid);
 void dt_image_cache_set_export_timestamp(const dt_imgid_t imgid);
 void dt_image_cache_set_print_timestamp(const dt_imgid_t imgid);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

@@ -31,10 +31,6 @@
 */
 
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "bauhaus/bauhaus.h"
 #include "common/box_filters.h"
 #include "common/darktable.h"

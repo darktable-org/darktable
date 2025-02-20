@@ -18,9 +18,6 @@
 
 #include "common/extra_optimizations.h"
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "bauhaus/bauhaus.h"
 #include "common/bspline.h"
 #include "common/darktable.h"

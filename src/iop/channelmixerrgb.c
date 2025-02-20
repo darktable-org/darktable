@@ -38,9 +38,6 @@
    If enabled there must be $DESCRIPTION: entries in illuminants.h for bauhaus
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "bauhaus/bauhaus.h"
 #include "chart/common.h"
 #include "develop/imageop_gui.h"

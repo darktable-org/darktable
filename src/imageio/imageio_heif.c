@@ -23,10 +23,6 @@
 #include <libheif/heif_properties.h>
 #endif
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <inttypes.h>
 #include <memory.h>
 #include <stdio.h>

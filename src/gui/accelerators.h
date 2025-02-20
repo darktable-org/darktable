@@ -24,9 +24,7 @@
 #include "libs/lib.h"
 #include "views/view.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+G_BEGIN_DECLS
 
 GtkWidget *dt_shortcuts_prefs(GtkWidget *widget);
 GHashTable *dt_shortcut_category_lists(dt_view_type_flags_t v);
@@ -218,9 +216,7 @@ GtkWidget *dt_action_entry_new(dt_action_t *ac, const gchar *label, gpointer cal
 // find the action a widget is linked to
 dt_action_t *dt_action_widget(GtkWidget *widget);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif /* __cplusplus */
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
