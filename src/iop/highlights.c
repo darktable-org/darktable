@@ -982,6 +982,20 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
   piece->data = NULL;
 }
 
+static void _set_quads(dt_iop_highlights_gui_data_t *g, GtkWidget *w)
+{
+  g->hlr_mask_mode = w && dt_bauhaus_widget_get_quad_active(w)
+                   ? w == g->clip     ? DT_HIGHLIGHTS_MASK_CLIPPED
+                   : w == g->combine  ? DT_HIGHLIGHTS_MASK_COMBINE
+                   : w == g->strength ? DT_HIGHLIGHTS_MASK_STRENGTH
+                   : DT_HIGHLIGHTS_MASK_CANDIDATING
+                   : DT_HIGHLIGHTS_MASK_OFF;
+  if(w != g->clip       ) dt_bauhaus_widget_set_quad_active(g->clip,        FALSE);
+  if(w != g->candidating) dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
+  if(w != g->combine    ) dt_bauhaus_widget_set_quad_active(g->combine,     FALSE);
+  if(w != g->strength   ) dt_bauhaus_widget_set_quad_active(g->strength,    FALSE);
+}
+
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_highlights_gui_data_t *g = self->gui_data;
@@ -1037,11 +1051,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   if(w == g->mode)
   {
-    dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
-    dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
-    dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
-    dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
-    g->hlr_mask_mode = DT_HIGHLIGHTS_MASK_OFF;
+    _set_quads(g, NULL);
   }
 }
 
@@ -1054,11 +1064,7 @@ void gui_update(dt_iop_module_t *self)
   self->default_enabled = dt_image_is_rawprepare_supported(img) && !monochrome;
   self->hide_enable_button = monochrome;
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), !monochrome ? "default" : "notapplicable");
-  dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
-  dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
-  dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
-  dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
-  g->hlr_mask_mode = DT_HIGHLIGHTS_MASK_OFF;
+  _set_quads(g, NULL);
 
   gui_changed(self, NULL, NULL);
 }
@@ -1113,56 +1119,16 @@ void reload_defaults(dt_iop_module_t *self)
                                                                    ? DT_IOP_HIGHLIGHTS_SEGMENTS
                                                                    : DT_IOP_HIGHLIGHTS_LAPLACIAN);
     }
-    dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
-    dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
-    dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
-    dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
-    g->hlr_mask_mode = DT_HIGHLIGHTS_MASK_OFF;
+    _set_quads(g, NULL);
   }
   d->clip = MIN(d->clip, img->linear_response_limit);
 }
 
-static void _visualize_callback(GtkWidget *quad, dt_iop_module_t *self)
+static void _quad_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_highlights_gui_data_t *g = self->gui_data;
-  dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
-  dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
-  dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
-  g->hlr_mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? DT_HIGHLIGHTS_MASK_CLIPPED : DT_HIGHLIGHTS_MASK_OFF;
-  dt_dev_reprocess_center(self->dev);
-}
-
-static void _candidating_callback(GtkWidget *quad, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_highlights_gui_data_t *g = self->gui_data;
-  g->hlr_mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? DT_HIGHLIGHTS_MASK_CANDIDATING : DT_HIGHLIGHTS_MASK_OFF;
-  dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
-  dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
-  dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
-  dt_dev_reprocess_center(self->dev);
-}
-
-static void _combine_callback(GtkWidget *quad, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_highlights_gui_data_t *g = self->gui_data;
-  g->hlr_mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? DT_HIGHLIGHTS_MASK_COMBINE : DT_HIGHLIGHTS_MASK_OFF;
-  dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
-  dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
-  dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
-  dt_dev_reprocess_center(self->dev);
-}
-
-static void _strength_callback(GtkWidget *quad, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_highlights_gui_data_t *g = self->gui_data;
-  g->hlr_mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? DT_HIGHLIGHTS_MASK_STRENGTH : DT_HIGHLIGHTS_MASK_OFF;
-  dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
-  dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
-  dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
+  _set_quads(g, quad);
   dt_dev_reprocess_center(self->dev);
 }
 
@@ -1172,11 +1138,7 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
   if(!in)
   {
     const gboolean was_visualize = (g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF);
-    dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
-    dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
-    dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
-    dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
-    g->hlr_mask_mode = DT_HIGHLIGHTS_MASK_OFF;
+    _set_quads(g, NULL);
     if(was_visualize) dt_dev_reprocess_center(self->dev);
   }
 }
@@ -1195,37 +1157,24 @@ void gui_init(dt_iop_module_t *self)
                               _("manually adjust the clipping threshold mostly used against magenta highlights.\n"
                                 "you might use this for tuning 'laplacian', 'inpaint opposed' or 'segmentation' modes,\n"
                                 "especially if camera white point is incorrect."));
-  dt_bauhaus_widget_set_quad_tooltip(g->clip,
+  dt_bauhaus_widget_set_quad(g->clip, self, dtgtk_cairo_paint_showmask, TRUE, _quad_callback,
     _("visualize clipped highlights in a false color representation.\n"
-    "the effective clipping level also depends on the reconstruction method."));
-  dt_bauhaus_widget_set_quad_paint(g->clip, dtgtk_cairo_paint_showmask, 0, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->clip, TRUE);
-  dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
-
-  g_signal_connect(G_OBJECT(g->clip), "quad-pressed", G_CALLBACK(_visualize_callback), self);
+      "the effective clipping level also depends on the reconstruction method."));
 
   g->combine = dt_bauhaus_slider_from_params(self, "combine");
   dt_bauhaus_slider_set_digits(g->combine, 0);
   gtk_widget_set_tooltip_text(g->combine, _("combine closely related clipped segments by morphological operations.\n"
                                             "this often leads to improved color reconstruction for tiny segments before dark background."));
-  dt_bauhaus_widget_set_quad_tooltip(g->combine,
+  dt_bauhaus_widget_set_quad(g->combine, self, dtgtk_cairo_paint_showmask, TRUE, _quad_callback,
     _("visualize the combined segments in a false color representation."));
-  dt_bauhaus_widget_set_quad_paint(g->combine, dtgtk_cairo_paint_showmask, 0, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->combine, TRUE);
-  dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
-  g_signal_connect(G_OBJECT(g->combine), "quad-pressed", G_CALLBACK(_combine_callback), self);
 
   g->candidating = dt_bauhaus_slider_from_params(self, "candidating");
   gtk_widget_set_tooltip_text(g->candidating, _("select inpainting after segmentation analysis.\n"
                                                 "increase to favor candidates found in segmentation analysis, decrease for opposed means inpainting."));
-  dt_bauhaus_widget_set_quad_tooltip(g->candidating,
-    _("visualize segments that are considered to have a good candidate in a false color representation."));
   dt_bauhaus_slider_set_format(g->candidating, "%");
   dt_bauhaus_slider_set_digits(g->candidating, 0);
-  dt_bauhaus_widget_set_quad_paint(g->candidating, dtgtk_cairo_paint_showmask, 0, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->candidating, TRUE);
-  dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
-  g_signal_connect(G_OBJECT(g->candidating), "quad-pressed", G_CALLBACK(_candidating_callback), self);
+  dt_bauhaus_widget_set_quad(g->candidating, self, dtgtk_cairo_paint_showmask, TRUE, _quad_callback,
+    _("visualize segments that are considered to have a good candidate in a false color representation."));
 
   g->recovery = dt_bauhaus_combobox_from_params(self, "recovery");
   gtk_widget_set_tooltip_text(g->recovery, _("approximate lost data in regions with all photosites clipped, the effect depends on segment size and border gradients.\n"
@@ -1235,14 +1184,10 @@ void gui_init(dt_iop_module_t *self)
 
   g->strength = dt_bauhaus_slider_from_params(self, "strength");
   gtk_widget_set_tooltip_text(g->strength, _("set strength of rebuilding in regions with all photosites clipped."));
-  dt_bauhaus_widget_set_quad_tooltip(g->strength,
-    _("show the effect that is added to already reconstructed data."));
   dt_bauhaus_slider_set_format(g->strength, "%");
   dt_bauhaus_slider_set_digits(g->strength, 0);
-  dt_bauhaus_widget_set_quad_paint(g->strength, dtgtk_cairo_paint_showmask, 0, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->strength, TRUE);
-  dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
-  g_signal_connect(G_OBJECT(g->strength), "quad-pressed", G_CALLBACK(_strength_callback), self);
+  dt_bauhaus_widget_set_quad(g->strength, self, dtgtk_cairo_paint_showmask, TRUE, _quad_callback,
+    _("show the effect that is added to already reconstructed data."));
 
   g->noise_level = dt_bauhaus_slider_from_params(self, "noise_level");
   gtk_widget_set_tooltip_text(g->noise_level, _("add noise to visually blend the reconstructed areas\n"
