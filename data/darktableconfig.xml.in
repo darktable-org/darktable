@@ -263,15 +263,15 @@
     <name>opencl_mandatory_timeout</name>
     <type min="100">int</type>
     <default>1000</default>
-    <shortdescription>timeout period for locking mandatory opencl device</shortdescription>
-    <longdescription>time period (in units of 5ms) after which we give up try-locking an opencl device for mandatory use. defaults to 400 (2 seconds).</longdescription>
+    <shortdescription>timeout period for locking mandatory OpenCL device</shortdescription>
+    <longdescription>time period (in units of 5ms) after which we give up try-locking an OpenCL device for mandatory use. defaults to 400 (2 seconds).</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_checksum</name>
     <type>string</type>
     <default></default>
-    <shortdescription>checksum representing the setup of opencl devices on this computer</shortdescription>
-    <longdescription>darktable re-checks the performance benchmarks of your system in case your setup has changed, which is indicated by a change versus the stored checksum in this config variable; darktable de-activates opencl if the GPU benchmark lies below the one of the CPU; initial value is the empty string; set to OFF if you want to deactivate any automatic checks and prefer to do all configurations manually.</longdescription>
+    <shortdescription>checksum representing the setup of OpenCL devices on this computer</shortdescription>
+    <longdescription>darktable re-checks the performance benchmarks of your system in case your setup has changed, which is indicated by a change versus the stored checksum in this config variable; darktable de-activates OpenCL if the GPU benchmark lies below the one of the CPU; initial value is the empty string; set to OFF if you want to deactivate any automatic checks and prefer to do all configurations manually.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>pixelpipe_synchronization_timeout</name>
@@ -371,7 +371,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>tuned GPU memory</shortdescription>
-    <longdescription>if enabled on a system with multiple opencl devices you may specify a safety margin per device (headroom, default is 600MB)</longdescription>
+    <longdescription>if enabled on a system with multiple OpenCL devices you may specify a safety margin per device (headroom, default is 600MB)</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="platform" capability="nonapple" restart="true">
     <name>clplatform_intelropenclhdgraphics</name>
