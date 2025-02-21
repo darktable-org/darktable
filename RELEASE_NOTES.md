@@ -101,6 +101,8 @@ changes (where available).
   styles and presets too (and the bug that style shortcuts were not
   translated is fixed).
 
+- Give a hint for pending background work when darktable is closing.
+
 ## Bug Fixes
 
 - Fixed sidecar writing if quitting from darkroom.
