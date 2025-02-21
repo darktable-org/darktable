@@ -116,6 +116,7 @@ typedef struct dt_lib_module_t
   gboolean gui_uptodate;
 
   GtkWidget *arrow;
+  GtkWidget *preset_label;
   GtkWidget *reset_button;
   GtkWidget *presets_button;
 
