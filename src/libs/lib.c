@@ -407,8 +407,15 @@ void dt_lib_presets_update(const gchar *preset,
 static void _menuitem_activate_preset(GtkMenuItem *menuitem,
                                       dt_lib_module_info_t *minfo)
 {
-  dt_lib_presets_apply(g_object_get_data(G_OBJECT(menuitem), "dt-preset-name"),
-                       minfo->plugin_name, minfo->version);
+  gchar *preset_name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
+  gboolean res = dt_lib_presets_apply(preset_name,
+                                      minfo->plugin_name, minfo->version);
+
+  if(res){
+    gchar *preset_label_text = g_strdup_printf("• %s", preset_name);
+    gtk_label_set_text(GTK_LABEL(minfo->module->preset_label), preset_label_text);
+    g_free(preset_label_text);
+  }
 }
 
 static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
@@ -912,6 +919,7 @@ static gboolean _lib_gui_reset_callback(GtkButton *button,
 {
   dt_lib_module_t *module = (dt_lib_module_t *)user_data;
   module->gui_reset(module);
+  gtk_label_set_text(GTK_LABEL(module->preset_label), "");
   return TRUE;
 }
 
@@ -1294,6 +1302,13 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_widget_set_name(label, "lib-panel-label");
   dt_action_define(&module->actions, NULL, NULL, label_evb, NULL);
   gtk_box_pack_start(GTK_BOX(header), label_evb, FALSE, FALSE, 0);
+
+  module->preset_label = gtk_label_new(NULL);
+  gtk_widget_set_name(module->preset_label, "lib-module-name");
+  gtk_label_set_ellipsize(GTK_LABEL(module->preset_label), PANGO_ELLIPSIZE_MIDDLE);
+  gtk_widget_set_valign(module->preset_label, GTK_ALIGN_BASELINE);
+  g_object_set(G_OBJECT(module->preset_label), "xalign", 0.0, (gchar *)0);
+  gtk_box_pack_start(GTK_BOX(header), module->preset_label, FALSE, FALSE, 0);
 
   /* add preset button if module has implementation */
   module->presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
