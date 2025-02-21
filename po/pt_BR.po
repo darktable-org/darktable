@@ -2,13 +2,13 @@
 # Copyright (C) YEAR Free Software Foundation, Inc.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#: ../src/common/darktable.c:1847
+#: ../src/common/darktable.c:1860
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-20 13:09-0300\n"
-"PO-Revision-Date: 2025-02-20 13:12-0300\n"
+"POT-Creation-Date: 2025-02-23 18:20-0300\n"
+"PO-Revision-Date: 2025-02-23 18:20-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -1704,7 +1704,10 @@ msgstr "memória ajustada da GPU"
 msgid ""
 "if enabled on a system with multiple OpenCL devices you may specify a safety "
 "margin per device (headroom, default is 600MB)"
-msgstr "se habilitdo em um sistema com múltiplos dispositivos OpenCL você pode especificar uma margem de segurança por dispositivo (espaço livre, o padrão é 600MB)"
+msgstr ""
+"se habilitdo em um sistema com múltiplos dispositivos OpenCL você pode "
+"especificar uma margem de segurança por dispositivo (espaço livre, o padrão "
+"é 600MB)"
 
 #: ../build/bin/preferences_gen.h:6287
 msgid "OpenCL drivers"
@@ -3120,7 +3123,7 @@ msgstr "raio"
 #: ../build/lib/darktable/plugins/introspection_lens.cc:497
 #: ../src/iop/bloom.c:422 ../src/iop/denoiseprofile.c:3762
 #: ../src/iop/grain.c:545 ../src/iop/hazeremoval.c:246
-#: ../src/iop/hotpixels.c:445 ../src/iop/nlmeans.c:458 ../src/iop/velvia.c:279
+#: ../src/iop/hotpixels.c:445 ../src/iop/nlmeans.c:456 ../src/iop/velvia.c:279
 msgid "strength"
 msgstr "força"
 
@@ -3432,7 +3435,7 @@ msgstr "elevação, gama, ganho (sRGB)"
 #: ../src/develop/blend_gui.c:2408 ../src/develop/blend_gui.c:2456
 #: ../src/iop/atrous.c:1791 ../src/iop/channelmixerrgb.c:4484
 #: ../src/iop/channelmixerrgb.c:4572 ../src/iop/colorbalancergb.c:1801
-#: ../src/iop/colorzones.c:2624 ../src/iop/nlmeans.c:466
+#: ../src/iop/colorzones.c:2624 ../src/iop/nlmeans.c:464
 msgid "chroma"
 msgstr "croma"
 
@@ -4349,7 +4352,7 @@ msgstr "habilitar reconstrução de realces"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:549
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
-#: ../src/common/variables.c:196 ../src/common/variables.c:818
+#: ../src/common/variables.c:197 ../src/common/variables.c:821
 #: ../src/develop/imageop_gui.c:209 ../src/imageio/format/avif.c:857
 #: ../src/imageio/format/pdf.c:653 ../src/imageio/format/pdf.c:672
 #: ../src/imageio/format/tiff.c:921 ../src/libs/export.c:1561
@@ -5646,7 +5649,7 @@ msgstr "controle deslizante"
 msgid "dropdown"
 msgstr "menu flutuante"
 
-#: ../src/chart/main.c:504 ../src/common/database.c:3837
+#: ../src/chart/main.c:504 ../src/common/database.c:3847
 #: ../src/control/jobs/control_jobs.c:2154
 #: ../src/control/jobs/control_jobs.c:2212 ../src/gui/accelerators.c:2512
 #: ../src/gui/accelerators.c:2594 ../src/gui/accelerators.c:2647
@@ -5919,7 +5922,7 @@ msgid "history"
 msgstr "histórico"
 
 #: ../src/common/collection.c:616 ../src/common/colorlabels.c:388
-#: ../src/develop/lightroom.c:1607 ../src/dtgtk/thumbnail.c:1559
+#: ../src/develop/lightroom.c:1607 ../src/dtgtk/thumbnail.c:1567
 #: ../src/libs/filtering.c:59 ../src/libs/filters/colors.c:301
 #: ../src/libs/filters/colors.c:312 ../src/libs/tools/colorlabels.c:143
 msgid "color label"
@@ -5953,7 +5956,7 @@ msgstr "geoetiquetas"
 msgid "group"
 msgstr "grupo"
 
-#: ../src/common/collection.c:638 ../src/dtgtk/thumbnail.c:1574
+#: ../src/common/collection.c:638 ../src/dtgtk/thumbnail.c:1582
 #: ../src/libs/filters/local_copy.c:142 ../src/libs/metadata_view.c:139
 #: ../src/libs/metadata_view.c:365
 msgid "local copy"
@@ -6527,113 +6530,113 @@ msgstr "arquivo `%s' é de formato desconhecido!"
 msgid "error loading file `%s'"
 msgstr "erro carregando arquivo `%s'"
 
-#: ../src/common/darktable.c:1513
+#: ../src/common/darktable.c:1526
 #, c-format
 msgid ""
-"you do not have write access to create one of the user directories\n"
+"you do not have write access to create one of the user directories:\n"
 "\n"
-"see the log for more details\n"
+"%s\n"
 "\n"
 "please fix this and then run darktable again"
 msgstr ""
-"você não tem acesso de escrita para criar um dos diretórios\n"
+"você não tem acesso de escrita para criar um dos diretórios:\n"
 "\n"
-"veja o log para mais detalhes\n"
+"%s\n"
 "\n"
 "por favor resolva isto e abra o darktable novamente"
 
-#: ../src/common/darktable.c:1518
+#: ../src/common/darktable.c:1531
 msgid "darktable - unable to create directories"
 msgstr "darktable - não foi possível criar diretórios"
 
-#: ../src/common/darktable.c:1520 ../src/common/database.c:4078
-#: ../src/common/database.c:4272
+#: ../src/common/darktable.c:1533 ../src/common/database.c:4088
+#: ../src/common/database.c:4282
 msgid "_quit darktable"
 msgstr "_terminar o darktable"
 
 #. initialize the database
-#: ../src/common/darktable.c:1542
+#: ../src/common/darktable.c:1555
 msgid "opening image library"
 msgstr "abrindo boblioteca de imagens"
 
-#: ../src/common/darktable.c:1555
+#: ../src/common/darktable.c:1568
 msgid "forwarding image(s) to running instance"
 msgstr "enviando imagem(s) para a instância em execução"
 
-#: ../src/common/darktable.c:1586
+#: ../src/common/darktable.c:1599
 msgid "preparing database"
 msgstr "preparando base de dados"
 
-#: ../src/common/darktable.c:1705
+#: ../src/common/darktable.c:1718
 msgid "initializing GraphicsMagick"
 msgstr "inicializando GraphicsMagick"
 
 #. ImageMagick init
-#: ../src/common/darktable.c:1717
+#: ../src/common/darktable.c:1730
 msgid "initializing ImageMagick"
 msgstr "inicializando ImageMagick"
 
-#: ../src/common/darktable.c:1722
+#: ../src/common/darktable.c:1735
 msgid "initializing libheif"
 msgstr "inicializando libheif"
 
-#: ../src/common/darktable.c:1726
+#: ../src/common/darktable.c:1739
 msgid "starting OpenCL"
 msgstr "iniciando OpenCL"
 
-#: ../src/common/darktable.c:1738
+#: ../src/common/darktable.c:1751
 msgid "loading noise profiles"
 msgstr "carregando perfis de ruído"
 
-#: ../src/common/darktable.c:1755
+#: ../src/common/darktable.c:1768
 msgid "synchronizing local copies"
 msgstr "sincronizando cópias locais"
 
 #. Initialize the camera control.  this is done late so that the
 #. gui can react to the signal sent but before switching to
 #. lighttable!
-#: ../src/common/darktable.c:1762
+#: ../src/common/darktable.c:1775
 msgid "initializing camera control"
 msgstr "inicializando controle da câmera"
 
-#: ../src/common/darktable.c:1772
+#: ../src/common/darktable.c:1785
 msgid "initializing GUI"
 msgstr "inicializando interface gráfica"
 
-#: ../src/common/darktable.c:1796
+#: ../src/common/darktable.c:1809
 msgid "loading processing modules"
 msgstr "carregando módulos de processamento"
 
-#: ../src/common/darktable.c:1831
+#: ../src/common/darktable.c:1844
 msgid "loading utility modules"
 msgstr "carregando módulos utilitários"
 
 #. init the gui part of views
-#: ../src/common/darktable.c:1836
+#: ../src/common/darktable.c:1849
 msgid "loading views"
 msgstr "carregando isualizações"
 
-#: ../src/common/darktable.c:1842
+#: ../src/common/darktable.c:1855
 msgid "initializing Lua"
 msgstr "inicializando lua"
 
-#: ../src/common/darktable.c:1873
+#: ../src/common/darktable.c:1886
 msgid "importing image"
 msgstr "importando imagem"
 
-#: ../src/common/darktable.c:1893
+#: ../src/common/darktable.c:1906
 msgid "configuration information"
 msgstr "informações de configuração"
 
-#: ../src/common/darktable.c:1895
+#: ../src/common/darktable.c:1908
 msgid "_show this message again"
 msgstr "_mostrar esta mensagem novamente"
 
-#: ../src/common/darktable.c:1895
+#: ../src/common/darktable.c:1908
 msgid "_dismiss"
 msgstr "_remover"
 
-#: ../src/common/darktable.c:2403
+#: ../src/common/darktable.c:2416
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
@@ -6641,12 +6644,12 @@ msgstr ""
 "O interpolador RCD foi definido como padrão ao invés do PPG porque tem "
 "melhor desempenho e qualidade."
 
-#: ../src/common/darktable.c:2405
+#: ../src/common/darktable.c:2418
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
 "veja preferências/sala escura/interpolação cromática para zoom na sala escura"
 
-#: ../src/common/darktable.c:2411
+#: ../src/common/darktable.c:2424
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
@@ -6654,7 +6657,7 @@ msgstr ""
 "a interface com o usuário e os mecanismos internos para ajuste fino de "
 "desempenho do darktable mudaram."
 
-#: ../src/common/darktable.c:2413
+#: ../src/common/darktable.c:2426
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
@@ -6662,15 +6665,15 @@ msgstr ""
 "você não encontrará mais headroom e amigos, ao invés disso em preferências/"
 "processamento use:"
 
-#: ../src/common/darktable.c:2415
+#: ../src/common/darktable.c:2428
 msgid "1) darktable resources"
 msgstr "1) recursos do darktable"
 
-#: ../src/common/darktable.c:2417
+#: ../src/common/darktable.c:2430
 msgid "2) tune OpenCL performance"
 msgstr "2) ajustar desempenho do OpenCL"
 
-#: ../src/common/darktable.c:2424
+#: ../src/common/darktable.c:2437
 msgid ""
 "some global config parameters relevant for OpenCL performance are not used "
 "any longer."
@@ -6678,7 +6681,7 @@ msgstr ""
 "alguns valores de configuração globais relevantes para o desempenho de "
 "OpenCL não são mais usados."
 
-#: ../src/common/darktable.c:2426
+#: ../src/common/darktable.c:2439
 msgid ""
 "instead you will find 'per device' data in 'cldevice_v5_canonical-name'. "
 "content is:"
@@ -6686,8 +6689,8 @@ msgstr ""
 "ao invés disso você encontrará dados 'por dispositivo' em "
 "'cldevice_v5_canonical-name'. o conteúdo é:"
 
-#: ../src/common/darktable.c:2428 ../src/common/darktable.c:2447
-#: ../src/common/darktable.c:2462
+#: ../src/common/darktable.c:2441 ../src/common/darktable.c:2460
+#: ../src/common/darktable.c:2475
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
@@ -6695,18 +6698,18 @@ msgstr ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
 
-#: ../src/common/darktable.c:2430 ../src/common/darktable.c:2449
+#: ../src/common/darktable.c:2443 ../src/common/darktable.c:2462
 msgid "you may tune as before except 'magic'"
 msgstr "você pode ajustar como antes exceto por 'magic'"
 
-#: ../src/common/darktable.c:2436
+#: ../src/common/darktable.c:2449
 msgid ""
 "your OpenCL compiler settings for all devices have been reset to default."
 msgstr ""
 "Suas configurações de compilador OpenCL para todos os dispositivos foram "
 "redefinidas para o padrão."
 
-#: ../src/common/darktable.c:2443
+#: ../src/common/darktable.c:2456
 msgid ""
 "OpenCL global config parameters 'per device' data has been recreated with an "
 "updated name."
@@ -6714,14 +6717,14 @@ msgstr ""
 "Os dados de parâmetros globais OpenCL 'por dispositivo' foram recriados com "
 "nome atualizado."
 
-#: ../src/common/darktable.c:2445 ../src/common/darktable.c:2460
+#: ../src/common/darktable.c:2458 ../src/common/darktable.c:2473
 msgid ""
 "you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"
 msgstr ""
 "você encontrará dados 'por dispositivo' em 'cldevice_v5_canonical-name'. o "
 "conteúdo é:"
 
-#: ../src/common/darktable.c:2451
+#: ../src/common/darktable.c:2464
 msgid ""
 "If you're using device names in 'opencl_device_priority' you should update "
 "them to the new names."
@@ -6729,7 +6732,7 @@ msgstr ""
 "Se você está usando nomes de dispositivo como 'opencl_device_priority' você "
 "deveria atualizá-los para os novos nomes."
 
-#: ../src/common/darktable.c:2458
+#: ../src/common/darktable.c:2471
 msgid ""
 "OpenCL 'per device' config data have been automatically extended by 'unified-"
 "fraction'."
@@ -6737,7 +6740,7 @@ msgstr ""
 "dados de configuração OpenCL 'por dispositivo' foram estendidos "
 "automaticamente por 'unified-fraction'."
 
-#: ../src/common/darktable.c:2469
+#: ../src/common/darktable.c:2482
 msgid ""
 "OpenCL 'per device' compiler settings might have been updated.\n"
 "\n"
@@ -6745,22 +6748,22 @@ msgstr ""
 "As configurações OpenCL 'por dispositivo' podem ter sido atualizadas.\n"
 "\n"
 
-#: ../src/common/darktable.c:2474
+#: ../src/common/darktable.c:2487
 msgid ""
 "OpenCL mandatory timeout has been updated to 1000.\n"
 "\n"
 msgstr "Timeout obrigatório do OpenCL foi atualizado para 1000.\n"
 
-#: ../src/common/database.c:3212
+#: ../src/common/database.c:3222
 msgid "creator"
 msgstr "criador"
 
-#: ../src/common/database.c:3213
+#: ../src/common/database.c:3223
 msgid "publisher"
 msgstr "editor"
 
 #. title
-#: ../src/common/database.c:3214
+#: ../src/common/database.c:3224
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:70
 #: ../src/imageio/format/pdf.c:591 ../src/imageio/format/pdf.c:593
 #: ../src/imageio/storage/gallery.c:212 ../src/imageio/storage/gallery.c:219
@@ -6769,33 +6772,33 @@ msgstr "editor"
 msgid "title"
 msgstr "título"
 
-#: ../src/common/database.c:3215 ../src/gui/styles_dialog.c:590
+#: ../src/common/database.c:3225 ../src/gui/styles_dialog.c:590
 #: ../src/libs/filtering.c:61
 msgid "description"
 msgstr "descrição"
 
-#: ../src/common/database.c:3216
+#: ../src/common/database.c:3226
 msgid "rights"
 msgstr "direitos"
 
-#: ../src/common/database.c:3217
+#: ../src/common/database.c:3227
 msgid "notes"
 msgstr "notas"
 
-#: ../src/common/database.c:3218
+#: ../src/common/database.c:3228
 msgid "version name"
 msgstr "nome de versão"
 
-#: ../src/common/database.c:3219 ../src/libs/live_view.c:319
+#: ../src/common/database.c:3229 ../src/libs/live_view.c:319
 #: ../src/libs/metadata_view.c:134
 msgid "image id"
 msgstr "id da imagem"
 
-#: ../src/common/database.c:3220
+#: ../src/common/database.c:3230
 msgid "preserved filename"
 msgstr "nomes preservado de arquivo"
 
-#: ../src/common/database.c:3810
+#: ../src/common/database.c:3820
 #, c-format
 msgid ""
 "\n"
@@ -6871,19 +6874,19 @@ msgstr ""
 "sua base de dados.</i>\n"
 
 #. clang-format on
-#: ../src/common/database.c:3836
+#: ../src/common/database.c:3846
 msgid "error starting darktable"
 msgstr "erro ao iniciar o darktable"
 
-#: ../src/common/database.c:3837
+#: ../src/common/database.c:3847
 msgid "_delete database lock files"
 msgstr "_apagar arquivos de travas (locks) da base de dados"
 
-#: ../src/common/database.c:3843
+#: ../src/common/database.c:3853
 msgid "are you sure?"
 msgstr "tem certeza?"
 
-#: ../src/common/database.c:3844
+#: ../src/common/database.c:3854
 msgid ""
 "\n"
 "do you really want to delete the lock files?\n"
@@ -6891,19 +6894,19 @@ msgstr ""
 "\n"
 "você realmente deseja excluir os arquivos de trava?\n"
 
-#: ../src/common/database.c:3844 ../src/gui/gtk.c:3106
+#: ../src/common/database.c:3854 ../src/gui/gtk.c:3106
 msgid "_no"
 msgstr "_não"
 
-#: ../src/common/database.c:3844 ../src/gui/gtk.c:3105
+#: ../src/common/database.c:3854 ../src/gui/gtk.c:3105
 msgid "_yes"
 msgstr "_sim"
 
-#: ../src/common/database.c:3860
+#: ../src/common/database.c:3870
 msgid "done"
 msgstr "feito"
 
-#: ../src/common/database.c:3861
+#: ../src/common/database.c:3871
 msgid ""
 "\n"
 "successfully deleted the lock files.\n"
@@ -6913,17 +6916,17 @@ msgstr ""
 "arquivos de trava removidos com sucesso.\n"
 "você agora pode reiniciar o darktable\n"
 
-#: ../src/common/database.c:3862 ../src/common/database.c:3869
+#: ../src/common/database.c:3872 ../src/common/database.c:3879
 #: ../src/gui/accelerators.c:2595 ../src/gui/accelerators.c:2677
 #: ../src/gui/hist_dialog.c:226 ../src/gui/presets.c:567
 msgid "_ok"
 msgstr "_ok"
 
-#: ../src/common/database.c:3865
+#: ../src/common/database.c:3875
 msgid "error"
 msgstr "erro"
 
-#: ../src/common/database.c:3866
+#: ../src/common/database.c:3876
 #, c-format
 msgid ""
 "\n"
@@ -6938,7 +6941,7 @@ msgstr ""
 "<i>library.db.lock</i>\n"
 "na pasta <a href=\"file:///%s\">%s</a>.\n"
 
-#: ../src/common/database.c:3983
+#: ../src/common/database.c:3993
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -6947,17 +6950,17 @@ msgstr ""
 "o arquivo de lock da base de dados contém um pid que parece estar vivo no "
 "seu sistema: %d"
 
-#: ../src/common/database.c:3990
+#: ../src/common/database.c:4000
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "o lock da base de dados parece estar vazio"
 
-#: ../src/common/database.c:4000
+#: ../src/common/database.c:4010
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr "erro ao abrir a base de dados para leitura: %s"
 
-#: ../src/common/database.c:4070
+#: ../src/common/database.c:4080
 #, c-format
 msgid ""
 "the database schema version of\n"
@@ -6975,12 +6978,12 @@ msgstr ""
 "dados foi criada ou passou por upgrade por uma versão mais nova do "
 "darktable)\n"
 
-#: ../src/common/database.c:4077
+#: ../src/common/database.c:4087
 msgid "darktable - too new db version"
 msgstr "darktable - versão de bd muito nova"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:4093
+#: ../src/common/database.c:4103
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -6999,21 +7002,21 @@ msgstr ""
 "\n"
 "você quer continuar ou parar agora para fazer um backup\n"
 
-#: ../src/common/database.c:4101
+#: ../src/common/database.c:4111
 msgid "darktable - schema migration"
 msgstr "darktable - migrar esquema"
 
-#: ../src/common/database.c:4102 ../src/common/database.c:4453
-#: ../src/common/database.c:4468 ../src/common/database.c:4628
-#: ../src/common/database.c:4643
+#: ../src/common/database.c:4112 ../src/common/database.c:4463
+#: ../src/common/database.c:4478 ../src/common/database.c:4638
+#: ../src/common/database.c:4653
 msgid "_close darktable"
 msgstr "_fechar o darktable"
 
-#: ../src/common/database.c:4102
+#: ../src/common/database.c:4112
 msgid "_upgrade database"
 msgstr "_atualizar base de dados"
 
-#: ../src/common/database.c:4262
+#: ../src/common/database.c:4272
 #, c-format
 msgid ""
 "you do not have write access to at least one of the darktable databases:\n"
@@ -7030,11 +7033,11 @@ msgstr ""
 "\n"
 "por favor resolva isto e inicie o darktable novamente"
 
-#: ../src/common/database.c:4270
+#: ../src/common/database.c:4280
 msgid "darktable - read-only database detected"
 msgstr "darktable - base de dados somente de leitura detectada"
 
-#: ../src/common/database.c:4433 ../src/common/database.c:4608
+#: ../src/common/database.c:4443 ../src/common/database.c:4618
 #, c-format
 msgid ""
 "quick_check said:\n"
@@ -7043,21 +7046,21 @@ msgstr ""
 "quick_check disse:\n"
 "%s \n"
 
-#: ../src/common/database.c:4450 ../src/common/database.c:4465
-#: ../src/common/database.c:4625 ../src/common/database.c:4640
+#: ../src/common/database.c:4460 ../src/common/database.c:4475
+#: ../src/common/database.c:4635 ../src/common/database.c:4650
 msgid "darktable - error opening database"
 msgstr "darktable - erro ao abrir a base de dados"
 
-#: ../src/common/database.c:4454 ../src/common/database.c:4629
+#: ../src/common/database.c:4464 ../src/common/database.c:4639
 msgid "_attempt restore"
 msgstr "_tentar recuperar"
 
-#: ../src/common/database.c:4455 ../src/common/database.c:4469
-#: ../src/common/database.c:4630 ../src/common/database.c:4644
+#: ../src/common/database.c:4465 ../src/common/database.c:4479
+#: ../src/common/database.c:4640 ../src/common/database.c:4654
 msgid "_delete database"
 msgstr "_apagar base de dados"
 
-#: ../src/common/database.c:4458 ../src/common/database.c:4633
+#: ../src/common/database.c:4468 ../src/common/database.c:4643
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup, attempt an automatic restore\n"
@@ -7069,7 +7072,7 @@ msgstr ""
 "do snapshot mais recente ou remover a base de dados corrompida\n"
 "e iniciar com uma nova?"
 
-#: ../src/common/database.c:4472 ../src/common/database.c:4647
+#: ../src/common/database.c:4482 ../src/common/database.c:4657
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or delete the corrupted database\n"
@@ -7079,7 +7082,7 @@ msgstr ""
 "a base de dados de um backup ou remover a base de dados corrompida\n"
 "e iniciar com uma nova?"
 
-#: ../src/common/database.c:4479 ../src/common/database.c:4652
+#: ../src/common/database.c:4489 ../src/common/database.c:4662
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -7104,29 +7107,29 @@ msgstr ""
 "o filtro guiado independente de exposição não conseguiu alocar memória, "
 "verifique sua configuração de RAM"
 
-#: ../src/common/exif.cc:1973
+#: ../src/common/exif.cc:1974
 #, c-format
 msgid "detected OtherIlluminant in `%s`, please report via darktable github"
 msgstr ""
 "OtherIlluminant detctado em `%s`, por favor reporte via github do darktable"
 
-#: ../src/common/exif.cc:2023
+#: ../src/common/exif.cc:2024
 #, c-format
 msgid "special exif illuminants in `%s`, please report via darktable github"
 msgstr ""
 "iluminantes especiais exif em `%s`, por favor reporte via github do darktable"
 
-#: ../src/common/exif.cc:2051
+#: ../src/common/exif.cc:2052
 #, c-format
 msgid "forward matrix in `%s`, please report via darktable github"
 msgstr "matriz forward em `%s`, por favor reporte via github do darktable"
 
-#: ../src/common/exif.cc:5808
+#: ../src/common/exif.cc:5809
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "não foi possível abrir o arquivo XMP '%s': '%s'"
 
-#: ../src/common/exif.cc:5867
+#: ../src/common/exif.cc:5868
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "não foi possível escrever o arquivo XMP '%s': '%s'"
@@ -7203,63 +7206,63 @@ msgid_plural "date/time re-applied to %d images"
 msgstr[0] "data/hora re-aplicada em %d imagem"
 msgstr[1] "data/hora re-aplicada em %d imagens"
 
-#: ../src/common/image.c:2313
+#: ../src/common/image.c:2314
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "não pude acessar cópia local `%s'"
 
-#: ../src/common/image.c:2320
+#: ../src/common/image.c:2321
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "não pude escrever cópia local `%s'"
 
-#: ../src/common/image.c:2327
+#: ../src/common/image.c:2328
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "erro movendo cópia local `%s' -> `%s'"
 
-#: ../src/common/image.c:2344
+#: ../src/common/image.c:2345
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "erro movendo `%s': arquivo não encontrado"
 
-#: ../src/common/image.c:2354
+#: ../src/common/image.c:2355
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "erro movendo `%s' -> `%s': arquivo já existe"
 
-#: ../src/common/image.c:2358 ../src/common/image.c:2367
+#: ../src/common/image.c:2359 ../src/common/image.c:2368
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "erro movendo `%s' -> `%s'"
 
-#: ../src/common/image.c:2669
+#: ../src/common/image.c:2670
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "não é possível criar cópia local quando o arquivo original está inacessível."
 
-#: ../src/common/image.c:2683
+#: ../src/common/image.c:2684
 msgid "cannot create local copy."
 msgstr "não pude criar cópia local."
 
-#: ../src/common/image.c:2764 ../src/control/jobs/control_jobs.c:939
+#: ../src/common/image.c:2765 ../src/control/jobs/control_jobs.c:939
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "não é possível remover cópias local quando o arquivo original está "
 "inacessível."
 
-#: ../src/common/image.c:2940
+#: ../src/common/image.c:2941
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "cópia local %d foi sincronizada"
 msgstr[1] "cópias locais %d foram sincronizadas"
 
-#: ../src/common/image.c:3138
+#: ../src/common/image.c:3139
 msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr "<b>ALERTA</b> : amostras faltando para câmera!"
 
-#: ../src/common/image.c:3139
+#: ../src/common/image.c:3140
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://"
 "raw.pixls.us/</a>"
@@ -7267,7 +7270,7 @@ msgstr ""
 "Você precisa prover amostras em  <a href='https://raw.pixls.us/'>https://"
 "raw.pixls.us/</a>"
 
-#: ../src/common/image.c:3140
+#: ../src/common/image.c:3141
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
@@ -7276,7 +7279,7 @@ msgstr ""
 "para `%s' `%s'\n"
 "em tantos formatos/compressão/profundidade de bits quanto possível"
 
-#: ../src/common/image.c:3143
+#: ../src/common/image.c:3144
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr "ou o <b>RAW não será legível</b> na próxima versão."
 
@@ -7675,7 +7678,11 @@ msgstr "abaixo do nível do mar"
 msgid "m"
 msgstr "m"
 
-#: ../src/common/variables.c:196 ../src/common/variables.c:816
+#: ../src/common/variables.c:191
+msgid "no info"
+msgstr "sem informação"
+
+#: ../src/common/variables.c:197 ../src/common/variables.c:819
 #: ../src/develop/imageop_gui.c:210 ../src/imageio/format/avif.c:857
 #: ../src/imageio/format/pdf.c:653 ../src/imageio/format/pdf.c:672
 #: ../src/imageio/format/tiff.c:921 ../src/libs/export.c:1561
@@ -7880,7 +7887,13 @@ msgstr "<em foco>"
 msgid "show accels window"
 msgstr "mostra janela de atalhos"
 
-#: ../src/control/control.c:407
+#: ../src/control/control.c:314
+msgid ""
+"<span foreground='#FF0000' background='#000000'>darktable will be locked "
+"until background work has been done</span>"
+msgstr ""
+
+#: ../src/control/control.c:418
 msgid "working..."
 msgstr "processando..."
 
@@ -9178,13 +9191,13 @@ msgstr ""
 #: ../src/iop/filmicrgb.c:4453 ../src/iop/graduatednd.c:1065
 #: ../src/iop/negadoctor.c:1019 ../src/iop/profile_gamma.c:629
 #: ../src/iop/profile_gamma.c:635 ../src/iop/relight.c:249
-#: ../src/iop/soften.c:355 ../src/iop/toneequal.c:3317
-#: ../src/iop/toneequal.c:3320 ../src/iop/toneequal.c:3323
-#: ../src/iop/toneequal.c:3326 ../src/iop/toneequal.c:3329
-#: ../src/iop/toneequal.c:3332 ../src/iop/toneequal.c:3335
-#: ../src/iop/toneequal.c:3338 ../src/iop/toneequal.c:3341
-#: ../src/iop/toneequal.c:3463 ../src/iop/toneequal.c:3472
-#: ../src/iop/toneequal.c:3482 ../src/views/darkroom.c:2576
+#: ../src/iop/soften.c:355 ../src/iop/toneequal.c:3306
+#: ../src/iop/toneequal.c:3309 ../src/iop/toneequal.c:3312
+#: ../src/iop/toneequal.c:3315 ../src/iop/toneequal.c:3318
+#: ../src/iop/toneequal.c:3321 ../src/iop/toneequal.c:3324
+#: ../src/iop/toneequal.c:3327 ../src/iop/toneequal.c:3330
+#: ../src/iop/toneequal.c:3452 ../src/iop/toneequal.c:3461
+#: ../src/iop/toneequal.c:3471 ../src/views/darkroom.c:2576
 msgid " EV"
 msgstr " EV"
 
@@ -10035,7 +10048,7 @@ msgstr ""
 "provavelmente foi introduzido ao aplicar uma predefinição, estilo ou "
 "copiar&colar de histórico"
 
-#: ../src/develop/pixelpipe_hb.c:1229
+#: ../src/develop/pixelpipe_hb.c:1228
 #, c-format
 msgid ""
 "fatal pixelpipe abort due to non-aligned buffers\n"
@@ -10045,11 +10058,11 @@ msgstr ""
 "pixelpipe abortou de maneira fatal por causa de buffers nao alinhados\n"
 "no módulo '%s' por favor reporte no GitHub"
 
-#: ../src/develop/pixelpipe_hb.c:1689
+#: ../src/develop/pixelpipe_hb.c:1688
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr "erro fatal de alinhamento, por favor reporte no GitHub\n"
 
-#: ../src/develop/pixelpipe_hb.c:3056
+#: ../src/develop/pixelpipe_hb.c:3055
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -10070,7 +10083,7 @@ msgstr ""
 "  - configuração de espaço muito pequeno com 'use toda a memória do "
 "dispositivo'."
 
-#: ../src/develop/pixelpipe_hb.c:3230
+#: ../src/develop/pixelpipe_hb.c:3229
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -10298,7 +10311,7 @@ msgstr ""
 msgid "grouped images"
 msgstr "imagens agrupadas"
 
-#: ../src/dtgtk/thumbnail.c:851 ../src/dtgtk/thumbnail.c:1646
+#: ../src/dtgtk/thumbnail.c:859 ../src/dtgtk/thumbnail.c:1654
 #: ../src/iop/ashift.c:6050 ../src/iop/ashift.c:6137 ../src/iop/ashift.c:6139
 #: ../src/iop/ashift.c:6141 ../src/libs/navigation.c:110
 #: ../src/libs/navigation.c:188
@@ -12546,7 +12559,7 @@ msgstr "selecione a pasta do script"
 #: ../src/iop/channelmixerrgb.c:4421 ../src/iop/clipping.c:2097
 #: ../src/iop/colorbalancergb.c:1779 ../src/iop/colorequal.c:3006
 #: ../src/iop/filmicrgb.c:4378 ../src/iop/negadoctor.c:837
-#: ../src/iop/toneequal.c:3310 ../src/libs/image.c:497
+#: ../src/iop/toneequal.c:3299 ../src/libs/image.c:497
 #: ../src/views/lighttable.c:1283
 msgid "page"
 msgstr "página"
@@ -15852,7 +15865,7 @@ msgstr "o mais fino"
 msgid "x"
 msgstr "x"
 
-#: ../src/iop/atrous.c:1789 ../src/iop/nlmeans.c:463
+#: ../src/iop/atrous.c:1789 ../src/iop/nlmeans.c:461
 msgid "luma"
 msgstr "luma"
 
@@ -15880,7 +15893,7 @@ msgstr ""
 #: ../src/iop/colorequal.c:3017 ../src/iop/colorzones.c:2706
 #: ../src/iop/denoiseprofile.c:3700 ../src/iop/filmicrgb.c:4366
 #: ../src/iop/lowlight.c:809 ../src/iop/rawdenoise.c:910
-#: ../src/iop/toneequal.c:3362
+#: ../src/iop/toneequal.c:3351
 msgid "graph"
 msgstr "gráfico"
 
@@ -17501,7 +17514,7 @@ msgstr "quantidade"
 msgid "size of features to preserve"
 msgstr "tamanho da característica a preservar"
 
-#: ../src/iop/clahe.c:333 ../src/iop/nlmeans.c:462
+#: ../src/iop/clahe.c:333 ../src/iop/nlmeans.c:460
 msgid "strength of the effect"
 msgstr "força do efeito"
 
@@ -18006,7 +18019,7 @@ msgid "colorbalance works only on RGB input"
 msgstr "balanço de cor somente funciona com entrada RGB"
 
 #: ../src/iop/colorbalancergb.c:1421 ../src/iop/colorzones.c:2381
-#: ../src/iop/retouch.c:2055 ../src/iop/toneequal.c:1953
+#: ../src/iop/retouch.c:2055 ../src/iop/toneequal.c:1942
 msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
 "não é possível mostrar máscaras quando a máscara de mesclagem é mostrada"
@@ -22072,15 +22085,15 @@ msgstr "redução de ruído (média não local)"
 msgid "apply a poisson noise removal best suited for astrophotography"
 msgstr "aplica remoção de ruído poissoniano, apropriado para astrofotografia"
 
-#: ../src/iop/nlmeans.c:457
+#: ../src/iop/nlmeans.c:455
 msgid "radius of the patches to match"
 msgstr "raio dos patches a corresponder"
 
-#: ../src/iop/nlmeans.c:465
+#: ../src/iop/nlmeans.c:463
 msgid "how much to smooth brightness"
 msgstr "quanto suavizar o brilho"
 
-#: ../src/iop/nlmeans.c:468
+#: ../src/iop/nlmeans.c:466
 msgid "how much to smooth colors"
 msgstr "quanto suavizar as cores"
 
@@ -23427,21 +23440,21 @@ msgstr "curva de tons de contraste: forte"
 msgid "relight: fill-in"
 msgstr "reiluminação: preenchimento"
 
-#: ../src/iop/toneequal.c:1102
+#: ../src/iop/toneequal.c:1091
 msgid "tone equalizer failed to allocate memory, check your RAM settings"
 msgstr ""
 "o equalizador de tons não conseguiu alocar memória, verifique sua "
 "configuração de RAM"
 
-#: ../src/iop/toneequal.c:1784 ../src/iop/toneequal.c:2151
+#: ../src/iop/toneequal.c:1773 ../src/iop/toneequal.c:2140
 msgid "the interpolation is unstable, decrease the curve smoothing"
 msgstr "a interpolação está instável, diminua a suavização da curva"
 
-#: ../src/iop/toneequal.c:1818 ../src/iop/toneequal.c:1884
+#: ../src/iop/toneequal.c:1807 ../src/iop/toneequal.c:1873
 msgid "wait for the preview to finish recomputing"
 msgstr "aguardar a pré-visualização para terminar de recomputar"
 
-#: ../src/iop/toneequal.c:2025 ../src/iop/toneequal.c:2576
+#: ../src/iop/toneequal.c:2014 ../src/iop/toneequal.c:2565
 msgid ""
 "scroll over image to change tone exposure\n"
 "shift+scroll for large steps; ctrl+scroll for small steps"
@@ -23450,89 +23463,89 @@ msgstr ""
 "shift+scroll para mudar em passos largos; ctrl+scroll para mudar em passos "
 "curtos"
 
-#: ../src/iop/toneequal.c:2156
+#: ../src/iop/toneequal.c:2145
 msgid "some parameters are out-of-bounds"
 msgstr "alguns parâmetros estão fora dos limites"
 
-#: ../src/iop/toneequal.c:2473
+#: ../src/iop/toneequal.c:2462
 #, c-format
 msgid "%+.1f EV"
 msgstr "%+.1f EV"
 
-#: ../src/iop/toneequal.c:3224
+#: ../src/iop/toneequal.c:3213
 #, c-format
 msgid "[%s over image] change tone exposure"
 msgstr "[%s sobre a imagem] mudar exposição do tom"
 
-#: ../src/iop/toneequal.c:3227
+#: ../src/iop/toneequal.c:3216
 #, c-format
 msgid "[%s over image] change tone exposure in large steps"
 msgstr "[%s sobre a imagem] mudar exposição do tom em passos largos"
 
-#: ../src/iop/toneequal.c:3230
+#: ../src/iop/toneequal.c:3219
 #, c-format
 msgid "[%s over image] change tone exposure in small steps"
 msgstr "[%s sobre a imagem] mudar exposição do tom em passos curtos"
 
 #. Simple view
-#: ../src/iop/toneequal.c:3314 ../src/iop/toneequal.c:3343
-#: ../src/iop/toneequal.c:3344 ../src/iop/toneequal.c:3345
-#: ../src/iop/toneequal.c:3346 ../src/iop/toneequal.c:3347
-#: ../src/iop/toneequal.c:3348 ../src/iop/toneequal.c:3349
-#: ../src/iop/toneequal.c:3350 ../src/iop/toneequal.c:3351
+#: ../src/iop/toneequal.c:3303 ../src/iop/toneequal.c:3332
+#: ../src/iop/toneequal.c:3333 ../src/iop/toneequal.c:3334
+#: ../src/iop/toneequal.c:3335 ../src/iop/toneequal.c:3336
+#: ../src/iop/toneequal.c:3337 ../src/iop/toneequal.c:3338
+#: ../src/iop/toneequal.c:3339 ../src/iop/toneequal.c:3340
 msgid "simple"
 msgstr "simples"
 
-#: ../src/iop/toneequal.c:3343
+#: ../src/iop/toneequal.c:3332
 msgid "-8 EV"
 msgstr "-8 EV"
 
-#: ../src/iop/toneequal.c:3344
+#: ../src/iop/toneequal.c:3333
 msgid "-7 EV"
 msgstr "-7 EV"
 
-#: ../src/iop/toneequal.c:3345
+#: ../src/iop/toneequal.c:3334
 msgid "-6 EV"
 msgstr "-6 EV"
 
-#: ../src/iop/toneequal.c:3346
+#: ../src/iop/toneequal.c:3335
 msgid "-5 EV"
 msgstr "-5 EV"
 
-#: ../src/iop/toneequal.c:3347
+#: ../src/iop/toneequal.c:3336
 msgid "-4 EV"
 msgstr "-4 EV"
 
-#: ../src/iop/toneequal.c:3348
+#: ../src/iop/toneequal.c:3337
 msgid "-3 EV"
 msgstr "-3 EV"
 
-#: ../src/iop/toneequal.c:3349
+#: ../src/iop/toneequal.c:3338
 msgid "-2 EV"
 msgstr "-2 EV"
 
-#: ../src/iop/toneequal.c:3350
+#: ../src/iop/toneequal.c:3339
 msgid "-1 EV"
 msgstr "-1 EV"
 
-#: ../src/iop/toneequal.c:3351
+#: ../src/iop/toneequal.c:3340
 msgid "+0 EV"
 msgstr "+0 EV"
 
 #. Advanced view
-#: ../src/iop/toneequal.c:3355
+#: ../src/iop/toneequal.c:3344
 msgid "advanced"
 msgstr "avançado"
 
-#: ../src/iop/toneequal.c:3382
+#: ../src/iop/toneequal.c:3371
 msgid "double-click to reset the curve"
 msgstr "clique-duplo para redefinir curva"
 
-#: ../src/iop/toneequal.c:3386
+#: ../src/iop/toneequal.c:3375
 msgid "curve smoothing"
 msgstr "suavização de curva"
 
-#: ../src/iop/toneequal.c:3389
+#: ../src/iop/toneequal.c:3378
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -23545,11 +23558,11 @@ msgstr ""
 "mas podem produzir transições de tons brutais e danificar o contraste local."
 
 #. Masking options
-#: ../src/iop/toneequal.c:3399
+#: ../src/iop/toneequal.c:3388
 msgid "masking"
 msgstr "máscara"
 
-#: ../src/iop/toneequal.c:3404
+#: ../src/iop/toneequal.c:3393
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -23557,15 +23570,15 @@ msgstr ""
 "pré-visualiza a máscara e escolhe o estimador que te dá o\n"
 "maior contraste entre áreas a aclarar e áreas a escurecer"
 
-#: ../src/iop/toneequal.c:3407
+#: ../src/iop/toneequal.c:3396
 msgid "details"
 msgstr "detalhes"
 
-#: ../src/iop/toneequal.c:3408
+#: ../src/iop/toneequal.c:3397
 msgid "preserve details"
 msgstr "preservar detalhes"
 
-#: ../src/iop/toneequal.c:3411
+#: ../src/iop/toneequal.c:3400
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -23589,7 +23602,7 @@ msgstr ""
 "contrário do filtro guiado que suaviza menos os realces)\n"
 "'EIGF por média' é uma média geométrica dos métodos 'não' e 'EIGF'"
 
-#: ../src/iop/toneequal.c:3424
+#: ../src/iop/toneequal.c:3413
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -23597,7 +23610,7 @@ msgstr ""
 "número de passos do filtro guiado a aplicar\n"
 "ajuda a dispersão das bordas do filtro, mas é lento"
 
-#: ../src/iop/toneequal.c:3432
+#: ../src/iop/toneequal.c:3421
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -23607,7 +23620,7 @@ msgstr ""
 "atenção: valores altos deste parâmetro podem fazer a pré-visualização\n"
 "da sala escura muito mais lenta se o módulo de redução de ruído for usado."
 
-#: ../src/iop/toneequal.c:3440
+#: ../src/iop/toneequal.c:3429
 msgid ""
 "precision of the feathering:\n"
 "higher values force the mask to follow edges more closely\n"
@@ -23621,12 +23634,12 @@ msgstr ""
 "valores baixos dão gradientes mais suaves e melhor suavização\n"
 "mas podem levar a arestas imprecisas e halos"
 
-#: ../src/iop/toneequal.c:3447
+#: ../src/iop/toneequal.c:3436
 msgctxt "section"
 msgid "mask post-processing"
 msgstr "pós-processamento da máscara"
 
-#: ../src/iop/toneequal.c:3458
+#: ../src/iop/toneequal.c:3447
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -23636,7 +23649,7 @@ msgstr ""
 "a linha central mostra a média. as barras laranja aparecem nos extremos se "
 "houver corte."
 
-#: ../src/iop/toneequal.c:3466
+#: ../src/iop/toneequal.c:3455
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -23647,7 +23660,7 @@ msgstr ""
 "para produzir áreas mais suaves quando valores altos de enevoamento são "
 "usados"
 
-#: ../src/iop/toneequal.c:3475
+#: ../src/iop/toneequal.c:3464
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes."
@@ -23655,11 +23668,11 @@ msgstr ""
 "use para mover a exposição média da máscara pelos canais\n"
 "para melhor controle da correção de exposição com os nós disponíveis."
 
-#: ../src/iop/toneequal.c:3478
+#: ../src/iop/toneequal.c:3467
 msgid "auto-adjust the average exposure"
 msgstr "auto-ajustar para exposição média"
 
-#: ../src/iop/toneequal.c:3485
+#: ../src/iop/toneequal.c:3474
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -23671,11 +23684,11 @@ msgstr ""
 "isto permite espalhar o histograma de exposição sobre mais canais\n"
 "para um controle melhor da correção de exposição."
 
-#: ../src/iop/toneequal.c:3490
+#: ../src/iop/toneequal.c:3479
 msgid "auto-adjust the contrast"
 msgstr "auto-ajustar contraste"
 
-#: ../src/iop/toneequal.c:3505 ../src/iop/toneequal.c:3508
+#: ../src/iop/toneequal.c:3494 ../src/iop/toneequal.c:3497
 msgid "display exposure mask"
 msgstr "mostrar máscara de exposição"
 
@@ -25335,7 +25348,7 @@ msgstr ""
 msgid "apply offset and geo-location"
 msgstr "aplicar deslocamento e geolocalização"
 
-#: ../src/libs/geotagging.c:375 ../src/libs/geotagging.c:1957
+#: ../src/libs/geotagging.c:375 ../src/libs/geotagging.c:1956
 msgid "apply geo-location"
 msgstr "aplicar geolocalização"
 
@@ -25347,7 +25360,7 @@ msgstr ""
 "aplica deslocamento e geolocalização às imagens que combinam\n"
 "operação dupla: dois ctrl-z para desfazer"
 
-#: ../src/libs/geotagging.c:379 ../src/libs/geotagging.c:1958
+#: ../src/libs/geotagging.c:379 ../src/libs/geotagging.c:1957
 msgid "apply geo-location to matching images"
 msgstr "aplica geolocalização a imagens que casam com os padrões definidos"
 
@@ -25484,23 +25497,23 @@ msgstr "ver trilha inteira"
 msgid "refresh map to view entire selected track segments"
 msgstr "atualizar mapa para ver a toda a trilha selecionada de segmentos"
 
-#: ../src/libs/geotagging.c:1937
+#: ../src/libs/geotagging.c:1936
 msgid "preview images"
 msgstr "pré-visualizar imagens"
 
-#: ../src/libs/geotagging.c:1942
+#: ../src/libs/geotagging.c:1941
 msgid "show on map matching images"
 msgstr "mostrar no mapa as imagens que combinam"
 
-#: ../src/libs/geotagging.c:1945
+#: ../src/libs/geotagging.c:1944
 msgid "select images"
 msgstr "selecionar imagens"
 
-#: ../src/libs/geotagging.c:1946
+#: ../src/libs/geotagging.c:1945
 msgid "select matching images"
 msgstr "seleciona imagens que combinam"
 
-#: ../src/libs/geotagging.c:1954
+#: ../src/libs/geotagging.c:1953
 msgid "number of matching images versus selected images"
 msgstr "número de imagens que combinam  versus imagens selecionadas"
 
