@@ -661,9 +661,6 @@ int dt_control_jobs_pending()
   int pending = dt_atomic_get_int(&control->pending_jobs);
   if(darktable.backthumbs.running)
     pending--;
-#ifdef HAVE_PRINT
-  pending--;
-#endif
   return pending;
 }
 // clang-format off
