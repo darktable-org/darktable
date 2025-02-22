@@ -1377,12 +1377,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // Set directories as requested or default.
   // Set a result flag so if we can't create certain directories, we can
   // later, after initializing the GUI, show the user a message and exit.
-  const gboolean user_dirs_are_created = dt_loc_init(datadir_from_command,
-                                                     moduledir_from_command,
-                                                     localedir_from_command,
-                                                     configdir_from_command,
-                                                     cachedir_from_command,
-                                                     tmpdir_from_command);
+  const uint8_t user_dir_failed = dt_loc_init(datadir_from_command,
+                                              moduledir_from_command,
+                                              localedir_from_command,
+                                              configdir_from_command,
+                                              cachedir_from_command,
+                                              tmpdir_from_command);
 
   dt_print_mem_usage("at startup");
 
@@ -1507,14 +1507,27 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     darktable.themes = NULL;
     dt_gui_theme_init(darktable.gui);
 
-    if(!user_dirs_are_created)
+    if(user_dir_failed)
     {
+      gchar *which_failed = NULL;
+      switch(user_dir_failed)
+      {
+        case CONFIGDIR_CREATION_FAILED:
+          which_failed = darktable.configdir;
+          break;
+        case CACHEDIR_CREATION_FAILED:
+          which_failed = darktable.cachedir;
+          break;
+        case TMPDIR_CREATION_FAILED:
+          which_failed = darktable.tmpdir;
+          break;
+      }
       char *user_dirs_failure_text = g_markup_printf_escaped(
-        _("you do not have write access to create one of the user directories\n"
+        _("you do not have write access to create one of the user directories:\n"
           "\n"
-          "see the log for more details\n"
+          "%s\n"
           "\n"
-          "please fix this and then run darktable again"));
+          "please fix this and then run darktable again"), which_failed);
       dt_gui_show_standalone_yes_no_dialog(_("darktable - unable to create directories"),
                                            user_dirs_failure_text,
                                            _("_quit darktable"),

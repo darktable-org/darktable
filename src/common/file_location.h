@@ -23,16 +23,22 @@
 
 G_BEGIN_DECLS
 
+
+#define CONFIGDIR_CREATION_FAILED 1
+#define CACHEDIR_CREATION_FAILED 2
+#define TMPDIR_CREATION_FAILED 3
+
+
 // Returns the users home directory
 gchar *dt_loc_get_home_dir(const gchar *user);
 
 // Init all dirs
-gboolean dt_loc_init(const char *datadir,
-                     const char *moduledir,
-                     const char *localedir,
-                     const char *configdir,
-                     const char *cachedir,
-                     const char *tmpdir);
+uint8_t dt_loc_init(const char *datadir,
+                    const char *moduledir,
+                    const char *localedir,
+                    const char *configdir,
+                    const char *cachedir,
+                    const char *tmpdir);
 
 // Init systemwide data dir
 void dt_loc_init_datadir(const char *application_directory,
