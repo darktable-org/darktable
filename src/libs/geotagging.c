@@ -1927,7 +1927,6 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *overlay = gtk_overlay_new();
   gtk_container_add(GTK_CONTAINER(overlay), w);
   gtk_overlay_add_overlay(GTK_OVERLAY(overlay), GTK_WIDGET(gpx_view_button));
-  gtk_container_add(GTK_CONTAINER(d->map.gpx_section),overlay);
   gtk_box_pack_start(GTK_BOX(d->map.gpx_section), overlay, TRUE, TRUE, 0);
 
   grid = GTK_GRID(gtk_grid_new());
