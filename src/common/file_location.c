@@ -35,12 +35,12 @@
 #include "file_location.h"
 #include "whereami.h"
 
-gboolean dt_loc_init(const char *datadir,
-                     const char *moduledir,
-                     const char *localedir,
-                     const char *configdir,
-                     const char *cachedir,
-                     const char *tmpdir)
+uint8_t dt_loc_init(const char *datadir,
+                    const char *moduledir,
+                    const char *localedir,
+                    const char *configdir,
+                    const char *cachedir,
+                    const char *tmpdir)
 {
   // Assemble pathes
   char* application_directory = NULL;
@@ -66,11 +66,11 @@ gboolean dt_loc_init(const char *datadir,
 
   free(application_directory);
 
-  if(!dt_loc_init_user_config_dir(configdir)) return FALSE;
-  if(!dt_loc_init_user_cache_dir(cachedir)) return FALSE;
-  if(!dt_loc_init_tmp_dir(tmpdir)) return FALSE;
+  if(!dt_loc_init_user_config_dir(configdir)) return CONFIGDIR_CREATION_FAILED;
+  if(!dt_loc_init_user_cache_dir(cachedir)) return CACHEDIR_CREATION_FAILED;
+  if(!dt_loc_init_tmp_dir(tmpdir)) return TMPDIR_CREATION_FAILED;
 
-  return TRUE;
+  return 0;
 }
 
 gchar *dt_loc_get_home_dir(const gchar *user)
