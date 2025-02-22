@@ -236,7 +236,6 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
   // cached on widget creation
 
   const int old_rating = thumb->rating;
-  thumb->rating = 0;
   const dt_image_t *img = dt_image_cache_get(thumb->imgid, 'r');
   if(img)
   {
