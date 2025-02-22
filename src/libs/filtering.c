@@ -19,10 +19,8 @@
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/darktable.h"
-#include "common/metadata.h"
 #include "control/conf.h"
 #include "control/control.h"
-#include "control/jobs.h"
 #include "dtgtk/button.h"
 #include "dtgtk/range.h"
 #include "gui/accelerators.h"
@@ -2249,6 +2247,12 @@ void gui_init(dt_lib_module_t *self)
 
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_COLLECTION_CHANGED, _dt_collection_updated);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_IMAGES_ORDER_CHANGE, _dt_images_order_change);
+}
+
+void gui_update(dt_lib_module_t *self)
+{
+  // Don't remove the empty function to not break the gui_update chain.
+  // It is needed to update the preset_label in the module header when params change.
 }
 
 void gui_cleanup(dt_lib_module_t *self)
