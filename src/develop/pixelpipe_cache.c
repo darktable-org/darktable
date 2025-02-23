@@ -100,8 +100,7 @@ void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_t *pipe)
   cache->data = NULL;
 }
 
-static dt_hash_t _dev_pixelpipe_cache_basichash(const dt_imgid_t imgid,
-                                                dt_dev_pixelpipe_t *pipe,
+static dt_hash_t _dev_pixelpipe_cache_basichash(dt_dev_pixelpipe_t *pipe,
                                                 const int position)
 {
   /* What do we use for the basic hash
@@ -114,7 +113,7 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(const dt_imgid_t imgid,
           of the mask writing module (rawprepare or demosaic)
        4) Please note that position is not the iop_order but the n-th node position in the pipe
   */
-  const uint32_t hashing_pipemode[3] = {(uint32_t)imgid,
+  const uint32_t hashing_pipemode[3] = {(uint32_t)pipe->image.id,
                                         (uint32_t)pipe->type,
                                         (uint32_t)pipe->want_detail_mask };
   dt_hash_t hash = dt_hash(DT_INITHASH, &hashing_pipemode, sizeof(hashing_pipemode));
@@ -150,16 +149,22 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(const dt_imgid_t imgid,
   return hash;
 }
 
-dt_hash_t dt_dev_pixelpipe_cache_hash(const dt_imgid_t imgid,
-                                      const dt_iop_roi_t *roi,
+/* If we don't provide a roi this reflects the parameters including blending of all used pieces
+   in the pipe until the provided postion.
+*/
+dt_hash_t dt_dev_pixelpipe_cache_hash(const dt_iop_roi_t *roi,
                                       dt_dev_pixelpipe_t *pipe,
                                       const int position)
 {
-  dt_hash_t hash = _dev_pixelpipe_cache_basichash(imgid, pipe, position);
+  dt_hash_t hash = _dev_pixelpipe_cache_basichash(pipe, position);
   // also include roi data
   // FIXME include full roi data in cachelines
-  hash = dt_hash(hash, roi, sizeof(dt_iop_roi_t));
-  return dt_hash(hash, &pipe->scharr.hash, sizeof(pipe->scharr.hash));
+  if(roi)
+  {
+    hash = dt_hash(hash, roi, sizeof(dt_iop_roi_t));
+    hash = dt_hash(hash, &pipe->scharr.hash, sizeof(pipe->scharr.hash));
+  }
+  return hash;
 }
 
 gboolean dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_t *pipe,

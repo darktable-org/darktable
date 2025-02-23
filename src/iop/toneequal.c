@@ -1018,8 +1018,7 @@ void toneeq_process(dt_iop_module_t *self,
 
     pieces = g_list_next(pieces);
   }
-  const dt_hash_t hash = dt_dev_pixelpipe_cache_hash(piece->pipe->image.id,
-                                                    roi_out, piece->pipe, position);
+  const dt_hash_t hash = dt_dev_pixelpipe_cache_hash(roi_out, piece->pipe, position);
 
   // Sanity checks
   if(width < 1 || height < 1) return;

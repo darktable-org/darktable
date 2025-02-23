@@ -1169,8 +1169,7 @@ static inline dt_hash_t _piece_process_hash(const dt_dev_pixelpipe_iop_t *piece,
                                             const dt_iop_module_t *module,
                                             const int position)
 {
-  dt_hash_t phash =
-    dt_dev_pixelpipe_cache_hash(piece->pipe->image.id, roi, piece->pipe, position -1);
+  dt_hash_t phash = dt_dev_pixelpipe_cache_hash(roi, piece->pipe, position -1);
   phash = dt_hash(phash, roi, sizeof(dt_iop_roi_t));
   phash = dt_hash(phash, &module->so->op, strlen(module->so->op));
   phash = dt_hash(phash, &module->instance, sizeof(module->instance));
@@ -1564,7 +1563,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   if(dt_atomic_get_int(&pipe->shutdown))
     return TRUE;
 
-  dt_hash_t hash = dt_dev_pixelpipe_cache_hash(pipe->image.id, roi_out, pipe, pos);
+  dt_hash_t hash = dt_dev_pixelpipe_cache_hash(roi_out, pipe, pos);
 
   // we do not want data from the preview pixelpipe cache
   // for gamma so we can compute the final scope
@@ -3096,7 +3095,7 @@ restart:
 
   // terminate
   dt_pthread_mutex_lock(&pipe->backbuf_mutex);
-  pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(pipe->image.id, &roi, pipe, pos);
+  pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(&roi, pipe, pos);
 
   //FIXME lock/release cache line instead of copying
   if(pipe->type & DT_DEV_PIXELPIPE_SCREEN)
