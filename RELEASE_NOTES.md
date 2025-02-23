@@ -103,6 +103,9 @@ changes (where available).
 
 - Give a hint for pending background work when darktable is closing.
 
+- Improved rendering output of denoiseprofile, dither and nlmeans on
+  second window or in high quality processing mode.
+
 ## Bug Fixes
 
 - Fixed sidecar writing if quitting from darkroom.
