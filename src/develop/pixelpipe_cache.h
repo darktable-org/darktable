@@ -66,7 +66,7 @@ gboolean dt_dev_pixelpipe_cache_init(struct dt_dev_pixelpipe_t *pipe, const int 
 void dt_dev_pixelpipe_cache_cleanup(struct dt_dev_pixelpipe_t *pipe);
 
 /** creates a hopefully unique hash from the complete module stack up to the module-th, including the roi. */
-dt_hash_t dt_dev_pixelpipe_cache_hash(const dt_imgid_t imgid, const struct dt_iop_roi_t *roi,
+dt_hash_t dt_dev_pixelpipe_cache_hash(const struct dt_iop_roi_t *roi,
                                      struct dt_dev_pixelpipe_t *pipe, const int position);
 
 /** returns a float data buffer in 'data' for the given hash from the cache, dsc is updated too.
