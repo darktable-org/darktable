@@ -1008,17 +1008,7 @@ void toneeq_process(dt_iop_module_t *self,
   const size_t num_elem = width * height;
 
   // Get the hash of the upstream pipe to track changes
-  int position = 0;
-  GList *pieces = piece->pipe->nodes;
-  while(pieces)
-  {
-    position++;
-    const dt_dev_pixelpipe_iop_t *node = pieces->data;
-    if(piece == node) break;
-
-    pieces = g_list_next(pieces);
-  }
-  const dt_hash_t hash = dt_dev_pixelpipe_cache_hash(roi_out, piece->pipe, position);
+  const dt_hash_t hash = dt_dev_pixelpipe_piece_hash(piece, roi_out, TRUE);
 
   // Sanity checks
   if(width < 1 || height < 1) return;
@@ -1032,12 +1022,12 @@ void toneeq_process(dt_iop_module_t *self,
   if(self->dev->gui_attached)
   {
     // If the module instance has changed order in the pipe, invalidate the caches
-    if(g->pipe_order != position)
+    if(g->pipe_order != piece->module->iop_order)
     {
       dt_iop_gui_enter_critical_section(self);
-      g->ui_preview_hash = 0;
-      g->thumb_preview_hash = 0;
-      g->pipe_order = position;
+      g->ui_preview_hash = DT_INVALID_CACHEHASH;
+      g->thumb_preview_hash = DT_INVALID_CACHEHASH;
+      g->pipe_order = piece->module->iop_order;
       g->luminance_valid = FALSE;
       g->histogram_valid = FALSE;
       dt_iop_gui_leave_critical_section(self);
@@ -1345,8 +1335,8 @@ static void gui_cache_init(dt_iop_module_t *self)
   if(g == NULL) return;
 
   dt_iop_gui_enter_critical_section(self);
-  g->ui_preview_hash = 0;
-  g->thumb_preview_hash = 0;
+  g->ui_preview_hash = DT_INVALID_CACHEHASH;
+  g->thumb_preview_hash = DT_INVALID_CACHEHASH;
   g->max_histogram = 1;
   g->scale = 1.0f;
   g->sigma = sqrtf(2.0f);
