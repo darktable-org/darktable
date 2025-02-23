@@ -677,6 +677,11 @@ static gboolean default_preset_autoapply(dt_lib_module_t *self)
   return FALSE;
 }
 
+/* default gui_update implementation */
+static void default_gui_update(dt_lib_module_t *self)
+{
+}
+
 static int dt_lib_load_module(void *m,
                               const char *libname,
                               const char *module_name)
@@ -895,7 +900,7 @@ void dt_lib_gui_queue_update(dt_lib_module_t *module)
 
 void dt_lib_gui_update(dt_lib_module_t *module)
 {
-  if(module && module->gui_update && !module->gui_uptodate)
+  if(module && !module->gui_uptodate)
   {
     module->gui_update(module);
     module->gui_uptodate = TRUE;
@@ -930,9 +935,8 @@ static void dt_lib_init_module(void *m)
     if(module->widget)
     {
       g_object_ref_sink(module->widget);
-      if(module->gui_update)
-        g_signal_connect(G_OBJECT(module->widget), "draw",
-                         G_CALLBACK(_lib_draw_callback), module);
+      g_signal_connect(G_OBJECT(module->widget), "draw",
+                       G_CALLBACK(_lib_draw_callback), module);
     }
   }
 }

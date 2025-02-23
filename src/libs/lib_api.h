@@ -64,7 +64,7 @@ OPTIONAL(void, gui_reset, struct dt_lib_module_t *self);
 /** update libs gui when visible
     triggered by dt_lib_gui_queue_update.
     don't use for widgets accessible via actions when hidden. */
-OPTIONAL(void, gui_update, struct dt_lib_module_t *self);
+DEFAULT(void, gui_update, struct dt_lib_module_t *self);
 
 OPTIONAL(GtkWidget *, gui_tool_box, struct dt_lib_module_t *self);
 
