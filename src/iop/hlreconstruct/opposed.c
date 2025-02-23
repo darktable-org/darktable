@@ -38,21 +38,12 @@
    Again the algorithm has been developed in collaboration by @garagecoder and @Iain from gmic team and @jenshannoschwalm from dt.
 */
 
-static dt_hash_t _opposed_parhash(dt_dev_pixelpipe_iop_t *piece)
-{
-  dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
-  dt_iop_highlights_data_t *d = piece->data;
-
-  dt_hash_t hash = dt_hash(DT_INITHASH, &dsc->rawprepare, sizeof(dsc->rawprepare));
-  hash = dt_hash(hash, &dsc->temperature, sizeof(dsc->temperature));
-  hash = dt_hash(hash, &d->clip, sizeof(d->clip));
-  return dt_hash(hash, &piece->module->dev->chroma.late_correction, sizeof(int));
-}
-
 static dt_hash_t _opposed_hash(dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_hash_t hash = _opposed_parhash(piece);
-  return dt_hash(hash, &piece->pipe->image.id, sizeof(piece->pipe->image.id));
+  const dt_iop_highlights_data_t *d = piece->data;
+  dt_hash_t hash = dt_dev_pixelpipe_piece_hash(piece, NULL, FALSE);
+  hash = dt_hash(hash, &d->clip, sizeof(d->clip));
+  return dt_hash(hash, &piece->module->dev->chroma.late_correction, sizeof(int));
 }
 
 static inline float _calc_linear_refavg(const float *in, const int color)
@@ -336,7 +327,7 @@ static float *_process_opposed(dt_iop_module_t *self,
           "opposed chroma", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out,
           "RGB %3.4f %3.4f %3.4f hash=%" PRIx64 "%s%s",
           chrominance[0], chrominance[1], chrominance[2],
-          _opposed_parhash(piece),
+          _opposed_hash(piece),
           piece->pipe->type == DT_DEV_PIXELPIPE_FULL ? ", saved" : "",
           img_oppclipped ? "" : ", unclipped");
     }
@@ -535,7 +526,7 @@ static cl_int process_opposed_cl(dt_iop_module_t *self,
         "opposed chroma", piece->pipe, self, piece->pipe->devid, roi_in, roi_out,
         "RGB %3.4f %3.4f %3.4f hash=%" PRIx64 "%s%s",
         chrominance[0], chrominance[1], chrominance[2],
-        _opposed_parhash(piece),
+        _opposed_hash(piece),
         piece->pipe->type == DT_DEV_PIXELPIPE_FULL ? ", saved" : "",
         img_oppclipped ? "" : ", unclipped");
   }
