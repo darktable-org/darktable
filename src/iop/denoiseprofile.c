@@ -1599,18 +1599,18 @@ static float nlmeans_scattering(int *nbhood,
   int K = *nbhood;
   float scattering = d->scattering;
 
+  const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
   if(piece->pipe->type
-     & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2 | DT_DEV_PIXELPIPE_THUMBNAIL))
+     & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_FAST | DT_DEV_PIXELPIPE_THUMBNAIL))
   {
-    // much faster slightly more inaccurate preview
-    const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
+    // much faster but inaccurate for previews
     K = MIN(3, K);
     scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
   }
-  if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
+  else if((piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW2))
+          && !darktable.develop->late_scaling.enabled)
   {
-    // much faster slightly more inaccurate preview
-    const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
+    // faster but slightly more inaccurate
     K = MAX(MIN(4, K), K * scale);
     scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
   }
