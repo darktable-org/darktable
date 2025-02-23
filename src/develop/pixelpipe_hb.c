@@ -3622,6 +3622,24 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
   return resmask;
 }
 
+dt_hash_t dt_dev_pixelpipe_piece_hash(dt_dev_pixelpipe_iop_t *piece,
+                                      const dt_iop_roi_t *roi,
+                                      const gboolean include)
+{
+  int position = include ? 0 : -1;
+  GList *pieces = piece->pipe->nodes;
+  while(pieces)
+  {
+    position++;
+    const dt_dev_pixelpipe_iop_t *node = pieces->data;
+    if(piece == node) break;
+
+    pieces = g_list_next(pieces);
+  }
+  return dt_dev_pixelpipe_cache_hash(roi, piece->pipe, position);
+}
+
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
