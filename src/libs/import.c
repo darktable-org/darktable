@@ -2475,12 +2475,6 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_update_collapsible_section(&d->cs);
 }
 
-void gui_update(dt_lib_module_t *self)
-{
-  // Don't remove the empty function to not break the gui_update chain.
-  // It is needed to update the preset_label in the module header when params change.
-}
-
 void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_import_t *d = self->data;
