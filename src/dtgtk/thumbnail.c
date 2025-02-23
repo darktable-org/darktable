@@ -231,21 +231,29 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
 {
   if(!dt_is_valid_imgid(thumb->imgid))
     return;
-  if(thumb->over == DT_THUMBNAIL_OVERLAYS_NONE)
-    return;
 
   // we only get here infos that might change, others(exif, ...) are
   // cached on widget creation
 
   const int old_rating = thumb->rating;
-  thumb->rating = 0;
   const dt_image_t *img = dt_image_cache_get(thumb->imgid, 'r');
   if(img)
   {
-    thumb->has_localcopy = (img->flags & DT_IMAGE_LOCAL_COPY);
+    // we update rating in all cases (to eventually update thumb css)
     thumb->rating = img->flags & DT_IMAGE_REJECTED
       ? DT_VIEW_REJECT
       : (img->flags & DT_VIEW_RATINGS_MASK);
+    if(old_rating != thumb->rating)
+      _thumb_update_rating_class(thumb);
+
+    // if we don't show overlays, no need to go further
+    if(thumb->over == DT_THUMBNAIL_OVERLAYS_NONE)
+    {
+      dt_image_cache_read_release(img);
+      return;
+    }
+
+    thumb->has_localcopy = (img->flags & DT_IMAGE_LOCAL_COPY);
     thumb->is_bw = dt_image_monochrome_flags(img);
     thumb->is_bw_flow = dt_image_use_monochrome_workflow(img);
     thumb->is_hdr = dt_image_is_hdr(img);
