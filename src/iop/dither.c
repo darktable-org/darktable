@@ -377,7 +377,7 @@ static int _get_dither_parameters(
           break;
       }
       // no automatic dithering for preview and thumbnail
-      if(piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2 | DT_DEV_PIXELPIPE_THUMBNAIL))
+      if(piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_THUMBNAIL))
       {
         graymode = -1;
       }

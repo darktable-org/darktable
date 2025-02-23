@@ -364,8 +364,6 @@ void process(
         const dt_iop_roi_t *const roi_in,
         const dt_iop_roi_t *const roi_out)
 {
-  // this is called for preview and full pipe separately, each with its own pixelpipe piece.
-  // get our data struct:
   const dt_iop_nlmeans_params_t *const d = piece->data;
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, piece->module, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
@@ -378,12 +376,12 @@ void process(
   const float sharpness = 3000.0f / (1.0f + d->strength);
 
   // adjust to Lab, make L more important
-  float max_L = 120.0f, max_C = 512.0f;
-  float nL = 1.0f / max_L, nC = 1.0f / max_C;
+  const float max_L = 120.0f, max_C = 512.0f;
+  const float nL = 1.0f / max_L, nC = 1.0f / max_C;
   const dt_aligned_pixel_t norm2 = { nL * nL, nC * nC, nC * nC, 1.0f };
 
   // faster but less accurate processing by skipping half the patches on previews and thumbnails
-  int decimate = (piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2 | DT_DEV_PIXELPIPE_THUMBNAIL));
+  const int decimate = (piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_THUMBNAIL));
 
   const dt_nlmeans_param_t params = { .scattering = 0,
                                       .scale = scale,
