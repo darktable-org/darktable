@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2009-2024 darktable developers.
+  Copyright (C) 2009-2025 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -1276,7 +1276,7 @@ static dt_imgid_t _image_duplicate_with_version_ext(const dt_imgid_t imgid,
      "   orientation, longitude, latitude, altitude, color_matrix,"
      "   colorspace, version, max_version,"
      "   history_end, position, aspect_ratio, exposure_bias, import_timestamp,"
-     "   whitebalance_id, flash_id, exposure_program_id, metering_mode_id)"
+     "   whitebalance_id, flash_id, exposure_program_id, metering_mode_id, flash_tagvalue)"
      " SELECT NULL, group_id, film_id, width, height, filename,"
      "        maker_id, model_id, camera_id, lens_id,"
      "        exposure, aperture, iso, focal_length, focus_distance, datetime_taken,"
@@ -1284,7 +1284,7 @@ static dt_imgid_t _image_duplicate_with_version_ext(const dt_imgid_t imgid,
      "        raw_black, raw_maximum, orientation,"
      "        longitude, latitude, altitude, color_matrix, colorspace, NULL, NULL, 0, ?1,"
      "        aspect_ratio, exposure_bias, import_timestamp,"
-     "        whitebalance_id, flash_id, exposure_program_id, metering_mode_id"
+     "        whitebalance_id, flash_id, exposure_program_id, metering_mode_id, flash_tagvalue"
      " FROM main.images WHERE id = ?2",
      -1, &stmt, NULL);
   // clang-format on
@@ -2106,6 +2106,7 @@ void dt_image_init(dt_image_t *img)
   memset(img->camera_makermodel, 0, sizeof(img->camera_makermodel));
   memset(img->filename, 0, sizeof(img->filename));
   g_strlcpy(img->filename, "(unknown)", sizeof(img->filename));
+  img->exif_flash_tagvalue = -1; // -1 means we have no data (this is not the same as "flash not fired")
   img->exif_crop = 1.0;
   img->exif_exposure = 0;
   img->exif_exposure_bias = DT_EXIF_TAG_UNINITIALIZED;
@@ -2458,7 +2459,7 @@ dt_imgid_t dt_image_copy_rename(const dt_imgid_t imgid,
          "   raw_black, raw_maximum, orientation,"
          "   longitude, latitude, altitude, color_matrix, colorspace, version, max_version,"
          "   position, aspect_ratio, exposure_bias,"
-         "   whitebalance_id, flash_id, exposure_program_id, metering_mode_id)"
+         "   whitebalance_id, flash_id, exposure_program_id, metering_mode_id, flash_tagvalue)"
          " SELECT NULL, group_id, ?1 as film_id, width, height, ?2 as filename,"
          "        maker_id, model_id, lens_id,"
          "        exposure, aperture, iso, focal_length, focus_distance, datetime_taken,"
@@ -2466,7 +2467,7 @@ dt_imgid_t dt_image_copy_rename(const dt_imgid_t imgid,
          "        orientation, longitude, latitude, altitude,"
          "        color_matrix, colorspace, -1, -1,"
          "        ?3, aspect_ratio, exposure_bias,"
-         "        whitebalance_id, flash_id, exposure_program_id, metering_mode_id"
+         "        whitebalance_id, flash_id, exposure_program_id, metering_mode_id, flash_tagvalue"
          " FROM main.images"
          " WHERE id = ?4",
         -1, &stmt, NULL);

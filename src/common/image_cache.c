@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@ static void _image_cache_allocate(void *data,
       "       raw_black, raw_maximum, aspect_ratio, exposure_bias,"
       "       import_timestamp, change_timestamp, export_timestamp, print_timestamp,"
       "       output_width, output_height, cm.maker, cm.model, cm.alias,"
-      "       wb.name, fl.name, ep.name, mm.name"
+      "       wb.name, fl.name, ep.name, mm.name, flash_tagvalue"
       "  FROM main.images AS mi"
       "       LEFT JOIN main.cameras AS cm ON cm.id = mi.camera_id"
       "       LEFT JOIN main.makers AS mk ON mk.id = mi.maker_id"
@@ -153,6 +153,8 @@ static void _image_cache_allocate(void *data,
     if(str) g_strlcpy(img->exif_exposure_program, str, sizeof(img->exif_exposure_program));
     str = (char *)sqlite3_column_text(stmt, 41);
     if(str) g_strlcpy(img->exif_metering_mode, str, sizeof(img->exif_metering_mode));
+
+    img->exif_flash_tagvalue = sqlite3_column_int(stmt, 42);
 
     dt_color_harmony_get(entry->key, &img->color_harmony_guide);
 
@@ -343,7 +345,7 @@ void dt_image_cache_write_release_info(dt_image_t *img,
      "     import_timestamp = ?28, change_timestamp = ?29, export_timestamp = ?30,"
      "     print_timestamp = ?31, output_width = ?32, output_height = ?33,"
      "     whitebalance_id = ?36, flash_id = ?37,"
-     "     exposure_program_id = ?38, metering_mode_id = ?39"
+     "     exposure_program_id = ?38, metering_mode_id = ?39, flash_tagvalue = ?41"
      " WHERE id = ?40",
      -1, &stmt, NULL);
 
@@ -409,6 +411,7 @@ void dt_image_cache_write_release_info(dt_image_t *img,
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 38, exposure_program_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 39, metering_mode_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 40, img->id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 41, img->exif_flash_tagvalue);
 
   const int rc = sqlite3_step(stmt);
   if(rc != SQLITE_DONE)
