@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -106,17 +106,6 @@ typedef struct dt_variables_data_t
 
 static char *_expand_source(dt_variables_params_t *params, char **source, char extra_stop);
 
-static gboolean _is_flash_fired(const dt_image_t *img)
-{
-  if(img->exif_flash[0] == '\0') // string is empty
-    return FALSE;                // so we can't claim that flash fired
-  if(g_strrstr(img->exif_flash, "did not fire"))
-    return FALSE;
-  if(img->exif_flash[0] == 'N')  // "No", that is no flash function present
-    return FALSE;
-  else
-    return TRUE;  // all other strings mean that the flash fired
-}
 
 // gather some data that might be used for variable expansion
 static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
@@ -192,8 +181,22 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
     params->data->longitude = img->geoloc.longitude;
     params->data->latitude = img->geoloc.latitude;
     params->data->elevation = img->geoloc.elevation;
-    params->data->exif_flash_icon = _is_flash_fired(img) ? "⚡" : "";
-    params->data->exif_flash = _is_flash_fired(img) ? _("yes") : _("no");
+
+
+    // We don't want to claim that the flash did not fire when the photo is
+    // clearly taken with a flash, but information about this is not available
+    if(img->exif_flash_tagvalue == -1)
+    {
+       params->data->exif_flash_icon = "";
+       params->data->exif_flash = _("no info");
+    }
+    else
+    {
+      // Bit 0 set means that flash was fired
+      params->data->exif_flash_icon = (img->exif_flash_tagvalue & 1) ? "⚡" : "";
+      params->data->exif_flash = (img->exif_flash_tagvalue & 1) ? _("yes") : _("no");
+    }
+
     params->data->exif_exposure_program = img->exif_exposure_program;
     params->data->exif_metering_mode = img->exif_metering_mode;
     params->data->exif_whitebalance = img->exif_whitebalance;
