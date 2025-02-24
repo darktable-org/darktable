@@ -130,6 +130,8 @@ static dt_lib_module_info_t *_get_module_info_for_module(dt_lib_module_t *module
 static void _set_module_preset_label(dt_lib_module_t *module,
                                      const gchar *preset_name)
 {
+  if(!module->expander) return;
+
   gchar *preset_label_text = (*preset_name == '\0')? g_strdup("")
                                                    : g_strdup_printf("• %s", preset_name);
   gtk_label_set_text(GTK_LABEL(module->preset_label), preset_label_text);
@@ -714,6 +716,7 @@ static int dt_lib_load_module(void *m,
   module->widget = NULL;
   module->expander = NULL;
   module->arrow = NULL;
+  module->preset_label = NULL;
   module->reset_button = NULL;
   module->presets_button = NULL;
 
@@ -906,11 +909,14 @@ void dt_lib_gui_update(dt_lib_module_t *module)
     module->gui_uptodate = TRUE;
   }
 
-  dt_lib_module_info_t *mi = _get_module_info_for_module(module);
-  gchar *active_preset_name = dt_lib_get_active_preset_name(mi);
-  _free_module_info(NULL, mi);
-  _set_module_preset_label(module, active_preset_name? active_preset_name : "");
-  g_free(active_preset_name);
+  if(module->preset_label)
+  {
+    dt_lib_module_info_t *mi = _get_module_info_for_module(module);
+    gchar *active_preset_name = dt_lib_get_active_preset_name(mi);
+    _free_module_info(NULL, mi);
+    _set_module_preset_label(module, active_preset_name? active_preset_name : "");
+    g_free(active_preset_name);
+  }
 }
 
 static void dt_lib_init_module(void *m)
