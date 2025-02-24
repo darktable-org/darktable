@@ -23,3 +23,6 @@
 [submodule "src/external/onnxruntime"]
 	path = src/external/onnxruntime
 	url = https://github.com/microsoft/onnxruntime
+[submodule "src/external/opencv"]
+	path = src/external/opencv
+	url = https://github.com/opencv/opencv.git
