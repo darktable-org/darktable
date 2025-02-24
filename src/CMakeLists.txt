@@ -117,7 +117,7 @@ FILE(GLOB SOURCE_FILES
   "develop/masks/masks.c"
   "develop/masks/path.c"
   "develop/masks/point.c"
-  "develop/object_detection.c"
+  "develop/object_detection.cpp"
   "develop/pixelpipe.c"
   "develop/tensor_box.c"
   "develop/tiling.c"
@@ -162,7 +162,7 @@ FILE(GLOB SOURCE_FILES
   )
 
   FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/OpenCL/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h" "views/*.h")
-
+set_source_files_properties(develop/object_detection.cpp PROPERTIES LANGUAGE CXX)
 if(APPLE)
   list(APPEND SOURCE_FILES "osx/osx.mm")
   list(APPEND HEADER_FILES "osx/osx.h")
@@ -970,7 +970,7 @@ endif()
 target_link_libraries(lib_darktable PUBLIC ${STATIC_LIBS})
 target_link_libraries(lib_darktable PRIVATE whereami)
 target_link_libraries(lib_darktable PUBLIC ${LIBS})
-
+target_link_libraries(lib_darktable PUBLIC ${OpenCV_LIBS} )
 unset(LIBS)
 unset(STATIC_LIBS)
 unset(LIB_DEPS)

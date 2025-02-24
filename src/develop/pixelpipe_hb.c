@@ -1170,57 +1170,21 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
   size_t stride = w * h;
   if (stride > 0 && (pipe->has_proxy == FALSE)){
     pipe->has_proxy = TRUE;
-    int colors = piece->colors;
-    int bpc = piece->bpc;
-    
-    uint8_t* local_copy = (uint8_t*)malloc(4 * sizeof(uint8_t) * stride);
-    memcpy(local_copy, piece->pipe->backbuf, 4 * stride * sizeof(uint8_t));
-    uint8_t* new_image = (uint8_t*)malloc(3 * sizeof(uint8_t) * stride);
-
-    for (int i = 0; i < stride; i++ ){
-      new_image[i*3 + 0] = local_copy[i*4 + 0];
-      new_image[i*3 + 1] = local_copy[i*4 + 1];
-      new_image[i*3 + 2] = local_copy[i*4 + 2];
-    }
-    
-    float *converted_image = NULL;
-    size_t output_count;
-    hwc_to_chw(new_image, h, w, &converted_image, &output_count);
-    
-    g_ort = OrtGetApiBase()->GetApi(ORT_API_VERSION);
-    if (!g_ort) {
-      fprintf(stderr, "Failed to init ONNX Runtime engine.\n");
-      return -1;
-    }
-    char model_path[] = "/home/miko/Documents/OpenSourceProjects/darktable_plugins/fast_sam_example/build/fast_sam_1024.onnx";
-    OrtEnv* env;
-    ORT_ABORT_ON_ERROR(g_ort->CreateEnv(ORT_LOGGING_LEVEL_WARNING, "test", &env));
-    assert(env != NULL);
-    OrtSessionOptions* session_options;
-    ORT_ABORT_ON_ERROR(g_ort->CreateSessionOptions(&session_options));
-    OrtSession* session;
-    ORT_ABORT_ON_ERROR(g_ort->CreateSession(env, model_path, session_options, &session));
     
     float *out = NULL;
     size_t n_masks = 0;
-    run_inference(session, converted_image, h, w, &out, &n_masks);
-    
-    g_ort->ReleaseSessionOptions(session_options);
-    g_ort->ReleaseSession(session);
-    g_ort->ReleaseEnv(env);
 
+    run_inference(piece->pipe->backbuf, h, w, &out, &n_masks);
+    
     pipe->proxy_data = (uint8_t*)malloc(sizeof(uint8_t) * stride * n_masks);
     for (int i = 0; i < stride * n_masks; i++){
-      pipe->proxy_data[i] = (uint8_t)(out[i] * 255.0);
+      pipe->proxy_data[i] = (uint8_t)(out[i]);
     }
     pipe->proxy_width = w;
     pipe->proxy_height = h;
     pipe->n_masks = n_masks;
     
     free(out);
-    free(new_image);
-    free(converted_image);
-    printf("Colors %d, Bits per channel %d\n", colors, bpc);
   }
 
   _collect_histogram_on_CPU(pipe, dev, input, roi_in, module, piece, pixelpipe_flow);

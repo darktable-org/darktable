@@ -1,15 +1,23 @@
 #ifndef TENSOR_BOXES_H
 #define TENSOR_BOXES_H
+
 #ifndef MAX
 #define MAX(a, b) ((a) < (b) ? (b) : (a))
 #endif
 #ifndef MIN
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 #endif
+
 #define IOU_THRESHOLD 0.7
 #define CONF 0.3
+
 #include <stdlib.h>
 #include <stddef.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 typedef struct
 {
   float x1;
@@ -63,6 +71,10 @@ void sort_tensor_boxes_by_score(TensorBoxes* boxes, size_t count);
  * @return The number of boxes kept after NMS.
  */
 size_t NMS(TensorBoxes* boxes, size_t count, TensorBoxes* output);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 #endif
 
