@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-24 19:23+0100\n"
+"POT-Creation-Date: 2025-02-24 19:29+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -7415,13 +7415,11 @@ msgstr ""
 msgid "show accels window"
 msgstr ""
 
-#: ../src/control/control.c:314
-msgid ""
-"<span foreground='#FF0000' background='#000000'>darktable will be locked "
-"until background work has been done</span>"
+#: ../src/control/control.c:317
+msgid "darktable will be locked until background work has been done"
 msgstr ""
 
-#: ../src/control/control.c:418
+#: ../src/control/control.c:423
 msgid "working..."
 msgstr ""
 
