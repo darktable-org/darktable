@@ -311,9 +311,11 @@ void dt_control_quit()
 
   // We test pending jobs vs 1 as we always accept one DT_JOB_QUEUE_SYSTEM_FG job
   if(dt_control_jobs_pending() > 1)
-     dt_control_log(_("<span foreground='#FF0000' background='#000000'>"
-                      "darktable will be locked until background work has been done"
-                      "</span>"));
+  {
+    dt_control_log("<span foreground='#FF0000' background='#000000'>%s</span>",
+                   _("darktable will be locked until background work has been done"));
+  }
+
   for(int i = 0; i < 50 && (dt_control_jobs_pending() > 1); i++)
   {
     g_usleep(100000);
