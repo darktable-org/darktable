@@ -10405,7 +10405,7 @@ msgstr "Utiliser le module « Importer »"
 #: ../src/dtgtk/thumbtable.c:1262
 msgid "press and hold '<b>h</b>' to show all active keyboard shortcuts"
 msgstr ""
-"Presser et ternir <b>« h »</b> pour afficher tous les raccourcis actifs"
+"Presser et tenir <b>« h »</b> pour afficher tous les raccourcis actifs"
 
 #: ../src/dtgtk/thumbtable.c:1263
 msgid "to open the online manual click "
