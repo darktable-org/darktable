@@ -225,11 +225,10 @@ static const dt_magic_bytes_t _magic_signatures[] = {
   // WEBP image
   { DT_FILETYPE_WEBP, FALSE, 8, 4, dt_imageio_open_webp,
     { 'W', 'E', 'B', 'P' } },  // full signature is RIFF????WEPB, where ???? is the file size
-  // HEIC/HEIF image
-  { DT_FILETYPE_HEIC, FALSE, 4, 8, dt_imageio_open_heif,
-    { 'f', 't', 'y', 'p', 'h', 'e', 'i', 'c' } },
-  { DT_FILETYPE_HEIC, TRUE, 4, 8, dt_imageio_open_heif,
-    { 'f', 't', 'y', 'p', 'h', 'e', 'i', 'x' } }, // 10-bit
+  // HEIC/HEIF images
+  // this matches heic, heix, heim, heis, hevc, hevx, hevm and hevs major brands
+  { DT_FILETYPE_HEIC, FALSE, 4, 6, dt_imageio_open_heif,
+    { 'f', 't', 'y', 'p', 'h', 'e' } },
   { DT_FILETYPE_HEIC, FALSE, 4, 8, dt_imageio_open_heif,
     { 'f', 't', 'y', 'p', 'j', '2', 'k', 'i' } }, // JPEG 2000 encapsulated in HEIF
   { DT_FILETYPE_HEIC, FALSE, 4, 8, dt_imageio_open_heif,
