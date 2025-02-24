@@ -936,6 +936,9 @@ if(USE_XMLLINT)
   add_dependencies(generate_preferences validate_darktableconfig_xml generate_conf)
 endif(USE_XMLLINT)
 
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+
 #
 # build libdarktable
 #
