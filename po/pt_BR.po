@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-23 18:20-0300\n"
-"PO-Revision-Date: 2025-02-23 18:20-0300\n"
+"POT-Creation-Date: 2025-02-24 22:44-0300\n"
+"PO-Revision-Date: 2025-02-24 22:47-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -7887,13 +7887,11 @@ msgstr "<em foco>"
 msgid "show accels window"
 msgstr "mostra janela de atalhos"
 
-#: ../src/control/control.c:314
-msgid ""
-"<span foreground='#FF0000' background='#000000'>darktable will be locked "
-"until background work has been done</span>"
-msgstr ""
+#: ../src/control/control.c:316
+msgid "darktable will be locked until background work has been done"
+msgstr "o darktable permanecerá travado até que o trabalho de fundo tenha sido feito"
 
-#: ../src/control/control.c:418
+#: ../src/control/control.c:420
 msgid "working..."
 msgstr "processando..."
 
