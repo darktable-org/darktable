@@ -1520,14 +1520,19 @@ void *get_params(dt_lib_module_t *self, int *size)
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(textview);
     GtkTextIter start, end;
     gtk_text_buffer_get_bounds(buffer, &start, &end);
-    const gchar *tagname = g_object_get_data(G_OBJECT(textview), "tagname");
-    metadata_tagnames[i] = g_strdup(tagname);
-    metadata_tagname_len[i] = strlen(metadata_tagnames[i]) + 1;
-    metadata_texts[i] = gtk_text_buffer_get_text(buffer, &start, &end, TRUE);
-    if(!metadata_texts[i]) metadata_texts[i] = g_strdup("");
-    metadata_len[i] = strlen(metadata_texts[i]) + 1;
-    *size = *size + metadata_tagname_len[i] + metadata_len[i];
-    i++;
+    gchar *tagtext = gtk_text_buffer_get_text(buffer, &start, &end, TRUE);
+    if(*tagtext != '\0')
+    {
+      const gchar *tagname = g_object_get_data(G_OBJECT(textview), "tagname");
+      metadata_tagnames[i] = g_strdup(tagname);
+      metadata_tagname_len[i] = strlen(metadata_tagnames[i]) + 1;
+      metadata_texts[i] = tagtext;
+      metadata_len[i] = strlen(metadata_texts[i]) + 1;
+      *size = *size + metadata_tagname_len[i] + metadata_len[i];
+      i++;
+    }
+    else
+      g_free(tagtext);
   }
   dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
 
