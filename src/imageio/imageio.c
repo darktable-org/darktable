@@ -237,8 +237,14 @@ static const dt_magic_bytes_t _magic_signatures[] = {
   // AVIF image
   { DT_FILETYPE_AVIF, TRUE, 4, 8, dt_imageio_open_avif,
     { 'f', 't', 'y', 'p', 'a', 'v', 'i', 'f' } },
-//  { DT_FILETYPE_AVIF, TRUE, 4, 8, dt_imageio_open_avif,
-//    { 'f', 't', 'y', 'p', 'm', 'i', 'f', '1' } },  //alternate? HEIF or AVIF, depending on bytes 16-19
+  // Technically, files with major brand names starting with 'mif' or 'msf'
+  // can be either HEIF or AVIF files, depending on information in the
+  // next bytes. But the HEIF loader can read files of both formats, so
+  // that's the loader we're calling in this case.
+  { DT_FILETYPE_AVIF, TRUE, 4, 7, dt_imageio_open_heif,
+    { 'f', 't', 'y', 'p', 'm', 'i', 'f' } },
+  { DT_FILETYPE_AVIF, TRUE, 4, 7, dt_imageio_open_heif,
+    { 'f', 't', 'y', 'p', 'm', 's', 'f' } },
   // Quite OK Image Format (QOI)
   { DT_FILETYPE_QOI, FALSE, 0, 4, dt_imageio_open_qoi,
     { 'q', 'o', 'i', 'f' } },
