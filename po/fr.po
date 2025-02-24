@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-24 19:23+0100\n"
-"PO-Revision-Date: 2025-02-24 19:25+0100\n"
+"POT-Creation-Date: 2025-02-24 19:29+0100\n"
+"PO-Revision-Date: 2025-02-24 19:30+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -7931,15 +7931,13 @@ msgstr "<focus>"
 msgid "show accels window"
 msgstr "Afficher la fenêtre des raccourcis"
 
-#: ../src/control/control.c:314
-msgid ""
-"<span foreground='#FF0000' background='#000000'>darktable will be locked "
-"until background work has been done</span>"
+#: ../src/control/control.c:317
+msgid "darktable will be locked until background work has been done"
 msgstr ""
-"Darktable sera bloqué jusqu'à ce que toues les tâches de fond soient "
+"Darktable sera bloqué jusqu'à ce que toutes les tâches de fond soient "
 "terminées"
 
-#: ../src/control/control.c:418
+#: ../src/control/control.c:423
 msgid "working..."
 msgstr "En cours…"
 
