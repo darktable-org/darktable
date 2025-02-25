@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
     Copyright (C) 2009-2024 darktable developers.
-    Copyright (c) 2012 James C. McPherson
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
