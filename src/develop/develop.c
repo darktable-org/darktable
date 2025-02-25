@@ -444,9 +444,11 @@ restart:
       dt_pthread_mutex_unlock(&pipe->mutex);
       return;
     }
-    // or because the pipeline changed?
+    // or because the pipeline changed or shutdown?
     else
     {
+      if(dt_atomic_exch_int(&pipe->shutdown, FALSE))
+        dt_print_pipe(DT_DEBUG_PIPE, "spurious shutdown", pipe, NULL, pipe->devid, NULL, NULL);
       if(port && port->widget) dt_control_queue_redraw_widget(port->widget);
       goto restart;
     }
@@ -467,15 +469,22 @@ restart:
   dt_control_busy_leave();
   dt_pthread_mutex_unlock(&pipe->mutex);
 
-  if(dev->gui_attached && !dev->gui_leaving && signal != -1)
-    DT_CONTROL_SIGNAL_RAISE(signal);
+  const gboolean signalling = dev->gui_attached && !dev->gui_leaving && signal != -1;
 
-  if(port) return;
+  if(port) // reminder: only the preview pipe is called without a port
+  {
+    if(signalling && signal != DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED)
+      DT_CONTROL_SIGNAL_RAISE(signal);
+    return;
+  }
 
-  // preview pipe only
+  // rest is for preview pipe only
 
   if(!dev->history_postpone_invalidate)
     dt_image_update_final_size(dev->preview_pipe->output_imgid);
+
+  if(signalling)  // raise this after possibly updating the final size
+    DT_CONTROL_SIGNAL_RAISE(signal);
 
   dev->gui_previous_pipe_time = dt_get_wtime();
 
