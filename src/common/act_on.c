@@ -116,7 +116,7 @@ static gboolean _test_cache(dt_act_on_cache_t *cache)
 
 // cache the list of images to act on during global changes (libs, accels)
 // return TRUE if the cache is updated, FALSE if it's still up to date
-gboolean _cache_update(const gboolean only_visible,
+static gboolean _cache_update(const gboolean only_visible,
                        const gboolean force,
                        const gboolean ordered)
 {
