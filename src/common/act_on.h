@@ -36,7 +36,7 @@ typedef struct dt_act_on_cache_t
 typedef enum dt_act_on_algorithm_t
 {
   DT_ACT_ON_HOVER,
-  DT_ACT_ON_SELCTION
+  DT_ACT_ON_SELECTION
 } dt_act_on_algorithm_t;
 
 // get the algorithm used to get the act_on images
@@ -46,6 +46,7 @@ dt_act_on_algorithm_t dt_act_on_get_algorithm();
 // The list needs to be freed by the caller
 GList *dt_act_on_get_images(const gboolean only_visible, const gboolean force, const gboolean ordered);
 gchar *dt_act_on_get_query(const gboolean only_visible);
+gchar *dt_act_on_get_query_force(const gboolean only_visible, dt_act_on_algorithm_t algorithm);
 
 // get the main image to act on during global changes (libs, accels)
 dt_imgid_t dt_act_on_get_main_image();
