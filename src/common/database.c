@@ -4330,7 +4330,7 @@ start:
 
 
   /* opening / creating database */
-  if(sqlite3_open(db->dbfilename_library, &db->handle))
+  if(sqlite3_open(db->dbfilename_library, &db->handle) != SQLITE_OK)
   {
     dt_print(DT_DEBUG_ALWAYS, "[init] could not find database %s%s%s",
                               dbname ? " `" : "", dbname ? dbname : "", dbname ? "'!" : "");
