@@ -887,7 +887,7 @@ static gboolean _gui_quit_callback(GtkWidget *widget,
   // if we are in lighttable preview mode, then just exit preview instead of closing dt
   if(cv == DT_VIEW_LIGHTTABLE
       && dt_view_lighttable_preview_state(darktable.view_manager))
-    dt_view_lighttable_set_preview_state(darktable.view_manager, FALSE, FALSE, FALSE);
+    dt_view_lighttable_set_preview_state(darktable.view_manager, FALSE, FALSE, FALSE, DT_LIGHTTABLE_CULLING_RESTRICTION_AUTO);
   else
     _quit_callback(NULL);
 

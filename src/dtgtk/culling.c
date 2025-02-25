@@ -949,14 +949,16 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
 
 // initialize offset, ... values
 // to be used when reentering culling
-void dt_culling_init(dt_culling_t *table, const int fallback_offset)
+void dt_culling_init(dt_culling_t *table,
+                     const int fallback_offset,
+                     const dt_lighttable_culling_restriction_t restriction)
 {
   /** HOW it works :
    *
    * For the first image :
    *  act_on main image or fallback_offset if no image
    *
-   * For the navigation in selection :
+   * For the automatic detection of navigation in selection :
    *  culling dynamic mode                       => OFF
    *  first image in selection AND selection > 1 => ON
    *  otherwise                                  => OFF
@@ -971,6 +973,9 @@ void dt_culling_init(dt_culling_t *table, const int fallback_offset)
   table->selection_sync = FALSE;
   table->zoom_ratio = IMG_TO_FIT;
   table->view_width = 0; // in order to force a full redraw
+
+  if(restriction == DT_LIGHTTABLE_CULLING_RESTRICTION_SELECTION)
+    table->navigate_inside_selection = TRUE;
 
   // reset remaining zooming values if any
   for(GList *l = table->list; l; l = g_list_next(l))
@@ -1051,7 +1056,8 @@ void dt_culling_init(dt_culling_t *table, const int fallback_offset)
 
   if(table->mode == DT_CULLING_MODE_PREVIEW)
   {
-    table->navigate_inside_selection = (sel_count > 1 && inside);
+    if(restriction == DT_LIGHTTABLE_CULLING_RESTRICTION_AUTO)
+      table->navigate_inside_selection = (sel_count > 1 && inside);
     table->selection_sync = (sel_count == 1 && inside);
   }
   else if(table->mode == DT_CULLING_MODE_CULLING)
@@ -1083,7 +1089,8 @@ void dt_culling_init(dt_culling_t *table, const int fallback_offset)
     }
 
     // we now determine if we limit culling images to the selection
-    table->navigate_inside_selection = (!table->selection_sync && inside);
+    if(restriction == DT_LIGHTTABLE_CULLING_RESTRICTION_AUTO)
+      table->navigate_inside_selection = (!table->selection_sync && inside);
   }
 
   table->offset = _thumb_get_rowid(first_id);
