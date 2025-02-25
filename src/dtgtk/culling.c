@@ -954,7 +954,7 @@ void dt_culling_init(dt_culling_t *table, const int fallback_offset)
   /** HOW it works :
    *
    * For the first image :
-   *  image_over OR first selected OR first OR -1
+   *  act_on main image or fallback_offset if no image
    *
    * For the navigation in selection :
    *  culling dynamic mode                       => OFF
@@ -988,35 +988,7 @@ void dt_culling_init(dt_culling_t *table, const int fallback_offset)
             == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC);
 
   // get first id
-  sqlite3_stmt *stmt;
-  gchar *query = NULL;
-  dt_imgid_t first_id = NO_IMGID;
-
-  // prioritize mouseover if available
-  first_id = dt_control_get_mouse_over_id();
-
-  // try active images
-  if(!dt_is_valid_imgid(first_id) && darktable.view_manager->active_images)
-     first_id = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
-
-  // overwrite with selection no active images
-  if(!dt_is_valid_imgid(first_id))
-  {
-    // search the first selected image
-    // clang-format off
-    DT_DEBUG_SQLITE3_PREPARE_V2
-      (dt_database_get(darktable.db),
-       "SELECT col.imgid"
-       " FROM memory.collected_images AS col, main.selected_images as sel"
-       " WHERE col.imgid=sel.imgid"
-       " ORDER BY col.rowid"
-       " LIMIT 1",
-       -1, &stmt, NULL);
-    // clang-format on
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-      first_id = sqlite3_column_int(stmt, 0);
-    sqlite3_finalize(stmt);
-  }
+  dt_imgid_t first_id = dt_act_on_get_main_image();
 
   // if no new offset is available until now, we continue with the fallback one
   if(!dt_is_valid_imgid(first_id))
@@ -1036,6 +1008,7 @@ void dt_culling_init(dt_culling_t *table, const int fallback_offset)
 
   // selection count
   int sel_count = 0;
+  sqlite3_stmt *stmt;
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2
     (dt_database_get(darktable.db),
@@ -1065,7 +1038,7 @@ void dt_culling_init(dt_culling_t *table, const int fallback_offset)
   // is first_id inside selection ?
   gboolean inside = FALSE;
   // clang-format off
-  query = g_strdup_printf
+  gchar *query = g_strdup_printf
     ("SELECT col.imgid"
      " FROM memory.collected_images AS col, main.selected_images AS sel"
      " WHERE col.imgid=sel.imgid AND col.imgid=%d",
