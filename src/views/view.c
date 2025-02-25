@@ -1140,13 +1140,6 @@ gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm)
     return 10;
 }
 
-void dt_view_lighttable_culling_init_mode(dt_view_manager_t *vm)
-{
-  if(vm->proxy.lighttable.module
-    && vm->proxy.lighttable.culling_init_mode)
-    vm->proxy.lighttable.culling_init_mode(vm->proxy.lighttable.view);
-}
-
 void dt_view_lighttable_culling_preview_refresh(dt_view_manager_t *vm)
 {
   if(vm->proxy.lighttable.module
@@ -1169,6 +1162,35 @@ dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm)
     return DT_LIGHTTABLE_LAYOUT_FILEMANAGER;
 }
 
+void dt_view_lighttable_update_layout_buttons(dt_view_manager_t *vm)
+{
+  if(vm->proxy.lighttable.module)
+    vm->proxy.lighttable.update_layout_btn(vm->proxy.lighttable.module);
+}
+
+dt_lighttable_culling_restriction_t dt_view_lighttable_culling_initial_restriction(dt_view_manager_t *vm)
+{
+  if(vm->proxy.lighttable.module)
+    return vm->proxy.lighttable.get_culling_initial_restriction(vm->proxy.lighttable.module);
+  else
+    return FALSE;
+}
+
+dt_lighttable_culling_restriction_t dt_view_lighttable_culling_restricted_state(dt_view_manager_t *vm)
+{
+  if(vm->proxy.lighttable.view)
+    return vm->proxy.lighttable.get_culling_restricted_state(vm->proxy.lighttable.view);
+  else
+    return FALSE;
+}
+
+void dt_view_lighttable_set_culling_restricted_state(dt_view_manager_t *vm,
+                                                     const dt_lighttable_culling_restriction_t state)
+{
+  if(vm->proxy.lighttable.view)
+    vm->proxy.lighttable.set_culling_restricted_state(vm->proxy.lighttable.view, state);
+}
+
 gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm)
 {
   if(vm->proxy.lighttable.module)
@@ -1180,10 +1202,11 @@ gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm)
 void dt_view_lighttable_set_preview_state(dt_view_manager_t *vm,
                                           const gboolean state,
                                           const gboolean sticky,
-                                          const gboolean focus)
+                                          const gboolean focus,
+                                          const dt_lighttable_culling_restriction_t restriction)
 {
   if(vm->proxy.lighttable.module)
-    vm->proxy.lighttable.set_preview_state(vm->proxy.lighttable.view, state, sticky, focus);
+    vm->proxy.lighttable.set_preview_state(vm->proxy.lighttable.view, state, sticky, focus, restriction);
 }
 
 void dt_view_lighttable_change_offset(dt_view_manager_t *vm,
