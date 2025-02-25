@@ -1837,6 +1837,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   if(dt_atomic_get_int(&pipe->shutdown))
     return TRUE;
 
+  piece->module->position = pos;
+
 #ifdef HAVE_OPENCL
 
   // Fetch RGB working profile
@@ -3626,17 +3628,7 @@ dt_hash_t dt_dev_pixelpipe_piece_hash(dt_dev_pixelpipe_iop_t *piece,
                                       const dt_iop_roi_t *roi,
                                       const gboolean include)
 {
-  int position = include ? 0 : -1;
-  GList *pieces = piece->pipe->nodes;
-  while(pieces)
-  {
-    position++;
-    const dt_dev_pixelpipe_iop_t *node = pieces->data;
-    if(piece == node) break;
-
-    pieces = g_list_next(pieces);
-  }
-  return dt_dev_pixelpipe_cache_hash(roi, piece->pipe, position);
+  return dt_dev_pixelpipe_cache_hash(roi, piece->pipe, piece->module->position - (include ? 0 : -1));
 }
 
 

@@ -177,6 +177,8 @@ typedef struct dt_iop_module_t
   int32_t instance;
   /** order of the module on the pipe. the pipe will be sorted by iop_order. */
   int iop_order;
+  /** position id of module in pipe */
+  int position;
   /** module sets this if the enable checkbox should be hidden. */
   gboolean hide_enable_button;
   /** set to DT_REQUEST_COLORPICK_MODULE if you want an input color
