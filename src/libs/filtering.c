@@ -228,6 +228,7 @@ static _filter_t filters[]
         { DT_COLLECTION_PROP_DAY, _date_widget_init, _date_update },
         { DT_COLLECTION_PROP_CHANGE_TIMESTAMP, _date_widget_init, _date_update },
         { DT_COLLECTION_PROP_EXPORT_TIMESTAMP, _date_widget_init, _date_update },
+        { DT_COLLECTION_PROP_TIME, _date_widget_init, _date_update },
         { DT_COLLECTION_PROP_IMPORT_TIMESTAMP, _date_widget_init, _date_update },
         { DT_COLLECTION_PROP_PRINT_TIMESTAMP, _date_widget_init, _date_update },
         { DT_COLLECTION_PROP_ASPECT_RATIO, _ratio_widget_init, _ratio_update },
