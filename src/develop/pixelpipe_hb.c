@@ -131,7 +131,8 @@ void dt_print_pipe_ext(const char *title,
              roi_in->x, roi_in->y, roi_in->width, roi_in->height, roi_in->scale);
   if(roi_out)
   {
-    snprintf(roo, sizeof(roo),
+    if(!roi_in || memcmp(roi_in, roi_out, sizeof(dt_iop_roi_t)))
+      snprintf(roo, sizeof(roo),
              " --> (%4i/%4i) %4ix%4i scale=%.4f ",
              roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale);
   }
@@ -1249,7 +1250,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
   {
     dt_print_pipe(DT_DEBUG_PIPE,
                   "transform colorspace",
-                  pipe, module, DT_DEVICE_CPU, roi_in, NULL, " %s -> %s `%s'",
+                  pipe, module, DT_DEVICE_CPU, roi_in, NULL, "%s -> %s `%s'",
                   dt_iop_colorspace_to_name(cst_from),
                   dt_iop_colorspace_to_name(cst_to),
                   work_profile
@@ -1972,7 +1973,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           if(cst_from != cst_to)
             dt_print_pipe(DT_DEBUG_PIPE,
                           "transform colorspace",
-                          pipe, module, pipe->devid, &roi_in, NULL, " %s -> %s `%s'",
+                          pipe, module, pipe->devid, &roi_in, NULL, "%s -> %s `%s'",
                           dt_iop_colorspace_to_name(cst_from),
                           dt_iop_colorspace_to_name(cst_to),
                           work_profile ? dt_colorspaces_get_name(work_profile->type, work_profile->filename) : "no work profile");
@@ -2312,7 +2313,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           if(cst_from != cst_to)
             dt_print_pipe(DT_DEBUG_PIPE,
                           "transform colorspace",
-                          pipe, module, pipe->devid, &roi_in, NULL, " %s -> %s",
+                          pipe, module, pipe->devid, &roi_in, NULL, "%s -> %s",
                           dt_iop_colorspace_to_name(cst_from),
                           dt_iop_colorspace_to_name(cst_to));
           dt_ioppr_transform_image_colorspace
