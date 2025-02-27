@@ -959,7 +959,7 @@ void dt_culling_init(dt_culling_t *table,
    *  act_on main image or fallback_offset if no image
    *
    * For the automatic detection of navigation in selection :
-   *  culling dynamic mode                       => OFF
+   *  culling dynamic mode                       => OFF (whatever the restriction value)
    *  first image in selection AND selection > 1 => ON
    *  otherwise                                  => OFF
    *
