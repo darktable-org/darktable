@@ -112,6 +112,9 @@ changes (where available).
 
 - Fixed some rare race conditions while processing the pixelpipes.
 
+- Fixed collection filter presets based on capture time creating an
+  empty widget.
+
 ## Lua
 
 ### API Version
