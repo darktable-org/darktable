@@ -110,6 +110,8 @@ changes (where available).
 
 - Fixed sidecar writing if quitting from darkroom.
 
+- Fixed some rare race conditions while processing the pixelpipes.
+
 ## Lua
 
 ### API Version
