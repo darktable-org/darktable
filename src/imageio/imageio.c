@@ -1617,14 +1617,6 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
     if(!_image_handled(ret))
       ret = dt_imageio_open_libraw(img, filename, buf);
 
-    // there are reports that AVIF and HEIF files with alternate magic bytes exist, so try loading
-    // as such if we haven't yet succeeded
-    if(!_image_handled(ret))
-      ret = dt_imageio_open_avif(img, filename, buf);
-
-    if(!_image_handled(ret))
-      ret = dt_imageio_open_heif(img, filename, buf);
-
     if(!_image_handled(ret))
       ret = dt_imageio_open_exr(img, filename, buf);
 
