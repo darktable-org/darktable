@@ -234,8 +234,9 @@ static const dt_magic_bytes_t _magic_signatures[] = {
   { DT_FILETYPE_HEIC, FALSE, 4, 8, dt_imageio_open_heif,
     { 'f', 't', 'y', 'p', 'a', 'v', 'c', 'i' } }, // AVC (H.264) encoded HEIF
   // AVIF image
-  { DT_FILETYPE_AVIF, TRUE, 4, 8, dt_imageio_open_avif,
-    { 'f', 't', 'y', 'p', 'a', 'v', 'i', 'f' } },
+  // this matches 'avif' and 'avis'
+  { DT_FILETYPE_AVIF, TRUE, 4, 7, dt_imageio_open_avif,
+    { 'f', 't', 'y', 'p', 'a', 'v', 'i' } },
   // Technically, files with major brand names starting with 'mif' or 'msf'
   // can be either HEIF or AVIF files, depending on information in the
   // next bytes. But the HEIF loader can read files of both formats, so
