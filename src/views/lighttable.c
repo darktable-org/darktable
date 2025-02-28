@@ -317,6 +317,19 @@ static gboolean _preview_get_state(dt_view_t *self)
   return lib->preview_state;
 }
 
+static dt_imgid_t _culling_get_selection(dt_view_t *self)
+{
+  dt_library_t *lib = self->data;
+
+  // we only return a value in culling layout
+  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING
+     || lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+  {
+    return lib->culling->selection;
+  }
+  return NO_IMGID;
+}
+
 static void _culling_restricted_set_state(dt_view_t *self,
                                           const dt_lighttable_culling_restriction_t state)
 {
@@ -595,6 +608,7 @@ void init(dt_view_t *self)
   darktable.view_manager->proxy.lighttable.set_preview_state = _preview_set_state;
   darktable.view_manager->proxy.lighttable.get_culling_restricted_state = _culling_restricted_get_state;
   darktable.view_manager->proxy.lighttable.set_culling_restricted_state = _culling_restricted_set_state;
+  darktable.view_manager->proxy.lighttable.get_culling_selection = _culling_get_selection;
   darktable.view_manager->proxy.lighttable.view = self;
   darktable.view_manager->proxy.lighttable.change_offset = _lighttable_change_offset;
 

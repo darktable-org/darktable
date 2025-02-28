@@ -657,7 +657,7 @@ dialog .sidebar row:selected:hover label,
 }
 
 .dt_section_expander {
-  padding: 0.07em 0 0.07em 1.7em;  
+  padding: 0.07em 0 0.07em 1.7em;
 }
 
 .dt_section_expander,
@@ -2285,7 +2285,8 @@ Details :
   border: 0.14em solid @plugin_bg_color;
 }
 
-.dt_fullview #thumb-main:hover #thumb-image
+.dt_fullview:not(.dt_act_on_selection) #thumb-main:hover #thumb-image,
+.dt_fullview.dt_act_on_selection .dt_culling_selected#thumb-main #thumb-image
 {
   border: 0.14em solid @thumbnail_hover_bg_color;
 }

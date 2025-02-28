@@ -334,6 +334,7 @@ typedef struct dt_view_manager_t
       void (*culling_preview_reload_overlays)(struct dt_view_t *view);
       dt_lighttable_culling_restriction_t (*get_culling_initial_restriction)(struct dt_lib_module_t *module);
       dt_lighttable_culling_restriction_t (*get_culling_restricted_state)(struct dt_view_t *view);
+      dt_imgid_t (*get_culling_selection)(struct dt_view_t *view);
       void (*set_culling_restricted_state)(struct dt_view_t *view,
                                            const dt_lighttable_culling_restriction_t state);
       gboolean (*get_preview_state)(struct dt_view_t *view);
@@ -550,6 +551,8 @@ void dt_view_lighttable_set_culling_restricted_state(dt_view_manager_t *vm,
                                                      const dt_lighttable_culling_restriction_t state);
 /** get the lighttable full preview state */
 gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm);
+/** get the culling selection imgid (used in the "selection" act_on algorithm) */
+dt_imgid_t dt_view_lighttable_get_culling_selection(dt_view_manager_t *vm);
 /** set the lighttable full preview state */
 void dt_view_lighttable_set_preview_state(dt_view_manager_t *vm,
                                           const gboolean state,

@@ -105,16 +105,28 @@ static void _insert_in_list(GList **list,
 static void _insert_active_images_in_list(GList **list,
                                           gboolean only_visible)
 {
-  for(GSList *ll = darktable.view_manager->active_images;
-          ll;
-          ll = g_slist_next(ll))
+  // in the "selection" algo, we have a specific selection system in culling
+  if(dt_act_on_get_algorithm() == DT_ACT_ON_SELECTION
+     && !dt_view_lighttable_preview_state(darktable.view_manager)
+     && (dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING
+         || dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC))
   {
-    const dt_imgid_t imgid = GPOINTER_TO_INT(ll->data);
+    const dt_imgid_t imgid = dt_view_lighttable_get_culling_selection(darktable.view_manager);
     _insert_in_list(list, imgid, only_visible);
-    // be absolutely sure we have the id in the list (in darkroom,
-    // the active image can be out of collection)
-    if(!only_visible)
-      _insert_in_list(list, imgid, TRUE);
+  }
+  else
+  {
+    for(GSList *ll = darktable.view_manager->active_images;
+            ll;
+            ll = g_slist_next(ll))
+    {
+      const dt_imgid_t imgid = GPOINTER_TO_INT(ll->data);
+      _insert_in_list(list, imgid, only_visible);
+      // be absolutely sure we have the id in the list (in darkroom,
+      // the active image can be out of collection)
+      if(!only_visible)
+        _insert_in_list(list, imgid, TRUE);
+    }
   }
 }
 
@@ -626,7 +638,14 @@ static dt_imgid_t _get_main_image_selection()
 
   if(darktable.view_manager->active_images)
   {
-    imgid = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
+    if(!dt_view_lighttable_preview_state(darktable.view_manager)
+       && (dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING
+           || dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC))
+    {
+      imgid = dt_view_lighttable_get_culling_selection(darktable.view_manager);
+    }
+    else
+      imgid = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
   }
   else
   {

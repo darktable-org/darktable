@@ -745,6 +745,46 @@ static gboolean _event_button_release(GtkWidget *widget,
 {
   dt_culling_t *table = (dt_culling_t *)user_data;
   table->panning = FALSE;
+
+  const dt_imgid_t overid = dt_control_get_mouse_over_id();
+
+  // if the act_on algorithm is set to "selection",
+  // we use a very simple culling-specific selection
+  if(dt_act_on_get_algorithm() == DT_ACT_ON_SELECTION
+     && dt_is_valid_imgid(overid)
+     && event->button == 1)
+  {
+    const dt_imgid_t old_sel = table->selection;
+    if(table->selection == overid)
+    {
+      // this image is already selected
+      // so we deselect it
+      table->selection = NO_IMGID;
+    }
+    else
+      table->selection = overid;
+
+    // now we update the thumbnail class to reflect the selected state
+    for(GList *l = table->list; l; l = g_list_next(l))
+    {
+      dt_thumbnail_t *th = l->data;
+      if (th->imgid == old_sel)
+      {
+        dt_gui_remove_class(th->w_main, "dt_culling_selected");
+        gtk_widget_queue_draw(th->w_main);
+      }
+      else if(th->imgid == table->selection)
+      {
+        dt_gui_add_class(th->w_main, "dt_culling_selected");
+        gtk_widget_queue_draw(th->w_main);
+      }
+    }
+
+    // and we reset the cache
+    dt_act_on_reset_cache(TRUE);
+    dt_act_on_reset_cache(FALSE);
+  }
+
   return TRUE;
 }
 
@@ -754,6 +794,12 @@ static void _dt_pref_change_callback(gpointer instance,
 {
   if(!user_data) return;
   dt_culling_t *table = (dt_culling_t *)user_data;
+
+  // adjust the act_on algo class if needed
+  if(dt_act_on_get_algorithm() == DT_ACT_ON_SELECTION)
+    dt_gui_add_class(table->widget, "dt_act_on_selection");
+  else
+    dt_gui_remove_class(table->widget, "dt_act_on_selection");
 
   dt_culling_full_redraw(table, TRUE);
 
@@ -886,7 +932,10 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
   table->mode = mode;
   table->zoom_ratio = IMG_TO_FIT;
   table->widget = gtk_layout_new(NULL, NULL);
+  table->selection = NO_IMGID;
   dt_gui_add_class(table->widget, "dt_fullview");
+  if(dt_act_on_get_algorithm() == DT_ACT_ON_SELECTION)
+    dt_gui_add_class(table->widget, "dt_act_on_selection");
   // TODO dt_gui_add_help_link(table->widget, "lighttable_filemanager");
 
   // overlays
@@ -1827,23 +1876,36 @@ void dt_culling_full_redraw(dt_culling_t *table, const gboolean force)
   // we prefetch next/previous images
   _thumbs_prefetch(table);
 
-  // ensure that no hidden image as the focus
-  const dt_imgid_t selid = dt_control_get_mouse_over_id();
-  if(selid >= 0)
+  // ensure that no hidden image as the focus or is selected
+  const dt_imgid_t overid = dt_control_get_mouse_over_id();
+  if(dt_is_valid_imgid(overid) || dt_is_valid_imgid(table->selection))
   {
-    gboolean in_list = FALSE;
+    gboolean in_list_over = FALSE;
+    gboolean in_list_sel = FALSE;
     for(GList *l = table->list; l; l = g_list_next(l))
     {
       dt_thumbnail_t *thumb = l->data;
-      if(thumb->imgid == selid)
+      if(thumb->imgid == overid)
       {
-        in_list = TRUE;
-        break;
+        in_list_over = TRUE;
+        if(in_list_sel || !dt_is_valid_imgid(table->selection))
+          break;
+      }
+      if(thumb->imgid == table->selection)
+      {
+        in_list_sel = TRUE;
+        if(in_list_over || !dt_is_valid_imgid(overid))
+          break;
       }
     }
-    if(!in_list)
-    {
+    if(dt_is_valid_imgid(overid) && !in_list_over)
       dt_control_set_mouse_over_id(NO_IMGID);
+    if(dt_is_valid_imgid(table->selection) && !in_list_sel)
+    {
+      table->selection = NO_IMGID;
+      // and we reset the cache
+      dt_act_on_reset_cache(TRUE);
+      dt_act_on_reset_cache(FALSE);
     }
   }
 
