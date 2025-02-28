@@ -101,7 +101,8 @@ void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_t *pipe)
 }
 
 static dt_hash_t _dev_pixelpipe_cache_basichash(dt_dev_pixelpipe_t *pipe,
-                                                const int position)
+                                                const int position,
+                                                const dt_iop_roi_t *roi)
 {
   /* What do we use for the basic hash
        1) imgid as all structures using the hash might possibly contain data from other images
@@ -111,12 +112,14 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(dt_dev_pixelpipe_t *pipe,
           not valid any more.
           Do we have to keep the roi of details mask? No as that is always defined by roi_in
           of the mask writing module (rawprepare or demosaic)
-       4) Please note that position is not the iop_order but the n-th node position in the pipe
+       4) Please note that position is not the iop_order but the position in the pipe
+       5) Please note that pipe->type, want_details and request_color_pick are only used if a roi is provided
+          for better support of dt_dev_pixelpipe_piece_hash()
   */
   const uint32_t hashing_pipemode[3] = {(uint32_t)pipe->image.id,
                                         (uint32_t)pipe->type,
                                         (uint32_t)pipe->want_detail_mask };
-  dt_hash_t hash = dt_hash(DT_INITHASH, &hashing_pipemode, sizeof(hashing_pipemode));
+  dt_hash_t hash = dt_hash(DT_INITHASH, &hashing_pipemode, sizeof(uint32_t) * (roi ? 3 : 1));
 
   // go through all modules up to position and compute a hash using the operation and params.
   GList *pieces = pipe->nodes;
@@ -132,7 +135,7 @@ static dt_hash_t _dev_pixelpipe_cache_basichash(dt_dev_pixelpipe_t *pipe,
     if(!skipped && included)
     {
       hash = dt_hash(hash, &piece->hash, sizeof(piece->hash));
-      if(piece->module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
+      if(piece->module->request_color_pick != DT_REQUEST_COLORPICK_OFF && roi)
       {
         if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
         {
@@ -156,9 +159,8 @@ dt_hash_t dt_dev_pixelpipe_cache_hash(const dt_iop_roi_t *roi,
                                       dt_dev_pixelpipe_t *pipe,
                                       const int position)
 {
-  dt_hash_t hash = _dev_pixelpipe_cache_basichash(pipe, position);
-  // also include roi data
-  // FIXME include full roi data in cachelines
+  dt_hash_t hash = _dev_pixelpipe_cache_basichash(pipe, position, roi);
+  // also include roi data if provided
   if(roi)
   {
     hash = dt_hash(hash, roi, sizeof(dt_iop_roi_t));
