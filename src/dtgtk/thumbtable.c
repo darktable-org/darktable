@@ -1749,6 +1749,10 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
 // called each time the preference change, to update specific parts
 static void _dt_pref_change_callback(gpointer instance, dt_thumbtable_t *table)
 {
+  // in all case, we reset the act_on cache as the algorithm may have changed
+  dt_act_on_reset_cache(TRUE);
+  dt_act_on_reset_cache(FALSE);
+
   if(!table)
     return;
 
