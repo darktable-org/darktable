@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2024 darktable developers.
+    Copyright (C) 2017-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -79,6 +79,7 @@ typedef struct dt_iop_hazeremoval_gui_data_t
   rgb_pixel A0;
   float distance_max;
   dt_hash_t hash;
+  gboolean redo;
 } dt_iop_hazeremoval_gui_data_t;
 
 typedef struct dt_iop_hazeremoval_global_data_t
@@ -210,20 +211,6 @@ void cleanup_global(dt_iop_module_so_t *self)
   self->data = NULL;
 }
 
-
-void gui_update(dt_iop_module_t *self)
-{
-  dt_iop_hazeremoval_gui_data_t *g = self->gui_data;
-
-  dt_iop_gui_enter_critical_section(self);
-  g->distance_max = NAN;
-  g->A0[0] = NAN;
-  g->A0[1] = NAN;
-  g->A0[2] = NAN;
-  g->hash = 0;
-  dt_iop_gui_leave_critical_section(self);
-}
-
 void gui_changed(dt_iop_module_t *self,
                  GtkWidget *w,
                  void *previous)
@@ -237,12 +224,8 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_hazeremoval_gui_data_t *g = IOP_GUI_ALLOC(hazeremoval);
 
-  g->distance_max = NAN;
-  g->A0[0] = NAN;
-  g->A0[1] = NAN;
-  g->A0[2] = NAN;
-  g->hash = 0;
-
+  g->hash = DT_INVALID_CACHEHASH;
+  g->redo = FALSE;
   g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
   gtk_widget_set_tooltip_text(g->strength, _("amount of haze reduction"));
 
@@ -416,7 +399,7 @@ void _quick_select(float *first,
   }
 }
 
-// calculate diffusive ambient light and the maximal depth in the image
+// calculate diffusive ambient light and the maximal depth in the image.
 // depth is estimated by the local amount of haze and given in units of the
 // characteristic haze depth, i.e., the distance over which object light is
 // reduced by the factor exp(-1)
@@ -530,6 +513,13 @@ static float _ambient_light(const const_rgb_image img,
     : logf(FLT_MAX) / 2; // return the maximal depth
 }
 
+static inline void _restart_pipe(dt_dev_pixelpipe_t *pipe, dt_iop_module_t *self)
+{
+  dt_atomic_set_int(&pipe->shutdown, TRUE);
+  pipe->changed |= DT_DEV_PIPE_SYNCH;
+  // for now we flush the whole pipe cache
+  dt_dev_pixelpipe_cache_flush(pipe);
+}
 
 void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
@@ -544,6 +534,7 @@ void process(dt_iop_module_t *self,
     return;
   dt_iop_hazeremoval_gui_data_t *const g = self->gui_data;
   dt_iop_hazeremoval_params_t *d = piece->data;
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
 
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -562,61 +553,64 @@ void process(dt_iop_module_t *self,
   float *const restrict out = (float*)ovoid;
   const const_rgb_image img_in = (const_rgb_image){ in, width, height, 4 };
 
-  // estimate diffusive ambient light and image depth
-  rgb_pixel A0 = { NAN, NAN, NAN, 0.0f };
-  float distance_max = NAN;
+  const dt_hash_t phash = dt_dev_pixelpipe_piece_hash(piece, NULL, TRUE);
+  const gboolean fullpipe = pipe->type == DT_DEV_PIXELPIPE_FULL;
+  const gboolean gui = self->dev->gui_attached && g;
 
-  // hazeremoval module needs the color and the haziness (which yields
-  // distance_max) of the most hazy region of the image.  In pixelpipe
-  // FULL we can not reliably get this value as the pixelpipe might
-  // only see part of the image (region of interest).  Therefore, we
-  // try to get A0 and distance_max from the PREVIEW pixelpipe which
-  // luckily stores it for us.
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+  /* hazeremoval needs the color and the haziness (which yields distance_max)
+      of the most hazy region of the image.
+      In pixelpipe DT_DEV_PIXELPIPE_FULL we can not reliably get this value as
+      the pixelpipe sees only part of the image (region of interest).
+
+      To get consistent output in darkroom canvas and the exported image we don't
+      use A0 and distance_max (A&D) calculated from the preview pipe but want data
+      from a HQ pixelpipe.
+
+      So we
+      a) ensure correct data by a hash calculated from all upstream modules.
+      b) If we run a full pipe without validated A&D we enforce an immediate
+         HQ pipe re-run, calculate A&D and again do an immediate re-run of the pipe.
+      c) If we have valid A&D we always use them, other do the fallback via
+         _ambient_light().
+  */
+  if(gui && fullpipe && phash != g->hash)
   {
-    dt_iop_gui_enter_critical_section(self);
-    const dt_hash_t hash = g->hash;
-    dt_iop_gui_leave_critical_section(self);
-    // Note that the case 'hash == 0' on first invocation in a session
-    // implies that g->distance_max is NAN, which initiates special
-    // handling below to avoid inconsistent results.  In all other
-    // cases we make sure that the preview pipe has left us with
-    // proper readings for distance_max and A0.  If data are not yet
-    // there we need to wait (with timeout).
-    if(hash != DT_INVALID_CACHEHASH
-       && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order,
-                                      DT_DEV_TRANSFORM_DIR_BACK_INCL,
-                                      &self->gui_lock, &g->hash))
-      dt_control_log(_("inconsistent output"));
-    dt_iop_gui_enter_critical_section(self);
-    A0[0] = g->A0[0];
-    A0[1] = g->A0[1];
-    A0[2] = g->A0[2];
+    if(!darktable.develop->late_scaling.enabled)
+    {
+      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "HQ request", pipe, piece->module, pipe->devid, NULL, NULL);
+      darktable.develop->late_scaling.enabled = TRUE;
+      g->redo = TRUE;
+      _restart_pipe(pipe, self);
+      return;
+    }
+    else
+    {
+      g->distance_max = _ambient_light(img_in, w1, &g->A0, compatibility_mode);
+      g->hash = phash;
+      if(g->redo)
+      {
+        dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "HQ done", pipe, piece->module, pipe->devid, NULL, NULL);
+        darktable.develop->late_scaling.enabled = FALSE;
+        g->redo = FALSE;
+        _restart_pipe(pipe, self);
+        return;
+      }
+    }
+  }
+
+  // estimated diffusive ambient light and image depth
+  rgb_pixel A0;
+  float distance_max;
+
+  const gboolean hashed = gui && phash == g->hash;
+  if(hashed)
+  {
+    dt_print_pipe(DT_DEBUG_PIPE, "haze from HQ", pipe, piece->module, pipe->devid, NULL, NULL);
+    for(int i = 0; i < 3; i++) A0[i] = g->A0[i];
     distance_max = g->distance_max;
-    dt_iop_gui_leave_critical_section(self);
   }
-
-  // FIXME in pipe->type |= DT_DEV_PIXELPIPE_IMAGE mode we currently can't receive data from preview
-  // so we at least leave a note to the user
-  if(piece->pipe->type & DT_DEV_PIXELPIPE_IMAGE)
-    dt_control_log(_("inconsistent output"));
-
-  // In all other cases we calculate distance_max and A0 here.
-  if(dt_isnan(distance_max))
+  else // In all other cases we calculate distance_max and A0 here.
     distance_max = _ambient_light(img_in, w1, &A0, compatibility_mode);
-  // PREVIEW pixelpipe stores values.
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
-  {
-    dt_hash_t hash = dt_dev_hash_plus(self->dev, piece->pipe,
-                                      self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
-    dt_iop_gui_enter_critical_section(self);
-    g->A0[0] = A0[0];
-    g->A0[1] = A0[1];
-    g->A0[2] = A0[2];
-    g->distance_max = distance_max;
-    g->hash = hash;
-    dt_iop_gui_leave_critical_section(self);
-  }
 
   // calculate the transition map
   gray_image trans_map = new_gray_image(width, height);
@@ -627,21 +621,17 @@ void process(dt_iop_module_t *self,
   gray_image trans_map_filtered = new_gray_image(width, height);
   // apply guided filter with no clipping
   guided_filter(img_in.data, trans_map.data, trans_map_filtered.data,
-                width, height, 4, w2, eps, 1.f, -FLT_MAX,
-                FLT_MAX);
+                width, height, 4, w2, eps, 1.f, -FLT_MAX, FLT_MAX);
 
   // finally, calculate the haze-free image
-  const float t_min
-      = fminf(fmaxf(expf(-distance * distance_max),
-                    1.f / 1024),
-              1.f); // minimum allowed value for transition map
+  const float t_min = CLAMP(expf(-distance * distance_max), 1.0f / 1024.0f, 1.0f);
 
   const dt_aligned_pixel_t c_A0 = { A0[0], A0[1], A0[2], A0[3] };
   const gray_image c_trans_map_filtered = trans_map_filtered;
   DT_OMP_FOR()
   for(size_t i = 0; i < size; i++)
   {
-    float t = MAX(c_trans_map_filtered.data[i], t_min);
+    const float t = MAX(c_trans_map_filtered.data[i], t_min);
     dt_aligned_pixel_t res;
     for_each_channel(c, aligned(in))
       res[c] =  (in[4*i + c] - c_A0[c]) / t + c_A0[c];
@@ -671,19 +661,24 @@ static float _ambient_light_cl(dt_iop_module_t *self,
   const int width = dt_opencl_get_image_width(img);
   const int height = dt_opencl_get_image_height(img);
   const int element_size = dt_opencl_get_image_element_size(img);
+
+  cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
+  float max_depth = 0.0f;
+
   float *in = dt_alloc_aligned((size_t)width * height * element_size);
-  cl_int err = dt_opencl_read_host_from_device(devid, in, img, width, height, element_size);
+  if(in == NULL) goto error;
+
+  err = dt_opencl_read_host_from_device(devid, in, img, width, height, element_size);
   if(err != CL_SUCCESS) goto error;
+
   const const_rgb_image img_in = (const_rgb_image)
     { in, width, height, element_size / sizeof(float) };
 
-  const float max_depth = _ambient_light(img_in, w1, pA0, compatibility_mode);
+  max_depth = _ambient_light(img_in, w1, pA0, compatibility_mode);
+
+error:
   dt_free_align(in);
   return max_depth;
-error:
-  dt_print(DT_DEBUG_OPENCL, "[hazeremoval, ambient_light_cl] unknown error: %d", err);
-  dt_free_align(in);
-  return 0.f;
 }
 
 static int _box_min_cl(dt_iop_module_t *self,
@@ -804,9 +799,10 @@ int process_cl(dt_iop_module_t *self,
 {
   dt_iop_hazeremoval_gui_data_t *const g = (dt_iop_hazeremoval_gui_data_t*)self->gui_data;
   dt_iop_hazeremoval_params_t *d = piece->data;
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
 
   const int ch = piece->colors;
-  const int devid = piece->pipe->devid;
+  const int devid = pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
   const int w1 = 6; // window size (positive integer) for determining
@@ -819,68 +815,50 @@ int process_cl(dt_iop_module_t *self,
   const float eps = sqrtf(0.025f);    // regularization parameter for guided filter
   const gboolean compatibility_mode = d->compatibility_mode;
 
-  // estimate diffusive ambient light and image depth
-  rgb_pixel A0 = { NAN, NAN, NAN, 0.0f };
-  float distance_max = NAN;
+  const dt_hash_t phash = dt_dev_pixelpipe_piece_hash(piece, NULL, TRUE);
+  const gboolean fullpipe = pipe->type == DT_DEV_PIXELPIPE_FULL;
+  const gboolean gui = self->dev->gui_attached && g;
 
-  // hazeremoval module needs the color and the haziness (which yields
-  // distance_max) of the most hazy region of the image.  In pixelpipe
-  // FULL we can not reliably get this value as the pixelpipe might
-  // only see part of the image (region of interest).  Therefore, we
-  // try to get A0 and distance_max from the PREVIEW pixelpipe which
-  // luckily stores it for us.
-  if(self->dev->gui_attached
-     && g
-     && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
+  // For "how this works" see cpu code
+  if(gui && fullpipe && phash != g->hash)
   {
-    dt_iop_gui_enter_critical_section(self);
-    const dt_hash_t hash = g->hash;
-    dt_iop_gui_leave_critical_section(self);
-    // Note that the case 'hash == 0' on first invocation in a session
-    // implies that g->distance_max is NAN, which initiates special
-    // handling below to avoid inconsistent results.  In all other
-    // cases we make sure that the preview pipe has left us with
-    // proper readings for distance_max and A0.  If data are not yet
-    // there we need to wait (with timeout).
-    if(hash != DT_INVALID_CACHEHASH
-       && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe,
-                                      self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL,
-                                      &self->gui_lock, &g->hash))
+    if(!darktable.develop->late_scaling.enabled)
     {
-      dt_control_log(_("inconsistent output"));
+      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "HQ request", pipe, piece->module, devid, NULL, NULL);
+      darktable.develop->late_scaling.enabled = TRUE;
+      g->redo = TRUE;
+      _restart_pipe(pipe, self);
+      return CL_SUCCESS;
     }
-
-    dt_iop_gui_enter_critical_section(self);
-    A0[0] = g->A0[0];
-    A0[1] = g->A0[1];
-    A0[2] = g->A0[2];
-    distance_max = g->distance_max;
-    dt_iop_gui_leave_critical_section(self);
+    else
+    {
+      g->distance_max = _ambient_light_cl(self, devid, img_in, w1, &g->A0, compatibility_mode);
+      g->hash = phash;
+      if(g->redo)
+      {
+        dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "HQ done", pipe, piece->module, devid, NULL, NULL);
+        darktable.develop->late_scaling.enabled = FALSE;
+        g->redo = FALSE;
+        _restart_pipe(pipe, self);
+        return CL_SUCCESS;
+      }
+    }
   }
 
-  // FIXME in pipe->type |= DT_DEV_PIXELPIPE_IMAGE mode we currently can't receive data from preview
-  // so we at least leave a note to the user
-  if(piece->pipe->type & DT_DEV_PIXELPIPE_IMAGE)
-    dt_control_log(_("inconsistent output"));
+  // estimated diffusive ambient light and image depth
+  rgb_pixel A0;
+  float distance_max;
 
-  // In all other cases we calculate distance_max and A0 here.
-  if(dt_isnan(distance_max))
-    distance_max = _ambient_light_cl(self, devid, img_in, w1, &A0, compatibility_mode);
-  // PREVIEW pixelpipe stores values.
-  if(self->dev->gui_attached
-     && g
-     && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
+  const gboolean hashed = gui && phash == g->hash;
+  if(hashed)
   {
-    dt_hash_t hash = dt_dev_hash_plus(self->dev, piece->pipe,
-                                      self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
-    dt_iop_gui_enter_critical_section(self);
-    g->A0[0] = A0[0];
-    g->A0[1] = A0[1];
-    g->A0[2] = A0[2];
-    g->distance_max = distance_max;
-    g->hash = hash;
-    dt_iop_gui_leave_critical_section(self);
+    dt_print_pipe(DT_DEBUG_PIPE, "haze from HQ", pipe, piece->module, pipe->devid, NULL, NULL);
+    for(int i = 0; i < 3; i++) A0[i] = g->A0[i];
+    distance_max = g->distance_max;
   }
+  else
+    distance_max = _ambient_light_cl(self, devid, img_in, w1, &A0, compatibility_mode);
+
   cl_mem trans_map = NULL;
   cl_mem trans_map_filtered = NULL;
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
@@ -905,15 +883,11 @@ int process_cl(dt_iop_module_t *self,
 
   // apply guided filter with no clipping
   err = guided_filter_cl(devid, img_in, trans_map, trans_map_filtered,
-                         width, height, ch, w2, eps, 1.f, -CL_FLT_MAX,
-                         CL_FLT_MAX);
+                         width, height, ch, w2, eps, 1.f, -CL_FLT_MAX, CL_FLT_MAX);
   if(err != CL_SUCCESS) goto error;
 
   // finally, calculate the haze-free image
-  const float t_min
-      = fminf(fmaxf(expf(-distance * distance_max),
-                    1.f / 1024),
-              1.f); // minimum allowed value for transition map
+  const float t_min = CLAMP(expf(-distance * distance_max), 1.0f / 1024.0f, 1.0f);
   err = _dehaze_cl(self, devid, img_in, trans_map_filtered, img_out, t_min, A0);
 
 error:
