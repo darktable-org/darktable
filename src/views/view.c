@@ -1191,6 +1191,14 @@ void dt_view_lighttable_set_culling_restricted_state(dt_view_manager_t *vm,
     vm->proxy.lighttable.set_culling_restricted_state(vm->proxy.lighttable.view, state);
 }
 
+dt_imgid_t dt_view_lighttable_get_culling_selection(dt_view_manager_t *vm)
+{
+  if(vm->proxy.lighttable.module)
+    return vm->proxy.lighttable.get_culling_selection(vm->proxy.lighttable.view);
+  else
+    return NO_IMGID;
+}
+
 gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm)
 {
   if(vm->proxy.lighttable.module)
