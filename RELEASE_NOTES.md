@@ -106,6 +106,11 @@ changes (where available).
 - Improved rendering output of denoiseprofile, dither and nlmeans on
   second window or in high quality processing mode.
 
+- Hide "reduce resolution of preview image" preference setting. This
+  was a way to get better responsiveness on slow systems introduced in
+  2020, but at the same time it was making the color picker and mask
+  support inaccurate (quality loss).
+
 ## Bug Fixes
 
 - Fixed sidecar writing if quitting from darkroom.
