@@ -123,6 +123,8 @@ typedef struct dt_opencl_device_t
   int maxeventslot;
   gboolean nvidia_sm_20;
   const char *fullname;
+  const char *platform;
+  const char *device_version;
   const char *cname;
   const char *options;
   const char *cflags;
@@ -195,6 +197,9 @@ typedef struct dt_opencl_device_t
   // Some devices are known to be unused by other apps so they can use
   // all memory.
   int headroom;
+
+  // lets keep the vendor for runtime checks
+  int vendor_id;
 
   float advantage;
 } dt_opencl_device_t;
