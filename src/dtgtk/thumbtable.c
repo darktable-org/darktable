@@ -1756,6 +1756,9 @@ static void _dt_pref_change_callback(gpointer instance, dt_thumbtable_t *table)
   if(!table)
     return;
 
+  // adjust the act_on algo class if needed
+  dt_act_on_set_class(table->widget);
+
   dt_get_sysresource_level();
   dt_opencl_update_settings();
   dt_configure_ppd_dpi(darktable.gui);
@@ -2436,6 +2439,8 @@ dt_thumbtable_t *dt_thumbtable_new()
   dt_gui_add_class(table->widget, "dt_thumbtable");
   if(dt_conf_get_bool("lighttable/ui/expose_statuses"))
     dt_gui_add_class(table->widget, "dt_show_overlays");
+  // adjust the act_on algo class if needed
+  dt_act_on_set_class(table->widget);
 
   // overlays mode
   table->overlays = DT_THUMBNAIL_OVERLAYS_NONE;
