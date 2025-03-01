@@ -1915,16 +1915,24 @@ Details :
   border: 1px solid @lighttable_bg_color;
 }
 
+/* set hover effect */
+.dt_act_on_selection #thumb-main:active #thumb-back,
+.dt_act_on_selection #thumb-main:selected #thumb-back
+{
+  background-color: @thumbnail_hover_bg_color;
+}
+
 /* set selected image and/or focus one */
-#thumb-main:active #thumb-back,
-#thumb-main:selected #thumb-back
+.dt_act_on_hover #thumb-main:active #thumb-back,
+.dt_act_on_hover #thumb-main:selected #thumb-back,
+.dt_act_on_selection #thumb-main:hover #thumb-back
 {
   background-color: shade(@thumbnail_selected_bg_color, 1.05);
   border-color: shade(@thumbnail_selected_bg_color, 1.15);
 }
 
 /* set hover effect */
-#thumb-main:hover #thumb-back
+.dt_act_on_hover #thumb-main:hover #thumb-back
 {
   background-color: @thumbnail_hover_bg_color;
 }
@@ -2285,7 +2293,7 @@ Details :
   border: 0.14em solid @plugin_bg_color;
 }
 
-.dt_fullview:not(.dt_act_on_selection) #thumb-main:hover #thumb-image,
+.dt_fullview.dt_act_on_hover #thumb-main:hover #thumb-image,
 .dt_fullview.dt_act_on_selection .dt_culling_selected#thumb-main #thumb-image
 {
   border: 0.14em solid @thumbnail_hover_bg_color;

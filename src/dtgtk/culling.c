@@ -796,10 +796,7 @@ static void _dt_pref_change_callback(gpointer instance,
   dt_culling_t *table = (dt_culling_t *)user_data;
 
   // adjust the act_on algo class if needed
-  if(dt_act_on_get_algorithm() == DT_ACT_ON_SELECTION)
-    dt_gui_add_class(table->widget, "dt_act_on_selection");
-  else
-    dt_gui_remove_class(table->widget, "dt_act_on_selection");
+  dt_act_on_set_class(table->widget);
 
   dt_culling_full_redraw(table, TRUE);
 
@@ -934,8 +931,7 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
   table->widget = gtk_layout_new(NULL, NULL);
   table->selection = NO_IMGID;
   dt_gui_add_class(table->widget, "dt_fullview");
-  if(dt_act_on_get_algorithm() == DT_ACT_ON_SELECTION)
-    dt_gui_add_class(table->widget, "dt_act_on_selection");
+  dt_act_on_set_class(table->widget);
   // TODO dt_gui_add_help_link(table->widget, "lighttable_filemanager");
 
   // overlays

@@ -718,6 +718,21 @@ void dt_act_on_reset_cache(const gboolean only_visible)
     darktable.view_manager->act_on_cache_all.ok = FALSE;
 }
 
+// set the right class for the widget
+void dt_act_on_set_class(GtkWidget *widget)
+{
+  if(dt_act_on_get_algorithm() == DT_ACT_ON_SELECTION)
+  {
+    dt_gui_remove_class(widget, "dt_act_on_hover");
+    dt_gui_add_class(widget, "dt_act_on_selection");
+  }
+  else
+  {
+    dt_gui_add_class(widget, "dt_act_on_hover");
+    dt_gui_remove_class(widget, "dt_act_on_selection");
+  }
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

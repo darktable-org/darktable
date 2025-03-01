@@ -56,6 +56,9 @@ int dt_act_on_get_images_nb(const gboolean only_visible, const gboolean force);
 // reset the cache
 void dt_act_on_reset_cache(const gboolean only_visible);
 
+// set the right class for the widget
+void dt_act_on_set_class(GtkWidget *widget);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
