@@ -50,7 +50,7 @@ typedef struct dt_culling_t
 
   // rowid of the main shown image inside 'memory.collected_images'
   int offset;
-  int offset_imgid;
+  dt_imgid_t offset_imgid;
 
   int thumbs_count;            // last nb of thumb to display
   int view_width, view_height; // last main widget size
