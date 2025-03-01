@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -212,6 +212,8 @@ const char *cl_errstr(cl_int error)
       return "DT_OPENCL_PROCESS_CL";
     case DT_OPENCL_NODEVICE:
       return "DT_OPENCL_NODEVICE";
+    case DT_OPENCL_DT_EXCEPTION:
+      return "DT_OPENCL_DT_EXCEPTION";
     default:
       return "Unknown OpenCL error";
   }
@@ -789,7 +791,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     goto end;
   }
 
-  const gboolean is_blacklisted = dt_opencl_check_driver_blacklist(deviceversion);
+  const gboolean is_blacklisted = _opencl_check_driver_blacklist(deviceversion);
 
   // disable device for now if this is the first time detected and blacklisted too.
   if(newdevice && is_blacklisted)
@@ -964,6 +966,8 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
 
   dt_print_nts(DT_DEBUG_OPENCL, "   CL COMPILER OPTION:       %s\n", my_option);
   dt_print_nts(DT_DEBUG_OPENCL, "   CL COMPILER COMMAND:      %s\n", cl->dev[dev].options);
+
+  _write_test_exceptions(&cl->dev[dev]);
 
   g_free(compile_option_name_cname);
   g_free(my_option);
@@ -3662,6 +3666,12 @@ gboolean dt_opencl_is_enabled(void)
 gboolean dt_opencl_running(void)
 {
   return _cl_running();
+}
+
+gboolean dt_opencl_exception(const int devid, const uint32_t mask)
+{
+  if(!_cldev_running(devid)) return FALSE;
+  return (darktable.opencl->dev[devid].exceptions & mask) != 0;
 }
 
 /** update enabled flag and profile with value from preferences */

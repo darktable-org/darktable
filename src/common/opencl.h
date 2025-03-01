@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,6 +37,13 @@
 #define DT_OPENCL_SYSMEM_ALLOCATION -998
 #define DT_OPENCL_PROCESS_CL -997
 #define DT_OPENCL_NODEVICE -996
+#define DT_OPENCL_DT_EXCEPTION -995
+
+/* exceptions */
+#define DT_OPENCL_AMD_APP 1
+#define DT_OPENCL_ONLY_CUDA 2
+
+
 #include "common/darktable.h"
 
 #ifdef HAVE_OPENCL
@@ -200,6 +207,9 @@ typedef struct dt_opencl_device_t
 
   // lets keep the vendor for runtime checks
   int vendor_id;
+
+  // exceptions bit mask
+  uint32_t exceptions;
 
   float advantage;
 } dt_opencl_device_t;
@@ -609,6 +619,9 @@ void dt_opencl_check_tuning(const int devid);
 
 /** get size of allocatable single buffer */
 cl_ulong dt_opencl_get_device_memalloc(const int devid);
+
+/** checks for a detected OpenCL runtime exception */
+gboolean dt_opencl_exception(const int devid, const uint32_t mask);
 
 /** round size to a multiple of the value given in the device specifig
  * config parameter for opencl_size_roundup */
