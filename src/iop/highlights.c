@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2010-2024 darktable developers.
+   Copyright (C) 2010-2025 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -333,9 +333,6 @@ void distort_mask(dt_iop_module_t *self,
   dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 }
 
-/* inpaint opposed and segmentation based algorithms want the whole image for proper calculation
-   of chrominance correction and best candidates so we change both rois.
-*/
 void modify_roi_out(dt_iop_module_t *self,
                     dt_dev_pixelpipe_iop_t *piece,
                     dt_iop_roi_t *roi_out,
@@ -347,6 +344,9 @@ void modify_roi_out(dt_iop_module_t *self,
   roi_out->y = MAX(0, roi_in->y);
 }
 
+/* inpaint opposed and segmentation based algorithms want the whole image for proper calculation
+   of chrominance correction and best candidates.
+*/
 void modify_roi_in(dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *const roi_out,
@@ -356,29 +356,29 @@ void modify_roi_in(dt_iop_module_t *self,
 
   dt_iop_highlights_data_t *d = piece->data;
   const gboolean use_opposing = (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
-  /* When do we need to expand the roi to maximum of the full input data?
-     1. Certainly not if any other than opposed or the segmentation based algo is used.
-   */
+
+  // Whenever we use opposed we have to setup the desired roi_in area
   if(!use_opposing)
     return;
 
-  /*
-    2. Certainly not for linear raws as they miss the automatic downscaler provided by the demosaicer stage, so
-       the expanding to full image data does not work as we do a downscaling very early in
-       the pixelpipe. So - no quality achieved but really bad performance.
-       See #12998 and #12993 for a lengthy discussion
-  */
-  if(piece->pipe->dsc.filters == 0)
-    return;
-
-  /* We require the correct (full-image-data) expansion with a defined scale for all pixelpipes for proper
-     aligning and scaling in the demosiacer
-  */
-  roi_in->x = 0;
-  roi_in->y = 0;
-  roi_in->width = piece->buf_in.width;
-  roi_in->height = piece->buf_in.height;
   roi_in->scale = 1.0f;
+  if(piece->pipe->dsc.filters == 0)
+  {
+    // For linear raws we will use an internal downscaler as we normally do in demosaic
+    roi_in->x /= roi_out->scale;
+    roi_in->y /= roi_out->scale;
+    roi_in->width /= roi_out->scale;
+    roi_in->height /= roi_out->scale;
+  }
+  else
+  {
+    // We require the correct (full-image-data) expansion with a defined scale for all pixelpipes for proper
+    // aligning and scaling in the demosiacer
+    roi_in->x = 0;
+    roi_in->y = 0;
+    roi_in->width = piece->buf_in.width;
+    roi_in->height = piece->buf_in.height;
+  }
 }
 
 void tiling_callback(dt_iop_module_t *self,
@@ -732,6 +732,17 @@ void process(dt_iop_module_t *self,
 
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
+  const gboolean scaled = filters == 0 && d->mode != DT_IOP_HIGHLIGHTS_CLIP;
+
+  float *out = scaled ? dt_alloc_align_float((size_t)roi_in->width * roi_in->height * 4) : NULL;
+  if(!out && scaled)
+  {
+    dt_iop_clip_and_zoom_roi((float *)ovoid, (float *)ivoid, roi_out, roi_in);
+    dt_print_pipe(DT_DEBUG_PIPE,
+          "bypass opposed", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out,
+          "can't allocate temp buffer");
+    return;
+  }
 
   if(g && fullpipe)
   {
@@ -740,7 +751,14 @@ void process(dt_iop_module_t *self,
       piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
       if(g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED)
       {
-        process_visualize(piece, ivoid, ovoid, roi_in, roi_out, d);
+        if(scaled)
+        {
+          process_visualize(piece, ivoid, out, roi_in, roi_in, d);
+          dt_iop_clip_and_zoom_roi((float *)ovoid, out, roi_out, roi_in);
+          dt_free_align(out);
+        }
+        else
+          process_visualize(piece, ivoid, ovoid, roi_in, roi_out, d);
         return;
       }
     }
@@ -769,7 +787,9 @@ void process(dt_iop_module_t *self,
     }
     else
     {
-      _process_linear_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, high_quality);
+      _process_linear_opposed(self, piece, ivoid, out, roi_in, high_quality);
+      dt_iop_clip_and_zoom_roi((float *)ovoid, out, roi_out, roi_in);
+      dt_free_align(out);
     }
     return;
   }
