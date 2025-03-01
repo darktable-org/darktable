@@ -1251,6 +1251,7 @@ static void _lighttable_expose_empty(cairo_t *cr,
   pango_layout_set_tabs(layout, tabs);
   pango_tab_array_free(tabs);
 
+  const gboolean hover = (dt_act_on_get_algorithm() == DT_ACT_ON_HOVER);
 #define RGHT "\t   ",
   gchar *here = _("here"), *text = g_strjoin(NULL,
     "<b>", _("there are no images in this collection"), "</b>",
@@ -1268,10 +1269,10 @@ static void _lighttable_expose_empty(cairo_t *cr,
     "\n" ,
          RGHT _("click on the keyboard icon to define shortcuts"),
     "\n" ,
-    "<b>", _("try the 'no-click' workflow"), "</b>",
+    "<b>", hover ? _("try the 'no-click' workflow") : "", "</b>",
          RGHT _("set module-specific preferences through module's menu"),
-    "\n" , _("hover over an image and use keyboard shortcuts"),
-    "\n" , _("to apply ratings, colors, styles, etc."),
+    "\n" , hover ? _("hover over an image and use keyboard shortcuts") : "",
+    "\n" , hover ? _("to apply ratings, colors, styles, etc.") : "",
          RGHT _("make default raw development look more like your"),
     "\n" , _("hover over any button for its description and shortcuts"),
          RGHT _("camera's JPEG by applying a camera-specific style"),
