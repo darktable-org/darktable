@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2023 darktable developers.
+    Copyright (C) 2012-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -415,6 +415,40 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
 //        free(rates);
 //        opj_image_destroy(image);
 //        return 1;
+    }
+  }
+
+  /* Determine the actual (export vs colorout) color profile used */
+  const dt_colorspaces_color_profile_t *cp = dt_colorspaces_get_output_profile(imgid, over_type, over_filename);
+  /* ICC writing doesn't work w/ OpenJPEG 2.5.3 and earlier (prefer runtime detection) */
+  const char *opj_ver = opj_version();
+  if(opj_ver[0] > '2' || (opj_ver[0] == '2' && (opj_ver[2] > '5' || (opj_ver[2] == '5' && opj_ver[4] > '3'))))
+  {
+    uint32_t icc_profile_len;
+    cmsSaveProfileToMem(cp->profile, NULL, &icc_profile_len);
+    if(icc_profile_len > 0)
+    {
+      uint8_t *icc_profile_buf = malloc(sizeof(uint8_t) * icc_profile_len);
+      if(icc_profile_buf == NULL)
+      {
+        dt_print(DT_DEBUG_ALWAYS, "failed to allocate ICC profile");
+        opj_image_destroy(image);
+        rc = 0;
+        goto exit;
+      }
+      cmsSaveProfileToMem(cp->profile, icc_profile_buf, &icc_profile_len);
+      image->icc_profile_buf = icc_profile_buf; /* freed later by opj_image_destroy() */
+      image->icc_profile_len = icc_profile_len;
+    }
+  }
+  else
+  {
+    if(cp->type != DT_COLORSPACE_SRGB)
+    {
+      dt_control_log("%s", _("unable to attach output profile to JP2"));
+      dt_print(
+          DT_DEBUG_ALWAYS,
+          "Warning: exporting with anything but sRGB profile might lead to wrong results when opening the image");
     }
   }
 
