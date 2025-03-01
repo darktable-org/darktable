@@ -471,6 +471,8 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].used_global_mem = 0;
   cl->dev[dev].nvidia_sm_20 = FALSE;
   cl->dev[dev].fullname = NULL;
+  cl->dev[dev].platform = NULL;
+  cl->dev[dev].device_version = NULL;
   cl->dev[dev].cname = NULL;
   cl->dev[dev].options = NULL;
   cl->dev[dev].cflags = NULL;
@@ -493,6 +495,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->dev[dev].asyncmode = FALSE;
   cl->dev[dev].disabled = FALSE;
   cl->dev[dev].headroom = 0;
+  cl->dev[dev].vendor_id = 0;
   cl->dev[dev].tunehead = FALSE;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
 
@@ -634,8 +637,10 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
   cl->crc = crc32(cl->crc, (const unsigned char *)platform_name, strlen(platform_name));
   cl->crc = crc32(cl->crc, (const unsigned char *)device_name, strlen(device_name));
 
+  cl->dev[dev].platform = strdup(platform_name);
   cl->dev[dev].fullname = strdup(fullname);
   cl->dev[dev].cname = strdup(cname);
+  cl->dev[dev].vendor_id = vendor_id;
 
   const gboolean newdevice = dt_opencl_read_device_config(dev);
   dt_print_nts(DT_DEBUG_OPENCL,
@@ -646,7 +651,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                DT_CLDEVICE_HEAD, cl->dev[dev].cname);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   PLATFORM, VENDOR & ID:    %s, %s%s, ID=%d\n",
-               platform_display_name, is_mesa ? "Mesa:" : "", platform_vendor, vendor_id);
+               cl->dev[dev].platform, is_mesa ? "Mesa:" : "", platform_vendor, vendor_id);
   dt_print_nts(DT_DEBUG_OPENCL,
                "   CANONICAL NAME:           %s\n", cl->dev[dev].cname);
 
@@ -671,6 +676,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     cl->dev[dev].disabled |= TRUE;
     goto end;
   }
+  cl->dev[dev].device_version = strdup(deviceversion);
 
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_TYPE,
                                            sizeof(cl_device_type), &type, NULL);
@@ -707,7 +713,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
     cl->dev[dev].micro_nap = (is_cpu_device) ? 1000 : 250;
 
   dt_print_nts(DT_DEBUG_OPENCL, "   DRIVER VERSION:           %s\n", driverversion);
-  dt_print_nts(DT_DEBUG_OPENCL, "   DEVICE VERSION:           %s%s\n", deviceversion,
+  dt_print_nts(DT_DEBUG_OPENCL, "   DEVICE VERSION:           %s%s\n", cl->dev[dev].device_version,
      cl->dev[dev].nvidia_sm_20 ? ", SM_20 SUPPORT" : "");
   dt_print_nts(DT_DEBUG_OPENCL, "   DEVICE_TYPE:              %s%s%s%s\n",
       ((type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU) ? "CPU" : "",
@@ -1510,6 +1516,8 @@ finally:
         free(cl->dev[i].eventtags);
       }
       free((void *)(cl->dev[i].fullname));
+      free((void *)(cl->dev[i].device_version));
+      free((void *)(cl->dev[i].platform));
       free((void *)(cl->dev[i].cname));
       free((void *)(cl->dev[i].options));
       free((void *)(cl->dev[i].cflags));
@@ -1597,6 +1605,8 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
       }
 
       free((void *)(cl->dev[i].fullname));
+      free((void *)(cl->dev[i].device_version));
+      free((void *)(cl->dev[i].platform));
       free((void *)(cl->dev[i].cname));
       free((void *)(cl->dev[i].options));
       free((void *)(cl->dev[i].cflags));
