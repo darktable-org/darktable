@@ -2534,7 +2534,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
             }
             else
             {
-              dt_print_pipe(DT_DEBUG_PIPE,
+              dt_print_pipe(DT_DEBUG_OPENCL,
                 "copy CL data to host", pipe, module, pipe->devid, &roi_in, NULL);
               /* success: cache line is valid now, so we will not need
                  to invalidate it later */
@@ -2710,7 +2710,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     {
       dt_print_pipe(DT_DEBUG_PIPE,
                     "importance hints",
-                    pipe, module, pipe->devid, &roi_in, NULL, " %s%s%s",
+                    pipe, module, pipe->devid, &roi_in, NULL, "%s%s%s",
                     last_history ? "input_hint " : "",
                     has_focus ? "focus " : "",
                     important_cl ? "cldata" : "");
