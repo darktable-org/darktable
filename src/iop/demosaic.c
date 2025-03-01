@@ -754,6 +754,13 @@ int process_cl(dt_iop_module_t *self,
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
 
   int demosaicing_method = d->demosaicing_method;
+
+  // We do a PPG to RCD demosaicer fallback here as the used driver is known to fail.
+  // Also could "return DT_OPENCL_DT_EXCEPTION" for a cpu fallback
+  if(demosaicing_method == DT_IOP_DEMOSAIC_PPG
+     && dt_opencl_exception(piece->pipe->devid, DT_OPENCL_AMD_APP))
+    demosaicing_method = DT_IOP_DEMOSAIC_RCD;
+
   const int width = roi_in->width;
   const int height = roi_in->height;
 
