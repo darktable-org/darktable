@@ -1617,18 +1617,6 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,
     if(!_image_handled(ret))
       ret = dt_imageio_open_libraw(img, filename, buf);
 
-    if(!_image_handled(ret))
-      ret = dt_imageio_open_exr(img, filename, buf);
-
-    if(!_image_handled(ret))
-      ret = dt_imageio_open_rgbe(img, filename, buf);
-
-    if(!_image_handled(ret))
-      ret = dt_imageio_open_j2k(img, filename, buf);
-
-    if(!_image_handled(ret))
-      ret = dt_imageio_open_jpeg(img, filename, buf);
-
     // final fallback that tries to open file via GraphicsMagick or ImageMagick
     if(!_image_handled(ret))
       ret = dt_imageio_open_exotic(img, filename, buf);
