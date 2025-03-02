@@ -33,6 +33,7 @@ static GtkWidget *sel_entry;
 static const gchar *sel_entry_text;
 static GtkTreeView *sel_view;
 static GList *taglist = NULL;
+static GtkWidget *add_button;
 
 // routine to set individual visibility flag
 static gboolean _set_matching_tag_visibility(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_idata)
@@ -78,6 +79,12 @@ gchar *dt_metadata_tags_get_selected()
   return NULL;
 }
 
+static void _tree_selection_change(GtkTreeSelection *selection, gpointer user_data)
+{
+  const int nb = gtk_tree_selection_count_selected_rows(selection);
+  gtk_widget_set_sensitive(add_button, nb > 0);
+}
+
 GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent, gpointer metadata_activated_callback, gpointer user_data)
 {
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("select tag"), GTK_WINDOW(parent),
@@ -90,6 +97,9 @@ GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent, gpointer metadata_activate
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
   gtk_container_set_border_width(GTK_CONTAINER(vbox), 8);
   gtk_box_pack_start(GTK_BOX(area), vbox, TRUE, TRUE, 0);
+
+  // keep a reference to the "add" button to toggle its sensitivity
+  add_button = gtk_dialog_get_widget_for_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
 
   sel_entry = gtk_entry_new();
   gtk_entry_set_text(GTK_ENTRY(sel_entry), "");
@@ -104,7 +114,9 @@ GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent, gpointer metadata_activate
   sel_view = GTK_TREE_VIEW(gtk_tree_view_new());
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(sel_view));
   gtk_widget_set_tooltip_text(GTK_WIDGET(sel_view), _("list of available tags. click 'add' button or double-click on tag to add the selected one"));
-  gtk_tree_selection_set_mode(gtk_tree_view_get_selection(sel_view), GTK_SELECTION_SINGLE);
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(sel_view);
+  gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
+  g_signal_connect(selection, "changed", G_CALLBACK(_tree_selection_change), NULL);
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes(_("tag"), renderer, "text", 0, NULL);
   gtk_tree_view_append_column(sel_view, col);
