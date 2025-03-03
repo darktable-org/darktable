@@ -300,7 +300,7 @@ static const dt_magic_bytes_t _magic_signatures[] = {
   { DT_FILETYPE_RW2, TRUE, 0, 8, dt_imageio_open_rawspeed,
     { 'I', 'I', 'U', 0x00, 0x08, 0x00, 0x00, 0x00 } },
   // Sigma Foveon X3F file
-  { DT_FILETYPE_X3F, TRUE, 0, 4, NULL,
+  { DT_FILETYPE_X3F, TRUE, 0, 4, dt_imageio_open_libraw,
     { 'F', 'O', 'V', 'b' } },
   // Nikon NEF files are TIFFs with (usually) the string "NIKON CORP" early in the file
   { DT_FILETYPE_NEF, FALSE, 0, 4, dt_imageio_open_rawspeed,
