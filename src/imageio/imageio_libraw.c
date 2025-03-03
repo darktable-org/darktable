@@ -289,7 +289,7 @@ static gboolean _supported_image(const gchar *filename)
   // At the moment of writing this code CR3 files are not supported by RawSpeed,
   // so they are always processed by LibRaw.
   gchar *extensions_whitelist;
-  const gchar *always_by_libraw = "cr3";
+  const gchar *always_by_libraw = "cr3 x3f";
 
   gchar *ext = g_strrstr(filename, ".");
   if(!ext)
