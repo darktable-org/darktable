@@ -111,6 +111,9 @@ changes (where available).
   2020, but at the same time it was making the color picker and mask
   support inaccurate (quality loss).
 
+- Improved quality of inpaint opposed highlight recovery algorithm for
+  sRAW images.
+
 ## Bug Fixes
 
 - Fixed sidecar writing if quitting from darkroom.
