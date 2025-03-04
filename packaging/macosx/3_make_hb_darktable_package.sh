@@ -116,7 +116,7 @@ function reset_exec_path {
             # Set correct executable path
             install_name_tool -change "$hbDependency" "@executable_path/../Resources/lib/$dynDepOrigFile" "$1"  || true
 
-            # Check for loader path
+            # Check for loader paths
             oToolLoader=$(otool -L "$1" 2>/dev/null | grep '@loader_path' | grep $dynDepOrigFile | cut -d\( -f1 | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//' ) || true
             if [[ -n "$oToolLoader" ]]; then
                 echo "Resetting loader path for $hbDependency of $libraryOrigFile"
@@ -135,7 +135,21 @@ function reset_exec_path {
         echo "Resetting library ID of $libraryOrigFile"
 
         # Set correct library id
-        install_name_tool -id "@executable_path/../Resources/lib/$libraryOrigFile" "$1"  || true
+        # build the path relative to the package by cutting off $dtResourcesDir
+        execpath="@executable_path/../Resources${1#$dtResourcesDir}"
+        install_name_tool -id "$execpath" "$1"  || true
+        # install_name_tool -id "@executable_path/../Resources/lib/$libraryOrigFile" "$1"  || true
+    fi
+
+    # Check for rpaths
+    oToolRpaths=$(otool -L "$1" 2>/dev/null | grep '@rpath' | cut -d\( -f1 | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//' ) || true
+    if [[ -n "$oToolRpaths" ]]; then
+        for oToolRpath in $oToolRpaths; do
+            oToolRpathNew=$(echo $oToolRpath | sed "s#@rpath/##")
+            if [[ "$oToolRpathNew" != "libdarktable.dylib" ]]; then
+                install_name_tool -change "$oToolRpath" "@executable_path/../Resources/lib/$oToolRpathNew" "$1" || true
+            fi
+        done
     fi
 }
 
