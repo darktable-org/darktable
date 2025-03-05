@@ -11,6 +11,7 @@ tools/iop_deps.pdf
 cscope.out
 .*.swp
 .vscode/
+.vs/
 .clangd/
 .cache
 tags
@@ -25,3 +26,5 @@ output*png
 Brewfile.lock.json
 CMakeLists.txt.user
 workspace/
+
+CMakeUserPresets.json

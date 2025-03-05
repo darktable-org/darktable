@@ -120,7 +120,7 @@ static FILE* l_popen(lua_State *L, const char* filename, const char *mode, PROCE
     free(utf16buf);
     return NULL;
   }
-  
+
   free(utf16buf);
 
   CloseHandle(g_hChildStd_OUT_Wr);
@@ -912,7 +912,8 @@ static void createmeta (lua_State *L) {
 
 
 /*
-** function to (not) close the standard files stdin, stdout, and stderr
+** function to (not) close the standard fi
+les stdin, stdout, and stderr
 */
 static int io_noclose (lua_State *L) {
   LStream *p = tolstream(L);
@@ -924,11 +925,12 @@ static int io_noclose (lua_State *L) {
 
 
 int dt_lua_init_windows(lua_State *L){
-    luaL_newlib(L, iolib);
-    createmeta(L);
-
-    return 1;
-}
+  luaL_newlib(L, iolib);
+  createmeta(L);
+    
+  lua_pop(L, 1);
+  return 0;
+  }
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

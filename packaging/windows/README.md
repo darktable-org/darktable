@@ -2,9 +2,18 @@ The steps to build darktable Windows executable and make installer (Windows 8.1 
 [UCRT installed](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c))
 are as follows:
 
-* Install MSYS2 (instructions and prerequisites can be found on the official website: https://www.msys2.org)
+A short summary about the installation environment: The compilation is done by MSYS2 (For more background, see the documentation at https://www.msys2.org). In short, MSYS2 provides a Unix development environmnent (binaries, libraries, compilers etc) on Windows. In contrast to WSL, it does not run in a virtual machine. Instead, the binaries are native Windows binaries. 
 
-* Start the MSYS terminal and update the base system until no further updates are available by repeating:
+We will use the Universal C Runtime (UCRT), which is a newer runtime (in comparison with MSVCRT). See the information about the environments on MSYS at https://www.msys2.org/docs/environments.
+
+Note that there are two terminals. The MSYS terminal is for "normal" system work, and the UCRT64 terminal is for building (this is achived by prepending the MSYS64's `bin` directory to the PATH, thus giving precedence to the UCRT64 toolchain).
+
+
+* Install MSYS2 (instructions and prerequisites can be found on the official website: https://www.msys2.org). For additional convenience, 
+  configure the Windows terminal (https://www.msys2.org/docs/terminals/#windows-terminal) appropriately.
+  
+
+* Start the MSYS (not UCRT64) terminal and update the base system until no further updates are available by repeating:
     ```bash
     pacman -Syu
     ```
@@ -12,7 +21,7 @@ are as follows:
 * From the MSYS terminal, install the toolchain (assuming x64), developer tools and git:
     ```bash
     pacman -S --needed base-devel git intltool po4a
-    pacman -S --needed mingw-w64-ucrt-x86_64-{cc,cmake,gcc-libs,ninja,omp}
+    pacman -S --needed mingw-w64-ucrt-x86_64-{cc,cmake,gcc-libs,ninja,omp} #Install the UCRT64 toolchain
     ```
 
 * Install required and recommended dependencies for darktable:
@@ -93,3 +102,15 @@ If you like experimenting you could also install `mingw-w64-ucrt-x86_64-{clang,l
 Windows on Arm (WoA) users should use the `mingw-w64-clang-aarch64-` prefix when installing packages above and build within the CLANGARM64 environment instead (note that it is not currently possible to build the installer image because of missing `nsis`).
 
 Have fun with this, report back your findings.
+
+
+## Development with Visual Studio Code
+
+After installing and configuring MSYS2 from above, create a `CMakeUserPresets.json` in the root directory of this repository.
+
+
+
+https://cadhut.com/2020/08/02/how-to-set-up-and-use-msys2/
+https://www.msys2.org/docs/environments/
+
+https://dominikberner.ch/cmake-presets-best-practices/#:~:text=The%20command%20to%20configure%20a%20project%20using%20a,CMake%20with%20cmake%20--build%20--preset%20%3Cpreset-name%3E%20--target%20test.
