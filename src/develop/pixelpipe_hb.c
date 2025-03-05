@@ -245,7 +245,7 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->want_detail_mask = FALSE;
 
   pipe->processing = FALSE;
-  dt_atomic_set_int(&pipe->shutdown,FALSE);
+  dt_atomic_set_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
   pipe->opencl_error = FALSE;
   pipe->tiling = FALSE;
   pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
@@ -356,9 +356,8 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
 
 void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
 {
-  dt_atomic_set_int(&pipe->shutdown,TRUE); // tell pipe that it should
-                                           // shut itself down if
-                                           // currently running
+  // tell pipe that it should shut itself down if currently running
+  dt_atomic_set_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NODES);
 
   // FIXME: either this or all process() -> gdk mutices have to be changed!
   //        (this is a circular dependency on busy_mutex and the gdk mutex)
@@ -416,7 +415,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe,
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex); // block until pipe is idle
   // clear any pending shutdown request
-  dt_atomic_set_int(&pipe->shutdown,FALSE);
+  dt_atomic_set_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
   // check that the pipe was actually properly cleaned up after the last run
   g_assert(pipe->nodes == NULL);
   g_assert(pipe->iop == NULL);
@@ -1214,7 +1213,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                                           dt_pixelpipe_flow_t *pixelpipe_flow,
                                           const int position)
 {
-  if(dt_atomic_get_int(&pipe->shutdown))
+  if(dt_pipe_shutdown(pipe))
     return TRUE;
 
   // the data buffers must always have an alignment to DT_CACHELINE_BYTES
@@ -1264,12 +1263,12 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
     (module, input, input, roi_in->width, roi_in->height, cst_from,
      cst_to, &input_format->cst, work_profile);
 
-  if(dt_atomic_get_int(&pipe->shutdown))
+  if(dt_pipe_shutdown(pipe))
     return TRUE;
 
   _collect_histogram_on_CPU(pipe, dev, input, roi_in, module, piece, pixelpipe_flow);
 
-  if(dt_atomic_get_int(&pipe->shutdown))
+  if(dt_pipe_shutdown(pipe))
     return TRUE;
 
   const size_t in_bpp = dt_iop_buffer_dsc_to_bpp(input_format);
@@ -1318,7 +1317,8 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
       module->process_tiling(module, piece, input, *output, roi_in, roi_out, in_bpp);
       if(relevant)
       {
-        if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
+        if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE
+          && !dt_pipe_shutdown(pipe))
         {
           float *cache = _get_fast_blendcache(nfloats, phash, pipe);
           if(cache) dt_iop_image_copy(cache, *output, nfloats);
@@ -1383,7 +1383,8 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
       module->process(module, piece, input, *output, roi_in, roi_out);
       if(relevant)
       {
-        if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
+        if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE
+          && !dt_pipe_shutdown(pipe))
         {
           float *cache = _get_fast_blendcache(nfloats, phash, pipe);
           if(cache) dt_iop_image_copy(cache, *output, nfloats);
@@ -1398,7 +1399,15 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                          | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
   }
 
-  if(pfm_dump)
+  const dt_dev_pixelpipe_stopper_t stopper = dt_atomic_get_int(&pipe->shutdown);
+  if(stopper != DT_DEV_PIXELPIPE_STOP_NO)
+  {
+    if(stopper > DT_DEV_PIXELPIPE_STOP_LAST)
+      dt_dev_pixelpipe_cache_invalidate_later(pipe, stopper);
+    return TRUE;
+  }
+
+  if(pfm_dump && !dt_pipe_shutdown(pipe))
   {
     dt_dump_pipe_pfm(module->op, *output,
                      roi_out->width, roi_out->height, bpp,
@@ -1410,7 +1419,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
   // and save the output colorspace
   pipe->dsc.cst = module->output_colorspace(module, pipe, piece);
 
-  if(dt_atomic_get_int(&pipe->shutdown))
+  if(dt_pipe_shutdown(pipe))
     return TRUE;
 
   dt_iop_colorspace_type_t blend_cst = dt_develop_blend_colorspace(piece, pipe->dsc.cst);
@@ -1435,7 +1444,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PICKERDATA_READY, module, pipe);
   }
 
-  if(dt_atomic_get_int(&pipe->shutdown))
+  if(dt_pipe_shutdown(pipe))
     return TRUE;
 
   // blend needs input/output images with default colorspace
@@ -1473,7 +1482,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
   *pixelpipe_flow |= (PIXELPIPE_FLOW_BLENDED_ON_CPU);
   *pixelpipe_flow &= ~(PIXELPIPE_FLOW_BLENDED_ON_GPU);
 
-  return dt_atomic_get_int(&pipe->shutdown) ? TRUE : FALSE;
+  return dt_pipe_shutdown(pipe);
 }
 
 #ifdef HAVE_OPENCL
@@ -1506,7 +1515,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                            GList *pieces,
                                            const int pos)
 {
-  if(dt_atomic_get_int(&pipe->shutdown))
+  if(dt_pipe_shutdown(pipe))
     return TRUE;
 
   dt_iop_roi_t roi_in = *roi_out;
@@ -1561,7 +1570,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   const size_t bufsize = (size_t)bpp * roi_out->width * roi_out->height;
 
   // 1) if cached buffer is still available, return data
-  if(dt_atomic_get_int(&pipe->shutdown))
+  if(dt_pipe_shutdown(pipe))
     return TRUE;
 
   dt_hash_t hash = dt_dev_pixelpipe_cache_hash(roi_out, pipe, pos);
@@ -1586,7 +1595,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     dt_dev_pixelpipe_cache_get(pipe, hash, bufsize,
                                output, out_format, module, TRUE);
 
-    if(dt_atomic_get_int(&pipe->shutdown))
+    if(dt_pipe_shutdown(pipe))
       return TRUE;
 
     dt_print_pipe(DT_DEBUG_PIPE,
@@ -1614,7 +1623,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   if(!modules)
   {
     // 3a) import input array with given scale and roi
-    if(dt_atomic_get_int(&pipe->shutdown))
+    if(dt_pipe_shutdown(pipe))
       return TRUE;
 
     dt_times_t start;
@@ -1700,13 +1709,13 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     dt_show_times_f(&start, "[dev_pixelpipe]",
                     "initing base buffer [%s]", dt_dev_pixelpipe_type_to_str(pipe->type));
 
-    return dt_atomic_get_int(&pipe->shutdown) ? TRUE : FALSE;
+    return dt_pipe_shutdown(pipe);
   }
 
   // 3b) recurse and obtain output array in &input
 
   // get region of interest which is needed in input
-  if(dt_atomic_get_int(&pipe->shutdown))
+  if(dt_pipe_shutdown(pipe))
     return TRUE;
 
   module->modify_roi_in(module, piece, roi_out, &roi_in);
@@ -1744,7 +1753,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   const size_t out_bpp = dt_iop_buffer_dsc_to_bpp(*out_format);
 
   // reserve new cache line: output
-  if(dt_atomic_get_int(&pipe->shutdown))
+  if(dt_pipe_shutdown(pipe))
     return TRUE;
 
   const gboolean important = module
@@ -1757,7 +1766,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   dt_dev_pixelpipe_cache_get(pipe, hash, bufsize,
                              output, out_format, module, important);
 
-  if(dt_atomic_get_int(&pipe->shutdown))
+  if(dt_pipe_shutdown(pipe))
     return TRUE;
 
   gboolean important_cl = FALSE;
@@ -1835,7 +1844,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   assert(tiling.factor > 0.0f);
   assert(tiling.factor_cl > 0.0f);
 
-  if(dt_atomic_get_int(&pipe->shutdown))
+  if(dt_pipe_shutdown(pipe))
     return TRUE;
 
   piece->module->position = pos;
@@ -1946,7 +1955,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           }
         }
 
-        if(dt_atomic_get_int(&pipe->shutdown))
+        if(dt_pipe_shutdown(pipe))
         {
           dt_opencl_release_mem_object(cl_mem_input);
           return TRUE;
@@ -2023,7 +2032,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           }
         }
 
-        if(dt_atomic_get_int(&pipe->shutdown))
+        if(dt_pipe_shutdown(pipe))
           return TRUE;
 
         /* now call process_cl of module; module should emit
@@ -2106,7 +2115,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                      &roi_in, roi_out);
             if(relevant && (err == CL_SUCCESS))
             {
-              if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
+              if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE
+                && !dt_pipe_shutdown(pipe))
               {
                 float *cache = _get_fast_blendcache(out_bpp * roi_out->width * roi_out->height / sizeof(float), phash, pipe);
                 if(cache)
@@ -2129,12 +2139,13 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
 
           if(success_opencl)
           {
-            if(pfm_dump)
+            if(pfm_dump && !dt_pipe_shutdown(pipe))
               dt_opencl_dump_pipe_pfm(module->op, pipe->devid, *cl_mem_output,
                                     FALSE, dt_dev_pixelpipe_type_to_str(pipe->type));
 
-            if((pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT))
-                && darktable.dump_diff_pipe)
+            if(pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT)
+                && darktable.dump_diff_pipe
+                && !dt_pipe_shutdown(pipe))
             {
               const int ch = dt_opencl_get_image_element_size(cl_mem_input) / sizeof(float);
               const int cho = dt_opencl_get_image_element_size(*cl_mem_output) / sizeof(float);
@@ -2182,8 +2193,14 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           pipe->dsc.cst = module->output_colorspace(module, pipe, piece);
         }
 
-        if(dt_atomic_get_int(&pipe->shutdown))
+        const dt_dev_pixelpipe_stopper_t stopper = dt_atomic_get_int(&pipe->shutdown);
+        if(stopper != DT_DEV_PIXELPIPE_STOP_NO)
         {
+          if(stopper > DT_DEV_PIXELPIPE_STOP_LAST)
+          {
+            dt_dev_pixelpipe_invalidate_cacheline(pipe, input);
+            dt_dev_pixelpipe_cache_invalidate_later(pipe, stopper);
+          }
           dt_opencl_release_mem_object(cl_mem_input);
           return TRUE;
         }
@@ -2218,7 +2235,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PICKERDATA_READY, module, pipe);
         }
 
-        if(dt_atomic_get_int(&pipe->shutdown))
+        if(dt_pipe_shutdown(pipe))
            return TRUE;
 
         // blend needs input/output images with default colorspace
@@ -2268,7 +2285,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         if(success_opencl)
           success_opencl = dt_opencl_finish_sync_pipe(pipe->devid, pipe->type);
 
-        if(dt_atomic_get_int(&pipe->shutdown))
+        if(dt_pipe_shutdown(pipe))
         {
           dt_opencl_release_mem_object(cl_mem_input);
           return TRUE;
@@ -2303,7 +2320,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           valid_input_on_gpu_only = FALSE;
         }
 
-        if(dt_atomic_get_int(&pipe->shutdown))
+        if(dt_pipe_shutdown(pipe))
            return TRUE;
 
         // indirectly give gpu some air to breathe (and to do display related stuff)
@@ -2324,7 +2341,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
              &input_format->cst, work_profile);
         }
 
-        if(dt_atomic_get_int(&pipe->shutdown))
+        if(dt_pipe_shutdown(pipe))
           return TRUE;
 
         // histogram collection for module
@@ -2334,7 +2351,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                     module, piece, &pixelpipe_flow);
         }
 
-        if(dt_atomic_get_int(&pipe->shutdown))
+        if(dt_pipe_shutdown(pipe))
           return TRUE;
 
         /* now call process_tiling_cl of module; module should emit
@@ -2369,7 +2386,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                             *output, &roi_in, roi_out, in_bpp);
             if(relevant && (err == CL_SUCCESS))
             {
-              if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
+              if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE
+                && !dt_pipe_shutdown(pipe))
               {
                 float *cache = _get_fast_blendcache(nfloats, phash, pipe);
                 if(cache) dt_iop_image_copy(cache, *output, nfloats);
@@ -2396,8 +2414,13 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           pipe->dsc.cst = module->output_colorspace(module, pipe, piece);
         }
 
-        if(dt_atomic_get_int(&pipe->shutdown))
+        const dt_dev_pixelpipe_stopper_t stopper = dt_atomic_get_int(&pipe->shutdown);
+        if(stopper != DT_DEV_PIXELPIPE_STOP_NO)
+        {
+          if(stopper > DT_DEV_PIXELPIPE_STOP_LAST)
+            dt_dev_pixelpipe_cache_invalidate_later(pipe, stopper);
           return TRUE;
+        }
 
         dt_iop_colorspace_type_t blend_cst =
           dt_develop_blend_colorspace(piece, pipe->dsc.cst);
@@ -2422,7 +2445,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_PICKERDATA_READY, module, pipe);
         }
 
-        if(dt_atomic_get_int(&pipe->shutdown))
+        if(dt_pipe_shutdown(pipe))
            return TRUE;
 
         // blend needs input/output images with default colorspace
@@ -2455,7 +2478,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           }
         }
 
-        if(dt_atomic_get_int(&pipe->shutdown))
+        if(dt_pipe_shutdown(pipe))
           return TRUE;
 
         /* do process blending on cpu (this is anyhow fast enough) */
@@ -2470,7 +2493,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         if(success_opencl)
           success_opencl = dt_opencl_finish_sync_pipe(pipe->devid, pipe->type);
 
-        if(dt_atomic_get_int(&pipe->shutdown))
+        if(dt_pipe_shutdown(pipe))
           return TRUE;
       }
       else
@@ -2480,7 +2503,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
         success_opencl = FALSE;
       }
 
-      if(dt_atomic_get_int(&pipe->shutdown))
+      if(dt_pipe_shutdown(pipe))
       {
         dt_opencl_release_mem_object(cl_mem_input);
         return TRUE;
@@ -2547,7 +2570,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
             }
           }
 
-          if(dt_atomic_get_int(&pipe->shutdown))
+          if(dt_pipe_shutdown(pipe))
           {
             dt_opencl_release_mem_object(cl_mem_input);
             return TRUE;
@@ -2604,7 +2627,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           return TRUE;
       }
 
-      if(dt_atomic_get_int(&pipe->shutdown))
+      if(dt_pipe_shutdown(pipe))
         return TRUE;
     }
     else
@@ -2735,7 +2758,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   if((darktable.unmuted & DT_DEBUG_NAN)
      && !dt_iop_module_is(module->so, "gamma"))
   {
-    if(dt_atomic_get_int(&pipe->shutdown))
+    if(dt_pipe_shutdown(pipe))
       return TRUE;
 
 #ifdef HAVE_OPENCL
@@ -2794,7 +2817,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   }
 
   // 4) colorpicker and scopes:
-  if(dt_atomic_get_int(&pipe->shutdown))
+  if(dt_pipe_shutdown(pipe))
     return TRUE;
 
   if(dev->gui_attached && !dev->gui_leaving
@@ -2824,8 +2847,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                            display_profile,
                                            dt_ioppr_get_histogram_profile_info(dev));
   }
-
-  return dt_atomic_get_int(&pipe->shutdown) ? TRUE : FALSE;
+  return dt_pipe_shutdown(pipe);
 }
 
 

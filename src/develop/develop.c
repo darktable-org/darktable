@@ -447,8 +447,12 @@ restart:
     // or because the pipeline changed or shutdown?
     else
     {
-      if(dt_atomic_exch_int(&pipe->shutdown, FALSE))
-        dt_print_pipe(DT_DEBUG_PIPE, "spurious shutdown", pipe, NULL, pipe->devid, NULL, NULL);
+      const dt_dev_pixelpipe_stopper_t downer = dt_atomic_exch_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
+      if(downer)
+        dt_print_pipe(DT_DEBUG_PIPE,  downer == DT_DEV_PIXELPIPE_STOP_NODES ? "DT_DEV_PIXELPIPE_STOP_NODES shutdown"
+                                    : downer == DT_DEV_PIXELPIPE_STOP_HQ    ? "DT_DEV_PIXELPIPE_STOP_HQ shutdown"
+                                    : "PROCESS shutdown",
+          pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "downer=%d", downer);
       if(port && port->widget) dt_control_queue_redraw_widget(port->widget);
       goto restart;
     }
@@ -3308,7 +3312,7 @@ static gboolean _dev_wait_hash(dt_develop_t *dev,
 
   for(int n = 0; n < nloop; n++)
   {
-    if(dt_atomic_get_int(&pipe->shutdown))
+    if(dt_pipe_shutdown(pipe))
       return TRUE;  // stop waiting if pipe shuts down
 
     dt_hash_t probehash;
