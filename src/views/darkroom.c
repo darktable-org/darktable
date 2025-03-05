@@ -1539,9 +1539,9 @@ static void _latescaling_quickbutton_clicked(GtkWidget *w,
           || (dev->second_wnd && dev->preview2.pipe->processing)))
   {
     if(dev->full.pipe->processing)
-      dt_atomic_set_int(&dev->full.pipe->shutdown, TRUE);
+      dt_atomic_set_int(&dev->full.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_HQ);
     if(dev->second_wnd && dev->preview2.pipe->processing)
-      dt_atomic_set_int(&dev->preview2.pipe->shutdown, TRUE);
+      dt_atomic_set_int(&dev->preview2.pipe->shutdown, DT_DEV_PIXELPIPE_STOP_HQ);
 
     // do it the hard way for safety
     dt_dev_pixelpipe_rebuild(dev);
