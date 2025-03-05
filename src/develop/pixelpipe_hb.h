@@ -207,6 +207,10 @@ typedef struct dt_dev_pixelpipe_t
 
 struct dt_develop_t;
 
+static inline gboolean dt_pipe_shutdown(dt_dev_pixelpipe_t *pipe)
+{
+  return dt_atomic_get_int(&pipe->shutdown) != DT_DEV_PIXELPIPE_STOP_NO;
+}
 // report pipe->type as textual string
 const char *dt_dev_pixelpipe_type_to_str(dt_dev_pixelpipe_type_t pipe_type);
 
