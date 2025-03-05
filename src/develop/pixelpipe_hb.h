@@ -82,6 +82,14 @@ typedef enum dt_dev_pixelpipe_status_t
   DT_DEV_PIXELPIPE_INVALID = 3  // pixelpipe has finished; invalid result
 } dt_dev_pixelpipe_status_t;
 
+typedef enum dt_dev_pixelpipe_stopper_t
+{
+  DT_DEV_PIXELPIPE_STOP_NO = 0,
+  DT_DEV_PIXELPIPE_STOP_NODES = 1,
+  DT_DEV_PIXELPIPE_STOP_HQ = 2,
+  DT_DEV_PIXELPIPE_STOP_LAST = 2,
+} dt_dev_pixelpipe_stopper_t;
+
 typedef struct dt_dev_detail_mask_t
 {
   dt_iop_roi_t roi;
@@ -151,7 +159,14 @@ typedef struct dt_dev_pixelpipe_t
   dt_imgid_t output_imgid;
   // working?
   gboolean processing;
-  // shutting down?
+  /* shutting down?
+     can be used in various ways defined in dt_dev_pixelpipe_stopper_t, in all cases the
+       running pipe is stopped asap
+     If we don't use one of the enum values this is interpreted as the iop_order of the module
+     that has set this in case of an error condition or other reasons that request a re-run of the pipe.
+     In those cases we assume cachelines after this module and the input of the stopper module
+     are not valid cachelines any more so the pixelpipe takes care of this.
+  */
   dt_atomic_int shutdown;
   // opencl enabled for this pixelpipe?
   gboolean opencl_enabled;
@@ -192,6 +207,10 @@ typedef struct dt_dev_pixelpipe_t
 
 struct dt_develop_t;
 
+static inline gboolean dt_pipe_shutdown(dt_dev_pixelpipe_t *pipe)
+{
+  return dt_atomic_get_int(&pipe->shutdown) != DT_DEV_PIXELPIPE_STOP_NO;
+}
 // report pipe->type as textual string
 const char *dt_dev_pixelpipe_type_to_str(dt_dev_pixelpipe_type_t pipe_type);
 

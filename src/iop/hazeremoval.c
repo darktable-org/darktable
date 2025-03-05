@@ -515,10 +515,8 @@ static float _ambient_light(const const_rgb_image img,
 
 static inline void _restart_pipe(dt_dev_pixelpipe_t *pipe, dt_iop_module_t *self)
 {
-  dt_atomic_set_int(&pipe->shutdown, TRUE);
+  dt_atomic_set_int(&pipe->shutdown, self->iop_order);
   pipe->changed |= DT_DEV_PIPE_SYNCH;
-  // for now we flush the whole pipe cache
-  dt_dev_pixelpipe_cache_flush(pipe);
 }
 
 void process(dt_iop_module_t *self,
@@ -605,7 +603,7 @@ void process(dt_iop_module_t *self,
   const gboolean hashed = gui && phash == g->hash;
   if(hashed)
   {
-    dt_print_pipe(DT_DEBUG_PIPE, "haze from HQ", pipe, piece->module, pipe->devid, NULL, NULL);
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "haze from HQ", pipe, piece->module, pipe->devid, NULL, NULL);
     for(int i = 0; i < 3; i++) A0[i] = g->A0[i];
     distance_max = g->distance_max;
   }
@@ -852,7 +850,7 @@ int process_cl(dt_iop_module_t *self,
   const gboolean hashed = gui && phash == g->hash;
   if(hashed)
   {
-    dt_print_pipe(DT_DEBUG_PIPE, "haze from HQ", pipe, piece->module, pipe->devid, NULL, NULL);
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "haze from HQ", pipe, piece->module, pipe->devid, NULL, NULL);
     for(int i = 0; i < 3; i++) A0[i] = g->A0[i];
     distance_max = g->distance_max;
   }
