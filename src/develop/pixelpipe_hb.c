@@ -3651,7 +3651,7 @@ dt_hash_t dt_dev_pixelpipe_piece_hash(dt_dev_pixelpipe_iop_t *piece,
                                       const dt_iop_roi_t *roi,
                                       const gboolean include)
 {
-  return dt_dev_pixelpipe_cache_hash(roi, piece->pipe, piece->module->position - (include ? 0 : -1));
+  return dt_dev_pixelpipe_cache_hash(roi, piece->pipe, piece->module->position - (include ? 0 : 1));
 }
 
 
