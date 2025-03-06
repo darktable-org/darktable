@@ -53,10 +53,11 @@ cp -a /var/lib/lensfun-updates/* ../AppDir/usr/share/lensfun
 # doesn't suit you (for example, you want to build an AppImage without an
 # Internet connection), you can edit this script accordingly, and call
 # linuxdeploy and its plugin from where you put them.
-wget -c --no-verbose "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+ARCH=$(uname -m)
+wget -c --no-verbose "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-$ARCH.AppImage"
 wget -c --no-verbose "https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gtk/master/linuxdeploy-plugin-gtk.sh"
 
-chmod +x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-gtk.sh
+chmod +x linuxdeploy-$ARCH.AppImage linuxdeploy-plugin-gtk.sh
 
 export DEPLOY_GTK_VERSION=3
 export LINUXDEPLOY_OUTPUT_VERSION=$(sh ../tools/get_git_version_string.sh)
@@ -64,20 +65,20 @@ export DISABLE_COPYRIGHT_FILES_DEPLOYMENT=1
 
 # Instruct LDAI (LinuxDeploy AppImage plugin) to embed AppImage update information
 if [ "$DARKTABLE_APPIMAGE_UPDATE" == "release" ]; then
-  export LDAI_UPDATE_INFORMATION="gh-releases-zsync|darktable-org|darktable|latest|Darktable-*-x86_64.AppImage.zsync"
+  export LDAI_UPDATE_INFORMATION="gh-releases-zsync|darktable-org|darktable|latest|Darktable-*-$ARCH.AppImage.zsync"
 elif [ "$DARKTABLE_APPIMAGE_UPDATE" != "no" ]; then
-  export LDAI_UPDATE_INFORMATION="gh-releases-zsync|darktable-org|darktable|nightly|Darktable-*-x86_64.AppImage.zsync"
+  export LDAI_UPDATE_INFORMATION="gh-releases-zsync|darktable-org|darktable|nightly|Darktable-*-$ARCH.AppImage.zsync"
 fi
 
 # '--deploy-deps-only' are needed to tell linuxdeploy where to collect deps of
 # modules that are loaded via dlopen (therefore cannot be found automatically)
-./linuxdeploy-x86_64.AppImage \
+./linuxdeploy-$ARCH.AppImage \
   --appdir ../AppDir \
   --plugin gtk \
-  --deploy-deps-only ../AppDir/usr/lib/x86_64-linux-gnu/darktable/plugins \
-  --deploy-deps-only ../AppDir/usr/lib/x86_64-linux-gnu/darktable/plugins/imageio/format \
-  --deploy-deps-only ../AppDir/usr/lib/x86_64-linux-gnu/darktable/plugins/imageio/storage \
-  --deploy-deps-only ../AppDir/usr/lib/x86_64-linux-gnu/darktable/plugins/lighttable \
-  --deploy-deps-only ../AppDir/usr/lib/x86_64-linux-gnu/darktable/views \
+  --deploy-deps-only ../AppDir/usr/lib/$ARCH-linux-gnu/darktable/plugins \
+  --deploy-deps-only ../AppDir/usr/lib/$ARCH-linux-gnu/darktable/plugins/imageio/format \
+  --deploy-deps-only ../AppDir/usr/lib/$ARCH-linux-gnu/darktable/plugins/imageio/storage \
+  --deploy-deps-only ../AppDir/usr/lib/$ARCH-linux-gnu/darktable/plugins/lighttable \
+  --deploy-deps-only ../AppDir/usr/lib/$ARCH-linux-gnu/darktable/views \
   --custom-apprun ../packaging/AppImage/AppRun \
   --output appimage
