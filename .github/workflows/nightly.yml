@@ -89,11 +89,16 @@ jobs:
             python3-jsonschema \
             xsltproc \
             zlib1g-dev \
-            appstream;
+            appstream
+      - name: Add PPA for newer multimedia libs (x86_64 only)
+        if: ${{ env.RUNNER_ARCH != 'ARM64' }}
+        run: |
           sudo add-apt-repository -y ppa:savoury1/graphics
           sudo add-apt-repository -y ppa:savoury1/ffmpeg4
           sudo add-apt-repository -y ppa:savoury1/display
           sudo apt-get update
+      - name: Install extra dependencies
+        run: |
           sudo apt-get -y install \
             libavif-dev \
             libgphoto2-dev \
@@ -104,7 +109,7 @@ jobs:
             libopenexr-dev \
             libopenjp2-7-dev \
             x11proto-dev \
-            libxfixes-dev;
+            libxfixes-dev
       - name: Build and install a more recent version of exiv2
         run: |
           git clone --branch v0.28.5 --depth 1 https://github.com/Exiv2/exiv2 src-exiv2
@@ -142,7 +147,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: ${{ github.workspace }}/src/build/Darktable-*.AppImage*
-          name: artifact-appimage
+          name: artifact-appimage-${{ env.RUNNER_ARCH }}
           retention-days: 1
 
   Windows:
@@ -262,7 +267,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: ${{ env.BUILD_DIR }}/darktable-${{ env.VERSION }}-${{ env.SYSTEM }}.exe
-          name: artifact-windows
+          name: artifact-windows-${{ env.RUNNER_ARCH }}
           retention-days: 2
 
   macOS:
@@ -343,7 +348,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.dmg
-          name: artifact-macos-${{ env.ARCHITECTURE }}
+          name: artifact-macos-${{ env.RUNNER_ARCH }}
           retention-days: 2
 
   upload_to_release:
@@ -381,6 +386,6 @@ jobs:
 
             __Please help us improve Darktable by reporting any issues you encounter!__ :wink:
           files: |
-            artifact-appimage/*
-            artifact-windows/*
+            artifact-appimage-*/*
+            artifact-windows-*/*
             artifact-macos-*/*
