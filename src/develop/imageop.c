@@ -2113,7 +2113,7 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
 
   if(all_ok)
   {
-    dt_print(DT_DEBUG_ALWAYS,
+    dt_print(DT_DEBUG_VERBOSE,
              "[iop_validate_params] `%s' validated data for type \"%s\"%s%s%s",
              name, field->header.type_name,
              *field->header.name ? ", field: " : "",
