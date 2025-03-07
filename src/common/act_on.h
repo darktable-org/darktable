@@ -42,6 +42,9 @@ typedef enum dt_act_on_algorithm_t
 // get the algorithm used to get the act_on images
 dt_act_on_algorithm_t dt_act_on_get_algorithm();
 
+// does the algorithm use culling specific selection
+gboolean dt_act_on_use_culling_selection();
+
 // get images to act on for globals change (via libs or accels)
 // The list needs to be freed by the caller
 GList *dt_act_on_get_images(const gboolean only_visible, const gboolean force, const gboolean ordered);

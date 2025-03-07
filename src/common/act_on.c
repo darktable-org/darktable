@@ -47,6 +47,11 @@ dt_act_on_algorithm_t dt_act_on_get_algorithm()
     return DT_ACT_ON_SELECTION;
 }
 
+gboolean dt_act_on_use_culling_selection()
+{
+  return (dt_act_on_get_algorithm() == DT_ACT_ON_SELECTION);
+}
+
 static int _find_custom(gconstpointer a, gconstpointer b)
 {
   return (GPOINTER_TO_INT(a) != GPOINTER_TO_INT(b));
@@ -326,12 +331,13 @@ static gboolean _cache_update_selection(const gboolean only_visible,
 {
   /** Here's how it works
    *
-   *              selection| x | ? | ? |
-   *     mouse inside table| ? | x |   |
-   *          active images|   | x | x |
-   *                       |   |   |   |
-   *                       | S | S | A |
-   *  S = selection ; O = mouseover ; A = active images
+   *              selection| x | ? | ? | ? |
+   *     mouse inside table| ? | x |   |   |
+   *          active images|   | x | x | x |
+   *           culling mode|   | ? |   | x |
+   *                       |   |   |   |   |
+   *                       | S | S | A | C |
+   *  S = selection ; O = mouseover ; A = active images ; C = culling selection
    *
    *  if only_visible is FALSE, then it will add also not visible
    *  images because of grouping force define if we try to use cache
@@ -520,12 +526,13 @@ static gchar *_get_query_selection(const gboolean only_visible)
 {
   /** Here's how it works
    *
-   *              selection| ? | ? | ? |
-   *     mouse inside table| ? | x |   |
-   *          active images|   | x | x |
-   *                       |   |   |   |
-   *                       | S | S | A |
-   *  S = selection ; O = mouseover ; A = active images
+   *              selection| ? | ? | ? | ? |
+   *     mouse inside table| ? | x |   |   |
+   *          active images|   | x | x | x |
+   *           culling mode|   | ? |   | x |
+   *                       |   |   |   |   |
+   *                       | S | S | A | C |
+   *  S = selection ; O = mouseover ; A = active images ; C = culling selection
    *
    *  if only_visible is FALSE, then it will add also not visible
    *  images because of grouping force define if we try to use cache
@@ -626,12 +633,13 @@ static dt_imgid_t _get_main_image_selection()
   /** Here's how it works -- same as for list, except we don't care
    * about mouse inside selection or table
    *
-   *              selection| ? | ? |
-   *          active images|   | x |
-   *                       |   |   |
-   *                       | S | A |
+   *              selection| ? | ? | ? |
+   *          active images|   | x | x |
+   *           culling mode|   |   | x |
+   *                       |   |   |   |
+   *                       | S | A | C |
    *  First image of ...
-   *  S = selection ; O = mouseover ; A = active images
+   *  S = selection ; O = mouseover ; A = active images ; C = culling selection
    **/
 
   dt_imgid_t imgid = NO_IMGID;

@@ -748,9 +748,9 @@ static gboolean _event_button_release(GtkWidget *widget,
 
   const dt_imgid_t overid = dt_control_get_mouse_over_id();
 
-  // if the act_on algorithm is set to "selection",
+  // if the act_on algorithm need a specific culling "selection",
   // we use a very simple culling-specific selection
-  if(dt_act_on_get_algorithm() == DT_ACT_ON_SELECTION
+  if(dt_act_on_use_culling_selection()
      && dt_is_valid_imgid(overid)
      && event->button == 1)
   {
