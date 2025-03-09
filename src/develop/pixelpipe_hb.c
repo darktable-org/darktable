@@ -1199,6 +1199,24 @@ static inline float *_get_fast_blendcache(const size_t nfloats,
   return pipe->bcache_data;
 }
 
+/* use _module_pipe_stop to test for the just processed module leaving a flag to shutdown the pipeline
+   immediately.
+   This requires extra care as we want pipecache data after the module and it's input data to be invalided.
+*/
+static inline gboolean _module_pipe_stop(dt_dev_pixelpipe_t *pipe, float *input)
+{
+  const dt_dev_pixelpipe_stopper_t stopper = dt_atomic_get_int(&pipe->shutdown);
+  if(stopper != DT_DEV_PIXELPIPE_STOP_NO)
+  {
+    if(stopper > DT_DEV_PIXELPIPE_STOP_LAST)
+    {
+      dt_dev_pixelpipe_invalidate_cacheline(pipe, input);
+      dt_dev_pixelpipe_cache_invalidate_later(pipe, stopper);
+    }
+  }
+  return stopper != DT_DEV_PIXELPIPE_STOP_NO;
+}
+
 static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                                           dt_develop_t *dev,
                                           float *input,
@@ -1229,7 +1247,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                      "in module '%s'\nplease report on GitHub"),
                      module->op);
     // this is a fundamental problem with severe problems ahead so good to finish
-    // the pipe as if good to avoid reprocessing and endless loop.
+    // the pipe as if good to avoid reprocessing in an endless loop.
     return FALSE;
   }
 
@@ -1362,7 +1380,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
         if(module->process_plain)
         {
           dt_get_times(&start);
-          for(int i = 0; i < counter; i++)
+          for(int i = 0; i < counter && !dt_pipe_shutdown(pipe); i++)
             module->process_plain(module, piece, input, *output, roi_in, roi_out);
           dt_get_times(&end);
           const float clock = (end.clock - start.clock) / (float) counter;
@@ -1399,15 +1417,10 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
                          | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
   }
 
-  const dt_dev_pixelpipe_stopper_t stopper = dt_atomic_get_int(&pipe->shutdown);
-  if(stopper != DT_DEV_PIXELPIPE_STOP_NO)
-  {
-    if(stopper > DT_DEV_PIXELPIPE_STOP_LAST)
-      dt_dev_pixelpipe_cache_invalidate_later(pipe, stopper);
+  if(_module_pipe_stop(pipe, input))
     return TRUE;
-  }
 
-  if(pfm_dump && !dt_pipe_shutdown(pipe))
+  if(pfm_dump)
   {
     dt_dump_pipe_pfm(module->op, *output,
                      roi_out->width, roi_out->height, bpp,
@@ -1474,7 +1487,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
     }
   }
 
-  if(dt_atomic_get_int(&pipe->shutdown))
+  if(dt_pipe_shutdown(pipe))
     return TRUE;
 
   /* process blending on CPU */
@@ -2070,7 +2083,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
               const int counter = (pipe->type & DT_DEV_PIXELPIPE_FULL) ? 100 : 50;
               gboolean success = TRUE;
               dt_get_times(&bench);
-              for(int i = 0; i < counter; i++)
+              for(int i = 0; i < counter && !dt_pipe_shutdown(pipe); i++)
               {
                 if(success)
                   success = module->process_cl(module, piece, cl_mem_input, *cl_mem_output,
@@ -2193,14 +2206,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           pipe->dsc.cst = module->output_colorspace(module, pipe, piece);
         }
 
-        const dt_dev_pixelpipe_stopper_t stopper = dt_atomic_get_int(&pipe->shutdown);
-        if(stopper != DT_DEV_PIXELPIPE_STOP_NO)
+        if(_module_pipe_stop(pipe, input))
         {
-          if(stopper > DT_DEV_PIXELPIPE_STOP_LAST)
-          {
-            dt_dev_pixelpipe_invalidate_cacheline(pipe, input);
-            dt_dev_pixelpipe_cache_invalidate_later(pipe, stopper);
-          }
           dt_opencl_release_mem_object(cl_mem_input);
           return TRUE;
         }
@@ -2414,13 +2421,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           pipe->dsc.cst = module->output_colorspace(module, pipe, piece);
         }
 
-        const dt_dev_pixelpipe_stopper_t stopper = dt_atomic_get_int(&pipe->shutdown);
-        if(stopper != DT_DEV_PIXELPIPE_STOP_NO)
-        {
-          if(stopper > DT_DEV_PIXELPIPE_STOP_LAST)
-            dt_dev_pixelpipe_cache_invalidate_later(pipe, stopper);
+        if(_module_pipe_stop(pipe, input))
           return TRUE;
-        }
 
         dt_iop_colorspace_type_t blend_cst =
           dt_develop_blend_colorspace(piece, pipe->dsc.cst);
