@@ -171,7 +171,7 @@ static dt_imageio_retval_t _unsupported_type(dt_image_t *img,
 #define dt_imageio_open_gm _unsupported_type
 #endif
 
-#ifndef HAVE_IMAGESMAGICK
+#ifndef HAVE_IMAGEMAGICK
 #define dt_imageio_open_im _unsupported_type
 #endif
 
