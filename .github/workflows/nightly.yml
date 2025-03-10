@@ -91,7 +91,7 @@ jobs:
             zlib1g-dev \
             appstream
       - name: Add PPA for newer multimedia libs (x86_64 only)
-        if: $RUNNER_ARCH != 'ARM64'
+        if: runner.arch != 'ARM64'
         run: |
           sudo add-apt-repository -y ppa:savoury1/graphics
           sudo add-apt-repository -y ppa:savoury1/ffmpeg4
@@ -147,7 +147,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: ${{ github.workspace }}/src/build/Darktable-*.AppImage*
-          name: artifact-appimage-$RUNNER_ARCH
+          name: artifact-appimage-${{ runner.arch }}
           retention-days: 1
 
   Windows:
@@ -267,7 +267,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: ${{ env.BUILD_DIR }}/darktable-${{ env.VERSION }}-${{ env.SYSTEM }}.exe
-          name: artifact-windows-$RUNNER_ARCH
+          name: artifact-windows-${{ runner.arch }}
           retention-days: 2
 
   macOS:
@@ -337,18 +337,16 @@ jobs:
       - name: Create DMG file
         run: |
           ./src/packaging/macosx/4_make_hb_darktable_dmg.sh
-      - name: Get architecture
-        run: |
-          echo "ARCHITECTURE=$(uname -m)" >> $GITHUB_ENV
       - name: Get version info
         run: |
-          cd ${{ env.SRC_DIR }}
-          echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-${{ env.ARCHITECTURE }}" >> $GITHUB_ENV
+          cd ${SRC_DIR}
+          echo "VERSION=$(git describe --tags --match release-* | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')" >> $GITHUB_ENV
+          echo "ARCHITECTURE=$(uname -m)" >> $GITHUB_ENV
       - name: Package upload
         uses: actions/upload-artifact@v4
         with:
-          path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.dmg
-          name: artifact-macos-$RUNNER_ARCH
+          path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}-${{ env.ARCHITECTURE }}.dmg
+          name: artifact-macos-${{ runner.arch }}
           retention-days: 2
 
   upload_to_release:
