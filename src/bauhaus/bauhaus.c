@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2024 darktable developers.
+    Copyright (C) 2012-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3507,103 +3507,6 @@ static gboolean _widget_motion_notify(GtkWidget *widget,
 
   gtk_widget_queue_draw(widget);
   return TRUE;
-}
-
-void dt_bauhaus_vimkey_exec(const char *input)
-{
-  dt_action_t *ac = darktable.control->actions_iops.target;
-  input += 5; // skip ":set "
-
-  while(ac)
-  {
-    const int prefix = strcspn(input, ".=");
-
-    if(ac->type >= DT_ACTION_TYPE_WIDGET ||
-       ac->type <= DT_ACTION_TYPE_SECTION)
-    {
-      if(!strncasecmp(ac->label, input, prefix))
-      {
-        if(!ac->label[prefix])
-        {
-          input += prefix;
-          if(*input) input++; // skip . or =
-
-          if(ac->type <= DT_ACTION_TYPE_SECTION)
-          {
-            ac = ac->target;
-            continue;
-          }
-          else
-            break;
-        }
-      }
-    }
-
-    ac = ac->next;
-  }
-
-  if(!ac
-     || ac->type != DT_ACTION_TYPE_WIDGET
-     || !ac->target
-     || !DT_IS_BAUHAUS_WIDGET(ac->target))
-    return;
-
-  float old_value = .0f, new_value = .0f;
-
-  GtkWidget *w = ac->target;
-
-  switch(DT_BAUHAUS_WIDGET(w)->type)
-  {
-    case DT_BAUHAUS_SLIDER:
-      old_value = dt_bauhaus_slider_get(w);
-      new_value = dt_calculator_solve(old_value, input);
-      dt_print(DT_DEBUG_ALWAYS, " = %f", new_value);
-      if(dt_isfinite(new_value))
-        dt_bauhaus_slider_set(w, new_value);
-      break;
-    case DT_BAUHAUS_COMBOBOX:
-      // TODO: what about text as entry?
-      old_value = dt_bauhaus_combobox_get(w);
-      new_value = dt_calculator_solve(old_value, input);
-      dt_print(DT_DEBUG_ALWAYS, " = %f", new_value);
-      if(dt_isfinite(new_value))
-        dt_bauhaus_combobox_set(w, new_value);
-      break;
-    default:
-      break;
-  }
-}
-
-// give autocomplete suggestions
-GList *dt_bauhaus_vimkey_complete(const char *input)
-{
-  GList *res = NULL;
-
-  dt_action_t *ac = darktable.control->actions_iops.target;
-
-  while(ac)
-  {
-    const int prefix = strcspn(input, ".");
-
-    if(ac->type >= DT_ACTION_TYPE_WIDGET ||
-       ac->type <= DT_ACTION_TYPE_SECTION)
-    {
-      if(!prefix || !strncasecmp(ac->label, input, prefix))
-      {
-        if(!ac->label[prefix] && input[prefix] == '.')
-        {
-            input += prefix + 1;
-          if(ac->type <= DT_ACTION_TYPE_SECTION) ac = ac->target;
-          continue;
-        }
-        else
-          res = g_list_append(res, (gchar *)ac->label + prefix);
-      }
-    }
-
-    ac = ac->next;
-  }
-  return res;
 }
 
 void dt_bauhaus_combobox_mute_scrolling(GtkWidget *widget)

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2021 darktable developers.
+    Copyright (C) 2012-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -469,12 +469,6 @@ void dt_bauhaus_combobox_set_entries_ellipsis(GtkWidget *widget,
                                               PangoEllipsizeMode ellipis);
 PangoEllipsizeMode dt_bauhaus_combobox_get_entries_ellipsis(GtkWidget *widget);
 void dt_bauhaus_combobox_mute_scrolling(GtkWidget *widget);
-
-// key accel parsing:
-// execute a line of input
-void dt_bauhaus_vimkey_exec(const char *input);
-// give autocomplete suggestions
-GList *dt_bauhaus_vimkey_complete(const char *input);
 
 static inline void set_color(cairo_t *cr, GdkRGBA color)
 {
