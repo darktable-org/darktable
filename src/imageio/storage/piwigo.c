@@ -1112,6 +1112,7 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   // new album
   ui->new_album_entry = GTK_ENTRY(gtk_entry_new()); // Album title
+  gtk_widget_set_hexpand(GTK_WIDGET(ui->new_album_entry), TRUE);
   gtk_entry_set_text(ui->new_album_entry, _("new album"));
   gtk_entry_set_width_chars(GTK_ENTRY(ui->new_album_entry), 0);
 
