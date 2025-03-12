@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
@@ -216,9 +217,6 @@ void dt_control_init(const gboolean withgui)
 
   s->actions_modifiers = dt_action_define(&s->actions_global, NULL,
                                           N_("modifiers"), NULL, &dt_action_def_modifiers);
-
-  memset(s->vimkey, 0, sizeof(s->vimkey));
-  s->vimkey_cnt = 0;
 
   // same thread as init
   s->gui_thread = pthread_self();
@@ -726,15 +724,6 @@ void dt_toast_markup_log(const char *msg, ...)
   va_end(ap);
 }
 
-static void _control_log_ack_all()
-{
-  dt_control_t *dc = darktable.control;
-  dt_pthread_mutex_lock(&dc->log_mutex);
-  dc->log_ack = dc->log_pos;
-  dt_pthread_mutex_unlock(&dc->log_mutex);
-  dt_control_queue_redraw_center();
-}
-
 void dt_control_busy_enter()
 {
   if(!dt_control_running()) return;
@@ -796,113 +785,6 @@ void dt_control_queue_redraw_widget(GtkWidget *widget)
     g_object_ref(widget);
     g_idle_add(_widget_queue_draw, (void*)widget);
   }
-}
-
-gboolean dt_control_key_pressed_override(guint key, guint state)
-{
-  if(!dt_control_running()) return FALSE;
-  // TODO: if darkroom mode
-  // did a : vim-style command start?
-  static GList *autocomplete = NULL;
-  dt_control_t *dc = darktable.control;
-  if(dc->vimkey_cnt)
-  {
-    gunichar unichar = gdk_keyval_to_unicode(key);
-    if(key == GDK_KEY_Return)
-    {
-      if(!strcmp(dc->vimkey, ":q"))
-      {
-        dt_control_quit();
-      }
-      else
-      {
-        dt_bauhaus_vimkey_exec(dc->vimkey);
-      }
-      dc->vimkey[0] = 0;
-      dc->vimkey_cnt = 0;
-      _control_log_ack_all();
-      g_list_free(autocomplete);
-      autocomplete = NULL;
-    }
-    else if(key == GDK_KEY_Escape)
-    {
-      dc->vimkey[0] = 0;
-      dc->vimkey_cnt = 0;
-      _control_log_ack_all();
-      g_list_free(autocomplete);
-      autocomplete = NULL;
-    }
-    else if(key == GDK_KEY_BackSpace)
-    {
-      dc->vimkey_cnt -= (dc->vimkey + dc->vimkey_cnt)
-                        - g_utf8_prev_char(dc->vimkey + dc->vimkey_cnt);
-      dc->vimkey[dc->vimkey_cnt] = 0;
-      if(dc->vimkey_cnt == 0)
-        _control_log_ack_all();
-      else
-        dt_control_log("%s", dc->vimkey);
-      g_list_free(autocomplete);
-      autocomplete = NULL;
-    }
-    else if(key == GDK_KEY_Tab)
-    {
-      // TODO: also support :preset and :get?
-      // auto complete:
-      if(dc->vimkey_cnt < 5)
-      {
-        g_strlcpy(dc->vimkey, ":set ", sizeof(dc->vimkey));
-        dc->vimkey_cnt = 5;
-      }
-      else if(!autocomplete)
-      {
-        // TODO: handle '.'-separated things separately
-        // this is a static list, and tab cycles through the list
-        if(dc->vimkey_cnt < strlen(dc->vimkey))
-          dc->vimkey[dc->vimkey_cnt] = 0;
-        else
-          autocomplete = dt_bauhaus_vimkey_complete(dc->vimkey + 5);
-      }
-      if(autocomplete)
-      {
-        // pop first.
-        // the paths themselves are owned by bauhaus,
-        // no free required.
-        dc->vimkey[dc->vimkey_cnt] = 0;
-        g_strlcat(dc->vimkey, (char *)autocomplete->data, sizeof(dc->vimkey));
-        autocomplete = g_list_remove(autocomplete, autocomplete->data);
-      }
-      dt_control_log("%s", dc->vimkey);
-    }
-    else if(g_unichar_isprint(unichar)) // printable unicode character
-    {
-      gchar utf8[6] = { 0 };
-      g_unichar_to_utf8(unichar, utf8);
-      g_strlcat(dc->vimkey, utf8, sizeof(dc->vimkey));
-      dc->vimkey_cnt = strlen(dc->vimkey);
-      dt_control_log("%s", dc->vimkey);
-      g_list_free(autocomplete);
-      autocomplete = NULL;
-    }
-    else if(key == GDK_KEY_Up)
-    {
-      // TODO: step history up and copy to vimkey
-    }
-    else if(key == GDK_KEY_Down)
-    {
-      // TODO: step history down and copy to vimkey
-    }
-    return TRUE;
-  }
-  else if(key == ':')
-  {
-    dc->vimkey[0] = ':';
-    dc->vimkey[1] = 0;
-    dc->vimkey_cnt = 1;
-    dt_control_log("%s", dc->vimkey);
-    return TRUE;
-  }
-
-  return FALSE;
 }
 
 void dt_control_hinter_message(const char *message)

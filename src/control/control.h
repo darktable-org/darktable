@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -53,7 +53,6 @@ void dt_control_button_released(double x, double y, int which, uint32_t state);
 void dt_control_mouse_moved(double x, double y, double pressure, int which);
 void dt_control_mouse_leave(void);
 void dt_control_mouse_enter(void);
-gboolean dt_control_key_pressed_override(guint key, guint state);
 gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
 void dt_control_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_toast_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
@@ -150,9 +149,6 @@ typedef struct dt_control_t
   dt_action_element_t element;
   GPtrArray *widget_definitions;
   GSList *input_drivers;
-
-  char vimkey[256];
-  int vimkey_cnt;
 
   // gui related stuff
   double tabborder;
