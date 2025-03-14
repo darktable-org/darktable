@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2024 darktable developers.
+    Copyright (C) 2018-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -87,6 +87,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { { 6.0f }, "hotpixels", 0},
   { { 7.0f }, "rawdenoise", 0},
   { { 8.0f }, "demosaic", 0},
+  { { 8.5f }, "segmentation", 0},
   { { 9.0f }, "mask_manager", 0},
   { {10.0f }, "denoiseprofile", 0},
   { {11.0f }, "tonemap", 0},
@@ -182,6 +183,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { { 6.0f }, "hotpixels", 0},
   { { 7.0f }, "rawdenoise", 0},
   { { 8.0f }, "demosaic", 0},
+  { { 8.5f }, "segmentation", 0},
   { { 9.0f }, "denoiseprofile", 0},
   { {10.0f }, "bilateral", 0},
   { {11.0f }, "rotatepixels", 0},
@@ -298,6 +300,7 @@ const dt_iop_order_entry_t v50_order[] = {
   { { 6.0f }, "hotpixels", 0},
   { { 7.0f }, "rawdenoise", 0},
   { { 8.0f }, "demosaic", 0},
+  { { 8.5f }, "segmentation", 0},
   { { 9.0f }, "denoiseprofile", 0},
   { {10.0f }, "bilateral", 0},
   { {11.0f }, "rotatepixels", 0},
@@ -417,6 +420,7 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 7.0f }, "rawdenoise", 0 },
   { { 8.0f }, "demosaic", 0 },
   // all the modules between [8; 28] expect linear RGB, so they need to be moved after colorin
+  { { 8.5f }, "segmentation", 0},
   { { 28.0f }, "colorin", 0 },
   // moved modules : (copy-pasted in the same order)
   { { 28.0f }, "denoiseprofile", 0},
@@ -536,6 +540,7 @@ const dt_iop_order_entry_t v50_jpg_order[] = {
   { { 7.0f }, "rawdenoise", 0 },
   { { 8.0f }, "demosaic", 0 },
   // all the modules between [8; 28] expect linear RGB, so they need to be moved after colorin
+  { { 8.5f }, "segmentation", 0},
   { { 28.0f }, "colorin", 0 },
   // moved modules : (copy-pasted in the same order)
   { { 28.0f }, "denoiseprofile", 0},
@@ -1173,6 +1178,7 @@ GList *dt_ioppr_get_iop_order_list(const dt_imgid_t imgid,
           _insert_before(iop_order_list, "nlmeans", "blurs");
           _insert_before(iop_order_list, "filmicrgb", "sigmoid");
           _insert_before(iop_order_list, "colorbalancergb", "colorequal");
+          _insert_before(iop_order_list, "segmentation", "denoiseprofile");
         }
       }
       else if(version >= DT_IOP_ORDER_LEGACY

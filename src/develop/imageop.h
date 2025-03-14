@@ -102,7 +102,8 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_GUIDES_WIDGET = 1 << 15,     // require the guides widget
   IOP_FLAGS_CROP_EXPOSER = 1 << 16,      // offers crop exposing
   IOP_FLAGS_EXPAND_ROI_IN = 1 << 17,     // we might have to take special care about roi expansion
-  IOP_FLAGS_WRITE_DETAILS = 1 << 18
+  IOP_FLAGS_WRITE_DETAILS = 1 << 18,
+  IOP_FLAGS_WRITE_SEGMENTATION = 1 << 19
 } dt_iop_flags_t;
 
 /** status of a module*/

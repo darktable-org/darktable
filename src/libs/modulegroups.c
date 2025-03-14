@@ -1604,6 +1604,7 @@ void init_presets(dt_lib_module_t *self)
   AM("lens");
   AM("liquify");
   AM("nlmeans");
+  AM("segmentation");
   AM("rawdenoise");
   AM("retouch");
   AM("rotatepixels");
@@ -1705,6 +1706,7 @@ void init_presets(dt_lib_module_t *self)
   AM("lens");
   AM("retouch");
   AM("liquify");
+  AM("segmentation");
   AM("sharpen");
   AM("nlmeans");
 
@@ -1756,6 +1758,7 @@ void init_presets(dt_lib_module_t *self)
   AM("lens");
   AM("retouch");
   AM("liquify");
+  AM("segmentation");
   AM("sharpen");
   AM("nlmeans");
 

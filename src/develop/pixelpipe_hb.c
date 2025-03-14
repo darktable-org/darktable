@@ -3277,7 +3277,8 @@ float *dt_dev_get_raster_mask(dt_dev_pixelpipe_iop_t *piece,
 
     const gboolean source_enabled = source_piece && source_piece->enabled;
     const int maskmode = source_enabled ? source_piece->module->blend_params->mask_mode : 0;
-    const gboolean source_writing = maskmode != 0 && (maskmode & DEVELOP_MASK_RASTER) == 0;
+    const gboolean source_writing = (maskmode != 0 && (maskmode & DEVELOP_MASK_RASTER) == 0)
+                                  || (source_piece->module->flags() & IOP_FLAGS_WRITE_SEGMENTATION);
     /* there might be stale masks from disabled modules or modules that don't write masks.
        don't use those but delete them to avoid mem leaks.
     */

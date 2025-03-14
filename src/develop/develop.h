@@ -152,6 +152,18 @@ typedef struct dt_dev_chroma_t
   gboolean late_correction;
 } dt_dev_chroma_t;
 
+#define SEGMENTATION_INSTANCES 4
+#define SEGMENTATION_MAXSEGMENTS 128
+typedef struct dt_segmentation_t
+{
+  dt_pthread_mutex_t lock;
+  dt_hash_t hash;
+  int model;          // the chosen model
+  int segments;       // available segments after doing segmentation
+  int width, height;  // dimension of each segment mask
+  uint8_t *map[SEGMENTATION_MAXSEGMENTS];
+} dt_segmentation_t;
+
 typedef struct dt_develop_t
 {
   gboolean gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be
@@ -284,6 +296,12 @@ typedef struct dt_develop_t
   } proxy;
 
   dt_dev_chroma_t chroma;
+
+  struct dt_iop_module_so_t *segmentizers;
+  void (*get_segmentation_mask)(struct dt_dev_pixelpipe_iop_t *piece,
+                                 struct dt_iop_module_t *target_module,
+                                 const uint32_t instance,
+                                 const uint32_t segment);
 
   // for exposing and handling the crop
   struct

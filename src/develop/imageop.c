@@ -1865,6 +1865,11 @@ void dt_iop_advertise_rastermask(dt_iop_module_t *module, const int mask_mode)
         "raster mask advertised", NULL, module, DT_DEVICE_NONE, NULL, NULL);
     }
   }
+  else if(module->flags() & IOP_FLAGS_WRITE_SEGMENTATION)
+  {
+      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS | DT_DEBUG_VERBOSE,
+        "segmentation mask advertised", NULL, module, DT_DEVICE_NONE, NULL, NULL);
+  }
   else
   {
     if(g_hash_table_remove(module->raster_mask.source.masks, GINT_TO_POINTER(key)))
