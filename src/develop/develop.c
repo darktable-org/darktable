@@ -442,6 +442,9 @@ restart:
   if(dt_dev_pixelpipe_process(pipe, dev, x, y, wd, ht, scale, devid))
   {
     const gboolean img_changed = dev->image_force_reload || pipe->loading || pipe->input_changed;
+    // As image_force_reload could be set while we are restarting we clear it and possibly flush the cache too.
+    if(dev->image_force_reload) dt_dev_pixelpipe_cache_flush(pipe);
+    dev->image_force_reload = FALSE;
     const dt_dev_pixelpipe_stopper_t shutdown = dt_atomic_exch_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
     if(shutdown != DT_DEV_PIXELPIPE_STOP_NO || img_changed)
       dt_print_pipe(DT_DEBUG_PIPE,
