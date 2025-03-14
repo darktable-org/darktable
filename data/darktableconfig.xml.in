@@ -3497,13 +3497,13 @@
     <name>plugins/darkroom/workflow</name>
     <type>
       <enum>
-        <option>scene-referred (filmic)</option>
         <option>scene-referred (sigmoid)</option>
+        <option>scene-referred (filmic)</option>
         <option>display-referred (legacy)</option>
         <option>none</option>
       </enum>
     </type>
-    <default>scene-referred (filmic)</default>
+    <default>scene-referred (sigmoid)</default>
     <shortdescription>auto-apply pixel workflow defaults</shortdescription>
     <longdescription>scene-referred workflow is based on linear modules and will auto-apply filmic or sigmoid, color calibration and exposure,\ndisplay-referred workflow is based on Lab modules and will auto-apply base curve, white balance and the legacy module pipe order.</longdescription>
   </dtconfig>
