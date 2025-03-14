@@ -917,13 +917,9 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, dt_
   // windows could have been expanded for example, we need to create a new surface of the good size and redraw
   if(width != strip->panel_width || height != strip->panel_height)
   {
-    // if it's the first show, we need to recompute the scroll too
-    if(strip->panel_width == 0 || strip->panel_height == 0)
-    {
-      strip->panel_width = width;
-      strip->panel_height = height;
-      strip->time_pos = _selection_scroll_to(strip->start_t, strip);
-    }
+    strip->panel_width = width;
+    strip->panel_height = height;
+    strip->time_pos = _selection_scroll_to(strip->start_t, strip);
     if(strip->surface)
     {
       cairo_surface_destroy(strip->surface);
