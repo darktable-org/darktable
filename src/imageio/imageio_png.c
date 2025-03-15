@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -272,41 +272,56 @@ int dt_imageio_png_read_profile(const char *filename,
   cicp->transfer_characteristics = DT_CICP_TRANSFER_CHARACTERISTICS_UNSPECIFIED;
   cicp->matrix_coefficients = DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED;
 
-  dt_imageio_png_t image;
-  png_charp name;
-  png_uint_32 proflen = 0;
-  png_bytep profile;
-
   if(!(filename && *filename))
     return 0;
+
+  dt_imageio_png_t image;
 
   if(!dt_imageio_png_read_header(filename, &image))
     return 0;
 
-  // TODO: also add check for known cICP chunk read support once added to libpng
-#ifdef PNG_STORE_UNKNOWN_CHUNKS_SUPPORTED
+  // get CICP codes
+  png_byte data[4];
+  png_uint_32 ret = 0;
+#ifdef PNG_cICP_SUPPORTED
+  ret = png_get_cICP(image.png_ptr, image.info_ptr, &data[0], &data[1], &data[2], &data[3]);
+#elif defined(PNG_STORE_UNKNOWN_CHUNKS_SUPPORTED)
   png_unknown_chunkp unknowns = NULL;
   const int num = png_get_unknown_chunks(image.png_ptr, image.info_ptr, &unknowns);
   for(size_t c = 0; c < num; ++c)
     if(!strcmp((const char *)unknowns[c].name, "cICP"))
     {
-      // only RGB (matrix coeffs 0 in data[2]) and full range (1 in data[3])
-      // pixel values are supported by the loader above and dt color management
-      if(!unknowns[c].data[2] && unknowns[c].data[3])
-      {
-        cicp->color_primaries = (dt_colorspaces_cicp_color_primaries_t)unknowns[c].data[0];
-        cicp->transfer_characteristics = (dt_colorspaces_cicp_transfer_characteristics_t)unknowns[c].data[1];
-        cicp->matrix_coefficients = (dt_colorspaces_cicp_matrix_coefficients_t)unknowns[c].data[2];
-      }
-      else
-        dt_print(DT_DEBUG_IMAGEIO,
-                 "[png_open] encountered YUV and/or narrow-range image '%s', assuming unknown CICP",
-                 filename);
+      data[0] = unknowns[c].data[0];
+      data[1] = unknowns[c].data[1];
+      data[2] = unknowns[c].data[2];
+      data[3] = unknowns[c].data[3];
+      ret = 1;
       break;
     }
 #endif
+  // only RGB (matrix coeffs 0 in data[2]) and full range (1 in data[3])
+  // pixel values are supported by the loader above and dt color management
+  if(ret != 0)
+  {
+    if(!data[2] && data[3])
+    {
+      cicp->color_primaries = (dt_colorspaces_cicp_color_primaries_t)data[0];
+      cicp->transfer_characteristics = (dt_colorspaces_cicp_transfer_characteristics_t)data[1];
+      cicp->matrix_coefficients = (dt_colorspaces_cicp_matrix_coefficients_t)data[2];
+    }
+    else
+    {
+      dt_print(DT_DEBUG_IMAGEIO,
+               "[png_open] encountered YUV and/or narrow-range image '%s', assuming unknown CICP",
+               filename);
+    }
+  }
 
+  // get ICC profile
+  png_uint_32 proflen = 0;
 #ifdef PNG_iCCP_SUPPORTED
+  png_charp name;
+  png_bytep profile;
   if(png_get_valid(image.png_ptr, image.info_ptr, PNG_INFO_iCCP) != 0
      && png_get_iCCP(image.png_ptr, image.info_ptr, &name, NULL, &profile, &proflen) != 0)
   {
