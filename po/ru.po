@@ -25527,8 +25527,8 @@ msgid "color assessment"
 msgstr "Цветовая оценка"
 
 #: ../src/views/darkroom.c:2257
-msgid "toggle ISO 12646 color assessment conditions"
-msgstr "Переключить режим цветовой оценки ISO 12646"
+msgid "toggle color assessment conditions"
+msgstr "Переключить режим цветовой оценки"
 
 #: ../src/views/darkroom.c:2264
 msgid "high quality processing"
@@ -25737,8 +25737,8 @@ msgid "histogram profile"
 msgstr "Профиль гистограммы"
 
 #: ../src/views/darkroom.c:2464
-msgid "second preview window ISO 12646 color assessment"
-msgstr "Второй предпросмотр цветовой оценки ISO 12646"
+msgid "second preview window color assessment"
+msgstr "Второй предпросмотр цветовой оценки"
 
 #: ../src/views/darkroom.c:2466
 msgid "color assessment second preview"

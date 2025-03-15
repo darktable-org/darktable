@@ -3461,8 +3461,8 @@ void dt_gui_apply_theme()
           [DT_GUI_COLOR_MAP_LOC_SHAPE_HIGH] = { "map_count_circle_color_h", { 1.0, 1.0, 0.8, 1.0 } },
           [DT_GUI_COLOR_MAP_LOC_SHAPE_LOW] = { "map_count_circle_color_l", { 0.0, 0.0, 0.0, 1.0 } },
           [DT_GUI_COLOR_MAP_LOC_SHAPE_DEF] = { "map_count_circle_color_d", { 1.0, 0.0, 0.0, 1.0 } },
-          [DT_GUI_COLOR_ISO12646_BG] = { "iso12646_bg_color", { 0.4663, 0.4663, 0.4663, 1.0} },
-          [DT_GUI_COLOR_ISO12646_FG] = { "iso12646_fg_color", { 1.0, 1.0, 1.0, 1.0} } };
+          [DT_GUI_COLOR_COLOR_ASSESSMENT_BG] = { "color_assessment_bg_color", { 0.4663, 0.4663, 0.4663, 1.0} },
+          [DT_GUI_COLOR_COLOR_ASSESSMENT_FG] = { "color_assessment_fg_color", { 1.0, 1.0, 1.0, 1.0} } };
 
   // starting from 1 as DT_GUI_COLOR_BG is not part of this table
   for(int i = 1; i < DT_GUI_COLOR_LAST; i++)

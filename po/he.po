@@ -24163,8 +24163,8 @@ msgid "color assessment"
 msgstr "הערכת צבע"
 
 #: ../src/views/darkroom.c:2359
-msgid "toggle ISO 12646 color assessment conditions"
-msgstr "מתג תנאי הערכת צבע ISO 12646"
+msgid "toggle color assessment conditions"
+msgstr "מתג תנאי הערכת צבע"
 
 #: ../src/views/darkroom.c:2372
 msgid ""

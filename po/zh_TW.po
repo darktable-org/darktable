@@ -28937,8 +28937,8 @@ msgid "color assessment"
 msgstr "色彩評估"
 
 #: ../src/views/darkroom.c:2280
-msgid "toggle ISO 12646 color assessment conditions"
-msgstr "切換 ISO 12646 色彩評估模式"
+msgid "toggle color assessment conditions"
+msgstr "切換色彩評估模式"
 
 #: ../src/views/darkroom.c:2289
 msgid "high quality processing"
@@ -29146,8 +29146,8 @@ msgid "histogram profile"
 msgstr "直方圖描述檔"
 
 #: ../src/views/darkroom.c:2489
-msgid "second preview window ISO 12646 color assessment"
-msgstr "切換第二個預覽視窗 ISO 12646 色彩評估模式"
+msgid "second preview window color assessment"
+msgstr "切換第二個預覽視窗色彩評估模式"
 
 #: ../src/views/darkroom.c:2491
 msgid "color assessment second preview"

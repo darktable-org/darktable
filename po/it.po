@@ -26147,8 +26147,8 @@ msgid "color assessment"
 msgstr "Valitazione colori"
 
 #: ../src/views/darkroom.c:2257
-msgid "toggle ISO 12646 color assessment conditions"
-msgstr "Nascondi le condizioni di valutazione colore ISO 12646"
+msgid "toggle color assessment conditions"
+msgstr "Nascondi le condizioni di valutazione colore"
 
 #: ../src/views/darkroom.c:2264
 #| msgid "high quality resampling"
@@ -26365,8 +26365,8 @@ msgid "histogram profile"
 msgstr "Profilo istogramma"
 
 #: ../src/views/darkroom.c:2464
-msgid "second preview window ISO 12646 color assessment"
-msgstr "Seconda finestra di anteprima di valutazione colore ISO 12646"
+msgid "second preview window color assessment"
+msgstr "Seconda finestra di anteprima di valutazione colore"
 
 #: ../src/views/darkroom.c:2466
 msgid "color assessment second preview"
@@ -27155,4 +27155,3 @@ msgstr "Azioni mouse"
 #, c-format
 #~ msgid "%.1f mm (%.1f mm FF equiv, crop %.1f)"
 #~ msgstr "%.1f mm (%.1f mm FF equivalente, crop %.1f)"
-

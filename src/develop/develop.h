@@ -114,7 +114,7 @@ typedef struct dt_dev_viewport_t
   int32_t border_size;
   double dpi, dpi_factor, ppd;
 
-  gboolean iso_12646;
+  gboolean color_assessment;
 
   dt_dev_zoom_t zoom;
   int closeup;
@@ -320,11 +320,11 @@ typedef struct dt_develop_t
     float threshold;
   } rawoverexposed;
 
-  // ISO 12646-compliant colour assessment conditions
+  // Color assessment conditions
   struct
   {
     GtkWidget *floating_window, *button; // TODO (#18559): remove gtk stuff from here
-  } iso_12646;
+  } color_assessment;
 
   // late scaling down from full roi
   struct

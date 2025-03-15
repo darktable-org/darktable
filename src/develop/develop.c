@@ -143,8 +143,8 @@ void dt_dev_init(dt_develop_t *dev,
   dev->overexposed.lower = dt_conf_get_float("darkroom/ui/overexposed/lower");
   dev->overexposed.upper = dt_conf_get_float("darkroom/ui/overexposed/upper");
 
-  dev->full.iso_12646 = dt_conf_get_bool("full_window/iso_12646");
-  dev->preview2.iso_12646 = dt_conf_get_bool("second_window/iso_12646");
+  dev->full.color_assessment = dt_conf_get_bool("full_window/color_assessment");
+  dev->preview2.color_assessment = dt_conf_get_bool("second_window/color_assessment");
 
   dev->full.zoom = dev->preview2.zoom = DT_ZOOM_FIT;
   dev->full.closeup = dev->preview2.closeup = 0;
@@ -655,11 +655,11 @@ void dt_dev_load_image(dt_develop_t *dev,
 void dt_dev_configure(dt_dev_viewport_t *port)
 {
   int32_t tb = 0;
-  if(port->iso_12646)
+  if(port->color_assessment)
   {
     // the border size is taken from conf as an absolute in cm
     // and uses dpi and ppd for an absolute size
-    const int bsize = port->dpi * port->ppd * dt_conf_get_float("darkroom/ui/iso12464_border") / 2.54f;
+    const int bsize = port->dpi * port->ppd * dt_conf_get_float("darkroom/ui/color_assessment_border") / 2.54f;
     // for safety, at least 2 pixels and at least 40% for content
     tb = MIN(MAX(2, bsize), 0.3f * MIN(port->orig_width, port->orig_height));
   }
@@ -3494,7 +3494,7 @@ void dt_dev_image(const dt_imgid_t imgid,
     dev.full.width     = width;
     dev.full.height    = height;
     dev.full.ppd       = 1.0;
-    dev.full.iso_12646 = FALSE;
+    dev.full.color_assessment = FALSE;
   }
 
   // process the pipe

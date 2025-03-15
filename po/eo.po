@@ -23490,8 +23490,8 @@ msgid "color assessment"
 msgstr "kolora takso"
 
 #: ../src/views/darkroom.c:2282
-msgid "toggle ISO 12646 color assessment conditions"
-msgstr "alterni ISO 12646 kolorajn taksajn kondiĉojn"
+msgid "toggle color assessment conditions"
+msgstr "alterni kolorajn taksajn kondiĉojn"
 
 #: ../src/views/darkroom.c:2295
 msgid ""
