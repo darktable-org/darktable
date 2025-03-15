@@ -1527,8 +1527,7 @@ static void _full_iso12646_callback(GtkToggleButton *checkbutton, dt_develop_t *
 static void _iso12646_border_width_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_develop_t *dev = (dt_develop_t *) user_data;
-  dev->iso_12646.border_width = dt_bauhaus_slider_get(slider);
-  dt_conf_set_float("darkroom/ui/iso12464_border", dev->iso_12646.border_width);
+  dt_conf_set_float("darkroom/ui/iso12464_border", dt_bauhaus_slider_get(slider));
   if (dev->full.iso_12646)
   {
     dt_dev_configure(&dev->full);
@@ -1543,8 +1542,7 @@ static void _iso12646_border_width_callback(GtkWidget *slider, gpointer user_dat
 static void _iso12646_border_ratio_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_develop_t *dev = (dt_develop_t *) user_data;
-  dev->iso_12646.border_ratio = dt_bauhaus_slider_get(slider);
-  dt_conf_set_float("darkroom/ui/iso12464_ratio", dev->iso_12646.border_ratio);
+  dt_conf_set_float("darkroom/ui/iso12464_ratio", dt_bauhaus_slider_get(slider));
   if (dev->full.iso_12646)
   {
     dt_dev_reprocess_center(dev);
@@ -2478,9 +2476,8 @@ void gui_init(dt_view_t *self)
     gtk_container_add(GTK_CONTAINER(dev->iso_12646.floating_window), vbox);
 
     /* border_width */
-    dev->iso_12646.border_width = dt_conf_get_float("darkroom/ui/iso12464_border");
     GtkWidget *border_width_slider = dt_bauhaus_slider_new_action(DT_ACTION(self), 0., 5., 0.1, 4., 1);
-    dt_bauhaus_slider_set(border_width_slider, dev->iso_12646.border_width);
+    dt_bauhaus_slider_set(border_width_slider, dt_conf_get_float("darkroom/ui/iso12464_border"));
     dt_bauhaus_slider_set_format(border_width_slider, _(" cm"));
     dt_bauhaus_widget_set_label(border_width_slider, N_("iso_12646"), N_("border width"));
     gtk_widget_set_tooltip_text(border_width_slider,
@@ -2491,9 +2488,8 @@ void gui_init(dt_view_t *self)
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(border_width_slider), TRUE, TRUE, 0);
 
     /* border_ratio */
-    dev->iso_12646.border_ratio = dt_conf_get_float("darkroom/ui/iso12464_ratio");
     GtkWidget *border_ratio_slider = dt_bauhaus_slider_new_action(DT_ACTION(self), 0., 1., 0.05, 0.4, 2);
-    dt_bauhaus_slider_set(border_ratio_slider, dev->iso_12646.border_ratio);
+    dt_bauhaus_slider_set(border_ratio_slider, dt_conf_get_float("darkroom/ui/iso12464_ratio"));
     dt_bauhaus_slider_set_format(border_ratio_slider, "");
     dt_bauhaus_widget_set_label(border_ratio_slider, N_("iso_12646"), N_("border ratio"));
     gtk_widget_set_tooltip_text(border_ratio_slider,

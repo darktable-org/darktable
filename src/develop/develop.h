@@ -106,7 +106,7 @@ typedef struct dt_dev_proxy_exposure_t
 struct dt_dev_pixelpipe_t;
 typedef struct dt_dev_viewport_t
 {
-  GtkWidget *widget;
+  GtkWidget *widget; // TODO (#18559): remove gtk stuff from here
   int32_t orig_width, orig_height;
 
   // dimensions of window
@@ -300,8 +300,7 @@ typedef struct dt_develop_t
   // for the overexposure indicator
   struct
   {
-    GtkWidget *floating_window, *button;
-    // yes, having gtk stuff in here is ugly. live with it.
+    GtkWidget *floating_window, *button; // TODO (#18559): remove gtk stuff from here
 
     gboolean enabled;
     dt_dev_overexposed_colorscheme_t colorscheme;
@@ -313,8 +312,7 @@ typedef struct dt_develop_t
   // for the raw overexposure indicator
   struct
   {
-    GtkWidget *floating_window, *button;
-    // yes, having gtk stuff in here is ugly. live with it.
+    GtkWidget *floating_window, *button; // TODO (#18559): remove gtk stuff from here
 
     gboolean enabled;
     dt_dev_rawoverexposed_mode_t mode;
@@ -325,26 +323,23 @@ typedef struct dt_develop_t
   // ISO 12646-compliant colour assessment conditions
   struct
   {
-    GtkWidget *floating_window, *button; // yes, ugliness is the norm. what did you expect ?
-
-    float border_width;
-    float border_ratio;
+    GtkWidget *floating_window, *button; // TODO (#18559): remove gtk stuff from here
   } iso_12646;
 
   // late scaling down from full roi
   struct
   {
-    GtkWidget *button;
+    GtkWidget *button; // TODO (#18559): remove gtk stuff from here
     gboolean enabled;
   } late_scaling;
 
   // the display profile related things (softproof, gamut check, profiles ...)
   struct
   {
-    GtkWidget *floating_window, *softproof_button, *gamut_button;
+    GtkWidget *floating_window, *softproof_button, *gamut_button; // TODO (#18559): remove gtk stuff from here
   } profile;
 
-  GtkWidget *second_wnd, *second_wnd_button;
+  GtkWidget *second_wnd, *second_wnd_button; // TODO (#18559): remove gtk stuff from here
 
   // several views of the same image
   dt_dev_viewport_t full, preview2;
