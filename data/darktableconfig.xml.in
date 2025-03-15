@@ -2245,7 +2245,7 @@
   </dtconfig>
   <dtconfig>
     <name>darkroom/ui/color_assessment_border</name>
-    <type min="1.0" max="5.0">float</type>
+    <type min="2.0" max="5.0">float</type>
     <default>4.0</default>
     <shortdescription>total width of border in color assessment mode (cm)</shortdescription>
   </dtconfig>

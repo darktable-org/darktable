@@ -1945,8 +1945,7 @@ end:
   }
 }
 
-static void _display2_color_assessment_callback(GtkToggleButton *checkbutton,
-                                        dt_develop_t *dev)
+static void _display2_color_assessment_callback(GtkToggleButton *checkbutton, dt_develop_t *dev)
 {
   dev->preview2.color_assessment = gtk_toggle_button_get_active(checkbutton);
   dt_conf_set_bool("second_window/color_assessment", dev->preview2.color_assessment);
@@ -2476,7 +2475,7 @@ void gui_init(dt_view_t *self)
     gtk_container_add(GTK_CONTAINER(dev->color_assessment.floating_window), vbox);
 
     /* border_width */
-    GtkWidget *border_width_slider = dt_bauhaus_slider_new_action(DT_ACTION(self), 0., 5., 0.1, 4., 1);
+    GtkWidget *border_width_slider = dt_bauhaus_slider_new_action(DT_ACTION(self), 2., 5., 0.1, 4., 1);
     dt_bauhaus_slider_set(border_width_slider, dt_conf_get_float("darkroom/ui/color_assessment_border"));
     dt_bauhaus_slider_set_format(border_width_slider, _(" cm"));
     dt_bauhaus_widget_set_label(border_width_slider, N_("color_assessment"), N_("border width"));
@@ -2488,7 +2487,7 @@ void gui_init(dt_view_t *self)
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(border_width_slider), TRUE, TRUE, 0);
 
     /* border_ratio */
-    GtkWidget *border_ratio_slider = dt_bauhaus_slider_new_action(DT_ACTION(self), 0., 1., 0.05, 0.4, 2);
+    GtkWidget *border_ratio_slider = dt_bauhaus_slider_new_action(DT_ACTION(self), 0.1, 0.9, 0.05, 0.4, 2);
     dt_bauhaus_slider_set(border_ratio_slider, dt_conf_get_float("darkroom/ui/color_assessment_ratio"));
     dt_bauhaus_slider_set_format(border_ratio_slider, "");
     dt_bauhaus_widget_set_label(border_ratio_slider, N_("color_assessment"), N_("border ratio"));

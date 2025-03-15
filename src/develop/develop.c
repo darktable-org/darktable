@@ -659,9 +659,10 @@ void dt_dev_configure(dt_dev_viewport_t *port)
   {
     // the border size is taken from conf as an absolute in cm
     // and uses dpi and ppd for an absolute size
-    const int bsize = port->dpi * port->ppd * dt_conf_get_float("darkroom/ui/color_assessment_border") / 2.54f;
-    // for safety, at least 2 pixels and at least 40% for content
-    tb = MIN(MAX(2, bsize), 0.3f * MIN(port->orig_width, port->orig_height));
+    const double dpi = dt_get_physical_screen_dpi(port->widget);
+    const int bsize = dpi * port->ppd * dt_conf_get_float("darkroom/ui/color_assessment_border") / 2.54f;
+    // for safety, at least 2 pixels and at least 30% for content
+    tb = CLAMP(bsize, 2, 0.3f * MIN(port->orig_width, port->orig_height));
   }
   else if(port == &darktable.develop->full)
   {
