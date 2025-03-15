@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-02-24 19:29+0100\n"
-"PO-Revision-Date: 2025-02-27 22:18+0100\n"
+"PO-Revision-Date: 2025-03-14 22:52+0100\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -2863,7 +2863,7 @@ msgstr "Normalisiertes RGB"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:159
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:276
 msgid "basic power"
-msgstr "Grundleistung"
+msgstr "Basis Power"
 
 #: ../build/lib/darktable/plugins/introspection_basicadj.c:92
 #: ../build/lib/darktable/plugins/introspection_basicadj.c:195
@@ -3430,7 +3430,7 @@ msgstr "Lift, Gamma, Gain (ProPhotoRGB)"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:230
 msgid "slope, offset, power (ProPhoto RGB)"
-msgstr "Neigung, Offset, Stärke (ProPhotoRGB)"
+msgstr "Slope, Offset, Power (ProPhotoRGB)"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:231
 msgid "lift, gamma, gain (sRGB)"
@@ -4393,7 +4393,7 @@ msgstr "Luminanz Y"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:552
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:384
 msgid "RGB power norm"
-msgstr "RGB-Stärke-Standard"
+msgstr "RGB-Power-Norm"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:553
 msgid "RGB euclidean norm (legacy)"
@@ -17916,12 +17916,12 @@ msgstr "Offset"
 #: ../src/iop/colorbalance.c:1724
 msgctxt "color"
 msgid "power"
-msgstr "Stärke"
+msgstr "Power"
 
 #: ../src/iop/colorbalance.c:1724
 msgctxt "color"
 msgid "slope"
-msgstr "Steigung"
+msgstr "Slope"
 
 #: ../src/iop/colorbalance.c:1725
 msgctxt "color"
@@ -18025,27 +18025,27 @@ msgstr "Blau-Faktor für Lift/Offset"
 
 #: ../src/iop/colorbalance.c:2028
 msgid "factor of gamma/power"
-msgstr "Faktor für Gamma/Stärke"
+msgstr "Faktor für Gamma/Power"
 
 #: ../src/iop/colorbalance.c:2029
 msgid "factor of red for gamma/power"
-msgstr "Rot-Faktor für Gamma/Stärke"
+msgstr "Rot-Faktor für Gamma/Power"
 
 #: ../src/iop/colorbalance.c:2030
 msgid "factor of green for gamma/power"
-msgstr "Grün-Faktor für Gamma/Stärke"
+msgstr "Grün-Faktor für Gamma/Power"
 
 #: ../src/iop/colorbalance.c:2031
 msgid "factor of blue for gamma/power"
-msgstr "Blau-Faktor für Gamma/Stärke"
+msgstr "Blau-Faktor für Gamma/Power"
 
 #: ../src/iop/colorbalance.c:2034
 msgid "factor of gain/slope"
-msgstr "Faktor für Gain/Steigung"
+msgstr "Faktor für Gain/Slope"
 
 #: ../src/iop/colorbalance.c:2035
 msgid "factor of red for gain/slope"
-msgstr "Rot-Faktor für Gain/Steigung"
+msgstr "Rot-Faktor für Gain/Slope"
 
 #: ../src/iop/colorbalance.c:2036
 msgid "factor of green for gain/slope"
@@ -18078,7 +18078,7 @@ msgid ""
 "offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance|"
 "saturation"
 msgstr ""
-"Schatten Mitteltöne Lichter|CDL|Color Grading|Kontrast|Chrominanz|Farbton|"
+"Offset Power Slope|CDL|Color Grading|Kontrast|Chrominanz|Farbton|"
 "Lebendigkeit|Sättigung"
 
 #: ../src/iop/colorbalancergb.c:178
@@ -18320,13 +18320,13 @@ msgstr "Schwellenwert"
 #: ../src/iop/colorbalancergb.c:1993
 msgid "peak white luminance value used to normalize the power function"
 msgstr ""
-"Maximalwert der Weißluminanz, der zur Normalisierung der Potenzfunktion "
+"Maximalwert der Weißluminanz, der zur Normalisierung der Power-Funktion "
 "verwendet wird"
 
 #: ../src/iop/colorbalancergb.c:1999
 msgid "peak gray luminance value used to normalize the power function"
 msgstr ""
-"Maximalwert der Grauluminanz, der zur Normalisierung der Potenzfunktion "
+"Maximalwert der Grauluminanz, der zur Normalisierung der Power-Funktion "
 "verwendet wird"
 
 #: ../src/iop/colorbalancergb.c:2001
@@ -18458,7 +18458,7 @@ msgstr ""
 
 #: ../src/iop/colorchecker.c:1576
 msgid "green-magenta offset"
-msgstr "Grün-Magenta Kompensation"
+msgstr "Grün-Magenta Anpassung"
 
 #: ../src/iop/colorchecker.c:1585
 msgid ""
@@ -18472,7 +18472,7 @@ msgstr ""
 
 #: ../src/iop/colorchecker.c:1588
 msgid "blue-yellow offset"
-msgstr "Blau-Gelb Kompensation"
+msgstr "Blau-Gelb Anpassung"
 
 #: ../src/iop/colorchecker.c:1597
 msgid ""
@@ -20348,7 +20348,7 @@ msgid ""
 "of the display or color space.\n"
 "you should never touch that unless you know what you are doing."
 msgstr ""
-"Stärke oder Gamma der Übertragungsfunktion\n"
+"Power oder Gamma der Transferfunktion\n"
 "des Displays oder des Farbraums.\n"
 "Sollte nicht geändert werden, es sei denn, Du weisst, was Du tust."
 
