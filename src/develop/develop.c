@@ -338,7 +338,7 @@ void dt_dev_process_image_job(dt_develop_t *dev,
                              port ? 1.0 : buf.iscale);
 
   // We require calculation of pixelpipe dimensions via dt_dev_pixelpipe_change() in these cases
-  const gboolean initial = pipe->loading || dev->image_force_reload || pipe->input_changed;
+  gboolean initial = pipe->loading || dev->image_force_reload || pipe->input_changed;
 
   if(pipe->loading)
   {
@@ -391,10 +391,20 @@ restart:
   if(port == &dev->full)
     pipe->input_timestamp = dev->timestamp;
 
-  const gboolean pipe_changed = pipe->changed != DT_DEV_PIPE_UNCHANGED;
-  // dt_dev_pixelpipe_change() locks history mutex while syncing nodes and finally calculates dimensions
-  if(pipe_changed || initial || (port && port->pipe->loading))
+  const gboolean changing = (pipe->changed != DT_DEV_PIPE_UNCHANGED) || initial;
+
+  // to be checked: can we possibly restrict later dt_dev_zoom_move() calls
+  const gboolean require_zoom_test = ((pipe->changed & ~DT_DEV_PIPE_ZOOMED) != DT_DEV_PIPE_UNCHANGED) || initial;
+
+  /* dt_dev_pixelpipe_change()
+      locks history mutex while syncing nodes
+      finally calculates dimensions
+      leaves clean pipe->changed
+  */
+  if(changing || (port && port->pipe->loading))
     dt_dev_pixelpipe_change(pipe, dev);
+
+  initial = FALSE; // don't enforce dt_dev_pixelpipe_change() for restarts
 
   float scale = 1.0f;
   int window_width = G_MAXINT;
@@ -407,8 +417,11 @@ restart:
     // if just changed to an image with a different aspect ratio or
     // altered image orientation, the prior zoom xy could now be beyond
     // the image boundary
-    if(port->pipe->loading || pipe_changed)
+    if(port->pipe->loading || require_zoom_test)
+    {
+      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "[dt_dev_zoom_move]", pipe, NULL, DT_DEVICE_NONE, NULL, NULL);
       dt_dev_zoom_move(port, DT_ZOOM_MOVE, 0.0f, 0, 0.0f, 0.0f, TRUE);
+    }
 
     // determine scale according to new dimensions
     dt_dev_zoom_t zoom;
@@ -418,13 +431,6 @@ restart:
     window_width = port->width * port->ppd / (1<<closeup);
     window_height = port->height * port->ppd / (1<<closeup);
   }
-  // else
-  // {
-  //   // FIXME full pipe may be busy, so update processed sizes here
-  //   // make sure preview pipe is newer than full/preview2 pipes
-  //   dev->full.pipe->processed_width = pipe->processed_width * pipe->iscale;
-  //   dev->full.pipe->processed_height = pipe->processed_height * pipe->iscale;
-  // }
 
   const int wd = MIN(window_width, scale * pipe->processed_width);
   const int ht = MIN(window_height, scale * pipe->processed_height);
@@ -435,8 +441,25 @@ restart:
 
   if(dt_dev_pixelpipe_process(pipe, dev, x, y, wd, ht, scale, devid))
   {
+    const gboolean img_changed = dev->image_force_reload || pipe->loading || pipe->input_changed;
+    // As image_force_reload could be set while we are restarting we clear it and possibly flush the cache too.
+    if(dev->image_force_reload) dt_dev_pixelpipe_cache_flush(pipe);
+    dev->image_force_reload = FALSE;
+    const dt_dev_pixelpipe_stopper_t shutdown = dt_atomic_exch_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
+    if(shutdown != DT_DEV_PIXELPIPE_STOP_NO || img_changed)
+      dt_print_pipe(DT_DEBUG_PIPE,
+                    shutdown == DT_DEV_PIXELPIPE_STOP_NODES ? "DT_DEV_PIXELPIPE_STOP_NODES shutdown"
+                  : shutdown == DT_DEV_PIXELPIPE_STOP_HQ    ? "DT_DEV_PIXELPIPE_STOP_HQ shutdown"
+                  : shutdown == DT_DEV_PIXELPIPE_STOP_NO    ? "pixelpipe_process ERR"
+                  : "PROCESS shutdown",
+                  pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
+                  "%s%s%sshutdown=%d",
+                  dev->image_force_reload ? "image_force_reload, " : "",
+                  pipe->loading ? "pipe loading, " : "",
+                  pipe->input_changed ? "input_changed, " : "",
+                  shutdown);
     // interrupted because image changed?
-    if(dev->image_force_reload || pipe->loading || pipe->input_changed)
+    if(img_changed)
     {
       dt_mipmap_cache_release(&buf);
       dt_control_busy_leave();
@@ -447,12 +470,6 @@ restart:
     // or because the pipeline changed or shutdown?
     else
     {
-      const dt_dev_pixelpipe_stopper_t downer = dt_atomic_exch_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
-      if(downer)
-        dt_print_pipe(DT_DEBUG_PIPE,  downer == DT_DEV_PIXELPIPE_STOP_NODES ? "DT_DEV_PIXELPIPE_STOP_NODES shutdown"
-                                    : downer == DT_DEV_PIXELPIPE_STOP_HQ    ? "DT_DEV_PIXELPIPE_STOP_HQ shutdown"
-                                    : "PROCESS shutdown",
-          pipe, NULL, DT_DEVICE_NONE, NULL, NULL, "downer=%d", downer);
       if(port && port->widget) dt_control_queue_redraw_widget(port->widget);
       goto restart;
     }
@@ -463,7 +480,11 @@ restart:
   _dev_average_delay_update(&start, &pipe->average_delay);
 
   // maybe we got zoomed/panned in the meantime?
-  if(port && pipe->changed != DT_DEV_PIPE_UNCHANGED) goto restart;
+  if(port && pipe->changed != DT_DEV_PIPE_UNCHANGED)
+  {
+    dt_atomic_set_int(&pipe->shutdown, DT_DEV_PIXELPIPE_STOP_NO);
+    goto restart;
+  }
 
   pipe->status = DT_DEV_PIXELPIPE_VALID;
   pipe->loading = FALSE;
