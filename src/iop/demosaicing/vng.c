@@ -531,7 +531,7 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
       size_t origin[] = { 0, 0, 0 };
       size_t region[] = { width, height, 1 };
       err = dt_opencl_enqueue_copy_image(devid, dev_tmp, dev_out, origin, origin, region);
-      if(err != CL_SUCCESS) goto finish;
+      goto finish;
     }
     else
     {
@@ -574,10 +574,7 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
 
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_green_equilibrate, width, height,
         CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height));
-      if(err != CL_SUCCESS) goto finish;
     }
-
-  err = CL_SUCCESS; // we got here so no error to be reported / returned
 
 finish:
   dt_opencl_release_mem_object(dev_tmp);

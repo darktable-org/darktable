@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,8 +20,6 @@
    Dual demosaicing has been implemented by Ingo Weyrich <heckflosse67@gmx.de> for
    rawtherapee under GNU General Public License Version 3
    and has been modified to work for darktable by Hanno Schwalm (hanno@schwalm-bremen.de).
-   Also the code for dt_masks_blur_9x9 has been taken from rawtherapee capturesharpening,
-   implemented also by Ingo Weyrich.
 */
 
 static float slider2contrast(float slider)
@@ -40,44 +38,40 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece,
   if(roi->width < 16 || roi->height < 16) return;
 
   // If the threshold is zero and we don't want to see the blend mask we don't do anything
-  if(dual_threshold <= 0.0f) return;
+  if(dual_threshold <= 0.0f && !dual_mask) return;
 
-  const size_t msize = roi->width * roi->height;
-  float *vng_image = NULL;
-
+  const size_t msize = (size_t)roi->width * roi->height;
   const float contrastf = slider2contrast(dual_threshold);
 
   float *mask = dt_masks_calc_detail_mask(piece, contrastf, TRUE);
-  if(!mask) goto error;
+  if(!mask) return;
 
   if(dual_mask)
   {
     DT_OMP_FOR_SIMD(aligned(mask, high_data : 64))
-    for(int idx = 0; idx < msize; idx++)
+    for(size_t idx = 0; idx < msize; idx++)
       high_data[idx * 4 + 3] = mask[idx];
   }
   else
   {
-    vng_image = dt_alloc_align_float((size_t) 4 * msize);
-    if(!vng_image) goto error;
-
-    vng_interpolate(vng_image, raw_data, roi, filters, xtrans, FALSE);
-    color_smoothing(vng_image, roi, DT_DEMOSAIC_SMOOTH_2);
-
-    DT_OMP_FOR_SIMD(aligned(mask, vng_image, high_data : 64))
-    for(int idx = 0; idx < msize; idx++)
+    float *vng_image = dt_alloc_align_float(msize * 4);
+    if(vng_image)
     {
-      const int oidx = 4 * idx;
-      for(int c = 0; c < 3; c++)
-        high_data[oidx + c] = interpolatef(mask[idx], high_data[oidx + c], vng_image[oidx + c]);
-      high_data[oidx + 3] = 0.0f;
+      vng_interpolate(vng_image, raw_data, roi, filters, xtrans, TRUE);
+      color_smoothing(vng_image, roi, DT_DEMOSAIC_SMOOTH_2);
+
+      DT_OMP_FOR_SIMD(aligned(mask, vng_image, high_data : 64))
+      for(size_t idx = 0; idx < msize; idx++)
+      {
+        const size_t oidx = idx * 4;
+        for(int c = 0; c < 3; c++)
+          high_data[oidx + c] = interpolatef(mask[idx], high_data[oidx + c], vng_image[oidx + c]);
+        high_data[oidx + 3] = 0.0f;
+      }
+      dt_free_align(vng_image);
     }
   }
-
-  error:
-
   dt_free_align(mask);
-  dt_free_align(vng_image);
 }
 
 #ifdef HAVE_OPENCL
