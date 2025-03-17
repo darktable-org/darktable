@@ -331,13 +331,12 @@ static gboolean _cache_update_selection(const gboolean only_visible,
 {
   /** Here's how it works
    *
-   *              selection| x | ? | ? | ? |
-   *     mouse inside table| ? | x |   |   |
-   *          active images|   | x | x | x |
-   *           culling mode|   | ? |   | x |
-   *                       |   |   |   |   |
-   *                       | S | S | A | C |
-   *  S = selection ; O = mouseover ; A = active images ; C = culling selection
+   *              selection| x | ? | ? |
+   *          active images|   | x | x |
+   *           culling mode|   |   | x |
+   *                       |   |   |   |
+   *                       | S | A | C |
+   *  S = selection ; A = active images ; C = culling selection
    *
    *  if only_visible is FALSE, then it will add also not visible
    *  images because of grouping force define if we try to use cache
@@ -363,17 +362,8 @@ static gboolean _cache_update_selection(const gboolean only_visible,
 
   if(darktable.view_manager->active_images)
   {
-    if(dt_ui_thumbtable(darktable.gui->ui)->mouse_inside
-       || dt_ui_thumbtable(darktable.gui->ui)->key_inside)
-    {
-      // column 2
-      l = dt_selection_get_list(darktable.selection, only_visible, ordered);
-    }
-    else
-    {
-      // column 3
-      _insert_active_images_in_list(&l, only_visible);
-    }
+    // column 2 & 3 (culling specifity is taken into account by the insertion routine)
+    _insert_active_images_in_list(&l, only_visible);
   }
   else
   {
@@ -526,13 +516,12 @@ static gchar *_get_query_selection(const gboolean only_visible)
 {
   /** Here's how it works
    *
-   *              selection| ? | ? | ? | ? |
-   *     mouse inside table| ? | x |   |   |
-   *          active images|   | x | x | x |
-   *           culling mode|   | ? |   | x |
-   *                       |   |   |   |   |
-   *                       | S | S | A | C |
-   *  S = selection ; O = mouseover ; A = active images ; C = culling selection
+   *              selection| ? | ? | ? |
+   *          active images|   | x | x |
+   *           culling mode|   |   | x |
+   *                       |   |   |   |
+   *                       | S | A | C |
+   *  S = selection ; A = active images ; C = culling selection
    *
    *  if only_visible is FALSE, then it will add also not visible
    *  images because of grouping force define if we try to use cache
@@ -544,18 +533,8 @@ static gchar *_get_query_selection(const gboolean only_visible)
 
   if(darktable.view_manager->active_images)
   {
-    if(dt_ui_thumbtable(darktable.gui->ui)->mouse_inside
-       || dt_ui_thumbtable(darktable.gui->ui)->key_inside)
-    {
-      // column 2
-      return dt_selection_get_list_query(darktable.selection, only_visible, FALSE);
-    }
-    else
-    {
-      // column 3
-      _insert_active_images_in_list(&l, only_visible);
-    }
-
+    // column 2 & 3 (culling specifity is taken into account by the insertion routine)
+    _insert_active_images_in_list(&l, only_visible);
   }
   else
   {
@@ -630,8 +609,7 @@ static dt_imgid_t _get_main_image_hover()
 }
 static dt_imgid_t _get_main_image_selection()
 {
-  /** Here's how it works -- same as for list, except we don't care
-   * about mouse inside selection or table
+  /** Here's how it works -- same as for list
    *
    *              selection| ? | ? | ? |
    *          active images|   | x | x |
@@ -639,7 +617,7 @@ static dt_imgid_t _get_main_image_selection()
    *                       |   |   |   |
    *                       | S | A | C |
    *  First image of ...
-   *  S = selection ; O = mouseover ; A = active images ; C = culling selection
+   *  S = selection ; A = active images ; C = culling selection
    **/
 
   dt_imgid_t imgid = NO_IMGID;
