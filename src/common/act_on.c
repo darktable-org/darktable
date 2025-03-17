@@ -29,18 +29,8 @@
 #include <sqlite3.h>
 
 // get the algorithm set in preference
-// this take care of the different startup values if not already defined
-// direct access to the pref should not be used !
 dt_act_on_algorithm_t dt_act_on_get_algorithm()
 {
-  if(!dt_conf_key_defined("plugins/lighttable/act_on"))
-  {
-    // we are on an "old" darktable installation.
-    // in this case we set the algorithm to "hovered" to avoid an unexpected change to the user
-    // in the case of a new installation, the "selection" algorithm is the default
-    dt_conf_set_bool("plugins/lighttable/act_on", TRUE);
-    return DT_ACT_ON_HOVER;
-  }
   if(dt_conf_get_bool("plugins/lighttable/act_on"))
     return DT_ACT_ON_HOVER;
   else
