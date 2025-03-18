@@ -1650,6 +1650,13 @@
     <shortdescription>use single-click in the collections module</shortdescription>
     <longdescription>check this option to use single-click to select items in the collections module. this will allow you to do range selections for date-time and numeric values.</longdescription>
   </dtconfig>
+  <dtconfig prefs="lighttable" section="general">
+    <name>plugins/lighttable/act_on</name>
+     <type>bool</type>
+    <default>true</default>
+    <shortdescription>prioritise the hovered image over the selected images</shortdescription>
+    <longdescription>this define how the image to act on list is constructed.</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/collect/num_rules</name>
     <type min="1" max="10">int</type>

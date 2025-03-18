@@ -40,10 +40,12 @@ typedef struct dt_lib_tool_lighttable_t
   GtkWidget *layout_zoomable;
   GtkWidget *layout_culling_dynamic;
   GtkWidget *layout_culling_fix;
+  GtkWidget *layout_culling_restricted;
   GtkWidget *layout_preview;
   dt_lighttable_layout_t layout, base_layout;
   int current_zoom;
   gboolean fullpreview_focus;
+  dt_lighttable_culling_restriction_t culling_init_restriction;
 } dt_lib_tool_lighttable_t;
 
 /* set zoom proxy function */
@@ -130,15 +132,43 @@ static void _lib_lighttable_update_btn(dt_lib_module_t *self)
   gtk_widget_set_sensitive(d->zoom_entry, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC && !fullpreview));
   gtk_widget_set_sensitive(d->zoom, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC && !fullpreview));
   gtk_range_set_value(GTK_RANGE(d->zoom), d->current_zoom);
+
+  // culling restricted button configuration
+  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING || fullpreview)
+  {
+    if(dt_view_lighttable_culling_restricted_state(darktable.view_manager) == DT_LIGHTTABLE_CULLING_RESTRICTION_SELECTION)
+    {
+      gtk_widget_set_tooltip_text(d->layout_culling_restricted, _("click to allow browsing all images from the collection."));
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->layout_culling_restricted), TRUE);
+    }
+    else
+    {
+      gtk_widget_set_tooltip_text(d->layout_culling_restricted, _("click to limit browsing to the selection."));
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->layout_culling_restricted), FALSE);
+    }
+
+    gtk_widget_set_visible(d->layout_culling_restricted, TRUE);
+  }
+  else
+  {
+    gtk_widget_set_visible(d->layout_culling_restricted, FALSE);
+    // limit the filckering on next show : it's less visible to do inactive->active
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->layout_culling_restricted), FALSE);
+  }
 }
 
-static void _lib_lighttable_set_layout(dt_lib_module_t *self, dt_lighttable_layout_t layout)
+static void _lib_lighttable_set_layout(dt_lib_module_t *self,
+                                       const dt_lighttable_layout_t layout)
 {
   dt_lib_tool_lighttable_t *d = self->data;
 
   // we deal with fullpreview first.
   if((layout == DT_LIGHTTABLE_LAYOUT_PREVIEW) ^ dt_view_lighttable_preview_state(darktable.view_manager))
-    dt_view_lighttable_set_preview_state(darktable.view_manager, layout == DT_LIGHTTABLE_LAYOUT_PREVIEW, TRUE, d->fullpreview_focus);
+    dt_view_lighttable_set_preview_state(darktable.view_manager,
+                                         layout == DT_LIGHTTABLE_LAYOUT_PREVIEW,
+                                         TRUE,
+                                         d->fullpreview_focus,
+                                         DT_LIGHTTABLE_CULLING_RESTRICTION_AUTO);
 
   if(layout == DT_LIGHTTABLE_LAYOUT_PREVIEW)
   {
@@ -201,7 +231,13 @@ static gboolean _lib_lighttable_layout_btn_release(GtkWidget *w, GdkEventButton 
       new_layout = DT_LIGHTTABLE_LAYOUT_PREVIEW;
     }
     else if(w == d->layout_culling_fix)
+    {
+      if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+        d->culling_init_restriction = DT_LIGHTTABLE_CULLING_RESTRICTION_COLLECTION;
+      else
+        d->culling_init_restriction = DT_LIGHTTABLE_CULLING_RESTRICTION_AUTO;
       new_layout = DT_LIGHTTABLE_LAYOUT_CULLING;
+    }
     else if(w == d->layout_culling_dynamic)
       new_layout = DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC;
     else if(w == d->layout_zoomable)
@@ -225,6 +261,17 @@ static gboolean _lib_lighttable_layout_btn_release(GtkWidget *w, GdkEventButton 
   return TRUE;
 }
 
+static gboolean _lib_lighttable_restricted_btn_release(GtkWidget *w, GdkEventButton *event, dt_lib_module_t *self)
+{
+  dt_lighttable_culling_restriction_t restriction = DT_LIGHTTABLE_CULLING_RESTRICTION_SELECTION;
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)))
+    restriction = DT_LIGHTTABLE_CULLING_RESTRICTION_COLLECTION; // note : this is the state before the change
+
+  dt_view_lighttable_set_culling_restricted_state(darktable.view_manager, restriction);
+  _lib_lighttable_update_btn(self);
+  return TRUE;
+}
+
 static void _lib_lighttable_key_accel_toggle_filemanager(dt_action_t *action)
 {
   dt_lib_module_t *self = darktable.view_manager->proxy.lighttable.module;
@@ -244,21 +291,9 @@ static void _lib_lighttable_key_accel_toggle_culling_dynamic_mode(dt_action_t *a
 
   // if we are already in any culling layout, we return to the base layout
   if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING && d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+  {
     _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC);
-  else
-    _lib_lighttable_set_layout(self, d->base_layout);
-
-  dt_control_queue_redraw_center();
-}
-
-static void _lib_lighttable_key_accel_toggle_culling_mode(dt_action_t *action)
-{
-  dt_lib_module_t *self = darktable.view_manager->proxy.lighttable.module;
-  dt_lib_tool_lighttable_t *d = self->data;
-
-  // if we are already in any culling layout, we return to the base layout
-  if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING && d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
-    _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING);
+  }
   else
     _lib_lighttable_set_layout(self, d->base_layout);
 
@@ -273,7 +308,22 @@ static void _lib_lighttable_key_accel_toggle_culling_zoom_mode(dt_action_t *acti
   if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
     _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC);
   else if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+  {
+    d->culling_init_restriction = DT_LIGHTTABLE_CULLING_RESTRICTION_AUTO;
     _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING);
+  }
+}
+
+static void _lib_lighttable_key_accel_toggle_restricted_mode(dt_action_t *action)
+{
+  dt_lib_module_t *self = darktable.view_manager->proxy.lighttable.module;
+  dt_lib_tool_lighttable_t *d = self->data;
+
+  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING || dt_view_lighttable_preview_state(darktable.view_manager))
+  {
+    // if we are already in culling layout or fullpreview, we switch between restricted and unrestricted
+    _lib_lighttable_restricted_btn_release(d->layout_culling_restricted, NULL, self);
+  }
 }
 
 static void _lib_lighttable_key_accel_exit_layout(dt_action_t *action)
@@ -287,10 +337,51 @@ static void _lib_lighttable_key_accel_exit_layout(dt_action_t *action)
     _lib_lighttable_set_layout(self, d->base_layout);
 }
 
+static dt_lighttable_culling_restriction_t _lib_lighttable_get_culling_initial_restriction(dt_lib_module_t *self)
+{
+  dt_lib_tool_lighttable_t *d = self->data;
+  return d ? d->culling_init_restriction : DT_LIGHTTABLE_CULLING_RESTRICTION_AUTO;
+}
+
 enum
 {
-  DT_ACTION_ELEMENT_FOCUS_DETECT = 1,
+  DT_ACTION_ELEMENT_PREVIEW_FOCUS_DETECT = 1,
+  DT_ACTION_ELEMENT_PREVIEW_NO_RESTRICTION = 2,
 };
+enum
+{
+  DT_ACTION_ELEMENT_CULLING_NO_RESTRICTION = 1,
+};
+
+static float _action_process_culling(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  dt_lib_module_t *self = darktable.view_manager->proxy.lighttable.module;
+  dt_lib_tool_lighttable_t *d = self->data;
+
+  if(DT_PERFORM_ACTION(move_size))
+  {
+    if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING
+       && d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC
+       && effect != DT_ACTION_EFFECT_ON)
+    {
+      // if we are not in culling layout, we enter this mode
+      if(element == DT_ACTION_ELEMENT_CULLING_NO_RESTRICTION)
+        d->culling_init_restriction = DT_LIGHTTABLE_CULLING_RESTRICTION_COLLECTION;
+      else
+        d->culling_init_restriction = DT_LIGHTTABLE_CULLING_RESTRICTION_AUTO;
+      _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING);
+    }
+    else if(effect != DT_ACTION_EFFECT_ON)
+    {
+      // if we are already in culling layout we fallback to the base layout
+      _lib_lighttable_set_layout(self, d->base_layout);
+    }
+
+    _lib_lighttable_update_btn(self);
+  }
+
+  return (d->layout == DT_LIGHTTABLE_LAYOUT_CULLING);
+}
 
 static float _action_process_preview(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
@@ -309,9 +400,11 @@ static float _action_process_preview(gpointer target, dt_action_element_t elemen
       if(effect != DT_ACTION_EFFECT_OFF)
       {
         const gboolean sticky = effect == DT_ACTION_EFFECT_HOLD_TOGGLE;
-        const gboolean focus = element == DT_ACTION_ELEMENT_FOCUS_DETECT;
-
-        dt_view_lighttable_set_preview_state(darktable.view_manager, TRUE, sticky, focus);
+        const gboolean focus = element == DT_ACTION_ELEMENT_PREVIEW_FOCUS_DETECT;
+        dt_lighttable_culling_restriction_t restriction = DT_LIGHTTABLE_CULLING_RESTRICTION_AUTO;
+        if(sticky && element == DT_ACTION_ELEMENT_PREVIEW_NO_RESTRICTION)
+          restriction = DT_LIGHTTABLE_CULLING_RESTRICTION_COLLECTION;
+        dt_view_lighttable_set_preview_state(darktable.view_manager, TRUE, sticky, focus, restriction);
       }
     }
 
@@ -324,12 +417,24 @@ static float _action_process_preview(gpointer target, dt_action_element_t elemen
 const dt_action_element_def_t _action_elements_preview[]
   = { { N_("normal"), dt_action_effect_hold },
       { N_("focus detection"), dt_action_effect_hold },
+      { N_("no restriction"), dt_action_effect_hold },
       { NULL } };
 
 const dt_action_def_t _action_def_preview
   = { N_("preview"),
       _action_process_preview,
       _action_elements_preview,
+      NULL };
+
+const dt_action_element_def_t _action_elements_culling[]
+  = { { N_("normal"), dt_action_effect_hold },
+      { N_("no restriction"), dt_action_effect_hold },
+      { NULL } };
+
+const dt_action_def_t _action_def_culling
+  = { N_("culling"),
+      _action_process_culling,
+      _action_elements_culling,
       NULL };
 
 void gui_init(dt_lib_module_t *self)
@@ -373,8 +478,9 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
 
   d->layout_culling_fix = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_culling_fixed, 0, NULL);
-  ac = dt_action_define(ltv, NULL, N_("toggle culling mode"), d->layout_culling_fix, NULL);
-  dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_culling_mode, GDK_KEY_x, 0);
+  ac = dt_action_define(ltv, NULL, N_("toggle culling mode"), d->layout_culling_fix, &_action_def_culling);
+  dt_shortcut_register(ac, DT_ACTION_ELEMENT_DEFAULT, DT_ACTION_EFFECT_HOLD_TOGGLE, GDK_KEY_x, 0);
+  dt_shortcut_register(ac, DT_ACTION_ELEMENT_CULLING_NO_RESTRICTION, DT_ACTION_EFFECT_HOLD_TOGGLE, GDK_KEY_x, GDK_SHIFT_MASK);
   dt_gui_add_help_link(d->layout_culling_fix, "layout_culling");
   g_signal_connect(G_OBJECT(d->layout_culling_fix), "button-release-event",
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
@@ -389,8 +495,9 @@ void gui_init(dt_lib_module_t *self)
   d->layout_preview = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_fullpreview, 0, NULL);
   ac = dt_action_define(ltv, NULL, N_("preview"), d->layout_preview, &_action_def_preview);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_DEFAULT, DT_ACTION_EFFECT_HOLD_TOGGLE, GDK_KEY_f, 0);
+  dt_shortcut_register(ac, DT_ACTION_ELEMENT_PREVIEW_NO_RESTRICTION, DT_ACTION_EFFECT_HOLD_TOGGLE, GDK_KEY_f, GDK_SHIFT_MASK);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_DEFAULT, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, 0);
-  dt_shortcut_register(ac, DT_ACTION_ELEMENT_FOCUS_DETECT, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, GDK_CONTROL_MASK);
+  dt_shortcut_register(ac, DT_ACTION_ELEMENT_PREVIEW_FOCUS_DETECT, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, GDK_CONTROL_MASK);
   dt_gui_add_help_link(d->layout_preview, "layout_preview");
   g_signal_connect(G_OBJECT(d->layout_preview), "button-release-event",
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
@@ -413,7 +520,16 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_set_width_chars(GTK_ENTRY(d->zoom_entry), 3);
   gtk_entry_set_max_width_chars(GTK_ENTRY(d->zoom_entry), 3);
 
-  self->widget = dt_gui_hbox(d->layout_box, d->zoom, d->zoom_entry);
+  /* culling restricted icon */
+  d->layout_culling_restricted = dtgtk_togglebutton_new(dtgtk_cairo_paint_lock, 0, NULL);
+  ac = dt_action_define(ltv, NULL, N_("toggle culling restricted"), d->layout_culling_restricted, NULL);
+  dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_restricted_mode, GDK_KEY_r, GDK_CONTROL_MASK);
+  dt_gui_add_help_link(d->layout_culling_restricted, "layout_culling");
+  gtk_widget_set_no_show_all(d->layout_culling_restricted, TRUE);
+  g_signal_connect(G_OBJECT(d->layout_culling_restricted), "button-release-event",
+                   G_CALLBACK(_lib_lighttable_restricted_btn_release), self);
+
+  self->widget = dt_gui_hbox(d->layout_box, d->zoom, d->zoom_entry, d->layout_culling_restricted);
 
   _lib_lighttable_update_btn(self);
 
@@ -429,6 +545,8 @@ void gui_init(dt_lib_module_t *self)
   darktable.view_manager->proxy.lighttable.get_zoom = _lib_lighttable_get_zoom;
   darktable.view_manager->proxy.lighttable.get_layout = _lib_lighttable_get_layout;
   darktable.view_manager->proxy.lighttable.set_layout = _lib_lighttable_set_layout;
+  darktable.view_manager->proxy.lighttable.update_layout_btn = _lib_lighttable_update_btn;
+  darktable.view_manager->proxy.lighttable.get_culling_initial_restriction = _lib_lighttable_get_culling_initial_restriction;
 
   dt_action_register(ltv, N_("toggle culling zoom mode"), _lib_lighttable_key_accel_toggle_culling_zoom_mode,
                      GDK_KEY_less, 0);
