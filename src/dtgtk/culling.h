@@ -17,6 +17,7 @@
 */
 /** a class to manage a collection of zoomable thumbnails for culling or full preview.  */
 #include "dtgtk/thumbnail.h"
+#include "views/view.h"
 #include <gtk/gtk.h>
 
 typedef enum dt_culling_mode_t
@@ -49,7 +50,7 @@ typedef struct dt_culling_t
 
   // rowid of the main shown image inside 'memory.collected_images'
   int offset;
-  int offset_imgid;
+  dt_imgid_t offset_imgid;
 
   int thumbs_count;            // last nb of thumb to display
   int view_width, view_height; // last main widget size
@@ -74,6 +75,8 @@ typedef struct dt_culling_t
   dt_thumbnail_overlay_t overlays; // overlays type
   int overlays_block_timeout;      // overlay block visibility duration
   gboolean show_tooltips;          // are tooltips visible ?
+
+  dt_imgid_t selection; // image selected inside culling (used with selection act_on algorithm)
 } dt_culling_t;
 
 dt_culling_t *dt_culling_new(dt_culling_mode_t mode);
@@ -81,7 +84,9 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode);
 void dt_culling_full_redraw(dt_culling_t *table, gboolean force);
 // initialise culling offset/navigation mode, etc before entering.
 // if offset is > 0 it'll be used as offset, otherwise offset will be determined by other means
-void dt_culling_init(dt_culling_t *table, int offset);
+void dt_culling_init(dt_culling_t *table,
+                     const int offset,
+                     const dt_lighttable_culling_restriction_t restriction);
 // move by key actions.
 // this key accels are not managed here but inside view
 gboolean dt_culling_key_move(dt_culling_t *table, dt_culling_move_t move);

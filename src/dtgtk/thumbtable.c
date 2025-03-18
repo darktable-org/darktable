@@ -1251,6 +1251,7 @@ static void _lighttable_expose_empty(cairo_t *cr,
   pango_layout_set_tabs(layout, tabs);
   pango_tab_array_free(tabs);
 
+  const gboolean hover = (dt_act_on_get_algorithm() == DT_ACT_ON_HOVER);
 #define RGHT "\t   ",
   gchar *here = _("here"), *text = g_strjoin(NULL,
     "<b>", _("there are no images in this collection"), "</b>",
@@ -1268,10 +1269,10 @@ static void _lighttable_expose_empty(cairo_t *cr,
     "\n" ,
          RGHT _("click on the keyboard icon to define shortcuts"),
     "\n" ,
-    "<b>", _("try the 'no-click' workflow"), "</b>",
+    "<b>", hover ? _("try the 'no-click' workflow") : "", "</b>",
          RGHT _("set module-specific preferences through module's menu"),
-    "\n" , _("hover over an image and use keyboard shortcuts"),
-    "\n" , _("to apply ratings, colors, styles, etc."),
+    "\n" , hover ? _("hover over an image and use keyboard shortcuts") : "",
+    "\n" , hover ? _("to apply ratings, colors, styles, etc.") : "",
          RGHT _("make default raw development look more like your"),
     "\n" , _("hover over any button for its description and shortcuts"),
          RGHT _("camera's JPEG by applying a camera-specific style"),
@@ -1749,8 +1750,15 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
 // called each time the preference change, to update specific parts
 static void _dt_pref_change_callback(gpointer instance, dt_thumbtable_t *table)
 {
+  // in all case, we reset the act_on cache as the algorithm may have changed
+  dt_act_on_reset_cache(TRUE);
+  dt_act_on_reset_cache(FALSE);
+
   if(!table)
     return;
+
+  // adjust the act_on algo class if needed
+  dt_act_on_set_class(table->widget);
 
   dt_get_sysresource_level();
   dt_opencl_update_settings();
@@ -2432,6 +2440,8 @@ dt_thumbtable_t *dt_thumbtable_new()
   dt_gui_add_class(table->widget, "dt_thumbtable");
   if(dt_conf_get_bool("lighttable/ui/expose_statuses"))
     dt_gui_add_class(table->widget, "dt_show_overlays");
+  // adjust the act_on algo class if needed
+  dt_act_on_set_class(table->widget);
 
   // overlays mode
   table->overlays = DT_THUMBNAIL_OVERLAYS_NONE;
