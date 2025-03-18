@@ -186,7 +186,7 @@ int default_group()
 
 int flags()
 {
-  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
+  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_WRITE_RASTER;
 }
 
 dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
@@ -457,6 +457,69 @@ void tiling_callback(dt_iop_module_t *self,
   }
 }
 
+static float *_provide_raster_mask(const dt_iop_roi_t *const roi_in,
+                                   const dt_iop_roi_t *const roi_out,
+                                   const float *in,
+                                   const float clip,
+                                   dt_dev_pixelpipe_iop_t *piece)
+{
+  const size_t opix = (size_t)roi_out->width * roi_out->height;
+  float *out = dt_alloc_align_float(opix);
+  float *tmp = dt_alloc_align_float(opix);
+  if(!out || !tmp)
+  {
+    dt_free_align(tmp);
+    dt_free_align(out);
+    return NULL;
+  }
+
+  const uint32_t filters = piece->pipe->dsc.filters;
+  const float clips[4] = { clip * piece->pipe->dsc.processed_maximum[0],
+                           clip * piece->pipe->dsc.processed_maximum[1],
+                           clip * piece->pipe->dsc.processed_maximum[2], clip };
+
+  if(filters == 0)  // sraw
+  {
+    DT_OMP_FOR()
+    for(int row = 0; row < roi_out->height; row++)
+    {
+      for(int col = 0; col < roi_out->width; col++)
+      {
+        const size_t ox = (size_t)row * roi_out->width + col;
+        const size_t ix = ox * 4;
+        float mval = 0.0f;
+        for(int c = 0; c < 3; c++)
+        {
+          const float ref = MAX(0.5, 0.95f * clips[c]);
+          mval = MAX(mval, (in[ix+c] - ref) / ref);
+        }
+        tmp[ox] = MAX(0.0f, mval);
+      }
+    }
+  }
+  else
+  {
+    const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
+    const gboolean is_xtrans = (filters == 9u);
+    DT_OMP_FOR()
+    for(int row = 0; row < roi_out->height; row++)
+    {
+      for(int col = 0; col < roi_out->width; col++)
+      {
+        const size_t ox = (size_t)row * roi_out->width + col;
+        const int irow = row + roi_out->y - roi_in->y;
+        const int icol = col + roi_out->x - roi_in->x;
+        const int c = is_xtrans ? FCxtrans(irow, icol, roi_in, xtrans) : FC(irow, icol, filters);
+        const float ref = MAX(0.5, 0.95f * clips[c]);
+        tmp[ox] = MAX(0.0f, (in[ox] - ref) / ref);
+      }
+    }
+  }
+  dt_gaussian_fast_blur(tmp, out, roi_out->width, roi_out->height, 1.0f, 0.0f, 1.0f, 1);
+  dt_free_align(tmp);
+  return out;
+}
+
 #ifdef HAVE_OPENCL
 int process_cl(dt_iop_module_t *self,
                dt_dev_pixelpipe_iop_t *piece,
@@ -473,6 +536,7 @@ int process_cl(dt_iop_module_t *self,
   const int devid = piece->pipe->devid;
 
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+  gboolean announce = dt_iop_piece_is_raster_mask_used(piece, BLEND_RASTER_ID);
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem dev_xtrans = NULL;
@@ -505,7 +569,7 @@ int process_cl(dt_iop_module_t *self,
           CLARG(roi_out->x), CLARG(roi_out->y),
           CLARG(filters), CLARG(dev_xtrans),
           CLARG(dev_clips));
-
+        announce = FALSE;
         goto finish;
       }
     }
@@ -593,6 +657,22 @@ int process_cl(dt_iop_module_t *self,
       CLARG(dev_clips), CLARG(roi_out->x), CLARG(roi_out->y),
       CLARG(filters), CLARG(dev_xtrans));
   }
+  if(err != CL_SUCCESS) goto finish;
+
+  float *mask = NULL;
+  if(announce)
+  {
+    const size_t ch = filters ? 1 : 4;
+    float *cpdata = dt_alloc_align_float(ch * roi_out->width * roi_out->height);
+    if(cpdata)
+    {
+      if(dt_opencl_copy_device_to_host(devid, cpdata, dev_out, roi_out->width, roi_out->height, ch * sizeof(float)) == CL_SUCCESS)
+        mask = _provide_raster_mask(roi_in, roi_out, cpdata, d->clip, piece);
+      dt_free_align(cpdata);
+    }
+  }
+  if(mask)  dt_iop_piece_set_raster(piece, mask, roi_in, roi_out);
+  else      dt_iop_piece_clear_raster(piece, NULL);
 
   // update processed maximum
   if((err == CL_SUCCESS) && (d->mode != DT_IOP_HIGHLIGHTS_LAPLACIAN) && (d->mode != DT_IOP_HIGHLIGHTS_OPPOSED))
@@ -604,6 +684,8 @@ int process_cl(dt_iop_module_t *self,
   }
 
   finish:
+  if(err != CL_SUCCESS) dt_iop_piece_clear_raster(piece, NULL);
+
   dt_opencl_release_mem_object(dev_clips);
   dt_opencl_release_mem_object(dev_xtrans);
   return err;
@@ -734,12 +816,15 @@ void process(dt_iop_module_t *self,
   const gboolean scaled = filters == 0 && d->mode != DT_IOP_HIGHLIGHTS_CLIP;
 
   float *out = scaled ? dt_alloc_align_float((size_t)roi_in->width * roi_in->height * 4) : NULL;
+  const gboolean announce = dt_iop_piece_is_raster_mask_used(piece, BLEND_RASTER_ID);
+
   if(!out && scaled)
   {
     dt_iop_clip_and_zoom_roi((float *)ovoid, (float *)ivoid, roi_out, roi_in);
-    dt_print_pipe(DT_DEBUG_PIPE,
-          "bypass opposed", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out,
+    dt_print_pipe(DT_DEBUG_ALWAYS,
+          "bypass highlights", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out,
           "can't allocate temp buffer");
+    dt_iop_piece_clear_raster(piece, NULL);
     return;
   }
 
@@ -758,6 +843,8 @@ void process(dt_iop_module_t *self,
         }
         else
           process_visualize(piece, ivoid, ovoid, roi_in, roi_out, d);
+
+        dt_iop_piece_clear_raster(piece, NULL);
         return;
       }
     }
@@ -790,6 +877,11 @@ void process(dt_iop_module_t *self,
       dt_iop_clip_and_zoom_roi((float *)ovoid, out, roi_out, roi_in);
       dt_free_align(out);
     }
+
+    float *mask = announce ? _provide_raster_mask(roi_in, roi_out, (float *)ovoid, d->clip, piece) : NULL;
+    if(mask)  dt_iop_piece_set_raster(piece, mask, roi_in, roi_out);
+    else      dt_iop_piece_clear_raster(piece, NULL);
+
     return;
   }
 
@@ -882,6 +974,10 @@ void process(dt_iop_module_t *self,
       break;
     }
   }
+
+  float *mask = announce ? _provide_raster_mask(roi_in, roi_out, (float *)ovoid, d->clip, piece) : NULL;
+  if(mask)  dt_iop_piece_set_raster(piece, mask, roi_in, roi_out);
+  else      dt_iop_piece_clear_raster(piece, NULL);
 
   // update processed maximum
   if((d->mode != DT_IOP_HIGHLIGHTS_LAPLACIAN) && (d->mode != DT_IOP_HIGHLIGHTS_SEGMENTS) && (d->mode != DT_IOP_HIGHLIGHTS_OPPOSED))

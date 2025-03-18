@@ -440,44 +440,6 @@ static void _develop_blend_process_mask_tone_curve(float *const restrict mask,
   }
 }
 
-#define MININ 1e-5f
-static void _write_highlights_raster(const gboolean israw,
-                                     const float *const input,
-                                     const float *const output,
-                                     const dt_iop_roi_t *const roi_in,
-                                     const dt_iop_roi_t *const roi_out,
-                                     float *mask)
-{
-  DT_OMP_FOR(collapse(2))
-  for(ssize_t row = 0; row < roi_out->height; row++)
-  {
-    for(ssize_t col = 0; col < roi_out->width; col++)
-    {
-      const ssize_t irow = row + roi_out->y - roi_in->y;
-      const ssize_t icol = col + roi_out->x - roi_in->x;
-      const ssize_t ix = irow * roi_in->width + icol;
-      const ssize_t ox = row * roi_out->width + col;
-      if((irow < roi_in->height) && (icol < roi_in->width))
-      {
-        const float r = israw ?     output[ox] / MAX(MININ, input[ix])
-                              : MAX(output[4*ox+0] / MAX(MININ, input[4*ix+0]),
-                                MAX(output[4*ox+1] / MAX(MININ, input[4*ix+1]),
-                                    output[4*ox+2] / MAX(MININ, input[4*ix+2])));
-        mask[ox] *= CLAMPF(sqrf(10.0f * MAX(0.0f, r - 1.0f)), 0.0f, 2.0f);
-      }
-    }
-  }
-
-  const float mmax[] = { 1.0f };
-  const float mmin[] = { 0.0f };
-  dt_gaussian_t *g = dt_gaussian_init(roi_out->width, roi_out->height, 1, mmax, mmin, 1.5f, 0);
-  if(!g) return;
-
-  dt_gaussian_blur(g, mask, mask);
-  dt_gaussian_free(g);
-}
-#undef MININ
-
 static const char *_develop_blend_colorspace_to_str(const dt_develop_blend_colorspace_t type)
 {
   switch(type)
