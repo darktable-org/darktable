@@ -1466,42 +1466,6 @@ blendop_set_mask (__write_only image2d_t mask, const int width, const int height
   write_imagef(mask, (int2)(x, y), value);
 }
 
-#define MININ 1e-5f
-__kernel void blendop_highlights_mask
-  ( __read_only image2d_t in, __read_only image2d_t out,
-    __read_only image2d_t mask_in, __write_only image2d_t mask_out,
-    const int width, const int height,
-    const int iwidth, const int iheight,
-    const int ch, const int2 offs)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  int irow = y + offs.y;
-  int icol = x + offs.x;
-  if((irow >= iheight) || (icol >= iwidth)) return;
-
-  float r = 0.0f;
-  const float m = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
-
-  if(ch == 1)
-  {
-    const float a = fmax(MININ, read_imagef(in, sampleri, (int2)(icol, irow)).x);
-    const float b = read_imagef(out, sampleri, (int2)(x, y)).x / a;
-    r = 10.0f * fmax(0.0f, b - 1.0f);
-  }
-  else
-  {
-    const float4 a = fmax(MININ, read_imagef(in, sampleri, (int2)(icol, irow)));
-    const float4 b = read_imagef(out, sampleri, (int2)(x, y)) / a;
-    r = 10.0f * fmax(0.0f, (fmax(b.w, fmax(b.x, b.y)) - 1.0f));
-  }
-
-  write_imagef(mask_out, (int2)(x, y), m * clamp(r*r, 0.0f, 2.0f));
-}
-#undef MININ
 
 __kernel void
 blendop_display_channel(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask,
