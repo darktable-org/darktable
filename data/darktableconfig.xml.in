@@ -1655,7 +1655,7 @@
      <type>bool</type>
     <default>true</default>
     <shortdescription>prioritise the hovered image over the selected images</shortdescription>
-    <longdescription>this define how the image to act on list is constructed.</longdescription>
+    <longdescription>this defines how the list of images to act on is constructed.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/collect/num_rules</name>
