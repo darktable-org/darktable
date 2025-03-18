@@ -102,7 +102,8 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_GUIDES_WIDGET = 1 << 15,     // require the guides widget
   IOP_FLAGS_CROP_EXPOSER = 1 << 16,      // offers crop exposing
   IOP_FLAGS_EXPAND_ROI_IN = 1 << 17,     // we might have to take special care about roi expansion
-  IOP_FLAGS_WRITE_DETAILS = 1 << 18
+  IOP_FLAGS_WRITE_DETAILS = 1 << 18,     // provides the scharr mask used by details
+  IOP_FLAGS_WRITE_RASTER = 1 << 19       // modules not supporting blending might still advertise a raster mask
 } dt_iop_flags_t;
 
 /** status of a module*/
@@ -470,6 +471,12 @@ void dt_iop_update_multi_priority(dt_iop_module_t *module, int new_priority);
 
 /** iterates over the users hash table and checks if a specific mask is being used */
 gboolean dt_iop_is_raster_mask_used(const dt_iop_module_t *module, const dt_mask_id_t id);
+/** checks dt_iop_is_raster_mask_used() or writing for exports */
+gboolean dt_iop_piece_is_raster_mask_used(const struct dt_dev_pixelpipe_iop_t *piece, const dt_mask_id_t id);
+
+/** set and clear the rastermasks, check the pixelpipe cache and report */
+void dt_iop_piece_set_raster(struct dt_dev_pixelpipe_iop_t *piece, float *mask, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
+void dt_iop_piece_clear_raster(struct dt_dev_pixelpipe_iop_t *piece, float *mask);
 
 /** returns the previous visible module on the module list */
 dt_iop_module_t *dt_iop_gui_get_previous_visible_module(const dt_iop_module_t *module);
