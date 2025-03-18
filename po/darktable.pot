@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-18 22:18+0100\n"
+"POT-Creation-Date: 2025-03-18 22:31+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1018,7 +1018,7 @@ msgid "TRUE"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:4532
-msgid "this define how the image to act on list is constructed."
+msgid "this defines how the list of images to act on is constructed."
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:4553
