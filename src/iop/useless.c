@@ -367,8 +367,7 @@ void process(dt_iop_module_t *self,
 
   // we create a raster mask as an example
   float *mask = NULL;
-  if(piece->pipe->store_all_raster_masks
-     || dt_iop_is_raster_mask_used(piece->module, mask_id))
+  if(dt_iop_piece_is_raster_mask_used(piece, mask_id))
   {
     // Attempt to allocate all of the buffers we need.  For this
     // example, we need one buffer that is equal in dimensions to the

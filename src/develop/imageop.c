@@ -1856,7 +1856,8 @@ void dt_iop_advertise_rastermask(dt_iop_module_t *module, const int mask_mode)
 {
   static const int key = BLEND_RASTER_ID;
   // we don't advertise raster masks but should use the original source instead
-  if(mask_mode & DEVELOP_MASK_ENABLED && !(mask_mode & DEVELOP_MASK_RASTER))
+  if((mask_mode & DEVELOP_MASK_ENABLED && !(mask_mode & DEVELOP_MASK_RASTER))
+    || (module->flags() & IOP_FLAGS_WRITE_RASTER))
   {
     gchar *modulename = dt_history_item_get_name(module);
     if(g_hash_table_insert(module->raster_mask.source.masks, GINT_TO_POINTER(key), modulename))
@@ -1916,7 +1917,7 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
                             GINT_TO_POINTER(blendop_params->raster_mask_id));
         module->raster_mask.sink.source = candidate;
         module->raster_mask.sink.id = blendop_params->raster_mask_id;
-        dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
+        dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS | DT_DEBUG_VERBOSE,
                       "request raster mask",
                       NULL, module, DT_DEVICE_NONE, NULL, NULL, "from '%s%s' %s",
                       candidate->op, dt_iop_get_instance_id(candidate),
@@ -1935,7 +1936,7 @@ dt_iop_module_t *dt_iop_commit_blend_params(dt_iop_module_t *module,
   if(sink_source)
   {
     if(g_hash_table_remove(module->raster_mask.sink.source->raster_mask.source.users, module))
-      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
+      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS | DT_DEBUG_VERBOSE,
                   "clear as raster user",
                   NULL, module, DT_DEVICE_NONE, NULL, NULL, "from '%s%s'",
                   sink_source->op, dt_iop_get_instance_id(sink_source));
@@ -3537,6 +3538,54 @@ gboolean dt_iop_is_raster_mask_used(const dt_iop_module_t *module, const dt_mask
   }
   return FALSE;
 }
+
+gboolean dt_iop_piece_is_raster_mask_used(const dt_dev_pixelpipe_iop_t *piece, const dt_mask_id_t id)
+{
+  if(piece->pipe->store_all_raster_masks)
+    return TRUE;
+
+  GHashTableIter iter;
+  gpointer key, value;
+
+  g_hash_table_iter_init(&iter, piece->module->raster_mask.source.users);
+  while(g_hash_table_iter_next(&iter, &key, &value))
+  {
+    if(GPOINTER_TO_INT(value) == id)
+      return TRUE;
+  }
+  return FALSE;
+}
+
+void dt_iop_piece_set_raster(dt_dev_pixelpipe_iop_t *piece,
+                             float *mask,
+                             const dt_iop_roi_t *const roi_in,
+                             const dt_iop_roi_t *const roi_out)
+{
+  // Note: technically we don't need the roi_in here at all; provided as we later want more work to be done here
+  // possibly changing a rastermask to something else
+  const gboolean new = g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID), mask);
+
+  // If we place a raster mask we must invalidate the following cachelines
+  if(!new)
+    dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, piece->module->iop_order);
+
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
+    "write raster mask", piece->pipe, piece->module, DT_DEVICE_NONE, roi_in, roi_out, "%s (%ix%i)",
+    new ? "new" : "replaced",
+  roi_out->width, roi_out->height);
+}
+
+void dt_iop_piece_clear_raster(dt_dev_pixelpipe_iop_t *piece, float *mask)
+{
+  if(g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(BLEND_RASTER_ID)))
+  {
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MASKS,
+        "delete raster mask", piece->pipe, piece->module, piece->pipe->devid, NULL, NULL);
+    dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, piece->module->iop_order);
+  }
+  dt_free_align(mask);
+}
+
 
 dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules,
                                                   const char *operation,
