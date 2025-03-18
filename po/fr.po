@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-18 22:18+0100\n"
-"PO-Revision-Date: 2025-03-18 22:29+0100\n"
+"POT-Creation-Date: 2025-03-18 22:31+0100\n"
+"PO-Revision-Date: 2025-03-18 22:31+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1044,7 +1044,7 @@ msgid "TRUE"
 msgstr "VRAI"
 
 #: ../build/bin/preferences_gen.h:4532
-msgid "this define how the image to act on list is constructed."
+msgid "this defines how the list of images to act on is constructed."
 msgstr "Cela défini comment la liste d’images à traiter est construite."
 
 #: ../build/bin/preferences_gen.h:4553
