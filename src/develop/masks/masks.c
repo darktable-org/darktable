@@ -1095,6 +1095,7 @@ gboolean dt_masks_events_mouse_enter(dt_iop_module_t *module)
   return FALSE;
 }
 
+// return true in case of something has been exposed
 gboolean dt_masks_events_mouse_moved(dt_iop_module_t *module,
                                      const float pzx,
                                      const float pzy,
@@ -1102,15 +1103,17 @@ gboolean dt_masks_events_mouse_moved(dt_iop_module_t *module,
                                      const int which,
                                      const float zoom_scale)
 {
-  // if the module is disabled, formms aren't being shown, so there's no point
-  // in passing along mouse events to them
-  if(!module || !module->enabled)
+  // only enabled modules having gui focus should care
+  if(module && !(module->enabled && dt_iop_has_focus(module)))
     return FALSE;
 
-  // record mouse position even if there are no masks visible
+  // if module == NULL it's the mask manager without a module having focus.
+  // Only take care and report if expanded.
+  if(!module && !dt_lib_gui_get_expanded(dt_lib_get_module("masks")))
+    return FALSE;
+
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
   dt_masks_form_t *form = darktable.develop->form_visible;
-
 
   if(gui)
   {
@@ -1128,7 +1131,7 @@ gboolean dt_masks_events_mouse_moved(dt_iop_module_t *module,
 
   if(gui) _set_hinter_message(gui, form);
 
-  return rep;
+  return rep != 0;
 }
 
 gboolean dt_masks_events_button_released(dt_iop_module_t *module,
