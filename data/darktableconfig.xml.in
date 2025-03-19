@@ -1654,7 +1654,7 @@
     <name>plugins/lighttable/act_on</name>
      <type>bool</type>
     <default>true</default>
-    <shortdescription>prioritise the hovered image over the selected images</shortdescription>
+    <shortdescription>prioritize the hovered image over the selected images</shortdescription>
     <longdescription>this defines how the list of images to act on is constructed.</longdescription>
   </dtconfig>
   <dtconfig>
