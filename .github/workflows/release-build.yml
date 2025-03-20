@@ -49,7 +49,7 @@ jobs:
           brew update > /dev/null || true
           # brew upgrade || true        # no need for a very time-consuming upgrade of ALL packages
           brew install --force gd       # See https://github.com/Homebrew/homebrew-core/issues/141766
-          brew tap Homebrew/bundle
+          # brew tap Homebrew/bundle
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
           brew bundle --verbose || true
