@@ -67,36 +67,13 @@ void dt_cache_cleanup(dt_cache_t *cache)
   dt_pthread_mutex_destroy(&cache->lock);
 }
 
-int32_t dt_cache_contains(dt_cache_t *cache,
+gboolean dt_cache_contains(dt_cache_t *cache,
                           const uint32_t key)
 {
   dt_pthread_mutex_lock(&cache->lock);
-  int32_t result = g_hash_table_contains(cache->hashtable, GINT_TO_POINTER(key));
+  const gboolean result = g_hash_table_contains(cache->hashtable, GINT_TO_POINTER(key));
   dt_pthread_mutex_unlock(&cache->lock);
   return result;
-}
-
-int dt_cache_for_all(dt_cache_t *cache,
-                     int (*process)(const uint32_t key, const void *data, void *user_data),
-                     void *user_data)
-{
-  dt_pthread_mutex_lock(&cache->lock);
-  GHashTableIter iter;
-  gpointer key, value;
-
-  g_hash_table_iter_init (&iter, cache->hashtable);
-  while(g_hash_table_iter_next (&iter, &key, &value))
-  {
-    dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
-    const int err = process(GPOINTER_TO_INT(key), entry->data, user_data);
-    if(err)
-    {
-      dt_pthread_mutex_unlock(&cache->lock);
-      return err;
-    }
-  }
-  dt_pthread_mutex_unlock(&cache->lock);
-  return 0;
 }
 
 // return read locked bucket, or NULL if it's not already there.
@@ -123,7 +100,7 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache,
     { // need to give up mutex so other threads have a chance to get in between and
       // free the lock we're trying to acquire:
       dt_pthread_mutex_unlock(&cache->lock);
-      return 0;
+      return NULL;
     }
     // bubble up in lru list:
     cache->lru = g_list_remove_link(cache->lru, entry->link);
@@ -147,7 +124,7 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache,
   const double end = dt_get_debug_wtime();
   if(end - start > 0.1)
     dt_print(DT_DEBUG_ALWAYS, "try- wait time %.06fs", end - start);
-  return 0;
+  return NULL;
 }
 
 // if found, the data void* is returned. if not, it is set to be
@@ -264,8 +241,8 @@ restart:
   return entry;
 }
 
-int dt_cache_remove(dt_cache_t *cache,
-                    const uint32_t key)
+gboolean dt_cache_remove(dt_cache_t *cache,
+                         const uint32_t key)
 {
   dt_cache_entry_t *entry;
   gpointer orig_key, value;
@@ -280,7 +257,7 @@ restart:
   if(!res)
   { // not found in cache, not deleting.
     dt_pthread_mutex_unlock(&cache->lock);
-    return 1;
+    return TRUE;
   }
   // need write lock to be able to delete:
   if(dt_pthread_rwlock_trywrlock(&entry->lock))
@@ -321,7 +298,7 @@ restart:
   g_slice_free1(sizeof(*entry), entry);
 
   dt_pthread_mutex_unlock(&cache->lock);
-  return 0;
+  return FALSE;
 }
 
 // best-effort garbage collection. never blocks, never fails. well,

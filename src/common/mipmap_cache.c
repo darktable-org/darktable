@@ -309,7 +309,7 @@ static inline gboolean _is_static_image(void *buffer)
 }
 
 #ifndef NDEBUG
-static inline gboolean _buffer_is_broken(dt_mipmap_buffer_t *buf)
+static inline int _buffer_is_broken(dt_mipmap_buffer_t *buf)
 {
   if(!buf->buf) return 0;
   dt_mipmap_buffer_dsc_t *dsc = (dt_mipmap_buffer_dsc_t *)buf->buf - 1;
