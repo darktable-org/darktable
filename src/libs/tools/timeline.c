@@ -666,9 +666,9 @@ static int _block_get_at_zoom(dt_lib_module_t *self, int width)
   gchar *query = g_strdup_printf("SELECT db.datetime_taken AS dt,"
                                  " col.imgid FROM main.images AS db "
                                  "LEFT JOIN memory.collected_images AS col ON db.id=col.imgid "
-                                 "WHERE dt > %ld "
+                                 "WHERE dt > %lld "
                                  "ORDER BY dt ASC",
-                                 (long int)_time_format_for_db(strip->time_pos, strip->zoom));
+                                 (long long)_time_format_for_db(strip->time_pos, strip->zoom));
   // clang-format on
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
