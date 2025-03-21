@@ -398,6 +398,7 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_class(self->widget, "dt_duplicate_ui");
+  dt_act_on_set_class(self->widget);
 
   d->duplicate_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
