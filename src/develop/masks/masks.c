@@ -1095,6 +1095,7 @@ gboolean dt_masks_events_mouse_enter(dt_iop_module_t *module)
   return FALSE;
 }
 
+// return true in case of something has been exposed
 gboolean dt_masks_events_mouse_moved(dt_iop_module_t *module,
                                      const float pzx,
                                      const float pzy,
@@ -1102,15 +1103,25 @@ gboolean dt_masks_events_mouse_moved(dt_iop_module_t *module,
                                      const int which,
                                      const float zoom_scale)
 {
-  // if the module is disabled, formms aren't being shown, so there's no point
-  // in passing along mouse events to them
-  if(!module || !module->enabled)
-    return FALSE;
+/*  For UI responsivness we want to avoid further processing if possible,
+    so we do some tests and possibly return immediately.
+    *module is either the module having focus or the mask manager (module == NULL)
 
-  // record mouse position even if there are no masks visible
+    We can skip further processing if we have
+    1. a module and it's not enabled
+    2. the mask manager and it is not expanded
+*/
+  const gboolean skipped = (module && !module->enabled)
+                        || (!module && !dt_lib_gui_get_expanded(dt_lib_get_module("masks")));
+  dt_print(DT_DEBUG_VERBOSE,
+    "[dt_masks_events_mouse_moved] %s %s",
+    module ? module->so->op : "mask manager",
+    skipped ? "skipped" : "");
+
+  if(skipped) return FALSE;
+
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
   dt_masks_form_t *form = darktable.develop->form_visible;
-
 
   if(gui)
   {
@@ -1128,7 +1139,7 @@ gboolean dt_masks_events_mouse_moved(dt_iop_module_t *module,
 
   if(gui) _set_hinter_message(gui, form);
 
-  return rep;
+  return rep != 0;
 }
 
 gboolean dt_masks_events_button_released(dt_iop_module_t *module,
