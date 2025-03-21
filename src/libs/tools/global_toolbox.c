@@ -264,7 +264,8 @@ static void _overlays_show_popup(GtkWidget *button, dt_lib_module_t *self)
   // and we do the same for culling/preview if needed
   if(cv == DT_VIEW_LIGHTTABLE
      && (dt_view_lighttable_preview_state(darktable.view_manager)
-         || dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING))
+         || dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING
+         || dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC))
   {
     dt_culling_mode_t cmode = DT_CULLING_MODE_CULLING;
     if(dt_view_lighttable_preview_state(darktable.view_manager)) cmode = DT_CULLING_MODE_PREVIEW;
