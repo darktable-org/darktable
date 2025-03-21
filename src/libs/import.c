@@ -1769,8 +1769,9 @@ static void _add_custom_place(gchar *place,
   dt_lib_import_t *d = self->data;
 
   GtkTreeIter iter;
-  gtk_tree_model_get_iter_first(GTK_TREE_MODEL(d->placesModel), &iter);
-  const gboolean found = _find_iter_place(GTK_TREE_MODEL(d->placesModel), &iter, place);
+  gboolean found = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(d->placesModel), &iter);
+  if(found)
+    found = _find_iter_place(GTK_TREE_MODEL(d->placesModel), &iter, place);
 
   if(!found)
   {
