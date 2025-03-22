@@ -1527,11 +1527,10 @@ static void _full_color_assessment_callback(GtkToggleButton *checkbutton, dt_dev
 static void _color_assessment_border_width_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_develop_t *dev = (dt_develop_t *) user_data;
-  dt_conf_set_float("darkroom/ui/color_assessment_border", dt_bauhaus_slider_get(slider));
+  dt_conf_set_float("darkroom/ui/color_assessment_total_border_width", dt_bauhaus_slider_get(slider));
   if (dev->full.color_assessment)
   {
     dt_dev_configure(&dev->full);
-    dt_dev_reprocess_center(dev);
   }
   else
   {
@@ -1539,10 +1538,10 @@ static void _color_assessment_border_width_callback(GtkWidget *slider, gpointer 
   }
 }
 
-static void _color_assessment_border_ratio_callback(GtkWidget *slider, gpointer user_data)
+static void _color_assessment_border_white_ratio_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_develop_t *dev = (dt_develop_t *) user_data;
-  dt_conf_set_float("darkroom/ui/color_assessment_ratio", dt_bauhaus_slider_get(slider));
+  dt_conf_set_float("darkroom/ui/color_assessment_border_white_ratio", dt_bauhaus_slider_get(slider));
   if (dev->full.color_assessment)
   {
     dt_dev_reprocess_center(dev);
@@ -2457,16 +2456,14 @@ void gui_init(dt_view_t *self)
   {
     dev->color_assessment.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, 0, NULL);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->color_assessment.button), dev->full.color_assessment);
-    ac = dt_action_define(DT_ACTION(self), NULL, N_("color assessment"),
-                          dev->color_assessment.button, &dt_action_def_toggle);
-    gtk_widget_set_tooltip_text(dev->color_assessment.button,
-                                _("toggle color assessment conditions"));
+    ac = dt_action_define(DT_ACTION(self), NULL, N_("color assessment"), dev->color_assessment.button,
+                          &dt_action_def_toggle);
+    gtk_widget_set_tooltip_text(dev->color_assessment.button, _("toggle color assessment conditions\nright-click for options"));
     dt_shortcut_register(ac, 0, 0, GDK_KEY_b, GDK_CONTROL_MASK);
     g_signal_connect(G_OBJECT(dev->color_assessment.button), "toggled",
                      G_CALLBACK(_full_color_assessment_callback), dev);
 
-    dt_view_manager_module_toolbox_add(darktable.view_manager,
-                                       dev->color_assessment.button, DT_VIEW_DARKROOM);
+    dt_view_manager_module_toolbox_add(darktable.view_manager, dev->color_assessment.button, DT_VIEW_DARKROOM);
     /* add pop-up window */
     dev->color_assessment.floating_window = gtk_popover_new(dev->color_assessment.button);
     connect_button_press_release(dev->color_assessment.button, dev->color_assessment.floating_window);
@@ -2474,27 +2471,28 @@ void gui_init(dt_view_t *self)
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(dev->color_assessment.floating_window), vbox);
 
-    /* border_width */
-    GtkWidget *border_width_slider = dt_bauhaus_slider_new_action(DT_ACTION(self), 2., 5., 0.1, 4., 1);
-    dt_bauhaus_slider_set(border_width_slider, dt_conf_get_float("darkroom/ui/color_assessment_border"));
-    dt_bauhaus_slider_set_format(border_width_slider, _(" cm"));
-    dt_bauhaus_widget_set_label(border_width_slider, N_("color_assessment"), N_("border width"));
+    /* total border width */
+    GtkWidget *border_width_slider = dt_bauhaus_slider_new_action(DT_ACTION(self), 0.05, 0.4, 0.05, 0.2, 2);
+    dt_bauhaus_slider_set(border_width_slider, dt_conf_get_float("darkroom/ui/color_assessment_total_border_width"));
+    dt_bauhaus_slider_set_format(border_width_slider, _(" \%"));
+    dt_bauhaus_widget_set_label(border_width_slider, N_("color_assessment"), N_("total border width relative to screen"));
     gtk_widget_set_tooltip_text(border_width_slider,
-                                _("The border width pecifies the total width of the border for the ISO assessment mode.\n"
-                                  "This includes the outer grey part plus the inner white frame.\n"
-                                  "Default value: 4.0 cm"));
-    g_signal_connect(G_OBJECT(border_width_slider), "value-changed", G_CALLBACK(_color_assessment_border_width_callback), dev);
+                                _("Total border width in relation to the screen size for the assessment mode.\n"
+                                  "This includes the outer grey part plus the inner white frame."));
+    g_signal_connect(G_OBJECT(border_width_slider), "value-changed",
+                     G_CALLBACK(_color_assessment_border_width_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(border_width_slider), TRUE, TRUE, 0);
 
-    /* border_ratio */
-    GtkWidget *border_ratio_slider = dt_bauhaus_slider_new_action(DT_ACTION(self), 0.1, 0.9, 0.05, 0.4, 2);
-    dt_bauhaus_slider_set(border_ratio_slider, dt_conf_get_float("darkroom/ui/color_assessment_ratio"));
-    dt_bauhaus_slider_set_format(border_ratio_slider, "");
-    dt_bauhaus_widget_set_label(border_ratio_slider, N_("color_assessment"), N_("border ratio"));
+    /* white border ratio */
+    GtkWidget *border_ratio_slider = dt_bauhaus_slider_new_action(DT_ACTION(self), 0.1, 0.95, 0.05, 0.4, 2);
+    dt_bauhaus_slider_set(border_ratio_slider,
+                          dt_conf_get_float("darkroom/ui/color_assessment_border_white_ratio"));
+    dt_bauhaus_slider_set_format(border_ratio_slider, "\%");
+    dt_bauhaus_widget_set_label(border_ratio_slider, N_("color_assessment"), N_("white border ratio"));
     gtk_widget_set_tooltip_text(border_ratio_slider,
-                                _("The border ratio pecifies the fraction of the white part of the border.\n"
-                                  "The default is 0.4, so the defaults white part of the border is 0.4 * 4 cm."));
-    g_signal_connect(G_OBJECT(border_ratio_slider), "value-changed", G_CALLBACK(_color_assessment_border_ratio_callback), dev);
+                                _("The border ratio pecifies the fraction of the white part of the border."));
+    g_signal_connect(G_OBJECT(border_ratio_slider), "value-changed",
+                     G_CALLBACK(_color_assessment_border_white_ratio_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(border_ratio_slider), TRUE, TRUE, 0);
 
     gtk_widget_show_all(vbox);

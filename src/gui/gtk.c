@@ -1561,36 +1561,6 @@ double dt_get_system_gui_ppd(GtkWidget *widget)
   return res;
 }
 
-double dt_get_physical_screen_dpi(GtkWidget *widget)
-{
-  GdkDisplay *display = gdk_display_get_default();
-  if (!display) {
-      dt_print(DT_DEBUG_ALWAYS, "[screen dpi] Failed to get default display");
-      return -1.0;
-  }
-  GdkMonitor *monitor = gdk_display_get_monitor_at_window(display, gtk_widget_get_window(widget));
-  if (!monitor) {
-      dt_print(DT_DEBUG_ALWAYS, "[screen dpi] Failed to get primary monitor");
-      return -1.0;
-  }
-
-  // Get resolution in pixels
-  GdkRectangle geometry;
-  gdk_monitor_get_geometry(monitor, &geometry);
-  const int width_px = geometry.width;
-  
-  // Get physical screen size in mm
-  const int width_mm = gdk_monitor_get_width_mm(monitor);
-  if (width_mm == 0) {
-      dt_print(DT_DEBUG_ALWAYS, "[screen dpi] Monitor does not report physical size");
-      return -1.0;
-  }
-
-  const double dpi_x = (width_px / (double) width_mm) * 25.4;
-
-  return dpi_x;
-}
-
 double dt_get_screen_resolution(GtkWidget *widget)
 {
   // get the screen resolution

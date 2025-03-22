@@ -1760,9 +1760,9 @@ void dt_view_paint_surface(cairo_t *cr,
      && window != DT_WINDOW_SLIDESHOW)
   {
     // draw the white frame around picture
-    const double ratio = dt_conf_get_float("darkroom/ui/color_assessment_ratio") * 2;
-    const double borw = maxw + tb * ratio;
-    const double borh = maxh + tb * ratio;
+    const double ratio = dt_conf_get_float("darkroom/ui/color_assessment_border_white_ratio");
+    const double borw = maxw + 2.0 * tb * ratio;
+    const double borh = maxh + 2.0 * tb * ratio;
     cairo_rectangle(cr, -0.5 * borw, -0.5 * borh, borw, borh);
     dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_COLOR_ASSESSMENT_FG);
     cairo_fill(cr);
