@@ -78,6 +78,14 @@
 #define DT_UI_PANEL_MODULE_SPACING 0
 #define DT_UI_PANEL_BOTTOM_DEFAULT_SIZE 120
 
+#ifdef GDK_WINDOWING_QUARTZ
+// macOS has a fixed DPI of 72
+#define DT_UI_DEFAULT_DPI_RESOLUTION 72 
+#else
+// according to man xrandr and the docs of gdk_screen_set_resolution 96 is the default
+#define DT_UI_DEFAULT_DPI_RESOLUTION 96
+#endif
+
 typedef enum dt_gui_view_switch_t
 {
   DT_GUI_VIEW_SWITCH_TO_TETHERING = 1,
@@ -1563,15 +1571,11 @@ double dt_get_system_gui_ppd(GtkWidget *widget)
 
 double dt_get_screen_resolution(GtkWidget *widget)
 {
-  // get the screen resolution
   float screen_dpi = dt_conf_get_float("screen_dpi_overwrite");
+  char opt_str[64] = "";
   if(screen_dpi > 0.0)
   {
-    gdk_screen_set_resolution(gtk_widget_get_screen(widget), screen_dpi);
-    dt_print(DT_DEBUG_CONTROL,
-             "[screen resolution] setting the screen resolution to %f dpi as specified in "
-             "the configuration file",
-             screen_dpi);
+    strncpy(opt_str, "from the configuration file", sizeof(opt_str));
   }
   else
   {
@@ -1579,14 +1583,11 @@ double dt_get_screen_resolution(GtkWidget *widget)
     if(screen_dpi < 0.0)
     {
       screen_dpi = 96.0;
-      gdk_screen_set_resolution(gtk_widget_get_screen(widget), 96.0);
-      dt_print(DT_DEBUG_CONTROL,
-               "[screen resolution] setting the screen resolution to the default 96 dpi");
+      strncpy(opt_str, " (default value)", sizeof(opt_str));
     }
-    else
-      dt_print(DT_DEBUG_CONTROL,
-               "[screen resolution] setting the screen resolution to %f dpi",
-               screen_dpi);
+    gdk_screen_set_resolution(gtk_widget_get_screen(widget), screen_dpi);
+    dt_print(DT_DEBUG_CONTROL, "[screen resolution] setting the screen resolution to %f dpi %s",
+             screen_dpi, opt_str);
   }
   return screen_dpi;
 }
@@ -1598,13 +1599,7 @@ void dt_configure_ppd_dpi(dt_gui_gtk_t *gui)
   gui->ppd = gui->ppd_thb = dt_get_system_gui_ppd(widget);
   gui->filter_image = CAIRO_FILTER_GOOD;
   gui->dpi = dt_get_screen_resolution(widget);
-
-#ifdef GDK_WINDOWING_QUARTZ
-  gui->dpi_factor = gui->dpi / 72; // macOS has a fixed DPI of 72
-#else
-  gui->dpi_factor = gui->dpi / 96; // according to man xrandr and the docs of
-                       // gdk_screen_set_resolution 96 is the default
-#endif
+  gui->dpi_factor = gui->dpi / DT_UI_DEFAULT_DPI_RESOLUTION;
 }
 
 static gboolean _focus_in_out_event(GtkWidget *widget,
