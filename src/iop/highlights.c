@@ -1218,7 +1218,6 @@ void reload_defaults(dt_iop_module_t *self)
                                                                    DT_IOP_HIGHLIGHTS_OPPOSED);
       // As we only have clip available we remove all other options
       for(int i = 0; i < 6; i++) dt_bauhaus_combobox_remove_at(g->mode, 1);
-      d->mode = DT_IOP_HIGHLIGHTS_CLIP;
     }
     else if(sraw)
     {
@@ -1237,6 +1236,7 @@ void reload_defaults(dt_iop_module_t *self)
     _set_quads(g, NULL);
   }
   d->clip = MIN(d->clip, img->linear_response_limit);
+  d->mode = rawprep ? DT_IOP_HIGHLIGHTS_OPPOSED : DT_IOP_HIGHLIGHTS_CLIP;
 }
 
 static void _quad_callback(GtkWidget *quad, dt_iop_module_t *self)
