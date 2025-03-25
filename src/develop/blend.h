@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -388,13 +388,7 @@ dt_iop_colorspace_type_t
 dt_develop_blend_colorspace(const dt_dev_pixelpipe_iop_t *const piece,
                             const dt_iop_colorspace_type_t cst);
 
-/** check if content of params is all zero, indicating a
- * non-initialized set of blend parameters which needs special
- * care. */
-gboolean dt_develop_blend_params_is_all_zero(const void *params,
-                                             const size_t length);
-
-/** update blendop params from older versions */
+/** update blendop params to current version */
 gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,
                                         const void *const old_params,
                                         const int old_version,

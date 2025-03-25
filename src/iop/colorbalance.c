@@ -270,8 +270,8 @@ static void add_preset(dt_iop_module_so_t *self, const char *name,
     // update to current blendop params format
     void *bp_new = malloc(sizeof(dt_develop_blend_params_t));
 
-    if(dt_develop_blend_legacy_params_from_so(self, bp, blendop_version, bp_new, dt_develop_blend_version(),
-      blen) == 0)
+    if(dt_develop_blend_legacy_params_from_so(self, bp, blendop_version, bp_new,
+                                              dt_develop_blend_version(), blen) == FALSE)
     {
       free(bp);
       bp = bp_new;

@@ -703,11 +703,10 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
                sizeof(dt_develop_blend_params_t));
       }
       else if(style_item->blendop_params
-              && dt_develop_blend_legacy_params
-                   (module, style_item->blendop_params,
-                    style_item->blendop_version,
-                    module->blend_params, dt_develop_blend_version(),
-                    style_item->blendop_params_size) == 0)
+              && dt_develop_blend_legacy_params(module, style_item->blendop_params,
+                                                style_item->blendop_version,
+                                                module->blend_params, dt_develop_blend_version(),
+                                                style_item->blendop_params_size) == FALSE)
       {
         // do nothing
       }
