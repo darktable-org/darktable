@@ -521,9 +521,6 @@ void gui_init(dt_lib_module_t *self)
 
   g_signal_connect(G_OBJECT(d->zoom), "value-changed", G_CALLBACK(_lib_lighttable_zoom_slider_changed), self);
 
-  _lib_lighttable_zoom_slider_changed(d->zoom, self); // the slider defaults to 1 and GTK doesn't
-                                                      // fire a value-changed signal when setting
-                                                      // it to 1 => empty text box
   darktable.view_manager->proxy.lighttable.module = self;
   darktable.view_manager->proxy.lighttable.set_zoom = _lib_lighttable_set_zoom;
   darktable.view_manager->proxy.lighttable.get_zoom = _lib_lighttable_get_zoom;
