@@ -945,7 +945,7 @@ static void _blendop_blendif_polarity_callback(GtkToggleButton *togglebutton,
   _blendop_blendif_highlight_changed_tabs(data->module);
 }
 
-static float log10_scale_callback(GtkWidget *self,
+static float _log10_scale_callback(GtkWidget *self,
                                   const float inval,
                                   const int dir)
 {
@@ -969,7 +969,7 @@ static float log10_scale_callback(GtkWidget *self,
 }
 
 
-static float magnifier_scale_callback(GtkWidget *self,
+static float _magnifier_scale_callback(GtkWidget *self,
                                       const float inval,
                                       const int dir)
 {
@@ -1031,7 +1031,7 @@ static int _blendop_blendif_disp_alternative_mag(GtkWidget *widget,
                                                  const int mode)
 {
   return _blendop_blendif_disp_alternative_worker
-    (widget, module, mode, magnifier_scale_callback, _(" (zoom)"));
+    (widget, module, mode, _magnifier_scale_callback, _(" (zoom)"));
 }
 
 static int _blendop_blendif_disp_alternative_log(GtkWidget *widget,
@@ -1039,7 +1039,7 @@ static int _blendop_blendif_disp_alternative_log(GtkWidget *widget,
                                                  const int mode)
 {
   return _blendop_blendif_disp_alternative_worker
-    (widget, module, mode, log10_scale_callback, _(" (log)"));
+    (widget, module, mode, _log10_scale_callback, _(" (log)"));
 }
 
 static void _blendop_blendif_disp_alternative_reset(GtkWidget *widget,

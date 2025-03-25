@@ -2227,7 +2227,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     else if(blendop_params
             && dt_develop_blend_legacy_params
             (hist->module, blendop_params, blendop_version,
-             hist->blend_params, dt_develop_blend_version(), bl_length) == 0)
+             hist->blend_params, dt_develop_blend_version(), bl_length) == FALSE)
     {
       legacy_params = TRUE;
     }

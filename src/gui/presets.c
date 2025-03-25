@@ -1098,7 +1098,7 @@ void dt_gui_presets_apply_preset(const gchar* name,
     else if(blendop_params
             && dt_develop_blend_legacy_params(module, blendop_params,
                                               blendop_version, module->blend_params,
-                                              dt_develop_blend_version(), bl_length) == 0)
+                                              dt_develop_blend_version(), bl_length) == FALSE)
     {
       // do nothing
     }
