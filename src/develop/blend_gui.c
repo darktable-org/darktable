@@ -665,7 +665,9 @@ static void _blendop_masks_mode_callback(const dt_develop_mask_mode_t mask_mode,
   }
   else
   {
-    _box_set_visible(data->bottom_box, FALSE);
+    if(mask_mode & DEVELOP_MASK_RASTER)
+      gtk_widget_hide(GTK_WIDGET(data->masks_combine_combo));
+    _box_set_visible(data->bottom_box, mask_mode & DEVELOP_MASK_RASTER);
   }
 
   if(data->masks_inited && (mask_mode & DEVELOP_MASK_MASK))
@@ -945,7 +947,7 @@ static void _blendop_blendif_polarity_callback(GtkToggleButton *togglebutton,
   _blendop_blendif_highlight_changed_tabs(data->module);
 }
 
-static float log10_scale_callback(GtkWidget *self,
+static float _log10_scale_callback(GtkWidget *self,
                                   const float inval,
                                   const int dir)
 {
@@ -969,7 +971,7 @@ static float log10_scale_callback(GtkWidget *self,
 }
 
 
-static float magnifier_scale_callback(GtkWidget *self,
+static float _magnifier_scale_callback(GtkWidget *self,
                                       const float inval,
                                       const int dir)
 {
@@ -1031,7 +1033,7 @@ static int _blendop_blendif_disp_alternative_mag(GtkWidget *widget,
                                                  const int mode)
 {
   return _blendop_blendif_disp_alternative_worker
-    (widget, module, mode, magnifier_scale_callback, _(" (zoom)"));
+    (widget, module, mode, _magnifier_scale_callback, _(" (zoom)"));
 }
 
 static int _blendop_blendif_disp_alternative_log(GtkWidget *widget,
@@ -1039,7 +1041,7 @@ static int _blendop_blendif_disp_alternative_log(GtkWidget *widget,
                                                  const int mode)
 {
   return _blendop_blendif_disp_alternative_worker
-    (widget, module, mode, log10_scale_callback, _(" (log)"));
+    (widget, module, mode, _log10_scale_callback, _(" (log)"));
 }
 
 static void _blendop_blendif_disp_alternative_reset(GtkWidget *widget,
@@ -3321,7 +3323,9 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     module->suppress_mask = FALSE;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), FALSE);
 
-    _box_set_visible(bd->bottom_box, FALSE);
+    if(mask_mode & DEVELOP_MASK_RASTER)
+      gtk_widget_hide(GTK_WIDGET(bd->masks_combine_combo));
+    _box_set_visible(bd->bottom_box, mask_mode & DEVELOP_MASK_RASTER);
   }
 
   if(bd->masks_inited && (mask_mode & DEVELOP_MASK_MASK))
