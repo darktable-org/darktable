@@ -1577,10 +1577,9 @@ static void _init_presets(dt_iop_module_so_t *module_so)
 
       // convert the old blend params to new
       if(old_blend_params
-         && dt_develop_blend_legacy_params
-             (module, old_blend_params, old_blend_params_version,
-              new_blend_params, dt_develop_blend_version(),
-              old_blend_params_size) == 0)
+         && dt_develop_blend_legacy_params(module, old_blend_params, old_blend_params_version,
+                                           new_blend_params, dt_develop_blend_version(),
+                                           old_blend_params_size) == FALSE)
       {
         // do nothing
       }

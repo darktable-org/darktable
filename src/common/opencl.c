@@ -2881,15 +2881,21 @@ int dt_opencl_read_host_from_device_raw(const int devid,
   if(!_cldev_running(devid))
     return DT_OPENCL_NODEVICE;
 
-  cl_event *eventp = _opencl_events_get_slot(devid,
-                                               "[Read Image (from device to host)]");
+  cl_event *eventp = _opencl_events_get_slot(devid, "[Read Image (from device to host)]");
 
-  return (darktable.opencl->dlocl->symbols->dt_clEnqueueReadImage)
+  const cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueReadImage)
     (darktable.opencl->dev[devid].cmd_queue,
      device,
      blocking ? CL_TRUE : CL_FALSE,
      origin, region, rowpitch,
      0, host, 0, NULL, eventp);
+
+  if(err != CL_SUCCESS)
+    dt_print(DT_DEBUG_OPENCL,
+             "[dt_opencl_read_host_from_device_raw] could not read from device '%s' id=%d: %s",
+             darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
+
+  return err;
 }
 
 int dt_opencl_write_host_to_device(const int devid,
@@ -2968,6 +2974,10 @@ int dt_opencl_write_host_to_device_raw(const int devid,
      device, blocking ? CL_TRUE : CL_FALSE,
      origin, region,
      rowpitch, 0, host, 0, NULL, eventp);
+  if(err != CL_SUCCESS)
+    dt_print(DT_DEBUG_OPENCL,
+             "[dt_opencl_write_host_to_device_raw] could not write to device '%s' id=%d: %s",
+             darktable.opencl->dev[devid].fullname, devid, cl_errstr(err));
   _check_clmem_err(devid, err);
   return err;
 }
