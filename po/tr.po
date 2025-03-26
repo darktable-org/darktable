@@ -25548,8 +25548,12 @@ msgid "color assessment"
 msgstr "renk değerlendirmesi"
 
 #: ../src/views/darkroom.c:2214
-msgid "toggle color assessment conditions"
-msgstr "renk değerlendirme koşullarını değiştir"
+msgid ""
+"toggle color assessment conditions\n"
+"right-click for options"
+msgstr ""
+"renk değerlendirme koşullarını değiştir\n"
+"seçenekler için sağ tıklayın"
 
 #: ../src/views/darkroom.c:2221
 msgid "high quality processing"

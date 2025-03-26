@@ -28546,8 +28546,12 @@ msgid "color assessment"
 msgstr "színkiértékelés"
 
 #: ../src/views/darkroom.c:2280
-msgid "toggle color assessment conditions"
-msgstr "szín kiértékelési feltételek kapcsolása"
+msgid ""
+"toggle color assessment conditions\n"
+"right-click for options"
+msgstr ""
+"szín kiértékelési feltételek kapcsolása\n"
+"jobb kattintás az opciókhoz"
 
 #: ../src/views/darkroom.c:2289
 msgid "high quality processing"

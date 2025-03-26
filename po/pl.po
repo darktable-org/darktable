@@ -28511,8 +28511,12 @@ msgid "color assessment"
 msgstr "ocena kolorów"
 
 #: ../src/views/darkroom.c:2280
-msgid "toggle color assessment conditions"
-msgstr "włącz/wyłącz środowisko oceny kolorów"
+msgid ""
+"toggle color assessment conditions\n"
+"right-click for options"
+msgstr ""
+"włącz/wyłącz środowisko oceny kolorów\n"
+"kliknij prawym przyciskiem, by wyświetlić opcje"
 
 #: ../src/views/darkroom.c:2289
 msgid "high quality processing"

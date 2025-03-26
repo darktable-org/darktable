@@ -27721,8 +27721,12 @@ msgid "color assessment"
 msgstr "色彩评估"
 
 #: ../src/views/darkroom.c:2280
-msgid "toggle color assessment conditions"
-msgstr "切换颜色评估条件"
+msgid ""
+"toggle color assessment conditions\n"
+"right-click for options"
+msgstr ""
+"切换颜色评估条件\n"
+"右键查看选项"
 
 #: ../src/views/darkroom.c:2289
 msgid "high quality processing"

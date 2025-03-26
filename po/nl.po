@@ -28499,8 +28499,12 @@ msgid "color assessment"
 msgstr "kleur beoordeling"
 
 #: ../src/views/darkroom.c:2280
-msgid "toggle color assessment conditions"
-msgstr "schakel kleur beoordelingsvoorwaarden"
+msgid ""
+"toggle color assessment conditions\n"
+"right-click for options"
+msgstr ""
+"schakel kleur beoordelingsvoorwaarden\n"
+"klik rechts voor opties"
 
 #: ../src/views/darkroom.c:2289
 msgid "high quality processing"

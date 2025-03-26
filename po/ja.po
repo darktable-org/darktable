@@ -28722,8 +28722,12 @@ msgid "color assessment"
 msgstr "色の評価"
 
 #: ../src/views/darkroom.c:2435
-msgid "toggle color assessment conditions"
-msgstr "色評価条件の表示／非表示を切り替えます"
+msgid ""
+"toggle color assessment conditions\n"
+"right-click for options"
+msgstr ""
+"色評価条件の表示／非表示を切り替えます\n"
+"右クリックでオプション"
 
 #: ../src/views/darkroom.c:2446
 msgid "high quality processing"

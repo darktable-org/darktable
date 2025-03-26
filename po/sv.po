@@ -28414,8 +28414,12 @@ msgid "color assessment"
 msgstr "färgbedömning"
 
 #: ../src/views/darkroom.c:2280
-msgid "toggle color assessment conditions"
-msgstr "växla färgbedömning villkor"
+msgid ""
+"toggle color assessment conditions\n"
+"right-click for options"
+msgstr ""
+"växla färgbedömning villkor\n"
+"högerklicka för alternativ"
 
 #: ../src/views/darkroom.c:2289
 msgid "high quality processing"

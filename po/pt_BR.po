@@ -28785,8 +28785,12 @@ msgid "color assessment"
 msgstr "avaliação de cores"
 
 #: ../src/views/darkroom.c:2435
-msgid "toggle color assessment conditions"
-msgstr "alterna avaliação de cores"
+msgid ""
+"toggle color assessment conditions\n"
+"right-click for options"
+msgstr ""
+"alterna avaliação de cores\n"
+"clique-direito para opções"
 
 #: ../src/views/darkroom.c:2446
 msgid "high quality processing"

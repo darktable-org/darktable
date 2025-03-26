@@ -28650,8 +28650,12 @@ msgstr "režim kontroly barev"
 
 # white frame around the image (tooltip)
 #: ../src/views/darkroom.c:2433
-msgid "toggle color assessment conditions"
-msgstr "Přepnout do režimu kontroly barev"
+msgid ""
+"toggle color assessment conditions\n"
+"right-click for options"
+msgstr ""
+"Přepnout do režimu kontroly barev\n"
+"Kliknutím pravým tlačítkem zobrazíte možnosti."
 
 #: ../src/views/darkroom.c:2444
 msgid "high quality processing"

@@ -28912,8 +28912,12 @@ msgid "color assessment"
 msgstr "Оцінка кольорів"
 
 #: ../src/views/darkroom.c:2435
-msgid "toggle color assessment conditions"
-msgstr "Перемкнути умови оцінки кольору"
+msgid ""
+"toggle color assessment conditions\n"
+"right-click for options"
+msgstr ""
+"Перемкнути умови оцінки кольору\n"
+"Права кнопка миші - опції"
 
 #: ../src/views/darkroom.c:2446
 msgid "high quality processing"

@@ -28532,8 +28532,12 @@ msgid "color assessment"
 msgstr "Värin arviointi"
 
 #: ../src/views/darkroom.c:2280
-msgid "toggle color assessment conditions"
-msgstr "Vaihda värien arvioinnin tilaa."
+msgid ""
+"toggle color assessment conditions\n"
+"right-click for options"
+msgstr ""
+"Vaihda värien arvioinnin tilaa.\n"
+"Asetukset valittavissa hiiren kakkospainikkeella."
 
 #: ../src/views/darkroom.c:2289
 msgid "high quality processing"

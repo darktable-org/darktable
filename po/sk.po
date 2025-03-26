@@ -18442,8 +18442,12 @@ msgid "display a second darkroom image window"
 msgstr "zobraziť druhé okno fotokomory"
 
 #: ../src/views/darkroom.c:2165
-msgid "toggle color assessment conditions"
-msgstr "prepínať podmienky hodnotenia farieb"
+msgid ""
+"toggle color assessment conditions\n"
+"right-click for options"
+msgstr ""
+"prepínať podmienky hodnotenia farieb\n"
+"kliknutím pravým tlačidlom zobrazíte voľby"
 
 #: ../src/views/darkroom.c:2175
 msgid ""

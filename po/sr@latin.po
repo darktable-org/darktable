@@ -19436,8 +19436,12 @@ msgid "display a second darkroom image window"
 msgstr "prikaz drugog prozora tamne sobe"
 
 #: ../src/views/darkroom.c:2178
-msgid "toggle color assessment conditions"
-msgstr "uključi uslove za procenjivanje boja"
+msgid ""
+"toggle color assessment conditions\n"
+"right-click for options"
+msgstr ""
+"uključi uslove za procenjivanje boja\n"
+"desni klik za opcije"
 
 #: ../src/views/darkroom.c:2188
 msgid ""

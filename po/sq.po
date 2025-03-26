@@ -28427,8 +28427,12 @@ msgid "color assessment"
 msgstr "vlerësimi i ngjyrave"
 
 #: ../src/views/darkroom.c:2280
-msgid "toggle color assessment conditions"
-msgstr "vlerësoni ngjyrat në kushtet"
+msgid ""
+"toggle color assessment conditions\n"
+"right-click for options"
+msgstr ""
+"vlerësoni ngjyrat në kushtet\n"
+"klikoni me të djathtën për opsionet"
 
 #: ../src/views/darkroom.c:2289
 msgid "high quality processing"

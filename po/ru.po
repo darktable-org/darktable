@@ -25527,8 +25527,12 @@ msgid "color assessment"
 msgstr "Цветовая оценка"
 
 #: ../src/views/darkroom.c:2257
-msgid "toggle color assessment conditions"
-msgstr "Переключить режим цветовой оценки"
+msgid ""
+"toggle color assessment conditions\n"
+"right-click for options"
+msgstr ""
+"Переключить режим цветовой оценки\n"
+"Настройки открываются по щелчку правой кнопкой мыши."
 
 #: ../src/views/darkroom.c:2264
 msgid "high quality processing"
