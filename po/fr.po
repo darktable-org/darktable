@@ -18111,8 +18111,8 @@ msgid ""
 "offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance|"
 "saturation"
 msgstr ""
-"lift gamma gain|cdl|étalonnage des couleurs|contraste|chroma des hautes "
-"lumières|tonalité|vibrance|saturation"
+"offset power slope|cdl|étalonnage des couleurs|contraste|chroma des hautes "
+"lumières|teinte|vibrance|saturation"
 
 #: ../src/iop/colorbalancergb.c:178
 msgid ""
@@ -18309,11 +18309,11 @@ msgstr "Chroma du gain de couleur dans les hautes lumières"
 #: ../src/iop/colorbalancergb.c:1933
 msgctxt "section"
 msgid "power"
-msgstr "Puissance"
+msgstr "Power"
 
 #: ../src/iop/colorbalancergb.c:1934
 msgid "power"
-msgstr "Puissance"
+msgstr "Power"
 
 #: ../src/iop/colorbalancergb.c:1940
 msgid "luminance exponent in mid-tones"
