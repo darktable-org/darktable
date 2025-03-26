@@ -28,7 +28,7 @@
 #include "common/imagebuf.h"
 #include "common/gaussian.h"
 
-#define DEVELOP_BLEND_VERSION (13)
+#define DEVELOP_BLEND_VERSION (14)
 
 G_BEGIN_DECLS
 
