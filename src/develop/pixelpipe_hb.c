@@ -564,8 +564,7 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
       if(piece->enabled && piece->blendop_data)
       {
         const dt_develop_blend_params_t *const bp = piece->blendop_data;
-        const gboolean valid_mask = bp->mask_mode > DEVELOP_MASK_ENABLED
-                                &&  bp->mask_mode != DEVELOP_MASK_RASTER;
+        const gboolean valid_mask = bp->mask_mode > DEVELOP_MASK_ENABLED;
 
         if((!feqf(bp->details, 0.0f, 1e-6)) && valid_mask)
           dt_dev_pixelpipe_usedetails(pipe);

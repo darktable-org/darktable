@@ -665,7 +665,9 @@ static void _blendop_masks_mode_callback(const dt_develop_mask_mode_t mask_mode,
   }
   else
   {
-    _box_set_visible(data->bottom_box, FALSE);
+    if(mask_mode & DEVELOP_MASK_RASTER)
+      gtk_widget_hide(GTK_WIDGET(data->masks_combine_combo));
+    _box_set_visible(data->bottom_box, mask_mode & DEVELOP_MASK_RASTER);
   }
 
   if(data->masks_inited && (mask_mode & DEVELOP_MASK_MASK))
@@ -3321,7 +3323,9 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     module->suppress_mask = FALSE;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), FALSE);
 
-    _box_set_visible(bd->bottom_box, FALSE);
+    if(mask_mode & DEVELOP_MASK_RASTER)
+      gtk_widget_hide(GTK_WIDGET(bd->masks_combine_combo));
+    _box_set_visible(bd->bottom_box, mask_mode & DEVELOP_MASK_RASTER);
   }
 
   if(bd->masks_inited && (mask_mode & DEVELOP_MASK_MASK))

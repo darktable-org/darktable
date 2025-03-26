@@ -575,6 +575,7 @@ void dt_develop_blend_process(dt_iop_module_t *self,
         dt_iop_image_scaled_copy(mask, raster_mask, opacity, owidth, oheight, 1);
       }
       if(free_mask) dt_free_align(raster_mask);
+      _refine_with_detail_mask(self, piece, mask, roi_in, roi_out, d->details);
     }
     else
     {
@@ -655,7 +656,10 @@ void dt_develop_blend_process(dt_iop_module_t *self,
       default:
         break;
     }
+  }
 
+  if(!uniform)
+  {
     const float guide_weight = _get_guide_weight(piece);
     const float sqrt_eps = _get_feathering_eps(piece);
     // post processing the mask
@@ -1008,6 +1012,13 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
   dev_mask = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
   if(dev_mask == NULL) goto error;
 
+  const gboolean swap_mask = !uniform && (post_operations_size || !raster);
+  if(swap_mask)
+  {
+    dev_mask_2 = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
+    if(dev_mask_2 == NULL) goto error;
+  }
+
   dt_iop_order_iccprofile_info_t profile;
   const gboolean use_profile = dt_develop_blendif_init_masking_profile(piece, &profile, blend_csp);
 
@@ -1067,6 +1078,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
         dt_iop_image_scaled_copy(mask, raster_mask, opacity, owidth, oheight, 1);
       }
       if(free_mask) dt_free_align(raster_mask);
+      _refine_with_detail_mask_cl(self, piece, mask, roi_in, roi_out, d->details, devid);
     }
     else
     {
@@ -1122,10 +1134,6 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
 
     _refine_with_detail_mask_cl(self, piece, mask, roi_in, roi_out, d->details, devid);
 
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-    // write mask from host to device
-    dev_mask_2 = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
-    if(dev_mask_2 == NULL) goto error;
     err = dt_opencl_write_host_to_device(devid, mask, dev_mask_2, owidth, oheight, sizeof(float));
     if(err != CL_SUCCESS) goto error;
 
@@ -1156,7 +1164,10 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
                "[opencl_blendop] apply global opacity: %s", cl_errstr(err));
       goto error;
     }
+  }
 
+  if(!uniform && post_operations_size)
+  {
     // post processing the mask (it will always be stored in dev_mask)
     const int featherw = _get_required_w(d->feathering_radius, roi_out->scale / piece->iscale);
     const float sqrt_eps = _get_feathering_eps(piece);
@@ -1234,8 +1245,10 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
       }
       _blend_process_cl_exchange(&dev_mask, &dev_mask_2);
     }
+  }
 
-    // get rid of dev_mask_2
+  if(swap_mask)
+  {
     dt_opencl_release_mem_object(dev_mask_2);
     dev_mask_2 = NULL;
   }
@@ -1542,6 +1555,19 @@ static void _fix_masks_combine(dt_develop_blend_params_t *bp)
       bp->mask_combine &= ~DEVELOP_COMBINE_INV;
       bp->mask_combine &= ~DEVELOP_COMBINE_MASKS_POS;
     }
+  }
+}
+
+static void _fix_raster_blend(dt_develop_blend_params_t *n)
+{
+  if(n->mask_mode & DEVELOP_MASK_RASTER)
+  {
+    n->details = 0.0f;
+    n->feathering_radius = 0.0f;
+    n->blur_radius = 0.0f;
+    n->contrast = 0.0f;
+    n->brightness = 0.0f;
+    n->feathering_guide = DEVELOP_MASK_GUIDE_IN_AFTER_BLUR;
   }
 }
 
@@ -1994,6 +2020,7 @@ gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,
     n->raster_mask_invert = o->raster_mask_invert;
     n->feather_version = 0;
     _fix_masks_combine(n);
+    _fix_raster_blend(n);
     return FALSE;
   }
 
@@ -2077,7 +2104,7 @@ gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,
     n->feather_version = 0;
 
     _fix_masks_combine(n);
-
+    _fix_raster_blend(n);
     return FALSE;
   }
   if(old_version == 11 && new_version == DEVELOP_BLEND_VERSION)
@@ -2091,6 +2118,7 @@ gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,
     _fix_masks_combine(n);
     n->raster_mask_id = o->raster_mask_source[0] ? o->raster_mask_id : INVALID_MASKID;
     n->feather_version = 0;
+    _fix_raster_blend(n);
     return FALSE;
   }
   if(old_version == 12 && new_version == DEVELOP_BLEND_VERSION)
@@ -2103,6 +2131,18 @@ gboolean dt_develop_blend_legacy_params(dt_iop_module_t *module,
     *n = *o;
     n->raster_mask_id = o->raster_mask_source[0] ? o->raster_mask_id : INVALID_MASKID;
     n->feather_version = 0;
+    _fix_raster_blend(n);
+    return FALSE;
+  }
+  if(old_version == 13 && new_version == 14)
+  {
+    if(length != sizeof(dt_develop_blend_params_t)) return TRUE;
+
+    dt_develop_blend_params_t *o = (dt_develop_blend_params_t *)old_params;
+    dt_develop_blend_params_t *n = new_params;
+
+    *n = *o;
+    _fix_raster_blend(n);
     return FALSE;
   }
 
