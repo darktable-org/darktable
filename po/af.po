@@ -20500,12 +20500,9 @@ msgid "display a second darkroom image window"
 msgstr "vertoon 'n tweede donker kamer beeld venster"
 
 #: ../src/views/darkroom.c:2187
-msgid ""
-"toggle color assessment conditions\n"
-"right-click for options"
-msgstr ""
-"skakel kleur assessering voorwaardes\n"
-"regskliek vir opsies"
+msgid "toggle ISO 12646 color assessment conditions"
+msgstr "skakel ISO 12646 kleur assessering voorwaardes"
+
 #: ../src/views/darkroom.c:2197
 msgid ""
 "toggle raw over exposed indication\n"
@@ -20772,7 +20769,7 @@ msgctxt "accel"
 msgid "image back"
 msgstr "beeld terug"
 
-#. toggle color assessment condition
+#. toggle ISO 12646 color assessment condition
 #: ../src/views/darkroom.c:3908
 msgctxt "accel"
 msgid "color assessment"

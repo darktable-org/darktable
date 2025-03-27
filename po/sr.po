@@ -19436,12 +19436,8 @@ msgid "display a second darkroom image window"
 msgstr "приказ другог прозора тамне собе"
 
 #: ../src/views/darkroom.c:2178
-msgid ""
-"toggle color assessment conditions\n"
-"right-click for options"
-msgstr ""
-"укључи услове за процењивање боја\n"
-"десни клик за опције"
+msgid "toggle ISO 12646 color assessment conditions"
+msgstr "укључи ИСО 12646 услове за процењивање боја"
 
 #: ../src/views/darkroom.c:2188
 msgid ""
@@ -19717,7 +19713,7 @@ msgctxt "accel"
 msgid "image back"
 msgstr "претходна слика"
 
-#. toggle color assessment condition
+#. toggle ISO 12646 color assessment condition
 #: ../src/views/darkroom.c:3853
 msgctxt "accel"
 msgid "color assessment"

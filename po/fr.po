@@ -29061,12 +29061,8 @@ msgid "color assessment"
 msgstr "Évaluation des couleurs"
 
 #: ../src/views/darkroom.c:2435
-msgid ""
-"toggle color assessment conditions\n"
-"right-click for options"
-msgstr ""
-"Basculer les conditions d'évaluation des couleurs\n"
-"Clic-droit pour les options."
+msgid "toggle ISO 12646 color assessment conditions"
+msgstr "Basculer les conditions d’évaluation des couleurs ISO 12646"
 
 #: ../src/views/darkroom.c:2446
 msgid "high quality processing"
@@ -29275,8 +29271,8 @@ msgid "histogram profile"
 msgstr "Profil de l’histogramme"
 
 #: ../src/views/darkroom.c:2693
-msgid "second preview window color assessment"
-msgstr "Évaluation des couleurs pour la seconde fenêtre"
+msgid "second preview window ISO 12646 color assessment"
+msgstr "Évaluation des couleurs ISO 12646 pour la seconde fenêtre"
 
 #: ../src/views/darkroom.c:2696
 msgid "color assessment second preview"

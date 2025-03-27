@@ -27721,12 +27721,8 @@ msgid "color assessment"
 msgstr "色彩评估"
 
 #: ../src/views/darkroom.c:2280
-msgid ""
-"toggle color assessment conditions\n"
-"right-click for options"
-msgstr ""
-"切换颜色评估条件\n"
-"右键查看选项"
+msgid "toggle ISO 12646 color assessment conditions"
+msgstr "切换ISO 12646颜色评估条件"
 
 #: ../src/views/darkroom.c:2289
 msgid "high quality processing"
@@ -27929,8 +27925,8 @@ msgid "histogram profile"
 msgstr "直方图配置"
 
 #: ../src/views/darkroom.c:2489
-msgid "second preview window color assessment"
-msgstr "在第二个窗口中打开 颜色评估环境"
+msgid "second preview window ISO 12646 color assessment"
+msgstr "在第二个窗口中打开 ISO 12646 颜色评估环境"
 
 #: ../src/views/darkroom.c:2491
 msgid "color assessment second preview"

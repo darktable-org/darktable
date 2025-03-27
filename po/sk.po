@@ -18442,12 +18442,8 @@ msgid "display a second darkroom image window"
 msgstr "zobraziť druhé okno fotokomory"
 
 #: ../src/views/darkroom.c:2165
-msgid ""
-"toggle color assessment conditions\n"
-"right-click for options"
-msgstr ""
-"prepínať podmienky hodnotenia farieb\n"
-"kliknutím pravým tlačidlom zobrazíte voľby"
+msgid "toggle ISO 12646 color assessment conditions"
+msgstr "prepínať podmienky hodnotenia farieb podľa ISO 12646"
 
 #: ../src/views/darkroom.c:2175
 msgid ""
@@ -18723,7 +18719,7 @@ msgctxt "accel"
 msgid "image back"
 msgstr "predchádzajúci obrázok"
 
-#. toggle color assessment condition
+#. toggle ISO 12646 color assessment condition
 #: ../src/views/darkroom.c:3831
 msgctxt "accel"
 msgid "color assessment"

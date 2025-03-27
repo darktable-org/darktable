@@ -28650,12 +28650,8 @@ msgstr "režim kontroly barev"
 
 # white frame around the image (tooltip)
 #: ../src/views/darkroom.c:2433
-msgid ""
-"toggle color assessment conditions\n"
-"right-click for options"
-msgstr ""
-"Přepnout do režimu kontroly barev\n"
-"Kliknutím pravým tlačítkem zobrazíte možnosti."
+msgid "toggle ISO 12646 color assessment conditions"
+msgstr "Přepnout do režimu kontroly barev podle ISO 12646"
 
 #: ../src/views/darkroom.c:2444
 msgid "high quality processing"
@@ -28866,8 +28862,8 @@ msgstr "profil histogramu"
 
 # white frame around the image (second window, tooltip)
 #: ../src/views/darkroom.c:2694
-msgid "second preview window color assessment"
-msgstr "Přepnout do režimu kontroly barev (druhé okno)"
+msgid "second preview window ISO 12646 color assessment"
+msgstr "Přepnout do režimu kontroly barev podle ISO 12646 (druhé okno)"
 
 # white frame around the image (second window)
 #: ../src/views/darkroom.c:2697
