@@ -17980,7 +17980,7 @@ msgstr "Ombres : Lift / Offset"
 #: ../src/iop/colorbalance.c:1729
 msgctxt "section"
 msgid "mid-tones: gamma / power"
-msgstr "Tons moyens : Gamma / Puissance"
+msgstr "Tons moyens : Gamma / Power"
 
 #: ../src/iop/colorbalance.c:1730
 msgctxt "section"
