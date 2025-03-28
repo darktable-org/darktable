@@ -150,6 +150,8 @@ int main(int argc, char *argv[])
       darktable.gimp.error = !dt_export_gimp_file(id);
     else
       darktable.gimp.error = TRUE;
+
+    return darktable.gimp.error ? 1 : 0;
   }
 
   if(!dt_gimpmode() || dt_check_gimpmode_ok("file"))
