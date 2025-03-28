@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 STYLE_DIR=$1
 OUT=$2
