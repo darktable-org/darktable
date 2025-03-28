@@ -1583,7 +1583,7 @@ double dt_get_screen_resolution(GtkWidget *widget)
     if(screen_dpi < 0.0)
     {
       screen_dpi = 96.0;
-      strncpy(opt_str, " (default value)", sizeof(opt_str));
+      strncpy(opt_str, "(default value)", sizeof(opt_str));
     }
     gdk_screen_set_resolution(gtk_widget_get_screen(widget), screen_dpi);
     dt_print(DT_DEBUG_CONTROL, "[screen resolution] setting the screen resolution to %f dpi %s",
