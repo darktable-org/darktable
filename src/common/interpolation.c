@@ -1435,8 +1435,6 @@ static void _interpolation_resample_1c_plain(const struct dt_interpolation *itor
   float *vkernel = NULL;
   int *vmeta = NULL;
 
-  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
-      "resample_1c_plain", NULL, NULL, DT_DEVICE_CPU, roi_in, roi_out, "%s", itor->name);
   dt_times_t start = { 0 }, mid = { 0 };
   dt_get_perf_times(&start);
 
@@ -1446,6 +1444,8 @@ static void _interpolation_resample_1c_plain(const struct dt_interpolation *itor
   // Fast code path for 1:1 copy, only cropping area can change
   if(roi_out->scale == 1.f)
   {
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
+      "copy_1c_plain", NULL, NULL, DT_DEVICE_CPU, roi_in, roi_out, "%s", itor->name);
     const int x0 = roi_out->x * sizeof(float);
     DT_OMP_FOR()
     for(int y = 0; y < roi_out->height; y++)
@@ -1461,17 +1461,26 @@ static void _interpolation_resample_1c_plain(const struct dt_interpolation *itor
   }
 
   // Generic non 1:1 case... much more complicated :D
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
+      "resample_1c_plain", NULL, NULL, DT_DEVICE_CPU, roi_in, roi_out, "%s", itor->name);
 
+  gboolean error = FALSE;
   // Prepare resampling plans once and for all
   if(_prepare_resampling_plan(itor, roi_in->width, roi_in->x,
                               roi_out->width, roi_out->x, roi_out->scale,
                               &hlength, &hkernel, &hindex, NULL))
+  {
+    error = TRUE;
     goto exit;
+  }
 
   if(_prepare_resampling_plan(itor, roi_in->height, roi_in->y,
                               roi_out->height, roi_out->y, roi_out->scale,
                               &vlength, &vkernel, &vindex, &vmeta))
+  {
+    error = TRUE;
     goto exit;
+  }
 
   dt_get_perf_times(&mid);
 
@@ -1541,6 +1550,10 @@ static void _interpolation_resample_1c_plain(const struct dt_interpolation *itor
   }
 
   exit:
+  if(error)
+    dt_print_pipe(DT_DEBUG_ALWAYS,
+      "resample 1c failed", NULL, NULL, DT_DEVICE_CPU, roi_in, roi_out);
+
   /* Free the resampling plans. It's nasty to optimize allocs like that, but
    * it simplifies the code :-D. The length array is in fact the only memory
    * allocated. */
