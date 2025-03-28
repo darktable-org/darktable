@@ -16,24 +16,26 @@ function get-l10n()
     #  4. Finaly generates into the while loop the pseudo C code for
     #     the strings to be translated.
 
-    xsltproc <( echo '<?xml version="1.0"?>
-                      <xsl:stylesheet version="1.0"
-                               xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-                        <xsl:output indent="yes" omit-xml-declaration="yes"/>
-                        <xsl:template match="info">
-                          <xsl:value-of select="name"/>
-                          <xsl:text>&#10;</xsl:text>
-                          <xsl:value-of select="description"/>
-                        </xsl:template>
-
-                        <xsl:template match="style"/>
-
-                      </xsl:stylesheet>' ) $1 |
+    xsltproc "$SCR" "$1" |
         tr '|' '\n' | grep _l10n_ | sed 's/_l10n_//g' |
         while read line; do
             echo "_(\"$line\")"
         done
 }
+
+SCR=$(mktemp)
+
+echo '<?xml version="1.0"?>
+         <xsl:stylesheet version="1.0"
+          xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+            <xsl:output indent="yes" omit-xml-declaration="yes"/>
+            <xsl:template match="info">
+               <xsl:value-of select="name"/>
+               <xsl:text>&#10;</xsl:text>
+               <xsl:value-of select="description"/>
+            </xsl:template>
+            <xsl:template match="style"/>
+         </xsl:stylesheet>' > $SCR
 
 export IFS=$'\n'
 
@@ -47,3 +49,5 @@ export IFS=$'\n'
         get-l10n $file
     done | sort | uniq
 } > $OUT
+
+rm $SCR
