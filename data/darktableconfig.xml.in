@@ -2244,16 +2244,16 @@
     <longdescription>process the image in darkroom mode with a small border. set to 0 if you don't want any border.</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>darkroom/ui/iso12464_border</name>
-    <type min="1.0" max="5.0">float</type>
-    <default>4.0</default>
-    <shortdescription>total width of border in ISO 12646 mode (cm)</shortdescription>
+    <name>darkroom/ui/color_assessment_total_border_width</name>
+    <type min="0.05" max="0.4">float</type>
+    <default>0.2</default>
+    <shortdescription>total border width relative to screen size in color assessment mode</shortdescription>
   </dtconfig>
   <dtconfig>
-    <name>darkroom/ui/iso12464_ratio</name>
+    <name>darkroom/ui/color_assessment_border_white_ratio</name>
     <type min="0.1" max="0.9">float</type>
     <default>0.40</default>
-    <shortdescription>fraction of white border part in ISO 12646 mode</shortdescription>
+    <shortdescription>white fraction border in color assessment mode</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig prefs="darkroom" section="general">

@@ -1734,10 +1734,10 @@ void dt_view_paint_surface(cairo_t *cr,
 
   cairo_save(cr);
 
-  if(port->iso_12646)
+  if(port->color_assessment)
   {
     // force middle grey in background
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_ISO12646_BG);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_COLOR_ASSESSMENT_BG);
   }
   else
   {
@@ -1756,14 +1756,15 @@ void dt_view_paint_surface(cairo_t *cr,
   const int maxw = MIN(port->width, backbuf_scale * processed_width * (1<<closeup) / ppd);
   const int maxh = MIN(port->height, backbuf_scale * processed_height * (1<<closeup) / ppd);
 
-  if(port->iso_12646
+  if(port->color_assessment
      && window != DT_WINDOW_SLIDESHOW)
   {
     // draw the white frame around picture
-    const double ratio = dt_conf_get_float("darkroom/ui/iso12464_ratio") * 2;
-    const double borw = maxw + tb * ratio, borh = maxh + tb * ratio;
+    const double ratio = dt_conf_get_float("darkroom/ui/color_assessment_border_white_ratio");
+    const double borw = maxw + 2.0 * tb * ratio;
+    const double borh = maxh + 2.0 * tb * ratio;
     cairo_rectangle(cr, -0.5 * borw, -0.5 * borh, borw, borh);
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_ISO12646_FG);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_COLOR_ASSESSMENT_FG);
     cairo_fill(cr);
   }
 
@@ -1867,7 +1868,7 @@ dt_view_context_t dt_view_get_context_hash(void)
   // calculate a hash on view parameters. Use flt_prec here to avoid different hashes
   // for irrelevant variations for the zooms.
   const float flt_prec = 1.e6;
-  const uint32_t test[] = { (uint32_t)dev->full.iso_12646,
+  const uint32_t test[] = { (uint32_t)dev->full.color_assessment,
                             (uint32_t)darktable.gui->show_focus_peaking,
                             (uint32_t)closeup,
                             (uint32_t)(zoom_scale * flt_prec),

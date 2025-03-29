@@ -1517,12 +1517,39 @@ static gboolean _toolbar_show_popup(gpointer user_data)
   return FALSE;
 }
 
-static void _full_iso12646_callback(GtkToggleButton *checkbutton,
-                                    dt_develop_t *dev)
+static void _full_color_assessment_callback(GtkToggleButton *checkbutton, dt_develop_t *dev)
 {
-  dev->full.iso_12646 = gtk_toggle_button_get_active(checkbutton);
-  dt_conf_set_bool("full_window/iso_12646", dev->full.iso_12646);
+  dev->full.color_assessment = gtk_toggle_button_get_active(checkbutton);
+  dt_conf_set_bool("full_window/color_assessment", dev->full.color_assessment);
   dt_dev_configure(&dev->full);
+}
+
+static void _color_assessment_border_width_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_develop_t *dev = (dt_develop_t *) user_data;
+  dt_conf_set_float("darkroom/ui/color_assessment_total_border_width", dt_bauhaus_slider_get(slider));
+  if (dev->full.color_assessment)
+  {
+    dt_dev_configure(&dev->full);
+  }
+  else
+  {
+    gtk_button_clicked(GTK_BUTTON(dev->color_assessment.button));
+  }
+}
+
+static void _color_assessment_border_white_ratio_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_develop_t *dev = (dt_develop_t *) user_data;
+  dt_conf_set_float("darkroom/ui/color_assessment_border_white_ratio", dt_bauhaus_slider_get(slider));
+  if (dev->full.color_assessment)
+  {
+    dt_dev_reprocess_center(dev);
+  }
+  else
+  {
+    gtk_button_clicked(GTK_BUTTON(dev->color_assessment.button));
+  }
 }
 
 static void _latescaling_quickbutton_clicked(GtkWidget *w,
@@ -1917,11 +1944,10 @@ end:
   }
 }
 
-static void _display2_iso12646_callback(GtkToggleButton *checkbutton,
-                                        dt_develop_t *dev)
+static void _display2_color_assessment_callback(GtkToggleButton *checkbutton, dt_develop_t *dev)
 {
-  dev->preview2.iso_12646 = gtk_toggle_button_get_active(checkbutton);
-  dt_conf_set_bool("second_window/iso_12646", dev->preview2.iso_12646);
+  dev->preview2.color_assessment = gtk_toggle_button_get_active(checkbutton);
+  dt_conf_set_bool("second_window/color_assessment", dev->preview2.color_assessment);
   dt_dev_configure(&dev->preview2);
 }
 
@@ -2426,19 +2452,51 @@ void gui_init(dt_view_t *self)
   dt_view_manager_view_toolbox_add(darktable.view_manager,
                                    dev->second_wnd_button, DT_VIEW_DARKROOM);
 
-  /* Enable ISO 12646-compliant colour assessment conditions */
-  GtkWidget *full_iso12646 = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, 0, NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(full_iso12646), dev->full.iso_12646);
-  ac = dt_action_define(DT_ACTION(self), NULL, N_("color assessment"),
-                        full_iso12646, &dt_action_def_toggle);
-  gtk_widget_set_tooltip_text(full_iso12646,
-                              _("toggle ISO 12646 color assessment conditions"));
-  dt_shortcut_register(ac, 0, 0, GDK_KEY_b, GDK_CONTROL_MASK);
-  g_signal_connect(G_OBJECT(full_iso12646), "toggled",
-                   G_CALLBACK(_full_iso12646_callback), dev);
+  /* Enable color assessment conditions */
+  {
+    dev->color_assessment.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, 0, NULL);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->color_assessment.button), dev->full.color_assessment);
+    ac = dt_action_define(DT_ACTION(self), NULL, N_("color assessment"), dev->color_assessment.button,
+                          &dt_action_def_toggle);
+    gtk_widget_set_tooltip_text(dev->color_assessment.button, _("toggle color assessment conditions\nright-click for options"));
+    dt_shortcut_register(ac, 0, 0, GDK_KEY_b, GDK_CONTROL_MASK);
+    g_signal_connect(G_OBJECT(dev->color_assessment.button), "toggled",
+                     G_CALLBACK(_full_color_assessment_callback), dev);
 
-  dt_view_manager_module_toolbox_add(darktable.view_manager,
-                                     full_iso12646, DT_VIEW_DARKROOM);
+    dt_view_manager_module_toolbox_add(darktable.view_manager, dev->color_assessment.button, DT_VIEW_DARKROOM);
+    /* add pop-up window */
+    dev->color_assessment.floating_window = gtk_popover_new(dev->color_assessment.button);
+    connect_button_press_release(dev->color_assessment.button, dev->color_assessment.floating_window);
+
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_container_add(GTK_CONTAINER(dev->color_assessment.floating_window), vbox);
+
+    /* total border width */
+    GtkWidget *border_width_slider = dt_bauhaus_slider_new_action(DT_ACTION(self), 0.05, 0.4, 0.05, 0.2, 2);
+    dt_bauhaus_slider_set(border_width_slider, dt_conf_get_float("darkroom/ui/color_assessment_total_border_width"));
+    dt_bauhaus_slider_set_format(border_width_slider, _(" \%"));
+    dt_bauhaus_widget_set_label(border_width_slider, N_("color_assessment"), N_("total border width relative to screen"));
+    gtk_widget_set_tooltip_text(border_width_slider,
+                                _("Total border width in relation to the screen size for the assessment mode.\n"
+                                  "This includes the outer grey part plus the inner white frame."));
+    g_signal_connect(G_OBJECT(border_width_slider), "value-changed",
+                     G_CALLBACK(_color_assessment_border_width_callback), dev);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(border_width_slider), TRUE, TRUE, 0);
+
+    /* white border ratio */
+    GtkWidget *border_ratio_slider = dt_bauhaus_slider_new_action(DT_ACTION(self), 0.1, 0.95, 0.05, 0.4, 2);
+    dt_bauhaus_slider_set(border_ratio_slider,
+                          dt_conf_get_float("darkroom/ui/color_assessment_border_white_ratio"));
+    dt_bauhaus_slider_set_format(border_ratio_slider, "\%");
+    dt_bauhaus_widget_set_label(border_ratio_slider, N_("color_assessment"), N_("white border ratio"));
+    gtk_widget_set_tooltip_text(border_ratio_slider,
+                                _("The border ratio pecifies the fraction of the white part of the border."));
+    g_signal_connect(G_OBJECT(border_ratio_slider), "value-changed",
+                     G_CALLBACK(_color_assessment_border_white_ratio_callback), dev);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(border_ratio_slider), TRUE, TRUE, 0);
+
+    gtk_widget_show_all(vbox);
+  }
 
   /* Enable late-scaling button */
   dev->late_scaling.button =
@@ -2690,11 +2748,11 @@ void gui_init(dt_view_t *self)
     dt_bauhaus_combobox_set_entries_ellipsis(softproof_profile, PANGO_ELLIPSIZE_MIDDLE);
     dt_bauhaus_combobox_set_entries_ellipsis(histogram_profile, PANGO_ELLIPSIZE_MIDDLE);
 
-    GtkWidget *display2_iso12646 = gtk_check_button_new_with_label(_("second preview window ISO 12646 color assessment"));
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(display2_iso12646),
-                                 dev->preview2.iso_12646);
+    GtkWidget *display2_color_assessment = gtk_check_button_new_with_label(_("second preview window color assessment"));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(display2_color_assessment),
+                                 dev->preview2.color_assessment);
     ac = dt_action_define(DT_ACTION(self), NULL, N_("color assessment second preview"),
-                          display2_iso12646, &dt_action_def_toggle);
+                          display2_color_assessment, &dt_action_def_toggle);
     dt_shortcut_register(ac, 0, 0, GDK_KEY_b, GDK_MOD1_MASK);
 
     for(const GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
@@ -2762,8 +2820,8 @@ void gui_init(dt_view_t *self)
                      G_CALLBACK(_display_profile_callback), dev);
     g_signal_connect(G_OBJECT(display2_profile), "value-changed",
                      G_CALLBACK(_display2_profile_callback), dev);
-    g_signal_connect(G_OBJECT(display2_iso12646), "toggled",
-                     G_CALLBACK(_display2_iso12646_callback), dev);
+    g_signal_connect(G_OBJECT(display2_color_assessment), "toggled",
+                     G_CALLBACK(_display2_color_assessment_callback), dev);
     g_signal_connect(G_OBJECT(softproof_profile), "value-changed",
                      G_CALLBACK(_softproof_profile_callback), dev);
     g_signal_connect(G_OBJECT(histogram_profile), "value-changed",
@@ -2785,7 +2843,7 @@ void gui_init(dt_view_t *self)
     GtkWidget *vbox = dt_gui_vbox
       (display_profile, display_intent,
        gtk_separator_new(GTK_ORIENTATION_HORIZONTAL),
-       display2_profile, display2_intent, display2_iso12646,
+       display2_profile, display2_intent, display2_color_assessment,
        gtk_separator_new(GTK_ORIENTATION_HORIZONTAL),
        softproof_profile, histogram_profile);
 
@@ -3061,7 +3119,7 @@ void leave(dt_view_t *self)
   dt_develop_t *dev = self->data;
 
   // reset color assessment mode
-  if(dev->full.iso_12646)
+  if(dev->full.color_assessment)
   {
     dev->full.width = dev->full.orig_width;
     dev->full.height = dev->full.orig_height;
@@ -3182,6 +3240,7 @@ void leave(dt_view_t *self)
   gtk_widget_hide(dev->overexposed.floating_window);
   gtk_widget_hide(dev->rawoverexposed.floating_window);
   gtk_widget_hide(dev->profile.floating_window);
+  gtk_widget_hide(dev->color_assessment.floating_window);
 
   dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
 
