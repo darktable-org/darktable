@@ -2478,7 +2478,7 @@ void gui_init(dt_view_t *self)
     dt_bauhaus_widget_set_label(border_width_slider, N_("color_assessment"), N_("total border width relative to screen"));
     gtk_widget_set_tooltip_text(border_width_slider,
                                 _("total border width in relation to the screen size for the assessment mode.\n"
-                                  "this includes the outer grey part plus the inner white frame."));
+                                  "this includes the outer gray part plus the inner white frame."));
     g_signal_connect(G_OBJECT(border_width_slider), "value-changed",
                      G_CALLBACK(_color_assessment_border_width_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(border_width_slider), TRUE, TRUE, 0);
