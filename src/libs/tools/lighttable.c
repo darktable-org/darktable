@@ -508,7 +508,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_margin_start(d->zoom, 24);
   gtk_widget_set_tooltip_text(d->zoom,
                               _("set the number of thumbnails per row in filemanager layout,\n"
-                                "or the total number of thumbnails shown in culling layouts"));
+                                "or the total number of thumbnails shown in culling layouts."));
 
   /* culling restricted icon */
   d->layout_culling_restricted = dtgtk_togglebutton_new(dtgtk_cairo_paint_lock, 0, NULL);
