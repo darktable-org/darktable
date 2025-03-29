@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-29 07:31+0100\n"
+"POT-Creation-Date: 2025-03-29 07:36+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26301,7 +26301,7 @@ msgstr ""
 #: ../src/libs/tools/lighttable.c:510
 msgid ""
 "set the number of thumbnails per row in filemanager layout,\n"
-"or the total number of thumbnails shown in culling layouts"
+"or the total number of thumbnails shown in culling layouts."
 msgstr ""
 
 #: ../src/libs/tools/lighttable.c:515
