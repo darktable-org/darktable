@@ -2474,11 +2474,11 @@ void gui_init(dt_view_t *self)
     /* total border width */
     GtkWidget *border_width_slider = dt_bauhaus_slider_new_action(DT_ACTION(self), 0.05, 0.4, 0.05, 0.2, 2);
     dt_bauhaus_slider_set(border_width_slider, dt_conf_get_float("darkroom/ui/color_assessment_total_border_width"));
-    dt_bauhaus_slider_set_format(border_width_slider, _(" \%"));
+    dt_bauhaus_slider_set_format(border_width_slider, "%");
     dt_bauhaus_widget_set_label(border_width_slider, N_("color_assessment"), N_("total border width relative to screen"));
     gtk_widget_set_tooltip_text(border_width_slider,
-                                _("Total border width in relation to the screen size for the assessment mode.\n"
-                                  "This includes the outer grey part plus the inner white frame."));
+                                _("total border width in relation to the screen size for the assessment mode.\n"
+                                  "this includes the outer grey part plus the inner white frame."));
     g_signal_connect(G_OBJECT(border_width_slider), "value-changed",
                      G_CALLBACK(_color_assessment_border_width_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(border_width_slider), TRUE, TRUE, 0);
@@ -2487,10 +2487,10 @@ void gui_init(dt_view_t *self)
     GtkWidget *border_ratio_slider = dt_bauhaus_slider_new_action(DT_ACTION(self), 0.1, 0.95, 0.05, 0.4, 2);
     dt_bauhaus_slider_set(border_ratio_slider,
                           dt_conf_get_float("darkroom/ui/color_assessment_border_white_ratio"));
-    dt_bauhaus_slider_set_format(border_ratio_slider, "\%");
+    dt_bauhaus_slider_set_format(border_ratio_slider, "%");
     dt_bauhaus_widget_set_label(border_ratio_slider, N_("color_assessment"), N_("white border ratio"));
     gtk_widget_set_tooltip_text(border_ratio_slider,
-                                _("The border ratio pecifies the fraction of the white part of the border."));
+                                _("the border ratio specifies the fraction of the white part of the border."));
     g_signal_connect(G_OBJECT(border_ratio_slider), "value-changed",
                      G_CALLBACK(_color_assessment_border_white_ratio_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(border_ratio_slider), TRUE, TRUE, 0);
