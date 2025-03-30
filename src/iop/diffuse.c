@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2021-2024 darktable developers.
+   Copyright (C) 2021-2025 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -126,7 +126,7 @@ const char *name()
 
 const char *aliases()
 {
-  return _("diffusion|deconvolution|blur|sharpening|bloom|clarity|dehaze|inpaint|watercolor");
+  return _("diffusion|deconvolution|blur|sharpening|bloom|clarity|dehaze|denoise|inpaint|watercolor");
 }
 
 const char **description(dt_iop_module_t *self)
@@ -237,7 +237,7 @@ void init_presets(dt_iop_module_so_t *self)
 {
   // deblurring presets
 
-  dt_gui_presets_add_generic(_("lens deblur: soft"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("lens deblur | soft"), self->op, self->version(),
                              &(dt_iop_diffuse_params_t)
                                { .iterations = 8,
                                  .radius_center = 0,
@@ -262,7 +262,7 @@ void init_presets(dt_iop_module_so_t *self)
                              sizeof(dt_iop_diffuse_params_t), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  dt_gui_presets_add_generic(_("lens deblur: medium"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("lens deblur | medium"), self->op, self->version(),
                              &(dt_iop_diffuse_params_t)
                                { .iterations = 16,
                                  .radius_center = 0,
@@ -287,7 +287,7 @@ void init_presets(dt_iop_module_so_t *self)
                              sizeof(dt_iop_diffuse_params_t), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  dt_gui_presets_add_generic(_("lens deblur: hard"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("lens deblur | hard"), self->op, self->version(),
                              &(dt_iop_diffuse_params_t)
                                { .iterations = 24,
                                  .radius_center = 0,
@@ -313,7 +313,7 @@ void init_presets(dt_iop_module_so_t *self)
                              sizeof(dt_iop_diffuse_params_t), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  dt_gui_presets_add_generic(_("dehaze"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("dehaze | default"), self->op, self->version(),
                              &(dt_iop_diffuse_params_t)
                                { .iterations = 10,
                                  .radius_center = 0,
@@ -339,7 +339,7 @@ void init_presets(dt_iop_module_so_t *self)
                              sizeof(dt_iop_diffuse_params_t), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  dt_gui_presets_add_generic(_("dehaze: extra contrast"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("dehaze | extra contrast"), self->op, self->version(),
                              &(dt_iop_diffuse_params_t)
                                { .iterations = 10,
                                  .radius_center = 0,
@@ -365,7 +365,7 @@ void init_presets(dt_iop_module_so_t *self)
                              sizeof(dt_iop_diffuse_params_t), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  dt_gui_presets_add_generic(_("denoise: fine"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("denoise | fine"), self->op, self->version(),
                              &(dt_iop_diffuse_params_t)
                                { .iterations = 32,
                                  .radius_center = 2,
@@ -390,7 +390,7 @@ void init_presets(dt_iop_module_so_t *self)
                              sizeof(dt_iop_diffuse_params_t), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  dt_gui_presets_add_generic(_("denoise: medium"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("denoise | medium"), self->op, self->version(),
                              &(dt_iop_diffuse_params_t)
                                { .iterations = 32,
                                  .radius_center = 4,
@@ -415,7 +415,7 @@ void init_presets(dt_iop_module_so_t *self)
                              sizeof(dt_iop_diffuse_params_t), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  dt_gui_presets_add_generic(_("denoise: coarse"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("denoise | coarse"), self->op, self->version(),
                              &(dt_iop_diffuse_params_t)
                                { .iterations = 32,
                                  .radius_center = 8,
@@ -490,7 +490,7 @@ void init_presets(dt_iop_module_so_t *self)
                              sizeof(dt_iop_diffuse_params_t), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  dt_gui_presets_add_generic(_("sharpen demosaicing: no AA filter"), self->op,
+  dt_gui_presets_add_generic(_("sharpen demosaicing | no AA filter"), self->op,
                              self->version(),
                              &(dt_iop_diffuse_params_t)
                                { .iterations = 1,
@@ -516,7 +516,7 @@ void init_presets(dt_iop_module_so_t *self)
                              sizeof(dt_iop_diffuse_params_t), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  dt_gui_presets_add_generic(_("sharpen demosaicing: AA filter"), self->op,
+  dt_gui_presets_add_generic(_("sharpen demosaicing | AA filter"), self->op,
                              self->version(),
                              &(dt_iop_diffuse_params_t)
                                { .iterations = 1,
@@ -595,7 +595,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   // local contrast
 
-  dt_gui_presets_add_generic(_("local contrast"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("local contrast | normal"), self->op, self->version(),
                              &(dt_iop_diffuse_params_t)
                                { .iterations = 10,
                                  .radius_center = 512,
@@ -620,7 +620,7 @@ void init_presets(dt_iop_module_so_t *self)
                              sizeof(dt_iop_diffuse_params_t), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  dt_gui_presets_add_generic(_("local contrast: fine"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("local contrast | fine"), self->op, self->version(),
                              &(dt_iop_diffuse_params_t)
                                { .iterations = 5,
                                  .radius_center = 0,
@@ -672,7 +672,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   // fast presets for slow hardware
 
-  dt_gui_presets_add_generic(_("sharpness: fast"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("sharpness | fast"), self->op, self->version(),
                              &(dt_iop_diffuse_params_t)
                                { .iterations = 1,
                                  .radius_center = 0,
@@ -699,7 +699,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   // two more sharpness (standard & strong)
 
-  dt_gui_presets_add_generic(_("sharpness"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("sharpness | normal"), self->op, self->version(),
                              &(dt_iop_diffuse_params_t)
                                { .iterations = 3,
                                  .radius_center = 0,
@@ -724,7 +724,7 @@ void init_presets(dt_iop_module_so_t *self)
                              sizeof(dt_iop_diffuse_params_t), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  dt_gui_presets_add_generic(_("sharpness: strong"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("sharpness | strong"), self->op, self->version(),
                              &(dt_iop_diffuse_params_t)
                                { .iterations = 6,
                                  .radius_center = 0,
@@ -749,7 +749,7 @@ void init_presets(dt_iop_module_so_t *self)
                              sizeof(dt_iop_diffuse_params_t), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  dt_gui_presets_add_generic(_("local contrast: fast"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("local contrast | fast"), self->op, self->version(),
                              &(dt_iop_diffuse_params_t)
                                { .iterations = 1,
                                  .radius_center = 512,
