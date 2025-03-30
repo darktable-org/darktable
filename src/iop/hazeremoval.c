@@ -57,7 +57,7 @@
 // implement the module api
 //----------------------------------------------------------------------
 
-DT_MODULE_INTROSPECTION(2, dt_iop_hazeremoval_params_t)
+DT_MODULE_INTROSPECTION(3, dt_iop_hazeremoval_params_t)
 
 typedef dt_aligned_pixel_t rgb_pixel;
 
@@ -66,6 +66,7 @@ typedef struct dt_iop_hazeremoval_params_t
   float strength; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.2
   float distance; // $MIN:  0.0 $MAX: 1.0 $DEFAULT: 0.2
   gboolean compatibility_mode; // $DEFAULT: FALSE
+  gboolean adaptive; // $DEFAULT: TRUE
 } dt_iop_hazeremoval_params_t;
 
 // types  dt_iop_hazeremoval_params_t and dt_iop_hazeremoval_data_t are
@@ -168,9 +169,31 @@ int legacy_params(dt_iop_module_t *self,
     memcpy(n, o, sizeof(dt_iop_hazeremoval_params_v1_t));
 
     n->compatibility_mode = TRUE;
+    n->adaptive = FALSE;
+
     *new_params = n;
     *new_params_size = sizeof(dt_iop_hazeremoval_params_t);
-    *new_version = 2;
+    *new_version = 3;
+    return 0;
+  }
+
+  if(old_version == 2)
+  {
+    typedef struct dt_iop_hazeremoval_params_v2_t
+    {
+      float strength;
+      float distance;
+      gboolean compatibility_mode;
+    } dt_iop_hazeremoval_params_v2_t;
+    const dt_iop_hazeremoval_params_v2_t *o = old_params;
+
+    dt_iop_hazeremoval_params_t *n = malloc(sizeof(dt_iop_hazeremoval_params_t));
+    memcpy(n, o, sizeof(dt_iop_hazeremoval_params_v2_t));
+
+    n->adaptive = FALSE;
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_hazeremoval_params_t);
+    *new_version = 3;
     return 0;
   }
 
@@ -230,7 +253,10 @@ void gui_changed(dt_iop_module_t *self,
 {
   dt_iop_hazeremoval_params_t *p = self->params;
   if(w)
+  {
     p->compatibility_mode = FALSE;
+    p->adaptive = TRUE;
+  }
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -547,9 +573,14 @@ void process(dt_iop_module_t *self,
   const int width = roi_in->width;
   const int height = roi_in->height;
   const size_t size = (size_t)width * height;
-  const int w1 = 6; // window size (positive integer) for determining
-                    // the dark channel and the transition map
-  const int w2 = 9; // window size (positive integer) for the guided filter
+  const float wscale = d->adaptive ? CLIP((float)roi_in->scale / (float)piece->pipe->iscale) : 1.0f;
+  /*  To make the darkroom experience and data taken from preview pipe (not only internal but also pickers ...)
+      more consistent we modify the windowing sizes (positive integers) according to the pipe scaling.
+      w1: to determine the dark channel and the transition map
+      w2: for the guided filter
+  */
+  const int w1 = 2 + (int)ceilf(4.0f * wscale);
+  const int w2 = 3 + (int)ceilf(6.0f * wscale);
 
   // module parameters
   const float strength = d->strength; // strength of haze removal
@@ -817,9 +848,14 @@ int process_cl(dt_iop_module_t *self,
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
-  const int w1 = 6; // window size (positive integer) for determining
-                    // the dark channel and the transition map
-  const int w2 = 9; // window size (positive integer) for the guided filter
+  const float wscale = d->adaptive ? CLIP((float)roi_in->scale / (float)piece->pipe->iscale) : 1.0f;
+  /*  To make the darkroom experience and data taken from preview pipe (not only internal but also pickers ...)
+      more consistent we modify the windowing sizes (positive integers) according to the pipe scaling.
+      w1: to determine the dark channel and the transition map
+      w2: for the guided filter
+  */
+  const int w1 = 2 + (int)ceilf(4.0f * wscale);
+  const int w2 = 3 + (int)ceilf(6.0f * wscale);
 
   // module parameters
   const float strength = d->strength; // strength of haze removal
