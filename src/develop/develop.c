@@ -668,8 +668,8 @@ void dt_dev_configure(dt_dev_viewport_t *port)
 
   port->border_size = tb;
   // fixed border on every side
-  int32_t wd = port->orig_width - 2*tb;
-  int32_t ht = port->orig_height - 2*tb;
+  const int32_t wd = port->orig_width - 2*tb;
+  const int32_t ht = port->orig_height - 2*tb;
   if(port->width != wd || port->height != ht)
   {
     port->width = wd;

@@ -80,7 +80,7 @@
 
 #ifdef GDK_WINDOWING_QUARTZ
 // macOS has a fixed DPI of 72
-#define DT_UI_DEFAULT_DPI_RESOLUTION 72 
+#define DT_UI_DEFAULT_DPI_RESOLUTION 72
 #else
 // according to man xrandr and the docs of gdk_screen_set_resolution 96 is the default
 #define DT_UI_DEFAULT_DPI_RESOLUTION 96
