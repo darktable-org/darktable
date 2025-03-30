@@ -4739,7 +4739,7 @@ dt_action_t *dt_action_locate(dt_action_t *owner,
       new_action->id = clean_path;
       new_action->label = needs_translation
                         ? g_strdup(Q_(*path))
-                        : dt_util_localize_segmented_name(*path, TRUE);
+                        : dt_util_localize_segmented_name(*path, FALSE);
       new_action->type = DT_ACTION_TYPE_SECTION;
 
       dt_action_insert_sorted(owner, new_action);
