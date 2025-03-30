@@ -1109,6 +1109,9 @@ void dt_gui_presets_apply_preset(const gchar* name,
 
     if(!writeprotect) dt_gui_store_last_preset(name);
   }
+  else
+    dt_print(DT_DEBUG_ALWAYS,"preset '%s' not found\n",name);
+
   sqlite3_finalize(stmt);
   dt_iop_gui_update(module);
   dt_dev_add_history_item(darktable.develop, module, FALSE);
