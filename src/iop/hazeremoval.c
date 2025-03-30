@@ -559,7 +559,12 @@ void process(dt_iop_module_t *self,
   const gboolean gui = self->dev->gui_attached && g;
   const gboolean fullpipes = piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW2);
   const gboolean hq = darktable.develop->late_scaling.enabled;
-  const gboolean storing = gui && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW);
+  const gboolean fullhq = hq && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL);
+
+  /*  max distance and A0 for ambient light are stored and kept for the opther pipes by the preview pipe.
+      If we run in HQ mode let's keep the fullpipe data too for slightly improved results.
+  */
+  const gboolean storing = gui && ((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) || fullhq);
 
   const float *const restrict in = (float*)ivoid;
   float *const restrict out = (float*)ovoid;
@@ -610,7 +615,6 @@ void process(dt_iop_module_t *self,
   if(dt_isnan(distance_max))
     distance_max = _ambient_light(img_in, w1, &A0, compatibility_mode);
 
-  // PREVIEW pixelpipe stores values.
   if(storing)
   {
     dt_hash_t hash = dt_dev_hash_plus(self->dev, piece->pipe,
@@ -825,11 +829,11 @@ int process_cl(dt_iop_module_t *self,
   const gboolean gui = self->dev->gui_attached && g;
   const gboolean fullpipes = piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW2);
   const gboolean hq = darktable.develop->late_scaling.enabled;
-  const gboolean storing = gui && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW);
-
+  const gboolean fullhq = hq && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL);
   /*  max distance and A0 for ambient light are stored and kept for the opther pipes by the preview pipe.
       If we run in HQ mode let's keep the fullpipe data too for slightly improved results.
   */
+  const gboolean storing = gui && ((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) || fullhq);
   rgb_pixel A0 = { NAN, NAN, NAN, 0.0f };
   float distance_max = NAN;
 
@@ -875,7 +879,6 @@ int process_cl(dt_iop_module_t *self,
   if(dt_isnan(distance_max))
     distance_max = _ambient_light_cl(self, devid, img_in, w1, &A0, compatibility_mode);
 
-  // PREVIEW pixelpipe stores values.
   if(storing)
   {
     dt_hash_t hash = dt_dev_hash_plus(self->dev, piece->pipe,
