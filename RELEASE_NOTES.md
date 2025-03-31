@@ -114,6 +114,9 @@ changes (where available).
 - Improved quality of inpaint opposed highlight recovery algorithm for
   sRAW images.
 
+- Reduced haze removal visible difference between exports and HQ
+  darkroom processing.
+
 ## Bug Fixes
 
 - Fixed sidecar writing if quitting from darkroom.
