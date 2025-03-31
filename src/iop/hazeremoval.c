@@ -76,6 +76,7 @@ typedef struct dt_iop_hazeremoval_gui_data_t
 {
   GtkWidget *strength;
   GtkWidget *distance;
+  GtkWidget *alert;
   rgb_pixel A0;
   float distance_max;
   dt_hash_t hash;
@@ -221,6 +222,8 @@ void gui_update(dt_iop_module_t *self)
   g->A0[1] = NAN;
   g->A0[2] = NAN;
   g->hash = 0;
+  if(self->dev)
+    gtk_widget_set_visible(g->alert, !self->dev->late_scaling.enabled);
   dt_iop_gui_leave_critical_section(self);
 }
 
@@ -250,6 +253,12 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->distance, 3);
   gtk_widget_set_tooltip_text(g->distance,
                               _("limit haze removal up to a specific spatial depth"));
+  g->alert = gtk_label_new(_("HQ processing must be enabled for correct preview"));
+  gtk_widget_set_name(g->alert,"alert");
+  gtk_label_set_line_wrap(GTK_LABEL(g->alert), TRUE);
+  if(self->dev)
+    gtk_widget_set_visible(g->alert, !self->dev->late_scaling.enabled);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->alert, TRUE, TRUE, 0);
 }
 
 
