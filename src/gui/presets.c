@@ -1708,6 +1708,7 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
   gchar **prev_split = NULL;
   GtkWidget *submenu = GTK_WIDGET(menu);
   GSList *menu_stack = NULL; // stack of submenus
+  GSList *menu_path = NULL; // stack of menuitems which are the parents of submenus on menu_stack
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const int chk_writeprotect = sqlite3_column_int(stmt, 2);
@@ -1746,12 +1747,14 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
     {
       submenu = menu_stack->data;
       menu_stack = g_slist_delete_link(menu_stack, menu_stack); // pop
+      menu_path = g_slist_delete_link(menu_path, menu_path); // pop
     }
     for(; *(s+1); s++)
     {
-      menu_stack = g_slist_prepend(menu_stack, submenu); // push
-
       GtkWidget *sm = gtk_menu_item_new_with_label(*s);
+      menu_stack = g_slist_prepend(menu_stack, submenu); // push
+      menu_path = g_slist_prepend(menu_path, sm); // push
+
       gtk_menu_shell_append(GTK_MENU_SHELL(submenu), sm);
       submenu = gtk_menu_new();
       gtk_menu_item_set_submenu(GTK_MENU_ITEM(sm), submenu);
@@ -1792,6 +1795,18 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
       dt_gui_add_class(mi, "active_menu_item");
       gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), TRUE);
       g_set_weak_pointer(&_active_menu_item, mi);
+      // walk back up the menu hierarchy and highlight the entire path down to the current leaf
+      for(const GSList *mp = menu_path; mp; mp = g_slist_next(mp))
+      {
+        const char *curr_label = gtk_menu_item_get_label(GTK_MENU_ITEM(mp->data));
+        if(curr_label)
+        {
+          gchar *boldface = g_strdup_printf("<b>%s</b>",curr_label);
+          GtkWidget *child = gtk_bin_get_child(GTK_BIN(mp->data));
+          gtk_label_set_markup(GTK_LABEL(child), boldface);
+          g_free(boldface);
+        }
+      }
     }
 
     if(isdisabled)
