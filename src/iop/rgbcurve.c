@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2024 darktable developers.
+    Copyright (C) 2019-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -190,7 +190,7 @@ void init_presets(dt_iop_module_so_t *self)
   // Linear - no contrast
   for(int k = 0; k < 7; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].x = linear_L[k];
   for(int k = 0; k < 7; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = linear_L[k];
-  dt_gui_presets_add_generic(_("gamma 1.0 (linear)"), self->op,
+  dt_gui_presets_add_generic(_("linear (gamma 1.0)"), self->op,
                              self->version(), &p, sizeof(p),
                              1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -201,7 +201,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.curve_nodes[DT_IOP_RGBCURVE_R][2].y -= 0.030;
   p.curve_nodes[DT_IOP_RGBCURVE_R][4].y += 0.030;
   p.curve_nodes[DT_IOP_RGBCURVE_R][5].y += 0.020;
-  dt_gui_presets_add_generic(_("contrast - med (linear)"), self->op,
+  dt_gui_presets_add_generic(_("contrast | medium (linear)"), self->op,
                              self->version(), &p, sizeof(p),
                              1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -211,7 +211,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.curve_nodes[DT_IOP_RGBCURVE_R][2].y -= 0.060;
   p.curve_nodes[DT_IOP_RGBCURVE_R][4].y += 0.060;
   p.curve_nodes[DT_IOP_RGBCURVE_R][5].y += 0.040;
-  dt_gui_presets_add_generic(_("contrast - high (linear)"), self->op,
+  dt_gui_presets_add_generic(_("contrast | high (linear)"), self->op,
                              self->version(), &p, sizeof(p),
                              1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -228,7 +228,7 @@ void init_presets(dt_iop_module_so_t *self)
   for(int k = 1; k < 6; k++)
     p.curve_nodes[DT_IOP_RGBCURVE_R][k].y =
       powf(p.curve_nodes[DT_IOP_RGBCURVE_R][k].y, 2.2f);
-  dt_gui_presets_add_generic(_("contrast - med (gamma 2.2)"), self->op,
+  dt_gui_presets_add_generic(_("contrast | medium (gamma 2.2)"), self->op,
                              self->version(), &p, sizeof(p),
                              1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -244,7 +244,7 @@ void init_presets(dt_iop_module_so_t *self)
   for(int k = 1; k < 6; k++)
     p.curve_nodes[DT_IOP_RGBCURVE_R][k].y =
       powf(p.curve_nodes[DT_IOP_RGBCURVE_R][k].y, 2.2f);
-  dt_gui_presets_add_generic(_("contrast - high (gamma 2.2)"), self->op,
+  dt_gui_presets_add_generic(_("contrast | high (gamma 2.2)"), self->op,
                              self->version(), &p, sizeof(p),
                              1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -258,28 +258,28 @@ void init_presets(dt_iop_module_so_t *self)
   // Gamma 2.0 - no contrast
   for(int k = 1; k < 6; k++)
     p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = (linear_L[k] * linear_L[k]);
-  dt_gui_presets_add_generic(_("gamma 2.0"), self->op,
+  dt_gui_presets_add_generic(_("non-contrast curve | gamma 2.0"), self->op,
                              self->version(), &p, sizeof(p),
                              1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Gamma 0.5 - no contrast
   for(int k = 1; k < 6; k++)
     p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = sqrtf(linear_L[k]);
-  dt_gui_presets_add_generic(_("gamma 0.5"), self->op,
+  dt_gui_presets_add_generic(_("non-contrast curve | gamma 0.5"), self->op,
                              self->version(), &p, sizeof(p),
                              1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Log2 - no contrast
   for(int k = 1; k < 6; k++)
     p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = logf(linear_L[k] + 1.0f) / logf(2.0f);
-  dt_gui_presets_add_generic(_("logarithm (base 2)"), self->op,
+  dt_gui_presets_add_generic(_("non-contrast curve | logarithm (base 2)"), self->op,
                              self->version(), &p, sizeof(p),
                              1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Exp2 - no contrast
   for(int k = 1; k < 6; k++)
     p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = powf(2.0f, linear_L[k]) - 1.0f;
-  dt_gui_presets_add_generic(_("exponential (base 2)"), self->op,
+  dt_gui_presets_add_generic(_("non-contrast curve | exponential (base 2)"), self->op,
                              self->version(), &p, sizeof(p),
                              1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 }
