@@ -1640,25 +1640,44 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       // For every Olympus camera Exif.OlympusEq.LensType is present.
       _strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
 
-      // We have to check if Exif.OlympusEq.LensType has been translated by
-      // Exiv2. If it hasn't, fall back to Exif.OlympusEq.LensModel.
-      std::string lens(img->exif_lens);
-      if(std::string::npos == lens.find_first_not_of(" 1234567890"))
+      // We have to check for the special case "None", which comes with manual lenses
+      if(!strncmp(img->exif_lens, "None", 4))
       {
-        // Exif.OlympusEq.LensType contains only digits and spaces.
-        // This means that Exiv2 couldn't convert it to human readable form.
-        if(FIND_EXIF_TAG("Exif.OlympusEq.LensModel"))
+        // The data from the in camera "Lens Info Settings" Dialog can always be found in
+        // in Exif.Photo.LensModel, if present at all. In newer bodies this is the only place.
+        if(FIND_EXIF_TAG("Exif.Photo.LensModel"))
         {
           _strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
         }
-        // Just in case Exif.OlympusEq.LensModel hasn't been found.
-        else if(FIND_EXIF_TAG("Exif.Photo.LensModel"))
-        {
-          _strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
-        }
-        dt_print(DT_DEBUG_ALWAYS, "[exif] Warning: lens \"%s\" unknown as \"%s\"",
-                 img->exif_lens, lens.c_str());
       }
+      else
+      {
+        // We have to check if Exif.OlympusEq.LensType has been translated by
+        // Exiv2. If it hasn't, fall back to Exif.OlympusEq.LensModel.
+        std::string lens(img->exif_lens);
+        if(std::string::npos == lens.find_first_not_of(" 1234567890"))
+        {
+          // Exif.OlympusEq.LensType contains only digits and spaces.
+          // It means that Exiv2 couldn't convert it to human readable form.
+          // This happens for lenses not yet known to exiv2
+          if(FIND_EXIF_TAG("Exif.OlympusEq.LensModel"))
+          {
+            _strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+          }
+          // Just in case Exif.OlympusEq.LensModel hasn't been found.
+          else if(FIND_EXIF_TAG("Exif.Photo.LensModel"))
+          {
+            _strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+          }
+          dt_print(DT_DEBUG_ALWAYS, "[exif] Warning: lens \"%s\" unknown as \"%s\"",
+                  img->exif_lens, lens.c_str());
+        }
+      }
+    }
+    else if(FIND_EXIF_TAG("Exif.OlympusEq.LensType"))
+    {
+      _strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+
     }
     else if(Exiv2::testVersion(0,27,4)
             && FIND_EXIF_TAG("Exif.NikonLd4.LensID") && pos->toLong() == 0)
