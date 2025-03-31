@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -910,7 +910,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: large blur, strength 3"), self->op,
+  dt_gui_presets_add_generic(_("deblur | large blur, strength 3"), self->op,
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -928,7 +928,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: medium blur, strength 3"), self->op,
+  dt_gui_presets_add_generic(_("deblur | medium blur, strength 3"), self->op,
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -945,7 +945,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: fine blur, strength 3"), self->op,
+  dt_gui_presets_add_generic(_("deblur | fine blur, strength 3"), self->op,
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -964,7 +964,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: large blur, strength 2"), self->op,
+  dt_gui_presets_add_generic(_("deblur | large blur, strength 2"), self->op,
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -982,7 +982,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: medium blur, strength 2"), self->op,
+  dt_gui_presets_add_generic(_("deblur | medium blur, strength 2"), self->op,
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -999,7 +999,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: fine blur, strength 2"), self->op,
+  dt_gui_presets_add_generic(_("deblur | fine blur, strength 2"), self->op,
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -1018,7 +1018,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: large blur, strength 1"), self->op,
+  dt_gui_presets_add_generic(_("deblur | large blur, strength 1"), self->op,
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -1036,7 +1036,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: medium blur, strength 1"), self->op,
+  dt_gui_presets_add_generic(_("deblur | medium blur, strength 1"), self->op,
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -1053,7 +1053,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: fine blur, strength 1"), self->op,
+  dt_gui_presets_add_generic(_("deblur | fine blur, strength 1"), self->op,
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
