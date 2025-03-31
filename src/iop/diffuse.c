@@ -465,7 +465,7 @@ void init_presets(dt_iop_module_so_t *self)
                              sizeof(dt_iop_diffuse_params_t), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  dt_gui_presets_add_generic(_("bloom"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("artistic effects | bloom"), self->op, self->version(),
                              &(dt_iop_diffuse_params_t)
                                { .iterations = 1,
                                  .radius_center = 0,
@@ -543,7 +543,7 @@ void init_presets(dt_iop_module_so_t *self)
                              sizeof(dt_iop_diffuse_params_t), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  dt_gui_presets_add_generic(_("simulate watercolor"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("artistic effects | simulate watercolor"), self->op, self->version(),
                              &(dt_iop_diffuse_params_t)
                                { .iterations = 4,
                                  .radius_center = 0,
@@ -568,7 +568,7 @@ void init_presets(dt_iop_module_so_t *self)
                              sizeof(dt_iop_diffuse_params_t), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  dt_gui_presets_add_generic(_("simulate line drawing"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("artistic effects | simulate line drawing"), self->op, self->version(),
                              &(dt_iop_diffuse_params_t)
                                { .iterations = 50,
                                  .radius_center = 0,
