@@ -1789,12 +1789,15 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   dt_pixelpipe_flow_t pixelpipe_flow =
     (PIXELPIPE_FLOW_NONE | PIXELPIPE_FLOW_HISTOGRAM_NONE);
 
-  // special case: user requests to see channel data in the parametric
-  // mask of a module, or the blending mask. In that case we skip all
-  // modules manipulating pixel content and only process image
-  // distorting modules. Finally "gamma" is responsible for displaying
-  // channel/mask data accordingly.
-  // FIXME: Could we do a copy by roi here ?
+  /* special case: user requests to see channel data in the parametric
+      mask of a module or the blending mask.
+      In that case we skip all modules manipulating pixel content and only
+      process image distorting modules.
+      Finally "gamma" is responsible for displaying channel/mask data accordingly.
+    Note: As pipe->mask_display is intentionally not included in the piece hash
+      ensuring pixelpipe cacheline integrity, gamma is responsible to invalidate
+      it's input data.
+  */
   if(!dt_iop_module_is(module->so, "gamma")
      && (pipe->mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE)
      && !(module->operation_tags() & IOP_TAG_DISTORT)
@@ -1802,7 +1805,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
      && !memcmp(&roi_in, roi_out, sizeof(struct dt_iop_roi_t)))
   {
     dt_print_pipe(DT_DEBUG_PIPE,
-                    "pipe bypass", pipe, module, DT_DEVICE_NONE, &roi_in, roi_out);
+                    "pipe bypass", pipe, module, DT_DEVICE_NONE, &roi_in, roi_out,
+                    "mask_display=%d", pipe->mask_display);
     // since we're not actually running the module, the output format
     // is the same as the input format
     **out_format = pipe->dsc = piece->dsc_out = piece->dsc_in;
