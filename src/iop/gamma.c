@@ -322,6 +322,9 @@ void process(dt_iop_module_t *self,
   {
     _copy_output((const float *const restrict)i, (uint8_t *const restrict)o, buffsize);
   }
+
+  if(mask_display)
+    dt_dev_pixelpipe_invalidate_cacheline(piece->pipe, i);
 }
 
 void init(dt_iop_module_t *self)
