@@ -140,10 +140,13 @@ void dt_print_pipe_ext(const char *title,
   if(pipe)
   {
     snprintf(pname, sizeof(pname), "[%s]", dt_dev_pixelpipe_type_to_str(pipe->type));
-    if(pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY)
+    if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
+      snprintf(masking, sizeof(masking), " passthru");
+    else if(pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY)
       snprintf(masking, sizeof(masking),
-               " masking=%#x %s", pipe->mask_display,
-               pipe->bypass_blendif ? ", bypass blend" : "" );
+               " masking=%#x %s%s", pipe->mask_display,
+               pipe->bypass_blendif ? ", bypass blend" : "",
+               pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_STICKY ? ", sticky" : "");
   }
 
   va_list ap;
@@ -1805,8 +1808,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
      && !memcmp(&roi_in, roi_out, sizeof(struct dt_iop_roi_t)))
   {
     dt_print_pipe(DT_DEBUG_PIPE,
-                    "pipe bypass", pipe, module, DT_DEVICE_NONE, &roi_in, roi_out,
-                    "mask_display=%d", pipe->mask_display);
+                    "pipe bypass", pipe, module, DT_DEVICE_NONE, &roi_in, roi_out);
     // since we're not actually running the module, the output format
     // is the same as the input format
     **out_format = pipe->dsc = piece->dsc_out = piece->dsc_in;
