@@ -1640,11 +1640,12 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       // For every Olympus camera Exif.OlympusEq.LensType is present.
       _strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
 
-      // We have to check for the special case "None", which comes with manual lenses
-      if(!strncmp(img->exif_lens, "None", 4))
+      // Special case of a lens without electronic data.
+      if(pos->toString() == "0 0 0 0 0 0")
       {
-        // The data from the in camera "Lens Info Settings" Dialog can always be found in
-        // in Exif.Photo.LensModel, if present at all. In newer bodies this is the only place.
+        // If the photographer has entered something into the in camera lens info settings
+        // and activated that, it shows up in Exif.Photo.LensModel.
+        // In newer bodies this is the only place.
         if(FIND_EXIF_TAG("Exif.Photo.LensModel"))
         {
           _strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
@@ -1653,7 +1654,8 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       else
       {
         // We have to check if Exif.OlympusEq.LensType has been translated by
-        // Exiv2. If it hasn't, fall back to Exif.OlympusEq.LensModel.
+        // Exiv2. This happens with new lenses not yet known by exiv2.
+        // If it hasn't, fall back to Exif.OlympusEq.LensModel.
         std::string lens(img->exif_lens);
         if(std::string::npos == lens.find_first_not_of(" 1234567890"))
         {
