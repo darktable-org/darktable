@@ -1676,11 +1676,6 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         }
       }
     }
-    else if(FIND_EXIF_TAG("Exif.OlympusEq.LensType"))
-    {
-      _strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
-
-    }
     else if(Exiv2::testVersion(0,27,4)
             && FIND_EXIF_TAG("Exif.NikonLd4.LensID") && pos->toLong() == 0)
     {
