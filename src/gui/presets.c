@@ -1753,7 +1753,9 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
     {
       GtkWidget *sm = gtk_menu_item_new_with_label("");
       GtkWidget *mi_label = gtk_bin_get_child(GTK_BIN(sm));
-      gtk_label_set_markup(GTK_LABEL(mi_label), *s);
+      gchar *el = g_markup_escape_text(*s, -1);
+      gtk_label_set_markup(GTK_LABEL(mi_label), el);
+      g_free(el);
       menu_stack = g_slist_prepend(menu_stack, submenu); // push
       menu_path = g_slist_prepend(menu_path, sm); // push
 
@@ -1779,9 +1781,11 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
       label = g_strdup(*s);
     mi = gtk_check_menu_item_new_with_label("");
     GtkWidget *mi_label = gtk_bin_get_child(GTK_BIN(mi));
-    gtk_label_set_markup(GTK_LABEL(mi_label), label);
+    gchar *el = g_markup_escape_text(label, -1);
+    gtk_label_set_markup(GTK_LABEL(mi_label), el);
     dt_gui_add_class(mi, "dt_transparent_background");
     g_free(label);
+    g_free(el);
 
     if(module
        && ((op_params_size == 0
