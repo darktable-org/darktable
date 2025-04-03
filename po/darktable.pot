@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-03 18:35+0200\n"
+"POT-Creation-Date: 2025-04-03 18:48+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21662,27 +21662,27 @@ msgid "mask blending | people with backlight"
 msgstr ""
 
 #: ../src/iop/toneequal.c:522
-msgid "compress shadows/highlights | strong (EIGF)"
+msgid "compress shadows/highlights | EIGF | strong"
 msgstr ""
 
 #: ../src/iop/toneequal.c:527
-msgid "compress shadows/highlights | strong (GF)"
+msgid "compress shadows/highlights | GF | strong"
 msgstr ""
 
 #: ../src/iop/toneequal.c:536
-msgid "compress shadows/highlights | medium (EIGF)"
+msgid "compress shadows/highlights | EIGF | medium"
 msgstr ""
 
 #: ../src/iop/toneequal.c:541
-msgid "compress shadows/highlights | medium (GF)"
+msgid "compress shadows/highlights | GF | medium"
 msgstr ""
 
 #: ../src/iop/toneequal.c:550
-msgid "compress shadows/highlights | soft (EIGF)"
+msgid "compress shadows/highlights | EIGF | soft"
 msgstr ""
 
 #: ../src/iop/toneequal.c:555
-msgid "compress shadows/highlights | soft (GF)"
+msgid "compress shadows/highlights | GF | soft"
 msgstr ""
 
 #: ../src/iop/toneequal.c:563
