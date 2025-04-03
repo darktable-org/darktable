@@ -519,12 +519,12 @@ void init_presets(dt_iop_module_so_t *self)
   p.feathering = 20.0f;
   compress_shadows_highlight_preset_set_exposure_params(&p, 0.65f);
   dt_gui_presets_add_generic
-    (_("compress shadows/highlights | strong (EIGF)"), self->op,
+    (_("compress shadows/highlights | EIGF | strong"), self->op,
      self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
   p.details = DT_TONEEQ_GUIDED;
   p.feathering = 500.0f;
   dt_gui_presets_add_generic
-    (_("compress shadows/highlights | strong (GF)"), self->op,
+    (_("compress shadows/highlights | GF | strong"), self->op,
      self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.details = DT_TONEEQ_EIGF;
@@ -533,12 +533,12 @@ void init_presets(dt_iop_module_so_t *self)
   p.iterations = 3;
   compress_shadows_highlight_preset_set_exposure_params(&p, 0.45f);
   dt_gui_presets_add_generic
-    (_("compress shadows/highlights | medium (EIGF)"), self->op,
+    (_("compress shadows/highlights | EIGF | medium"), self->op,
      self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
   p.details = DT_TONEEQ_GUIDED;
   p.feathering = 500.0f;
   dt_gui_presets_add_generic
-    (_("compress shadows/highlights | medium (GF)"), self->op,
+    (_("compress shadows/highlights | GF | medium"), self->op,
      self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.details = DT_TONEEQ_EIGF;
@@ -547,12 +547,12 @@ void init_presets(dt_iop_module_so_t *self)
   p.iterations = 1;
   compress_shadows_highlight_preset_set_exposure_params(&p, 0.25f);
   dt_gui_presets_add_generic
-    (_("compress shadows/highlights | soft (EIGF)"), self->op,
+    (_("compress shadows/highlights | EIGF | soft"), self->op,
      self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
   p.details = DT_TONEEQ_GUIDED;
   p.feathering = 500.0f;
   dt_gui_presets_add_generic
-    (_("compress shadows/highlights | soft (GF)"), self->op,
+    (_("compress shadows/highlights | GF | soft"), self->op,
      self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // build the 1D contrast curves that revert the local compression of
