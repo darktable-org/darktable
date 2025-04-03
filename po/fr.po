@@ -15877,39 +15877,39 @@ msgstr "Clarté"
 
 #: ../src/iop/atrous.c:913
 msgid "deblur | large blur, strength 3"
-msgstr "Défloutage | large, force 3"
+msgstr "Défloutage | Large, force 3"
 
 #: ../src/iop/atrous.c:931
 msgid "deblur | medium blur, strength 3"
-msgstr "Défloutage | moyen, force 3"
+msgstr "Défloutage | Moyen, force 3"
 
 #: ../src/iop/atrous.c:948
 msgid "deblur | fine blur, strength 3"
-msgstr "Défloutage | fin, force 3"
+msgstr "Défloutage | Fin, force 3"
 
 #: ../src/iop/atrous.c:967
 msgid "deblur | large blur, strength 2"
-msgstr "Défloutage | large, force 2"
+msgstr "Défloutage | Large, force 2"
 
 #: ../src/iop/atrous.c:985
 msgid "deblur | medium blur, strength 2"
-msgstr "Défloutage | moyen, force 2"
+msgstr "Défloutage | Moyen, force 2"
 
 #: ../src/iop/atrous.c:1002
 msgid "deblur | fine blur, strength 2"
-msgstr "Défloutage | fin, force 2"
+msgstr "Défloutage | Fin, force 2"
 
 #: ../src/iop/atrous.c:1021
 msgid "deblur | large blur, strength 1"
-msgstr "Défloutage | large, force 1"
+msgstr "Défloutage | Large, force 1"
 
 #: ../src/iop/atrous.c:1039
 msgid "deblur | medium blur, strength 1"
-msgstr "Défloutage | moyen, force 1"
+msgstr "Défloutage | Moyen, force 1"
 
 #: ../src/iop/atrous.c:1056
 msgid "deblur | fine blur, strength 1"
-msgstr "Défloutage | fin, force 1"
+msgstr "Défloutage | Fin, force 1"
 
 #: ../src/iop/atrous.c:1385 ../src/iop/atrous.c:1631
 #: ../src/iop/denoiseprofile.c:3477 ../src/iop/rawdenoise.c:730
@@ -16985,7 +16985,7 @@ msgstr "Linéaire, RVB ou XYZ"
 
 #: ../src/iop/channelmixerrgb.c:460
 msgid "monochrome | luminance-based"
-msgstr "Monochrome | basée sur la luminance"
+msgstr "Monochrome | Basée sur la luminance"
 
 #: ../src/iop/channelmixerrgb.c:495
 msgid "monochrome | ILFORD HP5+"
@@ -18130,19 +18130,19 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:523
 msgid "basic colorfulness | legacy"
-msgstr "Couleur de base | originel"
+msgstr "Couleur de base | Originel"
 
 #: ../src/iop/colorbalancergb.c:532
 msgid "basic colorfulness | natural skin"
-msgstr "Couleur de base | peau naturelle"
+msgstr "Couleur de base | Peau naturelle"
 
 #: ../src/iop/colorbalancergb.c:538
 msgid "basic colorfulness | vibrant colors"
-msgstr "Couleur de base | couleurs vibrantes"
+msgstr "Couleur de base | Couleurs vibrantes"
 
 #: ../src/iop/colorbalancergb.c:544
 msgid "basic colorfulness | standard"
-msgstr "Couleur de base | standard"
+msgstr "Couleur de base | Standard"
 
 #: ../src/iop/colorbalancergb.c:961
 msgid "colorbalance works only on RGB input"
@@ -19620,64 +19620,64 @@ msgstr ""
 #. deblurring presets
 #: ../src/iop/diffuse.c:240
 msgid "lens deblur | soft"
-msgstr "Correction du flou d’objectif | léger"
+msgstr "Correction du flou d’objectif | Léger"
 
 #: ../src/iop/diffuse.c:265
 msgid "lens deblur | medium"
-msgstr "Correction du flou d’objectif | moyen"
+msgstr "Correction du flou d’objectif | Moyen"
 
 #: ../src/iop/diffuse.c:290
 msgid "lens deblur | hard"
-msgstr "Correction du flou d’objectif | fort"
+msgstr "Correction du flou d’objectif | Fort"
 
 #: ../src/iop/diffuse.c:316
 msgid "dehaze | default"
-msgstr "Suppression de la brume | défaut"
+msgstr "Suppression de la brume | Défaut"
 
 #: ../src/iop/diffuse.c:342
 msgid "dehaze | extra contrast"
-msgstr "Suppression de la brume | fort contraste"
+msgstr "Suppression de la brume | Fort contraste"
 
 #: ../src/iop/diffuse.c:368
 msgid "denoise | fine"
-msgstr "Débruitage | léger"
+msgstr "Débruitage | Léger"
 
 #: ../src/iop/diffuse.c:393
 msgid "denoise | medium"
-msgstr "Débruitage | moyen"
+msgstr "Débruitage | Moyen"
 
 #: ../src/iop/diffuse.c:418
 msgid "denoise | coarse"
-msgstr "Débruitage | fort"
+msgstr "Débruitage | Fort"
 
 #: ../src/iop/diffuse.c:468
 msgid "artistic effects | bloom"
-msgstr "Effet artistique | rayonnement"
+msgstr "Effet artistique | Rayonnement"
 
 #: ../src/iop/diffuse.c:493
 msgid "sharpen demosaicing | no AA filter"
-msgstr "Netteté du dématriçage | sans filtre AA"
+msgstr "Netteté du dématriçage | Sans filtre AA"
 
 #: ../src/iop/diffuse.c:519
 msgid "sharpen demosaicing | AA filter"
-msgstr "Netteté du dématriçage | filtre AA"
+msgstr "Netteté du dématriçage | Filtre AA"
 
 #: ../src/iop/diffuse.c:546
 msgid "artistic effects | simulate watercolor"
-msgstr "Effet artistique | simuler l’aquarelle"
+msgstr "Effet artistique | Simuler l’aquarelle"
 
 #: ../src/iop/diffuse.c:571
 msgid "artistic effects | simulate line drawing"
-msgstr "Effet artistique | simuler le dessin au trait"
+msgstr "Effet artistique | Simuler le dessin au trait"
 
 #. local contrast
 #: ../src/iop/diffuse.c:598
 msgid "local contrast | normal"
-msgstr "Contraste local | normal"
+msgstr "Contraste local | Normal"
 
 #: ../src/iop/diffuse.c:623
 msgid "local contrast | fine"
-msgstr "Contraste local | fin"
+msgstr "Contraste local | Fin"
 
 #: ../src/iop/diffuse.c:648
 msgid "inpaint highlights"
@@ -19686,20 +19686,20 @@ msgstr "Remplir les hautes lumières"
 #. fast presets for slow hardware
 #: ../src/iop/diffuse.c:675
 msgid "sharpness | fast"
-msgstr "Netteté | rapide"
+msgstr "Netteté | Rapide"
 
 #. two more sharpness (standard & strong)
 #: ../src/iop/diffuse.c:702
 msgid "sharpness | normal"
-msgstr "Netteté | normal"
+msgstr "Netteté | Normal"
 
 #: ../src/iop/diffuse.c:727
 msgid "sharpness | strong"
-msgstr "Netteté | forte"
+msgstr "Netteté | Forte"
 
 #: ../src/iop/diffuse.c:752
 msgid "local contrast | fast"
-msgstr "Contraste local | rapide"
+msgstr "Contraste local | Rapide"
 
 #: ../src/iop/diffuse.c:1403
 msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
@@ -20941,31 +20941,31 @@ msgstr "Gris neutre | ND8 (dur)"
 
 #: ../src/iop/graduatednd.c:84
 msgid "tinted | orange ND2 (soft)"
-msgstr "Teinte | orange ND2 (doux)"
+msgstr "Teinte | Orange ND2 (doux)"
 
 #: ../src/iop/graduatednd.c:87
 msgid "tinted | yellow ND2 (soft)"
-msgstr "Teinte | jaune ND2 (doux)"
+msgstr "Teinte | Jaune ND2 (doux)"
 
 #: ../src/iop/graduatednd.c:91
 msgid "tinted | purple ND2 (soft)"
-msgstr "Teinte | violet ND2 (doux)"
+msgstr "Teinte | Violet ND2 (doux)"
 
 #: ../src/iop/graduatednd.c:95
 msgid "tinted | green ND2 (soft)"
-msgstr "Teinte | vert ND2 (doux)"
+msgstr "Teinte | Vert ND2 (doux)"
 
 #: ../src/iop/graduatednd.c:99
 msgid "tinted | red ND2 (soft)"
-msgstr "Teinte | rouge ND2 (doux)"
+msgstr "Teinte | Rouge ND2 (doux)"
 
 #: ../src/iop/graduatednd.c:102
 msgid "tinted | blue ND2 (soft)"
-msgstr "Teinte | bleu ND2 (doux)"
+msgstr "Teinte | Bleu ND2 (doux)"
 
 #: ../src/iop/graduatednd.c:106
 msgid "tinted | brown ND4 (soft)"
-msgstr "Teinte | marron ND4 (doux)"
+msgstr "Teinte | Marron ND4 (doux)"
 
 #: ../src/iop/graduatednd.c:137
 msgid "graduated density"
@@ -22926,7 +22926,7 @@ msgstr ""
 
 #: ../src/iop/rgbcurve.c:183
 msgid "contrast | compression"
-msgstr "Contraste | compression"
+msgstr "Contraste | Compression"
 
 #: ../src/iop/rgbcurve.c:193
 msgid "linear (gamma 1.0)"
@@ -22934,27 +22934,27 @@ msgstr "Linéaire (gamma 1.0)"
 
 #: ../src/iop/rgbcurve.c:204
 msgid "contrast | medium (linear)"
-msgstr "Contraste | moyen (linéaire)"
+msgstr "Contraste | Moyen (linéaire)"
 
 #: ../src/iop/rgbcurve.c:214
 msgid "contrast | high (linear)"
-msgstr "Contraste | haut (linéaire)"
+msgstr "Contraste | Haut (linéaire)"
 
 #: ../src/iop/rgbcurve.c:231
 msgid "contrast | medium (gamma 2.2)"
-msgstr "Contraste | moyen (gamma 2.2)"
+msgstr "Contraste | Moyen (gamma 2.2)"
 
 #: ../src/iop/rgbcurve.c:247
 msgid "contrast | high (gamma 2.2)"
-msgstr "Contraste | haut (gamma 2.2)"
+msgstr "Contraste | Haut (gamma 2.2)"
 
 #: ../src/iop/rgbcurve.c:261
 msgid "non-contrast curve | gamma 2.0"
-msgstr "Courbe sans-contraste | gamma 2.0"
+msgstr "Courbe sans-contraste | Gamma 2.0"
 
 #: ../src/iop/rgbcurve.c:268
 msgid "non-contrast curve | gamma 0.5"
-msgstr "Courbe sans-contraste | gamma 2.2"
+msgstr "Courbe sans-contraste | Gamma 2.2"
 
 #: ../src/iop/rgbcurve.c:275
 msgid "non-contrast curve | logarithm (base 2)"
@@ -23670,47 +23670,47 @@ msgstr "Simple courbe des tonalités"
 
 #: ../src/iop/toneequal.c:498
 msgid "mask blending | all purposes"
-msgstr "Fusion du masque | tous usages"
+msgstr "Fusion du masque | Tous usages"
 
 #: ../src/iop/toneequal.c:505
 msgid "mask blending | people with backlight"
-msgstr "Fusion du masque | sujets à contre-jour"
+msgstr "Fusion du masque | Sujets à contre-jour"
 
 #: ../src/iop/toneequal.c:522
 msgid "compress shadows/highlights | strong (EIGF)"
-msgstr "Compresser les ombres/hautes lumières | fort (EIGF)"
+msgstr "Compresser les ombres/hautes lumières | Fort (EIGF)"
 
 #: ../src/iop/toneequal.c:527
 msgid "compress shadows/highlights | strong (GF)"
-msgstr "Compresser les ombres/hautes lumières | fort (GF)"
+msgstr "Compresser les ombres/hautes lumières | Fort (GF)"
 
 #: ../src/iop/toneequal.c:536
 msgid "compress shadows/highlights | medium (EIGF)"
-msgstr "Compresser les ombres/hautes lumières | moyen (EIGF)"
+msgstr "Compresser les ombres/hautes lumières | Moyen (EIGF)"
 
 #: ../src/iop/toneequal.c:541
 msgid "compress shadows/highlights | medium (GF)"
-msgstr "Compresser les ombres/hautes lumières | moyen (GF)"
+msgstr "Compresser les ombres/hautes lumières | Moyen (GF)"
 
 #: ../src/iop/toneequal.c:550
 msgid "compress shadows/highlights | soft (EIGF)"
-msgstr "Compresser les ombres/hautes lumières | léger (EIGF)"
+msgstr "Compresser les ombres/hautes lumières | Léger (EIGF)"
 
 #: ../src/iop/toneequal.c:555
 msgid "compress shadows/highlights | soft (GF)"
-msgstr "Compresser les ombres/hautes lumières | léger (GF)"
+msgstr "Compresser les ombres/hautes lumières | Léger (GF)"
 
 #: ../src/iop/toneequal.c:563
 msgid "contrast tone curve | soft"
-msgstr "Courbe de contraste des tonalités | léger"
+msgstr "Courbe de contraste des tonalités | Léger"
 
 #: ../src/iop/toneequal.c:568
 msgid "contrast tone curve | medium"
-msgstr "Courbe de contraste des tonalités | moyen"
+msgstr "Courbe de contraste des tonalités | Moyen"
 
 #: ../src/iop/toneequal.c:573
 msgid "contrast tone curve | strong"
-msgstr "Courbe de contraste des tonalités | fort"
+msgstr "Courbe de contraste des tonalités | Fort"
 
 #: ../src/iop/toneequal.c:596
 msgid "relight: fill-in"
