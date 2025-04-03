@@ -180,7 +180,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.curve_nodes[DT_IOP_RGBCURVE_R][3].y = 0.290352;
   p.curve_nodes[DT_IOP_RGBCURVE_R][4].y = 0.773852;
   p.curve_nodes[DT_IOP_RGBCURVE_R][5].y = 1.000000;
-  dt_gui_presets_add_generic(_("contrast compression"), self->op,
+  dt_gui_presets_add_generic(_("contrast | compression"), self->op,
                              self->version(), &p, sizeof(p),
                              1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -1567,7 +1567,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->interpolator), "value-changed",
                    G_CALLBACK(interpolator_callback), self);
 
-  dt_gui_box_add(self->widget, dt_gui_hbox(dt_gui_expand(g->channel_tabs), 
+  dt_gui_box_add(self->widget, dt_gui_hbox(dt_gui_expand(g->channel_tabs),
                                            dt_gui_expand(gtk_grid_new()),
                                            g->colorpicker, g->colorpicker_set_values),
                                g->area, g->interpolator);
