@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-03 17:44+0200\n"
-"PO-Revision-Date: 2025-04-03 18:25+0200\n"
+"POT-Creation-Date: 2025-04-03 18:35+0200\n"
+"PO-Revision-Date: 2025-04-03 18:36+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -5483,7 +5483,7 @@ msgstr "Moyenne géométrique RVB"
 
 #: ../build/lib/darktable/plugins/introspection_tonemap.cc:39
 #: ../build/lib/darktable/plugins/introspection_tonemap.cc:88
-#: ../src/iop/rgbcurve.c:183 ../src/iop/tonecurve.c:570
+#: ../src/iop/tonecurve.c:570
 msgid "contrast compression"
 msgstr "Compression du contraste"
 
@@ -22923,6 +22923,10 @@ msgstr "Courbe RVB"
 msgid "alter an image’s tones using curves in RGB color space"
 msgstr ""
 "Altère les tonalités d’une image à l’aide d’une courbe dans l’espace RVB"
+
+#: ../src/iop/rgbcurve.c:183
+msgid "contrast | compression"
+msgstr "Contraste | compression"
 
 #: ../src/iop/rgbcurve.c:193
 msgid "linear (gamma 1.0)"
