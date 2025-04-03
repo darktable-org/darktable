@@ -1286,7 +1286,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   pipe_RGB_to_Ych(self, pipe, (const float *)self->picked_color_max, max_Ych);
   const float picked_hue = get_hue_angle_from_Ych(Ych);
   GdkModifierType state = gdk_keymap_get_modifier_state(gdk_keymap_get_for_display(gdk_display_get_default()));
-  const float hue = (state & GDK_CONTROL_MASK) ? RAD_TO_DEG(picked_hue) : RAD_TO_DEG(picked_hue) + 180.f;    //selects the current or opposite color
+  const float hue = (state & GDK_CONTROL_MASK) ? RAD_TO_DEG(picked_hue) : RAD_TO_DEG(picked_hue) + 180.f;    //take the current or opponent color
 
   ++darktable.gui->reset;
   if(picker == g->global_H)
