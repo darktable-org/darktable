@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-03 18:35+0200\n"
-"PO-Revision-Date: 2025-04-03 18:36+0200\n"
+"POT-Creation-Date: 2025-04-03 18:48+0200\n"
+"PO-Revision-Date: 2025-04-03 18:50+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -23677,28 +23677,28 @@ msgid "mask blending | people with backlight"
 msgstr "Fusion du masque | Sujets à contre-jour"
 
 #: ../src/iop/toneequal.c:522
-msgid "compress shadows/highlights | strong (EIGF)"
-msgstr "Compresser les ombres/hautes lumières | Fort (EIGF)"
+msgid "compress shadows/highlights | EIGF | strong"
+msgstr "Compresser les ombres/hautes lumières | EIGF | Fort"
 
 #: ../src/iop/toneequal.c:527
-msgid "compress shadows/highlights | strong (GF)"
-msgstr "Compresser les ombres/hautes lumières | Fort (GF)"
+msgid "compress shadows/highlights | GF | strong"
+msgstr "Compresser les ombres/hautes lumières | GF | Fort"
 
 #: ../src/iop/toneequal.c:536
-msgid "compress shadows/highlights | medium (EIGF)"
-msgstr "Compresser les ombres/hautes lumières | Moyen (EIGF)"
+msgid "compress shadows/highlights | EIGF | medium"
+msgstr "Compresser les ombres/hautes lumières | EIGF | Moyen"
 
 #: ../src/iop/toneequal.c:541
-msgid "compress shadows/highlights | medium (GF)"
-msgstr "Compresser les ombres/hautes lumières | Moyen (GF)"
+msgid "compress shadows/highlights | GF | medium"
+msgstr "Compresser les ombres/hautes lumières | GF | Moyen"
 
 #: ../src/iop/toneequal.c:550
-msgid "compress shadows/highlights | soft (EIGF)"
-msgstr "Compresser les ombres/hautes lumières | Léger (EIGF)"
+msgid "compress shadows/highlights | EIGF | soft"
+msgstr "Compresser les ombres/hautes lumières | EIGF | Léger"
 
 #: ../src/iop/toneequal.c:555
-msgid "compress shadows/highlights | soft (GF)"
-msgstr "Compresser les ombres/hautes lumières | Léger (GF)"
+msgid "compress shadows/highlights | GF | soft"
+msgstr "Compresser les ombres/hautes lumières | GF | Léger"
 
 #: ../src/iop/toneequal.c:563
 msgid "contrast tone curve | soft"
@@ -29826,17 +29826,26 @@ msgstr "Créer une fenêtre flottante persistante"
 msgid "mouse actions"
 msgstr "Actions de la souris"
 
+#~ msgid "compress shadows/highlights | strong (EIGF)"
+#~ msgstr "Compresser les ombres/hautes lumières | Fort (EIGF)"
+
+#~ msgid "compress shadows/highlights | strong (GF)"
+#~ msgstr "Compresser les ombres/hautes lumières | Fort (GF)"
+
+#~ msgid "compress shadows/highlights | medium (EIGF)"
+#~ msgstr "Compresser les ombres/hautes lumières | Moyen (EIGF)"
+
+#~ msgid "compress shadows/highlights | medium (GF)"
+#~ msgstr "Compresser les ombres/hautes lumières | Moyen (GF)"
+
+#~ msgid "compress shadows/highlights | soft (EIGF)"
+#~ msgstr "Compresser les ombres/hautes lumières | Léger (EIGF)"
+
 #~ msgid "B&W: luminance-based"
 #~ msgstr "N&B : basée sur la luminance"
 
 #~ msgid "dehaze"
 #~ msgstr "Suppression de la brume"
-
-#~ msgid "compress shadows/highlights (EIGF): strong"
-#~ msgstr "Compresser les ombres/hautes lumières (EIGF) : fort"
-
-#~ msgid "compress shadows/highlights (EIGF): medium"
-#~ msgstr "Compresser les ombres/hautes lumières (EIGF) : moyen"
 
 #~ msgid "toggle ISO 12646 color assessment conditions"
 #~ msgstr "Basculer les conditions d’évaluation des couleurs ISO 12646"
