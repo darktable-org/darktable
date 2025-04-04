@@ -16,9 +16,13 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// avoid error reported when including exiv2.hpp on macOS (XCode 15.2)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
 #include <exiv2/exif.hpp>
 #include <exiv2/error.hpp>
 #include <exiv2/image.hpp>
+#pragma GCC diagnostic pop
 
 #include <cstdio>
 #include <cassert>
