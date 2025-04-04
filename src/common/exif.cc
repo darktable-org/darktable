@@ -37,7 +37,11 @@
 #include <sstream>
 #include <string>
 
+// avoid error reported when including exiv2.hpp on macOS (XCode 15.2)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
 #include <exiv2/exiv2.hpp>
+#pragma GCC diagnostic pop
 
 #include "control/control.h"
 
