@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-04-03 16:21-0300\n"
-"PO-Revision-Date: 2025-04-03 16:20-0300\n"
+"PO-Revision-Date: 2025-04-04 10:32-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -19450,13 +19450,10 @@ msgid "diffuse or sharpen"
 msgstr "difusão ou nitidez"
 
 #: ../src/iop/diffuse.c:129
-#, fuzzy
 msgid ""
 "diffusion|deconvolution|blur|sharpening|bloom|clarity|dehaze|denoise|inpaint|"
 "watercolor"
-msgstr ""
-"difusão|deconvolução|desfoque|nitidez|florescer|claridade|remoção de névoa|"
-"reconstrução|"
+msgstr "difusão|deconvolução|desfoque|nitidez|florescer|claridade|remoção de névoa|remoção de ruído|reconstrução|aquarela|"
 
 #: ../src/iop/diffuse.c:136
 msgid ""
@@ -19492,33 +19489,28 @@ msgid "dehaze | extra contrast"
 msgstr "remoção de névoa | contraste extra"
 
 #: ../src/iop/diffuse.c:368
-#, fuzzy
 msgid "denoise | fine"
-msgstr "redução de ruído: suave"
+msgstr "redução de ruído | suave"
 
 #: ../src/iop/diffuse.c:393
-#, fuzzy
 msgid "denoise | medium"
-msgstr "redução de ruído: médio"
+msgstr "redução de ruído | médio"
 
 #: ../src/iop/diffuse.c:418
-#, fuzzy
 msgid "denoise | coarse"
-msgstr "redução de ruído: grosso"
+msgstr "redução de ruído | grosso"
 
 #: ../src/iop/diffuse.c:468
 msgid "artistic effects | bloom"
-msgstr ""
+msgstr "efeitos artísticos | florescer"
 
 #: ../src/iop/diffuse.c:493
-#, fuzzy
 msgid "sharpen demosaicing | no AA filter"
-msgstr "aumentar nitidez da interpolação cromática: sem filtro AA"
+msgstr "aumentar nitidez da interpolação cromática | sem filtro AA"
 
 #: ../src/iop/diffuse.c:519
-#, fuzzy
 msgid "sharpen demosaicing | AA filter"
-msgstr "aumentar nitidez da interpolação cromática: com filtro AA"
+msgstr "aumentar nitidez da interpolação cromática | com filtro AA"
 
 #: ../src/iop/diffuse.c:546
 msgid "artistic effects | simulate watercolor"
@@ -20785,39 +20777,32 @@ msgid "neutral gray | ND8 (hard)"
 msgstr "cinza neutro | ND8 (hard)"
 
 #: ../src/iop/graduatednd.c:84
-#, fuzzy
 msgid "tinted | orange ND2 (soft)"
-msgstr "laranja ND2 (soft)"
+msgstr "matizado | laranja ND2 (soft)"
 
 #: ../src/iop/graduatednd.c:87
-#, fuzzy
 msgid "tinted | yellow ND2 (soft)"
-msgstr "amarelo ND2 (soft)"
+msgstr "matizado | amarelo ND2 (soft)"
 
 #: ../src/iop/graduatednd.c:91
-#, fuzzy
 msgid "tinted | purple ND2 (soft)"
-msgstr "roxo ND2 (soft)"
+msgstr "matizado | roxo ND2 (soft)"
 
 #: ../src/iop/graduatednd.c:95
-#, fuzzy
 msgid "tinted | green ND2 (soft)"
-msgstr "verde ND2 (soft)"
+msgstr "matizado | verde ND2 (soft)"
 
 #: ../src/iop/graduatednd.c:99
-#, fuzzy
 msgid "tinted | red ND2 (soft)"
-msgstr "vermelho ND2 (soft)"
+msgstr "matizado | vermelho ND2 (soft)"
 
 #: ../src/iop/graduatednd.c:102
-#, fuzzy
 msgid "tinted | blue ND2 (soft)"
-msgstr "azul ND2 (soft)"
+msgstr "matizado | azul ND2 (soft)"
 
 #: ../src/iop/graduatednd.c:106
-#, fuzzy
 msgid "tinted | brown ND4 (soft)"
-msgstr "marrom ND4 (soft)"
+msgstr "matizado | marrom ND4 (soft)"
 
 #: ../src/iop/graduatednd.c:137
 msgid "graduated density"
@@ -22764,22 +22749,19 @@ msgstr "contraste | alto (gama 2.2)"
 
 #: ../src/iop/rgbcurve.c:261
 msgid "non-contrast curve | gamma 2.0"
-msgstr "contraste | médio (gama 2.2)"
+msgstr "curva sem contraste | médio (gama 2.2)"
 
 #: ../src/iop/rgbcurve.c:268
-#, fuzzy
 msgid "non-contrast curve | gamma 0.5"
-msgstr "contraste - médio (gama 2.2)"
+msgstr "curva sem contraste - médio (gama 2.2)"
 
 #: ../src/iop/rgbcurve.c:275
-#, fuzzy
 msgid "non-contrast curve | logarithm (base 2)"
-msgstr "logaritmo (base 2)"
+msgstr "curva sem contraste | logaritmo (base 2)"
 
 #: ../src/iop/rgbcurve.c:282
-#, fuzzy
 msgid "non-contrast curve | exponential (base 2)"
-msgstr "exponencial (base 2)"
+msgstr "curva sem contraste | exponencial (base 2)"
 
 #: ../src/iop/rgbcurve.c:1486 ../src/iop/rgblevels.c:1033
 msgid "choose between linked and independent channels."
