@@ -569,8 +569,8 @@ static void _dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe,
         const dt_develop_blend_params_t *const bp = piece->blendop_data;
         const gboolean valid_mask = bp->mask_mode > DEVELOP_MASK_ENABLED;
 
-        if((!feqf(bp->details, 0.0f, 1e-6)) && valid_mask)
-          dt_dev_pixelpipe_usedetails(pipe);
+        if(!feqf(bp->details, 0.0f, 1e-6) && valid_mask)
+          dt_dev_pixelpipe_usedetails(piece);
       }
     }
   }
@@ -690,13 +690,15 @@ void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
                                   &pipe->processed_height);
 }
 
-void dt_dev_pixelpipe_usedetails(dt_dev_pixelpipe_t *pipe)
+void dt_dev_pixelpipe_usedetails(dt_dev_pixelpipe_iop_t *piece)
 {
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
   if(!pipe->want_detail_mask)
   {
+    dt_print_pipe(DT_DEBUG_PIPE, "details requested", pipe, piece->module, DT_DEVICE_NONE, NULL, NULL);
     dt_dev_pixelpipe_cache_invalidate_later(pipe, 0);
+    pipe->want_detail_mask = TRUE;
   }
-  pipe->want_detail_mask = TRUE;
 }
 
 static void _dump_pipe_pfm_diff(const char *mod,
