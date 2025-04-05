@@ -285,7 +285,7 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *d
 void dt_dev_pixelpipe_rebuild(struct dt_develop_t *dev);
 
 // switch on details mask processing
-void dt_dev_pixelpipe_usedetails(dt_dev_pixelpipe_t *pipe);
+void dt_dev_pixelpipe_usedetails(dt_dev_pixelpipe_iop_t *piece);
 // process region of interest of pixels. returns TRUE if pipe was altered during processing.
 gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
                              struct dt_develop_t *dev,

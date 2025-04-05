@@ -228,6 +228,9 @@ static dt_iop_demosaic_qual_flags_t demosaic_qual_flags(const dt_dev_pixelpipe_i
   dt_iop_demosaic_qual_flags_t flags = DT_DEMOSAIC_DEFAULT;
   switch(piece->pipe->type & DT_DEV_PIXELPIPE_ANY)
   {
+    case DT_DEV_PIXELPIPE_PREVIEW2:
+      flags |= DT_DEMOSAIC_FULL_SCALE;
+      break;
     case DT_DEV_PIXELPIPE_FULL:
       flags |= DT_DEMOSAIC_FULL_SCALE;
       break;
@@ -1085,7 +1088,7 @@ void commit_params(dt_iop_module_t *self,
 
   if(use_method & DT_DEMOSAIC_DUAL)
   {
-    dt_dev_pixelpipe_usedetails(piece->pipe);
+    dt_dev_pixelpipe_usedetails(piece);
     d->color_smoothing = DT_DEMOSAIC_SMOOTH_OFF;
   }
   d->demosaicing_method = use_method;
