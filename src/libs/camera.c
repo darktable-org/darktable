@@ -108,7 +108,8 @@ static void property_changed_callback(GtkComboBox *cb, gpointer data)
 }
 
 // Add a new property of camera to the GUI
-static dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, const gchar *label,
+static dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib,
+                                                       const gchar *label,
                                                        const gchar *propertyname)
 {
   if(dt_camctl_camera_property_exists(darktable.camctl, NULL, propertyname))
@@ -167,7 +168,9 @@ static gint _compare_property_by_name(gconstpointer a, gconstpointer b)
 }
 
 // Called when the property value changes
-static void _camera_property_value_changed(const dt_camera_t *camera, const char *name, const char *value,
+static void _camera_property_value_changed(const dt_camera_t *camera,
+                                           const char *name,
+                                           const char *value,
                                            void *data)
 {
   dt_lib_camera_t *lib = (dt_lib_camera_t *)data;
@@ -181,8 +184,10 @@ static void _camera_property_value_changed(const dt_camera_t *camera, const char
 }
 
 // Called when the accessibility of a property changes
-static void _camera_property_accessibility_changed(const dt_camera_t *camera, const char *name,
-                                                   gboolean read_only, void *data)
+static void _camera_property_accessibility_changed(const dt_camera_t *camera,
+                                                   const char *name,
+                                                   gboolean read_only,
+                                                   void *data)
 {
 }
 
@@ -200,7 +205,9 @@ static gboolean _bailout_of_tethering(gpointer user_data)
 }
 
 // Called when a camera error occurs
-static void _camera_error_callback(const dt_camera_t *camera, dt_camera_error_t error, void *user_data)
+static void _camera_error_callback(const dt_camera_t *camera,
+                                   dt_camera_error_t error,
+                                   void *user_data)
 {
   dt_control_log(_("connection with camera lost, exiting tethering mode"));
   g_idle_add(_bailout_of_tethering, user_data);
@@ -312,8 +319,12 @@ static void _toggle_capture_mode_clicked(GtkWidget *widget, gpointer user_data)
 
 
 #define BAR_HEIGHT DT_PIXEL_APPLY_DPI(18) // also change in views/tethering.c
-static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height,
-                             int32_t pointerx, int32_t pointery)
+static void _expose_info_bar(dt_lib_module_t *self,
+                             cairo_t *cr,
+                             int32_t width,
+                             int32_t height,
+                             int32_t pointerx,
+                             int32_t pointery)
 {
   dt_lib_camera_t *lib = self->data;
 
@@ -373,8 +384,12 @@ static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, 
   g_object_unref(layout);
 }
 
-static void _expose_settings_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height,
-                                 int32_t pointerx, int32_t pointery)
+static void _expose_settings_bar(dt_lib_module_t *self,
+                                 cairo_t *cr,
+                                 int32_t width,
+                                 int32_t height,
+                                 int32_t pointerx,
+                                 int32_t pointery)
 {
   /*// Draw control bar at bottom
   cairo_set_source_rgb (cr, .0,.0,.0);
@@ -382,7 +397,11 @@ static void _expose_settings_bar(dt_lib_module_t *self, cairo_t *cr, int32_t wid
   cairo_fill (cr);*/
 }
 
-void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
+void gui_post_expose(dt_lib_module_t *self,
+                     cairo_t *cr,
+                     int32_t width,
+                     int32_t height,
+                     int32_t pointerx,
                      int32_t pointery)
 {
   // Setup cairo font..
@@ -531,7 +550,9 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
+void view_enter(struct dt_lib_module_t *self,
+                struct dt_view_t *old_view,
+                struct dt_view_t *new_view)
 {
   dt_lib_camera_t *lib = self->data;
 
@@ -602,7 +623,9 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
   lib->data.camera_model = dt_camctl_camera_get_model(darktable.camctl, NULL);
 }
 
-void view_leave(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
+void view_leave(struct dt_lib_module_t *self,
+                struct dt_view_t *old_view,
+                struct dt_view_t *new_view)
 {
   dt_lib_camera_t *lib = self->data;
 
