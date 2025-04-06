@@ -126,6 +126,9 @@ changes (where available).
 - Fixed collection filter presets based on capture time creating an
   empty widget.
 
+- Proper high quality demosaicing and details blending support for
+  second window.
+
 ## Lua
 
 ### API Version
