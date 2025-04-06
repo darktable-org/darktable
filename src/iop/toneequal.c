@@ -69,7 +69,7 @@
  * smooth contiguous region (quantization parameter), but also to
  * translate (exposure boost) and dilate (contrast boost) the exposure
  * histogram through the control octaves, to center it on the control
- * view and make maximum use of the available NUM_SLIDERS.
+ * view and make maximum use of the available channels.
  *
  * Users should be aware that not all the available octaves will be
  * useful on every pictures.  Some automatic options will help them to
@@ -91,6 +91,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <inttypes.h> // Only needed for debug printf of hashes, TODO remove
+
 
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
@@ -306,8 +308,8 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   GtkDrawingArea *area, *bar;
   GtkWidget *blending, *smoothing, *quantization;
   GtkWidget *post_auto_align;
-  GtkWidget *method;
-  GtkWidget *details, *feathering, *contrast_boost, *iterations, *exposure_boost, *post_scale, *post_shift;
+  GtkWidget *lum_estimator;
+  GtkWidget *filter, *feathering, *contrast_boost, *iterations, *exposure_boost, *post_scale, *post_shift;
   GtkNotebook *notebook;
   dt_gui_collapsible_section_t sliders_section, advanced_masking_section;
   GtkWidget *show_luminance_mask;
@@ -449,8 +451,8 @@ int legacy_params(dt_iop_module_t *self,
     float quantization;
     float contrast_boost;
     float exposure_boost;
-    dt_iop_toneequalizer_filter_t details;
-    dt_iop_luminance_mask_method_t method;
+    dt_iop_toneequalizer_filter_t filter;
+    dt_iop_luminance_mask_method_t lum_estimator;
     int iterations;
     float post_scale;
     float post_shift;
@@ -464,9 +466,9 @@ int legacy_params(dt_iop_module_t *self,
       float noise, ultra_deep_blacks, deep_blacks, blacks;
       float shadows, midtones, highlights, whites, speculars;
       float blending, feathering, contrast_boost, exposure_boost;
-      dt_iop_toneequalizer_filter_t details;
+      dt_iop_toneequalizer_filter_t filter;
       int iterations;
-      dt_iop_luminance_mask_method_t method;
+      dt_iop_luminance_mask_method_t lum_estimator;
     } dt_iop_toneequalizer_params_v1_t;
 
     const dt_iop_toneequalizer_params_v1_t *o = old_params;
@@ -488,9 +490,9 @@ int legacy_params(dt_iop_module_t *self,
     n->contrast_boost = o->contrast_boost;
     n->exposure_boost = o->exposure_boost;
 
-    n->details = o->details;
+    n->filter = o->filter;
     n->iterations = o->iterations;
-    n->method = o->method;
+    n->lum_estimator = o->lum_estimator;
 
     // V2 params
     n->quantization = 0.0f;
@@ -515,8 +517,8 @@ int legacy_params(dt_iop_module_t *self,
       float shadows; float midtones; float highlights; float whites;
       float speculars; float blending; float smoothing; float feathering;
       float quantization; float contrast_boost; float exposure_boost;
-      dt_iop_toneequalizer_filter_t details;
-      dt_iop_luminance_mask_method_t method;
+      dt_iop_toneequalizer_filter_t filter;
+      dt_iop_luminance_mask_method_t lum_estimator;
       int iterations;
     } dt_iop_toneequalizer_params_v2_t;
 
@@ -539,9 +541,9 @@ int legacy_params(dt_iop_module_t *self,
     n->contrast_boost = o->contrast_boost;
     n->exposure_boost = o->exposure_boost;
 
-    n->details = o->details;
+    n->filter = o->filter;
     n->iterations = o->iterations;
-    n->method = o->method;
+    n->lum_estimator = o->lum_estimator;
 
     // V2 params
     n->quantization = o->quantization;
@@ -1380,7 +1382,7 @@ void toneeq_process(dt_iop_module_t *self,
     const gboolean luminance_valid = g->luminance_valid;
     dt_iop_gui_leave_critical_section(self);
 
-    printf("toneeq_process PIXELPIPE_PREVIEW: hash=%ld saved_hash=%ld luminance_valid=%d\n", current_upstream_hash, saved_upstream_hash,
+    printf("toneeq_process PIXELPIPE_PREVIEW: hash=%"PRIu64" saved_hash=%"PRIu64" luminance_valid=%d\n", current_upstream_hash, saved_upstream_hash,
            luminance_valid);
 
     if(saved_upstream_hash != current_upstream_hash || !luminance_valid)
@@ -1465,7 +1467,7 @@ void toneeq_process(dt_iop_module_t *self,
     const gboolean luminance_valid = g->luminance_valid;
     dt_iop_gui_leave_critical_section(self);
 
-    printf("toneeq_process GUI FULL: hash=%ld saved_hash=%ld luminance_valid=%d\n", current_upstream_hash, saved_upstream_hash,
+    printf("toneeq_process GUI FULL: hash=%"PRIu64" saved_hash=%"PRIu64" luminance_valid=%d\n", current_upstream_hash, saved_upstream_hash,
            luminance_valid);
 
     // Re-compute if the upstream state has changed
@@ -2183,7 +2185,7 @@ void gui_changed(dt_iop_module_t *self,
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   dt_iop_toneequalizer_params_t *p = self->params;
 
-  if(w == g->method
+  if(w == g->lum_estimator
      || w == g->blending
      || w == g->feathering
      || w == g->iterations
@@ -2191,7 +2193,7 @@ void gui_changed(dt_iop_module_t *self,
   {
     invalidate_luminance_cache(self);
   }
-  else if(w == g->details)
+  else if(w == g->filter)
   {
     invalidate_luminance_cache(self);
     show_guiding_controls(self);
@@ -3397,7 +3399,7 @@ static inline void compute_gui_curve_colors(dt_iop_module_t *self)
   const int shadows_limit = (int)UI_HISTO_SAMPLES * 0.3333;
   const int highlights_limit = (int)UI_HISTO_SAMPLES * 0.6666;
 
-  // printf("ev_dx=%f filter_active=%d details=%d\n", ev_dx, filter_active, p->details);
+  // printf("ev_dx=%f filter_active=%d filter=%d\n", ev_dx, filter_active, p->filter);
 
   if (!g->gui_histogram_valid || !g->gui_curve_valid) {
     // the module is not completely initialized, set all colors to standard
@@ -4182,16 +4184,16 @@ void gui_init(dt_iop_module_t *self)
   // Masking options
   self->widget = dt_ui_notebook_page(g->notebook, N_("masking"), NULL);
 
-  g->method = dt_bauhaus_combobox_from_params(self, "method");
+  g->lum_estimator = dt_bauhaus_combobox_from_params(self, "lum_estimator");
   gtk_widget_set_tooltip_text
-    (g->method,
+    (g->lum_estimator,
      _("preview the mask and chose the estimator that gives you the\n"
        "higher contrast between areas to dodge and areas to burn"));
 
-  g->details = dt_bauhaus_combobox_from_params(self, N_("details"));
-  dt_bauhaus_widget_set_label(g->details, NULL, N_("preserve details"));
+  g->filter = dt_bauhaus_combobox_from_params(self, N_("filter"));
+  dt_bauhaus_widget_set_label(g->filter, NULL, N_("preserve details"));
   gtk_widget_set_tooltip_text
-    (g->details,
+    (g->filter,
      _("'no' affects global and local contrast (safe if you only add contrast)\n"
        "'guided filter' only affects global contrast and tries to preserve local contrast\n"
        "'averaged guided filter' is a geometric mean of 'no' and 'guided filter' methods\n"
