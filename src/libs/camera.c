@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -129,14 +129,16 @@ static dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, con
       dt_gui_add_class(GTK_WIDGET(prop->osd), "dt_transparent_background");
       g_object_ref_sink(prop->osd);
       gtk_widget_set_tooltip_text(GTK_WIDGET(prop->osd), _("toggle view property in center view"));
+
       do
       {
         dt_bauhaus_combobox_add(prop->values, g_dgettext("libgphoto2-6", value));
-        if(!strcmp(current_value, g_dgettext("libgphoto2-6", value)))
+        if(current_value && !strcmp(current_value, g_dgettext("libgphoto2-6", value)))
           dt_bauhaus_combobox_set(prop->values, i);
         i++;
       } while((value = dt_camctl_camera_property_get_next_choice(darktable.camctl, NULL, propertyname))
               != NULL);
+
       lib->gui.properties = g_list_append(lib->gui.properties, prop);
       // Does dead lock!!!
       g_signal_connect(G_OBJECT(prop->values), "value-changed", G_CALLBACK(property_changed_callback),
