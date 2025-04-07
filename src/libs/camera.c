@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "bauhaus/bauhaus.h"
 #include "common/camera_control.h"
 #include "common/darktable.h"
@@ -32,19 +33,19 @@ DT_MODULE(1)
 
 typedef struct dt_lib_camera_property_t
 {
-  /** the visual property name */
+  // Visual property name
   gchar *name;
-  /** the property name */
+  // Property name
   gchar *property_name;
-  /**Combobox of values available for the property*/
+  // Combobox of values available for the property
   GtkWidget *values;
-  /** Show property OSD */
+  // Show property OSD
   GtkDarktableToggleButton *osd;
 } dt_lib_camera_property_t;
 
 typedef struct dt_lib_camera_t
 {
-  /** Gui part of the module */
+  // GUI part of the module
   struct
   {
     GtkGrid *main_grid;
@@ -52,18 +53,18 @@ typedef struct dt_lib_camera_t
     GtkWidget *timer, *count, *brackets, *steps;
     GtkWidget *button1;
 
-    int rows; // the number of row in the grid
+    int rows;       // the number of rows in the grid
     int prop_start; // the row of the grid above the first property
-    int prop_end; // the row of the grid where to insert new properties
+    int prop_end;   // the row of the grid where to insert new properties
 
-    GtkWidget *plabel, *pname; // propertylabel,widget
+    GtkWidget *plabel, *pname; // propertylabel, widget
     GList *properties;         // a list of dt_lib_camera_property_t
 
-    GtkMenu *properties_menu; // available properties
+    GtkMenu *properties_menu;  // available properties
 
   } gui;
 
-  /** Data part of the module */
+  // Data part of the module
   struct
   {
     const gchar *camera_model;
@@ -98,7 +99,7 @@ int position(const dt_lib_module_t *self)
   return 997;
 }
 
-/** Property changed*/
+// Property changed
 static void property_changed_callback(GtkComboBox *cb, gpointer data)
 {
   dt_lib_camera_property_t *prop = (dt_lib_camera_property_t *)data;
@@ -106,8 +107,9 @@ static void property_changed_callback(GtkComboBox *cb, gpointer data)
                                        dt_bauhaus_combobox_get_text(prop->values));
 }
 
-/** Add  a new property of camera to the gui */
-static dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, const gchar *label,
+// Add a new property of camera to the GUI
+static dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib,
+                                                       const gchar *label,
                                                        const gchar *propertyname)
 {
   if(dt_camctl_camera_property_exists(darktable.camctl, NULL, propertyname))
@@ -115,7 +117,7 @@ static dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, con
     const char *value;
     if((value = dt_camctl_camera_property_get_first_choice(darktable.camctl, NULL, propertyname)) != NULL)
     {
-      // We got a value for property lets construct the gui for the property and add values
+      // We got a value for property, let's construct the GUI for the property and add values
       int i = 0;
       const char *current_value = dt_camctl_camera_get_property(darktable.camctl, NULL, propertyname);
       dt_lib_camera_property_t *prop = calloc(1, sizeof(dt_lib_camera_property_t));
@@ -129,15 +131,18 @@ static dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, con
       dt_gui_add_class(GTK_WIDGET(prop->osd), "dt_transparent_background");
       g_object_ref_sink(prop->osd);
       gtk_widget_set_tooltip_text(GTK_WIDGET(prop->osd), _("toggle view property in center view"));
+
       do
       {
         dt_bauhaus_combobox_add(prop->values, g_dgettext("libgphoto2-6", value));
-        if(!strcmp(current_value, g_dgettext("libgphoto2-6", value)))
+        if(current_value && !strcmp(current_value, g_dgettext("libgphoto2-6", value)))
           dt_bauhaus_combobox_set(prop->values, i);
         i++;
       } while((value = dt_camctl_camera_property_get_next_choice(darktable.camctl, NULL, propertyname))
               != NULL);
+
       lib->gui.properties = g_list_append(lib->gui.properties, prop);
+
       // Does dead lock!!!
       g_signal_connect(G_OBJECT(prop->values), "value-changed", G_CALLBACK(property_changed_callback),
                        (gpointer)prop);
@@ -162,8 +167,10 @@ static gint _compare_property_by_name(gconstpointer a, gconstpointer b)
   return strcmp(ca->property_name, (char *)b);
 }
 
-/** Invoked when a value of a property is changed. */
-static void _camera_property_value_changed(const dt_camera_t *camera, const char *name, const char *value,
+// Called when the property value changes
+static void _camera_property_value_changed(const dt_camera_t *camera,
+                                           const char *name,
+                                           const char *value,
                                            void *data)
 {
   dt_lib_camera_t *lib = (dt_lib_camera_t *)data;
@@ -176,27 +183,31 @@ static void _camera_property_value_changed(const dt_camera_t *camera, const char
   }
 }
 
-/** Invoked when accessibility of a property is changed. */
-static void _camera_property_accessibility_changed(const dt_camera_t *camera, const char *name,
-                                                   gboolean read_only, void *data)
+// Called when the accessibility of a property changes
+static void _camera_property_accessibility_changed(const dt_camera_t *camera,
+                                                   const char *name,
+                                                   gboolean read_only,
+                                                   void *data)
 {
 }
 
 static gboolean _bailout_of_tethering(gpointer user_data)
 {
-  /* consider all error types as failure and bailout of tethering mode */
+  // Consider all error types as failure and bailout of tethering mode
   dt_lib_camera_t *lib = (dt_lib_camera_t *)user_data;
   dt_camctl_tether_mode(darktable.camctl, NULL, FALSE);
   dt_camctl_unregister_listener(darktable.camctl, lib->data.listener);
 
-  /* switch back to library mode */
+  // Switch back to library mode
   dt_ctl_switch_mode_to("lighttable");
 
   return FALSE;
 }
 
-/** Invoked when camera error appear */
-static void _camera_error_callback(const dt_camera_t *camera, dt_camera_error_t error, void *user_data)
+// Called when a camera error occurs
+static void _camera_error_callback(const dt_camera_t *camera,
+                                   dt_camera_error_t error,
+                                   void *user_data)
 {
   dt_control_log(_("connection with camera lost, exiting tethering mode"));
   g_idle_add(_bailout_of_tethering, user_data);
@@ -219,7 +230,7 @@ static void _capture_button_clicked(GtkWidget *widget, gpointer user_data)
                              ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.steps))
                              : 0;
 
-  /* create a capture background job */
+  // Create background capture job
   jobcode = dt_view_tethering_get_job_code(darktable.view_manager);
   dt_control_add_job(DT_JOB_QUEUE_USER_FG,
                      dt_camera_capture_job_create(jobcode, delay, count, brackets, steps));
@@ -264,7 +275,7 @@ static void _add_property_button_clicked(GtkWidget *widget, gpointer user_data)
   const gchar *label = gtk_entry_get_text(GTK_ENTRY(lib->gui.plabel));
   const gchar *property = gtk_entry_get_text(GTK_ENTRY(lib->gui.pname));
 
-  /* let's try to add property */
+  // Let's try to add property
   if(label && property)
   {
     dt_lib_camera_property_t *prop = NULL;
@@ -281,7 +292,7 @@ static void _add_property_button_clicked(GtkWidget *widget, gpointer user_data)
         if(*p == ' ') *p = '_';
       dt_conf_set_string(key, property);
 
-      /* clean entries */
+      // Clear entries
       gtk_entry_set_text(GTK_ENTRY(lib->gui.plabel), "");
       gtk_entry_set_text(GTK_ENTRY(lib->gui.pname), "");
     }
@@ -307,9 +318,13 @@ static void _toggle_capture_mode_clicked(GtkWidget *widget, gpointer user_data)
 }
 
 
-#define BAR_HEIGHT DT_PIXEL_APPLY_DPI(18) /* also change in views/tethering.c */
-static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height,
-                             int32_t pointerx, int32_t pointery)
+#define BAR_HEIGHT DT_PIXEL_APPLY_DPI(18) // also change in views/tethering.c
+static void _expose_info_bar(dt_lib_module_t *self,
+                             cairo_t *cr,
+                             int32_t width,
+                             int32_t height,
+                             int32_t pointerx,
+                             int32_t pointery)
 {
   dt_lib_camera_t *lib = self->data;
 
@@ -369,8 +384,12 @@ static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, 
   g_object_unref(layout);
 }
 
-static void _expose_settings_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height,
-                                 int32_t pointerx, int32_t pointery)
+static void _expose_settings_bar(dt_lib_module_t *self,
+                                 cairo_t *cr,
+                                 int32_t width,
+                                 int32_t height,
+                                 int32_t pointerx,
+                                 int32_t pointery)
 {
   /*// Draw control bar at bottom
   cairo_set_source_rgb (cr, .0,.0,.0);
@@ -378,7 +397,11 @@ static void _expose_settings_bar(dt_lib_module_t *self, cairo_t *cr, int32_t wid
   cairo_fill (cr);*/
 }
 
-void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
+void gui_post_expose(dt_lib_module_t *self,
+                     cairo_t *cr,
+                     int32_t width,
+                     int32_t height,
+                     int32_t pointerx,
                      int32_t pointery)
 {
   // Setup cairo font..
@@ -401,7 +424,7 @@ void gui_init(dt_lib_module_t *self)
   lib->data.listener->camera_property_value_changed = _camera_property_value_changed;
   lib->data.listener->camera_property_accessibility_changed = _camera_property_accessibility_changed;
 
-  // Setup gui
+  // Setup GUI
   lib->gui.rows = 0;
   lib->gui.prop_end = 0;
   self->widget = gtk_grid_new();
@@ -435,7 +458,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(brackets_label), 0, lib->gui.rows++, 1, 1);
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(steps_label), 0, lib->gui.rows++, 1, 1);
 
-  // capture modes buttons
+  // Capture modes buttons
   lib->gui.toggle_timer = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_timer, 0, NULL));
   lib->gui.toggle_sequence = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_filmstrip, 0, NULL));
   lib->gui.toggle_bracket = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_bracket, 0, NULL));
@@ -490,7 +513,7 @@ void gui_init(dt_lib_module_t *self)
   lib->gui.prop_end = lib->gui.rows;
 
 
-  // user specified properties
+  // User specified properties
   label = dt_ui_section_label_new(C_("section", "additional properties"));
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 2, 1);
 
@@ -527,10 +550,13 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
+void view_enter(struct dt_lib_module_t *self,
+                struct dt_view_t *old_view,
+                struct dt_view_t *new_view)
 {
   dt_lib_camera_t *lib = self->data;
-  /* add all camera properties to the widget */
+
+  // Add all camera properties to the widget
   dt_lib_camera_property_t *prop;
   if((prop = _lib_property_add_new(lib, _("program"), "expprogram")) != NULL)
     _lib_property_add_to_gui(prop, lib);
@@ -565,7 +591,7 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
   if((prop = _lib_property_add_new(lib, _("size"), "imagesize")) != NULL)
     _lib_property_add_to_gui(prop, lib);
 
-  /* add user widgets */
+  // Add user widgets
   GSList *options = dt_conf_all_string_entries("plugins/capture/tethering/properties");
   if(options)
   {
@@ -573,7 +599,7 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
     {
       dt_conf_string_entry_t *entry = item->data;
 
-      /* get the label from key */
+      // Get the label from key
       char *p = entry->key;
       const char *end = entry->key + strlen(entry->key);
       while(p++ < end)
@@ -584,34 +610,42 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
     }
     g_slist_free_full(options, dt_conf_string_entry_free);
   }
-  /* build the propertymenu  we do it now because it needs an actual camera */
+
+  // Build the property menu (we do it now because it needs an actual camera)
   dt_camctl_camera_build_property_menu(darktable.camctl, NULL, &lib->gui.properties_menu,
                                        G_CALLBACK(_property_choice_callback), lib);
 
   // Register listener
   dt_camctl_register_listener(darktable.camctl, lib->data.listener);
   dt_camctl_tether_mode(darktable.camctl, NULL, TRUE);
+
   // Get camera model name
   lib->data.camera_model = dt_camctl_camera_get_model(darktable.camctl, NULL);
 }
-void view_leave(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
+
+void view_leave(struct dt_lib_module_t *self,
+                struct dt_view_t *old_view,
+                struct dt_view_t *new_view)
 {
   dt_lib_camera_t *lib = self->data;
-  // remove listener from camera control..
+
+  // Remove listener from camera control
   dt_camctl_tether_mode(darktable.camctl, NULL, FALSE);
   dt_camctl_unregister_listener(darktable.camctl, lib->data.listener);
   gtk_widget_destroy(GTK_WIDGET(lib->gui.properties_menu));
   lib->gui.properties_menu = NULL;
-  // remove all properties
+
+  // Remove all properties
   while(lib->gui.prop_end > lib->gui.prop_start +1) {
     gtk_grid_remove_row(lib->gui.main_grid,lib->gui.prop_start +1);
     lib->gui.rows--;
     lib->gui.prop_end--;
   }
-  // no need to free widgets, they are freed when the line of the grid is destroyed
+  // No need to free widgets, they are freed when the line of the grid is destroyed
   g_list_free_full(lib->gui.properties,_lib_property_free);
   lib->gui.properties = NULL;
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
