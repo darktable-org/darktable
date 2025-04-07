@@ -129,6 +129,9 @@ changes (where available).
 - Proper high quality demosaicing and details blending support for
   second window.
 
+- Fixed a bug that allowed NULL pointer dereference in tethering mode
+  under certain conditions, which resulted in a crash.
+
 ## Lua
 
 ### API Version
