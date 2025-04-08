@@ -2587,6 +2587,19 @@ static float _calculate_new_scroll_zoom_tscale(const int up,
   return tscalenew;
 }
 
+static char *_transform_type(const dt_dev_transform_direction_t transf_direction)
+{
+  switch(transf_direction)
+  {
+    case DT_DEV_TRANSFORM_DIR_ALL:        return "all included";
+    case DT_DEV_TRANSFORM_DIR_FORW_INCL:  return "forward inclusive";
+    case DT_DEV_TRANSFORM_DIR_FORW_EXCL:  return "forward exclusive";
+    case DT_DEV_TRANSFORM_DIR_BACK_INCL:  return "backward inclusive";
+    case DT_DEV_TRANSFORM_DIR_BACK_EXCL:  return "backward exclusive";
+    default:                              return "no transform";
+  }
+}
+
 // running with the history locked
 static gboolean _dev_distort_backtransform_locked(dt_develop_t *dev,
                                                   dt_dev_pixelpipe_t *pipe,
@@ -2595,6 +2608,7 @@ static gboolean _dev_distort_backtransform_locked(dt_develop_t *dev,
                                                   float *points,
                                                   const size_t points_count)
 {
+  const gboolean log = (darktable.unmuted & (DT_DEBUG_CONTROL|DT_DEBUG_VERBOSE)) == (DT_DEBUG_CONTROL|DT_DEBUG_VERBOSE);
   GList *modules = g_list_last(pipe->iop);
   GList *pieces = g_list_last(pipe->nodes);
   while(modules)
@@ -2606,6 +2620,7 @@ static gboolean _dev_distort_backtransform_locked(dt_develop_t *dev,
     dt_iop_module_t *module = modules->data;
     dt_dev_pixelpipe_iop_t *piece = pieces->data;
     if(piece->enabled
+       && module->distort_backtransform
        && piece->data
        && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
            || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
@@ -2619,7 +2634,24 @@ static gboolean _dev_distort_backtransform_locked(dt_develop_t *dev,
        && !(dt_iop_module_is_skipped(dev, module)
             && (pipe->type & DT_DEV_PIXELPIPE_BASIC)))
     {
-      module->distort_backtransform(module, piece, points, points_count);
+      if(log)
+      {
+        char vbuf[1024] = { 0 };
+        float old[16];
+        const int tested = MIN(8, (int)points_count);
+        memcpy(old, points, 2*sizeof(float) * tested);
+        module->distort_backtransform(module, piece, points, points_count);
+        for(int p = 0; p < tested; p++)
+        {
+          const int done = strlen(vbuf);
+          snprintf(vbuf + done, sizeof(vbuf) - done,
+              "  [P%d] %.1f %.1f -> %.1f %.1f", p, old[2*p], old[2*p+1], points[2*p], points[2*p+1]);
+        }
+        dt_print_pipe(DT_DEBUG_ALWAYS, "distort_backtransform", pipe, module, DT_DEVICE_NONE, NULL, NULL,
+          "%s, order=%d, %d points:%s", _transform_type(transf_direction), (int)iop_order, (int)points_count, vbuf);
+      }
+      else
+        module->distort_backtransform(module, piece, points, points_count);
     }
     modules = g_list_previous(modules);
     pieces = g_list_previous(pieces);
@@ -2637,6 +2669,7 @@ static gboolean _dev_distort_transform_locked(dt_develop_t *dev,
 {
   GList *modules = pipe->iop;
   GList *pieces = pipe->nodes;
+  const gboolean log = (darktable.unmuted & (DT_DEBUG_CONTROL|DT_DEBUG_VERBOSE)) == (DT_DEBUG_CONTROL|DT_DEBUG_VERBOSE);
   while(modules)
   {
     if(!pieces)
@@ -2646,6 +2679,7 @@ static gboolean _dev_distort_transform_locked(dt_develop_t *dev,
     dt_iop_module_t *module = modules->data;
     dt_dev_pixelpipe_iop_t *piece = pieces->data;
     if(piece->enabled
+       && module->distort_transform
        && piece->data
        && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
            || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
@@ -2659,7 +2693,24 @@ static gboolean _dev_distort_transform_locked(dt_develop_t *dev,
        && !(dt_iop_module_is_skipped(dev, module)
             && (pipe->type & DT_DEV_PIXELPIPE_BASIC)))
     {
-      module->distort_transform(module, piece, points, points_count);
+      if(log)
+      {
+        char vbuf[1024] = { 0 };
+        float old[16];
+        const int tested = MIN(8, (int)points_count);
+        memcpy(old, points, 2*sizeof(float) * tested);
+        module->distort_transform(module, piece, points, points_count);
+        for(int p = 0; p < tested; p++)
+        {
+          const int done = strlen(vbuf);
+          snprintf(vbuf + done, sizeof(vbuf) - done,
+              "  [P%d] %.1f %.1f -> %.1f %.1f", p, old[2*p], old[2*p+1], points[2*p], points[2*p+1]);
+        }
+        dt_print_pipe(DT_DEBUG_ALWAYS, "distort_transform", pipe, module, DT_DEVICE_NONE, NULL, NULL,
+          "%s, order=%d, %d points%s", _transform_type(transf_direction), (int)iop_order, (int)points_count, vbuf);
+      }
+      else
+        module->distort_transform(module, piece, points, points_count);
     }
     modules = g_list_next(modules);
     pieces = g_list_next(pieces);
