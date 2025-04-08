@@ -3070,7 +3070,8 @@ kernel void md_lens_correction(read_only image2d_t in,
                                const int rooy,
                                const int knots,
                                const int itor_mode,
-                               const int itor_width)
+                               const int itor_width,
+                               const int pass_mode)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -3084,7 +3085,7 @@ kernel void md_lens_correction(read_only image2d_t in,
   float output[4];
   for(int c = 0; c < 4; c++)
   {
-    const int plane = (c == 3) ? 1 : c;
+    const int plane = (c == 3 || pass_mode) ? 1 : c;
     const float dr =
       _interpolate_linear_spline(knots_dist, &cor_rgb[plane * MAXKNOTS], knots, radius);
     const float xs = clamp(dr*cx + w2 - roix, 0.0f, limw);
