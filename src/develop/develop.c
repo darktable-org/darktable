@@ -2606,6 +2606,7 @@ static gboolean _dev_distort_backtransform_locked(dt_develop_t *dev,
     dt_iop_module_t *module = modules->data;
     dt_dev_pixelpipe_iop_t *piece = pieces->data;
     if(piece->enabled
+       && module->distort_backtransform
        && piece->data
        && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
            || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
@@ -2646,6 +2647,7 @@ static gboolean _dev_distort_transform_locked(dt_develop_t *dev,
     dt_iop_module_t *module = modules->data;
     dt_dev_pixelpipe_iop_t *piece = pieces->data;
     if(piece->enabled
+       && module->distort_transform
        && piece->data
        && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
            || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
