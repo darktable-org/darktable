@@ -295,12 +295,12 @@ DEFAULT(int, process_tiling_cl, struct dt_iop_module_t *self,
  * points is an array of float {x1,y1,x2,y2,...}
  * size is 2*points_count */
 /** points before the iop is applied => point after processed */
-DEFAULT(gboolean, distort_transform, struct dt_iop_module_t *self,
+OPTIONAL(gboolean, distort_transform, struct dt_iop_module_t *self,
                                      struct dt_dev_pixelpipe_iop_t *piece,
                                      float *points,
                                      size_t points_count);
 /** reverse points after the iop is applied => point before process */
-DEFAULT(gboolean, distort_backtransform, struct dt_iop_module_t *self,
+OPTIONAL(gboolean, distort_backtransform, struct dt_iop_module_t *self,
                                          struct dt_dev_pixelpipe_iop_t *piece,
                                          float *points,
                                          size_t points_count);
