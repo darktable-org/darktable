@@ -1903,7 +1903,7 @@ void gui_init(dt_iop_module_t *self)
   g->shadows_H = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(sect, "shadows_H"));
   dt_bauhaus_slider_set_feedback(g->shadows_H, 0);
   dt_bauhaus_slider_set_format(g->shadows_H, "°");
-  gtk_widget_set_tooltip_text(g->shadows_H, _("hue of the global color offset"));
+  gtk_widget_set_tooltip_text(g->shadows_H, _("hue of the color gain in shadows"));
 
   g->shadows_C = dt_bauhaus_slider_from_params(sect, "shadows_C");
   dt_bauhaus_slider_set_soft_range(g->shadows_C, 0., 0.5);
@@ -1943,7 +1943,7 @@ void gui_init(dt_iop_module_t *self)
   g->midtones_H = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(sect, "midtones_H"));
   dt_bauhaus_slider_set_feedback(g->midtones_H, 0);
   dt_bauhaus_slider_set_format(g->midtones_H, "°");
-  gtk_widget_set_tooltip_text(g->midtones_H, _("hue of the global color offset"));
+  gtk_widget_set_tooltip_text(g->midtones_H, _("hue of the color exponent in mid-tones"));
 
   g->midtones_C = dt_bauhaus_slider_from_params(sect, "midtones_C");
   dt_bauhaus_slider_set_soft_range(g->midtones_C, 0., 0.1);
