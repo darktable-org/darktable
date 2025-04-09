@@ -723,7 +723,7 @@ static inline int dt_get_thread_num()
 }
 
 #define DT_INITHASH 5381
-#define DT_INVALID_CACHEHASH 0
+#define DT_INVALID_HASH 0
 typedef uint64_t dt_hash_t;
 static inline dt_hash_t dt_hash(dt_hash_t hash, const void *data, const size_t size)
 {
