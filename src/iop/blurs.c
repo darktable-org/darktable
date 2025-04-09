@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021-2024 darktable developers.
+    Copyright (C) 2021-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-// our includes go first:
+
 #include "bauhaus/bauhaus.h"
 #include "common/dwt.h"
 #include "develop/imageop.h"
@@ -765,6 +765,14 @@ void gui_init(dt_iop_module_t *self)
 
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
   dt_bauhaus_slider_set_format(g->radius, " px");
+
+  // The current implementation's run time is proportional to the square of
+  // the blur radius. Let's soft-limit it to protect users from unacceptably
+  // long processing times for the full image (like when exporting), which
+  // many users perceive as a hang.
+  // NOTE: This is just quick damage control. The correct solution is to
+  // replace the bad implementation with a more efficient one.
+  dt_bauhaus_slider_set_soft_max(g->radius, 64);
 
   g->type = dt_bauhaus_combobox_from_params(self, "type");
 
