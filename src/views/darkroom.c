@@ -2980,7 +2980,7 @@ void enter(dt_view_t *self)
     dt_masks_init_form_gui(dev->form_gui);
   }
   dt_masks_change_form_gui(NULL);
-  dev->form_gui->pipe_hash = 0;
+  dev->form_gui->pipe_hash = DT_INVALID_HASH;
   dev->form_gui->formid = NO_MASKID;
   dev->gui_leaving = FALSE;
   dev->gui_module = NULL;

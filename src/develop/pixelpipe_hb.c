@@ -273,7 +273,7 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->output_profile_info = NULL;
   pipe->runs = 0;
   pipe->bcache_data = NULL;
-  pipe->bcache_hash = DT_INVALID_CACHEHASH;
+  pipe->bcache_hash = DT_INVALID_HASH;
   return dt_dev_pixelpipe_cache_init(pipe, entries, size, memlimit);
 }
 
@@ -447,7 +447,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe,
     piece->module = module;
     piece->pipe = pipe;
     piece->data = NULL;
-    piece->hash = DT_INVALID_CACHEHASH;
+    piece->hash = DT_INVALID_HASH;
     piece->process_cl_ready = FALSE;
     piece->process_tiling_ready = FALSE;
     piece->raster_masks = g_hash_table_new_full(g_direct_hash,
@@ -593,7 +593,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
   {
     dt_dev_pixelpipe_iop_t *piece = nodes->data;
-    piece->hash = DT_INVALID_CACHEHASH;
+    piece->hash = DT_INVALID_HASH;
     piece->enabled = piece->module->default_enabled;
     dt_iop_commit_params(piece->module,
                          piece->module->default_params,
@@ -1201,7 +1201,7 @@ static inline float *_get_fast_blendcache(const size_t nfloats,
                                           dt_dev_pixelpipe_t *pipe)
 {
   dt_free_align(pipe->bcache_data);
-  pipe->bcache_data = phash != DT_INVALID_CACHEHASH ? dt_alloc_align_float(nfloats) : NULL;
+  pipe->bcache_data = phash != DT_INVALID_HASH ? dt_alloc_align_float(nfloats) : NULL;
   pipe->bcache_hash = phash;
   return pipe->bcache_data;
 }
@@ -1319,9 +1319,9 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
   const gboolean relevant = _piece_fast_blend(piece, module);
   const dt_hash_t phash = relevant
     ? _piece_process_hash(piece, roi_out, module, position)
-    : DT_INVALID_CACHEHASH;
+    : DT_INVALID_HASH;
   const gboolean bcaching = relevant
-    ? pipe->bcache_data && phash == pipe->bcache_hash && phash != DT_INVALID_CACHEHASH
+    ? pipe->bcache_data && phash == pipe->bcache_hash && phash != DT_INVALID_HASH
     : FALSE;
 
   if(!fitting && _piece_may_tile(piece))
@@ -1349,7 +1349,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
           if(cache) dt_iop_image_copy(cache, *output, nfloats);
         }
         else
-          pipe->bcache_hash = DT_INVALID_CACHEHASH;
+          pipe->bcache_hash = DT_INVALID_HASH;
       }
     }
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU
@@ -1415,7 +1415,7 @@ static gboolean _pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe,
           if(cache) dt_iop_image_copy(cache, *output, nfloats);
         }
         else
-          pipe->bcache_hash = DT_INVALID_CACHEHASH;
+          pipe->bcache_hash = DT_INVALID_HASH;
       }
     }
 
@@ -2065,9 +2065,9 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           const gboolean relevant = _piece_fast_blend(piece, module);
           const dt_hash_t phash = relevant
             ? _piece_process_hash(piece, roi_out, module, pos)
-            : DT_INVALID_CACHEHASH;
+            : DT_INVALID_HASH;
           const gboolean bcaching = relevant
-            ? pipe->bcache_data && phash == pipe->bcache_hash && phash != DT_INVALID_CACHEHASH
+            ? pipe->bcache_data && phash == pipe->bcache_hash && phash != DT_INVALID_HASH
             : FALSE;
 
           dt_print_pipe(DT_DEBUG_PIPE,
@@ -2147,7 +2147,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                                                         roi_out->width, roi_out->height, out_bpp);
               }
               else
-                pipe->bcache_hash = DT_INVALID_CACHEHASH;
+                pipe->bcache_hash = DT_INVALID_HASH;
             }
           }
           success_opencl = (err == CL_SUCCESS);
@@ -2378,9 +2378,9 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
           const gboolean relevant = _piece_fast_blend(piece, module);
           const dt_hash_t phash = relevant
             ? _piece_process_hash(piece, roi_out, module, pos)
-            : DT_INVALID_CACHEHASH;
+            : DT_INVALID_HASH;
           const gboolean bcaching = relevant
-            ? pipe->bcache_data && phash == pipe->bcache_hash && phash != DT_INVALID_CACHEHASH
+            ? pipe->bcache_data && phash == pipe->bcache_hash && phash != DT_INVALID_HASH
             : FALSE;
 
           dt_print_pipe(DT_DEBUG_PIPE,
@@ -2410,7 +2410,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                 if(cache) dt_iop_image_copy(cache, *output, nfloats);
               }
               else
-                pipe->bcache_hash = DT_INVALID_CACHEHASH;
+                pipe->bcache_hash = DT_INVALID_HASH;
             }
           }
           success_opencl = (err == CL_SUCCESS);

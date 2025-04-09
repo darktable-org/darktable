@@ -2160,7 +2160,7 @@ void dt_iop_commit_params(dt_iop_module_t *module,
 
   module->commit_params(module, params, pipe, piece);
 
-  dt_hash_t phash = DT_INVALID_CACHEHASH;
+  dt_hash_t phash = DT_INVALID_HASH;
   // 2. compute the hash only if piece is enabled
   if(piece->enabled)
   {

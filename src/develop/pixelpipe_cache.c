@@ -49,7 +49,7 @@ gboolean dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_t *pipe,
 
   for(int k = 0; k < entries; k++)
   {
-    cache->hash[k] = DT_INVALID_CACHEHASH;
+    cache->hash[k] = DT_INVALID_HASH;
     cache->used[k] = 64 + k;
   }
   if(!size) return TRUE;
@@ -175,7 +175,7 @@ gboolean dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_t *pipe,
 {
   if(pipe->mask_display
      || pipe->nocache
-     || (hash == DT_INVALID_CACHEHASH))
+     || (hash == DT_INVALID_HASH))
     return FALSE;
 
   dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
@@ -207,7 +207,7 @@ static int _get_oldest_cacheline(dt_dev_pixelpipe_cache_t *cache,
     {
       if(mode == DT_CACHETEST_USED)         older = cache->data[k] != NULL;
       else if(mode == DT_CACHETEST_FREE)    older = cache->data[k] == NULL;
-      else if(mode == DT_CACHETEST_INVALID) older = cache->hash[k] == DT_INVALID_CACHEHASH;
+      else if(mode == DT_CACHETEST_INVALID) older = cache->hash[k] == DT_INVALID_HASH;
       if(older)
       {
         age = cache->used[k];
@@ -263,14 +263,14 @@ static gboolean _get_by_hash(dt_dev_pixelpipe_t *pipe,
            doesn't reflect the complete status.
            Anyway this has to be accepted as a dt bug so we always report
         */
-        cache->hash[k] = DT_INVALID_CACHEHASH;
+        cache->hash[k] = DT_INVALID_HASH;
         dt_print_pipe(DT_DEBUG_ALWAYS, "CACHELINE_SIZE ERROR",
           pipe, module, DT_DEVICE_NONE, NULL, NULL);
       }
       else if(pipe->mask_display || pipe->nocache)
       {
         // this should not happen but we make sure
-        cache->hash[k] = DT_INVALID_CACHEHASH;
+        cache->hash[k] = DT_INVALID_HASH;
       }
       else
       {
@@ -301,7 +301,7 @@ gboolean dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_t *pipe,
 
   // cache keeps history and we have a cache hit, so no new buffer
   if(cache->entries > DT_PIPECACHE_MIN
-     && (hash != DT_INVALID_CACHEHASH)
+     && (hash != DT_INVALID_HASH)
      && _get_by_hash(pipe, module, hash, size, data, dsc))
   {
     const dt_iop_buffer_dsc_t *cdsc = *dsc;
@@ -344,7 +344,7 @@ gboolean dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_t *pipe,
   *dsc = &cache->dsc[cline];
 
   const gboolean masking = pipe->mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE;
-  cache->hash[cline]      = masking ? DT_INVALID_CACHEHASH : hash;
+  cache->hash[cline]      = masking ? DT_INVALID_HASH : hash;
 
   const dt_iop_buffer_dsc_t *cdsc = *dsc;
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pipe cache get",
@@ -363,7 +363,7 @@ gboolean dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_t *pipe,
 
 static void _mark_invalid_cacheline(const dt_dev_pixelpipe_cache_t *cache, const int k)
 {
-  cache->hash[k] = DT_INVALID_CACHEHASH;
+  cache->hash[k] = DT_INVALID_HASH;
   cache->ioporder[k] = 0;
 }
 
@@ -374,15 +374,15 @@ void dt_dev_pixelpipe_cache_invalidate_later(dt_dev_pixelpipe_t *pipe,
   int invalidated = 0;
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
-    if((cache->ioporder[k] >= order) && (cache->hash[k] != DT_INVALID_CACHEHASH))
+    if((cache->ioporder[k] >= order) && (cache->hash[k] != DT_INVALID_HASH))
     {
       _mark_invalid_cacheline(cache, k);
       invalidated++;
     }
   }
 
-  const gboolean bcache = pipe->bcache_data != NULL && pipe->bcache_hash != DT_INVALID_CACHEHASH;
-  pipe->bcache_hash = DT_INVALID_CACHEHASH;
+  const gboolean bcache = pipe->bcache_data != NULL && pipe->bcache_hash != DT_INVALID_HASH;
+  pipe->bcache_hash = DT_INVALID_HASH;
 
   if(invalidated || bcache)
     dt_print_pipe(DT_DEBUG_PIPE,
@@ -406,7 +406,7 @@ void dt_dev_pixelpipe_important_cacheline(const dt_dev_pixelpipe_t *pipe,
   {
     if((cache->data[k] == data)
         && (size == cache->size[k])
-        && (cache->hash[k] != DT_INVALID_CACHEHASH))
+        && (cache->hash[k] != DT_INVALID_HASH))
       cache->used[k] = -cache->entries;
   }
 }
@@ -439,7 +439,7 @@ static void _cline_stats(dt_dev_pixelpipe_cache_t *cache)
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
     if(cache->data[k]) cache->lused++;
-    if(cache->data[k] && (cache->hash[k] == DT_INVALID_CACHEHASH)) cache->linvalid++;
+    if(cache->data[k] && (cache->hash[k] == DT_INVALID_HASH)) cache->linvalid++;
     if(cache->used[k] < 0) cache->limportant++;
   }
 }
@@ -457,7 +457,7 @@ void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe)
 
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
-    if((cache->hash[k] == DT_INVALID_CACHEHASH) && cache->data)
+    if((cache->hash[k] == DT_INVALID_HASH) && cache->data)
       freed += _free_cacheline(cache, k);
   }
 
