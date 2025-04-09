@@ -1923,7 +1923,7 @@ void gui_init(dt_iop_module_t *self)
   g->highlights_H = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(sect, "highlights_H"));
   dt_bauhaus_slider_set_feedback(g->highlights_H, 0);
   dt_bauhaus_slider_set_format(g->highlights_H, "°");
-  gtk_widget_set_tooltip_text(g->highlights_H, _("hue of the global color offset"));
+  gtk_widget_set_tooltip_text(g->highlights_H, _("hue of the color gain in highlights"));
 
   g->highlights_C = dt_bauhaus_slider_from_params(sect, "highlights_C");
   dt_bauhaus_slider_set_soft_range(g->highlights_C, 0., 0.2);
