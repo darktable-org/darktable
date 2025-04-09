@@ -117,6 +117,13 @@ changes (where available).
 - Reduced haze removal visible difference between exports and HQ
   darkroom processing.
 
+- Lens info is now read from OM-System/Olympus image files taken with
+  lenses without electronic data if this info is entered in the in
+  camera lens info settings dialog. The lens correction module will
+  automatically find the lens, if it is supported by lensfun and the
+  entered name matches the lensfun name, which can be seen in the lens
+  selection drop down list.
+
 ## Bug Fixes
 
 - Fixed sidecar writing if quitting from darkroom.
