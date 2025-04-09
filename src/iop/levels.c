@@ -350,7 +350,7 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
       // contains NANs which initiates special handling below to avoid inconsistent results. in all
       // other cases we make sure that the preview pipe has left us with proper readings for
       // g->auto_levels[]. if data are not yet there we need to wait (with timeout).
-      if(hash != DT_INVALID_CACHEHASH && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &self->gui_lock, &g->hash))
+      if(hash != DT_INVALID_HASH && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &self->gui_lock, &g->hash))
         dt_control_log(_("inconsistent output"));
 
       dt_iop_gui_enter_critical_section(self);
@@ -572,7 +572,7 @@ void gui_update(dt_iop_module_t *self)
   g->auto_levels[0] = DT_LEVELS_UNINIT;
   g->auto_levels[1] = DT_LEVELS_UNINIT;
   g->auto_levels[2] = DT_LEVELS_UNINIT;
-  g->hash = 0;
+  g->hash = DT_INVALID_HASH;
   dt_iop_gui_leave_critical_section(self);
 
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
@@ -615,7 +615,7 @@ void gui_init(dt_iop_module_t *self)
   g->auto_levels[0] = DT_LEVELS_UNINIT;
   g->auto_levels[1] = DT_LEVELS_UNINIT;
   g->auto_levels[2] = DT_LEVELS_UNINIT;
-  g->hash = 0;
+  g->hash = DT_INVALID_HASH;
   dt_iop_gui_leave_critical_section(self);
 
   g->modes = NULL;

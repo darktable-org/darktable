@@ -243,7 +243,7 @@ void gui_update(dt_iop_module_t *self)
   g->A0[0] = NAN;
   g->A0[1] = NAN;
   g->A0[2] = NAN;
-  g->hash = DT_INVALID_CACHEHASH;
+  g->hash = DT_INVALID_HASH;
   dt_iop_gui_leave_critical_section(self);
 }
 
@@ -267,7 +267,7 @@ void gui_init(dt_iop_module_t *self)
   g->A0[0] = NAN;
   g->A0[1] = NAN;
   g->A0[2] = NAN;
-  g->hash = DT_INVALID_CACHEHASH;
+  g->hash = DT_INVALID_HASH;
 
   g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
   gtk_widget_set_tooltip_text(g->strength, _("amount of haze reduction"));
@@ -618,13 +618,13 @@ void process(dt_iop_module_t *self,
     dt_iop_gui_enter_critical_section(self);
     const dt_hash_t hash = g->hash;
     dt_iop_gui_leave_critical_section(self);
-    // Note that the case 'hash == DT_INVALID_CACHEHASH' on first invocation in a session
+    // Note that the case 'hash == DT_INVALID_HASH' on first invocation in a session
     // implies that g->distance_max is NAN, which initiates special
     // handling below to avoid inconsistent results.  In all other
     // cases we make sure that the preview pipe has left us with
     // proper readings for distance_max and A0.  If data are not yet
     // there we need to wait (with timeout).
-    if(hash != DT_INVALID_CACHEHASH
+    if(hash != DT_INVALID_HASH
        && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order,
                                       DT_DEV_TRANSFORM_DIR_BACK_INCL,
                                       &self->gui_lock, &g->hash))
@@ -884,13 +884,13 @@ int process_cl(dt_iop_module_t *self,
     dt_iop_gui_enter_critical_section(self);
     const dt_hash_t hash = g->hash;
     dt_iop_gui_leave_critical_section(self);
-    // Note that the case 'hash == DT_INVALID_CACHEHASH' on first invocation in a session
+    // Note that the case 'hash == DT_INVALID_HASH' on first invocation in a session
     // implies that g->distance_max is NAN, which initiates special
     // handling below to avoid inconsistent results.  In all other
     // cases we make sure that the preview pipe has left us with
     // proper readings for distance_max and A0.  If data are not yet
     // there we need to wait (with timeout).
-    if(hash != DT_INVALID_CACHEHASH
+    if(hash != DT_INVALID_HASH
        && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe,
                                       self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL,
                                       &self->gui_lock, &g->hash))
