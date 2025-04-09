@@ -118,7 +118,7 @@ changes (where available).
   darkroom processing.
 
 - Lens info is now read from OM-System/Olympus image files taken with
-  lenses without electronic data if this info is entered in the in
+  lenses without electronic data if this info is entered in the
   camera lens info settings dialog. The lens correction module will
   automatically find the lens, if it is supported by lensfun and the
   entered name matches the lensfun name, which can be seen in the lens
