@@ -1171,7 +1171,7 @@ void dt_dev_free_history_item(gpointer data)
 
 void dt_dev_reload_history_items(dt_develop_t *dev)
 {
-  dev->focus_hash = 0;
+  dev->focus_hash = FALSE;
 
   dt_lock_image(dev->image_storage.id);
 
@@ -3442,7 +3442,7 @@ dt_hash_t dt_dev_hash_distort_plus(dt_develop_t *dev,
     if(!pieces)
     {
       dt_pthread_mutex_unlock(&dev->history_mutex);
-      return DT_INVALID_CACHEHASH;
+      return DT_INVALID_HASH;
     }
     dt_iop_module_t *module = modules->data;
     dt_dev_pixelpipe_iop_t *piece = pieces->data;

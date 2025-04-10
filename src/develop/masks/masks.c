@@ -225,7 +225,7 @@ void dt_masks_gui_form_remove(dt_masks_form_t *form,
                               const int index)
 {
   dt_masks_form_gui_points_t *gpt = g_list_nth_data(gui->points, index);
-  gui->pipe_hash = DT_INVALID_CACHEHASH;
+  gui->pipe_hash = DT_INVALID_HASH;
   gui->formid = NO_MASKID;
 
   if(gpt)
@@ -245,12 +245,12 @@ void dt_masks_gui_form_test_create(dt_masks_form_t *form,
                                    dt_iop_module_t *module)
 {
   // we test if the image has changed
-  if(gui->pipe_hash != DT_INVALID_CACHEHASH)
+  if(gui->pipe_hash != DT_INVALID_HASH)
   {
     if(gui->pipe_hash != darktable.develop->preview_pipe->backbuf_hash)
     {
       dt_print(DT_DEBUG_EXPOSE, "[dt_masks_gui_form_test_create] refreshes mask visualizer");
-      gui->pipe_hash = DT_INVALID_CACHEHASH;
+      gui->pipe_hash = DT_INVALID_HASH;
       gui->formid = NO_MASKID;
       g_list_free_full(gui->points, dt_masks_form_gui_points_free);
       gui->points = NULL;
@@ -258,7 +258,7 @@ void dt_masks_gui_form_test_create(dt_masks_form_t *form,
   }
 
   // we create the spots if needed
-  if(gui->pipe_hash == DT_INVALID_CACHEHASH)
+  if(gui->pipe_hash == DT_INVALID_HASH)
   {
     if(form->type & DT_MASKS_GROUP)
     {
@@ -1300,7 +1300,7 @@ void dt_masks_clear_form_gui(dt_develop_t *dev)
   dt_masks_dynbuf_free(dev->form_gui->guipoints_payload);
   dev->form_gui->guipoints_payload = NULL;
   dev->form_gui->guipoints_count = 0;
-  dev->form_gui->pipe_hash = DT_INVALID_CACHEHASH;
+  dev->form_gui->pipe_hash = DT_INVALID_HASH;
   dev->form_gui->formid = 0;
   dev->form_gui->dx = dev->form_gui->dy = 0.0f;
   dev->form_gui->scrollx = dev->form_gui->scrolly = 0.0f;
