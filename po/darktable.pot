@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-09 22:33+0200\n"
+"POT-Creation-Date: 2025-04-10 07:39+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -9438,27 +9438,27 @@ msgid ""
 "<b>remove path</b>: right-click"
 msgstr ""
 
-#: ../src/develop/pixelpipe_hb.c:512
+#: ../src/develop/pixelpipe_hb.c:515
 msgid "enabled as required"
 msgstr ""
 
-#: ../src/develop/pixelpipe_hb.c:513
+#: ../src/develop/pixelpipe_hb.c:516
 msgid ""
 "history had module disabled but it is required for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
 msgstr ""
 
-#: ../src/develop/pixelpipe_hb.c:520
+#: ../src/develop/pixelpipe_hb.c:523
 msgid "disabled as not appropriate"
 msgstr ""
 
-#: ../src/develop/pixelpipe_hb.c:521
+#: ../src/develop/pixelpipe_hb.c:524
 msgid ""
 "history had module enabled but it is not allowed for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
 msgstr ""
 
-#: ../src/develop/pixelpipe_hb.c:1250
+#: ../src/develop/pixelpipe_hb.c:1253
 #, c-format
 msgid ""
 "fatal pixelpipe abort due to non-aligned buffers\n"
@@ -9466,11 +9466,11 @@ msgid ""
 "please report on GitHub"
 msgstr ""
 
-#: ../src/develop/pixelpipe_hb.c:1715
+#: ../src/develop/pixelpipe_hb.c:1718
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr ""
 
-#: ../src/develop/pixelpipe_hb.c:3089
+#: ../src/develop/pixelpipe_hb.c:3092
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -9482,7 +9482,7 @@ msgid ""
 "  - too small headroom settings while using 'use all device memory'."
 msgstr ""
 
-#: ../src/develop/pixelpipe_hb.c:3282
+#: ../src/develop/pixelpipe_hb.c:3285
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -17011,11 +17011,8 @@ msgstr ""
 msgid "global luminance offset"
 msgstr ""
 
-#: ../src/iop/colorbalancergb.c:1886 ../src/iop/colorbalancergb.c:1906
-#: ../src/iop/colorbalancergb.c:1926 ../src/iop/colorbalancergb.c:1946
-msgid ""
-"pick opposite color from image\n"
-"ctrl-click to pick selected color"
+#: ../src/iop/colorbalancergb.c:1886
+msgid "hue of the global color offset"
 msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1892
@@ -17035,6 +17032,10 @@ msgstr ""
 msgid "luminance gain in shadows"
 msgstr ""
 
+#: ../src/iop/colorbalancergb.c:1906
+msgid "hue of the color gain in shadows"
+msgstr ""
+
 #: ../src/iop/colorbalancergb.c:1912
 msgid "chroma of the color gain in shadows"
 msgstr ""
@@ -17052,6 +17053,10 @@ msgstr ""
 msgid "luminance gain in highlights"
 msgstr ""
 
+#: ../src/iop/colorbalancergb.c:1926
+msgid "hue of the color gain in highlights"
+msgstr ""
+
 #: ../src/iop/colorbalancergb.c:1932
 msgid "chroma of the color gain in highlights"
 msgstr ""
@@ -17067,6 +17072,10 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1941
 msgid "luminance exponent in mid-tones"
+msgstr ""
+
+#: ../src/iop/colorbalancergb.c:1946
+msgid "hue of the color exponent in mid-tones"
 msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1952
