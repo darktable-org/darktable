@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-09 22:33+0200\n"
+"POT-Creation-Date: 2025-04-10 07:39+0200\n"
 "PO-Revision-Date: 2025-04-09 22:35+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
@@ -10083,11 +10083,11 @@ msgstr ""
 "<b>Déplacer un segment</b> : déplacer • <b>Ajouter un nœud</b> : Ctrl+clic\n"
 "<b>Supprimer le chemin</b> : clic-droit"
 
-#: ../src/develop/pixelpipe_hb.c:512
+#: ../src/develop/pixelpipe_hb.c:515
 msgid "enabled as required"
 msgstr "Activé car requis"
 
-#: ../src/develop/pixelpipe_hb.c:513
+#: ../src/develop/pixelpipe_hb.c:516
 msgid ""
 "history had module disabled but it is required for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -10096,11 +10096,11 @@ msgstr ""
 "Probablement introduit en appliquant un préréglage, un style ou un copier/"
 "coller d’historique."
 
-#: ../src/develop/pixelpipe_hb.c:520
+#: ../src/develop/pixelpipe_hb.c:523
 msgid "disabled as not appropriate"
 msgstr "Désactivé car non approprié"
 
-#: ../src/develop/pixelpipe_hb.c:521
+#: ../src/develop/pixelpipe_hb.c:524
 msgid ""
 "history had module enabled but it is not allowed for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -10109,7 +10109,7 @@ msgstr ""
 "Probablement introduit en appliquant un préréglage, un style ou un copier/"
 "coller d’historique."
 
-#: ../src/develop/pixelpipe_hb.c:1250
+#: ../src/develop/pixelpipe_hb.c:1253
 #, c-format
 msgid ""
 "fatal pixelpipe abort due to non-aligned buffers\n"
@@ -10120,11 +10120,11 @@ msgstr ""
 "dans le module « %s »\n"
 "Merci de reporter sur GitHub"
 
-#: ../src/develop/pixelpipe_hb.c:1715
+#: ../src/develop/pixelpipe_hb.c:1718
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr "Erreur d'alignement en entrée, merci de reporter sur GitHub\n"
 
-#: ../src/develop/pixelpipe_hb.c:3089
+#: ../src/develop/pixelpipe_hb.c:3092
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -10145,7 +10145,7 @@ msgstr ""
 " • Le « headroom » est trop petit lorsque l'option « Utiliser toute la "
 "mémoire du périphérique » est positionnée."
 
-#: ../src/develop/pixelpipe_hb.c:3282
+#: ../src/develop/pixelpipe_hb.c:3285
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -18262,14 +18262,9 @@ msgstr "Décalage global"
 msgid "global luminance offset"
 msgstr "Décalage global de luminance"
 
-#: ../src/iop/colorbalancergb.c:1886 ../src/iop/colorbalancergb.c:1906
-#: ../src/iop/colorbalancergb.c:1926 ../src/iop/colorbalancergb.c:1946
-msgid ""
-"pick opposite color from image\n"
-"ctrl-click to pick selected color"
-msgstr ""
-"Choisit la couleur opposée dans l’image,\n"
-"Ctrl+clic pour choisir la couleur."
+#: ../src/iop/colorbalancergb.c:1886
+msgid "hue of the global color offset"
+msgstr "Teinte du décalage de couleur global"
 
 #: ../src/iop/colorbalancergb.c:1892
 msgid "chroma of the global color offset"
@@ -18288,6 +18283,10 @@ msgstr "Lift"
 msgid "luminance gain in shadows"
 msgstr "Gain de luminance dans les ombres"
 
+#: ../src/iop/colorbalancergb.c:1906
+msgid "hue of the color gain in shadows"
+msgstr "Teinte du gain de couleur dans les ombres"
+
 #: ../src/iop/colorbalancergb.c:1912
 msgid "chroma of the color gain in shadows"
 msgstr "Chroma du gain de couleur dans les ombres"
@@ -18305,6 +18304,10 @@ msgstr "Gain"
 msgid "luminance gain in highlights"
 msgstr "Gain de luminance dans les hautes lumières"
 
+#: ../src/iop/colorbalancergb.c:1926
+msgid "hue of the color gain in highlights"
+msgstr "Teinte du gain de couleur dans les hautes lumières"
+
 #: ../src/iop/colorbalancergb.c:1932
 msgid "chroma of the color gain in highlights"
 msgstr "Chroma du gain de couleur dans les hautes lumières"
@@ -18321,6 +18324,10 @@ msgstr "Power"
 #: ../src/iop/colorbalancergb.c:1941
 msgid "luminance exponent in mid-tones"
 msgstr "Exposant de luminance dans les tons moyens"
+
+#: ../src/iop/colorbalancergb.c:1946
+msgid "hue of the color exponent in mid-tones"
+msgstr "Teinte de l’exposant de couleur dans les tons moyens"
 
 #: ../src/iop/colorbalancergb.c:1952
 msgid "chroma of the color exponent in mid-tones"
@@ -29819,17 +29826,12 @@ msgstr "Créer une fenêtre flottante persistante"
 msgid "mouse actions"
 msgstr "Actions de la souris"
 
-#~ msgid "hue of the global color offset"
-#~ msgstr "Teinte du décalage de couleur global"
-
-#~ msgid "hue of the color gain in shadows"
-#~ msgstr "Teinte du gain de couleur dans les ombres"
-
-#~ msgid "hue of the color gain in highlights"
-#~ msgstr "Teinte du gain de couleur dans les hautes lumières"
-
-#~ msgid "hue of the color exponent in mid-tones"
-#~ msgstr "Teinte de l’exposant de couleur dans les tons moyens"
+#~ msgid ""
+#~ "pick opposite color from image\n"
+#~ "ctrl-click to pick selected color"
+#~ msgstr ""
+#~ "Choisit la couleur opposée dans l’image,\n"
+#~ "Ctrl+clic pour choisir la couleur."
 
 #~ msgid "compress shadows/highlights | strong (EIGF)"
 #~ msgstr "Compresser les ombres/hautes lumières | Fort (EIGF)"
