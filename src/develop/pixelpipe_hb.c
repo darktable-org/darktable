@@ -139,7 +139,10 @@ void dt_print_pipe_ext(const char *title,
 
   if(pipe)
   {
-    snprintf(pname, sizeof(pname), "[%s]", dt_dev_pixelpipe_type_to_str(pipe->type));
+    snprintf(pname, sizeof(pname), "[%s%s]",
+      dt_dev_pixelpipe_type_to_str(pipe->type),
+      (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW2))
+        && darktable.develop->late_scaling.enabled ? " HQ" : "");
     if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
       snprintf(masking, sizeof(masking), " passthru");
     else if(pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY)
