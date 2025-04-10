@@ -629,8 +629,8 @@ static void invalidate_luminance_cache(dt_iop_module_t *const self)
   g->max_histogram = 1;
   g->luminance_valid = FALSE;
   g->histogram_valid = FALSE;
-  g->thumb_preview_hash = DT_INVALID_CACHEHASH;
-  g->ui_preview_hash = DT_INVALID_CACHEHASH;
+  g->thumb_preview_hash = DT_INVALID_HASH;
+  g->ui_preview_hash = DT_INVALID_HASH;
   dt_iop_gui_leave_critical_section(self);
   dt_iop_refresh_all(self);
 }
@@ -1025,8 +1025,8 @@ void toneeq_process(dt_iop_module_t *self,
     if(g->pipe_order != piece->module->iop_order)
     {
       dt_iop_gui_enter_critical_section(self);
-      g->ui_preview_hash = DT_INVALID_CACHEHASH;
-      g->thumb_preview_hash = DT_INVALID_CACHEHASH;
+      g->ui_preview_hash = DT_INVALID_HASH;
+      g->thumb_preview_hash = DT_INVALID_HASH;
       g->pipe_order = piece->module->iop_order;
       g->luminance_valid = FALSE;
       g->histogram_valid = FALSE;
@@ -1335,8 +1335,8 @@ static void gui_cache_init(dt_iop_module_t *self)
   if(g == NULL) return;
 
   dt_iop_gui_enter_critical_section(self);
-  g->ui_preview_hash = DT_INVALID_CACHEHASH;
-  g->thumb_preview_hash = DT_INVALID_CACHEHASH;
+  g->ui_preview_hash = DT_INVALID_HASH;
+  g->thumb_preview_hash = DT_INVALID_HASH;
   g->max_histogram = 1;
   g->scale = 1.0f;
   g->sigma = sqrtf(2.0f);

@@ -5728,7 +5728,7 @@ void reload_defaults(dt_iop_module_t *self)
     g->buf_x_off = 0;
     g->buf_y_off = 0;
     g->buf_scale = 1.0f;
-    g->buf_hash = DT_INVALID_CACHEHASH;
+    g->buf_hash = DT_INVALID_HASH;
     g->isflipped = -1;
     g->lastfit = ASHIFT_FIT_NONE;
     dt_iop_gui_leave_critical_section(self);
@@ -5739,8 +5739,8 @@ void reload_defaults(dt_iop_module_t *self)
     g->lines_count =0;
     g->horizontal_count = 0;
     g->vertical_count = 0;
-    g->grid_hash = DT_INVALID_CACHEHASH;
-    g->lines_hash = DT_INVALID_CACHEHASH;
+    g->grid_hash = DT_INVALID_HASH;
+    g->lines_hash = DT_INVALID_HASH;
     g->rotation_range = ROTATION_RANGE_SOFT;
     g->lensshift_v_range = LENSSHIFT_RANGE_SOFT;
     g->lensshift_h_range = LENSSHIFT_RANGE_SOFT;
@@ -5933,7 +5933,7 @@ void gui_init(dt_iop_module_t *self)
   g->buf_x_off = 0;
   g->buf_y_off = 0;
   g->buf_scale = 1.0f;
-  g->buf_hash = DT_INVALID_CACHEHASH;
+  g->buf_hash = DT_INVALID_HASH;
   g->isflipped = -1;
   g->lastfit = ASHIFT_FIT_NONE;
   dt_iop_gui_leave_critical_section(self);
@@ -5948,8 +5948,8 @@ void gui_init(dt_iop_module_t *self)
   g->points_idx = NULL;
   g->points_lines_count = 0;
   g->points_version = 0;
-  g->grid_hash = DT_INVALID_CACHEHASH;
-  g->lines_hash = DT_INVALID_CACHEHASH;
+  g->grid_hash = DT_INVALID_HASH;
+  g->lines_hash = DT_INVALID_HASH;
   g->rotation_range = ROTATION_RANGE_SOFT;
   g->lensshift_v_range = LENSSHIFT_RANGE_SOFT;
   g->lensshift_h_range = LENSSHIFT_RANGE_SOFT;
