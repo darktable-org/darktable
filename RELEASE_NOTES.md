@@ -77,7 +77,8 @@ changes (where available).
 - Allow reading of files in Cineon format (developed by Kodak) and DPX
   format (developed by SMPTE) with .cin and .dpx file extensions.
 
-- Removed prefer performance over quality preference setting.
+- The "prefer performance over quality" preference setting has been
+  removed.
 
 - A workaround for old broken AMD opencl drivers that has been in
   place for 12 years has been disabled by default. Hopefully more
@@ -131,9 +132,7 @@ changes (where available).
 - The highlights module offers a raster mask with information about level above
   clip level.
 
-- The "prefer performance over quality" preference setting has been removed.
-
-- Changing orientation (via the flip module) respects changes done in crop module. 
+- Changing orientation (via the flip module) respects changes done in crop module.
 
 ## Bug Fixes
 
