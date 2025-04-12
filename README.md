@@ -180,6 +180,7 @@ Required dependencies (minimum version):
 
 Required dependencies (no version requirement):
 * Lensfun *(for automatic lens correction)* (Note: alpha 0.3.95 and git master branch are not supported)
+* libjpeg *(both the original IJG library and API-compatible ones, such as libjpeg-turbo, will work)*
 * LibTIFF *(for TIFF import & export)*
 * Little CMS 2
 
