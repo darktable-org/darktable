@@ -469,20 +469,29 @@ static void _exif_value_str(const int value,
 
 static void _deleteXmpTag(Exiv2::XmpData &xmp, const char *tag)
 {
-  Exiv2::XmpData::iterator pos = xmp.findKey(Exiv2::XmpKey(tag));
+  try {
+    Exiv2::XmpData::iterator pos = xmp.findKey(Exiv2::XmpKey(tag));
 
-  while(pos != xmp.end())
+    while(pos != xmp.end())
+    {
+      std::string key = pos->key();
+      const char *ckey = key.c_str();
+      size_t len = key.size();
+
+      // Stop iterating once the key no longer matches what we are
+      // trying to delete. This assumes sorted input.
+      if(!(g_str_has_prefix(ckey, tag)
+        && (ckey[len] == '[' || ckey[len] == '\0')))
+        break;
+      pos = xmp.erase(pos);
+    }
+  }
+  catch(Exiv2::AnyError &e)
   {
-    std::string key = pos->key();
-    const char *ckey = key.c_str();
-    size_t len = key.size();
-
-    // Stop iterating once the key no longer matches what we are
-    // trying to delete. This assumes sorted input.
-    if(!(g_str_has_prefix(ckey, tag)
-      && (ckey[len] == '[' || ckey[len] == '\0')))
-      break;
-    pos = xmp.erase(pos);
+    // The only exception we may get is "invalid" tag, which is not
+    // important enough to either stop the function, or even display
+    // a message (it's probably the tag that is not implemented in
+    // the Exiv2 version used).
   }
 }
 
