@@ -314,7 +314,6 @@ jobs:
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
-          brew install --force gd       # See https://github.com/Homebrew/homebrew-core/issues/141766
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
           brew bundle --verbose || true
