@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2018-2024 darktable developers.
+   Copyright (C) 2018-2025 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1321,14 +1321,6 @@ void init_global(dt_iop_module_so_t *self)
 
   self->data = gd;
   gd->kernel_filmic = dt_opencl_create_kernel(program, "filmic");
-}
-
-void cleanup(dt_iop_module_t *self)
-{
-  free(self->params);
-  self->params = NULL;
-  free(self->default_params);
-  self->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *self)
