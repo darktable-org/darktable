@@ -1806,6 +1806,7 @@ treeview#delete-dialog:selected
 }
 
   /* set active menu items: needed for some Pango issues not rendering synthetic bold for all OS */
+.active_menu_item,
 .active_menu_item label
 {
   font-weight: bold;
