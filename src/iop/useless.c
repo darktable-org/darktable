@@ -446,7 +446,7 @@ void init(dt_iop_module_t *self)
   dt_iop_default_init(self);
 
   // Any non-default settings; for example disabling the on/off switch:
-  module->hide_enable_button = TRUE;
+  self->hide_enable_button = TRUE;
   // To make this work correctly, you also need to hide the widgets,
   // otherwise moving one would enable the module anyway. The standard
   // way is to set up a gtk_stack and show the page that only has a
@@ -460,13 +460,10 @@ void init_global(dt_iop_module_so_t *self)
 
 void cleanup(dt_iop_module_t *self)
 {
+  dt_iop_default_cleanup(self);
   // Releases any memory allocated in init(module) Implement this
   // function explicitly if the module allocates additional memory
   // besides (default_)params.  this is rare.
-  free(self->params);
-  self->params = NULL;
-  free(self->default_params);
-  self->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *self)
