@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2015-2024 darktable developers.
+    Copyright (C) 2015-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -224,14 +224,6 @@ void init(dt_iop_module_t *self)
   self->hide_enable_button = TRUE;
   self->params_size = sizeof(dt_iop_finalscale_params_t);
   self->gui_data = NULL;
-}
-
-void cleanup(dt_iop_module_t *self)
-{
-  free(self->params);
-  self->params = NULL;
-  free(self->default_params);
-  self->default_params = NULL;
 }
 
 // clang-format off
