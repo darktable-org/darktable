@@ -124,7 +124,7 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img,
 
   for(uint32_t row = 0; row < img->height; row++)
   {
-    float *bufprt = mipbuf + (size_t)4 * row * img->width;
+    float *bufpointer = mipbuf + (size_t)4 * row * img->width;
     int ret = DispatchImage(image,
                             0,
                             row,
@@ -132,7 +132,7 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img,
                             1,
                             "RGBP",
                             FloatPixel,
-                            bufprt,
+                            bufpointer,
                             &exception);
 
     if(exception.severity != UndefinedException)
