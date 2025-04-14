@@ -63,6 +63,7 @@ changes (where available).
 
 - Added the standard "Window" menu to the application menu bar on
   macOS.
+- Moved controls for mask exposure and contrast compensation to the advanced tab.
 
 ## Performance Improvements
 
