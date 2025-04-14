@@ -61,7 +61,7 @@ changes (where available).
 
 ## UI/UX Improvements
 
-- N/A
+- Moved controls for mask exposure and contrast compensation to the advanced tab.
 
 ## Performance Improvements
 
