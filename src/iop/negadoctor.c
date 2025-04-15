@@ -851,7 +851,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(row1), GTK_WIDGET(g->Dmin_picker), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->Dmin_picker), "color-set", G_CALLBACK(Dmin_picker_callback), self);
 
-  g->Dmin_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, row1);
+  g->Dmin_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, row1, NULL);
   gtk_widget_set_tooltip_text(g->Dmin_sampler , _("pick color of film material from image"));
   dt_action_define_iop(self, N_("pickers"), N_("film material"), g->Dmin_sampler, &dt_action_def_toggle);
 
@@ -891,7 +891,7 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(C_("section", "dynamic range of the film")), FALSE, FALSE, 0);
 
-  g->D_max = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "D_max"));
+  g->D_max = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "D_max"), NULL);
   dt_bauhaus_slider_set_format(g->D_max, " dB");
   gtk_widget_set_tooltip_text(g->D_max, _("maximum density of the film, corresponding to white after inversion.\n"
                                           "this value depends on the film specifications, the developing process,\n"
@@ -899,7 +899,7 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(C_("section", "scanner exposure settings")), FALSE, FALSE, 0);
 
-  g->offset = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "offset"));
+  g->offset = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "offset"), NULL);
   dt_bauhaus_slider_set_format(g->offset, " dB");
   gtk_widget_set_tooltip_text(g->offset, _("correct the exposure of the scanner, for all RGB channels,\n"
                                            "before the inversion, so blacks are neither clipped or too pale."));
@@ -918,7 +918,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(row3), GTK_WIDGET(g->WB_low_picker), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->WB_low_picker), "color-set", G_CALLBACK(WB_low_picker_callback), self);
 
-  g->WB_low_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, row3);
+  g->WB_low_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, row3, NULL);
   gtk_widget_set_tooltip_text(g->WB_low_sampler, _("pick shadows color from image"));
   dt_action_define_iop(self, N_("pickers"), N_("shadows"), g->WB_low_sampler, &dt_action_def_toggle);
 
@@ -956,7 +956,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(row2), GTK_WIDGET(g->WB_high_picker), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->WB_high_picker), "color-set", G_CALLBACK(WB_high_picker_callback), self);
 
-  g->WB_high_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, row2);
+  g->WB_high_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, row2, NULL);
   gtk_widget_set_tooltip_text(g->WB_high_sampler , _("pick illuminant color from image"));
   dt_action_define_iop(self, N_("pickers"), N_("illuminant"), g->WB_high_sampler, &dt_action_def_toggle);
 
@@ -989,7 +989,7 @@ void gui_init(dt_iop_module_t *self)
   // print corrections
   gtk_box_pack_start(GTK_BOX(page3), dt_ui_section_label_new(C_("section", "virtual paper properties")), FALSE, FALSE, 0);
 
-  g->black = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "black"));
+  g->black = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "black"), NULL);
   dt_bauhaus_slider_set_digits(g->black, 4);
   dt_bauhaus_slider_set_factor(g->black, 100);
   dt_bauhaus_slider_set_format(g->black, "%");
@@ -1012,7 +1012,7 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(page3), dt_ui_section_label_new(C_("section", "virtual print emulation")), FALSE, FALSE, 0);
 
-  g->exposure = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "exposure"));
+  g->exposure = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "exposure"), NULL);
   dt_bauhaus_slider_set_hard_min(g->exposure, -1.0);
   dt_bauhaus_slider_set_soft_min(g->exposure, -1.0);
   dt_bauhaus_slider_set_hard_max(g->exposure, 1.0);

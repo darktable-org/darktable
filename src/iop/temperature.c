@@ -2102,7 +2102,7 @@ void gui_init(dt_iop_module_t *self)
   // like this as we may not know the actual kind of data we are using
   // in the GUI (it is part of the pipeline).
   g->colorpicker = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_AREA,
-                                                NULL, IOP_CS_NONE);
+                                                NULL, IOP_CS_NONE, NULL);
   dt_action_define_iop(self, N_("settings"), N_("from image area"),
                        g->colorpicker, &dt_action_def_toggle);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker),

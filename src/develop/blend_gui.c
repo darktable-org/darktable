@@ -2590,7 +2590,7 @@ void dt_iop_gui_init_blendif(GtkWidget *blendw, dt_iop_module_t *module)
 
     bd->colorpicker = dt_color_picker_new
       (module,
-       DT_COLOR_PICKER_POINT_AREA | DT_COLOR_PICKER_IO, header);
+       DT_COLOR_PICKER_POINT_AREA | DT_COLOR_PICKER_IO, header, NULL);
     gtk_widget_set_tooltip_text
       (bd->colorpicker,
        _("pick GUI color from image\n"
@@ -2599,7 +2599,7 @@ void dt_iop_gui_init_blendif(GtkWidget *blendw, dt_iop_module_t *module)
     dt_action_define_iop(module, "blend`pickers", N_("show color"), bd->colorpicker, &dt_action_def_toggle);
 
     bd->colorpicker_set_values =
-      dt_color_picker_new(module, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_IO, header);
+      dt_color_picker_new(module, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_IO, header, NULL);
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(bd->colorpicker_set_values),
                                  dtgtk_cairo_paint_colorpicker_set_values, 0, NULL);
     dt_gui_add_class(bd->colorpicker_set_values, "dt_transparent_background");

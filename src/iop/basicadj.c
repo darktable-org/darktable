@@ -638,7 +638,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
 
   g->sl_middle_grey = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
-                      dt_bauhaus_slider_from_params(self, "middle_grey"));
+                      dt_bauhaus_slider_from_params(self, "middle_grey"), NULL);
   dt_bauhaus_slider_set_format(g->sl_middle_grey, "%");
   gtk_widget_set_tooltip_text(g->sl_middle_grey, _("middle gray adjustment"));
   g_signal_connect(G_OBJECT(g->sl_middle_grey), "quad-pressed", G_CALLBACK(_color_picker_callback), self);

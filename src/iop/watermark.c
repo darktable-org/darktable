@@ -1357,7 +1357,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->colorpick, _("watermark color, tag:\n$(WATERMARK_COLOR)"));
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select watermark color"));
-  g->color_picker_button = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
+  g->color_picker_button = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL, NULL);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->color_picker_button), _("pick color from image"));
   dt_action_define_iop(self, NULL, N_("pick color"), g->color_picker_button, &dt_action_def_toggle);
 

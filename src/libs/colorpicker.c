@@ -777,7 +777,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_valign(data->color_mode_selector, GTK_ALIGN_CENTER);
   gtk_box_pack_start(GTK_BOX(picker_row), data->color_mode_selector, TRUE, TRUE, 0);
 
-  data->picker_button = dt_color_picker_new(NULL, DT_COLOR_PICKER_POINT_AREA, picker_row);
+  data->picker_button = dt_color_picker_new(NULL, DT_COLOR_PICKER_POINT_AREA, picker_row, NULL);
   gtk_widget_set_tooltip_text
     (data->picker_button,
      _("turn on color picker\nctrl+click or right-click to select an area"));

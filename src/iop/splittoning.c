@@ -470,7 +470,7 @@ static inline void gui_init_section(dt_iop_module_t *self,
   dt_bauhaus_slider_set_stop(hue, 0.830f, 1.0f, 0.0f, 1.0f);
   dt_bauhaus_slider_set_stop(hue, 1.0f  , 1.0f, 0.0f, 0.0f);
   gtk_widget_set_tooltip_text(hue, _("select the hue tone"));
-  dt_color_picker_new(self, DT_COLOR_PICKER_POINT, hue);
+  dt_color_picker_new(self, DT_COLOR_PICKER_POINT, hue, NULL);
 
   dt_bauhaus_slider_set_stop(saturation, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(saturation, 1.0f, 1.0f, 1.0f, 1.0f);

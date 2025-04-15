@@ -1098,7 +1098,7 @@ void gui_init(dt_iop_module_t *self)
                                 "this is useful if you exposed the image to the right."));
 
   g->exposure = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
-                                    dt_bauhaus_slider_from_params(self, N_("exposure")));
+                                    dt_bauhaus_slider_from_params(self, N_("exposure")), NULL);
   gtk_widget_set_tooltip_text(g->exposure, _("adjust the exposure correction"));
   dt_bauhaus_slider_set_digits(g->exposure, 3);
   dt_bauhaus_slider_set_format(g->exposure, _(" EV"));

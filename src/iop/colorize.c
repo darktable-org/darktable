@@ -331,7 +331,7 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_colorize_gui_data_t *g = IOP_GUI_ALLOC(colorize);
 
-  g->hue = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, dt_bauhaus_slider_from_params(self, N_("hue")));
+  g->hue = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, dt_bauhaus_slider_from_params(self, N_("hue")), NULL);
   dt_bauhaus_slider_set_feedback(g->hue, 0);
   dt_bauhaus_slider_set_factor(g->hue, 360.0f);
   dt_bauhaus_slider_set_format(g->hue, "°");

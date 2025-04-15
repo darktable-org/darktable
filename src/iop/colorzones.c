@@ -2631,7 +2631,7 @@ void gui_init(dt_iop_module_t *self)
 
   // color pickers
   g->colorpicker = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_POINT_AREA,
-                                                NULL, IOP_CS_LCH);
+                                                NULL, IOP_CS_LCH, NULL);
   gtk_widget_set_tooltip_text
     (g->colorpicker,
      _("pick GUI color from image\nctrl+click or right-click to select an area"));
@@ -2640,7 +2640,7 @@ void gui_init(dt_iop_module_t *self)
                        g->colorpicker, &dt_action_def_toggle);
   g->colorpicker_set_values = dt_color_picker_new_with_cst(self,
                                                            DT_COLOR_PICKER_AREA,
-                                                           NULL, IOP_CS_LCH);
+                                                           NULL, IOP_CS_LCH, NULL);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker_set_values),
                                dtgtk_cairo_paint_colorpicker_set_values, 0, NULL);
   dt_gui_add_class(g->colorpicker_set_values, "dt_transparent_background");

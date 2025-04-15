@@ -663,7 +663,7 @@ void gui_init(dt_iop_module_t *self)
   // standalone in a box.  When a color is picked, color_picker_apply
   // is called with either the slider or the button that triggered it.
   g->factor = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
-              dt_bauhaus_slider_from_params(self, N_("factor")));
+              dt_bauhaus_slider_from_params(self, N_("factor")), NULL);
   // The initial slider range can be reduced from the introspection $MIN - $MAX
   dt_bauhaus_slider_set_soft_range(g->factor, 0.5f, 1.5f);
   // The default step is range/100, but can be changed here

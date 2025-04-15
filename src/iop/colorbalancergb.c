@@ -1880,7 +1880,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->global_Y, "%");
   gtk_widget_set_tooltip_text(g->global_Y, _("global luminance offset"));
 
-  g->global_H = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(sect, "global_H"));
+  g->global_H = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(sect, "global_H"),
+                                          _("pick opposite color from image\nctrl-click to pick selected color"));
   dt_bauhaus_slider_set_feedback(g->global_H, 0);
   dt_bauhaus_slider_set_format(g->global_H, "°");
   gtk_widget_set_tooltip_text(g->global_H, _("hue of the global color offset"));
@@ -1900,7 +1901,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->shadows_Y, "%");
   gtk_widget_set_tooltip_text(g->shadows_Y, _("luminance gain in shadows"));
 
-  g->shadows_H = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(sect, "shadows_H"));
+  g->shadows_H = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(sect, "shadows_H"),
+                                            _("pick opposite color from image\nctrl-click to pick selected color"));
   dt_bauhaus_slider_set_feedback(g->shadows_H, 0);
   dt_bauhaus_slider_set_format(g->shadows_H, "°");
   gtk_widget_set_tooltip_text(g->shadows_H, _("hue of the global color offset"));
@@ -1920,7 +1922,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->highlights_Y, "%");
   gtk_widget_set_tooltip_text(g->highlights_Y, _("luminance gain in highlights"));
 
-  g->highlights_H = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(sect, "highlights_H"));
+  g->highlights_H = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(sect, "highlights_H"),
+                                                 _("pick opposite color from image\nctrl-click to pick selected color"));
   dt_bauhaus_slider_set_feedback(g->highlights_H, 0);
   dt_bauhaus_slider_set_format(g->highlights_H, "°");
   gtk_widget_set_tooltip_text(g->highlights_H, _("hue of the global color offset"));
@@ -1940,7 +1943,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->midtones_Y, "%");
   gtk_widget_set_tooltip_text(g->midtones_Y, _("luminance exponent in mid-tones"));
 
-  g->midtones_H = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(sect, "midtones_H"));
+  g->midtones_H = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(sect, "midtones_H"),
+                                             _("pick opposite color from image\nctrl-click to pick selected color"));
   dt_bauhaus_slider_set_feedback(g->midtones_H, 0);
   dt_bauhaus_slider_set_format(g->midtones_H, "°");
   gtk_widget_set_tooltip_text(g->midtones_H, _("hue of the global color offset"));
@@ -1988,12 +1992,12 @@ void gui_init(dt_iop_module_t *self)
 
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "threshold")));
 
-  g->white_fulcrum = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "white_fulcrum"));
+  g->white_fulcrum = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "white_fulcrum"), NULL);
   dt_bauhaus_slider_set_soft_range(g->white_fulcrum, -2., +2.);
   dt_bauhaus_slider_set_format(g->white_fulcrum, _(" EV"));
   gtk_widget_set_tooltip_text(g->white_fulcrum, _("peak white luminance value used to normalize the power function"));
 
-  g->grey_fulcrum = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "grey_fulcrum"));
+  g->grey_fulcrum = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "grey_fulcrum"), NULL);
   dt_bauhaus_slider_set_soft_range(g->grey_fulcrum, 0.1, 0.5);
   dt_bauhaus_slider_set_digits(g->grey_fulcrum, 4);
   dt_bauhaus_slider_set_format(g->grey_fulcrum, "%");

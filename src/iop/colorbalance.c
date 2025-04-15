@@ -1880,7 +1880,8 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->saturation_out, _("saturation correction after the color balance"));
 
   g->grey = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
-            dt_bauhaus_slider_from_params(self, "grey"));
+            dt_bauhaus_slider_from_params(self, "grey"),
+            NULL);
   dt_bauhaus_slider_set_format(g->grey, "%");
   gtk_widget_set_tooltip_text(g->grey, _("adjust to match a neutral tone"));
 
@@ -1964,7 +1965,8 @@ void gui_init(dt_iop_module_t *self)
                                                                             \
   sprintf(field_name, "%s[%d]", #which, CHANNEL_FACTOR);                    \
   g->which##_factor = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,       \
-                      dt_bauhaus_slider_from_params(self, field_name));     \
+                      dt_bauhaus_slider_from_params(self, field_name),      \
+                      NULL);                                                \
   dt_bauhaus_slider_set_soft_range(g->which##_factor, -span+1.0, span+1.0); \
   dt_bauhaus_slider_set_digits(g->which##_factor, 4);                       \
   dt_bauhaus_slider_set_factor(g->which##_factor, 100.0);                   \
@@ -1978,7 +1980,7 @@ void gui_init(dt_iop_module_t *self)
                                                                             \
   g->hue_##which = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,          \
                    dt_bauhaus_slider_new_with_range_and_feedback(self,      \
-                   0.0f, 360.0f, 0, 0.0f, 2, 0));                           \
+                   0.0f, 360.0f, 0, 0.0f, 2, 0), NULL);                     \
   dt_bauhaus_widget_set_label(g->hue_##which, section, N_("hue"));          \
   dt_bauhaus_slider_set_format(g->hue_##which, "°");                        \
   dt_bauhaus_slider_set_stop(g->hue_##which, 0.0f,   1.0f, 0.0f, 0.0f);     \
@@ -2046,13 +2048,13 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "auto optimizers")), FALSE, FALSE, 0);
 
   g->auto_luma = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
-                 dt_bauhaus_combobox_new(self));
+                 dt_bauhaus_combobox_new(self), NULL);
   dt_bauhaus_widget_set_label(g->auto_luma, NULL, N_("optimize luma"));
   gtk_widget_set_tooltip_text(g->auto_luma, _("fit the whole histogram and center the average luma"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->auto_luma, FALSE, FALSE, 0);
 
   g->auto_color = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
-                  dt_bauhaus_combobox_new(self));
+                  dt_bauhaus_combobox_new(self), NULL);
   dt_bauhaus_widget_set_label(g->auto_color, NULL, N_("neutralize colors"));
   gtk_widget_set_tooltip_text(g->auto_color, _("optimize the RGB curves to remove color casts"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->auto_color, FALSE, FALSE, 0);

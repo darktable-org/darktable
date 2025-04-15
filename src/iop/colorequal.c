@@ -3037,7 +3037,7 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *box = self->widget = dt_gui_vbox(g->notebook, g->area);
   g->hue_shift = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_POINT_AREA | DT_COLOR_PICKER_DENOISE,
-                 dt_bauhaus_slider_from_params(self, "hue_shift"), IOP_CS_JZCZHZ);
+                 dt_bauhaus_slider_from_params(self, "hue_shift"), IOP_CS_JZCZHZ, NULL);
   dt_bauhaus_slider_set_format(g->hue_shift, "°");
   dt_bauhaus_slider_set_digits(g->hue_shift, 0);
   gtk_widget_set_tooltip_text(g->hue_shift,
@@ -3129,7 +3129,7 @@ void gui_init(dt_iop_module_t *self)
   self->widget = GTK_WIDGET(g->cs.container);
 
   g->white_level = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
-                                       dt_bauhaus_slider_from_params(self, "white_level"));
+                                       dt_bauhaus_slider_from_params(self, "white_level"), NULL);
   dt_bauhaus_slider_set_soft_range(g->white_level, -2., +2.);
   dt_bauhaus_slider_set_format(g->white_level, _(" EV"));
   gtk_widget_set_tooltip_text(g->white_level,

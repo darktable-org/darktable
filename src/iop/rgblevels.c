@@ -1065,7 +1065,8 @@ void gui_init(dt_iop_module_t *self)
                    G_CALLBACK(_area_scroll_callback), self);
 
 #define PICKER_SETUP(color, name, tooltip)                                 \
-  g->color##pick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL); \
+  g->color##pick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL,  \
+                                        NULL);                             \
   dt_action_define_iop(self, N_("pickers"), name, g->color##pick,          \
                        &dt_action_def_toggle);                             \
   gtk_widget_set_tooltip_text(g->color##pick, tooltip);                    \

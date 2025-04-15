@@ -1556,7 +1556,7 @@ void gui_init(dt_iop_module_t *self)
     dt_bauhaus_combobox_add(g->combobox_patch, cboxentry);
   }
 
-  dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA, g->combobox_patch);
+  dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA, g->combobox_patch, NULL);
 
   g->scale_L = dt_bauhaus_slider_new_with_range(self, -100.0, 200.0,
                                                 0, 0.0f, 2);

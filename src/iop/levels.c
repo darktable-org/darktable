@@ -651,15 +651,15 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(autobutton, _("apply auto levels"));
   g_signal_connect(G_OBJECT(autobutton), "clicked", G_CALLBACK(dt_iop_levels_autoadjust_callback), self);
 
-  g->blackpick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
+  g->blackpick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL, NULL);
   gtk_widget_set_tooltip_text(g->blackpick, _("pick black point from image"));
   gtk_widget_set_name(GTK_WIDGET(g->blackpick), "picker-black");
 
-  g->greypick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
+  g->greypick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL, NULL);
   gtk_widget_set_tooltip_text(g->greypick, _("pick medium gray point from image"));
   gtk_widget_set_name(GTK_WIDGET(g->greypick), "picker-grey");
 
-  g->whitepick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
+  g->whitepick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL, NULL);
   gtk_widget_set_tooltip_text(g->whitepick, _("pick white point from image"));
   gtk_widget_set_name(GTK_WIDGET(g->whitepick), "picker-white");
 

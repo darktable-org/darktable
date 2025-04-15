@@ -4382,7 +4382,8 @@ void gui_init(dt_iop_module_t *self)
 
   g->grey_point_source
       = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
-                            dt_bauhaus_slider_from_params(self, "grey_point_source"));
+                            dt_bauhaus_slider_from_params(self, "grey_point_source"),
+                            NULL);
   dt_bauhaus_slider_set_soft_range(g->grey_point_source, .1, 36.0);
   dt_bauhaus_slider_set_format(g->grey_point_source, "%");
   gtk_widget_set_tooltip_text(g->grey_point_source,
@@ -4394,7 +4395,8 @@ void gui_init(dt_iop_module_t *self)
   // White slider
   g->white_point_source
       = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
-                            dt_bauhaus_slider_from_params(self, "white_point_source"));
+                            dt_bauhaus_slider_from_params(self, "white_point_source"),
+                            NULL);
   dt_bauhaus_slider_set_soft_range(g->white_point_source, 2.0, 8.0);
   dt_bauhaus_slider_set_format(g->white_point_source, _(" EV"));
   gtk_widget_set_tooltip_text(g->white_point_source,
@@ -4405,7 +4407,8 @@ void gui_init(dt_iop_module_t *self)
   // Black slider
   g->black_point_source
       = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
-                            dt_bauhaus_slider_from_params(self, "black_point_source"));
+                            dt_bauhaus_slider_from_params(self, "black_point_source"),
+                            NULL);
   dt_bauhaus_slider_set_soft_range(g->black_point_source, -14.0, -3);
   dt_bauhaus_slider_set_format(g->black_point_source, _(" EV"));
   gtk_widget_set_tooltip_text(
@@ -4422,7 +4425,8 @@ void gui_init(dt_iop_module_t *self)
 
   // Auto tune slider
   g->auto_button = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
-                                       dt_bauhaus_combobox_new(self));
+                                       dt_bauhaus_combobox_new(self),
+                                       NULL);
   dt_bauhaus_widget_set_label(g->auto_button, NULL, N_("auto tune levels"));
   gtk_widget_set_tooltip_text(g->auto_button, _("try to optimize the settings with some statistical assumptions.\n"
                                                 "this will fit the luminance range inside the histogram bounds.\n"

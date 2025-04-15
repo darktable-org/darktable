@@ -388,7 +388,8 @@ static GtkWidget *_color_picker_new(dt_iop_module_t *module,
                                     const dt_iop_color_picker_flags_t flags,
                                     GtkWidget *w,
                                     const gboolean init_cst,
-                                    const dt_iop_colorspace_type_t cst)
+                                    const dt_iop_colorspace_type_t cst,
+                                    const char *tooltip)
 {
   dt_iop_color_picker_t *color_picker = g_malloc(sizeof(dt_iop_color_picker_t));
 
@@ -413,7 +414,8 @@ static GtkWidget *_color_picker_new(dt_iop_module_t *module,
   {
     dt_bauhaus_widget_set_quad_paint(w, dtgtk_cairo_paint_colorpicker, 0, NULL);
     dt_bauhaus_widget_set_quad_toggle(w, TRUE);
-    dt_bauhaus_widget_set_quad_tooltip(w, _("pick opposite color from image\nctrl-click to pick selected color"));
+    if(tooltip) dt_bauhaus_widget_set_quad_tooltip(w, tooltip);
+    else dt_bauhaus_widget_set_quad_tooltip(w, _("pick color from image"));
     _init_picker(color_picker, module, flags, w);
     if(init_cst)
     {
@@ -430,17 +432,19 @@ static GtkWidget *_color_picker_new(dt_iop_module_t *module,
 
 GtkWidget *dt_color_picker_new(dt_iop_module_t *module,
                                const dt_iop_color_picker_flags_t flags,
-                               GtkWidget *w)
+                               GtkWidget *w,
+                               const char *tooltip)
 {
-  return _color_picker_new(module, flags, w, FALSE, IOP_CS_NONE);
+  return _color_picker_new(module, flags, w, FALSE, IOP_CS_NONE, tooltip);
 }
 
 GtkWidget *dt_color_picker_new_with_cst(dt_iop_module_t *module,
                                         const dt_iop_color_picker_flags_t flags,
                                         GtkWidget *w,
-                                        const dt_iop_colorspace_type_t cst)
+                                        const dt_iop_colorspace_type_t cst,
+                                        const char *tooltip)
 {
-  return _color_picker_new(module, flags, w, TRUE, cst);
+  return _color_picker_new(module, flags, w, TRUE, cst, tooltip);
 }
 
 // clang-format off

@@ -86,11 +86,12 @@ void dt_iop_color_picker_init();
 void dt_iop_color_picker_cleanup();
 
 /* link color picker to widget */
-GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_flags_t flags, GtkWidget *w);
+GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_flags_t flags, GtkWidget *w,
+                                const char *tooltip);
 
 /* link color picker to widget and initialize color picker color space with given value */
 GtkWidget *dt_color_picker_new_with_cst(dt_iop_module_t *module, dt_iop_color_picker_flags_t flags, GtkWidget *w,
-                                        const dt_iop_colorspace_type_t cst);
+                                        const dt_iop_colorspace_type_t cst, const char *tooltip);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
