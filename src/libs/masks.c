@@ -1147,7 +1147,7 @@ static int _tree_button_pressed(GtkWidget *treeview,
     }
 
     gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
-    item = gtk_menu_item_new_with_label(_("cleanup unused shapes"));
+    item = gtk_menu_item_new_with_label(_("delete unused shapes"));
     g_signal_connect(item, "activate", (GCallback)_tree_cleanup, self);
     gtk_menu_shell_append(menu, item);
 
