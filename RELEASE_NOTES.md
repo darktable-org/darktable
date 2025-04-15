@@ -152,6 +152,9 @@ changes (where available).
 - Fixed darktable shutdown code so pending backgriund jobs are properly finished
   and give a control log if there is pending work.
 
+- Fixed a crash in the import dialog when trying to add a new place to
+  an empty places list.
+
 ## Lua
 
 ### API Version
