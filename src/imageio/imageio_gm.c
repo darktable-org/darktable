@@ -106,11 +106,8 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img,
     goto error;
   }
 
-  uint32_t width = image->columns;
-  uint32_t height = image->rows;
-
-  img->width = width;
-  img->height = height;
+  img->width = image->columns;
+  img->height = image->rows;
 
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
@@ -125,17 +122,17 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img,
     goto error;
   }
 
-  for(uint32_t row = 0; row < height; row++)
+  for(uint32_t row = 0; row < img->height; row++)
   {
-    float *bufprt = mipbuf + (size_t)4 * row * img->width;
+    float *bufpointer = mipbuf + (size_t)4 * row * img->width;
     int ret = DispatchImage(image,
                             0,
                             row,
-                            width,
+                            img->width,
                             1,
                             "RGBP",
                             FloatPixel,
-                            bufprt,
+                            bufpointer,
                             &exception);
 
     if(exception.severity != UndefinedException)
