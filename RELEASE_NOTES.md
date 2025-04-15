@@ -149,7 +149,7 @@ changes (where available).
 - Fixed a bug that allowed NULL pointer dereference in tethering mode
   under certain conditions, which resulted in a crash.
 
-- Fixed darktable shutdown code so pending backgriund jobs are properly finished
+- Fixed darktable shutdown code so pending background jobs are properly finished
   and give a control log if there is pending work.
 
 - Fixed a crash in the import dialog when trying to add a new place to
