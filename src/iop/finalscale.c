@@ -140,8 +140,7 @@ void distort_mask(dt_iop_module_t *self,
                   const dt_iop_roi_t *const roi_in,
                   const dt_iop_roi_t *const roi_out)
 {
-  const struct dt_interpolation *itor =
-    dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   dt_interpolation_resample_1c(itor, out, roi_out, in, roi_in);
 }
 

@@ -1092,8 +1092,7 @@ void distort_mask(dt_iop_module_t *self,
     return;
   }
 
-  const struct dt_interpolation *interpolation =
-    dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
   float DT_ALIGNED_ARRAY ihomograph[3][3];
   _homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h,
@@ -1271,8 +1270,7 @@ void modify_roi_in(dt_iop_module_t *self,
     }
   }
 
-  const struct dt_interpolation *interpolation =
-    dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
   const float iw1 = interpolation->width;
   const float iw2 = 2.0f * iw1;
@@ -3525,8 +3523,7 @@ void process(dt_iop_module_t *self,
     return;
   }
 
-  const struct dt_interpolation *interpolation =
-    dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
   float DT_ALIGNED_ARRAY ihomograph[3][3];
   _homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h,
@@ -3688,8 +3685,7 @@ int process_cl(dt_iop_module_t *self,
   const float clip[2] = { cx, cy };
 
 
-  const struct dt_interpolation *interpolation =
-    dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
   int ldkernel = -1;
 

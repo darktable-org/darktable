@@ -1022,8 +1022,7 @@ static void _apply_global_distortion_map(dt_iop_module_t *self,
 {
   const int ch = piece->colors;
   const int ch_width = ch * roi_in->width;
-  const struct dt_interpolation * const interpolation =
-    dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+  const dt_interpolation_t *const interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
   const size_t min_y = MAX(roi_out->y, extent->y);
   const size_t max_y = MIN(roi_out->y + roi_out->height, extent->y + extent->height);
@@ -1468,8 +1467,7 @@ static cl_int_t _apply_global_distortion_map_cl(dt_iop_module_t *self,
   dt_iop_liquify_global_data_t *gd = self->global_data;
   const int devid = piece->pipe->devid;
 
-  const struct dt_interpolation* interpolation =
-    dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
   dt_liquify_kernel_descriptor_t kdesc = { .size = 0, .resolution = 100 };
   float *k = NULL;
 

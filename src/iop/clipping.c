@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -626,7 +626,7 @@ void distort_mask(dt_iop_module_t *self,
   }
   else
   {
-    const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+    const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
     const float rx = piece->buf_in.width * roi_in->scale;
     const float ry = piece->buf_in.height * roi_in->scale;
     const dt_boundingbox_t k_space =
@@ -1013,7 +1013,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
   else
   {
-    const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+    const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
     const float rx = piece->buf_in.width * roi_in->scale;
     const float ry = piece->buf_in.height * roi_in->scale;
     const dt_boundingbox_t k_space =
@@ -1094,7 +1094,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   {
     int crkernel = -1;
 
-    const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+    const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
     switch(interpolation->id)
     {
@@ -1441,7 +1441,7 @@ static float _ratio_get_aspect(dt_iop_module_t *self, GtkWidget *combo)
     }
     else
     {
-      const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+      const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
       const float whratio = ((float)(iwd - 2 * interpolation->width) * (fabsf(p->cw) - p->cx))
                             / ((float)(iht - 2 * interpolation->width) * (fabsf(p->ch) - p->cy));
       const float ri = (float)iwd / (float)iht;
