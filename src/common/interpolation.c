@@ -1,6 +1,6 @@
 /* --------------------------------------------------------------------------
     This file is part of darktable,
-    Copyright (C) 2012-2024 darktable developers.
+    Copyright (C) 2012-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -392,7 +392,7 @@ static float _maketaps_lanczos(float *taps,
  * of this filter list. Otherwise bad things will happen
  * !!! !!! !!!
  */
-static const struct dt_interpolation dt_interpolator[] = {
+static const dt_interpolation_t dt_interpolator[] = {
   {.id = DT_INTERPOLATION_BILINEAR,
    .name = "bilinear",
    .width = 1,
@@ -419,7 +419,7 @@ static const struct dt_interpolation dt_interpolator[] = {
  * Kernel utility methods
  * ------------------------------------------------------------------------*/
 
-static inline float _compute_upsampling_kernel(const struct dt_interpolation *itor,
+static inline float _compute_upsampling_kernel(const dt_interpolation_t *itor,
                                                float *kernel,
                                                int *first,
                                                float t)
@@ -454,7 +454,7 @@ static inline float _compute_upsampling_kernel(const struct dt_interpolation *it
  * @param first [out] index of the first sample for which the kernel is to be applied
  * @param outoinratio [in] "out samples" over "in samples" ratio
  * @param xout [in] Output coordinate */
-static inline void _compute_downsampling_kernel(const struct dt_interpolation *itor,
+static inline void _compute_downsampling_kernel(const dt_interpolation_t *itor,
                                                 int *taps,
                                                 int *first,
                                                 float *kernel,
@@ -495,7 +495,7 @@ static inline void _compute_downsampling_kernel(const struct dt_interpolation *i
 
 #define MAX_KERNEL_REQ ((2 * (MAX_HALF_FILTER_WIDTH) + 3) & (~3))
 
-float dt_interpolation_compute_sample(const struct dt_interpolation *itor,
+float dt_interpolation_compute_sample(const dt_interpolation_t *itor,
                                       const float *in,
                                       const float x,
                                       const float y,
@@ -594,7 +594,7 @@ float dt_interpolation_compute_sample(const struct dt_interpolation *itor,
  * Pixel interpolation function (see usage in iop/lens.c and iop/clipping.c)
  * ------------------------------------------------------------------------*/
 
-void dt_interpolation_compute_pixel4c(const struct dt_interpolation *itor,
+void dt_interpolation_compute_pixel4c(const dt_interpolation_t *itor,
                                       const float *in,
                                       float *out,
                                       const float x,
@@ -713,9 +713,9 @@ void dt_interpolation_compute_pixel4c(const struct dt_interpolation *itor,
  * Interpolation factory
  * ------------------------------------------------------------------------*/
 
-const struct dt_interpolation *dt_interpolation_new(enum dt_interpolation_type type)
+const dt_interpolation_t *dt_interpolation_new(enum dt_interpolation_type type)
 {
-  const struct dt_interpolation *itor = NULL;
+  const dt_interpolation_t *itor = NULL;
 
   if(type == DT_INTERPOLATION_USERPREF)
   {
@@ -823,7 +823,7 @@ const struct dt_interpolation *dt_interpolation_new(enum dt_interpolation_type t
  * out position meta[3*out]
  * @return FALSE for success, TRUE for failure
  */
-static gboolean _prepare_resampling_plan(const struct dt_interpolation *itor,
+static gboolean _prepare_resampling_plan(const dt_interpolation_t *itor,
                                          const int in,
                                          const int in_x0,
                                          const int out,
@@ -1007,7 +1007,7 @@ static gboolean _prepare_resampling_plan(const struct dt_interpolation *itor,
   return FALSE;
 }
 
-static void _interpolation_resample_plain(const struct dt_interpolation *itor,
+static void _interpolation_resample_plain(const dt_interpolation_t *itor,
                                           float *out,
                                           const dt_iop_roi_t *const roi_out,
                                           const float *const in,
@@ -1149,7 +1149,7 @@ exit:
 /** Applies resampling (re-scaling) on *full* input and output buffers.
  *  roi_in and roi_out define the part of the buffers that is affected.
  */
-void dt_interpolation_resample(const struct dt_interpolation *itor,
+void dt_interpolation_resample(const dt_interpolation_t *itor,
                                float *out,
                                const dt_iop_roi_t *const roi_out,
                                const float *const in,
@@ -1169,7 +1169,7 @@ void dt_interpolation_resample(const struct dt_interpolation *itor,
  *  roi's. roi_in and roi_out define the relative positions of the
  *  roi's within the full input and output image, respectively.
  */
-void dt_interpolation_resample_roi(const struct dt_interpolation *itor,
+void dt_interpolation_resample_roi(const dt_interpolation_t *itor,
                                    float *out,
                                    const dt_iop_roi_t *const roi_out,
                                    const float *const in,
@@ -1218,7 +1218,7 @@ static uint32_t roundToNextPowerOfTwo(uint32_t x)
 /** Applies resampling (re-scaling) on *full* input and output buffers.
  *  roi_in and roi_out define the part of the buffers that is affected.
  */
-int dt_interpolation_resample_cl(const struct dt_interpolation *itor,
+int dt_interpolation_resample_cl(const dt_interpolation_t *itor,
                                  const int devid,
                                  cl_mem dev_out,
                                  const dt_iop_roi_t *const roi_out,
@@ -1404,7 +1404,7 @@ error:
  *  roi's. roi_in and roi_out define the relative positions of the
  *  roi's within the full input and output image, respectively.
  */
-int dt_interpolation_resample_roi_cl(const struct dt_interpolation *itor,
+int dt_interpolation_resample_roi_cl(const dt_interpolation_t *itor,
                                      const int devid,
                                      cl_mem dev_out,
                                      const dt_iop_roi_t *const roi_out,
@@ -1421,7 +1421,7 @@ int dt_interpolation_resample_roi_cl(const struct dt_interpolation *itor,
 }
 #endif
 
-static void _interpolation_resample_1c_plain(const struct dt_interpolation *itor,
+static void _interpolation_resample_1c_plain(const dt_interpolation_t *itor,
                                              float *out,
                                              const dt_iop_roi_t *const roi_out,
                                              const float *const in,
@@ -1565,7 +1565,7 @@ static void _interpolation_resample_1c_plain(const struct dt_interpolation *itor
 /** Applies resampling (re-scaling) on *full* input and output buffers.
  *  roi_in and roi_out define the part of the buffers that is affected.
  */
-void dt_interpolation_resample_1c(const struct dt_interpolation *itor,
+void dt_interpolation_resample_1c(const dt_interpolation_t *itor,
                                   float *out,
                                   const dt_iop_roi_t *const roi_out,
                                   const float *const in,
@@ -1578,7 +1578,7 @@ void dt_interpolation_resample_1c(const struct dt_interpolation *itor,
  *  and output buffers hold exactly those roi's. roi_in and roi_out define the relative
  *  positions of the roi's within the full input and output image, respectively.
  */
-void dt_interpolation_resample_roi_1c(const struct dt_interpolation *itor,
+void dt_interpolation_resample_roi_1c(const dt_interpolation_t *itor,
                                       float *out,
                                       const dt_iop_roi_t *const roi_out,
                                       const float *const in,
