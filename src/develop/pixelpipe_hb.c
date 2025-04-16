@@ -3355,36 +3355,29 @@ float *dt_dev_get_raster_mask(dt_dev_pixelpipe_iop_t *piece,
         {
           if(it_piece->module->distort_mask && !_empty_finalscale(it_piece))
           {
-            float *transformed_mask =
-              dt_alloc_align_float((size_t)it_piece->processed_roi_out.width
-                                   * it_piece->processed_roi_out.height);
-            if(transformed_mask)
+            dt_iop_roi_t *roi = &it_piece->processed_roi_in;
+            dt_iop_roi_t *roo = &it_piece->processed_roi_out;
+            float *tmp = dt_iop_image_alloc(roo->width, roo->height, 1);
+            if(tmp)
             {
               dt_print_pipe(DT_DEBUG_MASKS | DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
                               "distort raster mask",
-                              piece->pipe, it_piece->module, DT_DEVICE_NONE,
-                              &it_piece->processed_roi_in, &it_piece->processed_roi_out);
-              it_piece->module->distort_mask(it_piece->module,
-                                             it_piece,
-                                             raster_mask,
-                                             transformed_mask,
-                                             &it_piece->processed_roi_in,
-                                             &it_piece->processed_roi_out);
+                              piece->pipe, it_piece->module, DT_DEVICE_NONE, roi, roo);
+              it_piece->module->distort_mask(it_piece->module, it_piece, raster_mask, tmp, roi, roo);
 
               if(*free_mask)
                 dt_free_align(raster_mask);
               else
                 *free_mask = TRUE;
 
-              raster_mask = transformed_mask;
-              final_roi = &it_piece->processed_roi_out;
+              raster_mask = tmp;
+              final_roi = roo;
             }
             else
             {
               dt_print_pipe(DT_DEBUG_ALWAYS,
                               "no distort raster mask",
-                              piece->pipe, it_piece->module, DT_DEVICE_NONE,
-                              &it_piece->processed_roi_in, &it_piece->processed_roi_out,
+                              piece->pipe, it_piece->module, DT_DEVICE_NONE, roi, roo,
                               "skipped transforming mask due to lack of memory");
               goto failure;
             }
@@ -3438,9 +3431,7 @@ gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
   if(piece->pipe->tiling)
     goto error;
 
-  const int width = roi->width;
-  const int height = roi->height;
-  float *mask = dt_alloc_align_float((size_t)width * height);
+  float *mask = dt_iop_image_alloc(roi->width, roi->height, 1);
   if(!mask) goto error;
 
   p->scharr.data = mask;
@@ -3457,10 +3448,10 @@ gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "write scharr mask CPU",
                 p, NULL, DT_DEVICE_CPU, NULL, NULL, "(%ix%i)",
-                width, height);
+                roi->width, roi->height);
 
   if(darktable.dump_pfm_module && (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT))
-    dt_dump_pfm("scharr_cpu", mask, width, height, sizeof(float), "detail");
+    dt_dump_pfm("scharr_cpu", mask, roi->width, roi->height, sizeof(float), "detail");
 
   return FALSE;
 
@@ -3505,15 +3496,13 @@ int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
         wboff ? 1.0f : p->dsc.temperature.coeffs[1],
         wboff ? 1.0f : p->dsc.temperature.coeffs[2] };
 
-  err = dt_opencl_enqueue_kernel_2d_args
-    (devid,
+  err = dt_opencl_enqueue_kernel_2d_args(devid,
      darktable.opencl->blendop->kernel_calc_Y0_mask, width, height,
      CLARG(tmp), CLARG(in), CLARG(width), CLARG(height),
      CLARG(wb[0]), CLARG(wb[1]), CLARG(wb[2]));
   if(err != CL_SUCCESS) goto error;
 
-  err = dt_opencl_enqueue_kernel_2d_args
-    (devid,
+  err = dt_opencl_enqueue_kernel_2d_args(devid,
      darktable.opencl->blendop->kernel_calc_scharr_mask, width, height,
      CLARG(tmp), CLARG(out), CLARG(width), CLARG(height));
   if(err != CL_SUCCESS) goto error;
@@ -3593,21 +3582,18 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
     {
       if(it_piece->module->distort_mask && !_empty_finalscale(it_piece))
       {
-        float *tmp = dt_alloc_align_float((size_t)it_piece->processed_roi_out.width
-                                            * it_piece->processed_roi_out.height);
+        dt_iop_roi_t *roi = &it_piece->processed_roi_in;
+        dt_iop_roi_t *roo = &it_piece->processed_roi_out;
+        float *tmp = dt_iop_image_alloc(roo->width, roo->height, 1);
         dt_print_pipe(DT_DEBUG_MASKS | DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
                         "distort detail mask",
-                        pipe, it_piece->module,
-                        DT_DEVICE_NONE,
-                        &it_piece->processed_roi_in, &it_piece->processed_roi_out);
+                        pipe, it_piece->module, DT_DEVICE_NONE, roi, roo);
 
-        it_piece->module->distort_mask(it_piece->module, it_piece, inmask, tmp,
-                                         &it_piece->processed_roi_in,
-                                         &it_piece->processed_roi_out);
+        it_piece->module->distort_mask(it_piece->module, it_piece, inmask, tmp, roi, roo);
         resmask = tmp;
         if(inmask != src) dt_free_align(inmask);
         inmask = tmp;
-        final_roi = &it_piece->processed_roi_out;
+        final_roi = roo;
       }
       else _distort_piece_roi(it_piece);
 
