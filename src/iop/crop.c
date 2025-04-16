@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021-2024 darktable developers.
+    Copyright (C) 2021-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -541,8 +541,7 @@ static float _aspect_ratio_get(dt_iop_module_t *self, GtkWidget *combo)
     }
     else
     {
-      const struct dt_interpolation *interpolation =
-        dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+      const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
       const float whratio = ((float)(iwd - 2 * interpolation->width) * (p->cw - p->cx))
                             / ((float)(iht - 2 * interpolation->width) * (p->ch - p->cy));
       const float ri = (float)iwd / (float)iht;

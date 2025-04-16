@@ -1,6 +1,6 @@
 /* --------------------------------------------------------------------------
     This file is part of darktable,
-    Copyright (C) 2012-2023 darktable developers.
+    Copyright (C) 2012-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,13 +46,13 @@ typedef float (*dt_interpolation_func)(float *taps,
                                        float interval);
 
 /** Interpolation structure */
-struct dt_interpolation
+typedef struct dt_interpolation_t
 {
   enum dt_interpolation_type id;     /**< Id such as defined by the dt_interpolation_type */
   const char *name;                  /**< internal name  */
   size_t width;                      /**< Half width of its kernel support */
   dt_interpolation_func maketaps;    /**< Kernel function */
-};
+} dt_interpolation_t;
 
 /** Compute a single interpolated sample.
  *
@@ -74,7 +74,7 @@ struct dt_interpolation
  *
  * @return computed sample
  */
-float dt_interpolation_compute_sample(const struct dt_interpolation *itor, const float *in, const float x,
+float dt_interpolation_compute_sample(const dt_interpolation_t *itor, const float *in, const float x,
                                       const float y, const int width, const int height,
                                       const int samplestride, const int linestride);
 
@@ -97,7 +97,7 @@ float dt_interpolation_compute_sample(const struct dt_interpolation *itor, const
  * @param linestride Stride in bytes for complete line
  *
  */
-void dt_interpolation_compute_pixel4c(const struct dt_interpolation *itor, const float *in, float *out,
+void dt_interpolation_compute_pixel4c(const dt_interpolation_t *itor, const float *in, float *out,
                                       const float x, const float y, const int width, const int height,
                                       const int linestride);
 
@@ -105,7 +105,7 @@ void dt_interpolation_compute_pixel4c(const struct dt_interpolation *itor, const
  * @param type Interpolator to search for
  * @return requested interpolator or default if not found (this function can't fail)
  */
-const struct dt_interpolation *dt_interpolation_new(enum dt_interpolation_type type);
+const dt_interpolation_t *dt_interpolation_new(enum dt_interpolation_type type);
 
 /** Image resampler.
  *
@@ -128,11 +128,11 @@ const struct dt_interpolation *dt_interpolation_new(enum dt_interpolation_type t
  * @param roi_in [in] Region of interest of the original image
  * @param in_stride [in] Input line stride in <strong>bytes</strong>
  */
-void dt_interpolation_resample(const struct dt_interpolation *itor, float *out,
+void dt_interpolation_resample(const dt_interpolation_t *itor, float *out,
                                const dt_iop_roi_t *const roi_out,
                                const float *const in, const dt_iop_roi_t *const roi_in);
 
-void dt_interpolation_resample_roi(const struct dt_interpolation *itor, float *out,
+void dt_interpolation_resample_roi(const dt_interpolation_t *itor, float *out,
                                    const dt_iop_roi_t *const roi_out,
                                    const float *const in, const dt_iop_roi_t *const roi_in);
 
@@ -169,20 +169,20 @@ void dt_interpolation_free_cl_global(dt_interpolation_cl_global_t *g);
  * @param roi_in [in] Region of interest of the original image
  * @param in_stride [in] Input line stride in <strong>bytes</strong>
  */
-int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid, cl_mem dev_out,
+int dt_interpolation_resample_cl(const dt_interpolation_t *itor, int devid, cl_mem dev_out,
                                  const dt_iop_roi_t *const roi_out, cl_mem dev_in,
                                  const dt_iop_roi_t *const roi_in);
 
-int dt_interpolation_resample_roi_cl(const struct dt_interpolation *itor, int devid, cl_mem dev_out,
+int dt_interpolation_resample_roi_cl(const dt_interpolation_t *itor, int devid, cl_mem dev_out,
                                      const dt_iop_roi_t *const roi_out, cl_mem dev_in,
                                      const dt_iop_roi_t *const roi_in);
 #endif
 
-void dt_interpolation_resample_1c(const struct dt_interpolation *itor,
+void dt_interpolation_resample_1c(const dt_interpolation_t *itor,
                                   float *out, const dt_iop_roi_t *const roi_out,
                                   const float *const in, const dt_iop_roi_t *const roi_in);
 
-void dt_interpolation_resample_roi_1c(const struct dt_interpolation *itor,
+void dt_interpolation_resample_roi_1c(const dt_interpolation_t *itor,
                                       float *out, const dt_iop_roi_t *const roi_out,
                                       const float *const in, const dt_iop_roi_t *const roi_in);
 
