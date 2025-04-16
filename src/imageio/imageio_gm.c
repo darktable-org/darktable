@@ -122,30 +122,26 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img,
     goto error;
   }
 
-  for(uint32_t row = 0; row < img->height; row++)
+  int ret = DispatchImage(image,
+                          0,
+                          0,
+                          img->width,
+                          img->height,
+                          "RGBP",
+                          FloatPixel,
+                          mipbuf,
+                          &exception);
+
+  if(exception.severity != UndefinedException)
+    CatchException(&exception);
+
+  if(ret != MagickPass)
   {
-    float *bufpointer = mipbuf + (size_t)4 * row * img->width;
-    int ret = DispatchImage(image,
-                            0,
-                            row,
-                            img->width,
-                            1,
-                            "RGBP",
-                            FloatPixel,
-                            bufpointer,
-                            &exception);
-
-    if(exception.severity != UndefinedException)
-      CatchException(&exception);
-
-    if(ret != MagickPass)
-    {
-      dt_print(DT_DEBUG_ALWAYS,
-               "[GraphicsMagick_open] error reading image '%s'",
-               img->filename);
-      err = DT_IMAGEIO_LOAD_FAILED;
-      goto error;
-    }
+    dt_print(DT_DEBUG_ALWAYS,
+             "[GraphicsMagick_open] error reading image '%s'",
+             img->filename);
+    err = DT_IMAGEIO_LOAD_FAILED;
+    goto error;
   }
 
   size_t profile_length;
