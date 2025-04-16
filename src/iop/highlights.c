@@ -27,6 +27,7 @@
 #include "common/imagebuf.h"
 #include "common/fast_guided_filter.h"
 #include "common/distance_transform.h"
+#include "common/interpolation.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -37,7 +38,6 @@
 #include "develop/masks.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -330,7 +330,13 @@ void distort_mask(dt_iop_module_t *self,
                   const dt_iop_roi_t *const roi_in,
                   const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
+  if(roi_out->scale != roi_in->scale)
+  {
+    const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+    dt_interpolation_resample_roi_1c(itor, out, roi_out, in, roi_in);
+  }
+  else
+    dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 }
 
 void modify_roi_out(dt_iop_module_t *self,
