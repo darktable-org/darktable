@@ -325,7 +325,7 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
       if(new_view == old_view && !plugin->expandable(plugin)) continue;
 
       /* does this module belong to current view ?*/
-      GtkWidget *ppw = plugin->expander ?: plugin->widget;
+      GtkWidget *ppw = plugin->expander ? plugin->expander : plugin->widget;
       if(ppw && gtk_widget_get_ancestor(ppw, GTK_TYPE_WINDOW))
       {
         if(plugin->view_leave)
