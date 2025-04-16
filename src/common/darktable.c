@@ -1371,7 +1371,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       darktable.tmp_directory = g_dir_make_tmp("darktable_XXXXXX", NULL);
     dt_print(DT_DEBUG_ALWAYS,
              "[init] darktable dump directory is '%s'",
-             (darktable.tmp_directory) ?: "NOT AVAILABLE");
+             darktable.tmp_directory ? darktable.tmp_directory : "NOT AVAILABLE");
   }
 
   // Set directories as requested or default.

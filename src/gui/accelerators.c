@@ -1843,7 +1843,7 @@ static void _effect_editing_started(GtkCellRenderer *renderer,
 
       for(; values->name; values++)
       {
-        const char *text = values->description ?: values->name;
+        const char *text = values->description ? values->description : values->name;
         if(*text)
           gtk_list_store_insert_with_values
             (store, NULL, -1,
@@ -2116,7 +2116,8 @@ static void _fill_action_fields(GtkTreeViewColumn *column,
     return;
   }
 
-  gchar const *text = (strrchr(action->label, '|') ?: action->label - 1) + 1;
+  gchar const *last_sep = strrchr(action->label, '|');
+  gchar const *text = last_sep ? last_sep + 1 : action->label;
   if(!data)
   {
     const dt_action_def_t *def = _action_find_definition(action);

@@ -2204,7 +2204,7 @@ void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
   module->widget_list = NULL;
   DT_CONTROL_SIGNAL_DISCONNECT_ALL(module, module->so->op);
   if(module->gui_cleanup) module->gui_cleanup(module);
-  gtk_widget_destroy(module->expander ?: module->widget);
+  gtk_widget_destroy(module->expander ? module->expander : module->widget);
   dt_iop_gui_cleanup_blending(module);
   dt_pthread_mutex_destroy(&module->gui_lock);
   dt_free_align(module->gui_data);
