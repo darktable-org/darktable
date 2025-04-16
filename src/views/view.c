@@ -325,7 +325,7 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
       if(new_view == old_view && !plugin->expandable(plugin)) continue;
 
       /* does this module belong to current view ?*/
-      GtkWidget *ppw = plugin->expander ?: plugin->widget;
+      GtkWidget *ppw = plugin->expander ? plugin->expander : plugin->widget;
       if(ppw && gtk_widget_get_ancestor(ppw, GTK_TYPE_WINDOW))
       {
         if(plugin->view_leave)
@@ -1710,12 +1710,12 @@ void dt_view_paint_surface(cairo_t *cr,
                   port->zoom_x, port->zoom_y };
   dt_dev_distort_transform_plus(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 3);
 
-  float offset_x = pts[0] / processed_width - 0.5f;
-  float offset_y = pts[1] / processed_height - 0.5f;
-  float preview_x = pts[2] / processed_width - 0.5f;
+  float offset_x  = pts[0] / processed_width  - 0.5f;
+  float offset_y  = pts[1] / processed_height - 0.5f;
+  float preview_x = pts[2] / processed_width  - 0.5f;
   float preview_y = pts[3] / processed_height - 0.5f;
-  float zoom_x = pts[4] / port->pipe->processed_width - 0.5f;
-  float zoom_y = pts[5] / port->pipe->processed_height - 0.5f;
+  float zoom_x    = pts[4] / processed_width  - 0.5f;
+  float zoom_y    = pts[5] / processed_height - 0.5f;
 
   dt_dev_zoom_t zoom = port->zoom;
   int closeup = port->closeup;
