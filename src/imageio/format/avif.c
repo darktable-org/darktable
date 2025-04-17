@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2024 darktable developers.
+    Copyright (C) 2019-2025 darktable developers.
 
     Copyright (c) 2019      Andreas Schneider
 
@@ -715,8 +715,18 @@ int set_params(dt_imageio_module_format_t *self,
     return 1;
   const dt_imageio_avif_t *d = (dt_imageio_avif_t *)params;
 
+  size_t idx = 0;
+  for(size_t i = 0; avif_bit_depth[i].name != NULL; i++)
+  {
+    if(avif_bit_depth[i].bit_depth == d->bit_depth)
+    {
+      idx = i;
+      break;
+    }
+  }
+
   dt_imageio_avif_gui_t *g = self->gui_data;
-  dt_bauhaus_combobox_set(g->bit_depth, d->bit_depth);
+  dt_bauhaus_combobox_set(g->bit_depth, idx);
   dt_bauhaus_combobox_set(g->color_mode, d->color_mode);
   dt_bauhaus_combobox_set(g->tiling, d->tiling);
   dt_bauhaus_combobox_set(g->compression_type, d->compression_type);
