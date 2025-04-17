@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2024 darktable developers.
+    Copyright (C) 2012-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1756,6 +1756,13 @@ static void _show_milliseconds(dt_lib_geotagging_t *d)
 static void _dt_pref_change_callback(gpointer instance, dt_lib_module_t *self)
 {
   _show_milliseconds(self->data);
+}
+
+void gui_reset(dt_lib_module_t *self)
+{
+  dt_lib_geotagging_t *d = self->data;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->lock_offset), false);
+  _refresh_image_datetime(self);
 }
 
 void gui_init(dt_lib_module_t *self)
