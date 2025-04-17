@@ -260,7 +260,8 @@ static dt_iop_demosaic_qual_flags_t demosaic_qual_flags(const dt_dev_pixelpipe_i
 
   // we check if we can stop at the linear interpolation step in VNG
   // instead of going the full way
-  if((flags & DT_DEMOSAIC_FULL_SCALE) && (roi_out->scale < (is_xtrans ? 0.5f : 0.667f)))
+  if(((flags & DT_DEMOSAIC_FULL_SCALE) && (roi_out->scale < (is_xtrans ? 0.5f : 0.667f)))
+    || piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
     flags |= DT_DEMOSAIC_ONLY_VNG_LINEAR;
 
   return flags;
@@ -628,7 +629,7 @@ void process(dt_iop_module_t *self,
     }
     // take care of passthru modes
     if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
-      demosaicing_method = is_xtrans ? DT_IOP_DEMOSAIC_MARKESTEIJN : DT_IOP_DEMOSAIC_RCD;
+      demosaicing_method = is_xtrans ? DT_IOP_DEMOSAIC_VNG : DT_IOP_DEMOSAIC_VNG4;
   }
 
   float *in  = (float *)i;
@@ -785,7 +786,7 @@ int process_cl(dt_iop_module_t *self,
     }
     // take care of passthru modes
     if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
-      demosaicing_method = is_xtrans ? DT_IOP_DEMOSAIC_MARKESTEIJN : DT_IOP_DEMOSAIC_RCD;
+      demosaicing_method = is_xtrans ? DT_IOP_DEMOSAIC_VNG : DT_IOP_DEMOSAIC_VNG4;
   }
 
   const int devid = pipe->devid;
@@ -852,7 +853,7 @@ int process_cl(dt_iop_module_t *self,
   }
   else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || demosaicing_method == DT_IOP_DEMOSAIC_VNG)
   {
-    err = process_vng_cl(self, piece, in_image, out_image, roi_in, FALSE);
+    err = process_vng_cl(self, piece, in_image, out_image, roi_in, qual_flags & DT_DEMOSAIC_ONLY_VNG_LINEAR);
     if(err != CL_SUCCESS) goto finish;
   }
   else if(base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN || base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3)
