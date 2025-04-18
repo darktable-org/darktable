@@ -58,7 +58,7 @@ jobs:
       fail-fast: true
       matrix:
         distro:
-          - "ubuntu:24.10"
+          - "ubuntu:25.04"
         compiler:
           - { compiler: GNU14,  CC: gcc-14,   CXX: g++-14,     packages: gcc-14 g++-14 }
           - { compiler: LLVM19, CC: clang-19, CXX: clang++-19, packages: clang-19 libomp-19-dev llvm-19-dev libc++-19-dev libc++abi1-19 lld-19 clang-tools-19 mlir-19-tools libmlir-19-dev}
@@ -71,7 +71,7 @@ jobs:
         eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
         include:
           # We want one run in CI to be Debug to make sure the Debug build isn't broken
-          - distro: "ubuntu:24.10"
+          - distro: "ubuntu:25.04"
             btype: Debug
             compiler: { compiler: GNU14, CC: gcc-14, CXX: g++-14, packages: gcc-14 g++-14 }
             target: skiptest
