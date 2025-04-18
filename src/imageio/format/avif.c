@@ -715,18 +715,8 @@ int set_params(dt_imageio_module_format_t *self,
     return 1;
   const dt_imageio_avif_t *d = (dt_imageio_avif_t *)params;
 
-  size_t idx = 0;
-  for(size_t i = 0; avif_bit_depth[i].name != NULL; i++)
-  {
-    if(avif_bit_depth[i].bit_depth == d->bit_depth)
-    {
-      idx = i;
-      break;
-    }
-  }
-
   dt_imageio_avif_gui_t *g = self->gui_data;
-  dt_bauhaus_combobox_set(g->bit_depth, idx);
+  dt_bauhaus_combobox_set_from_value(g->bit_depth, d->bit_depth);
   dt_bauhaus_combobox_set(g->color_mode, d->color_mode);
   dt_bauhaus_combobox_set(g->tiling, d->tiling);
   dt_bauhaus_combobox_set(g->compression_type, d->compression_type);
@@ -848,11 +838,15 @@ void gui_init(dt_imageio_module_format_t *self)
   size_t idx = 0;
   for(size_t i = 0; avif_bit_depth[i].name != NULL; i++)
   {
-    dt_bauhaus_combobox_add(gui->bit_depth,  _(avif_bit_depth[i].name));
+    dt_bauhaus_combobox_add_full(gui->bit_depth,
+                                 _(avif_bit_depth[i].name),
+                                 DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                 GINT_TO_POINTER(avif_bit_depth[i].bit_depth),
+                                 NULL,
+                                 TRUE); 
+
     if(avif_bit_depth[i].bit_depth == bit_depth)
-    {
       idx = i;
-    }
   }
   dt_bauhaus_combobox_set(gui->bit_depth, idx);
 
