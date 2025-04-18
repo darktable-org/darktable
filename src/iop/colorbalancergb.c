@@ -1871,6 +1871,8 @@ void gui_init(dt_iop_module_t *self)
   // Page 4-ways
   self->widget = dt_ui_notebook_page(g->notebook, N_("4 ways"), _("selective color grading"));
 
+  const char *hue_picker_tooltip = _("pick opposite color from image\nctrl-click to pick selected color");
+
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "global offset")));
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("offset"));
 
@@ -1884,6 +1886,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_feedback(g->global_H, 0);
   dt_bauhaus_slider_set_format(g->global_H, "°");
   gtk_widget_set_tooltip_text(g->global_H, _("hue of the global color offset"));
+  dt_bauhaus_widget_set_quad_tooltip(g->global_H, hue_picker_tooltip);
 
   g->global_C = dt_bauhaus_slider_from_params(sect, "global_C");
   dt_bauhaus_slider_set_soft_range(g->global_C, 0., 0.01);
@@ -1904,6 +1907,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_feedback(g->shadows_H, 0);
   dt_bauhaus_slider_set_format(g->shadows_H, "°");
   gtk_widget_set_tooltip_text(g->shadows_H, _("hue of the color gain in shadows"));
+  dt_bauhaus_widget_set_quad_tooltip(g->shadows_H, hue_picker_tooltip);
 
   g->shadows_C = dt_bauhaus_slider_from_params(sect, "shadows_C");
   dt_bauhaus_slider_set_soft_range(g->shadows_C, 0., 0.5);
@@ -1924,6 +1928,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_feedback(g->highlights_H, 0);
   dt_bauhaus_slider_set_format(g->highlights_H, "°");
   gtk_widget_set_tooltip_text(g->highlights_H, _("hue of the color gain in highlights"));
+  dt_bauhaus_widget_set_quad_tooltip(g->highlights_H, hue_picker_tooltip);
 
   g->highlights_C = dt_bauhaus_slider_from_params(sect, "highlights_C");
   dt_bauhaus_slider_set_soft_range(g->highlights_C, 0., 0.2);
@@ -1944,6 +1949,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_feedback(g->midtones_H, 0);
   dt_bauhaus_slider_set_format(g->midtones_H, "°");
   gtk_widget_set_tooltip_text(g->midtones_H, _("hue of the color exponent in mid-tones"));
+  dt_bauhaus_widget_set_quad_tooltip(g->midtones_H, hue_picker_tooltip);
 
   g->midtones_C = dt_bauhaus_slider_from_params(sect, "midtones_C");
   dt_bauhaus_slider_set_soft_range(g->midtones_C, 0., 0.1);
