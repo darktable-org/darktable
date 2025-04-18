@@ -155,6 +155,8 @@ changes (where available).
 - Fixed a crash in the import dialog when trying to add a new place to
   an empty places list.
 
+- Fixed bitdepth setting not saved in AVIF export presets.
+
 ## Lua
 
 ### API Version
