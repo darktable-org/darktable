@@ -161,6 +161,8 @@ changes (where available).
 
 - Fixed bitdepth setting not saved in AVIF export presets.
 
+- Fixed reset button not working in the geotagging module.
+
 ## Lua
 
 ### API Version
