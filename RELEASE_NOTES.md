@@ -134,6 +134,10 @@ changes (where available).
 
 - Changing orientation (via the flip module) respects changes done in crop module.
 
+- In the history module item tooltip, fixed the formatting and scaling
+  of the changes to match the values as seen in the modules
+  themselves.
+
 ## Bug Fixes
 
 - Fixed sidecar writing if quitting from darkroom.
