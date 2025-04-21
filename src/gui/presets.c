@@ -88,7 +88,7 @@ void dt_gui_presets_init()
                         NULL, NULL);
 }
 
-void dt_gui_presets_add_generic(const char *name,
+void (dt_gui_presets_add_generic)(const char *name,
                                 const dt_dev_operation_t op,
                                 const int32_t version,
                                 const void *params,
@@ -98,9 +98,11 @@ void dt_gui_presets_add_generic(const char *name,
 {
   dt_develop_blend_params_t default_blendop_params;
   dt_develop_blend_init_blend_parameters(&default_blendop_params, blend_cst);
+  gchar *prefixed_name = g_strdup_printf(BUILTIN_PREFIX "%s", name);
   dt_gui_presets_add_with_blendop(
-      name, op, version, params, params_size,
+      prefixed_name, op, version, params, params_size,
       &default_blendop_params, enabled);
+  g_free(prefixed_name);
 }
 
 void dt_gui_presets_add_with_blendop(const char *name,
@@ -1588,11 +1590,13 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w)
         gchar *txt = g_strdup_printf("ꬹ%s|%sꬹ", iop->so->op, name);
         if(config && strstr(config, txt))
         {
-          GtkWidget *mi = gtk_menu_item_new_with_label(name);
+          GtkWidget *mi = gtk_menu_item_new_with_label("");
+          gchar *local_name = dt_util_localize_segmented_name(name, TRUE);
           gchar *tt = g_markup_printf_escaped("<b>%s %s</b> %s",
-                                              iop->name(), iop->multi_name, name);
+                                              iop->name(), iop->multi_name, local_name);
           gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), tt);
           g_free(tt);
+          g_free(local_name);
           _menuitem_connect_preset(mi, name, iop);
           gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(mi));
         }
@@ -1616,6 +1620,27 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w)
   dt_gui_menu_popup(menu, w, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST);
 }
 
+// Comparator function to sort menu items alphabetically by their labels in reverse order
+static gint _compare_menu_items(GtkMenuItem *a, GtkMenuItem *b)
+{
+  return - g_utf8_collate(gtk_menu_item_get_label(a), gtk_menu_item_get_label(b));
+}
+
+// Function to sort GtkMenuShell items
+static void _sort_menu_shell(GtkWidget *menu_shell)
+{
+  if(!GTK_IS_MENU_SHELL(menu_shell)) return;
+  GList *items = gtk_container_get_children(GTK_CONTAINER(menu_shell));
+  items = g_list_sort(items, (GCompareFunc)_compare_menu_items);
+  for(GList *iter = items; iter; iter = g_list_delete_link(iter, iter))
+  {
+    g_object_ref(iter->data);
+    gtk_container_remove(GTK_CONTAINER(menu_shell), GTK_WIDGET(iter->data));
+    _sort_menu_shell(gtk_menu_item_get_submenu(GTK_MENU_ITEM(iter->data)));
+    gtk_menu_shell_prepend(GTK_MENU_SHELL(menu_shell), GTK_WIDGET(iter->data));
+    g_object_unref(iter->data);
+  }
+}
 
 GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
 {
@@ -1740,7 +1765,9 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
     if(darktable.gui->last_preset && strcmp(darktable.gui->last_preset, name) == 0)
       found = TRUE;
 
-    gchar **split = g_strsplit(name, "|", -1), **s = split, **p = prev_split;
+    gchar *local_name = dt_util_localize_segmented_name(name, FALSE);
+    gchar **split = g_strsplit(local_name, "|", -1), **s = split, **p = prev_split;
+    g_free(local_name);
     for(; p && *(p+1) && *(s+1) && !g_strcmp0(*s, *p); p++, s++)
       ;
     for(; p && *(p+1); p++)
@@ -1750,9 +1777,7 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
     }
     for(; *(s+1); s++)
     {
-      GtkWidget *sm = gtk_menu_item_new_with_label("");
-      GtkWidget *mi_label = gtk_bin_get_child(GTK_BIN(sm));
-      gtk_label_set_text(GTK_LABEL(mi_label), *s);
+      GtkWidget *sm = gtk_menu_item_new_with_label(*s);
       menu_path = g_slist_prepend(menu_path, sm); // push
 
       gtk_menu_shell_append(GTK_MENU_SHELL(submenu), sm);
@@ -1775,13 +1800,9 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
       label = g_strdup_printf("%s %s", *s, _("(default)"));
     else
       label = g_strdup(*s);
-    mi = gtk_check_menu_item_new_with_label("");
-    GtkWidget *mi_label = gtk_bin_get_child(GTK_BIN(mi));
-    gchar *el = g_markup_escape_text(label, -1);
-    gtk_label_set_markup(GTK_LABEL(mi_label), el);
+    mi = gtk_check_menu_item_new_with_label(label);
     dt_gui_add_class(mi, "dt_transparent_background");
     g_free(label);
-    g_free(el);
 
     if(module
        && ((op_params_size == 0
@@ -1821,6 +1842,8 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
   g_slist_free(menu_path);
   g_strfreev(prev_split);
 
+  _sort_menu_shell(mainmenu);
+
   if(cnt > 0) gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
 
   if(module)
@@ -1846,7 +1869,7 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
 
       if(darktable.gui->last_preset && found)
       {
-        char *markup = g_markup_printf_escaped("%s <span weight='bold'>%s</span>",
+        char *markup = g_markup_printf_escaped("%s <b>%s</b>",
                                                _("update preset"),
                                                darktable.gui->last_preset);
         mi = gtk_menu_item_new_with_label("");

@@ -792,7 +792,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
-  dt_gui_presets_add_generic(C_("eq_preset", "coarse"), self->op,
+  dt_gui_presets_add_generic(_("coarse"), self->op,
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
   for(int k = 0; k < BANDS; k++)
@@ -824,7 +824,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
-  dt_gui_presets_add_generic(C_("atrous", "sharpen"), self->op,
+  dt_gui_presets_add_generic(_("sharpen"), self->op,
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
   for(int k = 0; k < BANDS; k++)
@@ -910,7 +910,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur | large blur, strength 3"), self->op,
+  dt_gui_presets_add_generic(_("deblur | large blur | strength 3"), self->op,
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -928,7 +928,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur | medium blur, strength 3"), self->op,
+  dt_gui_presets_add_generic(_("deblur | medium blur | strength 3"), self->op,
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -945,7 +945,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur | fine blur, strength 3"), self->op,
+  dt_gui_presets_add_generic(_("deblur | fine blur | strength 3"), self->op,
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -964,7 +964,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur | large blur, strength 2"), self->op,
+  dt_gui_presets_add_generic(_("deblur | large blur | strength 2"), self->op,
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -982,7 +982,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur | medium blur, strength 2"), self->op,
+  dt_gui_presets_add_generic(_("deblur | medium blur | strength 2"), self->op,
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -999,7 +999,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur | fine blur, strength 2"), self->op,
+  dt_gui_presets_add_generic(_("deblur | fine blur | strength 2"), self->op,
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -1018,7 +1018,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur | large blur, strength 1"), self->op,
+  dt_gui_presets_add_generic(_("deblur | large blur | strength 1"), self->op,
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -1036,7 +1036,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur | medium blur, strength 1"), self->op,
+  dt_gui_presets_add_generic(_("deblur | medium blur | strength 1"), self->op,
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -1053,7 +1053,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur | fine blur, strength 1"), self->op,
+  dt_gui_presets_add_generic(_("deblur | fine blur | strength 1"), self->op,
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -1382,7 +1382,7 @@ static gboolean area_draw(GtkWidget *widget,
     pango_layout_set_font_description(layout, desc);
     gdk_cairo_set_source_rgba(cr, &graph_bg);
     cairo_set_font_size(cr, .06 * height);
-    pango_layout_set_text(layout, _("coarse"), -1);
+    pango_layout_set_text(layout, C_("graph", "coarse"), -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     cairo_move_to(cr, .02 * width - ink.y, .14 * height + ink.width);
     cairo_save(cr);
@@ -1628,7 +1628,7 @@ const dt_action_element_def_t _action_elements_equalizer[]
   = { { N_("radius"  ), dt_action_effect_value     },
       { N_("coarsest"), dt_action_effect_equalizer },
       { N_("coarser" ), dt_action_effect_equalizer },
-      { N_("coarse"  ), dt_action_effect_equalizer },
+      { NC_("graph", "coarse"), dt_action_effect_equalizer },
       { N_("fine"    ), dt_action_effect_equalizer },
       { N_("finer"   ), dt_action_effect_equalizer },
       { N_("finest"  ), dt_action_effect_equalizer },

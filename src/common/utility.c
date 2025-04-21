@@ -59,7 +59,7 @@ const char *dt_util_localize_string(const char *s)
   static const int prefix_len = sizeof(prefix)-1;
 
   if(s && strncmp(s, prefix, prefix_len) == 0)
-    return _(s+prefix_len);
+    return Q_(s+prefix_len);
   else
     return s;
 }
@@ -70,7 +70,9 @@ gchar *dt_util_localize_segmented_name(const char *s,
   const char *sep = with_space ? " | " : "|";
   const int sep_len = strlen(sep);
 
-  gchar **split = g_strsplit(s, "|", 0);
+  const char *local_s = g_str_has_prefix(s, BUILTIN_PREFIX)
+                      ? _(s+sizeof(BUILTIN_PREFIX)-1) : s;
+  gchar **split = g_strsplit(local_s, "|", 0);
   gchar *localized = NULL;
   if(split && split[0])
   {
@@ -81,8 +83,11 @@ gchar *dt_util_localize_segmented_name(const char *s,
     gchar *end = g_stpcpy(localized, dt_util_localize_string(split[0]));
     for(int i = 1; split[i] != NULL; i++)
     {
+      while(*end == ' ') end--;
       end = g_stpcpy(end, sep);
-      end = g_stpcpy(end, dt_util_localize_string(split[i]));
+      gchar *part = split[i];
+      while(*part == ' ' ) part++;
+      end = g_stpcpy(end, dt_util_localize_string(part));
     }
   }
   g_strfreev(split);

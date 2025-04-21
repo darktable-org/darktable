@@ -32,6 +32,7 @@ const char *dt_util_localize_string(const char *s);
 /** caller must g_free() return value */
 gchar *dt_util_localize_segmented_name(const char *s,
                                        const gboolean with_space);
+#define BUILTIN_PREFIX "_builtin_"
 
 /** dynamically allocate and concatenate string */
 void dt_util_str_cat(gchar **str, const gchar *format, ...) __attribute__((format(printf, 2, 3)));

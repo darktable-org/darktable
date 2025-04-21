@@ -286,7 +286,11 @@ static void add_preset(dt_iop_module_so_t *self, const char *name,
   }
 
   if(p && bp)
-    dt_gui_presets_add_with_blendop(name, self->op, version, p, len, bp, 1);
+  {
+    gchar *prefixed_name = g_strdup_printf(BUILTIN_PREFIX "%s", name);
+    dt_gui_presets_add_with_blendop(prefixed_name, self->op, version, p, len, bp, 1);
+    g_free(prefixed_name);
+  }
   free(bp);
   free(p);
 }
@@ -294,26 +298,26 @@ static void add_preset(dt_iop_module_so_t *self, const char *name,
 void init_presets(dt_iop_module_so_t *self)
 {
   // these blobs were exported as dtstyle and copied from there:
-  add_preset(self, _("split-toning teal-orange (2nd instance)"),
+  add_preset(self, N_("split-toning teal-orange (2nd instance)"),
              "gz02eJxjZGBg8HhYZX99cYN9kkCDfdCOOnsGhgZ7ruvN9m8CK+yXFNTaz5w50z5PqBku9u9/PVjNv//9jqfP+NgDAHs0HIc=", 3,
              "gz05eJxjZWBgYGUAgRNODFDAzszAxMBQ5cwI4Tow4AUNdkBsD8E3gGwue9x8uB6q8s+c8bEF8Z9Y9Nnt2f3bbluCN03tg/EBIBckVg==", 8);
-  add_preset(self, _("split-toning teal-orange (1st instance)"),
+  add_preset(self, N_("split-toning teal-orange (1st instance)"),
              "gz02eJxjZACBBvugHXX2E3fU219f3GAP4n/TqLFvfd1oL8HZaH/2jI/9prn1cLHUtDSwGgaGCY7//tfbAwBRixpm", 3,
              "gz04eJxjZWBgYGUAgRNODFDApgwiq5wZIVyHD4E7bBnwggZ7CIYBRiBbBA8fXT1l/P5DX21i+pnA/Pfv8uw6OzzIMq9I5rgtSH//4wii1AMASbIlcw==", 8);
 
-  add_preset(self, _("generic film"),
+  add_preset(self, N_("generic film"),
              "gz02eJxjZACBBntN5gb7op/19u5AGsSX3dFgr+jYaL+vttb+0NcM+1Pnq+3XyFTZr/rYBJZPS0sD0hMcQDQA29kXSQ==", 3,
              "gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRxQcA5qIZBA==", 8);
 
-  add_preset(self, _("similar to Kodak Portra"),
+  add_preset(self, N_("similar to Kodak Portra"),
              "gz02eJxjZACBBnsQfh3YYK8VU28P43s8rLKP6W+yP/Q1w36deyMYLymoBcsZGxcDaQGHs2d87AGnphWu", 3,
              "gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRxQcA5qIZBA==", 8);
 
-  add_preset(self, _("similar to Kodak Ektar"),
+  add_preset(self, N_("similar to Kodak Ektar"),
              "gz02eJxjZACBBvvrixvsrXIb7IN21NnD+CA2iOa6nmxvZFxsX15ebp+e1gaWNwbyGRgEHNLS0uwBE7wWhw==", 3,
              "gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRxQcA5qIZBA==", 8);
 
-  add_preset(self, _("similar to Kodachrome"),
+  add_preset(self, N_("similar to Kodachrome"),
              "gz02eJxjZACBBvvrixvsrXIb7IN21NnD+CA2iG59HWhvZFxsX15ebp+e1gaWT0tLA9ICDrNmRtoDACjOF7c=", 3,
              "gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRxQcA5qIZBA==", 8);
 }
