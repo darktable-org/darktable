@@ -273,18 +273,26 @@ highlights_4f_clip (read_only image2d_t in, write_only image2d_t out, const int 
 }
 
 kernel void
-highlights_1f_clip (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                    global float *clips, const int rx, const int ry, const int filters, global const unsigned char (*const xtrans)[6])
+highlights_1f_clip (read_only image2d_t in, write_only image2d_t out,
+                    const int iwidth, const int iheight,
+                    const int owidth, const int oheight,
+                    global float *clips, const int dx, const int dy,
+                    const int filters, global const unsigned char (*const xtrans)[6])
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
-  if(x >= width || y >= height) return;
-  const int color = (filters == 9u) ? FCxtrans(y, x, xtrans) : FC(y, x, filters);
+  if(x >= owidth || y >= oheight) return;
 
-  float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
-
-  pixel = fmin(clips[color], pixel);
+  const int irow = y + dy;
+  const int icol = x + dx;
+  float pixel = 0.0f;
+  if((icol >= 0) && (irow >= 0) && (irow < iheight) && (icol < iwidth))
+  {
+    const int color = (filters == 9u) ? FCxtrans(irow, icol, xtrans) : FC(irow, icol, filters);
+    pixel = read_imagef(in, sampleri, (int2)(icol, irow)).x;
+    pixel = fmin(clips[color], pixel);
+  }
   write_imagef (out, (int2)(x, y), pixel);
 }
 
