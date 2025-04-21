@@ -958,7 +958,7 @@ static inline void dt_unreachable_codepath_with_caller(const char *description,
  * NQ_ should be used to strip any context from the string.
  */
 #undef NC_
-#define NC_(Context, String) (Context "|" String)
+#define NC_(Context, String) Context "|" String
 
 static inline const gchar *NQ_(const gchar *String)
 {

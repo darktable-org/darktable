@@ -454,7 +454,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.orientation = ORIENTATION_NULL;
   dt_gui_presets_add_generic(_("auto"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
-  dt_gui_presets_update_autoapply(_("auto"), self->op, self->version(), TRUE);
+  dt_gui_presets_update_autoapply(BUILTIN_PRESET("auto"), self->op, self->version(), TRUE);
 
   p.orientation = ORIENTATION_NONE;
   dt_gui_presets_add_generic(_("no rotation"), self->op,
