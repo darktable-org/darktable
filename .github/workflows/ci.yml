@@ -191,20 +191,22 @@ jobs:
   Windows:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
     name: Windows_${{ matrix.msystem }}_${{ matrix.btype }}
-    runs-on: windows-latest
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: true
       matrix:
         btype:
           - Release
-        msystem:
-          #- CLANG64
-          - UCRT64
         target:
           - skiptest
         generator:
           - Ninja
         eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
+        include:
+          - runner: windows-latest
+            msystem: UCRT64
+          - runner: windows-11-arm
+            msystem: CLANGARM64
     defaults:
       run:
         shell: msys2 {0}
