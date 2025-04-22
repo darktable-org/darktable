@@ -1871,7 +1871,7 @@ void gui_init(dt_iop_module_t *self)
   // Page 4-ways
   self->widget = dt_ui_notebook_page(g->notebook, N_("4 ways"), _("selective color grading"));
 
-  const char *hue_picker_tooltip = _("pick opposite color from image\nctrl-click to pick selected color");
+  const char *hue_picker_tooltip = _("pick opposite color from image\nctrl+click to pick selected color");
 
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "global offset")));
   sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("offset"));
