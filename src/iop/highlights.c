@@ -542,17 +542,29 @@ int process_cl(dt_iop_module_t *self,
   const uint32_t filters = pipe->dsc.filters;
   const int devid = pipe->devid;
 
-  const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
-  const gboolean passthru = pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
-  const dt_iop_highlights_mode_t dmode = passthru && fullpipe ? DT_IOP_HIGHLIGHTS_CLIP : d->mode;
+  if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
+  {
+    if(!filters)
+      return dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
+    else
+    {
+      size_t iorigin[] = { roi_out->x, roi_out->y, 0 };
+      size_t oorigin[] = { 0, 0, 0 };
+      size_t region[] = { roi_out->width, roi_out->height, 1 };
+      return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, iorigin, oorigin, region);
+    }
+  }
 
-  gboolean announce = passthru ? FALSE : dt_iop_piece_is_raster_mask_used(piece, BLEND_RASTER_ID);
+  const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const dt_iop_highlights_mode_t dmode =  d->mode;
+
+  gboolean announce = dt_iop_piece_is_raster_mask_used(piece, BLEND_RASTER_ID);
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem dev_xtrans = NULL;
   cl_mem dev_clips = NULL;
 
-  if(g && fullpipe && !passthru)
+  if(g && fullpipe)
   {
     if(g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF)
     {
@@ -585,7 +597,7 @@ int process_cl(dt_iop_module_t *self,
     }
   }
 
-  const float clip = passthru ? FLT_MAX : (d->clip * dt_iop_get_processed_minimum(piece));
+  const float clip = d->clip * dt_iop_get_processed_minimum(piece);
 
   if(!filters)
   {
@@ -671,7 +683,6 @@ int process_cl(dt_iop_module_t *self,
       CLARG(filters), CLARG(dev_xtrans));
   }
   if(err != CL_SUCCESS) goto finish;
-  if(passthru) goto finish;
 
   float *mask = NULL;
   if(announce)
@@ -826,16 +837,24 @@ void process(dt_iop_module_t *self,
   dt_iop_highlights_data_t *d = piece->data;
   dt_iop_highlights_gui_data_t *g = self->gui_data;
 
+  if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
+  {
+    if(!filters)
+      dt_iop_clip_and_zoom_roi((float *)ovoid, (float *)ivoid, roi_out, roi_in);
+    else
+      dt_iop_copy_image_roi((float *)ovoid, (float *)ivoid, 1, roi_in, roi_out);
+    return;
+  }
+
   const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
   const gboolean fastmode = pipe->type & DT_DEV_PIXELPIPE_FAST;
-
-  const gboolean passthru = pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
-  dt_iop_highlights_mode_t dmode = passthru ? DT_IOP_HIGHLIGHTS_CLIP : d->mode;
-
+  const dt_iop_highlights_mode_t dmode = fastmode && (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)
+                                        ? DT_IOP_HIGHLIGHTS_OPPOSED
+                                        : d->mode;
   const gboolean scaled = filters == 0 && dmode != DT_IOP_HIGHLIGHTS_CLIP;
 
   float *out = scaled ? dt_alloc_align_float((size_t)roi_in->width * roi_in->height * 4) : NULL;
-  const gboolean announce = passthru ? FALSE : dt_iop_piece_is_raster_mask_used(piece, BLEND_RASTER_ID);
+  const gboolean announce = dt_iop_piece_is_raster_mask_used(piece, BLEND_RASTER_ID);
 
   if(!out && scaled)
   {
@@ -847,7 +866,7 @@ void process(dt_iop_module_t *self,
     return;
   }
 
-  if(g && fullpipe && !passthru)
+  if(g && fullpipe)
   {
     if(g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF)
     {
@@ -879,19 +898,15 @@ void process(dt_iop_module_t *self,
     high_quality = (level >= min_s);
   }
 
-  const float clip = passthru ? FLT_MAX : d->clip * dt_iop_get_processed_minimum(piece);
+  const float clip = d->clip * dt_iop_get_processed_minimum(piece);
 
   if(filters == 0)
   {
     if(dmode == DT_IOP_HIGHLIGHTS_CLIP)
     {
       process_clip(self, piece, ivoid, ovoid, roi_in, roi_out, clip);
-      if(!passthru)
-      {
-        const float m = dt_iop_get_processed_minimum(piece);
-        for_three_channels(k)
-          pipe->dsc.processed_maximum[k] = m;
-      }
+      const float m = dt_iop_get_processed_minimum(piece);
+      for_three_channels(k) pipe->dsc.processed_maximum[k] = m;
     }
     else
     {
@@ -900,8 +915,6 @@ void process(dt_iop_module_t *self,
       dt_free_align(out);
     }
 
-    if(passthru) return;
-
     float *mask = announce ? _provide_raster_mask(roi_in, roi_out, (float *)ovoid, d->clip, piece) : NULL;
     if(mask)  dt_iop_piece_set_raster(piece, mask, roi_in, roi_out);
     else      dt_iop_piece_clear_raster(piece, NULL);
@@ -909,7 +922,6 @@ void process(dt_iop_module_t *self,
     return;
   }
 
-  dmode = fastmode && (dmode == DT_IOP_HIGHLIGHTS_SEGMENTS) ? DT_IOP_HIGHLIGHTS_OPPOSED : dmode;
   switch(dmode)
   {
     case DT_IOP_HIGHLIGHTS_INPAINT: // a1ex's (magiclantern) idea of color inpainting:
@@ -998,14 +1010,12 @@ void process(dt_iop_module_t *self,
     }
   }
 
-  if(passthru) return;
-
   float *mask = announce ? _provide_raster_mask(roi_in, roi_out, (float *)ovoid, d->clip, piece) : NULL;
   if(mask)  dt_iop_piece_set_raster(piece, mask, roi_in, roi_out);
   else      dt_iop_piece_clear_raster(piece, NULL);
 
   // update processed maximum
-  if((dmode != DT_IOP_HIGHLIGHTS_LAPLACIAN) && (dmode != DT_IOP_HIGHLIGHTS_SEGMENTS) && (dmode != DT_IOP_HIGHLIGHTS_OPPOSED) && !passthru)
+  if((dmode != DT_IOP_HIGHLIGHTS_LAPLACIAN) && (dmode != DT_IOP_HIGHLIGHTS_SEGMENTS) && (dmode != DT_IOP_HIGHLIGHTS_OPPOSED))
   {
     // The guided laplacian, inpaint opposed and segmentation modes keep signal scene-referred and don't clip highlights to 1
     // For the other modes, we need to notify the pipeline that white point has changed
