@@ -197,16 +197,19 @@ jobs:
       matrix:
         btype:
           - Release
+        msystem:
+          - CLANGARM64
+          - UCRT64
         target:
           - skiptest
         generator:
           - Ninja
         eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
         include:
-          - runner: windows-latest
-            msystem: UCRT64
-          - runner: windows-11-arm
-            msystem: CLANGARM64
+          - msystem: CLANGARM64
+            runner: windows-11-arm
+          - msystem: UCRT64
+            runner: windows-latest
     defaults:
       run:
         shell: msys2 {0}
@@ -231,7 +234,6 @@ jobs:
             cmake:p
             libxslt:p
             ninja:p
-            nsis:p
             python-jsonschema:p
             curl:p
             drmingw:p
