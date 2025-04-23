@@ -395,6 +395,12 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   TIFFGetField(t.tiff, TIFFTAG_PHOTOMETRIC, &photometric);
   TIFFGetField(t.tiff, TIFFTAG_INKSET, &inkset);
 
+  // Citing the TIFF 6.0 specification for SampleFormat:
+  // A reader would typically treat an image with “undefined” data as
+  // if the field were not present (i.e. as unsigned integer data).
+  if(t.sampleformat == SAMPLEFORMAT_VOID)
+    t.sampleformat = SAMPLEFORMAT_UINT;
+
   if(inkset == INKSET_CMYK || inkset == INKSET_MULTIINK)
   {
     dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: unsupported CMYK (or multi-ink) in '%s'", filename);
