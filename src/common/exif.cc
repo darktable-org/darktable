@@ -4859,21 +4859,28 @@ static void _set_xmp_dt_metadata(Exiv2::XmpData &xmpData,
   {
     int keyid = sqlite3_column_int(stmt, 0);
     const dt_metadata_t *metadata = dt_metadata_get_metadata_by_keyid(keyid);
-    if(metadata)
+    if(metadata && g_str_has_prefix(metadata->tagname, "Xmp."))
     {
-      if(export_flag
-        && !metadata->internal)
+      try
       {
-        if(metadata->visible && !metadata->priv)
-          xmpData[metadata->tagname] = sqlite3_column_text(stmt, 1);
-        else
+        if(export_flag
+          && !metadata->internal)
         {
-          Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey(metadata->tagname));
-          if(pos != xmpData.end()) xmpData.erase(pos);
+          if(metadata->visible && !metadata->priv)
+            xmpData[metadata->tagname] = sqlite3_column_text(stmt, 1);
+          else
+          {
+            Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey(metadata->tagname));
+            if(pos != xmpData.end()) xmpData.erase(pos);
+          }
         }
+        else
+          xmpData[metadata->tagname] = sqlite3_column_text(stmt, 1);
       }
-      else
-        xmpData[metadata->tagname] = sqlite3_column_text(stmt, 1);
+      catch(Exiv2::AnyError &e)
+      {
+        // ignore invalid tags
+      }
     }
   }
   dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);  
@@ -5627,6 +5634,38 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
       _exif_xmp_read_data_export(xmpData, imgid, m);
 
       Exiv2::IptcData &iptcData = img->iptcData();
+
+      // now add all exif and iptc metadata from the metadata editor.
+      // xmp metadata is already processed.
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT key, value FROM main.meta_data WHERE id = ?1",
+                                  -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+      while(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        int keyid = sqlite3_column_int(stmt, 0);
+        const dt_metadata_t *md = dt_metadata_get_metadata_by_keyid(keyid);
+        if(md && md->visible && !md->priv && !md->internal)
+        {
+          const char *value = (char *)sqlite3_column_text(stmt, 1);
+          try
+          {
+            if(g_str_has_prefix(md->tagname, "Iptc."))
+              iptcData[md->tagname] = value;
+            else if(g_str_has_prefix(md->tagname, "Exif."))
+              exifData[md->tagname] = value;
+          }
+          catch(Exiv2::AnyError &e)
+          {
+            // ignore invalid tags
+          }
+        }
+      }
+      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);  
+      sqlite3_finalize(stmt);
 
       if(!(m->flags & DT_META_GEOTAG))
         _remove_exif_geotag(exifData);
