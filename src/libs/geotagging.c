@@ -1763,6 +1763,15 @@ void gui_reset(dt_lib_module_t *self)
   dt_lib_geotagging_t *d = self->data;
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->lock_offset), false);
   _refresh_image_datetime(self);
+
+#ifdef HAVE_MAP
+  if(d->map.view)
+  {
+    gtk_label_set_text(GTK_LABEL(d->map.gpx_file), "");
+    _remove_tracks_from_map(self);
+    gtk_widget_set_visible(d->map.gpx_view, FALSE);
+  }
+#endif
 }
 
 void gui_init(dt_lib_module_t *self)
