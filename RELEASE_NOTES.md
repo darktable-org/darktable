@@ -161,7 +161,8 @@ changes (where available).
 
 - Fixed bitdepth setting not saved in AVIF export presets.
 
-- Fixed reset button not working in the geotagging module.
+- Fixed reset button not working in the geotagging module. Also a
+  loaded GPX track in the geotagging module is now properly removed.
 
 ## Lua
 
