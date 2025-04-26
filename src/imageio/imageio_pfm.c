@@ -41,7 +41,6 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img,
 
   int ret = 0;
   int channels = 3;
-  float scale_factor;
   char head[2] = { 'X', 'X' };
 
   ret = fscanf(f, "%c%c\n", head, head + 1);
@@ -56,7 +55,6 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img,
   else
     goto error_corrupt;
 
-  int read_byte;
   gboolean made_by_photoshop = TRUE;
   // We expect metadata with a newline character at the end.
   // If there is no whitespace in the first line, then this file
@@ -65,7 +63,7 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img,
   // to the file in a different order.
   for(;;)
   {
-    read_byte = fgetc(f);
+    int read_byte = fgetc(f);
     if((read_byte == '\n') || (read_byte == EOF))
       break;
     if(read_byte < '0')          // easy way to match all whitespaces
@@ -87,22 +85,18 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img,
   if(ret != 3)
     goto error_corrupt;
 
-  errno = 0;
   img->width = strtol(width_string, NULL, 0);
   img->height = strtol(height_string, NULL, 0);
-  scale_factor = g_ascii_strtod(scale_factor_string, NULL);
+  const float scale_factor = g_ascii_strtod(scale_factor_string, NULL);
 
-  if(errno != 0)
-    goto error_corrupt;
   if(img->width <= 0 || img->height <= 0 )
     goto error_corrupt;
 
   ret = fread(&ret, sizeof(char), 1, f);
   if(ret != 1)
     goto error_corrupt;
-  ret = 0;
 
-  int swap_byte_order = (scale_factor >= 0.0) ^ (G_BYTE_ORDER == G_BIG_ENDIAN);
+  const int swap_byte_order = (scale_factor >= 0.0) ^ (G_BYTE_ORDER == G_BIG_ENDIAN);
 
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
@@ -112,10 +106,15 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img,
 
   const size_t npixels = (size_t)img->width * img->height;
 
-  float *readbuf = dt_alloc_align_float(npixels * 4);
+  float *readbuf = dt_alloc_align_float(npixels * channels);
   if(!readbuf)
     goto error_cache_full;
-
+  ret = fread(readbuf, sizeof(float) * channels, npixels, f);
+  if(ret != npixels)
+  {
+    dt_free_align(readbuf);
+    goto error_corrupt;
+  }
   // We use this union to swap the byte order in the float value if needed
   union { float as_float; guint32 as_int; } value;
 
@@ -124,45 +123,37 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img,
   // the rows in the process of filling the output buffer with data
   if(channels == 3)
   {
-    ret = fread(readbuf, 3 * sizeof(float), npixels, f);
-    size_t target_row = 0;
-
-DT_OMP_FOR(collapse(2))
+    DT_OMP_FOR(collapse(2))
     for(size_t row = 0; row < img->height; row++)
+    {
+      const size_t target_row = made_by_photoshop ? row : img->height - 1 - row;
       for(size_t column = 0; column < img->width; column++)
       {
         dt_aligned_pixel_t pix = {0.0f, 0.0f, 0.0f, 0.0f};
-        if(made_by_photoshop)
-          target_row = row;
-        else
-          target_row = img->height - 1 - row;
         for_three_channels(c)
         {
-        value.as_float = readbuf[3 * (target_row * img->width + column) + c];
-        if(swap_byte_order) value.as_int = GUINT32_SWAP_LE_BE(value.as_int);
-        pix[c] = value.as_float;
+          value.as_float = readbuf[3 * (target_row * img->width + column) + c];
+          if(swap_byte_order) value.as_int = GUINT32_SWAP_LE_BE(value.as_int);
+          pix[c] = value.as_float;
         }
         copy_pixel_nontemporal(&buf[4 * (img->width * row + column)], pix);
       }
+    }
   }
   else
   {
-    ret = fread(readbuf, sizeof(float), npixels, f);
-    size_t target_row = 0;
-
-DT_OMP_FOR(collapse(2))
+    DT_OMP_FOR(collapse(2))
     for(size_t row = 0; row < img->height; row++)
+    {
+      const size_t target_row = made_by_photoshop ? row : img->height - 1 - row;
       for(size_t column = 0; column < img->width; column++)
       {
-        if(made_by_photoshop)
-          target_row = row;
-        else
-          target_row = img->height - 1 - row;
         value.as_float = readbuf[target_row * img->width + column];
         if(swap_byte_order) value.as_int = GUINT32_SWAP_LE_BE(value.as_int);
         buf[4 * (img->width * row + column) + 2] = buf[4 * (img->width * row + column) + 1]
             = buf[4 * (img->width * row + column) + 0] = value.as_float;
       }
+    }
   }
 
   fclose(f);
