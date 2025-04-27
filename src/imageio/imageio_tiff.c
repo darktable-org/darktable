@@ -337,7 +337,13 @@ static void _warning_error_handler(const char *type,
                                    const char* fmt,
                                    va_list ap)
 {
-  fprintf(stderr, "[tiff_open] %s: %s: ", type, module);
+  // We prepend the wall time from the program start to output line
+  // to be consistent with dt_print
+  fprintf(stderr,
+          "%11.4f [tiff_open] %s: %s: ",
+          dt_get_wtime() - darktable.start_wtime,
+          type,
+          module);
   vfprintf(stderr, fmt, ap);
   fprintf(stderr, "\n");
 }
