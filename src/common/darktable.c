@@ -788,7 +788,7 @@ char *version = g_strdup_printf(
 #ifdef HAVE_OPENCL
                "  OpenCL                 -> ENABLED\n"
 #else
-               "  OpenCL                 -> DISABLED\n"
+               "  OpenCL                 -> DISABLED - GPU acceleration is NOT available\n"
 #endif
 
 #ifdef USE_LUA
@@ -806,9 +806,15 @@ char *version = g_strdup_printf(
 #ifdef HAVE_GPHOTO2
                "  gPhoto2                -> ENABLED\n"
 #else
-               "  gPhoto2                -> DISABLED\n"
+               "  gPhoto2                -> DISABLED - tethering is NOT available\n"
 #endif
 
+#ifdef HAVE_MAP
+               "  OSMGpsMap              -> ENABLED  - map view is available\n"
+#else
+               "  OSMGpsMap              -> DISABLED - map view is NOT available\n"
+#endif
+               
 #ifdef HAVE_GMIC
                "  GMIC                   -> ENABLED  - Compressed LUTs are supported\n"
 #else
