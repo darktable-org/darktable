@@ -83,17 +83,17 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 5.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-03 18:48+0200\n"
-"PO-Revision-Date: 2025-04-07 13:41+0200\n"
+"POT-Creation-Date: 2025-04-21 09:43+0200\n"
+"PO-Revision-Date: 2025-04-28 09:07+0200\n"
 "Last-Translator: Matjaž Jeran <matjaz.jeran@amis.net>\n"
 "Language-Team: Slovenian <lugos-slo@lugos.si>\n"
 "Language: sl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%"
-"100==4 ? 2 : 3);\n"
-"X-Generator: Lokalize 24.12.3\n"
+"Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || "
+"n%100==4 ? 2 : 3);\n"
+"X-Generator: Poedit 3.6\n"
 
 #: ../build/bin/conf_gen.h:90
 msgctxt "preferences"
@@ -932,7 +932,7 @@ msgstr "ta nastavitev je bila spremenjena"
 #: ../build/bin/preferences_gen.h:4237 ../build/bin/preferences_gen.h:4420
 #: ../build/bin/preferences_gen.h:5093 ../build/bin/preferences_gen.h:5798
 #: ../build/bin/preferences_gen.h:6600 ../build/bin/preferences_gen.h:7093
-#: ../build/bin/preferences_gen.h:7359 ../src/gui/accelerators.c:3012
+#: ../build/bin/preferences_gen.h:7359 ../src/gui/accelerators.c:3013
 #: ../src/gui/gtk.c:3148 ../src/gui/preferences.c:519
 #: ../src/gui/preferences.c:1029 ../src/libs/modulegroups.c:4082
 msgid "?"
@@ -1092,7 +1092,6 @@ msgstr ""
 "vrednosti."
 
 #: ../build/bin/preferences_gen.h:4519
-#| msgid "prioritise the hovered image over the selected images"
 msgid "prioritize the hovered image over the selected images"
 msgstr ""
 "daj prednost sliki nad katero lebdi miškin kazalec pred izbranimi slikami"
@@ -2451,7 +2450,7 @@ msgstr "jesen"
 #: ../src/develop/blend_gui.c:2444 ../src/develop/lightroom.c:893
 #: ../src/gui/gtk.c:3750 ../src/iop/bilateral.cc:380
 #: ../src/iop/channelmixer.c:614 ../src/iop/channelmixer.c:634
-#: ../src/iop/channelmixerrgb.c:4618 ../src/iop/colorequal.c:2961
+#: ../src/iop/channelmixerrgb.c:4619 ../src/iop/colorequal.c:2961
 #: ../src/iop/colorzones.c:2490 ../src/iop/temperature.c:2014
 #: ../src/iop/temperature.c:2202 ../src/libs/collect.c:1963
 #: ../src/libs/filters/colors.c:263 ../src/libs/histogram.c:2613
@@ -2543,7 +2542,7 @@ msgid "extreme saturation"
 msgstr "ekstremna nasičenost"
 
 #. cubic spline
-#: ../build/bin/styles_string.h:23 ../src/iop/filmic.c:1593
+#: ../build/bin/styles_string.h:23 ../src/iop/filmic.c:1585
 msgid "faded"
 msgstr "obledelo"
 
@@ -2579,7 +2578,7 @@ msgstr "splošni"
 #: ../src/develop/blend_gui.c:2438 ../src/develop/lightroom.c:891
 #: ../src/gui/gtk.c:3749 ../src/gui/guides.c:868 ../src/iop/bilateral.cc:375
 #: ../src/iop/channelmixer.c:613 ../src/iop/channelmixer.c:628
-#: ../src/iop/channelmixerrgb.c:4617 ../src/iop/colorequal.c:2959
+#: ../src/iop/channelmixerrgb.c:4618 ../src/iop/colorequal.c:2959
 #: ../src/iop/colorzones.c:2488 ../src/iop/temperature.c:1994
 #: ../src/iop/temperature.c:2012 ../src/iop/temperature.c:2201
 #: ../src/libs/collect.c:1963 ../src/libs/filters/colors.c:262
@@ -2654,7 +2653,7 @@ msgstr "škrlatna"
 #: ../src/develop/blend_gui.c:2432 ../src/develop/lightroom.c:887
 #: ../src/gui/gtk.c:3748 ../src/gui/guides.c:867 ../src/iop/bilateral.cc:370
 #: ../src/iop/channelmixer.c:612 ../src/iop/channelmixer.c:622
-#: ../src/iop/channelmixerrgb.c:4616 ../src/iop/colorequal.c:2956
+#: ../src/iop/channelmixerrgb.c:4617 ../src/iop/colorequal.c:2956
 #: ../src/iop/colorzones.c:2485 ../src/iop/temperature.c:2010
 #: ../src/iop/temperature.c:2200 ../src/libs/collect.c:1963
 #: ../src/libs/filters/colors.c:260 ../src/libs/histogram.c:2631
@@ -2732,7 +2731,7 @@ msgstr "prireži"
 #: ../build/lib/darktable/plugins/introspection_ashift.c:148
 #: ../build/lib/darktable/plugins/introspection_ashift.c:291
 #: ../src/common/collection.c:620 ../src/gui/preferences.c:986
-#: ../src/gui/presets.c:733 ../src/libs/camera.c:548
+#: ../src/gui/presets.c:733 ../src/libs/camera.c:574
 #: ../src/libs/metadata_view.c:157
 msgid "focal length"
 msgstr "goriščna razdalja"
@@ -2755,7 +2754,7 @@ msgstr "prilagoditev razmerja stranic"
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:172
 #: ../build/lib/darktable/plugins/introspection_ashift.c:307
-#: ../src/iop/lens.cc:4449
+#: ../src/iop/lens.cc:4434
 msgid "lens model"
 msgstr "model objektiva"
 
@@ -2778,7 +2777,7 @@ msgstr "posebni"
 #: ../src/develop/blend_gui.c:153 ../src/develop/blend_gui.c:182
 #: ../src/develop/blend_gui.c:3466 ../src/gui/accelerators.c:147
 #: ../src/gui/accelerators.c:157 ../src/gui/accelerators.c:245
-#: ../src/imageio/format/avif.c:870 ../src/imageio/format/j2k.c:713
+#: ../src/imageio/format/avif.c:874 ../src/imageio/format/j2k.c:713
 #: ../src/libs/live_view.c:361
 msgid "off"
 msgstr "izklopljeno"
@@ -2828,7 +2827,7 @@ msgstr "ohrani barve"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
 #: ../src/dtgtk/stylemenu.c:69 ../src/gui/guides.c:843
-#: ../src/iop/basecurve.c:2148 ../src/iop/channelmixerrgb.c:4669
+#: ../src/iop/basecurve.c:2148 ../src/iop/channelmixerrgb.c:4670
 #: ../src/iop/clipping.c:1921 ../src/iop/clipping.c:2103
 #: ../src/iop/clipping.c:2118 ../src/iop/retouch.c:498
 #: ../src/libs/collect.c:2159 ../src/libs/colorpicker.c:51
@@ -2963,7 +2962,7 @@ msgstr "linearnost"
 #: ../build/lib/darktable/plugins/introspection_overlay.c:252
 #: ../build/lib/darktable/plugins/introspection_watermark.c:136
 #: ../build/lib/darktable/plugins/introspection_watermark.c:265
-#: ../src/iop/ashift.c:5972 ../src/libs/masks.c:110
+#: ../src/iop/ashift.c:5968 ../src/libs/masks.c:110
 msgid "rotation"
 msgstr "vrtenje"
 
@@ -2982,7 +2981,7 @@ msgstr "ukrivljenost"
 #: ../build/lib/darktable/plugins/introspection_blurs.c:206
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:81
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:148
-#: ../src/iop/colorbalancergb.c:1874
+#: ../src/iop/colorbalancergb.c:1877
 msgid "offset"
 msgstr "odmik"
 
@@ -3066,7 +3065,7 @@ msgstr "osnovno"
 #: ../build/lib/darktable/plugins/introspection_borders.c:349
 #: ../build/lib/darktable/plugins/introspection_borders.c:355
 #: ../src/gui/preferences.c:993 ../src/imageio/format/jpeg.c:597
-#: ../src/iop/ashift.c:6148 ../src/iop/basicadj.c:658 ../src/iop/flip.c:455
+#: ../src/iop/ashift.c:6144 ../src/iop/basicadj.c:658 ../src/iop/flip.c:455
 #: ../src/iop/flip.c:457 ../src/iop/levels.c:650 ../src/iop/rgblevels.c:1080
 msgid "auto"
 msgstr "avto"
@@ -3153,7 +3152,7 @@ msgstr "vodilo"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:132
 #: ../build/lib/darktable/plugins/introspection_lens.cc:340
 #: ../build/lib/darktable/plugins/introspection_lens.cc:501
-#: ../src/iop/atrous.c:1628 ../src/iop/bilateral.cc:366 ../src/iop/clahe.c:321
+#: ../src/iop/atrous.c:1628 ../src/iop/bilateral.cc:366 ../src/iop/clahe.c:313
 #: ../src/iop/dither.c:768 ../src/iop/lowpass.c:574 ../src/iop/shadhi.c:685
 #: ../src/iop/sharpen.c:427
 msgid "radius"
@@ -3477,8 +3476,8 @@ msgstr "dvig, gama, ojačenje (sRGB)"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:501
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:256
 #: ../src/develop/blend_gui.c:2410 ../src/develop/blend_gui.c:2458
-#: ../src/iop/atrous.c:1791 ../src/iop/channelmixerrgb.c:4484
-#: ../src/iop/channelmixerrgb.c:4572 ../src/iop/colorbalancergb.c:1801
+#: ../src/iop/atrous.c:1791 ../src/iop/channelmixerrgb.c:4485
+#: ../src/iop/channelmixerrgb.c:4573 ../src/iop/colorbalancergb.c:1802
 #: ../src/iop/colorzones.c:2624 ../src/iop/nlmeans.c:464
 msgid "chroma"
 msgstr "kroma"
@@ -3501,7 +3500,7 @@ msgstr "kroma"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:142
 #: ../src/develop/blend_gui.c:2369 ../src/develop/blend_gui.c:2403
 #: ../src/develop/blend_gui.c:2465 ../src/iop/channelmixer.c:609
-#: ../src/iop/channelmixerrgb.c:4478 ../src/iop/channelmixerrgb.c:4565
+#: ../src/iop/channelmixerrgb.c:4479 ../src/iop/channelmixerrgb.c:4566
 #: ../src/iop/colorbalance.c:1982 ../src/iop/colorequal.c:3067
 #: ../src/iop/colorize.c:334 ../src/iop/colorreconstruction.c:1233
 #: ../src/iop/colorzones.c:2625
@@ -3570,7 +3569,7 @@ msgstr "srednji toni"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:340
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:537
-#: ../src/iop/filmic.c:1567
+#: ../src/iop/filmic.c:1559
 msgid "global saturation"
 msgstr "globalna nasičenost"
 
@@ -3607,7 +3606,7 @@ msgstr "kontrast oporne točke sive"
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:237
 #: ../src/gui/guides.c:881 ../src/iop/basicadj.c:633 ../src/iop/bilat.c:468
 #: ../src/iop/colisa.c:277 ../src/iop/colorbalance.c:1887
-#: ../src/iop/colorbalance.c:1893 ../src/iop/filmic.c:1539
+#: ../src/iop/colorbalance.c:1893 ../src/iop/filmic.c:1531
 #: ../src/iop/filmicrgb.c:4506 ../src/iop/lowpass.c:576
 msgid "contrast"
 msgstr "kontrast"
@@ -3746,7 +3745,7 @@ msgid "range extent"
 msgstr "razširitev obsega"
 
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:154
-#: ../src/iop/channelmixerrgb.c:4671
+#: ../src/iop/channelmixerrgb.c:4672
 msgid "saturated colors"
 msgstr "nasičene barve"
 
@@ -3771,7 +3770,7 @@ msgstr "način obdelave"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:255
 #: ../src/develop/blend_gui.c:2348 ../src/iop/channelmixer.c:611
-#: ../src/iop/channelmixerrgb.c:4557 ../src/iop/colorchecker.c:1567
+#: ../src/iop/channelmixerrgb.c:4558 ../src/iop/colorchecker.c:1567
 #: ../src/iop/colorize.c:353 ../src/iop/colorzones.c:2623
 #: ../src/iop/exposure.c:1224
 msgid "lightness"
@@ -4253,7 +4252,7 @@ msgstr "avtomatično"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:212
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:423
-#: ../src/iop/filmic.c:1480
+#: ../src/iop/filmic.c:1472
 msgid "middle gray luminance"
 msgstr "svetlost srednje sive"
 
@@ -4261,13 +4260,13 @@ msgstr "svetlost srednje sive"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:427
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:97
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:166
-#: ../src/iop/filmic.c:1505
+#: ../src/iop/filmic.c:1497
 msgid "black relative exposure"
 msgstr "relativna osvetlitev črne"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:224
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:431
-#: ../src/iop/filmic.c:1492
+#: ../src/iop/filmic.c:1484
 msgid "white relative exposure"
 msgstr "relativna osvetlitev beline"
 
@@ -4298,19 +4297,19 @@ msgstr "merilo dinamičnega razpona"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:266
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:459
-#: ../src/iop/filmic.c:1637
+#: ../src/iop/filmic.c:1629
 msgid "target middle gray"
 msgstr "ciljna srednja siva"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:272
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:463
-#: ../src/iop/filmic.c:1628
+#: ../src/iop/filmic.c:1620
 msgid "target black luminance"
 msgstr "ciljna svetlost črne"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:278
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:467
-#: ../src/iop/filmic.c:1646
+#: ../src/iop/filmic.c:1638
 msgid "target white luminance"
 msgstr "ciljna svetlost bele"
 
@@ -4324,7 +4323,7 @@ msgstr "trdota"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:302
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:483
-#: ../src/iop/filmic.c:1577 ../src/iop/filmicrgb.c:4680
+#: ../src/iop/filmic.c:1569 ../src/iop/filmicrgb.c:4680
 msgid "extreme luminance saturation"
 msgstr "nasičenost skrajnih svetlosti"
 
@@ -4396,7 +4395,7 @@ msgstr "omogoči rekonstrukcijo bleščav"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:549
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
 #: ../src/common/variables.c:197 ../src/common/variables.c:821
-#: ../src/develop/imageop_gui.c:209 ../src/imageio/format/avif.c:857
+#: ../src/develop/imageop_gui.c:209 ../src/imageio/format/avif.c:861
 #: ../src/imageio/format/pdf.c:653 ../src/imageio/format/pdf.c:672
 #: ../src/imageio/format/tiff.c:921 ../src/libs/export.c:1561
 #: ../src/libs/export.c:1569 ../src/libs/export.c:1577
@@ -4549,7 +4548,7 @@ msgstr "gostota"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:146
 #: ../src/develop/blend_gui.c:2364 ../src/iop/basicadj.c:650
 #: ../src/iop/channelmixer.c:610 ../src/iop/colisa.c:279
-#: ../src/iop/colorbalance.c:1999 ../src/iop/colorbalancergb.c:1825
+#: ../src/iop/colorbalance.c:1999 ../src/iop/colorbalancergb.c:1826
 #: ../src/iop/colorchecker.c:1602 ../src/iop/colorcontrast.c:79
 #: ../src/iop/colorcorrection.c:263 ../src/iop/colorequal.c:3085
 #: ../src/iop/colorize.c:347 ../src/iop/lowpass.c:578 ../src/iop/soften.c:350
@@ -4739,7 +4738,7 @@ msgstr "način"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:238
 #: ../build/lib/darktable/plugins/introspection_lens.cc:433
-#: ../src/iop/lens.cc:4486
+#: ../src/iop/lens.cc:4471
 msgid "target geometry"
 msgstr "geometrija cilja"
 
@@ -4803,8 +4802,8 @@ msgstr "samo ročna vinjeta"
 #. get nice text for bounds
 #. Side-border hide/show
 #: ../build/lib/darktable/plugins/introspection_lens.cc:534
-#: ../src/dtgtk/range.c:1761 ../src/gui/accelerators.c:2607
-#: ../src/gui/accelerators.c:2689 ../src/gui/gtk.c:1454 ../src/gui/gtk.c:3747
+#: ../src/dtgtk/range.c:1761 ../src/gui/accelerators.c:2608
+#: ../src/gui/accelerators.c:2690 ../src/gui/gtk.c:1454 ../src/gui/gtk.c:3747
 #: ../src/imageio/format/pdf.c:662 ../src/iop/denoiseprofile.c:3670
 #: ../src/iop/rawdenoise.c:882 ../src/libs/collect.c:3559
 #: ../src/libs/filtering.c:1510 ../src/libs/filters/colors.c:157
@@ -5145,7 +5144,7 @@ msgstr "luma srednje sive"
 
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:103
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:170
-#: ../src/iop/filmic.c:1517
+#: ../src/iop/filmic.c:1509
 msgid "safety factor"
 msgstr "varnostni faktor"
 
@@ -5221,10 +5220,10 @@ msgstr "način polnenja"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:285
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
-#: ../src/iop/basicadj.c:646 ../src/iop/channelmixerrgb.c:4624
+#: ../src/iop/basicadj.c:646 ../src/iop/channelmixerrgb.c:4625
 #: ../src/iop/colisa.c:278 ../src/iop/colorequal.c:3103
 #: ../src/iop/lowpass.c:577 ../src/iop/soften.c:354 ../src/iop/vignette.c:1045
-#: ../src/libs/history.c:933
+#: ../src/libs/history.c:963
 msgid "brightness"
 msgstr "sijavost"
 
@@ -5553,7 +5552,7 @@ msgstr "razmerje širina/višina"
 #: ../build/lib/darktable/plugins/introspection_vignette.c:237
 #: ../src/iop/vignette.c:1054
 msgid "shape"
-msgstr "oblika"
+msgstr "lik"
 
 #: ../build/lib/darktable/plugins/introspection_vignette.c:265
 msgid "8-bit output"
@@ -5695,9 +5694,9 @@ msgstr "spust"
 
 #: ../src/chart/main.c:504 ../src/common/database.c:3847
 #: ../src/control/jobs/control_jobs.c:2154
-#: ../src/control/jobs/control_jobs.c:2212 ../src/gui/accelerators.c:2512
-#: ../src/gui/accelerators.c:2594 ../src/gui/accelerators.c:2647
-#: ../src/gui/accelerators.c:2676 ../src/gui/accelerators.c:2738
+#: ../src/control/jobs/control_jobs.c:2212 ../src/gui/accelerators.c:2513
+#: ../src/gui/accelerators.c:2595 ../src/gui/accelerators.c:2648
+#: ../src/gui/accelerators.c:2677 ../src/gui/accelerators.c:2739
 #: ../src/gui/hist_dialog.c:225 ../src/gui/preferences.c:1225
 #: ../src/gui/preferences.c:1265 ../src/gui/presets.c:423
 #: ../src/gui/presets.c:566 ../src/gui/styles_dialog.c:552
@@ -5962,7 +5961,7 @@ msgstr "čas tiskanja"
 
 #: ../src/common/collection.c:614 ../src/libs/collect.c:3770
 #: ../src/libs/filtering.c:2215 ../src/libs/filtering.c:2235
-#: ../src/libs/filters/history.c:153 ../src/libs/history.c:96
+#: ../src/libs/filters/history.c:153 ../src/libs/history.c:98
 msgid "history"
 msgstr "zgodovina"
 
@@ -5975,14 +5974,14 @@ msgstr "oznaka barve"
 
 #. iso
 #: ../src/common/collection.c:622 ../src/gui/preferences.c:968
-#: ../src/gui/presets.c:681 ../src/libs/camera.c:556
+#: ../src/gui/presets.c:681 ../src/libs/camera.c:582
 #: ../src/libs/metadata_view.c:161
 msgid "ISO"
 msgstr "ISO"
 
 #. aperture
 #: ../src/common/collection.c:624 ../src/gui/preferences.c:980
-#: ../src/gui/presets.c:716 ../src/libs/camera.c:543 ../src/libs/camera.c:545
+#: ../src/gui/presets.c:716 ../src/libs/camera.c:569 ../src/libs/camera.c:571
 #: ../src/libs/metadata_view.c:150
 msgid "aperture"
 msgstr "zaslonka"
@@ -6114,7 +6113,7 @@ msgstr[3] "<b>%d</b> slik izbranih izmed <b>%d</b>"
 
 #: ../src/common/color_vocabulary.c:38 ../src/develop/blend_gui.c:2378
 #: ../src/develop/blend_gui.c:2426 ../src/gui/guides.c:866
-#: ../src/iop/channelmixerrgb.c:4627 ../src/iop/levels.c:680
+#: ../src/iop/channelmixerrgb.c:4628 ../src/iop/levels.c:680
 #: ../src/iop/rgblevels.c:964 ../src/iop/rgblevels.c:1077
 msgid "gray"
 msgstr "siva"
@@ -6964,7 +6963,7 @@ msgstr ""
 "zdaj lahko ponovno poženete darktable\n"
 
 #: ../src/common/database.c:3872 ../src/common/database.c:3879
-#: ../src/gui/accelerators.c:2595 ../src/gui/accelerators.c:2677
+#: ../src/gui/accelerators.c:2596 ../src/gui/accelerators.c:2678
 #: ../src/gui/hist_dialog.c:226 ../src/gui/presets.c:567
 msgid "_ok"
 msgstr "v redu"
@@ -6978,14 +6977,14 @@ msgstr "napaka"
 msgid ""
 "\n"
 "at least one file could not be deleted.\n"
-"you may try to manually delete the files <i>data.db.lock</i> and <i>library."
-"db.lock</i>\n"
+"you may try to manually delete the files <i>data.db.lock</i> and "
+"<i>library.db.lock</i>\n"
 "in folder <a href=\"file:///%s\">%s</a>.\n"
 msgstr ""
 "\n"
 "vsaj ene datoteke ni bilo mogoče zbrisati.\n"
-"lahko poskusite ročno zbrisati datoteki <i>data.db.lock</i> in <i>library.db."
-"lock</i>\n"
+"lahko poskusite ročno zbrisati datoteki <i>data.db.lock</i> in "
+"<i>library.db.lock</i>\n"
 "v mapi <a href=\"file:///%s\">%s</a>.\n"
 
 #: ../src/common/database.c:3993
@@ -7154,29 +7153,29 @@ msgstr ""
 "neodvisni vodeni filter za hitro izpostavljenost ni uspel dodeliti "
 "pomnilnika, preverite vaše nastavitve RAM -a"
 
-#: ../src/common/exif.cc:1974
+#: ../src/common/exif.cc:2003
 #, c-format
 msgid "detected OtherIlluminant in `%s`, please report via darktable github"
 msgstr ""
 "odkrit OtherIlluminant v `%s`, prosimo, prijavite prek darktable github"
 
-#: ../src/common/exif.cc:2024
+#: ../src/common/exif.cc:2053
 #, c-format
 msgid "special exif illuminants in `%s`, please report via darktable github"
 msgstr ""
 "posebne osvetljave exif v `%s`, prosimo, prijavite prek darktable github"
 
-#: ../src/common/exif.cc:2052
+#: ../src/common/exif.cc:2081
 #, c-format
 msgid "forward matrix in `%s`, please report via darktable github"
 msgstr "forward matrix v `%s`, prosim poročajte prek darktable github"
 
-#: ../src/common/exif.cc:5809
+#: ../src/common/exif.cc:5838
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "ni mogoče prebrati datoteke XMP '%s': '%s'"
 
-#: ../src/common/exif.cc:5868
+#: ../src/common/exif.cc:5897
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "ni mogoče zapisati datoteke XMP '%s': '%s'"
@@ -7323,8 +7322,8 @@ msgstr "<b>OPOZORILO</b> : za kamero manjkajo vzorci!"
 
 #: ../src/common/image.c:3140
 msgid ""
-"You must provide samples in <a href='https://raw.pixls.us/'>https://raw."
-"pixls.us/</a>"
+"You must provide samples in <a href='https://raw.pixls.us/'>https://"
+"raw.pixls.us/</a>"
 msgstr ""
 "Dobavite vzorce v <a href='https://raw.pixls.us/'>https://raw.pixls.us/</a>"
 
@@ -7342,7 +7341,7 @@ msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr "ali <b>surovi format ne bo berljiv</b> v naslednji različici."
 
 #: ../src/common/image.h:217 ../src/common/ratings.c:297
-#: ../src/imageio/format/avif.c:110 ../src/libs/history.c:813
+#: ../src/imageio/format/avif.c:110 ../src/libs/history.c:842
 #: ../src/libs/snapshots.c:885
 msgid "unknown"
 msgstr "neznano"
@@ -7561,7 +7560,7 @@ msgstr ""
 msgid "building OpenCL program %s for %s"
 msgstr "izdelava programa OpenCL %s za %s"
 
-#: ../src/common/pdf.h:88 ../src/iop/lens.cc:4082
+#: ../src/common/pdf.h:88 ../src/iop/lens.cc:4067
 #: ../src/libs/filters/focal.c:74 ../src/libs/print_settings.c:84
 msgid "mm"
 msgstr "mm"
@@ -7743,7 +7742,7 @@ msgid "no info"
 msgstr "ni informacij"
 
 #: ../src/common/variables.c:197 ../src/common/variables.c:819
-#: ../src/develop/imageop_gui.c:210 ../src/imageio/format/avif.c:857
+#: ../src/develop/imageop_gui.c:210 ../src/imageio/format/avif.c:861
 #: ../src/imageio/format/pdf.c:653 ../src/imageio/format/pdf.c:672
 #: ../src/imageio/format/tiff.c:921 ../src/libs/export.c:1561
 #: ../src/libs/export.c:1569 ../src/libs/export.c:1577
@@ -9014,17 +9013,17 @@ msgid "uniformly"
 msgstr "enakomerno"
 
 #: ../src/develop/blend_gui.c:157 ../src/develop/blend_gui.c:2792
-#: ../src/develop/blend_gui.c:3485 ../src/develop/imageop.c:2805
+#: ../src/develop/blend_gui.c:3485 ../src/develop/imageop.c:2795
 msgid "drawn mask"
 msgstr "narisana maska"
 
 #: ../src/develop/blend_gui.c:159 ../src/develop/blend_gui.c:2566
-#: ../src/develop/blend_gui.c:3496 ../src/develop/imageop.c:2807
+#: ../src/develop/blend_gui.c:3496 ../src/develop/imageop.c:2797
 msgid "parametric mask"
 msgstr "parametrska maska"
 
 #: ../src/develop/blend_gui.c:161 ../src/develop/blend_gui.c:3001
-#: ../src/develop/blend_gui.c:3523 ../src/develop/imageop.c:2809
+#: ../src/develop/blend_gui.c:3523 ../src/develop/imageop.c:2799
 msgid "raster mask"
 msgstr "rastrska maska"
 
@@ -9066,17 +9065,17 @@ msgstr "vhod po zamegljevanju"
 
 #: ../src/develop/blend_gui.c:183 ../src/gui/accelerators.c:146
 #: ../src/gui/accelerators.c:156 ../src/gui/accelerators.c:245
-#: ../src/imageio/format/avif.c:870 ../src/libs/live_view.c:362
+#: ../src/imageio/format/avif.c:874 ../src/libs/live_view.c:362
 msgid "on"
 msgstr "vklopljeno"
 
 #: ../src/develop/blend_gui.c:1022 ../src/develop/blend_gui.c:2644
-#: ../src/develop/imageop.c:2933
+#: ../src/develop/imageop.c:2923
 msgid "input"
 msgstr "vhod"
 
 #: ../src/develop/blend_gui.c:1022 ../src/develop/blend_gui.c:2644
-#: ../src/develop/imageop.c:2933
+#: ../src/develop/imageop.c:2923
 msgid "output"
 msgstr "izhod"
 
@@ -9158,7 +9157,7 @@ msgid "sliders for gray value"
 msgstr "drsniki za sivine"
 
 #: ../src/develop/blend_gui.c:2379 ../src/develop/blend_gui.c:2427
-#: ../src/iop/channelmixerrgb.c:4616 ../src/iop/denoiseprofile.c:3671
+#: ../src/iop/channelmixerrgb.c:4617 ../src/iop/denoiseprofile.c:3671
 #: ../src/iop/rawdenoise.c:883 ../src/iop/rgbcurve.c:1491
 #: ../src/iop/rgblevels.c:1038 ../src/libs/filters/colors.c:137
 msgid "R"
@@ -9169,7 +9168,7 @@ msgid "sliders for red channel"
 msgstr "drsniki za rdeči kanal"
 
 #: ../src/develop/blend_gui.c:2385 ../src/develop/blend_gui.c:2433
-#: ../src/iop/channelmixerrgb.c:4617 ../src/iop/denoiseprofile.c:3672
+#: ../src/iop/channelmixerrgb.c:4618 ../src/iop/denoiseprofile.c:3672
 #: ../src/iop/rawdenoise.c:884 ../src/iop/rgbcurve.c:1492
 #: ../src/iop/rgblevels.c:1039 ../src/libs/filters/colors.c:143
 msgid "G"
@@ -9180,7 +9179,7 @@ msgid "sliders for green channel"
 msgstr "drsniki za zeleni kanal"
 
 #: ../src/develop/blend_gui.c:2391 ../src/develop/blend_gui.c:2439
-#: ../src/iop/channelmixerrgb.c:4618 ../src/iop/denoiseprofile.c:3673
+#: ../src/iop/channelmixerrgb.c:4619 ../src/iop/denoiseprofile.c:3673
 #: ../src/iop/rawdenoise.c:885 ../src/iop/rgbcurve.c:1493
 #: ../src/iop/rgblevels.c:1040 ../src/libs/filters/colors.c:146
 msgid "B"
@@ -9318,10 +9317,10 @@ msgstr ""
 "pritisnite 'm', da preklopite pogled na masko."
 
 #: ../src/develop/blend_gui.c:2692 ../src/develop/blend_gui.c:3614
-#: ../src/iop/basicadj.c:626 ../src/iop/colorbalancergb.c:1992
+#: ../src/iop/basicadj.c:626 ../src/iop/colorbalancergb.c:1999
 #: ../src/iop/colorequal.c:3134 ../src/iop/exposure.c:1104
-#: ../src/iop/exposure.c:1120 ../src/iop/filmic.c:1494 ../src/iop/filmic.c:1507
-#: ../src/iop/filmic.c:1549 ../src/iop/filmicrgb.c:4399
+#: ../src/iop/exposure.c:1120 ../src/iop/filmic.c:1486 ../src/iop/filmic.c:1499
+#: ../src/iop/filmic.c:1541 ../src/iop/filmicrgb.c:4399
 #: ../src/iop/filmicrgb.c:4410 ../src/iop/filmicrgb.c:4443
 #: ../src/iop/filmicrgb.c:4453 ../src/iop/graduatednd.c:1065
 #: ../src/iop/negadoctor.c:1019 ../src/iop/profile_gamma.c:629
@@ -9357,10 +9356,10 @@ msgstr "prilagodi faktor povečanja maske kanala"
 #, c-format
 msgid "%d shape used"
 msgid_plural "%d shapes used"
-msgstr[0] "uporabljena %d oblika"
-msgstr[1] "uporabljeni %d obliki"
-msgstr[2] "uporabljene %d oblike"
-msgstr[3] "uporabljeno %d oblik"
+msgstr[0] "uporabljen %d lik"
+msgstr[1] "uporabljena %d lika"
+msgstr[2] "uporabljeni %d liki"
+msgstr[3] "uporabljeno %d likov"
 
 #: ../src/develop/blend_gui.c:2739 ../src/develop/blend_gui.c:2795
 #: ../src/develop/blend_gui.c:2882 ../src/develop/blend_gui.c:3002
@@ -9379,7 +9378,7 @@ msgstr "prikaži in uredi elemente maske"
 msgid "show and edit in restricted mode (no moving/resizing of shapes)"
 msgstr ""
 "prikaži in uredi v omejevalnem načinu (ni pomikanja/spreminjanja velikosti "
-"oblik)"
+"likov)"
 
 #: ../src/develop/blend_gui.c:2820 ../src/libs/masks.c:1006
 #: ../src/libs/masks.c:1797 ../src/libs/masks.c:1801
@@ -9547,7 +9546,7 @@ msgstr "neprosojnost"
 msgid "set the opacity of the blending"
 msgstr "nastavi neprosojnost mešanja"
 
-#: ../src/develop/blend_gui.c:3633 ../src/libs/history.c:926
+#: ../src/develop/blend_gui.c:3633 ../src/libs/history.c:956
 msgid "combine masks"
 msgstr "sestavi maske"
 
@@ -9572,7 +9571,7 @@ msgstr ""
 "pozitivne vrednosti izberejo področja z močnimi podrobnostmi,\n"
 "negativne vrednosti izberejo ravna področja"
 
-#: ../src/develop/blend_gui.c:3654 ../src/libs/history.c:929
+#: ../src/develop/blend_gui.c:3654 ../src/libs/history.c:959
 msgid "feathering guide"
 msgstr "vodilo mehčanja robov"
 
@@ -9584,12 +9583,12 @@ msgstr ""
 "izberi vodilno masko po vhodni ali izhodni sliki in\n"
 "izberite mehčanje robov pred ali po maski zamegljevanja"
 
-#: ../src/develop/blend_gui.c:3666 ../src/libs/history.c:928
+#: ../src/develop/blend_gui.c:3666 ../src/libs/history.c:958
 msgid "feathering radius"
 msgstr "radij mehčanja robov"
 
 #: ../src/develop/blend_gui.c:3667 ../src/develop/blend_gui.c:3679
-#: ../src/iop/colorbalancergb.c:2014 ../src/iop/colorequal.c:3149
+#: ../src/iop/colorbalancergb.c:2021 ../src/iop/colorequal.c:3149
 #: ../src/iop/colorequal.c:3176 ../src/iop/diffuse.c:1783
 #: ../src/iop/diffuse.c:1793 ../src/iop/retouch.c:2717
 msgid " px"
@@ -9608,7 +9607,7 @@ msgid "radius for gaussian blur of blend mask"
 msgstr "polmer gaussove maske zamegljevalnega mešanja"
 
 #: ../src/develop/blend_gui.c:3689 ../src/iop/retouch.c:2722
-#: ../src/libs/history.c:924
+#: ../src/libs/history.c:954
 msgid "mask opacity"
 msgstr "neprosojnost maske"
 
@@ -9621,7 +9620,7 @@ msgstr ""
 "sijavost\n"
 "ne da bi vplivala na dele, ki so popolnoma prosojni ali popolnoma neprosojni"
 
-#: ../src/develop/blend_gui.c:3700 ../src/libs/history.c:932
+#: ../src/develop/blend_gui.c:3700 ../src/libs/history.c:962
 msgid "mask contrast"
 msgstr "kontrast maske"
 
@@ -9649,86 +9648,86 @@ msgstr ""
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: modul `%s' neusklajenost verzije: %d != %d"
 
-#: ../src/develop/develop.c:3124
+#: ../src/develop/develop.c:3175
 msgid "duplicate module, can't move new instance after the base one\n"
 msgstr "duplikat modula, ni ga mogoče premakniti v novi pojavek po osnovnem\n"
 
-#: ../src/develop/imageop.c:1012
+#: ../src/develop/imageop.c:1002
 msgid "new instance"
 msgstr "nova instanca"
 
-#: ../src/develop/imageop.c:1019
+#: ../src/develop/imageop.c:1009
 msgid "duplicate instance"
 msgstr "podvojena instanca"
 
-#: ../src/develop/imageop.c:1026 ../src/develop/imageop.c:4027
+#: ../src/develop/imageop.c:1016 ../src/develop/imageop.c:4017
 #: ../src/libs/masks.c:1138
 msgid "move up"
 msgstr "pomakni navzgor"
 
-#: ../src/develop/imageop.c:1033 ../src/develop/imageop.c:4028
+#: ../src/develop/imageop.c:1023 ../src/develop/imageop.c:4018
 #: ../src/libs/masks.c:1143
 msgid "move down"
 msgstr "pomakni navzdol"
 
 #. delete button label and tooltip will be updated based on trash pref
-#: ../src/develop/imageop.c:1040 ../src/develop/imageop.c:4030
+#: ../src/develop/imageop.c:1030 ../src/develop/imageop.c:4020
 #: ../src/gui/accelerators.c:172 ../src/libs/image.c:304
 #: ../src/libs/image.c:520
 msgid "delete"
 msgstr "briši"
 
-#: ../src/develop/imageop.c:1048 ../src/develop/imageop.c:4031
+#: ../src/develop/imageop.c:1038 ../src/develop/imageop.c:4021
 #: ../src/libs/modulegroups.c:3997
 msgid "rename"
 msgstr "preimenuj"
 
-#: ../src/develop/imageop.c:1139 ../src/develop/imageop.c:2981
+#: ../src/develop/imageop.c:1129 ../src/develop/imageop.c:2971
 #, c-format
 msgid "'%s' is switched on"
 msgstr "'%s' je vklopljen"
 
-#: ../src/develop/imageop.c:1139 ../src/develop/imageop.c:2981
+#: ../src/develop/imageop.c:1129 ../src/develop/imageop.c:2971
 #, c-format
 msgid "'%s' is switched off"
 msgstr "'%s' je izklopljen"
 
-#: ../src/develop/imageop.c:2173
+#: ../src/develop/imageop.c:2163
 #, c-format
 msgid "'%s' has an introspection error"
 msgstr "'%s' ima napako introspekcije"
 
-#: ../src/develop/imageop.c:2799
+#: ../src/develop/imageop.c:2789
 msgid "unknown mask"
 msgstr "neznana maska"
 
-#: ../src/develop/imageop.c:2803
+#: ../src/develop/imageop.c:2793
 msgid "drawn + parametric mask"
 msgstr "narisana + parametrska maska"
 
-#: ../src/develop/imageop.c:2812
+#: ../src/develop/imageop.c:2802
 #, c-format
 msgid "this module has a `%s'"
 msgstr "ta modul ima `%s'"
 
-#: ../src/develop/imageop.c:2817
+#: ../src/develop/imageop.c:2807
 #, c-format
 msgid "taken from module %s"
 msgstr "pobrano iz modula %s"
 
-#: ../src/develop/imageop.c:2822
+#: ../src/develop/imageop.c:2812
 msgid "click to display (module must be activated first)"
 msgstr "kliknite za prikaz (modul mora biti najprej aktiviran)"
 
-#: ../src/develop/imageop.c:2933
+#: ../src/develop/imageop.c:2923
 msgid "purpose"
 msgstr "namen"
 
-#: ../src/develop/imageop.c:2933
+#: ../src/develop/imageop.c:2923
 msgid "process"
 msgstr "obdelaj"
 
-#: ../src/develop/imageop.c:2997
+#: ../src/develop/imageop.c:2987
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -9736,7 +9735,7 @@ msgstr ""
 "ponovno nastavi parametre\n"
 "ctrl+click za ponovno uveljavitev samodejnih začetnih nastavitev"
 
-#: ../src/develop/imageop.c:3194
+#: ../src/develop/imageop.c:3184
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -9744,7 +9743,7 @@ msgstr ""
 "več aktivnosti pojavkov\n"
 "desni-klik ustvari nov pojavek"
 
-#: ../src/develop/imageop.c:3198
+#: ../src/develop/imageop.c:3188
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -9752,15 +9751,15 @@ msgstr ""
 "začetne vrednosti\n"
 "desni-klik za uveljavitev na novem pojavku"
 
-#: ../src/develop/imageop.c:3410 ../src/develop/imageop.c:3432
+#: ../src/develop/imageop.c:3400 ../src/develop/imageop.c:3422
 msgid "ERROR"
 msgstr "NAPAKA"
 
-#: ../src/develop/imageop.c:3889
+#: ../src/develop/imageop.c:3879
 msgid "unsupported input"
 msgstr "nepodprt vhod"
 
-#: ../src/develop/imageop.c:3890
+#: ../src/develop/imageop.c:3880
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -9772,23 +9771,23 @@ msgstr ""
 "se oblika zapisa podatkov ne ujema\n"
 "z njegovimi zahtevami."
 
-#: ../src/develop/imageop.c:4026 ../src/develop/imageop.c:4036
+#: ../src/develop/imageop.c:4016 ../src/develop/imageop.c:4026
 #: ../src/gui/accelerators.c:168 ../src/libs/lib.c:1571
 msgid "show"
 msgstr "prikaži"
 
-#: ../src/develop/imageop.c:4029 ../src/libs/modulegroups.c:3461
+#: ../src/develop/imageop.c:4019 ../src/libs/modulegroups.c:3461
 #: ../src/libs/modulegroups.c:3592 ../src/libs/modulegroups.c:4001
 #: ../src/libs/tagging.c:3366
 msgid "new"
 msgstr "nova"
 
-#: ../src/develop/imageop.c:4032 ../src/libs/duplicate.c:413
+#: ../src/develop/imageop.c:4022 ../src/libs/duplicate.c:413
 #: ../src/libs/image.c:541 ../src/libs/modulegroups.c:3993
 msgid "duplicate"
 msgstr "dupliciraj"
 
-#: ../src/develop/imageop.c:4037
+#: ../src/develop/imageop.c:4027
 #: ../src/external/lua-scripts/tools/executable_manager.lua:222
 #: ../src/gui/accelerators.c:129 ../src/gui/accelerators.c:139
 #: ../src/gui/gtk.c:3595 ../src/gui/gtk.c:3650 ../src/gui/hist_dialog.c:269
@@ -9799,24 +9798,24 @@ msgid "reset"
 msgstr "ponovno nastavi"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:4038 ../src/gui/preferences.c:920
+#: ../src/develop/imageop.c:4028 ../src/gui/preferences.c:920
 #: ../src/libs/lib.c:1573
 msgid "presets"
 msgstr "začetne vrednosti"
 
-#: ../src/develop/imageop.c:4039
+#: ../src/develop/imageop.c:4029
 msgid "enable"
 msgstr "omogoči"
 
-#: ../src/develop/imageop.c:4040 ../src/gui/accelerators.c:184
+#: ../src/develop/imageop.c:4030 ../src/gui/accelerators.c:184
 msgid "focus"
 msgstr "ostrenje"
 
-#: ../src/develop/imageop.c:4041 ../src/gui/accelerators.c:2890
+#: ../src/develop/imageop.c:4031 ../src/gui/accelerators.c:2891
 msgid "instance"
 msgstr "pojavek"
 
-#: ../src/develop/imageop.c:4061
+#: ../src/develop/imageop.c:4051
 msgid "processing module"
 msgstr "modul obdelav"
 
@@ -10037,7 +10036,7 @@ msgstr "<b>vrtenje</b>: poteg"
 
 #: ../src/develop/masks/masks.c:136
 msgid "[SHAPE] remove shape"
-msgstr "[SHAPE] odstrani obliko"
+msgstr "[SHAPE] odstrani lik"
 
 #: ../src/develop/masks/masks.c:300
 #, c-format
@@ -10061,11 +10060,11 @@ msgstr "neprosojnost: %.0f%%"
 
 #: ../src/develop/masks/masks.c:1640 ../src/libs/masks.c:1076
 msgid "add existing shape"
-msgstr "dodaj obstoječo obliko"
+msgstr "dodaj obstoječi lik"
 
 #: ../src/develop/masks/masks.c:1667
 msgid "use same shapes as"
-msgstr "uporabi enake oblike kot"
+msgstr "uporabi enake like kot"
 
 #: ../src/develop/masks/masks.c:1977
 msgid "masks can not contain themselves"
@@ -10158,11 +10157,11 @@ msgstr ""
 "<b>premakni segment</b>: klik, <b>dodaj vozel</b>:ctrl+klik\n"
 "<b>odstrani pot</b>: desni-klik"
 
-#: ../src/develop/pixelpipe_hb.c:509
+#: ../src/develop/pixelpipe_hb.c:515
 msgid "enabled as required"
 msgstr "omogočeno kot je zahtevano"
 
-#: ../src/develop/pixelpipe_hb.c:510
+#: ../src/develop/pixelpipe_hb.c:516
 msgid ""
 "history had module disabled but it is required for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -10171,11 +10170,11 @@ msgstr ""
 "verjetno je bil uveden z uporabo prednastavitve, sloga ali kopiranja in "
 "lepljenja v zgodovini"
 
-#: ../src/develop/pixelpipe_hb.c:517
+#: ../src/develop/pixelpipe_hb.c:523
 msgid "disabled as not appropriate"
 msgstr "onemogočeno kot neprimerno"
 
-#: ../src/develop/pixelpipe_hb.c:518
+#: ../src/develop/pixelpipe_hb.c:524
 msgid ""
 "history had module enabled but it is not allowed for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -10184,7 +10183,7 @@ msgstr ""
 "verjetno je bil uveden z uporabo prednastavitve, sloga ali kopiranja in "
 "lepljenja v zgodovini"
 
-#: ../src/develop/pixelpipe_hb.c:1245
+#: ../src/develop/pixelpipe_hb.c:1253
 #, c-format
 msgid ""
 "fatal pixelpipe abort due to non-aligned buffers\n"
@@ -10195,11 +10194,11 @@ msgstr ""
 "v modulu '%s'\n"
 "prosimo poročajte na GitHub"
 
-#: ../src/develop/pixelpipe_hb.c:1710
+#: ../src/develop/pixelpipe_hb.c:1718
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr "usodna neusklajenost vnosa, prosimo prijavite na GitHub\n"
 
-#: ../src/develop/pixelpipe_hb.c:3081
+#: ../src/develop/pixelpipe_hb.c:3092
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -10219,7 +10218,7 @@ msgstr ""
 "   - nekateri gonilniki ne podpirajo potrebnega števila dogodkov,\n"
 "   - premajhne nastavitve višine med uporabo 'use all device memory'."
 
-#: ../src/develop/pixelpipe_hb.c:3274
+#: ../src/develop/pixelpipe_hb.c:3285
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -10450,8 +10449,8 @@ msgid "grouped images"
 msgstr "grupirane slike"
 
 #: ../src/dtgtk/thumbnail.c:859 ../src/dtgtk/thumbnail.c:1654
-#: ../src/iop/ashift.c:6050 ../src/iop/ashift.c:6137 ../src/iop/ashift.c:6139
-#: ../src/iop/ashift.c:6141 ../src/libs/navigation.c:110
+#: ../src/iop/ashift.c:6046 ../src/iop/ashift.c:6133 ../src/iop/ashift.c:6135
+#: ../src/iop/ashift.c:6137 ../src/libs/navigation.c:110
 #: ../src/libs/navigation.c:188
 msgid "fit"
 msgstr "prilagodi"
@@ -12692,8 +12691,8 @@ msgstr "izberite mapo s skripti"
 #. a label that contains the name of the script
 #. a horizontal box that contains the button and the label
 #: ../src/external/lua-scripts/tools/script_manager.lua:1441
-#: ../src/iop/channelmixerrgb.c:4421 ../src/iop/clipping.c:2097
-#: ../src/iop/colorbalancergb.c:1779 ../src/iop/colorequal.c:3006
+#: ../src/iop/channelmixerrgb.c:4422 ../src/iop/clipping.c:2097
+#: ../src/iop/colorbalancergb.c:1780 ../src/iop/colorequal.c:3006
 #: ../src/iop/filmicrgb.c:4378 ../src/iop/negadoctor.c:837
 #: ../src/iop/toneequal.c:3299 ../src/libs/image.c:497
 #: ../src/views/lighttable.c:1329
@@ -12720,7 +12719,7 @@ msgstr "konfiguracija"
 #. stack for the options
 #. main menu
 #: ../src/external/lua-scripts/tools/script_manager.lua:1525
-#: ../src/gui/accelerators.c:2855 ../src/gui/accelerators.c:2958
+#: ../src/gui/accelerators.c:2856 ../src/gui/accelerators.c:2959
 #: ../src/views/view.c:1608
 msgid "action"
 msgstr "akcija"
@@ -12851,17 +12850,17 @@ msgstr "drsanje"
 msgid "pan"
 msgstr "premik"
 
-#: ../src/gui/accelerators.c:93 ../src/iop/ashift.c:5713
-#: ../src/iop/ashift.c:5715 ../src/iop/ashift.c:5819 ../src/iop/ashift.c:5821
-#: ../src/iop/ashift.c:6140 ../src/iop/clipping.c:1923
+#: ../src/gui/accelerators.c:93 ../src/iop/ashift.c:5709
+#: ../src/iop/ashift.c:5711 ../src/iop/ashift.c:5815 ../src/iop/ashift.c:5817
+#: ../src/iop/ashift.c:6136 ../src/iop/clipping.c:1923
 #: ../src/iop/clipping.c:2104 ../src/iop/clipping.c:2120
 #: ../src/views/darkroom.c:2893 ../src/views/lighttable.c:1321
 msgid "horizontal"
 msgstr "vodoravno"
 
-#: ../src/gui/accelerators.c:94 ../src/iop/ashift.c:5713
-#: ../src/iop/ashift.c:5715 ../src/iop/ashift.c:5819 ../src/iop/ashift.c:5821
-#: ../src/iop/ashift.c:6138 ../src/iop/clipping.c:1922
+#: ../src/gui/accelerators.c:94 ../src/iop/ashift.c:5709
+#: ../src/iop/ashift.c:5711 ../src/iop/ashift.c:5815 ../src/iop/ashift.c:5817
+#: ../src/iop/ashift.c:6134 ../src/iop/clipping.c:1922
 #: ../src/iop/clipping.c:2105 ../src/iop/clipping.c:2119
 #: ../src/views/darkroom.c:2897 ../src/views/lighttable.c:1325
 msgid "vertical"
@@ -13090,8 +13089,8 @@ msgstr "zadnji pojavek"
 msgid "relative instance"
 msgstr "relativni pojavek"
 
-#: ../src/gui/accelerators.c:782 ../src/gui/accelerators.c:2880
-#: ../src/gui/accelerators.c:3823
+#: ../src/gui/accelerators.c:782 ../src/gui/accelerators.c:2881
+#: ../src/gui/accelerators.c:3824
 msgid "speed"
 msgstr "hitrost"
 
@@ -13326,31 +13325,31 @@ msgstr "naj obnovim izbrano privzeto bližnjico?"
 msgid "remove the selected shortcut?"
 msgstr "naj odstranim izbrane bližnjice?"
 
-#: ../src/gui/accelerators.c:2124
+#: ../src/gui/accelerators.c:2125
 msgid "command"
 msgstr "ukaz"
 
-#: ../src/gui/accelerators.c:2125
+#: ../src/gui/accelerators.c:2126
 msgid "preset"
 msgstr "začetna nastavitev"
 
-#: ../src/gui/accelerators.c:2506
+#: ../src/gui/accelerators.c:2507
 msgid "restore shortcuts"
 msgstr "obnovi bližnjice"
 
-#: ../src/gui/accelerators.c:2509
+#: ../src/gui/accelerators.c:2510
 msgid "_defaults"
 msgstr "privzete vrednosti"
 
-#: ../src/gui/accelerators.c:2510
+#: ../src/gui/accelerators.c:2511
 msgid "_startup"
 msgstr "zaženi"
 
-#: ../src/gui/accelerators.c:2511
+#: ../src/gui/accelerators.c:2512
 msgid "_edits"
 msgstr "urejanja"
 
-#: ../src/gui/accelerators.c:2518
+#: ../src/gui/accelerators.c:2519
 msgid ""
 "restore shortcuts from one of these states:\n"
 "  - default\n"
@@ -13362,7 +13361,7 @@ msgstr ""
 "- kot ob zagonu\n"
 "- kot ob odprtju tega dialoga\n"
 
-#: ../src/gui/accelerators.c:2525
+#: ../src/gui/accelerators.c:2526
 msgid ""
 "clear all newer shortcuts\n"
 "(instead of just restoring changed ones)"
@@ -13370,17 +13369,17 @@ msgstr ""
 "očisti vse novejše bližnjice\n"
 "(namesto samo obnove spremenjenih)"
 
-#: ../src/gui/accelerators.c:2582 ../src/gui/preferences.c:1064
+#: ../src/gui/accelerators.c:2583 ../src/gui/preferences.c:1064
 #: ../src/libs/tools/global_toolbox.c:487
 #: ../src/libs/tools/global_toolbox.c:664
 msgid "shortcuts"
 msgstr "bližnjice"
 
-#: ../src/gui/accelerators.c:2592
+#: ../src/gui/accelerators.c:2593
 msgid "export shortcuts"
 msgstr "izvozi bližnjice"
 
-#: ../src/gui/accelerators.c:2601
+#: ../src/gui/accelerators.c:2602
 msgid ""
 "export all shortcuts to a file\n"
 "or just for one selected device\n"
@@ -13388,27 +13387,27 @@ msgstr ""
 "izvozi vse bližnjice na datoteko\n"
 "ali samo za eno izbrano napravo\n"
 
-#: ../src/gui/accelerators.c:2608 ../src/gui/accelerators.c:2690
+#: ../src/gui/accelerators.c:2609 ../src/gui/accelerators.c:2691
 msgid "keyboard"
 msgstr "tipkovnica"
 
-#: ../src/gui/accelerators.c:2620
+#: ../src/gui/accelerators.c:2621
 msgid "device id"
 msgstr "id naprave"
 
-#: ../src/gui/accelerators.c:2646
+#: ../src/gui/accelerators.c:2647
 msgid "select file to export"
 msgstr "izberi datoteko za izvoz"
 
-#: ../src/gui/accelerators.c:2647 ../src/libs/tagging.c:2629
+#: ../src/gui/accelerators.c:2648 ../src/libs/tagging.c:2629
 msgid "_export"
 msgstr "izvozi"
 
-#: ../src/gui/accelerators.c:2674
+#: ../src/gui/accelerators.c:2675
 msgid "import shortcuts"
 msgstr "uvozi bližnjice"
 
-#: ../src/gui/accelerators.c:2683
+#: ../src/gui/accelerators.c:2684
 msgid ""
 "import all shortcuts from a file\n"
 "or just for one selected device\n"
@@ -13416,31 +13415,31 @@ msgstr ""
 "uvozi vse bližnjice iz datoteke\n"
 "ali samo za eno izbrano napravo\n"
 
-#: ../src/gui/accelerators.c:2702
+#: ../src/gui/accelerators.c:2703
 msgid "id in file"
 msgstr "id v datoteki"
 
-#: ../src/gui/accelerators.c:2708
+#: ../src/gui/accelerators.c:2709
 msgid "id when loaded"
 msgstr "id ko je naložena"
 
-#: ../src/gui/accelerators.c:2712
+#: ../src/gui/accelerators.c:2713
 msgid "clear device first"
 msgstr "najprej očisti napravo"
 
-#: ../src/gui/accelerators.c:2737
+#: ../src/gui/accelerators.c:2738
 msgid "select file to import"
 msgstr "izberi datoteko za uvoz"
 
-#: ../src/gui/accelerators.c:2738 ../src/libs/tagging.c:2593
+#: ../src/gui/accelerators.c:2739 ../src/libs/tagging.c:2593
 msgid "_import"
 msgstr "uvozi"
 
-#: ../src/gui/accelerators.c:2830
+#: ../src/gui/accelerators.c:2831
 msgid "search shortcuts list"
 msgstr "seznam bližnjic iskanja"
 
-#: ../src/gui/accelerators.c:2832
+#: ../src/gui/accelerators.c:2833
 msgid ""
 "incrementally search the list of shortcuts\n"
 "press up or down keys to cycle through matches"
@@ -13448,23 +13447,23 @@ msgstr ""
 "postopno išči po seznamu bližnjic\n"
 "pritisnite tipki gor ali dol, da se ciklično pomikate po zadetkih"
 
-#: ../src/gui/accelerators.c:2852 ../src/views/view.c:1606
+#: ../src/gui/accelerators.c:2853 ../src/views/view.c:1606
 msgid "shortcut"
 msgstr "bližnjica"
 
-#: ../src/gui/accelerators.c:2865
+#: ../src/gui/accelerators.c:2866
 msgid "element"
 msgstr "element"
 
-#: ../src/gui/accelerators.c:2873
+#: ../src/gui/accelerators.c:2874
 msgid "effect"
 msgstr "učinek"
 
-#: ../src/gui/accelerators.c:2934
+#: ../src/gui/accelerators.c:2935
 msgid "search actions list"
 msgstr "seznam aktivnosti"
 
-#: ../src/gui/accelerators.c:2936
+#: ../src/gui/accelerators.c:2937
 msgid ""
 "incrementally search the list of actions\n"
 "press up or down keys to cycle through matches"
@@ -13472,16 +13471,16 @@ msgstr ""
 "postopno išči po seznamu akcij\n"
 "pritisnite tipki gor ali dol, da se ciklično pomikate po zadetkih"
 
-#: ../src/gui/accelerators.c:2966 ../src/gui/guides.c:851
+#: ../src/gui/accelerators.c:2967 ../src/gui/guides.c:851
 #: ../src/gui/metadata_tags.c:124
 msgid "type"
 msgstr "tip"
 
-#: ../src/gui/accelerators.c:3004
+#: ../src/gui/accelerators.c:3005
 msgid "enable fallbacks"
 msgstr "omogoči rešitve v sili"
 
-#: ../src/gui/accelerators.c:3005
+#: ../src/gui/accelerators.c:3006
 msgid ""
 "enables default meanings for additional buttons, modifiers or moves\n"
 "when used in combination with a base shortcut"
@@ -13489,37 +13488,37 @@ msgstr ""
 "omogoči privzete pomene za dodatne gumbe, modifikatorje ali premike\n"
 "kadar se uporabljajo v kombinaciji z osnovno bližnjico"
 
-#: ../src/gui/accelerators.c:3013
+#: ../src/gui/accelerators.c:3014
 msgid "open help page for shortcuts"
 msgstr "odpri stran pomoči za bližnjice"
 
-#: ../src/gui/accelerators.c:3018
+#: ../src/gui/accelerators.c:3019
 msgid "restore..."
 msgstr "obnovi..."
 
-#: ../src/gui/accelerators.c:3019
+#: ../src/gui/accelerators.c:3020
 msgid "restore default shortcuts or previous state"
 msgstr "obnovi privzete bližnjice ali prejšnje stanje"
 
-#: ../src/gui/accelerators.c:3023 ../src/libs/styles.c:901
+#: ../src/gui/accelerators.c:3024 ../src/libs/styles.c:901
 #: ../src/libs/tagging.c:3369
 msgid "import..."
 msgstr "uvozi..."
 
-#: ../src/gui/accelerators.c:3024
+#: ../src/gui/accelerators.c:3025
 msgid "fully or partially import shortcuts from file"
 msgstr "v celoti ali delno uvozi bližnjice iz datoteke"
 
-#: ../src/gui/accelerators.c:3028 ../src/libs/styles.c:907
+#: ../src/gui/accelerators.c:3029 ../src/libs/styles.c:907
 #: ../src/libs/tagging.c:3372
 msgid "export..."
 msgstr "izvoz..."
 
-#: ../src/gui/accelerators.c:3029
+#: ../src/gui/accelerators.c:3030
 msgid "fully or partially export shortcuts to file"
 msgstr "v celoti ali delno izvozi bližnjice v datoteko"
 
-#: ../src/gui/accelerators.c:3037
+#: ../src/gui/accelerators.c:3038
 msgid ""
 "the recommended way to assign shortcuts to visual elements is the <b>visual "
 "shortcut mapping</b> mode.\n"
@@ -13550,33 +13549,33 @@ msgstr ""
 "\n"
 "<i>kliknite <b> trikrat </b>, da trajno opustite to obvestilo</i>"
 
-#: ../src/gui/accelerators.c:3468
+#: ../src/gui/accelerators.c:3469
 msgid "reinitialising input devices"
 msgstr "ponovno nastavljanje vhodnih naprav"
 
-#: ../src/gui/accelerators.c:3610
+#: ../src/gui/accelerators.c:3611
 msgid "down move"
 msgstr "prenesi dol"
 
-#: ../src/gui/accelerators.c:3610
+#: ../src/gui/accelerators.c:3611
 msgid "flip top/bottom first/last"
 msgstr "obrni zgoraj/spodaj prva/zadnja"
 
-#: ../src/gui/accelerators.c:3691
+#: ../src/gui/accelerators.c:3692
 msgid "fallback to move"
 msgstr "rešitev v sili za prenos"
 
-#: ../src/gui/accelerators.c:3942
+#: ../src/gui/accelerators.c:3943
 #, c-format
 msgid "%s not assigned"
 msgstr "%s ni dodeljeno"
 
-#: ../src/gui/accelerators.c:4123
+#: ../src/gui/accelerators.c:4124
 #, c-format
 msgid "%s assigned to %s"
 msgstr "%s dodeljen za %s"
 
-#: ../src/gui/accelerators.c:4342
+#: ../src/gui/accelerators.c:4343
 msgid "short key press resets stuck keys"
 msgstr "kratek pritisk na tipko ponastavi zataknjene tipke"
 
@@ -14007,7 +14006,7 @@ msgstr "vodoravno"
 msgid "vertically"
 msgstr "navpično"
 
-#: ../src/gui/guides.c:846 ../src/iop/ashift.c:6142 ../src/iop/clipping.c:2106
+#: ../src/gui/guides.c:846 ../src/iop/ashift.c:6138 ../src/iop/clipping.c:2106
 #: ../src/iop/colorbalance.c:1857
 msgid "both"
 msgstr "oboje"
@@ -14738,7 +14737,7 @@ msgstr "aproksimativen"
 msgid "bit depth"
 msgstr "bitna globina"
 
-#: ../src/imageio/format/avif.c:850
+#: ../src/imageio/format/avif.c:854
 msgid "color information stored in an image, higher is better"
 msgstr "barvne informacije shranjene na sliki, višje so boljše"
 
@@ -14746,22 +14745,22 @@ msgstr "barvne informacije shranjene na sliki, višje so boljše"
 #. * Color mode combo box
 #.
 #. shortfile option combo box
-#: ../src/imageio/format/avif.c:855 ../src/imageio/format/tiff.c:919
+#: ../src/imageio/format/avif.c:859 ../src/imageio/format/tiff.c:919
 msgid "B&W as grayscale"
 msgstr "črno-belo kot lestvica sivin"
 
-#: ../src/imageio/format/avif.c:856 ../src/imageio/format/tiff.c:920
+#: ../src/imageio/format/avif.c:860 ../src/imageio/format/tiff.c:920
 msgid "saving as grayscale will reduce the size for black & white images"
 msgstr "če shranite kot sivine, bo zmanjšana velikost datotek črno-belih slik"
 
 #.
 #. * Tiling combo box
 #.
-#: ../src/imageio/format/avif.c:865
+#: ../src/imageio/format/avif.c:869
 msgid "tiling"
 msgstr "razrez"
 
-#: ../src/imageio/format/avif.c:866
+#: ../src/imageio/format/avif.c:870
 msgid ""
 "tile an image into segments.\n"
 "\n"
@@ -14775,14 +14774,14 @@ msgstr ""
 
 #. compression
 #. Compression method combo box
-#: ../src/imageio/format/avif.c:878 ../src/imageio/format/exr.cc:599
+#: ../src/imageio/format/avif.c:882 ../src/imageio/format/exr.cc:599
 #: ../src/imageio/format/pdf.c:693 ../src/imageio/format/png.c:702
 #: ../src/imageio/format/tiff.c:900 ../src/imageio/format/webp.c:409
 #: ../src/libs/masks.c:112
 msgid "compression"
 msgstr "stiskanje"
 
-#: ../src/imageio/format/avif.c:886
+#: ../src/imageio/format/avif.c:890
 msgid "the compression for the image"
 msgstr "stiskanje slike"
 
@@ -14791,13 +14790,13 @@ msgstr "stiskanje slike"
 #. step
 #. default
 #. digits
-#: ../src/imageio/format/avif.c:900 ../src/imageio/format/j2k.c:707
+#: ../src/imageio/format/avif.c:904 ../src/imageio/format/j2k.c:707
 #: ../src/imageio/format/jpeg.c:578 ../src/imageio/format/jxl.c:605
-#: ../src/imageio/format/webp.c:419 ../src/libs/camera.c:562
+#: ../src/imageio/format/webp.c:419 ../src/libs/camera.c:588
 msgid "quality"
 msgstr "kakovost"
 
-#: ../src/imageio/format/avif.c:903
+#: ../src/imageio/format/avif.c:907
 msgid ""
 "the quality of an image, less quality means fewer details.\n"
 "\n"
@@ -15000,7 +14999,7 @@ msgid "internal"
 msgstr "interno"
 
 #: ../src/imageio/format/jxl.c:619 ../src/libs/duplicate.c:407
-#: ../src/libs/history.c:1102 ../src/libs/snapshots.c:888
+#: ../src/libs/history.c:1146 ../src/libs/snapshots.c:888
 msgid "original"
 msgstr "izvirnik"
 
@@ -15596,7 +15595,7 @@ msgstr "korektiven ali kreativen"
 #: ../src/iop/channelmixerrgb.c:240 ../src/iop/clipping.c:357
 #: ../src/iop/clipping.c:359 ../src/iop/colorbalancergb.c:181
 #: ../src/iop/colorequal.c:214 ../src/iop/colorin.c:131 ../src/iop/crop.c:131
-#: ../src/iop/crop.c:133 ../src/iop/demosaic.c:293
+#: ../src/iop/crop.c:133 ../src/iop/demosaic.c:297
 #: ../src/iop/denoiseprofile.c:777 ../src/iop/denoiseprofile.c:779
 #: ../src/iop/diffuse.c:141 ../src/iop/diffuse.c:143
 #: ../src/iop/enlargecanvas.c:81 ../src/iop/enlargecanvas.c:83
@@ -15618,7 +15617,7 @@ msgstr "linearno, RGB, glede na sceno"
 msgid "geometric, RGB"
 msgstr "geometrično, RGB"
 
-#: ../src/iop/ashift.c:1207 ../src/iop/clipping.c:912
+#: ../src/iop/ashift.c:1206 ../src/iop/clipping.c:912
 #, c-format
 msgid ""
 "module '%s' has insane data so it is bypassed for now. you should disable it "
@@ -15627,23 +15626,23 @@ msgstr ""
 "modul '%s' ima nore podatke, zato je bil za zdaj zaobiden. morali bi ga "
 "onemogočitiali spremenite parametre\n"
 
-#: ../src/iop/ashift.c:2810
+#: ../src/iop/ashift.c:2808
 msgid "automatic cropping failed"
 msgstr "avtomatično obrezovanje je spodletelo"
 
-#: ../src/iop/ashift.c:3219 ../src/iop/ashift.c:3271 ../src/iop/ashift.c:3318
+#: ../src/iop/ashift.c:3217 ../src/iop/ashift.c:3269 ../src/iop/ashift.c:3316
 msgid "data pending - please repeat"
 msgstr "podatki v dobavljanju - prosim ponovite"
 
-#: ../src/iop/ashift.c:3228
+#: ../src/iop/ashift.c:3226
 msgid "could not detect structural data in image"
 msgstr "nisem uspel razbrati strukturnih podatkov v sliki"
 
-#: ../src/iop/ashift.c:3240
+#: ../src/iop/ashift.c:3238
 msgid "could not run outlier removal"
 msgstr "odstranjevanje osamelcev ni uspelo"
 
-#: ../src/iop/ashift.c:3417
+#: ../src/iop/ashift.c:3415
 #, c-format
 msgid ""
 "not enough structure for automatic correction\n"
@@ -15652,41 +15651,41 @@ msgstr ""
 "ni dovolj strukture za avtomatični popravek\n"
 "minimalno %d linij v vsaki relevantni smeri"
 
-#: ../src/iop/ashift.c:3423
+#: ../src/iop/ashift.c:3421
 msgid "automatic correction failed, please correct manually"
 msgstr "avtomatično popravljanje je spodletelo, prosim popravite ročno"
 
-#: ../src/iop/ashift.c:5001
+#: ../src/iop/ashift.c:4997
 #, c-format
 msgid "only %d lines can be saved in parameters"
 msgstr "samo %d vrstic je lahko shranjenih v parametrih"
 
-#: ../src/iop/ashift.c:5080
+#: ../src/iop/ashift.c:5076
 #, c-format
 msgid "rotation adjusted by %3.2f° to %3.2f°"
 msgstr "vrtenje prilagojeno za %3.2f° do %3.2f°"
 
-#: ../src/iop/ashift.c:5713 ../src/iop/ashift.c:5715 ../src/iop/ashift.c:5819
-#: ../src/iop/ashift.c:5821
+#: ../src/iop/ashift.c:5709 ../src/iop/ashift.c:5711 ../src/iop/ashift.c:5815
+#: ../src/iop/ashift.c:5817
 #, c-format
 msgid "lens shift (%s)"
 msgstr "pomik lečja (%s)"
 
-#: ../src/iop/ashift.c:5985
+#: ../src/iop/ashift.c:5981
 msgid "manual perspective"
 msgstr "ročna perspektiva"
 
-#: ../src/iop/ashift.c:6030
+#: ../src/iop/ashift.c:6026
 msgctxt "section"
 msgid "perspective"
 msgstr "perspektiva"
 
-#: ../src/iop/ashift.c:6036 ../src/iop/ashift.c:6143 ../src/iop/ashift.c:6145
-#: ../src/iop/ashift.c:6147
+#: ../src/iop/ashift.c:6032 ../src/iop/ashift.c:6139 ../src/iop/ashift.c:6141
+#: ../src/iop/ashift.c:6143
 msgid "structure"
 msgstr "struktura"
 
-#: ../src/iop/ashift.c:6069
+#: ../src/iop/ashift.c:6065
 msgid ""
 "rotate image\n"
 "right-click and drag to define a horizontal or vertical line by drawing on "
@@ -15696,19 +15695,19 @@ msgstr ""
 "desni klik in poteg za določanje vodoravne ali navpične črte, ki jo narišete "
 "na sliko"
 
-#: ../src/iop/ashift.c:6072 ../src/iop/ashift.c:6074
+#: ../src/iop/ashift.c:6068 ../src/iop/ashift.c:6070
 msgid "apply lens shift correction in one direction"
 msgstr "uporabi popravek pomika lečja v eni smeri"
 
-#: ../src/iop/ashift.c:6076
+#: ../src/iop/ashift.c:6072
 msgid "shear the image along one diagonal"
 msgstr "prireži sliko ob eni diagonali"
 
-#: ../src/iop/ashift.c:6077 ../src/iop/clipping.c:2127
+#: ../src/iop/ashift.c:6073 ../src/iop/clipping.c:2127
 msgid "automatically crop to avoid black edges"
 msgstr "avtomatično obreži v izogib črnim robovom"
 
-#: ../src/iop/ashift.c:6078
+#: ../src/iop/ashift.c:6074
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
@@ -15716,12 +15715,12 @@ msgstr ""
 "model popravkov perspektive objektiva: generični ali odvisen od goriščne "
 "razdalje"
 
-#: ../src/iop/ashift.c:6081
+#: ../src/iop/ashift.c:6077
 msgid "focal length of the lens, default value set from EXIF data if available"
 msgstr ""
 "goriščna razdalja lečja, privzeta vrednost iz podatkov v EXIFu, če obstaja"
 
-#: ../src/iop/ashift.c:6084
+#: ../src/iop/ashift.c:6080
 msgid ""
 "crop factor of the camera sensor, default value set from EXIF data if "
 "available, manual setting is often required"
@@ -15729,7 +15728,7 @@ msgstr ""
 "faktor obreza senzorja, privzeta vrednost iz podatkov v EXIFu, če obstaja, "
 "pogosto je potrebna ročna nastavitev"
 
-#: ../src/iop/ashift.c:6088
+#: ../src/iop/ashift.c:6084
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
@@ -15737,13 +15736,13 @@ msgstr ""
 "nivo popravkov, ki so odvisni od objektiva, postavljeno na max za popolno "
 "odvisnost od objektiva, postavljeno na 0 za generični primer"
 
-#: ../src/iop/ashift.c:6092
+#: ../src/iop/ashift.c:6088
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
 "prilagoditev razmerja proporcev slike s spremembo meril v horizontalni in "
 "vertikalni smeri"
 
-#: ../src/iop/ashift.c:6094
+#: ../src/iop/ashift.c:6090
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -15753,7 +15752,7 @@ msgstr ""
 "ctrl+klik samo za prilagajanje vrtenja\n"
 "dvigalka+klik samo za prilagajanje zamika lečja"
 
-#: ../src/iop/ashift.c:6098
+#: ../src/iop/ashift.c:6094
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -15763,7 +15762,7 @@ msgstr ""
 "ctrl+klik samo za prilagajanje vrtenja\n"
 "dvigalka+klik samo za prilagajanje zamika lečja"
 
-#: ../src/iop/ashift.c:6102
+#: ../src/iop/ashift.c:6098
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions, "
 "fitting rotation, lens shift in both directions, and shear\n"
@@ -15777,7 +15776,7 @@ msgstr ""
 "dvigalka+klik samo za prilagajanje zamika lečja\n"
 "ctrl+dvigalka+klik samo za prilagajanje vrtenja in zamika lečja"
 
-#: ../src/iop/ashift.c:6109
+#: ../src/iop/ashift.c:6105
 msgid ""
 "automatically analyse line structure in image\n"
 "ctrl+click for an additional edge enhancement\n"
@@ -15789,43 +15788,43 @@ msgstr ""
 "dvigalka+klik za dodatne izboljšave podrobnosti\n"
 "ctrl+dvigalka+klik za kombinacijo obeh metod"
 
-#: ../src/iop/ashift.c:6114
+#: ../src/iop/ashift.c:6110
 msgid "manually define perspective rectangle"
 msgstr "ročno določi pravokotnik perspektive"
 
-#: ../src/iop/ashift.c:6115
+#: ../src/iop/ashift.c:6111
 msgid "manually draw structure lines"
 msgstr "ročno nariši strukture linij"
 
-#: ../src/iop/ashift.c:6144
+#: ../src/iop/ashift.c:6140
 msgid "rectangle"
 msgstr "pravokotnik"
 
-#: ../src/iop/ashift.c:6146
+#: ../src/iop/ashift.c:6142
 msgid "lines"
 msgstr "črte"
 
-#: ../src/iop/ashift.c:6172 ../src/iop/clipping.c:3338
+#: ../src/iop/ashift.c:6168 ../src/iop/clipping.c:3338
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] določi/zavrti horizont"
 
-#: ../src/iop/ashift.c:6175
+#: ../src/iop/ashift.c:6171
 #, c-format
 msgid "[%s on segment] select segment"
 msgstr "[%s na segmentu] izberite segment"
 
-#: ../src/iop/ashift.c:6179
+#: ../src/iop/ashift.c:6175
 #, c-format
 msgid "[%s on segment] unselect segment"
 msgstr "[%s na segmentu] prekličite izbiro segmenta"
 
-#: ../src/iop/ashift.c:6183
+#: ../src/iop/ashift.c:6179
 #, c-format
 msgid "[%s] select all segments from zone"
 msgstr "[%s] izberite vse segmente iz cone"
 
-#: ../src/iop/ashift.c:6187
+#: ../src/iop/ashift.c:6183
 #, c-format
 msgid "[%s] unselect all segments from zone"
 msgstr "[%s] prekličite izbiro vseh segmentov iz cone"
@@ -15894,47 +15893,38 @@ msgid "clarity"
 msgstr "jasnost"
 
 #: ../src/iop/atrous.c:913
-#| msgid "deblur: large blur, strength 3"
 msgid "deblur | large blur, strength 3"
 msgstr "odstranitev zamegljenosti | velika zamegljenost, moč 3"
 
 #: ../src/iop/atrous.c:931
-#| msgid "deblur: medium blur, strength 3"
 msgid "deblur | medium blur, strength 3"
 msgstr "odstranitev zamegljenosti | srednja zamegljenost, moč 3"
 
 #: ../src/iop/atrous.c:948
-#| msgid "deblur: fine blur, strength 3"
 msgid "deblur | fine blur, strength 3"
 msgstr "odstranitev zamegljenosti | fina zamegljenost, moč 3"
 
 #: ../src/iop/atrous.c:967
-#| msgid "deblur: large blur, strength 2"
 msgid "deblur | large blur, strength 2"
 msgstr "odstranitev zamegljenosti | velika zamegljenost, moč 2"
 
 #: ../src/iop/atrous.c:985
-#| msgid "deblur: medium blur, strength 2"
 msgid "deblur | medium blur, strength 2"
 msgstr "odstranitev zamegljenosti | srednja zamegljenost, moč 2"
 
 #: ../src/iop/atrous.c:1002
-#| msgid "deblur: fine blur, strength 2"
 msgid "deblur | fine blur, strength 2"
 msgstr "odstranitev zamegljenosti | fina zamegljenost, moč 2"
 
 #: ../src/iop/atrous.c:1021
-#| msgid "deblur: large blur, strength 1"
 msgid "deblur | large blur, strength 1"
 msgstr "odstranitev zamegljenosti | velika zamegljenost, moč 1"
 
 #: ../src/iop/atrous.c:1039
-#| msgid "deblur: medium blur, strength 1"
 msgid "deblur | medium blur, strength 1"
 msgstr "odstranitev zamegljenosti | srednja zamegljenost, moč 1"
 
 #: ../src/iop/atrous.c:1056
-#| msgid "deblur: fine blur, strength 1"
 msgid "deblur | fine blur, strength 1"
 msgstr "odstranitev zamegljenosti | fina zamegljenost, moč 1"
 
@@ -16026,7 +16016,7 @@ msgstr ""
 "spremeni robne sije pri vsaki velikosti efekta\n"
 "edine spremembe so posledica zavihkov luma in krome"
 
-#: ../src/iop/atrous.c:1808 ../src/iop/colorbalancergb.c:1966
+#: ../src/iop/atrous.c:1808 ../src/iop/colorbalancergb.c:1973
 #: ../src/iop/colorequal.c:3017 ../src/iop/colorzones.c:2706
 #: ../src/iop/denoiseprofile.c:3700 ../src/iop/filmicrgb.c:4366
 #: ../src/iop/lowlight.c:809 ../src/iop/rawdenoise.c:910
@@ -16434,7 +16424,7 @@ msgstr "koliko zamegliti modro"
 msgid "apply Orton effect for a dreamy ethereal look"
 msgstr "uveljavi Ortonov učinek za sanjski eterični videz"
 
-#: ../src/iop/bloom.c:414 ../src/iop/soften.c:346 ../src/libs/camera.c:565
+#: ../src/iop/bloom.c:414 ../src/iop/soften.c:346 ../src/libs/camera.c:591
 #: ../src/libs/masks.c:107
 msgid "size"
 msgstr "velikost"
@@ -16464,7 +16454,7 @@ msgid "simulate physically-accurate lens and motion blurs"
 msgstr "simuliraj fizikalno točne objektive in zamaknjenosti zaradi gibanja"
 
 #. add the tooltips
-#: ../src/iop/blurs.c:787
+#: ../src/iop/blurs.c:795
 msgid ""
 "size of the blur in pixels\n"
 "<b>caution</b>: doubling the radius quadruples the run-time!"
@@ -16472,11 +16462,11 @@ msgstr ""
 "velikost zameglitve v slikovnih pikah\n"
 "<b>Pozor</b>: podvojitev polmera početveri čas delovanja!"
 
-#: ../src/iop/blurs.c:789
+#: ../src/iop/blurs.c:797
 msgid "shifts towards a star shape as value approaches blades-1"
-msgstr "se premakne proti obliki zvezde, ko se vrednost približa rezilom-1"
+msgstr "se premakne proti liku zvezde, ko se vrednost približa rezilom-1"
 
-#: ../src/iop/blurs.c:791
+#: ../src/iop/blurs.c:799
 msgid ""
 "adjust straightness of edges from 0=perfect circle\n"
 "to 1=completely straight"
@@ -16484,15 +16474,15 @@ msgstr ""
 "prilagodi ravnost robov od 0=popoln krog\n"
 "do 1=popolnoma ravno"
 
-#: ../src/iop/blurs.c:792
+#: ../src/iop/blurs.c:800
 msgid "set amount by which to rotate shape around its center"
 msgstr "nastavi količino, za katero želite zavrteti lik okoli središča"
 
-#: ../src/iop/blurs.c:794
+#: ../src/iop/blurs.c:802
 msgid "orientation of the motion's path"
 msgstr "usmeritev poti gibanja"
 
-#: ../src/iop/blurs.c:795
+#: ../src/iop/blurs.c:803
 msgid ""
 "amount to curve the motion relative\n"
 "to its overall orientation"
@@ -16500,7 +16490,7 @@ msgstr ""
 "količina za krivuljo gibanja relativno\n"
 "glede na njegovo splošno usmeritev"
 
-#: ../src/iop/blurs.c:796
+#: ../src/iop/blurs.c:804
 msgid ""
 "select which portion of the path to use,\n"
 "allowing the path to become asymmetric"
@@ -16540,7 +16530,7 @@ msgstr "katero dimenzijo uporabiti za izračun velikosti"
 msgid "size of the border in percent of the chosen basis"
 msgstr "velikost obrobe v odstotkih izbrane osnove"
 
-#: ../src/iop/borders.c:933 ../src/iop/clipping.c:2228 ../src/iop/crop.c:1255
+#: ../src/iop/borders.c:933 ../src/iop/clipping.c:2228 ../src/iop/crop.c:1254
 msgid "aspect"
 msgstr "razmerje stranic"
 
@@ -16580,7 +16570,7 @@ msgstr "5:3"
 msgid "US Legal 8.5x14"
 msgstr "ameriški pravni US Legal 8.5x14"
 
-#: ../src/iop/borders.c:945 ../src/iop/clipping.c:2141 ../src/iop/crop.c:1157
+#: ../src/iop/borders.c:945 ../src/iop/clipping.c:2141 ../src/iop/crop.c:1156
 msgid "golden cut"
 msgstr "zlati rez"
 
@@ -16616,7 +16606,7 @@ msgstr "14:11"
 msgid "5:4 (8x10)"
 msgstr "5:4 (8x10)"
 
-#: ../src/iop/borders.c:955 ../src/iop/clipping.c:2131 ../src/iop/crop.c:1146
+#: ../src/iop/borders.c:955 ../src/iop/clipping.c:2131 ../src/iop/crop.c:1145
 #: ../src/libs/filtering.c:310 ../src/libs/filters/ratio.c:124
 #: ../src/libs/histogram.c:119
 msgid "square"
@@ -16737,7 +16727,7 @@ msgstr "korekcija barvnega odklona za Bayerjeve senzorje"
 
 #: ../src/iop/cacorrect.c:82 ../src/iop/cacorrect.c:84
 #: ../src/iop/cacorrectrgb.c:167 ../src/iop/cacorrectrgb.c:169
-#: ../src/iop/demosaic.c:291 ../src/iop/highlights.c:177
+#: ../src/iop/demosaic.c:295 ../src/iop/highlights.c:177
 #: ../src/iop/highlights.c:179 ../src/iop/hotpixels.c:73
 #: ../src/iop/hotpixels.c:75 ../src/iop/rawdenoise.c:141
 #: ../src/iop/rawdenoise.c:143 ../src/iop/rawprepare.c:171
@@ -16747,7 +16737,7 @@ msgid "linear, raw, scene-referred"
 msgstr "linearni, surovi, glede na sceno"
 
 #: ../src/iop/cacorrect.c:83 ../src/iop/cacorrectrgb.c:168
-#: ../src/iop/demosaic.c:292 ../src/iop/invert.c:134
+#: ../src/iop/demosaic.c:296 ../src/iop/invert.c:134
 #: ../src/iop/rawdenoise.c:142 ../src/iop/rawprepare.c:172
 #: ../src/iop/temperature.c:251
 msgid "linear, raw"
@@ -17005,32 +16995,26 @@ msgid "linear, RGB or XYZ"
 msgstr "linearni, RGB ali XYZ"
 
 #: ../src/iop/channelmixerrgb.c:460
-#| msgid "B/W luminance-based"
 msgid "monochrome | luminance-based"
 msgstr "eno-barvno | na osnovi svetlosti"
 
 #: ../src/iop/channelmixerrgb.c:495
-#| msgid "B&W: ILFORD HP5+"
 msgid "monochrome | ILFORD HP5+"
 msgstr "eno-barvno | ILFORD HP5+"
 
 #: ../src/iop/channelmixerrgb.c:504
-#| msgid "B&W: ILFORD DELTA 100"
 msgid "monochrome | ILFORD DELTA 100"
 msgstr "eno-barvno | ILFORD DELTA 100"
 
 #: ../src/iop/channelmixerrgb.c:514
-#| msgid "B&W: ILFORD DELTA 400 - 3200"
 msgid "monochrome | ILFORD DELTA 400 - 3200"
 msgstr "eno-barvno | ILFORD DELTA 400 - 3200"
 
 #: ../src/iop/channelmixerrgb.c:523
-#| msgid "B&W: ILFORD FP4+"
 msgid "monochrome | ILFORD FP4+"
 msgstr "eno-barvno | ILFORD FP4+"
 
 #: ../src/iop/channelmixerrgb.c:532
-#| msgid "B&W: Fuji Acros 100"
 msgid "monochrome | Fuji Acros 100"
 msgstr "eno-barvno | Fuji Acros 100"
 
@@ -17039,17 +17023,14 @@ msgid "basic channel mixer"
 msgstr "osnovni mešalnik kanalov"
 
 #: ../src/iop/channelmixerrgb.c:562
-#| msgid "swap G and B"
 msgid "channel swap | swap G and B"
 msgstr "zamenjaj kanala | zamenjaj G in B"
 
 #: ../src/iop/channelmixerrgb.c:575
-#| msgid "swap G and R"
 msgid "channel swap | swap G and R"
 msgstr "zamenjaj kanala | zamenjaj G in R"
 
 #: ../src/iop/channelmixerrgb.c:588
-#| msgid "swap R and B"
 msgid "channel swap | swap R and B"
 msgstr "zamenjaj kanala | zamenjaj R in B"
 
@@ -17229,12 +17210,12 @@ msgstr "zaključeno samodejno zaznavanje ravnovesja beline"
 msgid "channelmixerrgb works only on RGB input"
 msgstr "channelmixerrg deluje samo na RGB vhodu"
 
-#: ../src/iop/channelmixerrgb.c:3642
+#: ../src/iop/channelmixerrgb.c:3643
 #, c-format
 msgid "CCT: %.0f K (daylight)"
 msgstr "CCT: %.0f K (dnevna svetloba)"
 
-#: ../src/iop/channelmixerrgb.c:3645
+#: ../src/iop/channelmixerrgb.c:3646
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a daylight spectrum,\n"
@@ -17244,12 +17225,12 @@ msgstr ""
 "to vrsto svetlobe je mogoče natančno modelirati s spektrom dnevne svetlobe,\n"
 "zato njegova temperatura smiselno ustreza svetlobi D."
 
-#: ../src/iop/channelmixerrgb.c:3651
+#: ../src/iop/channelmixerrgb.c:3652
 #, c-format
 msgid "CCT: %.0f K (black body)"
 msgstr "CCT: %.0f K (črno telo)"
 
-#: ../src/iop/channelmixerrgb.c:3654
+#: ../src/iop/channelmixerrgb.c:3655
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a black body spectrum,\n"
@@ -17259,12 +17240,12 @@ msgstr ""
 "to vrsto svetlobe je mogoče natančno modelirati s spektrom črnega telesa,\n"
 "zato njena temperatura smiselno ustreza Planckovi vrsti svetlobe."
 
-#: ../src/iop/channelmixerrgb.c:3660
+#: ../src/iop/channelmixerrgb.c:3661
 #, c-format
 msgid "CCT: %.0f K (invalid)"
 msgstr "CCT: %.0f K (neveljavno)"
 
-#: ../src/iop/channelmixerrgb.c:3663
+#: ../src/iop/channelmixerrgb.c:3664
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant cannot be accurately modeled by a daylight or black body "
@@ -17278,12 +17259,12 @@ msgstr ""
 "zato njena temperatura ni smiselno ustrezna in morate uporabiti svetlobo po "
 "meri."
 
-#: ../src/iop/channelmixerrgb.c:3672
+#: ../src/iop/channelmixerrgb.c:3673
 #, c-format
 msgid "CCT: undefined"
 msgstr "CCT: nedoločeno"
 
-#: ../src/iop/channelmixerrgb.c:3675
+#: ../src/iop/channelmixerrgb.c:3676
 msgid ""
 "the approximated correlated color temperature\n"
 "cannot be computed at all so you need to use a custom illuminant."
@@ -17291,16 +17272,16 @@ msgstr ""
 "približna korelirana barvna temperatura\n"
 "sploh je ni mogoče izračunati, zato morate uporabiti vrsto svetlobe po meri."
 
-#: ../src/iop/channelmixerrgb.c:3993
+#: ../src/iop/channelmixerrgb.c:3994
 msgid "white balance successfully extracted from raw image"
 msgstr "ravnovesje beline je bilo uspešno izvlečeno iz surove slike"
 
 #. We need to recompute only the full preview
-#: ../src/iop/channelmixerrgb.c:4000
+#: ../src/iop/channelmixerrgb.c:4001
 msgid "auto-detection of white balance started…"
 msgstr "samodejno zaznavanje ravnovesja beline se je začelo…"
 
-#: ../src/iop/channelmixerrgb.c:4111
+#: ../src/iop/channelmixerrgb.c:4112
 msgid ""
 "color calibration: the sum of the gray channel parameters is zero, "
 "normalization will be disabled."
@@ -17309,7 +17290,7 @@ msgstr ""
 "normalizacija bo onemogočena."
 
 #. Write report in GUI
-#: ../src/iop/channelmixerrgb.c:4155
+#: ../src/iop/channelmixerrgb.c:4156
 #, c-format
 msgid ""
 "L: \t%.1f %%\n"
@@ -17321,19 +17302,19 @@ msgstr ""
 "c: \t%.1f"
 
 #. Page CAT
-#: ../src/iop/channelmixerrgb.c:4424
+#: ../src/iop/channelmixerrgb.c:4425
 msgid "CAT"
 msgstr "CAT"
 
-#: ../src/iop/channelmixerrgb.c:4425
+#: ../src/iop/channelmixerrgb.c:4426
 msgid "chromatic adaptation transform"
 msgstr "transformacija barvnega prilagajanja"
 
-#: ../src/iop/channelmixerrgb.c:4427
+#: ../src/iop/channelmixerrgb.c:4428
 msgid "adaptation"
 msgstr "prilagoditev"
 
-#: ../src/iop/channelmixerrgb.c:4430
+#: ../src/iop/channelmixerrgb.c:4431
 msgid ""
 "choose the method to adapt the illuminant\n"
 "and the colorspace in which the module works: \n"
@@ -17353,7 +17334,7 @@ msgstr ""
 "• XYZ je preprosti razteg v prostoru XYZ. Na splošno ni priporočljiva.\n"
 "• nobena ne onemogoča prilagoditve in uporablja cevovod na RGB."
 
-#: ../src/iop/channelmixerrgb.c:4450
+#: ../src/iop/channelmixerrgb.c:4451
 msgid ""
 "this is the color of the scene illuminant before chromatic adaptation\n"
 "this color will be turned into pure white by the adaptation."
@@ -17361,23 +17342,23 @@ msgstr ""
 "to je barva scene z vira svetlobe pred barvno prilagoditvijo\n"
 "ta barva bo s prilagoditvijo postala čista bela."
 
-#: ../src/iop/channelmixerrgb.c:4458
+#: ../src/iop/channelmixerrgb.c:4459
 msgid "picker"
 msgstr "izbirnik"
 
-#: ../src/iop/channelmixerrgb.c:4460 ../src/iop/temperature.c:2111
+#: ../src/iop/channelmixerrgb.c:4461 ../src/iop/temperature.c:2111
 msgid "set white balance to detected from area"
 msgstr "nastavi ravnotežje beline iz detekcije površine"
 
-#: ../src/iop/channelmixerrgb.c:4464 ../src/iop/negadoctor.c:961
+#: ../src/iop/channelmixerrgb.c:4465 ../src/iop/negadoctor.c:961
 msgid "illuminant"
 msgstr "vir svetlobe"
 
-#: ../src/iop/channelmixerrgb.c:4470 ../src/iop/temperature.c:2178
+#: ../src/iop/channelmixerrgb.c:4471 ../src/iop/temperature.c:2178
 msgid "temperature"
 msgstr "temperatura"
 
-#: ../src/iop/channelmixerrgb.c:4508
+#: ../src/iop/channelmixerrgb.c:4509
 msgid ""
 "define a target chromaticity (hue and chroma) for a particular region of the "
 "image (the control sample), which you then match against the same target "
@@ -17390,17 +17371,17 @@ msgstr ""
 "slikah. kontrolni vzorec je lahko bodisi kritični del vaše teme ali "
 "nepremična in dosledno osvetljena površina vaše serije slik."
 
-#: ../src/iop/channelmixerrgb.c:4515 ../src/iop/channelmixerrgb.c:4528
-#: ../src/iop/channelmixerrgb.c:4557 ../src/iop/channelmixerrgb.c:4565
-#: ../src/iop/channelmixerrgb.c:4572
+#: ../src/iop/channelmixerrgb.c:4516 ../src/iop/channelmixerrgb.c:4529
+#: ../src/iop/channelmixerrgb.c:4558 ../src/iop/channelmixerrgb.c:4566
+#: ../src/iop/channelmixerrgb.c:4573
 msgid "mapping"
 msgstr "preslikava"
 
-#: ../src/iop/channelmixerrgb.c:4515 ../src/iop/exposure.c:1173
+#: ../src/iop/channelmixerrgb.c:4516 ../src/iop/exposure.c:1173
 msgid "area mode"
 msgstr "ploskovni način"
 
-#: ../src/iop/channelmixerrgb.c:4516
+#: ../src/iop/channelmixerrgb.c:4517
 msgid ""
 "\"correction\" automatically adjust the illuminant\n"
 "such that the input color is mapped to the target.\n"
@@ -17412,19 +17393,19 @@ msgstr ""
 "\"mera\" preprosto prikazuje, kako vhodno barvo preslika CAT\n"
 "in se lahko uporablja za vzorčenje cilja."
 
-#: ../src/iop/channelmixerrgb.c:4521 ../src/iop/exposure.c:1179
+#: ../src/iop/channelmixerrgb.c:4522 ../src/iop/exposure.c:1179
 msgid "correction"
 msgstr "popravek"
 
-#: ../src/iop/channelmixerrgb.c:4522 ../src/iop/exposure.c:1180
+#: ../src/iop/channelmixerrgb.c:4523 ../src/iop/exposure.c:1180
 msgid "measure"
 msgstr "mera"
 
-#: ../src/iop/channelmixerrgb.c:4526
+#: ../src/iop/channelmixerrgb.c:4527
 msgid "take channel mixing into account"
 msgstr "upoštevaj mešanje kanalov"
 
-#: ../src/iop/channelmixerrgb.c:4533
+#: ../src/iop/channelmixerrgb.c:4534
 msgid ""
 "compute the target by taking the channel mixing into account.\n"
 "if disabled, only the CAT is considered."
@@ -17432,11 +17413,11 @@ msgstr ""
 "izračunaj cilj tako, da upoštevamo mešanje kanala.\n"
 "Če je onemogočeno, se upošteva samo CAT."
 
-#: ../src/iop/channelmixerrgb.c:4541 ../src/iop/exposure.c:1195
+#: ../src/iop/channelmixerrgb.c:4542 ../src/iop/exposure.c:1195
 msgid "the input color that should be mapped to the target"
 msgstr "vhodna barva, ki jo je treba preslikati na cilj"
 
-#: ../src/iop/channelmixerrgb.c:4545
+#: ../src/iop/channelmixerrgb.c:4546
 msgid ""
 "L: \tN/A\n"
 "h: \tN/A\n"
@@ -17446,120 +17427,120 @@ msgstr ""
 "h: \tN/A\n"
 "c: \tN/A"
 
-#: ../src/iop/channelmixerrgb.c:4548 ../src/iop/exposure.c:1203
+#: ../src/iop/channelmixerrgb.c:4549 ../src/iop/exposure.c:1203
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
 msgstr "te koordinate LCh so izračunane iz koordinat CIE Lab 1976"
 
-#: ../src/iop/channelmixerrgb.c:4553
+#: ../src/iop/channelmixerrgb.c:4554
 msgid "the desired target color after mapping"
 msgstr "želena ciljna barva po preslikavi"
 
-#: ../src/iop/channelmixerrgb.c:4580 ../src/iop/exposure.c:1187
+#: ../src/iop/channelmixerrgb.c:4581 ../src/iop/exposure.c:1187
 msgctxt "section"
 msgid "input"
 msgstr "vhod"
 
-#: ../src/iop/channelmixerrgb.c:4583 ../src/iop/exposure.c:1210
+#: ../src/iop/channelmixerrgb.c:4584 ../src/iop/exposure.c:1210
 msgctxt "section"
 msgid "target"
 msgstr "cilj"
 
-#: ../src/iop/channelmixerrgb.c:4596
+#: ../src/iop/channelmixerrgb.c:4597
 msgid "input R"
 msgstr "vhod R"
 
-#: ../src/iop/channelmixerrgb.c:4601
+#: ../src/iop/channelmixerrgb.c:4602
 msgid "input G"
 msgstr "vhod G"
 
-#: ../src/iop/channelmixerrgb.c:4606
+#: ../src/iop/channelmixerrgb.c:4607
 msgid "input B"
 msgstr "vhod B"
 
-#: ../src/iop/channelmixerrgb.c:4616
+#: ../src/iop/channelmixerrgb.c:4617
 msgid "output R"
 msgstr "izhod R"
 
-#: ../src/iop/channelmixerrgb.c:4617
+#: ../src/iop/channelmixerrgb.c:4618
 msgid "output G"
 msgstr "izhod G"
 
-#: ../src/iop/channelmixerrgb.c:4618
+#: ../src/iop/channelmixerrgb.c:4619
 msgid "output B"
 msgstr "izhod B"
 
-#: ../src/iop/channelmixerrgb.c:4620
+#: ../src/iop/channelmixerrgb.c:4621
 msgid "colorfulness"
 msgstr "polnost barv"
 
-#: ../src/iop/channelmixerrgb.c:4620
+#: ../src/iop/channelmixerrgb.c:4621
 msgid "output colorfulness"
 msgstr "polnost barv izhoda"
 
-#: ../src/iop/channelmixerrgb.c:4624
+#: ../src/iop/channelmixerrgb.c:4625
 msgid "output brightness"
 msgstr "sijavost izhoda"
 
-#: ../src/iop/channelmixerrgb.c:4627
+#: ../src/iop/channelmixerrgb.c:4628
 msgid "output gray"
 msgstr "siva na izhodu"
 
-#: ../src/iop/channelmixerrgb.c:4640
+#: ../src/iop/channelmixerrgb.c:4641
 msgid "calibrate with a color checker"
 msgstr "kalibriraj z merilnikom barve"
 
-#: ../src/iop/channelmixerrgb.c:4645
+#: ../src/iop/channelmixerrgb.c:4646
 msgid "use a color checker target to autoset CAT and channels"
 msgstr ""
 "uporabite cilj barvnega merilnika za samodejno nastavitev CAT in kanalov"
 
-#: ../src/iop/channelmixerrgb.c:4650 ../src/iop/channelmixerrgb.c:4662
-#: ../src/iop/channelmixerrgb.c:4679 ../src/iop/channelmixerrgb.c:4693
-#: ../src/iop/channelmixerrgb.c:4701 ../src/iop/channelmixerrgb.c:4708
+#: ../src/iop/channelmixerrgb.c:4651 ../src/iop/channelmixerrgb.c:4663
+#: ../src/iop/channelmixerrgb.c:4680 ../src/iop/channelmixerrgb.c:4694
+#: ../src/iop/channelmixerrgb.c:4702 ../src/iop/channelmixerrgb.c:4709
 msgid "calibrate"
 msgstr "kalibriraj"
 
-#: ../src/iop/channelmixerrgb.c:4650
+#: ../src/iop/channelmixerrgb.c:4651
 msgid "chart"
 msgstr "diagram"
 
-#: ../src/iop/channelmixerrgb.c:4651
+#: ../src/iop/channelmixerrgb.c:4652
 msgid "choose the vendor and the type of your chart"
 msgstr "izberite dobavitelja in vrsto cilja"
 
-#: ../src/iop/channelmixerrgb.c:4653
+#: ../src/iop/channelmixerrgb.c:4654
 msgid "Xrite ColorChecker 24 pre-2014"
 msgstr "Xrite ColorChecker 24 pred-2014"
 
-#: ../src/iop/channelmixerrgb.c:4654
+#: ../src/iop/channelmixerrgb.c:4655
 msgid "Xrite/Calibrite ColorChecker 24 post-2014"
 msgstr "Xrite/Calibrite ColorChecker 24 po-2014"
 
-#: ../src/iop/channelmixerrgb.c:4655
+#: ../src/iop/channelmixerrgb.c:4656
 msgid "Datacolor SpyderCheckr 24 pre-2018"
 msgstr "Datacolor SpyderCheckr 24 pred-2018"
 
-#: ../src/iop/channelmixerrgb.c:4656
+#: ../src/iop/channelmixerrgb.c:4657
 msgid "Datacolor SpyderCheckr 24 post-2018"
 msgstr "Datacolor SpyderCheckr 24 po-2018"
 
-#: ../src/iop/channelmixerrgb.c:4657
+#: ../src/iop/channelmixerrgb.c:4658
 msgid "Datacolor SpyderCheckr 48 pre-2018"
 msgstr "Datacolor SpyderCheckr 48 pred-2018"
 
-#: ../src/iop/channelmixerrgb.c:4658
+#: ../src/iop/channelmixerrgb.c:4659
 msgid "Datacolor SpyderCheckr 48 post-2018"
 msgstr "Datacolor SpyderCheckr 48 po-2018"
 
-#: ../src/iop/channelmixerrgb.c:4659
+#: ../src/iop/channelmixerrgb.c:4660
 msgid "Datacolor SpyderCheckr Photo"
 msgstr "Datacolor SpyderCheckr Photo"
 
-#: ../src/iop/channelmixerrgb.c:4662
+#: ../src/iop/channelmixerrgb.c:4663
 msgid "optimize for"
 msgstr "optimirano za"
 
-#: ../src/iop/channelmixerrgb.c:4663
+#: ../src/iop/channelmixerrgb.c:4664
 msgid ""
 "choose the colors that will be optimized with higher priority.\n"
 "neutral colors gives the lowest average delta E but a high maximum delta E\n"
@@ -17575,35 +17556,35 @@ msgstr ""
 "noben je kompromis med obema\n"
 "druge predstavljajo posebna vedenja za zaščito nekaterih odtenkov"
 
-#: ../src/iop/channelmixerrgb.c:4670
+#: ../src/iop/channelmixerrgb.c:4671
 msgid "neutral colors"
 msgstr "nevtralne barve"
 
-#: ../src/iop/channelmixerrgb.c:4672
+#: ../src/iop/channelmixerrgb.c:4673
 msgid "skin and soil colors"
 msgstr "barve kože in zemlje"
 
-#: ../src/iop/channelmixerrgb.c:4673
+#: ../src/iop/channelmixerrgb.c:4674
 msgid "foliage colors"
 msgstr "listnate barve"
 
-#: ../src/iop/channelmixerrgb.c:4674
+#: ../src/iop/channelmixerrgb.c:4675
 msgid "sky and water colors"
 msgstr "barve neba in vode"
 
-#: ../src/iop/channelmixerrgb.c:4675
+#: ../src/iop/channelmixerrgb.c:4676
 msgid "average delta E"
 msgstr "povprečni delta E"
 
-#: ../src/iop/channelmixerrgb.c:4676
+#: ../src/iop/channelmixerrgb.c:4677
 msgid "maximum delta E"
 msgstr "maximum delta E"
 
-#: ../src/iop/channelmixerrgb.c:4679
+#: ../src/iop/channelmixerrgb.c:4680
 msgid "patch scale"
 msgstr "merilo zaplate"
 
-#: ../src/iop/channelmixerrgb.c:4682
+#: ../src/iop/channelmixerrgb.c:4683
 msgid ""
 "reduce the radius of the patches to select the more or less central part.\n"
 "useful when the perspective correction is sloppy or\n"
@@ -17613,31 +17594,31 @@ msgstr ""
 "uporabno, če je popravek perspektive površen ali\n"
 "če okvir zaplat meče sence na robove zaplate."
 
-#: ../src/iop/channelmixerrgb.c:4690
+#: ../src/iop/channelmixerrgb.c:4691
 msgid "the delta E is using the CIE 2000 formula"
 msgstr "delta E uporablja formulo CIE 2000"
 
-#: ../src/iop/channelmixerrgb.c:4693
+#: ../src/iop/channelmixerrgb.c:4694
 msgid "accept"
 msgstr "sprejemi"
 
-#: ../src/iop/channelmixerrgb.c:4698
+#: ../src/iop/channelmixerrgb.c:4699
 msgid "accept the computed profile and set it in the module"
 msgstr "sprejmi izračunani profil in ga nastavi v modulu"
 
-#: ../src/iop/channelmixerrgb.c:4701
+#: ../src/iop/channelmixerrgb.c:4702
 msgid "recompute"
 msgstr "ponovno izračunaj"
 
-#: ../src/iop/channelmixerrgb.c:4705
+#: ../src/iop/channelmixerrgb.c:4706
 msgid "recompute the profile"
 msgstr "ponovno izračunaj profil"
 
-#: ../src/iop/channelmixerrgb.c:4708
+#: ../src/iop/channelmixerrgb.c:4709
 msgid "validate"
 msgstr "preveri veljavnost"
 
-#: ../src/iop/channelmixerrgb.c:4712
+#: ../src/iop/channelmixerrgb.c:4713
 msgid "check the output delta E"
 msgstr "preveri izhodno delto E"
 
@@ -17653,15 +17634,15 @@ msgid ""
 "this module is deprecated. better use new local contrast module instead."
 msgstr "ta modul je zastarel. raje uporabite novi modul lokalnega kontrasta."
 
-#: ../src/iop/clahe.c:323 ../src/iop/sharpen.c:432
+#: ../src/iop/clahe.c:315 ../src/iop/sharpen.c:432
 msgid "amount"
 msgstr "količina"
 
-#: ../src/iop/clahe.c:332
+#: ../src/iop/clahe.c:324
 msgid "size of features to preserve"
 msgstr "velikost shranjenih dodatkov"
 
-#: ../src/iop/clahe.c:333 ../src/iop/nlmeans.c:460
+#: ../src/iop/clahe.c:325 ../src/iop/nlmeans.c:460
 msgid "strength of the effect"
 msgstr "moč učinka"
 
@@ -17686,15 +17667,15 @@ msgid "change the framing and correct the perspective"
 msgstr "spremeni okvirjanje in popravi perspektivo"
 
 #: ../src/iop/clipping.c:1415 ../src/iop/clipping.c:2130 ../src/iop/crop.c:516
-#: ../src/iop/crop.c:1145
+#: ../src/iop/crop.c:1144
 msgid "original image"
 msgstr "izvorna slika"
 
-#: ../src/iop/clipping.c:1719 ../src/iop/crop.c:824
+#: ../src/iop/clipping.c:1719 ../src/iop/crop.c:823
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "neveljavno razmerje. mora biti 'število:število'"
 
-#: ../src/iop/clipping.c:1735 ../src/iop/crop.c:840
+#: ../src/iop/clipping.c:1735 ../src/iop/crop.c:839
 msgid "invalid ratio format. it should be a positive number"
 msgstr "neveljavno razmerje stranic. mora biti pozitivno število"
 
@@ -17736,51 +17717,51 @@ msgstr "popravek perspektive"
 msgid "set perspective correction for your image"
 msgstr "nastavi popravek perspektive za vašo sliko"
 
-#: ../src/iop/clipping.c:2129 ../src/iop/crop.c:1144
+#: ../src/iop/clipping.c:2129 ../src/iop/crop.c:1143
 msgid "freehand"
 msgstr "prostoročno"
 
-#: ../src/iop/clipping.c:2132 ../src/iop/crop.c:1147
+#: ../src/iop/clipping.c:2132 ../src/iop/crop.c:1146
 msgid "10:8 in print"
 msgstr "10:8 za tisk"
 
-#: ../src/iop/clipping.c:2133 ../src/iop/crop.c:1148
+#: ../src/iop/clipping.c:2133 ../src/iop/crop.c:1147
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4x5, 8x10"
 
-#: ../src/iop/clipping.c:2134 ../src/iop/crop.c:1149
+#: ../src/iop/clipping.c:2134 ../src/iop/crop.c:1148
 msgid "11x14"
 msgstr "11x14"
 
-#: ../src/iop/clipping.c:2135 ../src/iop/crop.c:1151
+#: ../src/iop/clipping.c:2135 ../src/iop/crop.c:1150
 msgid "8.5x11, letter"
 msgstr "8.5x11, ameriško pismo"
 
-#: ../src/iop/clipping.c:2136 ../src/iop/crop.c:1152
+#: ../src/iop/clipping.c:2136 ../src/iop/crop.c:1151
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:2137 ../src/iop/crop.c:1153
+#: ../src/iop/clipping.c:2137 ../src/iop/crop.c:1152
 msgid "5x7"
 msgstr "5x7"
 
-#: ../src/iop/clipping.c:2138 ../src/iop/crop.c:1154
+#: ../src/iop/clipping.c:2138 ../src/iop/crop.c:1153
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:2139 ../src/iop/crop.c:1155
+#: ../src/iop/clipping.c:2139 ../src/iop/crop.c:1154
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4x6, 35mm"
 
-#: ../src/iop/clipping.c:2140 ../src/iop/crop.c:1156
+#: ../src/iop/clipping.c:2140 ../src/iop/crop.c:1155
 msgid "16:10, 8x5"
 msgstr "16:10, 8x5"
 
-#: ../src/iop/clipping.c:2142 ../src/iop/crop.c:1158
+#: ../src/iop/clipping.c:2142 ../src/iop/crop.c:1157
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:2143 ../src/iop/crop.c:1159
+#: ../src/iop/clipping.c:2143 ../src/iop/crop.c:1158
 msgid "widescreen"
 msgstr "široki zaslon"
 
@@ -17792,25 +17773,25 @@ msgstr "2:1, univisium"
 msgid "cinemascope"
 msgstr "cinemascope"
 
-#: ../src/iop/clipping.c:2146 ../src/iop/crop.c:1162
+#: ../src/iop/clipping.c:2146 ../src/iop/crop.c:1161
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:2147 ../src/iop/crop.c:1163
+#: ../src/iop/clipping.c:2147 ../src/iop/crop.c:1162
 msgid "anamorphic"
 msgstr "anamorfno"
 
-#: ../src/iop/clipping.c:2148 ../src/iop/crop.c:1165
+#: ../src/iop/clipping.c:2148 ../src/iop/crop.c:1164
 msgid "3:1, panorama"
 msgstr "3:1 panorama"
 
-#: ../src/iop/clipping.c:2180 ../src/iop/clipping.c:2192 ../src/iop/crop.c:1201
-#: ../src/iop/crop.c:1218
+#: ../src/iop/clipping.c:2180 ../src/iop/clipping.c:2192 ../src/iop/crop.c:1200
+#: ../src/iop/crop.c:1217
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr "napačen format razmerja `%s'. mora biti 'število:število'"
 
-#: ../src/iop/clipping.c:2239 ../src/iop/crop.c:1269
+#: ../src/iop/clipping.c:2239 ../src/iop/crop.c:1268
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square\n"
@@ -17822,23 +17803,23 @@ msgstr ""
 "da bi vnesli razmerje po meri odprite kombinirano polje in vnesite razmerje "
 "kot x:y ali v decimalni obliki"
 
-#: ../src/iop/clipping.c:2246 ../src/iop/crop.c:1280
+#: ../src/iop/clipping.c:2246 ../src/iop/crop.c:1279
 msgid "margins"
 msgstr "robovi"
 
-#: ../src/iop/clipping.c:2251 ../src/iop/crop.c:1290
+#: ../src/iop/clipping.c:2251 ../src/iop/crop.c:1289
 msgid "the left margin cannot overlap with the right margin"
 msgstr "levi rob se ne sme prekrivati z desnim robom"
 
-#: ../src/iop/clipping.c:2258 ../src/iop/crop.c:1298
+#: ../src/iop/clipping.c:2258 ../src/iop/crop.c:1297
 msgid "the right margin cannot overlap with the left margin"
 msgstr "desni rob se ne sme prekrivati z levim robom"
 
-#: ../src/iop/clipping.c:2263 ../src/iop/crop.c:1304
+#: ../src/iop/clipping.c:2263 ../src/iop/crop.c:1303
 msgid "the top margin cannot overlap with the bottom margin"
 msgstr "zgornji rob se ne sme prekrivati s spodnjim robom"
 
-#: ../src/iop/clipping.c:2270 ../src/iop/crop.c:1312
+#: ../src/iop/clipping.c:2270 ../src/iop/crop.c:1311
 msgid "the bottom margin cannot overlap with the top margin"
 msgstr "spodnji rob se ne sme prekrivati z zgornjim robom"
 
@@ -17880,12 +17861,12 @@ msgstr ""
 "<b>premakni vodoravno</b>: ctrl+poteg\n"
 "<b>poravnaj</b>: desni-poteg, <b>potrdi</b>: dvojni klik"
 
-#: ../src/iop/clipping.c:3335 ../src/iop/crop.c:1802
+#: ../src/iop/clipping.c:3335 ../src/iop/crop.c:1801
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[%s on borders] obreži"
 
-#: ../src/iop/clipping.c:3337 ../src/iop/crop.c:1804
+#: ../src/iop/clipping.c:3337 ../src/iop/crop.c:1803
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[%s on borders] razmerje obreze"
@@ -18146,22 +18127,18 @@ msgstr ""
 "senc, srednjih tonov in bleščav"
 
 #: ../src/iop/colorbalancergb.c:523
-#| msgid "add basic colorfulness (legacy)"
 msgid "basic colorfulness | legacy"
 msgstr "osnovna polnost barv | zapuščina"
 
 #: ../src/iop/colorbalancergb.c:532
-#| msgid "basic colorfulness: natural skin"
 msgid "basic colorfulness | natural skin"
 msgstr "osnovna polnost barv | naravna koža"
 
 #: ../src/iop/colorbalancergb.c:538
-#| msgid "basic colorfulness: vibrant colors"
 msgid "basic colorfulness | vibrant colors"
 msgstr "osnovna polnost barv | živahne barve"
 
 #: ../src/iop/colorbalancergb.c:544
-#| msgid "basic colorfulness: standard"
 msgid "basic colorfulness | standard"
 msgstr "osnovna polnost barv | standard"
 
@@ -18169,64 +18146,64 @@ msgstr "osnovna polnost barv | standard"
 msgid "colorbalance works only on RGB input"
 msgstr "uravnoteževanje barv deluje samo na vhodu RGB"
 
-#: ../src/iop/colorbalancergb.c:1421 ../src/iop/colorzones.c:2381
+#: ../src/iop/colorbalancergb.c:1422 ../src/iop/colorzones.c:2381
 #: ../src/iop/retouch.c:2055 ../src/iop/toneequal.c:1942
 msgid "cannot display masks when the blending mask is displayed"
 msgstr "ne morem prikazati mask, kadar je prikazana maska mešanja"
 
 #. Page master
-#: ../src/iop/colorbalancergb.c:1782
+#: ../src/iop/colorbalancergb.c:1783
 msgid "master"
 msgstr "matični"
 
-#: ../src/iop/colorbalancergb.c:1782
+#: ../src/iop/colorbalancergb.c:1783
 msgid "global grading"
 msgstr "globalno stopnjevanje"
 
-#: ../src/iop/colorbalancergb.c:1786
+#: ../src/iop/colorbalancergb.c:1787
 msgid "rotate all hues by an angle, at the same luminance"
 msgstr "zavrti vse odtenke za kot pri enaki svetlosti"
 
-#: ../src/iop/colorbalancergb.c:1792
+#: ../src/iop/colorbalancergb.c:1793
 msgid "increase colorfulness mostly on low-chroma colors"
 msgstr "poveča polnost barv predvsem na barvah z nizko kromo"
 
-#: ../src/iop/colorbalancergb.c:1798
+#: ../src/iop/colorbalancergb.c:1799
 msgid "increase the contrast at constant chromaticity"
 msgstr "poveča kontrast pri stalni kromatičnosti"
 
-#: ../src/iop/colorbalancergb.c:1800
+#: ../src/iop/colorbalancergb.c:1801
 msgctxt "section"
 msgid "linear chroma grading"
 msgstr "linearno stopnjevanje krome"
 
-#: ../src/iop/colorbalancergb.c:1807
+#: ../src/iop/colorbalancergb.c:1808
 msgid "increase colorfulness at same luminance globally"
 msgstr "poveča barvitost pri enaki globalni svetlosti"
 
-#: ../src/iop/colorbalancergb.c:1812
+#: ../src/iop/colorbalancergb.c:1813
 msgid "increase colorfulness at same luminance mostly in shadows"
 msgstr "poveča barvitost pri enaki svetlosti predvsem v sencah"
 
-#: ../src/iop/colorbalancergb.c:1817
+#: ../src/iop/colorbalancergb.c:1818
 msgid "increase colorfulness at same luminance mostly in mid-tones"
 msgstr "poveča barvitost pri enaki svetlosti predvsem v srednjih tonih"
 
-#: ../src/iop/colorbalancergb.c:1822
+#: ../src/iop/colorbalancergb.c:1823
 msgid "increase colorfulness at same luminance mostly in highlights"
 msgstr "poveča barvitost pri enaki svetlosti predvsem v bleščavah"
 
-#: ../src/iop/colorbalancergb.c:1824
+#: ../src/iop/colorbalancergb.c:1825
 msgctxt "section"
 msgid "perceptual saturation grading"
 msgstr "perceptivno stopnjevanje nasičenosti"
 
-#: ../src/iop/colorbalancergb.c:1830
+#: ../src/iop/colorbalancergb.c:1831
 msgid "add or remove saturation by an absolute amount"
 msgstr "dodaj ali odstrani nasičenost za absolutno vrednost"
 
-#: ../src/iop/colorbalancergb.c:1835 ../src/iop/colorbalancergb.c:1840
-#: ../src/iop/colorbalancergb.c:1845
+#: ../src/iop/colorbalancergb.c:1836 ../src/iop/colorbalancergb.c:1841
+#: ../src/iop/colorbalancergb.c:1846
 msgid ""
 "increase or decrease saturation proportionally to the original pixel "
 "saturation"
@@ -18234,181 +18211,189 @@ msgstr ""
 "povečaj ali zmanjšaj nasičenost proporcionalno glede na izvirno nasičenost "
 "pikslov"
 
-#: ../src/iop/colorbalancergb.c:1847
+#: ../src/iop/colorbalancergb.c:1848
 msgctxt "section"
 msgid "perceptual brilliance grading"
 msgstr "percepcijsko stopnjevanje živahnosti"
 
-#: ../src/iop/colorbalancergb.c:1848
+#: ../src/iop/colorbalancergb.c:1849
 msgid "brilliance"
 msgstr "živahnost"
 
-#: ../src/iop/colorbalancergb.c:1853
+#: ../src/iop/colorbalancergb.c:1854
 msgid "add or remove brilliance by an absolute amount"
 msgstr "dodaj ali odstrani živahnost v absolutni vrednosti"
 
-#: ../src/iop/colorbalancergb.c:1858 ../src/iop/colorbalancergb.c:1863
-#: ../src/iop/colorbalancergb.c:1868
+#: ../src/iop/colorbalancergb.c:1859 ../src/iop/colorbalancergb.c:1864
+#: ../src/iop/colorbalancergb.c:1869
 msgid ""
 "increase or decrease brilliance proportionally to the original pixel "
 "brilliance"
 msgstr "povečaj ali zmanjšaj živahnost sorazmerno izvirni živahnosti pikslov"
 
 #. Page 4-ways
-#: ../src/iop/colorbalancergb.c:1871
+#: ../src/iop/colorbalancergb.c:1872
 msgid "4 ways"
 msgstr "4 poti"
 
-#: ../src/iop/colorbalancergb.c:1871
+#: ../src/iop/colorbalancergb.c:1872
 msgid "selective color grading"
 msgstr "selektivno stopnjevanje barv"
 
-#: ../src/iop/colorbalancergb.c:1873
+#: ../src/iop/colorbalancergb.c:1874
+msgid ""
+"pick opposite color from image\n"
+"ctrl-click to pick selected color"
+msgstr ""
+"izberitenasprotno barvo iz slike\n"
+"ctrl+klik da poberete izbrano barvo"
+
+#: ../src/iop/colorbalancergb.c:1876
 msgctxt "section"
 msgid "global offset"
 msgstr "globalni odmik"
 
-#: ../src/iop/colorbalancergb.c:1880
+#: ../src/iop/colorbalancergb.c:1883
 msgid "global luminance offset"
 msgstr "globalni odmik svetlosti"
 
-#: ../src/iop/colorbalancergb.c:1885
+#: ../src/iop/colorbalancergb.c:1888
 msgid "hue of the global color offset"
 msgstr "globalni barvni odmik odtenka"
 
-#: ../src/iop/colorbalancergb.c:1891
+#: ../src/iop/colorbalancergb.c:1895
 msgid "chroma of the global color offset"
 msgstr "globalni odmik barve krome"
 
-#: ../src/iop/colorbalancergb.c:1893
+#: ../src/iop/colorbalancergb.c:1897
 msgctxt "section"
 msgid "shadows lift"
 msgstr "dvig senc"
 
-#: ../src/iop/colorbalancergb.c:1894
+#: ../src/iop/colorbalancergb.c:1898
 msgid "lift"
 msgstr "dvig"
 
-#: ../src/iop/colorbalancergb.c:1900
+#: ../src/iop/colorbalancergb.c:1904
 msgid "luminance gain in shadows"
 msgstr "povečanje svetlosti v sencah"
 
-#: ../src/iop/colorbalancergb.c:1905
+#: ../src/iop/colorbalancergb.c:1909
 msgid "hue of the color gain in shadows"
 msgstr "odtenek povečanja barv v sencah"
 
-#: ../src/iop/colorbalancergb.c:1911
+#: ../src/iop/colorbalancergb.c:1916
 msgid "chroma of the color gain in shadows"
 msgstr "kroma povečanja barv v sencah"
 
-#: ../src/iop/colorbalancergb.c:1913
+#: ../src/iop/colorbalancergb.c:1918
 msgctxt "section"
 msgid "highlights gain"
 msgstr "povečanje bleščav"
 
-#: ../src/iop/colorbalancergb.c:1914
+#: ../src/iop/colorbalancergb.c:1919
 msgid "gain"
 msgstr "ojačenje"
 
-#: ../src/iop/colorbalancergb.c:1920
+#: ../src/iop/colorbalancergb.c:1925
 msgid "luminance gain in highlights"
 msgstr "povečanje svetlosti v bleščavah"
 
-#: ../src/iop/colorbalancergb.c:1925
+#: ../src/iop/colorbalancergb.c:1930
 msgid "hue of the color gain in highlights"
 msgstr "odtenek povečanja barv v bleščavah"
 
-#: ../src/iop/colorbalancergb.c:1931
+#: ../src/iop/colorbalancergb.c:1937
 msgid "chroma of the color gain in highlights"
 msgstr "kroma povečanja barv v bleščavah"
 
-#: ../src/iop/colorbalancergb.c:1933
+#: ../src/iop/colorbalancergb.c:1939
 msgctxt "section"
-msgid "power"
-msgstr "moč"
-
-#: ../src/iop/colorbalancergb.c:1934
 msgid "power"
 msgstr "moč"
 
 #: ../src/iop/colorbalancergb.c:1940
+msgid "power"
+msgstr "moč"
+
+#: ../src/iop/colorbalancergb.c:1946
 msgid "luminance exponent in mid-tones"
 msgstr "eksponent svetlosti v srednjih tonih"
 
-#: ../src/iop/colorbalancergb.c:1945
+#: ../src/iop/colorbalancergb.c:1951
 msgid "hue of the color exponent in mid-tones"
 msgstr "odtenek eksponenta barve v srednjih tonih"
 
-#: ../src/iop/colorbalancergb.c:1951
+#: ../src/iop/colorbalancergb.c:1958
 msgid "chroma of the color exponent in mid-tones"
 msgstr "kroma eksponenta barve v srednjih tonih"
 
 #. Page masks
-#: ../src/iop/colorbalancergb.c:1954
+#: ../src/iop/colorbalancergb.c:1961
 msgid "masks"
 msgstr "maske"
 
-#: ../src/iop/colorbalancergb.c:1954
+#: ../src/iop/colorbalancergb.c:1961
 msgid "isolate luminances"
 msgstr "izoliraj svetlosti"
 
-#: ../src/iop/colorbalancergb.c:1958
+#: ../src/iop/colorbalancergb.c:1965
 msgid "choose in which uniform color space the saturation is computed"
 msgstr ""
 "izberite v katerem enakomernem barvnem prostoru naj bo izračunano nasičenje"
 
-#: ../src/iop/colorbalancergb.c:1960
+#: ../src/iop/colorbalancergb.c:1967
 msgctxt "section"
 msgid "luminance ranges"
 msgstr "obsegi svetlosti"
 
-#: ../src/iop/colorbalancergb.c:1973
+#: ../src/iop/colorbalancergb.c:1980
 msgid "weight of the shadows over the whole tonal range"
 msgstr "teža senc v celotnem območju tonov"
 
-#: ../src/iop/colorbalancergb.c:1979
+#: ../src/iop/colorbalancergb.c:1986
 msgid "position of the middle-gray reference for masking"
 msgstr "pozicija srednje sive reference za maskiranje"
 
-#: ../src/iop/colorbalancergb.c:1985
+#: ../src/iop/colorbalancergb.c:1992
 msgid "weights of highlights over the whole tonal range"
 msgstr "uteži bleščav v celotnem tonskem območju"
 
-#: ../src/iop/colorbalancergb.c:1988
+#: ../src/iop/colorbalancergb.c:1995
 msgctxt "section"
 msgid "threshold"
 msgstr "prag"
 
-#: ../src/iop/colorbalancergb.c:1993
+#: ../src/iop/colorbalancergb.c:2000
 msgid "peak white luminance value used to normalize the power function"
 msgstr ""
 "najvišja vrednost bele svetlosti, ki se uporablja za normalizacijo funkcije "
 "moči"
 
-#: ../src/iop/colorbalancergb.c:1999
+#: ../src/iop/colorbalancergb.c:2006
 msgid "peak gray luminance value used to normalize the power function"
 msgstr ""
 "najvišja vrednost bele svetlosti, ki se uporablja za normalizacijo funkcije "
 "moči"
 
-#: ../src/iop/colorbalancergb.c:2001
+#: ../src/iop/colorbalancergb.c:2008
 msgctxt "section"
 msgid "mask preview settings"
 msgstr "nastavitve predogleda maske"
 
-#: ../src/iop/colorbalancergb.c:2005 ../src/iop/colorbalancergb.c:2010
+#: ../src/iop/colorbalancergb.c:2012 ../src/iop/colorbalancergb.c:2017
 msgid "select color of the checkerboard from a swatch"
 msgstr "izberite barvo šahovnice iz vzorca"
 
-#: ../src/iop/colorbalancergb.c:2015
+#: ../src/iop/colorbalancergb.c:2022
 msgid "checkerboard size"
 msgstr "velikost šahovnice"
 
-#: ../src/iop/colorbalancergb.c:2019
+#: ../src/iop/colorbalancergb.c:2026
 msgid "checkerboard color 1"
 msgstr "barva šahovnice 1"
 
-#: ../src/iop/colorbalancergb.c:2020
+#: ../src/iop/colorbalancergb.c:2027
 msgid "checkerboard color 2"
 msgstr "barva šahovnice 2"
 
@@ -18789,7 +18774,7 @@ msgstr ""
 "pretvori kateri koli vhod RGB v cevovodni referenčni RGB\n"
 "uporaba barvnih profilov za ponovno preslikavo vrednosti RGB"
 
-#: ../src/iop/colorin.c:128 ../src/iop/colorout.c:86 ../src/iop/demosaic.c:290
+#: ../src/iop/colorin.c:128 ../src/iop/colorout.c:86 ../src/iop/demosaic.c:294
 #: ../src/iop/rawprepare.c:170
 msgid "mandatory"
 msgstr "obvezno"
@@ -19050,8 +19035,8 @@ msgstr "če in kako dati prednost določenim nadomestnim barvam"
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "ton odtenka, ki naj bi imel prednost pred drugimi toni"
 
-#: ../src/iop/colorreconstruction.c:1254 ../src/iop/demosaic.c:1355
-#: ../src/iop/highlights.c:1324
+#: ../src/iop/colorreconstruction.c:1254 ../src/iop/demosaic.c:1364
+#: ../src/iop/highlights.c:1349
 msgid "not applicable"
 msgstr "ni na voljo"
 
@@ -19191,28 +19176,28 @@ msgstr "ponovno okvirjenje|popačenje"
 msgid "change the framing"
 msgstr "spremeni okvirjanje"
 
-#: ../src/iop/crop.c:1150
+#: ../src/iop/crop.c:1149
 msgid "45x35, portrait"
 msgstr "45x35, portretno"
 
-#: ../src/iop/crop.c:1160
+#: ../src/iop/crop.c:1159
 msgid "2:1, Univisium"
 msgstr "2:1, Univisium"
 
-#: ../src/iop/crop.c:1161
+#: ../src/iop/crop.c:1160
 msgid "CinemaScope"
 msgstr "CinemaScope"
 
-#: ../src/iop/crop.c:1164
+#: ../src/iop/crop.c:1163
 msgid "65:24, XPan"
 msgstr "65:24, XPan"
 
-#: ../src/iop/crop.c:1685
+#: ../src/iop/crop.c:1684
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
 "<b>spremeni velikost</b>: poteg, <b>ohrani proporce</b>: dvigalka+poteg"
 
-#: ../src/iop/crop.c:1692
+#: ../src/iop/crop.c:1691
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag"
@@ -19268,22 +19253,22 @@ msgstr ""
 "prag za odstranitev barvnih napak robov, višje vrednosti pomenijo manj "
 "odstranjevanja napak"
 
-#: ../src/iop/demosaic.c:284
+#: ../src/iop/demosaic.c:288
 msgid "demosaic"
 msgstr "odstrani mozaičnost"
 
-#: ../src/iop/demosaic.c:289
+#: ../src/iop/demosaic.c:293
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
 "rekonstruiraj polne RGB slikovne pike iz odčitavanja polja senzorjev barvnih "
 "filtrov"
 
-#: ../src/iop/demosaic.c:1165
+#: ../src/iop/demosaic.c:1174
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "matrike barv `%s' ne najdem za sliko 4bayer!"
 
-#: ../src/iop/demosaic.c:1318
+#: ../src/iop/demosaic.c:1327
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -19297,7 +19282,7 @@ msgstr ""
 "dvojni odstranjevalniki mozaičnosti povečajo čas obdelave z mešanjem "
 "različice VNG v drugem prehodu."
 
-#: ../src/iop/demosaic.c:1322
+#: ../src/iop/demosaic.c:1331
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -19309,11 +19294,11 @@ msgstr ""
 "dvojni odstranjevalniki mozaičnosti povečajo čas obdelave z mešanjem "
 "različice VNG v drugem prehodu."
 
-#: ../src/iop/demosaic.c:1328
+#: ../src/iop/demosaic.c:1337
 msgid "Bayer4 sensor demosaicing methods."
 msgstr "metode za odstr. mozaičnosti senzorja Bayer4."
 
-#: ../src/iop/demosaic.c:1332
+#: ../src/iop/demosaic.c:1341
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -19323,7 +19308,7 @@ msgstr ""
 "nastavite na 0.0 za izklop.\n"
 "nastavite na 1.0 za prezrtje robov"
 
-#: ../src/iop/demosaic.c:1337
+#: ../src/iop/demosaic.c:1346
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -19333,11 +19318,11 @@ msgstr ""
 "nastavi na 0.0 za visoko frekvenčni kontekst.\n"
 "nastavi na 1.0 za plosko vsebino"
 
-#: ../src/iop/demosaic.c:1340
+#: ../src/iop/demosaic.c:1349
 msgid "toggle mask visualization"
 msgstr "preklop vizualizacije maske"
 
-#: ../src/iop/demosaic.c:1343
+#: ../src/iop/demosaic.c:1352
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -19345,15 +19330,15 @@ msgstr ""
 "koraki izboljšave LMMSE, koraki mediane k povprečju izhoda,\n"
 "izboljšave dodajo nekaj ponovnih izračunov rdečih in modrih kanalov"
 
-#: ../src/iop/demosaic.c:1346
+#: ../src/iop/demosaic.c:1355
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "koliko korakov mediane barvnega glajenja po odstranjevanju mozaičnosti"
 
-#: ../src/iop/demosaic.c:1349
+#: ../src/iop/demosaic.c:1358
 msgid "green channels matching method"
 msgstr "metoda usklajevanja z zelenimi kanali"
 
-#: ../src/iop/demosaic.c:1356
+#: ../src/iop/demosaic.c:1365
 msgid "demosaicing is only used for color raw images"
 msgstr "odstranjevanje mozaičnosti se uporablja samo za surove slike"
 
@@ -19588,15 +19573,12 @@ msgid "diffuse or sharpen"
 msgstr "difuzija ali ostrenje"
 
 #: ../src/iop/diffuse.c:129
-#| msgid ""
-#| "diffusion|deconvolution|blur|sharpening|bloom|clarity|dehaze|inpaint|"
-#| "watercolor"
 msgid ""
 "diffusion|deconvolution|blur|sharpening|bloom|clarity|dehaze|denoise|inpaint|"
 "watercolor"
 msgstr ""
-"difuzija|dekonvolucija|zamegljevanje|ostrenje|razcvet|jasnost|odmegli|odstrani"
-" šum|dobarvaj|akvarel"
+"difuzija|dekonvolucija|zamegljevanje|ostrenje|razcvet|jasnost|odmegli|"
+"odstrani šum|dobarvaj|akvarel"
 
 #: ../src/iop/diffuse.c:136
 msgid ""
@@ -19612,42 +19594,34 @@ msgstr ""
 
 #. deblurring presets
 #: ../src/iop/diffuse.c:240
-#| msgid "lens deblur: soft"
 msgid "lens deblur | soft"
 msgstr "odstranjevanje zamegljenosti objektiva |mehko"
 
 #: ../src/iop/diffuse.c:265
-#| msgid "lens deblur: medium"
 msgid "lens deblur | medium"
 msgstr "odstranjevanje zamegljenosti objektiva | srednje"
 
 #: ../src/iop/diffuse.c:290
-#| msgid "lens deblur: hard"
 msgid "lens deblur | hard"
 msgstr "odstranjevanje zamegljenosti objektiva | močno"
 
 #: ../src/iop/diffuse.c:316
-#| msgid "disabled defaults"
 msgid "dehaze | default"
 msgstr "odprava zamegljenosti | privzeto"
 
 #: ../src/iop/diffuse.c:342
-#| msgid "dehaze: extra contrast"
 msgid "dehaze | extra contrast"
 msgstr "odprava zamegljenosti | dodaten kontrast"
 
 #: ../src/iop/diffuse.c:368
-#| msgid "denoise: fine"
 msgid "denoise | fine"
 msgstr "odstranjevanje šuma | fino"
 
 #: ../src/iop/diffuse.c:393
-#| msgid "denoise: medium"
 msgid "denoise | medium"
 msgstr "odstranjevanje šuma | srednje"
 
 #: ../src/iop/diffuse.c:418
-#| msgid "denoise: coarse"
 msgid "denoise | coarse"
 msgstr "odstranjevanje šuma | grobo"
 
@@ -19656,33 +19630,27 @@ msgid "artistic effects | bloom"
 msgstr "umetniški učinki | razcvet"
 
 #: ../src/iop/diffuse.c:493
-#| msgid "sharpen demosaicing: no AA filter"
 msgid "sharpen demosaicing | no AA filter"
 msgstr "naostri odstranjevanje mozaičnosti | brez filtra AA"
 
 #: ../src/iop/diffuse.c:519
-#| msgid "sharpen demosaicing: AA filter"
 msgid "sharpen demosaicing | AA filter"
 msgstr "naostri odstranjevanje mozaičnosti | filter AA"
 
 #: ../src/iop/diffuse.c:546
-#| msgid "simulate watercolor"
 msgid "artistic effects | simulate watercolor"
 msgstr "umetniški učinki |simuliraj akvarel"
 
 #: ../src/iop/diffuse.c:571
-#| msgid "simulate line drawing"
 msgid "artistic effects | simulate line drawing"
 msgstr "umetniški učinki | simuliraj risanje črt"
 
 #. local contrast
 #: ../src/iop/diffuse.c:598
-#| msgid "local contrast mask"
 msgid "local contrast | normal"
 msgstr "lokalni kontrast | normalno"
 
 #: ../src/iop/diffuse.c:623
-#| msgid "local contrast: fine"
 msgid "local contrast | fine"
 msgstr "lokalni kontrast | fino"
 
@@ -19692,36 +19660,32 @@ msgstr "obarvaj bleščave"
 
 #. fast presets for slow hardware
 #: ../src/iop/diffuse.c:675
-#| msgid "sharpness: fast"
 msgid "sharpness | fast"
 msgstr "ostrina | hitro"
 
 #. two more sharpness (standard & strong)
 #: ../src/iop/diffuse.c:702
-#| msgid "sharpness"
 msgid "sharpness | normal"
 msgstr "ostrina | normalno"
 
 #: ../src/iop/diffuse.c:727
-#| msgid "sharpness: strong"
 msgid "sharpness | strong"
 msgstr "ostrina | močno"
 
 #: ../src/iop/diffuse.c:752
-#| msgid "local contrast: fast"
 msgid "local contrast | fast"
 msgstr "lokalni kontrast | hitro"
 
 #: ../src/iop/diffuse.c:1403
 msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
 msgstr ""
-"zmehčaj/naostri ni uspel pridobiti dovolj pomnilnika, preverite nastavitve za "
-"RAM"
+"zmehčaj/naostri ni uspel pridobiti dovolj pomnilnika, preverite nastavitve "
+"za RAM"
 
 #. Additional parameters
 #. Camera settings
 #: ../src/iop/diffuse.c:1770 ../src/iop/splittoning.c:524
-#: ../src/libs/camera.c:486
+#: ../src/libs/camera.c:509
 msgctxt "section"
 msgid "properties"
 msgstr "lastnosti"
@@ -20004,31 +19968,31 @@ msgstr "dodaj prazen prostor na levo, zgoraj, desno ali spodaj"
 msgid "composition|expand|extend"
 msgstr "kompozicija|razširi|podaljšaj"
 
-#: ../src/iop/enlargecanvas.c:427
+#: ../src/iop/enlargecanvas.c:419
 msgid ""
 "how much to enlarge the canvas to the left as a percentage of the original "
 "image width"
 msgstr "za koliko povečati platno v levo kot odstotek prvotne širine slike"
 
-#: ../src/iop/enlargecanvas.c:433
+#: ../src/iop/enlargecanvas.c:425
 msgid ""
 "how much to enlarge the canvas to the right as a percentage of the original "
 "image width"
 msgstr "za koliko povečati platno v desno kot odstotek prvotne širine slike"
 
-#: ../src/iop/enlargecanvas.c:439
+#: ../src/iop/enlargecanvas.c:431
 msgid ""
 "how much to enlarge the canvas to the top as a percentage of the original "
 "image height"
 msgstr "za koliko povečati platno zgoraj kot odstotek prvotne višine slike"
 
-#: ../src/iop/enlargecanvas.c:445
+#: ../src/iop/enlargecanvas.c:437
 msgid ""
 "how much to enlarge the canvas to the bottom as a percentage of the original "
 "image height"
 msgstr "za koliko povečati platno spodaj kot odstotek prvotne višine slike"
 
-#: ../src/iop/enlargecanvas.c:449
+#: ../src/iop/enlargecanvas.c:441
 msgid "select the color of the enlarged canvas"
 msgstr "izberi barvo povečanega platna"
 
@@ -20082,7 +20046,7 @@ msgstr "izravnava osvetlitve fotoaparata (%+.1f EV)"
 msgid "L : \t%.1f %%"
 msgstr "L : \t%.1f %%"
 
-#: ../src/iop/exposure.c:931 ../src/libs/history.c:923
+#: ../src/iop/exposure.c:931 ../src/libs/history.c:953
 #, c-format
 msgid "%.2f EV"
 msgstr "%.2f EV"
@@ -20211,17 +20175,17 @@ msgstr "16 EV (HDR)"
 msgid "18 EV (HDR++)"
 msgstr "18 EV (HDR++)"
 
-#: ../src/iop/filmic.c:1471
+#: ../src/iop/filmic.c:1463
 msgid "read-only graph, use the parameters below to set the nodes"
 msgstr ""
 "graf samo za branje, uporabi parametre spodaj za določanje vozlov grafa"
 
-#: ../src/iop/filmic.c:1475
+#: ../src/iop/filmic.c:1467
 msgctxt "section"
 msgid "logarithmic shaper"
 msgstr "logaritemski oblikovalnik"
 
-#: ../src/iop/filmic.c:1483
+#: ../src/iop/filmic.c:1475
 msgid ""
 "adjust to match the average luminance of the subject.\n"
 "except in back-lighting situations, this should be around 18%."
@@ -20229,7 +20193,7 @@ msgstr ""
 "prilagodi, da ustreza povprečni svetlosti subjekta.\n"
 "razen pri osvetlitvi od zadaj, bi moralo biti okrog 18%."
 
-#: ../src/iop/filmic.c:1495 ../src/iop/filmicrgb.c:4401
+#: ../src/iop/filmic.c:1487 ../src/iop/filmicrgb.c:4401
 msgid ""
 "number of stops between middle gray and pure white.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -20239,7 +20203,7 @@ msgstr ""
 "to vrednost bi dal tudi svetlomer na sceni.\n"
 "prilagodi tako, da se izognete obrezovanju bleščav"
 
-#: ../src/iop/filmic.c:1508 ../src/iop/filmicrgb.c:4412
+#: ../src/iop/filmic.c:1500 ../src/iop/filmicrgb.c:4412
 msgid ""
 "number of stops between middle gray and pure black.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -20251,7 +20215,7 @@ msgstr ""
 "povečajte, če želite več kontrasta.\n"
 "zmanjšajte za omogočanje več podrobnosti v slabo osvetljenih delih."
 
-#: ../src/iop/filmic.c:1520
+#: ../src/iop/filmic.c:1512
 msgid ""
 "increase or decrease the computed dynamic range.\n"
 "useful in conjunction with \"auto tune levels\"."
@@ -20259,12 +20223,12 @@ msgstr ""
 "povečaj ali zmanjšaj izračunan dinamični razpon.\n"
 "uporabno v povezavi z \"avtomatskim prilagajanjem nivojev\"."
 
-#: ../src/iop/filmic.c:1526 ../src/iop/filmicrgb.c:4426
+#: ../src/iop/filmic.c:1518 ../src/iop/filmicrgb.c:4426
 #: ../src/iop/profile_gamma.c:645
 msgid "auto tune levels"
 msgstr "nivoji avtomatske nastavitve"
 
-#: ../src/iop/filmic.c:1529
+#: ../src/iop/filmic.c:1521
 msgid ""
 "try to optimize the settings with some guessing.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -20276,12 +20240,12 @@ msgstr ""
 "deluje bolje za pokrajine in enakomerno osvetljene slike,\n"
 "a ne deluje pri pretežno svetlih ali pretežno temnih motivih."
 
-#: ../src/iop/filmic.c:1534
+#: ../src/iop/filmic.c:1526
 msgctxt "section"
 msgid "filmic S curve"
 msgstr "filmska S krivulja"
 
-#: ../src/iop/filmic.c:1541 ../src/iop/filmicrgb.c:4509
+#: ../src/iop/filmic.c:1533 ../src/iop/filmicrgb.c:4509
 msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
@@ -20290,12 +20254,12 @@ msgstr ""
 "ima vpliv predvsem na srednje tone"
 
 #. geotagging
-#: ../src/iop/filmic.c:1548 ../src/iop/filmicrgb.c:4518
+#: ../src/iop/filmic.c:1540 ../src/iop/filmicrgb.c:4518
 #: ../src/libs/metadata_view.c:169
 msgid "latitude"
 msgstr "zemljepisna širina"
 
-#: ../src/iop/filmic.c:1551
+#: ../src/iop/filmic.c:1543
 msgid ""
 "width of the linear domain in the middle of the curve.\n"
 "increase to get more contrast at the extreme luminances.\n"
@@ -20305,11 +20269,11 @@ msgstr ""
 "povečajte, če želite več kontrasta pri skrajnih svetlostih.\n"
 "to nima vpliva na srednje tone."
 
-#: ../src/iop/filmic.c:1558
+#: ../src/iop/filmic.c:1550
 msgid "shadows/highlights balance"
 msgstr "uravnoteženost med senčnimi in svetlimi toni"
 
-#: ../src/iop/filmic.c:1561 ../src/iop/filmicrgb.c:4529
+#: ../src/iop/filmic.c:1553 ../src/iop/filmicrgb.c:4529
 msgid ""
 "slides the latitude along the slope\n"
 "to give more room to shadows or highlights.\n"
@@ -20321,7 +20285,7 @@ msgstr ""
 "uporabite, če želite zagotoviti več podrobnosti\n"
 "na enem od skrajnih delov histograma."
 
-#: ../src/iop/filmic.c:1571
+#: ../src/iop/filmic.c:1563
 msgid ""
 "desaturates the input of the module globally.\n"
 "you need to set this value below 100%\n"
@@ -20331,7 +20295,7 @@ msgstr ""
 "to vrednost morate postaviti pod 100%,\n"
 "če želite ohraniti barvnost."
 
-#: ../src/iop/filmic.c:1581
+#: ../src/iop/filmic.c:1573
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -20342,36 +20306,36 @@ msgstr ""
 "zmanjšajte, če so sence in/ali bleščave preveč nasičene."
 
 #. Add export intent combo
-#: ../src/iop/filmic.c:1591 ../src/libs/export.c:1600
+#: ../src/iop/filmic.c:1583 ../src/libs/export.c:1600
 #: ../src/libs/print_settings.c:2550 ../src/libs/print_settings.c:2897
 #: ../src/views/darkroom.c:2713 ../src/views/lighttable.c:1255
 msgid "intent"
 msgstr "namen"
 
-#: ../src/iop/filmic.c:1592
+#: ../src/iop/filmic.c:1584
 msgid "contrasted"
 msgstr "kontrastno"
 
 #. centripetal spline
-#: ../src/iop/filmic.c:1594 ../src/iop/profile_gamma.c:607
+#: ../src/iop/filmic.c:1586 ../src/iop/profile_gamma.c:607
 msgid "linear"
 msgstr "linearno"
 
 #. monotonic spline
-#: ../src/iop/filmic.c:1595
+#: ../src/iop/filmic.c:1587
 msgid "optimized"
 msgstr "optimirano"
 
-#: ../src/iop/filmic.c:1597
+#: ../src/iop/filmic.c:1589
 msgid "change this method if you see reversed contrast or faded blacks"
 msgstr "zamenjajte to metodo, če vidite obratne kontraste ali obledele črnine"
 
 #. Preserve color
-#: ../src/iop/filmic.c:1601
+#: ../src/iop/filmic.c:1593
 msgid "preserve the chrominance"
 msgstr "ohrani barvnost"
 
-#: ../src/iop/filmic.c:1603
+#: ../src/iop/filmic.c:1595
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations.\n"
@@ -20381,12 +20345,12 @@ msgstr ""
 "lahko okrepi barvne aberacije objektiva.\n"
 "kadar uporabite ta način, morate uporabiti ročno nastavitev nasičenosti."
 
-#: ../src/iop/filmic.c:1613
+#: ../src/iop/filmic.c:1605
 msgctxt "section"
 msgid "destination/display"
 msgstr "cilj/prikaz"
 
-#: ../src/iop/filmic.c:1631 ../src/iop/filmicrgb.c:4548
+#: ../src/iop/filmic.c:1623 ../src/iop/filmicrgb.c:4548
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -20394,7 +20358,7 @@ msgstr ""
 "svetlost izhoda čiste črne, bi morala biti 0%\n"
 "razen če želite obledel videz"
 
-#: ../src/iop/filmic.c:1640 ../src/iop/filmicrgb.c:4555
+#: ../src/iop/filmic.c:1632 ../src/iop/filmicrgb.c:4555
 msgid ""
 "middle gray value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -20402,7 +20366,7 @@ msgstr ""
 "vrednost srednjih sivin ciljnega prikaza ali barvnega prostora.\n"
 "ne dotikajte se tega, razen če res veste, kaj delate."
 
-#: ../src/iop/filmic.c:1649 ../src/iop/filmicrgb.c:4562
+#: ../src/iop/filmic.c:1641 ../src/iop/filmicrgb.c:4562
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -20410,11 +20374,11 @@ msgstr ""
 "svetlost čiste bele, bi morala biti 100%,\n"
 "razen če želite obledel videz"
 
-#: ../src/iop/filmic.c:1655
+#: ../src/iop/filmic.c:1647
 msgid "target gamma"
 msgstr "ciljna gama"
 
-#: ../src/iop/filmic.c:1657
+#: ../src/iop/filmic.c:1649
 msgid ""
 "power or gamma of the transfer function\n"
 "of the display or color space.\n"
@@ -20910,67 +20874,54 @@ msgid "the target light for tonemapper specified as cd/m2"
 msgstr "ciljna osvetljenost za prikaz tonov v cd/m2"
 
 #: ../src/iop/graduatednd.c:64
-#| msgid "neutral gray ND2 (soft)"
 msgid "neutral gray | ND2 (soft)"
 msgstr "nevtralno siv | ND2 (mehek)"
 
 #: ../src/iop/graduatednd.c:67
-#| msgid "neutral gray ND4 (soft)"
 msgid "neutral gray | ND4 (soft)"
 msgstr "nevtralno siv | ND4 (mehek)"
 
 #: ../src/iop/graduatednd.c:70
-#| msgid "neutral gray ND8 (soft)"
 msgid "neutral gray | ND8 (soft)"
 msgstr "nevtralno siv | ND8 (mehek)"
 
 #: ../src/iop/graduatednd.c:73
-#| msgid "neutral gray ND2 (hard)"
 msgid "neutral gray | ND2 (hard)"
 msgstr "nevtralno siv | ND2 (trd)"
 
 #: ../src/iop/graduatednd.c:77
-#| msgid "neutral gray ND4 (hard)"
 msgid "neutral gray | ND4 (hard)"
 msgstr "nevtralno siv | ND4 (trd)"
 
 #: ../src/iop/graduatednd.c:80
-#| msgid "neutral gray ND8 (hard)"
 msgid "neutral gray | ND8 (hard)"
 msgstr "nevtralno siv | ND8 (trd)"
 
 #: ../src/iop/graduatednd.c:84
-#| msgid "orange ND2 (soft)"
 msgid "tinted | orange ND2 (soft)"
 msgstr "toniran | oranžen ND2 (mehko)"
 
 #: ../src/iop/graduatednd.c:87
-#| msgid "yellow ND2 (soft)"
 msgid "tinted | yellow ND2 (soft)"
 msgstr "toniran | rumeno ND2 (mehko)"
 
 #: ../src/iop/graduatednd.c:91
-#| msgid "purple ND2 (soft)"
 msgid "tinted | purple ND2 (soft)"
 msgstr "toniran |vijolično ND2 (mehko)"
 
 #: ../src/iop/graduatednd.c:95
-#| msgid "green ND2 (soft)"
 msgid "tinted | green ND2 (soft)"
 msgstr "toniran | zeleno ND2 (mehko)"
 
 #: ../src/iop/graduatednd.c:99
-#| msgid "red ND2 (soft)"
 msgid "tinted | red ND2 (soft)"
 msgstr "toniran | rdeče ND2 (mehko)"
 
 #: ../src/iop/graduatednd.c:102
-#| msgid "blue ND2 (soft)"
 msgid "tinted | blue ND2 (soft)"
 msgstr "toniran | modro ND2 (mehko)"
 
 #: ../src/iop/graduatednd.c:106
-#| msgid "brown ND4 (soft)"
 msgid "tinted | brown ND4 (soft)"
 msgstr "toniran | rjavo ND4 (mehko)"
 
@@ -21088,18 +21039,18 @@ msgstr "izogibaj se bleščavam v magenti in poskusi obnoviti barve bleščav"
 msgid "reconstruction, raw"
 msgstr "rekonstrukcija, surovo"
 
-#: ../src/iop/highlights.c:1142
+#: ../src/iop/highlights.c:1167
 msgid ""
 "highlights: mode not available for this type of image. falling back to "
 "inpaint opposed."
 msgstr ""
 "bleščave: način ni na voljo za to vrsto slik. v sili v nasprotno dobarvanje."
 
-#: ../src/iop/highlights.c:1267
+#: ../src/iop/highlights.c:1292
 msgid "highlight reconstruction method"
 msgstr "metoda rekonstrukcije bleščav"
 
-#: ../src/iop/highlights.c:1272
+#: ../src/iop/highlights.c:1297
 msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
 "highlights.\n"
@@ -21112,7 +21063,7 @@ msgstr ""
 "ali način 'segmentacije',\n"
 "še posebej, če je nastavitev beline kamere napačna."
 
-#: ../src/iop/highlights.c:1276
+#: ../src/iop/highlights.c:1301
 msgid ""
 "visualize clipped highlights in a false color representation.\n"
 "the effective clipping level also depends on the reconstruction method."
@@ -21120,7 +21071,7 @@ msgstr ""
 "vizualiziraj odrezane bleščave v lažni barvni predstavitvi.\n"
 "učinkovita stopnja izrezovanja je odvisna tudi od metode rekonstrukcije."
 
-#: ../src/iop/highlights.c:1281
+#: ../src/iop/highlights.c:1306
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
 "this often leads to improved color reconstruction for tiny segments before "
@@ -21130,11 +21081,11 @@ msgstr ""
 "to pogosto vodi do izboljšane barvne rekonstrukcije za majhne segmente prej "
 "temnega ozadja."
 
-#: ../src/iop/highlights.c:1284
+#: ../src/iop/highlights.c:1309
 msgid "visualize the combined segments in a false color representation."
 msgstr "vizualiziraj združene segmente v lažni barvni predstavitvi."
 
-#: ../src/iop/highlights.c:1287
+#: ../src/iop/highlights.c:1312
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favor candidates found in segmentation analysis, decrease for "
@@ -21144,7 +21095,7 @@ msgstr ""
 "povečaj za priljubljenost kandidatov, ugotovljenih v analizi segmentacije, "
 "zmanjšaj za nasprotnike pomeni dobarvanje."
 
-#: ../src/iop/highlights.c:1292
+#: ../src/iop/highlights.c:1317
 msgid ""
 "visualize segments that are considered to have a good candidate in a false "
 "color representation."
@@ -21152,7 +21103,7 @@ msgstr ""
 "vizualizirajte segmente, za katere menite, da imajo dobrega kandidata v "
 "napačni barvni predstavitvi."
 
-#: ../src/iop/highlights.c:1295
+#: ../src/iop/highlights.c:1320
 msgid ""
 "approximate lost data in regions with all photosites clipped, the effect "
 "depends on segment size and border gradients.\n"
@@ -21172,15 +21123,15 @@ msgstr ""
 "ravni načini ignorirajo ozke neobrezane strukture (kot npr. potenčne "
 "krivulje), ki ohranjajo obnovljene bleščave in se izogibajo gradientom."
 
-#: ../src/iop/highlights.c:1301
+#: ../src/iop/highlights.c:1326
 msgid "set strength of rebuilding in regions with all photosites clipped."
 msgstr "nastavite moč obnove v regijah z vsemi posnetimi foto lokacijami."
 
-#: ../src/iop/highlights.c:1305
+#: ../src/iop/highlights.c:1330
 msgid "show the effect that is added to already reconstructed data."
 msgstr "prikaži učinek, ki je dodan že rekonstruiranim podatkom."
 
-#: ../src/iop/highlights.c:1308
+#: ../src/iop/highlights.c:1333
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -21188,7 +21139,7 @@ msgstr ""
 "dodajte šum, da vizualno mešamo rekonstruirana območja\n"
 "v preostalo sliko s šumom. koristno pri visokem ISO."
 
-#: ../src/iop/highlights.c:1312
+#: ../src/iop/highlights.c:1337
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -21196,7 +21147,7 @@ msgstr ""
 "povečajte, če bleščave magente ne bodo popolnoma popravljene\n"
 "vsaka nova iteracija prinaša kazen za uspešnost."
 
-#: ../src/iop/highlights.c:1317
+#: ../src/iop/highlights.c:1342
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
@@ -21204,7 +21155,7 @@ msgstr ""
 "povečajte, če bleščave magente ne bi bile popolnoma popravljene\n"
 "to lahko izdela nezvezne meje med veljavnimi in popravljenimi področji."
 
-#: ../src/iop/highlights.c:1321
+#: ../src/iop/highlights.c:1346
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -21212,7 +21163,7 @@ msgstr ""
 "povečaj za popravljanje večjih odrezanih območij.\n"
 "velike vrednosti prinašajo ogromne kazni za zmogljivost"
 
-#: ../src/iop/highlights.c:1325
+#: ../src/iop/highlights.c:1350
 msgid "this module does not work with monochrome RAW files"
 msgstr "ta modul ne deluje pri monokromatskih surovih RAW datotekah"
 
@@ -21332,7 +21283,7 @@ msgstr "popravi optične napake leč"
 msgid "geometric and reconstruction, RGB"
 msgstr "geometrija in rekonstrukcija, RGB"
 
-#: ../src/iop/lens.cc:3782
+#: ../src/iop/lens.cc:3767
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -21345,7 +21296,7 @@ msgstr ""
 "bajonet:\t\t%s\n"
 "faktor obreze:\t%.1f"
 
-#: ../src/iop/lens.cc:4030
+#: ../src/iop/lens.cc:4015
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -21364,31 +21315,31 @@ msgstr ""
 "tip:\t\t%s\n"
 "mounts:\t%s"
 
-#: ../src/iop/lens.cc:4083
+#: ../src/iop/lens.cc:4068
 msgid "focal length (mm)"
 msgstr "goriščna razdalja (mm)"
 
-#: ../src/iop/lens.cc:4109
+#: ../src/iop/lens.cc:4094
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.cc:4110
+#: ../src/iop/lens.cc:4095
 msgid "f-number (aperture)"
 msgstr "f-število (zaslonka)"
 
-#: ../src/iop/lens.cc:4129
+#: ../src/iop/lens.cc:4114
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.cc:4130
+#: ../src/iop/lens.cc:4115
 msgid "distance to subject"
 msgstr "razdalja do predmeta"
 
-#: ../src/iop/lens.cc:4284
+#: ../src/iop/lens.cc:4269
 msgid "camera/lens not found"
 msgstr "ni mogoče najti kamere/lečij"
 
-#: ../src/iop/lens.cc:4285
+#: ../src/iop/lens.cc:4270
 msgid ""
 "please select your lens manually\n"
 "you might also want to check if your Lensfun database is up-to-date\n"
@@ -21398,50 +21349,50 @@ msgstr ""
 "lahko tudi preverite, če je podatkovna baza Lensfun ažurna\n"
 "če poženete lensfun-update-data"
 
-#: ../src/iop/lens.cc:4434
+#: ../src/iop/lens.cc:4419
 msgid "camera model"
 msgstr "model kamere"
 
-#: ../src/iop/lens.cc:4439
+#: ../src/iop/lens.cc:4424
 msgid "find camera"
 msgstr "išči kamero"
 
-#: ../src/iop/lens.cc:4454
+#: ../src/iop/lens.cc:4439
 msgid "find lens"
 msgstr "išči objektiv"
 
 #. scale
-#: ../src/iop/lens.cc:4489 ../src/iop/overlay.c:1113 ../src/iop/vignette.c:1043
+#: ../src/iop/lens.cc:4474 ../src/iop/overlay.c:1113 ../src/iop/vignette.c:1043
 #: ../src/iop/watermark.c:1381 ../src/libs/export.c:1540
 msgid "scale"
 msgstr "merilo"
 
-#: ../src/iop/lens.cc:4491
+#: ../src/iop/lens.cc:4476
 msgid "auto scale"
 msgstr "avtomatsko merilo"
 
-#: ../src/iop/lens.cc:4493
+#: ../src/iop/lens.cc:4478
 msgid "automatic scale to available image size due to Lensfun data"
 msgstr ""
 "samodejno prilagajanje razpoložljive velikosti slike zaradi podatkov Lensfun"
 
-#: ../src/iop/lens.cc:4498
+#: ../src/iop/lens.cc:4483
 msgid "correct distortions or apply them"
 msgstr "popravi popačenja ali jih izvedi"
 
-#: ../src/iop/lens.cc:4506
+#: ../src/iop/lens.cc:4491
 msgid "transversal chromatic aberration red"
 msgstr "transverzalni barvni odklon rdeče"
 
-#: ../src/iop/lens.cc:4511
+#: ../src/iop/lens.cc:4496
 msgid "transversal chromatic aberration blue"
 msgstr "transverzalni barvni odklon modre"
 
-#: ../src/iop/lens.cc:4522
+#: ../src/iop/lens.cc:4507
 msgid "use latest algorithm"
 msgstr "uporabi najnovejši algoritem"
 
-#: ../src/iop/lens.cc:4525
+#: ../src/iop/lens.cc:4510
 msgid ""
 "you're using an old version of the algorithm.\n"
 "once enabled, you won't be able to\n"
@@ -21451,39 +21402,39 @@ msgstr ""
 "potem ko ste omogočili, se ne boste mogli\n"
 "vrniti nazaj na stari algoritem."
 
-#: ../src/iop/lens.cc:4536
+#: ../src/iop/lens.cc:4521
 msgid "fine-tuning"
 msgstr "natančno prilagajanje"
 
-#: ../src/iop/lens.cc:4544
+#: ../src/iop/lens.cc:4529
 msgid "fine-tune"
 msgstr "natančno prilagajanje"
 
-#: ../src/iop/lens.cc:4551
+#: ../src/iop/lens.cc:4536
 msgid "tune the warp and chromatic aberration correction"
 msgstr "prilagodite osnovo in popravek kromatske aberacije"
 
-#: ../src/iop/lens.cc:4556
+#: ../src/iop/lens.cc:4541
 msgid "tune the vignette correction"
 msgstr "prilagodi popravek vinjetiranja"
 
-#: ../src/iop/lens.cc:4561
+#: ../src/iop/lens.cc:4546
 msgid "tune the TCA red correction"
 msgstr "prilagodi popravek TCA rdeče"
 
-#: ../src/iop/lens.cc:4566
+#: ../src/iop/lens.cc:4551
 msgid "tune the TCA blue correction"
 msgstr "prilagodi popravek TCA modre"
 
-#: ../src/iop/lens.cc:4570
+#: ../src/iop/lens.cc:4555
 msgid "image scaling"
 msgstr "prilagoditve velikosti slike"
 
-#: ../src/iop/lens.cc:4572
+#: ../src/iop/lens.cc:4557
 msgid "automatic scale to available image size"
 msgstr "samodejno prilagodi razpoložljivi velikosti slike"
 
-#: ../src/iop/lens.cc:4583
+#: ../src/iop/lens.cc:4568
 msgid ""
 "select a correction mode either based on\n"
 " a) data and algorithms provided by the Lensfun project\n"
@@ -21494,43 +21445,43 @@ msgstr ""
 "  b) vdelane metapodatke, ki jih zagotovi prodajalec kamere ali programske "
 "opreme​"
 
-#: ../src/iop/lens.cc:4590
+#: ../src/iop/lens.cc:4575
 msgid "which corrections to apply"
 msgstr "katere popravke uveljaviti"
 
-#: ../src/iop/lens.cc:4596
+#: ../src/iop/lens.cc:4581
 msgid "corrections done: "
 msgstr "popravki izvedeni: "
 
-#: ../src/iop/lens.cc:4599
+#: ../src/iop/lens.cc:4584
 msgid "which corrections have actually been done"
 msgstr "kateri popravki so bili zares izvedeni"
 
-#: ../src/iop/lens.cc:4618
+#: ../src/iop/lens.cc:4603
 msgid "manual vignette correction"
 msgstr "ročno popravljanje vinjetiranja"
 
-#: ../src/iop/lens.cc:4622
+#: ../src/iop/lens.cc:4607
 msgid "additional manually controlled optical vignetting correction"
 msgstr "dodatna ročno nadzorovana optična korekcija vinjetiranja"
 
-#: ../src/iop/lens.cc:4625
+#: ../src/iop/lens.cc:4610
 msgid "vignette"
 msgstr "vinjeta"
 
-#: ../src/iop/lens.cc:4629
+#: ../src/iop/lens.cc:4614
 msgid "amount of the applied optical vignetting correction"
 msgstr "količina uporabljenega optičnega popravka vinjetiranja"
 
-#: ../src/iop/lens.cc:4633
+#: ../src/iop/lens.cc:4618
 msgid "show applied optical vignette correction mask"
 msgstr "prikaži uporabljeno korekcijsko masko optične vinjete"
 
-#: ../src/iop/lens.cc:4637
+#: ../src/iop/lens.cc:4622
 msgid "radius of uncorrected centre"
 msgstr "polmer nekorigiranega središča"
 
-#: ../src/iop/lens.cc:4643
+#: ../src/iop/lens.cc:4628
 msgid "steepness of the correction effect outside of radius"
 msgstr "strmina korekcijskega učinka zunaj polmera"
 
@@ -21589,41 +21540,41 @@ msgstr "utekočini"
 msgid "distort parts of the image"
 msgstr "popači dele slike"
 
-#: ../src/iop/liquify.c:2870
+#: ../src/iop/liquify.c:2868
 msgid "click to edit nodes"
 msgstr "kliknite za urejanje vozlišč"
 
-#: ../src/iop/liquify.c:3572
+#: ../src/iop/liquify.c:3570
 msgid ""
 "<b>add point</b>: click and drag\n"
 "<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: "
 "ctrl+scroll"
 msgstr ""
 "<b>dodaj točko</b>: klik in povlek\n"
-"<b>velikost</b>: poteg - <b>moč</b>: dvigalka + poteg - <b>smer</b>:"
-"kontrolka+drsanje"
+"<b>velikost</b>: poteg - <b>moč</b>: dvigalka + poteg - <b>smer</"
+"b>:kontrolka+drsanje"
 
-#: ../src/iop/liquify.c:3575
+#: ../src/iop/liquify.c:3573
 msgid ""
 "<b>add line</b>: click\n"
 "<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: "
 "ctrl+scroll"
 msgstr ""
 "<b>dodaj črto</b>: klik\n"
-"<b>velikost</b>: poteg - <b>moč</b>: dvigalka + poteg - <b>smer</b>:"
-"kontrolka+drsanje"
+"<b>velikost</b>: poteg - <b>moč</b>: dvigalka + poteg - <b>smer</"
+"b>:kontrolka+drsanje"
 
-#: ../src/iop/liquify.c:3578
+#: ../src/iop/liquify.c:3576
 msgid ""
 "<b>add curve</b>: click\n"
 "<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: "
 "ctrl+scroll"
 msgstr ""
 "<b>dodaj krivuljo</b>: klik\n"
-"<b>velikost</b>: poteg - <b>moč</b>: dvigalka + poteg - <b>smer</b>:"
-"kontrolka+drsanje"
+"<b>velikost</b>: poteg - <b>moč</b>: dvigalka + poteg - <b>smer</"
+"b>:kontrolka+drsanje"
 
-#: ../src/iop/liquify.c:3629
+#: ../src/iop/liquify.c:3627
 msgid ""
 "use a tool to add warps\n"
 "<b>remove a warp</b>: right-click"
@@ -21631,48 +21582,48 @@ msgstr ""
 "uporabite orodje za dodajanje zvitkov\n"
 "<b>odstrani zvitek</b>: desni klik"
 
-#: ../src/iop/liquify.c:3632
+#: ../src/iop/liquify.c:3630
 msgid "warps|nodes count:"
 msgstr "zvitki|št. vozlišč:"
 
-#: ../src/iop/liquify.c:3641
+#: ../src/iop/liquify.c:3639
 msgid "edit, add and delete nodes"
 msgstr "uredi, dodaj in briši vozlišča"
 
-#: ../src/iop/liquify.c:3646 ../src/iop/liquify.c:3652
-#: ../src/iop/liquify.c:3658 ../src/iop/retouch.c:2449
+#: ../src/iop/liquify.c:3644 ../src/iop/liquify.c:3650
+#: ../src/iop/liquify.c:3656 ../src/iop/retouch.c:2449
 #: ../src/iop/retouch.c:2455 ../src/iop/retouch.c:2460
 #: ../src/iop/retouch.c:2465 ../src/iop/spots.c:879 ../src/iop/spots.c:884
 #: ../src/iop/spots.c:889 ../src/libs/masks.c:1797 ../src/libs/masks.c:1805
 #: ../src/libs/masks.c:1813 ../src/libs/masks.c:1821 ../src/libs/masks.c:1829
 msgid "shapes"
-msgstr "oblike"
+msgstr "liki"
 
-#: ../src/iop/liquify.c:3647
+#: ../src/iop/liquify.c:3645
 msgid "draw curves"
 msgstr "riši krivulje"
 
-#: ../src/iop/liquify.c:3647
+#: ../src/iop/liquify.c:3645
 msgid "draw multiple curves"
 msgstr "riši več krivulj"
 
-#: ../src/iop/liquify.c:3653
+#: ../src/iop/liquify.c:3651
 msgid "draw lines"
 msgstr "riši črte"
 
-#: ../src/iop/liquify.c:3653
+#: ../src/iop/liquify.c:3651
 msgid "draw multiple lines"
 msgstr "riši več črt"
 
-#: ../src/iop/liquify.c:3659
+#: ../src/iop/liquify.c:3657
 msgid "draw points"
 msgstr "riši točke"
 
-#: ../src/iop/liquify.c:3659
+#: ../src/iop/liquify.c:3657
 msgid "draw multiple points"
 msgstr "riši več točk"
 
-#: ../src/iop/liquify.c:3665
+#: ../src/iop/liquify.c:3663
 msgid ""
 "<b>add node</b>: ctrl+click - <b>remove path</b>: right-click\n"
 "<b>toggle line/curve</b>: ctrl+alt+click"
@@ -21680,7 +21631,7 @@ msgstr ""
 "<b>dodaj vozel</b>: ctrl+klik, <b>odstrani pot</b>: desni-klik\n"
 "<b>preklop črta/krivulja</b>: ctrl+alt+klik"
 
-#: ../src/iop/liquify.c:3668
+#: ../src/iop/liquify.c:3666
 msgid ""
 "<b>move</b>: click and drag - <b>show/hide feathering controls</b>: click\n"
 "<b>autosmooth, cusp, smooth, symmetrical</b>: ctrl+click - <b>remove</b>: "
@@ -21691,23 +21642,23 @@ msgstr ""
 "<b>samodejno glajenje, spoj, glajenje, simetrično</b>: ctrl+klik - "
 "<b>odstrani</b>: desni klik"
 
-#: ../src/iop/liquify.c:3672 ../src/iop/liquify.c:3674
+#: ../src/iop/liquify.c:3670 ../src/iop/liquify.c:3672
 msgid "<b>shape of path</b>: drag"
 msgstr "<b>oblika poti</b>: poteg"
 
-#: ../src/iop/liquify.c:3676
+#: ../src/iop/liquify.c:3674
 msgid "<b>radius</b>: drag"
 msgstr "<b>radij</b>: poteg"
 
-#: ../src/iop/liquify.c:3678
+#: ../src/iop/liquify.c:3676
 msgid "<b>hardness (center)</b>: drag"
 msgstr "<b>trdota (center)</b>: poteg"
 
-#: ../src/iop/liquify.c:3680
+#: ../src/iop/liquify.c:3678
 msgid "<b>hardness (feather)</b>: drag"
 msgstr "<b>trdota (pero)</b>: poteg"
 
-#: ../src/iop/liquify.c:3682
+#: ../src/iop/liquify.c:3680
 msgid ""
 "<b>strength</b>: drag\n"
 "<b>linear, grow, and shrink</b>: ctrl+click"
@@ -22691,15 +22642,15 @@ msgstr "zdravljenje"
 
 #: ../src/iop/retouch.c:2432
 msgid "shapes:"
-msgstr "oblike:"
+msgstr "liki:"
 
 #: ../src/iop/retouch.c:2438
 msgid ""
 "to add a shape select an algorithm and a shape type and click on the image.\n"
 "shapes are added to the current scale"
 msgstr ""
-"za dodajanje oblike izberite algoritem iz vrst oblike in kliknite na sliko.\n"
-"oblike so dodane na trenutna merila"
+"za dodajanje lika izberite algoritem iz vrst lika in kliknite na sliko.\n"
+"liki so dodani na trenutna merila"
 
 #: ../src/iop/retouch.c:2442 ../src/iop/retouch.c:2575
 #: ../src/iop/retouch.c:2581 ../src/iop/retouch.c:2590
@@ -22710,11 +22661,11 @@ msgstr "urejanje"
 
 #: ../src/iop/retouch.c:2443
 msgid "show and edit shapes on the current scale"
-msgstr "prikaži in uredi oblike v trenutnem merilu"
+msgstr "prikaži in uredi like v trenutnem merilu"
 
 #: ../src/iop/retouch.c:2444
 msgid "show and edit shapes in restricted mode"
-msgstr "prikaži in uredi oblike v omejevalnem načinu"
+msgstr "prikaži in uredi like v omejevalnem načinu"
 
 #: ../src/iop/retouch.c:2473
 msgid "algorithms:"
@@ -22727,7 +22678,7 @@ msgstr "aktiviraj orodje zamegljevanja"
 #: ../src/iop/retouch.c:2477 ../src/iop/retouch.c:2483
 #: ../src/iop/retouch.c:2489 ../src/iop/retouch.c:2495
 msgid "change algorithm for current form"
-msgstr "spremeni algoritem za trenutno obliko"
+msgstr "spremeni algoritem za trenutni lik"
 
 #: ../src/iop/retouch.c:2482 ../src/iop/retouch.c:2505
 msgid "activate fill tool"
@@ -22782,15 +22733,15 @@ msgstr "maske prikaza"
 
 #: ../src/iop/retouch.c:2581
 msgid "temporarily switch off shapes"
-msgstr "začasno izklopi oblike"
+msgstr "začasno izklopi like"
 
 #: ../src/iop/retouch.c:2590
 msgid "paste cut shapes to current scale"
-msgstr "prilepi oblike v trenutno merilo"
+msgstr "prilepi like v trenutno merilo"
 
 #: ../src/iop/retouch.c:2595
 msgid "cut shapes from current scale"
-msgstr "izreži oblike iz trenutnega merila"
+msgstr "izreži like iz trenutnega merila"
 
 #: ../src/iop/retouch.c:2603
 msgid "display wavelet scale"
@@ -22811,14 +22762,14 @@ msgstr "avtomatski nivoji"
 
 #: ../src/iop/retouch.c:2656
 msgid "shape selected:"
-msgstr "izbrana oblika:"
+msgstr "izbrani lik:"
 
 #: ../src/iop/retouch.c:2662
 msgid ""
 "click on a shape to select it,\n"
 "to unselect click on an empty space"
 msgstr ""
-"kliknite na obliko za njen izbor.\n"
+"kliknite na lik za njegov izbor.\n"
 "za preklic izbora kliknite na prazen prostor"
 
 #: ../src/iop/retouch.c:2671
@@ -22855,7 +22806,7 @@ msgstr "radij izbranega tipa zamegljevanja"
 
 #: ../src/iop/retouch.c:2725
 msgid "set the opacity on the selected shape"
-msgstr "določi neprosojnost izbrane oblike"
+msgstr "določi neprosojnost izbranega lika"
 
 #: ../src/iop/retouch.c:2731
 msgctxt "section"
@@ -22870,7 +22821,7 @@ msgstr "dekompozicija valovanja"
 #: ../src/iop/retouch.c:2735
 msgctxt "section"
 msgid "shapes"
-msgstr "oblike"
+msgstr "liki"
 
 #: ../src/iop/retouch.c:3878 ../src/iop/retouch.c:4700
 #, c-format
@@ -22886,7 +22837,6 @@ msgid "alter an image’s tones using curves in RGB color space"
 msgstr "spremeni tone slike s pomočjo krivulj v barvnem prostoru RGB"
 
 #: ../src/iop/rgbcurve.c:183
-#| msgid "contrast compression"
 msgid "contrast | compression"
 msgstr "kontrast | stiskanje"
 
@@ -22895,42 +22845,34 @@ msgid "linear (gamma 1.0)"
 msgstr "linearno (gama 1,0)"
 
 #: ../src/iop/rgbcurve.c:204
-#| msgid "contrast - med (linear)"
 msgid "contrast | medium (linear)"
 msgstr "kontrast | srednji (linearni)"
 
 #: ../src/iop/rgbcurve.c:214
-#| msgid "contrast - high (linear)"
 msgid "contrast | high (linear)"
 msgstr "kontrast |visoki (linearni)"
 
 #: ../src/iop/rgbcurve.c:231
-#| msgid "contrast - med (gamma 2.2)"
 msgid "contrast | medium (gamma 2.2)"
 msgstr "kontrast | srednji (gama 2,2)"
 
 #: ../src/iop/rgbcurve.c:247
-#| msgid "contrast - high (gamma 2.2)"
 msgid "contrast | high (gamma 2.2)"
 msgstr "kontrast | visoki (gama 2,2)"
 
 #: ../src/iop/rgbcurve.c:261
-#| msgid "contrast - med (gamma 2.2)"
 msgid "non-contrast curve | gamma 2.0"
 msgstr "ne-kontrastna krivulja | gama 2,0"
 
 #: ../src/iop/rgbcurve.c:268
-#| msgid "contrast - med (gamma 2.2)"
 msgid "non-contrast curve | gamma 0.5"
 msgstr "ne-kontrastna krivulja |gama 0,5"
 
 #: ../src/iop/rgbcurve.c:275
-#| msgid "logarithm (base 2)"
 msgid "non-contrast curve | logarithm (base 2)"
 msgstr "ne-kontrastna krivulja | logaritem (osnova 2)"
 
 #: ../src/iop/rgbcurve.c:282
-#| msgid "exponential (base 2)"
 msgid "non-contrast curve | exponential (base 2)"
 msgstr "ne-kontrastna krivulja | eksponentna (osnova 2)"
 
@@ -23331,7 +23273,7 @@ msgstr "geometrijsko, surovo"
 
 #: ../src/iop/spots.c:232
 msgid "spot module is limited to 64 shapes. please add a new instance!"
-msgstr "modul točk je omejen na 64 oblik. dodajte nov pojavek!"
+msgstr "modul točk je omejen na 64 likov. dodajte nov pojavek!"
 
 #: ../src/iop/spots.c:868
 msgid "number of strokes:"
@@ -23349,7 +23291,7 @@ msgstr ""
 
 #: ../src/iop/spots.c:875
 msgid "show and edit shapes"
-msgstr "prikaži in uredi oblike"
+msgstr "prikaži in uredi like"
 
 #: ../src/iop/temperature.c:241
 msgctxt "modulename"
@@ -23623,57 +23565,46 @@ msgid "simple tone curve"
 msgstr "preprosta krivulja tonov"
 
 #: ../src/iop/toneequal.c:498
-#| msgid "mask blending: all purposes"
 msgid "mask blending | all purposes"
 msgstr "mešanje mask | vsi nameni"
 
 #: ../src/iop/toneequal.c:505
-#| msgid "mask blending: people with backlight"
 msgid "mask blending | people with backlight"
 msgstr "mešanje mask | osebe osvetljene od zadaj"
 
 #: ../src/iop/toneequal.c:522
-#| msgid "compress shadows/highlights (EIGF): strong"
 msgid "compress shadows/highlights | EIGF | strong"
 msgstr "stiskanje senc/bleščav | EIGF | močno"
 
 #: ../src/iop/toneequal.c:527
-#| msgid "compress shadows/highlights (GF): strong"
 msgid "compress shadows/highlights | GF | strong"
 msgstr "stiskanje senc/bleščav | GF | močno"
 
 #: ../src/iop/toneequal.c:536
-#| msgid "compress shadows/highlights (EIGF): medium"
 msgid "compress shadows/highlights | EIGF | medium"
 msgstr "stiskanje senc/bleščav | EIGF | srednje"
 
 #: ../src/iop/toneequal.c:541
-#| msgid "compress shadows/highlights (GF): medium"
 msgid "compress shadows/highlights | GF | medium"
 msgstr "stiskanje senc/bleščav | GF |srednje"
 
 #: ../src/iop/toneequal.c:550
-#| msgid "compress shadows/highlights (EIGF): soft"
 msgid "compress shadows/highlights | EIGF | soft"
 msgstr "stiskanje senc/bleščav | EIGF | mehko"
 
 #: ../src/iop/toneequal.c:555
-#| msgid "compress shadows/highlights (GF): soft"
 msgid "compress shadows/highlights | GF | soft"
 msgstr "stiskanje senc/bleščav | GF | mehko"
 
 #: ../src/iop/toneequal.c:563
-#| msgid "contrast tone curve: soft"
 msgid "contrast tone curve | soft"
 msgstr "krivulja kontrastnih tonov | mehka"
 
 #: ../src/iop/toneequal.c:568
-#| msgid "contrast tone curve: medium"
 msgid "contrast tone curve | medium"
 msgstr "krivulja kontrastnih tonov | srednja"
 
 #: ../src/iop/toneequal.c:573
-#| msgid "contrast tone curve: strong"
 msgid "contrast tone curve | strong"
 msgstr "krivulja kontrastnih tonov | močna"
 
@@ -24196,73 +24127,73 @@ msgstr ""
 msgid "background jobs"
 msgstr "procesi v ozadju"
 
-#: ../src/libs/camera.c:78
+#: ../src/libs/camera.c:79
 msgid "camera settings"
 msgstr "nastavitve kamere"
 
-#: ../src/libs/camera.c:131
+#: ../src/libs/camera.c:133
 msgid "toggle view property in center view"
 msgstr "preklop lastnosti pogleda v centralnem pogledu"
 
-#: ../src/libs/camera.c:201
+#: ../src/libs/camera.c:212
 msgid "connection with camera lost, exiting tethering mode"
 msgstr "povezava s kamero je izgubljena, izhod iz upravljavskega načina"
 
-#: ../src/libs/camera.c:342
+#: ../src/libs/camera.c:357
 msgid "battery"
 msgstr "baterija"
 
-#: ../src/libs/camera.c:342
+#: ../src/libs/camera.c:357
 msgid "n/a"
 msgstr "nima pomena"
 
 #. Camera control
-#: ../src/libs/camera.c:417
+#: ../src/libs/camera.c:440
 msgctxt "section"
 msgid "camera control"
 msgstr "upravljanje kamere"
 
-#: ../src/libs/camera.c:421 ../src/libs/histogram.c:2586
+#: ../src/libs/camera.c:444 ../src/libs/histogram.c:2586
 msgid "modes"
 msgstr "načini"
 
-#: ../src/libs/camera.c:422
+#: ../src/libs/camera.c:445
 msgid "timer (s)"
 msgstr "odštevalnik(i) časa"
 
-#: ../src/libs/camera.c:423
+#: ../src/libs/camera.c:446
 msgid "count"
 msgstr "število"
 
-#: ../src/libs/camera.c:424
+#: ../src/libs/camera.c:447
 msgid "brackets"
 msgstr "omejitve kadriranja"
 
-#: ../src/libs/camera.c:425
+#: ../src/libs/camera.c:448
 msgid "bkt. steps"
 msgstr "koraki nazaj"
 
-#: ../src/libs/camera.c:458
+#: ../src/libs/camera.c:481
 msgid "capture image(s)"
 msgstr "zajem slik(e)"
 
-#: ../src/libs/camera.c:461
+#: ../src/libs/camera.c:484
 msgid "toggle delayed capture mode"
 msgstr "preklopi v način zajema z zamudo"
 
-#: ../src/libs/camera.c:462
+#: ../src/libs/camera.c:485
 msgid "toggle sequenced capture mode"
 msgstr "preklop na način zaporednega zajemanja"
 
-#: ../src/libs/camera.c:463
+#: ../src/libs/camera.c:486
 msgid "toggle bracketed capture mode"
 msgstr "preklop zajemanja z vrednostmi v intervalu"
 
-#: ../src/libs/camera.c:464
+#: ../src/libs/camera.c:487
 msgid "the count of seconds before actually doing a capture"
 msgstr "število sekund pred samim zajemom"
 
-#: ../src/libs/camera.c:466
+#: ../src/libs/camera.c:489
 msgid ""
 "the amount of images to capture in a sequence,\n"
 "you can use this in conjunction with delayed mode to create stop-motion "
@@ -24272,7 +24203,7 @@ msgstr ""
 "to lahko uporabljate skupaj z zajemanjem z zamudo za ustvarjanje časovnih "
 "zaporedij slik"
 
-#: ../src/libs/camera.c:469
+#: ../src/libs/camera.c:492
 msgid ""
 "the amount of brackets on each side of centered shoot, amount of images = "
 "(brackets*2) + 1"
@@ -24280,7 +24211,7 @@ msgstr ""
 "število intervalnih omejitev na vsaki strani osredotočenega posnetka, "
 "število slik = (št_omejitev*2) + 1"
 
-#: ../src/libs/camera.c:471
+#: ../src/libs/camera.c:494
 msgid ""
 "the amount of steps per bracket, steps is camera configurable and usually 3 "
 "steps per stop\n"
@@ -24290,41 +24221,41 @@ msgstr ""
 "kameri in je navadno 3 korake na vrednost zaslonke\n"
 "drugače povedano, 3 koraki so 1EV osvetlitve med omejitvami"
 
-#. user specified properties
-#: ../src/libs/camera.c:494
+#. User specified properties
+#: ../src/libs/camera.c:517
 msgctxt "section"
 msgid "additional properties"
 msgstr "dodatne lastnosti"
 
-#: ../src/libs/camera.c:497
+#: ../src/libs/camera.c:520
 msgid "label"
 msgstr "oznaka"
 
-#: ../src/libs/camera.c:504
+#: ../src/libs/camera.c:527
 msgid "property"
 msgstr "lastnost"
 
-#: ../src/libs/camera.c:515
+#: ../src/libs/camera.c:538
 msgid "add user property"
 msgstr "dodaj lastnost uporabnika"
 
-#: ../src/libs/camera.c:535
+#: ../src/libs/camera.c:561
 msgid "program"
 msgstr "program"
 
-#: ../src/libs/camera.c:538 ../src/libs/camera.c:540
+#: ../src/libs/camera.c:564 ../src/libs/camera.c:566
 msgid "focus mode"
 msgstr "način ostrenja"
 
-#: ../src/libs/camera.c:551
+#: ../src/libs/camera.c:577
 msgid "shutterspeed2"
 msgstr "hitrost zaklopa 2"
 
-#: ../src/libs/camera.c:553
+#: ../src/libs/camera.c:579
 msgid "shutterspeed"
 msgstr "hitrost zaklopa"
 
-#: ../src/libs/camera.c:559
+#: ../src/libs/camera.c:585
 msgid "WB"
 msgstr "ČB"
 
@@ -25584,7 +25515,7 @@ msgstr ""
 msgid "apply offset and geo-location"
 msgstr "uveljavi odmik in geolociranje"
 
-#: ../src/libs/geotagging.c:375 ../src/libs/geotagging.c:1956
+#: ../src/libs/geotagging.c:375 ../src/libs/geotagging.c:1963
 msgid "apply geo-location"
 msgstr "uveljavi geolociranje"
 
@@ -25596,7 +25527,7 @@ msgstr ""
 "uveljavi odmik in geolokacijo na ustreznih slikah\n"
 "dvojna operacija: dvakrat ctrl-Z za razveljavitev"
 
-#: ../src/libs/geotagging.c:379 ../src/libs/geotagging.c:1957
+#: ../src/libs/geotagging.c:379 ../src/libs/geotagging.c:1964
 msgid "apply geo-location to matching images"
 msgstr "uveljavi geolokacijo na ustreznih slikah"
 
@@ -25604,7 +25535,7 @@ msgstr "uveljavi geolokacijo na ustreznih slikah"
 msgid "GPX file track segments"
 msgstr "segmenti sledi datoteke GPX"
 
-#: ../src/libs/geotagging.c:851 ../src/libs/geotagging.c:1902
+#: ../src/libs/geotagging.c:851 ../src/libs/geotagging.c:1909
 msgid "start time"
 msgstr "začetni čas"
 
@@ -25612,11 +25543,11 @@ msgstr "začetni čas"
 msgid "end time"
 msgstr "čas konca"
 
-#: ../src/libs/geotagging.c:853 ../src/libs/geotagging.c:1904
+#: ../src/libs/geotagging.c:853 ../src/libs/geotagging.c:1911
 msgid "points"
 msgstr "točke"
 
-#: ../src/libs/geotagging.c:854 ../src/libs/geotagging.c:1906
+#: ../src/libs/geotagging.c:854 ../src/libs/geotagging.c:1913
 #: ../src/libs/image.c:501
 msgid "images"
 msgstr "slike"
@@ -25634,11 +25565,11 @@ msgstr "predogled"
 msgid "GPS data exchange format"
 msgstr "GPS Data Exchange format"
 
-#: ../src/libs/geotagging.c:1773
+#: ../src/libs/geotagging.c:1780
 msgid "date/time"
 msgstr "datum in čas"
 
-#: ../src/libs/geotagging.c:1774
+#: ../src/libs/geotagging.c:1781
 msgid ""
 "enter the new date/time (YYYY:MM:DD hh:mm:ss[.sss])\n"
 "key in the new numbers or scroll over the cell"
@@ -25646,40 +25577,40 @@ msgstr ""
 "vnesite nov datum in čas (YYYY:MM:DD hh:mm:ss[.sss])\n"
 "vtipkajte nove številke ali potegnite prek celice"
 
-#: ../src/libs/geotagging.c:1778
+#: ../src/libs/geotagging.c:1785
 msgid "original date/time"
 msgstr "izvorni datum in čas"
 
-#: ../src/libs/geotagging.c:1782
+#: ../src/libs/geotagging.c:1789
 msgid "lock date/time offset value to apply it onto another selection"
 msgstr "zakleni datumsko oz. časovni odmik za uveljavitev v drugi izbiri"
 
-#: ../src/libs/geotagging.c:1786
+#: ../src/libs/geotagging.c:1793
 msgid "date/time offset"
 msgstr "datumski oz. časovni odmik"
 
-#: ../src/libs/geotagging.c:1787
+#: ../src/libs/geotagging.c:1794
 msgid "offset or difference ([-]dd hh:mm:ss[.sss])"
 msgstr "odmik ali razlika ([-]dd hh:mm:ss)"
 
 #. apply
-#: ../src/libs/geotagging.c:1791
+#: ../src/libs/geotagging.c:1798
 msgid "apply offset"
 msgstr "uveljavi odmik"
 
-#: ../src/libs/geotagging.c:1792
+#: ../src/libs/geotagging.c:1799
 msgid "apply offset to selected images"
 msgstr "uveljavi časovni zamik na izbranih slikah"
 
-#: ../src/libs/geotagging.c:1795
+#: ../src/libs/geotagging.c:1802
 msgid "apply date/time"
 msgstr "uveljavi datum in čas"
 
-#: ../src/libs/geotagging.c:1796
+#: ../src/libs/geotagging.c:1803
 msgid "apply the same date/time to selected images"
 msgstr "uveljavi enak datumski oz. časovni zamik za izbrane slike"
 
-#: ../src/libs/geotagging.c:1806
+#: ../src/libs/geotagging.c:1813
 msgid ""
 "start typing to show a list of permitted values and select your timezone.\n"
 "press enter to confirm, so that the asterisk * disappears"
@@ -25689,24 +25620,24 @@ msgstr ""
 "pritisnite enter za potrditev, tako da zvezdica * izgine"
 
 #. gpx
-#: ../src/libs/geotagging.c:1848
+#: ../src/libs/geotagging.c:1855
 msgid "apply GPX track file..."
 msgstr "uveljavi datoteko sledi GPX..."
 
-#: ../src/libs/geotagging.c:1849
+#: ../src/libs/geotagging.c:1856
 msgid "parses a GPX file and updates location of selected images"
 msgstr "pregleda datoteko GPX in določi lokacijo izbranih slik"
 
-#: ../src/libs/geotagging.c:1860
+#: ../src/libs/geotagging.c:1867
 msgctxt "section"
 msgid "GPX file"
 msgstr "datoteka GPX"
 
-#: ../src/libs/geotagging.c:1867
+#: ../src/libs/geotagging.c:1874
 msgid "select a GPX track file..."
 msgstr "izberi datoteko sledi GPX..."
 
-#: ../src/libs/geotagging.c:1884
+#: ../src/libs/geotagging.c:1891
 msgid ""
 "list of track segments in the GPX file, for each segment:\n"
 "- the start date/time in local time (LT)\n"
@@ -25723,31 +25654,31 @@ msgstr ""
 
 #. the gpx_view_button is invisible and the label and tooltip of cannot be displayed on GUI.
 #. but label is use in "shortcuts" dialog.
-#: ../src/libs/geotagging.c:1921
+#: ../src/libs/geotagging.c:1928
 msgid "view entire track"
 msgstr "ogled celotne sledi"
 
-#: ../src/libs/geotagging.c:1922
+#: ../src/libs/geotagging.c:1929
 msgid "refresh map to view entire selected track segments"
 msgstr "osveži mapo, za ogled celotnih izbranih razdelkov sledi"
 
-#: ../src/libs/geotagging.c:1936
+#: ../src/libs/geotagging.c:1943
 msgid "preview images"
 msgstr "predogled slik"
 
-#: ../src/libs/geotagging.c:1941
+#: ../src/libs/geotagging.c:1948
 msgid "show on map matching images"
 msgstr "pokaži ustrezne slike na zemljevidu"
 
-#: ../src/libs/geotagging.c:1944
+#: ../src/libs/geotagging.c:1951
 msgid "select images"
 msgstr "izberite slike"
 
-#: ../src/libs/geotagging.c:1945
+#: ../src/libs/geotagging.c:1952
 msgid "select matching images"
 msgstr "izberi ustrezne slike"
 
-#: ../src/libs/geotagging.c:1953
+#: ../src/libs/geotagging.c:1960
 msgid "number of matching images versus selected images"
 msgstr "število ustreznih slik nasproti izbranim slikam"
 
@@ -25918,7 +25849,7 @@ msgstr "barvne harmonije"
 msgid "cycle color harmonies"
 msgstr "kroži po barvnih harmonijah"
 
-#: ../src/libs/history.c:101
+#: ../src/libs/history.c:103
 msgid ""
 "display the sequence of edit actions\n"
 "and allow temporarily returning to\n"
@@ -25928,11 +25859,11 @@ msgstr ""
 "in omogoči začasno vrnitev\n"
 "na prejšnje stanje urejanja"
 
-#: ../src/libs/history.c:134
+#: ../src/libs/history.c:136
 msgid "compress history stack"
 msgstr "stisni sklad zgodovine"
 
-#: ../src/libs/history.c:135
+#: ../src/libs/history.c:137
 msgid ""
 "create a minimal history stack which produces the same image\n"
 "ctrl+click to truncate history to the selected item"
@@ -25940,94 +25871,94 @@ msgstr ""
 "ustvari minimalni sklad zgodovine, ki ustvari enako sliko\n"
 "ctrl+klik za rezanje zgodovine pri izbranem vnosu"
 
-#: ../src/libs/history.c:146
+#: ../src/libs/history.c:148
 msgid "create a style from the current history stack"
 msgstr "ustvari slog iz trenutnega sklada zgodovine"
 
-#: ../src/libs/history.c:148
+#: ../src/libs/history.c:150
 msgid "create style from history"
 msgstr "ustvari slog iz zgodovine"
 
-#: ../src/libs/history.c:202
+#: ../src/libs/history.c:204
 msgid "always-on module"
 msgstr "vedno prikazuj modul"
 
-#: ../src/libs/history.c:208
+#: ../src/libs/history.c:210
 msgid "default enabled module"
 msgstr "privzeto omogočen modul"
 
-#: ../src/libs/history.c:215
+#: ../src/libs/history.c:217
 msgid "deprecated module"
 msgstr "zastareli modul"
 
-#: ../src/libs/history.c:915
+#: ../src/libs/history.c:945
 msgid "colorspace"
 msgstr "barvni prostor"
 
-#: ../src/libs/history.c:917
+#: ../src/libs/history.c:947
 msgid "mask mode"
 msgstr "maskirni način"
 
-#: ../src/libs/history.c:919
+#: ../src/libs/history.c:949
 msgid "blend mode"
 msgstr "način mešanja"
 
-#: ../src/libs/history.c:921
+#: ../src/libs/history.c:951
 msgid "blend operation"
 msgstr "operacija mešanja"
 
-#: ../src/libs/history.c:923
+#: ../src/libs/history.c:953
 msgid "blend fulcrum"
 msgstr "izhodišče mešanja"
 
-#: ../src/libs/history.c:931
+#: ../src/libs/history.c:961
 msgid "mask blur"
 msgstr "maska zamegljevanja"
 
-#: ../src/libs/history.c:934
+#: ../src/libs/history.c:964
 msgid "raster mask instance"
 msgstr "pojavek rastrske maske"
 
-#: ../src/libs/history.c:935
+#: ../src/libs/history.c:965
 msgid "raster mask id"
 msgstr "id rastrske maske"
 
-#: ../src/libs/history.c:936
+#: ../src/libs/history.c:966
 msgid "invert mask"
 msgstr "preobrni masko"
 
-#: ../src/libs/history.c:941
+#: ../src/libs/history.c:972
 msgid "drawn mask polarity"
 msgstr "polarnost narisane maske"
 
-#: ../src/libs/history.c:945
+#: ../src/libs/history.c:976
 #, c-format
 msgid "a drawn mask was added"
 msgstr "narisana maska je bila dodana"
 
-#: ../src/libs/history.c:947
+#: ../src/libs/history.c:978
 #, c-format
 msgid "the drawn mask was removed"
 msgstr "narisana maska je bila odstranjena"
 
-#: ../src/libs/history.c:948
+#: ../src/libs/history.c:979
 #, c-format
 msgid "the drawn mask was changed"
 msgstr "narisana maska je bila spremenjena"
 
-#: ../src/libs/history.c:980
+#: ../src/libs/history.c:1011
 msgid "parametric output mask:"
 msgstr "parametrska izhodna maska:"
 
-#: ../src/libs/history.c:981
+#: ../src/libs/history.c:1012
 msgid "parametric input mask:"
 msgstr "parametrska vhodna maska:"
 
-#: ../src/libs/history.c:1303
+#: ../src/libs/history.c:1347
 msgid "delete image's history?"
 msgstr "zbrišem zgodovino slik?"
 
-#: ../src/libs/history.c:1304
+#: ../src/libs/history.c:1348
 msgid "do you really want to clear history of current image?"
 msgstr "ali res želite očistiti zgodovino sprememb trenutne slike?"
 
@@ -26660,7 +26591,7 @@ msgid ""
 "manipulate the drawn shapes used\n"
 "for masks on the processing modules"
 msgstr ""
-"manipuliraj z uporabljenimi narisanimi oblikami\n"
+"manipuliraj z uporabljenimi narisanimi liki\n"
 "za maske na procesnih modulih"
 
 #: ../src/libs/masks.c:109
@@ -26674,11 +26605,11 @@ msgstr "grupa #%d"
 
 #: ../src/libs/masks.c:1089
 msgid "duplicate this shape"
-msgstr "dupliciraj to obliko"
+msgstr "dupliciraj ta lik"
 
 #: ../src/libs/masks.c:1093
 msgid "delete this shape"
-msgstr "briši to obliko"
+msgstr "briši ta lik"
 
 #: ../src/libs/masks.c:1099
 msgid "delete group"
@@ -26694,7 +26625,7 @@ msgstr "grupiraj forme"
 
 #: ../src/libs/masks.c:1122
 msgid "use inverted shape"
-msgstr "uporabi inverzno obliko"
+msgstr "uporabi inverzni lik"
 
 #: ../src/libs/masks.c:1126
 msgid "mode: union"
@@ -26717,12 +26648,12 @@ msgid "mode: exclusion"
 msgstr "način : izvzetje"
 
 #: ../src/libs/masks.c:1150
-msgid "cleanup unused shapes"
-msgstr "počisti neuporabljene oblike"
+msgid "delete unused shapes"
+msgstr "briši neuporabljene like"
 
 #: ../src/libs/masks.c:1874
 msgid "created shapes"
-msgstr "ustvarjene oblike"
+msgstr "ustvarjeni liki"
 
 #: ../src/libs/masks.c:1881 ../src/libs/masks.c:1896 ../src/libs/masks.c:1910
 #: ../src/libs/masks.c:1912
@@ -26731,7 +26662,7 @@ msgstr "lastnosti"
 
 #: ../src/libs/masks.c:1884
 msgid "no shapes selected"
-msgstr "ni izbranih oblik"
+msgstr "ni izbranih likov"
 
 #: ../src/libs/masks.c:1910
 msgid "pressure"
@@ -29034,9 +28965,6 @@ msgid "color assessment"
 msgstr "ocena barv"
 
 #: ../src/views/darkroom.c:2461
-#| msgid ""
-#| "toggle clipping indication\n"
-#| "right-click for options"
 msgid ""
 "toggle color assessment conditions\n"
 "right-click for options"
@@ -29045,7 +28973,6 @@ msgstr ""
 "desni klik za možnosti"
 
 #: ../src/views/darkroom.c:2478 ../src/views/darkroom.c:2491
-#| msgid "color assessment"
 msgid "color_assessment"
 msgstr "ocena barv"
 
@@ -29062,7 +28989,6 @@ msgstr ""
 "to vključuje zunanji sivi del in notranji beli okvir."
 
 #: ../src/views/darkroom.c:2491
-#| msgid "filter order"
 msgid "white border ratio"
 msgstr "razmerje bele obrobe"
 
@@ -29278,7 +29204,6 @@ msgid "histogram profile"
 msgstr "profil histograma"
 
 #: ../src/views/darkroom.c:2751
-#| msgid "second preview window ISO 12646 color assessment"
 msgid "second preview window color assessment"
 msgstr "drugo okno za predogled ocene barv "
 
@@ -29736,6 +29661,9 @@ msgstr "preklopi na klasično okno, ki bo ostalo odprto po sprostitvi tipke"
 #: ../src/views/view.c:1566
 msgid "mouse actions"
 msgstr "aktivnosti miške"
+
+#~ msgid "cleanup unused shapes"
+#~ msgstr "počisti neuporabljene oblike"
 
 #~ msgid "B&W: luminance-based"
 #~ msgstr "Č/B : na osnovi svetlosti"
@@ -34018,8 +33946,8 @@ msgstr "aktivnosti miške"
 #~ "dveh datoteki, ki materializirata zaklep\n"
 #~ "     in da ni več povezana z nobenim pojavkom darktabla. Zato jo ali ju "
 #~ "je potrebno zbrisati.\n"
-#~ "     Dve datoteki sta poimenovani <i>data.db.lock</i> in <i>library.db."
-#~ "lock</i>. Mehanizem za odpiranje signalizira\n"
+#~ "     Dve datoteki sta poimenovani <i>data.db.lock</i> in "
+#~ "<i>library.db.lock</i>. Mehanizem za odpiranje signalizira\n"
 #~ "     prisotnost datoteke <i><b>%s</b></i> v mapi <i><b>%s</b></i>.\n"
 #~ "     (polno ime poti: <i><b>%s</b></i>).\n"
 #~ "\n"
