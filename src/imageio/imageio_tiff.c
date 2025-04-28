@@ -332,7 +332,10 @@ failed:
 }
 
 
-static void _warning_error_handler(const char *type, const char* module, const char* fmt, va_list ap)
+static void _warning_error_handler(const char *type,
+                                   const char* module,
+                                   const char* fmt,
+                                   va_list ap)
 {
   fprintf(stderr, "[tiff_open] %s: %s: ", type, module);
   vfprintf(stderr, fmt, ap);
@@ -352,7 +355,9 @@ static void _error_handler(const char* module, const char* fmt, va_list ap)
   _warning_error_handler("error", module, fmt, ap);
 }
 
-dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
+dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
+                                         const char *filename,
+                                         dt_mipmap_buffer_t *mbuf)
 {
   // doing this once would be enough, but our imageio reading code is
   // compiled into dt's core and doesn't have an init routine.
@@ -364,6 +369,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   if(strncmp(ext, ".tif", 4) && strncmp(ext, ".TIF", 4) && strncmp(ext, ".tiff", 5)
      && strncmp(ext, ".TIFF", 5))
     return DT_IMAGEIO_UNSUPPORTED_FORMAT;
+
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
   tiff_t t;
@@ -395,9 +401,17 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   TIFFGetField(t.tiff, TIFFTAG_PHOTOMETRIC, &photometric);
   TIFFGetField(t.tiff, TIFFTAG_INKSET, &inkset);
 
+  // Citing the TIFF 6.0 specification for SampleFormat:
+  // A reader would typically treat an image with “undefined” data as
+  // if the field were not present (i.e. as unsigned integer data).
+  if(t.sampleformat == SAMPLEFORMAT_VOID)
+    t.sampleformat = SAMPLEFORMAT_UINT;
+
   if(inkset == INKSET_CMYK || inkset == INKSET_MULTIINK)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: unsupported CMYK (or multi-ink) in '%s'", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[tiff_open] error: unsupported CMYK (or multi-ink) in '%s'",
+             filename);
     TIFFClose(t.tiff);
     return DT_IMAGEIO_UNSUPPORTED_FEATURE;
   }
@@ -410,20 +424,26 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
 
   t.scanlinesize = TIFFScanlineSize(t.tiff);
 
-  dt_print(DT_DEBUG_IMAGEIO, "[tiff_open] %dx%d %dbpp, %d samples per pixel", t.width, t.height, t.bpp, t.spp);
+  dt_print(DT_DEBUG_IMAGEIO,
+           "[tiff_open] %dx%d %dbpp, %d samples per pixel",
+           t.width, t.height, t.bpp, t.spp);
 
   // we only support 8, 16 and 32 bits per pixel formats.
   if(t.bpp != 8 && t.bpp != 16 && t.bpp != 32)
   {
     TIFFClose(t.tiff);
-    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: unsupported bit depth other than 8, 16 or 32 in '%s'", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[tiff_open] error: unsupported bit depth other than 8, 16 or 32 in '%s'",
+             filename);
     return DT_IMAGEIO_UNSUPPORTED_FEATURE;
   }
 
   /* don't depend on planar config if spp == 1 */
   if(t.spp > 1 && config != PLANARCONFIG_CONTIG)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: unsupported non-chunky PlanarConfiguration in '%s'", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[tiff_open] error: unsupported non-chunky PlanarConfiguration in '%s'",
+             filename);
     TIFFClose(t.tiff);
     return DT_IMAGEIO_UNSUPPORTED_FEATURE;
   }
@@ -440,7 +460,9 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   t.mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, t.image);
   if(!t.mipbuf)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: could not alloc full buffer for '%s'", t.image->filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[tiff_open] error: could not alloc full buffer for '%s'",
+             t.image->filename);
     TIFFClose(t.tiff);
     return DT_IMAGEIO_CACHE_FULL;
   }
@@ -468,21 +490,39 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   int ok = 1;
   dt_imageio_retval_t ret = DT_IMAGEIO_LOAD_FAILED;
 
-  if((photometric == PHOTOMETRIC_CIELAB || photometric == PHOTOMETRIC_ICCLAB) && t.bpp == 8 && t.sampleformat == SAMPLEFORMAT_UINT)
+  if((photometric == PHOTOMETRIC_CIELAB || photometric == PHOTOMETRIC_ICCLAB)
+     && t.bpp == 8
+     && t.sampleformat == SAMPLEFORMAT_UINT)
+  {
     ok = _read_chunky_8_Lab(&t, photometric);
-  else if((photometric == PHOTOMETRIC_CIELAB || photometric == PHOTOMETRIC_ICCLAB) && t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_UINT)
+  }
+  else if((photometric == PHOTOMETRIC_CIELAB || photometric == PHOTOMETRIC_ICCLAB)
+          && t.bpp == 16
+          && t.sampleformat == SAMPLEFORMAT_UINT)
+  {
     ok = _read_chunky_16_Lab(&t, photometric);
+  }
   else if(t.bpp == 8 && t.sampleformat == SAMPLEFORMAT_UINT)
+  {
     ok = _read_chunky_8(&t);
+  }
   else if(t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_UINT)
+  {
     ok = _read_chunky_16(&t);
+  }
   else if(t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_IEEEFP)
+  {
     ok = _read_chunky_h(&t);
+  }
   else if(t.bpp == 32 && t.sampleformat == SAMPLEFORMAT_IEEEFP)
+  {
     ok = _read_chunky_f(&t);
+  }
   else
   {
-    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: unsupported TIFF format feature in '%s'", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[tiff_open] error: unsupported TIFF format feature in '%s'",
+             filename);
     ok = 0;
     ret = DT_IMAGEIO_UNSUPPORTED_FEATURE;
   }
