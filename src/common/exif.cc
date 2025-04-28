@@ -342,7 +342,7 @@ void dt_exif_set_exiv2_taglist()
     _get_xmp_tags("expressionmedia", &exiv2_taglist);
     _get_xmp_tags("MicrosoftPhoto", &exiv2_taglist);
   }
-  catch (Exiv2::AnyError& e)
+  catch(const Exiv2::AnyError& e)
   {
     const char *errstring = e.what();
     dt_print(DT_DEBUG_IMAGEIO, "[exiv2 taglist] %s", errstring);
@@ -486,7 +486,7 @@ static void _deleteXmpTag(Exiv2::XmpData &xmp, const char *tag)
       pos = xmp.erase(pos);
     }
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     // The only exception we may get is "invalid" tag, which is not
     // important enough to either stop the function, or even display
@@ -528,7 +528,7 @@ static void _remove_exif_keys(Exiv2::ExifData &exif,
       while((pos = exif.findKey(Exiv2::ExifKey(keys[i]))) != exif.end())
         exif.erase(pos);
     }
-    catch(Exiv2::AnyError &e)
+    catch(const Exiv2::AnyError &e)
     {
       // The only exception we may get is "invalid" tag, which is not
       // important enough to either stop the function, or even display
@@ -550,7 +550,7 @@ static void _remove_xmp_keys(Exiv2::XmpData &xmp,
       while((pos = xmp.findKey(Exiv2::XmpKey(keys[i]))) != xmp.end())
         xmp.erase(pos);
     }
-    catch(Exiv2::AnyError &e)
+    catch(const Exiv2::AnyError &e)
     {
       // The only exception we may get is "invalid" tag, which is not
       // important enough to either stop the function, or even display
@@ -569,7 +569,7 @@ static bool _exif_read_xmp_tag(Exiv2::XmpData &xmpData,
     return (*pos = xmpData.findKey(Exiv2::XmpKey(key))) != xmpData.end()
       && (*pos)->size();
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
     dt_print(DT_DEBUG_IMAGEIO, "[exiv2 read_xmp_tag] %s", errstring);
@@ -734,7 +734,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img,
     imgs = NULL;
     return true;
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     if(imgs) g_list_free(imgs);
     imgs = NULL;
@@ -756,7 +756,7 @@ static bool _exif_read_iptc_tag(Exiv2::IptcData &iptcData,
     return (*pos = iptcData.findKey(Exiv2::IptcKey(key)))
       != iptcData.end() && (*pos)->size();
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
     dt_print(DT_DEBUG_IMAGEIO, "[exiv2 read_iptc_tag] %s", errstring);
@@ -840,7 +840,7 @@ static bool _exif_decode_iptc_data(dt_image_t *img,
 
     return true;
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
     dt_print(DT_DEBUG_IMAGEIO,
@@ -860,7 +860,7 @@ static bool _exif_read_exif_tag(Exiv2::ExifData &exifData,
     return (*pos = exifData.findKey(Exiv2::ExifKey(key)))
       != exifData.end() && (*pos)->size();
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
     dt_print(DT_DEBUG_IMAGEIO, "[exiv2 read_exif_tag] %s", errstring);
@@ -1147,7 +1147,7 @@ void dt_exif_img_check_additional_tags(dt_image_t *img,
     }
     return;
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
     dt_print(DT_DEBUG_IMAGEIO, "[exiv2 reading additional exif tags] %s: %s", filename, errstring);
@@ -2208,7 +2208,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     img->exif_inited = TRUE;
     return true;
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
     dt_print(DT_DEBUG_IMAGEIO, "[exiv2 _exif_decode_exif_data] %s: %s", img->filename, errstring);
@@ -2297,7 +2297,7 @@ gboolean dt_exif_read_from_blob(dt_image_t *img,
     dt_exif_apply_default_metadata(img);
     return res ? FALSE : TRUE;
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     const char *errstring = e.what();
     dt_print(DT_DEBUG_IMAGEIO, "[exiv2 dt_exif_read_from_blob] %s: %s", img->filename, errstring);
@@ -2354,7 +2354,7 @@ gboolean dt_exif_get_thumbnail(const char *path,
 
     return FALSE;
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "[exiv2 dt_exif_get_thumbnail] %s: %s",
@@ -2437,7 +2437,7 @@ gboolean dt_exif_read(dt_image_t *img,
 
     return res ? FALSE : TRUE;
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "[exiv2 dt_exif_read] %s: %s",
@@ -2499,7 +2499,7 @@ int dt_exif_write_blob(uint8_t *blob,
     imgExifData.sortByTag();
     image->writeMetadata();
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "[exiv2 dt_exif_write_blob] %s: %s",
@@ -2893,7 +2893,7 @@ int dt_exif_read_blob(uint8_t **buf,
     memcpy(*buf, &(blob[0]), length);
     return length;
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     // std::cerr.rdbuf(savecerr);
     dt_print(DT_DEBUG_IMAGEIO,
@@ -4473,7 +4473,7 @@ gboolean dt_exif_xmp_read(dt_image_t *img,
     }
 
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     // Actually nobody's interested in that if the file doesn't exist:
     // std::string s(e.what());
@@ -4859,21 +4859,28 @@ static void _set_xmp_dt_metadata(Exiv2::XmpData &xmpData,
   {
     int keyid = sqlite3_column_int(stmt, 0);
     const dt_metadata_t *metadata = dt_metadata_get_metadata_by_keyid(keyid);
-    if(metadata)
+    if(metadata && g_str_has_prefix(metadata->tagname, "Xmp."))
     {
-      if(export_flag
-        && !metadata->internal)
+      try
       {
-        if(metadata->visible && !metadata->priv)
-          xmpData[metadata->tagname] = sqlite3_column_text(stmt, 1);
-        else
+        if(export_flag
+          && !metadata->internal)
         {
-          Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey(metadata->tagname));
-          if(pos != xmpData.end()) xmpData.erase(pos);
+          if(metadata->visible && !metadata->priv)
+            xmpData[metadata->tagname] = sqlite3_column_text(stmt, 1);
+          else
+          {
+            Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey(metadata->tagname));
+            if(pos != xmpData.end()) xmpData.erase(pos);
+          }
         }
+        else
+          xmpData[metadata->tagname] = sqlite3_column_text(stmt, 1);
       }
-      else
-        xmpData[metadata->tagname] = sqlite3_column_text(stmt, 1);
+      catch(const Exiv2::AnyError &e)
+      {
+        // ignore invalid tags
+      }
     }
   }
   dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);  
@@ -5243,7 +5250,7 @@ char *dt_exif_xmp_read_string(const dt_imgid_t imgid)
     }
     return g_strdup(xmpPacket.c_str());
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "[xmp_read_blob] caught exiv2 exception '%s'",
@@ -5261,7 +5268,7 @@ static void _remove_xmp_key(Exiv2::XmpData &xmp,
     if(pos != xmp.end())
       xmp.erase(pos);
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
   }
 }
@@ -5280,7 +5287,7 @@ static void _remove_xmp_keys(Exiv2::XmpData &xmpData,
         ++i;
     }
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
   }
 }
@@ -5294,7 +5301,7 @@ static void _remove_exif_key(Exiv2::ExifData &exif,
     if(pos != exif.end())
       exif.erase(pos);
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
   }
 }
@@ -5308,7 +5315,7 @@ static void _remove_iptc_key(Exiv2::IptcData &iptc,
     while((pos = iptc.findKey(Exiv2::IptcKey(key))) != iptc.end())
       iptc.erase(pos);
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
   }
 }
@@ -5561,7 +5568,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
         img->setXmpData(input_image->xmpData());
       }
     }
-    catch(Exiv2::AnyError &e)
+    catch(const Exiv2::AnyError &e)
     {
       dt_print(DT_DEBUG_IMAGEIO,
                "[xmp_attach] %s: caught exiv2 exception '%s'",
@@ -5627,6 +5634,38 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
       _exif_xmp_read_data_export(xmpData, imgid, m);
 
       Exiv2::IptcData &iptcData = img->iptcData();
+
+      // now add all exif and iptc metadata from the metadata editor.
+      // xmp metadata is already processed.
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT key, value FROM main.meta_data WHERE id = ?1",
+                                  -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+      dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
+      while(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        int keyid = sqlite3_column_int(stmt, 0);
+        const dt_metadata_t *md = dt_metadata_get_metadata_by_keyid(keyid);
+        if(md && md->visible && !md->priv && !md->internal)
+        {
+          const char *value = (char *)sqlite3_column_text(stmt, 1);
+          try
+          {
+            if(g_str_has_prefix(md->tagname, "Iptc."))
+              iptcData[md->tagname] = value;
+            else if(g_str_has_prefix(md->tagname, "Exif."))
+              exifData[md->tagname] = value;
+          }
+          catch(const Exiv2::AnyError &e)
+          {
+            // ignore invalid tags
+          }
+        }
+      }
+      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);  
+      sqlite3_finalize(stmt);
 
       if(!(m->flags & DT_META_GEOTAG))
         _remove_exif_geotag(exifData);
@@ -5763,7 +5802,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
     {
       img->writeMetadata();
     }
-    catch(Exiv2::AnyError &e)
+    catch(const Exiv2::AnyError &e)
     {
       if(e.code() == Exiv2::ErrorCode::kerTooLargeJpegSegment)
       {
@@ -5775,7 +5814,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
         {
           img->writeMetadata();
         }
-        catch(Exiv2::AnyError &e2)
+        catch(const Exiv2::AnyError &e2)
         {
           dt_print(DT_DEBUG_IMAGEIO,
                    "[dt_exif_xmp_attach_export] without history %s: caught exiv2 exception '%s'",
@@ -5789,7 +5828,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
     }
     return FALSE;
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "[dt_exif_xmp_attach_export] %s: caught exiv2 exception '%s'",
@@ -5901,7 +5940,7 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
 
     return FALSE;
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "[dt_exif_xmp_write] %s: caught exiv2 exception '%s'",
@@ -5951,7 +5990,7 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
 
     return DT_COLORSPACE_DISPLAY; // nothing embedded
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "[exiv2 dt_exif_get_color_space] %s",
@@ -5974,7 +6013,7 @@ void dt_exif_get_basic_data(const uint8_t *data,
     _find_datetime_taken(exifData, pos, basic_exif->datetime);
     _find_exif_makermodel(exifData, pos, basic_exif);
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "[exiv2 dt_exif_get_basic_data] %s",
@@ -6012,7 +6051,7 @@ void dt_exif_init()
   {
     Exiv2::XmpProperties::propertyList("lr");
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     // If Lightroom is not known register it.
     Exiv2::XmpProperties::registerNs("http://ns.adobe.com/lightroom/1.0/", "lr");
@@ -6021,7 +6060,7 @@ void dt_exif_init()
   {
     Exiv2::XmpProperties::propertyList("exifEX");
   }
-  catch(Exiv2::AnyError &e)
+  catch(const Exiv2::AnyError &e)
   {
     // If exifEX is not known register it.
     Exiv2::XmpProperties::registerNs("http://cipa.jp/exif/1.0/", "exifEX");
