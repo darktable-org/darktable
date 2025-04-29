@@ -1165,7 +1165,8 @@ void gui_init(dt_imageio_module_storage_t *self)
      dt_gui_hbox(dt_ui_label_new(_("filename pattern")), ui->filename_pattern_entry),
      ui->conflict_action);
 
-  storage_login(self);
+  if(dt_conf_get_bool("plugins/imageio/storage/export/auto_login"))
+    storage_login(self);
 }
 
 void gui_cleanup(dt_imageio_module_storage_t *self)
