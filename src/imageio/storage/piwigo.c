@@ -691,7 +691,7 @@ static void _piwigo_conflict_changed(GtkWidget *widget,
 
 /** Refresh albums */
 static gboolean _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui,
-                                   const gchar *select_album)
+                                       const gchar *select_album)
 {
   gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), FALSE);
   gtk_widget_set_sensitive(GTK_WIDGET(ui->parent_album_list), FALSE);
@@ -1164,6 +1164,8 @@ void gui_init(dt_imageio_module_storage_t *self)
      ui->create_box,
      dt_gui_hbox(dt_ui_label_new(_("filename pattern")), ui->filename_pattern_entry),
      ui->conflict_action);
+
+  storage_login(self);
 }
 
 void gui_cleanup(dt_imageio_module_storage_t *self)
