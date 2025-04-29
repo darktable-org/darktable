@@ -123,7 +123,7 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img,
   // the rows in the process of filling the output buffer with data
   if(channels == 3)
   {
-    DT_OMP_FOR(collapse(2))
+    DT_OMP_FOR()
     for(size_t row = 0; row < img->height; row++)
     {
       const size_t target_row = made_by_photoshop ? row : img->height - 1 - row;
@@ -142,7 +142,7 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img,
   }
   else
   {
-    DT_OMP_FOR(collapse(2))
+    DT_OMP_FOR()
     for(size_t row = 0; row < img->height; row++)
     {
       const size_t target_row = made_by_photoshop ? row : img->height - 1 - row;
