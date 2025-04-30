@@ -3790,9 +3790,9 @@ static float _process_action(dt_action_t *action,
     }
     else if(owner->type == DT_ACTION_TYPE_IOP)
     {
-      dt_action_widget_toast(action_target, NULL, "\napplying preset '%s'", action->label);
+      dt_action_widget_toast(action_target, NULL, _("\napplying preset '%s'"), action->label);
 
-      dt_gui_presets_apply_preset(action->label, action_target);
+      dt_gui_presets_apply_preset(action->id, action_target);
     }
     else
       dt_print(DT_DEBUG_ALWAYS,
@@ -4740,7 +4740,7 @@ dt_action_t *dt_action_locate(dt_action_t *owner,
       new_action->id = clean_path;
       new_action->label = needs_translation
                         ? g_strdup(Q_(*path))
-                        : dt_util_localize_segmented_name(*path, FALSE);
+                        : dt_util_localize_segmented_name(*path, TRUE);
       new_action->type = DT_ACTION_TYPE_SECTION;
 
       dt_action_insert_sorted(owner, new_action);
@@ -5000,7 +5000,7 @@ void dt_action_rename(dt_action_t *action,
   if(new_name)
   {
     action->id = path_without_symbols(new_name);
-    action->label = g_strdup(_(new_name));
+    action->label = dt_util_localize_segmented_name(new_name, TRUE);
 
     dt_action_insert_sorted(action->owner, action);
   }

@@ -176,7 +176,7 @@ void init_presets(dt_iop_module_so_t *self)
                              self->version(), &tmp, sizeof(dt_iop_dither_params_t), 1,
                              DEVELOP_BLEND_CS_NONE);
   // make it auto-apply for all images:
-  // dt_gui_presets_update_autoapply(_("dither"), self->op, self->version(), 1);
+  // dt_gui_presets_update_autoapply(BUILTIN_PRESET("dither"), self->op, self->version(), 1);
 
   dt_database_release_transaction(darktable.db);
 }
