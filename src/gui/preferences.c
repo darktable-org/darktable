@@ -777,12 +777,14 @@ static void _update_preset_line(GtkTreeStore *tree_store,
       focal_length = g_strdup_printf("%d – %d", focal_length_min, focal_length_max);
   }
 
+  gchar *local_name = dt_util_localize_segmented_name(name, TRUE);
+
   gtk_tree_store_set(GTK_TREE_STORE(tree_store), iter,
                      P_ROWID_COLUMN, rowid,
                      P_OPERATION_COLUMN, operation,
                      P_MODULE_COLUMN, "",
                      P_EDITABLE_COLUMN, writeprotect ? lock_pixbuf : NULL,
-                     P_NAME_COLUMN, name,
+                     P_NAME_COLUMN, local_name,
                      P_MODEL_COLUMN, smodel,
                      P_MAKER_COLUMN, smaker,
                      P_LENS_COLUMN, slens,
@@ -793,6 +795,7 @@ static void _update_preset_line(GtkTreeStore *tree_store,
                      P_AUTOAPPLY_COLUMN, autoapply ? check_pixbuf : NULL,
                      -1);
 
+  g_free(local_name);
   g_free(focal_length);
   g_free(aperture);
   g_free(exposure);

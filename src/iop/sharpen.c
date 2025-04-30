@@ -104,7 +104,7 @@ void init_presets(dt_iop_module_so_t *self)
                              self->version(), &tmp, sizeof(dt_iop_sharpen_params_t),
                              1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   // restrict to raw images
-  dt_gui_presets_update_format(_("sharpen"), self->op,
+  dt_gui_presets_update_format(BUILTIN_PRESET("sharpen"), self->op,
                                self->version(), FOR_RAW);
 }
 

@@ -443,7 +443,7 @@ const char *dt_presets_get_multi_name(const char *name, const char *multi_name)
   // in auto-update mode     : use either the multi_name if defined otherwise the name
   // in non auto-update mode : use only the multi_name if defined
   if(auto_module)
-    return strlen(multi_name) > 0 ? multi_name : name;
+    return strlen(multi_name) > 0 ? multi_name : dt_util_localize_segmented_name(name, FALSE);
   else
     return strlen(multi_name) > 0 ? multi_name : "";
 }

@@ -727,7 +727,7 @@ static gboolean rawdenoise_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t
   pango_layout_set_font_description(layout, desc);
   cairo_set_source_rgb(cr, .1, .1, .1);
 
-  pango_layout_set_text(layout, _("coarse"), -1);
+  pango_layout_set_text(layout, C_("graph", "coarse"), -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, .02 * width - ink.y, .5 * (height + ink.width));
   cairo_save(cr);
