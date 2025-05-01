@@ -1761,7 +1761,7 @@ static void _dt_pref_change_callback(gpointer instance, dt_lib_module_t *self)
 void gui_reset(dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = self->data;
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->lock_offset), false);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->lock_offset), FALSE);
   _refresh_image_datetime(self);
 
 #ifdef HAVE_MAP
