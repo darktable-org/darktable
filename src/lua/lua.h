@@ -38,7 +38,6 @@ G_BEGIN_DECLS
 #include <lua.h>
 #include <lualib.h>
 
-
 /**
   (0,+1)
   find or create the global darktable module table and push it on the stack
