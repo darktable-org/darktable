@@ -370,10 +370,8 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
   TIFFSetWarningHandler(_warning_handler);
   TIFFSetErrorHandler(_error_handler);
 
-  const char *ext = filename + strlen(filename);
-  while(*ext != '.' && ext > filename) ext--;
-  if(strncmp(ext, ".tif", 4) && strncmp(ext, ".TIF", 4) && strncmp(ext, ".tiff", 5)
-     && strncmp(ext, ".TIFF", 5))
+  char *ext = g_strrstr(filename, ".");
+  if(ext && g_ascii_strcasecmp(ext, ".tif") && g_ascii_strcasecmp(ext, ".tiff"))
     return DT_IMAGEIO_UNSUPPORTED_FORMAT;
 
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
