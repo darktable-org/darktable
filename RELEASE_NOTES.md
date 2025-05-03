@@ -132,11 +132,15 @@ changes (where available).
 - The highlights module offers a raster mask with information about level above
   clip level.
 
-- Changing orientation (via the flip module) respects changes done in crop module.
+- Changing orientation (via the flip module) respects changes done in
+  crop module.
 
 - In the history module item tooltip, fixed the formatting and scaling
   of the changes to match the values as seen in the modules
   themselves.
+
+- Added auto login to the piwigo export module. This can be enabled in
+  the security section of the preferences.
 
 ## Bug Fixes
 
