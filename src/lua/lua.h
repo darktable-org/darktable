@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2013-2024 darktable developers.
+   Copyright (C) 2013-2025 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -28,6 +28,11 @@
 #include <glib.h>
 
 #ifdef USE_LUA
+
+// while it's poor practice to have includes inside an "extern C" block, we need to
+// do this here because the Lua headers don't supply it when compiling under C++....
+G_BEGIN_DECLS
+
 #include <lautoc.h>
 #include <lauxlib.h>
 #include <lua.h>
@@ -96,6 +101,8 @@ typedef struct
   int unused; // if this is empty clang++ complains that the struct has size 0 in C and size 1 in C++
 } dt_lua_state_t;
 #endif
+
+G_END_DECLS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
