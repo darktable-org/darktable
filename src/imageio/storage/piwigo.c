@@ -42,11 +42,12 @@
 #include <unistd.h>
 #include <inttypes.h>
 
-DT_MODULE(2)
+DT_MODULE(3)
 
 #define piwigo_EXTRA_VERBOSE FALSE
 
 #define MAX_ALBUM_NAME_SIZE 100
+#define MAX_SERVER_NAME_SIZE 2048
 
 typedef struct _piwigo_api_context_t
 {
@@ -128,6 +129,7 @@ typedef struct dt_storage_piwigo_preset_data_t
   char filename_pattern[DT_MAX_PATH_FOR_PARAMS];
   dt_storage_piwigo_permissions_t privacy;
   dt_storage_piwigo_conflict_actions_t conflict_action;
+  char server[MAX_SERVER_NAME_SIZE];
 } dt_storage_piwigo_preset_data_t;
 
 typedef struct dt_storage_piwigo_params_t
@@ -149,17 +151,17 @@ void *legacy_params(dt_imageio_module_storage_t *self,
                     int *new_version,
                     size_t *new_size)
 {
-  typedef struct dt_storage_piwigo_preset_data_v2_t
-  {
-    char filename_pattern[DT_MAX_PATH_FOR_PARAMS];
-    dt_storage_piwigo_permissions_t privacy;
-    dt_storage_piwigo_conflict_actions_t conflict_action;
-  } dt_storage_piwigo_preset_data_v2_t;
-
   if(old_version == 1)
   {
     // version 1 did not save any piwigo settings in the preset,
     // so we only need to initialize the data struct here
+    typedef struct dt_storage_piwigo_preset_data_v2_t
+    {
+      char filename_pattern[DT_MAX_PATH_FOR_PARAMS];
+      dt_storage_piwigo_permissions_t privacy;
+      dt_storage_piwigo_conflict_actions_t conflict_action;
+    } dt_storage_piwigo_preset_data_v2_t;
+
     dt_storage_piwigo_preset_data_v2_t *n =
       (dt_storage_piwigo_preset_data_v2_t *)g_malloc0(sizeof(dt_storage_piwigo_preset_data_v2_t));
 
@@ -169,6 +171,28 @@ void *legacy_params(dt_imageio_module_storage_t *self,
 
     *new_size = sizeof(dt_storage_piwigo_preset_data_v2_t);
     *new_version = 2;
+
+    return n;
+  }
+  else if(old_version == 2)
+  {
+    // add server name to params
+    typedef struct dt_storage_piwigo_preset_data_v3_t
+    {
+      char filename_pattern[DT_MAX_PATH_FOR_PARAMS];
+      dt_storage_piwigo_permissions_t privacy;
+      dt_storage_piwigo_conflict_actions_t conflict_action;
+      char server[MAX_SERVER_NAME_SIZE];
+    } dt_storage_piwigo_preset_data_v3_t;
+
+    dt_storage_piwigo_preset_data_v3_t *n =
+      (dt_storage_piwigo_preset_data_v3_t *)g_malloc0(sizeof(dt_storage_piwigo_preset_data_v3_t));
+
+    memcpy(n, old_params, old_params_size);
+    n->server[0] = '\0';
+
+    *new_size = sizeof(dt_storage_piwigo_preset_data_v3_t);
+    *new_version = 3;
 
     return n;
   }
@@ -691,7 +715,7 @@ static void _piwigo_conflict_changed(GtkWidget *widget,
 
 /** Refresh albums */
 static gboolean _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui,
-                                   const gchar *select_album)
+                                       const gchar *select_album)
 {
   gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), FALSE);
   gtk_widget_set_sensitive(GTK_WIDGET(ui->parent_album_list), FALSE);
@@ -1164,6 +1188,9 @@ void gui_init(dt_imageio_module_storage_t *self)
      ui->create_box,
      dt_gui_hbox(dt_ui_label_new(_("filename pattern")), ui->filename_pattern_entry),
      ui->conflict_action);
+
+  if(dt_conf_get_bool("plugins/imageio/storage/export/auto_login"))
+    storage_login(self);
 }
 
 void gui_cleanup(dt_imageio_module_storage_t *self)
@@ -1454,6 +1481,8 @@ void *get_params(dt_imageio_module_storage_t *self)
   // fill p from controls in ui
   const char *text = dt_conf_get_string_const("plugins/imageio/storage/export/piwigo/filename_pattern");
   g_strlcpy(p->preset_data.filename_pattern, text, sizeof(p->preset_data.filename_pattern));
+  text = dt_conf_get_string_const("plugins/imageio/storage/export/piwigo/server");
+  g_strlcpy(p->preset_data.server, text, sizeof(p->preset_data.server));
 
   p->preset_data.conflict_action = dt_bauhaus_combobox_get(ui->conflict_action);
 
@@ -1548,6 +1577,21 @@ int set_params(dt_imageio_module_storage_t *self,
 
   gtk_entry_set_text(GTK_ENTRY(g->filename_pattern_entry), d->preset_data.filename_pattern);
   dt_bauhaus_combobox_set(g->conflict_action, d->preset_data.conflict_action);
+
+  if(dt_bauhaus_combobox_set_from_text(g->account_list, d->preset_data.server))
+  {
+    const _piwigo_account_t *account = _piwigo_get_account(g, d->preset_data.server);
+    if(account)
+    {
+      gtk_entry_set_text(g->server_entry, account->server);
+      gtk_entry_set_text(g->user_entry, account->username);
+      gtk_entry_set_text(g->pwd_entry, account->password);
+
+      // if we have a server name, do auto-login
+      if(dt_conf_get_bool("plugins/imageio/storage/export/auto_login"))
+        storage_login(self);
+    }
+  }
 
   switch(d->preset_data.privacy)
   {
