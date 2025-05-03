@@ -2855,6 +2855,13 @@
     <shortdescription>password storage backend to use</shortdescription>
     <longdescription>the storage backend for password storage: auto, none, libsecret, kwallet, apple_keychain, windows_credentials</longdescription>
   </dtconfig>
+  <dtconfig prefs="security" section="other">
+    <name>plugins/imageio/storage/export/auto_login</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>auto login to storage server</shortdescription>
+    <longdescription>automatically login to last used storage server. this requires that a password storage backend is set.</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/export/icctype</name>
     <type>int</type>
