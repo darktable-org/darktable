@@ -814,7 +814,7 @@ char *version = g_strdup_printf(
 #else
                "  OSMGpsMap              -> DISABLED - map view is NOT available\n"
 #endif
-               
+
 #ifdef HAVE_GMIC
                "  GMIC                   -> ENABLED  - Compressed LUTs are supported\n"
 #else
@@ -2076,12 +2076,14 @@ void dt_cleanup()
    2) The pipeline processing uses access to gui related data - focus, active module ...
         so make sure to avoid those too.
    3) As lua events might be fired by the backthreads it's state mutex must still be unlocked.
+*/
+  }
 
-5. After dt_control_shutdown() has finished we are sure there are no background threads running any
+/* 5. After dt_control_shutdown() has finished we are sure there are no background threads running any
      more so we can safely close all mentioned subsystems and continue.
 */
-    dt_control_shutdown();
-  }
+  dt_control_shutdown();
+
 #ifdef USE_LUA
   dt_lua_finalize();
 #endif
