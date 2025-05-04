@@ -337,7 +337,13 @@ static void _warning_error_handler(const char *type,
                                    const char* fmt,
                                    va_list ap)
 {
-  fprintf(stderr, "[tiff_open] %s: %s: ", type, module);
+  // We prepend the wall time from the program start to output line
+  // to be consistent with dt_print
+  fprintf(stderr,
+          "%11.4f [tiff_open] %s: %s: ",
+          dt_get_wtime() - darktable.start_wtime,
+          type,
+          module);
   vfprintf(stderr, fmt, ap);
   fprintf(stderr, "\n");
 }
@@ -364,10 +370,8 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
   TIFFSetWarningHandler(_warning_handler);
   TIFFSetErrorHandler(_error_handler);
 
-  const char *ext = filename + strlen(filename);
-  while(*ext != '.' && ext > filename) ext--;
-  if(strncmp(ext, ".tif", 4) && strncmp(ext, ".TIF", 4) && strncmp(ext, ".tiff", 5)
-     && strncmp(ext, ".TIFF", 5))
+  char *ext = g_strrstr(filename, ".");
+  if(ext && g_ascii_strcasecmp(ext, ".tif") && g_ascii_strcasecmp(ext, ".tiff"))
     return DT_IMAGEIO_UNSUPPORTED_FORMAT;
 
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
