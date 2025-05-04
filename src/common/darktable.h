@@ -706,8 +706,7 @@ static inline size_t dt_get_num_threads()
 static inline size_t dt_get_num_procs()
 {
 #ifdef _OPENMP
-  // we can safely assume omp_get_num_procs is > 0
-  return (size_t)omp_get_num_procs();
+  return (size_t)MAX(1, omp_get_num_procs());
 #else
   return 1;
 #endif
