@@ -27,11 +27,11 @@
 #include "common/dtpthread.h"
 #include <glib.h>
 
-#ifdef USE_LUA
-
 // while it's poor practice to have includes inside an "extern C" block, we need to
 // do this here because the Lua headers don't supply it when compiling under C++....
 G_BEGIN_DECLS
+
+#ifdef USE_LUA
 
 #include <lautoc.h>
 #include <lauxlib.h>
