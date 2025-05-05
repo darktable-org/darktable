@@ -1621,9 +1621,10 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w)
 }
 
 // Comparator function to sort menu items alphabetically by their labels in reverse order
-static gint _compare_menu_items(GtkMenuItem *a, GtkMenuItem *b)
+static gint _compare_menu_items(gpointer a, gpointer b)
 {
-  return - g_utf8_collate(gtk_menu_item_get_label(a), gtk_menu_item_get_label(b));
+  int d = g_object_get_data(a, "builtin") - g_object_get_data(b, "builtin");
+  return d ? d : - g_utf8_collate(gtk_menu_item_get_label(a), gtk_menu_item_get_label(b));
 }
 
 // Function to sort GtkMenuShell items
@@ -1801,6 +1802,7 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
     else
       label = g_strdup(*s);
     mi = gtk_check_menu_item_new_with_label(label);
+    g_object_set_data(G_OBJECT(mi), "builtin", GINT_TO_POINTER(chk_writeprotect));
     dt_gui_add_class(mi, "dt_transparent_background");
     g_free(label);
 
