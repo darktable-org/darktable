@@ -91,7 +91,8 @@ gchar *dt_util_localize_segmented_name(const char *s,
   return localized;
 }
 
-void dt_util_str_cat(gchar **str, const gchar *format, ...)
+void dt_util_str_cat(gchar **str,
+                     const gchar *format, ...)
 {
   if(!str) return;
 
@@ -113,7 +114,8 @@ void dt_util_str_cat(gchar **str, const gchar *format, ...)
   (*str)[nsize - 1] = '\0';
 }
 
-guint dt_util_str_occurence(const gchar *haystack, const gchar *needle)
+guint dt_util_str_occurence(const gchar *haystack,
+                            const gchar *needle)
 {
   guint o = 0;
   if(haystack && needle)
@@ -130,7 +132,8 @@ guint dt_util_str_occurence(const gchar *haystack, const gchar *needle)
   return o;
 }
 
-gchar *dt_util_float_to_str(const gchar *format, const double value)
+gchar *dt_util_float_to_str(const gchar *format,
+                            const double value)
 {
 #if defined(WIN32)
   _configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
@@ -151,7 +154,9 @@ gchar *dt_util_float_to_str(const gchar *format, const double value)
   return txt;
 }
 
-gchar *dt_util_str_replace(const gchar *string, const gchar *pattern, const gchar *substitute)
+gchar *dt_util_str_replace(const gchar *string,
+                           const gchar *pattern,
+                           const gchar *substitute)
 {
   const gint occurrences = dt_util_str_occurence(string, pattern);
   gchar *nstring = NULL;
@@ -181,7 +186,8 @@ gchar *dt_util_str_replace(const gchar *string, const gchar *pattern, const gcha
   return nstring;
 }
 
-gchar *dt_util_glist_to_str(const gchar *separator, GList *items)
+gchar *dt_util_glist_to_str(const gchar *separator,
+                            GList *items)
 {
   if(items == NULL) return NULL;
 
@@ -304,7 +310,9 @@ gchar *dt_util_fix_path(const gchar *path)
  * Return value: strlen(src)
  * Implementation by Philip Page, see https://bugzilla.gnome.org/show_bug.cgi?id=520116
  **/
-size_t dt_utf8_strlcpy(char *dest, const char *src, size_t n)
+size_t dt_utf8_strlcpy(char *dest,
+                       const char *src,
+                       const size_t n)
 {
   register const gchar *s = src;
   while(s - src < n && *s)
@@ -470,7 +478,8 @@ dt_logo_season_t dt_util_get_logo_season(void)
   return DT_LOGO_SEASON_NONE;
 }
 
-static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
+static cairo_surface_t *_util_get_svg_img(gchar *logo,
+                                          const float size)
 {
   GError *error = NULL;
   cairo_surface_t *surface = NULL;
@@ -643,8 +652,12 @@ double dt_util_gps_string_to_number(const gchar *input)
   return res;
 }
 
-gboolean dt_util_gps_rationale_to_number(const double r0_1, const double r0_2, const double r1_1,
-                                         const double r1_2, const double r2_1, const double r2_2, char sign,
+gboolean dt_util_gps_rationale_to_number(const double r0_1,
+                                         const double r0_2,
+                                         const double r1_1,
+                                         const double r1_2,
+                                         const double r2_1,
+                                         const double r2_2, char sign,
                                          double *result)
 {
   if(!result) return FALSE;
@@ -681,7 +694,10 @@ gboolean dt_util_gps_rationale_to_number(const double r0_1, const double r0_2, c
   return TRUE;
 }
 
-gboolean dt_util_gps_elevation_to_number(const double r_1, const double r_2, char sign, double *result)
+gboolean dt_util_gps_elevation_to_number(const double r_1,
+                                         const double r_2,
+                                         char sign,
+                                         double *result)
 {
   if(!result) return FALSE;
   double res = 0.0;
@@ -698,7 +714,8 @@ gboolean dt_util_gps_elevation_to_number(const double r_1, const double r_2, cha
 }
 
 
-// make paths absolute and try to normalize on Windows. also deal with character encoding on Windows.
+// make paths absolute and try to normalize on Windows. also deal with
+// character encoding on Windows.
 gchar *dt_util_normalize_path(const gchar *_input)
 {
 #ifdef _WIN32
@@ -809,12 +826,15 @@ const gboolean dt_util_path_is_UNC(const gchar *filename)
 }
 #endif
 
-// gets the directory components of a file name, like g_path_get_dirname(), but works also with Windows networks paths (\\hostname\share\file)
+// gets the directory components of a file name, like
+// g_path_get_dirname(), but works also with Windows networks paths
+// (\\hostname\share\file)
 gchar *dt_util_path_get_dirname(const gchar *filename)
 {
   gchar *dirname = g_path_get_dirname(filename);
 
-  /* Remove trailing slash, as g_path_get_dirname() leaves it for Windows UNC and this messes up film roll name */
+  /* Remove trailing slash, as g_path_get_dirname() leaves it for
+     Windows UNC and this messes up film roll name */
   if(dirname[0])
   {
     int last = strlen(dirname) - 1;
@@ -824,7 +844,8 @@ gchar *dt_util_path_get_dirname(const gchar *filename)
   return dirname;
 }
 
-guint dt_util_string_count_char(const char *text, const char needle)
+guint dt_util_string_count_char(const char *text,
+                                const char needle)
 {
   guint count = 0;
   while(text[0])
@@ -843,7 +864,8 @@ void dt_util_str_to_loc_numbers_format(char *data)
   g_strdelimit(data, en_decimal_point, loc_decimal_point);
 }
 
-GList *dt_util_str_to_glist(const gchar *separator, const gchar *text)
+GList *dt_util_str_to_glist(const gchar *separator,
+                            const gchar *text)
 {
   if(text == NULL) return NULL;
   GList *list = NULL;
@@ -906,7 +928,8 @@ char *dt_util_format_exposure(const float exposuretime)
   return result;
 }
 
-char *dt_read_file(const char *const filename, size_t *filesize)
+char *dt_read_file(const char *const filename,
+                   size_t *filesize)
 {
   if(filesize) *filesize = 0;
   FILE *fd = g_fopen(filename, "rb");
@@ -930,7 +953,8 @@ char *dt_read_file(const char *const filename, size_t *filesize)
   return NULL;
 }
 
-void dt_copy_file(const char *const sourcefile, const char *destination)
+void dt_copy_file(const char *const sourcefile,
+                  const char *destination)
 {
   char *content = NULL;
   FILE *fin = g_fopen(sourcefile, "rb");
@@ -975,7 +999,8 @@ END:
   g_free(content);
 }
 
-void dt_copy_resource_file(const char *src, const char *dst)
+void dt_copy_resource_file(const char *src,
+                           const char *dst)
 {
   char share[PATH_MAX] = { 0 };
   dt_loc_get_datadir(share, sizeof(share));
@@ -1017,7 +1042,12 @@ RsvgDimensionData dt_get_svg_dimension(RsvgHandle *svg)
   return dimension;
 }
 
-void dt_render_svg(RsvgHandle *svg, cairo_t *cr, double width, double height, double offset_x, double offset_y)
+void dt_render_svg(RsvgHandle *svg,
+                   cairo_t *cr,
+                   const double width,
+                   const double height,
+                   const double offset_x,
+                   const double offset_y)
 {
   // rsvg_handle_render_cairo has been deprecated in librsvg 2.52
   #if LIBRSVG_CHECK_VERSION(2,52,0)
@@ -1053,7 +1083,8 @@ gboolean dt_has_same_path_basename(const char *filename1, const char *filename2)
 }
 
 // set the filename2 extension to filename1 - return NULL if fails - result should be freed
-char *dt_copy_filename_extension(const char *filename1, const char *filename2)
+char *dt_copy_filename_extension(const char *filename1,
+                                 const char *filename2)
 {
   // assume both filenames have an extension
   if(!filename2) return NULL;
@@ -1063,7 +1094,8 @@ char *dt_copy_filename_extension(const char *filename1, const char *filename2)
   return dt_filename_change_extension(filename1, dot2+1);
 }
 
-char *dt_filename_change_extension(const char *filename, const char *ext)
+char *dt_filename_change_extension(const char *filename,
+                                   const char *ext)
 {
   // assume both filenames have an extension
   if(!filename || !ext) return NULL;
@@ -1081,7 +1113,9 @@ char *dt_filename_change_extension(const char *filename, const char *ext)
 }
 
 // replaces all occurences of a substring in a string
-gchar *dt_str_replace(const char *string, const char *search, const char *replace)
+gchar *dt_str_replace(const char *string,
+                      const char *search,
+                      const char *replace)
 {
   gchar **split = g_strsplit(string, search, -1);
   gchar *res = g_strjoinv(replace, split);
@@ -1089,7 +1123,8 @@ gchar *dt_str_replace(const char *string, const char *search, const char *replac
   return res;
 }
 
-gboolean dt_str_commasubstring(const char *list, const char *search)
+gboolean dt_str_commasubstring(const char *list,
+                               const char *search)
 {
   if(search == NULL)
     return FALSE;
