@@ -1111,20 +1111,11 @@ static gchar *_lib_history_button_label(const dt_dev_history_item_t *item)
   gchar *label = NULL;
   if(!item)
     label = g_strdup("");
-  else if(!item->multi_name[0] || strcmp(item->multi_name, "0") == 0)
-    label = g_strdup(item->module->name());
   else
-  {
-    if(item->multi_name_hand_edited)
-      label = g_markup_printf_escaped("%s • <small>%s</small>",
-                                      item->module->name(),
-                                      item->multi_name);
-    else
-      label = g_markup_printf_escaped
-        ("%s • <small>%s</small>",
-         item->module->name(),
-         dt_util_localize_segmented_name(item->multi_name, FALSE));
-  }
+    label = dt_history_get_name_label(item->module->name(),
+                                      item->multi_name,
+                                      TRUE,
+                                      item->multi_name_hand_edited);
   return label;
 }
 

@@ -3250,19 +3250,10 @@ void dt_dev_module_remove(dt_develop_t *dev,
 
 gchar *dt_history_item_get_name(const dt_iop_module_t *module)
 {
-  gchar *label;
-  /* create a history button and add to box */
-  if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
-    label = g_strdup(module->name());
-  else
-  {
-    if(module->multi_name_hand_edited)
-      label = g_strdup_printf("%s • %s", module->name(), module->multi_name);
-    else
-      label = g_strdup_printf("%s • %s", module->name(),
-                              dt_util_localize_segmented_name(module->multi_name, FALSE));
-  }
-  return label;
+  return dt_history_get_name_label(module->name(),
+                                   module->multi_name,
+                                   FALSE,
+                                   module->multi_name_hand_edited);
 }
 
 gboolean dt_dev_distort_transform(dt_develop_t *dev,
