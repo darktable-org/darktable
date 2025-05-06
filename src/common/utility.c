@@ -83,7 +83,11 @@ gchar *dt_util_localize_segmented_name(const char *s,
     gchar *end = g_stpcpy(localized, dt_util_localize_string(split[0]));
     for(int i = 1; split[i] != NULL; i++)
     {
-      while(*end == ' ') end--;
+      while(*(end-1) == ' ')
+      {
+        *(end-1) = '\0';
+        end--;
+      }
       end = g_stpcpy(end, sep);
       gchar *part = split[i];
       while(*part == ' ' ) part++;
