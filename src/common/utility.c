@@ -68,32 +68,25 @@ gchar *dt_util_localize_segmented_name(const char *s,
                                        const gboolean with_space)
 {
   const char *sep = with_space ? " | " : "|";
-  const int sep_len = strlen(sep);
 
   const char *local_s = g_str_has_prefix(s, BUILTIN_PREFIX)
                       ? _(s+sizeof(BUILTIN_PREFIX)-1) : s;
   gchar **split = g_strsplit(local_s, "|", 0);
-  gchar *localized = NULL;
-  if(split && split[0])
+  GList *items = NULL;
+
+  if(split)
   {
-    gsize loc_len = 1 + strlen(dt_util_localize_string(split[0]));
-    for(int i = 1; split[i] != NULL; i++)
-      loc_len += strlen(dt_util_localize_string(split[i])) + sep_len;
-    localized = g_new0(gchar, loc_len);
-    gchar *end = g_stpcpy(localized, dt_util_localize_string(split[0]));
-    for(int i = 1; split[i] != NULL; i++)
+    for(int i = 0; split[i] != NULL; i++)
     {
-      while(*(end-1) == ' ')
-      {
-        *(end-1) = '\0';
-        end--;
-      }
-      end = g_stpcpy(end, sep);
-      gchar *part = split[i];
-      while(*part == ' ' ) part++;
-      end = g_stpcpy(end, dt_util_localize_string(part));
+      const char *name = g_strstrip(split[i]);
+      const char *l_name = dt_util_localize_string(name);
+      items = g_list_append(items, (void *)l_name);
     }
   }
+
+  char *localized = dt_util_glist_to_str(sep, items);
+
+  g_list_free(items);
   g_strfreev(split);
   return localized;
 }
