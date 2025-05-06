@@ -1668,47 +1668,6 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  // translate the non hand-edited multi-name. The multi-name is not
-  // anymore translated to preserve the shortcuts accross session
-  // possibly using different locale. So we need to translate them at
-  // the time it is read from the database.
-
-  snprintf(query, sizeof(query),
-           " SELECT rowid, multi_name, multi_name_hand_edited"
-           "   FROM memory.history");
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    const int rid = sqlite3_column_int(stmt, 0);
-    const char *multi_name = (const char *)sqlite3_column_text(stmt, 1);
-    const int module_name_hand_edited = sqlite3_column_int(stmt, 2);
-
-    if(!module_name_hand_edited
-       && strlen(multi_name) > 0)
-    {
-      char *new_name = dt_util_localize_segmented_name(multi_name, FALSE);
-
-      //  replace with the now translated multi-name
-      {
-        //  Query to replace multi-name with translated value
-        sqlite3_stmt *r_stmt;
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "UPDATE memory.history"
-                                    "   SET multi_name = ?1"
-                                    "   WHERE rowid = ?2", -1, &r_stmt, NULL);
-
-        DT_DEBUG_SQLITE3_BIND_TEXT(r_stmt, 1, new_name, -1, SQLITE_TRANSIENT);
-        DT_DEBUG_SQLITE3_BIND_INT(r_stmt, 2, rid);
-        sqlite3_step(r_stmt);
-        sqlite3_finalize(r_stmt);
-      }
-
-      g_free(new_name);
-    }
-  }
-  sqlite3_finalize(stmt);
-
   // now we want to auto-apply the iop-order list if one corresponds and none are
   // still applied. Note that we can already have an iop-order list set when
   // copying an history or applying a style to a not yet developed image.
@@ -3296,7 +3255,13 @@ gchar *dt_history_item_get_name(const dt_iop_module_t *module)
   if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
     label = g_strdup(module->name());
   else
-    label = g_strdup_printf("%s • %s", module->name(), module->multi_name);
+  {
+    if(module->multi_name_hand_edited)
+      label = g_strdup_printf("%s • %s", module->name(), module->multi_name);
+    else
+      label = g_strdup_printf("%s • %s", module->name(),
+                              dt_util_localize_segmented_name(module->multi_name, FALSE));
+  }
   return label;
 }
 

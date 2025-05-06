@@ -1010,7 +1010,8 @@ char *dt_history_item_as_string(const char *name, const gboolean enabled)
 
 char *dt_history_get_name_label(const char *name,
                                 const char *label,
-                                const gboolean markup)
+                                const gboolean markup,
+                                const gboolean hand_edited)
 {
   char *result = NULL;
 
@@ -1022,8 +1023,13 @@ char *dt_history_get_name_label(const char *name,
   }
   else
   {
-    result = markup ? g_markup_printf_escaped("%s • <small>%s</small>", name, label)
-                    : g_markup_printf_escaped("%s • %s", name, label);
+    const char *l_label = hand_edited
+      ? label
+      : dt_util_localize_segmented_name(label, FALSE);
+
+    result = markup
+      ? g_markup_printf_escaped("%s • <small>%s</small>", name, l_label)
+      : g_markup_printf_escaped("%s • %s", name, l_label);
   }
 
   return result;
@@ -1038,7 +1044,8 @@ GList *dt_history_get_items(const dt_imgid_t imgid,
   sqlite3_stmt *stmt;
 
   gchar *query = g_strdup_printf
-    ("SELECT num, operation, enabled, multi_name, blendop_params"
+    ("SELECT num, operation, enabled, multi_name, blendop_params,"
+     "       multi_name_hand_edited"
      " FROM main.history"
      " WHERE imgid=?1"
      "   AND enabled in (1, ?2)"
@@ -1065,13 +1072,15 @@ GList *dt_history_get_items(const dt_imgid_t imgid,
     // first uint32_t of blend_params is the mode
     const uint32_t *blend_params = (uint32_t *)sqlite3_column_blob(stmt, 4);
     const int blend_params_len = sqlite3_column_bytes(stmt, 4);
+    const int hand_edited = sqlite3_column_int(stmt, 5);
     item->num = sqlite3_column_int(stmt, 0);
     item->enabled = sqlite3_column_int(stmt, 2);
     item->mask_mode = blend_params_len > 0 ? blend_params[0] : DEVELOP_MASK_DISABLED;
 
     const char *mname = (char *)sqlite3_column_text(stmt, 3);
 
-    item->name = dt_history_get_name_label(dt_iop_get_localized_name(op), mname, markup);
+    item->name = dt_history_get_name_label(dt_iop_get_localized_name(op),
+                                           mname, markup, hand_edited);
     item->op = g_strdup(op);
     result = g_list_prepend(result, item);
   }
