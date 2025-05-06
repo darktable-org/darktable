@@ -138,7 +138,8 @@ typedef struct dt_history_item_t
 /** returns the history name + label with markup */
 char *dt_history_get_name_label(const char *name,
                                 const char *label,
-                                const gboolean markup);
+                                const gboolean markup,
+                                const gboolean hand_edited);
 
 /** get list of history items for image */
 GList *dt_history_get_items(const dt_imgid_t imgid,
