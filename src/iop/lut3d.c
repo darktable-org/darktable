@@ -78,7 +78,7 @@ typedef struct dt_iop_lut3d_params_t
 
 typedef struct dt_iop_lut3d_gui_data_t
 {
-  GtkWidget *hbox;
+  GtkWidget *button;
   GtkWidget *filepath;
   GtkWidget *colorspace;
   GtkWidget *interpolation;
@@ -1627,13 +1627,13 @@ void gui_update(dt_iop_module_t *self)
   gchar *lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
   if(!lutfolder[0])
   {
-    gtk_widget_set_sensitive(g->hbox, FALSE);
+    gtk_widget_set_sensitive(g->button, FALSE);
     gtk_widget_set_sensitive(g->filepath, FALSE);
     dt_bauhaus_combobox_clear(g->filepath);
   }
   else
   {
-    gtk_widget_set_sensitive(g->hbox, TRUE);
+    gtk_widget_set_sensitive(g->button, TRUE);
     gtk_widget_set_sensitive(g->filepath, p->filepath[0]);
     update_filepath_combobox(g, p->filepath, lutfolder);
   }
@@ -1661,24 +1661,21 @@ void gui_init(dt_iop_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  g->hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(8));
-  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
-  gtk_widget_set_name(button, "non-flat");
+  g->button = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
+  gtk_widget_set_name(g->button, "non-flat");
 #ifdef HAVE_GMIC
-  gtk_widget_set_tooltip_text(button, _("select a png (haldclut)"
+  gtk_widget_set_tooltip_text(g->button, _("select a png (haldclut)"
       ", a cube, a 3dl or a gmz (compressed LUT) file "
       "CAUTION: 3D LUT folder must be set in preferences/processing before choosing the LUT file"));
 #else
-  gtk_widget_set_tooltip_text(button, _("select a png (haldclut)"
+  gtk_widget_set_tooltip_text(g->button, _("select a png (haldclut)"
       ", a cube or a 3dl file "
       "CAUTION: 3D LUT folder must be set in preferences/processing before choosing the LUT file"));
 #endif // HAVE_GMIC
-  gtk_box_pack_start(GTK_BOX(g->hbox), button, FALSE, FALSE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), self);
+  g_signal_connect(G_OBJECT(g->button), "clicked", G_CALLBACK(button_clicked), self);
 
   g->filepath = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_entries_ellipsis(g->filepath, PANGO_ELLIPSIZE_MIDDLE);
-  gtk_box_pack_start(GTK_BOX(g->hbox), g->filepath, TRUE, TRUE, 0);
 #ifdef HAVE_GMIC
   gtk_widget_set_tooltip_text(g->filepath,
     _("the file path (relative to LUT folder) is saved with image along with the LUT data if it's a compressed LUT (gmz)"));
@@ -1688,42 +1685,40 @@ void gui_init(dt_iop_module_t *self)
 #endif // HAVE_GMIC
   g_signal_connect(G_OBJECT(g->filepath), "value-changed", G_CALLBACK(filepath_callback), self);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->hbox), TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, dt_gui_hbox(g->button, dt_gui_expand(g->filepath)));
 
 #ifdef HAVE_GMIC
   // text entry
-  GtkWidget *entry = gtk_entry_new();
-  gtk_widget_set_tooltip_text(entry, _("enter LUT name"));
-  gtk_box_pack_start((GtkBox *)self->widget,entry, TRUE, TRUE, 0);
-  gtk_widget_add_events(entry, GDK_KEY_RELEASE_MASK);
-  g_signal_connect(G_OBJECT(entry), "changed", G_CALLBACK(entry_callback), self);
-  g->lutentry = entry;
+  g->lutentry = gtk_entry_new();
+  gtk_widget_set_tooltip_text(g->lutentry, _("enter LUT name"));
+  gtk_widget_add_events(g->lutentry, GDK_KEY_RELEASE_MASK);
+  g_signal_connect(G_OBJECT(g->lutentry), "changed", G_CALLBACK(entry_callback), self);
+  dt_gui_box_add(self->widget, g->lutentry);
+
   // treeview
-  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
-  g->lutwindow = sw;
-  gtk_scrolled_window_set_policy((GtkScrolledWindow *)sw, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  g->lutwindow = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy((GtkScrolledWindow *)g->lutwindow, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   GtkTreeModel *lutmodel = (GtkTreeModel *)gtk_list_store_new(DT_LUT3D_NUM_COLS, G_TYPE_STRING, G_TYPE_BOOLEAN);
   GtkTreeModel *lutfilter = gtk_tree_model_filter_new(lutmodel, NULL);
   gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(lutfilter), DT_LUT3D_COL_VISIBLE);
   g_object_unref(lutmodel);
 
-  GtkTreeView *view = (GtkTreeView *)gtk_tree_view_new();
-  g->lutname = (GtkWidget *)view;
-  gtk_widget_set_name((GtkWidget *)view, "lutname");
-  gtk_tree_view_set_model(view, lutfilter);
-  gtk_tree_view_set_hover_selection(view, FALSE);
-  gtk_tree_view_set_headers_visible(view, FALSE);
-  gtk_container_add(GTK_CONTAINER(sw), (GtkWidget *)view);
-  gtk_widget_set_tooltip_text((GtkWidget *)view, _("select the LUT"));
+  g->lutname = (GtkWidget *)gtk_tree_view_new();
+  gtk_widget_set_name(g->lutname, "lutname");
+  gtk_tree_view_set_model((GtkTreeView *)g->lutname, lutfilter);
+  gtk_tree_view_set_hover_selection((GtkTreeView *)g->lutname, FALSE);
+  gtk_tree_view_set_headers_visible((GtkTreeView *)g->lutname, FALSE);
+  gtk_container_add(GTK_CONTAINER(g->lutwindow), (GtkWidget *)g->lutname);
+  gtk_widget_set_tooltip_text(g->lutname, _("select the LUT"));
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes ("lutname", renderer,
                                                    "text", DT_LUT3D_COL_NAME, NULL);
-  gtk_tree_view_append_column(view, col);
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
+  gtk_tree_view_append_column((GtkTreeView *)g->lutname, col);
+  GtkTreeSelection *selection = gtk_tree_view_get_selection((GtkTreeView *)g->lutname);
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
   g->lutname_handler_id = g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(lutname_callback), self);
-  g_signal_connect(G_OBJECT(view), "scroll-event", G_CALLBACK(mouse_scroll), (gpointer)self);
-  gtk_box_pack_start((GtkBox *)self->widget, sw , TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT((GtkTreeView *)g->lutname), "scroll-event", G_CALLBACK(mouse_scroll), (gpointer)self);
+  dt_gui_box_add(self->widget, g->lutwindow);
 #endif // HAVE_GMIC
 
   g->colorspace = dt_bauhaus_combobox_from_params(self, "colorspace");
