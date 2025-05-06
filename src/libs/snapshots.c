@@ -508,7 +508,7 @@ static void _entry_activated_callback(GtkEntry *entry, dt_lib_module_t *self)
 
   const char *txt = gtk_entry_get_text(GTK_ENTRY(d->snapshot[index].entry));
 
-  char *label = dt_history_get_name_label(d->snapshot[index].module, txt, TRUE);
+  char *label = dt_history_get_name_label(d->snapshot[index].module, txt, TRUE, TRUE);
   gtk_label_set_markup(GTK_LABEL(d->snapshot[index].name), label);
   g_free(label);
 
@@ -738,7 +738,7 @@ static void _sidebyside_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 
   d->sidebyside = !d->sidebyside;
   d->snap_requested = TRUE;
-  gtk_widget_set_visible(dt_ui_snapshot(darktable.gui->ui), 
+  gtk_widget_set_visible(dt_ui_snapshot(darktable.gui->ui),
                          d->sidebyside && d->selected >= 0);
 }
 
@@ -907,7 +907,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
   gtk_label_set_text(lnum, num);
   gtk_label_set_text(lstatus, " ");
 
-  char *txt = dt_history_get_name_label(s->module, s->label, TRUE);
+  char *txt = dt_history_get_name_label(s->module, s->label, TRUE, TRUE);
   gtk_label_set_markup(lname, txt);
 
   gtk_entry_set_text(lentry, s->label ? s->label : "");
