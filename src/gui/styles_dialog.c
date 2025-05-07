@@ -1003,7 +1003,10 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
 
     if(i->multi_name && strlen(i->multi_name) > 0)
     {
-      snprintf(mn, sizeof(mn), "(%s)", i->multi_name);
+      snprintf(mn, sizeof(mn), "(%s)",
+               i->multi_name_hand_edited
+               ? i->multi_name
+               : dt_util_localize_segmented_name(i->multi_name, TRUE));
     }
     else
     {
