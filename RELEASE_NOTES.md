@@ -71,6 +71,11 @@ changes (where available).
 
 ## Other Changes
 
+- Removed the levels and contrast brightness saturation modules (which
+  were deprecated in 2023) from the deprecated modules group. Since
+  this group would be empty after that, it has also been removed for
+  now.
+
 - Due to an upstream issue, exporting JPEG XL in 16-bit float at
   quality 100 is not currently mathematically lossless.
 
