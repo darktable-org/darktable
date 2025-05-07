@@ -69,25 +69,37 @@ gchar *dt_util_localize_segmented_name(const char *s,
 {
   const char *sep = with_space ? " | " : "|";
 
-  const char *local_s = g_str_has_prefix(s, BUILTIN_PREFIX)
-                      ? _(s+sizeof(BUILTIN_PREFIX)-1) : s;
-  gchar **split = g_strsplit(local_s, "|", 0);
-  GList *items = NULL;
+  const gboolean is_builtin = g_str_has_prefix(s, BUILTIN_PREFIX);
 
-  if(split)
+  const char *local_s = is_builtin
+    ? _(s+sizeof(BUILTIN_PREFIX)-1) : s;
+
+  char *localized = g_strdup(_(local_s));
+
+  //  Check if translation found, if not localize each segment
+
+  if(!strcmp(local_s, localized))
   {
-    for(int i = 0; split[i] != NULL; i++)
+    gchar **split = g_strsplit(local_s, "|", 0);
+    GList *items = NULL;
+
+    if(split)
     {
-      const char *name = g_strstrip(split[i]);
-      const char *l_name = dt_util_localize_string(name);
-      items = g_list_append(items, (void *)l_name);
+      for(int i = 0; split[i] != NULL; i++)
+      {
+        const char *name = g_strstrip(split[i]);
+        const char *l_name = dt_util_localize_string(name);
+        items = g_list_append(items, (void *)l_name);
+      }
     }
+
+    g_free(localized);
+    localized = dt_util_glist_to_str(sep, items);
+
+    g_list_free(items);
+    g_strfreev(split);
   }
 
-  char *localized = dt_util_glist_to_str(sep, items);
-
-  g_list_free(items);
-  g_strfreev(split);
   return localized;
 }
 
