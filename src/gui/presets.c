@@ -1086,7 +1086,7 @@ void dt_gui_presets_apply_preset(const gchar* name,
        && (strlen(multi_name) == 0 || multi_name[0] != ' '))
     {
       g_strlcpy(module->multi_name,
-                dt_presets_get_multi_name(name, multi_name),
+                strlen(multi_name) > 0 ? multi_name : name,
                 sizeof(module->multi_name));
       module->multi_name_hand_edited = multi_name_hand_edited;
     }
