@@ -1195,8 +1195,10 @@ static void _iop_panel_name(dt_iop_module_t *module)
     }
     else
     {
-      new_label = g_strdup_printf("• %s", module->multi_name);
-      multi_name = g_strdup(module->multi_name);
+      if(module->multi_name_hand_edited)
+        new_label = g_strdup_printf("• %s", module->multi_name);
+      else
+        new_label = g_strdup_printf("• %s", dt_util_localize_segmented_name(module->multi_name, FALSE));
       gtk_widget_set_name(GTK_WIDGET(iname), "iop-module-name");
     }
   }
@@ -3005,7 +3007,12 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
   return button;
 }
 
-static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, gint y, guint time, dt_iop_module_t *dest)
+static gboolean _on_drag_motion(GtkWidget *widget,
+                                GdkDragContext *dc,
+                                const gint x,
+                                const gint y,
+                                const guint time,
+                                dt_iop_module_t *dest)
 {
   gdk_drag_status(dc, 0, time);
   dtgtk_expander_set_drag_hover(DTGTK_EXPANDER(widget), FALSE, TRUE, time);
@@ -3075,7 +3082,12 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
   return TRUE;
 }
 
-static gboolean _on_drag_drop(GtkWidget *widget, GdkDragContext *dc, gint x, gint y, guint time, dt_iop_module_t *module)
+static gboolean _on_drag_drop(GtkWidget *widget,
+                              GdkDragContext *dc,
+                              const gint x,
+                              const gint y,
+                              const guint time,
+                              dt_iop_module_t *module)
 {
   return _on_drag_motion(widget, dc, DND_DROP, y, time, module);
 }

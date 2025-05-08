@@ -1114,10 +1114,9 @@ void dt_dev_add_masks_history_item_ext(dt_develop_t *dev,
              "[dt_dev_add_masks_history_item_ext] can't find mask manager module");
 }
 
-void dt_dev_add_masks_history_item(
-        dt_develop_t *dev,
-        dt_iop_module_t *module,
-        const gboolean enable)
+void dt_dev_add_masks_history_item(dt_develop_t *dev,
+                                   dt_iop_module_t *module,
+                                   const gboolean enable)
 {
   gpointer target = NULL;
 
@@ -3250,13 +3249,10 @@ void dt_dev_module_remove(dt_develop_t *dev,
 
 gchar *dt_history_item_get_name(const dt_iop_module_t *module)
 {
-  gchar *label;
-  /* create a history button and add to box */
-  if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
-    label = g_strdup(module->name());
-  else
-    label = g_strdup_printf("%s • %s", module->name(), module->multi_name);
-  return label;
+  return dt_history_get_name_label(module->name(),
+                                   module->multi_name,
+                                   FALSE,
+                                   module->multi_name_hand_edited);
 }
 
 gboolean dt_dev_distort_transform(dt_develop_t *dev,

@@ -428,7 +428,7 @@ char *dt_presets_get_module_label(const char *module_name,
     const char *name = (const char *)sqlite3_column_text(stmt, 0);
     const char *multi_name = (const char *)sqlite3_column_text(stmt, 1);
     if(multi_name && (strlen(multi_name) == 0 || multi_name[0] != ' '))
-      result = g_strdup(dt_presets_get_multi_name(name, multi_name));
+      result = g_strdup(dt_presets_get_multi_name(name, multi_name, FALSE));
   }
   g_free(query);
   sqlite3_finalize(stmt);
@@ -436,14 +436,18 @@ char *dt_presets_get_module_label(const char *module_name,
   return result;
 }
 
-const char *dt_presets_get_multi_name(const char *name, const char *multi_name)
+const char *dt_presets_get_multi_name(const char *name,
+                                      const char *multi_name,
+                                      const gboolean localize)
 {
   const gboolean auto_module = dt_conf_get_bool("darkroom/ui/auto_module_name_update");
 
   // in auto-update mode     : use either the multi_name if defined otherwise the name
   // in non auto-update mode : use only the multi_name if defined
   if(auto_module)
-    return strlen(multi_name) > 0 ? multi_name : dt_util_localize_segmented_name(name, FALSE);
+    return strlen(multi_name) > 0
+      ? multi_name
+      : (localize ? dt_util_localize_segmented_name(name, FALSE) : name);
   else
     return strlen(multi_name) > 0 ? multi_name : "";
 }

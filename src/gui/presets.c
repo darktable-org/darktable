@@ -123,10 +123,10 @@ void dt_gui_presets_add_with_blendop(const char *name,
       "                    blendop_params, blendop_version, multi_priority, multi_name,"
       "                    model, maker, lens, iso_min, iso_max, exposure_min, exposure_max,"
       "                    aperture_min, aperture_max, focal_length_min, focal_length_max,"
-      "                    writeprotect, autoapply, filter, def, format)"
+      "                    writeprotect, autoapply, filter, def, format, multi_name_hand_edited)"
       " VALUES (?1, '', ?2, ?3, ?4, ?5, ?6, ?7, 0, '', '%', '%', '%', 0,"
       "         340282346638528859812000000000000000000, 0, 10000000, 0, 100000000, 0,"
-      "         ?8, 1, 0, 0, 0, 0)",
+      "         ?8, 1, 0, 0, 0, 0, 0)",
       -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
@@ -1086,7 +1086,7 @@ void dt_gui_presets_apply_preset(const gchar* name,
        && (strlen(multi_name) == 0 || multi_name[0] != ' '))
     {
       g_strlcpy(module->multi_name,
-                dt_presets_get_multi_name(name, multi_name),
+                strlen(multi_name) > 0 ? multi_name : name,
                 sizeof(module->multi_name));
       module->multi_name_hand_edited = multi_name_hand_edited;
     }
