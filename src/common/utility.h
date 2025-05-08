@@ -35,23 +35,35 @@ gchar *dt_util_localize_segmented_name(const char *s,
 #define BUILTIN_PREFIX "_builtin_"
 
 /** dynamically allocate and concatenate string */
-void dt_util_str_cat(gchar **str, const gchar *format, ...) __attribute__((format(printf, 2, 3)));
+void dt_util_str_cat(gchar **str, const
+                     gchar *format, ...) __attribute__((format(printf, 2, 3)));
 
-/** replace all occurrences of pattern by substitute. the returned value has to be freed after use. */
-gchar *dt_util_str_replace(const gchar *string, const gchar *pattern, const gchar *substitute);
+/** replace all occurrences of pattern by substitute. the returned
+    value has to be freed after use. */
+gchar *dt_util_str_replace(const gchar *string,
+                           const gchar *pattern,
+                           const gchar *substitute);
 /** count the number of occurrences of needle in haystack */
-guint dt_util_str_occurence(const gchar *haystack, const gchar *needle);
+guint dt_util_str_occurence(const gchar *haystack,
+                            const gchar *needle);
 /** format a floating point number string with dot separator locale independent */
-gchar *dt_util_float_to_str(const gchar *format, const double value);
-/** generate a string from the elements of the list, separated by separator. the result has to be freed. */
-gchar *dt_util_glist_to_str(const gchar *separator, GList *items);
-/** generate a GList from the elements of a string, separated by separator. the result has to be freed. */
-GList *dt_util_str_to_glist(const gchar *separator, const gchar *text);
+gchar *dt_util_float_to_str(const gchar *format,
+                            const double value);
+/** generate a string from the elements of the list, separated by
+    separator. the result has to be freed. */
+gchar *dt_util_glist_to_str(const gchar *separator,
+                            GList *items);
+/** generate a GList from the elements of a string, separated by
+    separator. the result has to be freed. */
+GList *dt_util_str_to_glist(const gchar *separator,
+                            const gchar *text);
 /** take a list of strings and remove all duplicates. the result will be sorted. */
 GList *dt_util_glist_uniq(GList *items);
 /** fixes the given path by replacing a possible tilde with the correct home directory */
 gchar *dt_util_fix_path(const gchar *path);
-size_t dt_utf8_strlcpy(char *dest, const char *src, size_t n);
+size_t dt_utf8_strlcpy(char *dest,
+                       const char *src,
+                       const size_t n);
 /** returns true if a file is regular, has read access and a filesize > 0 */
 gboolean dt_util_test_image_file(const char *filename);
 /** returns true if the path represents a directory with write access */
@@ -61,11 +73,13 @@ gboolean dt_util_is_dir_empty(const char *dirname);
 /** returns a valid UTF-8 string for the given char array. has to be freed with g_free(). */
 gchar *dt_util_foo_to_utf8(const char *string);
 /** returns the number of occurence of character in a text. */
-guint dt_util_string_count_char(const char *text, const char needle);
+guint dt_util_string_count_char(const char *text,
+                                const char needle);
 /* helper function to convert en float numbers to local based numbers for scanf */
 void dt_util_str_to_loc_numbers_format(char *data);
 /* helper function to search for a string in a comma seperated string */
-gboolean dt_str_commasubstring(const char *list, const char *search);
+gboolean dt_str_commasubstring(const char *list,
+                               const char *search);
 
 typedef enum dt_logo_season_t
 {
@@ -85,12 +99,21 @@ gchar *dt_util_latitude_str(float latitude);
 gchar *dt_util_longitude_str(float longitude);
 gchar *dt_util_elevation_str(float elevation);
 double dt_util_gps_string_to_number(const gchar *input);
-gboolean dt_util_gps_rationale_to_number(const double r0_1, const double r0_2, const double r1_1,
-                                         const double r1_2, const double r2_1, const double r2_2, char sign,
+gboolean dt_util_gps_rationale_to_number(const double r0_1,
+                                         const double r0_2,
+                                         const double r1_1,
+                                         const double r1_2,
+                                         const double r2_1,
+                                         const double r2_2,
+                                         const char sign,
                                          double *result);
-gboolean dt_util_gps_elevation_to_number(const double r_1, const double r_2, char sign, double *result);
+gboolean dt_util_gps_elevation_to_number(const double r_1,
+                                         const double r_2,
+                                         char sign,
+                                         double *result);
 
-// make paths absolute and try to normalize on Windows. also deal with character encoding on Windows.
+// make paths absolute and try to normalize on Windows. also deal with
+// character encoding on Windows.
 gchar *dt_util_normalize_path(const gchar *input);
 
 #ifdef WIN32
@@ -98,39 +121,54 @@ gchar *dt_util_normalize_path(const gchar *input);
 const gboolean dt_util_path_is_UNC(const gchar *filename);
 #endif
 
-// gets the directory components of a file name, like g_path_get_dirname(), but works also with Windows networks paths (\\hostname\share\file)
+// gets the directory components of a file name, like
+// g_path_get_dirname(), but works also with Windows networks paths
+// (\\hostname\share\file)
 gchar *dt_util_path_get_dirname(const gchar *filename);
 
 // format exposure time string
 gchar *dt_util_format_exposure(const float exposuretime);
 
-// read the contents of the given file into a malloc'ed buffer
-// returns NULL if unable to read file or alloc memory; sets filesize to the number of bytes returned
-char *dt_read_file(const char *filename, size_t *filesize);
+// read the contents of the given file into a malloc'ed buffer returns
+// NULL if unable to read file or alloc memory; sets filesize to the
+// number of bytes returned
+char *dt_read_file(const char *filename,
+                   size_t *filesize);
 
 // copy the contents of the given file to a new file
-void dt_copy_file(const char *src, const char *dst);
+void dt_copy_file(const char *src,
+                  const char *dst);
 
 // copy the contents of a file in dt's data directory to a new file
-void dt_copy_resource_file(const char *src, const char *dst);
+void dt_copy_resource_file(const char *src,
+                           const char *dst);
 
 // returns the RsvgDimensionData of a supplied RsvgHandle
 RsvgDimensionData dt_get_svg_dimension(RsvgHandle *svg);
 
 // renders svg data
-void dt_render_svg(RsvgHandle *svg, cairo_t *cr, double width, double height, double offset_x, double offset_y);
+void dt_render_svg(RsvgHandle *svg, cairo_t *cr,
+                   const double width,
+                   const double height,
+                   const double offset_x,
+                   const double offset_y);
 
 // check if the path + basenames are the same (<=> only differ by the extension)
-gboolean dt_has_same_path_basename(const char *filename1, const char *filename2);
+gboolean dt_has_same_path_basename(const char *filename1,
+                                   const char *filename2);
 
 // set the filename2 extension to filename1 - return NULL if fails - result should be freed
-char *dt_copy_filename_extension(const char *filename1, const char *filename2);
+char *dt_copy_filename_extension(const char *filename1,
+                                 const char *filename2);
 
 // change filename to have the given extension
-char *dt_filename_change_extension(const char *filename, const char *ext);
+char *dt_filename_change_extension(const char *filename,
+                                   const char *ext);
 
 // replaces all occurences of a substring in a string
-gchar *dt_str_replace(const char *string, const char *search, const char *replace);
+gchar *dt_str_replace(const char *string,
+                      const char *search,
+                      const char *replace);
 
 // returns true if current settings is scene-referred
 gboolean dt_is_scene_referred(void);
