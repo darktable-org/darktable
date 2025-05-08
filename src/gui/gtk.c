@@ -2806,7 +2806,7 @@ static void _ui_log_redraw_callback(gpointer instance,
     {
       const int h = gtk_widget_get_allocated_height(dt_ui_center_base(darktable.gui->ui));
       gtk_widget_set_margin_bottom
-        (gtk_widget_get_parent(widget), 0.15 * h - DT_PIXEL_APPLY_DPI(10));
+        (gtk_widget_get_parent(widget), MAX(0, 0.15 * h - DT_PIXEL_APPLY_DPI(10)));
       gtk_widget_show(widget);
     }
   }
