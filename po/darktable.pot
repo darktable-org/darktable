@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-05-08 20:05+0200\n"
+"POT-Creation-Date: 2025-05-08 22:14+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1727,7 +1727,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:7104
 msgid ""
-"automatically login to last used storage server. this requires that a "
+"automatically login to the configured storage server. this requires that a "
 "password storage backend is set."
 msgstr ""
 
