@@ -465,6 +465,10 @@ void dt_develop_blend_process(dt_iop_module_t *self,
   // check if blend is disabled
   if(!(mask_mode & DEVELOP_MASK_ENABLED)) return;
 
+  const gboolean raster = mask_mode & DEVELOP_MASK_RASTER;
+  const gboolean mode_drawn = mask_mode & DEVELOP_MASK_MASK;
+  const gboolean mode_parametric = mask_mode & DEVELOP_MASK_CONDITIONAL;
+
   const size_t ch = piece->colors;           // the number of channels in the buffer
   const int owidth = roi_out->width;
   const int oheight = roi_out->height;
@@ -498,12 +502,12 @@ void dt_develop_blend_process(dt_iop_module_t *self,
 
   // does user want us to display a specific channel?
   const dt_dev_pixelpipe_display_mask_t request_mask_display =
-      valid_request && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL)
+      valid_request && mode_parametric
         ? self->request_mask_display
         : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
   const dt_dev_pixelpipe_display_mask_t request_raster_display =
-      valid_request && (mask_mode & DEVELOP_MASK_RASTER)
+      valid_request && raster
         ? self->request_mask_display
         : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
@@ -515,6 +519,7 @@ void dt_develop_blend_process(dt_iop_module_t *self,
   const gboolean suppress_mask = self->suppress_mask
                                  && valid_request
                                  && (mask_mode & ~DEVELOP_MASK_ENABLED);
+  const gboolean uniform = mask_mode == DEVELOP_MASK_ENABLED || suppress_mask;
 
   // obtaining the list of mask operations to perform
   _develop_mask_post_processing post_operations[3];
@@ -536,8 +541,6 @@ void dt_develop_blend_process(dt_iop_module_t *self,
 
   float *const restrict mask = _mask;
 
-  const gboolean uniform = mask_mode == DEVELOP_MASK_ENABLED || suppress_mask;
-  const gboolean raster = mask_mode & DEVELOP_MASK_RASTER;
   if(uniform)
   {
     // blend uniformly (no drawn or parametric mask)
@@ -592,9 +595,7 @@ void dt_develop_blend_process(dt_iop_module_t *self,
     dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, d->mask_id);
 
     // we blend with a drawn and/or parametric mask
-    if(form
-       && (!(self->flags() & IOP_FLAGS_NO_MASKS))
-       && (mask_mode & DEVELOP_MASK_MASK))
+    if(form && mode_drawn && !(self->flags() & IOP_FLAGS_NO_MASKS))
     {
       form_ok = dt_masks_group_render_roi(self, piece, form, roi_out, mask);
 
@@ -604,8 +605,7 @@ void dt_develop_blend_process(dt_iop_module_t *self,
         dt_iop_image_invert(mask, 1.0f, owidth, oheight, 1); // mask[k] = 1.0f - mask[k];
       }
     }
-    else if((!(self->flags() & IOP_FLAGS_NO_MASKS))
-            && (mask_mode & DEVELOP_MASK_MASK))
+    else if(mode_drawn && !(self->flags() & IOP_FLAGS_NO_MASKS))
     {
       // no form defined but drawn mask active
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
@@ -903,14 +903,18 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
 
   const gboolean valid_request = dt_iop_has_focus(self) && (piece->pipe == self->dev->full.pipe);
 
+  const gboolean raster = mask_mode & DEVELOP_MASK_RASTER;
+  const gboolean mode_drawn = mask_mode & DEVELOP_MASK_MASK;
+  const gboolean mode_parametric = mask_mode & DEVELOP_MASK_CONDITIONAL;
+
   // does user want us to display a specific channel?
   const dt_dev_pixelpipe_display_mask_t request_mask_display =
-      valid_request && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL)
+      valid_request && mode_parametric
         ? self->request_mask_display
         : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
   const dt_dev_pixelpipe_display_mask_t request_raster_display =
-      valid_request && (mask_mode & DEVELOP_MASK_RASTER)
+      valid_request && raster
         ? self->request_mask_display
         : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
@@ -924,7 +928,6 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
                                  && (mask_mode & ~DEVELOP_MASK_ENABLED);
 
   const gboolean uniform = mask_mode == DEVELOP_MASK_ENABLED || suppress_mask;
-  const gboolean raster = mask_mode & DEVELOP_MASK_RASTER;
 
   // obtaining the list of mask operations to perform
   _develop_mask_post_processing post_operations[3];
@@ -1097,9 +1100,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
     dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, d->mask_id);
 
     // we blend with a drawn and/or parametric mask
-    if(form
-       && (!(self->flags() & IOP_FLAGS_NO_MASKS))
-       && (mask_mode & DEVELOP_MASK_MASK))
+    if(form && mode_drawn && !(self->flags() & IOP_FLAGS_NO_MASKS))
     {
       form_ok = dt_masks_group_render_roi(self, piece, form, roi_out, mask);
 
@@ -1109,8 +1110,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
         dt_iop_image_invert(mask, 1.0f, owidth, oheight, 1); //mask[k] = 1.0f - mask[k]
       }
     }
-    else if((!(self->flags() & IOP_FLAGS_NO_MASKS))
-            && (mask_mode & DEVELOP_MASK_MASK))
+    else if(mode_parametric && !(self->flags() & IOP_FLAGS_NO_MASKS))
     {
       // no form defined but drawn mask active
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
@@ -1334,7 +1334,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
   if(dt_iop_piece_is_raster_mask_used(piece, BLEND_RASTER_ID))
   {
     // get back final mask from the device as the raster mask
-    if(!(mask_mode & DEVELOP_MASK_RASTER))
+    if(!raster)
     {
       err = dt_opencl_copy_device_to_host(devid, mask, dev_mask,
                                           owidth, oheight, sizeof(float));

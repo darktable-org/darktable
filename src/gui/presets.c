@@ -1620,27 +1620,14 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w)
   dt_gui_menu_popup(menu, w, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST);
 }
 
-// Comparator function to sort menu items alphabetically by their labels in reverse order
-static gint _compare_menu_items(gpointer a, gpointer b)
+static void _menu_shell_insert_sorted(GtkWidget *menu_shell, GtkWidget *item, gchar *name)
 {
-  int d = g_object_get_data(a, "builtin") - g_object_get_data(b, "builtin");
-  return d ? d : - g_utf8_collate(gtk_menu_item_get_label(a), gtk_menu_item_get_label(b));
-}
-
-// Function to sort GtkMenuShell items
-static void _sort_menu_shell(GtkWidget *menu_shell)
-{
-  if(!GTK_IS_MENU_SHELL(menu_shell)) return;
   GList *items = gtk_container_get_children(GTK_CONTAINER(menu_shell));
-  items = g_list_sort(items, (GCompareFunc)_compare_menu_items);
-  for(GList *iter = items; iter; iter = g_list_delete_link(iter, iter))
-  {
-    g_object_ref(iter->data);
-    gtk_container_remove(GTK_CONTAINER(menu_shell), GTK_WIDGET(iter->data));
-    _sort_menu_shell(gtk_menu_item_get_submenu(GTK_MENU_ITEM(iter->data)));
-    gtk_menu_shell_prepend(GTK_MENU_SHELL(menu_shell), GTK_WIDGET(iter->data));
-    g_object_unref(iter->data);
-  }
+  int num = g_list_length(items);
+  for(GList *i = g_list_last(items); i; i = i->prev, num--)
+    if(g_utf8_collate(gtk_menu_item_get_label(i->data), name) < 0) break;
+  gtk_menu_shell_insert(GTK_MENU_SHELL(menu_shell), item, num);
+  g_list_free(items);
 }
 
 GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
@@ -1781,7 +1768,7 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
       GtkWidget *sm = gtk_menu_item_new_with_label(*s);
       menu_path = g_slist_prepend(menu_path, sm); // push
 
-      gtk_menu_shell_append(GTK_MENU_SHELL(submenu), sm);
+      _menu_shell_insert_sorted(submenu, sm, *s);
       submenu = gtk_menu_new();
       gtk_menu_item_set_submenu(GTK_MENU_ITEM(sm), submenu);
     }
@@ -1802,7 +1789,7 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
     else
       label = g_strdup(*s);
     mi = gtk_check_menu_item_new_with_label(label);
-    g_object_set_data(G_OBJECT(mi), "builtin", GINT_TO_POINTER(chk_writeprotect));
+    _menu_shell_insert_sorted(submenu, mi, label);
     dt_gui_add_class(mi, "dt_transparent_background");
     g_free(label);
 
@@ -1837,14 +1824,11 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
       gtk_widget_set_tooltip_text(mi, (const char *)sqlite3_column_text(stmt, 3));
       _menuitem_connect_preset(mi, name, module);
     }
-    gtk_menu_shell_append(GTK_MENU_SHELL(submenu), mi);
     cnt++;
   }
   sqlite3_finalize(stmt);
   g_slist_free(menu_path);
   g_strfreev(prev_split);
-
-  _sort_menu_shell(mainmenu);
 
   if(cnt > 0) gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
 
