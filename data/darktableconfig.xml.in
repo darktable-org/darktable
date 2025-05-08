@@ -2860,7 +2860,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>auto login to storage server</shortdescription>
-    <longdescription>automatically login to last used storage server. this requires that a password storage backend is set.</longdescription>
+    <longdescription>automatically login to the configured storage server. this requires that a password storage backend is set.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/export/icctype</name>
