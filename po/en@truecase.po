@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-05-08 20:05+0200\n"
-"PO-Revision-Date: 2025-05-08 21:45+0300\n"
+"POT-Creation-Date: 2025-05-08 22:14+0200\n"
+"PO-Revision-Date: 2025-05-09 11:17+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -1876,10 +1876,10 @@ msgstr "Auto login to storage server"
 
 #: ../build/bin/preferences_gen.h:7104
 msgid ""
-"automatically login to last used storage server. this requires that a "
+"automatically login to the configured storage server. this requires that a "
 "password storage backend is set."
 msgstr ""
-"Automatically login to last used storage server. This requires that a "
+"Automatically login to the configured storage server. This requires that a "
 "password storage backend is set."
 
 #: ../build/bin/preferences_gen.h:7125
