@@ -120,19 +120,6 @@ invert_histogram(
   }
 }
 
-#if 0
-static void
-write_pfm(const char *filename, float *buf, int wd, int ht)
-{
-  FILE *f = fopen(filename, "wb");
-  if(!f) return;
-  fprintf(f, "PF\n%d %d\n-1.0\n", wd, ht);
-  fwrite(buf, sizeof(float)*3, wd*ht, f);
-  fclose(f);
-}
-#endif
-
-
 #define MIN(a,b) ((a>b)?b:a)
 #define MAX(a,b) ((a>b)?a:b)
 
