@@ -3507,6 +3507,13 @@
     <shortdescription>LUT 3D root folder</shortdescription>
     <longdescription>this folder (and sub-folders) contains LUT files used by LUT 3D module. (restart required)</longdescription>
   </dtconfig>
+  <dtconfig prefs="processing" section="general" restart="true">
+    <name>plugins/darkroom/segments/def_path</name>
+    <type>dir</type>
+    <default>$(home)</default>
+    <shortdescription>raster image masks root folder</shortdescription>
+    <longdescription>this folder (and sub-folders) contains pfm files used by the raster image file module. (restart required)</longdescription>
+  </dtconfig>
   <dtconfig prefs="processing" section="general">
     <name>plugins/darkroom/workflow</name>
     <type>
