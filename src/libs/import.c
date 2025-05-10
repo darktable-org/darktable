@@ -592,7 +592,7 @@ static gboolean _files_button_press(GtkWidget *view,
                                     dt_lib_module_t *self)
 {
   dt_lib_import_t *d = self->data;
-  if((event->type == GDK_BUTTON_PRESS && event->button == 1))
+  if((event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY))
   {
     GtkTreePath *path = NULL;
     GtkTreeViewColumn *column = NULL;
@@ -615,7 +615,7 @@ static gboolean _files_button_press(GtkWidget *view,
     }
     gtk_tree_path_free(path);
   }
-  else if((event->type == GDK_2BUTTON_PRESS && event->button == 1))
+  else if((event->type == GDK_2BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY))
   {
     GtkTreePath *path = NULL;
     // Get tree path for row that was clicked
@@ -1323,7 +1323,7 @@ static gboolean _places_button_press(GtkWidget *view,
     const int button_pressed = (event->type == GDK_BUTTON_PRESS) ? event->button : 0;
 
     // left-click: set as new root
-    if(button_pressed == 1)
+    if(button_pressed == GDK_BUTTON_PRIMARY)
     {
       GtkTreeSelection *place_selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
       gtk_tree_selection_select_path(place_selection, path);
@@ -1352,7 +1352,7 @@ static gboolean _folders_button_press(GtkWidget *view,
   gboolean res = FALSE;
   const int button_pressed = (event->type == GDK_BUTTON_PRESS) ? event->button : 0;
   const gboolean modifier = dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_CONTROL_MASK);
-  if((button_pressed == 1) && !modifier)
+  if((button_pressed == GDK_BUTTON_PRIMARY) && !modifier)
   {
     GtkTreePath *path = NULL;
     if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view),

@@ -658,7 +658,7 @@ static gboolean view_onButtonPressed(GtkWidget *treeview,
   // case of a context-menu (folder/filmroll)
   if(((d->view_rule == DT_COLLECTION_PROP_FOLDERS)
       || (d->view_rule == DT_COLLECTION_PROP_FILMROLL))
-     && (event->type == GDK_BUTTON_PRESS && event->button == 3)
+     && (event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_SECONDARY)
      && !(dt_modifier_is(event->state, GDK_SHIFT_MASK)
           || dt_modifier_is(event->state, GDK_CONTROL_MASK)))
   {
@@ -670,9 +670,9 @@ static gboolean view_onButtonPressed(GtkWidget *treeview,
   }
 
   // case of a activation
-  if((!d->singleclick && event->type == GDK_2BUTTON_PRESS && event->button == 1)
-     || (d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == 1)
-     || (!d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == 1
+  if((!d->singleclick && event->type == GDK_2BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY)
+     || (d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY)
+     || (!d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY
          && (dt_modifier_is(event->state, GDK_SHIFT_MASK)
              || dt_modifier_is(event->state, GDK_CONTROL_MASK))))
   {
@@ -3647,7 +3647,7 @@ GtkWidget *gui_tool_box(dt_lib_module_t *self)
                                             ? CPF_DIRECTION_DOWN
                                             : CPF_DIRECTION_UP,
                                             NULL);
-  gtk_widget_set_tooltip_text(sortb, _("toggle collection sort order ascending/descending"));                                            
+  gtk_widget_set_tooltip_text(sortb, _("toggle collection sort order ascending/descending"));
   dt_gui_add_class(sortb, "dt_ignore_fg_state");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(sortb), sort_descend);
   g_signal_connect(G_OBJECT(sortb),

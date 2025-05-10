@@ -618,7 +618,7 @@ static int _ellipse_events_button_pressed(dt_iop_module_t *module,
       }
     }
   }
-  else if(which == 3)
+  else if(which == GDK_BUTTON_SECONDARY)
   {
     gui->creation_continuous = FALSE;
     gui->creation_continuous_module = NULL;
@@ -627,7 +627,7 @@ static int _ellipse_events_button_pressed(dt_iop_module_t *module,
     dt_control_queue_redraw_center();
     return 1;
   }
-  else if(which == 1
+  else if(which == GDK_BUTTON_PRIMARY
           && (dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)
               || dt_modifier_is(state, GDK_SHIFT_MASK)))
   {

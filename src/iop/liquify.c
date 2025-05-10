@@ -3110,18 +3110,18 @@ int button_pressed(dt_iop_module_t *self,
 
   g->last_mouse_pos = pt;
   g->last_mouse_mods = state;
-  if(which == 1)
+  if(which == GDK_BUTTON_PRIMARY)
     g->last_button1_pressed_pos = pt;
 
   if(!is_dragging(g))
     // while dragging you would always hit the dragged thing
     _hit_test_paths(self, p, pt, &g->last_hit);
 
-  if(which == 2) goto done;
+  if(which == GDK_BUTTON_MIDDLE) goto done;
 
   // Point tool
 
-  if(which == 1 && gtk_toggle_button_get_active(g->btn_point_tool))
+  if(which == GDK_BUTTON_PRIMARY && gtk_toggle_button_get_active(g->btn_point_tool))
   {
     // always end dragging before manipulating the path list to avoid
     // dangling pointers
@@ -3139,7 +3139,7 @@ int button_pressed(dt_iop_module_t *self,
 
   // Line tool or curve tool
 
-  if(which == 1 && (gtk_toggle_button_get_active(g->btn_line_tool)
+  if(which == GDK_BUTTON_PRIMARY && (gtk_toggle_button_get_active(g->btn_line_tool)
                     || gtk_toggle_button_get_active(g->btn_curve_tool)))
   {
     // always end dragging before manipulating the path list to avoid
@@ -3169,7 +3169,7 @@ int button_pressed(dt_iop_module_t *self,
   }
 
   // right-click is handled on release
-  if(which == 3)
+  if(which == GDK_BUTTON_SECONDARY)
   {
     handled = 1;
     goto done;
@@ -3225,7 +3225,7 @@ int button_released(dt_iop_module_t *self,
 
   const gboolean dragged = detect_drag(g, scale, pt);
 
-  if(which == 1 && g->temp && (g->status & DT_LIQUIFY_STATUS_NEW))
+  if(which == GDK_BUTTON_PRIMARY && g->temp && (g->status & DT_LIQUIFY_STATUS_NEW))
   {
     end_drag(g);
     if(gtk_toggle_button_get_active(g->btn_point_tool))
@@ -3274,7 +3274,7 @@ int button_released(dt_iop_module_t *self,
     goto done;
   }
 
-  if(which == 1 && is_dragging(g))
+  if(which == GDK_BUTTON_PRIMARY && is_dragging(g))
   {
     end_drag(g);
     handled = 2;
@@ -3282,7 +3282,7 @@ int button_released(dt_iop_module_t *self,
   }
 
   // right click == cancel or delete
-  if(which == 3)
+  if(which == GDK_BUTTON_SECONDARY)
   {
     end_drag(g);
 
@@ -3333,7 +3333,7 @@ int button_released(dt_iop_module_t *self,
 
   if(gtk_toggle_button_get_active(g->btn_node_tool))
   {
-    if(which == 1 && dt_modifier_is(g->last_mouse_mods, 0) && !dragged)
+    if(which == GDK_BUTTON_PRIMARY && dt_modifier_is(g->last_mouse_mods, 0) && !dragged)
     {
       // select/unselect start/endpoint and clear previous selections
       if(g->last_hit.layer == DT_LIQUIFY_LAYER_CENTERPOINT)
@@ -3352,7 +3352,7 @@ int button_released(dt_iop_module_t *self,
         goto done;
       }
     }
-    if(which == 1 && dt_modifier_is(g->last_mouse_mods, GDK_SHIFT_MASK) && !dragged)
+    if(which == GDK_BUTTON_PRIMARY && dt_modifier_is(g->last_mouse_mods, GDK_SHIFT_MASK) && !dragged)
     {
       // select/unselect start/endpoint and keep previous selections
       if(g->last_hit.layer == DT_LIQUIFY_LAYER_CENTERPOINT)
@@ -3363,7 +3363,7 @@ int button_released(dt_iop_module_t *self,
         goto done;
       }
     }
-    if(which == 1 && dt_modifier_is(g->last_mouse_mods, GDK_CONTROL_MASK) && !dragged)
+    if(which == GDK_BUTTON_PRIMARY && dt_modifier_is(g->last_mouse_mods, GDK_CONTROL_MASK) && !dragged)
     {
       // add node
       if(g->last_hit.layer == DT_LIQUIFY_LAYER_PATH)
@@ -3444,7 +3444,7 @@ int button_released(dt_iop_module_t *self,
         }
       }
     }
-    if(which == 1
+    if(which == GDK_BUTTON_PRIMARY
        && dt_modifier_is(g->last_mouse_mods, GDK_MOD1_MASK | GDK_CONTROL_MASK)
        && !dragged)
     {
@@ -3482,7 +3482,7 @@ int button_released(dt_iop_module_t *self,
 
 done:
   dt_iop_gui_leave_critical_section(self);
-  if(which == 1)
+  if(which == GDK_BUTTON_PRIMARY)
     g->last_button1_pressed_pos = -1;
   g->last_hit = NOWHERE;
   if(handled)

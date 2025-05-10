@@ -1201,7 +1201,7 @@ static gboolean _apply_style_button_callback(GtkMenuItem *menuitem,
                                              GdkEventButton *event,
                                              const dt_stylemenu_data_t *menu_data)
 {
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     _update_style(menu_data);
   }
@@ -1771,7 +1771,7 @@ int button_pressed(struct dt_lib_module_t *self,
     _snap_to_grid(ps, &ps->x1, &ps->y1);
   }
   else if(ps->selected > 0
-          && (which == 2 || (which == 1 && dt_modifier_is(state, GDK_CONTROL_MASK))))
+          && (which == GDK_BUTTON_MIDDLE || (which == GDK_BUTTON_PRIMARY && dt_modifier_is(state, GDK_CONTROL_MASK))))
   {
     // middle click (or ctrl-click), move selected image down
     dt_image_box b;
@@ -1780,7 +1780,7 @@ int button_pressed(struct dt_lib_module_t *self,
            sizeof(dt_image_box));
     memcpy(&ps->imgs.box[ps->selected-1], &b, sizeof(dt_image_box));
   }
-  else if(ps->selected != -1 && which == 1)
+  else if(ps->selected != -1 && which == GDK_BUTTON_PRIMARY)
   {
     dt_image_box *b = &ps->imgs.box[ps->selected];
 
@@ -1797,7 +1797,7 @@ int button_pressed(struct dt_lib_module_t *self,
 
     dt_control_change_cursor(GDK_HAND1);
   }
-  else if(ps->selected != -1 && which == 3)
+  else if(ps->selected != -1 && which == GDK_BUTTON_SECONDARY)
   {
     dt_image_box *b = &ps->imgs.box[ps->selected];
 
