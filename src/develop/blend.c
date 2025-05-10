@@ -502,7 +502,7 @@ void dt_develop_blend_process(dt_iop_module_t *self,
 
   // does user want us to display a specific channel?
   const dt_dev_pixelpipe_display_mask_t request_mask_display =
-      valid_request && mode_parametric
+      valid_request && (mode_parametric || mode_drawn)
         ? self->request_mask_display
         : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
@@ -909,7 +909,7 @@ gboolean dt_develop_blend_process_cl(dt_iop_module_t *self,
 
   // does user want us to display a specific channel?
   const dt_dev_pixelpipe_display_mask_t request_mask_display =
-      valid_request && mode_parametric
+      valid_request && (mode_parametric || mode_drawn)
         ? self->request_mask_display
         : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
