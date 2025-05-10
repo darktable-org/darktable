@@ -68,6 +68,7 @@ build/lib/darktable/plugins/introspection_overexposed.c
 build/lib/darktable/plugins/introspection_overlay.c
 build/lib/darktable/plugins/introspection_primaries.c
 build/lib/darktable/plugins/introspection_profile_gamma.c
+build/lib/darktable/plugins/introspection_rasterfile.c
 build/lib/darktable/plugins/introspection_rawdenoise.c
 build/lib/darktable/plugins/introspection_rawoverexposed.c
 build/lib/darktable/plugins/introspection_rawprepare.c
@@ -297,6 +298,7 @@ src/iop/overlay.c
 src/iop/primaries.c
 src/iop/profile_gamma.c
 src/iop/rawdenoise.c
+src/iop/rasterfile.c
 src/iop/rawoverexposed.c
 src/iop/rawprepare.c
 src/iop/relight.c
