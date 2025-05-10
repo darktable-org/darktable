@@ -2475,21 +2475,21 @@ gboolean dt_dev_get_preview_size(const dt_develop_t *dev,
   return *wd >= 1.f && *ht >= 1.f;
 }
 
-void dt_dev_get_processed_size(dt_dev_viewport_t *port,
-                               int *procw,
-                               int *proch)
+gboolean dt_dev_get_processed_size(dt_dev_viewport_t *port,
+                                  int *procw,
+                                  int *proch)
 {
   // no processed pipes, lets return 0 size
   *procw = *proch = 0;
 
-  if(!port) return;
+  if(!port) return FALSE;
 
   // if pipe is processed, lets return its size
   if(port->pipe && port->pipe->processed_width)
   {
     *procw = port->pipe->processed_width;
     *proch = port->pipe->processed_height;
-    return;
+    return TRUE;
   }
 
   dt_develop_t *dev = darktable.develop;
@@ -2501,6 +2501,7 @@ void dt_dev_get_processed_size(dt_dev_viewport_t *port,
     *procw = scale * dev->preview_pipe->processed_width;
     *proch = scale * dev->preview_pipe->processed_height;
   }
+  return FALSE;
 }
 
 static float _calculate_new_scroll_zoom_tscale(const int up,
