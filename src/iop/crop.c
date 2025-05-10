@@ -1418,25 +1418,26 @@ void gui_post_expose(dt_iop_module_t *self,
   if(dimmed) return;
 
   // draw cropping window dimensions if first mouse button is pressed
-  if(darktable.control->button_down && darktable.control->button_down_which == 1)
+  if(darktable.control->button_down && darktable.control->button_down_which == GDK_BUTTON_PRIMARY)
   {
-    char dimensions[16];
+    char dimensions[64];
     dimensions[0] = '\0';
     PangoLayout *layout;
     PangoRectangle ext;
     PangoFontDescription *desc =
       pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
     pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-    pango_font_description_set_absolute_size
-      (desc,
-       DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE / zoom_scale);
+    pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE / zoom_scale);
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
 
     int procw, proch;
-    dt_dev_get_processed_size(&dev->full, &procw, &proch);
-    snprintf(dimensions, sizeof(dimensions),
-             "%i x %i", (int)(0.5f + procw * g->clip_w), (int)(0.5f + proch * g->clip_h));
+    const gboolean exact = dt_dev_get_processed_size(&dev->full, &procw, &proch);
+    const int dx = floorf(procw * g->clip_w);
+    const int dy = floorf(proch * g->clip_h);
+    snprintf(dimensions, sizeof(dimensions), "%s%d x %d", exact ? "" : "~ ", dx, dy);
+    dt_print(DT_DEBUG_VERBOSE, "reported crop dimension: %s%d x %d",
+                                exact ? "" : "~ ", dx, dy);
 
     pango_layout_set_text(layout, dimensions, -1);
     pango_layout_get_pixel_extents(layout, NULL, &ext);
@@ -1454,8 +1455,7 @@ void gui_post_expose(dt_iop_module_t *self,
     yp = CLAMP(yp, y1 + 2.0 * margin, y2 - text_h - 2.0 * margin);
 
     cairo_set_source_rgba(cr, .5, .5, .5, .9);
-    dt_gui_draw_rounded_rectangle
-      (cr, text_w + 2 * margin, text_h + 2 * margin, xp - margin, yp - margin);
+    dt_gui_draw_rounded_rectangle(cr, text_w + 2 * margin, text_h + 2 * margin, xp - margin, yp - margin);
     cairo_set_source_rgb(cr, .7, .7, .7);
     cairo_move_to(cr, xp, yp);
     pango_cairo_show_layout(cr, layout);
@@ -1537,7 +1537,7 @@ int mouse_moved(dt_iop_module_t *self,
 
   _set_max_clip(self);
 
-  if(darktable.control->button_down && darktable.control->button_down_which == 1)
+  if(darktable.control->button_down && darktable.control->button_down_which == GDK_BUTTON_PRIMARY)
   {
     // draw a light gray frame, to show it's not stored yet:
     // first mouse button, adjust cropping frame, but what do we do?
@@ -1548,14 +1548,12 @@ int mouse_moved(dt_iop_module_t *self,
     {
       /* moving the crop window */
       if(!g->shift_hold)
-        g->clip_x
-          = fminf(g->clip_max_w + g->clip_max_x - g->clip_w,
-                  fmaxf(g->clip_max_x, g->handle_x + pzx - bzx));
+        g->clip_x = MIN(g->clip_max_w + g->clip_max_x - g->clip_w,
+                        MAX(g->clip_max_x, g->handle_x + pzx - bzx));
 
       if(!g->ctrl_hold)
-        g->clip_y
-          = fminf(g->clip_max_h + g->clip_max_y - g->clip_h,
-                  fmaxf(g->clip_max_y, g->handle_y + pzy - bzy));
+        g->clip_y = MIN(g->clip_max_h + g->clip_max_y - g->clip_h,
+                        MAX(g->clip_max_y, g->handle_y + pzy - bzy));
     }
     else if(g->cropping == GRAB_NONE)
       return 0;
@@ -1734,10 +1732,10 @@ int button_pressed(dt_iop_module_t *self,
   if(!g->preview_ready) return 0;
 
   // avoid unexpected back to lt mode:
-  if(type == GDK_2BUTTON_PRESS && which == 1)
+  if(type == GDK_2BUTTON_PRESS && which == GDK_BUTTON_PRIMARY)
     return 1;
 
-  if(which == 1)
+  if(which == GDK_BUTTON_PRIMARY)
   {
     float wd, ht;
     dt_dev_get_preview_size(self->dev, &wd, &ht);
@@ -1779,7 +1777,7 @@ int button_pressed(dt_iop_module_t *self,
 
     return 1;
   }
-  else if(which == 3)
+  else if(which == GDK_BUTTON_SECONDARY)
   {
     // we reset cropping
     g->clip_x = 0.0f;
