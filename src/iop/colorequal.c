@@ -2775,14 +2775,14 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
   if(event->button == 2
-     || (event->button == 1 // Ctrl+Click alias for macOS
+     || (event->button == GDK_BUTTON_PRIMARY // Ctrl+Click alias for macOS
          && dt_modifier_is(event->state, GDK_CONTROL_MASK)))
   {
     dt_conf_set_bool("plugins/darkroom/colorequal/show_sliders",
                      gtk_notebook_get_n_pages(g->notebook) != 4);
     gui_update(self);
   }
-  else if(event->button == 1)
+  else if(event->button == GDK_BUTTON_PRIMARY)
   {
     if(event->type == GDK_2BUTTON_PRESS)
     {
@@ -2806,7 +2806,7 @@ static gboolean _area_button_release_callback(GtkWidget *widget,
 {
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     g->dragging = FALSE;
     return TRUE;

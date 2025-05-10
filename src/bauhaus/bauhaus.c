@@ -614,7 +614,7 @@ static gboolean _popup_button_press(GtkWidget *widget,
   dt_bauhaus_t *bh = darktable.bauhaus;
   dt_bauhaus_widget_t *w = bh->current;
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     // only accept left mouse click
     gtk_widget_set_state_flags(GTK_WIDGET(w),
@@ -634,7 +634,7 @@ static gboolean _popup_button_press(GtkWidget *widget,
     event->state |= GDK_BUTTON1_MASK;
     _window_motion_notify(widget, (GdkEventMotion*)event, user_data);
   }
-  else if(event->button == 2 && w->type == DT_BAUHAUS_SLIDER)
+  else if(event->button == GDK_BUTTON_MIDDLE && w->type == DT_BAUHAUS_SLIDER)
     _slider_zoom_range(w, 0);
   else
     _popup_reject();
@@ -3392,7 +3392,7 @@ static gboolean _widget_button_press(GtkWidget *widget,
   {
     dt_bauhaus_widget_press_quad(widget);
   }
-  else if(event->button == 1
+  else if(event->button == GDK_BUTTON_PRIMARY
           && event->type == GDK_2BUTTON_PRESS)
   {
     if(!(dt_modifier_is(event->state, GDK_CONTROL_MASK) && w->field
@@ -3402,14 +3402,14 @@ static gboolean _widget_button_press(GtkWidget *widget,
     // (except in weird corner cases where the popup is under the -1st entry
     _popup_hide();
   }
-  else if(event->button == 3 || w->type == DT_BAUHAUS_COMBOBOX)
+  else if(event->button == GDK_BUTTON_SECONDARY || w->type == DT_BAUHAUS_COMBOBOX)
   {
     darktable.bauhaus->opentime = event->time;
     darktable.bauhaus->mouse_x = event->x;
     darktable.bauhaus->mouse_y = event->y;
     _popup_show(widget);
   }
-  else if(event->button == 2)
+  else if(event->button == GDK_BUTTON_MIDDLE)
   {
     _slider_zoom_range(w, 0); // reset zoom range to soft min/max
     _slider_zoom_toast(w);
@@ -3443,7 +3443,7 @@ static gboolean _widget_button_release(GtkWidget *widget,
   if(w->type != DT_BAUHAUS_SLIDER) return FALSE;
 
   dt_bauhaus_slider_data_t *d = &w->data.slider;
-  if(event->button == 1 && d->is_dragging)
+  if(event->button == GDK_BUTTON_PRIMARY && d->is_dragging)
   {
     d->is_dragging = 0;
     if(d->timeout_handle) g_source_remove(d->timeout_handle);

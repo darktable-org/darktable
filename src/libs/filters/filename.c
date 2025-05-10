@@ -238,7 +238,7 @@ static void _filename_update_selection(_widgets_filename_t *filename)
 
 static gboolean _filename_press(GtkWidget *w, GdkEventButton *e, _widgets_filename_t *filename)
 {
-  if(e->button == 3)
+  if(e->button == GDK_BUTTON_SECONDARY)
   {
     _filename_tree_update_visibility(w, filename);
     gtk_popover_set_default_widget(GTK_POPOVER(filename->pop), w);
@@ -250,7 +250,7 @@ static gboolean _filename_press(GtkWidget *w, GdkEventButton *e, _widgets_filena
     gtk_widget_show_all(filename->pop);
     return TRUE;
   }
-  else if(e->button == 1 && e->type == GDK_2BUTTON_PRESS)
+  else if(e->button == GDK_BUTTON_PRIMARY && e->type == GDK_2BUTTON_PRESS)
   {
     gtk_entry_set_text(GTK_ENTRY(w), "");
     _filename_changed(w, filename);

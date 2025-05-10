@@ -1324,9 +1324,9 @@ static gboolean _click_on_view_attached(GtkWidget *view, GdkEventButton *event, 
   dt_lib_tagging_t *d = self->data;
   _unselect_all_in_view(d->dictionary_view);
 
-  if((event->type == GDK_BUTTON_PRESS && event->button == 3)
-    || (event->type == GDK_2BUTTON_PRESS && event->button == 1)
-    || (event->type == GDK_BUTTON_PRESS && event->button == 1))
+  if((event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_SECONDARY)
+    || (event->type == GDK_2BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY)
+    || (event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY))
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
     GtkTreePath *path = NULL;
@@ -1343,13 +1343,13 @@ static gboolean _click_on_view_attached(GtkWidget *view, GdkEventButton *event, 
       {
         gtk_tree_selection_select_path(selection, path);
         dt_lib_gui_queue_update(self);
-        if(event->type == GDK_BUTTON_PRESS && event->button == 3)
+        if(event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_SECONDARY)
         {
           _pop_menu_attached(view, event, self);
           gtk_tree_path_free(path);
           return TRUE;
         }
-        else if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
+        else if(event->type == GDK_2BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY)
         {
           _detach_selected_tag(d->attached_view, self);
           gtk_tree_path_free(path);
@@ -2423,16 +2423,16 @@ static gboolean _click_on_view_dictionary(GtkWidget *view, GdkEventButton *event
 
   const int button_pressed = (event->type == GDK_BUTTON_PRESS) ? event->button : 0;
   const gboolean shift_pressed = dt_modifier_is(event->state, GDK_SHIFT_MASK);
-  if((button_pressed == 3)                                        // contextual menu
-     || (d->tree_flag && button_pressed == 1)                     // expand & drag
-     || (event->type == GDK_2BUTTON_PRESS && event->button == 1)) // attach
+  if((button_pressed == GDK_BUTTON_SECONDARY)                     // contextual menu
+     || (d->tree_flag && button_pressed == GDK_BUTTON_PRIMARY)    // expand & drag
+     || (event->type == GDK_2BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY)) // attach
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
     GtkTreePath *path = NULL;
     // Get tree path for row that was clicked
     if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), (gint)event->x, (gint)event->y, &path, NULL, NULL, NULL))
     {
-      if(d->tree_flag && button_pressed == 1 && !shift_pressed)
+      if(d->tree_flag && button_pressed == GDK_BUTTON_PRIMARY && !shift_pressed)
       {
         GtkTreeModel *model = gtk_tree_view_get_model(d->dictionary_view);
         GtkTreeIter iter;
@@ -2452,19 +2452,19 @@ static gboolean _click_on_view_dictionary(GtkWidget *view, GdkEventButton *event
       {
         gtk_tree_selection_select_path(selection, path);
         dt_lib_gui_queue_update(self);
-        if(button_pressed == 3)
+        if(button_pressed == GDK_BUTTON_SECONDARY)
         {
           _pop_menu_dictionary(view, event, self);
           gtk_tree_path_free(path);
           return TRUE;
         }
-        else if(d->tree_flag && button_pressed == 1 && shift_pressed)
+        else if(d->tree_flag && button_pressed == GDK_BUTTON_PRIMARY && shift_pressed)
         {
           gtk_tree_view_expand_row(GTK_TREE_VIEW(view), path, TRUE);
           gtk_tree_path_free(path);
           return TRUE;
         }
-        else if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
+        else if(event->type == GDK_2BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY)
         {
           _attach_selected_tag(self, d);
           gtk_tree_path_free(path);

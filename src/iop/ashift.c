@@ -4816,14 +4816,14 @@ int button_pressed(dt_iop_module_t *self,
   gboolean handled = FALSE;
 
   // avoid unexpected back to lt mode:
-  if(type == GDK_2BUTTON_PRESS && which == 1)
+  if(type == GDK_2BUTTON_PRESS && which == GDK_BUTTON_PRIMARY)
     return TRUE;
 
   float wd, ht;
   if(!dt_dev_get_preview_size(self->dev, &wd, &ht)) return 1;
 
   // if we start to draw a straightening line
-  if(!g->lines && which == 3)
+  if(!g->lines && which == GDK_BUTTON_SECONDARY)
   {
     dt_control_change_cursor(GDK_CROSSHAIR);
     g->straightening = TRUE;
@@ -4877,7 +4877,7 @@ int button_pressed(dt_iop_module_t *self,
     g->lastx = pzx;
     g->lasty = pzy;
 
-    g->isbounding = (which == 3) ? ASHIFT_BOUNDING_DESELECT : ASHIFT_BOUNDING_SELECT;
+    g->isbounding = (which == GDK_BUTTON_SECONDARY) ? ASHIFT_BOUNDING_DESELECT : ASHIFT_BOUNDING_SELECT;
     dt_control_change_cursor(GDK_CROSS);
 
     return TRUE;
@@ -4898,7 +4898,7 @@ int button_pressed(dt_iop_module_t *self,
             !(g->current_structure_method == ASHIFT_METHOD_QUAD
               || g->current_structure_method == ASHIFT_METHOD_LINES));
 
-  if((g->current_structure_method == ASHIFT_METHOD_LINES && which == 1)
+  if((g->current_structure_method == ASHIFT_METHOD_LINES && which == GDK_BUTTON_PRIMARY)
      || g->current_structure_method == ASHIFT_METHOD_QUAD)
   {
     // we search the selected line and mark it as the moved line
@@ -4929,7 +4929,7 @@ int button_pressed(dt_iop_module_t *self,
     {
       if(g->points_idx[n].near == 0) continue;
 
-      if(which == 3)
+      if(which == GDK_BUTTON_SECONDARY)
       {
         if(g->current_structure_method != ASHIFT_METHOD_LINES)
           g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
@@ -4976,7 +4976,7 @@ int button_pressed(dt_iop_module_t *self,
     }
   }
 
-  if(!handled && g->current_structure_method == ASHIFT_METHOD_LINES && which == 1)
+  if(!handled && g->current_structure_method == ASHIFT_METHOD_LINES && which == GDK_BUTTON_PRIMARY)
   {
     // start to draw a manual line
     g->draw_point_move = TRUE;
@@ -5020,7 +5020,7 @@ int button_pressed(dt_iop_module_t *self,
   // we switch into sweeping mode either if we anyhow take control
   // or if cursor was close to a line when button was pressed. in other
   // cases we hand over the event (for image panning)
-  if((take_control || handled) && which == 3)
+  if((take_control || handled) && which == GDK_BUTTON_SECONDARY)
   {
     dt_control_change_cursor(GDK_PIRATE);
     g->isdeselecting = 1;
@@ -5181,7 +5181,7 @@ int button_released(dt_iop_module_t *self,
   g->crop_cx = g->crop_cy = -1.0f;
 
   // if we have deselected drawn lines, we need to update params
-  if(g->current_structure_method == ASHIFT_METHOD_LINES && which == 3)
+  if(g->current_structure_method == ASHIFT_METHOD_LINES && which == GDK_BUTTON_SECONDARY)
   {
     // we save the lines in params
     _draw_save_lines_to_params(self);
@@ -5332,7 +5332,7 @@ static int _event_fit_v_button_clicked(GtkWidget *widget,
 {
   if(darktable.gui->reset) return FALSE;
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_ashift_params_t *p = self->params;
     dt_iop_ashift_gui_data_t *g = self->gui_data;
@@ -5380,7 +5380,7 @@ static int _event_fit_h_button_clicked(GtkWidget *widget,
 {
   if(darktable.gui->reset) return FALSE;
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_ashift_params_t *p = self->params;
     dt_iop_ashift_gui_data_t *g = self->gui_data;
@@ -5428,7 +5428,7 @@ static int _event_fit_both_button_clicked(GtkWidget *widget,
 {
   if(darktable.gui->reset) return FALSE;
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_ashift_params_t *p = self->params;
     dt_iop_ashift_gui_data_t *g = self->gui_data;
@@ -5478,7 +5478,7 @@ static int _event_structure_auto_clicked(GtkWidget *widget,
 {
   if(darktable.gui->reset) return FALSE;
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_ashift_params_t *p = self->params;
     dt_iop_ashift_gui_data_t *g = self->gui_data;

@@ -663,7 +663,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
       : (fabs(sl_y - y) < 5);
 
     /* do the split rotating */
-    if(which == 1 && fabs(sl_x - x) < 7 && fabs(sl_y - y) < 7)
+    if(which == GDK_BUTTON_PRIMARY && fabs(sl_x - x) < 7 && fabs(sl_y - y) < 7)
     {
       /* let's rotate */
       lib->splitline_rotation = (lib->splitline_rotation + 1) % 4;
@@ -672,7 +672,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
       result = 1;
     }
     /* do the dragging !? */
-    else if(which == 1 && mouse_over_control)
+    else if(which == GDK_BUTTON_PRIMARY && mouse_over_control)
     {
       lib->splitline_dragging = TRUE;
       dt_control_queue_redraw_center();

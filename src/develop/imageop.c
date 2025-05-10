@@ -982,13 +982,13 @@ static gboolean _gui_multiinstance_callback(GtkButton *button,
                                             GdkEventButton *event,
                                             dt_iop_module_t *module)
 {
-  if(event && event->button == 3)
+  if(event && event->button == GDK_BUTTON_SECONDARY)
   {
     if(!(module->flags() & IOP_FLAGS_ONE_INSTANCE))
       _gui_copy_callback(button, module);
     return TRUE;
   }
-  else if(event && event->button == 2)
+  else if(event && event->button == GDK_BUTTON_MIDDLE)
   {
     return FALSE;
   }
@@ -2529,12 +2529,12 @@ static gboolean _iop_plugin_body_button_press(GtkWidget *w,
                                               gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-  if(e->button == 1)
+  if(e->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_request_focus(module);
     return TRUE;
   }
-  else if(e->button == 3)
+  else if(e->button == GDK_BUTTON_SECONDARY)
   {
     _presets_popup_callback(NULL, NULL, module);
 
@@ -2552,7 +2552,7 @@ static gboolean _iop_plugin_header_button_release(GtkWidget *w,
 
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
 
-  if(e->button == 1)
+  if(e->button == GDK_BUTTON_PRIMARY)
   {
     if(dt_modifier_is(e->state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
       ; // do nothing (for easier dragging)
@@ -2578,7 +2578,7 @@ static gboolean _iop_plugin_header_button_release(GtkWidget *w,
       return TRUE;
     }
   }
-  else if(e->button == 3)
+  else if(e->button == GDK_BUTTON_SECONDARY)
   {
     _presets_popup_callback(NULL, NULL, module);
 

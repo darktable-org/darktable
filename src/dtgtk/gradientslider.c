@@ -279,7 +279,7 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
   GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
 
   // reset slider
-  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS && gslider->is_resettable)
+  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS && gslider->is_resettable)
   {
     gslider->is_dragging = FALSE;
     gslider->do_reset = TRUE;
@@ -289,14 +289,14 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
     g_signal_emit_by_name(G_OBJECT(widget), "value-changed");
     g_signal_emit_by_name(G_OBJECT(widget), "value-reset");
   }
-  else if((event->button == 1 || event->button == 3) && event->type == GDK_BUTTON_PRESS)
+  else if((event->button == GDK_BUTTON_PRIMARY || event->button == GDK_BUTTON_SECONDARY) && event->type == GDK_BUTTON_PRESS)
   {
     const gint lselected = _get_active_marker_from_screen(widget, event->x, event->y);
 
     assert(lselected >= 0);
     assert(lselected <= gslider->positions - 1);
 
-    if(event->button == 1) // left mouse button : select and start dragging
+    if(event->button == GDK_BUTTON_PRIMARY) // left mouse button : select and start dragging
     {
       gslider->selected = lselected;
       gslider->do_reset = FALSE;
@@ -368,7 +368,7 @@ static gboolean _gradient_slider_button_release(GtkWidget *widget, GdkEventButto
   GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
   const gint selected = _get_active_marker(gslider);
 
-  if(event->button == 1 && selected != -1 && gslider->do_reset == FALSE)
+  if(event->button == GDK_BUTTON_PRIMARY && selected != -1 && gslider->do_reset == FALSE)
   {
     // First get some dimension info
     gslider->is_changed = TRUE;

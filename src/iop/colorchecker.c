@@ -423,7 +423,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.target_L[34] = p.source_L[34] = 41;  // purple red
   p.target_a[34] = p.source_a[34] = 33;
   p.target_b[34] = p.source_b[34] = -66;
-  
+
   // IT8 skin tones in sixth row
   p.target_L[35] = p.source_L[35] = 17;
   p.target_a[35] = p.source_a[35] = 8;
@@ -446,7 +446,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.target_L[41] = p.source_L[41] = 76;
   p.target_a[41] = p.source_a[41] = 5;
   p.target_b[41] = p.source_b[41] = 33;
-  
+
   // 7-level gray ramp in last row
   p.target_L[42] = p.source_L[42] = 2.0;
   p.target_L[43] = p.source_L[43] = 18.0;
@@ -1439,7 +1439,7 @@ static gboolean checker_button_press(
   const float mx = mouse_x * cells_x / (float)width;
   const float my = mouse_y * cells_y / (float)height;
   int patch = (int)mx + cells_x*(int)my;
-  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
   { // reset on double click
     if(patch < 0 || patch >= p->num_patches) return FALSE;
     p->target_L[patch] = p->source_L[patch];
@@ -1452,7 +1452,7 @@ static gboolean checker_button_press(
     gtk_widget_queue_draw(g->area);
     return TRUE;
   }
-  else if(event->button == 3 && (patch < p->num_patches))
+  else if(event->button == GDK_BUTTON_SECONDARY && (patch < p->num_patches))
   {
     // right click: delete patch, move others up
     if(patch < 0 || patch >= p->num_patches) return FALSE;
@@ -1477,7 +1477,7 @@ static gboolean checker_button_press(
     gtk_widget_queue_draw(g->area);
     return TRUE;
   }
-  else if((event->button == 1) &&
+  else if((event->button == GDK_BUTTON_PRIMARY) &&
           dt_modifier_is(event->state, GDK_SHIFT_MASK) &&
           (self->request_color_pick == DT_REQUEST_COLORPICK_MODULE))
   {

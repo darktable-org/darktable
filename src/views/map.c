@@ -2108,7 +2108,7 @@ static gboolean _view_map_button_press_callback(GtkWidget *w,
     }
   }
 
-  if(e->button == 1)
+  if(e->button == GDK_BUTTON_PRIMARY)
   {
     // check if the click was in a location form - crtl gives priority to images
     if(lib->loc.main.id > 0

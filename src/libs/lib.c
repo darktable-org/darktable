@@ -411,7 +411,7 @@ static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
                                         GdkEventButton *event,
                                         dt_lib_module_info_t *minfo)
 {
-  if(event->button == 1) return FALSE;
+  if(event->button == GDK_BUTTON_PRIMARY) return FALSE;
 
   dt_shortcut_copy_lua((dt_action_t*)minfo->module,
                         g_object_get_data(G_OBJECT(menuitem), "dt-preset-name"));
@@ -965,7 +965,7 @@ static gboolean _lib_plugin_arrow_button_press(GtkWidget *w,
 
   dt_lib_module_t *module = (dt_lib_module_t *)user_data;
 
-  if(e->button == 1)
+  if(e->button == GDK_BUTTON_PRIMARY)
   {
     /* bail out if module is static */
     if(!module->expandable(module)) return FALSE;
@@ -1012,7 +1012,7 @@ static gboolean _lib_plugin_arrow_button_press(GtkWidget *w,
 
     return TRUE;
   }
-  else if(e->button == 3)
+  else if(e->button == GDK_BUTTON_SECONDARY)
   {
     if(gtk_widget_get_sensitive(module->presets_button))
       _presets_popup_callback(NULL, NULL, module);
