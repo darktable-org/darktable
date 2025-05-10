@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-05-10 21:11+0200\n"
-"PO-Revision-Date: 2025-05-10 21:21+0200\n"
+"POT-Creation-Date: 2025-05-10 21:23+0200\n"
+"PO-Revision-Date: 2025-05-10 21:23+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1557,7 +1557,7 @@ msgstr "Répertoire racine des masques raster"
 #: ../build/bin/preferences_gen.h:6078
 msgid ""
 "this folder (and sub-folders) contains pfm files used by the raster image "
-"file module. (restart required)"
+"import module. (restart required)"
 msgstr ""
 "Ce répertoire (et ses sous-répertoires) contient les fichiers PFM utilisés "
 "par le module\n"
@@ -5164,7 +5164,7 @@ msgstr "Gamma"
 
 #: ../build/lib/darktable/plugins/introspection_rasterfile.c:146
 msgid "all RGB colors"
-msgstr "Toutes les couleurs RVB"
+msgstr "Tous les canaux RVB"
 
 #: ../build/lib/darktable/plugins/introspection_rasterfile.c:147
 msgid "only red"
@@ -22641,7 +22641,7 @@ msgid "raster|mask"
 msgstr "masque|raster"
 
 #: ../src/iop/rasterfile.c:100
-msgid "read pfm files to be used as rastermasks"
+msgid "read pfm files to be used as raster masks"
 msgstr "Lire le fichier PFM à utilisé comme masque raster"
 
 #: ../src/iop/rasterfile.c:169
