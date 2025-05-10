@@ -253,7 +253,7 @@ static int _circle_events_button_pressed(dt_iop_module_t *module,
       }
     }
   }
-  else if(which == 3)
+  else if(which == GDK_BUTTON_SECONDARY)
   {
     gui->creation_continuous = FALSE;
     gui->creation_continuous_module = NULL;
@@ -262,7 +262,7 @@ static int _circle_events_button_pressed(dt_iop_module_t *module,
     dt_control_queue_redraw_center();
     return 1;
   }
-  else if(which == 1
+  else if(which == GDK_BUTTON_PRIMARY
           && ((dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK))
               || dt_modifier_is(state, GDK_SHIFT_MASK)))
   {
@@ -398,7 +398,7 @@ static int _circle_events_button_released(dt_iop_module_t *module,
   float wd, ht, iwidth, iheight;
   dt_masks_get_image_size(&wd, &ht, &iwidth, &iheight);
 
-  if(which == 3
+  if(which == GDK_BUTTON_SECONDARY
      && dt_is_valid_maskid(parentid)
      && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {

@@ -268,7 +268,7 @@ static gboolean _misc_press(GtkWidget *w,
                             GdkEventButton *e,
                             _widgets_misc_t *misc)
 {
-  if(e->button == 3)
+  if(e->button == GDK_BUTTON_SECONDARY)
   {
     _misc_tree_update_visibility(w, misc);
     gtk_popover_set_default_widget(GTK_POPOVER(misc->pop), w);
@@ -280,7 +280,7 @@ static gboolean _misc_press(GtkWidget *w,
     gtk_widget_show_all(misc->pop);
     return TRUE;
   }
-  else if(e->button == 1 && e->type == GDK_2BUTTON_PRESS)
+  else if(e->button == GDK_BUTTON_PRIMARY && e->type == GDK_2BUTTON_PRESS)
   {
     gtk_entry_set_text(GTK_ENTRY(misc->name), "");
     _misc_changed(w, misc);

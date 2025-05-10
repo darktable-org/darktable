@@ -560,7 +560,7 @@ static void _refresh_display_all_tracks(GtkWidget *widget, dt_lib_module_t *self
 
 static gboolean _click_for_entire_track(GtkEntry *spin, GdkEventButton *event, dt_lib_module_t *self)
 {
-  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
   {
     _refresh_display_all_tracks(NULL, self);
   }

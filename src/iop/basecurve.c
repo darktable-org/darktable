@@ -1892,7 +1892,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
   int nodes = p->basecurve_nodes[ch];
   dt_iop_basecurve_node_t *basecurve = p->basecurve[ch];
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     if(event->type == GDK_BUTTON_PRESS && dt_modifier_is(event->state, GDK_CONTROL_MASK)
       && nodes < MAXNODES && g->selected == -1)
@@ -1969,7 +1969,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
       return TRUE;
     }
   }
-  else if(event->button == 3 && g->selected >= 0)
+  else if(event->button == GDK_BUTTON_SECONDARY && g->selected >= 0)
   {
     if(g->selected == 0 || g->selected == nodes - 1)
     {

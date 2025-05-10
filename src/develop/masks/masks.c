@@ -1181,7 +1181,7 @@ gboolean dt_masks_events_button_pressed(dt_iop_module_t *module,
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
 
   // allow to select a shape inside an iop
-  if(gui && which == 1)
+  if(gui && which == GDK_BUTTON_PRIMARY)
   {
     dt_masks_form_t *sel = NULL;
 

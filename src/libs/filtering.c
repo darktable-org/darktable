@@ -1044,7 +1044,7 @@ static gboolean _topbar_label_press(GtkWidget *w,
                                     dt_lib_module_t *self)
 {
   //reset on double-click
-  if(e->button == 1 && e->type == GDK_2BUTTON_PRESS)
+  if(e->button == GDK_BUTTON_PRIMARY && e->type == GDK_2BUTTON_PRESS)
     _topbar_reset(self);
   return FALSE;
 }

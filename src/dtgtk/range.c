@@ -1185,7 +1185,7 @@ static void _popup_show(GtkDarktableRangeSelect *range, GtkWidget *w)
 static gboolean _event_entry_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
-  if(e->button == 3)
+  if(e->button == GDK_BUTTON_SECONDARY)
   {
     _popup_show(range, w);
     return TRUE;
@@ -1574,12 +1574,12 @@ static gboolean _event_band_leave(GtkWidget *w, GdkEventCrossing *e, gpointer us
 static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
-  if(e->button == 1 && e->type == GDK_2BUTTON_PRESS)
+  if(e->button == GDK_BUTTON_PRIMARY && e->type == GDK_2BUTTON_PRESS)
   {
     dtgtk_range_select_set_selection(range, DT_RANGE_BOUND_MIN | DT_RANGE_BOUND_MAX, range->min_r, range->max_r,
                                      TRUE, TRUE);
   }
-  else if(e->button == 1)
+  else if(e->button == GDK_BUTTON_PRIMARY)
   {
     if(!range->mouse_inside) return TRUE;
     const double pos_r = _graph_value_from_pos(range, e->x - range->alloc_padding.x, TRUE);
@@ -1611,7 +1611,7 @@ static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user
 
     gtk_widget_queue_draw(range->band);
   }
-  else if(e->button == 3)
+  else if(e->button == GDK_BUTTON_SECONDARY)
   {
     _popup_show(range, range->band);
   }

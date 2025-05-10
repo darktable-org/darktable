@@ -1279,7 +1279,7 @@ static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
 
   gchar *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     if(_click_time > event->time)
     {

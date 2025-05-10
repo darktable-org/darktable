@@ -313,7 +313,7 @@ static void _bt_add_shape(GtkWidget *widget, GdkEventButton *event, gpointer sha
 {
   if(darktable.gui->reset) return;
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     _tree_add_shape(NULL, shape);
 
@@ -884,7 +884,7 @@ static int _tree_button_pressed(GtkWidget *treeview,
   }
   /* single click with the right mouse button? */
   if(event->type == GDK_BUTTON_PRESS
-     && event->button == 1)
+     && event->button == GDK_BUTTON_PRIMARY)
   {
     // if click on a blank space, then deselect all
     if(!on_row)
@@ -893,7 +893,7 @@ static int _tree_button_pressed(GtkWidget *treeview,
     }
   }
   else if(event->type == GDK_BUTTON_PRESS
-          && event->button == 3)
+          && event->button == GDK_BUTTON_SECONDARY)
   {
     // if we are already inside the selection, no change
     if(on_row

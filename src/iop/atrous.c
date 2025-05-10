@@ -1513,7 +1513,7 @@ static gboolean area_button_press(GtkWidget *widget,
                                   GdkEventButton *event,
                                   dt_iop_module_t *self)
 {
-  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
   {
     // reset current curve
     dt_iop_atrous_params_t *p = self->params;
@@ -1527,7 +1527,7 @@ static gboolean area_button_press(GtkWidget *widget,
     }
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + g->channel2);
   }
-  else if(event->button == 1)
+  else if(event->button == GDK_BUTTON_PRIMARY)
   {
     // set active point
     dt_iop_atrous_gui_data_t *g = self->gui_data;
@@ -1551,7 +1551,7 @@ static gboolean area_button_release(GtkWidget *widget,
                                     GdkEventButton *event,
                                     dt_iop_module_t *self)
 {
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_atrous_gui_data_t *g = self->gui_data;
     g->dragging = 0;

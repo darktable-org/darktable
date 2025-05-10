@@ -2872,7 +2872,7 @@ int mouse_moved(dt_iop_module_t *self,
       if(grab & GRAB_BOTTOM) g->handle_y = bzy - (g->clip_h + g->clip_y);
       if(!grab && darktable.control->button_down_which == 3) g->straightening = 1;
     }
-    if(!g->straightening && darktable.control->button_down_which == 1 && g->k_show != 1)
+    if(!g->straightening && darktable.control->button_down_which == GDK_BUTTON_PRIMARY && g->k_show != 1)
     {
       grab = g->cropping;
 
@@ -3183,13 +3183,13 @@ int button_pressed(dt_iop_module_t *self,
   if(!g->preview_ready) return 0;
 
   // avoid unexpected back to lt mode:
-  if(type == GDK_2BUTTON_PRESS && which == 1)
+  if(type == GDK_2BUTTON_PRESS && which == GDK_BUTTON_PRIMARY)
   {
     dt_iop_request_focus(NULL);
     commit_box(self, g, p);
     return 1;
   }
-  if(which == 3 || which == 1)
+  if(which == GDK_BUTTON_SECONDARY || which == GDK_BUTTON_PRIMARY)
   {
     // switch module on already, other code depends in this:
     dt_dev_add_history_item(darktable.develop, self, TRUE);

@@ -2434,7 +2434,7 @@ static gboolean _panel_handle_button_callback(GtkWidget *w,
                                               GdkEventButton *e,
                                               gpointer user_data)
 {
-  if(e->button == 1)
+  if(e->button == GDK_BUTTON_PRIMARY)
   {
     if(e->type == GDK_BUTTON_PRESS)
     {
@@ -4001,7 +4001,7 @@ static gboolean _resize_wrap_button(GtkWidget *widget,
   }
   else if(event->y > gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE
           && event->type == GDK_BUTTON_PRESS
-          && event->button == 1 )
+          && event->button == GDK_BUTTON_PRIMARY)
   {
     _resize_wrap_dragging = TRUE;
     return TRUE;

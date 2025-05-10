@@ -166,7 +166,7 @@ static void _lib_duplicate_thumb_press_callback(GtkWidget *widget,
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_object_get_data(G_OBJECT(widget), "thumb");
   const dt_imgid_t imgid = thumb->imgid;
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     if(event->type == GDK_BUTTON_PRESS)
     {

@@ -742,7 +742,7 @@ void expose(dt_view_t *self,
 
   // if dragging the rotation line, do it and nothing else
   if(dev->proxy.rotate
-     && (darktable.control->button_down_which == 3
+     && (darktable.control->button_down_which == GDK_BUTTON_SECONDARY
          || dmod == dev->proxy.rotate))
   {
     // reminder, we want this to be exposed always for guidings
@@ -1443,7 +1443,7 @@ static gboolean _darkroom_ui_apply_style_button_callback
    GdkEventButton *event,
    const dt_stylemenu_data_t *menu_data)
 {
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
     dt_styles_apply_to_dev(menu_data->name, darktable.develop->image_storage.id);
   else
     dt_shortcut_copy_lua(NULL, menu_data->name);
@@ -2384,7 +2384,7 @@ static gboolean _quickbutton_press_release(GtkWidget *button,
   int delay = 0;
   g_object_get(gtk_settings_get_default(), "gtk-long-press-time", &delay, NULL);
 
-  if((event->type == GDK_BUTTON_PRESS && event->button == 3) ||
+  if((event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_SECONDARY) ||
      (event->type == GDK_BUTTON_RELEASE && event->time - start_time > delay))
   {
     gtk_popover_set_relative_to(GTK_POPOVER(popover), button);
@@ -3359,7 +3359,7 @@ void mouse_moved(dt_view_t *self,
                                            pressure, which, zoom_scale);
   }
 
-  if(ctl->button_down && ctl->button_down_which == 1)
+  if(ctl->button_down && ctl->button_down_which == GDK_BUTTON_PRIMARY)
   {
     if(!handled)
       dt_dev_zoom_move(&dev->full, DT_ZOOM_MOVE, -1.f, 0,
@@ -3377,7 +3377,7 @@ void mouse_moved(dt_view_t *self,
   }
   else if(darktable.control->button_down
           && !handled
-          && darktable.control->button_down_which == 3
+          && darktable.control->button_down_which == GDK_BUTTON_SECONDARY
           && dev->proxy.rotate)
   {
     _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
@@ -3395,14 +3395,14 @@ int button_released(dt_view_t *self,
 {
   dt_develop_t *dev = darktable.develop;
 
-  if(darktable.develop->darkroom_skip_mouse_events && which == 1)
+  if(darktable.develop->darkroom_skip_mouse_events && which == GDK_BUTTON_PRIMARY)
   {
     dt_control_change_cursor(GDK_LEFT_PTR);
     return 1;
   }
 
   int handled = 0;
-  if(dt_iop_color_picker_is_visible(dev) && which == 1)
+  if(dt_iop_color_picker_is_visible(dev) && which == GDK_BUTTON_PRIMARY)
   {
     // only sample box picker at end, for speed
     if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
@@ -3416,7 +3416,7 @@ int button_released(dt_view_t *self,
 
   float zoom_x = FLT_MAX, zoom_y, zoom_scale;
   // rotate
-  if(which == 3 && dev->proxy.rotate)
+  if(which == GDK_BUTTON_SECONDARY && dev->proxy.rotate)
   {
     _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
     handled = dev->proxy.rotate->button_released(dev->proxy.rotate, zoom_x, zoom_y,
@@ -3440,7 +3440,7 @@ int button_released(dt_view_t *self,
                                                which, state, zoom_scale);
     if(handled) return handled;
   }
-  if(which == 1) dt_control_change_cursor(GDK_LEFT_PTR);
+  if(which == GDK_BUTTON_PRIMARY) dt_control_change_cursor(GDK_LEFT_PTR);
 
   return 1;
 }
@@ -3461,13 +3461,13 @@ int button_pressed(dt_view_t *self,
 
   if(darktable.develop->darkroom_skip_mouse_events)
   {
-    if(which == 1)
+    if(which == GDK_BUTTON_PRIMARY)
     {
       if(type == GDK_2BUTTON_PRESS) return 0;
       dt_control_change_cursor(GDK_HAND1);
       return 1;
     }
-    else if(which == 3 && dev->proxy.rotate)
+    else if(which == GDK_BUTTON_SECONDARY && dev->proxy.rotate)
     {
       _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
       return dev->proxy.rotate->button_pressed(dev->proxy.rotate, zoom_x, zoom_y, pressure,
@@ -3481,7 +3481,7 @@ int button_pressed(dt_view_t *self,
     const int procw = dev->preview_pipe->backbuf_width;
     const int proch = dev->preview_pipe->backbuf_height;
 
-    if(which == 1)
+    if(which == GDK_BUTTON_PRIMARY)
     {
       _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
       sample->point[0] = zoom_x;
@@ -3525,7 +3525,7 @@ int button_pressed(dt_view_t *self,
       return 1;
     }
 
-    if(which == 3)
+    if(which == GDK_BUTTON_SECONDARY)
     {
       // apply a live sample's area to the active picker?
       // FIXME: this is a naive implementation, nicer would be to cycle through overlapping samples then reset
@@ -3601,17 +3601,17 @@ int button_pressed(dt_view_t *self,
     if(handled) return handled;
   }
 
-  if(which == 1 && type == GDK_2BUTTON_PRESS) return 0;
-  if(which == 1)
+  if(which == GDK_BUTTON_PRIMARY && type == GDK_2BUTTON_PRESS) return 0;
+  if(which == GDK_BUTTON_PRIMARY)
   {
     dt_control_change_cursor(GDK_HAND1);
     return 1;
   }
 
-  if(which == 2  && type == GDK_BUTTON_PRESS) // Middle mouse button
+  if(which == GDK_BUTTON_MIDDLE  && type == GDK_BUTTON_PRESS) // Middle mouse button
     dt_dev_zoom_move(&dev->full, DT_ZOOM_1, 0.0f, -2, x, y,
                      !dt_modifier_is(state, GDK_CONTROL_MASK));
-  if(which == 3 && dev->proxy.rotate)
+  if(which == GDK_BUTTON_SECONDARY && dev->proxy.rotate)
   {
     _get_zoom_pos(&dev->full, x, y, &zoom_x, &zoom_y, &zoom_scale);
     return dev->proxy.rotate->button_pressed(dev->proxy.rotate, zoom_x, zoom_y,
@@ -3804,14 +3804,14 @@ static gboolean _second_window_button_pressed_callback(GtkWidget *w,
                                                        dt_develop_t *dev)
 {
   if(event->type == GDK_2BUTTON_PRESS) return 0;
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     darktable.control->button_x = event->x;
     darktable.control->button_y = event->y;
     _dt_second_window_change_cursor(dev, "grabbing");
     return TRUE;
   }
-  if(event->button == 2)
+  if(event->button == GDK_BUTTON_MIDDLE)
   {
     dt_dev_zoom_move(&dev->preview2, DT_ZOOM_1, 0.0f, -2,
                      event->x, event->y, !dt_modifier_is(event->state, GDK_CONTROL_MASK));
@@ -3824,7 +3824,7 @@ static gboolean _second_window_button_released_callback(GtkWidget *w,
                                                         GdkEventButton *event,
                                                         dt_develop_t *dev)
 {
-  if(event->button == 1) _dt_second_window_change_cursor(dev, "default");
+  if(event->button == GDK_BUTTON_PRIMARY) _dt_second_window_change_cursor(dev, "default");
 
   gtk_widget_queue_draw(w);
   return TRUE;
