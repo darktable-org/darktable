@@ -55,7 +55,7 @@ static void _set_mask(dt_lib_filtering_rule_t *rule , const int mask, const gboo
 static gboolean _colors_clicked(GtkWidget *w, GdkEventButton *e, _widgets_colors_t *colors)
 {
   // double click reset the widget
-  if(e->button == 1 && e->type == GDK_2BUTTON_PRESS)
+  if(e->button == GDK_BUTTON_PRIMARY && e->type == GDK_2BUTTON_PRESS)
   {
     _set_mask(colors->rule, CL_AND_MASK, TRUE);
     _colors_update(colors->rule);

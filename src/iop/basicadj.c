@@ -407,13 +407,13 @@ int button_pressed(dt_iop_module_t *self,
   dt_iop_basicadj_gui_data_t *g = self->gui_data;
   if(g && g->draw_selected_region && self->enabled)
   {
-    if((which == 3) || (which == 1 && type == GDK_2BUTTON_PRESS))
+    if((which == GDK_BUTTON_SECONDARY) || (which == GDK_BUTTON_PRIMARY && type == GDK_2BUTTON_PRESS))
     {
       _turn_selregion_picker_off(self);
 
       handled = 1;
     }
-    else if(which == 1)
+    else if(which == GDK_BUTTON_PRIMARY)
     {
       float wd, ht;
       dt_dev_get_preview_size(self->dev, &wd, &ht);

@@ -719,7 +719,7 @@ static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event,
 static gboolean lowlight_button_press(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
   dt_iop_lowlight_gui_data_t *g = self->gui_data;
-  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
   {
     // reset current curve
     dt_iop_lowlight_params_t *p = self->params;
@@ -732,7 +732,7 @@ static gboolean lowlight_button_press(GtkWidget *widget, GdkEventButton *event, 
     dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget);
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
-  else if(event->button == 1)
+  else if(event->button == GDK_BUTTON_PRIMARY)
   {
     g->drag_params = *(dt_iop_lowlight_params_t *)self->params;
     const int inset = DT_IOP_LOWLIGHT_INSET;
@@ -750,7 +750,7 @@ static gboolean lowlight_button_press(GtkWidget *widget, GdkEventButton *event, 
 
 static gboolean lowlight_button_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_lowlight_gui_data_t *g = self->gui_data;
     g->dragging = 0;

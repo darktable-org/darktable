@@ -1284,7 +1284,7 @@ static gboolean rt_wdbar_button_release(GtkWidget *widget,
 {
   dt_iop_retouch_gui_data_t *g = self->gui_data;
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
     g->is_dragging = 0;
 
   gtk_widget_queue_draw(g->wd_bar);
@@ -1842,7 +1842,7 @@ static gboolean rt_edit_masks_callback(GtkWidget *widget,
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), FALSE);
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     ++darktable.gui->reset;
 

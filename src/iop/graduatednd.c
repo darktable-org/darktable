@@ -645,7 +645,7 @@ int button_pressed(dt_iop_module_t *self,
 {
   dt_iop_graduatednd_gui_data_t *g = self->gui_data;
 
-  if(which == 3)
+  if(which == GDK_BUTTON_SECONDARY)
   {
     // creating a line with right click
     g->dragging = 2;
@@ -657,7 +657,7 @@ int button_pressed(dt_iop_module_t *self,
     g->oldy = pzy;
     return 1;
   }
-  else if(g->selected > 0 && which == 1)
+  else if(g->selected > 0 && which == GDK_BUTTON_PRIMARY)
   {
     g->dragging = g->selected;
     g->oldx = pzx;

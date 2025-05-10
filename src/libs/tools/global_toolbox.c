@@ -804,7 +804,7 @@ static gboolean _lib_keymap_button_press_release(GtkWidget *button, GdkEventButt
   int delay = 0;
   g_object_get(gtk_settings_get_default(), "gtk-long-press-time", &delay, NULL);
 
-  if((event->type == GDK_BUTTON_PRESS && event->button == 3) ||
+  if((event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_SECONDARY) ||
      (event->type == GDK_BUTTON_RELEASE && event->time - start_time > delay))
   {
     _show_shortcuts_prefs(NULL);

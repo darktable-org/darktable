@@ -1927,7 +1927,7 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
     MIN(dt_conf_get_float(DT_MASKS_CONF(form->type, path, border)), 0.5f);
 
   if(gui->creation
-     && which == 1
+     && which == GDK_BUTTON_PRIMARY
      && form->points == NULL
      && (dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)
          || dt_modifier_is(state, GDK_SHIFT_MASK)))
@@ -1939,7 +1939,7 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
     return 1;
   }
   else if(gui->creation
-          && (which == 3 || gui->creation_closing_form))
+          && (which == GDK_BUTTON_SECONDARY || gui->creation_closing_form))
   {
     // we don't want a form with less than 3 points
     if(g_list_shorter_than(form->points, 4))
@@ -2044,7 +2044,7 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
       dt_control_queue_redraw_center();
     }
   }
-  else if(which == 1)
+  else if(which == GDK_BUTTON_PRIMARY)
   {
     if(gui->creation)
     {
@@ -2241,7 +2241,7 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
     }
     gui->point_edited = -1;
   }
-  else if(which == 3 && gui->point_selected >= 0)
+  else if(which == GDK_BUTTON_SECONDARY && gui->point_selected >= 0)
   {
     // we remove the point (and the entire form if there is too few points)
     if(g_list_shorter_than(form->points, 4))
@@ -2299,7 +2299,7 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
 
     return 1;
   }
-  else if(which == 3 && gui->feather_selected >= 0)  // right-click to reset Bézier controls
+  else if(which == GDK_BUTTON_SECONDARY && gui->feather_selected >= 0)  // right-click to reset Bézier controls
   {
     dt_masks_point_path_t *point
         = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->feather_selected);
@@ -2317,7 +2317,7 @@ static int _path_events_button_pressed(dt_iop_module_t *module,
     }
     return 1;
   }
-  else if(which == 3
+  else if(which == GDK_BUTTON_SECONDARY
           && dt_is_valid_maskid(parentid)
           && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {

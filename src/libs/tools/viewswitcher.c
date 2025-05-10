@@ -275,7 +275,7 @@ static void _switch_view(const dt_view_t *view)
 
 static gboolean _lib_viewswitcher_button_press_callback(GtkWidget *w, GdkEventButton *ev, const dt_view_t *view)
 {
-  if(ev->button == 1)
+  if(ev->button == GDK_BUTTON_PRIMARY)
   {
     _switch_view(view);
     return TRUE;

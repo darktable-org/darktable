@@ -658,9 +658,9 @@ int button_pressed(dt_view_t *self,
 {
   dt_slideshow_t *d = self->data;
 
-  if(which == 1)
+  if(which == GDK_BUTTON_PRIMARY)
     _step_state(d, S_REQUEST_STEP);
-  else if(which == 3)
+  else if(which == GDK_BUTTON_SECONDARY)
     _step_state(d, S_REQUEST_STEP_BACK);
   else
     return 1;

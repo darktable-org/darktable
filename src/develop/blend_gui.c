@@ -1353,7 +1353,7 @@ static gboolean _blendop_blendif_showmask_clicked(GtkToggleButton *button,
 {
   if(darktable.gui->reset) return TRUE;
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     const gboolean has_mask_display =
       module->request_mask_display
@@ -1406,7 +1406,7 @@ static gboolean _blendop_masks_modes_none_clicked(GtkWidget *button,
   if(darktable.gui->reset) return TRUE;
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
-  if(event->button == 1 && data->selected_mask_mode != button)
+  if(event->button == GDK_BUTTON_PRIMARY && data->selected_mask_mode != button)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->selected_mask_mode),
                                  FALSE); // unsets currently toggled if any
@@ -1665,7 +1665,7 @@ static gboolean _blendop_masks_show_and_edit(GtkWidget *widget,
 
   dt_iop_gui_blend_data_t *bd = self->blend_data;
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_request_focus(self);
 

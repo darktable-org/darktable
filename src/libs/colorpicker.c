@@ -518,12 +518,12 @@ static gboolean _live_sample_button(GtkWidget *widget,
                                     GdkEventButton *event,
                                     dt_colorpicker_sample_t *sample)
 {
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     sample->locked = !sample->locked;
     gtk_widget_queue_draw(widget);
   }
-  else if(event->button == 3)
+  else if(event->button == GDK_BUTTON_SECONDARY)
   {
     // copy to active picker
     dt_lib_module_t *self = darktable.lib->proxy.colorpicker.module;
