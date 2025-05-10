@@ -449,6 +449,7 @@ static void _correct_pixel_pyramid(const float *const in,
   }
 }
 
+#ifdef HAVE_GMIC
 static void _get_cache_filename(const char *const lutname, char *const cache_filename)
 {
   char *cache_dir = g_build_filename(g_get_user_cache_dir(), "gmic", NULL);
@@ -459,7 +460,6 @@ static void _get_cache_filename(const char *const lutname, char *const cache_fil
   g_free(cache_file);
 }
 
-#ifdef HAVE_GMIC
 static uint8_t _calculate_clut_compressed(dt_iop_lut3d_params_t *const p,
                                           const char *const filepath, float **clut)
 {
