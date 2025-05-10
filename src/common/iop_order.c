@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2024 darktable developers.
+    Copyright (C) 2018-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -82,6 +82,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { { 1.0f }, "rawprepare", 0},
   { { 2.0f }, "invert", 0},
   { { 3.0f }, "temperature", 0},
+  { { 3.1f }, "rasterfile", 0},
   { { 4.0f }, "highlights", 0},
   { { 5.0f }, "cacorrect", 0},
   { { 6.0f }, "hotpixels", 0},
@@ -177,6 +178,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { { 1.0 }, "rawprepare", 0},
   { { 2.0 }, "invert", 0},
   { { 3.0f }, "temperature", 0},
+  { { 3.1f }, "rasterfile", 0},
   { { 4.0f }, "highlights", 0},
   { { 5.0f }, "cacorrect", 0},
   { { 6.0f }, "hotpixels", 0},
@@ -293,6 +295,7 @@ const dt_iop_order_entry_t v50_order[] = {
   { { 1.0 }, "rawprepare", 0},
   { { 2.0 }, "invert", 0},
   { { 3.0f }, "temperature", 0},
+  { { 3.1f }, "rasterfile", 0},
   { { 4.0f }, "highlights", 0},
   { { 5.0f }, "cacorrect", 0},
   { { 6.0f }, "hotpixels", 0},
@@ -411,6 +414,7 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 1.0 }, "rawprepare", 0 },
   { { 2.0 }, "invert", 0 },
   { { 3.0f }, "temperature", 0 },
+  { { 3.1f }, "rasterfile", 0},
   { { 4.0f }, "highlights", 0 },
   { { 5.0f }, "cacorrect", 0 },
   { { 6.0f }, "hotpixels", 0 },
@@ -530,6 +534,7 @@ const dt_iop_order_entry_t v50_jpg_order[] = {
   { { 1.0 }, "rawprepare", 0 },
   { { 2.0 }, "invert", 0 },
   { { 3.0f }, "temperature", 0 },
+  { { 3.1f }, "rasterfile", 0},
   { { 4.0f }, "highlights", 0 },
   { { 5.0f }, "cacorrect", 0 },
   { { 6.0f }, "hotpixels", 0 },
@@ -1173,6 +1178,7 @@ GList *dt_ioppr_get_iop_order_list(const dt_imgid_t imgid,
           _insert_before(iop_order_list, "nlmeans", "blurs");
           _insert_before(iop_order_list, "filmicrgb", "sigmoid");
           _insert_before(iop_order_list, "colorbalancergb", "colorequal");
+          _insert_before(iop_order_list, "highlights", "rasterfile");
         }
       }
       else if(version >= DT_IOP_ORDER_LEGACY

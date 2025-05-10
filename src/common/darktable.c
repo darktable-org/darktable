@@ -52,6 +52,7 @@
 #include "common/resource_limits.h"
 #include "common/undo.h"
 #include "common/gimp.h"
+#include "common/pfm.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/crawler.h"
@@ -601,34 +602,14 @@ void dt_dump_pfm_file(
      (bpp != 16) ? "M" : "C",
      (bpp==2) ? "ppm" : "pfm");
 
-  if((width<1) || (height<1) || !data)
+
+  if((width < 1) || (height < 1) || !data)
     goto finalize;
 
   fullname = g_build_filename(path, fname, NULL);
-
-  FILE *f = g_fopen(fullname, "wb");
-  if(f == NULL)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "%20s can't write file '%s' in wb mode", head, fullname);
-    goto finalize;
-  }
-
-  if(bpp==2)
-    fprintf(f, "P5\n%d %d\n", width, height);
-  else
-    fprintf(f, "P%s\n%d %d\n-1.0\n", (bpp != 16) ? "f" : "F", width, height);
-
-  for(int row = height - 1; row >= 0; row--)
-  {
-    for(int col = 0; col < width; col++)
-    {
-      const size_t blk = ((size_t)row * width + col) * bpp;
-      fwrite(data + blk, (bpp==16) ? 12 : bpp, 1, f);
-    }
-  }
+  dt_write_pfm(fullname, width, height, data, bpp);
 
   dt_print(DT_DEBUG_ALWAYS, "%-20s %s,  %dx%d, bpp=%d", head, fullname, width, height, bpp);
-  fclose(f);
   written += 1;
 
 finalize:
@@ -814,7 +795,7 @@ char *version = g_strdup_printf(
 #else
                "  OSMGpsMap              -> DISABLED - map view is NOT available\n"
 #endif
-               
+
 #ifdef HAVE_GMIC
                "  GMIC                   -> ENABLED  - Compressed LUTs are supported\n"
 #else
