@@ -1007,21 +1007,15 @@ gboolean dt_imageio_export(const dt_imgid_t imgid,
   }
 }
 
-
-static double _get_pipescale(dt_dev_pixelpipe_t *pipe,
-                             const int width,
-                             const int height,
+static double _get_pipescale(const int processed_dimension,
+                             const int dimension,
                              const double max_scale)
 {
-  const double scalex = width > 0
-    ? fmin((double)width / (double)pipe->processed_width, max_scale)
+  const double scale = dimension > 0
+    ? fmin((double)dimension / (double)processed_dimension, max_scale)
     : max_scale;
 
-  const double scaley = height > 0
-    ? fmin((double)height / (double)pipe->processed_height, max_scale)
-    : max_scale;
-
-  return fmin(scalex, scaley);
+  return scale;
 }
 
 // internal function: to avoid exif blob reading + 8-bit byteorder
@@ -1256,7 +1250,10 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   const gboolean doscale = upscale && ((width > 0 || height > 0) || is_scaling);
   const double max_scale = doscale ? max_possible_scale : 1.00;
 
-  double scale = _get_pipescale(&pipe, width, height, max_scale);
+  // get the scale for both height and width separately as these values can differ slightly
+  double scale_width = _get_pipescale(pipe.processed_width, width, max_scale);
+  double scale_height = _get_pipescale(pipe.processed_height, height, max_scale);
+  double scale = fmin(scale_width, scale_height);
   float origin[2] = { 0.0f, 0.0f };
 
   if(dt_dev_distort_backtransform_plus(&dev, &pipe, 0.0,
@@ -1264,7 +1261,9 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   {
     if(width == 0) width = pipe.processed_width;
     if(height == 0) height = pipe.processed_height;
-    scale = _get_pipescale(&pipe, width, height, max_scale);
+    scale_width = _get_pipescale(pipe.processed_width, width, max_scale);
+    scale_height = _get_pipescale(pipe.processed_height, height, max_scale);
+    scale = fmin(scale_width, scale_height);
 
     if(is_scaling)
     {
@@ -1275,12 +1274,14 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
       if(!thumbnail_export)
       {
         scale = fmin(scale_factor, max_scale);
+        scale_width = scale;
+        scale_height = scale;
       }
     }
   }
 
-  const int processed_width = floor(scale * pipe.processed_width);
-  const int processed_height = floor(scale * pipe.processed_height);
+  const int processed_width = floor(scale_width * pipe.processed_width);
+  const int processed_height = floor(scale_height * pipe.processed_height);
   const gboolean size_warning = processed_width < 1 || processed_height < 1;
   dt_print(DT_DEBUG_IMAGEIO,
            "[dt_imageio_export] %s%s imgid %d, %ix%i --> %ix%i (scale=%.4f, maxscale=%.4f)."
