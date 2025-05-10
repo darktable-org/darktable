@@ -59,6 +59,12 @@ changes (where available).
 - The metadata module is now fully configurable and allows to add and
   maintain any tags which are supported by exiv2.
 
+- Added a new module "raster mask import". After setting up a root
+  folder containing pfm files, a file can be selected to be used as a
+  raster mask, it is scaled to full image size. You can also define
+  what combination of the RGB channels of that pfm file will be used
+  for the raster mask.
+
 ## UI/UX Improvements
 
 - N/A
