@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-05-10 21:11+0200\n"
+"POT-Creation-Date: 2025-05-10 21:23+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1431,7 +1431,7 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:6078
 msgid ""
 "this folder (and sub-folders) contains pfm files used by the raster image "
-"file module. (restart required)"
+"import module. (restart required)"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:6099
@@ -20716,7 +20716,7 @@ msgid "raster|mask"
 msgstr ""
 
 #: ../src/iop/rasterfile.c:100
-msgid "read pfm files to be used as rastermasks"
+msgid "read pfm files to be used as raster masks"
 msgstr ""
 
 #: ../src/iop/rasterfile.c:169
