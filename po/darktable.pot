@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-05-10 21:09+0200\n"
+"POT-Creation-Date: 2025-05-10 21:11+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4411,6 +4411,8 @@ msgstr ""
 #. mode choice
 #: ../build/lib/darktable/plugins/introspection_lens.cc:202
 #: ../build/lib/darktable/plugins/introspection_lens.cc:409
+#: ../build/lib/darktable/plugins/introspection_rasterfile.c:49
+#: ../build/lib/darktable/plugins/introspection_rasterfile.c:116
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:128
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:219
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:51
@@ -4844,6 +4846,34 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:185
 #: ../src/iop/profile_gamma.c:611
 msgid "gamma"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_rasterfile.c:146
+msgid "all RGB colors"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_rasterfile.c:147
+msgid "only red"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_rasterfile.c:148
+msgid "only green"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_rasterfile.c:149
+msgid "only blue"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_rasterfile.c:150
+msgid "red and green"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_rasterfile.c:151
+msgid "red and blue"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_rasterfile.c:152
+msgid "green and blue"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_rawdenoise.c:43
@@ -5383,18 +5413,18 @@ msgstr ""
 #: ../src/gui/presets.c:568 ../src/gui/styles_dialog.c:552
 #: ../src/imageio/storage/disk.c:198 ../src/imageio/storage/gallery.c:149
 #: ../src/imageio/storage/latex.c:145 ../src/iop/lut3d.c:1562
-#: ../src/libs/collect.c:433 ../src/libs/collect.c:3390
-#: ../src/libs/copy_history.c:122 ../src/libs/export_metadata.c:168
-#: ../src/libs/geotagging.c:953 ../src/libs/import.c:1863
-#: ../src/libs/import.c:1976 ../src/libs/import.c:2075
-#: ../src/libs/metadata.c:844 ../src/libs/metadata_view.c:1435
-#: ../src/libs/modulegroups.c:3631 ../src/libs/recentcollect.c:232
-#: ../src/libs/styles.c:452 ../src/libs/styles.c:500 ../src/libs/styles.c:595
-#: ../src/libs/styles.c:658 ../src/libs/tagging.c:1535
-#: ../src/libs/tagging.c:1626 ../src/libs/tagging.c:1717
-#: ../src/libs/tagging.c:1853 ../src/libs/tagging.c:2137
-#: ../src/libs/tagging.c:2593 ../src/libs/tagging.c:2629
-#: ../src/libs/tagging.c:3583
+#: ../src/iop/rasterfile.c:256 ../src/libs/collect.c:433
+#: ../src/libs/collect.c:3390 ../src/libs/copy_history.c:122
+#: ../src/libs/export_metadata.c:168 ../src/libs/geotagging.c:953
+#: ../src/libs/import.c:1863 ../src/libs/import.c:1976
+#: ../src/libs/import.c:2075 ../src/libs/metadata.c:844
+#: ../src/libs/metadata_view.c:1435 ../src/libs/modulegroups.c:3631
+#: ../src/libs/recentcollect.c:232 ../src/libs/styles.c:452
+#: ../src/libs/styles.c:500 ../src/libs/styles.c:595 ../src/libs/styles.c:658
+#: ../src/libs/tagging.c:1535 ../src/libs/tagging.c:1626
+#: ../src/libs/tagging.c:1717 ../src/libs/tagging.c:1853
+#: ../src/libs/tagging.c:2137 ../src/libs/tagging.c:2593
+#: ../src/libs/tagging.c:2629 ../src/libs/tagging.c:3583
 msgid "_cancel"
 msgstr ""
 
@@ -14598,6 +14628,7 @@ msgstr ""
 #: ../src/iop/colorbalance.c:160 ../src/iop/colorbalancergb.c:180
 #: ../src/iop/colorchecker.c:130 ../src/iop/colorcorrection.c:74
 #: ../src/iop/crop.c:130 ../src/iop/lut3d.c:138 ../src/iop/primaries.c:76
+#: ../src/iop/rasterfile.c:101
 msgid "corrective or creative"
 msgstr ""
 
@@ -15667,7 +15698,8 @@ msgstr ""
 #: ../src/iop/demosaic.c:295 ../src/iop/highlights.c:177
 #: ../src/iop/highlights.c:179 ../src/iop/hotpixels.c:73
 #: ../src/iop/hotpixels.c:75 ../src/iop/rawdenoise.c:141
-#: ../src/iop/rawdenoise.c:143 ../src/iop/rawprepare.c:171
+#: ../src/iop/rawdenoise.c:143 ../src/iop/rasterfile.c:102
+#: ../src/iop/rasterfile.c:104 ../src/iop/rawprepare.c:171
 #: ../src/iop/rawprepare.c:173 ../src/iop/temperature.c:250
 #: ../src/iop/temperature.c:252
 msgid "linear, raw, scene-referred"
@@ -15675,8 +15707,8 @@ msgstr ""
 
 #: ../src/iop/cacorrect.c:83 ../src/iop/cacorrectrgb.c:168
 #: ../src/iop/demosaic.c:296 ../src/iop/invert.c:134
-#: ../src/iop/rawdenoise.c:142 ../src/iop/rawprepare.c:172
-#: ../src/iop/temperature.c:251
+#: ../src/iop/rawdenoise.c:142 ../src/iop/rasterfile.c:103
+#: ../src/iop/rawprepare.c:172 ../src/iop/temperature.c:251
 msgid "linear, raw"
 msgstr ""
 
@@ -20158,7 +20190,7 @@ msgstr ""
 msgid "select LUT file"
 msgstr ""
 
-#: ../src/iop/lut3d.c:1562
+#: ../src/iop/lut3d.c:1562 ../src/iop/rasterfile.c:256
 msgid "_select"
 msgstr ""
 
@@ -20673,6 +20705,49 @@ msgstr ""
 msgid ""
 "raw denoising\n"
 "only works for raw images."
+msgstr ""
+
+#: ../src/iop/rasterfile.c:89
+msgid "raster mask import"
+msgstr ""
+
+#: ../src/iop/rasterfile.c:94
+msgid "raster|mask"
+msgstr ""
+
+#: ../src/iop/rasterfile.c:100
+msgid "read pfm files to be used as rastermasks"
+msgstr ""
+
+#: ../src/iop/rasterfile.c:169
+#, c-format
+msgid "can't read image raster file '%s'"
+msgstr ""
+
+#: ../src/iop/rasterfile.c:248
+msgid "rasterfile masks root folder not defined"
+msgstr ""
+
+#: ../src/iop/rasterfile.c:255
+msgid "select raster mask file"
+msgstr ""
+
+#: ../src/iop/rasterfile.c:289
+msgid "selected file not within raster masks root folder"
+msgstr ""
+
+#: ../src/iop/rasterfile.c:587
+msgid "select the RGB channels taken into account to generate the raster mask"
+msgstr ""
+
+#: ../src/iop/rasterfile.c:591
+msgid ""
+"select a pfm file to be advertized as a raster mask,\n"
+"CAUTION: path must be set in preferences/processing before choosing"
+msgstr ""
+
+#: ../src/iop/rasterfile.c:597
+msgid "the mask file path is saved with the image history"
 msgstr ""
 
 #. * let's fill the encapsulating widgets
