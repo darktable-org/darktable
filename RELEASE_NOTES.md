@@ -183,11 +183,12 @@ changes (where available).
 
 ### API Version
 
-- API version is now 9.4.0
+- API version is now 9.5.0
 
 ### New Features
 
-- N/A
+- Added apply_sidecar to dt_lua_image_t so that a sidecar file can be loaded
+  and applied to an image in lighttable.
 
 ### Bug Fixes
 
