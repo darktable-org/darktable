@@ -417,7 +417,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
              "[tiff_open] error: unsupported CMYK (or multi-ink) in '%s'",
              filename);
     TIFFClose(t.tiff);
-    return DT_IMAGEIO_UNSUPPORTED_FEATURE;
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
   }
 
   if(TIFFRasterScanlineSize(t.tiff) != TIFFScanlineSize(t.tiff))
@@ -439,7 +439,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
     dt_print(DT_DEBUG_ALWAYS,
              "[tiff_open] error: unsupported bit depth other than 8, 16 or 32 in '%s'",
              filename);
-    return DT_IMAGEIO_UNSUPPORTED_FEATURE;
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
   }
 
   /* don't depend on planar config if spp == 1 */
@@ -449,7 +449,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
              "[tiff_open] error: unsupported non-chunky PlanarConfiguration in '%s'",
              filename);
     TIFFClose(t.tiff);
-    return DT_IMAGEIO_UNSUPPORTED_FEATURE;
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
   }
 
   /* initialize cached image buffer */
@@ -528,7 +528,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
              "[tiff_open] error: unsupported TIFF format feature in '%s'",
              filename);
     ok = 0;
-    ret = DT_IMAGEIO_UNSUPPORTED_FEATURE;
+    ret = DT_IMAGEIO_UNSUPPORTED_FORMAT;
   }
 
   _TIFFfree(t.buf);
