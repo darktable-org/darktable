@@ -4237,7 +4237,7 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, dt_i
         return FALSE;
       }
     }
-    else if(event->button == 3)
+    else if(event->button == GDK_BUTTON_SECONDARY)
     {
       // simple right click cycles through modes in negative direction
       if(g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)

@@ -202,8 +202,7 @@ static int _gradient_events_button_pressed(dt_iop_module_t *module,
 {
   if(!gui) return 0;
 
-  if(which == GDK_BUTTON_PRIMARY
-     && type == GDK_2BUTTON_PRESS)
+  if(which == GDK_BUTTON_PRIMARY && type == GDK_2BUTTON_PRESS)
   {
     // double-click resets curvature
     dt_masks_point_gradient_t *gradient = form->points->data;
@@ -239,8 +238,7 @@ static int _gradient_events_button_pressed(dt_iop_module_t *module,
     gui->dy = gpt->points[1] - gui->posy;
     return 1;
   }
-  else if(gui->creation
-          && (which == GDK_BUTTON_SECONDARY))
+  else if(gui->creation && (which == GDK_BUTTON_SECONDARY))
   {
     dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
     dt_masks_iop_update(module);

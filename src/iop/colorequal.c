@@ -2774,7 +2774,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
 {
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
-  if(event->button == 2
+  if(event->button == GDK_BUTTON_MIDDLE
      || (event->button == GDK_BUTTON_PRIMARY // Ctrl+Click alias for macOS
          && dt_modifier_is(event->state, GDK_CONTROL_MASK)))
   {
