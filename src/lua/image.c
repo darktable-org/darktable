@@ -93,6 +93,18 @@ static int history_delete(lua_State *L)
   return 0;
 }
 
+static int apply_sidecar(lua_State *L)
+{
+  dt_lua_image_t imgid = NO_IMGID;
+  gchar filename[PATH_MAX] = { 0 };
+  luaA_to(L, dt_lua_image_t, &imgid, 1);
+  const char *sidecar = luaL_checkstring(L, 2);
+  g_strlcpy(filename, sidecar, PATH_MAX);
+  gboolean result = dt_history_load_and_apply(imgid, filename, 0);
+  lua_pushboolean(L, !result);
+  return 1;
+}
+
 static int drop_cache(lua_State *L)
 {
   dt_lua_image_t imgid = NO_IMGID;
@@ -666,6 +678,9 @@ int dt_lua_init_image(lua_State *L)
   lua_pushcfunction(L, generate_cache);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const(L, dt_lua_image_t, "generate_cache");
+  lua_pushcfunction(L, apply_sidecar);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const(L, dt_lua_image_t, "apply_sidecar");
   lua_pushcfunction(L, image_tostring);
   dt_lua_type_setmetafield(L,dt_lua_image_t,"__tostring");
 
