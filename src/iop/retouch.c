@@ -1254,7 +1254,7 @@ static gboolean rt_wdbar_button_press(GtkWidget *widget,
   const int inset = round(RT_WDBAR_INSET * allocation.height);
   const float box_w = (allocation.width - 2.0f * inset) / (float)RETOUCH_NO_SCALES;
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     if(g->lower_margin) // bottom slider
     {

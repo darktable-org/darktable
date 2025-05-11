@@ -2684,8 +2684,7 @@ static gboolean _manage_direct_module_popup(GtkWidget *widget,
 {
   dt_action_t *module = g_object_get_data(G_OBJECT(widget), "module");
 
-  if(event->type == GDK_BUTTON_PRESS
-     && event->button == GDK_BUTTON_SECONDARY)
+  if(event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_SECONDARY)
   {
     int nba = 0; // nb of already present items
     GtkWidget *pop = gtk_menu_new();

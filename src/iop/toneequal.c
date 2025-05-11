@@ -3049,8 +3049,7 @@ static gboolean area_button_press(GtkWidget *widget,
 
   dt_iop_request_focus(self);
 
-  if(event->button == GDK_BUTTON_PRIMARY
-     && event->type == GDK_2BUTTON_PRESS)
+  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
   {
     dt_iop_toneequalizer_params_t *p = self->params;
     const dt_iop_toneequalizer_params_t *const d = self->default_params;

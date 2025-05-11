@@ -2191,7 +2191,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
       return TRUE;
     }
   }
-  else if(event->button == 3 && g->selected >= 0)
+  else if(event->button == GDK_BUTTON_SECONDARY && g->selected >= 0)
   {
     if((g->selected == 0 || g->selected == nodes - 1)
        && p->splines_version == DT_IOP_COLORZONES_SPLINES_V1)

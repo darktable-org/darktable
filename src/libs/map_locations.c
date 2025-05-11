@@ -846,10 +846,7 @@ static gboolean _click_on_view(GtkWidget *view, GdkEventButton *event, dt_lib_mo
 
   const int button_pressed = (event->type == GDK_BUTTON_PRESS) ? event->button : 0;
   const gboolean ctrl_pressed = dt_modifier_is(event->state, GDK_CONTROL_MASK);
-  if((button_pressed == GDK_BUTTON_SECONDARY)
-     || (button_pressed == GDK_BUTTON_PRIMARY && !ctrl_pressed)
-     || (button_pressed == GDK_BUTTON_PRIMARY && ctrl_pressed)
-    )
+  if(button_pressed == GDK_BUTTON_SECONDARY || button_pressed == GDK_BUTTON_PRIMARY)
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
     GtkTreePath *path = NULL;
