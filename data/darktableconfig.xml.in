@@ -3512,7 +3512,7 @@
     <type>dir</type>
     <default>$(home)</default>
     <shortdescription>raster image masks root folder</shortdescription>
-    <longdescription>this folder (and sub-folders) contains pfm files used by the raster image import module. (restart required)</longdescription>
+    <longdescription>this folder (and sub-folders) contains PFM files used by the raster image import module. (restart required)</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="general">
     <name>plugins/darkroom/workflow</name>
