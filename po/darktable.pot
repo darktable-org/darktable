@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-05-10 21:23+0200\n"
+"POT-Creation-Date: 2025-05-11 20:05+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -843,7 +843,7 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:6725 ../build/bin/preferences_gen.h:7252
 #: ../build/bin/preferences_gen.h:7518 ../src/gui/accelerators.c:3013
 #: ../src/gui/gtk.c:3148 ../src/gui/preferences.c:519
-#: ../src/gui/preferences.c:1032 ../src/libs/modulegroups.c:4093
+#: ../src/gui/preferences.c:1032 ../src/libs/modulegroups.c:4092
 msgid "?"
 msgstr ""
 
@@ -5418,7 +5418,7 @@ msgstr ""
 #: ../src/libs/export_metadata.c:168 ../src/libs/geotagging.c:953
 #: ../src/libs/import.c:1863 ../src/libs/import.c:1976
 #: ../src/libs/import.c:2075 ../src/libs/metadata.c:844
-#: ../src/libs/metadata_view.c:1435 ../src/libs/modulegroups.c:3631
+#: ../src/libs/metadata_view.c:1435 ../src/libs/modulegroups.c:3630
 #: ../src/libs/recentcollect.c:232 ../src/libs/styles.c:452
 #: ../src/libs/styles.c:500 ../src/libs/styles.c:595 ../src/libs/styles.c:658
 #: ../src/libs/tagging.c:1535 ../src/libs/tagging.c:1626
@@ -7602,17 +7602,17 @@ msgstr ""
 
 #. setup selection accelerators
 #. action-box
-#: ../src/control/crawler.c:824 ../src/dtgtk/thumbtable.c:2984
+#: ../src/control/crawler.c:824 ../src/dtgtk/thumbtable.c:2982
 #: ../src/libs/import.c:2098 ../src/libs/select.c:142
 msgid "select all"
 msgstr ""
 
-#: ../src/control/crawler.c:825 ../src/dtgtk/thumbtable.c:2986
+#: ../src/control/crawler.c:825 ../src/dtgtk/thumbtable.c:2984
 #: ../src/libs/import.c:2102 ../src/libs/select.c:146
 msgid "select none"
 msgstr ""
 
-#: ../src/control/crawler.c:826 ../src/dtgtk/thumbtable.c:2988
+#: ../src/control/crawler.c:826 ../src/dtgtk/thumbtable.c:2986
 #: ../src/libs/select.c:150
 msgid "invert selection"
 msgstr ""
@@ -8074,7 +8074,7 @@ msgid "refresh EXIF"
 msgstr ""
 
 #: ../src/control/jobs/control_jobs.c:2313
-#: ../src/control/jobs/control_jobs.c:2331 ../src/dtgtk/thumbtable.c:2971
+#: ../src/control/jobs/control_jobs.c:2331 ../src/dtgtk/thumbtable.c:2969
 msgid "paste history"
 msgstr ""
 
@@ -8082,7 +8082,7 @@ msgstr ""
 msgid "compress history"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2356 ../src/dtgtk/thumbtable.c:2975
+#: ../src/control/jobs/control_jobs.c:2356 ../src/dtgtk/thumbtable.c:2973
 #: ../src/libs/copy_history.c:365
 msgid "discard history"
 msgstr ""
@@ -8724,13 +8724,13 @@ msgstr ""
 #: ../src/iop/filmicrgb.c:4453 ../src/iop/graduatednd.c:1065
 #: ../src/iop/negadoctor.c:1019 ../src/iop/profile_gamma.c:629
 #: ../src/iop/profile_gamma.c:635 ../src/iop/relight.c:249
-#: ../src/iop/soften.c:355 ../src/iop/toneequal.c:3306
-#: ../src/iop/toneequal.c:3309 ../src/iop/toneequal.c:3312
-#: ../src/iop/toneequal.c:3315 ../src/iop/toneequal.c:3318
-#: ../src/iop/toneequal.c:3321 ../src/iop/toneequal.c:3324
-#: ../src/iop/toneequal.c:3327 ../src/iop/toneequal.c:3330
-#: ../src/iop/toneequal.c:3452 ../src/iop/toneequal.c:3461
-#: ../src/iop/toneequal.c:3471 ../src/views/darkroom.c:2634
+#: ../src/iop/soften.c:355 ../src/iop/toneequal.c:3305
+#: ../src/iop/toneequal.c:3308 ../src/iop/toneequal.c:3311
+#: ../src/iop/toneequal.c:3314 ../src/iop/toneequal.c:3317
+#: ../src/iop/toneequal.c:3320 ../src/iop/toneequal.c:3323
+#: ../src/iop/toneequal.c:3326 ../src/iop/toneequal.c:3329
+#: ../src/iop/toneequal.c:3451 ../src/iop/toneequal.c:3460
+#: ../src/iop/toneequal.c:3470 ../src/views/darkroom.c:2634
 msgid " EV"
 msgstr ""
 
@@ -8775,8 +8775,8 @@ msgstr ""
 msgid "show and edit in restricted mode (no moving/resizing of shapes)"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2817 ../src/libs/masks.c:1006
-#: ../src/libs/masks.c:1797 ../src/libs/masks.c:1801
+#: ../src/develop/blend_gui.c:2817 ../src/libs/masks.c:1004
+#: ../src/libs/masks.c:1795 ../src/libs/masks.c:1799
 msgid "add gradient"
 msgstr ""
 
@@ -8785,7 +8785,7 @@ msgid "add multiple gradients"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:2825 ../src/iop/retouch.c:2450
-#: ../src/libs/masks.c:986 ../src/libs/masks.c:1829 ../src/libs/masks.c:1833
+#: ../src/libs/masks.c:984 ../src/libs/masks.c:1827 ../src/libs/masks.c:1831
 msgid "add brush"
 msgstr ""
 
@@ -8794,8 +8794,8 @@ msgid "add multiple brush strokes"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:2833 ../src/iop/retouch.c:2455
-#: ../src/iop/spots.c:880 ../src/libs/masks.c:1001 ../src/libs/masks.c:1805
-#: ../src/libs/masks.c:1809
+#: ../src/iop/spots.c:880 ../src/libs/masks.c:999 ../src/libs/masks.c:1803
+#: ../src/libs/masks.c:1807
 msgid "add path"
 msgstr ""
 
@@ -8805,8 +8805,8 @@ msgid "add multiple paths"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:2841 ../src/iop/retouch.c:2460
-#: ../src/iop/spots.c:885 ../src/libs/masks.c:996 ../src/libs/masks.c:1813
-#: ../src/libs/masks.c:1817
+#: ../src/iop/spots.c:885 ../src/libs/masks.c:994 ../src/libs/masks.c:1811
+#: ../src/libs/masks.c:1815
 msgid "add ellipse"
 msgstr ""
 
@@ -8816,8 +8816,8 @@ msgid "add multiple ellipses"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:2849 ../src/iop/retouch.c:2465
-#: ../src/iop/spots.c:890 ../src/libs/masks.c:991 ../src/libs/masks.c:1821
-#: ../src/libs/masks.c:1825
+#: ../src/iop/spots.c:890 ../src/libs/masks.c:989 ../src/libs/masks.c:1819
+#: ../src/libs/masks.c:1823
 msgid "add circle"
 msgstr ""
 
@@ -9034,12 +9034,12 @@ msgid "duplicate instance"
 msgstr ""
 
 #: ../src/develop/imageop.c:1016 ../src/develop/imageop.c:4029
-#: ../src/libs/masks.c:1138
+#: ../src/libs/masks.c:1136
 msgid "move up"
 msgstr ""
 
 #: ../src/develop/imageop.c:1023 ../src/develop/imageop.c:4030
-#: ../src/libs/masks.c:1143
+#: ../src/libs/masks.c:1141
 msgid "move down"
 msgstr ""
 
@@ -9051,7 +9051,7 @@ msgid "delete"
 msgstr ""
 
 #: ../src/develop/imageop.c:1038 ../src/develop/imageop.c:4033
-#: ../src/libs/modulegroups.c:4008
+#: ../src/libs/modulegroups.c:4007
 msgid "rename"
 msgstr ""
 
@@ -9139,14 +9139,14 @@ msgstr ""
 msgid "show"
 msgstr ""
 
-#: ../src/develop/imageop.c:4031 ../src/libs/modulegroups.c:3472
-#: ../src/libs/modulegroups.c:3603 ../src/libs/modulegroups.c:4012
+#: ../src/develop/imageop.c:4031 ../src/libs/modulegroups.c:3471
+#: ../src/libs/modulegroups.c:3602 ../src/libs/modulegroups.c:4011
 #: ../src/libs/tagging.c:3366
 msgid "new"
 msgstr ""
 
 #: ../src/develop/imageop.c:4034 ../src/libs/duplicate.c:413
-#: ../src/libs/image.c:541 ../src/libs/modulegroups.c:4004
+#: ../src/libs/image.c:541 ../src/libs/modulegroups.c:4003
 msgid "duplicate"
 msgstr ""
 
@@ -9156,7 +9156,7 @@ msgstr ""
 #: ../src/gui/gtk.c:3595 ../src/gui/gtk.c:3650 ../src/gui/hist_dialog.c:269
 #: ../src/gui/styles_dialog.c:643 ../src/gui/styles_dialog.c:665
 #: ../src/iop/atrous.c:1618 ../src/libs/lib.c:1572
-#: ../src/libs/modulegroups.c:4088
+#: ../src/libs/modulegroups.c:4087
 msgid "reset"
 msgstr ""
 
@@ -9337,46 +9337,46 @@ msgstr ""
 msgid "curvature: %3.2f%%"
 msgstr ""
 
-#: ../src/develop/masks/gradient.c:1419
+#: ../src/develop/masks/gradient.c:1417
 msgid "[GRADIENT on pivot] rotate shape"
 msgstr ""
 
-#: ../src/develop/masks/gradient.c:1421
+#: ../src/develop/masks/gradient.c:1419
 msgid "[GRADIENT creation] set rotation"
 msgstr ""
 
-#: ../src/develop/masks/gradient.c:1423
+#: ../src/develop/masks/gradient.c:1421
 msgid "[GRADIENT] change curvature"
 msgstr ""
 
-#: ../src/develop/masks/gradient.c:1425
+#: ../src/develop/masks/gradient.c:1423
 msgid "[GRADIENT] change compression"
 msgstr ""
 
-#: ../src/develop/masks/gradient.c:1427
+#: ../src/develop/masks/gradient.c:1425
 msgid "[GRADIENT] change opacity"
 msgstr ""
 
-#: ../src/develop/masks/gradient.c:1440
+#: ../src/develop/masks/gradient.c:1438
 #, c-format
 msgid "gradient #%d"
 msgstr ""
 
-#: ../src/develop/masks/gradient.c:1451
+#: ../src/develop/masks/gradient.c:1449
 #, c-format
 msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>rotation</b>: click+drag, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 
-#: ../src/develop/masks/gradient.c:1456
+#: ../src/develop/masks/gradient.c:1454
 #, c-format
 msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 
-#: ../src/develop/masks/gradient.c:1459
+#: ../src/develop/masks/gradient.c:1457
 msgid "<b>rotate</b>: drag"
 msgstr ""
 
@@ -9404,7 +9404,7 @@ msgstr ""
 msgid "opacity: %.0f%%"
 msgstr ""
 
-#: ../src/develop/masks/masks.c:1640 ../src/libs/masks.c:1076
+#: ../src/develop/masks/masks.c:1640 ../src/libs/masks.c:1074
 msgid "add existing shape"
 msgstr ""
 
@@ -9822,72 +9822,72 @@ msgstr ""
 msgid "camera's JPEG by applying a camera-specific style"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1697
+#: ../src/dtgtk/thumbtable.c:1695
 msgid ""
 "you have changed the settings related to how thumbnails are generated.\n"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1700
+#: ../src/dtgtk/thumbtable.c:1698
 msgid ""
 "all cached thumbnails need to be invalidated.\n"
 "\n"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1704
+#: ../src/dtgtk/thumbtable.c:1702
 #, c-format
 msgid ""
 "cached thumbnails starting from level %d need to be invalidated.\n"
 "\n"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1709
+#: ../src/dtgtk/thumbtable.c:1707
 #, c-format
 msgid ""
 "cached thumbnails below level %d need to be invalidated.\n"
 "\n"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1714
+#: ../src/dtgtk/thumbtable.c:1712
 #, c-format
 msgid ""
 "cached thumbnails between level %d and %d need to be invalidated.\n"
 "\n"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1717
+#: ../src/dtgtk/thumbtable.c:1715
 msgid "do you want to do that now?"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1719
+#: ../src/dtgtk/thumbtable.c:1717
 msgid "cached thumbnails invalidation"
 msgstr ""
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2967
+#: ../src/dtgtk/thumbtable.c:2965
 msgid "copy history"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2969
+#: ../src/dtgtk/thumbtable.c:2967
 msgid "copy history parts"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2973
+#: ../src/dtgtk/thumbtable.c:2971
 msgid "paste history parts"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2978
+#: ../src/dtgtk/thumbtable.c:2976
 msgid "duplicate image"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2980
+#: ../src/dtgtk/thumbtable.c:2978
 msgid "duplicate image virgin"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2990 ../src/libs/select.c:154
+#: ../src/dtgtk/thumbtable.c:2988 ../src/libs/select.c:154
 msgid "select film roll"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2992 ../src/libs/select.c:158
+#: ../src/dtgtk/thumbtable.c:2990 ../src/libs/select.c:158
 msgid "select untouched"
 msgstr ""
 
@@ -11942,7 +11942,7 @@ msgstr ""
 #: ../src/iop/channelmixerrgb.c:4422 ../src/iop/clipping.c:2097
 #: ../src/iop/colorbalancergb.c:1780 ../src/iop/colorequal.c:3006
 #: ../src/iop/filmicrgb.c:4378 ../src/iop/negadoctor.c:837
-#: ../src/iop/toneequal.c:3299 ../src/libs/image.c:497
+#: ../src/iop/toneequal.c:3298 ../src/libs/image.c:497
 #: ../src/views/lighttable.c:1329
 msgid "page"
 msgstr ""
@@ -13488,12 +13488,12 @@ msgid "preset `%s' is write-protected, can't delete!"
 msgstr ""
 
 #: ../src/gui/presets.c:160 ../src/gui/presets.c:466 ../src/libs/lib.c:233
-#: ../src/libs/modulegroups.c:3882
+#: ../src/libs/modulegroups.c:3881
 msgid "delete preset?"
 msgstr ""
 
 #: ../src/gui/presets.c:161 ../src/gui/presets.c:467 ../src/libs/lib.c:234
-#: ../src/libs/modulegroups.c:3883
+#: ../src/libs/modulegroups.c:3882
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr ""
@@ -13694,8 +13694,8 @@ msgstr ""
 msgid "scene-referred default"
 msgstr ""
 
-#: ../src/gui/presets.c:1423 ../src/libs/modulegroups.c:3967
-#: ../src/libs/modulegroups.c:3977
+#: ../src/gui/presets.c:1423 ../src/libs/modulegroups.c:3966
+#: ../src/libs/modulegroups.c:3976
 msgid "manage module layouts"
 msgstr ""
 
@@ -15030,7 +15030,7 @@ msgstr ""
 #: ../src/iop/colorequal.c:3017 ../src/iop/colorzones.c:2706
 #: ../src/iop/denoiseprofile.c:3700 ../src/iop/filmicrgb.c:4366
 #: ../src/iop/lowlight.c:809 ../src/iop/rawdenoise.c:910
-#: ../src/iop/toneequal.c:3351
+#: ../src/iop/toneequal.c:3350
 msgid "graph"
 msgstr ""
 
@@ -19903,8 +19903,8 @@ msgstr ""
 #: ../src/iop/liquify.c:3656 ../src/iop/retouch.c:2449
 #: ../src/iop/retouch.c:2455 ../src/iop/retouch.c:2460
 #: ../src/iop/retouch.c:2465 ../src/iop/spots.c:879 ../src/iop/spots.c:884
-#: ../src/iop/spots.c:889 ../src/libs/masks.c:1797 ../src/libs/masks.c:1805
-#: ../src/libs/masks.c:1813 ../src/libs/masks.c:1821 ../src/libs/masks.c:1829
+#: ../src/iop/spots.c:889 ../src/libs/masks.c:1795 ../src/libs/masks.c:1803
+#: ../src/libs/masks.c:1811 ../src/libs/masks.c:1819 ../src/libs/masks.c:1827
 msgid "shapes"
 msgstr ""
 
@@ -20716,7 +20716,7 @@ msgid "raster|mask"
 msgstr ""
 
 #: ../src/iop/rasterfile.c:100
-msgid "read pfm files to be used as raster masks"
+msgid "import pfm files to be used as raster masks"
 msgstr ""
 
 #: ../src/iop/rasterfile.c:169
@@ -21829,80 +21829,80 @@ msgstr ""
 msgid "%+.1f EV"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3213
+#: ../src/iop/toneequal.c:3212
 #, c-format
 msgid "[%s over image] change tone exposure"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3216
+#: ../src/iop/toneequal.c:3215
 #, c-format
 msgid "[%s over image] change tone exposure in large steps"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3219
+#: ../src/iop/toneequal.c:3218
 #, c-format
 msgid "[%s over image] change tone exposure in small steps"
 msgstr ""
 
 #. Simple view
-#: ../src/iop/toneequal.c:3303 ../src/iop/toneequal.c:3332
-#: ../src/iop/toneequal.c:3333 ../src/iop/toneequal.c:3334
-#: ../src/iop/toneequal.c:3335 ../src/iop/toneequal.c:3336
-#: ../src/iop/toneequal.c:3337 ../src/iop/toneequal.c:3338
-#: ../src/iop/toneequal.c:3339 ../src/iop/toneequal.c:3340
+#: ../src/iop/toneequal.c:3302 ../src/iop/toneequal.c:3331
+#: ../src/iop/toneequal.c:3332 ../src/iop/toneequal.c:3333
+#: ../src/iop/toneequal.c:3334 ../src/iop/toneequal.c:3335
+#: ../src/iop/toneequal.c:3336 ../src/iop/toneequal.c:3337
+#: ../src/iop/toneequal.c:3338 ../src/iop/toneequal.c:3339
 msgid "simple"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3332
+#: ../src/iop/toneequal.c:3331
 msgid "-8 EV"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3333
+#: ../src/iop/toneequal.c:3332
 msgid "-7 EV"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3334
+#: ../src/iop/toneequal.c:3333
 msgid "-6 EV"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3335
+#: ../src/iop/toneequal.c:3334
 msgid "-5 EV"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3336
+#: ../src/iop/toneequal.c:3335
 msgid "-4 EV"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3337
+#: ../src/iop/toneequal.c:3336
 msgid "-3 EV"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3338
+#: ../src/iop/toneequal.c:3337
 msgid "-2 EV"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3339
+#: ../src/iop/toneequal.c:3338
 msgid "-1 EV"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3340
+#: ../src/iop/toneequal.c:3339
 msgid "+0 EV"
 msgstr ""
 
 #. Advanced view
-#: ../src/iop/toneequal.c:3344
+#: ../src/iop/toneequal.c:3343
 msgid "advanced"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3371
+#: ../src/iop/toneequal.c:3370
 msgid "double-click to reset the curve"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3375
+#: ../src/iop/toneequal.c:3374
 msgid "curve smoothing"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3378
+#: ../src/iop/toneequal.c:3377
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -21911,25 +21911,25 @@ msgid ""
 msgstr ""
 
 #. Masking options
-#: ../src/iop/toneequal.c:3388
+#: ../src/iop/toneequal.c:3387
 msgid "masking"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3393
+#: ../src/iop/toneequal.c:3392
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3396
+#: ../src/iop/toneequal.c:3395
 msgid "details"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3397
+#: ../src/iop/toneequal.c:3396
 msgid "preserve details"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3400
+#: ../src/iop/toneequal.c:3399
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -21943,20 +21943,20 @@ msgid ""
 "filter' methods"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3413
+#: ../src/iop/toneequal.c:3412
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3421
+#: ../src/iop/toneequal.c:3420
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
 "preview much slower if denoise profiled is used."
 msgstr ""
 
-#: ../src/iop/toneequal.c:3429
+#: ../src/iop/toneequal.c:3428
 msgid ""
 "precision of the feathering:\n"
 "higher values force the mask to follow edges more closely\n"
@@ -21965,36 +21965,36 @@ msgid ""
 "but may lead to inaccurate edges taping and halos"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3436
+#: ../src/iop/toneequal.c:3435
 msgctxt "section"
 msgid "mask post-processing"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3447
+#: ../src/iop/toneequal.c:3446
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
 "clipping occurs."
 msgstr ""
 
-#: ../src/iop/toneequal.c:3455
+#: ../src/iop/toneequal.c:3454
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
 "produce piece-wise smooth areas when using high feathering values"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3464
+#: ../src/iop/toneequal.c:3463
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes."
 msgstr ""
 
-#: ../src/iop/toneequal.c:3467
+#: ../src/iop/toneequal.c:3466
 msgid "auto-adjust the average exposure"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3474
+#: ../src/iop/toneequal.c:3473
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -22002,11 +22002,11 @@ msgid ""
 "for a better control of the exposure correction."
 msgstr ""
 
-#: ../src/iop/toneequal.c:3479
+#: ../src/iop/toneequal.c:3478
 msgid "auto-adjust the contrast"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3494 ../src/iop/toneequal.c:3497
+#: ../src/iop/toneequal.c:3493 ../src/iop/toneequal.c:3496
 msgid "display exposure mask"
 msgstr ""
 
@@ -23928,7 +23928,7 @@ msgstr ""
 msgid "physically delete from disk immediately"
 msgstr ""
 
-#: ../src/libs/image.c:513 ../src/libs/modulegroups.c:4000
+#: ../src/libs/image.c:513 ../src/libs/modulegroups.c:3999
 #: ../src/libs/styles.c:895
 msgid "remove"
 msgstr ""
@@ -24425,7 +24425,7 @@ msgid "new sub-location"
 msgstr ""
 
 #: ../src/libs/map_locations.c:238 ../src/libs/map_locations.c:286
-#: ../src/libs/map_locations.c:959
+#: ../src/libs/map_locations.c:956
 msgid "new location"
 msgstr ""
 
@@ -24455,7 +24455,7 @@ msgid ""
 "terminate edit (press enter or escape) before selecting another location"
 msgstr ""
 
-#: ../src/libs/map_locations.c:930
+#: ../src/libs/map_locations.c:927
 msgid ""
 "list of user locations,\n"
 "click to show or hide a location on the map:\n"
@@ -24470,22 +24470,22 @@ msgid ""
 "right-click for other actions: delete location and go to collection"
 msgstr ""
 
-#: ../src/libs/map_locations.c:956
+#: ../src/libs/map_locations.c:953
 msgid ""
 "select the shape of the location's limits on the map, circle or rectangle\n"
 "or even polygon if available (select first a polygon place in 'find "
 "location' module)"
 msgstr ""
 
-#: ../src/libs/map_locations.c:960
+#: ../src/libs/map_locations.c:957
 msgid "add a new location on the center of the visible map"
 msgstr ""
 
-#: ../src/libs/map_locations.c:964
+#: ../src/libs/map_locations.c:961
 msgid "show all"
 msgstr ""
 
-#: ../src/libs/map_locations.c:967
+#: ../src/libs/map_locations.c:964
 msgid "show all locations which are on the visible map"
 msgstr ""
 
@@ -24516,72 +24516,72 @@ msgstr ""
 msgid "group #%d"
 msgstr ""
 
-#: ../src/libs/masks.c:1089
+#: ../src/libs/masks.c:1087
 msgid "duplicate this shape"
 msgstr ""
 
-#: ../src/libs/masks.c:1093
+#: ../src/libs/masks.c:1091
 msgid "delete this shape"
 msgstr ""
 
-#: ../src/libs/masks.c:1099
+#: ../src/libs/masks.c:1097
 msgid "delete group"
 msgstr ""
 
-#: ../src/libs/masks.c:1106
+#: ../src/libs/masks.c:1104
 msgid "remove from group"
 msgstr ""
 
-#: ../src/libs/masks.c:1114
+#: ../src/libs/masks.c:1112
 msgid "group the forms"
 msgstr ""
 
-#: ../src/libs/masks.c:1122
+#: ../src/libs/masks.c:1120
 msgid "use inverted shape"
 msgstr ""
 
-#: ../src/libs/masks.c:1126
+#: ../src/libs/masks.c:1124
 msgid "mode: union"
 msgstr ""
 
-#: ../src/libs/masks.c:1128
+#: ../src/libs/masks.c:1126
 msgid "mode: intersection"
 msgstr ""
 
-#: ../src/libs/masks.c:1130
+#: ../src/libs/masks.c:1128
 msgid "mode: difference"
 msgstr ""
 
-#: ../src/libs/masks.c:1132
+#: ../src/libs/masks.c:1130
 msgid "mode: sum"
 msgstr ""
 
-#: ../src/libs/masks.c:1134
+#: ../src/libs/masks.c:1132
 msgid "mode: exclusion"
 msgstr ""
 
-#: ../src/libs/masks.c:1150
+#: ../src/libs/masks.c:1148
 msgid "delete unused shapes"
 msgstr ""
 
-#: ../src/libs/masks.c:1874
+#: ../src/libs/masks.c:1872
 msgid "created shapes"
 msgstr ""
 
-#: ../src/libs/masks.c:1881 ../src/libs/masks.c:1896 ../src/libs/masks.c:1910
-#: ../src/libs/masks.c:1912
+#: ../src/libs/masks.c:1879 ../src/libs/masks.c:1894 ../src/libs/masks.c:1908
+#: ../src/libs/masks.c:1910
 msgid "properties"
 msgstr ""
 
-#: ../src/libs/masks.c:1884
+#: ../src/libs/masks.c:1882
 msgid "no shapes selected"
 msgstr ""
 
-#: ../src/libs/masks.c:1910
+#: ../src/libs/masks.c:1908
 msgid "pressure"
 msgstr ""
 
-#: ../src/libs/masks.c:1912
+#: ../src/libs/masks.c:1910
 msgid "smoothing"
 msgstr ""
 
@@ -25047,188 +25047,188 @@ msgstr ""
 msgid "remove widget"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2725
+#: ../src/libs/modulegroups.c:2724
 msgid "show all history modules"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2728 ../src/libs/modulegroups.c:4034
+#: ../src/libs/modulegroups.c:2727 ../src/libs/modulegroups.c:4033
 msgid ""
 "show modules that are present in the history stack, regardless of whether or "
 "not they are currently enabled"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2823 ../src/libs/modulegroups.c:2929
+#: ../src/libs/modulegroups.c:2822 ../src/libs/modulegroups.c:2928
 msgid ""
 "the following modules are deprecated because they have internal design "
 "mistakes that can't be corrected and alternative modules that correct them.\n"
 "they will be removed for new edits in the next release."
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2876
+#: ../src/libs/modulegroups.c:2875
 msgid ""
 "quick access panel\n"
 "right-click tab icon to add/remove widgets"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2879
+#: ../src/libs/modulegroups.c:2878
 msgid "quick access panel"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2891
+#: ../src/libs/modulegroups.c:2890
 msgid "show only active modules"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2892
+#: ../src/libs/modulegroups.c:2891
 msgid "active modules"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2898
+#: ../src/libs/modulegroups.c:2897
 msgid ""
 "presets\n"
 "ctrl+click to manage"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2905
+#: ../src/libs/modulegroups.c:2904
 msgid "search modules"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2907
+#: ../src/libs/modulegroups.c:2906
 msgid "search modules by name or tag"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2922
+#: ../src/libs/modulegroups.c:2921
 msgid "clear text"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3186
+#: ../src/libs/modulegroups.c:3185
 msgid "basic icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3197
+#: ../src/libs/modulegroups.c:3196
 msgid "active icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3208
+#: ../src/libs/modulegroups.c:3207
 msgid "color icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3219
+#: ../src/libs/modulegroups.c:3218
 msgid "correct icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3230
+#: ../src/libs/modulegroups.c:3229
 msgid "effect icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3241
+#: ../src/libs/modulegroups.c:3240
 msgid "favorites icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3252
+#: ../src/libs/modulegroups.c:3251
 msgid "tone icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3263
+#: ../src/libs/modulegroups.c:3262
 msgid "grading icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3274
+#: ../src/libs/modulegroups.c:3273
 msgid "technical icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3308
+#: ../src/libs/modulegroups.c:3307
 msgid "quick access panel widgets"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3310
+#: ../src/libs/modulegroups.c:3309
 msgid "quick access"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3332
+#: ../src/libs/modulegroups.c:3331
 msgid "add widget to the quick access panel"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3366
+#: ../src/libs/modulegroups.c:3365
 msgid "group icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3376
+#: ../src/libs/modulegroups.c:3375
 msgid "group name"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3388
+#: ../src/libs/modulegroups.c:3387
 msgid "remove group"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3416
+#: ../src/libs/modulegroups.c:3415
 msgid "move group to the left"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3426
+#: ../src/libs/modulegroups.c:3425
 msgid "add module to the group"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3438
+#: ../src/libs/modulegroups.c:3437
 msgid "move group to the right"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3629
+#: ../src/libs/modulegroups.c:3628
 msgid "rename preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3632
+#: ../src/libs/modulegroups.c:3631
 msgid "_rename"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3639
+#: ../src/libs/modulegroups.c:3638
 msgid "new preset name:"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3640
+#: ../src/libs/modulegroups.c:3639
 msgid "a preset with this name already exists!"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3992
+#: ../src/libs/modulegroups.c:3991
 msgid "preset: "
 msgstr ""
 
-#: ../src/libs/modulegroups.c:4002
+#: ../src/libs/modulegroups.c:4001
 msgid "remove the preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:4006
+#: ../src/libs/modulegroups.c:4005
 msgid "duplicate the preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:4010
+#: ../src/libs/modulegroups.c:4009
 msgid "rename the preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:4014
+#: ../src/libs/modulegroups.c:4013
 msgid "create a new empty preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:4022
+#: ../src/libs/modulegroups.c:4021
 msgid "show search line"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:4026
+#: ../src/libs/modulegroups.c:4025
 msgid "show quick access panel"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:4031
+#: ../src/libs/modulegroups.c:4030
 msgid "show all history modules in active group"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:4045
+#: ../src/libs/modulegroups.c:4044
 msgid "auto-apply this preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:4061
+#: ../src/libs/modulegroups.c:4060
 msgid "module groups"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:4080
+#: ../src/libs/modulegroups.c:4079
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
 msgstr ""
