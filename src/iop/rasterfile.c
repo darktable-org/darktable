@@ -165,8 +165,8 @@ static float *_read_rasterfile(char *filename,
   float *mask = dt_iop_image_alloc(width, height, 1);
   if(!image || !mask)
   {
-    dt_print(DT_DEBUG_ALWAYS, "can't read image raster file '%s'", filename ? filename : "???");
-    dt_control_log(_("can't read image raster file '%s'"), filename ? filename : "???");
+    dt_print(DT_DEBUG_ALWAYS, "can't read raster mask file '%s'", filename ? filename : "???");
+    dt_control_log(_("can't read raster mask file '%s'"), filename ? filename : "???");
 
     dt_free_align(image);
     dt_free_align(mask);
@@ -244,8 +244,8 @@ static void _fbutton_clicked(GtkWidget *widget, dt_iop_module_t *self)
   gchar *mfolder = dt_conf_get_string("plugins/darkroom/segments/def_path");
   if(strlen(mfolder) == 0)
   {
-    dt_print(DT_DEBUG_ALWAYS, "rasterfile masks root folder not defined");
-    dt_control_log(_("rasterfile masks root folder not defined"));
+    dt_print(DT_DEBUG_ALWAYS, "raster mask files root folder not defined");
+    dt_control_log(_("raster mask files root folder not defined"));
     g_free(mfolder);
     return;
   }
