@@ -472,7 +472,7 @@ static gboolean _monochrome_motion_notify(GtkWidget *widget, GdkEventMotion *eve
 
 static gboolean _monochrome_button_press(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_monochrome_gui_data_t *g = self->gui_data;
     dt_iop_monochrome_params_t *p = self->params;
@@ -506,7 +506,7 @@ static gboolean _monochrome_button_press(GtkWidget *widget, GdkEventButton *even
 
 static gboolean _monochrome_button_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_monochrome_gui_data_t *g = self->gui_data;
     dt_iop_color_picker_reset(self, TRUE);

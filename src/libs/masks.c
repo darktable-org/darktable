@@ -883,8 +883,7 @@ static int _tree_button_pressed(GtkWidget *treeview,
     }
   }
   /* single click with the right mouse button? */
-  if(event->type == GDK_BUTTON_PRESS
-     && event->button == GDK_BUTTON_PRIMARY)
+  if(event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY)
   {
     // if click on a blank space, then deselect all
     if(!on_row)
@@ -892,8 +891,7 @@ static int _tree_button_pressed(GtkWidget *treeview,
       gtk_tree_selection_unselect_all(selection);
     }
   }
-  else if(event->type == GDK_BUTTON_PRESS
-          && event->button == GDK_BUTTON_SECONDARY)
+  else if(event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_SECONDARY)
   {
     // if we are already inside the selection, no change
     if(on_row
