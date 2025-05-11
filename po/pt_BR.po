@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-05-11 09:17-0300\n"
-"PO-Revision-Date: 2025-05-11 09:16-0300\n"
+"POT-Creation-Date: 2025-05-11 17:07-0300\n"
+"PO-Revision-Date: 2025-05-11 17:07-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -10145,9 +10145,9 @@ msgid ""
 "'%s' as that is processed later in the pixel pipe.\n"
 "raster mask is ignored."
 msgstr ""
-"o módulo `%s' não pode obter a máscara de matriz de pixels do módulo `%s'\n"
+"o módulo `%s' não pode obter a máscara de pixels do módulo `%s'\n"
 "porque ela é processada mais tarde na pixel pipe.\n"
-"a máscara de matriz de pixels será ignorada"
+"a máscara de pixels será ignorada"
 
 #: ../src/develop/tiling.c:811 ../src/develop/tiling.c:1151
 #, c-format
@@ -22440,15 +22440,15 @@ msgstr ""
 
 #: ../src/iop/rasterfile.c:89
 msgid "raster mask import"
-msgstr "importar máscara de matriz de pixels"
+msgstr "importar máscara de pixels"
 
 #: ../src/iop/rasterfile.c:94
 msgid "raster|mask"
 msgstr "matriz de pixels|máscara"
 
 #: ../src/iop/rasterfile.c:100
-msgid "read pfm files to be used as raster masks"
-msgstr "ler arquivos pfm a serem usados como máscaras de pixels"
+msgid "import pfm files to be used as raster masks"
+msgstr "importar arquivos pfm a serem usados como máscaras de pixels"
 
 #: ../src/iop/rasterfile.c:169
 #, c-format
@@ -22461,7 +22461,7 @@ msgstr "pasta raiz de máscaras de pixels não definida"
 
 #: ../src/iop/rasterfile.c:255
 msgid "select raster mask file"
-msgstr "seleciona arquivo com máscara de matriz de pixels"
+msgstr "seleciona arquivo com máscara de pixels"
 
 #: ../src/iop/rasterfile.c:289
 msgid "selected file not within raster masks root folder"
@@ -22470,9 +22470,7 @@ msgstr ""
 
 #: ../src/iop/rasterfile.c:587
 msgid "select the RGB channels taken into account to generate the raster mask"
-msgstr ""
-"selecionar os canais RGB levados em conta ao gerar a máscara de matriz de "
-"pixels"
+msgstr "selecionar os canais RGB levados em conta ao gerar a máscara de pixels"
 
 #: ../src/iop/rasterfile.c:591
 msgid ""
@@ -25935,11 +25933,11 @@ msgstr "mascara de desfoque"
 
 #: ../src/libs/history.c:964
 msgid "raster mask instance"
-msgstr "instâncias de máscara de matriz de pixels"
+msgstr "instâncias de máscara de pixels"
 
 #: ../src/libs/history.c:965
 msgid "raster mask id"
-msgstr "id de máscara de matriz de pixels"
+msgstr "id de máscara de pixels"
 
 #: ../src/libs/history.c:966
 msgid "invert mask"
