@@ -52,7 +52,7 @@ DT_MODULE_INTROSPECTION(1, dt_iop_rasterfile_params_t)
 
 typedef enum dt_iop_rasterfile_mode_t
 {
-  DT_RASTERFILE_MODE_ALL = 7,     // $DESCRIPTION: "all RGB colors"
+  DT_RASTERFILE_MODE_ALL = 7,     // $DESCRIPTION: "all RGB channels"
   DT_RASTERFILE_MODE_RED = 1,     // $DESCRIPTION: "only red"
   DT_RASTERFILE_MODE_GREEN = 2,   // $DESCRIPTION: "only green"
   DT_RASTERFILE_MODE_BLUE = 4,   // $DESCRIPTION: "only blue"
