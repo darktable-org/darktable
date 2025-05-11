@@ -3511,8 +3511,8 @@
     <name>plugins/darkroom/segments/def_path</name>
     <type>dir</type>
     <default>$(home)</default>
-    <shortdescription>raster image masks root folder</shortdescription>
-    <longdescription>this folder (and sub-folders) contains PFM files used by the raster image import module. (restart required)</longdescription>
+    <shortdescription>raster mask files root folder</shortdescription>
+    <longdescription>this folder (and sub-folders) contains PFM files used by the raster mask import module. (restart required)</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="general">
     <name>plugins/darkroom/workflow</name>
