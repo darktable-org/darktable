@@ -1291,7 +1291,7 @@ static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
       dt_gui_presets_apply_preset(name, module);
     }
   }
-  else if(event->button == 3 && event->type == GDK_BUTTON_RELEASE && _click_time)
+  else if(event->button == GDK_BUTTON_SECONDARY && event->type == GDK_BUTTON_RELEASE && _click_time)
   {
     if(long_click || (module->flags() & IOP_FLAGS_ONE_INSTANCE))
       dt_shortcut_copy_lua((dt_action_t*)module, name);

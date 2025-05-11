@@ -177,7 +177,7 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button,
 
   const GdkModifierType state = e != NULL ? e->state : dt_key_modifier_state();
   const gboolean to_area_mode =
-    dt_modifier_is(state, GDK_CONTROL_MASK) || (e != NULL && e->button == 3);
+    dt_modifier_is(state, GDK_CONTROL_MASK) || (e != NULL && e->button == GDK_BUTTON_SECONDARY);
   dt_iop_color_picker_flags_t flags = self->flags;
 
   // setup if a new picker or switching between point/area mode

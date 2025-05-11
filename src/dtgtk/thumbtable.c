@@ -1411,8 +1411,7 @@ static gboolean _event_button_press(GtkWidget *widget,
 
   const dt_imgid_t id = dt_control_get_mouse_over_id();
 
-  if(dt_is_valid_imgid(id)
-     && event->button == GDK_BUTTON_PRIMARY)
+  if(dt_is_valid_imgid(id) && event->button == GDK_BUTTON_PRIMARY)
   {
     //  double-click
     if(event->type == GDK_2BUTTON_PRESS)
@@ -1489,8 +1488,7 @@ static gboolean _event_button_press(GtkWidget *widget,
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM)
     return TRUE;
 
-  if(event->button == GDK_BUTTON_PRIMARY
-     && event->type == GDK_BUTTON_PRESS)
+  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_BUTTON_PRESS)
   {
     table->dragging = TRUE;
     table->drag_dx = table->drag_dy = 0;
