@@ -3,13 +3,13 @@
 # Nazarii Vitak <nazarii.vitak@gmail.com>, 2013-2016.
 # Victor Forsiuk <vvforce@gmail.com>, 2021-2025.
 #
-#: ../src/common/darktable.c:1847
+#: ../src/common/darktable.c:1853
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-05-11 20:05+0200\n"
-"PO-Revision-Date: 2025-05-11 21:43+0300\n"
+"POT-Creation-Date: 2025-05-12 08:16+0200\n"
+"PO-Revision-Date: 2025-05-12 10:58+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -1549,12 +1549,12 @@ msgstr ""
 "(потрібен перезапуск)"
 
 #: ../build/bin/preferences_gen.h:6058
-msgid "raster image masks root folder"
+msgid "raster mask files root folder"
 msgstr "Кореневий каталог растрових масок"
 
 #: ../build/bin/preferences_gen.h:6078
 msgid ""
-"this folder (and sub-folders) contains pfm files used by the raster image "
+"this folder (and sub-folders) contains PFM files used by the raster mask "
 "import module. (restart required)"
 msgstr ""
 "Цей каталог (і вкладені каталоги) містить файли PFM, що використовуються "
@@ -5146,7 +5146,7 @@ msgid "gamma"
 msgstr "Гамма"
 
 #: ../build/lib/darktable/plugins/introspection_rasterfile.c:146
-msgid "all RGB colors"
+msgid "all RGB channels"
 msgstr "Всі канали RGB"
 
 #: ../build/lib/darktable/plugins/introspection_rasterfile.c:147
@@ -6625,76 +6625,90 @@ msgstr "Пересилання зображень до запущеного ек
 msgid "preparing database"
 msgstr "Підготовка бази даних"
 
-#: ../src/common/darktable.c:1705
+#. init darktable tags table
+#: ../src/common/darktable.c:1590
+msgid "setting up tags table"
+msgstr "Налаштування таблиці тегів"
+
+#. Initialize the signal system
+#: ../src/common/darktable.c:1594
+msgid "initializing signals and control"
+msgstr "Ініціалізація сигналів"
+
+#: ../src/common/darktable.c:1613
+msgid "importing default styles"
+msgstr "Імпорт стандартних стилів"
+
+#: ../src/common/darktable.c:1711
 msgid "initializing GraphicsMagick"
 msgstr "Ініціалізація GraphicsMagick"
 
 #. ImageMagick init
-#: ../src/common/darktable.c:1717
+#: ../src/common/darktable.c:1723
 msgid "initializing ImageMagick"
 msgstr "Ініціалізація ImageMagick"
 
-#: ../src/common/darktable.c:1722
+#: ../src/common/darktable.c:1728
 msgid "initializing libheif"
 msgstr "Ініціалізація libheif"
 
-#: ../src/common/darktable.c:1726
+#: ../src/common/darktable.c:1732
 msgid "starting OpenCL"
 msgstr "Запуск OpenCL"
 
-#: ../src/common/darktable.c:1738
+#: ../src/common/darktable.c:1744
 msgid "loading noise profiles"
 msgstr "Завантаження профілів шуму"
 
-#: ../src/common/darktable.c:1755
+#: ../src/common/darktable.c:1761
 msgid "synchronizing local copies"
 msgstr "Синхронізація локальних копій"
 
 #. Initialize the camera control.  this is done late so that the
 #. gui can react to the signal sent but before switching to
 #. lighttable!
-#: ../src/common/darktable.c:1762
+#: ../src/common/darktable.c:1768
 msgid "initializing camera control"
 msgstr "Ініціалізація керування камерою"
 
-#: ../src/common/darktable.c:1772
+#: ../src/common/darktable.c:1778
 msgid "initializing GUI"
 msgstr "Ініціалізація GUI"
 
-#: ../src/common/darktable.c:1796
+#: ../src/common/darktable.c:1802
 msgid "loading processing modules"
 msgstr "Завантаження модулів обробки"
 
-#: ../src/common/darktable.c:1831
+#: ../src/common/darktable.c:1837
 msgid "loading utility modules"
 msgstr "Завантаження сервісних модулів"
 
 #. init the gui part of views
-#: ../src/common/darktable.c:1836
+#: ../src/common/darktable.c:1842
 msgid "loading views"
 msgstr "Завантаження режимів"
 
-#: ../src/common/darktable.c:1842
+#: ../src/common/darktable.c:1848
 msgid "initializing Lua"
 msgstr "Ініціалізація Lua"
 
-#: ../src/common/darktable.c:1873
+#: ../src/common/darktable.c:1879
 msgid "importing image"
 msgstr "Імпорт зображення"
 
-#: ../src/common/darktable.c:1893
+#: ../src/common/darktable.c:1899
 msgid "configuration information"
 msgstr "Інформація щодо налаштування"
 
-#: ../src/common/darktable.c:1895
+#: ../src/common/darktable.c:1901
 msgid "_show this message again"
 msgstr "_Показати це наступного разу"
 
-#: ../src/common/darktable.c:1895
+#: ../src/common/darktable.c:1901
 msgid "_dismiss"
 msgstr "_Більше не показувати"
 
-#: ../src/common/darktable.c:2403
+#: ../src/common/darktable.c:2409
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
@@ -6702,13 +6716,13 @@ msgstr ""
 "Метод демозаїкізації RCD було встановлено за замовчуванням замість PPG через "
 "кращу якість та продуктивність."
 
-#: ../src/common/darktable.c:2405
+#: ../src/common/darktable.c:2411
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
 "Щодо демозаїкізації масштабованих зображень в режимі темної кімнати "
 "перегляньте відповідний параметр в \"Налаштування > Темна кімната\""
 
-#: ../src/common/darktable.c:2411
+#: ../src/common/darktable.c:2417
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
@@ -6716,7 +6730,7 @@ msgstr ""
 "Інтерфейс користувача та базові внутрішні елементи для налаштування "
 "продуктивності Darktable змінилися."
 
-#: ../src/common/darktable.c:2413
+#: ../src/common/darktable.c:2419
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
@@ -6724,15 +6738,15 @@ msgstr ""
 "Ви більше не знайдете старих параметрів, замість цього \"в Налаштування > "
 "Обробка\" використовуйте:"
 
-#: ../src/common/darktable.c:2415
+#: ../src/common/darktable.c:2421
 msgid "1) darktable resources"
 msgstr "1) рівень ресурсів для Darktable"
 
-#: ../src/common/darktable.c:2417
+#: ../src/common/darktable.c:2423
 msgid "2) tune OpenCL performance"
 msgstr "2) налаштування продуктивності OpenCL"
 
-#: ../src/common/darktable.c:2424
+#: ../src/common/darktable.c:2430
 msgid ""
 "some global config parameters relevant for OpenCL performance are not used "
 "any longer."
@@ -6740,7 +6754,7 @@ msgstr ""
 "Деякі глобальні параметри конфігурації, що мають відношення до "
 "продуктивності OpenCL, більше не використовуються."
 
-#: ../src/common/darktable.c:2426
+#: ../src/common/darktable.c:2432
 msgid ""
 "instead you will find 'per device' data in 'cldevice_v5_canonical-name'. "
 "content is:"
@@ -6748,8 +6762,8 @@ msgstr ""
 "Замість цього ви знайдете окремі дані для пристроїв у 'cldevice_v5_canonical-"
 "name'. Зміст:"
 
-#: ../src/common/darktable.c:2428 ../src/common/darktable.c:2447
-#: ../src/common/darktable.c:2462
+#: ../src/common/darktable.c:2434 ../src/common/darktable.c:2453
+#: ../src/common/darktable.c:2468
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
@@ -6757,18 +6771,18 @@ msgstr ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
 
-#: ../src/common/darktable.c:2430 ../src/common/darktable.c:2449
+#: ../src/common/darktable.c:2436 ../src/common/darktable.c:2455
 msgid "you may tune as before except 'magic'"
 msgstr "Ви можете регулювати ці параметри, як і раніше, за винятком 'magic'"
 
-#: ../src/common/darktable.c:2436
+#: ../src/common/darktable.c:2442
 msgid ""
 "your OpenCL compiler settings for all devices have been reset to default."
 msgstr ""
 "Налаштування компілятора OpenCL для всіх пристроїв були скинуті до значень "
 "за замовчуванням."
 
-#: ../src/common/darktable.c:2443
+#: ../src/common/darktable.c:2449
 msgid ""
 "OpenCL global config parameters 'per device' data has been recreated with an "
 "updated name."
@@ -6776,13 +6790,13 @@ msgstr ""
 "Дані параметрів глобальної конфігурації OpenCL 'для окремих пристроїв' було "
 "відтворено з оновленою назвою."
 
-#: ../src/common/darktable.c:2445 ../src/common/darktable.c:2460
+#: ../src/common/darktable.c:2451 ../src/common/darktable.c:2466
 msgid ""
 "you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"
 msgstr ""
 "Ви знайдете окремі дані для пристроїв у 'cldevice_v5_canonical-name'. Зміст:"
 
-#: ../src/common/darktable.c:2451
+#: ../src/common/darktable.c:2457
 msgid ""
 "If you're using device names in 'opencl_device_priority' you should update "
 "them to the new names."
@@ -6790,7 +6804,7 @@ msgstr ""
 "Якщо ви використовуєте імена пристроїв у 'opencl_device_priority', вам слід "
 "оновити їх до нових імен."
 
-#: ../src/common/darktable.c:2458
+#: ../src/common/darktable.c:2464
 msgid ""
 "OpenCL 'per device' config data have been automatically extended by 'unified-"
 "fraction'."
@@ -6798,7 +6812,7 @@ msgstr ""
 "Конфігураційні дані OpenCL для окремих пристроїв автоматично розширено "
 "додаванням 'unified-fraction'."
 
-#: ../src/common/darktable.c:2469
+#: ../src/common/darktable.c:2475
 msgid ""
 "OpenCL 'per device' compiler settings might have been updated.\n"
 "\n"
@@ -6807,7 +6821,7 @@ msgstr ""
 "оновлені.\n"
 "\n"
 
-#: ../src/common/darktable.c:2474
+#: ../src/common/darktable.c:2480
 msgid ""
 "OpenCL mandatory timeout has been updated to 1000.\n"
 "\n"
@@ -22552,16 +22566,16 @@ msgid "raster|mask"
 msgstr "raster|mask"
 
 #: ../src/iop/rasterfile.c:100
-msgid "import pfm files to be used as raster masks"
+msgid "import PFM files to be used as raster masks"
 msgstr "Імпортувати файли PFM для використання в якості растрових масок"
 
 #: ../src/iop/rasterfile.c:169
 #, c-format
-msgid "can't read image raster file '%s'"
+msgid "can't read raster mask file '%s'"
 msgstr "Не вдається прочитати файл растрової маски '%s'"
 
 #: ../src/iop/rasterfile.c:248
-msgid "rasterfile masks root folder not defined"
+msgid "raster mask files root folder not defined"
 msgstr "Кореневий каталог файлів растрових масок не визначено"
 
 #: ../src/iop/rasterfile.c:255
@@ -22579,10 +22593,10 @@ msgstr ""
 
 #: ../src/iop/rasterfile.c:591
 msgid ""
-"select a pfm file to be advertized as a raster mask,\n"
+"select a PFM file to be advertized as a raster mask,\n"
 "CAUTION: path must be set in preferences/processing before choosing"
 msgstr ""
-"Вибрати файл PFM, який буде розглядатися як растрова маска,\n"
+"Вибрати файл PFM, який буде розглядатися як растрова маска\n"
 "ПОПЕРЕДЖЕННЯ: Перед вибором потрібно встановити кореневий каталог файлів в "
 "розділі \"Обробка\" налаштувань Darktable"
 
@@ -29792,6 +29806,9 @@ msgstr ""
 #: ../src/views/view.c:1566
 msgid "mouse actions"
 msgstr "Дії за допомогою миші"
+
+#~ msgid "all RGB colors"
+#~ msgstr "Всі канали RGB"
 
 #~ msgctxt "eq_preset"
 #~ msgid "coarse"
