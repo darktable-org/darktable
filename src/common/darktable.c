@@ -1849,8 +1849,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // after the following Lua startup call, we can no longer use dt_gui_process_events() or we hang;
   // this also means no more calls to darktable_splash_screen_set_progress()
   dt_lua_init(darktable.lua_state.state, lua_command);
-#else
-  darktable_splash_screen_set_progress(_(""));
 #endif
 
   if(init_gui)
