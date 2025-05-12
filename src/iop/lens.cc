@@ -1125,9 +1125,9 @@ static void _process_lf(dt_iop_module_t *self,
             const float pi1 = fmaxf(fminf(bufptr[c * 2 + 1] - roi_in->y,
                                           roi_in->height - 1.0f),
                                     0.0f);
-            out[c] = dt_interpolation_compute_sample
-              (interpolation, inptr, pi0, pi1, roi_in->width,
-               roi_in->height, ch, ch_width);
+            out[c] = dt_interpolation_compute_sample(interpolation, inptr,
+                                                     pi0, pi1,
+                                                     roi_in->width, roi_in->height, ch, ch_width);
           }
 
           if(mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
@@ -1148,9 +1148,9 @@ static void _process_lf(dt_iop_module_t *self,
             const float pi1 = fmaxf(fminf(bufptr[3] - roi_in->y,
                                           roi_in->height - 1.0f),
                                     0.0f);
-            out[3] = dt_interpolation_compute_sample
-              (interpolation, inptr, pi0, pi1, roi_in->width,
-               roi_in->height, ch, ch_width);
+            out[3] = dt_interpolation_compute_sample(interpolation, inptr,
+                                                     pi0, pi1,
+                                                     roi_in->width, roi_in->height, ch, ch_width);
           }
         }
       }
@@ -1235,11 +1235,9 @@ static void _process_lf(dt_iop_module_t *self,
                                           roi_in->width - 1.0f), 0.0f);
             const float pi1 = fmaxf(fminf(buf2ptr[c * 2 + 1] - roi_in->y,
                                           roi_in->height - 1.0f), 0.0f);
-            out[c] = dt_interpolation_compute_sample(interpolation,
-                                                     bufptr, pi0, pi1,
-                                                     roi_in->width,
-                                                     roi_in->height, ch,
-                                                     ch_width);
+            out[c] = dt_interpolation_compute_sample(interpolation, bufptr,
+                                                     pi0, pi1,
+                                                     roi_in->width, roi_in->height, ch, ch_width);
           }
 
           if(mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
@@ -1687,9 +1685,9 @@ static void _distort_mask_lf(dt_iop_module_t *self,
       // take green channel distortion also for alpha channel
       const float pi0 = bufptr[2] - roi_in->x;
       const float pi1 = bufptr[3] - roi_in->y;
-      *_out = MIN(1.0f, dt_interpolation_compute_sample(interpolation, in, pi0, pi1,
-                                              roi_in->width, roi_in->height, 1,
-                                              roi_in->width));
+      *_out = CLIP(dt_interpolation_compute_sample(interpolation, in,
+                                                   pi0, pi1,
+                                                   roi_in->width, roi_in->height, 1, roi_in->width));
     }
   }
   dt_free_align(buf);
@@ -2729,11 +2727,9 @@ static void _distort_mask_md(dt_iop_module_t *self,
                                    d->nc, r*sqrtf(cx*cx + cy*cy));
       const float xs = CLAMP(dr*cx + w2 - roi_in->x, 0.0f, limw);
       const float ys = CLAMP(dr*cy + h2 - roi_in->y, 0.0f, limh);
-      out[y * roi_out->width + x] =
-        MIN(1.0f, dt_interpolation_compute_sample(interpolation, in, xs, ys,
-                                        roi_in->width,
-                                        roi_in->height,
-                                        1, roi_in->width));
+      out[y * roi_out->width + x] = CLIP(dt_interpolation_compute_sample(interpolation, in,
+                                                                         xs, ys,
+                                                                         roi_in->width, roi_in->height, 1, roi_in->width));
     }
   }
 }
@@ -2814,9 +2810,9 @@ static void _process_md(dt_iop_module_t *self,
           _interpolate_linear_spline(d->knots_dist, d->cor_rgb[plane], d->nc, radius);
         const float xs = CLAMP(dr*cx + w2 - roi_in->x, 0.0f, limw);
         const float ys = CLAMP(dr*cy + h2 - roi_in->y, 0.0f, limh);
-        out[odx+c] = dt_interpolation_compute_sample
-          (interpolation, buf + c, xs, ys, roi_in->width,
-           roi_in->height, 4, 4*roi_in->width);
+        out[odx+c] = dt_interpolation_compute_sample(interpolation, buf + c,
+                                                     xs, ys,
+                                                     roi_in->width, roi_in->height, 4, 4*roi_in->width);
       }
     }
   }
