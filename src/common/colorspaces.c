@@ -2493,6 +2493,18 @@ gboolean dt_colorspaces_get_primaries_and_whitepoint_from_profile(cmsHPROFILE pr
   return TRUE;
 }
 
+static float _sanitizeY(float y)
+{
+  if (y < 1e-6f && y >= 0)
+  {
+    y = 1e-6f;
+  } else if (y < 0 && y > -1e-6f)
+  {
+    y = -1e-6f;
+  }
+  return y;
+}
+
 void dt_make_transposed_matrices_from_primaries_and_whitepoint(const float primaries[3][2],
                                                                const float whitepoint[2],
                                                                dt_colormatrix_t RGB_to_XYZ_transposed)
@@ -2501,17 +2513,19 @@ void dt_make_transposed_matrices_from_primaries_and_whitepoint(const float prima
   dt_colormatrix_t primaries_matrix = { { 0.f } };
   for(size_t i = 0; i < 3; i++)
   {
+    const float y = _sanitizeY(primaries[i][1]);
     // N.B. compared to linked equations, our matrix is transposed
-    primaries_matrix[i][0] = primaries[i][0] / primaries[i][1];
+    primaries_matrix[i][0] = primaries[i][0] / y;
     primaries_matrix[i][1] = 1.f;
-    primaries_matrix[i][2] = (1.f - primaries[i][0] - primaries[i][1]) / primaries[i][1];
+    primaries_matrix[i][2] = (1.f - primaries[i][0] - y) / y;
   }
 
   dt_colormatrix_t primaries_inverse = { { 0.f } };
   mat3SSEinv(primaries_inverse, primaries_matrix);
   dt_aligned_pixel_t scale;
+  const float y = _sanitizeY(whitepoint[1]);
   const dt_aligned_pixel_t XYZ_white
-      = { whitepoint[0] / whitepoint[1], 1.f, (1.f - whitepoint[0] - whitepoint[1]) / whitepoint[1] };
+      = { whitepoint[0] / y, 1.f, (1.f - whitepoint[0] - y) / y };
   dt_apply_transposed_color_matrix(XYZ_white, primaries_inverse, scale);
 
   for(size_t i = 0; i < 3; i++)
