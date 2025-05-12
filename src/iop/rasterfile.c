@@ -52,7 +52,7 @@ DT_MODULE_INTROSPECTION(1, dt_iop_rasterfile_params_t)
 
 typedef enum dt_iop_rasterfile_mode_t
 {
-  DT_RASTERFILE_MODE_ALL = 7,     // $DESCRIPTION: "all RGB colors"
+  DT_RASTERFILE_MODE_ALL = 7,     // $DESCRIPTION: "all RGB channels"
   DT_RASTERFILE_MODE_RED = 1,     // $DESCRIPTION: "only red"
   DT_RASTERFILE_MODE_GREEN = 2,   // $DESCRIPTION: "only green"
   DT_RASTERFILE_MODE_BLUE = 4,   // $DESCRIPTION: "only blue"
@@ -97,7 +97,7 @@ const char *aliases()
 const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
-      _("import pfm files to be used as raster masks"),
+      _("import PFM files to be used as raster masks"),
       _("corrective or creative"),
       _("linear, raw, scene-referred"),
       _("linear, raw"),
@@ -165,8 +165,8 @@ static float *_read_rasterfile(char *filename,
   float *mask = dt_iop_image_alloc(width, height, 1);
   if(!image || !mask)
   {
-    dt_print(DT_DEBUG_ALWAYS, "can't read image raster file '%s'", filename ? filename : "???");
-    dt_control_log(_("can't read image raster file '%s'"), filename ? filename : "???");
+    dt_print(DT_DEBUG_ALWAYS, "can't read raster mask file '%s'", filename ? filename : "???");
+    dt_control_log(_("can't read raster mask file '%s'"), filename ? filename : "???");
 
     dt_free_align(image);
     dt_free_align(mask);
@@ -244,8 +244,8 @@ static void _fbutton_clicked(GtkWidget *widget, dt_iop_module_t *self)
   gchar *mfolder = dt_conf_get_string("plugins/darkroom/segments/def_path");
   if(strlen(mfolder) == 0)
   {
-    dt_print(DT_DEBUG_ALWAYS, "rasterfile masks root folder not defined");
-    dt_control_log(_("rasterfile masks root folder not defined"));
+    dt_print(DT_DEBUG_ALWAYS, "raster mask files root folder not defined");
+    dt_control_log(_("raster mask files root folder not defined"));
     g_free(mfolder);
     return;
   }
@@ -588,7 +588,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->fbutton = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
   gtk_widget_set_name(g->fbutton, "non-flat");
-  gtk_widget_set_tooltip_text(g->fbutton, _("select a pfm file to be advertized as a raster mask,\n"
+  gtk_widget_set_tooltip_text(g->fbutton, _("select a PFM file to be advertized as a raster mask,\n"
       "CAUTION: path must be set in preferences/processing before choosing"));
   g_signal_connect(G_OBJECT(g->fbutton), "clicked", G_CALLBACK(_fbutton_clicked), self);
 
