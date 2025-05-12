@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2018-2020 darktable developers.
+    copyright (c) 2018-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -94,7 +94,7 @@ filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
   {
 
     // Save the ratios
-    float maxRGB = max(max(o.x, o.y), o.z);
+    float maxRGB = fmax(fmax(o.x, o.y), o.z);
     const float4 ratios = o / (float4)maxRGB;
 
     // Log profile
