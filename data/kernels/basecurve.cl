@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2016 johannes hanika.
-    copyright (c) 2016 Ulrich Pegelow.
+    copyright (c) 2016-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -104,17 +103,17 @@ basecurve_compute_features(read_only image2d_t in, write_only image2d_t out, con
 
   float4 value = read_imagef(in, sampleri, (int2)(x, y));
 
-  const float ma = max(value.x, max(value.y, value.z));
-  const float mi = min(value.x, min(value.y, value.z));
+  const float ma = fmax(value.x, fmax(value.y, value.z));
+  const float mi = fmin(value.x, fmin(value.y, value.z));
 
-  const float sat = 0.1f + 0.1f * (ma - mi) / max(1.0e-4f, ma);
+  const float sat = 0.1f + 0.1f * (ma - mi) / fmax(1.0e-4f, ma);
   value.w = sat;
 
   const float c = 0.54f;
 
   float v = fabs(value.x - c);
-  v = max(fabs(value.y - c), v);
-  v = max(fabs(value.z - c), v);
+  v = fmax(fabs(value.y - c), v);
+  v = fmax(fabs(value.z - c), v);
 
   const float var = 0.5f;
   const float e = 0.2f + dt_fast_expf(-v * v / (var * var));

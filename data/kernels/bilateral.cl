@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2012 johannes hanika.
+    copyright (c) 2012-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 float4
 image_to_grid(
     const float4 p,
-    const int4   size,
+    const int4 size,
     const float4 sigma)
 {
   return (float4)(
@@ -326,7 +326,7 @@ slice_to_output(
         grid[gi+ox+oz]    * (       fx) * (1.0f - fy) * (       fz) +
         grid[gi+oy+oz]    * (1.0f - fx) * (       fy) * (       fz) +
         grid[gi+ox+oy+oz] * (       fx) * (       fy) * (       fz);
-  pixel2.x = max(0.0f, pixel2.x + norm * Ldiff);
+  pixel2.x = fmax(0.0f, pixel2.x + norm * Ldiff);
   write_imagef (out, (int2)(x, y), pixel2);
 }
 
@@ -378,7 +378,7 @@ slice(
         grid[gi+ox+oz]    * (       fx) * (1.0f - fy) * (       fz) +
         grid[gi+oy+oz]    * (1.0f - fx) * (       fy) * (       fz) +
         grid[gi+ox+oy+oz] * (       fx) * (       fy) * (       fz);
-  pixel.x = max(0.0f, L + norm * Ldiff);
+  pixel.x = fmax(0.0f, L + norm * Ldiff);
   write_imagef (out, (int2)(x, y), pixel);
 }
 
