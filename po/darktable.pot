@@ -3,13 +3,13 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#: ../src/common/darktable.c:1847
+#: ../src/common/darktable.c:1853
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-05-11 20:05+0200\n"
+"POT-Creation-Date: 2025-05-12 08:16+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1425,12 +1425,12 @@ msgid ""
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:6058
-msgid "raster image masks root folder"
+msgid "raster mask files root folder"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:6078
 msgid ""
-"this folder (and sub-folders) contains pfm files used by the raster image "
+"this folder (and sub-folders) contains PFM files used by the raster mask "
 "import module. (restart required)"
 msgstr ""
 
@@ -4849,7 +4849,7 @@ msgid "gamma"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_rasterfile.c:146
-msgid "all RGB colors"
+msgid "all RGB channels"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_rasterfile.c:147
@@ -6295,163 +6295,177 @@ msgstr ""
 msgid "preparing database"
 msgstr ""
 
-#: ../src/common/darktable.c:1705
+#. init darktable tags table
+#: ../src/common/darktable.c:1590
+msgid "setting up tags table"
+msgstr ""
+
+#. Initialize the signal system
+#: ../src/common/darktable.c:1594
+msgid "initializing signals and control"
+msgstr ""
+
+#: ../src/common/darktable.c:1613
+msgid "importing default styles"
+msgstr ""
+
+#: ../src/common/darktable.c:1711
 msgid "initializing GraphicsMagick"
 msgstr ""
 
 #. ImageMagick init
-#: ../src/common/darktable.c:1717
+#: ../src/common/darktable.c:1723
 msgid "initializing ImageMagick"
 msgstr ""
 
-#: ../src/common/darktable.c:1722
+#: ../src/common/darktable.c:1728
 msgid "initializing libheif"
 msgstr ""
 
-#: ../src/common/darktable.c:1726
+#: ../src/common/darktable.c:1732
 msgid "starting OpenCL"
 msgstr ""
 
-#: ../src/common/darktable.c:1738
+#: ../src/common/darktable.c:1744
 msgid "loading noise profiles"
 msgstr ""
 
-#: ../src/common/darktable.c:1755
+#: ../src/common/darktable.c:1761
 msgid "synchronizing local copies"
 msgstr ""
 
 #. Initialize the camera control.  this is done late so that the
 #. gui can react to the signal sent but before switching to
 #. lighttable!
-#: ../src/common/darktable.c:1762
+#: ../src/common/darktable.c:1768
 msgid "initializing camera control"
 msgstr ""
 
-#: ../src/common/darktable.c:1772
+#: ../src/common/darktable.c:1778
 msgid "initializing GUI"
 msgstr ""
 
-#: ../src/common/darktable.c:1796
+#: ../src/common/darktable.c:1802
 msgid "loading processing modules"
 msgstr ""
 
-#: ../src/common/darktable.c:1831
+#: ../src/common/darktable.c:1837
 msgid "loading utility modules"
 msgstr ""
 
 #. init the gui part of views
-#: ../src/common/darktable.c:1836
+#: ../src/common/darktable.c:1842
 msgid "loading views"
 msgstr ""
 
-#: ../src/common/darktable.c:1842
+#: ../src/common/darktable.c:1848
 msgid "initializing Lua"
 msgstr ""
 
-#: ../src/common/darktable.c:1873
+#: ../src/common/darktable.c:1879
 msgid "importing image"
 msgstr ""
 
-#: ../src/common/darktable.c:1893
+#: ../src/common/darktable.c:1899
 msgid "configuration information"
 msgstr ""
 
-#: ../src/common/darktable.c:1895
+#: ../src/common/darktable.c:1901
 msgid "_show this message again"
 msgstr ""
 
-#: ../src/common/darktable.c:1895
+#: ../src/common/darktable.c:1901
 msgid "_dismiss"
 msgstr ""
 
-#: ../src/common/darktable.c:2403
+#: ../src/common/darktable.c:2409
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
 msgstr ""
 
-#: ../src/common/darktable.c:2405
+#: ../src/common/darktable.c:2411
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
 
-#: ../src/common/darktable.c:2411
+#: ../src/common/darktable.c:2417
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
 msgstr ""
 
-#: ../src/common/darktable.c:2413
+#: ../src/common/darktable.c:2419
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
 msgstr ""
 
-#: ../src/common/darktable.c:2415
+#: ../src/common/darktable.c:2421
 msgid "1) darktable resources"
 msgstr ""
 
-#: ../src/common/darktable.c:2417
+#: ../src/common/darktable.c:2423
 msgid "2) tune OpenCL performance"
 msgstr ""
 
-#: ../src/common/darktable.c:2424
+#: ../src/common/darktable.c:2430
 msgid ""
 "some global config parameters relevant for OpenCL performance are not used "
 "any longer."
 msgstr ""
 
-#: ../src/common/darktable.c:2426
+#: ../src/common/darktable.c:2432
 msgid ""
 "instead you will find 'per device' data in 'cldevice_v5_canonical-name'. "
 "content is:"
 msgstr ""
 
-#: ../src/common/darktable.c:2428 ../src/common/darktable.c:2447
-#: ../src/common/darktable.c:2462
+#: ../src/common/darktable.c:2434 ../src/common/darktable.c:2453
+#: ../src/common/darktable.c:2468
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
 msgstr ""
 
-#: ../src/common/darktable.c:2430 ../src/common/darktable.c:2449
+#: ../src/common/darktable.c:2436 ../src/common/darktable.c:2455
 msgid "you may tune as before except 'magic'"
 msgstr ""
 
-#: ../src/common/darktable.c:2436
+#: ../src/common/darktable.c:2442
 msgid ""
 "your OpenCL compiler settings for all devices have been reset to default."
 msgstr ""
 
-#: ../src/common/darktable.c:2443
+#: ../src/common/darktable.c:2449
 msgid ""
 "OpenCL global config parameters 'per device' data has been recreated with an "
 "updated name."
 msgstr ""
 
-#: ../src/common/darktable.c:2445 ../src/common/darktable.c:2460
+#: ../src/common/darktable.c:2451 ../src/common/darktable.c:2466
 msgid ""
 "you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"
 msgstr ""
 
-#: ../src/common/darktable.c:2451
+#: ../src/common/darktable.c:2457
 msgid ""
 "If you're using device names in 'opencl_device_priority' you should update "
 "them to the new names."
 msgstr ""
 
-#: ../src/common/darktable.c:2458
+#: ../src/common/darktable.c:2464
 msgid ""
 "OpenCL 'per device' config data have been automatically extended by 'unified-"
 "fraction'."
 msgstr ""
 
-#: ../src/common/darktable.c:2469
+#: ../src/common/darktable.c:2475
 msgid ""
 "OpenCL 'per device' compiler settings might have been updated.\n"
 "\n"
 msgstr ""
 
-#: ../src/common/darktable.c:2474
+#: ../src/common/darktable.c:2480
 msgid ""
 "OpenCL mandatory timeout has been updated to 1000.\n"
 "\n"
@@ -20716,16 +20730,16 @@ msgid "raster|mask"
 msgstr ""
 
 #: ../src/iop/rasterfile.c:100
-msgid "import pfm files to be used as raster masks"
+msgid "import PFM files to be used as raster masks"
 msgstr ""
 
 #: ../src/iop/rasterfile.c:169
 #, c-format
-msgid "can't read image raster file '%s'"
+msgid "can't read raster mask file '%s'"
 msgstr ""
 
 #: ../src/iop/rasterfile.c:248
-msgid "rasterfile masks root folder not defined"
+msgid "raster mask files root folder not defined"
 msgstr ""
 
 #: ../src/iop/rasterfile.c:255
@@ -20742,7 +20756,7 @@ msgstr ""
 
 #: ../src/iop/rasterfile.c:591
 msgid ""
-"select a pfm file to be advertized as a raster mask,\n"
+"select a PFM file to be advertized as a raster mask,\n"
 "CAUTION: path must be set in preferences/processing before choosing"
 msgstr ""
 
