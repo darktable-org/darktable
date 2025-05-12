@@ -2495,16 +2495,20 @@ gboolean dt_colorspaces_get_primaries_and_whitepoint_from_profile(cmsHPROFILE pr
   return TRUE;
 }
 
-static float _sanitizeY(float y)
+static inline float _sanitizeY(const float y)
 {
-  if (y < 1e-6f && y >= 0)
+  if (y < FLT_EPSILON && y >= 0)
   {
-    y = 1e-6f;
-  } else if (y < 0 && y > -1e-6f)
-  {
-    y = -1e-6f;
+    return FLT_EPSILON;
   }
-  return y;
+  else if (y < 0 && y > -FLT_EPSILON)
+  {
+    return -FLT_EPSILON;
+  }
+  else
+  {
+    return y;
+  }
 }
 
 void dt_make_transposed_matrices_from_primaries_and_whitepoint(const float primaries[3][2],
