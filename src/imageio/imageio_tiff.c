@@ -85,8 +85,10 @@ static inline float _half_to_float(uint16_t h)
 }
 #endif
 
-static inline int _read_chunky_8(tiff_t *t)
+static inline int _read_chunky_8(tiff_t *t, uint16_t photometric)
 {
+  const gboolean need_invert = (photometric == PHOTOMETRIC_MINISWHITE);
+
   for(uint32_t row = 0; row < t->height; row++)
   {
     uint8_t *in = ((uint8_t *)t->buf);
@@ -98,7 +100,9 @@ static inline int _read_chunky_8(tiff_t *t)
     for(uint32_t i = 0; i < t->width; i++, in += t->spp, out += 4)
     {
       /* set rgb to first sample from scanline */
-      out[0] = ((float)in[0]) * (1.0f / 255.0f);
+      out[0] = need_invert
+               ? 1.0f - ((float)in[0]) * (1.0f / 255.0f)
+               :        ((float)in[0]) * (1.0f / 255.0f);
 
       if(t->spp < 3)  // mono, maybe plus alpha channel
       {
@@ -521,7 +525,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
   }
   else if(t.bpp == 8 && t.sampleformat == SAMPLEFORMAT_UINT)
   {
-    ok = _read_chunky_8(&t);
+    ok = _read_chunky_8(&t, photometric);
   }
   else if(t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_UINT)
   {
