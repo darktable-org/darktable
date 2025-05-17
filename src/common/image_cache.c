@@ -29,7 +29,7 @@
 #include <inttypes.h>
 
 static void _image_cache_allocate(void *data,
-                             dt_cache_entry_t *entry)
+                                  dt_cache_entry_t *entry)
 {
   entry->cost = sizeof(dt_image_t);
 

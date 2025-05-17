@@ -1060,6 +1060,7 @@ void dt_image_flip(const dt_imgid_t imgid, const int32_t cw)
   orientation ^= ORIENTATION_SWAP_XY;
 
   if(cw == 2) orientation = ORIENTATION_NULL;
+
   dt_image_set_flip(imgid, orientation);
 
   dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
@@ -1113,10 +1114,15 @@ void dt_image_set_aspect_ratio_to(const dt_imgid_t imgid,
     /* store but don't save xmp*/
     dt_image_cache_write_release(image, DT_IMAGE_CACHE_RELAXED);
 
-    if(image && raise && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+    if(image
+       && raise
+       && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
+    {
+      dt_collection_update_query(darktable.collection,
+                                 DT_COLLECTION_CHANGE_RELOAD,
                                  DT_COLLECTION_PROP_ASPECT_RATIO,
                                  g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
+    }
   }
 }
 
@@ -1137,17 +1143,23 @@ void dt_image_set_aspect_ratio_if_different(const dt_imgid_t imgid,
       dt_image_t *wimage = dt_image_cache_get(imgid, 'w');
       if(wimage)
         wimage->aspect_ratio = aspect_ratio;
+
       dt_image_cache_write_release(wimage, DT_IMAGE_CACHE_RELAXED);
 
-      if(raise && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
-        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
-                                 DT_COLLECTION_PROP_ASPECT_RATIO,
-                                 g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
+      if(raise
+         && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
+      {
+        dt_collection_update_query(darktable.collection,
+                                   DT_COLLECTION_CHANGE_RELOAD,
+                                   DT_COLLECTION_PROP_ASPECT_RATIO,
+                                   g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
+      }
     }
   }
 }
 
-void dt_image_reset_aspect_ratio(const dt_imgid_t imgid, const gboolean raise)
+void dt_image_reset_aspect_ratio(const dt_imgid_t imgid,
+                                 const gboolean raise)
 {
   /* fetch image from cache */
   dt_image_t *image = dt_image_cache_get(imgid, 'w');
@@ -1157,16 +1169,22 @@ void dt_image_reset_aspect_ratio(const dt_imgid_t imgid, const gboolean raise)
   {
     image->aspect_ratio = 0.f;
     /* store in db, but don't synch XMP */
-    dt_image_cache_write_release_info(image, DT_IMAGE_CACHE_RELAXED, "dt_image_reset_aspect_ratio");
+    dt_image_cache_write_release_info(image,
+                                      DT_IMAGE_CACHE_RELAXED,
+                                      "dt_image_reset_aspect_ratio");
 
-    if(raise && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
+    if(raise
+       && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
+    {
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
                                DT_COLLECTION_PROP_ASPECT_RATIO,
                                g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
+    }
   }
 }
 
-float dt_image_set_aspect_ratio(const dt_imgid_t imgid, const gboolean raise)
+float dt_image_set_aspect_ratio(const dt_imgid_t imgid,
+                                const gboolean raise)
 {
   dt_mipmap_buffer_t buf;
   float aspect_ratio = 0.0;
