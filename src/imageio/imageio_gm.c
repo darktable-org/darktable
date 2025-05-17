@@ -98,14 +98,6 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img,
            "[GraphicsMagick_open] image '%s' loading",
            img->filename);
 
-  if(IsCMYKColorspace(image->colorspace))
-  {
-    dt_print(DT_DEBUG_ALWAYS,
-             "[GraphicsMagick_open] error: CMYK images are not supported");
-    err =  DT_IMAGEIO_LOAD_FAILED;
-    goto error;
-  }
-
   img->width = image->columns;
   img->height = image->rows;
 
