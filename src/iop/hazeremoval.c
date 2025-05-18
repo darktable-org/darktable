@@ -657,6 +657,8 @@ void process(dt_iop_module_t *self,
     g->distance_max = distance_max;
     g->hash = hash;
     dt_iop_gui_leave_critical_section(self);
+    if(distance_max <= 0.0f)
+      dt_control_log(_("haze removal could not calculate ambient light due to image content"));
   }
 
   // calculate the transition map
@@ -926,6 +928,8 @@ int process_cl(dt_iop_module_t *self,
     g->distance_max = distance_max;
     g->hash = hash;
     dt_iop_gui_leave_critical_section(self);
+    if(distance_max <= 0.0f)
+      dt_control_log(_("haze removal could not calculate ambient light due to image content"));
   }
 
   cl_mem trans_map = NULL;
