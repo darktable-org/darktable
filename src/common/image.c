@@ -868,7 +868,7 @@ void dt_image_update_final_size(const dt_imgid_t imgid)
 gboolean dt_image_get_final_size(const dt_imgid_t imgid, int *width, int *height)
 {
   if(!dt_is_valid_imgid(imgid)) return TRUE;
-  // get the img strcut
+  // get the img struct
   dt_image_t *timg = dt_image_cache_get(imgid, 'r');
   if(!timg)
   {
