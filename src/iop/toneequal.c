@@ -91,7 +91,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <inttypes.h> // Only needed for debug printf of hashes, TODO remove
 
 
 #include "bauhaus/bauhaus.h"
@@ -125,64 +124,12 @@
 #include <omp.h>
 #endif
 
+// #define MF_DEBUG
+#ifdef MF_DEBUG
+#include <inttypes.h> // Only needed for debug printf of hashes, TODO remove
+#endif
+
 DT_MODULE_INTROSPECTION(3, dt_iop_toneequalizer_params_t)
-
-/****************************************************************************
- *
- * Debugging code, remove before release
- *
- ****************************************************************************/
-
-#include <sys/time.h>
-
-#define DEBUG_WRITE_BUFFERS TRUE
-
-int debug_write_buffer_to_file(const float *buffer, const char *tag, int width, int height, int channels,
-                               dt_dev_pixelpipe_type_t const pipe)
-{
-  if (!DEBUG_WRITE_BUFFERS) return 0;
-
-  // Get current time in milliseconds
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  unsigned long long ms = (unsigned long long)tv.tv_sec * 1000 + tv.tv_usec / 1000;
-
-  // Create filename
-  char filename[256];
-  snprintf(filename, sizeof(filename), "%llu_%s_%d.buftxt", ms, tag, pipe);
-
-  // Open file
-  FILE *file = g_fopen(filename, "w");
-  if(!file) return -1;
-
-  // Write header
-  fprintf(file, "%d %d %d\n", width, height, channels);
-
-  // Write buffer contents
-  const size_t total = width * height * channels;
-  int line_pos = 0;
-
-  for(size_t i = 0; i < total; i++)
-  {
-    if(line_pos == 20)
-    { // Start new line every 20 numbers
-      fputc('\n', file);
-      line_pos = 0;
-    }
-
-    if(line_pos > 0)
-    {
-      fputc(' ', file); // Space between numbers
-    }
-
-    fprintf(file, "%.6f", buffer[i]);
-    line_pos++;
-  }
-
-  fclose(file);
-  return 0;
-}
-
 
 /****************************************************************************
  *
@@ -197,7 +144,6 @@ int debug_write_buffer_to_file(const float *buffer, const char *tag, int width, 
 
 #define DT_TONEEQ_MIN_EV (-8.0f)
 #define DT_TONEEQ_MAX_EV (0.0f)
-#define DT_TONEEQ_USE_LUT TRUE
 
 #define HIRES_HISTO_MIN_EV -16.0f
 #define HIRES_HISTO_MAX_EV 8.0f
@@ -251,9 +197,9 @@ typedef enum dt_iop_toneequalizer_filter_t
 typedef enum dt_iop_toneequalizer_post_auto_align_t
 {
   DT_TONEEQ_ALIGN_CUSTOM = 0,   // $DESCRIPTION: "custom"
-  DT_TONEEQ_ALIGN_LEFT,         // $DESCRIPTION: "auto-align at shadows"
-  DT_TONEEQ_ALIGN_CENTER,       // $DESCRIPTION: "auto-align at mid-tones"
-  DT_TONEEQ_ALIGN_RIGHT,        // $DESCRIPTION: "auto-align at highlights"
+  DT_TONEEQ_ALIGN_LEFT,         // $DESCRIPTION: "at shadows"
+  DT_TONEEQ_ALIGN_CENTER,       // $DESCRIPTION: "at mid-tones"
+  DT_TONEEQ_ALIGN_RIGHT,        // $DESCRIPTION: "at highlights"
   DT_TONEEQ_ALIGN_FIT,          // $DESCRIPTION: "fully fit"
 
 } dt_iop_toneequalizer_post_auto_align_t;
@@ -280,7 +226,7 @@ typedef struct dt_iop_toneequalizer_params_t
   int iterations;          // $MIN: 1 $MAX: 20 $DEFAULT: 1 $DESCRIPTION: "filter diffusion"
   float post_scale;        // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 0.0 $DESCRIPTION: "mask contrast / scale histogram"
   float post_shift;        // $MIN: -4.0 $MAX: 4.0 $DEFAULT: 0.0 $DESCRIPTION: "mask brightness / shift histogram"
-  dt_iop_toneequalizer_post_auto_align_t post_auto_align; // $DEFAULT: DT_TONEEQ_ALIGN_CUSTOM $DESCRIPTION: "auto align mask exposure"
+  dt_iop_toneequalizer_post_auto_align_t post_auto_align; // $DEFAULT: DT_TONEEQ_ALIGN_FIT $DESCRIPTION: "auto align mask exposure"
 } dt_iop_toneequalizer_params_t;
 
 
@@ -380,6 +326,7 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   float sign_width;
   float graph_width;
   float graph_height;
+  float graph_w_gradients_height;
   float gradient_left_limit;
   float gradient_right_limit;
   float gradient_top_limit;
@@ -462,12 +409,10 @@ const char *name()
   return _("tone equalizer");
 }
 
-
 const char *aliases()
 {
   return _("tone curve|tone mapping|relight|background light|shadows highlights");
 }
-
 
 const char **description(dt_iop_module_t *self)
 {
@@ -479,18 +424,15 @@ const char **description(dt_iop_module_t *self)
      _("quasi-linear, RGB, scene-referred"));
 }
 
-
 int default_group()
 {
   return IOP_GROUP_BASIC | IOP_GROUP_GRADING;
 }
 
-
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
 }
-
 
 dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
                                             dt_dev_pixelpipe_t *pipe,
@@ -499,7 +441,6 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
                   const int old_version,
@@ -507,7 +448,9 @@ int legacy_params(dt_iop_module_t *self,
                   int32_t *new_params_size,
                   int *new_version)
 {
+#ifdef MF_DEBUG
   printf("legacy_params old_version=%d\n", old_version);
+#endif
 
   typedef struct dt_iop_toneequalizer_params_v3_t
   {
@@ -575,7 +518,7 @@ int legacy_params(dt_iop_module_t *self,
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_toneequalizer_params_v3_t);
-    *new_version = 1;
+    *new_version = 3;
     return 0;
   }
 
@@ -616,7 +559,7 @@ int legacy_params(dt_iop_module_t *self,
  * Presets
  *
  ****************************************************************************/
-static void compress_shadows_highlight_preset_set_exposure_params
+static void _compress_shadows_highlight_preset_set_exposure_params
   (dt_iop_toneequalizer_params_t* p,
    const float step)
 {
@@ -634,8 +577,26 @@ static void compress_shadows_highlight_preset_set_exposure_params
   p->speculars = -step;
 }
 
+static void _compress_shadows_highlight_linear_preset_set_exposure_params
+  (dt_iop_toneequalizer_params_t* p,
+   const float step)
+{
+  // this function is used to set the exposure params for the 4 "compress shadows
+  // highlights" presets, which use basically the same curve, centered around
+  // -4EV with an exposure compensation that puts middle-grey at -4EV.
+  p->noise = step;
+  p->ultra_deep_blacks = 15.f / 9.f * step;
+  p->deep_blacks = 10.f / 9.f * step;
+  p->blacks = 5.f / 9.f * step;
+  p->shadows = 0.0f;
+  p->midtones = -5.f / 9.f * step;
+  p->highlights = -10.f / 9.f * step;
+  p->whites = -15.f / 9.f * step;
+  p->speculars = -step;
+}
 
-static void dilate_shadows_highlight_preset_set_exposure_params
+
+static void _dilate_shadows_highlight_preset_set_exposure_params
   (dt_iop_toneequalizer_params_t* p,
    const float step)
 {
@@ -651,7 +612,6 @@ static void dilate_shadows_highlight_preset_set_exposure_params
   p->whites = 14.f / 9.f * step;
   p->speculars = 15.f / 9.f * step;
 }
-
 
 void init_presets(dt_iop_module_so_t *self)
 {
@@ -690,14 +650,14 @@ void init_presets(dt_iop_module_so_t *self)
   p.exposure_boost = 0.0f;
   p.contrast_boost = 0.0f;
   dt_gui_presets_add_generic
-    (_("mask blending: all purposes"), self->op,
+    (_("mask blending | all purposes"), self->op,
      self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.blending = 1.0f;
   p.feathering = 10.0f;
   p.iterations = 3;
   dt_gui_presets_add_generic
-    (_("mask blending: people with backlight"), self->op,
+    (_("mask blending | people with backlight"), self->op,
      self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // Shadows/highlights presets
@@ -709,63 +669,93 @@ void init_presets(dt_iop_module_so_t *self)
   p.iterations = 5;
   p.quantization = 0.0f;
 
+  // Modified names to gentle / medium / strong, so the alphabetical
+  // sort order matches the order of strengths.
+
   // slight modification to give higher compression
   p.filter = DT_TONEEQ_EIGF;
   p.feathering = 20.0f;
-  compress_shadows_highlight_preset_set_exposure_params(&p, 0.65f);
+  _compress_shadows_highlight_preset_set_exposure_params(&p, 0.65f);
   dt_gui_presets_add_generic
-    (_("compress shadows/highlights (EIGF): strong"), self->op,
+    (_("compress shadows/highlights | classic EIGF | strong"), self->op,
      self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
   p.filter = DT_TONEEQ_GUIDED;
   p.feathering = 500.0f;
   dt_gui_presets_add_generic
-    (_("compress shadows/highlights (GF): strong"), self->op,
+    (_("compress shadows/highlights | classic GF | strong"), self->op,
      self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.filter = DT_TONEEQ_EIGF;
   p.blending = 3.0f;
   p.feathering = 7.0f;
   p.iterations = 3;
-  compress_shadows_highlight_preset_set_exposure_params(&p, 0.45f);
+  _compress_shadows_highlight_preset_set_exposure_params(&p, 0.45f);
   dt_gui_presets_add_generic
-    (_("compress shadows/highlights (EIGF): medium"), self->op,
+    (_("compress shadows/highlights | classic EIGF | medium"), self->op,
      self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
   p.filter = DT_TONEEQ_GUIDED;
   p.feathering = 500.0f;
   dt_gui_presets_add_generic
-    (_("compress shadows/highlights (GF): medium"), self->op,
+    (_("compress shadows/highlights | classic GF | medium"), self->op,
      self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.filter = DT_TONEEQ_EIGF;
   p.blending = 5.0f;
   p.feathering = 1.0f;
   p.iterations = 1;
-  compress_shadows_highlight_preset_set_exposure_params(&p, 0.25f);
+  _compress_shadows_highlight_preset_set_exposure_params(&p, 0.25f);
   dt_gui_presets_add_generic
-    (_("compress shadows/highlights (EIGF): soft"), self->op,
+    (_("compress shadows/highlights | classic EIGF | gentle"), self->op,
      self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
   p.filter = DT_TONEEQ_GUIDED;
   p.feathering = 500.0f;
   dt_gui_presets_add_generic
-    (_("compress shadows/highlights (GF): soft"), self->op,
+    (_("compress shadows/highlights | classic GF | gentle"), self->op,
+     self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+
+  // New compress shadows & highlights with a more linear curve
+  // and auto-align "fully fit"
+  p.post_auto_align = DT_TONEEQ_ALIGN_FIT;
+  p.filter = DT_TONEEQ_EIGF;
+  p.feathering = 20.0f;
+  _compress_shadows_highlight_linear_preset_set_exposure_params(&p, 0.65f);
+  dt_gui_presets_add_generic
+    (_("compress shadows/highlights | v3 EIGF | strong"), self->op,
+     self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+
+  p.blending = 3.0f;
+  p.feathering = 7.0f;
+  p.iterations = 3;
+  _compress_shadows_highlight_linear_preset_set_exposure_params(&p, 0.45f);
+  dt_gui_presets_add_generic
+    (_("compress shadows/highlights | v3 EIGF | medium"), self->op,
+     self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+
+  p.blending = 5.0f;
+  p.feathering = 1.0f;
+  p.iterations = 1;
+  _compress_shadows_highlight_linear_preset_set_exposure_params(&p, 0.25f);
+  dt_gui_presets_add_generic
+    (_("compress shadows/highlights | v3 EIGF | gentle"), self->op,
      self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // build the 1D contrast curves that revert the local compression of
   // contrast above
+  p.post_auto_align = DT_TONEEQ_ALIGN_CUSTOM;
   p.filter = DT_TONEEQ_NONE;
-  dilate_shadows_highlight_preset_set_exposure_params(&p, 0.25f);
+  _dilate_shadows_highlight_preset_set_exposure_params(&p, 0.25f);
   dt_gui_presets_add_generic
-    (_("contrast tone curve: soft"), self->op,
+    (_("contrast tone curve | gentle"), self->op,
      self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
-  dilate_shadows_highlight_preset_set_exposure_params(&p, 0.45f);
+  _dilate_shadows_highlight_preset_set_exposure_params(&p, 0.45f);
   dt_gui_presets_add_generic
-    (_("contrast tone curve: medium"), self->op,
+    (_("contrast tone curve | medium"), self->op,
      self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
-  dilate_shadows_highlight_preset_set_exposure_params(&p, 0.65f);
+  _dilate_shadows_highlight_preset_set_exposure_params(&p, 0.65f);
   dt_gui_presets_add_generic
-    (_("contrast tone curve: strong"), self->op,
+    (_("contrast tone curve | strong"), self->op,
      self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // relight
@@ -800,15 +790,13 @@ void init_presets(dt_iop_module_so_t *self)
  *
  ****************************************************************************/
 __DT_CLONE_TARGETS__
-static inline void compute_hires_histogram_and_stats(const float *const restrict luminance,
+static inline void _compute_hires_histogram_and_stats(const float *const restrict luminance,
                                                      int hires_histogram[HIRES_HISTO_SAMPLES],
                                                      const size_t num_elem,
                                                      float *first_decile,
                                                      float *last_decile,
                                                      dt_dev_pixelpipe_type_t const debug_pipe)
 {
-  // printf("compute_hires_histogram_and_stats pipe=%d num_elem=%ld\n", debug_pipe, num_elem);
-
   // The GUI histogram comprises 8 EV (UI_HISTO_SAMPLES, -8 to 0).
   // The high resolution histogram extends this to an exta 8 EV before and
   // 8EV after, for a total of 24.
@@ -829,8 +817,6 @@ static inline void compute_hires_histogram_and_stats(const float *const restrict
             hires_histogram[index] += 1;
   }
 
-  // printf("hires_histogram 0: %d 256: %d 512: %d 767: %d\n", hires_histogram[0], hires_histogram[256], hires_histogram[512], hires_histogram[767]);
-
   const int first_decile_pop = (int)((float)num_elem * 0.05f);
   const int last_decile_pop = (int)((float)num_elem * (1.0f - 0.95f));
   int population = 0;
@@ -841,7 +827,6 @@ static inline void compute_hires_histogram_and_stats(const float *const restrict
   // Scout the extended histogram bins looking for the
   // absolute first and last non-zero values and for deciles.
   // These would not be accurate with the gui histogram.
-
   for(k = 0; k < HIRES_HISTO_SAMPLES; ++k)
   {
     population += hires_histogram[k];
@@ -862,16 +847,14 @@ static inline void compute_hires_histogram_and_stats(const float *const restrict
       break;
     }
   }
-  // printf("First pos: %d, Last pos: %d\n", first_pos, last_pos);
 
   // Convert decile positions to exposures
   *first_decile = (temp_ev_range * ((float)first_decile_pos / (float)(HIRES_HISTO_SAMPLES - 1))) + HIRES_HISTO_MIN_EV;
   *last_decile = (temp_ev_range * ((float)last_decile_pos / (float)(HIRES_HISTO_SAMPLES - 1))) + HIRES_HISTO_MIN_EV;
 }
 
-
 __DT_CLONE_TARGETS__
-static inline void compute_luminance_mask(const float *const restrict in,
+static inline void _compute_luminance_mask(const float *const restrict in,
                                           float *const restrict luminance,
                                           const size_t width,
                                           const size_t height,
@@ -882,27 +865,13 @@ static inline void compute_luminance_mask(const float *const restrict in,
                                           float *last_decile,                       // only for compute_image_stats
                                           dt_dev_pixelpipe_type_t const debug_pipe)
 {
-  printf("compute_luminance_mask pipe=%d width=%ld height=%ld first luminance=%f estimator=%d "
+#ifdef MF_DEBUG
+  printf("_compute_luminance_mask pipe=%d width=%ld height=%ld first luminance=%f estimator=%d "
          "exposure_boost=%f contrast_boost=%f radius=%d feathering=%f iterations=%d scale=%f quantization=%f\n",
           debug_pipe, width, height, luminance[0], d->lum_estimator,
           d->exposure_boost, d->contrast_boost, d->radius, d->feathering,
           d->iterations, d->scale, d->quantization);
-
-  // int n = 10;
-  // printf("compute_luminance_mask row  0 START  in=%f %f %f %f %f %f %f %f %f %f %f %f\n",
-  //        in[0], in[1], in[2], in[3], in[4], in[5], in[6], in[7], in[8], in[9], in[10], in[11]);
-  // printf("compute_luminance_mask row %d START  in=%f %f %f %f %f %f %f %f %f %f %f %f\n", n,
-  //        in[0 + n*4*width], in[1 + n*4*width], in[2 + n*4*width], in[3 + n*4*width], in[4 + n*4*width],
-  //        in[5 + n*4*width], in[6 + n*4*width], in[7 + n*4*width], in[8 + n*4*width], in[9 + n*4*width],
-  //        in[10 + n*4*width], in[11 + n*4*width]);
-
-  // int offset = ((width / 2) / 4) * 4; // int division to get the offset %4 aligned
-  // printf("compute_luminance_mask row %d MIDDLE in=%f %f %f %f %f %f %f %f %f %f %f %f\n", n,
-  //        in[0 + n*4*width + offset], in[1 + n*4*width + offset], in[2 + n*4*width + offset], in[3 + n*4*width + offset], in[4 + n*4*width + offset],
-  //        in[5 + n*4*width + offset], in[6 + n*4*width + offset], in[7 + n*4*width + offset], in[8 + n*4*width + offset], in[9 + n*4*width + offset],
-  //        in[10 + n*4*width + offset], in[11 + n*4*width + offset]);
-
-  // debug_write_buffer_to_file(in, "luminance_mask", width, height, 4, debug_pipe);
+#endif
 
   const int num_elem = width * height;
 
@@ -914,7 +883,7 @@ static inline void compute_luminance_mask(const float *const restrict in,
       luminance_mask(in, luminance, width, height,
                      d->lum_estimator, d->exposure_boost, 0.0f, 1.0f);
       if (compute_image_stats)
-          compute_hires_histogram_and_stats(luminance, hires_histogram, num_elem, first_decile, last_decile, debug_pipe);
+          _compute_hires_histogram_and_stats(luminance, hires_histogram, num_elem, first_decile, last_decile, debug_pipe);
       break;
     }
 
@@ -924,7 +893,7 @@ static inline void compute_luminance_mask(const float *const restrict in,
       luminance_mask(in, luminance, width, height,
                      d->lum_estimator, d->exposure_boost, 0.0f, 1.0f);
       if (compute_image_stats)
-          compute_hires_histogram_and_stats(luminance, hires_histogram, num_elem, first_decile, last_decile, debug_pipe);
+          _compute_hires_histogram_and_stats(luminance, hires_histogram, num_elem, first_decile, last_decile, debug_pipe);
       fast_surface_blur(luminance, width, height, d->radius, d->feathering, d->iterations,
                         DT_GF_BLENDING_GEOMEAN, d->scale, d->quantization,
                         exp2f(-14.0f), 4.0f);
@@ -943,7 +912,7 @@ static inline void compute_luminance_mask(const float *const restrict in,
       luminance_mask(in, luminance, width, height, d->lum_estimator, d->exposure_boost,
                      CONTRAST_FULCRUM, d->contrast_boost);
       if (compute_image_stats)
-          compute_hires_histogram_and_stats(luminance, hires_histogram, num_elem, first_decile, last_decile, debug_pipe);
+          _compute_hires_histogram_and_stats(luminance, hires_histogram, num_elem, first_decile, last_decile, debug_pipe);
       fast_surface_blur(luminance, width, height, d->radius, d->feathering, d->iterations,
                         DT_GF_BLENDING_LINEAR, d->scale, d->quantization,
                         exp2f(-14.0f), 4.0f);
@@ -956,7 +925,7 @@ static inline void compute_luminance_mask(const float *const restrict in,
       luminance_mask(in, luminance, width, height,
                      d->lum_estimator, d->exposure_boost, 0.0f, 1.0f);
       if (compute_image_stats)
-          compute_hires_histogram_and_stats(luminance, hires_histogram, num_elem, first_decile, last_decile, debug_pipe);
+          _compute_hires_histogram_and_stats(luminance, hires_histogram, num_elem, first_decile, last_decile, debug_pipe);
       fast_eigf_surface_blur(luminance, width, height,
                              d->radius, d->feathering, d->iterations,
                              DT_GF_BLENDING_GEOMEAN, d->scale,
@@ -969,7 +938,7 @@ static inline void compute_luminance_mask(const float *const restrict in,
       luminance_mask(in, luminance, width, height, d->lum_estimator, d->exposure_boost,
                      CONTRAST_FULCRUM, d->contrast_boost);
       if (compute_image_stats)
-          compute_hires_histogram_and_stats(luminance, hires_histogram, num_elem, first_decile, last_decile, debug_pipe);
+          _compute_hires_histogram_and_stats(luminance, hires_histogram, num_elem, first_decile, last_decile, debug_pipe);
       fast_eigf_surface_blur(luminance, width, height,
                              d->radius, d->feathering, d->iterations,
                              DT_GF_BLENDING_LINEAR, d->scale,
@@ -982,26 +951,24 @@ static inline void compute_luminance_mask(const float *const restrict in,
       luminance_mask(in, luminance, width, height,
                      d->lum_estimator, d->exposure_boost, 0.0f, 1.0f);
       if (compute_image_stats)
-        compute_hires_histogram_and_stats(luminance, hires_histogram, num_elem, first_decile, last_decile, debug_pipe);
+        _compute_hires_histogram_and_stats(luminance, hires_histogram, num_elem, first_decile, last_decile, debug_pipe);
       break;
     }
   }
-
-  // debug_write_buffer_to_file(luminance, "luminance_mask", width, height, 1, debug_pipe);
 }
-
 
 // This is similar to exposure/contrast boost.
 // However it is applied AFTER the guided filter calculation, so it is much
 // easier to control and does not mess with the detail detection of the
 // guided filter.
-static inline float post_scale_shift(const float v, const float post_scale, const float post_shift)
+static inline float _post_scale_shift(const float v,
+                                      const float post_scale,
+                                      const float post_shift)
 {
   const float scale_exp = exp2f(post_scale);
   // signifficant range -8..0, centering around the middle
   return (v + 4.0f) * scale_exp - 4.0f + post_shift;
 }
-
 
 // This is similar to the auto-buttons for exposure/contrast boost.
 // However it runs automatically in the pipe, so it does not need to be
@@ -1017,8 +984,10 @@ void compute_auto_post_scale_shift(dt_iop_toneequalizer_post_auto_align_t post_a
   const float last_decile_target = -1.0f;
   const float pivot = -4.0f; // for scaling
 
+#ifdef MF_DEBUG
   printf("compute_auto_post_shift_scale: Pipe=%d post_auto_align=%d old post_scale=%f post_shift=%f histogram_first_decile=%f histogram_last_decile=%f\n",
           debug_pipe, post_auto_align, *post_scale, *post_shift, histogram_first_decile, histogram_last_decile);
+#endif
 
   switch(post_auto_align)
   {
@@ -1059,28 +1028,31 @@ void compute_auto_post_scale_shift(dt_iop_toneequalizer_post_auto_align_t post_a
       break;
     }
   }
+#ifdef MF_DEBUG
   printf("compute_auto_post_shift_scale: New post_scale=%f post_shift=%f\n", *post_scale, *post_shift);
+#endif
 };
 
-
 __DT_CLONE_TARGETS__
-static inline void display_luminance_mask(const float *const restrict in,
-                                          const float *const restrict luminance,
-                                          float *const restrict out,
-                                          const dt_iop_roi_t *const roi_in,
-                                          const dt_iop_roi_t *const roi_out,
-                                          const float post_scale,
-                                          const float post_shift,
-                                          dt_dev_pixelpipe_type_t const debug_pipe)
+static inline void _display_luminance_mask(const float *const restrict in,
+                                           const float *const restrict luminance,
+                                           float *const restrict out,
+                                           const dt_iop_roi_t *const roi_in,
+                                           const dt_iop_roi_t *const roi_out,
+                                           const float post_scale,
+                                           const float post_shift,
+                                           dt_dev_pixelpipe_type_t const debug_pipe)
 {
   const size_t offset_x = (roi_in->x < roi_out->x) ? -roi_in->x + roi_out->x : 0;
   const size_t offset_y = (roi_in->y < roi_out->y) ? -roi_in->y + roi_out->y : 0;
 
+#ifdef MF_DEBUG
   printf("display_luminance_mask pipe=%d offset_x=%ld offset_y=%ld roi_in %d %d %d %d roi_out %d %d %d %d, post_scale=%f, post_shift=%f\n",
          debug_pipe, offset_x, offset_y,
          roi_in->x, roi_in->y, roi_in->width, roi_in->height,
          roi_out->x, roi_out->y, roi_out->width, roi_out->height,
          post_scale, post_shift);
+#endif
 
   // The output dimensions need to be smaller or equal to the input ones
   // there is no logical reason they shouldn't, except some weird bug in the pipe
@@ -1102,7 +1074,7 @@ static inline void display_luminance_mask(const float *const restrict in,
       // and add a "gamma" 2.0 for better legibility in shadows
       const int lum_index = (i + offset_y) * in_width + (j + offset_x);
       const float lum_log = log2f(luminance[lum_index]);
-      const float lum_corrected = post_scale_shift(lum_log, post_scale, post_shift);
+      const float lum_corrected = _post_scale_shift(lum_log, post_scale, post_shift);
 
       // IMHO it would be fine, to show the log version of the mask to the user.
       // const float intensity =
@@ -1126,7 +1098,6 @@ static inline void display_luminance_mask(const float *const restrict in,
     }
 }
 
-
 /***
  * Exposure compensation computation
  *
@@ -1137,7 +1108,7 @@ static inline void display_luminance_mask(const float *const restrict in,
  ***/
 DT_OMP_DECLARE_SIMD()
 __DT_CLONE_TARGETS__
-static float gaussian_denom(const float sigma)
+static float _gaussian_denom(const float sigma)
 {
   // Gaussian function denominator such that y = exp(- radius^2 / denominator)
   // this is the constant factor of the exponential, so we don't need to recompute it
@@ -1145,27 +1116,28 @@ static float gaussian_denom(const float sigma)
   return 2.0f * sigma * sigma;
 }
 
-
 DT_OMP_DECLARE_SIMD()
 __DT_CLONE_TARGETS__
-static float gaussian_func(const float radius, const float denominator)
+static float _gaussian_func(const float radius,
+                            const float denominator)
 {
   // Gaussian function without normalization
   // this is the variable part of the exponential
-  // the denominator should be evaluated with `gaussian_denom`
+  // the denominator should be evaluated with `_gaussian_denom`
   // ahead of the array loop for optimal performance
   return expf(- radius * radius / denominator);
 }
 
-
-static void compute_correction_lut(float *restrict lut, const float sigma,
-                                   const float *const restrict factors,
-                                   const float post_scale, const float post_shift,
-                                   dt_dev_pixelpipe_type_t const debug_pipe)
+static void _compute_correction_lut(float *restrict lut, const float sigma,
+                                    const float *const restrict factors,
+                                    const float post_scale, const float post_shift,
+                                    dt_dev_pixelpipe_type_t const debug_pipe)
 {
-  // printf("compute_correction_lut pipe=%d, post_scale=%f, post_shift=%f\n", debug_pipe, post_scale, post_shift);
+#ifdef MF_DEBUG
+  // printf("_compute_correction_lut pipe=%d, post_scale=%f, post_shift=%f\n", debug_pipe, post_scale, post_shift);
+#endif
 
-  const float gauss_denom = gaussian_denom(sigma);
+  const float gauss_denom = _gaussian_denom(sigma);
   assert(NUM_OCTAVES == 8);
 
   // TODO MF: Does the openmp still work here?
@@ -1175,36 +1147,36 @@ static void compute_correction_lut(float *restrict lut, const float sigma,
     // build the correction for each pixel
     // as the sum of the contribution of each luminance channelcorrection
     const float exposure_uncorrected = (float)j / (float)LUT_RESOLUTION + DT_TONEEQ_MIN_EV; // [-8...0] EV
-    const float exposure = fast_clamp(post_scale_shift(exposure_uncorrected, post_scale, post_shift),
+    const float exposure = fast_clamp(_post_scale_shift(exposure_uncorrected, post_scale, post_shift),
                                       DT_TONEEQ_MIN_EV, DT_TONEEQ_MAX_EV);
     float result = 0.0f;
     for(int i = 0; i < NUM_OCTAVES; i++)
     {
-      result += gaussian_func(exposure - centers_ops[i], gauss_denom) * factors[i];
+      result += _gaussian_func(exposure - centers_ops[i], gauss_denom) * factors[i];
     }
     // the user-set correction is expected in [-2;+2] EV, so is the interpolated one
     lut[j] = fast_clamp(result, 0.25f, 4.0f);
   }
 }
 
-
-#if DT_TONEEQ_USE_LUT
 // this is the version currently used, as using a lut gives a
 // big performance speedup on some cpus
 __DT_CLONE_TARGETS__
-static inline void apply_toneequalizer(const float *const restrict in,
-                                       const float *const restrict luminance,
-                                       float *const restrict out,
-                                       const dt_iop_roi_t *const roi_in,
-                                       const dt_iop_roi_t *const roi_out,
-                                       const dt_iop_toneequalizer_data_t *const d,
-                                       dt_dev_pixelpipe_type_t const debug_pipe)
+static inline void _apply_toneequalizer(const float *const restrict in,
+                                        const float *const restrict luminance,
+                                        float *const restrict out,
+                                        const dt_iop_roi_t *const roi_in,
+                                        const dt_iop_roi_t *const roi_out,
+                                        const dt_iop_toneequalizer_data_t *const d,
+                                        dt_dev_pixelpipe_type_t const debug_pipe)
 {
-  // printf("apply_toneequalizer pipe=%d first luminance=%f roi_in %d %d %d %d roi_out %d %d %d %d post_scale=%f, post_shift=%f\n",
+#ifdef MF_DEBUG
+  // printf("_apply_toneequalizer pipe=%d first luminance=%f roi_in %d %d %d %d roi_out %d %d %d %d post_scale=%f, post_shift=%f\n",
   //   debug_pipe, luminance[0],
   //   roi_in->x, roi_in->y, roi_in->width, roi_in->height,
   //   roi_out->x, roi_out->y, roi_out->width, roi_out->height,
   //   d->post_scale, d->post_shift);
+#endif
   const size_t npixels = (size_t)roi_in->width * roi_in->height;
   const float* restrict lut = d->correction_lut;
   const float lutres = LUT_RESOLUTION;
@@ -1223,50 +1195,6 @@ static inline void apply_toneequalizer(const float *const restrict in,
   }
 }
 
-#else
-
-// we keep this version for further reference (e.g. for implementing
-// a gpu version)
-// TODO MF: Remove? This is no longer identical to the LUT version.
-__DT_CLONE_TARGETS__
-static inline void apply_toneequalizer(const float *const restrict in,
-                                       const float *const restrict luminance,
-                                       float *const restrict out,
-                                       const dt_iop_roi_t *const roi_in,
-                                       const dt_iop_roi_t *const roi_out,
-                                       const dt_iop_toneequalizer_data_t *const d)
-{
-  const size_t num_elem = roi_in->width * roi_in->height;
-  const float *const restrict factors = d->factors;
-  const float sigma = d->smoothing;
-  const float gauss_denom = gaussian_denom(sigma);
-
-  DT_OMP_FOR(shared(centers_ops))
-  for(size_t k = 0; k < num_elem; ++k)
-  {
-    // build the correction for the current pixel
-    // as the sum of the contribution of each luminance channelcorrection
-    float result = 0.0f;
-
-    // The radial-basis interpolation is valid in [-8; 0] EV and can
-    // quickely diverge outside
-    const float exposure = fast_clamp(log2f(luminance[k]), DT_TONEEQ_MIN_EV, DT_TONEEQ_MAX_EV);
-
-    DT_OMP_SIMD(aligned(luminance, centers_ops, factors:64) safelen(NUM_OCTAVES) reduction(+:result))
-    for(int i = 0; i < NUM_OCTAVES; ++i)
-      result += gaussian_func(exposure - centers_ops[i], gauss_denom) * factors[i];
-
-    // the user-set correction is expected in [-2;+2] EV, so is the interpolated one
-    const float correction = fast_clamp(result, 0.25f, 4.0f);
-
-    // apply correction
-    for_each_channel(c)
-      out[4 * k + c] = correction * in[4 * k + c];
-  }
-}
-#endif // USE_LUT
-
-
 float adjust_radius_to_scale(const dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi, int full_width, int full_height)
 {
   dt_iop_toneequalizer_data_t *const d = piece->data;
@@ -1281,10 +1209,11 @@ float adjust_radius_to_scale(const dt_dev_pixelpipe_iop_t *piece, const dt_iop_r
   return radius;
 }
 
-
-static void compute_mask_stats_from_full_image(dt_dev_pixelpipe_iop_t *piece,
-  const float *const restrict in, const dt_iop_roi_t *const roi_in, const dt_iop_toneequalizer_data_t *const d,
-  float *first_decile, float *last_decile)
+static void _compute_mask_stats_from_full_image(dt_dev_pixelpipe_iop_t *piece,
+                                                const float *const restrict in,
+                                                const dt_iop_roi_t *const roi_in,
+                                                const dt_iop_toneequalizer_data_t *const d,
+                                                float *first_decile, float *last_decile)
 {
   // A stable method of calculating the decile values. This is designed to
   // produce the exact same results in PIXELPIPE_FULL and PIXELPIPE_EXPORT.
@@ -1325,16 +1254,18 @@ static void compute_mask_stats_from_full_image(dt_dev_pixelpipe_iop_t *piece,
   memcpy(&data, d, sizeof(dt_iop_toneequalizer_data_t));
   data.radius = adjust_radius_to_scale(piece, &roi, roi_in->width, roi_in->height);
 
-  printf("compute_mask_stats_from_full_image: roi_in %d %d %d %d scale %f roi %d %d %d %d scale %f radius %d\n",
+#ifdef MF_DEBUG
+  printf("_compute_mask_stats_from_full_image: roi_in %d %d %d %d scale %f roi %d %d %d %d scale %f radius %d\n",
     roi_in->x, roi_in->y, roi_in->width, roi_in->height, roi_in->scale,
     roi.x, roi.y, roi.width, roi.height, roi.scale, data.radius);
+#endif
 
   // If the image is big, we downscale it and compute our mask from the small version.
   // If the image was small already, this is not necessary.
   if (downscale) {
     float *mask_input = dt_alloc_align_float(4 * num_elem);
     dt_iop_clip_and_zoom(mask_input, in, &roi, roi_in);
-    compute_luminance_mask(mask_input, luminance,
+    _compute_luminance_mask(mask_input, luminance,
                            roi.width, roi.height, &data,
                            FALSE, NULL, NULL, NULL,
                            piece->pipe->type);
@@ -1342,22 +1273,20 @@ static void compute_mask_stats_from_full_image(dt_dev_pixelpipe_iop_t *piece,
   }
   else
   {
-    compute_luminance_mask(in, luminance,
+    _compute_luminance_mask(in, luminance,
                            roi.width, roi.height, &data,
                            FALSE, NULL, NULL, NULL,
                            piece->pipe->type);
   }
 
   int* hires_histogram = dt_alloc_align_int(HIRES_HISTO_SAMPLES);
-  compute_hires_histogram_and_stats(luminance, hires_histogram, num_elem,
+  _compute_hires_histogram_and_stats(luminance, hires_histogram, num_elem,
     first_decile, last_decile,
     piece->pipe->type);
 
   dt_free_align(hires_histogram);
   dt_free_align(luminance);
 }
-
-
 
 /***
  * PROCESS
@@ -1368,7 +1297,7 @@ static void compute_mask_stats_from_full_image(dt_dev_pixelpipe_iop_t *piece,
  *    we also get the 5th and 95th percentiles.
  * 3. Optionally compute auto align -> post scale and shift
  * 4. Compute a correction LUT based on the user's curve in the GUI
- *    and optionally post scale/shift
+ *    and post scale/shift
  * 5. Correct the image based on curve and luminance mask
  *
  * The guided filter is scale dependent, so the results with differently
@@ -1389,13 +1318,13 @@ static void compute_mask_stats_from_full_image(dt_dev_pixelpipe_iop_t *piece,
  *   as long as nothing changes upstream.
  * - The histogram is cached in g and used for the GUI.
  * - The deciles are calculated and stored in g. These are needed for
- *   the exposure/contrast boost magic wands.
+ *   the original exposure/contrast boost magic wands.
  * - Post scale/shift are calculated with local data. They are off, but this
  *   image is only displayed as a small preview, so no one will notice.
  * DT_DEV_PIXELPIPE_FULL (2)
  * - The input image is whatever is displayed in the main view. This can be
  *   a segment of the full image if the user has zoomed in.
- * - The muminance mask for this pipe is also cached, so it does not need to
+ * - The luminance mask for this pipe is also cached, so it does not need to
  *   be re-calculated as long as nothing changes upstream. This also allows
  *   for switching to the mask view (greyscale) quickly.
  * - A segment is not suitable for calculating post scale/shift, for this
@@ -1410,10 +1339,9 @@ static void compute_mask_stats_from_full_image(dt_dev_pixelpipe_iop_t *piece,
  *   filter and also post scale/shift calculation will deviate, but
  *   the output is displayed very small, so no one will notice.
  ***/
-
 __DT_CLONE_TARGETS__
 static
-void toneeq_process(dt_iop_module_t *self,
+void _toneeq_process(dt_iop_module_t *self,
                     dt_dev_pixelpipe_iop_t *piece,
                     const void *const restrict ivoid,
                     void *const restrict ovoid,
@@ -1446,13 +1374,13 @@ void toneeq_process(dt_iop_module_t *self,
   gboolean local_luminance = FALSE;
   gboolean local_hires_hist = FALSE;
 
-  // Debugging
-  printf("toneeq_process: pipe=%d piece->buf_in->width=%d piece->buf_in->height=%d iwidth=%d iheight=%d roi_in x=%d y=%d w=%d h=%d s=%f roi_out x=%d y=%d w=%d h=%d s=%f radius=%d mode=%d\n",
+#ifdef MF_DEBUG
+  printf("_toneeq_process: pipe=%d piece->buf_in->width=%d piece->buf_in->height=%d iwidth=%d iheight=%d roi_in x=%d y=%d w=%d h=%d s=%f roi_out x=%d y=%d w=%d h=%d s=%f radius=%d mode=%d\n",
          piece->pipe->type, piece->buf_in.width, piece->buf_in.height, piece->iwidth, piece->iheight,
          roi_in->x, roi_in->y, roi_in->width, roi_in->height, roi_in->scale,
          roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale,
          d->radius, darktable.color_profiles->mode);
-  // debug_write_buffer_to_file(in, "toneeq_in", width, height, 4, piece->pipe->type);
+#endif
 
   /**************************************************************************
    * Initialization
@@ -1555,9 +1483,11 @@ void toneeq_process(dt_iop_module_t *self,
 
   d->radius = adjust_radius_to_scale(piece, roi_in, piece->iwidth, piece->iheight);
 
-  printf("toneeq_process (%d) after adjust_radius_to_scale: d->radius=%d roi in %d %d %d %d scale %f iwidth %d iheight %d\n", piece->pipe->type, d->radius, 
+#ifdef MF_DEBUG
+  printf("_toneeq_process (%d) after adjust_radius_to_scale: d->radius=%d roi in %d %d %d %d scale %f iwidth %d iheight %d\n", piece->pipe->type, d->radius, 
     roi_in->x, roi_in->y, roi_in->width, roi_in->height, roi_in->scale,
     piece->iwidth, piece->iheight);
+#endif
 
   /**************************************************************************
    * Compute the luminance mask
@@ -1579,8 +1509,10 @@ void toneeq_process(dt_iop_module_t *self,
     const gboolean prv_luminance_valid = g->prv_luminance_valid;
     dt_iop_gui_leave_critical_section(self);
 
-    printf("toneeq_process GUI PIXELPIPE_PREVIEW: hash=%"PRIu64" saved_hash=%"PRIu64" prv_luminance_valid=%d\n",
+#ifdef MF_DEBUG
+    printf("_toneeq_process GUI PIXELPIPE_PREVIEW: hash=%"PRIu64" saved_hash=%"PRIu64" prv_luminance_valid=%d\n",
       current_upstream_hash, saved_upstream_hash, prv_luminance_valid);
+#endif
 
     if(saved_upstream_hash != current_upstream_hash || !prv_luminance_valid)
     {
@@ -1590,14 +1522,14 @@ void toneeq_process(dt_iop_module_t *self,
       g->preview_upstream_hash = current_upstream_hash;
       g->gui_histogram_valid = FALSE;
 
-      compute_luminance_mask(in, luminance, roi_out->width, roi_out->height, d,
+      _compute_luminance_mask(in, luminance, roi_out->width, roi_out->height, d,
                              TRUE, // Also compute an image (not mask!) histogram for coloring the curve
                              g->image_hires_histogram,
                              &g->image_histogram_first_decile, &g->image_histogram_last_decile,
                              piece->pipe->type);
 
       // Histogram and deciles
-      compute_hires_histogram_and_stats(luminance, hires_histogram, num_elem,
+      _compute_hires_histogram_and_stats(luminance, hires_histogram, num_elem,
                                         &g->prv_histogram_first_decile, &g->prv_histogram_last_decile,
                                         piece->pipe->type);
 
@@ -1615,24 +1547,23 @@ void toneeq_process(dt_iop_module_t *self,
                                   piece->pipe->type);
     dt_iop_gui_leave_critical_section(self);
 
-    printf("toneeq_process PIXELPIPE_PREVIEW (%d): roi with=%d roi_height=%d post_align=%d d->post_scale=%f d->post_shift=%f final post_scale=%f final post_shift=%f hash=%"PRIu64" saved_hash=%"PRIu64" prv_luminance_valid=%d \n",
+#ifdef MF_DEBUG
+    printf("_toneeq_process PIXELPIPE_PREVIEW (%d): roi with=%d roi_height=%d post_align=%d d->post_scale=%f d->post_shift=%f final post_scale=%f final post_shift=%f hash=%"PRIu64" saved_hash=%"PRIu64" prv_luminance_valid=%d \n",
       piece->pipe->type,
       roi_in->width, roi_in->height,
       d->post_auto_align, d->post_scale, d->post_shift,
       post_scale, post_shift,
       current_upstream_hash, saved_upstream_hash, prv_luminance_valid
     );
-
+#endif
 
     // TODO MF: Not completely sure in which cases this must be called.
     //          Assumption is once per output image change by this module and
     //          only when the GUI is active.
     dt_dev_pixelpipe_cache_invalidate_later(piece->pipe, self->iop_order);
-
   }
   else if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
-
     if(roi_in->width == piece->buf_in.width && roi_in->height == piece->buf_in.height && fabs(roi_in->scale - 1.0f) < 0.00001)
     {
       // We are in PIXELPIPE_FULL and have the full image as our roi.
@@ -1652,8 +1583,10 @@ void toneeq_process(dt_iop_module_t *self,
       const gboolean full_luminance_valid = g->full_luminance_valid;
       dt_iop_gui_leave_critical_section(self);
 
-      printf("toneeq_process GUI PIXELPIPE_PREVIEW: hash=%"PRIu64" saved_hash=%"PRIu64" full_luminance_valid=%d\n",
+#ifdef MF_DEBUG
+      printf("_toneeq_process GUI PIXELPIPE_PREVIEW: hash=%"PRIu64" saved_hash=%"PRIu64" full_luminance_valid=%d\n",
         current_upstream_hash, saved_upstream_hash, full_luminance_valid);
+#endif
 
       if(saved_upstream_hash != current_upstream_hash || !full_luminance_valid)
       {
@@ -1666,13 +1599,13 @@ void toneeq_process(dt_iop_module_t *self,
         d->radius = adjust_radius_to_scale(piece, roi_out, piece->iwidth, piece->iheight);
 
         // Luminance mask, but no image histogram
-        compute_luminance_mask(in_cropped, luminance, roi_out->width, roi_out->height, d,
-                              FALSE, NULL, NULL, NULL,
-                              piece->pipe->type);
+        _compute_luminance_mask(in_cropped, luminance, roi_out->width, roi_out->height, d,
+                                FALSE, NULL, NULL, NULL,
+                                piece->pipe->type);
 
         // Calculate post scale/shift using the full image (same calculation as
         // during export)
-        compute_mask_stats_from_full_image(piece, in, roi_in, d,
+        _compute_mask_stats_from_full_image(piece, in, roi_in, d,
                                            &g->full_histogram_first_decile, &g->full_histogram_last_decile);
 
         g->full_luminance_valid = TRUE;
@@ -1689,10 +1622,12 @@ void toneeq_process(dt_iop_module_t *self,
       g->post_shift_value = post_shift;
       dt_iop_gui_leave_critical_section(self);
 
-      printf("toneeq_process GUI PIXELPIPE_FULL (%d), FULL ROI: roi with=%d roi_height=%d post_align=%d d->post_scale=%f "
+#ifdef MF_DEBUG
+      printf("_toneeq_process GUI PIXELPIPE_FULL (%d), FULL ROI: roi with=%d roi_height=%d post_align=%d d->post_scale=%f "
              "d->post_shift=%f final post_scale=%f final post_shift=%f\n",
              piece->pipe->type, roi_in->width, roi_in->height, d->post_auto_align, d->post_scale, d->post_shift,
              post_scale, post_shift);
+#endif
     }
     else // not full image as roi
     {
@@ -1717,8 +1652,10 @@ void toneeq_process(dt_iop_module_t *self,
       const gboolean full_luminance_valid = g->full_luminance_valid;
       dt_iop_gui_leave_critical_section(self);
 
-      printf("toneeq_process GUI PIXELPIPE_FULL: hash=%" PRIu64 " saved_hash=%" PRIu64 " full_luminance_valid=%d\n",
+#ifdef MF_DEBUG
+      printf("_toneeq_process GUI PIXELPIPE_FULL: hash=%" PRIu64 " saved_hash=%" PRIu64 " full_luminance_valid=%d\n",
              current_upstream_hash, saved_upstream_hash, full_luminance_valid);
+#endif
 
       // If the upstream state has changed, re-compute the mask of the displayed image part
       if(current_upstream_hash != saved_upstream_hash || !full_luminance_valid)
@@ -1728,7 +1665,7 @@ void toneeq_process(dt_iop_module_t *self,
         g->full_upstream_hash = current_upstream_hash;
         dt_iop_gui_leave_critical_section(self);
 
-        compute_luminance_mask(in, luminance, roi_out->width, roi_out->height, d, FALSE, NULL, NULL, NULL, piece->pipe->type);
+        _compute_luminance_mask(in, luminance, roi_out->width, roi_out->height, d, FALSE, NULL, NULL, NULL, piece->pipe->type);
         g->full_luminance_valid = TRUE;
       }
 
@@ -1746,10 +1683,12 @@ void toneeq_process(dt_iop_module_t *self,
                                       piece->pipe->type);
       }
 
-      printf("toneeq_process GUI PIXELPIPE_FULL (%d), no full roi: roi with=%d roi_height=%d post_align=%d d->post_scale=%f "
+#ifdef MF_DEBUG
+      printf("_toneeq_process GUI PIXELPIPE_FULL (%d), no full roi: roi with=%d roi_height=%d post_align=%d d->post_scale=%f "
              "d->post_shift=%f final post_scale=%f final post_shift=%f\n",
              piece->pipe->type, roi_in->width, roi_in->height, d->post_auto_align, d->post_scale, d->post_shift,
              post_scale, post_shift);
+#endif
     }
   }
   else
@@ -1757,7 +1696,7 @@ void toneeq_process(dt_iop_module_t *self,
     // No caching path: compute no matter what
     // We are in PIXELPIPE_EXPORT or PIXELPIPE_THUMBNAIL
 
-    compute_luminance_mask(in, luminance, roi_out->width, roi_out->height, d,
+    _compute_luminance_mask(in, luminance, roi_out->width, roi_out->height, d,
                            FALSE, NULL, NULL, NULL,
                            piece->pipe->type);
 
@@ -1766,7 +1705,7 @@ void toneeq_process(dt_iop_module_t *self,
     float histogram_last_decile = 0;
 
     if (d->post_auto_align != DT_TONEEQ_ALIGN_CUSTOM) {
-      compute_mask_stats_from_full_image(piece, in, roi_in, d,
+      _compute_mask_stats_from_full_image(piece, in, roi_in, d,
         &histogram_first_decile, &histogram_last_decile);
     }
     compute_auto_post_scale_shift(d->post_auto_align,
@@ -1774,12 +1713,14 @@ void toneeq_process(dt_iop_module_t *self,
                                   &post_scale, &post_shift,
                                   piece->pipe->type);
 
-    printf("toneeq_process NO GUI PIXELPIPE (%d): roi with=%d roi_height=%d post_align=%d d->post_scale=%f "
+#ifdef MF_DEBUG
+    printf("_toneeq_process NO GUI PIXELPIPE (%d): roi with=%d roi_height=%d post_align=%d d->post_scale=%f "
            "d->post_shift=%f final post_scale=%f final post_shift=%f\n",
            piece->pipe->type,
            roi_in->width, roi_in->height,
            d->post_auto_align, d->post_scale, d->post_shift,
            post_scale, post_shift);
+#endif
   }
 
   /**************************************************************************
@@ -1788,12 +1729,12 @@ void toneeq_process(dt_iop_module_t *self,
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) && g->mask_display)
   {
     if (in_cropped) {  // not elegant, but necessary because buffers are "restrict"
-      display_luminance_mask(in_cropped, luminance, out, roi_out, roi_out,
+      _display_luminance_mask(in_cropped, luminance, out, roi_out, roi_out,
                              post_scale, post_shift, piece->pipe->type);
     }
     else
     {
-      display_luminance_mask(in, luminance, out, roi_in, roi_out, post_scale,
+      _display_luminance_mask(in, luminance, out, roi_in, roi_out, post_scale,
                              post_shift, piece->pipe->type);
     }
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
@@ -1801,23 +1742,27 @@ void toneeq_process(dt_iop_module_t *self,
   else
   {
     if (in_cropped) {
-      printf("toneeq_process: in_cropped roi %d %d %d %d\n",
+#ifdef MF_DEBUG
+      printf("_toneeq_process: in_cropped roi %d %d %d %d\n",
         roi_out->x, roi_out->y, roi_out->width, roi_out->height);
-      compute_correction_lut(d->correction_lut, d->smoothing, d->factors,
+#endif
+      _compute_correction_lut(d->correction_lut, d->smoothing, d->factors,
                              post_scale, post_shift,
                              piece->pipe->type);
-      apply_toneequalizer(in_cropped, luminance, out,
+      _apply_toneequalizer(in_cropped, luminance, out,
                           roi_out, roi_out,
                           d, piece->pipe->type);
     }
     else
     {
-      printf("toneeq_process: in roi %d %d %d %d\n",
+#ifdef MF_DEBUG
+      printf("_toneeq_process: in roi %d %d %d %d\n",
         roi_in->x, roi_in->y, roi_in->width, roi_in->height);
-      compute_correction_lut(d->correction_lut, d->smoothing, d->factors,
+#endif
+      _compute_correction_lut(d->correction_lut, d->smoothing, d->factors,
                              post_scale, post_shift,
                              piece->pipe->type);
-      apply_toneequalizer(in, luminance, out,
+      _apply_toneequalizer(in, luminance, out,
                           roi_in, roi_out,
                           d, piece->pipe->type);
     }
@@ -1837,7 +1782,6 @@ void toneeq_process(dt_iop_module_t *self,
   }
 }
 
-
 void process(dt_iop_module_t *self,
              dt_dev_pixelpipe_iop_t *piece,
              const void *const restrict ivoid,
@@ -1845,7 +1789,7 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  toneeq_process(self, piece, ivoid, ovoid, roi_in, roi_out);
+  _toneeq_process(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
 
 
@@ -1857,39 +1801,31 @@ void process(dt_iop_module_t *self,
 
 void init_global(dt_iop_module_so_t *self)
 {
-  printf("toneequalizer init_global\n");
   dt_iop_toneequalizer_global_data_t *gd = malloc(sizeof(dt_iop_toneequalizer_global_data_t));
 
   self->data = gd;
 }
 
-
 void cleanup_global(dt_iop_module_so_t *self)
 {
-  printf("toneequalizer cleanup_global\n");
   free(self->data);
   self->data = NULL;
 }
-
 
 void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
-  printf("toneequalizer init_pipe, pipe %d\n", pipe->type);
   piece->data = dt_calloc1_align_type(dt_iop_toneequalizer_data_t);
 }
-
 
 void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
-  printf("toneequalizer cleanup_pipe, pipe %d\n", pipe->type);
   dt_free_align(piece->data);
   piece->data = NULL;
 }
-
 
 void modify_roi_in(dt_iop_module_t *self,
                    dt_dev_pixelpipe_iop_t *piece,
@@ -1924,7 +1860,9 @@ void modify_roi_in(dt_iop_module_t *self,
       roi_in->height = piece->buf_in.height;
       roi_in->scale = 1.0f;
 
+#ifdef MF_DEBUG
       printf("modify_roi_in: full image for auto-alignment\n");
+#endif
     }
   }
 }
@@ -1957,8 +1895,8 @@ void modify_roi_in(dt_iop_module_t *self,
  * should be used in combination with a tone curve or filmic.
  *
  ***/
-static void get_channels_gains(float factors[NUM_SLIDERS],
-                               const dt_iop_toneequalizer_params_t *p)
+static void _get_channels_gains(float factors[NUM_SLIDERS],
+                                const dt_iop_toneequalizer_params_t *p)
 {
   assert(NUM_SLIDERS == 9);
 
@@ -1974,14 +1912,13 @@ static void get_channels_gains(float factors[NUM_SLIDERS],
   factors[8] = p->speculars;         // +0 EV
 }
 
-
-static void get_channels_factors(float factors[NUM_SLIDERS],
-                                 const dt_iop_toneequalizer_params_t *p)
+static void _get_channels_factors(float factors[NUM_SLIDERS],
+                                  const dt_iop_toneequalizer_params_t *p)
 {
   assert(NUM_SLIDERS == 9);
 
   // Get user-set NUM_SLIDERS gains in EV (log2)
-  get_channels_gains(factors, p);
+  _get_channels_gains(factors, p);
 
   // Convert from EV offsets to linear factors
   DT_OMP_SIMD(aligned(factors:64))
@@ -1989,30 +1926,28 @@ static void get_channels_factors(float factors[NUM_SLIDERS],
     factors[c] = exp2f(factors[c]);
 }
 
-
 __DT_CLONE_TARGETS__
-static inline float pixel_correction(const float exposure,
-                                     const float *const restrict factors,
-                                     const float sigma)
+static inline float _pixel_correction(const float exposure,
+                                      const float *const restrict factors,
+                                      const float sigma)
 {
   // build the correction for the current pixel
   // as the sum of the contribution of each luminance channel
   float result = 0.0f;
-  const float gauss_denom = gaussian_denom(sigma);
+  const float gauss_denom = _gaussian_denom(sigma);
   const float expo = fast_clamp(exposure, DT_TONEEQ_MIN_EV, DT_TONEEQ_MAX_EV);
 
   DT_OMP_SIMD(aligned(centers_ops, factors:64) safelen(NUM_OCTAVES) reduction(+:result))
   for(int i = 0; i < NUM_OCTAVES; ++i)
-    result += gaussian_func(expo - centers_ops[i], gauss_denom) * factors[i];
+    result += _gaussian_func(expo - centers_ops[i], gauss_denom) * factors[i];
 
   return fast_clamp(result, 0.25f, 4.0f);
 }
 
-
 __DT_CLONE_TARGETS__
-static gboolean compute_channels_factors(const float factors[NUM_OCTAVES],
-                                         float out[NUM_SLIDERS],
-                                         const float sigma)
+static gboolean _compute_channels_factors(const float factors[NUM_OCTAVES],
+                                          float out[NUM_SLIDERS],
+                                          const float sigma)
 {
   // Input factors are the weights for the radial-basis curve
   // approximation of user params Output factors are the gains of the
@@ -2023,17 +1958,16 @@ static gboolean compute_channels_factors(const float factors[NUM_OCTAVES],
   DT_OMP_FOR_SIMD(aligned(factors, out, centers_params:64) firstprivate(centers_params))
   for(int i = 0; i < NUM_SLIDERS; ++i)
   {
-    // Compute the new NUM_SLIDERS factors; pixel_correction clamps the factors, so we don't
+    // Compute the new NUM_SLIDERS factors; _pixel_correction clamps the factors, so we don't
     // need to check for validity here
-    out[i] = pixel_correction(centers_params[i], factors, sigma);
+    out[i] = _pixel_correction(centers_params[i], factors, sigma);
   }
   return TRUE;
 }
 
-
 __DT_CLONE_TARGETS__
-static void compute_channels_gains(const float in[NUM_SLIDERS],
-                                  float out[NUM_SLIDERS])
+static void _compute_channels_gains(const float in[NUM_SLIDERS],
+                                    float out[NUM_SLIDERS])
 {
   // Helper function to compute the new NUM_SLIDERS gains (log) from the factors (linear)
   assert(NUM_OCTAVES == 8);
@@ -2042,9 +1976,8 @@ static void compute_channels_gains(const float in[NUM_SLIDERS],
     out[i] = log2f(in[i]);
 }
 
-
-static void commit_channels_gains(const float factors[NUM_SLIDERS],
-                                 dt_iop_toneequalizer_params_t *p)
+static void _commit_channels_gains(const float factors[NUM_SLIDERS],
+                                   dt_iop_toneequalizer_params_t *p)
 {
   p->noise = factors[0];
   p->ultra_deep_blacks = factors[1];
@@ -2063,9 +1996,8 @@ static void commit_channels_gains(const float factors[NUM_SLIDERS],
  * Cache invalidation and initialization
  *
  ****************************************************************************/
-static void gui_cache_init(dt_iop_module_t *self)
+static void _gui_cache_init(dt_iop_module_t *self)
 {
-  printf("gui_cache_init\n");
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   if(g == NULL) return;
 
@@ -2114,10 +2046,11 @@ static void gui_cache_init(dt_iop_module_t *self)
   dt_iop_gui_leave_critical_section(self);
 }
 
-
-static void invalidate_luminance_cache(dt_iop_module_t *const self)
+static void _invalidate_luminance_cache(dt_iop_module_t *const self)
 {
-  printf("invalidate_luminance_cache\n");
+#ifdef MF_DEBUG
+  printf("_invalidate_luminance_cache\n");
+#endif
   // Invalidate the private luminance cache and histogram when
   // the luminance mask extraction parameters have changed
   dt_iop_toneequalizer_gui_data_t *const restrict g = self->gui_data;
@@ -2134,10 +2067,11 @@ static void invalidate_luminance_cache(dt_iop_module_t *const self)
   dt_iop_refresh_all(self);
 }
 
-
-static void invalidate_lut_and_histogram(dt_iop_module_t *const self)
+static void _invalidate_lut_and_histogram(dt_iop_module_t *const self)
 {
-  printf("invalidate_lut_and_histogram\n");
+#ifdef MF_DEBUG
+  printf("_invalidate_lut_and_histogram\n");
+#endif
   dt_iop_toneequalizer_gui_data_t *const restrict g = self->gui_data;
 
   dt_iop_gui_enter_critical_section(self);
@@ -2154,24 +2088,23 @@ static void invalidate_lut_and_histogram(dt_iop_module_t *const self)
  * Curve Interpolation
  *
  ****************************************************************************/
-static inline void build_interpolation_matrix(float A[NUM_SLIDERS * NUM_OCTAVES],
-                                              const float sigma)
+static inline void _build_interpolation_matrix(float A[NUM_SLIDERS * NUM_OCTAVES],
+                                               const float sigma)
 {
   // Build the symmetrical definite positive part of the augmented matrix
   // of the radial-basis interpolation weights
 
-  const float gauss_denom = gaussian_denom(sigma);
+  const float gauss_denom = _gaussian_denom(sigma);
 
   DT_OMP_SIMD(aligned(A, centers_ops, centers_params:64) collapse(2))
   for(int i = 0; i < NUM_SLIDERS; ++i)
     for(int j = 0; j < NUM_OCTAVES; ++j)
       A[i * NUM_OCTAVES + j] =
-        gaussian_func(centers_params[i] - centers_ops[j], gauss_denom);
+        _gaussian_func(centers_params[i] - centers_ops[j], gauss_denom);
 }
 
-
 __DT_CLONE_TARGETS__
-static inline void compute_gui_curve(dt_iop_toneequalizer_gui_data_t *g)
+static inline void _compute_gui_curve(dt_iop_toneequalizer_gui_data_t *g)
 {
   // Compute the curve of the exposure corrections in EV,
   // offset and scale it for display in GUI widget graph
@@ -2188,13 +2121,12 @@ static inline void compute_gui_curve(dt_iop_toneequalizer_gui_data_t *g)
     // build the inset graph curve LUT
     // the x range is [-14;+2] EV
     const float x = (8.0f * (((float)k) / ((float)(UI_HISTO_SAMPLES - 1)))) - 8.0f;
-    // curve[k] = offset - log2f(pixel_correction(x, factors, sigma)) / scaling;
-    curve[k] = log2f(pixel_correction(x, factors, sigma));
+    // curve[k] = offset - log2f(_pixel_correction(x, factors, sigma)) / scaling;
+    curve[k] = log2f(_pixel_correction(x, factors, sigma));
   }
 }
 
-
-static inline gboolean curve_interpolation(dt_iop_module_t *self)
+static inline gboolean _curve_interpolation(dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_params_t *p = self->params;
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
@@ -2207,7 +2139,7 @@ static inline gboolean curve_interpolation(dt_iop_module_t *self)
 
   if(!g->interpolation_valid)
   {
-    build_interpolation_matrix(g->interpolation_matrix, g->sigma);
+    _build_interpolation_matrix(g->interpolation_matrix, g->sigma);
     g->interpolation_valid = TRUE;
     g->factors_valid = FALSE;
   }
@@ -2215,7 +2147,7 @@ static inline gboolean curve_interpolation(dt_iop_module_t *self)
   if(!g->user_param_valid)
   {
     float factors[NUM_SLIDERS] DT_ALIGNED_ARRAY;
-    get_channels_factors(factors, p);
+    _get_channels_factors(factors, p);
     dt_simd_memcpy(factors, g->temp_user_params, NUM_SLIDERS);
     g->user_param_valid = TRUE;
     g->factors_valid = FALSE;
@@ -2234,7 +2166,7 @@ static inline gboolean curve_interpolation(dt_iop_module_t *self)
 
   if(!g->gui_curve_valid && g->factors_valid)
   {
-    compute_gui_curve(g);
+    _compute_gui_curve(g);
     g->gui_curve_valid = TRUE;
   }
 
@@ -2257,8 +2189,10 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_iop_toneequalizer_data_t *d = piece->data;
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
+#ifdef MF_DEBUG
   // printf("commit_params pipe=%d align=%d p->post_scale=%f p->post_shift=%f d->post_scale=%f d->post_shift=%f\n",
   //        pipe->type, p->post_auto_align, p->post_scale, p->post_shift, d->post_scale, d->post_shift);
+#endif
 
   // Trivial params passing
   d->lum_estimator = p->lum_estimator;
@@ -2294,7 +2228,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     g->user_param_valid = FALSE; // force updating NUM_SLIDERS factors
     dt_iop_gui_leave_critical_section(self);
 
-    curve_interpolation(self);
+    _curve_interpolation(self);
 
     dt_iop_gui_enter_critical_section(self);
     dt_simd_memcpy(g->factors, d->factors, NUM_OCTAVES);
@@ -2304,10 +2238,10 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   {
     // No cache : Build / Solve interpolation matrix
     float factors[NUM_SLIDERS] DT_ALIGNED_ARRAY;
-    get_channels_factors(factors, p);
+    _get_channels_factors(factors, p);
 
     float A[NUM_SLIDERS * NUM_OCTAVES] DT_ALIGNED_ARRAY;
-    build_interpolation_matrix(A, p->smoothing);
+    _build_interpolation_matrix(A, p->smoothing);
     pseudo_solve(A, factors, NUM_SLIDERS, NUM_OCTAVES, FALSE);
 
     dt_simd_memcpy(factors, d->factors, NUM_OCTAVES);
@@ -2320,13 +2254,15 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
  * GUI Helpers
  *
  ****************************************************************************/
-static inline void compute_gui_histogram(int hires_histogram[HIRES_HISTO_SAMPLES],
-  int histogram[UI_HISTO_SAMPLES],
-  float histogram_scale,
-  float histogram_shift,
-  int *max_histogram)
+static inline void _compute_gui_histogram(int hires_histogram[HIRES_HISTO_SAMPLES],
+                                          int histogram[UI_HISTO_SAMPLES],
+                                          float histogram_scale,
+                                          float histogram_shift,
+                                          int *max_histogram)
 {
-  printf("compute_gui_histogram scale=%f shift=%f\n", histogram_scale, histogram_shift);
+#ifdef MF_DEBUG
+  printf("_compute_gui_histogram scale=%f shift=%f\n", histogram_scale, histogram_shift);
+#endif
   // (Re)init the histogram
   memset(histogram, 0, sizeof(int) * UI_HISTO_SAMPLES);
 
@@ -2337,10 +2273,10 @@ static inline void compute_gui_histogram(int hires_histogram[HIRES_HISTO_SAMPLES
   for(size_t k = 0; k < HIRES_HISTO_SAMPLES; ++k)
   {
     // from [0...HIRES_HISTO_SAMPLES] to [-16...8EV]
-    float EV = temp_ev_range * (float)k / (float)(HIRES_HISTO_SAMPLES - 1) + HIRES_HISTO_MIN_EV;
+    const float EV = temp_ev_range * (float)k / (float)(HIRES_HISTO_SAMPLES - 1) + HIRES_HISTO_MIN_EV;
 
     // apply shift & scale to the EV value
-    const float shift_scaled_EV = post_scale_shift(EV, histogram_scale, histogram_shift);
+    const float shift_scaled_EV = _post_scale_shift(EV, histogram_scale, histogram_shift);
 
     // from [-8...0] EV to [0...UI_HISTO_SAMPLES]
     const int i = CLAMP((int)(((shift_scaled_EV + 8.0f) / 8.0f) * (float)UI_HISTO_SAMPLES), 0, UI_HISTO_SAMPLES - 1);
@@ -2357,8 +2293,7 @@ static inline void compute_gui_histogram(int hires_histogram[HIRES_HISTO_SAMPLES
   }
 }
 
-
-static inline void update_gui_histogram(dt_iop_module_t *const self)
+static inline void _update_gui_histogram(dt_iop_module_t *const self)
 {
   dt_iop_toneequalizer_gui_data_t *const g = self->gui_data;
   dt_iop_toneequalizer_params_t *const p = self->params;
@@ -2376,7 +2311,7 @@ static inline void update_gui_histogram(dt_iop_module_t *const self)
       &p->post_scale, &p->post_shift,
       999);
 
-    compute_gui_histogram(g->hires_histogram, g->histogram,
+    _compute_gui_histogram(g->hires_histogram, g->histogram,
                           p->post_scale, p->post_shift,
                           &g->max_histogram);
 
@@ -2396,15 +2331,14 @@ static inline void update_gui_histogram(dt_iop_module_t *const self)
     g->image_EV_per_UI_sample = (mask_EV_of_target * mask_to_image * target_to_full) / (float)UI_HISTO_SAMPLES;
 
     if (g->show_two_histograms)
-      compute_gui_histogram(g->image_hires_histogram, g->image_histogram, p->post_scale, p->post_shift, &g->image_max_histogram);
+      _compute_gui_histogram(g->image_hires_histogram, g->image_histogram, p->post_scale, p->post_shift, &g->image_max_histogram);
 
     g->gui_histogram_valid = TRUE;
   }
   dt_iop_gui_leave_critical_section(self);
 }
 
-
-static void show_guiding_controls(dt_iop_module_t *self)
+static void _show_guiding_controls(dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   const dt_iop_toneequalizer_params_t *p = self->params;
@@ -2444,7 +2378,8 @@ static void show_guiding_controls(dt_iop_module_t *self)
     }
   }
 
-  switch(p->post_auto_align) {
+  switch(p->post_auto_align)
+  {
     case(DT_TONEEQ_ALIGN_LEFT):
     case(DT_TONEEQ_ALIGN_CENTER):
     case(DT_TONEEQ_ALIGN_RIGHT):
@@ -2476,27 +2411,30 @@ static void show_guiding_controls(dt_iop_module_t *self)
  ****************************************************************************/
 void gui_update(dt_iop_module_t *self)
 {
+#ifdef MF_DEBUG
   printf("gui_update\n");
+#endif
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   dt_iop_toneequalizer_params_t *p = self->params;
 
   dt_bauhaus_slider_set(g->smoothing, logf(p->smoothing) / logf(sqrtf(2.0f)) - 1.0f);
 
-  show_guiding_controls(self);
+  _show_guiding_controls(self);
 
-  invalidate_luminance_cache(self);
+  _invalidate_luminance_cache(self);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), g->mask_display);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_two_histograms), g->two_histograms_display);
 
 }
 
-
 void gui_changed(dt_iop_module_t *self,
                  GtkWidget *w,
                  void *previous)
 {
+#ifdef MF_DEBUG
   printf("gui_changed\n");
+#endif
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   dt_iop_toneequalizer_params_t *p = self->params;
 
@@ -2506,23 +2444,23 @@ void gui_changed(dt_iop_module_t *self,
      || w == g->iterations
      || w == g->quantization)
   {
-    invalidate_luminance_cache(self);
+    _invalidate_luminance_cache(self);
   }
   else if(w == g->filter)
   {
-    invalidate_luminance_cache(self);
-    show_guiding_controls(self);
+    _invalidate_luminance_cache(self);
+    _show_guiding_controls(self);
   }
   else if(w == g->contrast_boost
           || w == g->exposure_boost)
   {
-    invalidate_luminance_cache(self);
+    _invalidate_luminance_cache(self);
     dt_bauhaus_widget_set_quad_active(w, FALSE);
   }
   else if (w == g->post_scale
            || w == g->post_shift)
   {
-    invalidate_lut_and_histogram(self);
+    _invalidate_lut_and_histogram(self);
   }
   else if (w == g->post_auto_align)
   {
@@ -2537,13 +2475,13 @@ void gui_changed(dt_iop_module_t *self,
     dt_bauhaus_slider_set(g->post_shift, p->post_shift);
     --darktable.gui->reset;
 
-    invalidate_luminance_cache(self);
-    show_guiding_controls(self);
+    _invalidate_luminance_cache(self);
+    _show_guiding_controls(self);
   }
 }
 
-
-static void smoothing_callback(GtkWidget *slider, dt_iop_module_t *self)
+static void _smoothing_callback(GtkWidget *slider,
+                                dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_toneequalizer_params_t *p = self->params;
@@ -2552,10 +2490,10 @@ static void smoothing_callback(GtkWidget *slider, dt_iop_module_t *self)
   p->smoothing= powf(sqrtf(2.0f), 1.0f +  dt_bauhaus_slider_get(slider));
 
   float factors[NUM_SLIDERS] DT_ALIGNED_ARRAY;
-  get_channels_factors(factors, p);
+  _get_channels_factors(factors, p);
 
   // Solve the interpolation by least-squares to check the validity of the smoothing param
-  if(!curve_interpolation(self))
+  if(!_curve_interpolation(self))
     dt_control_log
       (_("the interpolation is unstable, decrease the curve smoothing"));
 
@@ -2568,8 +2506,8 @@ static void smoothing_callback(GtkWidget *slider, dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
 }
 
-
-static void auto_adjust_exposure_boost(GtkWidget *quad, dt_iop_module_t *self)
+static void _auto_adjust_exposure_boost(GtkWidget *quad,
+                                        dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_params_t *p = self->params;
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
@@ -2585,7 +2523,7 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, dt_iop_module_t *self)
     dt_bauhaus_slider_set(g->exposure_boost, p->exposure_boost);
     --darktable.gui->reset;
 
-    invalidate_luminance_cache(self);
+    _invalidate_luminance_cache(self);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return;
   }
@@ -2604,7 +2542,7 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, dt_iop_module_t *self)
   g->gui_histogram_valid = FALSE;
   dt_iop_gui_leave_critical_section(self);
 
-  update_gui_histogram(self);
+  _update_gui_histogram(self);
 
   // calculate exposure correction
   const float fd_new = exp2f(g->prv_histogram_first_decile);
@@ -2626,15 +2564,15 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, dt_iop_module_t *self)
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->exposure_boost, p->exposure_boost);
   --darktable.gui->reset;
-  invalidate_luminance_cache(self);
+  _invalidate_luminance_cache(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 
   // Unlock the colour picker so we can display our own custom cursor
   dt_iop_color_picker_reset(self, TRUE);
 }
 
-
-static void auto_adjust_contrast_boost(GtkWidget *quad, dt_iop_module_t *self)
+static void _auto_adjust_contrast_boost(GtkWidget *quad,
+                                        dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_params_t *p = self->params;
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
@@ -2650,7 +2588,7 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, dt_iop_module_t *self)
     dt_bauhaus_slider_set(g->contrast_boost, p->contrast_boost);
     --darktable.gui->reset;
 
-    invalidate_luminance_cache(self);
+    _invalidate_luminance_cache(self);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return;
   }
@@ -2666,7 +2604,7 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, dt_iop_module_t *self)
   g->gui_histogram_valid = FALSE;
   dt_iop_gui_leave_critical_section(self);
 
-  update_gui_histogram(self);
+  _update_gui_histogram(self);
 
   // calculate contrast correction
   const float fd_new = exp2f(g->prv_histogram_first_decile);
@@ -2704,17 +2642,16 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, dt_iop_module_t *self)
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->contrast_boost, p->contrast_boost);
   --darktable.gui->reset;
-  invalidate_luminance_cache(self);
+  _invalidate_luminance_cache(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 
   // Unlock the colour picker so we can display our own custom cursor
   dt_iop_color_picker_reset(self, TRUE);
 }
 
-
-static void show_luminance_mask_callback(GtkWidget *togglebutton,
-                                         GdkEventButton *event,
-                                         dt_iop_module_t *self)
+static void _show_luminance_mask_callback(GtkWidget *togglebutton,
+                                          GdkEventButton *event,
+                                          dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_request_focus(self);
@@ -2742,11 +2679,10 @@ static void show_luminance_mask_callback(GtkWidget *togglebutton,
   dt_iop_color_picker_reset(self, TRUE);
 }
 
-
 // TODO MF: Remove this again? Two histograms are only useful for debugging.
-static void show_two_histograms_callback(GtkWidget *togglebutton,
-  GdkEventButton *event,
-  dt_iop_module_t *self)
+static void _show_two_histograms_callback(GtkWidget *togglebutton,
+                                          GdkEventButton *event,
+                                          dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_request_focus(self);
@@ -2790,13 +2726,12 @@ static void _get_point(dt_iop_module_t *self, const int c_x, const int c_y, int 
   *y = pts[1];
 }
 
-
 __DT_CLONE_TARGETS__
-static float get_luminance_from_buffer(const float *const buffer,
-                                       const size_t width,
-                                       const size_t height,
-                                       const size_t x,
-                                       const size_t y)
+static float _get_luminance_from_buffer(const float *const buffer,
+                                        const size_t width,
+                                        const size_t height,
+                                        const size_t x,
+                                        const size_t y)
 {
   // Get the weighted average luminance of the 3×3 pixels region centered in (x, y)
   // x and y are ratios in [0, 1] of the width and height
@@ -2839,8 +2774,7 @@ static float get_luminance_from_buffer(const float *const buffer,
   return luminance;
 }
 
-
-// unify with get_luminance_from_buffer
+// unify with _get_luminance_from_buffer
 static float _luminance_from_thumb_preview_buf(dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
@@ -2854,13 +2788,12 @@ static float _luminance_from_thumb_preview_buf(dt_iop_module_t *self)
 
   _get_point(self, c_x, c_y, &b_x, &b_y);
 
-  return get_luminance_from_buffer(g->preview_buf,
+  return _get_luminance_from_buffer(g->preview_buf,
     g->preview_buf_width,
     g->preview_buf_height,
     b_x,
     b_y);
 }
-
 
 void update_exposure_sliders(dt_iop_toneequalizer_gui_data_t *g, dt_iop_toneequalizer_params_t *p)
 {
@@ -2878,15 +2811,13 @@ void update_exposure_sliders(dt_iop_toneequalizer_gui_data_t *g, dt_iop_toneequa
   --darktable.gui->reset;
 }
 
-
-static gboolean in_mask_editing(dt_iop_module_t *self)
+static gboolean _in_mask_editing(dt_iop_module_t *self)
 {
   const dt_develop_t *dev = self->dev;
   return dev->form_gui && dev->form_visible;
 }
 
-
-static void switch_cursors(dt_iop_module_t *self)
+static void _switch_cursors(dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
@@ -2896,7 +2827,7 @@ static void switch_cursors(dt_iop_module_t *self)
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
 
   // if we are editing masks or using colour-pickers, do not display controls
-  if(in_mask_editing(self)
+  if(_in_mask_editing(self)
      || dt_iop_canvas_not_sensitive(self->dev))
   {
     // display default cursor
@@ -2965,7 +2896,6 @@ static void switch_cursors(dt_iop_module_t *self)
   }
 }
 
-
 int mouse_moved(dt_iop_module_t *self,
                 const float pzx,
                 const float pzy,
@@ -3008,14 +2938,13 @@ int mouse_moved(dt_iop_module_t *self,
   // store the actual exposure too, to spare I/O op
   if(g->cursor_valid && !dev->full.pipe->processing && g->prv_luminance_valid) {
     const float lum = log2f(_luminance_from_thumb_preview_buf(self));
-    g->cursor_exposure = fast_clamp(post_scale_shift(lum, p->post_scale, p->post_shift), DT_TONEEQ_MIN_EV, DT_TONEEQ_MAX_EV);
+    g->cursor_exposure = fast_clamp(_post_scale_shift(lum, p->post_scale, p->post_shift), DT_TONEEQ_MIN_EV, DT_TONEEQ_MAX_EV);
   }
 
-  switch_cursors(self);
+  _switch_cursors(self);
 
   return 1;
 }
-
 
 int mouse_leave(dt_iop_module_t *self)
 {
@@ -3039,12 +2968,11 @@ int mouse_leave(dt_iop_module_t *self)
   return 1;
 }
 
-
-static inline gboolean set_new_params_interactive(const float control_exposure,
-                                                  const float exposure_offset,
-                                                  const float blending_sigma,
-                                                  dt_iop_toneequalizer_gui_data_t *g,
-                                                  dt_iop_toneequalizer_params_t *p)
+static inline gboolean _set_new_params_interactive(const float control_exposure,
+                                                   const float exposure_offset,
+                                                   const float blending_sigma,
+                                                   dt_iop_toneequalizer_gui_data_t *g,
+                                                   dt_iop_toneequalizer_params_t *p)
 {
   // Apply an exposure offset optimized smoothly over all the exposure NUM_SLIDERS,
   // taking user instruction to apply exposure_offset EV at control_exposure EV,
@@ -3053,12 +2981,12 @@ static inline gboolean set_new_params_interactive(const float control_exposure,
   // Raise the user params accordingly to control correction and
   // distance from cursor exposure to blend smoothly the desired
   // correction
-  const float std = gaussian_denom(blending_sigma);
+  const float std = _gaussian_denom(blending_sigma);
   if(g->user_param_valid)
   {
     for(int i = 0; i < NUM_SLIDERS; ++i)
       g->temp_user_params[i] *=
-        exp2f(gaussian_func(centers_params[i] - control_exposure, std) * exposure_offset);
+        exp2f(_gaussian_func(centers_params[i] - control_exposure, std) * exposure_offset);
   }
 
   // Get the new weights for the radial-basis approximation
@@ -3071,7 +2999,7 @@ static inline gboolean set_new_params_interactive(const float control_exposure,
 
   // Compute new user params for NUM_SLIDERS and store them locally
   if(g->user_param_valid)
-    g->user_param_valid = compute_channels_factors(factors, g->temp_user_params, g->sigma);
+    g->user_param_valid = _compute_channels_factors(factors, g->temp_user_params, g->sigma);
   if(!g->user_param_valid) dt_control_log(_("some parameters are out-of-bounds"));
 
   const gboolean commit = g->user_param_valid;
@@ -3084,20 +3012,19 @@ static inline gboolean set_new_params_interactive(const float control_exposure,
 
     // Convert the linear temp parameters to log gains and commit
     float gains[NUM_SLIDERS] DT_ALIGNED_ARRAY;
-    compute_channels_gains(g->temp_user_params, gains);
-    commit_channels_gains(gains, p);
+    _compute_channels_gains(g->temp_user_params, gains);
+    _commit_channels_gains(gains, p);
   }
   else
   {
     // Reset the GUI copy of user params
-    get_channels_factors(factors, p);
+    _get_channels_factors(factors, p);
     dt_simd_memcpy(factors, g->temp_user_params, NUM_SLIDERS);
     g->user_param_valid = TRUE;
   }
 
   return commit;
 }
-
 
 int scrolled(dt_iop_module_t *self,
              const float x,
@@ -3117,7 +3044,7 @@ int scrolled(dt_iop_module_t *self,
   if(!self->enabled)
     if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
 
-  if(in_mask_editing(self)) return 0;
+  if(_in_mask_editing(self)) return 0;
 
   // ALT/Option should work for zooming
   if (dt_modifier_is(state, GDK_MOD1_MASK)) return 0;
@@ -3139,7 +3066,7 @@ int scrolled(dt_iop_module_t *self,
   dt_iop_gui_enter_critical_section(self);
 
   const float lum = log2f(_luminance_from_thumb_preview_buf(self));
-  g->cursor_exposure = fast_clamp(post_scale_shift(lum, p->post_scale, p->post_shift), DT_TONEEQ_MIN_EV, DT_TONEEQ_MAX_EV);
+  g->cursor_exposure = fast_clamp(_post_scale_shift(lum, p->post_scale, p->post_shift), DT_TONEEQ_MIN_EV, DT_TONEEQ_MAX_EV);
 
   dt_iop_gui_leave_critical_section(self);
 
@@ -3158,7 +3085,7 @@ int scrolled(dt_iop_module_t *self,
 
   // Get the desired correction on exposure NUM_SLIDERS
   dt_iop_gui_enter_critical_section(self);
-  const gboolean commit = set_new_params_interactive(g->cursor_exposure, offset,
+  const gboolean commit = _set_new_params_interactive(g->cursor_exposure, offset,
                                                 g->sigma * g->sigma / 2.0f, g, p);
   dt_iop_gui_leave_critical_section(self);
 
@@ -3214,10 +3141,9 @@ void cairo_draw_hatches(cairo_t *cr,
   }
 }
 
-
-static void get_shade_from_luminance(cairo_t *cr,
-                                     const float luminance,
-                                     const float alpha)
+static void _get_shade_from_luminance(cairo_t *cr,
+                                      const float luminance,
+                                      const float alpha)
 {
   // TODO: fetch screen gamma from ICC display profile
   const float gamma = 1.0f / 2.2f;
@@ -3225,22 +3151,21 @@ static void get_shade_from_luminance(cairo_t *cr,
   cairo_set_source_rgba(cr, shade, shade, shade, alpha);
 }
 
-
-static void draw_exposure_cursor(cairo_t *cr,
-                                 const double pointerx,
-                                 const double pointery,
-                                 const double radius,
-                                 const float luminance,
-                                 const float zoom_scale,
-                                 const int instances,
-                                 const float alpha)
+static void _draw_exposure_cursor(cairo_t *cr,
+                                  const double pointerx,
+                                  const double pointery,
+                                  const double radius,
+                                  const float luminance,
+                                  const float zoom_scale,
+                                  const int instances,
+                                  const float alpha)
 {
   // Draw a circle cursor filled with a grey shade corresponding to a luminance value
   // or hatches if the value is above the overexposed threshold
 
   const double radius_z = radius / zoom_scale;
 
-  get_shade_from_luminance(cr, luminance, alpha);
+  _get_shade_from_luminance(cr, luminance, alpha);
   cairo_arc(cr, pointerx, pointery, radius_z, 0, 2 * M_PI);
   cairo_fill_preserve(cr);
   cairo_save(cr);
@@ -3257,10 +3182,9 @@ static void draw_exposure_cursor(cairo_t *cr,
   cairo_restore(cr);
 }
 
-
-static void match_color_to_background(cairo_t *cr,
-                                      const float exposure,
-                                      const float alpha)
+static void _match_color_to_background(cairo_t *cr,
+                                       const float exposure,
+                                       const float alpha)
 {
   float shade = 0.0f;
   // TODO: put that as a preference in darktablerc
@@ -3271,9 +3195,8 @@ static void match_color_to_background(cairo_t *cr,
   else
     shade = (fmaxf(exposure / contrast, -5.0f) + 2.5f);
 
-  get_shade_from_luminance(cr, exp2f(shade), alpha);
+  _get_shade_from_luminance(cr, exp2f(shade), alpha);
 }
-
 
 void gui_post_expose(dt_iop_module_t *self,
                      cairo_t *cr,
@@ -3290,7 +3213,7 @@ void gui_post_expose(dt_iop_module_t *self,
   dt_iop_toneequalizer_params_t *p = self->params;
 
   // if we are editing masks, do not display controls
-  if(in_mask_editing(self)) return;
+  if(_in_mask_editing(self)) return;
 
   dt_iop_gui_enter_critical_section(self);
 
@@ -3310,7 +3233,7 @@ void gui_post_expose(dt_iop_module_t *self,
   // re-read the exposure in case it has changed
   if(g->prv_luminance_valid && self->enabled) {
     const float lum = log2f(_luminance_from_thumb_preview_buf(self));
-    g->cursor_exposure = fast_clamp(post_scale_shift(lum, p->post_scale, p->post_shift), DT_TONEEQ_MIN_EV, DT_TONEEQ_MAX_EV);
+    g->cursor_exposure = fast_clamp(_post_scale_shift(lum, p->post_scale, p->post_shift), DT_TONEEQ_MIN_EV, DT_TONEEQ_MAX_EV);
   }
 
   dt_iop_gui_enter_critical_section(self);
@@ -3331,7 +3254,7 @@ void gui_post_expose(dt_iop_module_t *self,
     luminance_in = exp2f(exposure_in);
 
     // Get the corresponding correction and compute resulting exposure
-    correction = log2f(pixel_correction(exposure_in, g->factors, g->sigma));
+    correction = log2f(_pixel_correction(exposure_in, g->factors, g->sigma));
     exposure_out = exposure_in + correction;
     luminance_out = exp2f(exposure_out);
   }
@@ -3347,7 +3270,7 @@ void gui_post_expose(dt_iop_module_t *self,
   const double fill_width = DT_PIXEL_APPLY_DPI(4. / zoom_scale);
 
   // setting fill bars
-  match_color_to_background(cr, exposure_out, 1.0);
+  _match_color_to_background(cr, exposure_out, 1.0);
   cairo_set_line_width(cr, 2.0 * fill_width);
   cairo_move_to(cr, x_pointer - setting_offset_x, y_pointer);
 
@@ -3379,9 +3302,9 @@ void gui_post_expose(dt_iop_module_t *self,
   cairo_stroke(cr);
 
   // draw exposure cursor
-  draw_exposure_cursor(cr, x_pointer, y_pointer, outer_radius,
+  _draw_exposure_cursor(cr, x_pointer, y_pointer, outer_radius,
                        luminance_in, zoom_scale, 6, .9);
-  draw_exposure_cursor(cr, x_pointer, y_pointer, inner_radius,
+  _draw_exposure_cursor(cr, x_pointer, y_pointer, inner_radius,
                        luminance_out, zoom_scale, 3, .9);
 
   // Create Pango objects : texts
@@ -3407,7 +3330,7 @@ void gui_post_expose(dt_iop_module_t *self,
   pango_layout_get_pixel_extents(layout, &ink, NULL);
 
   // Draw the text plain blackground
-  get_shade_from_luminance(cr, luminance_out, 0.75);
+  _get_shade_from_luminance(cr, luminance_out, 0.75);
   cairo_rectangle(cr,
                   x_pointer + (outer_radius + 2. * g->inner_padding) / zoom_scale,
                   y_pointer - ink.y - ink.height / 2.0 - g->inner_padding / zoom_scale,
@@ -3416,7 +3339,7 @@ void gui_post_expose(dt_iop_module_t *self,
   cairo_fill(cr);
 
   // Display the EV reading
-  match_color_to_background(cr, exposure_out, 1.0);
+  _match_color_to_background(cr, exposure_out, 1.0);
   cairo_move_to(cr, x_pointer + (outer_radius + 4. * g->inner_padding) / zoom_scale,
                     y_pointer - ink.y - ink.height / 2.);
   pango_cairo_show_layout(cr, layout);
@@ -3443,7 +3366,6 @@ void gui_post_expose(dt_iop_module_t *self,
   }
 }
 
-
 static void _develop_distort_callback(gpointer instance,
                                       dt_iop_module_t *self)
 {
@@ -3462,7 +3384,6 @@ static void _develop_distort_callback(gpointer instance,
     dt_dev_reprocess_preview(darktable.develop);
 }
 
-
 static void _set_distort_signal(dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
@@ -3472,7 +3393,6 @@ static void _set_distort_signal(dt_iop_module_t *self)
     g->distort_signal_active = TRUE;
   }
 }
-
 
 static void _unset_distort_signal(dt_iop_module_t *self)
 {
@@ -3484,15 +3404,16 @@ static void _unset_distort_signal(dt_iop_module_t *self)
   }
 }
 
-
 void gui_focus(dt_iop_module_t *self, gboolean in)
 {
+#ifdef MF_DEBUG
   printf("gui_focus %d\n", in);
+#endif
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   dt_iop_gui_enter_critical_section(self);
   g->has_focus = in;
   dt_iop_gui_leave_critical_section(self);
-  switch_cursors(self);
+  _switch_cursors(self);
   if(!in)
   {
     //lost focus - stop showing mask
@@ -3516,7 +3437,6 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
   }
 }
 
-
 static inline gboolean _init_drawing(dt_iop_module_t *const restrict self,
                                      GtkWidget *widget,
                                      dt_iop_toneequalizer_gui_data_t *const restrict g)
@@ -3527,9 +3447,9 @@ static inline gboolean _init_drawing(dt_iop_module_t *const restrict self,
   if(g->cst)
     cairo_surface_destroy(g->cst);
 
-  g->allocation.height -= DT_RESIZE_HANDLE_SIZE;
+  g->graph_w_gradients_height = g->allocation.height - DT_RESIZE_HANDLE_SIZE - g->inner_padding;
   g->cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
-                                         g->allocation.width, g->allocation.height);
+                                         g->allocation.width, g->graph_w_gradients_height);
 
   if(g->cr)
     cairo_destroy(g->cr);
@@ -3569,7 +3489,7 @@ static inline gboolean _init_drawing(dt_iop_module_t *const restrict self,
   // align the right border on sliders:
   g->graph_width = g->allocation.width - g->inset - 2.0 * g->line_height;
    // give room to nodes:
-  g->graph_height = g->allocation.height - g->inset - 2.0 * g->line_height;
+  g->graph_height = g->graph_w_gradients_height - g->inset - 2.0 * g->line_height;
   g->gradient_left_limit = 0.0;
   g->gradient_right_limit = g->graph_width;
   g->gradient_top_limit = g->graph_height + 2 * g->inner_padding;
@@ -3577,7 +3497,7 @@ static inline gboolean _init_drawing(dt_iop_module_t *const restrict self,
   g->legend_top_limit = -0.5 * g->line_height - 2.0 * g->inner_padding;
   g->x_label = g->graph_width + g->sign_width + 3.0 * g->inner_padding;
 
-  gtk_render_background(g->context, g->cr, 0, 0, g->allocation.width, g->allocation.height);
+  gtk_render_background(g->context, g->cr, 0, 0, g->allocation.width, g->graph_w_gradients_height);
 
   // set the graph as the origin of the coordinates
   cairo_translate(g->cr, g->line_height + 2 * g->inner_padding,
@@ -3660,9 +3580,8 @@ static inline gboolean _init_drawing(dt_iop_module_t *const restrict self,
   return TRUE;
 }
 
-
 // must be called while holding self->gui_lock
-static inline void init_nodes_x(dt_iop_toneequalizer_gui_data_t *g)
+static inline void _init_nodes_x(dt_iop_toneequalizer_gui_data_t *g)
 {
   if(g == NULL) return;
 
@@ -3674,9 +3593,8 @@ static inline void init_nodes_x(dt_iop_toneequalizer_gui_data_t *g)
   }
 }
 
-
 // must be called while holding self->gui_lock
-static inline void init_nodes_y(dt_iop_toneequalizer_gui_data_t *g)
+static inline void _init_nodes_y(dt_iop_toneequalizer_gui_data_t *g)
 {
   if(g == NULL) return;
 
@@ -3689,8 +3607,10 @@ static inline void init_nodes_y(dt_iop_toneequalizer_gui_data_t *g)
   }
 }
 
-
-static inline void interpolate_gui_color(GdkRGBA a, GdkRGBA b, float t, GdkRGBA *out)
+static inline void _interpolate_gui_color(GdkRGBA a,
+                                          GdkRGBA b,
+                                          float t,
+                                          GdkRGBA *out)
 {
   float t_clamp = fast_clamp(t, 0.0f, 1.0f);
   out->red = a.red + t_clamp * (b.red - a.red);
@@ -3699,8 +3619,7 @@ static inline void interpolate_gui_color(GdkRGBA a, GdkRGBA b, float t, GdkRGBA 
   out->alpha = a.alpha + t_clamp * (b.alpha - a.alpha);
 }
 
-
-static inline void compute_gui_curve_colors(dt_iop_module_t *self)
+static inline void _compute_gui_curve_colors(dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   dt_iop_toneequalizer_params_t *p = self->params;
@@ -3717,8 +3636,6 @@ static inline void compute_gui_curve_colors(dt_iop_module_t *self)
 
   const int shadows_limit = (int)UI_HISTO_SAMPLES * 0.3333;
   const int highlights_limit = (int)UI_HISTO_SAMPLES * 0.6666;
-
-  // printf("ev_dx=%f filter_active=%d filter=%d\n", ev_dx, filter_active, p->filter);
 
   if (!g->gui_histogram_valid || !g->gui_curve_valid) {
     // the module is not completely initialized, set all colors to standard
@@ -3740,7 +3657,7 @@ static inline void compute_gui_curve_colors(dt_iop_module_t *self)
       // contrast that the user probably expects.
       const float x_dist = ((float)(shadows_limit - k) / (float)UI_HISTO_SAMPLES) * 8.0f;
       const float color_dist = fminf(x_dist, -curve[k]);
-      interpolate_gui_color(standard, warning, color_dist, &temp_color);
+      _interpolate_gui_color(standard, warning, color_dist, &temp_color);
       colors[k] = temp_color;
     }
     else if(filter_active && k > highlights_limit && curve[k] > 0.0f)
@@ -3749,7 +3666,7 @@ static inline void compute_gui_curve_colors(dt_iop_module_t *self)
       // contrast that the user probably expects.
       const float x_dist = ((float)(k - highlights_limit) / (float)UI_HISTO_SAMPLES) * 8.0f;
       const float color_dist = fminf(x_dist, curve[k]);
-      interpolate_gui_color(standard, warning, color_dist, &temp_color);
+      _interpolate_gui_color(standard, warning, color_dist, &temp_color);
       colors[k] = temp_color;
     }
     else if(!filter_active && k < shadows_limit && curve[k] > 0.0f)
@@ -3757,7 +3674,7 @@ static inline void compute_gui_curve_colors(dt_iop_module_t *self)
       // Raise shadows without filter, this leads to a loss of contrast.
       const float x_dist = ((float)(shadows_limit - k) / (float)UI_HISTO_SAMPLES) * 8.0f;
       const float color_dist = fminf(x_dist, curve[k]);
-      interpolate_gui_color(standard, warning, color_dist, &temp_color);
+      _interpolate_gui_color(standard, warning, color_dist, &temp_color);
       colors[k] = temp_color;
     }
     else if(!filter_active && k > highlights_limit && curve[k] < 0.0f)
@@ -3765,7 +3682,7 @@ static inline void compute_gui_curve_colors(dt_iop_module_t *self)
       // Lower highlights without filter, this leads to a loss of contrast.
       const float x_dist = ((float)(k - highlights_limit) / (float)UI_HISTO_SAMPLES) * 8.0f;
       const float color_dist = fminf(x_dist, -curve[k]);
-      interpolate_gui_color(standard, warning, color_dist, &temp_color);
+      _interpolate_gui_color(standard, warning, color_dist, &temp_color);
       colors[k] = temp_color;
     }
 
@@ -3781,14 +3698,15 @@ static inline void compute_gui_curve_colors(dt_iop_module_t *self)
       colors[k] = error;
     }
 
+#ifdef MF_DEBUG
     // printf("curve[%d]=%f ev_dx=%f ev_dy=%f steepness=%f colors[%d]=%f\n", k, curve[k], ev_dx, ev_dy, steepness, k, colors[k].red);
+#endif
   }
 }
 
-
-static gboolean area_draw(GtkWidget *widget,
-                          cairo_t *cr,
-                          dt_iop_module_t *self)
+static gboolean _area_draw(GtkWidget *widget,
+                           cairo_t *cr,
+                           dt_iop_module_t *self)
 {
   // Draw the widget equalizer view
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
@@ -3813,11 +3731,11 @@ static gboolean area_draw(GtkWidget *widget,
   dt_iop_gui_leave_critical_section(self);
 
   // Refresh cached UI elements
-  update_gui_histogram(self); // TODO MF: Delay until both PREVIEW and FULL pixelpipes are ready
-  curve_interpolation(self);
+  _update_gui_histogram(self); // TODO MF: Delay until both PREVIEW and FULL pixelpipes are ready
+  _curve_interpolation(self);
 
   // The colors depend on the histogram and the curve
-  compute_gui_curve_colors(self);
+  _compute_gui_curve_colors(self);
 
   // Draw graph background
   cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(0.5));
@@ -3839,11 +3757,7 @@ static gboolean area_draw(GtkWidget *widget,
 
   if(g->gui_histogram_valid && self->enabled)
   {
-    float histo_height;
-    if (g->two_histograms_display)
-      histo_height = 0.5 * g->graph_height;
-    else
-      histo_height = g->graph_height;
+    const float histo_height = g->graph_height * (g->two_histograms_display ? 0.5 : 1.0);
 
     // draw the mask histogram background
     set_color(g->cr, darktable.bauhaus->inset_histogram);
@@ -3874,15 +3788,13 @@ static gboolean area_draw(GtkWidget *widget,
         const float y_temp = fast_clamp((float)(g->image_histogram[k]) / (float)(g->image_max_histogram), -1.0f, 1.0f) * 0.96;
         cairo_line_to(g->cr, (x_temp + 8.0) * g->graph_width / 8.0,
                              y_temp * histo_height);
-        //if (k % 5 == 0)
-        // printf("g->image_histogram[%d] = %d, image_max_histogram = %d\n", k, g->image_histogram[k], g->image_max_histogram);
       }
       cairo_line_to(g->cr, g->graph_width, 0);
       cairo_close_path(g->cr);
       cairo_fill(g->cr);
     }
 
-    if(post_scale_shift(g->prv_histogram_last_decile, p->post_scale, p->post_shift) > -0.1f)
+    if(_post_scale_shift(g->prv_histogram_last_decile, p->post_scale, p->post_shift) > -0.1f)
     {
       // histogram overflows controls in highlights : display warning
       cairo_save(g->cr);
@@ -3894,7 +3806,7 @@ static gboolean area_draw(GtkWidget *widget,
       cairo_restore(g->cr);
     }
 
-    if(post_scale_shift(g->prv_histogram_first_decile, p->post_scale, p->post_shift) < -7.9f)
+    if(_post_scale_shift(g->prv_histogram_first_decile, p->post_scale, p->post_shift) < -7.9f)
     {
       // histogram overflows controls in lowlights : display warning
       cairo_save(g->cr);
@@ -3940,11 +3852,11 @@ static gboolean area_draw(GtkWidget *widget,
   }
 
   dt_iop_gui_enter_critical_section(self);
-  init_nodes_x(g);
+  _init_nodes_x(g);
   dt_iop_gui_leave_critical_section(self);
 
   dt_iop_gui_enter_critical_section(self);
-  init_nodes_y(g);
+  _init_nodes_y(g);
   dt_iop_gui_leave_critical_section(self);
 
   if(g->user_param_valid)
@@ -4020,82 +3932,12 @@ static gboolean area_draw(GtkWidget *widget,
   cairo_set_source_surface(cr, g->cst, 0, 0);
   cairo_paint(cr);
 
-  return TRUE;
+  return FALSE; // Draw the handle next
 }
 
-
-// static gboolean _toneequalizer_bar_draw(GtkWidget *widget,
-//                                         cairo_t *crf,
-//                                         dt_iop_module_t *self)
-// {
-//   // Draw the widget equalizer view
-//   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
-
-//   update_gui_histogram(self);
-
-//   GtkAllocation allocation;
-//   gtk_widget_get_allocation(widget, &allocation);
-//   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
-//                                                        allocation.width, allocation.height);
-//   cairo_t *cr = cairo_create(cst);
-
-//   // draw background
-//   set_color(cr, darktable.bauhaus->graph_bg);
-//   cairo_rectangle(cr, 0, 0, allocation.width, allocation.height);
-//   cairo_fill_preserve(cr);
-//   cairo_clip(cr);
-
-//   dt_iop_gui_enter_critical_section(self);
-
-//   if(g->gui_histogram_valid)
-//   {
-//     // draw histogram span
-//     const float left = (g->histogram_first_decile + 8.0f) / 8.0f;
-//     const float right = (g->histogram_last_decile + 8.0f) / 8.0f;
-//     const float width = (right - left);
-//     set_color(cr, darktable.bauhaus->inset_histogram);
-//     cairo_rectangle(cr, left * allocation.width, 0,
-//                     width * allocation.width, allocation.height);
-//     cairo_fill(cr);
-
-//     // draw average bar
-//     set_color(cr, darktable.bauhaus->graph_fg);
-//     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3));
-//     const float average = ((g->histogram_first_decile + g->histogram_last_decile) / 2.0f + 8.0f) / 8.0f;
-//     cairo_move_to(cr, average * allocation.width, 0.0);
-//     cairo_line_to(cr, average * allocation.width, allocation.height);
-//     cairo_stroke(cr);
-
-//     // draw clipping bars
-//     cairo_set_source_rgb(cr, 0.75, 0.50, 0);
-//     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(6));
-//     if(g->histogram_first_decile < -7.9f)
-//     {
-//       cairo_move_to(cr, DT_PIXEL_APPLY_DPI(3), 0.0);
-//       cairo_line_to(cr, DT_PIXEL_APPLY_DPI(3), allocation.height);
-//       cairo_stroke(cr);
-//     }
-//     if(g->histogram_last_decile > - 0.1f)
-//     {
-//       cairo_move_to(cr, allocation.width - DT_PIXEL_APPLY_DPI(3), 0.0);
-//       cairo_line_to(cr, allocation.width - DT_PIXEL_APPLY_DPI(3), allocation.height);
-//       cairo_stroke(cr);
-//     }
-//   }
-
-//   dt_iop_gui_leave_critical_section(self);
-
-//   cairo_set_source_surface(crf, cst, 0, 0);
-//   cairo_paint(crf);
-//   cairo_destroy(cr);
-//   cairo_surface_destroy(cst);
-//   return TRUE;
-// }
-
-
-static gboolean area_enter_leave_notify(GtkWidget *widget,
-                                        GdkEventCrossing *event,
-                                        dt_iop_module_t *self)
+static gboolean _area_enter_leave_notify(GtkWidget *widget,
+                                         GdkEventCrossing *event,
+                                         dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return TRUE;
   if(!self->enabled) return FALSE;
@@ -4126,12 +3968,10 @@ static gboolean area_enter_leave_notify(GtkWidget *widget,
   return FALSE;
 }
 
-
-static gboolean area_button_press(GtkWidget *widget,
-                                  GdkEventButton *event,
-                                  dt_iop_module_t *self)
+static gboolean _area_button_press(GtkWidget *widget,
+                                   GdkEventButton *event,
+                                   dt_iop_module_t *self)
 {
-
   if(darktable.gui->reset) return TRUE;
 
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
@@ -4173,7 +4013,7 @@ static gboolean area_button_press(GtkWidget *widget,
     {
       dt_dev_add_history_item(darktable.develop, self, TRUE);
     }
-    return TRUE;
+    return FALSE;
   }
 
   // Unlock the colour picker so we can display our own custom cursor
@@ -4182,10 +4022,9 @@ static gboolean area_button_press(GtkWidget *widget,
   return FALSE;
 }
 
-
-static gboolean area_motion_notify(GtkWidget *widget,
-                                   GdkEventMotion *event,
-                                   dt_iop_module_t *self)
+static gboolean _area_motion_notify(GtkWidget *widget,
+                                    GdkEventMotion *event,
+                                    dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return TRUE;
   if(!self->enabled) return FALSE;
@@ -4202,7 +4041,7 @@ static gboolean area_motion_notify(GtkWidget *widget,
     const float cursor_exposure = g->area_x / g->graph_width * 8.0f - 8.0f;
 
     // Get the desired correction on exposure NUM_SLIDERS
-    g->area_dragging = set_new_params_interactive(cursor_exposure, offset,
+    g->area_dragging = _set_new_params_interactive(cursor_exposure, offset,
                                                   g->sigma * g->sigma / 2.0f, g, p);
     dt_iop_gui_leave_critical_section(self);
   }
@@ -4233,13 +4072,12 @@ static gboolean area_motion_notify(GtkWidget *widget,
   dt_iop_gui_leave_critical_section(self);
 
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
-  return TRUE;
+  return FALSE;
 }
 
-
-static gboolean area_button_release(GtkWidget *widget,
-                                    GdkEventButton *event,
-                                    dt_iop_module_t *self)
+static gboolean _area_button_release(GtkWidget *widget,
+                                     GdkEventButton *event,
+                                     dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return TRUE;
   if(!self->enabled) return FALSE;
@@ -4264,24 +4102,23 @@ static gboolean area_button_release(GtkWidget *widget,
       g->area_dragging = FALSE;
       dt_iop_gui_leave_critical_section(self);
 
-      return TRUE;
+      return FALSE;
     }
   }
   return FALSE;
 }
 
-
-static gboolean area_scroll(GtkWidget *widget,
-                            GdkEventScroll *event,
-                            gpointer user_data)
+static gboolean _area_scroll(GtkWidget *widget,
+                             GdkEventScroll *event,
+                             gpointer user_data)
 {
   // do not propagate to tab bar unless scrolling sidebar
   return !dt_gui_ignore_scroll(event);
 }
 
-static gboolean notebook_button_press(GtkWidget *widget,
-                                      GdkEventButton *event,
-                                      dt_iop_module_t *self)
+static gboolean _notebook_button_press(GtkWidget *widget,
+                                       GdkEventButton *event,
+                                       dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return TRUE;
 
@@ -4293,7 +4130,6 @@ static gboolean notebook_button_press(GtkWidget *widget,
 
   return FALSE;
 }
-
 
 GSList *mouse_actions(dt_iop_module_t *self)
 {
@@ -4310,17 +4146,18 @@ GSList *mouse_actions(dt_iop_module_t *self)
   return lm;
 }
 
-
 /**
  * Post pipe events
  **/
 static void _develop_ui_pipe_started_callback(gpointer instance,
                                               dt_iop_module_t *self)
 {
+#ifdef MF_DEBUG
   printf("ui pipe started callback\n");
+#endif
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   if(g == NULL) return;
-  switch_cursors(self);
+  _switch_cursors(self);
 
   if(!self->expanded || !self->enabled)
   {
@@ -4338,11 +4175,12 @@ static void _develop_ui_pipe_started_callback(gpointer instance,
   --darktable.gui->reset;
 }
 
-
 static void _develop_preview_pipe_finished_callback(gpointer instance,
                                                     dt_iop_module_t *self)
 {
+#ifdef MF_DEBUG
   printf("preview pipe finished callback\n");
+#endif
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   if(g == NULL) return;
 
@@ -4352,22 +4190,22 @@ static void _develop_preview_pipe_finished_callback(gpointer instance,
   // reprocess of the preview has been scheduled.
   _set_distort_signal(self);
 
-  switch_cursors(self);
+  _switch_cursors(self);
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
   // gtk_widget_queue_draw(GTK_WIDGET(g->bar));
 }
 
-
 static void _develop_ui_pipe_finished_callback(gpointer instance,
                                                dt_iop_module_t *self)
 {
+#ifdef MF_DEBUG
   printf("ui pipe finished callback\n");
+#endif
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   if(g == NULL) return;
 
-  switch_cursors(self);
+  _switch_cursors(self);
 }
-
 
 void gui_reset(dt_iop_module_t *self)
 {
@@ -4382,12 +4220,11 @@ void gui_reset(dt_iop_module_t *self)
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = IOP_GUI_ALLOC(toneequalizer);
 
-  gui_cache_init(self);
+  _gui_cache_init(self);
 
   // g->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
 
@@ -4406,19 +4243,19 @@ void gui_init(dt_iop_module_t *self)
                         | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                         | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
-  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(area_draw), self);
+  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(_area_draw), self);
   g_signal_connect(G_OBJECT(g->area), "button-press-event",
-                   G_CALLBACK(area_button_press), self);
+                   G_CALLBACK(_area_button_press), self);
   g_signal_connect(G_OBJECT(g->area), "button-release-event",
-                   G_CALLBACK(area_button_release), self);
+                   G_CALLBACK(_area_button_release), self);
   g_signal_connect(G_OBJECT(g->area), "leave-notify-event",
-                   G_CALLBACK(area_enter_leave_notify), self);
+                   G_CALLBACK(_area_enter_leave_notify), self);
   g_signal_connect(G_OBJECT(g->area), "enter-notify-event",
-                   G_CALLBACK(area_enter_leave_notify), self);
+                   G_CALLBACK(_area_enter_leave_notify), self);
   g_signal_connect(G_OBJECT(g->area), "motion-notify-event",
-                   G_CALLBACK(area_motion_notify), self);
+                   G_CALLBACK(_area_motion_notify), self);
   g_signal_connect(G_OBJECT(g->area), "scroll-event",
-                   G_CALLBACK(area_scroll), self);
+                   G_CALLBACK(_area_scroll), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double-click to reset the curve"));
 
   static dt_action_def_t notebook_def = { };
@@ -4455,7 +4292,7 @@ void gui_init(dt_iop_module_t *self)
                                 "negative values will avoid oscillations and behave more robustly\n"
                                 "but may produce brutal tone transitions and damage local contrast."));
   gtk_box_pack_start(GTK_BOX(self->widget), g->smoothing, FALSE, FALSE, 0);
-  g_signal_connect(G_OBJECT(g->smoothing), "value-changed", G_CALLBACK(smoothing_callback), self);
+  g_signal_connect(G_OBJECT(g->smoothing), "value-changed", G_CALLBACK(_smoothing_callback), self);
 
   // sliders section (former "simple" page)
   dt_gui_new_collapsible_section(&g->sliders_section, "plugins/darkroom/toneequal/expand_sliders", _("sliders"),
@@ -4510,7 +4347,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->highlights, N_("simple"), N_("-2 EV"));
   dt_bauhaus_widget_set_label(g->whites, N_("simple"), N_("-1 EV"));
   dt_bauhaus_widget_set_label(g->speculars, N_("simple"), N_("+0 EV"));
-
 
   // Masking options
   self->widget = dt_ui_notebook_page(g->notebook, N_("masking"), NULL);
@@ -4578,18 +4414,6 @@ void gui_init(dt_iop_module_t *self)
 
   self->widget = GTK_WIDGET(g->advanced_masking_section.container);
 
-  // g->bar = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  // gtk_widget_set_size_request(GTK_WIDGET(g->bar), -1, 40);
-  // gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->bar), TRUE, TRUE, 0);
-  // gtk_widget_set_can_focus(GTK_WIDGET(g->bar), TRUE);
-  // g_signal_connect(G_OBJECT(g->bar), "draw",
-  //                  G_CALLBACK(_toneequalizer_bar_draw), self);
-  // gtk_widget_set_tooltip_text
-  //   (GTK_WIDGET(g->bar),
-  //    _("mask histogram span between the first and last deciles.\n"
-  //      "the central line shows the average. orange bars appear at extrema"
-  //      " if clipping occurs."));
-
   g->quantization = dt_bauhaus_slider_from_params(self, "quantization");
   dt_bauhaus_slider_set_format(g->quantization, _(" EV"));
   gtk_widget_set_tooltip_text
@@ -4605,7 +4429,7 @@ void gui_init(dt_iop_module_t *self)
     (g->exposure_boost,
      _("use this to slide the mask average exposure along NUM_SLIDERS\n"
        "for a better control of the exposure correction with the available nodes."));
-  dt_bauhaus_widget_set_quad(g->exposure_boost, self, dtgtk_cairo_paint_wand, FALSE, auto_adjust_exposure_boost,
+  dt_bauhaus_widget_set_quad(g->exposure_boost, self, dtgtk_cairo_paint_wand, FALSE, _auto_adjust_exposure_boost,
                              _("auto-adjust the average exposure"));
 
   g->contrast_boost = dt_bauhaus_slider_from_params(self, "contrast_boost");
@@ -4617,7 +4441,7 @@ void gui_init(dt_iop_module_t *self)
        "and dilate the mask contrast around -4EV\n"
        "this allows to spread the exposure histogram over more NUM_SLIDERS\n"
        "for a better control of the exposure correction."));
-  dt_bauhaus_widget_set_quad(g->contrast_boost, self, dtgtk_cairo_paint_wand, FALSE, auto_adjust_contrast_boost,
+  dt_bauhaus_widget_set_quad(g->contrast_boost, self, dtgtk_cairo_paint_wand, FALSE, _auto_adjust_contrast_boost,
                              _("auto-adjust the contrast"));
 
 
@@ -4626,7 +4450,7 @@ void gui_init(dt_iop_module_t *self)
                     dt_ui_label_new(_("show image histogram in graph")), TRUE, TRUE, 0);
   g->show_two_histograms = dt_iop_togglebutton_new
     (self, NULL,
-    N_("display the image histogram together with mask histogram"), NULL, G_CALLBACK(show_two_histograms_callback),
+    N_("display the image histogram together with mask histogram"), NULL, G_CALLBACK(_show_two_histograms_callback),
     FALSE, 0, 0, dtgtk_cairo_paint_showmask, histo_box);
   dt_gui_add_class(g->show_two_histograms, "dt_transparent_background");
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->show_two_histograms),
@@ -4645,7 +4469,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(wrapper), TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(g->notebook), "button-press-event",
-                   G_CALLBACK(notebook_button_press), self);
+                   G_CALLBACK(_notebook_button_press), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -4653,7 +4477,7 @@ void gui_init(dt_iop_module_t *self)
                      dt_ui_label_new(_("display exposure mask")), TRUE, TRUE, 0);
   g->show_luminance_mask = dt_iop_togglebutton_new
     (self, NULL,
-     N_("display exposure mask"), NULL, G_CALLBACK(show_luminance_mask_callback),
+     N_("display exposure mask"), NULL, G_CALLBACK(_show_luminance_mask_callback),
      FALSE, 0, 0, dtgtk_cairo_paint_showmask, hbox);
   dt_gui_add_class(g->show_luminance_mask, "dt_transparent_background");
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->show_luminance_mask),
@@ -4666,7 +4490,6 @@ void gui_init(dt_iop_module_t *self)
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _develop_ui_pipe_finished_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_HISTORY_CHANGE, _develop_ui_pipe_started_callback);
 }
-
 
 void gui_cleanup(dt_iop_module_t *self)
 {

@@ -3080,6 +3080,13 @@
     <longdescription>height of color balance rgb graph in per cent</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/toneequal/graphheight</name>
+    <type min="200" max="400">int</type>
+    <default>300</default>
+    <shortdescription>height of tone equalizer graph in per cent</shortdescription>
+    <longdescription>height of tone equalizer graph in per cent</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/histogram/mode</name>
     <type>
       <enum>
