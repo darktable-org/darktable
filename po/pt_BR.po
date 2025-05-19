@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-05-12 18:30-0300\n"
-"PO-Revision-Date: 2025-05-12 18:33-0300\n"
+"POT-Creation-Date: 2025-05-19 18:36-0300\n"
+"PO-Revision-Date: 2025-05-19 18:39-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -1548,7 +1548,9 @@ msgstr "pasta raiz para arquivos de máscaras de pixels"
 msgid ""
 "this folder (and sub-folders) contains PFM files used by the raster mask "
 "import module. (restart required)"
-msgstr "esta pasta (e subpastas) contém arquivos PFM usados pelo módulo de importação de imagem de matriz de pixels. (é necssário reiniciar o darktable)"
+msgstr ""
+"esta pasta (e subpastas) contém arquivos PFM usados pelo módulo de "
+"importação de imagem de matriz de pixels. (é necssário reiniciar o darktable)"
 
 #: ../build/bin/preferences_gen.h:6099
 msgid "auto-apply pixel workflow defaults"
@@ -3390,32 +3392,32 @@ msgstr "versão 3 (Abr 2021)"
 
 #: ../build/lib/darktable/plugins/introspection_clipping.c:142
 #: ../build/lib/darktable/plugins/introspection_clipping.c:303
-#: ../build/lib/darktable/plugins/introspection_crop.c:61
-#: ../build/lib/darktable/plugins/introspection_crop.c:134
+#: ../build/lib/darktable/plugins/introspection_crop.c:65
+#: ../build/lib/darktable/plugins/introspection_crop.c:144
 #: ../src/gui/gtk.c:1391 ../src/iop/atrous.c:1624
 msgid "left"
 msgstr "esquerda"
 
 #: ../build/lib/darktable/plugins/introspection_clipping.c:148
 #: ../build/lib/darktable/plugins/introspection_clipping.c:307
-#: ../build/lib/darktable/plugins/introspection_crop.c:67
-#: ../build/lib/darktable/plugins/introspection_crop.c:138
+#: ../build/lib/darktable/plugins/introspection_crop.c:71
+#: ../build/lib/darktable/plugins/introspection_crop.c:148
 #: ../src/gui/accelerators.c:130 ../src/gui/gtk.c:1401
 msgid "top"
 msgstr "superior"
 
 #: ../build/lib/darktable/plugins/introspection_clipping.c:154
 #: ../build/lib/darktable/plugins/introspection_clipping.c:311
-#: ../build/lib/darktable/plugins/introspection_crop.c:73
-#: ../build/lib/darktable/plugins/introspection_crop.c:142
+#: ../build/lib/darktable/plugins/introspection_crop.c:77
+#: ../build/lib/darktable/plugins/introspection_crop.c:152
 #: ../src/gui/gtk.c:1396 ../src/iop/atrous.c:1623
 msgid "right"
 msgstr "direita"
 
 #: ../build/lib/darktable/plugins/introspection_clipping.c:160
 #: ../build/lib/darktable/plugins/introspection_clipping.c:315
-#: ../build/lib/darktable/plugins/introspection_crop.c:79
-#: ../build/lib/darktable/plugins/introspection_crop.c:146
+#: ../build/lib/darktable/plugins/introspection_crop.c:83
+#: ../build/lib/darktable/plugins/introspection_crop.c:156
 #: ../src/gui/accelerators.c:131 ../src/gui/gtk.c:1405
 msgid "bottom"
 msgstr "inferior"
@@ -7273,63 +7275,63 @@ msgid_plural "date/time re-applied to %d images"
 msgstr[0] "data/hora re-aplicada em %d imagem"
 msgstr[1] "data/hora re-aplicada em %d imagens"
 
-#: ../src/common/image.c:2314
+#: ../src/common/image.c:2344
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "não pude acessar cópia local `%s'"
 
-#: ../src/common/image.c:2321
+#: ../src/common/image.c:2351
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "não pude escrever cópia local `%s'"
 
-#: ../src/common/image.c:2328
+#: ../src/common/image.c:2358
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "erro movendo cópia local `%s' -> `%s'"
 
-#: ../src/common/image.c:2345
+#: ../src/common/image.c:2375
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "erro movendo `%s': arquivo não encontrado"
 
-#: ../src/common/image.c:2355
+#: ../src/common/image.c:2385
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "erro movendo `%s' -> `%s': arquivo já existe"
 
-#: ../src/common/image.c:2359 ../src/common/image.c:2368
+#: ../src/common/image.c:2389 ../src/common/image.c:2398
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "erro movendo `%s' -> `%s'"
 
-#: ../src/common/image.c:2670
+#: ../src/common/image.c:2700
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "não é possível criar cópia local quando o arquivo original está inacessível."
 
-#: ../src/common/image.c:2684
+#: ../src/common/image.c:2714
 msgid "cannot create local copy."
 msgstr "não pude criar cópia local."
 
-#: ../src/common/image.c:2765 ../src/control/jobs/control_jobs.c:939
+#: ../src/common/image.c:2795 ../src/control/jobs/control_jobs.c:939
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "não é possível remover cópias local quando o arquivo original está "
 "inacessível."
 
-#: ../src/common/image.c:2941
+#: ../src/common/image.c:2971
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "cópia local %d foi sincronizada"
 msgstr[1] "cópias locais %d foram sincronizadas"
 
-#: ../src/common/image.c:3139
+#: ../src/common/image.c:3169
 msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr "<b>ALERTA</b> : amostras faltando para câmera!"
 
-#: ../src/common/image.c:3140
+#: ../src/common/image.c:3170
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://"
 "raw.pixls.us/</a>"
@@ -7337,7 +7339,7 @@ msgstr ""
 "Você precisa prover amostras em  <a href='https://raw.pixls.us/'>https://"
 "raw.pixls.us/</a>"
 
-#: ../src/common/image.c:3141
+#: ../src/common/image.c:3171
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
@@ -7346,7 +7348,7 @@ msgstr ""
 "para `%s' `%s'\n"
 "em tantos formatos/compressão/profundidade de bits quanto possível"
 
-#: ../src/common/image.c:3144
+#: ../src/common/image.c:3174
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr "ou o <b>RAW não será legível</b> na próxima versão."
 
@@ -15532,7 +15534,7 @@ msgstr "rotaciona ou distorce a perspectiva automaticamente"
 #: ../src/iop/channelmixerrgb.c:237 ../src/iop/clipping.c:356
 #: ../src/iop/colorbalance.c:160 ../src/iop/colorbalancergb.c:180
 #: ../src/iop/colorchecker.c:130 ../src/iop/colorcorrection.c:74
-#: ../src/iop/crop.c:130 ../src/iop/lut3d.c:138 ../src/iop/primaries.c:76
+#: ../src/iop/crop.c:134 ../src/iop/lut3d.c:138 ../src/iop/primaries.c:76
 #: ../src/iop/rasterfile.c:101
 msgid "corrective or creative"
 msgstr "corretivo ou criativo"
@@ -15542,8 +15544,8 @@ msgstr "corretivo ou criativo"
 #: ../src/iop/blurs.c:90 ../src/iop/blurs.c:91 ../src/iop/channelmixerrgb.c:238
 #: ../src/iop/channelmixerrgb.c:240 ../src/iop/clipping.c:357
 #: ../src/iop/clipping.c:359 ../src/iop/colorbalancergb.c:181
-#: ../src/iop/colorequal.c:214 ../src/iop/colorin.c:131 ../src/iop/crop.c:131
-#: ../src/iop/crop.c:133 ../src/iop/demosaic.c:297
+#: ../src/iop/colorequal.c:214 ../src/iop/colorin.c:131 ../src/iop/crop.c:135
+#: ../src/iop/crop.c:137 ../src/iop/demosaic.c:297
 #: ../src/iop/denoiseprofile.c:777 ../src/iop/denoiseprofile.c:779
 #: ../src/iop/diffuse.c:141 ../src/iop/diffuse.c:143
 #: ../src/iop/enlargecanvas.c:81 ../src/iop/enlargecanvas.c:83
@@ -15561,7 +15563,7 @@ msgid "linear, RGB, scene-referred"
 msgstr "linear, RGB, relativo à cena"
 
 #: ../src/iop/ashift.c:129 ../src/iop/borders.c:319 ../src/iop/clipping.c:358
-#: ../src/iop/crop.c:132 ../src/iop/flip.c:109 ../src/iop/liquify.c:296
+#: ../src/iop/crop.c:136 ../src/iop/flip.c:109 ../src/iop/liquify.c:296
 msgid "geometric, RGB"
 msgstr "geométrico, RGB"
 
@@ -16480,7 +16482,7 @@ msgstr "que dimensão usar para o cálculo do tamanho"
 msgid "size of the border in percent of the chosen basis"
 msgstr "tamanho da borda em percentagem da base escolhida"
 
-#: ../src/iop/borders.c:933 ../src/iop/clipping.c:2229 ../src/iop/crop.c:1254
+#: ../src/iop/borders.c:933 ../src/iop/clipping.c:2229 ../src/iop/crop.c:1326
 msgid "aspect"
 msgstr "proporção"
 
@@ -16520,7 +16522,7 @@ msgstr "5:3"
 msgid "US Legal 8.5x14"
 msgstr "US Legal 8.5x14"
 
-#: ../src/iop/borders.c:945 ../src/iop/clipping.c:2142 ../src/iop/crop.c:1156
+#: ../src/iop/borders.c:945 ../src/iop/clipping.c:2142 ../src/iop/crop.c:1228
 msgid "golden cut"
 msgstr "proporção áurea"
 
@@ -16556,7 +16558,7 @@ msgstr "14:11"
 msgid "5:4 (8x10)"
 msgstr "5:4 (8x10)"
 
-#: ../src/iop/borders.c:955 ../src/iop/clipping.c:2132 ../src/iop/crop.c:1145
+#: ../src/iop/borders.c:955 ../src/iop/clipping.c:2132 ../src/iop/crop.c:1217
 #: ../src/libs/filtering.c:310 ../src/libs/filters/ratio.c:124
 #: ../src/libs/histogram.c:119
 msgid "square"
@@ -17621,16 +17623,16 @@ msgstr "reenquadrar|perspectiva|distorção de perspectiva|distorção"
 msgid "change the framing and correct the perspective"
 msgstr "muda o enquadramento e corrige a perspectiva"
 
-#: ../src/iop/clipping.c:1416 ../src/iop/clipping.c:2131 ../src/iop/crop.c:516
-#: ../src/iop/crop.c:1144
+#: ../src/iop/clipping.c:1416 ../src/iop/clipping.c:2131 ../src/iop/crop.c:587
+#: ../src/iop/crop.c:1216
 msgid "original image"
 msgstr "imagem original"
 
-#: ../src/iop/clipping.c:1720 ../src/iop/crop.c:823
+#: ../src/iop/clipping.c:1720 ../src/iop/crop.c:895
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "formato da proporção inválido. deveria ser \"número:número\""
 
-#: ../src/iop/clipping.c:1736 ../src/iop/crop.c:839
+#: ../src/iop/clipping.c:1736 ../src/iop/crop.c:911
 msgid "invalid ratio format. it should be a positive number"
 msgstr "formato da proporção inválido. deveria ser um número positivo"
 
@@ -17671,51 +17673,51 @@ msgstr "distorção de perspectiva"
 msgid "set perspective correction for your image"
 msgstr "define a correção de perspectiva para sua imagem"
 
-#: ../src/iop/clipping.c:2130 ../src/iop/crop.c:1143
+#: ../src/iop/clipping.c:2130 ../src/iop/crop.c:1215
 msgid "freehand"
 msgstr "mão livre"
 
-#: ../src/iop/clipping.c:2133 ../src/iop/crop.c:1146
+#: ../src/iop/clipping.c:2133 ../src/iop/crop.c:1218
 msgid "10:8 in print"
 msgstr "10:8 em impressão"
 
-#: ../src/iop/clipping.c:2134 ../src/iop/crop.c:1147
+#: ../src/iop/clipping.c:2134 ../src/iop/crop.c:1219
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4x5, 8x10"
 
-#: ../src/iop/clipping.c:2135 ../src/iop/crop.c:1148
+#: ../src/iop/clipping.c:2135 ../src/iop/crop.c:1220
 msgid "11x14"
 msgstr "11x14"
 
-#: ../src/iop/clipping.c:2136 ../src/iop/crop.c:1150
+#: ../src/iop/clipping.c:2136 ../src/iop/crop.c:1222
 msgid "8.5x11, letter"
 msgstr "8.5x11, carta"
 
-#: ../src/iop/clipping.c:2137 ../src/iop/crop.c:1151
+#: ../src/iop/clipping.c:2137 ../src/iop/crop.c:1223
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:2138 ../src/iop/crop.c:1152
+#: ../src/iop/clipping.c:2138 ../src/iop/crop.c:1224
 msgid "5x7"
 msgstr "5x7"
 
-#: ../src/iop/clipping.c:2139 ../src/iop/crop.c:1153
+#: ../src/iop/clipping.c:2139 ../src/iop/crop.c:1225
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:2140 ../src/iop/crop.c:1154
+#: ../src/iop/clipping.c:2140 ../src/iop/crop.c:1226
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4x6, 35mm"
 
-#: ../src/iop/clipping.c:2141 ../src/iop/crop.c:1155
+#: ../src/iop/clipping.c:2141 ../src/iop/crop.c:1227
 msgid "16:10, 8x5"
 msgstr "16:10, 8x5"
 
-#: ../src/iop/clipping.c:2143 ../src/iop/crop.c:1157
+#: ../src/iop/clipping.c:2143 ../src/iop/crop.c:1229
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:2144 ../src/iop/crop.c:1158
+#: ../src/iop/clipping.c:2144 ../src/iop/crop.c:1230
 msgid "widescreen"
 msgstr "widescreen"
 
@@ -17727,25 +17729,25 @@ msgstr "2:1, univisium"
 msgid "cinemascope"
 msgstr "cinemascópio"
 
-#: ../src/iop/clipping.c:2147 ../src/iop/crop.c:1161
+#: ../src/iop/clipping.c:2147 ../src/iop/crop.c:1233
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:2148 ../src/iop/crop.c:1162
+#: ../src/iop/clipping.c:2148 ../src/iop/crop.c:1234
 msgid "anamorphic"
 msgstr "anamórfico"
 
-#: ../src/iop/clipping.c:2149 ../src/iop/crop.c:1164
+#: ../src/iop/clipping.c:2149 ../src/iop/crop.c:1236
 msgid "3:1, panorama"
 msgstr "3:1, panorâmica"
 
-#: ../src/iop/clipping.c:2181 ../src/iop/clipping.c:2193 ../src/iop/crop.c:1200
-#: ../src/iop/crop.c:1217
+#: ../src/iop/clipping.c:2181 ../src/iop/clipping.c:2193 ../src/iop/crop.c:1272
+#: ../src/iop/crop.c:1289
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr "formato da proporção inválido para `%s'. deveria ser \"número:número\""
 
-#: ../src/iop/clipping.c:2240 ../src/iop/crop.c:1268
+#: ../src/iop/clipping.c:2240 ../src/iop/crop.c:1340
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square\n"
@@ -17757,23 +17759,23 @@ msgstr ""
 "para entrar uma proporção personalizada, abra o o menu\n"
 "suspenso e digite a proporção como x:y ou em formato decimal"
 
-#: ../src/iop/clipping.c:2247 ../src/iop/crop.c:1279
+#: ../src/iop/clipping.c:2247 ../src/iop/crop.c:1351
 msgid "margins"
 msgstr "margens"
 
-#: ../src/iop/clipping.c:2252 ../src/iop/crop.c:1289
+#: ../src/iop/clipping.c:2252 ../src/iop/crop.c:1361
 msgid "the left margin cannot overlap with the right margin"
 msgstr "a margem esquerda não pode sobrepor a margem direita"
 
-#: ../src/iop/clipping.c:2259 ../src/iop/crop.c:1297
+#: ../src/iop/clipping.c:2259 ../src/iop/crop.c:1369
 msgid "the right margin cannot overlap with the left margin"
 msgstr "a margem direita não pode sobrepor a margem esquerda"
 
-#: ../src/iop/clipping.c:2264 ../src/iop/crop.c:1303
+#: ../src/iop/clipping.c:2264 ../src/iop/crop.c:1375
 msgid "the top margin cannot overlap with the bottom margin"
 msgstr "a margem superior não pode sobrepor a margem inferior"
 
-#: ../src/iop/clipping.c:2271 ../src/iop/crop.c:1311
+#: ../src/iop/clipping.c:2271 ../src/iop/crop.c:1383
 msgid "the bottom margin cannot overlap with the top margin"
 msgstr "a margem inferior não pode sobrepor a margem superior"
 
@@ -17816,12 +17818,12 @@ msgstr ""
 "horizontalmente</b>: ctrl+arrastar\n"
 "<b>endireitar</b>: arrastar com botão direito, <b>finalizar</b>: clique-duplo"
 
-#: ../src/iop/clipping.c:3336 ../src/iop/crop.c:1799
+#: ../src/iop/clipping.c:3336 ../src/iop/crop.c:1881
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[%s em bordas] cortar"
 
-#: ../src/iop/clipping.c:3338 ../src/iop/crop.c:1801
+#: ../src/iop/clipping.c:3338 ../src/iop/crop.c:1883
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[%s em bordas] cortar mantendo aspecto"
@@ -18952,7 +18954,7 @@ msgstr "recupera realces recortados propagando cores vizinhas"
 #: ../src/iop/colorreconstruction.c:632 ../src/iop/colorreconstruction.c:1038
 #: ../src/iop/globaltonemap.c:217 ../src/iop/globaltonemap.c:372
 #: ../src/iop/hazeremoval.c:631 ../src/iop/hazeremoval.c:643
-#: ../src/iop/hazeremoval.c:898 ../src/iop/hazeremoval.c:912
+#: ../src/iop/hazeremoval.c:900 ../src/iop/hazeremoval.c:914
 #: ../src/iop/levels.c:354
 msgid "inconsistent output"
 msgstr "saída inconsistente"
@@ -19125,40 +19127,40 @@ msgstr ""
 "- monotônica é melhor para acurácia de funções puramente analíticas (log, "
 "gama, exp)"
 
-#: ../src/iop/crop.c:118
+#: ../src/iop/crop.c:122
 msgid "crop"
 msgstr "cortar"
 
-#: ../src/iop/crop.c:123
+#: ../src/iop/crop.c:127
 msgid "reframe|distortion"
 msgstr "reenquadramento|distorção"
 
-#: ../src/iop/crop.c:129
+#: ../src/iop/crop.c:133
 msgid "change the framing"
 msgstr "muda o enquadramento"
 
-#: ../src/iop/crop.c:1149
+#: ../src/iop/crop.c:1221
 msgid "45x35, portrait"
 msgstr "45x35, retrato"
 
-#: ../src/iop/crop.c:1159
+#: ../src/iop/crop.c:1231
 msgid "2:1, Univisium"
 msgstr "2:1, Univisium"
 
-#: ../src/iop/crop.c:1160
+#: ../src/iop/crop.c:1232
 msgid "CinemaScope"
 msgstr "CinemaScope"
 
-#: ../src/iop/crop.c:1163
+#: ../src/iop/crop.c:1235
 msgid "65:24, XPan"
 msgstr "65:24, XPan"
 
-#: ../src/iop/crop.c:1682
+#: ../src/iop/crop.c:1764
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
 "<b>mudar tamanho</b>: arrastar, <b>manter proporção</b>: shift+arrastar"
 
-#: ../src/iop/crop.c:1689
+#: ../src/iop/crop.c:1771
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag"
@@ -20992,6 +20994,10 @@ msgstr "distância"
 msgid "limit haze removal up to a specific spatial depth"
 msgstr "limita remoção de névoa a uma profundidade espacial específica"
 
+#: ../src/iop/hazeremoval.c:661 ../src/iop/hazeremoval.c:932
+msgid "haze removal could not calculate ambient light due to image content"
+msgstr "o módilo de remoção de névoa não conseguiu calcular a lluz ambiente devido a conteúdo da imagem"
+
 #: ../src/iop/highlights.c:170
 msgid "highlight reconstruction"
 msgstr "reconstrução de realce"
@@ -22489,7 +22495,8 @@ msgid ""
 "CAUTION: path must be set in preferences/processing before choosing"
 msgstr ""
 "selecione um arquivo PFM para ser usado como máscara de pixels,\n"
-"ATENÇÃO: o caminho deve ser configurado em preferências/processamento antes de escolher o arquivo"
+"ATENÇÃO: o caminho deve ser configurado em preferências/processamento antes "
+"de escolher o arquivo"
 
 #: ../src/iop/rasterfile.c:597
 msgid "the mask file path is saved with the image history"
