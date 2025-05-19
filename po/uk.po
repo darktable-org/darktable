@@ -3,13 +3,12 @@
 # Nazarii Vitak <nazarii.vitak@gmail.com>, 2013-2016.
 # Victor Forsiuk <vvforce@gmail.com>, 2021-2025.
 #
-#: ../src/common/darktable.c:1853
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-05-12 08:16+0200\n"
-"PO-Revision-Date: 2025-05-12 10:58+0300\n"
+"POT-Creation-Date: 2025-05-18 22:43+0200\n"
+"PO-Revision-Date: 2025-05-19 00:03+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -2740,7 +2739,7 @@ msgstr "Регулювання співвідношення сторін"
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:172
 #: ../build/lib/darktable/plugins/introspection_ashift.c:307
-#: ../src/iop/lens.cc:4434
+#: ../src/iop/lens.cc:4430
 msgid "lens model"
 msgstr "Модель об'єктива"
 
@@ -2814,8 +2813,8 @@ msgstr "Метод збереження кольорів"
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
 #: ../src/dtgtk/stylemenu.c:69 ../src/gui/guides.c:843
 #: ../src/iop/basecurve.c:2135 ../src/iop/channelmixerrgb.c:4670
-#: ../src/iop/clipping.c:1921 ../src/iop/clipping.c:2103
-#: ../src/iop/clipping.c:2118 ../src/iop/retouch.c:498
+#: ../src/iop/clipping.c:1922 ../src/iop/clipping.c:2104
+#: ../src/iop/clipping.c:2119 ../src/iop/retouch.c:498
 #: ../src/libs/collect.c:2159 ../src/libs/colorpicker.c:51
 #: ../src/libs/export.c:1147 ../src/libs/filters/module_order.c:158
 #: ../src/libs/histogram.c:110 ../src/libs/live_view.c:311
@@ -2948,7 +2947,7 @@ msgstr "Лінійність"
 #: ../build/lib/darktable/plugins/introspection_overlay.c:252
 #: ../build/lib/darktable/plugins/introspection_watermark.c:136
 #: ../build/lib/darktable/plugins/introspection_watermark.c:265
-#: ../src/iop/ashift.c:5968 ../src/libs/masks.c:110
+#: ../src/iop/ashift.c:5967 ../src/libs/masks.c:110
 msgid "rotation"
 msgstr "Обертання"
 
@@ -3051,7 +3050,7 @@ msgstr "Базис"
 #: ../build/lib/darktable/plugins/introspection_borders.c:349
 #: ../build/lib/darktable/plugins/introspection_borders.c:355
 #: ../src/gui/preferences.c:996 ../src/imageio/format/jpeg.c:597
-#: ../src/iop/ashift.c:6144 ../src/iop/basicadj.c:658 ../src/iop/flip.c:455
+#: ../src/iop/ashift.c:6143 ../src/iop/basicadj.c:658 ../src/iop/flip.c:455
 #: ../src/iop/levels.c:650 ../src/iop/rgblevels.c:1080
 msgid "auto"
 msgstr "Авто"
@@ -4726,7 +4725,7 @@ msgstr "Режим"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:238
 #: ../build/lib/darktable/plugins/introspection_lens.cc:433
-#: ../src/iop/lens.cc:4471
+#: ../src/iop/lens.cc:4467
 msgid "target geometry"
 msgstr "Цільова геометрія"
 
@@ -6692,23 +6691,23 @@ msgstr "Завантаження режимів"
 msgid "initializing Lua"
 msgstr "Ініціалізація Lua"
 
-#: ../src/common/darktable.c:1879
+#: ../src/common/darktable.c:1877
 msgid "importing image"
 msgstr "Імпорт зображення"
 
-#: ../src/common/darktable.c:1899
+#: ../src/common/darktable.c:1897
 msgid "configuration information"
 msgstr "Інформація щодо налаштування"
 
-#: ../src/common/darktable.c:1901
+#: ../src/common/darktable.c:1899
 msgid "_show this message again"
 msgstr "_Показати це наступного разу"
 
-#: ../src/common/darktable.c:1901
+#: ../src/common/darktable.c:1899
 msgid "_dismiss"
 msgstr "_Більше не показувати"
 
-#: ../src/common/darktable.c:2409
+#: ../src/common/darktable.c:2407
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
@@ -6716,13 +6715,13 @@ msgstr ""
 "Метод демозаїкізації RCD було встановлено за замовчуванням замість PPG через "
 "кращу якість та продуктивність."
 
-#: ../src/common/darktable.c:2411
+#: ../src/common/darktable.c:2409
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
 "Щодо демозаїкізації масштабованих зображень в режимі темної кімнати "
 "перегляньте відповідний параметр в \"Налаштування > Темна кімната\""
 
-#: ../src/common/darktable.c:2417
+#: ../src/common/darktable.c:2415
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
@@ -6730,7 +6729,7 @@ msgstr ""
 "Інтерфейс користувача та базові внутрішні елементи для налаштування "
 "продуктивності Darktable змінилися."
 
-#: ../src/common/darktable.c:2419
+#: ../src/common/darktable.c:2417
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
@@ -6738,15 +6737,15 @@ msgstr ""
 "Ви більше не знайдете старих параметрів, замість цього \"в Налаштування > "
 "Обробка\" використовуйте:"
 
-#: ../src/common/darktable.c:2421
+#: ../src/common/darktable.c:2419
 msgid "1) darktable resources"
 msgstr "1) рівень ресурсів для Darktable"
 
-#: ../src/common/darktable.c:2423
+#: ../src/common/darktable.c:2421
 msgid "2) tune OpenCL performance"
 msgstr "2) налаштування продуктивності OpenCL"
 
-#: ../src/common/darktable.c:2430
+#: ../src/common/darktable.c:2428
 msgid ""
 "some global config parameters relevant for OpenCL performance are not used "
 "any longer."
@@ -6754,7 +6753,7 @@ msgstr ""
 "Деякі глобальні параметри конфігурації, що мають відношення до "
 "продуктивності OpenCL, більше не використовуються."
 
-#: ../src/common/darktable.c:2432
+#: ../src/common/darktable.c:2430
 msgid ""
 "instead you will find 'per device' data in 'cldevice_v5_canonical-name'. "
 "content is:"
@@ -6762,8 +6761,8 @@ msgstr ""
 "Замість цього ви знайдете окремі дані для пристроїв у 'cldevice_v5_canonical-"
 "name'. Зміст:"
 
-#: ../src/common/darktable.c:2434 ../src/common/darktable.c:2453
-#: ../src/common/darktable.c:2468
+#: ../src/common/darktable.c:2432 ../src/common/darktable.c:2451
+#: ../src/common/darktable.c:2466
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
@@ -6771,18 +6770,18 @@ msgstr ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic' 'advantage' 'unified'"
 
-#: ../src/common/darktable.c:2436 ../src/common/darktable.c:2455
+#: ../src/common/darktable.c:2434 ../src/common/darktable.c:2453
 msgid "you may tune as before except 'magic'"
 msgstr "Ви можете регулювати ці параметри, як і раніше, за винятком 'magic'"
 
-#: ../src/common/darktable.c:2442
+#: ../src/common/darktable.c:2440
 msgid ""
 "your OpenCL compiler settings for all devices have been reset to default."
 msgstr ""
 "Налаштування компілятора OpenCL для всіх пристроїв були скинуті до значень "
 "за замовчуванням."
 
-#: ../src/common/darktable.c:2449
+#: ../src/common/darktable.c:2447
 msgid ""
 "OpenCL global config parameters 'per device' data has been recreated with an "
 "updated name."
@@ -6790,13 +6789,13 @@ msgstr ""
 "Дані параметрів глобальної конфігурації OpenCL 'для окремих пристроїв' було "
 "відтворено з оновленою назвою."
 
-#: ../src/common/darktable.c:2451 ../src/common/darktable.c:2466
+#: ../src/common/darktable.c:2449 ../src/common/darktable.c:2464
 msgid ""
 "you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"
 msgstr ""
 "Ви знайдете окремі дані для пристроїв у 'cldevice_v5_canonical-name'. Зміст:"
 
-#: ../src/common/darktable.c:2457
+#: ../src/common/darktable.c:2455
 msgid ""
 "If you're using device names in 'opencl_device_priority' you should update "
 "them to the new names."
@@ -6804,7 +6803,7 @@ msgstr ""
 "Якщо ви використовуєте імена пристроїв у 'opencl_device_priority', вам слід "
 "оновити їх до нових імен."
 
-#: ../src/common/darktable.c:2464
+#: ../src/common/darktable.c:2462
 msgid ""
 "OpenCL 'per device' config data have been automatically extended by 'unified-"
 "fraction'."
@@ -6812,7 +6811,7 @@ msgstr ""
 "Конфігураційні дані OpenCL для окремих пристроїв автоматично розширено "
 "додаванням 'unified-fraction'."
 
-#: ../src/common/darktable.c:2475
+#: ../src/common/darktable.c:2473
 msgid ""
 "OpenCL 'per device' compiler settings might have been updated.\n"
 "\n"
@@ -6821,7 +6820,7 @@ msgstr ""
 "оновлені.\n"
 "\n"
 
-#: ../src/common/darktable.c:2480
+#: ../src/common/darktable.c:2478
 msgid ""
 "OpenCL mandatory timeout has been updated to 1000.\n"
 "\n"
@@ -7287,49 +7286,49 @@ msgstr[0] "Дату/час повторно застосовано для %d з�
 msgstr[1] "Дату/час повторно застосовано для %d зображень"
 msgstr[2] "Дату/час повторно застосовано для %d зображень"
 
-#: ../src/common/image.c:2314
+#: ../src/common/image.c:2332
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "Не вдається отримати доступ до локальної копії `%s'"
 
-#: ../src/common/image.c:2321
+#: ../src/common/image.c:2339
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "Не вдається записати локальну копію `%s'"
 
-#: ../src/common/image.c:2328
+#: ../src/common/image.c:2346
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "Помилка переміщення локальної копії `%s' -> `%s'"
 
-#: ../src/common/image.c:2345
+#: ../src/common/image.c:2363
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "Помилка переміщення `%s': файл не знайдено"
 
-#: ../src/common/image.c:2355
+#: ../src/common/image.c:2373
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "Помилка переміщення `%s' -> `%s': файл існує"
 
-#: ../src/common/image.c:2359 ../src/common/image.c:2368
+#: ../src/common/image.c:2377 ../src/common/image.c:2386
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "Помилка переміщення `%s' -> `%s'"
 
-#: ../src/common/image.c:2670
+#: ../src/common/image.c:2688
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "Неможливо створити локальну копію, коли оригінал недоступний."
 
-#: ../src/common/image.c:2684
+#: ../src/common/image.c:2702
 msgid "cannot create local copy."
 msgstr "Неможливо створити локальну копію."
 
-#: ../src/common/image.c:2765 ../src/control/jobs/control_jobs.c:939
+#: ../src/common/image.c:2783 ../src/control/jobs/control_jobs.c:939
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "Неможливо видалити локальну копію, коли оригінал недоступний."
 
-#: ../src/common/image.c:2941
+#: ../src/common/image.c:2959
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -7337,11 +7336,11 @@ msgstr[0] "%d локальну копію синхронізовано"
 msgstr[1] "%d локальні копії синхронізовано"
 msgstr[2] "%d локальних копій синхронізовано"
 
-#: ../src/common/image.c:3139
+#: ../src/common/image.c:3157
 msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr "<b>ПОПЕРЕДЖЕННЯ</b>: відсутні зразки зображень із цієї моделі камери!"
 
-#: ../src/common/image.c:3140
+#: ../src/common/image.c:3158
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://"
 "raw.pixls.us/</a>"
@@ -7349,7 +7348,7 @@ msgstr ""
 "Вам слід надати такі зразки, завантаживши їх на сайт <a href='https://"
 "raw.pixls.us/'>https://raw.pixls.us/</a>"
 
-#: ../src/common/image.c:3141
+#: ../src/common/image.c:3159
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
@@ -7358,7 +7357,7 @@ msgstr ""
 "для `%s' `%s'\n"
 "у якомога більшій кількості форматів/варіантів стиснення/глибин кольору"
 
-#: ../src/common/image.c:3144
+#: ../src/common/image.c:3162
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr ""
 "інакше <b>RAW з цієї камери не буде читатися</b> у наступній версії "
@@ -7581,7 +7580,7 @@ msgstr ""
 msgid "building OpenCL program %s for %s"
 msgstr "Компіляція програми OpenCL %s для %s"
 
-#: ../src/common/pdf.h:88 ../src/iop/lens.cc:4067
+#: ../src/common/pdf.h:88 ../src/iop/lens.cc:4063
 #: ../src/libs/filters/focal.c:74 ../src/libs/print_settings.c:84
 msgid "mm"
 msgstr "мм"
@@ -10447,8 +10446,8 @@ msgid "grouped images"
 msgstr "Згруповані зображення"
 
 #: ../src/dtgtk/thumbnail.c:859 ../src/dtgtk/thumbnail.c:1654
-#: ../src/iop/ashift.c:6046 ../src/iop/ashift.c:6133 ../src/iop/ashift.c:6135
-#: ../src/iop/ashift.c:6137 ../src/libs/navigation.c:110
+#: ../src/iop/ashift.c:6045 ../src/iop/ashift.c:6132 ../src/iop/ashift.c:6134
+#: ../src/iop/ashift.c:6136 ../src/libs/navigation.c:110
 #: ../src/libs/navigation.c:188
 msgid "fit"
 msgstr "Підгонка"
@@ -12685,7 +12684,7 @@ msgstr "Вибрати каталог сценаріїв"
 #. a label that contains the name of the script
 #. a horizontal box that contains the button and the label
 #: ../src/external/lua-scripts/tools/script_manager.lua:1461
-#: ../src/iop/channelmixerrgb.c:4422 ../src/iop/clipping.c:2097
+#: ../src/iop/channelmixerrgb.c:4422 ../src/iop/clipping.c:2098
 #: ../src/iop/colorbalancergb.c:1780 ../src/iop/colorequal.c:3006
 #: ../src/iop/filmicrgb.c:4378 ../src/iop/negadoctor.c:837
 #: ../src/iop/toneequal.c:3298 ../src/libs/image.c:497
@@ -12847,18 +12846,18 @@ msgstr "Прокрутка"
 msgid "pan"
 msgstr "Панорамування"
 
-#: ../src/gui/accelerators.c:93 ../src/iop/ashift.c:5709
-#: ../src/iop/ashift.c:5711 ../src/iop/ashift.c:5815 ../src/iop/ashift.c:5817
-#: ../src/iop/ashift.c:6136 ../src/iop/clipping.c:1923
-#: ../src/iop/clipping.c:2104 ../src/iop/clipping.c:2120
+#: ../src/gui/accelerators.c:93 ../src/iop/ashift.c:5708
+#: ../src/iop/ashift.c:5710 ../src/iop/ashift.c:5814 ../src/iop/ashift.c:5816
+#: ../src/iop/ashift.c:6135 ../src/iop/clipping.c:1924
+#: ../src/iop/clipping.c:2105 ../src/iop/clipping.c:2121
 #: ../src/views/darkroom.c:2893 ../src/views/lighttable.c:1321
 msgid "horizontal"
 msgstr "Горизонтально"
 
-#: ../src/gui/accelerators.c:94 ../src/iop/ashift.c:5709
-#: ../src/iop/ashift.c:5711 ../src/iop/ashift.c:5815 ../src/iop/ashift.c:5817
-#: ../src/iop/ashift.c:6134 ../src/iop/clipping.c:1922
-#: ../src/iop/clipping.c:2105 ../src/iop/clipping.c:2119
+#: ../src/gui/accelerators.c:94 ../src/iop/ashift.c:5708
+#: ../src/iop/ashift.c:5710 ../src/iop/ashift.c:5814 ../src/iop/ashift.c:5816
+#: ../src/iop/ashift.c:6133 ../src/iop/clipping.c:1923
+#: ../src/iop/clipping.c:2106 ../src/iop/clipping.c:2120
 #: ../src/views/darkroom.c:2897 ../src/views/lighttable.c:1325
 msgid "vertical"
 msgstr "Вертикально"
@@ -14002,7 +14001,7 @@ msgstr "Глобальні налаштування накладання нап�
 msgid "guide lines"
 msgstr "Напрямні"
 
-#: ../src/gui/guides.c:841 ../src/iop/clipping.c:2102
+#: ../src/gui/guides.c:841 ../src/iop/clipping.c:2103
 msgid "flip"
 msgstr "Віддзеркалити"
 
@@ -14018,7 +14017,7 @@ msgstr "Горизонтально"
 msgid "vertically"
 msgstr "Вертикально"
 
-#: ../src/gui/guides.c:846 ../src/iop/ashift.c:6138 ../src/iop/clipping.c:2106
+#: ../src/gui/guides.c:846 ../src/iop/ashift.c:6137 ../src/iop/clipping.c:2107
 #: ../src/iop/colorbalance.c:1861
 msgid "both"
 msgstr "Обидва"
@@ -15597,7 +15596,7 @@ msgstr "Повернути або спотворити перспективу"
 #: ../src/iop/channelmixerrgb.c:237 ../src/iop/clipping.c:356
 #: ../src/iop/colorbalance.c:160 ../src/iop/colorbalancergb.c:180
 #: ../src/iop/colorchecker.c:130 ../src/iop/colorcorrection.c:74
-#: ../src/iop/crop.c:130 ../src/iop/lut3d.c:138 ../src/iop/primaries.c:76
+#: ../src/iop/crop.c:134 ../src/iop/lut3d.c:138 ../src/iop/primaries.c:76
 #: ../src/iop/rasterfile.c:101
 msgid "corrective or creative"
 msgstr "коригуюче чи креативне"
@@ -15607,8 +15606,8 @@ msgstr "коригуюче чи креативне"
 #: ../src/iop/blurs.c:90 ../src/iop/blurs.c:91 ../src/iop/channelmixerrgb.c:238
 #: ../src/iop/channelmixerrgb.c:240 ../src/iop/clipping.c:357
 #: ../src/iop/clipping.c:359 ../src/iop/colorbalancergb.c:181
-#: ../src/iop/colorequal.c:214 ../src/iop/colorin.c:131 ../src/iop/crop.c:131
-#: ../src/iop/crop.c:133 ../src/iop/demosaic.c:297
+#: ../src/iop/colorequal.c:214 ../src/iop/colorin.c:131 ../src/iop/crop.c:135
+#: ../src/iop/crop.c:137 ../src/iop/demosaic.c:297
 #: ../src/iop/denoiseprofile.c:777 ../src/iop/denoiseprofile.c:779
 #: ../src/iop/diffuse.c:141 ../src/iop/diffuse.c:143
 #: ../src/iop/enlargecanvas.c:81 ../src/iop/enlargecanvas.c:83
@@ -15626,11 +15625,11 @@ msgid "linear, RGB, scene-referred"
 msgstr "лінійний простір, RGB, на основі сцен"
 
 #: ../src/iop/ashift.c:129 ../src/iop/borders.c:319 ../src/iop/clipping.c:358
-#: ../src/iop/crop.c:132 ../src/iop/flip.c:109 ../src/iop/liquify.c:296
+#: ../src/iop/crop.c:136 ../src/iop/flip.c:109 ../src/iop/liquify.c:296
 msgid "geometric, RGB"
 msgstr "геометрична, RGB"
 
-#: ../src/iop/ashift.c:1206 ../src/iop/clipping.c:912
+#: ../src/iop/ashift.c:1205 ../src/iop/clipping.c:913
 #, c-format
 msgid ""
 "module '%s' has insane data so it is bypassed for now. you should disable it "
@@ -15639,23 +15638,23 @@ msgstr ""
 "Модуль '%s' містить абсурдні дані, тому його дію поки що вимкнено. Вам слід "
 "вимкнути його або змінити параметри\n"
 
-#: ../src/iop/ashift.c:2808
+#: ../src/iop/ashift.c:2807
 msgid "automatic cropping failed"
 msgstr "Не вдалося автоматично обрізати"
 
-#: ../src/iop/ashift.c:3217 ../src/iop/ashift.c:3269 ../src/iop/ashift.c:3316
+#: ../src/iop/ashift.c:3216 ../src/iop/ashift.c:3268 ../src/iop/ashift.c:3315
 msgid "data pending - please repeat"
 msgstr "В очікуванні даних - будь ласка, повторіть"
 
-#: ../src/iop/ashift.c:3226
+#: ../src/iop/ashift.c:3225
 msgid "could not detect structural data in image"
 msgstr "Не вдалося виявити структурні дані на зображенні"
 
-#: ../src/iop/ashift.c:3238
+#: ../src/iop/ashift.c:3237
 msgid "could not run outlier removal"
 msgstr "Не вдалося виконати видалення структури"
 
-#: ../src/iop/ashift.c:3415
+#: ../src/iop/ashift.c:3414
 #, c-format
 msgid ""
 "not enough structure for automatic correction\n"
@@ -15664,41 +15663,41 @@ msgstr ""
 "Недостатньо структури для автоматичної корекції\n"
 "Мінімально необхідна кількість ліній у кожному відповідному напрямку: %d"
 
-#: ../src/iop/ashift.c:3421
+#: ../src/iop/ashift.c:3420
 msgid "automatic correction failed, please correct manually"
 msgstr "Не вдалося виконати автоматичне виправлення. виправте вручну"
 
-#: ../src/iop/ashift.c:4997
+#: ../src/iop/ashift.c:4996
 #, c-format
 msgid "only %d lines can be saved in parameters"
 msgstr "Максимальна кількість ліній, яку можна зберегти в параметрах: %d"
 
-#: ../src/iop/ashift.c:5076
+#: ../src/iop/ashift.c:5075
 #, c-format
 msgid "rotation adjusted by %3.2f° to %3.2f°"
 msgstr "Обертання скориговано на %3.2f° до %3.2f°"
 
-#: ../src/iop/ashift.c:5709 ../src/iop/ashift.c:5711 ../src/iop/ashift.c:5815
-#: ../src/iop/ashift.c:5817
+#: ../src/iop/ashift.c:5708 ../src/iop/ashift.c:5710 ../src/iop/ashift.c:5814
+#: ../src/iop/ashift.c:5816
 #, c-format
 msgid "lens shift (%s)"
 msgstr "Зміщення об'єктива (%s)"
 
-#: ../src/iop/ashift.c:5981
+#: ../src/iop/ashift.c:5980
 msgid "manual perspective"
 msgstr "Ручна підгонка"
 
-#: ../src/iop/ashift.c:6026
+#: ../src/iop/ashift.c:6025
 msgctxt "section"
 msgid "perspective"
 msgstr "Перспектива"
 
-#: ../src/iop/ashift.c:6032 ../src/iop/ashift.c:6139 ../src/iop/ashift.c:6141
-#: ../src/iop/ashift.c:6143
+#: ../src/iop/ashift.c:6031 ../src/iop/ashift.c:6138 ../src/iop/ashift.c:6140
+#: ../src/iop/ashift.c:6142
 msgid "structure"
 msgstr "Структура"
 
-#: ../src/iop/ashift.c:6065
+#: ../src/iop/ashift.c:6064
 msgid ""
 "rotate image\n"
 "right-click and drag to define a horizontal or vertical line by drawing on "
@@ -15708,19 +15707,19 @@ msgstr ""
 "Клікніть правою кнопкою миші та перетягніть, щоб визначити горизонтальну або "
 "вертикальну лінію шляхом малювання на зображенні"
 
-#: ../src/iop/ashift.c:6068 ../src/iop/ashift.c:6070
+#: ../src/iop/ashift.c:6067 ../src/iop/ashift.c:6069
 msgid "apply lens shift correction in one direction"
 msgstr "Застосувати корекцію зміщення об'єктива в одному напрямку"
 
-#: ../src/iop/ashift.c:6072
+#: ../src/iop/ashift.c:6071
 msgid "shear the image along one diagonal"
 msgstr "Корекція зображення вздовж однієї з діагоналей"
 
-#: ../src/iop/ashift.c:6073 ../src/iop/clipping.c:2127
+#: ../src/iop/ashift.c:6072 ../src/iop/clipping.c:2128
 msgid "automatically crop to avoid black edges"
 msgstr "Автоматично обрізати, щоб уникнути чорних країв"
 
-#: ../src/iop/ashift.c:6074
+#: ../src/iop/ashift.c:6073
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
@@ -15728,13 +15727,13 @@ msgstr ""
 "Модель об'єктива для корекції перспективи: загальна або залежна від фокусної "
 "відстані"
 
-#: ../src/iop/ashift.c:6077
+#: ../src/iop/ashift.c:6076
 msgid "focal length of the lens, default value set from EXIF data if available"
 msgstr ""
 "Фокусна відстань об'єктива, значення за замовчуванням установлюється з даних "
 "EXIF, якщо є"
 
-#: ../src/iop/ashift.c:6080
+#: ../src/iop/ashift.c:6079
 msgid ""
 "crop factor of the camera sensor, default value set from EXIF data if "
 "available, manual setting is often required"
@@ -15742,7 +15741,7 @@ msgstr ""
 "Кроп-фактор сенсора камери, значення за замовчуванням установлюється з даних "
 "EXIF, якщо є. Часто потрібне ручне встановлення"
 
-#: ../src/iop/ashift.c:6084
+#: ../src/iop/ashift.c:6083
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
@@ -15750,13 +15749,13 @@ msgstr ""
 "Рівень залежності корекції від об'єктива, встановлюйте на максимум для "
 "повної залежності від об'єктива, встановлюйте на нуль для загального випадку"
 
-#: ../src/iop/ashift.c:6088
+#: ../src/iop/ashift.c:6087
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
 "Регулювати співвідношення сторін зображення за допомогою горизонтального та "
 "вертикального масштабування"
 
-#: ../src/iop/ashift.c:6090
+#: ../src/iop/ashift.c:6089
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -15766,7 +15765,7 @@ msgstr ""
 "Ctrl+клік - лише обертання\n"
 "Shift+клік - лише зміщення об'єктива"
 
-#: ../src/iop/ashift.c:6094
+#: ../src/iop/ashift.c:6093
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -15776,7 +15775,7 @@ msgstr ""
 "Ctrl+клік - лише обертання\n"
 "Shift+клік - лише зміщення об'єктива"
 
-#: ../src/iop/ashift.c:6098
+#: ../src/iop/ashift.c:6097
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions, "
 "fitting rotation, lens shift in both directions, and shear\n"
@@ -15790,7 +15789,7 @@ msgstr ""
 "Shift+клік - лише зміщення об'єктива\n"
 "Ctrl+Shift+клік - лише обертання та зміщення об'єктива"
 
-#: ../src/iop/ashift.c:6105
+#: ../src/iop/ashift.c:6104
 msgid ""
 "automatically analyse line structure in image\n"
 "ctrl+click for an additional edge enhancement\n"
@@ -15802,43 +15801,43 @@ msgstr ""
 "Shift+клік для додаткового покращення деталей\n"
 "Ctrl+Shift+клік для поєднання обох методів"
 
-#: ../src/iop/ashift.c:6110
+#: ../src/iop/ashift.c:6109
 msgid "manually define perspective rectangle"
 msgstr "Вручну визначити прямокутник перспективи"
 
-#: ../src/iop/ashift.c:6111
+#: ../src/iop/ashift.c:6110
 msgid "manually draw structure lines"
 msgstr "Вручну намалювати лінії структури"
 
-#: ../src/iop/ashift.c:6140
+#: ../src/iop/ashift.c:6139
 msgid "rectangle"
 msgstr "Прямокутник"
 
-#: ../src/iop/ashift.c:6142
+#: ../src/iop/ashift.c:6141
 msgid "lines"
 msgstr "Лінії"
 
-#: ../src/iop/ashift.c:6168 ../src/iop/clipping.c:3338
+#: ../src/iop/ashift.c:6167 ../src/iop/clipping.c:3339
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] визначити/повернути горизонт"
 
-#: ../src/iop/ashift.c:6171
+#: ../src/iop/ashift.c:6170
 #, c-format
 msgid "[%s on segment] select segment"
 msgstr "[%s на сегменті] вибрати сегмент"
 
-#: ../src/iop/ashift.c:6175
+#: ../src/iop/ashift.c:6174
 #, c-format
 msgid "[%s on segment] unselect segment"
 msgstr "[%s на сегменті] скасувати вибір сегмента"
 
-#: ../src/iop/ashift.c:6179
+#: ../src/iop/ashift.c:6178
 #, c-format
 msgid "[%s] select all segments from zone"
 msgstr "[%s] вибрати усі сегменти із зони"
 
-#: ../src/iop/ashift.c:6183
+#: ../src/iop/ashift.c:6182
 #, c-format
 msgid "[%s] unselect all segments from zone"
 msgstr "[%s] скасувати вибір усіх сегментів із зони"
@@ -16551,7 +16550,7 @@ msgstr "Який вимір використовувати для обчисле
 msgid "size of the border in percent of the chosen basis"
 msgstr "Розмір облямівки в процентах від вибраного базису"
 
-#: ../src/iop/borders.c:933 ../src/iop/clipping.c:2228 ../src/iop/crop.c:1254
+#: ../src/iop/borders.c:933 ../src/iop/clipping.c:2229 ../src/iop/crop.c:1326
 msgid "aspect"
 msgstr "Вибір співвідношення"
 
@@ -16592,7 +16591,7 @@ msgstr "5:3"
 msgid "US Legal 8.5x14"
 msgstr "US Legal 8.5x14"
 
-#: ../src/iop/borders.c:945 ../src/iop/clipping.c:2141 ../src/iop/crop.c:1156
+#: ../src/iop/borders.c:945 ../src/iop/clipping.c:2142 ../src/iop/crop.c:1228
 msgid "golden cut"
 msgstr "Золотий перетин"
 
@@ -16628,7 +16627,7 @@ msgstr "14:11"
 msgid "5:4 (8x10)"
 msgstr "5:4 (8x10)"
 
-#: ../src/iop/borders.c:955 ../src/iop/clipping.c:2131 ../src/iop/crop.c:1145
+#: ../src/iop/borders.c:955 ../src/iop/clipping.c:2132 ../src/iop/crop.c:1217
 #: ../src/libs/filtering.c:310 ../src/libs/filters/ratio.c:124
 #: ../src/libs/histogram.c:119
 msgid "square"
@@ -17700,132 +17699,132 @@ msgstr "reframe|perspective|keystone|distortion"
 msgid "change the framing and correct the perspective"
 msgstr "Змінити кадрування та виправити перспективу"
 
-#: ../src/iop/clipping.c:1415 ../src/iop/clipping.c:2130 ../src/iop/crop.c:516
-#: ../src/iop/crop.c:1144
+#: ../src/iop/clipping.c:1416 ../src/iop/clipping.c:2131 ../src/iop/crop.c:587
+#: ../src/iop/crop.c:1216
 msgid "original image"
 msgstr "Як в оригіналі"
 
-#: ../src/iop/clipping.c:1719 ../src/iop/crop.c:823
+#: ../src/iop/clipping.c:1720 ../src/iop/crop.c:895
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "Недійсний формат співвідношення. це має бути \"число:число\""
 
-#: ../src/iop/clipping.c:1735 ../src/iop/crop.c:839
+#: ../src/iop/clipping.c:1736 ../src/iop/crop.c:911
 msgid "invalid ratio format. it should be a positive number"
 msgstr "Недійсний формат співвідношення. це має бути додатне число"
 
-#: ../src/iop/clipping.c:1924 ../src/iop/clipping.c:2121
+#: ../src/iop/clipping.c:1925 ../src/iop/clipping.c:2122
 msgid "full"
 msgstr "Повна"
 
-#: ../src/iop/clipping.c:1925
+#: ../src/iop/clipping.c:1926
 msgid "old system"
 msgstr "Стара система"
 
-#: ../src/iop/clipping.c:1926
+#: ../src/iop/clipping.c:1927
 msgid "correction applied"
 msgstr "Корекцію застосовано"
 
-#: ../src/iop/clipping.c:2099
+#: ../src/iop/clipping.c:2100
 msgid "main"
 msgstr "Головне"
 
-#: ../src/iop/clipping.c:2108
+#: ../src/iop/clipping.c:2109
 msgid "mirror image horizontally and/or vertically"
 msgstr "Віддзеркалити зображення в горизонтальній та/або вертикальній площині"
 
-#: ../src/iop/clipping.c:2111
+#: ../src/iop/clipping.c:2112
 msgid "angle"
 msgstr "Кут"
 
-#: ../src/iop/clipping.c:2114
+#: ../src/iop/clipping.c:2115
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr ""
 "Клікніть правою кнопкою та перетягніть лінію на зображенні, щоб вказати "
 "пряму лінію"
 
-#: ../src/iop/clipping.c:2117
+#: ../src/iop/clipping.c:2118
 msgid "keystone"
 msgstr "Корекція перспективи"
 
-#: ../src/iop/clipping.c:2122
+#: ../src/iop/clipping.c:2123
 msgid "set perspective correction for your image"
 msgstr "Встановити корекцію перспективи для вашого зображення"
 
-#: ../src/iop/clipping.c:2129 ../src/iop/crop.c:1143
+#: ../src/iop/clipping.c:2130 ../src/iop/crop.c:1215
 msgid "freehand"
 msgstr "Вільне"
 
-#: ../src/iop/clipping.c:2132 ../src/iop/crop.c:1146
+#: ../src/iop/clipping.c:2133 ../src/iop/crop.c:1218
 msgid "10:8 in print"
 msgstr "10:8, друк"
 
-#: ../src/iop/clipping.c:2133 ../src/iop/crop.c:1147
+#: ../src/iop/clipping.c:2134 ../src/iop/crop.c:1219
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4x5, 8x10"
 
-#: ../src/iop/clipping.c:2134 ../src/iop/crop.c:1148
+#: ../src/iop/clipping.c:2135 ../src/iop/crop.c:1220
 msgid "11x14"
 msgstr "11x14"
 
-#: ../src/iop/clipping.c:2135 ../src/iop/crop.c:1150
+#: ../src/iop/clipping.c:2136 ../src/iop/crop.c:1222
 msgid "8.5x11, letter"
 msgstr "8.5x11, Letter"
 
-#: ../src/iop/clipping.c:2136 ../src/iop/crop.c:1151
+#: ../src/iop/clipping.c:2137 ../src/iop/crop.c:1223
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:2137 ../src/iop/crop.c:1152
+#: ../src/iop/clipping.c:2138 ../src/iop/crop.c:1224
 msgid "5x7"
 msgstr "5x7"
 
-#: ../src/iop/clipping.c:2138 ../src/iop/crop.c:1153
+#: ../src/iop/clipping.c:2139 ../src/iop/crop.c:1225
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:2139 ../src/iop/crop.c:1154
+#: ../src/iop/clipping.c:2140 ../src/iop/crop.c:1226
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4x6, 35мм"
 
-#: ../src/iop/clipping.c:2140 ../src/iop/crop.c:1155
+#: ../src/iop/clipping.c:2141 ../src/iop/crop.c:1227
 msgid "16:10, 8x5"
 msgstr "16:10, 8x5"
 
-#: ../src/iop/clipping.c:2142 ../src/iop/crop.c:1157
+#: ../src/iop/clipping.c:2143 ../src/iop/crop.c:1229
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:2143 ../src/iop/crop.c:1158
+#: ../src/iop/clipping.c:2144 ../src/iop/crop.c:1230
 msgid "widescreen"
 msgstr "Широкий екран"
 
-#: ../src/iop/clipping.c:2144
+#: ../src/iop/clipping.c:2145
 msgid "2:1, univisium"
 msgstr "2:1, Univisium"
 
-#: ../src/iop/clipping.c:2145
+#: ../src/iop/clipping.c:2146
 msgid "cinemascope"
 msgstr "Сінемаскоп"
 
-#: ../src/iop/clipping.c:2146 ../src/iop/crop.c:1161
+#: ../src/iop/clipping.c:2147 ../src/iop/crop.c:1233
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:2147 ../src/iop/crop.c:1162
+#: ../src/iop/clipping.c:2148 ../src/iop/crop.c:1234
 msgid "anamorphic"
 msgstr "Анаморф"
 
-#: ../src/iop/clipping.c:2148 ../src/iop/crop.c:1164
+#: ../src/iop/clipping.c:2149 ../src/iop/crop.c:1236
 msgid "3:1, panorama"
 msgstr "3:1, панорама"
 
-#: ../src/iop/clipping.c:2180 ../src/iop/clipping.c:2192 ../src/iop/crop.c:1200
-#: ../src/iop/crop.c:1217
+#: ../src/iop/clipping.c:2181 ../src/iop/clipping.c:2193 ../src/iop/crop.c:1272
+#: ../src/iop/crop.c:1289
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr "Недійсний формат співвідношення для `%s'. Це має бути \"число:число\""
 
-#: ../src/iop/clipping.c:2239 ../src/iop/crop.c:1268
+#: ../src/iop/clipping.c:2240 ../src/iop/crop.c:1340
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square\n"
@@ -17838,33 +17837,33 @@ msgstr ""
 "співвідношення у форматі x:y або у вигляді десяткового дробу (чи цілого "
 "числа)"
 
-#: ../src/iop/clipping.c:2246 ../src/iop/crop.c:1279
+#: ../src/iop/clipping.c:2247 ../src/iop/crop.c:1351
 msgid "margins"
 msgstr "Поля"
 
-#: ../src/iop/clipping.c:2251 ../src/iop/crop.c:1289
+#: ../src/iop/clipping.c:2252 ../src/iop/crop.c:1361
 msgid "the left margin cannot overlap with the right margin"
 msgstr "Ліве поле не може накладатися на праве"
 
-#: ../src/iop/clipping.c:2258 ../src/iop/crop.c:1297
+#: ../src/iop/clipping.c:2259 ../src/iop/crop.c:1369
 msgid "the right margin cannot overlap with the left margin"
 msgstr "Праве поле не може перекриватися з лівим"
 
-#: ../src/iop/clipping.c:2263 ../src/iop/crop.c:1303
+#: ../src/iop/clipping.c:2264 ../src/iop/crop.c:1375
 msgid "the top margin cannot overlap with the bottom margin"
 msgstr "Верхнє поле не може перекриватися з нижнім"
 
-#: ../src/iop/clipping.c:2270 ../src/iop/crop.c:1311
+#: ../src/iop/clipping.c:2271 ../src/iop/crop.c:1383
 msgid "the bottom margin cannot overlap with the top margin"
 msgstr "Нижнє поле не може накладатися на верхнє"
 
-#: ../src/iop/clipping.c:3014
+#: ../src/iop/clipping.c:3015
 msgid "<b>commit</b>: double-click, <b>straighten</b>: right-drag"
 msgstr ""
 "<b>Фіксація змін</b>: подвійний клік, <b>Випрямлення</b>: перетягування "
 "правою кнопкою"
 
-#: ../src/iop/clipping.c:3018
+#: ../src/iop/clipping.c:3019
 msgid ""
 "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
 "<b>straighten</b>: right-drag"
@@ -17873,17 +17872,17 @@ msgstr ""
 "Shift+перетягування\n"
 "<b>Випрямлення</b>: перетягування правою кнопкою"
 
-#: ../src/iop/clipping.c:3059
+#: ../src/iop/clipping.c:3060
 msgid "<b>move control point</b>: drag"
 msgstr "<b>Переміщення контрольної точки</b>: перетягування"
 
-#: ../src/iop/clipping.c:3064
+#: ../src/iop/clipping.c:3065
 msgid "<b>move line</b>: drag, <b>toggle symmetry</b>: click ꝏ"
 msgstr ""
 "<b>Переміщення лінії</b>: перетягування, <b>Перемикання симетрії</b>: "
 "натисніть ꝏ"
 
-#: ../src/iop/clipping.c:3069
+#: ../src/iop/clipping.c:3070
 msgid ""
 "<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click ꝏ\n"
 "<b>move line/control point</b>: drag"
@@ -17892,7 +17891,7 @@ msgstr ""
 "натисніть ꝏ\n"
 "<b>Переміщення лінії/контрольної точки</b>: перетягування"
 
-#: ../src/iop/clipping.c:3076
+#: ../src/iop/clipping.c:3077
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag\n"
@@ -17903,12 +17902,12 @@ msgstr ""
 "<b>Випрямлення</b>: перетягування правою кнопкою, <b>Фіксація змін</b>: "
 "подвійний клік"
 
-#: ../src/iop/clipping.c:3335 ../src/iop/crop.c:1799
+#: ../src/iop/clipping.c:3336 ../src/iop/crop.c:1881
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[%s на краях] обрізати"
 
-#: ../src/iop/clipping.c:3337 ../src/iop/crop.c:1801
+#: ../src/iop/clipping.c:3338 ../src/iop/crop.c:1883
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[%s на краях] обрізати зі збереженням співвідношення сторін"
@@ -19046,7 +19045,7 @@ msgstr ""
 #: ../src/iop/colorreconstruction.c:632 ../src/iop/colorreconstruction.c:1038
 #: ../src/iop/globaltonemap.c:217 ../src/iop/globaltonemap.c:372
 #: ../src/iop/hazeremoval.c:631 ../src/iop/hazeremoval.c:643
-#: ../src/iop/hazeremoval.c:898 ../src/iop/hazeremoval.c:912
+#: ../src/iop/hazeremoval.c:900 ../src/iop/hazeremoval.c:914
 #: ../src/iop/levels.c:354
 msgid "inconsistent output"
 msgstr "inconsistent output"
@@ -19220,41 +19219,41 @@ msgstr ""
 "але менш плавний\n"
 "- Монотонний краще для точності чистих аналітичних функцій (log, gamma, exp)"
 
-#: ../src/iop/crop.c:118
+#: ../src/iop/crop.c:122
 msgid "crop"
 msgstr "Кадрування"
 
-#: ../src/iop/crop.c:123
+#: ../src/iop/crop.c:127
 msgid "reframe|distortion"
 msgstr "reframe|distortion"
 
-#: ../src/iop/crop.c:129
+#: ../src/iop/crop.c:133
 msgid "change the framing"
 msgstr "Змінити кадрування"
 
-#: ../src/iop/crop.c:1149
+#: ../src/iop/crop.c:1221
 msgid "45x35, portrait"
 msgstr "45x35, портрет"
 
-#: ../src/iop/crop.c:1159
+#: ../src/iop/crop.c:1231
 msgid "2:1, Univisium"
 msgstr "2:1, Univisium"
 
-#: ../src/iop/crop.c:1160
+#: ../src/iop/crop.c:1232
 msgid "CinemaScope"
 msgstr "CinemaScope"
 
-#: ../src/iop/crop.c:1163
+#: ../src/iop/crop.c:1235
 msgid "65:24, XPan"
 msgstr "65:24, XPan"
 
-#: ../src/iop/crop.c:1682
+#: ../src/iop/crop.c:1764
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
 "<b>Зміна розміру</b>: перетягування, <b>Зберегти співвідношення сторін</b>: "
 "Shift+перетягування"
 
-#: ../src/iop/crop.c:1689
+#: ../src/iop/crop.c:1771
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag"
@@ -21098,6 +21097,10 @@ msgstr "Відстань"
 msgid "limit haze removal up to a specific spatial depth"
 msgstr "Обмежити видалення серпанку до певної просторової глибини"
 
+#: ../src/iop/hazeremoval.c:661 ../src/iop/hazeremoval.c:932
+msgid "haze removal could not calculate ambient light due to image content"
+msgstr "Не вдалося обчислити навколишнє освітлення через вміст зображення"
+
 #: ../src/iop/highlights.c:170
 msgid "highlight reconstruction"
 msgstr "Відновлення переекспонованого"
@@ -21360,7 +21363,7 @@ msgstr "Виправити оптичні недоліки лінз"
 msgid "geometric and reconstruction, RGB"
 msgstr "геометрична і відновлювальна, RGB"
 
-#: ../src/iop/lens.cc:3767
+#: ../src/iop/lens.cc:3763
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -21373,7 +21376,7 @@ msgstr ""
 "Байонет:\t\t%s\n"
 "Кроп-фактор:\t%.1f"
 
-#: ../src/iop/lens.cc:4015
+#: ../src/iop/lens.cc:4011
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -21392,31 +21395,31 @@ msgstr ""
 "Тип:\t\t%s\n"
 "Байонети:\t%s"
 
-#: ../src/iop/lens.cc:4068
+#: ../src/iop/lens.cc:4064
 msgid "focal length (mm)"
 msgstr "Фокусна відстань (мм)"
 
-#: ../src/iop/lens.cc:4094
+#: ../src/iop/lens.cc:4090
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.cc:4095
+#: ../src/iop/lens.cc:4091
 msgid "f-number (aperture)"
 msgstr "f-номер (діафрагма)"
 
-#: ../src/iop/lens.cc:4114
+#: ../src/iop/lens.cc:4110
 msgid "d"
 msgstr "відстань"
 
-#: ../src/iop/lens.cc:4115
+#: ../src/iop/lens.cc:4111
 msgid "distance to subject"
 msgstr "Відстань до об'єкта"
 
-#: ../src/iop/lens.cc:4269
+#: ../src/iop/lens.cc:4265
 msgid "camera/lens not found"
 msgstr "Камеру/об'єктив не знайдено"
 
-#: ../src/iop/lens.cc:4270
+#: ../src/iop/lens.cc:4266
 msgid ""
 "please select your lens manually\n"
 "you might also want to check if your Lensfun database is up-to-date\n"
@@ -21426,50 +21429,50 @@ msgstr ""
 "Ви також можете перевірити, чи ваша база даних Lensfun оновлена\n"
 "за допомогою lensfun-update-data"
 
-#: ../src/iop/lens.cc:4419
+#: ../src/iop/lens.cc:4415
 msgid "camera model"
 msgstr "Модель камери"
 
-#: ../src/iop/lens.cc:4424
+#: ../src/iop/lens.cc:4420
 msgid "find camera"
 msgstr "Знайти камеру"
 
-#: ../src/iop/lens.cc:4439
+#: ../src/iop/lens.cc:4435
 msgid "find lens"
 msgstr "Знайти об'єктив"
 
 #. scale
-#: ../src/iop/lens.cc:4474 ../src/iop/overlay.c:1113 ../src/iop/vignette.c:1043
+#: ../src/iop/lens.cc:4470 ../src/iop/overlay.c:1113 ../src/iop/vignette.c:1043
 #: ../src/iop/watermark.c:1381 ../src/libs/export.c:1540
 msgid "scale"
 msgstr "Масштаб"
 
-#: ../src/iop/lens.cc:4476
+#: ../src/iop/lens.cc:4472
 msgid "auto scale"
 msgstr "Автоматичне масштабування"
 
-#: ../src/iop/lens.cc:4478
+#: ../src/iop/lens.cc:4474
 msgid "automatic scale to available image size due to Lensfun data"
 msgstr ""
 "Автоматичне масштабування до доступного розміру зображення за даними Lensfun"
 
-#: ../src/iop/lens.cc:4483
+#: ../src/iop/lens.cc:4479
 msgid "correct distortions or apply them"
 msgstr "Коригувати деформації об'єктива чи застосувати їх"
 
-#: ../src/iop/lens.cc:4491
+#: ../src/iop/lens.cc:4487
 msgid "transversal chromatic aberration red"
 msgstr "Поперечні ХА - червоний"
 
-#: ../src/iop/lens.cc:4496
+#: ../src/iop/lens.cc:4492
 msgid "transversal chromatic aberration blue"
 msgstr "Поперечні ХА - синій"
 
-#: ../src/iop/lens.cc:4507
+#: ../src/iop/lens.cc:4503
 msgid "use latest algorithm"
 msgstr "Використовувати найновіший алгоритм"
 
-#: ../src/iop/lens.cc:4510
+#: ../src/iop/lens.cc:4506
 msgid ""
 "you're using an old version of the algorithm.\n"
 "once enabled, you won't be able to\n"
@@ -21479,39 +21482,39 @@ msgstr ""
 "Після ввімкнення ви не зможете\n"
 "повернутися до старого алгоритму."
 
-#: ../src/iop/lens.cc:4521
+#: ../src/iop/lens.cc:4517
 msgid "fine-tuning"
 msgstr "Тонке регулювання"
 
-#: ../src/iop/lens.cc:4529
+#: ../src/iop/lens.cc:4525
 msgid "fine-tune"
 msgstr "Тонке регулювання"
 
-#: ../src/iop/lens.cc:4536
+#: ../src/iop/lens.cc:4532
 msgid "tune the warp and chromatic aberration correction"
 msgstr "Підкоригувати виправлення викривлення та хроматичної аберації"
 
-#: ../src/iop/lens.cc:4541
+#: ../src/iop/lens.cc:4537
 msgid "tune the vignette correction"
 msgstr "Підкоригувати виправлення віньєтування"
 
-#: ../src/iop/lens.cc:4546
+#: ../src/iop/lens.cc:4542
 msgid "tune the TCA red correction"
 msgstr "Підкоригувати виправлення червоної ХА"
 
-#: ../src/iop/lens.cc:4551
+#: ../src/iop/lens.cc:4547
 msgid "tune the TCA blue correction"
 msgstr "Підкоригувати виправлення синьої ХА"
 
-#: ../src/iop/lens.cc:4555
+#: ../src/iop/lens.cc:4551
 msgid "image scaling"
 msgstr "Масштабування зображення"
 
-#: ../src/iop/lens.cc:4557
+#: ../src/iop/lens.cc:4553
 msgid "automatic scale to available image size"
 msgstr "Автоматичне масштабування до доступного розміру зображення"
 
-#: ../src/iop/lens.cc:4568
+#: ../src/iop/lens.cc:4564
 msgid ""
 "select a correction mode either based on\n"
 " a) data and algorithms provided by the Lensfun project\n"
@@ -21522,43 +21525,43 @@ msgstr ""
 "  b) вбудованих метаданих, наданих вендором камери чи програмного "
 "забезпечення"
 
-#: ../src/iop/lens.cc:4575
+#: ../src/iop/lens.cc:4571
 msgid "which corrections to apply"
 msgstr "Які коригування застосовувати"
 
-#: ../src/iop/lens.cc:4581
+#: ../src/iop/lens.cc:4577
 msgid "corrections done: "
 msgstr "Скориговано: "
 
-#: ../src/iop/lens.cc:4584
+#: ../src/iop/lens.cc:4580
 msgid "which corrections have actually been done"
 msgstr "Які коригування було застосовано"
 
-#: ../src/iop/lens.cc:4603
+#: ../src/iop/lens.cc:4599
 msgid "manual vignette correction"
 msgstr "Ручна корекція віньєтування"
 
-#: ../src/iop/lens.cc:4607
+#: ../src/iop/lens.cc:4603
 msgid "additional manually controlled optical vignetting correction"
 msgstr "Додаткова корекція оптичного віньєтування з ручним керуванням"
 
-#: ../src/iop/lens.cc:4610
+#: ../src/iop/lens.cc:4606
 msgid "vignette"
 msgstr "Віньєтування"
 
-#: ../src/iop/lens.cc:4614
+#: ../src/iop/lens.cc:4610
 msgid "amount of the applied optical vignetting correction"
 msgstr "Обсяг застосованої корекції оптичного віньєтування"
 
-#: ../src/iop/lens.cc:4618
+#: ../src/iop/lens.cc:4614
 msgid "show applied optical vignette correction mask"
 msgstr "Показати застосовану маску корекції оптичного віньєтування"
 
-#: ../src/iop/lens.cc:4622
+#: ../src/iop/lens.cc:4618
 msgid "radius of uncorrected centre"
 msgstr "Радіус невиправленого центру"
 
-#: ../src/iop/lens.cc:4628
+#: ../src/iop/lens.cc:4624
 msgid "steepness of the correction effect outside of radius"
 msgstr "Крутизна ефекту корекції за межами радіуса"
 
@@ -21620,11 +21623,11 @@ msgstr "Пластика"
 msgid "distort parts of the image"
 msgstr "Деформації частин зображення"
 
-#: ../src/iop/liquify.c:2868
+#: ../src/iop/liquify.c:2863
 msgid "click to edit nodes"
 msgstr "Натисніть, щоб редагувати вузли"
 
-#: ../src/iop/liquify.c:3570
+#: ../src/iop/liquify.c:3565
 msgid ""
 "<b>add point</b>: click and drag\n"
 "<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: "
@@ -21634,7 +21637,7 @@ msgstr ""
 "<b>Розмір</b>: прокрутка - <b>Сила</b>: Shift+прокрутка - <b>Напрямок</b>: "
 "Ctrl+прокрутка"
 
-#: ../src/iop/liquify.c:3573
+#: ../src/iop/liquify.c:3568
 msgid ""
 "<b>add line</b>: click\n"
 "<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: "
@@ -21644,7 +21647,7 @@ msgstr ""
 "<b>Розмір</b>: прокрутка - <b>Сила</b>: Shift+прокрутка - <b>Напрямок</b>: "
 "Ctrl+прокрутка"
 
-#: ../src/iop/liquify.c:3576
+#: ../src/iop/liquify.c:3571
 msgid ""
 "<b>add curve</b>: click\n"
 "<b>size</b>: scroll - <b>strength</b>: shift+scroll - <b>direction</b>: "
@@ -21654,7 +21657,7 @@ msgstr ""
 "<b>Розмір</b>: прокрутка - <b>Сила</b>: Shift+прокрутка - <b>Напрямок</b>: "
 "Ctrl+прокрутка"
 
-#: ../src/iop/liquify.c:3627
+#: ../src/iop/liquify.c:3622
 msgid ""
 "use a tool to add warps\n"
 "<b>remove a warp</b>: right-click"
@@ -21662,16 +21665,16 @@ msgstr ""
 "Використовуйте інструмент для додавання деформацій\n"
 "<b>Видалити деформацію</b>: права кнопка миші"
 
-#: ../src/iop/liquify.c:3630
+#: ../src/iop/liquify.c:3625
 msgid "warps|nodes count:"
 msgstr "Деформацій | Вузлів: "
 
-#: ../src/iop/liquify.c:3639
+#: ../src/iop/liquify.c:3634
 msgid "edit, add and delete nodes"
 msgstr "Редагувати, додавати і видаляти вузли"
 
-#: ../src/iop/liquify.c:3644 ../src/iop/liquify.c:3650
-#: ../src/iop/liquify.c:3656 ../src/iop/retouch.c:2449
+#: ../src/iop/liquify.c:3639 ../src/iop/liquify.c:3645
+#: ../src/iop/liquify.c:3651 ../src/iop/retouch.c:2449
 #: ../src/iop/retouch.c:2455 ../src/iop/retouch.c:2460
 #: ../src/iop/retouch.c:2465 ../src/iop/spots.c:879 ../src/iop/spots.c:884
 #: ../src/iop/spots.c:889 ../src/libs/masks.c:1795 ../src/libs/masks.c:1803
@@ -21679,31 +21682,31 @@ msgstr "Редагувати, додавати і видаляти вузли"
 msgid "shapes"
 msgstr "Фігури"
 
-#: ../src/iop/liquify.c:3645
+#: ../src/iop/liquify.c:3640
 msgid "draw curves"
 msgstr "Додати криві"
 
-#: ../src/iop/liquify.c:3645
+#: ../src/iop/liquify.c:3640
 msgid "draw multiple curves"
 msgstr "Додати кілька кривих"
 
-#: ../src/iop/liquify.c:3651
+#: ../src/iop/liquify.c:3646
 msgid "draw lines"
 msgstr "Додати лінії"
 
-#: ../src/iop/liquify.c:3651
+#: ../src/iop/liquify.c:3646
 msgid "draw multiple lines"
 msgstr "Додати кілька ліній"
 
-#: ../src/iop/liquify.c:3657
+#: ../src/iop/liquify.c:3652
 msgid "draw points"
 msgstr "Додати точку"
 
-#: ../src/iop/liquify.c:3657
+#: ../src/iop/liquify.c:3652
 msgid "draw multiple points"
 msgstr "Додати кілька точок"
 
-#: ../src/iop/liquify.c:3663
+#: ../src/iop/liquify.c:3658
 msgid ""
 "<b>add node</b>: ctrl+click - <b>remove path</b>: right-click\n"
 "<b>toggle line/curve</b>: ctrl+alt+click"
@@ -21711,7 +21714,7 @@ msgstr ""
 "<b>Додати вузол</b>: Ctrl+клік - <b>Видалити контур</b>: правий клік\n"
 "<b>Перемкнути лінія/крива</b>: Ctrl+Alt+клік"
 
-#: ../src/iop/liquify.c:3666
+#: ../src/iop/liquify.c:3661
 msgid ""
 "<b>move</b>: click and drag - <b>show/hide feathering controls</b>: click\n"
 "<b>autosmooth, cusp, smooth, symmetrical</b>: ctrl+click - <b>remove</b>: "
@@ -21722,23 +21725,23 @@ msgstr ""
 "<b>Автозгладжування, виступи, згладжування, симетричність</b>: Ctrl+клік - "
 "<b>Прибрати</b>: клік правою кнопкою"
 
-#: ../src/iop/liquify.c:3670 ../src/iop/liquify.c:3672
+#: ../src/iop/liquify.c:3665 ../src/iop/liquify.c:3667
 msgid "<b>shape of path</b>: drag"
 msgstr "<b>Зміна форми контуру</b>: перетягування"
 
-#: ../src/iop/liquify.c:3674
+#: ../src/iop/liquify.c:3669
 msgid "<b>radius</b>: drag"
 msgstr "<b>Радіус</b>: перетягування"
 
-#: ../src/iop/liquify.c:3676
+#: ../src/iop/liquify.c:3671
 msgid "<b>hardness (center)</b>: drag"
 msgstr "<b>Регулювання жорсткості (центр)</b>: перетягування"
 
-#: ../src/iop/liquify.c:3678
+#: ../src/iop/liquify.c:3673
 msgid "<b>hardness (feather)</b>: drag"
 msgstr "<b>Регулювання жорсткості (розтушовка)</b>: перетягування"
 
-#: ../src/iop/liquify.c:3680
+#: ../src/iop/liquify.c:3675
 msgid ""
 "<b>strength</b>: drag\n"
 "<b>linear, grow, and shrink</b>: ctrl+click"
