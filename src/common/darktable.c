@@ -1577,7 +1577,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       if(connection) g_object_unref(connection);
     }
     darktable_splash_screen_destroy(); // dismiss splash screen before potentially showing error dialog
-    if(!image_loaded_elsewhere) dt_database_show_error(darktable.db);
+    if(!image_loaded_elsewhere && init_gui) dt_database_show_error(darktable.db);
 
     dt_print(DT_DEBUG_ALWAYS, "ERROR: can't acquire database lock, aborting.");
     return 1;
