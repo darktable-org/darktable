@@ -179,6 +179,8 @@ changes (where available).
 - Fixed reset button not working in the geotagging module. Also a
   loaded GPX track in the geotagging module is now properly removed.
 
+- Fixed darktable-cli crashing if the darktable database is locked.
+
 ## Lua
 
 ### API Version
