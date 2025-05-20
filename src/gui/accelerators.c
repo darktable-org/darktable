@@ -396,6 +396,27 @@ const dt_action_def_t dt_action_def_value
 const dt_action_def_t _action_def_dummy
   = { };
 
+static dt_action_t *_action_find(const gchar *action_name)
+{
+  gchar **path = g_strsplit(action_name, "/", 0);
+  for(gchar **cur = path; *cur; cur++)
+  {
+    gchar *d = *cur;
+    for(gchar *c = *cur; *c; c++)
+    {
+      if(*c == '@')
+        *d++ = *++c == ':' ? ';' : *c == '<' ? '/' : *c == '>' ? '\\' : '@';
+      else
+        *d++ = *c;
+    }
+    *d = 0;
+  }
+  dt_action_t *action = dt_action_locate(NULL, path, FALSE);
+  g_strfreev(path);
+
+  return action;
+}
+
 static const dt_action_def_t *_action_find_definition(dt_action_t *action)
 {
   if(!action) return NULL;
@@ -526,15 +547,29 @@ static gint _shortcut_compare_func(gconstpointer shortcut_a,
 
 static gchar *_action_full_id(dt_action_t *action)
 {
+  gchar *full_label = NULL;
+  size_t owner_len = 0;
+  size_t max_len = 2 * strlen(action->id) + 2;
   if(action->owner)
   {
-    gchar *owner_id = _action_full_id(action->owner);
-    gchar *full_label = g_strdup_printf("%s/%s", owner_id, action->id);
-    g_free(owner_id);
-    return full_label;
+    full_label = _action_full_id(action->owner);
+    owner_len = strlen(full_label);
   }
-  else
-    return g_strdup(action->id);
+  full_label = g_realloc(full_label, owner_len + max_len);
+  gchar *d = full_label + owner_len;
+  if(owner_len) *d++ = '/';
+  for(const gchar *c = action->id; *c; c++)
+  {
+    if(strchr("@;/\\", *c))
+    {
+      *d++ = '@';
+      *d++ = *c == ';' ? ':' : *c == '/' ? '<' : *c == '\\' ? '>' : '@';
+    }
+    else
+      *d++ = *c;
+  }
+  *d = 0;
+  return full_label;
 }
 
 static gchar *_action_full_label(dt_action_t *action)
@@ -3372,10 +3407,7 @@ static void _shortcuts_load(const gchar *shortcuts_file,
         gboolean disable = !g_ascii_strcasecmp(token, "disabled");
         if(disable) token = strtok(NULL, ";");
 
-        // find action
-        gchar **path = g_strsplit(token, "/", 0);
-        s.action = dt_action_locate(NULL, path, FALSE);
-        g_strfreev(path);
+        s.action = _action_find(token);
 
         if(!s.action)
         {
@@ -3958,9 +3990,7 @@ float dt_action_process(const gchar *action,
                         const gchar *effect,
                         float move_size)
 {
-  gchar **path = g_strsplit(action, "/", 0);
-  dt_action_t *ac = dt_action_locate(NULL, path, FALSE);
-  g_strfreev(path);
+  dt_action_t *ac = _action_find(action);
 
   if(!ac)
   {
@@ -4679,11 +4709,6 @@ static void _remove_widget_from_hashtable(GtkWidget *widget, gpointer user_data)
   }
 }
 
-static inline gchar *path_without_symbols(const gchar *path)
-{
-  return g_strdelimit(g_strndup(path, strlen(path) - (g_str_has_suffix(path, "...")?3:0)), "=,/.;", '-');
-}
-
 void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action)
 {
   new_action->owner = owner;
@@ -4721,10 +4746,8 @@ dt_action_t *dt_action_locate(dt_action_t *owner,
       || (g_ascii_strcasecmp(owner->id, "styles")
           && g_ascii_strcasecmp(owner->id, "preset"));
 
-    const gchar *id_start = needs_translation ? NQ_(*path) : *path;
-
     if(!clean_path)
-      clean_path = path_without_symbols(id_start);
+      clean_path = g_strdup(needs_translation ? NQ_(*path) : *path);
 
     if(!action)
     {
@@ -4999,7 +5022,7 @@ void dt_action_rename(dt_action_t *action,
 
   if(new_name)
   {
-    action->id = path_without_symbols(new_name);
+    action->id = g_strdup(new_name);
     action->label = dt_util_localize_segmented_name(new_name, TRUE);
 
     dt_action_insert_sorted(action->owner, action);
