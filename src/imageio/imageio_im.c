@@ -92,16 +92,6 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
   }
   dt_print(DT_DEBUG_IMAGEIO, "[ImageMagick_open] image `%s' loading", img->filename);
 
-  ColorspaceType colorspace;
-
-  colorspace = MagickGetImageColorspace(image);
-
-  if((colorspace == CMYColorspace) || (colorspace == CMYKColorspace))
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[ImageMagick_open] error: CMY(K) images are not supported.");
-    err =  DT_IMAGEIO_LOAD_FAILED;
-    goto error;
-  }
 
   img->width = MagickGetImageWidth(image);
   img->height = MagickGetImageHeight(image);
@@ -118,11 +108,31 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
     goto error;
   }
 
-  ret = MagickExportImagePixels(image, 0, 0, img->width, img->height, "RGBP", FloatPixel, mipbuf);
+  ColorspaceType colorspace = MagickGetImageColorspace(image);
+
+  char *colormap;
+  if((colorspace == CMYColorspace) || (colorspace == CMYKColorspace))
+    colormap = "CMYK";
+  else
+    colormap = "RGBP";
+
+  ret = MagickExportImagePixels(image, 0, 0, img->width, img->height, colormap, FloatPixel, mipbuf);
   if(ret != MagickTrue) {
     dt_print(DT_DEBUG_ALWAYS,
         "[ImageMagick_open] error reading image `%s'", img->filename);
     goto error;
+  }
+
+  // If the image in CMYK color space convert it to linear RGB
+  if((colorspace == CMYColorspace) || (colorspace == CMYKColorspace))
+  {
+    for(size_t index = 0; index < img->width * img->height * 4; index += 4)
+    {
+      const float black = mipbuf[index + 3];
+      mipbuf[index]     = (1.f - black) * (1.f - mipbuf[index]);
+      mipbuf[index + 1] = (1.f - black) * (1.f - mipbuf[index + 1]);
+      mipbuf[index + 2] = (1.f - black) * (1.f - mipbuf[index + 2]);
+    }
   }
 
   size_t profile_length;
