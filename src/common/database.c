@@ -4151,7 +4151,7 @@ void dt_database_backup(const char *filename)
     else
     {
       // there is nothing to backup, create an empty file to prevent further backup attempts
-      const int fd = g_open(backup, O_CREAT, S_IWUSR);
+      const int fd = g_open(backup, O_CREAT, S_IWUSR | S_IRUSR);
       if(fd < 0 || !g_close(fd, &gerror)) copy_status = FALSE;
     }
     if(!copy_status)
