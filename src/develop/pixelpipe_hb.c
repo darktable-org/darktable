@@ -101,6 +101,8 @@ void dt_print_pipe_ext(const char *title,
   char roo[128] = { 0 };
   char pname[32] = { 0 };
   char masking[64] = { 0 };
+  char area[32];
+  char shift[32];
 
   snprintf(vtit, sizeof(vtit), "%s", title);
 
@@ -125,16 +127,18 @@ void dt_print_pipe_ext(const char *title,
   else if(device != DT_DEVICE_NONE)
     snprintf(dev, sizeof(dev), "??? %i", device);
 
+  const gboolean show_roo = roi_out && (!roi_in || memcmp(roi_in, roi_out, sizeof(dt_iop_roi_t)));
   if(roi_in)
-    snprintf(roi, sizeof(roi),
-             "(%4i/%4i) %4ix%4i scale=%.4f",
-             roi_in->x, roi_in->y, roi_in->width, roi_in->height, roi_in->scale);
-  if(roi_out)
   {
-    if(!roi_in || memcmp(roi_in, roi_out, sizeof(dt_iop_roi_t)))
-      snprintf(roo, sizeof(roo),
-             " --> (%4i/%4i) %4ix%4i scale=%.4f ",
-             roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale);
+    snprintf(shift, sizeof(shift), "(%i/%i)", roi_in->x, roi_in->y);
+    snprintf(area, sizeof(area), "%ix%i", roi_in->width, roi_in->height);
+    snprintf(roi, sizeof(roi), "%11s %10s sc=%.3f%s", shift, area, roi_in->scale, show_roo ? "" : ";");
+  }
+  if(show_roo)
+  {
+    snprintf(shift, sizeof(shift), "(%i/%i)", roi_out->x, roi_out->y);
+    snprintf(area, sizeof(area), "%ix%i", roi_out->width, roi_out->height);
+    snprintf(roo, sizeof(roo), " --> %11s %10s sc=%.3f;", shift, area, roi_out->scale);
   }
 
   if(pipe)
