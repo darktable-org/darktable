@@ -137,7 +137,7 @@ typedef struct dt_iop_demosaic_gui_data_t
   GtkWidget *demosaic_method_bayerfour;
   GtkWidget *dual_thrs;
   GtkWidget *lmmse_refine;
-  gboolean visual_mask;
+  gboolean dual_mask;
 } dt_iop_demosaic_gui_data_t;
 
 typedef struct dt_iop_demosaic_global_data_t
@@ -476,7 +476,7 @@ void tiling_callback(dt_iop_module_t *self,
   dt_iop_demosaic_data_t *d = piece->data;
 
   const float ioratio = (float)roi_out->width * roi_out->height / ((float)roi_in->width * roi_in->height);
-  const float smooth = d->color_smoothing ? ioratio : 0.0f;
+  const float smooth = d->color_smoothing != DT_DEMOSAIC_SMOOTH_OFF ? ioratio : 0.0f;
   const gboolean is_xtrans = piece->pipe->dsc.filters == 9u;
   const float greeneq = (!is_xtrans && (d->green_eq != DT_IOP_GREEN_EQ_NO)) ? 0.25f : 0.0f;
   const dt_iop_demosaic_method_t demosaicing_method = d->demosaicing_method & ~DT_DEMOSAIC_DUAL;
@@ -600,6 +600,7 @@ void process(dt_iop_module_t *self,
 
   const gboolean run_fast = pipe->type & DT_DEV_PIXELPIPE_FAST;
   const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean previewpipe = pipe->type & DT_DEV_PIXELPIPE_PREVIEW;
 
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])pipe->dsc.xtrans;
 
@@ -616,13 +617,15 @@ void process(dt_iop_module_t *self,
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  if(width < 16 || height < 16)
+  if((width < 16 || height < 16)
+        &&  (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME
+          && demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR))
     demosaicing_method = is_xtrans ? DT_IOP_DEMOSAIC_VNG : DT_IOP_DEMOSAIC_VNG4;
 
   gboolean showmask = FALSE;
   if(self->dev->gui_attached && fullpipe)
   {
-    if(g->visual_mask)
+    if(g->dual_mask)
     {
       showmask = TRUE;
       pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
@@ -649,7 +652,7 @@ void process(dt_iop_module_t *self,
   }
 
   const int base_demosaicing_method = demosaicing_method & ~DT_DEMOSAIC_DUAL;
-  const gboolean dual = (demosaicing_method & DT_DEMOSAIC_DUAL) && !run_fast;
+  const gboolean dual = (demosaicing_method & DT_DEMOSAIC_DUAL) && !run_fast && !previewpipe;
 
   const gboolean direct = roi_out->width == width && roi_out->height == height && feqf(roi_in->scale, roi_out->scale, 1e-8f);
 
@@ -724,10 +727,10 @@ void process(dt_iop_module_t *self,
 
   if((float *)i != in) dt_free_align(in);
 
-  if(d->color_smoothing)
+  if(d->color_smoothing != DT_DEMOSAIC_SMOOTH_OFF)
     color_smoothing(out, roi_in, d->color_smoothing);
 
-  dt_print_pipe(DT_DEBUG_PIPE, direct ? "demosaic inplace" : "demosaic clip_and_zoom", pipe, self, DT_DEVICE_CPU, roi_in, roi_out);
+  dt_print_pipe(DT_DEBUG_VERBOSE, direct ? "demosaic inplace" : "demosaic clip_and_zoom", pipe, self, DT_DEVICE_CPU, roi_in, roi_out);
   if(!direct)
   {
     dt_iop_roi_t roo = *roi_out;
@@ -751,6 +754,7 @@ int process_cl(dt_iop_module_t *self,
   dt_dev_pixelpipe_t *const pipe = piece->pipe;
   const gboolean run_fast = pipe->type & DT_DEV_PIXELPIPE_FAST;
   const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean previewpipe = pipe->type & DT_DEV_PIXELPIPE_PREVIEW;
   const int qual_flags = demosaic_qual_flags(piece, img, roi_out);
   const gboolean fullscale = qual_flags & DT_DEMOSAIC_FULL_SCALE;
   const gboolean is_xtrans = pipe->dsc.filters == 9u;
@@ -773,13 +777,15 @@ int process_cl(dt_iop_module_t *self,
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  if(width < 16 || height < 16)
+  if((width < 16 || height < 16)
+    &&  (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME
+      && demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR))
     demosaicing_method = is_xtrans ? DT_IOP_DEMOSAIC_VNG : DT_IOP_DEMOSAIC_VNG4;
 
   gboolean showmask = FALSE;
   if(self->dev->gui_attached && fullpipe)
   {
-    if(g->visual_mask)
+    if(g->dual_mask)
     {
       showmask = TRUE;
       pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
@@ -822,7 +828,7 @@ int process_cl(dt_iop_module_t *self,
 
   const gboolean direct = roi_out->width == width && roi_out->height == height && feqf(roi_in->scale, roi_out->scale, 1e-8f);
   const int base_demosaicing_method = demosaicing_method & ~DT_DEMOSAIC_DUAL;
-  const gboolean dual = (demosaicing_method & DT_DEMOSAIC_DUAL) && !run_fast;
+  const gboolean dual = (demosaicing_method & DT_DEMOSAIC_DUAL) && !run_fast && !previewpipe;
 
   cl_mem out_image = direct ? dev_out : dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   cl_mem in_image = dev_in;
@@ -902,13 +908,13 @@ int process_cl(dt_iop_module_t *self,
     in_image = NULL;
   }
 
-  if(d->color_smoothing)
+  if(d->color_smoothing != DT_DEMOSAIC_SMOOTH_OFF)
   {
     err = color_smoothing_cl(self, piece, out_image, out_image, roi_in, d->color_smoothing);
     if(err != CL_SUCCESS) goto finish;
   }
 
-  dt_print_pipe(DT_DEBUG_PIPE, direct ? "demosaic inplace" : "demosaic clip_and_zoom", pipe, self, devid, roi_in, roi_out);
+  dt_print_pipe(DT_DEBUG_VERBOSE, direct ? "demosaic inplace" : "demosaic clip_and_zoom", pipe, self, devid, roi_in, roi_out);
   if(!direct)
     err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, out_image, roi_out, roi_in);
 
@@ -1151,8 +1157,8 @@ void commit_params(dt_iop_module_t *self,
 
   // green-equilibrate over full image excludes tiling
   // The details mask calculation required for dual demosaicing does not allow tiling.
-  if((d->green_eq == DT_IOP_GREEN_EQ_FULL
-      || d->green_eq == DT_IOP_GREEN_EQ_BOTH)
+  if(    d->green_eq == DT_IOP_GREEN_EQ_FULL
+      || d->green_eq == DT_IOP_GREEN_EQ_BOTH
       || use_method & DT_DEMOSAIC_DUAL
       || piece->pipe->want_detail_mask)
   {
@@ -1278,7 +1284,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   if(!w || w != g->dual_thrs)
   {
     dt_bauhaus_widget_set_quad_active(g->dual_thrs, FALSE);
-    g->visual_mask = FALSE;
+    g->dual_mask = FALSE;
   }
 
   // as the dual modes change behaviour for previous pipeline modules we do a reprocess
@@ -1297,7 +1303,7 @@ static void _visualize_callback(GtkWidget *quad, dt_iop_module_t *self)
   if(darktable.gui->reset) return;
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
 
-  g->visual_mask = dt_bauhaus_widget_get_quad_active(quad);
+  g->dual_mask = dt_bauhaus_widget_get_quad_active(quad);
   dt_dev_reprocess_center(self->dev);
 }
 
@@ -1306,9 +1312,9 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
   if(!in)
   {
-    const gboolean was_dualmask = g->visual_mask;
+    const gboolean was_dualmask = g->dual_mask;
     dt_bauhaus_widget_set_quad_active(g->dual_thrs, FALSE);
-    g->visual_mask = FALSE;
+    g->dual_mask = FALSE;
     if(was_dualmask) dt_dev_reprocess_center(self->dev);
   }
 }
