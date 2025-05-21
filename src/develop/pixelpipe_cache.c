@@ -33,7 +33,7 @@ gboolean dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_t *pipe,
                                      const size_t size,
                                      const size_t limit)
 {
-  dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
+  dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
 
   cache->entries = entries;
   cache->allmem = cache->hits = cache->calls = cache->tests = 0;
@@ -446,7 +446,7 @@ static void _cline_stats(dt_dev_pixelpipe_cache_t *cache)
 
 void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe)
 {
-  dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
+  dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
 
   // we have pixelpipes like export & thumbnail that just use
   // alternating buffers so no cleanup
@@ -454,11 +454,11 @@ void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe)
 
   // We always free cachelines marked as not valid
   size_t freed = 0;
-
+  size_t freed_invalid = 0;
   for(int k = DT_PIPECACHE_MIN; k < cache->entries; k++)
   {
     if((cache->hash[k] == DT_INVALID_HASH) && cache->data)
-      freed += _free_cacheline(cache, k);
+      freed_invalid += _free_cacheline(cache, k);
   }
 
   while(cache->memlimit && (cache->memlimit < cache->allmem))
@@ -471,14 +471,14 @@ void dt_dev_pixelpipe_cache_checkmem(dt_dev_pixelpipe_t *pipe)
 
   _cline_stats(cache);
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MEMORY, "pipe cache check", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
-    "%i lines (important=%i, used=%i). Freed %iMB. Using using %iMB, limit=%iMB",
+    "%i lines (important=%i, used=%i). Freed: invalid %iMB used %iMB. Using %iMB, limit=%iMB",
     cache->entries, cache->limportant, cache->lused,
-    _to_mb(freed), _to_mb(cache->allmem), _to_mb(cache->memlimit));
+    _to_mb(freed_invalid), _to_mb(freed), _to_mb(cache->allmem), _to_mb(cache->memlimit));
 }
 
 void dt_dev_pixelpipe_cache_report(dt_dev_pixelpipe_t *pipe)
 {
-  dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
+  dt_dev_pixelpipe_cache_t *cache = &pipe->cache;
 
   _cline_stats(cache);
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_MEMORY, "cache report", pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
