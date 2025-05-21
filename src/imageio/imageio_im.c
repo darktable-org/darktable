@@ -75,7 +75,7 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img,
                                        const char *filename,
                                        dt_mipmap_buffer_t *mbuf)
 {
-  int err = DT_IMAGEIO_LOAD_FAILED;
+  dt_imageio_retval_t err = DT_IMAGEIO_LOAD_FAILED;
 
   if(!_supported_image(filename))
     return DT_IMAGEIO_LOAD_FAILED;
