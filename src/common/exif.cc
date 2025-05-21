@@ -2000,8 +2000,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         {
           if(!modified_dng)
           {
-            dt_control_log(_("detected OtherIlluminant in `%s`, please report via darktable github"), img->filename);
-            dt_print(DT_DEBUG_IMAGEIO, "detected not-implemented OtherIlluminant in `%s`, please report via darktable github", img->filename);
+            dt_print(DT_DEBUG_IMAGEIO, "detected not-implemented OtherIlluminant in `%s`", img->filename);
             missing_sample = TRUE;
           }
           illu[k] = DT_LS_D65;
@@ -2050,8 +2049,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       const gboolean interpolate = found_illus > 1 && sel_temp > D65temp && min_temp < D65temp && min_temp > 0;
       if(interpolate && !modified_dng)
       {
-        dt_control_log(_("special exif illuminants in `%s`, please report via darktable github"), img->filename);
-        dt_print(DT_DEBUG_ALWAYS, "special exif illuminants in `%s`, please report via darktable github", img->filename);
+        dt_print(DT_DEBUG_IMAGEIO, "special exif illuminants in `%s`", img->filename);
         missing_sample = TRUE;
       }
 
@@ -2077,10 +2075,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         const dt_dng_illuminant_t illuminant = illu[sel_illu];
         const gboolean forward_suggested = has_FM[sel_illu];
         if(forward_suggested && !modified_dng)
-        {
-          dt_control_log(_("forward matrix in `%s`, please report via darktable github"), img->filename);
           missing_sample = TRUE;
-        }
         dt_print(DT_DEBUG_IMAGEIO,
           "[exif] %s%s%s: selected from  [1] %s (%iK), [2] %s (%iK), [3] %s (%iK)",
                  _illu_to_str(illuminant),
@@ -4883,7 +4878,7 @@ static void _set_xmp_dt_metadata(Exiv2::XmpData &xmpData,
       }
     }
   }
-  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);  
+  dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
   sqlite3_finalize(stmt);
 
   // Color labels
@@ -5664,7 +5659,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
           }
         }
       }
-      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);  
+      dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
       sqlite3_finalize(stmt);
 
       if(!(m->flags & DT_META_GEOTAG))
