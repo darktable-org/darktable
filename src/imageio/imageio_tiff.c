@@ -428,10 +428,10 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
   if(t.sampleformat == SAMPLEFORMAT_VOID)
     t.sampleformat = SAMPLEFORMAT_UINT;
 
-  if(inkset == INKSET_CMYK || inkset == INKSET_MULTIINK)
+  if(photometric == PHOTOMETRIC_SEPARATED)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[tiff_open] error: unsupported CMYK (or multi-ink) in '%s'",
+             "[tiff_open] error: CMYK colorspace not supported in '%s'",
              filename);
     TIFFClose(t.tiff);
     return DT_IMAGEIO_UNSUPPORTED_FORMAT;
