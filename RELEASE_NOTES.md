@@ -128,6 +128,8 @@ changes (where available).
 
 - Reduced haze removal visible difference between exports and HQ
   darkroom processing.
+  For some images the algorithm fails to calculate correction parameters,
+  this is reported via control log.
 
 - Lens info is now read from OM-System/Olympus image files taken with
   lenses without electronic data if this info is entered in the
@@ -138,13 +140,16 @@ changes (where available).
 
 - Raster masks got internal improvements and now support the same refinement
   tools as all other masks including details threshold, feathering guide and
-  radius, blurring radius and contrast.
+  radius, blurring radius and contrast. Some UI refinements for rastermasks.
 
 - The highlights module offers a raster mask with information about level above
   clip level.
 
 - Changing orientation (via the flip module) respects changes done in
   crop module.
+
+- The shown dimension while cropping now matches the default export dimension and
+  keeps the exact chosen ratio. 
 
 - In the history module item tooltip, fixed the formatting and scaling
   of the changes to match the values as seen in the modules
