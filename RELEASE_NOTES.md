@@ -74,7 +74,9 @@ changes (where available).
 
 ## UI/UX Improvements
 
-- N/A
+- Replaced the zoom range widget, which controls the number of
+  thumbnails displayed on the thumbnail table, with a spin
+  button. This makes it easier to set the exact value.
 
 ## Performance Improvements
 
