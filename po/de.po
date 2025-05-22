@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-05-18 22:43+0200\n"
-"PO-Revision-Date: 2025-05-20 10:17+0200\n"
+"PO-Revision-Date: 2025-05-22 17:23+0200\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -622,7 +622,7 @@ msgstr "teilkomplementär"
 #: ../build/bin/conf_gen.h:3105
 msgctxt "preferences"
 msgid "dyad"
-msgstr "Radisch"
+msgstr "dyadisch"
 
 #: ../build/bin/conf_gen.h:3106
 msgctxt "preferences"
@@ -755,19 +755,19 @@ msgstr "ausblenden"
 #: ../build/bin/conf_gen.h:3603
 msgctxt "preferences"
 msgid "fit"
-msgstr "einpassen"
+msgstr "passend"
 
 # ist das eine passende Übersetzung?
 # gerne konstruktive Vorschläge ;)
 #: ../build/bin/conf_gen.h:3604
 msgctxt "preferences"
 msgid "smooth"
-msgstr "einpassen & ausblenden"
+msgstr "dynamisch"
 
 #: ../build/bin/conf_gen.h:3605
 msgctxt "preferences"
 msgid "glide"
-msgstr "einpassen & gleitend ausblenden"
+msgstr "gleitend"
 
 #: ../build/bin/preferences_gen.h:77 ../build/bin/preferences_gen.h:4349
 #: ../build/bin/preferences_gen.h:4388 ../build/bin/preferences_gen.h:4427
@@ -1295,7 +1295,7 @@ msgstr "Vertausche Panel für Bearbeitung- und Hilfsmodule"
 
 #: ../build/bin/preferences_gen.h:5723
 msgid "move the list of processing modules to the left of the screen"
-msgstr "Plane fürVerarbeitungsmodule wird links angeordnet"
+msgstr "Panel für Verarbeitungsmodule wird links angeordnet"
 
 #: ../build/bin/preferences_gen.h:5744
 msgid "show right-side buttons in processing module headers"
@@ -1314,14 +1314,14 @@ msgid ""
 " - 'glide': gradually hide individual buttons as needed"
 msgstr ""
 "Die Multiinstanz-, Reset- und Voreinstellungsschaltflächen können verborgen werden, wenn sich der Mauszeiger nicht über einem Modul befinden\n"
-" - „immer”: Alle Schaltflächen immer anzeigen\n"
-" - „aktive”: Zeige Schaltflächen nur, wenn Mauszeiger über Modul\n"
-" - „dunkel”: Schaltflächen werden abgedunkelt, wenn Maus nicht über Modul\n"
-" - „automatisch”: Verberge Schaltflächen, wenn Panel zu schmal\n"
-" - „ausblenden”: Blende Schaltflächen aus, wenn Panel zu schmal\n"
-" - „einpassen”: Verberge Schaltflächen, wenn Panel zu schmal für Modulname und Schaltflächen\n"
-" - „einpassen & ausblenden”: Blende Schaltflächen aus, wenn Panel zu schmal für Modulname und Schaltflächen\n"
-" - „einpassen & gleitend ausblenden”: Blende Schaltflächen schrittweise aus, wenn Panel zu schmal für Modulname und Schaltflächen"
+" - „immer”: alle Schaltflächen immer anzeigen\n"
+" - „aktive”: zeige Schaltflächen nur, wenn Mauszeiger über Modul\n"
+" - „dunkel”: alle Schaltflächen abdunkeln, wenn Maus nicht über Modul\n"
+" - „automatisch”: alle Schaltflächen verbergen , wenn Panel zu schmal\n"
+" - „ausblenden”: alle Schaltflächen ausblenden, wenn Panel zu schmal\n"
+" - „passend”: Schaltflächen verbergen, wenn Panel zu schmal für Modulname und Schaltflächen\n"
+" - „dynamisch”: Schaltflächen ausblenden und verbergen, wenn Panel zu schmal für Modulname und Schaltflächen\n"
+" - „gleitend”: Schaltflächen schrittweise verbergen, wenn Panel zu schmal für Modulname und Schaltflächen"
 
 #: ../build/bin/preferences_gen.h:5779
 msgid "show mask indicator in module headers"
@@ -1456,7 +1456,7 @@ msgid ""
 "these messages can be false-positive and should be disregarded if you know what you are doing. this option will hide them all the time."
 msgstr ""
 "Warnmeldungen in den Modulen anzeigen, wenn nicht standardmäßige und möglicherweise nachteilige Einstellungen in der Pipeline verwendet werden.\n"
-"Diese Meldungen können falsch-positiv sein und sollten ignoriert werden, wenn Du weisst, was Du tust. Mit dieser Option werden sie immer ausgeblendet."
+"Diese Meldungen können falsch-positiv sein und sollten ignoriert werden, wenn Du weißt, was Du tust. Mit dieser Option werden sie immer ausgeblendet."
 
 #: ../build/bin/preferences_gen.h:6224
 msgid "CPU / memory"
@@ -2026,7 +2026,7 @@ msgstr "Groß- und Kleinschreibung für Tags"
 
 #: ../build/bin/preferences_gen.h:8326
 msgid "tags case sensitivity. without the Sqlite ICU extension, insensitivity works only for the 26 latin letters"
-msgstr "Groß- und Kleinschreibung für Tags. Ohne die Sqlite ICU Erweiterung funktioniert die Nichtbeachtung der Groß/Kleinschreibung nur für die 26 lateinischen Buchstaben"
+msgstr "Groß- und Kleinschreibung für Tags. Ohne die SQLite ICU Erweiterung funktioniert die Nichtbeachtung der Groß/Kleinschreibung nur für die 26 lateinischen Buchstaben"
 
 #: ../build/bin/preferences_gen.h:8347 ../build/bin/preferences_gen.h:8490
 msgid "number of collections to be stored"
@@ -2166,7 +2166,7 @@ msgstr "Dehaze (stark, nur Luminanz)"
 
 #: ../build/bin/styles_string.h:18
 msgid "desaturate and darken red pupils in flash photos.  add drawn masks to limit affected areas to just the eyes if necessary."
-msgstr "Entsättigen und verdunkeln roter Pupillen in Blitzlichtfotos. Ggf Masken hinzufügen, um die betroffenen Bereiche auf die Augen zu beschränken."
+msgstr "Entsättigen und verdunkeln roter Pupillen in Blitzlichtfotos. Ggf. Masken hinzufügen, um die betroffenen Bereiche auf die Augen zu beschränken."
 
 #: ../build/bin/styles_string.h:19
 msgid "effects"
@@ -3008,7 +3008,7 @@ msgstr "V1 (violett 2724 K)"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:546
 msgid "V2 (Violet 4070 K)"
-msgstr "V2 (violet 4070 K)"
+msgstr "V2 (violett 4070 K)"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:551
 msgid "linear Bradford (ICC v4)"
@@ -5267,7 +5267,7 @@ msgstr "Graphik;Grafik;Photographie;Fotografie;RAW;"
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:2
 msgid "darktable manages your camera raw files and images in a database, lets you view them through lighttable mode and develop/enhance them in darkroom mode."
-msgstr "darktable verwaltet die RAW-Dateien und Bilder der Kamera in einer Datenbank, zeigt sie im Leuchttisch-Modus an und ermöglicht die Entwicklung/Bearbeitung iim Dunkelkammer-Modus."
+msgstr "darktable verwaltet die RAW-Dateien und Bilder der Kamera in einer Datenbank, zeigt sie im Leuchttisch-Modus an und ermöglicht die Entwicklung/Bearbeitung im Dunkelkammer-Modus."
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:3
 msgid "Other modes besides lighttable and darkroom are a map for geotagging, tethering, print and a slideshow."
@@ -6122,7 +6122,7 @@ msgstr "Lab"
 
 #: ../src/common/colorspaces.c:1547 ../src/common/colorspaces.c:1751
 msgid "linear infrared BGR"
-msgstr "linears Infrarot-BGR"
+msgstr "lineares Infrarot-BGR"
 
 #: ../src/common/colorspaces.c:1552
 msgid "BRG (for testing)"
@@ -7599,7 +7599,7 @@ msgstr "SUCCESS: %s alt (DB) → neu (XMP) synchronisiert"
 #: ../src/control/crawler.c:702
 #, c-format
 msgid "%id %02dh %02dm %02ds"
-msgstr "%it %02dh %02dm %02ds"
+msgstr "%id %02dh %02dm %02ds"
 
 #: ../src/control/crawler.c:754
 msgid "XMP"
@@ -9413,7 +9413,7 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 "<b>Ausblendemodus</b>: Shift+Klick, <b>drehen</b>: Strg+ziehen\n"
-"<b>Größe</b>: Scrollen, <b>Ausblendegöße</b>: Shift+Scrollen, <b>Deckkraft</b>: Strg+Scrollen (%d%%)"
+"<b>Größe</b>: Scrollen, <b>Ausblendegröße</b>: Shift+Scrollen, <b>Deckkraft</b>: Strg+Scrollen (%d%%)"
 
 #: ../src/develop/masks/gradient.c:130 ../src/develop/masks/gradient.c:173
 #, c-format
@@ -9566,7 +9566,7 @@ msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>: ctrl+click\n"
 "<b>finish path</b>: right-click"
 msgstr ""
-"<b>Knoten hinzufügen</b>: Klick, <b>spitzen Knoten hinzufügen</b>: Strg+klick\n"
+"<b>Knoten hinzufügen</b>: Klick, <b>spitzen Knoten hinzufügen</b>: Strg+Klick\n"
 "<b>Pfad abschließen</b>: Rechtsklick"
 
 #: ../src/develop/masks/path.c:3994
@@ -9575,7 +9575,7 @@ msgid ""
 "<b>switch smooth/sharp mode</b>: ctrl+click"
 msgstr ""
 "<b>Knoten bewegen</b>: ziehen, <b>Knoten entfernen</b>: Rechtsklick\n"
-"<b>Wechsel glatt/spitz</b>: Strg+klick"
+"<b>Wechsel glatt/spitz</b>: Strg+Klick"
 
 #: ../src/develop/masks/path.c:3999
 msgid ""
@@ -9590,7 +9590,7 @@ msgid ""
 "<b>move segment</b>: drag, <b>add node</b>: ctrl+click\n"
 "<b>remove path</b>: right-click"
 msgstr ""
-"<b>Segment bewegen</b>: ziehen, <b>Knoten hinzufüge</b>: Strg+klick\n"
+"<b>Segment bewegen</b>: ziehen, <b>Knoten hinzufüge</b>: Strg+Klick\n"
 "<b>Pfad entfernen</b>: Rechtsklick"
 
 #: ../src/develop/pixelpipe_hb.c:515
@@ -10547,12 +10547,12 @@ msgstr "$(EXIF.APERTURE) – Exif-Blende"
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:920
 #: ../src/gui/gtkentry.c:85
 msgid "$(EXIF.CROP_FACTOR) - EXIF crop factor"
-msgstr "$(EXIF.CROP_FACTOR) - EXIF crop factor"
+msgstr "$(EXIF.CROP_FACTOR) - EXIF crop Faktor"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:921
 #: ../src/gui/gtkentry.c:86
 msgid "$(EXIF.FOCAL.LENGTH) - EXIF focal length"
-msgstr "$(EXIF.FOCAL.LENGTH) - EXIF focal length"
+msgstr "$(EXIF.FOCAL.LENGTH) - EXIF Brennweite"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:922
 #: ../src/gui/gtkentry.c:87
@@ -10562,7 +10562,7 @@ msgstr "$(EXIF.FOCAL.LENGTH.EQUIV) - EXIF 35 mm Äquivalenzbrennweite"
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:923
 #: ../src/gui/gtkentry.c:88
 msgid "$(EXIF.FOCUS.DISTANCE) - EXIF focal distance"
-msgstr "$(EXIF.FOCUS.DISTANCE) - EXIF focal distance"
+msgstr "$(EXIF.FOCUS.DISTANCE) - EXIF Fokus Entfernung"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:924
 #: ../src/gui/gtkentry.c:89
@@ -11565,7 +11565,7 @@ msgstr "PDF-Anzeigeprogramm"
 
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:66
 msgid "can be an absolute pathname or the tool may be in the PATH"
-msgstr "ann ein absoluter Pfadname sein oder das Tool befindet sich möglicherweise im PATH."
+msgstr "kann ein absoluter Pfadname sein oder das Tool befindet sich möglicherweise im PATH."
 
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:74
 msgid "thumbs per line"
@@ -12019,7 +12019,7 @@ msgstr "Lua Skripte aus dem Repository aktualisieren"
 #. add additional scripts
 #: ../src/external/lua-scripts/tools/script_manager.lua:1358
 msgid "enter the URL of the git repository containing the scripts you wish to add"
-msgstr "URL des Git-Repositorys eingeben, das die gewünschten Skripte enthält"
+msgstr "URL des Git-Repository eingeben, das die gewünschten Skripte enthält"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1363
 msgid "name of new folder"
@@ -12248,7 +12248,7 @@ msgstr "auf/ab"
 
 #: ../src/gui/accelerators.c:99
 msgid "pgupdown"
-msgstr "Bildauf/ab"
+msgstr "Bild auf/ab"
 
 #: ../src/gui/accelerators.c:107 ../src/views/view.c:1391
 msgid "shift"
@@ -12900,7 +12900,7 @@ msgstr "Bewegung abwärts"
 
 #: ../src/gui/accelerators.c:3611
 msgid "flip top/bottom first/last"
-msgstr "umschalten oben/unten zuerst/letzt"
+msgstr "umschalten oben/unten erstes/letztes"
 
 #: ../src/gui/accelerators.c:3692
 msgid "fallback to move"
@@ -14082,7 +14082,7 @@ msgid ""
 "\n"
 "makes encoding faster, but increases the file size. the loss of image quality is negligible."
 msgstr ""
-"zelegt ein Bild in Segmente.\n"
+"zerlegt ein Bild in Segmente.\n"
 "\n"
 "macht die Codierung schneller erhöht aber die Dateigröße. Die Auswirkung auf die Qualitätsminderung ist vernachlässigbar."
 
@@ -14320,15 +14320,15 @@ msgstr "Encodieraufwand"
 
 #: ../src/imageio/format/jxl.c:635
 msgid "the effort used to encode the image, higher efforts will have better results at the expense of longer encoding times"
-msgstr "Aufwand für die Kodierung des Bildes: ein höherer Wert führt zu besseren Ergebnissen auf Kosten einer längeren Codierdauer"
+msgstr "Aufwand für die Codierung des Bildes: ein höherer Wert führt zu besseren Ergebnissen auf Kosten einer längeren Codierdauer"
 
 #: ../src/imageio/format/jxl.c:645
 msgid "decoding speed"
-msgstr "Dekodierungsgeschwindigkeit"
+msgstr "Decodierungsgeschwindigkeit"
 
 #: ../src/imageio/format/jxl.c:647
 msgid "the preferred decoding speed with some sacrifice of quality"
-msgstr "bevorzugte Dekodiergeschwindigkeit mit gewissen Qualitätseinbußen"
+msgstr "bevorzugte Decodiergeschwindigkeit mit gewissen Qualitätseinbußen"
 
 #: ../src/imageio/format/pdf.c:200 ../src/imageio/format/pdf.c:497
 msgid "invalid paper size"
@@ -14977,7 +14977,7 @@ msgid ""
 "right-click and drag to define a horizontal or vertical line by drawing on the image"
 msgstr ""
 "Bild rotieren\n"
-"Rechtscklick und ziehen, um eine horizontale oder vertikale Linie auf dem Bild zu ziehen"
+"Rechtsklick + ziehen, um eine horizontale oder vertikale Linie auf dem Bild zu ziehen"
 
 #: ../src/iop/ashift.c:6067 ../src/iop/ashift.c:6069
 msgid "apply lens shift correction in one direction"
@@ -16130,7 +16130,7 @@ msgstr "Kanalmixer"
 
 #: ../src/iop/channelmixer.c:128
 msgid "this module is deprecated. please use the color calibration module instead."
-msgstr "veraltetes Modul; abgelöst durch Farbkalibierung"
+msgstr "veraltetes Modul; abgelöst durch Farbkalibrierung"
 
 #: ../src/iop/channelmixer.c:133 ../src/iop/channelmixerrgb.c:234
 msgid ""
@@ -16272,15 +16272,15 @@ msgstr "einfacher Kanalmixer"
 
 #: ../src/iop/channelmixerrgb.c:562
 msgid "channel swap | swap G and B"
-msgstr "Farbkanalstausch | Grün - Blau"
+msgstr "Farbkanaltausch | Grün - Blau"
 
 #: ../src/iop/channelmixerrgb.c:575
 msgid "channel swap | swap G and R"
-msgstr "Farbkanalstausch | Grün - Rot"
+msgstr "Farbkanaltausch | Grün - Rot"
 
 #: ../src/iop/channelmixerrgb.c:588
 msgid "channel swap | swap R and B"
-msgstr "Farbkanalstausch | Rot - Blau"
+msgstr "Farbkanaltausch | Rot - Blau"
 
 #: ../src/iop/channelmixerrgb.c:602
 msgid "area color mapping (active)"
@@ -16388,7 +16388,7 @@ msgstr ""
 "Es gibt mehrere Instanzen der Farbkalibrierung, \n"
 "die alle eine chromatische Adaption durchführen.\n"
 "Dies kann dies zu Inkonsistenzen führen, es sei denn \n"
-"sie werden mit Masken verwendet oder Du weisst, was Du tust."
+"sie werden mit Masken verwendet oder mit Absicht."
 
 #: ../src/iop/channelmixerrgb.c:2063
 msgid "white balance applied twice"
@@ -17037,7 +17037,7 @@ msgstr "Unterer Rand kann nicht über oberen Rand hinauslaufen"
 
 #: ../src/iop/clipping.c:3015
 msgid "<b>commit</b>: double-click, <b>straighten</b>: right-drag"
-msgstr "<b>Bestätigen</b>: Doppelklick, <b>Ausrichten</b>: Rechtsclick-ziehen"
+msgstr "<b>Bestätigen</b>: Doppelklick, <b>Ausrichten</b>: Rechtsklick-ziehen"
 
 #: ../src/iop/clipping.c:3019
 msgid ""
@@ -17045,7 +17045,7 @@ msgid ""
 "<b>straighten</b>: right-drag"
 msgstr ""
 "<b>Größe ändern</b>: ziehen, <b>Seitenverhältnis beibehalten</b>: Shift+ziehen\n"
-"<b>Ausrichten</b>: Rechtsclick-ziehen"
+"<b>Ausrichten</b>: Rechtsklick-ziehen"
 
 #: ../src/iop/clipping.c:3060
 msgid "<b>move control point</b>: drag"
@@ -18267,8 +18267,8 @@ msgid ""
 msgstr ""
 "Kurve basierend auf einem Bildausschnitt erstellen. \n"
 "rechteckige Auswahl erstellt eine flache Kurve\n"
-"Strg+Auswahl erstellt eine positive Kurve. \n"
-"Shift+Auswahlerstellt eine negative Kurve."
+"Strg+Auswahl erstellt eine positive Kurve\n"
+"Shift+Auswahl erstellt eine negative Kurve"
 
 #: ../src/iop/colorzones.c:2654 ../src/iop/rgbcurve.c:1520
 msgid "create curve"
@@ -18618,7 +18618,7 @@ msgstr ""
 msgid "emergency use only: radius of the neighborhood to search patches in. increase for better denoising performance, but watch the long runtimes! large radii can be very slow. you have been warned"
 msgstr ""
 "Nur für den Notfall: Radius der Nachbarschaft, in der nach Blöcken gesucht werden soll. \n"
-"Eine Vergrößerung der Blockgröße führt zu einer besseren Rauschentfernung aber verusacht auch längere Laufzeiten. \n"
+"Eine Vergrößerung der Blockgröße führt zu einer besseren Rauschentfernung aber verursacht auch längere Laufzeiten. \n"
 "Große Radien können zu einer sehr langsamen Bearbeitung führen."
 
 #: ../src/iop/denoiseprofile.c:3817
@@ -20712,7 +20712,7 @@ msgid ""
 "<b>linear, grow, and shrink</b>: ctrl+click"
 msgstr ""
 "<b>Stärke</b>: ziehen\n"
-"<b>linear, vergrößern, verkleinern</b>: Strg+klick"
+"<b>linear, vergrößern, verkleinern</b>: Strg+Klick"
 
 #: ../src/iop/lowlight.c:83
 msgid "lowlight vision"
@@ -20901,7 +20901,7 @@ msgstr "Fehler: CUBE LUT Zeilenzahl %d nicht korrekt, sollte %d sein"
 #: ../src/iop/lut3d.c:860
 #, c-format
 msgid "warning - cube LUT has %d values out of range [0,1]"
-msgstr "Warnung: CUBE LUT hat %d Werte außerhalb des Bbereichs [0,1]"
+msgstr "Warnung: CUBE LUT hat %d Werte außerhalb des Bereichs [0,1]"
 
 #: ../src/iop/lut3d.c:885
 #, c-format
@@ -21187,7 +21187,7 @@ msgstr "Druckeigenschaften"
 #: ../src/iop/negadoctor.c:990
 msgctxt "section"
 msgid "virtual paper properties"
-msgstr "virtuelle Papereigenschaften"
+msgstr "virtuelle Papiereigenschaften"
 
 #: ../src/iop/negadoctor.c:996
 msgid ""
@@ -21639,7 +21639,7 @@ msgstr "veraltetes Modul; abgelöst durch Tonwert Equalizer"
 
 #: ../src/iop/relight.c:250
 msgid "the fill-light in EV"
-msgstr "Füllicht in EV"
+msgstr "Füll-Licht in EV"
 
 #: ../src/iop/relight.c:259
 msgid ""
@@ -21655,7 +21655,7 @@ msgstr "mittlere Helligkeit im Bild wählen"
 
 #: ../src/iop/relight.c:267
 msgid "width of fill-light area defined in zones"
-msgstr "Breite des Füllicht-Bereichs, definiert in Zonen."
+msgstr "Breite des Füll-Licht-Bereichs, definiert in Zonen."
 
 #: ../src/iop/retouch.c:194
 msgid "retouch"
@@ -22831,7 +22831,7 @@ msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if clipping occurs."
 msgstr ""
-"Spanne des Masken-Histogramm zwischen der ersten und letzten Zehntel.Die Mittellinie zeigt den Mittelwert an. \n"
+"Spanne des Masken-Histogramm zwischen der ersten und letzten Zehntel. Die Mittellinie zeigt den Mittelwert an. \n"
 "Orangefarbene Balken erscheinen bei Extrema, wenn es zu Beschneidungen kommt."
 
 #: ../src/iop/toneequal.c:3454
@@ -22902,7 +22902,7 @@ msgstr "wie sehr sollen Spitzlichter und Schatten ausgenommen werden"
 
 #: ../src/iop/vibrance.c:59
 msgid "this module is deprecated. please use the vibrance slider in the color balance rgb module instead."
-msgstr "veraltetes Modul; abgelöst durch den Vibranceregler in Farbbalace RGB"
+msgstr "veraltetes Modul; abgelöst durch den Vibranceregler in Farbbalance RGB"
 
 #: ../src/iop/vibrance.c:92
 msgid ""
@@ -23489,7 +23489,7 @@ msgid ""
 msgstr ""
 "Maus über das Farbfeld bewegen, um den Messpunkt im Bild hervorzuheben, \n"
 "zum Sperren klicken\n"
-"Rechtsklick zum Laden des Meßpunkts in die aktive Pipette"
+"Rechtsklick zum Laden des Messpunkts in die aktive Pipette"
 
 #: ../src/libs/colorpicker.c:738 ../src/libs/colorpicker.c:805
 msgid "click to (un)hide large color patch"
@@ -24696,7 +24696,7 @@ msgstr "Pipette-Modul verwenden, um den Bereich einzuschränken"
 
 #: ../src/libs/histogram.c:1671
 msgid "scroll to coarse-rotate"
-msgstr "Scrollen: grosse Drehung"
+msgstr "Scrollen: große Drehung"
 
 #: ../src/libs/histogram.c:1672
 msgid "ctrl+scroll to fine rotate"
@@ -24764,7 +24764,7 @@ msgstr "Histogramm-Modus umschalten"
 
 #: ../src/libs/histogram.c:2611
 msgid "toggle blue channel"
-msgstr "Blau-Kanal ein/aussblenden"
+msgstr "Blau-Kanal ein/ausblenden"
 
 #: ../src/libs/histogram.c:2613 ../src/libs/histogram.c:2622
 #: ../src/libs/histogram.c:2631
@@ -25012,7 +25012,7 @@ msgstr "Flags"
 
 #: ../src/libs/image.c:618
 msgid "select ratings metadata"
-msgstr "Bewertungemetadaten auswählen"
+msgstr "Bewertungsmetadaten auswählen"
 
 #: ../src/libs/image.c:619
 msgid "select colors metadata"
@@ -25117,7 +25117,7 @@ msgstr[1] "%d Bilder von %d ausgewählt"
 
 #: ../src/libs/import.c:1463
 msgid "choose the root of the folder tree below"
-msgstr "Root Verzeichnis für die unten stehende Ordnertruktur"
+msgstr "Root Verzeichnis für die unten stehende Ordnerstruktur"
 
 #: ../src/libs/import.c:1466
 msgid "places"
@@ -25207,8 +25207,8 @@ msgid ""
 "inspect darktable preferences -> import.\n"
 "check and possibly correct the 'base directory naming pattern'"
 msgstr ""
-"vor der Kopie von Bildern in den darktable Basis-Ordner muß sichergestellt werden, \n"
-"daß dieser wie gewünscht definiert ist.\n"
+"vor der Kopie von Bildern in den darktable Basis-Ordner muss sichergestellt werden, \n"
+"dass dieser wie gewünscht definiert ist.\n"
 "Weitere Informationen siehe darktable Handbuch.\n"
 "\n"
 "ggf. das „Basisverzeichnis für Filmrollen“ im darktable Einstellungsdialog -> Importieren \n"
@@ -25305,11 +25305,11 @@ msgstr "Live-View horizontal spiegeln"
 
 #: ../src/libs/live_view.c:301
 msgid "move focus point in (big steps)"
-msgstr "Fokuspunkt näherrücken (große Schritte)"
+msgstr "Fokuspunkt näher rücken (große Schritte)"
 
 #: ../src/libs/live_view.c:302
 msgid "move focus point in (small steps)"
-msgstr "Fokuspunkt näherrücken (kleine Schritte)"
+msgstr "Fokuspunkt näher rücken (kleine Schritte)"
 
 #. TODO icon not centered
 #: ../src/libs/live_view.c:303
@@ -25318,12 +25318,12 @@ msgstr "Autofokus"
 
 #: ../src/libs/live_view.c:304
 msgid "move focus point out (small steps)"
-msgstr "Fokuspunkt wegrücken (kleine Schritte)"
+msgstr "Fokuspunkt weg rücken (kleine Schritte)"
 
 #. TODO same here
 #: ../src/libs/live_view.c:305
 msgid "move focus point out (big steps)"
-msgstr "Fokuspunkt wegrücken (große Schritte)"
+msgstr "Fokuspunkt weg rücken (große Schritte)"
 
 #: ../src/libs/live_view.c:310
 msgid "overlay"
@@ -26455,7 +26455,7 @@ msgid ""
 msgstr ""
 "Vergrößerungsfaktor des Bildes gegenüber der Druckerauflösung:\n"
 "< 1 ist eine Verkleinerung des Bildes (beste Qualität)\n"
-"> 1 ist eine Vergößerung des Bildes\n"
+"> 1 ist eine Vergrößerung des Bildes\n"
 "ein zu großer Wert kann zu schlechter Druckqualität führen"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
@@ -27392,7 +27392,7 @@ msgstr "gruppierte Bilder zusammenfassen"
 
 #: ../src/libs/tools/global_toolbox.c:401
 msgid "thumbnail overlays options"
-msgstr "Einstellung für Bildinfo-EInblendung"
+msgstr "Einstellung für Bildinfo-Einblendung"
 
 #: ../src/libs/tools/global_toolbox.c:402
 msgid "click to change the type of overlays shown on thumbnails"
@@ -27405,7 +27405,7 @@ msgstr "Überlagerungsmodus für Größe"
 
 #: ../src/libs/tools/global_toolbox.c:428
 msgid "thumbnail overlays"
-msgstr "Bildinfo-EInblendung"
+msgstr "Bildinfo-Einblendung"
 
 #: ../src/libs/tools/global_toolbox.c:430
 #: ../src/libs/tools/global_toolbox.c:459
@@ -27456,7 +27456,7 @@ msgstr "Hilfe"
 #: ../src/libs/tools/global_toolbox.c:482
 msgid "enable this, then click on a control element to see its online help"
 msgstr ""
-"dies aktivieren und dann dann auf ein Bedienelement\n"
+"dies aktivieren und dann auf ein Bedienelement\n"
 "klicken, um die Online-Hilfe anzuzeigen"
 
 #: ../src/libs/tools/global_toolbox.c:488
@@ -27948,7 +27948,7 @@ msgstr ""
 
 #: ../src/views/darkroom.c:2609
 msgid "clipping preview mode"
-msgstr "Abschneidevoransicht"
+msgstr "Clipping Voransicht"
 
 #: ../src/views/darkroom.c:2610
 msgid ""
@@ -28002,13 +28002,13 @@ msgid ""
 "typical color glossy prints produce black at -8.00 EV,\n"
 "typical B&W glossy prints produce black at -9.00 EV."
 msgstr ""
-"Abschneidewert für den Schwarzpunkt in Blendenstufen (EV) relativ zu weiß (0 EV).\n"
-"8-Bit sRGB schneidet bei -12,69 EV ab.\n"
-"8-Bits Adobe RGB schneidet bei -19,79 EV ab.\n"
-"16-Bit sRGB schneidet bei -20,69 EV ab.\n"
-"Typische mattierte Fine-Art-Drucke erzeugen Schwarz bei -5,30 EV.\n"
-"Typische Farbglanzdrucke erzeugen Schwarz bei -8,00 EV.\n"
-"Typische Hochglanz-Schwarz-Weiß- Drucke erzeugen Schwarz bei -9,00 EV."
+"Clipping-Wert für den Schwarzpunkt in Blendenstufen (EV) relativ zu weiß (0 EV).\n"
+"8-Bit sRGB clippt bei -12,69 EV\n"
+"8-Bits Adobe RGB clippt bei -19,79 EV\n"
+"16-Bit sRGB clippt bei -20,69 EV\n"
+"Typische mattierte Fine-Art-Drucke erzeugen Schwarz bei -5,30 EV\n"
+"Typische Farbglanzdrucke erzeugen Schwarz bei -8,00 EV\n"
+"Typische Hochglanz-Schwarz-Weiß- Drucke erzeugen Schwarz bei -9,00 EV"
 
 #: ../src/views/darkroom.c:2653
 msgid "upper threshold"
@@ -28021,7 +28021,7 @@ msgid ""
 "clipping threshold for the white point.\n"
 "100% is peak medium luminance."
 msgstr ""
-"Abschneidewert für den Weißpunkt.\n"
+"Clipping-Wert für den Weißpunkt.\n"
 "100% entsprechen der maximalen mittleren Luminanz."
 
 #: ../src/views/darkroom.c:2667
@@ -28275,7 +28275,7 @@ msgstr "Bild auswählen"
 
 #: ../src/views/lighttable.c:968
 msgid "select range from last image"
-msgstr "Bereich ausgehend vom letzen Bild auswählen"
+msgstr "Bereich ausgehend vom letzten Bild auswählen"
 
 #: ../src/views/lighttable.c:970
 msgid "add image to or remove it from a selection"
@@ -28295,7 +28295,7 @@ msgstr "Innerhalb aller Bilder verschieben"
 
 #: ../src/views/lighttable.c:984
 msgid "zoom current image"
-msgstr "Aktuelles bild skalieren"
+msgstr "Aktuelles Bild skalieren"
 
 #: ../src/views/lighttable.c:985
 msgid "pan inside current image"
