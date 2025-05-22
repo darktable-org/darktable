@@ -65,6 +65,13 @@ changes (where available).
   what combination of the RGB channels of that pfm file will be used
   for the raster mask.
 
+- Sigmoid module is now the default tonemapper selected for new
+  installation.
+
+- The export module has got a new section multi-preset export which
+  allows to export the selected images with multiple presets in one
+  single export run.
+
 ## UI/UX Improvements
 
 - N/A
@@ -158,6 +165,16 @@ changes (where available).
 - Added auto login to the piwigo export module. This can be enabled in
   the security section of the preferences.
 
+- Add 45x35 aspect ratio to the crop module, which is popular on IDs
+  and passports.
+
+- Color assessment conditions: Changed total border width to relative
+  scaling which should work well on small and big screens, independent
+  of physical screen resolution, added pop-up window for
+  parameterization and removed ISO12464 reference.
+
+- Attach export ICC profile to JP2 images.
+
 ## Bug Fixes
 
 - Fixed sidecar writing if quitting from darkroom.
@@ -185,6 +202,16 @@ changes (where available).
   loaded GPX track in the geotagging module is now properly removed.
 
 - Fixed darktable-cli crashing if the darktable database is locked.
+
+- Fixed image not properly layout in the print module after beeing
+  rotated from Lighttable.
+
+- Fixed a bug where the changes in various edit fields are not saved
+  correctly when the field loses the input focus.
+
+- Fixed incorrect reporting of whether a flash was fired in expansion
+  variables $(EXIF.FLASH.ICON) and $(EXIF.FLASH) under certain
+  conditions.
 
 ## Lua
 
