@@ -128,8 +128,8 @@ changes (where available).
 
 - Reduced haze removal visible difference between exports and HQ
   darkroom processing.
-  For some images the algorithm fails to calculate correction parameters,
-  this is reported via control log.
+  For some images the algorithm fails to calculate correction
+  parameters, this is reported via control log.
 
 - Lens info is now read from OM-System/Olympus image files taken with
   lenses without electronic data if this info is entered in the
@@ -148,8 +148,8 @@ changes (where available).
 - Changing orientation (via the flip module) respects changes done in
   crop module.
 
-- The shown dimension while cropping now matches the default export dimension and
-  keeps the exact chosen ratio. 
+- The shown dimension while cropping now matches the default export
+  dimension and keeps the exact chosen ratio.
 
 - In the history module item tooltip, fixed the formatting and scaling
   of the changes to match the values as seen in the modules
