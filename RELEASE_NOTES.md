@@ -78,6 +78,12 @@ changes (where available).
   thumbnails displayed on the thumbnail table, with a spin
   button. This makes it easier to set the exact value.
 
+- In the 4 ways tab in color balance rgb, ctrl+click now picks the
+  actual color while regular click continues to pick the opposite
+  color. This gives users more flexibility and control when selecting
+  hues.
+
+
 ## Performance Improvements
 
 - Eliminated unnecessary GUI refreshes.
