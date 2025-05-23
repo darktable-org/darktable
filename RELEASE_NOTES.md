@@ -186,6 +186,12 @@ changes (where available).
 - Improved visibility of masks in darkroom. This is controlled by the
   new hidden "darkroom/ui/develop_mask_mix" conf option.
 
+- Add a new setting to change which images are taken into account for
+  actions: By default, the image under the cursor takes priority. With
+  this parameter enabled, the selected images will take priority, and
+  the image under the cursor will only be taken into account to feed
+  the information modules.
+
 ## Bug Fixes
 
 - Fixed sidecar writing if quitting from darkroom.
