@@ -183,6 +183,9 @@ changes (where available).
 
 - Attach export ICC profile to JP2 images.
 
+- Improved visibility of masks in darkroom. This is controlled by the
+  new hidden "darkroom/ui/develop_mask_mix" conf option.
+
 ## Bug Fixes
 
 - Fixed sidecar writing if quitting from darkroom.
