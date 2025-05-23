@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-05-18 22:43+0200\n"
-"PO-Revision-Date: 2025-05-18 22:45+0200\n"
+"POT-Creation-Date: 2025-05-23 23:33+0200\n"
+"PO-Revision-Date: 2025-05-23 23:33+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -859,7 +859,7 @@ msgstr "Ce paramètre a été modifié"
 #: ../build/bin/preferences_gen.h:4321 ../build/bin/preferences_gen.h:4504
 #: ../build/bin/preferences_gen.h:5177 ../build/bin/preferences_gen.h:5882
 #: ../build/bin/preferences_gen.h:6725 ../build/bin/preferences_gen.h:7252
-#: ../build/bin/preferences_gen.h:7518 ../src/gui/accelerators.c:3013
+#: ../build/bin/preferences_gen.h:7518 ../src/gui/accelerators.c:3048
 #: ../src/gui/gtk.c:3148 ../src/gui/preferences.c:519
 #: ../src/gui/preferences.c:1032 ../src/libs/modulegroups.c:4092
 msgid "?"
@@ -3408,32 +3408,32 @@ msgstr "Version 3 (Avril 2021)"
 
 #: ../build/lib/darktable/plugins/introspection_clipping.c:142
 #: ../build/lib/darktable/plugins/introspection_clipping.c:303
-#: ../build/lib/darktable/plugins/introspection_crop.c:61
-#: ../build/lib/darktable/plugins/introspection_crop.c:134
+#: ../build/lib/darktable/plugins/introspection_crop.c:65
+#: ../build/lib/darktable/plugins/introspection_crop.c:144
 #: ../src/gui/gtk.c:1391 ../src/iop/atrous.c:1624
 msgid "left"
 msgstr "Gauche"
 
 #: ../build/lib/darktable/plugins/introspection_clipping.c:148
 #: ../build/lib/darktable/plugins/introspection_clipping.c:307
-#: ../build/lib/darktable/plugins/introspection_crop.c:67
-#: ../build/lib/darktable/plugins/introspection_crop.c:138
+#: ../build/lib/darktable/plugins/introspection_crop.c:71
+#: ../build/lib/darktable/plugins/introspection_crop.c:148
 #: ../src/gui/accelerators.c:130 ../src/gui/gtk.c:1401
 msgid "top"
 msgstr "Haut"
 
 #: ../build/lib/darktable/plugins/introspection_clipping.c:154
 #: ../build/lib/darktable/plugins/introspection_clipping.c:311
-#: ../build/lib/darktable/plugins/introspection_crop.c:73
-#: ../build/lib/darktable/plugins/introspection_crop.c:142
+#: ../build/lib/darktable/plugins/introspection_crop.c:77
+#: ../build/lib/darktable/plugins/introspection_crop.c:152
 #: ../src/gui/gtk.c:1396 ../src/iop/atrous.c:1623
 msgid "right"
 msgstr "Droite"
 
 #: ../build/lib/darktable/plugins/introspection_clipping.c:160
 #: ../build/lib/darktable/plugins/introspection_clipping.c:315
-#: ../build/lib/darktable/plugins/introspection_crop.c:79
-#: ../build/lib/darktable/plugins/introspection_crop.c:146
+#: ../build/lib/darktable/plugins/introspection_crop.c:83
+#: ../build/lib/darktable/plugins/introspection_crop.c:156
 #: ../src/gui/accelerators.c:131 ../src/gui/gtk.c:1405
 msgid "bottom"
 msgstr "Bas"
@@ -4805,8 +4805,8 @@ msgstr "Vignettage manuel seulement"
 #. get nice text for bounds
 #. Side-border hide/show
 #: ../build/lib/darktable/plugins/introspection_lens.cc:534
-#: ../src/dtgtk/range.c:1761 ../src/gui/accelerators.c:2608
-#: ../src/gui/accelerators.c:2690 ../src/gui/gtk.c:1454 ../src/gui/gtk.c:3747
+#: ../src/dtgtk/range.c:1761 ../src/gui/accelerators.c:2643
+#: ../src/gui/accelerators.c:2725 ../src/gui/gtk.c:1454 ../src/gui/gtk.c:3747
 #: ../src/imageio/format/pdf.c:662 ../src/iop/denoiseprofile.c:3670
 #: ../src/iop/rawdenoise.c:882 ../src/libs/collect.c:3559
 #: ../src/libs/filtering.c:1510 ../src/libs/filters/colors.c:157
@@ -5725,9 +5725,9 @@ msgstr "Menu déroulant"
 
 #: ../src/chart/main.c:504 ../src/common/database.c:3847
 #: ../src/control/jobs/control_jobs.c:2154
-#: ../src/control/jobs/control_jobs.c:2212 ../src/gui/accelerators.c:2513
-#: ../src/gui/accelerators.c:2595 ../src/gui/accelerators.c:2648
-#: ../src/gui/accelerators.c:2677 ../src/gui/accelerators.c:2739
+#: ../src/control/jobs/control_jobs.c:2212 ../src/gui/accelerators.c:2548
+#: ../src/gui/accelerators.c:2630 ../src/gui/accelerators.c:2683
+#: ../src/gui/accelerators.c:2712 ../src/gui/accelerators.c:2774
 #: ../src/gui/hist_dialog.c:225 ../src/gui/preferences.c:1228
 #: ../src/gui/preferences.c:1268 ../src/gui/presets.c:425
 #: ../src/gui/presets.c:568 ../src/gui/styles_dialog.c:552
@@ -5735,7 +5735,7 @@ msgstr "Menu déroulant"
 #: ../src/imageio/storage/latex.c:145 ../src/iop/lut3d.c:1562
 #: ../src/iop/rasterfile.c:256 ../src/libs/collect.c:433
 #: ../src/libs/collect.c:3390 ../src/libs/copy_history.c:122
-#: ../src/libs/export_metadata.c:168 ../src/libs/geotagging.c:953
+#: ../src/libs/export_metadata.c:168 ../src/libs/geotagging.c:954
 #: ../src/libs/import.c:1863 ../src/libs/import.c:1976
 #: ../src/libs/import.c:2075 ../src/libs/metadata.c:844
 #: ../src/libs/metadata_view.c:1435 ../src/libs/modulegroups.c:3630
@@ -6026,7 +6026,7 @@ msgid "filename"
 msgstr "Nom de fichier"
 
 #: ../src/common/collection.c:634 ../src/develop/lightroom.c:1598
-#: ../src/libs/geotagging.c:141
+#: ../src/libs/geotagging.c:142
 msgid "geotagging"
 msgstr "Géolocalisation"
 
@@ -7016,7 +7016,7 @@ msgstr ""
 "Darktable doit être redémarré.\n"
 
 #: ../src/common/database.c:3872 ../src/common/database.c:3879
-#: ../src/gui/accelerators.c:2596 ../src/gui/accelerators.c:2678
+#: ../src/gui/accelerators.c:2631 ../src/gui/accelerators.c:2713
 #: ../src/gui/hist_dialog.c:226 ../src/gui/presets.c:569
 msgid "_ok"
 msgstr "_Ok"
@@ -7210,32 +7210,12 @@ msgstr ""
 "Le filtre guidé indépendant de l’exposition a échoué lors de l’allocation de "
 "mémoire, vérifier les préférences de la RAM"
 
-#: ../src/common/exif.cc:2003
-#, c-format
-msgid "detected OtherIlluminant in `%s`, please report via darktable github"
-msgstr ""
-"OtherIlluminant détecté dans « %s », merci de reporter sur le GitHub de "
-"Darktable"
-
-#: ../src/common/exif.cc:2053
-#, c-format
-msgid "special exif illuminants in `%s`, please report via darktable github"
-msgstr ""
-"Illuminants Exif spécial dans « %s », merci de reporter sur le GitHub de "
-"Darktable"
-
-#: ../src/common/exif.cc:2081
-#, c-format
-msgid "forward matrix in `%s`, please report via darktable github"
-msgstr ""
-"ForwardMatrix dans « %s », merci de reporter sur le GitHub de Darktable"
-
-#: ../src/common/exif.cc:5877
+#: ../src/common/exif.cc:5872
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "Impossible de lire le fichier XMP « %s » : « %s »"
 
-#: ../src/common/exif.cc:5936
+#: ../src/common/exif.cc:5931
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "Impossible d’écrire le fichier XMP « %s » : « %s »"
@@ -7259,7 +7239,7 @@ msgstr[0] "Supprimer le répertoire vide ?"
 msgstr[1] "Supprimer les répertoires vides ?"
 
 #: ../src/common/film.c:368 ../src/gui/preferences.c:947
-#: ../src/gui/styles_dialog.c:583 ../src/libs/geotagging.c:850
+#: ../src/gui/styles_dialog.c:583 ../src/libs/geotagging.c:851
 #: ../src/libs/import.c:1912
 msgid "name"
 msgstr "Nom"
@@ -7314,65 +7294,65 @@ msgid_plural "date/time re-applied to %d images"
 msgstr[0] "Data/heure réappliquée à %d image"
 msgstr[1] "Data/heure réappliquée à %d images"
 
-#: ../src/common/image.c:2332
+#: ../src/common/image.c:2344
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "Accès à la copie locale « %s » impossible"
 
-#: ../src/common/image.c:2339
+#: ../src/common/image.c:2351
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "Création de la copie locale « %s » impossible"
 
-#: ../src/common/image.c:2346
+#: ../src/common/image.c:2358
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "Erreur lors du déplacement de la copie locale de « %s » vers « %s »"
 
-#: ../src/common/image.c:2363
+#: ../src/common/image.c:2375
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "Erreur de déplacement « %s » : le fichier n’existe pas"
 
-#: ../src/common/image.c:2373
+#: ../src/common/image.c:2385
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "Erreur de déplacement de « %s » vers « %s » : le fichier existe"
 
-#: ../src/common/image.c:2377 ../src/common/image.c:2386
+#: ../src/common/image.c:2389 ../src/common/image.c:2398
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "Erreur lors du déplacement de « %s » vers « %s »"
 
-#: ../src/common/image.c:2688
+#: ../src/common/image.c:2700
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "Impossible de créer une copie locale lorsque l’original n’est pas accessible."
 
-#: ../src/common/image.c:2702
+#: ../src/common/image.c:2714
 msgid "cannot create local copy."
 msgstr "Copie locale impossible."
 
-#: ../src/common/image.c:2783 ../src/control/jobs/control_jobs.c:939
+#: ../src/common/image.c:2795 ../src/control/jobs/control_jobs.c:939
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "Impossible de supprimer une copie locale lorsque l’original n’est pas "
 "accessible."
 
-#: ../src/common/image.c:2959
+#: ../src/common/image.c:2971
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d copie locale a été synchronisée"
 msgstr[1] "%d copies locales ont été synchronisées"
 
-#: ../src/common/image.c:3157
+#: ../src/common/image.c:3169
 msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr "<b>Attention</b>, échantillons manquants pour le boîtier."
 
 # semble être la suite de la phrase précédente,
 # minuscule initiale
-#: ../src/common/image.c:3158
+#: ../src/common/image.c:3170
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://"
 "raw.pixls.us/</a>"
@@ -7382,7 +7362,7 @@ msgstr ""
 
 # semble être la suite de la phrase précédente,
 # minuscule initiale et virgule finale
-#: ../src/common/image.c:3159
+#: ../src/common/image.c:3171
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
@@ -7393,7 +7373,7 @@ msgstr ""
 
 # semble être la suite et fin de la phrase précédente,
 # minuscule initiale et point final
-#: ../src/common/image.c:3162
+#: ../src/common/image.c:3174
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr ""
 "sinon le fichier RAW <b>ne sera plus lisible</b> dans la prochaine version."
@@ -9811,7 +9791,7 @@ msgstr "Activer"
 msgid "focus"
 msgstr "Focus"
 
-#: ../src/develop/imageop.c:4043 ../src/gui/accelerators.c:2891
+#: ../src/develop/imageop.c:4043 ../src/gui/accelerators.c:2926
 msgid "instance"
 msgstr "Instance"
 
@@ -10154,11 +10134,11 @@ msgstr ""
 "<b>Déplacer un segment</b> : déplacer • <b>Ajouter un nœud</b> : Ctrl+clic\n"
 "<b>Supprimer le chemin</b> : clic-droit"
 
-#: ../src/develop/pixelpipe_hb.c:515
+#: ../src/develop/pixelpipe_hb.c:519
 msgid "enabled as required"
 msgstr "Activé car requis"
 
-#: ../src/develop/pixelpipe_hb.c:516
+#: ../src/develop/pixelpipe_hb.c:520
 msgid ""
 "history had module disabled but it is required for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -10167,11 +10147,11 @@ msgstr ""
 "Probablement introduit en appliquant un préréglage, un style ou un copier/"
 "coller d’historique."
 
-#: ../src/develop/pixelpipe_hb.c:523
+#: ../src/develop/pixelpipe_hb.c:527
 msgid "disabled as not appropriate"
 msgstr "Désactivé car non approprié"
 
-#: ../src/develop/pixelpipe_hb.c:524
+#: ../src/develop/pixelpipe_hb.c:528
 msgid ""
 "history had module enabled but it is not allowed for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -10180,7 +10160,7 @@ msgstr ""
 "Probablement introduit en appliquant un préréglage, un style ou un copier/"
 "coller d’historique."
 
-#: ../src/develop/pixelpipe_hb.c:1253
+#: ../src/develop/pixelpipe_hb.c:1257
 #, c-format
 msgid ""
 "fatal pixelpipe abort due to non-aligned buffers\n"
@@ -10191,11 +10171,11 @@ msgstr ""
 "dans le module « %s »\n"
 "Merci de reporter sur GitHub"
 
-#: ../src/develop/pixelpipe_hb.c:1718
+#: ../src/develop/pixelpipe_hb.c:1722
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr "Erreur d'alignement en entrée, merci de reporter sur GitHub\n"
 
-#: ../src/develop/pixelpipe_hb.c:3092
+#: ../src/develop/pixelpipe_hb.c:3096
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -10216,7 +10196,7 @@ msgstr ""
 " • Le « headroom » est trop petit lorsque l'option « Utiliser toute la "
 "mémoire du périphérique » est positionnée."
 
-#: ../src/develop/pixelpipe_hb.c:3285
+#: ../src/develop/pixelpipe_hb.c:3289
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -10369,7 +10349,7 @@ msgid "date type"
 msgstr "Type de date"
 
 #. the date section
-#: ../src/dtgtk/range.c:961 ../src/libs/geotagging.c:1535
+#: ../src/dtgtk/range.c:961 ../src/libs/geotagging.c:1536
 msgid "date"
 msgstr "Date"
 
@@ -10394,7 +10374,7 @@ msgid "days: "
 msgstr "Jours : "
 
 #. the time section
-#: ../src/dtgtk/range.c:1007 ../src/libs/geotagging.c:1535
+#: ../src/dtgtk/range.c:1007 ../src/libs/geotagging.c:1536
 msgid "time"
 msgstr "Date/heure"
 
@@ -12728,7 +12708,7 @@ msgstr "Configuration"
 #. stack for the options
 #. main menu
 #: ../src/external/lua-scripts/tools/script_manager.lua:1545
-#: ../src/gui/accelerators.c:2856 ../src/gui/accelerators.c:2959
+#: ../src/gui/accelerators.c:2891 ../src/gui/accelerators.c:2994
 #: ../src/views/view.c:1608
 msgid "action"
 msgstr "Action"
@@ -12930,13 +12910,13 @@ msgstr "AltGr"
 msgid "edit"
 msgstr "Modifier"
 
-#: ../src/gui/accelerators.c:127 ../src/gui/accelerators.c:739
-#: ../src/gui/accelerators.c:1446
+#: ../src/gui/accelerators.c:127 ../src/gui/accelerators.c:774
+#: ../src/gui/accelerators.c:1481
 msgid "up"
 msgstr "Monter"
 
-#: ../src/gui/accelerators.c:128 ../src/gui/accelerators.c:739
-#: ../src/gui/accelerators.c:1446
+#: ../src/gui/accelerators.c:128 ../src/gui/accelerators.c:774
+#: ../src/gui/accelerators.c:1481
 msgid "down"
 msgstr "Descendre"
 
@@ -12958,11 +12938,11 @@ msgstr "Suivant"
 msgid "previous"
 msgstr "Précédent"
 
-#: ../src/gui/accelerators.c:140 ../src/gui/accelerators.c:1589
+#: ../src/gui/accelerators.c:140 ../src/gui/accelerators.c:1624
 msgid "last"
 msgstr "Dernier"
 
-#: ../src/gui/accelerators.c:141 ../src/gui/accelerators.c:1588
+#: ../src/gui/accelerators.c:141 ../src/gui/accelerators.c:1623
 msgid "first"
 msgstr "Premier"
 
@@ -13031,93 +13011,93 @@ msgstr "Fin"
 msgid "entry"
 msgstr "Zone de saisie"
 
-#: ../src/gui/accelerators.c:452
+#: ../src/gui/accelerators.c:473
 msgid "combo effect not found"
 msgstr "Action « combobox » non trouvée"
 
-#: ../src/gui/accelerators.c:629
+#: ../src/gui/accelerators.c:664
 msgid "(keypad)"
 msgstr "(Pavé numérique)"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l’image n'est pas physiquement dupliquée
-#: ../src/gui/accelerators.c:638
+#: ../src/gui/accelerators.c:673
 msgid "tablet button"
 msgstr "Bouton de la tablette"
 
-#: ../src/gui/accelerators.c:647
+#: ../src/gui/accelerators.c:682
 msgid "unknown driver"
 msgstr "Pilote inconnu"
 
-#: ../src/gui/accelerators.c:720
+#: ../src/gui/accelerators.c:755
 msgid "long"
 msgstr "Long"
 
-#: ../src/gui/accelerators.c:721
+#: ../src/gui/accelerators.c:756
 msgid "double-press"
 msgstr "Double pression"
 
-#: ../src/gui/accelerators.c:722
+#: ../src/gui/accelerators.c:757
 msgid "triple-press"
 msgstr "Triple pression"
 
-#: ../src/gui/accelerators.c:723
+#: ../src/gui/accelerators.c:758
 msgid "press"
 msgstr "Presser"
 
-#: ../src/gui/accelerators.c:727
+#: ../src/gui/accelerators.c:762
 msgctxt "accel"
 msgid "left"
 msgstr "Gauche"
 
-#: ../src/gui/accelerators.c:728
+#: ../src/gui/accelerators.c:763
 msgctxt "accel"
 msgid "right"
 msgstr "Droite"
 
-#: ../src/gui/accelerators.c:729
+#: ../src/gui/accelerators.c:764
 msgctxt "accel"
 msgid "middle"
 msgstr "Milieu"
 
-#: ../src/gui/accelerators.c:730
+#: ../src/gui/accelerators.c:765
 msgctxt "accel"
 msgid "long"
 msgstr "Long"
 
-#: ../src/gui/accelerators.c:731
+#: ../src/gui/accelerators.c:766
 msgctxt "accel"
 msgid "double-click"
 msgstr "Double clic"
 
-#: ../src/gui/accelerators.c:732
+#: ../src/gui/accelerators.c:767
 msgctxt "accel"
 msgid "triple-click"
 msgstr "Triple clic"
 
-#: ../src/gui/accelerators.c:733
+#: ../src/gui/accelerators.c:768
 msgid "click"
 msgstr "Clic"
 
-#: ../src/gui/accelerators.c:761
+#: ../src/gui/accelerators.c:796
 msgid "first instance"
 msgstr "Première instance"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l’image n'est pas physiquement dupliquée
-#: ../src/gui/accelerators.c:763
+#: ../src/gui/accelerators.c:798
 msgid "last instance"
 msgstr "Dernière instance"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l’image n'est pas physiquement dupliquée
-#: ../src/gui/accelerators.c:765
+#: ../src/gui/accelerators.c:800
 msgid "relative instance"
 msgstr "Instance relative"
 
-#: ../src/gui/accelerators.c:782 ../src/gui/accelerators.c:2881
-#: ../src/gui/accelerators.c:3824
+#: ../src/gui/accelerators.c:817 ../src/gui/accelerators.c:2916
+#: ../src/gui/accelerators.c:3856
 msgid "speed"
 msgstr "Vitesse"
 
-#: ../src/gui/accelerators.c:924
+#: ../src/gui/accelerators.c:959
 #, c-format
 msgid ""
 "Lua script command copied to clipboard:\n"
@@ -13128,11 +13108,11 @@ msgstr ""
 "\n"
 "<tt>%s</tt>"
 
-#: ../src/gui/accelerators.c:1028 ../src/gui/accelerators.c:1047
+#: ../src/gui/accelerators.c:1063 ../src/gui/accelerators.c:1082
 msgid "start typing for incremental search"
 msgstr "Commencer la saisie pour lancer la recherche incrémentale"
 
-#: ../src/gui/accelerators.c:1031
+#: ../src/gui/accelerators.c:1066
 msgid ""
 "\n"
 "press Delete to delete selected shortcut"
@@ -13140,7 +13120,7 @@ msgstr ""
 "\n"
 "Touche Delete pour supprimer le raccourci sélectionné"
 
-#: ../src/gui/accelerators.c:1033
+#: ../src/gui/accelerators.c:1068
 msgid ""
 "\n"
 "press Delete to disable selected default shortcut"
@@ -13148,7 +13128,7 @@ msgstr ""
 "\n"
 "Touche Delete pour désactiver le raccourci par défaut sélectionné"
 
-#: ../src/gui/accelerators.c:1034
+#: ../src/gui/accelerators.c:1069
 msgid ""
 "\n"
 "press Delete to restore selected default shortcut"
@@ -13156,7 +13136,7 @@ msgstr ""
 "\n"
 "Touche Delete pour restaurer le raccourci par défaut sélectionné"
 
-#: ../src/gui/accelerators.c:1036
+#: ../src/gui/accelerators.c:1071
 msgid ""
 "\n"
 "double-click to add new shortcut"
@@ -13164,11 +13144,11 @@ msgstr ""
 "\n"
 "Double clic pour ajouter un nouveau raccourci"
 
-#: ../src/gui/accelerators.c:1048
+#: ../src/gui/accelerators.c:1083
 msgid "click to filter shortcuts list"
 msgstr "Cliquer pour filtrer la liste des raccourcis"
 
-#: ../src/gui/accelerators.c:1050
+#: ../src/gui/accelerators.c:1085
 msgid ""
 "\n"
 "right-click to show action of selected shortcut"
@@ -13176,7 +13156,7 @@ msgstr ""
 "\n"
 "Clic-droit pour montrer l’action du raccourci sélectionné"
 
-#: ../src/gui/accelerators.c:1053
+#: ../src/gui/accelerators.c:1088
 msgid ""
 "\n"
 "double-click to define new shortcut"
@@ -13186,11 +13166,11 @@ msgstr ""
 
 # bulle d'aide de l'histogramme, et aussi très souvent dans les modules
 # => pas de " • " initial
-#: ../src/gui/accelerators.c:1069
+#: ../src/gui/accelerators.c:1104
 msgid "shift+alt+scroll to change height"
 msgstr "Maj+Alt+molette pour changer la hauteur"
 
-#: ../src/gui/accelerators.c:1089
+#: ../src/gui/accelerators.c:1124
 msgid ""
 "press keys with mouse click and scroll or move combinations to create a "
 "shortcut"
@@ -13200,31 +13180,31 @@ msgstr ""
 
 # 1re ligne de la liste dans la bulle d'aide de l'icône de définition
 # des raccourcis lorsqu'activée
-#: ../src/gui/accelerators.c:1090
+#: ../src/gui/accelerators.c:1125
 msgid "click to open shortcut configuration"
 msgstr " • Cliquer pour ouvrir le panneau de configuration des raccourcis"
 
-#: ../src/gui/accelerators.c:1091
+#: ../src/gui/accelerators.c:1126
 msgid "ctrl+click to add to quick access panel\n"
 msgstr "Ctrl+clic pour ajouter au panneau d’accès rapide\n"
 
-#: ../src/gui/accelerators.c:1092
+#: ../src/gui/accelerators.c:1127
 msgid "ctrl+click to remove from quick access panel\n"
 msgstr "Ctrl+clic pour supprimer du panneau d’accès rapide\n"
 
 # 2e ligne de la liste dans la bulle d'aide de l'icône de définition
 # des raccourcis lorsqu'activée
-#: ../src/gui/accelerators.c:1093
+#: ../src/gui/accelerators.c:1128
 msgid "scroll to change default speed"
 msgstr " • Molette pour changer la vitesse"
 
 # 3e ligne de la liste dans la bulle d'aide de l'icône de définition
 # des raccourcis lorsqu'activée
-#: ../src/gui/accelerators.c:1094
+#: ../src/gui/accelerators.c:1129
 msgid "right-click to exit mapping mode"
 msgstr " • Clic-droit pour quitter le mode enregistrement"
 
-#: ../src/gui/accelerators.c:1106
+#: ../src/gui/accelerators.c:1141
 #, c-format
 msgid ""
 "%sright-click to type a specific value between <b>%s</b> and <b>%s</b>\n"
@@ -13233,24 +13213,24 @@ msgstr ""
 "%sClic-droit pour définir une valeur entre <b>%s</b> et <b>%s</b>\n"
 "ou maintenir Ctrl+Shift lors du déplacement pour ignorer les limites souples."
 
-#: ../src/gui/accelerators.c:1170
+#: ../src/gui/accelerators.c:1205
 msgid "ctrl+v"
 msgstr "Ctrl+V"
 
-#: ../src/gui/accelerators.c:1170
+#: ../src/gui/accelerators.c:1205
 msgid "right long click"
 msgstr "Clic-droit long"
 
 # minuscule initiale
-#: ../src/gui/accelerators.c:1170
+#: ../src/gui/accelerators.c:1205
 msgid "to copy Lua command"
 msgstr "pour copier la commande Lua"
 
-#: ../src/gui/accelerators.c:1442
+#: ../src/gui/accelerators.c:1477
 msgid "shortcut for move exists with single effect"
 msgstr "Un raccourci pour le mouvement existe avec un effet unique"
 
-#: ../src/gui/accelerators.c:1443
+#: ../src/gui/accelerators.c:1478
 #, c-format
 msgid ""
 "%s\n"
@@ -13261,64 +13241,64 @@ msgstr ""
 "\n"
 "(assigner « %s » à « %s »)"
 
-#: ../src/gui/accelerators.c:1444
+#: ../src/gui/accelerators.c:1479
 msgid "create separate shortcuts for up and down move?"
 msgstr ""
 "Créer des raccourcis différents pour les mouvements monter et descendre ?"
 
-#: ../src/gui/accelerators.c:1470
+#: ../src/gui/accelerators.c:1505
 #, c-format
 msgid "%s, speed reset"
 msgstr "%s, réinitialise la vitesse"
 
-#: ../src/gui/accelerators.c:1488
+#: ../src/gui/accelerators.c:1523
 msgid "shortcut exists with different settings"
 msgstr "Le raccourci existe avec des paramètres différents"
 
-#: ../src/gui/accelerators.c:1489
+#: ../src/gui/accelerators.c:1524
 msgid "reset the settings of the shortcut?"
 msgstr "Réinitialiser les paramètres du raccourci ?"
 
-#: ../src/gui/accelerators.c:1498
+#: ../src/gui/accelerators.c:1533
 msgid "shortcut already exists"
 msgstr "Le raccourci existe déjà"
 
-#: ../src/gui/accelerators.c:1500
+#: ../src/gui/accelerators.c:1535
 msgid "disable this default shortcut?"
 msgstr "Désactiver ce raccourci par défaut ?"
 
-#: ../src/gui/accelerators.c:1501
+#: ../src/gui/accelerators.c:1536
 msgid "remove the shortcut?"
 msgstr "Supprimer le raccourci ?"
 
-#: ../src/gui/accelerators.c:1541
+#: ../src/gui/accelerators.c:1576
 msgid "clashing shortcuts exist"
 msgstr "Il y a des raccourcis conflictuels"
 
-#: ../src/gui/accelerators.c:1542
+#: ../src/gui/accelerators.c:1577
 msgid "remove these existing shortcuts?"
 msgstr "Éliminer ces raccourcis existants ?"
 
 #. or 3, but change char relative[] = "-2" to "-1"
 #. NUM_INSTANCES
-#: ../src/gui/accelerators.c:1587
+#: ../src/gui/accelerators.c:1622
 msgid "preferred"
 msgstr "Préféré"
 
-#: ../src/gui/accelerators.c:1590
+#: ../src/gui/accelerators.c:1625
 msgid "second"
 msgstr "Second"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l’image n'est pas physiquement dupliquée
-#: ../src/gui/accelerators.c:1591
+#: ../src/gui/accelerators.c:1626
 msgid "last but one"
 msgstr "Pénultième"
 
-#: ../src/gui/accelerators.c:1754 ../src/gui/accelerators.c:1819
+#: ../src/gui/accelerators.c:1789 ../src/gui/accelerators.c:1854
 msgid "(unchanged)"
 msgstr "(Non modifié)"
 
-#: ../src/gui/accelerators.c:1936
+#: ../src/gui/accelerators.c:1971
 msgid ""
 "define a shortcut by pressing a key, optionally combined with modifier keys "
 "(ctrl/shift/alt)\n"
@@ -13344,47 +13324,47 @@ msgstr ""
 "\n"
 "Clic-droit pour annuler."
 
-#: ../src/gui/accelerators.c:2009
+#: ../src/gui/accelerators.c:2044
 msgid "removing shortcut"
 msgstr "Suppression du raccourci"
 
-#: ../src/gui/accelerators.c:2011
+#: ../src/gui/accelerators.c:2046
 msgid "disable the selected default shortcut?"
 msgstr "Désactiver le raccourci par défaut sélectionné ?"
 
-#: ../src/gui/accelerators.c:2012
+#: ../src/gui/accelerators.c:2047
 msgid "restore the selected default shortcut?"
 msgstr "Restaurer le raccourci par défaut sélectionné ?"
 
-#: ../src/gui/accelerators.c:2013
+#: ../src/gui/accelerators.c:2048
 msgid "remove the selected shortcut?"
 msgstr "Supprimer le raccourci sélectionné ?"
 
-#: ../src/gui/accelerators.c:2125
+#: ../src/gui/accelerators.c:2160
 msgid "command"
 msgstr "Commande"
 
-#: ../src/gui/accelerators.c:2126
+#: ../src/gui/accelerators.c:2161
 msgid "preset"
 msgstr "Préréglage"
 
-#: ../src/gui/accelerators.c:2507
+#: ../src/gui/accelerators.c:2542
 msgid "restore shortcuts"
 msgstr "Restauration du raccourci"
 
-#: ../src/gui/accelerators.c:2510
+#: ../src/gui/accelerators.c:2545
 msgid "_defaults"
 msgstr "_Défaut"
 
-#: ../src/gui/accelerators.c:2511
+#: ../src/gui/accelerators.c:2546
 msgid "_startup"
 msgstr "_Démarrage"
 
-#: ../src/gui/accelerators.c:2512
+#: ../src/gui/accelerators.c:2547
 msgid "_edits"
 msgstr "_Avant modif"
 
-#: ../src/gui/accelerators.c:2519
+#: ../src/gui/accelerators.c:2554
 msgid ""
 "restore shortcuts from one of these states:\n"
 "  - default\n"
@@ -13396,7 +13376,7 @@ msgstr ""
 " • Comme au démarrage\n"
 " • Comme avant l’ouverture de ce dialogue\n"
 
-#: ../src/gui/accelerators.c:2526
+#: ../src/gui/accelerators.c:2561
 msgid ""
 "clear all newer shortcuts\n"
 "(instead of just restoring changed ones)"
@@ -13404,17 +13384,17 @@ msgstr ""
 "Effacer tous les raccourcis récents\n"
 "au lieu de restaurer ceux qui ont été modifiés."
 
-#: ../src/gui/accelerators.c:2583 ../src/gui/preferences.c:1067
+#: ../src/gui/accelerators.c:2618 ../src/gui/preferences.c:1067
 #: ../src/libs/tools/global_toolbox.c:487
 #: ../src/libs/tools/global_toolbox.c:664
 msgid "shortcuts"
 msgstr "Raccourcis"
 
-#: ../src/gui/accelerators.c:2593
+#: ../src/gui/accelerators.c:2628
 msgid "export shortcuts"
 msgstr "Exporter les raccourcis"
 
-#: ../src/gui/accelerators.c:2602
+#: ../src/gui/accelerators.c:2637
 msgid ""
 "export all shortcuts to a file\n"
 "or just for one selected device\n"
@@ -13422,27 +13402,27 @@ msgstr ""
 "Exporter tous les raccourcis dans un fichier\n"
 "ou seulement pour un périphérique sélectionné.\n"
 
-#: ../src/gui/accelerators.c:2609 ../src/gui/accelerators.c:2691
+#: ../src/gui/accelerators.c:2644 ../src/gui/accelerators.c:2726
 msgid "keyboard"
 msgstr "Clavier"
 
-#: ../src/gui/accelerators.c:2621
+#: ../src/gui/accelerators.c:2656
 msgid "device id"
 msgstr "Id du périphérique"
 
-#: ../src/gui/accelerators.c:2647
+#: ../src/gui/accelerators.c:2682
 msgid "select file to export"
 msgstr "Sélectionne le fichier à exporter"
 
-#: ../src/gui/accelerators.c:2648 ../src/libs/tagging.c:2629
+#: ../src/gui/accelerators.c:2683 ../src/libs/tagging.c:2629
 msgid "_export"
 msgstr "_Exporter"
 
-#: ../src/gui/accelerators.c:2675
+#: ../src/gui/accelerators.c:2710
 msgid "import shortcuts"
 msgstr "Importer des raccourcis"
 
-#: ../src/gui/accelerators.c:2684
+#: ../src/gui/accelerators.c:2719
 msgid ""
 "import all shortcuts from a file\n"
 "or just for one selected device\n"
@@ -13450,31 +13430,31 @@ msgstr ""
 "Importer tous les raccourcis du fichier,\n"
 "ou seulement pour un périphérique sélectionné.\n"
 
-#: ../src/gui/accelerators.c:2703
+#: ../src/gui/accelerators.c:2738
 msgid "id in file"
 msgstr "Id dans le fichier"
 
-#: ../src/gui/accelerators.c:2709
+#: ../src/gui/accelerators.c:2744
 msgid "id when loaded"
 msgstr "Id lorsque chargé"
 
-#: ../src/gui/accelerators.c:2713
+#: ../src/gui/accelerators.c:2748
 msgid "clear device first"
 msgstr "Effacer d’abord les raccourcis du périphérique"
 
-#: ../src/gui/accelerators.c:2738
+#: ../src/gui/accelerators.c:2773
 msgid "select file to import"
 msgstr "Sélectionner le fichier à importer"
 
-#: ../src/gui/accelerators.c:2739 ../src/libs/tagging.c:2593
+#: ../src/gui/accelerators.c:2774 ../src/libs/tagging.c:2593
 msgid "_import"
 msgstr "_Importer"
 
-#: ../src/gui/accelerators.c:2831
+#: ../src/gui/accelerators.c:2866
 msgid "search shortcuts list"
 msgstr "Chercher dans la liste des raccourcis"
 
-#: ../src/gui/accelerators.c:2833
+#: ../src/gui/accelerators.c:2868
 msgid ""
 "incrementally search the list of shortcuts\n"
 "press up or down keys to cycle through matches"
@@ -13482,23 +13462,23 @@ msgstr ""
 "Recherche incrémentale dans la liste des raccourcis,\n"
 "appuyer les touches haut ou bas pour parcourir la sélection."
 
-#: ../src/gui/accelerators.c:2853 ../src/views/view.c:1606
+#: ../src/gui/accelerators.c:2888 ../src/views/view.c:1606
 msgid "shortcut"
 msgstr "Raccourci"
 
-#: ../src/gui/accelerators.c:2866
+#: ../src/gui/accelerators.c:2901
 msgid "element"
 msgstr "Élément"
 
-#: ../src/gui/accelerators.c:2874
+#: ../src/gui/accelerators.c:2909
 msgid "effect"
 msgstr "Effets"
 
-#: ../src/gui/accelerators.c:2935
+#: ../src/gui/accelerators.c:2970
 msgid "search actions list"
 msgstr "Chercher dans la liste d’actions"
 
-#: ../src/gui/accelerators.c:2937
+#: ../src/gui/accelerators.c:2972
 msgid ""
 "incrementally search the list of actions\n"
 "press up or down keys to cycle through matches"
@@ -13506,16 +13486,16 @@ msgstr ""
 "Recherche incrémentale dans la liste des actions,\n"
 "appuyer les touches haut ou bas pour parcourir la sélection."
 
-#: ../src/gui/accelerators.c:2967 ../src/gui/guides.c:851
+#: ../src/gui/accelerators.c:3002 ../src/gui/guides.c:851
 #: ../src/gui/metadata_tags.c:124
 msgid "type"
 msgstr "Type"
 
-#: ../src/gui/accelerators.c:3005
+#: ../src/gui/accelerators.c:3040
 msgid "enable fallbacks"
 msgstr "Activer les replis"
 
-#: ../src/gui/accelerators.c:3006
+#: ../src/gui/accelerators.c:3041
 msgid ""
 "enables default meanings for additional buttons, modifiers or moves\n"
 "when used in combination with a base shortcut"
@@ -13524,38 +13504,38 @@ msgstr ""
 "additionnels,\n"
 "lorsque utilisé avec un raccourci de base."
 
-#: ../src/gui/accelerators.c:3014
+#: ../src/gui/accelerators.c:3049
 msgid "open help page for shortcuts"
 msgstr "Ouvre la page d'aide pour les raccourcis"
 
 # lorsque l’action n’engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/gui/accelerators.c:3019
+#: ../src/gui/accelerators.c:3054
 msgid "restore..."
 msgstr "Restaurer…"
 
-#: ../src/gui/accelerators.c:3020
+#: ../src/gui/accelerators.c:3055
 msgid "restore default shortcuts or previous state"
 msgstr "Restaurer les raccourcis par défaut ou leur état précédent"
 
-#: ../src/gui/accelerators.c:3024 ../src/libs/styles.c:901
+#: ../src/gui/accelerators.c:3059 ../src/libs/styles.c:901
 #: ../src/libs/tagging.c:3369
 msgid "import..."
 msgstr "Importer…"
 
-#: ../src/gui/accelerators.c:3025
+#: ../src/gui/accelerators.c:3060
 msgid "fully or partially import shortcuts from file"
 msgstr "Importer tout ou partiellement les raccourcis"
 
-#: ../src/gui/accelerators.c:3029 ../src/libs/styles.c:907
+#: ../src/gui/accelerators.c:3064 ../src/libs/styles.c:907
 #: ../src/libs/tagging.c:3372
 msgid "export..."
 msgstr "Exporter…"
 
-#: ../src/gui/accelerators.c:3030
+#: ../src/gui/accelerators.c:3065
 msgid "fully or partially export shortcuts to file"
 msgstr "Exporter tout ou partiellement les raccourcis"
 
-#: ../src/gui/accelerators.c:3038
+#: ../src/gui/accelerators.c:3073
 msgid ""
 "the recommended way to assign shortcuts to visual elements is the <b>visual "
 "shortcut mapping</b> mode.\n"
@@ -13589,24 +13569,24 @@ msgstr ""
 "<i>Cliquer <b>trois fois</b> pour supprimer définitivement cette "
 "notification.</i>"
 
-#: ../src/gui/accelerators.c:3469
+#: ../src/gui/accelerators.c:3501
 msgid "reinitialising input devices"
 msgstr "Réinitialise les périphériques d’entrée"
 
 # lorsque l’action n’engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/gui/accelerators.c:3611
+#: ../src/gui/accelerators.c:3643
 msgid "down move"
 msgstr "Mouvement vers le bas"
 
-#: ../src/gui/accelerators.c:3611
+#: ../src/gui/accelerators.c:3643
 msgid "flip top/bottom first/last"
 msgstr "Intervertir haut/bas premier/dernier"
 
-#: ../src/gui/accelerators.c:3692
+#: ../src/gui/accelerators.c:3724
 msgid "fallback to move"
 msgstr "Repli à déplacer"
 
-#: ../src/gui/accelerators.c:3793
+#: ../src/gui/accelerators.c:3825
 #, c-format
 msgid ""
 "\n"
@@ -13615,17 +13595,17 @@ msgstr ""
 "\n"
 "Applique le préréglage « %s »"
 
-#: ../src/gui/accelerators.c:3943
+#: ../src/gui/accelerators.c:3975
 #, c-format
 msgid "%s not assigned"
 msgstr "« %s » n’est pas assigné"
 
-#: ../src/gui/accelerators.c:4124
+#: ../src/gui/accelerators.c:4154
 #, c-format
 msgid "%s assigned to %s"
 msgstr "« %s » est assigné à « %s »"
 
-#: ../src/gui/accelerators.c:4343
+#: ../src/gui/accelerators.c:4373
 msgid "short key press resets stuck keys"
 msgstr "Une pression courte réinitialise les touches bloquées"
 
@@ -14181,7 +14161,7 @@ msgstr "Sélectionner un mot-clé"
 msgid "_add"
 msgstr "_Ajouter"
 
-#: ../src/gui/metadata_tags.c:93 ../src/libs/geotagging.c:831
+#: ../src/gui/metadata_tags.c:93 ../src/libs/geotagging.c:832
 msgid "_done"
 msgstr "_Terminé"
 
@@ -14365,7 +14345,7 @@ msgid "select preset(s) to import"
 msgstr "Sélectionne le(s) préréglage(s) à importer"
 
 #: ../src/gui/preferences.c:1228 ../src/libs/collect.c:433
-#: ../src/libs/copy_history.c:122 ../src/libs/geotagging.c:954
+#: ../src/libs/copy_history.c:122 ../src/libs/geotagging.c:955
 #: ../src/libs/import.c:1863 ../src/libs/import.c:1976 ../src/libs/styles.c:595
 msgid "_open"
 msgstr "_Ouvrir"
@@ -14375,7 +14355,7 @@ msgid "darktable preset files"
 msgstr "Fichiers de préréglage"
 
 #: ../src/gui/preferences.c:1242 ../src/iop/lut3d.c:1593
-#: ../src/libs/copy_history.c:161 ../src/libs/geotagging.c:970
+#: ../src/libs/copy_history.c:161 ../src/libs/geotagging.c:971
 #: ../src/libs/styles.c:609
 msgid "all files"
 msgstr "Tous les fichiers"
@@ -19145,7 +19125,7 @@ msgstr "Priorité à des couleurs de remplacement spécifiques"
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "Teinte à laquelle on donne priorité sur les autres"
 
-#: ../src/iop/colorreconstruction.c:1254 ../src/iop/demosaic.c:1364
+#: ../src/iop/colorreconstruction.c:1254 ../src/iop/demosaic.c:1370
 #: ../src/iop/highlights.c:1359
 msgid "not applicable"
 msgstr "Non applicable"
@@ -19374,12 +19354,12 @@ msgstr ""
 "Reconstruit des pixels RVB complets\n"
 "à partir de la lecture d’un capteur à grille de filtres colorés."
 
-#: ../src/iop/demosaic.c:1174
+#: ../src/iop/demosaic.c:1180
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "Matrice de couleurs « %s » non trouvée pour une image de Bayer"
 
-#: ../src/iop/demosaic.c:1327
+#: ../src/iop/demosaic.c:1333
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -19394,7 +19374,7 @@ msgstr ""
 "Un double dématriçage accroît le temps de traitement par fusionnant un "
 "variant VNG en seconde passe."
 
-#: ../src/iop/demosaic.c:1331
+#: ../src/iop/demosaic.c:1337
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -19406,11 +19386,11 @@ msgstr ""
 "Un double dématriçage accroît le temps de traitement par fusionnant un "
 "variant VNG en seconde passe."
 
-#: ../src/iop/demosaic.c:1337
+#: ../src/iop/demosaic.c:1343
 msgid "Bayer4 sensor demosaicing methods."
 msgstr "Méthode de dématriçage pour les capteurs de Bayer."
 
-#: ../src/iop/demosaic.c:1341
+#: ../src/iop/demosaic.c:1347
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -19419,7 +19399,7 @@ msgstr ""
 "Seuil pour une passe médiane supplémentaire.\n"
 "Indiquer « 0.0 » pour désactiver, « 1.0 » pour ignorer les bords."
 
-#: ../src/iop/demosaic.c:1346
+#: ../src/iop/demosaic.c:1352
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -19429,11 +19409,11 @@ msgstr ""
 " • « 0.0 » pour favoriser les hautes fréquences (détails).\n"
 " • « 1.0 » pour favoriser les basses fréquences (aplats)."
 
-#: ../src/iop/demosaic.c:1349
+#: ../src/iop/demosaic.c:1355
 msgid "toggle mask visualization"
 msgstr "Bascule la visualisation du masque"
 
-#: ../src/iop/demosaic.c:1352
+#: ../src/iop/demosaic.c:1358
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -19442,15 +19422,15 @@ msgstr ""
 "Le pas « Médian » fait la moyenne de la sortie, le pas « Raffinement »\n"
 "ajoute un nouveau calcul des canaux rouges et bleus."
 
-#: ../src/iop/demosaic.c:1355
+#: ../src/iop/demosaic.c:1361
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "Nombre de passes pour le lissage de couleur après le dématriçage"
 
-#: ../src/iop/demosaic.c:1358
+#: ../src/iop/demosaic.c:1364
 msgid "green channels matching method"
 msgstr "Méthode de calcul des verts"
 
-#: ../src/iop/demosaic.c:1365
+#: ../src/iop/demosaic.c:1371
 msgid "demosaicing is only used for color raw images"
 msgstr "« Dématriçage » est uniquement utilisé pour les images RAW"
 
@@ -25777,7 +25757,7 @@ msgstr ""
 "joker correspondant.\n"
 "La zone de saisie est atténuée pendant l’exécution de la recherche."
 
-#: ../src/libs/geotagging.c:146
+#: ../src/libs/geotagging.c:147
 msgid ""
 "set geolocation information for\n"
 "the currently selected images"
@@ -25785,65 +25765,65 @@ msgstr ""
 "Définir les informations de géolocalisation\n"
 "pour les images sélectionnées."
 
-#: ../src/libs/geotagging.c:374
+#: ../src/libs/geotagging.c:375
 msgid "apply offset and geo-location"
 msgstr "Appliquer un décalage et une géolocalisation"
 
-#: ../src/libs/geotagging.c:375 ../src/libs/geotagging.c:1972
+#: ../src/libs/geotagging.c:376 ../src/libs/geotagging.c:1973
 msgid "apply geo-location"
 msgstr "Applique la géolocalisation"
 
-#: ../src/libs/geotagging.c:377
+#: ../src/libs/geotagging.c:378
 msgid ""
 "apply offset and geo-location to matching images\n"
-"double operation: two ctrl-z to undo"
+"double operation: two ctrl+z to undo"
 msgstr ""
 "Applique un décalage et une géolocalisation aux images sélectionnées.\n"
 "Deux opérations : faire deux Ctrl+Z pour défaire."
 
-#: ../src/libs/geotagging.c:379 ../src/libs/geotagging.c:1973
+#: ../src/libs/geotagging.c:380 ../src/libs/geotagging.c:1974
 msgid "apply geo-location to matching images"
 msgstr "Appliquer la géolocalisation aux images sélectionnées"
 
-#: ../src/libs/geotagging.c:829
+#: ../src/libs/geotagging.c:830
 msgid "GPX file track segments"
 msgstr "Segments de piste de fichiers GPX"
 
-#: ../src/libs/geotagging.c:851 ../src/libs/geotagging.c:1918
+#: ../src/libs/geotagging.c:852 ../src/libs/geotagging.c:1919
 msgid "start time"
 msgstr "Heure de début"
 
-#: ../src/libs/geotagging.c:852
+#: ../src/libs/geotagging.c:853
 msgid "end time"
 msgstr "Heure de fin"
 
-#: ../src/libs/geotagging.c:853 ../src/libs/geotagging.c:1920
+#: ../src/libs/geotagging.c:854 ../src/libs/geotagging.c:1921
 msgid "points"
 msgstr "Points"
 
-#: ../src/libs/geotagging.c:854 ../src/libs/geotagging.c:1922
+#: ../src/libs/geotagging.c:855 ../src/libs/geotagging.c:1923
 #: ../src/libs/image.c:501
 msgid "images"
 msgstr "Images"
 
-#: ../src/libs/geotagging.c:951
+#: ../src/libs/geotagging.c:952
 msgid "open GPX file"
 msgstr "Ouvrir un fichier GPX"
 
-#: ../src/libs/geotagging.c:952 ../src/libs/tools/lighttable.c:419
+#: ../src/libs/geotagging.c:953 ../src/libs/tools/lighttable.c:419
 #: ../src/libs/tools/lighttable.c:491 ../src/views/darkroom.c:2342
 msgid "preview"
 msgstr "Aperçu"
 
-#: ../src/libs/geotagging.c:965
+#: ../src/libs/geotagging.c:966
 msgid "GPS data exchange format"
 msgstr "Format d’échange de données GPS"
 
-#: ../src/libs/geotagging.c:1789
+#: ../src/libs/geotagging.c:1790
 msgid "date/time"
 msgstr "Date/heure"
 
-#: ../src/libs/geotagging.c:1790
+#: ../src/libs/geotagging.c:1791
 msgid ""
 "enter the new date/time (YYYY:MM:DD hh:mm:ss[.sss])\n"
 "key in the new numbers or scroll over the cell"
@@ -25851,40 +25831,40 @@ msgstr ""
 "Entrer la nouvelle date/heure (aaaa:mm:jj hh:mm:ss[.sss])\n"
 "ou utiliser la molette sur les cellules."
 
-#: ../src/libs/geotagging.c:1794
+#: ../src/libs/geotagging.c:1795
 msgid "original date/time"
 msgstr "Date/heure originale"
 
-#: ../src/libs/geotagging.c:1798
+#: ../src/libs/geotagging.c:1799
 msgid "lock date/time offset value to apply it onto another selection"
 msgstr "Bloquer le décalage horaire pour l’appliquer à une autre sélection"
 
-#: ../src/libs/geotagging.c:1802
+#: ../src/libs/geotagging.c:1803
 msgid "date/time offset"
 msgstr "Décalage de date/heure"
 
-#: ../src/libs/geotagging.c:1803
+#: ../src/libs/geotagging.c:1804
 msgid "offset or difference ([-]dd hh:mm:ss[.sss])"
 msgstr "Décalage ou différence ([-]dd hh:mm:ss[.sss])"
 
 #. apply
-#: ../src/libs/geotagging.c:1807
+#: ../src/libs/geotagging.c:1808
 msgid "apply offset"
 msgstr "Appliquer le décalage"
 
-#: ../src/libs/geotagging.c:1808
+#: ../src/libs/geotagging.c:1809
 msgid "apply offset to selected images"
 msgstr "Appliquer le décalage aux images sélectionnées"
 
-#: ../src/libs/geotagging.c:1811
+#: ../src/libs/geotagging.c:1812
 msgid "apply date/time"
 msgstr "Appliquer la date/heure"
 
-#: ../src/libs/geotagging.c:1812
+#: ../src/libs/geotagging.c:1813
 msgid "apply the same date/time to selected images"
 msgstr "Appliquer la même date/heure aux images sélectionnées"
 
-#: ../src/libs/geotagging.c:1822
+#: ../src/libs/geotagging.c:1823
 msgid ""
 "start typing to show a list of permitted values and select your timezone.\n"
 "press enter to confirm, so that the asterisk * disappears"
@@ -25895,25 +25875,25 @@ msgstr ""
 
 # "un ficher" ou "le fichier" ?
 #. gpx
-#: ../src/libs/geotagging.c:1864
+#: ../src/libs/geotagging.c:1865
 msgid "apply GPX track file..."
 msgstr "Appliquer un ficher GPX…"
 
-#: ../src/libs/geotagging.c:1865
+#: ../src/libs/geotagging.c:1866
 msgid "parses a GPX file and updates location of selected images"
 msgstr ""
 "Lit un fichier GPX et met à jour la localisation des images sélectionnées"
 
-#: ../src/libs/geotagging.c:1876
+#: ../src/libs/geotagging.c:1877
 msgctxt "section"
 msgid "GPX file"
 msgstr "Fichier GPX"
 
-#: ../src/libs/geotagging.c:1883
+#: ../src/libs/geotagging.c:1884
 msgid "select a GPX track file..."
 msgstr "Sélectionner un ficher GPX…"
 
-#: ../src/libs/geotagging.c:1900
+#: ../src/libs/geotagging.c:1901
 msgid ""
 "list of track segments in the GPX file, for each segment:\n"
 "- the start date/time in local time (LT)\n"
@@ -25931,31 +25911,31 @@ msgstr ""
 
 #. the gpx_view_button is invisible and the label and tooltip of cannot be displayed on GUI.
 #. but label is use in "shortcuts" dialog.
-#: ../src/libs/geotagging.c:1937
+#: ../src/libs/geotagging.c:1938
 msgid "view entire track"
 msgstr "Voir le tracé complet"
 
-#: ../src/libs/geotagging.c:1938
+#: ../src/libs/geotagging.c:1939
 msgid "refresh map to view entire selected track segments"
 msgstr "Rafraîchir le vue pour afficher complètement le tracé"
 
-#: ../src/libs/geotagging.c:1952
+#: ../src/libs/geotagging.c:1953
 msgid "preview images"
 msgstr "Prévisualiser les images"
 
-#: ../src/libs/geotagging.c:1957
+#: ../src/libs/geotagging.c:1958
 msgid "show on map matching images"
 msgstr "Afficher sur la carte les images correspondantes"
 
-#: ../src/libs/geotagging.c:1960
+#: ../src/libs/geotagging.c:1961
 msgid "select images"
 msgstr "Sélectionner des images"
 
-#: ../src/libs/geotagging.c:1961
+#: ../src/libs/geotagging.c:1962
 msgid "select matching images"
 msgstr "Sélectionne les images correspondantes"
 
-#: ../src/libs/geotagging.c:1969
+#: ../src/libs/geotagging.c:1970
 msgid "number of matching images versus selected images"
 msgstr "Nombre d’images par rapport aux images sélectionnées"
 
@@ -29960,6 +29940,23 @@ msgstr "Créer une fenêtre flottante persistante"
 #: ../src/views/view.c:1566
 msgid "mouse actions"
 msgstr "Actions de la souris"
+
+#, c-format
+#~ msgid "detected OtherIlluminant in `%s`, please report via darktable github"
+#~ msgstr ""
+#~ "OtherIlluminant détecté dans « %s », merci de reporter sur le GitHub de "
+#~ "Darktable"
+
+#, c-format
+#~ msgid "special exif illuminants in `%s`, please report via darktable github"
+#~ msgstr ""
+#~ "Illuminants Exif spécial dans « %s », merci de reporter sur le GitHub de "
+#~ "Darktable"
+
+#, c-format
+#~ msgid "forward matrix in `%s`, please report via darktable github"
+#~ msgstr ""
+#~ "ForwardMatrix dans « %s », merci de reporter sur le GitHub de Darktable"
 
 #~ msgid "all RGB colors"
 #~ msgstr "Tous les canaux RVB"
