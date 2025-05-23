@@ -32,6 +32,11 @@ mark_as_advanced(Gphoto2_PORT_LIBRARY)
 # Detect libgphoto2 version
 libfind_pkg_check_modules(Gphoto2_PKGCONF libgphoto2)
 if(Gphoto2_PKGCONF_FOUND)
+  if(NOT ${Gphoto2_INCLUDE_DIR} STREQUAL "GPhoto2_INCLUDE_DIR-NOTFOUND")
+    find_path(Gphoto2_INCLUDE_DIR gphoto2/gphoto2.h PATHS ${Gphoto2_PKGCONF_INCLUDE_DIRS} )
+    find_library(Gphoto2_LIBRARY NAMES ${Gphoto2_NAMES} PATHS ${Gphoto2_PKGCONF_LIBRARY_DIRS} )
+    find_library(Gphoto2_PORT_LIBRARY NAMES ${Gphoto2_PORT_NAMES} PATHS ${Gphoto2_PKGCONF_LIBRARY_DIRS} )
+  endif()
   set(Gphoto2_VERSION_STRING "${Gphoto2_PKGCONF_VERSION}")
 endif()
 
