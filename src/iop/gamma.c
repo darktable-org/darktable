@@ -251,11 +251,11 @@ static void _mask_display(const float *const restrict in,
 {
   // yellow, "unused" element aids vectorization
   const dt_aligned_pixel_t mask_color = { 1.0f, 1.0f, 0.0f };
-  const gboolean devel = dt_conf_get_bool("darkroom/ui/develop_mask");
+  const float mix = CLIP(dt_conf_get_float("darkroom/ui/develop_mask_mix"));
   DT_OMP_FOR_SIMD(aligned(in, out: 64) aligned(mask_color: 16))
   for(size_t j = 0; j < buffsize; j+= 4)
   {
-    const float gray = devel ? in[j + 3] : (0.3f * in[j + 0] + 0.59f * in[j + 1] + 0.11f * in[j + 2]);
+    const float gray = interpolatef(mix, in[j + 3], 0.3f * in[j + 0] + 0.59f * in[j + 1] + 0.11f * in[j + 2]);
     const dt_aligned_pixel_t pixel = { gray, gray, gray, gray };
     _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
   }
