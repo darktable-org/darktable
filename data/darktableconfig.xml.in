@@ -2443,11 +2443,11 @@
     <longdescription>show gray loading screen when navigating between images in the darkroom\ndisable to just show a toast message</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>darkroom/ui/develop_mask</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>show mask in developer mode</shortdescription>
-    <longdescription>if switched on, the mask visualize button will show the 'pure mask' instead of mask and image content.</longdescription>
+    <name>darkroom/ui/develop_mask_mix</name>
+    <type>float</type>
+    <default>0.3</default>
+    <shortdescription>show mask in mixed mode</shortdescription>
+    <longdescription>the mask visualize button will show the mask mixed with image content. 0 shows only content, 1 only the mask. Choose any value between.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="general">
     <name>plugins/lighttable/export/pixel_interpolator_warp</name>
