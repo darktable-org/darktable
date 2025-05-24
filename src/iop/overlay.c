@@ -149,7 +149,7 @@ const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
     (self,
-     _("combine with elements from a processed image\n"
+     _("combine the image with elements from another processed image\n"
        "(move this module to after output color profile if you see banding)"),
      _("corrective and creative"),
      _("linear, RGB, scene-referred"),
