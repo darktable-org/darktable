@@ -192,6 +192,13 @@ changes (where available).
   the image under the cursor will only be taken into account to feed
   the information modules.
 
+- Added a tag icon on thumbnails to display the list of attached tags
+  when hovering over it.
+
+- In the map view, it is possible to pan the entire track in one of
+  the following ways: by double-clicking on the track segment list, by
+  left-clicking on the list header, or by shortcut option.
+
 ## Bug Fixes
 
 - Fixed sidecar writing if quitting from darkroom.
@@ -229,6 +236,10 @@ changes (where available).
 - Fixed incorrect reporting of whether a flash was fired in expansion
   variables $(EXIF.FLASH.ICON) and $(EXIF.FLASH) under certain
   conditions.
+
+- Fixed the edit style dialog to show all module's duplicates. Also,
+  when creating a new style we don't show the whole history but only
+  the last version of each module.
 
 ## Lua
 
