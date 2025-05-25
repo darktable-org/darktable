@@ -1315,6 +1315,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   GtkWidget *widget;
   if(!gui->ui)
     gui->ui = g_malloc0(sizeof(dt_ui_t));
+  gui->surface = NULL;
   gui->hide_tooltips = dt_conf_get_bool("ui/hide_tooltips") ? 1 : 0;
   gui->grouping = dt_conf_get_bool("ui_last/grouping");
   gui->expanded_group_id = NO_IMGID;
@@ -1546,6 +1547,11 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
     g_atomic_int_set(&darktable.gui_running, 1);
     gtk_main();
     g_atomic_int_set(&darktable.gui_running, 0);
+  }
+  if(darktable.gui->surface)
+  {
+    cairo_surface_destroy(darktable.gui->surface);
+    darktable.gui->surface = NULL;
   }
 }
 

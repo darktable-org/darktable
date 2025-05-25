@@ -539,6 +539,13 @@ void expose(dt_view_t *self,
   {
     // draw image
     _view_paint_surface(cri, width, height, port, DT_WINDOW_MAIN);
+    if(dt_conf_get_bool("darkroom/ui/loading_screen") == FALSE) {
+      // cache the rendered bitmap for use while loading the next image
+      if(darktable.gui->surface)
+        cairo_surface_destroy(darktable.gui->surface);
+      darktable.gui->surface = cairo_get_target(cri);
+      cairo_surface_reference(darktable.gui->surface);
+    }
   }
   else if(dev->preview_pipe->output_imgid != dev->image_storage.id)
   {
@@ -659,7 +666,19 @@ void expose(dt_view_t *self,
     {
       // repaint the image we are switching away from, to avoid a
       // flash of the background color
-      _view_paint_surface(cri, width, height, port, DT_WINDOW_MAIN);
+      if(darktable.gui->surface) {
+        GtkAllocation alloc;
+        GtkWidget *cent = dt_ui_center(darktable.gui->ui);
+        GtkWidget *base = dt_ui_main_window(darktable.gui->ui);
+        gtk_widget_get_allocation(cent,&alloc);
+        gtk_widget_translate_coordinates(base, cent, alloc.x, alloc.y, &alloc.x, &alloc.y);
+        cairo_save(cri);
+        cairo_scale(cri, 1.0, 1.0);
+        cairo_translate(cri, alloc.x, alloc.y);
+        cairo_set_source_surface(cri, darktable.gui->surface, 0, 0);
+        cairo_paint(cri);
+        cairo_restore(cri);
+      }
       dt_toast_log("%s", load_txt);
     }
     g_free(load_txt);
