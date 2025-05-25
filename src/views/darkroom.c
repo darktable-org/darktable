@@ -657,6 +657,9 @@ void expose(dt_view_t *self,
     }
     else
     {
+      // repaint the image we are switching away from, to avoid a
+      // flash of the background color
+      _view_paint_surface(cri, width, height, port, DT_WINDOW_MAIN);
       dt_toast_log("%s", load_txt);
     }
     g_free(load_txt);
