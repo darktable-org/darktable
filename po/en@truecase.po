@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-05-23 23:33+0200\n"
-"PO-Revision-Date: 2025-05-24 09:55+0300\n"
+"POT-Creation-Date: 2025-05-25 09:09+0200\n"
+"PO-Revision-Date: 2025-05-25 12:12+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: en\n"
@@ -9373,7 +9373,7 @@ msgid "adjust the fulcrum used by some blending operations"
 msgstr "Adjust the fulcrum used by some blending operations"
 
 #. Add opacity/scale sliders to table
-#: ../src/develop/blend_gui.c:3589 ../src/iop/overlay.c:1102
+#: ../src/develop/blend_gui.c:3589 ../src/iop/overlay.c:1103
 #: ../src/iop/watermark.c:1371 ../src/libs/masks.c:106
 msgid "opacity"
 msgstr "Opacity"
@@ -9426,8 +9426,8 @@ msgstr "Feathering radius"
 
 #: ../src/develop/blend_gui.c:3628 ../src/develop/blend_gui.c:3637
 #: ../src/iop/colorbalancergb.c:2021 ../src/iop/colorequal.c:3149
-#: ../src/iop/colorequal.c:3176 ../src/iop/diffuse.c:1783
-#: ../src/iop/diffuse.c:1793 ../src/iop/retouch.c:2717
+#: ../src/iop/colorequal.c:3176 ../src/iop/diffuse.c:1782
+#: ../src/iop/diffuse.c:1792 ../src/iop/retouch.c:2717
 msgid " px"
 msgstr " px"
 
@@ -15403,13 +15403,13 @@ msgstr "Corrective or creative"
 #: ../src/iop/colorequal.c:214 ../src/iop/colorin.c:131 ../src/iop/crop.c:135
 #: ../src/iop/crop.c:137 ../src/iop/demosaic.c:297
 #: ../src/iop/denoiseprofile.c:777 ../src/iop/denoiseprofile.c:779
-#: ../src/iop/diffuse.c:141 ../src/iop/diffuse.c:143
+#: ../src/iop/diffuse.c:140 ../src/iop/diffuse.c:142
 #: ../src/iop/enlargecanvas.c:81 ../src/iop/enlargecanvas.c:83
 #: ../src/iop/exposure.c:128 ../src/iop/exposure.c:130 ../src/iop/flip.c:109
 #: ../src/iop/flip.c:110 ../src/iop/hazeremoval.c:111
 #: ../src/iop/hazeremoval.c:113 ../src/iop/lens.cc:263 ../src/iop/lens.cc:265
-#: ../src/iop/liquify.c:295 ../src/iop/liquify.c:297 ../src/iop/overlay.c:154
-#: ../src/iop/overlay.c:156 ../src/iop/primaries.c:77 ../src/iop/primaries.c:79
+#: ../src/iop/liquify.c:295 ../src/iop/liquify.c:297 ../src/iop/overlay.c:155
+#: ../src/iop/overlay.c:157 ../src/iop/primaries.c:77 ../src/iop/primaries.c:79
 #: ../src/iop/retouch.c:207 ../src/iop/retouch.c:209
 #: ../src/iop/scalepixels.c:85 ../src/iop/scalepixels.c:87
 #: ../src/iop/sigmoid.c:205 ../src/iop/splittoning.c:103
@@ -15646,10 +15646,10 @@ msgid "add or remove local contrast, sharpness, acutance"
 msgstr "Add or remove local contrast, sharpness, acutance"
 
 #: ../src/iop/atrous.c:133 ../src/iop/bilateral.cc:101
-#: ../src/iop/colorequal.c:213 ../src/iop/diffuse.c:140
+#: ../src/iop/colorequal.c:213 ../src/iop/diffuse.c:139
 #: ../src/iop/enlargecanvas.c:80 ../src/iop/exposure.c:127
 #: ../src/iop/filmicrgb.c:349 ../src/iop/graduatednd.c:143
-#: ../src/iop/negadoctor.c:142 ../src/iop/overlay.c:153
+#: ../src/iop/negadoctor.c:142 ../src/iop/overlay.c:154
 #: ../src/iop/rgbcurve.c:142 ../src/iop/rgblevels.c:121 ../src/iop/shadhi.c:141
 #: ../src/iop/sigmoid.c:205 ../src/iop/tonecurve.c:180
 #: ../src/iop/toneequal.c:329
@@ -16168,7 +16168,7 @@ msgstr ""
 "(reduce shadow and highlight contrast), increase for more powerful local "
 "contrast"
 
-#: ../src/iop/bilateral.cc:72 ../src/iop/diffuse.c:443
+#: ../src/iop/bilateral.cc:72 ../src/iop/diffuse.c:442
 msgid "surface blur"
 msgstr "Surface blur"
 
@@ -16182,8 +16182,8 @@ msgstr "Apply edge-aware surface blur to denoise or smoothen textures"
 
 #: ../src/iop/bilateral.cc:103 ../src/iop/blurs.c:90
 #: ../src/iop/channelmixer.c:138 ../src/iop/denoiseprofile.c:778
-#: ../src/iop/diffuse.c:142 ../src/iop/enlargecanvas.c:82
-#: ../src/iop/exposure.c:129 ../src/iop/overlay.c:155 ../src/iop/primaries.c:78
+#: ../src/iop/diffuse.c:141 ../src/iop/enlargecanvas.c:82
+#: ../src/iop/exposure.c:129 ../src/iop/overlay.c:156 ../src/iop/primaries.c:78
 #: ../src/iop/scalepixels.c:86 ../src/iop/soften.c:102
 #: ../src/iop/splittoning.c:104 ../src/iop/velvia.c:97
 msgid "linear, RGB"
@@ -19365,112 +19365,110 @@ msgstr ""
 #: ../src/iop/diffuse.c:136
 msgid ""
 "simulate directional diffusion of light with heat transfer model\n"
-"to apply an iterative edge-oriented blur,\n"
-"inpaint damaged parts of the image, or to remove blur with blind "
-"deconvolution."
+"to apply an iterative edge-oriented blur, inpaint damaged parts\n"
+"of the image, or to remove blur with blind deconvolution"
 msgstr ""
 "Simulate directional diffusion of light with heat transfer model\n"
-"to apply an iterative edge-oriented blur,\n"
-"inpaint damaged parts of the image, or to remove blur with blind "
-"deconvolution."
+"to apply an iterative edge-oriented blur, inpaint damaged parts\n"
+"of the image, or to remove blur with blind deconvolution"
 
 #. deblurring presets
-#: ../src/iop/diffuse.c:240
+#: ../src/iop/diffuse.c:239
 msgid "lens deblur | soft"
 msgstr "Lens deblur | Soft"
 
-#: ../src/iop/diffuse.c:265
+#: ../src/iop/diffuse.c:264
 msgid "lens deblur | medium"
 msgstr "Lens deblur | Medium"
 
-#: ../src/iop/diffuse.c:290
+#: ../src/iop/diffuse.c:289
 msgid "lens deblur | hard"
 msgstr "Lens deblur | Hard"
 
-#: ../src/iop/diffuse.c:316
+#: ../src/iop/diffuse.c:315
 msgid "dehaze | default"
 msgstr "Dehaze | Default"
 
-#: ../src/iop/diffuse.c:342
+#: ../src/iop/diffuse.c:341
 msgid "dehaze | extra contrast"
 msgstr "Dehaze | Extra contrast"
 
-#: ../src/iop/diffuse.c:368
+#: ../src/iop/diffuse.c:367
 msgid "denoise | fine"
 msgstr "Denoise | Fine"
 
-#: ../src/iop/diffuse.c:393
+#: ../src/iop/diffuse.c:392
 msgid "denoise | medium"
 msgstr "Denoise | Medium"
 
-#: ../src/iop/diffuse.c:418
+#: ../src/iop/diffuse.c:417
 msgid "denoise | coarse"
 msgstr "Denoise | Coarse"
 
-#: ../src/iop/diffuse.c:468
+#: ../src/iop/diffuse.c:467
 msgid "artistic effects | bloom"
 msgstr "Artistic effects | Bloom"
 
-#: ../src/iop/diffuse.c:493
+#: ../src/iop/diffuse.c:492
 msgid "sharpen demosaicing | no AA filter"
 msgstr "Sharpen demosaicing | No AA filter"
 
-#: ../src/iop/diffuse.c:519
+#: ../src/iop/diffuse.c:518
 msgid "sharpen demosaicing | AA filter"
 msgstr "Sharpen demosaicing | AA filter"
 
-#: ../src/iop/diffuse.c:546
+#: ../src/iop/diffuse.c:545
 msgid "artistic effects | simulate watercolor"
 msgstr "Artistic effects | Simulate watercolor"
 
-#: ../src/iop/diffuse.c:571
+#: ../src/iop/diffuse.c:570
 msgid "artistic effects | simulate line drawing"
 msgstr "Artistic effects | Simulate line drawing"
 
 #. local contrast
-#: ../src/iop/diffuse.c:598
+#: ../src/iop/diffuse.c:597
 msgid "local contrast | normal"
 msgstr "Local contrast | Normal"
 
-#: ../src/iop/diffuse.c:623
+#: ../src/iop/diffuse.c:622
 msgid "local contrast | fine"
 msgstr "Local contrast | Fine"
 
-#: ../src/iop/diffuse.c:648
+#: ../src/iop/diffuse.c:647
 msgid "inpaint highlights"
 msgstr "Inpaint highlights"
 
 #. fast presets for slow hardware
-#: ../src/iop/diffuse.c:675
+#: ../src/iop/diffuse.c:674
 msgid "sharpness | fast"
 msgstr "Sharpness | Fast"
 
 #. two more sharpness (standard & strong)
-#: ../src/iop/diffuse.c:702
+#: ../src/iop/diffuse.c:701
 msgid "sharpness | normal"
 msgstr "Sharpness | Normal"
 
-#: ../src/iop/diffuse.c:727
+#: ../src/iop/diffuse.c:726
 msgid "sharpness | strong"
 msgstr "Sharpness | Strong"
 
-#: ../src/iop/diffuse.c:752
+#: ../src/iop/diffuse.c:751
 msgid "local contrast | fast"
 msgstr "Local contrast | Fast"
 
-#: ../src/iop/diffuse.c:1403
+#: ../src/iop/diffuse.c:1402
 msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
 msgstr "Diffuse/sharpen failed to allocate memory, check your RAM settings"
 
 #. Additional parameters
 #. Camera settings
-#: ../src/iop/diffuse.c:1770 ../src/iop/splittoning.c:524
+#: ../src/iop/diffuse.c:1769 ../src/iop/splittoning.c:524
 #: ../src/libs/camera.c:509
 msgctxt "section"
 msgid "properties"
 msgstr "Properties"
 
-#: ../src/iop/diffuse.c:1776
+#: ../src/iop/diffuse.c:1775
 msgid ""
 "more iterations make the effect stronger but the module slower.\n"
 "this is analogous to giving more time to the diffusion reaction.\n"
@@ -19482,7 +19480,7 @@ msgstr ""
 "If you plan on sharpening or inpainting, \n"
 "more iterations help reconstruction."
 
-#: ../src/iop/diffuse.c:1785
+#: ../src/iop/diffuse.c:1784
 msgid ""
 "main scale of the diffusion.\n"
 "zero makes diffusion act on the finest details more heavily.\n"
@@ -19496,7 +19494,7 @@ msgstr ""
 "For deblurring and denoising, set to zero.\n"
 "Increase to act on local contrast instead."
 
-#: ../src/iop/diffuse.c:1795
+#: ../src/iop/diffuse.c:1794
 msgid ""
 "width of the diffusion around the central radius.\n"
 "high values diffuse on a large band of radii.\n"
@@ -19510,12 +19508,12 @@ msgstr ""
 "If you plan on deblurring, \n"
 "the radius should be around the width of your lens blur."
 
-#: ../src/iop/diffuse.c:1801
+#: ../src/iop/diffuse.c:1800
 msgctxt "section"
 msgid "speed (sharpen ↔ diffuse)"
 msgstr "Speed (sharpen ↔ diffuse)"
 
-#: ../src/iop/diffuse.c:1807
+#: ../src/iop/diffuse.c:1806
 msgid ""
 "diffusion speed of low-frequency wavelet layers\n"
 "in the direction of 1st order anisotropy (set below).\n"
@@ -19531,7 +19529,7 @@ msgstr ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 
-#: ../src/iop/diffuse.c:1817
+#: ../src/iop/diffuse.c:1816
 msgid ""
 "diffusion speed of low-frequency wavelet layers\n"
 "in the direction of 2nd order anisotropy (set below).\n"
@@ -19547,7 +19545,7 @@ msgstr ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 
-#: ../src/iop/diffuse.c:1827
+#: ../src/iop/diffuse.c:1826
 msgid ""
 "diffusion speed of high-frequency wavelet layers\n"
 "in the direction of 3rd order anisotropy (set below).\n"
@@ -19563,7 +19561,7 @@ msgstr ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 
-#: ../src/iop/diffuse.c:1837
+#: ../src/iop/diffuse.c:1836
 msgid ""
 "diffusion speed of high-frequency wavelet layers\n"
 "in the direction of 4th order anisotropy (set below).\n"
@@ -19579,12 +19577,12 @@ msgstr ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 
-#: ../src/iop/diffuse.c:1843
+#: ../src/iop/diffuse.c:1842
 msgctxt "section"
 msgid "direction"
 msgstr "Direction"
 
-#: ../src/iop/diffuse.c:1849
+#: ../src/iop/diffuse.c:1848
 msgid ""
 "direction of 1st order speed (set above).\n"
 "\n"
@@ -19598,7 +19596,7 @@ msgstr ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 
-#: ../src/iop/diffuse.c:1858
+#: ../src/iop/diffuse.c:1857
 msgid ""
 "direction of 2nd order speed (set above).\n"
 "\n"
@@ -19612,7 +19610,7 @@ msgstr ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 
-#: ../src/iop/diffuse.c:1867
+#: ../src/iop/diffuse.c:1866
 msgid ""
 "direction of 3rd order speed (set above).\n"
 "\n"
@@ -19626,7 +19624,7 @@ msgstr ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 
-#: ../src/iop/diffuse.c:1876
+#: ../src/iop/diffuse.c:1875
 msgid ""
 "direction of 4th order speed (set above).\n"
 "\n"
@@ -19640,12 +19638,12 @@ msgstr ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 
-#: ../src/iop/diffuse.c:1881
+#: ../src/iop/diffuse.c:1880
 msgctxt "section"
 msgid "edge management"
 msgstr "Edge management"
 
-#: ../src/iop/diffuse.c:1889
+#: ../src/iop/diffuse.c:1888
 msgid ""
 "increase or decrease the sharpness of the highest frequencies.\n"
 "can be used to keep details after blooming,\n"
@@ -19655,7 +19653,7 @@ msgstr ""
 "Can be used to keep details after blooming,\n"
 "for standalone sharpening set speed to negative values."
 
-#: ../src/iop/diffuse.c:1896
+#: ../src/iop/diffuse.c:1895
 msgid ""
 "define the sensitivity of the variance penalty for edges.\n"
 "increase to exclude more edges from diffusion,\n"
@@ -19665,7 +19663,7 @@ msgstr ""
 "Increase to exclude more edges from diffusion,\n"
 "if fringes or halos appear."
 
-#: ../src/iop/diffuse.c:1903
+#: ../src/iop/diffuse.c:1902
 msgid ""
 "define the variance threshold between edge amplification and penalty.\n"
 "decrease if you want pixels on smooth surfaces get a boost,\n"
@@ -19677,12 +19675,12 @@ msgstr ""
 "increase if you see noise appear on smooth surfaces or\n"
 "if dark areas seem oversharpened compared to bright areas."
 
-#: ../src/iop/diffuse.c:1908
+#: ../src/iop/diffuse.c:1907
 msgctxt "section"
 msgid "diffusion spatiality"
 msgstr "Diffusion spatiality"
 
-#: ../src/iop/diffuse.c:1914
+#: ../src/iop/diffuse.c:1913
 msgid ""
 "luminance threshold for the mask.\n"
 "0. disables the luminance masking and applies the module on the whole "
@@ -21146,7 +21144,7 @@ msgid "find lens"
 msgstr "Find lens"
 
 #. scale
-#: ../src/iop/lens.cc:4470 ../src/iop/overlay.c:1113 ../src/iop/vignette.c:1043
+#: ../src/iop/lens.cc:4470 ../src/iop/overlay.c:1114 ../src/iop/vignette.c:1043
 #: ../src/iop/watermark.c:1381 ../src/libs/export.c:1540
 msgid "scale"
 msgstr "Scale"
@@ -22028,14 +22026,18 @@ msgid "composite"
 msgstr "Composite"
 
 #: ../src/iop/overlay.c:152
-msgid "combine with elements from a processed image"
-msgstr "Combine with elements from a processed image"
+msgid ""
+"combine the image with elements from another processed image\n"
+"(move this module to after output color profile if you see banding)"
+msgstr ""
+"Combine the image with elements from another processed image\n"
+"(move this module to after output color profile if you see banding)"
 
-#: ../src/iop/overlay.c:161
+#: ../src/iop/overlay.c:162
 msgid "layer|stack|overlay"
 msgstr "layer|stack|overlay"
 
-#: ../src/iop/overlay.c:297
+#: ../src/iop/overlay.c:298
 #, c-format
 msgid ""
 "overlay image missing from database\n"
@@ -22046,13 +22048,13 @@ msgstr ""
 "\n"
 "'%s'"
 
-#: ../src/iop/overlay.c:332
+#: ../src/iop/overlay.c:333
 #, c-format
 msgid "image %d does not exist"
 msgstr "Image %d does not exist"
 
 #. TRANSLATORS: This text must be very narrow, check in the GUI that it is not truncated
-#: ../src/iop/overlay.c:796
+#: ../src/iop/overlay.c:797
 msgid ""
 "drop\n"
 "image\n"
@@ -22064,7 +22066,7 @@ msgstr ""
 "from filmstrip\n"
 "here"
 
-#: ../src/iop/overlay.c:1009
+#: ../src/iop/overlay.c:1010
 #, c-format
 msgid ""
 "cannot use image %d as an overlay as it is using the current image as an "
@@ -22073,12 +22075,12 @@ msgstr ""
 "Cannot use image %d as an overlay as it is using the current image as an "
 "overlay, directly or indirectly"
 
-#: ../src/iop/overlay.c:1106 ../src/iop/watermark.c:1374
+#: ../src/iop/overlay.c:1107 ../src/iop/watermark.c:1374
 msgctxt "section"
 msgid "placement"
 msgstr "Placement"
 
-#: ../src/iop/overlay.c:1121
+#: ../src/iop/overlay.c:1122
 msgid ""
 "choose how to scale the overlay\n"
 "• image: scale overlay relative to whole image\n"
@@ -22098,29 +22100,29 @@ msgstr ""
 "• Height: scale overlay height to image height\n"
 "• Advanced options: choose overlay and image dimensions independently"
 
-#: ../src/iop/overlay.c:1132
+#: ../src/iop/overlay.c:1133
 msgid "reference image dimension against which to scale the overlay"
 msgstr "Reference image dimension against which to scale the overlay"
 
-#: ../src/iop/overlay.c:1136
+#: ../src/iop/overlay.c:1137
 msgid "overlay dimension to scale"
 msgstr "Overlay dimension to scale"
 
-#: ../src/iop/overlay.c:1140 ../src/iop/watermark.c:1404
+#: ../src/iop/overlay.c:1141 ../src/iop/watermark.c:1404
 #: ../src/libs/print_settings.c:2752
 msgid "alignment"
 msgstr "Alignment"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/overlay.c:1164
+#: ../src/iop/overlay.c:1165
 msgid "the opacity of the overlay"
 msgstr "The opacity of the overlay"
 
-#: ../src/iop/overlay.c:1165
+#: ../src/iop/overlay.c:1166
 msgid "the scale of the overlay"
 msgstr "The scale of the overlay"
 
-#: ../src/iop/overlay.c:1166
+#: ../src/iop/overlay.c:1167
 msgid "the rotation of the overlay"
 msgstr "The rotation of the overlay"
 
@@ -29411,6 +29413,9 @@ msgstr "Switch to a classic window which will stay open after key release"
 #: ../src/views/view.c:1566
 msgid "mouse actions"
 msgstr "Mouse actions"
+
+#~ msgid "combine with elements from a processed image"
+#~ msgstr "Combine with elements from a processed image"
 
 #, c-format
 #~ msgid "detected OtherIlluminant in `%s`, please report via darktable github"
