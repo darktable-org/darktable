@@ -110,6 +110,7 @@ typedef struct dt_gui_gtk_t
 
   dt_gui_scrollbars_t scrollbars;
 
+  cairo_surface_t *surface;  // cached prior image when config var ui/loading_screen is FALSE
   gboolean drawing_snapshot;
 
   char *last_preset;
