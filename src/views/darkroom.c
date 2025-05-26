@@ -539,7 +539,8 @@ void expose(dt_view_t *self,
   {
     // draw image
     _view_paint_surface(cri, width, height, port, DT_WINDOW_MAIN);
-    if(dt_conf_get_bool("darkroom/ui/loading_screen") == FALSE) {
+    if(!dt_conf_get_bool("darkroom/ui/loading_screen"))
+    {
       // cache the rendered bitmap for use while loading the next image
       if(darktable.gui->surface)
         cairo_surface_destroy(darktable.gui->surface);
@@ -666,7 +667,8 @@ void expose(dt_view_t *self,
     {
       // repaint the image we are switching away from, to avoid a
       // flash of the background color
-      if(darktable.gui->surface) {
+      if(darktable.gui->surface)
+      {
         GtkAllocation alloc;
         GtkWidget *cent = dt_ui_center(darktable.gui->ui);
         GtkWidget *base = dt_ui_main_window(darktable.gui->ui);
