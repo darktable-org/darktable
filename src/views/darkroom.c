@@ -539,11 +539,15 @@ void expose(dt_view_t *self,
   {
     // draw image
     _view_paint_surface(cri, width, height, port, DT_WINDOW_MAIN);
+    // clean up cached rendering; do this unconditionally in case user toggles the preference
+    if(darktable.gui->surface)
+    {
+      cairo_surface_destroy(darktable.gui->surface);
+      darktable.gui->surface = NULL;
+    }
     if(!dt_conf_get_bool("darkroom/ui/loading_screen"))
     {
       // cache the rendered bitmap for use while loading the next image
-      if(darktable.gui->surface)
-        cairo_surface_destroy(darktable.gui->surface);
       darktable.gui->surface = cairo_get_target(cri);
       cairo_surface_reference(darktable.gui->surface);
     }
