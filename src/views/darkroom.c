@@ -673,14 +673,8 @@ void expose(dt_view_t *self,
       // flash of the background color
       if(darktable.gui->surface)
       {
-        GtkAllocation alloc;
-        GtkWidget *cent = dt_ui_center(darktable.gui->ui);
-        GtkWidget *base = dt_ui_main_window(darktable.gui->ui);
-        gtk_widget_get_allocation(cent,&alloc);
-        gtk_widget_translate_coordinates(base, cent, alloc.x, alloc.y, &alloc.x, &alloc.y);
         cairo_save(cri);
-        cairo_scale(cri, 1.0, 1.0);
-        cairo_translate(cri, alloc.x, alloc.y);
+        cairo_identity_matrix(cri);
         cairo_set_source_surface(cri, darktable.gui->surface, 0, 0);
         cairo_paint(cri);
         cairo_restore(cri);
