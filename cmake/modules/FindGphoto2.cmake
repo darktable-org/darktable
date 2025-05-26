@@ -19,16 +19,6 @@
 
 include(LibFindMacros)
 
-find_path(Gphoto2_INCLUDE_DIR gphoto2/gphoto2.h)
-mark_as_advanced(Gphoto2_INCLUDE_DIR)
-
-set(Gphoto2_NAMES ${Gphoto2_NAMES} gphoto2 libgphoto2)
-set(Gphoto2_PORT_NAMES ${Gphoto2_PORT_NAMES} gphoto2_port libgphoto2_port)
-find_library(Gphoto2_LIBRARY NAMES ${Gphoto2_NAMES} )
-find_library(Gphoto2_PORT_LIBRARY NAMES ${Gphoto2_PORT_NAMES} )
-mark_as_advanced(Gphoto2_LIBRARY)
-mark_as_advanced(Gphoto2_PORT_LIBRARY)
-
 # Detect libgphoto2 version
 libfind_pkg_check_modules(Gphoto2_PKGCONF libgphoto2)
 if(Gphoto2_PKGCONF_FOUND)
@@ -41,10 +31,20 @@ if(Gphoto2_PORT_PKGCONF_FOUND)
   set(Gphoto2_PORT_VERSION_STRING "${Gphoto2_PORT_PKGCONF_VERSION}")
 endif()
 
+find_path(Gphoto2_INCLUDE_DIR NAMES gphoto2/gphoto2.h HINTS ${Gphoto2_PKGCONF_INCLUDE_DIRS})
+mark_as_advanced(Gphoto2_INCLUDE_DIR)
+
+set(Gphoto2_NAMES ${Gphoto2_NAMES} gphoto2 libgphoto2)
+set(Gphoto2_PORT_NAMES ${Gphoto2_PORT_NAMES} gphoto2_port libgphoto2_port)
+find_library(Gphoto2_LIBRARY NAMES ${Gphoto2_NAMES} HINTS ${Gphoto2_PKGCONF_LIBRARY_DIRS})
+find_library(Gphoto2_PORT_LIBRARY NAMES ${Gphoto2_PORT_NAMES} HINTS ${Gphoto2_PORT_PKGCONF_LIBRARY_DIRS})
+mark_as_advanced(Gphoto2_LIBRARY)
+mark_as_advanced(Gphoto2_PORT_LIBRARY)
+
 # handle the QUIETLY and REQUIRED arguments and set Gphoto2_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Gphoto2 DEFAULT_MSG Gphoto2_LIBRARY Gphoto2_INCLUDE_DIR)
+find_package_handle_standard_args(Gphoto2 DEFAULT_MSG Gphoto2_LIBRARY Gphoto2_PORT_LIBRARY Gphoto2_INCLUDE_DIR)
 
 IF(Gphoto2_FOUND)
   SET(Gphoto2_LIBRARIES ${Gphoto2_LIBRARY} ${Gphoto2_PORT_LIBRARY})
