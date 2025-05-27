@@ -293,12 +293,17 @@ changes (where available).
 
 ## RawSpeed changes
 
-- Fujifilm GFX cameras now use the vendor supplied crop
+- OM System 14-bit high-resolution ORFs are now supported.
+- Canon EOS 5D Mark II crop was updated.
+- Fujifilm FinePix X100 crop was updated.
+- Samsung EX1 crop and white level were updated.
+- Sony ILCE-1M2 color matrix was updated.
 
-## Camera support, compared to 4.8
+## Camera support, compared to 5.0
 
 ### Base Support
 
+- Canon EOS R5 C (requires LibRaw 202502 and later)
 - ???
 
 ### White Balance Presets
@@ -316,7 +321,7 @@ changes (where available).
 - DNG 1.7 using JPEG XL (Adobe enhanced, Samsung Expert RAW)
 - Fujifilm lossy RAFs
 - Nikon high efficiency NEFs
-- OM System 14-bit high resolution ORFs
+- Phase One other than IIQ L
 - Sony downsized lossless ARWs ("M" for full-frame, "S" for full-frame & APS-C)
 
 ### Suspended Support
@@ -331,7 +336,6 @@ Support for the following cameras is suspended because no samples are available 
 - Leaf Credo 80
 - Olympus SP320
 - Phase One IQ250
-- Sinar Hy6/ Sinarback eXact
 - ST Micro STV680
 
 ## Translations
