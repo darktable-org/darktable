@@ -165,7 +165,7 @@ int legacy_params(dt_iop_module_t *self,
 
 const char **description(dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("sets technical specificities of the raw sensor\n"
+  return dt_iop_set_description(self, _("sets technical specificities of the raw sensor\n\n"
                                         "touch with great care!"),
                                       _("mandatory"),
                                       _("linear, raw, scene-referred"),
