@@ -384,10 +384,6 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
   uint16_t config;
   uint16_t photometric;
 
-  // This variable may not be assigned a value in TIFFGetField because
-  // the corresponding tag is optional, so we must initialize this variable.
-  uint16_t inkset = 0;
-
   t.image = img;
 
 #ifdef _WIN32
@@ -420,7 +416,6 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
   TIFFGetFieldDefaulted(t.tiff, TIFFTAG_SAMPLEFORMAT, &t.sampleformat);
   TIFFGetField(t.tiff, TIFFTAG_PLANARCONFIG, &config);
   TIFFGetField(t.tiff, TIFFTAG_PHOTOMETRIC, &photometric);
-  TIFFGetField(t.tiff, TIFFTAG_INKSET, &inkset);
 
   // Citing the TIFF 6.0 specification for SampleFormat:
   // A reader would typically treat an image with “undefined” data as
