@@ -93,7 +93,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
-                                _("internal module to setup technical specificities of raw sensor.\n\n"
+                                _("internal module to setup technical specificities of raw sensor\n\n"
                                   "you should not touch values here!"),
                                 NULL, NULL, NULL, NULL);
 }
