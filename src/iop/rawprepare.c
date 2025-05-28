@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2015-2024 darktable developers.
+    Copyright (C) 2015-2025 darktable developers.
 
     (based on code by johannes hanika)
 
@@ -165,7 +165,7 @@ int legacy_params(dt_iop_module_t *self,
 
 const char **description(dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("sets technical specificities of the raw sensor.\n"
+  return dt_iop_set_description(self, _("sets technical specificities of the raw sensor\n\n"
                                         "touch with great care!"),
                                       _("mandatory"),
                                       _("linear, raw, scene-referred"),
