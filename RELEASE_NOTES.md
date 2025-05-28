@@ -286,6 +286,7 @@ changes (where available).
 ## RawSpeed changes
 
 - OM System 14-bit high-resolution ORFs are now supported.
+- Canon EOS 5D Mark II crop was updated.
 - Fujifilm FinePix X100 crop was updated.
 - Samsung EX1 crop and white level were updated.
 - Sony ILCE-1M2 color matrix was updated.
