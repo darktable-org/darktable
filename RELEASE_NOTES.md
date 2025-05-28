@@ -254,6 +254,8 @@ changes (where available).
 
 ### Bug Fixes
 
+- Expanded width of preference boxes Lua Options so that long input is visible.
+
 - N/A
 
 ### Add action support for Lua
