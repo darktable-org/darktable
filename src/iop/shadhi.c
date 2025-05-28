@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2012-2020 darktable developers.
+  Copyright (C) 2012-2025 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -137,7 +137,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("modify the tonal range of the shadows and highlights\n"
-                                        "of an image by enhancing local contrast."),
+                                        "of an image by enhancing local contrast"),
                                       _("corrective and creative"),
                                       _("linear or non-linear, Lab, display-referred"),
                                       _("non-linear, Lab"),
