@@ -692,6 +692,7 @@ static int register_pref_sub(lua_State *L)
         dt_conf_set_string(pref_name, built_elt->type_data.string_data.default_value);
 
       built_elt->widget = gtk_entry_new();
+      gtk_widget_set_hexpand(built_elt->widget, TRUE);
       built_elt->tooltip_reset= g_strdup_printf( _("double-click to reset to `%s'"),
           built_elt->type_data.string_data.default_value);
       g_object_ref_sink(G_OBJECT(built_elt->widget));
