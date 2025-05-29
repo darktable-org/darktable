@@ -200,8 +200,8 @@ const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
                                 _("apply a view transform to make an image displayable\n"
-                                  "on a screen or print. uses a robust and smooth\n"
-                                  "tone curve with optional color preservation methods."),
+                                  "on a screen or print using a robust and smooth\n"
+                                  "tone curve with optional color preservation methods"),
                                 _("corrective and creative"), _("linear, RGB, scene-referred"),
                                 _("non-linear, RGB"), _("linear, RGB, display-referred"));
 }
