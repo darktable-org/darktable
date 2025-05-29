@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -367,7 +367,7 @@ const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
     (self,
-     _("apply a view transform based on personal or camera manufacturer look,\n"
+     _("apply a view transform based on personal or camera maker look,\n"
        "for corrective purposes, to prepare images for display"),
      _("corrective"),
      _("linear, RGB, display-referred"),
