@@ -95,6 +95,7 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
+          sed -i 's/archive\.ubuntu/azure\.archive\.ubuntu/' /etc/apt/sources.list.d/ubuntu.sources
           set -xe
           rm -rf /var/lib/apt/lists/*
           apt-get --yes update
