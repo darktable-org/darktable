@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2024 darktable developers.
+    Copyright (C) 2017-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -202,7 +202,8 @@ const char *aliases()
 
 const char **description(dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("remove and clone spots, perform split-frequency skin editing"),
+  return dt_iop_set_description(self, _("remove and clone spots,\n"
+                                        "perform split-frequency skin editing"),
                                       _("corrective"),
                                       _("linear, RGB, scene-referred"),
                                       _("geometric and frequential, RGB"),
