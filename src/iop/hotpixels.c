@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -68,7 +68,8 @@ const char *name()
 
 const char **description(dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("remove abnormally bright pixels by dampening them with neighbors"),
+  return dt_iop_set_description(self, _("remove abnormally bright pixels\n"
+                                        "by dampening them with neighbors"),
                                       _("corrective"),
                                       _("linear, raw, scene-referred"),
                                       _("reconstruction, raw"),
