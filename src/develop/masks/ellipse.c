@@ -577,7 +577,7 @@ static int _ellipse_events_button_pressed(dt_iop_module_t *module,
     dt_masks_form_gui_points_t *gpt = g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
 
-    if(gui->form_selected && dt_modifier_is(state, GDK_SHIFT_MASK))
+    if(gui->form_selected && dt_modifier_is(state, GDK_MOD1_MASK))
     {
       gui->border_toggling = TRUE;
       return 1;
@@ -1185,16 +1185,14 @@ static int _ellipse_events_mouse_moved(dt_iop_module_t *module,
         const float dist_b = sqf(x - gpt->border[i * 2]) + sqf(y - gpt->border[i * 2 +1]);
         const float dist_p = sqf(x - gpt->points[i * 2]) + sqf(y - gpt->points[i * 2 + 1]);
 
-        // prefer border points over shape itself in case of near
-        // overlap for ease of pickup
+        if(!gui->select_only_border && dist_p < as2)
+        {
+          gui->point_selected = i;
+          break;
+        }
         if(dist_b < as2)
         {
           gui->point_border_selected = i;
-          break;
-        }
-        if(dist_p < as2)
-        {
-          gui->point_selected = i;
           break;
         }
       }
