@@ -80,7 +80,8 @@ const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
                                 _("module for setting pixel aspect ratio\n\n"
-                                "useful for certain sensor types and anamorphic desqueeze"),
+                                "useful for certain sensor types\n"
+                                "and anamorphic desqueeze"),
                                 _("corrective"),
                                 _("linear, RGB, scene-referred"),
                                 _("linear, RGB"),
