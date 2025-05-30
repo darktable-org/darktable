@@ -622,15 +622,13 @@ static int _circle_events_mouse_moved(dt_iop_module_t *module,
       const float dist_b = sqf(x - gpt->border[2]) + sqf(y - gpt->border[3]);
       const float dist_p = sqf(x - gpt->points[2]) + sqf(y - gpt->points[3]);
 
-      // prefer border point over shape itself in case of near overlap
-      // for ease of pickup
-      if(dist_b < as2)
-      {
-        gui->point_border_selected = 1;
-      }
-      else if(dist_p < as2)
+      if(!gui->select_only_border && dist_p < as2)
       {
         gui->point_selected = 1;
+      }
+      else if(dist_b < as2)
+      {
+        gui->point_border_selected = 1;
       }
     }
 

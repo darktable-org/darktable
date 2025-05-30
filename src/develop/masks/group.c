@@ -180,6 +180,7 @@ static int _group_events_mouse_moved(dt_iop_module_t *module,
   gui->seg_selected = -1;
   gui->point_border_selected = -1;
   gui->group_edited = gui->group_selected = -1;
+  gui->select_only_border = dt_modifier_is(which, GDK_SHIFT_MASK);
 
   dt_masks_form_t *sel = NULL;
   dt_masks_point_group_t *sel_fpt = NULL;
