@@ -1,0 +1,237 @@
+name: Release Build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  Win64:
+    if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
+    name: win64
+    runs-on: windows-latest
+    environment: Release Build
+    strategy:
+      fail-fast: true
+      matrix:
+        btype:
+          - Release
+        msystem:
+          - UCRT64
+        target:
+          - skiptest
+        generator:
+          - Ninja
+        eco: [-DBINARY_PACKAGE_BUILD=ON]
+    defaults:
+      run:
+        shell: msys2 {0}
+    env:
+      SRC_DIR: ${{ github.workspace }}/src
+      BUILD_DIR: ${{ github.workspace }}/build
+      INSTALL_PREFIX: ${{ github.workspace }}/install
+      ECO: ${{ matrix.eco }}
+      CMAKE_BUILD_TYPE: ${{ matrix.btype }}
+      TARGET: ${{ matrix.target }}
+      GENERATOR: ${{ matrix.generator }}
+    steps:
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          install: >-
+            git
+            intltool
+            po4a
+          pacboy: >-
+            cc:p
+            cmake:p
+            libxslt:p
+            ninja:p
+            nsis:p
+            python-jsonschema:p
+            curl:p
+            drmingw:p
+            gcc-libs:p
+            gettext:p
+            gmic:p
+            graphicsmagick:p
+            gtk3:p
+            icu:p
+            imath:p
+            iso-codes:p
+            lcms2:p
+            lensfun:p
+            libavif:p
+            libgphoto2:p
+            libheif:p
+            libjpeg-turbo:p
+            libjxl:p
+            libpng:p
+            librsvg:p
+            libsecret:p
+            libtiff:p
+            libwebp:p
+            libxml2:p
+            lua:p
+            omp:p
+            openexr:p
+            openjpeg2:p
+            osm-gps-map:p
+            portmidi:p
+            pugixml:p
+            SDL2:p
+            sqlite3:p
+            zlib:p
+          update: false
+      - name: Install the latest not yet broken version of exiv2
+        run: |
+          # It's a temporary fix, to be removed when the issue will be resolved
+          pacman -U --noconfirm https://repo.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-exiv2-0.27.7-1-any.pkg.tar.zst
+      - name: Install the latest still safe to display cyrillic texts version of pango
+        run: |
+          # It's a temporary fix, to be removed when the issue #13084 will be resolved
+          pacman -U --noconfirm https://repo.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-pango-1.50.11-1-any.pkg.tar.zst
+      - name: Cancel workflow if job fails
+        if: ${{ failure() }}
+        uses: andymckay/cancel-action@0.4
+      - run: git config --global core.autocrlf input
+        shell: bash
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+          path: src
+      - name: Update lensfun data
+        if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
+        continue-on-error: true
+        run: |
+          lensfun-update-data
+      - name: Build and Install
+        run: |
+          cmake -E make_directory "${BUILD_DIR}"
+          cmake -E make_directory "${INSTALL_PREFIX}"
+          $(cygpath ${SRC_DIR})/.ci/ci-script.sh
+      - name: Check if it runs
+        run: |
+          $(cygpath ${INSTALL_PREFIX})/bin/darktable.exe --version || true
+          $(cygpath ${INSTALL_PREFIX})/bin/darktable-cli.exe \
+                 --width 2048 --height 2048 \
+                 --hq true --apply-custom-presets false \
+                 $(cygpath ${SRC_DIR})/src/tests/integration/images/mire1.cr2 \
+                 $(cygpath ${SRC_DIR})/src/tests/integration/0000-nop/nop.xmp \
+                 output.png \
+                 --core --disable-opencl --conf host_memory_limit=8192 \
+                 --conf worker_threads=4 -t 4 \
+                 --conf plugins/lighttable/export/force_lcms2=FALSE \
+                 --conf plugins/lighttable/export/iccintent=0
+      - name: Package
+        if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
+        run: |
+          cd "${BUILD_DIR}"
+          cmake --build "${BUILD_DIR}" --target package
+      - name: Get version info
+        run: |      
+          cd ${SRC_DIR}
+          echo "VERSION=$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')" >> $GITHUB_ENV
+          ([[ ${MSYSTEM_CARCH} == x86_64 ]] && echo "SYSTEM=win64" || echo "SYSTEM=woa64") >> $GITHUB_ENV
+      - name: Package upload
+        if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: darktable-${{ env.VERSION }}-${{ env.SYSTEM }}.exe
+          path: ${{ env.BUILD_DIR }}/darktable-${{ env.VERSION }}-${{ env.SYSTEM }}.exe
+          retention-days: 2
+
+  macOS:
+    if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
+    name: macOS
+    runs-on: ${{ matrix.build.os }}
+    environment: Release Build
+    strategy:
+      fail-fast: true
+      matrix:
+        build:
+          - { os: macos-12, xcode: 14.2, deployment: 12.5 } # LLVM14, x86_64
+          - { os: macos-14, xcode: 15.2, deployment: 14.0 } # LLVM16, arm64
+        compiler:
+          - { compiler: XCode,   CC: cc, CXX: c++ }
+        btype: [ Release ]
+        eco: [-DBINARY_PACKAGE_BUILD=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON -DUSE_GRAPHICSMAGICK=OFF -DUSE_IMAGEMAGICK=ON]
+        target:
+          - skiptest
+        generator:
+          - Ninja
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_${{ matrix.build.xcode }}.app/Contents/Developer
+      CC: ${{ matrix.compiler.CC }}
+      CXX: ${{ matrix.compiler.CXX }}
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.build.deployment }}
+      SRC_DIR: ${{ github.workspace }}/src
+      BUILD_DIR: ${{ github.workspace }}/src/build
+      INSTALL_PREFIX: ${{ github.workspace }}/src/build/macosx
+      ECO: ${{ matrix.eco }}
+      CMAKE_BUILD_TYPE: ${{ matrix.btype }}
+      GENERATOR: ${{ matrix.generator }}
+      TARGET: ${{ matrix.target }}
+    steps:          
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ vars.RELEASE_TAG }}
+          submodules: true
+          path: src
+      - name: Install Base Dependencies
+        run: |
+          brew update > /dev/null || true
+          # brew upgrade || true        # no need for a very time-consuming upgrade of ALL packages
+          brew install --force gd       # See https://github.com/Homebrew/homebrew-core/issues/141766
+          brew tap Homebrew/bundle
+          cd src/.ci
+          export HOMEBREW_NO_INSTALL_UPGRADE=1
+          export HOMEBREW_NO_INSTALL_CLEANUP=1
+          brew bundle --verbose || true
+          # handle keg-only libs
+          brew link --force libomp
+          brew link --force libsoup@2
+      - name: use ImageMagick 6
+        run: |
+          brew link --overwrite --force imagemagick@6
+      - name: Build and Install
+          # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
+        run: |
+          cmake -E make_directory "${BUILD_DIR}";
+          cmake -E make_directory "${INSTALL_PREFIX}";
+          ./src/.ci/ci-script.sh;
+      - name: Check if it runs
+        run: |
+          ${INSTALL_PREFIX}/bin/darktable --version || true
+          ${INSTALL_PREFIX}/bin/darktable-cli \
+                 --width 2048 --height 2048 \
+                 --hq true --apply-custom-presets false \
+                 "${SRC_DIR}/src/tests/integration/images/mire1.cr2" \
+                 "${SRC_DIR}/src/tests/integration/0000-nop/nop.xmp" \
+                 output.png \
+                 --core --disable-opencl --conf host_memory_limit=8192 \
+                 --conf worker_threads=4 -t 4 \
+                 --conf plugins/lighttable/export/force_lcms2=FALSE \
+                 --conf plugins/lighttable/export/iccintent=0
+      - name: Build macOS package
+        run: |
+          ./src/packaging/macosx/3_make_hb_darktable_package.sh
+      - name: Create DMG file
+        run: |
+          ./src/packaging/macosx/4_make_hb_darktable_dmg.sh
+      - name: Get architecture
+        run: |
+          echo "ARCHITECTURE=$(uname -m)" >> $GITHUB_ENV
+      - name: Get version info
+        run: |      
+          cd ${{ env.SRC_DIR }}
+          echo "VERSION=$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-${{ env.ARCHITECTURE }}" >> $GITHUB_ENV
+      - name: Package upload
+        if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: darktable-${{ env.VERSION }}.dmg
+          path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.dmg
+          retention-days: 2
