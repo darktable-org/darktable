@@ -2707,7 +2707,7 @@ static int _path_events_mouse_moved(dt_iop_module_t *module,
 
   if((gui->group_selected == index) && gui->point_edited >= 0)
   {
-      const int k = gui->point_edited;
+    const int k = gui->point_edited;
     // we only select feather if the point is not "sharp"
     if(gpt->points[k * 6 + 2] != gpt->points[k * 6 + 4]
        && gpt->points[k * 6 + 3] != gpt->points[k * 6 + 5])
