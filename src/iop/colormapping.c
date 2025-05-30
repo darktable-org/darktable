@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2024 darktable developers.
+    Copyright (C) 2013-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "bauhaus/bauhaus.h"
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
@@ -146,7 +147,8 @@ const char *name()
 
 const char **description(dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("transfer a color palette and tonal repartition from one image to another"),
+  return dt_iop_set_description(self, _("transfer a color palette and tonal repartition\n"
+                                        "from one image to another"),
                                       _("creative"),
                                       _("linear or non-linear, Lab, display-referred"),
                                       _("non-linear, Lab"),
