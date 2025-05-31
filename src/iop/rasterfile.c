@@ -97,7 +97,7 @@ const char *aliases()
 const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
-      _("import PFM files to be used as raster masks"),
+      _("read PFM files recorded for use as raster masks"),
       _("corrective or creative"),
       _("linear, raw, scene-referred"),
       _("linear, raw"),
