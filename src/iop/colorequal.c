@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022-2024 darktable developers.
+    Copyright (C) 2022-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -209,7 +209,9 @@ const char *aliases()
 const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description
-    (self, _("change saturation, hue and brightness depending on local hue"),
+    (self,
+     _("change saturation, hue and brightness\n"
+       "depending on local hue"),
      _("corrective and creative"),
      _("linear, RGB, scene-referred"),
      _("quasi-linear, RGB"),
