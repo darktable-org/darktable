@@ -736,6 +736,7 @@ static char *_get_version_string(void)
                                        STR(LUA_API_VERSION_MINOR) "."
                                        STR(LUA_API_VERSION_PATCH) "\n";
 #endif
+
 char *version = g_strdup_printf(
                "darktable %s\n"
                "Copyright (C) 2012-%s Johannes Hanika and other contributors.\n\n"
@@ -1185,8 +1186,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                    "[dt_init --threads] requested %d ompthreads restricted to %d",
             desired, possible);
         dt_print(DT_DEBUG_ALWAYS,
-                 "[dt_init --threads] using %d threads for openmp parallel sections",
-          darktable.num_openmp_threads);
+                 "[dt_init --threads] using %d threads of %d for openmp parallel sections %s",
+          darktable.num_openmp_threads, (int)dt_get_num_procs(), omp_get_dynamic() ? "(dynamic)" : "(static)");
         k++;
         argv[k-1] = NULL;
         argv[k] = NULL;
@@ -1448,6 +1449,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
 #ifdef _OPENMP
   omp_set_num_threads(darktable.num_openmp_threads);
+  omp_set_dynamic(FALSE);
 #endif
 
 #ifdef USE_LUA
