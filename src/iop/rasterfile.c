@@ -208,8 +208,13 @@ static void _update_filepath(dt_iop_module_t *self)
   if(!p->path[0] || !p->file[0])
   {
     dt_bauhaus_combobox_clear(g->file);
+    // Making the empty widget insensitive is very important, because
+    // attempts to interact with it trigger a bug in GTK (as of 3.24.49)
+    // that disables the display of tooltips
+    gtk_widget_set_sensitive(g->file, FALSE);
     return;
   }
+  gtk_widget_set_sensitive(g->file, TRUE);
 
   if(!dt_bauhaus_combobox_set_from_text(g->file, p->file))
   {
