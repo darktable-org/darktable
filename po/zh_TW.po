@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 5.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-05-28 17:33+0200\n"
-"PO-Revision-Date: 2025-05-29 10:40+0800\n"
+"POT-Creation-Date: 2025-06-01 09:33+0200\n"
+"PO-Revision-Date: 2025-06-02 12:08+0800\n"
 "Last-Translator: Hsu Kang-Wei <beblue.shi@gmail.com>\n"
 "Language-Team: \n"
 "Language: zh_TW\n"
@@ -2327,9 +2327,9 @@ msgstr "秋天"
 #: ../src/common/collection.c:1461 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:383 ../src/develop/blend_gui.c:2392
 #: ../src/develop/blend_gui.c:2440 ../src/develop/lightroom.c:893
-#: ../src/gui/gtk.c:3756 ../src/iop/bilateral.cc:380
+#: ../src/gui/gtk.c:3756 ../src/iop/bilateral.cc:382
 #: ../src/iop/channelmixer.c:614 ../src/iop/channelmixer.c:634
-#: ../src/iop/channelmixerrgb.c:4619 ../src/iop/colorequal.c:2961
+#: ../src/iop/channelmixerrgb.c:4619 ../src/iop/colorequal.c:2963
 #: ../src/iop/colorzones.c:2490 ../src/iop/temperature.c:2014
 #: ../src/iop/temperature.c:2202 ../src/libs/collect.c:1963
 #: ../src/libs/filters/colors.c:263 ../src/libs/histogram.c:2613
@@ -2370,7 +2370,7 @@ msgstr "對比與銳利度"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:523
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:555
 #: ../src/common/color_vocabulary.c:298 ../src/gui/guides.c:870
-#: ../src/iop/colorequal.c:2960 ../src/iop/temperature.c:1998
+#: ../src/iop/colorequal.c:2962 ../src/iop/temperature.c:1998
 msgid "cyan"
 msgstr "青色"
 
@@ -2449,9 +2449,9 @@ msgstr "通用"
 #: ../src/common/collection.c:1459 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:382 ../src/develop/blend_gui.c:2386
 #: ../src/develop/blend_gui.c:2434 ../src/develop/lightroom.c:891
-#: ../src/gui/gtk.c:3755 ../src/gui/guides.c:868 ../src/iop/bilateral.cc:375
+#: ../src/gui/gtk.c:3755 ../src/gui/guides.c:868 ../src/iop/bilateral.cc:377
 #: ../src/iop/channelmixer.c:613 ../src/iop/channelmixer.c:628
-#: ../src/iop/channelmixerrgb.c:4618 ../src/iop/colorequal.c:2959
+#: ../src/iop/channelmixerrgb.c:4618 ../src/iop/colorequal.c:2961
 #: ../src/iop/colorzones.c:2488 ../src/iop/temperature.c:1994
 #: ../src/iop/temperature.c:2012 ../src/iop/temperature.c:2201
 #: ../src/libs/collect.c:1963 ../src/libs/filters/colors.c:262
@@ -2467,7 +2467,7 @@ msgstr "綠"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:535
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:567
 #: ../src/common/color_vocabulary.c:341 ../src/gui/guides.c:871
-#: ../src/iop/colorequal.c:2963 ../src/iop/colorzones.c:2492
+#: ../src/iop/colorequal.c:2965 ../src/iop/colorzones.c:2492
 #: ../src/iop/temperature.c:1996
 msgid "magenta"
 msgstr "洋紅色"
@@ -2493,7 +2493,7 @@ msgstr "動態模糊"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:479
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:511
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:543
-#: ../src/iop/colorequal.c:2957 ../src/iop/colorzones.c:2486
+#: ../src/iop/colorequal.c:2959 ../src/iop/colorzones.c:2486
 msgid "orange"
 msgstr "橘色"
 
@@ -2520,9 +2520,9 @@ msgstr "紫色"
 #: ../src/common/collection.c:1455 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:380 ../src/develop/blend_gui.c:2380
 #: ../src/develop/blend_gui.c:2428 ../src/develop/lightroom.c:887
-#: ../src/gui/gtk.c:3754 ../src/gui/guides.c:867 ../src/iop/bilateral.cc:370
+#: ../src/gui/gtk.c:3754 ../src/gui/guides.c:867 ../src/iop/bilateral.cc:372
 #: ../src/iop/channelmixer.c:612 ../src/iop/channelmixer.c:622
-#: ../src/iop/channelmixerrgb.c:4617 ../src/iop/colorequal.c:2956
+#: ../src/iop/channelmixerrgb.c:4617 ../src/iop/colorequal.c:2958
 #: ../src/iop/colorzones.c:2485 ../src/iop/temperature.c:2010
 #: ../src/iop/temperature.c:2200 ../src/libs/collect.c:1963
 #: ../src/libs/filters/colors.c:260 ../src/libs/histogram.c:2631
@@ -2558,7 +2558,7 @@ msgstr "特別色"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:547
 #: ../src/common/collection.c:1457 ../src/common/colorlabels.c:381
 #: ../src/develop/lightroom.c:889 ../src/gui/guides.c:869
-#: ../src/iop/colorequal.c:2958 ../src/iop/colorzones.c:2487
+#: ../src/iop/colorequal.c:2960 ../src/iop/colorzones.c:2487
 #: ../src/iop/temperature.c:2000 ../src/libs/collect.c:1963
 #: ../src/libs/filters/colors.c:261
 msgid "yellow"
@@ -2697,7 +2697,7 @@ msgstr "保留色彩"
 #: ../src/dtgtk/stylemenu.c:69 ../src/gui/guides.c:843
 #: ../src/iop/basecurve.c:2135 ../src/iop/channelmixerrgb.c:4670
 #: ../src/iop/clipping.c:1922 ../src/iop/clipping.c:2104
-#: ../src/iop/clipping.c:2119 ../src/iop/retouch.c:498
+#: ../src/iop/clipping.c:2119 ../src/iop/retouch.c:499
 #: ../src/libs/collect.c:2159 ../src/libs/colorpicker.c:51
 #: ../src/libs/export.c:1147 ../src/libs/filters/module_order.c:158
 #: ../src/libs/histogram.c:110 ../src/libs/live_view.c:311
@@ -3020,7 +3020,7 @@ msgstr "參考色版"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:132
 #: ../build/lib/darktable/plugins/introspection_lens.cc:340
 #: ../build/lib/darktable/plugins/introspection_lens.cc:501
-#: ../src/iop/atrous.c:1628 ../src/iop/bilateral.cc:366 ../src/iop/clahe.c:313
+#: ../src/iop/atrous.c:1628 ../src/iop/bilateral.cc:368 ../src/iop/clahe.c:313
 #: ../src/iop/dither.c:768 ../src/iop/lowpass.c:574 ../src/iop/shadhi.c:685
 #: ../src/iop/sharpen.c:427
 msgid "radius"
@@ -3034,7 +3034,7 @@ msgstr "半徑"
 #: ../build/lib/darktable/plugins/introspection_lens.cc:497
 #: ../src/iop/bloom.c:422 ../src/iop/denoiseprofile.c:3762
 #: ../src/iop/grain.c:545 ../src/iop/hazeremoval.c:272
-#: ../src/iop/hotpixels.c:445 ../src/iop/nlmeans.c:456 ../src/iop/velvia.c:279
+#: ../src/iop/hotpixels.c:446 ../src/iop/nlmeans.c:457 ../src/iop/velvia.c:281
 msgid "strength"
 msgstr "強度"
 
@@ -3346,7 +3346,7 @@ msgstr "提升、伽瑪、增益（sRGB）"
 #: ../src/develop/blend_gui.c:2406 ../src/develop/blend_gui.c:2454
 #: ../src/iop/atrous.c:1791 ../src/iop/channelmixerrgb.c:4485
 #: ../src/iop/channelmixerrgb.c:4573 ../src/iop/colorbalancergb.c:1802
-#: ../src/iop/colorzones.c:2624 ../src/iop/nlmeans.c:464
+#: ../src/iop/colorzones.c:2624 ../src/iop/nlmeans.c:465
 msgid "chroma"
 msgstr "彩度"
 
@@ -3369,7 +3369,7 @@ msgstr "彩度"
 #: ../src/develop/blend_gui.c:2365 ../src/develop/blend_gui.c:2399
 #: ../src/develop/blend_gui.c:2461 ../src/iop/channelmixer.c:609
 #: ../src/iop/channelmixerrgb.c:4479 ../src/iop/channelmixerrgb.c:4566
-#: ../src/iop/colorbalance.c:1986 ../src/iop/colorequal.c:3067
+#: ../src/iop/colorbalance.c:1986 ../src/iop/colorequal.c:3069
 #: ../src/iop/colorize.c:334 ../src/iop/colorreconstruction.c:1233
 #: ../src/iop/colorzones.c:2625
 msgid "hue"
@@ -3413,7 +3413,7 @@ msgstr "暗部"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:180
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:313
 #: ../src/iop/bilat.c:473 ../src/iop/colorbalance.c:2045
-#: ../src/iop/monochrome.c:575 ../src/iop/shadhi.c:682
+#: ../src/iop/monochrome.c:577 ../src/iop/shadhi.c:682
 #: ../src/iop/splittoning.c:501
 msgid "highlights"
 msgstr "亮部"
@@ -3538,7 +3538,7 @@ msgstr "使用導引濾波器"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:499
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:531
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:563
-#: ../src/common/color_vocabulary.c:343 ../src/iop/colorequal.c:2962
+#: ../src/common/color_vocabulary.c:343 ../src/iop/colorequal.c:2964
 msgid "lavender"
 msgstr "粉紫色"
 
@@ -3665,7 +3665,7 @@ msgstr "邊緣偵測半徑"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:230
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:435
 #: ../src/iop/atrous.c:1687 ../src/iop/bloom.c:418
-#: ../src/iop/colorreconstruction.c:1229 ../src/iop/hotpixels.c:441
+#: ../src/iop/colorreconstruction.c:1229 ../src/iop/hotpixels.c:442
 #: ../src/iop/sharpen.c:436
 msgid "threshold"
 msgstr "臨界值"
@@ -4418,9 +4418,9 @@ msgstr "濃度"
 #: ../src/iop/channelmixer.c:610 ../src/iop/colisa.c:279
 #: ../src/iop/colorbalance.c:2003 ../src/iop/colorbalancergb.c:1826
 #: ../src/iop/colorchecker.c:1602 ../src/iop/colorcontrast.c:79
-#: ../src/iop/colorcorrection.c:263 ../src/iop/colorequal.c:3085
+#: ../src/iop/colorcorrection.c:263 ../src/iop/colorequal.c:3087
 #: ../src/iop/colorize.c:347 ../src/iop/lowpass.c:578 ../src/iop/soften.c:350
-#: ../src/iop/velvia.c:72 ../src/iop/vibrance.c:69 ../src/iop/vignette.c:1046
+#: ../src/iop/velvia.c:73 ../src/iop/vibrance.c:69 ../src/iop/vignette.c:1046
 msgid "saturation"
 msgstr "飽和度"
 
@@ -5119,7 +5119,7 @@ msgstr "填色模式"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:285
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:646 ../src/iop/channelmixerrgb.c:4625
-#: ../src/iop/colisa.c:278 ../src/iop/colorequal.c:3103
+#: ../src/iop/colisa.c:278 ../src/iop/colorequal.c:3105
 #: ../src/iop/lowpass.c:577 ../src/iop/soften.c:354 ../src/iop/vignette.c:1045
 #: ../src/libs/history.c:963
 msgid "brightness"
@@ -5144,12 +5144,12 @@ msgid "heal"
 msgstr "修復"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:447
-#: ../src/iop/retouch.c:2037
+#: ../src/iop/retouch.c:2038
 msgid "blur"
 msgstr "模糊"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:448
-#: ../src/iop/retouch.c:2035
+#: ../src/iop/retouch.c:2036
 msgid "fill"
 msgstr "填色"
 
@@ -5521,7 +5521,7 @@ msgid "Print your images"
 msgstr "列印影像"
 
 #: ../src/bauhaus/bauhaus.c:884 ../src/bauhaus/bauhaus.c:3864
-#: ../src/iop/colorequal.c:3052
+#: ../src/iop/colorequal.c:3054
 msgid "sliders"
 msgstr "滑桿"
 
@@ -5597,7 +5597,7 @@ msgstr "下拉選單"
 #: ../src/gui/presets.c:568 ../src/gui/styles_dialog.c:552
 #: ../src/imageio/storage/disk.c:198 ../src/imageio/storage/gallery.c:149
 #: ../src/imageio/storage/latex.c:145 ../src/iop/lut3d.c:1562
-#: ../src/iop/rasterfile.c:256 ../src/libs/collect.c:433
+#: ../src/iop/rasterfile.c:255 ../src/libs/collect.c:433
 #: ../src/libs/collect.c:3390 ../src/libs/copy_history.c:122
 #: ../src/libs/export_metadata.c:168 ../src/libs/geotagging.c:954
 #: ../src/libs/import.c:1863 ../src/libs/import.c:1976
@@ -9091,7 +9091,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2688 ../src/develop/blend_gui.c:3580
 #: ../src/iop/basicadj.c:626 ../src/iop/colorbalancergb.c:1999
-#: ../src/iop/colorequal.c:3134 ../src/iop/exposure.c:1104
+#: ../src/iop/colorequal.c:3136 ../src/iop/exposure.c:1104
 #: ../src/iop/exposure.c:1120 ../src/iop/filmic.c:1486 ../src/iop/filmic.c:1499
 #: ../src/iop/filmic.c:1541 ../src/iop/filmicrgb.c:4399
 #: ../src/iop/filmicrgb.c:4410 ../src/iop/filmicrgb.c:4443
@@ -9160,44 +9160,44 @@ msgstr "增加漸層遮罩"
 msgid "add multiple gradients"
 msgstr "增加多個漸層遮罩"
 
-#: ../src/develop/blend_gui.c:2825 ../src/iop/retouch.c:2450
+#: ../src/develop/blend_gui.c:2825 ../src/iop/retouch.c:2451
 #: ../src/libs/masks.c:984 ../src/libs/masks.c:1827 ../src/libs/masks.c:1831
 msgid "add brush"
 msgstr "增加筆刷遮罩"
 
-#: ../src/develop/blend_gui.c:2826 ../src/iop/retouch.c:2450
+#: ../src/develop/blend_gui.c:2826 ../src/iop/retouch.c:2451
 msgid "add multiple brush strokes"
 msgstr "增加多個筆刷遮罩"
 
-#: ../src/develop/blend_gui.c:2833 ../src/iop/retouch.c:2455
+#: ../src/develop/blend_gui.c:2833 ../src/iop/retouch.c:2456
 #: ../src/iop/spots.c:880 ../src/libs/masks.c:999 ../src/libs/masks.c:1803
 #: ../src/libs/masks.c:1807
 msgid "add path"
 msgstr "增加路徑遮罩"
 
-#: ../src/develop/blend_gui.c:2834 ../src/iop/retouch.c:2455
+#: ../src/develop/blend_gui.c:2834 ../src/iop/retouch.c:2456
 #: ../src/iop/spots.c:880
 msgid "add multiple paths"
 msgstr "增加多個路徑遮罩"
 
-#: ../src/develop/blend_gui.c:2841 ../src/iop/retouch.c:2460
+#: ../src/develop/blend_gui.c:2841 ../src/iop/retouch.c:2461
 #: ../src/iop/spots.c:885 ../src/libs/masks.c:994 ../src/libs/masks.c:1811
 #: ../src/libs/masks.c:1815
 msgid "add ellipse"
 msgstr "增加橢圓遮罩"
 
-#: ../src/develop/blend_gui.c:2842 ../src/iop/retouch.c:2460
+#: ../src/develop/blend_gui.c:2842 ../src/iop/retouch.c:2461
 #: ../src/iop/spots.c:885
 msgid "add multiple ellipses"
 msgstr "增加多個橢圓遮罩"
 
-#: ../src/develop/blend_gui.c:2849 ../src/iop/retouch.c:2465
+#: ../src/develop/blend_gui.c:2849 ../src/iop/retouch.c:2466
 #: ../src/iop/spots.c:890 ../src/libs/masks.c:989 ../src/libs/masks.c:1819
 #: ../src/libs/masks.c:1823
 msgid "add circle"
 msgstr "增加圓形遮罩"
 
-#: ../src/develop/blend_gui.c:2850 ../src/iop/retouch.c:2465
+#: ../src/develop/blend_gui.c:2850 ../src/iop/retouch.c:2466
 #: ../src/iop/spots.c:890
 msgid "add multiple circles"
 msgstr "增加多個圓形遮罩"
@@ -9388,9 +9388,9 @@ msgid "feathering radius"
 msgstr "柔化半徑"
 
 #: ../src/develop/blend_gui.c:3628 ../src/develop/blend_gui.c:3637
-#: ../src/iop/colorbalancergb.c:2021 ../src/iop/colorequal.c:3149
-#: ../src/iop/colorequal.c:3176 ../src/iop/diffuse.c:1782
-#: ../src/iop/diffuse.c:1792 ../src/iop/retouch.c:2717
+#: ../src/iop/colorbalancergb.c:2021 ../src/iop/colorequal.c:3151
+#: ../src/iop/colorequal.c:3178 ../src/iop/diffuse.c:1782
+#: ../src/iop/diffuse.c:1792 ../src/iop/retouch.c:2718
 msgid " px"
 msgstr " 像素"
 
@@ -9414,7 +9414,7 @@ msgstr ""
 "越大的半徑可創造更柔和的邊緣過渡，避免邊緣不自然感\n"
 "在邊緣偵測後使用模糊，則可修飾過於生硬的遮罩邊緣"
 
-#: ../src/develop/blend_gui.c:3645 ../src/iop/retouch.c:2722
+#: ../src/develop/blend_gui.c:3645 ../src/iop/retouch.c:2723
 #: ../src/libs/history.c:954
 msgid "mask opacity"
 msgstr "遮罩不透明度"
@@ -12279,8 +12279,8 @@ msgid "official"
 msgstr "正式"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:415
-#: ../src/iop/retouch.c:2476 ../src/iop/retouch.c:2482
-#: ../src/iop/retouch.c:2488 ../src/iop/retouch.c:2494
+#: ../src/iop/retouch.c:2477 ../src/iop/retouch.c:2483
+#: ../src/iop/retouch.c:2489 ../src/iop/retouch.c:2495
 msgid "tools"
 msgstr "工具"
 
@@ -12471,7 +12471,7 @@ msgstr "選擇腳本資料夾"
 #. a horizontal box that contains the button and the label
 #: ../src/external/lua-scripts/tools/script_manager.lua:1461
 #: ../src/iop/channelmixerrgb.c:4422 ../src/iop/clipping.c:2098
-#: ../src/iop/colorbalancergb.c:1780 ../src/iop/colorequal.c:3006
+#: ../src/iop/colorbalancergb.c:1780 ../src/iop/colorequal.c:3008
 #: ../src/iop/filmicrgb.c:4378 ../src/iop/negadoctor.c:837
 #: ../src/iop/toneequal.c:3298 ../src/libs/image.c:497
 #: ../src/views/lighttable.c:1329
@@ -13690,7 +13690,7 @@ msgid "from metadata"
 msgstr "從詮釋資料"
 
 #: ../src/gui/guides.c:30 ../src/iop/colorcorrection.c:243
-#: ../src/iop/monochrome.c:560
+#: ../src/iop/monochrome.c:562
 msgid "grid"
 msgstr "格線"
 
@@ -14106,7 +14106,7 @@ msgstr "RAW 原始檔"
 msgid "HDR"
 msgstr "高動態範圍影像"
 
-#: ../src/gui/presets.c:59 ../src/iop/monochrome.c:74 ../src/libs/image.c:659
+#: ../src/gui/presets.c:59 ../src/iop/monochrome.c:75 ../src/libs/image.c:659
 #: ../src/libs/metadata_view.c:368
 msgid "monochrome"
 msgstr "黑白"
@@ -15329,16 +15329,16 @@ msgstr ""
 #: ../src/iop/colorbalance.c:160 ../src/iop/colorbalancergb.c:180
 #: ../src/iop/colorchecker.c:130 ../src/iop/colorcorrection.c:74
 #: ../src/iop/crop.c:134 ../src/iop/lut3d.c:138 ../src/iop/primaries.c:76
-#: ../src/iop/rasterfile.c:101
+#: ../src/iop/rasterfile.c:100
 msgid "corrective or creative"
 msgstr "修正或創意"
 
 #: ../src/iop/ashift.c:128 ../src/iop/ashift.c:130 ../src/iop/basicadj.c:169
-#: ../src/iop/bilateral.cc:102 ../src/iop/bilateral.cc:104
+#: ../src/iop/bilateral.cc:104 ../src/iop/bilateral.cc:106
 #: ../src/iop/blurs.c:90 ../src/iop/blurs.c:91 ../src/iop/channelmixerrgb.c:238
 #: ../src/iop/channelmixerrgb.c:240 ../src/iop/clipping.c:357
 #: ../src/iop/clipping.c:359 ../src/iop/colorbalancergb.c:181
-#: ../src/iop/colorequal.c:214 ../src/iop/colorin.c:131 ../src/iop/crop.c:135
+#: ../src/iop/colorequal.c:216 ../src/iop/colorin.c:131 ../src/iop/crop.c:135
 #: ../src/iop/crop.c:137 ../src/iop/demosaic.c:297
 #: ../src/iop/denoiseprofile.c:777 ../src/iop/denoiseprofile.c:779
 #: ../src/iop/diffuse.c:140 ../src/iop/diffuse.c:142
@@ -15348,11 +15348,11 @@ msgstr "修正或創意"
 #: ../src/iop/hazeremoval.c:113 ../src/iop/lens.cc:263 ../src/iop/lens.cc:265
 #: ../src/iop/liquify.c:295 ../src/iop/liquify.c:297 ../src/iop/overlay.c:155
 #: ../src/iop/overlay.c:157 ../src/iop/primaries.c:77 ../src/iop/primaries.c:79
-#: ../src/iop/retouch.c:207 ../src/iop/retouch.c:209
-#: ../src/iop/scalepixels.c:85 ../src/iop/scalepixels.c:87
+#: ../src/iop/retouch.c:208 ../src/iop/retouch.c:210
+#: ../src/iop/scalepixels.c:86 ../src/iop/scalepixels.c:88
 #: ../src/iop/sigmoid.c:205 ../src/iop/splittoning.c:103
 #: ../src/iop/splittoning.c:105 ../src/iop/spots.c:67 ../src/iop/spots.c:69
-#: ../src/iop/toneequal.c:330 ../src/iop/velvia.c:96 ../src/iop/velvia.c:98
+#: ../src/iop/toneequal.c:330 ../src/iop/velvia.c:98 ../src/iop/velvia.c:100
 msgid "linear, RGB, scene-referred"
 msgstr "線性、RGB、場景參照"
 
@@ -15628,8 +15628,8 @@ msgstr ""
 "縱軸表示不同細節頻率的亮度和彩度對比\n"
 "這個功能強大的模組可以達成多種效果，可藉由套用預設集了解控制邏輯"
 
-#: ../src/iop/atrous.c:133 ../src/iop/bilateral.cc:101
-#: ../src/iop/colorequal.c:213 ../src/iop/diffuse.c:139
+#: ../src/iop/atrous.c:133 ../src/iop/bilateral.cc:103
+#: ../src/iop/colorequal.c:215 ../src/iop/diffuse.c:139
 #: ../src/iop/enlargecanvas.c:80 ../src/iop/exposure.c:127
 #: ../src/iop/filmicrgb.c:349 ../src/iop/graduatednd.c:143
 #: ../src/iop/negadoctor.c:142 ../src/iop/overlay.c:154
@@ -15779,7 +15779,7 @@ msgstr "最精細"
 msgid "x"
 msgstr "x"
 
-#: ../src/iop/atrous.c:1789 ../src/iop/nlmeans.c:461
+#: ../src/iop/atrous.c:1789 ../src/iop/nlmeans.c:462
 msgid "luma"
 msgstr "亮度"
 
@@ -15811,7 +15811,7 @@ msgstr ""
 "亮度和彩度對比出現不自然的邊緣時可以使用，調整數值因影像而異必須自行嘗試"
 
 #: ../src/iop/atrous.c:1808 ../src/iop/colorbalancergb.c:1973
-#: ../src/iop/colorequal.c:3017 ../src/iop/colorzones.c:2706
+#: ../src/iop/colorequal.c:3019 ../src/iop/colorzones.c:2706
 #: ../src/iop/denoiseprofile.c:3700 ../src/iop/filmicrgb.c:4366
 #: ../src/iop/lowlight.c:809 ../src/iop/rawdenoise.c:910
 #: ../src/iop/toneequal.c:3350
@@ -15903,7 +15903,7 @@ msgstr "基礎曲線"
 
 #: ../src/iop/basecurve.c:370
 msgid ""
-"apply a view transform based on personal or camera manufacturer look,\n"
+"apply a view transform based on personal or camera maker look,\n"
 "for corrective purposes, to prepare images for display"
 msgstr ""
 "基礎曲線 | base curve\n"
@@ -15917,10 +15917,10 @@ msgstr ""
 #: ../src/iop/cacorrectrgb.c:166 ../src/iop/colorreconstruction.c:117
 #: ../src/iop/defringe.c:80 ../src/iop/denoiseprofile.c:776
 #: ../src/iop/flip.c:108 ../src/iop/hazeremoval.c:110
-#: ../src/iop/highlights.c:176 ../src/iop/hotpixels.c:72
-#: ../src/iop/invert.c:132 ../src/iop/lens.cc:262 ../src/iop/nlmeans.c:86
+#: ../src/iop/highlights.c:176 ../src/iop/hotpixels.c:73
+#: ../src/iop/invert.c:132 ../src/iop/lens.cc:262 ../src/iop/nlmeans.c:87
 #: ../src/iop/profile_gamma.c:99 ../src/iop/rawdenoise.c:140
-#: ../src/iop/retouch.c:206 ../src/iop/scalepixels.c:84 ../src/iop/sharpen.c:93
+#: ../src/iop/retouch.c:207 ../src/iop/scalepixels.c:85 ../src/iop/sharpen.c:93
 #: ../src/iop/spots.c:66 ../src/iop/temperature.c:249
 msgid "corrective"
 msgstr "修正"
@@ -16029,11 +16029,11 @@ msgstr "套用一般的影像調整"
 #: ../src/iop/basicadj.c:168 ../src/iop/bilat.c:85 ../src/iop/bloom.c:81
 #: ../src/iop/blurs.c:90 ../src/iop/borders.c:317 ../src/iop/censorize.c:83
 #: ../src/iop/colisa.c:87 ../src/iop/colorcontrast.c:86
-#: ../src/iop/colorize.c:95 ../src/iop/colormapping.c:150
+#: ../src/iop/colorize.c:95 ../src/iop/colormapping.c:152
 #: ../src/iop/colorzones.c:142 ../src/iop/grain.c:391 ../src/iop/highpass.c:75
 #: ../src/iop/levels.c:137 ../src/iop/liquify.c:294 ../src/iop/lowlight.c:89
-#: ../src/iop/lowpass.c:103 ../src/iop/monochrome.c:97 ../src/iop/soften.c:100
-#: ../src/iop/splittoning.c:102 ../src/iop/velvia.c:95 ../src/iop/vibrance.c:94
+#: ../src/iop/lowpass.c:103 ../src/iop/monochrome.c:99 ../src/iop/soften.c:100
+#: ../src/iop/splittoning.c:102 ../src/iop/velvia.c:97 ../src/iop/vibrance.c:94
 #: ../src/iop/vignette.c:117 ../src/iop/watermark.c:414
 msgid "creative"
 msgstr "創意"
@@ -16120,21 +16120,21 @@ msgstr ""
 #: ../src/iop/bloom.c:84 ../src/iop/colisa.c:88 ../src/iop/colisa.c:90
 #: ../src/iop/colorcontrast.c:87 ../src/iop/colorcontrast.c:89
 #: ../src/iop/colorcorrection.c:75 ../src/iop/colorcorrection.c:77
-#: ../src/iop/colorize.c:98 ../src/iop/colormapping.c:153
+#: ../src/iop/colorize.c:98 ../src/iop/colormapping.c:155
 #: ../src/iop/colorreconstruction.c:120 ../src/iop/colorzones.c:145
 #: ../src/iop/defringe.c:83 ../src/iop/grain.c:392 ../src/iop/grain.c:394
 #: ../src/iop/levels.c:140 ../src/iop/lowlight.c:90 ../src/iop/lowlight.c:92
-#: ../src/iop/monochrome.c:100 ../src/iop/nlmeans.c:87 ../src/iop/nlmeans.c:89
+#: ../src/iop/monochrome.c:102 ../src/iop/nlmeans.c:88 ../src/iop/nlmeans.c:90
 #: ../src/iop/shadhi.c:144 ../src/iop/tonecurve.c:183 ../src/iop/vibrance.c:97
 msgid "non-linear, Lab, display-referred"
 msgstr "非線性、Lab、顯示參照"
 
 #: ../src/iop/bilat.c:87 ../src/iop/bloom.c:83 ../src/iop/colisa.c:89
 #: ../src/iop/colorcontrast.c:88 ../src/iop/colorcorrection.c:76
-#: ../src/iop/colorize.c:97 ../src/iop/colormapping.c:152
+#: ../src/iop/colorize.c:97 ../src/iop/colormapping.c:154
 #: ../src/iop/colorreconstruction.c:119 ../src/iop/colorzones.c:144
 #: ../src/iop/defringe.c:82 ../src/iop/grain.c:393 ../src/iop/levels.c:139
-#: ../src/iop/monochrome.c:99 ../src/iop/nlmeans.c:88 ../src/iop/shadhi.c:143
+#: ../src/iop/monochrome.c:101 ../src/iop/nlmeans.c:89 ../src/iop/shadhi.c:143
 #: ../src/iop/tonecurve.c:182 ../src/iop/vibrance.c:96
 msgid "non-linear, Lab"
 msgstr "非線性、Lab"
@@ -16201,8 +16201,10 @@ msgstr "表面模糊"
 msgid "denoise (bilateral filter)"
 msgstr "雙邊濾波除雜訊"
 
-#: ../src/iop/bilateral.cc:100
-msgid "apply edge-aware surface blur to denoise or smoothen textures"
+#: ../src/iop/bilateral.cc:101
+msgid ""
+"apply edge-aware surface blur\n"
+"to denoise or smoothen textures"
 msgstr ""
 "表面模糊 | surface blur\n"
 "\n"
@@ -16211,20 +16213,20 @@ msgstr ""
 "「天文攝影除雜訊」或「相機特性除雜訊」\n"
 "此模組還可用作創意濾鏡以創造卡通般的外觀效果"
 
-#: ../src/iop/bilateral.cc:103 ../src/iop/blurs.c:90
+#: ../src/iop/bilateral.cc:105 ../src/iop/blurs.c:90
 #: ../src/iop/channelmixer.c:138 ../src/iop/denoiseprofile.c:778
 #: ../src/iop/diffuse.c:141 ../src/iop/enlargecanvas.c:82
 #: ../src/iop/exposure.c:129 ../src/iop/overlay.c:156 ../src/iop/primaries.c:78
-#: ../src/iop/scalepixels.c:86 ../src/iop/soften.c:102
-#: ../src/iop/splittoning.c:104 ../src/iop/velvia.c:97
+#: ../src/iop/scalepixels.c:87 ../src/iop/soften.c:102
+#: ../src/iop/splittoning.c:104 ../src/iop/velvia.c:99
 msgid "linear, RGB"
 msgstr "線性、RGB"
 
-#: ../src/iop/bilateral.cc:139
+#: ../src/iop/bilateral.cc:141
 msgid "image too large"
 msgstr "影像尺寸太大"
 
-#: ../src/iop/bilateral.cc:140
+#: ../src/iop/bilateral.cc:142
 msgid ""
 "this module is unable to process\n"
 "images with more than 2 gigapixels.\n"
@@ -16233,19 +16235,19 @@ msgstr ""
 "因為影像尺寸超過二十億畫素，此模組無法執行，\n"
 "並已略過處理步驟。"
 
-#: ../src/iop/bilateral.cc:367
+#: ../src/iop/bilateral.cc:369
 msgid "spatial extent of the gaussian"
 msgstr "高斯模糊的尺寸"
 
-#: ../src/iop/bilateral.cc:371
+#: ../src/iop/bilateral.cc:373
 msgid "how much to blur red"
 msgstr "紅色色版模糊量"
 
-#: ../src/iop/bilateral.cc:376
+#: ../src/iop/bilateral.cc:378
 msgid "how much to blur green"
 msgstr "綠色色版模糊量"
 
-#: ../src/iop/bilateral.cc:381
+#: ../src/iop/bilateral.cc:383
 msgid "how much to blur blue"
 msgstr "藍色色版模糊量"
 
@@ -16370,7 +16372,7 @@ msgstr "計算時使用的邊長"
 msgid "size of the border in percent of the chosen basis"
 msgstr "設定外框尺寸（相對於選定邊長的百分比）"
 
-#: ../src/iop/borders.c:933 ../src/iop/clipping.c:2229 ../src/iop/crop.c:1326
+#: ../src/iop/borders.c:933 ../src/iop/clipping.c:2229 ../src/iop/crop.c:1236
 msgid "aspect"
 msgstr "影像長寬比"
 
@@ -16410,7 +16412,7 @@ msgstr "5：3"
 msgid "US Legal 8.5x14"
 msgstr "美規 Legal 8.5 x 14"
 
-#: ../src/iop/borders.c:945 ../src/iop/clipping.c:2142 ../src/iop/crop.c:1228
+#: ../src/iop/borders.c:945 ../src/iop/clipping.c:2142 ../src/iop/crop.c:1138
 msgid "golden cut"
 msgstr "黃金比例"
 
@@ -16446,7 +16448,7 @@ msgstr "14：11"
 msgid "5:4 (8x10)"
 msgstr "5：4（8 x 10）"
 
-#: ../src/iop/borders.c:955 ../src/iop/clipping.c:2132 ../src/iop/crop.c:1217
+#: ../src/iop/borders.c:955 ../src/iop/clipping.c:2132 ../src/iop/crop.c:1127
 #: ../src/libs/filtering.c:310 ../src/libs/filters/ratio.c:124
 #: ../src/libs/histogram.c:119
 msgid "square"
@@ -16581,10 +16583,10 @@ msgstr ""
 #: ../src/iop/cacorrect.c:82 ../src/iop/cacorrect.c:84
 #: ../src/iop/cacorrectrgb.c:167 ../src/iop/cacorrectrgb.c:169
 #: ../src/iop/demosaic.c:295 ../src/iop/highlights.c:177
-#: ../src/iop/highlights.c:179 ../src/iop/hotpixels.c:73
-#: ../src/iop/hotpixels.c:75 ../src/iop/rawdenoise.c:141
-#: ../src/iop/rawdenoise.c:143 ../src/iop/rasterfile.c:102
-#: ../src/iop/rasterfile.c:104 ../src/iop/rawprepare.c:171
+#: ../src/iop/highlights.c:179 ../src/iop/hotpixels.c:74
+#: ../src/iop/hotpixels.c:76 ../src/iop/rawdenoise.c:141
+#: ../src/iop/rawdenoise.c:143 ../src/iop/rasterfile.c:101
+#: ../src/iop/rasterfile.c:103 ../src/iop/rawprepare.c:171
 #: ../src/iop/rawprepare.c:173 ../src/iop/temperature.c:250
 #: ../src/iop/temperature.c:252
 msgid "linear, raw, scene-referred"
@@ -16592,7 +16594,7 @@ msgstr "線性、RAW、場景參照"
 
 #: ../src/iop/cacorrect.c:83 ../src/iop/cacorrectrgb.c:168
 #: ../src/iop/demosaic.c:296 ../src/iop/invert.c:134
-#: ../src/iop/rawdenoise.c:142 ../src/iop/rasterfile.c:103
+#: ../src/iop/rawdenoise.c:142 ../src/iop/rasterfile.c:102
 #: ../src/iop/rawprepare.c:172 ../src/iop/temperature.c:251
 msgid "linear, raw"
 msgstr "線性、RAW"
@@ -17531,7 +17533,7 @@ msgstr "總量"
 msgid "size of features to preserve"
 msgstr "要保留的特性大小"
 
-#: ../src/iop/clahe.c:325 ../src/iop/nlmeans.c:460
+#: ../src/iop/clahe.c:325 ../src/iop/nlmeans.c:461
 msgid "strength of the effect"
 msgstr "調整去除雜訊的強度"
 
@@ -17554,15 +17556,15 @@ msgid "change the framing and correct the perspective"
 msgstr "變更邊界與修正透視"
 
 #: ../src/iop/clipping.c:1416 ../src/iop/clipping.c:2131 ../src/iop/crop.c:587
-#: ../src/iop/crop.c:1216
+#: ../src/iop/crop.c:1126
 msgid "original image"
 msgstr "原始影像"
 
-#: ../src/iop/clipping.c:1720 ../src/iop/crop.c:895
+#: ../src/iop/clipping.c:1720 ../src/iop/crop.c:811
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "無效的比例格式，必須使用「數字：數字」"
 
-#: ../src/iop/clipping.c:1736 ../src/iop/crop.c:911
+#: ../src/iop/clipping.c:1736 ../src/iop/crop.c:827
 msgid "invalid ratio format. it should be a positive number"
 msgstr "無效的比例格式，只能使用正值"
 
@@ -17602,51 +17604,51 @@ msgstr "梯形校正"
 msgid "set perspective correction for your image"
 msgstr "調整影像的透視校正"
 
-#: ../src/iop/clipping.c:2130 ../src/iop/crop.c:1215
+#: ../src/iop/clipping.c:2130 ../src/iop/crop.c:1125
 msgid "freehand"
 msgstr "手繪"
 
-#: ../src/iop/clipping.c:2133 ../src/iop/crop.c:1218
+#: ../src/iop/clipping.c:2133 ../src/iop/crop.c:1128
 msgid "10:8 in print"
 msgstr "10：8 - 傳統相紙"
 
-#: ../src/iop/clipping.c:2134 ../src/iop/crop.c:1219
+#: ../src/iop/clipping.c:2134 ../src/iop/crop.c:1129
 msgid "5:4, 4x5, 8x10"
 msgstr "5：4 - 4 x 5、8 x 10 大型相機"
 
-#: ../src/iop/clipping.c:2135 ../src/iop/crop.c:1220
+#: ../src/iop/clipping.c:2135 ../src/iop/crop.c:1130
 msgid "11x14"
 msgstr "11：14 - 傳統相紙"
 
-#: ../src/iop/clipping.c:2136 ../src/iop/crop.c:1222
+#: ../src/iop/clipping.c:2136 ../src/iop/crop.c:1132
 msgid "8.5x11, letter"
 msgstr "8.5 x 11 - 北美書信用紙"
 
-#: ../src/iop/clipping.c:2137 ../src/iop/crop.c:1223
+#: ../src/iop/clipping.c:2137 ../src/iop/crop.c:1133
 msgid "4:3, VGA, TV"
 msgstr "4：3 - 傳統電視"
 
-#: ../src/iop/clipping.c:2138 ../src/iop/crop.c:1224
+#: ../src/iop/clipping.c:2138 ../src/iop/crop.c:1134
 msgid "5x7"
 msgstr "5：7 - 傳統相紙"
 
-#: ../src/iop/clipping.c:2139 ../src/iop/crop.c:1225
+#: ../src/iop/clipping.c:2139 ../src/iop/crop.c:1135
 msgid "ISO 216, DIN 476, A4"
 msgstr "A4 - ISO 216、DIN 476"
 
-#: ../src/iop/clipping.c:2140 ../src/iop/crop.c:1226
+#: ../src/iop/clipping.c:2140 ../src/iop/crop.c:1136
 msgid "3:2, 4x6, 35mm"
 msgstr "3：2 - 35mm 底片及數位相機"
 
-#: ../src/iop/clipping.c:2141 ../src/iop/crop.c:1227
+#: ../src/iop/clipping.c:2141 ../src/iop/crop.c:1137
 msgid "16:10, 8x5"
 msgstr "16：10 - 螢幕"
 
-#: ../src/iop/clipping.c:2143 ../src/iop/crop.c:1229
+#: ../src/iop/clipping.c:2143 ../src/iop/crop.c:1139
 msgid "16:9, HDTV"
 msgstr "16：9 - 電視寬螢幕"
 
-#: ../src/iop/clipping.c:2144 ../src/iop/crop.c:1230
+#: ../src/iop/clipping.c:2144 ../src/iop/crop.c:1140
 msgid "widescreen"
 msgstr "寬螢幕"
 
@@ -17658,25 +17660,25 @@ msgstr "2：1 - Univisium 電影格式"
 msgid "cinemascope"
 msgstr "寬螢幕電影鏡頭"
 
-#: ../src/iop/clipping.c:2147 ../src/iop/crop.c:1233
+#: ../src/iop/clipping.c:2147 ../src/iop/crop.c:1143
 msgid "21:9"
 msgstr "21：9"
 
-#: ../src/iop/clipping.c:2148 ../src/iop/crop.c:1234
+#: ../src/iop/clipping.c:2148 ../src/iop/crop.c:1144
 msgid "anamorphic"
 msgstr "電影變形鏡頭"
 
-#: ../src/iop/clipping.c:2149 ../src/iop/crop.c:1236
+#: ../src/iop/clipping.c:2149 ../src/iop/crop.c:1146
 msgid "3:1, panorama"
 msgstr "3：1 - 全景"
 
-#: ../src/iop/clipping.c:2181 ../src/iop/clipping.c:2193 ../src/iop/crop.c:1272
-#: ../src/iop/crop.c:1289
+#: ../src/iop/clipping.c:2181 ../src/iop/clipping.c:2193 ../src/iop/crop.c:1182
+#: ../src/iop/crop.c:1199
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr "比例格式「%s」無效，只能使用「數字：數字」"
 
-#: ../src/iop/clipping.c:2240 ../src/iop/crop.c:1340
+#: ../src/iop/clipping.c:2240 ../src/iop/crop.c:1250
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square\n"
@@ -17687,32 +17689,32 @@ msgstr ""
 "排列順序：從最接近正方形到最長形\n"
 "開啟下拉選單後可直接輸入自訂比例，使用「寬：高」或寬高比數值"
 
-#: ../src/iop/clipping.c:2247 ../src/iop/crop.c:1351
+#: ../src/iop/clipping.c:2247 ../src/iop/crop.c:1261
 msgid "margins"
 msgstr "邊界"
 
-#: ../src/iop/clipping.c:2252 ../src/iop/crop.c:1361
+#: ../src/iop/clipping.c:2252 ../src/iop/crop.c:1271
 msgid "the left margin cannot overlap with the right margin"
 msgstr ""
 "左側裁剪掉的大小，以影像寬度百分比表示\n"
 "使用滑鼠直接操作影像上的裁切區域會自動更新此數值\n"
 "左側邊界不能重疊至右側邊界"
 
-#: ../src/iop/clipping.c:2259 ../src/iop/crop.c:1369
+#: ../src/iop/clipping.c:2259 ../src/iop/crop.c:1279
 msgid "the right margin cannot overlap with the left margin"
 msgstr ""
 "右側裁剪掉的大小，以影像寬度百分比表示\n"
 "使用滑鼠直接操作影像上的裁切區域會自動更新此數值\n"
 "右側邊界不能重疊至左側邊界"
 
-#: ../src/iop/clipping.c:2264 ../src/iop/crop.c:1375
+#: ../src/iop/clipping.c:2264 ../src/iop/crop.c:1285
 msgid "the top margin cannot overlap with the bottom margin"
 msgstr ""
 "上方裁剪掉的大小，以影像高度百分比表示\n"
 "使用滑鼠直接操作影像上的裁切區域會自動更新此數值\n"
 "上方邊界不能重疊至下方邊界"
 
-#: ../src/iop/clipping.c:2271 ../src/iop/crop.c:1383
+#: ../src/iop/clipping.c:2271 ../src/iop/crop.c:1293
 msgid "the bottom margin cannot overlap with the top margin"
 msgstr ""
 "下方裁剪掉的大小，以影像高度百分比表示\n"
@@ -17757,12 +17759,12 @@ msgstr ""
 "b>\n"
 "右鍵拖曳：<b>拉水平線</b>，雙擊：<b>完成</b>"
 
-#: ../src/iop/clipping.c:3336 ../src/iop/crop.c:1881
+#: ../src/iop/clipping.c:3336 ../src/iop/crop.c:1791
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[邊界 %s] 裁切"
 
-#: ../src/iop/clipping.c:3338 ../src/iop/crop.c:1883
+#: ../src/iop/clipping.c:3338 ../src/iop/crop.c:1793
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[邊界 %s] 保持比例裁切"
@@ -18076,7 +18078,7 @@ msgid "colorbalance works only on RGB input"
 msgstr "色彩平衡僅適用於 RGB 輸入"
 
 #: ../src/iop/colorbalancergb.c:1422 ../src/iop/colorzones.c:2381
-#: ../src/iop/retouch.c:2055 ../src/iop/toneequal.c:1942
+#: ../src/iop/retouch.c:2056 ../src/iop/toneequal.c:1942
 msgid "cannot display masks when the blending mask is displayed"
 msgstr "顯示混合遮罩時無法顯示其他遮罩"
 
@@ -18399,10 +18401,10 @@ msgstr ""
 "要使用色卡效正色偏請使用「色彩校正」模組"
 
 #: ../src/iop/colorchecker.c:131 ../src/iop/colorchecker.c:133
-#: ../src/iop/colorize.c:96 ../src/iop/colormapping.c:151
+#: ../src/iop/colorize.c:96 ../src/iop/colormapping.c:153
 #: ../src/iop/colorout.c:87 ../src/iop/colorreconstruction.c:118
 #: ../src/iop/colorzones.c:143 ../src/iop/defringe.c:81 ../src/iop/levels.c:138
-#: ../src/iop/monochrome.c:98 ../src/iop/shadhi.c:142
+#: ../src/iop/monochrome.c:100 ../src/iop/shadhi.c:142
 #: ../src/iop/tonecurve.c:181 ../src/iop/vibrance.c:95
 msgid "linear or non-linear, Lab, display-referred"
 msgstr "線性或非線性、Lab、顯示參照"
@@ -18603,7 +18605,7 @@ msgstr ""
 msgid "set the global saturation"
 msgstr "設定整體飽和度"
 
-#: ../src/iop/colorequal.c:201 ../src/iop/colorequal.c:2967
+#: ../src/iop/colorequal.c:201 ../src/iop/colorequal.c:2969
 msgid "color equalizer"
 msgstr "色彩等化器"
 
@@ -18611,45 +18613,47 @@ msgstr "色彩等化器"
 msgid "color zones|hsl"
 msgstr "色彩分區調整|color zones|HSL"
 
-#: ../src/iop/colorequal.c:212
-msgid "change saturation, hue and brightness depending on local hue"
+#: ../src/iop/colorequal.c:213
+msgid ""
+"change saturation, hue and brightness\n"
+"depending on local hue"
 msgstr ""
 "色彩等化器 | colorequal\n"
 "\n"
 "依據色相選擇性地調整色相、飽和度、亮度\n"
 "使用方式與「色彩分區調整」類似，但在 RGB 空間中處理數據"
 
-#: ../src/iop/colorequal.c:215 ../src/iop/toneequal.c:331
+#: ../src/iop/colorequal.c:217 ../src/iop/toneequal.c:331
 msgid "quasi-linear, RGB"
 msgstr "類線性、RGB"
 
-#: ../src/iop/colorequal.c:216 ../src/iop/toneequal.c:332
+#: ../src/iop/colorequal.c:218 ../src/iop/toneequal.c:332
 msgid "quasi-linear, RGB, scene-referred"
 msgstr "類線性、RGB、場景參照"
 
-#: ../src/iop/colorequal.c:2130
+#: ../src/iop/colorequal.c:2132
 msgid "bleach bypass"
 msgstr "跳漂白風格"
 
-#: ../src/iop/colorequal.c:2174
+#: ../src/iop/colorequal.c:2176
 msgid "Kodachrome 64 like"
 msgstr "Kodachrome 64 風格"
 
-#: ../src/iop/colorequal.c:2218
+#: ../src/iop/colorequal.c:2220
 msgid "Kodak Portra 400 like"
 msgstr "Kodak Portra 400 風格"
 
-#: ../src/iop/colorequal.c:2262
+#: ../src/iop/colorequal.c:2264
 msgid "teal & orange"
 msgstr "橙青電影調"
 
 #. Page OPTIONS
-#: ../src/iop/colorequal.c:2922 ../src/iop/colorequal.c:3126
+#: ../src/iop/colorequal.c:2924 ../src/iop/colorequal.c:3128
 #: ../src/iop/filmicrgb.c:4566
 msgid "options"
 msgstr "選項"
 
-#: ../src/iop/colorequal.c:3018
+#: ../src/iop/colorequal.c:3020
 msgid ""
 "double-click to reset the curve\n"
 "middle-click to toggle sliders visibility\n"
@@ -18659,11 +18663,11 @@ msgstr ""
 "滑鼠中鍵開關顯示色相控制點滑桿\n"
 "alt + 滾輪切換控制頁面"
 
-#: ../src/iop/colorequal.c:3044
+#: ../src/iop/colorequal.c:3046
 msgid "shift nodes to lower or higher hue"
 msgstr "移動控制節點的色相位置"
 
-#: ../src/iop/colorequal.c:3047
+#: ../src/iop/colorequal.c:3049
 msgid ""
 "pick hue from image and visualize it\n"
 "ctrl+click to select an area"
@@ -18671,19 +18675,19 @@ msgstr ""
 "從影像中選擇一點，在上圖顯示其色相位置\n"
 "ctrl + 點擊可圈選一個區域"
 
-#: ../src/iop/colorequal.c:3067
+#: ../src/iop/colorequal.c:3069
 msgid "change hue hue-wise"
 msgstr "依色相改變色相"
 
-#: ../src/iop/colorequal.c:3085
+#: ../src/iop/colorequal.c:3087
 msgid "change saturation hue-wise"
 msgstr "依色相改變飽和度"
 
-#: ../src/iop/colorequal.c:3103
+#: ../src/iop/colorequal.c:3105
 msgid "change brightness hue-wise"
 msgstr "依色相改變亮度"
 
-#: ../src/iop/colorequal.c:3136
+#: ../src/iop/colorequal.c:3138
 msgid ""
 "the white level set manually or via the picker restricts brightness "
 "corrections\n"
@@ -18693,15 +18697,15 @@ msgstr ""
 "亮度調整會限制在設定的白點之下。\n"
 "預設值適用於大多數的影像。"
 
-#: ../src/iop/colorequal.c:3141
+#: ../src/iop/colorequal.c:3143
 msgid "change for sharper or softer hue curve"
 msgstr "調整色相曲線更銳利或平滑"
 
-#: ../src/iop/colorequal.c:3145
+#: ../src/iop/colorequal.c:3147
 msgid "restrict effect by using a guided filter based on hue and saturation"
 msgstr "透過使用基於色調和飽和度的導引濾波器來限制效果"
 
-#: ../src/iop/colorequal.c:3151
+#: ../src/iop/colorequal.c:3153
 msgid ""
 "set radius of the guided filter chroma analysis (hue).\n"
 "increase if there is large local variance of hue or strong chroma noise."
@@ -18709,7 +18713,7 @@ msgstr ""
 "設定導引濾波器的色度（色相）分析半徑。\n"
 "若色調局部變化較大或色度雜訊較強時增加。"
 
-#: ../src/iop/colorequal.c:3158
+#: ../src/iop/colorequal.c:3160
 msgid ""
 "visualize weighting function on changed output and view weighting curve.\n"
 "red shows possibly changed data, blueish parts will not be changed."
@@ -18717,7 +18721,7 @@ msgstr ""
 "查看加權曲線及視覺化加權函數。\n"
 "紅色表示可能被改變的區域，藍色部分不會更動。"
 
-#: ../src/iop/colorequal.c:3162
+#: ../src/iop/colorequal.c:3164
 msgid ""
 "set saturation threshold for the guided filter.\n"
 " - decrease to allow changes in areas with low chromaticity\n"
@@ -18729,7 +18733,7 @@ msgstr ""
 " - 提高以限制僅對更高色度的區域調整\n"
 "   增加下方對比滑桿並避免低色度區域的亮度變化"
 
-#: ../src/iop/colorequal.c:3170
+#: ../src/iop/colorequal.c:3172
 msgid ""
 "set saturation contrast for the guided filter.\n"
 " - increase to favor sharp transitions between saturations leading to higher "
@@ -18740,11 +18744,11 @@ msgstr ""
 " - 提高以讓導引濾波器在飽和度上的過渡更急遽\n"
 " - 降低以獲得更平滑的導引濾波器過渡"
 
-#: ../src/iop/colorequal.c:3177
+#: ../src/iop/colorequal.c:3179
 msgid "set radius of applied parameters for the guided filter"
 msgstr "設定導引濾波器參數應用的半徑"
 
-#: ../src/iop/colorequal.c:3180
+#: ../src/iop/colorequal.c:3182
 msgid ""
 "visualize changed output for the selected tab.\n"
 "red shows increased values, blue decreased."
@@ -18870,13 +18874,14 @@ msgstr ""
 "控制原始影像的明度如何與純色混合\n"
 "0% 代表不使用原始影像明度，結果為單一純色"
 
-#: ../src/iop/colormapping.c:144
+#: ../src/iop/colormapping.c:145
 msgid "color mapping"
 msgstr "色彩映射"
 
-#: ../src/iop/colormapping.c:149
+#: ../src/iop/colormapping.c:150
 msgid ""
-"transfer a color palette and tonal repartition from one image to another"
+"transfer a color palette and tonal repartition\n"
+"from one image to another"
 msgstr ""
 "色彩映射 | color mapping\n"
 "\n"
@@ -18885,37 +18890,37 @@ msgstr ""
 "接著開啟要套用的影像，然後點選「套用目的影像」\n"
 "可使用下方滑桿調整效果，或使用透明度與混合模式來更改"
 
-#: ../src/iop/colormapping.c:1000
+#: ../src/iop/colormapping.c:1002
 msgid "acquire as source"
 msgstr "分析來源影像"
 
-#: ../src/iop/colormapping.c:1004
+#: ../src/iop/colormapping.c:1006
 msgid "analyze this image as a source image"
 msgstr "使用目前影像作為來源，分析影像的色彩與亮度分布製作色彩群集"
 
-#: ../src/iop/colormapping.c:1006
+#: ../src/iop/colormapping.c:1008
 msgid "acquire as target"
 msgstr "套用目的影像"
 
-#: ../src/iop/colormapping.c:1010
+#: ../src/iop/colormapping.c:1012
 msgid "analyze this image as a target image"
 msgstr "將目前影像當作調整目標，分析影像製作色彩群集後套用來源色彩"
 
-#: ../src/iop/colormapping.c:1012
+#: ../src/iop/colormapping.c:1014
 msgid "source clusters:"
 msgstr "來源影像色彩群集："
 
-#: ../src/iop/colormapping.c:1013
+#: ../src/iop/colormapping.c:1015
 msgid "target clusters:"
 msgstr "目標影像色彩群集："
 
-#: ../src/iop/colormapping.c:1016
+#: ../src/iop/colormapping.c:1018
 msgid "number of clusters to find in image. value change resets all clusters"
 msgstr ""
 "依據影像分析製作的色彩群集數量，設定應該與影像中的主要色彩數量相符\n"
 "色彩由隨機採樣統計產生，代表影像中最常出現的顏色，更改設定會重設色彩群集"
 
-#: ../src/iop/colormapping.c:1019
+#: ../src/iop/colormapping.c:1021
 msgid ""
 "how clusters are mapped. low values: based on color proximity, high values: "
 "based on color dominance"
@@ -18924,7 +18929,7 @@ msgstr ""
 "越低的值映射趨向改變接近的顏色，效果越不明顯\n"
 "越高的值映射基於色彩群集所佔的權重， 效果更為強烈"
 
-#: ../src/iop/colormapping.c:1024
+#: ../src/iop/colormapping.c:1026
 msgid "level of histogram equalization"
 msgstr ""
 "依據來源影像的亮度分配重新調整目標影像的亮度\n"
@@ -19224,29 +19229,29 @@ msgstr ""
 "以螢幕顯示直覺地操作裁切影像\n"
 "選取此模組時會顯示完整未裁切影像"
 
-#: ../src/iop/crop.c:1221
+#: ../src/iop/crop.c:1131
 msgid "45x35, portrait"
 msgstr "35 x 45 - 直式"
 
-#: ../src/iop/crop.c:1231
+#: ../src/iop/crop.c:1141
 msgid "2:1, Univisium"
 msgstr "2：1 - Univisium 電影格式"
 
-#: ../src/iop/crop.c:1232
+#: ../src/iop/crop.c:1142
 msgid "CinemaScope"
 msgstr "寬螢幕電影鏡頭"
 
-#: ../src/iop/crop.c:1235
+#: ../src/iop/crop.c:1145
 msgid "65:24, XPan"
 msgstr "65：24 - XPan"
 
-#: ../src/iop/crop.c:1764
+#: ../src/iop/crop.c:1674
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
 "拖曳邊界改變尺寸\n"
 "shift + 拖曳維持寬高比"
 
-#: ../src/iop/crop.c:1771
+#: ../src/iop/crop.c:1681
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag"
@@ -21180,7 +21185,7 @@ msgstr ""
 "嘗試修復亮點顏色避免過曝區域顯示洋紅色\n"
 "可與「底片式階調映射」的重建功能搭配使用"
 
-#: ../src/iop/highlights.c:178 ../src/iop/hotpixels.c:74
+#: ../src/iop/highlights.c:178 ../src/iop/hotpixels.c:75
 msgid "reconstruction, raw"
 msgstr "修復、RAW"
 
@@ -21367,29 +21372,31 @@ msgid "hot pixels"
 msgstr "去除熱壞點"
 
 #: ../src/iop/hotpixels.c:71
-msgid "remove abnormally bright pixels by dampening them with neighbors"
+msgid ""
+"remove abnormally bright pixels\n"
+"by dampening them with neighbors"
 msgstr ""
 "去除熱壞點 | hot pixels\n"
 "\n"
 "自動偵測和消除可能的熱壞點\n"
 "以相鄰的像素平均來替換異常過亮的像素"
 
-#: ../src/iop/hotpixels.c:420
+#: ../src/iop/hotpixels.c:421
 #, c-format
 msgid "fixed %d pixel"
 msgid_plural "fixed %d pixels"
 msgstr[0] "修復 %d 個壞點"
 msgstr[1] "修復 %d 個壞點"
 
-#: ../src/iop/hotpixels.c:443
+#: ../src/iop/hotpixels.c:444
 msgid "lower threshold for hot pixel"
 msgstr "設定像素的值偏離其周邊像素多少才被視為熱壞點"
 
-#: ../src/iop/hotpixels.c:447
+#: ../src/iop/hotpixels.c:448
 msgid "strength of hot pixel correction"
 msgstr "調整熱壞點的校正強度，代表其與周邊像素的平均權重"
 
-#: ../src/iop/hotpixels.c:463
+#: ../src/iop/hotpixels.c:464
 msgid ""
 "hot pixel correction\n"
 "only works for raw images."
@@ -21787,9 +21794,9 @@ msgid "edit, add and delete nodes"
 msgstr "編輯、增加和刪除節點"
 
 #: ../src/iop/liquify.c:3639 ../src/iop/liquify.c:3645
-#: ../src/iop/liquify.c:3651 ../src/iop/retouch.c:2449
-#: ../src/iop/retouch.c:2455 ../src/iop/retouch.c:2460
-#: ../src/iop/retouch.c:2465 ../src/iop/spots.c:879 ../src/iop/spots.c:884
+#: ../src/iop/liquify.c:3651 ../src/iop/retouch.c:2450
+#: ../src/iop/retouch.c:2456 ../src/iop/retouch.c:2461
+#: ../src/iop/retouch.c:2466 ../src/iop/spots.c:879 ../src/iop/spots.c:884
 #: ../src/iop/spots.c:889 ../src/libs/masks.c:1795 ../src/libs/masks.c:1803
 #: ../src/libs/masks.c:1811 ../src/libs/masks.c:1819 ../src/libs/masks.c:1827
 msgid "shapes"
@@ -22132,7 +22139,7 @@ msgstr "未定義 LUT 根目錄，請至「偏好設定」〉「運算方法」�
 msgid "select LUT file"
 msgstr "選擇 LUT 檔案"
 
-#: ../src/iop/lut3d.c:1562 ../src/iop/rasterfile.c:256
+#: ../src/iop/lut3d.c:1562 ../src/iop/rasterfile.c:255
 msgid "_select"
 msgstr "選擇（_S）"
 
@@ -22215,8 +22222,10 @@ msgstr ""
 msgid "mask manager"
 msgstr "遮罩管理器"
 
-#: ../src/iop/monochrome.c:96
-msgid "quickly convert an image to black & white using a variable color filter"
+#: ../src/iop/monochrome.c:97
+msgid ""
+"quickly convert an image to black & white\n"
+"using a variable color filter"
 msgstr ""
 "黑白濾鏡 | monochrome\n"
 "\n"
@@ -22224,18 +22233,18 @@ msgstr ""
 "快速將影像轉換成黑白\n"
 "也可以使用「色彩校正」模組中的底片模擬預設集"
 
-#: ../src/iop/monochrome.c:149
+#: ../src/iop/monochrome.c:151
 msgid "red filter"
 msgstr "紅色濾鏡"
 
-#: ../src/iop/monochrome.c:559
+#: ../src/iop/monochrome.c:561
 msgid "drag and scroll mouse wheel to adjust the virtual color filter"
 msgstr ""
 "拖曳移動改變濾鏡顏色，滑鼠滾輪調整濾鏡色彩範圍\n"
 "建議先縮小濾鏡顏色範圍，以看出不同顏色的效果\n"
 "找到最適合的色相之後再逐步擴大濾鏡範圍，以獲得較自然的階調"
 
-#: ../src/iop/monochrome.c:576
+#: ../src/iop/monochrome.c:578
 msgid "how much to keep highlights"
 msgstr "控制亮部的保留程度"
 
@@ -22480,23 +22489,25 @@ msgid "denoise (non-local means)"
 msgstr "非局部平均除雜訊非局部平均"
 
 #: ../src/iop/nlmeans.c:85
-msgid "apply a poisson noise removal best suited for astrophotography"
+msgid ""
+"apply a poisson noise removal\n"
+"best suited for astrophotography"
 msgstr ""
 "天文攝影除雜訊 | astrophoto denoise\n"
 "\n"
 "使用最適合天文照片的帕松偏微分方程去除雜訊\n"
 "以便在去除雜訊的同時保留影像中的細節結構\n"
-"這會耗用大量運算資源，若處理速度過慢可以先完成其他調整最後再啟用此模組"
+"會耗用大量運算資源，可先完成其他調整最後再啟用此模組"
 
-#: ../src/iop/nlmeans.c:455
+#: ../src/iop/nlmeans.c:456
 msgid "radius of the patches to match"
 msgstr "評估雜訊色塊的半徑"
 
-#: ../src/iop/nlmeans.c:463
+#: ../src/iop/nlmeans.c:464
 msgid "how much to smooth brightness"
 msgstr "降低亮度雜訊的程度"
 
-#: ../src/iop/nlmeans.c:466
+#: ../src/iop/nlmeans.c:467
 msgid "how much to smooth colors"
 msgstr "降低彩色雜訊的程度"
 
@@ -22769,52 +22780,52 @@ msgstr ""
 "⚠️ 錯誤 ⚠️\n"
 "「RAW 檔除雜訊」僅適用於 RAW。"
 
-#: ../src/iop/rasterfile.c:89
-msgid "raster mask import"
-msgstr "點陣遮罩匯入"
+#: ../src/iop/rasterfile.c:88
+msgid "external raster masks"
+msgstr "外部點陣遮罩"
 
-#: ../src/iop/rasterfile.c:94
+#: ../src/iop/rasterfile.c:93
 msgid "raster|mask"
 msgstr "點陣遮罩"
 
-#: ../src/iop/rasterfile.c:100
-msgid "import PFM files to be used as raster masks"
+#: ../src/iop/rasterfile.c:99
+msgid "read PFM files recorded for use as raster masks"
 msgstr ""
 "點陣遮罩匯入 | raster mask import\n"
 "\n"
 "選擇要匯入使用的點陣遮罩 PFM 檔案\n"
 "必須先於偏好設定中設定遮罩檔案所在的根目錄"
 
-#: ../src/iop/rasterfile.c:169
+#: ../src/iop/rasterfile.c:168
 #, c-format
 msgid "can't read raster mask file '%s'"
 msgstr "無法讀取點陣遮罩檔案「%s」"
 
-#: ../src/iop/rasterfile.c:248
+#: ../src/iop/rasterfile.c:247
 msgid "raster mask files root folder not defined"
 msgstr "未定義 LUT 根目錄，請至「偏好設定」〉「運算方法」中定義"
 
-#: ../src/iop/rasterfile.c:255
+#: ../src/iop/rasterfile.c:254
 msgid "select raster mask file"
 msgstr "選擇點陣遮罩檔案"
 
-#: ../src/iop/rasterfile.c:289
+#: ../src/iop/rasterfile.c:288
 msgid "selected file not within raster masks root folder"
 msgstr "選擇的檔案不在點陣遮罩根目錄下"
 
-#: ../src/iop/rasterfile.c:587
+#: ../src/iop/rasterfile.c:586
 msgid "select the RGB channels taken into account to generate the raster mask"
 msgstr "選擇用來生成點陣遮罩的 RGB 色版"
 
-#: ../src/iop/rasterfile.c:591
+#: ../src/iop/rasterfile.c:590
 msgid ""
-"select a PFM file to be advertized as a raster mask,\n"
+"select the PFM file recorded as a raster mask,\n"
 "CAUTION: path must be set in preferences/processing before choosing"
 msgstr ""
 "選擇 PFM 檔案\n"
 "<b>注意</b>：請先至「偏好設定」〉「運算方法」中定義點陣遮罩根目錄"
 
-#: ../src/iop/rasterfile.c:597
+#: ../src/iop/rasterfile.c:596
 msgid "the mask file path is saved with the image history"
 msgstr "點陣遮罩的檔案路徑與影像編輯紀錄一併儲存"
 
@@ -22950,40 +22961,42 @@ msgstr ""
 "stamp|blur|fill|wavelets|spot removal"
 
 #: ../src/iop/retouch.c:205
-msgid "remove and clone spots, perform split-frequency skin editing"
+msgid ""
+"remove and clone spots,\n"
+"perform split-frequency skin editing"
 msgstr ""
 "細節修飾 | retouch\n"
 "\n"
 "繪製形狀遮罩執行修復或移除影像中不需要的斑點\n"
 "並且可以利用小波分解，進行頻率分離的皮膚精修"
 
-#: ../src/iop/retouch.c:208
+#: ../src/iop/retouch.c:209
 msgid "geometric and frequential, RGB"
 msgstr "幾何與頻率、RGB"
 
-#: ../src/iop/retouch.c:1677
+#: ../src/iop/retouch.c:1678
 msgid "cannot display scales when the blending mask is displayed"
 msgstr "顯示混合遮罩時無法顯示小波尺度"
 
-#: ../src/iop/retouch.c:2031 ../src/iop/retouch.c:2033
-#: ../src/iop/retouch.c:2035 ../src/iop/retouch.c:2037
+#: ../src/iop/retouch.c:2032 ../src/iop/retouch.c:2034
+#: ../src/iop/retouch.c:2036 ../src/iop/retouch.c:2038
 #, c-format
 msgid "default tool changed to %s"
 msgstr "預設工具變更為「%s」"
 
-#: ../src/iop/retouch.c:2031
+#: ../src/iop/retouch.c:2032
 msgid "cloning"
 msgstr "複製"
 
-#: ../src/iop/retouch.c:2033
+#: ../src/iop/retouch.c:2034
 msgid "healing"
 msgstr "修復"
 
-#: ../src/iop/retouch.c:2432
+#: ../src/iop/retouch.c:2433
 msgid "shapes:"
 msgstr "遮罩形狀："
 
-#: ../src/iop/retouch.c:2438
+#: ../src/iop/retouch.c:2439
 msgid ""
 "to add a shape select an algorithm and a shape type and click on the image.\n"
 "shapes are added to the current scale"
@@ -22991,68 +23004,68 @@ msgstr ""
 "選擇遮罩形狀和修飾方法，然後在影像上點擊欲修飾的地方\n"
 "修飾形狀遮罩會作用於目前選定的小波尺度（細節頻率）上"
 
-#: ../src/iop/retouch.c:2442 ../src/iop/retouch.c:2575
-#: ../src/iop/retouch.c:2581 ../src/iop/retouch.c:2590
-#: ../src/iop/retouch.c:2595 ../src/iop/retouch.c:2603
-#: ../src/iop/retouch.c:2648
+#: ../src/iop/retouch.c:2443 ../src/iop/retouch.c:2576
+#: ../src/iop/retouch.c:2582 ../src/iop/retouch.c:2591
+#: ../src/iop/retouch.c:2596 ../src/iop/retouch.c:2604
+#: ../src/iop/retouch.c:2649
 msgid "editing"
 msgstr "編輯"
 
-#: ../src/iop/retouch.c:2443
+#: ../src/iop/retouch.c:2444
 msgid "show and edit shapes on the current scale"
 msgstr "顯示目前小波尺度中的形狀以編輯"
 
-#: ../src/iop/retouch.c:2444
+#: ../src/iop/retouch.c:2445
 msgid "show and edit shapes in restricted mode"
 msgstr "在受限模式下編輯，遮罩形狀的位置和大小被保護避免變更"
 
-#: ../src/iop/retouch.c:2473
+#: ../src/iop/retouch.c:2474
 msgid "algorithms:"
 msgstr "修飾方法："
 
-#: ../src/iop/retouch.c:2476 ../src/iop/retouch.c:2502
+#: ../src/iop/retouch.c:2477 ../src/iop/retouch.c:2503
 msgid "activate blur tool"
 msgstr "啟用模糊工具"
 
-#: ../src/iop/retouch.c:2477 ../src/iop/retouch.c:2483
-#: ../src/iop/retouch.c:2489 ../src/iop/retouch.c:2495
+#: ../src/iop/retouch.c:2478 ../src/iop/retouch.c:2484
+#: ../src/iop/retouch.c:2490 ../src/iop/retouch.c:2496
 msgid "change algorithm for current form"
 msgstr "將選擇的形狀更改為此工具"
 
-#: ../src/iop/retouch.c:2482 ../src/iop/retouch.c:2505
+#: ../src/iop/retouch.c:2483 ../src/iop/retouch.c:2506
 msgid "activate fill tool"
 msgstr "啟用填色工具"
 
-#: ../src/iop/retouch.c:2488 ../src/iop/retouch.c:2508
+#: ../src/iop/retouch.c:2489 ../src/iop/retouch.c:2509
 msgid "activate cloning tool"
 msgstr "啟用複製工具"
 
-#: ../src/iop/retouch.c:2494 ../src/iop/retouch.c:2511
+#: ../src/iop/retouch.c:2495 ../src/iop/retouch.c:2512
 msgid "activate healing tool"
 msgstr "啟用修復工具"
 
 #. overwrite tooltip ourself to handle shift+click
-#: ../src/iop/retouch.c:2500
+#: ../src/iop/retouch.c:2501
 msgid "ctrl+click to change tool for current form"
 msgstr "ctrl + 點擊 將選擇的形狀更改為此工具"
 
-#: ../src/iop/retouch.c:2501
+#: ../src/iop/retouch.c:2502
 msgid "shift+click to set the tool as default"
 msgstr "shift + 點擊 將此工具設為預設值"
 
-#: ../src/iop/retouch.c:2521
+#: ../src/iop/retouch.c:2522
 msgid "scales:"
 msgstr "小波尺度（頻率分離層數）："
 
-#: ../src/iop/retouch.c:2528
+#: ../src/iop/retouch.c:2529
 msgid "current:"
 msgstr "目前使用的小波尺度："
 
-#: ../src/iop/retouch.c:2535
+#: ../src/iop/retouch.c:2536
 msgid "merge from:"
 msgstr "合併編輯效果至小波層："
 
-#: ../src/iop/retouch.c:2546
+#: ../src/iop/retouch.c:2547
 msgid ""
 "top slider adjusts where the merge scales start\n"
 "bottom slider adjusts the number of scales\n"
@@ -23081,44 +23094,44 @@ msgstr ""
 "上方的三角形控制小波層合併效果，高層數的修飾會套用至低層上\n"
 "選擇 0 為不合併效果，每個修飾遮罩只作用在所屬的小波尺度中"
 
-#: ../src/iop/retouch.c:2575
+#: ../src/iop/retouch.c:2576
 msgid "display masks"
 msgstr "顯示遮罩"
 
-#: ../src/iop/retouch.c:2581
+#: ../src/iop/retouch.c:2582
 msgid "temporarily switch off shapes"
 msgstr "暫時不顯示修飾效果"
 
-#: ../src/iop/retouch.c:2590
+#: ../src/iop/retouch.c:2591
 msgid "paste cut shapes to current scale"
 msgstr "貼上剪下的修飾遮罩到目前選取的小波尺度"
 
-#: ../src/iop/retouch.c:2595
+#: ../src/iop/retouch.c:2596
 msgid "cut shapes from current scale"
 msgstr "從目前小波尺度中剪下修飾遮罩"
 
-#: ../src/iop/retouch.c:2603
+#: ../src/iop/retouch.c:2604
 msgid "display wavelet scale"
 msgstr "切換顯示小波尺度 / 整體影像"
 
-#: ../src/iop/retouch.c:2611
+#: ../src/iop/retouch.c:2612
 msgctxt "section"
 msgid "preview single scale"
 msgstr "單一小波尺度預覽效果"
 
-#: ../src/iop/retouch.c:2625
+#: ../src/iop/retouch.c:2626
 msgid "adjust preview levels"
 msgstr "調整小波預覽色階"
 
-#: ../src/iop/retouch.c:2648 ../src/iop/rgblevels.c:1081
+#: ../src/iop/retouch.c:2649 ../src/iop/rgblevels.c:1081
 msgid "auto levels"
 msgstr "自動調整預覽效果"
 
-#: ../src/iop/retouch.c:2656
+#: ../src/iop/retouch.c:2657
 msgid "shape selected:"
 msgstr "目前選取的形狀遮罩："
 
-#: ../src/iop/retouch.c:2662
+#: ../src/iop/retouch.c:2663
 msgid ""
 "click on a shape to select it,\n"
 "to unselect click on an empty space"
@@ -23126,58 +23139,58 @@ msgstr ""
 "點擊形狀遮罩以選取\n"
 "點擊空白區域取消選取"
 
-#: ../src/iop/retouch.c:2671
+#: ../src/iop/retouch.c:2672
 msgid "erase the detail or fills with chosen color"
 msgstr "抹除細節或用選取的色彩來填滿"
 
-#: ../src/iop/retouch.c:2681
+#: ../src/iop/retouch.c:2682
 msgid "fill color: "
 msgstr "填充色彩： "
 
-#: ../src/iop/retouch.c:2686 ../src/iop/retouch.c:2687
+#: ../src/iop/retouch.c:2687 ../src/iop/retouch.c:2688
 msgid "select fill color"
 msgstr "選擇填充色彩"
 
-#: ../src/iop/retouch.c:2697
+#: ../src/iop/retouch.c:2698
 msgid "pick fill color from image"
 msgstr "從影像上選擇要填滿的色彩"
 
-#: ../src/iop/retouch.c:2698
+#: ../src/iop/retouch.c:2699
 msgid "pick fill color"
 msgstr "選取填滿色彩"
 
-#: ../src/iop/retouch.c:2708
+#: ../src/iop/retouch.c:2709
 msgid "adjusts color brightness to fine-tune it. works with erase as well"
 msgstr "調整填色的亮度，也適用於擦除模式"
 
-#: ../src/iop/retouch.c:2714
+#: ../src/iop/retouch.c:2715
 msgid "type for the blur algorithm"
 msgstr "選擇模糊演算法"
 
-#: ../src/iop/retouch.c:2718
+#: ../src/iop/retouch.c:2719
 msgid "radius of the selected blur type"
 msgstr "選取模糊的半徑尺寸"
 
-#: ../src/iop/retouch.c:2725
+#: ../src/iop/retouch.c:2726
 msgid "set the opacity on the selected shape"
 msgstr "調整選取形狀遮罩的不透明度"
 
-#: ../src/iop/retouch.c:2731
+#: ../src/iop/retouch.c:2732
 msgctxt "section"
 msgid "retouch tools"
 msgstr "修飾工具"
 
-#: ../src/iop/retouch.c:2733
+#: ../src/iop/retouch.c:2734
 msgctxt "section"
 msgid "wavelet decompose"
 msgstr "小波分解（高低頻分離）"
 
-#: ../src/iop/retouch.c:2735
+#: ../src/iop/retouch.c:2736
 msgctxt "section"
 msgid "shapes"
 msgstr "形狀"
 
-#: ../src/iop/retouch.c:3878 ../src/iop/retouch.c:4700
+#: ../src/iop/retouch.c:3879 ../src/iop/retouch.c:4701
 #, c-format
 msgid "max scale is %i for this image size"
 msgstr "這個影像尺寸的最高小波尺度為 %i"
@@ -23316,14 +23329,15 @@ msgstr "像素寬高比"
 msgid ""
 "module for setting pixel aspect ratio\n"
 "\n"
-"useful for certain sensor types and anamorphic desqueeze"
+"useful for certain sensor types\n"
+"and anamorphic desqueeze"
 msgstr ""
 "像素寬高比 | scale pixels\n"
 "\n"
 "修正某些相機感光元件的影像\n"
 "或是去擠壓使用變形鏡頭拍攝的照片"
 
-#: ../src/iop/scalepixels.c:258
+#: ../src/iop/scalepixels.c:259
 msgid "adjust pixel aspect ratio"
 msgstr "調整像素寬高比"
 
@@ -23444,9 +23458,9 @@ msgstr "階調映射|亮度映射|tone mapping|view transform|display transform"
 
 #: ../src/iop/sigmoid.c:202
 msgid ""
-"apply a view transform to make a image displayable\n"
-"on a screen or print. uses a robust and smooth\n"
-"tone curve with optional color preservation methods."
+"apply a view transform to make an image displayable\n"
+"on a screen or print using a robust and smooth\n"
+"tone curve with optional color preservation methods"
 msgstr ""
 "S 形曲線階調映射 | sigmoid\n"
 "\n"
@@ -24321,13 +24335,14 @@ msgid ""
 "module instead."
 msgstr "此模組已被汰除，建議使用「局部對比度」或「階調等化器」模組替代。"
 
-#: ../src/iop/velvia.c:67
+#: ../src/iop/velvia.c:68
 msgid "velvia"
 msgstr "Velvia 正片"
 
-#: ../src/iop/velvia.c:94
+#: ../src/iop/velvia.c:95
 msgid ""
-"resaturate giving more weight to blacks, whites and low-saturation pixels"
+"resaturate giving more weight to blacks,\n"
+"whites and low-saturation pixels"
 msgstr ""
 "Velvia 正片 | velvia\n"
 "\n"
@@ -24335,11 +24350,11 @@ msgstr ""
 "以富士的經典正片 Velvia 命名\n"
 "效果非常強烈，可能會造成難以控管的色彩變化"
 
-#: ../src/iop/velvia.c:281
+#: ../src/iop/velvia.c:283
 msgid "the strength of saturation boost"
 msgstr "飽和度提升的強度"
 
-#: ../src/iop/velvia.c:284
+#: ../src/iop/velvia.c:286
 msgid "how much to spare highlights and shadows"
 msgstr ""
 "減少對中間調的影響以避開膚色，降低不自然的皮膚曬傷效果\n"
@@ -29164,8 +29179,8 @@ msgid "viewswitcher"
 msgstr "視角切換"
 
 #: ../src/lua/preferences.c:656 ../src/lua/preferences.c:671
-#: ../src/lua/preferences.c:683 ../src/lua/preferences.c:695
-#: ../src/lua/preferences.c:711 ../src/lua/preferences.c:775
+#: ../src/lua/preferences.c:683 ../src/lua/preferences.c:696
+#: ../src/lua/preferences.c:712 ../src/lua/preferences.c:776
 #, c-format
 msgid "double-click to reset to `%s'"
 msgstr "雙擊重設回「%s」"
@@ -29174,17 +29189,17 @@ msgstr "雙擊重設回「%s」"
 msgid "select file"
 msgstr "選擇檔案"
 
-#: ../src/lua/preferences.c:734
+#: ../src/lua/preferences.c:735
 #, c-format
 msgid "double-click to reset to `%d'"
 msgstr "雙擊重設回「%d」"
 
-#: ../src/lua/preferences.c:761
+#: ../src/lua/preferences.c:762
 #, c-format
 msgid "double-click to reset to `%f'"
 msgstr "雙擊重設回「%f」"
 
-#: ../src/lua/preferences.c:837
+#: ../src/lua/preferences.c:838
 msgid "Lua options"
 msgstr "Lua 選項"
 
@@ -30058,6 +30073,9 @@ msgstr "切換回傳統視窗，在按鍵放開後仍保持開啟"
 #: ../src/views/view.c:1566
 msgid "mouse actions"
 msgstr "滑鼠動作"
+
+#~ msgid "raster mask import"
+#~ msgstr "點陣遮罩匯入"
 
 #, c-format
 #~ msgid "detected OtherIlluminant in `%s`, please report via darktable github"
