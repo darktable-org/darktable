@@ -129423,6 +129423,305 @@
           ]
         },
         {
+          "model": "DC-S9",
+          "presets": [
+            {
+              "name": "Daylight",
+              "tuning": -9,
+              "channels": [
+                2.3984375,
+                1,
+                1.5,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": -6,
+              "channels": [
+                2.296875,
+                1,
+                1.5703125,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": -3,
+              "channels": [
+                2.19140625,
+                1,
+                1.64453125,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "channels": [
+                2.0859375,
+                1,
+                1.71875,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": 3,
+              "channels": [
+                2.01953125,
+                1,
+                1.828125,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": 6,
+              "channels": [
+                1.95703125,
+                1,
+                1.94140625,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "tuning": 9,
+              "channels": [
+                1.890625,
+                1,
+                2.0546875,
+                0
+              ]
+            },
+            {
+              "name": "Shade",
+              "tuning": -9,
+              "channels": [
+                2.69140625,
+                1,
+                1.34375,
+                0
+              ]
+            },
+            {
+              "name": "Shade",
+              "tuning": -6,
+              "channels": [
+                2.57421875,
+                1,
+                1.40625,
+                0
+              ]
+            },
+            {
+              "name": "Shade",
+              "tuning": -3,
+              "channels": [
+                2.45703125,
+                1,
+                1.47265625,
+                0
+              ]
+            },
+            {
+              "name": "Shade",
+              "channels": [
+                2.32421875,
+                1,
+                1.54296875,
+                0
+              ]
+            },
+            {
+              "name": "Shade",
+              "channels": [
+                2.33984375,
+                1,
+                1.5390625,
+                0
+              ]
+            },
+            {
+              "name": "Shade",
+              "tuning": 3,
+              "channels": [
+                2.265625,
+                1,
+                1.63671875,
+                0
+              ]
+            },
+            {
+              "name": "Shade",
+              "tuning": 6,
+              "channels": [
+                2.1953125,
+                1,
+                1.73828125,
+                0
+              ]
+            },
+            {
+              "name": "Shade",
+              "tuning": 9,
+              "channels": [
+                2.12109375,
+                1,
+                1.83984375,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": -9,
+              "channels": [
+                2.55078125,
+                1,
+                1.40625,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": -6,
+              "channels": [
+                2.4375,
+                1,
+                1.4765625,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": -3,
+              "channels": [
+                2.328125,
+                1,
+                1.546875,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "channels": [
+                2.203125,
+                1,
+                1.6171875,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "channels": [
+                2.21484375,
+                1,
+                1.61328125,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": 3,
+              "channels": [
+                2.1484375,
+                1,
+                1.71875,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": 6,
+              "channels": [
+                2.078125,
+                1,
+                1.82421875,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "tuning": 9,
+              "channels": [
+                2.0078125,
+                1,
+                1.9296875,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": -9,
+              "channels": [
+                1.6328125,
+                1,
+                2.30859375,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": -6,
+              "channels": [
+                1.5625,
+                1,
+                2.41796875,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": -3,
+              "channels": [
+                1.4921875,
+                1,
+                2.53125,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "channels": [
+                1.41796875,
+                1,
+                2.64453125,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": 3,
+              "channels": [
+                1.375,
+                1,
+                2.81640625,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": 6,
+              "channels": [
+                1.33203125,
+                1,
+                2.98828125,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "tuning": 9,
+              "channels": [
+                1.28515625,
+                1,
+                3.16015625,
+                0
+              ]
+            }
+          ]
+        },
+        {
           "model": "DC-S5",
           "presets": [
             {
