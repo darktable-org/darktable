@@ -226,7 +226,7 @@ static void wavelet_denoise(const float *const restrict in, float *const restric
       const float *const restrict inp = in + (size_t)row * roi->width + offset;
       const int senselwidth = (roi->width-offset+1)/2;
       for(int col = 0; col < senselwidth; col++)
-        fimgp[col] = sqrtf(MAX(0.0f, inp[2*col]));
+        fimgp[col] = sqrtf(fmaxf(0.0f, inp[2*col]));
     }
 
     // perform the wavelet decomposition and denoising
@@ -298,7 +298,7 @@ static void wavelet_denoise(const float *const restrict in, float *const restric
 
 static inline float vstransform(const float value)
 {
-  return sqrtf(MAX(0.0f, value));
+  return sqrtf(fmaxf(0.0f, value));
 }
 
 static void wavelet_denoise_xtrans(const float *const restrict in, float *const restrict out,
