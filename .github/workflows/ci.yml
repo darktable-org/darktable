@@ -61,7 +61,7 @@ jobs:
           - "ubuntu:25.04"
         compiler:
           - { compiler: GNU15,  CC: gcc-15,   CXX: g++-15,     packages: gcc-15 g++-15 }
-          - { compiler: LLVM19, CC: clang-19, CXX: clang++-19, packages: clang-19 libomp-19-dev llvm-19-dev libc++-19-dev libc++abi1-19 lld-19 clang-tools-19 mlir-19-tools libmlir-19-dev}
+          - { compiler: LLVM20, CC: clang-20, CXX: clang++-20, packages: clang-20 libomp-20-dev llvm-20-dev libc++-20-dev libc++abi1-20 lld-20 clang-tools-20 mlir-20-tools libmlir-20-dev}
         btype:
           - Release
         target:
