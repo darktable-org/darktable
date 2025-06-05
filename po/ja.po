@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-01 09:33+0200\n"
-"PO-Revision-Date: 2025-06-05 23:06+0900\n"
+"PO-Revision-Date: 2025-06-05 23:23+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -1041,7 +1041,7 @@ msgstr "TRUE"
 
 #: ../build/bin/preferences_gen.h:4616
 msgid "this defines how the list of images to act on is constructed."
-msgstr ""
+msgstr "操作対象となる画像リストがどのように構築されるかを定義します"
 
 #: ../build/bin/preferences_gen.h:4637
 msgid "expand a single utility module at a time"
@@ -1900,6 +1900,8 @@ msgid ""
 "automatically login to the configured storage server. this requires that a "
 "password storage backend is set."
 msgstr ""
+"設定したストレージサーバーに自動ログインします\n"
+"パスワードストレージバックエンドが設定されている必要があります"
 
 #: ../build/bin/preferences_gen.h:7212
 msgid "executable for playing audio files"
@@ -6593,7 +6595,7 @@ msgstr "データベースを準備しています"
 #. init darktable tags table
 #: ../src/common/darktable.c:1590
 msgid "setting up tags table"
-msgstr ""
+msgstr "タグテーブルを設定しています"
 
 #. Initialize the signal system
 #: ../src/common/darktable.c:1594
@@ -7909,7 +7911,7 @@ msgstr "アクセルウィンドウを表示"
 
 #: ../src/control/control.c:313
 msgid "darktable will be locked until background work has been done"
-msgstr ""
+msgstr "バックグランドワークが完了するまでdarktableはロックされます"
 
 #: ../src/control/control.c:417
 msgid "working..."
@@ -14791,7 +14793,7 @@ msgstr "DWAB"
 
 #: ../src/imageio/format/j2k.c:448
 msgid "unable to attach output profile to JP2"
-msgstr ""
+msgstr "JP2に出力プロファイルを付けることが出来ません"
 
 #: ../src/imageio/format/j2k.c:677
 msgid "JPEG 2000 (12-bit)"
@@ -20997,7 +20999,7 @@ msgstr "かすみの除去を特定の奥行きに制限します"
 
 #: ../src/iop/hazeremoval.c:661 ../src/iop/hazeremoval.c:932
 msgid "haze removal could not calculate ambient light due to image content"
-msgstr ""
+msgstr "かすみの除去が環境光を計算することが出来ません"
 
 #: ../src/iop/highlights.c:170
 msgid "highlight reconstruction"
@@ -22245,6 +22247,9 @@ msgid ""
 "combine the image with elements from another processed image\n"
 "(move this module to after output color profile if you see banding)"
 msgstr ""
+"画像と他の処理済みの画像から取り出した要素を組み合わせます\n"
+"（バンディングがある場合、このモジュールを出力カラープロファイルの後に移動し"
+"てください）"
 
 #: ../src/iop/overlay.c:162
 msgid "layer|stack|overlay"
@@ -22469,7 +22474,7 @@ msgstr "ラスター：マスク"
 
 #: ../src/iop/rasterfile.c:99
 msgid "read PFM files recorded for use as raster masks"
-msgstr ""
+msgstr "ラスターマスクとして用いるようPFMファイルを読み込む"
 
 #: ../src/iop/rasterfile.c:168
 #, c-format
@@ -22486,11 +22491,11 @@ msgstr "ラスターマスクファイルを選択してください"
 
 #: ../src/iop/rasterfile.c:288
 msgid "selected file not within raster masks root folder"
-msgstr ""
+msgstr "選択したファイルはラスターマスクルートフォルダ内にありません"
 
 #: ../src/iop/rasterfile.c:586
 msgid "select the RGB channels taken into account to generate the raster mask"
-msgstr ""
+msgstr "ラスターマスクを生成するために考慮するRGBチャンネルを選択する"
 
 #: ../src/iop/rasterfile.c:590
 msgid ""
@@ -22502,7 +22507,7 @@ msgstr ""
 
 #: ../src/iop/rasterfile.c:596
 msgid "the mask file path is saved with the image history"
-msgstr ""
+msgstr "マスクファイルパスが画像の履歴とともに保存されます"
 
 #. * let's fill the encapsulating widgets
 #. mode of operation
@@ -25684,11 +25689,11 @@ msgstr ""
 #. but label is use in "shortcuts" dialog.
 #: ../src/libs/geotagging.c:1938
 msgid "view entire track"
-msgstr ""
+msgstr "トラック全体を表示する"
 
 #: ../src/libs/geotagging.c:1939
 msgid "refresh map to view entire selected track segments"
-msgstr ""
+msgstr "マップをリフレクションして選択したトラックセグメント全体を表示します"
 
 #: ../src/libs/geotagging.c:1953
 msgid "preview images"
@@ -28650,11 +28655,11 @@ msgstr "クリックすると、選別レイアウト動的モードに入りま
 
 #: ../src/libs/tools/lighttable.c:136
 msgid "click to allow browsing all images from the collection."
-msgstr ""
+msgstr "クリックすると、コレクションの全ての画像を閲覧することを許可します"
 
 #: ../src/libs/tools/lighttable.c:141
 msgid "click to limit browsing to the selection."
-msgstr ""
+msgstr "クリックすると、閲覧する画像を選択したものだけに制限します"
 
 #: ../src/libs/tools/lighttable.c:414
 msgid "focus detection"
@@ -28697,6 +28702,8 @@ msgid ""
 "set the number of thumbnails per row in filemanager layout,\n"
 "or the total number of thumbnails shown in culling layouts."
 msgstr ""
+"ファイルマネージャーレイアウトにおける一行ごとのサムネイル数\n"
+"または、選別レイアウトにおける表示されるサムネイルの合計数"
 
 #: ../src/libs/tools/lighttable.c:515
 msgid "toggle culling restricted"
