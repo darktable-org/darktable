@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-01 09:33+0200\n"
-"PO-Revision-Date: 2025-06-05 22:56+0900\n"
+"PO-Revision-Date: 2025-06-05 23:06+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -1015,10 +1015,8 @@ msgstr ""
 "これにより、日付／時刻と数値の範囲選択が可能になります"
 
 #: ../build/bin/preferences_gen.h:4603
-#, fuzzy
-#| msgid "paste metadata to the selected images"
 msgid "prioritize the hovered image over the selected images"
-msgstr "2番目に選択した画像にメタデータを貼り付けます"
+msgstr "選択した画像よりホバーしている画像を優先します"
 
 #: ../build/bin/preferences_gen.h:4613 ../build/bin/preferences_gen.h:4749
 #: ../build/bin/preferences_gen.h:4894 ../build/bin/preferences_gen.h:5252
@@ -6556,13 +6554,7 @@ msgid "error loading file `%s'"
 msgstr "ファイル`%s'読み込みエラー"
 
 #: ../src/common/darktable.c:1513
-#, fuzzy, c-format
-#| msgid ""
-#| "you do not have write access to create one of the user directories\n"
-#| "\n"
-#| "see the log for more details\n"
-#| "\n"
-#| "please fix this and then run darktable again"
+#, c-format
 msgid ""
 "you do not have write access to create one of the user directories:\n"
 "\n"
@@ -6572,7 +6564,7 @@ msgid ""
 msgstr ""
 "ユーザーディレクトリのうちの一つを作成するための書き込み権限がありません\n"
 "\n"
-"詳細についてはログを御覧ください\n"
+"%s\n"
 "\n"
 "この問題を修正してからdarktableを再起動してください"
 
@@ -28989,22 +28981,24 @@ msgstr "色の評価"
 
 #: ../src/views/darkroom.c:2500
 msgid "total border width relative to screen"
-msgstr ""
+msgstr "スクリーンに対する余白の幅の合計"
 
 #: ../src/views/darkroom.c:2502
 msgid ""
 "total border width in relation to the screen size for the assessment mode.\n"
 "this includes the outer gray part plus the inner white frame."
 msgstr ""
+"評価モードで用いる、スクリーンサイズに対する余白の幅の合計\n"
+"外側の灰色の部分と内側の白いフレームが含まれます"
 
 #: ../src/views/darkroom.c:2513
 msgid "white border ratio"
-msgstr "白の縁の割合"
+msgstr "白の余白の割合"
 
 #: ../src/views/darkroom.c:2515
 msgid ""
 "the border ratio specifies the fraction of the white part of the border."
-msgstr ""
+msgstr "余白の白い部分を指定します"
 
 #: ../src/views/darkroom.c:2526
 msgid "high quality processing"
