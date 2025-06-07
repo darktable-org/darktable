@@ -821,10 +821,8 @@ static void _histogram_collect_cl(const int devid,
 
   if(!pixel) return;
 
-  const cl_int err = dt_opencl_copy_device_to_host(devid, pixel, img,
-                                                   roi->width, roi->height,
-                                                   sizeof(float) * 4);
-  if(err != CL_SUCCESS)
+  if(dt_opencl_copy_device_to_host(devid, pixel, img,
+                                   roi->width, roi->height, sizeof(float) * 4) != CL_SUCCESS)
   {
     dt_free_align(tmpbuf);
     return;
@@ -2147,7 +2145,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
               {
                 float *cache = _get_fast_blendcache(out_bpp * roi_out->width * roi_out->height / sizeof(float), phash, pipe);
                 if(cache)
-                  err = dt_opencl_read_host_from_device(pipe->devid, cache, *cl_mem_output,
+                  err = dt_opencl_copy_device_to_host(pipe->devid, cache, *cl_mem_output,
                                                         roi_out->width, roi_out->height, out_bpp);
               }
               else
@@ -2189,15 +2187,14 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
                 float *cpudata = dt_alloc_align_float((size_t)ow * oh * cho);
                 if(clindata && cloutdata && cpudata)
                 {
-                  cl_int terr = dt_opencl_read_host_from_device(pipe->devid,
-                                                                cloutdata, *cl_mem_output,
-                                                                ow, oh,
-                                                                cho * sizeof(float));
+                  cl_int terr = dt_opencl_copy_device_to_host(pipe->devid,
+                                                              cloutdata, *cl_mem_output,
+                                                              ow, oh, cho * sizeof(float));
                   if(terr == CL_SUCCESS)
                   {
-                    terr = dt_opencl_read_host_from_device(pipe->devid,
-                                                           clindata, cl_mem_input, ow, oh,
-                                                           ch * sizeof(float));
+                    terr = dt_opencl_copy_device_to_host(pipe->devid,
+                                                         clindata, cl_mem_input, ow, oh,
+                                                         ch * sizeof(float));
                     if(terr == CL_SUCCESS)
                     {
                       module->process(module, piece, clindata, cpudata, &roi_in, roi_out);
@@ -2573,7 +2570,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
             }
             else
             {
-              dt_print_pipe(DT_DEBUG_OPENCL,
+              dt_print_pipe(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
                 "copy CL data to host", pipe, module, pipe->devid, &roi_in, NULL);
               /* success: cache line is valid now, so we will not need
                  to invalidate it later */
