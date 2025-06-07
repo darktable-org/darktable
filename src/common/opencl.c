@@ -2811,16 +2811,6 @@ int dt_opencl_copy_device_to_host(const int devid,
                                   const int height,
                                   const int bpp)
 {
-  return dt_opencl_read_host_from_device(devid, host, device, width, height, bpp);
-}
-
-int dt_opencl_read_host_from_device(const int devid,
-                                    void *host,
-                                    void *device,
-                                    const int width,
-                                    const int height,
-                                    const int bpp)
-{
   return dt_opencl_read_host_from_device_rowpitch(devid, host, device,
                                                   width, height, bpp * width);
 }
@@ -3506,9 +3496,7 @@ void dt_opencl_dump_pipe_pfm(const char* mod,
   float *data = dt_alloc_aligned((size_t)width * height * element_size);
   if(data)
   {
-    const cl_int err =
-      dt_opencl_read_host_from_device(devid, data, img, width, height, element_size);
-    if(err == CL_SUCCESS)
+    if(dt_opencl_copy_device_to_host(devid, data, img, width, height, element_size) == CL_SUCCESS)
       dt_dump_pfm_file(pipe, data, width, height, element_size, mod,
                        "[dt_opencl_dump_pipe_pfm]", input, !input, FALSE);
 

@@ -715,7 +715,7 @@ static float _ambient_light_cl(dt_iop_module_t *self,
   const int height = dt_opencl_get_image_height(img);
   const int element_size = dt_opencl_get_image_element_size(img);
   float *in = dt_alloc_aligned((size_t)width * height * element_size);
-  cl_int err = dt_opencl_read_host_from_device(devid, in, img, width, height, element_size);
+  cl_int err = dt_opencl_copy_device_to_host(devid, in, img, width, height, element_size);
   if(err != CL_SUCCESS) goto error;
 
   const const_rgb_image img_in = (const_rgb_image) {in, width, height, element_size / sizeof(float)};
