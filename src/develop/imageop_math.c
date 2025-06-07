@@ -198,8 +198,7 @@ int dt_iop_clip_and_zoom_roi_cl(int devid,
     float *out = dt_alloc_align_float((size_t)roi_out->width * roi_out->height * 4);
     if(out && in)
     {
-      err = dt_opencl_read_host_from_device
-            (devid, in, dev_in, roi_in->width, roi_in->height, 4 * sizeof(float));
+      err = dt_opencl_copy_device_to_host(devid, in, dev_in, roi_in->width, roi_in->height, 4 * sizeof(float));
       if(err == CL_SUCCESS)
       {
         dt_iop_clip_and_zoom_roi(out, in, roi_out, roi_in);
