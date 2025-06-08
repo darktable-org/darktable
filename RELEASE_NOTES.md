@@ -241,6 +241,9 @@ changes (where available).
   when creating a new style we don't show the whole history but only
   the last version of each module.
 
+- Fixed a bug in xtrans demosaicers that could feed NaNs into the
+  pixelpipe.
+
 ## Lua
 
 ### API Version
