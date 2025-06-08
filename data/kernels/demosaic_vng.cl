@@ -357,7 +357,7 @@ clip_and_zoom_demosaic_third_size_xtrans(read_only image2d_t in, write_only imag
   // X-Trans RGB weighting averages to 2:5:2 for each 3x3 cell
   col[0] = fmax(0.0f, col[0] / (num * 2));
   col[1] = fmax(0.0f, col[1] / (num * 5));
-  col[2] = fmax(0.0f, col[1] / (num * 2));
+  col[2] = fmax(0.0f, col[2] / (num * 2));
 
   write_imagef(out, (int2)(x, y), (float4)(col[0], col[1], col[2], 0.0f));
 }
