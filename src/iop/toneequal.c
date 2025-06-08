@@ -201,7 +201,7 @@ typedef enum dt_iop_toneequalizer_post_auto_align_t
   DT_TONEEQ_ALIGN_CENTER,       // $DESCRIPTION: "at mid-tones"
   DT_TONEEQ_ALIGN_RIGHT,        // $DESCRIPTION: "at highlights"
   DT_TONEEQ_ALIGN_FIT,          // $DESCRIPTION: "fully fit"
-
+  DT_TONEEQ_ALIGN_LEGACY,       // $DESCRIPTION: "legacy pre-processing"
 } dt_iop_toneequalizer_post_auto_align_t;
 
 typedef struct dt_iop_toneequalizer_params_t
@@ -226,7 +226,7 @@ typedef struct dt_iop_toneequalizer_params_t
   int iterations;          // $MIN: 1 $MAX: 20 $DEFAULT: 1 $DESCRIPTION: "filter diffusion"
   float post_scale;        // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 0.0 $DESCRIPTION: "mask contrast / scale histogram"
   float post_shift;        // $MIN: -4.0 $MAX: 4.0 $DEFAULT: 0.0 $DESCRIPTION: "mask brightness / shift histogram"
-  dt_iop_toneequalizer_post_auto_align_t post_auto_align; // $DEFAULT: DT_TONEEQ_ALIGN_FIT $DESCRIPTION: "auto align mask exposure"
+  dt_iop_toneequalizer_post_auto_align_t post_auto_align; // $DEFAULT: DT_TONEEQ_ALIGN_FIT $DESCRIPTION: "align mask exposure"
 } dt_iop_toneequalizer_params_t;
 
 
@@ -317,9 +317,11 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   GtkWidget *lum_estimator;
   GtkWidget *filter, *feathering, *contrast_boost, *iterations, *exposure_boost, *post_scale, *post_shift;
   GtkNotebook *notebook;
-  dt_gui_collapsible_section_t sliders_section, guided_filter_section, advanced_masking_section;
+  dt_gui_collapsible_section_t sliders_section;
+  GtkWidget *pre_processing_label, *post_processing_label, *advanced_label;
+
   GtkWidget *show_luminance_mask;
-  GtkWidget *show_two_histograms;
+  // GtkWidget *show_two_histograms;
 
   // Cache Pango and Cairo stuff for the equalizer drawing
   float line_height;
@@ -542,7 +544,7 @@ int legacy_params(dt_iop_module_t *self,
     // V3 params
     n->post_scale = 0.0f;
     n->post_shift = 0.0f;
-    n->post_auto_align = DT_TONEEQ_ALIGN_CUSTOM;
+    n->post_auto_align = DT_TONEEQ_ALIGN_LEGACY;
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_toneequalizer_params_v3_t);
@@ -628,7 +630,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.quantization = 0.0f;
   p.post_scale = 0.0f;
   p.post_shift = 0.0f;
-  p.post_auto_align = DT_TONEEQ_ALIGN_CUSTOM;
+  p.post_auto_align = DT_TONEEQ_ALIGN_LEGACY;
 
   // Init exposure settings
   p.noise = p.ultra_deep_blacks = p.deep_blacks = p.blacks = 0.0f;
@@ -741,7 +743,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   // build the 1D contrast curves that revert the local compression of
   // contrast above
-  p.post_auto_align = DT_TONEEQ_ALIGN_CUSTOM;
+  p.post_auto_align = DT_TONEEQ_ALIGN_LEGACY;
   p.filter = DT_TONEEQ_NONE;
   _dilate_shadows_highlight_preset_set_exposure_params(&p, 0.25f);
   dt_gui_presets_add_generic
@@ -977,8 +979,7 @@ void compute_auto_post_scale_shift(dt_iop_toneequalizer_post_auto_align_t post_a
                                    float histogram_first_decile,
                                    float histogram_last_decile,
                                    float *post_scale, float *post_shift,
-                                   dt_dev_pixelpipe_type_t const debug_pipe
-                                  )
+                                   dt_dev_pixelpipe_type_t const debug_pipe)
 {
   const float first_decile_target = -7.0f;
   const float last_decile_target = -1.0f;
@@ -992,6 +993,7 @@ void compute_auto_post_scale_shift(dt_iop_toneequalizer_post_auto_align_t post_a
   switch(post_auto_align)
   {
     case(DT_TONEEQ_ALIGN_CUSTOM):
+    case(DT_TONEEQ_ALIGN_LEGACY):
     {
       // fully user-controlled, do not modify
       break;
@@ -1617,6 +1619,8 @@ void _toneeq_process(dt_iop_module_t *self,
                                     &post_scale, &post_shift,
                                     piece->pipe->type);
 
+      printf("_toneeq_process / DT_DEV_PIXELPIPE_FULL: post_scale %f, post_shift %f\n", post_scale, post_shift);
+
       dt_iop_gui_enter_critical_section(self);
       g->post_scale_value = post_scale;
       g->post_shift_value = post_shift;
@@ -1669,7 +1673,9 @@ void _toneeq_process(dt_iop_module_t *self,
         g->full_luminance_valid = TRUE;
       }
 
-      if (d->post_auto_align != DT_TONEEQ_ALIGN_CUSTOM) {
+      if ((d->post_auto_align != DT_TONEEQ_ALIGN_CUSTOM)
+          && (d->post_auto_align != DT_TONEEQ_ALIGN_LEGACY))
+      {
         // Calculate post scale/shift using previously saved deciles of the full mask
 
         dt_iop_gui_enter_critical_section(self);
@@ -1704,15 +1710,20 @@ void _toneeq_process(dt_iop_module_t *self,
     float histogram_first_decile = 0;
     float histogram_last_decile = 0;
 
-    if (d->post_auto_align != DT_TONEEQ_ALIGN_CUSTOM) {
+    if ((d->post_auto_align != DT_TONEEQ_ALIGN_CUSTOM)
+        && (d->post_auto_align != DT_TONEEQ_ALIGN_LEGACY))
+    {
       _compute_mask_stats_from_full_image(piece, in, roi_in, d,
-        &histogram_first_decile, &histogram_last_decile);
+                                          &histogram_first_decile, &histogram_last_decile);
+      compute_auto_post_scale_shift(d->post_auto_align,
+                                    histogram_first_decile, histogram_last_decile,
+                                    &post_scale, &post_shift,
+                                    piece->pipe->type);
+      if (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT)
+      {
+        printf("_toneeq_process / DT_DEV_PIXELPIPE_EXPORT: post_scale %f, post_shift %f\n", post_scale, post_shift);
+      }
     }
-    compute_auto_post_scale_shift(d->post_auto_align,
-                                  histogram_first_decile, histogram_last_decile,
-                                  &post_scale, &post_shift,
-                                  piece->pipe->type);
-
 #ifdef MF_DEBUG
     printf("_toneeq_process NO GUI PIXELPIPE (%d): roi with=%d roi_height=%d post_align=%d d->post_scale=%f "
            "d->post_shift=%f final post_scale=%f final post_shift=%f\n",
@@ -1850,7 +1861,8 @@ void modify_roi_in(dt_iop_module_t *self,
 
     // Auto-align is on and either has the upstream image changed or the user
     // modified some option that requires re-calculation of the mask
-    if(d->post_auto_align != DT_TONEEQ_ALIGN_CUSTOM
+    if((d->post_auto_align != DT_TONEEQ_ALIGN_CUSTOM)
+      && (d->post_auto_align != DT_TONEEQ_ALIGN_LEGACY)
       && (current_upstream_hash != saved_upstream_hash || !full_luminance_valid))
     {
       // We need the full image as our roi
@@ -1860,9 +1872,7 @@ void modify_roi_in(dt_iop_module_t *self,
       roi_in->height = piece->buf_in.height;
       roi_in->scale = 1.0f;
 
-#ifdef MF_DEBUG
-      printf("modify_roi_in: full image for auto-alignment\n");
-#endif
+      printf("modify_roi_in/DT_DEV_PIXELPIPE_FULL: requesting full image for auto-alignment\n");
     }
   }
 }
@@ -2330,11 +2340,22 @@ static inline void _update_gui_histogram(dt_iop_module_t *const self)
 
     g->image_EV_per_UI_sample = (mask_EV_of_target * mask_to_image * target_to_full) / (float)UI_HISTO_SAMPLES;
 
-    if (g->show_two_histograms)
-      _compute_gui_histogram(g->image_hires_histogram, g->image_histogram, p->post_scale, p->post_shift, &g->image_max_histogram);
+    // if (g->show_two_histograms)
+    //   _compute_gui_histogram(g->image_hires_histogram, g->image_histogram, p->post_scale, p->post_shift, &g->image_max_histogram);
 
     g->gui_histogram_valid = TRUE;
   }
+  // else
+  // { // TODO MF: REMOVE LATER, THIS IS ONLY FOR DEBUGGING
+  //   if (!g->prv_luminance_valid)
+  //   {
+  //     printf("_update_gui_histogram: Skipping histogram drawing, PIXELPIPE_PREVIEW is not ready yet.\n");
+  //   }
+  //   if (!g->full_luminance_valid)
+  //   {
+  //     printf("_update_gui_histogram: Skipping histogram drawing, PIXELPIPE_FULL is not ready yet.\n");
+  //   }
+  // }
   dt_iop_gui_leave_critical_section(self);
 }
 
@@ -2380,24 +2401,54 @@ static void _show_guiding_controls(dt_iop_module_t *self)
 
   switch(p->post_auto_align)
   {
+    case(DT_TONEEQ_ALIGN_CUSTOM):
+    {
+      gtk_widget_set_visible(g->pre_processing_label, FALSE);
+      gtk_widget_set_visible(g->exposure_boost, FALSE);
+      gtk_widget_set_visible(g->contrast_boost, FALSE);
+
+      gtk_widget_set_visible(g->post_processing_label, TRUE);
+      gtk_widget_set_visible(g->post_scale, TRUE);
+      gtk_widget_set_visible(g->post_shift, TRUE);
+
+      break;
+    }
     case(DT_TONEEQ_ALIGN_LEFT):
     case(DT_TONEEQ_ALIGN_CENTER):
     case(DT_TONEEQ_ALIGN_RIGHT):
     {
+      gtk_widget_set_visible(g->pre_processing_label, FALSE);
+      gtk_widget_set_visible(g->exposure_boost, FALSE);
+      gtk_widget_set_visible(g->contrast_boost, FALSE);
+
+      gtk_widget_set_visible(g->post_processing_label, TRUE);
       gtk_widget_set_visible(g->post_scale, TRUE);
       gtk_widget_set_visible(g->post_shift, FALSE);
+
       break;
     }
     case(DT_TONEEQ_ALIGN_FIT):
     {
+      gtk_widget_set_visible(g->pre_processing_label, FALSE);
+      gtk_widget_set_visible(g->exposure_boost, FALSE);
+      gtk_widget_set_visible(g->contrast_boost, FALSE);
+
+      gtk_widget_set_visible(g->post_processing_label, FALSE);
       gtk_widget_set_visible(g->post_scale, FALSE);
       gtk_widget_set_visible(g->post_shift, FALSE);
+
       break;
     }
-    case(DT_TONEEQ_ALIGN_CUSTOM):
+    case(DT_TONEEQ_ALIGN_LEGACY):
     {
-      gtk_widget_set_visible(g->post_scale, TRUE);
-      gtk_widget_set_visible(g->post_shift, TRUE);
+      gtk_widget_set_visible(g->pre_processing_label, TRUE);
+      gtk_widget_set_visible(g->exposure_boost, TRUE);
+      gtk_widget_set_visible(g->contrast_boost, TRUE);
+
+      gtk_widget_set_visible(g->post_processing_label, FALSE);
+      gtk_widget_set_visible(g->post_scale, FALSE);
+      gtk_widget_set_visible(g->post_shift, FALSE);
+
       break;
     }
   }
@@ -2424,7 +2475,7 @@ void gui_update(dt_iop_module_t *self)
   _invalidate_luminance_cache(self);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), g->mask_display);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_two_histograms), g->two_histograms_display);
+  // gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_two_histograms), g->two_histograms_display);
 
 }
 
@@ -2464,16 +2515,51 @@ void gui_changed(dt_iop_module_t *self,
   }
   else if (w == g->post_auto_align)
   {
-    // We may have switched from a more automatic to a less automatic mode.
-    // Copy the automatically determined parameters to the GUI sliders.
 
-    p->post_scale = g->post_scale_value;
-    p->post_shift = g->post_shift_value;
+    // TODO MF:
+    // For now reset everything whenever the mode is changed.
+    // It may be nice to preserve some values, i.e. when switching
+    // form fully fit to custom. But there are corner-cases,
+    // i.e, regarding presets that make this complocated.
+    p->post_scale = 0.0f;
+    p->post_shift = 0.0f;
 
     ++darktable.gui->reset;
     dt_bauhaus_slider_set(g->post_scale, p->post_scale);
     dt_bauhaus_slider_set(g->post_shift, p->post_shift);
     --darktable.gui->reset;
+
+    g->post_scale_value = 0.0f;
+    g->post_shift_value = 0.0f;
+
+    p->contrast_boost = 0.0f;
+    p->exposure_boost = 0.0f;
+
+    ++darktable.gui->reset;
+    dt_bauhaus_slider_set(g->contrast_boost, p->contrast_boost);
+    dt_bauhaus_slider_set(g->exposure_boost, p->exposure_boost);
+    --darktable.gui->reset;
+
+    // else
+    // {
+    //   p->contrast_boost = 0.0f;
+    //   p->exposure_boost = 0.0f;
+
+    //   ++darktable.gui->reset;
+    //   dt_bauhaus_slider_set(g->contrast_boost, p->contrast_boost);
+    //   dt_bauhaus_slider_set(g->exposure_boost, p->exposure_boost);
+    //   --darktable.gui->reset;
+
+    //   // // We may have switched from a more automatic to a less automatic mode.
+    //   // // Copy the automatically determined parameters to the GUI sliders.
+    //   // p->post_scale = g->post_scale_value;
+    //   // p->post_shift = g->post_shift_value;
+
+    //   ++darktable.gui->reset;
+    //   dt_bauhaus_slider_set(g->post_scale, p->post_scale);
+    //   dt_bauhaus_slider_set(g->post_shift, p->post_shift);
+    //   --darktable.gui->reset;
+    // }
 
     _invalidate_luminance_cache(self);
     _show_guiding_controls(self);
@@ -2680,24 +2766,24 @@ static void _show_luminance_mask_callback(GtkWidget *togglebutton,
 }
 
 // TODO MF: Remove this again? Two histograms are only useful for debugging.
-static void _show_two_histograms_callback(GtkWidget *togglebutton,
-                                          GdkEventButton *event,
-                                          dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_request_focus(self);
+// static void _show_two_histograms_callback(GtkWidget *togglebutton,
+//                                           GdkEventButton *event,
+//                                           dt_iop_module_t *self)
+// {
+//   if(darktable.gui->reset) return;
+//   dt_iop_request_focus(self);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
+//   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
 
-  dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
-  g->two_histograms_display = !g->two_histograms_display;
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_two_histograms), g->two_histograms_display);
+//   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+//   g->two_histograms_display = !g->two_histograms_display;
+//   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_two_histograms), g->two_histograms_display);
 
-  //  dt_dev_reprocess_center(self->dev);
-  dt_iop_refresh_center(self); // TODO: is this needed?
-  // Unlock the colour picker so we can display our own custom cursor
-  // dt_iop_color_picker_reset(self, TRUE);
-}
+//   //  dt_dev_reprocess_center(self->dev);
+//   dt_iop_refresh_center(self); // TODO: is this needed?
+//   // Unlock the colour picker so we can display our own custom cursor
+//   // dt_iop_color_picker_reset(self, TRUE);
+// }
 
 
 /****************************************************************************
@@ -4269,17 +4355,49 @@ void gui_init(dt_iop_module_t *self)
   g->post_auto_align = dt_bauhaus_combobox_from_params(self, "post_auto_align");
   gtk_widget_set_tooltip_text(g->post_auto_align, _("automatically set the mask exposure/contrast"));
 
-  g->post_scale = dt_bauhaus_slider_from_params(self, "post_scale");
-  dt_bauhaus_slider_set_soft_range(g->post_scale, -2.0, 2.0);
+  g->pre_processing_label = dt_ui_section_label_new(C_("section", "mask pre-processing"));
+  gtk_box_pack_start(GTK_BOX(self->widget),
+                     g->pre_processing_label,
+                     FALSE, FALSE, 0);
+
+  g->exposure_boost = dt_bauhaus_slider_from_params(self, "exposure_boost");
+  dt_bauhaus_slider_set_soft_range(g->exposure_boost, -4.0, 4.0);
+  dt_bauhaus_slider_set_format(g->exposure_boost, _(" EV"));
   gtk_widget_set_tooltip_text
-    (g->post_scale,
-    _("set the mask contrast / scale the histogram"));
+    (g->exposure_boost,
+     _("use this to slide the mask average exposure along sliders\n"
+       "for a better control of the exposure correction with the available nodes."));
+  dt_bauhaus_widget_set_quad(g->exposure_boost, self, dtgtk_cairo_paint_wand, FALSE, _auto_adjust_exposure_boost,
+                             _("auto-adjust the average exposure"));
+
+  g->contrast_boost = dt_bauhaus_slider_from_params(self, "contrast_boost");
+  dt_bauhaus_slider_set_soft_range(g->contrast_boost, -2.0, 2.0);
+  dt_bauhaus_slider_set_format(g->contrast_boost, _(" EV"));
+  gtk_widget_set_tooltip_text
+    (g->contrast_boost,
+     _("use this to counter the averaging effect of the guided filter\n"
+       "and dilate the mask contrast around -4EV\n"
+       "this allows to spread the exposure histogram over more sliders\n"
+       "for a better control of the exposure correction."));
+  dt_bauhaus_widget_set_quad(g->contrast_boost, self, dtgtk_cairo_paint_wand, FALSE, _auto_adjust_contrast_boost,
+                             _("auto-adjust the contrast"));
+
+  g->post_processing_label = dt_ui_section_label_new(C_("section", "mask post-processing"));
+  gtk_box_pack_start(GTK_BOX(self->widget),
+                     g->post_processing_label,
+                     FALSE, FALSE, 0);
 
   g->post_shift = dt_bauhaus_slider_from_params(self, "post_shift");
   dt_bauhaus_slider_set_soft_range(g->post_shift, -4.0, 4.0);
   gtk_widget_set_tooltip_text
     (g->post_shift,
     _("set the mask exposure / shift the histogram"));
+
+  g->post_scale = dt_bauhaus_slider_from_params(self, "post_scale");
+  dt_bauhaus_slider_set_soft_range(g->post_scale, -2.0, 2.0);
+  gtk_widget_set_tooltip_text
+    (g->post_scale,
+    _("set the mask contrast / scale the histogram"));
 
   self->widget = dt_ui_notebook_page(g->notebook, N_("curve"), NULL);
 
@@ -4350,20 +4468,20 @@ void gui_init(dt_iop_module_t *self)
 
   // Masking options
   self->widget = dt_ui_notebook_page(g->notebook, N_("masking"), NULL);
-  GtkWidget *masking_page = self->widget;
+  // GtkWidget *masking_page = self->widget;
 
   // guided filter section
-  dt_gui_new_collapsible_section(&g->guided_filter_section, "plugins/darkroom/toneequal/expand_sliders",
-                                 _("guided filter"), GTK_BOX(masking_page), DT_ACTION(self));
-  gtk_widget_set_tooltip_text(g->guided_filter_section.expander, _("guided filter"));
-
+  // dt_gui_new_collapsible_section(&g->guided_filter_section, "plugins/darkroom/toneequal/expand_sliders",
+  //                                _("guided filter"), GTK_BOX(masking_page), DT_ACTION(self));
+  // gtk_widget_set_tooltip_text(g->guided_filter_section.expander, _("guided filter"));
+  //
   // Hack to make the collapsible section align at the top
-  g_object_ref(g->guided_filter_section.expander);
-  gtk_container_remove(GTK_CONTAINER(masking_page), g->guided_filter_section.expander);
-  gtk_box_pack_start(GTK_BOX(masking_page), g->guided_filter_section.expander, FALSE, FALSE, 0);
-  g_object_unref(g->guided_filter_section.expander);
-
-  self->widget = GTK_WIDGET(g->guided_filter_section.container);
+  // g_object_ref(g->guided_filter_section.expander);
+  // gtk_container_remove(GTK_CONTAINER(masking_page), g->guided_filter_section.expander);
+  // gtk_box_pack_start(GTK_BOX(masking_page), g->guided_filter_section.expander, FALSE, FALSE, 0);
+  // g_object_unref(g->guided_filter_section.expander);
+  //
+  // self->widget = GTK_WIDGET(g->guided_filter_section.container);
 
   g->lum_estimator = dt_bauhaus_combobox_from_params(self, "lum_estimator");
   gtk_widget_set_tooltip_text(g->lum_estimator, _("preview the mask and chose the estimator that gives you the\n"
@@ -4401,18 +4519,23 @@ void gui_init(dt_iop_module_t *self)
                                                "lower values give smoother gradients and better smoothing\n"
                                                "but may lead to inaccurate edges taping and halos"));
 
-  // Collapsible section mask pre-processing
-  dt_gui_new_collapsible_section(&g->advanced_masking_section, "plugins/darkroom/toneequal/expand_advanced_masking",
-    _("mask pre-processing"), GTK_BOX(masking_page), DT_ACTION(self));
-  gtk_widget_set_tooltip_text(g->advanced_masking_section.expander, _("mask pre-processing"));
+  // // Collapsible section mask pre-processing
+  // dt_gui_new_collapsible_section(&g->advanced_masking_section, "plugins/darkroom/toneequal/expand_advanced_masking",
+  //   _("mask pre-processing"), GTK_BOX(masking_page), DT_ACTION(self));
+  // gtk_widget_set_tooltip_text(g->advanced_masking_section.expander, _("mask pre-processing"));
 
-  // Hack to make the collapsible section align at the top
-  g_object_ref(g->advanced_masking_section.expander);
-  gtk_container_remove(GTK_CONTAINER(masking_page), g->advanced_masking_section.expander);
-  gtk_box_pack_start(GTK_BOX(masking_page), g->advanced_masking_section.expander, FALSE, FALSE, 0);
-  g_object_unref(g->advanced_masking_section.expander);
+  // // Hack to make the collapsible section align at the top
+  // g_object_ref(g->advanced_masking_section.expander);
+  // gtk_container_remove(GTK_CONTAINER(masking_page), g->advanced_masking_section.expander);
+  // gtk_box_pack_start(GTK_BOX(masking_page), g->advanced_masking_section.expander, FALSE, FALSE, 0);
+  // g_object_unref(g->advanced_masking_section.expander);
 
-  self->widget = GTK_WIDGET(g->advanced_masking_section.container);
+  // self->widget = GTK_WIDGET(g->advanced_masking_section.container);
+
+  g->advanced_label = dt_ui_section_label_new(C_("section", "advanced"));
+  gtk_box_pack_start(GTK_BOX(self->widget),
+                     g->advanced_label,
+                     FALSE, FALSE, 0);
 
   g->quantization = dt_bauhaus_slider_from_params(self, "quantization");
   dt_bauhaus_slider_set_format(g->quantization, _(" EV"));
@@ -4422,41 +4545,18 @@ void gui_init(dt_iop_module_t *self)
        "higher values posterize the luminance mask to help the guiding\n"
        "produce piece-wise smooth areas when using high feathering values"));
 
-  g->exposure_boost = dt_bauhaus_slider_from_params(self, "exposure_boost");
-  dt_bauhaus_slider_set_soft_range(g->exposure_boost, -4.0, 4.0);
-  dt_bauhaus_slider_set_format(g->exposure_boost, _(" EV"));
-  gtk_widget_set_tooltip_text
-    (g->exposure_boost,
-     _("use this to slide the mask average exposure along NUM_SLIDERS\n"
-       "for a better control of the exposure correction with the available nodes."));
-  dt_bauhaus_widget_set_quad(g->exposure_boost, self, dtgtk_cairo_paint_wand, FALSE, _auto_adjust_exposure_boost,
-                             _("auto-adjust the average exposure"));
-
-  g->contrast_boost = dt_bauhaus_slider_from_params(self, "contrast_boost");
-  dt_bauhaus_slider_set_soft_range(g->contrast_boost, -2.0, 2.0);
-  dt_bauhaus_slider_set_format(g->contrast_boost, _(" EV"));
-  gtk_widget_set_tooltip_text
-    (g->contrast_boost,
-     _("use this to counter the averaging effect of the guided filter\n"
-       "and dilate the mask contrast around -4EV\n"
-       "this allows to spread the exposure histogram over more NUM_SLIDERS\n"
-       "for a better control of the exposure correction."));
-  dt_bauhaus_widget_set_quad(g->contrast_boost, self, dtgtk_cairo_paint_wand, FALSE, _auto_adjust_contrast_boost,
-                             _("auto-adjust the contrast"));
-
-
-  GtkWidget *histo_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(histo_box),
-                    dt_ui_label_new(_("show image histogram in graph")), TRUE, TRUE, 0);
-  g->show_two_histograms = dt_iop_togglebutton_new
-    (self, NULL,
-    N_("display the image histogram together with mask histogram"), NULL, G_CALLBACK(_show_two_histograms_callback),
-    FALSE, 0, 0, dtgtk_cairo_paint_showmask, histo_box);
-  dt_gui_add_class(g->show_two_histograms, "dt_transparent_background");
-  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->show_two_histograms),
-                              dtgtk_cairo_paint_showmask, 0, NULL);
-  dt_gui_add_class(g->show_two_histograms, "dt_bauhaus_alignment");
-  gtk_box_pack_start(GTK_BOX(self->widget), histo_box, FALSE, FALSE, 0);
+  // GtkWidget *histo_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  // gtk_box_pack_start(GTK_BOX(histo_box),
+  //                   dt_ui_label_new(_("show image histogram in graph")), TRUE, TRUE, 0);
+  // g->show_two_histograms = dt_iop_togglebutton_new
+  //   (self, NULL,
+  //   N_("display the image histogram together with mask histogram"), NULL, G_CALLBACK(_show_two_histograms_callback),
+  //   FALSE, 0, 0, dtgtk_cairo_paint_showmask, histo_box);
+  // dt_gui_add_class(g->show_two_histograms, "dt_transparent_background");
+  // dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->show_two_histograms),
+  //                             dtgtk_cairo_paint_showmask, 0, NULL);
+  // dt_gui_add_class(g->show_two_histograms, "dt_bauhaus_alignment");
+  // gtk_box_pack_start(GTK_BOX(self->widget), histo_box, FALSE, FALSE, 0);
 
 
   // start building top level widget
