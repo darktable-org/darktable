@@ -88,14 +88,14 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img,
   if(!image)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[GraphicsMagick_open] image '%s' not found",
+             "[GraphicsMagick_open] ReadImage failed for '%s'",
              img->filename);
     err = DT_IMAGEIO_FILE_NOT_FOUND;
     goto error;
   }
 
   dt_print(DT_DEBUG_IMAGEIO,
-           "[GraphicsMagick_open] image '%s' loading",
+           "[GraphicsMagick_open] loading image '%s'",
            img->filename);
 
   img->width = image->columns;
@@ -136,7 +136,7 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img,
   if(ret != MagickPass)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[GraphicsMagick_open] error reading image '%s'",
+             "[GraphicsMagick_open] error reading image pixels for '%s'",
              img->filename);
     err = DT_IMAGEIO_LOAD_FAILED;
     goto error;
