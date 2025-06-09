@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-01 09:41-0300\n"
-"PO-Revision-Date: 2025-06-01 09:41-0300\n"
+"POT-Creation-Date: 2025-06-09 06:25-0300\n"
+"PO-Revision-Date: 2025-06-09 06:25-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -2660,9 +2660,8 @@ msgstr ""
 "outono"
 
 #: ../build/bin/styles_string.h:40
-#, fuzzy
 msgid "spot color"
-msgstr "mostrar cor"
+msgstr "destacar cor"
 
 #: ../build/bin/styles_string.h:41
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:272
@@ -5714,7 +5713,7 @@ msgstr "menu flutuante"
 #: ../src/gui/presets.c:568 ../src/gui/styles_dialog.c:552
 #: ../src/imageio/storage/disk.c:198 ../src/imageio/storage/gallery.c:149
 #: ../src/imageio/storage/latex.c:145 ../src/iop/lut3d.c:1562
-#: ../src/iop/rasterfile.c:255 ../src/libs/collect.c:433
+#: ../src/iop/rasterfile.c:260 ../src/libs/collect.c:433
 #: ../src/libs/collect.c:3390 ../src/libs/copy_history.c:122
 #: ../src/libs/export_metadata.c:168 ../src/libs/geotagging.c:954
 #: ../src/libs/import.c:1863 ../src/libs/import.c:1976
@@ -21862,7 +21861,7 @@ msgstr "pasta raiz do LUT não definida"
 msgid "select LUT file"
 msgstr "selecionar arquivo LUT"
 
-#: ../src/iop/lut3d.c:1562 ../src/iop/rasterfile.c:255
+#: ../src/iop/lut3d.c:1562 ../src/iop/rasterfile.c:260
 msgid "_select"
 msgstr "_selecionar"
 
@@ -22478,24 +22477,24 @@ msgstr "ler arquivos PFM gravados para uso como máscaras de pixels"
 msgid "can't read raster mask file '%s'"
 msgstr "não foi possível ler o arquivo de máscara de pixels '%s'"
 
-#: ../src/iop/rasterfile.c:247
+#: ../src/iop/rasterfile.c:252
 msgid "raster mask files root folder not defined"
 msgstr "pasta raiz de máscaras de pixels não definida"
 
-#: ../src/iop/rasterfile.c:254
+#: ../src/iop/rasterfile.c:259
 msgid "select raster mask file"
 msgstr "seleciona arquivo com máscara de pixels"
 
-#: ../src/iop/rasterfile.c:288
+#: ../src/iop/rasterfile.c:293
 msgid "selected file not within raster masks root folder"
 msgstr ""
 "o arquivo selecionado não está dentro da pasta raiz das máscaras de pixels"
 
-#: ../src/iop/rasterfile.c:586
+#: ../src/iop/rasterfile.c:591
 msgid "select the RGB channels taken into account to generate the raster mask"
 msgstr "selecionar os canais RGB levados em conta ao gerar a máscara de pixels"
 
-#: ../src/iop/rasterfile.c:590
+#: ../src/iop/rasterfile.c:595
 msgid ""
 "select the PFM file recorded as a raster mask,\n"
 "CAUTION: path must be set in preferences/processing before choosing"
@@ -22504,7 +22503,7 @@ msgstr ""
 "ATENÇÃO: o caminho deve ser configurado em preferências/processamento antes "
 "de escolher o arquivo"
 
-#: ../src/iop/rasterfile.c:596
+#: ../src/iop/rasterfile.c:601
 msgid "the mask file path is saved with the image history"
 msgstr "o caminho do arquivo de máscara é gravado com o histórico da imagem"
 
@@ -26765,9 +26764,8 @@ msgid "XMP tag name"
 msgstr "nome da etiqueta XMP"
 
 #: ../src/libs/metadata.c:903
-#, fuzzy
 msgid "display name"
-msgstr "mostrar amostras"
+msgstr "nome na tela"
 
 #: ../src/libs/metadata.c:913 ../src/libs/metadata_view.c:1478
 msgid "visible"
