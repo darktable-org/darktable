@@ -350,10 +350,8 @@ static float *_get_rasterfile_mask(dt_dev_pixelpipe_iop_t *piece)
     if(tmp)
     {
       interpolate_bilinear(cd->mask, cd->width, cd->height, tmp, roi->width, roi->height, 1);
-    dt_print(DT_DEBUG_PIPE, "interpolated");
       res = dt_iop_image_alloc(roo->width, roo->height, 1);
       if(res) self->distort_mask(self, piece, tmp, res, roi, roo);
-    dt_print(DT_DEBUG_PIPE, "distorted");
       dt_free_align(tmp);
     }
   }
