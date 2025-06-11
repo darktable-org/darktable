@@ -93,18 +93,18 @@ The chosen segmentation algorithm works like this:
 static inline float _local_std_deviation(const float *p, const int w)
 {
   const int w2 = 2*w;
-  const float av = 0.04f *
-      (p[-w2-2] + p[-w2-1] + p[-w2] + p[-w2+1] + p[-w2+2] +
+  const float av =
+      (p[-w2-1] + p[-w2] + p[-w2+1] +
        p[-w-2]  + p[-w-1]  + p[-w]  + p[-w+1]  + p[-w+2] +
        p[-2]    + p[-1]    + p[0]   + p[1]     + p[2] +
        p[w-2]   + p[w-1]   + p[w]   + p[w+1]   + p[w+2] +
-       p[w2-2]  + p[w2-1]  + p[w2]  + p[w2+1]  + p[w2+2]);
-  return sqrtf(0.04f *
-      (sqrf(p[-w2-2]-av) + sqrf(p[-w2-1]-av) + sqrf(p[-w2]-av) + sqrf(p[-w2+1]-av) + sqrf(p[-w2+2]-av) +
-       sqrf(p[-w-2]-av)  + sqrf(p[-w-1]-av)  + sqrf(p[-w]-av)  + sqrf(p[-w+1]-av)  + sqrf(p[-w+2]-av) +
-       sqrf(p[-2]-av)    + sqrf(p[-1]-av)    + sqrf(p[0]-av)   + sqrf(p[1]-av)     + sqrf(p[2]-av) +
-       sqrf(p[w-2]-av)   + sqrf(p[w-1]-av)   + sqrf(p[w]-av)   + sqrf(p[w+1]-av)   + sqrf(p[w+2]-av) +
-       sqrf(p[w2-2]-av)  + sqrf(p[w2-1]-av)  + sqrf(p[w2]-av)  + sqrf(p[w2+1]-av)  + sqrf(p[w2+2]-av)));
+       p[w2-1]  + p[w2]  + p[w2+1]) / 21.0f;
+  return sqrtf(
+      (sqrf(p[-w2-1]-av) + sqrf(p[-w2]-av)  + sqrf(p[-w2+1]-av) +
+       sqrf(p[-w-2]-av)  + sqrf(p[-w-1]-av) + sqrf(p[-w]-av)  + sqrf(p[-w+1]-av)  + sqrf(p[-w+2]-av) +
+       sqrf(p[-2]-av)    + sqrf(p[-1]-av)   + sqrf(p[0]-av)   + sqrf(p[1]-av)     + sqrf(p[2]-av) +
+       sqrf(p[w-2]-av)   + sqrf(p[w-1]-av)  + sqrf(p[w]-av)   + sqrf(p[w+1]-av)   + sqrf(p[w+2]-av) +
+       sqrf(p[w2-1]-av)  + sqrf(p[w2]-av)   + sqrf(p[w2+1]-av)) / 21.0f);
 }
 
 static float _calc_weight(const float *s, const size_t loc, const int w, const float clipval)
