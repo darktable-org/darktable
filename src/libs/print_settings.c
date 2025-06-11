@@ -372,10 +372,11 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
   const gboolean upscale = TRUE;
   const gboolean export_masks = FALSE;
   const gboolean is_scaling = FALSE;
+  const double scale_factor = 1.0;
 
   dt_imageio_export_with_flags
     (img->imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, FALSE,
-     high_quality, upscale, is_scaling, FALSE, NULL,
+     high_quality, upscale, is_scaling, scale_factor, FALSE, NULL,
      FALSE, export_masks, params->buf_icc_type,
      params->buf_icc_profile, params->buf_icc_intent,  NULL, NULL, 1, 1, NULL, -1);
 

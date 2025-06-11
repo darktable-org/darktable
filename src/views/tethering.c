@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2024 darktable developers.
+    Copyright (C) 2014-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -438,7 +438,7 @@ static void _expose_tethered_mode(dt_view_t *self,
 
     if(!dt_imageio_export_with_flags(lib->image_id, "unused",
                                      &format, (dt_imageio_module_data_t *)&dat, TRUE,
-                                     FALSE, FALSE, FALSE, FALSE, FALSE, NULL,
+                                     FALSE, FALSE, FALSE, FALSE, 1.0, FALSE, NULL,
                                      FALSE, FALSE, histogram_type, histogram_filename,
                                      DT_INTENT_PERCEPTUAL, NULL, NULL, 1, 1, NULL, -1))
     {
