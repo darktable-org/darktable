@@ -631,7 +631,7 @@ static int32_t _control_merge_hdr_job_run(dt_job_t *job)
 
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
     dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat,
-                                 TRUE, FALSE, TRUE, TRUE, FALSE,
+                                 TRUE, FALSE, TRUE, TRUE, FALSE, 1.0,
                                  FALSE, "pre:rawprepare", FALSE,
                                  FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
                                  NULL, num, total, NULL, -1);
@@ -1864,6 +1864,14 @@ static int32_t _control_export_job_run(dt_job_t *job)
                     "\x1b%G");  // ESC % G
   }
 
+  // scaling
+  const gboolean is_scaling =
+    dt_conf_is_equal("plugins/lighttable/export/resizing", "scaling");
+
+  double _num, _denum;
+  dt_imageio_resizing_factor_get_and_parsing(&_num, &_denum);
+  const double scale_factor = is_scaling? _num / _denum : 1.0;
+
   dt_export_metadata_t metadata;
   metadata.flags = 0;
   metadata.list = dt_util_str_to_glist("\1", settings->metadata_export);
@@ -1907,6 +1915,7 @@ static int32_t _control_export_job_run(dt_job_t *job)
         dt_image_cache_read_release(image);
         if(mstorage->store(mstorage, sdata, imgid, mformat, fdata,
                            num, total, settings->high_quality, settings->upscale,
+                           is_scaling, scale_factor,
                            settings->export_masks, settings->icc_type,
                            settings->icc_filename, settings->icc_intent,
                            &metadata) != 0)

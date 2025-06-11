@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -91,6 +91,8 @@ gboolean dt_imageio_export(const dt_imgid_t imgid,
                       struct dt_imageio_module_data_t *format_params,
                       const gboolean high_quality,
                       const gboolean upscale,
+                      const gboolean is_scaling,
+                      const double scale_factor,
                       const gboolean copy_metadata,
                       const gboolean export_masks,
                       dt_colorspaces_color_profile_type_t icc_type,
@@ -110,6 +112,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid, const char *filena
                                  const gboolean high_quality,
                                  const gboolean upscale,
                                  const gboolean is_scaling,
+                                 const double scale_factor,
                                  const gboolean thumbnail_export,
                                  const char *filter,
                                  const gboolean copy_metadata,
