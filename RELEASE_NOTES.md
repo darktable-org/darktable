@@ -82,7 +82,8 @@ changes (where available).
   actual color while regular click continues to pick the opposite
   color. This gives users more flexibility and control when selecting
   hues.
-
+  
+- Moved controls for mask exposure and contrast compensation to the advanced tab.
 
 ## Performance Improvements
 
