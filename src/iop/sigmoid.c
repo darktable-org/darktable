@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2024 darktable developers.
+    Copyright (C) 2020-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -199,9 +199,9 @@ const char *aliases()
 const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
-                                _("apply a view transform to make a image displayable\n"
-                                  "on a screen or print. uses a robust and smooth\n"
-                                  "tone curve with optional color preservation methods."),
+                                _("apply a view transform to make an image displayable\n"
+                                  "on a screen or print using a robust and smooth\n"
+                                  "tone curve with optional color preservation methods"),
                                 _("corrective and creative"), _("linear, RGB, scene-referred"),
                                 _("non-linear, RGB"), _("linear, RGB, display-referred"));
 }
@@ -237,10 +237,10 @@ void init_presets(dt_iop_module_so_t *self)
                                self->op, self->version(), NULL, 0, 1,
                                DEVELOP_BLEND_CS_RGB_SCENE);
 
-    dt_gui_presets_update_format(_("scene-referred default"),
+    dt_gui_presets_update_format(BUILTIN_PRESET("scene-referred default"),
                                  self->op, self->version(), FOR_RAW | FOR_MATRIX);
 
-    dt_gui_presets_update_autoapply(_("scene-referred default"),
+    dt_gui_presets_update_autoapply(BUILTIN_PRESET("scene-referred default"),
                                     self->op, self->version(), TRUE);
   }
 

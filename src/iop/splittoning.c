@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -98,7 +98,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("use two specific colors for shadows and highlights and\n"
-                                        "create a linear toning effect between them up to a pivot."),
+                                        "create a linear toning effect between them up to a pivot"),
                                       _("creative"),
                                       _("linear, RGB, scene-referred"),
                                       _("linear, RGB"),

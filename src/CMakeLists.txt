@@ -70,6 +70,7 @@ FILE(GLOB SOURCE_FILES
   "common/opencl.c"
   "common/overlay.c"
   "common/pdf.c"
+  "common/pfm.c"
   "common/presets.c"
   "common/pwstorage/backend_kwallet.c"
   "common/pwstorage/pwstorage.c"

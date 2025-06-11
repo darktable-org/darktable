@@ -624,13 +624,13 @@ static gboolean _event_button_press(GtkWidget *widget,
 {
   dt_culling_t *table = (dt_culling_t *)user_data;
 
-  if(event->button == 1 && event->type == GDK_BUTTON_PRESS)
+  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_BUTTON_PRESS)
   {
     // make sure any edition field loses the focus
     gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
   }
 
-  if(event->button == 2)
+  if(event->button == GDK_BUTTON_MIDDLE)
   {
     // if shift is pressed, we work only with image hovered
     if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
@@ -642,7 +642,7 @@ static gboolean _event_button_press(GtkWidget *widget,
 
   const dt_imgid_t id = dt_control_get_mouse_over_id();
 
-  if(dt_is_valid_imgid(id) && event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  if(dt_is_valid_imgid(id) && event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
   {
     dt_view_manager_switch(darktable.view_manager, "darkroom");
     return TRUE;
@@ -752,7 +752,7 @@ static gboolean _event_button_release(GtkWidget *widget,
   // we use a very simple culling-specific selection
   if(dt_act_on_use_culling_selection()
      && dt_is_valid_imgid(overid)
-     && event->button == 1)
+     && event->button == GDK_BUTTON_PRIMARY)
   {
     const dt_imgid_t old_sel = table->selection;
     if(table->selection == overid)

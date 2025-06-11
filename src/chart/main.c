@@ -20,7 +20,6 @@
 #include "chart/colorchart.h"
 #include "chart/common.h"
 #include "chart/deltaE.h"
-#include "chart/pfm.h"
 #include "chart/thinplate.h"
 #include "chart/tonecurve.h"
 #include "common/exif.h"
@@ -29,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "common/pfm.h"
 
 #ifdef __APPLE__
 #include "osx/osx.h"
@@ -351,13 +351,13 @@ static gboolean open_reference_image(dt_lut_t *self, const char *filename)
 
 static gboolean open_image(image_t *image, const char *filename)
 {
-  int width, height;
+  int width, height, error = 0;
 
   free_image(image);
 
   if(!filename) return FALSE;
 
-  float *pfm = read_pfm(filename, &width, &height);
+  float *pfm = dt_read_pfm(filename, &error, &width, &height, NULL, 3);
 
   if(!pfm)
   {

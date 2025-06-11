@@ -98,19 +98,8 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img,
            "[GraphicsMagick_open] image '%s' loading",
            img->filename);
 
-  if(IsCMYKColorspace(image->colorspace))
-  {
-    dt_print(DT_DEBUG_ALWAYS,
-             "[GraphicsMagick_open] error: CMYK images are not supported");
-    err =  DT_IMAGEIO_LOAD_FAILED;
-    goto error;
-  }
-
-  uint32_t width = image->columns;
-  uint32_t height = image->rows;
-
-  img->width = width;
-  img->height = height;
+  img->width = image->columns;
+  img->height = image->rows;
 
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
@@ -125,29 +114,43 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img,
     goto error;
   }
 
-  for(uint32_t row = 0; row < height; row++)
+  char *colormap;
+  if(IsCMYKColorspace(image->colorspace))
+    colormap = "CMYK";
+  else
+    colormap = "RGBP";
+
+  int ret = DispatchImage(image,
+                          0,
+                          0,
+                          img->width,
+                          img->height,
+                          colormap,
+                          FloatPixel,
+                          mipbuf,
+                          &exception);
+
+  if(exception.severity != UndefinedException)
+    CatchException(&exception);
+
+  if(ret != MagickPass)
   {
-    float *bufprt = mipbuf + (size_t)4 * row * img->width;
-    int ret = DispatchImage(image,
-                            0,
-                            row,
-                            width,
-                            1,
-                            "RGBP",
-                            FloatPixel,
-                            bufprt,
-                            &exception);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[GraphicsMagick_open] error reading image '%s'",
+             img->filename);
+    err = DT_IMAGEIO_LOAD_FAILED;
+    goto error;
+  }
 
-    if(exception.severity != UndefinedException)
-      CatchException(&exception);
-
-    if(ret != MagickPass)
+  // If the image in CMYK color space convert it to linear RGB
+  if(IsCMYKColorspace(image->colorspace))
+  {
+    for(size_t index = 0; index < img->width * img->height * 4; index += 4)
     {
-      dt_print(DT_DEBUG_ALWAYS,
-               "[GraphicsMagick_open] error reading image '%s'",
-               img->filename);
-      err = DT_IMAGEIO_LOAD_FAILED;
-      goto error;
+      float black = mipbuf[index + 3];
+      mipbuf[index]     = (1.f - black) * (1.f - mipbuf[index]);
+      mipbuf[index + 1] = (1.f - black) * (1.f - mipbuf[index + 1]);
+      mipbuf[index + 2] = (1.f - black) * (1.f - mipbuf[index + 2]);
     }
   }
 

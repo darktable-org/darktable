@@ -130,7 +130,7 @@ jobs:
         run: |
           # Note that we can't make a shallow clone to reduce clone traffic and time, as we have to
           # fetch the entire history to correctly generate the version for the AppImage filename
-          git clone https://github.com/darktable-org/darktable src
+          git clone -b ${{ github.ref_name }} https://github.com/${{ github.repository }} src
           pushd src
           git submodule init
           git config submodule.src/tests/integration.update none
@@ -240,7 +240,7 @@ jobs:
         run: |
           # Note that we can't make a shallow clone to reduce clone traffic and time, as we have to
           # fetch the entire history to correctly generate the version for the installation package filename
-          git clone https://github.com/darktable-org/darktable src
+          git clone -b ${{ github.ref_name }} https://github.com/${{ github.repository }} src
           pushd src
           git submodule init
           git config submodule.src/tests/integration.update none
@@ -305,7 +305,7 @@ jobs:
         run: |
           # Note that we can't make a shallow clone to reduce clone traffic and time, as we have to
           # fetch the entire history to correctly generate the version for the disk image filename
-          git clone https://github.com/darktable-org/darktable src
+          git clone -b ${{ github.ref_name }} https://github.com/${{ github.repository }} src
           pushd src
           git submodule init
           git config submodule.src/tests/integration.update none
@@ -314,7 +314,6 @@ jobs:
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
-          brew install --force gd       # See https://github.com/Homebrew/homebrew-core/issues/141766
           cd src/.ci
           export HOMEBREW_NO_INSTALL_UPGRADE=1
           brew bundle --verbose || true

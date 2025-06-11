@@ -936,7 +936,7 @@ static void process_cmatrix_fastpath(dt_iop_module_t *self,
   DT_OMP_FOR()
   for(size_t chunk = 0; chunk < nthreads; chunk++)
   {
-    size_t start = chunksize * dt_get_thread_num();
+    size_t start = chunksize * chunk;
     if(start >= npixels) continue;  // handle case when chunksize is < 4*nthreads and last thread has no work
     size_t end = MIN(start + chunksize, npixels);
     if(clipping)
@@ -1062,7 +1062,7 @@ static void process_cmatrix_proper(dt_iop_module_t *self,
   DT_OMP_FOR()
   for(size_t chunk = 0; chunk < nthreads; chunk++)
   {
-    size_t start = chunksize * dt_get_thread_num();
+    size_t start = chunksize * chunk;
     if(start >= npixels) continue;  // handle case when chunksize is < 4*nthreads and last thread has no work
     size_t end = MIN(start + chunksize, npixels);
     if(clipping)

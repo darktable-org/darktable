@@ -915,7 +915,7 @@ static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *e
 static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
   // set active point
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     if(darktable.develop->gui_module != self) dt_iop_request_focus(self);
 
@@ -943,7 +943,7 @@ static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *ev
 
 static gboolean dt_iop_levels_button_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_levels_gui_data_t *g = self->gui_data;
     g->dragging = 0;

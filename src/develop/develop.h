@@ -420,9 +420,10 @@ void dt_dev_reprocess_preview(dt_develop_t *dev);
 gboolean dt_dev_get_preview_size(const dt_develop_t *dev,
                                  float *wd,
                                  float *ht);
-void dt_dev_get_processed_size(dt_dev_viewport_t *port,
-                               int *procw,
-                               int *proch);
+// return TRUE in case we got it from current port instead of preview
+gboolean dt_dev_get_processed_size(dt_dev_viewport_t *port,
+                                   int *procw,
+                                   int *proch);
 gboolean dt_dev_get_zoom_bounds(dt_dev_viewport_t *port,
                                 float *zoom_x,
                                 float *zoom_y,

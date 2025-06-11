@@ -863,12 +863,24 @@ void dt_image_update_final_size(const dt_imgid_t imgid)
       }
     }
   }
+  else
+  {
+    // on lighttable, cannot run a pipe, reset to force proper values to be recomputed
+    // later.
+    dt_image_t *imgtmp = dt_image_cache_get(imgid, 'w');
+    if(imgtmp)
+    {
+      imgtmp->final_width = 0;
+      imgtmp->final_height = 0;
+      dt_image_cache_write_release(imgtmp, DT_IMAGE_CACHE_RELAXED);
+    }
+  }
 }
 
 gboolean dt_image_get_final_size(const dt_imgid_t imgid, int *width, int *height)
 {
   if(!dt_is_valid_imgid(imgid)) return TRUE;
-  // get the img strcut
+  // get the img struct
   dt_image_t *timg = dt_image_cache_get(imgid, 'r');
   if(!timg)
   {
@@ -1060,6 +1072,7 @@ void dt_image_flip(const dt_imgid_t imgid, const int32_t cw)
   orientation ^= ORIENTATION_SWAP_XY;
 
   if(cw == 2) orientation = ORIENTATION_NULL;
+
   dt_image_set_flip(imgid, orientation);
 
   dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
@@ -1113,10 +1126,15 @@ void dt_image_set_aspect_ratio_to(const dt_imgid_t imgid,
     /* store but don't save xmp*/
     dt_image_cache_write_release(image, DT_IMAGE_CACHE_RELAXED);
 
-    if(image && raise && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+    if(image
+       && raise
+       && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
+    {
+      dt_collection_update_query(darktable.collection,
+                                 DT_COLLECTION_CHANGE_RELOAD,
                                  DT_COLLECTION_PROP_ASPECT_RATIO,
                                  g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
+    }
   }
 }
 
@@ -1137,17 +1155,23 @@ void dt_image_set_aspect_ratio_if_different(const dt_imgid_t imgid,
       dt_image_t *wimage = dt_image_cache_get(imgid, 'w');
       if(wimage)
         wimage->aspect_ratio = aspect_ratio;
+
       dt_image_cache_write_release(wimage, DT_IMAGE_CACHE_RELAXED);
 
-      if(raise && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
-        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
-                                 DT_COLLECTION_PROP_ASPECT_RATIO,
-                                 g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
+      if(raise
+         && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
+      {
+        dt_collection_update_query(darktable.collection,
+                                   DT_COLLECTION_CHANGE_RELOAD,
+                                   DT_COLLECTION_PROP_ASPECT_RATIO,
+                                   g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
+      }
     }
   }
 }
 
-void dt_image_reset_aspect_ratio(const dt_imgid_t imgid, const gboolean raise)
+void dt_image_reset_aspect_ratio(const dt_imgid_t imgid,
+                                 const gboolean raise)
 {
   /* fetch image from cache */
   dt_image_t *image = dt_image_cache_get(imgid, 'w');
@@ -1157,16 +1181,22 @@ void dt_image_reset_aspect_ratio(const dt_imgid_t imgid, const gboolean raise)
   {
     image->aspect_ratio = 0.f;
     /* store in db, but don't synch XMP */
-    dt_image_cache_write_release_info(image, DT_IMAGE_CACHE_RELAXED, "dt_image_reset_aspect_ratio");
+    dt_image_cache_write_release_info(image,
+                                      DT_IMAGE_CACHE_RELAXED,
+                                      "dt_image_reset_aspect_ratio");
 
-    if(raise && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
+    if(raise
+       && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
+    {
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
                                DT_COLLECTION_PROP_ASPECT_RATIO,
                                g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
+    }
   }
 }
 
-float dt_image_set_aspect_ratio(const dt_imgid_t imgid, const gboolean raise)
+float dt_image_set_aspect_ratio(const dt_imgid_t imgid,
+                                const gboolean raise)
 {
   dt_mipmap_buffer_t buf;
   float aspect_ratio = 0.0;

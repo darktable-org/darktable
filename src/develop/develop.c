@@ -599,7 +599,7 @@ float dt_dev_get_zoom_scale(dt_dev_viewport_t *port,
     zoom_scale *= (float)darktable.develop->full.pipe->processed_width
                   / darktable.develop->preview_pipe->processed_width;
 
-  return zoom_scale;
+  return zoom_scale ? zoom_scale : 1.0f;
 }
 
 float dt_dev_get_zoom_scale_full(void)
@@ -1114,10 +1114,9 @@ void dt_dev_add_masks_history_item_ext(dt_develop_t *dev,
              "[dt_dev_add_masks_history_item_ext] can't find mask manager module");
 }
 
-void dt_dev_add_masks_history_item(
-        dt_develop_t *dev,
-        dt_iop_module_t *module,
-        const gboolean enable)
+void dt_dev_add_masks_history_item(dt_develop_t *dev,
+                                   dt_iop_module_t *module,
+                                   const gboolean enable)
 {
   gpointer target = NULL;
 
@@ -2476,21 +2475,21 @@ gboolean dt_dev_get_preview_size(const dt_develop_t *dev,
   return *wd >= 1.f && *ht >= 1.f;
 }
 
-void dt_dev_get_processed_size(dt_dev_viewport_t *port,
-                               int *procw,
-                               int *proch)
+gboolean dt_dev_get_processed_size(dt_dev_viewport_t *port,
+                                  int *procw,
+                                  int *proch)
 {
   // no processed pipes, lets return 0 size
   *procw = *proch = 0;
 
-  if(!port) return;
+  if(!port) return FALSE;
 
   // if pipe is processed, lets return its size
   if(port->pipe && port->pipe->processed_width)
   {
     *procw = port->pipe->processed_width;
     *proch = port->pipe->processed_height;
-    return;
+    return TRUE;
   }
 
   dt_develop_t *dev = darktable.develop;
@@ -2502,6 +2501,7 @@ void dt_dev_get_processed_size(dt_dev_viewport_t *port,
     *procw = scale * dev->preview_pipe->processed_width;
     *proch = scale * dev->preview_pipe->processed_height;
   }
+  return FALSE;
 }
 
 static float _calculate_new_scroll_zoom_tscale(const int up,
@@ -3250,13 +3250,10 @@ void dt_dev_module_remove(dt_develop_t *dev,
 
 gchar *dt_history_item_get_name(const dt_iop_module_t *module)
 {
-  gchar *label;
-  /* create a history button and add to box */
-  if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
-    label = g_strdup(module->name());
-  else
-    label = g_strdup_printf("%s • %s", module->name(), module->multi_name);
-  return label;
+  return dt_history_get_name_label(module->name(),
+                                   module->multi_name,
+                                   FALSE,
+                                   module->multi_name_hand_edited);
 }
 
 gboolean dt_dev_distort_transform(dt_develop_t *dev,

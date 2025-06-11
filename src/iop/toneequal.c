@@ -2981,8 +2981,7 @@ static gboolean area_button_press(GtkWidget *widget,
 
   dt_iop_request_focus(self);
 
-  if(event->button == 1
-     && event->type == GDK_2BUTTON_PRESS)
+  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
   {
     dt_iop_toneequalizer_params_t *p = self->params;
     const dt_iop_toneequalizer_params_t *const d = self->default_params;
@@ -3006,7 +3005,7 @@ static gboolean area_button_press(GtkWidget *widget,
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return TRUE;
   }
-  else if(event->button == 1)
+  else if(event->button == GDK_BUTTON_PRIMARY)
   {
     if(self->enabled)
     {
@@ -3093,7 +3092,7 @@ static gboolean area_button_release(GtkWidget *widget,
   // Give focus to module
   dt_iop_request_focus(self);
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_toneequalizer_params_t *p = self->params;
 

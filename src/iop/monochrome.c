@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "bauhaus/bauhaus.h"
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
@@ -93,7 +94,8 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 
 const char **description(dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("quickly convert an image to black & white using a variable color filter"),
+  return dt_iop_set_description(self, _("quickly convert an image to black & white\n"
+                                        "using a variable color filter"),
                                       _("creative"),
                                       _("linear or non-linear, Lab, display-referred"),
                                       _("non-linear, Lab"),
@@ -472,7 +474,7 @@ static gboolean _monochrome_motion_notify(GtkWidget *widget, GdkEventMotion *eve
 
 static gboolean _monochrome_button_press(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_monochrome_gui_data_t *g = self->gui_data;
     dt_iop_monochrome_params_t *p = self->params;
@@ -506,7 +508,7 @@ static gboolean _monochrome_button_press(GtkWidget *widget, GdkEventButton *even
 
 static gboolean _monochrome_button_release(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_monochrome_gui_data_t *g = self->gui_data;
     dt_iop_color_picker_reset(self, TRUE);

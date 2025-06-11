@@ -553,7 +553,7 @@ static gboolean _scale_mdlclick(GtkEntry *spin,
                                 GdkEventButton *event,
                                 dt_lib_export_t *d)
 {
-  if(event->button == 2)
+  if(event->button == GDK_BUTTON_MIDDLE)
   {
     dt_conf_set_string(CONFIG_PREFIX "resizing_factor", "1");
     g_signal_handlers_block_by_func(spin, _scale_changed, d);
@@ -571,7 +571,7 @@ static void _widht_mdlclick(GtkEntry *spin,
                             GdkEventButton *event,
                             gpointer user_data)
 {
-  if(event->button == 2)
+  if(event->button == GDK_BUTTON_MIDDLE)
   {
     dt_conf_set_int(CONFIG_PREFIX "width", 0);
     g_signal_handlers_block_by_func(spin, _width_changed, user_data);
@@ -588,7 +588,7 @@ static void _height_mdlclick(GtkEntry *spin,
                              GdkEventButton *event,
                              gpointer user_data)
 {
-  if(event->button == 2)
+  if(event->button == GDK_BUTTON_MIDDLE)
   {
     dt_conf_set_int(CONFIG_PREFIX "height", 0);
     g_signal_handlers_block_by_func(spin, _height_changed, user_data);
@@ -1180,7 +1180,7 @@ static gboolean _apply_style_button_callback(GtkMenuItem *menuitem,
                                              GdkEventButton *event,
                                              const dt_stylemenu_data_t *menu_data)
 {
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     _update_style(menu_data);
   }

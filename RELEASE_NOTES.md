@@ -59,8 +59,30 @@ changes (where available).
 - The metadata module is now fully configurable and allows to add and
   maintain any tags which are supported by exiv2.
 
+- Added a new module "raster mask import". After setting up a root
+  folder containing pfm files, a file can be selected to be used as a
+  raster mask, it is scaled to full image size. You can also define
+  what combination of the RGB channels of that pfm file will be used
+  for the raster mask.
+
+- Sigmoid module is now the default tonemapper selected for new
+  installation.
+
+- The export module has got a new section multi-preset export which
+  allows to export the selected images with multiple presets in one
+  single export run.
+
 ## UI/UX Improvements
 
+- Replaced the zoom range widget, which controls the number of
+  thumbnails displayed on the thumbnail table, with a spin
+  button. This makes it easier to set the exact value.
+
+- In the 4 ways tab in color balance rgb, ctrl+click now picks the
+  actual color while regular click continues to pick the opposite
+  color. This gives users more flexibility and control when selecting
+  hues.
+  
 - Moved controls for mask exposure and contrast compensation to the advanced tab.
 
 ## Performance Improvements
@@ -70,6 +92,11 @@ changes (where available).
 - Improved user interface responsiveness for blending operations.
 
 ## Other Changes
+
+- Removed the levels and contrast brightness saturation modules (which
+  were deprecated in 2023) from the deprecated modules group. Since
+  this group would be empty after that, it has also been removed for
+  now.
 
 - Due to an upstream issue, exporting JPEG XL in 16-bit float at
   quality 100 is not currently mathematically lossless.
@@ -90,8 +117,8 @@ changes (where available).
     - Add the line opencl_force_c_locale=anything to your
       ~/.config/darktable/darktablerc file.
 
-    - If that solves your problem, please report the issue to github
-      PR #xxxx, including information on the make of your GPU and the
+    - If that solves your problem, please report the issue to GiHhub
+      PR #18342, including information on the make of your GPU and the
       version of your drivers. We can then for the next release either
       by default reenable the workaround for drivers that need them,
       or warn people with antiquated drivers that they need to update.
@@ -117,6 +144,8 @@ changes (where available).
 
 - Reduced haze removal visible difference between exports and HQ
   darkroom processing.
+  For some images the algorithm fails to calculate correction
+  parameters, this is reported via control log.
 
 - Lens info is now read from OM-System/Olympus image files taken with
   lenses without electronic data if this info is entered in the
@@ -127,12 +156,49 @@ changes (where available).
 
 - Raster masks got internal improvements and now support the same refinement
   tools as all other masks including details threshold, feathering guide and
-  radius, blurring radius and contrast.
+  radius, blurring radius and contrast. Some UI refinements for rastermasks.
 
 - The highlights module offers a raster mask with information about level above
   clip level.
 
-- Changing orientation (via the flip module) respects changes done in crop module.
+- Changing orientation (via the flip module) respects changes done in
+  crop module.
+
+- The shown dimension while cropping now matches the default export
+  dimension and keeps the exact chosen ratio.
+
+- In the history module item tooltip, fixed the formatting and scaling
+  of the changes to match the values as seen in the modules
+  themselves.
+
+- Added auto login to the piwigo export module. This can be enabled in
+  the security section of the preferences.
+
+- Add 45x35 aspect ratio to the crop module, which is popular on IDs
+  and passports.
+
+- Color assessment conditions: Changed total border width to relative
+  scaling which should work well on small and big screens, independent
+  of physical screen resolution, added pop-up window for
+  parameterization and removed ISO12464 reference.
+
+- Attach export ICC profile to JP2 images.
+
+- Improved visibility of masks in darkroom. This is controlled by the
+  new hidden "darkroom/ui/develop_mask_mix" configuration option.
+
+- Add a new setting to change which images are taken into account for
+  actions: By default, the image under the cursor takes priority. With
+  this parameter enabled, the selected images will take priority, and
+  the image under the cursor will only be taken into account to feed
+  the information modules.
+
+- Added a tag icon on thumbnails to display the list of attached tags
+  when hovering over it.
+
+- In the map view, it is possible to pan the entire track in one of
+  the following ways: by double-clicking on the track segment list, by
+  left-clicking on the list header, or by shortcut option.
 
 ## Bug Fixes
 
@@ -149,20 +215,50 @@ changes (where available).
 - Fixed a bug that allowed NULL pointer dereference in tethering mode
   under certain conditions, which resulted in a crash.
 
-- Fixed darktable shutdown code so pending backgriund jobs are properly finished
+- Fixed darktable shutdown code so pending background jobs are properly finished
   and give a control log if there is pending work.
+
+- Fixed a crash in the import dialog when trying to add a new place to
+  an empty places list.
+
+- Fixed bitdepth setting not saved in AVIF export presets.
+
+- Fixed reset button not working in the geotagging module. Also a
+  loaded GPX track in the geotagging module is now properly removed.
+
+- Fixed darktable-cli crashing if the darktable database is locked.
+
+- Fixed image not properly layout in the print module after beeing
+  rotated from Lighttable.
+
+- Fixed a bug where the changes in various edit fields are not saved
+  correctly when the field loses the input focus.
+
+- Fixed incorrect reporting of whether a flash was fired in expansion
+  variables $(EXIF.FLASH.ICON) and $(EXIF.FLASH) under certain
+  conditions.
+
+- Fixed the edit style dialog to show all module's duplicates. Also,
+  when creating a new style we don't show the whole history but only
+  the last version of each module.
+
+- Fixed a bug in xtrans demosaicers that could feed NaNs into the
+  pixelpipe.
 
 ## Lua
 
 ### API Version
 
-- API version is now 9.4.0
+- API version is now 9.5.0
 
 ### New Features
 
-- N/A
+- Added apply_sidecar to dt_lua_image_t so that a sidecar file can be loaded
+  and applied to an image in lighttable.
 
 ### Bug Fixes
+
+- Expanded width of preference boxes Lua Options so that long input is visible.
 
 - N/A
 

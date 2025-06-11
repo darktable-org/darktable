@@ -88,7 +88,7 @@ void dt_gui_presets_init()
                         NULL, NULL);
 }
 
-void dt_gui_presets_add_generic(const char *name,
+void (dt_gui_presets_add_generic)(const char *name,
                                 const dt_dev_operation_t op,
                                 const int32_t version,
                                 const void *params,
@@ -98,9 +98,11 @@ void dt_gui_presets_add_generic(const char *name,
 {
   dt_develop_blend_params_t default_blendop_params;
   dt_develop_blend_init_blend_parameters(&default_blendop_params, blend_cst);
+  gchar *prefixed_name = g_strdup_printf(BUILTIN_PREFIX "%s", name);
   dt_gui_presets_add_with_blendop(
-      name, op, version, params, params_size,
+      prefixed_name, op, version, params, params_size,
       &default_blendop_params, enabled);
+  g_free(prefixed_name);
 }
 
 void dt_gui_presets_add_with_blendop(const char *name,
@@ -121,10 +123,10 @@ void dt_gui_presets_add_with_blendop(const char *name,
       "                    blendop_params, blendop_version, multi_priority, multi_name,"
       "                    model, maker, lens, iso_min, iso_max, exposure_min, exposure_max,"
       "                    aperture_min, aperture_max, focal_length_min, focal_length_max,"
-      "                    writeprotect, autoapply, filter, def, format)"
+      "                    writeprotect, autoapply, filter, def, format, multi_name_hand_edited)"
       " VALUES (?1, '', ?2, ?3, ?4, ?5, ?6, ?7, 0, '', '%', '%', '%', 0,"
       "         340282346638528859812000000000000000000, 0, 10000000, 0, 100000000, 0,"
-      "         ?8, 1, 0, 0, 0, 0)",
+      "         ?8, 1, 0, 0, 0, 0, 0)",
       -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
@@ -1084,7 +1086,7 @@ void dt_gui_presets_apply_preset(const gchar* name,
        && (strlen(multi_name) == 0 || multi_name[0] != ' '))
     {
       g_strlcpy(module->multi_name,
-                dt_presets_get_multi_name(name, multi_name),
+                strlen(multi_name) > 0 ? multi_name : name,
                 sizeof(module->multi_name));
       module->multi_name_hand_edited = multi_name_hand_edited;
     }
@@ -1277,7 +1279,7 @@ static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
 
   gchar *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     if(_click_time > event->time)
     {
@@ -1289,7 +1291,7 @@ static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
       dt_gui_presets_apply_preset(name, module);
     }
   }
-  else if(event->button == 3 && event->type == GDK_BUTTON_RELEASE && _click_time)
+  else if(event->button == GDK_BUTTON_SECONDARY && event->type == GDK_BUTTON_RELEASE && _click_time)
   {
     if(long_click || (module->flags() & IOP_FLAGS_ONE_INSTANCE))
       dt_shortcut_copy_lua((dt_action_t*)module, name);
@@ -1588,11 +1590,13 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w)
         gchar *txt = g_strdup_printf("ꬹ%s|%sꬹ", iop->so->op, name);
         if(config && strstr(config, txt))
         {
-          GtkWidget *mi = gtk_menu_item_new_with_label(name);
+          GtkWidget *mi = gtk_menu_item_new_with_label("");
+          gchar *local_name = dt_util_localize_segmented_name(name, TRUE);
           gchar *tt = g_markup_printf_escaped("<b>%s %s</b> %s",
-                                              iop->name(), iop->multi_name, name);
+                                              iop->name(), iop->multi_name, local_name);
           gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), tt);
           g_free(tt);
+          g_free(local_name);
           _menuitem_connect_preset(mi, name, iop);
           gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(mi));
         }
@@ -1616,6 +1620,15 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w)
   dt_gui_menu_popup(menu, w, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST);
 }
 
+static void _menu_shell_insert_sorted(GtkWidget *menu_shell, GtkWidget *item, gchar *name)
+{
+  GList *items = gtk_container_get_children(GTK_CONTAINER(menu_shell));
+  int num = g_list_length(items);
+  for(GList *i = g_list_last(items); i; i = i->prev, num--)
+    if(g_utf8_collate(gtk_menu_item_get_label(i->data), name) < 0) break;
+  gtk_menu_shell_insert(GTK_MENU_SHELL(menu_shell), item, num);
+  g_list_free(items);
+}
 
 GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
 {
@@ -1707,7 +1720,7 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
   int last_wp = -1;
   gchar **prev_split = NULL;
   GtkWidget *submenu = GTK_WIDGET(menu);
-  GSList *menu_stack = NULL; // stack of submenus
+  GtkWidget *mainmenu = submenu;
   GSList *menu_path = NULL; // stack of menuitems which are the parents of submenus on menu_stack
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1740,26 +1753,22 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
     if(darktable.gui->last_preset && strcmp(darktable.gui->last_preset, name) == 0)
       found = TRUE;
 
-    gchar **split = g_strsplit(name, "|", -1), **s = split, **p = prev_split;
+    gchar *local_name = dt_util_localize_segmented_name(name, FALSE);
+    gchar **split = g_strsplit(local_name, "|", -1), **s = split, **p = prev_split;
+    g_free(local_name);
     for(; p && *(p+1) && *(s+1) && !g_strcmp0(*s, *p); p++, s++)
       ;
     for(; p && *(p+1); p++)
     {
-      submenu = menu_stack->data;
-      menu_stack = g_slist_delete_link(menu_stack, menu_stack); // pop
       menu_path = g_slist_delete_link(menu_path, menu_path); // pop
+      submenu = menu_path ? gtk_menu_item_get_submenu(menu_path->data) : mainmenu;
     }
     for(; *(s+1); s++)
     {
-      GtkWidget *sm = gtk_menu_item_new_with_label("");
-      GtkWidget *mi_label = gtk_bin_get_child(GTK_BIN(sm));
-      gchar *el = g_markup_escape_text(*s, -1);
-      gtk_label_set_markup(GTK_LABEL(mi_label), el);
-      g_free(el);
-      menu_stack = g_slist_prepend(menu_stack, submenu); // push
+      GtkWidget *sm = gtk_menu_item_new_with_label(*s);
       menu_path = g_slist_prepend(menu_path, sm); // push
 
-      gtk_menu_shell_append(GTK_MENU_SHELL(submenu), sm);
+      _menu_shell_insert_sorted(submenu, sm, *s);
       submenu = gtk_menu_new();
       gtk_menu_item_set_submenu(GTK_MENU_ITEM(sm), submenu);
     }
@@ -1779,13 +1788,10 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
       label = g_strdup_printf("%s %s", *s, _("(default)"));
     else
       label = g_strdup(*s);
-    mi = gtk_check_menu_item_new_with_label("");
-    GtkWidget *mi_label = gtk_bin_get_child(GTK_BIN(mi));
-    gchar *el = g_markup_escape_text(label, -1);
-    gtk_label_set_markup(GTK_LABEL(mi_label), el);
+    mi = gtk_check_menu_item_new_with_label(label);
+    _menu_shell_insert_sorted(submenu, mi, label);
     dt_gui_add_class(mi, "dt_transparent_background");
     g_free(label);
-    g_free(el);
 
     if(module
        && ((op_params_size == 0
@@ -1805,16 +1811,7 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
       g_set_weak_pointer(&_active_menu_item, mi);
       // walk back up the menu hierarchy and highlight the entire path down to the current leaf
       for(const GSList *mp = menu_path; mp; mp = g_slist_next(mp))
-      {
-        const char *curr_label = gtk_menu_item_get_label(GTK_MENU_ITEM(mp->data));
-        if(curr_label)
-        {
-          gchar *boldface = g_strdup_printf("<b>%s</b>",curr_label);
-          GtkWidget *child = gtk_bin_get_child(GTK_BIN(mp->data));
-          gtk_label_set_markup(GTK_LABEL(child), boldface);
-          g_free(boldface);
-        }
-      }
+        dt_gui_add_class(gtk_bin_get_child(GTK_BIN(mp->data)), "active_menu_item");
     }
 
     if(isdisabled)
@@ -1827,11 +1824,10 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
       gtk_widget_set_tooltip_text(mi, (const char *)sqlite3_column_text(stmt, 3));
       _menuitem_connect_preset(mi, name, module);
     }
-    gtk_menu_shell_append(GTK_MENU_SHELL(submenu), mi);
     cnt++;
   }
   sqlite3_finalize(stmt);
-  g_slist_free(menu_stack);
+  g_slist_free(menu_path);
   g_strfreev(prev_split);
 
   if(cnt > 0) gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
@@ -1859,7 +1855,7 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
 
       if(darktable.gui->last_preset && found)
       {
-        char *markup = g_markup_printf_escaped("%s <span weight='bold'>%s</span>",
+        char *markup = g_markup_printf_escaped("%s <b>%s</b>",
                                                _("update preset"),
                                                darktable.gui->last_preset);
         mi = gtk_menu_item_new_with_label("");

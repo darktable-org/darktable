@@ -3209,10 +3209,10 @@ void init_presets(dt_iop_module_so_t *self)
        NULL, 0,
        1, DEVELOP_BLEND_CS_RGB_SCENE);
 
-    dt_gui_presets_update_format(_("scene-referred default"), self->op,
+    dt_gui_presets_update_format(BUILTIN_PRESET("scene-referred default"), self->op,
                                  self->version(), FOR_RAW | FOR_MATRIX);
 
-    dt_gui_presets_update_autoapply(_("scene-referred default"),
+    dt_gui_presets_update_autoapply(BUILTIN_PRESET("scene-referred default"),
                                     self->op, self->version(), TRUE);
   }
 }
@@ -4193,7 +4193,7 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, dt_i
   if(g->active_button != DT_FILMIC_GUI_BUTTON_LAST)
   {
 
-    if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+    if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
     {
       // double click resets view
       if(g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)
@@ -4208,7 +4208,7 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, dt_i
         return FALSE;
       }
     }
-    else if(event->button == 1)
+    else if(event->button == GDK_BUTTON_PRIMARY)
     {
       // simple left click cycles through modes in positive direction
       if(g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)
@@ -4237,7 +4237,7 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, dt_i
         return FALSE;
       }
     }
-    else if(event->button == 3)
+    else if(event->button == GDK_BUTTON_SECONDARY)
     {
       // simple right click cycles through modes in negative direction
       if(g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)

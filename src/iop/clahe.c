@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -296,14 +296,6 @@ void init(dt_iop_module_t *self)
   self->params_size = sizeof(dt_iop_rlce_params_t);
   self->gui_data = NULL;
   *((dt_iop_rlce_params_t *)self->default_params) = (dt_iop_rlce_params_t){ 64, 1.25 };
-}
-
-void cleanup(dt_iop_module_t *self)
-{
-  free(self->params);
-  self->params = NULL;
-  free(self->default_params);
-  self->default_params = NULL;
 }
 
 void gui_init(dt_iop_module_t *self)

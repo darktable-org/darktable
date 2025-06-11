@@ -19,7 +19,7 @@
 #pragma once
 
 #include <cinttypes>
-#include <ciso646>
+#include <version>
 #include <memory>
 
 #include <OpenEXR/ImfChannelList.h>

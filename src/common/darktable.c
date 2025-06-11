@@ -52,6 +52,7 @@
 #include "common/resource_limits.h"
 #include "common/undo.h"
 #include "common/gimp.h"
+#include "common/pfm.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/crawler.h"
@@ -601,34 +602,14 @@ void dt_dump_pfm_file(
      (bpp != 16) ? "M" : "C",
      (bpp==2) ? "ppm" : "pfm");
 
-  if((width<1) || (height<1) || !data)
+
+  if((width < 1) || (height < 1) || !data)
     goto finalize;
 
   fullname = g_build_filename(path, fname, NULL);
-
-  FILE *f = g_fopen(fullname, "wb");
-  if(f == NULL)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "%20s can't write file '%s' in wb mode", head, fullname);
-    goto finalize;
-  }
-
-  if(bpp==2)
-    fprintf(f, "P5\n%d %d\n", width, height);
-  else
-    fprintf(f, "P%s\n%d %d\n-1.0\n", (bpp != 16) ? "f" : "F", width, height);
-
-  for(int row = height - 1; row >= 0; row--)
-  {
-    for(int col = 0; col < width; col++)
-    {
-      const size_t blk = ((size_t)row * width + col) * bpp;
-      fwrite(data + blk, (bpp==16) ? 12 : bpp, 1, f);
-    }
-  }
+  dt_write_pfm(fullname, width, height, data, bpp);
 
   dt_print(DT_DEBUG_ALWAYS, "%-20s %s,  %dx%d, bpp=%d", head, fullname, width, height, bpp);
-  fclose(f);
   written += 1;
 
 finalize:
@@ -755,6 +736,7 @@ static char *_get_version_string(void)
                                        STR(LUA_API_VERSION_MINOR) "."
                                        STR(LUA_API_VERSION_PATCH) "\n";
 #endif
+
 char *version = g_strdup_printf(
                "darktable %s\n"
                "Copyright (C) 2012-%s Johannes Hanika and other contributors.\n\n"
@@ -788,7 +770,7 @@ char *version = g_strdup_printf(
 #ifdef HAVE_OPENCL
                "  OpenCL                 -> ENABLED\n"
 #else
-               "  OpenCL                 -> DISABLED\n"
+               "  OpenCL                 -> DISABLED - GPU acceleration is NOT available\n"
 #endif
 
 #ifdef USE_LUA
@@ -806,7 +788,13 @@ char *version = g_strdup_printf(
 #ifdef HAVE_GPHOTO2
                "  gPhoto2                -> ENABLED\n"
 #else
-               "  gPhoto2                -> DISABLED\n"
+               "  gPhoto2                -> DISABLED - tethering is NOT available\n"
+#endif
+
+#ifdef HAVE_MAP
+               "  OSMGpsMap              -> ENABLED  - map view is available\n"
+#else
+               "  OSMGpsMap              -> DISABLED - map view is NOT available\n"
 #endif
 
 #ifdef HAVE_GMIC
@@ -1198,8 +1186,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                    "[dt_init --threads] requested %d ompthreads restricted to %d",
             desired, possible);
         dt_print(DT_DEBUG_ALWAYS,
-                 "[dt_init --threads] using %d threads for openmp parallel sections",
-          darktable.num_openmp_threads);
+                 "[dt_init --threads] using %d threads of %d for openmp parallel sections %s",
+          darktable.num_openmp_threads, (int)dt_get_num_procs(), omp_get_dynamic() ? "(dynamic)" : "(static)");
         k++;
         argv[k-1] = NULL;
         argv[k] = NULL;
@@ -1371,7 +1359,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       darktable.tmp_directory = g_dir_make_tmp("darktable_XXXXXX", NULL);
     dt_print(DT_DEBUG_ALWAYS,
              "[init] darktable dump directory is '%s'",
-             (darktable.tmp_directory) ?: "NOT AVAILABLE");
+             darktable.tmp_directory ? darktable.tmp_directory : "NOT AVAILABLE");
   }
 
   // Set directories as requested or default.
@@ -1461,6 +1449,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
 #ifdef _OPENMP
   omp_set_num_threads(darktable.num_openmp_threads);
+  omp_set_dynamic(FALSE);
 #endif
 
 #ifdef USE_LUA
@@ -1590,7 +1579,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       if(connection) g_object_unref(connection);
     }
     darktable_splash_screen_destroy(); // dismiss splash screen before potentially showing error dialog
-    if(!image_loaded_elsewhere) dt_database_show_error(darktable.db);
+    if(!image_loaded_elsewhere && init_gui) dt_database_show_error(darktable.db);
 
     dt_print(DT_DEBUG_ALWAYS, "ERROR: can't acquire database lock, aborting.");
     return 1;
@@ -1600,9 +1589,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_upgrade_maker_model(darktable.db);
 
   // init darktable tags table
+  darktable_splash_screen_set_progress(_("setting up tags table"));
   dt_set_darktable_tags();
 
   // Initialize the signal system
+  darktable_splash_screen_set_progress(_("initializing signals and control"));
   darktable.signals = dt_control_signal_init();
 
   dt_control_init(init_gui);
@@ -1619,8 +1610,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // import default styles from shared directory
   gchar *styledir = g_build_filename(sharedir, "darktable/styles", NULL);
   if(styledir)
+  {
+    dt_gui_process_events();
+    darktable_splash_screen_set_progress(_("importing default styles"));
     dt_import_default_styles(styledir);
-  g_free(styledir);
+    g_free(styledir);
+  }
 
   // we initialize grouping early because it's needed for collection init
   // idem for folder reachability
@@ -1856,8 +1851,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // after the following Lua startup call, we can no longer use dt_gui_process_events() or we hang;
   // this also means no more calls to darktable_splash_screen_set_progress()
   dt_lua_init(darktable.lua_state.state, lua_command);
-#else
-  darktable_splash_screen_set_progress(_(""));
 #endif
 
   if(init_gui)

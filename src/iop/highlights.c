@@ -27,6 +27,7 @@
 #include "common/imagebuf.h"
 #include "common/fast_guided_filter.h"
 #include "common/distance_transform.h"
+#include "common/interpolation.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -37,7 +38,6 @@
 #include "develop/masks.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -330,7 +330,13 @@ void distort_mask(dt_iop_module_t *self,
                   const dt_iop_roi_t *const roi_in,
                   const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
+  if(roi_out->scale != roi_in->scale)
+  {
+    const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+    dt_interpolation_resample_roi_1c(itor, out, roi_out, in, roi_in);
+  }
+  else
+    dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
 }
 
 void modify_roi_out(dt_iop_module_t *self,
@@ -528,14 +534,30 @@ int process_cl(dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
   dt_iop_highlights_data_t *d = piece->data;
   dt_iop_highlights_gui_data_t *g = self->gui_data;
   dt_iop_highlights_global_data_t *gd = self->global_data;
 
-  const uint32_t filters = piece->pipe->dsc.filters;
-  const int devid = piece->pipe->devid;
+  const uint32_t filters = pipe->dsc.filters;
+  const int devid = pipe->devid;
 
-  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+  if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
+  {
+    if(!filters)
+      return dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
+    else
+    {
+      size_t iorigin[] = { roi_out->x, roi_out->y, 0 };
+      size_t oorigin[] = { 0, 0, 0 };
+      size_t region[] = { roi_out->width, roi_out->height, 1 };
+      return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, iorigin, oorigin, region);
+    }
+  }
+
+  const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const dt_iop_highlights_mode_t dmode =  d->mode;
+
   gboolean announce = dt_iop_piece_is_raster_mask_used(piece, BLEND_RASTER_ID);
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
@@ -546,11 +568,11 @@ int process_cl(dt_iop_module_t *self,
   {
     if(g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF)
     {
-      piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+      pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
       if(g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED)
       {
         const float mclip = d->clip * highlights_clip_magics[d->mode];
-        const float *c = piece->pipe->dsc.temperature.coeffs;
+        const float *c = pipe->dsc.temperature.coeffs;
         float clips[4] = { mclip * (c[RED]   <= 0.0f ? 1.0f : c[RED]),
                            mclip * (c[GREEN] <= 0.0f ? 1.0f : c[GREEN]),
                            mclip * (c[BLUE]  <= 0.0f ? 1.0f : c[BLUE]),
@@ -559,7 +581,7 @@ int process_cl(dt_iop_module_t *self,
         dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
         if(dev_clips == NULL) goto finish;
 
-        dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
+        dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(pipe->dsc.xtrans), pipe->dsc.xtrans);
         if(dev_xtrans == NULL) goto finish;
 
         err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_false_color, roi_out->width, roi_out->height,
@@ -583,13 +605,13 @@ int process_cl(dt_iop_module_t *self,
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_4f_clip, roi_in->width, roi_in->height,
       CLARG(dev_in), CLARG(dev_out),
       CLARG(roi_in->width), CLARG(roi_in->height),
-      CLARG(d->mode), CLARG(clip));
+      CLARG(dmode), CLARG(clip));
   }
-  else if(d->mode == DT_IOP_HIGHLIGHTS_OPPOSED)
+  else if(dmode == DT_IOP_HIGHLIGHTS_OPPOSED)
   {
     err = process_opposed_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
   }
-  else if(d->mode == DT_IOP_HIGHLIGHTS_LCH && filters != 9u)
+  else if(dmode == DT_IOP_HIGHLIGHTS_LCH && filters != 9u)
   {
     // bayer sensor raws with LCH mode
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_1f_lch_bayer, roi_in->width, roi_in->height,
@@ -598,7 +620,7 @@ int process_cl(dt_iop_module_t *self,
       CLARG(clip), CLARG(roi_out->x), CLARG(roi_out->y),
       CLARG(filters));
   }
-  else if(d->mode == DT_IOP_HIGHLIGHTS_LCH && filters == 9u)
+  else if(dmode == DT_IOP_HIGHLIGHTS_LCH && filters == 9u)
   {
     // xtrans sensor raws with LCH mode
     int blocksizex, blocksizey;
@@ -616,8 +638,7 @@ int process_cl(dt_iop_module_t *self,
     else
       blocksizex = blocksizey = 1;
 
-    dev_xtrans
-        = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
+    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(pipe->dsc.xtrans), pipe->dsc.xtrans);
     if(dev_xtrans == NULL) goto finish;
 
     size_t sizes[] = { ROUNDUP(roi_in->width, blocksizex), ROUNDUP(roi_in->height, blocksizey), 1 };
@@ -630,15 +651,15 @@ int process_cl(dt_iop_module_t *self,
       CLLOCAL(sizeof(float) * (blocksizex + 4) * (blocksizey + 4)));
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_highlights_1f_lch_xtrans, sizes, local);
   }
-  else if(d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN)
+  else if(dmode == DT_IOP_HIGHLIGHTS_LAPLACIAN)
   {
     const float clipper = d->clip * highlights_clip_magics[DT_IOP_HIGHLIGHTS_LAPLACIAN];
-    const dt_aligned_pixel_t clips = { clipper * piece->pipe->dsc.processed_maximum[0],
-                                       clipper * piece->pipe->dsc.processed_maximum[1],
-                                       clipper * piece->pipe->dsc.processed_maximum[2], clip };
+    const dt_aligned_pixel_t clips = { clipper * pipe->dsc.processed_maximum[0],
+                                       clipper * pipe->dsc.processed_maximum[1],
+                                       clipper * pipe->dsc.processed_maximum[2], clip };
     err = process_laplacian_bayer_cl(self, piece, dev_in, dev_out, roi_in, roi_out, clips);
   }
-  else // (d->mode == DT_IOP_HIGHLIGHTS_CLIP)
+  else // (dmode == DT_IOP_HIGHLIGHTS_CLIP)
   {
     const dt_dev_chroma_t *chr = &self->dev->chroma;
     dt_aligned_pixel_t clips = { clip, clip, clip, clip};
@@ -648,13 +669,17 @@ int process_cl(dt_iop_module_t *self,
     dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
     if(dev_clips == NULL) goto finish;
 
-    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
+    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(pipe->dsc.xtrans), pipe->dsc.xtrans);
     if(dev_xtrans == NULL) goto finish;
+
     // raw images with clip mode (both bayer and xtrans)
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_1f_clip, roi_in->width, roi_in->height,
+    const int dy = roi_out->y - roi_in->y;
+    const int dx = roi_out->x - roi_in->x;
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_1f_clip, roi_out->width, roi_out->height,
       CLARG(dev_in), CLARG(dev_out),
       CLARG(roi_in->width), CLARG(roi_in->height),
-      CLARG(dev_clips), CLARG(roi_out->x), CLARG(roi_out->y),
+      CLARG(roi_out->width), CLARG(roi_out->height),
+      CLARG(dev_clips), CLARG(dx), CLARG(dy),
       CLARG(filters), CLARG(dev_xtrans));
   }
   if(err != CL_SUCCESS) goto finish;
@@ -680,7 +705,7 @@ int process_cl(dt_iop_module_t *self,
     // The guided laplacian and opposed are the modes that keeps signal scene-referred and don't clip highlights to 1
     // For the other modes, we need to notify the pipeline that white point has changed
     const float m = dt_iop_get_processed_maximum(piece);
-    for_three_channels(k) piece->pipe->dsc.processed_maximum[k] = m;
+    for_three_channels(k) pipe->dsc.processed_maximum[k] = m;
   }
 
   finish:
@@ -807,13 +832,26 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  const uint32_t filters = piece->pipe->dsc.filters;
+  dt_dev_pixelpipe_t *pipe = piece->pipe;
+  const uint32_t filters = pipe->dsc.filters;
   dt_iop_highlights_data_t *d = piece->data;
   dt_iop_highlights_gui_data_t *g = self->gui_data;
 
-  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-  const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
-  const gboolean scaled = filters == 0 && d->mode != DT_IOP_HIGHLIGHTS_CLIP;
+  if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
+  {
+    if(!filters)
+      dt_iop_clip_and_zoom_roi((float *)ovoid, (float *)ivoid, roi_out, roi_in);
+    else
+      dt_iop_copy_image_roi((float *)ovoid, (float *)ivoid, 1, roi_in, roi_out);
+    return;
+  }
+
+  const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean fastmode = pipe->type & DT_DEV_PIXELPIPE_FAST;
+  const dt_iop_highlights_mode_t dmode = fastmode && (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)
+                                        ? DT_IOP_HIGHLIGHTS_OPPOSED
+                                        : d->mode;
+  const gboolean scaled = filters == 0 && dmode != DT_IOP_HIGHLIGHTS_CLIP;
 
   float *out = scaled ? dt_alloc_align_float((size_t)roi_in->width * roi_in->height * 4) : NULL;
   const gboolean announce = dt_iop_piece_is_raster_mask_used(piece, BLEND_RASTER_ID);
@@ -822,7 +860,7 @@ void process(dt_iop_module_t *self,
   {
     dt_iop_clip_and_zoom_roi((float *)ovoid, (float *)ivoid, roi_out, roi_in);
     dt_print_pipe(DT_DEBUG_ALWAYS,
-          "bypass highlights", piece->pipe, self, DT_DEVICE_CPU, roi_in, roi_out,
+          "bypass highlights", pipe, self, DT_DEVICE_CPU, roi_in, roi_out,
           "can't allocate temp buffer");
     dt_iop_piece_clear_raster(piece, NULL);
     return;
@@ -832,7 +870,7 @@ void process(dt_iop_module_t *self,
   {
     if(g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF)
     {
-      piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+      pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
       if(g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED)
       {
         if(scaled)
@@ -852,9 +890,9 @@ void process(dt_iop_module_t *self,
 
   /* While rendering thumnbnails we look for an acceptable lower quality */
   gboolean high_quality = TRUE;
-  if(piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL)
+  if(pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL)
   {
-    const dt_mipmap_size_t level = dt_mipmap_cache_get_matching_size(piece->pipe->final_width, piece->pipe->final_height);
+    const dt_mipmap_size_t level = dt_mipmap_cache_get_matching_size(pipe->final_width, pipe->final_height);
     const char *min = dt_conf_get_string_const("plugins/lighttable/thumbnail_hq_min_level");
     const dt_mipmap_size_t min_s = dt_mipmap_cache_get_min_mip_from_pref(min);
     high_quality = (level >= min_s);
@@ -864,12 +902,11 @@ void process(dt_iop_module_t *self,
 
   if(filters == 0)
   {
-    if(d->mode == DT_IOP_HIGHLIGHTS_CLIP)
+    if(dmode == DT_IOP_HIGHLIGHTS_CLIP)
     {
       process_clip(self, piece, ivoid, ovoid, roi_in, roi_out, clip);
       const float m = dt_iop_get_processed_minimum(piece);
-      for_three_channels(k)
-        piece->pipe->dsc.processed_maximum[k] = m;
+      for_three_channels(k) pipe->dsc.processed_maximum[k] = m;
     }
     else
     {
@@ -885,20 +922,18 @@ void process(dt_iop_module_t *self,
     return;
   }
 
-  const dt_iop_highlights_mode_t dmode = fastmode && (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)
-                                          ? DT_IOP_HIGHLIGHTS_OPPOSED : d->mode;
   switch(dmode)
   {
     case DT_IOP_HIGHLIGHTS_INPAINT: // a1ex's (magiclantern) idea of color inpainting:
     {
       const float clipper = d->clip * highlights_clip_magics[DT_IOP_HIGHLIGHTS_INPAINT];
-      const float clips[4] = { clipper * piece->pipe->dsc.processed_maximum[0],
-                               clipper * piece->pipe->dsc.processed_maximum[1],
-                               clipper * piece->pipe->dsc.processed_maximum[2], clip };
+      const float clips[4] = { clipper * pipe->dsc.processed_maximum[0],
+                               clipper * pipe->dsc.processed_maximum[1],
+                               clipper * pipe->dsc.processed_maximum[2], clip };
 
       if(filters == 9u)
       {
-        const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
+        const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])pipe->dsc.xtrans;
         DT_OMP_FOR()
         for(int j = 0; j < roi_out->height; j++)
         {
@@ -961,9 +996,9 @@ void process(dt_iop_module_t *self,
     case DT_IOP_HIGHLIGHTS_LAPLACIAN:
     {
       const float clipper = d->clip * highlights_clip_magics[DT_IOP_HIGHLIGHTS_LAPLACIAN];
-      const dt_aligned_pixel_t clips = { clipper * piece->pipe->dsc.processed_maximum[0],
-                                         clipper * piece->pipe->dsc.processed_maximum[1],
-                                         clipper * piece->pipe->dsc.processed_maximum[2], clip };
+      const dt_aligned_pixel_t clips = { clipper * pipe->dsc.processed_maximum[0],
+                                         clipper * pipe->dsc.processed_maximum[1],
+                                         clipper * pipe->dsc.processed_maximum[2], clip };
       process_laplacian_bayer(self, piece, ivoid, ovoid, roi_in, roi_out, clips);
       break;
     }
@@ -980,12 +1015,12 @@ void process(dt_iop_module_t *self,
   else      dt_iop_piece_clear_raster(piece, NULL);
 
   // update processed maximum
-  if((d->mode != DT_IOP_HIGHLIGHTS_LAPLACIAN) && (d->mode != DT_IOP_HIGHLIGHTS_SEGMENTS) && (d->mode != DT_IOP_HIGHLIGHTS_OPPOSED))
+  if((dmode != DT_IOP_HIGHLIGHTS_LAPLACIAN) && (dmode != DT_IOP_HIGHLIGHTS_SEGMENTS) && (dmode != DT_IOP_HIGHLIGHTS_OPPOSED))
   {
     // The guided laplacian, inpaint opposed and segmentation modes keep signal scene-referred and don't clip highlights to 1
     // For the other modes, we need to notify the pipeline that white point has changed
     const float m = dt_iop_get_processed_maximum(piece);
-    for_three_channels(k) piece->pipe->dsc.processed_maximum[k] = m;
+    for_three_channels(k) pipe->dsc.processed_maximum[k] = m;
   }
 }
 

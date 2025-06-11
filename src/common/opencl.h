@@ -421,13 +421,6 @@ int dt_opencl_copy_device_to_host(const int devid,
                                   const int height,
                                   const int bpp);
 
-int dt_opencl_read_host_from_device(const int devid,
-                                    void *host,
-                                    void *device,
-                                    const int width,
-                                    const int height,
-                                    const int bpp);
-
 int dt_opencl_read_host_from_device_rowpitch(const int devid,
                                              void *host,
                                              void *device,

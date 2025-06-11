@@ -305,13 +305,13 @@ int button_pressed(dt_iop_module_t *self,
   dt_iop_rgblevels_gui_data_t *g = self->gui_data;
   if(g && g->draw_selected_region && self->enabled)
   {
-    if((which == 3) || (which == 1 && type == GDK_2BUTTON_PRESS))
+    if((which == GDK_BUTTON_SECONDARY) || (which == GDK_BUTTON_PRIMARY && type == GDK_2BUTTON_PRESS))
     {
       _turn_selregion_picker_off(self);
 
       handled = 1;
     }
-    else if(which == 1)
+    else if(which == GDK_BUTTON_PRIMARY)
     {
       float wd, ht;
       dt_dev_get_preview_size(self->dev, &wd, &ht);
@@ -603,7 +603,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
                                             dt_iop_module_t *self)
 {
   // set active point
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     if(darktable.develop->gui_module != self) dt_iop_request_focus(self);
 
@@ -641,7 +641,7 @@ static gboolean _area_button_release_callback(GtkWidget *widget,
                                               GdkEventButton *event,
                                               dt_iop_module_t *self)
 {
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_rgblevels_gui_data_t *g = self->gui_data;
     g->dragging = 0;

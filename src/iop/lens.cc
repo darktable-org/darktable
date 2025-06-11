@@ -1082,8 +1082,7 @@ static void _process_lf(dt_iop_module_t *self,
 
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
-  const struct dt_interpolation *const interpolation =
-    dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+  const dt_interpolation_t *const interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
   if(d->inverse)
   {
@@ -1126,9 +1125,9 @@ static void _process_lf(dt_iop_module_t *self,
             const float pi1 = fmaxf(fminf(bufptr[c * 2 + 1] - roi_in->y,
                                           roi_in->height - 1.0f),
                                     0.0f);
-            out[c] = dt_interpolation_compute_sample
-              (interpolation, inptr, pi0, pi1, roi_in->width,
-               roi_in->height, ch, ch_width);
+            out[c] = dt_interpolation_compute_sample(interpolation, inptr,
+                                                     pi0, pi1,
+                                                     roi_in->width, roi_in->height, ch, ch_width);
           }
 
           if(mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
@@ -1149,9 +1148,9 @@ static void _process_lf(dt_iop_module_t *self,
             const float pi1 = fmaxf(fminf(bufptr[3] - roi_in->y,
                                           roi_in->height - 1.0f),
                                     0.0f);
-            out[3] = dt_interpolation_compute_sample
-              (interpolation, inptr, pi0, pi1, roi_in->width,
-               roi_in->height, ch, ch_width);
+            out[3] = dt_interpolation_compute_sample(interpolation, inptr,
+                                                     pi0, pi1,
+                                                     roi_in->width, roi_in->height, ch, ch_width);
           }
         }
       }
@@ -1236,11 +1235,9 @@ static void _process_lf(dt_iop_module_t *self,
                                           roi_in->width - 1.0f), 0.0f);
             const float pi1 = fmaxf(fminf(buf2ptr[c * 2 + 1] - roi_in->y,
                                           roi_in->height - 1.0f), 0.0f);
-            out[c] = dt_interpolation_compute_sample(interpolation,
-                                                     bufptr, pi0, pi1,
-                                                     roi_in->width,
-                                                     roi_in->height, ch,
-                                                     ch_width);
+            out[c] = dt_interpolation_compute_sample(interpolation, bufptr,
+                                                     pi0, pi1,
+                                                     roi_in->width, roi_in->height, ch, ch_width);
           }
 
           if(mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
@@ -1332,8 +1329,7 @@ static int _process_cl_lf(dt_iop_module_t *self,
 
   int modflags;
   int ldkernel = -1;
-  const struct dt_interpolation *interpolation =
-    dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f)
     return dt_opencl_enqueue_copy_image(devid, dev_in, dev_out,
@@ -1662,8 +1658,7 @@ static void _distort_mask_lf(dt_iop_module_t *self,
     return;
   }
 
-  const struct dt_interpolation *const interpolation =
-    dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+  const dt_interpolation_t *const interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
   // acquire temp memory for distorted pixel coords
   const size_t bufsize = (size_t)roi_out->width * 2 * 3;
@@ -1690,9 +1685,9 @@ static void _distort_mask_lf(dt_iop_module_t *self,
       // take green channel distortion also for alpha channel
       const float pi0 = bufptr[2] - roi_in->x;
       const float pi1 = bufptr[3] - roi_in->y;
-      *_out = MIN(1.0f, dt_interpolation_compute_sample(interpolation, in, pi0, pi1,
-                                              roi_in->width, roi_in->height, 1,
-                                              roi_in->width));
+      *_out = CLIP(dt_interpolation_compute_sample(interpolation, in,
+                                                   pi0, pi1,
+                                                   roi_in->width, roi_in->height, 1, roi_in->width));
     }
   }
   dt_free_align(buf);
@@ -1792,8 +1787,7 @@ DT_OMP_PRAGMA(barrier)
     if(!isfinite(yM) || !(1 <= yM && yM < orig_h))
       yM = orig_h;
 
-    const struct dt_interpolation *interpolation =
-      dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+    const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
     roi_in->x = MAX(0.0f, xm - interpolation->width);
     roi_in->y = MAX(0.0f, ym - interpolation->width);
     roi_in->width = MIN(orig_w - roi_in->x,  xM - roi_in->x + interpolation->width);
@@ -2719,8 +2713,7 @@ static void _distort_mask_md(dt_iop_module_t *self,
   const float limw = roi_in->width - 1;
   const float limh = roi_in->height - 1;
 
-  const struct dt_interpolation *interpolation =
-    dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
   DT_OMP_FOR(collapse(2))
   for(int y = 0; y < roi_out->height; y++)
@@ -2734,11 +2727,9 @@ static void _distort_mask_md(dt_iop_module_t *self,
                                    d->nc, r*sqrtf(cx*cx + cy*cy));
       const float xs = CLAMP(dr*cx + w2 - roi_in->x, 0.0f, limw);
       const float ys = CLAMP(dr*cy + h2 - roi_in->y, 0.0f, limh);
-      out[y * roi_out->width + x] =
-        MIN(1.0f, dt_interpolation_compute_sample(interpolation, in, xs, ys,
-                                        roi_in->width,
-                                        roi_in->height,
-                                        1, roi_in->width));
+      out[y * roi_out->width + x] = CLIP(dt_interpolation_compute_sample(interpolation, in,
+                                                                         xs, ys,
+                                                                         roi_in->width, roi_in->height, 1, roi_in->width));
     }
   }
 }
@@ -2762,7 +2753,7 @@ static void _process_md(dt_iop_module_t *self,
   const float h2 = 0.5f * roi_in->scale * piece->buf_in.height;
   const float r = 1.0f / sqrtf(w2*w2 + h2*h2);
 
-  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
   const gboolean pass_mode = piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
 
   // Allocate temporary storage if we haven't got that from manual vignette
@@ -2819,9 +2810,9 @@ static void _process_md(dt_iop_module_t *self,
           _interpolate_linear_spline(d->knots_dist, d->cor_rgb[plane], d->nc, radius);
         const float xs = CLAMP(dr*cx + w2 - roi_in->x, 0.0f, limw);
         const float ys = CLAMP(dr*cy + h2 - roi_in->y, 0.0f, limh);
-        out[odx+c] = dt_interpolation_compute_sample
-          (interpolation, buf + c, xs, ys, roi_in->width,
-           roi_in->height, 4, 4*roi_in->width);
+        out[odx+c] = dt_interpolation_compute_sample(interpolation, buf + c,
+                                                     xs, ys,
+                                                     roi_in->width, roi_in->height, 4, 4*roi_in->width);
       }
     }
   }
@@ -2856,7 +2847,7 @@ static int _process_cl_md(dt_iop_module_t *self,
   const float r = 1.0f / sqrtf(w2*w2 + h2*h2);
   const int knots = d->nc;
 
-  const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+  const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
   const int itor_width = itor->width;
   const int pass_mode = piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
 
@@ -2983,8 +2974,7 @@ static void _modify_roi_in_md(dt_iop_module_t *self,
     }
   }
 
-  const struct dt_interpolation *interpolation =
-    dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+  const dt_interpolation_t *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
   const float iw1 = interpolation->width;
   const float iw2 = 2.0f * iw1;

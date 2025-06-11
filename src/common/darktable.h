@@ -706,8 +706,7 @@ static inline size_t dt_get_num_threads()
 static inline size_t dt_get_num_procs()
 {
 #ifdef _OPENMP
-  // we can safely assume omp_get_num_procs is > 0
-  return (size_t)omp_get_num_procs();
+  return (size_t)MAX(1, omp_get_num_procs());
 #else
   return 1;
 #endif
@@ -958,7 +957,7 @@ static inline void dt_unreachable_codepath_with_caller(const char *description,
  * NQ_ should be used to strip any context from the string.
  */
 #undef NC_
-#define NC_(Context, String) (Context "|" String)
+#define NC_(Context, String) Context "|" String
 
 static inline const gchar *NQ_(const gchar *String)
 {

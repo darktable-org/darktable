@@ -2443,11 +2443,11 @@
     <longdescription>show gray loading screen when navigating between images in the darkroom\ndisable to just show a toast message</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>darkroom/ui/develop_mask</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>show mask in developer mode</shortdescription>
-    <longdescription>if switched on, the mask visualize button will show the 'pure mask' instead of mask and image content.</longdescription>
+    <name>darkroom/ui/develop_mask_mix</name>
+    <type>float</type>
+    <default>0.3</default>
+    <shortdescription>show mask in mixed mode</shortdescription>
+    <longdescription>the mask visualize button will show the mask mixed with image content. 0 shows only content, 1 only the mask. Choose any value between.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="general">
     <name>plugins/lighttable/export/pixel_interpolator_warp</name>
@@ -2854,6 +2854,13 @@
     <default>auto</default>
     <shortdescription>password storage backend to use</shortdescription>
     <longdescription>the storage backend for password storage: auto, none, libsecret, kwallet, apple_keychain, windows_credentials</longdescription>
+  </dtconfig>
+  <dtconfig prefs="security" section="other">
+    <name>plugins/imageio/storage/export/auto_login</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>auto login to storage server</shortdescription>
+    <longdescription>automatically login to the configured storage server. this requires that a password storage backend is set.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/export/icctype</name>
@@ -3499,6 +3506,13 @@
     <default>$(home)</default>
     <shortdescription>LUT 3D root folder</shortdescription>
     <longdescription>this folder (and sub-folders) contains LUT files used by LUT 3D module. (restart required)</longdescription>
+  </dtconfig>
+  <dtconfig prefs="processing" section="general" restart="true">
+    <name>plugins/darkroom/segments/def_path</name>
+    <type>dir</type>
+    <default>$(home)</default>
+    <shortdescription>raster mask files root folder</shortdescription>
+    <longdescription>this folder (and sub-folders) contains PFM files used by the raster mask import module. (restart required)</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="general">
     <name>plugins/darkroom/workflow</name>

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2024 darktable developers.
+    Copyright (C) 2016-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -151,7 +151,7 @@ void dt_iop_clip_and_zoom(float *out,
                           const dt_iop_roi_t *const roi_out,
                           const dt_iop_roi_t *const roi_in)
 {
-  const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   dt_interpolation_resample(itor, out, roi_out, in, roi_in);
 }
 
@@ -162,7 +162,7 @@ void dt_iop_clip_and_zoom_roi(float *out,
                               const dt_iop_roi_t *const roi_out,
                               const dt_iop_roi_t *const roi_in)
 {
-  const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   dt_interpolation_resample_roi(itor, out, roi_out, in, roi_in);
 }
 
@@ -175,7 +175,7 @@ int dt_iop_clip_and_zoom_cl(int devid,
                             const dt_iop_roi_t *const roi_out,
                             const dt_iop_roi_t *const roi_in)
 {
-  const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   return dt_interpolation_resample_cl(itor, devid, dev_out, roi_out, dev_in, roi_in);
 }
 
@@ -187,7 +187,7 @@ int dt_iop_clip_and_zoom_roi_cl(int devid,
                                 const dt_iop_roi_t *const roi_out,
                                 const dt_iop_roi_t *const roi_in)
 {
-  const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const dt_interpolation_t *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   cl_int err = dt_interpolation_resample_roi_cl(itor, devid, dev_out,
                                                 roi_out, dev_in, roi_in);
   if(err == CL_INVALID_WORK_GROUP_SIZE)
@@ -198,8 +198,7 @@ int dt_iop_clip_and_zoom_roi_cl(int devid,
     float *out = dt_alloc_align_float((size_t)roi_out->width * roi_out->height * 4);
     if(out && in)
     {
-      err = dt_opencl_read_host_from_device
-            (devid, in, dev_in, roi_in->width, roi_in->height, 4 * sizeof(float));
+      err = dt_opencl_copy_device_to_host(devid, in, dev_in, roi_in->width, roi_in->height, 4 * sizeof(float));
       if(err == CL_SUCCESS)
       {
         dt_iop_clip_and_zoom_roi(out, in, roi_out, roi_in);

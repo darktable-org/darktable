@@ -673,7 +673,7 @@ int button_pressed(dt_view_t *self,
   dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
   dt_capture_t *lib = self->data;
 
-  if(which == 1 && cam->is_live_viewing && cam->live_view_zoom)
+  if(which == GDK_BUTTON_PRIMARY && cam->is_live_viewing && cam->live_view_zoom)
   {
     cam->live_view_pan = TRUE;
     lib->live_view_zoom_cursor_x = x;
@@ -681,7 +681,7 @@ int button_pressed(dt_view_t *self,
     dt_control_change_cursor(GDK_HAND1);
     return 1;
   }
-  else if((which == 2 || which == 3) && cam->is_live_viewing) // zoom the live view
+  else if((which == GDK_BUTTON_MIDDLE || which == GDK_BUTTON_SECONDARY) && cam->is_live_viewing) // zoom the live view
   {
     cam->live_view_zoom = !cam->live_view_zoom;
     if(cam->live_view_zoom == TRUE)
@@ -700,7 +700,7 @@ int button_released(dt_view_t *self,
                     uint32_t state)
 {
   dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
-  if(which == 1)
+  if(which == GDK_BUTTON_PRIMARY)
   {
     cam->live_view_pan = FALSE;
     dt_control_change_cursor(GDK_LEFT_PTR);

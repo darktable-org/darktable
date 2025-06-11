@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1604,6 +1604,7 @@ void init_presets(dt_lib_module_t *self)
   AM("lens");
   AM("liquify");
   AM("nlmeans");
+  AM("rasterfile");
   AM("rawdenoise");
   AM("retouch");
   AM("rotatepixels");
@@ -1705,6 +1706,7 @@ void init_presets(dt_lib_module_t *self)
   AM("lens");
   AM("retouch");
   AM("liquify");
+  AM("rasterfile");
   AM("sharpen");
   AM("nlmeans");
 
@@ -1756,6 +1758,7 @@ void init_presets(dt_lib_module_t *self)
   AM("lens");
   AM("retouch");
   AM("liquify");
+  AM("rasterfile");
   AM("sharpen");
   AM("nlmeans");
 
@@ -1780,9 +1783,16 @@ void init_presets(dt_lib_module_t *self)
   dt_lib_presets_add(_("search only"),
                      self->plugin_name, self->version(), tx, strlen(tx), TRUE, 0);
 
-  // this is a special preset for all newly deprecated modules
-  // so users still have a chance to access them until next release (with warning messages)
-  // this modules are deprecated in 3.4 and should be removed from this group in 3.8 (1 year later)
+  // There is no need for the deprecated modules group now, as there have been
+  // no new module deprecations for a long time. The group is not for access
+  // to all once deprecated modules, it should only contain deprecated modules
+  // temporarily (planned for 1 year) to prepare users of these modules for
+  // the need to learn the replacement modules.
+  // We are not removing the following code, just commenting it out for possible
+  // updating if we decide to deprecate any modules again in the future.
+#if 0
+  // This is a special preset for all newly deprecated modules, so users still
+  // have a chance to access them until next release (with warning messages)
   SNQA();
   SMG(C_("modulegroup", "deprecated"), "basic");
   // these modules are deprecated in 4.4 and should be removed in 4.8 (1 year later)
@@ -1791,6 +1801,7 @@ void init_presets(dt_lib_module_t *self)
 
   dt_lib_presets_add(_(DEPRECATED_PRESET_NAME),
                      self->plugin_name, self->version(), tx, strlen(tx), TRUE, 0);
+#endif
 
   g_free(tx);
 
@@ -2644,7 +2655,7 @@ static gboolean _manage_direct_popup(GtkWidget *widget,
                                      GdkEventButton *event,
                                      dt_lib_module_t *self)
 {
-  if(event->type == GDK_BUTTON_PRESS && event->button == 3)
+  if(event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_SECONDARY)
   {
     dt_lib_modulegroups_group_t *gr = g_object_get_data(G_OBJECT(widget), "group");
     if(!g_strcmp0(gr->name, C_("modulegroup", "deprecated"))) return FALSE;
@@ -2659,7 +2670,7 @@ static gboolean _manage_direct_basic_popup(GtkWidget *widget,
                                            GdkEventButton *event,
                                            dt_lib_module_t *self)
 {
-  if(event->type == GDK_BUTTON_PRESS && event->button == 3)
+  if(event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_SECONDARY)
   {
     _manage_basics_add_popup(widget, self, TRUE);
     return TRUE;
@@ -2673,8 +2684,7 @@ static gboolean _manage_direct_module_popup(GtkWidget *widget,
 {
   dt_action_t *module = g_object_get_data(G_OBJECT(widget), "module");
 
-  if(event->type == GDK_BUTTON_PRESS
-     && event->button == 3)
+  if(event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_SECONDARY)
   {
     int nba = 0; // nb of already present items
     GtkWidget *pop = gtk_menu_new();
@@ -2705,7 +2715,7 @@ static gboolean _manage_direct_active_popup(GtkWidget *widget,
                                             GdkEventButton *event,
                                             dt_lib_module_t *self)
 {
-  if(event->type == GDK_BUTTON_PRESS && event->button == 3)
+  if(event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_SECONDARY)
   {
     dt_lib_modulegroups_t *d = self->data;
     GtkWidget *pop = gtk_menu_new();

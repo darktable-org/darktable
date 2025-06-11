@@ -539,14 +539,14 @@ int mouse_moved(dt_iop_module_t *self,
   }
 
   if(grab == 0
-     || !(darktable.control->button_down && darktable.control->button_down_which == 1))
+     || !(darktable.control->button_down && darktable.control->button_down_which == GDK_BUTTON_PRIMARY))
   {
     grab = _get_grab(pzx * wd - vignette_x, pzy * ht - vignette_y,
                      vignette_w, -vignette_h, vignette_fx,
                     -vignette_fy, zoom_scale);
   }
 
-  if(darktable.control->button_down && darktable.control->button_down_which == 1)
+  if(darktable.control->button_down && darktable.control->button_down_which == GDK_BUTTON_PRIMARY)
   {
     if(grab == 0) // pan the image
     {
@@ -676,7 +676,7 @@ int button_pressed(dt_iop_module_t *self,
                    const uint32_t state,
                    const float zoom_scale)
 {
-  if(which == 1) return 1;
+  if(which == GDK_BUTTON_PRIMARY) return 1;
   return 0;
 }
 
@@ -687,7 +687,7 @@ int button_released(dt_iop_module_t *self,
                     const uint32_t state,
                     const float zoom_scale)
 {
-  if(which == 1) return 1;
+  if(which == GDK_BUTTON_PRIMARY) return 1;
   return 0;
 }
 

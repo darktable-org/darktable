@@ -75,14 +75,16 @@ typedef struct dt_gui_presets_edit_dialog_t
 void dt_gui_presets_init();
 
 /** add or replace a generic (i.e. non-exif specific) preset for this operation. */
-void dt_gui_presets_add_generic(const char *name,
+/** the names _have_ to be marked for translation with _("") otherwise use dt_gui_presets_add_with_blendop */
+#define dt_gui_presets_add_generic(name, ...) dt_gui_presets_add_generic(N##name, __VA_ARGS__)
+void (dt_gui_presets_add_generic)(const char *name,
                                 const dt_dev_operation_t op,
                                 const int32_t version,
                                 const void *params,
                                 const int32_t params_size,
                                 const int32_t enabled,
                                 const dt_develop_blend_colorspace_t blend_cst);
-
+#define BUILTIN_PRESET(name) BUILTIN_PREFIX name
 /** same as add_generic but also supply blendop parameters for the presets. */
 void dt_gui_presets_add_with_blendop(const char *name,
                                      const dt_dev_operation_t op,

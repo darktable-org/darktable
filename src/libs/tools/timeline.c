@@ -1076,7 +1076,7 @@ static gboolean _lib_timeline_button_press_callback(GtkWidget *w, GdkEventButton
 {
   dt_lib_timeline_t *strip = self->data;
 
-  if(e->button == 1)
+  if(e->button == GDK_BUTTON_PRIMARY)
   {
     if(e->type == GDK_BUTTON_PRESS)
     {
@@ -1109,7 +1109,7 @@ static gboolean _lib_timeline_button_press_callback(GtkWidget *w, GdkEventButton
       gtk_widget_queue_draw(strip->timeline);
     }
   }
-  else if(e->button == 3)
+  else if(e->button == GDK_BUTTON_SECONDARY)
   {
     // we remove the last rule if it's a datetime one
     const int nb_rules = dt_conf_get_int("plugins/lighttable/collect/num_rules");

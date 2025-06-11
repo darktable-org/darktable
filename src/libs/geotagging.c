@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2024 darktable developers.
+    Copyright (C) 2012-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/debug.h"
 #include "common/file_location.h"
 #include "common/image_cache.h"
@@ -375,7 +376,7 @@ static void _update_buttons(dt_lib_module_t *self)
                                                  : _("apply geo-location"));
   gtk_widget_set_tooltip_text(d->map.apply_gpx_button,
                               d->offset ? _("apply offset and geo-location to matching images"
-                                            "\ndouble operation: two ctrl-z to undo")
+                                            "\ndouble operation: two ctrl+z to undo")
                                         : _("apply geo-location to matching images"));
   gtk_widget_set_sensitive(d->map.apply_gpx_button, d->map.nb_imgs);
   gtk_widget_set_sensitive(d->map.select_button,
@@ -560,7 +561,7 @@ static void _refresh_display_all_tracks(GtkWidget *widget, dt_lib_module_t *self
 
 static gboolean _click_for_entire_track(GtkEntry *spin, GdkEventButton *event, dt_lib_module_t *self)
 {
-  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
   {
     _refresh_display_all_tracks(NULL, self);
   }
@@ -1756,6 +1757,22 @@ static void _show_milliseconds(dt_lib_geotagging_t *d)
 static void _dt_pref_change_callback(gpointer instance, dt_lib_module_t *self)
 {
   _show_milliseconds(self->data);
+}
+
+void gui_reset(dt_lib_module_t *self)
+{
+  dt_lib_geotagging_t *d = self->data;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->lock_offset), FALSE);
+  _refresh_image_datetime(self);
+
+#ifdef HAVE_MAP
+  if(d->map.view)
+  {
+    gtk_label_set_text(GTK_LABEL(d->map.gpx_file), "");
+    _remove_tracks_from_map(self);
+    gtk_widget_set_visible(d->map.gpx_view, FALSE);
+  }
+#endif
 }
 
 void gui_init(dt_lib_module_t *self)

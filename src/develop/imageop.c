@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -207,6 +207,11 @@ static dt_introspection_field_t *default_get_f(const char *name)
   return NULL;
 }
 
+void dt_iop_default_cleanup(dt_iop_module_t *module)
+{
+  default_cleanup(module);
+}
+
 void dt_iop_default_init(dt_iop_module_t *module)
 {
   size_t param_size = module->so->get_introspection()->size;
@@ -217,6 +222,7 @@ void dt_iop_default_init(dt_iop_module_t *module)
   module->default_enabled = FALSE;
   module->has_trouble = FALSE;
   module->gui_data = NULL;
+  module->data = NULL;
 
   dt_introspection_field_t *i = module->so->get_introspection_linear();
 
@@ -976,13 +982,13 @@ static gboolean _gui_multiinstance_callback(GtkButton *button,
                                             GdkEventButton *event,
                                             dt_iop_module_t *module)
 {
-  if(event && event->button == 3)
+  if(event && event->button == GDK_BUTTON_SECONDARY)
   {
     if(!(module->flags() & IOP_FLAGS_ONE_INSTANCE))
       _gui_copy_callback(button, module);
     return TRUE;
   }
-  else if(event && event->button == 2)
+  else if(event && event->button == GDK_BUTTON_MIDDLE)
   {
     return FALSE;
   }
@@ -1189,8 +1195,10 @@ static void _iop_panel_name(dt_iop_module_t *module)
     }
     else
     {
-      new_label = g_strdup_printf("• %s", module->multi_name);
-      multi_name = g_strdup(module->multi_name);
+      if(module->multi_name_hand_edited)
+        new_label = g_strdup_printf("• %s", module->multi_name);
+      else
+        new_label = g_strdup_printf("• %s", dt_util_localize_segmented_name(module->multi_name, FALSE));
       gtk_widget_set_name(GTK_WIDGET(iname), "iop-module-name");
     }
   }
@@ -2198,7 +2206,7 @@ void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
   module->widget_list = NULL;
   DT_CONTROL_SIGNAL_DISCONNECT_ALL(module, module->so->op);
   if(module->gui_cleanup) module->gui_cleanup(module);
-  gtk_widget_destroy(module->expander ?: module->widget);
+  gtk_widget_destroy(module->expander ? module->expander : module->widget);
   dt_iop_gui_cleanup_blending(module);
   dt_pthread_mutex_destroy(&module->gui_lock);
   dt_free_align(module->gui_data);
@@ -2521,12 +2529,12 @@ static gboolean _iop_plugin_body_button_press(GtkWidget *w,
                                               gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-  if(e->button == 1)
+  if(e->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_request_focus(module);
     return TRUE;
   }
-  else if(e->button == 3)
+  else if(e->button == GDK_BUTTON_SECONDARY)
   {
     _presets_popup_callback(NULL, NULL, module);
 
@@ -2544,7 +2552,7 @@ static gboolean _iop_plugin_header_button_release(GtkWidget *w,
 
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
 
-  if(e->button == 1)
+  if(e->button == GDK_BUTTON_PRIMARY)
   {
     if(dt_modifier_is(e->state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
       ; // do nothing (for easier dragging)
@@ -2570,7 +2578,7 @@ static gboolean _iop_plugin_header_button_release(GtkWidget *w,
       return TRUE;
     }
   }
-  else if(e->button == 3)
+  else if(e->button == GDK_BUTTON_SECONDARY)
   {
     _presets_popup_callback(NULL, NULL, module);
 
@@ -2999,7 +3007,12 @@ GtkWidget *dt_iop_gui_header_button(dt_iop_module_t *module,
   return button;
 }
 
-static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, gint y, guint time, dt_iop_module_t *dest)
+static gboolean _on_drag_motion(GtkWidget *widget,
+                                GdkDragContext *dc,
+                                const gint x,
+                                const gint y,
+                                const guint time,
+                                dt_iop_module_t *dest)
 {
   gdk_drag_status(dc, 0, time);
   dtgtk_expander_set_drag_hover(DTGTK_EXPANDER(widget), FALSE, TRUE, time);
@@ -3069,7 +3082,12 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
   return TRUE;
 }
 
-static gboolean _on_drag_drop(GtkWidget *widget, GdkDragContext *dc, gint x, gint y, guint time, dt_iop_module_t *module)
+static gboolean _on_drag_drop(GtkWidget *widget,
+                              GdkDragContext *dc,
+                              const gint x,
+                              const gint y,
+                              const guint time,
+                              dt_iop_module_t *module)
 {
   return _on_drag_motion(widget, dc, DND_DROP, y, time, module);
 }

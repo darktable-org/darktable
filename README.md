@@ -180,6 +180,7 @@ Required dependencies (minimum version):
 
 Required dependencies (no version requirement):
 * Lensfun *(for automatic lens correction)* (Note: alpha 0.3.95 and git master branch are not supported)
+* libjpeg *(both the original IJG library and API-compatible ones, such as libjpeg-turbo, will work)*
 * LibTIFF *(for TIFF import & export)*
 * Little CMS 2
 
@@ -237,19 +238,6 @@ sudo rm /etc/apt/sources.list.d/darktable-sources-tmp.list
 ```bash
 sudo apt-get build-dep darktable
 ```
-
-#### Install missing dependencies
-
-If mandatory dependencies are missing on your system, the software build will fail with
-errors like `Package XXX has not been found` or `Command YYY has no provider on this system`.
-If you see one of these errors you should find out which package provides the missing package/command in your distribution,
-then install it. This can usually be done in your package manager (not the application manager
-customarily provided by default in your distribution) or from the internet with a search engine.
-You may need to install a package manager first (like APT on Debian/Ubuntu, or DNF on Fedora/RHEL).
-
-This process might be tedious but you only need to do it once. See
-[this page on building darktable](https://github.com/darktable-org/darktable/wiki/Building-darktable)
-for one-line commands that will install most dependencies on the most common Linux distributions.
 
 ### Get the source
 

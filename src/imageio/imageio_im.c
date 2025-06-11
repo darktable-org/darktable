@@ -71,37 +71,34 @@ static gboolean _supported_image(const gchar *filename)
 }
 
 
-dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
+dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img,
+                                       const char *filename,
+                                       dt_mipmap_buffer_t *mbuf)
 {
-  int err = DT_IMAGEIO_LOAD_FAILED;
-  MagickWand *image = NULL;
-  MagickBooleanType ret;
+  dt_imageio_retval_t err = DT_IMAGEIO_LOAD_FAILED;
 
-  if(!_supported_image(filename)) return DT_IMAGEIO_LOAD_FAILED;
+  if(!_supported_image(filename))
+    return DT_IMAGEIO_LOAD_FAILED;
 
-  if(!img->exif_inited) (void)dt_exif_read(img, filename);
+  if(!img->exif_inited)
+    (void)dt_exif_read(img, filename);
 
-  image = NewMagickWand();
-  if(image == NULL) goto error;
+  MagickWand *image = NewMagickWand();
+  if(image == NULL)
+    goto error;
 
-  ret = MagickReadImage(image, filename);
+  MagickBooleanType ret = MagickReadImage(image, filename);
   if(ret != MagickTrue) {
-    dt_print(DT_DEBUG_ALWAYS, "[ImageMagick_open] cannot open `%s'", img->filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[ImageMagick_open] cannot open '%s'",
+             img->filename);
     err = DT_IMAGEIO_FILE_NOT_FOUND;
     goto error;
   }
-  dt_print(DT_DEBUG_IMAGEIO, "[ImageMagick_open] image `%s' loading", img->filename);
 
-  ColorspaceType colorspace;
-
-  colorspace = MagickGetImageColorspace(image);
-
-  if((colorspace == CMYColorspace) || (colorspace == CMYKColorspace))
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[ImageMagick_open] error: CMY(K) images are not supported.");
-    err =  DT_IMAGEIO_LOAD_FAILED;
-    goto error;
-  }
+  dt_print(DT_DEBUG_IMAGEIO,
+           "[ImageMagick_open] image '%s' loading",
+           img->filename);
 
   img->width = MagickGetImageWidth(image);
   img->height = MagickGetImageHeight(image);
@@ -112,23 +109,59 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
   float *mipbuf = dt_mipmap_cache_alloc(mbuf, img);
   if(mipbuf == NULL) {
     dt_print(DT_DEBUG_ALWAYS,
-        "[ImageMagick_open] could not alloc full buffer for image `%s'",
+        "[ImageMagick_open] could not alloc full buffer for image '%s'",
         img->filename);
     err = DT_IMAGEIO_CACHE_FULL;
     goto error;
   }
 
-  ret = MagickExportImagePixels(image, 0, 0, img->width, img->height, "RGBP", FloatPixel, mipbuf);
+  ColorspaceType colorspace = MagickGetImageColorspace(image);
+
+  char *colormap;
+  if((colorspace == CMYColorspace) || (colorspace == CMYKColorspace))
+    colormap = "CMYK";
+  else
+    colormap = "RGBP";
+
+  ret = MagickExportImagePixels(image,
+                                0,
+                                0,
+                                img->width,
+                                img->height,
+                                colormap,
+                                FloatPixel,
+                                mipbuf);
+
   if(ret != MagickTrue) {
     dt_print(DT_DEBUG_ALWAYS,
-        "[ImageMagick_open] error reading image `%s'", img->filename);
+        "[ImageMagick_open] error reading image '%s'", img->filename);
     goto error;
   }
 
+  // If the image in CMYK color space convert it to linear RGB
+  if((colorspace == CMYColorspace) || (colorspace == CMYKColorspace))
+  {
+    for(size_t index = 0; index < img->width * img->height * 4; index += 4)
+    {
+      const float black = mipbuf[index + 3];
+      mipbuf[index]     = (1.f - black) * (1.f - mipbuf[index]);
+      mipbuf[index + 1] = (1.f - black) * (1.f - mipbuf[index + 1]);
+      mipbuf[index + 2] = (1.f - black) * (1.f - mipbuf[index + 2]);
+    }
+  }
+
   size_t profile_length;
-  uint8_t *profile_data = (uint8_t *)MagickGetImageProfile(image, "icc", &profile_length);
-  /* no alias support like GraphicsMagick, have to check both locations */
-  if(profile_data == NULL) profile_data = (uint8_t *)MagickGetImageProfile(image, "icm", &profile_length);
+  uint8_t *profile_data = (uint8_t *)MagickGetImageProfile(image,
+                                                           "icc",
+                                                           &profile_length);
+
+  // No alias support for profile names (unlike GraphicsMagick),
+  // so we need to try "icm" if we didn't get an "icc" profile
+  if(profile_data == NULL)
+    profile_data = (uint8_t *)MagickGetImageProfile(image,
+                                                    "icm",
+                                                    &profile_length);
+
   if(profile_data)
   {
     img->profile = g_try_malloc0(profile_length);
@@ -142,7 +175,8 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
 
   // As a warning to those who will modify the loader in the future:
   // MagickWandTerminus() cannot be called on successful image reading.
-  // See https://github.com/darktable-org/darktable/issues/13090 regarding the consequences.
+  // See https://github.com/darktable-org/darktable/issues/13090
+  // regarding the consequences.
   DestroyMagickWand(image);
 
   img->buf_dsc.cst = IOP_CS_RGB;

@@ -313,7 +313,7 @@ static void _bt_add_shape(GtkWidget *widget, GdkEventButton *event, gpointer sha
 {
   if(darktable.gui->reset) return;
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     _tree_add_shape(NULL, shape);
 
@@ -883,8 +883,7 @@ static int _tree_button_pressed(GtkWidget *treeview,
     }
   }
   /* single click with the right mouse button? */
-  if(event->type == GDK_BUTTON_PRESS
-     && event->button == 1)
+  if(event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY)
   {
     // if click on a blank space, then deselect all
     if(!on_row)
@@ -892,8 +891,7 @@ static int _tree_button_pressed(GtkWidget *treeview,
       gtk_tree_selection_unselect_all(selection);
     }
   }
-  else if(event->type == GDK_BUTTON_PRESS
-          && event->button == 3)
+  else if(event->type == GDK_BUTTON_PRESS && event->button == GDK_BUTTON_SECONDARY)
   {
     // if we are already inside the selection, no change
     if(on_row
@@ -1147,7 +1145,7 @@ static int _tree_button_pressed(GtkWidget *treeview,
     }
 
     gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
-    item = gtk_menu_item_new_with_label(_("cleanup unused shapes"));
+    item = gtk_menu_item_new_with_label(_("delete unused shapes"));
     g_signal_connect(item, "activate", (GCallback)_tree_cleanup, self);
     gtk_menu_shell_append(menu, item);
 

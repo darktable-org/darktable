@@ -846,10 +846,7 @@ static gboolean _click_on_view(GtkWidget *view, GdkEventButton *event, dt_lib_mo
 
   const int button_pressed = (event->type == GDK_BUTTON_PRESS) ? event->button : 0;
   const gboolean ctrl_pressed = dt_modifier_is(event->state, GDK_CONTROL_MASK);
-  if((button_pressed == 3)
-     || (button_pressed == 1 && !ctrl_pressed)
-     || (button_pressed == 1 && ctrl_pressed)
-    )
+  if(button_pressed == GDK_BUTTON_SECONDARY || button_pressed == GDK_BUTTON_PRIMARY)
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
     GtkTreePath *path = NULL;
@@ -857,7 +854,7 @@ static gboolean _click_on_view(GtkWidget *view, GdkEventButton *event, dt_lib_mo
     if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), (gint)event->x,
                                      (gint)event->y, &path, NULL, NULL, NULL))
     {
-      if(button_pressed == 3)
+      if(button_pressed == GDK_BUTTON_SECONDARY)
       {
         gtk_tree_selection_select_path(selection, path);
         _pop_menu_view(view, event, self);
@@ -865,14 +862,14 @@ static gboolean _click_on_view(GtkWidget *view, GdkEventButton *event, dt_lib_mo
         _display_buttons(self);
         return TRUE;
       }
-      else if(button_pressed == 1 && !ctrl_pressed)
+      else if(button_pressed == GDK_BUTTON_PRIMARY && !ctrl_pressed)
       {
         if(gtk_tree_selection_path_is_selected(selection, path))
           g_timeout_add(100, (GSourceFunc)_force_selection_changed, self);
         gtk_tree_path_free(path);
         return FALSE;
       }
-      else if(button_pressed == 1 && ctrl_pressed)
+      else if(button_pressed == GDK_BUTTON_PRIMARY && ctrl_pressed)
       {
         gtk_tree_selection_select_path(selection, path);
         g_object_set(G_OBJECT(d->renderer), "editable", TRUE, NULL);

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -118,6 +118,7 @@ typedef enum dt_iop_module_state_t
 typedef void dt_iop_gui_data_t;
 typedef void dt_iop_data_t;
 typedef void dt_iop_global_data_t;
+typedef void dt_iop_module_data_t;
 
 /** color picker request */
 typedef enum dt_dev_request_colorpick_flags_t
@@ -224,6 +225,8 @@ typedef struct dt_iop_module_t
   dt_pthread_mutex_t gui_lock;
   /** other stuff that may be needed by the module, not only in gui mode. */
   dt_iop_global_data_t *global_data;
+  /** data that must be available per module instance */
+  dt_iop_module_data_t *data;
   /** blending params */
   struct dt_develop_blend_params_t *blend_params, *default_blendop_params;
   /** holder for blending ui control */
@@ -402,6 +405,8 @@ void dt_iop_request_focus(dt_iop_module_t *module);
 gboolean dt_iop_has_focus(const dt_iop_module_t *module);
 /** allocate and load default settings from introspection. */
 void dt_iop_default_init(dt_iop_module_t *module);
+/** helper for module cleanup to do the basic stuff */
+void dt_iop_default_cleanup(dt_iop_module_t *module);
 /** loads default settings from database. */
 void dt_iop_load_default_params(dt_iop_module_t *module);
 /** creates the module's gui widget */

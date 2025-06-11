@@ -397,10 +397,10 @@ void init_presets(dt_iop_module_so_t *self)
        NULL, 0,
        1, DEVELOP_BLEND_CS_RGB_SCENE);
 
-    dt_gui_presets_update_format(_("scene-referred default"), self->op,
+    dt_gui_presets_update_format(BUILTIN_PRESET("scene-referred default"), self->op,
                                  self->version(), FOR_MATRIX);
 
-    dt_gui_presets_update_autoapply(_("scene-referred default"),
+    dt_gui_presets_update_autoapply(BUILTIN_PRESET("scene-referred default"),
                                     self->op, self->version(), TRUE);
   }
 
@@ -3102,13 +3102,14 @@ void commit_params(dt_iop_module_t *self,
   const gboolean run_profile = preview && g && g->run_profile;
   const gboolean run_validation = preview && g && g->run_validation;
 
+  const char *ill_desc = dt_introspection_get_enum_name(get_f("illuminant"), d->illuminant_type);
   dt_print(DT_DEBUG_PARAMS,
     "[commit color calibration]%s%s  temp=%i  xy=%.4f %.4f - XYZ=%.4f %.4f %.4f - LMS=%.4f %.4f %.4f  %s",
      run_profile ? " [profile]" : "",
      run_validation ? " [validation]" : "",
      (int)p->temperature, x, y, XYZ[0], XYZ[1], XYZ[2],
      d->illuminant[0], d->illuminant[1], d->illuminant[2],
-     dt_introspection_get_enum_name(get_f("illuminant"), d->illuminant_type) ?: "DT_ILLUMINANT_UNDEFINED");
+     ill_desc ? ill_desc : "DT_ILLUMINANT_UNDEFINED");
 
   // blue compensation for Bradford transform = (test illuminant blue
   // / reference illuminant blue)^0.0834 reference illuminant is

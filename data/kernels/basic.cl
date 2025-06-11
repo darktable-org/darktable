@@ -1,9 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009-2013 johannes hanika.
-    copyright (c) 2014 Ulrich Pegelow.
-    copyright (c) 2014 LebedevRI.
-    Copyright (C) 2022-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -273,18 +270,26 @@ highlights_4f_clip (read_only image2d_t in, write_only image2d_t out, const int 
 }
 
 kernel void
-highlights_1f_clip (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                    global float *clips, const int rx, const int ry, const int filters, global const unsigned char (*const xtrans)[6])
+highlights_1f_clip (read_only image2d_t in, write_only image2d_t out,
+                    const int iwidth, const int iheight,
+                    const int owidth, const int oheight,
+                    global float *clips, const int dx, const int dy,
+                    const int filters, global const unsigned char (*const xtrans)[6])
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
-  if(x >= width || y >= height) return;
-  const int color = (filters == 9u) ? FCxtrans(y, x, xtrans) : FC(y, x, filters);
+  if(x >= owidth || y >= oheight) return;
 
-  float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
-
-  pixel = fmin(clips[color], pixel);
+  const int irow = y + dy;
+  const int icol = x + dx;
+  float pixel = 0.0f;
+  if((icol >= 0) && (irow >= 0) && (irow < iheight) && (icol < iwidth))
+  {
+    const int color = (filters == 9u) ? FCxtrans(irow, icol, xtrans) : FC(irow, icol, filters);
+    pixel = read_imagef(in, sampleri, (int2)(icol, irow)).x;
+    pixel = fmin(clips[color], pixel);
+  }
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -589,8 +594,8 @@ highlights_1f_lch_bayer (read_only image2d_t in, write_only image2d_t out, const
           R = val;
           break;
         case 1:
-          Gmin = min(Gmin, val);
-          Gmax = max(Gmax, val);
+          Gmin = fmin(Gmin, val);
+          Gmax = fmax(Gmax, val);
           break;
         case 2:
           B = val;
@@ -601,9 +606,9 @@ highlights_1f_lch_bayer (read_only image2d_t in, write_only image2d_t out, const
 
   if(clipped)
   {
-    const float Ro = min(R, clip);
-    const float Go = min(Gmin, clip);
-    const float Bo = min(B, clip);
+    const float Ro = fmin(R, clip);
+    const float Go = fmin(Gmin, clip);
+    const float Bo = fmin(B, clip);
 
     const float L = (R + Gmax + B) / 3.0f;
 
@@ -688,7 +693,7 @@ highlights_1f_lch_xtrans (read_only image2d_t in, write_only image2d_t out, cons
   if(x < 2 || x > width - 3 || y < 2 || y > height - 3)
   {
     // fast path for border
-    pixel = min(clip, buffer[0]);
+    pixel = fmin(clip, buffer[0]);
   }
   else
   {
@@ -738,13 +743,13 @@ highlights_1f_lch_xtrans (read_only image2d_t in, write_only image2d_t out, cons
           const int c = FCxtrans(y + jj + ry, x + ii + rx, xtrans);
           mean[c] += val;
           cnt[c]++;
-          RGBmax[c] = max(RGBmax[c], val);
+          RGBmax[c] = fmax(RGBmax[c], val);
         }
       }
 
-      const float Ro = min(mean[0]/cnt[0], clip);
-      const float Go = min(mean[1]/cnt[1], clip);
-      const float Bo = min(mean[2]/cnt[2], clip);
+      const float Ro = fmin(mean[0]/cnt[0], clip);
+      const float Go = fmin(mean[1]/cnt[1], clip);
+      const float Bo = fmin(mean[2]/cnt[2], clip);
 
       const float R = RGBmax[0];
       const float G = RGBmax[1];
@@ -1055,14 +1060,8 @@ guide_laplacians(read_only image2d_t HF,
   if(alpha > 0.f) // reconstruct
   {
     // non-local neighbours coordinates
-    const int j_neighbours[3] = {
-      max(x - mult, 0),
-      x,
-      min(x + mult, width - 1) };
-    const int i_neighbours[3] = {
-      max(y - mult, 0),
-      y,
-      min(y + mult, height - 1) };
+    const int j_neighbours[3] = { max(x - mult, 0), x, min(x + mult, width - 1) };
+    const int i_neighbours[3] = { max(y - mult, 0), y, min(y + mult, height - 1) };
 
     // fetch non-local pixels and store them locally and contiguously
     float4 neighbour_pixel_HF[9];
@@ -1245,14 +1244,8 @@ diffuse_color(read_only image2d_t HF,
   if(alpha.w > 0.f) // reconstruct
   {
     // non-local neighbours coordinates
-    const int j_neighbours[3] = {
-      max(x - mult, 0),
-      x,
-      min(x + mult, width - 1) };
-    const int i_neighbours[3] = {
-      max(y - mult, 0),
-      y,
-      min(y + mult, height - 1) };
+    const int j_neighbours[3] = { max(x - mult, 0), x, min(x + mult, width - 1) };
+    const int i_neighbours[3] = { max(y - mult, 0), y, min(y + mult, height - 1) };
 
     // fetch non-local pixels and store them locally and contiguously
     float4 neighbour_pixel_HF[9];
@@ -2778,7 +2771,7 @@ kernel void lens_man_vignette(read_only image2d_t in,
   const float dx = ((float)(roix + x) - w2);
   const float dy = ((float)(roiy + y) - h2);
   const float radius = sqrt(dx*dx + dy*dy) * inv_maxr;
-  const float4 val = max(0.0f, intensity * _calc_vignette_spline(radius, spline, splinesize));
+  const float4 val = fmax(0.0f, intensity * _calc_vignette_spline(radius, spline, splinesize));
 
   float4 pixel  = read_imagef(in, samplerA, (int2)(x, y));
   const float mask = pixel.w;

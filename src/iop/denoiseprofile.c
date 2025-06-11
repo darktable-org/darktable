@@ -3474,7 +3474,7 @@ static gboolean denoiseprofile_draw(GtkWidget *widget,
   pango_layout_set_font_description(layout, desc);
   cairo_set_source_rgb(cr, .1, .1, .1);
 
-  pango_layout_set_text(layout, _("coarse"), -1);
+  pango_layout_set_text(layout, C_("graph", "coarse"), -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, .02 * width - ink.y, .5 * (height + ink.width));
   cairo_save(cr);
@@ -3561,7 +3561,7 @@ static gboolean denoiseprofile_button_press(GtkWidget *widget,
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
-  else if(event->button == 1)
+  else if(event->button == GDK_BUTTON_PRIMARY)
   {
     g->drag_params = *(dt_iop_denoiseprofile_params_t *)self->params;
     const int inset = DT_IOP_DENOISE_PROFILE_INSET;
@@ -3582,7 +3582,7 @@ static gboolean denoiseprofile_button_release(GtkWidget *widget,
                                               GdkEventButton *event,
                                               dt_iop_module_t *self)
 {
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
     g->dragging = 0;

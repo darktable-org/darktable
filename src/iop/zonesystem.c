@@ -610,7 +610,7 @@ static gboolean dt_iop_zonesystem_bar_button_press(GtkWidget *widget, GdkEventBu
   if((g->mouse_x / width) > zonemap[k] + (zw / 2)) k++;
 
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     if(p->zone[k] == -1)
     {
@@ -620,7 +620,7 @@ static gboolean dt_iop_zonesystem_bar_button_press(GtkWidget *widget, GdkEventBu
     g->is_dragging = TRUE;
     g->current_zone = k;
   }
-  else if(event->button == 3)
+  else if(event->button == GDK_BUTTON_SECONDARY)
   {
     /* clear the controlpoint */
     p->zone[k] = -1;
@@ -634,7 +634,7 @@ static gboolean dt_iop_zonesystem_bar_button_release(GtkWidget *widget, GdkEvent
                                                      dt_iop_module_t *self)
 {
   dt_iop_zonesystem_gui_data_t *g = self->gui_data;
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     g->is_dragging = FALSE;
   }

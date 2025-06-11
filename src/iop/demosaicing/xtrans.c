@@ -504,7 +504,7 @@ static void xtrans_markesteijn_interpolate(float *out,
             }
           }
           for(int c = 0; c < 3; c++)
-            out[4 * (width * (row + top) + col + left) + c] = avg[c]/avg[3];
+            out[4 * (width * (row + top) + col + left) + c] = MAX(0.0f, avg[c]/avg[3]);
         }
     }
   }
@@ -1619,7 +1619,7 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
           rgbpix[0] = y + 1.474600014746f * uv[1];
           rgbpix[1] = y - 0.15498578286403f * uv[0] - 0.571353132557189f * uv[1];
           rgbpix[2] = y + 1.77201282937288f * uv[0];
-          for(int c = 0; c < 3; c++) out[4 * (width * (row + top) + col + left) + c] = rgbpix[c];
+          for(int c = 0; c < 3; c++) out[4 * (width * (row + top) + col + left) + c] = MAX(0.0f, rgbpix[c]);
         }
     }
   }

@@ -684,15 +684,18 @@ void init_presets(dt_iop_module_so_t *self)
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
 
+  dt_develop_blend_params_t default_blendop_params;
+  dt_develop_blend_init_blend_parameters(&default_blendop_params, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
   for(int k = 0;
       k < sizeof(preset_camera_curves) / sizeof(preset_camera_curves[0]);
       k++)
   {
     // insert the preset
-    dt_gui_presets_add_generic(preset_camera_curves[k].name,
-                               self->op, self->version(),
-                               &preset_camera_curves[k].preset,
-                               sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+    dt_gui_presets_add_with_blendop(preset_camera_curves[k].name,
+                                    self->op, self->version(),
+                                    &preset_camera_curves[k].preset, sizeof(p),
+                                    &default_blendop_params, 1);
 
     // restrict it to model, maker
     dt_gui_presets_update_mml(preset_camera_curves[k].name,
@@ -1850,7 +1853,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
   int nodes = p->tonecurve_nodes[ch];
   dt_iop_tonecurve_node_t *tonecurve = p->tonecurve[ch];
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     if(event->type == GDK_BUTTON_PRESS
        && dt_modifier_is(event->state, GDK_CONTROL_MASK)
@@ -1946,7 +1949,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
       return TRUE;
     }
   }
-  else if(event->button == 3 && g->selected >= 0)
+  else if(event->button == GDK_BUTTON_SECONDARY && g->selected >= 0)
   {
     if(g->selected == 0 || g->selected == nodes - 1)
     {

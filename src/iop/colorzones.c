@@ -1662,7 +1662,7 @@ static gboolean _bottom_area_button_press_callback(GtkWidget *widget,
 {
   dt_iop_colorzones_gui_data_t *g = self->gui_data;
 
-  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
   {
     // reset zoom level
     g->zoom_factor = 1.f;
@@ -2102,7 +2102,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
   int nodes = p->curve_num_nodes[ch];
   dt_iop_colorzones_node_t *curve = p->curve[ch];
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     if(g->edit_by_area && event->type != GDK_2BUTTON_PRESS
        && !dt_modifier_is(event->state, GDK_CONTROL_MASK))
@@ -2191,7 +2191,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
       return TRUE;
     }
   }
-  else if(event->button == 3 && g->selected >= 0)
+  else if(event->button == GDK_BUTTON_SECONDARY && g->selected >= 0)
   {
     if((g->selected == 0 || g->selected == nodes - 1)
        && p->splines_version == DT_IOP_COLORZONES_SPLINES_V1)
@@ -2233,7 +2233,7 @@ static gboolean _area_button_release_callback(GtkWidget *widget,
 {
   if(darktable.develop->darkroom_skip_mouse_events) return TRUE;
 
-  if(event->button == 1)
+  if(event->button == GDK_BUTTON_PRIMARY)
   {
     dt_iop_colorzones_gui_data_t *g = self->gui_data;
     g->dragging = 0;

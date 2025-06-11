@@ -1315,6 +1315,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   GtkWidget *widget;
   if(!gui->ui)
     gui->ui = g_malloc0(sizeof(dt_ui_t));
+  gui->surface = NULL;
   gui->hide_tooltips = dt_conf_get_bool("ui/hide_tooltips") ? 1 : 0;
   gui->grouping = dt_conf_get_bool("ui_last/grouping");
   gui->expanded_group_id = NO_IMGID;
@@ -1546,6 +1547,11 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
     g_atomic_int_set(&darktable.gui_running, 1);
     gtk_main();
     g_atomic_int_set(&darktable.gui_running, 0);
+  }
+  if(darktable.gui->surface)
+  {
+    cairo_surface_destroy(darktable.gui->surface);
+    darktable.gui->surface = NULL;
   }
 }
 
@@ -2434,7 +2440,7 @@ static gboolean _panel_handle_button_callback(GtkWidget *w,
                                               GdkEventButton *e,
                                               gpointer user_data)
 {
-  if(e->button == 1)
+  if(e->button == GDK_BUTTON_PRIMARY)
   {
     if(e->type == GDK_BUTTON_PRESS)
     {
@@ -2806,7 +2812,7 @@ static void _ui_log_redraw_callback(gpointer instance,
     {
       const int h = gtk_widget_get_allocated_height(dt_ui_center_base(darktable.gui->ui));
       gtk_widget_set_margin_bottom
-        (gtk_widget_get_parent(widget), 0.15 * h - DT_PIXEL_APPLY_DPI(10));
+        (gtk_widget_get_parent(widget), MAX(0, 0.15 * h - DT_PIXEL_APPLY_DPI(10)));
       gtk_widget_show(widget);
     }
   }
@@ -4001,7 +4007,7 @@ static gboolean _resize_wrap_button(GtkWidget *widget,
   }
   else if(event->y > gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE
           && event->type == GDK_BUTTON_PRESS
-          && event->button == 1 )
+          && event->button == GDK_BUTTON_PRIMARY)
   {
     _resize_wrap_dragging = TRUE;
     return TRUE;

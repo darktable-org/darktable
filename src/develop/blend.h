@@ -301,8 +301,8 @@ typedef struct dt_iop_gui_blend_data_t
   GList *masks_modes_toggles;
 
   GtkWidget *iopw;
-  GtkBox *top_box;
-  GtkBox *bottom_box;
+  GtkBox *blend_box;
+  GtkBox *refine_box;
   GtkBox *masks_modes_box;
   GtkBox *blendif_box;
   GtkBox *masks_box;

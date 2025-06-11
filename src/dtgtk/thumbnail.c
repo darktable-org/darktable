@@ -984,7 +984,7 @@ static gboolean _event_rating_release(GtkWidget *widget,
   if(dtgtk_thumbnail_btn_is_hidden(widget))
     return FALSE;
 
-  if(event->button == 1 && !thumb->moved)
+  if(event->button == GDK_BUTTON_PRIMARY && !thumb->moved)
   {
     dt_view_image_over_t rating = DT_VIEW_DESERT;
     if(widget == thumb->w_reject)
@@ -1022,7 +1022,7 @@ static gboolean _event_grouping_release(GtkWidget *widget,
   if(dtgtk_thumbnail_btn_is_hidden(widget))
     return FALSE;
 
-  if(event->button == 1 && !thumb->moved)
+  if(event->button == GDK_BUTTON_PRIMARY && !thumb->moved)
   {
     //TODO: will succeed if either or *both* of Shift and Control are
     //pressed.  Do we want this?
@@ -1072,7 +1072,7 @@ static gboolean _event_audio_release(GtkWidget *widget,
   if(dtgtk_thumbnail_btn_is_hidden(widget))
     return FALSE;
 
-  if(event->button == 1 && !thumb->moved)
+  if(event->button == GDK_BUTTON_PRIMARY && !thumb->moved)
   {
     gboolean start_audio = TRUE;
     if(darktable.view_manager->audio.audio_player_id != -1)

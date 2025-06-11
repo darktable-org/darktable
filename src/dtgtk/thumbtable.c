@@ -1411,8 +1411,7 @@ static gboolean _event_button_press(GtkWidget *widget,
 
   const dt_imgid_t id = dt_control_get_mouse_over_id();
 
-  if(dt_is_valid_imgid(id)
-     && event->button == 1)
+  if(dt_is_valid_imgid(id) && event->button == GDK_BUTTON_PRIMARY)
   {
     //  double-click
     if(event->type == GDK_2BUTTON_PRESS)
@@ -1451,7 +1450,7 @@ static gboolean _event_button_press(GtkWidget *widget,
       return FALSE;
   }
 
-  if(event->button == 1 && event->type == GDK_BUTTON_PRESS)
+  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_BUTTON_PRESS)
   {
     // make sure any edition field loses the focus
     gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
@@ -1459,7 +1458,7 @@ static gboolean _event_button_press(GtkWidget *widget,
 
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM
      && !dt_is_valid_imgid(id)
-     && event->button == 1
+     && event->button == GDK_BUTTON_PRIMARY
      && event->type == GDK_BUTTON_PRESS)
   {
     const dt_view_type_flags_t cv = dt_view_get_current();
@@ -1489,8 +1488,7 @@ static gboolean _event_button_press(GtkWidget *widget,
   if(table->mode != DT_THUMBTABLE_MODE_ZOOM)
     return TRUE;
 
-  if(event->button == 1
-     && event->type == GDK_BUTTON_PRESS)
+  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_BUTTON_PRESS)
   {
     table->dragging = TRUE;
     table->drag_dx = table->drag_dy = 0;
@@ -1550,7 +1548,7 @@ static gboolean _event_button_release(GtkWidget *widget,
   const dt_imgid_t id = dt_control_get_mouse_over_id();
 
   if(dt_is_valid_imgid(id)
-     && event->button == 1
+     && event->button == GDK_BUTTON_PRIMARY
      && event->type == GDK_BUTTON_RELEASE)
   {
     if(dt_modifier_is(event->state, GDK_CONTROL_MASK)
