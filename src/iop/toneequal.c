@@ -129,6 +129,71 @@
 #include <inttypes.h> // Only needed for debug printf of hashes, TODO remove
 #endif
 
+#include <stdio.h>
+#include <math.h>
+
+#define dbg_plot_width 49
+#define dbg_plot_height 5 // y = +2, +1, 0, -1, -2
+
+
+void plot_ascii(const float y_values[49], float mark1, float mark2) {
+    const float x_start = -16.0f;
+    const float x_step = 0.5f;
+
+    // Prepare the graph: fill with spaces
+    char graph[dbg_plot_height][dbg_plot_width + 1];
+    for (int row = 0; row < dbg_plot_height; ++row) {
+        for (int col = 0; col < dbg_plot_width; ++col) {
+            // Draw dashed lines at y = +2 (row 0), y = 0 (row 2), y = -2 (row 4)
+            if (row == 0 || row == 2 || row == 4)
+                graph[row][col] = '-';
+            else
+                graph[row][col] = ' ';
+        }
+        graph[row][dbg_plot_width] = '\0';
+    }
+
+    // Overwrite with stars for the data points
+    for (int col = 0; col < dbg_plot_width; ++col) {
+        float y = y_values[col];
+        // Map y in [-2,2] to row index: +2->0, 0->2, -2->4
+        int row = (int)round((2.0f - y) * (dbg_plot_height) / 5.0f);
+        if (row < 0) row = 0;
+        if (row >= dbg_plot_height) row = dbg_plot_height;
+        graph[row][col] = '*';
+    }
+
+    // Prepare the x-axis marker row
+    char x_axis[dbg_plot_width + 1];
+    for (int col = 0; col < dbg_plot_width; ++col) {
+        float x = x_start + col * x_step;
+        if (fabsf(x - mark1) < x_step / 2 || fabsf(x - mark2) < x_step / 2) {
+            x_axis[col] = '^';
+        } else if (fmodf(x + 16, 2.0f) < 0.01f) {
+            x_axis[col] = '|';
+        } else {
+            x_axis[col] = ' ';
+        }
+    }
+    x_axis[dbg_plot_width] = '\0';
+
+    // Print the top border and +2 label
+
+    // Print each row of the graph with labels
+    for (int row = 0; row < dbg_plot_height; ++row) {
+        printf("%s", graph[row]);
+        if (row == 0) printf(" +2\n");
+        else if (row == 2) printf("  0\n");
+        else if (row == 4) printf(" -2\n");
+        else printf("\n");
+    }
+    // Print the x-axis markers
+    printf("%s\n", x_axis);
+    // Print the x-axis labels
+    printf("-16 -14 -12 -10 -8  -6  -4  -2  0   2   4   6   8\n");
+    printf("\n");
+}
+
 DT_MODULE_INTROSPECTION(3, dt_iop_toneequalizer_params_t)
 
 /****************************************************************************
@@ -145,8 +210,11 @@ DT_MODULE_INTROSPECTION(3, dt_iop_toneequalizer_params_t)
 #define DT_TONEEQ_MIN_EV (-8.0f)
 #define DT_TONEEQ_MAX_EV (0.0f)
 
-#define HIRES_HISTO_MIN_EV -16.0f
-#define HIRES_HISTO_MAX_EV 8.0f
+// We need more space for the histogram and also for the LUT
+// This needs to comprise the possible scaled/shifted range of
+// the original 8EV.
+#define HIRES_MIN_EV -16.0f
+#define HIRES_MAX_EV 8.0f
 
 /**
  * Build the exposures octaves :
@@ -155,6 +223,7 @@ DT_MODULE_INTROSPECTION(3, dt_iop_toneequalizer_params_t)
 
 #define NUM_SLIDERS 9
 #define NUM_OCTAVES 8
+#define LUT_OCTAVES 24
 #define LUT_RESOLUTION 10000
 
 // radial distances used for pixel ops
@@ -233,7 +302,7 @@ typedef struct dt_iop_toneequalizer_params_t
 typedef struct dt_iop_toneequalizer_data_t
 {
   float factors[NUM_OCTAVES] DT_ALIGNED_ARRAY;
-  float correction_lut[NUM_OCTAVES * LUT_RESOLUTION + 1] DT_ALIGNED_ARRAY;
+  float correction_lut[LUT_OCTAVES * LUT_RESOLUTION + 1] DT_ALIGNED_ARRAY;
   float blending, feathering, contrast_boost, exposure_boost, quantization, smoothing, post_scale, post_shift;
   float scale;
   int radius;
@@ -804,7 +873,7 @@ static inline void _compute_hires_histogram_and_stats(const float *const restric
   // 8EV after, for a total of 24.
   // Also the resolution is increased to compensate for the fact that the user
   // can scale the histogram.
-  const float temp_ev_range = HIRES_HISTO_MAX_EV - HIRES_HISTO_MIN_EV;
+  const float temp_ev_range = HIRES_MAX_EV - HIRES_MIN_EV;
 
   // (Re)init the histogram
   memset(hires_histogram, 0, sizeof(int) * HIRES_HISTO_SAMPLES);
@@ -814,7 +883,7 @@ static inline void _compute_hires_histogram_and_stats(const float *const restric
   for(size_t k = 0; k < num_elem; k++)
   {
     const int index =
-      CLAMP((int)(((log2f(luminance[k]) - HIRES_HISTO_MIN_EV) / temp_ev_range) * (float)HIRES_HISTO_SAMPLES),
+      CLAMP((int)(((log2f(luminance[k]) - HIRES_MIN_EV) / temp_ev_range) * (float)HIRES_HISTO_SAMPLES),
             0, HIRES_HISTO_SAMPLES - 1);
             hires_histogram[index] += 1;
   }
@@ -851,8 +920,8 @@ static inline void _compute_hires_histogram_and_stats(const float *const restric
   }
 
   // Convert decile positions to exposures
-  *first_decile = (temp_ev_range * ((float)first_decile_pos / (float)(HIRES_HISTO_SAMPLES - 1))) + HIRES_HISTO_MIN_EV;
-  *last_decile = (temp_ev_range * ((float)last_decile_pos / (float)(HIRES_HISTO_SAMPLES - 1))) + HIRES_HISTO_MIN_EV;
+  *first_decile = (temp_ev_range * ((float)first_decile_pos / (float)(HIRES_HISTO_SAMPLES - 1))) + HIRES_MIN_EV;
+  *last_decile = (temp_ev_range * ((float)last_decile_pos / (float)(HIRES_HISTO_SAMPLES - 1))) + HIRES_MIN_EV;
 }
 
 __DT_CLONE_TARGETS__
@@ -970,6 +1039,15 @@ static inline float _post_scale_shift(const float v,
   const float scale_exp = exp2f(post_scale);
   // signifficant range -8..0, centering around the middle
   return (v + 4.0f) * scale_exp - 4.0f + post_shift;
+}
+
+static inline float _inverse_post_scale_shift(const float v,
+                                      const float post_scale,
+                                      const float post_shift)
+{
+  const float scale_exp = exp2f(post_scale);
+  // signifficant range -8..0, centering around the middle
+  return ((v - post_shift + 4.0f) / scale_exp) - 4.0f;
 }
 
 // This is similar to the auto-buttons for exposure/contrast boost.
@@ -1133,7 +1211,9 @@ static float _gaussian_func(const float radius,
 static void _compute_correction_lut(float *restrict lut, const float sigma,
                                     const float *const restrict factors,
                                     const float post_scale, const float post_shift,
-                                    dt_dev_pixelpipe_type_t const debug_pipe)
+                                    dt_dev_pixelpipe_type_t const debug_pipe,
+                                    const float debug_first_decile, const float debug_last_decile
+                                  )
 {
 #ifdef MF_DEBUG
   // printf("_compute_correction_lut pipe=%d, post_scale=%f, post_shift=%f\n", debug_pipe, post_scale, post_shift);
@@ -1144,11 +1224,14 @@ static void _compute_correction_lut(float *restrict lut, const float sigma,
 
   // TODO MF: Does the openmp still work here?
   DT_OMP_FOR(shared(centers_ops))
-  for(int j = 0; j <= LUT_RESOLUTION * NUM_OCTAVES; j++)
+  for(int j = 0; j <= LUT_RESOLUTION * LUT_OCTAVES; j++)
   {
     // build the correction for each pixel
     // as the sum of the contribution of each luminance channelcorrection
-    const float exposure_uncorrected = (float)j / (float)LUT_RESOLUTION + DT_TONEEQ_MIN_EV; // [-8...0] EV
+    const float exposure_uncorrected = (float)j / (float)LUT_RESOLUTION + HIRES_MIN_EV; // [-16...8] EV
+
+    // Transform to account for post/scale shift and clamp to the curve range of
+    // -8 to 0 afterwards
     const float exposure = fast_clamp(_post_scale_shift(exposure_uncorrected, post_scale, post_shift),
                                       DT_TONEEQ_MIN_EV, DT_TONEEQ_MAX_EV);
     float result = 0.0f;
@@ -1159,6 +1242,18 @@ static void _compute_correction_lut(float *restrict lut, const float sigma,
     // the user-set correction is expected in [-2;+2] EV, so is the interpolated one
     lut[j] = fast_clamp(result, 0.25f, 4.0f);
   }
+
+#ifdef MF_DEBUG
+  if (!isnan(debug_first_decile))
+  {
+    float values[49];
+    for(int j = 0; j <= 2 * LUT_OCTAVES; j++)
+    {
+      values[j] = log2f(lut[j * (int)(LUT_RESOLUTION/2)]);
+    }
+    plot_ascii(values, debug_first_decile, debug_last_decile);
+  }
+#endif
 }
 
 // this is the version currently used, as using a lut gives a
@@ -1189,8 +1284,8 @@ static inline void _apply_toneequalizer(const float *const restrict in,
     // The radial-basis interpolation is valid in [-8; 0] EV and can quickly diverge outside.
     // Note: not doing an explicit lut[index] check is safe as long we take care of proper
     // DT_TONEEQ_MIN_EV and DT_TONEEQ_MAX_EV and allocated lut size LUT_RESOLUTION+1
-    const float exposure = fast_clamp(log2f(luminance[k]), DT_TONEEQ_MIN_EV, DT_TONEEQ_MAX_EV);
-    const float correction = lut[(unsigned)roundf((exposure - DT_TONEEQ_MIN_EV) * lutres)];
+    const float exposure = fast_clamp(log2f(luminance[k]), HIRES_MIN_EV, HIRES_MAX_EV);
+    const float correction = lut[(unsigned)roundf((exposure - HIRES_MIN_EV) * lutres)];
     // apply correction
     for_each_channel(c)
       out[4 * k + c] = correction * in[4 * k + c];
@@ -1619,8 +1714,6 @@ void _toneeq_process(dt_iop_module_t *self,
                                     &post_scale, &post_shift,
                                     piece->pipe->type);
 
-      printf("_toneeq_process / DT_DEV_PIXELPIPE_FULL: post_scale %f, post_shift %f\n", post_scale, post_shift);
-
       dt_iop_gui_enter_critical_section(self);
       g->post_scale_value = post_scale;
       g->post_shift_value = post_shift;
@@ -1759,7 +1852,7 @@ void _toneeq_process(dt_iop_module_t *self,
 #endif
       _compute_correction_lut(d->correction_lut, d->smoothing, d->factors,
                              post_scale, post_shift,
-                             piece->pipe->type);
+                             piece->pipe->type, NAN, NAN);
       _apply_toneequalizer(in_cropped, luminance, out,
                           roi_out, roi_out,
                           d, piece->pipe->type);
@@ -1770,9 +1863,21 @@ void _toneeq_process(dt_iop_module_t *self,
       printf("_toneeq_process: in roi %d %d %d %d\n",
         roi_in->x, roi_in->y, roi_in->width, roi_in->height);
 #endif
-      _compute_correction_lut(d->correction_lut, d->smoothing, d->factors,
+      if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)) {
+        _compute_correction_lut(d->correction_lut, d->smoothing, d->factors,
+                              post_scale, post_shift,
+                              piece->pipe->type,
+                              g->prv_histogram_first_decile, g->prv_histogram_last_decile
+                            );
+      }
+      else
+      {
+              _compute_correction_lut(d->correction_lut, d->smoothing, d->factors,
                              post_scale, post_shift,
-                             piece->pipe->type);
+                             piece->pipe->type, NAN, NAN);
+      }
+
+
       _apply_toneequalizer(in, luminance, out,
                           roi_in, roi_out,
                           d, piece->pipe->type);
@@ -1871,8 +1976,6 @@ void modify_roi_in(dt_iop_module_t *self,
       roi_in->width = piece->buf_in.width;
       roi_in->height = piece->buf_in.height;
       roi_in->scale = 1.0f;
-
-      printf("modify_roi_in/DT_DEV_PIXELPIPE_FULL: requesting full image for auto-alignment\n");
     }
   }
 }
@@ -2276,14 +2379,14 @@ static inline void _compute_gui_histogram(int hires_histogram[HIRES_HISTO_SAMPLE
   // (Re)init the histogram
   memset(histogram, 0, sizeof(int) * UI_HISTO_SAMPLES);
 
-  const float temp_ev_range = HIRES_HISTO_MAX_EV - HIRES_HISTO_MIN_EV;
+  const float temp_ev_range = HIRES_MAX_EV - HIRES_MIN_EV;
 
   // remap the extended histogram into the gui histogram
   // bins between [-8; 0] EV remapped between [0 ; UI_HISTO_SAMPLES]
   for(size_t k = 0; k < HIRES_HISTO_SAMPLES; ++k)
   {
     // from [0...HIRES_HISTO_SAMPLES] to [-16...8EV]
-    const float EV = temp_ev_range * (float)k / (float)(HIRES_HISTO_SAMPLES - 1) + HIRES_HISTO_MIN_EV;
+    const float EV = temp_ev_range * (float)k / (float)(HIRES_HISTO_SAMPLES - 1) + HIRES_MIN_EV;
 
     // apply shift & scale to the EV value
     const float shift_scaled_EV = _post_scale_shift(EV, histogram_scale, histogram_shift);
