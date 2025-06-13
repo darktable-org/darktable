@@ -60,12 +60,12 @@ changes (where available).
   maintain any tags which are supported by exiv2.
 
 - Added a new module "raster mask import". After setting up a root
-  folder containing pfm files, a file can be selected to be used as a
+  folder containing PFM files, a file can be selected to be used as a
   raster mask, it is scaled to full image size. You can also define
-  what combination of the RGB channels of that pfm file will be used
+  what combination of the RGB channels of that PFM file will be used
   for the raster mask.
 
-- Sigmoid module is now the default tonemapper selected for new
+- Sigmoid module is now the default tone-mapper selected for new
   installation.
 
 - The export module has got a new section multi-preset export which
@@ -78,10 +78,10 @@ changes (where available).
   thumbnails displayed on the thumbnail table, with a spin
   button. This makes it easier to set the exact value.
 
-- In the 4 ways tab in color balance rgb, ctrl+click now picks the
-  actual color while regular click continues to pick the opposite
-  color. This gives users more flexibility and control when selecting
-  hues.
+- In the 4 ways tab in Color Balance RGB, <kbd>ctrl+click</kbd> now
+  picks the actual color while regular click continues to pick the
+  opposite color. This gives users more flexibility and control when
+  selecting hues.
 
 
 ## Performance Improvements
@@ -106,7 +106,7 @@ changes (where available).
 - The "prefer performance over quality" preference setting has been
   removed.
 
-- A workaround for old broken AMD opencl drivers that has been in
+- A workaround for old broken AMD OpenCL drivers that has been in
   place for 12 years has been disabled by default. Hopefully more
   recent drivers don't need it anymore and it caused problems with the
   translation of the user interface during startup, causing part of it
@@ -119,7 +119,7 @@ changes (where available).
     - If that solves your problem, please report the issue to GiHhub
       PR #18342, including information on the make of your GPU and the
       version of your drivers. We can then for the next release either
-      by default reenable the workaround for drivers that need them,
+      by default re-enable the workaround for drivers that need them,
       or warn people with antiquated drivers that they need to update.
 
 - Presets can now be arranged in sub menus, like styles can, by
@@ -130,8 +130,8 @@ changes (where available).
 
 - Give a hint for pending background work when darktable is closing.
 
-- Improved rendering output of denoiseprofile, dither and nlmeans on
-  second window or in high quality processing mode.
+- Improved rendering output of Denoise Profile, Dither and Astrophoto
+  Denoise on second window or in high quality processing mode.
 
 - Hide "reduce resolution of preview image" preference setting. This
   was a way to get better responsiveness on slow systems introduced in
@@ -155,7 +155,7 @@ changes (where available).
 
 - Raster masks got internal improvements and now support the same refinement
   tools as all other masks including details threshold, feathering guide and
-  radius, blurring radius and contrast. Some UI refinements for rastermasks.
+  radius, blurring radius and contrast. Some UI refinements for raster-masks.
 
 - The highlights module offers a raster mask with information about level above
   clip level.
@@ -220,14 +220,14 @@ changes (where available).
 - Fixed a crash in the import dialog when trying to add a new place to
   an empty places list.
 
-- Fixed bitdepth setting not saved in AVIF export presets.
+- Fixed bit-depth setting not saved in AVIF export presets.
 
 - Fixed reset button not working in the geotagging module. Also a
   loaded GPX track in the geotagging module is now properly removed.
 
 - Fixed darktable-cli crashing if the darktable database is locked.
 
-- Fixed image not properly layout in the print module after beeing
+- Fixed image not properly layout in the print module after being
   rotated from Lighttable.
 
 - Fixed a bug where the changes in various edit fields are not saved
