@@ -977,6 +977,14 @@ static void _signal_image_changed(gpointer instance, dt_iop_module_t *self)
     _clear_cache_entry(self, k);
 }
 
+static void _signal_module_moved(gpointer instance, dt_iop_module_t *self)
+{
+  if(!self) return;
+
+  _clear_cache_entry(self, self->multi_priority);
+  dt_dev_reprocess_all(self->dev);
+}
+
 static void _drag_and_drop_received(GtkWidget *widget,
                                     GdkDragContext *context,
                                     gint x,
@@ -1167,8 +1175,8 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->rotate, _("the rotation of the overlay"));
 
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_MODULE_REMOVE, _module_remove_callback);
-
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _signal_image_changed);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_MODULE_MOVED, _signal_module_moved);
 }
 
 // clang-format off

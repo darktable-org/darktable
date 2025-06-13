@@ -244,6 +244,9 @@ changes (where available).
 - Fixed a bug in xtrans demosaicers that could feed NaNs into the
   pixelpipe.
 
+- Fixed display of image using a composite module when the modules are
+  reordered.
+
 ## Lua
 
 ### API Version
