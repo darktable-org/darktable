@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1810,6 +1810,8 @@ void reload_defaults(dt_iop_module_t *self)
 
   if(g)
   {
+    gboolean profile_embedded_but_corrupted = FALSE;
+
     char *tooltip_part_profile_dirs =
       dt_ioppr_get_location_tooltip("in", _("external ICC profiles"));
 
@@ -1818,6 +1820,17 @@ void reload_defaults(dt_iop_module_t *self)
     if(color_profile == DT_COLORSPACE_EMBEDDED_ICC)
     {
       cmsHPROFILE cmsprofile = cmsOpenProfileFromMem(img->profile, img->profile_size);
+
+      // So, exiv2 read the embedded ICC profile from the image file, but it
+      // can be corrupted to the point that lcms2 cannot open it as a profile.
+      // In such a case, we have to bail out of the profile reading code, as
+      // we cannot read the profile properties and change the tooltip.
+      if(!cmsprofile)
+      {
+        profile_embedded_but_corrupted = TRUE;
+        dt_print(DT_DEBUG_ALWAYS, "[colorin] ICC profile is embedded but corrupted");
+        goto corrupted_profile;
+      }
 
       char iccDesc[64]; iccDesc[0] = '\0';
       cmsGetProfileInfoASCII(cmsprofile, cmsInfoDescription, "en", "US", iccDesc, 64);
@@ -1876,10 +1889,12 @@ void reload_defaults(dt_iop_module_t *self)
       if(bufsize)
         free(iccCopyr);
     }
-    else
+
+    // Make a generic tooltip if there is no ICC profile in the current image,
+    // or we jumped here because profile is corrupted.
+corrupted_profile:
+    if((color_profile != DT_COLORSPACE_EMBEDDED_ICC) || profile_embedded_but_corrupted)
     {
-      // If the current image does not have an embedded profile, let's
-      // display a generic tooltip
       gtk_widget_set_tooltip_markup(g->profile_combobox, tooltip_part_profile_dirs);
       g_free(tooltip_part_profile_dirs);
     }
