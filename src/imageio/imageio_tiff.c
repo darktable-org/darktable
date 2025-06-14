@@ -559,6 +559,9 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
 
 int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
 {
+  TIFFSetWarningHandler(_warning_handler);
+  TIFFSetErrorHandler(_error_handler);
+
   TIFF *tiff = NULL;
   uint32_t profile_len = 0;
   uint8_t *profile = NULL;
