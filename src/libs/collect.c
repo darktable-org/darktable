@@ -432,6 +432,8 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem,
      GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
      _("_open"), _("_cancel"));
 
+  gtk_file_chooser_set_create_folders(GTK_FILE_CHOOSER(filechooser), TRUE);
+
   if(tree_path != NULL)
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), tree_path);
   else

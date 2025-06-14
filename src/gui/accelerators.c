@@ -2682,6 +2682,7 @@ static void _export_clicked(GtkButton *button, gpointer user_data)
         _("select file to export"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SAVE,
         _("_export"), _("_cancel"));
 
+  gtk_file_chooser_set_create_folders(GTK_FILE_CHOOSER(chooser), TRUE);
   gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(chooser), TRUE);
   dt_conf_get_folder_to_file_chooser("ui_last/export_path", GTK_FILE_CHOOSER(chooser));
   gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(chooser), "shortcutsrc");

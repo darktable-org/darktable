@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -423,6 +423,9 @@ static void _edit_preset_response(GtkDialog *dialog,
     GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
           _("select directory"), GTK_WINDOW(dialog), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
           _("_select as output destination"), _("_cancel"));
+
+    gtk_file_chooser_set_create_folders(GTK_FILE_CHOOSER(filechooser), TRUE);
+
     dt_conf_get_folder_to_file_chooser("ui_last/export_path",
                                        GTK_FILE_CHOOSER(filechooser));
 

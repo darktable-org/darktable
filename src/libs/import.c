@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1862,6 +1862,8 @@ static void _lib_import_select_folder(GtkWidget *widget,
       _("select directory"), GTK_WINDOW(win),
       GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_open"), _("_cancel"));
 
+  gtk_file_chooser_set_create_folders(GTK_FILE_CHOOSER(filechooser), TRUE);
+
   // run the native dialog
   dt_conf_get_folder_to_file_chooser("ui_last/import_last_place",
                                      GTK_FILE_CHOOSER(filechooser));
@@ -1974,6 +1976,8 @@ static void _browse_basedir_clicked(GtkWidget *widget,
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
       _("select directory"), GTK_WINDOW(topwindow),
       GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_open"), _("_cancel"));
+
+  gtk_file_chooser_set_create_folders(GTK_FILE_CHOOSER(filechooser), TRUE);
 
   gchar *old = g_strdup(gtk_entry_get_text(basedir));
   char *c = g_strstr_len(old, -1, "$");
