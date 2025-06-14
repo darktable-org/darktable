@@ -2707,7 +2707,7 @@ static int _path_events_mouse_moved(dt_iop_module_t *module,
 
   if((gui->group_selected == index) && gui->point_edited >= 0)
   {
-      const int k = gui->point_edited;
+    const int k = gui->point_edited;
     // we only select feather if the point is not "sharp"
     if(gpt->points[k * 6 + 2] != gpt->points[k * 6 + 4]
        && gpt->points[k * 6 + 3] != gpt->points[k * 6 + 5])
@@ -2749,7 +2749,8 @@ static int _path_events_mouse_moved(dt_iop_module_t *module,
   for(int k = 0; k < nb; k++)
   {
     // corner ??
-    if(pzx - gpt->points[k * 6 + 2] > -as
+    if(!gui->select_only_border
+       && pzx - gpt->points[k * 6 + 2] > -as
        && pzx - gpt->points[k * 6 + 2] < as
        && pzy - gpt->points[k * 6 + 3] > -as
        && pzy - gpt->points[k * 6 + 3] < as)
@@ -2776,7 +2777,7 @@ static int _path_events_mouse_moved(dt_iop_module_t *module,
   int near = 0;
   float dist = 0;
   _path_get_distance(pzx, pzy, as, gui, index, nb, &in, &inb, &near, &ins, &dist);
-  gui->seg_selected = dist < sqf(as) ? near : -1;
+  gui->seg_selected = !gui->select_only_border && dist < sqf(as) ? near : -1;
 
   // no segment selected, set form or source selection
   if(near < 0)
