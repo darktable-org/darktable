@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024 darktable developers.
+    Copyright (C) 2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -54,13 +54,15 @@ gboolean dt_export_gimp_file(const dt_imgid_t imgid)
   fdata->style_append = FALSE;
 
   storage->store(storage, sdata, imgid, format, fdata, 1, 1,
-                  thumb ? FALSE : TRUE, // high_quality,
-                  FALSE, // never upscale
-                  thumb ? FALSE : TRUE, // export_masks
-                  thumb ? DT_COLORSPACE_SRGB : DT_COLORSPACE_LIN_REC709,
-                  NULL,  // icc_filename
-                  DT_INTENT_PERCEPTUAL,
-                  NULL);  // &metadata
+                 thumb ? FALSE : TRUE, // high_quality,
+                 FALSE, // never upscale
+                 FALSE,
+                 1.0,
+                 thumb ? FALSE : TRUE, // export_masks
+                 thumb ? DT_COLORSPACE_SRGB : DT_COLORSPACE_LIN_REC709,
+                 NULL,  // icc_filename
+                 DT_INTENT_PERCEPTUAL,
+                 NULL);  // &metadata
   printf("<<<gimp\n%s%s\n", path, thumb ? ".jpg" : ".exr");
   if(thumb)
   {

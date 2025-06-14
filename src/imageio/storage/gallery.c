@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -255,6 +255,8 @@ int store(dt_imageio_module_storage_t *self,
           const int total,
           const gboolean high_quality,
           const gboolean upscale,
+          const gboolean is_scaling,
+          const double scale_factor,
           const gboolean export_masks,
           dt_colorspaces_color_profile_type_t icc_type,
           const gchar *icc_filename,
@@ -395,7 +397,8 @@ int store(dt_imageio_module_storage_t *self,
   // export image to file. need this to be able to access meaningful
   // fdata->width and height below.
   if(dt_imageio_export(imgid, filename, format, fdata, high_quality,
-                       upscale, TRUE, export_masks, icc_type,
+                       upscale, is_scaling, scale_factor,
+                       TRUE, export_masks, icc_type,
                        icc_filename, icc_intent, self, sdata, num, total, metadata) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS,
@@ -436,6 +439,7 @@ int store(dt_imageio_module_storage_t *self,
   ext = format->extension(fdata);
   sprintf(c, "-thumb.%s", ext);
   if(dt_imageio_export(imgid, filename, format, fdata, FALSE, TRUE, FALSE,
+                       is_scaling, scale_factor,
                        export_masks, icc_type, icc_filename,
                        icc_intent, self, sdata, num, total, NULL) != 0)
   {
