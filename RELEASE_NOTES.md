@@ -181,8 +181,6 @@ changes (where available).
   of physical screen resolution, added pop-up window for
   parameterization and removed ISO12464 reference.
 
-- Attach export ICC profile to JP2 images.
-
 - Improved visibility of masks in darkroom. This is controlled by the
   new hidden "darkroom/ui/develop_mask_mix" configuration option.
 
