@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable 5.1.x\n"
+"Project-Id-Version: darktable 5.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-09 00:09-0600\n"
-"PO-Revision-Date: 2025-06-09 00:42-0600\n"
+"POT-Creation-Date: 2025-06-09 10:32-0600\n"
+"PO-Revision-Date: 2025-06-14 21:09-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1051,7 +1051,7 @@ msgstr "VERDADERO"
 # dt•v5.2
 #: ../build/bin/preferences_gen.h:4616
 msgid "this defines how the list of images to act on is constructed."
-msgstr ""
+msgstr "Indica cómo se construye la lista de imágenes para procesar"
 
 #: ../build/bin/preferences_gen.h:4637
 msgid "expand a single utility module at a time"
@@ -1568,19 +1568,20 @@ msgstr ""
 "Esta carpeta (y subcarpetas) contienen los archivos LUT utilizados por el "
 "módulo lut 3D. Es necesario reiniciar darktable."
 
+# dt•v5.2
 #: ../build/bin/preferences_gen.h:6058
-#, fuzzy
 msgid "raster mask files root folder"
-msgstr "máscaras de matriz de pixeles"
+msgstr "Carpeta raíz de archivos de máscaras de matriz de pixeles"
 
+# dt•v5.2
 #: ../build/bin/preferences_gen.h:6078
-#, fuzzy
 msgid ""
 "this folder (and sub-folders) contains PFM files used by the raster mask "
 "import module. (restart required)"
 msgstr ""
-"Esta carpeta (y subcarpetas) contienen los archivos LUT utilizados por el "
-"módulo lut 3D. Es necesario reiniciar darktable."
+"Esta carpeta (y subcarpetas) contienen los archivos PFM utilizados por el "
+"módulo de importación de máscaras de matriz de pixeles. Es necesario "
+"reiniciar darktable."
 
 #: ../build/bin/preferences_gen.h:6099
 msgid "auto-apply pixel workflow defaults"
@@ -1755,7 +1756,7 @@ msgstr ""
 msgid "tuned GPU memory"
 msgstr "Utilizar toda la memoria del GPU"
 
-# dt•v5.0*
+# dt•v5.0*dt•v5.2
 #: ../build/bin/preferences_gen.h:6388
 #, fuzzy
 msgid ""
@@ -1954,6 +1955,7 @@ msgstr ""
 "Interfaz para almacenamiento de claves: automático, ninguno, Libsecret, "
 "Kwallet, Llaveros de Apple y Credenciales de Windows"
 
+# dt•v5.2
 #: ../build/bin/preferences_gen.h:7178
 #, fuzzy
 msgid "auto login to storage server"
@@ -1965,6 +1967,10 @@ msgid ""
 "automatically login to the configured storage server. this requires that a "
 "password storage backend is set."
 msgstr ""
+"Iniciar sesión automáticamente en el servidor de almacenamiento "
+"configurado.\n"
+"Para ello es necesario establecer un soporte de almacenamiento con "
+"contraseña."
 
 #: ../build/bin/preferences_gen.h:7212
 msgid "executable for playing audio files"
@@ -2449,12 +2455,12 @@ msgstr ""
 #. Not to be compiled, generated for translation only
 #: ../build/bin/styles_string.h:3
 msgid "4-up on US Letter paper"
-msgstr ""
+msgstr "4 imágenes por cara, tamaño Carta (US)"
 
+# dt•v5.2
 #: ../build/bin/styles_string.h:4
-#, fuzzy
 msgid "add simulated motion blur to the image"
-msgstr "Ajusta el aspecto de la imagen"
+msgstr "añadir desenfoque de movimiento simulado a la imagen"
 
 # dt•v5.2
 #: ../build/bin/styles_string.h:5
@@ -2485,12 +2491,12 @@ msgstr "azul"
 # dt•v5.2
 #: ../build/bin/styles_string.h:7
 msgid "blue LED lighting fix"
-msgstr ""
+msgstr "corrección para el LED azul (intensa)"
 
 # dt•v5.2
 #: ../build/bin/styles_string.h:8
 msgid "blue LED lighting fix (strong)"
-msgstr ""
+msgstr "corrección para el LED azul (intensa)"
 
 # dt•v5.0•5.1
 #: ../build/bin/styles_string.h:9
@@ -2507,11 +2513,13 @@ msgid ""
 "composite four images plus a caption into an image which can be printed "
 "borderless on 8.5x11 paper"
 msgstr ""
+"Impresión sin márgenes con cuatro imágenes y pie de foto por cara en papel "
+"de 8.5 × 11"
 
+# dt•v5.2
 #: ../build/bin/styles_string.h:12
-#, fuzzy
 msgid "contrast and sharpness"
-msgstr "contraste en las sombras"
+msgstr "contraste y nitidez"
 
 #: ../build/bin/styles_string.h:13
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:284
@@ -2532,20 +2540,20 @@ msgstr "cian"
 msgid "darktable"
 msgstr "darktable"
 
+# dt•v5.2
 #: ../build/bin/styles_string.h:15
-#, fuzzy
 msgid "day for night"
-msgstr "controlador direccional derecho"
+msgstr "día a noche"
 
+# dt•v5.2
 #: ../build/bin/styles_string.h:16
-#, fuzzy
 msgid "day for twilight"
-msgstr "amanecer"
+msgstr "día a crepúsculo"
 
+# dt•v5.2
 #: ../build/bin/styles_string.h:17
-#, fuzzy
 msgid "dehaze (strong, luminance only)"
-msgstr "Sólo luminancia"
+msgstr "eliminar neblina (intenso y sólo luminancia)"
 
 # dt•v5.2
 #: ../build/bin/styles_string.h:18
@@ -2553,10 +2561,11 @@ msgid ""
 "desaturate and darken red pupils in flash photos.  add drawn masks to limit "
 "affected areas to just the eyes if necessary."
 msgstr ""
+"Desatura y oscurece lo rojo en las pupilas causadas por el flash.  Si es "
+"necesario, trace máscaras para delimitar las zonas afectadas."
 
-# dt•v5.1
+# dt•v5.1*dt•v5.2
 #: ../build/bin/styles_string.h:19
-#, fuzzy
 msgid "effects"
 msgstr "efectos"
 
@@ -2566,15 +2575,15 @@ msgstr "efectos"
 msgid "examples"
 msgstr "ejemplos"
 
+# dt•v5.2
 #: ../build/bin/styles_string.h:21
-#, fuzzy
 msgid "extreme local contrast"
-msgstr "contraste local rápido"
+msgstr "contraste local extremo"
 
+# dt•v5.2
 #: ../build/bin/styles_string.h:22
-#, fuzzy
 msgid "extreme saturation"
-msgstr "saturación de luminancia extrema"
+msgstr "saturación extrema"
 
 #. cubic spline
 #: ../build/bin/styles_string.h:23 ../src/iop/filmic.c:1585
@@ -2588,10 +2597,10 @@ msgid ""
 "color equalizer"
 msgstr ""
 
+# dt•v5.2
 #: ../build/bin/styles_string.h:25
-#, fuzzy
 msgid "fog"
-msgstr "logarítmica"
+msgstr "neblina"
 
 #: ../build/bin/styles_string.h:26
 #: ../build/lib/darktable/plugins/introspection_ashift.c:361
@@ -2638,6 +2647,8 @@ msgstr "magenta"
 #: ../build/bin/styles_string.h:29
 msgid "make a photo taken in daylight look like it was taken in twilight"
 msgstr ""
+"Transforma una imagen tomada durante el día para que aparente ser tomada al "
+"atardecer"
 
 # dt•v5.2
 #: ../build/bin/styles_string.h:30
@@ -2645,6 +2656,8 @@ msgid ""
 "make a photo taken in full daylight look like it was taken at night.  "
 "emulates the cinematic technique of the same name."
 msgstr ""
+"Transforma una imagen tomada durante el día para que aparente ser nocturna.  "
+"Emula la técnica cinematográfica del mismo nombre."
 
 # dt•v5.1
 #: ../build/bin/styles_string.h:31
@@ -2695,30 +2708,32 @@ msgstr "púrpura"
 msgid "red"
 msgstr "rojo"
 
+# dt•v5.2
 #: ../build/bin/styles_string.h:36
-#, fuzzy
 msgid "red-eye reduction"
-msgstr "atenuación del rojo"
+msgstr "reducción de ojo rojo"
 
 # dt•v5.2
 #: ../build/bin/styles_string.h:37
 msgid "sepia"
 msgstr "sepia"
 
+# dt•v5.2
 #: ../build/bin/styles_string.h:38
-#, fuzzy
 msgid "sharpen finest details"
-msgstr "enfoque y reducción de ruido"
+msgstr "aumentar nitidez en detalles pequeños"
 
 # dt•v5.2
 #: ../build/bin/styles_string.h:39
 msgid "shift greens to yellow and yellows to orange to simulate fall foliage"
 msgstr ""
+"Alterna los verdes por amarillos y los amarillos por naranjas para simular "
+"follaje otoñal"
 
+# dt•v5.2
 #: ../build/bin/styles_string.h:40
-#, fuzzy
 msgid "spot color"
-msgstr "mostrar color"
+msgstr "destacar color"
 
 #: ../build/bin/styles_string.h:41
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:272
@@ -3934,15 +3949,15 @@ msgstr "RCD (Relación Corregida)"
 msgid "LMMSE"
 msgstr "LMMSE (ECMML)"
 
+# dt•v5.2
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:218
-#, fuzzy
 msgid "RCD (dual)"
-msgstr "D (Luz de Día)"
+msgstr "RCD (Relación Corregida) dual"
 
+# dt•v5.2
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:219
-#, fuzzy
 msgid "AMaZE (dual)"
-msgstr "AMaZE (lento)"
+msgstr "AMaZE (dual)"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:220
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:227
@@ -3970,10 +3985,10 @@ msgstr "Markesteijn 3 pasadas"
 msgid "frequency domain chroma"
 msgstr "croma de dominio de frecuencia"
 
+# dt•v5.2
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:226
-#, fuzzy
 msgid "Markesteijn 3-pass (dual)"
-msgstr "Markesteijn 3 pasadas (lento)"
+msgstr "Markesteijn 3 pasadas (dual)"
 
 #. history
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:232
@@ -5210,40 +5225,40 @@ msgstr "logarítmica"
 msgid "gamma"
 msgstr "gamma"
 
+# dt•v5.2
 #: ../build/lib/darktable/plugins/introspection_rasterfile.c:146
-#, fuzzy
 msgid "all RGB channels"
-msgstr "Cualquier canal RGB"
+msgstr "todos los canales RGB"
 
+# dt•v5.2
 #: ../build/lib/darktable/plugins/introspection_rasterfile.c:147
-#, fuzzy
 msgid "only red"
-msgstr "marca roja"
+msgstr "solo rojo"
 
+# dt•v5.2
 #: ../build/lib/darktable/plugins/introspection_rasterfile.c:148
-#, fuzzy
 msgid "only green"
-msgstr "verde claro"
+msgstr "solo verde"
 
+# dt•v5.2
 #: ../build/lib/darktable/plugins/introspection_rasterfile.c:149
-#, fuzzy
 msgid "only blue"
-msgstr "azul marino"
+msgstr "solo azul"
 
+# dt•v5.2
 #: ../build/lib/darktable/plugins/introspection_rasterfile.c:150
-#, fuzzy
 msgid "red and green"
-msgstr "verde marino"
+msgstr "rojo y verde"
 
+# dt•v5.2
 #: ../build/lib/darktable/plugins/introspection_rasterfile.c:151
-#, fuzzy
 msgid "red and blue"
 msgstr "rojo y azul"
 
+# dt•v5.2
 #: ../build/lib/darktable/plugins/introspection_rasterfile.c:152
-#, fuzzy
 msgid "green and blue"
-msgstr "matiz del verde"
+msgstr "verde y azul"
 
 #: ../build/lib/darktable/plugins/introspection_rawdenoise.c:43
 #: ../build/lib/darktable/plugins/introspection_rawdenoise.c:122
@@ -6682,10 +6697,10 @@ msgid ""
 "please fix this and then run darktable again"
 msgstr ""
 
+# dt•v5.2
 #: ../src/common/darktable.c:1520
-#, fuzzy
 msgid "darktable - unable to create directories"
-msgstr "darktable: versión de base de datos bastante reciente."
+msgstr "darktable: no es posible crear directorios"
 
 #: ../src/common/darktable.c:1522 ../src/common/database.c:4088
 #: ../src/common/database.c:4282
@@ -6714,14 +6729,13 @@ msgstr "Preparando la base de datos"
 msgid "setting up tags table"
 msgstr ""
 
-# dt•v5.0
+# dt•v5.0*dt•v5.2
 #. Initialize the signal system
 #: ../src/common/darktable.c:1596
-#, fuzzy
 msgid "initializing signals and control"
-msgstr "Inicializando el control de cámara"
+msgstr "Inicializando las señales y los controles"
 
-# dt•v5.0
+# dt•v5.0*dt•v5.2
 #: ../src/common/darktable.c:1615
 #, fuzzy
 msgid "importing default styles"
@@ -6776,16 +6790,17 @@ msgstr "Inicializando la interfaz de usuario"
 msgid "loading processing modules"
 msgstr "Cargando módulos de revelado"
 
+# dt•v5.2
 #: ../src/common/darktable.c:1839
 #, fuzzy
 msgid "loading utility modules"
 msgstr "módulos de funcionalidad"
 
+# dt•v5.2
 #. init the gui part of views
 #: ../src/common/darktable.c:1844
-#, fuzzy
 msgid "loading views"
-msgstr "visión en directo"
+msgstr "Cargando vistas"
 
 # dt•v5.0
 #: ../src/common/darktable.c:1850
@@ -7212,10 +7227,10 @@ msgid ""
 "please fix this and then run darktable again"
 msgstr ""
 
+# dt•v5.2
 #: ../src/common/database.c:4280
-#, fuzzy
 msgid "darktable - read-only database detected"
-msgstr "Error en darktable al abrir la base de datos"
+msgstr "Error en darktable: base de datos de solo lectura"
 
 #: ../src/common/database.c:4443 ../src/common/database.c:4618
 #, c-format
@@ -7859,10 +7874,10 @@ msgstr "bajo el nivel del mar"
 msgid "m"
 msgstr "m"
 
+# dt•v5.2
 #: ../src/common/variables.c:191
-#, fuzzy
 msgid "no info"
-msgstr "mostrar información"
+msgstr "sin información"
 
 #: ../src/common/variables.c:197 ../src/common/variables.c:819
 #: ../src/develop/imageop_gui.c:210 ../src/imageio/format/avif.c:861
@@ -8073,6 +8088,8 @@ msgstr "Mostrar la ventana de atajos"
 #: ../src/control/control.c:313
 msgid "darktable will be locked until background work has been done"
 msgstr ""
+"darktable se bloqueará hasta que se hayan completado todas las tareas en "
+"segundo plano"
 
 # Traducción no literal: Se usa un mensaje con mejor sentido en español.
 #: ../src/control/control.c:417
@@ -13837,6 +13854,7 @@ msgstr "invertir arriba/abajo primero/último"
 msgid "fallback to move"
 msgstr "alternativa para moverse"
 
+# dt•v5.2
 #: ../src/gui/accelerators.c:3825
 #, fuzzy, c-format
 msgid ""
@@ -13888,38 +13906,38 @@ msgctxt "menu"
 msgid "Views"
 msgstr "vistas"
 
+# dt•v5.2
 #: ../src/gui/gtk.c:1240
-#, fuzzy
 msgctxt "menu"
 msgid "Lighttable"
 msgstr "mesa de luz"
 
+# dt•v5.2
 #: ../src/gui/gtk.c:1241
-#, fuzzy
 msgctxt "menu"
 msgid "Darkroom"
 msgstr "cuarto oscuro"
 
+# dt•v5.2
 #: ../src/gui/gtk.c:1247
-#, fuzzy
 msgctxt "menu"
 msgid "Slideshow"
 msgstr "diapositivas"
 
+# dt•v5.2
 #: ../src/gui/gtk.c:1249
-#, fuzzy
 msgctxt "menu"
 msgid "Map"
 msgstr "mapa"
 
+# dt•v5.2
 #: ../src/gui/gtk.c:1251
-#, fuzzy
 msgctxt "menu"
 msgid "Print"
 msgstr "imprimir"
 
+# dt•v5.2
 #: ../src/gui/gtk.c:1253
-#, fuzzy
 msgctxt "menu"
 msgid "Tethering"
 msgstr "captura"
@@ -14216,11 +14234,10 @@ msgstr "$(TAGS) → etiquetas establecidas en la configuración de metadatos"
 msgid "$(DARKTABLE.NAME) - darktable name"
 msgstr "$(DARKTABLE.NAME) → mencionar a darktable"
 
-# dt•v5.0
+# dt•v5.0*dt•v5.2
 #: ../src/gui/gtkentry.c:295
-#, fuzzy
 msgid "from metadata"
-msgstr "copiar metadatos"
+msgstr "desde los metadatos"
 
 #: ../src/gui/guides.c:30 ../src/iop/colorcorrection.c:243
 #: ../src/iop/monochrome.c:562
@@ -15218,7 +15235,7 @@ msgstr "DWAB"
 # dt•v5.2
 #: ../src/imageio/format/j2k.c:448
 msgid "unable to attach output profile to JP2"
-msgstr ""
+msgstr "No se puede adjuntar el perfil de salida a JP2"
 
 #: ../src/imageio/format/j2k.c:677
 msgid "JPEG 2000 (12-bit)"
@@ -16234,54 +16251,54 @@ msgstr "resplandor"
 msgid "clarity"
 msgstr "claridad"
 
+# dt•v5.2
 #: ../src/iop/atrous.c:913
-#, fuzzy
 msgid "deblur | large blur | strength 3"
-msgstr "nitidez: desenfoque amplio, intensidad 3"
+msgstr "nitidez | desenfoque amplio | intensidad 3"
 
+# dt•v5.2
 #: ../src/iop/atrous.c:931
-#, fuzzy
 msgid "deblur | medium blur | strength 3"
-msgstr "nitidez: desenfoque medio, intensidad 3"
+msgstr "nitidez | desenfoque medio | intensidad 3"
 
+# dt•v5.2
 #: ../src/iop/atrous.c:948
-#, fuzzy
 msgid "deblur | fine blur | strength 3"
-msgstr "nitidez: desenfoque ligero, intensidad 3"
+msgstr "nitidez | desenfoque ligero | intensidad 3"
 
+# dt•v5.2
 #: ../src/iop/atrous.c:967
-#, fuzzy
 msgid "deblur | large blur | strength 2"
-msgstr "nitidez: desenfoque amplio, intensidad 2"
+msgstr "nitidez | desenfoque amplio | intensidad 2"
 
+# dt•v5.2
 #: ../src/iop/atrous.c:985
-#, fuzzy
 msgid "deblur | medium blur | strength 2"
-msgstr "nitidez: desenfoque medio, intensidad 2"
+msgstr "nitidez | desenfoque medio | intensidad 2"
 
+# dt•v5.2
 #: ../src/iop/atrous.c:1002
-#, fuzzy
 msgid "deblur | fine blur | strength 2"
-msgstr "nitidez: desenfoque ligero, intensidad 2"
+msgstr "nitidez | desenfoque ligero | intensidad 2"
 
+# dt•v5.2
 #: ../src/iop/atrous.c:1021
-#, fuzzy
 msgid "deblur | large blur | strength 1"
-msgstr "nitidez: desenfoque amplio, intensidad 1"
+msgstr "nitidez | desenfoque amplio | intensidad 1"
 
+# dt•v5.2
 #: ../src/iop/atrous.c:1039
-#, fuzzy
 msgid "deblur | medium blur | strength 1"
-msgstr "nitidez: desenfoque medio, intensidad 1"
+msgstr "nitidez | desenfoque medio | intensidad 1"
 
+# dt•v5.2
 #: ../src/iop/atrous.c:1056
-#, fuzzy
 msgid "deblur | fine blur | strength 1"
-msgstr "nitidez: desenfoque ligero, intensidad 1"
+msgstr "nitidez | desenfoque ligero | intensidad 1"
 
+# dt•v5.2
 #: ../src/iop/atrous.c:1385 ../src/iop/atrous.c:1631
 #: ../src/iop/denoiseprofile.c:3477 ../src/iop/rawdenoise.c:730
-#, fuzzy
 msgctxt "graph"
 msgid "coarse"
 msgstr "detalles grandes"
@@ -16461,6 +16478,7 @@ msgstr "similar a Nokia"
 msgid "base curve"
 msgstr "curva base"
 
+# dt•v5.2
 #: ../src/iop/basecurve.c:370
 #, fuzzy
 msgid ""
@@ -16735,6 +16753,7 @@ msgstr "difuminar textura"
 msgid "denoise (bilateral filter)"
 msgstr "reducción de ruido (filtro bilateral)"
 
+# dt•v5.2
 #: ../src/iop/bilateral.cc:101
 #, fuzzy
 msgid ""
@@ -17382,54 +17401,54 @@ msgstr "mezclador de canal|balance de blancos|monocromo"
 msgid "linear, RGB or XYZ"
 msgstr "Lineal, RGB o XYZ"
 
+# dt•v5.2
 #: ../src/iop/channelmixerrgb.c:460
-#, fuzzy
 msgid "monochrome | luminance-based"
-msgstr "B/N basado en luminosidad"
+msgstr "B/N | basado en luminosidad"
 
+# dt•v5.2
 #: ../src/iop/channelmixerrgb.c:495
-#, fuzzy
 msgid "monochrome | ILFORD HP5+"
-msgstr "B/N:  ILFORD HP5+"
+msgstr "B/N | ILFORD HP5+"
 
+# dt•v5.2
 #: ../src/iop/channelmixerrgb.c:504
-#, fuzzy
 msgid "monochrome | ILFORD DELTA 100"
-msgstr "B/N:  ILFORD DELTA 100"
+msgstr "B/N | ILFORD DELTA 100"
 
+# dt•v5.2
 #: ../src/iop/channelmixerrgb.c:514
-#, fuzzy
 msgid "monochrome | ILFORD DELTA 400 - 3200"
-msgstr "B/N:  ILFORD DELTA 400-3200"
+msgstr "B/N | ILFORD DELTA 400-3200"
 
+# dt•v5.2
 #: ../src/iop/channelmixerrgb.c:523
-#, fuzzy
 msgid "monochrome | ILFORD FP4+"
-msgstr "B/N:  ILFORD FP4+"
+msgstr "B/N | ILFORD FP4+"
 
+# dt•v5.2
 #: ../src/iop/channelmixerrgb.c:532
-#, fuzzy
 msgid "monochrome | Fuji Acros 100"
-msgstr "B/N: Fuji Acros 100"
+msgstr "B/N | Fuji Acros 100"
 
 #: ../src/iop/channelmixerrgb.c:549
 msgid "basic channel mixer"
 msgstr "mezclador básico de canal"
 
+# dt•v5.2
 #: ../src/iop/channelmixerrgb.c:562
-#, fuzzy
 msgid "channel swap | swap G and B"
-msgstr "intercambiar G y B"
+msgstr "intercambiar canal | G y B"
 
+# dt•v5.2
 #: ../src/iop/channelmixerrgb.c:575
-#, fuzzy
 msgid "channel swap | swap G and R"
-msgstr "intercambiar G y R"
+msgstr "intercambiar canal | G y R"
 
+# dt•v5.2
 #: ../src/iop/channelmixerrgb.c:588
-#, fuzzy
 msgid "channel swap | swap R and B"
-msgstr "intercambiar R y B"
+msgstr "intercambiar canal | R y B"
 
 # dt•v5.0
 #: ../src/iop/channelmixerrgb.c:602
@@ -18552,25 +18571,25 @@ msgstr ""
 "Las herramientas de gradación de color emplean máscaras alfa\n"
 "para separar las sombras, los tonos medios y las luces."
 
+# dt•v5.2
 #: ../src/iop/colorbalancergb.c:523
-#, fuzzy
 msgid "basic colorfulness | legacy"
-msgstr "añadir coloración básica (heredado)"
+msgstr "coloración básica |  heredado"
 
+# dt•v5.2
 #: ../src/iop/colorbalancergb.c:532
-#, fuzzy
 msgid "basic colorfulness | natural skin"
-msgstr "añadir coloración básica: piel natural"
+msgstr "coloración básica |  piel natural"
 
+# dt•v5.2
 #: ../src/iop/colorbalancergb.c:538
-#, fuzzy
 msgid "basic colorfulness | vibrant colors"
-msgstr "añadir coloración básica: colores vivos"
+msgstr "coloración básica |  colores vivos"
 
+# dt•v5.2
 #: ../src/iop/colorbalancergb.c:544
-#, fuzzy
 msgid "basic colorfulness | standard"
-msgstr "añadir coloración básica"
+msgstr "coloración básica | general"
 
 #: ../src/iop/colorbalancergb.c:961
 msgid "colorbalance works only on RGB input"
@@ -18677,6 +18696,7 @@ msgstr "4 escalas"
 msgid "selective color grading"
 msgstr "Gradación de color modular"
 
+# dt•v5.2
 #: ../src/iop/colorbalancergb.c:1874
 #, fuzzy
 msgid ""
@@ -19065,6 +19085,7 @@ msgstr "ecualizador de color"
 msgid "color zones|hsl"
 msgstr "zonas de color|hsl"
 
+# dt•v5.2
 #: ../src/iop/colorequal.c:213
 #, fuzzy
 msgid ""
@@ -19328,6 +19349,7 @@ msgstr "Mezclar la luminosidad de las fuentes"
 msgid "color mapping"
 msgstr "mapeo de color"
 
+# dt•v5.2
 #: ../src/iop/colormapping.c:150
 #, fuzzy
 msgid ""
@@ -19737,6 +19759,7 @@ msgstr ""
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "«%s» matriz de color no encontrada para imagen tipo Bayer"
 
+# dt•v5.2
 #: ../src/iop/demosaic.c:1333
 #, fuzzy
 msgid ""
@@ -19751,6 +19774,7 @@ msgstr ""
 "LMMSE es el más adecuado para imágenes con ISO alto.\n"
 "El tiempo de procesado se duplica con la interpolación cromática dual."
 
+# dt•v5.2
 #: ../src/iop/demosaic.c:1337
 #, fuzzy
 msgid ""
@@ -20054,6 +20078,7 @@ msgstr ""
 msgid "diffuse or sharpen"
 msgstr "difuso / nítido"
 
+# dt•v5.2
 #: ../src/iop/diffuse.c:129
 #, fuzzy
 msgid ""
@@ -20063,6 +20088,7 @@ msgstr ""
 "difusión|deconvolución|desenfoque|nitidez|resplandor|claridad|reconstrucción|"
 "acuarela"
 
+# dt•v5.2
 #: ../src/iop/diffuse.c:136
 #, fuzzy
 msgid ""
@@ -20076,108 +20102,108 @@ msgstr ""
 "restaurar zonas dañadas de la imagen o\n"
 "reducir el desenfoque por el método de deconvolución ciega."
 
+# dt•v5.2
 #. deblurring presets
 #: ../src/iop/diffuse.c:239
-#, fuzzy
 msgid "lens deblur | soft"
-msgstr "nitidez de lente: sutil"
+msgstr "nitidez de lente | sutil"
 
+# dt•v5.2
 #: ../src/iop/diffuse.c:264
-#, fuzzy
 msgid "lens deblur | medium"
-msgstr "nitidez de lente: moderado"
+msgstr "nitidez de lente | moderado"
 
+# dt•v5.2
 #: ../src/iop/diffuse.c:289
-#, fuzzy
 msgid "lens deblur | hard"
-msgstr "nitidez de lente: notable"
+msgstr "nitidez de lente | notable"
 
+# dt•v5.2
 #: ../src/iop/diffuse.c:315
-#, fuzzy
 msgid "dehaze | default"
-msgstr "preajustes desactivados"
+msgstr "eliminar neblina | normal"
 
+# dt•v5.2
 #: ../src/iop/diffuse.c:341
-#, fuzzy
 msgid "dehaze | extra contrast"
-msgstr "eliminar neblina: mayor contraste"
+msgstr "eliminar neblina | mayor contraste"
 
+# dt•v5.2
 #: ../src/iop/diffuse.c:367
-#, fuzzy
 msgid "denoise | fine"
-msgstr "reducción de ruido: tenue"
+msgstr "reducción de ruido | tenue"
 
+# dt•v5.2
 #: ../src/iop/diffuse.c:392
-#, fuzzy
 msgid "denoise | medium"
-msgstr "reducción de ruido: moderado"
+msgstr "reducción de ruido | moderado"
 
+# dt•v5.2
 #: ../src/iop/diffuse.c:417
-#, fuzzy
 msgid "denoise | coarse"
-msgstr "reducción de ruido: intenso"
+msgstr "reducción de ruido | intenso"
 
 # dt•v5.2
 #: ../src/iop/diffuse.c:467
 msgid "artistic effects | bloom"
-msgstr ""
+msgstr "efectos artísticos | resplandor"
 
+# dt•v5.2
 #: ../src/iop/diffuse.c:492
-#, fuzzy
 msgid "sharpen demosaicing | no AA filter"
-msgstr "nitidez con interpolación cromática: sin filtro antiplegamiento"
+msgstr "nitidez con interpolación cromática | sin filtro antiplegamiento"
 
+# dt•v5.2
 #: ../src/iop/diffuse.c:518
-#, fuzzy
 msgid "sharpen demosaicing | AA filter"
-msgstr "nitidez con interpolación cromática: con filtro antiplegamiento"
+msgstr "nitidez con interpolación cromática | con filtro antiplegamiento"
 
+# dt•v5.2
 #: ../src/iop/diffuse.c:545
-#, fuzzy
 msgid "artistic effects | simulate watercolor"
-msgstr "imitar a la acuarela"
+msgstr "efectos artísticos | imitar a la acuarela"
 
+# dt•v5.2
 #: ../src/iop/diffuse.c:570
-#, fuzzy
 msgid "artistic effects | simulate line drawing"
-msgstr "imitar al dibujo con líneas"
+msgstr "efectos artísticos | imitar al dibujo con líneas"
 
+# dt•v5.2
 #. local contrast
 #: ../src/iop/diffuse.c:597
-#, fuzzy
 msgid "local contrast | normal"
-msgstr "máscara de contraste local"
+msgstr "contraste local | normal"
 
+# dt•v5.2
 #: ../src/iop/diffuse.c:622
-#, fuzzy
 msgid "local contrast | fine"
-msgstr "contraste local: refinado"
+msgstr "contraste local | refinado"
 
 #: ../src/iop/diffuse.c:647
 msgid "inpaint highlights"
 msgstr "reconstrucción de luces"
 
+# dt•v5.2
 #. fast presets for slow hardware
 #: ../src/iop/diffuse.c:674
-#, fuzzy
 msgid "sharpness | fast"
-msgstr "enfoque: acelerado"
+msgstr "enfoque | acelerado"
 
+# dt•v5.2
 #. two more sharpness (standard & strong)
 #: ../src/iop/diffuse.c:701
-#, fuzzy
 msgid "sharpness | normal"
-msgstr "enfoque"
+msgstr "enfoque | normal"
 
+# dt•v5.2
 #: ../src/iop/diffuse.c:726
-#, fuzzy
 msgid "sharpness | strong"
-msgstr "enfoque: marcado"
+msgstr "enfoque | marcado"
 
+# dt•v5.2
 #: ../src/iop/diffuse.c:751
-#, fuzzy
 msgid "local contrast | fast"
-msgstr "contraste local: acelerado"
+msgstr "contraste local | acelerado"
 
 #: ../src/iop/diffuse.c:1402
 msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
@@ -21427,70 +21453,70 @@ msgstr ""
 msgid "the target light for tonemapper specified as cd/m2"
 msgstr "La luz destino para el mapeo tonal se especifica como cd/m²"
 
+# dt•v5.2
 #: ../src/iop/graduatednd.c:64
-#, fuzzy
 msgid "neutral gray | ND2 (soft)"
-msgstr "gris neutro ND2 (tenue)"
+msgstr "gris neutro | ND2 (tenue)"
 
+# dt•v5.2
 #: ../src/iop/graduatednd.c:67
-#, fuzzy
 msgid "neutral gray | ND4 (soft)"
-msgstr "gris neutro ND4 (tenue)"
+msgstr "gris neutro | ND4 (tenue)"
 
+# dt•v5.2
 #: ../src/iop/graduatednd.c:70
-#, fuzzy
 msgid "neutral gray | ND8 (soft)"
-msgstr "gris neutro ND8 (tenue)"
+msgstr "gris neutro | ND8 (tenue)"
 
+# dt•v5.2
 #: ../src/iop/graduatednd.c:73
-#, fuzzy
 msgid "neutral gray | ND2 (hard)"
-msgstr "gris neutro ND2 (intenso)"
+msgstr "gris neutro | ND2 (intenso)"
 
+# dt•v5.2
 #: ../src/iop/graduatednd.c:77
-#, fuzzy
 msgid "neutral gray | ND4 (hard)"
-msgstr "gris neutro ND4 (intenso)"
+msgstr "gris neutro | ND4 (intenso)"
 
+# dt•v5.2
 #: ../src/iop/graduatednd.c:80
-#, fuzzy
 msgid "neutral gray | ND8 (hard)"
-msgstr "gris neutro ND8 (intenso)"
+msgstr "gris neutro | ND8 (intenso)"
 
+# dt•v5.2
 #: ../src/iop/graduatednd.c:84
-#, fuzzy
 msgid "tinted | orange ND2 (soft)"
-msgstr "naranja ND2 (tenue)"
+msgstr "naranja | ND2 (tenue)"
 
+# dt•v5.2
 #: ../src/iop/graduatednd.c:87
-#, fuzzy
 msgid "tinted | yellow ND2 (soft)"
-msgstr "amarillo ND2 (tenue)"
+msgstr "amarillo | ND2 (tenue)"
 
+# dt•v5.2
 #: ../src/iop/graduatednd.c:91
-#, fuzzy
 msgid "tinted | purple ND2 (soft)"
-msgstr "púrpura ND2 (tenue)"
+msgstr "púrpura | ND2 (tenue)"
 
+# dt•v5.2
 #: ../src/iop/graduatednd.c:95
-#, fuzzy
 msgid "tinted | green ND2 (soft)"
-msgstr "verde ND2 (tenue)"
+msgstr "verde | ND2 (tenue)"
 
+# dt•v5.2
 #: ../src/iop/graduatednd.c:99
-#, fuzzy
 msgid "tinted | red ND2 (soft)"
-msgstr "rojo ND2 (tenue)"
+msgstr "rojo | ND2 (tenue)"
 
+# dt•v5.2
 #: ../src/iop/graduatednd.c:102
-#, fuzzy
 msgid "tinted | blue ND2 (soft)"
-msgstr "azul ND2 (tenue)"
+msgstr "azul | ND2 (tenue)"
 
+# dt•v5.2
 #: ../src/iop/graduatednd.c:106
-#, fuzzy
 msgid "tinted | brown ND4 (soft)"
-msgstr "marrón ND4 (tenue)"
+msgstr "marrón | ND4 (tenue)"
 
 #: ../src/iop/graduatednd.c:137
 msgid "graduated density"
@@ -21788,6 +21814,7 @@ msgstr "Contraste del filtro paso alto"
 msgid "hot pixels"
 msgstr "pixeles calientes"
 
+# dt•v5.2
 #: ../src/iop/hotpixels.c:71
 #, fuzzy
 msgid ""
@@ -22571,6 +22598,7 @@ msgstr "Eligir el método de interpolación"
 msgid "mask manager"
 msgstr "gestor de máscaras"
 
+# dt•v5.2
 #: ../src/iop/monochrome.c:97
 #, fuzzy
 msgid ""
@@ -22830,6 +22858,7 @@ msgstr "reducción de ruido en astrofotografía"
 msgid "denoise (non-local means)"
 msgstr "reducción de ruido (medias no locales)"
 
+# dt•v5.2
 #: ../src/iop/nlmeans.c:85
 #, fuzzy
 msgid ""
@@ -23105,54 +23134,59 @@ msgstr ""
 "Reducción de ruido en RAW\n"
 "Solo funciona con imágenes RAW."
 
+# dt•v5.2
 #: ../src/iop/rasterfile.c:88
-#, fuzzy
 msgid "external raster masks"
-msgstr "máscara de matriz de pixeles"
+msgstr "máscara de matriz de pixeles externa"
 
+# dt•v5.2
 #: ../src/iop/rasterfile.c:93
-#, fuzzy
 msgid "raster|mask"
-msgstr "máscara de matriz de pixeles"
+msgstr "matriz de pixeles | máscara"
 
 # dt•v5.2
 #: ../src/iop/rasterfile.c:99
 msgid "read PFM files recorded for use as raster masks"
 msgstr ""
+"Lee los archivos PFM guardados para usarse como máscaras de matriz de pixeles"
 
+# dt•v5.2
 #: ../src/iop/rasterfile.c:168
 #, fuzzy, c-format
 msgid "can't read raster mask file '%s'"
 msgstr "No se puede leer el archivo XMP «%s»: «%s»"
 
+# dt•v5.2
 #: ../src/iop/rasterfile.c:252
-#, fuzzy
 msgid "raster mask files root folder not defined"
-msgstr "La carpeta raíz de LUT no está definida"
+msgstr ""
+"La carpeta raíz de archivos de máscaras de matriz de pixeles no está definida"
 
+# dt•v5.2
 #: ../src/iop/rasterfile.c:259
-#, fuzzy
 msgid "select raster mask file"
-msgstr "Escoja el color de la marca de agua"
+msgstr "Seleccione el archivo de máscara de matriz de pixeles"
 
 # dt•v5.2
 #: ../src/iop/rasterfile.c:293
 msgid "selected file not within raster masks root folder"
 msgstr ""
+"El archivo seleccionado no se encuentra en la carpeta raíz de máscaras de "
+"matriz de pixeles"
 
 # dt•v5.2
 #: ../src/iop/rasterfile.c:591
 msgid "select the RGB channels taken into account to generate the raster mask"
 msgstr ""
 
+# dt•v5.2
 #: ../src/iop/rasterfile.c:595
-#, fuzzy
 msgid ""
 "select the PFM file recorded as a raster mask,\n"
 "CAUTION: path must be set in preferences/processing before choosing"
 msgstr ""
-"Elegir un archivo PNG (Hald CLUT), CUBE o 3DL. ADVERTENCIA: antes de elegir "
-"el archivo, la carpeta LUT 3D se debe señalar en "
+"Elegir un archivo PFM como máscara de matriz de pixeles. \n"
+"ADVERTENCIA: antes de elegir el archivo, la carpeta raíz se debe indicar en "
 "Preferencias→procesamiento→procesamiento de imagen."
 
 # dt•v5.2
@@ -23173,6 +23207,7 @@ msgctxt "modulename"
 msgid "raw black/white point"
 msgstr "punto negro / punto blanco"
 
+# dt•v5.2
 #: ../src/iop/rawprepare.c:168
 #, fuzzy
 msgid ""
@@ -23297,6 +23332,7 @@ msgstr ""
 "separación de frecuencias|saneado|clonado|tampón de clonar|desenfoque|"
 "rellenar|ondículas|eliminación de manchas"
 
+# dt•v5.2
 #: ../src/iop/retouch.c:205
 #, fuzzy
 msgid ""
@@ -23527,55 +23563,55 @@ msgstr "curva rgb"
 msgid "alter an image’s tones using curves in RGB color space"
 msgstr "Modifica los tonos de la imagen mediante curvas en el espacio RGB"
 
+# dt•v5.2
 #: ../src/iop/rgbcurve.c:183
-#, fuzzy
 msgid "contrast | compression"
-msgstr "compresión del contraste"
+msgstr "contraste | compresión"
 
 # dt•v5.2
 #: ../src/iop/rgbcurve.c:193
 msgid "linear (gamma 1.0)"
-msgstr ""
+msgstr "gamma 1.0 (lineal)"
 
+# dt•v5.2
 #: ../src/iop/rgbcurve.c:204
-#, fuzzy
 msgid "contrast | medium (linear)"
-msgstr "contraste medio (lineal)"
+msgstr "contraste | medio (lineal)"
 
+# dt•v5.2
 #: ../src/iop/rgbcurve.c:214
-#, fuzzy
 msgid "contrast | high (linear)"
-msgstr "contraste alto (lineal)"
+msgstr "contraste | alto (lineal)"
 
+# dt•v5.2
 #: ../src/iop/rgbcurve.c:231
-#, fuzzy
 msgid "contrast | medium (gamma 2.2)"
-msgstr "contraste medio (gamma 2.2)"
+msgstr "contraste | medio (gamma 2.2)"
 
+# dt•v5.2
 #: ../src/iop/rgbcurve.c:247
-#, fuzzy
 msgid "contrast | high (gamma 2.2)"
-msgstr "contraste alto (gamma 2.2)"
+msgstr "contraste | alto (gamma 2.2)"
 
+# dt•v5.2
 #: ../src/iop/rgbcurve.c:261
-#, fuzzy
 msgid "non-contrast curve | gamma 2.0"
-msgstr "contraste medio (gamma 2.2)"
+msgstr "sin contraste | (gamma 2.2)"
 
+# dt•v5.2
 #: ../src/iop/rgbcurve.c:268
-#, fuzzy
 msgid "non-contrast curve | gamma 0.5"
-msgstr "contraste medio (gamma 2.2)"
+msgstr "sin contraste | (gamma 2.2)"
 
+# dt•v5.2
 #: ../src/iop/rgbcurve.c:275
-#, fuzzy
 msgid "non-contrast curve | logarithm (base 2)"
-msgstr "logarítmico (base 2)"
+msgstr "sin contraste | logarítmico (base 2)"
 
+# dt•v5.2
 #: ../src/iop/rgbcurve.c:282
-#, fuzzy
 msgid "non-contrast curve | exponential (base 2)"
-msgstr "exponencial (base 2)"
+msgstr "sin contraste | exponencial (base 2)"
 
 #: ../src/iop/rgbcurve.c:1486 ../src/iop/rgblevels.c:1033
 msgid "choose between linked and independent channels."
@@ -23622,6 +23658,7 @@ msgctxt "modulename"
 msgid "rotate pixels"
 msgstr "rotar pixeles"
 
+# dt•v5.2
 #: ../src/iop/rotatepixels.c:96
 #, fuzzy
 msgid ""
@@ -23651,6 +23688,7 @@ msgctxt "modulename"
 msgid "scale pixels"
 msgstr "redimensionar pixeles"
 
+# dt•v5.2
 #: ../src/iop/scalepixels.c:82
 #, fuzzy
 msgid ""
@@ -23671,6 +23709,7 @@ msgstr "Cambia la relación de aspecto del pixel"
 msgid "shadows and highlights"
 msgstr "sombras y luces"
 
+# dt•v5.2
 #: ../src/iop/shadhi.c:139
 #, fuzzy
 msgid ""
@@ -23754,6 +23793,7 @@ msgstr "sigmoidal"
 msgid "tone mapping|view transform|display transform"
 msgstr "mapeo de tonos|cambiar aspecto|cambiar visualización"
 
+# dt•v5.2
 #: ../src/iop/sigmoid.c:202
 #, fuzzy
 msgid ""
@@ -23905,6 +23945,7 @@ msgstr "La intensidad del efecto"
 msgid "split-toning"
 msgstr "variaciones tonales"
 
+# dt•v5.2
 #: ../src/iop/splittoning.c:100
 #, fuzzy
 msgid ""
@@ -24283,60 +24324,60 @@ msgstr "Ilumina la escena como si se hubiera hecho directamente desde la toma"
 msgid "simple tone curve"
 msgstr "curva de tono básico"
 
+# dt•v5.2
 #: ../src/iop/toneequal.c:498
-#, fuzzy
 msgid "mask blending | all purposes"
-msgstr "fusión de máscara: multiuso"
+msgstr "fusión de máscara | multiuso"
 
+# dt•v5.2
 #: ../src/iop/toneequal.c:505
-#, fuzzy
 msgid "mask blending | people with backlight"
-msgstr "fusión de máscara: sujetos a contraluz"
+msgstr "fusión de máscara | sujetos a contraluz"
 
+# dt•v5.2
 #: ../src/iop/toneequal.c:522
-#, fuzzy
 msgid "compress shadows/highlights | EIGF | strong"
-msgstr "compresión de sombras/luces (FGIE): intensa"
+msgstr "compresión de sombras/luces | FGIE | intensa"
 
+# dt•v5.2
 #: ../src/iop/toneequal.c:527
-#, fuzzy
 msgid "compress shadows/highlights | GF | strong"
-msgstr "compresión de sombras/luces (FG): intensa"
+msgstr "compresión de sombras/luces | FG | intensa"
 
+# dt•v5.2
 #: ../src/iop/toneequal.c:536
-#, fuzzy
 msgid "compress shadows/highlights | EIGF | medium"
-msgstr "compresión de sombras/luces (FGIE): media"
+msgstr "compresión de sombras/luces | FGIE | media"
 
+# dt•v5.2
 #: ../src/iop/toneequal.c:541
-#, fuzzy
 msgid "compress shadows/highlights | GF | medium"
-msgstr "compresión de sombras/luces (FG): media"
+msgstr "compresión de sombras/luces | FG | media"
 
+# dt•v5.2
 #: ../src/iop/toneequal.c:550
-#, fuzzy
 msgid "compress shadows/highlights | EIGF | soft"
-msgstr "compresión de sombras/luces (FGIE): ligera"
+msgstr "compresión de sombras/luces | FGIE | ligera"
 
+# dt•v5.2
 #: ../src/iop/toneequal.c:555
-#, fuzzy
 msgid "compress shadows/highlights | GF | soft"
-msgstr "compresión de sombras/luces (FG): ligera"
+msgstr "compresión de sombras/luces | FG | ligera"
 
+# dt•v5.2
 #: ../src/iop/toneequal.c:563
-#, fuzzy
 msgid "contrast tone curve | soft"
-msgstr "curva de tono: contraste bajo"
+msgstr "curva de tono: contraste | bajo"
 
+# dt•v5.2
 #: ../src/iop/toneequal.c:568
-#, fuzzy
 msgid "contrast tone curve | medium"
-msgstr "curva de tono: contraste medio"
+msgstr "curva de tono: contraste | medio"
 
+# dt•v5.2
 #: ../src/iop/toneequal.c:573
-#, fuzzy
 msgid "contrast tone curve | strong"
-msgstr "curva de tono: contraste alto"
+msgstr "curva de tono: contraste | alto"
 
 #: ../src/iop/toneequal.c:596
 msgid "relight: fill-in"
@@ -24570,6 +24611,7 @@ msgstr ""
 "Cuando se usan valores de difuminado altos, produce áreas lisas por "
 "segmentos "
 
+# dt•v5.2
 #: ../src/iop/toneequal.c:3463
 #, fuzzy
 msgid ""
@@ -24582,11 +24624,13 @@ msgstr ""
 "disponibles.\n"
 "La varita mágica ajustará automáticamente la exposición promedio."
 
+# dt•v5.2
 #: ../src/iop/toneequal.c:3466
 #, fuzzy
 msgid "auto-adjust the average exposure"
 msgstr "Arrastrar para cambiar la exposición"
 
+# dt•v5.2
 #: ../src/iop/toneequal.c:3473
 #, fuzzy
 msgid ""
@@ -24601,6 +24645,7 @@ msgstr ""
 "Ofrece un mejor control sobre la corrección de exposición.\n"
 "La varita mágica ajustará automáticamente el contraste."
 
+# dt•v5.2
 #: ../src/iop/toneequal.c:3478
 #, fuzzy
 msgid "auto-adjust the contrast"
@@ -24626,6 +24671,7 @@ msgstr ""
 msgid "velvia"
 msgstr "velvia"
 
+# dt•v5.2
 #: ../src/iop/velvia.c:95
 #, fuzzy
 msgid ""
@@ -25215,6 +25261,7 @@ msgstr "O"
 msgid "BUT NOT"
 msgstr "EXCEPTO"
 
+# dt•v5.2
 #: ../src/libs/collect.c:3650
 #, fuzzy
 msgid "toggle collection sort order ascending/descending"
@@ -25473,10 +25520,11 @@ msgstr "Almacenamiento no válido para la exportación elegida"
 msgid "export to disk"
 msgstr "exportar al disco"
 
+# dt•v5.2
 #: ../src/libs/export.c:449
-#, fuzzy, c-format
+#, c-format
 msgid "could not login to storage `%s'!"
-msgstr "No se puede escribir en el directorio «%s»"
+msgstr "No es posible acceder al almacenamiento «%s»"
 
 #: ../src/libs/export.c:618
 #, c-format
@@ -25699,8 +25747,8 @@ msgstr "Estilo temporal para ser aplicado al exportar"
 msgid "style"
 msgstr "estilo"
 
+# dt•v5.2
 #: ../src/libs/export.c:1663
-#, fuzzy
 msgctxt "actionbutton"
 msgid "start export"
 msgstr "exportar"
@@ -25720,21 +25768,21 @@ msgctxt "section"
 msgid "global options"
 msgstr "opciones generales"
 
+# dt•v5.2
 #: ../src/libs/export.c:1683
-#, fuzzy
 msgid "multi-preset export"
-msgstr "Seleccione el archivo a exportar"
+msgstr "exportación multiselección"
 
+# dt•v5.2
 #: ../src/libs/export.c:1686
-#, fuzzy
 msgid "export the selected images with multiple presets"
-msgstr "Exportar los estilos seleccionados a un fichero de estilos"
+msgstr "Exportar con múltiples preajustes seleccionados"
 
+# dt•v5.2
 #. multi-preset export button
 #: ../src/libs/export.c:1711
-#, fuzzy
 msgid "start export"
-msgstr "exportar"
+msgstr "exportar multiselección"
 
 #: ../src/libs/export_metadata.c:166
 msgid "edit metadata exportation"
@@ -26312,6 +26360,7 @@ msgstr "establecer diferencia y geolocalización"
 msgid "apply geo-location"
 msgstr "establecer geolocalización"
 
+# dt•v5.2
 #: ../src/libs/geotagging.c:378
 #, fuzzy
 msgid ""
@@ -26455,12 +26504,13 @@ msgstr ""
 #. but label is use in "shortcuts" dialog.
 #: ../src/libs/geotagging.c:1938
 msgid "view entire track"
-msgstr ""
+msgstr "ver segmento completo"
 
 # dt•v5.2
 #: ../src/libs/geotagging.c:1939
 msgid "refresh map to view entire selected track segments"
 msgstr ""
+"Actualizar el mapa para ver todos los segmentos de recorrido seleccionados"
 
 #: ../src/libs/geotagging.c:1953
 msgid "preview images"
@@ -27471,7 +27521,7 @@ msgstr "modo: suma"
 msgid "mode: exclusion"
 msgstr "modo: exclusión"
 
-# dt•v5.0
+# dt•v5.0*dt•v5.2
 #: ../src/libs/masks.c:1148
 #, fuzzy
 msgid "delete unused shapes"
@@ -27537,12 +27587,13 @@ msgstr "<no modificar>"
 msgid "metadata settings"
 msgstr "Configuración de metadatos"
 
+# dt•v5.2
 #: ../src/libs/metadata.c:897
 #, fuzzy
 msgid "XMP tag name"
 msgstr "Introducir el nombre de la etiqueta"
 
-# dt•v5.0
+# dt•v5.0*dt•v5.2
 #: ../src/libs/metadata.c:903
 #, fuzzy
 msgid "display name"
@@ -27580,11 +27631,13 @@ msgstr ""
 "Marque la casilla si desea mantener esta información en privado (no se "
 "exporta con las imágenes)"
 
+# dt•v5.2
 #: ../src/libs/metadata.c:947
 #, fuzzy
 msgid "add metadata tags"
 msgstr "Eliminar etiqueta de los metadatos"
 
+# dt•v5.2
 #: ../src/libs/metadata.c:999
 #, fuzzy
 msgid "delete metadata"
@@ -29499,10 +29552,10 @@ msgstr ""
 msgid "focus detection"
 msgstr "detección de enfoque"
 
+# dt•v5.2
 #: ../src/libs/tools/lighttable.c:415 ../src/libs/tools/lighttable.c:426
-#, fuzzy
 msgid "no restriction"
-msgstr "sin rotación"
+msgstr "sin restricción"
 
 #: ../src/libs/tools/lighttable.c:430
 msgid "culling"
@@ -29539,6 +29592,7 @@ msgid ""
 "or the total number of thumbnails shown in culling layouts."
 msgstr ""
 
+# dt•v5.2
 #: ../src/libs/tools/lighttable.c:515
 #, fuzzy
 msgid "toggle culling restricted"
@@ -29827,7 +29881,7 @@ msgstr "Abrir en otra ventana la vista previa de la imagen del cuarto oscuro"
 msgid "color assessment"
 msgstr "evaluación del color"
 
-# dt•v5.0
+# dt•v5.0*dt•v5.2
 #: ../src/views/darkroom.c:2483
 #, fuzzy
 msgid ""
@@ -29837,6 +29891,7 @@ msgstr ""
 "Activar el indicador de recorte en las luces/sombras.\n"
 "Pulse botón secundario para ver más opciones."
 
+# dt•v5.2
 #: ../src/views/darkroom.c:2500 ../src/views/darkroom.c:2513
 #, fuzzy
 msgid "color_assessment"
@@ -29854,6 +29909,7 @@ msgid ""
 "this includes the outer gray part plus the inner white frame."
 msgstr ""
 
+# dt•v5.2
 #: ../src/views/darkroom.c:2513
 #, fuzzy
 msgid "white border ratio"
@@ -30078,6 +30134,7 @@ msgstr "vista previa del perfil (pantalla)"
 msgid "histogram profile"
 msgstr "perfil del histograma"
 
+# dt•v5.2
 #: ../src/views/darkroom.c:2773
 #, fuzzy
 msgid "second preview window color assessment"
