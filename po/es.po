@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 5.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-09 10:32-0600\n"
-"PO-Revision-Date: 2025-06-14 21:09-0600\n"
+"PO-Revision-Date: 2025-06-14 21:28-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -24647,9 +24647,8 @@ msgstr ""
 
 # dt•v5.2
 #: ../src/iop/toneequal.c:3478
-#, fuzzy
 msgid "auto-adjust the contrast"
-msgstr "dureza automática"
+msgstr "ajuste automático del constraste"
 
 #: ../src/iop/toneequal.c:3493 ../src/iop/toneequal.c:3496
 msgid "display exposure mask"
@@ -24673,13 +24672,12 @@ msgstr "velvia"
 
 # dt•v5.2
 #: ../src/iop/velvia.c:95
-#, fuzzy
 msgid ""
 "resaturate giving more weight to blacks,\n"
 "whites and low-saturation pixels"
 msgstr ""
-"Incrementa la saturación en las sombras, las luces y pixeles levemente "
-"saturados"
+"Incrementa la saturación en las sombras, \n"
+"las luces y pixeles levemente saturados"
 
 #: ../src/iop/velvia.c:283
 msgid "the strength of saturation boost"
@@ -25263,9 +25261,8 @@ msgstr "EXCEPTO"
 
 # dt•v5.2
 #: ../src/libs/collect.c:3650
-#, fuzzy
 msgid "toggle collection sort order ascending/descending"
-msgstr "Colección en orden descendente"
+msgstr "Alternar el orden de la colección entre ascendente/descendente"
 
 #: ../src/libs/collect.c:3772 ../src/libs/filtering.c:2216
 msgid "revert to a previous set of rules"
@@ -26362,7 +26359,6 @@ msgstr "establecer geolocalización"
 
 # dt•v5.2
 #: ../src/libs/geotagging.c:378
-#, fuzzy
 msgid ""
 "apply offset and geo-location to matching images\n"
 "double operation: two ctrl+z to undo"
@@ -27523,9 +27519,8 @@ msgstr "modo: exclusión"
 
 # dt•v5.0*dt•v5.2
 #: ../src/libs/masks.c:1148
-#, fuzzy
 msgid "delete unused shapes"
-msgstr "borrar etiquetas sin utilizar"
+msgstr "eliminar figuras no usadas"
 
 #: ../src/libs/masks.c:1872
 msgid "created shapes"
@@ -27589,15 +27584,13 @@ msgstr "Configuración de metadatos"
 
 # dt•v5.2
 #: ../src/libs/metadata.c:897
-#, fuzzy
 msgid "XMP tag name"
-msgstr "Introducir el nombre de la etiqueta"
+msgstr "nombre de la etiqueta XMP"
 
 # dt•v5.0*dt•v5.2
 #: ../src/libs/metadata.c:903
-#, fuzzy
 msgid "display name"
-msgstr "muestras de pantalla"
+msgstr "mostrar nombre"
 
 #: ../src/libs/metadata.c:913 ../src/libs/metadata_view.c:1478
 msgid "visible"
@@ -27633,15 +27626,13 @@ msgstr ""
 
 # dt•v5.2
 #: ../src/libs/metadata.c:947
-#, fuzzy
 msgid "add metadata tags"
-msgstr "Eliminar etiqueta de los metadatos"
+msgstr "Añadir etiquetas de los metadatos"
 
 # dt•v5.2
 #: ../src/libs/metadata.c:999
-#, fuzzy
 msgid "delete metadata"
-msgstr "Eliminar etiqueta de los metadatos"
+msgstr "Eliminar metadatos"
 
 # dt•v5.2
 #: ../src/libs/metadata.c:1000
@@ -29594,9 +29585,8 @@ msgstr ""
 
 # dt•v5.2
 #: ../src/libs/tools/lighttable.c:515
-#, fuzzy
 msgid "toggle culling restricted"
-msgstr "cambiar a modo de selección"
+msgstr "cambiar a modo restricto de selección "
 
 #: ../src/libs/tools/lighttable.c:536
 msgid "toggle culling zoom mode"
@@ -29883,17 +29873,15 @@ msgstr "evaluación del color"
 
 # dt•v5.0*dt•v5.2
 #: ../src/views/darkroom.c:2483
-#, fuzzy
 msgid ""
 "toggle color assessment conditions\n"
 "right-click for options"
 msgstr ""
-"Activar el indicador de recorte en las luces/sombras.\n"
+"Activar condiciones para la evaluación de color.\n"
 "Pulse botón secundario para ver más opciones."
 
 # dt•v5.2
 #: ../src/views/darkroom.c:2500 ../src/views/darkroom.c:2513
-#, fuzzy
 msgid "color_assessment"
 msgstr "evaluación del color"
 
@@ -29911,9 +29899,8 @@ msgstr ""
 
 # dt•v5.2
 #: ../src/views/darkroom.c:2513
-#, fuzzy
 msgid "white border ratio"
-msgstr "orden del filtro"
+msgstr "relación de aspecto del borde blanco"
 
 # dt•v5.2
 #: ../src/views/darkroom.c:2515
@@ -30136,11 +30123,8 @@ msgstr "perfil del histograma"
 
 # dt•v5.2
 #: ../src/views/darkroom.c:2773
-#, fuzzy
 msgid "second preview window color assessment"
-msgstr ""
-"Condiciones de evaluación de color ISO 12646 en la ventana de "
-"previsualización"
+msgstr "Evaluación de color de la ventana de previsualización"
 
 #: ../src/views/darkroom.c:2776
 msgid "color assessment second preview"
