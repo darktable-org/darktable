@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 5.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-09 10:32-0600\n"
-"PO-Revision-Date: 2025-06-14 21:56-0600\n"
+"PO-Revision-Date: 2025-06-14 22:44-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1759,13 +1759,12 @@ msgstr "Utilizar toda la memoria del GPU"
 
 # dt•v5.0*dt•v5.2
 #: ../build/bin/preferences_gen.h:6388
-#, fuzzy
 msgid ""
 "if enabled on a system with multiple OpenCL devices you may specify a safety "
 "margin per device (headroom, default is 600MB)"
 msgstr ""
-"Si se activa, darktable utilizará toda la memoria del dispositivo excepto "
-"por el margen de seguridad (espacio libre predefinido en 600 MB)"
+"Si se activa en un sistema con varios dispositivos OpenCL, puede especificar "
+"un margen de seguridad por dispositivo (espacio libre predefinido en 600 MB)"
 
 #: ../build/bin/preferences_gen.h:6407
 msgid "OpenCL drivers"
@@ -1958,9 +1957,8 @@ msgstr ""
 
 # dt•v5.2
 #: ../build/bin/preferences_gen.h:7178
-#, fuzzy
 msgid "auto login to storage server"
-msgstr "No se puede escribir en el directorio «%s»"
+msgstr "Inicio de sesión automático en el servidor de almacenamiento"
 
 # dt•v5.2
 #: ../build/bin/preferences_gen.h:7191
@@ -2597,6 +2595,8 @@ msgid ""
 "fine-tune the selected color by adjusting the 'node placement' slider in "
 "color equalizer"
 msgstr ""
+"Afina el color seleccionado ajustando el control deslizante «desplazamiento "
+"de nodos» en el módulo ecualizador de color"
 
 # dt•v5.2
 #: ../build/bin/styles_string.h:25
@@ -6697,6 +6697,12 @@ msgid ""
 "\n"
 "please fix this and then run darktable again"
 msgstr ""
+"No se cuenta con los permisos de escritura necesarios para crear el "
+"siguiente directorio:\n"
+"\n"
+"%s\n"
+"\n"
+"Solucione el conflicto y ejecute darktable de nuevo"
 
 # dt•v5.2
 #: ../src/common/darktable.c:1520
@@ -6728,7 +6734,7 @@ msgstr "Preparando la base de datos"
 #. init darktable tags table
 #: ../src/common/darktable.c:1592
 msgid "setting up tags table"
-msgstr ""
+msgstr "Configuración de la tabla de etiquetas"
 
 # dt•v5.0*dt•v5.2
 #. Initialize the signal system
@@ -7225,6 +7231,13 @@ msgid ""
 "\n"
 "please fix this and then run darktable again"
 msgstr ""
+"Sin permiso de escritura en al menos una de las siguientes bases de datos de "
+"darktable:\n"
+"\n"
+"<span style='italic'>%s</span>\n"
+"<span style='italic'>%s</span>\n"
+"\n"
+"Solucione el conflicto y ejecute darktable de nuevo"
 
 # dt•v5.2
 #: ../src/common/database.c:4280
@@ -18698,13 +18711,12 @@ msgstr "Gradación de color modular"
 
 # dt•v5.2
 #: ../src/iop/colorbalancergb.c:1874
-#, fuzzy
 msgid ""
 "pick opposite color from image\n"
 "ctrl+click to pick selected color"
 msgstr ""
-"Elegir el color desde la imagen.\n"
-"Pulse Ctrl+Clic o Clic Secundario para seleccionar un área."
+"Elija un color opuesto en la imagen.\n"
+"Pulse Ctrl+Clic para elegir el color que se visualiza."
 
 #: ../src/iop/colorbalancergb.c:1876
 msgctxt "section"
@@ -21626,6 +21638,8 @@ msgstr ""
 #: ../src/iop/hazeremoval.c:661 ../src/iop/hazeremoval.c:932
 msgid "haze removal could not calculate ambient light due to image content"
 msgstr ""
+"No es posible calcular la luz ambiente para la eliminación de neblina debido "
+"al contenido de la imagen"
 
 #: ../src/iop/highlights.c:170
 msgid "highlight reconstruction"
@@ -22903,6 +22917,9 @@ msgid ""
 "combine the image with elements from another processed image\n"
 "(move this module to after output color profile if you see banding)"
 msgstr ""
+"Combina la imagen con elementos de otra imagen revelada.\n"
+"(mueva este módulo después de «Perfil de color de salida» si se producen "
+"bandas)"
 
 #: ../src/iop/overlay.c:162
 msgid "layer|stack|overlay"
@@ -23173,7 +23190,7 @@ msgstr ""
 # dt•v5.2
 #: ../src/iop/rasterfile.c:591
 msgid "select the RGB channels taken into account to generate the raster mask"
-msgstr ""
+msgstr "Seleccione el canal RGB para generar la máscara de matriz de pixeles"
 
 # dt•v5.2
 #: ../src/iop/rasterfile.c:595
@@ -23189,6 +23206,7 @@ msgstr ""
 #: ../src/iop/rasterfile.c:601
 msgid "the mask file path is saved with the image history"
 msgstr ""
+"La ruta del archivo de la máscara se guarda en el historial de la imagen"
 
 #. * let's fill the encapsulating widgets
 #. mode of operation
@@ -27584,7 +27602,7 @@ msgstr "visible"
 # dt•v5.2
 #: ../src/libs/metadata.c:920
 msgid "drag and drop one row at a time until you get the desired order"
-msgstr ""
+msgstr "Arrastre y suelte una fila a la vez hasta obtener el orden deseado"
 
 #: ../src/libs/metadata.c:928
 msgid ""
@@ -27625,6 +27643,8 @@ msgid ""
 "you are about to delete metadata which is currently assigned to images.\n"
 "the assignments will be removed."
 msgstr ""
+"Está a punto de eliminar metadatos que están asignados a imágenes.\n"
+"Se eliminarán las asociaciones."
 
 #: ../src/libs/metadata.c:1159
 msgid "write metadata for selected images"
@@ -28671,6 +28691,8 @@ msgid ""
 "place the snapshot side-by-side / above-below the current image instead of "
 "overlaying"
 msgstr ""
+"Colocar la instantánea lado a lado o encima y debajo de la actual imagen en "
+"lugar de superponerla"
 
 #: ../src/libs/snapshots.c:837
 msgid "toggle last snapshot"
@@ -29518,11 +29540,12 @@ msgstr "Pulse para activar el modo dinámico de selección"
 #: ../src/libs/tools/lighttable.c:136
 msgid "click to allow browsing all images from the collection."
 msgstr ""
+"Pulse para permitir la navegación por todas las imágenes de la colección."
 
 # dt•v5.2
 #: ../src/libs/tools/lighttable.c:141
 msgid "click to limit browsing to the selection."
-msgstr ""
+msgstr "Pulse para restringir la navegación a la selección de imágenes."
 
 #: ../src/libs/tools/lighttable.c:414
 msgid "focus detection"
@@ -29567,6 +29590,10 @@ msgid ""
 "set the number of thumbnails per row in filemanager layout,\n"
 "or the total number of thumbnails shown in culling layouts."
 msgstr ""
+"Establece el número de miniaturas por fila en la disposición gestor de "
+"archivos,\n"
+" o el número total de miniaturas mostradas en los modos de disposición de "
+"selección."
 
 # dt•v5.2
 #: ../src/libs/tools/lighttable.c:515
@@ -29873,7 +29900,7 @@ msgstr "evaluación del color"
 # dt•v5.2
 #: ../src/views/darkroom.c:2500
 msgid "total border width relative to screen"
-msgstr ""
+msgstr "Anchura total del borde en relación con la pantalla"
 
 # dt•v5.2
 #: ../src/views/darkroom.c:2502
@@ -29881,6 +29908,9 @@ msgid ""
 "total border width in relation to the screen size for the assessment mode.\n"
 "this includes the outer gray part plus the inner white frame."
 msgstr ""
+"Anchura total del borde en relación con el tamaño de la pantalla para el "
+"modo de evaluación.\n"
+"Incluye la parte gris externa más el marco blanco interno."
 
 # dt•v5.2
 #: ../src/views/darkroom.c:2513
@@ -29892,6 +29922,7 @@ msgstr "relación de aspecto del borde blanco"
 msgid ""
 "the border ratio specifies the fraction of the white part of the border."
 msgstr ""
+"La proporción del borde especifica la fracción de la parte blanca del borde."
 
 #: ../src/views/darkroom.c:2526
 msgid "high quality processing"
