@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 5.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-09 10:32-0600\n"
-"PO-Revision-Date: 2025-06-14 21:28-0600\n"
+"PO-Revision-Date: 2025-06-14 21:56-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1023,9 +1023,10 @@ msgstr ""
 
 # dt•v5.0
 #: ../build/bin/preferences_gen.h:4603
-#, fuzzy
 msgid "prioritize the hovered image over the selected images"
-msgstr "Establecer los metadatos en las imágenes seleccionadas"
+msgstr ""
+"Priorizar la imagen con el cursor encima, antes que las imágenes "
+"seleccionadas"
 
 #: ../build/bin/preferences_gen.h:4613 ../build/bin/preferences_gen.h:4749
 #: ../build/bin/preferences_gen.h:4894 ../build/bin/preferences_gen.h:5252
@@ -6737,9 +6738,8 @@ msgstr "Inicializando las señales y los controles"
 
 # dt•v5.0*dt•v5.2
 #: ../src/common/darktable.c:1615
-#, fuzzy
 msgid "importing default styles"
-msgstr "Filtros de importación"
+msgstr "Importando estilos predeterminados"
 
 # dt•v5.0
 #: ../src/common/darktable.c:1713
@@ -6792,9 +6792,8 @@ msgstr "Cargando módulos de revelado"
 
 # dt•v5.2
 #: ../src/common/darktable.c:1839
-#, fuzzy
 msgid "loading utility modules"
-msgstr "módulos de funcionalidad"
+msgstr "Cargando módulos de funcionalidad"
 
 # dt•v5.2
 #. init the gui part of views
@@ -13856,11 +13855,13 @@ msgstr "alternativa para moverse"
 
 # dt•v5.2
 #: ../src/gui/accelerators.c:3825
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 "applying preset '%s'"
-msgstr "ajustes automáticos establecidos"
+msgstr ""
+"\n"
+"Aplicando preajuste «%s»"
 
 #: ../src/gui/accelerators.c:3975
 #, c-format
@@ -16480,13 +16481,13 @@ msgstr "curva base"
 
 # dt•v5.2
 #: ../src/iop/basecurve.c:370
-#, fuzzy
 msgid ""
 "apply a view transform based on personal or camera maker look,\n"
 "for corrective purposes, to prepare images for display"
 msgstr ""
-"Implementa un tratamiento al aspecto de la imagen con fines correctivos,\n"
-"basado en el estilo del fabricante de la cámara o personalizado"
+"Prepara e implementa para visualizar, un tratamiento al aspecto de la imagen "
+"con fines correctivos,\n"
+"basado en un estilo del fabricante de la cámara o personalizado"
 
 #: ../src/iop/basecurve.c:372 ../src/iop/cacorrect.c:81
 #: ../src/iop/cacorrectrgb.c:166 ../src/iop/colorreconstruction.c:117
@@ -16755,13 +16756,12 @@ msgstr "reducción de ruido (filtro bilateral)"
 
 # dt•v5.2
 #: ../src/iop/bilateral.cc:101
-#, fuzzy
 msgid ""
 "apply edge-aware surface blur\n"
 "to denoise or smoothen textures"
 msgstr ""
-"Aplica un difuminado en ciertas áreas al detectar los contornos para "
-"suavizar texturas o reducir el ruido"
+"Aplica un difuminado en ciertas áreas al detectar los contornos\n"
+"para suavizar texturas o reducir el ruido"
 
 #: ../src/iop/bilateral.cc:105 ../src/iop/blurs.c:90
 #: ../src/iop/channelmixer.c:138 ../src/iop/denoiseprofile.c:778
@@ -19087,11 +19087,12 @@ msgstr "zonas de color|hsl"
 
 # dt•v5.2
 #: ../src/iop/colorequal.c:213
-#, fuzzy
 msgid ""
 "change saturation, hue and brightness\n"
 "depending on local hue"
-msgstr "Cambia el tono, la saturación y el brillo en función del tono nativo"
+msgstr ""
+"Cambia el tono, la saturación y el brillo\n"
+"en función del tono nativo"
 
 #: ../src/iop/colorequal.c:217 ../src/iop/toneequal.c:331
 msgid "quasi-linear, RGB"
@@ -19351,7 +19352,6 @@ msgstr "mapeo de color"
 
 # dt•v5.2
 #: ../src/iop/colormapping.c:150
-#, fuzzy
 msgid ""
 "transfer a color palette and tonal repartition\n"
 "from one image to another"
@@ -19761,7 +19761,6 @@ msgstr "«%s» matriz de color no encontrada para imagen tipo Bayer"
 
 # dt•v5.2
 #: ../src/iop/demosaic.c:1333
-#, fuzzy
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -19772,11 +19771,11 @@ msgstr ""
 "Para los sensores tipo Bayer, los métodos de interpolación cromática rápidos "
 "son PPG y RCD y los lentos son AMaZE y LMMSE.\n"
 "LMMSE es el más adecuado para imágenes con ISO alto.\n"
-"El tiempo de procesado se duplica con la interpolación cromática dual."
+"El tiempo de procesado aumenta con la interpolación cromática dual "
+"integrando una variante VNG en la segunda pasada."
 
 # dt•v5.2
 #: ../src/iop/demosaic.c:1337
-#, fuzzy
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -19785,7 +19784,8 @@ msgid ""
 msgstr ""
 "Para los sensores tipo X-Trans, los métodos de interpolación cromática "
 "Markesteijn 3 pasadas y croma de dominio de frecuencia son lentos.\n"
-"El tiempo de procesado se duplica con la interpolación cromática dual."
+"El tiempo de procesado aumenta con la interpolación cromática dual "
+"integrando una variante VNG en la segunda pasada."
 
 # Demosaicing -> Algoritmo de interpolación cromática.
 #: ../src/iop/demosaic.c:1343
@@ -20080,17 +20080,15 @@ msgstr "difuso / nítido"
 
 # dt•v5.2
 #: ../src/iop/diffuse.c:129
-#, fuzzy
 msgid ""
 "diffusion|deconvolution|blur|sharpening|bloom|clarity|dehaze|denoise|inpaint|"
 "watercolor"
 msgstr ""
-"difusión|deconvolución|desenfoque|nitidez|resplandor|claridad|reconstrucción|"
-"acuarela"
+"difusión|deconvolución|desenfoque|nitidez|resplandor|claridad|"
+"eliminarneblina|reconstrucción|acuarela"
 
 # dt•v5.2
 #: ../src/iop/diffuse.c:136
-#, fuzzy
 msgid ""
 "simulate directional diffusion of light with heat transfer model\n"
 "to apply an iterative edge-oriented blur, inpaint damaged parts\n"
@@ -21816,12 +21814,12 @@ msgstr "pixeles calientes"
 
 # dt•v5.2
 #: ../src/iop/hotpixels.c:71
-#, fuzzy
 msgid ""
 "remove abnormally bright pixels\n"
 "by dampening them with neighbors"
 msgstr ""
-"Atenúa los pixeles brillantes anormales con base en los pixeles vecinos"
+"Atenúa los pixeles brillantes anormales\n"
+"con base en los pixeles vecinos."
 
 #: ../src/iop/hotpixels.c:421
 #, c-format
@@ -22600,13 +22598,12 @@ msgstr "gestor de máscaras"
 
 # dt•v5.2
 #: ../src/iop/monochrome.c:97
-#, fuzzy
 msgid ""
 "quickly convert an image to black & white\n"
 "using a variable color filter"
 msgstr ""
-"Convierte fácilmente la imagen en blanco y negro usando un filtro de color "
-"variable"
+"Convierte fácilmente la imagen en blanco y negro\n"
+"usando un filtro de color variable."
 
 #: ../src/iop/monochrome.c:151
 msgid "red filter"
@@ -22860,13 +22857,12 @@ msgstr "reducción de ruido (medias no locales)"
 
 # dt•v5.2
 #: ../src/iop/nlmeans.c:85
-#, fuzzy
 msgid ""
 "apply a poisson noise removal\n"
 "best suited for astrophotography"
 msgstr ""
-"Utiliza el método de Poisson para la reducción de ruido. Recomendado para "
-"astrofotografía"
+"Utiliza el método de Poisson para la reducción de ruido.\n"
+"Recomendado para astrofotografía."
 
 #: ../src/iop/nlmeans.c:456
 msgid "radius of the patches to match"
@@ -23152,9 +23148,9 @@ msgstr ""
 
 # dt•v5.2
 #: ../src/iop/rasterfile.c:168
-#, fuzzy, c-format
+#, c-format
 msgid "can't read raster mask file '%s'"
-msgstr "No se puede leer el archivo XMP «%s»: «%s»"
+msgstr "No se puede leer el archivo de máscara de matriz de pixeles «%s»"
 
 # dt•v5.2
 #: ../src/iop/rasterfile.c:252
@@ -23209,7 +23205,6 @@ msgstr "punto negro / punto blanco"
 
 # dt•v5.2
 #: ../src/iop/rawprepare.c:168
-#, fuzzy
 msgid ""
 "sets technical specificities of the raw sensor\n"
 "\n"
@@ -23334,13 +23329,12 @@ msgstr ""
 
 # dt•v5.2
 #: ../src/iop/retouch.c:205
-#, fuzzy
 msgid ""
 "remove and clone spots,\n"
 "perform split-frequency skin editing"
 msgstr ""
-"Clona y elimina manchas. Realiza la separación de frecuencias para el "
-"retoque de la piel"
+"Clona y elimina manchas. \n"
+"Realiza la separación de frecuencias para el retoque de la piel."
 
 #: ../src/iop/retouch.c:209
 msgid "geometric and frequential, RGB"
@@ -23660,7 +23654,6 @@ msgstr "rotar pixeles"
 
 # dt•v5.2
 #: ../src/iop/rotatepixels.c:96
-#, fuzzy
 msgid ""
 "internal module to setup technical specificities of raw sensor\n"
 "\n"
@@ -23690,7 +23683,6 @@ msgstr "redimensionar pixeles"
 
 # dt•v5.2
 #: ../src/iop/scalepixels.c:82
-#, fuzzy
 msgid ""
 "module for setting pixel aspect ratio\n"
 "\n"
@@ -23699,7 +23691,8 @@ msgid ""
 msgstr ""
 "Módulo para reajustar la relación de aspecto de los pixeles.\n"
 "\n"
-"Es conveniente para determinados tipos de sensores y la reducción anamórfica."
+"Es conveniente para determinados tipos de sensores \n"
+"y reducción anamórfica."
 
 #: ../src/iop/scalepixels.c:259
 msgid "adjust pixel aspect ratio"
@@ -23711,13 +23704,12 @@ msgstr "sombras y luces"
 
 # dt•v5.2
 #: ../src/iop/shadhi.c:139
-#, fuzzy
 msgid ""
 "modify the tonal range of the shadows and highlights\n"
 "of an image by enhancing local contrast"
 msgstr ""
 "Cambia la gama tonal de las sombras y las luces\n"
-"mediante el realce del contraste local"
+"mediante el realce del contraste local."
 
 #: ../src/iop/shadhi.c:686 ../src/iop/splittoning.c:535
 msgid "compress"
@@ -23795,7 +23787,6 @@ msgstr "mapeo de tonos|cambiar aspecto|cambiar visualización"
 
 # dt•v5.2
 #: ../src/iop/sigmoid.c:202
-#, fuzzy
 msgid ""
 "apply a view transform to make an image displayable\n"
 "on a screen or print using a robust and smooth\n"
@@ -23947,13 +23938,12 @@ msgstr "variaciones tonales"
 
 # dt•v5.2
 #: ../src/iop/splittoning.c:100
-#, fuzzy
 msgid ""
 "use two specific colors for shadows and highlights and\n"
 "create a linear toning effect between them up to a pivot"
 msgstr ""
 "Utiliza dos colores específicos para las sombras y las luces\n"
-"creando un gradiente lineal entre ellos"
+"creando un efecto de gradiente lineal con base en un pivote."
 
 #: ../src/iop/splittoning.c:117
 msgid "authentic sepia"
@@ -24613,7 +24603,6 @@ msgstr ""
 
 # dt•v5.2
 #: ../src/iop/toneequal.c:3463
-#, fuzzy
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes."
@@ -24621,18 +24610,15 @@ msgstr ""
 "Úsese para deslizar la exposición promedio de la máscara a lo largo de los "
 "canales\n"
 "y lograr un mejor control de la corrección de exposición con los nodos "
-"disponibles.\n"
-"La varita mágica ajustará automáticamente la exposición promedio."
+"disponibles."
 
 # dt•v5.2
 #: ../src/iop/toneequal.c:3466
-#, fuzzy
 msgid "auto-adjust the average exposure"
-msgstr "Arrastrar para cambiar la exposición"
+msgstr "Ajuste automático de la exposición media"
 
 # dt•v5.2
 #: ../src/iop/toneequal.c:3473
-#, fuzzy
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -24642,8 +24628,7 @@ msgstr ""
 "Úsese para contrarrestar el efecto promedio del filtro guiado\n"
 "y dilatar el contraste de la máscara alrededor de -4 EV.\n"
 "Permite extender el histograma de exposición a más canales.\n"
-"Ofrece un mejor control sobre la corrección de exposición.\n"
-"La varita mágica ajustará automáticamente el contraste."
+"Ofrece un mejor control sobre la corrección de exposición."
 
 # dt•v5.2
 #: ../src/iop/toneequal.c:3478
