@@ -70,7 +70,7 @@ const char *name()
 int flags()
 {
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE
-    | IOP_FLAGS_UNSAFE_COPY;
+    | IOP_FLAGS_UNSAFE_COPY | IOP_FLAGS_HIDDEN;
 }
 
 int default_group()
@@ -349,26 +349,6 @@ void reload_defaults(dt_iop_module_t *self)
   *d = (dt_iop_rotatepixels_params_t){ .rx = 0u, .ry = image->fuji_rotation_pos, .angle = -45.0f };
 
   self->default_enabled = ((d->rx != 0u) || (d->ry != 0u));
-
-  // FIXME: does not work.
-  self->hide_enable_button = !self->default_enabled;
-
-  if(self->widget)
-    gtk_label_set_text(GTK_LABEL(self->widget), self->default_enabled
-                       ? _("automatic pixel rotation")
-                       : _("automatic pixel rotation\nonly works for the sensors that need it."));
-}
-
-void gui_update(dt_iop_module_t *self)
-{
-}
-void gui_init(dt_iop_module_t *self)
-{
-  IOP_GUI_ALLOC(rotatepixels);
-
-  self->widget = dt_ui_label_new("");
-  gtk_label_set_line_wrap(GTK_LABEL(self->widget), TRUE);
-
 }
 
 // clang-format off
@@ -376,4 +356,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
