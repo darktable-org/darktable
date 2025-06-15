@@ -1567,7 +1567,7 @@ static void _init_8(uint8_t *buf,
     // swap byte order, don't do hq processing, no upscaling and
     // signal we want thumbnail export
     res = dt_imageio_export_with_flags(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, TRUE, FALSE, FALSE,
-                                       FALSE, FALSE, TRUE, NULL, FALSE, FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
+                                       FALSE, FALSE, 1.0, TRUE, NULL, FALSE, FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
                                        NULL, 1, 1, NULL, -1);
     if(!res)
     {
