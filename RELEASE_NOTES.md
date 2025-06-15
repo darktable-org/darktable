@@ -181,8 +181,6 @@ changes (where available).
   of physical screen resolution, added pop-up window for
   parameterization and removed ISO12464 reference.
 
-- Attach export ICC profile to JP2 images.
-
 - Improved visibility of masks in darkroom. This is controlled by the
   new hidden "darkroom/ui/develop_mask_mix" configuration option.
 
@@ -234,7 +232,7 @@ changes (where available).
   correctly when the field loses the input focus.
 
 - Fixed incorrect reporting of whether a flash was fired in expansion
-  variables $(EXIF.FLASH.ICON) and $(EXIF.FLASH) under certain
+  variables `$(EXIF.FLASH.ICON)` and `$(EXIF.FLASH)` under certain
   conditions.
 
 - Fixed the edit style dialog to show all module's duplicates. Also,
@@ -246,6 +244,23 @@ changes (where available).
 
 - Fixed display of image using a composite module when the modules are
   reordered.
+
+- Many TIFF loader fixes and improvements:
+
+    - Fixed crash on files for which libtiff would issue warnings or errors
+
+    - Fixed crash on files with missing SAMPLESPERPIXEL tag
+
+    - Enabled CMYK TIFF support
+
+    - Added support for loading TIFF with missing/undefined sample format
+
+    - Fixed reading of grayscale images with min-is-white interpretation
+      (made them not inverted)
+
+    - Fixed regression in support of many more exotic variations
+      of the TIFF format, such as tiled encoding, planar layout,
+      uncommon bit depths (such as 12 or 14 bits, or less than 8)
 
 ## Lua
 
