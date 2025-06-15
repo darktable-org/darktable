@@ -245,6 +245,23 @@ changes (where available).
 - Fixed display of image using a composite module when the modules are
   reordered.
 
+- Many TIFF loader fixes and improvements:
+
+    - Fixed crash on files for which libtiff would issue warnings or errors
+
+    - Fixed crash on files with missing SAMPLESPERPIXEL tag
+
+    - Enabled CMYK TIFF support
+
+    - Added support for loading TIFF with missing/undefined sample format
+
+    - Fixed reading of grayscale images with min-is-white interpretation
+      (made them not inverted)
+
+    - Fixed regression in support of many more exotic variations
+      of the TIFF format, such as tiled encoding, planar layout,
+      uncommon bit depths (such as 12 or 14 bits, or less than 8)
+
 ## Lua
 
 ### API Version
