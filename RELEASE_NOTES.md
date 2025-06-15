@@ -34,9 +34,9 @@ You are strongly advised to take a backup first.
 
 Since darktable 5.0:
 
-- ??? commits to darktable+rawspeed
-- ??? pull requests handled
-- ??? issues closed
+- 1099 commits to darktable+rawspeed
+- 386 pull requests handled
+- 49 issues closed
 
 _Please note that the darktable documentation is not currently complete for release 5.2
 and contributions are greatly appreciated. Please see the
@@ -304,15 +304,70 @@ changes (where available).
 ### Base Support
 
 - Canon EOS R5 C (requires LibRaw 202502 and later)
-- ???
+- Fujifilm GFX100RF (compressed)
+- Fujifilm GFX100S II (compressed)
+- Nikon 1 J5
+- Nikon 1 V3
+- Nikon COOLPIX P1100 (12bit-uncompressed)
+- Nikon Coolpix P340
+- Nikon D100
+- Nikon D200
+- Nikon D2Hs
+- Nikon D2X
+- Nikon D3300
+- Nikon D3X
+- Nikon D40
+- Nikon D40X
+- Nikon D5
+- Nikon D5000
+- Nikon D5300
+- Nikon D5500
+- Nikon D5600
+- Nikon D60
+- Nikon D80
+- Nikon D800
+- Nikon D800E
+- Nikon D90
+- Nikon Z5_2 (14bit-compressed)
+- OM System OM-3
+- Olympus SP510UZ
+- Panasonic DC-G97 (4:3)
+- Panasonic DC-G9M2 (4:3)
+- Panasonic DC-GH6 (4:3)
+- Panasonic DC-S1RM2 (3:2)
+- Panasonic DC-S5M2 (3:2)
+- Panasonic DC-S5M2X (3:2)
+- Panasonic DC-S9 (3:2)
+- Panasonic DC-TZ99 (4:3)
+- Panasonic DC-ZS99 (4:3)
+- Phase One IQ150
+- Phase One P40+
+- Samsung GX20
+- Sigma BF (DNG)
+- Sigma DP1 (DNG)
+- Sigma DP1 Merrill (DNG)
+- Sinar Hy6 (DNG)
+- Sony DSC-RX100M7A
+- Sony ILCE-6100A
+- Sony ILCE-6400A
+- Sony ILME-FX3A
+- Sony ZV-1A
+- Sony ZV-E10M2
 
 ### White Balance Presets
 
-- ???
+- Fujifilm GFX100 II
+- OM System OM-3
+- Panasonic DC-S9
 
 ### Noise Profiles
 
-- ???
+- Fujifilm GFX 100
+- Leica SL2
+- OM System OM-3
+- Panasonic DC-S1RM2
+- Panasonic DC-S9
+- Sony ILCE-1M2
 
 ### Missing Compression Mode Support
 
