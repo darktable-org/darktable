@@ -2153,6 +2153,8 @@ void dt_control_move_images()
         _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
         _("_select as destination"), _("_cancel"));
 
+  gtk_file_chooser_set_create_folders(GTK_FILE_CHOOSER(filechooser), TRUE);
+
   dt_conf_get_folder_to_file_chooser("ui_last/move_path", GTK_FILE_CHOOSER(filechooser));
   if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
@@ -2210,6 +2212,8 @@ void dt_control_copy_images()
                                 GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
                                 _("_select as destination"),
                                 _("_cancel"));
+
+  gtk_file_chooser_set_create_folders(GTK_FILE_CHOOSER(filechooser), TRUE);
 
   dt_conf_get_folder_to_file_chooser("ui_last/copy_path",
                                      GTK_FILE_CHOOSER(filechooser));
