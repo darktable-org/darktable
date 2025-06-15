@@ -232,7 +232,7 @@ changes (where available).
   correctly when the field loses the input focus.
 
 - Fixed incorrect reporting of whether a flash was fired in expansion
-  variables $(EXIF.FLASH.ICON) and $(EXIF.FLASH) under certain
+  variables `$(EXIF.FLASH.ICON)` and `$(EXIF.FLASH)` under certain
   conditions.
 
 - Fixed the edit style dialog to show all module's duplicates. Also,
