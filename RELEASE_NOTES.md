@@ -8,19 +8,19 @@ The checksums are:
 
 ```
 $ sha256sum darktable-5.2.0.tar.xz
-??? darktable-5.2.0.tar.xz
+53a46cd46ef7118485c4abf4ab407c181639bb8634243ec0ed1f7c1e8299bec6  darktable-5.2.0.tar.xz
 
 $ sha256sum darktable-5.2.0-x86_64.dmg
-??? darktable-5.2.0-x86_64.dmg
+bdffebcf758cd1ec6d4ee26eb031d52b1d7e4fe8fe000e728edb14bec91f3a35  darktable-5.2.0-x86_64.dmg
 
 $ sha256sum darktable-5.2.0-arm64.dmg
-??? darktable-5.2.0-arm64.dmg
+8dabf58b6d76c04800be8ab540d3c2f1e772123279e22629a7396fe3e26273de  darktable-5.2.0-arm64.dmg
 
 $ sha256sum darktable-5.2.0-arm64-13.5.dmg
-??? darktable-5.2.0-arm64-13.5.dmg
+8b35cff9d926bc4ae08ea88a09a2a45082756548c9f641afad0d785371dcf384  darktable-5.2.0-arm64-13.5.dmg
 
 $ sha256sum darktable-5.2.0-win64.exe
-??? darktable-5.2.0-win64.exe
+4c1499e9d137efcd87e8b70fb6a0374f7139f1d0f0c49baeac9923ef7df7bdaa  darktable-5.2.0-win64.exe
 
 $ sha256sum darktable-4.8.1-x86_64.AppImage
 ???  darktable-5.2.0-x86_64.AppImage
@@ -181,8 +181,6 @@ changes (where available).
   of physical screen resolution, added pop-up window for
   parameterization and removed ISO12464 reference.
 
-- Attach export ICC profile to JP2 images.
-
 - Improved visibility of masks in darkroom. This is controlled by the
   new hidden "darkroom/ui/develop_mask_mix" configuration option.
 
@@ -234,7 +232,7 @@ changes (where available).
   correctly when the field loses the input focus.
 
 - Fixed incorrect reporting of whether a flash was fired in expansion
-  variables $(EXIF.FLASH.ICON) and $(EXIF.FLASH) under certain
+  variables `$(EXIF.FLASH.ICON)` and `$(EXIF.FLASH)` under certain
   conditions.
 
 - Fixed the edit style dialog to show all module's duplicates. Also,
@@ -246,6 +244,23 @@ changes (where available).
 
 - Fixed display of image using a composite module when the modules are
   reordered.
+
+- Many TIFF loader fixes and improvements:
+
+    - Fixed crash on files for which libtiff would issue warnings or errors
+
+    - Fixed crash on files with missing SAMPLESPERPIXEL tag
+
+    - Enabled CMYK TIFF support
+
+    - Added support for loading TIFF with missing/undefined sample format
+
+    - Fixed reading of grayscale images with min-is-white interpretation
+      (made them not inverted)
+
+    - Fixed regression in support of many more exotic variations
+      of the TIFF format, such as tiled encoding, planar layout,
+      uncommon bit depths (such as 12 or 14 bits, or less than 8)
 
 ## Lua
 
@@ -261,8 +276,6 @@ changes (where available).
 ### Bug Fixes
 
 - Expanded width of preference boxes Lua Options so that long input is visible.
-
-- N/A
 
 ### Add action support for Lua
 
