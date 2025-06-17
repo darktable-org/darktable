@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -128,7 +128,8 @@ enum _lib_snapshot_button_items
     _SNAPSHOT_BUTTON_ENTRY,
   } _lib_snapshot_button_items;
 
-static GtkWidget *_lib_snapshot_button_get_item(GtkWidget *button, const int num)
+static GtkWidget *_lib_snapshot_button_get_item(GtkWidget *button,
+                                                const int num)
 {
   GtkWidget *cont = gtk_bin_get_child(GTK_BIN(button));
   GList *items = gtk_container_get_children(GTK_CONTAINER(cont));
@@ -419,7 +420,8 @@ int button_pressed(struct dt_lib_module_t *self,
       _lib_snapshot_rotation_cnt++;
 
       d->vertical = !d->vertical;
-      gtk_orientable_set_orientation(GTK_ORIENTABLE(gtk_widget_get_parent(dt_ui_snapshot(darktable.gui->ui))), d->vertical ?  GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL);
+      gtk_orientable_set_orientation(GTK_ORIENTABLE(gtk_widget_get_parent(dt_ui_snapshot(darktable.gui->ui))),
+                                     d->vertical ?  GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL);
       if(_lib_snapshot_rotation_cnt % 2) d->inverted = !d->inverted;
       if(d->sidebyside)
         d->snap_requested = TRUE;
@@ -536,7 +538,8 @@ static gboolean _lib_button_button_pressed_callback(GtkWidget *widget,
   return gtk_widget_has_focus(d->snapshot[index].entry);
 }
 
-static void _init_snapshot_entry(dt_lib_module_t *self, dt_lib_snapshot_t *s)
+static void _init_snapshot_entry(dt_lib_module_t *self,
+                                 dt_lib_snapshot_t *s)
 {
   /* create snapshot button */
   s->button = gtk_toggle_button_new();
@@ -687,7 +690,8 @@ static void _signal_image_removed(gpointer instance,
   }
 }
 
-static void _signal_image_changed(gpointer instance, dt_lib_module_t *self)
+static void _signal_image_changed(gpointer instance,
+                                  dt_lib_module_t *self)
 {
   dt_lib_snapshots_t *d = self->data;
 
@@ -942,7 +946,8 @@ static int _lib_snapshots_get_activated(dt_lib_module_t *self, GtkWidget *widget
   return -1;
 }
 
-static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, dt_lib_module_t *self)
+static void _lib_snapshots_toggled_callback(GtkToggleButton *widget,
+                                            dt_lib_module_t *self)
 {
   dt_lib_snapshots_t *d = self->data;
 
@@ -971,7 +976,8 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, dt_lib_modu
   dt_control_queue_redraw_center();
 }
 
-static void _lib_snapshots_restore_callback(GtkButton *widget, dt_lib_module_t *self)
+static void _lib_snapshots_restore_callback(GtkButton *widget,
+                                            dt_lib_module_t *self)
 {
   dt_lib_snapshots_t *d = self->data;
 

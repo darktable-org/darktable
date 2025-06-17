@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2023 darktable developers.
+    Copyright (C) 2019-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,7 +35,8 @@
 #include <inttypes.h>
 #include <sqlite3.h>
 
-static char *dt_preset_encode(sqlite3_stmt *stmt, int row)
+static char *_preset_encode(sqlite3_stmt *stmt,
+                            const int row)
 {
   const int32_t len = sqlite3_column_bytes(stmt, row);
   char *vparams = dt_exif_xmp_encode
@@ -128,7 +129,7 @@ void dt_presets_save_to_file(const int rowid,
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "description", "%s", description);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "operation", "%s", operation);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_params", "%s",
-                                    dt_preset_encode(stmt, 0));
+                                    _preset_encode(stmt, 0));
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_version", "%d", op_version);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "enabled", "%d", enabled);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "autoapply", "%d", autoapply);
@@ -146,7 +147,7 @@ void dt_presets_save_to_file(const int rowid,
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "focal_length_max", "%d",
                                     focal_length_max);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_params", "%s",
-                                    dt_preset_encode(stmt, 1));
+                                    _preset_encode(stmt, 1));
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_version", "%d",
                                     blendop_version);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_priority", "%d",
