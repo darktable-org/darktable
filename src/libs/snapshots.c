@@ -882,7 +882,9 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
       if(strlen(history_item->multi_name) > 0
          && history_item->multi_name[0] != ' ')
       {
-        s->label = g_strdup(history_item->multi_name);
+        s->label = history_item->multi_name_hand_edited
+          ? g_strdup(history_item->multi_name)
+          : dt_util_localize_segmented_name(history_item->multi_name, TRUE);
       }
     }
     else
