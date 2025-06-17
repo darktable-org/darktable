@@ -22,8 +22,8 @@ $ sha256sum darktable-5.2.0-arm64-13.5.dmg
 $ sha256sum darktable-5.2.0-win64.exe
 4c1499e9d137efcd87e8b70fb6a0374f7139f1d0f0c49baeac9923ef7df7bdaa  darktable-5.2.0-win64.exe
 
-$ sha256sum darktable-4.8.1-x86_64.AppImage
-???  darktable-5.2.0-x86_64.AppImage
+$ sha256sum Darktable-4.8.1-x86_64.AppImage
+294eff1d74d322cc5459221361ac7bdcdf0dc41529a02c165d0861e085978d58  Darktable-5.2.0-x86_64.AppImage
 ```
 
 When updating from the stable 5.0 series, please bear in mind that your edits will be preserved during this process, but the new library and configuration will no longer be usable with 5.0.
