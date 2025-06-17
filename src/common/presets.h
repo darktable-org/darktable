@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2023 darktable developers.
+    Copyright (C) 2019-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,9 +42,9 @@ char *dt_presets_get_module_label(const char *module_name,
    and the recorded preset's multi_name. This depends on the preference
    darkroom/ui/auto_module_name_update
 */
-const char *dt_presets_get_multi_name(const char *name,
-                                      const char *multi_name,
-                                      const gboolean localize);
+char *dt_presets_get_multi_name(const char *name,
+                                const char *multi_name,
+                                const gboolean localize);
 
 /** get currently active preset name for the module */
 gchar *dt_get_active_preset_name(dt_iop_module_t *module, gboolean *writeprotect);
