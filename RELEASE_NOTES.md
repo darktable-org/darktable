@@ -335,7 +335,6 @@ changes (where available).
 - Phase One IQ150
 - Phase One P40+
 - Sigma BF (DNG)
-- Sinar Hy6 (DNG)
 - Sony DSC-RX100M7A
 - Sony ILCE-6100A
 - Sony ILCE-6400A
