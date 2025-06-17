@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1003,10 +1003,12 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const dt_imgid_t imgid)
 
     if(i->multi_name && strlen(i->multi_name) > 0)
     {
-      snprintf(mn, sizeof(mn), "(%s)",
-               i->multi_name_hand_edited
-               ? i->multi_name
-               : dt_util_localize_segmented_name(i->multi_name, TRUE));
+      char *mname = i->multi_name_hand_edited
+        ? g_strdup(i->multi_name)
+        : dt_util_localize_segmented_name(i->multi_name, TRUE);
+
+      snprintf(mn, sizeof(mn), "(%s)", mname);
+      g_free(mname);
     }
     else
     {

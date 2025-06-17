@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1023,13 +1023,15 @@ char *dt_history_get_name_label(const char *name,
   }
   else
   {
-    const char *l_label = hand_edited
-      ? label
+    char *l_label = hand_edited
+      ? g_strdup (label)
       : dt_util_localize_segmented_name(label, FALSE);
 
     result = markup
       ? g_markup_printf_escaped("%s • <small>%s</small>", name, l_label)
       : g_markup_printf_escaped("%s • %s", name, l_label);
+
+    g_free(l_label);
   }
 
   return result;
