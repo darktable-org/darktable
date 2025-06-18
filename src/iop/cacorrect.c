@@ -1215,37 +1215,6 @@ DT_OMP_PRAGMA(barrier)
 /*==================================================================================
  * end raw therapee code
  *==================================================================================*/
-void modify_roi_out(dt_iop_module_t *self,
-                    dt_dev_pixelpipe_iop_t *piece,
-                    dt_iop_roi_t *roi_out,
-                    const dt_iop_roi_t *const roi_in)
-{
-  *roi_out = *roi_in;
-  roi_out->x = MAX(0, roi_in->x);
-  roi_out->y = MAX(0, roi_in->y);
-}
-void modify_roi_in(dt_iop_module_t *self,
-                   dt_dev_pixelpipe_iop_t *piece,
-                   const dt_iop_roi_t *const roi_out,
-                   dt_iop_roi_t *roi_in)
-{
-  *roi_in = *roi_out;
-  roi_in->x = 0;
-  roi_in->y = 0;
-  roi_in->width = piece->buf_in.width;
-  roi_in->height = piece->buf_in.height;
-  roi_in->scale = 1.0f;
-}
-
-void distort_mask(dt_iop_module_t *self,
-                  dt_dev_pixelpipe_iop_t *piece,
-                  const float *const in,
-                  float *const out,
-                  const dt_iop_roi_t *const roi_in,
-                  const dt_iop_roi_t *const roi_out)
-{
-  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
-}
 
 void reload_defaults(dt_iop_module_t *self)
 {

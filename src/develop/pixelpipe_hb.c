@@ -1737,9 +1737,6 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   // 3b) recurse and obtain output array in &input
 
   // get region of interest which is needed in input
-  if(dt_pipe_shutdown(pipe))
-    return TRUE;
-
   module->modify_roi_in(module, piece, roi_out, &roi_in);
   if((darktable.unmuted & DT_DEBUG_PIPE) && memcmp(roi_out, &roi_in, sizeof(dt_iop_roi_t)))
   {
@@ -1775,18 +1772,11 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
   const size_t out_bpp = dt_iop_buffer_dsc_to_bpp(*out_format);
 
   // reserve new cache line: output
-  if(dt_pipe_shutdown(pipe))
-    return TRUE;
-
   const gboolean important = module
       && (pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE)
-      && (((pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
-           && dt_iop_module_is(module->so, "colorout"))
-       || ((pipe->type & DT_DEV_PIXELPIPE_FULL)
-           && dt_iop_module_is(module->so, "gamma")));
+      && dt_iop_module_is(module->so, "pipescale");
 
-  dt_dev_pixelpipe_cache_get(pipe, hash, bufsize,
-                             output, out_format, module, important);
+  dt_dev_pixelpipe_cache_get(pipe, hash, bufsize, output, out_format, module, important);
 
   if(dt_pipe_shutdown(pipe))
     return TRUE;
@@ -2546,8 +2536,8 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
            && dev->gui_attached
            && ((module == dt_dev_gui_module())
                 || darktable.develop->history_last_module == module
-                || dt_iop_module_is(module->so, "colorout")
-                || dt_iop_module_is(module->so, "finalscale"));
+                || dt_iop_module_is(module->so, "finalscale")
+                || dt_iop_module_is(module->so, "pipescale"));
 
         if(important_cl)
         {
