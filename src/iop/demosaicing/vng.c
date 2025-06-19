@@ -342,10 +342,14 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
   const int prow = (filters4 == 9u) ? 6 : 8;
   const int pcol = (filters4 == 9u) ? 6 : 2;
   const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
 
   int *ips = NULL;
 
-  cl_mem dev_tmp = NULL;
+  cl_mem dev_tmp = only_vng_linear ? dev_out : dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
+  if(dev_tmp == NULL) dev_tmp = dev_out;
+
   cl_mem dev_xtrans = NULL;
   cl_mem dev_lookup = NULL;
   cl_mem dev_code = NULL;
@@ -486,15 +490,6 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
     dev_ips = dt_opencl_copy_host_to_device_constant(devid, ips_size, ips);
     if(dev_ips == NULL) goto finish;
 
-    int width = roi_in->width;
-    int height = roi_in->height;
-
-    // need to reserve scaled auxiliary buffer or use dev_out
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-
-    dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
-    if(dev_tmp == NULL) goto finish;
-
     // manage borders for linear interpolation part
     int border = 1;
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
@@ -524,13 +519,8 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
       if(err != CL_SUCCESS) goto finish;
     }
 
-
-    if(only_vng_linear)
+    if(dev_tmp == dev_out)
     {
-      // leave it at linear interpolation and skip VNG
-      size_t origin[] = { 0, 0, 0 };
-      size_t region[] = { width, height, 1 };
-      err = dt_opencl_enqueue_copy_image(devid, dev_tmp, dev_out, origin, origin, region);
       goto finish;
     }
     else
@@ -577,7 +567,7 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
     }
 
 finish:
-  dt_opencl_release_mem_object(dev_tmp);
+  if(dev_tmp != dev_out) dt_opencl_release_mem_object(dev_tmp);
   dt_opencl_release_mem_object(dev_xtrans);
   dt_opencl_release_mem_object(dev_lookup);
   free(lookup);

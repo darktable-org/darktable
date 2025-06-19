@@ -95,7 +95,6 @@ typedef enum dt_iop_demosaic_qual_flags_t
   // or third scale interpolation instead
   DT_DEMOSAIC_DEFAULT                 = 0,
   DT_DEMOSAIC_FULL_SCALE              = 1 << 0,
-  DT_DEMOSAIC_ONLY_VNG_LINEAR         = 1 << 1,
 } dt_iop_demosaic_qual_flags_t;
 
 typedef enum dt_iop_demosaic_smooth_t
@@ -280,12 +279,6 @@ static dt_iop_demosaic_qual_flags_t demosaic_qual_flags(const dt_dev_pixelpipe_i
   // half_size_f doesn't support 4bayer images
   if(img->flags & DT_IMAGE_4BAYER)
     flags |= DT_DEMOSAIC_FULL_SCALE;
-
-  // we check if we can stop at the linear interpolation step in VNG
-  // instead of going the full way
-  if(((flags & DT_DEMOSAIC_FULL_SCALE) && (roi_out->scale < (is_xtrans ? 0.5f : 0.667f)))
-    || piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
-    flags |= DT_DEMOSAIC_ONLY_VNG_LINEAR;
 
   return flags;
 }
@@ -498,37 +491,10 @@ void modify_roi_in(dt_iop_module_t *self,
   roi_in->height /= roi_out->scale;
   roi_in->scale = 1.0f;
 
-  dt_iop_demosaic_data_t *d = piece->data;
-  const dt_iop_demosaic_method_t method = d->demosaicing_method;
-  const gboolean passthrough = method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME ||
-                               method == DT_IOP_DEMOSAIC_PASSTHR_MONOX ||
-                               method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR ||
-                               method == DT_IOP_DEMOSAIC_PASSTHR_COLORX;
-  // set position to closest top/left sensor pattern snap
-  if(!passthrough)
-  {
-    const int aligner = (piece->pipe->dsc.filters != 9u) ? DT_BAYER_SNAPPER : DT_XTRANS_SNAPPER;
-    const int dx = roi_in->x % aligner;
-    const int dy = roi_in->y % aligner;
-
-/*
-    // This implements snapping to closest position, meant for optimized xtrans position
-    // but with problems at extreme zoom levels
-    const int shift_x = (dx > aligner / 2) ? aligner - dx : -dx;
-    const int shift_y = (dy > aligner / 2) ? aligner - dy : -dy;
-
-    roi_in->x += shift_x;
-    roi_in->y += shift_y;
-*/
-
-    // currently we always snap to left & upper
-    roi_in->x -= dx;
-    roi_in->y -= dy;
-  }
-
-  // clamp to full buffer fixing numeric inaccuracies
-  roi_in->x = MAX(0, roi_in->x);
-  roi_in->y = MAX(0, roi_in->y);
+  // always set position to closest top/left sensor pattern snap
+  const int snap = (piece->pipe->dsc.filters != 9u) ? DT_BAYER_SNAPPER : DT_XTRANS_SNAPPER;
+  roi_in->x = MAX(0, (roi_in->x / snap) * snap);
+  roi_in->y = MAX(0, (roi_in->y / snap) * snap);
   roi_in->width = MIN(roi_in->width, piece->buf_in.width);
   roi_in->height = MIN(roi_in->height, piece->buf_in.height);
 }
@@ -577,7 +543,7 @@ void tiling_callback(dt_iop_module_t *self,
       tiling->factor += smooth;                        // + smooth
 
     tiling->overhead = 0;
-    tiling->overlap = 5; // take care of border handling
+    tiling->overlap = demosaicing_method == DT_IOP_DEMOSAIC_AMAZE ? 8 : 5; // take care of border handling
   }
   else if(demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN ||
           demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3 ||
@@ -754,15 +720,15 @@ void process(dt_iop_module_t *self,
     switch(d->green_eq)
     {
       case DT_IOP_GREEN_EQ_FULL:
-        green_equilibration_favg(in, (float *)i, width, height, pipe->dsc.filters, roi_in->x, roi_in->y);
+        green_equilibration_favg(in, (float *)i, width, height, pipe->dsc.filters);
         break;
       case DT_IOP_GREEN_EQ_LOCAL:
-        green_equilibration_lavg(in, (float *)i, width, height, pipe->dsc.filters, roi_in->x, roi_in->y, threshold);
+        green_equilibration_lavg(in, (float *)i, width, height, pipe->dsc.filters, threshold);
         break;
       case DT_IOP_GREEN_EQ_BOTH:
         aux = dt_alloc_align_float((size_t)height * width);
-        green_equilibration_favg(aux, (float *)i, width, height, pipe->dsc.filters, roi_in->x, roi_in->y);
-        green_equilibration_lavg(in, aux, width, height, pipe->dsc.filters, roi_in->x, roi_in->y, threshold);
+        green_equilibration_favg(aux, (float *)i, width, height, pipe->dsc.filters);
+        green_equilibration_lavg(in, aux, width, height, pipe->dsc.filters, threshold);
         dt_free_align(aux);
         break;
       default:
