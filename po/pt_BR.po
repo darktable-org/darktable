@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-09 06:25-0300\n"
-"PO-Revision-Date: 2025-06-09 06:25-0300\n"
+"POT-Creation-Date: 2025-06-20 10:37-0300\n"
+"PO-Revision-Date: 2025-06-20 10:38-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -2693,6 +2693,10 @@ msgstr "contribuidores do rawspeed"
 #: ../build/bin/tools/darktable_authors.h:21
 msgid "integration contributors"
 msgstr "contribuidores de integração"
+
+#: ../build/bin/tools/darktable_authors.h:26
+msgid "lua-scripts contributors"
+msgstr "contribuidores do lua-scripts"
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:130
 #: ../build/lib/darktable/plugins/introspection_ashift.c:279
@@ -7336,7 +7340,7 @@ msgstr "ou o <b>RAW não será legível</b> na próxima versão."
 
 #: ../src/common/image.h:217 ../src/common/ratings.c:297
 #: ../src/imageio/format/avif.c:110 ../src/libs/history.c:842
-#: ../src/libs/snapshots.c:885
+#: ../src/libs/snapshots.c:889
 msgid "unknown"
 msgstr "desconhecido"
 
@@ -9450,7 +9454,7 @@ msgid "adjust the fulcrum used by some blending operations"
 msgstr "ajusta o pivô (fulcrum) usado por algumas operações de mesclagem"
 
 #. Add opacity/scale sliders to table
-#: ../src/develop/blend_gui.c:3589 ../src/iop/overlay.c:1103
+#: ../src/develop/blend_gui.c:3589 ../src/iop/overlay.c:1111
 #: ../src/iop/watermark.c:1371 ../src/libs/masks.c:106
 msgid "opacity"
 msgstr "opacidade"
@@ -10098,7 +10102,7 @@ msgstr ""
 "provavelmente foi introduzido ao aplicar uma predefinição, estilo ou "
 "copiar&colar de histórico"
 
-#: ../src/develop/pixelpipe_hb.c:1257
+#: ../src/develop/pixelpipe_hb.c:1255
 #, c-format
 msgid ""
 "fatal pixelpipe abort due to non-aligned buffers\n"
@@ -10108,11 +10112,11 @@ msgstr ""
 "pixelpipe abortou de maneira fatal por causa de buffers nao alinhados\n"
 "no módulo '%s' por favor reporte no GitHub"
 
-#: ../src/develop/pixelpipe_hb.c:1722
+#: ../src/develop/pixelpipe_hb.c:1720
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr "erro fatal de alinhamento, por favor reporte no GitHub\n"
 
-#: ../src/develop/pixelpipe_hb.c:3096
+#: ../src/develop/pixelpipe_hb.c:3093
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -10133,7 +10137,7 @@ msgstr ""
 "  - configuração de espaço muito pequeno com 'use toda a memória do "
 "dispositivo'."
 
-#: ../src/develop/pixelpipe_hb.c:3289
+#: ../src/develop/pixelpipe_hb.c:3286
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -14935,7 +14939,7 @@ msgid "internal"
 msgstr "interno"
 
 #: ../src/imageio/format/jxl.c:619 ../src/libs/duplicate.c:407
-#: ../src/libs/history.c:1145 ../src/libs/snapshots.c:888
+#: ../src/libs/history.c:1145 ../src/libs/snapshots.c:892
 msgid "original"
 msgstr "original"
 
@@ -21332,7 +21336,7 @@ msgid "find lens"
 msgstr "encontrar lentes"
 
 #. scale
-#: ../src/iop/lens.cc:4470 ../src/iop/overlay.c:1114 ../src/iop/vignette.c:1043
+#: ../src/iop/lens.cc:4470 ../src/iop/overlay.c:1122 ../src/iop/vignette.c:1043
 #: ../src/iop/watermark.c:1381 ../src/libs/export.c:1540
 msgid "scale"
 msgstr "escala"
@@ -22274,7 +22278,7 @@ msgstr ""
 "de filme\n"
 "aqui"
 
-#: ../src/iop/overlay.c:1010
+#: ../src/iop/overlay.c:1018
 #, c-format
 msgid ""
 "cannot use image %d as an overlay as it is using the current image as an "
@@ -22283,12 +22287,12 @@ msgstr ""
 "não é possível usar a imagem %d como sobreposição porque ela mesma está "
 "usando a imagem corrente como sobreposição"
 
-#: ../src/iop/overlay.c:1107 ../src/iop/watermark.c:1374
+#: ../src/iop/overlay.c:1115 ../src/iop/watermark.c:1374
 msgctxt "section"
 msgid "placement"
 msgstr "posicionamento"
 
-#: ../src/iop/overlay.c:1122
+#: ../src/iop/overlay.c:1130
 msgid ""
 "choose how to scale the overlay\n"
 "• image: scale overlay relative to whole image\n"
@@ -22307,31 +22311,31 @@ msgstr ""
 "• opções avançadas: escolher dimensões da sobreposição e da imagem "
 "independentemente"
 
-#: ../src/iop/overlay.c:1133
+#: ../src/iop/overlay.c:1141
 msgid "reference image dimension against which to scale the overlay"
 msgstr ""
 "dimensão da imagem de referência contra a qual a sobreposição terá a escala "
 "ajustada"
 
-#: ../src/iop/overlay.c:1137
+#: ../src/iop/overlay.c:1145
 msgid "overlay dimension to scale"
 msgstr "dimensão da sobreposição para ajuste de escala"
 
-#: ../src/iop/overlay.c:1141 ../src/iop/watermark.c:1404
+#: ../src/iop/overlay.c:1149 ../src/iop/watermark.c:1404
 #: ../src/libs/print_settings.c:2752
 msgid "alignment"
 msgstr "alinhamento"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/overlay.c:1165
+#: ../src/iop/overlay.c:1173
 msgid "the opacity of the overlay"
 msgstr "a opacidade da sobreposição"
 
-#: ../src/iop/overlay.c:1166
+#: ../src/iop/overlay.c:1174
 msgid "the scale of the overlay"
 msgstr "a escala da sobreposição"
 
-#: ../src/iop/overlay.c:1167
+#: ../src/iop/overlay.c:1175
 msgid "the rotation of the overlay"
 msgstr "a rotação da sobreposição"
 
@@ -22490,11 +22494,11 @@ msgid "selected file not within raster masks root folder"
 msgstr ""
 "o arquivo selecionado não está dentro da pasta raiz das máscaras de pixels"
 
-#: ../src/iop/rasterfile.c:591
+#: ../src/iop/rasterfile.c:589
 msgid "select the RGB channels taken into account to generate the raster mask"
 msgstr "selecionar os canais RGB levados em conta ao gerar a máscara de pixels"
 
-#: ../src/iop/rasterfile.c:595
+#: ../src/iop/rasterfile.c:593
 msgid ""
 "select the PFM file recorded as a raster mask,\n"
 "CAUTION: path must be set in preferences/processing before choosing"
@@ -22503,7 +22507,7 @@ msgstr ""
 "ATENÇÃO: o caminho deve ser configurado em preferências/processamento antes "
 "de escolher o arquivo"
 
-#: ../src/iop/rasterfile.c:601
+#: ../src/iop/rasterfile.c:599
 msgid "the mask file path is saved with the image history"
 msgstr "o caminho do arquivo de máscara é gravado com o histórico da imagem"
 
@@ -27806,33 +27810,33 @@ msgstr ""
 "permitir compará-lo com outro ou\n"
 "retornar àquela versão"
 
-#: ../src/libs/snapshots.c:154
+#: ../src/libs/snapshots.c:155
 msgctxt "snapshot sign"
 msgid "S"
 msgstr "S"
 
-#: ../src/libs/snapshots.c:568
+#: ../src/libs/snapshots.c:571
 msgid "restore snapshot into current history"
 msgstr "restaurar instantânea no histórico atual"
 
-#: ../src/libs/snapshots.c:683
+#: ../src/libs/snapshots.c:686
 msgid "snapshots for removed image have been deleted"
 msgstr "instantâneas da imagem removida foram removidos"
 
-#: ../src/libs/snapshots.c:723
+#: ../src/libs/snapshots.c:727
 #, c-format
 msgid "↗ %s '%s'"
 msgstr "↗ %s '%s'"
 
-#: ../src/libs/snapshots.c:723
+#: ../src/libs/snapshots.c:727
 msgid "this snapshot was taken from"
 msgstr "esta captura instantânea foi tirada de"
 
-#: ../src/libs/snapshots.c:772
+#: ../src/libs/snapshots.c:776
 msgid "take snapshot"
 msgstr "captura instantânea"
 
-#: ../src/libs/snapshots.c:774
+#: ../src/libs/snapshots.c:778
 msgid ""
 "take snapshot to compare with another image or the same image at another "
 "stage of development"
@@ -27840,7 +27844,7 @@ msgstr ""
 "tira uma instantânea para comparar com outra imagem ou a mesma imagem em "
 "outro estágio de revelação"
 
-#: ../src/libs/snapshots.c:833
+#: ../src/libs/snapshots.c:837
 msgid ""
 "place the snapshot side-by-side / above-below the current image instead of "
 "overlaying"
@@ -27848,7 +27852,7 @@ msgstr ""
 "positionar a instantânea lado-a-lado / acima-abaixo da imagem atual ao invés "
 "de sobrepor"
 
-#: ../src/libs/snapshots.c:837
+#: ../src/libs/snapshots.c:841
 msgid "toggle last snapshot"
 msgstr "alterna última instantânea"
 
