@@ -36,8 +36,13 @@ backtransformf (float2 p, const int r_x, const int r_y, const int r_wd, const in
 }
 
 kernel void
-green_equilibration_lavg(read_only image2d_t in, write_only image2d_t out, const int width, const int height, const unsigned int filters,
-                         const int r_x, const int r_y, const float thr, local float *buffer)
+green_equilibration_lavg(read_only image2d_t in,
+                         write_only image2d_t out,
+                         const int width,
+                         const int height,
+                         const unsigned int filters,
+                         const float thr,
+                         local float *buffer)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -79,11 +84,11 @@ green_equilibration_lavg(read_only image2d_t in, write_only image2d_t out, const
 
   if(x >= width || y >= height) return;
 
-  const int c = FC(y + r_y, x + r_x, filters);
+  const int c = FC(y, x, filters);
   const float maximum = 1.0f;
   float o = buffer[0];
 
-  if(c == 1 && ((y + r_y) & 1))
+  if(c == 1 && (y & 1))
   {
     const float o1_1 = buffer[-1 * stride - 1];
     const float o1_2 = buffer[-1 * stride + 1];
@@ -112,8 +117,12 @@ green_equilibration_lavg(read_only image2d_t in, write_only image2d_t out, const
 
 
 kernel void
-green_equilibration_favg_reduce_first(read_only image2d_t in, const int width, const int height,
-                                      global float2 *accu, const unsigned int filters, const int r_x, const int r_y, local float2 *buffer)
+green_equilibration_favg_reduce_first(read_only image2d_t in,
+                                      const int width,
+                                      const int height,
+                                      global float2 *accu,
+                                      const unsigned int filters,
+                                      local float2 *buffer)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -124,11 +133,11 @@ green_equilibration_favg_reduce_first(read_only image2d_t in, const int width, c
 
   const int l = mad24(ylid, xlsz, xlid);
 
-  const int c = FC(y + r_y, x + r_x, filters);
+  const int c = FC(y, x, filters);
 
   const int isinimage = (x < 2 * (width / 2) && y < 2 * (height / 2));
-  const int isgreen1 = (c == 1 && !((y + r_y) & 1));
-  const int isgreen2 = (c == 1 && ((y + r_y) & 1));
+  const int isgreen1 = (c == 1 && !(y & 1));
+  const int isgreen2 = (c == 1 && (y & 1));
 
   float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
 
@@ -194,8 +203,12 @@ green_equilibration_favg_reduce_second(const global float2* input, global float2
 
 
 kernel void
-green_equilibration_favg_apply(read_only image2d_t in, write_only image2d_t out, const int width, const int height, const unsigned int filters,
-                               const int r_x, const int r_y, const float gr_ratio)
+green_equilibration_favg_apply(read_only image2d_t in,
+                               write_only image2d_t out,
+                               const int width,
+                               const int height,
+                               const unsigned int filters,
+                               const float gr_ratio)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -204,9 +217,9 @@ green_equilibration_favg_apply(read_only image2d_t in, write_only image2d_t out,
 
   float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
 
-  const int c = FC(y + r_y, x + r_x, filters);
+  const int c = FC(y, x, filters);
 
-  const int isgreen1 = (c == 1 && !((y + r_y) & 1));
+  const int isgreen1 = (c == 1 && !(y & 1));
 
   pixel *= (isgreen1 ? gr_ratio : 1.0f);
 

@@ -155,6 +155,7 @@ add_iop(sigmoid "sigmoid.c")
 add_iop(primaries "primaries.c")
 add_iop(colorequal "colorequal.c")
 add_iop(rasterfile "rasterfile.c")
+add_iop(pipescale "pipescale.c")
 
 if(Rsvg2_FOUND)
   add_iop(watermark "watermark.c")

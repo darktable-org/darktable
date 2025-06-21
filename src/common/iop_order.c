@@ -88,6 +88,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { { 6.0f }, "hotpixels", 0},
   { { 7.0f }, "rawdenoise", 0},
   { { 8.0f }, "demosaic", 0},
+  { { 8.5f }, "pipescale", 0},
   { { 9.0f }, "mask_manager", 0},
   { {10.0f }, "denoiseprofile", 0},
   { {11.0f }, "tonemap", 0},
@@ -184,6 +185,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { { 6.0f }, "hotpixels", 0},
   { { 7.0f }, "rawdenoise", 0},
   { { 8.0f }, "demosaic", 0},
+  { { 8.5f }, "pipescale", 0},
   { { 9.0f }, "denoiseprofile", 0},
   { {10.0f }, "bilateral", 0},
   { {11.0f }, "rotatepixels", 0},
@@ -301,6 +303,7 @@ const dt_iop_order_entry_t v50_order[] = {
   { { 6.0f }, "hotpixels", 0},
   { { 7.0f }, "rawdenoise", 0},
   { { 8.0f }, "demosaic", 0},
+  { { 8.5f }, "pipescale", 0},
   { { 9.0f }, "denoiseprofile", 0},
   { {10.0f }, "bilateral", 0},
   { {11.0f }, "rotatepixels", 0},
@@ -420,6 +423,7 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 6.0f }, "hotpixels", 0 },
   { { 7.0f }, "rawdenoise", 0 },
   { { 8.0f }, "demosaic", 0 },
+  { { 8.5f }, "pipescale", 0},
   // all the modules between [8; 28] expect linear RGB, so they need to be moved after colorin
   { { 28.0f }, "colorin", 0 },
   // moved modules : (copy-pasted in the same order)
@@ -540,6 +544,7 @@ const dt_iop_order_entry_t v50_jpg_order[] = {
   { { 6.0f }, "hotpixels", 0 },
   { { 7.0f }, "rawdenoise", 0 },
   { { 8.0f }, "demosaic", 0 },
+  { { 8.5f }, "pipescale", 0},
   // all the modules between [8; 28] expect linear RGB, so they need to be moved after colorin
   { { 28.0f }, "colorin", 0 },
   // moved modules : (copy-pasted in the same order)
@@ -1179,6 +1184,7 @@ GList *dt_ioppr_get_iop_order_list(const dt_imgid_t imgid,
           _insert_before(iop_order_list, "filmicrgb", "sigmoid");
           _insert_before(iop_order_list, "colorbalancergb", "colorequal");
           _insert_before(iop_order_list, "highlights", "rasterfile");
+          _insert_before(iop_order_list, "denoiseprofile", "pipescale"); // ????
         }
       }
       else if(version >= DT_IOP_ORDER_LEGACY
