@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -147,6 +147,8 @@ static void button_clicked(GtkWidget *widget,
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
          _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
          _("_select as output destination"), _("_cancel"));
+
+  gtk_file_chooser_set_create_folders(GTK_FILE_CHOOSER(filechooser), TRUE);
 
   gchar *old = g_strdup(gtk_entry_get_text(d->entry));
   char *c = g_strstr_len(old, -1, "$");
