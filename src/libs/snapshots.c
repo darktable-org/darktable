@@ -561,7 +561,7 @@ static void _init_snapshot_entry(dt_lib_module_t *self,
   gtk_widget_set_halign(s->name, GTK_ALIGN_START);
 
   s->entry = gtk_entry_new();
-  gtk_widget_set_halign(s->entry, GTK_ALIGN_START);
+  gtk_widget_set_halign(s->entry, GTK_ALIGN_FILL);
   g_signal_connect(G_OBJECT(s->entry), "activate",
                    G_CALLBACK(_entry_activated_callback), self);
 
@@ -882,7 +882,9 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
       if(strlen(history_item->multi_name) > 0
          && history_item->multi_name[0] != ' ')
       {
-        s->label = g_strdup(history_item->multi_name);
+        s->label = history_item->multi_name_hand_edited
+          ? g_strdup(history_item->multi_name)
+          : dt_util_localize_segmented_name(history_item->multi_name, TRUE);
       }
     }
     else
