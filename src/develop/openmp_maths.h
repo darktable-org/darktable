@@ -41,8 +41,10 @@ extern float fabsf(const float x);
 DT_OMP_DECLARE_SIMD()
 extern float powf(const float x, const float y);
 
+#ifndef __GNUC__  // GCC 15 compiles but fails at runtime due to missing library function
 DT_OMP_DECLARE_SIMD()
 extern float sqrtf(const float x);
+#endif
 
 DT_OMP_DECLARE_SIMD()
 extern float cbrtf(const float x);
