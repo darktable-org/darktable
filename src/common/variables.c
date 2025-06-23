@@ -953,9 +953,8 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     for(GList* iter = dt_metadata_get_list(); iter; iter = iter->next)
     {
       dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
-      gchar *prefix = g_utf8_strup(dt_metadata_get_tag_subkey(metadata->tagname), -1);
       gboolean found = FALSE;
-      if(_has_prefix(variable, prefix))
+      if(_has_prefix(variable, metadata->tagname))
       {
         GList *res = dt_metadata_get(params->imgid, metadata->tagname, NULL);
         if(res != NULL)
@@ -963,7 +962,6 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
         g_list_free_full(res, g_free);
         found = TRUE;
       }
-      g_free(prefix);
       if(found) break;
     }
     dt_pthread_mutex_unlock(&darktable.metadata_threadsafe);
