@@ -291,7 +291,7 @@ void dt_gtkentry_variables_add_metadata(dt_metadata_t *metadata)
 {
   GtkTreeIter iter;
 
-  gchar *varname = g_utf8_strup(dt_metadata_get_tag_subkey(metadata->tagname), -1);
+  gchar *varname = g_strdup(metadata->tagname);
   gchar *description = g_strdup_printf("$(%s) - %s", varname, _("from metadata"));
   gtk_list_store_append(_completion_model, &iter);
   gtk_list_store_set(_completion_model, &iter,
