@@ -186,12 +186,10 @@ static int32_t _generic_dt_control_fileop_images_job_run
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
   const guint total = g_list_length(t);
-  char message[512] = { 0 };
   double fraction = 0;
   gchar *newdir = (gchar *)params->data;
 
-  g_snprintf(message, sizeof(message), ngettext(desc, desc_pl, total), total);
-  dt_control_job_set_progress_message(job, message);
+  dt_control_job_set_progress_message(job, ngettext(desc, desc_pl, total), total);
 
   // create new film roll for the destination directory
   dt_film_t new_film;
@@ -326,11 +324,9 @@ static dt_job_t *_control_generic_image_job_create(dt_job_execute_callback execu
 static int32_t _control_write_sidecar_files_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
-  char message[512] = { 0 };
   const size_t nb_imgs = g_list_length(params->index);
-  g_snprintf(message, sizeof(message),
+  dt_control_job_set_progress_message(job,
              ngettext("writing sidecar file","writing %zu sidecar files",nb_imgs), nb_imgs);
-  dt_control_job_set_progress_message(job, message);
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2
@@ -606,12 +602,9 @@ static int32_t _control_merge_hdr_job_run(dt_job_t *job)
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
   const guint total = g_list_length(t);
-  char message[512] = { 0 };
   double fraction = 0;
-  snprintf(message, sizeof(message), ngettext("merging %d image",
-                                              "merging %d images", total), total);
-
-  dt_control_job_set_progress_message(job, message);
+  dt_control_job_set_progress_message(job, ngettext("merging %d image",
+                                                    "merging %d images", total), total);
 
   dt_control_merge_hdr_t d = (dt_control_merge_hdr_t){.epsw = 1e-8f, .abort = FALSE };
 
@@ -711,13 +704,11 @@ static int32_t _control_duplicate_images_job_run(dt_job_t *job)
   GList *t = params->index;
   const guint total = g_list_length(t);
   double fraction = 0.0f;
-  char message[512] = { 0 };
 
   dt_undo_start_group(darktable.undo, DT_UNDO_DUPLICATE);
 
-  snprintf(message, sizeof(message), ngettext("duplicating %d image",
-                                              "duplicating %d images", total), total);
-  dt_control_job_set_progress_message(job, message);
+  dt_control_job_set_progress_message(job, ngettext("duplicating %d image",
+                                                    "duplicating %d images", total), total);
   double prev_time = 0;
   double last_coll_update = dt_get_wtime() - (INIT_UPDATE_INTERVAL/2.0);
   double update_interval = INIT_UPDATE_INTERVAL;
@@ -755,13 +746,11 @@ static int32_t _control_flip_images_job_run(dt_job_t *job)
   GList *t = params->index;
   const guint total = g_list_length(t);
   double fraction = 0.0;
-  char message[512] = { 0 };
 
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
 
-  snprintf(message, sizeof(message), ngettext("flipping %d image",
-                                              "flipping %d images", total), total);
-  dt_control_job_set_progress_message(job, message);
+  dt_control_job_set_progress_message(job, ngettext("flipping %d image",
+                                                    "flipping %d images", total), total);
   double prev_time = 0;
   for(; t && !_job_cancelled(job); t = g_list_next(t))
   {
@@ -787,21 +776,16 @@ static int32_t _control_monochrome_images_job_run(dt_job_t *job)
   const int32_t mode = params->flag;
   GList *t = params->index;
   const guint total = g_list_length(t);
-  char message[512] = { 0 };
   double fraction = 0.0f;
 
   dt_undo_start_group(darktable.undo, DT_UNDO_FLAGS);
 
-  if(mode == 0)
-    snprintf(message, sizeof(message),
-             ngettext("set %d color image",
-                      "setting %d color images", total), total);
-  else
-    snprintf(message, sizeof(message),
-             ngettext("set %d monochrome image",
-                      "setting %d monochrome images", total), total);
-
-  dt_control_job_set_progress_message(job, message);
+  dt_control_job_set_progress_message(job, mode == 0
+                                         ? ngettext("set %d color image",
+                                                    "setting %d color images", total)
+                                         : ngettext("set %d monochrome image",
+                                                    "setting %d monochrome images", total)
+                                         , total);
   double prev_time = 0;
   for(; t && !_job_cancelled(job); t = g_list_next(t))
   {
@@ -907,10 +891,8 @@ static int32_t _control_remove_images_job_run(dt_job_t *job)
   GList *t = params->index;
   char *imgs = _get_image_list(t);
   const guint total = g_list_length(t);
-  char message[512] = { 0 };
-  snprintf(message, sizeof(message), ngettext("removing %d image",
-                                              "removing %d images", total), total);
-  dt_control_job_set_progress_message(job, message);
+  dt_control_job_set_progress_message(job, ngettext("removing %d image",
+                                                    "removing %d images", total), total);
   sqlite3_stmt *stmt = NULL;
 
   // check that we can safely remove the image
@@ -1221,15 +1203,14 @@ static int32_t _control_delete_images_job_run(dt_job_t *job)
   char imgidstr[25] = { 0 };
   const guint total = g_list_length(t);
   double fraction = 0.0f;
-  char message[512] = { 0 };
   _dt_delete_dialog_choice_t delete_on_error = _DT_DELETE_DIALOG_CHOICE_NONE;
-  if(dt_conf_get_bool("send_to_trash"))
-    snprintf(message, sizeof(message), ngettext("trashing %d image",
-                                                "trashing %d images", total), total);
-  else
-    snprintf(message, sizeof(message), ngettext("deleting %d image",
-                                                "deleting %d images", total), total);
-  dt_control_job_set_progress_message(job, message);
+
+  dt_control_job_set_progress_message(job, dt_conf_get_bool("send_to_trash")
+                                         ? ngettext("trashing %d image",
+                                                    "trashing %d images", total)
+                                         : ngettext("deleting %d image",
+                                                    "deleting %d images", total)
+                                         , total);
 
   sqlite3_stmt *stmt;
 
@@ -1522,12 +1503,8 @@ static int32_t _control_refresh_exif_run(dt_job_t *job)
   GList *imgs = g_list_copy(t);
   const guint total = g_list_length(t);
   double fraction = 0.0;
-  char message[512] = { 0 };
-  snprintf(message, sizeof(message), ngettext("refreshing info for %d image",
-                                              "refreshing info for %d images",
-                                              total), total);
-
-  dt_control_job_set_progress_message(job, message);
+  dt_control_job_set_progress_message(job, ngettext("refreshing info for %d image",
+                                                    "refreshing info for %d images", total), total);
   double prev_time = 0;
   while(t)
   {
@@ -1586,14 +1563,11 @@ static int32_t _control_paste_history_job_run(dt_job_t *job)
   GList *t = params->data;
   const guint total = g_list_length(t);
   double fraction = 0.0;
-  char message[512] = { 0 };
-  snprintf(message, sizeof(message), ngettext("pasting history to %d image",
-                                              "pasting history to %d images",
-                                              total), total);
   const int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
   const gboolean merge = (mode == 0) ? TRUE : FALSE;
 
-  dt_control_job_set_progress_message(job, message);
+  dt_control_job_set_progress_message(job, ngettext("pasting history to %d image",
+                                                    "pasting history to %d images", total), total);
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
   double prev_time = 0;
   GList *to_synch = NULL;
@@ -1649,11 +1623,8 @@ static int32_t _control_compress_history_job_run(dt_job_t *job)
   const guint total = g_list_length(t);
   double fraction = 0.0;
   int missing = 0;
-  char message[512] = { 0 };
-  snprintf(message, sizeof(message), ngettext("compressing history for %d image",
-                                              "compressing history for %d images",
-                                              total), total);
-  dt_control_job_set_progress_message(job, message);
+  dt_control_job_set_progress_message(job, ngettext("compressing history for %d image",
+                                                    "compressing history for %d images", total), total);
   double prev_time = 0;
   for( ; t && !_job_cancelled(job); t = g_list_next(t))
   {
@@ -1690,11 +1661,8 @@ static int32_t _control_discard_history_job_run(dt_job_t *job)
   GList *t = params->data;
   const guint total = g_list_length(t);
   double fraction = 0.0;
-  char message[512] = { 0 };
-  snprintf(message, sizeof(message), ngettext("discarding history for %d image",
-                                              "discarding history for %d images",
-                                              total), total);
-  dt_control_job_set_progress_message(job, message);
+  dt_control_job_set_progress_message(job, ngettext("discarding history for %d image",
+                                                    "discarding history for %d images", total), total);
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
   double prev_time = 0;
   for( ; t && !_job_cancelled(job); t = g_list_next(t))
@@ -1733,11 +1701,8 @@ static int32_t _control_apply_styles_job_run(dt_job_t *job)
   gboolean duplicate = style_data->duplicate;
   const guint total = g_list_length(imgs);
   double fraction = 0.0;
-  char message[512] = { 0 };
-  snprintf(message, sizeof(message), ngettext("applying style(s) for %d image",
-                                              "applying style(s) for %d images",
-                                              total), total);
-  dt_control_job_set_progress_message(job, message);
+  dt_control_job_set_progress_message(job, ngettext("applying style(s) for %d image",
+                                                    "applying style(s) for %d images", total), total);
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
 
   const int mode = dt_conf_get_int("plugins/lighttable/style/applymode");
@@ -1882,11 +1847,9 @@ static int32_t _control_export_job_run(dt_job_t *job)
     const guint num = total - g_list_length(t);
 
     // progress message
-    char message[512] = { 0 };
-    snprintf(message, sizeof(message), _("exporting %d / %d to %s"),
-             num, total, mstorage->name(mstorage));
     // update the message. initialize_store() might have changed the number of images
-    dt_control_job_set_progress_message(job, message);
+    dt_control_job_set_progress_message(job, _("exporting %d / %d to %s"),
+                                             num, total, mstorage->name(mstorage));
 
     // check if image still exists:
     const dt_image_t *image = dt_image_cache_get(imgid, 'r');
@@ -2516,7 +2479,6 @@ static int32_t _control_datetime_job_run(dt_job_t *job)
   GList *t = params->index;
   const GTimeSpan offset = ((dt_control_datetime_t *)params->data)->offset;
   const char *datetime = ((dt_control_datetime_t *)params->data)->datetime;
-  char message[512] = { 0 };
 
   /* do we have any selected images and is offset != 0 */
   if(!t || (offset == 0 && !datetime[0]))
@@ -2532,8 +2494,7 @@ static int32_t _control_datetime_job_run(dt_job_t *job)
   const char *mes12 = offset
     ? N_("adding time offset to %d images")
     : N_("setting date/time of %d images");
-  snprintf(message, sizeof(message), ngettext(mes11, mes12, total), total);
-  dt_control_job_set_progress_message(job, message);
+  dt_control_job_set_progress_message(job, ngettext(mes11, mes12, total), total);
 
   GList *imgs = NULL;
   if(offset)
@@ -2857,7 +2818,6 @@ static int32_t _control_import_job_run(dt_job_t *job)
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   dt_control_import_t *data = params->data;
   uint32_t cntr = 0;
-  char message[512] = { 0 };
 
 #ifdef USE_LUA
   if(!data->session)
@@ -2869,9 +2829,8 @@ static int32_t _control_import_job_run(dt_job_t *job)
 
   GList *t = params->index;
   const guint total = g_list_length(t);
-  snprintf(message, sizeof(message), ngettext("importing %d image",
-                                              "importing %d images", total), total);
-  dt_control_job_set_progress_message(job, message);
+  dt_control_job_set_progress_message(job, ngettext("importing %d image",
+                                                    "importing %d images", total), total);
 
   GList *imgs = NULL;
   double fraction = 0.0f;
@@ -2921,10 +2880,8 @@ static int32_t _control_import_job_run(dt_job_t *job)
     if(currtime - last_prog_update > PROGRESS_UPDATE_INTERVAL)
     {
       last_prog_update = currtime;
-      snprintf(message, sizeof(message),
-               ngettext("importing %d/%d image",
-                        "importing %d/%d images", cntr), cntr, total);
-      dt_control_job_set_progress_message(job, message);
+      dt_control_job_set_progress_message(job, ngettext("importing %d/%d image",
+                                                        "importing %d/%d images", cntr), cntr, total);
       dt_control_job_set_progress(job, fraction);
       g_usleep(100);
     }
