@@ -72,14 +72,11 @@ typedef struct dt_camera_import_t
 static int32_t dt_camera_capture_job_run(dt_job_t *job)
 {
   dt_camera_capture_t *params = dt_control_job_get_params(job);
-  char message[512] = { 0 };
   double fraction = 0;
 
   int total = params->brackets ? params->count * params->brackets : params->count;
-  snprintf(message, sizeof(message),
+  dt_control_job_set_progress_message(job,
            ngettext("capturing %d image", "capturing %d images", total), total);
-
-  dt_control_job_set_progress_message(job, message);
 
   /* try to get exp program mode for nikon */
   char *expprogram = (char *)dt_camctl_camera_get_property(darktable.camctl,
@@ -331,11 +328,9 @@ static int32_t dt_camera_import_job_run(dt_job_t *job)
   dt_control_log(_("starting to import images from camera"));
 
   guint total = g_list_length(params->images);
-  char message[512] = { 0 };
-  snprintf(message, sizeof(message),
+  dt_control_job_set_progress_message(job,
            ngettext("importing %d image from camera",
                     "importing %d images from camera", total), total);
-  dt_control_job_set_progress_message(job, message);
 
   // Switch to new filmroll
   dt_film_open(dt_import_session_film_id(params->shared.session));
