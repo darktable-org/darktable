@@ -87,6 +87,8 @@
 #include <locale.h>
 #include <limits.h>
 
+#include <exiv2/exv_conf.h>  // for EXV_PACKAGE_VERSION
+
 #ifdef HAVE_GRAPHICSMAGICK
 #include <magick/api.h>
 #elif defined HAVE_IMAGEMAGICK
@@ -722,6 +724,8 @@ void dt_start_backtumbs_crawler(void)
 
 static char *_get_version_string(void)
 {
+  const char *exiv2_version = EXV_PACKAGE_VERSION "\n";
+
 #ifdef HAVE_LIBRAW
   const char *libraw_version = LIBRAW_VERSION_STR "\n";
 #endif
@@ -742,13 +746,14 @@ char *version = g_strdup_printf(
                "Copyright (C) 2012-%s Johannes Hanika and other contributors.\n\n"
                "Compile options:\n"
                "  Bit depth              -> %zu bit\n"
-               "%s%s%s%s%s\n"
+               "%s%s%s%s%s%s%s\n"
                "See %s for detailed documentation.\n"
                "See %s to report bugs.\n",
                darktable_package_version,
                darktable_last_commit_year,
                CHAR_BIT * sizeof(void *),
 
+               "  Exiv2                  -> ", exiv2_version,
 #ifdef _DEBUG
                "  Debug                  -> ENABLED\n"
 #else
