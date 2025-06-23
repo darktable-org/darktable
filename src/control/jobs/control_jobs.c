@@ -1375,6 +1375,9 @@ static int32_t _control_gpx_apply_job_run(dt_job_t *job)
   const dt_control_gpx_apply_t *d = params->data;
   const gchar *filename = d->filename;
   const gchar *tz = d->tz;
+  char message[512] = { 0 };
+  double fraction = 0;
+
   /* do we have any selected images */
   if(!t) goto bail_out;
 
@@ -1388,6 +1391,13 @@ static int32_t _control_gpx_apply_job_run(dt_job_t *job)
 
   GTimeZone *tz_camera = (tz == NULL) ? g_time_zone_new_utc() : g_time_zone_new(tz);
   if(!tz_camera) goto bail_out;
+
+  const guint total = g_list_length(t);
+  double prev_time = 0;
+  g_snprintf(message, sizeof(message),
+             ngettext("setting GPS information", "setting GPS information for %u images", total),
+             total);
+  dt_control_job_set_progress_message(job, message);
 
   GList *imgs = NULL;
   GArray *gloc = g_array_new(FALSE, FALSE, sizeof(dt_image_geoloc_t));
@@ -1424,6 +1434,7 @@ static int32_t _control_gpx_apply_job_run(dt_job_t *job)
       g_list_free(grps);
     }
     g_date_time_unref(utc_time);
+    _update_progress(job, fraction, &prev_time);
   } while((t = g_list_next(t)) != NULL);
   imgs = g_list_reverse(imgs);
 

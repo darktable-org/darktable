@@ -299,6 +299,7 @@ static void _remove_images_from_map(dt_lib_module_t *self)
 
 static void _refresh_images_displayed_on_track(const int segid, const gboolean active, dt_lib_module_t *self)
 {
+  dt_gui_cursor_set_busy();
   dt_lib_geotagging_t *d = self->data;
   for(GList *i = d->imgs; i; i = g_list_next(i))
   {
@@ -342,6 +343,7 @@ static void _refresh_images_displayed_on_track(const int segid, const gboolean a
       }
     }
   }
+  dt_gui_cursor_clear_busy();
 }
 
 static void _update_nb_images(dt_lib_module_t *self)
