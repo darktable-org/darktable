@@ -227,10 +227,20 @@ jobs:
             webp-pixbuf-loader:p
             zlib:p
           update: false
-      - name: Install the latest not yet broken version of exiv2
+      - name: Build and install the latest compatible version of exiv2
         run: |
-          # It's a temporary fix, to be removed when the issue will be resolved
-          pacman -U --noconfirm https://repo.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-exiv2-0.27.7-1-any.pkg.tar.zst
+          git clone --branch v0.27.7 --depth 1 https://github.com/Exiv2/exiv2 src-exiv2
+          cd src-exiv2
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=ON \
+            -DEXIV2_ENABLE_BMFF=ON \
+            -DEXIV2_ENABLE_NLS=ON \
+            -DEXIV2_ENABLE_VIDEO=OFF \
+            -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX}
+          cmake --build build
+          cmake --install build
+          cd ..
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
         uses: andymckay/cancel-action@0.5
