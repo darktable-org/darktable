@@ -584,10 +584,15 @@ void dt_control_job_add_progress(dt_job_t *job, const char *message, const gbool
     dt_control_progress_attach_job(job->progress, job);
 }
 
-void dt_control_job_set_progress_message(dt_job_t *job, const char *message)
+void dt_control_job_set_progress_message(dt_job_t *job, const char *message, ...)
 {
   if(!job || !job->progress) return;
-  dt_control_progress_set_message(job->progress, message);
+  va_list ap;
+  va_start(ap, message);
+  char *msg = g_strdup_vprintf(message, ap);
+  dt_control_progress_set_message(job->progress, msg);
+  g_free(msg);
+  va_end(ap);
 }
 
 void dt_control_job_set_progress(dt_job_t *job, const double value)
