@@ -773,6 +773,30 @@ static gboolean _scrollbar_changed(GtkWidget *widget,
   return TRUE;
 }
 
+gboolean _valid_window_placement(gint saved_x, gint saved_y, gint window_width, gint window_height)
+{
+  GdkDisplay *display = gdk_display_get_default();
+  gint n_monitors = gdk_display_get_n_monitors(display);
+
+  // check each monitor
+  for(gint i = 0; i < n_monitors; i++)
+  {
+    GdkMonitor *monitor = gdk_display_get_monitor(display, i);
+    GdkRectangle geometry;
+    gdk_monitor_get_geometry(monitor, &geometry);
+
+    // Check if window overlaps with this monitor
+    gboolean x_overlap = (saved_x < geometry.x + geometry.width) && (saved_x + window_width > geometry.x);
+    gboolean y_overlap = (saved_y < geometry.y + geometry.height) && (saved_y + window_height > geometry.y);
+
+    if(x_overlap && y_overlap)
+    {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
 int dt_gui_gtk_load_config()
 {
   dt_pthread_mutex_lock(&darktable.gui->mutex);
@@ -784,7 +808,10 @@ int dt_gui_gtk_load_config()
   const gint y = MAX(0, dt_conf_get_int("ui_last/window_y"));
 
   gtk_window_resize(GTK_WINDOW(widget), width, height);
-  gtk_window_move(GTK_WINDOW(widget), x, y);
+  if(_valid_window_placement(x, y, width, height))
+    gtk_window_move(GTK_WINDOW(widget), x, y);
+  else
+    gtk_window_move(GTK_WINDOW(widget), 0, 0);
   const gboolean fullscreen = dt_conf_get_bool("ui_last/fullscreen");
 
   if(fullscreen)
