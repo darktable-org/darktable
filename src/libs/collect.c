@@ -536,6 +536,7 @@ static void view_popup_menu_onRemove(GtkWidget *menuitem,
     gchar *fullq = NULL;
 
     gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &filmroll_path, -1);
+    char *escaped_filmroll_path = sqlite3_mprintf("%q", filmroll_path);
 
     /* Clean selected images, and add to the table those which are going to be deleted */
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
@@ -547,11 +548,12 @@ static void view_popup_menu_onRemove(GtkWidget *menuitem,
        " SELECT id"
        " FROM main.images"
        " WHERE film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%')",
-       filmroll_path);
+       escaped_filmroll_path);
     // clang-format on
 
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
     g_free(filmroll_path);
+    sqlite3_free(escaped_filmroll_path);
 
     if(dt_control_remove_images())
     {
