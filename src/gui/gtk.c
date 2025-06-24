@@ -773,7 +773,7 @@ static gboolean _scrollbar_changed(GtkWidget *widget,
   return TRUE;
 }
 
-gboolean _valid_window_placement(gint saved_x, gint saved_y, gint window_width, gint window_height)
+gboolean _valid_window_placement(gint saved_x, gint saved_y, gint window_width, gint window_height, gint border)
 {
   GdkDisplay *display = gdk_display_get_default();
   gint n_monitors = gdk_display_get_n_monitors(display);
@@ -785,9 +785,17 @@ gboolean _valid_window_placement(gint saved_x, gint saved_y, gint window_width, 
     GdkRectangle geometry;
     gdk_monitor_get_geometry(monitor, &geometry);
 
-    // Check if window overlaps with this monitor
-    gboolean x_overlap = (saved_x < geometry.x + geometry.width) && (saved_x + window_width > geometry.x);
-    gboolean y_overlap = (saved_y < geometry.y + geometry.height) && (saved_y + window_height > geometry.y);
+    // Calculate effective area excluding border
+    gint eff_x = geometry.x + border;
+    gint eff_y = geometry.y + border;
+    gint eff_width = geometry.width - (2 * border);
+    gint eff_height = geometry.height - (2 * border);
+
+    if(eff_width <= 0 || eff_height <= 0) continue;
+
+    // Check overlap
+    gboolean x_overlap = (saved_x < eff_x + eff_width) && (saved_x + window_width > eff_x);
+    gboolean y_overlap = (saved_y < eff_y + eff_height) && (saved_y + window_height > eff_y);
 
     if(x_overlap && y_overlap)
     {
@@ -808,7 +816,7 @@ int dt_gui_gtk_load_config()
   const gint y = MAX(0, dt_conf_get_int("ui_last/window_y"));
 
   gtk_window_resize(GTK_WINDOW(widget), width, height);
-  if(_valid_window_placement(x, y, width, height))
+  if(_valid_window_placement(x, y, width, height, 24))
     gtk_window_move(GTK_WINDOW(widget), x, y);
   else
     gtk_window_move(GTK_WINDOW(widget), 0, 0);
