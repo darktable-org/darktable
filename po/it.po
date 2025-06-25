@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-01 09:33+0200\n"
-"PO-Revision-Date: 2025-06-12 19:22+0200\n"
+"PO-Revision-Date: 2025-06-25 18:00+0200\n"
 "Last-Translator: Elia Devito <eliadevito@gmail.com>\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
@@ -5352,7 +5352,7 @@ msgstr "Preserva tonalità"
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:152
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:261
 msgid "red attenuation"
-msgstr "Saturazione del rosso"
+msgstr "Attenuazione del rosso"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:158
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:265
@@ -6982,11 +6982,11 @@ msgstr ""
 
 #: ../src/common/database.c:3854 ../src/gui/gtk.c:3105
 msgid "_no"
-msgstr "_no"
+msgstr "_No"
 
 #: ../src/common/database.c:3854 ../src/gui/gtk.c:3104
 msgid "_yes"
-msgstr "_yes"
+msgstr "_Si"
 
 #: ../src/common/database.c:3870
 msgid "done"
@@ -7006,7 +7006,7 @@ msgstr ""
 #: ../src/gui/accelerators.c:2631 ../src/gui/accelerators.c:2713
 #: ../src/gui/hist_dialog.c:226 ../src/gui/presets.c:569
 msgid "_ok"
-msgstr "_ok"
+msgstr "_Ok"
 
 #: ../src/common/database.c:3875
 msgid "error"
@@ -7097,11 +7097,11 @@ msgstr "Darktable - migrazione schema"
 #: ../src/common/database.c:4478 ../src/common/database.c:4638
 #: ../src/common/database.c:4653
 msgid "_close darktable"
-msgstr "_chiudi darktable"
+msgstr "_Chiudi darktable"
 
 #: ../src/common/database.c:4112
 msgid "_upgrade database"
-msgstr "_aggiorna database"
+msgstr "_Aggiorna database"
 
 #: ../src/common/database.c:4272
 #, c-format
@@ -7140,12 +7140,12 @@ msgstr "darktable - errore nell'apertura del database"
 
 #: ../src/common/database.c:4464 ../src/common/database.c:4639
 msgid "_attempt restore"
-msgstr "_tenta il ripristino"
+msgstr "_Tenta il ripristino"
 
 #: ../src/common/database.c:4465 ../src/common/database.c:4479
 #: ../src/common/database.c:4640 ../src/common/database.c:4654
 msgid "_delete database"
-msgstr "_elimina database"
+msgstr "_Elimina database"
 
 #: ../src/common/database.c:4468 ../src/common/database.c:4643
 msgid ""
