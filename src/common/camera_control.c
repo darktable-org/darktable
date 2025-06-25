@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2010-2024 darktable developers.
+   Copyright (C) 2010-2025 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -920,7 +920,7 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
       if(removed)
       {
         dt_print(DT_DEBUG_CAMCTL,
-                 "[camera_control] remove %s on port %s from ununsed camera list",
+                 "[camera_control] remove %s on port %s from unused camera list",
                  cam->model, cam->port);
         dt_camera_unused_t *oldcam = (dt_camera_unused_t *)unused_item->data;
         camctl->unused_cameras = unused_item =
@@ -978,7 +978,7 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
 
           dt_print(DT_DEBUG_CAMCTL,
                    "[camera_control] remove %s on port %s from"
-                   " ununsed camera list as mounted",
+                   " unused camera list as mounted",
                    cam->model, cam->port);
           dt_camera_unused_t *oldcam = (dt_camera_unused_t *)unused_item->data;
           camctl->unused_cameras = unused_item =
