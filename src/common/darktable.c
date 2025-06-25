@@ -88,6 +88,7 @@
 #include <limits.h>
 
 #include <exiv2/exv_conf.h>  // for EXV_PACKAGE_VERSION
+#include <lensfun.h>  // for lensfun library version macros
 
 #ifdef HAVE_GRAPHICSMAGICK
 #include <magick/api.h>
@@ -726,6 +727,8 @@ static char *_get_version_string(void)
 {
   const char *exiv2_version = EXV_PACKAGE_VERSION "\n";
 
+  const char *liblensfun_version = g_strdup_printf("%d.%d.%d\n", LF_VERSION_MAJOR, LF_VERSION_MINOR, LF_VERSION_MICRO);
+
 #ifdef HAVE_LIBRAW
   const char *libraw_version = LIBRAW_VERSION_STR "\n";
 #endif
@@ -746,7 +749,7 @@ char *version = g_strdup_printf(
                "Copyright (C) 2012-%s Johannes Hanika and other contributors.\n\n"
                "Compile options:\n"
                "  Bit depth              -> %zu bit\n"
-               "%s%s%s%s%s%s%s\n"
+               "%s%s%s%s%s%s%s%s%s\n"
                "See %s for detailed documentation.\n"
                "See %s to report bugs.\n",
                darktable_package_version,
@@ -754,6 +757,7 @@ char *version = g_strdup_printf(
                CHAR_BIT * sizeof(void *),
 
                "  Exiv2                  -> ", exiv2_version,
+               "  Lensfun                -> ", liblensfun_version,
 #ifdef _DEBUG
                "  Debug                  -> ENABLED\n"
 #else
