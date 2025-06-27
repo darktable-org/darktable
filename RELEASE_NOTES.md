@@ -82,6 +82,8 @@ changes (where available).
 
 - Expanded width of preference boxes Lua Options so that long input is visible.
 
+- Fixed compilation when OpenMP is disabled.
+
 ### Add action support for Lua
 
 ### Other Lua changes
