@@ -1193,10 +1193,13 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         if(desired > possible)
           dt_print(DT_DEBUG_ALWAYS,
                    "[dt_init --threads] requested %d ompthreads restricted to %d",
-            desired, possible);
+                   desired, possible);
+#ifdef _OPENMP
         dt_print(DT_DEBUG_ALWAYS,
                  "[dt_init --threads] using %d threads of %d for openmp parallel sections %s",
-          darktable.num_openmp_threads, (int)dt_get_num_procs(), omp_get_dynamic() ? "(dynamic)" : "(static)");
+                 darktable.num_openmp_threads, (int)dt_get_num_procs(),
+                 omp_get_dynamic() ? "(dynamic)" : "(static)");
+#endif
         k++;
         argv[k-1] = NULL;
         argv[k] = NULL;
