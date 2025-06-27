@@ -773,6 +773,42 @@ static gboolean _scrollbar_changed(GtkWidget *widget,
   return TRUE;
 }
 
+gboolean _valid_window_placement( const gint saved_x,
+                                  const gint saved_y,
+                                  const gint window_width,
+                                  const gint window_height,
+                                  const gint border)
+{
+  GdkDisplay *display = gdk_display_get_default();
+  const gint n_monitors = gdk_display_get_n_monitors(display);
+
+  // check each monitor
+  for(gint i = 0; i < n_monitors; i++)
+  {
+    GdkMonitor *monitor = gdk_display_get_monitor(display, i);
+    GdkRectangle geometry;
+    gdk_monitor_get_geometry(monitor, &geometry);
+
+    // Calculate effective area excluding border
+    const gint eff_x = geometry.x + border;
+    const gint eff_y = geometry.y + border;
+    const gint eff_width = geometry.width - (2 * border);
+    const gint eff_height = geometry.height - (2 * border);
+
+    if(eff_width <= 0 || eff_height <= 0) continue;
+
+    // Check overlap
+    const gboolean x_overlap = (saved_x < eff_x + eff_width) && (saved_x + window_width > eff_x);
+    const gboolean y_overlap = (saved_y < eff_y + eff_height) && (saved_y + window_height > eff_y);
+
+    if(x_overlap && y_overlap)
+    {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
 int dt_gui_gtk_load_config()
 {
   dt_pthread_mutex_lock(&darktable.gui->mutex);
@@ -784,7 +820,10 @@ int dt_gui_gtk_load_config()
   const gint y = MAX(0, dt_conf_get_int("ui_last/window_y"));
 
   gtk_window_resize(GTK_WINDOW(widget), width, height);
-  gtk_window_move(GTK_WINDOW(widget), x, y);
+  if(_valid_window_placement(x, y, width, height, 24))
+    gtk_window_move(GTK_WINDOW(widget), x, y);
+  else
+    gtk_window_move(GTK_WINDOW(widget), 0, 0);
   const gboolean fullscreen = dt_conf_get_bool("ui_last/fullscreen");
 
   if(fullscreen)
