@@ -53,7 +53,7 @@ changes (where available).
 
 ## UI/UX Improvements
 
-- N/A
+- reset window position if it can't be placed at last used position on any available monitor in a multi-monitor setup
 
 ## Performance Improvements
 
