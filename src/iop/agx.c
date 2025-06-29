@@ -777,10 +777,12 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_use
 
   const float remaining_y_below_pivot = tone_mapping_params.pivot_y - tone_mapping_params.target_black;
   const float toe_length_y = remaining_y_below_pivot * user_params->curve_linear_percent_below_pivot  / 100.0f;
-  const float dx_linear_below_pivot = toe_length_y / tone_mapping_params.slope;
+  float dx_linear_below_pivot = toe_length_y / tone_mapping_params.slope;
   // ...and subtract it from pivot_x to get the x coordinate where the linear section joins the toe
   // ... but keep the transition point above x = 0
   tone_mapping_params.toe_transition_x = fmaxf(_epsilon, tone_mapping_params.pivot_x - dx_linear_below_pivot);
+  // fix up in case the limitation kicked in
+  dx_linear_below_pivot = tone_mapping_params.pivot_x - tone_mapping_params.toe_transition_x;
 
   // from the 'run' pivot_x->toe_transition_x, we calculate the 'rise'
   const float toe_y_below_pivot_y = tone_mapping_params.slope * dx_linear_below_pivot;
@@ -818,10 +820,11 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_use
   tone_mapping_params.target_white = powf(user_params->curve_target_display_white_percent / 100.0, 1.0f / tone_mapping_params.curve_gamma);
   const float remaining_y_above_pivot = tone_mapping_params.target_white - tone_mapping_params.pivot_y;
   const float shoulder_length_y = remaining_y_above_pivot * user_params->curve_linear_percent_above_pivot / 100.0f;
-  const float dx_linear_above_pivot = shoulder_length_y / tone_mapping_params.slope;
+  float dx_linear_above_pivot = shoulder_length_y / tone_mapping_params.slope;
 
   // don't allow shoulder_transition_x to reach 1
   tone_mapping_params.shoulder_transition_x = fminf(1 - _epsilon, tone_mapping_params.pivot_x + dx_linear_above_pivot);
+  dx_linear_above_pivot = tone_mapping_params.pivot_x - tone_mapping_params.shoulder_transition_x;
   tone_mapping_params.shoulder_transition_y = tone_mapping_params.pivot_y + shoulder_length_y;
   tone_mapping_params.shoulder_power = user_params->curve_shoulder_power;
 
