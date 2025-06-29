@@ -432,6 +432,15 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
     return DT_IMAGEIO_UNSUPPORTED_FORMAT;
   }
 
+  if(photometric == PHOTOMETRIC_PALETTE)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[tiff_open] error: indexed color map (palette) not supported in '%s'",
+             filename);
+    TIFFClose(t.tiff);
+    return DT_IMAGEIO_UNSUPPORTED_FORMAT;
+  }
+
   if(TIFFRasterScanlineSize(t.tiff) != TIFFScanlineSize(t.tiff))
   {
     TIFFClose(t.tiff);
