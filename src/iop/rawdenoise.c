@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
 
     darktable is free software: you can redistribute it and/or modify
@@ -226,7 +226,7 @@ static void wavelet_denoise(const float *const restrict in, float *const restric
       const float *const restrict inp = in + (size_t)row * roi->width + offset;
       const int senselwidth = (roi->width-offset+1)/2;
       for(int col = 0; col < senselwidth; col++)
-        fimgp[col] = sqrtf(fmaxf(0.0f, inp[2*col]));
+        fimgp[col] = sqrtf(MAX(0.0f, inp[2*col]));
     }
 
     // perform the wavelet decomposition and denoising
