@@ -378,7 +378,7 @@ int process_cl(dt_iop_module_t *self,
   if(visual) return err;
 
   if(roi_out->scale != roi_in->scale && ch == 4)
-    err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
+    err = dt_iop_clip_and_zoom_cl(devid, dev_out, dev_in, roi_out, roi_in);
   else
   {
     size_t iorigin[] = { roi_out->x, roi_out->y, 0 };
