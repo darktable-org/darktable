@@ -325,13 +325,12 @@ static inline dt_hash_t _get_cache_hash(dt_iop_module_t *self)
   return hash;
 }
 
-static float *_get_rasterfile_mask(dt_dev_pixelpipe_iop_t *piece)
+static float *_get_rasterfile_mask(dt_dev_pixelpipe_iop_t *piece,
+                                   const dt_iop_roi_t *const roi,
+                                   const dt_iop_roi_t *const roo)
 {
   dt_iop_module_t *self = piece->module;
   dt_iop_rasterfile_data_t *d = piece->data;
-
-  const dt_iop_roi_t *roi = &piece->processed_roi_in;
-  const dt_iop_roi_t *roo = &piece->processed_roi_out;
 
   dt_rasterfile_cache_t *cd = self->data;
   float *res = NULL;
@@ -348,13 +347,14 @@ static float *_get_rasterfile_mask(dt_dev_pixelpipe_iop_t *piece)
   }
   if(cd->mask)
   {
-    float *tmp = dt_iop_image_alloc(roi->width, roi->height, 1);
+    const gboolean scale = cd->width != roi->width || cd->height != roi->height;
+    float *tmp = scale ? dt_iop_image_alloc(roi->width, roi->height, 1) : cd->mask;
     if(tmp)
     {
-      interpolate_bilinear(cd->mask, cd->width, cd->height, tmp, roi->width, roi->height, 1);
+      if(scale) interpolate_bilinear(cd->mask, cd->width, cd->height, tmp, roi->width, roi->height, 1);
       res = dt_iop_image_alloc(roo->width, roo->height, 1);
       if(res) self->distort_mask(self, piece, tmp, res, roi, roo);
-      dt_free_align(tmp);
+      if(scale) dt_free_align(tmp);
     }
   }
   dt_pthread_mutex_unlock(&cd->lock);
@@ -380,7 +380,7 @@ int process_cl(dt_iop_module_t *self,
   if(visual) return err;
 
   if(roi_out->scale != roi_in->scale && ch == 4)
-    err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
+    err = dt_iop_clip_and_zoom_cl(devid, dev_out, dev_in, roi_out, roi_in);
   else
   {
     size_t iorigin[] = { roi_out->x, roi_out->y, 0 };
@@ -392,7 +392,7 @@ int process_cl(dt_iop_module_t *self,
   if(dt_iop_is_raster_mask_used(piece->module, BLEND_RASTER_ID)
      && (err == CL_SUCCESS))
   {
-    float *mask = _get_rasterfile_mask(piece);
+    float *mask = _get_rasterfile_mask(piece, roi_in, roi_out);
     if(mask)
       dt_iop_piece_set_raster(piece, mask, roi_in, roi_out);
     else
@@ -429,7 +429,7 @@ void process(dt_iop_module_t *self,
   const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
   const gboolean request = dt_iop_is_raster_mask_used(piece->module, BLEND_RASTER_ID);
   const gboolean visual = fullpipe && dt_iop_has_focus(self);
-  float *mask = visual || request ? _get_rasterfile_mask(piece) : NULL;
+  float *mask = visual || request ? _get_rasterfile_mask(piece, roi_in, roi_out) : NULL;
 
   if(visual)
   {
