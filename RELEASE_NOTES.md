@@ -53,7 +53,8 @@ changes (where available).
 
 ## UI/UX Improvements
 
-- reset window position if it can't be placed at last used position on any available monitor in a multi-monitor setup
+- Reset window position if it can't be placed at last used position on
+  any available monitor in a multi-monitor setup.
 
 ## Performance Improvements
 
@@ -83,6 +84,8 @@ changes (where available).
 - Expanded width of preference boxes Lua Options so that long input is visible.
 
 - Fixed compilation when OpenMP is disabled.
+
+- Fixed an OpenCL bug in rastermask module for non-raw images.
 
 ### Add action support for Lua
 
