@@ -145,6 +145,16 @@ void dt_ioppr_get_input_profile_type(struct dt_develop_t *dev,
 void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
                                       dt_colorspaces_color_profile_type_t *profile_type,
                                       const char **profile_filename);
+/**
+ * @see dt_ioppr_get_configured_export_profile_settings()
+ */
+gboolean dt_ioppr_get_configured_export_profile_settings(
+    struct dt_develop_t *dev,
+    dt_colorspaces_color_profile_type_t *profile_type,
+    char *profile_filename,
+    size_t filename_size,
+    dt_iop_color_intent_t *profile_intent);
+
 /** returns the current setting of the histogram profile */
 void dt_ioppr_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *profile_type,
                                          const char **profile_filename);
