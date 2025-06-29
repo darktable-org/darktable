@@ -2295,9 +2295,6 @@ static void _draw_color_picker(dt_iop_module_t *self,
                                const double width,
                                const double height)
 {
-  if(!(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE))
-    return;
-
   // only visualize for decent brightness & saturation
   if(self->picked_color[0] < MINJZ || self->picked_color[1] < MINJZ)
     return;
@@ -2534,7 +2531,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
 
   dt_free_align(g->LUT);
 
-  if(self->enabled && dt_iop_has_focus(self) && self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
+  if(self->enabled && self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
     _draw_color_picker(self, cr, p, g, (double)graph_width, (double)graph_height);
 
   cairo_restore(cr);
