@@ -39,12 +39,21 @@ float *dt_read_pfm(const char *filename, int *err, int *wd, int *ht, int *ch, co
 
   float *readbuf = NULL;
   float *image = NULL;
-  FILE *f = g_fopen(filename, "rb");
+
+  // The file path is expected to be normalized before dt_read_pfm is called
+  // (for example, a non-normalized file name may simply not be displayed
+  // in the menu widget). Therefore, normalization here is expected to be
+  // redundant (and do nothing) and is added more just in case, as
+  // additional protection against unsanitized input data.
+  char *normalized_filename = dt_util_normalize_path(filename);
+  FILE *f = g_fopen(normalized_filename, "rb");
   if(!f)
   {
+    g_free(normalized_filename);
     if(err) *err = DT_IMAGEIO_FILE_NOT_FOUND;
     return NULL;
   }
+  g_free(normalized_filename);
 
   char head[2] = { 'X', 'X' };
   char scale_factor_string[64] = { 0 };
