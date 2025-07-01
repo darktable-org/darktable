@@ -225,8 +225,10 @@ static void _update_filepath(dt_iop_module_t *self)
     for(int i = 0; i < numentries; i++)
     {
       const char *file = entries[i]->d_name;
-      dt_bauhaus_combobox_add_aligned(g->file, file, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+      char *normalized_filename = g_locale_to_utf8(file, -1, NULL, NULL, NULL);
+      dt_bauhaus_combobox_add_aligned(g->file, normalized_filename, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
       free(entries[i]);
+      g_free(normalized_filename);
     }
     if(numentries != -1) free(entries);
 
