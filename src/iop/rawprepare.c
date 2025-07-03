@@ -806,6 +806,8 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_rawprepare_4f);
   dt_opencl_free_kernel(gd->kernel_rawprepare_1f_unnormalized);
   dt_opencl_free_kernel(gd->kernel_rawprepare_1f);
+  dt_opencl_free_kernel(gd->kernel_rawprepare_1f_gainmap);
+  dt_opencl_free_kernel(gd->kernel_rawprepare_1f_unnormalized_gainmap);
   free(self->data);
   self->data = NULL;
 }
