@@ -38,6 +38,9 @@ CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wno-format-truncation)
 # clang-4.0 bug https://llvm.org/bugs/show_bug.cgi?id=28115#c7
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wno-error=address-of-packed-member)
 
+# needed to deal with warnings in libheif
+CHECK_C_COMPILER_FLAG_AND_ENABLE_IT(-Wno-typedef-redefinition)
+
 # minimal main thread's stack/frame stack size.
 # 2 MiB seems to work.
 # 1 MiB does NOT work with gmic support enabled.
