@@ -666,7 +666,7 @@ static void _agx_look(dt_aligned_pixel_t pixel_in_out,
   }
 }
 
-static float _apply_log_encoding(float x, const float range_in_ev, const float min_ev)
+static inline float _apply_log_encoding(float x, const float range_in_ev, const float min_ev)
 {
   // Assume input is linear RGB relative to 0.18 mid-gray
   // Ensure value > 0 before log
@@ -686,9 +686,10 @@ static inline float _calculate_slope_matching_power(const float slope,
 }
 
 static inline float _calculate_fallback_curve_coefficient(const float dx_transition_to_limit,
-                                                   const float dy_transition_to_limit, const float B)
+                                                          const float dy_transition_to_limit,
+                                                          const float exponent)
 {
-  return dy_transition_to_limit / powf(dx_transition_to_limit, B);
+  return dy_transition_to_limit / powf(dx_transition_to_limit, exponent);
 }
 
 static inline void _compress_into_gamut(dt_aligned_pixel_t pixel_in_out)
@@ -1819,8 +1820,10 @@ static void _populate_primaries_presets_combobox(dt_iop_module_t *self)
   sqlite3_stmt *stmt;
   // Fetch name and parameters, filtering by current module version to ensure struct compatibility.
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name, op_params FROM data.presets WHERE operation = ?1 AND op_version = ?2 "
-                              "ORDER BY writeprotect DESC, LOWER(name), rowid",
+                              "SELECT name, op_params"
+                              " FROM data.presets"
+                              " WHERE operation = ?1 AND op_version = ?2 "
+                              " ORDER BY writeprotect DESC, LOWER(name), rowid",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
