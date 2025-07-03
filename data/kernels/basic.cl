@@ -3551,7 +3551,7 @@ rawoverexposed_mark_cfa (read_only image2d_t in,
                          const unsigned int filters,
                          global const unsigned char (*const xtrans)[6],
                          global unsigned int *threshold,
-                         global float *colors)
+                         global float4 *colors)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -3574,15 +3574,11 @@ rawoverexposed_mark_cfa (read_only image2d_t in,
 
   if(raw_pixel < threshold[c]) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-
-  global float *color = colors + mad24(4, c, 0);
+  float4 pixel = fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)));
+  const float4 color = colors[c & 3];
 
   // cfa color
-  pixel.x = color[0];
-  pixel.y = color[1];
-  pixel.z = color[2];
-
+  pixel.xyz = color.xyz;
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -3621,7 +3617,7 @@ rawoverexposed_mark_solid (read_only image2d_t in,
 
   if(raw_pixel < threshold[c]) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 pixel = fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)));
 
   // solid color
   pixel.xyz = solid_color.xyz;
@@ -3663,13 +3659,10 @@ rawoverexposed_falsecolor (read_only image2d_t in,
 
   if(raw_pixel < threshold[c]) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-
-  float p[4];
-  vstore4(pixel, 0, p);
-  // falsecolor
-  p[c] = 0.0f;
-  pixel = vload4(0, p);
+  float4 pixel = fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)));
+  if(c == 2)      pixel.z = 0.0f;
+  else if(c == 1) pixel.y = 0.0f;
+  else if(c == 0) pixel.x = 0.0f;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
