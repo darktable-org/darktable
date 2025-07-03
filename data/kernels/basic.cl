@@ -46,7 +46,7 @@ rawprepare_1f(read_only image2d_t in, write_only image2d_t out,
   const int id = BL(ry+cy+y, rx+cx+x);
   const float pixel_scaled = (pixel - sub[id]) / div[id];
 
-  write_imagef(out, (int2)(x, y), (float4)(pixel_scaled, 0.0f, 0.0f, 0.0f));
+  write_imagef(out, (int2)(x, y), pixel_scaled);
 }
 
 kernel void
@@ -88,7 +88,7 @@ rawprepare_1f_gainmap(read_only image2d_t in, write_only image2d_t out,
       break;
   }
 
-  write_imagef(out, (int2)(x, y), (float4)(pixel_scaled, 0.0f, 0.0f, 0.0f));
+  write_imagef(out, (int2)(x, y), pixel_scaled);
 }
 
 kernel void
@@ -108,7 +108,7 @@ rawprepare_1f_unnormalized(read_only image2d_t in, write_only image2d_t out,
   const int id = BL(ry+cy+y, rx+cx+x);
   const float pixel_scaled = (pixel - sub[id]) / div[id];
 
-  write_imagef(out, (int2)(x, y), (float4)(pixel_scaled, 0.0f, 0.0f, 0.0f));
+  write_imagef(out, (int2)(x, y), pixel_scaled);
 }
 
 kernel void
@@ -150,7 +150,7 @@ rawprepare_1f_unnormalized_gainmap(read_only image2d_t in, write_only image2d_t 
       break;
   }
 
-  write_imagef(out, (int2)(x, y), (float4)(pixel_scaled, 0.0f, 0.0f, 0.0f));
+  write_imagef(out, (int2)(x, y), pixel_scaled);
 }
 
 kernel void
