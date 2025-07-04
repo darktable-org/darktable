@@ -2216,9 +2216,9 @@ void init_presets(dt_iop_module_so_t *self)
   user_params.master_outset_ratio = 1.0f;
   user_params.master_unrotation_ratio = 1.0f;
 
-  user_params.red_outset = 0.290696322918;
-  user_params.green_outset = 0.261332511902;
-  user_params.blue_outset = 0.047416660935;
+  user_params.red_outset = 0.290776401758;
+  user_params.green_outset = 0.263155400753;
+  user_params.blue_outset = 0.045810721815;
   user_params.red_unrotation = 0;
   user_params.green_unrotation = 0;
   user_params.blue_unrotation = 0;
