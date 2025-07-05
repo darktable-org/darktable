@@ -1985,12 +1985,6 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
   gui_data->primaries_controls_vbox = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(primaries_box), self->widget, FALSE, FALSE, 0);
 
-  GtkWidget *base_primaries_combo = dt_bauhaus_combobox_from_params(self, "base_primaries");
-  gtk_widget_set_tooltip_text(base_primaries_combo,
-                              _("color space primaries to use as the base for below adjustments.\n"
-                                "'export profile' uses the profile set in 'output color profile'."));
-
-
   GtkWidget *preset_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(gui_data->primaries_controls_vbox), preset_hbox, FALSE, FALSE, 0);
 
@@ -2006,6 +2000,11 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
   g_signal_connect(gui_data->primaries_preset_apply_button, "clicked",
                    G_CALLBACK(_apply_primaries_from_preset_callback), self);
   gtk_box_pack_start(GTK_BOX(preset_hbox), gui_data->primaries_preset_apply_button, FALSE, FALSE, 0);
+
+  GtkWidget *base_primaries_combo = dt_bauhaus_combobox_from_params(self, "base_primaries");
+  gtk_widget_set_tooltip_text(base_primaries_combo,
+                              _("color space primaries to use as the base for below adjustments.\n"
+                                "'export profile' uses the profile set in 'output color profile'."));
 
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "before tone mapping")));
 
