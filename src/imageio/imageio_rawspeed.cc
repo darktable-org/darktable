@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -132,7 +132,7 @@ uint32_t dt_rawspeed_crop_dcraw_filters(const uint32_t filters,
 static gboolean _ignore_image(const gchar *filename)
 {
   gchar *extensions_ignorelist;
-  const gchar *always_ignore = "cr3 tiff";
+  const gchar *always_ignore = "cr3";
 
   gchar *ext = g_strrstr(filename, ".");
   if(!ext) return FALSE;
