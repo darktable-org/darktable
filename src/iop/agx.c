@@ -2163,11 +2163,6 @@ void gui_init(dt_iop_module_t *self)
   gui_update(self);
 }
 
-static float _degrees_to_radians(const float degrees)
-{
-  return degrees * M_PI_F / 180.f;
-}
-
 static void _set_neutral_params(dt_iop_agx_user_params_t *user_params)
 {
   user_params->look_slope = 1.0f;
@@ -2277,15 +2272,15 @@ void init_presets(dt_iop_module_so_t *self)
   user_params.red_inset = 0.1f;
   user_params.green_inset = 0.1f;
   user_params.blue_inset = 0.15f;
-  user_params.red_rotation = _degrees_to_radians(2.f);
-  user_params.green_rotation = _degrees_to_radians(-1.f);
-  user_params.blue_rotation = _degrees_to_radians(-3.f);
+  user_params.red_rotation = deg2rad(2.f);
+  user_params.green_rotation = deg2rad(-1.f);
+  user_params.blue_rotation = deg2rad(-3.f);
   user_params.red_outset = 0.1f;
   user_params.green_outset = 0.1f;
   user_params.blue_outset = 0.15f;
-  user_params.red_unrotation = _degrees_to_radians(2.f);
-  user_params.green_unrotation = _degrees_to_radians(-1.f);
-  user_params.blue_unrotation = _degrees_to_radians(-3.f);
+  user_params.red_unrotation = deg2rad(2.f);
+  user_params.green_unrotation = deg2rad(-1.f);
+  user_params.blue_unrotation = deg2rad(-3.f);
   // Don't restore purity - try to avoid posterization.
   user_params.master_outset_ratio = 0.0f;
   user_params.master_unrotation_ratio = 1.0f;
