@@ -2341,19 +2341,3 @@ void commit_params(dt_iop_module_t *self,
                            processing_params->rendering_profile.matrix_in_transposed);
   processing_params->rendering_profile.nonlinearlut = FALSE; // no LUT for this linear transform
 }
-
-void tiling_callback(dt_iop_module_t *self,
-                     dt_dev_pixelpipe_iop_t *piece,
-                     const dt_iop_roi_t *roi_in,
-                     const dt_iop_roi_t *roi_out,
-                     dt_develop_tiling_t *tiling)
-{
-  tiling->factor = 2.0f;
-  tiling->factor_cl = 3.0f;
-  tiling->maxbuf = 1.0f;
-  tiling->maxbuf_cl = 1.0f;
-  tiling->overhead = 0;
-  tiling->overlap = 0;
-  tiling->xalign = 1;
-  tiling->yalign = 1;
-}
