@@ -1045,16 +1045,13 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,
              "[dt_ioppr_get_work_profile_type] can't find colorin iop");
 }
 
-void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
-                                      dt_colorspaces_color_profile_type_t *profile_type,
-                                      const char **profile_filename)
+static gboolean _dt_ioppr_find_colorout_module(struct dt_develop_t *dev,
+                                               dt_iop_module_so_t **colorout_so_out,
+                                               dt_iop_module_t **colorout_out)
 {
-  *profile_type = DT_COLORSPACE_NONE;
-  *profile_filename = NULL;
-
   // use introspection to get the params values
-  dt_iop_module_so_t *colorout_so = NULL;
-  dt_iop_module_t *colorout = NULL;
+  *colorout_so_out = NULL;
+  *colorout_out = NULL;
 
   for(const GList *modules = g_list_last(darktable.iop);
       modules;
@@ -1063,23 +1060,45 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
     dt_iop_module_so_t *module_so = modules->data;
     if(dt_iop_module_is(module_so, "colorout"))
     {
-      colorout_so = module_so;
+      *colorout_so_out = module_so;
       break;
     }
   }
-  if(colorout_so && colorout_so->get_p)
+
+  // Ensure the SO was found and supports introspection.
+  if(*colorout_so_out && (*colorout_so_out)->get_p)
   {
     for(const GList *modules = g_list_last(dev->iop); modules; modules = g_list_previous(modules))
     {
       dt_iop_module_t *module = modules->data;
       if(dt_iop_module_is(module->so, "colorout"))
       {
-        colorout = module;
+        *colorout_out = module;
         break;
       }
     }
   }
-  if(colorout)
+
+  if(*colorout_out)
+  {
+    return TRUE;
+  }
+
+  dt_print(DT_DEBUG_ALWAYS, "[_dt_ioppr_find_colorout_module] can't find colorout iop");
+  return FALSE;
+}
+
+void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
+                                      dt_colorspaces_color_profile_type_t *profile_type,
+                                      const char **profile_filename)
+{
+  *profile_type = DT_COLORSPACE_NONE;
+  *profile_filename = NULL;
+
+  dt_iop_module_so_t *colorout_so = NULL;
+  dt_iop_module_t *colorout = NULL;
+
+  if(_dt_ioppr_find_colorout_module(dev, &colorout_so, &colorout))
   {
     dt_colorspaces_color_profile_type_t *_type = colorout_so->get_p(colorout->params, "type");
     char *_filename = colorout_so->get_p(colorout->params, "filename");
@@ -1092,23 +1111,8 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
       dt_print(DT_DEBUG_ALWAYS,
                "[dt_ioppr_get_export_profile_type] can't get colorout parameters");
   }
-  else
-    dt_print(DT_DEBUG_ALWAYS,
-             "[dt_ioppr_get_export_profile_type] can't find colorout iop");
 }
 
-/**
- * Get the export profile settings configured in the colorout module.
- * This retrieves the settings as configured in the GUI, regardless of the
- * current pipeline type (display, export, etc.).
- *
- * @param dev develop struct
- * @param profile_type pointer to store the profile type
- * @param profile_filename buffer to store the filename (supply size)
- * @param filename_size size of the profile_filename buffer
- * @param profile_intent pointer to store the rendering intent
- * @return TRUE if colorout module and parameters were found, FALSE otherwise
- */
 gboolean dt_ioppr_get_configured_export_profile_settings(
     struct dt_develop_t *dev,
     dt_colorspaces_color_profile_type_t *profile_type,
@@ -1116,75 +1120,35 @@ gboolean dt_ioppr_get_configured_export_profile_settings(
     size_t filename_size,
     dt_iop_color_intent_t *profile_intent)
 {
-    // Initialize output parameters to default/invalid values
-    if (profile_type) *profile_type = DT_COLORSPACE_NONE;
-    if (profile_filename) profile_filename[0] = '\0';
-    if (profile_intent) *profile_intent = DT_INTENT_PERCEPTUAL; // Default intent
+  *profile_type = DT_COLORSPACE_NONE;
+  profile_filename[0] = '\0';
+  *profile_intent = DT_INTENT_PERCEPTUAL;
 
-    dt_iop_module_so_t *colorout_so = NULL;
-    // Find the colorout module SO (should be loaded)
-    for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
-    {
-        dt_iop_module_so_t *module_so = modules->data;
-        if(dt_iop_module_is(module_so, "colorout"))
-        {
-            colorout_so = module_so;
-            break;
-        }
-    }
+  dt_iop_module_so_t *colorout_so = NULL;
+  dt_iop_module_t *colorout = NULL;
 
-    if (!colorout_so || !colorout_so->get_p)
-    {
-         // colorout module SO not found or doesn't support get_p
-         dt_print(DT_DEBUG_ALWAYS, "[get_configured_export_profile_settings] colorout SO or get_p not found.");
-         return FALSE;
-    }
+  if (!_dt_ioppr_find_colorout_module(dev, &colorout_so, &colorout))
+  {
+    return FALSE;
+  }
 
-    dt_iop_module_t *colorout = NULL;
-    // Find the colorout instance in the current pipeline (dev->iop)
-    // Start from the end, as colorout is usually last
-    for(const GList *modules = g_list_last(dev->iop); modules; modules = g_list_previous(modules))
-    {
-        dt_iop_module_t *module = modules->data;
-        if(dt_iop_module_is(module->so, "colorout"))
-        {
-            colorout = module;
-            break;
-        }
-    }
+  dt_colorspaces_color_profile_type_t *_type = colorout_so->get_p(colorout->params, "type");
+  char *_filename = colorout_so->get_p(colorout->params, "filename");
+  dt_iop_color_intent_t *_intent = colorout_so->get_p(colorout->params, "intent");
 
-    if (!colorout)
-    {
-         // colorout module instance not found in this pipeline
-         dt_print(DT_DEBUG_ALWAYS, "[get_configured_export_profile_settings] colorout module not found in pipe.");
-         return FALSE;
-    }
+  if (_type && _filename && _intent)
+  {
+    // Populate the output parameters
+    if (profile_type) *profile_type = *_type;
+    if (profile_filename && filename_size > 0) g_strlcpy(profile_filename, _filename, filename_size);
+    if (profile_intent) *profile_intent = *_intent;
 
-    // Get pointers to the parameter values using introspection
-    dt_colorspaces_color_profile_type_t *_type = colorout_so->get_p(colorout->params, "type");
-    char *_filename = colorout_so->get_p(colorout->params, "filename");
-    dt_iop_color_intent_t *_intent = colorout_so->get_p(colorout->params, "intent");
+    return TRUE;
+  }
 
-    // Check if all expected parameters were successfully retrieved
-    if (_type && _filename && _intent)
-    {
-        // Populate the output parameters
-        if (profile_type) *profile_type = *_type;
-        if (profile_filename && filename_size > 0) g_strlcpy(profile_filename, _filename, filename_size);
-        if (profile_intent) *profile_intent = *_intent;
-
-        dt_print(DT_DEBUG_DEV,
-                 "[get_configured_export_profile_settings] Retrieved export profile: type=%d, filename='%s', intent=%d",
-                 *profile_type, profile_filename, *profile_intent);
-        return TRUE; // Success
-    }
-    else
-    {
-        dt_print(DT_DEBUG_ALWAYS,
-                 "[get_configured_export_profile_settings] Failed to get colorout parameters via get_p.");
-        // Even on failure, the output parameters were initialized to default/invalid
-        return FALSE;
-    }
+  dt_print(DT_DEBUG_ALWAYS,
+           "[get_configured_export_profile_settings] Failed to get colorout parameters");
+  return FALSE;
 }
 
 void dt_ioppr_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *profile_type,
