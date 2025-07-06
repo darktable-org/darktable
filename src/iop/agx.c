@@ -38,7 +38,7 @@
 #include <pango/pangocairo.h>
 #include <stdlib.h>
 
-DT_MODULE_INTROSPECTION(2, dt_iop_agx_user_params_t)
+DT_MODULE_INTROSPECTION(3, dt_iop_agx_user_params_t)
 
 const char *name()
 {
@@ -79,11 +79,11 @@ typedef enum dt_iop_agx_base_primaries_t
 // Params exposed on the UI
 typedef struct dt_iop_agx_user_params_t
 {
-  float look_offset;                 // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "offset"
-  float look_slope;                  // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 1.0 $DESCRIPTION: "slope"
-  float look_power;                  // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 1.0 $DESCRIPTION: "power"
-  float look_saturation;             // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 1.0 $DESCRIPTION: "saturation"
-  float look_original_hue_mix_ratio; // $MIN: 0.0 $MAX: 1 $DEFAULT: 0.0 $DESCRIPTION: "preserve hue"
+  float look_offset_percent;           // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "offset"
+  float look_slope;                    // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 1.0 $DESCRIPTION: "slope"
+  float look_power;                    // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 1.0 $DESCRIPTION: "power"
+  float look_saturation_percent;       // $MIN: 0.0 $MAX: 1000.0 $DEFAULT: 100.0 $DESCRIPTION: "saturation"
+  float look_original_hue_mix_percent; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "preserve hue"
 
   // log mapping
   float range_black_relative_exposure;  // $MIN: -20.0 $MAX: -0.1 $DEFAULT: -10 $DESCRIPTION: "black relative exposure"
@@ -92,9 +92,9 @@ typedef struct dt_iop_agx_user_params_t
 
   // curve params - comments indicate the original variables from https://www.desmos.com/calculator/yrysofmx8h
   // Corresponds to p_x, but not directly -- allows shifting the default 0.18 towards black or white relative exposure
-  float curve_pivot_x_shift;      // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0 $DESCRIPTION: "pivot x shift"
+  float curve_pivot_x_shift_percent;      // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 0 $DESCRIPTION: "pivot input shift"
   // Corresponds to p_y, but not directly -- needs application of gamma
-  float curve_pivot_y_linear;            // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.18 $DESCRIPTION: "pivot y (linear)"
+  float curve_pivot_y_percent;            // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 18 $DESCRIPTION: "pivot target output"
   // P_slope
   float curve_contrast_around_pivot;      // $MIN: 0.1 $MAX: 10.0 $DEFAULT: 2.4 $DESCRIPTION: "contrast around the pivot"
   // related to P_tlength; the number expresses the portion of the y range below the pivot
@@ -358,6 +358,26 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     *new_params = np;
     *new_params_size = sizeof(dt_iop_agx_params_v2_t);
     *new_version = 2;
+
+    return 0; // success
+  }
+  if (old_version == 2)
+  {
+    const dt_iop_agx_params_v2_t *op = old_params;
+    dt_iop_agx_params_v2_t *np = calloc(1, sizeof(dt_iop_agx_params_v2_t));
+
+    // v2 and v3 have the same layout, but some parameters are now percentages
+    memcpy(np, op, sizeof(dt_iop_agx_params_v2_t));
+    np->look_offset_percent *= 100;
+    np->look_saturation_percent *= 100;
+    np->look_original_hue_mix_percent *= 100;
+    np->curve_pivot_x_shift_percent *= 100;
+    np->curve_pivot_y_percent *= 100;
+
+    // Set the output parameters for the framework.
+    *new_params = np;
+    *new_params_size = sizeof(dt_iop_agx_params_v2_t);
+    *new_version = 3;
 
     return 0; // success
   }
@@ -752,15 +772,15 @@ static inline void _compress_into_gamut(dt_aligned_pixel_t pixel_in_out)
 static void _adjust_pivot(const dt_iop_agx_user_params_t *user_params, tone_mapping_params_t *params)
 {
   const float mid_gray_in_log_range = fabsf(params->min_ev / params->range_in_ev);
-  if (user_params->curve_pivot_x_shift < 0)
+  if (user_params->curve_pivot_x_shift_percent < 0)
   {
-    const float black_ratio = -user_params->curve_pivot_x_shift;
+    const float black_ratio = -user_params->curve_pivot_x_shift_percent / 100;
     const float gray_ratio = 1 - black_ratio;
     params->pivot_x = gray_ratio * mid_gray_in_log_range;
   }
-  else if (user_params->curve_pivot_x_shift > 0)
+  else if (user_params->curve_pivot_x_shift_percent > 0)
   {
-    const float white_ratio = user_params->curve_pivot_x_shift;
+    const float white_ratio = user_params->curve_pivot_x_shift_percent / 100;
     const float gray_ratio = 1 - white_ratio;
     params->pivot_x = mid_gray_in_log_range * gray_ratio + white_ratio;
   }
@@ -774,8 +794,8 @@ static void _adjust_pivot(const dt_iop_agx_user_params_t *user_params, tone_mapp
 
   if (user_params->auto_gamma)
   {
-    params->curve_gamma = params->pivot_x > 0 && user_params->curve_pivot_y_linear > 0
-                              ? log2f(user_params->curve_pivot_y_linear) / log2f(params->pivot_x)
+    params->curve_gamma = params->pivot_x > 0 && user_params->curve_pivot_y_percent > 0
+                              ? log2f(user_params->curve_pivot_y_percent / 100) / log2f(params->pivot_x)
                               : user_params->curve_gamma;
   }
   else
@@ -784,7 +804,7 @@ static void _adjust_pivot(const dt_iop_agx_user_params_t *user_params, tone_mapp
   }
 
   params->pivot_y
-      = powf(CLAMPF(user_params->curve_pivot_y_linear, user_params->curve_target_display_black_percent / 100.0,
+      = powf(CLAMPF(user_params->curve_pivot_y_percent / 100, user_params->curve_target_display_black_percent / 100.0,
                     user_params->curve_target_display_white_percent / 100.0),
              1.0f / params->curve_gamma);
 }
@@ -802,11 +822,11 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_use
   tone_mapping_params_t tone_mapping_params;
 
   // look
-  tone_mapping_params.look_offset = user_params->look_offset;
+  tone_mapping_params.look_offset = user_params->look_offset_percent / 100;
   tone_mapping_params.look_slope = user_params->look_slope;
-  tone_mapping_params.look_saturation = user_params->look_saturation;
+  tone_mapping_params.look_saturation = user_params->look_saturation_percent / 100;
   tone_mapping_params.look_power = user_params->look_power;
-  tone_mapping_params.look_original_hue_mix_ratio = user_params->look_original_hue_mix_ratio;
+  tone_mapping_params.look_original_hue_mix_ratio = user_params->look_original_hue_mix_percent / 100;
 
   // log mapping
   _calculate_log_mapping_params(user_params, &tone_mapping_params);
@@ -1045,8 +1065,8 @@ static void apply_auto_pivot_x(dt_iop_module_t *self, const dt_iop_order_iccprof
   const float base_pivot_x = fabsf(min_ev / range_in_ev); // Pivot representing 0 EV (mid-gray)
 
   dt_iop_agx_user_params_t params_with_mid_gray = *user_params;
-  params_with_mid_gray.curve_pivot_y_linear = 0.18;
-  params_with_mid_gray.curve_pivot_x_shift = 0;
+  params_with_mid_gray.curve_pivot_y_percent = 18;
+  params_with_mid_gray.curve_pivot_x_shift_percent = 0;
 
   const tone_mapping_params_t tone_mapping_params = _calculate_tone_mapping_params(&params_with_mid_gray);
 
@@ -1054,7 +1074,7 @@ static void apply_auto_pivot_x(dt_iop_module_t *self, const dt_iop_order_iccprof
   const float target_y = _apply_curve(target_pivot_x, &tone_mapping_params);
   // try to avoid changing the brightness of the pivot
   const float target_y_linearised = powf(target_y, tone_mapping_params.curve_gamma);
-  user_params->curve_pivot_y_linear = target_y_linearised;
+  user_params->curve_pivot_y_percent = target_y_linearised * 100;
 
   float shift;
   if (fabsf(target_pivot_x - base_pivot_x) < _epsilon)
@@ -1073,20 +1093,20 @@ static void apply_auto_pivot_x(dt_iop_module_t *self, const dt_iop_order_iccprof
     shift = (denominator > _epsilon) ? (target_pivot_x - base_pivot_x) / denominator : 1.0f;
   }
 
-  user_params->curve_pivot_x_shift = CLAMPF(shift, -1.0f, 1.0f);
+  user_params->curve_pivot_x_shift_percent = CLAMPF(shift, -1.0f, 1.0f) * 100;
 
   // Update the slider visually
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(gui_data->basic_curve_controls_settings_page.curve_pivot_x_shift,
-                        user_params->curve_pivot_x_shift);
+                        user_params->curve_pivot_x_shift_percent);
   dt_bauhaus_slider_set(gui_data->basic_curve_controls_settings_page.curve_pivot_y_linear,
-                        user_params->curve_pivot_y_linear);
+                        user_params->curve_pivot_y_percent);
   if (gui_data->curve_tab_enabled)
   {
     dt_bauhaus_slider_set(gui_data->basic_curve_controls_curve_page.curve_pivot_x_shift,
-                          user_params->curve_pivot_x_shift);
+                          user_params->curve_pivot_x_shift_percent);
     dt_bauhaus_slider_set(gui_data->basic_curve_controls_curve_page.curve_pivot_y_linear,
-                          user_params->curve_pivot_y_linear);
+                          user_params->curve_pivot_y_percent);
   }
   --darktable.gui->reset;
 }
@@ -1508,9 +1528,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *widget, void *previous)
     dt_bauhaus_slider_set(slider1, dt_bauhaus_slider_get(slider2));                                               \
   }
 
-      SYNC_SLIDER("curve_pivot_x_shift", gui_data->basic_curve_controls_settings_page.curve_pivot_x_shift,
+      SYNC_SLIDER("curve_pivot_x_shift_percent", gui_data->basic_curve_controls_settings_page.curve_pivot_x_shift,
                   gui_data->basic_curve_controls_curve_page.curve_pivot_x_shift);
-      SYNC_SLIDER("curve_pivot_y_linear", gui_data->basic_curve_controls_settings_page.curve_pivot_y_linear,
+      SYNC_SLIDER("curve_pivot_y_percent", gui_data->basic_curve_controls_settings_page.curve_pivot_y_linear,
                   gui_data->basic_curve_controls_curve_page.curve_pivot_y_linear);
       SYNC_SLIDER("curve_contrast_around_pivot",
                   gui_data->basic_curve_controls_settings_page.curve_contrast_around_pivot,
@@ -1554,15 +1574,17 @@ static void _add_basic_curve_controls(dt_iop_module_t *self, dt_iop_basic_curve_
 
   // curve_pivot_x_shift with picker
   slider = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
-                               dt_bauhaus_slider_from_params(self, "curve_pivot_x_shift"));
+                               dt_bauhaus_slider_from_params(self, "curve_pivot_x_shift_percent"));
   controls->curve_pivot_x_shift = slider;
-  dt_bauhaus_slider_set_soft_range(slider, -0.5f, 0.5f);
+  dt_bauhaus_slider_set_format(slider, "%");
+  dt_bauhaus_slider_set_soft_range(slider, -50, 50);
   gtk_widget_set_tooltip_text(slider, _("shift the pivot input towards black(-) or white(+)"));
 
   // curve_pivot_y_linear
-  slider = dt_bauhaus_slider_from_params(self, "curve_pivot_y_linear");
+  slider = dt_bauhaus_slider_from_params(self, "curve_pivot_y_percent");
   controls->curve_pivot_y_linear = slider;
-  dt_bauhaus_slider_set_soft_range(slider, 0.0f, 1.0f);
+  dt_bauhaus_slider_set_format(slider, "%");
+  dt_bauhaus_slider_set_soft_range(slider, 0.0f, 100.0f);
   gtk_widget_set_tooltip_text(slider, _("darken or brighten the pivot (output)"));
 
   // curve_contrast_around_pivot
@@ -1613,8 +1635,9 @@ static void _add_look_sliders(dt_iop_module_t *self, GtkWidget *parent_widget)
   GtkWidget *slider;
 
   // look_offset
-  slider = dt_bauhaus_slider_from_params(self, "look_offset");
-  dt_bauhaus_slider_set_soft_range(slider, -0.5f, 0.5f);
+  slider = dt_bauhaus_slider_from_params(self, "look_offset_percent");
+  dt_bauhaus_slider_set_format(slider, "%");
+  dt_bauhaus_slider_set_soft_range(slider, -50, 50);
   gtk_widget_set_tooltip_text(slider, _("deepen or lift shadows"));
 
   // look_slope
@@ -1628,13 +1651,15 @@ static void _add_look_sliders(dt_iop_module_t *self, GtkWidget *parent_widget)
   gtk_widget_set_tooltip_text(slider, _("increase or decrease brightness"));
 
   // look_saturation
-  slider = dt_bauhaus_slider_from_params(self, "look_saturation");
-  dt_bauhaus_slider_set_soft_range(slider, 0.0f, 2.0f);
+  slider = dt_bauhaus_slider_from_params(self, "look_saturation_percent");
+  dt_bauhaus_slider_set_format(slider, "%");
+  dt_bauhaus_slider_set_soft_range(slider, 0.0f, 200.0f);
   gtk_widget_set_tooltip_text(slider, _("decrease or increase saturation"));
 
   // look_original_hue_mix_ratio
-  slider = dt_bauhaus_slider_from_params(self, "look_original_hue_mix_ratio");
-  dt_bauhaus_slider_set_soft_range(slider, 0.0f, 1.0f);
+  slider = dt_bauhaus_slider_from_params(self, "look_original_hue_mix_percent");
+  dt_bauhaus_slider_set_format(slider, "%");
+  dt_bauhaus_slider_set_soft_range(slider, 0.0f, 100.0f);
   gtk_widget_set_tooltip_text(slider, _("increase to bring hues closer to original"));
 
   self->widget = original_self_widget;
@@ -2147,9 +2172,9 @@ static void _set_neutral_params(dt_iop_agx_user_params_t *user_params)
 {
   user_params->look_slope = 1.0f;
   user_params->look_power = 1.0f;
-  user_params->look_offset = 0.0f;
-  user_params->look_saturation = 1.0f;
-  user_params->look_original_hue_mix_ratio = 0.0f;
+  user_params->look_offset_percent = 0.0f;
+  user_params->look_saturation_percent = 100.0f;
+  user_params->look_original_hue_mix_percent = 0.0f;
 
   user_params->range_black_relative_exposure = -10;
   user_params->range_white_relative_exposure = 6.5;
@@ -2163,9 +2188,9 @@ static void _set_neutral_params(dt_iop_agx_user_params_t *user_params)
   user_params->curve_target_display_black_percent = 0.0;
   user_params->curve_target_display_white_percent = 100.0;
   user_params->auto_gamma = FALSE;
-  user_params->curve_gamma = 2.2;
-  user_params->curve_pivot_x_shift = 0.0;
-  user_params->curve_pivot_y_linear = 0.18;
+  user_params->curve_gamma = 2.2f;
+  user_params->curve_pivot_x_shift_percent = 0.0f;
+  user_params->curve_pivot_y_percent = 18.0f;
 
   user_params->disable_primaries_adjustments = FALSE;
   user_params->red_inset = 0.0f;
@@ -2225,7 +2250,7 @@ void init_presets(dt_iop_module_so_t *self)
   // In Blender, a related param is set to 40%, but is actually used as 1 - param,
   // so 60% would give almost identical results; however, Eary_Chow suggested
   // that we leave this as 0, based on feedback he had received
-  user_params.look_original_hue_mix_ratio = 0;
+  user_params.look_original_hue_mix_percent = 0;
   user_params.base_primaries = DT_AGX_REC2020;
 
   const char *workflow = dt_conf_get_string_const("plugins/darkroom/workflow");
@@ -2242,8 +2267,8 @@ void init_presets(dt_iop_module_so_t *self)
 
   // Punchy preset
   user_params.look_power = 1.35f;
-  user_params.look_offset = 0.0f;
-  user_params.look_saturation = 1.4f;
+  user_params.look_offset_percent = 0.0f;
+  user_params.look_saturation_percent = 140.0f;
   dt_gui_presets_add_generic(_("blender-like|punchy"), self->op, self->version(), &user_params,
                              sizeof(user_params), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
@@ -2271,8 +2296,8 @@ void init_presets(dt_iop_module_so_t *self)
 
   // 'Punchy' look
   user_params.look_power = 1.35f;
-  user_params.look_offset = 0.0f;
-  user_params.look_saturation = 1.4f;
+  user_params.look_offset_percent = 0.0f;
+  user_params.look_saturation_percent = 140.0f;
   dt_gui_presets_add_generic(_("smooth|punchy"), self->op, self->version(), &user_params, sizeof(user_params), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 }
