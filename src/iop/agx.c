@@ -413,22 +413,22 @@ static const dt_iop_order_iccprofile_info_t * _agx_get_base_profile(dt_develop_t
   {
     case DT_AGX_EXPORT_PROFILE:
     {
-      dt_colorspaces_color_profile_type_t export_type;
-      char export_filename[DT_IOP_COLOR_ICC_LEN];
-      dt_iop_color_intent_t export_intent;
+      dt_colorspaces_color_profile_type_t profile_type;
+      const char *profile_filename;
 
       // Get the configured export profile settings
-      const gboolean settings_ok = dt_ioppr_get_configured_export_profile_settings
-        (dev, &export_type, export_filename, sizeof(export_filename), &export_intent);
+      dt_ioppr_get_export_profile_type(
+        dev, &profile_type, &profile_filename);
 
-      if (settings_ok)
+      if (profile_type != DT_COLORSPACE_NONE && profile_filename != NULL)
       {
+        // intent does not matter, we just need the primaries
         selected_profile_info
-            = dt_ioppr_add_profile_info_to_list(dev, export_type, export_filename, export_intent);
+            = dt_ioppr_add_profile_info_to_list(dev, profile_type, profile_filename, INTENT_PERCEPTUAL);
         if (!selected_profile_info || !dt_is_valid_colormatrix(selected_profile_info->matrix_in_transposed[0][0]))
         {
           dt_print(DT_DEBUG_PIPE, "[agx] Export profile '%s' unusable or missing matrix, falling back to Rec2020.",
-                   dt_colorspaces_get_name(export_type, export_filename));
+                   dt_colorspaces_get_name(profile_type, profile_filename));
           selected_profile_info = NULL; // Force fallback
         }
       }

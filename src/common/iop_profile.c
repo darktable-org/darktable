@@ -1045,13 +1045,16 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,
              "[dt_ioppr_get_work_profile_type] can't find colorin iop");
 }
 
-static gboolean _dt_ioppr_find_colorout_module(struct dt_develop_t *dev,
-                                               dt_iop_module_so_t **colorout_so_out,
-                                               dt_iop_module_t **colorout_out)
+void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
+                                      dt_colorspaces_color_profile_type_t *profile_type,
+                                      const char **profile_filename)
 {
+  *profile_type = DT_COLORSPACE_NONE;
+  *profile_filename = NULL;
+
   // use introspection to get the params values
-  *colorout_so_out = NULL;
-  *colorout_out = NULL;
+  dt_iop_module_so_t *colorout_so = NULL;
+  dt_iop_module_t *colorout = NULL;
 
   for(const GList *modules = g_list_last(darktable.iop);
       modules;
@@ -1060,45 +1063,23 @@ static gboolean _dt_ioppr_find_colorout_module(struct dt_develop_t *dev,
     dt_iop_module_so_t *module_so = modules->data;
     if(dt_iop_module_is(module_so, "colorout"))
     {
-      *colorout_so_out = module_so;
+      colorout_so = module_so;
       break;
     }
   }
-
-  // Ensure the SO was found and supports introspection.
-  if(*colorout_so_out && (*colorout_so_out)->get_p)
+  if(colorout_so && colorout_so->get_p)
   {
     for(const GList *modules = g_list_last(dev->iop); modules; modules = g_list_previous(modules))
     {
       dt_iop_module_t *module = modules->data;
       if(dt_iop_module_is(module->so, "colorout"))
       {
-        *colorout_out = module;
+        colorout = module;
         break;
       }
     }
   }
-
-  if(*colorout_out)
-  {
-    return TRUE;
-  }
-
-  dt_print(DT_DEBUG_ALWAYS, "[_dt_ioppr_find_colorout_module] can't find colorout iop");
-  return FALSE;
-}
-
-void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
-                                      dt_colorspaces_color_profile_type_t *profile_type,
-                                      const char **profile_filename)
-{
-  *profile_type = DT_COLORSPACE_NONE;
-  *profile_filename = NULL;
-
-  dt_iop_module_so_t *colorout_so = NULL;
-  dt_iop_module_t *colorout = NULL;
-
-  if(_dt_ioppr_find_colorout_module(dev, &colorout_so, &colorout))
+  if(colorout)
   {
     dt_colorspaces_color_profile_type_t *_type = colorout_so->get_p(colorout->params, "type");
     char *_filename = colorout_so->get_p(colorout->params, "filename");
@@ -1111,44 +1092,9 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
       dt_print(DT_DEBUG_ALWAYS,
                "[dt_ioppr_get_export_profile_type] can't get colorout parameters");
   }
-}
-
-gboolean dt_ioppr_get_configured_export_profile_settings(
-    struct dt_develop_t *dev,
-    dt_colorspaces_color_profile_type_t *profile_type,
-    char *profile_filename,
-    size_t filename_size,
-    dt_iop_color_intent_t *profile_intent)
-{
-  *profile_type = DT_COLORSPACE_NONE;
-  profile_filename[0] = '\0';
-  *profile_intent = DT_INTENT_PERCEPTUAL;
-
-  dt_iop_module_so_t *colorout_so = NULL;
-  dt_iop_module_t *colorout = NULL;
-
-  if (!_dt_ioppr_find_colorout_module(dev, &colorout_so, &colorout))
-  {
-    return FALSE;
-  }
-
-  dt_colorspaces_color_profile_type_t *_type = colorout_so->get_p(colorout->params, "type");
-  char *_filename = colorout_so->get_p(colorout->params, "filename");
-  dt_iop_color_intent_t *_intent = colorout_so->get_p(colorout->params, "intent");
-
-  if (_type && _filename && _intent)
-  {
-    // Populate the output parameters
-    if (profile_type) *profile_type = *_type;
-    if (profile_filename && filename_size > 0) g_strlcpy(profile_filename, _filename, filename_size);
-    if (profile_intent) *profile_intent = *_intent;
-
-    return TRUE;
-  }
-
-  dt_print(DT_DEBUG_ALWAYS,
-           "[get_configured_export_profile_settings] Failed to get colorout parameters");
-  return FALSE;
+  else
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dt_ioppr_get_export_profile_type] can't find colorout iop");
 }
 
 void dt_ioppr_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *profile_type,
