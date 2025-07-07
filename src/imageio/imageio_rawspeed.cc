@@ -454,7 +454,12 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img,
     else
     {
       dt_print(DT_DEBUG_ALWAYS, "[rawspeed] %s corrupt: %s", img->filename, exc.what());
-      return DT_IMAGEIO_FILE_CORRUPTED;
+      // We can end up here if the loader is called on what is actually
+      // a TIFF file, which mistakenly contains the signature of a raw
+      // format in a TIFF container. So it is very important that the
+      // return code from here directs the execution path through the
+      // fallback loader chain.
+      return DT_IMAGEIO_UNSUPPORTED_FORMAT;
     }
   }
   catch(const rawspeed::RawParserException &exc)
