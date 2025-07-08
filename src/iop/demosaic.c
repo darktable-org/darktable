@@ -89,15 +89,6 @@ typedef enum dt_iop_demosaic_greeneq_t
   DT_IOP_GREEN_EQ_BOTH = 3   // $DESCRIPTION: "full and local average"
 } dt_iop_demosaic_greeneq_t;
 
-typedef enum dt_iop_demosaic_qual_flags_t
-{
-  // either perform full scale demosaicing or choose simple half scale
-  // or third scale interpolation instead
-  DT_DEMOSAIC_DEFAULT                 = 0,
-  DT_DEMOSAIC_FULL_SCALE              = 1 << 0,
-  DT_DEMOSAIC_ONLY_VNG_LINEAR         = 1 << 1,
-} dt_iop_demosaic_qual_flags_t;
-
 typedef enum dt_iop_demosaic_smooth_t
 {
   DT_DEMOSAIC_SMOOTH_OFF = 0, // $DESCRIPTION: "disabled"
@@ -244,55 +235,22 @@ static gboolean _get_thumb_quality(const int width, const int height)
   return (level >= min_s);
 }
 
-// set flags for demosaic quality based on factors besides demosaic
-// method (e.g. config, scale, pixelpipe type)
-static dt_iop_demosaic_qual_flags_t demosaic_qual_flags(const dt_dev_pixelpipe_iop_t *const piece,
-                                                        const dt_image_t *const img,
-                                                        const dt_iop_roi_t *const roi_out)
+// can we avoid full demosaicing and use a fast interpolator instead?
+static gboolean _demosaic_full(const dt_dev_pixelpipe_iop_t *const piece,
+                               const dt_image_t *const img,
+                               const dt_iop_roi_t *const roi_out)
 {
-  const uint32_t filters = piece->pipe->dsc.filters;
-  const gboolean is_xtrans = filters == 9u;
+  if((img->flags & DT_IMAGE_4BAYER)   // half_size_f doesn't support 4bayer images
+      || piece->pipe->want_detail_mask)
+    return TRUE;
 
-  dt_iop_demosaic_qual_flags_t flags = DT_DEMOSAIC_DEFAULT;
-  switch(piece->pipe->type & DT_DEV_PIXELPIPE_ANY)
-  {
-    case DT_DEV_PIXELPIPE_PREVIEW2:
-      flags |= DT_DEMOSAIC_FULL_SCALE;
-      break;
-    case DT_DEV_PIXELPIPE_FULL:
-      flags |= DT_DEMOSAIC_FULL_SCALE;
-      break;
-    case DT_DEV_PIXELPIPE_EXPORT:
-      flags |= DT_DEMOSAIC_FULL_SCALE;
-      break;
-    case DT_DEV_PIXELPIPE_THUMBNAIL:
-      flags |= (piece->pipe->want_detail_mask || _get_thumb_quality(roi_out->width, roi_out->height))
-                  ? DT_DEMOSAIC_FULL_SCALE
-                  : DT_DEMOSAIC_DEFAULT;
-      break;
-    default: // make C not complain about missing enum members
-      break;
-  }
+  if(piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL)
+    return _get_thumb_quality(roi_out->width, roi_out->height);
 
-  // For sufficiently small scaling, one or more repetitition of the
-  // CFA pattern can be merged into a single pixel, hence it is
-  // possible to skip the full demosaic and perform a quick downscale.
-  // Note even though the X-Trans CFA is 6x6, for this purposes we can
-  // see each 6x6 tile as four fairly similar 3x3 tiles
-  if(roi_out->scale > (is_xtrans ? 0.667f : 0.5f))
-    flags |= DT_DEMOSAIC_FULL_SCALE;
+  if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
+    return roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.667f : 0.5f);
 
-  // half_size_f doesn't support 4bayer images
-  if(img->flags & DT_IMAGE_4BAYER)
-    flags |= DT_DEMOSAIC_FULL_SCALE;
-
-  // we check if we can stop at the linear interpolation step in VNG
-  // instead of going the full way
-  if(((flags & DT_DEMOSAIC_FULL_SCALE) && (roi_out->scale < (is_xtrans ? 0.5f : 0.667f)))
-    || piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
-    flags |= DT_DEMOSAIC_ONLY_VNG_LINEAR;
-
-  return flags;
+  return TRUE;
 }
 
 // Implemented in demosaicing/amaze.cc
@@ -515,8 +473,7 @@ void tiling_callback(dt_iop_module_t *self,
   const float greeneq = (!is_xtrans && (d->green_eq != DT_IOP_GREEN_EQ_NO)) ? 0.25f : 0.0f;
   const dt_iop_demosaic_method_t demosaicing_method = d->demosaicing_method & ~DT_DEMOSAIC_DUAL;
 
-  const int qual_flags = demosaic_qual_flags(piece, &self->dev->image_storage, roi_out);
-  const int full_scale = qual_flags & DT_DEMOSAIC_FULL_SCALE;
+  const gboolean full_scale = _demosaic_full(piece, &self->dev->image_storage, roi_out);
 
   // check if output buffer has same dimension as input buffer (thus avoiding one
   // additional temporary buffer)
@@ -640,8 +597,7 @@ void process(dt_iop_module_t *self,
   const dt_iop_demosaic_data_t *d = piece->data;
   const dt_iop_demosaic_gui_data_t *g = self->gui_data;
 
-  const int qual_flags = demosaic_qual_flags(piece, img, roi_out);
-  const gboolean fullscale = qual_flags & DT_DEMOSAIC_FULL_SCALE;
+  const gboolean fullscale = _demosaic_full(piece, img, roi_out);
   const gboolean is_xtrans = pipe->dsc.filters == 9u;
   const gboolean is_4bayer = img->flags & DT_IMAGE_4BAYER;
   const gboolean is_bayer = !is_xtrans && pipe->dsc.filters != 0;
@@ -806,8 +762,7 @@ int process_cl(dt_iop_module_t *self,
   const gboolean run_fast = pipe->type & (DT_DEV_PIXELPIPE_FAST | DT_DEV_PIXELPIPE_PREVIEW);
   const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
 
-  const int qual_flags = demosaic_qual_flags(piece, img, roi_out);
-  const gboolean fullscale = qual_flags & DT_DEMOSAIC_FULL_SCALE;
+  const gboolean fullscale = _demosaic_full(piece, img, roi_out);
   const gboolean is_xtrans = pipe->dsc.filters == 9u;
   const gboolean is_bayer = !is_xtrans && pipe->dsc.filters != 0;
 
