@@ -62,7 +62,7 @@
 
 #ifdef __GNUC__
   #pragma GCC push_options
-  #pragma GCC optimize ("fast-math", "fp-contract=fast", "finite-math-only", "no-math-errno")
+  #pragma GCC optimize ("fp-contract=fast", "finite-math-only", "no-math-errno")
 #endif
 
 #define RCD_BORDER 9          // avoid tile-overlap errors

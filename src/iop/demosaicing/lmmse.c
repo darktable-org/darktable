@@ -52,7 +52,7 @@
 
 #ifdef __GNUC__
   #pragma GCC push_options
-  #pragma GCC optimize ("fast-math", "fp-contract=fast", "finite-math-only", "no-math-errno")
+  #pragma GCC optimize ("fp-contract=fast", "finite-math-only", "no-math-errno")
 #endif
 
 #define LMMSE_OVERLAP 8
