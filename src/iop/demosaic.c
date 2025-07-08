@@ -205,6 +205,7 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_rcd_step_5_2;
   int kernel_rcd_border_redblue;
   int kernel_rcd_border_green;
+  int kernel_demosaic_box3;
   int kernel_write_blended_dual;
   int gaussian_9x9_mul;
   int gaussian_9x9_div;
@@ -657,7 +658,6 @@ void process(dt_iop_module_t *self,
   gboolean show_dual = FALSE;
   gboolean show_capture = FALSE;
   gboolean show_sigma = FALSE;
-  gboolean vng_linear = FALSE;
   if(self->dev->gui_attached && fullpipe)
   {
     if(g->dual_mask)
@@ -674,12 +674,6 @@ void process(dt_iop_module_t *self,
     {
       show_sigma = TRUE;
       pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
-    }
-    // take care of passthru modes
-    if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
-    {
-      demosaicing_method = is_xtrans ? DT_IOP_DEMOSAIC_VNG : DT_IOP_DEMOSAIC_VNG4;
-      vng_linear = TRUE;
     }
   }
 
@@ -736,7 +730,9 @@ void process(dt_iop_module_t *self,
     }
   }
 
-  if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
+  if(demosaic_mask)
+    demosaic_box3(piece, out, in, roi_in, pipe->dsc.filters, xtrans);
+  else if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
     passthrough_monochrome(out, in, roi_in);
   else if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR)
     passthrough_color(out, in, roi_in, pipe->dsc.filters, xtrans);
@@ -748,13 +744,13 @@ void process(dt_iop_module_t *self,
     else if(base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN || base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3)
       xtrans_markesteijn_interpolate(out, in, roi_in, xtrans, passes);
     else
-      vng_interpolate(out, in, roi_in, pipe->dsc.filters, xtrans, vng_linear);
+      vng_interpolate(out, in, roi_in, pipe->dsc.filters, xtrans, FALSE);
   }
   else
   {
     if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || is_4bayer)
     {
-      vng_interpolate(out, in, roi_in, pipe->dsc.filters, xtrans, vng_linear);
+      vng_interpolate(out, in, roi_in, pipe->dsc.filters, xtrans, FALSE);
       if(is_4bayer)
       {
         dt_colorspaces_cygm_to_rgb(out, width * height, d->CAM_to_RGB);
@@ -839,7 +835,6 @@ int process_cl(dt_iop_module_t *self,
 
   gboolean show_dual = FALSE;
   gboolean show_capture = FALSE;
-  gboolean vng_linear = FALSE;
   gboolean show_sigma = FALSE;
   if(self->dev->gui_attached && fullpipe)
   {
@@ -857,12 +852,6 @@ int process_cl(dt_iop_module_t *self,
     {
       show_sigma = TRUE;
       pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
-    }
-    // take care of passthru modes
-    if(pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
-    {
-      demosaicing_method = is_xtrans ? DT_IOP_DEMOSAIC_VNG : DT_IOP_DEMOSAIC_VNG4;
-      vng_linear = TRUE;
     }
   }
 
@@ -919,32 +908,20 @@ int process_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS) goto finish;
   }
 
-  if(passthru || demosaicing_method == DT_IOP_DEMOSAIC_PPG)
-  {
+  if(demosaic_mask)
+    err = demosaic_box3_cl(self, piece, in_image, out_image, roi_in);
+  else if(passthru || demosaicing_method == DT_IOP_DEMOSAIC_PPG)
     err = process_default_cl(self, piece, in_image, out_image, roi_in, demosaicing_method);
-    if(err != CL_SUCCESS) return err;
-  }
   else if(base_demosaicing_method == DT_IOP_DEMOSAIC_RCD)
-  {
     err = process_rcd_cl(self, piece, in_image, out_image, roi_in);
-    if(err != CL_SUCCESS) goto finish;
-  }
   else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || demosaicing_method == DT_IOP_DEMOSAIC_VNG)
-  {
-    err = process_vng_cl(self, piece, in_image, out_image, roi_in, vng_linear);
-    if(err != CL_SUCCESS) goto finish;
-  }
+    err = process_vng_cl(self, piece, in_image, out_image, roi_in, FALSE);
   else if(base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN || base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3)
-  {
     err = process_markesteijn_cl(self, piece, in_image, out_image, roi_in);
-    if(err != CL_SUCCESS) goto finish;
-  }
   else
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[opencl_demosaic] demosaicing method %d not yet supported by opencl code", demosaicing_method);
     err = DT_OPENCL_PROCESS_CL;
-    goto finish;
-  }
+
+  if(err != CL_SUCCESS) goto finish;
 
   if(pipe->want_detail_mask)
   {
@@ -1067,6 +1044,7 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_rcd_step_5_2 = dt_opencl_create_kernel(rcd, "rcd_step_5_2");
   gd->kernel_rcd_border_redblue = dt_opencl_create_kernel(rcd, "rcd_border_redblue");
   gd->kernel_rcd_border_green = dt_opencl_create_kernel(rcd, "rcd_border_green");
+  gd->kernel_demosaic_box3 = dt_opencl_create_kernel(rcd, "demosaic_box3");
   gd->kernel_write_blended_dual  = dt_opencl_create_kernel(rcd, "write_blended_dual");
 
   const int capt = 38; // capture.cl, from programs.conf
@@ -1135,6 +1113,7 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_rcd_step_5_2);
   dt_opencl_free_kernel(gd->kernel_rcd_border_redblue);
   dt_opencl_free_kernel(gd->kernel_rcd_border_green);
+  dt_opencl_free_kernel(gd->kernel_demosaic_box3);
   dt_opencl_free_kernel(gd->kernel_write_blended_dual);
   dt_opencl_free_kernel(gd->gaussian_9x9_mul);
   dt_opencl_free_kernel(gd->gaussian_9x9_div);
