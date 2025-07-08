@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -263,6 +263,41 @@ static void rcd_ppg_border(float *const out,
       for_each_channel(k)
         buf[k] = color[k];
       buf += 4;
+    }
+  }
+}
+
+DT_OMP_DECLARE_SIMD(aligned(in, out : 64))
+static void demosaic_box3(dt_dev_pixelpipe_iop_t *piece,
+                            float *const restrict out,
+                            const float *const restrict in,
+                            const dt_iop_roi_t *const roi,
+                            const uint32_t filters,
+                            const uint8_t(*const xtrans)[6])
+{
+  const int width = roi->width;
+  const int height = roi->height;
+  DT_OMP_FOR()
+  for(int row = 0; row < height; row++)
+  {
+    for(int col = 0; col < width; col++)
+    {
+      dt_aligned_pixel_t sum = { 0.0f, 0.0f, 0.0f, 0.0f };
+      dt_aligned_pixel_t cnt = { 0.0f, 0.0f, 0.0f, 0.0f };
+      for(int y = row-1; y < row+2; y++)
+      {
+        for(int x = col-1; x < col+2; x++)
+        {
+          if(x >= 0 && y >= 0 && x < width && y < height)
+          {
+            const int color = (filters == 9u) ? FCxtrans(y, x, roi, xtrans) : FC(y, x, filters);
+            sum[color] += MAX(0.0f, in[(size_t)width*y +x]);
+            cnt[color] += 1.0f;
+          }
+        }
+      }
+      for_each_channel(c)
+        out[((size_t)row * width + col)*4 + c] = sum[c] / MAX(1.0f, cnt[c]);
     }
   }
 }
