@@ -616,6 +616,28 @@ error:
   return err;
 }
 
+static int demosaic_box3_cl(dt_iop_module_t *self,
+                              dt_dev_pixelpipe_iop_t *piece,
+                              cl_mem dev_in,
+                              cl_mem dev_out,
+                              const dt_iop_roi_t *const roi)
+{
+  const dt_iop_demosaic_global_data_t *gd = self->global_data;
+  dt_dev_pixelpipe_t *const pipe = piece->pipe;
+  const int devid = pipe->devid;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+
+  cl_mem dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(pipe->dsc.xtrans), pipe->dsc.xtrans);
+  if(!dev_xtrans) return err;
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_demosaic_box3, roi->width, roi->height,
+          CLARG(dev_in), CLARG(dev_out),
+          CLARG(roi->width), CLARG(roi->height),
+          CLARG(roi->x), CLARG(roi->y),
+          CLARG(pipe->dsc.filters), CLARG(dev_xtrans));
+  dt_opencl_release_mem_object(dev_xtrans);
+  return err;
+}
+
 #endif
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
