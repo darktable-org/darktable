@@ -167,7 +167,6 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_ppg_green;
   int kernel_ppg_redblue;
   int kernel_zoom_half_size;
-  int kernel_downsample;
   int kernel_border_interpolate;
   int kernel_color_smoothing;
   int kernel_zoom_passthrough_monochrome;
@@ -493,37 +492,10 @@ void modify_roi_in(dt_iop_module_t *self,
   roi_in->height /= roi_out->scale;
   roi_in->scale = 1.0f;
 
-  dt_iop_demosaic_data_t *d = piece->data;
-  const dt_iop_demosaic_method_t method = d->demosaicing_method;
-  const gboolean passthrough = method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME ||
-                               method == DT_IOP_DEMOSAIC_PASSTHR_MONOX ||
-                               method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR ||
-                               method == DT_IOP_DEMOSAIC_PASSTHR_COLORX;
-  // set position to closest top/left sensor pattern snap
-  if(!passthrough)
-  {
-    const int aligner = (piece->pipe->dsc.filters != 9u) ? DT_BAYER_SNAPPER : DT_XTRANS_SNAPPER;
-    const int dx = roi_in->x % aligner;
-    const int dy = roi_in->y % aligner;
-
-/*
-    // This implements snapping to closest position, meant for optimized xtrans position
-    // but with problems at extreme zoom levels
-    const int shift_x = (dx > aligner / 2) ? aligner - dx : -dx;
-    const int shift_y = (dy > aligner / 2) ? aligner - dy : -dy;
-
-    roi_in->x += shift_x;
-    roi_in->y += shift_y;
-*/
-
-    // currently we always snap to left & upper
-    roi_in->x -= dx;
-    roi_in->y -= dy;
-  }
-
-  // clamp to full buffer fixing numeric inaccuracies
-  roi_in->x = MAX(0, roi_in->x);
-  roi_in->y = MAX(0, roi_in->y);
+  // always set position to closest top/left sensor pattern snap
+  const int snap = (piece->pipe->dsc.filters != 9u) ? DT_BAYER_SNAPPER : DT_XTRANS_SNAPPER;
+  roi_in->x = MAX(0, (roi_in->x / snap) * snap);
+  roi_in->y = MAX(0, (roi_in->y / snap) * snap);
   roi_in->width = MIN(roi_in->width, piece->buf_in.width);
   roi_in->height = MIN(roi_in->height, piece->buf_in.height);
 }
@@ -748,15 +720,15 @@ void process(dt_iop_module_t *self,
     switch(d->green_eq)
     {
       case DT_IOP_GREEN_EQ_FULL:
-        green_equilibration_favg(in, (float *)i, width, height, pipe->dsc.filters, roi_in->x, roi_in->y);
+        green_equilibration_favg(in, (float *)i, width, height, pipe->dsc.filters);
         break;
       case DT_IOP_GREEN_EQ_LOCAL:
-        green_equilibration_lavg(in, (float *)i, width, height, pipe->dsc.filters, roi_in->x, roi_in->y, threshold);
+        green_equilibration_lavg(in, (float *)i, width, height, pipe->dsc.filters, threshold);
         break;
       case DT_IOP_GREEN_EQ_BOTH:
         aux = dt_alloc_align_float((size_t)height * width);
-        green_equilibration_favg(aux, (float *)i, width, height, pipe->dsc.filters, roi_in->x, roi_in->y);
-        green_equilibration_lavg(in, aux, width, height, pipe->dsc.filters, roi_in->x, roi_in->y, threshold);
+        green_equilibration_favg(aux, (float *)i, width, height, pipe->dsc.filters);
+        green_equilibration_lavg(in, aux, width, height, pipe->dsc.filters, threshold);
         dt_free_align(aux);
         break;
       default:
@@ -902,7 +874,6 @@ int process_cl(dt_iop_module_t *self,
   if(!fullscale)
   {
     dt_print_pipe(DT_DEBUG_PIPE, "demosaic approx zoom", pipe, self, devid, roi_in, roi_out);
-    const int zero = 0;
     if(is_xtrans)
     {
       cl_mem dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(pipe->dsc.xtrans), pipe->dsc.xtrans);
@@ -916,12 +887,12 @@ int process_cl(dt_iop_module_t *self,
     }
     else if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
       return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_passthrough_monochrome, roi_out->width, roi_out->height,
-          CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height), CLARG(zero), CLARG(zero), CLARG(width),
-          CLARG(height), CLARG(roi_out->scale), CLARG(pipe->dsc.filters));
+          CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height),
+          CLARG(width), CLARG(height), CLARG(roi_out->scale));
     else // bayer
       return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_half_size, roi_out->width, roi_out->height,
-          CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height), CLARG(zero), CLARG(zero), CLARG(width),
-          CLARG(height), CLARG(roi_out->scale), CLARG(pipe->dsc.filters));
+          CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height),
+          CLARG(width), CLARG(height), CLARG(roi_out->scale), CLARG(pipe->dsc.filters));
   }
 
   const gboolean direct = roi_out->width == width && roi_out->height == height && feqf(roi_in->scale, roi_out->scale, 1e-8f);
@@ -1048,7 +1019,6 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_green_eq_favg_apply = dt_opencl_create_kernel(program, "green_equilibration_favg_apply");
   gd->kernel_pre_median = dt_opencl_create_kernel(program, "pre_median");
   gd->kernel_ppg_redblue = dt_opencl_create_kernel(program, "ppg_demosaic_redblue");
-  gd->kernel_downsample = dt_opencl_create_kernel(program, "clip_and_zoom");
   gd->kernel_border_interpolate = dt_opencl_create_kernel(program, "border_interpolate");
   gd->kernel_color_smoothing = dt_opencl_create_kernel(program, "color_smoothing");
 
@@ -1125,7 +1095,6 @@ void cleanup_global(dt_iop_module_so_t *self)
   dt_opencl_free_kernel(gd->kernel_green_eq_favg_reduce_second);
   dt_opencl_free_kernel(gd->kernel_green_eq_favg_apply);
   dt_opencl_free_kernel(gd->kernel_ppg_redblue);
-  dt_opencl_free_kernel(gd->kernel_downsample);
   dt_opencl_free_kernel(gd->kernel_border_interpolate);
   dt_opencl_free_kernel(gd->kernel_color_smoothing);
   dt_opencl_free_kernel(gd->kernel_passthrough_monochrome);
