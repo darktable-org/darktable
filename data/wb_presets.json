@@ -32705,7 +32705,7 @@
           ]
         },
         {
-          "model": "GFX100",
+          "model": "GFX 100",
           "presets": [
             {
               "name": "Daylight",
