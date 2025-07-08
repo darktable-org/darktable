@@ -319,8 +319,8 @@ int write_image(struct dt_imageio_module_data_t *data,
     if(!exif_buf)
       JXL_FAIL("could not allocate Exif buffer of size %zu", (size_t)(exif_len + 4));
     memmove(exif_buf + 4, exif, exif_len);
-    // Exiv2 < 0.28 doesn't support Brotli compressed boxes
-    LIBJXL_ASSERT(JxlEncoderAddBox(encoder, "Exif", exif_buf, exif_len + 4, JXL_FALSE));
+    // Exiv2 >= 0.28 (released 2023-05-08) supports Brotli compressed boxes
+    LIBJXL_ASSERT(JxlEncoderAddBox(encoder, "Exif", exif_buf, exif_len + 4, JXL_TRUE));
   }
 
   /* TODO: workaround; remove when exiv2 implements JXL BMFF write support and update flags() */
@@ -332,9 +332,9 @@ int write_image(struct dt_imageio_module_data_t *data,
     if(xmp_string
        && (xmp_len = strlen(xmp_string)) > 0)
     {
-      // Exiv2 < 0.28 doesn't support Brotli compressed boxes
+      // Exiv2 >= 0.28 (released 2023-05-08) supports Brotli compressed boxes
       LIBJXL_ASSERT(JxlEncoderAddBox(encoder, "xml ",
-                                     (const uint8_t *)xmp_string, xmp_len, JXL_FALSE));
+                                     (const uint8_t *)xmp_string, xmp_len, JXL_TRUE));
     }
   }
 
