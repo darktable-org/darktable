@@ -31,9 +31,12 @@ float *dt_read_pfm(const char *filename, int *err, int *wd, int *ht, int *ch, co
   if(ht) *ht = 0;
   if(ch) *ch = 0;
   if(err) *err = DT_IMAGEIO_OK;
+
   if(!filename || filename[0] == 0)
   {
     if(err) *err = DT_IMAGEIO_FILE_NOT_FOUND;
+    dt_print(DT_DEBUG_ALWAYS,
+             "[pfm_read] no filename provided for 'dt_read_pfm'");
     return NULL;
   }
 
@@ -51,6 +54,9 @@ float *dt_read_pfm(const char *filename, int *err, int *wd, int *ht, int *ch, co
   {
     g_free(normalized_filename);
     if(err) *err = DT_IMAGEIO_FILE_NOT_FOUND;
+    dt_print(DT_DEBUG_ALWAYS,
+             "[pfm_read] failed to open file '%s'",
+             filename);
     return NULL;
   }
   g_free(normalized_filename);
@@ -65,6 +71,9 @@ float *dt_read_pfm(const char *filename, int *err, int *wd, int *ht, int *ch, co
   if(ret != 2 || head[0] != 'P')
   {
     if(err) *err = DT_IMAGEIO_FILE_CORRUPTED;
+    dt_print(DT_DEBUG_ALWAYS,
+             "[pfm_read] format of data is not Portable Float Map in '%s'",
+             filename);
     goto error;
   }
 
@@ -73,6 +82,9 @@ float *dt_read_pfm(const char *filename, int *err, int *wd, int *ht, int *ch, co
   else
   {
     if(err) *err = DT_IMAGEIO_FILE_CORRUPTED;
+    dt_print(DT_DEBUG_ALWAYS,
+             "[pfm_read] format of data is not Portable Float Map in '%s'",
+             filename);
     goto error;
   }
   if(ch) *ch = channels;
@@ -132,7 +144,9 @@ float *dt_read_pfm(const char *filename, int *err, int *wd, int *ht, int *ch, co
   if(!readbuf || !image)
   {
     if(err) *err = DT_IMAGEIO_IOERROR;
-    dt_print(DT_DEBUG_ALWAYS, "can't allocate memory for pfm file `%s'", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[pfm_read] failed to allocate memory for PFM file `%s'",
+             filename);
     goto error;
   }
 
@@ -140,7 +154,9 @@ float *dt_read_pfm(const char *filename, int *err, int *wd, int *ht, int *ch, co
   if(ret != npixels)
   {
     if(err) *err = DT_IMAGEIO_IOERROR;
-    dt_print(DT_DEBUG_ALWAYS, "can't read all pfm file contents from '%s'", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[pfm_read] failed to read all PFM file contents from '%s'",
+             filename);
     goto error;
   }
 
@@ -201,14 +217,17 @@ void dt_write_pfm(const char *filename, const size_t width, const size_t height,
 {
   if(!filename || filename[0] == 0)
   {
-    dt_print(DT_DEBUG_ALWAYS, "no filename provided for 'dt_write_pfm'");
+    dt_print(DT_DEBUG_ALWAYS,
+             "[pfm_write] no filename provided for 'dt_write_pfm'");
     return;
   }
 
   FILE *f = g_fopen(filename, "wb");
   if(!f)
   {
-    dt_print(DT_DEBUG_ALWAYS, "can't write file `%s'", filename);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[pfm_write] failed to open file '%s'",
+             filename);
     return;
   }
 
@@ -263,4 +282,3 @@ void dt_write_pfm(const char *filename, const size_t width, const size_t height,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
