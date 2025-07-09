@@ -25,7 +25,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-float *dt_read_pfm(const char *filename, int *err, int *wd, int *ht, int *ch, const size_t planes)
+float *dt_read_pfm(const char *filename,
+                   int *err,
+                   int *wd,
+                   int *ht,
+                   int *ch,
+                   const size_t planes)
 {
   if(wd) *wd = 0;
   if(ht) *ht = 0;
@@ -213,7 +218,11 @@ float *dt_read_pfm(const char *filename, int *err, int *wd, int *ht, int *ch, co
   return NULL;
 }
 
-void dt_write_pfm(const char *filename, const size_t width, const size_t height, const void *data, const size_t bpp)
+void dt_write_pfm(const char *filename,
+                  const size_t width,
+                  const size_t height,
+                  const void *data,
+                  const size_t bpp)
 {
   if(!filename || filename[0] == 0)
   {
@@ -231,15 +240,19 @@ void dt_write_pfm(const char *filename, const size_t width, const size_t height,
     return;
   }
 
-  if(bpp==2)
+  if(bpp == 2)
     fprintf(f, "P5\n%d %d\n", (int)width, (int)height);
   else
-    fprintf(f, "P%s\n%d %d\n-1.0\n", (bpp == sizeof(float)) ? "f" : "F", (int)width, (int)height);
+    fprintf(f,
+            "P%s\n%d %d\n-1.0\n",
+            (bpp == sizeof(float)) ? "f" : "F",
+            (int)width,
+            (int)height);
 
   void *buf_line = dt_alloc_align_float(width * 4);
   for(size_t row = 0; row < height; row++)
   {
-    // NOTE: pfm has rows in reverse order
+    // NOTE: PFM has rows in reverse order
     const size_t row_in = height - 1 - row;
     if(bpp == 4*sizeof(float))
     {
