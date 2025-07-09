@@ -87,6 +87,10 @@ changes (where available).
 
 - Fixed an OpenCL bug in rastermask module for non-raw images.
 
+- Fixed regression introduced in darktable 5.0 with inability to read
+  raw files from ancient (over two decades old) Canon cameras that
+  recorded raw files with .tiff extension.
+
 ### Add action support for Lua
 
 ### Other Lua changes
