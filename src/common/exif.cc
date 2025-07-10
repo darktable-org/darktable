@@ -2442,6 +2442,27 @@ gboolean dt_exif_read(dt_image_t *img,
   }
 }
 
+int dt_exif_write_exv(uint8_t *blob,
+                       uint32_t size,
+                       const char *path,
+                       const int compressed)
+{
+  try
+  {
+    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::create(Exiv2::ImageType::exv, WIDEN(path)));
+    image->writeMetadata();
+  }
+  catch(const Exiv2::AnyError &e)
+  {
+    dt_print(DT_DEBUG_IMAGEIO,
+             "[exiv2 dt_exif_write_blob] %s: %s",
+             path,
+             e.what());
+    return 0;
+  }
+  return 1;
+}
+
 int dt_exif_write_blob(uint8_t *blob,
                        uint32_t size,
                        const char *path,

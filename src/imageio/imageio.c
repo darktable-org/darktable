@@ -1436,7 +1436,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
   if(!ignore_exif
      && (!strcmp(format->mime(NULL), "image/avif")
          || !strcmp(format->mime(NULL), "image/x-exr")
-         || !strcmp(format->mime(NULL), "image/jxl")
+        //  || !strcmp(format->mime(NULL), "image/jxl")
          || !strcmp(format->mime(NULL), "image/x-xcf")))
   {
     const int32_t meta_all =
