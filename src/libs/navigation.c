@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2023 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -105,12 +105,12 @@ static void _lib_navigation_control_redraw_callback(gpointer instance,
   dt_dev_zoom_t zoom;
   int closeup;
   dt_dev_get_viewport_params(port, &zoom, &closeup, NULL, NULL);
-  const float cur_scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 0);
+  const float cur_scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, FALSE);
 
   gchar *zoomline = zoom == DT_ZOOM_FIT ? g_strdup(_("fit"))
                   : zoom == DT_ZOOM_FILL ? g_strdup(C_("navigationbox", "fill"))
-                  : 0.5 * dt_dev_get_zoom_scale(port, DT_ZOOM_FIT, 1.0, 0)
-                    == dt_dev_get_zoom_scale(port, DT_ZOOM_FREE, 1.0, 0)
+                  : 0.5 * dt_dev_get_zoom_scale(port, DT_ZOOM_FIT, 1.0, FALSE)
+                    == dt_dev_get_zoom_scale(port, DT_ZOOM_FREE, 1.0, FALSE)
                          ? g_strdup(_("small"))
                          : g_strdup_printf("%.0f%%", cur_scale * 100 * darktable.gui->ppd);
   ++darktable.gui->reset;
@@ -365,7 +365,7 @@ static void _zoom_changed(GtkWidget *widget, gpointer user_data)
   dt_dev_zoom_t zoom = DT_ZOOM_FREE;
 
   if(val == 0u) // small
-    scale = 0.5 * dt_dev_get_zoom_scale(port, DT_ZOOM_FIT, 1.0, 0);
+    scale = 0.5 * dt_dev_get_zoom_scale(port, DT_ZOOM_FIT, 1.0, FALSE);
   else if(val == 1u || val == -1u) // fit to screen
     zoom = DT_ZOOM_FIT;
   else if(val == 2u) // fill screen

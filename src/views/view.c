@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1721,7 +1721,7 @@ void dt_view_paint_surface(cairo_t *cr,
   int closeup = port->closeup;
   const float ppd           = port->ppd;
   const double tb           = port->border_size;
-  const float zoom_scale    = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 1);
+  const float zoom_scale    = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, TRUE);
   const float backbuf_scale = dt_dev_get_zoom_scale(port, zoom, 1.0f, 0) * ppd;
 
   dt_print_pipe(DT_DEBUG_EXPOSE,
@@ -1863,7 +1863,7 @@ dt_view_context_t dt_view_get_context_hash(void)
   int closeup;
   float zoom_x, zoom_y;
   dt_dev_get_viewport_params(&dev->full, &zoom, &closeup, &zoom_x, &zoom_y);
-  const float zoom_scale = dt_dev_get_zoom_scale(&dev->full, zoom, 1<<closeup, 1);
+  const float zoom_scale = dt_dev_get_zoom_scale(&dev->full, zoom, 1<<closeup, TRUE);
 
   // calculate a hash on view parameters. Use flt_prec here to avoid different hashes
   // for irrelevant variations for the zooms.

@@ -701,7 +701,7 @@ void expose(dt_view_t *self,
   cairo_save(cri);
 
   float pzx = FLT_MAX, pzy = 0.0f;
-  float zoom_scale = dt_dev_get_zoom_scale(&dev->full, port->zoom, 1 << port->closeup, 1);
+  float zoom_scale = dt_dev_get_zoom_scale(&dev->full, port->zoom, 1 << port->closeup, TRUE);
 
   // don't draw guides and color pickers on image margins
   cairo_rectangle(cri, tb, tb, width - 2.0 * tb, height - 2.0 * tb);
