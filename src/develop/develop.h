@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -439,7 +439,7 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
 float dt_dev_get_zoom_scale(dt_dev_viewport_t *port,
                             dt_dev_zoom_t zoom,
                             const int closeup_factor,
-                            const int mode);
+                            const gboolean preview);
 float dt_dev_get_zoom_scale_full(void);
 float dt_dev_get_zoomed_in(void);
 void dt_dev_get_pointer_zoom_pos(dt_dev_viewport_t *port,
