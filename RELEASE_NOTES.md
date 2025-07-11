@@ -91,6 +91,10 @@ changes (where available).
   raw files from ancient (over two decades old) Canon cameras that
   recorded raw files with .tiff extension.
 
+- Fixed the inability of external raster masks module to work in
+  Windows with PFM files that have Unicode characters in the file
+  name.
+
 ### Add action support for Lua
 
 ### Other Lua changes
