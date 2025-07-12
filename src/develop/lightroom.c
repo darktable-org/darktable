@@ -22,7 +22,7 @@
 #include "common/curve_tools.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "common/iop_order.h"
+#include "common/math.h"
 #include "common/ratings.h"
 #include "common/tags.h"
 #include "common/metadata.h"
@@ -1347,7 +1347,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
 
     // Rotate the cropped zone according to rotation angle
     // All rotations done using center of the image
-    rangle = data.pc.angle * (M_PI / 180.0f);
+    rangle = deg2radf(data.pc.angle);
     rotate_xy(&cx, &cy, -rangle);
     rotate_xy(&cw, &ch, -rangle);
 
