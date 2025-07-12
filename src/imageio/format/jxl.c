@@ -338,7 +338,7 @@ int write_image(struct dt_imageio_module_data_t *data,
     }
   }
 
-f  JxlPixelFormat pixel_format = { 3, JXL_TYPE_FLOAT, JXL_NATIVE_ENDIAN, 0 };
+  JxlPixelFormat pixel_format = { 3, JXL_TYPE_FLOAT, JXL_NATIVE_ENDIAN, 0 };
 
   // Fix pixel stride
   const size_t pixels_size = width * height * 3 * sizeof(float);
