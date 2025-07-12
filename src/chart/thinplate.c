@@ -25,6 +25,7 @@
 
 #include "chart/thinplate.h"
 #include "chart/deltaE.h"
+#include "common/math.h"
 #include "iop/svd.h"
 
 #include <assert.h>
@@ -434,10 +435,8 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
 
 float thinplate_color_pos(float L, float a, float b)
 {
-  const float pi = 3.14153f; // clearly true.
-  const float h = atan2f(b, a) + pi;
-  // const float C = sqrtf(a*a + b*b);
-  const int sector = 4.0f * h / (2.0f * pi);
+  const float h = atan2f(b, a) + M_PI_F;
+  const int sector = 4.0f * h / (2.0f * M_PI_F);
   return 256.0 * sector + L; // C;
 }
 
