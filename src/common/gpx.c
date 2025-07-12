@@ -495,10 +495,10 @@ void dt_gpx_geodesic_distance(double lat1, double lon1,
                               double lat2, double lon2,
                               double *d, double *delta)
 {
-  const double lat_rad_1 = lat1 * M_PI / 180;
-  const double lat_rad_2 = lat2 * M_PI / 180;
-  const double lon_rad_1 = lon1 * M_PI / 180;
-  const double lon_rad_2 = lon2 * M_PI / 180;
+  const double lat_rad_1 = deg2rad(lat1);
+  const double lat_rad_2 = deg2rad(lat2);
+  const double lon_rad_1 = deg2rad(lon1);
+  const double lon_rad_2 = deg2rad(lon2);
   const double delta_lat_rad = lat_rad_2 - lat_rad_1;
   const double delta_lon_rad = lon_rad_2 - lon_rad_1;
   const double sin_delta_lat_rad = sin(delta_lat_rad / 2);
@@ -535,16 +535,16 @@ void dt_gpx_geodesic_intermediate_point(const double lat1, const double lon1,
 
   if(first_time)
   {
-    lat_rad_1 = lat1 * M_PI / 180;
+    lat_rad_1 = deg2rad(lat1);
     sin_lat_rad_1 = sin(lat_rad_1);
     cos_lat_rad_1 = cos(lat_rad_1);
-    lat_rad_2 = lat2 * M_PI / 180;
+    lat_rad_2 = deg2rad(lat2);
     sin_lat_rad_2 = sin(lat_rad_2);
     cos_lat_rad_2 = cos(lat_rad_2);
-    lon_rad_1 = lon1 * M_PI / 180;
+    lon_rad_1 = deg2rad(lon1);
     sin_lon_rad_1 = sin(lon_rad_1);
     cos_lon_rad_1 = cos(lon_rad_1);
-    lon_rad_2 = lon2 * M_PI / 180;
+    lon_rad_2 = deg2rad(lon2);
     sin_lon_rad_2 = sin(lon_rad_2);
     cos_lon_rad_2 = cos(lon_rad_2);
     sin_delta = sin(delta);
@@ -558,8 +558,8 @@ void dt_gpx_geodesic_intermediate_point(const double lat1, const double lon1,
   const double lat_rad = atan2(z, sqrt(x * x + y * y)); /* latitude of intermediate point in radians */
   const double lon_rad = atan2(y, x);                   /* longitude of intermediate point in radians */
 
-  *lat = lat_rad / M_PI * 180;
-  *lon = lon_rad / M_PI * 180;
+  *lat = rad2deg(lat_rad);
+  *lon = rad2deg(lon_rad);
 }
 /* -------- end of Geodesic interpolation functions -----------------------*/
 
