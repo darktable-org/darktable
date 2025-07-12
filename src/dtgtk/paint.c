@@ -39,10 +39,10 @@
 #define FINISH { cairo_identity_matrix(cr); \
                  cairo_restore(cr); }
 
+static const double degrees = M_PI / 180.0;
+
 static void _rounded_rectangle(cairo_t *cr)  // create rounded rectangle to use in other icons
 {
-  const double degrees = M_PI / 180.0;
-
   cairo_new_sub_path (cr);
   cairo_arc (cr, 0.9, 0.1, 0.1, -90 * degrees, 0 * degrees);
   cairo_arc (cr, 0.9, 0.9, 0.1, 0 * degrees, 90 * degrees);
@@ -93,9 +93,8 @@ static void _draw_triangle(cairo_t *cr, const gint flags)  // create triangle fo
   cairo_matrix_t hflip_matrix;
   cairo_matrix_init(&hflip_matrix, -1, 0, 0, 1, 1, 0);
 
-  double C = cos(-(M_PI / 2.0)), S = sin(-(M_PI / 2.0)); // -90 degrees
-  C = flags & CPF_DIRECTION_DOWN ? cos(-(M_PI * 1.5)) : C;
-  S = flags & CPF_DIRECTION_DOWN ? sin(-(M_PI * 1.5)) : S;
+  const double C = flags & CPF_DIRECTION_DOWN ? cos(90 * degrees) : cos(-90 * degrees);
+  const double S = flags & CPF_DIRECTION_DOWN ? sin(90 * degrees) : sin(-90 * degrees);
   cairo_matrix_t rotation_matrix;
   cairo_matrix_init(&rotation_matrix, C, S, -S, C, 0.5 - C * 0.5 + S * 0.5, 0.5 - S * 0.5 - C * 0.5);
 
@@ -141,9 +140,8 @@ void dtgtk_cairo_paint_arrow(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
   cairo_matrix_t hflip_matrix;
   cairo_matrix_init(&hflip_matrix, -1, 0, 0, 1, 1, 0);
 
-  double C = cos(-(M_PI / 2.0)), S = sin(-(M_PI / 2.0)); // -90 degrees
-  C = flags & CPF_DIRECTION_UP ? cos(-(M_PI * 1.5)) : C;
-  S = flags & CPF_DIRECTION_UP ? sin(-(M_PI * 1.5)) : S;
+  const double C = flags & CPF_DIRECTION_UP ? cos(90 * degrees) : cos(-90 * degrees);
+  const double S = flags & CPF_DIRECTION_UP ? sin(90 * degrees) : sin(-90 * degrees);
   cairo_matrix_t rotation_matrix;
   cairo_matrix_init(&rotation_matrix, C, S, -S, C, 0.5 - C * 0.5 + S * 0.5, 0.5 - S * 0.5 - C * 0.5);
 
@@ -168,9 +166,8 @@ void dtgtk_cairo_paint_solid_arrow(cairo_t *cr, gint x, int y, gint w, gint h, g
   cairo_matrix_t hflip_matrix;
   cairo_matrix_init(&hflip_matrix, -1, 0, 0, 1, 1, 0);
 
-  double C = cos(-(M_PI / 2.0f)), S = sin(-(M_PI / 2.0f)); // -90 degrees
-  C = flags & CPF_DIRECTION_DOWN ? cos(-(M_PI * 1.5)) : C;
-  S = flags & CPF_DIRECTION_DOWN ? sin(-(M_PI * 1.5)) : S;
+  const double C = flags & CPF_DIRECTION_DOWN ? cos(90 * degrees) : cos(-90 * degrees);
+  const double S = flags & CPF_DIRECTION_DOWN ? sin(90 * degrees) : sin(-90 * degrees);
   cairo_matrix_t rotation_matrix;
   cairo_matrix_init(&rotation_matrix, C, S, -S, C, 0.5 - C * 0.5 + S * 0.5, 0.5 - S * 0.5 - C * 0.5);
 
@@ -315,7 +312,7 @@ void dtgtk_cairo_paint_switch(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
 {
   PREAMBLE(1, 1, 0, 0)
 
-  cairo_arc(cr, 0.5, 0.5, 0.46, (-50 * 3.145 / 180), (230 * 3.145 / 180));
+  cairo_arc(cr, 0.5, 0.5, 0.46, -50 * degrees, 230 * degrees);
   cairo_move_to(cr, 0.5, 0.0);
   cairo_line_to(cr, 0.5, 0.5);
   cairo_stroke(cr);
@@ -334,7 +331,9 @@ void dtgtk_cairo_paint_switch_inactive(cairo_t *cr, gint x, gint y, gint w, gint
 {
   PREAMBLE(1, .3f, 0, 0)
 
-  cairo_arc(cr, 0.5, 0.5, 0.46, (-50 * 3.145 / 180), (230 * 3.145 / 180));
+
+
+  cairo_arc(cr, 0.5, 0.5, 0.46, -50 * degrees, 230 * degrees);
   cairo_move_to(cr, 0.5, 0.0);
   cairo_line_to(cr, 0.5, 0.5);
   cairo_stroke(cr);
@@ -1039,7 +1038,7 @@ void dtgtk_cairo_paint_timer(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
 {
   PREAMBLE(1, 1, 0, 0)
 
-  cairo_arc(cr, 0.5, 0.5, 0.5, (-80 * 3.145 / 180), (150 * 3.145 / 180));
+  cairo_arc(cr, 0.5, 0.5, 0.5, -80 * degrees, 150 * degrees);
   cairo_line_to(cr, 0.5, 0.5);
   cairo_stroke(cr);
 
@@ -1096,8 +1095,6 @@ void dtgtk_cairo_paint_focus_peaking(cairo_t *cr, gint x, gint y, gint w, gint h
   const double right = center + offset_w;
   const double top = center - offset_h;
   const double bottom = center + offset_h;
-
-  const double degrees = M_PI / 180.0;
 
   /// north west
   cairo_move_to(cr, left, top + tick_length);
@@ -1367,7 +1364,6 @@ void dtgtk_cairo_paint_color_harmony(cairo_t *cr, gint x, gint y, gint w, gint h
 {
   PREAMBLE(1, 1, 0.5, 0.5)
 
-  const double degrees = M_PI / 180.0;
   typedef struct
   {
     const char *name;
@@ -1460,8 +1456,6 @@ void dtgtk_cairo_paint_directory(cairo_t *cr, gint x, gint y, gint w, gint h, gi
 {
   PREAMBLE(1, 1, 0, 0);
 
-  const double degrees = M_PI / 180.0;
-
   cairo_new_sub_path (cr);
   cairo_arc (cr, 0.85, 0.35, 0.1, -90 * degrees, 0 * degrees);
   cairo_arc (cr, 0.8, 0.75, 0.1, 0 * degrees, 90 * degrees);
@@ -1494,7 +1488,7 @@ void dtgtk_cairo_paint_refresh(cairo_t *cr, gint x, gint y, gint w, gint h, gint
   cairo_line_to(cr, 0.65, 0.3);
   cairo_stroke(cr);
 
-  cairo_arc(cr, 0.5, 0.5, 0.35, (-80 * 3.145 / 180), (220 * 3.145 / 180));
+  cairo_arc(cr, 0.5, 0.5, 0.35, -80 * degrees, 220 * degrees);
   cairo_stroke(cr);
 
   FINISH
@@ -1606,7 +1600,7 @@ void dtgtk_cairo_paint_aspectflip(cairo_t *cr, gint x, gint y, gint w, gint h, g
   cairo_line_to(cr, 0.6, 0.25);
   cairo_stroke(cr);
 
-  cairo_arc(cr, 0.5, 0.5, 0.45, (-80 * 3.145 / 180), (220 * 3.145 / 180));
+  cairo_arc(cr, 0.5, 0.5, 0.45, -80 * degrees, 220 * degrees);
   cairo_stroke(cr);
 
   FINISH
@@ -1905,11 +1899,11 @@ void dtgtk_cairo_paint_audio(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
   cairo_line_to(cr, 0.25, 0.4);
 
   cairo_new_sub_path(cr);
-  cairo_arc(cr, 0.2, 0.5, 0.45, -(35.0 / 180.0) * M_PI, (35.0 / 180.0) * M_PI);
+  cairo_arc(cr, 0.2, 0.5, 0.45, -35.0 * degrees, 35.0 * degrees);
   cairo_new_sub_path(cr);
-  cairo_arc(cr, 0.2, 0.5, 0.6, -(35.0 / 180.0) * M_PI, (35.0 / 180.0) * M_PI);
+  cairo_arc(cr, 0.2, 0.5, 0.6, -35.0  * degrees, 35.0  * degrees);
   cairo_new_sub_path(cr);
-  cairo_arc(cr, 0.2, 0.5, 0.75, -(35.0 / 180.0) * M_PI, (35.0 / 180.0) * M_PI);
+  cairo_arc(cr, 0.2, 0.5, 0.75, -35.0  * degrees, 35.0  * degrees);
 
   cairo_stroke(cr);
 
@@ -2616,7 +2610,7 @@ void dtgtk_cairo_paint_modulegroup_active(cairo_t *cr, gint x, gint y, gint w, g
 {
   PREAMBLE(1.1, 1, 0, 0)
 
-  cairo_arc(cr, 0.5, 0.5, 0.40, (-50 * 3.145 / 180), (230 * 3.145 / 180));
+  cairo_arc(cr, 0.5, 0.5, 0.40, -50 * degrees, 230 * degrees);
   cairo_move_to(cr, 0.5, 0.05);
   cairo_line_to(cr, 0.5, 0.40);
   cairo_stroke(cr);
