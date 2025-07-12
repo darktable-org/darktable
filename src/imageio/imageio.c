@@ -1446,6 +1446,40 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
     md_flags_set = metadata ? (metadata->flags & meta_all) == meta_all : FALSE;
   }
 
+  uint8_t *exif_profile0 = NULL; // Exif data should be 65536 bytes
+                                // max, but if original size is
+                                // close to that, adding new tags
+                                // could make it go over that... so
+                                // let it be and see what happens
+                                // when we write the image
+  char pathname[PATH_MAX] = { 0 };
+  gboolean from_cache = TRUE;
+  dt_image_full_path(imgid, pathname, sizeof(pathname), &from_cache);
+
+  // last param is dng mode, it's false here
+  const int length0 = dt_exif_read_blob(&exif_profile0, pathname, imgid, sRGB,
+                                        processed_width, processed_height, FALSE);
+
+  char* exv_filename = g_malloc(strlen(filename) + 5);
+  snprintf(exv_filename, strlen(filename) + 5, "%s%s", filename, ".exv");
+
+  // empty metadata file (XXX call write_blob inside there for us)
+  dt_exif_write_exv(exif_profile0, length0, exv_filename, 1);
+
+  // write data into metadata file
+  dt_exif_write_blob(exif_profile0, length0, exv_filename, 1);
+
+  free(exif_profile0);
+
+  /* now write xmp into that container, if possible */
+  if(copy_metadata
+     && (format->flags(format_params) & FORMAT_FLAGS_SUPPORT_XMP))
+  {
+    dt_exif_xmp_attach_export(imgid, exv_filename, metadata, &dev, &pipe);
+    // no need to cancel the export if this fail
+  }
+
+  // write image including filtered metadata from .exv
   if(!ignore_exif && md_flags_set)
   {
     uint8_t *exif_profile = NULL; // Exif data should be 65536 bytes
@@ -1454,12 +1488,8 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
                                   // could make it go over that... so
                                   // let it be and see what happens
                                   // when we write the image
-    char pathname[PATH_MAX] = { 0 };
-    gboolean from_cache = TRUE;
-    dt_image_full_path(imgid, pathname, sizeof(pathname), &from_cache);
-
     // last param is dng mode, it's false here
-    const int length = dt_exif_read_blob(&exif_profile, pathname, imgid, sRGB,
+    const int length = dt_exif_read_blob(&exif_profile, exv_filename, imgid, sRGB,
                                          processed_width, processed_height, FALSE);
 
     res = (format->write_image(format_params, filename, outbuf, icc_type,
@@ -1475,16 +1505,11 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
                               &pipe, export_masks)) != 0;
   }
 
+  g_free(exv_filename);
+
   if(res)
     goto error;
 
-  /* now write xmp into that container, if possible */
-  if(copy_metadata
-     && (format->flags(format_params) & FORMAT_FLAGS_SUPPORT_XMP))
-  {
-    dt_exif_xmp_attach_export(imgid, filename, metadata, &dev, &pipe);
-    // no need to cancel the export if this fail
-  }
 
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
