@@ -19,6 +19,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/undo.h"
+#include "common/math.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -224,8 +225,8 @@ static float *_points_to_transform(const float xx,
                                    const float ht,
                                    int *points_count)
 {
-  const float v1 = (rotation / 180.0f) * M_PI;
-  const float v2 = (rotation - 90.0f) / 180.0f * M_PI;
+  const float v1 = deg2radf(rotation);
+  const float v2 = deg2radf(rotation - 90.0f);
   float a, b, v;
 
   if(radius_a >= radius_b)
@@ -893,9 +894,9 @@ static int _ellipse_events_button_released(dt_iop_module_t *module,
     // Normalize to the range -180 to 180 degrees
     check_angle = atan2f(sinf(check_angle), cosf(check_angle));
     if(check_angle < 0)
-      ellipse->rotation -= dv / M_PI * 180.0f;
+      ellipse->rotation -= rad2degf(dv);
     else
-      ellipse->rotation += dv / M_PI * 180.0f;
+      ellipse->rotation += rad2degf(dv);
 
     dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, rotation), ellipse->rotation);
 
@@ -1117,9 +1118,9 @@ static int _ellipse_events_mouse_moved(dt_iop_module_t *module,
     // Normalize to the range -180 to 180 degrees
     check_angle = atan2f(sinf(check_angle), cosf(check_angle));
     if(check_angle < 0)
-      ellipse->rotation -= dv / M_PI * 180.0f;
+      ellipse->rotation -= rad2degf(dv);
     else
-      ellipse->rotation += dv / M_PI * 180.0f;
+      ellipse->rotation += rad2degf(dv);
 
     dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, rotation), ellipse->rotation);
 
@@ -1502,8 +1503,8 @@ static float *const _ellipse_points_to_transform(const float center_x,
                                                  size_t *point_count)
 {
 
-  const float v1 = ((rotation) / 180.0f) * M_PI;
-  const float v2 = ((rotation - 90.0f) / 180.0f) * M_PI;
+  const float v1 = deg2radf(rotation);
+  const float v2 = deg2radf(rotation - 90.0f);
   float a = 0.0f, b = 0.0f, v = 0.0f;
 
   if(dim1 >= dim2)
@@ -1721,7 +1722,7 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module,
     b = radius[1];
     ta = total[0];
     tb = total[1];
-    alpha = (ellipse->rotation / 180.0f) * M_PI;
+    alpha = deg2radf(ellipse->rotation);
   }
   else
   {
@@ -1729,7 +1730,7 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module,
     b = radius[0];
     ta = total[1];
     tb = total[0];
-    alpha = ((ellipse->rotation - 90.0f) / 180.0f) * M_PI;
+    alpha = deg2radf(ellipse->rotation - 90.0f);
   }
 
   float *const bufptr = *buffer;
@@ -1772,7 +1773,7 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   const float b = radius[1];
   const float ta = total[0];
   const float tb = total[1];
-  const float alpha = (ellipse->rotation / 180.0f) * M_PI;
+  const float alpha = deg2radf(ellipse->rotation);
   const float cosa = cosf(alpha);
   const float sina = sinf(alpha);
 
