@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014 Marcello Perathoner.
+    Copyright (C) 2020-2024 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -72,13 +72,13 @@ float kmix (global const float *k,
 
 kernel void
 warp_kernel (read_only image2d_t in,
-	     write_only image2d_t out,
-	     global dt_iop_roi_t *roi_in,
-	     global dt_iop_roi_t *roi_out,
-	     global float2 *map,
-	     global cairo_rectangle_int_t *map_extent,
-	     global dt_liquify_kernel_descriptor_t *kdesc,
-	     global float *k)
+	           write_only image2d_t out,
+	           global dt_iop_roi_t *roi_in,
+	           global dt_iop_roi_t *roi_out,
+	           global float2 *map,
+	           global cairo_rectangle_int_t *map_extent,
+	           global dt_liquify_kernel_descriptor_t *kdesc,
+	           global float *k)
 {
   int2 pos = (int2) (get_global_id (0), get_global_id (1));
 
@@ -123,11 +123,9 @@ warp_kernel (read_only image2d_t in,
   // loop over support region (eg. 6x6 pixels for lanczos3)
   for (sample_pos.y = 1 - a; sample_pos.y <= a; ++sample_pos.y)
     for (sample_pos.x = 1 - a; sample_pos.x <= a; ++sample_pos.x)
-      Sxy += (read_imagef (in, sampleri, in_pos + convert_float2 (sample_pos))
-	      * lk[sample_pos.x].x * lk[sample_pos.y].y);
+      Sxy += fmax(0.0f, (read_imagef (in, sampleri, in_pos + convert_float2 (sample_pos))
+	      * lk[sample_pos.x].x * lk[sample_pos.y].y));
 
-  Sxy = Sxy / (norm.x * norm.y);
-  Sxy = clamp (Sxy, 0.0f, 1.0f);
-
+  Sxy = fmax(0.0f, Sxy / fmax(1e-7f, norm.x * norm.y));
   write_imagef (out, pos - roi_out_origin, Sxy);
 }
