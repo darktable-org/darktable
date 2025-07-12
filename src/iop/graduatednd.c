@@ -227,15 +227,15 @@ static int _set_grad_from_points(
 
   // we first need to find the rotation angle
   // weird dichotomic solution : we may use something more cool ...
-  float v1 = -M_PI;
-  float v2 = M_PI;
+  float v1 = -M_PI_F;
+  float v2 = M_PI_F;
   float sinv, cosv, r1, r2, v, r;
 
   sinv = sinf(v1), cosv = cosf(v1);
   r1 = pts[1] * cosv - pts[0] * sinv + pts[2] * sinv - pts[3] * cosv;
 
   // we search v2 so r2 as not the same sign as r1
-  const float pas = M_PI / 16.0;
+  const float pas = M_PI_F / 16.f;
 
   do
   {
@@ -243,9 +243,9 @@ static int _set_grad_from_points(
     sinv = sinf(v2), cosv = cosf(v2);
     r2 = pts[1] * cosv - pts[0] * sinv + pts[2] * sinv - pts[3] * cosv;
     if(r1 * r2 < 0) break;
-  } while(v2 <= M_PI);
+  } while(v2 <= M_PI_F);
 
-  if(v2 == (float)M_PI) return 9;
+  if(v2 == M_PI_F) return 9;
 
   // set precision for the iterative check
   const float eps = .0001f;
@@ -274,17 +274,17 @@ static int _set_grad_from_points(
   // be careful to the gnd direction
 
   const float diff_x = pts[2] - pts[0];
-  const float MPI2 = (M_PI / 2.0f);
+  const float MPI2 = M_PI_F / 2.0f;
 
   if(diff_x > eps)
   {
-    if(v >=  MPI2) v -= M_PI;
-    if(v <  -MPI2) v += M_PI;
+    if(v >=  MPI2) v -= M_PI_F;
+    if(v <  -MPI2) v += M_PI_F;
   }
   else if(diff_x < -eps)
   {
-    if(v <  MPI2 && v >= 0) v -= M_PI;
-    if(v > -MPI2 && v < 0)  v += M_PI;
+    if(v <  MPI2 && v >= 0) v -= M_PI_F;
+    if(v > -MPI2 && v < 0)  v += M_PI_F;
   }
   else // let's pretend that we are at PI/2
   {
@@ -293,7 +293,7 @@ static int _set_grad_from_points(
     else               v = MPI2;
   }
 
-  *rotation = -v * 180.0f / M_PI;
+  *rotation = rad2degf(-v);
 
   // and now we go for the offset (more easy)
   sinv = sinf(v);
@@ -315,7 +315,7 @@ static int _set_points_from_grad(
         float offset)
 {
   // we get the extremities of the line
-  const float v = (-rotation / 180) * M_PI;
+  const float v = deg2radf(-rotation);
   const float sinv = sinf(v);
   dt_boundingbox_t pts;
 
@@ -795,7 +795,7 @@ void process(dt_iop_module_t *self,
   const float hh = ih / 2.0f;
   const float hw_inv = 1.0f / hw;
   const float hh_inv = 1.0f / hh;
-  const float v = (-data->rotation / 180) * M_PI;
+  const float v = deg2radf(-data->rotation);
   const float sinv = sinf(v);
   const float cosv = cosf(v);
   const float cosv_hh_inv = cosv * hh_inv;
@@ -946,7 +946,7 @@ int process_cl(dt_iop_module_t *self,
   const float hh = ih / 2.0f;
   const float hw_inv = 1.0f / hw;
   const float hh_inv = 1.0f / hh;
-  const float v = (-data->rotation / 180) * M_PI;
+  const float v = deg2radf(-data->rotation);
   const float sinv = sinf(v);
   const float cosv = cosf(v);
   const float filter_radie = sqrtf((hh * hh) + (hw * hw)) / hh;
