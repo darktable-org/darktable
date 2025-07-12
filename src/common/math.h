@@ -749,6 +749,26 @@ static inline void dt_vector_sin(const dt_aligned_pixel_t arg,
     sine[c] = scaled[c] * (p[c] * (abs_scaled[c] - one[c]) + one[c]);
 }
 
+inline float deg2radf(const float degrees)
+{
+  return degrees / 180.f * M_PI_F ;
+}
+
+inline float rad2degf(const float radians)
+{
+  return radians / M_PI_F * 180.f;
+}
+
+inline double deg2rad(const double degrees)
+{
+  return degrees / 180.0 * M_PI;
+}
+
+inline double rad2deg(const double radians)
+{
+  return radians / M_PI * 180.0;
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
