@@ -272,8 +272,6 @@ void init_presets(dt_iop_module_so_t *self)
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  const float DEG_TO_RAD = M_PI_F / 180.f;
-
   // smooth - a preset that utilizes the primaries feature
   p.middle_grey_contrast = 1.5f;
   // Allow a little bit more room for the highlights
@@ -284,9 +282,9 @@ void init_presets(dt_iop_module_so_t *self)
   p.red_inset = 0.1f;
   p.green_inset = 0.1f;
   p.blue_inset = 0.15f;
-  p.red_rotation = 2.f * DEG_TO_RAD;
-  p.green_rotation = -1.f * DEG_TO_RAD;
-  p.blue_rotation = -3.f * DEG_TO_RAD;
+  p.red_rotation = 2 * degrees;
+  p.green_rotation = -1 * degrees;
+  p.blue_rotation = -3 * degrees;
   // Don't restore purity - try to avoid posterization.
   p.purity = 0.f;
   // Constant base primaries (not dependent on work profile) to
@@ -944,7 +942,7 @@ void gui_init(dt_iop_module_t *self)
   slider = dt_bauhaus_slider_from_params(sect, #color "_rotation");                                               \
   dt_bauhaus_slider_set_format(slider, "°");                                                                      \
   dt_bauhaus_slider_set_digits(slider, 1);                                                                        \
-  dt_bauhaus_slider_set_factor(slider, 180.f / M_PI_F);                                                        \
+  dt_bauhaus_slider_set_factor(slider, RAD_2_DEG);                                                                \
   dt_bauhaus_slider_set_stop(slider, 0.f, r, g, b);                                                               \
   gtk_widget_set_tooltip_text(slider, rotation_tooltip);
 
