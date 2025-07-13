@@ -369,8 +369,8 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
                                          const char *filename,
                                          dt_mipmap_buffer_t *mbuf)
 {
-  // doing this once would be enough, but our imageio reading code is
-  // compiled into dt's core and doesn't have an init routine.
+  // Doing this once would be enough, but our imageio reading code is
+  // compiled into darktable's core and doesn't have an init routine.
   TIFFSetWarningHandler(_warning_handler);
   TIFFSetErrorHandler(_error_handler);
 
@@ -403,7 +403,8 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
   if(TIFFIsTiled(t.tiff))
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[tiff_open] error: tiled TIFF is not supported in '%s'",
+             "[tiff_open] hand over to fallback loader: "
+             "tiled TIFF is not supported in '%s'",
              filename);
     TIFFClose(t.tiff);
     return DT_IMAGEIO_LOAD_FAILED;
@@ -426,7 +427,8 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
   if(photometric == PHOTOMETRIC_SEPARATED)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[tiff_open] error: CMYK colorspace not supported in '%s'",
+             "[tiff_open] hand over to fallback loader: "
+             "CMYK colorspace not supported in '%s'",
              filename);
     TIFFClose(t.tiff);
     return DT_IMAGEIO_UNSUPPORTED_FORMAT;
@@ -435,7 +437,8 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
   if(photometric == PHOTOMETRIC_PALETTE)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[tiff_open] error: indexed color map (palette) not supported in '%s'",
+             "[tiff_open] hand over to fallback loader: "
+             "indexed color map (palette) not supported in '%s'",
              filename);
     TIFFClose(t.tiff);
     return DT_IMAGEIO_UNSUPPORTED_FORMAT;
@@ -458,16 +461,18 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
   {
     TIFFClose(t.tiff);
     dt_print(DT_DEBUG_ALWAYS,
-             "[tiff_open] error: unsupported bit depth other than 8, 16 or 32 in '%s'",
+             "[tiff_open] hand over to fallback loader: "
+             "unsupported bit depth other than 8, 16 or 32 in '%s'",
              filename);
     return DT_IMAGEIO_UNSUPPORTED_FORMAT;
   }
 
-  /* don't depend on planar config if spp == 1 */
+  // Planar config is irrelevant if spp == 1
   if(t.spp > 1 && config != PLANARCONFIG_CONTIG)
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[tiff_open] error: unsupported non-chunky PlanarConfiguration in '%s'",
+             "[tiff_open] hand over to fallback loader: "
+             "unsupported non-chunky PlanarConfiguration in '%s'",
              filename);
     TIFFClose(t.tiff);
     return DT_IMAGEIO_UNSUPPORTED_FORMAT;
@@ -546,7 +551,8 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img,
   else
   {
     dt_print(DT_DEBUG_ALWAYS,
-             "[tiff_open] error: unsupported TIFF format feature in '%s'",
+             "[tiff_open] hand over to fallback loader: "
+             "unsupported TIFF format feature in '%s'",
              filename);
     ok = 0;
     ret = DT_IMAGEIO_UNSUPPORTED_FORMAT;
