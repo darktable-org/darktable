@@ -20,7 +20,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
-#include "develop/imageop_gui.h"
+#include "common/math.h"
 #include "dtgtk/button.h"
 #include "gui/guides.h"
 
@@ -409,7 +409,6 @@ static void dt_guides_draw_metering(cairo_t *cr,
 #undef y_LINES
 #undef CROSSES
 
-#define RADIANS(degrees) ((degrees) * (M_PI / 180.))
 static void dt_guides_draw_golden_mean(cairo_t *cr,
                                        const dt_QRect_t *R1,
                                        const dt_QRect_t *R2,
@@ -462,61 +461,60 @@ static void dt_guides_draw_golden_mean(cairo_t *cr,
     cairo_new_sub_path(cr);
     cairo_scale(cr, R1->width / R1->height, 1);
     cairo_arc(cr, R1->right / R1->width * R1->height,
-              R1->top, R1->height, RADIANS(90), RADIANS(180));
+              R1->top, R1->height, 90 * degrees, 180 * degrees);
     cairo_restore(cr);
 
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_scale(cr, R2->width / R2->height, 1);
     cairo_arc(cr, R2->left / R2->width * R2->height,
-              R2->top, R2->height, RADIANS(0), RADIANS(90));
+              R2->top, R2->height, 0 * degrees, 90 * degrees);
     cairo_restore(cr);
 
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_scale(cr, R3->width / R3->height, 1);
     cairo_arc(cr, R3->left / R3->width * R3->height,
-              R3->bottom, R3->height, RADIANS(270), RADIANS(360));
+              R3->bottom, R3->height, 270 * degrees, 360 * degrees);
     cairo_restore(cr);
 
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_scale(cr, 1, R4->height / R4->width);
     cairo_arc(cr, R4->right, R4->bottom / R4->height * R4->width,
-              R4->width, RADIANS(180), RADIANS(270));
+              R4->width, 180 * degrees, 270 * degrees);
     cairo_restore(cr);
 
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_scale(cr, 1, R5->height / R5->width);
     cairo_arc(cr, R5->right, R5->top / R5->height * R5->width,
-              R5->width, RADIANS(90), RADIANS(180));
+              R5->width, 90 * degrees, 180 * degrees);
     cairo_restore(cr);
 
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_scale(cr, 1, R6->height / R6->width);
     cairo_arc(cr, R6->left, R6->top / R6->height * R6->width,
-              R6->width, RADIANS(0), RADIANS(90));
+              R6->width, 0 * degrees, 90 * degrees);
     cairo_restore(cr);
 
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_scale(cr, R7->width / R7->height, 1);
     cairo_arc(cr, R7->left / R7->width * R7->height, R7->bottom,
-              R7->height, RADIANS(270), RADIANS(360));
+              R7->height, 270 * degrees, 360 * degrees);
     cairo_restore(cr);
 
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_scale(cr, (R6->width - R7->width) / R7->height, 1);
     cairo_arc(cr, R7->left / (R6->width - R7->width) * R7->height,
-              R7->bottom, R7->height, RADIANS(210),
-              RADIANS(270));
+              R7->bottom, R7->height, 210 * degrees,
+              270 * degrees);
     cairo_restore(cr);
   }
 }
-#undef RADIANS
 
 
 ///////// wrappers for the guides system
