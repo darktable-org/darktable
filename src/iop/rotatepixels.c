@@ -319,7 +319,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->rx = p->rx;
   d->ry = p->ry;
 
-  const float angle = p->angle * M_PI / 180.0f;
+  const float angle = deg2radf(p->angle);
 
   float rt[] = { cosf(angle), sinf(angle), -sinf(angle), cosf(angle) };
   for(int k = 0; k < 4; k++) d->m[k] = rt[k];

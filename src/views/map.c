@@ -22,6 +22,7 @@
 #include "common/gpx.h"
 #include "common/geo.h"
 #include "common/image_cache.h"
+#include "common/math.h"
 #include "common/mipmap_cache.h"
 #include "common/undo.h"
 #include "control/conf.h"
@@ -407,11 +408,6 @@ static int zoom_member(lua_State *L)
 
 #define TILESIZE 256
 
-static float deg2rad(const float deg)
-{
-  return (deg * M_PI / 180.0);
-}
-
 static int latlon2zoom(const int pix_height,
                        const int pix_width,
                        const float lat1,
@@ -542,7 +538,7 @@ static GdkPixbuf *_init_place_pin()
   // outer shape
   _rgba_from_color(pin_outer_color, &r, &g, &b, &a);
   cairo_set_source_rgba(cr, r, g, b, a);
-  cairo_arc(cr, 0.5 * w, 0.333 * h, 0.333 * h - 2, 150.0 * (M_PI / 180.0), 30.0 * (M_PI / 180.0));
+  cairo_arc(cr, 0.5 * w, 0.333 * h, 0.333 * h - 2, 150.0 * degrees, 30.0 * degrees);
   cairo_line_to(cr, 0.5 * w, h - 2);
   cairo_close_path(cr);
   cairo_fill_preserve(cr);
@@ -1486,8 +1482,8 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
       while(sqlite3_step(lib->main_query) == SQLITE_ROW && all_good && i < img_count)
       {
         p[i].imgid = sqlite3_column_int(lib->main_query, 0);
-        p[i].x = sqlite3_column_double(lib->main_query, 1) * M_PI / 180;
-        p[i].y = sqlite3_column_double(lib->main_query, 2) * M_PI / 180;
+        p[i].x = deg2rad(sqlite3_column_double(lib->main_query, 1));
+        p[i].y = deg2rad(sqlite3_column_double(lib->main_query, 2));
         p[i].cluster_id = UNCLASSIFIED;
         i++;
       }
@@ -1521,8 +1517,8 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
             entry->imgid = p[i].imgid;
             entry->group = p[i].cluster_id;
             entry->group_count = 1;
-            entry->longitude = p[i].x * 180 / M_PI;
-            entry->latitude = p[i].y * 180 / M_PI;
+            entry->longitude = rad2deg(p[i].x);
+            entry->latitude = rad2deg(p[i].y);
             entry->group_same_loc = TRUE;
             if(sel_imgs)
               entry->selected_in_group = g_list_find((GList *)sel_imgs,
@@ -1564,8 +1560,8 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
                 }
               }
             }
-            entry->latitude = entry->latitude  * 180 / M_PI / entry->group_count;
-            entry->longitude = entry->longitude * 180 / M_PI / entry->group_count;
+            entry->latitude = rad2deg(entry->latitude) / entry->group_count;
+            entry->longitude = rad2deg(entry->longitude) / entry->group_count;
             lib->images = g_slist_prepend(lib->images, entry);
           }
         }
@@ -3243,10 +3239,10 @@ static double round_down(const double x,
 static void _bin_points(const dt_map_t *lib,
                         const double epsilon)
 {
-  const double lat_north = lib->bbox.lat1 * M_PI / 180.0 ; // UI uses degrees, we compute in radians
-  const double lat_south = round_down(lib->bbox.lat2 * M_PI / 180.0, epsilon) ;
-  const double lon_east = lib->bbox.lon2 * M_PI / 180.0 ;
-  const double lon_west = round_down(lib->bbox.lon1 * M_PI / 180.0, epsilon) ;
+  const double lat_north = deg2rad(lib->bbox.lat1) ; // UI uses degrees, we compute in radians
+  const double lat_south = round_down(deg2rad(lib->bbox.lat2), epsilon) ;
+  const double lon_east = deg2rad(lib->bbox.lon2);
+  const double lon_west = round_down(deg2rad(lib->bbox.lon1), epsilon) ;
   const double lat_range = lat_north - lat_south;
   const double lon_range = lon_east - lon_west;
   const unsigned int num_lat_bins = ceil(lat_range / db.epsilon) + 1;

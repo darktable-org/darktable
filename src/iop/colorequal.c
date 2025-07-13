@@ -452,9 +452,9 @@ void _mean_gaussian(float *const buf,
 // sRGB primary red records at 20° of hue in darktable UCS 22, so we offset the whole hue range
 // such that red is the origin hues in the GUI. This is consistent with HSV/HSL color wheels UI.
 #define ANGLE_SHIFT +20.f
-static inline float _deg_to_rad(const float angle)
+static inline float _conventional_hue_deg_to_ucs_rad(const float angle)
 {
-  return (angle + ANGLE_SHIFT) * M_PI_F / 180.f;
+  return deg2radf(angle + ANGLE_SHIFT);
 }
 
 /* We use precalculated data for the logistic weighting function for performance and stability
@@ -1676,7 +1676,7 @@ error:
 static inline float _get_hue_node(const int k, const float hue_shift)
 {
   // Get the angular coordinate of the k-th hue node, including hue shift
-  return _deg_to_rad(((float)k) * 360.f / ((float)NODES) + hue_shift);
+  return _conventional_hue_deg_to_ucs_rad(((float)k) * 360.f / ((float)NODES) + hue_shift);
 }
 
 static inline float _cosine_coeffs(const float l,
@@ -1723,7 +1723,7 @@ static inline void _periodic_RBF_interpolate(float nodes[NODES],
     // every degree.  We use un-offset angles here, since thue hue
     // offset is merely a GUI thing, only relevant for user-defined
     // nodes.
-    const float hue = (float)i * 360.0f / (float)LUT_ELEM * M_PI_F / 180.f - M_PI_F;
+    const float hue = deg2radf((float)i * 360.0f / (float)LUT_ELEM) - M_PI_F;
     LUT[i] = 0.f;
 
     for(int k = 0; k < NODES; k++)
@@ -1795,7 +1795,7 @@ static inline void _pack_hue(dt_iop_colorequal_params_t *p,
   array[7] = p->hue_magenta;
 
   for(int i = 0; i < NODES; i++)
-    array[i] = array[i] / 180.f * M_PI_F; // Convert to radians
+    array[i] = deg2radf(array[i]);
 }
 
 static inline void _pack_brightness(dt_iop_colorequal_params_t *p,
@@ -2053,7 +2053,7 @@ static void _init_graph_backgrounds(dt_iop_colorequal_gui_data_t *g,
       const size_t idx = i * stride + j * 4;
       const float x = 360.0f * (float)(gwidth - j - 1) / (graph_width - 1.0f) - 90.0f;
       const float y = 1.0f - (float)i / (graph_height - 1.0f);
-      const float hue = (x < -180.0f) ? _deg_to_rad(x +180.0f) : _deg_to_rad(x);
+      const float hue = (x < -180.0f) ? _conventional_hue_deg_to_ucs_rad(x +180.0f) : _conventional_hue_deg_to_ucs_rad(x);
       const float hhue = hue - (y - 0.5f) * 2.f * M_PI_F;
 
       dt_aligned_pixel_t RGB;
@@ -2394,7 +2394,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
   {
     for(int k = 0; k < 360; k++)
     {
-      const float hue = _deg_to_rad((float)k);
+      const float hue = _conventional_hue_deg_to_ucs_rad((float)k);
       dt_aligned_pixel_t RGB = { 1.f };
       _build_dt_UCS_HSB_gradients((dt_aligned_pixel_t){ hue, g->max_saturation,
                                                         SLIDER_BRIGHTNESS, 1.0f },
@@ -2486,7 +2486,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
   for(int k = first; k < (360 + first); k++)
   {
     const float x = ((float)k / (float)(360 - 1) + dx) * graph_width;
-    float hue = _deg_to_rad(k);
+    float hue = _conventional_hue_deg_to_ucs_rad(k);
     hue = (hue < M_PI_F) ? hue : -2.f * M_PI_F + hue; // The LUT is defined in [-pi; pi[
     const float y = (offset - lookup_gamut(g->LUT, hue) * factor) * graph_height;
 

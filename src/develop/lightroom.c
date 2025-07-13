@@ -1347,7 +1347,7 @@ gboolean dt_lightroom_import(dt_imgid_t imgid, dt_develop_t *dev, gboolean iauto
 
     // Rotate the cropped zone according to rotation angle
     // All rotations done using center of the image
-    rangle = deg2radf(data.pc.angle);
+    rangle = deg2rad(data.pc.angle);
     rotate_xy(&cx, &cy, -rangle);
     rotate_xy(&cw, &ch, -rangle);
 

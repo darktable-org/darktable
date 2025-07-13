@@ -18,6 +18,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/imagebuf.h"
+#include "common/math.h"
 #include "common/tags.h"
 #include "common/variables.h"
 #include "common/datetime.h"
@@ -574,7 +575,7 @@ void process(dt_iop_module_t *self,
   float *in = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
-  const float angle = (M_PI / 180) * (-data->rotate);
+  const float angle = deg2radf(-data->rotate);
 
   gchar configdir[PATH_MAX] = { 0 };
   gchar datadir[PATH_MAX] = { 0 };
