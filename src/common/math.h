@@ -751,28 +751,28 @@ static inline void dt_vector_sin(const dt_aligned_pixel_t arg,
 
 // allows evaluating conversions involving constants at compile, e.g.:
 // const double right_angle = 90 * degrees;
-const double degrees = M_PI / 180;
+static const double degrees = M_PI / 180;
 
 // conversion factor, e.g.
 // dt_bauhaus_slider_set_factor(slider, RAD_TO_DEG);
-const double RAD_2_DEG = 180 / M_PI;
+static const double RAD_2_DEG = 180 / M_PI;
 
-inline float deg2radf(const float deg)
+static inline float deg2radf(const float deg)
 {
   return deg * M_PI_F / 180.f;
 }
 
-inline float rad2degf(const float radians)
+static inline float rad2degf(const float radians)
 {
   return radians / M_PI_F * 180.f;
 }
 
-inline double deg2rad(const double deg)
+static inline double deg2rad(const double deg)
 {
   return deg * M_PI / 180.0;
 }
 
-inline double rad2deg(const double radians)
+static inline double rad2deg(const double radians)
 {
   return radians / M_PI * 180.0;
 }
