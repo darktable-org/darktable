@@ -29,14 +29,11 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
-#include "develop/tiling.h"
 #include "dtgtk/button.h"
 #include "dtgtk/expander.h"
-#include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
-#include "gui/presets.h"
 #include "iop/iop_api.h"
 #include "gui/guides.h"
 
@@ -777,7 +774,7 @@ static void _homography(float *homograph,
   const float u = width;
   const float v = height;
 
-  const float phi = M_PI * angle / 180.0f;
+  const float phi = deg2radf(angle);
   const float cosi = cosf(phi);
   const float sini = sinf(phi);
   const float ascale = sqrtf(aspect);
@@ -1600,7 +1597,7 @@ static gboolean line_detect(float *in,
       ashift_lines[lct].weight = weight;
 
 
-      const float angle = atan2f(py2 - py1, px2 - px1) / M_PI * 180.0f;
+      const float angle = rad2degf(atan2f(py2 - py1, px2 - px1));
       const gboolean vertical = fabsf(fabsf(angle) - 90.0f) < MAX_TANGENTIAL_DEVIATION;
       const gboolean horizontal = fabsf(fabsf(fabsf(angle) - 90.0f) - 90.0f) < MAX_TANGENTIAL_DEVIATION;
       const gboolean relevant = ashift_lines[lct].length > MIN_LINE_LENGTH;
@@ -1906,7 +1903,7 @@ static void ransac(const dt_iop_ashift_line_t *lines,
         const float d = fabsf(vec3scalar(V, L3));
 
         // depending on d we either include or exclude the point from the set
-        inout[n] = (d < epsilon) ? 1 : 0;
+        inout[n] = (d < epsilon);
 
         float q;
 
@@ -3471,13 +3468,12 @@ void process(dt_iop_module_t *self,
     float ovecl = sqrtf(ovec[0] * ovec[0] + ovec[1] * ovec[1]);
 
     // angle between input vector and output vector
-    float alpha = acos(CLAMP((ivec[0] * ovec[0] + ivec[1] * ovec[1]) / (ivecl * ovecl),
+    float alpha = acosf(CLAMP((ivec[0] * ovec[0] + ivec[1] * ovec[1]) / (ivecl * ovecl),
                              -1.0f, 1.0f));
 
     // we are interested if |alpha| is in the range of 90° +/- 45° ->
     // we assume the image is flipped
-    const int isflipped = fabs(fmod(alpha + M_PI, M_PI) - M_PI / 2.0f) < M_PI / 4.0f
-      ? 1 : 0;
+    const int isflipped = fabsf(fmodf(alpha + M_PI_F, M_PI_F) - M_PI_F / 2.0f) < M_PI_F / 4.0f;
 
     // did modules prior to this one in pixelpipe have changed? -> check via hash value
     const dt_hash_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe,
@@ -3611,12 +3607,12 @@ int process_cl(dt_iop_module_t *self,
 
     // angle between input vector and output vector
     const float alpha =
-      acos(CLAMP((ivec[0] * ovec[0] + ivec[1] * ovec[1]) / (ivecl * ovecl), -1.0f, 1.0f));
+      acosf(CLAMP((ivec[0] * ovec[0] + ivec[1] * ovec[1]) / (ivecl * ovecl), -1.0f, 1.0f));
 
     // we are interested if |alpha| is in the range of 90° +/- 45° ->
     // we assume the image is flipped
     const int isflipped =
-      fabs(fmod(alpha + M_PI, M_PI) - M_PI / 2.0f) < M_PI / 4.0f ? 1 : 0;
+      fabsf(fmodf(alpha + M_PI_F, M_PI_F) - M_PI_F / 2.0f) < M_PI_F / 4.0f;
 
     // do modules coming before this one in pixelpipe have changed? -> check via hash value
     const dt_hash_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe,
@@ -4097,19 +4093,19 @@ static float _calculate_straightening(dt_iop_module_t *self,
   }
 
   float angle = atan2f(dy, dx);
-  if(!(angle >= -M_PI / 2.0 && angle <= M_PI / 2.0))
+  if(!(angle >= -M_PI_F / 2.f && angle <= M_PI_F / 2.f))
     return 0.0f;
   float close = angle;
-  if(close > M_PI / 4.0)
-    close = M_PI / 2.0 - close;
-  else if(close < -M_PI / 4.0)
-    close = -M_PI / 2.0 - close;
+  if(close > M_PI_F / 4.f)
+    close = M_PI_F / 2.f - close;
+  else if(close < -M_PI_F / 4.f)
+    close = -M_PI_F / 2.f - close;
   else
     close = -close;
 
-  float a = 180.0 / M_PI * close;
-  if(a < -180.0) a += 360.0;
-  if(a > 180.0) a -= 360.0;
+  float a = rad2degf(close);
+  if(a < -180.f) a += 360.f;
+  if(a > 180.f) a -= 360.f;
 
   return a;
 }
@@ -5679,7 +5675,7 @@ void reload_defaults(dt_iop_module_t *self)
     // label some sliders before pixelpipe has been set up. later we
     // will get a definite result by assessing the pixelpipe
     isflipped = (img->orientation == ORIENTATION_ROTATE_CCW_90_DEG
-                 || img->orientation == ORIENTATION_ROTATE_CW_90_DEG) ? 1 : 0;
+                 || img->orientation == ORIENTATION_ROTATE_CW_90_DEG);
 
     // focal length should be available in exif data if lens is
     // electronically coupled to the camera
