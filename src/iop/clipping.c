@@ -1193,7 +1193,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->k_apply = 0;
   d->enlarge_x = d->enlarge_y = 0.0f;
   d->flip = 0;
-  d->angle = M_PI / 180.0 * p->angle;
+  d->angle = deg2radf(p->angle);
 
   // image flip
   d->flags = (p->ch < 0 ? FLAG_FLIP_VERTICAL : 0) | (p->cw < 0 ? FLAG_FLIP_HORIZONTAL : 0);
@@ -2444,8 +2444,7 @@ void gui_post_expose(dt_iop_module_t *self,
       dx = -dx;
       dy = -dy;
     }
-    float angle = atan2f(dy, dx);
-    angle = angle * 180 / M_PI;
+    float angle = rad2degf(atan2f(dy, dx));
     if(angle > 45.0) angle -= 90;
     if(angle < -45.0) angle += 90;
 
@@ -3143,18 +3142,18 @@ int button_released(dt_iop_module_t *self,
     }
 
     float angle = atan2f(dy, dx);
-    if(!(angle >= -M_PI / 2.0 && angle <= M_PI / 2.0)) angle = 0.0f;
+    if(!(angle >= -M_PI_F / 2.f && angle <= M_PI_F / 2.f)) angle = 0.0f;
     float close = angle;
-    if(close > M_PI / 4.0)
-      close = M_PI / 2.0 - close;
-    else if(close < -M_PI / 4.0)
-      close = -M_PI / 2.0 - close;
+    if(close > M_PI_F / 4.f)
+      close = M_PI_F / 2.f - close;
+    else if(close < -M_PI_F / 4.f)
+      close = -M_PI_F / 2.f - close;
     else
       close = -close;
 
-    float a = 180.0 / M_PI * close;
-    if(a < -180.0) a += 360.0;
-    if(a > 180.0) a -= 360.0;
+    float a = rad2degf(close);
+    if(a < -180.f) a += 360.f;
+    if(a > 180.f) a -= 360.f;
 
     dt_bauhaus_slider_set(g->angle, a);
     dt_control_change_cursor(GDK_LEFT_PTR);
