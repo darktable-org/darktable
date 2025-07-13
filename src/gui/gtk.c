@@ -25,7 +25,6 @@
 #include "common/file_location.h"
 #include "common/l10n.h"
 #include "common/image.h"
-#include "common/image_cache.h"
 #include "common/gimp.h"
 #include "gui/guides.h"
 #include "gui/splash.h"
@@ -43,12 +42,9 @@
 #include "common/styles.h"
 #include "control/conf.h"
 #include "control/control.h"
-#include "control/jobs.h"
 #include "control/signal.h"
 #include "gui/presets.h"
 #include "views/view.h"
-#include "gui/about.h"
-#include "gui/preferences.h"
 
 #include <gdk/gdkkeysyms.h>
 #ifdef GDK_WINDOWING_WAYLAND
@@ -4230,7 +4226,6 @@ void dt_gui_draw_rounded_rectangle(cairo_t *cr,
                                    const float y)
 {
   const float radius = height / 5.0f;
-  const float degrees = M_PI / 180.0;
   cairo_new_sub_path(cr);
   cairo_arc(cr, x + width - radius, y + radius, radius, -90 * degrees, 0 * degrees);
   cairo_arc(cr, x + width - radius, y + height - radius, radius, 0 * degrees, 90 * degrees);
