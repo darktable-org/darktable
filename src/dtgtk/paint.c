@@ -17,13 +17,10 @@
 */
 
 #include "bauhaus/bauhaus.h"
+#include "common/math.h"
 #include "dtgtk/paint.h"
 #include "gui/draw.h"
 #include <math.h>
-
-#ifndef M_PI
-#define M_PI 3.141592654
-#endif
 
 #define PREAMBLE(scaling, line_scaling, x_offset, y_offset) {  \
                   cairo_save(cr);                                                            \
@@ -38,8 +35,6 @@
 
 #define FINISH { cairo_identity_matrix(cr); \
                  cairo_restore(cr); }
-
-static const double degrees = M_PI / 180.0;
 
 static void _rounded_rectangle(cairo_t *cr)  // create rounded rectangle to use in other icons
 {
@@ -312,7 +307,7 @@ void dtgtk_cairo_paint_switch(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
 {
   PREAMBLE(1, 1, 0, 0)
 
-  cairo_arc(cr, 0.5, 0.5, 0.46, -50 * degrees, 230 * degrees);
+  cairo_arc(cr, 0.5, 0.5, 0.46, (-50 * 3.145 / 180), (230 * 3.145 / 180));
   cairo_move_to(cr, 0.5, 0.0);
   cairo_line_to(cr, 0.5, 0.5);
   cairo_stroke(cr);
@@ -331,9 +326,7 @@ void dtgtk_cairo_paint_switch_inactive(cairo_t *cr, gint x, gint y, gint w, gint
 {
   PREAMBLE(1, .3f, 0, 0)
 
-
-
-  cairo_arc(cr, 0.5, 0.5, 0.46, -50 * degrees, 230 * degrees);
+  cairo_arc(cr, 0.5, 0.5, 0.46, (-50 * 3.145 / 180), (230 * 3.145 / 180));
   cairo_move_to(cr, 0.5, 0.0);
   cairo_line_to(cr, 0.5, 0.5);
   cairo_stroke(cr);
@@ -1038,7 +1031,7 @@ void dtgtk_cairo_paint_timer(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
 {
   PREAMBLE(1, 1, 0, 0)
 
-  cairo_arc(cr, 0.5, 0.5, 0.5, -80 * degrees, 150 * degrees);
+  cairo_arc(cr, 0.5, 0.5, 0.5, (-80 * 3.145 / 180), (150 * 3.145 / 180));
   cairo_line_to(cr, 0.5, 0.5);
   cairo_stroke(cr);
 
@@ -1488,7 +1481,7 @@ void dtgtk_cairo_paint_refresh(cairo_t *cr, gint x, gint y, gint w, gint h, gint
   cairo_line_to(cr, 0.65, 0.3);
   cairo_stroke(cr);
 
-  cairo_arc(cr, 0.5, 0.5, 0.35, -80 * degrees, 220 * degrees);
+  cairo_arc(cr, 0.5, 0.5, 0.35, (-80 * 3.145 / 180), (220 * 3.145 / 180));
   cairo_stroke(cr);
 
   FINISH
@@ -1600,7 +1593,7 @@ void dtgtk_cairo_paint_aspectflip(cairo_t *cr, gint x, gint y, gint w, gint h, g
   cairo_line_to(cr, 0.6, 0.25);
   cairo_stroke(cr);
 
-  cairo_arc(cr, 0.5, 0.5, 0.45, -80 * degrees, 220 * degrees);
+  cairo_arc(cr, 0.5, 0.5, 0.45, (-80 * 3.145 / 180), (220 * 3.145 / 180));
   cairo_stroke(cr);
 
   FINISH
@@ -1899,11 +1892,11 @@ void dtgtk_cairo_paint_audio(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
   cairo_line_to(cr, 0.25, 0.4);
 
   cairo_new_sub_path(cr);
-  cairo_arc(cr, 0.2, 0.5, 0.45, -35.0 * degrees, 35.0 * degrees);
+  cairo_arc(cr, 0.2, 0.5, 0.45, -35 * degrees, 35 * degrees);
   cairo_new_sub_path(cr);
-  cairo_arc(cr, 0.2, 0.5, 0.6, -35.0  * degrees, 35.0  * degrees);
+  cairo_arc(cr, 0.2, 0.5, 0.6, -35 * degrees, 35 * degrees);
   cairo_new_sub_path(cr);
-  cairo_arc(cr, 0.2, 0.5, 0.75, -35.0  * degrees, 35.0  * degrees);
+  cairo_arc(cr, 0.2, 0.5, 0.75, -35 * degrees, 35 * degrees);
 
   cairo_stroke(cr);
 
@@ -2610,7 +2603,7 @@ void dtgtk_cairo_paint_modulegroup_active(cairo_t *cr, gint x, gint y, gint w, g
 {
   PREAMBLE(1.1, 1, 0, 0)
 
-  cairo_arc(cr, 0.5, 0.5, 0.40, -50 * degrees, 230 * degrees);
+  cairo_arc(cr, 0.5, 0.5, 0.40, (-50 * 3.145 / 180), (230 * 3.145 / 180));
   cairo_move_to(cr, 0.5, 0.05);
   cairo_line_to(cr, 0.5, 0.40);
   cairo_stroke(cr);
