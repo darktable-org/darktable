@@ -138,10 +138,7 @@
  */
 /*----------------------------------------------------------------------------*/
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
-#include <float.h>
 #include "common/math.h"
 
 #ifndef FALSE
@@ -156,10 +153,10 @@
 #define NOTDEF -1024.0
 
 /** 3/2 pi */
-#define M_3_2_PI 4.71238898038
+#define M_3_2_PI M_PI * 3.0 / 2.0
 
 /** 2 pi */
-#define M_2__PI  6.28318530718
+#define M_2__PI  2.0 * M_PI
 
 /** Label for pixels not used in yet. */
 #define NOTUSED 0
@@ -2118,7 +2115,7 @@ double * LineSegmentDetection( int * n_out,
 
 
   /* angle tolerance */
-  prec = M_PI * ang_th / 180.0;
+  prec = deg2rad(ang_th);
   p = ang_th / 180.0;
   rho = quant / sin(prec); /* gradient magnitude threshold */
 
