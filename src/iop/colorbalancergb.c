@@ -45,8 +45,8 @@
 // so shift in GUI only it to not confuse people. User params are always degrees,
 // pixel params are always radians.
 #define ANGLE_SHIFT -30.f
-#define DEG_TO_RAD(x) ((x + ANGLE_SHIFT) * M_PI / 180.f)
-#define RAD_TO_DEG(x) (x * 180.f / M_PI - ANGLE_SHIFT)
+#define CONVENTIONAL_DEG_TO_YRG_RAD(x) (deg2radf(x + ANGLE_SHIFT))
+#define YRG_RAD_TO_CONVENTIONAL_DEG(x) (rad2degf(x) - ANGLE_SHIFT)
 
 DT_MODULE_INTROSPECTION(5, dt_iop_colorbalancergb_params_t)
 
@@ -305,7 +305,7 @@ int legacy_params(dt_iop_module_t *self,
     // Copy the common part of the params struct
     memcpy(n, o, sizeof(dt_iop_colorbalancergb_params_v1_t));
 
-    n->saturation_global /= 180.f / M_PI;
+    n->saturation_global = deg2radf(n->saturation_global);
     n->mask_grey_fulcrum = 0.1845f;
     n->vibrance = 0.f;
     n->grey_fulcrum = 0.1845f;
@@ -1123,7 +1123,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->brilliance[2] = p->brilliance_highlights;
   d->brilliance[3] = 0.f;
 
-  d->hue_angle = M_PI * p->hue_angle / 180.f;
+  d->hue_angle = deg2radf(p->hue_angle);
 
   // measure the grading RGB of a pure white
   const dt_aligned_pixel_t Ych_norm = { 1.f, 0.f, 1.f, 0.f };
@@ -1133,14 +1133,14 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
   // global
   {
-    make_Ych(1.f, p->global_C, DEG_TO_RAD(p->global_H), Ych);
+    make_Ych(1.f, p->global_C, CONVENTIONAL_DEG_TO_YRG_RAD(p->global_H), Ych);
     Ych_to_gradingRGB(Ych, d->global);
     for(size_t c = 0; c < 4; c++) d->global[c] = (d->global[c] - RGB_norm[c]) + RGB_norm[c] * p->global_Y;
   }
 
   // shadows
   {
-    make_Ych(1.f, p->shadows_C, DEG_TO_RAD(p->shadows_H), Ych);
+    make_Ych(1.f, p->shadows_C, CONVENTIONAL_DEG_TO_YRG_RAD(p->shadows_H), Ych);
     Ych_to_gradingRGB(Ych, d->shadows);
     for(size_t c = 0; c < 4; c++) d->shadows[c] = 1.f + (d->shadows[c] - RGB_norm[c]) + p->shadows_Y;
     d->shadows_weight = 2.f + p->shadows_weight * 2.f;
@@ -1148,7 +1148,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
   // highlights
   {
-    make_Ych(1.f, p->highlights_C, DEG_TO_RAD(p->highlights_H), Ych);
+    make_Ych(1.f, p->highlights_C, CONVENTIONAL_DEG_TO_YRG_RAD(p->highlights_H), Ych);
     Ych_to_gradingRGB(Ych, d->highlights);
     for(size_t c = 0; c < 4; c++) d->highlights[c] = 1.f + (d->highlights[c] - RGB_norm[c]) + p->highlights_Y;
     d->highlights_weight = 2.f + p->highlights_weight * 2.f;
@@ -1156,7 +1156,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
   // midtones
   {
-    make_Ych(1.f, p->midtones_C, DEG_TO_RAD(p->midtones_H), Ych);
+    make_Ych(1.f, p->midtones_C, CONVENTIONAL_DEG_TO_YRG_RAD(p->midtones_H), Ych);
     Ych_to_gradingRGB(Ych, d->midtones);
     for(size_t c = 0; c < 4; c++) d->midtones[c] = 1.f / (1.f + (d->midtones[c] - RGB_norm[c]));
     d->midtones_Y = 1.f / (1.f + p->midtones_Y);
@@ -1286,7 +1286,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
   pipe_RGB_to_Ych(self, pipe, (const float *)self->picked_color_max, max_Ych);
   const float picked_hue = get_hue_angle_from_Ych(Ych);
   const GdkModifierType state = dt_key_modifier_state();
-  const float hue = (state & GDK_CONTROL_MASK) ? RAD_TO_DEG(picked_hue) : RAD_TO_DEG(picked_hue) + 180.f;    //take the current or opponent color
+  const float hue = (state & GDK_CONTROL_MASK) ? YRG_RAD_TO_CONVENTIONAL_DEG(picked_hue) : YRG_RAD_TO_CONVENTIONAL_DEG(picked_hue) + 180.f;    //take the current or opponent color
 
   ++darktable.gui->reset;
   if(picker == g->global_H)
@@ -1367,7 +1367,7 @@ static void paint_chroma_slider(const dt_iop_order_iccprofile_info_t *output_pro
   const float x_max = 1;
   const float x_range = x_max - x_min;
 
-  const float h = DEG_TO_RAD(hue);
+  const float h = CONVENTIONAL_DEG_TO_YRG_RAD(hue);
   const float cos_h = cosf(h);
   const float sin_h = sinf(h);
   // Find max available chroma at this hue without negative RGB
@@ -1395,7 +1395,7 @@ static void paint_hue_sliders(const dt_iop_order_iccprofile_info_t *output_profi
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
   {
     const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
-    const float h = DEG_TO_RAD(stop * (360.f));
+    const float h = CONVENTIONAL_DEG_TO_YRG_RAD(stop * (360.f));
     const float max_chroma = Ych_max_chroma_without_negatives(output_matrix_LMS_to_RGB, cosf(h), sinf(h));
     dt_aligned_pixel_t RGB;
     _YchToRGB(&RGB, MIN(0.2f, max_chroma), h, output_profile, output_matrix_LMS_to_RGB);
