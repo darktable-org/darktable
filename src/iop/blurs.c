@@ -17,7 +17,6 @@
 */
 
 #include "bauhaus/bauhaus.h"
-#include "common/dwt.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "dtgtk/drawingarea.h"
@@ -25,6 +24,7 @@
 #include "iop/iop_api.h"
 
 // #include <fftw3.h> // one day, include FFT convolution
+#include "common/math.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
@@ -746,8 +746,6 @@ void gui_update(dt_iop_module_t *self)
   gui_changed(self, NULL, NULL);
 }
 
-#define DEG_TO_RAD 180.f / M_PI_F
-
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_blurs_gui_data_t *g = IOP_GUI_ALLOC(blurs);
@@ -781,11 +779,11 @@ void gui_init(dt_iop_module_t *self)
   g->linearity = dt_bauhaus_slider_from_params(self, "linearity");
 
   g->rotation = dt_bauhaus_slider_from_params(self, "rotation");
-  dt_bauhaus_slider_set_factor(g->rotation, DEG_TO_RAD);
+  dt_bauhaus_slider_set_factor(g->rotation, RAD_2_DEG);
   dt_bauhaus_slider_set_format(g->rotation, "°");
 
   g->angle = dt_bauhaus_slider_from_params(self, "angle");
-  dt_bauhaus_slider_set_factor(g->angle, DEG_TO_RAD);
+  dt_bauhaus_slider_set_factor(g->angle, RAD_2_DEG);
   dt_bauhaus_slider_set_format(g->angle, "°");
 
   g->curvature = dt_bauhaus_slider_from_params(self, "curvature");
