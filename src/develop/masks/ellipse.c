@@ -272,10 +272,10 @@ static float *_points_to_transform(const float xx,
   points[4] = x - a * cosf(v);
   points[5] = y - a * sinf(v);
 
-  points[6] = x + b * cosf(v - M_PI / 2.0f);
-  points[7] = y + b * sinf(v - M_PI / 2.0f);
-  points[8] = x - b * cosf(v - M_PI / 2.0f);
-  points[9] = y - b * sinf(v - M_PI / 2.0f);
+  points[6] = x + b * cosf(v - M_PI_F / 2.0f);
+  points[7] = y + b * sinf(v - M_PI_F / 2.0f);
+  points[8] = x - b * cosf(v - M_PI_F / 2.0f);
+  points[9] = y - b * sinf(v - M_PI_F / 2.0f);
 
 
   DT_OMP_FOR_SIMD(if(l > 100) aligned(points:64))
@@ -1543,10 +1543,10 @@ static float *const _ellipse_points_to_transform(const float center_x,
   points[3] = y + a * sinf(v);
   points[4] = x - a * cosf(v);
   points[5] = y - a * sinf(v);
-  points[6] = x + b * cosf(v - M_PI / 2.0f);
-  points[7] = y + b * sinf(v - M_PI / 2.0f);
-  points[8] = x - b * cosf(v - M_PI / 2.0f);
-  points[9] = y - b * sinf(v - M_PI / 2.0f);
+  points[6] = x + b * cosf(v - M_PI_F / 2.0f);
+  points[7] = y + b * sinf(v - M_PI_F / 2.0f);
+  points[8] = x - b * cosf(v - M_PI_F / 2.0f);
+  points[9] = y - b * sinf(v - M_PI_F / 2.0f);
   // and finally the regularly-spaced points on the circumference
   for(int i = 5; i < l + 5; i++)
   {
