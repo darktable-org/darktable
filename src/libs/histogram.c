@@ -518,7 +518,7 @@ static void _lib_histogram_vectorscope_bkgd
         {
           // get the color to be displayed
           _ryb2rgb(rgb_scope, rgb_display, d->ryb2rgb_ypp);
-          const float alpha = M_PI * (0.33333 * ((float)k + (float)i / VECTORSCOPE_HUES));
+          const float alpha = M_PI_F * (0.33333f * ((float)k + (float)i / VECTORSCOPE_HUES));
           chromaticity[1] = cosf(alpha) * 0.01;
           chromaticity[2] = sinf(alpha) * 0.01;
           break;
@@ -716,7 +716,7 @@ static void _get_chromaticity(const dt_aligned_pixel_t RGB,
       dt_sRGB_to_linear_sRGB(RGB, rgb);
       _rgb2ryb(rgb, RYB, rgb2ryb_ypp);
       dt_RGB_2_HCV(RYB, HCV);
-      const float alpha = 2.0 * M_PI * HCV[0];
+      const float alpha = 2.f * M_PI_F * HCV[0];
       chromaticity[1] = cosf(alpha) * HCV[1] * 0.01;
       chromaticity[2] = sinf(alpha) * HCV[1] * 0.01;
       break;
@@ -1363,9 +1363,9 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
                            ? MIN(hw, (hm.angle[i+1] - hm.angle[i]) / 2.f)
                            : hw);
       const float angle1 =
-        ((hm.angle[i] - span1) * 2.f + d->harmony_guide.rotation / 180.f) * M_PI;
+        (hm.angle[i] - span1) * 2.f * M_PI_F + deg2radf((float)d->harmony_guide.rotation);
       const float angle2 =
-        ((hm.angle[i] + span2) * 2.f + d->harmony_guide.rotation / 180.f) * M_PI;
+        (hm.angle[i] + span2) * 2.f * M_PI_F + deg2radf((float)d->harmony_guide.rotation);
       cairo_arc(cr, 0., 0., hr * scale, angle1, angle2);
       cairo_line_to(cr, 0., 0.);
     }
@@ -2428,7 +2428,7 @@ void gui_init(dt_lib_module_t *self)
       d->vectorscope_scale = i;
 
   int a = dt_conf_get_int("plugins/darkroom/histogram/vectorscope/angle");
-  d->vectorscope_angle = a * M_PI / 180.0;
+  d->vectorscope_angle = deg2rad(a);
 
   d->histogram = dt_alloc_align_type(uint32_t, 4 * HISTOGRAM_BINS);
   memset(d->histogram, 0, 4 * HISTOGRAM_BINS * sizeof(uint32_t));
