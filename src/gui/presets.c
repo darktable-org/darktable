@@ -1269,7 +1269,7 @@ static gboolean _menuitem_motion_preset(GtkMenuItem *menuitem,
   return FALSE;
 }
 
-gpointer _active_menu_item = NULL;
+static gpointer _active_menu_item = NULL;
 
 static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
                                         GdkEventButton *event,
@@ -1620,7 +1620,7 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w)
   dt_gui_menu_popup(menu, w, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST);
 }
 
-static void _menu_shell_insert_sorted(GtkWidget *menu_shell, GtkWidget *item, gchar *name)
+static void _menu_shell_insert_sorted(GtkWidget *menu_shell, GtkWidget *item, const gchar *name)
 {
   GList *items = gtk_container_get_children(GTK_CONTAINER(menu_shell));
   int num = g_list_length(items);
