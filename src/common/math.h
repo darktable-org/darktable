@@ -754,7 +754,7 @@ static inline void dt_vector_sin(const dt_aligned_pixel_t arg,
 static const double degrees = M_PI / 180;
 
 // conversion factor, e.g.
-// dt_bauhaus_slider_set_factor(slider, RAD_TO_DEG);
+// dt_bauhaus_slider_set_factor(slider, RAD_2_DEG);
 static const double RAD_2_DEG = 180 / M_PI;
 
 static inline float deg2radf(const float deg)
