@@ -95,6 +95,9 @@ changes (where available).
   Windows with PFM files that have Unicode characters in the file
   name.
 
+- Fixed a bug in liquify OpenCL code leading to incorrect clamped
+  output.
+
 ### Add action support for Lua
 
 ### Other Lua changes
