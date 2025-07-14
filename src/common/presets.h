@@ -49,6 +49,14 @@ char *dt_presets_get_multi_name(const char *name,
 /** get currently active preset name for the module */
 gchar *dt_get_active_preset_name(dt_iop_module_t *module, gboolean *writeprotect);
 
+/** helper for creating menu hierarchy, generates submenus as indicated by vertical bars in name */
+GtkWidget *dt_insert_preset_in_menu_hierarchy(const char *name,
+                                              GSList **menu_path,
+                                              GtkWidget *mainmenu,
+                                              GtkWidget **submenu,
+                                              gchar ***prev_split,
+                                              gboolean isdefault);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

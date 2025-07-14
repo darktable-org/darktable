@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #include "libs/lib.h"
 #include "common/debug.h"
 #include "common/module.h"
+#include "common/presets.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
@@ -429,17 +430,6 @@ static void free_module_info(GtkWidget *widget,
   free(minfo);
 }
 
-//TODO: dedup this and same func in presets.c
-static void _menu_shell_insert_sorted(GtkWidget *menu_shell, GtkWidget *item, const gchar *name)
-{
-  GList *items = gtk_container_get_children(GTK_CONTAINER(menu_shell));
-  int num = g_list_length(items);
-  for(GList *i = g_list_last(items); i; i = i->prev, num--)
-    if(g_utf8_collate(gtk_menu_item_get_label(i->data), name) < 0) break;
-  gtk_menu_shell_insert(GTK_MENU_SHELL(menu_shell), item, num);
-  g_list_free(items);
-}
-
 static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
                                            GtkWidget *w)
 {
@@ -501,31 +491,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
     if(darktable.gui->last_preset && strcmp(darktable.gui->last_preset, name) == 0)
       found = TRUE;
 
-    gchar *local_name = dt_util_localize_segmented_name(name, FALSE);
-    gchar **split = g_strsplit(local_name, "|", -1), **s = split, **p = prev_split;
-    g_free(local_name);
-    for(; p && *(p+1) && *(s+1) && !g_strcmp0(*s, *p); p++, s++)
-      ;
-    for(; p && *(p+1); p++)
-    {
-      menu_path = g_slist_delete_link(menu_path, menu_path); // pop
-      submenu = menu_path ? gtk_menu_item_get_submenu(menu_path->data) : mainmenu;
-    }
-    for(; *(s+1); s++)
-    {
-      GtkWidget *sm = gtk_menu_item_new_with_label(*s);
-      menu_path = g_slist_prepend(menu_path, sm); // push
-
-      _menu_shell_insert_sorted(submenu, sm, *s);
-      submenu = gtk_menu_new();
-      gtk_menu_item_set_submenu(GTK_MENU_ITEM(sm), submenu);
-    }
-    g_strfreev(prev_split);
-    prev_split = split;
-
-    mi = gtk_check_menu_item_new_with_label(*s);
-    _menu_shell_insert_sorted(submenu, mi, *s);
-    dt_gui_add_class(mi, "dt_transparent_background");
+    mi = dt_insert_preset_in_menu_hierarchy(name, &menu_path, mainmenu, &submenu, &prev_split, FALSE);
 
     // selected in bold:
     // printf("comparing %d bytes to %d\n", op_params_size, minfo->params_size);
