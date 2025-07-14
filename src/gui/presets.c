@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1620,16 +1620,6 @@ void dt_gui_favorite_presets_menu_show(GtkWidget *w)
   dt_gui_menu_popup(menu, w, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST);
 }
 
-static void _menu_shell_insert_sorted(GtkWidget *menu_shell, GtkWidget *item, const gchar *name)
-{
-  GList *items = gtk_container_get_children(GTK_CONTAINER(menu_shell));
-  int num = g_list_length(items);
-  for(GList *i = g_list_last(items); i; i = i->prev, num--)
-    if(g_utf8_collate(gtk_menu_item_get_label(i->data), name) < 0) break;
-  gtk_menu_shell_insert(GTK_MENU_SHELL(menu_shell), item, num);
-  g_list_free(items);
-}
-
 GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
 {
   const int32_t version = module->version();
@@ -1753,28 +1743,6 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
     if(darktable.gui->last_preset && strcmp(darktable.gui->last_preset, name) == 0)
       found = TRUE;
 
-    gchar *local_name = dt_util_localize_segmented_name(name, FALSE);
-    gchar **split = g_strsplit(local_name, "|", -1), **s = split, **p = prev_split;
-    g_free(local_name);
-    for(; p && *(p+1) && *(s+1) && !g_strcmp0(*s, *p); p++, s++)
-      ;
-    for(; p && *(p+1); p++)
-    {
-      menu_path = g_slist_delete_link(menu_path, menu_path); // pop
-      submenu = menu_path ? gtk_menu_item_get_submenu(menu_path->data) : mainmenu;
-    }
-    for(; *(s+1); s++)
-    {
-      GtkWidget *sm = gtk_menu_item_new_with_label(*s);
-      menu_path = g_slist_prepend(menu_path, sm); // push
-
-      _menu_shell_insert_sorted(submenu, sm, *s);
-      submenu = gtk_menu_new();
-      gtk_menu_item_set_submenu(GTK_MENU_ITEM(sm), submenu);
-    }
-    g_strfreev(prev_split);
-    prev_split = split;
-
     if(module
        && (op_params_size == 0
            || !memcmp(module->default_params, op_params,
@@ -1783,15 +1751,7 @@ GtkMenu *dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
                   MIN(bl_params_size, sizeof(dt_develop_blend_params_t))))
       isdefault = TRUE;
 
-    gchar *label;
-    if(isdefault)
-      label = g_strdup_printf("%s %s", *s, _("(default)"));
-    else
-      label = g_strdup(*s);
-    mi = gtk_check_menu_item_new_with_label(label);
-    _menu_shell_insert_sorted(submenu, mi, label);
-    dt_gui_add_class(mi, "dt_transparent_background");
-    g_free(label);
+    mi = dt_insert_preset_in_menu_hierarchy(name, &menu_path, mainmenu, &submenu, &prev_split, isdefault);
 
     if(module
        && ((op_params_size == 0
