@@ -305,7 +305,7 @@ int legacy_params(dt_iop_module_t *self,
     // Copy the common part of the params struct
     memcpy(n, o, sizeof(dt_iop_colorbalancergb_params_v1_t));
 
-    n->saturation_global = deg2radf(n->saturation_global);
+    n->saturation_global /= 100.f;
     n->mask_grey_fulcrum = 0.1845f;
     n->vibrance = 0.f;
     n->grey_fulcrum = 0.1845f;
