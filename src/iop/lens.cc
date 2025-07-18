@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2024 darktable developers.
+    Copyright (C) 2019-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -60,9 +60,9 @@ G_BEGIN_DECLS
 #define LF_SEARCH_SORT_AND_UNIQUIFY 2
 #endif
 
-#if LF_VERSION == ((0 << 24) | (3 << 16) | (95 << 8) | 0)
+#if LF_VERSION >= ((0 << 24) | (3 << 16) | (95 << 8) | 0)
 #define LF_0395
-#error Lensfun 0.3.95 is not supported since its API is not backward compatible with Lensfun stable release.
+#error Lensfun 0.3.95 and later development snapshots are not supported.
 #endif
 
 DT_MODULE_INTROSPECTION(10, dt_iop_lens_params_t)
