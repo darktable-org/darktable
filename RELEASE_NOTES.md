@@ -105,6 +105,8 @@ changes (where available).
   to the GraphicsMagick/ImageMagick fallback loader (usually available
   in official/distro builds) for correct reading.
 
+- Fixed Camera Model Name for Fujifilm GFX 100 in WB presets.
+
 ### Add action support for Lua
 
 ### Other Lua changes
