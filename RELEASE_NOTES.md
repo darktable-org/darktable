@@ -98,6 +98,8 @@ changes (where available).
 - Fixed a bug in liquify OpenCL code leading to incorrect clamped
   output.
 
+- Fix color equalizer picker not working in quick access panel.
+
 ### Add action support for Lua
 
 ### Other Lua changes
