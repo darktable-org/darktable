@@ -110,6 +110,9 @@ changes (where available).
 
 - Fixed Camera Model Name for Fujifilm GFX 100 in WB presets.
 
+- The variable names for the metadata tags variables have been changed
+  to the full case sensitive tag name to avoid ambiguity.
+
 ### Add action support for Lua
 
 ### Other Lua changes
