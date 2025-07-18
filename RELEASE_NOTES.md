@@ -79,6 +79,9 @@ changes (where available).
 - Added apply_sidecar to dt_lua_image_t so that a sidecar file can be loaded
   and applied to an image in lighttable.
 
+- Add busy cursor while generating a GPX track preview and a progress
+  bar while applying positions from a track to images.
+
 ### Bug Fixes
 
 - Expanded width of preference boxes Lua Options so that long input is visible.
