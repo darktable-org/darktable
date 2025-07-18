@@ -100,6 +100,11 @@ changes (where available).
 
 - Fix color equalizer picker not working in quick access panel.
 
+- Paletted TIFFs were read incorrectly by the main libtiff-based
+  loader, with loss of color information. We are now handing them over
+  to the GraphicsMagick/ImageMagick fallback loader (usually available
+  in official/distro builds) for correct reading.
+
 ### Add action support for Lua
 
 ### Other Lua changes
