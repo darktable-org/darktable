@@ -345,7 +345,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d,
   const float scale = brightness / ((orient == DT_LIB_HISTOGRAM_ORIENT_HORI
                                      ? sample_height
                                      : sample_width) * samples_per_bin);
-  size_t nthreads = dt_get_num_threads();
+  const size_t nthreads = dt_get_num_threads();
 
   DT_OMP_FOR(collapse(3))
   for(size_t ch = 0; ch < 3; ch++)
@@ -967,7 +967,7 @@ static void dt_lib_histogram_process
   {
     const dt_colorpicker_sample_t *const sample =
       darktable.lib->proxy.colorpicker.primary_sample;
-    dt_iop_color_picker_t *proxy = darktable.lib->proxy.colorpicker.picker_proxy;
+    const dt_iop_color_picker_t *proxy = darktable.lib->proxy.colorpicker.picker_proxy;
     if(proxy && !proxy->module)
     {
       // FIXME: for histogram process whole image, then pull point
@@ -1047,10 +1047,10 @@ static void dt_lib_histogram_process
 }
 
 
-static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d,
+static void _lib_histogram_draw_histogram(const dt_lib_histogram_t *d,
                                           cairo_t *cr,
-                                          int width,
-                                          int height,
+                                          const int width,
+                                          const int height,
                                           const uint8_t mask[3])
 {
   if(!d->histogram_max) return;
@@ -1083,10 +1083,10 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d,
   cairo_restore(cr);
 }
 
-static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d,
+static void _lib_histogram_draw_waveform(const dt_lib_histogram_t *d,
                                          cairo_t *cr,
-                                         int width,
-                                         int height,
+                                         const int width,
+                                         const int height,
                                          const uint8_t mask[3])
 {
   // composite before scaling to screen dimensions, as scaling each
@@ -1143,10 +1143,10 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d,
   cairo_restore(cr);
 }
 
-static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d,
+static void _lib_histogram_draw_rgb_parade(const dt_lib_histogram_t *d,
                                            cairo_t *cr,
-                                           int width,
-                                           int height)
+                                           const int width,
+                                           const int height)
 {
   // same composite-to-temp optimization as in waveform code above
   const double alpha_chroma = 0.85, desat_over = 0.85, alpha_over = 0.65;
@@ -1206,8 +1206,8 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d,
   cairo_restore(cr);
 }
 
-static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
-                                            int width, int height)
+static void _lib_histogram_draw_vectorscope(const dt_lib_histogram_t *d, cairo_t *cr,
+                                            const int width, const int height)
 {
   const float vs_radius = d->vectorscope_radius;
   const int diam_px = d->vectorscope_diameter_px;
@@ -1467,7 +1467,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   if(display_live_samples)
   {
     GSList *samples = d->vectorscope_samples;
-    float *sample_xy = NULL;
+    const float *sample_xy = NULL;
     int pos = 0;
     for( ; samples; samples = g_slist_next(samples))
     {
@@ -1509,13 +1509,13 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 // e.g. tone equalizer, color balance, etc.
 static gboolean _drawable_draw_callback(GtkWidget *widget,
                                         cairo_t *crf,
-                                        gpointer user_data)
+                                        const gpointer user_data)
 {
   dt_times_t start;
   dt_get_perf_times(&start);
 
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
-  dt_develop_t *dev = darktable.develop;
+  const dt_develop_t *dev = darktable.develop;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1715,7 +1715,7 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget,
 
 static gboolean _drawable_button_press_callback(GtkWidget *widget,
                                                 GdkEventButton *event,
-                                                dt_lib_histogram_t *d)
+                                                const dt_lib_histogram_t *d)
 {
   if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
   {
@@ -1729,7 +1729,7 @@ static gboolean _drawable_button_press_callback(GtkWidget *widget,
   return TRUE;
 }
 
-static void _color_harmony_button_on(dt_lib_histogram_t *d)
+static void _color_harmony_button_on(const dt_lib_histogram_t *d)
 {
   const dt_color_harmony_type_t on = d->harmony_guide.type;
 
@@ -1742,8 +1742,8 @@ static void _color_harmony_button_on(dt_lib_histogram_t *d)
   }
 }
 
-static void _color_harmony_changed(dt_lib_histogram_t *d);
-static void _color_harmony_changed_record(dt_lib_histogram_t *d);
+static void _color_harmony_changed(const dt_lib_histogram_t *d);
+static void _color_harmony_changed_record(const dt_lib_histogram_t *d);
 
 static gboolean _eventbox_scroll_callback(GtkWidget *widget,
                                           GdkEventScroll *event,
@@ -1757,7 +1757,7 @@ static gboolean _eventbox_scroll_callback(GtkWidget *widget,
   }
   else if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
   {
-    gboolean black = d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
+    const gboolean black = d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
     if(black) { event->delta_x *= -1; event->delta_y *= -1; }
     dt_dev_exposure_handle_event((GdkEvent *)event, black);
   }
@@ -1813,7 +1813,7 @@ static gboolean _drawable_button_release_callback(GtkWidget *widget,
 }
 
 static gboolean _drawable_leave_notify_callback(GtkWidget *widget,
-                                                GdkEventCrossing *event,
+                                                const GdkEventCrossing *event,
                                                 dt_lib_histogram_t *d)
 {
   // if dragging, gtk keeps up motion notifications until mouse button
@@ -1871,7 +1871,7 @@ static void _scope_orient_update(const dt_lib_histogram_t *d)
   }
 }
 
-static void _vectorscope_view_update(dt_lib_histogram_t *d)
+static void _vectorscope_view_update(const dt_lib_histogram_t *d)
 {
   switch(d->vectorscope_scale)
   {
@@ -1913,7 +1913,7 @@ static void _vectorscope_view_update(dt_lib_histogram_t *d)
   }
 }
 
-  static void _scope_type_update(dt_lib_histogram_t *d)
+  static void _scope_type_update(const dt_lib_histogram_t *d)
 {
   gtk_widget_hide(d->color_harmony_box);
 
@@ -1944,7 +1944,7 @@ static void _vectorscope_view_update(dt_lib_histogram_t *d)
   }
 }
 
-static void _scope_type_changed(dt_lib_histogram_t *d)
+static void _scope_type_changed(const dt_lib_histogram_t *d)
 {
   dt_conf_set_string("plugins/darkroom/histogram/mode",
                      dt_lib_histogram_scope_type_names[d->scope_type]);
@@ -2040,7 +2040,7 @@ static void _colorspace_clicked(GtkWidget *button, dt_lib_histogram_t *d)
     dt_control_queue_redraw_center();
 }
 
-static void _update_color_harmony_gui(dt_lib_module_t *self)
+static void _update_color_harmony_gui(const dt_lib_module_t *self)
 {
   dt_lib_histogram_t *d = self->data;
 
@@ -2069,7 +2069,7 @@ static void _update_color_harmony_gui(dt_lib_module_t *self)
   _color_harmony_changed(d);
 }
 
-void _signal_image_changed(gpointer instance, dt_lib_module_t *self)
+void _signal_image_changed(gpointer instance, const dt_lib_module_t *self)
 {
 
   _update_color_harmony_gui(self);
@@ -2097,12 +2097,12 @@ static void _blue_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
   gtk_widget_queue_draw(d->scope_draw);
 }
 
-static void _color_harmony_changed(dt_lib_histogram_t *d)
+static void _color_harmony_changed(const dt_lib_histogram_t *d)
 {
   gtk_widget_queue_draw(d->scope_draw);
 }
 
-static void _color_harmony_changed_record(dt_lib_histogram_t *d)
+static void _color_harmony_changed_record(const dt_lib_histogram_t *d)
 {
   dt_conf_set_string("plugins/darkroom/histogram/vectorscope/harmony_type",
                      dt_color_harmonies[d->harmony_guide.type].name);
@@ -2153,9 +2153,9 @@ static gboolean _color_harmony_clicked(GtkWidget *button,
   return TRUE;
 }
 
-static gboolean _color_harmony_enter_notify_callback(GtkWidget *widget,
+static gboolean _color_harmony_enter_notify_callback(const GtkWidget *widget,
                                                      GdkEventCrossing *event,
-                                                     gpointer user_data)
+                                                     const gpointer user_data)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   // find positions of entered button
@@ -2175,7 +2175,7 @@ static gboolean _color_harmony_enter_notify_callback(GtkWidget *widget,
 
 static gboolean _color_harmony_leave_notify_callback(GtkWidget *widget,
                                                      GdkEventCrossing *event,
-                                                     gpointer user_data)
+                                                     const gpointer user_data)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   d->harmony_guide.type = d->color_harmony_old;
@@ -2185,9 +2185,9 @@ static gboolean _color_harmony_leave_notify_callback(GtkWidget *widget,
 
 static gboolean _eventbox_enter_notify_callback(GtkWidget *widget,
                                                 GdkEventCrossing *event,
-                                                gpointer user_data)
+                                                const gpointer user_data)
 {
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
+  const dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   _scope_type_update(d);
   gtk_widget_show(d->button_box_main);
   gtk_widget_show(d->button_box_opt);
@@ -2195,11 +2195,11 @@ static gboolean _eventbox_enter_notify_callback(GtkWidget *widget,
 }
 
 static gboolean _eventbox_motion_notify_callback(GtkWidget *widget,
-                                                 GdkEventMotion *event,
-                                                 gpointer user_data)
+                                                 const GdkEventMotion *event,
+                                                 const gpointer user_data)
 {
   //This is required in order to correctly display the button tooltips
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
+  const dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   _scope_type_update(d);
 
   GtkAllocation fix_alloc;
@@ -2214,13 +2214,13 @@ static gboolean _eventbox_motion_notify_callback(GtkWidget *widget,
 }
 
 static gboolean _eventbox_leave_notify_callback(GtkWidget *widget,
-                                                GdkEventCrossing *event,
-                                                gpointer user_data)
+                                                const GdkEventCrossing *event,
+                                                const gpointer user_data)
 {
   // when click between buttons on the buttonbox a leave event is generated -- ignore it
   if(!(event->mode == GDK_CROSSING_UNGRAB && event->detail == GDK_NOTIFY_INFERIOR))
   {
-    dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
+    const dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
     gtk_widget_hide(d->button_box_main);
     gtk_widget_hide(d->button_box_opt);
   }
@@ -2240,7 +2240,7 @@ static void _lib_histogram_collapse_callback(dt_action_t *action)
 
 static void _lib_histogram_cycle_mode_callback(dt_action_t *action)
 {
-  dt_lib_module_t *self = darktable.lib->proxy.histogram.module;
+  const dt_lib_module_t *self = darktable.lib->proxy.histogram.module;
   dt_lib_histogram_t *d = self->data;
 
   // FIXME: When switch modes, this hack turns off the highlight and
@@ -2334,14 +2334,14 @@ static void _lib_histogram_cycle_mode_callback(dt_action_t *action)
 
 static void _lib_histogram_change_type_callback(dt_action_t *action)
 {
-  dt_lib_module_t *self = darktable.lib->proxy.histogram.module;
+  const dt_lib_module_t *self = darktable.lib->proxy.histogram.module;
   dt_lib_histogram_t *d = self->data;
   _scope_view_clicked(d->scope_view_button, d);
 }
 
 static void _lib_histogram_cycle_harmony_callback(dt_action_t *action)
 {
-  dt_lib_module_t *self = darktable.lib->proxy.histogram.module;
+  const dt_lib_module_t *self = darktable.lib->proxy.histogram.module;
   dt_lib_histogram_t *d = self->data;
   d->harmony_guide.type = (d->color_harmony_old + 1) % DT_COLOR_HARMONY_N;
   _color_harmony_button_on(d);
@@ -2351,7 +2351,7 @@ static void _lib_histogram_cycle_harmony_callback(dt_action_t *action)
 
 // this is only called in darkroom view
 static void _lib_histogram_preview_updated_callback(gpointer instance,
-                                                    dt_lib_module_t *self)
+                                                    const dt_lib_module_t *self)
 {
   // preview pipe has already given process() the high quality
   // pre-gamma image. Now that preview pipe is complete, draw it
@@ -2361,7 +2361,7 @@ static void _lib_histogram_preview_updated_callback(gpointer instance,
   // other way to assure that the histogram image is current besides
   // checking the pixelpipe to see if it has processed the current
   // image
-  dt_lib_histogram_t *d = self->data;
+  const dt_lib_histogram_t *d = self->data;
   gtk_widget_queue_draw(d->scope_draw);
 }
 
@@ -2369,7 +2369,7 @@ void view_enter(struct dt_lib_module_t *self,
                 struct dt_view_t *old_view,
                 struct dt_view_t *new_view)
 {
-  dt_lib_histogram_t *d = self->data;
+  const dt_lib_histogram_t *d = self->data;
   if(new_view->view(new_view) == DT_VIEW_DARKROOM)
   {
     DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _lib_histogram_preview_updated_callback);
@@ -2427,7 +2427,7 @@ void gui_init(dt_lib_module_t *self)
     if(g_strcmp0(str, dt_lib_histogram_scale_names[i]) == 0)
       d->vectorscope_scale = i;
 
-  int a = dt_conf_get_int("plugins/darkroom/histogram/vectorscope/angle");
+  const int a = dt_conf_get_int("plugins/darkroom/histogram/vectorscope/angle");
   d->vectorscope_angle = deg2rad(a);
 
   d->histogram = dt_alloc_align_type(uint32_t, 4 * HISTOGRAM_BINS);
