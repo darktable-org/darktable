@@ -255,7 +255,7 @@ int legacy_params(dt_iop_module_t *self,
     /* add future params after this so the legacy params import can use a blind memcpy */
   } dt_iop_colorbalancergb_params_v5_t;
 
-  dt_iop_colorbalancergb_params_v5_t default_v5 =
+  const dt_iop_colorbalancergb_params_v5_t default_v5 =
     { 0.0f,  0.0f,  0.0f,  0.0f,    0.0f,
       0.0f,  0.0f,  0.0f,  0.0f,    0.0f,
       0.0f,  0.0f,  1.0f,  0.0f,    1.0f,
@@ -951,8 +951,8 @@ int process_cl(dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorbalancergb_data_t *const d = piece->data;
-  dt_iop_colorbalancergb_global_data_t *const gd = self->global_data;
-  dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
+  const dt_iop_colorbalancergb_global_data_t *const gd = self->global_data;
+  const dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
@@ -1076,7 +1076,7 @@ void init_global(dt_iop_module_so_t *self)
 
 void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_colorbalancergb_global_data_t *gd = self->data;
+  const dt_iop_colorbalancergb_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_colorbalance_rgb);
   free(self->data);
   self->data = NULL;
@@ -1087,7 +1087,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorbalancergb_data_t *d = piece->data;
-  dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)p1;
+  const dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)p1;
 
   d->checker_color_1[0] = CLAMP(dt_conf_get_float("plugins/darkroom/colorbalancergb/checker1/red"), 0.f, 1.f);
   d->checker_color_1[1] = CLAMP(dt_conf_get_float("plugins/darkroom/colorbalancergb/checker1/green"), 0.f, 1.f);
@@ -1251,7 +1251,7 @@ void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
 
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_colorbalancergb_data_t *d = piece->data;
+  const dt_iop_colorbalancergb_data_t *d = piece->data;
   if(d->gamut_LUT) dt_free_align(d->gamut_LUT);
   dt_free_align(piece->data);
   piece->data = NULL;
@@ -1277,7 +1277,7 @@ void pipe_RGB_to_Ych(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, const dt_a
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
+  const dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
   dt_iop_colorbalancergb_params_t *p = self->params;
 
   dt_aligned_pixel_t Ych = { 0.f };
@@ -1336,7 +1336,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
 }
 
 
-static void _YchToRGB(dt_aligned_pixel_t *RGB_out, float chroma, float hue,
+static void _YchToRGB(dt_aligned_pixel_t *RGB_out, const float chroma, const float hue,
                       const dt_iop_order_iccprofile_info_t *output_profile,
                       const dt_colormatrix_t output_matrix_LMS_to_RGB)
 {
@@ -1446,9 +1446,9 @@ static void mask_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
 }
 
 
-static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
+static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, const dt_iop_module_t *self)
 {
-  dt_iop_colorbalancergb_params_t *p = self->params;
+  const dt_iop_colorbalancergb_params_t *p = self->params;
   const float shadows_weight = 2.f + p->shadows_weight * 2.f;
   const float highlights_weight = 2.f + p->highlights_weight * 2.f;
 
@@ -1560,12 +1560,12 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
     for(size_t c = 0; c < 3; c++) LUT[c][k] = output[c];
   }
 
-  GdkRGBA fg_color = darktable.bauhaus->graph_fg;
+  const GdkRGBA fg_color = darktable.bauhaus->graph_fg;
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
 
   for(size_t c = 0; c < 3; c++)
   {
-    GdkRGBA line_color = { fg_color.red * (1. - (2 - c) / 4.),
+    const GdkRGBA line_color = { fg_color.red * (1. - (2 - c) / 4.),
                            fg_color.green * (1. - (2 - c) / 4.),
                            fg_color.blue * (1. - (2 - c) / 4.),
                            fg_color.alpha };
@@ -1599,7 +1599,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
 }
 
 
-static void checker_1_picker_callback(GtkColorButton *widget, dt_iop_module_t *self)
+static void checker_1_picker_callback(GtkColorButton *widget, const dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
@@ -1612,7 +1612,7 @@ static void checker_1_picker_callback(GtkColorButton *widget, dt_iop_module_t *s
 }
 
 
-static void checker_2_picker_callback(GtkColorButton *widget, dt_iop_module_t *self)
+static void checker_2_picker_callback(GtkColorButton *widget, const dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
@@ -1625,7 +1625,7 @@ static void checker_2_picker_callback(GtkColorButton *widget, dt_iop_module_t *s
 }
 
 
-static void checker_size_callback(GtkWidget *widget, dt_iop_module_t *self)
+static void checker_size_callback(GtkWidget *widget, const dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   const size_t size = dt_bauhaus_slider_get(widget);
@@ -1637,7 +1637,7 @@ static void checker_size_callback(GtkWidget *widget, dt_iop_module_t *self)
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
-  dt_iop_colorbalancergb_params_t *p = self->params;
+  const dt_iop_colorbalancergb_params_t *p = self->params;
 
   // Prepare data for gamut mapping slider backgrounds
   // Make our best effort to find display profile. If not found
@@ -1690,7 +1690,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_colorbalancergb_gui_data_t *g = self->gui_data;
-  dt_iop_colorbalancergb_params_t *p = self->params;
+  const dt_iop_colorbalancergb_params_t *p = self->params;
 
   dt_bauhaus_slider_set(g->hue_angle, p->hue_angle);
   dt_bauhaus_slider_set(g->vibrance, p->vibrance);
