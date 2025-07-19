@@ -162,8 +162,8 @@ static inline float Log2Thres(const float x,
 // ensure that any changes here are synchronized with data/kernels/extended.cl
 static inline float fastlog2(const float x)
 {
-  union { float f; uint32_t i; } vx = { x };
-  union { uint32_t i; float f; } mx = { (vx.i & 0x007FFFFF) | 0x3f000000 };
+  const union { float f; uint32_t i; } vx = { x };
+  const union { uint32_t i; float f; } mx = { (vx.i & 0x007FFFFF) | 0x3f000000 };
 
   float y = vx.i;
 
@@ -294,8 +294,8 @@ static inline float median9f(const float *p)
   float p5 = MAX(p[4], p[5]);
   float p7 = MIN(p[7], p[8]);
   float p8 = MAX(p[7], p[8]);
-  float p0 = MIN(p[0], p1);
-  float p1a = MAX(p[0], p1);
+  const float p0 = MIN(p[0], p1);
+  const float p1a = MAX(p[0], p1);
   float p3 = MIN(p[3], p4);
   float p4a = MAX(p[3], p4);
   float p6 = MIN(p[6], p7);
@@ -683,8 +683,8 @@ static inline void dt_vector_div1(dt_aligned_pixel_t result,
 
 static inline float dt_vector_channel_max(const dt_aligned_pixel_t pixel)
 {
-  dt_aligned_pixel_t swapRG = { pixel[1], pixel[0], pixel[2], pixel[3] };
-  dt_aligned_pixel_t swapRB = { pixel[2], pixel[1], pixel[0], pixel[3] };
+  const dt_aligned_pixel_t swapRG = { pixel[1], pixel[0], pixel[2], pixel[3] };
+  const dt_aligned_pixel_t swapRB = { pixel[2], pixel[1], pixel[0], pixel[3] };
   dt_aligned_pixel_t maximum;
   for_each_channel(c)
     maximum[c] = MAX(MAX(pixel[c], swapRG[c]), swapRB[c]);
