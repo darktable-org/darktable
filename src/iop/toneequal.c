@@ -602,7 +602,7 @@ void init_presets(dt_iop_module_so_t *self)
  * Helper functions
  **/
 
-static gboolean in_mask_editing(dt_iop_module_t *self)
+static gboolean in_mask_editing(const dt_iop_module_t *self)
 {
   const dt_develop_t *dev = self->dev;
   return dev->form_gui && dev->form_visible;
@@ -689,7 +689,7 @@ static float get_luminance_from_buffer(const float *const buffer,
   return luminance;
 }
 
-static void _get_point(dt_iop_module_t *self,
+static void _get_point(const dt_iop_module_t *self,
                        const int c_x,
                        const int c_y,
                        int *x,
@@ -716,9 +716,9 @@ static void _get_point(dt_iop_module_t *self,
   *y = pts[1];
 }
 
-static float _luminance_from_module_buffer(dt_iop_module_t *self)
+static float _luminance_from_module_buffer(const dt_iop_module_t *self)
 {
-  dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+  const dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
   const size_t c_x = g->cursor_pos_x;
   const size_t c_y = g->cursor_pos_y;
@@ -1457,7 +1457,7 @@ static inline void compute_log_histogram_and_stats(const float *const restrict l
   // bins between [-8; 0] EV remapped between [0 ; UI_SAMPLES]
   for(size_t k = 0; k < TEMP_SAMPLES; ++k)
   {
-    float EV = 16.0 * (float)k / (float)(TEMP_SAMPLES - 1) - 10.0;
+    const float EV = 16.0 * (float)k / (float)(TEMP_SAMPLES - 1) - 10.0;
     const int i =
       CLAMP((int)(((EV + 8.0f) / 8.0f) * (float)UI_SAMPLES),
             0, UI_SAMPLES - 1);
@@ -1515,7 +1515,7 @@ static inline void compute_lut_correction(dt_iop_toneequalizer_gui_data_t *g,
 
 static inline gboolean update_curve_lut(dt_iop_module_t *self)
 {
-  dt_iop_toneequalizer_params_t *p = self->params;
+  const dt_iop_toneequalizer_params_t *p = self->params;
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
   if(g == NULL) return FALSE;
@@ -1583,7 +1583,7 @@ void commit_params(dt_iop_module_t *self,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)p1;
+  const dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)p1;
   dt_iop_toneequalizer_data_t *d = piece->data;
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
@@ -1658,9 +1658,9 @@ void cleanup_pipe(dt_iop_module_t *self,
   piece->data = NULL;
 }
 
-static void show_guiding_controls(dt_iop_module_t *self)
+static void show_guiding_controls(const dt_iop_module_t *self)
 {
-  dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+  const dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   const dt_iop_toneequalizer_params_t *p = self->params;
 
   switch(p->details)
@@ -1699,8 +1699,8 @@ static void show_guiding_controls(dt_iop_module_t *self)
   }
 }
 
-void update_exposure_sliders(dt_iop_toneequalizer_gui_data_t *g,
-                             dt_iop_toneequalizer_params_t *p)
+void update_exposure_sliders(const dt_iop_toneequalizer_gui_data_t *g,
+                             const dt_iop_toneequalizer_params_t *p)
 {
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->noise, p->noise);
@@ -1718,8 +1718,8 @@ void update_exposure_sliders(dt_iop_toneequalizer_gui_data_t *g,
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
-  dt_iop_toneequalizer_params_t *p = self->params;
+  const dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+  const dt_iop_toneequalizer_params_t *p = self->params;
 
   dt_bauhaus_slider_set(g->smoothing, logf(p->smoothing) / logf(sqrtf(2.0f)) - 1.0f);
 
@@ -1733,7 +1733,7 @@ void gui_changed(dt_iop_module_t *self,
                  GtkWidget *w,
                  void *previous)
 {
-  dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+  const dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
   if(w == g->method
      || w == g->blending
@@ -1760,7 +1760,7 @@ static void smoothing_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_toneequalizer_params_t *p = self->params;
-  dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+  const dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
   p->smoothing= powf(sqrtf(2.0f), 1.0f +  dt_bauhaus_slider_get(slider));
 
@@ -2175,7 +2175,7 @@ int scrolled(dt_iop_module_t *self,
              const int up,
              const uint32_t state)
 {
-  dt_develop_t *dev = self->dev;
+  const dt_develop_t *dev = self->dev;
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   dt_iop_toneequalizer_params_t *p = self->params;
 
@@ -2260,10 +2260,10 @@ void cairo_draw_hatches(cairo_t *cr,
   // span is the distance of the region's bounds to the center, over (x, y) axes
 
   // Get the coordinates of the corners of the bounding box of the region
-  double C0[2] = { center[0] - span[0], center[1] - span[1] };
-  double C2[2] = { center[0] + span[0], center[1] + span[1] };
+  const double C0[2] = { center[0] - span[0], center[1] - span[1] };
+  const double C2[2] = { center[0] + span[0], center[1] + span[1] };
 
-  double delta[2] = { 2.0 * span[0] / (double)instances,
+  const double delta[2] = { 2.0 * span[0] / (double)instances,
                       2.0 * span[1] / (double)instances };
 
   cairo_set_line_width(cr, line_width);
@@ -2347,7 +2347,7 @@ void gui_post_expose(dt_iop_module_t *self,
 {
   // Draw the custom exposure cursor over the image preview
 
-  dt_develop_t *dev = self->dev;
+  const dt_develop_t *dev = self->dev;
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
   // if we are editing masks, do not display controls
@@ -2505,7 +2505,7 @@ void gui_post_expose(dt_iop_module_t *self,
 static void _develop_distort_callback(gpointer instance,
                                       dt_iop_module_t *self)
 {
-  dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+  const dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   if(g == NULL) return;
   if(!g->distort_signal_actif) return;
 
@@ -2540,7 +2540,7 @@ static void _unset_distort_signal(dt_iop_module_t *self)
   }
 }
 
-void gui_focus(dt_iop_module_t *self, gboolean in)
+void gui_focus(dt_iop_module_t *self, const gboolean in)
 {
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   dt_iop_gui_enter_critical_section(self);
@@ -2940,7 +2940,7 @@ static gboolean _toneequalizer_bar_draw(GtkWidget *widget,
                                         dt_iop_module_t *self)
 {
   // Draw the widget equalizer view
-  dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+  const dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
   update_histogram(self);
 
@@ -3005,7 +3005,7 @@ static gboolean _toneequalizer_bar_draw(GtkWidget *widget,
 
 
 static gboolean area_enter_leave_notify(GtkWidget *widget,
-                                        GdkEventCrossing *event,
+                                        const GdkEventCrossing *event,
                                         dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return TRUE;
@@ -3013,7 +3013,7 @@ static gboolean area_enter_leave_notify(GtkWidget *widget,
 
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
-  dt_iop_toneequalizer_params_t *p = self->params;
+  const dt_iop_toneequalizer_params_t *p = self->params;
 
   if(g->area_dragging)
   {
@@ -3039,7 +3039,7 @@ static gboolean area_enter_leave_notify(GtkWidget *widget,
 
 
 static gboolean area_button_press(GtkWidget *widget,
-                                  GdkEventButton *event,
+                                  const GdkEventButton *event,
                                   dt_iop_module_t *self)
 {
 
@@ -3095,7 +3095,7 @@ static gboolean area_button_press(GtkWidget *widget,
 
 
 static gboolean area_motion_notify(GtkWidget *widget,
-                                   GdkEventMotion *event,
+                                   const GdkEventMotion *event,
                                    dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return TRUE;
@@ -3149,7 +3149,7 @@ static gboolean area_motion_notify(GtkWidget *widget,
 
 
 static gboolean area_button_release(GtkWidget *widget,
-                                    GdkEventButton *event,
+                                    const GdkEventButton *event,
                                     dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return TRUE;
@@ -3162,7 +3162,7 @@ static gboolean area_button_release(GtkWidget *widget,
 
   if(event->button == GDK_BUTTON_PRIMARY)
   {
-    dt_iop_toneequalizer_params_t *p = self->params;
+    const dt_iop_toneequalizer_params_t *p = self->params;
 
     if(g->area_dragging)
     {
@@ -3250,7 +3250,7 @@ static void _develop_ui_pipe_started_callback(gpointer instance,
 static void _develop_preview_pipe_finished_callback(gpointer instance,
                                                     dt_iop_module_t *self)
 {
-  dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+  const dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   if(g == NULL) return;
 
   // now that the preview pipe is termintated, set back the distort signal to catch
@@ -3268,14 +3268,14 @@ static void _develop_preview_pipe_finished_callback(gpointer instance,
 static void _develop_ui_pipe_finished_callback(gpointer instance,
                                                dt_iop_module_t *self)
 {
-  dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+  const dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   if(g == NULL) return;
   switch_cursors(self);
 }
 
 void gui_reset(dt_iop_module_t *self)
 {
-  dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+  const dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   if(g == NULL) return;
   dt_iop_request_focus(self);
   dt_bauhaus_widget_set_quad_active(g->exposure_boost, FALSE);
@@ -3509,7 +3509,7 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
+  const dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
   dt_conf_set_int("plugins/darkroom/toneequal/gui_page",
