@@ -4231,10 +4231,10 @@ void dt_gui_draw_rounded_rectangle(cairo_t *cr,
 {
   const float radius = height / 5.0f;
   cairo_new_sub_path(cr);
-  cairo_arc(cr, x + width - radius, y + radius, radius, -90 * degrees, 0 * degrees);
-  cairo_arc(cr, x + width - radius, y + height - radius, radius, 0 * degrees, 90 * degrees);
-  cairo_arc(cr, x + radius, y + height - radius, radius, 90 * degrees, 180 * degrees);
-  cairo_arc(cr, x + radius, y + radius, radius, 180 * degrees, 270 * degrees);
+  cairo_arc(cr, x + width - radius, y + radius, radius, deg2rad(-90), deg2rad(0));
+  cairo_arc(cr, x + width - radius, y + height - radius, radius, deg2rad(0), deg2rad(90));
+  cairo_arc(cr, x + radius, y + height - radius, radius, deg2rad(90), deg2rad(180));
+  cairo_arc(cr, x + radius, y + radius, radius, deg2rad(180), deg2rad(270));
   cairo_close_path(cr);
   cairo_fill(cr);
 }

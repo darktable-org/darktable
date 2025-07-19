@@ -282,9 +282,9 @@ void init_presets(dt_iop_module_so_t *self)
   p.red_inset = 0.1f;
   p.green_inset = 0.1f;
   p.blue_inset = 0.15f;
-  p.red_rotation = 2 * degrees;
-  p.green_rotation = -1 * degrees;
-  p.blue_rotation = -3 * degrees;
+  p.red_rotation = deg2radf(2.f);
+  p.green_rotation = deg2radf(-1.f);
+  p.blue_rotation = deg2radf(-3.f);
   // Don't restore purity - try to avoid posterization.
   p.purity = 0.f;
   // Constant base primaries (not dependent on work profile) to

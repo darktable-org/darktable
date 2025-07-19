@@ -749,10 +749,6 @@ static inline void dt_vector_sin(const dt_aligned_pixel_t arg,
     sine[c] = scaled[c] * (p[c] * (abs_scaled[c] - one[c]) + one[c]);
 }
 
-// allows evaluating conversions involving constants at compile, e.g.:
-// const double right_angle = 90 * degrees;
-static const double degrees = M_PI / 180;
-
 // conversion factor, e.g.
 // dt_bauhaus_slider_set_factor(slider, RAD_2_DEG);
 static const double RAD_2_DEG = 180 / M_PI;

@@ -461,57 +461,57 @@ static void dt_guides_draw_golden_mean(cairo_t *cr,
     cairo_new_sub_path(cr);
     cairo_scale(cr, R1->width / R1->height, 1);
     cairo_arc(cr, R1->right / R1->width * R1->height,
-              R1->top, R1->height, 90 * degrees, 180 * degrees);
+              R1->top, R1->height, deg2rad(90), deg2rad(180));
     cairo_restore(cr);
 
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_scale(cr, R2->width / R2->height, 1);
     cairo_arc(cr, R2->left / R2->width * R2->height,
-              R2->top, R2->height, 0 * degrees, 90 * degrees);
+              R2->top, R2->height, deg2rad(0), deg2rad(90));
     cairo_restore(cr);
 
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_scale(cr, R3->width / R3->height, 1);
     cairo_arc(cr, R3->left / R3->width * R3->height,
-              R3->bottom, R3->height, 270 * degrees, 360 * degrees);
+              R3->bottom, R3->height, deg2rad(270), deg2rad(360));
     cairo_restore(cr);
 
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_scale(cr, 1, R4->height / R4->width);
     cairo_arc(cr, R4->right, R4->bottom / R4->height * R4->width,
-              R4->width, 180 * degrees, 270 * degrees);
+              R4->width, deg2rad(180), deg2rad(270));
     cairo_restore(cr);
 
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_scale(cr, 1, R5->height / R5->width);
     cairo_arc(cr, R5->right, R5->top / R5->height * R5->width,
-              R5->width, 90 * degrees, 180 * degrees);
+              R5->width, deg2rad(90), deg2rad(180));
     cairo_restore(cr);
 
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_scale(cr, 1, R6->height / R6->width);
     cairo_arc(cr, R6->left, R6->top / R6->height * R6->width,
-              R6->width, 0 * degrees, 90 * degrees);
+              R6->width, deg2rad(0), deg2rad(90));
     cairo_restore(cr);
 
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_scale(cr, R7->width / R7->height, 1);
     cairo_arc(cr, R7->left / R7->width * R7->height, R7->bottom,
-              R7->height, 270 * degrees, 360 * degrees);
+              R7->height, deg2rad(270), deg2rad(360));
     cairo_restore(cr);
 
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_scale(cr, (R6->width - R7->width) / R7->height, 1);
     cairo_arc(cr, R7->left / (R6->width - R7->width) * R7->height,
-              R7->bottom, R7->height, 210 * degrees,
-              270 * degrees);
+              R7->bottom, R7->height, deg2rad(210.0),
+              deg2rad(270.0));
     cairo_restore(cr);
   }
 }

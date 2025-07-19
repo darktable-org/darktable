@@ -358,7 +358,7 @@ static GtkWidget *_setup_hue_slider(dt_iop_module_t *self,
   dt_bauhaus_slider_set_format(slider, "°");
   dt_bauhaus_slider_set_digits(slider, 1);
   dt_bauhaus_slider_set_factor(slider, RAD_2_DEG);
-  dt_bauhaus_slider_set_soft_range(slider, -20 * degrees, 20 * degrees);
+  dt_bauhaus_slider_set_soft_range(slider, deg2radf(-20.f), deg2radf(20.f));
   gtk_widget_set_tooltip_text(slider, tooltip);
   return slider;
 }
