@@ -113,6 +113,8 @@ changes (where available).
 - The variable names for the metadata tags variables have been changed
   to the full case sensitive tag name to avoid ambiguity.
 
+- Fixed inability to remove collections with ' in the name.
+
 ### Add action support for Lua
 
 ### Other Lua changes
