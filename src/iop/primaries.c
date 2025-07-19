@@ -125,7 +125,7 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_primaries_params_t *params = piece->data;
+  const dt_iop_primaries_params_t *params = piece->data;
 
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self,
                                         piece->colors, ivoid, ovoid, roi_in,
@@ -156,8 +156,8 @@ int process_cl(dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_primaries_params_t *params = piece->data;
-  dt_iop_primaries_global_data_t *gd = self->global_data;
+  const dt_iop_primaries_params_t *params = piece->data;
+  const dt_iop_primaries_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -169,14 +169,14 @@ int process_cl(dt_iop_module_t *self,
   _calculate_adjustment_matrix(params, pipe_work_profile, transposed_matrix);
   transpose_3xSSE(transposed_matrix, matrix);
 
-  cl_mem dev_matrix = dt_opencl_copy_host_to_device_constant(devid, sizeof(matrix), matrix);
+  const cl_mem dev_matrix = dt_opencl_copy_host_to_device_constant(devid, sizeof(matrix), matrix);
   if(dev_matrix == NULL)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_primaries] couldn't allocate memory!");
     return DT_OPENCL_DEFAULT_ERROR;
   }
 
-  cl_int err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_primaries,
+  const cl_int err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_primaries,
                                                 width, height, CLARG(dev_in),
                                                 CLARG(dev_out), CLARG(width), CLARG(height),
                                                 CLARG(dev_matrix));
@@ -419,7 +419,7 @@ void init_global(dt_iop_module_so_t *self)
 
 void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_primaries_global_data_t *gd = self->data;
+  const dt_iop_primaries_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_primaries);
   free(self->data);
   self->data = NULL;
