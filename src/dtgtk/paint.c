@@ -46,14 +46,14 @@ static void _rounded_rectangle(cairo_t *cr)  // create rounded rectangle to use 
   cairo_close_path (cr);
 }
 
-void dtgtk_cairo_paint_empty(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_empty(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
   cairo_stroke(cr);
   FINISH
 }
 
-void dtgtk_cairo_paint_color(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_color(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -67,7 +67,7 @@ void dtgtk_cairo_paint_color(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
   FINISH
 }
 
-void dtgtk_cairo_paint_presets(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_presets(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -106,7 +106,7 @@ static void _draw_triangle(cairo_t *cr, const gint flags)  // create triangle fo
   cairo_line_to(cr, 0.05, 0.5);
 }
 
-void dtgtk_cairo_paint_triangle(cairo_t *cr, gint x, int y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_triangle(cairo_t *cr, const gint x, const int y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -116,7 +116,7 @@ void dtgtk_cairo_paint_triangle(cairo_t *cr, gint x, int y, gint w, gint h, gint
   FINISH
 }
 
-void dtgtk_cairo_paint_solid_triangle(cairo_t *cr, gint x, int y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_solid_triangle(cairo_t *cr, const gint x, const int y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -128,7 +128,7 @@ void dtgtk_cairo_paint_solid_triangle(cairo_t *cr, gint x, int y, gint w, gint h
   FINISH
 }
 
-void dtgtk_cairo_paint_arrow(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_arrow(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -153,7 +153,7 @@ void dtgtk_cairo_paint_arrow(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
   FINISH
 }
 
-void dtgtk_cairo_paint_solid_arrow(cairo_t *cr, gint x, int y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_solid_arrow(cairo_t *cr, const gint x, const int y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -180,7 +180,7 @@ void dtgtk_cairo_paint_solid_arrow(cairo_t *cr, gint x, int y, gint w, gint h, g
   FINISH
 }
 
-void dtgtk_cairo_paint_line_arrow(cairo_t *cr, gint x, int y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_line_arrow(cairo_t *cr, const gint x, const int y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -204,7 +204,7 @@ void dtgtk_cairo_paint_line_arrow(cairo_t *cr, gint x, int y, gint w, gint h, gi
   FINISH
 }
 
-void dtgtk_cairo_paint_sortby(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_sortby(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1.2, 0, 0)
 
@@ -242,7 +242,7 @@ void dtgtk_cairo_paint_sortby(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
   FINISH
 }
 
-void dtgtk_cairo_paint_flip(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_flip(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -269,7 +269,7 @@ void dtgtk_cairo_paint_flip(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   FINISH
 }
 
-void dtgtk_cairo_paint_reset(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_reset(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -281,7 +281,7 @@ void dtgtk_cairo_paint_reset(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
   FINISH
 }
 
-void dtgtk_cairo_paint_store(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_store(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -303,7 +303,7 @@ void dtgtk_cairo_paint_store(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
   FINISH
 }
 
-void dtgtk_cairo_paint_switch(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_switch(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -322,7 +322,7 @@ void dtgtk_cairo_paint_switch(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
   FINISH
 }
 
-void dtgtk_cairo_paint_switch_inactive(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_switch_inactive(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, .3f, 0, 0)
 
@@ -341,7 +341,7 @@ void dtgtk_cairo_paint_switch_inactive(cairo_t *cr, gint x, gint y, gint w, gint
   FINISH
 }
 
-void dtgtk_cairo_paint_switch_on(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_switch_on(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -361,7 +361,7 @@ void dtgtk_cairo_paint_switch_on(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   FINISH
 }
 
-void dtgtk_cairo_paint_switch_off(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_switch_off(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -371,7 +371,7 @@ void dtgtk_cairo_paint_switch_off(cairo_t *cr, gint x, gint y, gint w, gint h, g
   FINISH
 }
 
-void dtgtk_cairo_paint_switch_deprecated(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_switch_deprecated(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -384,12 +384,12 @@ void dtgtk_cairo_paint_switch_deprecated(cairo_t *cr, gint x, gint y, gint w, gi
   FINISH
 }
 
-void dtgtk_cairo_paint_plus(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_plus(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   dtgtk_cairo_paint_plusminus(cr, x, y, w, h, flags | CPF_ACTIVE, data);
 }
 
-void dtgtk_cairo_paint_plusminus(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_plusminus(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -417,7 +417,7 @@ void dtgtk_cairo_paint_plusminus(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   FINISH
 }
 
-void dtgtk_cairo_paint_square_plus(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_square_plus(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -434,7 +434,7 @@ void dtgtk_cairo_paint_square_plus(cairo_t *cr, gint x, gint y, gint w, gint h, 
   FINISH
 }
 
-void dtgtk_cairo_paint_sorting(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_sorting(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -449,7 +449,7 @@ void dtgtk_cairo_paint_sorting(cairo_t *cr, gint x, gint y, gint w, gint h, gint
   FINISH
 }
 
-void dtgtk_cairo_paint_plus_simple(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_plus_simple(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -462,7 +462,7 @@ void dtgtk_cairo_paint_plus_simple(cairo_t *cr, gint x, gint y, gint w, gint h, 
   FINISH
 }
 
-void dtgtk_cairo_paint_minus_simple(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_minus_simple(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -473,7 +473,7 @@ void dtgtk_cairo_paint_minus_simple(cairo_t *cr, gint x, gint y, gint w, gint h,
   FINISH
 }
 
-void dtgtk_cairo_paint_multiply_small(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_multiply_small(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -486,7 +486,7 @@ void dtgtk_cairo_paint_multiply_small(cairo_t *cr, gint x, gint y, gint w, gint 
   FINISH
 }
 
-void dtgtk_cairo_paint_treelist(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_treelist(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -513,7 +513,7 @@ void dtgtk_cairo_paint_treelist(cairo_t *cr, gint x, gint y, gint w, gint h, gin
   FINISH
 }
 
-void dtgtk_cairo_paint_invert(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_invert(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(0.95, 1, 0, 0)
 
@@ -526,12 +526,12 @@ void dtgtk_cairo_paint_invert(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
   FINISH
 }
 
-void dtgtk_cairo_paint_masks_eye(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_masks_eye(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
-  double dashed[] = { 0.2, 0.2 };
-  int len = sizeof(dashed) / sizeof(dashed[0]);
+  const double dashed[] = { 0.2, 0.2 };
+  const int len = sizeof(dashed) / sizeof(dashed[0]);
   cairo_set_dash(cr, dashed, len, 0);
 
   cairo_arc(cr, 0.75, 0.75, 0.75, 2.8, 4.7124);
@@ -550,7 +550,7 @@ void dtgtk_cairo_paint_masks_eye(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   FINISH
 }
 
-void dtgtk_cairo_paint_masks_circle(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_masks_circle(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.1, 1, 0, 0)
 
@@ -560,7 +560,7 @@ void dtgtk_cairo_paint_masks_circle(cairo_t *cr, gint x, gint y, gint w, gint h,
   FINISH
 }
 
-void dtgtk_cairo_paint_masks_ellipse(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_masks_ellipse(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.15, 1, 0, 0)
 
@@ -574,7 +574,7 @@ void dtgtk_cairo_paint_masks_ellipse(cairo_t *cr, gint x, gint y, gint w, gint h
   FINISH
 }
 
-void dtgtk_cairo_paint_masks_gradient(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_masks_gradient(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, -0.05, -0.05)
 
@@ -590,7 +590,7 @@ void dtgtk_cairo_paint_masks_gradient(cairo_t *cr, gint x, gint y, gint w, gint 
   FINISH
 }
 
-void dtgtk_cairo_paint_masks_path(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_masks_path(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.05, 1, 0, 0)
 
@@ -606,7 +606,7 @@ void dtgtk_cairo_paint_masks_path(cairo_t *cr, gint x, gint y, gint w, gint h, g
   FINISH
 }
 
-void dtgtk_cairo_paint_masks_vertgradient(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_masks_vertgradient(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -623,7 +623,7 @@ void dtgtk_cairo_paint_masks_vertgradient(cairo_t *cr, gint x, gint y, gint w, g
   FINISH
 }
 
-void dtgtk_cairo_paint_masks_brush_and_inverse(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_masks_brush_and_inverse(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -647,7 +647,7 @@ void dtgtk_cairo_paint_masks_brush_and_inverse(cairo_t *cr, gint x, gint y, gint
   FINISH
 }
 
-void dtgtk_cairo_paint_masks_brush(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_masks_brush(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(0.90, 1, 0., 0.)
 
@@ -669,7 +669,7 @@ void dtgtk_cairo_paint_masks_brush(cairo_t *cr, gint x, gint y, gint w, gint h, 
   FINISH
 }
 
-void dtgtk_cairo_paint_masks_uniform(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_masks_uniform(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(0.95, 1, 0, 0)
 
@@ -679,7 +679,7 @@ void dtgtk_cairo_paint_masks_uniform(cairo_t *cr, gint x, gint y, gint w, gint h
   FINISH
 }
 
-void dtgtk_cairo_paint_masks_drawn(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_masks_drawn(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(0.9, 1, 0, 0)
 
@@ -712,8 +712,8 @@ void dtgtk_cairo_paint_masks_drawn(cairo_t *cr, gint x, gint y, gint w, gint h, 
 
 /** draws an arc with a B&W gradient following the arc path.
  *  nb_steps must be adjusted depending on the displayed size of the element, 16 is fine for small buttons*/
-void _gradient_arc(cairo_t *cr, double lw, int nb_steps, double x_center, double y_center, double radius,
-                   double angle_from, double angle_to, double color_from, double color_to, double alpha)
+void _gradient_arc(cairo_t *cr, const double lw, const int nb_steps, const double x_center, const double y_center, const double radius,
+                   double angle_from, double angle_to, const double color_from, const double color_to, const double alpha)
 {
   cairo_set_line_width(cr, lw);
 
@@ -737,7 +737,7 @@ void _gradient_arc(cairo_t *cr, double lw, int nb_steps, double x_center, double
   free(portions);
 }
 
-void dtgtk_cairo_paint_masks_parametric(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_masks_parametric(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(0.95, 1, 0, 0)
 
@@ -763,7 +763,7 @@ final:
   FINISH
 }
 
-void dtgtk_cairo_paint_masks_drawn_and_parametric(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags,
+void dtgtk_cairo_paint_masks_drawn_and_parametric(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags,
                                                   void *data)
 {
   PREAMBLE(1.05, 1, -0.1, -0.05)
@@ -819,7 +819,7 @@ final:
   FINISH
 }
 
-void dtgtk_cairo_paint_masks_raster(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_masks_raster(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -838,7 +838,7 @@ void dtgtk_cairo_paint_masks_raster(cairo_t *cr, gint x, gint y, gint w, gint h,
   FINISH
 }
 
-void dtgtk_cairo_paint_masks_multi(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_masks_multi(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -851,7 +851,7 @@ void dtgtk_cairo_paint_masks_multi(cairo_t *cr, gint x, gint y, gint w, gint h, 
   FINISH
 }
 
-void dtgtk_cairo_paint_masks_inverse(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_masks_inverse(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -863,7 +863,7 @@ void dtgtk_cairo_paint_masks_inverse(cairo_t *cr, gint x, gint y, gint w, gint h
   FINISH
 }
 
-void dtgtk_cairo_paint_masks_union(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_masks_union(cairo_t *cr, gint x, gint y, const gint w, const gint h, gint flags, void *data)
 {
   // note : as the icon is not square, we don't want PREAMBLE macro
   // we want 2 circles of radius R that intersect in the middle,
@@ -876,7 +876,7 @@ void dtgtk_cairo_paint_masks_union(cairo_t *cr, gint x, gint y, gint w, gint h, 
   cairo_fill(cr);
 }
 
-void dtgtk_cairo_paint_masks_intersection(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_masks_intersection(cairo_t *cr, gint x, gint y, const gint w, const gint h, gint flags, void *data)
 {
   // note : as the icon is not square, we don't want PREAMBLE macro
   // we want 2 circles of radius R that intersect in the middle,
@@ -903,7 +903,7 @@ void dtgtk_cairo_paint_masks_intersection(cairo_t *cr, gint x, gint y, gint w, g
   cairo_restore(cr);
 }
 
-void dtgtk_cairo_paint_masks_difference(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_masks_difference(cairo_t *cr, gint x, gint y, const gint w, const gint h, gint flags, void *data)
 {
   // note : as the icon is not square, we don't want PREAMBLE macro
   // we want 2 round of radius R that intersect in the middle,
@@ -928,7 +928,7 @@ void dtgtk_cairo_paint_masks_difference(cairo_t *cr, gint x, gint y, gint w, gin
   cairo_stroke(cr);
 }
 
-void dtgtk_cairo_paint_masks_sum(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_masks_sum(cairo_t *cr, gint x, gint y, const gint w, const gint h, gint flags, void *data)
 {
   // note : as the icon is not square, we don't want PREAMBLE macro
   // we want 2 round of radius R that intersect in the middle,
@@ -956,7 +956,7 @@ void dtgtk_cairo_paint_masks_sum(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   cairo_paint(cr);
 }
 
-void dtgtk_cairo_paint_masks_exclusion(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_masks_exclusion(cairo_t *cr, gint x, gint y, const gint w, const gint h, gint flags, void *data)
 {
   // note : as the icon is not square, we don't want PREAMBLE macro
   // we want 2 round of radius R that intersect in the middle,
@@ -985,7 +985,7 @@ void dtgtk_cairo_paint_masks_exclusion(cairo_t *cr, gint x, gint y, gint w, gint
   cairo_pop_group_to_source(cr);
   cairo_paint(cr);
 }
-void dtgtk_cairo_paint_masks_used(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_masks_used(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -997,12 +997,12 @@ void dtgtk_cairo_paint_masks_used(cairo_t *cr, gint x, gint y, gint w, gint h, g
   FINISH
 }
 
-void dtgtk_cairo_paint_eye(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_eye(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   dtgtk_cairo_paint_eye_toggle(cr, x, y, w, h, flags & ~CPF_ACTIVE, data);
 }
 
-void dtgtk_cairo_paint_eye_toggle(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_eye_toggle(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1027,7 +1027,7 @@ void dtgtk_cairo_paint_eye_toggle(cairo_t *cr, gint x, gint y, gint w, gint h, g
   FINISH
 }
 
-void dtgtk_cairo_paint_timer(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_timer(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1038,7 +1038,7 @@ void dtgtk_cairo_paint_timer(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
   FINISH
 }
 
-void dtgtk_cairo_paint_grid(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_grid(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1064,7 +1064,7 @@ void dtgtk_cairo_paint_grid(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   FINISH
 }
 
-void dtgtk_cairo_paint_focus_peaking(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_focus_peaking(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.2, 1, 0, 0)
 
@@ -1116,7 +1116,7 @@ void dtgtk_cairo_paint_focus_peaking(cairo_t *cr, gint x, gint y, gint w, gint h
   FINISH
 }
 
-void dtgtk_cairo_paint_camera(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_camera(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1142,7 +1142,7 @@ void dtgtk_cairo_paint_camera(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
   FINISH
 }
 
-void dtgtk_cairo_paint_histogram_scope(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_histogram_scope(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1154,7 +1154,7 @@ void dtgtk_cairo_paint_histogram_scope(cairo_t *cr, gint x, gint y, gint w, gint
   FINISH
 }
 
-void dtgtk_cairo_paint_waveform_scope(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_waveform_scope(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1192,7 +1192,7 @@ final:
   FINISH
 }
 
-void dtgtk_cairo_paint_vectorscope(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_vectorscope(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1204,7 +1204,7 @@ void dtgtk_cairo_paint_vectorscope(cairo_t *cr, gint x, gint y, gint w, gint h, 
   FINISH
 }
 
-void dtgtk_cairo_paint_linear_scale(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_linear_scale(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1215,7 +1215,7 @@ void dtgtk_cairo_paint_linear_scale(cairo_t *cr, gint x, gint y, gint w, gint h,
   FINISH
 }
 
-void dtgtk_cairo_paint_logarithmic_scale(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_logarithmic_scale(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1226,7 +1226,7 @@ void dtgtk_cairo_paint_logarithmic_scale(cairo_t *cr, gint x, gint y, gint w, gi
   FINISH
 }
 
-void dtgtk_cairo_paint_waveform_overlaid(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_waveform_overlaid(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1251,7 +1251,7 @@ final:
   FINISH
 }
 
-void dtgtk_cairo_paint_rgb_parade(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_rgb_parade(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1285,7 +1285,7 @@ void dtgtk_cairo_paint_rgb_parade(cairo_t *cr, gint x, gint y, gint w, gint h, g
   FINISH
 }
 
-void dtgtk_cairo_paint_luv(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_luv(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1307,7 +1307,7 @@ void dtgtk_cairo_paint_luv(cairo_t *cr, gint x, gint y, gint w, gint h, gint fla
   FINISH
 }
 
-void dtgtk_cairo_paint_jzazbz(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_jzazbz(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1325,7 +1325,7 @@ void dtgtk_cairo_paint_jzazbz(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
   FINISH
 }
 
-void dtgtk_cairo_paint_ryb(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_ryb(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.2, 1, -0.05, -0.05)
 
@@ -1353,7 +1353,7 @@ void dtgtk_cairo_paint_ryb(cairo_t *cr, gint x, gint y, gint w, gint h, gint fla
   FINISH
 }
 
-void dtgtk_cairo_paint_color_harmony(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_color_harmony(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0.5, 0.5)
 
@@ -1364,7 +1364,7 @@ void dtgtk_cairo_paint_color_harmony(cairo_t *cr, gint x, gint y, gint w, gint h
     const float angle[4];
     const float length[4];
   } ch_t;
-  ch_t *ch = (ch_t *)data;
+  const ch_t *ch = (ch_t *)data;
 
   cairo_arc(cr, 0.0, 0.0, 0.5, 0, 2.0 * M_PI);
   cairo_stroke(cr);
@@ -1385,7 +1385,7 @@ void dtgtk_cairo_paint_color_harmony(cairo_t *cr, gint x, gint y, gint w, gint h
   FINISH
 }
 
-void dtgtk_cairo_paint_clock(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_clock(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.2, 1.2, 0.5, 0.5)
 
@@ -1410,7 +1410,7 @@ void dtgtk_cairo_paint_clock(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
   FINISH
 }
 
-void dtgtk_cairo_paint_filmstrip(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_filmstrip(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   const double sw = 0.6;
   const double bend = 0.3;
@@ -1445,7 +1445,7 @@ void dtgtk_cairo_paint_filmstrip(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   FINISH
 }
 
-void dtgtk_cairo_paint_directory(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_directory(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0);
 
@@ -1466,7 +1466,7 @@ void dtgtk_cairo_paint_directory(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   FINISH
 }
 
-void dtgtk_cairo_paint_refresh(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_refresh(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1487,7 +1487,7 @@ void dtgtk_cairo_paint_refresh(cairo_t *cr, gint x, gint y, gint w, gint h, gint
   FINISH
 }
 
-void dtgtk_cairo_paint_perspective(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_perspective(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1522,7 +1522,7 @@ void dtgtk_cairo_paint_perspective(cairo_t *cr, gint x, gint y, gint w, gint h, 
   FINISH
 }
 
-void dtgtk_cairo_paint_structure(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_structure(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1542,7 +1542,7 @@ void dtgtk_cairo_paint_structure(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   FINISH
 }
 
-void dtgtk_cairo_paint_draw_structure(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_draw_structure(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1565,7 +1565,7 @@ void dtgtk_cairo_paint_draw_structure(cairo_t *cr, gint x, gint y, gint w, gint 
   FINISH
 }
 
-void dtgtk_cairo_paint_cancel(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_cancel(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1578,7 +1578,7 @@ void dtgtk_cairo_paint_cancel(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
   FINISH
 }
 
-void dtgtk_cairo_paint_aspectflip(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_aspectflip(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1599,7 +1599,7 @@ void dtgtk_cairo_paint_aspectflip(cairo_t *cr, gint x, gint y, gint w, gint h, g
   FINISH
 }
 
-void dtgtk_cairo_paint_styles(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_styles(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(0.5 * 1.1, 1, 0.5 + 0.06, 0.5 -0.10)
 
@@ -1622,7 +1622,7 @@ void dtgtk_cairo_paint_styles(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
   FINISH
 }
 
-void dtgtk_cairo_paint_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_label(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1665,7 +1665,7 @@ void dtgtk_cairo_paint_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
   FINISH
 }
 
-void dtgtk_cairo_paint_label_sel(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_label_sel(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   #define CPF_USER_DATA_INCLUDE CPF_USER_DATA
   #define CPF_USER_DATA_EXCLUDE CPF_USER_DATA << 1
@@ -1721,7 +1721,7 @@ void dtgtk_cairo_paint_label_sel(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   FINISH
 }
 
-void dtgtk_cairo_paint_reject(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_reject(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(0.95, 1, 0, 0)
 
@@ -1742,7 +1742,7 @@ void dtgtk_cairo_paint_reject(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
   FINISH
 }
 
-void dtgtk_cairo_paint_remove(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_remove(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(0.95, 1, 0, 0)
 
@@ -1760,7 +1760,7 @@ void dtgtk_cairo_paint_remove(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
   FINISH
 }
 
-void dtgtk_cairo_paint_star(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_star(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1770,7 +1770,7 @@ void dtgtk_cairo_paint_star(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   // we fill the star if needed (mouseover or activated)
   if(data)
   {
-    GdkRGBA *bgc = (GdkRGBA *)data; // the inner star color is defined in data
+    const GdkRGBA *bgc = (GdkRGBA *)data; // the inner star color is defined in data
     double r, g, b, a;
     if(cairo_pattern_get_rgba(cairo_get_source(cr), &r, &g, &b, &a) == CAIRO_STATUS_SUCCESS)
     {
@@ -1785,7 +1785,7 @@ void dtgtk_cairo_paint_star(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   FINISH
 }
 
-void dtgtk_cairo_paint_unratestar(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_unratestar(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1811,7 +1811,7 @@ void dtgtk_cairo_paint_unratestar(cairo_t *cr, gint x, gint y, gint w, gint h, g
   FINISH
 }
 
-void dtgtk_cairo_paint_local_copy(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_local_copy(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1839,7 +1839,7 @@ void dtgtk_cairo_paint_local_copy(cairo_t *cr, gint x, gint y, gint w, gint h, g
   FINISH
 }
 
-void dtgtk_cairo_paint_altered(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_altered(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(0.5 * 0.95, 1, 0.5, 0.5)
 
@@ -1859,7 +1859,7 @@ void dtgtk_cairo_paint_altered(cairo_t *cr, gint x, gint y, gint w, gint h, gint
   FINISH
 }
 
-void dtgtk_cairo_paint_tags(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_tags(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1881,7 +1881,7 @@ void dtgtk_cairo_paint_tags(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
 }
 
 
-void dtgtk_cairo_paint_audio(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_audio(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -1904,7 +1904,7 @@ void dtgtk_cairo_paint_audio(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
   FINISH
 }
 
-void dtgtk_cairo_paint_label_flower(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_label_flower(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1.1, 1, 0, 0)
 
@@ -1948,7 +1948,7 @@ void dtgtk_cairo_paint_label_flower(cairo_t *cr, gint x, gint y, gint w, gint h,
   FINISH
 }
 
-void dtgtk_cairo_paint_colorpicker(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_colorpicker(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0.05)
 
@@ -1980,7 +1980,7 @@ void dtgtk_cairo_paint_colorpicker(cairo_t *cr, gint x, gint y, gint w, gint h, 
   FINISH
 }
 
-void dtgtk_cairo_paint_colorpicker_set_values(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_colorpicker_set_values(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0.05)
 
@@ -2020,7 +2020,7 @@ void dtgtk_cairo_paint_colorpicker_set_values(cairo_t *cr, gint x, gint y, gint 
   FINISH
 }
 
-void dtgtk_cairo_paint_showmask(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_showmask(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2036,7 +2036,7 @@ void dtgtk_cairo_paint_showmask(cairo_t *cr, gint x, gint y, gint w, gint h, gin
   FINISH
 }
 
-void dtgtk_cairo_paint_preferences(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_preferences(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(0.5 * 0.95, 1, 0.5, 0.5)
 
@@ -2059,7 +2059,7 @@ void dtgtk_cairo_paint_preferences(cairo_t *cr, gint x, gint y, gint w, gint h, 
   FINISH
 }
 
-void dtgtk_cairo_paint_overlays(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_overlays(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(0.5 * 1.03, 1, 0.5, 0.5)
 
@@ -2069,7 +2069,7 @@ void dtgtk_cairo_paint_overlays(cairo_t *cr, gint x, gint y, gint w, gint h, gin
   FINISH
 }
 
-void dtgtk_cairo_paint_help(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_help(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(0.5 * 0.97, 1, 0.5, 0.5)
 
@@ -2082,7 +2082,7 @@ void dtgtk_cairo_paint_help(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   FINISH
 }
 
-void dtgtk_cairo_paint_grouping(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_grouping(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2107,7 +2107,7 @@ void dtgtk_cairo_paint_grouping(cairo_t *cr, gint x, gint y, gint w, gint h, gin
   FINISH
 }
 
-void dtgtk_cairo_paint_alignment(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_alignment(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2169,7 +2169,7 @@ void dtgtk_cairo_paint_alignment(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   FINISH
 }
 
-void dtgtk_cairo_paint_text_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_text_label(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2185,7 +2185,7 @@ void dtgtk_cairo_paint_text_label(cairo_t *cr, gint x, gint y, gint w, gint h, g
   FINISH
 }
 
-void dtgtk_cairo_paint_union(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_union(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2197,7 +2197,7 @@ void dtgtk_cairo_paint_union(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
   FINISH
 }
 
-void dtgtk_cairo_paint_intersection(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_intersection(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2226,7 +2226,7 @@ final:
   FINISH
 }
 
-void dtgtk_cairo_paint_andnot(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_andnot(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2237,7 +2237,7 @@ void dtgtk_cairo_paint_andnot(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
   FINISH
 }
 
-void dtgtk_cairo_paint_dropdown(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_dropdown(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2249,7 +2249,7 @@ void dtgtk_cairo_paint_dropdown(cairo_t *cr, gint x, gint y, gint w, gint h, gin
   FINISH
 }
 
-void dtgtk_cairo_paint_bracket(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_bracket(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2268,7 +2268,7 @@ void dtgtk_cairo_paint_bracket(cairo_t *cr, gint x, gint y, gint w, gint h, gint
   FINISH
 }
 
-void dtgtk_cairo_paint_lock(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_lock(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2285,7 +2285,7 @@ void dtgtk_cairo_paint_lock(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   FINISH
 }
 
-void dtgtk_cairo_paint_check_mark(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_check_mark(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2297,7 +2297,7 @@ void dtgtk_cairo_paint_check_mark(cairo_t *cr, gint x, gint y, gint w, gint h, g
   FINISH
 }
 
-void dtgtk_cairo_paint_overexposed(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_overexposed(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2315,7 +2315,7 @@ void dtgtk_cairo_paint_overexposed(cairo_t *cr, gint x, gint y, gint w, gint h, 
 }
 
 
-void dtgtk_cairo_paint_bulb(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_bulb(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(0.95, 1, 0, -0.05)
 
@@ -2349,7 +2349,7 @@ void dtgtk_cairo_paint_bulb(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   FINISH
 }
 
-void dtgtk_cairo_paint_bulb_mod(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_bulb_mod(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(0.95, 1, 0, -0.05)
 
@@ -2393,7 +2393,7 @@ void dtgtk_cairo_paint_bulb_mod(cairo_t *cr, gint x, gint y, gint w, gint h, gin
 }
 
 
-void dtgtk_cairo_paint_rawoverexposed(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_rawoverexposed(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2427,7 +2427,7 @@ void dtgtk_cairo_paint_rawoverexposed(cairo_t *cr, gint x, gint y, gint w, gint 
   FINISH
 }
 
-void dtgtk_cairo_paint_gamut_check(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_gamut_check(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.15, 1, 0, -0.05)
 
@@ -2462,7 +2462,7 @@ void dtgtk_cairo_paint_gamut_check(cairo_t *cr, gint x, gint y, gint w, gint h, 
   FINISH
 }
 
-void dtgtk_cairo_paint_softproof(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_softproof(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.1, 1, 0, 0)
 
@@ -2485,7 +2485,7 @@ void dtgtk_cairo_paint_softproof(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   FINISH
 }
 
-void dtgtk_cairo_paint_display(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_display(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2499,7 +2499,7 @@ void dtgtk_cairo_paint_display(cairo_t *cr, gint x, gint y, gint w, gint h, gint
   FINISH
 }
 
-void dtgtk_cairo_paint_display2(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_display2(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(0.55, 1, 0.5, 0.5)
 
@@ -2522,7 +2522,7 @@ void dtgtk_cairo_paint_display2(cairo_t *cr, gint x, gint y, gint w, gint h, gin
   FINISH
 }
 
-void dtgtk_cairo_paint_rect_landscape(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_rect_landscape(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2536,7 +2536,7 @@ void dtgtk_cairo_paint_rect_landscape(cairo_t *cr, gint x, gint y, gint w, gint 
   FINISH
 }
 
-void dtgtk_cairo_paint_rect_portrait(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_rect_portrait(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2550,7 +2550,7 @@ void dtgtk_cairo_paint_rect_portrait(cairo_t *cr, gint x, gint y, gint w, gint h
   FINISH
 }
 
-void dtgtk_cairo_paint_polygon(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_polygon(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2566,7 +2566,7 @@ void dtgtk_cairo_paint_polygon(cairo_t *cr, gint x, gint y, gint w, gint h, gint
   FINISH
 }
 
-void dtgtk_cairo_paint_zoom(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_zoom(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2584,7 +2584,7 @@ void dtgtk_cairo_paint_zoom(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   FINISH
 }
 
-void dtgtk_cairo_paint_multiinstance(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_multiinstance(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2600,7 +2600,7 @@ void dtgtk_cairo_paint_multiinstance(cairo_t *cr, gint x, gint y, gint w, gint h
   FINISH
 }
 
-void dtgtk_cairo_paint_modulegroup_active(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_modulegroup_active(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.1, 1, 0, 0)
 
@@ -2612,7 +2612,7 @@ void dtgtk_cairo_paint_modulegroup_active(cairo_t *cr, gint x, gint y, gint w, g
   FINISH
 }
 
-void dtgtk_cairo_paint_modulegroup_favorites(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_modulegroup_favorites(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.2, 1, 0, 0)
 
@@ -2635,7 +2635,7 @@ void dtgtk_cairo_paint_modulegroup_favorites(cairo_t *cr, gint x, gint y, gint w
   FINISH
 }
 
-void dtgtk_cairo_paint_modulegroup_basics(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_modulegroup_basics(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.1, 1, 0, 0)
 
@@ -2695,7 +2695,7 @@ final:
   FINISH
 }
 
-void dtgtk_cairo_paint_modulegroup_basic(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_modulegroup_basic(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.1, 1, 0, 0)
 
@@ -2706,7 +2706,7 @@ void dtgtk_cairo_paint_modulegroup_basic(cairo_t *cr, gint x, gint y, gint w, gi
   FINISH
 }
 
-void dtgtk_cairo_paint_modulegroup_tone(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_modulegroup_tone(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.1, 1, 0, 0)
 
@@ -2726,7 +2726,7 @@ void dtgtk_cairo_paint_modulegroup_tone(cairo_t *cr, gint x, gint y, gint w, gin
   FINISH
 }
 
-void dtgtk_cairo_paint_modulegroup_color(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_modulegroup_color(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.1, 1, 0, 0)
 
@@ -2750,7 +2750,7 @@ void dtgtk_cairo_paint_modulegroup_color(cairo_t *cr, gint x, gint y, gint w, gi
   FINISH
 }
 
-void dtgtk_cairo_paint_modulegroup_correct(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_modulegroup_correct(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.1, 1, 0, 0)
 
@@ -2763,7 +2763,7 @@ void dtgtk_cairo_paint_modulegroup_correct(cairo_t *cr, gint x, gint y, gint w, 
   FINISH
 }
 
-void dtgtk_cairo_paint_modulegroup_effect(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_modulegroup_effect(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.1, 1, 0, 0)
 
@@ -2814,7 +2814,7 @@ void dtgtk_cairo_paint_modulegroup_effect(cairo_t *cr, gint x, gint y, gint w, g
   FINISH
 }
 
-void dtgtk_cairo_paint_modulegroup_grading(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_modulegroup_grading(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.2, 1, 0, 0)
 
@@ -2855,7 +2855,7 @@ void dtgtk_cairo_paint_modulegroup_grading(cairo_t *cr, gint x, gint y, gint w, 
   FINISH
 }
 
-void dtgtk_cairo_paint_modulegroup_technical(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_modulegroup_technical(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.2, 1, 0, 0)
 
@@ -2886,7 +2886,7 @@ void dtgtk_cairo_paint_modulegroup_technical(cairo_t *cr, gint x, gint y, gint w
   FINISH
 }
 
-void dtgtk_cairo_paint_map_pin(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_map_pin(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2899,7 +2899,7 @@ void dtgtk_cairo_paint_map_pin(cairo_t *cr, gint x, gint y, gint w, gint h, gint
   FINISH
 }
 
-void dtgtk_cairo_paint_tool_clone(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_tool_clone(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2912,7 +2912,7 @@ void dtgtk_cairo_paint_tool_clone(cairo_t *cr, gint x, gint y, gint w, gint h, g
   FINISH
 }
 
-void dtgtk_cairo_paint_tool_heal(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_tool_heal(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2940,7 +2940,7 @@ void dtgtk_cairo_paint_tool_heal(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   FINISH
 }
 
-void dtgtk_cairo_paint_tool_fill(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_tool_fill(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.08, 1, 0, 0)
 
@@ -2958,7 +2958,7 @@ void dtgtk_cairo_paint_tool_fill(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   FINISH
 }
 
-void dtgtk_cairo_paint_tool_blur(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_tool_blur(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.1, 1, 0, 0)
 
@@ -2973,7 +2973,7 @@ void dtgtk_cairo_paint_tool_blur(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   FINISH
 }
 
-void dtgtk_cairo_paint_paste_forms(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_paste_forms(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -2994,7 +2994,7 @@ void dtgtk_cairo_paint_paste_forms(cairo_t *cr, gint x, gint y, gint w, gint h, 
   FINISH
 }
 
-void dtgtk_cairo_paint_cut_forms(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_cut_forms(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, -0.07)
 
@@ -3031,7 +3031,7 @@ void dtgtk_cairo_paint_cut_forms(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   FINISH
 }
 
-void dtgtk_cairo_paint_display_wavelet_scale(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_display_wavelet_scale(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(0.93, 1, 0, 0)
 
@@ -3073,7 +3073,7 @@ void dtgtk_cairo_paint_display_wavelet_scale(cairo_t *cr, gint x, gint y, gint w
   FINISH
 }
 
-void dtgtk_cairo_paint_auto_levels(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_auto_levels(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -3096,7 +3096,7 @@ void dtgtk_cairo_paint_auto_levels(cairo_t *cr, gint x, gint y, gint w, gint h, 
   FINISH
 }
 
-void _compass_star(cairo_t *cr, double cx, double cy, double size)
+void _compass_star(cairo_t *cr, const double cx, const double cy, const double size)
 {
   const double a = size / 2.0;
   const double b = size / 10.0;
@@ -3113,7 +3113,7 @@ void _compass_star(cairo_t *cr, double cx, double cy, double size)
   cairo_fill(cr);
 }
 
-void dtgtk_cairo_paint_compass_star(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_compass_star(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0 , 0)
 
@@ -3122,7 +3122,7 @@ void dtgtk_cairo_paint_compass_star(cairo_t *cr, gint x, gint y, gint w, gint h,
   FINISH
 }
 
-void dtgtk_cairo_paint_wand(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_wand(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -3147,7 +3147,7 @@ void dtgtk_cairo_paint_wand(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   FINISH
 }
 
-void dtgtk_cairo_paint_lt_mode_grid(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_lt_mode_grid(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.4, 1, 0, 0)
 
@@ -3167,7 +3167,7 @@ void dtgtk_cairo_paint_lt_mode_grid(cairo_t *cr, gint x, gint y, gint w, gint h,
   FINISH
 }
 
-void dtgtk_cairo_paint_lt_mode_zoom(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_lt_mode_zoom(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.4, 1, 0, 0)
 
@@ -3197,7 +3197,7 @@ void dtgtk_cairo_paint_lt_mode_zoom(cairo_t *cr, gint x, gint y, gint w, gint h,
   FINISH
 }
 
-void dtgtk_cairo_paint_lt_mode_culling_fixed(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_lt_mode_culling_fixed(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.4, 1, 0, 0)
 
@@ -3233,7 +3233,7 @@ void dtgtk_cairo_paint_lt_mode_culling_fixed(cairo_t *cr, gint x, gint y, gint w
   FINISH
 }
 
-void dtgtk_cairo_paint_lt_mode_culling_dynamic(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_lt_mode_culling_dynamic(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.4, 1, 0, 0)
 
@@ -3259,7 +3259,7 @@ void dtgtk_cairo_paint_lt_mode_culling_dynamic(cairo_t *cr, gint x, gint y, gint
   FINISH
 }
 
-void dtgtk_cairo_paint_lt_mode_fullpreview(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_lt_mode_fullpreview(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1.4, 1, 0, 0)
 
@@ -3299,7 +3299,7 @@ void dtgtk_cairo_paint_lt_mode_fullpreview(cairo_t *cr, gint x, gint y, gint w, 
   FINISH
 }
 
-void dtgtk_cairo_paint_link(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_link(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -3421,7 +3421,7 @@ void dtgtk_cairo_paint_shortcut(cairo_t *cr, gint x, gint y, gint w, gint h, gin
   FINISH
 }
 
-void dtgtk_cairo_paint_pin(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_pin(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -3445,7 +3445,7 @@ void dtgtk_cairo_paint_pin(cairo_t *cr, gint x, gint y, gint w, gint h, gint fla
   FINISH
 }
 
-void dtgtk_cairo_paint_filtering_menu(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_filtering_menu(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
@@ -3475,7 +3475,7 @@ void dtgtk_cairo_paint_filtering_menu(cairo_t *cr, gint x, gint y, gint w, gint 
   FINISH
 }
 
-void dtgtk_cairo_paint_snapshots_restore(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_snapshots_restore(cairo_t *cr, const gint x, const gint y, const gint w, const gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
