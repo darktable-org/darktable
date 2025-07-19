@@ -31,7 +31,7 @@ float dt_colorspaces_deltaE_1976(dt_aligned_pixel_t Lab0, dt_aligned_pixel_t Lab
   float dE = 0.0;
   for(int i = 0; i < 3; i++)
   {
-    float difference = Lab0[i] - Lab1[i];
+    const float difference = Lab0[i] - Lab1[i];
     dE += difference * difference;
   }
   return sqrtf(dE);
@@ -40,16 +40,16 @@ float dt_colorspaces_deltaE_1976(dt_aligned_pixel_t Lab0, dt_aligned_pixel_t Lab
 // http://www.brucelindbloom.com/index.html?Eqn_DeltaE_CIE2000.html
 float dt_colorspaces_deltaE_2000(dt_aligned_pixel_t Lab0, dt_aligned_pixel_t Lab1)
 {
-  float L_ip = (Lab0[0] + Lab1[0]) * 0.5;
-  float C1 = sqrtf(Lab0[1] * Lab0[1] + Lab0[2] * Lab0[2]);
-  float C2 = sqrtf(Lab1[1] * Lab1[1] + Lab1[2] * Lab1[2]);
-  float C_i = (C1 + C2) * 0.5;
-  float G = (1.0 - sqrtf(powf(C_i, 7) / (powf(C_i, 7) + powf(25, 7)))) * 0.5;
-  float a1_p = Lab0[1] * (1 + G);
-  float a2_p = Lab1[1] * (1 + G);
-  float C1_p = sqrtf(a1_p * a1_p + Lab0[2] * Lab0[2]);
-  float C2_p = sqrtf(a2_p * a2_p + Lab1[2] * Lab1[2]);
-  float C_ip = (C1_p + C2_p) * 0.5;
+  const float L_ip = (Lab0[0] + Lab1[0]) * 0.5;
+  const float C1 = sqrtf(Lab0[1] * Lab0[1] + Lab0[2] * Lab0[2]);
+  const float C2 = sqrtf(Lab1[1] * Lab1[1] + Lab1[2] * Lab1[2]);
+  const float C_i = (C1 + C2) * 0.5;
+  const float G = (1.0 - sqrtf(powf(C_i, 7) / (powf(C_i, 7) + powf(25, 7)))) * 0.5;
+  const float a1_p = Lab0[1] * (1 + G);
+  const float a2_p = Lab1[1] * (1 + G);
+  const float C1_p = sqrtf(a1_p * a1_p + Lab0[2] * Lab0[2]);
+  const float C2_p = sqrtf(a2_p * a2_p + Lab1[2] * Lab1[2]);
+  const float C_ip = (C1_p + C2_p) * 0.5;
   float h1_p = rad2degf(atan2f(Lab0[2], a1_p));
   if(h1_p < 0) h1_p += 360.0;
   float h2_p = rad2degf(atan2f(Lab1[2], a2_p));
@@ -59,7 +59,7 @@ float dt_colorspaces_deltaE_2000(dt_aligned_pixel_t Lab0, dt_aligned_pixel_t Lab
     H_ip = (h1_p + h2_p + 360.0) * 0.5;
   else
     H_ip = (h1_p + h2_p) * 0.5;
-  float T = 1.0 - 0.17 * cosf(deg2radf(H_ip - 30.0)) + 0.24 * cosf(deg2radf(2.0 * H_ip))
+  const float T = 1.0 - 0.17 * cosf(deg2radf(H_ip - 30.0)) + 0.24 * cosf(deg2radf(2.0 * H_ip))
             + 0.32 * cosf(deg2radf(3.0 * H_ip + 6.0)) - 0.20 * cosf(deg2radf(4.0 * H_ip - 63.0));
   float dh_p = h2_p - h1_p;
   if(fabsf(dh_p) > 180.0)
@@ -69,20 +69,20 @@ float dt_colorspaces_deltaE_2000(dt_aligned_pixel_t Lab0, dt_aligned_pixel_t Lab
     else
       dh_p -= 360.0;
   }
-  float dL_p = Lab1[0] - Lab0[0];
-  float dC_p = C2_p - C1_p;
-  float dH_p = 2.0 * sqrtf(C1_p * C2_p) * sinf(deg2radf(dh_p * 0.5));
-  float SL = 1.0 + ((0.015 * (L_ip - 50.0) * (L_ip - 50.0)) / sqrtf(20.0 + (L_ip - 50.0) * (L_ip - 50.0)));
-  float SC = 1.0 + 0.045 * C_ip;
-  float SH = 1.0 + 0.015 * C_ip * T;
-  float dtheta = 30.0 * expf(-1.0 * ((H_ip - 275.0) / 25.0) * ((H_ip - 275.0) / 25.0));
-  float RC = 2.0 * sqrtf(powf(C_ip, 7) / (powf(C_ip, 7) + powf(25, 7)));
-  float RT = -1.0 * RC * sinf(deg2radf(2.0 * dtheta));
-  float KL = 1.0;
-  float KC = 1.0;
-  float KH = 1.0;
+  const float dL_p = Lab1[0] - Lab0[0];
+  const float dC_p = C2_p - C1_p;
+  const float dH_p = 2.0 * sqrtf(C1_p * C2_p) * sinf(deg2radf(dh_p * 0.5));
+  const float SL = 1.0 + ((0.015 * (L_ip - 50.0) * (L_ip - 50.0)) / sqrtf(20.0 + (L_ip - 50.0) * (L_ip - 50.0)));
+  const float SC = 1.0 + 0.045 * C_ip;
+  const float SH = 1.0 + 0.015 * C_ip * T;
+  const float dtheta = 30.0 * expf(-1.0 * ((H_ip - 275.0) / 25.0) * ((H_ip - 275.0) / 25.0));
+  const float RC = 2.0 * sqrtf(powf(C_ip, 7) / (powf(C_ip, 7) + powf(25, 7)));
+  const float RT = -1.0 * RC * sinf(deg2radf(2.0 * dtheta));
+  const float KL = 1.0;
+  const float KC = 1.0;
+  const float KH = 1.0;
 
-  float dE = sqrtf((dL_p / (KL * SL)) * (dL_p / (KL * SL)) + (dC_p / (KC * SC)) * (dC_p / (KC * SC))
+  const float dE = sqrtf((dL_p / (KL * SL)) * (dL_p / (KL * SL)) + (dC_p / (KC * SC)) * (dC_p / (KC * SC))
                    + (dH_p / (KH * SH)) * (dH_p / (KH * SH)) + RT * (dC_p / (KC * SC)) * (dH_p / (KH * SH)));
   return dE;
 }
