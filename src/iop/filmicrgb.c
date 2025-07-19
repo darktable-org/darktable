@@ -388,20 +388,20 @@ static void convert_to_spline_v3(dt_iop_filmicrgb_params_t* n)
   dt_iop_filmic_rgb_compute_spline(n, &spline);
 
   // from the spline, compute new values for contrast, balance, and latitude to update spline_version to v3
-  float grey_log = spline.x[2];
+  const float grey_log = spline.x[2];
   float toe_log = fminf(spline.x[1], grey_log);
   float shoulder_log = fmaxf(spline.x[3], grey_log);
-  float black_display = spline.y[0];
-  float grey_display = spline.y[2];
-  float white_display = spline.y[4];
+  const float black_display = spline.y[0];
+  const float grey_display = spline.y[2];
+  const float white_display = spline.y[4];
   const float scaled_safety_margin = SAFETY_MARGIN * (white_display - black_display);
   float toe_display = fminf(spline.y[1], grey_display);
   float shoulder_display = fmaxf(spline.y[3], grey_display);
 
-  float hardness = n->output_power;
+  const float hardness = n->output_power;
   float contrast = (shoulder_display - toe_display) / (shoulder_log - toe_log);
   // sanitize toe and shoulder, for min and max values, while keeping the same contrast
-  float linear_intercept = grey_display - (contrast * grey_log);
+  const float linear_intercept = grey_display - (contrast * grey_log);
   if(toe_display < black_display + scaled_safety_margin)
   {
     toe_display = black_display + scaled_safety_margin;
@@ -420,8 +420,8 @@ static void convert_to_spline_v3(dt_iop_filmicrgb_params_t* n)
   // latitude is the % of the segment [b+safety*(w-b),w-safety*(w-b)] which is covered, where b is black_display and w white_display
   const float latitude = CLAMP((shoulder_display - toe_display) / ((white_display - black_display) - 2.0f * scaled_safety_margin), 0.0f, 0.99f);
   // find balance
-  float toe_display_ref = latitude * (black_display + scaled_safety_margin) + (1.0f - latitude) * grey_display;
-  float shoulder_display_ref = latitude * (white_display - scaled_safety_margin) + (1.0f - latitude) * grey_display;
+  const float toe_display_ref = latitude * (black_display + scaled_safety_margin) + (1.0f - latitude) * grey_display;
+  const float shoulder_display_ref = latitude * (white_display - scaled_safety_margin) + (1.0f - latitude) * grey_display;
   float balance;
   if(shoulder_display < shoulder_display_ref)
     balance = 0.5f * (1.0f - fmaxf(shoulder_display - grey_display, 0.0f) / fmaxf(shoulder_display_ref - grey_display, 1E-5f));
@@ -1289,7 +1289,7 @@ static inline gboolean reconstruct_highlights(const float *const restrict in,
                                           float *const restrict reconstructed,
                                           const dt_iop_filmicrgb_reconstruction_type_t variant,
                                           const dt_iop_filmicrgb_data_t *const data,
-                                          dt_dev_pixelpipe_iop_t *piece,
+                                          const dt_dev_pixelpipe_iop_t *piece,
                                           const dt_iop_roi_t *const roi_in,
                                           const dt_iop_roi_t *const roi_out)
 {
@@ -2115,7 +2115,7 @@ void process(dt_iop_module_t *self,
    * integer
    */
 
-  float *restrict in = (float *)ivoid;
+  const float *restrict in = (float *)ivoid;
   float *const restrict out = (float *)ovoid;
   float *const restrict mask = dt_alloc_align_float((size_t)roi_out->width * roi_out->height);
 
@@ -2129,7 +2129,7 @@ void process(dt_iop_module_t *self,
   // display mask and exit
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) && mask)
   {
-    dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
+    const dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
     if(g->show_mask)
     {
@@ -2233,9 +2233,9 @@ void process(dt_iop_module_t *self,
 }
 
 #ifdef HAVE_OPENCL
-static inline cl_int reconstruct_highlights_cl(cl_mem in, cl_mem mask, cl_mem reconstructed,
-                                          const dt_iop_filmicrgb_reconstruction_type_t variant, dt_iop_filmicrgb_global_data_t *const gd,
-                                          const dt_iop_filmicrgb_data_t *const data, dt_dev_pixelpipe_iop_t *piece,
+static inline cl_int reconstruct_highlights_cl(const cl_mem in, const cl_mem mask, const cl_mem reconstructed,
+                                          const dt_iop_filmicrgb_reconstruction_type_t variant, const dt_iop_filmicrgb_global_data_t *const gd,
+                                          const dt_iop_filmicrgb_data_t *const data, const dt_dev_pixelpipe_iop_t *piece,
                                           const dt_iop_roi_t *const roi_in)
 {
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
@@ -2248,13 +2248,13 @@ static inline cl_int reconstruct_highlights_cl(cl_mem in, cl_mem mask, cl_mem re
   const int scales = get_scales(roi_in, piece);
 
   // wavelets scales buffers
-  cl_mem LF_even = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4); // low-frequencies RGB
-  cl_mem LF_odd = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);  // low-frequencies RGB
-  cl_mem HF_RGB = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);  // high-frequencies RGB
-  cl_mem HF_grey = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4); // high-frequencies RGB backup
+  const cl_mem LF_even = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4); // low-frequencies RGB
+  const cl_mem LF_odd = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);  // low-frequencies RGB
+  const cl_mem HF_RGB = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);  // high-frequencies RGB
+  const cl_mem HF_grey = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4); // high-frequencies RGB backup
 
   // alloc a permanent reusable buffer for intermediate computations - avoid multiple alloc/free
-  cl_mem temp = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);;
+  const cl_mem temp = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);;
 
   if(!LF_even || !LF_odd || !HF_RGB || !HF_grey || !temp)
   {
@@ -2370,7 +2370,7 @@ int process_cl(dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_filmicrgb_data_t *const d = piece->data;
-  dt_iop_filmicrgb_global_data_t *const gd = self->global_data;
+  const dt_iop_filmicrgb_global_data_t *const gd = self->global_data;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
@@ -2384,7 +2384,7 @@ int process_cl(dt_iop_module_t *self,
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
+  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   cl_mem in = dev_in;
   cl_mem inpainted = NULL;
@@ -2416,8 +2416,8 @@ int process_cl(dt_iop_module_t *self,
   const float norm_min = exp_tonemapping_v2(0.f, d->grey_source, d->black_source, d->dynamic_range);
   const float norm_max = exp_tonemapping_v2(1.f, d->grey_source, d->black_source, d->dynamic_range);
 
-  cl_mem input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), input_matrix);
-  cl_mem output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), output_matrix);
+  const cl_mem input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), input_matrix);
+  const cl_mem output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), output_matrix);
   cl_mem export_input_matrix_cl = NULL;
   cl_mem export_output_matrix_cl = NULL;
 
@@ -2464,7 +2464,7 @@ int process_cl(dt_iop_module_t *self,
   // display mask and exit
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
-    dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
+    const dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
     if(g->show_mask)
     {
@@ -2583,7 +2583,7 @@ error:
 }
 #endif
 
-static inline void _compute_output_power(dt_iop_module_t *self,
+static inline void _compute_output_power(const dt_iop_module_t *self,
                                          dt_iop_filmicrgb_params_t *p)
 {
   const float min = self->so->get_f("output_power")->Float.Min;
@@ -2599,7 +2599,7 @@ static void apply_auto_grey(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_filmicrgb_params_t *p = self->params;
-  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
+  const dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
   const dt_iop_order_iccprofile_info_t *const work_profile
       = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
@@ -2627,7 +2627,7 @@ static void apply_auto_black(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_filmicrgb_params_t *p = self->params;
-  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
+  const dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
   // Black
   const dt_iop_order_iccprofile_info_t *const work_profile
@@ -2654,7 +2654,7 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_filmicrgb_params_t *p = self->params;
-  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
+  const dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
   // White
   const dt_iop_order_iccprofile_info_t *const work_profile
@@ -2678,7 +2678,7 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
 
 static void apply_autotune(dt_iop_module_t *self)
 {
-  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
+  const dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
   dt_iop_filmicrgb_params_t *p = self->params;
   const dt_iop_order_iccprofile_info_t *const work_profile
       = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
@@ -2718,7 +2718,7 @@ static void apply_autotune(dt_iop_module_t *self)
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
+  const dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
   if(picker == g->grey_point_source)
     apply_auto_grey(self);
@@ -2730,7 +2730,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
     apply_autotune(self);
 }
 
-static void show_mask_callback(GtkToggleButton *button, GdkEventButton *event, dt_iop_module_t *self)
+static void show_mask_callback(GtkToggleButton *button, GdkEventButton *event, const dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
@@ -2795,10 +2795,10 @@ inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_p
   }
 
   float toe_log, shoulder_log, toe_display, shoulder_display, contrast;
-  float balance = CLAMP(p->balance, -50.0f, 50.0f) / 100.0f; // in %
+  const float balance = CLAMP(p->balance, -50.0f, 50.0f) / 100.0f; // in %
   if(p->spline_version < DT_FILMIC_SPLINE_VERSION_V3)
   {
-    float latitude = CLAMP(p->latitude, 0.0f, 100.0f) / 100.0f * dynamic_range; // in % of dynamic range
+    const float latitude = CLAMP(p->latitude, 0.0f, 100.0f) / 100.0f * dynamic_range; // in % of dynamic range
     contrast = CLAMP(p->contrast, 1.00001f, 6.0f);
 
     // nodes for mapping from log encoding to desired target luminance
@@ -2807,7 +2807,7 @@ inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_p
     shoulder_log = grey_log + latitude / dynamic_range * fabsf(white_source / dynamic_range);
 
     // interception
-    float linear_intercept = grey_display - (contrast * grey_log);
+    const float linear_intercept = grey_display - (contrast * grey_log);
 
     // y coordinates
     toe_display = (toe_log * contrast + linear_intercept);
@@ -2828,8 +2828,8 @@ inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_p
   {
     const float hardness = p->output_power;
     // latitude in %
-    float latitude = CLAMP(p->latitude, 0.0f, 100.0f) / 100.0f;
-    float slope = p->contrast * dynamic_range / 8.0f;
+    const float latitude = CLAMP(p->latitude, 0.0f, 100.0f) / 100.0f;
+    const float slope = p->contrast * dynamic_range / 8.0f;
     float min_contrast = 1.0f; // otherwise, white_display and black_display cannot be reached
     // make sure there is enough contrast to be able to construct the top right part of the curve
     min_contrast = fmaxf(min_contrast, (white_display - grey_display) / (white_log - grey_log));
@@ -2844,12 +2844,12 @@ inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_p
     //              = contrast * hardness * grey_display^(hardness-1)
     // f'(grey_log) = target_contrast <=> contrast = target_contrast / (hardness * grey_display^(hardness-1))
     contrast = slope / (hardness * powf(grey_display, hardness - 1.0f));
-    float clamped_contrast = CLAMP(contrast, min_contrast, 100.0f);
+    const float clamped_contrast = CLAMP(contrast, min_contrast, 100.0f);
     clamping = (clamped_contrast != contrast);
     contrast = clamped_contrast;
 
     // interception
-    float linear_intercept = grey_display - (contrast * grey_log);
+    const float linear_intercept = grey_display - (contrast * grey_log);
 
     // consider the line of equation y = contrast * x + linear_intercept
     // we want to keep y in [black_display, white_display] (with some safety margin)
@@ -2865,7 +2865,7 @@ inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_p
 
     // Apply the highlights/shadows balance as a shift along the contrast slope
     // negative values drag to the left and compress the shadows, on the UI negative is the inverse
-    float balance_correction = (balance > 0.0f) ? 2.0f * balance * (shoulder_log - grey_log)
+    const float balance_correction = (balance > 0.0f) ? 2.0f * balance * (shoulder_log - grey_log)
                                                 : 2.0f * balance * (grey_log - toe_log);
     toe_log -= balance_correction;
     shoulder_log -= balance_correction;
@@ -3048,7 +3048,7 @@ inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_p
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)p1;
+  const dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)p1;
   dt_iop_filmicrgb_data_t *d = piece->data;
 
   // source and display greys
@@ -3126,7 +3126,7 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
   if(!in)
   {
     // lost focus - hide the mask
-    gint mask_was_shown = g->show_mask;
+    const gint mask_was_shown = g->show_mask;
     g->show_mask = FALSE;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_highlight_mask), FALSE);
     if(mask_was_shown) dt_dev_reprocess_center(self->dev);
@@ -3147,7 +3147,7 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
-  dt_iop_filmicrgb_params_t *p = self->params;
+  const dt_iop_filmicrgb_params_t *p = self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
 
@@ -3241,7 +3241,7 @@ void init_global(dt_iop_module_so_t *self)
 
 void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_filmicrgb_global_data_t *gd = self->data;
+  const dt_iop_filmicrgb_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_filmic_rgb_split);
   dt_opencl_free_kernel(gd->kernel_filmic_rgb_chroma);
   dt_opencl_free_kernel(gd->kernel_filmic_mask);
@@ -3266,8 +3266,8 @@ void gui_reset(dt_iop_module_t *self)
 
 #define LOGBASE 20.f
 
-static inline void dt_cairo_draw_arrow(cairo_t *cr, double origin_x, double origin_y, double destination_x,
-                                       double destination_y, gboolean show_head)
+static inline void dt_cairo_draw_arrow(cairo_t *cr, const double origin_x, const double origin_y, const double destination_x,
+                                       const double destination_y, const gboolean show_head)
 {
   cairo_move_to(cr, origin_x, origin_y);
   cairo_line_to(cr, destination_x, destination_y);
@@ -3293,8 +3293,8 @@ static inline void dt_cairo_draw_arrow(cairo_t *cr, double origin_x, double orig
   }
 }
 
-void filmic_gui_draw_icon(cairo_t *cr, dt_iop_filmicrgb_gui_button_data_t *button,
-                          dt_iop_filmicrgb_gui_data_t *g)
+void filmic_gui_draw_icon(cairo_t *cr, const dt_iop_filmicrgb_gui_button_data_t *button,
+                          const dt_iop_filmicrgb_gui_data_t *g)
 {
   if(!g->gui_sizes_inited) return;
 
@@ -4182,7 +4182,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
   return FALSE;
 }
 
-static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
+static gboolean area_button_press(GtkWidget *widget, const GdkEventButton *event, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return TRUE;
 
@@ -4268,7 +4268,7 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, dt_i
   return FALSE;
 }
 
-static gboolean area_enter_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
+static gboolean area_enter_leave_notify(GtkWidget *widget, const GdkEventCrossing *event, const dt_iop_module_t *self)
 {
   dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
   g->gui_hover = event->type == GDK_ENTER_NOTIFY;
@@ -4276,7 +4276,7 @@ static gboolean area_enter_leave_notify(GtkWidget *widget, GdkEventCrossing *eve
   return FALSE;
 }
 
-static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, dt_iop_module_t *self)
+static gboolean area_motion_notify(GtkWidget *widget, const GdkEventMotion *event, const dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return 1;
 
@@ -4289,7 +4289,7 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, dt_
 
   if(x > 0. && x < g->allocation.width && y > 0. && y < g->allocation.height) g->gui_hover = TRUE;
 
-  gint save_active_button = g->active_button;
+  const gint save_active_button = g->active_button;
 
   if(g->gui_hover)
   {
@@ -4630,7 +4630,7 @@ void gui_init(dt_iop_module_t *self)
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_filmicrgb_params_t *p = self->params;
-  dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
+  const dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
   if(!w || w == g->auto_hardness || w == g->security_factor || w == g->grey_point_source
      || w == g->black_point_source || w == g->white_point_source)
@@ -4639,7 +4639,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
     if(w == g->security_factor || w == g->grey_point_source)
     {
-      float prev = *(float *)previous;
+      const float prev = *(float *)previous;
       if(w == g->security_factor)
       {
         const float ratio = (p->security_factor - prev) / (prev + 100.0f);
