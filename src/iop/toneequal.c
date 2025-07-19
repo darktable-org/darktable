@@ -2412,10 +2412,10 @@ void gui_post_expose(dt_iop_module_t *self,
 
   if(correction > 0.0f)
     cairo_arc(cr, x_pointer, y_pointer, setting_offset_x,
-              M_PI, M_PI + correction * M_PI / 4.0);
+              M_PI, M_PI + correction * M_PI_4);
   else
     cairo_arc_negative(cr, x_pointer, y_pointer, setting_offset_x,
-                       M_PI, M_PI + correction * M_PI / 4.0);
+                       M_PI, M_PI + correction * M_PI_4);
 
   cairo_stroke(cr);
 

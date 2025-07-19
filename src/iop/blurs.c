@@ -47,10 +47,10 @@ typedef struct dt_iop_blurs_params_t
   int blades;              // $MIN: 3 $MAX: 11 $DEFAULT: 5 $DESCRIPTION: "diaphragm blades"
   float concavity;         // $MIN: 1. $MAX: 9.  $DEFAULT: 1. $DESCRIPTION: "concavity"
   float linearity;         // $MIN: 0. $MAX: 1.  $DEFAULT: 1. $DESCRIPTION: "linearity"
-  float rotation;          // $MIN: -M_PI_F/2. $MAX: M_PI_F/2. $DEFAULT: 0. $DESCRIPTION: "rotation"
+  float rotation;          // $MIN: -M_PI_F / 2.f $MAX: M_PI_F / 2.f $DEFAULT: 0.f $DESCRIPTION: "rotation"
 
   // motion blur params
-  float angle;             // $MIN: -M_PI_F $MAX: M_PI_F $DEFAULT: 0. $DESCRIPTION: "direction"
+  float angle;             // $MIN: -M_PI_F $MAX: M_PI_F $DEFAULT: 0.f $DESCRIPTION: "direction"
   float curvature;         // $MIN: -2.   $MAX: 2.   $DEFAULT: 0. $DESCRIPTION: "curvature"
   float offset;            // $MIN: -1.   $MAX: 1.   $DEFAULT: 0  $DESCRIPTION: "offset"
 
