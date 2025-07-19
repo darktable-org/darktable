@@ -256,7 +256,7 @@ static int _gradient_events_button_pressed(dt_iop_module_t *module,
 }
 
 static void _gradient_init_values(const float zoom_scale,
-                                  dt_masks_form_gui_t *gui,
+                                  const dt_masks_form_gui_t *gui,
                                   const float xpos,
                                   const float ypos,
                                   const float pzx,
@@ -414,7 +414,7 @@ static int _gradient_events_button_released(dt_iop_module_t *module,
     const float xref = gpt->points[0];
     const float yref = gpt->points[1];
 
-    float pts[8] = { xref, yref, x , y, 0, 0, gui->dx, gui->dy };
+    const float pts[8] = { xref, yref, x , y, 0, 0, gui->dx, gui->dy };
 
     const float dv = atan2f(pts[3] - pts[1],
                             pts[2] - pts[0]) - atan2f(-(pts[7] - pts[5]),
@@ -504,7 +504,7 @@ static int _gradient_events_button_released(dt_iop_module_t *module,
     {
       if(crea_module)
       {
-        dt_iop_gui_blend_data_t *bd = crea_module->blend_data;
+        const dt_iop_gui_blend_data_t *bd = crea_module->blend_data;
         for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
           if(bd->masks_type[n] == form->type)
             gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), TRUE);
@@ -580,7 +580,7 @@ static int _gradient_events_mouse_moved(dt_iop_module_t *module,
     const float xref = gpt->points[0];
     const float yref = gpt->points[1];
 
-    float pts[8] = { xref, yref, x, y, 0, 0, gui->dx, gui->dy };
+    const float pts[8] = { xref, yref, x, y, 0, 0, gui->dx, gui->dy };
 
     // we remap dx, dy to the right values, as it will be used in next movements
     gui->dx = xref - gui->posx;
@@ -882,7 +882,7 @@ static void _gradient_draw_lines(const gboolean borders,
                                  cairo_t *cr,
                                  const gboolean selected,
                                  const float zoom_scale,
-                                 float *pts_line,
+                                 const float *pts_line,
                                  const int pts_line_count,
                                  const float xref,
                                  const float yref)
@@ -936,7 +936,7 @@ static void _gradient_draw_arrow(cairo_t *cr,
                                  const gboolean selected,
                                  const gboolean border_selected,
                                  const float zoom_scale,
-                                 float *pts,
+                                 const float *pts,
                                  const int pts_count)
 {
   if(pts_count < 3) return;
@@ -1045,7 +1045,7 @@ static int _gradient_get_points_border(dt_develop_t *dev,
                                        const dt_iop_module_t *module)
 {
   (void)source;  // unused arg, keep compiler from complaining
-  dt_masks_point_gradient_t *gradient = form->points->data;
+  const dt_masks_point_gradient_t *gradient = form->points->data;
   if(_gradient_get_points(dev, gradient->anchor[0], gradient->anchor[1],
                           gradient->rotation, gradient->curvature,
                           points, points_count))
@@ -1125,7 +1125,7 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
            dt_get_lap_time(&start2));
 
   // we get the gradient values
-  dt_masks_point_gradient_t *gradient = form->points->data;
+  const dt_masks_point_gradient_t *gradient = form->points->data;
 
   // we create a buffer of grid points for later interpolation. mainly
   // in order to reduce memory footprint
@@ -1202,7 +1202,7 @@ static int _gradient_get_mask(const dt_iop_module_t *const module,
   }
 
   // center lut around zero
-  float *clut = lut + lutmax;
+  const float *clut = lut + lutmax;
 
 
   DT_OMP_FOR(collapse(2))
@@ -1354,7 +1354,7 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module,
   }
 
   // center lut around zero
-  float *clut = lut + lutmax;
+  const float *clut = lut + lutmax;
 
   DT_OMP_FOR(collapse(2))
   for(int j = 0; j < gh; j++)
@@ -1427,7 +1427,7 @@ static GSList *_gradient_setup_mouse_actions(const dt_masks_form_t *const form)
   return lm;
 }
 
-static void _gradient_sanitize_config(dt_masks_type_t type)
+static void _gradient_sanitize_config(const dt_masks_type_t type)
 {
   // we always want to start with no curvature
   dt_conf_set_float(DT_MASKS_CONF(type, gradient, curvature), 0.0f);
@@ -1465,7 +1465,7 @@ static void _gradient_duplicate_points(dt_develop_t *dev,
   (void)dev; // unused arg, keep compiler from complaining
   for(GList *pts = base->points; pts; pts = g_list_next(pts))
   {
-    dt_masks_point_gradient_t *pt = pts->data;
+    const dt_masks_point_gradient_t *pt = pts->data;
     dt_masks_point_gradient_t *npt = malloc(sizeof(dt_masks_point_gradient_t));
     memcpy(npt, pt, sizeof(dt_masks_point_gradient_t));
     dest->points = g_list_append(dest->points, npt);
@@ -1500,7 +1500,7 @@ static void _gradient_modify_property(dt_masks_form_t *const form,
       ++*count;
       break;
     case DT_MASKS_PROPERTY_COMPRESSION:;
-      float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
+      const float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
       float compression = gradient
         ? gradient->compression
         : dt_conf_get_float(DT_MASKS_CONF(form->type, gradient, compression));
