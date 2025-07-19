@@ -4231,9 +4231,9 @@ void dt_gui_draw_rounded_rectangle(cairo_t *cr,
 {
   const float radius = height / 5.0f;
   cairo_new_sub_path(cr);
-  cairo_arc(cr, x + width - radius, y + radius, radius, -M_PI / 2.0, 0);
-  cairo_arc(cr, x + width - radius, y + height - radius, radius, 0, M_PI / 2.0);
-  cairo_arc(cr, x + radius, y + height - radius, radius, M_PI / 2.0, M_PI);
+  cairo_arc(cr, x + width - radius, y + radius, radius, -M_PI_2, 0);
+  cairo_arc(cr, x + width - radius, y + height - radius, radius, 0, M_PI_2);
+  cairo_arc(cr, x + radius, y + height - radius, radius, M_PI_2, M_PI);
   cairo_arc(cr, x + radius, y + radius, radius, M_PI, 1.5 * M_PI);
   cairo_close_path(cr);
   cairo_fill(cr);

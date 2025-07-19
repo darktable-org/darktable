@@ -1949,10 +1949,10 @@ static void _draw_paths(dt_iop_module_t *self,
           switch(data->header.node_type)
           {
              case DT_LIQUIFY_NODE_TYPE_CUSP:
-               draw_triangle(cr, point - w / 2.0 * I, -M_PI / 2.0, w);
+               draw_triangle(cr, point - w / 2.0 * I, -M_PI_2, w);
                break;
              case DT_LIQUIFY_NODE_TYPE_SMOOTH:
-               draw_rectangle(cr, point, M_PI / 4.0, w);
+               draw_rectangle(cr, point, M_PI_4, w);
                break;
              case DT_LIQUIFY_NODE_TYPE_SYMMETRICAL:
                draw_rectangle(cr, point, 0, w);
