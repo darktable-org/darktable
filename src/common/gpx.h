@@ -53,13 +53,13 @@ void dt_gpx_destroy(struct dt_gpx_t *gpx);
 /* fetch the lon,lat coords for time t, if within time range
   of gpx record return TRUE, FALSE is returned if out of time frame
   and closest record of lon,lat is filled */
-gboolean dt_gpx_get_location(struct dt_gpx_t *, GDateTime *timestamp, dt_image_geoloc_t *geoloc);
+gboolean dt_gpx_get_location(const struct dt_gpx_t *, GDateTime *timestamp, dt_image_geoloc_t *geoloc);
 
 // get the list of track segments
-GList *dt_gpx_get_trkseg(struct dt_gpx_t *gpx);
+GList *dt_gpx_get_trkseg(const struct dt_gpx_t *gpx);
 
 // get the list of track points for a track segment
-GList *dt_gpx_get_trkpts(struct dt_gpx_t *gpx, const guint segid);
+GList *dt_gpx_get_trkpts(const struct dt_gpx_t *gpx, const guint segid);
 
 // get the distance on the geodesic line and the angle delta referred to earth center
 void dt_gpx_geodesic_distance(double lat1, double lon1,

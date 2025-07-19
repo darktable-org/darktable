@@ -61,14 +61,14 @@ static GMarkupParser _gpx_parser
     = { _gpx_parser_start_element, _gpx_parser_end_element, _gpx_parser_text, NULL, NULL };
 
 
-static gint _sort_track(gconstpointer a, gconstpointer b)
+static gint _sort_track(const gconstpointer a, const gconstpointer b)
 {
   const dt_gpx_track_point_t *pa = (const dt_gpx_track_point_t *)a;
   const dt_gpx_track_point_t *pb = (const dt_gpx_track_point_t *)b;
   return g_date_time_compare(pa->time, pb->time);
 }
 
-static gint _sort_segment(gconstpointer a, gconstpointer b)
+static gint _sort_segment(const gconstpointer a, const gconstpointer b)
 {
   const dt_gpx_track_segment_t *pa = (const dt_gpx_track_segment_t *)a;
   const dt_gpx_track_segment_t *pb = (const dt_gpx_track_segment_t *)b;
@@ -150,7 +150,7 @@ void dt_gpx_destroy(dt_gpx_t *gpx)
   g_free(gpx);
 }
 
-gboolean dt_gpx_get_location(dt_gpx_t *gpx, GDateTime *timestamp, dt_image_geoloc_t *geoloc)
+gboolean dt_gpx_get_location(const dt_gpx_t *gpx, GDateTime *timestamp, dt_image_geoloc_t *geoloc)
 {
   g_assert(gpx != NULL);
 
@@ -159,7 +159,7 @@ gboolean dt_gpx_get_location(dt_gpx_t *gpx, GDateTime *timestamp, dt_image_geolo
 
   for(GList *item = gpx->trkpts; item; item = g_list_next(item))
   {
-    dt_gpx_track_point_t *tp = item->data;
+    const dt_gpx_track_point_t *tp = item->data;
 
     /* if timestamp is out of time range return false but fill
        closest location value start or end point */
@@ -172,13 +172,13 @@ gboolean dt_gpx_get_location(dt_gpx_t *gpx, GDateTime *timestamp, dt_image_geolo
       return FALSE;
     }
 
-    dt_gpx_track_point_t *tp_next = item->next->data;
+    const dt_gpx_track_point_t *tp_next = item->next->data;
     /* check if timestamp is within current and next trackpoint */
     const gint cmp_n = g_date_time_compare(timestamp, tp_next->time);
     if(item->next && cmp_n <= 0)
     {
-      GTimeSpan seg_diff = g_date_time_difference(tp_next->time, tp->time);
-      GTimeSpan diff = g_date_time_difference(timestamp, tp->time);
+      const GTimeSpan seg_diff = g_date_time_difference(tp_next->time, tp->time);
+      const GTimeSpan diff = g_date_time_difference(timestamp, tp->time);
       if(seg_diff == 0 || diff == 0)
       {
         geoloc->longitude = tp->longitude;
@@ -264,7 +264,7 @@ static void _gpx_parse_error(GError **error)
  */
 void _gpx_parser_start_element(GMarkupParseContext *ctx, const gchar *element_name,
                                const gchar **attribute_names, const gchar **attribute_values,
-                               gpointer user_data, GError **error)
+                               const gpointer user_data, GError **error)
 {
   g_return_if_fail(*error == NULL);
 
@@ -374,7 +374,7 @@ element_error:
   _gpx_parse_error(error);
 }
 
-void _gpx_parser_end_element(GMarkupParseContext *context, const gchar *element_name, gpointer user_data,
+void _gpx_parser_end_element(GMarkupParseContext *context, const gchar *element_name, const gpointer user_data,
                              GError **error)
 {
   g_return_if_fail(*error == NULL);
@@ -407,7 +407,7 @@ void _gpx_parser_end_element(GMarkupParseContext *context, const gchar *element_
   }
 }
 
-void _gpx_parser_text(GMarkupParseContext *context, const gchar *text, gsize text_len, gpointer user_data,
+void _gpx_parser_text(GMarkupParseContext *context, const gchar *text, gsize text_len, const gpointer user_data,
                       GError **error)
 {
   g_return_if_fail(*error == NULL);
@@ -458,13 +458,13 @@ void _gpx_parser_text(GMarkupParseContext *context, const gchar *text, gsize tex
     gpx->current_track_point->elevation = g_ascii_strtod(text, NULL);
 }
 
-GList *dt_gpx_get_trkseg(struct dt_gpx_t *gpx)
+GList *dt_gpx_get_trkseg(const struct dt_gpx_t *gpx)
 {
   return (gpx != NULL)? gpx->trksegs
                       : NULL;
 }
 
-GList *dt_gpx_get_trkpts(dt_gpx_t *gpx, const guint segid)
+GList *dt_gpx_get_trkpts(const dt_gpx_t *gpx, const guint segid)
 {
   if(gpx == NULL)
     return NULL;
@@ -472,12 +472,12 @@ GList *dt_gpx_get_trkpts(dt_gpx_t *gpx, const guint segid)
   GList *pts = NULL;
   GList *ts = g_list_nth(gpx->trksegs, segid);
   if(!ts) return pts;
-  dt_gpx_track_segment_t *tsd = ts->data;
+  const dt_gpx_track_segment_t *tsd = ts->data;
   GList *tps = g_list_find(gpx->trkpts, tsd->trkpt);
   if(!tps) return pts;
   for(GList *tp = tps; tp; tp = g_list_next(tp))
   {
-    dt_gpx_track_point_t *tpd = tp->data;
+    const dt_gpx_track_point_t *tpd = tp->data;
     if(tpd->segid != segid) return pts;
     dt_geo_map_display_point_t *p = g_malloc0(sizeof(dt_geo_map_display_point_t));
     p->lat = tpd->latitude;
@@ -491,8 +491,8 @@ GList *dt_gpx_get_trkpts(dt_gpx_t *gpx, const guint segid)
  * Geodesic interpolation functions
  * ------------------------------------------------------------------------*/
 
-void dt_gpx_geodesic_distance(double lat1, double lon1,
-                              double lat2, double lon2,
+void dt_gpx_geodesic_distance(const double lat1, const double lon1,
+                              const double lat2, const double lon2,
                               double *d, double *delta)
 {
   const double lat_rad_1 = deg2rad(lat1);
@@ -516,7 +516,7 @@ void dt_gpx_geodesic_intermediate_point(const double lat1, const double lon1,
                                         const double lat2, const double lon2,
                                         const double delta,
                                         const gboolean first_time,
-                                        double f,
+                                        const double f,
                                         double *lat, double *lon)
 {
   static double lat_rad_1;
