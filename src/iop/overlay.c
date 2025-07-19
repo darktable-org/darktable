@@ -227,7 +227,7 @@ static GList *_get_disabled_modules(const dt_iop_module_t *self,
     char *buf = g_malloc0(PATH_MAX);
     for(GList *m = result; m; m = g_list_next(m))
     {
-      char *mod = (char *)(m->data);
+      const char *mod = (char *)(m->data);
       g_strlcat(buf, mod, PATH_MAX);
       g_strlcat(buf, " ", PATH_MAX);
     }
@@ -240,7 +240,7 @@ static GList *_get_disabled_modules(const dt_iop_module_t *self,
   return result;
 }
 
-static void _clear_cache_entry(dt_iop_module_t *self, const int index)
+static void _clear_cache_entry(const dt_iop_module_t *self, const int index)
 {
   dt_iop_overlay_global_data_t *gd = self->global_data;
   if(!gd) return;
@@ -251,24 +251,24 @@ static void _clear_cache_entry(dt_iop_module_t *self, const int index)
 
 static void _module_remove_callback(gpointer instance,
                                     dt_iop_module_t *self,
-                                    gpointer user_data)
+                                    const gpointer user_data)
 {
   if(!self || self != user_data) return;
-  dt_iop_overlay_params_t *p = self->params;
+  const dt_iop_overlay_params_t *p = self->params;
 
   if(dt_is_valid_imgid(p->imgid))
     dt_overlay_remove(self->dev->image_storage.id, p->imgid);
 }
 
 static void _setup_overlay(dt_iop_module_t *self,
-                           dt_dev_pixelpipe_iop_t *piece,
+                           const dt_dev_pixelpipe_iop_t *piece,
                            uint8_t **pbuf,
                            size_t *pwidth,
                            size_t *pheight)
 {
   dt_iop_overlay_params_t *p = self->params;
-  dt_iop_overlay_gui_data_t *g = self->gui_data;
-  dt_iop_overlay_data_t *data = piece->data;
+  const dt_iop_overlay_gui_data_t *g = self->gui_data;
+  const dt_iop_overlay_data_t *data = piece->data;
 
   dt_imgid_t imgid = data->imgid;
 
@@ -295,7 +295,7 @@ static void _setup_overlay(dt_iop_module_t *self,
     }
     else if(g)
     {
-      gchar *tooltip = g_strdup_printf
+      const gchar *tooltip = g_strdup_printf
         (_("overlay image missing from database\n\n"
            "'%s'" ), p->filename);
       gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), tooltip);
@@ -737,10 +737,10 @@ void process(dt_iop_module_t *self,
 
 static void _draw_thumb(GtkWidget *area,
                         cairo_t *crf,
-                        dt_iop_module_t *self)
+                        const dt_iop_module_t *self)
 {
-  dt_iop_overlay_gui_data_t *g = self->gui_data;
-  dt_iop_overlay_params_t *p = self->params;
+  const dt_iop_overlay_gui_data_t *g = self->gui_data;
+  const dt_iop_overlay_params_t *p = self->params;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(area, &allocation);
@@ -810,9 +810,9 @@ static void _draw_thumb(GtkWidget *area,
   }
 }
 
-static void _alignment_callback(GtkWidget *tb, dt_iop_module_t *self)
+static void _alignment_callback(const GtkWidget *tb, dt_iop_module_t *self)
 {
-  dt_iop_overlay_gui_data_t *g = self->gui_data;
+  const dt_iop_overlay_gui_data_t *g = self->gui_data;
 
   if(darktable.gui->reset) return;
   dt_iop_overlay_params_t *p = self->params;
@@ -844,7 +844,7 @@ void commit_params(dt_iop_module_t *self,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)p1;
+  const dt_iop_overlay_params_t *p = (dt_iop_overlay_params_t *)p1;
   dt_iop_overlay_data_t *d = piece->data;
 
   d->opacity    = p->opacity;
@@ -877,8 +877,8 @@ void cleanup_pipe(dt_iop_module_t *self,
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_overlay_gui_data_t *g = self->gui_data;
-  dt_iop_overlay_params_t *p = self->params;
+  const dt_iop_overlay_gui_data_t *g = self->gui_data;
+  const dt_iop_overlay_params_t *p = self->params;
 
   for(int i = 0; i < 9; i++)
   {
@@ -912,7 +912,7 @@ void reload_defaults(dt_iop_module_t *self)
 
 void gui_reset(dt_iop_module_t *self)
 {
-  dt_iop_overlay_gui_data_t *g = self->gui_data;
+  const dt_iop_overlay_gui_data_t *g = self->gui_data;
   dt_iop_overlay_params_t *p = self->params;
   if(dt_is_valid_imgid(p->imgid))
     dt_overlay_remove(self->dev->image_storage.id, p->imgid);
@@ -925,8 +925,8 @@ void gui_changed(dt_iop_module_t *self,
                  GtkWidget *w,
                  void *previous)
 {
-  dt_iop_overlay_gui_data_t *g = self->gui_data;
-  dt_iop_overlay_params_t *p = self->params;
+  const dt_iop_overlay_gui_data_t *g = self->gui_data;
+  const dt_iop_overlay_params_t *p = self->params;
 
   if(w == g->scale_base)
   {
@@ -990,12 +990,12 @@ static void _drag_and_drop_received(GtkWidget *widget,
                                     GdkDragContext *context,
                                     gint x,
                                     gint y,
-                                    GtkSelectionData *selection_data,
-                                    guint target_type,
-                                    guint time,
+                                    const GtkSelectionData *selection_data,
+                                    const guint target_type,
+                                    const guint time,
                                     dt_iop_module_t *self)
 {
-  dt_iop_overlay_gui_data_t *g = self->gui_data;
+  const dt_iop_overlay_gui_data_t *g = self->gui_data;
   dt_iop_overlay_params_t *p = self->params;
 
   gboolean success = FALSE;
@@ -1005,7 +1005,7 @@ static void _drag_and_drop_received(GtkWidget *widget,
     if(imgs_nb)
     {
       const int index  = self->multi_priority;
-      dt_imgid_t *imgs = (dt_imgid_t *)gtk_selection_data_get_data(selection_data);
+      const dt_imgid_t *imgs = (dt_imgid_t *)gtk_selection_data_get_data(selection_data);
 
       const dt_imgid_t imgid_intended_overlay = imgs[0];
       const dt_imgid_t imgid_target_image = self->dev->image_storage.id;
@@ -1052,7 +1052,7 @@ static gboolean _on_drag_motion(GtkWidget *widget,
                                 gint x,
                                 gint y,
                                 guint time,
-                                dt_iop_module_t *self)
+                                const dt_iop_module_t *self)
 {
   dt_iop_overlay_gui_data_t *g = self->gui_data;
 
@@ -1064,7 +1064,7 @@ static gboolean _on_drag_motion(GtkWidget *widget,
 static void _on_drag_leave(GtkWidget *widget,
                            GdkDragContext *dc,
                            guint time,
-                           dt_iop_module_t *self)
+                           const dt_iop_module_t *self)
 {
   dt_iop_overlay_gui_data_t *g = self->gui_data;
 
