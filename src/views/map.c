@@ -441,8 +441,8 @@ static void osm_gps_map_zoom_fit_bbox(OsmGpsMap *map,
   GtkAllocation allocation;
   gtk_widget_get_allocation(GTK_WIDGET (map), &allocation);
   const int zoom = latlon2zoom(allocation.height, allocation.width,
-                               deg2rad(latitude1), deg2rad(latitude2),
-                               deg2rad(longitude1), deg2rad(longitude2));
+                               deg2radf(latitude1), deg2radf(latitude2),
+                               deg2radf(longitude1), deg2radf(longitude2));
   osm_gps_map_set_center(map, (latitude1 + latitude2) / 2, (longitude1 + longitude2) / 2);
   osm_gps_map_set_zoom(map, zoom);
 }
@@ -538,7 +538,7 @@ static GdkPixbuf *_init_place_pin()
   // outer shape
   _rgba_from_color(pin_outer_color, &r, &g, &b, &a);
   cairo_set_source_rgba(cr, r, g, b, a);
-  cairo_arc(cr, 0.5 * w, 0.333 * h, 0.333 * h - 2, 150.0 * degrees, 30.0 * degrees);
+  cairo_arc(cr, 0.5 * w, 0.333 * h, 0.333 * h - 2, deg2rad(150.0), deg2rad(30.0));
   cairo_line_to(cr, 0.5 * w, h - 2);
   cairo_close_path(cr);
   cairo_fill_preserve(cr);

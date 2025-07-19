@@ -356,7 +356,7 @@ void process(dt_iop_module_t *self,
   float *in = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
-  const float angle = deg2rad(-data->rotate);
+  const float angle = deg2radf(-data->rotate);
   const int index   = self->multi_priority;
 
   if(!dt_is_valid_imgid(data->imgid))

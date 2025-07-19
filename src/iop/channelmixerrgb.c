@@ -1365,14 +1365,14 @@ static inline void _compute_patches_delta_E(const float *const restrict patches,
     const float T = 1.f
                     - 0.17f * cosf(deg2radf(H_avg_prime - 30))
                     + 0.24f * cosf(2.f * deg2radf(H_avg_prime))
-                    + 0.32f * cosf(3.f * deg2radf(H_avg_prime) + 6 * degrees)
-                    - 0.20f * cosf(4.f * deg2radf(H_avg_prime) - 63 * degrees);
+                    + 0.32f * cosf(3.f * deg2radf(H_avg_prime) + deg2radf(6.f))
+                    - 0.20f * cosf(4.f * deg2radf(H_avg_prime) - deg2radf(63.f));
 
     const float S_L = 1.f + (0.015f * sqf(L_avg - 50.f)) / sqrtf(20.f + sqf(L_avg - 50.f));
     const float S_C = 1.f + 0.045f * C_avg_prime;
     const float S_H = 1.f + 0.015f * C_avg_prime * T;
     const float R_T = -2.f * C_avg_7_ratio_sqrt
-                      * sinf(60 * degrees * expf(-sqf((H_avg_prime - 275.f) / 25.f)));
+                      * sinf(deg2radf(60.f) * expf(-sqf((H_avg_prime - 275.f) / 25.f)));
 
     // roll the drum, here goes the Delta E, finally…
     const float DE = sqrtf(sqf(DL / S_L) + sqf(DC_prime / S_C) + sqf(DH_prime / S_H)
