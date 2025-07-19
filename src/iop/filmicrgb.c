@@ -3653,7 +3653,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
     float y_white = 1.f;
 
     const float central_slope = (g->spline.y[3] - g->spline.y[1]) * g->graph_width / ((g->spline.x[3] - g->spline.x[1]) * g->graph_height);
-    const float central_slope_angle = atanf(central_slope) + M_PI / 2.0f;
+    const float central_slope_angle = atanf(central_slope) + M_PI_F / 2.f;
     set_color(cr, darktable.bauhaus->graph_fg);
     for(int k = 0; k < 5; k++)
     {

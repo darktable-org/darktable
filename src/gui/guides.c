@@ -461,14 +461,14 @@ static void dt_guides_draw_golden_mean(cairo_t *cr,
     cairo_new_sub_path(cr);
     cairo_scale(cr, R1->width / R1->height, 1);
     cairo_arc(cr, R1->right / R1->width * R1->height,
-              R1->top, R1->height, M_PI / 2.0, M_PI);
+              R1->top, R1->height, M_PI_2, M_PI);
     cairo_restore(cr);
 
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_scale(cr, R2->width / R2->height, 1);
     cairo_arc(cr, R2->left / R2->width * R2->height,
-              R2->top, R2->height, 0, M_PI / 2.0);
+              R2->top, R2->height, 0, M_PI_2);
     cairo_restore(cr);
 
     cairo_save(cr);
@@ -489,14 +489,14 @@ static void dt_guides_draw_golden_mean(cairo_t *cr,
     cairo_new_sub_path(cr);
     cairo_scale(cr, 1, R5->height / R5->width);
     cairo_arc(cr, R5->right, R5->top / R5->height * R5->width,
-              R5->width, M_PI / 2.0, M_PI);
+              R5->width, M_PI_2, M_PI);
     cairo_restore(cr);
 
     cairo_save(cr);
     cairo_new_sub_path(cr);
     cairo_scale(cr, 1, R6->height / R6->width);
     cairo_arc(cr, R6->left, R6->top / R6->height * R6->width,
-              R6->width, 0, M_PI / 2.0);
+              R6->width, 0, M_PI_2);
     cairo_restore(cr);
 
     cairo_save(cr);

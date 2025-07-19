@@ -2671,9 +2671,9 @@ void dt_masks_draw_arrow(cairo_t *cr,
   float cangle = atanf(dx / dy);
 
   if(dy > 0)
-    cangle = (M_PI / 2) - cangle;
+    cangle = M_PI_2 - cangle;
   else
-    cangle = -(M_PI / 2) - cangle;
+    cangle = -M_PI_2 - cangle;
 
   // move a bit away from the path
   const float x = to_x + (touch_dest
