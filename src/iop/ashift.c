@@ -2255,7 +2255,7 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *self,
                                         dt_iop_ashift_params_t *p,
                                         const dt_iop_ashift_fitaxis_t dir)
 {
-  dt_iop_ashift_gui_data_t *g = self->gui_data;
+  const dt_iop_ashift_gui_data_t *g = self->gui_data;
 
   if(!g->lines) return NMS_NOT_ENOUGH_LINES;
   if(dir == ASHIFT_FIT_NONE) return NMS_SUCCESS;
@@ -5062,7 +5062,7 @@ int button_released(dt_iop_module_t *self,
   {
     g->straightening = FALSE;
 
-    float bzx = g->straighten_x, bzy = g->straighten_y;
+    const float bzx = g->straighten_x, bzy = g->straighten_y;
     const float angle = _calculate_straightening(self, pzx, pzy, bzx, bzy, wd, ht, zoom_scale);
     if(angle == 0.0f) return TRUE;
 
@@ -5647,7 +5647,7 @@ void cleanup_pipe(dt_iop_module_t *self,
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_ashift_gui_data_t *g = self->gui_data;
-  dt_iop_ashift_params_t *p = self->params;
+  const dt_iop_ashift_params_t *p = self->params;
 
   gtk_widget_set_visible(g->specifics, p->mode == ASHIFT_MODE_SPECIFIC);
 
