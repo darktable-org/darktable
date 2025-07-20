@@ -271,15 +271,7 @@ typedef struct
 // djb2 hash
 static inline guint _agx_primaries_hash(const gconstpointer p)
 {
-  guint hash = 5381;
-  const unsigned char *data = p;
-  size_t len = sizeof(_agx_primaries_key);
-
-  while(len-- > 0)
-  {
-    hash = (hash << 5) + hash + *data++;
-  }
-  return hash;
+  return dt_hash(5381, p, sizeof(_agx_primaries_key));
 }
 
 static inline gboolean _agx_primaries_equal(const gconstpointer a, const gconstpointer b)
