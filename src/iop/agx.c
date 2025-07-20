@@ -26,7 +26,6 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
-#include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/draw.h"
@@ -45,18 +44,23 @@ const char *name()
   return _("agx");
 }
 
+const char *aliases()
+{
+  return _("tone mapping|view transform|display transform");
+}
+
 const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
                                 _("applies a tone mapping curve.\n"
-                                  "Inspired by Blender's AgX tone mapper"),
+                                  "inspired by Blender's AgX tone mapper"),
                                 _("corrective and creative"), _("linear, RGB, scene-referred"),
                                 _("non-linear, RGB"), _("linear, RGB, display-referred"));
 }
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
 int default_group()
@@ -257,33 +261,24 @@ typedef struct
   float blue_unrotation;
 } _agx_primaries_key;
 
-// djb2 hash
-static inline guint _agx_primaries_hash(const gconstpointer p)
-{
-  guint hash = 5381;
-  const unsigned char *data = p;
-  size_t len = sizeof(_agx_primaries_key);
-
-  while(len-- > 0)
-  {
-    hash = (hash << 5) + hash + *data++;
-  }
-  return hash;
-}
-
 static inline gboolean _agx_primaries_equal(const gconstpointer a, const gconstpointer b)
 {
   return memcmp(a, b, sizeof(_agx_primaries_key)) == 0;
 }
 
-dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
+dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
+                                            dt_dev_pixelpipe_t *pipe,
                                             dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void **new_params,
-                  int32_t *new_params_size, int *new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void **new_params,
+                  int32_t *new_params_size,
+                  int *new_version)
 {
   typedef struct dt_iop_agx_params_v2_3_4_t
   {
@@ -1646,7 +1641,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *widget, void *previous)
 
 static void _add_basic_curve_controls(dt_iop_module_t *self, dt_iop_basic_curve_controls_t *controls)
 {
-  GtkWidget *slider;
+  GtkWidget *slider = NULL;
 
   // curve_pivot_x_shift with picker
   slider = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
@@ -1712,7 +1707,7 @@ static void _add_look_sliders(dt_iop_module_t *self, GtkWidget *parent_widget)
   self->widget = parent_widget;
 
   // Reuse the slider variable for all sliders instead of creating new ones in each scope
-  GtkWidget *slider;
+  GtkWidget *slider = NULL;
 
   // look_offset
   slider = dt_bauhaus_slider_from_params(self, "look_offset");
@@ -1804,7 +1799,7 @@ static void _add_advanced_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *gui_
   self->widget = GTK_WIDGET(gui_data->advanced_section.container);
 
   // Reuse the slider variable for all sliders
-  GtkWidget *slider;
+  GtkWidget *slider = NULL;
 
   // Toe length
   slider = dt_bauhaus_slider_from_params(self, "curve_linear_ratio_below_pivot");
@@ -1934,7 +1929,7 @@ static void _populate_primaries_presets_combobox(const dt_iop_module_t *self)
   gtk_combo_box_text_remove_all(GTK_COMBO_BOX_TEXT(gui_data->primaries_preset_combo));
 
   // Use a hash table to track unique primaries configurations.
-  GHashTable *seen_presets = g_hash_table_new_full(_agx_primaries_hash, _agx_primaries_equal, g_free, NULL);
+  GHashTable *seen_presets = g_hash_table_new_full(dt_hash, _agx_primaries_equal, g_free, NULL);
 
   sqlite3_stmt *stmt;
   // Fetch name and parameters, filtering by current module version to ensure struct compatibility.
@@ -2127,7 +2122,7 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
 
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "before tone mapping")));
 
-  GtkWidget *slider;
+  GtkWidget *slider = NULL;
   const float desaturation = 0.2f;
 #define SETUP_COLOR_COMBO(color, r, g, b, attenuation_suffix, inset_tooltip, rotation_suffix, rotation_tooltip)   \
   slider = dt_bauhaus_slider_from_params(self, #color attenuation_suffix);                                        \
