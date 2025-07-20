@@ -609,7 +609,7 @@ _BLEND_FUNC _blend_difference2(const float *const a,
 
     for_each_channel(x)
       tb[x] = fabsf(ta[x] - tb[x]) / fabsf(max[x] - min[x]);
-    tb[0] = fmaxf(tb[0], fmaxf(tb[1], tb[2]));
+    tb[0] = max3f(tb);
 
     tb[0] = _CLAMP(ta[0] * (1.0f - local_opacity) + tb[0] * local_opacity, min[0], max[0]);
     tb[1] = 0.0f;

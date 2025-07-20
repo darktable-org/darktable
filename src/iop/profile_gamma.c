@@ -330,7 +330,7 @@ static void apply_auto_grey(dt_iop_module_t *self)
   dt_iop_profilegamma_params_t *p = self->params;
   dt_iop_profilegamma_gui_data_t *g = self->gui_data;
 
-  float grey = fmax(fmax(self->picked_color[0], self->picked_color[1]), self->picked_color[2]);
+  float grey = max3f(self->picked_color);
   p->grey_point = 100.f * grey;
 
   ++darktable.gui->reset;
@@ -349,7 +349,7 @@ static void apply_auto_black(dt_iop_module_t *self)
   float noise = powf(2.0f, -16.0f);
 
   // Black
-  float black = fmax(fmax(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
+  float black = max3f(self->picked_color_min);
   float EVmin = Log2Thres(black / (p->grey_point / 100.0f), noise);
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
@@ -374,7 +374,7 @@ static void apply_auto_dynamic_range(dt_iop_module_t *self)
   float EVmin = p->shadows_range;
 
   // White
-  float white = fmax(fmax(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]);
+  float white = max3f(self->picked_color_max);
   float EVmax = Log2Thres(white / (p->grey_point / 100.0f), noise);
   EVmax *= (1.0f + p->security_factor / 100.0f);
 
@@ -395,16 +395,16 @@ static void apply_autotune(dt_iop_module_t *self)
   float noise = powf(2.0f, -16.0f);
 
   // Grey
-  float grey = fmax(fmax(self->picked_color[0], self->picked_color[1]), self->picked_color[2]);
+  float grey = max3f(self->picked_color);
   p->grey_point = 100.f * grey;
 
   // Black
-  float black = fmax(fmax(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
+  float black = max3f(self->picked_color_min);
   float EVmin = Log2Thres(black / (p->grey_point / 100.0f), noise);
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
   // White
-  float white = fmax(fmax(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]);
+  float white = max3f(self->picked_color_max);
   float EVmax = Log2Thres(white / (p->grey_point / 100.0f), noise);
   EVmax *= (1.0f + p->security_factor / 100.0f);
 
