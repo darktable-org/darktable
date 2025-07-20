@@ -464,8 +464,7 @@ static gboolean _area_draw_callback(GtkWidget *widget,
     float hist_max;
 
     if(p->autoscale == DT_IOP_RGBLEVELS_LINKED_CHANNELS)
-      hist_max = fmaxf(self->histogram_max[DT_IOP_RGBLEVELS_R],
-                       fmaxf(self->histogram_max[DT_IOP_RGBLEVELS_G],self->histogram_max[DT_IOP_RGBLEVELS_B]));
+      hist_max = max3f(self->histogram_max);
     else
       hist_max = self->histogram_max[ch];
 

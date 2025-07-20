@@ -163,18 +163,12 @@ static inline int FC(const size_t row, const size_t col, const uint32_t filters)
 
 static inline float dt_iop_get_processed_maximum(dt_dev_pixelpipe_iop_t *piece)
 {
-  return  fmaxf(1.0f,
-          fmaxf(piece->pipe->dsc.processed_maximum[0],
-          fmaxf(piece->pipe->dsc.processed_maximum[1],
-                piece->pipe->dsc.processed_maximum[2])));
+  return  fmaxf(1.0f, max3f(piece->pipe->dsc.processed_maximum));
 }
 
 static inline float dt_iop_get_processed_minimum(dt_dev_pixelpipe_iop_t *piece)
 {
-  return  fmaxf(1.0f,
-          fminf(piece->pipe->dsc.processed_maximum[0],
-          fminf(piece->pipe->dsc.processed_maximum[1],
-                piece->pipe->dsc.processed_maximum[2])));
+  return  fmaxf(1.0f, min3f(piece->pipe->dsc.processed_maximum));
 }
 
 /** Calculate the xtrans pattern color from the row and column **/
