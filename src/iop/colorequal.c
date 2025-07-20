@@ -1041,8 +1041,8 @@ void process(dt_iop_module_t *self,
     dt_D65_XYZ_to_xyY(XYZ_D65, xyY);
 
     // calc saturation from input data
-    const float dmin = fminf(pix_in[0], fminf(pix_in[1], pix_in[2]));
-    const float dmax = fmaxf(pix_in[0], fmaxf(pix_in[1], pix_in[2]));
+    const float dmin = min3f(pix_in);
+    const float dmax = max3f(pix_in);
     const float delta = dmax - dmin;
     saturation[k] = (dmax > NORM_MIN && delta > NORM_MIN) ? delta / dmax : 0.0f;
 
