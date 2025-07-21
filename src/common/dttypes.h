@@ -27,7 +27,9 @@
 //#define NO_COLORMATRIX_NAN
 
 #include <float.h>
+#include <gmodule.h>
 #include <math.h>
+#include <stdint.h>
 
 // When included by a C++ file, restrict qualifiers are not allowed
 #ifdef __cplusplus
@@ -255,6 +257,11 @@ static inline int dt_is_valid_colormatrix(float matrix)
 #endif
 
 #endif /* NO_COLORMATRIX_NAN */
+
+static inline uint32_t max3i(const uint32_t* array)
+{
+  return MAX(MAX(array[0], array[1]), array[2]);
+}
 
 static inline float max3f(const float* array)
 {
