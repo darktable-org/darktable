@@ -275,7 +275,7 @@ dt_imageio_retval_t dt_imageio_open_pnm(dt_image_t *img,
     img->flags &= ~DT_IMAGE_HDR;
 
     // The most common and generally assumed interpretation of the
-    // image data in PNM seems to be that the values ​​are non-linear.
+    // image data in PNM seems to be that the values are non-linear.
     // This is why we set the so called 'LDR' flag, which essentially,
     // in the absence of metadata, signals darktable the need to treat
     // the image data as non-linear.

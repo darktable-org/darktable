@@ -31,41 +31,50 @@
 #include "develop/imageop.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
+
 #ifdef HAVE_OPENEXR
 #include "imageio/imageio_exr.h"
 #endif
+
 #ifdef HAVE_OPENJPEG
 #include "imageio/imageio_j2k.h"
 #endif
+
 #ifdef HAVE_LIBJXL
 #include "imageio/imageio_jpegxl.h"
 #endif
-#include "imageio/imageio_gm.h"
-#include "imageio/imageio_im.h"
+
 #include "imageio/imageio_jpeg.h"
 #include "imageio/imageio_pfm.h"
 #include "imageio/imageio_png.h"
 #include "imageio/imageio_pnm.h"
 #include "imageio/imageio_qoi.h"
 #include "imageio/imageio_rawspeed.h"
-#include "imageio/imageio_libraw.h"
 #include "imageio/imageio_rgbe.h"
 #include "imageio/imageio_tiff.h"
+
 #ifdef HAVE_LIBAVIF
 #include "imageio/imageio_avif.h"
 #endif
+
 #ifdef HAVE_LIBHEIF
 #include "imageio/imageio_heif.h"
 #endif
+
 #ifdef HAVE_WEBP
 #include "imageio/imageio_webp.h"
 #endif
+
+#ifdef HAVE_LIBRAW
 #include "imageio/imageio_libraw.h"
+#endif
 
 #ifdef HAVE_GRAPHICSMAGICK
+#include "imageio/imageio_gm.h"
 #include <magick/api.h>
 #include <magick/blob.h>
 #elif defined HAVE_IMAGEMAGICK
+#include "imageio/imageio_im.h"
   #ifdef HAVE_IMAGEMAGICK7
   #include <MagickWand/MagickWand.h>
   #else
@@ -1652,6 +1661,8 @@ gboolean dt_imageio_lookup_makermodel(const char *maker,
                                                  mk, mk_len,
                                                  md, md_len,
                                                  al, al_len);
+
+#ifdef HAVE_LIBRAW
   if(found == FALSE)
   {
     // Special handling for CR3 raw files via libraw
@@ -1660,6 +1671,8 @@ gboolean dt_imageio_lookup_makermodel(const char *maker,
                                         md, md_len,
                                         al, al_len);
   }
+#endif
+
   return found;
 }
 
