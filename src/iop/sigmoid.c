@@ -272,8 +272,6 @@ void init_presets(dt_iop_module_so_t *self)
                              self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  const float DEG_TO_RAD = M_PI_F / 180.f;
-
   // smooth - a preset that utilizes the primaries feature
   p.middle_grey_contrast = 1.5f;
   // Allow a little bit more room for the highlights
@@ -284,9 +282,9 @@ void init_presets(dt_iop_module_so_t *self)
   p.red_inset = 0.1f;
   p.green_inset = 0.1f;
   p.blue_inset = 0.15f;
-  p.red_rotation = 2.f * DEG_TO_RAD;
-  p.green_rotation = -1.f * DEG_TO_RAD;
-  p.blue_rotation = -3.f * DEG_TO_RAD;
+  p.red_rotation = deg2radf(2.f);
+  p.green_rotation = deg2radf(-1.f);
+  p.blue_rotation = deg2radf(-3.f);
   // Don't restore purity - try to avoid posterization.
   p.purity = 0.f;
   // Constant base primaries (not dependent on work profile) to
@@ -321,7 +319,7 @@ void commit_params(dt_iop_module_t *self,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_sigmoid_params_t *params = (dt_iop_sigmoid_params_t *)p1;
+  const dt_iop_sigmoid_params_t *params = (dt_iop_sigmoid_params_t *)p1;
   dt_iop_sigmoid_data_t *module_data = piece->data;
   /* Calculate actual skew log logistic parameters to fulfill the following:
    * f(scene_zero) = display_black_target
@@ -564,7 +562,7 @@ static void _pixel_channel_order(const dt_aligned_pixel_t pix_in, dt_iop_sigmoid
   }
 }
 
-void process_loglogistic_rgb_ratio(dt_dev_pixelpipe_iop_t *piece,
+void process_loglogistic_rgb_ratio(const dt_dev_pixelpipe_iop_t *piece,
                                    const void *const ivoid,
                                    void *const ovoid,
                                    const dt_iop_roi_t *const roi_in,
@@ -702,7 +700,7 @@ static inline void _preserve_hue_and_energy(const dt_aligned_pixel_t pix_in,
 }
 
 void process_loglogistic_per_channel(dt_develop_t *dev,
-                                     dt_dev_pixelpipe_iop_t *piece,
+                                     const dt_dev_pixelpipe_iop_t *piece,
                                      const void *const ivoid, void *const ovoid,
                                      const dt_iop_roi_t *const roi_in,
                                      const dt_iop_roi_t *const roi_out)
@@ -770,7 +768,7 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
-  dt_iop_sigmoid_data_t *module_data = piece->data;
+  const dt_iop_sigmoid_data_t *module_data = piece->data;
 
   if(module_data->color_processing == DT_SIGMOID_METHOD_PER_CHANNEL)
   {
@@ -791,7 +789,7 @@ int process_cl(dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_sigmoid_data_t *const d = piece->data;
-  dt_iop_sigmoid_global_data_t *const gd = self->global_data;
+  const dt_iop_sigmoid_global_data_t *const gd = self->global_data;
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   const int devid = piece->pipe->devid;
@@ -812,11 +810,11 @@ int process_cl(dt_iop_module_t *self,
   transpose_3xSSE(pipe_to_base_transposed, pipe_to_base);
   transpose_3xSSE(base_to_rendering_transposed, base_to_rendering);
   transpose_3xSSE(rendering_to_pipe_transposed, rendering_to_pipe);
-  cl_mem dev_pipe_to_base
+  const cl_mem dev_pipe_to_base
       = dt_opencl_copy_host_to_device_constant(devid, sizeof(pipe_to_base), pipe_to_base);
-  cl_mem dev_base_to_rendering
+  const cl_mem dev_base_to_rendering
       = dt_opencl_copy_host_to_device_constant(devid, sizeof(base_to_rendering), base_to_rendering);
-  cl_mem dev_rendering_to_pipe
+  const cl_mem dev_rendering_to_pipe
       = dt_opencl_copy_host_to_device_constant(devid, sizeof(rendering_to_pipe), rendering_to_pipe);
   if(dev_pipe_to_base == NULL || dev_base_to_rendering == NULL || dev_rendering_to_pipe == NULL)
     goto cleanup;
@@ -859,7 +857,7 @@ void init_global(dt_iop_module_so_t *self)
 
 void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_sigmoid_global_data_t *gd = self->data;
+  const dt_iop_sigmoid_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_per_channel);
   dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_rgb_ratio);
   free(self->data);
@@ -873,8 +871,8 @@ void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_sigmoid_gui_data_t *g = self->gui_data;
-  dt_iop_sigmoid_params_t *p = self->params;
+  const dt_iop_sigmoid_gui_data_t *g = self->gui_data;
+  const dt_iop_sigmoid_params_t *p = self->params;
 
   if(!w || w == g->color_processing_list)
   {
@@ -886,7 +884,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_sigmoid_gui_data_t *g = self->gui_data;
+  const dt_iop_sigmoid_gui_data_t *g = self->gui_data;
 
   dt_gui_update_collapsible_section(&g->display_luminance_section);
   dt_gui_update_collapsible_section(&g->primaries_section);
@@ -944,7 +942,7 @@ void gui_init(dt_iop_module_t *self)
   slider = dt_bauhaus_slider_from_params(sect, #color "_rotation");                                               \
   dt_bauhaus_slider_set_format(slider, "°");                                                                      \
   dt_bauhaus_slider_set_digits(slider, 1);                                                                        \
-  dt_bauhaus_slider_set_factor(slider, 180.f / M_PI_F);                                                        \
+  dt_bauhaus_slider_set_factor(slider, RAD_2_DEG);                                                                \
   dt_bauhaus_slider_set_stop(slider, 0.f, r, g, b);                                                               \
   gtk_widget_set_tooltip_text(slider, rotation_tooltip);
 

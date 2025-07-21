@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/imagebuf.h"
+#include "common/math.h"
 #include "common/tags.h"
 #include "common/variables.h"
 #include "common/datetime.h"
@@ -440,7 +441,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 }
 
 // sets text / color / font widgets sensitive based on watermark file type
-static void _text_color_font_set_sensitive(dt_iop_watermark_gui_data_t *g, gchar *filename)
+static void _text_color_font_set_sensitive(const dt_iop_watermark_gui_data_t *g, const gchar *filename)
 {
   const gchar *extension = strrchr(filename, '.');
   if(extension)
@@ -453,7 +454,7 @@ static void _text_color_font_set_sensitive(dt_iop_watermark_gui_data_t *g, gchar
   }
 }
 
-static void _combo_box_set_active_text(dt_iop_watermark_gui_data_t *g, gchar *text)
+static void _combo_box_set_active_text(const dt_iop_watermark_gui_data_t *g, const gchar *text)
 {
   int i = 0;
   for(const GList *iter = g->watermarks_filenames; iter; iter = g_list_next(iter))
@@ -494,7 +495,7 @@ static gchar *_string_substitute(gchar *string, const gchar *search, const gchar
   return result;
 }
 
-static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data_t *data,
+static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, const dt_iop_watermark_data_t *data,
                                     const dt_image_t *image, const gchar *filename)
 {
   gchar *svgdata = NULL;
@@ -539,7 +540,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     pango_font_description_free(font);
 
     // watermark color
-    GdkRGBA c = { data->color[0], data->color[1], data->color[2], 1.0f };
+    const GdkRGBA c = { data->color[0], data->color[1], data->color[2], 1.0f };
     g_strlcpy(buffer, gdk_rgba_to_string(&c), sizeof(buffer));
     svgdata = _string_substitute(svgdata, "$(WATERMARK_COLOR)", buffer);
 
@@ -574,7 +575,7 @@ void process(dt_iop_module_t *self,
   float *in = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
-  const float angle = (M_PI / 180) * (-data->rotate);
+  const float angle = deg2radf(-data->rotate);
 
   gchar configdir[PATH_MAX] = { 0 };
   gchar datadir[PATH_MAX] = { 0 };
@@ -1015,12 +1016,12 @@ void process(dt_iop_module_t *self,
 
 static void _watermark_callback(GtkWidget *tb, dt_iop_module_t *self)
 {
-  dt_iop_watermark_gui_data_t *g = self->gui_data;
+  const dt_iop_watermark_gui_data_t *g = self->gui_data;
 
   if(darktable.gui->reset) return;
   dt_iop_watermark_params_t *p = self->params;
   memset(p->filename, 0, sizeof(p->filename));
-  int n = dt_bauhaus_combobox_get(g->watermarks);
+  const int n = dt_bauhaus_combobox_get(g->watermarks);
   g_strlcpy(p->filename, (char *)g_list_nth_data(g->watermarks_filenames, n), sizeof(p->filename));
   _text_color_font_set_sensitive(g, p->filename);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1029,7 +1030,7 @@ static void _watermark_callback(GtkWidget *tb, dt_iop_module_t *self)
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_watermark_gui_data_t *g = self->gui_data;
+  const dt_iop_watermark_gui_data_t *g = self->gui_data;
   dt_iop_watermark_params_t *p = self->params;
 
   if(fabsf(p->color[0] - self->picked_color[0]) < 0.0001f
@@ -1040,7 +1041,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
     return;
   }
 
-  GdkRGBA c = {.red   = self->picked_color[0],
+  const GdkRGBA c = {.red   = self->picked_color[0],
                .green = self->picked_color[1],
                .blue  = self->picked_color[2],
                .alpha = 1.0 };
@@ -1095,7 +1096,7 @@ static void _load_watermarks(const char *basedir, dt_iop_watermark_gui_data_t *g
 static void _refresh_watermarks(dt_iop_module_t *self)
 {
   dt_iop_watermark_gui_data_t *g = self->gui_data;
-  dt_iop_watermark_params_t *p = self->params;
+  const dt_iop_watermark_params_t *p = self->params;
 
   g_signal_handlers_block_by_func(g->watermarks, _watermark_callback, self);
 
@@ -1123,10 +1124,10 @@ static void _refresh_callback(GtkWidget *tb, dt_iop_module_t *self)
   _refresh_watermarks(self);
 }
 
-static void _alignment_callback(GtkWidget *tb, dt_iop_module_t *self)
+static void _alignment_callback(const GtkWidget *tb, dt_iop_module_t *self)
 {
   int index = -1;
-  dt_iop_watermark_gui_data_t *g = self->gui_data;
+  const dt_iop_watermark_gui_data_t *g = self->gui_data;
 
   if(darktable.gui->reset) return;
   dt_iop_watermark_params_t *p = self->params;
@@ -1195,7 +1196,7 @@ void commit_params(dt_iop_module_t *self,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)p1;
+  const dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)p1;
   dt_iop_watermark_data_t *d = piece->data;
 
   d->opacity = p->opacity;
@@ -1235,8 +1236,8 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_watermark_gui_data_t *g = self->gui_data;
-  dt_iop_watermark_params_t *p = self->params;
+  const dt_iop_watermark_gui_data_t *g = self->gui_data;
+  const dt_iop_watermark_params_t *p = self->params;
   for(int i = 0; i < 9; i++)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[i]), FALSE);
@@ -1244,7 +1245,7 @@ void gui_update(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[p->alignment]), TRUE);
   _combo_box_set_active_text(g, p->filename);
   gtk_entry_set_text(GTK_ENTRY(g->text), p->text);
-  GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
+  const GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpick), &color);
   gtk_font_chooser_set_font(GTK_FONT_CHOOSER(g->fontsel), p->font);
 
@@ -1264,8 +1265,8 @@ void gui_changed(dt_iop_module_t *self,
                  GtkWidget *w,
                  void *previous)
 {
-  dt_iop_watermark_gui_data_t *g = self->gui_data;
-  dt_iop_watermark_params_t *p = self->params;
+  const dt_iop_watermark_gui_data_t *g = self->gui_data;
+  const dt_iop_watermark_params_t *p = self->params;
 
   if(w == g->scale_base)
   {
@@ -1347,10 +1348,10 @@ void gui_init(dt_iop_module_t *self)
   gtk_grid_attach_next_to(grid, g->fontsel, label, GTK_POS_RIGHT, 2, 1);
 
   // Watermark color
-  float red = dt_conf_get_float("plugins/darkroom/watermark/color_red");
-  float green = dt_conf_get_float("plugins/darkroom/watermark/color_green");
-  float blue = dt_conf_get_float("plugins/darkroom/watermark/color_blue");
-  GdkRGBA color = (GdkRGBA){.red = red, .green = green, .blue = blue, .alpha = 1.0 };
+  const float red = dt_conf_get_float("plugins/darkroom/watermark/color_red");
+  const float green = dt_conf_get_float("plugins/darkroom/watermark/color_green");
+  const float blue = dt_conf_get_float("plugins/darkroom/watermark/color_blue");
+  const GdkRGBA color = (GdkRGBA){.red = red, .green = green, .blue = blue, .alpha = 1.0 };
 
   label = dtgtk_reset_label_new(_("color"), self, &p->color, 3 * sizeof(float));
   g->colorpick = gtk_color_button_new_with_rgba(&color);

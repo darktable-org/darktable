@@ -17,7 +17,6 @@
 */
 
 #include "bauhaus/bauhaus.h"
-#include "common/dwt.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "dtgtk/drawingarea.h"
@@ -25,6 +24,7 @@
 #include "iop/iop_api.h"
 
 // #include <fftw3.h> // one day, include FFT convolution
+#include "common/math.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
@@ -47,10 +47,10 @@ typedef struct dt_iop_blurs_params_t
   int blades;              // $MIN: 3 $MAX: 11 $DEFAULT: 5 $DESCRIPTION: "diaphragm blades"
   float concavity;         // $MIN: 1. $MAX: 9.  $DEFAULT: 1. $DESCRIPTION: "concavity"
   float linearity;         // $MIN: 0. $MAX: 1.  $DEFAULT: 1. $DESCRIPTION: "linearity"
-  float rotation;          // $MIN: -M_PI_F/2. $MAX: M_PI_F/2. $DEFAULT: 0. $DESCRIPTION: "rotation"
+  float rotation;          // $MIN: -M_PI_F / 2.f $MAX: M_PI_F / 2.f $DEFAULT: 0.f $DESCRIPTION: "rotation"
 
   // motion blur params
-  float angle;             // $MIN: -M_PI_F $MAX: M_PI_F $DEFAULT: 0. $DESCRIPTION: "direction"
+  float angle;             // $MIN: -M_PI_F $MAX: M_PI_F $DEFAULT: 0.f $DESCRIPTION: "direction"
   float curvature;         // $MIN: -2.   $MAX: 2.   $DEFAULT: 0. $DESCRIPTION: "curvature"
   float offset;            // $MIN: -1.   $MAX: 1.   $DEFAULT: 0  $DESCRIPTION: "offset"
 
@@ -275,7 +275,7 @@ static inline void create_gauss_kernel(float *const restrict buffer,
 
 
 static inline void build_gui_kernel(unsigned char *const buffer, const size_t width, const size_t height,
-                                    dt_iop_blurs_params_t *p)
+                                    const dt_iop_blurs_params_t *p)
 {
   float *const restrict kernel_1 = dt_alloc_align_float(width * height);
   float *const restrict kernel_2 = dt_alloc_align_float(width * height);
@@ -317,7 +317,7 @@ cleanup:
 }
 
 
-static inline float compute_norm(float *const buffer, const size_t width, const size_t height)
+static inline float compute_norm(const float *const buffer, const size_t width, const size_t height)
 {
   float norm = 0.f;
 
@@ -342,7 +342,7 @@ static inline void normalize(float *const buffer, const size_t width, const size
 
 
 static inline void build_pixel_kernel(float *const buffer, const size_t width, const size_t height,
-                                      dt_iop_blurs_params_t *p)
+                                      const dt_iop_blurs_params_t *p)
 {
   float *const restrict kernel_1 = dt_alloc_align_float(width * height);
   if(!kernel_1)
@@ -602,7 +602,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_blurs_params_t *p = piece->data;
-  dt_iop_blurs_global_data_t *const gd = self->global_data;
+  const dt_iop_blurs_global_data_t *const gd = self->global_data;
 
   cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
   cl_mem kernel_cl = NULL;
@@ -642,7 +642,7 @@ void init_global(dt_iop_module_so_t *self)
 
 void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_blurs_global_data_t *gd = self->data;
+  const dt_iop_blurs_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_blurs_convolve);
   free(self->data);
   self->data = NULL;
@@ -652,8 +652,8 @@ void cleanup_global(dt_iop_module_so_t *self)
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_blurs_params_t *p = self->params;
-  dt_iop_blurs_gui_data_t *g = self->gui_data;
+  const dt_iop_blurs_params_t *p = self->params;
+  const dt_iop_blurs_gui_data_t *g = self->gui_data;
 
   if(!w || w == g->type)
   {
@@ -700,10 +700,10 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
 }
 
-static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
+static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, const dt_iop_module_t *self)
 {
   dt_iop_blurs_gui_data_t *g = self->gui_data;
-  dt_iop_blurs_params_t *p = self->params;
+  const dt_iop_blurs_params_t *p = self->params;
 
   GtkAllocation allocation;
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
@@ -746,8 +746,6 @@ void gui_update(dt_iop_module_t *self)
   gui_changed(self, NULL, NULL);
 }
 
-#define DEG_TO_RAD 180.f / M_PI_F
-
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_blurs_gui_data_t *g = IOP_GUI_ALLOC(blurs);
@@ -781,11 +779,11 @@ void gui_init(dt_iop_module_t *self)
   g->linearity = dt_bauhaus_slider_from_params(self, "linearity");
 
   g->rotation = dt_bauhaus_slider_from_params(self, "rotation");
-  dt_bauhaus_slider_set_factor(g->rotation, DEG_TO_RAD);
+  dt_bauhaus_slider_set_factor(g->rotation, RAD_2_DEG);
   dt_bauhaus_slider_set_format(g->rotation, "°");
 
   g->angle = dt_bauhaus_slider_from_params(self, "angle");
-  dt_bauhaus_slider_set_factor(g->angle, DEG_TO_RAD);
+  dt_bauhaus_slider_set_factor(g->angle, RAD_2_DEG);
   dt_bauhaus_slider_set_format(g->angle, "°");
 
   g->curvature = dt_bauhaus_slider_from_params(self, "curvature");
@@ -807,7 +805,7 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  dt_iop_blurs_gui_data_t *g = self->gui_data;
+  const dt_iop_blurs_gui_data_t *g = self->gui_data;
   if(g->img) dt_free_align(g->img);
 }
 
