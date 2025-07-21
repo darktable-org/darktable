@@ -29,14 +29,11 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
-#include "develop/tiling.h"
 #include "dtgtk/button.h"
 #include "dtgtk/expander.h"
-#include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
-#include "gui/presets.h"
 #include "iop/iop_api.h"
 #include "gui/guides.h"
 
@@ -712,7 +709,7 @@ static inline int vec3isnull(const float *const v)
   return (fabsf(v[0]) < eps && fabsf(v[1]) < eps && fabsf(v[2]) < eps);
 }
 
-static inline void _shadow_crop_box(dt_iop_ashift_params_t *p,
+static inline void _shadow_crop_box(const dt_iop_ashift_params_t *p,
                                     dt_iop_ashift_gui_data_t *g)
 {
   // copy actual crop box values into shadow variables
@@ -732,7 +729,7 @@ static void _clear_shadow_crop_box(dt_iop_ashift_gui_data_t *g)
 }
 
 static inline void _commit_crop_box(dt_iop_ashift_params_t *p,
-                                    dt_iop_ashift_gui_data_t *g)
+                                    const dt_iop_ashift_gui_data_t *g)
 {
   // copy shadow values for crop box into actual parameters
   p->cl = g->cl;
@@ -777,7 +774,7 @@ static void _homography(float *homograph,
   const float u = width;
   const float v = height;
 
-  const float phi = M_PI * angle / 180.0f;
+  const float phi = deg2radf(angle);
   const float cosi = cosf(phi);
   const float sini = sinf(phi);
   const float ascale = sqrtf(aspect);
@@ -1028,7 +1025,7 @@ gboolean distort_transform(dt_iop_module_t *self,
   DT_OMP_FOR(if(points_count > 100))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
-    float DT_ALIGNED_PIXEL pi[3] = { pts[i], pts[i + 1], 1.0f };
+    const float DT_ALIGNED_PIXEL pi[3] = { pts[i], pts[i + 1], 1.0f };
     float DT_ALIGNED_PIXEL po[3];
     mat3mulv(po, (float *)homograph, pi);
     pts[i] = po[0] / po[2] - cx;
@@ -1066,7 +1063,7 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   DT_OMP_FOR(if(points_count > 100))
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
-    float DT_ALIGNED_PIXEL pi[3] = { pts[i] + cx, pts[i + 1] + cy, 1.0f };
+    const float DT_ALIGNED_PIXEL pi[3] = { pts[i] + cx, pts[i + 1] + cy, 1.0f };
     float DT_ALIGNED_PIXEL po[3];
     mat3mulv(po, (float *)ihomograph, pi);
     pts[i] = po[0] / po[2];
@@ -1146,7 +1143,7 @@ void modify_roi_out(dt_iop_module_t *self,
                     dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *roi_in)
 {
-  dt_iop_ashift_data_t *data = piece->data;
+  const dt_iop_ashift_data_t *data = piece->data;
   *roi_out = *roi_in;
 
   // nothing more to be done if parameters are set to neutral values
@@ -1217,7 +1214,7 @@ void modify_roi_in(dt_iop_module_t *self,
                    const dt_iop_roi_t *const roi_out,
                    dt_iop_roi_t *roi_in)
 {
-  dt_iop_ashift_data_t *data = piece->data;
+  const dt_iop_ashift_data_t *data = piece->data;
   *roi_in = *roi_out;
 
   // nothing more to be done if parameters are set to neutral values
@@ -1600,7 +1597,7 @@ static gboolean line_detect(float *in,
       ashift_lines[lct].weight = weight;
 
 
-      const float angle = atan2f(py2 - py1, px2 - px1) / M_PI * 180.0f;
+      const float angle = rad2degf(atan2f(py2 - py1, px2 - px1));
       const gboolean vertical = fabsf(fabsf(angle) - 90.0f) < MAX_TANGENTIAL_DEVIATION;
       const gboolean horizontal = fabsf(fabsf(fabsf(angle) - 90.0f) - 90.0f) < MAX_TANGENTIAL_DEVIATION;
       const gboolean relevant = ashift_lines[lct].length > MIN_LINE_LENGTH;
@@ -1746,7 +1743,7 @@ error:
 // swap two integer values
 static inline void swap(int *a, int *b)
 {
-  int tmp = *a;
+  const int tmp = *a;
   *a = *b;
   *b = tmp;
 }
@@ -1757,7 +1754,7 @@ static gboolean quickperm(int *a, int *p, const int N, int *i)
   if(*i >= N) return FALSE;
 
   p[*i]--;
-  int j = (*i % 2 == 1) ? p[*i] : 0;
+  const int j = (*i % 2 == 1) ? p[*i] : 0;
   swap(&a[j], &a[*i]);
   *i = 1;
   while(p[*i] == 0)
@@ -1773,7 +1770,7 @@ static void shuffle(int *a, const int N)
 {
   for(int i = 0; i < N; i++)
   {
-    int j = i + rand() % (N - i);
+    const int j = i + rand() % (N - i);
     swap(&a[j], &a[i]);
   }
 }
@@ -1992,7 +1989,7 @@ static void ransac(const dt_iop_ashift_line_t *lines,
 
 // try to clean up structural data by eliminating outliers and thereby increasing
 // the chance of a convergent fitting
-static gboolean _remove_outliers(dt_iop_module_t *self)
+static gboolean _remove_outliers(const dt_iop_module_t *self)
 {
   dt_iop_ashift_gui_data_t *g = self->gui_data;
 
@@ -2125,10 +2122,10 @@ static inline double ilogit(const double L, const double min, const double max)
 
 static double model_fitness(double *params, void *data)
 {
-  dt_iop_ashift_fit_params_t *fit = (dt_iop_ashift_fit_params_t *)data;
+  const dt_iop_ashift_fit_params_t *fit = (dt_iop_ashift_fit_params_t *)data;
 
   // just for convenience: get shorter names
-  dt_iop_ashift_line_t *lines = fit->lines;
+  const dt_iop_ashift_line_t *lines = fit->lines;
   const int lines_count = fit->lines_count;
   const int width = fit->width;
   const int height = fit->height;
@@ -2140,10 +2137,10 @@ static double model_fitness(double *params, void *data)
   float lensshift_v = fit->lensshift_v;
   float lensshift_h = fit->lensshift_h;
   float shear = fit->shear;
-  float rotation_range = fit->rotation_range;
-  float lensshift_v_range = fit->lensshift_v_range;
-  float lensshift_h_range = fit->lensshift_h_range;
-  float shear_range = fit->shear_range;
+  const float rotation_range = fit->rotation_range;
+  const float lensshift_v_range = fit->lensshift_v_range;
+  const float lensshift_h_range = fit->lensshift_h_range;
+  const float shear_range = fit->shear_range;
 
   int pcount = 0;
 
@@ -2221,7 +2218,7 @@ static double model_fitness(double *params, void *data)
 
     // get scalar product of line L with orthogonal axis A -> gives 0
     // if line is perpendicular
-    float s = vec3scalar(L, A);
+    const float s = vec3scalar(L, A);
 
     // sum up weighted s^2 for both directions individually
     sumsq_v += isvertical ? s * s * lines[n].weight : 0.0;
@@ -2258,7 +2255,7 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *self,
                                         dt_iop_ashift_params_t *p,
                                         const dt_iop_ashift_fitaxis_t dir)
 {
-  dt_iop_ashift_gui_data_t *g = self->gui_data;
+  const dt_iop_ashift_gui_data_t *g = self->gui_data;
 
   if(!g->lines) return NMS_NOT_ENOUGH_LINES;
   if(dir == ASHIFT_FIT_NONE) return NMS_SUCCESS;
@@ -2560,7 +2557,7 @@ static void crop_constraint(double *params, const int pcount)
 // conversion to the output coordinates
 static double crop_fitness(double *params, void *data)
 {
-  dt_iop_ashift_cropfit_params_t *cropfit = (dt_iop_ashift_cropfit_params_t *)data;
+  const dt_iop_ashift_cropfit_params_t *cropfit = (dt_iop_ashift_cropfit_params_t *)data;
 
   const float wd = cropfit->width;
   const float ht = cropfit->height;
@@ -2644,7 +2641,7 @@ static double crop_fitness(double *params, void *data)
 // center coordinates (and optionally the aspect angle) that delivers
 // the largest overall crop area.
 
-static void do_crop(dt_iop_module_t *self, dt_iop_ashift_params_t *p)
+static void do_crop(const dt_iop_module_t *self, dt_iop_ashift_params_t *p)
 {
   dt_iop_ashift_gui_data_t *g = self->gui_data;
 
@@ -2809,7 +2806,7 @@ failed:
 }
 
 // manually adjust crop area by shifting its center
-static void crop_adjust(dt_iop_module_t *self,
+static void crop_adjust(const dt_iop_module_t *self,
                         const dt_iop_ashift_params_t *const p,
                         const float newx,
                         const float newy)
@@ -2982,9 +2979,9 @@ static void _draw_basic_line(dt_iop_ashift_line_t *line,
   line->type = type;
 }
 
-static void _gui_update_structure_states(dt_iop_module_t *self, GtkWidget *widget)
+static void _gui_update_structure_states(const dt_iop_module_t *self, GtkWidget *widget)
 {
-  dt_iop_ashift_gui_data_t *g = self->gui_data;
+  const dt_iop_ashift_gui_data_t *g = self->gui_data;
   if(widget && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
   else
@@ -3076,7 +3073,7 @@ static gboolean _draw_retrieve_lines_from_params(dt_iop_module_t *self,
   dt_iop_ashift_params_t *p = self->params;
   if(!g || !p) return FALSE;
 
-  dt_dev_pixelpipe_iop_t *piece =
+  const dt_dev_pixelpipe_iop_t *piece =
     dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
   if(method == ASHIFT_METHOD_QUAD
      && p->last_quad_lines[0] > 0.0f && p->last_quad_lines[1] > 0.0f
@@ -3208,7 +3205,7 @@ static gboolean _do_get_structure_auto(dt_iop_module_t *self,
   g->fitting = 1;
 
   dt_iop_gui_enter_critical_section(self);
-  float *b = g->buf;
+  const float *b = g->buf;
   dt_iop_gui_leave_critical_section(self);
 
   if(b == NULL)
@@ -3260,7 +3257,7 @@ static void _do_get_structure_lines(dt_iop_module_t *self)
 
   // we verify that we have a valid buffer
   dt_iop_gui_enter_critical_section(self);
-  float *b = g->buf;
+  const float *b = g->buf;
   dt_iop_gui_leave_critical_section(self);
 
   if(b == NULL)
@@ -3274,7 +3271,7 @@ static void _do_get_structure_lines(dt_iop_module_t *self)
 
   _gui_update_structure_states(self, g->structure_lines);
 
-  dt_dev_pixelpipe_iop_t *piece =
+  const dt_dev_pixelpipe_iop_t *piece =
     dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
 
   _do_clean_structure(self, p, TRUE);
@@ -3307,7 +3304,7 @@ static void _do_get_structure_quad(dt_iop_module_t *self)
 
   // we verify that we have a valid buffer
   dt_iop_gui_enter_critical_section(self);
-  float *b = g->buf;
+  const float *b = g->buf;
   dt_iop_gui_leave_critical_section(self);
 
   if(b == NULL)
@@ -3321,7 +3318,7 @@ static void _do_get_structure_quad(dt_iop_module_t *self)
 
   _gui_update_structure_states(self, g->structure_quad);
 
-  dt_dev_pixelpipe_iop_t *piece =
+  const dt_dev_pixelpipe_iop_t *piece =
     dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
 
   _do_clean_structure(self, p, TRUE);
@@ -3403,7 +3400,7 @@ static void do_fit(dt_iop_module_t *self,
 
   g->fitting = 1;
 
-  dt_iop_ashift_nmsresult_t res = nmsfit(self, p, dir);
+  const dt_iop_ashift_nmsresult_t res = nmsfit(self, p, dir);
 
   g->fitting = 0;
 
@@ -3443,7 +3440,7 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_ashift_data_t *data = piece->data;
+  const dt_iop_ashift_data_t *data = piece->data;
   dt_iop_ashift_gui_data_t *g = self->gui_data;
 
   const int ch = piece->colors;
@@ -3460,24 +3457,23 @@ void process(dt_iop_module_t *self,
                                 (float)piece->buf_in.width,
                                 (float)piece->buf_in.height };
 
-    float ivec[2] = { points[2] - points[0], points[3] - points[1] };
-    float ivecl = sqrtf(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
+    const float ivec[2] = { points[2] - points[0], points[3] - points[1] };
+    const float ivecl = sqrtf(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
 
     // where do they go?
     dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                       DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 2);
 
-    float ovec[2] = { points[2] - points[0], points[3] - points[1] };
-    float ovecl = sqrtf(ovec[0] * ovec[0] + ovec[1] * ovec[1]);
+    const float ovec[2] = { points[2] - points[0], points[3] - points[1] };
+    const float ovecl = sqrtf(ovec[0] * ovec[0] + ovec[1] * ovec[1]);
 
     // angle between input vector and output vector
-    float alpha = acos(CLAMP((ivec[0] * ovec[0] + ivec[1] * ovec[1]) / (ivecl * ovecl),
+    const float alpha = acosf(CLAMP((ivec[0] * ovec[0] + ivec[1] * ovec[1]) / (ivecl * ovecl),
                              -1.0f, 1.0f));
 
     // we are interested if |alpha| is in the range of 90° +/- 45° ->
     // we assume the image is flipped
-    const int isflipped = fabs(fmod(alpha + M_PI, M_PI) - M_PI / 2.0f) < M_PI / 4.0f
-      ? 1 : 0;
+    const int isflipped = fabsf(fmodf(alpha + M_PI_F, M_PI_F) - M_PI_F / 2.0f) < M_PI_F / 4.0f;
 
     // did modules prior to this one in pixelpipe have changed? -> check via hash value
     const dt_hash_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe,
@@ -3579,8 +3575,8 @@ int process_cl(dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_ashift_data_t *d = piece->data;
-  dt_iop_ashift_global_data_t *gd = self->global_data;
+  const dt_iop_ashift_data_t *d = piece->data;
+  const dt_iop_ashift_global_data_t *gd = self->global_data;
   dt_iop_ashift_gui_data_t *g = self->gui_data;
 
   const int devid = piece->pipe->devid;
@@ -3611,12 +3607,12 @@ int process_cl(dt_iop_module_t *self,
 
     // angle between input vector and output vector
     const float alpha =
-      acos(CLAMP((ivec[0] * ovec[0] + ivec[1] * ovec[1]) / (ivecl * ovecl), -1.0f, 1.0f));
+      acosf(CLAMP((ivec[0] * ovec[0] + ivec[1] * ovec[1]) / (ivecl * ovecl), -1.0f, 1.0f));
 
     // we are interested if |alpha| is in the range of 90° +/- 45° ->
     // we assume the image is flipped
     const int isflipped =
-      fabs(fmod(alpha + M_PI, M_PI) - M_PI / 2.0f) < M_PI / 4.0f ? 1 : 0;
+      fabsf(fmodf(alpha + M_PI_F, M_PI_F) - M_PI_F / 2.0f) < M_PI_F / 4.0f;
 
     // do modules coming before this one in pixelpipe have changed? -> check via hash value
     const dt_hash_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe,
@@ -3760,8 +3756,8 @@ static void _get_near(const float *points,
     // check line point by point
     for(int l = 0; l < length; l++, offset++)
     {
-      float dx = pzx - points[offset * 2];
-      float dy = pzy - points[offset * 2 + 1];
+      const float dx = pzx - points[offset * 2];
+      const float dy = pzy - points[offset * 2 + 1];
 
       if(dx * dx + dy * dy < delta2)
       {
@@ -3801,8 +3797,8 @@ static void _get_bounded_inside(const float *points,
   }
 
   // we either look for the selected or the deselected lines
-  dt_iop_ashift_linetype_t mask = ASHIFT_LINE_SELECTED;
-  dt_iop_ashift_linetype_t state =
+  const dt_iop_ashift_linetype_t mask = ASHIFT_LINE_SELECTED;
+  const dt_iop_ashift_linetype_t state =
     (mode == ASHIFT_BOUNDING_DESELECT) ? ASHIFT_LINE_SELECTED : 0;
 
   for(int n = 0; n < points_lines_count; n++)
@@ -3851,11 +3847,11 @@ static dt_hash_t _get_lines_hash(const dt_iop_ashift_line_t *lines,
 // update color information in points_idx if lines have changed in
 // terms of type (but not in terms of number or position)
 
-static gboolean _update_colors(dt_iop_module_t *self,
+static gboolean _update_colors(const dt_iop_module_t *self,
                                dt_iop_ashift_points_idx_t *points_idx,
                                const int points_lines_count)
 {
-  dt_iop_ashift_gui_data_t *g = self->gui_data;
+  const dt_iop_ashift_gui_data_t *g = self->gui_data;
 
   // is the display flipped relative to the original image?
   const gboolean isflipped = g->isflipped;
@@ -3884,7 +3880,7 @@ static gboolean _update_colors(dt_iop_module_t *self,
 }
 
 // get all the points to display lines in the gui
-static gboolean _get_points(dt_iop_module_t *self,
+static gboolean _get_points(const dt_iop_module_t *self,
                             const dt_iop_ashift_line_t *lines,
                             const int lines_count,
                             const int lines_version,
@@ -3895,7 +3891,7 @@ static gboolean _get_points(dt_iop_module_t *self,
                             const float scale)
 {
   dt_develop_t *dev = self->dev;
-  dt_iop_ashift_gui_data_t *g = self->gui_data;
+  const dt_iop_ashift_gui_data_t *g = self->gui_data;
 
   if(lines_count < 1)
     return FALSE;
@@ -4045,8 +4041,8 @@ error:
                                      self->priority, self->priority + 1,
                                      (float *)V, 4))
 */
-static int call_distort_transform(dt_develop_t *dev,
-                                  dt_dev_pixelpipe_t *pipe,
+static int call_distort_transform(const dt_develop_t *dev,
+                                  const dt_dev_pixelpipe_t *pipe,
                                   dt_iop_module_t *self,
                                   float *points,
                                   const size_t points_count)
@@ -4072,11 +4068,11 @@ static int call_distort_transform(dt_develop_t *dev,
   //  eliminates the glitch.
 }
 
-static float _calculate_straightening(dt_iop_module_t *self,
-                                      float pzx, float pzy,
-                                      float bzx, float bzy,
-                                      float wd, float ht,
-                                      float zoom_scale)
+static float _calculate_straightening(const dt_iop_module_t *self,
+                                      const float pzx, const float pzy,
+                                      const float bzx, const float bzy,
+                                      const float wd, const float ht,
+                                      const float zoom_scale)
 {
   float dx = (pzx - bzx) * wd, dy = (pzy - bzy) * ht;
   if(sqrt(dx * dx + dy * dy) * zoom_scale < DT_PIXEL_APPLY_DPI(25))
@@ -4096,20 +4092,20 @@ static float _calculate_straightening(dt_iop_module_t *self,
     dy = -dy;
   }
 
-  float angle = atan2f(dy, dx);
-  if(!(angle >= -M_PI / 2.0 && angle <= M_PI / 2.0))
+  const float angle = atan2f(dy, dx);
+  if(!(angle >= -M_PI_F / 2.f && angle <= M_PI_F / 2.f))
     return 0.0f;
   float close = angle;
-  if(close > M_PI / 4.0)
-    close = M_PI / 2.0 - close;
-  else if(close < -M_PI / 4.0)
-    close = -M_PI / 2.0 - close;
+  if(close > M_PI_F / 4.f)
+    close = M_PI_F / 2.f - close;
+  else if(close < -M_PI_F / 4.f)
+    close = -M_PI_F / 2.f - close;
   else
     close = -close;
 
-  float a = 180.0 / M_PI * close;
-  if(a < -180.0) a += 360.0;
-  if(a > 180.0) a -= 360.0;
+  float a = rad2degf(close);
+  if(a < -180.f) a += 360.f;
+  if(a > 180.f) a -= 360.f;
 
   return a;
 }
@@ -4124,7 +4120,7 @@ void gui_post_expose(dt_iop_module_t *self,
 {
   dt_develop_t *dev = self->dev;
   dt_iop_ashift_gui_data_t *g = self->gui_data;
-  dt_iop_ashift_params_t *p = self->params;
+  const dt_iop_ashift_params_t *p = self->params;
 
   const gboolean dimmed = dt_iop_canvas_not_sensitive(dev);
   const double lwidth = (dimmed ? 0.5 : 1.0) / zoom_scale;
@@ -4142,7 +4138,7 @@ void gui_post_expose(dt_iop_module_t *self,
     const float iyo = g->buf_y_off;
 
     // the four corners of the input buffer of this module
-    float V[4][2] = { { ixo,        iyo       },
+    const float V[4][2] = { { ixo,        iyo       },
                       { ixo,        iyo + iht },
                       { ixo + iwd,  iyo + iht },
                       { ixo + iwd,  iyo       } };
@@ -4164,7 +4160,7 @@ void gui_post_expose(dt_iop_module_t *self,
     const float oht = ymax - ymin;
 
     // the four clipping corners
-    float C[4][2] = { { xmin + g->cl * owd, ymin + g->ct * oht },
+    const float C[4][2] = { { xmin + g->cl * owd, ymin + g->ct * oht },
                       { xmin + g->cl * owd, ymin + g->cb * oht },
                       { xmin + g->cr * owd, ymin + g->cb * oht },
                       { xmin + g->cr * owd, ymin + g->ct * oht } };
@@ -4176,7 +4172,7 @@ void gui_post_expose(dt_iop_module_t *self,
 
     cairo_save(cr);
 
-    double dashes = DT_PIXEL_APPLY_DPI(5.0) / zoom_scale;
+    const double dashes = DT_PIXEL_APPLY_DPI(5.0) / zoom_scale;
     cairo_set_dash(cr, &dashes, 0, 0);
 
     // mask parts of image outside of clipping area in dark grey
@@ -4574,7 +4570,7 @@ int mouse_moved(dt_iop_module_t *self,
 
   if(g->adjust_crop)
   {
-    dt_iop_ashift_params_t *p = self->params;
+    const dt_iop_ashift_params_t *p = self->params;
 
     dt_boundingbox_t pts = { pzx, pzy, 1.0f, 1.0f };
     dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
@@ -4834,7 +4830,7 @@ int button_pressed(dt_iop_module_t *self,
   // if no lines available -> potentially adjust crop area
   if(g->current_structure_method != ASHIFT_METHOD_LINES && !g->lines)
   {
-    dt_iop_ashift_params_t *p = self->params;
+    const dt_iop_ashift_params_t *p = self->params;
     if(p->cropmode == ASHIFT_CROP_ASPECT)
     {
       dt_control_change_cursor(GDK_HAND1);
@@ -5066,11 +5062,11 @@ int button_released(dt_iop_module_t *self,
   {
     g->straightening = FALSE;
 
-    float bzx = g->straighten_x, bzy = g->straighten_y;
-    float angle = _calculate_straightening(self, pzx, pzy, bzx, bzy, wd, ht, zoom_scale);
+    const float bzx = g->straighten_x, bzy = g->straighten_y;
+    const float angle = _calculate_straightening(self, pzx, pzy, bzx, bzy, wd, ht, zoom_scale);
     if(angle == 0.0f) return TRUE;
 
-    float n = dt_bauhaus_slider_get(g->rotation) - angle;
+    const float n = dt_bauhaus_slider_get(g->rotation) - angle;
     dt_bauhaus_slider_set(g->rotation, n);
     dt_toast_log(_("rotation adjusted by %3.2f° to %3.2f°"), - angle, n);
     return TRUE;
@@ -5326,7 +5322,7 @@ static void cropmode_callback(GtkWidget *widget, dt_iop_module_t *self)
 }
 
 static int _event_fit_v_button_clicked(GtkWidget *widget,
-                                       GdkEventButton *event,
+                                       const GdkEventButton *event,
                                        dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
@@ -5374,7 +5370,7 @@ static int _event_fit_v_button_clicked(GtkWidget *widget,
 }
 
 static int _event_fit_h_button_clicked(GtkWidget *widget,
-                                       GdkEventButton *event,
+                                       const GdkEventButton *event,
                                        dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
@@ -5422,7 +5418,7 @@ static int _event_fit_h_button_clicked(GtkWidget *widget,
 }
 
 static int _event_fit_both_button_clicked(GtkWidget *widget,
-                                          GdkEventButton *event,
+                                          const GdkEventButton *event,
                                           dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
@@ -5472,7 +5468,7 @@ static int _event_fit_both_button_clicked(GtkWidget *widget,
 }
 
 static int _event_structure_auto_clicked(GtkWidget *widget,
-                                         GdkEventButton *event,
+                                         const GdkEventButton *event,
                                          dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
@@ -5546,8 +5542,8 @@ static void _event_process_after_preview_callback(gpointer instance, dt_iop_modu
   dt_iop_ashift_params_t *p = self->params;
   dt_iop_ashift_gui_data_t *g = self->gui_data;
 
-  dt_iop_ashift_jobcode_t jobcode = g->jobcode;
-  int jobparams = g->jobparams;
+  const dt_iop_ashift_jobcode_t jobcode = g->jobcode;
+  const int jobparams = g->jobparams;
 
   // purge
   g->jobcode = ASHIFT_JOBCODE_NONE;
@@ -5597,7 +5593,7 @@ void commit_params(dt_iop_module_t *self,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)p1;
+  const dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)p1;
   dt_iop_ashift_data_t *d = piece->data;
 
   d->rotation = p->rotation;
@@ -5651,7 +5647,7 @@ void cleanup_pipe(dt_iop_module_t *self,
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_ashift_gui_data_t *g = self->gui_data;
-  dt_iop_ashift_params_t *p = self->params;
+  const dt_iop_ashift_params_t *p = self->params;
 
   gtk_widget_set_visible(g->specifics, p->mode == ASHIFT_MODE_SPECIFIC);
 
@@ -5679,7 +5675,7 @@ void reload_defaults(dt_iop_module_t *self)
     // label some sliders before pixelpipe has been set up. later we
     // will get a definite result by assessing the pixelpipe
     isflipped = (img->orientation == ORIENTATION_ROTATE_CCW_90_DEG
-                 || img->orientation == ORIENTATION_ROTATE_CW_90_DEG) ? 1 : 0;
+                 || img->orientation == ORIENTATION_ROTATE_CW_90_DEG);
 
     // focal length should be available in exif data if lens is
     // electronically coupled to the camera
@@ -5784,7 +5780,7 @@ void init_global(dt_iop_module_so_t *self)
 
 void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_ashift_global_data_t *gd = self->data;
+  const dt_iop_ashift_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_ashift_bilinear);
   dt_opencl_free_kernel(gd->kernel_ashift_bicubic);
   dt_opencl_free_kernel(gd->kernel_ashift_lanczos2);
@@ -5798,7 +5794,7 @@ static gboolean _event_draw(GtkWidget *widget,
                             cairo_t *cr,
                             dt_iop_module_t *self)
 {
-  dt_iop_ashift_gui_data_t *g = self->gui_data;
+  const dt_iop_ashift_gui_data_t *g = self->gui_data;
   if(darktable.gui->reset) return FALSE;
 
   dt_iop_gui_enter_critical_section(self);
@@ -5823,7 +5819,7 @@ static gboolean _event_draw(GtkWidget *widget,
   return FALSE;
 }
 
-void gui_focus(dt_iop_module_t *self, gboolean in)
+void gui_focus(dt_iop_module_t *self, const gboolean in)
 {
   darktable.develop->history_postpone_invalidate = in
     && dt_dev_modulegroups_test_activated(darktable.develop);
@@ -5846,7 +5842,7 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
   }
 }
 
-static float log2_curve(float inval, dt_bauhaus_curve_t dir)
+static float log2_curve(const float inval, const dt_bauhaus_curve_t dir)
 {
   float outval;
   if(dir == DT_BAUHAUS_SET)
@@ -6153,7 +6149,7 @@ void gui_cleanup(dt_iop_module_t *self)
   if(darktable.develop->proxy.rotate == self)
     darktable.develop->proxy.rotate = NULL;
 
-  dt_iop_ashift_gui_data_t *g = self->gui_data;
+  const dt_iop_ashift_gui_data_t *g = self->gui_data;
   if(g->lines) free(g->lines);
   dt_free_align(g->buf);
   if(g->points) free(g->points);
