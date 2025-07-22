@@ -81,7 +81,8 @@ changes (where available).
 
 ### Bug Fixes
 
-- N/A
+- Fixed a bug where changing the image scaling in the export module
+  influences the result of a running export job.
 
 ### Add action support for Lua
 
