@@ -890,7 +890,14 @@ void gui_update(dt_lib_module_t *self)
         {
           (void)g_snprintf(text, sizeof(text), _("infinity"));
         }
-        else if(!(dt_isnan(img->exif_focus_distance) || (fpclassify(img->exif_focus_distance) == FP_ZERO) ))
+        // Interpret the value as a distance only if it is a valid number
+        // and not zero
+        else if(!
+                (
+                dt_isnan(img->exif_focus_distance)
+                || (fpclassify(img->exif_focus_distance) == FP_ZERO)
+                )
+               )
         {
           (void)g_snprintf(text,
                            sizeof(text),
