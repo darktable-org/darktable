@@ -194,6 +194,7 @@ Support for the following cameras is suspended because no samples are available 
 - Hungarian
 - Italian
 - Japanese
+- Korean
 - Dutch
 - Brazilian Portuguese
 - Russian
