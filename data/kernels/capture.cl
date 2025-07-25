@@ -230,7 +230,7 @@ __kernel void modify_blend(global float *blend,
   const float modified_coef_variation = std_deviation / dtcl_sqrt(fmax(NORM_MIN, sum / 21.0f));
   const float t = dtcl_log(1.0f + modified_coef_variation);
   const float weight = 1.0f / (1.0f + dtcl_exp(offset - tscale * t));
-  blend[k] = clamp(blend[k] * 1.01011f * (weight - 0.01f), 0.0f, 1.0f);
+  blend[k] = clipf(blend[k] * 1.01011f * (weight - 0.01f));
   luminance[k] = Yold[k];
 }
 
@@ -243,7 +243,7 @@ __kernel void final_blend(global float *blendmask,
 
   const float diff = unblurred[k] - blendmask[k];
   const float w_tmp2 = 1.0f / (1.0f + dtcl_exp(5.0f - 10.0f * diff));
-  blendmask[k] = clamp(w_tmp2 * unblurred[k] + (1.0f - w_tmp2) * blendmask[k], 0.0f, 1.0f);
+  blendmask[k] = clipf(w_tmp2 * unblurred[k] + (1.0f - w_tmp2) * blendmask[k]);
 }
 
 __kernel void show_blend_mask(__read_only image2d_t in,
@@ -282,7 +282,7 @@ __kernel void capture_result( __read_only image2d_t in,
 
   if(blendmask[k] > 0.0f)
   {
-    const float mixer = clamp(blendmask[k], 0.0f, 1.0f);
+    const float mixer = clipf(blendmask[k]);
     const float luminance_new = mix(luminance[k], tmp[k], mixer);
     const float4 factor = luminance_new / fmax(luminance[k], CAPTURE_YMIN);
     pix *= factor;

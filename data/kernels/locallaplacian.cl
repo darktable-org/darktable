@@ -267,7 +267,7 @@ float curve(
   if (fabs(c) > 2*sigma) val = g + ssigma + shadhi * (c-ssigma); // linear part
   else
   { // blend in via quadratic bezier
-    const float t = clamp(c / (2.0f*ssigma), 0.0f, 1.0f);
+    const float t = clipf(c / (2.0f*ssigma));
     const float t2 = t * t;
     const float mt = 1.0f-t;
     val = g + ssigma * 2.0f*mt*t + t2*(ssigma + ssigma*shadhi);

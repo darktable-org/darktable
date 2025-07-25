@@ -264,7 +264,7 @@ __kernel void apply_guided(global float2 *uv,
                       a[k].z * uv[k].x + a[k].w * uv[k].y + b[k].y };
 
   corrections[k].y = _interpolatef(_get_satweight(saturation[k] - sat_shift, weights), CV.x, 1.0f);
-  const float gradient_weight = 1.0f - clamp(scharr[k], 0.0f, 1.0f);
+  const float gradient_weight = 1.0f - clipf(scharr[k]);
   b_corrections[k] = _interpolatef(gradient_weight * _get_satweight(saturation[k] - bright_shift, weights), CV.y, 0.0f);
 }
 

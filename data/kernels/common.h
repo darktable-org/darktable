@@ -107,3 +107,8 @@ static inline float fsquare(const float a)
 {
   return (a * a);
 }
+
+static inline float clipf(const float a)
+{
+  return clamp(a, 0.0f, 1.0f);
+}
