@@ -489,8 +489,6 @@ static void _export_clicked(GtkWidget *w, dt_lib_styles_t *d)
         else
         {
           /* create and run dialog */
-          char overwrite_str[256];
-
           gint overwrite_dialog_res = GTK_RESPONSE_ACCEPT;
           gint overwrite_dialog_check_button_res = TRUE;
 
@@ -506,16 +504,13 @@ static void _export_clicked(GtkWidget *w, dt_lib_styles_t *d)
                                             GTK_RESPONSE_CANCEL);
 
             // contents for dialog
-            GtkWidget *content_area =
-              gtk_dialog_get_content_area(GTK_DIALOG(dialog_overwrite_export));
-            sprintf(overwrite_str, _("style `%s' already exists.\ndo you want to overwrite existing style?\n"), stylename);
-            GtkWidget *label = gtk_label_new(overwrite_str);
+            gchar *overwrite_str = g_strdup_printf(_("style `%s' already exists.\ndo you want to overwrite existing style?\n"), stylename);
             GtkWidget *overwrite_dialog_check_button =
               gtk_check_button_new_with_label(_("apply this option to all existing styles"));
 
-            gtk_container_add(GTK_CONTAINER(content_area), label);
-            gtk_container_add(GTK_CONTAINER(content_area), overwrite_dialog_check_button);
+            dt_gui_dialog_add(GTK_DIALOG(dialog_overwrite_export), gtk_label_new(overwrite_str), overwrite_dialog_check_button);
             gtk_widget_show_all(dialog_overwrite_export);
+            g_free(overwrite_str);
 
             // disable check button and skip button when only one style is selected
             if(g_list_is_singleton(style_names))
@@ -647,8 +642,6 @@ static void _import_clicked(GtkWidget *w, dt_lib_styles_t *d)
         else
         {
           /* create and run dialog */
-          char overwrite_str[256];
-
           gint overwrite_dialog_res = GTK_RESPONSE_ACCEPT;
           gint overwrite_dialog_check_button_res = TRUE;
 
@@ -663,14 +656,11 @@ static void _import_clicked(GtkWidget *w, dt_lib_styles_t *d)
             gtk_dialog_set_default_response(GTK_DIALOG(dialog_overwrite_import), GTK_RESPONSE_CANCEL);
 
             // contents for dialog
-            GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_overwrite_import));
-            sprintf(overwrite_str, _("style `%s' already exists.\ndo you want to overwrite existing style?\n"), bname);
-            GtkWidget *label = gtk_label_new(overwrite_str);
+            gchar *overwrite_str = g_strdup_printf(_("style `%s' already exists.\ndo you want to overwrite existing style?\n"), bname);
             GtkWidget *overwrite_dialog_check_button = gtk_check_button_new_with_label(_("apply this option to all existing styles"));
-
-            gtk_container_add(GTK_CONTAINER(content_area), label);
-            gtk_container_add(GTK_CONTAINER(content_area), overwrite_dialog_check_button);
+            dt_gui_dialog_add(GTK_DIALOG(dialog_overwrite_import), gtk_label_new(overwrite_str), overwrite_dialog_check_button);
             gtk_widget_show_all(dialog_overwrite_import);
+            g_free(overwrite_str);
 
             // disable check button and skip button when dealing with one style
             if(g_list_is_singleton(filenames))

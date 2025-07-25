@@ -575,11 +575,6 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
-  GtkContainer *content_area =
-    GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
-  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  gtk_container_add(content_area, GTK_WIDGET(box));
-
   g->name = GTK_ENTRY(gtk_entry_new());
   gtk_entry_set_text(g->name, g->original_name);
   gtk_entry_set_width_chars(g->name, 10 + g_utf8_strlen(title, -1));
@@ -587,7 +582,6 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
     gtk_entry_set_activates_default(g->name, TRUE);
   else
     gtk_widget_set_sensitive(GTK_WIDGET(g->name), FALSE);
-  gtk_box_pack_start(box, GTK_WIDGET(g->name), FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->name), _("name of the preset"));
 
   g->description = GTK_ENTRY(gtk_entry_new());
@@ -595,7 +589,6 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
     gtk_entry_set_activates_default(g->description, TRUE);
   else
     gtk_widget_set_sensitive(GTK_WIDGET(g->description), FALSE);
-  gtk_box_pack_start(box, GTK_WIDGET(g->description), FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->description),
                               _("description or further information"));
 
@@ -606,19 +599,16 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
     (GTK_WIDGET(g->autoinit),
      _("the parameters will be reset to their default values,"
        " which may be automatically set based on image metadata"));
-  gtk_box_pack_start(box, GTK_WIDGET(g->autoinit), FALSE, FALSE, 0);
 
   g->autoapply
       = GTK_CHECK_BUTTON(gtk_check_button_new_with_label
                          (_("auto apply this preset to matching images")));
-  gtk_box_pack_start(box, GTK_WIDGET(g->autoapply), FALSE, FALSE, 0);
   g->filter
       = GTK_CHECK_BUTTON(gtk_check_button_new_with_label
                          (_("only show this preset for matching images")));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->filter),
                               _("be very careful with this option. "
                                 "this might be the last time you see your preset."));
-  gtk_box_pack_start(box, GTK_WIDGET(g->filter), FALSE, FALSE, 0);
 
   // check if module_name is an IOP module
   const dt_iop_module_so_t *module = dt_iop_get_module_so(g->module_name);
@@ -649,7 +639,6 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
   gtk_grid_set_row_spacing(GTK_GRID(g->details), DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_spacing(GTK_GRID(g->details), DT_PIXEL_APPLY_DPI(10));
   gtk_grid_set_row_homogeneous(GTK_GRID(g->details), TRUE);
-  gtk_box_pack_start(box, GTK_WIDGET(g->details), TRUE, TRUE, 0);
 
   GtkWidget *label = NULL;
 
@@ -901,6 +890,8 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
                                                       GTK_RESPONSE_CANCEL);
     if(w) gtk_widget_grab_focus(w);
   }
+
+  dt_gui_dialog_add(GTK_DIALOG(dialog), g->name, g->description, g->autoinit, g->autoapply, g->filter, g->details);
 
   g_signal_connect(dialog, "response", G_CALLBACK(_edit_preset_response), g);
   gtk_widget_show_all(dialog);
@@ -1430,9 +1421,6 @@ static void _menuitem_manage_quick_presets(GtkMenuItem *menuitem,
 #endif
   gtk_widget_set_name(dialog, "quick-presets-manager");
   gtk_window_set_title(GTK_WINDOW(dialog), _("manage quick presets"));
-  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
-                                 GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
   GtkTreeViewColumn *col;
   GtkCellRenderer *renderer;
@@ -1524,10 +1512,8 @@ static void _menuitem_manage_quick_presets(GtkMenuItem *menuitem,
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
   g_object_unref(model);
 
-  gtk_container_add(GTK_CONTAINER(sw), view);
-  gtk_widget_set_vexpand(sw, TRUE);
-  gtk_widget_set_hexpand(sw, TRUE);
-  gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), sw);
+  GtkWidget *sw = dt_gui_scroll_wrap(view);
+  dt_gui_dialog_add(GTK_DIALOG(dialog), dt_gui_expand(sw));
 
   gtk_window_set_resizable(GTK_WINDOW(dialog), TRUE);
 

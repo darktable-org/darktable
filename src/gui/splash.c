@@ -327,14 +327,11 @@ void darktable_exit_screen_create(GtkWindow *parent_window,
   GtkBox *header_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   gtk_box_pack_start(header_box, logo, FALSE, FALSE, 0);
   gtk_box_pack_start(header_box, program_name, FALSE, FALSE, 0);
-  GtkBox *content = GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(exit_screen)));
-  gtk_box_pack_start(content, GTK_WIDGET(header_box), FALSE, FALSE, 0);
   GtkWidget *message1 = gtk_label_new(_("darktable is now shutting down"));
   gtk_widget_set_name(message1, "exitscreen-message");
   GtkWidget *message2 = gtk_label_new(_("please wait while background jobs finish"));
   gtk_widget_set_name(message2, "exitscreen-message");
-  gtk_box_pack_start(content, message1, FALSE, FALSE, 0);
-  gtk_box_pack_start(content, message2, FALSE, FALSE, 0);
+  dt_gui_dialog_add(GTK_DIALOG(exit_screen), GTK_WIDGET(header_box), message1, message2);
   gtk_widget_show_all(exit_screen);
   _process_all_gui_events();
 

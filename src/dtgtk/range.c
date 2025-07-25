@@ -1027,7 +1027,6 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   gtk_box_pack_start(GTK_BOX(hbox2), pop->seconds, FALSE, TRUE, 0);
 
   // the treeview
-  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
   GtkTreeModel *model = GTK_TREE_MODEL(gtk_tree_store_new(DATETIME_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT,
                                                           G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_UINT));
   pop->treeview = gtk_tree_view_new_with_model(model);
@@ -1043,10 +1042,9 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_set_cell_data_func(col, renderer, _date_tree_count_func, NULL, NULL);
-
   gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(pop->treeview), DATETIME_COL_TOOLTIP);
 
-  gtk_container_add(GTK_CONTAINER(sw), pop->treeview);
+  GtkWidget *sw = dt_gui_scroll_wrap(pop->treeview);
   gtk_box_pack_start(GTK_BOX(hbox), sw, FALSE, TRUE, 0);
 
   // the select line
