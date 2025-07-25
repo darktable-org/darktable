@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-01 09:33+0200\n"
-"PO-Revision-Date: 2025-07-21 13:35+0900\n"
+"PO-Revision-Date: 2025-07-25 16:45+0900\n"
 "Last-Translator: Hwanyong Lee <hwan@ajou.ac.kr>\n"
 "Language-Team: Ajou Univ.(함도혁,윤하윤,정채영,김민채,김윤중)\n"
 "Language: ko_KR\n"
@@ -191,8 +191,8 @@ msgid ""
 "if enabled, only raw files will be allowed to import. non-raw files will not "
 "be visible in the dialog and will not be imported."
 msgstr ""
-"활성화하면 RAW 파일만 가져올 수 있습니다. RAW가 아닌 파일은"
-"대화상자에 표시되지 않으며 가져올 수 없습니다."
+"활성화하면 RAW 파일만 가져올 수 있습니다. RAW가 아닌 파일은대화상자에 표시되"
+"지 않으며 가져올 수 없습니다."
 
 #: ../build/bin/conf_gen.h:977
 msgid "apply metadata"
@@ -204,27 +204,27 @@ msgstr "새로 가져온 모든 이미지에 일부 메타데이터를 적용합
 
 #: ../build/bin/conf_gen.h:984
 msgid "recursive directory"
-msgstr "모든 하위 디렉터리 포함"
+msgstr "모든 하위 디렉토리 포함"
 
 #: ../build/bin/conf_gen.h:985
 msgid "recursive directory traversal when importing filmrolls"
-msgstr "필름롤을 가져올 때 하위 디렉터리 탐색"
+msgstr "필름롤을 가져오기 시 하위 디렉토리 탐색"
 
 #: ../build/bin/conf_gen.h:991
 msgid "creator to be applied when importing"
-msgstr "가져올 때 적용할 작성자"
+msgstr "가져오기 시 적용할 작성자"
 
 #: ../build/bin/conf_gen.h:998
 msgid "publisher to be applied when importing"
-msgstr "가져올 때 적용할 발행자"
+msgstr "가져오기 시 적용할 발행자"
 
 #: ../build/bin/conf_gen.h:1005
 msgid "rights to be applied when importing"
-msgstr "가져올 때 적용할 저작권 정보"
+msgstr "가져오기 시 적용할 저작권 정보"
 
 #: ../build/bin/conf_gen.h:1012
 msgid "comma separated tags to be applied when importing"
-msgstr "가져올 때 적용할 태그 (쉼표로 구분)"
+msgstr "가져오기 시 적용할 태그 (쉼표로 구분)"
 
 #: ../build/bin/conf_gen.h:1019
 msgid "import tags from XMP"
@@ -236,7 +236,7 @@ msgstr "초기 등급"
 
 #: ../build/bin/conf_gen.h:1048
 msgid "initial star rating for all images when importing a filmroll"
-msgstr "필름롤을 가져올 때 모든 이미지에 적용할 초기 등급"
+msgstr "필름롤을 가져오기 시 모든 이미지에 적용할 초기 등급"
 
 #: ../build/bin/conf_gen.h:1054
 msgid "ignore EXIF rating"
@@ -247,8 +247,8 @@ msgid ""
 "ignore EXIF rating. if not set and EXIF rating is found, it overrides "
 "'initial rating'"
 msgstr ""
-"EXIF 등급을 무시합니다. 설정하지 않으면 EXIF 등급이 있을 경우"
-"'초기 등급'을 덮어씁니다"
+"EXIF 등급을 무시합니다. 설정하지 않으면 EXIF 등급이 있을 경우'초기 등급'을 덮"
+"어씁니다"
 
 #: ../build/bin/conf_gen.h:1061
 msgid "import job"
@@ -269,10 +269,10 @@ msgid ""
 "$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS), $(MSEC).\n"
 "let the field empty otherwise"
 msgstr ""
-"변수를 확장할 때 사용할 현재 날짜/시간을 재정의하려면"
-"다음 형식으로 날짜를 입력 합니다 : YYYY:MM:DD[ hh:mm:ss[.sss]].\n"
-"$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS), $(MSEC)"
-"변수에 적용됩니다.\n"
+"변수를 확장할 때 사용할 현재 날짜/시간을 재정의하려면다음 형식으로 날짜를 입"
+"력 합니다 : YYYY:MM:DD[ hh:mm:ss[.sss]].\n"
+"$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS), $(MSEC)변수에 적용"
+"됩니다.\n"
 "필요 없으면 필드를 비워 둡니다"
 
 #: ../build/bin/conf_gen.h:1075
@@ -432,8 +432,8 @@ msgid ""
 "increase or decrease the spatial size of images groups on the map. can "
 "influence the calculation time"
 msgstr ""
-"지도에서 이미지 그룹의 공간 크기를 늘리거나 줄입니다."
-"계산 시간에 영향을 줄 수 있습니다"
+"지도에서 이미지 그룹의 공간 크기를 늘리거나 줄입니다.계산 시간에 영향을 줄 "
+"수 있습니다"
 
 #: ../build/bin/conf_gen.h:2034
 msgid "min images per group"
@@ -444,8 +444,8 @@ msgid ""
 "the minimum number of images to set up an images group. can influence the "
 "calculation time."
 msgstr ""
-"이미지 그룹을 구성하는 데 필요한 최소 이미지 수입니다."
-"계산 시간에 영향을 줄 수 있습니다."
+"이미지 그룹을 구성하는 데 필요한 최소 이미지 수입니다.계산 시간에 영향을 줄 "
+"수 있습니다."
 
 #: ../build/bin/conf_gen.h:2040
 msgctxt "preferences"
@@ -466,8 +466,8 @@ msgid ""
 "three options are available: images thumbnails, only the count of images of "
 "the group or nothing"
 msgstr ""
-"세 가지 옵션이 있습니다: 이미지 썸네일, 그룹의 이미지 개수만 표시,"
-"또는 아무것도 표시하지 않기"
+"세 가지 옵션이 있습니다: 이미지 썸네일, 그룹의 이미지 개수만 표시,또는 아무것"
+"도 표시하지 않기"
 
 #: ../build/bin/conf_gen.h:2058
 msgid "max polygon points"
@@ -476,7 +476,7 @@ msgstr "최대 다각형 꼭짓점 수"
 #: ../build/bin/conf_gen.h:2059
 msgid ""
 "limit the number of points imported with polygon in find location module"
-msgstr "위치 찾기 모듈에서 다각형으로 가져올 때 꼭짓점 수를 제한합니다"
+msgstr "위치 찾기 모듈에서 다각형으로 가져오기 시 꼭짓점 수를 제한합니다"
 
 #: ../build/bin/conf_gen.h:2393
 msgctxt "preferences"
@@ -734,8 +734,8 @@ msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
 msgstr ""
-"대부분의 카메라는 EXIF에 시간대를 저장하지 않습니다."
-"GPX 데이터를 올바르게 일치시키기 위해 올바른 시간대를 입력합니다"
+"대부분의 카메라는 EXIF에 시간대를 저장하지 않습니다.GPX 데이터를 올바르게 일"
+"치시키기 위해 올바른 시간대를 입력합니다"
 
 #: ../build/bin/conf_gen.h:3536
 msgctxt "preferences"
@@ -876,7 +876,7 @@ msgstr "세션 옵션"
 
 #: ../build/bin/preferences_gen.h:4352
 msgid "base filmroll's directory"
-msgstr "기본 필름롤 디렉터리"
+msgstr "기본 필름롤 디렉토리"
 
 #: ../build/bin/preferences_gen.h:4367 ../build/bin/preferences_gen.h:4406
 #: ../build/bin/preferences_gen.h:4440 ../build/bin/preferences_gen.h:4479
@@ -933,7 +933,7 @@ msgstr "`%s' 으로 초기화하려면 더블 클릭"
 
 #: ../build/bin/preferences_gen.h:4370
 msgid "directory where new imported filmrolls are created"
-msgstr "새로 가져온 필름롤이 생성되는 디렉터리"
+msgstr "새로 가져온 필름롤이 생성되는 디렉토리"
 
 #: ../build/bin/preferences_gen.h:4391
 msgid "filmroll name"
@@ -972,7 +972,7 @@ msgstr "FALSE"
 msgid ""
 "keep original filename instead of a pattern while importing from camera or "
 "card"
-msgstr "카메라나 카드에서 가져올 때 패턴 대신 원본 파일 이름을 유지합니다"
+msgstr "카메라나 카드에서 가져오기 시 패턴 대신 원본 파일 이름을 유지합니다"
 
 #: ../build/bin/preferences_gen.h:4464
 msgid "file naming pattern"
@@ -1011,8 +1011,8 @@ msgid ""
 "module. this will allow you to do range selections for date-time and numeric "
 "values."
 msgstr ""
-"이 옵션을 선택하면 컬렉션 모듈에서 항목을 단일 클릭으로 선택할 수 있습니다."
-"날짜-시간 및 숫자 값에 대해 범위 선택이 가능합니다."
+"이 옵션을 선택하면 컬렉션 모듈에서 항목을 단일 클릭으로 선택할 수 있습니다.날"
+"짜-시간 및 숫자 값에 대해 범위 선택이 가능합니다."
 
 #: ../build/bin/preferences_gen.h:4603
 msgid "prioritize the hovered image over the selected images"
@@ -1060,7 +1060,8 @@ msgid ""
 "when this option is enabled then darktable will try to scroll the module to "
 "the top of the visible list"
 msgstr ""
-"이 옵션을 활성화하면 darktable이 해당 모듈을 표시 목록의 상단으로 스크롤합니다"
+"이 옵션을 활성화하면 darktable이 해당 모듈을 표시 목록의 상단으로 스크롤합니"
+"다"
 
 #: ../build/bin/preferences_gen.h:4705
 msgid "rating an image one star twice will not zero out the rating"
@@ -1070,7 +1071,8 @@ msgstr "이미지를 두 번 연속 1점으로 평가해도 등급이 0이 되�
 msgid ""
 "defines whether rating an image one star twice will zero out star rating"
 msgstr ""
-"이미지에 두 번 연속 1점으로 평가하면 별점 등급이 0점이 되는지 여부를 정의합니다"
+"이미지에 두 번 연속 1점으로 평가하면 별점 등급이 0점이 되는지 여부를 정의합니"
+"다"
 
 #: ../build/bin/preferences_gen.h:4739 ../build/bin/preferences_gen.h:5396
 msgid "show scrollbars for central view"
@@ -1104,10 +1106,10 @@ msgid ""
 "should choose the *always* option.\n"
 "(more comments in the manual)"
 msgstr ""
-"썸네일 크기가 이 값보다 크면 내장 미리보기 JPEG 대신"
-"RAW 파일로 처리됩니다(높은 품질, 낮은 성능).\n"
-"모든 썸네일과 미리 렌더링된 이미지를 최상의 품질로 원하는 경우"
-"*항상* 옵션을 선택해야 합니다.\n"
+"썸네일 크기가 이 값보다 크면 내장 미리보기 JPEG 대신RAW 파일로 처리됩니다(높"
+"은 품질, 낮은 성능).\n"
+"모든 썸네일과 미리 렌더링된 이미지를 최상의 품질로 원하는 경우*항상* 옵션을 "
+"선택해야 합니다.\n"
 "(자세한 내용은 매뉴얼을 참고)"
 
 #: ../build/bin/preferences_gen.h:4849
@@ -1122,10 +1124,10 @@ msgid ""
 "should choose the *always* option.\n"
 "(more comments in the manual)"
 msgstr ""
-"썸네일 크기가 이 값보다 크면 전체 품질 렌더링 경로로 처리됩니다"
-"(높은 품질, 낮은 성능).\n"
-"모든 썸네일과 미리 렌더링된 이미지를 최상의 품질로 원한다면"
-"*항상* 옵션을 선택합니다.\n"
+"썸네일 크기가 이 값보다 크면 전체 품질 렌더링 경로로 처리됩니다(높은 품질, 낮"
+"은 성능).\n"
+"모든 썸네일과 미리 렌더링된 이미지를 최상의 품질로 원한다면*항상* 옵션을 선택"
+"합니다.\n"
 "(자세한 내용은 매뉴얼을 참고)"
 
 #: ../build/bin/preferences_gen.h:4884
@@ -1143,14 +1145,14 @@ msgid ""
 "to generate all thumbnails of your entire collection offline, run 'darktable-"
 "generate-cache'."
 msgstr ""
-"이 옵션을 활성화하면 썸네일이 메모리 캐시에서 제거될 때"
-"디스크(.cache/darktable/)에 저장됩니다.\n"
-"참고: 이 기능은 많은 메모리를 사용할 수 있으며 (20k 이미지에 수 기가바이트 필요)"
-"한 번 저장된 캐시 썸네일은 자동으로 삭제되지 않습니다.\n"
+"이 옵션을 활성화하면 썸네일이 메모리 캐시에서 제거될 때디스크(.cache/"
+"darktable/)에 저장됩니다.\n"
+"참고: 이 기능은 많은 메모리를 사용할 수 있으며 (20k 이미지에 수 기가바이트 필"
+"요)한 번 저장된 캐시 썸네일은 자동으로 삭제되지 않습니다.\n"
 "원한다면 수동으로 삭제해도 안전합니다.\n"
 "많은 이미지를 탐색할 때 light table 성능이 크게 향상됩니다.\n"
-"전체 컬렉션의 모든 썸네일을 오프라인으로 생성하려면"
-"'darktable-generate-cache'를 실행합니다."
+"전체 컬렉션의 모든 썸네일을 오프라인으로 생성하려면'darktable-generate-"
+"cache'를 실행합니다."
 
 #: ../build/bin/preferences_gen.h:4918
 msgid "enable disk backend for full preview cache"
@@ -1166,10 +1168,10 @@ msgid ""
 "light table performance will be increased greatly when zooming image in full "
 "preview mode."
 msgstr ""
-"이 옵션을 활성화하면 전체 미리보기가 메모리 캐시에서 제거될 때"
-"디스크(.cache/darktable/)에 저장됩니다.\n"
-"참고: 이 기능은 많은 메모리를 사용할 수 있으며 (20k 이미지에 수 기가바이트 필요)"
-"한 번 저장된 캐시 전체 미리보기는 자동으로 삭제되지 않습니다.\n"
+"이 옵션을 활성화하면 전체 미리보기가 메모리 캐시에서 제거될 때디스크(.cache/"
+"darktable/)에 저장됩니다.\n"
+"참고: 이 기능은 많은 메모리를 사용할 수 있으며 (20k 이미지에 수 기가바이트 필"
+"요)한 번 저장된 캐시 전체 미리보기는 자동으로 삭제되지 않습니다.\n"
 "원한다면 수동으로 삭제해도 안전합니다.\n"
 "전체 미리보기 모드에서 이미지를 확대할 때 lighttable 성능이 크게 향상됩니다."
 
@@ -1196,8 +1198,8 @@ msgid ""
 "if 'enable disk backend for thumbnail cache' is enabled thumbnails/mipmaps "
 "up to the selected size are generated while user is inactive in lighttable."
 msgstr ""
-"'썸네일 캐시에 디스크 백엔드 사용'이 활성화되어 있으면, 사용자가 lighttable에서 "
-"비활성 상태일 때 선택한 크기까지 썸네일/밉맵이 생성됩니다."
+"'썸네일 캐시에 디스크 백엔드 사용'이 활성화되어 있으면, 사용자가 lighttable에"
+"서 비활성 상태일 때 선택한 크기까지 썸네일/밉맵이 생성됩니다."
 
 #: ../build/bin/preferences_gen.h:5021
 msgid "reset cached thumbnails"
@@ -1208,8 +1210,8 @@ msgid ""
 "force thumbnails to be regenerated by resetting the database. this may be "
 "needed in case some thumbnails have been manually removed or corrupted."
 msgstr ""
-"데이터베이스를 재설정하여 썸네일을 강제로 다시 생성합니다."
-"일부 썸네일이 수동으로 삭제되었거나 손상된 경우 필요할 수 있습니다."
+"데이터베이스를 재설정하여 썸네일을 강제로 다시 생성합니다.일부 썸네일이 수동"
+"으로 삭제되었거나 손상된 경우 필요할 수 있습니다."
 
 #: ../build/bin/preferences_gen.h:5055
 msgid "delimiters for size categories"
@@ -1222,8 +1224,8 @@ msgid ""
 "for example, 120|400 means 3 categories of thumbnails: <120px, 120-400px, "
 ">400px"
 msgstr ""
-"크기별로 서로 다른 오버레이와 CSS 값을 설정할 수 있도록"
-"크기 구분자를 |로 구분하여 사용합니다.\n"
+"크기별로 서로 다른 오버레이와 CSS 값을 설정할 수 있도록크기 구분자를 |로 구분"
+"하여 사용합니다.\n"
 "예, 120|400은 3개의 썸네일 크기 범주를 의미: <120px, 120-400px, >400px"
 
 #: ../build/bin/preferences_gen.h:5094
@@ -1254,9 +1256,9 @@ msgid ""
 "curvature\n"
 "by default scrolling up increases these parameters"
 msgstr ""
-"마우스 휠로 마스크 파라메터를 변경할 때, 아래로 스크롤하면 마스크 크기,"
-"페더 크기, 불투명도, 브러시 경도, 그라디언트 곡률이 증가합니다.\n"
-"기본적으로는 스크롤을 올릴 때 이 값들이 증가합니다"
+"마우스 휠로 마스크 파라메터를 변경할 때, 아래로 스크롤하면 마스크 크기,페더 "
+"크기, 불투명도, 브러시 경도, 그라디언트 곡률이 증가합니다.\n"
+"기본적으로는 스크롤을 올릴 때 이 파라메터 값들이 증가합니다"
 
 #: ../build/bin/preferences_gen.h:5242
 msgid "middle mouse button zooms to 200%"
@@ -1269,9 +1271,9 @@ msgid ""
 "on middle mouse clicks. if disabled, it will toggle between viewport size "
 "and 100%, and the 'ctrl' key can be used to control the zoom level."
 msgstr ""
-"활성화하면 중간 마우스 클릭 시 확대 수준이 100%, 200%, 뷰포트 맞춤 순으로 바뀝니다."
-"비활성화하면 뷰포트 크기와 100% 사이를 전환하며,"
-"'ctrl' 키로 확대 수준을 조절할 수 있습니다."
+"활성화하면 중간 마우스 클릭 시 확대 수준이 100%, 200%, 뷰포트 맞춤 순으로 바"
+"뀝니다.비활성화하면 뷰포트 크기와 100% 사이를 전환하며,'ctrl' 키로 확대 수준"
+"을 조절할 수 있습니다."
 
 #: ../build/bin/preferences_gen.h:5277
 msgid "pattern for the image information line"
@@ -1303,8 +1305,8 @@ msgid ""
 "process the image in darkroom mode with a small border. set to 0 if you "
 "don't want any border."
 msgstr ""
-"darkroom 모드에서 작은 테두리로 이미지를 처리합니다. 테두리가 필요 없다면 "
-"0으로 설정합니다."
+"darkroom 모드에서 작은 테두리로 이미지를 처리합니다. 테두리가 필요 없다면 0으"
+"로 설정합니다."
 
 #: ../build/bin/preferences_gen.h:5430
 msgid "show loading screen between images"
@@ -1361,8 +1363,8 @@ msgid ""
 "if only expanding a single module at a time, only collapse other modules in "
 "the current group - ignore modules in other groups"
 msgstr ""
-"한 번에 하나의 모듈만 펼칠 경우, 현재 그룹 내 다른 모듈만 접히고 "
-"다른 그룹의 모듈은 무시됩니다"
+"한 번에 하나의 모듈만 펼칠 경우, 현재 그룹 내 다른 모듈만 접히고 다른 그룹의 "
+"모듈은 무시됩니다"
 
 #: ../build/bin/preferences_gen.h:5642
 msgid "expand the module when it is activated, and collapse it when disabled"
@@ -1373,8 +1375,7 @@ msgid ""
 "this option allows to expand or collapse automatically the module when it is "
 "enabled or disabled."
 msgstr ""
-"이 옵션을 사용하면 모듈이 활성화 또는 비활성화될 때 자동으로"
-"펼침, 접힘이 됩니다."
+"이 옵션을 사용하면 모듈이 활성화 또는 비활성화될 때 자동으로펼침, 접힘이 됩니다."
 
 #: ../build/bin/preferences_gen.h:5676
 msgid "scroll processing modules to the top when expanded"
@@ -1405,7 +1406,8 @@ msgid ""
 " - 'smooth': fade out all buttons in one header simultaneously,\n"
 " - 'glide': gradually hide individual buttons as needed"
 msgstr ""
-"마우스가 모듈 위에 없을 때 다중 인스턴스, 재설정, 프리셋 버튼을 숨길 수 있습니다:\n"
+"마우스가 모듈 위에 없을 때 다중 인스턴스, 재설정, 프리셋 버튼을 숨길 수 있습"
+"니다:\n"
 " - '항상': 모든 버튼 항상 표시\n"
 " - '활성': 마우스가 모듈 위에 있을 때만 버튼 표시\n"
 " - '어둡게': 마우스가 떨어지면 버튼 어둡게\n"
@@ -1431,10 +1433,11 @@ msgstr "새 인스턴스 추가 시 이름 입력 요청"
 
 #: ../build/bin/preferences_gen.h:5826
 msgid ""
-"if enabled, a rename prompt will be present for each new module instance"
+"if enabled, a rename prompt will be present for each new module instance "
 "(either new instance or duplicate)"
 msgstr ""
-"활성화하면 새 모듈 인스턴스 (신규 또는 복제)마다 이름 변경 요청이 표시됩니다"
+"활성화하면, 새 모듈 인스턴스 (신규 또는 복제) 마다 이름 변경 요청이 표시됩니"
+"다"
 
 #: ../build/bin/preferences_gen.h:5847
 msgid "automatically update module name"
@@ -1445,8 +1448,8 @@ msgid ""
 "if enabled, the module name will be automatically updated to match a preset "
 "name or a preset instance name if present."
 msgstr ""
-"활성화하면 모듈 이름이 프리셋 이름 또는 프리셋 인스턴스 이름과"
-"자동으로 일치하도록 업데이트됩니다."
+"활성화하면 모듈 이름이 프리셋 이름 또는 프리셋 인스턴스 이름과자동으로 일치하"
+"도록 업데이트됩니다."
 
 #: ../build/bin/preferences_gen.h:5892
 msgid "processing"
@@ -1499,15 +1502,15 @@ msgstr "LUT 3D 루트 폴더"
 #: ../src/libs/import.c:1975 ../src/libs/import.c:2033 ../src/libs/styles.c:451
 #: ../src/lua/preferences.c:668
 msgid "select directory"
-msgstr "디렉터리 선택"
+msgstr "디렉토리 선택"
 
 #: ../build/bin/preferences_gen.h:6037
 msgid ""
 "this folder (and sub-folders) contains LUT files used by LUT 3D module. "
 "(restart required)"
 msgstr ""
-"이 폴더(및 하위 폴더)에는 LUT 3D 모듈에서 사용하는 LUT 파일이 포함되어 있습니다."
-"(재시작 필요)"
+"이 폴더(및 하위 폴더)에는 LUT 3D 모듈에서 사용하는 LUT 파일이 포함되어 있습니"
+"다.(재시작 필요)"
 
 #: ../build/bin/preferences_gen.h:6058
 msgid "raster mask files root folder"
@@ -1532,10 +1535,10 @@ msgid ""
 "display-referred workflow is based on Lab modules and will auto-apply base "
 "curve, white balance and the legacy module pipe order."
 msgstr ""
-"장면 기준 워크플로우는 선형 모듈을 기반으로 하며 filmic 또는 "
-"시그모이드,색상 보정, 노출을 자동 적용합니다.\n"
-"디스플레이 기준 워크플로우는 Lab 모듈을 기반으로 하며 기본 곡선,"
-"화이트 밸런스, 레거시 모듈 순서를 자동 적용합니다."
+"장면 기준 워크플로우는 선형 모듈을 기반으로 하며 filmic 또는 시그모이드,색상 "
+"보정, 노출을 자동 적용합니다.\n"
+"디스플레이 기준 워크플로우는 Lab 모듈을 기반으로 하며 기본 곡선,화이트 밸런"
+"스, 레거시 모듈 순서를 자동 적용합니다."
 
 #: ../build/bin/preferences_gen.h:6134
 msgid "auto-apply per camera basecurve presets"
@@ -1550,12 +1553,12 @@ msgid ""
 "to prevent auto-apply basecurve presets \"auto-apply pixel workflow "
 "defaults\" should be set to \"none\""
 msgstr ""
-"사용 가능한 경우 제조사 기본값 대신 카메라별 기본 곡선을 기본값으로 사용합니다."
-"(재시작 필요)\n"
-"이 옵션은 \"픽셀 워크플로우 기본값 자동 적용\"이 \"디스플레이 기준\"으로 설정된 "
-"경우에 적용됩니다.\n"
-"기본 곡선 프리셋 자동 적용을 방지하려면 \"픽셀 워크플로우 기본값 자동 적용\"을"
-"\"없음\"으로 설정하세요."
+"사용 가능한 경우 제조사 기본값 대신 카메라별 기본 곡선을 기본값으로 사용합니"
+"다.(재시작 필요)\n"
+"이 옵션은 \"픽셀 워크플로우 기본값 자동 적용\"이 \"디스플레이 기준\"으로 설정"
+"된 경우에 적용됩니다.\n"
+"기본 곡선 프리셋 자동 적용을 방지하려면 \"픽셀 워크플로우 기본값 자동 적용"
+"\"을\"없음\"으로 설정하세요."
 
 #: ../build/bin/preferences_gen.h:6168
 msgid "detect monochrome previews"
@@ -1566,8 +1569,8 @@ msgid ""
 "many monochrome images can be identified via EXIF and preview data. beware: "
 "this slows down imports and reading of EXIF data"
 msgstr ""
-"많은 모노크롬 이미지는 EXIF 및 미리보기 데이터를 통해 식별할 수 있습니다."
-"참고: 이 옵션은 가져오기 및 EXIF 데이터 읽기 속도를 저하시킬 수 있습니다"
+"많은 모노크롬 이미지는 EXIF 및 미리보기 데이터를 통해 식별할 수 있습니다.참"
+"고: 이 옵션은 가져오기 및 EXIF 데이터 읽기 속도를 저하시킬 수 있습니다"
 
 #: ../build/bin/preferences_gen.h:6202
 msgid "show warning messages"
@@ -1626,7 +1629,8 @@ msgid ""
 "your graphics card(s).\n"
 "can be switched on and off at any time."
 msgstr ""
-"시스템에서 OpenCL 런타임을 찾으면 그래픽 카드(들)을 사용해 처리 속도를 높입니다.\n"
+"시스템에서 OpenCL 런타임을 찾으면 그래픽 카드(들)을 사용해 처리 속도를 높입니"
+"다.\n"
 "언제든지 켜거나 끌 수 있습니다."
 
 #: ../build/bin/preferences_gen.h:6303 ../build/bin/preferences_gen.h:6348
@@ -1665,8 +1669,7 @@ msgid ""
 " - 'very fast GPU': process both pixelpipes sequentially on the GPU."
 msgstr ""
 "OpenCL이 활성화된 시스템에서 미리보기 및 전체 픽셀 파이프 작업의 스케줄 방식을 정의합니다:\n"
-" - 'default': GPU는 전체, CPU는 미리보기 파이프를 처리 (구성 파라메터로 조정 "
-"가능)\n"
+" - 'default': GPU는 전체, CPU는 미리보기 파이프를 처리 (구성 파라메터로 조정 가능)\n"
 " - 'multiple GPUs': 두 개의 다른 GPU에서 두 픽셀 파이프를 병렬 처리\n"
 " - 'very fast GPU': 두 픽셀 파이프를 GPU에서 순차 처리."
 
@@ -1679,8 +1682,8 @@ msgid ""
 "if enabled on a system with multiple OpenCL devices you may specify a safety "
 "margin per device (headroom, default is 600MB)"
 msgstr ""
-"여러 OpenCL 장치가 있는 시스템에서 이 옵션을 활성화하면, 각 장치별로"
-"안전 여유 메모리 (헤드룸, 기본값 600MB)를 지정할 수 있습니다"
+"여러 OpenCL 장치가 있는 시스템에서 이 옵션을 활성화하면, 각 장치별로안전 여"
+"유 메모리 (헤드룸, 기본값 600MB)를 지정할 수 있습니다"
 
 #: ../build/bin/preferences_gen.h:6407
 msgid "OpenCL drivers"
@@ -1719,7 +1722,8 @@ msgid ""
 "RustiCL Mesa OpenCL, still unstable. if you want to use this, you should "
 "disable the vendor driver"
 msgstr ""
-"RustiCL Mesa OpenCL (아직 불안정). 사용하려면 공급업체 드라이버를 비활성화해야 합니다"
+"RustiCL Mesa OpenCL (아직 불안정). 사용하려면 공급업체 드라이버를 비활성화해"
+"야 합니다"
 
 #: ../build/bin/preferences_gen.h:6602
 msgid "Apple"
@@ -1738,7 +1742,8 @@ msgid ""
 "Microsoft OpenCLOn12, only use this if the vendor provided driver does not "
 "work or there is none provided."
 msgstr ""
-"Microsoft OpenCLOn12 - 공급업체 드라이버가 작동하지 않거나 없는 경우에만 사용하세요."
+"Microsoft OpenCLOn12 - 공급업체 드라이버가 작동하지 않거나 없는 경우에만 사용"
+"하세요."
 
 #: ../build/bin/preferences_gen.h:6690
 msgid "other platforms"
@@ -1749,8 +1754,8 @@ msgid ""
 "if set, all unspecified platforms are accepted. only do this if no vendor "
 "driver is available"
 msgstr ""
-"설정 시, 지정되지 않은 모든 플랫폼을 허용합니다."
-"공급업체 드라이버가 없을 때에만 사용하세요"
+"설정 시, 지정되지 않은 모든 플랫폼을 허용합니다.공급업체 드라이버가 없을 때에"
+"만 사용하세요"
 
 #: ../build/bin/preferences_gen.h:6735
 msgid "security"
@@ -1815,8 +1820,8 @@ msgid ""
 "always ask the user before removing any empty folder. this can happen after "
 "moving or deleting images."
 msgstr ""
-"빈 폴더를 제거하기 전에 항상 사용자에게 확인합니다. 이미지를 이동하거나 "
-"삭제한 후에 발생할 수 있습니다."
+"빈 폴더를 제거하기 전에 항상 사용자에게 확인합니다. 이미지를 이동하거나 삭제"
+"한 후에 발생할 수 있습니다."
 
 #: ../build/bin/preferences_gen.h:6994
 msgid "ask before deleting a tag"
@@ -1879,8 +1884,8 @@ msgid ""
 "this external program is used to play audio files some cameras record to "
 "keep notes for images"
 msgstr ""
-"일부 카메라가 이미지 메모용으로 녹음한 오디오 파일을 재생하는 데 사용되는 "
-"외부 프로그램입니다"
+"일부 카메라가 이미지 메모용으로 녹음한 오디오 파일을 재생하는 데 사용되는 외"
+"부 프로그램입니다"
 
 #: ../build/bin/preferences_gen.h:7262
 msgid "storage"
@@ -1906,8 +1911,8 @@ msgid ""
 " - 'once a day': create snapshot if over 24h passed since last snapshot\n"
 " - 'on close': create snapshot every time darktable is closed"
 msgstr ""
-"darktable을 종료하기 직전에 데이터베이스 스냅샷이 생성됩니다. 옵션을 통해 스냅샷"
-"생성 주기를 선택할 수 있습니다:\n"
+"darktable을 종료하기 직전에 데이터베이스 스냅샷이 생성됩니다. 옵션을 통해 스"
+"냅샷생성 주기를 선택할 수 있습니다:\n"
 " - '안 함': 스냅샷을 생성하지 않습니다. 이 경우 필수 버전 업그레이드 시에만 "
 "스냅샷이 생성됩니다\n"
 " - '한 달에 한 번': 마지막 스냅샷 이후 한 달이 지나면 생성\n"
@@ -1926,8 +1931,8 @@ msgid ""
 "keep in mind that snapshots do take some space and you only need the most "
 "recent one for successful restore"
 msgstr ""
-"스냅샷 생성 후 이전 스냅샷을 몇 개까지 보관할지 설정합니다. "
-"(필수 버전 업그레이드 스냅샷 제외). 모두 보관하려면 -1을 입력하세요.\n"
+"스냅샷 생성 후 이전 스냅샷을 몇 개까지 보관할지 설정합니다. (필수 버전 업그레"
+"이드 스냅샷 제외). 모두 보관하려면 -1을 입력하세요.\n"
 "스냅샷은 저장 공간을 차지하므로, 복원을 위해 가장 최근 스냅샷만 있으면 됩니다"
 
 #: ../build/bin/preferences_gen.h:7350 ../src/libs/copy_history.c:156
@@ -1954,7 +1959,7 @@ msgstr ""
 "\n"
 "선택한 모드에 따라 사이드카 파일이 생성됩니다:\n"
 " - '안 함': 모든 보정 정보가 라이브러리 데이터베이스에만 저장됩니다\n"
-" - '가져올 때': 이미지를 가져오자마자 생성됩니다\n"
+" - '가져오기 시': 이미지를 가져오자마자 생성됩니다\n"
 " - '편집 후': 이미지에 변경을 하거나 태그를 추가한 후 생성됩니다."
 
 #: ../build/bin/preferences_gen.h:7404
@@ -1967,8 +1972,8 @@ msgid ""
 "to store the history stack in output files.\n"
 "this option allows XMP tags to be compressed and save space."
 msgstr ""
-"XMP 태그의 항목이 매우 커질 수 있어, 출력 파일에 히스토리 스택을 "
-"저장할 공간을 초과할 수 있습니다.\n"
+"XMP 태그의 항목이 매우 커질 수 있어, 출력 파일에 히스토리 스택을 저장할 공간"
+"을 초과할 수 있습니다.\n"
 "이 옵션을 사용하면 XMP 태그를 압축하여 공간을 절약할 수 있습니다."
 
 #: ../build/bin/preferences_gen.h:7439
@@ -1981,9 +1986,9 @@ msgid ""
 "seconds); set to zero to disable auto-saving. auto-saving might be disabled "
 "on slow drives."
 msgstr ""
-"지정한 간격(초)마다 현상 작업 히스토리를 자동 저장합니다. "
-"0으로 설정하면 자동 저장이 비활성화됩니다. "
-"느린 드라이브에서는 자동 저장이 비활성화될 수 있습니다."
+"지정한 간격(초)마다 현상 작업 히스토리를 자동 저장합니다. 0으로 설정하면 자"
+"동 저장이 비활성화됩니다. 느린 드라이브에서는 자동 저장이 비활성화될 수 있습"
+"니다."
 
 #: ../build/bin/preferences_gen.h:7483
 msgid "look for updated XMP files on startup"
@@ -2054,8 +2059,8 @@ msgid ""
 "when enabled, use mouse wheel to scroll modules side panel.  use ctrl+alt to "
 "use mouse wheel for data entry.  when disabled, this behavior is reversed"
 msgstr ""
-"활성화하면 마우스 휠로 모듈 사이드 패널을 스크롤합니다. ctrl+alt를 누르면"
-"마우스 휠로 값 입력이 가능합니다. 비활성화하면 동작이 반대로 적용됩니다"
+"활성화하면 마우스 휠로 모듈 사이드 패널을 스크롤합니다. ctrl+alt를 누르면마우"
+"스 휠로 값 입력이 가능합니다. 비활성화하면 동작이 반대로 적용됩니다"
 
 #: ../build/bin/preferences_gen.h:7719
 msgid "always show panels' scrollbars"
@@ -2096,8 +2101,8 @@ msgid ""
 "profile.\n"
 "this is useful when one alternative gives wrong results"
 msgstr ""
-"이 옵션을 사용하면 현재 디스플레이 프로파일을 가져오는 방식을 강제로"
-"지정할 수 있습니다.\n"
+"이 옵션을 사용하면 현재 디스플레이 프로파일을 가져오는 방식을 강제로지정할 "
+"수 있습니다.\n"
 "특정 방식이 잘못된 결과를 줄 때 유용합니다"
 
 #: ../build/bin/preferences_gen.h:7868
@@ -2111,10 +2116,10 @@ msgid ""
 "or if preceded by '-' prevent matching devices from loading. add encoding "
 "and number of knobs like 'BeatStep:63:16'"
 msgstr ""
-"쉼표로 구분된 장치 이름 일부의 목록입니다. 목록의 각 항목이 일치할 경우 "
-"해당 위치의 id로 지정된 MIDI 장치를 불러옵니다\n"
-"'-'를 앞에 붙이면 해당 장치는 불러오지 않습니다. 'BeatStep:63:16'처럼 "
-"인코딩 및 노브 개수도 추가할 수 있습니다."
+"쉼표로 구분된 장치 이름 일부의 목록입니다. 목록의 각 항목이 일치할 경우 해당 "
+"위치의 id로 지정된 MIDI 장치를 불러옵니다\n"
+"'-'를 앞에 붙이면 해당 장치는 불러오지 않습니다. 'BeatStep:63:16'처럼 인코딩 "
+"및 노브 개수도 추가할 수 있습니다."
 
 #. tags
 #: ../build/bin/preferences_gen.h:7905 ../src/develop/lightroom.c:1573
@@ -2157,8 +2162,8 @@ msgid ""
 "note: blending shortcuts always apply to the focused instance"
 msgstr ""
 "모듈에 여러 인스턴스가 있을 때, 단축키는 포커스된 인스턴스에 적용됩니다\n"
-"포커스된 인스턴스가 없으면 아래 환경설정에 따라 (순서대로) 단축키가"
-"적용될 모듈 인스턴스가 결정됩니다.\n"
+"포커스된 인스턴스가 없으면 아래 환경설정에 따라 (순서대로) 단축키가적용될 모"
+"듈 인스턴스가 결정됩니다.\n"
 "참고: 블렌딩 단축키는 항상 포커스된 인스턴스에 적용됩니다"
 
 #: ../build/bin/preferences_gen.h:7999
@@ -2216,7 +2221,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:8158
 msgid "map / geolocalization view"
-msgstr "지도/위치 보기"
+msgstr "지도 / 위치 보기"
 
 #: ../build/bin/preferences_gen.h:8177
 msgid "pretty print the image location"
@@ -2254,7 +2259,8 @@ msgid ""
 "tags case sensitivity. without the Sqlite ICU extension, insensitivity works "
 "only for the 26 latin letters"
 msgstr ""
-"태그 대소문자 구분. Sqlite ICU 확장 없이 비구분 기능은 영문자 26자에만 적용됩니다"
+"태그 대소문자 구분. Sqlite ICU 확장 없이 비구분 기능은 영문자 26자에만 적용됩"
+"니다"
 
 #: ../build/bin/preferences_gen.h:8347 ../build/bin/preferences_gen.h:8490
 msgid "number of collections to be stored"
@@ -2293,7 +2299,7 @@ msgid ""
 "associated tags, 99: 99% matching associated tags, 100: no matching tag to "
 "show only recent tags (faster)"
 msgstr ""
-"추천 목록에 태그를 포함할 신뢰도 수준입니다. 0: 모든 연관 태그,"
+"추천 목록에 태그를 포함할 신뢰도 수준입니다. 0: 모든 연관 태그, "
 "99: 99% 일치하는 연관 태그, 100: 일치하는 태그 없이 최근 태그만 표시 (더 빠름)"
 
 #: ../build/bin/preferences_gen.h:8617
@@ -2405,8 +2411,8 @@ msgid ""
 "desaturate and darken red pupils in flash photos.  add drawn masks to limit "
 "affected areas to just the eyes if necessary."
 msgstr ""
-"플래시 사진에서 붉은 눈동자를 채도 감소 및 어둡게 처리합니다. 필요하다면 마스크를"
-"추가해 눈동자에만 적용할 수 있습니다."
+"플래시 사진에서 붉은 눈동자를 채도 감소 및 어둡게 처리합니다. 필요하다면 마스"
+"크를추가해 눈동자에만 적용할 수 있습니다."
 
 #: ../build/bin/styles_string.h:19
 msgid "effects"
@@ -2491,7 +2497,7 @@ msgid ""
 "make a photo taken in full daylight look like it was taken at night.  "
 "emulates the cinematic technique of the same name."
 msgstr ""
-"밝은 낮에 찍은 사진을 밤에 촬영한 것처럼 만듭니다."
+"밝은 낮에 찍은 사진을 밤에 촬영한 것처럼 만듭니다. "
 "영화 촬영에서 사용하는 기법을 모방합니다."
 
 #: ../build/bin/styles_string.h:31
@@ -3127,7 +3133,7 @@ msgstr "색역 압축"
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:336
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:489
 msgid "clip negative RGB from gamut"
-msgstr "색역에서 음수 RGB 클립"
+msgstr "색역에서 음수 RGB 클리핑"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:342
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:493
@@ -5494,15 +5500,16 @@ msgid ""
 "darktable manages your camera raw files and images in a database, lets you "
 "view them through lighttable mode and develop/enhance them in darkroom mode."
 msgstr ""
-"darktable은 카메라 RAW 파일과 이미지를 데이터베이스로 관리하며, lighttable"
-"모드에서 이미지를 보고 darkroom 모드에서 현상 및 보정할 수 있습니다."
+"darktable은 카메라 RAW 파일과 이미지를 데이터베이스로 관리하며, lighttable모"
+"드에서 이미지를 보고 darkroom 모드에서 현상 및 보정할 수 있습니다."
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:3
 msgid ""
 "Other modes besides lighttable and darkroom are a map for geotagging, "
 "tethering, print and a slideshow."
 msgstr ""
-"lighttable과 darkroom 외에도 지도(지오태깅), 테더링, 인쇄, 슬라이드쇼 모드를 지원합니다."
+"lighttable과 darkroom 외에도 지도(지오태깅), 테더링, 인쇄, 슬라이드쇼 모드를 "
+"지원합니다."
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:4
 msgid ""
@@ -5671,7 +5678,7 @@ msgstr "--out-ext의 확장자가 너무 깁니다"
 #: ../src/cli/main.c:366
 #, c-format
 msgid "notice: input file or dir '%s' doesn't exist, skipping\n"
-msgstr "알림: 입력 파일 또는 디렉터리 '%s'가 존재하지 않아 건너뜁니다\n"
+msgstr "알림: 입력 파일 또는 디렉토리 '%s'가 존재하지 않아 건너뜁니다\n"
 
 #: ../src/cli/main.c:375
 #, c-format
@@ -5705,7 +5712,7 @@ msgid ""
 "notice: output location is a directory. assuming '%s/$(FILE_NAME).%s' output "
 "pattern"
 msgstr ""
-"알림: 출력 위치가 디렉터리입니다. '%s/$(FILE_NAME).%s' 출력 패턴을 사용합니다"
+"알림: 출력 위치가 디렉토리입니다. '%s/$(FILE_NAME).%s' 출력 패턴을 사용합니다"
 
 #. output file exists or there's output ext specified and it's same as file...
 #: ../src/cli/main.c:524
@@ -5754,8 +5761,8 @@ msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
 msgstr ""
-"디스크 저장소 모듈을 찾을 수 없습니다. 설치 상태를 확인해 주세요."
-"문제가 있는 것 같습니다."
+"디스크 저장소 모듈을 찾을 수 없습니다. 설치 상태를 확인해 주세요.문제가 있는 "
+"것 같습니다."
 
 #: ../src/cli/main.c:701
 msgid "failed to get parameters from storage module, aborting export ..."
@@ -6619,7 +6626,7 @@ msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
 msgstr ""
-"더 이상 헤드룸과 친구를 찾을 수 없고, 대신 환경설정/처리 사용량에서 찾을 수 "
+"더 이상 헤드룸과 친구를 찾을 수 없고, 대신 환경설정/프로세싱 사용: 에 "
 "있습니다:"
 
 #: ../src/common/darktable.c:2419
@@ -6635,7 +6642,7 @@ msgid ""
 "some global config parameters relevant for OpenCL performance are not used "
 "any longer."
 msgstr ""
-"OpenCL 성능과 관련된 전역 구성 매개변수의 일부는 더 이상 사용되지 않습니다."
+"OpenCL 성능과 관련된 전역 구성 파라메터 일부는 더 이상 사용되지 않습니다."
 
 #: ../src/common/darktable.c:2430
 msgid ""
@@ -6675,8 +6682,8 @@ msgstr ""
 msgid ""
 "you will find 'per device' data in 'cldevice_v5_canonical-name'. content is:"
 msgstr ""
-"'cldevice_v5_canonical-name'에서 'per device' 데이터를 찾을 수 있습니다."
-"내용은 다음과 같습니다:"
+"'cldevice_v5_canonical-name'에서 'per device' 데이터를 찾을 수 있습니다.내용"
+"은 다음과 같습니다:"
 
 #: ../src/common/darktable.c:2455
 msgid ""
@@ -6691,7 +6698,8 @@ msgid ""
 "OpenCL 'per device' config data have been automatically extended by 'unified-"
 "fraction'."
 msgstr ""
-"OpenCL 'per device' 구성 데이터가 'unified-fraction'에 의해 자동으로 확장되었습니다."
+"OpenCL 'per device' 구성 데이터가 'unified-fraction'에 의해 자동으로 확장되었"
+"습니다."
 
 #: ../src/common/darktable.c:2473
 msgid ""
@@ -7299,8 +7307,8 @@ msgid ""
 "couldn't expand to a unique filename for session, please check your import "
 "session settings"
 msgstr ""
-"세션에 대한 고유한 파일 이름으로 확장할 수 없습니다."
-"가져오기 세션 설정을 확인하세요."
+"세션에 대한 고유한 파일 이름으로 확장할 수 없습니다.가져오기 세션 설정을 확인"
+"하세요."
 
 #: ../src/common/import_session.c:389
 msgid "requested session path not available. device not mounted?"
@@ -9458,7 +9466,7 @@ msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
 msgstr ""
-"설정 초기화\n"
+"파라메터 초기화\n"
 "Ctrl+클릭하여 자동 프리셋 다시 적용"
 
 #: ../src/develop/imageop.c:3196
@@ -9927,7 +9935,7 @@ msgid ""
 msgstr ""
 "OpenCL 오류가 발생했습니다; 이번 세션에서는 OpenCL을 비활성화합니다! 가능한 "
 "원인:\n"
-"  - 환경설정으로 인한 OpenCL 리소스 부족. 기본 설정으로 시도해 보세요,\n"
+"  - 환경설정으로 인한 OpenCL 리소스 부족. 기본값으로 시도해 보세요,\n"
 "  - 일부 장치의 버그 있는 드라이버. darktable을 `-d opencl' 옵션으로 실행하여"
 "확인하세요,\n"
 "  - 일부 드라이버가 필요한 이벤트 수를 지원하지 않음,\n"
@@ -9942,7 +9950,7 @@ msgid ""
 msgstr ""
 "모듈 '%s'이 픽셀 파이프라인에서 나중에 처리되는\n"
 "모듈 '%s'에서 래스터 마스크를 가져올 수 없습니다.\n"
-"래스터 마스크는 무시됩니다."
+"래스터 마스크는 무시합니다."
 
 #: ../src/develop/tiling.c:811 ../src/develop/tiling.c:1151
 #, c-format
@@ -12533,7 +12541,7 @@ msgstr "속도 조절"
 
 #: ../src/gui/accelerators.c:71
 msgid "disabled defaults"
-msgstr "바활성화된 기본 설정"
+msgstr "바활성화된 기본값"
 
 #: ../src/gui/accelerators.c:91 ../src/views/view.c:1413
 msgid "scroll"
@@ -12892,7 +12900,8 @@ msgid ""
 "%sright-click to type a specific value between <b>%s</b> and <b>%s</b>\n"
 "or hold ctrl+shift while dragging to ignore soft limits."
 msgstr ""
-"%s를 우클릭 하여 <b>%s</b>와 <b>%s</b> 사이의 특정한 값을 입력할 수 있습니다\n"
+"%s를 우클릭 하여 <b>%s</b>와 <b>%s</b> 사이의 특정한 값을 입력할 수 있습니"
+"다\n"
 "또는 드래그하는 동안 Ctrl+Shift 유지하여 소프트 제한을 무시합니다"
 
 #: ../src/gui/accelerators.c:1205
@@ -12993,10 +13002,12 @@ msgstr ""
 "키를 눌러 단축키를 정의합니다. 선택적으로 수정 키(Ctrl/Shift/Alt)와 조합할 "
 "수 있습니다\n"
 "키는 두 번 또는 세 번 누를 수 있으며, 마지막 입력은 길게 누를 수 있습니다\n"
-"키를 누른 상태에서, 마우스 버튼은 (더블/트리플/길게) 클릭하여 조합할 수 있습니다\n"
-"키(혹은 수정 키/마우스 버튼)를 누른 상태에서, 스크롤 또는 마우스 이동을"
-"추가할 수 있습니다\n"
-"연결된 장치는 물리적 컨트롤러를 통해 키 입력이나 움직임을 전송할 수 있습니다\n"
+"키를 누른 상태에서, 마우스 버튼은 (더블/트리플/길게) 클릭하여 조합할 수 있습"
+"니다\n"
+"키(혹은 수정 키/마우스 버튼)를 누른 상태에서, 스크롤 또는 마우스 이동을추가"
+"할 수 있습니다\n"
+"연결된 장치는 물리적 컨트롤러를 통해 키 입력이나 움직임을 전송할 수 있습니"
+"다\n"
 "\n"
 "우클릭으로 취소합니다"
 
@@ -13226,17 +13237,17 @@ msgid ""
 "\n"
 "<i>click <b> three times </b> to dismiss this notice permanently</i>"
 msgstr ""
-"단축키를 시각적 요소에 할당할 때, <b>시각적 단축키 매핑<b> 모드를 사용하는 "
-"것을 가장 권장합니다.\n"
+"단축키를 시각적 요소에 할당할 때, <b>시각적 단축키 매핑<b> 모드를 사용하는 것"
+"을 가장 권장합니다.\n"
 "이 모드는 상단 패널의 환경설정 옆에 있는 <i>\"키보드\"</i> 버튼을 전환하여 활"
-"성화할 수 있습니다. 이 모드에서, 위젯이나 영역을 클릭하면 고급 설정을 위한 "
-"대화상자가 적절한 위치에 생성됩니다.\n"
+"성화할 수 있습니다. 이 모드에서, 위젯이나 영역을 클릭하면 고급 설정을 위한 대"
+"화상자가 적절한 위치에 생성됩니다.\n"
 "\n"
 "위와 같은 작업에 여러 개의 단축키를 지정할 수 있습니다. 이는 특히  모듈 버튼 "
-"또는 슬라이더에 연결된 컬러 피커처럼 여러 개의 <i>요소</i>를 가지고 있는 "
-"경우에 유용합니다. 그러나, <i>대체 기능</i>이 활성화 된 경우, 동일한 "
-"단일 단축키를 마우스 클릭과 조합하여, 그들의 <i>요소</i>나 <i>효과</i>를 "
-"바꿔가며 사용하는 것이 가능합니다.\n"
+"또는 슬라이더에 연결된 컬러 피커처럼 여러 개의 <i>요소</i>를 가지고 있는 경우"
+"에 유용합니다. 그러나, <i>대체 기능</i>이 활성화 된 경우, 동일한 단일 단축키"
+"를 마우스 클릭과 조합하여, 그들의 <i>요소</i>나 <i>효과</i>를 바꿔가며 사용하"
+"는 것이 가능합니다.\n"
 "\n"
 "<i><b>세 번 </b> 클릭하면 이 알림은 다시 표시되지 않습니다</i>"
 
@@ -13803,8 +13814,8 @@ msgid ""
 "CAUTION: not selected metadata are cleaned up when XMP file is updated."
 msgstr ""
 "선택된 메타데이터는 이미지에서 가져오며, 기본값을 덮어씁니다.\n"
-"이로 인해 '업데이트된 XMP 파일 확인' 및 '사이드카 파일 불러오기' 활동 또한 "
-"함께 실행됩니다.\n"
+"이로 인해 '업데이트된 XMP 파일 확인' 및 '사이드카 파일 불러오기' 활동 또한 함"
+"께 실행됩니다.\n"
 "주의: XMP 파일이 업데이트 될 때, 선택되지 않은 메타데이터는 제거됩니다."
 
 #. tags
@@ -13901,8 +13912,10 @@ msgid ""
 "default is 96 DPI on most systems.\n"
 "(restart required)"
 msgstr ""
-"전체적인 GUI 해상도를 조정하여 컨트롤, 버튼, 레이블 등의 크기를 재조정합니다.\n"
-"값을 증가시키면 GUI가 확대되고, 값을 감소시키면 더 많은 내용을 윈도우에 표시합니다.\n"
+"전체적인 GUI 해상도를 조정하여 컨트롤, 버튼, 레이블 등의 크기를 재조정합니"
+"다.\n"
+"값을 증가시키면 GUI가 확대되고, 값을 감소시키면 더 많은 내용을 윈도우에 표시"
+"합니다.\n"
 "-1로 설정하면 시스템에서 정의한 전체 해상도를 사용합니다.\n"
 "대부분의 시스템 정의 기본값은 96 DPI입니다.\n"
 "(재시작 필요)"
@@ -14453,8 +14466,8 @@ msgid ""
 msgstr ""
 "이미지를 여러 부분으로 분할합니다.\n"
 "\n"
-"인코딩 속도는 빨라지지만, 파일 크기는 증가합니다. 이미지의 화질 손실은 "
-"무시할 수 있을 정도로 적습니다."
+"인코딩 속도는 빨라지지만, 파일 크기는 증가합니다. 이미지의 화질 손실은 무시"
+"할 수 있을 정도로 적습니다."
 
 #. compression
 #. Compression method combo box
@@ -14674,8 +14687,8 @@ msgid ""
 msgstr ""
 "인코더가 사용하는 색상 프로파일입니다\n"
 "손실 압축의 높은 효율성을 위해 내부 XYB 색공간 변환을 허용할 수 있으며,\n"
-"또는 색상 공간의 변화 없이 원본 색상 공간을 유지할 수 있습니다. "
-"(무손실 압축의 경우 암묵적으로 적용됨)"
+"또는 색상 공간의 변화 없이 원본 색상 공간을 유지할 수 있습니다. (무손실 압축"
+"의 경우 암묵적으로 적용됨)"
 
 #: ../src/imageio/format/jxl.c:619
 msgid "internal"
@@ -14695,8 +14708,8 @@ msgid ""
 "the effort used to encode the image, higher efforts will have better results "
 "at the expense of longer encoding times"
 msgstr ""
-"이미지를 인코딩하기 위해 사용되는 수준. 수준이 높아질 수록 인코딩 시간은 "
-"길어지지만, 더 좋은 결과를 가져옵니다"
+"이미지를 인코딩하기 위해 사용되는 수준. 수준이 높아질 수록 인코딩 시간은 길어"
+"지지만, 더 좋은 결과를 가져옵니다"
 
 #: ../src/imageio/format/jxl.c:645
 msgid "decoding speed"
@@ -14883,8 +14896,8 @@ msgid ""
 "to the slowest 100."
 msgstr ""
 "손실 압축에서, 0에서는 작은 파일 크기가 되고, 100에서는 높은 품질이 됩니다.\n"
-"무손실 압축에서, 0에서는 빠르지만 파일크기가 크고, 100에서는 느리지만 작은 "
-"파일이 됩니다."
+"무손실 압축에서, 0에서는 빠르지만 파일크기가 크고, 100에서는 느리지만 작은 파"
+"일이 됩니다."
 
 #: ../src/imageio/format/webp.c:429
 msgid "image hint"
@@ -14924,8 +14937,8 @@ msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
 "or buy more memory."
 msgstr ""
-"%s에 대한 메모리 할당에 실패했습니다, 내보내기에 사용하는 스레드 수를 "
-"줄이거나 더 많은 메모리를 구매하세요."
+"%s에 대한 메모리 할당에 실패했습니다, 내보내기에 사용하는 스레드 수를 줄이거"
+"나 더 많은 메모리를 구매하세요."
 
 #: ../src/imageio/imageio.c:1099
 msgctxt "noun"
@@ -15032,8 +15045,8 @@ msgid ""
 "\n"
 "do you really want to continue?"
 msgstr ""
-"내보낼 때 덮어쓰기 모드를 사용하고 있습니다, 이 과정에서 존재하는 다른 "
-"이미지를 덮어쓸 수 있습니다\n"
+"내보낼 때 덮어쓰기 모드를 사용하고 있습니다, 이 과정에서 존재하는 다른 이미지"
+"를 덮어쓸 수 있습니다\n"
 "\n"
 "정말로 계속하시겠습니까?"
 
@@ -15120,7 +15133,8 @@ msgid ""
 msgstr ""
 "서버 이름\n"
 "기본 프로토콜은 https입니다\n"
-"http:// 와 같은 보안되지 않은 프로토콜이 필요한 경우, 명시적 입력이 요구됩니다"
+"http:// 와 같은 보안되지 않은 프로토콜이 필요한 경우, 명시적 입력이 요구됩니"
+"다"
 
 #: ../src/imageio/storage/piwigo.c:1083 ../src/imageio/storage/piwigo.c:1184
 msgid "user"
@@ -15293,8 +15307,8 @@ msgid ""
 "module '%s' has insane data so it is bypassed for now. you should disable it "
 "or change parameters\n"
 msgstr ""
-"모듈 '%s'에 비정상적인 데이터가 있어 현재 무시되었습니다. 비활성화하거나 "
-"파라메터를 변경하세요\n"
+"모듈 '%s'에 비정상적인 데이터가 있어 현재 무시되었습니다. "
+"비활성화하거나 파라메터를 변경하세요\n"
 
 #: ../src/iop/ashift.c:2807
 msgid "automatic cropping failed"
@@ -15328,7 +15342,7 @@ msgstr "자동 보정에 실패했습니다, 수동으로 조정해주세요"
 #: ../src/iop/ashift.c:4996
 #, c-format
 msgid "only %d lines can be saved in parameters"
-msgstr "오직 %d개의 선만 매개변수로 지정할 수 있습니다"
+msgstr "오직 %d개의 선만 파라메터로 지정할 수 있습니다"
 
 #: ../src/iop/ashift.c:5075
 #, c-format
@@ -15391,16 +15405,16 @@ msgid ""
 "crop factor of the camera sensor, default value set from EXIF data if "
 "available, manual setting is often required"
 msgstr ""
-"카메라 센서의 크롭 계수. EXIF 데이터가 사용 가능하다면 기본값으로 "
-"설정되지만, 수동 설정이 필요할 때도 있습니다"
+"카메라 센서의 크롭 계수. EXIF 데이터가 사용 가능하다면 기본값으로 설정되지"
+"만, 수동 설정이 필요할 때도 있습니다"
 
 #: ../src/iop/ashift.c:6083
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
 msgstr ""
-"렌즈 의존 보정의 수준. 최댓값은 렌즈에 의존해 설정됩니다, 일반 보정을 위해 "
-"0으로 설정할 수 있습니다."
+"렌즈 의존 보정의 수준. 최댓값은 렌즈에 의존해 설정됩니다, 일반 보정을 위해 0"
+"으로 설정할 수 있습니다."
 
 #: ../src/iop/ashift.c:6087
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
@@ -15434,8 +15448,8 @@ msgid ""
 "shift+click to only fit lens shift\n"
 "ctrl+shift+click to only fit rotation and lens shift"
 msgstr ""
-"수직 방향 및 수평 방향 원근 왜곡 자동 보정, 회전, 양방향으로 렌즈 이동 및 "
-"기울이기 포함\n"
+"수직 방향 및 수평 방향 원근 왜곡 자동 보정, 회전, 양방향으로 렌즈 이동 및 기"
+"울이기 포함\n"
 "Ctrl+클릭: 회전만 보정\n"
 "Shift+클릭: 렌즈 이동만 보정\n"
 "Ctrl+Shift+클릭: 회전과 렌즈 이동만 보정"
@@ -15842,8 +15856,8 @@ msgid ""
 "fuse this image stopped up/down a couple of times with itself, to compress "
 "high dynamic range. expose for the highlights before use."
 msgstr ""
-"이미지를 몇 번 위/아래로 멈춘 후 합성하여, 높은 다이나믹 레인지를 압축합니다. "
-"사용하기 전 하이라이트를 노출시키세요."
+"이미지를 몇 번 위/아래로 멈춘 후 합성하여, 높은 다이나믹 레인지를 압축합니"
+"다. 사용하기 전 하이라이트를 노출시키세요."
 
 #: ../src/iop/basecurve.c:2143
 msgid "how many stops to shift the individual exposures apart"
@@ -16024,9 +16038,9 @@ msgid ""
 "(reduce shadow and highlight contrast), increase for more powerful local "
 "contrast"
 msgstr ""
-"중간 톤으로 여겨지는 범위를 정의합니다. 낮추는 경우 더 좋은 다이나믹 레인지 압축을,"
-"(여두운 영역과 하이라이트의 대비 감소), 증가시키는 경우 매우 강한 "
-"부분 대비가 됩니다."
+"중간 톤으로 여겨지는 범위를 정의합니다. 낮추는 경우 더 좋은 다이나믹 레인지 "
+"압축을,(여두운 영역과 하이라이트의 대비 감소), 증가시키는 경우 매우 강한 부"
+"분 대비가 됩니다."
 
 #: ../src/iop/bilateral.cc:72 ../src/iop/diffuse.c:442
 msgid "surface blur"
@@ -16466,7 +16480,7 @@ msgstr ""
 #: ../src/iop/cacorrectrgb.c:732
 msgctxt "section"
 msgid "advanced parameters"
-msgstr "고급 설정"
+msgstr "고급 파라메터"
 
 #: ../src/iop/cacorrectrgb.c:734
 msgid ""
@@ -16545,7 +16559,8 @@ msgstr "채널 혼합"
 msgid ""
 "this module is deprecated. please use the color calibration module instead."
 msgstr ""
-"이 모듈은 더 이상 사용되지 않습니다. 색상 캘리브레이션 모듈을 대신 사용하세요."
+"이 모듈은 더 이상 사용되지 않습니다. 색상 캘리브레이션 모듈을 대신 사용하세"
+"요."
 
 #: ../src/iop/channelmixer.c:133 ../src/iop/channelmixerrgb.c:234
 msgid ""
@@ -16919,8 +16934,8 @@ msgid ""
 msgstr ""
 "근사된 상관 색온도입니다.\n"
 "이 광원은 일광이나 흑체 스펙트럼으로 정확하게 모델링할 수 없기 때문에,\n"
-"광원의 온도는 유의미하거나 의미있지 않으며 당신은 사용자 지정 광원을 "
-"사용해야 합니다."
+"광원의 온도는 유의미하거나 의미있지 않으며 당신은 사용자 지정 광원을 사용해"
+"야 합니다."
 
 #: ../src/iop/channelmixerrgb.c:3673
 #, c-format
@@ -16949,7 +16964,8 @@ msgid ""
 "color calibration: the sum of the gray channel parameters is zero, "
 "normalization will be disabled."
 msgstr ""
-"컬러 캘리브레이션: 회색 채널 파라메터의 합이 0이기 때문에, 정규화가 비활성화됩니다."
+"컬러 캘리브레이션: 회색 채널 파라메터의 합이 0이기 때문에, 정규화가 비활성화 "
+"됩니다."
 
 #. Write report in GUI
 #: ../src/iop/channelmixerrgb.c:4156
@@ -16993,7 +17009,8 @@ msgstr ""
 "• CAT16 (2016): 더 안정적이고 정확한 방식입니다.\n"
 "• Non-linear Bradford (1985): 원래의 Bradford 방식이며,\n"
 "선형 버전보다 더 좋은 결과를 낼 수 있지만, 신뢰할 수 없습니다.\n"
-"• XYZ: XYZ 공간에서 단순한 스케일링을 수행하며, 일반적으로 권장되지 않습니다.\n"
+"• XYZ: XYZ 공간에서 단순한 스케일링을 수행하며, 일반적으로 권장되지 않습니"
+"다.\n"
 "• none: 색순응을 비활성화하고 파이프라인 작업 RGB를 사용합니다."
 
 #: ../src/iop/channelmixerrgb.c:4451
@@ -17028,9 +17045,9 @@ msgid ""
 "part of your subject or a non-moving and consistently-lit surface over your "
 "series of images."
 msgstr ""
-"이미지의 특정 영역 (제어 샘플)에 대해 목표 색도 (색조와 채도)를 정의한 후, "
-"다른 이미지에서 동일한 목표 색도와 정의한 특정 영역의 색도와 일치시킵니다. "
-"제어 샘플은 이미지에 나타난 대상의 중요한 부분이거나 당신이 가지고 있는 일련의 "
+"이미지의 특정 영역 (제어 샘플)에 대해 목표 색도 (색조와 채도)를 정의한 후, 다"
+"른 이미지에서 동일한 목표 색도와 정의한 특정 영역의 색도와 일치시킵니다. 제"
+"어 샘플은 이미지에 나타난 대상의 중요한 부분이거나 당신이 가지고 있는 일련의 "
 "이미지에서 움직이지 않고 일정하게 광원이 유지되는 표면일 수 있습니다."
 
 #: ../src/iop/channelmixerrgb.c:4516 ../src/iop/channelmixerrgb.c:4529
@@ -18147,8 +18164,8 @@ msgid ""
 "lower values shift target color towards greens while higher shift towards "
 "magentas"
 msgstr ""
-"대상 색상의 Lab 'a' 채널 조절값을 낮추면 대상 색상이 녹색 쪽으로,높이면 마젠타 "
-"쪽으로 색상이 이동합니다"
+"대상 색상의 Lab 'a' 채널 조절값을 낮추면 대상 색상이 녹색 쪽으로,높이면 마젠"
+"타 쪽으로 색상이 이동합니다"
 
 #: ../src/iop/colorchecker.c:1576
 msgid "green-magenta offset"
@@ -18160,8 +18177,8 @@ msgid ""
 "lower values shift target color towards blues while higher shift towards "
 "yellows"
 msgstr ""
-"대상 색상의 Lab 'b' 채널 조절값을 낮추면 대상 색상이 파란색 쪽으로,높이면 노란색 쪽으로 "
-"색상이 이동합니다"
+"대상 색상의 Lab 'b' 채널 조절값을 낮추면 대상 색상이 파란색 쪽으로,높이면 노"
+"란색 쪽으로 색상이 이동합니다"
 
 #: ../src/iop/colorchecker.c:1588
 msgid "blue-yellow offset"
@@ -18249,8 +18266,8 @@ msgid ""
 "drag the line for split-toning. bright means highlights, dark means shadows. "
 "use mouse wheel to change saturation."
 msgstr ""
-"선을 드래그하여 스플릿 톤을 조절합니다. 밝음은 하이라이트, 어두움은 쉐도우를 의미합니다."
-"마우스 휠로 채도를 변경합니다."
+"선을 드래그하여 스플릿 톤을 조절합니다. 밝음은 하이라이트, 어두움은 쉐도우를 "
+"의미합니다.마우스 휠로 채도를 변경합니다."
 
 #: ../src/iop/colorcorrection.c:264
 msgid "set the global saturation"
@@ -18367,7 +18384,8 @@ msgid ""
 "red shows possibly changed data, blueish parts will not be changed."
 msgstr ""
 "변경된 출력에 적용된 가중치 함수를 시각화하고 가중치 곡선을 확인합니다.\n"
-"빨간색은 변경 가능성이 있는 데이터를, 파란색은 변경되지 않을 영역을 나타냅니다."
+"빨간색은 변경 가능성이 있는 데이터를, 파란색은 변경되지 않을 영역을 나타냅니"
+"다."
 
 #: ../src/iop/colorequal.c:3164
 msgid ""
@@ -18394,7 +18412,7 @@ msgstr ""
 
 #: ../src/iop/colorequal.c:3179
 msgid "set radius of applied parameters for the guided filter"
-msgstr "가이드 필터에 적용된 매개변수의 반지름을 설정"
+msgstr "가이드 필터에 적용된 파라메터의 반지름을 설정"
 
 #: ../src/iop/colorequal.c:3182
 msgid ""
@@ -18694,7 +18712,8 @@ msgstr "색상 전달"
 #: ../src/iop/colortransfer.c:115
 msgid "this module is deprecated. better use color mapping module instead."
 msgstr ""
-"이 모듈은 더이상 사용되지 않습니다. 색상 매핑 모듈을 사용하는 것이 더 좋습니다."
+"이 모듈은 더이상 사용되지 않습니다. 색상 매핑 모듈을 사용하는 것이 더 좋습니"
+"다."
 
 #: ../src/iop/colortransfer.c:413
 msgid ""
@@ -18735,7 +18754,7 @@ msgstr "흑백: 필름"
 
 #: ../src/iop/colorzones.c:788
 msgid "HSL base setting"
-msgstr "HSL 기본 설정"
+msgstr "HSL 기반 설정"
 
 #: ../src/iop/colorzones.c:2650 ../src/iop/rgbcurve.c:1516
 msgid ""
@@ -18907,9 +18926,11 @@ msgid ""
 "dual demosaicers increase processing time by blending a VNG variant in a "
 "second pass."
 msgstr ""
-"베이어 센서 모자이크 제거 방식, PPG와 RCD는 빠르고, AMaZE와 LMMSE는 느립니다.\n"
+"베이어 센서 모자이크 제거 방식, PPG와 RCD는 빠르고, AMaZE와 LMMSE는 느립니"
+"다.\n"
 "LMMSE는 고감도(ISO) 이미지에 적합합니다.\n"
-"듀얼 모자이크 제거는 두 번째 단계에서 VNG 변형을 혼합하여 처리 시간이 길어집니다."
+"듀얼 모자이크 제거는 두 번째 단계에서 VNG 변형을 혼합하여 처리 시간이 길어집"
+"니다."
 
 #: ../src/iop/demosaic.c:1337
 msgid ""
@@ -18918,8 +18939,10 @@ msgid ""
 "dual demosaicers increase processing time by blending a VNG variant in a "
 "second pass."
 msgstr ""
-"X-Trans 센서의 모자이크 제거 방식 중 Markesteijn 3단계와 주파수 영역 색상 방식은 느립니다.\n"
-"듀얼 모자이크 제거는 두 번째 단계에서 VNG 변형을 혼합하므로 처리 시간이 증가합니다."
+"X-Trans 센서의 모자이크 제거 방식 중 Markesteijn 3단계와 주파수 영역 색상 방"
+"식은 느립니다.\n"
+"듀얼 모자이크 제거는 두 번째 단계에서 VNG 변형을 혼합하므로 처리 시간이 증가"
+"합니다."
 
 #: ../src/iop/demosaic.c:1343
 msgid "Bayer4 sensor demosaicing methods."
@@ -20031,7 +20054,8 @@ msgid ""
 "filmic highlights reconstruction failed to allocate memory, check your RAM "
 "settings"
 msgstr ""
-"필믹 하이라이트 복원에 필요한 메모리 할당에 실패했습니다, RAM 설정을 확인하세요"
+"필믹 하이라이트 복원에 필요한 메모리 할당에 실패했습니다, RAM 설정을 확인하세"
+"요"
 
 #: ../src/iop/filmicrgb.c:2261
 msgid "filmic highlights reconstruction failed to allocate memory on GPU"
@@ -20103,7 +20127,7 @@ msgid ""
 "the bright curve is the filmic tone mapping curve\n"
 "the dark curve is the desaturation curve."
 msgstr ""
-"아래 매개변수를 사용해 노드를 설정합니다.\n"
+"아래 파라메터를 사용해 노드를 설정합니다.\n"
 "밝은 곡선은 필믹 톤 매핑 곡선입니다.\n"
 "어두운 곡선은 채도 감소 곡선입니다."
 
@@ -20475,7 +20499,8 @@ msgid ""
 "the bias for tonemapper controls the linearity, the higher the more details "
 "in blacks"
 msgstr ""
-"톤매퍼의 바이어스는 선형성을 제어하며, 값이 높을수록 암부 디테일이 더 잘 표현됩니다"
+"톤매퍼의 바이어스는 선형성을 제어하며, 값이 높을수록 암부 디테일이 더 잘 표현"
+"됩니다"
 
 #: ../src/iop/globaltonemap.c:649
 msgid "the target light for tonemapper specified as cd/m2"
@@ -20608,8 +20633,8 @@ msgid ""
 "greater the bias, the more pronounced the fall off of the grain in shadows "
 "and highlights"
 msgstr ""
-"사진 인화지 반응 모델링에서 중간 톤 편향량. 편향이 클수록 쉐도우와 하이라이트에서 "
-"그레인의 감소가 더 뚜렷해집니다"
+"사진 인화지 반응 모델링에서 중간 톤 편향량. 편향이 클수록 쉐도우와 하이라이트"
+"에서 그레인의 감소가 더 뚜렷해집니다"
 
 #: ../src/iop/hazeremoval.c:98
 msgid "haze removal"
@@ -21514,7 +21539,7 @@ msgid ""
 "the LUT file"
 msgstr ""
 "png (haldclut), 큐브, 3dl 또는 gmz(압축된 LUT) 파일을 선택하세요\n"
-"주의: LUT 파일을 선택하기 전에 환경 설정 > 처리에서 3D LUT 폴더를 반드시 설정"
+"주의: LUT 파일을 선택하기 전에 환경설정 > 처리에서 3D LUT 폴더를 반드시 설정"
 "해야 합니다"
 
 #: ../src/iop/lut3d.c:1682
@@ -21523,7 +21548,7 @@ msgid ""
 "set in preferences/processing before choosing the LUT file"
 msgstr ""
 "png (haldclut), 큐브 또는 3dl 파일을 선택하세요\n"
-"주의: LUT 파일을 선택하기 전에 환경 설정 > 처리에서 3D LUT 폴더를 반드시 설정"
+"주의: LUT 파일을 선택하기 전에 환경설정 > 처리에서 3D LUT 폴더를 반드시 설정"
 "해야 합니다"
 
 #: ../src/iop/lut3d.c:1691
@@ -21658,8 +21683,8 @@ msgid ""
 "the dynamic range of the scene and the scanner exposure settings."
 msgstr ""
 "필름의 최대 밀도이며, 반전 후에는 흰색에 해당합니다.\n"
-"이 값은 필름 사양, 현상 과정, 장면의 다이나믹 레인지, 스캐너 노출 설정에"
-"따라 달라집니다."
+"이 값은 필름 사양, 현상 과정, 장면의 다이나믹 레인지, 스캐너 노출 설정에따라 "
+"달라집니다."
 
 #: ../src/iop/negadoctor.c:900
 msgctxt "section"
@@ -22149,7 +22174,7 @@ msgstr "통과"
 
 #: ../src/iop/rawprepare.c:618
 msgid "invalid crop parameters"
-msgstr "잘못된 자르기 매개변수"
+msgstr "잘못된 자르기 파라메터"
 
 #: ../src/iop/rawprepare.c:619
 msgid ""
@@ -23158,8 +23183,8 @@ msgid ""
 "XYZ is similar but applies the saturation changes in XYZ space."
 msgstr ""
 "자동으로 설정하면 a 및 b 곡선은 적용되지 않으며 표시되지 않습니다.이 경우 각 "
-"픽셀의 색상값(a와 b)은 L 곡선 데이터를 기반으로 조정됩니다. auto XYZ는 이와 유사하지만,"
-"채도 변경을 XYZ 색상 공간에서 적용합니다."
+"픽셀의 색상값(a와 b)은 L 곡선 데이터를 기반으로 조정됩니다. auto XYZ는 이와 "
+"유사하지만,채도 변경을 XYZ 색상 공간에서 적용합니다."
 
 #: ../src/iop/tonecurve.c:1272
 msgid "tonecurve for L channel"
@@ -23264,7 +23289,7 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:2145
 msgid "some parameters are out-of-bounds"
-msgstr "일부 매개변수가 범위를 벗어났습니다"
+msgstr "일부 파라메터가 범위를 벗어났습니다"
 
 #: ../src/iop/toneequal.c:2462
 #, c-format
@@ -23390,12 +23415,14 @@ msgid ""
 "'averaged EIGF' is a geometric mean of 'no' and 'exposure-independent guided "
 "filter' methods"
 msgstr ""
-"'없음'은 글로벌 및 지역 대비 모두에 영향을 줍니다 (대비만 추가할 경우 안전함)\n"
-"'가이드 필터'는 글로벌 대비에만 영향을 주며 지역 대비는 보존하려고 시도합니다\n"
+"'없음'은 글로벌 및 지역 대비 모두에 영향을 줍니다 (대비만 추가할 경우 안전"
+"함)\n"
+"'가이드 필터'는 글로벌 대비에만 영향을 주며 지역 대비는 보존하려고 시도합니"
+"다\n"
 "'평균 가이드 필터'는 '없음'과 '가이드 필터' 방법의 기하 평균입니다\n"
-"'EIGF'(노출 독립 가이드 필터)는 노출에 관계없이 작동하는 가이드 필터로, 쉐도우와"
-"하이라이트를 동일하게 부드럽게 처리합니다(일반 가이드 필터는 하이라이트를 "
-"덜 부드럽게 처리함)\n"
+"'EIGF'(노출 독립 가이드 필터)는 노출에 관계없이 작동하는 가이드 필터로, 쉐도"
+"우와하이라이트를 동일하게 부드럽게 처리합니다(일반 가이드 필터는 하이라이트"
+"를 덜 부드럽게 처리함)\n"
 "'평균 EIGF'는 '없음'과 '노출 독립 가이드 필터' 방법의 기하 평균입니다"
 
 #: ../src/iop/toneequal.c:3412
@@ -23413,7 +23440,7 @@ msgid ""
 "preview much slower if denoise profiled is used."
 msgstr ""
 "블러 지름을 이미지 최대 크기의 백분율로 설정합니다\n"
-"경고: 이 값을 크게 설정하면 프로파일 기반 노이즈 제거 사용 시\n"
+"경고: 이 파라메터 값을 크게 설정하면 프로파일 기반 노이즈 제거 사용 시\n"
 "darkroom 미리보기가 매우 느려질 수 있습니다."
 
 #: ../src/iop/toneequal.c:3428
@@ -23442,7 +23469,8 @@ msgid ""
 "clipping occurs."
 msgstr ""
 "마스크 히스토그램은 처음과 마지막 10분위 사이의 범위를 표시합니다.\n"
-"중앙 선은 평균 값을 나타내며, 클리핑이 발생하면 극단값에 주황색 막대가 나타납니다."
+"중앙 선은 평균 값을 나타내며, 클리핑이 발생하면 극단값에 주황색 막대가 나타납"
+"니다."
 
 #: ../src/iop/toneequal.c:3454
 msgid ""
@@ -23495,7 +23523,8 @@ msgid ""
 "this module is deprecated. please use the local contrast or tone equalizer "
 "module instead."
 msgstr ""
-"이 모듈은 더 이상 사용되지 않습니다. 지역 대비 또는 톤 균형 조절 모듈을 대신 사용하세요."
+"이 모듈은 더 이상 사용되지 않습니다. 지역 대비 또는 톤 균형 조절 모듈을 대신 "
+"사용하세요."
 
 #: ../src/iop/velvia.c:68
 msgid "velvia"
@@ -23522,7 +23551,8 @@ msgid ""
 "this module is deprecated. please use the vibrance slider in the color "
 "balance rgb module instead."
 msgstr ""
-"이 모듈은 더 이상 사용되지 않습니다. 색상 밸런스 RGB 모듈의 생동감 슬라이더를 사용하세요."
+"이 모듈은 더 이상 사용되지 않습니다. 색상 밸런스 RGB 모듈의 생동감 슬라이더"
+"를 사용하세요."
 
 #: ../src/iop/vibrance.c:92
 msgid ""
@@ -23697,7 +23727,8 @@ msgstr ""
 "워터마크의 크기 조정 방식을 선택합니다\n"
 "• 이미지: 워터마크를 전체 이미지 기준으로 크기 조정\n"
 "• 더 큰 경계: 워터마크의 큰 경계를 이미지의 더 큰 경계 기준으로 크기 조정\n"
-"• 더 작은 경계: 워터마크의 큰 경계를 이미지의 더 작은 경계 기준으로 크기 조정\n"
+"• 더 작은 경계: 워터마크의 큰 경계를 이미지의 더 작은 경계 기준으로 크기 조"
+"정\n"
 "• 높이: 워터마크 높이를 이미지 높이에 맞춰 조정\n"
 "• 고급 옵션: 워터마크와 이미지의 크기를 독립적으로 설정"
 
@@ -23822,7 +23853,8 @@ msgid ""
 "the amount of brackets on each side of centered shoot, amount of images = "
 "(brackets*2) + 1"
 msgstr ""
-"중앙 노출을 기준으로 양쪽에 설정할 브래킷 수, 전체 이미지 수 = (브래킷 수×2) + 1"
+"중앙 노출을 기준으로 양쪽에 설정할 브래킷 수, 전체 이미지 수 = (브래킷 수×2) "
+"+ 1"
 
 #: ../src/libs/camera.c:494
 msgid ""
@@ -24054,7 +24086,7 @@ msgstr "컬렉션 설정"
 #: ../src/libs/metadata.c:1135 ../src/libs/metadata_view.c:1548
 #: ../src/libs/recentcollect.c:297 ../src/libs/tagging.c:3607
 msgid "preferences..."
-msgstr "환경 설정..."
+msgstr "환경설정..."
 
 #: ../src/libs/collect.c:3534 ../src/libs/filtering.c:1483
 msgid "AND"
@@ -24366,7 +24398,8 @@ msgstr ""
 "특정 메타데이터만 선택하여 포함하는 기능은 현재 지원되지 않습니다\n"
 "\n"
 "따라서 이러한 형식으로 내보낼 때는,\n"
-"내보내기 모듈의 환경설정에서 메타데이터 항목을 <b>모두</b> 선택하지 않는 한,\n"
+"내보내기 모듈의 환경설정에서 메타데이터 항목을 <b>모두</b> 선택하지 않는 "
+"한,\n"
 "어떠한 메타데이터도 포함되지 않습니다"
 
 # #####################1 -- 100 ############################################
@@ -24459,7 +24492,8 @@ msgstr "마스크 저장"
 #: ../src/libs/export.c:1574
 msgid "store masks as layers in exported images. only works for some formats."
 msgstr ""
-"마스크를 내보낸 이미지에 레이어 형태로 저장합니다. 일부 형식에서만 가능합니다."
+"마스크를 내보낸 이미지에 레이어 형태로 저장합니다. 일부 형식에서만 가능합니"
+"다."
 
 #: ../src/libs/export.c:1583 ../src/libs/export.c:1618
 #: ../src/libs/print_settings.c:2854 ../src/libs/print_settings.c:2900
@@ -24490,20 +24524,20 @@ msgid ""
 "destination medium and do nothing else. mainly used when proofing colors.\n"
 "(not suited for photography)."
 msgstr ""
-"• 지각적(Perceptual): 색영역(gamut)을 벗어난 색을 그라데이션을 유지하면서"
-"색 영역 안쪽으로 부드럽게 이동합니다.\n"
+"• 지각적(Perceptual): 색영역(gamut)을 벗어난 색을 그라데이션을 유지하면서색 "
+"영역 안쪽으로 부드럽게 이동합니다.\n"
 "이 과정에서 색영역 내의 색상에 왜곡이 생길 수 있습니다.\n"
-"해당 방식은 대상 색공간에 따라 결과값이 달라질 수 있는 전용 LUT를 "
-"사용한다는 점을 주의하세요.\n"
+"해당 방식은 대상 색공간에 따라 결과값이 달라질 수 있는 전용 LUT를 사용한다는 "
+"점을 주의하세요.\n"
 "\n"
-"• 상대 색도: 밝기를 유지한 상태로 채도를 최소한으로 감소시켜 색을 색영역에"
-" 맞춥니다.\n"
+"• 상대 색도: 밝기를 유지한 상태로 채도를 최소한으로 감소시켜 색을 색영역에 맞"
+"춥니다.\n"
 "\n"
 "• 채도: 채도를 유지함으로써 눈길을 끌 수 있는 비즈니스 그래픽용입니다.\n"
 "(사진에는 적합하지 않습니다)\n"
 "\n"
-"• 절대 색도: 이미지의 화이트 포인트를 출력 매체의 화이트 포인트에 맞추고, "
-"그 외의 작업은 없습니다.\n"
+"• 절대 색도: 이미지의 화이트 포인트를 출력 매체의 화이트 포인트에 맞추고, 그 "
+"외의 작업은 없습니다.\n"
 " 주로 색상 교정 용도로 사용됩니다. (사진에는 적합하지 않습니다)"
 
 #: ../src/libs/export.c:1629 ../src/libs/print_settings.c:2934
@@ -24598,12 +24632,12 @@ msgid ""
 "if remote storage doesn't understand darktable XMP metadata, you can use "
 "calculated metadata instead"
 msgstr ""
-"기본적으로 인터페이스가 이미지 옆에 있는 (제한된) 일부 메타데이터를 "
-"원격 저장공간으로 전송합니다.\n"
-"만약 이미지에 내장된 darktable XMP 메타데이터만 사용하려면 이 플래그를 "
-"선택하세요.\n"
-"원격 저장소가 darktable XMP 메타데이터를 인식하지 못하는 경우, 대신 계산된 "
-"메타데이터를 사용할 수 있습니다"
+"기본적으로 인터페이스가 이미지 옆에 있는 (제한된) 일부 메타데이터를 원격 저장"
+"공간으로 전송합니다.\n"
+"만약 이미지에 내장된 darktable XMP 메타데이터만 사용하려면 이 플래그를 선택하"
+"세요.\n"
+"원격 저장소가 darktable XMP 메타데이터를 인식하지 못하는 경우, 대신 계산된 메"
+"타데이터를 사용할 수 있습니다"
 
 #: ../src/libs/export_metadata.c:211 ../src/libs/image.c:621
 msgid "geo tags"
@@ -24642,8 +24676,8 @@ msgid ""
 "only the last part of the hierarchical tags is included. can be useful if "
 "categories are not used"
 msgstr ""
-"계층형 태그의 마지막 부분만 포함됩니다. 카테고리를 사용하지 않을 경우 "
-"유용합니다"
+"계층형 태그의 마지막 부분만 포함됩니다. 카테고리를 사용하지 않을 경우 유용합"
+"니다"
 
 #: ../src/libs/export_metadata.c:233
 msgid "hierarchical tags"
@@ -24662,8 +24696,8 @@ msgid ""
 "export darktable development data (recovery purpose in case of loss of "
 "database or XMP file)"
 msgstr ""
-"darktable 현상 데이터 내보내기 (데이터베이스나 XMP 파일 손상 시 복구용으로 "
-"사용)"
+"darktable 현상 데이터 내보내기 (데이터베이스나 XMP 파일 손상 시 복구용으로 사"
+"용)"
 
 #: ../src/libs/export_metadata.c:244
 msgid "per metadata settings"
@@ -24693,8 +24727,8 @@ msgstr ""
 "계산된 메타데이터 목록입니다\n"
 "'+'을 클릭하여 새 메타데이터를 선택하고 추가할 수 있습니다\n"
 "수식이 비어 있으면 해당 메타데이터를 내보내는 파일에서 제거되고,\n"
-"수식이 '='이면 EXIT 데이터가 비활성화되어 있어도 해당 EXIF 메타데이터는 "
-"내보내집니다\n"
+"수식이 '='이면 EXIT 데이터가 비활성화되어 있어도 해당 EXIF 메타데이터는 내보"
+"내집니다\n"
 "다른 경우에는 수식에 따라 메타데이터가 계산되어 내보내집니다\n"
 "수식 셀을 클릭하면 편집할 수 있습니다\n"
 "'$('를 입력하면 자동 완성이 활성화되며 변수 목록이 표시됩니다"
@@ -25859,7 +25893,7 @@ msgstr "잘못된 날짜/시간 형식"
 
 #: ../src/libs/import.c:2375
 msgid "import base directory"
-msgstr "베이스 디렉터리 가져오기"
+msgstr "베이스 디렉토리 가져오기"
 
 #: ../src/libs/import.c:2376
 msgid ""
@@ -25870,20 +25904,20 @@ msgid ""
 "inspect darktable preferences -> import.\n"
 "check and possibly correct the 'base directory naming pattern'"
 msgstr ""
-"이미지를 darktable의 기준 디렉터리로 복사하기 전에\n"
+"이미지를 darktable의 베이스 디렉토리로 복사하기 전에\n"
 "원하는 방식으로 설정되어 있는지 확인하세요.\n"
 "자세한 내용은 darktable 메뉴얼을 참고하세요.\n"
 "\n"
 "[환경설정] -> [가져오기]에서\n"
-"'베이스 디렉터리 작명 규칙'을 확인하고 필요시 수정하세요"
+"'베이스 디렉토리 작명 규칙'을 확인하고 필요시 수정하세요"
 
 #: ../src/libs/import.c:2380
 msgid "_come back & check"
-msgstr "돌아가서 체크 (&C)"
+msgstr "_돌아가서 체크 (&C)"
 
 #: ../src/libs/import.c:2380
 msgid "_understood & done"
-msgstr "이해하고 완료 (&U)"
+msgstr "_이해하고 완료 (&U)"
 
 #: ../src/libs/import.c:2446
 msgid "add to library..."
@@ -25903,13 +25937,12 @@ msgid ""
 "patterns can be defined to rename the images and specify the destination "
 "folders"
 msgstr ""
-"라이브러리에 추가하기 전에 이미지를 복사하거나 선택적으로 이름을 바꿀 수 "
-"있습니다\n"
+"라이브러리에 추가하기 전에 이미지를 복사하거나 선택적으로 이름을 바꿀 수 있습니다\n"
 "패턴을 정의하여 파일 이름 변경과 대상 폴더 지정이 가능합니다"
 
 #: ../src/libs/import.c:2480
 msgid "parameters"
-msgstr "설정 값"
+msgstr "파라메터"
 
 #: ../src/libs/ioporder.c:200
 msgid "v3.0 for RAW input"
@@ -26158,8 +26191,8 @@ msgid ""
 "location' module)"
 msgstr ""
 "지도 상의 위치 경계 모양을 선택하세요 (원, 사각형 등)\n"
-"또는 '위치 찾기' 모듈에서 다각형 장소를 먼저 선택한 경우, 다각형도 사용"
-" 가능합니다"
+"또는 '위치 찾기' 모듈에서 다각형 장소를 먼저 선택한 경우, 다각형도 사용 가능"
+"합니다"
 
 #: ../src/libs/map_locations.c:957
 msgid "add a new location on the center of the visible map"
@@ -26601,8 +26634,8 @@ msgid ""
 "this quick access widget is disabled as there are multiple instances of this "
 "module present. Please use the full module to access this widget..."
 msgstr ""
-"이 빠른 액세스 위젯은 이 모듈의 인스턴스가 여러 개 존재하여"
-" 비활성화되었습니다.\n"
+"이 빠른 액세스 위젯은 이 모듈의 인스턴스가 여러 개 존재하여 비활성화되었습니"
+"다.\n"
 "전체 모듈을 사용하여 액세스해주세요..."
 
 #: ../src/libs/modulegroups.c:577
@@ -28369,8 +28402,8 @@ msgstr "파일 `%s'은 인식할 수 없는 형식입니다, lighttable로 전�
 msgid ""
 "file `%s' is from an unsupported camera model, switching to lighttable now."
 msgstr ""
-"파일 `%s'은 지원되지 않는 카메라 모델에서 생성되었습니다, "
-"lighttable로 전환합니다."
+"파일 `%s'은 지원되지 않는 카메라 모델에서 생성되었습니다, lighttable로 전환합"
+"니다."
 
 #: ../src/views/darkroom.c:593
 #, c-format
@@ -28385,8 +28418,8 @@ msgid ""
 msgstr ""
 "파일 `%s'에서 지원되지 않는 기능이 사용되었습니다, lighttable로 전환합니다.\n"
 "\n"
-"카메라의 메뉴에서 선택한 이미지 형식 및 압축 방식이 지원되는지"
-" 확인해 주세요.\n"
+"카메라의 메뉴에서 선택한 이미지 형식 및 압축 방식이 지원되는지 확인해 주세"
+"요.\n"
 "(https://www.darktable.org/resources/camera-support/ 및 이 darktable 버전의 "
 "릴리스 노트를 참고하세요)"
 
