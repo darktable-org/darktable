@@ -725,20 +725,12 @@ static inline float _lerp_hue(const float original_hue, const float processed_hu
 
 static inline float _apply_slope_offset(const float x, const float slope, const float offset)
 {
-  // negative offset should darken the image; positive brighten it
-  // without the scale: m = 1 / (1 + offset)
-  // offset = 1, slope = 1, x = 0 -> m = 1 / (1+1) = 1/2, b = 1 * 1/2 = 1/2, y = 1/2*0 + 1/2 = 1/2
+  // https://www.desmos.com/calculator/8a26bc7eb8
   const float m = slope / (1.f + offset);
   const float b = offset * m;
   return m * x + b;
-  // ASC CDL:
-  // return x * slope + offset;
-  // alternative:
-  // y = mx + b, b is the offset, m = (1 - offset), so the line runs from (0, offset) to (1, 1)
-  // return (1 - offset) * x + offset;
 }
 
-// https://docs.acescentral.com/specifications/acescct/#appendix-a-application-of-asc-cdl-parameters-to-acescct-image-data
 DT_OMP_DECLARE_SIMD(aligned(pixel_in_out : 16))
 static void _agx_look(dt_aligned_pixel_t pixel_in_out,
                       const tone_mapping_params_t *params,
@@ -946,19 +938,19 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_use
                                           inverse_toe_transition_x, inverse_toe_transition_y,
                                           tone_mapping_params.slope, tone_mapping_params.toe_power);
 
-  // limit_x is 0 -> dx to limit is just toe_transition_x
-  // use epsilon to avoid division by 0 later
-  const float toe_dx_transition_to_limit = fmaxf(_epsilon, tone_mapping_params.toe_transition_x);
+  // limit_x is 0, so toe length =  -> toe_transition_x - limit_x is just toe_transition_x
+  // the value is already limited to be >= epsilon, so safe to use in division
+  const float toe_length = tone_mapping_params.toe_transition_x;
   const float toe_dy_transition_to_limit =
       fmaxf(_epsilon, tone_mapping_params.toe_transition_y - tone_mapping_params.target_black);
-  const float toe_slope_transition_to_limit = toe_dy_transition_to_limit / toe_dx_transition_to_limit;
+  const float toe_slope_transition_to_limit = toe_dy_transition_to_limit / toe_length;
   tone_mapping_params.need_convex_toe = toe_slope_transition_to_limit > tone_mapping_params.slope;
 
   // toe fallback curve params
   tone_mapping_params.toe_fallback_power = _calculate_slope_matching_power
-      (tone_mapping_params.slope, toe_dx_transition_to_limit, toe_dy_transition_to_limit);
+      (tone_mapping_params.slope, toe_length, toe_dy_transition_to_limit);
   tone_mapping_params.toe_fallback_coefficient = _calculate_fallback_curve_coefficient
-      (toe_dx_transition_to_limit, toe_dy_transition_to_limit, tone_mapping_params.toe_fallback_power);
+      (toe_length, toe_dy_transition_to_limit, tone_mapping_params.toe_fallback_power);
 
   // if x went from toe_transition_x to 0, at the given slope, starting from toe_transition_y, where would we
   // intersect the y-axis?
@@ -975,8 +967,10 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_use
   // don't allow shoulder_transition_x to reach 1
   tone_mapping_params.shoulder_transition_x =
       fminf(1.f - _epsilon, tone_mapping_params.pivot_x + dx_linear_above_pivot);
-  dx_linear_above_pivot = tone_mapping_params.pivot_x - tone_mapping_params.shoulder_transition_x;
-  tone_mapping_params.shoulder_transition_y = tone_mapping_params.pivot_y + shoulder_length_y;
+  dx_linear_above_pivot = tone_mapping_params.shoulder_transition_x - tone_mapping_params.pivot_x;
+
+  const float shoulder_y_above_pivot_y = tone_mapping_params.slope * dx_linear_above_pivot;
+  tone_mapping_params.shoulder_transition_y = tone_mapping_params.pivot_y + shoulder_y_above_pivot_y;
   tone_mapping_params.shoulder_power = user_params->curve_shoulder_power;
 
   const float shoulder_limit_x = 1.f;
@@ -987,19 +981,19 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_use
                                               tone_mapping_params.slope,
                                               tone_mapping_params.shoulder_power);
 
-  const float shoulder_dx_transition_to_limit =
-      fmaxf(_epsilon, 1.f - tone_mapping_params.shoulder_transition_x); // dx to 0, avoid division by 0 later
+  // shoulder_transition_x < 1, guaranteed above
+  const float shoulder_length = 1.f - tone_mapping_params.shoulder_transition_x;
   const float shoulder_dy_transition_to_limit =
       fmaxf(_epsilon, tone_mapping_params.target_white - tone_mapping_params.shoulder_transition_y);
   const float shoulder_slope_transition_to_limit =
-      shoulder_dy_transition_to_limit / shoulder_dx_transition_to_limit;
+      shoulder_dy_transition_to_limit / shoulder_length;
   tone_mapping_params.need_concave_shoulder = shoulder_slope_transition_to_limit > tone_mapping_params.slope;
 
   // shoulder fallback curve params
   tone_mapping_params.shoulder_fallback_power = _calculate_slope_matching_power
-      (tone_mapping_params.slope, shoulder_dx_transition_to_limit, shoulder_dy_transition_to_limit);
+      (tone_mapping_params.slope, shoulder_length, shoulder_dy_transition_to_limit);
   tone_mapping_params.shoulder_fallback_coefficient = _calculate_fallback_curve_coefficient
-      (shoulder_dx_transition_to_limit, shoulder_dy_transition_to_limit, tone_mapping_params.shoulder_fallback_power);
+      (shoulder_length, shoulder_dy_transition_to_limit, tone_mapping_params.shoulder_fallback_power);
 
   return tone_mapping_params;
 }
@@ -1425,7 +1419,7 @@ static gboolean _agx_draw_curve(GtkWidget *widget, cairo_t *crf, const dt_iop_mo
     cairo_identity_matrix(cr);                  // Reset transformations for text
     set_color(cr, darktable.bauhaus->graph_fg); // Use standard text color
 
-    snprintf(text, sizeof(text), "%.2f", y_linear); // Format the linear value
+    snprintf(text, sizeof(text), "%.0f%%", 100.0f * y_linear); // Format the linear value
     pango_layout_set_text(layout, text, -1);
     pango_layout_get_pixel_extents(layout, &gui_data->ink, NULL);
 
@@ -1516,11 +1510,25 @@ static gboolean _agx_draw_curve(GtkWidget *widget, cairo_t *crf, const dt_iop_mo
   }
   cairo_stroke(cr);
 
-  // Draw the pivot point
+  // Draw the toe start, shoulder start, pivot
   cairo_save(cr);
   cairo_rectangle(cr, -DT_PIXEL_APPLY_DPI(4.), -DT_PIXEL_APPLY_DPI(4.), graph_width + 2. * DT_PIXEL_APPLY_DPI(4.),
                   graph_height + 2. * DT_PIXEL_APPLY_DPI(4.));
   cairo_clip(cr);
+
+  const float x_toe_graph = tone_mapping_params.toe_transition_x * graph_width;
+  const float y_toe_graph = tone_mapping_params.toe_transition_y * graph_height;
+  set_color(cr, darktable.bauhaus->graph_fg_active);
+  cairo_arc(cr, x_toe_graph, y_toe_graph, DT_PIXEL_APPLY_DPI(4), 0, 2. * M_PI);
+  cairo_fill(cr);
+  cairo_stroke(cr);
+
+  const float x_shoulder_graph = tone_mapping_params.shoulder_transition_x * graph_width;
+  const float y_shoulder_graph = tone_mapping_params.shoulder_transition_y * graph_height;
+  set_color(cr, darktable.bauhaus->graph_fg_active);
+  cairo_arc(cr, x_shoulder_graph, y_shoulder_graph, DT_PIXEL_APPLY_DPI(4), 0, 2. * M_PI);
+  cairo_fill(cr);
+  cairo_stroke(cr);
 
   const float x_pivot_graph = tone_mapping_params.pivot_x * graph_width;
   const float y_pivot_graph = tone_mapping_params.pivot_y * graph_height;
@@ -1528,6 +1536,7 @@ static gboolean _agx_draw_curve(GtkWidget *widget, cairo_t *crf, const dt_iop_mo
   cairo_arc(cr, x_pivot_graph, y_pivot_graph, DT_PIXEL_APPLY_DPI(4), 0, 2. * M_PI);
   cairo_fill(cr);
   cairo_stroke(cr);
+
   cairo_restore(cr);
 
   // --- Cleanup ---
@@ -1719,25 +1728,19 @@ static void _add_look_sliders(dt_iop_module_t *self, GtkWidget *parent_widget)
   // Reuse the slider variable for all sliders instead of creating new ones in each scope
   GtkWidget *slider = NULL;
 
-  // look_offset
-  slider = dt_bauhaus_slider_from_params(self, "look_offset");
-  dt_bauhaus_slider_set_format(slider, "%");
-  dt_bauhaus_slider_set_digits(slider, 2);
-  dt_bauhaus_slider_set_factor(slider, 100.f);
-  dt_bauhaus_slider_set_soft_range(slider, -0.5f, 0.5f);
-  gtk_widget_set_tooltip_text(slider, _("deepen or lift shadows"));
-
-  // look_slope
   slider = dt_bauhaus_slider_from_params(self, "look_slope");
   dt_bauhaus_slider_set_soft_range(slider, 0.f, 2.f);
   gtk_widget_set_tooltip_text(slider, _("decrease or increase contrast and brightness"));
 
-  // look_power
+  slider = dt_bauhaus_slider_from_params(self, "look_offset");
+  dt_bauhaus_slider_set_digits(slider, 2);
+  dt_bauhaus_slider_set_soft_range(slider, -0.5f, 0.5f);
+  gtk_widget_set_tooltip_text(slider, _("deepen or lift shadows"));
+
   slider = dt_bauhaus_slider_from_params(self, "look_power");
   dt_bauhaus_slider_set_soft_range(slider, 0.5f, 2.f);
   gtk_widget_set_tooltip_text(slider, _("increase or decrease brightness"));
 
-  // look_saturation
   slider = dt_bauhaus_slider_from_params(self, "look_saturation");
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
@@ -1745,7 +1748,6 @@ static void _add_look_sliders(dt_iop_module_t *self, GtkWidget *parent_widget)
   dt_bauhaus_slider_set_soft_range(slider, 0.f, 2.f);
   gtk_widget_set_tooltip_text(slider, _("decrease or increase saturation"));
 
-  // look_original_hue_mix_ratio
   slider = dt_bauhaus_slider_from_params(self, "look_original_hue_mix_ratio");
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
