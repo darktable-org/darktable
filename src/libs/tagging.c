@@ -1515,7 +1515,6 @@ static void _pop_menu_dictionary_delete_tag(GtkWidget *menuitem, dt_lib_module_t
   char *tagname;
   gint tagid;
   gchar *text;
-  GtkWidget *label;
   GtkTreeIter iter;
   GtkTreeModel *model = NULL;
   GtkTreeView *view = d->dictionary_view;
@@ -1536,27 +1535,21 @@ static void _pop_menu_dictionary_delete_tag(GtkWidget *menuitem, dt_lib_module_t
                                                     _("_delete"), GTK_RESPONSE_YES, NULL);
     gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_NONE);
     gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
-    GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
-    gtk_container_set_border_width(GTK_CONTAINER(vbox), 8);
-    gtk_container_add(GTK_CONTAINER(area), vbox);
+
     text = g_strdup_printf(_("selected: %s"), tagname);
-    label = gtk_label_new(text);
-    gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, TRUE, 0);
+    GtkWidget *label1 = gtk_label_new(text);
     g_free(text);
 
-    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-    gtk_box_pack_start(GTK_BOX(vbox), box, FALSE, TRUE, 0);
-    text = g_markup_printf_escaped(ngettext("do you really want to delete the tag `%s'?\n%d image is assigned this tag!",
-             "do you really want to delete the tag `%s'?\n%d images are assigned this tag!", img_count), tagname, img_count);
-    label = gtk_label_new(NULL);
-    gtk_label_set_markup(GTK_LABEL(label), text);
-    gtk_box_pack_start(GTK_BOX(box), label, FALSE, TRUE, 0);
+    text = g_markup_printf_escaped(ngettext("do you really want to delete the tag `%s'?\n<u>%d</u> image is assigned this tag!",
+             "do you really want to delete the tag `%s'?\n<u>%d</u> images are assigned this tag!", img_count), tagname, img_count);
+    GtkWidget *label2 = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(label2), text);
     g_free(text);
 
   #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
   #endif
+    dt_gui_dialog_add(GTK_DIALOG(dialog), label1, label2);
     gtk_widget_show_all(dialog);
 
     res = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -1605,7 +1598,6 @@ static void _pop_menu_dictionary_delete_node(GtkWidget *menuitem, dt_lib_module_
   char *tagname;
   gint tagid;
   gchar *text;
-  GtkWidget *label;
   GtkTreeIter iter;
   GtkTreeModel *model = NULL;
   GtkTreeView *view = d->dictionary_view;
@@ -1627,31 +1619,25 @@ static void _pop_menu_dictionary_delete_node(GtkWidget *menuitem, dt_lib_module_
                                                   _("_delete"), GTK_RESPONSE_YES, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_NONE);
   gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
-  GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
-  gtk_container_set_border_width(GTK_CONTAINER(vbox), 8);
-  gtk_container_add(GTK_CONTAINER(area), vbox);
+
   text = g_strdup_printf(_("selected: %s"), tagname);
-  label = gtk_label_new(text);
-  gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, TRUE, 0);
+  GtkWidget *label1 = gtk_label_new(text);
   g_free(text);
 
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-  gtk_box_pack_start(GTK_BOX(vbox), box, FALSE, TRUE, 0);
   text = g_strdup_printf(ngettext("<u>%d</u> tag will be deleted", "<u>%d</u> tags will be deleted", tag_count), tag_count);
-  label = gtk_label_new(NULL);
-  gtk_label_set_markup(GTK_LABEL(label), text);
-  gtk_box_pack_start(GTK_BOX(box), label, FALSE, TRUE, 0);
+  GtkWidget *label2 = gtk_label_new(NULL);
+  gtk_label_set_markup(GTK_LABEL(label2), text);
   g_free(text);
+
   text = g_strdup_printf(ngettext("<u>%d</u> image will be updated", "<u>%d</u> images will be updated", img_count), img_count);
-  label = gtk_label_new(NULL);
-  gtk_label_set_markup(GTK_LABEL(label), text);
-  gtk_box_pack_start(GTK_BOX(box), label, FALSE, TRUE, 0);
+  GtkWidget *label3 = gtk_label_new(NULL);
+  gtk_label_set_markup(GTK_LABEL(label3), text);
   g_free(text);
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
+  dt_gui_dialog_add(GTK_DIALOG(dialog), label1, dt_gui_hbox(label2, gtk_label_new("  "), label3));
   gtk_widget_show_all(dialog);
 
   res = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -1701,7 +1687,6 @@ static void _pop_menu_dictionary_create_tag(GtkWidget *menuitem, dt_lib_module_t
   char *path;
   gint tagid;
   gchar *text;
-  GtkWidget *label;
   GtkTreeIter iter;
   GtkTreeModel *model = NULL;
   GtkTreeView *view = d->dictionary_view;
@@ -1718,53 +1703,37 @@ static void _pop_menu_dictionary_create_tag(GtkWidget *menuitem, dt_lib_module_t
                                                   _("_save"), GTK_RESPONSE_YES, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_YES);
   gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
-  GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
-  gtk_container_set_border_width(GTK_CONTAINER(vbox), 8);
-  gtk_container_add(GTK_CONTAINER(area), vbox);
 
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), box, FALSE, TRUE, 0);
-  label = gtk_label_new(_("name: "));
-  gtk_box_pack_start(GTK_BOX(box), label, FALSE, TRUE, 0);
   GtkWidget *entry = gtk_entry_new();
   gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
   gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog), GTK_RESPONSE_YES, FALSE);
   g_signal_connect(entry, "changed", G_CALLBACK(_name_changed), dialog);
-  gtk_box_pack_end(GTK_BOX(box), entry, TRUE, TRUE, 0);
 
   GtkWidget *category;
   GtkWidget *private;
   GtkWidget *parent;
   GtkTextBuffer *buffer = NULL;
-  GtkWidget *vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), vbox2, FALSE, TRUE, 0);
 
   text = g_strdup_printf(_("add to: \"%s\" "), path);
   parent = gtk_check_button_new_with_label(text);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(parent), TRUE);
-  gtk_box_pack_end(GTK_BOX(vbox2), parent, FALSE, TRUE, 0);
   g_free(text);
 
   category = gtk_check_button_new_with_label(_("category"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(category), FALSE);
-  gtk_box_pack_end(GTK_BOX(vbox2), category, FALSE, TRUE, 0);
   private = gtk_check_button_new_with_label(_("private"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(private), FALSE);
-  gtk_box_pack_end(GTK_BOX(vbox2), private, FALSE, TRUE, 0);
 
-  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_end(GTK_BOX(vbox), box, TRUE, TRUE, 0);
-  label = gtk_label_new(_("synonyms: "));
-  gtk_box_pack_start(GTK_BOX(box), label, FALSE, TRUE, 0);
   GtkWidget *synonyms = gtk_text_view_new();
-  gtk_box_pack_end(GTK_BOX(box), synonyms, TRUE, TRUE, 0);
   gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(synonyms), GTK_WRAP_WORD);
   buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(synonyms));
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
+  dt_gui_dialog_add(GTK_DIALOG(dialog), dt_gui_hbox(gtk_label_new(_("name: ")), dt_gui_expand(entry)),
+                                        private, category, parent,
+                                        dt_gui_hbox(gtk_label_new(_("synonyms: ")), dt_gui_expand(synonyms)));
   gtk_widget_show_all(dialog);
 
   if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
@@ -1826,7 +1795,6 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
   char *synonyms_list;
   gint tagid;
   gchar *text;
-  GtkWidget *label;
   GtkTreeIter iter;
   GtkTreeModel *model = NULL;
   GtkTreeView *view = d->dictionary_view;
@@ -1854,37 +1822,28 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
                                                   _("_save"), GTK_RESPONSE_YES, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_YES);
   gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
-  GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
-  gtk_container_set_border_width(GTK_CONTAINER(vbox), 8);
-  gtk_container_add(GTK_CONTAINER(area), vbox);
+
   text = g_strdup_printf(_("selected: %s"), tagname);
-  label = gtk_label_new(text);
-  gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, TRUE, 0);
+  GtkWidget *label1 = gtk_label_new(text);
   g_free(text);
 
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-  gtk_box_pack_start(GTK_BOX(vbox), box, FALSE, TRUE, 0);
   text = g_strdup_printf(ngettext("<u>%d</u> tag will be updated", "<u>%d</u> tags will be updated", tag_count), tag_count);
-  label = gtk_label_new(NULL);
-  gtk_label_set_markup(GTK_LABEL(label), text);
-  gtk_box_pack_start(GTK_BOX(box), label, FALSE, TRUE, 0);
+  GtkWidget *label2 = gtk_label_new(NULL);
+  gtk_label_set_markup(GTK_LABEL(label2), text);
   g_free(text);
   text = g_strdup_printf(ngettext("<u>%d</u> image will be updated", "<u>%d</u> images will be updated", img_count), img_count);
-  label = gtk_label_new(NULL);
-  gtk_label_set_markup(GTK_LABEL(label), text);
-  gtk_box_pack_start(GTK_BOX(box), label, FALSE, TRUE, 0);
+  GtkWidget *label3 = gtk_label_new(NULL);
+  gtk_label_set_markup(GTK_LABEL(label3), text);
   g_free(text);
 
-  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), box, FALSE, TRUE, 0);
-  label = gtk_label_new(_("name: "));
-  gtk_box_pack_start(GTK_BOX(box), label, FALSE, TRUE, 0);
   GtkWidget *entry = gtk_entry_new();
   gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
   g_signal_connect(entry, "changed", G_CALLBACK(_name_changed), dialog);
   gtk_entry_set_text(GTK_ENTRY(entry), subtag ? subtag : tagname);
-  gtk_box_pack_end(GTK_BOX(box), entry, TRUE, TRUE, 0);
+  
+  dt_gui_dialog_add(GTK_DIALOG(dialog), label1,
+                                        dt_gui_hbox(label2, gtk_label_new("  "), label3),
+                                        dt_gui_hbox(gtk_label_new(_("name: ")), dt_gui_expand(entry)));
 
   gint flags = 0;
   GtkWidget *category = NULL;
@@ -1892,25 +1851,19 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
   GtkTextBuffer *buffer = NULL;
   if(tagid)
   {
-    GtkWidget *vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), vbox2, FALSE, TRUE, 0);
     flags = dt_tag_get_flags(tagid);
     category = gtk_check_button_new_with_label(_("category"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(category), flags & DT_TF_CATEGORY);
-    gtk_box_pack_end(GTK_BOX(vbox2), category, FALSE, TRUE, 0);
     private = gtk_check_button_new_with_label(_("private"));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(private), flags & DT_TF_PRIVATE);
-    gtk_box_pack_end(GTK_BOX(vbox2), private, FALSE, TRUE, 0);
 
-    box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_box_pack_end(GTK_BOX(vbox), box, TRUE, TRUE, 0);
-    label = gtk_label_new(_("synonyms: "));
-    gtk_box_pack_start(GTK_BOX(box), label, FALSE, TRUE, 0);
     GtkWidget *synonyms = gtk_text_view_new();
-    gtk_box_pack_end(GTK_BOX(box), synonyms, TRUE, TRUE, 0);
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(synonyms), GTK_WRAP_WORD);
     buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(synonyms));
     if(synonyms_list) gtk_text_buffer_set_text(buffer, synonyms_list, -1);
+
+    dt_gui_dialog_add(GTK_DIALOG(dialog), private, category,
+                                          dt_gui_hbox(gtk_label_new(_("synonyms: ")), dt_gui_expand(synonyms)));
   }
 
 #ifdef GDK_WINDOWING_QUARTZ
@@ -2116,7 +2069,6 @@ static void _pop_menu_dictionary_change_path(GtkWidget *menuitem, dt_lib_module_
   char *tagname;
   gint tagid;
   gchar *text;
-  GtkWidget *label;
   GtkTreeIter iter;
   GtkTreeModel *model = NULL;
   GtkTreeView *view = d->dictionary_view;
@@ -2138,36 +2090,30 @@ static void _pop_menu_dictionary_change_path(GtkWidget *menuitem, dt_lib_module_
                                                   _("_save"), GTK_RESPONSE_YES, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_YES);
   gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
-  GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
-  gtk_container_set_border_width(GTK_CONTAINER(vbox), 8);
-  gtk_container_add(GTK_CONTAINER(area), vbox);
+
   text = g_strdup_printf(_("selected: %s"), tagname);
-  label = gtk_label_new(text);
-  gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, TRUE, 0);
+  GtkWidget *label1 = gtk_label_new(text);
   g_free(text);
 
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-  gtk_box_pack_start(GTK_BOX(vbox), box, FALSE, TRUE, 0);
   text = g_strdup_printf(ngettext("<u>%d</u> tag will be updated", "<u>%d</u> tags will be updated", tag_count), tag_count);
-  label = gtk_label_new(NULL);
-  gtk_label_set_markup(GTK_LABEL(label), text);
-  gtk_box_pack_start(GTK_BOX(box), label, FALSE, TRUE, 0);
+  GtkWidget *label2 = gtk_label_new(NULL);
+  gtk_label_set_markup(GTK_LABEL(label2), text);
   g_free(text);
   text = g_strdup_printf(ngettext("<u>%d</u> image will be updated", "<u>%d</u> images will be updated", img_count), img_count);
-  label = gtk_label_new(NULL);
-  gtk_label_set_markup(GTK_LABEL(label), text);
-  gtk_box_pack_start(GTK_BOX(box), label, FALSE, TRUE, 0);
+  GtkWidget *label3 = gtk_label_new(NULL);
+  gtk_label_set_markup(GTK_LABEL(label3), text);
   g_free(text);
 
   GtkWidget *entry = gtk_entry_new();
   gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
   gtk_entry_set_text(GTK_ENTRY(entry), tagname);
-  gtk_box_pack_start(GTK_BOX(vbox), entry, FALSE, TRUE, 0);
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
+  dt_gui_dialog_add(GTK_DIALOG(dialog), label1,
+                                        dt_gui_hbox(label2, gtk_label_new("  "), label3),
+                                        dt_gui_expand(entry));
   gtk_widget_show_all(dialog);
 
   if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)

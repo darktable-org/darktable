@@ -838,12 +838,6 @@ static void _preview_gpx_file(GtkWidget *widget, dt_lib_module_t *self)
   struct dt_gpx_t *gpx = dt_gpx_new(filedir);
   g_free(filedir);
 
-  GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-  GtkWidget *w = gtk_scrolled_window_new(NULL, NULL);
-  gtk_widget_set_size_request(w, -1, DT_PIXEL_APPLY_DPI(100));
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_NEVER, GTK_POLICY_NEVER);
-  gtk_box_pack_start(GTK_BOX(area), w, TRUE, TRUE, 0);
-
   GtkWidget *grid = gtk_grid_new();
   gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(10));
   int line = 0;
@@ -898,7 +892,10 @@ static void _preview_gpx_file(GtkWidget *widget, dt_lib_module_t *self)
     gpx = NULL;
   }
 
-  gtk_container_add(GTK_CONTAINER(w), grid);
+  GtkWidget *w = dt_gui_scroll_wrap(grid);
+  gtk_widget_set_size_request(w, -1, DT_PIXEL_APPLY_DPI(100));
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_NEVER, GTK_POLICY_NEVER);
+  dt_gui_dialog_add(GTK_DIALOG(dialog), w);
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);

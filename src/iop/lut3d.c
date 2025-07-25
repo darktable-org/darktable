@@ -1714,8 +1714,6 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_box_add(self->widget, g->lutentry);
 
   // treeview
-  g->lutwindow = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy((GtkScrolledWindow *)g->lutwindow, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   GtkTreeModel *lutmodel = (GtkTreeModel *)gtk_list_store_new(DT_LUT3D_NUM_COLS, G_TYPE_STRING, G_TYPE_BOOLEAN);
   GtkTreeModel *lutfilter = gtk_tree_model_filter_new(lutmodel, NULL);
   gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(lutfilter), DT_LUT3D_COL_VISIBLE);
@@ -1726,8 +1724,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_tree_view_set_model((GtkTreeView *)g->lutname, lutfilter);
   gtk_tree_view_set_hover_selection((GtkTreeView *)g->lutname, FALSE);
   gtk_tree_view_set_headers_visible((GtkTreeView *)g->lutname, FALSE);
-  gtk_container_add(GTK_CONTAINER(g->lutwindow), (GtkWidget *)g->lutname);
   gtk_widget_set_tooltip_text(g->lutname, _("select the LUT"));
+  g->lutwindow = dt_gui_scroll_wrap(g->lutname);
+
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes ("lutname", renderer,
                                                    "text", DT_LUT3D_COL_NAME, NULL);

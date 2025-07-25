@@ -477,8 +477,6 @@ static void _misc_widget_init(dt_lib_filtering_rule_t *rule,
   gtk_container_add(GTK_CONTAINER(misc->pop), hb);
 
   // the name tree
-  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
-  gtk_box_pack_start(GTK_BOX(hb), sw, TRUE, TRUE, 0);
   GtkTreeModel *model
       = GTK_TREE_MODEL(gtk_list_store_new(TREE_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT));
   misc->name_tree = gtk_tree_view_new_with_model(model);
@@ -499,7 +497,8 @@ static void _misc_widget_init(dt_lib_filtering_rule_t *rule,
 
   gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(misc->name_tree), TREE_COL_TOOLTIP);
 
-  gtk_container_add(GTK_CONTAINER(sw), misc->name_tree);
+  GtkWidget *sw = dt_gui_scroll_wrap(misc->name_tree);
+  gtk_box_pack_start(GTK_BOX(hb), sw, TRUE, TRUE, 0);
 
   // the button to close the popup
   GtkWidget *btn = gtk_button_new_with_label(_("ok"));

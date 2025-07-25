@@ -4508,13 +4508,12 @@ start:
       g_free(quick_check_text);
       g_free(data_status);
 
-      GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG (dialog));
       GtkWidget *label = gtk_label_new(NULL);
       gtk_label_set_markup(GTK_LABEL(label), label_text);
       g_free(label_text);
-      gtk_container_add(GTK_CONTAINER (content_area), label);
+      dt_gui_dialog_add(GTK_DIALOG(dialog), label);
 
-      gtk_widget_show_all(content_area);
+      gtk_widget_show_all(dialog);
 
       const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
 
@@ -4681,13 +4680,12 @@ start:
     g_free(quick_check_text);
     g_free(libdb_status);
 
-    GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG (dialog));
     GtkWidget *label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(label), label_text);
     g_free(label_text);
-    gtk_container_add(GTK_CONTAINER (content_area), label);
+    dt_gui_dialog_add(GTK_DIALOG(dialog), label);
 
-    gtk_widget_show_all(content_area);
+    gtk_widget_show_all(dialog);
 
     const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
 
