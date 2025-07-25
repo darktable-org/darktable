@@ -1075,8 +1075,8 @@ treeview header label
 /*-------------------------------------
   - Preferences dialog window options -
   -------------------------------------*/
-#preferences-content,
-#preferences-content .dialog-action-box,
+#preferences-box,
+#preferences-box .dialog-action-box,
 #quick-presets-manager box  /* set same setting on quick preset manager dialog window ; accessible to bottom left button on footer bar in darkroom view */
 {
   margin: 0; /* reset default dialog margin to main items. And needed to have an hover and selected effect on all width of categories in sidebar */

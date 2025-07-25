@@ -1482,8 +1482,6 @@ void dt_view_accels_show(dt_view_manager_t *vm)
 #endif
   dt_gui_add_class(vm->accels_window.window, "dt_accels_window");
 
-  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
-
   GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 
   vm->accels_window.flow_box = gtk_flow_box_new();
@@ -1508,10 +1506,9 @@ void dt_view_accels_show(dt_view_manager_t *vm)
 
   GtkAllocation alloc;
   gtk_widget_get_allocation(dt_ui_main_window(darktable.gui->ui), &alloc);
-  // gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw), alloc.height);
+  GtkWidget *sw = dt_gui_scroll_wrap(hb);
   gtk_scrolled_window_set_max_content_height(GTK_SCROLLED_WINDOW(sw), alloc.height);
   gtk_scrolled_window_set_max_content_width(GTK_SCROLLED_WINDOW(sw), alloc.width);
-  gtk_container_add(GTK_CONTAINER(sw), hb);
   gtk_container_add(GTK_CONTAINER(vm->accels_window.window), sw);
 
   gtk_window_set_resizable(GTK_WINDOW(vm->accels_window.window), FALSE);

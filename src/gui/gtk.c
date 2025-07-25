@@ -4095,7 +4095,7 @@ GtkWidget *dt_ui_resize_wrap(GtkWidget *w,
   }
   else
   {
-    GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+    GtkWidget *sw = dt_gui_scroll_wrap(w);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
                                    GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
     gtk_scrolled_window_set_min_content_height
@@ -4104,7 +4104,6 @@ GtkWidget *dt_ui_resize_wrap(GtkWidget *w,
                      G_CALLBACK(_resize_wrap_scroll), config_str);
     g_signal_connect(G_OBJECT(w), "draw",
                      G_CALLBACK(_resize_wrap_draw), config_str);
-    gtk_container_add(GTK_CONTAINER(sw), w);
     gtk_widget_set_margin_bottom(sw, DT_RESIZE_HANDLE_SIZE);
     w = gtk_event_box_new();
     gtk_container_add(GTK_CONTAINER(w), sw);
@@ -4482,6 +4481,7 @@ void dt_gui_simulate_button_event(GtkWidget *widget,
 
 GtkWidget *(dt_gui_box_add)(const char *file, const int line, const char *function, GtkBox *box, gpointer list[])
 {
+  if(!GTK_IS_BOX(box)) dt_print(DT_DEBUG_ALWAYS, "%s:%d %s: trying to add widgets to non-box container using dt_gui_box_add", file, line, function);
   int i = 1;
   for(; *list != (gpointer)-1; list++, i++)
   {
