@@ -3373,7 +3373,7 @@
           ]
         },
         {
-          "comment": "gfx100s ii contributed by root",
+          "comment": "gfx100s ii contributed by mckajvah",
           "model": "GFX100S II",
           "profiles": [
             {"name": "GFX100S II iso 40", "iso": 40, "a": [2.34247637233179e-06, 9.93287574366949e-07, 2.23032497845829e-06], "b": [3.27200817486161e-09, 1.25964772203042e-09, 2.12024225217659e-09]},
