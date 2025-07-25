@@ -325,8 +325,8 @@ __kernel void calc_scharr_mask(global float *in, global float *out, const int w,
                 + 162.0f / 255.0f * (in[idx-1]   - in[idx+1]);
   const float gy = 47.0f / 255.0f * (in[idx-w-1] - in[idx+w-1] + in[idx-w+1] - in[idx+w+1])
                 + 162.0f / 255.0f * (in[idx-w]   - in[idx+w]);
-  const float gradient_magnitude = dtcl_sqrt(fsquare(gx) + fsquare(gy));
-  out[oidx] = clamp(gradient_magnitude / 16.0f, 0.0f, 1.0f);
+  const float gradient_magnitude = dt_fast_hypot(gx, gy);
+  out[oidx] = clipf(gradient_magnitude / 16.0f);
 }
 
 __kernel void calc_detail_blend(global float *in, global float *out, const int w, const int height, const float threshold, const int detail)
@@ -337,7 +337,7 @@ __kernel void calc_detail_blend(global float *in, global float *out, const int w
 
   const int idx = mad24(row, w, col);
 
-  const float blend = clamp(calcBlendFactor(in[idx], threshold), 0.0f, 1.0f);
+  const float blend = clipf(calcBlendFactor(in[idx], threshold));
   out[idx] = detail ? blend : 1.0f - blend;
 }
 
