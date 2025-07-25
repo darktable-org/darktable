@@ -467,8 +467,8 @@ int mouse_moved(dt_lib_module_t *self,
     {
       d->vp_xpointer = xp;
       d->vp_ypointer = yp;
+      dt_control_queue_redraw_center();
     }
-    dt_control_queue_redraw_center();
     return 1;
   }
 
