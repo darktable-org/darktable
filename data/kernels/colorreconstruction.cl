@@ -79,7 +79,7 @@ atomic_add_f(
   do
   {
     // the following is equivalent to old_val.f = *val. however, as according to the opencl standard
-    // we can not rely on global buffer val to be consistently cached (relaxed memory consistency) we 
+    // we can not rely on global buffer val to be consistently cached (relaxed memory consistency) we
     // access it via a slower but consistent atomic operation.
     old_val.i = atomic_add(ival, 0);
     new_val.f = old_val.f + delta;
@@ -143,7 +143,7 @@ colorreconstruction_splat(
       m = m > M_PI_F ? m - 2*M_PI_F : (m < -M_PI_F ? m + 2*M_PI_F : m);
       weight = exp(-m*m/params.y);
       break;
-      
+
     case COLORRECONSTRUCT_PRECEDENCE_NONE:
     default:
       weight = 1.0f;
@@ -155,10 +155,10 @@ colorreconstruction_splat(
     // splat into downsampled grid
     float4 p = (float4)(x, y, pixel.x, 0);
     float4 gridp = image_to_grid(p, size, sigma);
-    
-    // closest integer splatting:    
+
+    // closest integer splatting:
     int4 xi = clamp(convert_int4(round(gridp)), 0, size - 1);
-   
+
     // first accumulate into local memory
     gi[li] = xi.x + size.x*xi.y + size.x*size.y*xi.z;
     accum[li] = pixel.x < threshold ? weight * (float4)(pixel.x, pixel.y, pixel.z, 1.0f) : (float4)0.0f;
@@ -178,17 +178,17 @@ colorreconstruction_splat(
   li = lszx*j;
   int oldgi = gi[li];
   float4 tmp = accum[li];
- 
+
   for(int ii=1; ii < lszx && oldgi != -1; ii++)
   {
     li = lszx*j + ii;
     if(gi[li] != oldgi)
     {
       atomic_add_f(grid + 4 * oldgi,              tmp.x);
-      atomic_add_f(grid + 4 * oldgi + 1,          tmp.y);      
+      atomic_add_f(grid + 4 * oldgi + 1,          tmp.y);
       atomic_add_f(grid + 4 * oldgi + 2,          tmp.z);
-      atomic_add_f(grid + 4 * oldgi + 3,          tmp.w);      
-      
+      atomic_add_f(grid + 4 * oldgi + 3,          tmp.w);
+
       oldgi = gi[li];
       tmp = accum[li];
     }
@@ -201,9 +201,9 @@ colorreconstruction_splat(
   if(oldgi == -1) return;
 
   atomic_add_f(grid + 4 * oldgi,              tmp.x);
-  atomic_add_f(grid + 4 * oldgi + 1,          tmp.y);      
+  atomic_add_f(grid + 4 * oldgi + 1,          tmp.y);
   atomic_add_f(grid + 4 * oldgi + 2,          tmp.z);
-  atomic_add_f(grid + 4 * oldgi + 3,          tmp.w);      
+  atomic_add_f(grid + 4 * oldgi + 3,          tmp.w);
 }
 
 
@@ -233,7 +233,7 @@ colorreconstruction_blur_line(
   index += offset3;
   float4 tmp2 = vload4(index, ibuf);
   out = vload4(index, ibuf)*w0 + (vload4(index + offset3, ibuf) + tmp1)*w1 + vload4(index + 2*offset3, ibuf)*w2;
-  vstore4(out, index, obuf);  
+  vstore4(out, index, obuf);
   index += offset3;
   for(int i=2;i<size3-2;i++)
   {
@@ -241,14 +241,14 @@ colorreconstruction_blur_line(
     out = vload4(index, ibuf)*w0
         + (vload4(index + offset3, ibuf)   + tmp2)*w1
         + (vload4(index + 2*offset3, ibuf) + tmp1)*w2;
-    vstore4(out, index, obuf);        
+    vstore4(out, index, obuf);
     index += offset3;
     tmp1 = tmp2;
     tmp2 = tmp3;
   }
   const float4 tmp3 = vload4(index, ibuf);
   out = vload4(index, ibuf)*w0 + (vload4(index + offset3, ibuf) + tmp2)*w1 + tmp1*w2;
-  vstore4(out, index, obuf);    
+  vstore4(out, index, obuf);
   index += offset3;
   out = vload4(index, ibuf)*w0 + tmp3*w1 + tmp2*w2;
   vstore4(out, index, obuf);
@@ -284,7 +284,7 @@ colorreconstruction_slice(
   float4 sigma = (float4)(sigma_s, sigma_s, sigma_r, 0);
 
   float4 pixel = read_imagef (in, samplerc, (int2)(x, y));
-  float blend = clamp(20.0f / threshold * pixel.x - 19.0f, 0.0f, 1.0f);
+  float blend = clipf(20.0f / threshold * pixel.x - 19.0f);
   float2 pxy = grid_rescale((int2)(x, y), roixy, bxy, scale);
   float4 p = (float4)(pxy.x, pxy.y, pixel.x, 0);
   float4 gridp = image_to_grid(p, size, sigma);
@@ -305,10 +305,10 @@ colorreconstruction_slice(
         vload4(gi+ox+oz, grid)    * (       fx) * (1.0f - fy) * (       fz) +
         vload4(gi+oy+oz, grid)    * (1.0f - fx) * (       fy) * (       fz) +
         vload4(gi+ox+oy+oz, grid) * (       fx) * (       fy) * (       fz);
-        
+
   const float opixelx = fmax(opixel.x, 0.01f);
   pixel.y = (opixel.w > 0.0f) ? pixel.y * (1.0f - blend) + opixel.y * pixel.x/opixelx * blend : pixel.y;
-  pixel.z = (opixel.w > 0.0f) ? pixel.z * (1.0f - blend) + opixel.z * pixel.x/opixelx * blend : pixel.z;  
+  pixel.z = (opixel.w > 0.0f) ? pixel.z * (1.0f - blend) + opixel.z * pixel.x/opixelx * blend : pixel.z;
 
   write_imagef (out, (int2)(x, y), pixel);
 }

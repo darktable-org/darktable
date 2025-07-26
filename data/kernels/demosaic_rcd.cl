@@ -18,11 +18,6 @@
 
 #include "common.h"
 
-static inline float sqrf(float a)
-{
-  return (a * a);
-}
-
 static inline float calcBlendFactor(float val, float threshold)
 {
     // sigmoid function
@@ -69,8 +64,8 @@ __kernel void rcd_step_1_1 (global float *cfa, global float *v_diff, global floa
   const int w2 = 2 * w;
   const int w3 = 3 * w;
 
-  v_diff[idx] = sqrf(cfa[idx - w3] - 3.0f * cfa[idx - w2] - cfa[idx - w] + 6.0f * cfa[idx] - cfa[idx + w] - 3.0f * cfa[idx + w2] + cfa[idx + w3]);
-  h_diff[idx] = sqrf(cfa[idx -  3] - 3.0f * cfa[idx -  2] - cfa[idx - 1] + 6.0f * cfa[idx] - cfa[idx + 1] - 3.0f * cfa[idx +  2] + cfa[idx +  3]);
+  v_diff[idx] = fsquare(cfa[idx - w3] - 3.0f * cfa[idx - w2] - cfa[idx - w] + 6.0f * cfa[idx] - cfa[idx + w] - 3.0f * cfa[idx + w2] + cfa[idx + w3]);
+  h_diff[idx] = fsquare(cfa[idx -  3] - 3.0f * cfa[idx -  2] - cfa[idx - 1] + 6.0f * cfa[idx] - cfa[idx + 1] - 3.0f * cfa[idx +  2] + cfa[idx +  3]);
 }
 
 // Step 1.2: Calculate vertical and horizontal local discrimination
@@ -151,8 +146,8 @@ __kernel void rcd_step_4_1(global float *cfa, global float *p_diff, global float
   const int w2 = 2 * w;
   const int w3 = 3 * w;
 
-  p_diff[idx2] = sqrf((cfa[idx - w3 - 3] - cfa[idx - w - 1] - cfa[idx + w + 1] + cfa[idx + w3 + 3]) - 3.0f * (cfa[idx - w2 - 2] + cfa[idx + w2 + 2]) + 6.0f * cfa[idx]);
-  q_diff[idx2] = sqrf((cfa[idx - w3 + 3] - cfa[idx - w + 1] - cfa[idx + w - 1] + cfa[idx + w3 - 3]) - 3.0f * (cfa[idx - w2 + 2] + cfa[idx + w2 - 2]) + 6.0f * cfa[idx]);
+  p_diff[idx2] = fsquare((cfa[idx - w3 - 3] - cfa[idx - w - 1] - cfa[idx + w + 1] + cfa[idx + w3 + 3]) - 3.0f * (cfa[idx - w2 - 2] + cfa[idx + w2 + 2]) + 6.0f * cfa[idx]);
+  q_diff[idx2] = fsquare((cfa[idx - w3 + 3] - cfa[idx - w + 1] - cfa[idx + w - 1] + cfa[idx + w3 - 3]) - 3.0f * (cfa[idx - w2 + 2] + cfa[idx + w2 - 2]) + 6.0f * cfa[idx]);
 }
 
 // Step 4.1: Calculate P/Q diagonals local discrimination strength
@@ -330,8 +325,8 @@ __kernel void calc_scharr_mask(global float *in, global float *out, const int w,
                 + 162.0f / 255.0f * (in[idx-1]   - in[idx+1]);
   const float gy = 47.0f / 255.0f * (in[idx-w-1] - in[idx+w-1] + in[idx-w+1] - in[idx+w+1])
                 + 162.0f / 255.0f * (in[idx-w]   - in[idx+w]);
-  const float gradient_magnitude = dtcl_sqrt(sqrf(gx) + sqrf(gy));
-  out[oidx] = clamp(gradient_magnitude / 16.0f, 0.0f, 1.0f);
+  const float gradient_magnitude = dt_fast_hypot(gx, gy);
+  out[oidx] = clipf(gradient_magnitude / 16.0f);
 }
 
 __kernel void calc_detail_blend(global float *in, global float *out, const int w, const int height, const float threshold, const int detail)
@@ -342,7 +337,7 @@ __kernel void calc_detail_blend(global float *in, global float *out, const int w
 
   const int idx = mad24(row, w, col);
 
-  const float blend = clamp(calcBlendFactor(in[idx], threshold), 0.0f, 1.0f);
+  const float blend = clipf(calcBlendFactor(in[idx], threshold));
   out[idx] = detail ? blend : 1.0f - blend;
 }
 
