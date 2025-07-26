@@ -1784,6 +1784,7 @@ void dt_view_paint_surface(cairo_t *cr,
          || floor(maxh / 2 / back_scale) - 1 > MIN(- trans_y, trans_y + buf_height))
      && (port == &dev->full || port == &dev->preview2))
   {
+    port->pipe->changed |= DT_DEV_PIPE_ZOOMED;
     if(port->pipe->status == DT_DEV_PIXELPIPE_VALID)
       port->pipe->status = DT_DEV_PIXELPIPE_DIRTY;
 
