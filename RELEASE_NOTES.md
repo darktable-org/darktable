@@ -49,7 +49,10 @@ The following is a summary of the main features added to darktable
 5.4. Please see the user manual for more details of the individual
 changes (where available).
 
-- ???
+- A new section Capture Sharpening is added into the demosaic
+  module. The capture sharpening tries to recover details lost due to
+  in-camera blurring, which can be caused by diffraction, the
+  anti-aliasing filter or other sources of gaussian-type blur.
 
 ## UI/UX Improvements
 
