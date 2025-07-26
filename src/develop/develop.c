@@ -428,8 +428,10 @@ restart:
     int closeup;
     dt_dev_get_viewport_params(port, &zoom, &closeup, &zoom_x, &zoom_y);
     scale = dt_dev_get_zoom_scale(port, zoom, 1.0f, FALSE) * port->ppd;
-    window_width = port->width * port->ppd / (1<<closeup);
-    window_height = port->height * port->ppd / (1<<closeup);
+    // Make sure we always have enough data for the port's width & height
+    const int cscale = 1 << closeup;
+    window_width = port->width * port->ppd / cscale + 2*cscale;
+    window_height = port->height * port->ppd / cscale + 2*cscale;
   }
 
   const int wd = MIN(window_width, scale * pipe->processed_width);
