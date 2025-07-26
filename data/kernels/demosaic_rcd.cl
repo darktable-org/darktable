@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020-2024 darktable developers.
+    Copyright (C) 2020-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -540,5 +540,35 @@ kernel void rcd_border_redblue(read_only image2d_t in, write_only image2d_t out,
     }
   }
   write_imagef (out, (int2)(x, y), fmax(color, 0.0f));
+}
+
+kernel void demosaic_box3(read_only image2d_t in,
+                          write_only image2d_t out,
+                          const int width,
+                          const int height,
+                          const int sx,
+                          const int sy,
+                          const unsigned int filters,
+                          global const unsigned char (*const xtrans)[6])
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if(col >= width || row >= height) return;
+  float sum[3] = { 0.0f, 0.0f, 0.0f };
+  float cnt[3] = { 0.0f, 0.0f, 0.0f };
+  for(int y = row-1; y < row+2; y++)
+  {
+    for(int x = col-1; x < col+2; x++)
+    {
+      if(x >= 0 && y >= 0 && x < width && y < height)
+      {
+        const int color = (filters == 9u) ? FCxtrans(y+sy, x+sx, xtrans) : FC(y, x, filters);
+        sum[color] += fmax(0.0f, read_imagef(in, samplerA, (int2)(x, y)).x);
+        cnt[color] += 1.0f;
+      }
+    }
+  }
+  const float4 rgb = { sum[0]/fmax(1.0f, cnt[0]), sum[1]/fmax(1.0f, cnt[1]), sum[2]/fmax(1.0f, cnt[2]), 0.0f};
+  write_imagef(out, (int2)(col, row), rgb);
 }
 
