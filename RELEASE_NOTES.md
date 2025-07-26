@@ -87,6 +87,9 @@ changes (where available).
 - Fixed a bug where changing the image scaling in the export module
   influences the result of a running export job.
 
+- Make sure we always fill the complete main darkroom canvas while
+  zooming at large scales.
+
 ### Add action support for Lua
 
 ### Other Lua changes
