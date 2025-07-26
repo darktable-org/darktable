@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -151,16 +151,14 @@ static void green_equilibration_lavg(float *out,
                                      const int width,
                                      const int height,
                                      const uint32_t filters,
-                                     const int x,
-                                     const int y,
                                      const float thr)
 {
   const float maximum = 1.0f;
 
   int oj = 2, oi = 2;
-  if(FC(oj + y, oi + x, filters) != 1) oj++;
-  if(FC(oj + y, oi + x, filters) != 1) oi++;
-  if(FC(oj + y, oi + x, filters) != 1) oj--;
+  if(FC(oj, oi, filters) != 1) oj++;
+  if(FC(oj, oi, filters) != 1) oi++;
+  if(FC(oj, oi, filters) != 1) oj--;
 
   dt_iop_image_copy_by_size(out, in, width, height, 1);
 
@@ -203,15 +201,13 @@ static void green_equilibration_favg(float *out,
                                      const float *const in,
                                      const int width,
                                      const int height,
-                                     const uint32_t filters,
-                                     const int x,
-                                     const int y)
+                                     const uint32_t filters)
 {
   int oj = 0, oi = 0;
   // const float ratio_max = 1.1f;
   double sum1 = 0.0, sum2 = 0.0, gr_ratio;
 
-  if((FC(oj + y, oi + x, filters) & 1) != 1) oi++;
+  if((FC(oj, oi, filters) & 1) != 1) oi++;
   const int g2_offset = oi ? -1 : 1;
   dt_iop_image_copy_by_size(out, in, width, height, 1);
   DT_OMP_FOR(reduction(+ : sum1, sum2) collapse(2))
@@ -387,7 +383,7 @@ static int green_equilibration_cl(const dt_iop_module_t *self,
     size_t flocal[3] = { flocopt.sizex, flocopt.sizey, 1 };
     dt_opencl_set_kernel_args(devid, gd->kernel_green_eq_favg_reduce_first, 0,
       CLARG(dev_in1), CLARG(width),
-      CLARG(height), CLARG(dev_m), CLARG(piece->pipe->dsc.filters), CLARG(roi_in->x), CLARG(roi_in->y),
+      CLARG(height), CLARG(dev_m), CLARG(piece->pipe->dsc.filters),
       CLLOCAL(sizeof(float) * 2 * flocopt.sizex * flocopt.sizey));
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_green_eq_favg_reduce_first, fsizes, flocal);
     if(err != CL_SUCCESS) goto error;
@@ -442,7 +438,7 @@ static int green_equilibration_cl(const dt_iop_module_t *self,
 
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_green_eq_favg_apply, width, height,
       CLARG(dev_in1), CLARG(dev_out1), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters),
-      CLARG(roi_in->x), CLARG(roi_in->y), CLARG(gr_ratio));
+      CLARG(gr_ratio));
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -466,7 +462,7 @@ static int green_equilibration_cl(const dt_iop_module_t *self,
     size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
     dt_opencl_set_kernel_args(devid, gd->kernel_green_eq_lavg, 0,
       CLARG(dev_in2), CLARG(dev_out2),
-      CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters), CLARG(roi_in->x), CLARG(roi_in->y),
+      CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters),
       CLARG(threshold), CLLOCAL(sizeof(float) * (locopt.sizex + 4) * (locopt.sizey + 4)));
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_green_eq_lavg, sizes, local);
     if(err != CL_SUCCESS) goto error;
@@ -617,6 +613,28 @@ error:
 
  if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] basic kernel problem '%s'", cl_errstr(err));
+  return err;
+}
+
+static int demosaic_box3_cl(dt_iop_module_t *self,
+                              dt_dev_pixelpipe_iop_t *piece,
+                              cl_mem dev_in,
+                              cl_mem dev_out,
+                              const dt_iop_roi_t *const roi)
+{
+  const dt_iop_demosaic_global_data_t *gd = self->global_data;
+  dt_dev_pixelpipe_t *const pipe = piece->pipe;
+  const int devid = pipe->devid;
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+
+  cl_mem dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(pipe->dsc.xtrans), pipe->dsc.xtrans);
+  if(!dev_xtrans) return err;
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_demosaic_box3, roi->width, roi->height,
+          CLARG(dev_in), CLARG(dev_out),
+          CLARG(roi->width), CLARG(roi->height),
+          CLARG(roi->x), CLARG(roi->y),
+          CLARG(pipe->dsc.filters), CLARG(dev_xtrans));
+  dt_opencl_release_mem_object(dev_xtrans);
   return err;
 }
 
