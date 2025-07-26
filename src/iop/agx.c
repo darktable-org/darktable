@@ -158,9 +158,14 @@ typedef struct dt_iop_agx_gui_data_t
   GtkWidget *auto_gamma;
   GtkWidget *curve_gamma;
   GtkDrawingArea *graph_drawing_area;
+
   dt_gui_collapsible_section_t look_section;
   dt_gui_collapsible_section_t graph_section;
   dt_gui_collapsible_section_t advanced_section;
+
+  GtkWidget *curve_basic_controls_box;
+  GtkWidget *curve_graph_box;
+  GtkWidget *curve_advanced_controls_box;
 
   // Exposure pickers and their sliders
   GtkWidget *range_exposure_picker;
@@ -168,9 +173,8 @@ typedef struct dt_iop_agx_gui_data_t
   GtkWidget *white_exposure_picker;
   GtkWidget *security_factor;
 
-  // the duplicated curve controls that appear on both the 'settings' and on the 'curve' page
-  dt_iop_basic_curve_controls_t basic_curve_controls_settings_page;
-  dt_iop_basic_curve_controls_t basic_curve_controls_curve_page;
+  // basic curve controls for 'settings' and 'curve' page (if enabled)
+  dt_iop_basic_curve_controls_t basic_curve_controls;
 
   // curve graph/plot
   GtkAllocation allocation;
@@ -179,7 +183,6 @@ typedef struct dt_iop_agx_gui_data_t
 
   GtkWidget *disable_primaries_adjustments;
   GtkWidget *primaries_controls_vbox;
-  gboolean curve_tab_enabled;
   GtkComboBoxText *primaries_preset_combo;
   GtkWidget *primaries_preset_apply_button;
 } dt_iop_agx_gui_data_t;
@@ -1172,17 +1175,10 @@ static void _apply_auto_pivot_x(dt_iop_module_t *self, const dt_iop_order_iccpro
 
   // Update the slider visually
   ++darktable.gui->reset;
-  dt_bauhaus_slider_set(g->basic_curve_controls_settings_page.curve_pivot_x_shift,
+  dt_bauhaus_slider_set(g->basic_curve_controls.curve_pivot_x_shift,
                         p->curve_pivot_x_shift_ratio);
-  dt_bauhaus_slider_set(g->basic_curve_controls_settings_page.curve_pivot_y_linear,
+  dt_bauhaus_slider_set(g->basic_curve_controls.curve_pivot_y_linear,
                         p->curve_pivot_y_ratio);
-  if(g->curve_tab_enabled)
-  {
-    dt_bauhaus_slider_set(g->basic_curve_controls_curve_page.curve_pivot_x_shift,
-                          p->curve_pivot_x_shift_ratio);
-    dt_bauhaus_slider_set(g->basic_curve_controls_curve_page.curve_pivot_y_linear,
-                          p->curve_pivot_y_ratio);
-  }
   --darktable.gui->reset;
 }
 
@@ -1601,42 +1597,6 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *widget, void *previous)
     darktable.gui->reset--;
   }
 
-  if(g->curve_tab_enabled)
-  {
-    // --- START MANUAL SYNC ---
-    if(!darktable.gui->reset) // Check the global reset guard
-    {
-      darktable.gui->reset++; // Prevent recursion
-
-#define SYNC_SLIDER(param_name, slider1, slider2)                                                                 \
-  if(widget == slider1)                                                                                           \
-  {                                                                                                               \
-    dt_bauhaus_slider_set(slider2, dt_bauhaus_slider_get(slider1));                                               \
-  }                                                                                                               \
-  else if(widget == slider2)                                                                                      \
-  {                                                                                                               \
-    dt_bauhaus_slider_set(slider1, dt_bauhaus_slider_get(slider2));                                               \
-  }
-
-      SYNC_SLIDER("curve_pivot_x_shift_ratio", g->basic_curve_controls_settings_page.curve_pivot_x_shift,
-                  g->basic_curve_controls_curve_page.curve_pivot_x_shift);
-      SYNC_SLIDER("curve_pivot_y_ratio", g->basic_curve_controls_settings_page.curve_pivot_y_linear,
-                  g->basic_curve_controls_curve_page.curve_pivot_y_linear);
-      SYNC_SLIDER("curve_contrast_around_pivot",
-                  g->basic_curve_controls_settings_page.curve_contrast_around_pivot,
-                  g->basic_curve_controls_curve_page.curve_contrast_around_pivot);
-      SYNC_SLIDER("curve_toe_power", g->basic_curve_controls_settings_page.curve_toe_power,
-                  g->basic_curve_controls_curve_page.curve_toe_power);
-      SYNC_SLIDER("curve_shoulder_power", g->basic_curve_controls_settings_page.curve_shoulder_power,
-                  g->basic_curve_controls_curve_page.curve_shoulder_power);
-
-#undef SYNC_SLIDER
-
-      darktable.gui->reset--; // Release the guard
-    }
-    // --- END MANUAL SYNC ---
-  }
-
   _update_primaries_checkbox_and_sliders(self);
 
   // Test which widget was changed.
@@ -1700,24 +1660,20 @@ static void _add_basic_curve_controls(dt_iop_module_t *self, dt_iop_basic_curve_
   gtk_widget_set_tooltip_text(slider, _("contrast in highlights"));
 }
 
-static void _add_basic_curve_controls_settings_page(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
+static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
 {
   GtkWidget *parent = self->widget;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
-  gtk_box_pack_start(GTK_BOX(parent), self->widget, FALSE, FALSE, 0);
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  self->widget = box;
 
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "basic curve parameters")));
 
-  _add_basic_curve_controls(self, &g->basic_curve_controls_settings_page);
+  _add_basic_curve_controls(self, &g->basic_curve_controls);
 
   self->widget = parent;
-}
 
-static void _add_basic_curve_controls_curve_page(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
-{
-  _add_basic_curve_controls(self, &g->basic_curve_controls_curve_page);
+  return box;
 }
 
 static void _add_look_sliders(dt_iop_module_t *self, GtkWidget *parent_widget)
@@ -1773,12 +1729,11 @@ static void _add_look_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
   gtk_box_pack_start(GTK_BOX(parent), look_box, FALSE, FALSE, 0);
 }
 
-static void _add_curve_graph(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
+static GtkWidget* _create_curve_graph_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
 {
   GtkWidget *parent = self->widget;
 
   GtkWidget *graph_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  gtk_box_pack_start(GTK_BOX(parent), graph_box, FALSE, FALSE, 0);
   self->widget = graph_box;
 
   dt_gui_new_collapsible_section(&g->graph_section, "plugins/darkroom/agx/expand_curve_graph",
@@ -1796,14 +1751,15 @@ static void _add_curve_graph(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
   gtk_box_pack_start(GTK_BOX(graph_container), GTK_WIDGET(g->graph_drawing_area), TRUE, TRUE, 0);
 
   self->widget = parent;
+
+  return graph_box;
 }
 
-static void _add_advanced_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
+static GtkWidget* _create_advanced_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
 {
   GtkWidget *parent = self->widget;
 
   GtkWidget *advanced_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  gtk_box_pack_start(GTK_BOX(parent), advanced_box, FALSE, FALSE, 0);
   self->widget = advanced_box;
 
   dt_gui_new_collapsible_section(&g->advanced_section, "plugins/darkroom/agx/expand_curve_advanced",
@@ -1866,23 +1822,8 @@ static void _add_advanced_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
                                   "affects overall contrast, you may have to counteract it with the contrast slider."));
 
   self->widget = parent;
-}
 
-static void _add_curve_section(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
-{
-  GtkWidget *parent = self->widget;
-
-  GtkWidget *curve_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  gtk_box_pack_start(GTK_BOX(self->widget), curve_box, TRUE, TRUE, 0);
-  self->widget = curve_box;
-
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "curve parameters")));
-
-  _add_basic_curve_controls_curve_page(self, g);
-
-  _add_advanced_box(self, g);
-
-  self->widget = parent;
+  return advanced_box;
 }
 
 static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
@@ -2184,44 +2125,40 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
   return primaries_box;
 }
 
-static void _create_settings_page(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
+static void _notebook_page_changed(GtkNotebook *notebook, GtkWidget *page, guint page_num, dt_iop_module_t *self)
 {
-  GtkWidget *parent = self->widget;
+  dt_iop_agx_gui_data_t *g = self->gui_data;
 
-  GtkWidget *settings_page =
-      dt_ui_notebook_page(g->notebook, N_("settings"), _("main look and curve settings"));
-  self->widget = settings_page;
-
-  _add_look_box(self, g);
-
-  _add_exposure_box(self, g);
-
-  if(!g->curve_tab_enabled)
+  // 'settings' or 'curve' page only
+  if(page_num == 0 || page_num == 1)
   {
-    _add_curve_graph(self, g);
+    // the GtkBox container for the tab
+    GtkWidget *vbox = page;
+
+    GtkWidget *current_parent = gtk_widget_get_parent(g->curve_basic_controls_box);
+
+    if(current_parent != vbox)
+    {
+      // prevent the widget from being destroyed when removed from its parent
+      g_object_ref(g->curve_basic_controls_box);
+
+      if(current_parent)
+      {
+        gtk_container_remove(GTK_CONTAINER(current_parent), g->curve_basic_controls_box);
+      }
+
+      // pack to new parent
+      gtk_box_pack_start(GTK_BOX(vbox), g->curve_basic_controls_box, FALSE, FALSE, 0);
+
+      // on the 'curve' page, move to top
+      if(page_num == 1)
+      {
+        gtk_box_reorder_child(GTK_BOX(vbox), g->curve_basic_controls_box, 0);
+      }
+
+      g_object_unref(g->curve_basic_controls_box);
+    }
   }
-
-  _add_basic_curve_controls_settings_page(self, g);
-
-  if(!g->curve_tab_enabled)
-  {
-    _add_advanced_box(self, g);
-  }
-
-  self->widget = parent;
-}
-
-static void _create_curve_page(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
-{
-  GtkWidget *parent = self->widget;
-
-  GtkWidget *curve_page = dt_ui_notebook_page(g->notebook, N_("curve"), _("detailed curve settings"));
-  self->widget = curve_page;
-
-  _add_curve_graph(self, g);
-  _add_curve_section(self, g);
-
-  self->widget = parent;
 }
 
 static void _create_primaries_page(dt_iop_module_t *self, const dt_iop_agx_gui_data_t *g)
@@ -2240,21 +2177,46 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_agx_gui_data_t *g = IOP_GUI_ALLOC(agx);
   GtkWidget *main_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  self->widget = main_vbox;
 
-  g->curve_tab_enabled = dt_conf_get_bool("plugins/darkroom/agx/enable_curve_tab");
-
-  // the notebook
   static dt_action_def_t notebook_def = {};
   g->notebook = dt_ui_notebook_new(&notebook_def);
   GtkWidget *notebook_widget = GTK_WIDGET(g->notebook);
   dt_action_define_iop(self, NULL, N_("page"), notebook_widget, &notebook_def);
   gtk_box_pack_start(GTK_BOX(main_vbox), notebook_widget, TRUE, TRUE, 0);
 
-  _create_settings_page(self, g);
+  g->curve_basic_controls_box = _create_basic_curve_controls_box(self, g);
+  g->curve_graph_box = _create_curve_graph_box(self, g);
+  g->curve_advanced_controls_box = _create_advanced_box(self, g);
 
-  if(g->curve_tab_enabled)
+  if(dt_conf_get_bool("plugins/darkroom/agx/enable_curve_tab"))
   {
-    _create_curve_page(self, g);
+    GtkWidget *settings_page = dt_ui_notebook_page(g->notebook, N_("settings"), _("main look and curve settings"));
+    self->widget = settings_page;
+    _add_look_box(self, g);
+    _add_exposure_box(self, g);
+    // we'll trigger a 'reparenting' to get the basic curve params here
+
+    GtkWidget *curve_page = dt_ui_notebook_page(g->notebook, N_("curve"), _("detailed curve settings"));
+    self->widget = curve_page;
+    gtk_box_pack_start(GTK_BOX(curve_page), g->curve_graph_box, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(curve_page), g->curve_advanced_controls_box, FALSE, FALSE, 0);
+
+    // reparent on tab switch
+    g_signal_connect(g->notebook, "switch-page", G_CALLBACK(_notebook_page_changed), self);
+
+    // initial 'reparenting' to the settings page
+    _notebook_page_changed(g->notebook, gtk_notebook_get_nth_page(g->notebook, 0), 0, self);
+  }
+  else
+  {
+    GtkWidget *settings_page = dt_ui_notebook_page(g->notebook, N_("settings"), _("main look and curve settings"));
+    self->widget = settings_page;
+    _add_look_box(self, g);
+    _add_exposure_box(self, g);
+    gtk_box_pack_start(GTK_BOX(settings_page), g->curve_basic_controls_box, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(settings_page), g->curve_graph_box, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(settings_page), g->curve_advanced_controls_box, FALSE, FALSE, 0);
   }
 
   _create_primaries_page(self, g);
@@ -2405,9 +2367,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   if(picker == g->black_exposure_picker) _apply_auto_black_exposure(self);
   else if(picker == g->white_exposure_picker) _apply_auto_white_exposure(self);
   else if(picker == g->range_exposure_picker) _apply_auto_tune_exposure(self);
-  else if(picker == g->basic_curve_controls_settings_page.curve_pivot_x_shift
-          || (g->curve_tab_enabled
-              && picker == g->basic_curve_controls_curve_page.curve_pivot_x_shift))
+  else if(picker == g->basic_curve_controls.curve_pivot_x_shift)
   {
     _apply_auto_pivot_x(self, dt_ioppr_get_pipe_work_profile_info(pipe));
   }
