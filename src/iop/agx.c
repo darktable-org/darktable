@@ -387,14 +387,14 @@ int legacy_params(dt_iop_module_t *self,
     // Because the new 'disable_primaries_adjustments' field was added in the middle of the struct,
     // we must copy the data in two parts, around the new field.
 
-    // Part 1: All fields before 'disable_primaries_adjustments'.
+    // fields before 'disable_primaries_adjustments'.
     const size_t part1_size = offsetof(dt_iop_agx_params_v2_3_4_t, disable_primaries_adjustments);
     memcpy(np, op, part1_size);
 
-    // Initialize the new parameter to its default value.
+    // the new param
     np->disable_primaries_adjustments = FALSE;
 
-    // Part 2: All fields after 'disable_primaries_adjustments'.
+    // fields after 'disable_primaries_adjustments'.
     const void *old_part2_start = &op->red_inset;
     void *new_part2_start = &np->red_inset;
     const size_t part2_size = sizeof(dt_iop_agx_params_v1_t) - offsetof(dt_iop_agx_params_v1_t, red_inset);
@@ -412,7 +412,7 @@ int legacy_params(dt_iop_module_t *self,
     // (Later, this turned out to be a mistake, see v4.) Rather than defining the same
     // struct again, with different names, we convert in place.
     // Fields names reflect the v4 names, so this is somewhat confusing, but I did not want
-    // repeat the whole struct, when the layout is identical.
+    // to repeat the whole struct, when the layout is identical.
 
     const dt_iop_agx_params_v2_3_4_t *op = old_params;
     dt_iop_agx_params_v2_3_4_t *np = calloc(1, sizeof(dt_iop_agx_params_v2_3_4_t));
@@ -480,7 +480,7 @@ static inline dt_colorspaces_color_profile_type_t _get_base_profile_type_from_en
   }
 }
 
-// Get the profile info struct based on the user selection
+// user-selected base profile
 static const dt_iop_order_iccprofile_info_t *_agx_get_base_profile(dt_develop_t *dev,
                                                                    const dt_iop_order_iccprofile_info_t *
                                                                    pipe_work_profile,
@@ -496,7 +496,6 @@ static const dt_iop_order_iccprofile_info_t *_agx_get_base_profile(dt_develop_t 
       dt_colorspaces_color_profile_type_t profile_type;
       const char *profile_filename;
 
-      // Get the configured export profile settings
       dt_ioppr_get_export_profile_type(dev, &profile_type, &profile_filename);
 
       if(profile_type != DT_COLORSPACE_NONE && profile_filename != NULL)
@@ -515,14 +514,13 @@ static const dt_iop_order_iccprofile_info_t *_agx_get_base_profile(dt_develop_t 
       {
         dt_print(DT_DEBUG_ALWAYS,
                  "[agx] Failed to get configured export profile settings, falling back to Rec2020.");
-        // Fallback handled below
+        // fallback handled below
       }
     }
     break;
 
     case DT_AGX_WORK_PROFILE:
-      // Cast away const, as dt_ioppr_add_profile_info_to_list returns non-const
-      return (dt_iop_order_iccprofile_info_t *)pipe_work_profile;
+      return pipe_work_profile;
 
     case DT_AGX_REC2020:
     case DT_AGX_DISPLAY_P3:
@@ -545,12 +543,12 @@ static const dt_iop_order_iccprofile_info_t *_agx_get_base_profile(dt_develop_t 
     break;
   }
 
-  // Fallback if selected profile wasn't found or was invalid
+  // fallback: selected profile not found or invalid
   if(!selected_profile_info)
   {
     selected_profile_info =
         dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_RELATIVE_COLORIMETRIC);
-    // If even Rec2020 fails, something is very wrong, but let the caller handle NULL if necessary.
+    // if even Rec2020 fails, something is very wrong, but let the caller handle NULL if necessary.
     if(!selected_profile_info)
       dt_print(DT_DEBUG_ALWAYS, "[agx] CRITICAL: Failed to get even Rec2020 base profile info.");
   }
@@ -744,7 +742,6 @@ static void _agx_look(dt_aligned_pixel_t pixel_in_out,
   const float power = params->look_power;
   const float sat = params->look_saturation;
 
-  // ASC CDL (Slope, Offset, Power) per channel
   for_three_channels(k, aligned(pixel_in_out : 16))
   {
     const float slope_and_offset_val = _apply_slope_offset(pixel_in_out[k], slope, offset);
@@ -1316,7 +1313,6 @@ void process(dt_iop_module_t *self,
   }
 }
 
-// Plot the curve
 static gboolean _agx_draw_curve(GtkWidget *widget, cairo_t *crf, const dt_iop_module_t *self)
 {
   const dt_iop_agx_params_t *p = self->params;
@@ -1324,7 +1320,6 @@ static gboolean _agx_draw_curve(GtkWidget *widget, cairo_t *crf, const dt_iop_mo
 
   const tone_mapping_params_t tone_mapping_params = _calculate_tone_mapping_params(p);
 
-  // --- Boilerplate cairo/pango setup ---
   gtk_widget_get_allocation(widget, &g->allocation);
   g->allocation.height -= DT_RESIZE_HANDLE_SIZE;
 
@@ -1340,7 +1335,7 @@ static gboolean _agx_draw_curve(GtkWidget *widget, cairo_t *crf, const dt_iop_mo
 
   char text[32];
 
-  // Get text metrics
+  // text metrics
   const gint font_size = pango_font_description_get_size(desc);
   pango_font_description_set_size(desc, 0.95 * font_size); // Slightly smaller font for graph
   pango_layout_set_font_description(layout, desc);
@@ -1350,25 +1345,24 @@ static gboolean _agx_draw_curve(GtkWidget *widget, cairo_t *crf, const dt_iop_mo
   pango_layout_get_pixel_extents(layout, &g->ink, NULL);
   const float line_height = g->ink.height;
 
-  // Set graph dimensions and margins (simplified from filmic)
+  // set graph dimensions and margins
   const int inner_padding = DT_PIXEL_APPLY_DPI(4);
   const int inset = inner_padding;
-  const float margin_left = 3.f * line_height + 2.f * inset;   // Room for Y labels
-  const float margin_bottom = 2.f * line_height + 2.f * inset; // Room for X labels
+  const float margin_left = 3.f * line_height + 2.f * inset;   // room for Y labels
+  const float margin_bottom = 2.f * line_height + 2.f * inset; // room for X labels
   const float margin_top = inset + 0.5f * line_height;
   const float margin_right = inset;
 
   const float graph_width = g->allocation.width - margin_right - margin_left;
   const float graph_height = g->allocation.height - margin_bottom - margin_top;
 
-  // --- Drawing starts ---
   gtk_render_background(g->context, cr, 0, 0, g->allocation.width, g->allocation.height);
 
-  // Translate origin to bottom-left of graph area for easier plotting
+  // translate origin to bottom-left of graph area for easier plotting
   cairo_translate(cr, margin_left, margin_top + graph_height);
   cairo_scale(cr, 1., -1.); // Flip Y axis
 
-  // Draw graph background and border
+  // graph background and border
   cairo_rectangle(cr, 0.0, 0.0, graph_width, graph_height);
   set_color(cr, darktable.bauhaus->graph_bg);
   cairo_fill_preserve(cr);
@@ -1376,7 +1370,7 @@ static gboolean _agx_draw_curve(GtkWidget *widget, cairo_t *crf, const dt_iop_mo
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(0.5));
   cairo_stroke(cr);
 
-  // Draw identity line (y=x)
+  // identity line (y=x)
   cairo_save(cr);
   cairo_set_source_rgba(cr, darktable.bauhaus->graph_border.red, darktable.bauhaus->graph_border.green,
                         darktable.bauhaus->graph_border.blue, 0.5);
@@ -1385,12 +1379,12 @@ static gboolean _agx_draw_curve(GtkWidget *widget, cairo_t *crf, const dt_iop_mo
   cairo_stroke(cr);
   cairo_restore(cr);
 
-  // --- Draw Gamma Guide Lines ---
+  // linear output guide lines
   cairo_save(cr);
-  // Use a distinct style for guides, e.g., dashed and semi-transparent
-  set_color(cr, darktable.bauhaus->graph_fg); // Use foreground color for now
+
+  set_color(cr, darktable.bauhaus->graph_fg);
   cairo_set_source_rgba(cr, darktable.bauhaus->graph_fg.red, darktable.bauhaus->graph_fg.green,
-                        darktable.bauhaus->graph_fg.blue, 0.4);                   // Make it semi-transparent
+                        darktable.bauhaus->graph_fg.blue, 0.4);                   // semi-transparent
   const double dashes[] = { 4.0 / darktable.gui->ppd, 4.0 / darktable.gui->ppd }; // 4px dash, 4px gap
   cairo_set_dash(cr, dashes, 2, 0);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(0.5));
@@ -1410,7 +1404,7 @@ static gboolean _agx_draw_curve(GtkWidget *widget, cairo_t *crf, const dt_iop_mo
     cairo_line_to(cr, graph_width, y_graph);
     cairo_stroke(cr);
 
-    // Draw label for the guide line
+    // label
     cairo_save(cr);
     cairo_identity_matrix(cr);                  // Reset transformations for text
     set_color(cr, darktable.bauhaus->graph_fg); // Use standard text color
@@ -1419,12 +1413,12 @@ static gboolean _agx_draw_curve(GtkWidget *widget, cairo_t *crf, const dt_iop_mo
     pango_layout_set_text(layout, text, -1);
     pango_layout_get_pixel_extents(layout, &g->ink, NULL);
 
-    // Position label slightly to the left of the graph
+    // position label slightly to the left of the graph
     const float label_x = margin_left - g->ink.width - inset / 2.f;
-    // Vertically center label on the guide line (remember Y is flipped)
+    // vertically center label on the guide line
     float label_y = margin_top + graph_height - y_graph - g->ink.height / 2.f - g->ink.y;
 
-    // Ensure label stays within vertical bounds of the graph area
+    // ensure label stays within vertical bounds of the graph area
     label_y = CLAMPF(label_y, margin_top - g->ink.height / 2.f - g->ink.y,
                      margin_top + graph_height - g->ink.height / 2.f - g->ink.y);
 
@@ -1433,11 +1427,10 @@ static gboolean _agx_draw_curve(GtkWidget *widget, cairo_t *crf, const dt_iop_mo
     cairo_restore(cr);
   }
 
-  // Restore original drawing state (solid line, etc.)
-  cairo_restore(cr); // Matches cairo_save(cr) at the beginning of this block
-  // --- End Draw Gamma Guide Lines ---
+  cairo_restore(cr);
+  // end linear output guide lines
 
-  // --- Draw Vertical EV Guide Lines ---
+  // vertical EV guide lines
   cairo_save(cr);
   // Use the same style as horizontal guides
   set_color(cr, darktable.bauhaus->graph_fg);
@@ -1450,12 +1443,12 @@ static gboolean _agx_draw_curve(GtkWidget *widget, cairo_t *crf, const dt_iop_mo
   const float max_ev = tone_mapping_params.max_ev;
   const float range_in_ev = tone_mapping_params.range_in_ev;
 
-  if(range_in_ev > _epsilon) // Avoid division by zero or tiny ranges
+  if(range_in_ev > _epsilon) // avoid division by zero or tiny ranges
   {
     for(int ev = ceilf(min_ev); ev <= floorf(max_ev); ++ev)
     {
       float x_norm = (ev - min_ev) / range_in_ev;
-      // Clamp to ensure it stays within the graph bounds if min/max_ev aren't exactly integers
+      // stays within the graph bounds
       x_norm = CLAMPF(x_norm, 0.f, 1.f);
       const float x_graph = x_norm * graph_width;
 
@@ -1463,19 +1456,19 @@ static gboolean _agx_draw_curve(GtkWidget *widget, cairo_t *crf, const dt_iop_mo
       cairo_line_to(cr, x_graph, graph_height);
       cairo_stroke(cr);
 
-      // Draw label for the EV guide line
+      // label
       if(ev % 5 == 0 || ev == ceilf(min_ev) || ev == floorf(max_ev))
       {
         cairo_save(cr);
-        cairo_identity_matrix(cr); // Reset transformations for text
+        cairo_identity_matrix(cr); // eeset transformations for text
         set_color(cr, darktable.bauhaus->graph_fg);
-        snprintf(text, sizeof(text), "%d", ev); // Format the EV value
+        snprintf(text, sizeof(text), "%d", ev);
         pango_layout_set_text(layout, text, -1);
         pango_layout_get_pixel_extents(layout, &g->ink, NULL);
-        // Position label slightly below the x-axis, centered horizontally
+        // label slightly below the x-axis, centered horizontally
         float label_x = margin_left + x_graph - g->ink.width / 2.f - g->ink.x;
         const float label_y = margin_top + graph_height + inset / 2.f;
-        // Ensure label stays within horizontal bounds
+        // stay within horizontal bounds
         label_x = CLAMPF(label_x, margin_left - g->ink.width / 2.f - g->ink.x,
                          margin_left + graph_width - g->ink.width / 2.f - g->ink.x);
         cairo_move_to(cr, label_x, label_y);
@@ -1484,10 +1477,10 @@ static gboolean _agx_draw_curve(GtkWidget *widget, cairo_t *crf, const dt_iop_mo
       }
     }
   }
-  cairo_restore(cr); // Matches cairo_save(cr) at the beginning of this block
-  // --- End Draw Vertical EV Guide Lines ---
+  cairo_restore(cr);
+  // end vertical EV guide lines
 
-  // Draw the curve
+  // the curve
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
   set_color(cr, darktable.bauhaus->graph_fg);
 
@@ -1497,7 +1490,7 @@ static gboolean _agx_draw_curve(GtkWidget *widget, cairo_t *crf, const dt_iop_mo
     const float x_norm = (float)k / steps; // Input to the curve [0, 1]
     const float y_norm = _apply_curve(x_norm, &tone_mapping_params);
 
-    // Map normalized coords [0,1] to graph pixel coords
+    // map [0,1] to graph pixel coords
     const float x_graph = x_norm * graph_width;
     const float y_graph = y_norm * graph_height;
 
@@ -1506,7 +1499,7 @@ static gboolean _agx_draw_curve(GtkWidget *widget, cairo_t *crf, const dt_iop_mo
   }
   cairo_stroke(cr);
 
-  // Draw the toe start, shoulder start, pivot
+  // draw the toe start, shoulder start, pivot
   cairo_save(cr);
   cairo_rectangle(cr, -DT_PIXEL_APPLY_DPI(4.), -DT_PIXEL_APPLY_DPI(4.), graph_width + 2. * DT_PIXEL_APPLY_DPI(4.),
                   graph_height + 2. * DT_PIXEL_APPLY_DPI(4.));
@@ -1535,7 +1528,7 @@ static gboolean _agx_draw_curve(GtkWidget *widget, cairo_t *crf, const dt_iop_mo
 
   cairo_restore(cr);
 
-  // --- Cleanup ---
+  // cleanup
   cairo_destroy(cr);
   cairo_set_source_surface(crf, cst, 0, 0);
   cairo_paint(crf);
@@ -1621,10 +1614,11 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *widget, void *previous)
 static void _add_basic_curve_controls(dt_iop_module_t *self, dt_iop_basic_curve_controls_t *controls)
 {
   GtkWidget *slider = NULL;
+  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, (gchar *)C_("section", "basic curve parameters"));
 
   // curve_pivot_x_shift with picker
   slider = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
-                               dt_bauhaus_slider_from_params(self, "curve_pivot_x_shift_ratio"));
+                               dt_bauhaus_slider_from_params(section, "curve_pivot_x_shift_ratio"));
   controls->curve_pivot_x_shift = slider;
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
@@ -1633,7 +1627,7 @@ static void _add_basic_curve_controls(dt_iop_module_t *self, dt_iop_basic_curve_
   gtk_widget_set_tooltip_text(slider, _("shift the pivot input towards black(-) or white(+)"));
 
   // curve_pivot_y_linear
-  slider = dt_bauhaus_slider_from_params(self, "curve_pivot_y_ratio");
+  slider = dt_bauhaus_slider_from_params(section, "curve_pivot_y_ratio");
   controls->curve_pivot_y_linear = slider;
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
@@ -1642,19 +1636,19 @@ static void _add_basic_curve_controls(dt_iop_module_t *self, dt_iop_basic_curve_
   gtk_widget_set_tooltip_text(slider, _("darken or brighten the pivot (output)"));
 
   // curve_contrast_around_pivot
-  slider = dt_bauhaus_slider_from_params(self, "curve_contrast_around_pivot");
+  slider = dt_bauhaus_slider_from_params(section, "curve_contrast_around_pivot");
   controls->curve_contrast_around_pivot = slider;
   dt_bauhaus_slider_set_soft_range(slider, 0.1f, 5.f);
   gtk_widget_set_tooltip_text(slider, _("slope of the linear section"));
 
   // curve_toe_power
-  slider = dt_bauhaus_slider_from_params(self, "curve_toe_power");
+  slider = dt_bauhaus_slider_from_params(section, "curve_toe_power");
   controls->curve_toe_power = slider;
   dt_bauhaus_slider_set_soft_range(slider, 1.f, 5.f);
   gtk_widget_set_tooltip_text(slider, _("contrast in shadows"));
 
   // curve_shoulder_power
-  slider = dt_bauhaus_slider_from_params(self, "curve_shoulder_power");
+  slider = dt_bauhaus_slider_from_params(section, "curve_shoulder_power");
   controls->curve_shoulder_power = slider;
   dt_bauhaus_slider_set_soft_range(slider, 1.f, 5.f);
   gtk_widget_set_tooltip_text(slider, _("contrast in highlights"));
@@ -1681,30 +1675,32 @@ static void _add_look_sliders(dt_iop_module_t *self, GtkWidget *parent_widget)
   GtkWidget *original_self_widget = self->widget;
   self->widget = parent_widget;
 
+  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, _("look"));
+
   // Reuse the slider variable for all sliders instead of creating new ones in each scope
   GtkWidget *slider = NULL;
 
-  slider = dt_bauhaus_slider_from_params(self, "look_slope");
+  slider = dt_bauhaus_slider_from_params(section, "look_slope");
   dt_bauhaus_slider_set_soft_range(slider, 0.f, 2.f);
   gtk_widget_set_tooltip_text(slider, _("decrease or increase contrast and brightness"));
 
-  slider = dt_bauhaus_slider_from_params(self, "look_offset");
+  slider = dt_bauhaus_slider_from_params(section, "look_offset");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_soft_range(slider, -0.5f, 0.5f);
   gtk_widget_set_tooltip_text(slider, _("deepen or lift shadows"));
 
-  slider = dt_bauhaus_slider_from_params(self, "look_power");
+  slider = dt_bauhaus_slider_from_params(section, "look_power");
   dt_bauhaus_slider_set_soft_range(slider, 0.5f, 2.f);
   gtk_widget_set_tooltip_text(slider, _("increase or decrease brightness"));
 
-  slider = dt_bauhaus_slider_from_params(self, "look_saturation");
+  slider = dt_bauhaus_slider_from_params(section, "look_saturation");
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
   dt_bauhaus_slider_set_soft_range(slider, 0.f, 2.f);
   gtk_widget_set_tooltip_text(slider, _("decrease or increase saturation"));
 
-  slider = dt_bauhaus_slider_from_params(self, "look_original_hue_mix_ratio");
+  slider = dt_bauhaus_slider_from_params(section, "look_original_hue_mix_ratio");
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
@@ -1763,14 +1759,15 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self, dt_iop_agx_gui_dat
   self->widget = advanced_box;
 
   dt_gui_new_collapsible_section(&g->advanced_section, "plugins/darkroom/agx/expand_curve_advanced",
-                                 _("advanced"), GTK_BOX(advanced_box), DT_ACTION(self));
+                                 _("advanced curve parameters"), GTK_BOX(advanced_box), DT_ACTION(self));
   self->widget = GTK_WIDGET(g->advanced_section.container);
+  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, _("advanced curve parameters"));
 
   // Reuse the slider variable for all sliders
   GtkWidget *slider = NULL;
 
   // Toe length
-  slider = dt_bauhaus_slider_from_params(self, "curve_linear_ratio_below_pivot");
+  slider = dt_bauhaus_slider_from_params(section, "curve_linear_ratio_below_pivot");
   dt_bauhaus_slider_set_soft_range(slider, 0.f, 1.f);
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
@@ -1780,7 +1777,7 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self, dt_iop_agx_gui_dat
                                   "may crush shadows"));
 
   // Toe intersection point
-  slider = dt_bauhaus_slider_from_params(self, "curve_target_display_black_ratio");
+  slider = dt_bauhaus_slider_from_params(section, "curve_target_display_black_ratio");
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
@@ -1788,7 +1785,7 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self, dt_iop_agx_gui_dat
   gtk_widget_set_tooltip_text(slider, _("raise for a faded look"));
 
   // Shoulder length
-  slider = dt_bauhaus_slider_from_params(self, "curve_linear_ratio_above_pivot");
+  slider = dt_bauhaus_slider_from_params(section, "curve_linear_ratio_above_pivot");
   dt_bauhaus_slider_set_soft_range(slider, 0.f, 1.f);
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
@@ -1798,7 +1795,7 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self, dt_iop_agx_gui_dat
                                   "may clip highlights"));
 
   // Shoulder intersection point
-  slider = dt_bauhaus_slider_from_params(self, "curve_target_display_white_ratio");
+  slider = dt_bauhaus_slider_from_params(section, "curve_target_display_white_ratio");
   dt_bauhaus_slider_set_soft_range(slider, 0.5f, 1.f);
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
@@ -1806,14 +1803,14 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self, dt_iop_agx_gui_dat
   gtk_widget_set_tooltip_text(slider, _("max output brightness"));
 
   // curve_gamma
-  g->auto_gamma = dt_bauhaus_toggle_from_params(self, "auto_gamma");
+  g->auto_gamma = dt_bauhaus_toggle_from_params(section, "auto_gamma");
   gtk_widget_set_tooltip_text(g->auto_gamma,
                               _("tries to make sure the curve always remains S-shaped,\n"
                                   "given that contrast is high enough, so toe and shoulder\n"
                                   "controls remain effective.\n"
                                   "affects overall contrast, you may have to counteract it with the contrast slider."));
 
-  slider = dt_bauhaus_slider_from_params(self, "curve_gamma");
+  slider = dt_bauhaus_slider_from_params(section, "curve_gamma");
   g->curve_gamma = slider;
   dt_bauhaus_slider_set_soft_range(slider, 1.f, 5.f);
   gtk_widget_set_tooltip_text(slider,
@@ -1833,12 +1830,14 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   // Create section label
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "input exposure range")));
+  gchar const *section_name = C_("section", "input exposure range");
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(section_name));
+  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, (gchar *)section_name);
 
   // white point slider and picker
   g->white_exposure_picker =
       dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
-                            dt_bauhaus_slider_from_params(self, "range_white_relative_exposure"));
+                            dt_bauhaus_slider_from_params(section, "range_white_relative_exposure"));
   dt_bauhaus_slider_set_soft_range(g->white_exposure_picker, 1.f, 20.f);
   dt_bauhaus_slider_set_format(g->white_exposure_picker, _(" EV"));
   gtk_widget_set_tooltip_text(g->white_exposure_picker,
@@ -1847,14 +1846,14 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
   // black point slider and picker
   g->black_exposure_picker =
       dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
-                            dt_bauhaus_slider_from_params(self, "range_black_relative_exposure"));
+                            dt_bauhaus_slider_from_params(section, "range_black_relative_exposure"));
   dt_bauhaus_slider_set_soft_range(g->black_exposure_picker, -20.f, -1.f);
   dt_bauhaus_slider_set_format(g->black_exposure_picker, _(" EV"));
   gtk_widget_set_tooltip_text(g->black_exposure_picker,
                               _("relative exposure below mid-grey (black point)"));
 
   // Dynamic range scaling
-  g->security_factor = dt_bauhaus_slider_from_params(self, "security_factor");
+  g->security_factor = dt_bauhaus_slider_from_params(section, "security_factor");
   dt_bauhaus_slider_set_soft_max(g->security_factor, 0.5f);
   dt_bauhaus_slider_set_format(g->security_factor, "%");
   dt_bauhaus_slider_set_digits(g->security_factor, 2);
@@ -1866,7 +1865,8 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
   // auto-tune picker
   g->range_exposure_picker =
       dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, dt_bauhaus_combobox_new(self));
-  dt_bauhaus_widget_set_label(g->range_exposure_picker, NULL, N_("auto tune levels"));
+  dt_bauhaus_widget_set_label(g->range_exposure_picker, section_name, N_("auto tune levels"));
+  //dt_bauhaus_widget_set_label(g->range_exposure_picker, NULL, N_("auto tune levels"));
   gtk_widget_set_tooltip_text(g->range_exposure_picker,
                               _("pick image area to automatically set black and white exposure"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->range_exposure_picker, FALSE, FALSE, 0);
@@ -2039,8 +2039,9 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
 
   GtkWidget *primaries_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   self->widget = primaries_box;
+  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, _("primaries"));
 
-  g->disable_primaries_adjustments = dt_bauhaus_toggle_from_params(self, "disable_primaries_adjustments");
+  g->disable_primaries_adjustments = dt_bauhaus_toggle_from_params(section, "disable_primaries_adjustments");
   gtk_widget_set_tooltip_text(g->disable_primaries_adjustments,
                               _("disable purity adjustments and rotations, only applying the curve.\n"
                                   "note that those adjustments are at the heart of AgX,\n"
@@ -2067,7 +2068,7 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
                    G_CALLBACK(_apply_primaries_from_preset_callback), self);
   gtk_box_pack_start(GTK_BOX(preset_hbox), g->primaries_preset_apply_button, FALSE, FALSE, 0);
 
-  GtkWidget *base_primaries_combo = dt_bauhaus_combobox_from_params(self, "base_primaries");
+  GtkWidget *base_primaries_combo = dt_bauhaus_combobox_from_params(section, "base_primaries");
   gtk_widget_set_tooltip_text(base_primaries_combo,
                               _("color space primaries to use as the base for below adjustments.\n"
                                   "'export profile' uses the profile set in 'output color profile'."));
@@ -2077,7 +2078,7 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
   GtkWidget *slider = NULL;
   const float desaturation = 0.2f;
 #define SETUP_COLOR_COMBO(color, r, g, b, attenuation_suffix, inset_tooltip, rotation_suffix, rotation_tooltip)   \
-  slider = dt_bauhaus_slider_from_params(self, #color attenuation_suffix);                                        \
+  slider = dt_bauhaus_slider_from_params(section, #color attenuation_suffix);                                     \
   dt_bauhaus_slider_set_format(slider, "%");                                                                      \
   dt_bauhaus_slider_set_digits(slider, 2);                                                                        \
   dt_bauhaus_slider_set_factor(slider, 100.f);                                                                    \
@@ -2085,10 +2086,10 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(slider, 0.f, r, g, b);                                                               \
   gtk_widget_set_tooltip_text(slider, inset_tooltip);                                                             \
                                                                                                                   \
-  slider = dt_bauhaus_slider_from_params(self, #color rotation_suffix);                                           \
+  slider = dt_bauhaus_slider_from_params(section, #color rotation_suffix);                                        \
   dt_bauhaus_slider_set_format(slider, "°");                                                                      \
   dt_bauhaus_slider_set_digits(slider, 1);                                                                        \
-  dt_bauhaus_slider_set_factor(slider, RAD_2_DEG);                                                           \
+  dt_bauhaus_slider_set_factor(slider, RAD_2_DEG);                                                                \
   dt_bauhaus_slider_set_stop(slider, 0.f, r, g, b);                                                               \
   gtk_widget_set_tooltip_text(slider, rotation_tooltip);
 
@@ -2101,13 +2102,13 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
 
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "after tone mapping")));
 
-  slider = dt_bauhaus_slider_from_params(self, "master_outset_ratio");
+  slider = dt_bauhaus_slider_from_params(section, "master_outset_ratio");
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
   gtk_widget_set_tooltip_text(slider, _("overall purity boost"));
 
-  slider = dt_bauhaus_slider_from_params(self, "master_unrotation_ratio");
+  slider = dt_bauhaus_slider_from_params(section, "master_unrotation_ratio");
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
   dt_bauhaus_slider_set_factor(slider, 100.f);
@@ -2125,7 +2126,7 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
   return primaries_box;
 }
 
-static void _notebook_page_changed(GtkNotebook *notebook, GtkWidget *page, guint page_num, dt_iop_module_t *self)
+static void _notebook_page_changed(GtkNotebook *notebook, GtkWidget *page, const guint page_num, dt_iop_module_t *self)
 {
   dt_iop_agx_gui_data_t *g = self->gui_data;
 
