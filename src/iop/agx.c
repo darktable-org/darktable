@@ -1636,7 +1636,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *widget, void *previous)
 static void _add_basic_curve_controls(dt_iop_module_t *self, dt_iop_basic_curve_controls_t *controls)
 {
   GtkWidget *slider = NULL;
-  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, (gchar *)C_("section", "basic curve parameters"));
+  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, N_("basic curve parameters"));
 
   // curve_pivot_x_shift with picker
   slider = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
@@ -1697,7 +1697,7 @@ static void _add_look_sliders(dt_iop_module_t *self, GtkWidget *parent_widget)
   GtkWidget *original_self_widget = self->widget;
   self->widget = parent_widget;
 
-  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, _("look"));
+  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, N_("look"));
 
   // Reuse the slider variable for all sliders instead of creating new ones in each scope
   GtkWidget *slider = NULL;
@@ -1783,7 +1783,7 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self, dt_iop_agx_gui_dat
   dt_gui_new_collapsible_section(&g->advanced_section, "plugins/darkroom/agx/expand_curve_advanced",
                                  _("advanced curve parameters"), GTK_BOX(advanced_box), DT_ACTION(self));
   self->widget = GTK_WIDGET(g->advanced_section.container);
-  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, _("advanced curve parameters"));
+  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, N_("advanced curve parameters"));
 
   // Reuse the slider variable for all sliders
   GtkWidget *slider = NULL;
@@ -1854,7 +1854,7 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
   // Create section label
   gchar const *section_name = C_("section", "input exposure range");
   dt_gui_box_add(self->widget, dt_ui_section_label_new(section_name));
-  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, (gchar *)section_name);
+  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, N_("input exposure range"));
 
   // white point slider and picker
   g->white_exposure_picker =
@@ -2061,7 +2061,7 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
 
   GtkWidget *primaries_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   self->widget = primaries_box;
-  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, _("primaries"));
+  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, N_("primaries"));
 
   g->disable_primaries_adjustments = dt_bauhaus_toggle_from_params(section, "disable_primaries_adjustments");
   gtk_widget_set_tooltip_text(g->disable_primaries_adjustments,
