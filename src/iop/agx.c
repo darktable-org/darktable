@@ -76,6 +76,7 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
 }
 
 static const float _epsilon = 1E-6f;
+static const float _default_gamma = 2.2f;
 
 typedef enum dt_iop_agx_base_primaries_t
 {
@@ -906,7 +907,28 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_par
   _adjust_pivot(p, &tone_mapping_params);
 
   // avoid range altering slope - 16.5 EV is the default AgX range; keep the meaning of slope
-  tone_mapping_params.slope = p->curve_contrast_around_pivot * (tone_mapping_params.range_in_ev / 16.5f);
+  const float range_adjusted_slope = p->curve_contrast_around_pivot * (tone_mapping_params.range_in_ev / 16.5f);
+
+  // compensate contrast relative to gamma 2.2 to keep contrast around the pivot constant
+  const float gamma = tone_mapping_params.curve_gamma;
+  const float pivot_y = tone_mapping_params.pivot_y;
+
+  // We want to maintain the contrast after linearisation, so we need to apply
+  // the chain rule (f(g(x)' = f'(g(x)) * g'(x))
+  // to find the derivative of linearisation(curve(x)) = curve(x)^gamma.
+  // By definition, the derivative of the curve g'(pivot_x)) = the slope;
+  // also, curve(pivot_x) = pivot_y, so we need the derivative of the
+  // power function at that point: f'(pivot_y).
+  // We want to find gamma_compensated_slope to keep the overall derivative constant:
+  // gamma_compensated_slope * [gamma * pivot_y^(current_gamma-1)] =
+  // range_adjusted_slope * [_default_gamma * pivot_y^(_default_gamma-1)],
+  // and thus gamma_compensated_slope = range_adjusted_slope *
+  //              [_default_gamma * pivot_y^(_default_gamma-1)] / [gamma * pivot_y^(current_gamma-1)]
+  const float derivative_at_current_gamma = gamma * powf(fmaxf(_epsilon, pivot_y), gamma - 1.0f);
+  const float derivative_at_default_gamma = _default_gamma * powf(fmaxf(_epsilon, pivot_y), _default_gamma - 1.0f);
+  const float compensation_factor = derivative_at_current_gamma / derivative_at_default_gamma;
+
+  tone_mapping_params.slope = range_adjusted_slope / compensation_factor;
 
   // toe
   tone_mapping_params.target_black =
@@ -1460,7 +1482,7 @@ static gboolean _agx_draw_curve(GtkWidget *widget, cairo_t *crf, const dt_iop_mo
       if(ev % 5 == 0 || ev == ceilf(min_ev) || ev == floorf(max_ev))
       {
         cairo_save(cr);
-        cairo_identity_matrix(cr); // eeset transformations for text
+        cairo_identity_matrix(cr); // reset transformations for text
         set_color(cr, darktable.bauhaus->graph_fg);
         snprintf(text, sizeof(text), "%d", ev);
         pango_layout_set_text(layout, text, -1);
@@ -1580,7 +1602,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *widget, void *previous)
   {
     darktable.gui->reset++;
     const float prev = *(float *)previous;
-    const float ratio = (p->security_factor - prev) / (prev + 100.f);
+    const float ratio = (p->security_factor - prev) / (prev + 1.f);
 
     p->range_black_relative_exposure *= (1.f + ratio);
     p->range_white_relative_exposure *= (1.f + ratio);
@@ -1808,7 +1830,7 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self, dt_iop_agx_gui_dat
                               _("tries to make sure the curve always remains S-shaped,\n"
                                   "given that contrast is high enough, so toe and shoulder\n"
                                   "controls remain effective.\n"
-                                  "affects overall contrast, you may have to counteract it with the contrast slider."));
+                                  "affects overall contrast, you may have to counteract it with the contrast slider, or with toe / shoulder controls."));
 
   slider = dt_bauhaus_slider_from_params(section, "curve_gamma");
   g->curve_gamma = slider;
@@ -1816,7 +1838,7 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self, dt_iop_agx_gui_dat
   gtk_widget_set_tooltip_text(slider,
                               _("shifts representation (but not output brightness) of pivot\n"
                                   "along the y axis of the curve.\n"
-                                  "affects overall contrast, you may have to counteract it with the contrast slider."));
+                                  "affects overall contrast, you may have to counteract it with the contrast slider, or with toe / shoulder controls."));
 
   self->widget = parent;
 
@@ -2246,7 +2268,7 @@ static void _set_neutral_params(dt_iop_agx_params_t *p)
   p->curve_target_display_black_ratio = 0.f;
   p->curve_target_display_white_ratio = 1.f;
   p->auto_gamma = FALSE;
-  p->curve_gamma = 2.2f;
+  p->curve_gamma = _default_gamma;
   p->curve_pivot_x_shift_ratio = 0.f;
   p->curve_pivot_y_ratio = 0.18f;
 
