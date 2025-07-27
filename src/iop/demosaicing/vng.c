@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -148,8 +148,7 @@ static void vng_interpolate(float *out,
                             const float *const in,
                             const dt_iop_roi_t *const roi,
                             const uint32_t filters,
-                            const uint8_t (*const xtrans)[6],
-                            const gboolean only_vng_linear)
+                            const uint8_t (*const xtrans)[6])
 {
   static const signed char terms[]
       = { -2, -2, +0, -1, 1, 0x01, -2, -2, +0, +0, 2, 0x01, -2, -1, -1, +0, 1, 0x01, -2, -1, +0, -1, 1, 0x02,
@@ -190,9 +189,6 @@ static void vng_interpolate(float *out,
     filters4 = filters | 0x0c0c0c0cu;
 
   lin_interpolate(out, in, roi, filters4, xtrans);
-
-  // if only linear interpolation is requested we can stop it here
-  if(only_vng_linear) return;
 
   char *buffer = dt_alloc_aligned(sizeof(**brow) * width * 3 + sizeof(*ip) * prow * pcol * 320);
   if(!buffer)
@@ -309,7 +305,7 @@ static void vng_interpolate(float *out,
 
   if(filters != 9 && !FILTERS_ARE_4BAYER(filters)) // x-trans or CYGM/RGBE
   {
-// for Bayer mix the two greens to make VNG4
+    // for Bayer mix the two greens to make VNG4
     DT_OMP_FOR()
     for(int i = 0; i < height * width; i++)
       out[i * 4 + 1] = (out[i * 4 + 1] + out[i * 4 + 3]) / 2.0f;
@@ -321,8 +317,7 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
                              const dt_dev_pixelpipe_iop_t *piece,
                              cl_mem dev_in,
                              cl_mem dev_out,
-                             const dt_iop_roi_t *const roi_in,
-                             const gboolean only_vng_linear)
+                             const dt_iop_roi_t *const roi_in)
 {
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
 
@@ -342,69 +337,73 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
   const int prow = (filters4 == 9u) ? 6 : 8;
   const int pcol = (filters4 == 9u) ? 6 : 2;
   const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
 
   int *ips = NULL;
 
-  cl_mem dev_tmp = NULL;
   cl_mem dev_xtrans = NULL;
   cl_mem dev_lookup = NULL;
   cl_mem dev_code = NULL;
   cl_mem dev_ips = NULL;
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-
+  cl_mem dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   int32_t(*lookup)[16][32] = NULL;
+  if(!dev_tmp) goto finish;
 
   if(piece->pipe->dsc.filters == 9u)
   {
     dev_xtrans
         = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
-    if(dev_xtrans == NULL) goto finish;
+    if(!dev_xtrans) goto finish;
   }
 
-    // build interpolation lookup table for linear interpolation which for a given offset in the sensor
-    // lists neighboring pixels from which to interpolate:
-    // NUM_PIXELS                 # of neighboring pixels to read
-    // for(1..NUM_PIXELS):
-    //   OFFSET                   # in bytes from current pixel
-    //   WEIGHT                   # how much weight to give this neighbor
-    //   COLOR                    # sensor color
-    // # weights of adjoining pixels not of this pixel's color
-    // COLORA TOT_WEIGHT
-    // COLORB TOT_WEIGHT
-    // COLORPIX                   # color of center pixel
-    const size_t lookup_size = (size_t)16 * 16 * 32 * sizeof(int32_t);
-    lookup = malloc(lookup_size);
+  // build interpolation lookup table for linear interpolation which for a given offset in the sensor
+  // lists neighboring pixels from which to interpolate:
+  // NUM_PIXELS                 # of neighboring pixels to read
+  // for(1..NUM_PIXELS):
+  //   OFFSET                   # in bytes from current pixel
+  //   WEIGHT                   # how much weight to give this neighbor
+  //   COLOR                    # sensor color
+  // # weights of adjoining pixels not of this pixel's color
+  // COLORA TOT_WEIGHT
+  // COLORB TOT_WEIGHT
+  // COLORPIX                   # color of center pixel
+  const size_t lookup_size = (size_t)16 * 16 * 32 * sizeof(int32_t);
+  lookup = malloc(lookup_size);
 
-    for(int row = 0; row < size; row++)
-      for(int col = 0; col < size; col++)
-      {
-        int32_t *ip = &(lookup[row][col][1]);
-        int sum[4] = { 0 };
-        const int f = fcol(row + roi_in->y, col + roi_in->x, filters4, xtrans);
-        // make list of adjoining pixel offsets by weight & color
-        for(int y = -1; y <= 1; y++)
-          for(int x = -1; x <= 1; x++)
-          {
-            const int weight = 1 << ((y == 0) + (x == 0));
-            const int color = fcol(row + y + roi_in->y, col + x + roi_in->x, filters4, xtrans);
-            if(color == f) continue;
-            *ip++ = (y << 16) | (x & 0xffffu);
-            *ip++ = weight;
-            *ip++ = color;
-            sum[color] += weight;
-          }
-        lookup[row][col][0] = (ip - &(lookup[row][col][0])) / 3; /* # of neighboring pixels found */
-        for(int c = 0; c < colors; c++)
-          if(c != f)
-          {
-            *ip++ = c;
-            *ip++ = sum[c];
-          }
-        *ip = f;
-      }
+  for(int row = 0; row < size; row++)
+  {
+    for(int col = 0; col < size; col++)
+    {
+      int32_t *ip = &(lookup[row][col][1]);
+      int sum[4] = { 0 };
+      const int f = fcol(row + roi_in->y, col + roi_in->x, filters4, xtrans);
+      // make list of adjoining pixel offsets by weight & color
+      for(int y = -1; y <= 1; y++)
+        for(int x = -1; x <= 1; x++)
+        {
+          const int weight = 1 << ((y == 0) + (x == 0));
+          const int color = fcol(row + y + roi_in->y, col + x + roi_in->x, filters4, xtrans);
+          if(color == f) continue;
+          *ip++ = (y << 16) | (x & 0xffffu);
+          *ip++ = weight;
+          *ip++ = color;
+          sum[color] += weight;
+        }
+      lookup[row][col][0] = (ip - &(lookup[row][col][0])) / 3; /* # of neighboring pixels found */
+      for(int c = 0; c < colors; c++)
+        if(c != f)
+        {
+          *ip++ = c;
+          *ip++ = sum[c];
+        }
+      *ip = f;
+    }
+  }
 
-    // Precalculate for VNG
-    static const signed char terms[]
+  // Precalculate for VNG
+  static const signed char terms[]
       = { -2, -2, +0, -1, 1, 0x01, -2, -2, +0, +0, 2, 0x01, -2, -1, -1, +0, 1, 0x01, -2, -1, +0, -1, 1, 0x02,
           -2, -1, +0, +0, 1, 0x03, -2, -1, +0, +1, 2, 0x01, -2, +0, +0, -1, 1, 0x06, -2, +0, +0, +0, 2, 0x02,
           -2, +0, +0, +1, 1, 0x03, -2, +1, -1, +0, 1, 0x04, -2, +1, +0, -1, 2, 0x04, -2, +1, +0, +0, 1, 0x06,
@@ -421,160 +420,133 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
           +0, +0, +2, +2, 2, 0x10, +0, +1, +1, +0, 1, 0x44, +0, +1, +1, +2, 1, 0x10, +0, +1, +2, -1, 2, 0x40,
           +0, +1, +2, +0, 1, 0x60, +0, +1, +2, +1, 1, 0x20, +0, +1, +2, +2, 1, 0x10, +1, -2, +1, +0, 1, 0x80,
           +1, -1, +1, +1, 1, 0x88, +1, +0, +1, +2, 1, 0x08, +1, +0, +2, -1, 1, 0x40, +1, +0, +2, +1, 1, 0x10 };
-    static const signed char chood[]
-      = { -1, -1, -1, 0, -1, +1, 0, +1, +1, +1, +1, 0, +1, -1, 0, -1 };
 
-    const size_t ips_size = (size_t)prow * pcol * 352 * sizeof(int);
-    ips = malloc(ips_size);
+  static const signed char chood[] = { -1, -1, -1, 0, -1, +1, 0, +1, +1, +1, +1, 0, +1, -1, 0, -1 };
 
-    int *ip = ips;
-    int code[16][16];
+  const size_t ips_size = (size_t)prow * pcol * 352 * sizeof(int);
+  ips = malloc(ips_size);
 
-    for(int row = 0; row < prow; row++)
-      for(int col = 0; col < pcol; col++)
+  int *ip = ips;
+  int code[16][16];
+
+  for(int row = 0; row < prow; row++)
+    for(int col = 0; col < pcol; col++)
+    {
+      code[row][col] = ip - ips;
+      const signed char *cp = terms;
+      for(int t = 0; t < 64; t++)
       {
-        code[row][col] = ip - ips;
-        const signed char *cp = terms;
-        for(int t = 0; t < 64; t++)
-        {
-          const int y1 = *cp++, x1 = *cp++;
-          const int y2 = *cp++, x2 = *cp++;
-          const int weight = *cp++;
-          const int grads = *cp++;
-          const int color = fcol(row + y1, col + x1, filters4, xtrans);
-          if(fcol(row + y2, col + x2, filters4, xtrans) != color) continue;
-          const int diag
-              = (fcol(row, col + 1, filters4, xtrans) == color && fcol(row + 1, col, filters4, xtrans) == color)
-                    ? 2
-                    : 1;
-          if(abs(y1 - y2) == diag && abs(x1 - x2) == diag) continue;
-          *ip++ = (y1 << 16) | (x1 & 0xffffu);
-          *ip++ = (y2 << 16) | (x2 & 0xffffu);
-          *ip++ = (color << 16) | (weight & 0xffffu);
-          for(int g = 0; g < 8; g++)
-            if(grads & 1 << g) *ip++ = g;
-          *ip++ = -1;
-        }
-        *ip++ = INT_MAX;
-        cp = chood;
+        const int y1 = *cp++, x1 = *cp++;
+        const int y2 = *cp++, x2 = *cp++;
+        const int weight = *cp++;
+        const int grads = *cp++;
+        const int color = fcol(row + y1, col + x1, filters4, xtrans);
+        if(fcol(row + y2, col + x2, filters4, xtrans) != color) continue;
+        const int diag
+            = (fcol(row, col + 1, filters4, xtrans) == color && fcol(row + 1, col, filters4, xtrans) == color)
+              ? 2
+              : 1;
+        if(abs(y1 - y2) == diag && abs(x1 - x2) == diag) continue;
+        *ip++ = (y1 << 16) | (x1 & 0xffffu);
+        *ip++ = (y2 << 16) | (x2 & 0xffffu);
+        *ip++ = (color << 16) | (weight & 0xffffu);
         for(int g = 0; g < 8; g++)
+          if(grads & 1 << g) *ip++ = g;
+        *ip++ = -1;
+      }
+      *ip++ = INT_MAX;
+      cp = chood;
+      for(int g = 0; g < 8; g++)
+      {
+        const int y = *cp++, x = *cp++;
+        *ip++ = (y << 16) | (x & 0xffffu);
+        const int color = fcol(row, col, filters4, xtrans);
+        if(fcol(row + y, col + x, filters4, xtrans) != color
+           && fcol(row + y * 2, col + x * 2, filters4, xtrans) == color)
         {
-          const int y = *cp++, x = *cp++;
-          *ip++ = (y << 16) | (x & 0xffffu);
-          const int color = fcol(row, col, filters4, xtrans);
-          if(fcol(row + y, col + x, filters4, xtrans) != color
-             && fcol(row + y * 2, col + x * 2, filters4, xtrans) == color)
-          {
-            *ip++ = (2*y << 16) | (2*x & 0xffffu);
-            *ip++ = color;
-          }
-          else
-          {
-            *ip++ = 0;
-            *ip++ = 0;
-          }
+          *ip++ = (2*y << 16) | (2*x & 0xffffu);
+          *ip++ = color;
+        }
+        else
+        {
+          *ip++ = 0;
+          *ip++ = 0;
         }
       }
+    }
 
 
-    dev_lookup = dt_opencl_copy_host_to_device_constant(devid, lookup_size, lookup);
-    if(dev_lookup == NULL) goto finish;
+  dev_lookup = dt_opencl_copy_host_to_device_constant(devid, lookup_size, lookup);
+  dev_code = dt_opencl_copy_host_to_device_constant(devid, sizeof(code), code);
+  dev_ips = dt_opencl_copy_host_to_device_constant(devid, ips_size, ips);
+  if(!dev_code || !dev_lookup || !dev_ips) goto finish;
 
-    dev_code = dt_opencl_copy_host_to_device_constant(devid, sizeof(code), code);
-    if(dev_code == NULL) goto finish;
-
-    dev_ips = dt_opencl_copy_host_to_device_constant(devid, ips_size, ips);
-    if(dev_ips == NULL) goto finish;
-
-    int width = roi_in->width;
-    int height = roi_in->height;
-
-    // need to reserve scaled auxiliary buffer or use dev_out
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-
-    dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
-    if(dev_tmp == NULL) goto finish;
-
-    // manage borders for linear interpolation part
-    int border = 1;
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
+  // manage borders for linear interpolation part
+  int border = 1;
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
         CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(border), CLARG(roi_in->x), CLARG(roi_in->y),
         CLARG(filters4), CLARG(dev_xtrans));
-    if(err != CL_SUCCESS) goto finish;
+  if(err != CL_SUCCESS) goto finish;
 
+  {  // do linear interpolation
+    dt_opencl_local_buffer_t locopt
+      = (dt_opencl_local_buffer_t){ .xoffset = 2*1, .xfactor = 1, .yoffset = 2*1, .yfactor = 1,
+                                    .cellsize = 1 * sizeof(float), .overhead = 0,
+                                    .sizex = 1 << 8, .sizey = 1 << 8 };
+
+    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_vng_lin_interpolate, &locopt))
     {
-      // do linear interpolation
-      dt_opencl_local_buffer_t locopt
-        = (dt_opencl_local_buffer_t){ .xoffset = 2*1, .xfactor = 1, .yoffset = 2*1, .yfactor = 1,
-                                      .cellsize = 1 * sizeof(float), .overhead = 0,
-                                      .sizex = 1 << 8, .sizey = 1 << 8 };
-
-      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_vng_lin_interpolate, &locopt))
-      {
-        err = CL_INVALID_WORK_DIMENSION;
-        goto finish;
-      }
-
-      size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
-      size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-      dt_opencl_set_kernel_args(devid, gd->kernel_vng_lin_interpolate, 0,
-        CLARG(dev_in), CLARG(dev_tmp),
-        CLARG(width), CLARG(height), CLARG(filters4), CLARG(dev_lookup), CLLOCAL(sizeof(float) * (locopt.sizex + 2) * (locopt.sizey + 2)));
-      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_lin_interpolate, sizes, local);
-      if(err != CL_SUCCESS) goto finish;
-    }
-
-
-    if(only_vng_linear)
-    {
-      // leave it at linear interpolation and skip VNG
-      size_t origin[] = { 0, 0, 0 };
-      size_t region[] = { width, height, 1 };
-      err = dt_opencl_enqueue_copy_image(devid, dev_tmp, dev_out, origin, origin, region);
+      err = CL_INVALID_WORK_DIMENSION;
       goto finish;
     }
-    else
-    {
-      // do full VNG interpolation
-      dt_opencl_local_buffer_t locopt
-        = (dt_opencl_local_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
-                                      .cellsize = 4 * sizeof(float), .overhead = 0,
-                                      .sizex = 1 << 8, .sizey = 1 << 8 };
+    size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
+    size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
+    dt_opencl_set_kernel_args(devid, gd->kernel_vng_lin_interpolate, 0,
+        CLARG(dev_in), CLARG(dev_tmp),
+        CLARG(width), CLARG(height), CLARG(filters4), CLARG(dev_lookup), CLLOCAL(sizeof(float) * (locopt.sizex + 2) * (locopt.sizey + 2)));
+    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_lin_interpolate, sizes, local);
+    if(err != CL_SUCCESS) goto finish;
+  }
 
-      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_vng_interpolate, &locopt))
-      {
-        err = CL_INVALID_WORK_DIMENSION;
-        goto finish;
-      }
+  // do full VNG interpolation
+  dt_opencl_local_buffer_t locopt
+      = (dt_opencl_local_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
+                                    .cellsize = 4 * sizeof(float), .overhead = 0,
+                                    .sizex = 1 << 8, .sizey = 1 << 8 };
 
-      size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
-      size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-      dt_opencl_set_kernel_args(devid, gd->kernel_vng_interpolate, 0,
-        CLARG(dev_tmp), CLARG(dev_out),
-        CLARG(width), CLARG(height), CLARG(roi_in->x), CLARG(roi_in->y), CLARG(filters4),
-        CLARG(dev_xtrans), CLARG(dev_ips), CLARG(dev_code), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 4) * (locopt.sizey + 4)));
-      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_interpolate, sizes, local);
-      if(err != CL_SUCCESS) goto finish;
-    }
+  if(!dt_opencl_local_buffer_opt(devid, gd->kernel_vng_interpolate, &locopt))
+  {
+    err = CL_INVALID_WORK_DIMENSION;
+    goto finish;
+  }
 
-    // manage borders
-    border = 2;
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
-        CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(border), CLARG(roi_in->x), CLARG(roi_in->y),
-        CLARG(filters4), CLARG(dev_xtrans));
+  size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
+  size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
+  dt_opencl_set_kernel_args(devid, gd->kernel_vng_interpolate, 0,
+    CLARG(dev_tmp), CLARG(dev_out),
+    CLARG(width), CLARG(height), CLARG(roi_in->x), CLARG(roi_in->y), CLARG(filters4),
+    CLARG(dev_xtrans), CLARG(dev_ips), CLARG(dev_code), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 4) * (locopt.sizey + 4)));
+  err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_interpolate, sizes, local);
+  if(err != CL_SUCCESS) goto finish;
+
+  // manage borders
+  border = 2;
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
+      CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(border), CLARG(roi_in->x), CLARG(roi_in->y),
+      CLARG(filters4), CLARG(dev_xtrans));
+  if(err != CL_SUCCESS) goto finish;
+
+  if(filters4 != 9)
+  {
+    // for Bayer sensors mix the two green channels
+    size_t origin[] = { 0, 0, 0 };
+    size_t region[] = { width, height, 1 };
+    err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
     if(err != CL_SUCCESS) goto finish;
 
-    if(filters4 != 9)
-    {
-      // for Bayer sensors mix the two green channels
-      size_t origin[] = { 0, 0, 0 };
-      size_t region[] = { width, height, 1 };
-      err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
-      if(err != CL_SUCCESS) goto finish;
-
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_green_equilibrate, width, height,
-        CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height));
-    }
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_green_equilibrate, width, height,
+      CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height));
+  }
 
 finish:
   dt_opencl_release_mem_object(dev_tmp);

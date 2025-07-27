@@ -700,13 +700,13 @@ void process(dt_iop_module_t *self,
     else if(base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN || base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3)
       xtrans_markesteijn_interpolate(out, in, roi_in, xtrans, passes);
     else
-      vng_interpolate(out, in, roi_in, pipe->dsc.filters, xtrans, FALSE);
+      vng_interpolate(out, in, roi_in, pipe->dsc.filters, xtrans);
   }
   else
   {
     if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || is_4bayer)
     {
-      vng_interpolate(out, in, roi_in, pipe->dsc.filters, xtrans, FALSE);
+      vng_interpolate(out, in, roi_in, pipe->dsc.filters, xtrans);
       if(is_4bayer)
       {
         dt_colorspaces_cygm_to_rgb(out, width * height, d->CAM_to_RGB);
@@ -870,7 +870,7 @@ int process_cl(dt_iop_module_t *self,
   else if(base_demosaicing_method == DT_IOP_DEMOSAIC_RCD)
     err = process_rcd_cl(self, piece, in_image, out_image, roi_in);
   else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || demosaicing_method == DT_IOP_DEMOSAIC_VNG)
-    err = process_vng_cl(self, piece, in_image, out_image, roi_in, FALSE);
+    err = process_vng_cl(self, piece, in_image, out_image, roi_in);
   else if(base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN || base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3)
     err = process_markesteijn_cl(self, piece, in_image, out_image, roi_in);
   else
@@ -901,7 +901,7 @@ int process_cl(dt_iop_module_t *self,
       size_t region[] = { width, height, 1 };
       err = dt_opencl_enqueue_copy_image(devid, out_image, cp_image, origin, origin, region);
       if(err == CL_SUCCESS)
-        err = process_vng_cl(self, piece, in_image, low_image, roi_in, TRUE);
+        err = process_vng_cl(self, piece, in_image, low_image, roi_in);
       if(err == CL_SUCCESS)
         err = color_smoothing_cl(self, piece, low_image, low_image, roi_in, DT_DEMOSAIC_SMOOTH_2);
       if(err == CL_SUCCESS)

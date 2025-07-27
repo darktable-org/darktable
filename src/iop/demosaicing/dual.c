@@ -57,7 +57,7 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece,
     float *vng_image = dt_alloc_align_float(msize * 4);
     if(vng_image)
     {
-      vng_interpolate(vng_image, raw_data, roi, filters, xtrans, TRUE);
+      vng_interpolate(vng_image, raw_data, roi, filters, xtrans);
       color_smoothing(vng_image, roi, DT_DEMOSAIC_SMOOTH_2);
 
       DT_OMP_FOR_SIMD(aligned(mask, vng_image, high_data : 64))

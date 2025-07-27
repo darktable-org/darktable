@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2141,7 +2141,7 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
       if(err != CL_SUCCESS) goto error;
 
       // VNG processing
-      err = process_vng_cl(self, piece, dev_edge_in, dev_edge_out, &roi, FALSE);
+      err = process_vng_cl(self, piece, dev_edge_in, dev_edge_out, &roi);
       if(err != CL_SUCCESS) goto error;
 
       // adjust for "good" part, dropping linear border where possible
