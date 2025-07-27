@@ -700,7 +700,8 @@ gboolean dt_masks_calc_scharr_mask(dt_dev_detail_mask_t *details,
                                    const dt_aligned_pixel_t wb);
 float *dt_masks_calc_detail_mask(struct dt_dev_pixelpipe_iop_t *piece,
                                  const float threshold,
-                                 const gboolean detail);
+                                 const gboolean detail,
+                                 const gboolean blurred);
 
 /** return the list of possible mouse actions */
 GSList *dt_masks_mouse_actions(const dt_masks_form_t *form);

@@ -271,7 +271,7 @@ static void _refine_with_detail_mask(dt_iop_module_t *self,
   dt_dev_pixelpipe_t *p = piece->pipe;
   if(p->scharr.data == NULL) goto error;
 
-  float *lum = dt_masks_calc_detail_mask(piece, threshold, detail);
+  float *lum = dt_masks_calc_detail_mask(piece, threshold, detail, TRUE);
   if(lum == NULL) goto error;
 
   // here we have the slightly blurred full detail mask available

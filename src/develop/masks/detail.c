@@ -153,7 +153,8 @@ static inline float _calcBlendFactor(float val, float ithreshold)
 
 float *dt_masks_calc_detail_mask(dt_dev_pixelpipe_iop_t *piece,
                                  const float threshold,
-                                 const gboolean detail)
+                                 const gboolean detail,
+                                 const gboolean blurred)
 {
   dt_dev_pixelpipe_t *pipe = piece->pipe;
   dt_dev_detail_mask_t *details = &pipe->scharr;
@@ -163,11 +164,12 @@ float *dt_masks_calc_detail_mask(dt_dev_pixelpipe_iop_t *piece,
 
   const size_t msize = (size_t) details->roi.width * details->roi.height;
   float *tmp = dt_alloc_align_float(msize);
-  float *mask = dt_alloc_align_float(msize);
-  if(!tmp || !mask)
+  if(!tmp) return NULL;
+
+  float *mask = blurred ? dt_alloc_align_float(msize) : NULL;
+  if(!mask && blurred)
   {
     dt_free_align(tmp);
-    dt_free_align(mask);
     return NULL;
   }
 
@@ -179,6 +181,9 @@ float *dt_masks_calc_detail_mask(dt_dev_pixelpipe_iop_t *piece,
     const float blend = CLIP(_calcBlendFactor(src[idx], ithreshold));
     tmp[idx] = detail ? blend : 1.0f - blend;
   }
+  if(!blurred)
+    return tmp;
+
   // for very small images the blurring should be slightly less to have an effect at all
   const float sigma = (MIN(details->roi.width, details->roi.height) < 500) ? 1.5f : 2.0f;
   dt_gaussian_fast_blur(tmp, mask, details->roi.width, details->roi.height, sigma, 0.0f, 1.0f, 1);

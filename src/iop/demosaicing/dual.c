@@ -26,49 +26,65 @@ static float slider2contrast(float slider)
 {
   return 0.005f * powf(slider, 1.1f);
 }
-static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece,
+
+static void dual_demosaic(const dt_iop_module_t *self,
+                          dt_dev_pixelpipe_iop_t *piece,
                           float *const restrict high_data,
                           const float *const restrict raw_data,
                           const dt_iop_roi_t *const roi,
                           const uint32_t filters,
                           const uint8_t (*const xtrans)[6],
-                          const gboolean dual_mask,
-                          const float dual_threshold)
+                          const gboolean dual_mask)
 {
-  if(roi->width < 16 || roi->height < 16) return;
+  const int width = roi->width;
+  const int height = roi->height;
+  if(width < 16 || height < 16) return;
+
+  const dt_iop_demosaic_global_data_t *gd = self->global_data;
+  dt_iop_demosaic_data_t *d = piece->data;
 
   // If the threshold is zero and we don't want to see the blend mask we don't do anything
-  if(dual_threshold <= 0.0f && !dual_mask) return;
+  if(d->dual_thrs <= 0.0f && !dual_mask) return;
 
-  const size_t msize = (size_t)roi->width * roi->height;
-  const float contrastf = slider2contrast(dual_threshold);
+  const float contrastf = slider2contrast(d->dual_thrs);
 
-  float *mask = dt_masks_calc_detail_mask(piece, contrastf, TRUE);
+  // get the unblurred mask and do it here instead for less mem pressure
+  float *mask = dt_masks_calc_detail_mask(piece, contrastf, TRUE, FALSE);
   if(!mask) return;
 
-  if(dual_mask)
-  {
-    DT_OMP_FOR_SIMD(aligned(mask, high_data : 64))
-    for(size_t idx = 0; idx < msize; idx++)
-      high_data[idx * 4 + 3] = mask[idx];
-  }
-  else
-  {
-    float *vng_image = dt_alloc_align_float(msize * 4);
-    if(vng_image)
-    {
-      vng_interpolate(vng_image, raw_data, roi, filters, xtrans);
-      color_smoothing(vng_image, roi, DT_DEMOSAIC_SMOOTH_2);
+  const float *ckern = gd->gauss_coeffs + _sigma_to_index(d->dual_sigma) * CAPTURE_KERNEL_ALIGN;
+  const float *gkern = gd->gauss_coeffs + _sigma_to_index(2.0f) * CAPTURE_KERNEL_ALIGN;
 
-      DT_OMP_FOR_SIMD(aligned(mask, vng_image, high_data : 64))
-      for(size_t idx = 0; idx < msize; idx++)
+  DT_OMP_FOR()
+  for(int row = 0; row < height; row++)
+  {
+    for(int col = 0; col < width; col++)
+    {
+      dt_aligned_pixel_t sum = { 0.0f, 0.0f, 0.0f, 0.0f };
+      dt_aligned_pixel_t cnt = { 0.0f, 0.0f, 0.0f, 0.0f };
+      float blurr = 0.0f;
+      for(int dy = -4; dy < 5; dy++)
       {
-        const size_t oidx = idx * 4;
-        for(int c = 0; c < 3; c++)
-          high_data[oidx + c] = interpolatef(mask[idx], high_data[oidx + c], vng_image[oidx + c]);
-        high_data[oidx + 3] = 0.0f;
+        for(int dx = -4; dx < 5; dx++)
+        {
+          const int x = col + dx;
+          const int y = row + dy;
+          if(x >= 0 && y >= 0 && x < width && y < height)
+          {
+            const size_t idx = (size_t)width*y + x;
+            const int kdx = 5 * ABS(dy) + ABS(dx);
+            const int color = (filters == 9u) ? FCxtrans(y, x, roi, xtrans) : FC(y, x, filters);
+            const float weight = ckern[kdx];
+            sum[color] += MAX(0.0f, weight * raw_data[idx]);
+            cnt[color] += weight;
+            blurr += gkern[kdx] * mask[idx];
+          }
+        }
       }
-      dt_free_align(vng_image);
+      const size_t k = ((size_t)width*row + col) * 4;
+      for_three_channels(c)
+        high_data[k+c] = interpolatef(CLIP(blurr), high_data[k+c], sum[c] / cnt[c]);
+      high_data[k+3] = dual_mask ? CLIP(blurr) : 0.0f;
     }
   }
   dt_free_align(mask);
@@ -78,43 +94,67 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece,
 int dual_demosaic_cl(const dt_iop_module_t *self,
                      const dt_dev_pixelpipe_iop_t *piece,
                      cl_mem high_image,
-                     cl_mem low_image,
-                     cl_mem out,
-                     const dt_iop_roi_t *const roi_in,
+                     cl_mem in_image,
+                     cl_mem out_image,
+                     const dt_iop_roi_t *const roi,
                      const int dual_mask)
 {
   const int devid = piece->pipe->devid;
-  const int width = roi_in->width;
-  const int height = roi_in->height;
+  const int width = roi->width;
+  const int height = roi->height;
 
-  dt_iop_demosaic_data_t *data = piece->data;
+  dt_iop_demosaic_data_t *d = piece->data;
+  if(width < 16 || height < 16 || (d->dual_thrs <= 0.0f && !dual_mask))
+  {
+    size_t origin[] = { 0, 0, 0 };
+    size_t region[] = { width, height, 1 };
+    return dt_opencl_enqueue_copy_image(devid, high_image, out_image, origin, origin, region);
+  }
+
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
-
-  const float contrastf = slider2contrast(data->dual_thrs);
+  const float contrastf = slider2contrast(d->dual_thrs);
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-  cl_mem mask = NULL;
-  cl_mem tmp = NULL;
   const size_t bsize = sizeof(float) * width * height;
 
-  tmp = dt_opencl_copy_host_to_device_constant(devid, bsize, piece->pipe->scharr.data);
-  mask = dt_opencl_alloc_device_buffer(devid, bsize);
-  if(mask == NULL || tmp == NULL) goto finish;
+  cl_mem tmp = dt_opencl_copy_host_to_device_constant(devid, bsize, piece->pipe->scharr.data);
+  cl_mem mask = dt_opencl_alloc_device_buffer(devid, bsize);
+  cl_mem mcoeffs = NULL;
+  cl_mem ccoeffs = NULL;
+  cl_mem xtrans = NULL;
+  if(!mask || !tmp) goto finish;
 
   const int detail = 1;
   err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_calc_blend, width, height,
       CLARG(tmp), CLARG(mask), CLARG(width), CLARG(height), CLARG(contrastf), CLARG(detail));
+  dt_opencl_release_mem_object(tmp);
+  tmp = NULL;
   if(err != CL_SUCCESS) goto finish;
 
-  err = dt_gaussian_fast_blur_cl_buffer(devid, mask, tmp, width, height, 2.0f, 1, 0.0f, 1.0f);
-  if(err != CL_SUCCESS) goto finish;
+  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  mcoeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * CAPTURE_KERNEL_ALIGN, gd->gauss_coeffs + _sigma_to_index(2.0f) * CAPTURE_KERNEL_ALIGN);
+  ccoeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * CAPTURE_KERNEL_ALIGN, gd->gauss_coeffs + _sigma_to_index(d->dual_sigma) * CAPTURE_KERNEL_ALIGN);
+  if(!mcoeffs || !ccoeffs) goto finish;
+
+  if(self->dev->image_storage.buf_dsc.filters == 9u)
+  {
+    xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
+    if(!xtrans) goto finish;
+  }
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_write_blended_dual, width, height,
-      CLARG(high_image), CLARG(low_image), CLARG(out), CLARG(width), CLARG(height), CLARG(tmp), CLARG(dual_mask));
+      CLARG(high_image), CLARG(in_image), CLARG(out_image),
+      CLARG(width), CLARG(height), CLARG(roi->x), CLARG(roi->y),
+      CLARG(piece->pipe->dsc.filters), CLARG(xtrans),
+      CLARG(mask), CLARG(mcoeffs), CLARG(ccoeffs), CLARG(dual_mask));
 
   finish:
   dt_opencl_release_mem_object(mask);
   dt_opencl_release_mem_object(tmp);
+  dt_opencl_release_mem_object(ccoeffs);
+  dt_opencl_release_mem_object(mcoeffs);
+  dt_opencl_release_mem_object(xtrans);
+
   return err;
 }
 #endif
