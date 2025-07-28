@@ -22,49 +22,7 @@
 
 #pragma once
 
-
-#if defined(_OPENMP) && !defined(_WIN32) && (!defined(__GNUC__) || __GNUC__ >= 12)
-
-#ifndef __GNUC__  // GCC 12 compiles but fails at runtime due to missing library function
-DT_OMP_DECLARE_SIMD()
-extern float fmaxf(const float x, const float y);
-#endif
-
-#ifndef __GNUC__  // GCC 12 compiles but fails at runtime due to missing library function
-DT_OMP_DECLARE_SIMD()
-extern float fminf(const float x, const float y);
-#endif
-
-DT_OMP_DECLARE_SIMD()
-extern float fabsf(const float x);
-
-DT_OMP_DECLARE_SIMD()
-extern float powf(const float x, const float y);
-
-DT_OMP_DECLARE_SIMD()
-extern float sqrtf(const float x);
-
-DT_OMP_DECLARE_SIMD()
-extern float cbrtf(const float x);
-
-DT_OMP_DECLARE_SIMD()
-extern float log2f(const float x);
-
-DT_OMP_DECLARE_SIMD()
-extern float exp2f(const float x);
-
-DT_OMP_DECLARE_SIMD()
-extern float log10f(const float x);
-
-DT_OMP_DECLARE_SIMD()
-extern float expf(const float x);
-
-DT_OMP_DECLARE_SIMD()
-extern float logf(const float x);
-
-#endif
-
-/* Bring our own optimized maths functions because Clang makes dumb shit */
+/* Bring our own optimized maths functions */
 
 DT_OMP_DECLARE_SIMD()
 static inline float fast_exp10f(const float x)

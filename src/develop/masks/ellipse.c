@@ -19,6 +19,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/undo.h"
+#include "common/math.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -52,8 +53,8 @@ static inline void _ellipse_point_transform(const float xref,
 // Jordan's point in polygon test
 static int _ellipse_cross_test(const float x,
                                const float y,
-                               float *point_1,
-                               float *point_2)
+                               const float *point_1,
+                               const float *point_2)
 {
   const float x_a = x;
   const float y_a = y;
@@ -93,7 +94,7 @@ static int _ellipse_cross_test(const float x,
 
 static int _ellipse_point_in_polygon(const float x,
                                      const float y,
-                                     float *points,
+                                     const float *points,
                                      const int points_count)
 {
   int t = -1;
@@ -110,7 +111,7 @@ static void _ellipse_get_distance(const float x,
                                   const float y,
                                   const float as,
                                   dt_masks_form_gui_t *gui,
-                                  int index,
+                                  const int index,
                                   const int num_points,
                                   gboolean *inside,
                                   gboolean *inside_border,
@@ -189,7 +190,7 @@ static void _ellipse_draw_shape(const gboolean borders,
                                 const float zoom_scale,
                                 const float xref,
                                 const float yref,
-                                float *points,
+                                const float *points,
                                 const int points_count)
 {
   if(points_count <= 10) return;
@@ -224,8 +225,8 @@ static float *_points_to_transform(const float xx,
                                    const float ht,
                                    int *points_count)
 {
-  const float v1 = (rotation / 180.0f) * M_PI;
-  const float v2 = (rotation - 90.0f) / 180.0f * M_PI;
+  const float v1 = deg2radf(rotation);
+  const float v2 = deg2radf(rotation - 90.0f);
   float a, b, v;
 
   if(radius_a >= radius_b)
@@ -271,10 +272,10 @@ static float *_points_to_transform(const float xx,
   points[4] = x - a * cosf(v);
   points[5] = y - a * sinf(v);
 
-  points[6] = x + b * cosf(v - M_PI / 2.0f);
-  points[7] = y + b * sinf(v - M_PI / 2.0f);
-  points[8] = x - b * cosf(v - M_PI / 2.0f);
-  points[9] = y - b * sinf(v - M_PI / 2.0f);
+  points[6] = x + b * cosf(v - M_PI_F / 2.0f);
+  points[7] = y + b * sinf(v - M_PI_F / 2.0f);
+  points[8] = x - b * cosf(v - M_PI_F / 2.0f);
+  points[9] = y - b * sinf(v - M_PI_F / 2.0f);
 
 
   DT_OMP_FOR_SIMD(if(l > 100) aligned(points:64))
@@ -386,13 +387,13 @@ static int _ellipse_get_points_border(dt_develop_t *dev,
                                       const int source,
                                       const dt_iop_module_t *module)
 {
-  dt_masks_point_ellipse_t *ellipse = form->points->data;
+  const dt_masks_point_ellipse_t *ellipse = form->points->data;
   const float x = ellipse->center[0], y = ellipse->center[1];
   const float a = ellipse->radius[0], b = ellipse->radius[1];
 
   if(source)
   {
-    float xs = form->source[0], ys = form->source[1];
+    const float xs = form->source[0], ys = form->source[1];
     return _ellipse_get_points_source(dev, x, y, xs, ys, a, b,
                                       ellipse->rotation, points, points_count, module);
   }
@@ -577,7 +578,7 @@ static int _ellipse_events_button_pressed(dt_iop_module_t *module,
     dt_masks_form_gui_points_t *gpt = g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
 
-    if(gui->form_selected && dt_modifier_is(state, GDK_SHIFT_MASK))
+    if(gui->form_selected && dt_modifier_is(state, GDK_MOD1_MASK))
     {
       gui->border_toggling = TRUE;
       return 1;
@@ -694,7 +695,7 @@ static int _ellipse_events_button_pressed(dt_iop_module_t *module,
       int pos3 = 0, pos2 = -1;
       for(GList *fs = grp->points; fs; fs = g_list_next(fs))
       {
-        dt_masks_point_group_t *pt = fs->data;
+        const dt_masks_point_group_t *pt = fs->data;
         if(pt->formid == form->formid)
         {
           pos2 = pos3;
@@ -728,7 +729,7 @@ static int _ellipse_events_button_pressed(dt_iop_module_t *module,
     {
       if(crea_module)
       {
-        dt_iop_gui_blend_data_t *bd = crea_module->blend_data;
+        const dt_iop_gui_blend_data_t *bd = crea_module->blend_data;
         for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
           if(bd->masks_type[n] == form->type)
             gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), TRUE);
@@ -893,9 +894,9 @@ static int _ellipse_events_button_released(dt_iop_module_t *module,
     // Normalize to the range -180 to 180 degrees
     check_angle = atan2f(sinf(check_angle), cosf(check_angle));
     if(check_angle < 0)
-      ellipse->rotation -= dv / M_PI * 180.0f;
+      ellipse->rotation -= rad2degf(dv);
     else
-      ellipse->rotation += dv / M_PI * 180.0f;
+      ellipse->rotation += rad2degf(dv);
 
     dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, rotation), ellipse->rotation);
 
@@ -1117,9 +1118,9 @@ static int _ellipse_events_mouse_moved(dt_iop_module_t *module,
     // Normalize to the range -180 to 180 degrees
     check_angle = atan2f(sinf(check_angle), cosf(check_angle));
     if(check_angle < 0)
-      ellipse->rotation -= dv / M_PI * 180.0f;
+      ellipse->rotation -= rad2degf(dv);
     else
-      ellipse->rotation += dv / M_PI * 180.0f;
+      ellipse->rotation += rad2degf(dv);
 
     dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, rotation), ellipse->rotation);
 
@@ -1177,7 +1178,7 @@ static int _ellipse_events_mouse_moved(dt_iop_module_t *module,
     gui->point_border_selected = -1;
     if(gui->form_selected)
     {
-      dt_masks_form_gui_points_t *gpt = g_list_nth_data(gui->points, index);
+      const dt_masks_form_gui_points_t *gpt = g_list_nth_data(gui->points, index);
       const float as2 = sqf(as);
 
       for(int i = 1; i < _nb_ctrl_point() - 1; i++)
@@ -1185,16 +1186,14 @@ static int _ellipse_events_mouse_moved(dt_iop_module_t *module,
         const float dist_b = sqf(x - gpt->border[i * 2]) + sqf(y - gpt->border[i * 2 +1]);
         const float dist_p = sqf(x - gpt->points[i * 2]) + sqf(y - gpt->points[i * 2 + 1]);
 
-        // prefer border points over shape itself in case of near
-        // overlap for ease of pickup
+        if(!gui->select_only_border && dist_p < as2)
+        {
+          gui->point_selected = i;
+          break;
+        }
         if(dist_b < as2)
         {
           gui->point_border_selected = i;
-          break;
-        }
-        if(dist_p < as2)
-        {
-          gui->point_selected = i;
           break;
         }
       }
@@ -1502,8 +1501,8 @@ static float *const _ellipse_points_to_transform(const float center_x,
                                                  size_t *point_count)
 {
 
-  const float v1 = ((rotation) / 180.0f) * M_PI;
-  const float v2 = ((rotation - 90.0f) / 180.0f) * M_PI;
+  const float v1 = deg2radf(rotation);
+  const float v2 = deg2radf(rotation - 90.0f);
   float a = 0.0f, b = 0.0f, v = 0.0f;
 
   if(dim1 >= dim2)
@@ -1542,14 +1541,14 @@ static float *const _ellipse_points_to_transform(const float center_x,
   points[3] = y + a * sinf(v);
   points[4] = x - a * cosf(v);
   points[5] = y - a * sinf(v);
-  points[6] = x + b * cosf(v - M_PI / 2.0f);
-  points[7] = y + b * sinf(v - M_PI / 2.0f);
-  points[8] = x - b * cosf(v - M_PI / 2.0f);
-  points[9] = y - b * sinf(v - M_PI / 2.0f);
+  points[6] = x + b * cosf(v - M_PI_F / 2.0f);
+  points[7] = y + b * sinf(v - M_PI_F / 2.0f);
+  points[8] = x - b * cosf(v - M_PI_F / 2.0f);
+  points[9] = y - b * sinf(v - M_PI_F / 2.0f);
   // and finally the regularly-spaced points on the circumference
   for(int i = 5; i < l + 5; i++)
   {
-    float alpha = (i - 5) * 2.0 * M_PI / (float)l;
+    const float alpha = (i - 5) * 2.0 * M_PI / (float)l;
     points[i * 2] = x + a * cosf(alpha) * cosv - b * sinf(alpha) * sinv;
     points[i * 2 + 1] = y + a * cosf(alpha) * sinv + b * sinf(alpha) * cosv;
   }
@@ -1565,7 +1564,7 @@ static int _ellipse_get_source_area(dt_iop_module_t *module,
                                     int *posy)
 {
   // we get the ellipse values
-  dt_masks_point_ellipse_t *ellipse = form->points->data;
+  const dt_masks_point_ellipse_t *ellipse = form->points->data;
   const float wd = piece->pipe->iwidth, ht = piece->pipe->iheight;
   const int prop = ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL;
   const float total[2] = { (prop
@@ -1608,7 +1607,7 @@ static int _ellipse_get_area(const dt_iop_module_t *const module,
                              int *posy)
 {
   // we get the ellipse values
-  dt_masks_point_ellipse_t *ellipse = form->points->data;
+  const dt_masks_point_ellipse_t *ellipse = form->points->data;
   const float wd = piece->pipe->iwidth, ht = piece->pipe->iheight;
   const int prop = ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL;
   const float total[2] = { (prop
@@ -1660,10 +1659,10 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module,
            form->name, dt_get_lap_time(&start2));
 
   // we get the ellipse values
-  dt_masks_point_ellipse_t *ellipse = form->points->data;
+  const dt_masks_point_ellipse_t *ellipse = form->points->data;
 
   // we create a buffer of points with all points in the area
-  int w = *width, h = *height;
+  const int w = *width, h = *height;
   float *points = dt_alloc_align_float((size_t)2 * w * h);
   if(points == NULL)
     return 0;
@@ -1721,7 +1720,7 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module,
     b = radius[1];
     ta = total[0];
     tb = total[1];
-    alpha = (ellipse->rotation / 180.0f) * M_PI;
+    alpha = deg2radf(ellipse->rotation);
   }
   else
   {
@@ -1729,7 +1728,7 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module,
     b = radius[0];
     ta = total[1];
     tb = total[0];
-    alpha = ((ellipse->rotation - 90.0f) / 180.0f) * M_PI;
+    alpha = deg2radf(ellipse->rotation - 90.0f);
   }
 
   float *const bufptr = *buffer;
@@ -1755,7 +1754,7 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   double start2 = start1;
 
   // we get the ellipse parameters
-  dt_masks_point_ellipse_t *ellipse = form->points->data;
+  const dt_masks_point_ellipse_t *ellipse = form->points->data;
   const int wi = piece->pipe->iwidth, hi = piece->pipe->iheight;
   const float center[2] = { ellipse->center[0] * wi,
                             ellipse->center[1] * hi };
@@ -1772,7 +1771,7 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module,
   const float b = radius[1];
   const float ta = total[0];
   const float tb = total[1];
-  const float alpha = (ellipse->rotation / 180.0f) * M_PI;
+  const float alpha = deg2radf(ellipse->rotation);
   const float cosa = cosf(alpha);
   const float sina = sinf(alpha);
 
@@ -1985,7 +1984,7 @@ static void _ellipse_duplicate_points(dt_develop_t *const dev,
   (void)dev; // unused arg, keep compiler from complaining
   for(GList *pts = base->points; pts; pts = g_list_next(pts))
   {
-    dt_masks_point_ellipse_t *pt = pts->data;
+    const dt_masks_point_ellipse_t *pt = pts->data;
     dt_masks_point_ellipse_t *npt = malloc(sizeof(dt_masks_point_ellipse_t));
     memcpy(npt, pt, sizeof(dt_masks_point_ellipse_t));
     dest->points = g_list_append(dest->points, npt);
@@ -2024,7 +2023,7 @@ static void _ellipse_set_hint_message(const dt_masks_form_gui_t *const gui,
                  " <b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
 }
 
-static void _ellipse_sanitize_config(dt_masks_type_t type)
+static void _ellipse_sanitize_config(const dt_masks_type_t type)
 {
   dt_conf_get_and_sanitize_float(DT_MASKS_CONF(type, ellipse, rotation), 0.0f, 360.f);
   const int flags = dt_conf_get_and_sanitize_int
@@ -2069,7 +2068,7 @@ static void _ellipse_modify_property(dt_masks_form_t *const form,
                                      float *min,
                                      float *max)
 {
-  float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
+  const float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
 
   dt_masks_point_ellipse_t *ellipse = form->points ? form->points->data : NULL;
 
@@ -2102,7 +2101,7 @@ static void _ellipse_modify_property(dt_masks_form_t *const form,
       ++*count;
       break;
     case DT_MASKS_PROPERTY_FEATHER:;
-      dt_masks_ellipse_flags_t flags = ellipse
+      const dt_masks_ellipse_flags_t flags = ellipse
         ? ellipse->flags
         : dt_conf_get_int(DT_MASKS_CONF(form->type, ellipse, flags));
       const float reference = flags & DT_MASKS_ELLIPSE_PROPORTIONAL

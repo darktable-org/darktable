@@ -325,63 +325,63 @@ typedef enum dt_ui_border_t
 void dt_ui_container_swap_left_right(struct dt_ui_t *ui,
                                      gboolean swap);
 /** \brief add's a widget to a defined container */
-void dt_ui_container_add_widget(struct dt_ui_t *ui,
+void dt_ui_container_add_widget(const struct dt_ui_t *ui,
                                 const dt_ui_container_t c,
                                 GtkWidget *w);
 /** \brief gives a widget focus in the container */
-void dt_ui_container_focus_widget(struct dt_ui_t *ui,
+void dt_ui_container_focus_widget(const struct dt_ui_t *ui,
                                   const dt_ui_container_t c,
                                   GtkWidget *w);
 /** \brief calls a callback on all children widgets from container */
-void dt_ui_container_foreach(struct dt_ui_t *ui,
+void dt_ui_container_foreach(const struct dt_ui_t *ui,
                              const dt_ui_container_t c,
                              GtkCallback callback);
 /** \brief destroy all child widgets from container */
-void dt_ui_container_destroy_children(struct dt_ui_t *ui,
+void dt_ui_container_destroy_children(const struct dt_ui_t *ui,
                                       const dt_ui_container_t c);
 /** \brief shows/hide a panel */
-void dt_ui_panel_show(struct dt_ui_t *ui,
+void dt_ui_panel_show(const struct dt_ui_t *ui,
                       const dt_ui_panel_t,
                       const gboolean show,
                       const gboolean write);
 /** \brief restore saved state of panel visibility for current view */
-void dt_ui_restore_panels(struct dt_ui_t *ui);
+void dt_ui_restore_panels(const struct dt_ui_t *ui);
 /** \brief update scrollbars for current view */
 void dt_ui_update_scrollbars(struct dt_ui_t *ui);
 /** show or hide scrollbars */
 void dt_ui_scrollbars_show(struct dt_ui_t *ui, const gboolean show);
 /** \brief toggle view of panels eg. collapse/expands to previous view state */
-void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui);
+void dt_ui_toggle_panels_visibility(const struct dt_ui_t *ui);
 /** \brief draw user's attention */
 void dt_ui_notify_user();
 /** \brief get visible state of panel */
-gboolean dt_ui_panel_visible(struct dt_ui_t *ui,
+gboolean dt_ui_panel_visible(const struct dt_ui_t *ui,
                              const dt_ui_panel_t);
 /**  \brief get width of right, left, or bottom panel */
 int dt_ui_panel_get_size(struct dt_ui_t *ui,
                          const dt_ui_panel_t p);
 /**  \brief set width of right, left, or bottom panel */
-void dt_ui_panel_set_size(struct dt_ui_t *ui,
+void dt_ui_panel_set_size(const struct dt_ui_t *ui,
                           const dt_ui_panel_t p,
                           int s);
 /** \brief is the panel ancestor of widget */
-gboolean dt_ui_panel_ancestor(struct dt_ui_t *ui,
+gboolean dt_ui_panel_ancestor(const struct dt_ui_t *ui,
                               const dt_ui_panel_t p,
                               GtkWidget *w);
 /** \brief get the center drawable widget */
-GtkWidget *dt_ui_center(struct dt_ui_t *ui);
-GtkWidget *dt_ui_center_base(struct dt_ui_t *ui);
-GtkWidget *dt_ui_snapshot(struct dt_ui_t *ui);
+GtkWidget *dt_ui_center(const struct dt_ui_t *ui);
+GtkWidget *dt_ui_center_base(const struct dt_ui_t *ui);
+GtkWidget *dt_ui_snapshot(const struct dt_ui_t *ui);
 /** \brief get the main window widget */
-GtkWidget *dt_ui_main_window(struct dt_ui_t *ui);
+GtkWidget *dt_ui_main_window(const struct dt_ui_t *ui);
 /** \brief get the thumb table */
-struct dt_thumbtable_t *dt_ui_thumbtable(struct dt_ui_t *ui);
+struct dt_thumbtable_t *dt_ui_thumbtable(const struct dt_ui_t *ui);
 /** \brief get the log message widget */
-GtkWidget *dt_ui_log_msg(struct dt_ui_t *ui);
+GtkWidget *dt_ui_log_msg(const struct dt_ui_t *ui);
 /** \brief get the toast message widget */
-GtkWidget *dt_ui_toast_msg(struct dt_ui_t *ui);
+GtkWidget *dt_ui_toast_msg(const struct dt_ui_t *ui);
 
-GtkBox *dt_ui_get_container(struct dt_ui_t *ui,
+GtkBox *dt_ui_get_container(const struct dt_ui_t *ui,
                             const dt_ui_container_t c);
 
 /*  activate ellipsization of the combox entries */
@@ -464,7 +464,7 @@ void dt_configure_ppd_dpi(dt_gui_gtk_t *gui);
 
 // translate key press events to remove any modifiers used to produce the keyval
 // for example when the shift key is used to create the asterisk character
-guint dt_gui_translated_key_state(GdkEventKey *event);
+guint dt_gui_translated_key_state(const GdkEventKey *event);
 
 // return modifier keys currently pressed, independent of any key event
 GdkModifierType dt_key_modifier_state();
@@ -526,10 +526,10 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
 void dt_gui_collapsible_section_set_label(dt_gui_collapsible_section_t *cs,
                                           const char *label);
 // routine to be called from gui_update
-void dt_gui_update_collapsible_section(dt_gui_collapsible_section_t *cs);
+void dt_gui_update_collapsible_section(const dt_gui_collapsible_section_t *cs);
 
 // routine to hide the collapsible section
-void dt_gui_hide_collapsible_section(dt_gui_collapsible_section_t *cs);
+void dt_gui_hide_collapsible_section(const dt_gui_collapsible_section_t *cs);
 
 // is delay between first and second click/press longer than double-click time?
 gboolean dt_gui_long_click(const guint second,

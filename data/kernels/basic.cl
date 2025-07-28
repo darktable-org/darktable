@@ -46,7 +46,7 @@ rawprepare_1f(read_only image2d_t in, write_only image2d_t out,
   const int id = BL(ry+cy+y, rx+cx+x);
   const float pixel_scaled = (pixel - sub[id]) / div[id];
 
-  write_imagef(out, (int2)(x, y), (float4)(pixel_scaled, 0.0f, 0.0f, 0.0f));
+  write_imagef(out, (int2)(x, y), pixel_scaled);
 }
 
 kernel void
@@ -88,7 +88,7 @@ rawprepare_1f_gainmap(read_only image2d_t in, write_only image2d_t out,
       break;
   }
 
-  write_imagef(out, (int2)(x, y), (float4)(pixel_scaled, 0.0f, 0.0f, 0.0f));
+  write_imagef(out, (int2)(x, y), pixel_scaled);
 }
 
 kernel void
@@ -108,7 +108,7 @@ rawprepare_1f_unnormalized(read_only image2d_t in, write_only image2d_t out,
   const int id = BL(ry+cy+y, rx+cx+x);
   const float pixel_scaled = (pixel - sub[id]) / div[id];
 
-  write_imagef(out, (int2)(x, y), (float4)(pixel_scaled, 0.0f, 0.0f, 0.0f));
+  write_imagef(out, (int2)(x, y), pixel_scaled);
 }
 
 kernel void
@@ -150,7 +150,7 @@ rawprepare_1f_unnormalized_gainmap(read_only image2d_t in, write_only image2d_t 
       break;
   }
 
-  write_imagef(out, (int2)(x, y), (float4)(pixel_scaled, 0.0f, 0.0f, 0.0f));
+  write_imagef(out, (int2)(x, y), pixel_scaled);
 }
 
 kernel void
@@ -1476,7 +1476,7 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
   }
 
   // clamp at this stage
-  for(int i=0; i<3; i++) RGB[i] = clamp(RGB[i], 0.0f, 1.0f);
+  for(int i=0; i<3; i++) RGB[i] = clipf(RGB[i]);
 
   // convert clipped RGB to XYZ
   for(int j=0;j<3;j++)
@@ -3128,7 +3128,7 @@ flip(read_only image2d_t in,
 float
 envelope(const float L)
 {
-  const float x = clamp(L/100.0f, 0.0f, 1.0f);
+  const float x = clipf(L/100.0f);
   // const float alpha = 2.0f;
   const float beta = 0.6f;
   if(x < beta)
@@ -3163,7 +3163,7 @@ monochrome_filter(read_only image2d_t in,
 
   float4 pixel = read_imagef (in,   sampleri, (int2)(x, y));
   // TODO: this could be a native_expf, or exp2f, need to evaluate comparisons with cpu though:
-  pixel.x = 100.0f*dt_fast_expf(-clamp(((pixel.y - a)*(pixel.y - a) + (pixel.z - b)*(pixel.z - b))/(2.0f * size), 0.0f, 1.0f));
+  pixel.x = 100.0f*dt_fast_expf(-clipf((pixel.y - a)*(pixel.y - a) + (pixel.z - b)*(pixel.z - b))/(2.0f * size));
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -3185,7 +3185,7 @@ monochrome(read_only image2d_t in,
 
   float4 pixel = read_imagef (in,   sampleri, (int2)(x, y));
   float4 basep = read_imagef (base, sampleri, (int2)(x, y));
-  float filter  = dt_fast_expf(-clamp(((pixel.y - a)*(pixel.y - a) + (pixel.z - b)*(pixel.z - b))/(2.0f * size), 0.0f, 1.0f));
+  float filter  = dt_fast_expf(-clipf(((pixel.y - a)*(pixel.y - a) + (pixel.z - b)*(pixel.z - b))/(2.0f * size)));
   float tt = envelope(pixel.x);
   float t  = tt + (1.0f-tt)*(1.0f-highlights);
   pixel.x = mix(pixel.x, pixel.x*basep.x/100.0f, t);
@@ -3378,7 +3378,7 @@ colorzones (read_only image2d_t in,
       select = LCh.z;
       break;
   }
-  select = clamp(select, 0.f, 1.f);
+  select = clipf(select);
 
   LCh.x *= dtcl_pow(2.0f, 4.0f * (lookup(table_L, select) - .5f));
   LCh.y *= 2.f * lookup(table_C, select);
@@ -3705,7 +3705,7 @@ lowlight (read_only image2d_t in,
   }
 
   // scale using empiric coefficient and fit inside limits
-  V = clamp(c*V, 0.0f, 1.0f);
+  V = clipf(c*V);
 
   // blending coefficient from curve
   w = lookup(lut, pixel.x/100.0f);

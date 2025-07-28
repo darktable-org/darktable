@@ -310,7 +310,7 @@ void init_global(dt_iop_module_so_t *self)
 
 void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_colorequal_global_data_t *gd = self->data;
+  const dt_iop_colorequal_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->ce_init_covariance);
   dt_opencl_free_kernel(gd->ce_finish_covariance);
   dt_opencl_free_kernel(gd->ce_prepare_prefilter);
@@ -344,7 +344,7 @@ void tiling_callback(dt_iop_module_t *self,
                      const dt_iop_roi_t *roi_out,
                      dt_develop_tiling_t *tiling)
 {
-  dt_iop_colorequal_data_t *data = piece->data;
+  const dt_iop_colorequal_data_t *data = piece->data;
 
   tiling->maxbuf = 1.0f;
   tiling->xalign = 1;
@@ -452,9 +452,9 @@ void _mean_gaussian(float *const buf,
 // sRGB primary red records at 20° of hue in darktable UCS 22, so we offset the whole hue range
 // such that red is the origin hues in the GUI. This is consistent with HSV/HSL color wheels UI.
 #define ANGLE_SHIFT +20.f
-static inline float _deg_to_rad(const float angle)
+static inline float _conventional_hue_deg_to_ucs_rad(const float angle)
 {
-  return (angle + ANGLE_SHIFT) * M_PI_F / 180.f;
+  return deg2radf(angle + ANGLE_SHIFT);
 }
 
 /* We use precalculated data for the logistic weighting function for performance and stability
@@ -542,7 +542,7 @@ static void _prepare_prefilter(const size_t pixels,
   {
     // Extract the 2×2 covariance matrix sigma = cov(U, V) at current pixel
     // and add the variance threshold : sigma' = sigma + epsilon * Identity
-    dt_aligned_pixel_t Sigma = {covariance[4 * k + 0] + eps,
+    const dt_aligned_pixel_t Sigma = {covariance[4 * k + 0] + eps,
                                 covariance[4 * k + 1],
                                 covariance[4 * k + 2],
                                 covariance[4 * k + 3] + eps};
@@ -554,7 +554,7 @@ static void _prepare_prefilter(const size_t pixels,
     // a(chan) = dot_product(cov(chan, uv), sigma_inv)
     if(fabsf(det) > 4.f * FLT_EPSILON)
     {
-      dt_aligned_pixel_t sigma_inv = { Sigma[3] / det, -Sigma[1] / det,
+      const dt_aligned_pixel_t sigma_inv = { Sigma[3] / det, -Sigma[1] / det,
                                       -Sigma[2] / det,  Sigma[0] / det };
       // find a_1, a_2 s.t. U' = a_1 * U + a_2 * V
       a[4 * k + 0] = (covariance[4 * k + 0] * sigma_inv[0]
@@ -580,8 +580,8 @@ static void _prepare_prefilter(const size_t pixels,
 }
 
 DT_OMP_DECLARE_SIMD(aligned(a, b, saturation, UV: 64))
-static void _apply_prefilter(size_t npixels,
-                             float sat_shift,
+static void _apply_prefilter(const size_t npixels,
+                             const float sat_shift,
                              float *const restrict UV,
                              const float *const restrict saturation,
                              const float *const restrict a,
@@ -604,7 +604,7 @@ static void _apply_prefilter(size_t npixels,
 }
 
 static void _prefilter_chromaticity(float *const restrict UV,
-                                    float *const restrict saturation,
+                                    const float *const restrict saturation,
                                     const int width,
                                     const int height,
                                     const float sigma,
@@ -710,9 +710,9 @@ static void _prefilter_chromaticity(float *const restrict UV,
 
 static void _guide_with_chromaticity(float *const restrict UV,
                               float *const restrict corrections,
-                              float *const restrict saturation,
+                              const float *const restrict saturation,
                               float *const restrict b_corrections,
-                              float *const restrict gradients,
+                              const float *const restrict gradients,
                               const int width,
                               const int height,
                               const float sigma,
@@ -922,7 +922,7 @@ static void _guide_with_chromaticity(float *const restrict UV,
 }
 
 static void _prepare_process(const float roi_scale,
-                             dt_iop_colorequal_data_t *d,
+                             const dt_iop_colorequal_data_t *d,
 
                              // parameters to be setup
                              float *white,
@@ -1002,8 +1002,8 @@ void process(dt_iop_module_t *self,
     dt_iop_copy_image_roi(o, i, piece->colors, roi_in, roi_out);
     return;
   }
-  dt_iop_colorequal_data_t *d = piece->data;
-  dt_iop_colorequal_gui_data_t *g = self->gui_data;
+  const dt_iop_colorequal_data_t *d = piece->data;
+  const dt_iop_colorequal_gui_data_t *g = self->gui_data;
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   const int mask_mode = g && fullpipe ? g->mask_mode : 0;
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
@@ -1068,7 +1068,7 @@ void process(dt_iop_module_t *self,
       float *const restrict pix_out = DT_IS_ALIGNED_PIXEL(out + k * 4);
       float *const restrict corrections_out = corrections + k * 2;
 
-      float *const restrict uv = UV + k * 2;
+      const float *const restrict uv = UV + k * 2;
 
       // Finish the conversion to dt UCS JCH then HSB
       dt_aligned_pixel_t JCH = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -1214,7 +1214,7 @@ void process(dt_iop_module_t *self,
 #if HAVE_OPENCL
 
 int _mean_gaussian_cl(const int devid,
-                      cl_mem image,
+                      const cl_mem image,
                       const int width,
                       const int height,
                       const int ch,
@@ -1227,21 +1227,21 @@ int _mean_gaussian_cl(const int devid,
   dt_gaussian_cl_t *g = dt_gaussian_init_cl(devid, width, height, ch, max, min, sigma, DT_IOP_GAUSSIAN_ZERO);
   if(!g) return DT_OPENCL_PROCESS_CL;
 
-  cl_int err = dt_gaussian_blur_cl_buffer(g, image, image);
+  const cl_int err = dt_gaussian_blur_cl_buffer(g, image, image);
   dt_gaussian_free_cl(g);
   return err;
 }
 
 static cl_mem _init_covariance_cl(const int devid,
-                                  dt_iop_colorequal_global_data_t *gd,
-                                  cl_mem UV,
+                                  const dt_iop_colorequal_global_data_t *gd,
+                                  const cl_mem UV,
                                   const int width,
                                   const int height)
 {
   cl_mem covariance = dt_opencl_alloc_device_buffer(devid, 4 * sizeof(float) * width * height);
   if(covariance == NULL) return NULL;
 
-  cl_int err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_init_covariance, width, height,
+  const cl_int err = dt_opencl_enqueue_kernel_2d_args(devid, gd->ce_init_covariance, width, height,
                     CLARG(covariance), CLARG(UV), CLARG(width), CLARG(height));
   if(err != CL_SUCCESS)
   {
@@ -1252,10 +1252,10 @@ static cl_mem _init_covariance_cl(const int devid,
 }
 
 static int _prefilter_chromaticity_cl(const int devid,
-                                      dt_iop_colorequal_global_data_t *gd,
-                                      cl_mem UV,
-                                      cl_mem saturation,
-                                      cl_mem weight,
+                                      const dt_iop_colorequal_global_data_t *gd,
+                                      const cl_mem UV,
+                                      const cl_mem saturation,
+                                      const cl_mem weight,
                                       const int width,
                                       const int height,
                                       const float sigma,
@@ -1378,13 +1378,13 @@ error:
 }
 
 static int _guide_with_chromaticity_cl(const int devid,
-                                      dt_iop_colorequal_global_data_t *gd,
-                                      cl_mem UV,
-                                      cl_mem corrections,
-                                      cl_mem saturation,
-                                      cl_mem b_corrections,
-                                      cl_mem scharr,
-                                      cl_mem weight,
+                                      const dt_iop_colorequal_global_data_t *gd,
+                                      const cl_mem UV,
+                                      const cl_mem corrections,
+                                      const cl_mem saturation,
+                                      const cl_mem b_corrections,
+                                      const cl_mem scharr,
+                                      const cl_mem weight,
                                       const int width,
                                       const int height,
                                       const float sigma,
@@ -1545,8 +1545,8 @@ int process_cl(dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorequal_data_t *d = (dt_iop_colorequal_data_t *)piece->data;
-  dt_iop_colorequal_global_data_t *const gd = (dt_iop_colorequal_global_data_t *)self->global_data;
+  const dt_iop_colorequal_data_t *d = (dt_iop_colorequal_data_t *)piece->data;
+  const dt_iop_colorequal_global_data_t *const gd = (dt_iop_colorequal_global_data_t *)self->global_data;
 
   // Get working color profile
   const struct dt_iop_order_iccprofile_info_t *const work_profile
@@ -1561,7 +1561,7 @@ int process_cl(dt_iop_module_t *self,
   const int height = roi_out->height;
   const size_t bsize = (size_t) width * height * sizeof(float);
 
-  dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
+  const dt_iop_colorequal_gui_data_t *g = (dt_iop_colorequal_gui_data_t *)self->gui_data;
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   const int mask_mode = g && fullpipe ? g->mask_mode : 0;
   const int guiding = d->use_filter;
@@ -1576,20 +1576,20 @@ int process_cl(dt_iop_module_t *self,
   dt_colormatrix_mul(input_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in);
   dt_colormatrix_mul(output_matrix, work_profile->matrix_out, XYZ_D65_to_D50_CAT16);
 
-  cl_mem input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), input_matrix);
-  cl_mem output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), output_matrix);
-  cl_mem gamut_LUT = dt_opencl_copy_host_to_device_constant(devid, LUT_ELEM * sizeof(float), d->gamut_LUT);
-  cl_mem LUT_saturation = dt_opencl_copy_host_to_device_constant(devid, LUT_ELEM * sizeof(float), d->LUT_saturation);
-  cl_mem LUT_hue = dt_opencl_copy_host_to_device_constant(devid, LUT_ELEM * sizeof(float), d->LUT_hue);
-  cl_mem LUT_brightness = dt_opencl_copy_host_to_device_constant(devid, LUT_ELEM * sizeof(float), d->LUT_brightness);
-  cl_mem weight = dt_opencl_copy_host_to_device_constant(devid, (2 * SATSIZE + 1) * sizeof(float), satweights);
+  const cl_mem input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), input_matrix);
+  const cl_mem output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), output_matrix);
+  const cl_mem gamut_LUT = dt_opencl_copy_host_to_device_constant(devid, LUT_ELEM * sizeof(float), d->gamut_LUT);
+  const cl_mem LUT_saturation = dt_opencl_copy_host_to_device_constant(devid, LUT_ELEM * sizeof(float), d->LUT_saturation);
+  const cl_mem LUT_hue = dt_opencl_copy_host_to_device_constant(devid, LUT_ELEM * sizeof(float), d->LUT_hue);
+  const cl_mem LUT_brightness = dt_opencl_copy_host_to_device_constant(devid, LUT_ELEM * sizeof(float), d->LUT_brightness);
+  const cl_mem weight = dt_opencl_copy_host_to_device_constant(devid, (2 * SATSIZE + 1) * sizeof(float), satweights);
 
-  cl_mem pixout = dt_opencl_alloc_device_buffer(devid, 4 * bsize);
-  cl_mem UV = dt_opencl_alloc_device_buffer(devid, 2 * bsize);
-  cl_mem corrections = dt_opencl_alloc_device_buffer(devid, 2 * bsize);
-  cl_mem b_corrections = dt_opencl_alloc_device_buffer(devid, bsize);
-  cl_mem Lscharr = dt_opencl_alloc_device_buffer(devid, bsize);
-  cl_mem saturation = dt_opencl_alloc_device_buffer(devid, bsize);
+  const cl_mem pixout = dt_opencl_alloc_device_buffer(devid, 4 * bsize);
+  const cl_mem UV = dt_opencl_alloc_device_buffer(devid, 2 * bsize);
+  const cl_mem corrections = dt_opencl_alloc_device_buffer(devid, 2 * bsize);
+  const cl_mem b_corrections = dt_opencl_alloc_device_buffer(devid, bsize);
+  const cl_mem Lscharr = dt_opencl_alloc_device_buffer(devid, bsize);
+  const cl_mem saturation = dt_opencl_alloc_device_buffer(devid, bsize);
 
   if(input_matrix_cl == NULL || output_matrix_cl == NULL || gamut_LUT == NULL || LUT_saturation == NULL
       || LUT_hue == NULL || LUT_brightness == NULL || weight == NULL
@@ -1676,7 +1676,7 @@ error:
 static inline float _get_hue_node(const int k, const float hue_shift)
 {
   // Get the angular coordinate of the k-th hue node, including hue shift
-  return _deg_to_rad(((float)k) * 360.f / ((float)NODES) + hue_shift);
+  return _conventional_hue_deg_to_ucs_rad(((float)k) * 360.f / ((float)NODES) + hue_shift);
 }
 
 static inline float _cosine_coeffs(const float l,
@@ -1723,7 +1723,7 @@ static inline void _periodic_RBF_interpolate(float nodes[NODES],
     // every degree.  We use un-offset angles here, since thue hue
     // offset is merely a GUI thing, only relevant for user-defined
     // nodes.
-    const float hue = (float)i * 360.0f / (float)LUT_ELEM * M_PI_F / 180.f - M_PI_F;
+    const float hue = deg2radf((float)i * 360.0f / (float)LUT_ELEM) - M_PI_F;
     LUT[i] = 0.f;
 
     for(int k = 0; k < NODES; k++)
@@ -1760,7 +1760,7 @@ void cleanup_pipe(dt_iop_module_t *self,
                   dt_dev_pixelpipe_t *pipe,
                   dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_colorequal_data_t *d = piece->data;
+  const dt_iop_colorequal_data_t *d = piece->data;
   dt_free_align(d->LUT_saturation);
   dt_free_align(d->LUT_hue);
   dt_free_align(d->LUT_brightness);
@@ -1769,7 +1769,7 @@ void cleanup_pipe(dt_iop_module_t *self,
   piece->data = NULL;
 }
 
-static inline void _pack_saturation(dt_iop_colorequal_params_t *p,
+static inline void _pack_saturation(const dt_iop_colorequal_params_t *p,
                                     float array[NODES])
 {
   array[0] = p->sat_red;
@@ -1782,7 +1782,7 @@ static inline void _pack_saturation(dt_iop_colorequal_params_t *p,
   array[7] = p->sat_magenta;
 }
 
-static inline void _pack_hue(dt_iop_colorequal_params_t *p,
+static inline void _pack_hue(const dt_iop_colorequal_params_t *p,
                              float array[NODES])
 {
   array[0] = p->hue_red;
@@ -1795,10 +1795,10 @@ static inline void _pack_hue(dt_iop_colorequal_params_t *p,
   array[7] = p->hue_magenta;
 
   for(int i = 0; i < NODES; i++)
-    array[i] = array[i] / 180.f * M_PI_F; // Convert to radians
+    array[i] = deg2radf(array[i]);
 }
 
-static inline void _pack_brightness(dt_iop_colorequal_params_t *p,
+static inline void _pack_brightness(const dt_iop_colorequal_params_t *p,
                                     float array[NODES])
 {
   array[0] = p->bright_red;
@@ -1817,7 +1817,7 @@ void commit_params(dt_iop_module_t *self,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_colorequal_params_t *p = (dt_iop_colorequal_params_t *)p1;
+  const dt_iop_colorequal_params_t *p = (dt_iop_colorequal_params_t *)p1;
   dt_iop_colorequal_data_t *d = piece->data;
 
   d->white_level = exp2f(p->white_level);
@@ -1977,10 +1977,10 @@ static inline void _draw_sliders_brightness_gradient
   }
 }
 
-static inline void _init_sliders(dt_iop_module_t *self)
+static inline void _init_sliders(const dt_iop_module_t *self)
 {
-  dt_iop_colorequal_gui_data_t *g = self->gui_data;
-  dt_iop_colorequal_params_t *p = self->params;
+  const dt_iop_colorequal_gui_data_t *g = self->gui_data;
+  const dt_iop_colorequal_params_t *p = self->params;
 
   // Saturation sliders
   for(int k = 0; k < NODES; k++)
@@ -2053,7 +2053,7 @@ static void _init_graph_backgrounds(dt_iop_colorequal_gui_data_t *g,
       const size_t idx = i * stride + j * 4;
       const float x = 360.0f * (float)(gwidth - j - 1) / (graph_width - 1.0f) - 90.0f;
       const float y = 1.0f - (float)i / (graph_height - 1.0f);
-      const float hue = (x < -180.0f) ? _deg_to_rad(x +180.0f) : _deg_to_rad(x);
+      const float hue = (x < -180.0f) ? _conventional_hue_deg_to_ucs_rad(x +180.0f) : _conventional_hue_deg_to_ucs_rad(x);
       const float hhue = hue - (y - 0.5f) * 2.f * M_PI_F;
 
       dt_aligned_pixel_t RGB;
@@ -2288,16 +2288,13 @@ static inline float _get_hueval(const float hue)
   return b < 0.0f ? b + 1.0f : b;
 }
 
-static void _draw_color_picker(dt_iop_module_t *self,
+static void _draw_color_picker(const dt_iop_module_t *self,
                                cairo_t *cr,
                                dt_iop_colorequal_params_t *p,
                                dt_iop_colorequal_gui_data_t *g,
                                const double width,
                                const double height)
 {
-  if(!(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE))
-    return;
-
   // only visualize for decent brightness & saturation
   if(self->picked_color[0] < MINJZ || self->picked_color[1] < MINJZ)
     return;
@@ -2345,7 +2342,7 @@ static void _draw_color_picker(dt_iop_module_t *self,
 
 static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
                                          cairo_t *crf,
-                                         dt_iop_module_t *self)
+                                         const dt_iop_module_t *self)
 {
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
   dt_iop_colorequal_params_t *p = self->params;
@@ -2397,7 +2394,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
   {
     for(int k = 0; k < 360; k++)
     {
-      const float hue = _deg_to_rad((float)k);
+      const float hue = _conventional_hue_deg_to_ucs_rad((float)k);
       dt_aligned_pixel_t RGB = { 1.f };
       _build_dt_UCS_HSB_gradients((dt_aligned_pixel_t){ hue, g->max_saturation,
                                                         SLIDER_BRIGHTNESS, 1.0f },
@@ -2438,7 +2435,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
   dt_draw_line(cr, 0.0, 0.5 * graph_height, graph_width, 0.5 * graph_height);
   cairo_stroke(cr);
 
-  GdkRGBA fg_color = darktable.bauhaus->graph_fg;
+  const GdkRGBA fg_color = darktable.bauhaus->graph_fg;
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0));
   set_color(cr, fg_color);
 
@@ -2489,7 +2486,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
   for(int k = first; k < (360 + first); k++)
   {
     const float x = ((float)k / (float)(360 - 1) + dx) * graph_width;
-    float hue = _deg_to_rad(k);
+    float hue = _conventional_hue_deg_to_ucs_rad(k);
     hue = (hue < M_PI_F) ? hue : -2.f * M_PI_F + hue; // The LUT is defined in [-pi; pi[
     const float y = (offset - lookup_gamut(g->LUT, hue) * factor) * graph_height;
 
@@ -2534,7 +2531,7 @@ static gboolean _iop_colorequalizer_draw(GtkWidget *widget,
 
   dt_free_align(g->LUT);
 
-  if(self->enabled && dt_iop_has_focus(self) && self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
+  if(self->enabled && self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
     _draw_color_picker(self, cr, p, g, (double)graph_width, (double)graph_height);
 
   cairo_restore(cr);
@@ -2579,7 +2576,7 @@ void color_picker_apply(dt_iop_module_t *self,
                         GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_colorequal_gui_data_t *g = self->gui_data;
+  const dt_iop_colorequal_gui_data_t *g = self->gui_data;
   dt_iop_colorequal_params_t *p = self->params;
 
   if(picker == g->white_level)
@@ -2619,7 +2616,7 @@ static void _masking_callback_t(GtkWidget *quad, dt_iop_module_t *self)
 
 static void _channel_tabs_switch_callback(GtkNotebook *notebook,
                                           GtkWidget *page,
-                                          guint page_num,
+                                          const guint page_num,
                                           dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -2649,7 +2646,7 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook,
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-static GtkWidget *_get_slider(dt_iop_colorequal_gui_data_t *g, int selected)
+static GtkWidget *_get_slider(const dt_iop_colorequal_gui_data_t *g, const int selected)
 {
   GtkWidget *w = NULL;
 
@@ -2671,7 +2668,7 @@ static GtkWidget *_get_slider(dt_iop_colorequal_gui_data_t *g, int selected)
   return w;
 }
 
-static void _area_set_value(dt_iop_colorequal_gui_data_t *g,
+static void _area_set_value(const dt_iop_colorequal_gui_data_t *g,
                             const float graph_height,
                             const float pos)
 {
@@ -2704,7 +2701,7 @@ static void _area_set_value(dt_iop_colorequal_gui_data_t *g,
   }
 }
 
-static void _area_set_pos(dt_iop_colorequal_gui_data_t *g,
+static void _area_set_pos(const dt_iop_colorequal_gui_data_t *g,
                           const float pos)
 {
   const float graph_height = MAX(1.0f, g->graph_height);
@@ -2735,9 +2732,9 @@ static void _area_reset_nodes(dt_iop_colorequal_gui_data_t *g)
 
 static gboolean _area_scrolled_callback(GtkWidget *widget,
                                         GdkEventScroll *event,
-                                        dt_iop_module_t *self)
+                                        const dt_iop_module_t *self)
 {
-  dt_iop_colorequal_gui_data_t *g = self->gui_data;
+  const dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
   GtkWidget *w = dt_modifier_is(event->state, GDK_MOD1_MASK)
                ? GTK_WIDGET(g->notebook)
@@ -2746,8 +2743,8 @@ static gboolean _area_scrolled_callback(GtkWidget *widget,
 }
 
 static gboolean _area_motion_notify_callback(GtkWidget *widget,
-                                             GdkEventMotion *event,
-                                             dt_iop_module_t *self)
+                                             const GdkEventMotion *event,
+                                             const dt_iop_module_t *self)
 {
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
@@ -2803,8 +2800,8 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
 }
 
 static gboolean _area_button_release_callback(GtkWidget *widget,
-                                              GdkEventButton *event,
-                                              dt_iop_module_t *self)
+                                              const GdkEventButton *event,
+                                              const dt_iop_module_t *self)
 {
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
@@ -2819,7 +2816,7 @@ static gboolean _area_button_release_callback(GtkWidget *widget,
 
 static gboolean _area_size_callback(GtkWidget *widget,
                                     GdkEventButton *event,
-                                    dt_iop_module_t *self)
+                                    const dt_iop_module_t *self)
 {
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
   g->gradients_cached = FALSE;
@@ -2829,7 +2826,7 @@ static gboolean _area_size_callback(GtkWidget *widget,
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
-  dt_iop_colorequal_params_t *p = self->params;
+  const dt_iop_colorequal_params_t *p = self->params;
 
   // Get the current display profile
   struct dt_iop_order_iccprofile_info_t *work_profile =
@@ -2905,12 +2902,12 @@ void gui_cleanup(dt_iop_module_t *self)
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_colorequal_params_t *p = self->params;
+  const dt_iop_colorequal_params_t *p = self->params;
   dt_iop_colorequal_gui_data_t *g = self->gui_data;
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_filter), p->use_filter);
   gui_changed(self, NULL, NULL);
 
-  gboolean show_sliders = dt_conf_get_bool("plugins/darkroom/colorequal/show_sliders");
+  const gboolean show_sliders = dt_conf_get_bool("plugins/darkroom/colorequal/show_sliders");
 
   // reset masking
   g->mask_mode = 0;
@@ -2939,13 +2936,13 @@ void gui_update(dt_iop_module_t *self)
   gtk_stack_set_visible_child_name(g->stack, numstr);
 }
 
-static float _action_process_colorequal(gpointer target,
-                                        dt_action_element_t element,
-                                        dt_action_effect_t effect,
-                                        float move_size)
+static float _action_process_colorequal(const gpointer target,
+                                        const dt_action_element_t element,
+                                        const dt_action_effect_t effect,
+                                        const float move_size)
 {
-  dt_iop_module_t *self = g_object_get_data(G_OBJECT(target), "iop-instance");
-  dt_iop_colorequal_gui_data_t *g = self->gui_data;
+  const dt_iop_module_t *self = g_object_get_data(G_OBJECT(target), "iop-instance");
+  const dt_iop_colorequal_gui_data_t *g = self->gui_data;
 
   GtkWidget *w = _get_slider(g, element);
   const int index = dt_action_widget(w)->type - DT_ACTION_TYPE_WIDGET - 1;

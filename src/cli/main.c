@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2023 darktable developers.
+    Copyright (C) 2012-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -778,7 +778,8 @@ int main(int argc, char *arg[])
     dt_export_metadata_t metadata;
     metadata.flags = dt_lib_export_metadata_default_flags();
     metadata.list = NULL;
-    if(storage->store(storage, sdata, id, format, fdata, num, total, high_quality, upscale, export_masks,
+    if(storage->store(storage, sdata, id, format, fdata, num, total, high_quality,
+                      upscale, FALSE, 1.0, export_masks,
                       icc_type, icc_filename, icc_intent, &metadata) != 0)
       res = 1;
   }

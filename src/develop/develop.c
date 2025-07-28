@@ -427,9 +427,11 @@ restart:
     dt_dev_zoom_t zoom;
     int closeup;
     dt_dev_get_viewport_params(port, &zoom, &closeup, &zoom_x, &zoom_y);
-    scale = dt_dev_get_zoom_scale(port, zoom, 1.0f, 0) * port->ppd;
-    window_width = port->width * port->ppd / (1<<closeup);
-    window_height = port->height * port->ppd / (1<<closeup);
+    scale = dt_dev_get_zoom_scale(port, zoom, 1.0f, FALSE) * port->ppd;
+    // Make sure we always have enough data for the port's width & height
+    const int cscale = 1 << closeup;
+    window_width = port->width * port->ppd / cscale + 2*cscale;
+    window_height = port->height * port->ppd / cscale + 2*cscale;
   }
 
   const int wd = MIN(window_width, scale * pipe->processed_width);
@@ -567,7 +569,7 @@ void dt_dev_reload_image(dt_develop_t *dev,
 float dt_dev_get_zoom_scale(dt_dev_viewport_t *port,
                             dt_dev_zoom_t zoom,
                             const int closeup_factor,
-                            const int preview)
+                            const gboolean preview)
 {
   float zoom_scale;
 
@@ -607,7 +609,7 @@ float dt_dev_get_zoom_scale_full(void)
   dt_dev_zoom_t zoom;
   int closeup;
   dt_dev_get_viewport_params(&darktable.develop->full, &zoom, &closeup, NULL, NULL);
-  const float zoom_scale = dt_dev_get_zoom_scale(&darktable.develop->full, zoom, 1 << closeup, 1);
+  const float zoom_scale = dt_dev_get_zoom_scale(&darktable.develop->full, zoom, 1 << closeup, TRUE);
 
   return zoom_scale;
 }
@@ -617,8 +619,8 @@ float dt_dev_get_zoomed_in(void)
   dt_dev_zoom_t zoom;
   int closeup;
   dt_dev_get_viewport_params(&darktable.develop->full, &zoom, &closeup, NULL, NULL);
-  const float min_scale = dt_dev_get_zoom_scale(&darktable.develop->full, DT_ZOOM_FIT, 1<<closeup, 0);
-  const float cur_scale = dt_dev_get_zoom_scale(&darktable.develop->full, zoom, 1<<closeup, 0);
+  const float min_scale = dt_dev_get_zoom_scale(&darktable.develop->full, DT_ZOOM_FIT, 1<<closeup, FALSE);
+  const float cur_scale = dt_dev_get_zoom_scale(&darktable.develop->full, zoom, 1<<closeup, FALSE);
 
   return cur_scale / min_scale;
 }
@@ -2458,7 +2460,7 @@ gboolean dt_dev_get_zoom_bounds(dt_dev_viewport_t *port,
   int closeup, procw = 0, proch = 0;
   dt_dev_get_viewport_params(port, &zoom, &closeup, zoom_x, zoom_y);
   dt_dev_get_processed_size(port, &procw, &proch);
-  const float scale = dt_dev_get_zoom_scale(port, port->zoom, 1<<port->closeup, 0);
+  const float scale = dt_dev_get_zoom_scale(port, port->zoom, 1<<port->closeup, FALSE);
 
   *boxw = procw ? port->width / (procw * scale) : 1.0f;
   *boxh = proch ? port->height / (proch * scale) : 1.0f;
@@ -2746,7 +2748,7 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
   float zoom_x = pts[0] / procw - 0.5f;
   float zoom_y = pts[1] / proch - 0.5f;
 
-  float cur_scale = dt_dev_get_zoom_scale(port, port->zoom, 1<<port->closeup, 0);
+  float cur_scale = dt_dev_get_zoom_scale(port, port->zoom, 1<<port->closeup, FALSE);
 
   if(zoom == DT_ZOOM_POSITION)
   {
@@ -2772,7 +2774,7 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
       const float tscale = cur_scale * ppd;
       closeup = 0;
 
-      const float scalefit = dt_dev_get_zoom_scale(port, DT_ZOOM_FIT, 1, 0) * ppd;
+      const float scalefit = dt_dev_get_zoom_scale(port, DT_ZOOM_FIT, 1, FALSE) * ppd;
 
       // Get config so we can check if the user want to cycle through 100%->200%->FIT or
       // only switch between FIT<->100% unless ctrl key is pressed.
@@ -2800,12 +2802,12 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
           closeup = low_ppd && !constrain ? 1 : 0;
       }
 
-      scale = low_ppd ? dt_dev_get_zoom_scale(port, zoom, 1, 0) : (1.0f / ppd);
+      scale = low_ppd ? dt_dev_get_zoom_scale(port, zoom, 1, FALSE) : (1.0f / ppd);
     }
     else if(zoom == DT_ZOOM_SCROLL)
     {
       zoom = DT_ZOOM_FREE;
-      const float fitscale = dt_dev_get_zoom_scale(port, DT_ZOOM_FIT, 1.0, 0);
+      const float fitscale = dt_dev_get_zoom_scale(port, DT_ZOOM_FIT, 1.0, FALSE);
       const float tscaleold = cur_scale * ppd;
       const float tscale = _calculate_new_scroll_zoom_tscale (closeup, constrain, tscaleold, fitscale * ppd);
       scale = tscale / ppd;
@@ -2854,7 +2856,7 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
     zoom_x = zoom_y = 0.0f;
   else
   {
-    float new_scale = dt_dev_get_zoom_scale(port, port->zoom, 1<<port->closeup, 0);
+    float new_scale = dt_dev_get_zoom_scale(port, port->zoom, 1<<port->closeup, FALSE);
 
     float boxw = port->width / (procw * new_scale);
     float boxh = port->height / (proch * new_scale);
@@ -2909,7 +2911,7 @@ void dt_dev_get_pointer_zoom_pos(dt_dev_viewport_t *port,
   float zoom2_x = 0.0f, zoom2_y = 0.0f;
   dt_dev_get_viewport_params(port, &zoom, &closeup, &zoom2_x, &zoom2_y);
   dt_dev_get_processed_size(port, &procw, &proch);
-  const float scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 0);
+  const float scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, FALSE);
   const double tb = port->border_size;
   // offset from center now (current zoom_{x,y} points there)
   const float mouse_off_x = px - tb - .5 * port->width;
@@ -2918,7 +2920,7 @@ void dt_dev_get_pointer_zoom_pos(dt_dev_viewport_t *port,
   zoom2_y += mouse_off_y / (proch * scale);
   *zoom_x = zoom2_x + 0.5f;
   *zoom_y = zoom2_y + 0.5f;
-  *zoom_scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 1);
+  *zoom_scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, TRUE);
 }
 
 void dt_dev_get_pointer_zoom_pos_from_bounds(dt_dev_viewport_t *port,
@@ -2935,7 +2937,7 @@ void dt_dev_get_pointer_zoom_pos_from_bounds(dt_dev_viewport_t *port,
   float zoom2_x = zbound_x, zoom2_y = zbound_y;
   dt_dev_get_viewport_params(port, &zoom, &closeup, NULL, NULL);
   dt_dev_get_processed_size(port, &procw, &proch);
-  const float scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 0);
+  const float scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, FALSE);
   const double tb = port->border_size;
   // offset from center now (current zoom_{x,y} points there)
   const float mouse_off_x = px - tb - .5 * port->width;
@@ -2944,7 +2946,7 @@ void dt_dev_get_pointer_zoom_pos_from_bounds(dt_dev_viewport_t *port,
   zoom2_y += mouse_off_y / (proch * scale);
   *zoom_x = zoom2_x + 0.5f;
   *zoom_y = zoom2_y + 0.5f;
-  *zoom_scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, 1);
+  *zoom_scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, TRUE);
 }
 
 void dt_dev_get_viewport_params(dt_dev_viewport_t *port,

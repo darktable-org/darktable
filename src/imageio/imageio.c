@@ -31,41 +31,50 @@
 #include "develop/imageop.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
+
 #ifdef HAVE_OPENEXR
 #include "imageio/imageio_exr.h"
 #endif
+
 #ifdef HAVE_OPENJPEG
 #include "imageio/imageio_j2k.h"
 #endif
+
 #ifdef HAVE_LIBJXL
 #include "imageio/imageio_jpegxl.h"
 #endif
-#include "imageio/imageio_gm.h"
-#include "imageio/imageio_im.h"
+
 #include "imageio/imageio_jpeg.h"
 #include "imageio/imageio_pfm.h"
 #include "imageio/imageio_png.h"
 #include "imageio/imageio_pnm.h"
 #include "imageio/imageio_qoi.h"
 #include "imageio/imageio_rawspeed.h"
-#include "imageio/imageio_libraw.h"
 #include "imageio/imageio_rgbe.h"
 #include "imageio/imageio_tiff.h"
+
 #ifdef HAVE_LIBAVIF
 #include "imageio/imageio_avif.h"
 #endif
+
 #ifdef HAVE_LIBHEIF
 #include "imageio/imageio_heif.h"
 #endif
+
 #ifdef HAVE_WEBP
 #include "imageio/imageio_webp.h"
 #endif
+
+#ifdef HAVE_LIBRAW
 #include "imageio/imageio_libraw.h"
+#endif
 
 #ifdef HAVE_GRAPHICSMAGICK
+#include "imageio/imageio_gm.h"
 #include <magick/api.h>
 #include <magick/blob.h>
 #elif defined HAVE_IMAGEMAGICK
+#include "imageio/imageio_im.h"
   #ifdef HAVE_IMAGEMAGICK7
   #include <MagickWand/MagickWand.h>
   #else
@@ -977,6 +986,8 @@ gboolean dt_imageio_export(const dt_imgid_t imgid,
                            dt_imageio_module_data_t *format_params,
                            const gboolean high_quality,
                            const gboolean upscale,
+                           const gboolean is_scaling,
+                           const double scale_factor,
                            const gboolean copy_metadata,
                            const gboolean export_masks,
                            const dt_colorspaces_color_profile_type_t icc_type,
@@ -995,12 +1006,9 @@ gboolean dt_imageio_export(const dt_imgid_t imgid,
                                export_masks)) != 0;
   else
   {
-    const gboolean is_scaling =
-      dt_conf_is_equal("plugins/lighttable/export/resizing", "scaling");
-
     return dt_imageio_export_with_flags(imgid, filename, format, format_params,
                                         FALSE, FALSE, high_quality, upscale,
-                                        is_scaling, FALSE, NULL, copy_metadata,
+                                        is_scaling, scale_factor, FALSE, NULL, copy_metadata,
                                         export_masks, icc_type, icc_filename,
                                         icc_intent, storage, storage_params,
                                         num, total, metadata, -1);
@@ -1035,6 +1043,7 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
                                       const gboolean high_quality,
                                       const gboolean upscale,
                                       const gboolean is_scaling,
+                                      const double scale_factor,
                                       const gboolean thumbnail_export,
                                       const char *filter,
                                       const gboolean copy_metadata,
@@ -1268,10 +1277,6 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid,
 
     if(is_scaling)
     {
-      // scaling
-      double _num, _denum;
-      dt_imageio_resizing_factor_get_and_parsing(&_num, &_denum);
-      const double scale_factor = _num / _denum;
       if(!thumbnail_export)
       {
         scale = fmin(scale_factor, max_scale);
@@ -1652,6 +1657,8 @@ gboolean dt_imageio_lookup_makermodel(const char *maker,
                                                  mk, mk_len,
                                                  md, md_len,
                                                  al, al_len);
+
+#ifdef HAVE_LIBRAW
   if(found == FALSE)
   {
     // Special handling for CR3 raw files via libraw
@@ -1660,6 +1667,8 @@ gboolean dt_imageio_lookup_makermodel(const char *maker,
                                         md, md_len,
                                         al, al_len);
   }
+#endif
+
   return found;
 }
 
@@ -1735,10 +1744,11 @@ cairo_surface_t *dt_imageio_preview(const dt_imgid_t imgid,
   const gboolean upscale = TRUE;
   const gboolean export_masks = FALSE;
   const gboolean is_scaling = FALSE;
+  const double scale_factor = 1.0;
 
   dt_imageio_export_with_flags
     (imgid, "preview", &buf, (dt_imageio_module_data_t *)&dat, TRUE, TRUE,
-     high_quality, upscale, is_scaling, FALSE, NULL, FALSE, export_masks,
+     high_quality, upscale, is_scaling, scale_factor, FALSE, NULL, FALSE, export_masks,
      DT_COLORSPACE_DISPLAY, NULL, DT_INTENT_LAST, NULL, NULL, 1, 1, NULL,
      history_end);
 
