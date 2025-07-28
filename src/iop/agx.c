@@ -100,13 +100,13 @@ typedef struct dt_iop_agx_params_t
   // log mapping
   float range_black_relative_exposure;  // $MIN: -20.f $MAX: -0.1f  $DEFAULT: -10.f $DESCRIPTION: "black relative exposure"
   float range_white_relative_exposure;  // $MIN: 0.1f $MAX: 20.f $DEFAULT: 6.5f $DESCRIPTION: "white relative exposure"
-  float security_factor;                // $MIN: -0.5f $MAX: 2.f $DEFAULT: 0.1f $DESCRIPTION: "dynamic range scaling"
+  float dynamic_range_scaling;          // $MIN: -0.5f $MAX: 2.f $DEFAULT: 0.1f $DESCRIPTION: "dynamic range scaling"
 
   // curve params - comments indicate the original variables from https://www.desmos.com/calculator/yrysofmx8h
   // Corresponds to p_x, but not directly -- allows shifting the default 0.18 towards black or white relative exposure
   float curve_pivot_x_shift_ratio;        // $MIN: -1.f $MAX: 1.f $DEFAULT: 0.f $DESCRIPTION: "pivot input shift"
   // Corresponds to p_y, but not directly -- needs application of gamma
-  float curve_pivot_y_ratio;              // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.18f $DESCRIPTION: "pivot target output"
+  float curve_pivot_y_linear_output;      // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.18f $DESCRIPTION: "pivot target output"
   // P_slope
   float curve_contrast_around_pivot;      // $MIN: 0.1f $MAX: 10.f $DEFAULT: 2.4f $DESCRIPTION: "contrast around the pivot"
   // related to P_tlength; the number expresses the portion of the y range below the pivot
@@ -303,7 +303,7 @@ int legacy_params(dt_iop_module_t *self,
     float security_factor;
 
     float curve_pivot_x_shift_ratio;
-    float curve_pivot_y_ratio;
+    float curve_pivot_y_linear_output;
     float curve_contrast_around_pivot;
     float curve_linear_ratio_below_pivot;
     float curve_linear_ratio_above_pivot;
@@ -423,7 +423,7 @@ int legacy_params(dt_iop_module_t *self,
     np->look_saturation *= 100.f;
     np->look_original_hue_mix_ratio *= 100.f;
     np->curve_pivot_x_shift_ratio *= 100.f;
-    np->curve_pivot_y_ratio *= 100.f;
+    np->curve_pivot_y_linear_output *= 100.f;
 
     *new_params = np;
     *new_params_size = sizeof(dt_iop_agx_params_v2_3_4_t);
@@ -449,7 +449,7 @@ int legacy_params(dt_iop_module_t *self,
     np->look_original_hue_mix_ratio /= 100.f;
     np->security_factor /= 100.f;
     np->curve_pivot_x_shift_ratio /= 100.f;
-    np->curve_pivot_y_ratio /= 100.f;
+    np->curve_pivot_y_linear_output /= 100.f;
     np->curve_linear_ratio_below_pivot /= 100.f;
     np->curve_linear_ratio_above_pivot /= 100.f;
     np->curve_target_display_black_ratio /= 100.f;
@@ -792,20 +792,20 @@ static inline void _compress_into_gamut(dt_aligned_pixel_t pixel_in_out)
 
   const float input_y = pixel_in_out[0] * luminance_coeffs[0] + pixel_in_out[1] * luminance_coeffs[1]
                         + pixel_in_out[2] * luminance_coeffs[2];
+  const float max_rgb = _max(pixel_in_out);
 
   // Calculate luminance of the opponent color, and use it to compensate for negative luminance values
-  const float max_rgb = _max(pixel_in_out);
-  dt_aligned_pixel_t inverse_rgb = { 0.f };
-  for_each_channel(c, aligned(inverse_rgb, pixel_in_out))
+  dt_aligned_pixel_t opponent_rgb = { 0.f };
+  for_each_channel(c, aligned(opponent_rgb, pixel_in_out))
   {
-    inverse_rgb[c] = max_rgb - pixel_in_out[c];
+    opponent_rgb[c] = max_rgb - pixel_in_out[c];
   }
-  const float max_inverse = _max(inverse_rgb);
 
-  const float inverse_y = inverse_rgb[0] * luminance_coeffs[0] + inverse_rgb[1] * luminance_coeffs[1]
-                          + inverse_rgb[2] * luminance_coeffs[2];
+  const float opponent_y = opponent_rgb[0] * luminance_coeffs[0] + opponent_rgb[1] * luminance_coeffs[1]
+                          + opponent_rgb[2] * luminance_coeffs[2];
+  const float max_opponent = _max(opponent_rgb);
 
-  const float y_compensate_negative = max_inverse - inverse_y + input_y;
+  const float y_compensate_negative = max_opponent - opponent_y + input_y;
 
   // Offset the input tristimulus such that there are no negatives
   const float min_rgb = _min(pixel_in_out);
@@ -819,16 +819,16 @@ static inline void _compress_into_gamut(dt_aligned_pixel_t pixel_in_out)
   const float max_of_rgb_offset = _max(rgb_offset);
 
   // Calculate luminance of the opponent color, and use it to compensate for negative luminance values
-  dt_aligned_pixel_t inverse_rgb_offset = { 0.f };
-  for_each_channel(c, aligned(inverse_rgb_offset, rgb_offset))
+  dt_aligned_pixel_t opponent_rgb_offset = { 0.f };
+  for_each_channel(c, aligned(opponent_rgb_offset, rgb_offset))
   {
-    inverse_rgb_offset[c] = max_of_rgb_offset - rgb_offset[c];
+    opponent_rgb_offset[c] = max_of_rgb_offset - rgb_offset[c];
   }
 
-  const float max_inverse_rgb_offset = _max(inverse_rgb_offset);
-  const float y_inverse_rgb_offset = inverse_rgb_offset[0] * luminance_coeffs[0]
-                                     + inverse_rgb_offset[1] * luminance_coeffs[1]
-                                     + inverse_rgb_offset[2] * luminance_coeffs[2];
+  const float max_inverse_rgb_offset = _max(opponent_rgb_offset);
+  const float y_inverse_rgb_offset = opponent_rgb_offset[0] * luminance_coeffs[0]
+                                     + opponent_rgb_offset[1] * luminance_coeffs[1]
+                                     + opponent_rgb_offset[2] * luminance_coeffs[2];
   float y_new = rgb_offset[0] * luminance_coeffs[0] + rgb_offset[1] * luminance_coeffs[1]
                 + rgb_offset[2] * luminance_coeffs[2];
   y_new = max_inverse_rgb_offset - y_inverse_rgb_offset + y_new;
@@ -866,8 +866,8 @@ static void _adjust_pivot(const dt_iop_agx_params_t *p, tone_mapping_params_t *t
 
   if(p->auto_gamma)
   {
-    tone_mapping_params->curve_gamma = tone_mapping_params->pivot_x > 0.f && p->curve_pivot_y_ratio > 0.f
-                            ? log2f(p->curve_pivot_y_ratio) / log2f(tone_mapping_params->pivot_x)
+    tone_mapping_params->curve_gamma = tone_mapping_params->pivot_x > 0.f && p->curve_pivot_y_linear_output > 0.f
+                            ? log2f(p->curve_pivot_y_linear_output) / log2f(tone_mapping_params->pivot_x)
                             : p->curve_gamma;
   }
   else
@@ -876,7 +876,7 @@ static void _adjust_pivot(const dt_iop_agx_params_t *p, tone_mapping_params_t *t
   }
 
   tone_mapping_params->pivot_y =
-        powf(CLAMPF(p->curve_pivot_y_ratio,
+        powf(CLAMPF(p->curve_pivot_y_linear_output,
                          p->curve_target_display_black_ratio,
                     p->curve_target_display_white_ratio),
              1.f / tone_mapping_params->curve_gamma);
@@ -945,8 +945,8 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_par
   dx_linear_below_pivot = tone_mapping_params.pivot_x - tone_mapping_params.toe_transition_x;
 
   // from the 'run' pivot_x->toe_transition_x, we calculate the 'rise'
-  const float toe_y_below_pivot_y = tone_mapping_params.slope * dx_linear_below_pivot;
-  tone_mapping_params.toe_transition_y = tone_mapping_params.pivot_y - toe_y_below_pivot_y;
+  const float toe_dy_below_pivot = tone_mapping_params.slope * dx_linear_below_pivot;
+  tone_mapping_params.toe_transition_y = tone_mapping_params.pivot_y - toe_dy_below_pivot;
 
   // we use the same calculation as for the shoulder, so we flip the toe left <-> right, up <-> down
   const float inverse_toe_limit_x = 1.f; // 1 - toe_limix_x (toe_limix_x = 0, so inverse = 1)
@@ -962,17 +962,17 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_par
 
   // limit_x is 0, so toe length =  -> toe_transition_x - limit_x is just toe_transition_x
   // the value is already limited to be >= epsilon, so safe to use in division
-  const float toe_length = tone_mapping_params.toe_transition_x;
+  const float toe_length_x = tone_mapping_params.toe_transition_x;
   const float toe_dy_transition_to_limit =
       fmaxf(_epsilon, tone_mapping_params.toe_transition_y - tone_mapping_params.target_black);
-  const float toe_slope_transition_to_limit = toe_dy_transition_to_limit / toe_length;
+  const float toe_slope_transition_to_limit = toe_dy_transition_to_limit / toe_length_x;
   tone_mapping_params.need_convex_toe = toe_slope_transition_to_limit > tone_mapping_params.slope;
 
   // toe fallback curve params
   tone_mapping_params.toe_fallback_power = _calculate_slope_matching_power
-      (tone_mapping_params.slope, toe_length, toe_dy_transition_to_limit);
+      (tone_mapping_params.slope, toe_length_x, toe_dy_transition_to_limit);
   tone_mapping_params.toe_fallback_coefficient = _calculate_fallback_curve_coefficient
-      (toe_length, toe_dy_transition_to_limit, tone_mapping_params.toe_fallback_power);
+      (toe_length_x, toe_dy_transition_to_limit, tone_mapping_params.toe_fallback_power);
 
   // if x went from toe_transition_x to 0, at the given slope, starting from toe_transition_y, where would we
   // intersect the y-axis?
@@ -991,8 +991,8 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_par
       fminf(1.f - _epsilon, tone_mapping_params.pivot_x + dx_linear_above_pivot);
   dx_linear_above_pivot = tone_mapping_params.shoulder_transition_x - tone_mapping_params.pivot_x;
 
-  const float shoulder_y_above_pivot_y = tone_mapping_params.slope * dx_linear_above_pivot;
-  tone_mapping_params.shoulder_transition_y = tone_mapping_params.pivot_y + shoulder_y_above_pivot_y;
+  const float shoulder_dy_above_pivot = tone_mapping_params.slope * dx_linear_above_pivot;
+  tone_mapping_params.shoulder_transition_y = tone_mapping_params.pivot_y + shoulder_dy_above_pivot;
   tone_mapping_params.shoulder_power = p->curve_shoulder_power;
 
   const float shoulder_limit_x = 1.f;
@@ -1004,18 +1004,18 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_par
                                               tone_mapping_params.shoulder_power);
 
   // shoulder_transition_x < 1, guaranteed above
-  const float shoulder_length = 1.f - tone_mapping_params.shoulder_transition_x;
+  const float shoulder_length_x = 1.f - tone_mapping_params.shoulder_transition_x;
   const float shoulder_dy_transition_to_limit =
       fmaxf(_epsilon, tone_mapping_params.target_white - tone_mapping_params.shoulder_transition_y);
   const float shoulder_slope_transition_to_limit =
-      shoulder_dy_transition_to_limit / shoulder_length;
+      shoulder_dy_transition_to_limit / shoulder_length_x;
   tone_mapping_params.need_concave_shoulder = shoulder_slope_transition_to_limit > tone_mapping_params.slope;
 
   // shoulder fallback curve params
   tone_mapping_params.shoulder_fallback_power = _calculate_slope_matching_power
-      (tone_mapping_params.slope, shoulder_length, shoulder_dy_transition_to_limit);
+      (tone_mapping_params.slope, shoulder_length_x, shoulder_dy_transition_to_limit);
   tone_mapping_params.shoulder_fallback_coefficient = _calculate_fallback_curve_coefficient
-      (shoulder_length, shoulder_dy_transition_to_limit, tone_mapping_params.shoulder_fallback_power);
+      (shoulder_length_x, shoulder_dy_transition_to_limit, tone_mapping_params.shoulder_fallback_power);
 
   return tone_mapping_params;
 }
@@ -1084,7 +1084,6 @@ static void _agx_tone_mapping(dt_aligned_pixel_t rgb_in_out, const tone_mapping_
   dt_HSV_2_RGB(hsv_pixel, rgb_in_out);
 }
 
-// Apply logic for black point picker
 static void _apply_auto_black_exposure(const dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -1093,7 +1092,7 @@ static void _apply_auto_black_exposure(const dt_iop_module_t *self)
 
   const float black_norm = _min(self->picked_color_min);
   p->range_black_relative_exposure = CLAMPF(log2f(fmaxf(_epsilon, black_norm) / 0.18f), -20.f, -0.1f)
-                                               * (1.f + p->security_factor);
+                                               * (1.f + p->dynamic_range_scaling);
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->black_exposure_picker, p->range_black_relative_exposure);
@@ -1102,7 +1101,6 @@ static void _apply_auto_black_exposure(const dt_iop_module_t *self)
   gtk_widget_queue_draw(GTK_WIDGET(g->graph_drawing_area));
 }
 
-// Apply logic for white point picker
 static void _apply_auto_white_exposure(const dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -1111,14 +1109,13 @@ static void _apply_auto_white_exposure(const dt_iop_module_t *self)
 
   const float white_norm = _max(self->picked_color_max);
   p->range_white_relative_exposure = CLAMPF(log2f(fmaxf(_epsilon, white_norm) / 0.18f), 0.1f, 20.f)
-                                               * (1.f + p->security_factor);
+                                               * (1.f + p->dynamic_range_scaling);
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->white_exposure_picker, p->range_white_relative_exposure);
   --darktable.gui->reset;
 }
 
-// Apply logic for auto-tuning both black and white points
 static void _apply_auto_tune_exposure(const dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -1128,12 +1125,12 @@ static void _apply_auto_tune_exposure(const dt_iop_module_t *self)
   // Black point
   const float black_norm = _min(self->picked_color_min);
   p->range_black_relative_exposure = CLAMPF(log2f(fmaxf(_epsilon, black_norm) / 0.18f), -20.f, -0.1f)
-                                               * (1.f + p->security_factor);
+                                               * (1.f + p->dynamic_range_scaling);
 
   // White point
   const float white_norm = _max(self->picked_color_max);
   p->range_white_relative_exposure = CLAMPF(log2f(fmaxf(_epsilon, white_norm) / 0.18f), 0.1f, 20.f)
-                                               * (1.f + p->security_factor);
+                                               * (1.f + p->dynamic_range_scaling);
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->black_exposure_picker, p->range_black_relative_exposure);
@@ -1162,7 +1159,7 @@ static void _apply_auto_pivot_x(dt_iop_module_t *self, const dt_iop_order_iccpro
   const float base_pivot_x = fabsf(min_ev / range_in_ev); // Pivot representing 0 EV (mid-gray)
 
   dt_iop_agx_params_t params_with_mid_gray = *p;
-  params_with_mid_gray.curve_pivot_y_ratio = 0.18f;
+  params_with_mid_gray.curve_pivot_y_linear_output = 0.18f;
   params_with_mid_gray.curve_pivot_x_shift_ratio = 0.f;
 
   const tone_mapping_params_t tone_mapping_params = _calculate_tone_mapping_params(&params_with_mid_gray);
@@ -1171,7 +1168,7 @@ static void _apply_auto_pivot_x(dt_iop_module_t *self, const dt_iop_order_iccpro
   const float target_y = _apply_curve(target_pivot_x, &tone_mapping_params);
   // try to avoid changing the brightness of the pivot
   const float target_y_linearised = powf(target_y, tone_mapping_params.curve_gamma);
-  p->curve_pivot_y_ratio = target_y_linearised;
+  p->curve_pivot_y_linear_output = target_y_linearised;
 
   float shift;
   if(fabsf(target_pivot_x - base_pivot_x) < _epsilon)
@@ -1197,7 +1194,7 @@ static void _apply_auto_pivot_x(dt_iop_module_t *self, const dt_iop_order_iccpro
   dt_bauhaus_slider_set(g->basic_curve_controls.curve_pivot_x_shift,
                         p->curve_pivot_x_shift_ratio);
   dt_bauhaus_slider_set(g->basic_curve_controls.curve_pivot_y_linear,
-                        p->curve_pivot_y_ratio);
+                        p->curve_pivot_y_linear_output);
   --darktable.gui->reset;
 }
 
@@ -1602,7 +1599,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *widget, void *previous)
   {
     darktable.gui->reset++;
     const float prev = *(float *)previous;
-    const float ratio = (p->security_factor - prev) / (prev + 1.f);
+    const float ratio = (p->dynamic_range_scaling - prev) / (prev + 1.f);
 
     p->range_black_relative_exposure *= (1.f + ratio);
     p->range_white_relative_exposure *= (1.f + ratio);
@@ -1649,7 +1646,7 @@ static void _add_basic_curve_controls(dt_iop_module_t *self, dt_iop_basic_curve_
   gtk_widget_set_tooltip_text(slider, _("shift the pivot input towards black(-) or white(+)"));
 
   // curve_pivot_y_linear
-  slider = dt_bauhaus_slider_from_params(section, "curve_pivot_y_ratio");
+  slider = dt_bauhaus_slider_from_params(section, "curve_pivot_y_linear_output");
   controls->curve_pivot_y_linear = slider;
   dt_bauhaus_slider_set_format(slider, "%");
   dt_bauhaus_slider_set_digits(slider, 2);
@@ -1851,12 +1848,10 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  // Create section label
   gchar const *section_name = C_("section", "input exposure range");
   dt_gui_box_add(self->widget, dt_ui_section_label_new(section_name));
   dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, N_("input exposure range"));
 
-  // white point slider and picker
   g->white_exposure_picker =
       dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
                             dt_bauhaus_slider_from_params(section, "range_white_relative_exposure"));
@@ -1865,7 +1860,6 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
   gtk_widget_set_tooltip_text(g->white_exposure_picker,
                               _("relative exposure above mid-grey (white point)"));
 
-  // black point slider and picker
   g->black_exposure_picker =
       dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
                             dt_bauhaus_slider_from_params(section, "range_black_relative_exposure"));
@@ -1874,8 +1868,7 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
   gtk_widget_set_tooltip_text(g->black_exposure_picker,
                               _("relative exposure below mid-grey (black point)"));
 
-  // Dynamic range scaling
-  g->security_factor = dt_bauhaus_slider_from_params(section, "security_factor");
+  g->security_factor = dt_bauhaus_slider_from_params(section, "dynamic_range_scaling");
   dt_bauhaus_slider_set_soft_max(g->security_factor, 0.5f);
   dt_bauhaus_slider_set_format(g->security_factor, "%");
   dt_bauhaus_slider_set_digits(g->security_factor, 2);
@@ -1884,11 +1877,9 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
                               _("symmetrically increase or decrease the computed dynamic range.\n"
                                   "useful to give a safety margin to extreme luminances."));
 
-  // auto-tune picker
   g->range_exposure_picker =
       dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE, dt_bauhaus_combobox_new(self));
   dt_bauhaus_widget_set_label(g->range_exposure_picker, section_name, N_("auto tune levels"));
-  //dt_bauhaus_widget_set_label(g->range_exposure_picker, NULL, N_("auto tune levels"));
   gtk_widget_set_tooltip_text(g->range_exposure_picker,
                               _("pick image area to automatically set black and white exposure"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->range_exposure_picker, FALSE, FALSE, 0);
@@ -2258,7 +2249,7 @@ static void _set_neutral_params(dt_iop_agx_params_t *p)
 
   p->range_black_relative_exposure = -10.f;
   p->range_white_relative_exposure = 6.5f;
-  p->security_factor = 0.1f;
+  p->dynamic_range_scaling = 0.1f;
 
   p->curve_contrast_around_pivot = 2.4f;
   p->curve_linear_ratio_below_pivot = 0.f;
@@ -2270,7 +2261,7 @@ static void _set_neutral_params(dt_iop_agx_params_t *p)
   p->auto_gamma = FALSE;
   p->curve_gamma = _default_gamma;
   p->curve_pivot_x_shift_ratio = 0.f;
-  p->curve_pivot_y_ratio = 0.18f;
+  p->curve_pivot_y_linear_output = 0.18f;
 
   p->disable_primaries_adjustments = FALSE;
   p->red_inset = 0.f;
