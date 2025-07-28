@@ -372,6 +372,10 @@ static int32_t _control_write_sidecar_files_job_run(dt_job_t *job)
   return 0;
 }
 
+
+
+
+
 typedef struct dt_control_merge_hdr_t
 {
   uint32_t first_imgid;
@@ -704,6 +708,529 @@ end:
 
   return 0;
 }
+
+
+
+
+
+
+typedef struct dt_control_mean_offset_t
+{
+  uint32_t first_imgid;
+  uint32_t first_filter;
+  uint8_t first_xtrans[6][6];
+
+  float *pixels;
+
+  int wd;
+  int ht;
+  dt_image_orientation_t orientation;
+
+  dt_aligned_pixel_t wb_coeffs;
+  float adobe_XYZ_to_CAM[4][3];
+
+  // 0 - ok; 1 - errors, abort
+  gboolean abort;
+} dt_control_mean_offset_t;
+
+
+typedef struct dt_control_mean_offset_format_t
+{
+  dt_imageio_module_data_t parent;
+  dt_control_mean_offset_t *d;
+} dt_control_mean_offset_format_t;
+
+static int _control_mean_offset_bpp(dt_imageio_module_data_t *data)
+{
+  return 32;
+}
+
+static int _control_mean_offset_levels(dt_imageio_module_data_t *data)
+{
+  return IMAGEIO_RGB | IMAGEIO_FLOAT;
+}
+
+static const char *_control_mean_offset_mime(dt_imageio_module_data_t *data)
+{
+  return "memory";
+}
+
+static int _control_mean_process(dt_imageio_module_data_t *datai,
+                                        const char *filename,
+                                        const void *const ivoid,
+                                        dt_colorspaces_color_profile_type_t over_type,
+                                        const char *over_filename,
+                                        void *exif,
+                                        int exif_len,
+                                        dt_imgid_t imgid,
+                                        int num,
+                                        int total,
+                                        dt_dev_pixelpipe_t *pipe,
+                                        const gboolean export_masks)
+{
+  const dt_control_mean_offset_format_t *data = (dt_control_mean_offset_format_t *)datai;
+  dt_control_mean_offset_t *d = data->d;
+
+  // just take a copy. also do it after blocking read, so filters will make sense.
+  const dt_image_t *img = dt_image_cache_get(imgid, 'r');
+  const dt_image_t image = *img;
+  dt_image_cache_read_release(img);
+
+  if(!d->pixels)
+  {
+    d->first_imgid = imgid;
+    d->first_filter = dt_rawspeed_crop_dcraw_filters(image.buf_dsc.filters, image.crop_x, image.crop_y);
+    // sensor layout is just passed on to be written to dng.
+    // we offset it to the crop of the image here, so we don't
+    // need to load in the FCxtrans dependency into the dng writer.
+    // for some stupid reason the dng needs this layout wrt cropped
+    // offsets, not globally.
+    dt_iop_roi_t roi = {0};
+    roi.x = image.crop_x;
+    roi.y = image.crop_y;
+    for(int j=0;j<6;j++)
+      for(int i = 0; i < 6; i++)
+        d->first_xtrans[j][i] = FCxtrans(j, i, &roi, image.buf_dsc.xtrans);
+
+    d->pixels = calloc((size_t)datai->width * datai->height, sizeof(float));
+    d->wd = datai->width;
+    d->ht = datai->height;
+    d->orientation = image.orientation;
+    for(int i = 0; i < 3; i++)
+      d->wb_coeffs[i] = image.wb_coeffs[i];
+
+    // give priority to DNG embedded matrix: see
+    // dt_colorspaces_conversion_matrices_xyz() and its call from
+    // iop/temperature.c with image_storage.adobe_XYZ_to_CAM[][] and
+    // image_storage.d65_color_matrix[] as inputs
+    if(dt_is_valid_colormatrix(image.d65_color_matrix[0]))
+    {
+        for(int i = 0; i < 9; ++i)
+          d->adobe_XYZ_to_CAM[i/3][i%3] = image.d65_color_matrix[i];
+        for(int i = 0; i < 3; ++i)
+          d->adobe_XYZ_to_CAM[3][i] = 0.0f;
+    }
+    else
+      for(int k = 0; k < 4; ++k)
+        for(int i = 0; i < 3; ++i)
+          d->adobe_XYZ_to_CAM[k][i] = image.adobe_XYZ_to_CAM[k][i];
+  }
+
+  if(!d->pixels)
+  {
+    dt_control_log(_("unable to allocate memory for mean image"));
+    d->abort = TRUE;
+    return 1;
+  }
+
+  if(image.buf_dsc.filters == 0u
+     || image.buf_dsc.channels != 1 )
+//     || image.buf_dsc.datatype != TYPE_UINT16)	// removed to allow DNG
+  {
+    dt_control_log(_("mean value only works on raw images."));
+    d->abort = TRUE;
+    return 1;
+  }
+  else if(datai->width != d->wd
+          || datai->height != d->ht
+          || d->orientation != image.orientation)
+  {
+    dt_control_log(_("images have to be of same size and orientation!"));
+    d->abort = TRUE;
+    return 1;
+  }
+
+  DT_OMP_FOR(collapse(2))
+  for(int y = 0; y < d->ht; y++)
+    for(int x = 0; x < d->wd; x++)
+    {
+      // read unclamped raw value with subtracted black and rescaled
+      // to 1.0 saturation.  this is the output of the rawprepare iop.
+      const float in = ((float *)ivoid)[x + d->wd * y];
+
+      d->pixels[x + d->wd * y] += in;
+    }
+
+  return 0;
+}
+
+
+static int32_t _control_mean_job_run(dt_job_t *job)
+{
+  dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
+  GList *t = params->index;
+  const guint total = g_list_length(t);
+  char message[512] = { 0 };
+  double fraction = 0;
+  snprintf(message, sizeof(message), ngettext("merging %d image",
+                                              "merging %d images", total), total);
+
+  dt_control_job_set_progress_message(job, message);
+
+  dt_control_mean_offset_t d = (dt_control_mean_offset_t){ .abort = FALSE };
+
+  dt_imageio_module_format_t buf = (dt_imageio_module_format_t)
+    {.mime = _control_mean_offset_mime,
+     .levels = _control_mean_offset_levels,
+     .bpp = _control_mean_offset_bpp,
+     .write_image = _control_mean_process };
+
+  dt_control_mean_offset_format_t dat =
+    (dt_control_mean_offset_format_t){.parent = { 0 }, .d = &d };
+
+  int num = 1;
+  while(t)
+  {
+    if(d.abort) goto end;
+
+    const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
+    dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat,
+                                 TRUE, FALSE, TRUE, TRUE, FALSE,
+                                 FALSE, "pre:rawprepare", FALSE,
+                                 FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
+                                 NULL, num, total, NULL, -1);
+
+    t = g_list_next(t);
+
+    /* update the progress bar */
+    fraction += 1.0 / (total + 1);
+    dt_control_job_set_progress(job, fraction);
+    num++;
+  }
+
+  if(d.abort) goto end;
+
+// normalize by number of images
+  DT_OMP_FOR(shared(d))
+  for(size_t k = 0; k < (size_t)d.wd * d.ht; k++)
+      d.pixels[k] /= total;
+
+  // output mean as digital negative with exif data.
+  uint8_t *exif = NULL;
+  char pathname[PATH_MAX] = { 0 };
+  gboolean from_cache = TRUE;
+  dt_image_full_path(d.first_imgid, pathname, sizeof(pathname), &from_cache);
+
+  // last param is dng mode
+  const int exif_len = dt_exif_read_blob(&exif, pathname, d.first_imgid, FALSE, d.wd, d.ht, TRUE);
+  char *c = pathname + strlen(pathname);
+  while(*c != '.' && c > pathname) c--;
+  g_strlcpy(c, "-mean.dng", sizeof(pathname) - (c - pathname));
+  dt_imageio_write_dng(pathname,
+                       d.pixels,
+                       d.wd,
+                       d.ht,
+                       exif,
+                       exif_len,
+                       d.first_filter,
+                       (const uint8_t (*)[6])d.first_xtrans,
+                       1.0f,
+                       (const float (*))d.wb_coeffs,
+                       d.adobe_XYZ_to_CAM);
+  free(exif);
+
+  dt_control_job_set_progress(job, 1.0);
+
+  while(*c != '/' && c > pathname) c--;
+  dt_control_log(_("wrote mean `%s'"), c + 1);
+
+  // import new image
+  gchar *directory = g_path_get_dirname((const gchar *)pathname);
+  dt_film_t film;
+  const dt_filmid_t filmid = dt_film_new(&film, directory);
+  const dt_imgid_t imageid = dt_image_import(filmid, pathname, TRUE, TRUE);
+  g_free(directory);
+
+  // refresh the thumbtable view
+  dt_collection_update_query(darktable.collection,
+                             DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                             g_list_prepend(NULL, GINT_TO_POINTER(imageid)));
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_FILMROLLS_CHANGED);
+  dt_control_queue_redraw_center();
+
+end:
+  free(d.pixels);
+
+  return 0;
+}
+
+
+
+
+
+
+static int _control_offset_process(dt_imageio_module_data_t *datai,
+                                        const char *filename,
+                                        const void *const ivoid,
+                                        dt_colorspaces_color_profile_type_t over_type,
+                                        const char *over_filename,
+                                        void *exif,
+                                        int exif_len,
+                                        dt_imgid_t imgid,
+                                        int num,
+                                        int total,
+                                        dt_dev_pixelpipe_t *pipe,
+                                        const gboolean export_masks)
+{
+  const dt_control_mean_offset_format_t *data = (dt_control_mean_offset_format_t *)datai;
+  dt_control_mean_offset_t *d = data->d;
+
+  // just take a copy. also do it after blocking read, so filters will make sense.
+  const dt_image_t *img = dt_image_cache_get(imgid, 'r');
+  const dt_image_t image = *img;
+  dt_image_cache_read_release(img);
+
+  double mean1 = 0.,
+         mean2 = 0.;
+
+  if(!d->pixels)
+  {
+    d->first_imgid = imgid;
+    d->first_filter = dt_rawspeed_crop_dcraw_filters(image.buf_dsc.filters, image.crop_x, image.crop_y);
+    // sensor layout is just passed on to be written to dng.
+    // we offset it to the crop of the image here, so we don't
+    // need to load in the FCxtrans dependency into the dng writer.
+    // for some stupid reason the dng needs this layout wrt cropped
+    // offsets, not globally.
+    dt_iop_roi_t roi = {0};
+    roi.x = image.crop_x;
+    roi.y = image.crop_y;
+    for(int j=0;j<6;j++)
+      for(int i = 0; i < 6; i++)
+        d->first_xtrans[j][i] = FCxtrans(j, i, &roi, image.buf_dsc.xtrans);
+
+    d->pixels = calloc((size_t)datai->width * datai->height, sizeof(float));
+    d->wd = datai->width;
+    d->ht = datai->height;
+    d->orientation = image.orientation;
+    for(int i = 0; i < 3; i++)
+      d->wb_coeffs[i] = image.wb_coeffs[i];
+
+    // give priority to DNG embedded matrix: see
+    // dt_colorspaces_conversion_matrices_xyz() and its call from
+    // iop/temperature.c with image_storage.adobe_XYZ_to_CAM[][] and
+    // image_storage.d65_color_matrix[] as inputs
+    if(dt_is_valid_colormatrix(image.d65_color_matrix[0]))
+    {
+        for(int i = 0; i < 9; ++i)
+          d->adobe_XYZ_to_CAM[i/3][i%3] = image.d65_color_matrix[i];
+        for(int i = 0; i < 3; ++i)
+          d->adobe_XYZ_to_CAM[3][i] = 0.0f;
+    }
+    else
+      for(int k = 0; k < 4; ++k)
+        for(int i = 0; i < 3; ++i)
+          d->adobe_XYZ_to_CAM[k][i] = image.adobe_XYZ_to_CAM[k][i];
+  }
+
+  if(!d->pixels)
+  {
+    dt_control_log(_("unable to allocate memory for offset image"));
+    d->abort = TRUE;
+    return 1;
+  }
+
+  if(image.buf_dsc.filters == 0u
+     || image.buf_dsc.channels != 1 )
+//     || image.buf_dsc.datatype != TYPE_UINT16)	// removed to allow DNG
+  {
+    dt_control_log(_("dark frame subtraction only works on raw images."));
+    d->abort = TRUE;
+    return 1;
+  }
+  else if(datai->width != d->wd
+          || datai->height != d->ht
+          || d->orientation != image.orientation)
+  {
+    dt_control_log(_("images have to be of same size and orientation!"));
+    d->abort = TRUE;
+    return 1;
+  }
+
+
+
+  if (num == 1) {
+
+    // initialize the array with the first iamge:
+    DT_OMP_FOR(collapse(2))
+    for(int y = 0; y < d->ht; y++)
+      for(int x = 0; x < d->wd; x++)
+      {
+        // read unclamped raw value with subtracted black and rescaled
+        // to 1.0 saturation.  this is the output of the rawprepare iop.
+        const float in = ((float *)ivoid)[x + d->wd * y];
+
+        d->pixels[x + d->wd * y] = in;
+      }
+
+  } else {
+
+    // calculate the mean scalar value for the frames
+    // to check wich image is the dark image, i.e. lower mean value:
+    // dont use DT_OMP_FOR(collapse(2)), as we would fill the same variable
+    // in each thread which will not work in parallel
+    for(int y = 0; y < d->ht; y++)
+      for(int x = 0; x < d->wd; x++)
+      {
+        // read unclamped raw value with subtracted black and rescaled
+        // to 1.0 saturation.  this is the output of the rawprepare iop.
+        const float in = ((float *)ivoid)[x + d->wd * y];
+
+        mean1 += d->pixels[x + d->wd * y];
+        mean2 += in;
+      }
+
+    mean1 /= d->ht;
+    mean1 /= d->wd;
+    mean2 /= d->ht;
+    mean2 /= d->wd;
+
+    if (mean1 > mean2) {
+      // subtract 2nd from 1st:
+
+      DT_OMP_FOR(collapse(2))
+      for(int y = 0; y < d->ht; y++)
+        for(int x = 0; x < d->wd; x++)
+        {
+          // read unclamped raw value with subtracted black and rescaled
+          // to 1.0 saturation.  this is the output of the rawprepare iop.
+          const float in = ((float *)ivoid)[x + d->wd * y];
+
+          // we want to eleminate the fixed pattern noise only and keep
+          // the mean dark value, so we add the mean value again
+          d->pixels[x + d->wd * y] = d->pixels[x + d->wd * y] - in + mean2;
+        }
+    } else {
+      // subtract 1st from 2nd:
+
+      // use image id and filters of the real shot for export
+      d->first_imgid = imgid;
+      d->first_filter = dt_rawspeed_crop_dcraw_filters(image.buf_dsc.filters, image.crop_x, image.crop_y);
+
+      DT_OMP_FOR(collapse(2))
+      for(int y = 0; y < d->ht; y++)
+        for(int x = 0; x < d->wd; x++)
+        {
+          // read unclamped raw value with subtracted black and rescaled
+          // to 1.0 saturation.  this is the output of the rawprepare iop.
+          const float in = ((float *)ivoid)[x + d->wd * y];
+
+          // we want to eleminate the fixed pattern noise only and keep
+          // the mean dark value, so we add the mean value again
+          d->pixels[x + d->wd * y] = in - d->pixels[x + d->wd * y] + mean1;
+        }
+    }
+  }
+
+  return 0;
+}
+
+
+static int32_t _control_offset_job_run(dt_job_t *job)
+{
+  dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
+  GList *t = params->index;
+  const guint total = g_list_length(t);
+  char message[512] = { 0 };
+  double fraction = 0;
+
+  if (total != 2)
+  {
+    dt_control_log(_("dark frame subtraction works with two images only"));
+    return 0;
+  }
+
+  snprintf(message, sizeof(message), ngettext("merging %d image",
+                                              "merging %d images", total), total);
+
+  dt_control_job_set_progress_message(job, message);
+
+  dt_control_mean_offset_t d = (dt_control_mean_offset_t){ .abort = FALSE };
+
+  dt_imageio_module_format_t buf = (dt_imageio_module_format_t)
+    {.mime = _control_mean_offset_mime,
+     .levels = _control_mean_offset_levels,
+     .bpp = _control_mean_offset_bpp,
+     .write_image = _control_offset_process };
+
+  dt_control_mean_offset_format_t dat =
+    (dt_control_mean_offset_format_t){.parent = { 0 }, .d = &d };
+
+  int num = 1;
+  while(t)
+  {
+    if(d.abort) goto end;
+
+    const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
+    dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat,
+                                 TRUE, FALSE, TRUE, TRUE, FALSE,
+                                 FALSE, "pre:rawprepare", FALSE,
+                                 FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
+                                 NULL, num, total, NULL, -1);
+
+    t = g_list_next(t);
+
+    /* update the progress bar */
+    fraction += 1.0 / (total + 1);
+    dt_control_job_set_progress(job, fraction);
+    num++;
+  }
+
+  if(d.abort) goto end;
+
+  // output offset as digital negative with exif data.
+  uint8_t *exif = NULL;
+  char pathname[PATH_MAX] = { 0 };
+  gboolean from_cache = TRUE;
+  dt_image_full_path(d.first_imgid, pathname, sizeof(pathname), &from_cache);
+
+  // last param is dng mode
+  const int exif_len = dt_exif_read_blob(&exif, pathname, d.first_imgid, FALSE, d.wd, d.ht, TRUE);
+  char *c = pathname + strlen(pathname);
+  while(*c != '.' && c > pathname) c--;
+  g_strlcpy(c, "-offset.dng", sizeof(pathname) - (c - pathname));
+  dt_imageio_write_dng(pathname,
+                       d.pixels,
+                       d.wd,
+                       d.ht,
+                       exif,
+                       exif_len,
+                       d.first_filter,
+                       (const uint8_t (*)[6])d.first_xtrans,
+                       1.0f,
+                       (const float (*))d.wb_coeffs,
+                       d.adobe_XYZ_to_CAM);
+  free(exif);
+
+  dt_control_job_set_progress(job, 1.0);
+
+  while(*c != '/' && c > pathname) c--;
+  dt_control_log(_("wrote offset `%s'"), c + 1);
+
+  // import new image
+  gchar *directory = g_path_get_dirname((const gchar *)pathname);
+  dt_film_t film;
+  const dt_filmid_t filmid = dt_film_new(&film, directory);
+  const dt_imgid_t imageid = dt_image_import(filmid, pathname, TRUE, TRUE);
+  g_free(directory);
+
+  // refresh the thumbtable view
+  dt_collection_update_query(darktable.collection,
+                             DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                             g_list_prepend(NULL, GINT_TO_POINTER(imageid)));
+  DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_FILMROLLS_CHANGED);
+  dt_control_queue_redraw_center();
+
+end:
+  free(d.pixels);
+
+  return 0;
+}
+
+
+
+
+
 
 static int32_t _control_duplicate_images_job_run(dt_job_t *job)
 {
@@ -2011,6 +2538,7 @@ static dt_job_t *_control_gpx_apply_job_create(const gchar *filename,
   return job;
 }
 
+
 void dt_control_merge_hdr()
 {
   dt_control_add_job(DT_JOB_QUEUE_USER_FG,
@@ -2018,6 +2546,29 @@ void dt_control_merge_hdr()
                                           N_("merge HDR image"), 0,
                                           NULL, PROGRESS_CANCELLABLE, TRUE));
 }
+
+
+void dt_control_mean()
+{
+  dt_control_add_job(DT_JOB_QUEUE_USER_FG,
+     _control_generic_images_job_create(&_control_mean_job_run,
+                                          N_("create mean image"), 0,
+                                          NULL, PROGRESS_CANCELLABLE, TRUE));
+}
+
+
+
+void dt_control_offset()
+{
+  dt_control_add_job(DT_JOB_QUEUE_USER_FG,
+     _control_generic_images_job_create(&_control_offset_job_run,
+                                          N_("subtract offset image"), 0,
+                                          NULL, PROGRESS_CANCELLABLE, TRUE));
+}
+
+
+
+
 
 void dt_control_gpx_apply(const gchar *filename,
                           const int32_t filmid,

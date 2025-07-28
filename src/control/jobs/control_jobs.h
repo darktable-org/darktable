@@ -54,6 +54,8 @@ void dt_control_export(GList *imgid_list, const int max_width, const int max_hei
                        dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
                        dt_iop_color_intent_t icc_intent, const gchar *metadata_export);
 void dt_control_merge_hdr(void);
+void dt_control_mean(void);
+void dt_control_offset(void);
 void dt_control_import(GList *imgs, const char *datetime_override, const gboolean inplace);
 void dt_control_refresh_exif(void);
 

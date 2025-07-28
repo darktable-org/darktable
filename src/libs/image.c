@@ -50,6 +50,7 @@ typedef struct dt_lib_image_t
 {
   GtkWidget *rotate_cw_button, *rotate_ccw_button, *remove_button;
   GtkWidget *delete_button, *create_hdr_button;
+  GtkWidget *mean_button, *offset_button;
   GtkWidget *duplicate_button, *reset_button, *move_button, *copy_button;
   GtkWidget *group_button, *ungroup_button, *cache_button, *uncache_button;
   GtkWidget *refresh_button, *set_monochrome_button, *set_color_button;
@@ -184,6 +185,10 @@ static void button_clicked(GtkWidget *widget, gpointer user_data)
     dt_control_reset_local_copy_images();
   else if(i == 14)
     dt_control_refresh_exif();
+  else if(i == 15)
+    dt_control_mean();
+  else if(i == 16)
+    dt_control_offset();
 }
 
 void gui_update(dt_lib_module_t *self)
@@ -205,8 +210,11 @@ void gui_update(dt_lib_module_t *self)
   gtk_widget_set_sensitive(GTK_WIDGET(d->move_button), act_on_any);
   gtk_widget_set_sensitive(GTK_WIDGET(d->copy_button), act_on_any);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->create_hdr_button), act_on_any);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->create_hdr_button), selected_cnt > 1);
   gtk_widget_set_sensitive(GTK_WIDGET(d->duplicate_button), act_on_any);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->mean_button), selected_cnt > 1);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->offset_button), selected_cnt == 2);
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->rotate_ccw_button), act_on_any);
   gtk_widget_set_sensitive(GTK_WIDGET(d->rotate_cw_button), act_on_any);
@@ -542,6 +550,20 @@ void gui_init(dt_lib_module_t *self)
      _("add a duplicate to the image library, including its history stack"),
      GDK_KEY_d, GDK_CONTROL_MASK);
   gtk_grid_attach(grid, d->duplicate_button, 2, line++, 2, 1);
+
+
+  d->mean_button = dt_action_button_new
+    (self, N_("create mean image"), button_clicked,
+     GINT_TO_POINTER(15),
+     _("create mean value image from selected shots\n reduce shot noise and read noise"), 0, 0);
+  gtk_grid_attach(grid, d->mean_button, 0, line, 2, 1);
+
+  d->offset_button = dt_action_button_new
+    (self, N_("subtract dark frame"), button_clicked,
+    GINT_TO_POINTER(16),
+    _("subtract a dark image from from selected shot\n reduce fixed pattern noise\n select two images"), 0, 0);
+  gtk_grid_attach(grid, d->offset_button, 2, line++, 2, 1);
+
 
   d->rotate_ccw_button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_NONE, NULL);;
   gtk_widget_set_name(d->rotate_ccw_button, "non-flat");
