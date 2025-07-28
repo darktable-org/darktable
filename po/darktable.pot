@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-28 08:37+0200\n"
+"POT-Creation-Date: 2025-07-28 09:02+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18077,10 +18077,10 @@ msgstr ""
 
 #: ../src/iop/demosaic.c:1490
 msgid ""
-"capture sharpen radius should reflect the overall gaussian type blurof the "
-"camera sensor, possibly the anti-aliasing filter and the lens.\n"
-"increasing this too far will soon lead to artifacts like halos andringing "
-"especially when used with a large 'sharpen' setting\n"
+"capture sharpen radius should reflect the overall gaussian type blur\n"
+"of the camera sensor, possibly the anti-aliasing filter and the lens.\n"
+"increasing this too far will soon lead to artifacts like halos and\n"
+"ringing especially when used with a large 'sharpen' setting\n"
 msgstr ""
 
 #: ../src/iop/demosaic.c:1496
@@ -18103,7 +18103,7 @@ msgstr ""
 #: ../src/iop/demosaic.c:1509
 msgid ""
 "further increase sharpen radius at image corners,\n"
-"the sharp centre of the image will not be affected"
+"the sharp center of the image will not be affected"
 msgstr ""
 
 #: ../src/iop/demosaic.c:1511
@@ -18111,7 +18111,7 @@ msgid "visualize the overall radius"
 msgstr ""
 
 #: ../src/iop/demosaic.c:1516
-msgid "adjust to the sharp image centre"
+msgid "adjust to the sharp image center"
 msgstr ""
 
 #: ../src/iop/demosaic.c:1523
