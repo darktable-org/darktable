@@ -116,8 +116,8 @@ typedef struct dt_opencl_device_t
   cl_ulong used_global_mem;
   cl_program program[DT_OPENCL_MAX_PROGRAMS];
   cl_kernel kernel[DT_OPENCL_MAX_KERNELS];
-  int program_used[DT_OPENCL_MAX_PROGRAMS];
-  int kernel_used[DT_OPENCL_MAX_KERNELS];
+  gboolean program_used[DT_OPENCL_MAX_PROGRAMS];
+  gboolean kernel_used[DT_OPENCL_MAX_KERNELS];
   cl_event *eventlist;
   dt_opencl_eventtag_t *eventtags;
   int numevents;
