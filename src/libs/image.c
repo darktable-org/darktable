@@ -555,13 +555,13 @@ void gui_init(dt_lib_module_t *self)
   d->mean_button = dt_action_button_new
     (self, N_("create mean image"), button_clicked,
      GINT_TO_POINTER(15),
-     _("create mean value image from selected shots\n reduce shot noise and read noise"), 0, 0);
+     _("create mean value image from selected shots\n reduces shot noise and read noise"), 0, 0);
   gtk_grid_attach(grid, d->mean_button, 0, line, 2, 1);
 
   d->offset_button = dt_action_button_new
     (self, N_("subtract dark frame"), button_clicked,
     GINT_TO_POINTER(16),
-    _("subtract a dark image from from selected shot\n reduce fixed pattern noise\n select two images"), 0, 0);
+    _("subtract a dark image from from selected shot\n reduces fixed pattern noise\n select two images"), 0, 0);
   gtk_grid_attach(grid, d->offset_button, 2, line++, 2, 1);
 
 

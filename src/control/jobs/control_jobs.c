@@ -820,7 +820,7 @@ static int _control_mean_process(dt_imageio_module_data_t *datai,
      || image.buf_dsc.channels != 1 )
 //     || image.buf_dsc.datatype != TYPE_UINT16)	// removed to allow DNG
   {
-    dt_control_log(_("mean value only works on raw images."));
+    dt_control_log(_("creating mean image only works on raw images!"));
     d->abort = TRUE;
     return 1;
   }
@@ -1027,7 +1027,7 @@ static int _control_offset_process(dt_imageio_module_data_t *datai,
      || image.buf_dsc.channels != 1 )
 //     || image.buf_dsc.datatype != TYPE_UINT16)	// removed to allow DNG
   {
-    dt_control_log(_("dark frame subtraction only works on raw images."));
+    dt_control_log(_("dark frame subtraction only works on raw images!"));
     d->abort = TRUE;
     return 1;
   }
