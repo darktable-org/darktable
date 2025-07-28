@@ -120,7 +120,7 @@ typedef struct dt_iop_demosaic_params_t
   float cs_thrs;                                // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.40 $DESCRIPTION: "edge sensitivity"
   float cs_boost;                               // $MIN: 0.0 $MAX: 1.5 $DEFAULT: 0.0 $DESCRIPTION: "corner boost"
   int cs_iter;                                  // $MIN: 0 $MAX: 25 $DEFAULT: 0 $DESCRIPTION: "sharpen"
-  float cs_centre;                              // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "sharp centre"
+  float cs_center;                              // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "sharp center"
 } dt_iop_demosaic_params_t;
 
 typedef struct dt_iop_demosaic_gui_data_t
@@ -137,7 +137,7 @@ typedef struct dt_iop_demosaic_gui_data_t
   GtkWidget *cs_radius;
   GtkWidget *cs_boost;
   GtkWidget *cs_iter;
-  GtkWidget *cs_centre;
+  GtkWidget *cs_center;
   dt_gui_collapsible_section_t capture;
   gboolean cs_mask;
   gboolean dual_mask;
@@ -222,7 +222,7 @@ typedef struct dt_iop_demosaic_data_t
   float cs_thrs;
   float cs_boost;
   int cs_iter;
-  float cs_centre;
+  float cs_center;
 } dt_iop_demosaic_data_t;
 
 static gboolean _get_thumb_quality(const int width, const int height)
@@ -320,7 +320,7 @@ int legacy_params(dt_iop_module_t *self,
     float cs_thrs;
     float cs_boost;
     int cs_iter;
-    float cs_centre;
+    float cs_center;
   } dt_iop_demosaic_params_v5_t;
 
   typedef struct dt_iop_demosaic_params_v4_t
@@ -387,7 +387,7 @@ int legacy_params(dt_iop_module_t *self,
     n->cs_thrs = 0.4f;
     n->cs_boost = 0.0f;
     n->cs_iter = 0;
-    n->cs_centre = 0.0f;
+    n->cs_center = 0.0f;
 
     *new_params = n;
     *new_params_size = sizeof(dt_iop_demosaic_params_v5_t);
@@ -1103,7 +1103,7 @@ void commit_params(dt_iop_module_t *self,
   d->cs_radius = p->cs_radius;
   d->cs_thrs = p->cs_thrs;
   d->cs_boost = p->cs_boost;
-  d->cs_centre = p->cs_centre;
+  d->cs_center = p->cs_center;
   // magic function to have CS iterations with fine granularity for values <= 11 and then rising up to 50
   d->cs_iter = p->cs_iter + (int)(0.000065f * powf((float)p->cs_iter, 4.0f));
   const gboolean xmethod = use_method & DT_DEMOSAIC_XTRANS;
@@ -1291,7 +1291,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_sensitive(g->cs_radius, do_capture);
   gtk_widget_set_sensitive(g->cs_thrs, do_capture);
   gtk_widget_set_sensitive(g->cs_boost, do_capture);
-  gtk_widget_set_sensitive(g->cs_centre, do_capture && p->cs_boost);
+  gtk_widget_set_sensitive(g->cs_center, do_capture && p->cs_boost);
   gtk_widget_set_sensitive(g->cs_iter, capture_support);
 
   // we might have a wrong method dur to xtrans/bayer - mode mismatch
@@ -1487,9 +1487,9 @@ void gui_init(dt_iop_module_t *self)
   g->cs_radius = dt_bauhaus_slider_from_params(self, "cs_radius");
   dt_bauhaus_slider_set_digits(g->cs_radius, 2);
   dt_bauhaus_slider_set_format(g->cs_radius, _(_(" px")));
-  gtk_widget_set_tooltip_text(g->cs_radius, _("capture sharpen radius should reflect the overall gaussian type blur"
+  gtk_widget_set_tooltip_text(g->cs_radius, _("capture sharpen radius should reflect the overall gaussian type blur\n"
                                               "of the camera sensor, possibly the anti-aliasing filter and the lens.\n"
-                                              "increasing this too far will soon lead to artifacts like halos and"
+                                              "increasing this too far will soon lead to artifacts like halos and\n"
                                               "ringing especially when used with a large 'sharpen' setting\n"));
   dt_bauhaus_slider_set_hard_min(g->cs_radius, 0.01f);
   dt_bauhaus_widget_set_quad(g->cs_radius, self, dtgtk_cairo_paint_reset, FALSE, _cs_autoradius_callback,
@@ -1507,13 +1507,13 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->cs_boost, 2);
   dt_bauhaus_slider_set_format(g->cs_boost, _(_(" px")));
   gtk_widget_set_tooltip_text(g->cs_boost, _("further increase sharpen radius at image corners,\n"
-                                             "the sharp centre of the image will not be affected"));
+                                             "the sharp center of the image will not be affected"));
   dt_bauhaus_widget_set_quad(g->cs_boost, self, dtgtk_cairo_paint_showmask, TRUE, _cs_boost_callback, _("visualize the overall radius"));
 
-  g->cs_centre = dt_bauhaus_slider_from_params(self, "cs_centre");
-  dt_bauhaus_slider_set_format(g->cs_centre, "%");
-  dt_bauhaus_slider_set_digits(g->cs_centre, 0);
-  gtk_widget_set_tooltip_text(g->cs_centre, _("adjust to the sharp image centre"));
+  g->cs_center = dt_bauhaus_slider_from_params(self, "cs_center");
+  dt_bauhaus_slider_set_format(g->cs_center, "%");
+  dt_bauhaus_slider_set_digits(g->cs_center, 0);
+  gtk_widget_set_tooltip_text(g->cs_center, _("adjust to the sharp image center"));
 
   // start building top level widget
   self->widget = gtk_stack_new();
