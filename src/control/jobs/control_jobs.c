@@ -878,7 +878,7 @@ static int32_t _control_mean_job_run(dt_job_t *job)
 
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
     dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat,
-                                 TRUE, FALSE, TRUE, TRUE, FALSE,
+                                 TRUE, FALSE, TRUE, TRUE, FALSE, 1.0,
                                  FALSE, "pre:rawprepare", FALSE,
                                  FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
                                  NULL, num, total, NULL, -1);
@@ -1156,7 +1156,7 @@ static int32_t _control_offset_job_run(dt_job_t *job)
 
     const dt_imgid_t imgid = GPOINTER_TO_INT(t->data);
     dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat,
-                                 TRUE, FALSE, TRUE, TRUE, FALSE,
+                                 TRUE, FALSE, TRUE, TRUE, FALSE, 1.0,
                                  FALSE, "pre:rawprepare", FALSE,
                                  FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
                                  NULL, num, total, NULL, -1);
