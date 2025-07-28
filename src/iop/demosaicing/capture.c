@@ -638,7 +638,7 @@ void _capture_sharpen(dt_iop_module_t *self,
     goto finalize;
   }
 
-  gauss_idx = _cs_precalc_gauss_idx(self, roi, radius, d->cs_boost, d->cs_centre);
+  gauss_idx = _cs_precalc_gauss_idx(self, roi, radius, d->cs_boost, d->cs_center);
   if(!gauss_idx) goto finalize;
 
   if(show_sigma_mask)
@@ -803,7 +803,7 @@ int _capture_sharpen_cl(dt_iop_module_t *self,
     goto finish;
   }
 
-  unsigned char *f_gauss_idx = _cs_precalc_gauss_idx(self, roi, radius, d->cs_boost, d->cs_centre);
+  unsigned char *f_gauss_idx = _cs_precalc_gauss_idx(self, roi, radius, d->cs_boost, d->cs_center);
   if(f_gauss_idx)
   {
     gcoeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * (UCHAR_MAX+1) * CAPTURE_KERNEL_ALIGN, gd->gauss_coeffs);
