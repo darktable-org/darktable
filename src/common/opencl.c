@@ -59,14 +59,14 @@ static gboolean _opencl_load_program(const int dev,
                                      const char *cachedir,
                                      char *md5sum,
                                      char **includemd5,
-                                     int *loaded_cached);
+                                     gboolean *loaded_cached);
 
 static gboolean _opencl_build_program(const int dev,
                                       const int prog,
                                       const char *binname,
                                       const char *cachedir,
                                       char *md5sum,
-                                      int loaded_cached);
+                                      const gboolean loaded_cached);
 
 static char *_ascii_str_canonical(const char *in, char *out, int maxlen);
 
@@ -1050,7 +1050,7 @@ static gboolean _opencl_device_init(dt_opencl_t *cl,
                "%s" G_DIR_SEPARATOR_S "%s.bin", cachedir, programname);
       dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
                "[dt_opencl_device_init] testing program `%s' ..", programname);
-      int loaded_cached;
+      gboolean loaded_cached;
       char md5sum[33];
       if(_opencl_load_program(dev, prog, programname, filename, binname, cachedir,
                               md5sum, includemd5, &loaded_cached)
@@ -1110,10 +1110,9 @@ end:
   return res;
 }
 
-void dt_opencl_init(
-        dt_opencl_t *cl,
-        const gboolean exclude_opencl,
-        const gboolean print_statistics)
+void dt_opencl_init(dt_opencl_t *cl,
+                    const gboolean exclude_opencl,
+                    const gboolean print_statistics)
 {
   dt_pthread_mutex_init(&cl->lock, NULL);
   cl->inited = FALSE;
@@ -1217,9 +1216,10 @@ void dt_opencl_init(
            num_platforms, num_platforms > 1 ? "s" : "");
 
   // safety check for platforms; we must not have several versions for the same platform
+  if(num_platforms)
   {
     char *platforms = calloc(num_platforms, sizeof(char) * DT_OPENCL_CBUFFSIZE);
-    for(int n = 0; n < num_platforms; n++)
+    for(int n = 0; n < num_platforms && platforms; n++)
     {
       cl_platform_id platform = all_platforms[n];
       if((cl->dlocl->symbols->dt_clGetPlatformInfo)
@@ -1327,7 +1327,7 @@ void dt_opencl_init(
   for(int n = 0; n < num_platforms; n++) num_devices += all_num_devices[n];
 
   // create the device list
-  cl_device_id *devices = 0;
+  cl_device_id *devices = NULL;
   if(num_devices)
   {
     cl->dev = (dt_opencl_device_t *)malloc(sizeof(dt_opencl_device_t) * num_devices);
@@ -1337,6 +1337,7 @@ void dt_opencl_init(
       free(cl->dev);
       cl->dev = NULL;
       free(devices);
+      devices = NULL;
       dt_print(DT_DEBUG_OPENCL,
                "[opencl_init] could not allocate memory for device resources");
       logerror = _("not enough memory for OpenCL devices");
@@ -1373,7 +1374,10 @@ void dt_opencl_init(
   if(num_devices == 0)
   {
     if(devices)
+    {
       free(devices);
+      devices = NULL;
+    }
     logerror = _("no OpenCL devices found");
     goto finally;
   }
@@ -1505,14 +1509,22 @@ finally:
     for(int i = 0; cl->dev && i < cl->num_devs; i++)
     {
       dt_pthread_mutex_destroy(&cl->dev[i].lock);
+
       for(int k = 0; k < DT_OPENCL_MAX_KERNELS; k++)
+      {
         if(cl->dev[i].kernel_used[k])
           (cl->dlocl->symbols->dt_clReleaseKernel)(cl->dev[i].kernel[k]);
+      }
+
       for(int k = 0; k < DT_OPENCL_MAX_PROGRAMS; k++)
+      {
         if(cl->dev[i].program_used[k])
           (cl->dlocl->symbols->dt_clReleaseProgram)(cl->dev[i].program[k]);
+      }
+
       (cl->dlocl->symbols->dt_clReleaseCommandQueue)(cl->dev[i].cmd_queue);
       (cl->dlocl->symbols->dt_clReleaseContext)(cl->dev[i].context);
+
       if(cl->dev[i].use_events)
       {
         dt_opencl_events_reset(i);
@@ -2151,13 +2163,13 @@ static gboolean _opencl_load_program(const int dev,
                                      const char *cachedir,
                                      char *md5sum,
                                      char **includemd5,
-                                     int *loaded_cached)
+                                     gboolean *loaded_cached)
 {
   cl_int err;
   dt_opencl_t *cl = darktable.opencl;
 
   struct stat filestat, cachedstat;
-  *loaded_cached = 0;
+  *loaded_cached = FALSE;
 
   if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS)
   {
@@ -2287,8 +2299,8 @@ static gboolean _opencl_load_program(const int dev,
           }
           else
           {
-            cl->dev[dev].program_used[prog] = 1;
-            *loaded_cached = 1;
+            cl->dev[dev].program_used[prog] = TRUE;
+            *loaded_cached = TRUE;
           }
         }
         free(cached_content);
@@ -2298,7 +2310,7 @@ static gboolean _opencl_load_program(const int dev,
   }
 
 
-  if(*loaded_cached == 0)
+  if(*loaded_cached == FALSE)
   {
     // if loading cached was unsuccessful for whatever reason,
     // try to remove cached binary & link
@@ -2334,7 +2346,7 @@ static gboolean _opencl_load_program(const int dev,
     }
     else
     {
-      cl->dev[dev].program_used[prog] = 1;
+      cl->dev[dev].program_used[prog] = TRUE;
     }
   }
   else
@@ -2358,7 +2370,7 @@ static gboolean _opencl_build_program(const int dev,
                                       const char *binname,
                                       const char *cachedir,
                                       char *md5sum,
-                                      int loaded_cached)
+                                      const gboolean loaded_cached)
 {
   if(prog < 0 || prog > DT_OPENCL_MAX_PROGRAMS) return TRUE;
 
@@ -2564,20 +2576,19 @@ static gboolean _check_kernel(const int dev,
   if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS) return FALSE;
   dt_pthread_mutex_lock(&cl->lock);
 
-  cl_int err;
   if(!cl->dev[dev].kernel_used[kernel]
      && cl->name_saved[kernel])
   {
-    cl->dev[dev].kernel_used[kernel] = 1;
-    cl->dev[dev].kernel[kernel] =
-      (cl->dlocl->symbols->dt_clCreateKernel)
-        (cl->dev[dev].program[prog], cl->name_saved[kernel], &err);
+    cl->dev[dev].kernel_used[kernel] = TRUE;
+    cl_int err;
+    cl->dev[dev].kernel[kernel] = (cl->dlocl->symbols->dt_clCreateKernel)
+                                  (cl->dev[dev].program[prog], cl->name_saved[kernel], &err);
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL,
                "[opencl_create_kernel] could not create kernel `%s' for '%s' id=%d: (%s)",
                cl->name_saved[kernel], cl->dev[dev].fullname, dev, cl_errstr(err));
-      cl->dev[dev].kernel_used[kernel] = 0;
+      cl->dev[dev].kernel_used[kernel] = FALSE;
       cl->name_saved[kernel] = NULL; // don't try again
       dt_pthread_mutex_unlock(&cl->lock);
       return FALSE;
@@ -2595,7 +2606,7 @@ void dt_opencl_free_kernel(const int kernel)
   dt_pthread_mutex_lock(&cl->lock);
   for(int dev = 0; dev < cl->num_devs; dev++)
   {
-    cl->dev[dev].kernel_used[kernel] = 0;
+    cl->dev[dev].kernel_used[kernel] = FALSE;
     (cl->dlocl->symbols->dt_clReleaseKernel)(cl->dev[dev].kernel[kernel]);
   }
   dt_pthread_mutex_unlock(&cl->lock);
