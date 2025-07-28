@@ -2107,7 +2107,7 @@ static gboolean _add_actions_to_tree(GtkTreeIter *parent,
       module_is_needed = module->gui_reset || module->get_params || module->expandable(module);
     }
 
-    gchar **split = g_strsplit(action->label, " | ", -1), **s = split, **p = prev_split;
+    gchar **split = g_strsplit(action->label, "|", -1), **s = split, **p = prev_split;
     for(; p && *(p+1) && *(s+1) && !g_strcmp0(*s, *p); p++, s++)
       ;
     for(; p && *(p+1); p++, node = iter)
