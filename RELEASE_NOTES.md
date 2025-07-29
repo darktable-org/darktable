@@ -68,6 +68,9 @@ changes (where available).
   points on blend masks. This is sometime needed when the path point
   and the feather point are too close to each others.
 
+- Hierarchical presets are now supported for utility modules as well
+  as processing modules.
+
 ## Bug Fixes
 
 - ???
