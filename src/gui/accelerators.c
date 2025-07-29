@@ -2107,7 +2107,10 @@ static gboolean _add_actions_to_tree(GtkTreeIter *parent,
       module_is_needed = module->gui_reset || module->get_params || module->expandable(module);
     }
 
-    gchar **split = g_strsplit(action->label, " | ", -1), **s = split, **p = prev_split;
+    gchar **split = g_strsplit(action->label, "|", -1);
+    gchar **s = split, **p = prev_split;
+    for(gchar **spl = split; *spl; spl++)
+      g_strstrip(*spl); // remove leading/trailing whitespace (in-place)
     for(; p && *(p+1) && *(s+1) && !g_strcmp0(*s, *p); p++, s++)
       ;
     for(; p && *(p+1); p++, node = iter)
@@ -4762,8 +4765,8 @@ dt_action_t *dt_action_locate(dt_action_t *owner,
       dt_action_t *new_action = calloc(1, sizeof(dt_action_t));
       new_action->id = clean_path;
       new_action->label = needs_translation
-                        ? g_strdup(Q_(*path))
-                        : dt_util_localize_segmented_name(*path, TRUE);
+                        ? dt_util_localize_segmented_name(*path, TRUE)
+                        : g_strdup(*path);
       new_action->type = DT_ACTION_TYPE_SECTION;
 
       dt_action_insert_sorted(owner, new_action);
