@@ -1652,6 +1652,7 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     dt_get_perf_times(&start);
 
     const gboolean aligned_input = dt_check_aligned(pipe->input);
+
     // we're looking for the full buffer
     if(roi_out->scale == 1.0f
        && roi_out->x == 0 && roi_out->y == 0
@@ -1669,26 +1670,42 @@ static gboolean _dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe,
     {
       if(roi_in.scale == 1.0f)
       {
-        // fast branch for 1:1 pixel copies. Supports all type of files via bpp.
-
-        // last minute clamping to catch potential out-of-bounds in roi_in and roi_out
+        /*  fast branch for 1:1 pixel copies. Supports all type of files via bpp.
+            We make sure that we
+            - don't have negative roi_in shifts
+            - don't take data from input if not provided to avoid out of bounds
+            - fill all data not available from input by zeros
+        */
         const int in_x = MAX(roi_in.x, 0);
         const int in_y = MAX(roi_in.y, 0);
-        const int cp_width = MAX(0, MIN(roi_out->width, pipe->iwidth - in_x));
-        const int cp_height = MIN(roi_out->height, pipe->iheight - in_y);
+        const gboolean wd_fit = roi_out->width <= (pipe->iwidth - in_x);
+        const gboolean ht_fit = roi_out->height <= (pipe->iheight - in_y);
 
+        const size_t cp_width = bpp * MAX(0, MIN(roi_out->width, pipe->iwidth - in_x));
+        const size_t o_width = bpp * roi_out->width;
+
+        // provide this for correct log reporting
+        dt_iop_roi_t roi = roi_in;
+        roi.width = pipe->iwidth;
+        roi.height = pipe->iheight;
         dt_print_pipe(DT_DEBUG_PIPE,
-                      (cp_width > 0) ? "pixelpipe data 1:1 copied" : "pixelpipe data 1:1 none",
-                      pipe, module, DT_DEVICE_NONE, &roi_in, roi_out, "%sbpp=%lu",
-                      aligned_input ? "" : "non-aligned input ",
-                      bpp);
-        if(cp_width > 0)
+                      "pixelpipe data 1:1 copy",
+                      pipe, module, DT_DEVICE_NONE, &roi, roi_out, "%s%s%sbpp=%lu",
+                      wd_fit ? "" : "expand line, ",
+                      ht_fit ? "" : "expand row, ",
+                      aligned_input ? "" : "non-aligned input ", bpp);
+        DT_OMP_FOR()
+        for(int row = 0; row < roi_out->height; row++)
         {
-          DT_OMP_FOR()
-          for(int j = 0; j < cp_height; j++)
-            memcpy(((char *)*output) + (size_t)bpp * j * roi_out->width,
-                   ((char *)pipe->input) + (size_t)bpp * (in_x + (in_y + j) * pipe->iwidth),
-                   (size_t)bpp * cp_width);
+          uint8_t *out = (uint8_t*)*output + bpp * row * roi_out->width;
+          if((row + in_y) < pipe->iheight)
+          {
+            memcpy(out, ((uint8_t*)pipe->input) + bpp * (in_x + (in_y + row) * pipe->iwidth), cp_width);
+            if(!wd_fit) // fill up remaining data in this line with zero
+              memset(out + cp_width, 0, o_width - cp_width);
+          }
+          else // we don't have data for this line so fill with zero
+            memset(out, 0, o_width);
         }
       }
       else
