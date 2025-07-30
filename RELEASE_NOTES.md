@@ -108,8 +108,6 @@ changes (where available).
   to the GraphicsMagick/ImageMagick fallback loader (usually available
   in official/distro builds) for correct reading.
 
-- Fixed Camera Model Name for Fujifilm GFX 100 in WB presets.
-
 - The variable names for the metadata tags variables have been changed
   to the full case sensitive tag name to avoid ambiguity.
 
@@ -144,9 +142,10 @@ changes (where available).
 
 ## RawSpeed changes
 
-- N/A
+- OM Sytem OM-1 Mark II and OM-3 crop was updated for better handling
+  of high-resolution raws.
 
-## Camera support, compared to 5.0
+## Camera support, compared to 5.2.0
 
 ### Base Support
 
@@ -154,7 +153,7 @@ changes (where available).
 
 ### White Balance Presets
 
-- N/A
+- Fujifilm GFX 100 model name fix
 
 ### Noise Profiles
 
