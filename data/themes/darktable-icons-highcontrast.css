@@ -37,5 +37,5 @@
 @define-color graph_fg_active @grey_100;
 @define-color graph_grid @grey_00;
 
-#iop-panel-label, #lib-panel-label, #iop-module-name { color: @fg_color; }
+#iop-panel-label, #lib-panel-label, #iop-module-name, #lib-module-name { color: @fg_color; }
 #module-header .toggle:checked { color: @fg_color; }
