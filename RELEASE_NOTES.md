@@ -49,7 +49,10 @@ The following is a summary of the main features added to darktable
 5.4. Please see the user manual for more details of the individual
 changes (where available).
 
-- ???
+- A new section Capture Sharpening is added into the demosaic
+  module. The capture sharpening tries to recover details lost due to
+  in-camera blurring, which can be caused by diffraction, the
+  anti-aliasing filter or other sources of gaussian-type blur.
 
 ## UI/UX Improvements
 
@@ -64,6 +67,9 @@ changes (where available).
 - Allow using <kbd>Shift</kbd> modifier to select only the feather
   points on blend masks. This is sometime needed when the path point
   and the feather point are too close to each others.
+
+- Hierarchical presets are now supported for utility modules as well
+  as processing modules.
 
 ## Bug Fixes
 
@@ -83,6 +89,9 @@ changes (where available).
 
 - Fixed a bug where changing the image scaling in the export module
   influences the result of a running export job.
+
+- Make sure we always fill the complete main darkroom canvas while
+  zooming at large scales.
 
 ### Add action support for Lua
 
