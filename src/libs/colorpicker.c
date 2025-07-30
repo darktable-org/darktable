@@ -39,6 +39,7 @@ DT_MODULE(1);
 typedef enum dt_lib_colorpicker_model_t
 {
   DT_LIB_COLORPICKER_MODEL_RGB = 0,
+  DT_LIB_COLORPICKER_MODEL_RGB_PERCENT,
   DT_LIB_COLORPICKER_MODEL_LAB,
   DT_LIB_COLORPICKER_MODEL_LCH,
   DT_LIB_COLORPICKER_MODEL_HSL,
@@ -48,7 +49,7 @@ typedef enum dt_lib_colorpicker_model_t
 } dt_lib_colorpicker_model_t;
 
 const gchar *dt_lib_colorpicker_model_names[]
-  = { N_("RGB"), N_("Lab"), N_("LCh"), N_("HSL"), N_("HSV"), N_("Hex"), N_("none"), NULL };
+  = { N_("RGB"), N_("RGB%"), N_("Lab"), N_("LCh"), N_("HSL"), N_("HSV"), N_("Hex"), N_("none"), NULL };
 const gchar *dt_lib_colorpicker_statistic_names[]
   = { N_("mean"), N_("min"), N_("max"), NULL };
 
@@ -208,7 +209,12 @@ static void _update_sample_label(dt_lib_module_t *self,
       snprintf(text, sizeof(text), "%6d %6d %6d",
                sample->label_rgb[0], sample->label_rgb[1], sample->label_rgb[2]);
       break;
-
+    case DT_LIB_COLORPICKER_MODEL_RGB_PERCENT:  
+      snprintf(text, sizeof(text), "%6.1f%% %6.1f%% %6.1f%%",
+            (sample->scope[statistic][0] * 100.f),
+            (sample->scope[statistic][1] * 100.f),
+            (sample->scope[statistic][2] * 100.f));
+      break;
     case DT_LIB_COLORPICKER_MODEL_LAB:
       snprintf(text, sizeof(text), "%6.02f %6.02f %6.02f",
                CLAMP(sample->lab[statistic][0], .0f, 100.0f),
