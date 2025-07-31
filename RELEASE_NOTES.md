@@ -62,27 +62,12 @@ changes (where available).
 
 ## Other Changes
 
-- N/A
+- Add busy cursor while generating a GPX track preview and a progress
+  bar while applying positions from a track to images.
 
 ## Bug Fixes
 
 - Fixed translation of snapshot module's labels.
-
-## Lua
-
-### API Version
-
-- API version is now 9.5.0
-
-### New Features
-
-- Added apply_sidecar to dt_lua_image_t so that a sidecar file can be loaded
-  and applied to an image in lighttable.
-
-- Add busy cursor while generating a GPX track preview and a progress
-  bar while applying positions from a track to images.
-
-### Bug Fixes
 
 - Expanded width of preference boxes Lua Options so that long input is visible.
 
@@ -112,6 +97,21 @@ changes (where available).
   to the full case sensitive tag name to avoid ambiguity.
 
 - Fixed inability to remove collections with ' in the name.
+
+## Lua
+
+### API Version
+
+- API version is now 9.5.0
+
+### New Features
+
+- Added apply_sidecar to dt_lua_image_t so that a sidecar file can be loaded
+  and applied to an image in lighttable.
+
+### Bug Fixes
+
+- N/A
 
 ### Add action support for Lua
 
