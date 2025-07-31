@@ -29,7 +29,6 @@ msgctxt "preferences"
 msgid "last instance"
 msgstr "마지막 인스턴스"
 
-# ##mortglacia###
 #: ../build/bin/conf_gen.h:190 ../build/bin/conf_gen.h:303
 #: ../build/bin/conf_gen.h:313 ../build/bin/conf_gen.h:1264
 #: ../build/bin/conf_gen.h:1280 ../build/bin/conf_gen.h:1309
@@ -5765,7 +5764,6 @@ msgstr "코카서스인"
 msgid "African-American"
 msgstr "아프리카계 미국인"
 
-# ##YoonHayoon###
 #: ../src/common/color_vocabulary.c:97
 msgid "Mexican"
 msgstr "멕시칸"
@@ -17503,7 +17501,6 @@ msgstr "프로파일|LUT|컬러 그레이딩"
 msgid "perform color space corrections and apply looks"
 msgstr "색공간 보정을 수행하고 보기에 적용"
 
-# ##minchae###
 #: ../src/iop/colorchecker.c:131 ../src/iop/colorchecker.c:133
 #: ../src/iop/colorize.c:96 ../src/iop/colormapping.c:153
 #: ../src/iop/colorout.c:87 ../src/iop/colorreconstruction.c:118
@@ -23710,7 +23707,6 @@ msgstr ""
 "내보내기 모듈의 환경설정에서 메타데이터 항목을 <b>모두</b> 선택하지 않는 한,\n"
 "어떠한 메타데이터도 포함되지 않습니다"
 
-# #####################1 -- 100 ############################################
 #: ../src/libs/export.c:1472
 msgid "set size"
 msgstr "크기 설정"
@@ -25596,7 +25592,6 @@ msgstr ""
 msgid "<leave unchanged>"
 msgstr "<변경하지 않음>"
 
-# ########################## 401 -- 500 ###########################################################
 #: ../src/libs/metadata.c:842 ../src/libs/metadata_view.c:1432
 msgid "metadata settings"
 msgstr "메타데이터 설정"
@@ -27450,7 +27445,6 @@ msgstr "현재 컬렉션에 있는 %s"
 msgid "image infos"
 msgstr "이미지 정보"
 
-# ########################### 801 -- 900 ############################################
 #: ../src/libs/tools/lighttable.c:114
 msgid "click to exit from full preview layout."
 msgstr "전체 미리보기 레이아웃에서 나가려면 클릭하세요."
@@ -27592,7 +27586,7 @@ msgstr "보기 전환 모듈"
 #: ../src/lua/preferences.c:712 ../src/lua/preferences.c:776
 #, c-format
 msgid "double-click to reset to `%s'"
-msgstr "더블 클릭하여 `%s'(으)로 리셋"
+msgstr "더블 클릭하여 `%s'로 리셋"
 
 #: ../src/lua/preferences.c:681
 msgid "select file"
@@ -27601,12 +27595,12 @@ msgstr "파일 선택"
 #: ../src/lua/preferences.c:735
 #, c-format
 msgid "double-click to reset to `%d'"
-msgstr "더블 클릭하여 `%d'(으)로 리셋"
+msgstr "더블 클릭하여 `%d'로 리셋"
 
 #: ../src/lua/preferences.c:762
 #, c-format
 msgid "double-click to reset to `%f'"
-msgstr "더블 클릭하여 `%f'(으)로 리셋"
+msgstr "더블 클릭하여 `%f'로 리셋"
 
 #: ../src/lua/preferences.c:838
 msgid "Lua options"
@@ -27943,8 +27937,8 @@ msgid ""
 "typical color glossy prints produce black at -8.00 EV,\n"
 "typical B&W glossy prints produce black at -9.00 EV."
 msgstr ""
-"블랙 포인트 클리핑 임계값(EV 기준)을 설정합니다,\n"
-"EV에서, 0 EV는 흰색입니다.\n"
+"블랙 포인트 클리핑 임계값을 설정합니다,\n"
+"EV에서, 상대적으로 흰색 (0 EV).\n"
 "8비트 sRGB: -12.69 EV에서 검은색을 클리핑하고,\n"
 "8비트 Adobe RGB: -19.79 EV에서 검을색을 클리핑하고,\n"
 "16비트 sRGB: -20.69 EV에서 검은색을 클리핑합니다,\n"
@@ -27974,7 +27968,7 @@ msgid ""
 "toggle softproofing\n"
 "right-click for profile options"
 msgstr ""
-"소프트프루핑 전환\n"
+"소프트프루프 전환\n"
 "우클릭하여 옵션 보기"
 
 #: ../src/views/darkroom.c:2706
@@ -28461,3 +28455,4 @@ msgstr "키를 뗀 후에도 창이 닫히지 않는 클래식 창으로 전환"
 #: ../src/views/view.c:1566
 msgid "mouse actions"
 msgstr "마우스 동작"
+
