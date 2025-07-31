@@ -28004,7 +28004,7 @@ msgstr "히스토그램 프로파일"
 
 #: ../src/views/darkroom.c:2773
 msgid "second preview window color assessment"
-msgstr "두 번째 미리보기 창 색상 평가"
+msgstr "두번째 미리보기 창 색상 평가"
 
 #: ../src/views/darkroom.c:2776
 msgid "color assessment second preview"
