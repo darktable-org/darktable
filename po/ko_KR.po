@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-28 09:08+0200\n"
-"PO-Revision-Date: 2025-07-31 17:29+0900\n"
+"PO-Revision-Date: 2025-07-31 18:33+0900\n"
 "Last-Translator: Hwanyong Lee <hwan@ajou.ac.kr>\n"
 "Language-Team: Ajou Univ.(함도혁,윤하윤,정채영,김민채,김윤중)\n"
 "Language: ko_KR\n"
@@ -15640,7 +15640,7 @@ msgid ""
 "allowing the path to become asymmetric"
 msgstr ""
 "경로의 어떤 부분을 사용할지 선택하여,\n"
-"해당 경로를 비대칭으로 만들 수 있습니다."
+"해당 경로를 비대칭으로 만들 수 있습니다"
 
 #: ../src/iop/borders.c:306
 msgid "framing"
@@ -28455,4 +28455,3 @@ msgstr "키를 뗀 후에도 창이 닫히지 않는 클래식 창으로 전환"
 #: ../src/views/view.c:1566
 msgid "mouse actions"
 msgstr "마우스 동작"
-
