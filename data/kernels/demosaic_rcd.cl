@@ -266,30 +266,50 @@ __kernel void rcd_step_5_2(global float *VH_dir, global float *rgb0, global floa
 }
 
 __kernel void write_blended_dual(__read_only image2d_t high,
-                                 __read_only image2d_t low,
+                                 __read_only image2d_t in,
                                  __write_only image2d_t out,
-                                 const int w,
+                                 const int w1,
                                  const int height,
+                                 const int sx,
+                                 const int sy,
+                                 const unsigned int filters,
+                                 global const unsigned char (*const xtrans)[6],
                                  global float *mask,
+                                 global float *kern,
+                                 global float *ckern,
                                  const int showmask)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
-  if((col >= w) || (row >= height)) return;
-  const int idx = mad24(row, w, col);
+  if((col >= w1) || (row >= height)) return;
 
-  float4 data;
+  const float4 high_val = read_imagef(high, samplerA, (int2)(col, row));
 
-  const float4 high_val = read_imagef(high, sampleri, (int2)(col, row));
-  const float4 low_val = read_imagef(low, sampleri, (int2)(col, row));
-  const float4 blender = mask[idx];
-  data = mix(low_val, high_val, blender);
+  float sum[3] = { 0.0f, 0.0f, 0.0f };
+  float cnt[3] = { 0.0f, 0.0f, 0.0f };
+  float blurr = 0.0f;
+  for(int dy = -4; dy < 5; dy++)
+  {
+    for(int dx = -4; dx < 5; dx++)
+    {
+      const int x = col + dx;
+      const int y = row + dy;
+      if(x >= 0 && y >= 0 && x < w1 && y < height)
+      {
+        const int kdx = 5 * abs(dy) + abs(dx);
+        const int color = (filters == 9u) ? FCxtrans(y+sy, x+sx, xtrans) : FC(y, x, filters);
+        const float weight = ckern[kdx];
+        sum[color] += fmax(0.0f, weight * read_imagef(in, samplerA, (int2)(x, y)).x);
+        cnt[color] += weight;
+        blurr += kern[kdx] * mask[mad24(y, w1, x)];
+      }
+    }
+  }
+  const float4 low_val = { sum[0] / cnt[0], sum[1] / cnt[1], sum[2] / cnt[2], 0.0f};
+  blurr = clipf(blurr);
+  float4 data = mix(low_val, high_val, (float4)blurr);
 
-  if(showmask)
-    data.w = mask[idx];
-  else
-    data.w = 0.0f;
-
+  data.w = showmask ? blurr : 0.0f;
   write_imagef(out, (int2)(col, row), fmax(data, 0.0f));
 }
 
@@ -300,7 +320,7 @@ __kernel void calc_Y0_mask(global float *mask, __read_only image2d_t in, const i
   if((col >= w) || (row >= height)) return;
   const int idx = mad24(row, w, col);
 
-  float4 pt = read_imagef(in, sampleri, (int2)(col, row));
+  const float4 pt = read_imagef(in, samplerA, (int2)(col, row));
   const float val = fmax(pt.x / red, 0.0f)
                   + fmax(pt.y / green, 0.0f)
                   + fmax(pt.z / blue, 0.0f);
