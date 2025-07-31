@@ -28152,7 +28152,7 @@ msgstr "제한 없는 이미지 확대"
 
 #: ../src/views/darkroom.c:3721
 msgid "zoom to 100% 200% and back"
-msgstr "100%, 200%로 확대 및 되돌리"
+msgstr "100%, 200%로 확대 및 되돌리기"
 
 #: ../src/views/darkroom.c:3723 ../src/views/lighttable.c:957
 msgid "pan a zoomed image"
