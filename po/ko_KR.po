@@ -27826,7 +27826,7 @@ msgstr "CFA 색상으로 마킹"
 
 #: ../src/views/darkroom.c:2569
 msgid "mark with solid color"
-msgstr "단색으로 표시"
+msgstr "단색으로 마킹"
 
 #: ../src/views/darkroom.c:2570
 msgid "false color"
