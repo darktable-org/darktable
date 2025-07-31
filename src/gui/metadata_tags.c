@@ -93,10 +93,6 @@ GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent, gpointer metadata_activate
                                                   _("_done"), GTK_RESPONSE_NONE, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_NONE);
   gtk_window_set_default_size(GTK_WINDOW(dialog), DT_PIXEL_APPLY_DPI(500), DT_PIXEL_APPLY_DPI(300));
-  GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
-  gtk_container_set_border_width(GTK_CONTAINER(vbox), 8);
-  gtk_box_pack_start(GTK_BOX(area), vbox, TRUE, TRUE, 0);
 
   // keep a reference to the "add" button to toggle its sensitivity
   add_button = gtk_dialog_get_widget_for_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
@@ -105,14 +101,10 @@ GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent, gpointer metadata_activate
   gtk_entry_set_text(GTK_ENTRY(sel_entry), "");
   gtk_widget_set_tooltip_text(sel_entry, _("list filter"));
   gtk_entry_set_activates_default(GTK_ENTRY(sel_entry), TRUE);
-  gtk_box_pack_start(GTK_BOX(vbox), sel_entry, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(sel_entry), "changed", G_CALLBACK(_tag_name_changed), NULL);
 
-  GtkWidget *w = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_box_pack_start(GTK_BOX(vbox), w, TRUE, TRUE, 0);
   sel_view = GTK_TREE_VIEW(gtk_tree_view_new());
-  gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(sel_view));
+  GtkWidget *w = dt_gui_scroll_wrap(GTK_WIDGET(sel_view));
   gtk_widget_set_tooltip_text(GTK_WIDGET(sel_view), _("list of available tags. click 'add' button or double-click on tag to add the selected one"));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(sel_view);
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
@@ -162,6 +154,7 @@ GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent, gpointer metadata_activate
   g_object_unref(model);
   g_signal_connect(G_OBJECT(sel_view), "row-activated", G_CALLBACK(metadata_activated_callback), user_data);
 
+  dt_gui_dialog_add(GTK_DIALOG(dialog), sel_entry, w);
   return dialog;
 }
 

@@ -398,9 +398,6 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   gtk_container_add(GTK_CONTAINER(filename->pop), hb);
 
   // the name tree
-  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
-  gtk_widget_set_no_show_all(sw, TRUE);
-  gtk_box_pack_start(GTK_BOX(hb), sw, TRUE, TRUE, 0);
   GtkTreeModel *model
       = GTK_TREE_MODEL(gtk_list_store_new(TREE_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT));
   filename->name_tree = gtk_tree_view_new_with_model(model);
@@ -422,12 +419,11 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
 
   gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(filename->name_tree), TREE_COL_TOOLTIP);
 
-  gtk_container_add(GTK_CONTAINER(sw), filename->name_tree);
-
-  // the extension tree
-  sw = gtk_scrolled_window_new(NULL, NULL);
+  GtkWidget *sw = dt_gui_scroll_wrap(filename->name_tree);
   gtk_widget_set_no_show_all(sw, TRUE);
   gtk_box_pack_start(GTK_BOX(hb), sw, TRUE, TRUE, 0);
+
+  // the extension tree
   model
       = GTK_TREE_MODEL(gtk_list_store_new(TREE_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT));
   filename->ext_tree = gtk_tree_view_new_with_model(model);
@@ -449,7 +445,9 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
 
   gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(filename->ext_tree), TREE_COL_TOOLTIP);
 
-  gtk_container_add(GTK_CONTAINER(sw), filename->ext_tree);
+  sw = dt_gui_scroll_wrap(filename->ext_tree);
+  gtk_widget_set_no_show_all(sw, TRUE);
+  gtk_box_pack_start(GTK_BOX(hb), sw, TRUE, TRUE, 0);
 
   // the button to close the popup
   GtkWidget *btn = gtk_button_new_with_label(_("ok"));
