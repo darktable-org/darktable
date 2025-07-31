@@ -28259,7 +28259,7 @@ msgstr "전체"
 
 #: ../src/views/lighttable.c:1333
 msgid "leave"
-msgstr "나가기기"
+msgstr "나가기"
 
 #: ../src/views/lighttable.c:1340
 msgid "align images to grid"
