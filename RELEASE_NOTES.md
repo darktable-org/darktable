@@ -115,6 +115,8 @@ changes (where available).
 
 ### Add action support for Lua
 
+- N/A
+
 ### Other Lua changes
 
 - N/A
