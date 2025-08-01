@@ -154,6 +154,7 @@ changes (where available).
 - Nikon D200 (12bit-compressed)
 - Nikon D5300 (12bit-compressed)
 - Panasonic DC-GH7 (4:3)
+- Pentax K-r (PEF)
 - Samsung GX-1L
 
 ### White Balance Presets
