@@ -22,7 +22,7 @@ $ sha256sum darktable-5.2.1-arm64-13.5.dmg
 $ sha256sum darktable-5.2.1-win64.exe
 4c1499e9d137efcd87e8b70fb6a0374f7139f1d0f0c49baeac9923ef7df7bdaa  darktable-5.2.1-win64.exe
 
-$ sha256sum Darktable-4.8.1-x86_64.AppImage
+$ sha256sum Darktable-5.2.1-x86_64.AppImage
 294eff1d74d322cc5459221361ac7bdcdf0dc41529a02c165d0861e085978d58  Darktable-5.2.1-x86_64.AppImage
 ```
 
@@ -32,11 +32,11 @@ You are strongly advised to take a backup first.
 
 #### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
 
-Since darktable 5.0:
+Since darktable 5.2.0:
 
-- 1099 commits to darktable+rawspeed
-- 386 pull requests handled
-- 49 issues closed
+- 74 commits to darktable+rawspeed
+- 37 pull requests handled
+- 11 issues closed
 
 _Please note that the darktable documentation is not currently complete for release 5.2
 and contributions are greatly appreciated. Please see the
@@ -151,15 +151,21 @@ changes (where available).
 
 ### Base Support
 
-- N/A
+- Nikon D200 (12bit-compressed)
+- Nikon D5300 (12bit-compressed)
+- Panasonic DC-GH7 (4:3)
+- Samsung GX-1L
 
 ### White Balance Presets
 
 - Fujifilm GFX 100 model name fix
+- Nikon Z50_2
 
 ### Noise Profiles
 
-- N/A
+- Fujifilm GFX100S II
+- Panasonic DC-S5M2X
+- Pentax *ist D
 
 ### Missing Compression Mode Support
 
