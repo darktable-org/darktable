@@ -20,6 +20,7 @@
 #include "common/custom_primaries.h"
 #include "common/math.h"
 #include "common/matrices.h"
+#include "common/dttypes.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "develop/openmp_maths.h"
@@ -494,7 +495,7 @@ DT_OMP_DECLARE_SIMD()
 static inline void _desaturate_negative_values(const dt_aligned_pixel_t pix_in, dt_aligned_pixel_t pix_out)
 {
   const float pixel_average = fmaxf((pix_in[0] + pix_in[1] + pix_in[2]) / 3.0f, 0.0f);
-  const float min_value = fminf(fminf(pix_in[0], pix_in[1]), pix_in[2]);
+  const float min_value = min3f(pix_in);
   const float saturation_factor = min_value < 0.0f ? -pixel_average / (min_value - pixel_average) : 1.0f;
   for_each_channel(c, aligned(pix_in, pix_out))
   {
