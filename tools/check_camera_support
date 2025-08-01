@@ -341,7 +341,7 @@ else
       verbose_mode = true
     elsif arg == "--quiet"
       quiet_mode = true
-    elsif samplesdir == nil && File.exists?(arg)
+    elsif samplesdir == nil && File.exist?(arg)
       samplesdir = arg
     else
       $stderr.puts "Usage: check_camera_support [--verbose] [--matrix] <samples dir>"
