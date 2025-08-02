@@ -2195,12 +2195,15 @@ void dt_image_refresh_makermodel(dt_image_t *img)
             sizeof(img->camera_makermodel)-len-1);
 }
 
-gboolean _move_file(const gchar *oldFilePath, const gchar *newFolder)
+gboolean _move_extra_file(const gchar *oldFilePath, const gchar *newFolder, const gchar *newBasename)
 {
+  //get extension of extra files before move (can be upper or lower case)
   gchar *oldFilename = g_path_get_basename(oldFilePath);
+  gchar *oldExtension =  g_strdup( oldFilename + (strrchr(oldFilename, '.') - oldFilename) );
   gchar newFilePath[PATH_MAX] = { 0 };
   g_strlcpy(newFilePath, newFolder, sizeof(newFilePath));
-  g_strlcat(newFilePath, oldFilename, sizeof(newFilePath));
+  g_strlcat(newFilePath, newBasename, sizeof(newFilePath));
+  g_strlcat(newFilePath, oldExtension, sizeof(newFilePath));
   GFile *oldFile = g_file_new_for_path(oldFilePath);
   GFile *newFile = g_file_new_for_path(newFilePath);
   gboolean moveSuccess = g_file_move(oldFile, newFile, 0, NULL, NULL, NULL, NULL);
@@ -2381,24 +2384,30 @@ gboolean dt_image_rename(const dt_imgid_t imgid,
         g_object_unref(cnew);
       }
 
+      // Now copy extra files like sidecar text file and audio file, if present
       gchar *oldTxtFilePath = dt_image_get_text_path_from_path(oldimg);
       gchar *oldAudioFilePath = dt_image_get_audio_path_from_path(oldimg);
       if(oldTxtFilePath != NULL || oldAudioFilePath != NULL)
       {
         gchar newFolder[PATH_MAX] = { 0 };
         gchar *newPath = g_path_get_dirname(newimg);
+        gchar *newImgBasename = g_path_get_basename(newimg);
+        //if a new image name is provided, this should also be used for the extra files
+        gchar *newBasename = g_strndup(newImgBasename, strrchr(newImgBasename, '.') - newImgBasename);
         g_strlcpy(newFolder, newPath, sizeof(newFolder));
         g_strlcat(newFolder, G_DIR_SEPARATOR_S, sizeof(newFolder));
 
         if(oldTxtFilePath != NULL)
         {
-          _move_file(oldTxtFilePath, newFolder);
+          _move_extra_file(oldTxtFilePath, newFolder, newBasename);
         }
         if(oldAudioFilePath != NULL)
         {
-          _move_file(oldAudioFilePath, newFolder);       
+          _move_extra_file(oldAudioFilePath, newFolder, newBasename);       
         }    
         g_free(newPath);    
+        g_free(newImgBasename);
+        g_free(newBasename);
       }
       g_free(oldTxtFilePath);
       g_free(oldAudioFilePath);
