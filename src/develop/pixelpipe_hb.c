@@ -688,7 +688,7 @@ void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
       dt_dev_pixelpipe_synch_all(pipe, dev);
     }
   }
-  pipe->changed = DT_DEV_PIPE_UNCHANGED;
+  pipe->changed &= DT_DEV_PIPE_ZOOMED; // clear all but zoomed flag
   dt_pthread_mutex_unlock(&dev->history_mutex);
 
   dt_dev_pixelpipe_get_dimensions(pipe, dev,
