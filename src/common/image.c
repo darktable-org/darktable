@@ -2366,6 +2366,46 @@ gboolean dt_image_rename(const dt_imgid_t imgid,
         g_object_unref(cnew);
       }
 
+      gchar *oldTxtFilePath = dt_image_get_text_path_from_path(oldimg);
+      gchar *oldAudioFilePath = dt_image_get_audio_path_from_path(oldimg);
+      if(oldTxtFilePath != NULL || oldAudioFilePath != NULL)
+      {
+        gchar newFolder[PATH_MAX] = { 0 };
+        gchar *newPath = g_path_get_dirname(newimg);
+        g_strlcpy(newFolder, newPath, sizeof(newFolder));
+        g_strlcat(newFolder, G_DIR_SEPARATOR_S, sizeof(newFolder));
+
+        if(oldTxtFilePath != NULL)
+        {
+          gchar *oldTxtFilename = g_path_get_basename(oldTxtFilePath);
+          gchar newTxtFilePath[PATH_MAX] = { 0 };
+          g_strlcpy(newTxtFilePath, newFolder, sizeof(newTxtFilePath));
+          g_strlcat(newTxtFilePath, oldTxtFilename, sizeof(newTxtFilePath));
+          GFile *oldTxtFile = g_file_new_for_path(oldTxtFilePath);
+          GFile *newTxtFile = g_file_new_for_path(newTxtFilePath);
+          g_file_move(oldTxtFile, newTxtFile, 0, NULL, NULL, NULL, NULL);
+          g_free(oldTxtFilename);
+          g_object_unref(oldTxtFile);
+          g_object_unref(newTxtFile);
+        }
+        if(oldAudioFilePath != NULL)
+        {
+          gchar *oldAudioFilename = g_path_get_basename(oldAudioFilePath);
+          gchar newAudioFilePath[PATH_MAX] = { 0 };
+          g_strlcpy(newAudioFilePath, newFolder, sizeof(newAudioFilePath));
+          g_strlcat(newAudioFilePath, oldAudioFilename, sizeof(newAudioFilePath));
+          GFile *oldAudioFile = g_file_new_for_path(oldAudioFilePath);
+          GFile *newAudioFile = g_file_new_for_path(newAudioFilePath);
+          g_file_move(oldAudioFile, newAudioFile, 0, NULL, NULL, NULL, NULL);
+          g_free(oldAudioFilename);
+          g_object_unref(oldAudioFile);
+          g_object_unref(newAudioFile);          
+        }    
+        g_free(newPath);    
+      }
+      g_free(oldTxtFilePath);
+      g_free(oldAudioFilePath);
+
       result = FALSE;
     }
     else
