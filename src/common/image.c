@@ -2195,6 +2195,21 @@ void dt_image_refresh_makermodel(dt_image_t *img)
             sizeof(img->camera_makermodel)-len-1);
 }
 
+gboolean _move_file(const gchar *oldFilePath, const gchar *newFolder)
+{
+  gchar *oldFilename = g_path_get_basename(oldFilePath);
+  gchar newFilePath[PATH_MAX] = { 0 };
+  g_strlcpy(newFilePath, newFolder, sizeof(newFilePath));
+  g_strlcat(newFilePath, oldFilename, sizeof(newFilePath));
+  GFile *oldFile = g_file_new_for_path(oldFilePath);
+  GFile *newFile = g_file_new_for_path(newFilePath);
+  gboolean moveSuccess = g_file_move(oldFile, newFile, 0, NULL, NULL, NULL, NULL);
+  g_free(oldFilename);
+  g_object_unref(oldFile);
+  g_object_unref(newFile);      
+  return moveSuccess;    
+}
+
 gboolean dt_image_rename(const dt_imgid_t imgid,
                          const int32_t filmid,
                          const gchar *newname)
@@ -2377,29 +2392,11 @@ gboolean dt_image_rename(const dt_imgid_t imgid,
 
         if(oldTxtFilePath != NULL)
         {
-          gchar *oldTxtFilename = g_path_get_basename(oldTxtFilePath);
-          gchar newTxtFilePath[PATH_MAX] = { 0 };
-          g_strlcpy(newTxtFilePath, newFolder, sizeof(newTxtFilePath));
-          g_strlcat(newTxtFilePath, oldTxtFilename, sizeof(newTxtFilePath));
-          GFile *oldTxtFile = g_file_new_for_path(oldTxtFilePath);
-          GFile *newTxtFile = g_file_new_for_path(newTxtFilePath);
-          g_file_move(oldTxtFile, newTxtFile, 0, NULL, NULL, NULL, NULL);
-          g_free(oldTxtFilename);
-          g_object_unref(oldTxtFile);
-          g_object_unref(newTxtFile);
+          _move_file(oldTxtFilePath, newFolder);
         }
         if(oldAudioFilePath != NULL)
         {
-          gchar *oldAudioFilename = g_path_get_basename(oldAudioFilePath);
-          gchar newAudioFilePath[PATH_MAX] = { 0 };
-          g_strlcpy(newAudioFilePath, newFolder, sizeof(newAudioFilePath));
-          g_strlcat(newAudioFilePath, oldAudioFilename, sizeof(newAudioFilePath));
-          GFile *oldAudioFile = g_file_new_for_path(oldAudioFilePath);
-          GFile *newAudioFile = g_file_new_for_path(newAudioFilePath);
-          g_file_move(oldAudioFile, newAudioFile, 0, NULL, NULL, NULL, NULL);
-          g_free(oldAudioFilename);
-          g_object_unref(oldAudioFile);
-          g_object_unref(newAudioFile);          
+          _move_file(oldAudioFilePath, newFolder);       
         }    
         g_free(newPath);    
       }
