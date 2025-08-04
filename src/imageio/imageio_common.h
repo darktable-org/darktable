@@ -127,14 +127,6 @@ gboolean dt_imageio_export_with_flags(const dt_imgid_t imgid, const char *filena
                                  dt_export_metadata_t *metadata,
                                  const int history_end);
 
-size_t dt_imageio_write_pos(const int i,
-                            const int j,
-                            const int wd,
-                            const int ht,
-                            const float fwd,
-                            const float fht,
-                            const dt_image_orientation_t orientation);
-
 // general, efficient buffer flipping function using memcopies
 void dt_imageio_flip_buffers(char *out,
                              const char *in,

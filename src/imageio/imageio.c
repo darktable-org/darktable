@@ -933,28 +933,6 @@ void dt_imageio_flip_buffers_ui8_to_float(float *out,
   }
 }
 
-size_t dt_imageio_write_pos(const int i,
-                            const int j,
-                            const int wd,
-                            const int ht,
-                            const float fwd,
-                            const float fht,
-                            const dt_image_orientation_t orientation)
-{
-  int ii = i, jj = j, w = wd, fw = fwd, fh = fht;
-  if(orientation & ORIENTATION_SWAP_XY)
-  {
-    w = ht;
-    ii = j;
-    jj = i;
-    fw = fht;
-    fh = fwd;
-  }
-  if(orientation & ORIENTATION_FLIP_X) ii = (int)fw - ii - 1;
-  if(orientation & ORIENTATION_FLIP_Y) jj = (int)fh - jj - 1;
-  return (size_t)jj * w + ii;
-}
-
 gboolean dt_imageio_is_ldr(const char *filename)
 {
   const dt_magic_bytes_t *sig = _find_signature(filename);
