@@ -618,6 +618,8 @@ const char *dt_collection_name_untranslated(const dt_collection_properties_t pro
       return N_("tag");
     case DT_COLLECTION_PROP_DAY:
       return N_("capture date");
+    case DT_COLLECTION_PROP_MONTH:
+      return N_("capture month");
     case DT_COLLECTION_PROP_TIME:
       return N_("capture time");
     case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
@@ -2101,6 +2103,73 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
       break;
     }
+    case DT_COLLECTION_PROP_MONTH:
+    {
+      if(g_str_has_prefix(escaped_text, "0x"))
+      {
+        // bitmask format from the filtering panel toggle buttons
+        const int mask = (int)strtoll(&escaped_text[2], NULL, 16);
+        if(mask == 0 || mask == 0xFFF)
+        {
+          query = g_strdup("1=1");
+        }
+        else
+        {
+          // build IN(...) list from bitmask
+          GString *months = g_string_new(NULL);
+          for(int i = 0; i < 12; i++)
+          {
+            if(mask & (1 << i))
+            {
+              if(months->len > 0)
+                g_string_append(months, ", ");
+              g_string_append_printf(months, "%d", i + 1);
+            }
+          }
+          // clang-format off
+          query = g_strdup_printf(
+            "(CAST(strftime('%%m', datetime_taken / 86400000000.0 + julianday('0001-01-01'))"
+            " AS INTEGER) IN (%s))",
+            months->str);
+          // clang-format on
+          g_string_free(months, TRUE);
+        }
+      }
+      else
+      {
+        // plain text format from the collections panel (e.g. "12" or "3")
+        // parse as a comma-separated list of month numbers or a single month
+        GString *months = g_string_new(NULL);
+        gchar **parts = g_strsplit(escaped_text, ",", -1);
+        for(int i = 0; parts[i]; i++)
+        {
+          g_strstrip(parts[i]);
+          const int m = atoi(parts[i]);
+          if(m >= 1 && m <= 12)
+          {
+            if(months->len > 0)
+              g_string_append(months, ", ");
+            g_string_append_printf(months, "%d", m);
+          }
+        }
+        g_strfreev(parts);
+
+        if(months->len > 0)
+        {
+          // clang-format off
+          query = g_strdup_printf(
+            "(CAST(strftime('%%m', datetime_taken / 86400000000.0 + julianday('0001-01-01'))"
+            " AS INTEGER) IN (%s))",
+            months->str);
+          // clang-format on
+        }
+        else
+          query = g_strdup("1=1");
+
+        g_string_free(months, TRUE);
+      }
+      break;
+    }
     case DT_COLLECTION_PROP_DAY:
     case DT_COLLECTION_PROP_TIME:
     case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
@@ -2114,6 +2183,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       switch(local_property)
       {
         case DT_COLLECTION_PROP_DAY: colname = "datetime_taken" ; break ;
+        // WHERE strftime('%m', date_time_column) = '08'
         case DT_COLLECTION_PROP_TIME: colname = "datetime_taken" ; break ;
         case DT_COLLECTION_PROP_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
         case DT_COLLECTION_PROP_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
