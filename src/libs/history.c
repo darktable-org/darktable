@@ -101,8 +101,12 @@ const char *name(dt_lib_module_t *self)
 const char *description(dt_lib_module_t *self)
 {
   return _("display the sequence of edit actions\n"
-           "and allow temporarily returning to\n"
-           "an earlier state of the edit");
+           "- click on an entry to temporarily return to\n"
+           "  that earlier state of the edit\n"
+           "  (warning: any edits will be made to that\n"
+           "  earlier state, losing later changes)\n"
+           "- shift-click to focus that module without\n"
+           "  changing the edit state");
 }
 
 dt_view_type_flags_t views(dt_lib_module_t *self)
