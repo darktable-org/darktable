@@ -3897,3 +3897,32 @@ interpolation_resample (read_only image2d_t in,
     write_imagef (out, (int2)(x, y), fmax(buffer[ylid], 0.f));
   }
 }
+
+/* kernel for the interpolation copy helper */
+kernel void
+interpolation_copy(read_only image2d_t dev_in,
+                   write_only image2d_t dev_out,
+                   const int owidth,
+                   const int oheight,
+                   const int iwidth,
+                   const int iheight,
+                   const int dx,
+                   const int dy)
+{
+  const int ocol = get_global_id(0);
+  const int orow = get_global_id(1);
+
+  if(ocol >= owidth || orow >= oheight) return;
+
+  float4 pix = (float4)( 0.0f, 0.0f, 0.0f, 0.0f );
+
+  const int irow = orow + dy;
+  const int icol = ocol + dx;
+
+  if(irow < iheight && icol < iwidth)
+  {
+    pix = read_imagef(dev_in, samplerA, (int2)(icol, irow));
+  }
+  write_imagef(dev_out, (int2)(ocol, orow), pix);
+}
+
