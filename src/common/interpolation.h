@@ -140,6 +140,7 @@ void dt_interpolation_resample_roi(const dt_interpolation_t *itor, float *out,
 typedef struct dt_interpolation_cl_global_t
 {
   int kernel_interpolation_resample;
+  int kernel_copy_resample;
 } dt_interpolation_cl_global_t;
 
 dt_interpolation_cl_global_t *dt_interpolation_init_cl_global(void);
