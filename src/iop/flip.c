@@ -347,14 +347,6 @@ void modify_roi_in(dt_iop_module_t *self,
   // to convert valid points to widths, we need to add one
   roi_in->width = aabb_in[2] - aabb_in[0] + 1;
   roi_in->height = aabb_in[3] - aabb_in[1] + 1;
-
-  // sanity check.
-  const float w = piece->buf_in.width * roi_out->scale;
-  const float h = piece->buf_in.height * roi_out->scale;
-  roi_in->x = CLAMP(roi_in->x, 0, (int)floorf(w));
-  roi_in->y = CLAMP(roi_in->y, 0, (int)floorf(h));
-  roi_in->width = CLAMP(roi_in->width, 1, (int)ceilf(w) - roi_in->x);
-  roi_in->height = CLAMP(roi_in->height, 1, (int)ceilf(h) - roi_in->y);
 }
 
 // 3rd (final) pass: you get this input region (may be different from
