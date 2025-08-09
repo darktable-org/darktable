@@ -926,7 +926,7 @@ void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out,
         {
           for(int j = 0; j < 3; ++j)
             for(int i = 0; i < 3; ++i)
-              col[FCxtrans(yy + j, xx + i, roi_in, xtrans)]
+              col[FCxtrans(yy + j, xx + i, NULL, xtrans)]
                 += in[xx + i + in_stride * (yy + j)];
           num++;
         }

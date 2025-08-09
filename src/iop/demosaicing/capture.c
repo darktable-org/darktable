@@ -181,27 +181,25 @@ static float _calcRadiusBayer(const float *in,
 }
 
 static float _calcRadiusXtrans(const float *in,
+                               const int width,
+                               const int height,
                                const float lowerLimit,
                                const float upperLimit,
-                               const dt_iop_roi_t *const roi,
                                const uint8_t(*const xtrans)[6])
 {
-  const int width = roi->width;
-  const int height = roi->height;
-
   int startx, starty;
   gboolean found = FALSE;
   for(starty = 6; starty < 12 && !found; starty++)
   {
     for(startx = 6; startx < 12 && !found; startx++)
     {
-      if(FCxtrans(starty, startx, roi, xtrans) == 1)
+      if(FCxtrans(starty, startx, NULL, xtrans) == 1)
       {
-        if(FCxtrans(starty, startx - 1, roi, xtrans) != FCxtrans(starty, startx + 1, roi, xtrans))
+        if(FCxtrans(starty, startx - 1, NULL, xtrans) != FCxtrans(starty, startx + 1, NULL, xtrans))
         {
-          if(FCxtrans(starty -1, startx, roi, xtrans) != 1)
+          if(FCxtrans(starty -1, startx, NULL, xtrans) != 1)
           {
-            if(FCxtrans(starty, startx -1, roi, xtrans) != 1)
+            if(FCxtrans(starty, startx -1, NULL, xtrans) != 1)
             {
               found = TRUE;
               break;
@@ -541,7 +539,9 @@ void _capture_sharpen(dt_iop_module_t *self,
                       float *out,
                       const dt_iop_roi_t *const roi,
                       const gboolean show_variance_mask,
-                      const gboolean show_sigma_mask)
+                      const gboolean show_sigma_mask,
+                      const uint8_t (*const xtrans)[6],
+                      const uint32_t filters)
 {
   dt_dev_pixelpipe_t *pipe = piece->pipe;
 
@@ -560,8 +560,6 @@ void _capture_sharpen(dt_iop_module_t *self,
 
   if(d->cs_iter < 1 && !show_variance_mask && !show_sigma_mask) return;
 
-  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])pipe->dsc.xtrans;
-  const uint32_t filters = pipe->dsc.filters;
   const dt_iop_buffer_dsc_t *dsc = &pipe->dsc;
   const gboolean wbon = dsc->temperature.enabled;
   const dt_aligned_pixel_t icoeffs = { wbon ? CAPTURE_CFACLIP * dsc->temperature.coeffs[0] : CAPTURE_CFACLIP,
@@ -576,7 +574,7 @@ void _capture_sharpen(dt_iop_module_t *self,
   {
     radius = filters != 9u
               ? _calcRadiusBayer(in, width, height, 0.01f, 1.0f, filters)
-              : _calcRadiusXtrans(in, 0.01f, 1.0f, roi, xtrans);
+              : _calcRadiusXtrans(in, width, height, 0.01f, 1.0f, xtrans);
     const gboolean valid = radius > 0.1f && radius < 1.0f;
 
     dt_print_pipe(DT_DEBUG_PIPE, filters != 9u ? "bayer autoradius" : "xtrans autoradius",
@@ -692,9 +690,12 @@ int _capture_sharpen_cl(dt_iop_module_t *self,
                         dt_dev_pixelpipe_iop_t *const piece,
                         const cl_mem dev_in,
                         cl_mem dev_out,
+                        cl_mem dev_xtrans,
                         const dt_iop_roi_t *const roi,
                         const gboolean showmask,
-                        const gboolean show_sigmamask)
+                        const gboolean show_sigmamask,
+                        const uint8_t (*const xtrans)[6],
+                        const uint32_t filters)
 {
   dt_dev_pixelpipe_t *pipe = piece->pipe;
 
@@ -716,7 +717,6 @@ int _capture_sharpen_cl(dt_iop_module_t *self,
 
   if(d->cs_iter < 1 && !showmask) return CL_SUCCESS;
 
-  const uint32_t filters = pipe->dsc.filters;
   const dt_iop_buffer_dsc_t *dsc = &pipe->dsc;
   const gboolean wbon = dsc->temperature.enabled;
   dt_aligned_pixel_t icoeffs = { wbon ? CAPTURE_CFACLIP * dsc->temperature.coeffs[0] : CAPTURE_CFACLIP,
@@ -737,7 +737,7 @@ int _capture_sharpen_cl(dt_iop_module_t *self,
       {
         radius = filters != 9u
                 ? _calcRadiusBayer(in, width, height, 0.01f, 1.0f, filters)
-                : _calcRadiusXtrans(in, 0.01f, 1.0f, roi, (const uint8_t(*const)[6])pipe->dsc.xtrans);
+                : _calcRadiusXtrans(in, width, height, 0.01f, 1.0f, xtrans);
         const gboolean valid = radius > 0.1f && radius < 1.0f;
         dt_print_pipe(DT_DEBUG_PIPE, filters != 9u ? "bayer autoradius" : "xtrans autoradius",
             pipe, self, devid, roi, NULL, "autoradius=%.2f", radius);
@@ -769,18 +769,17 @@ int _capture_sharpen_cl(dt_iop_module_t *self,
   cl_mem luminance = dt_opencl_alloc_device_buffer(devid, bsize);
   cl_mem tmp2 = dt_opencl_alloc_device_buffer(devid, bsize);
   cl_mem tmp1 = dt_opencl_alloc_device_buffer(devid, bsize);
-  cl_mem xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(pipe->dsc.xtrans), pipe->dsc.xtrans);
   cl_mem whites = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), icoeffs);
   cl_mem dev_rgb = dt_opencl_duplicate_image(devid, dev_out);
 
-  if(!blendmask || !luminance || !tmp2 || !tmp1 || !xtrans || !whites || !dev_rgb) goto finish;
+  if(!blendmask || !luminance || !tmp2 || !tmp1 || !whites || !dev_rgb) goto finish;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->prefill_clip_mask, width, height,
           CLARG(tmp2), CLARG(width), CLARG(height));
   if(err != CL_SUCCESS) goto finish;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->prepare_blend, width, height,
-          CLARG(dev_in), CLARG(dev_out), CLARG(filters), CLARG(xtrans), CLARG(tmp2), CLARG(tmp1),
+          CLARG(dev_in), CLARG(dev_out), CLARG(filters), CLARG(dev_xtrans), CLARG(tmp2), CLARG(tmp1),
           CLARG(whites), CLARG(width), CLARG(height));
   if(err != CL_SUCCESS) goto finish;
 
@@ -852,7 +851,6 @@ int _capture_sharpen_cl(dt_iop_module_t *self,
   dt_opencl_release_mem_object(tmp2);
   dt_opencl_release_mem_object(tmp1);
   dt_opencl_release_mem_object(luminance);
-  dt_opencl_release_mem_object(xtrans);
   dt_opencl_release_mem_object(whites);
 
   return err;

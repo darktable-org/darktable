@@ -38,7 +38,7 @@ passthrough_monochrome (__read_only image2d_t in, __write_only image2d_t out, co
 }
 
 __kernel void
-passthrough_color (__read_only image2d_t in, __write_only image2d_t out, const int width, const int height, const int rx, const int ry,
+passthrough_color (__read_only image2d_t in, __write_only image2d_t out, const int width, const int height,
                    const unsigned int filters, global const unsigned char (*const xtrans)[6])
 {
   const int x = get_global_id(0);
@@ -47,7 +47,7 @@ passthrough_color (__read_only image2d_t in, __write_only image2d_t out, const i
   if(x >= width || y >= height) return;
 
   const float ival = read_imagef(in, sampleri, (int2)(x, y)).x;
-  const int c = (filters == 9u) ? FCxtrans(y + ry, x + rx, xtrans) : FC(y + ry, x + rx, filters);
+  const int c = (filters == 9u) ? FCxtrans(y, x, xtrans) : FC(y, x, filters);
 
   float4 oval = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
   if(c == 0)       oval.x = ival;
