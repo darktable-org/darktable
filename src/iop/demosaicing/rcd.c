@@ -290,7 +290,7 @@ static void demosaic_box3(dt_dev_pixelpipe_iop_t *piece,
         {
           if(x >= 0 && y >= 0 && x < width && y < height)
           {
-            const int color = (filters == 9u) ? FCxtrans(y, x, roi, xtrans) : FC(y, x, filters);
+            const int color = (filters == 9u) ? FCxtrans(y, x, NULL, xtrans) : FC(y, x, filters);
             sum[color] += MAX(0.0f, in[(size_t)width*y +x]);
             cnt[color] += 1.0f;
           }
@@ -596,7 +596,8 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
                              dt_dev_pixelpipe_iop_t *piece,
                              cl_mem dev_in,
                              cl_mem dev_out,
-                             const dt_iop_roi_t *const roi_in)
+                             const dt_iop_roi_t *const roi_in,
+                             const uint32_t filters)
 {
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
 
@@ -622,7 +623,7 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
 
     int myborder = 3;
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_border_interpolate, width, height,
-        CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters), CLARG(myborder));
+        CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(filters), CLARG(myborder));
     if(err != CL_SUCCESS) goto error;
 
     {
@@ -640,7 +641,7 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
       size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
       size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
       dt_opencl_set_kernel_args(devid, gd->kernel_rcd_border_green, 0, CLARG(dev_in), CLARG(dev_tmp),
-        CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters), CLLOCAL(sizeof(float) * (locopt.sizex + 2*3) * (locopt.sizey + 2*3)),
+        CLARG(width), CLARG(height), CLARG(filters), CLLOCAL(sizeof(float) * (locopt.sizex + 2*3) * (locopt.sizey + 2*3)),
         CLARG(myborder));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_rcd_border_green, sizes, local);
       if(err != CL_SUCCESS) goto error;
@@ -661,7 +662,7 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
       size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
       size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
       dt_opencl_set_kernel_args(devid, gd->kernel_rcd_border_redblue, 0, CLARG(dev_tmp), CLARG(dev_out),
-        CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2)),
+        CLARG(width), CLARG(height), CLARG(filters), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2)),
         CLARG(myborder));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_rcd_border_redblue, sizes, local);
       if(err != CL_SUCCESS) goto error;
@@ -686,7 +687,7 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
     float scaler = 1.0f / dt_iop_get_processed_maximum(piece);
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_populate, width, height,
         CLARG(dev_in), CLARG(cfa), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height),
-        CLARG(piece->pipe->dsc.filters), CLARG(scaler));
+        CLARG(filters), CLARG(scaler));
     if(err != CL_SUCCESS) goto error;
 
     // Step 1.1: Calculate a squared vertical and horizontal high pass filter on color differences
@@ -701,32 +702,32 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
 
     // Step 2.1: Low pass filter incorporating green, red and blue local samples from the raw data
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_2_1, width / 2, height,
-        CLARG(PQ_dir), CLARG(cfa), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters));
+        CLARG(PQ_dir), CLARG(cfa), CLARG(width), CLARG(height), CLARG(filters));
     if(err != CL_SUCCESS) goto error;
 
     // Step 3.1: Populate the green channel at blue and red CFA positions
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_3_1, width / 2, height,
-      CLARG(PQ_dir), CLARG(cfa), CLARG(rgb1), CLARG(VH_dir), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters));
+      CLARG(PQ_dir), CLARG(cfa), CLARG(rgb1), CLARG(VH_dir), CLARG(width), CLARG(height), CLARG(filters));
     if(err != CL_SUCCESS) goto error;
 
     // Step 4.1: Calculate a squared P/Q diagonals high pass filter on color differences
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_4_1, width / 2, height,
-      CLARG(cfa), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters));
+      CLARG(cfa), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height), CLARG(filters));
     if(err != CL_SUCCESS) goto error;
 
     // Step 4.2: Calculate P/Q diagonal local discrimination
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_4_2, width / 2, height,
-        CLARG(PQ_dir), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters));
+        CLARG(PQ_dir), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height), CLARG(filters));
     if(err != CL_SUCCESS) goto error;
 
     // Step 4.3: Populate the red and blue channels at blue and red CFA positions
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_5_1, width / 2, height,
-        CLARG(PQ_dir), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters));
+        CLARG(PQ_dir), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height), CLARG(filters));
     if(err != CL_SUCCESS) goto error;
 
     // Step 5.2: Populate the red and blue channels at green CFA positions
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_5_2, width / 2, height,
-        CLARG(VH_dir), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters));
+        CLARG(VH_dir), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height), CLARG(filters));
     if(err != CL_SUCCESS) goto error;
 
     scaler = dt_iop_get_processed_maximum(piece);

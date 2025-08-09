@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -135,13 +135,13 @@ static void xtrans_markesteijn_interpolate(float *out,
           float(*const pix) = rgb[0][row - top][col - left];
           if((col >= 0) && (row >= 0) && (col < width) && (row < height))
           {
-            const int f = FCxtrans(row, col, roi_in, xtrans);
+            const int f = FCxtrans(row, col, NULL, xtrans);
             for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[roi_in->width * row + col] : 0.f;
           }
           else
           {
             // mirror a border pixel if beyond image edge
-            const int c = FCxtrans(row, col, roi_in, xtrans);
+            const int c = FCxtrans(row, col, NULL, xtrans);
             for(int cc = 0; cc < 3; cc++)
             {
               if(cc != c)
@@ -150,7 +150,7 @@ static void xtrans_markesteijn_interpolate(float *out,
               {
 #define TRANSLATE(n, size) ((n >= size) ? (2 * size - n - 2) : abs(n))
                 const int cy = TRANSLATE(row, height), cx = TRANSLATE(col, width);
-                if(c == FCxtrans(cy, cx, roi_in, xtrans))
+                if(c == FCxtrans(cy, cx, NULL, xtrans))
                   pix[c] = in[roi_in->width * cy + cx];
                 else
                 {
@@ -161,7 +161,7 @@ static void xtrans_markesteijn_interpolate(float *out,
                     for(int x = col - 1; x <= col + 1; x++)
                     {
                       const int yy = TRANSLATE(y, height), xx = TRANSLATE(x, width);
-                      const int ff = FCxtrans(yy, xx, roi_in, xtrans);
+                      const int ff = FCxtrans(yy, xx, NULL, xtrans);
                       if(ff == c)
                       {
                         sum += in[roi_in->width * yy + xx];
@@ -199,7 +199,7 @@ static void xtrans_markesteijn_interpolate(float *out,
           // if in row of horizontal red & blue pairs (or processing
           // vertical red & blue pairs near image bottom), reset min/max
           // between each pair
-          if(FCxtrans(row, col, roi_in, xtrans) == 1)
+          if(FCxtrans(row, col, NULL, xtrans) == 1)
           {
             min = FLT_MAX, max = 0.0f;
             continue;
@@ -245,7 +245,7 @@ static void xtrans_markesteijn_interpolate(float *out,
         for(int col = left + pad_g_interp; col < mcol - pad_g_interp; col++)
         {
           float color[8];
-          const int f = FCxtrans(row, col, roi_in, xtrans);
+          const int f = FCxtrans(row, col, NULL, xtrans);
           if(f == 1) continue;
           float (*const pix)[3] = &rgb[0][row - top][col - left];
           const short *const hex = _hexmap(row,col,allhex);
@@ -280,7 +280,7 @@ static void xtrans_markesteijn_interpolate(float *out,
           for(int row = top + pad_g_recalc; row < mrow - pad_g_recalc; row++)
             for(int col = left + pad_g_recalc; col < mcol - pad_g_recalc; col++)
             {
-              const int f = FCxtrans(row, col, roi_in, xtrans);
+              const int f = FCxtrans(row, col, NULL, xtrans);
               if(f == 1) continue;
               const short *const hex = _hexmap(row,col,allhex);
               for(int d = 3; d < 6; d++)
@@ -300,7 +300,7 @@ static void xtrans_markesteijn_interpolate(float *out,
           for(int col = (left - sgcol + pad_rb_g + 2) / 3 * 3 + sgcol; col < mcol - pad_rb_g; col += 3)
           {
             float(*rfx)[3] = &rgb[0][row - top][col - left];
-            int h = FCxtrans(row, col + 1, roi_in, xtrans);
+            int h = FCxtrans(row, col + 1, NULL, xtrans);
             float diff[6] = { 0.0f };
             // interplated color: first index is red/blue, second is
             // pass, is double actual result
@@ -351,7 +351,7 @@ static void xtrans_markesteijn_interpolate(float *out,
         for(int row = top + pad_rb_br; row < mrow - pad_rb_br; row++)
           for(int col = left + pad_rb_br; col < mcol - pad_rb_br; col++)
           {
-            const int f = 2 - FCxtrans(row, col, roi_in, xtrans);
+            const int f = 2 - FCxtrans(row, col, NULL, xtrans);
             if(f == 1) continue;
             float(*rfx)[3] = &rgb[0][row - top][col - left];
             const int c = (row - sgrow) % 3 ? TS : 1;
@@ -1109,7 +1109,7 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
     {
       for(int col = 0; col < 6; col++)
       {
-        if(!((col - sgcol) % 3) && (FCxtrans(row, col + 1, roi_in, xtrans) == 0))
+        if(!((col - sgcol) % 3) && (FCxtrans(row, col + 1, NULL, xtrans) == 0))
         {
           rowoffset = 37 - row - pad_tile; // 1 plus a generous multiple of 6
           coloffset = 37 - col - pad_tile; // to avoid that this value gets negative
@@ -1175,14 +1175,14 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
           float(*const pix) = rgb[0][row - top][col - left];
           if((col >= 0) && (row >= 0) && (col < width) && (row < height))
           {
-            const int f = FCxtrans(row, col, roi_in, xtrans);
+            const int f = FCxtrans(row, col, NULL, xtrans);
             for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[roi_in->width * row + col] : 0.f;
             *(i_src + TS * (row - top) + (col - left)) = in[roi_in->width * row + col];
           }
           else
           {
             // mirror a border pixel if beyond image edge
-            const int c = FCxtrans(row, col, roi_in, xtrans);
+            const int c = FCxtrans(row, col, NULL, xtrans);
             for(int cc = 0; cc < 3; cc++)
               if(cc != c)
                 pix[cc] = 0.0f;
@@ -1190,7 +1190,7 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
               {
 #define TRANSLATE(n, size) ((n >= size) ? (2 * size - n - 2) : abs(n))
                 const int cy = TRANSLATE(row, height), cx = TRANSLATE(col, width);
-                if(c == FCxtrans(cy, cx, roi_in, xtrans))
+                if(c == FCxtrans(cy, cx, NULL, xtrans))
                 {
                   pix[c] = in[roi_in->width * cy + cx];
                   *(i_src + TS * (row - top) + (col - left)) = in[roi_in->width * cy + cx];
@@ -1204,7 +1204,7 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
                     for(int x = col - 1; x <= col + 1; x++)
                     {
                       const int yy = TRANSLATE(y, height), xx = TRANSLATE(x, width);
-                      const int ff = FCxtrans(yy, xx, roi_in, xtrans);
+                      const int ff = FCxtrans(yy, xx, NULL, xtrans);
                       if(ff == c)
                       {
                         sum += in[roi_in->width * yy + xx];
@@ -1242,7 +1242,7 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
           // if in row of horizontal red & blue pairs (or processing
           // vertical red & blue pairs near image bottom), reset min/max
           // between each pair
-          if(FCxtrans(row, col, roi_in, xtrans) == 1)
+          if(FCxtrans(row, col, NULL, xtrans) == 1)
           {
             min = FLT_MAX, max = 0.0f;
             continue;
@@ -1288,7 +1288,7 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
         for(int col = left + pad_g_interp; col < mcol - pad_g_interp; col++)
         {
           float color[8];
-          int f = FCxtrans(row, col, roi_in, xtrans);
+          int f = FCxtrans(row, col, NULL, xtrans);
           if(f == 1) continue;
           float (*const pix)[3] = &rgb[0][row - top][col - left];
           const short *const hex = _hexmap(row, col, allhex);
@@ -1312,7 +1312,7 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
         for(int col = (left - sgcol + pad_rb_g + 2) / 3 * 3 + sgcol; col < mcol - pad_rb_g; col += 3)
         {
           float(*rfx)[3] = &rgb[0][row - top][col - left];
-          int h = FCxtrans(row, col + 1, roi_in, xtrans);
+          int h = FCxtrans(row, col + 1, NULL, xtrans);
           float diff[6] = { 0.0f };
           float color[3][8];
           for(int i = 1, d = 0; d < 6; d++, i ^= TS ^ 1, h ^= 2)
@@ -1340,7 +1340,7 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
       for(int row = top + pad_rb_br; row < mrow - pad_rb_br; row++)
         for(int col = left + pad_rb_br; col < mcol - pad_rb_br; col++)
         {
-          int f = 2 - FCxtrans(row, col, roi_in, xtrans);
+          int f = 2 - FCxtrans(row, col, NULL, xtrans);
           if(f == 1) continue;
           float(*rfx)[3] = &rgb[0][row - top][col - left];
           int c = (row - sgrow) % 3 ? TS : 1;
@@ -1636,16 +1636,18 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
                                      const dt_dev_pixelpipe_iop_t *piece,
                                      cl_mem dev_in,
                                      cl_mem dev_out,
-                                     const dt_iop_roi_t *const roi_in)
+                                     cl_mem dev_xtrans,
+                                     const uint8_t(*const xtrans)[6],
+                                     const dt_iop_roi_t *const roi_in,
+                                     const uint32_t filters)
 {
   const dt_iop_demosaic_data_t *data = piece->data;
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
 
+  process_vng_cl(self, piece, dev_in, dev_out, dev_xtrans, xtrans, roi_in, filters, FALSE);
   const int devid = piece->pipe->devid;
-  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
 
   cl_mem dev_tmptmp = NULL;
-  cl_mem dev_xtrans = NULL;
   cl_mem dev_rgbv[8] =    { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
   cl_mem dev_drv[8] =     { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
   cl_mem dev_homo[8] =    { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
@@ -1653,14 +1655,9 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
   cl_mem dev_gminmax = NULL;
   cl_mem dev_allhex = NULL;
   cl_mem dev_aux = NULL;
-  cl_mem dev_edge_in = NULL;
-  cl_mem dev_edge_out = NULL;
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
   cl_mem *dev_rgb = dev_rgbv;
-
-  dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
-  if(dev_xtrans == NULL) return err;
 
     const int width = roi_in->width;
     const int height = roi_in->height;
@@ -1724,8 +1721,7 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
 
     // copy from dev_in to first rgb image buffer.
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_markesteijn_initial_copy, width, height,
-        CLARG(dev_in), CLARG(dev_rgb[0]), CLARG(width), CLARG(height), CLARG(roi_in->x), CLARG(roi_in->y),
-        CLARG(dev_xtrans));
+        CLARG(dev_in), CLARG(dev_rgb[0]), CLARG(width), CLARG(height), CLARG(dev_xtrans));
     if(err != CL_SUCCESS) goto error;
 
     // duplicate dev_rgb[0] to dev_rgb[1], dev_rgb[2], and dev_rgb[3]
@@ -1754,7 +1750,7 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
       size_t local[3] = { locopt_g1_g3.sizex, locopt_g1_g3.sizey, 1 };
       dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_green_minmax, 0,
         CLARG(dev_rgb[0]), CLARG(dev_gminmax),
-        CLARG(width), CLARG(height), CLARG(pad_g1_g3), CLARG(roi_in->x), CLARG(roi_in->y), CLARRAY(2, sgreen),
+        CLARG(width), CLARG(height), CLARG(pad_g1_g3), CLARRAY(2, sgreen),
         CLARG(dev_xtrans), CLARG(dev_allhex), CLLOCAL(sizeof(float) * (locopt_g1_g3.sizex + 2*3) * (locopt_g1_g3.sizey + 2*3)));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_green_minmax, sizes, local);
       if(err != CL_SUCCESS) goto error;
@@ -1779,7 +1775,7 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
       dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_interpolate_green, 0,
         CLARG(dev_rgb[0]), CLARG(dev_rgb[1]), CLARG(dev_rgb[2]), CLARG(dev_rgb[3]),
         CLARG(dev_gminmax), CLARG(width), CLARG(height),
-        CLARG(pad_g_interp), CLARG(roi_in->x), CLARG(roi_in->y), CLARRAY(2, sgreen), CLARG(dev_xtrans),
+        CLARG(pad_g_interp), CLARRAY(2, sgreen), CLARG(dev_xtrans),
         CLARG(dev_allhex), CLLOCAL(sizeof(float) * 4 * (locopt_g_interp.sizex + 2*6) * (locopt_g_interp.sizey + 2*6)));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_interpolate_green, sizes, local);
       if(err != CL_SUCCESS) goto error;
@@ -1809,7 +1805,7 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
         const int pad_g_recalc = 6;
         err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_markesteijn_recalculate_green, width, height,
           CLARG(dev_rgb[0]), CLARG(dev_rgb[1]), CLARG(dev_rgb[2]), CLARG(dev_rgb[3]), CLARG(dev_gminmax),
-          CLARG(width), CLARG(height), CLARG(pad_g_recalc), CLARG(roi_in->x), CLARG(roi_in->y), CLARRAY(2, sgreen),
+          CLARG(width), CLARG(height), CLARG(pad_g_recalc), CLARRAY(2, sgreen),
           CLARG(dev_xtrans), CLARG(dev_allhex));
         if(err != CL_SUCCESS) goto error;
       }
@@ -1836,7 +1832,7 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
         size_t sizes[3] = { ROUNDUP(width, locopt_rb_g.sizex), ROUNDUP(height, locopt_rb_g.sizey), 1 };
         size_t local[3] = { locopt_rb_g.sizex, locopt_rb_g.sizey, 1 };
         dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_solitary_green, 0,
-          CLARG(dev_trgb[0]), CLARG(dev_aux), CLARG(width), CLARG(height), CLARG(pad_rb_g), CLARG(roi_in->x), CLARG(roi_in->y),
+          CLARG(dev_trgb[0]), CLARG(dev_aux), CLARG(width), CLARG(height), CLARG(pad_rb_g),
           CLARG(d), CLARRAY(2, dir), CLARG(h), CLARRAY(2, sgreen), CLARG(dev_xtrans), CLLOCAL(sizeof(float) * 4 * (locopt_rb_g.sizex + 2*2) * (locopt_rb_g.sizey + 2*2)));
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_solitary_green, sizes, local);
         if(err != CL_SUCCESS) goto error;
@@ -1862,7 +1858,7 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
         size_t sizes[3] = { ROUNDUP(width, locopt_rb_br.sizex), ROUNDUP(height, locopt_rb_br.sizey), 1 };
         size_t local[3] = { locopt_rb_br.sizex, locopt_rb_br.sizey, 1 };
         dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_red_and_blue, 0,
-          CLARG(dev_rgb[d]), CLARG(width), CLARG(height), CLARG(pad_rb_br), CLARG(roi_in->x), CLARG(roi_in->y), CLARG(d), CLARRAY(2, sgreen),
+          CLARG(dev_rgb[d]), CLARG(width), CLARG(height), CLARG(pad_rb_br), CLARG(d), CLARRAY(2, sgreen),
           CLARG(dev_xtrans), CLLOCAL(sizeof(float) * 4 * (locopt_rb_br.sizex + 2*3) * (locopt_rb_br.sizey + 2*3)));
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_red_and_blue, sizes, local);
         if(err != CL_SUCCESS) goto error;
@@ -1886,7 +1882,7 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
         size_t sizes[3] = { ROUNDUP(width, locopt_g22.sizex), ROUNDUP(height, locopt_g22.sizey), 1 };
         size_t local[3] = { locopt_g22.sizex, locopt_g22.sizey, 1 };
         dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 0,
-          CLARG(dev_rgb[n]), CLARG(width), CLARG(height), CLARG(pad_g22), CLARG(roi_in->x), CLARG(roi_in->y), CLARG(d), CLARRAY(2, sgreen),
+          CLARG(dev_rgb[n]), CLARG(width), CLARG(height), CLARG(pad_g22), CLARG(d), CLARRAY(2, sgreen),
           CLARG(dev_xtrans), CLARG(dev_allhex), CLLOCAL(sizeof(float) * 4 * (locopt_g22.sizex + 2*2) * (locopt_g22.sizey + 2*2)));
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_interpolate_twoxtwo, sizes, local);
         if(err != CL_SUCCESS) goto error;
@@ -2075,97 +2071,6 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
     // process the final image
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_markesteijn_final, width, height,
         CLARG(dev_tmptmp), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(pad_tile));
-    if(err != CL_SUCCESS) goto error;
-
-    // now it's time to get rid of most of the temporary buffers (except of dev_tmp and dev_xtrans)
-    for(int n = 0; n < 8; n++)
-    {
-      dt_opencl_release_mem_object(dev_rgbv[n]);
-      dev_rgbv[n] = NULL;
-      dt_opencl_release_mem_object(dev_homo[n]);
-      dev_homo[n] = NULL;
-      dt_opencl_release_mem_object(dev_homosum[n]);
-      dev_homosum[n] = NULL;
-    }
-
-    dt_opencl_release_mem_object(dev_aux);
-    dev_aux = NULL;
-
-    dt_opencl_release_mem_object(dev_xtrans);
-    dev_xtrans = NULL;
-
-    dt_opencl_release_mem_object(dev_allhex);
-    dev_allhex = NULL;
-
-    dt_opencl_release_mem_object(dev_tmptmp);
-    dev_tmptmp = NULL;
-
-    // take care of image borders. the algorithm above leaves an unprocessed border of pad_tile pixels.
-    // strategy: take the four edges and process them each with process_vng_cl(). as VNG produces
-    // an image with a border with only linear interpolation we process edges of pad_tile+3px and
-    // drop 3px on the inner side if possible
-
-    // take care of some degenerate cases (which might happen if we are called in a tiling context)
-    const int wd = (width > pad_tile+3) ? pad_tile+3 : width;
-    const int ht = (height > pad_tile+3) ? pad_tile+3 : height;
-    const int wdc = (wd >= pad_tile+3) ? 3 : 0;
-    const int htc = (ht >= pad_tile+3) ? 3 : 0;
-
-    // the data of all four edges:
-    // total edge: x-offset, y-offset, width, height,
-    // after dropping: x-offset adjust, y-offset adjust, width adjust, height adjust
-    const int edges[4][8] = { { 0, 0, wd, height, 0, 0, -wdc, 0 },
-                              { 0, 0, width, ht, 0, 0, 0, -htc },
-                              { width - wd, 0, wd, height, wdc, 0, -wdc, 0 },
-                              { 0, height - ht, width, ht, 0, htc, 0, -htc } };
-
-    for(int n = 0; n < 4; n++)
-    {
-      dt_iop_roi_t roi = { roi_in->x + edges[n][0], roi_in->y + edges[n][1], edges[n][2], edges[n][3], 1.0f };
-
-      size_t iorigin[] = { edges[n][0], edges[n][1], 0 };
-      size_t oorigin[] = { 0, 0, 0 };
-      size_t region[] = { edges[n][2], edges[n][3], 1 };
-
-      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-      // reserve input buffer for image edge
-      dev_edge_in = dt_opencl_alloc_device(devid, edges[n][2], edges[n][3], sizeof(float));
-      if(dev_edge_in == NULL) goto error;
-
-      // reserve output buffer for VNG processing of edge
-      dev_edge_out = dt_opencl_alloc_device(devid, edges[n][2], edges[n][3], sizeof(float) * 4);
-      if(dev_edge_out == NULL) goto error;
-
-      // copy edge to input buffer
-      err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_edge_in, iorigin, oorigin, region);
-      if(err != CL_SUCCESS) goto error;
-
-      // VNG processing
-      err = process_vng_cl(self, piece, dev_edge_in, dev_edge_out, &roi, FALSE);
-      if(err != CL_SUCCESS) goto error;
-
-      // adjust for "good" part, dropping linear border where possible
-      iorigin[0] += edges[n][4];
-      iorigin[1] += edges[n][5];
-      oorigin[0] += edges[n][4];
-      oorigin[1] += edges[n][5];
-      region[0] += edges[n][6];
-      region[1] += edges[n][7];
-
-      // copy output
-      err = dt_opencl_enqueue_copy_image(devid, dev_edge_out, dev_out, oorigin, iorigin, region);
-      if(err != CL_SUCCESS) goto error;
-
-      // release intermediate buffers
-      dt_opencl_release_mem_object(dev_edge_in);
-      dt_opencl_release_mem_object(dev_edge_out);
-      dev_edge_in = dev_edge_out = NULL;
-    }
-
-  dt_opencl_release_mem_object(dev_xtrans);
-  dev_xtrans = NULL;
-
-  return err;
 
 error:
   for(int n = 0; n < 8; n++)
@@ -2178,12 +2083,10 @@ error:
     dt_opencl_release_mem_object(dev_homosum[n]);
   dt_opencl_release_mem_object(dev_gminmax);
   dt_opencl_release_mem_object(dev_tmptmp);
-  dt_opencl_release_mem_object(dev_xtrans);
   dt_opencl_release_mem_object(dev_allhex);
   dt_opencl_release_mem_object(dev_aux);
-  dt_opencl_release_mem_object(dev_edge_in);
-  dt_opencl_release_mem_object(dev_edge_out);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] markesteijn problem '%s'", cl_errstr(err));
+  if(err != CL_SUCCESS)
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] markesteijn problem '%s'", cl_errstr(err));
   return err;
 }
 
