@@ -278,12 +278,10 @@ __kernel void write_blended_dual(__read_only image2d_t high,
   if((col >= w) || (row >= height)) return;
   const int idx = mad24(row, w, col);
 
-  float4 data;
-
   const float4 high_val = read_imagef(high, sampleri, (int2)(col, row));
   const float4 low_val = read_imagef(low, sampleri, (int2)(col, row));
   const float4 blender = mask[idx];
-  data = mix(low_val, high_val, blender);
+  float4 data = mix(low_val, high_val, blender);
 
   if(showmask)
     data.w = mask[idx];
@@ -300,7 +298,7 @@ __kernel void calc_Y0_mask(global float *mask, __read_only image2d_t in, const i
   if((col >= w) || (row >= height)) return;
   const int idx = mad24(row, w, col);
 
-  float4 pt = read_imagef(in, sampleri, (int2)(col, row));
+  const float4 pt = read_imagef(in, sampleri, (int2)(col, row));
   const float val = fmax(pt.x / red, 0.0f)
                   + fmax(pt.y / green, 0.0f)
                   + fmax(pt.z / blue, 0.0f);
@@ -314,12 +312,8 @@ __kernel void calc_scharr_mask(global float *in, global float *out, const int w,
   if((col >= w) || (row >= height)) return;
 
   const int oidx = mad24(row, w, col);
-
-  int incol = col < 1 ? 1 : col;
-  incol = col > w - 2 ? w - 2 : incol;
-  int inrow = row < 1 ? 1 : row;
-  inrow = row > height - 2 ? height - 2 : inrow;
-
+  const int incol = clamp(col, 1, w - 2);
+  const int inrow = clamp(row, 1, height -2);
   const int idx = mad24(inrow, w, incol);
   const float gx = 47.0f / 255.0f * (in[idx-w-1] - in[idx-w+1] + in[idx+w-1] - in[idx+w+1])
                 + 162.0f / 255.0f * (in[idx-1]   - in[idx+1]);
@@ -546,8 +540,6 @@ kernel void demosaic_box3(read_only image2d_t in,
                           write_only image2d_t out,
                           const int width,
                           const int height,
-                          const int sx,
-                          const int sy,
                           const unsigned int filters,
                           global const unsigned char (*const xtrans)[6])
 {
@@ -562,7 +554,7 @@ kernel void demosaic_box3(read_only image2d_t in,
     {
       if(x >= 0 && y >= 0 && x < width && y < height)
       {
-        const int color = (filters == 9u) ? FCxtrans(y+sy, x+sx, xtrans) : FC(y, x, filters);
+        const int color = (filters == 9u) ? FCxtrans(y, x, xtrans) : FC(y, x, filters);
         sum[color] += fmax(0.0f, read_imagef(in, samplerA, (int2)(x, y)).x);
         cnt[color] += 1.0f;
       }

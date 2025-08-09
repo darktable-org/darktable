@@ -307,7 +307,8 @@ static int green_equilibration_cl(const dt_iop_module_t *self,
                                   const dt_dev_pixelpipe_iop_t *piece,
                                   cl_mem dev_in,
                                   cl_mem dev_out,
-                                  const dt_iop_roi_t *const roi_in)
+                                  const dt_iop_roi_t *const roi_in,
+                                  const uint32_t filters)
 {
   const dt_iop_demosaic_data_t *d = piece->data;
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
@@ -383,7 +384,7 @@ static int green_equilibration_cl(const dt_iop_module_t *self,
     size_t flocal[3] = { flocopt.sizex, flocopt.sizey, 1 };
     dt_opencl_set_kernel_args(devid, gd->kernel_green_eq_favg_reduce_first, 0,
       CLARG(dev_in1), CLARG(width),
-      CLARG(height), CLARG(dev_m), CLARG(piece->pipe->dsc.filters),
+      CLARG(height), CLARG(dev_m), CLARG(filters),
       CLLOCAL(sizeof(float) * 2 * flocopt.sizex * flocopt.sizey));
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_green_eq_favg_reduce_first, fsizes, flocal);
     if(err != CL_SUCCESS) goto error;
@@ -437,7 +438,7 @@ static int green_equilibration_cl(const dt_iop_module_t *self,
     const float gr_ratio = (sum1 > 0.0f && sum2 > 0.0f) ? sum2 / sum1 : 1.0f;
 
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_green_eq_favg_apply, width, height,
-      CLARG(dev_in1), CLARG(dev_out1), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters),
+      CLARG(dev_in1), CLARG(dev_out1), CLARG(width), CLARG(height), CLARG(filters),
       CLARG(gr_ratio));
     if(err != CL_SUCCESS) goto error;
   }
@@ -462,7 +463,7 @@ static int green_equilibration_cl(const dt_iop_module_t *self,
     size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
     dt_opencl_set_kernel_args(devid, gd->kernel_green_eq_lavg, 0,
       CLARG(dev_in2), CLARG(dev_out2),
-      CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters),
+      CLARG(width), CLARG(height), CLARG(filters),
       CLARG(threshold), CLLOCAL(sizeof(float) * (locopt.sizex + 4) * (locopt.sizey + 4)));
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_green_eq_lavg, sizes, local);
     if(err != CL_SUCCESS) goto error;
@@ -482,8 +483,10 @@ static int process_default_cl(const dt_iop_module_t *self,
                               const dt_dev_pixelpipe_iop_t *piece,
                               cl_mem dev_in,
                               cl_mem dev_out,
+                              cl_mem dev_xtrans,
                               const dt_iop_roi_t *const roi_in,
-                              const int demosaicing_method)
+                              const int demosaicing_method,
+                              const uint32_t filters)
 {
   const dt_iop_demosaic_data_t *d = piece->data;
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
@@ -505,13 +508,9 @@ static int process_default_cl(const dt_iop_module_t *self,
     }
     else if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR)
     {
-      cl_mem dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
-      if(dev_xtrans == NULL) goto error;
-
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_passthrough_color, width, height,
-        CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(roi_in->x), CLARG(roi_in->y),
-        CLARG(piece->pipe->dsc.filters), CLARG(dev_xtrans));
-      dt_opencl_release_mem_object(dev_xtrans);
+        CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
+        CLARG(filters), CLARG(dev_xtrans));
       if(err != CL_SUCCESS) goto error;
     }
     else if(demosaicing_method == DT_IOP_DEMOSAIC_PPG)
@@ -527,7 +526,7 @@ static int process_default_cl(const dt_iop_module_t *self,
         const int myborder = 3;
         // manage borders
         err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_border_interpolate, width, height,
-          CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters), CLARG(myborder));
+          CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(filters), CLARG(myborder));
         if(err != CL_SUCCESS) goto error;
       }
 
@@ -555,7 +554,7 @@ static int process_default_cl(const dt_iop_module_t *self,
         size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
         dt_opencl_set_kernel_args(devid, gd->kernel_pre_median, 0,
           CLARG(dev_in), CLARG(dev_med), CLARG(width),
-          CLARG(height), CLARG(piece->pipe->dsc.filters), CLARG(d->median_thrs), CLLOCAL(sizeof(float) * (locopt.sizex + 4) * (locopt.sizey + 4)));
+          CLARG(height), CLARG(filters), CLARG(d->median_thrs), CLLOCAL(sizeof(float) * (locopt.sizex + 4) * (locopt.sizey + 4)));
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pre_median, sizes, local);
         if(err != CL_SUCCESS) goto error;
         dev_in = dev_out;
@@ -578,7 +577,7 @@ static int process_default_cl(const dt_iop_module_t *self,
         size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
         dt_opencl_set_kernel_args(devid, gd->kernel_ppg_green, 0,
           CLARG(dev_med), CLARG(dev_tmp), CLARG(width),
-          CLARG(height), CLARG(piece->pipe->dsc.filters), CLLOCAL(sizeof(float) * (locopt.sizex + 2*3) * (locopt.sizey + 2*3)));
+          CLARG(height), CLARG(filters), CLLOCAL(sizeof(float) * (locopt.sizex + 2*3) * (locopt.sizey + 2*3)));
 
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_ppg_green, sizes, local);
         if(err != CL_SUCCESS) goto error;
@@ -600,7 +599,7 @@ static int process_default_cl(const dt_iop_module_t *self,
         size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
         dt_opencl_set_kernel_args(devid, gd->kernel_ppg_redblue, 0,
           CLARG(dev_tmp), CLARG(dev_out), CLARG(width),
-          CLARG(height), CLARG(piece->pipe->dsc.filters), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2)));
+          CLARG(height), CLARG(filters), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2)));
 
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_ppg_redblue, sizes, local);
         if(err != CL_SUCCESS) goto error;
@@ -620,22 +619,17 @@ static int demosaic_box3_cl(dt_iop_module_t *self,
                               dt_dev_pixelpipe_iop_t *piece,
                               cl_mem dev_in,
                               cl_mem dev_out,
-                              const dt_iop_roi_t *const roi)
+                              cl_mem dev_xtrans,
+                              const dt_iop_roi_t *const roi,
+                              const uint32_t filters)
 {
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
-  dt_dev_pixelpipe_t *const pipe = piece->pipe;
-  const int devid = pipe->devid;
-  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-
-  cl_mem dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(pipe->dsc.xtrans), pipe->dsc.xtrans);
-  if(!dev_xtrans) return err;
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_demosaic_box3, roi->width, roi->height,
+//  dt_dev_pixelpipe_t *const pipe = piece->pipe;
+//  const int devid = pipe->devid;
+  return dt_opencl_enqueue_kernel_2d_args(piece->pipe->devid, gd->kernel_demosaic_box3, roi->width, roi->height,
           CLARG(dev_in), CLARG(dev_out),
           CLARG(roi->width), CLARG(roi->height),
-          CLARG(roi->x), CLARG(roi->y),
-          CLARG(pipe->dsc.filters), CLARG(dev_xtrans));
-  dt_opencl_release_mem_object(dev_xtrans);
-  return err;
+          CLARG(filters), CLARG(dev_xtrans));
 }
 
 #endif
