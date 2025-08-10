@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -391,10 +391,11 @@ int process_cl(dt_iop_module_t *self,
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
-  const int orientation = data->orientation;
 
   return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_flip, width, height,
-    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(orientation));
+    CLARG(dev_in), CLARG(dev_out),
+    CLARG(width), CLARG(height), CLARG(roi_out->width), CLARG(roi_out->height),
+    CLARG(data->orientation));
 }
 #endif
 
