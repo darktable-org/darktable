@@ -3099,6 +3099,8 @@ flip(read_only image2d_t in,
      write_only image2d_t out,
      const int width,
      const int height,
+     const int owidth,
+     const int oheight,
      const int orientation)
 {
   const int x = get_global_id(0);
@@ -3106,23 +3108,25 @@ flip(read_only image2d_t in,
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-
   // ORIENTATION_FLIP_X = 2
-  int  nx = (orientation & 2) ? width - x - 1 : x;
+  int ox = (orientation & 2) ? width - x - 1 : x;
 
   // ORIENTATION_FLIP_Y = 1
-  int ny = (orientation & 1) ? height - y - 1 : y;
+  int oy = (orientation & 1) ? height - y - 1 : y;
 
   // ORIENTATION_SWAP_XY = 4
-  if((orientation & 4) == 4)
+  if(orientation & 4)
   {
-     const int tmp = nx;
-     nx = ny;
-     ny = tmp;
-   }
+     const int tmp = ox;
+     ox = oy;
+     oy = tmp;
+  }
 
-  write_imagef (out, (int2)(nx, ny), pixel);
+  if(ox < owidth && oy < oheight)
+  {
+    const float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+    write_imagef(out, (int2)(ox, oy), pixel);
+  }
 }
 
 float
