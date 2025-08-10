@@ -488,10 +488,10 @@ kernel void rcd_border_redblue(read_only image2d_t in, write_only image2d_t out,
     if(c == 1 || c == 3)
     { // calculate red and blue for green pixels:
       // need 4-nbhood:
-      float4 nt = buffer[-stride];
-      float4 nb = buffer[ stride];
-      float4 nl = buffer[-1];
-      float4 nr = buffer[ 1];
+      const float4 nt = buffer[-stride];
+      const float4 nb = buffer[ stride];
+      const float4 nl = buffer[-1];
+      const float4 nr = buffer[ 1];
       if(FC(row, col+1, filters) == 0) // red nb in same row
       {
         color.z = (nt.z + nb.z + 2.0f*color.y - nt.y - nb.y)*0.5f;
@@ -506,10 +506,10 @@ kernel void rcd_border_redblue(read_only image2d_t in, write_only image2d_t out,
     else
     {
       // get 4-star-nbhood:
-      float4 ntl = buffer[-stride - 1];
-      float4 ntr = buffer[-stride + 1];
-      float4 nbl = buffer[ stride - 1];
-      float4 nbr = buffer[ stride + 1];
+      const float4 ntl = buffer[-stride - 1];
+      const float4 ntr = buffer[-stride + 1];
+      const float4 nbl = buffer[ stride - 1];
+      const float4 nbr = buffer[ stride + 1];
 
       if(c == 0)
       { // red pixel, fill blue:
