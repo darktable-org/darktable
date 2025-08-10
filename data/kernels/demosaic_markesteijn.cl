@@ -56,7 +56,7 @@ markesteijn_initial_copy(read_only image2d_t in, global float *rgb, const int wi
 
   const int f = FCxtrans(y, x, xtrans);
 
-  float p = read_imagef(in, sampleri, (int2)(x, y)).x;
+  const float p = read_imagef(in, sampleri, (int2)(x, y)).x;
 
   for(int c = 0; c < 3; c++)
     pix[c] = (c == f) ? p : 0.0f;
@@ -331,7 +331,7 @@ markesteijn_solitary_green(global float *rgb, global float *aux, const int width
   for(int c = 0; c < 2; c++, h ^= 2)
   {
     const int off = i << c;
-    float g = 2.0f * buff[1] - (buff + off)[1] - (buff - off)[1];
+    const float g = 2.0f * buff[1] - (buff + off)[1] - (buff - off)[1];
     color[h] = g + (buff + off)[h] + (buff - off)[h];
     diff += (d > 1) ? sqr((buff + off)[1] - (buff - off)[1] - (buff + off)[h] + (buff - off)[h])
                       + sqr(g)
