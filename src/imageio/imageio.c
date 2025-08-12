@@ -198,6 +198,11 @@ typedef struct {
   const char   *searchstring;	   // sub-signature which might be anywhere in first 512 bytes of file
 } dt_magic_bytes_t;
 
+static dt_imageio_retval_t _try_open_as_tiff_on_failure_fallback_to_rawspeed(
+    dt_image_t *img,
+    const char *filename,
+    dt_mipmap_buffer_t *mbuf);
+
 // the signatures for the file types we know about.  More specific ones need to come before
 // less specific ones, e.g. TIFF needs to come after DNG and nearly all camera formats, since
 // the latter are all TIFF containers
@@ -312,29 +317,29 @@ static const dt_magic_bytes_t _magic_signatures[] = {
   { DT_FILETYPE_X3F, TRUE, 0, 4, dt_imageio_open_libraw,
     { 'F', 'O', 'V', 'b' } },
   // Nikon NEF files are TIFFs with (usually) the string "NIKON CORP" early in the file
-  { DT_FILETYPE_NEF, FALSE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_NEF, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
     { 'I', 'I', '*', 0x00 }, "NIKON CORP" },
-  { DT_FILETYPE_NEF, FALSE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_NEF, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
     { 'M', 'M', 0x00, '*' }, "NIKON CORP" },
   // Epson ERF files are TIFFs with the string "EPSON" early in the file
-  { DT_FILETYPE_ERF, FALSE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_ERF, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
     { 'I', 'I', '*', 0x00 }, "EPSON" },
-  { DT_FILETYPE_ERF, FALSE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_ERF, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
     { 'M', 'M', 0x00, '*' }, "EPSON" },
   // Pentax/Ricoh PEF files are TIFFs with the string "PENTAX" early in the file
-  { DT_FILETYPE_PEF, FALSE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_PEF, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
     { 'I', 'I', '*', 0x00 }, "PENTAX" },
-  { DT_FILETYPE_PEF, FALSE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_PEF, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
     { 'M', 'M', 0x00, '*' }, "PENTAX" },
   // Samsung SRW files are TIFFs with the string "SAMSUNG" early in the file
-  { DT_FILETYPE_SRW, FALSE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_SRW, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
     { 'I', 'I', '*', 0x00 }, "SAMSUNG" },
-  { DT_FILETYPE_SRW, FALSE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_SRW, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
     { 'M', 'M', 0x00, '*' }, "SAMSUNG" },
   // Sony ARW files are TIFFs with the string "SONY" early in the file
-  { DT_FILETYPE_ARW, FALSE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_ARW, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
     { 'I', 'I', '*', 0x00 }, "SONY" },
-  { DT_FILETYPE_ARW, FALSE, 0, 4, dt_imageio_open_rawspeed,
+  { DT_FILETYPE_ARW, FALSE, 0, 4, _try_open_as_tiff_on_failure_fallback_to_rawspeed,
     { 'M', 'M', 0x00, '*' }, "SONY" },
   // little-endian (Intel) TIFF
   { DT_FILETYPE_TIFF, FALSE, 0, 4, NULL, // may be DNG or any of many camera raw types
@@ -571,6 +576,31 @@ static const dt_magic_bytes_t *_find_signature(const char *filename)
   if(magicbuf[0] == 40 && magicbuf[1] == 0 && magicbuf[12] == 1 && magicbuf[13] == 0)
     return &_windows_BMP_signature;
   return NULL;
+}
+
+// Note: if some program creates a TIFF file from a raw file which is based
+// on a TIFF container, while preserving all Exif data, such a file cannot
+// be distinguished from a raw file by its signature.
+
+// We want to support reading such TIFFs, and even those that, by mistake,
+// contain metadata specific to raw files. The raw loader may in this case
+// conclude that it is reading a raw file and produce wrong image.
+
+// We can fix this by calling TIFF loader first. It checks the file extension
+// and limits itself to processing only .tif/.tiff. So it's safe for nearly
+// all raw files except those few disguised as TIFF files with .tif extension.
+// Obviously, for them, this function should not be called.
+static dt_imageio_retval_t _try_open_as_tiff_on_failure_fallback_to_rawspeed(
+    dt_image_t *img,
+    const char *filename,
+    dt_mipmap_buffer_t *mbuf)
+{
+  dt_imageio_retval_t ret = DT_IMAGEIO_LOAD_FAILED;
+  ret = dt_imageio_open_tiff(img, filename, mbuf);
+  if(!_image_handled(ret))
+    ret = dt_imageio_open_rawspeed(img, filename, mbuf);
+
+  return ret;
 }
 
 static dt_imageio_retval_t _open_by_magic_number(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf)
