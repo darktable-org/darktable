@@ -456,10 +456,10 @@ clip_and_zoom(read_only image2d_t in, write_only image2d_t out, const int width,
 
   const float px_footprint = 0.5f/r_scale;
   const int samples = ((int)px_footprint);
-  float2 p = backtransformf((float2)(x+0.5f, y+0.5f), r_x, r_y, r_wd, r_ht, r_scale);
+  const float2 p = backtransformf((float2)(x+0.5f, y+0.5f), r_x, r_y, r_wd, r_ht, r_scale);
   for(int j=-samples;j<=samples;j++) for(int i=-samples;i<=samples;i++)
   {
-    float4 px = read_imagef(in, samplerf, (float2)(p.x+i, p.y+j));
+    const float4 px = read_imagef(in, samplerf, (float2)(p.x+i, p.y+j));
     color += px;
   }
   color /= (float4)((2*samples+1)*(2*samples+1));
@@ -705,10 +705,10 @@ ppg_demosaic_redblue (read_only image2d_t in, write_only image2d_t out, const in
   if(c == 1 || c == 3)
   { // calculate red and blue for green pixels:
     // need 4-nbhood:
-    float4 nt = buffer[-stride];
-    float4 nb = buffer[ stride];
-    float4 nl = buffer[-1];
-    float4 nr = buffer[ 1];
+    const float4 nt = buffer[-stride];
+    const float4 nb = buffer[ stride];
+    const float4 nl = buffer[-1];
+    const float4 nr = buffer[ 1];
     if(FC(row, col+1, filters) == 0) // red nb in same row
     {
       color.z = (nt.z + nb.z + 2.0f*color.y - nt.y - nb.y)*0.5f;
@@ -723,10 +723,10 @@ ppg_demosaic_redblue (read_only image2d_t in, write_only image2d_t out, const in
   else
   {
     // get 4-star-nbhood:
-    float4 ntl = buffer[-stride - 1];
-    float4 ntr = buffer[-stride + 1];
-    float4 nbl = buffer[ stride - 1];
-    float4 nbr = buffer[ stride + 1];
+    const float4 ntl = buffer[-stride - 1];
+    const float4 ntr = buffer[-stride + 1];
+    const float4 nbl = buffer[ stride - 1];
+    const float4 nbr = buffer[ stride + 1];
 
     if(c == 0)
     { // red pixel, fill blue:
@@ -776,12 +776,12 @@ border_interpolate(read_only image2d_t in, write_only image2d_t out, const int w
     if (j>=0 && i>=0 && j<height && i<width)
     {
       const int f = FC(j,i,filters);
-      sum[f] += read_imagef(in, sampleri, (int2)(i, j)).x;
+      sum[f] += fmax(0.0f, read_imagef(in, sampleri, (int2)(i, j)).x);
       count[f]++;
     }
   }
 
-  const float i = read_imagef(in, sampleri, (int2)(x, y)).x;
+  const float i = fmax(0.0f, read_imagef(in, sampleri, (int2)(x, y)).x);
   o.x = count[0] > 0 ? sum[0]/count[0] : i;
   o.y = count[1]+count[3] > 0 ? (sum[1]+sum[3])/(count[1]+count[3]) : i;
   o.z = count[2] > 0 ? sum[2]/count[2] : i;
@@ -793,5 +793,5 @@ border_interpolate(read_only image2d_t in, write_only image2d_t out, const int w
   else if(f == 2) o.z = i;
   else            o.y = i;
 
-  write_imagef (out, (int2)(x, y), fmax(o, 0.0f));
+  write_imagef (out, (int2)(x, y), o);
 }
