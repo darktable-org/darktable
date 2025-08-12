@@ -63,9 +63,8 @@ vng_border_interpolate(read_only image2d_t in,
       }
     }
 
-  float i = read_imagef(in, sampleri, (int2)(x, y)).x;
-
-  int f = fcol(y, x, filters, xtrans);
+  const float i = read_imagef(in, sampleri, (int2)(x, y)).x;
+  const int f = fcol(y, x, filters, xtrans);
 
   for(int c = 0; c < colors; c++)
   {
@@ -253,7 +252,7 @@ vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
 
   float thold = gmin + (gmax * 0.5f);
   float sum[4] = { 0.0f };
-  int color = fcol(y, x, filters, xtrans);
+  const int color = fcol(y, x, filters, xtrans);
   int num = 0;
 
   // average the neighbors
