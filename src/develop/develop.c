@@ -567,11 +567,11 @@ void dt_dev_reload_image(dt_develop_t *dev,
 }
 
 float dt_dev_get_zoom_scale(dt_dev_viewport_t *port,
-                            dt_dev_zoom_t zoom,
+                            const dt_dev_zoom_t zoom,
                             const int closeup_factor,
                             const gboolean preview)
 {
-  float zoom_scale;
+  float zoom_scale = .0f;
 
   int procw, proch;
   dt_dev_get_processed_size(port, &procw, &proch);
@@ -609,7 +609,8 @@ float dt_dev_get_zoom_scale_full(void)
   dt_dev_zoom_t zoom;
   int closeup;
   dt_dev_get_viewport_params(&darktable.develop->full, &zoom, &closeup, NULL, NULL);
-  const float zoom_scale = dt_dev_get_zoom_scale(&darktable.develop->full, zoom, 1 << closeup, TRUE);
+  const float zoom_scale =
+    dt_dev_get_zoom_scale(&darktable.develop->full, zoom, 1 << closeup, TRUE);
 
   return zoom_scale;
 }
@@ -2724,9 +2725,9 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
                       dt_dev_zoom_t zoom,
                       float scale,
                       int closeup,
-                      float x,
-                      float y,
-                      gboolean constrain)
+                      const float x,
+                      const float y,
+                      const gboolean constrain)
 {
   dt_develop_t *dev = darktable.develop;
 
@@ -2998,7 +2999,7 @@ float dt_dev_exposure_get_black(dt_develop_t *dev)
   return instance && instance->get_black  && instance->module->enabled ? instance->get_black(instance->module) : 0.0f;
 }
 
-void dt_dev_exposure_handle_event(GdkEvent *event, gboolean blackwhite)
+void dt_dev_exposure_handle_event(GdkEvent *event, const gboolean blackwhite)
 {
   if(darktable.develop->proxy.exposure.handle_event)
     darktable.develop->proxy.exposure.handle_event(event, blackwhite);
