@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-28 09:08+0200\n"
-"PO-Revision-Date: 2025-07-28 09:09+0200\n"
+"POT-Creation-Date: 2025-08-13 19:17+0200\n"
+"PO-Revision-Date: 2025-08-13 19:25+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -859,7 +859,7 @@ msgstr "Ce paramètre a été modifié"
 #: ../build/bin/preferences_gen.h:4321 ../build/bin/preferences_gen.h:4504
 #: ../build/bin/preferences_gen.h:5177 ../build/bin/preferences_gen.h:5882
 #: ../build/bin/preferences_gen.h:6725 ../build/bin/preferences_gen.h:7252
-#: ../build/bin/preferences_gen.h:7518 ../src/gui/accelerators.c:3048
+#: ../build/bin/preferences_gen.h:7518 ../src/gui/accelerators.c:3051
 #: ../src/gui/gtk.c:3193 ../src/gui/preferences.c:519
 #: ../src/gui/preferences.c:1032 ../src/libs/modulegroups.c:4092
 msgid "?"
@@ -3068,7 +3068,7 @@ msgstr "Base"
 #: ../build/lib/darktable/plugins/introspection_borders.c:349
 #: ../build/lib/darktable/plugins/introspection_borders.c:355
 #: ../src/gui/preferences.c:996 ../src/imageio/format/jpeg.c:597
-#: ../src/iop/ashift.c:6139 ../src/iop/basicadj.c:658 ../src/iop/flip.c:455
+#: ../src/iop/ashift.c:6139 ../src/iop/basicadj.c:658 ../src/iop/flip.c:456
 #: ../src/iop/levels.c:650 ../src/iop/rgblevels.c:1080
 msgid "auto"
 msgstr "Auto"
@@ -3882,7 +3882,7 @@ msgstr "Renforcer la netteté"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:180
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:263
-msgid "sharp centre"
+msgid "sharp center"
 msgstr "Accentuer le centre"
 
 # au masculin
@@ -4504,17 +4504,17 @@ msgid "autodetect"
 msgstr "Détection automatique"
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:101
-#: ../src/iop/flip.c:460
+#: ../src/iop/flip.c:461
 msgid "no rotation"
 msgstr "Pas de rotation"
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:102
-#: ../src/iop/flip.c:468 ../src/iop/flip.c:626
+#: ../src/iop/flip.c:469 ../src/iop/flip.c:627
 msgid "flip vertically"
 msgstr "Retourne verticalement"
 
 #: ../build/lib/darktable/plugins/introspection_flip.c:103
-#: ../src/iop/flip.c:464 ../src/iop/flip.c:622
+#: ../src/iop/flip.c:465 ../src/iop/flip.c:623
 msgid "flip horizontally"
 msgstr "Retourne horizontalement"
 
@@ -4830,8 +4830,8 @@ msgstr "Vignettage manuel seulement"
 #. get nice text for bounds
 #. Side-border hide/show
 #: ../build/lib/darktable/plugins/introspection_lens.cc:534
-#: ../src/dtgtk/range.c:1761 ../src/gui/accelerators.c:2643
-#: ../src/gui/accelerators.c:2725 ../src/gui/gtk.c:1494 ../src/gui/gtk.c:3792
+#: ../src/dtgtk/range.c:1761 ../src/gui/accelerators.c:2646
+#: ../src/gui/accelerators.c:2728 ../src/gui/gtk.c:1494 ../src/gui/gtk.c:3792
 #: ../src/imageio/format/pdf.c:662 ../src/iop/denoiseprofile.c:3670
 #: ../src/iop/rawdenoise.c:882 ../src/libs/collect.c:3561
 #: ../src/libs/filtering.c:1510 ../src/libs/filters/colors.c:157
@@ -5280,7 +5280,7 @@ msgstr "Mode de remplissage"
 #: ../src/iop/basicadj.c:646 ../src/iop/channelmixerrgb.c:4622
 #: ../src/iop/colisa.c:278 ../src/iop/colorequal.c:3102
 #: ../src/iop/lowpass.c:577 ../src/iop/soften.c:354 ../src/iop/vignette.c:1045
-#: ../src/libs/history.c:963
+#: ../src/libs/history.c:967
 msgid "brightness"
 msgstr "Luminosité"
 
@@ -5748,11 +5748,11 @@ msgstr "Réglette"
 msgid "dropdown"
 msgstr "Menu déroulant"
 
-#: ../src/chart/main.c:504 ../src/common/database.c:3847
+#: ../src/chart/main.c:504 ../src/common/database.c:3857
 #: ../src/control/jobs/control_jobs.c:2137
-#: ../src/control/jobs/control_jobs.c:2195 ../src/gui/accelerators.c:2548
-#: ../src/gui/accelerators.c:2630 ../src/gui/accelerators.c:2683
-#: ../src/gui/accelerators.c:2712 ../src/gui/accelerators.c:2774
+#: ../src/control/jobs/control_jobs.c:2195 ../src/gui/accelerators.c:2551
+#: ../src/gui/accelerators.c:2633 ../src/gui/accelerators.c:2686
+#: ../src/gui/accelerators.c:2715 ../src/gui/accelerators.c:2777
 #: ../src/gui/hist_dialog.c:225 ../src/gui/preferences.c:1228
 #: ../src/gui/preferences.c:1268 ../src/gui/presets.c:425
 #: ../src/gui/presets.c:568 ../src/gui/styles_dialog.c:552
@@ -6655,8 +6655,8 @@ msgstr ""
 msgid "darktable - unable to create directories"
 msgstr "Darktable - impossible de créer des répertoires"
 
-#: ../src/common/darktable.c:1534 ../src/common/database.c:4088
-#: ../src/common/database.c:4282
+#: ../src/common/darktable.c:1534 ../src/common/database.c:4098
+#: ../src/common/database.c:4292
 msgid "_quit darktable"
 msgstr "_Quitter Darktable"
 
@@ -6922,7 +6922,7 @@ msgid "preserved filename"
 msgstr "Nom de fichier préservé"
 
 # dialogue très modifié et ajout d'un 1er message
-#: ../src/common/database.c:3820
+#: ../src/common/database.c:3830
 #, c-format
 msgid ""
 "\n"
@@ -6998,19 +6998,19 @@ msgstr ""
 "\n"
 
 #. clang-format on
-#: ../src/common/database.c:3846
+#: ../src/common/database.c:3856
 msgid "error starting darktable"
 msgstr "Erreur de lancement de Darktable"
 
-#: ../src/common/database.c:3847
+#: ../src/common/database.c:3857
 msgid "_delete database lock files"
 msgstr "_Supprimer les verrous de la base de données"
 
-#: ../src/common/database.c:3853
+#: ../src/common/database.c:3863
 msgid "are you sure?"
 msgstr "Est-ce certain ?"
 
-#: ../src/common/database.c:3854
+#: ../src/common/database.c:3864
 msgid ""
 "\n"
 "do you really want to delete the lock files?\n"
@@ -7018,19 +7018,19 @@ msgstr ""
 "\n"
 "Réellement supprimer les fichiers verrous ?\n"
 
-#: ../src/common/database.c:3854 ../src/gui/gtk.c:3144
+#: ../src/common/database.c:3864 ../src/gui/gtk.c:3144
 msgid "_no"
 msgstr "_Non"
 
-#: ../src/common/database.c:3854 ../src/gui/gtk.c:3143
+#: ../src/common/database.c:3864 ../src/gui/gtk.c:3143
 msgid "_yes"
 msgstr "_Oui"
 
-#: ../src/common/database.c:3870
+#: ../src/common/database.c:3880
 msgid "done"
 msgstr "Terminé"
 
-#: ../src/common/database.c:3871
+#: ../src/common/database.c:3881
 msgid ""
 "\n"
 "successfully deleted the lock files.\n"
@@ -7040,17 +7040,17 @@ msgstr ""
 "Suppression des fichiers verrous réussie,\n"
 "Darktable doit être redémarré.\n"
 
-#: ../src/common/database.c:3872 ../src/common/database.c:3879
-#: ../src/gui/accelerators.c:2631 ../src/gui/accelerators.c:2713
+#: ../src/common/database.c:3882 ../src/common/database.c:3889
+#: ../src/gui/accelerators.c:2634 ../src/gui/accelerators.c:2716
 #: ../src/gui/hist_dialog.c:226 ../src/gui/presets.c:569
 msgid "_ok"
 msgstr "_Ok"
 
-#: ../src/common/database.c:3875
+#: ../src/common/database.c:3885
 msgid "error"
 msgstr "Erreur"
 
-#: ../src/common/database.c:3876
+#: ../src/common/database.c:3886
 #, c-format
 msgid ""
 "\n"
@@ -7064,7 +7064,7 @@ msgstr ""
 "Supprimer les fichiers <i>data.db.lock</i> et <i>library.db.lock</i> \n"
 "dans le répertoire <a href=\"file:///%s\">%s</a>. \n"
 
-#: ../src/common/database.c:3993
+#: ../src/common/database.c:4003
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -7073,19 +7073,19 @@ msgstr ""
 "Le fichier de verrouillage de la base de données contient un numéro de "
 "processus actif sur le système (%d)"
 
-#: ../src/common/database.c:4000
+#: ../src/common/database.c:4010
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "Le fichier de verrouillage de la base de données semble être vide"
 
-#: ../src/common/database.c:4010
+#: ../src/common/database.c:4020
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr ""
 "Erreur lors de la lecture du fichier de verrouillage de la base de données : "
 "« %s »"
 
-#: ../src/common/database.c:4080
+#: ../src/common/database.c:4090
 #, c-format
 msgid ""
 "the database schema version of\n"
@@ -7103,12 +7103,12 @@ msgstr ""
 "(cela signifie que la base de données a été créée ou mise à jour pas une "
 "version plus récente de Darktable.\n"
 
-#: ../src/common/database.c:4087
+#: ../src/common/database.c:4097
 msgid "darktable - too new db version"
 msgstr "Darktable - Base de données trop récente"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:4103
+#: ../src/common/database.c:4113
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -7127,21 +7127,21 @@ msgstr ""
 "\n"
 "Continuer ou quitter pour effectuer une sauvegarde.\n"
 
-#: ../src/common/database.c:4111
+#: ../src/common/database.c:4121
 msgid "darktable - schema migration"
 msgstr "Darktable - Migration de la base de données"
 
-#: ../src/common/database.c:4112 ../src/common/database.c:4463
-#: ../src/common/database.c:4478 ../src/common/database.c:4638
-#: ../src/common/database.c:4653
+#: ../src/common/database.c:4122 ../src/common/database.c:4473
+#: ../src/common/database.c:4488 ../src/common/database.c:4648
+#: ../src/common/database.c:4663
 msgid "_close darktable"
 msgstr "_Quitter Darktable"
 
-#: ../src/common/database.c:4112
+#: ../src/common/database.c:4122
 msgid "_upgrade database"
 msgstr "_Mise à jour de la base de données"
 
-#: ../src/common/database.c:4272
+#: ../src/common/database.c:4282
 #, c-format
 msgid ""
 "you do not have write access to at least one of the darktable databases:\n"
@@ -7158,11 +7158,11 @@ msgstr ""
 "\n"
 "Merci de corriger cela avant de relancer Darktable."
 
-#: ../src/common/database.c:4280
+#: ../src/common/database.c:4290
 msgid "darktable - read-only database detected"
 msgstr "Darktable - Bases de données en lecture seule"
 
-#: ../src/common/database.c:4443 ../src/common/database.c:4618
+#: ../src/common/database.c:4453 ../src/common/database.c:4628
 #, c-format
 msgid ""
 "quick_check said:\n"
@@ -7172,21 +7172,21 @@ msgstr ""
 "« %s »\n"
 "\n"
 
-#: ../src/common/database.c:4460 ../src/common/database.c:4475
-#: ../src/common/database.c:4635 ../src/common/database.c:4650
+#: ../src/common/database.c:4470 ../src/common/database.c:4485
+#: ../src/common/database.c:4645 ../src/common/database.c:4660
 msgid "darktable - error opening database"
 msgstr "Darktable - Erreur lors de l’ouverture de la base de données"
 
-#: ../src/common/database.c:4464 ../src/common/database.c:4639
+#: ../src/common/database.c:4474 ../src/common/database.c:4649
 msgid "_attempt restore"
 msgstr "_Essayer de restaurer"
 
-#: ../src/common/database.c:4465 ../src/common/database.c:4479
-#: ../src/common/database.c:4640 ../src/common/database.c:4654
+#: ../src/common/database.c:4475 ../src/common/database.c:4489
+#: ../src/common/database.c:4650 ../src/common/database.c:4664
 msgid "_delete database"
 msgstr "_Effacer la base de données"
 
-#: ../src/common/database.c:4468 ../src/common/database.c:4643
+#: ../src/common/database.c:4478 ../src/common/database.c:4653
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup, attempt an automatic restore\n"
@@ -7199,7 +7199,7 @@ msgstr ""
 "récente\n"
 " • Ou supprimer la base corrompue et redémarrer avec une nouvelle base ?"
 
-#: ../src/common/database.c:4482 ../src/common/database.c:4657
+#: ../src/common/database.c:4492 ../src/common/database.c:4667
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or delete the corrupted database\n"
@@ -7209,7 +7209,7 @@ msgstr ""
 "la base de données depuis une sauvegarde, ou supprimer la base corrompue\n"
 "et redémarrer avec une nouvelle base ?"
 
-#: ../src/common/database.c:4489 ../src/common/database.c:4662
+#: ../src/common/database.c:4499 ../src/common/database.c:4672
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -7404,7 +7404,7 @@ msgstr ""
 "sinon le fichier RAW <b>ne sera plus lisible</b> dans la prochaine version."
 
 #: ../src/common/image.h:217 ../src/common/ratings.c:297
-#: ../src/imageio/format/avif.c:110 ../src/libs/history.c:842
+#: ../src/imageio/format/avif.c:110 ../src/libs/history.c:846
 #: ../src/libs/snapshots.c:927
 msgid "unknown"
 msgstr "Inconnu"
@@ -7539,17 +7539,17 @@ msgstr ""
 "ou, si ce répertoire n'existe pas, depuis\n"
 "<b>%s</b>"
 
-#: ../src/common/mipmap_cache.c:1327 ../src/imageio/imageio.c:1078
+#: ../src/common/mipmap_cache.c:1327 ../src/imageio/imageio.c:1056
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "Image « %s » non disponible"
 
-#: ../src/common/mipmap_cache.c:1330 ../src/imageio/imageio.c:1086
+#: ../src/common/mipmap_cache.c:1330 ../src/imageio/imageio.c:1064
 #, c-format
 msgid "unable to load image `%s'!"
 msgstr "Impossible de charger l'image « %s » !"
 
-#: ../src/common/mipmap_cache.c:1332 ../src/imageio/imageio.c:1089
+#: ../src/common/mipmap_cache.c:1332 ../src/imageio/imageio.c:1067
 #, c-format
 msgid "image '%s' not supported"
 msgstr "Image « %s » non supportée"
@@ -7563,11 +7563,11 @@ msgstr "Distribution générique"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "Le profil de gestion du bruit « %s » n’est pas valide"
 
-#: ../src/common/opencl.c:1162
+#: ../src/common/opencl.c:1161
 msgid "no working OpenCL library found"
 msgstr "pas de bibliothèque OpenCL fonctionnelle trouvée"
 
-#: ../src/common/opencl.c:1182
+#: ../src/common/opencl.c:1181
 msgid ""
 "platform detection failed. some possible causes:\n"
 "  - OpenCL ICD (ocl-icd) missing,\n"
@@ -7589,19 +7589,19 @@ msgstr ""
 msgid "no devices found for unknown platform"
 msgstr "Pas de périphérique trouvé pour la plateforme non connue"
 
-#: ../src/common/opencl.c:1342
+#: ../src/common/opencl.c:1343
 msgid "not enough memory for OpenCL devices"
 msgstr "Pas assez de mémoire pour les périphériques OpenCL"
 
-#: ../src/common/opencl.c:1377
+#: ../src/common/opencl.c:1381
 msgid "no OpenCL devices found"
 msgstr "Aucun périphérique OpenCL trouvé"
 
-#: ../src/common/opencl.c:1420
+#: ../src/common/opencl.c:1424
 msgid "no suitable OpenCL devices found"
 msgstr "Aucun périphérique OpenCL adéquat trouvé"
 
-#: ../src/common/opencl.c:1444
+#: ../src/common/opencl.c:1448
 #, c-format
 msgid ""
 "OpenCL initializing problem:\n"
@@ -7612,13 +7612,13 @@ msgstr ""
 "%s\n"
 "OpenCL désactivé maintenant"
 
-#: ../src/common/opencl.c:1480
+#: ../src/common/opencl.c:1484
 msgid "OpenCL scheduling profile set to default, setup has changed"
 msgstr ""
 "Profil de planification d’OpenCL par défaut positionné, l'environnement a "
 "changé"
 
-#: ../src/common/opencl.c:2323
+#: ../src/common/opencl.c:2335
 #, c-format
 msgid "building OpenCL program %s for %s"
 msgstr "Compilation du programme OpenCL « %s » pour « %s »"
@@ -9554,7 +9554,7 @@ msgstr "Opacité"
 msgid "set the opacity of the blending"
 msgstr "Fixer l’opacité de la fusion"
 
-#: ../src/develop/blend_gui.c:3597 ../src/libs/history.c:956
+#: ../src/develop/blend_gui.c:3597 ../src/libs/history.c:960
 msgid "combine masks"
 msgstr "Combinaison des masques"
 
@@ -9581,7 +9581,7 @@ msgstr ""
 "importants\n"
 " • Les valeurs négatives sélectionnent les zone plates, sans détail"
 
-#: ../src/develop/blend_gui.c:3618 ../src/libs/history.c:959
+#: ../src/develop/blend_gui.c:3618 ../src/libs/history.c:963
 msgid "feathering guide"
 msgstr "Guide de raffinement"
 
@@ -9593,14 +9593,14 @@ msgstr ""
 "Permet de guider le masque depuis l’image d’entrée ou de sortie\n"
 "et de choisir d’appliquer le raffinement avant ou après le flou."
 
-#: ../src/develop/blend_gui.c:3627 ../src/libs/history.c:958
+#: ../src/develop/blend_gui.c:3627 ../src/libs/history.c:962
 msgid "feathering radius"
 msgstr "Rayon du raffinement"
 
 #: ../src/develop/blend_gui.c:3628 ../src/develop/blend_gui.c:3637
 #: ../src/iop/colorbalancergb.c:2021 ../src/iop/colorequal.c:3148
-#: ../src/iop/colorequal.c:3175 ../src/iop/demosaic.c:1489
-#: ../src/iop/demosaic.c:1508 ../src/iop/diffuse.c:1782
+#: ../src/iop/colorequal.c:3175 ../src/iop/demosaic.c:1501
+#: ../src/iop/demosaic.c:1520 ../src/iop/diffuse.c:1782
 #: ../src/iop/diffuse.c:1792 ../src/iop/retouch.c:2718
 msgid " px"
 msgstr " px"
@@ -9618,7 +9618,7 @@ msgid "radius for gaussian blur of blend mask"
 msgstr "Rayon du flou gaussien du masque de fusion"
 
 #: ../src/develop/blend_gui.c:3645 ../src/iop/retouch.c:2723
-#: ../src/libs/history.c:954
+#: ../src/libs/history.c:958
 msgid "mask opacity"
 msgstr "Opacité du masque"
 
@@ -9631,7 +9631,7 @@ msgstr ""
 "luminosité\n"
 "sans affecter les régions complètement transparentes ou opaques."
 
-#: ../src/develop/blend_gui.c:3654 ../src/libs/history.c:962
+#: ../src/develop/blend_gui.c:3654 ../src/libs/history.c:966
 msgid "mask contrast"
 msgstr "Contraste du masque"
 
@@ -9786,7 +9786,7 @@ msgstr ""
 "ne satisfait pas ses prérequis."
 
 #: ../src/develop/imageop.c:4032 ../src/develop/imageop.c:4042
-#: ../src/gui/accelerators.c:168 ../src/libs/lib.c:1571
+#: ../src/gui/accelerators.c:168 ../src/libs/lib.c:1578
 msgid "show"
 msgstr "Afficher"
 
@@ -9807,14 +9807,14 @@ msgstr "Cloner"
 #: ../src/gui/accelerators.c:129 ../src/gui/accelerators.c:139
 #: ../src/gui/gtk.c:3640 ../src/gui/gtk.c:3695 ../src/gui/hist_dialog.c:269
 #: ../src/gui/styles_dialog.c:643 ../src/gui/styles_dialog.c:665
-#: ../src/iop/atrous.c:1618 ../src/libs/lib.c:1572
+#: ../src/iop/atrous.c:1618 ../src/libs/lib.c:1579
 #: ../src/libs/modulegroups.c:4087
 msgid "reset"
 msgstr "Réinitialiser"
 
 #. Adding the outer container
 #: ../src/develop/imageop.c:4044 ../src/gui/preferences.c:923
-#: ../src/libs/lib.c:1573
+#: ../src/libs/lib.c:1580
 msgid "presets"
 msgstr "Préréglages"
 
@@ -9826,7 +9826,7 @@ msgstr "Activer"
 msgid "focus"
 msgstr "Focus"
 
-#: ../src/develop/imageop.c:4047 ../src/gui/accelerators.c:2926
+#: ../src/develop/imageop.c:4047 ../src/gui/accelerators.c:2929
 msgid "instance"
 msgstr "Instance"
 
@@ -10206,11 +10206,11 @@ msgstr ""
 "dans le module « %s »\n"
 "Merci de reporter sur GitHub"
 
-#: ../src/develop/pixelpipe_hb.c:1720
+#: ../src/develop/pixelpipe_hb.c:1737
 msgid "fatal input misalignment, please report on GitHub\n"
 msgstr "Erreur d'alignement en entrée, merci de reporter sur GitHub\n"
 
-#: ../src/develop/pixelpipe_hb.c:3093
+#: ../src/develop/pixelpipe_hb.c:3110
 msgid ""
 "OpenCL errors encountered; disabling OpenCL for this session! some possible "
 "causes:\n"
@@ -10231,7 +10231,7 @@ msgstr ""
 " • Le « headroom » est trop petit lorsque l'option « Utiliser toute la "
 "mémoire du périphérique » est positionnée."
 
-#: ../src/develop/pixelpipe_hb.c:3286
+#: ../src/develop/pixelpipe_hb.c:3303
 #, c-format
 msgid ""
 "module '%s' can't get raster mask from module\n"
@@ -12743,7 +12743,7 @@ msgstr "Configuration"
 #. stack for the options
 #. main menu
 #: ../src/external/lua-scripts/tools/script_manager.lua:1545
-#: ../src/gui/accelerators.c:2891 ../src/gui/accelerators.c:2994
+#: ../src/gui/accelerators.c:2894 ../src/gui/accelerators.c:2997
 #: ../src/views/view.c:1608
 msgid "action"
 msgstr "Action"
@@ -13127,8 +13127,8 @@ msgstr "Dernière instance"
 msgid "relative instance"
 msgstr "Instance relative"
 
-#: ../src/gui/accelerators.c:817 ../src/gui/accelerators.c:2916
-#: ../src/gui/accelerators.c:3856
+#: ../src/gui/accelerators.c:817 ../src/gui/accelerators.c:2919
+#: ../src/gui/accelerators.c:3859
 msgid "speed"
 msgstr "Vitesse"
 
@@ -13375,31 +13375,31 @@ msgstr "Restaurer le raccourci par défaut sélectionné ?"
 msgid "remove the selected shortcut?"
 msgstr "Supprimer le raccourci sélectionné ?"
 
-#: ../src/gui/accelerators.c:2160
+#: ../src/gui/accelerators.c:2163
 msgid "command"
 msgstr "Commande"
 
-#: ../src/gui/accelerators.c:2161
+#: ../src/gui/accelerators.c:2164
 msgid "preset"
 msgstr "Préréglage"
 
-#: ../src/gui/accelerators.c:2542
+#: ../src/gui/accelerators.c:2545
 msgid "restore shortcuts"
 msgstr "Restauration du raccourci"
 
-#: ../src/gui/accelerators.c:2545
+#: ../src/gui/accelerators.c:2548
 msgid "_defaults"
 msgstr "_Défaut"
 
-#: ../src/gui/accelerators.c:2546
+#: ../src/gui/accelerators.c:2549
 msgid "_startup"
 msgstr "_Démarrage"
 
-#: ../src/gui/accelerators.c:2547
+#: ../src/gui/accelerators.c:2550
 msgid "_edits"
 msgstr "_Avant modif"
 
-#: ../src/gui/accelerators.c:2554
+#: ../src/gui/accelerators.c:2557
 msgid ""
 "restore shortcuts from one of these states:\n"
 "  - default\n"
@@ -13411,7 +13411,7 @@ msgstr ""
 " • Comme au démarrage\n"
 " • Comme avant l’ouverture de ce dialogue\n"
 
-#: ../src/gui/accelerators.c:2561
+#: ../src/gui/accelerators.c:2564
 msgid ""
 "clear all newer shortcuts\n"
 "(instead of just restoring changed ones)"
@@ -13419,17 +13419,17 @@ msgstr ""
 "Effacer tous les raccourcis récents\n"
 "au lieu de restaurer ceux qui ont été modifiés."
 
-#: ../src/gui/accelerators.c:2618 ../src/gui/preferences.c:1067
+#: ../src/gui/accelerators.c:2621 ../src/gui/preferences.c:1067
 #: ../src/libs/tools/global_toolbox.c:487
 #: ../src/libs/tools/global_toolbox.c:664
 msgid "shortcuts"
 msgstr "Raccourcis"
 
-#: ../src/gui/accelerators.c:2628
+#: ../src/gui/accelerators.c:2631
 msgid "export shortcuts"
 msgstr "Exporter les raccourcis"
 
-#: ../src/gui/accelerators.c:2637
+#: ../src/gui/accelerators.c:2640
 msgid ""
 "export all shortcuts to a file\n"
 "or just for one selected device\n"
@@ -13437,27 +13437,27 @@ msgstr ""
 "Exporter tous les raccourcis dans un fichier\n"
 "ou seulement pour un périphérique sélectionné.\n"
 
-#: ../src/gui/accelerators.c:2644 ../src/gui/accelerators.c:2726
+#: ../src/gui/accelerators.c:2647 ../src/gui/accelerators.c:2729
 msgid "keyboard"
 msgstr "Clavier"
 
-#: ../src/gui/accelerators.c:2656
+#: ../src/gui/accelerators.c:2659
 msgid "device id"
 msgstr "Id du périphérique"
 
-#: ../src/gui/accelerators.c:2682
+#: ../src/gui/accelerators.c:2685
 msgid "select file to export"
 msgstr "Sélectionne le fichier à exporter"
 
-#: ../src/gui/accelerators.c:2683 ../src/libs/tagging.c:2629
+#: ../src/gui/accelerators.c:2686 ../src/libs/tagging.c:2629
 msgid "_export"
 msgstr "_Exporter"
 
-#: ../src/gui/accelerators.c:2710
+#: ../src/gui/accelerators.c:2713
 msgid "import shortcuts"
 msgstr "Importer des raccourcis"
 
-#: ../src/gui/accelerators.c:2719
+#: ../src/gui/accelerators.c:2722
 msgid ""
 "import all shortcuts from a file\n"
 "or just for one selected device\n"
@@ -13465,31 +13465,31 @@ msgstr ""
 "Importer tous les raccourcis du fichier,\n"
 "ou seulement pour un périphérique sélectionné.\n"
 
-#: ../src/gui/accelerators.c:2738
+#: ../src/gui/accelerators.c:2741
 msgid "id in file"
 msgstr "Id dans le fichier"
 
-#: ../src/gui/accelerators.c:2744
+#: ../src/gui/accelerators.c:2747
 msgid "id when loaded"
 msgstr "Id lorsque chargé"
 
-#: ../src/gui/accelerators.c:2748
+#: ../src/gui/accelerators.c:2751
 msgid "clear device first"
 msgstr "Effacer d’abord les raccourcis du périphérique"
 
-#: ../src/gui/accelerators.c:2773
+#: ../src/gui/accelerators.c:2776
 msgid "select file to import"
 msgstr "Sélectionner le fichier à importer"
 
-#: ../src/gui/accelerators.c:2774 ../src/libs/tagging.c:2593
+#: ../src/gui/accelerators.c:2777 ../src/libs/tagging.c:2593
 msgid "_import"
 msgstr "_Importer"
 
-#: ../src/gui/accelerators.c:2866
+#: ../src/gui/accelerators.c:2869
 msgid "search shortcuts list"
 msgstr "Chercher dans la liste des raccourcis"
 
-#: ../src/gui/accelerators.c:2868
+#: ../src/gui/accelerators.c:2871
 msgid ""
 "incrementally search the list of shortcuts\n"
 "press up or down keys to cycle through matches"
@@ -13497,23 +13497,23 @@ msgstr ""
 "Recherche incrémentale dans la liste des raccourcis,\n"
 "appuyer les touches haut ou bas pour parcourir la sélection."
 
-#: ../src/gui/accelerators.c:2888 ../src/views/view.c:1606
+#: ../src/gui/accelerators.c:2891 ../src/views/view.c:1606
 msgid "shortcut"
 msgstr "Raccourci"
 
-#: ../src/gui/accelerators.c:2901
+#: ../src/gui/accelerators.c:2904
 msgid "element"
 msgstr "Élément"
 
-#: ../src/gui/accelerators.c:2909
+#: ../src/gui/accelerators.c:2912
 msgid "effect"
 msgstr "Effets"
 
-#: ../src/gui/accelerators.c:2970
+#: ../src/gui/accelerators.c:2973
 msgid "search actions list"
 msgstr "Chercher dans la liste d’actions"
 
-#: ../src/gui/accelerators.c:2972
+#: ../src/gui/accelerators.c:2975
 msgid ""
 "incrementally search the list of actions\n"
 "press up or down keys to cycle through matches"
@@ -13521,16 +13521,16 @@ msgstr ""
 "Recherche incrémentale dans la liste des actions,\n"
 "appuyer les touches haut ou bas pour parcourir la sélection."
 
-#: ../src/gui/accelerators.c:3002 ../src/gui/guides.c:849
+#: ../src/gui/accelerators.c:3005 ../src/gui/guides.c:849
 #: ../src/gui/metadata_tags.c:124
 msgid "type"
 msgstr "Type"
 
-#: ../src/gui/accelerators.c:3040
+#: ../src/gui/accelerators.c:3043
 msgid "enable fallbacks"
 msgstr "Activer les replis"
 
-#: ../src/gui/accelerators.c:3041
+#: ../src/gui/accelerators.c:3044
 msgid ""
 "enables default meanings for additional buttons, modifiers or moves\n"
 "when used in combination with a base shortcut"
@@ -13539,38 +13539,38 @@ msgstr ""
 "additionnels,\n"
 "lorsque utilisé avec un raccourci de base."
 
-#: ../src/gui/accelerators.c:3049
+#: ../src/gui/accelerators.c:3052
 msgid "open help page for shortcuts"
 msgstr "Ouvre la page d'aide pour les raccourcis"
 
 # lorsque l’action n’engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/gui/accelerators.c:3054
+#: ../src/gui/accelerators.c:3057
 msgid "restore..."
 msgstr "Restaurer…"
 
-#: ../src/gui/accelerators.c:3055
+#: ../src/gui/accelerators.c:3058
 msgid "restore default shortcuts or previous state"
 msgstr "Restaurer les raccourcis par défaut ou leur état précédent"
 
-#: ../src/gui/accelerators.c:3059 ../src/libs/styles.c:901
+#: ../src/gui/accelerators.c:3062 ../src/libs/styles.c:901
 #: ../src/libs/tagging.c:3369
 msgid "import..."
 msgstr "Importer…"
 
-#: ../src/gui/accelerators.c:3060
+#: ../src/gui/accelerators.c:3063
 msgid "fully or partially import shortcuts from file"
 msgstr "Importer tout ou partiellement les raccourcis"
 
-#: ../src/gui/accelerators.c:3064 ../src/libs/styles.c:907
+#: ../src/gui/accelerators.c:3067 ../src/libs/styles.c:907
 #: ../src/libs/tagging.c:3372
 msgid "export..."
 msgstr "Exporter…"
 
-#: ../src/gui/accelerators.c:3065
+#: ../src/gui/accelerators.c:3068
 msgid "fully or partially export shortcuts to file"
 msgstr "Exporter tout ou partiellement les raccourcis"
 
-#: ../src/gui/accelerators.c:3073
+#: ../src/gui/accelerators.c:3076
 msgid ""
 "the recommended way to assign shortcuts to visual elements is the <b>visual "
 "shortcut mapping</b> mode.\n"
@@ -13604,24 +13604,24 @@ msgstr ""
 "<i>Cliquer <b>trois fois</b> pour supprimer définitivement cette "
 "notification.</i>"
 
-#: ../src/gui/accelerators.c:3501
+#: ../src/gui/accelerators.c:3504
 msgid "reinitialising input devices"
 msgstr "Réinitialise les périphériques d’entrée"
 
 # lorsque l’action n’engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/gui/accelerators.c:3643
+#: ../src/gui/accelerators.c:3646
 msgid "down move"
 msgstr "Mouvement vers le bas"
 
-#: ../src/gui/accelerators.c:3643
+#: ../src/gui/accelerators.c:3646
 msgid "flip top/bottom first/last"
 msgstr "Intervertir haut/bas premier/dernier"
 
-#: ../src/gui/accelerators.c:3724
+#: ../src/gui/accelerators.c:3727
 msgid "fallback to move"
 msgstr "Repli à déplacer"
 
-#: ../src/gui/accelerators.c:3825
+#: ../src/gui/accelerators.c:3828
 #, c-format
 msgid ""
 "\n"
@@ -13630,17 +13630,17 @@ msgstr ""
 "\n"
 "Applique le préréglage « %s »"
 
-#: ../src/gui/accelerators.c:3975
+#: ../src/gui/accelerators.c:3978
 #, c-format
 msgid "%s not assigned"
 msgstr "« %s » n’est pas assigné"
 
-#: ../src/gui/accelerators.c:4154
+#: ../src/gui/accelerators.c:4157
 #, c-format
 msgid "%s assigned to %s"
 msgstr "« %s » est assigné à « %s »"
 
-#: ../src/gui/accelerators.c:4373
+#: ../src/gui/accelerators.c:4376
 msgid "short key press resets stuck keys"
 msgstr "Une pression courte réinitialise les touches bloquées"
 
@@ -14417,12 +14417,12 @@ msgstr "Monochrome"
 msgid "preset `%s' is write-protected, can't delete!"
 msgstr "Le préréglage « %s » est protégé et ne peut être supprimé"
 
-#: ../src/gui/presets.c:160 ../src/gui/presets.c:466 ../src/libs/lib.c:233
+#: ../src/gui/presets.c:160 ../src/gui/presets.c:466 ../src/libs/lib.c:236
 #: ../src/libs/modulegroups.c:3881
 msgid "delete preset?"
 msgstr "Supprimer ce préréglage ?"
 
-#: ../src/gui/presets.c:161 ../src/gui/presets.c:467 ../src/libs/lib.c:234
+#: ../src/gui/presets.c:161 ../src/gui/presets.c:467 ../src/libs/lib.c:237
 #: ../src/libs/modulegroups.c:3882
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
@@ -14435,8 +14435,8 @@ msgstr "Réellement supprimer le préréglage « %s » ?"
 #. create a shortcut for the new entry
 #. then show edit dialog
 #: ../src/gui/presets.c:203 ../src/gui/presets.c:1034 ../src/gui/presets.c:1037
-#: ../src/gui/presets.c:1040 ../src/libs/lib.c:183 ../src/libs/lib.c:200
-#: ../src/libs/lib.c:208 ../src/libs/lib.c:211
+#: ../src/gui/presets.c:1040 ../src/libs/lib.c:186 ../src/libs/lib.c:203
+#: ../src/libs/lib.c:211 ../src/libs/lib.c:214
 msgid "new preset"
 msgstr "Nouveau préréglage"
 
@@ -14595,11 +14595,11 @@ msgstr "∞"
 msgid "preset `%s' is write-protected! can't edit it!"
 msgstr "Le préréglage « %s » est protégé et ne peut être édité"
 
-#: ../src/gui/presets.c:1002 ../src/libs/lib.c:153
+#: ../src/gui/presets.c:1002 ../src/libs/lib.c:156
 msgid "update preset?"
 msgstr "Mettre à jour le préréglage ?"
 
-#: ../src/gui/presets.c:1003 ../src/libs/lib.c:154
+#: ../src/gui/presets.c:1003 ../src/libs/lib.c:157
 #, c-format
 msgid "do you really want to update the preset `%s'?"
 msgstr "Réellement mettre à jour le préréglage « %s » ?"
@@ -14648,27 +14648,23 @@ msgstr "Gérer les préréglages"
 msgid "manage quick presets list..."
 msgstr "Gérer la liste des préréglages…"
 
-#: ../src/gui/presets.c:1788
-msgid "(default)"
-msgstr "(défaut)"
-
-#: ../src/gui/presets.c:1820
+#: ../src/gui/presets.c:1780
 msgid "disabled: wrong module version"
 msgstr "Désactivé, la version du module n’est pas cohérente"
 
-#: ../src/gui/presets.c:1839 ../src/libs/lib.c:540
+#: ../src/gui/presets.c:1799 ../src/libs/lib.c:547
 msgid "edit this preset.."
 msgstr "Modifier ce préréglage"
 
-#: ../src/gui/presets.c:1844 ../src/libs/lib.c:544
+#: ../src/gui/presets.c:1804 ../src/libs/lib.c:551
 msgid "delete this preset"
 msgstr "Supprimer ce préréglage"
 
-#: ../src/gui/presets.c:1851 ../src/libs/lib.c:552
+#: ../src/gui/presets.c:1811 ../src/libs/lib.c:559
 msgid "store new preset.."
 msgstr "Nouveau préréglage"
 
-#: ../src/gui/presets.c:1859 ../src/libs/lib.c:565
+#: ../src/gui/presets.c:1819 ../src/libs/lib.c:572
 msgid "update preset"
 msgstr "Mettre à jour le préréglage"
 
@@ -15074,7 +15070,7 @@ msgid "internal"
 msgstr "Interne"
 
 #: ../src/imageio/format/jxl.c:619 ../src/libs/duplicate.c:407
-#: ../src/libs/history.c:1145 ../src/libs/snapshots.c:930
+#: ../src/libs/history.c:1149 ../src/libs/snapshots.c:930
 msgid "original"
 msgstr "Original"
 
@@ -15315,7 +15311,7 @@ msgid "XCF"
 msgstr "XCF"
 
 # Il n'y a plus de préférence du nombre de theads
-#: ../src/imageio/imageio.c:1106
+#: ../src/imageio/imageio.c:1084
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -15324,17 +15320,17 @@ msgstr ""
 "Échec de l’allocation de mémoire pour « %s », merci de diminuer le nombre de "
 "fils utilisés pour l’export ou d’acheter de la mémoire."
 
-#: ../src/imageio/imageio.c:1108
+#: ../src/imageio/imageio.c:1086
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "L’aperçu"
 
-#: ../src/imageio/imageio.c:1108
+#: ../src/imageio/imageio.c:1086
 msgctxt "noun"
 msgid "export"
 msgstr "L’image"
 
-#: ../src/imageio/imageio.c:1125
+#: ../src/imageio/imageio.c:1103
 #, c-format
 msgid "cannot find the style '%s' to apply during export"
 msgstr "Impossible de trouver le style « %s » à appliquer pendant l’export"
@@ -15667,7 +15663,7 @@ msgstr "Correctif ou créatif"
 #: ../src/iop/channelmixerrgb.c:240 ../src/iop/clipping.c:357
 #: ../src/iop/clipping.c:359 ../src/iop/colorbalancergb.c:181
 #: ../src/iop/colorequal.c:216 ../src/iop/colorin.c:131 ../src/iop/crop.c:135
-#: ../src/iop/crop.c:137 ../src/iop/demosaic.c:284
+#: ../src/iop/crop.c:137 ../src/iop/demosaic.c:282
 #: ../src/iop/denoiseprofile.c:777 ../src/iop/denoiseprofile.c:779
 #: ../src/iop/diffuse.c:140 ../src/iop/diffuse.c:142
 #: ../src/iop/enlargecanvas.c:81 ../src/iop/enlargecanvas.c:83
@@ -16810,7 +16806,7 @@ msgstr ""
 
 #: ../src/iop/cacorrect.c:82 ../src/iop/cacorrect.c:84
 #: ../src/iop/cacorrectrgb.c:167 ../src/iop/cacorrectrgb.c:169
-#: ../src/iop/demosaic.c:282 ../src/iop/highlights.c:177
+#: ../src/iop/demosaic.c:280 ../src/iop/highlights.c:177
 #: ../src/iop/highlights.c:179 ../src/iop/hotpixels.c:74
 #: ../src/iop/hotpixels.c:76 ../src/iop/rawdenoise.c:141
 #: ../src/iop/rawdenoise.c:143 ../src/iop/rasterfile.c:101
@@ -16821,7 +16817,7 @@ msgid "linear, raw, scene-referred"
 msgstr "Relatif à la scène, linéaire, RAW"
 
 #: ../src/iop/cacorrect.c:83 ../src/iop/cacorrectrgb.c:168
-#: ../src/iop/demosaic.c:283 ../src/iop/invert.c:134
+#: ../src/iop/demosaic.c:281 ../src/iop/invert.c:134
 #: ../src/iop/rawdenoise.c:142 ../src/iop/rasterfile.c:102
 #: ../src/iop/rawprepare.c:172 ../src/iop/temperature.c:251
 msgid "linear, raw"
@@ -18887,7 +18883,7 @@ msgstr ""
 "Convertit n’importe quelle entrée RVB en RVB de référence pour le pipeline\n"
 "en utilisant les profils de couleur pour redéfinir les valeurs RVB."
 
-#: ../src/iop/colorin.c:128 ../src/iop/colorout.c:86 ../src/iop/demosaic.c:281
+#: ../src/iop/colorin.c:128 ../src/iop/colorout.c:86 ../src/iop/demosaic.c:279
 #: ../src/iop/rawprepare.c:170
 msgid "mandatory"
 msgstr "Obligatoire"
@@ -19159,7 +19155,7 @@ msgstr "Priorité à des couleurs de remplacement spécifiques"
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "Teinte à laquelle on donne priorité sur les autres"
 
-#: ../src/iop/colorreconstruction.c:1254 ../src/iop/demosaic.c:1522
+#: ../src/iop/colorreconstruction.c:1254 ../src/iop/demosaic.c:1534
 #: ../src/iop/highlights.c:1359
 msgid "not applicable"
 msgstr "Non applicable"
@@ -19378,22 +19374,22 @@ msgstr ""
 "Seuil pour la détection de la frange, valeurs plus grandes pour moins de "
 "suppression de la frange"
 
-#: ../src/iop/demosaic.c:275
+#: ../src/iop/demosaic.c:273
 msgid "demosaic"
 msgstr "Dématriçage"
 
-#: ../src/iop/demosaic.c:280
+#: ../src/iop/demosaic.c:278
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
 "Reconstruit des pixels RVB complets\n"
 "à partir de la lecture d’un capteur à grille de filtres colorés."
 
-#: ../src/iop/demosaic.c:1217
+#: ../src/iop/demosaic.c:1229
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "Matrice de couleurs « %s » non trouvée pour une image de Bayer"
 
-#: ../src/iop/demosaic.c:1445
+#: ../src/iop/demosaic.c:1457
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -19408,7 +19404,7 @@ msgstr ""
 "Un double dématriçage accroît le temps de traitement par fusionnant un "
 "variant VNG en seconde passe."
 
-#: ../src/iop/demosaic.c:1449
+#: ../src/iop/demosaic.c:1461
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -19420,11 +19416,11 @@ msgstr ""
 "Un double dématriçage accroît le temps de traitement par fusionnant un "
 "variant VNG en seconde passe."
 
-#: ../src/iop/demosaic.c:1455
+#: ../src/iop/demosaic.c:1467
 msgid "Bayer4 sensor demosaicing methods."
 msgstr "Méthode de dématriçage pour les capteurs de Bayer."
 
-#: ../src/iop/demosaic.c:1459
+#: ../src/iop/demosaic.c:1471
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -19434,11 +19430,11 @@ msgstr ""
 " • « 0.0 » pour favoriser les hautes fréquences (détails).\n"
 " • « 1.0 » pour favoriser les basses fréquences (aplats)."
 
-#: ../src/iop/demosaic.c:1462
+#: ../src/iop/demosaic.c:1474
 msgid "toggle mask visualization"
 msgstr "Bascule la visualisation du masque"
 
-#: ../src/iop/demosaic.c:1466
+#: ../src/iop/demosaic.c:1478
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -19447,7 +19443,7 @@ msgstr ""
 "Seuil pour une passe médiane supplémentaire.\n"
 "Indiquer « 0.0 » pour désactiver, « 1.0 » pour ignorer les bords."
 
-#: ../src/iop/demosaic.c:1469
+#: ../src/iop/demosaic.c:1481
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -19456,50 +19452,50 @@ msgstr ""
 "Le pas « Médian » fait la moyenne de la sortie, le pas « Raffinement »\n"
 "ajoute un nouveau calcul des canaux rouges et bleus."
 
-#: ../src/iop/demosaic.c:1472
+#: ../src/iop/demosaic.c:1484
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "Nombre de passes pour le lissage de couleur après le dématriçage"
 
-#: ../src/iop/demosaic.c:1475
+#: ../src/iop/demosaic.c:1487
 msgid "green channels matching method"
 msgstr "Méthode de calcul des verts"
 
-#: ../src/iop/demosaic.c:1478
+#: ../src/iop/demosaic.c:1490
 msgid "capture sharpen"
 msgstr "Netteté de capture"
 
-#: ../src/iop/demosaic.c:1479
+#: ../src/iop/demosaic.c:1491
 msgid ""
 "capture sharpen tries to recover details lost due to in-camera blurring\n"
 "which can be caused by diffraction, the anti-aliasing filter or other\n"
-"sources of gaussian-type blur\n"
+"sources of gaussian-type blur"
 msgstr ""
-"L'amélioration de la netteté de capture essaie de récupérer les détails "
+"L’amélioration de la netteté de capture essaie de récupérer les détails "
 "perdus\n"
 "à cause du flou de capture du boîtier qui peut venir de la diffraction, du "
 "filtre\n"
-"antialiasing et d'autres sources de flou du type gaussien.\n"
+"antialiasing et d'autres sources de flou du type gaussien."
 
-#: ../src/iop/demosaic.c:1485
+#: ../src/iop/demosaic.c:1497
 msgid "enable capture sharpening and set effect strength based on iterations"
 msgstr ""
 "Active l'amélioration de la netteté de capture et définit la force basée sur "
 "le nombre d'itération"
 
-#: ../src/iop/demosaic.c:1490
+#: ../src/iop/demosaic.c:1502
 msgid ""
 "capture sharpen radius should reflect the overall gaussian type blur\n"
 "of the camera sensor, possibly the anti-aliasing filter and the lens.\n"
 "increasing this too far will soon lead to artifacts like halos and\n"
-"ringing especially when used with a large 'sharpen' setting\n"
+"ringing especially when used with a large 'sharpen' setting"
 msgstr ""
-"Le rayon d'ajustement de la netteté devrait refléter le type de flou "
+"Le rayon d’ajustement de la netteté devrait refléter le type de flou "
 "gaussien du capteur,\n"
 "du filtre anti-antialiasing si présent et de l'objectif.\n"
 "Trop augmenter cela apportera rapidement des artefacts comme des halos\n"
-"d'autant plus lorsque utilisé avec une augmentation de la netteté forte. \n"
+"d'autant plus lorsque utilisé avec une augmentation de la netteté forte."
 
-#: ../src/iop/demosaic.c:1496
+#: ../src/iop/demosaic.c:1508
 msgid ""
 "calculate the capture sharpen radius from sensor data.\n"
 "this should be done in zoomed out darkroom"
@@ -19507,7 +19503,7 @@ msgstr ""
 "Calculer le rayon de l'ajustement de netteté depuis les données du capteur.\n"
 "A faire en zoomant dans la chambre noire."
 
-#: ../src/iop/demosaic.c:1501
+#: ../src/iop/demosaic.c:1513
 msgid ""
 "restrict capture sharpening to areas with high local contrast,\n"
 "increase to exclude flat areas in very dark or noisy images,\n"
@@ -19518,11 +19514,11 @@ msgstr ""
 "du bruit,\n"
 "Réduire pour les images bien exposées et dont le bruit est bas."
 
-#: ../src/iop/demosaic.c:1504
+#: ../src/iop/demosaic.c:1516
 msgid "visualize sharpened areas"
 msgstr "Visualiser les zones dont la netteté est ajustée"
 
-#: ../src/iop/demosaic.c:1509
+#: ../src/iop/demosaic.c:1521
 msgid ""
 "further increase sharpen radius at image corners,\n"
 "the sharp center of the image will not be affected"
@@ -19530,19 +19526,19 @@ msgstr ""
 "Augmente le rayon d'accentuation des angles de l'image,\n"
 "le centre de l'image n'est pas affecté."
 
-#: ../src/iop/demosaic.c:1511
+#: ../src/iop/demosaic.c:1523
 msgid "visualize the overall radius"
 msgstr "Visualiser le rayon global"
 
-#: ../src/iop/demosaic.c:1516
+#: ../src/iop/demosaic.c:1528
 msgid "adjust to the sharp image center"
 msgstr "Ajuste l'accentuation du centre de l'image"
 
-#: ../src/iop/demosaic.c:1523
+#: ../src/iop/demosaic.c:1535
 msgid "demosaicing is only used for color raw images"
 msgstr "« Dématriçage » est uniquement utilisé pour les images RAW"
 
-#: ../src/iop/demosaicing/capture.c:591
+#: ../src/iop/demosaicing/capture.c:589
 msgid "calculated capture radius"
 msgstr "Rayon « capture » calculé"
 
@@ -20264,7 +20260,7 @@ msgstr "Compenser l’exposition du boîtier (%+.1f IL)"
 msgid "L : \t%.1f %%"
 msgstr "L : \t%.1f %%"
 
-#: ../src/iop/exposure.c:931 ../src/libs/history.c:953
+#: ../src/iop/exposure.c:931 ../src/libs/history.c:957
 #, c-format
 msgid "%.2f EV"
 msgstr "%.2f IL"
@@ -21039,27 +21035,27 @@ msgstr "rotation|retournement|miroir"
 msgid "flip or rotate image by step of 90 degrees"
 msgstr "Inverse ou tourne l’image par pas de 90 degrés"
 
-#: ../src/iop/flip.c:472
+#: ../src/iop/flip.c:473
 msgid "rotate by -90 degrees"
 msgstr "Rotation de –90 degrés"
 
-#: ../src/iop/flip.c:476
+#: ../src/iop/flip.c:477
 msgid "rotate by  90 degrees"
 msgstr "Rotation de 90 degrés"
 
-#: ../src/iop/flip.c:480
+#: ../src/iop/flip.c:481
 msgid "rotate by 180 degrees"
 msgstr "Rotation de 180 degrés"
 
-#: ../src/iop/flip.c:610
+#: ../src/iop/flip.c:611
 msgid "transform"
 msgstr "Transformation"
 
-#: ../src/iop/flip.c:614 ../src/libs/live_view.c:293
+#: ../src/iop/flip.c:615 ../src/libs/live_view.c:293
 msgid "rotate 90 degrees CCW"
 msgstr "Tourne de 90 degrés (sens anti-horaire)"
 
-#: ../src/iop/flip.c:618 ../src/libs/live_view.c:294
+#: ../src/iop/flip.c:619 ../src/libs/live_view.c:294
 msgid "rotate 90 degrees CW"
 msgstr "Tourne de 90 degrés (sens horaire)"
 
@@ -26235,18 +26231,26 @@ msgstr "Parcourir les harmonie des couleurs"
 #: ../src/libs/history.c:103
 msgid ""
 "display the sequence of edit actions\n"
-"and allow temporarily returning to\n"
-"an earlier state of the edit"
+"- click on an entry to temporarily return to\n"
+"  that earlier state of the edit\n"
+"  (warning: any edits will be made to that\n"
+"  earlier state, losing later changes)\n"
+"- shift-click to focus that module without\n"
+"  changing the edit state"
 msgstr ""
-"Affiche la séquence des actions de développement\n"
-"et permet de revenir temporairement à une version\n"
-"antérieure du développement."
+"Affiche la séquence des modifications\n"
+" • Cliquer sur une entrée pour retourner temporairement\n"
+"    à cette étape d'édition.\n"
+"    (Attention: toute modification sera faite depuis cette étape,\n"
+"     les changements au delà seront perdus).\n"
+"• Maj+clic pour donner le focus à ce module sans changer\n"
+"   l’état d'édition."
 
-#: ../src/libs/history.c:136
+#: ../src/libs/history.c:140
 msgid "compress history stack"
 msgstr "Compresser l’historique"
 
-#: ../src/libs/history.c:137
+#: ../src/libs/history.c:141
 msgid ""
 "create a minimal history stack which produces the same image\n"
 "ctrl+click to truncate history to the selected item"
@@ -26254,94 +26258,94 @@ msgstr ""
 "Génère l’historique minimum qui produit la même image.\n"
 "Ctrl+clic pour tronquer l’historique à la sélection."
 
-#: ../src/libs/history.c:148
+#: ../src/libs/history.c:152
 msgid "create a style from the current history stack"
 msgstr "Créer un style depuis l’historique actuel"
 
-#: ../src/libs/history.c:150
+#: ../src/libs/history.c:154
 msgid "create style from history"
 msgstr "Créer un style depuis l’historique"
 
-#: ../src/libs/history.c:204
+#: ../src/libs/history.c:208
 msgid "always-on module"
 msgstr "Module toujours activé"
 
-#: ../src/libs/history.c:210
+#: ../src/libs/history.c:214
 msgid "default enabled module"
 msgstr "Module activé par défaut"
 
-#: ../src/libs/history.c:217
+#: ../src/libs/history.c:221
 msgid "deprecated module"
 msgstr "Module déprécié"
 
-#: ../src/libs/history.c:945
+#: ../src/libs/history.c:949
 msgid "colorspace"
 msgstr "Espace de couleur"
 
-#: ../src/libs/history.c:947
+#: ../src/libs/history.c:951
 msgid "mask mode"
 msgstr "Mode du masque"
 
-#: ../src/libs/history.c:949
+#: ../src/libs/history.c:953
 msgid "blend mode"
 msgstr "Mode de fusion"
 
-#: ../src/libs/history.c:951
+#: ../src/libs/history.c:955
 msgid "blend operation"
 msgstr "Opération de fusion"
 
-#: ../src/libs/history.c:953
+#: ../src/libs/history.c:957
 msgid "blend fulcrum"
 msgstr "Pivot de fusion"
 
-#: ../src/libs/history.c:961
+#: ../src/libs/history.c:965
 msgid "mask blur"
 msgstr "Floutage du masque"
 
-#: ../src/libs/history.c:964
+#: ../src/libs/history.c:968
 msgid "raster mask instance"
 msgstr "Instance du masque raster"
 
-#: ../src/libs/history.c:965
+#: ../src/libs/history.c:969
 msgid "raster mask id"
 msgstr "Id du masque raster"
 
-#: ../src/libs/history.c:966
+#: ../src/libs/history.c:970
 msgid "invert mask"
 msgstr "Inverser le masque"
 
-#: ../src/libs/history.c:972
+#: ../src/libs/history.c:976
 msgid "drawn mask polarity"
 msgstr "Polarité du masque dessiné"
 
-#: ../src/libs/history.c:976
+#: ../src/libs/history.c:980
 #, c-format
 msgid "a drawn mask was added"
 msgstr "Ajout d’un masque dessiné"
 
-#: ../src/libs/history.c:978
+#: ../src/libs/history.c:982
 #, c-format
 msgid "the drawn mask was removed"
 msgstr "Suppression d’un masque dessiné"
 
-#: ../src/libs/history.c:979
+#: ../src/libs/history.c:983
 #, c-format
 msgid "the drawn mask was changed"
 msgstr "Modification d’un masque dessiné"
 
-#: ../src/libs/history.c:1011
+#: ../src/libs/history.c:1015
 msgid "parametric output mask:"
 msgstr "Sortie du masque paramétrique :"
 
-#: ../src/libs/history.c:1012
+#: ../src/libs/history.c:1016
 msgid "parametric input mask:"
 msgstr "Entrée du masque paramétrique :"
 
-#: ../src/libs/history.c:1346
+#: ../src/libs/history.c:1350
 msgid "delete image's history?"
 msgstr "Supprimer l’historique de l’image ?"
 
-#: ../src/libs/history.c:1347
+#: ../src/libs/history.c:1351
 msgid "do you really want to clear history of current image?"
 msgstr "Supprimer l’historique de l’image courante ?"
 
@@ -26723,27 +26727,27 @@ msgstr "v5.0 pour format RAW"
 msgid "v5.0 for JPEG/non-RAW input"
 msgstr "v5.0 pour format JPEG/non-RAW"
 
-#: ../src/libs/lib.c:371
+#: ../src/libs/lib.c:374
 msgid "deleting preset for obsolete module"
 msgstr "Suppression du préréglage pour le module obsolète"
 
-#: ../src/libs/lib.c:531
+#: ../src/libs/lib.c:538
 msgid "manage presets..."
 msgstr "Gérer les préréglages…"
 
-#: ../src/libs/lib.c:556
+#: ../src/libs/lib.c:563
 msgid "nothing to save"
 msgstr "Rien à sauvegarder"
 
-#: ../src/libs/lib.c:1255
+#: ../src/libs/lib.c:1262
 msgid "show module"
 msgstr "Afficher le module"
 
-#: ../src/libs/lib.c:1280
+#: ../src/libs/lib.c:1287
 msgid "presets and preferences"
 msgstr "Préréglages et préférences"
 
-#: ../src/libs/lib.c:1587
+#: ../src/libs/lib.c:1594
 msgid "utility module"
 msgstr "Module utilitaire"
 
@@ -30062,6 +30066,18 @@ msgstr "Créer une fenêtre flottante persistante"
 #: ../src/views/view.c:1566
 msgid "mouse actions"
 msgstr "Actions de la souris"
+
+#~ msgid "(default)"
+#~ msgstr "(défaut)"
+
+#~ msgid ""
+#~ "display the sequence of edit actions\n"
+#~ "and allow temporarily returning to\n"
+#~ "an earlier state of the edit"
+#~ msgstr ""
+#~ "Affiche la séquence des actions de développement\n"
+#~ "et permet de revenir temporairement à une version\n"
+#~ "antérieure du développement."
 
 #~ msgid "automatic pixel rotation"
 #~ msgstr "Rotation automatique des pixels"
