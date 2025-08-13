@@ -2748,7 +2748,7 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
   float zoom_x = pts[0] / procw - 0.5f;
   float zoom_y = pts[1] / proch - 0.5f;
 
-  float cur_scale = dt_dev_get_zoom_scale(port, port->zoom, 1<<port->closeup, FALSE);
+  const float cur_scale = dt_dev_get_zoom_scale(port, port->zoom, 1<<port->closeup, FALSE);
 
   if(zoom == DT_ZOOM_POSITION)
   {
@@ -2856,16 +2856,16 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
     zoom_x = zoom_y = 0.0f;
   else
   {
-    float new_scale = dt_dev_get_zoom_scale(port, port->zoom, 1<<port->closeup, FALSE);
+    const float new_scale = dt_dev_get_zoom_scale(port, port->zoom, 1<<port->closeup, FALSE);
 
-    float boxw = port->width / (procw * new_scale);
-    float boxh = port->height / (proch * new_scale);
+    const float boxw = port->width / (procw * new_scale);
+    const float boxh = port->height / (proch * new_scale);
 
     if(x >= 0.0f && y >= 0.0f)
     {
       // adjust offset from center so same point under cursor
-      float mouse_off_x = (x - port->border_size - 0.5f * port->width) / procw;
-      float mouse_off_y = (y - port->border_size - 0.5f * port->height) / proch;
+      const float mouse_off_x = (x - port->border_size - 0.5f * port->width) / procw;
+      const float mouse_off_y = (y - port->border_size - 0.5f * port->height) / proch;
       zoom_x += mouse_off_x / cur_scale - mouse_off_x / new_scale;
       zoom_y += mouse_off_y / cur_scale - mouse_off_y / new_scale;
     }
@@ -2876,7 +2876,8 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
 
   pts[0] = (zoom_x + 0.5f) * procw;
   pts[1] = (zoom_y + 0.5f) * proch;
-  gboolean has_moved = fabsf(pts[0] - old_pts0) + fabsf(pts[1] - old_pts1) > 0.5f || (zoom == DT_ZOOM_MOVE && (x || y));
+  const gboolean has_moved = fabsf(pts[0] - old_pts0) + fabsf(pts[1] - old_pts1) > 0.5f
+    || (zoom == DT_ZOOM_MOVE && (x || y));
   if(has_moved)
   {
     _dev_distort_backtransform_locked(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
