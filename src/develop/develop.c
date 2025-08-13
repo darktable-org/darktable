@@ -2876,7 +2876,7 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
 
   pts[0] = (zoom_x + 0.5f) * procw;
   pts[1] = (zoom_y + 0.5f) * proch;
-  gboolean has_moved = fabsf(pts[0] - old_pts0) + fabsf(pts[1] - old_pts1) > 0.5f;
+  gboolean has_moved = fabsf(pts[0] - old_pts0) + fabsf(pts[1] - old_pts1) > 0.5f || (zoom == DT_ZOOM_MOVE && (x || y));
   if(has_moved)
   {
     _dev_distort_backtransform_locked(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
