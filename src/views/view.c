@@ -1710,15 +1710,15 @@ void dt_view_paint_surface(cairo_t *cr,
                   port->zoom_x, port->zoom_y };
   dt_dev_distort_transform_plus(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 3);
 
-  float offset_x  = pts[0] / processed_width  - 0.5f;
-  float offset_y  = pts[1] / processed_height - 0.5f;
-  float preview_x = pts[2] / processed_width  - 0.5f;
-  float preview_y = pts[3] / processed_height - 0.5f;
-  float zoom_x    = pts[4] / processed_width  - 0.5f;
-  float zoom_y    = pts[5] / processed_height - 0.5f;
+  const float offset_x  = pts[0] / processed_width  - 0.5f;
+  const float offset_y  = pts[1] / processed_height - 0.5f;
+  const float preview_x = pts[2] / processed_width  - 0.5f;
+  const float preview_y = pts[3] / processed_height - 0.5f;
+  const float zoom_x    = pts[4] / processed_width  - 0.5f;
+  const float zoom_y    = pts[5] / processed_height - 0.5f;
 
-  dt_dev_zoom_t zoom = port->zoom;
-  int closeup = port->closeup;
+  const dt_dev_zoom_t zoom = port->zoom;
+  const int closeup = port->closeup;
   const float ppd           = port->ppd;
   const double tb           = port->border_size;
   const float zoom_scale    = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, TRUE);
@@ -1780,16 +1780,16 @@ void dt_view_paint_surface(cairo_t *cr,
   if(dev->preview_pipe->output_imgid == dev->image_storage.id
      && (port->pipe->output_imgid != dev->image_storage.id
          || fabsf(backbuf_scale / buf_scale - 1.0f) > .09f
-         || floor(maxw / 2 / back_scale) - 1 > MIN(- trans_x, trans_x + buf_width)
-         || floor(maxh / 2 / back_scale) - 1 > MIN(- trans_y, trans_y + buf_height))
+         || floor(maxw / 2 / back_scale) > MIN(- trans_x, trans_x + buf_width)
+         || floor(maxh / 2 / back_scale) > MIN(- trans_y, trans_y + buf_height))
      && (port == &dev->full || port == &dev->preview2))
   {
     if(port->pipe->status == DT_DEV_PIXELPIPE_VALID)
       port->pipe->status = DT_DEV_PIXELPIPE_DIRTY;
 
     // draw preview
-    float wd = processed_width * dev->preview_pipe->processed_width / MAX(1, dev->full.pipe->processed_width);
-    float ht = processed_height * dev->preview_pipe->processed_width / MAX(1, dev->full.pipe->processed_width);
+    const float wd = processed_width * dev->preview_pipe->processed_width / MAX(1, dev->full.pipe->processed_width);
+    const float ht = processed_height * dev->preview_pipe->processed_width / MAX(1, dev->full.pipe->processed_width);
 
     cairo_surface_t *preview = dt_view_create_surface(dev->preview_pipe->backbuf,
                                                       dev->preview_pipe->backbuf_width,

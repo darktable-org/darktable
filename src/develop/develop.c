@@ -430,8 +430,8 @@ restart:
     scale = dt_dev_get_zoom_scale(port, zoom, 1.0f, FALSE) * port->ppd;
     // Make sure we always have enough data for the port's width & height
     const int cscale = 1 << closeup;
-    window_width = port->width * port->ppd / cscale + 2*cscale;
-    window_height = port->height * port->ppd / cscale + 2*cscale;
+    window_width = port->width * port->ppd / cscale + 4*cscale;
+    window_height = port->height * port->ppd / cscale + 4*cscale;
   }
 
   const int wd = MIN(window_width, scale * pipe->processed_width);
