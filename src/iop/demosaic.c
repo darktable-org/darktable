@@ -1490,7 +1490,7 @@ void gui_init(dt_iop_module_t *self)
                                  _("capture sharpen"), GTK_BOX(box_raw), DT_ACTION(self));
   gtk_widget_set_tooltip_text(g->capture.expander, _("capture sharpen tries to recover details lost due to in-camera blurring\n"
                                                      "which can be caused by diffraction, the anti-aliasing filter or other\n"
-                                                     "sources of gaussian-type blur\n"));
+                                                     "sources of gaussian-type blur"));
   self->widget = GTK_WIDGET(g->capture.container);
 
   g->cs_iter = dt_bauhaus_slider_from_params(self, "cs_iter");
@@ -1502,7 +1502,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->cs_radius, _("capture sharpen radius should reflect the overall gaussian type blur\n"
                                               "of the camera sensor, possibly the anti-aliasing filter and the lens.\n"
                                               "increasing this too far will soon lead to artifacts like halos and\n"
-                                              "ringing especially when used with a large 'sharpen' setting\n"));
+                                              "ringing especially when used with a large 'sharpen' setting"));
   dt_bauhaus_slider_set_hard_min(g->cs_radius, 0.01f);
   dt_bauhaus_widget_set_quad(g->cs_radius, self, dtgtk_cairo_paint_reset, FALSE, _cs_autoradius_callback,
     _("calculate the capture sharpen radius from sensor data.\n"
