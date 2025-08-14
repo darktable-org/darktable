@@ -323,7 +323,8 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
                              cl_mem dev_out,
                              cl_mem dev_xtrans,
                              const uint8_t (*const xtrans)[6],
-                             const dt_iop_roi_t *const roi_in,
+                             const int width,
+                             const int height,
                              const uint32_t filters,
                              const gboolean only_vng_linear)
 {
@@ -479,9 +480,6 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
 
     dev_ips = dt_opencl_copy_host_to_device_constant(devid, ips_size, ips);
     if(dev_ips == NULL) goto finish;
-
-    int width = roi_in->width;
-    int height = roi_in->height;
 
     // need to reserve scaled auxiliary buffer or use dev_out
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;

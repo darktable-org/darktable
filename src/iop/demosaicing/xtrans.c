@@ -73,8 +73,8 @@ static void xtrans_markesteijn_interpolate(float *out,
     for(int col = 0; col < 3; col++)
       for(int ng = 0, d = 0; d < 10; d += 2)
       {
-        const int g = FCxtrans(row, col, NULL, xtrans) == 1;
-        if(FCxtrans(row + orth[d], col + orth[d + 2], NULL, xtrans) == 1)
+        const int g = FCNxtrans(row, col, xtrans) == 1;
+        if(FCNxtrans(row + orth[d], col + orth[d + 2], xtrans) == 1)
           ng = 0;
         else
           ng++;
@@ -135,7 +135,7 @@ static void xtrans_markesteijn_interpolate(float *out,
           float(*const pix) = rgb[0][row - top][col - left];
           if((col >= 0) && (row >= 0) && (col < width) && (row < height))
           {
-            const int f = FCxtrans(row, col, NULL, xtrans);
+            const int f = FCNxtrans(row, col, xtrans);
             for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[roi_in->width * row + col] : 0.f;
           }
           else
@@ -150,7 +150,7 @@ static void xtrans_markesteijn_interpolate(float *out,
               {
 #define TRANSLATE(n, size) ((n >= size) ? (2 * size - n - 2) : abs(n))
                 const int cy = TRANSLATE(row, height), cx = TRANSLATE(col, width);
-                if(c == FCxtrans(cy, cx, NULL, xtrans))
+                if(c == FCNxtrans(cy, cx, xtrans))
                   pix[c] = in[roi_in->width * cy + cx];
                 else
                 {
@@ -161,7 +161,7 @@ static void xtrans_markesteijn_interpolate(float *out,
                     for(int x = col - 1; x <= col + 1; x++)
                     {
                       const int yy = TRANSLATE(y, height), xx = TRANSLATE(x, width);
-                      const int ff = FCxtrans(yy, xx, NULL, xtrans);
+                      const int ff = FCNxtrans(yy, xx, xtrans);
                       if(ff == c)
                       {
                         sum += in[roi_in->width * yy + xx];
@@ -245,7 +245,7 @@ static void xtrans_markesteijn_interpolate(float *out,
         for(int col = left + pad_g_interp; col < mcol - pad_g_interp; col++)
         {
           float color[8];
-          const int f = FCxtrans(row, col, NULL, xtrans);
+          const int f = FCNxtrans(row, col, xtrans);
           if(f == 1) continue;
           float (*const pix)[3] = &rgb[0][row - top][col - left];
           const short *const hex = _hexmap(row,col,allhex);
@@ -280,7 +280,7 @@ static void xtrans_markesteijn_interpolate(float *out,
           for(int row = top + pad_g_recalc; row < mrow - pad_g_recalc; row++)
             for(int col = left + pad_g_recalc; col < mcol - pad_g_recalc; col++)
             {
-              const int f = FCxtrans(row, col, NULL, xtrans);
+              const int f = FCNxtrans(row, col, xtrans);
               if(f == 1) continue;
               const short *const hex = _hexmap(row,col,allhex);
               for(int d = 3; d < 6; d++)
@@ -351,7 +351,7 @@ static void xtrans_markesteijn_interpolate(float *out,
         for(int row = top + pad_rb_br; row < mrow - pad_rb_br; row++)
           for(int col = left + pad_rb_br; col < mcol - pad_rb_br; col++)
           {
-            const int f = 2 - FCxtrans(row, col, NULL, xtrans);
+            const int f = 2 - FCNxtrans(row, col, xtrans);
             if(f == 1) continue;
             float(*rfx)[3] = &rgb[0][row - top][col - left];
             const int c = (row - sgrow) % 3 ? TS : 1;
@@ -1075,8 +1075,8 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
     for(int col = 0; col < 3; col++)
       for(int ng = 0, d = 0; d < 10; d += 2)
       {
-        int g = FCxtrans(row, col, NULL, xtrans) == 1;
-        if(FCxtrans(row + orth[d], col + orth[d + 2], NULL, xtrans) == 1)
+        int g = FCNxtrans(row, col, xtrans) == 1;
+        if(FCNxtrans(row + orth[d], col + orth[d + 2], xtrans) == 1)
           ng = 0;
         else
           ng++;
@@ -1109,7 +1109,7 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
     {
       for(int col = 0; col < 6; col++)
       {
-        if(!((col - sgcol) % 3) && (FCxtrans(row, col + 1, NULL, xtrans) == 0))
+        if(!((col - sgcol) % 3) && (FCNxtrans(row, col + 1, xtrans) == 0))
         {
           rowoffset = 37 - row - pad_tile; // 1 plus a generous multiple of 6
           coloffset = 37 - col - pad_tile; // to avoid that this value gets negative
@@ -1175,7 +1175,7 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
           float(*const pix) = rgb[0][row - top][col - left];
           if((col >= 0) && (row >= 0) && (col < width) && (row < height))
           {
-            const int f = FCxtrans(row, col, NULL, xtrans);
+            const int f = FCNxtrans(row, col, xtrans);
             for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[roi_in->width * row + col] : 0.f;
             *(i_src + TS * (row - top) + (col - left)) = in[roi_in->width * row + col];
           }
@@ -1190,7 +1190,7 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
               {
 #define TRANSLATE(n, size) ((n >= size) ? (2 * size - n - 2) : abs(n))
                 const int cy = TRANSLATE(row, height), cx = TRANSLATE(col, width);
-                if(c == FCxtrans(cy, cx, NULL, xtrans))
+                if(c == FCNxtrans(cy, cx, xtrans))
                 {
                   pix[c] = in[roi_in->width * cy + cx];
                   *(i_src + TS * (row - top) + (col - left)) = in[roi_in->width * cy + cx];
@@ -1204,7 +1204,7 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
                     for(int x = col - 1; x <= col + 1; x++)
                     {
                       const int yy = TRANSLATE(y, height), xx = TRANSLATE(x, width);
-                      const int ff = FCxtrans(yy, xx, NULL, xtrans);
+                      const int ff = FCNxtrans(yy, xx, xtrans);
                       if(ff == c)
                       {
                         sum += in[roi_in->width * yy + xx];
@@ -1242,7 +1242,7 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
           // if in row of horizontal red & blue pairs (or processing
           // vertical red & blue pairs near image bottom), reset min/max
           // between each pair
-          if(FCxtrans(row, col, NULL, xtrans) == 1)
+          if(FCNxtrans(row, col, xtrans) == 1)
           {
             min = FLT_MAX, max = 0.0f;
             continue;
@@ -1288,7 +1288,7 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
         for(int col = left + pad_g_interp; col < mcol - pad_g_interp; col++)
         {
           float color[8];
-          int f = FCxtrans(row, col, NULL, xtrans);
+          int f = FCNxtrans(row, col, xtrans);
           if(f == 1) continue;
           float (*const pix)[3] = &rgb[0][row - top][col - left];
           const short *const hex = _hexmap(row, col, allhex);
@@ -1312,7 +1312,7 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
         for(int col = (left - sgcol + pad_rb_g + 2) / 3 * 3 + sgcol; col < mcol - pad_rb_g; col += 3)
         {
           float(*rfx)[3] = &rgb[0][row - top][col - left];
-          int h = FCxtrans(row, col + 1, NULL, xtrans);
+          int h = FCNxtrans(row, col + 1, xtrans);
           float diff[6] = { 0.0f };
           float color[3][8];
           for(int i = 1, d = 0; d < 6; d++, i ^= TS ^ 1, h ^= 2)
@@ -1340,7 +1340,7 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
       for(int row = top + pad_rb_br; row < mrow - pad_rb_br; row++)
         for(int col = left + pad_rb_br; col < mcol - pad_rb_br; col++)
         {
-          int f = 2 - FCxtrans(row, col, NULL, xtrans);
+          int f = 2 - FCNxtrans(row, col, xtrans);
           if(f == 1) continue;
           float(*rfx)[3] = &rgb[0][row - top][col - left];
           int c = (row - sgrow) % 3 ? TS : 1;
@@ -1638,13 +1638,14 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
                                      cl_mem dev_out,
                                      cl_mem dev_xtrans,
                                      const uint8_t(*const xtrans)[6],
-                                     const dt_iop_roi_t *const roi_in,
+                                     const int width,
+                                     const int height,
                                      const uint32_t filters)
 {
   const dt_iop_demosaic_data_t *data = piece->data;
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
 
-  process_vng_cl(self, piece, dev_in, dev_out, dev_xtrans, xtrans, roi_in, filters, FALSE);
+  process_vng_cl(self, piece, dev_in, dev_out, dev_xtrans, xtrans, width, height, filters, FALSE);
   const int devid = piece->pipe->devid;
 
   cl_mem dev_tmptmp = NULL;
@@ -1659,8 +1660,6 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
 
   cl_mem *dev_rgb = dev_rgbv;
 
-    const int width = roi_in->width;
-    const int height = roi_in->height;
     const int passes = ((data->demosaicing_method & ~DT_DEMOSAIC_DUAL) == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ? 3 : 1;
     const int ndir = passes > 1 ? 8 : 4 ;
     const int pad_tile = (passes == 1) ? 12 : 17;

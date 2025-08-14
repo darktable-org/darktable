@@ -80,12 +80,11 @@ int dual_demosaic_cl(const dt_iop_module_t *self,
                      cl_mem high_image,
                      cl_mem low_image,
                      cl_mem out,
-                     const dt_iop_roi_t *const roi_in,
+                     const int width,
+                     const int height,
                      const int dual_mask)
 {
   const int devid = piece->pipe->devid;
-  const int width = roi_in->width;
-  const int height = roi_in->height;
 
   dt_iop_demosaic_data_t *data = piece->data;
   const dt_iop_demosaic_global_data_t *gd = self->global_data;

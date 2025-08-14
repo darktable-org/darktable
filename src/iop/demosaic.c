@@ -792,10 +792,10 @@ int process_cl(dt_iop_module_t *self,
      && dt_opencl_exception(pipe->devid, DT_OPENCL_AMD_APP))
     demosaicing_method = DT_IOP_DEMOSAIC_RCD;
 
-  const int width = roi_in->width;
-  const int height = roi_in->height;
+  const int iwidth = roi_in->width;
+  const int iheight = roi_in->height;
 
-  if((width < 16 || height < 16)
+  if((iwidth < 16 || iheight < 16)
     &&  (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME
       && demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR))
     demosaicing_method = is_xtrans ? DT_IOP_DEMOSAIC_VNG : DT_IOP_DEMOSAIC_VNG4;
@@ -841,21 +841,21 @@ int process_cl(dt_iop_module_t *self,
       // sample third-size image
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_third_size, roi_out->width, roi_out->height,
           CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height),
-          CLARG(width), CLARG(height), CLARG(roi_out->scale), CLARG(dev_xtrans));
+          CLARG(iwidth), CLARG(iheight), CLARG(roi_out->scale), CLARG(dev_xtrans));
       dt_opencl_release_mem_object(dev_xtrans);
       return err;
     }
     else if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
       return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_passthrough_monochrome, roi_out->width, roi_out->height,
           CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height),
-          CLARG(width), CLARG(height), CLARG(roi_out->scale));
+          CLARG(iwidth), CLARG(iheight), CLARG(roi_out->scale));
     else // bayer
       return dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_zoom_half_size, roi_out->width, roi_out->height,
           CLARG(dev_in), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height),
-          CLARG(width), CLARG(height), CLARG(roi_out->scale), CLARG(filters));
+          CLARG(iwidth), CLARG(iheight), CLARG(roi_out->scale), CLARG(filters));
   }
 
-  const gboolean direct = roi_out->width == width && roi_out->height == height && feqf(roi_in->scale, roi_out->scale, 1e-8f);
+  const gboolean direct = roi_out->width == iwidth && roi_out->height == iheight && feqf(roi_in->scale, roi_out->scale, 1e-8f);
   const int base_demosaicing_method = demosaicing_method & ~DT_DEMOSAIC_DUAL;
   const gboolean no_masking = pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_NONE;
   const gboolean demosaic_mask = pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
@@ -864,8 +864,8 @@ int process_cl(dt_iop_module_t *self,
                          || demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR;
   const gboolean do_capture = !passthru && !run_fast && !show_dual && d->cs_iter;
 
-  cl_mem out_image = direct ? dev_out : dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
-  cl_mem high_image = dual ? dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4) : out_image;
+  cl_mem out_image = direct ? dev_out : dt_opencl_alloc_device(devid, iwidth, iheight, sizeof(float) * 4);
+  cl_mem high_image = dual ? dt_opencl_alloc_device(devid, iwidth, iheight, sizeof(float) * 4) : out_image;
   cl_mem in_image = dev_in;
 
   if(out_image == NULL)
@@ -873,7 +873,7 @@ int process_cl(dt_iop_module_t *self,
 
   if(is_bayer && d->green_eq != DT_IOP_GREEN_EQ_NO && no_masking)
   {
-    in_image = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+    in_image = dt_opencl_alloc_device(devid, iwidth, iheight, sizeof(float));
     if(in_image == NULL) goto finish;
 
     err = green_equilibration_cl(self, piece, dev_in, in_image, roi_in, filters);
@@ -881,15 +881,15 @@ int process_cl(dt_iop_module_t *self,
   }
 
   if(demosaic_mask)
-    err = demosaic_box3_cl(self, piece, in_image, out_image, dev_xtrans, roi_in, filters);
+    err = demosaic_box3_cl(self, piece, in_image, high_image, dev_xtrans, iwidth, iheight, filters);
   else if(passthru || demosaicing_method == DT_IOP_DEMOSAIC_PPG)
-    err = process_default_cl(self, piece, in_image, high_image, dev_xtrans, roi_in, demosaicing_method, filters);
+    err = process_default_cl(self, piece, in_image, high_image, dev_xtrans, iwidth, iheight, demosaicing_method, filters);
   else if(base_demosaicing_method == DT_IOP_DEMOSAIC_RCD)
-    err = process_rcd_cl(self, piece, in_image, high_image, roi_in, filters);
+    err = process_rcd_cl(self, piece, in_image, high_image, iwidth, iheight, filters);
   else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || demosaicing_method == DT_IOP_DEMOSAIC_VNG)
-    err = process_vng_cl(self, piece, in_image, high_image, dev_xtrans, xtrans, roi_in, filters, FALSE);
+    err = process_vng_cl(self, piece, in_image, high_image, dev_xtrans, xtrans, iwidth, iheight, filters, FALSE);
   else if(base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN || base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3)
-    err = process_markesteijn_cl(self, piece, in_image, high_image, dev_xtrans, xtrans, roi_in, filters);
+    err = process_markesteijn_cl(self, piece, in_image, high_image, dev_xtrans, xtrans, iwidth, iheight, filters);
   else
     err = DT_OPENCL_PROCESS_CL;
 
@@ -903,21 +903,21 @@ int process_cl(dt_iop_module_t *self,
 
   if(do_capture)
   {
-    err = _capture_sharpen_cl(self, piece, dev_in, out_image, dev_xtrans, roi_in, show_capture, show_sigma, xtrans, filters);
+    err = _capture_sharpen_cl(self, piece, dev_in, high_image, dev_xtrans, iwidth, iheight, roi_in->x, roi_in->y, show_capture, show_sigma, xtrans, filters);
     if(err != CL_SUCCESS) goto finish;
   }
 
   if(dual)
   {
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-    cl_mem low_image = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
+    cl_mem low_image = dt_opencl_alloc_device(devid, iwidth, iheight, sizeof(float) * 4);
     if(low_image)
     {
-      err = process_vng_cl(self, piece, in_image, low_image, dev_xtrans, xtrans, roi_in, filters, TRUE);
+      err = process_vng_cl(self, piece, in_image, low_image, dev_xtrans, xtrans, iwidth, iheight, filters, TRUE);
       if(err == CL_SUCCESS)
-        err = color_smoothing_cl(self, piece, low_image, low_image, roi_in, DT_DEMOSAIC_SMOOTH_2);
+        err = color_smoothing_cl(self, piece, low_image, low_image, iwidth, iheight, DT_DEMOSAIC_SMOOTH_2);
       if(err == CL_SUCCESS)
-        err = dual_demosaic_cl(self, piece, high_image, low_image, out_image, roi_in, show_dual);
+        err = dual_demosaic_cl(self, piece, high_image, low_image, out_image, iwidth, iheight, show_dual);
       dt_opencl_release_mem_object(low_image);
     }
     if(err != CL_SUCCESS) goto finish;
@@ -931,7 +931,7 @@ int process_cl(dt_iop_module_t *self,
 
   if(d->color_smoothing != DT_DEMOSAIC_SMOOTH_OFF && no_masking)
   {
-    err = color_smoothing_cl(self, piece, out_image, out_image, roi_in, d->color_smoothing);
+    err = color_smoothing_cl(self, piece, out_image, out_image, iwidth, iheight, d->color_smoothing);
     if(err != CL_SUCCESS) goto finish;
   }
 
