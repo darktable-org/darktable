@@ -77,7 +77,10 @@ static inline unsigned char _sigma_to_index(const float sigma)
 
 // provide an index map so the convolution kernels can easily get the correct coeffs
 static unsigned char *_cs_precalc_gauss_idx(dt_iop_module_t *self,
-                                            const dt_iop_roi_t *const roi,
+                                            const int width,
+                                            const int height,
+                                            const int dx,
+                                            const int dy,
                                             const float isigma,
                                             const float boost,
                                             const float centre)
@@ -86,10 +89,6 @@ static unsigned char *_cs_precalc_gauss_idx(dt_iop_module_t *self,
   const int rwidth = img->p_width / 2;
   const int rheight = img->p_height / 2;
   const float mdim = MIN(rwidth, rheight);
-  const int width = roi->width;
-  const int height = roi->height;
-  const int dy = roi->y;
-  const int dx = roi->x;
   unsigned char *table = dt_alloc_aligned((size_t)height * width);
   if(!table) return NULL;
 
@@ -193,13 +192,13 @@ static float _calcRadiusXtrans(const float *in,
   {
     for(startx = 6; startx < 12 && !found; startx++)
     {
-      if(FCxtrans(starty, startx, NULL, xtrans) == 1)
+      if(FCNxtrans(starty, startx, xtrans) == 1)
       {
-        if(FCxtrans(starty, startx - 1, NULL, xtrans) != FCxtrans(starty, startx + 1, NULL, xtrans))
+        if(FCNxtrans(starty, startx - 1, xtrans) != FCNxtrans(starty, startx + 1, xtrans))
         {
-          if(FCxtrans(starty -1, startx, NULL, xtrans) != 1)
+          if(FCNxtrans(starty -1, startx, xtrans) != 1)
           {
-            if(FCxtrans(starty, startx -1, NULL, xtrans) != 1)
+            if(FCNxtrans(starty, startx -1, xtrans) != 1)
             {
               found = TRUE;
               break;
@@ -447,7 +446,6 @@ static void _prepare_blend(const float *cfa,
                            const float *rgb,
                            const uint32_t filters,
                            const uint8_t (*const xtrans)[6],
-                           const dt_iop_roi_t *const roi,
                            float *mask,
                            float *Yold,
                            const float *whites,
@@ -469,7 +467,7 @@ static void _prepare_blend(const float *cfa,
       Yold[k] = MAX(0.0f, yw[0] + yw[1] + yw[2]);
       if(row > 1 && col > 1 && row < height-2 && col < w1-2)
       {
-        const int color = (filters == 9u) ? FCxtrans(row, col, roi, xtrans) : FC(row, col, filters);
+        const int color = (filters == 9u) ? FCNxtrans(row, col, xtrans) : FC(row, col, filters);
         if(cfa[k] > whites[color] || Yold[k] < CAPTURE_YMIN)
         {
           mask[k-w2-1] = mask[k-w2]   = mask[k-w2+1] =
@@ -578,7 +576,7 @@ void _capture_sharpen(dt_iop_module_t *self,
     const gboolean valid = radius > 0.1f && radius < 1.0f;
 
     dt_print_pipe(DT_DEBUG_PIPE, filters != 9u ? "bayer autoradius" : "xtrans autoradius",
-      pipe, self, DT_DEVICE_CPU, roi, NULL, "autoradius=%.2f", radius);
+      pipe, self, DT_DEVICE_CPU, NULL, NULL, "autoradius=%.2f", radius);
 
     if(!feqf(radius, old_radius, 0.005f) && valid)
     {
@@ -607,7 +605,7 @@ void _capture_sharpen(dt_iop_module_t *self,
     goto finalize;
 
   // tmp2 will hold the temporary clipmask, tmp1 holds Y data
-  _prepare_blend(in, out, filters, xtrans, roi, tmp2, tmp1, icoeffs, width, height);
+  _prepare_blend(in, out, filters, xtrans, tmp2, tmp1, icoeffs, width, height);
   // modify clipmask in tmp2 according to Y variance, also write L to luminance
   _modify_blend(tmp2, tmp1, luminance, d->cs_thrs, width, height);
 
@@ -636,7 +634,7 @@ void _capture_sharpen(dt_iop_module_t *self,
     goto finalize;
   }
 
-  gauss_idx = _cs_precalc_gauss_idx(self, roi, radius, d->cs_boost, d->cs_center);
+  gauss_idx = _cs_precalc_gauss_idx(self, width, height, roi->x, roi->y, radius, d->cs_boost, d->cs_center);
   if(!gauss_idx) goto finalize;
 
   if(show_sigma_mask)
@@ -691,7 +689,10 @@ int _capture_sharpen_cl(dt_iop_module_t *self,
                         const cl_mem dev_in,
                         cl_mem dev_out,
                         cl_mem dev_xtrans,
-                        const dt_iop_roi_t *const roi,
+                        const int width,
+                        const int height,
+                        const int dx,
+                        const int dy,
                         const gboolean showmask,
                         const gboolean show_sigmamask,
                         const uint8_t (*const xtrans)[6],
@@ -699,8 +700,6 @@ int _capture_sharpen_cl(dt_iop_module_t *self,
 {
   dt_dev_pixelpipe_t *pipe = piece->pipe;
 
-  const int width = roi->width;
-  const int height = roi->height;
   const int pixels = width * height;
   const int bsize = sizeof(float) * pixels;
   const int devid = piece->pipe->devid;
@@ -740,7 +739,7 @@ int _capture_sharpen_cl(dt_iop_module_t *self,
                 : _calcRadiusXtrans(in, width, height, 0.01f, 1.0f, xtrans);
         const gboolean valid = radius > 0.1f && radius < 1.0f;
         dt_print_pipe(DT_DEBUG_PIPE, filters != 9u ? "bayer autoradius" : "xtrans autoradius",
-            pipe, self, devid, roi, NULL, "autoradius=%.2f", radius);
+            pipe, self, devid, NULL, NULL, "autoradius=%.2f", radius);
 
         if(!feqf(radius, old_radius, 0.005f) && valid)
         {
@@ -802,7 +801,7 @@ int _capture_sharpen_cl(dt_iop_module_t *self,
     goto finish;
   }
 
-  unsigned char *f_gauss_idx = _cs_precalc_gauss_idx(self, roi, radius, d->cs_boost, d->cs_center);
+  unsigned char *f_gauss_idx = _cs_precalc_gauss_idx(self, width, height, dx, dy, radius, d->cs_boost, d->cs_center);
   if(f_gauss_idx)
   {
     gcoeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * (UCHAR_MAX+1) * CAPTURE_KERNEL_ALIGN, gd->gauss_coeffs);
