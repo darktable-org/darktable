@@ -71,7 +71,7 @@ static void passthrough_color(float *out,
       {
         const float val = in[(size_t)col + row * width];
         const size_t offset = (size_t)4 * ((size_t)row * width + col);
-        const size_t ch = FCxtrans(row, col, NULL, xtrans);
+        const size_t ch = FCNxtrans(row, col, xtrans);
 
         out[offset] = out[offset + 1] = out[offset + 2] = 0.0f;
         out[offset + ch] = val;
