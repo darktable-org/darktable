@@ -428,16 +428,21 @@ restart:
     int closeup;
     dt_dev_get_viewport_params(port, &zoom, &closeup, &zoom_x, &zoom_y);
     scale = dt_dev_get_zoom_scale(port, zoom, 1.0f, FALSE) * port->ppd;
+    const float anticipate_move = port->pipe->changed & DT_DEV_PIPE_ZOOMED
+                                ? dt_conf_get_float("darkroom/ui/anticipate_move") : 1.0f;
+    port->pipe->changed &= ~DT_DEV_PIPE_ZOOMED; // clear zoomed flag
     // Make sure we always have enough data for the port's width & height
     const int cscale = 1 << closeup;
-    window_width = port->width * port->ppd / cscale + 2*cscale;
-    window_height = port->height * port->ppd / cscale + 2*cscale;
+    window_width = port->width * port->ppd * anticipate_move / cscale + 2*cscale;
+    window_height = port->height * port->ppd * anticipate_move / cscale + 2*cscale;
   }
 
-  const int wd = MIN(window_width, scale * pipe->processed_width);
-  const int ht = MIN(window_height, scale * pipe->processed_height);
-  const int x = port ? MAX(0, scale * pipe->processed_width  * (.5 + zoom_x) - wd / 2) : 0;
-  const int y = port ? MAX(0, scale * pipe->processed_height * (.5 + zoom_y) - ht / 2) : 0;
+  const int pipe_width = scale * pipe->processed_width;
+  const int pipe_height = scale * pipe->processed_height;
+  const int wd = MIN(window_width, pipe_width);
+  const int ht = MIN(window_height, pipe_height);
+  const int x = port ? CLAMP(pipe_width  * (.5 + zoom_x) - wd / 2, 0, pipe_width  - wd) : 0;
+  const int y = port ? CLAMP(pipe_height * (.5 + zoom_y) - ht / 2, 0, pipe_height - ht) : 0;
 
   dt_get_times(&start);
 
