@@ -2088,6 +2088,10 @@ void dt_control_delete_images()
   dt_control_add_job(DT_JOB_QUEUE_USER_FG, job);
 }
 
+// This function is just a variation of the dt_control_delete_images function,
+// which deletes not the selected images, but the explicitly specified imgid.
+// But we use this function only for deleting duplicates, which is reflected
+// in both the function name and the texts for the confirmation dialog.
 void dt_control_delete_duplicate(const dt_imgid_t imgid)
 {
   // first get all selected images, to avoid the set changing during ui interaction
