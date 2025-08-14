@@ -241,14 +241,13 @@ static int color_smoothing_cl(const dt_iop_module_t *self,
                               const dt_dev_pixelpipe_iop_t *piece,
                               cl_mem dev_in,
                               cl_mem dev_out,
-                              const dt_iop_roi_t *const roi,
+                              const int width,
+                              const int height,
                               const int passes)
 {
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
-  const int width = roi->width;
-  const int height = roi->height;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
@@ -484,7 +483,8 @@ static int process_default_cl(const dt_iop_module_t *self,
                               cl_mem dev_in,
                               cl_mem dev_out,
                               cl_mem dev_xtrans,
-                              const dt_iop_roi_t *const roi_in,
+                              const int width,
+                              const int height,
                               const int demosaicing_method,
                               const uint32_t filters)
 {
@@ -497,10 +497,7 @@ static int process_default_cl(const dt_iop_module_t *self,
   cl_mem dev_med = NULL;
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
-  const int width = roi_in->width;
-  const int height = roi_in->height;
-
-     if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
+    if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
     {
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_passthrough_monochrome, width, height,
         CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height));
@@ -620,15 +617,14 @@ static int demosaic_box3_cl(dt_iop_module_t *self,
                               cl_mem dev_in,
                               cl_mem dev_out,
                               cl_mem dev_xtrans,
-                              const dt_iop_roi_t *const roi,
+                              const int width,
+                              const int height,
                               const uint32_t filters)
 {
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
-//  dt_dev_pixelpipe_t *const pipe = piece->pipe;
-//  const int devid = pipe->devid;
-  return dt_opencl_enqueue_kernel_2d_args(piece->pipe->devid, gd->kernel_demosaic_box3, roi->width, roi->height,
+  return dt_opencl_enqueue_kernel_2d_args(piece->pipe->devid, gd->kernel_demosaic_box3, width, height,
           CLARG(dev_in), CLARG(dev_out),
-          CLARG(roi->width), CLARG(roi->height),
+          CLARG(width), CLARG(height),
           CLARG(filters), CLARG(dev_xtrans));
 }
 
