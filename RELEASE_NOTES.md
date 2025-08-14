@@ -56,7 +56,10 @@ changes (where available).
 
 ## UI/UX Improvements
 
-- ???
+- Show a busy cursor when changing views. This provides immediate
+  feedback when, for example, double-clicking an image in the
+  lighttable instead of simply freezing the UI until the darkroom has
+  finished opening.
 
 ## Performance Improvements
 
