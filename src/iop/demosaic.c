@@ -1300,11 +1300,11 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->demosaic_method_bayerfour, bayer4);
   gtk_widget_set_visible(g->demosaic_method_xtrans, xtrans);
 
-  gtk_widget_set_sensitive(g->cs_radius, do_capture);
-  gtk_widget_set_sensitive(g->cs_thrs, do_capture);
-  gtk_widget_set_sensitive(g->cs_boost, do_capture);
-  gtk_widget_set_sensitive(g->cs_center, do_capture && p->cs_boost);
-  gtk_widget_set_sensitive(g->cs_iter, capture_support);
+  gtk_widget_set_visible(g->cs_radius, do_capture);
+  gtk_widget_set_visible(g->cs_thrs, do_capture);
+  gtk_widget_set_visible(g->cs_boost, do_capture);
+  gtk_widget_set_visible(g->cs_center, do_capture && p->cs_boost);
+  gtk_widget_set_visible(g->cs_iter, capture_support);
 
   // we might have a wrong method dur to xtrans/bayer - mode mismatch
   if(bayer)
