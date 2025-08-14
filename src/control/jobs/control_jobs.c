@@ -2091,9 +2091,9 @@ void dt_control_delete_images()
 void dt_control_delete_image(const dt_imgid_t imgid)
 {
   // first get all selected images, to avoid the set changing during ui interaction
-  dt_job_t *job = _control_generic_image_job_create(&_control_delete_images_job_run, N_("delete images"), 0,
+  dt_job_t *job = _control_generic_image_job_create(&_control_delete_images_job_run, N_("delete duplicate"), 0,
                                                       NULL, PROGRESS_SIMPLE, imgid);
-  const gboolean send_to_trash = dt_conf_get_bool("send_to_trash");
+
   if(dt_conf_get_bool("ask_before_delete"))
   {
     // Do not show the dialog if no valid image
@@ -2104,9 +2104,9 @@ void dt_control_delete_image(const dt_imgid_t imgid)
     }
 
     if(!dt_gui_show_yes_no_dialog(
-          _("delete image?"),
-          send_to_trash ? _("do you really want to physically delete selected image (using trash if possible)?")
-                        : _("do you really want to physically delete selected image from disk?")))
+          _("delete duplicate?"),
+          _("do you really want to delete the duplicate "
+            "(without deleting the source image file on disk)?")))
     {
       dt_control_job_dispose(job);
       return;
