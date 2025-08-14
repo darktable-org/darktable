@@ -2094,9 +2094,12 @@ void dt_control_delete_images()
 // in both the function name and the texts for the confirmation dialog.
 void dt_control_delete_duplicate(const dt_imgid_t imgid)
 {
-  // first get all selected images, to avoid the set changing during ui interaction
-  dt_job_t *job = _control_generic_image_job_create(&_control_delete_images_job_run, N_("delete duplicate"), 0,
-                                                      NULL, PROGRESS_SIMPLE, imgid);
+  dt_job_t *job = _control_generic_image_job_create(&_control_delete_images_job_run,
+                                                    N_("delete duplicate"),
+                                                    0,
+                                                    NULL,
+                                                    PROGRESS_SIMPLE,
+                                                    imgid);
 
   if(dt_conf_get_bool("ask_before_delete"))
   {
