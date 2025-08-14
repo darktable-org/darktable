@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2015-2024 darktable developers.
+    Copyright (C) 2015-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -152,7 +152,7 @@ static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
   }
 
   // and we remove the image
-  dt_control_delete_image(imgid);
+  dt_control_delete_duplicate(imgid);
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                              g_list_prepend(NULL, GINT_TO_POINTER(imgid)));

@@ -34,7 +34,7 @@ void dt_control_datetime(const GTimeSpan offset, const char *datetime, GList *im
 
 void dt_control_write_sidecar_files(void);
 void dt_control_delete_images(void);
-void dt_control_delete_image(const dt_imgid_t imgid);
+void dt_control_delete_duplicate(const dt_imgid_t imgid);
 void dt_control_duplicate_images(const gboolean virgin);
 void dt_control_flip_images(const int32_t cw);
 void dt_control_monochrome_images(const int32_t mode);
