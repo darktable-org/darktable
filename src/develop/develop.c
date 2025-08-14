@@ -437,10 +437,12 @@ restart:
     window_height = port->height * port->ppd * anticipate_move / cscale + 2*cscale;
   }
 
-  const int wd = MIN(window_width, scale * pipe->processed_width);
-  const int ht = MIN(window_height, scale * pipe->processed_height);
-  const int x = port ? MAX(0, scale * pipe->processed_width  * (.5 + zoom_x) - wd / 2) : 0;
-  const int y = port ? MAX(0, scale * pipe->processed_height * (.5 + zoom_y) - ht / 2) : 0;
+  const int pipe_width = scale * pipe->processed_width;
+  const int pipe_height = scale * pipe->processed_height;
+  const int wd = MIN(window_width, pipe_width);
+  const int ht = MIN(window_height, pipe_height);
+  const int x = port ? CLAMP(pipe_width  * (.5 + zoom_x) - wd / 2, 0, pipe_width  - wd) : 0;
+  const int y = port ? CLAMP(pipe_height * (.5 + zoom_y) - ht / 2, 0, pipe_height - ht) : 0;
 
   dt_get_times(&start);
 
