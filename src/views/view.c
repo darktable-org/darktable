@@ -244,9 +244,6 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
       && dt_view_get_current() == DT_VIEW_DARKROOM)
     return FALSE;
 
-  // reset the cursor to the default one
-  dt_control_change_cursor(GDK_LEFT_PTR);
-
   dt_set_backthumb_time(0.0);
 
   // destroy old module list
@@ -307,6 +304,10 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
       return error;
     }
   }
+
+  // show we are busy changing views
+  dt_control_change_cursor(GDK_WATCH);
+  dt_gui_process_events();
 
   /* cleanup current view before initialization of new  */
   if(old_view)
@@ -438,6 +439,10 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
 
   // update toast visibility
   DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_CONTROL_TOAST_REDRAW);
+
+  // reset the cursor to the default one
+  dt_control_change_cursor(GDK_LEFT_PTR);
+
   return FALSE;
 }
 
