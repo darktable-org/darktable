@@ -608,9 +608,9 @@ static inline float _dt_RGB_2_Hue(const dt_aligned_pixel_t RGB, const float max,
     hue = 4.0f + (RGB[0] - RGB[1]) / delta;
 
   hue /= 6.0f;
-  if(hue < 0.0f) hue += 1.0f;
-  if(hue > 1.0f) hue -= 1.0f;
-  return hue;
+
+  // restrict to [0, 1), handling hue < 0 and hue >= 1
+  return hue - floorf(hue);
 }
 
 DT_OMP_DECLARE_SIMD(aligned(RGB: 16))
