@@ -165,9 +165,9 @@ void process(dt_iop_module_t *self,
       float *const out = (float *const)ovoid + 4 * k;
 
       // calculate vibrance, and apply boost velvia saturation at least saturated pixels
-      float pmax = MAX(in[0], MAX(in[1], in[2])); // max value in RGB set
-      float pmin = MIN(in[0], MIN(in[1], in[2])); // min value in RGB set
-      float plum = (pmax + pmin) / 2.0f;          // pixel luminocity
+      float pmax = max3f(in);            // max value in RGB set
+      float pmin = min3f(in);            // min value in RGB set
+      float plum = (pmax + pmin) / 2.0f; // pixel luminocity
       float psat = (plum <= 0.5f) ? (pmax - pmin) / (1e-5f + pmax + pmin)
                                   : (pmax - pmin) / (1e-5f + MAX(0.0f, 2.0f - pmax - pmin));
 
