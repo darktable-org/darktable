@@ -392,19 +392,19 @@ restart:
     pipe->input_timestamp = dev->timestamp;
 
   const gboolean changing = (pipe->changed != DT_DEV_PIPE_UNCHANGED) || initial;
-
-  // to be checked: can we possibly restrict later dt_dev_zoom_move() calls
-  const gboolean require_zoom_test = ((pipe->changed & ~DT_DEV_PIPE_ZOOMED) != DT_DEV_PIPE_UNCHANGED) || initial;
+  const gboolean port_loading = port && port->pipe->loading;
+  const gboolean require_zoom_test = (pipe->changed & ~DT_DEV_PIPE_ZOOMED) || initial;
+  initial = FALSE; // don't enforce dt_dev_pixelpipe_change() for restarts
 
   /* dt_dev_pixelpipe_change()
       locks history mutex while syncing nodes
       finally calculates dimensions
-      leaves clean pipe->changed
+      leaves clean pipe->changed except DT_DEV_PIPE_ZOOMED so we have to take care about that
   */
-  if(changing || (port && port->pipe->loading))
+  const gboolean pipe_zoomed = pipe->changed & DT_DEV_PIPE_ZOOMED;
+  if(changing || port_loading)
     dt_dev_pixelpipe_change(pipe, dev);
-
-  initial = FALSE; // don't enforce dt_dev_pixelpipe_change() for restarts
+  pipe->changed = DT_DEV_PIPE_UNCHANGED;
 
   float scale = 1.0f;
   int window_width = G_MAXINT;
@@ -417,7 +417,7 @@ restart:
     // if just changed to an image with a different aspect ratio or
     // altered image orientation, the prior zoom xy could now be beyond
     // the image boundary
-    if(port->pipe->loading || require_zoom_test)
+    if(port_loading || require_zoom_test)
     {
       dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "[dt_dev_zoom_move]", pipe, NULL, DT_DEVICE_NONE, NULL, NULL);
       dt_dev_zoom_move(port, DT_ZOOM_MOVE, 0.0f, 0, 0.0f, 0.0f, TRUE);
@@ -428,9 +428,7 @@ restart:
     int closeup;
     dt_dev_get_viewport_params(port, &zoom, &closeup, &zoom_x, &zoom_y);
     scale = dt_dev_get_zoom_scale(port, zoom, 1.0f, FALSE) * port->ppd;
-    const float anticipate_move = port->pipe->changed & DT_DEV_PIPE_ZOOMED
-                                ? dt_conf_get_float("darkroom/ui/anticipate_move") : 1.0f;
-    port->pipe->changed &= ~DT_DEV_PIPE_ZOOMED; // clear zoomed flag
+    const float anticipate_move = pipe_zoomed ? dt_conf_get_float("darkroom/ui/anticipate_move") : 1.0f;
     // Make sure we always have enough data for the port's width & height
     const int cscale = 1 << closeup;
     window_width = port->width * port->ppd * anticipate_move / cscale + 2*cscale;
@@ -614,10 +612,7 @@ float dt_dev_get_zoom_scale_full(void)
   dt_dev_zoom_t zoom;
   int closeup;
   dt_dev_get_viewport_params(&darktable.develop->full, &zoom, &closeup, NULL, NULL);
-  const float zoom_scale =
-    dt_dev_get_zoom_scale(&darktable.develop->full, zoom, 1 << closeup, TRUE);
-
-  return zoom_scale;
+  return dt_dev_get_zoom_scale(&darktable.develop->full, zoom, 1 << closeup, TRUE);
 }
 
 float dt_dev_get_zoomed_in(void)
@@ -1128,8 +1123,8 @@ void dt_dev_add_masks_history_item(dt_develop_t *dev,
 {
   gpointer target = NULL;
 
-  dt_masks_form_t *form = dev->form_visible;
-  dt_masks_form_gui_t *gui = dev->form_gui;
+  const dt_masks_form_t *form = dev->form_visible;
+  const dt_masks_form_gui_t *gui = dev->form_gui;
   if(form && gui)
   {
     dt_masks_point_group_t *fpt = g_list_nth_data(form->points, gui->group_edited);
@@ -1344,7 +1339,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, const int32_t cnt)
     while(modules && modules_old)
     {
       dt_iop_module_t *module = modules->data;
-      dt_iop_module_t *module_old = modules_old->data;
+      const dt_iop_module_t *module_old = modules_old->data;
 
       if(module->iop_order != module_old->iop_order)
       {
@@ -2500,7 +2495,7 @@ gboolean dt_dev_get_processed_size(dt_dev_viewport_t *port,
     return TRUE;
   }
 
-  dt_develop_t *dev = darktable.develop;
+  const dt_develop_t *dev = darktable.develop;
 
   // fallback on preview pipe
   if(dev->preview_pipe && dev->preview_pipe->processed_width)
