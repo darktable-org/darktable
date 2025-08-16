@@ -231,19 +231,12 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
   dt_osx_disallow_fullscreen(GTK_WIDGET(dialog));
 #endif
 
-  GtkContainer *content_area =
-    GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
-
-  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
-                                 GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scroll),
-                                             DT_PIXEL_APPLY_DPI(450));
-
   /* create the list of items */
   d->items = GTK_TREE_VIEW(gtk_tree_view_new());
-  gtk_container_add(GTK_CONTAINER(scroll), GTK_WIDGET(d->items));
-  gtk_box_pack_start(GTK_BOX(content_area), GTK_WIDGET(scroll), TRUE, TRUE, 0);
+  GtkWidget *scroll = dt_gui_scroll_wrap(GTK_WIDGET(d->items));
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
+                                 GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  dt_gui_dialog_add(GTK_DIALOG(dialog), scroll);
 
   GtkListStore *liststore
     = gtk_list_store_new(DT_HIST_ITEMS_NUM_COLS,

@@ -3315,7 +3315,7 @@ static GtkWidget *_manage_editor_group_init_basics_box(dt_lib_module_t *self)
 
   // chosen widgets
   GtkWidget *vb3 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+  GtkWidget *sw = dt_gui_scroll_wrap(vb3);
   d->edit_basics_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
                                  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
@@ -3337,7 +3337,6 @@ static GtkWidget *_manage_editor_group_init_basics_box(dt_lib_module_t *self)
     gtk_box_pack_start(GTK_BOX(vb2), hb4, FALSE, FALSE, 0);
   }
 
-  gtk_container_add(GTK_CONTAINER(sw), vb3);
   gtk_box_pack_start(GTK_BOX(vb2), sw, TRUE, TRUE, 0);
 
   return vb2;
@@ -3397,7 +3396,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self,
 
   // chosen modules
   GtkWidget *vb3 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+  GtkWidget *sw = dt_gui_scroll_wrap(vb3);
   gr->iop_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
                                  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
@@ -3443,7 +3442,6 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self,
     gtk_box_pack_start(GTK_BOX(vb2), hb4, FALSE, FALSE, 0);
   }
 
-  gtk_container_add(GTK_CONTAINER(sw), vb3);
   gtk_box_pack_start(GTK_BOX(vb2), sw, TRUE, TRUE, 0);
 
   return vb2;
@@ -3633,9 +3631,6 @@ static void _manage_editor_preset_action(GtkWidget *btn,
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
-  GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-  gtk_box_pack_start(GTK_BOX(content_area),
-                     gtk_label_new(_("new preset name:")), FALSE, TRUE, 0);
   GtkWidget *lb = gtk_label_new(_("a preset with this name already exists!"));
   GtkWidget *tb = gtk_entry_new();
   gtk_entry_set_activates_default(GTK_ENTRY(tb), TRUE);
@@ -3645,9 +3640,8 @@ static void _manage_editor_preset_action(GtkWidget *btn,
   gpointer verify_params[] = {dialog, names, lb};
   g_signal_connect(G_OBJECT(tb), "changed",
                    G_CALLBACK(_manage_editor_preset_name_verify), verify_params);
-  gtk_box_pack_start(GTK_BOX(content_area), tb, FALSE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(content_area), lb, FALSE, TRUE, 0);
-  gtk_widget_show_all(content_area);
+  dt_gui_dialog_add(GTK_DIALOG(dialog), gtk_label_new(_("new preset name:")), tb, lb);
+  gtk_widget_show_all(dialog);
   gtk_entry_set_text(GTK_ENTRY(tb), new_name);
   res = gtk_dialog_run(GTK_DIALOG(dialog));
 
@@ -4105,8 +4099,7 @@ static void _manage_show_window(dt_lib_module_t *self)
   const char *preset = dt_conf_get_string_const("plugins/darkroom/modulegroups_preset");
   _manage_editor_load(preset, self);
 
-  gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(d->dialog))),
-                    vb_main);
+  dt_gui_dialog_add(GTK_DIALOG(d->dialog), vb_main);
 
   g_signal_connect(d->dialog, "destroy", G_CALLBACK(_manage_editor_destroy), self);
   gtk_window_set_resizable(GTK_WINDOW(d->dialog), TRUE);

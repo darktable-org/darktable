@@ -16,13 +16,12 @@
   gtk_widget_set_valign(grid, GTK_ALIGN_START);
   int line = 0;
   char tooltip[1024];
-  GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
   g_object_set_data(G_OBJECT(dialog), "local-dialog", GUINT_TO_POINTER(1));
 </xsl:variable>
 
 <xsl:variable name="dialog_end">
   g_object_unref(widget_group);
-  gtk_box_pack_start(GTK_BOX(area), grid, FALSE, FALSE, 0);
+  dt_gui_dialog_add(GTK_DIALOG(dialog), grid);
   return grid;
 }
 </xsl:variable>
@@ -184,18 +183,13 @@ static void init_tab_generated(GtkWidget *dialog, GtkWidget *stack)
     int line = 0;
     char tooltip[1024];
     GtkWidget *tab_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-    viewport = gtk_viewport_new(NULL, NULL);
-    gtk_viewport_set_shadow_type(GTK_VIEWPORT(viewport), GTK_SHADOW_NONE); // doesn't seem to work from gtkrc
+    GtkWidget *scroll = dt_gui_scroll_wrap(grid);
     GtkWidget *help = gtk_button_new_with_label(_("?"));
     gtk_widget_set_halign(help, GTK_ALIGN_END);
     g_object_set_data_full(G_OBJECT(help), "dt-help-url",
                           g_strdup("preferences-settings/</xsl:text><xsl:value-of select="@title"/><xsl:text>/"), g_free);
     g_signal_connect(help, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
     gtk_box_pack_start(GTK_BOX(tab_box), scroll, TRUE, TRUE, 0);
-    gtk_container_add(GTK_CONTAINER(scroll), viewport);
-    gtk_container_add(GTK_CONTAINER(viewport), grid);
     gtk_box_pack_end(GTK_BOX(tab_box), help, FALSE, FALSE, 0);
     gtk_stack_add_titled(GTK_STACK(stack), tab_box,
                          _("</xsl:text><xsl:value-of select="@title"/><xsl:text>"), _("</xsl:text><xsl:value-of select="@title"/><xsl:text>"));</xsl:text>
