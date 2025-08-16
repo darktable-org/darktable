@@ -55,7 +55,7 @@ jobs:
           brew bundle --verbose || true
           # handle keg-only libs
           brew link --force libomp
-          brew link --force libsoup@2
+          brew link --force libsoup
       - name: Cancel workflow if job fails
         if: ${{ failure() }}
         uses: andymckay/cancel-action@0.4
