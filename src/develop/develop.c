@@ -472,12 +472,8 @@ restart:
       dt_pthread_mutex_unlock(&pipe->mutex);
       return;
     }
-    // or because the pipeline changed or shutdown?
-    else
-    {
-      if(port && port->widget) dt_control_queue_redraw_widget(port->widget);
+    if(shutdown != DT_DEV_PIXELPIPE_STOP_NO)
       goto restart;
-    }
   }
   dt_show_times_f(&start,
                   "[dev_process_image] pixel pipeline", "processing `%s'",
