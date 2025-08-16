@@ -307,7 +307,8 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
 
   // show we are busy changing views
   dt_control_change_cursor(GDK_WATCH);
-  dt_gui_process_events();
+  if(new_view != old_view) 
+    dt_gui_process_events();
 
   /* cleanup current view before initialization of new  */
   if(old_view)
