@@ -74,6 +74,9 @@ changes (where available).
 - Hierarchical presets are now supported for utility modules as well
   as processing modules.
 
+- Fixed some issues with the hierarchical styles handling in the
+  styles module.
+
 ## Bug Fixes
 
 - ???
