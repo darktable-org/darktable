@@ -85,9 +85,9 @@ typedef enum dt_dev_pixelpipe_status_t
 typedef enum dt_dev_pixelpipe_stopper_t
 {
   DT_DEV_PIXELPIPE_STOP_NO = 0,
-  DT_DEV_PIXELPIPE_STOP_NODES = 1,
-  DT_DEV_PIXELPIPE_STOP_HQ = 2,
-  DT_DEV_PIXELPIPE_STOP_LAST = 2,
+  DT_DEV_PIXELPIPE_STOP_NODES,
+  DT_DEV_PIXELPIPE_STOP_HQ,
+  DT_DEV_PIXELPIPE_STOP_LAST,
 } dt_dev_pixelpipe_stopper_t;
 
 typedef struct dt_dev_detail_mask_t
