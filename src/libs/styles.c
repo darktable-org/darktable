@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,8 +23,6 @@
 #include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
-#include "control/jobs.h"
-#include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/styles.h"
@@ -271,7 +269,11 @@ GList* _get_selected_style_names(GList* selected_styles, GtkTreeModel *model)
     gtk_tree_model_get_iter(model, &iter, (GtkTreePath *)style->data);
     gtk_tree_model_get_value(model, &iter, DT_STYLES_COL_FULLNAME, &value);
     if(G_VALUE_HOLDS_STRING(&value))
-      style_names = g_list_prepend(style_names, g_strdup(g_value_get_string(&value)));
+    {
+      gchar *vstring = g_strdup(g_value_get_string(&value));
+      if(vstring)
+        style_names = g_list_prepend(style_names, vstring);
+    }
     g_value_unset(&value);
   }
   return g_list_reverse(style_names); // list was built in reverse order, so un-reverse it
@@ -782,7 +784,12 @@ void gui_update(dt_lib_module_t *self)
   const gboolean has_act_on = dt_act_on_get_images_nb(TRUE, FALSE) > 0;
 
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->tree));
-  const gboolean any_style = gtk_tree_selection_count_selected_rows(selection) > 0;
+  GtkTreeModel *model= gtk_tree_view_get_model(d->tree);
+  GList *selected_styles = gtk_tree_selection_get_selected_rows(selection, &model);
+  GList *style_names = _get_selected_style_names(selected_styles, model);
+  const gboolean any_style = style_names != NULL;
+  g_list_free_full(style_names, g_free);
+  g_list_free_full(selected_styles, (GDestroyNotify) gtk_tree_path_free);
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->create_button), has_act_on);
   gtk_widget_set_sensitive(GTK_WIDGET(d->edit_button), any_style);
