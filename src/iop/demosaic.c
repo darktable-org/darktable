@@ -868,21 +868,24 @@ int process_cl(dt_iop_module_t *self,
                          || demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR;
   const gboolean do_capture = !passthru && !run_fast && !show_dual && d->cs_iter;
 
-  cl_mem out_image = direct ? dev_out : dt_opencl_alloc_device(devid, iwidth, iheight, sizeof(float) * 4);
-  cl_mem high_image = dual ? dt_opencl_alloc_device(devid, iwidth, iheight, sizeof(float) * 4) : out_image;
   cl_mem in_image = dev_in;
-
-  if(out_image == NULL)
-    goto finish;
-
   if(is_bayer && d->green_eq != DT_IOP_GREEN_EQ_NO && no_masking)
   {
     in_image = dt_opencl_alloc_device(devid, iwidth, iheight, sizeof(float));
-    if(in_image == NULL) goto finish;
+    if(!in_image) return err;
 
-    err = green_equilibration_cl(self, piece, dev_in, in_image, roi_in, filters);
-    if(err != CL_SUCCESS) goto finish;
+    err = green_equilibration_cl(self, piece, dev_in, in_image, iwidth, iheight, filters);
+    if(err != CL_SUCCESS)
+    {
+      dt_opencl_release_mem_object(in_image);
+      return err;
+    }
   }
+
+  cl_mem out_image = direct ? dev_out : dt_opencl_alloc_device(devid, iwidth, iheight, sizeof(float) * 4);
+  cl_mem high_image = dual ? dt_opencl_alloc_device(devid, iwidth, iheight, sizeof(float) * 4) : out_image;
+
+  if(!out_image) goto finish;
 
   if(demosaic_mask)
     err = demosaic_box3_cl(self, piece, in_image, high_image, dev_xtrans, iwidth, iheight, filters);

@@ -308,15 +308,14 @@ static int green_equilibration_cl(const dt_iop_module_t *self,
                                   const dt_dev_pixelpipe_iop_t *piece,
                                   cl_mem dev_in,
                                   cl_mem dev_out,
-                                  const dt_iop_roi_t *const roi_in,
+                                  const int width,
+                                  const int height,
                                   const uint32_t filters)
 {
   const dt_iop_demosaic_data_t *d = piece->data;
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
-  const int width = roi_in->width;
-  const int height = roi_in->height;
 
   cl_mem dev_tmp = NULL;
   cl_mem dev_m = NULL;
