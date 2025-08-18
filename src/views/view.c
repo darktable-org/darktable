@@ -111,7 +111,7 @@ void dt_view_manager_cleanup(dt_view_manager_t *vm)
   vm->views = NULL;
 }
 
-const dt_view_t *dt_view_manager_get_current_view(dt_view_manager_t *vm)
+const dt_view_t *dt_view_manager_get_current_view(const dt_view_manager_t *vm)
 {
   return vm->current_view;
 }
@@ -307,7 +307,7 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
 
   // show we are busy changing views
   dt_control_change_cursor(GDK_WATCH);
-  if(new_view != old_view) 
+  if(new_view != old_view)
     dt_gui_process_events();
 
   /* cleanup current view before initialization of new  */
@@ -383,7 +383,7 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
       char var[1024];
       snprintf(var, sizeof(var), "plugins/%s/%s/expanded",
                new_view->module_name, plugin->plugin_name);
-      gboolean expanded = dt_conf_get_bool(var);
+      const gboolean expanded = dt_conf_get_bool(var);
       dt_lib_gui_set_expanded(plugin, expanded);
       dt_lib_set_visible(plugin, TRUE);
     }
@@ -447,7 +447,7 @@ gboolean dt_view_manager_switch_by_view(dt_view_manager_t *vm,
   return FALSE;
 }
 
-const char *dt_view_manager_name(dt_view_manager_t *vm)
+const char *dt_view_manager_name(const dt_view_manager_t *vm)
 {
   if(!vm->current_view)
     return "";
@@ -1095,7 +1095,7 @@ void dt_view_active_images_reset(const gboolean raise)
   if(raise)
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 }
-void dt_view_active_images_add(dt_imgid_t imgid, gboolean raise)
+void dt_view_active_images_add(const dt_imgid_t imgid, const gboolean raise)
 {
   darktable.view_manager->active_images =
     g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(imgid));
@@ -1123,7 +1123,7 @@ void dt_view_manager_module_toolbox_add(dt_view_manager_t *vm,
     vm->proxy.module_toolbox.add(vm->proxy.module_toolbox.module, tool, views);
 }
 
-dt_darkroom_layout_t dt_view_darkroom_get_layout(dt_view_manager_t *vm)
+dt_darkroom_layout_t dt_view_darkroom_get_layout(const dt_view_manager_t *vm)
 {
   if(vm->proxy.darkroom.view)
     return vm->proxy.darkroom.get_layout(vm->proxy.darkroom.view);
@@ -1138,7 +1138,7 @@ void dt_view_lighttable_set_zoom(dt_view_manager_t *vm,
     vm->proxy.lighttable.set_zoom(vm->proxy.lighttable.module, zoom);
 }
 
-gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm)
+gint dt_view_lighttable_get_zoom(const dt_view_manager_t *vm)
 {
   if(vm->proxy.lighttable.module)
     return vm->proxy.lighttable.get_zoom(vm->proxy.lighttable.module);
@@ -1716,15 +1716,15 @@ void dt_view_paint_surface(cairo_t *cr,
                   port->zoom_x, port->zoom_y };
   dt_dev_distort_transform_plus(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 3);
 
-  float offset_x  = pts[0] / processed_width  - 0.5f;
-  float offset_y  = pts[1] / processed_height - 0.5f;
-  float preview_x = pts[2] / processed_width  - 0.5f;
-  float preview_y = pts[3] / processed_height - 0.5f;
-  float zoom_x    = pts[4] / processed_width  - 0.5f;
-  float zoom_y    = pts[5] / processed_height - 0.5f;
+  const float offset_x  = pts[0] / processed_width  - 0.5f;
+  const float offset_y  = pts[1] / processed_height - 0.5f;
+  const float preview_x = pts[2] / processed_width  - 0.5f;
+  const float preview_y = pts[3] / processed_height - 0.5f;
+  const float zoom_x    = pts[4] / processed_width  - 0.5f;
+  const float zoom_y    = pts[5] / processed_height - 0.5f;
 
-  dt_dev_zoom_t zoom = port->zoom;
-  int closeup = port->closeup;
+  const dt_dev_zoom_t zoom = port->zoom;
+  const int closeup = port->closeup;
   const float ppd           = port->ppd;
   const double tb           = port->border_size;
   const float zoom_scale    = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, TRUE);
@@ -1795,8 +1795,8 @@ void dt_view_paint_surface(cairo_t *cr,
       port->pipe->status = DT_DEV_PIXELPIPE_DIRTY;
 
     // draw preview
-    float wd = processed_width * dev->preview_pipe->processed_width / MAX(1, dev->full.pipe->processed_width);
-    float ht = processed_height * dev->preview_pipe->processed_width / MAX(1, dev->full.pipe->processed_width);
+    const float wd = processed_width * dev->preview_pipe->processed_width / MAX(1, dev->full.pipe->processed_width);
+    const float ht = processed_height * dev->preview_pipe->processed_width / MAX(1, dev->full.pipe->processed_width);
 
     cairo_surface_t *preview = dt_view_create_surface(dev->preview_pipe->backbuf,
                                                       dev->preview_pipe->backbuf_width,
