@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2023 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -422,7 +422,7 @@ void dt_view_manager_gui_init(dt_view_manager_t *vm);
 void dt_view_manager_cleanup(dt_view_manager_t *vm);
 
 /** return translated name. */
-const char *dt_view_manager_name(dt_view_manager_t *vm);
+const char *dt_view_manager_name(const dt_view_manager_t *vm);
 /** switch to this module. returns TRUE if the module fails to change. */
 gboolean dt_view_manager_switch(dt_view_manager_t *vm,
                                 const char *view_name);
@@ -438,7 +438,7 @@ void dt_view_manager_expose(dt_view_manager_t *vm,
 /** reset current view. */
 void dt_view_manager_reset(dt_view_manager_t *vm);
 /** get current view of the view manager. */
-const dt_view_t *dt_view_manager_get_current_view(dt_view_manager_t *vm);
+const dt_view_t *dt_view_manager_get_current_view(const dt_view_manager_t *vm);
 
 void dt_view_manager_mouse_enter(dt_view_manager_t *vm);
 void dt_view_manager_mouse_leave(dt_view_manager_t *vm);
@@ -539,7 +539,7 @@ GSList *dt_view_active_images_get();
 /** get the lighttable current layout */
 dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm);
 /** get the darkroom current layout */
-dt_darkroom_layout_t dt_view_darkroom_get_layout(dt_view_manager_t *vm);
+dt_darkroom_layout_t dt_view_darkroom_get_layout(const dt_view_manager_t *vm);
 /** update the layout buttons of the lighttable lib */
 void dt_view_lighttable_update_layout_buttons(dt_view_manager_t *vm);
 /** get the lighttable culling initial restricted state */
@@ -563,7 +563,7 @@ void dt_view_lighttable_set_preview_state(dt_view_manager_t *vm,
 void dt_view_lighttable_set_zoom(dt_view_manager_t *vm,
                                  const gint zoom);
 /** gets the lighttable image in row zoom */
-gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm);
+gint dt_view_lighttable_get_zoom(const dt_view_manager_t *vm);
 /** force refresh of culling and/or preview */
 void dt_view_lighttable_culling_preview_refresh(dt_view_manager_t *vm);
 /** force refresh of culling and/or preview overlays */
