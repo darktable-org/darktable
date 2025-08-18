@@ -902,11 +902,6 @@ int process_cl(dt_iop_module_t *self,
 
   if(err != CL_SUCCESS) goto finish;
 
-  if(pipe->want_detail_mask)
-  {
-    err = dt_dev_write_scharr_mask_cl(piece, high_image, roi_in, TRUE);
-    if(err != CL_SUCCESS) goto finish;
-  }
 
   if(do_capture)
   {
@@ -934,6 +929,11 @@ int process_cl(dt_iop_module_t *self,
   {
     dt_opencl_release_mem_object(in_image);
     in_image = NULL;
+  }
+  if(pipe->want_detail_mask)
+  {
+    err = dt_dev_write_scharr_mask_cl(piece, out_image, roi_in, TRUE);
+    if(err != CL_SUCCESS) goto finish;
   }
 
   if(d->color_smoothing != DT_DEMOSAIC_SMOOTH_OFF && no_masking)

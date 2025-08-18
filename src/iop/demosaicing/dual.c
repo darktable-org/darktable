@@ -84,7 +84,8 @@ int dual_demosaic_cl(const dt_iop_module_t *self,
                      const int height,
                      const int dual_mask)
 {
-  const int devid = piece->pipe->devid;
+  dt_dev_pixelpipe_t *p = piece->pipe;
+  const int devid = p->devid;
 
   dt_iop_demosaic_data_t *data = piece->data;
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
@@ -96,9 +97,24 @@ int dual_demosaic_cl(const dt_iop_module_t *self,
   cl_mem tmp = NULL;
   const size_t bsize = sizeof(float) * width * height;
 
-  tmp = dt_opencl_copy_host_to_device_constant(devid, bsize, piece->pipe->scharr.data);
+  tmp = dt_opencl_alloc_device_buffer(devid, bsize);
   mask = dt_opencl_alloc_device_buffer(devid, bsize);
   if(mask == NULL || tmp == NULL) goto finish;
+
+  const gboolean wboff = !p->dsc.temperature.enabled;
+  const dt_aligned_pixel_t wb =
+      { wboff ? 1.0f : p->dsc.temperature.coeffs[0],
+        wboff ? 1.0f : p->dsc.temperature.coeffs[1],
+        wboff ? 1.0f : p->dsc.temperature.coeffs[2] };
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_calc_Y0_mask, width, height,
+     CLARG(mask), CLARG(high_image), CLARG(width), CLARG(height),
+     CLARG(wb[0]), CLARG(wb[1]), CLARG(wb[2]));
+  if(err != CL_SUCCESS) goto finish;
+
+  err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_calc_scharr_mask, width, height,
+     CLARG(mask), CLARG(tmp), CLARG(width), CLARG(height));
+  if(err != CL_SUCCESS) goto finish;
 
   const int detail = 1;
   err = dt_opencl_enqueue_kernel_2d_args(devid, darktable.opencl->blendop->kernel_calc_blend, width, height,
