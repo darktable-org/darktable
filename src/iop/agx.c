@@ -697,32 +697,25 @@ static float _apply_curve(const float x, const tone_mapping_params_t *params)
   return CLAMPF(result, params->target_black, params->target_white);
 }
 
-static inline float _sanitize_hue(float hue)
-{
-  if(hue < 0.f) hue += 1.f;
-  if(hue >= 1.f) hue -= 1.f;
-  return hue;
-}
-
 // 'lerp', but take care of the boundary: hue wraps around 1->0
 static inline float _lerp_hue(const float original_hue, const float processed_hue, const float mix)
 {
-  const float s_original_hue = _sanitize_hue(original_hue);
-  float s_processed_hue = _sanitize_hue(processed_hue);
+  // could be between (-1, 1)
+  const float naive_hue_diff = processed_hue - original_hue;
+  // the rounded value is never more than 0.5 away from the original, so this will bring it to [-0.5, 0.5]
+  const float shortest_hue_diff = naive_hue_diff - roundf(naive_hue_diff);
 
-  const float hue_diff = s_processed_hue - s_original_hue;
+  // target_hue represents the same hue as processed_hue, potentially moved outside [0, 1)
+  // (but still the same position on the circle, moved by +1 or -1)
+  // so with two reds processed_hue = 0.01 and original_hue = 0.99 (close on the circle):
+  // naive_hue_diff = 0.01 - 0.99 = -0.98
+  // shortest_hue_diff = -0.98 - (-1) = 0.02
+  // target_hue = 0.99 + 0.02 = 1.01 (moved by +1)
+  const float target_hue = original_hue + shortest_hue_diff;
 
-  if(hue_diff > 0.5f)
-  {
-    s_processed_hue -= 1.f;
-  }
-  else if(hue_diff < -0.5f)
-  {
-    s_processed_hue += 1.f;
-  }
-
-  const float restored_hue = s_processed_hue + (s_original_hue - s_processed_hue) * mix;
-  return _sanitize_hue(restored_hue);
+  const float restored_hue = target_hue + (original_hue - target_hue) * mix;
+  // restored_hue may be outside [0, 1); this brings it back to the range
+  return restored_hue - floorf(restored_hue);
 }
 
 static inline float _apply_slope_offset(const float x, const float slope, const float offset)
