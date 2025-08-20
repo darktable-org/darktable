@@ -700,22 +700,18 @@ static float _apply_curve(const float x, const tone_mapping_params_t *params)
 // 'lerp', but take care of the boundary: hue wraps around 1->0
 static inline float _lerp_hue(const float original_hue, const float processed_hue, const float mix)
 {
-  // could be between (-1, 1)
-  const float naive_hue_diff = processed_hue - original_hue;
-  // the rounded value is never more than 0.5 away from the original, so this will bring it to [-0.5, 0.5]
-  const float shortest_hue_diff = naive_hue_diff - roundf(naive_hue_diff);
+  // shortest signed difference in [-0.5, 0.5]
+  // there is some ambiguity (shortest distance on a circle is undefined if the points are exactly on the opposite side),
+  // but the original and processed hue are quite similar, we don't expect 180-degree shifts,
+  // and couldn't do anything about it, anyway
+  const float shortest_distance_on_hue_circle = remainderf(processed_hue - original_hue, 1.0f);
 
-  // target_hue represents the same hue as processed_hue, potentially moved outside [0, 1)
-  // (but still the same position on the circle, moved by +1 or -1)
-  // so with two reds processed_hue = 0.01 and original_hue = 0.99 (close on the circle):
-  // naive_hue_diff = 0.01 - 0.99 = -0.98
-  // shortest_hue_diff = -0.98 - (-1) = 0.02
-  // target_hue = 0.99 + 0.02 = 1.01 (moved by +1)
-  const float target_hue = original_hue + shortest_hue_diff;
+  // interpolate: mix = 0 -> processed_hue; mix = 1 -> original_hue
+  // multiply-add: (1 - mix) * shortest_distance_on_hue_circle + original_hue
+  const float mixed_hue = fmaf(1.0f - mix, shortest_distance_on_hue_circle, original_hue);
 
-  const float restored_hue = target_hue + (original_hue - target_hue) * mix;
-  // restored_hue may be outside [0, 1); this brings it back to the range
-  return restored_hue - floorf(restored_hue);
+  // wrap to [0, 1)
+  return mixed_hue - floorf(mixed_hue);
 }
 
 static inline float _apply_slope_offset(const float x, const float slope, const float offset)
