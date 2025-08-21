@@ -612,17 +612,17 @@ void _capture_sharpen(dt_iop_module_t *self,
                       dt_dev_pixelpipe_iop_t *const piece,
                       float *const in,
                       float *out,
-                      const dt_iop_roi_t *const roi,
+                      const int width,
+                      const int height,
+                      const int dx,
+                      const int dy,
                       const gboolean show_variance_mask,
                       const gboolean show_sigma_mask,
                       const uint8_t (*const xtrans)[6],
                       const uint32_t filters)
 {
   dt_dev_pixelpipe_t *pipe = piece->pipe;
-
-  const size_t width = roi->width;
-  const size_t height = roi->height;
-  const size_t pixels = width * height;
+  const size_t pixels = (size_t)width * height;
   const dt_iop_demosaic_data_t *d = piece->data;
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
@@ -709,7 +709,7 @@ void _capture_sharpen(dt_iop_module_t *self,
     goto finalize;
   }
 
-  gauss_idx = _cs_precalc_gauss_idx(self, width, height, roi->x, roi->y, radius, d->cs_boost, d->cs_center);
+  gauss_idx = _cs_precalc_gauss_idx(self, width, height, dx, dy, radius, d->cs_boost, d->cs_center);
   if(!gauss_idx) goto finalize;
 
   if(show_sigma_mask)

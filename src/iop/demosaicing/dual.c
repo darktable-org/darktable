@@ -22,29 +22,40 @@
    and has been modified to work for darktable by Hanno Schwalm (hanno@schwalm-bremen.de).
 */
 
-static float slider2contrast(float slider)
+static float _slider2contrast(const float slider)
 {
   return 0.005f * powf(slider, 1.1f);
 }
+
 static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece,
                           float *const restrict high_data,
                           const float *const restrict raw_data,
-                          const dt_iop_roi_t *const roi,
+                          const int width,
+                          const int height,
                           const uint32_t filters,
                           const uint8_t (*const xtrans)[6],
                           const gboolean dual_mask,
                           const float dual_threshold)
 {
-  if(roi->width < 16 || roi->height < 16) return;
+  if(width < 16 || height < 16) return;
+  dt_dev_pixelpipe_t *p = piece->pipe;
 
   // If the threshold is zero and we don't want to see the blend mask we don't do anything
   if(dual_threshold <= 0.0f && !dual_mask) return;
 
-  const size_t msize = (size_t)roi->width * roi->height;
-  const float contrastf = slider2contrast(dual_threshold);
+  const size_t msize = (size_t)width * height;
+  const float contrastf = _slider2contrast(dual_threshold);
 
-  float *mask = dt_masks_calc_detail_mask(piece, contrastf, TRUE);
-  if(!mask) return;
+  float *mask = dt_masks_calc_scharr_mask(p, high_data, width, height, TRUE);
+  float *tmp = dt_iop_image_alloc(width, height, 1);
+  if(!mask || !tmp)
+  {
+    dt_free_align(mask);
+    dt_free_align(tmp);
+    return;
+  }
+  dt_masks_calc_detail_blend(mask, tmp, msize, contrastf, TRUE);
+  dt_gaussian_fast_blur(tmp, mask, width, height, 2.0f, 0.0f, 1.0f, 1);
 
   if(dual_mask)
   {
@@ -57,8 +68,8 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece,
     float *vng_image = dt_iop_image_alloc(width, height, 4);
     if(vng_image)
     {
-      vng_interpolate(vng_image, raw_data, roi, filters, xtrans, TRUE);
-      color_smoothing(vng_image, roi, DT_DEMOSAIC_SMOOTH_2);
+      vng_interpolate(vng_image, raw_data, width, height, filters, xtrans, TRUE);
+      color_smoothing(vng_image, width, height, DT_DEMOSAIC_SMOOTH_2);
 
       DT_OMP_FOR_SIMD(aligned(mask, vng_image, high_data : 64))
       for(size_t idx = 0; idx < msize; idx++)
@@ -72,6 +83,7 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece,
     }
   }
   dt_free_align(mask);
+  dt_free_align(tmp);
 }
 
 #ifdef HAVE_OPENCL
@@ -90,7 +102,7 @@ int dual_demosaic_cl(const dt_iop_module_t *self,
   dt_iop_demosaic_data_t *data = piece->data;
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
 
-  const float contrastf = slider2contrast(data->dual_thrs);
+  const float contrastf = _slider2contrast(data->dual_thrs);
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   cl_mem mask = NULL;

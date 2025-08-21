@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2024 darktable developers.
+    Copyright (C) 2013-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -695,12 +695,20 @@ void dt_masks_calculate_source_pos_value(const dt_masks_form_gui_t *gui,
                                          const int adding);
 
 /** detail mask support */
-gboolean dt_masks_calc_scharr_mask(dt_dev_detail_mask_t *details,
-                                   float *const src,
-                                   const dt_aligned_pixel_t wb);
+float *dt_masks_calc_scharr_mask(struct dt_dev_pixelpipe_t *pipe,
+                                 float *src,
+                                 const int width,
+                                 const int height,
+                                 const gboolean rawmode);
 float *dt_masks_calc_detail_mask(struct dt_dev_pixelpipe_iop_t *piece,
                                  const float threshold,
                                  const gboolean detail);
+void dt_masks_calc_detail_blend(float *const src,
+                                float *out,
+                                const size_t msize,
+                                const float threshold,
+                                const gboolean detail);
+
 
 /** return the list of possible mouse actions */
 GSList *dt_masks_mouse_actions(const dt_masks_form_t *form);

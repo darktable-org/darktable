@@ -89,13 +89,11 @@ static void pre_median(float *out,
   if(med[I] > med[J]) SWAP(med[I], med[J])
 
 static void color_smoothing(float *out,
-                            const dt_iop_roi_t *const roi,
+                            const int width,
+                            const int height,
                             const int num_passes)
 {
-  const int width4 = 4 * roi->width;
-  const int width = roi->width;
-  const int height = roi->height;
-
+  const int width4 = 4 * width;
   for(int pass = 0; pass < num_passes; pass++)
   {
     for(int c = 0; c < 3; c += 2)

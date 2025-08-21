@@ -705,13 +705,13 @@ void process(dt_iop_module_t *self,
     else if(base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN || base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3)
       xtrans_markesteijn_interpolate(out, in, width, height, xtrans, passes);
     else
-      vng_interpolate(out, in, roi_in, filters, xtrans, FALSE);
+      vng_interpolate(out, in, width, height, filters, xtrans, FALSE);
   }
   else
   {
     if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || is_4bayer)
     {
-      vng_interpolate(out, in, roi_in, filters, xtrans, FALSE);
+      vng_interpolate(out, in, width, height, filters, xtrans, FALSE);
       if(is_4bayer)
       {
         dt_colorspaces_cygm_to_rgb(out, width * height, d->CAM_to_RGB);
@@ -728,19 +728,20 @@ void process(dt_iop_module_t *self,
       amaze_demosaic(in, out, width, height, filters, procmin);
   }
 
-  if(pipe->want_detail_mask)
-    dt_dev_write_scharr_mask(piece, out, roi_in, TRUE);
-
   if(do_capture)
-    _capture_sharpen(self, piece, (float *)i, out, roi_in, show_capture, show_sigma, xtrans, filters);
+    _capture_sharpen(self, piece, in, out, width, height, roi_in->x, roi_in->y, show_capture, show_sigma, xtrans, filters);
 
   if(dual)
-    dual_demosaic(piece, out, in, roi_in, filters, xtrans, show_dual, d->dual_thrs);
+    dual_demosaic(piece, out, in, width, height, filters, xtrans, show_dual, d->dual_thrs);
 
   if((float *)i != in) dt_free_align(in);
 
   if(d->color_smoothing != DT_DEMOSAIC_SMOOTH_OFF && no_masking)
-    color_smoothing(out, roi_in, d->color_smoothing);
+    color_smoothing(out, width, height, d->color_smoothing);
+
+  // FIXME we should better write details mask scaled to roi_out dimension
+  if(pipe->want_detail_mask)
+    dt_dev_write_scharr_mask(piece, out, roi_in, TRUE);
 
   dt_print_pipe(DT_DEBUG_VERBOSE, direct ? "demosaic inplace" : "demosaic clip_and_zoom", pipe, self, DT_DEVICE_CPU, roi_in, roi_out);
   if(!direct)
@@ -1156,10 +1157,8 @@ void commit_params(dt_iop_module_t *self,
   }
 
   if(use_method & DT_DEMOSAIC_DUAL)
-  {
-    dt_dev_pixelpipe_usedetails(piece);
     d->color_smoothing = DT_DEMOSAIC_SMOOTH_OFF;
-  }
+
   d->demosaicing_method = use_method;
 
   // as some demosaicers don't have OpenCL implementations
@@ -1181,12 +1180,8 @@ void commit_params(dt_iop_module_t *self,
       piece->process_cl_ready = TRUE;
   }
 
-  // green-equilibrate over full image excludes tiling
-  // The details mask calculation required for dual demosaicing does not allow tiling.
-  if(    d->green_eq == DT_IOP_GREEN_EQ_FULL
-      || d->green_eq == DT_IOP_GREEN_EQ_BOTH
-      || use_method & DT_DEMOSAIC_DUAL
-      || piece->pipe->want_detail_mask)
+  // green-equilibrate over full image and details mask exclude tiling
+  if(d->green_eq & DT_IOP_GREEN_EQ_FULL || piece->pipe->want_detail_mask)
   {
     piece->process_tiling_ready = FALSE;
   }
