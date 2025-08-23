@@ -135,8 +135,8 @@ void dtgtk_cairo_paint_arrow(cairo_t *cr, const gint x, const gint y, const gint
   cairo_matrix_t hflip_matrix;
   cairo_matrix_init(&hflip_matrix, -1, 0, 0, 1, 1, 0);
 
-  const double C = flags & CPF_DIRECTION_UP ? cos(M_PI_2) : cos(-M_PI_2);
-  const double S = flags & CPF_DIRECTION_UP ? sin(M_PI_2) : sin(-M_PI_2);
+  const double C = flags & CPF_DIRECTION_DOWN ? cos(M_PI_2) : cos(-M_PI_2);
+  const double S = flags & CPF_DIRECTION_DOWN ? sin(M_PI_2) : sin(-M_PI_2);
   cairo_matrix_t rotation_matrix;
   cairo_matrix_init(&rotation_matrix, C, S, -S, C, 0.5 - C * 0.5 + S * 0.5, 0.5 - S * 0.5 - C * 0.5);
 
