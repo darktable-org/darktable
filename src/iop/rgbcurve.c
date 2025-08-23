@@ -891,7 +891,7 @@ static gboolean _area_draw_callback(GtkWidget *widget,
     float hist_max;
 
     if(autoscale == DT_S_SCALE_AUTOMATIC_RGB)
-      hist_max = max3i(self->histogram_max);
+      hist_max = max3ui(self->histogram_max);
     else
       hist_max = self->histogram_max[ch];
 
