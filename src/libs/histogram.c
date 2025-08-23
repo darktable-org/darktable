@@ -1859,7 +1859,7 @@ static void _scope_orient_update(const dt_lib_histogram_t *d)
     case DT_LIB_HISTOGRAM_ORIENT_HORI:
       gtk_widget_set_tooltip_text(d->scope_view_button, _("set scope to vertical"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
-                             dtgtk_cairo_paint_arrow, CPF_DIRECTION_DOWN, NULL);
+                             dtgtk_cairo_paint_arrow, CPF_DIRECTION_UP, NULL);
       break;
     case DT_LIB_HISTOGRAM_ORIENT_VERT:
       gtk_widget_set_tooltip_text(d->scope_view_button, _("set scope to horizontal"));
