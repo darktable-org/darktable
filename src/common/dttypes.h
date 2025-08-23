@@ -258,7 +258,7 @@ static inline int dt_is_valid_colormatrix(float matrix)
 
 #endif /* NO_COLORMATRIX_NAN */
 
-static inline uint32_t max3i(const uint32_t* array)
+static inline uint32_t max3ui(const uint32_t* array)
 {
   return MAX(MAX(array[0], array[1]), array[2]);
 }
