@@ -2605,6 +2605,70 @@ static char *_transform_type(const dt_dev_transform_direction_t transf_direction
 }
 
 // running with the history locked
+static gboolean _dev_geometry_backtransform_locked(dt_develop_t *dev,
+                                                   dt_dev_pixelpipe_t *pipe,
+                                                   const double iop_order,
+                                                   const dt_dev_transform_direction_t transf_direction,
+                                                   float *points,
+                                                   const size_t points_count)
+{
+  const gboolean log = (darktable.unmuted & (DT_DEBUG_CONTROL|DT_DEBUG_VERBOSE)) == (DT_DEBUG_CONTROL|DT_DEBUG_VERBOSE);
+  GList *modules = g_list_last(pipe->iop);
+  GList *pieces = g_list_last(pipe->nodes);
+  while(modules)
+  {
+    if(!pieces)
+    {
+      return FALSE;
+    }
+    dt_iop_module_t *module = modules->data;
+    dt_dev_pixelpipe_iop_t *piece = pieces->data;
+    if(piece->enabled
+       && (module->geometry_backtransform || module->distort_backtransform)
+       && piece->data
+       && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
+               && module->iop_order >= iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
+               && module->iop_order > iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL
+               && module->iop_order <= iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL
+               && module->iop_order < iop_order))
+       && !(dt_iop_module_is_skipped(dev, module)
+            && (pipe->type & DT_DEV_PIXELPIPE_BASIC)))
+    {
+      if(log)
+      {
+        char vbuf[1024] = { 0 };
+        float old[16];
+        const int tested = MIN(8, (int)points_count);
+        memcpy(old, points, 2*sizeof(float) * tested);
+        if(module->geometry_backtransform)
+          module->geometry_backtransform(module, piece, points, points_count);
+        else
+          module->distort_backtransform(module, piece, points, points_count);
+        for(int p = 0; p < tested; p++)
+        {
+          const int done = strlen(vbuf);
+          snprintf(vbuf + done, sizeof(vbuf) - done,
+              "  [P%d] %.1f %.1f -> %.1f %.1f", p, old[2*p], old[2*p+1], points[2*p], points[2*p+1]);
+        }
+        dt_print_pipe(DT_DEBUG_ALWAYS, "geometry_backtransform", pipe, module, DT_DEVICE_NONE, NULL, NULL,
+          "%s, order=%d, %d points:%s", _transform_type(transf_direction), (int)iop_order, (int)points_count, vbuf);
+      }
+      else if(module->geometry_backtransform)
+        module->geometry_backtransform(module, piece, points, points_count);
+      else
+        module->distort_backtransform(module, piece, points, points_count);
+    }
+    modules = g_list_previous(modules);
+    pieces = g_list_previous(pieces);
+  }
+  return TRUE;
+}
+
+// running with the history locked
 static gboolean _dev_distort_backtransform_locked(dt_develop_t *dev,
                                                   dt_dev_pixelpipe_t *pipe,
                                                   const double iop_order,
@@ -2744,9 +2808,13 @@ static gboolean _dev_geometry_transform_all_locked(dt_develop_t *dev,
             && (pipe->type & DT_DEV_PIXELPIPE_BASIC)))
     {
       if(module->geometry_transform)
+      {
         module->geometry_transform(module, piece, points, points_count);
-      else
+      }
+      else if(module->distort_transform)
+      {
         module->distort_transform(module, piece, points, points_count);
+      }
     }
     modules = g_list_next(modules);
     pieces = g_list_next(pieces);
@@ -2914,7 +2982,14 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
     || (zoom == DT_ZOOM_MOVE && (x || y));
   if(has_moved)
   {
-    _dev_distort_backtransform_locked(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
+    //TODO: for some reason, using geometry rather than distort here leads to infinite refresh loops
+    // unless zoomed in very tightly, but the distort version is of course much slower with liquify....
+    // distort also occassionally gets into a refresh loop when liquify is enabled with a big warp,
+    // but not like the geometry-only version.
+    if(1)
+      _dev_geometry_backtransform_locked(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
+    else
+      _dev_distort_backtransform_locked(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
     port->zoom_x = pts[0];
     port->zoom_y = pts[1];
   }

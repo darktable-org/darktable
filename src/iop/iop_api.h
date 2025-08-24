@@ -320,6 +320,15 @@ OPTIONAL(gboolean, geometry_transform, struct dt_iop_module_t *self,
                                        float *points,
                                        size_t points_count);
 
+// The following function is used like distort_backtransform, but based on
+// the overall geometric distortion (as produced by e.g. rotate and perspective)
+// without regard for any local distortions such as liquify's warps.
+// If not provided by a module, distort_backtransform will be called instead.
+OPTIONAL(gboolean, geometry_backtransform, struct dt_iop_module_t *self,
+                                           struct dt_dev_pixelpipe_iop_t *piece,
+                                           float *points,
+                                           size_t points_count);
+
 // introspection related callbacks, will be auto-implemented if
 // DT_MODULE_INTROSPECTION() is used,
 OPTIONAL(int, introspection_init, struct dt_iop_module_so_t *self, int api_version);

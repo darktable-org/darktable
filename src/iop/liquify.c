@@ -1368,6 +1368,18 @@ gboolean geometry_transform(dt_iop_module_t *self,
   return TRUE;
 }
 
+gboolean geometry_backtransform(dt_iop_module_t *self,
+                                dt_dev_pixelpipe_iop_t *piece,
+                                float *const restrict points,
+                                const size_t points_count)
+{
+  // liquify does not apply any geometric transformation to the image
+  // coordinates, only local warping, so this function is a no-op and
+  // overrides distort_backtransform when the viewport coordinates are
+  // determined
+  return TRUE;
+}
+
 void distort_mask(dt_iop_module_t *self,
                   dt_dev_pixelpipe_iop_t *piece,
                   const float *const in,
