@@ -452,6 +452,7 @@ restart:
                 problem ? "problem " : "success ",
                 shutdown == DT_DEV_PIXELPIPE_STOP_NODES ? "DT_DEV_PIXELPIPE_STOP_NODES"
                 : shutdown == DT_DEV_PIXELPIPE_STOP_HQ  ? "DT_DEV_PIXELPIPE_STOP_HQ"
+                : shutdown == DT_DEV_PIXELPIPE_STOP_ZOOMED ? "DT_DEV_PIXELPIPE_STOP_ZOOMED"
                 : shutdown == DT_DEV_PIXELPIPE_STOP_NO  ? "DT_DEV_PIXELPIPE_STOP_NO"
                 : "DT_DEV_PIXELPIPE_STOP_OTHER");
   if(problem)

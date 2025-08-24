@@ -655,7 +655,7 @@ static void process_laplacian_bayer(dt_iop_module_t *self,
   interpolate_bilinear(clipping_mask, width, height, ds_clipping_mask, ds_width, ds_height, 4);
   interpolate_bilinear(interpolated, width, height, ds_interpolated, ds_width, ds_height, 4);
 
-  for(int i = 0; i < data->iterations; i++)
+  for(int i = 0; i < data->iterations && !dt_pipe_shutdown(piece->pipe); i++)
   {
     const int salt = (i == data->iterations - 1); // add noise on the last iteration only
     wavelets_process(ds_interpolated, temp, ds_clipping_mask, ds_width, ds_height, scales, HF, LF_odd,
@@ -673,6 +673,9 @@ static void process_laplacian_bayer(dt_iop_module_t *self,
     dt_dump_pfm("interpolated", interpolated, width, height,  4 * sizeof(float), "highlights");
     dt_dump_pfm("clipping_mask", clipping_mask, width, height,  4 * sizeof(float), "highlights");
   }
+
+  if(dt_atomic_get_int(&piece->pipe->shutdown) == DT_DEV_PIXELPIPE_STOP_ZOOMED)
+    dt_atomic_set_int(&piece->pipe->shutdown, self->iop_order);
 
   dt_free_align(interpolated);
   dt_free_align(clipping_mask);
@@ -856,7 +859,7 @@ static cl_int process_laplacian_bayer_cl(dt_iop_module_t *self,
 
   if(err != CL_SUCCESS) goto error;
 
-  for(int i = 0; i < data->iterations; i++)
+  for(int i = 0; i < data->iterations && !dt_pipe_shutdown(piece->pipe); i++)
   {
     const int salt = (i == data->iterations - 1); // add noise on the last iteration only
     err = wavelets_process_cl(devid, ds_interpolated, temp, ds_clipping_mask, ds_sizes, ds_width, ds_height, gd, scales, HF,
@@ -880,6 +883,9 @@ static cl_int process_laplacian_bayer_cl(dt_iop_module_t *self,
     CLARG(wb_cl), CLARG(filters), CLARG(width), CLARG(height));
 
 error:
+  if(err == CL_SUCCESS && dt_atomic_get_int(&piece->pipe->shutdown) == DT_DEV_PIXELPIPE_STOP_ZOOMED)
+    dt_atomic_set_int(&piece->pipe->shutdown, self->iop_order);
+
   dt_opencl_release_mem_object(wb_cl);
   dt_opencl_release_mem_object(interpolated);
   dt_opencl_release_mem_object(ds_clipping_mask);

@@ -1794,6 +1794,8 @@ void dt_view_paint_surface(cairo_t *cr,
     if(port->pipe->status == DT_DEV_PIXELPIPE_VALID)
       port->pipe->status = DT_DEV_PIXELPIPE_DIRTY;
 
+    if(port->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW2))
+      dt_atomic_set_int(&port->pipe->shutdown, DT_DEV_PIXELPIPE_STOP_ZOOMED);
     // draw preview
     const float wd = processed_width * dev->preview_pipe->processed_width / MAX(1, dev->full.pipe->processed_width);
     const float ht = processed_height * dev->preview_pipe->processed_width / MAX(1, dev->full.pipe->processed_width);

@@ -1436,12 +1436,16 @@ void process(dt_iop_module_t *self,
     if(it == iterations - 1)
       temp_out = out;
 
-    wavelets_process(temp_in, temp_out, mask,
+    if(!dt_pipe_shutdown(piece->pipe))
+      wavelets_process(temp_in, temp_out, mask,
                      roi_out->width, roi_out->height,
                      data, final_radius, scale, scales, has_mask, HF, LF_odd, LF_even);
   }
 
 finish:
+  if(dt_atomic_get_int(&piece->pipe->shutdown) == DT_DEV_PIXELPIPE_STOP_ZOOMED)
+    dt_atomic_set_int(&piece->pipe->shutdown, self->iop_order);
+
   dt_free_align(mask);
   dt_free_align(temp1);
   dt_free_align(temp2);
@@ -1710,12 +1714,17 @@ int process_cl(dt_iop_module_t *self,
 
     if(it == iterations - 1)
       temp_out = dev_out;
-    err = wavelets_process_cl(devid, temp_in, temp_out, mask, sizes,
+
+    if(!dt_pipe_shutdown(piece->pipe))
+      err = wavelets_process_cl(devid, temp_in, temp_out, mask, sizes,
                               width, height, data, gd, final_radius,
                               scale, scales, has_mask, HF, LF_odd, LF_even);
   }
 
 error:
+  if(err == CL_SUCCESS && dt_atomic_get_int(&piece->pipe->shutdown) == DT_DEV_PIXELPIPE_STOP_ZOOMED)
+    dt_atomic_set_int(&piece->pipe->shutdown, self->iop_order);
+
   dt_opencl_release_mem_object(temp1);
   dt_opencl_release_mem_object(temp2);
   dt_opencl_release_mem_object(mask);

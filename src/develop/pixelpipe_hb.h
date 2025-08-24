@@ -87,6 +87,7 @@ typedef enum dt_dev_pixelpipe_stopper_t
   DT_DEV_PIXELPIPE_STOP_NO = 0,
   DT_DEV_PIXELPIPE_STOP_NODES,
   DT_DEV_PIXELPIPE_STOP_HQ,
+  DT_DEV_PIXELPIPE_STOP_ZOOMED,
   DT_DEV_PIXELPIPE_STOP_LAST,
 } dt_dev_pixelpipe_stopper_t;
 
