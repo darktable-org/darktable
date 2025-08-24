@@ -2342,8 +2342,9 @@ Details :
 /* splash screen */
 #splashscreen
 {
-    background-color: @grey_10;
-    border: 5px solid @grey_60;
+    background-color: @grey_20;
+    border: 1px solid;
+    border-radius: 25px; 
 }
 #splashscreen-header
 {
@@ -2360,6 +2361,8 @@ Details :
 /* style the darktable logo */
 #splashscreen-logo
 {
+    margin-left: 20px;
+    margin-right: 20px;
 }
 /* position the darktable version number next to the logo */
 #splashscreen-version
@@ -2373,31 +2376,44 @@ Details :
 {
     font-size: 48pt;
     margin: 2pt;
+    margin-top: 20px;
+    margin-right: 20px;
 }
 /* style the darktable program description */
 #splashscreen-description
 {
+    color: @grey_60;
     font-size: 16pt;
-    font-family: DejaVu Serif, serif;
+    font-family: Inter, DejaVu Serif, serif;
     padding: 1em;
     margin: 1em;
 }
 /* style the "get ready" message */
 #splashscreen-prepare
 {
-    font-size: 14pt;
-    font-family: DejaVu Serif, serif;
+    font-size: 12pt;
+    font-family: Inter, DejaVu Serif, serif;
+    margin-top: -5pt;
+    margin-left: -150pt;
 }
 /* style the separating bar - without a style, it won't appear or take space! */
 #splashscreen-separator
 {
-    border: 2px solid @grey_80;
-    margin-top: 15pt;
-    margin-bottom: 15pt;
+    border: 0px;
+    margin-top: 1pt;
+    margin-bottom: 3pt;
 }
 /* style the progress message */
 #splashscreen-progress
 {
+    border-radius: 15px;
+    background-color: alpha(@grey_10, 0.8);
+    min-width: 1em;
+    min-height: 4em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    margin-left: 8em;
+    margin-right: 8em;
 }
 /* style the time remaining */
 #splashscreen-remaining
