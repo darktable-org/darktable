@@ -3634,6 +3634,11 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
     resmask = NULL;
   }
 
+  if(src && src == resmask)
+  {
+    resmask = dt_iop_image_alloc(pipe->scharr.roi.width, pipe->scharr.roi.height, 1);
+    dt_iop_image_copy(resmask, src, pipe->scharr.roi.width * pipe->scharr.roi.height);
+  }
   return resmask;
 }
 
