@@ -58,7 +58,7 @@ typedef struct dt_lib_snapshot_t
   uint8_t *buf;
   float scale;
   size_t width, height;
-  float zoom_x, zoom_y;
+  dt_dev_zoom_pos_t zoom_pos;
 } dt_lib_snapshot_t;
 
 typedef struct dt_lib_snapshots_t
@@ -238,8 +238,7 @@ void gui_post_expose(dt_lib_module_t *self,
       dt_dev_image(snap->imgid, width, height,
                    snap->history_end,
                    &snap->buf, &snap->scale,
-                   &snap->width, &snap->height,
-                   &snap->zoom_x, &snap->zoom_y,
+                   &snap->width, &snap->height, snap->zoom_pos,
                    snap->id, NULL, DT_DEVICE_NONE, FALSE);
       d->snap_requested = FALSE;
       d->expose_again_timeout_id = 0;
@@ -303,8 +302,7 @@ void gui_post_expose(dt_lib_module_t *self,
     if(snap->buf)
     {
       dt_view_paint_surface(cri, width, height, &dev->full, DT_WINDOW_MAIN,
-                            snap->buf, snap->scale, snap->width, snap->height,
-                            snap->zoom_x, snap->zoom_y);
+                            snap->buf, snap->scale, snap->width, snap->height, snap->zoom_pos);
     }
 
     cairo_restore(cri);
