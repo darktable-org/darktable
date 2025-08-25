@@ -250,16 +250,6 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   return TRUE;
 }
 
-void distort_mask(dt_iop_module_t *self,
-                  dt_dev_pixelpipe_iop_t *piece,
-                  const float *const in,
-                  float *const out,
-                  const dt_iop_roi_t *const roi_in,
-                  const dt_iop_roi_t *const roi_out)
-{
-  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out);
-}
-
 // we're not scaling here (bayer input), so just crop borders
 void modify_roi_out(dt_iop_module_t *self,
                     dt_dev_pixelpipe_iop_t *piece,
@@ -341,12 +331,13 @@ void process(dt_iop_module_t *self,
   const int csx = _compute_proper_crop(piece, roi_in, d->left);
   const int csy = _compute_proper_crop(piece, roi_in, d->top);
 
+  float *const out = (float *const)ovoid;
+
   if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1
      && piece->dsc_in.datatype == TYPE_UINT16)
   { // raw mosaic
 
     const uint16_t *const in = (const uint16_t *const)ivoid;
-    float *const out = (float *const)ovoid;
 
     DT_OMP_FOR_SIMD(collapse(2))
     for(int j = 0; j < roi_out->height; j++)
@@ -370,7 +361,6 @@ void process(dt_iop_module_t *self,
   { // raw mosaic, fp, unnormalized
 
     const float *const in = (const float *const)ivoid;
-    float *const out = (float *const)ovoid;
 
     DT_OMP_FOR_SIMD(collapse(2))
     for(int j = 0; j < roi_out->height; j++)
@@ -393,8 +383,6 @@ void process(dt_iop_module_t *self,
   { // pre-downsampled buffer that needs black/white scaling
 
     const float *const in = (const float *const)ivoid;
-    float *const out = (float *const)ovoid;
-
     const int ch = piece->colors;
 
     DT_OMP_FOR_SIMD(collapse(3))
@@ -423,7 +411,6 @@ void process(dt_iop_module_t *self,
     const float rel_to_map_y = 1.0f / d->gainmaps[0]->map_spacing_v;
     const float map_origin_h = d->gainmaps[0]->map_origin_h;
     const float map_origin_v = d->gainmaps[0]->map_origin_v;
-    float *const out = (float *const)ovoid;
 
     DT_OMP_FOR()
     for(int j = 0; j < roi_out->height; j++)
@@ -454,7 +441,7 @@ void process(dt_iop_module_t *self,
   }
 
   if(!dt_image_is_raw(&piece->pipe->image) && piece->pipe->want_detail_mask)
-    dt_dev_write_scharr_mask(piece, (float *const)ovoid, roi_in, FALSE);
+    dt_dev_write_scharr_mask(piece, out, roi_out, FALSE);
 
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
 }
@@ -570,7 +557,7 @@ finish:
     }
     for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
     if(!dt_image_is_raw(&piece->pipe->image) && piece->pipe->want_detail_mask)
-      err = dt_dev_write_scharr_mask_cl(piece, dev_out, roi_in, FALSE);
+      err = dt_dev_write_scharr_mask_cl(piece, dev_out, roi_out, FALSE);
   }
 
   return err;
