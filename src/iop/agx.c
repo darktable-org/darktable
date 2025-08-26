@@ -1033,7 +1033,8 @@ static primaries_params_t _get_primaries_params(const dt_iop_agx_params_t *p)
   return primaries_params;
 }
 
-static void _agx_tone_mapping(dt_aligned_pixel_t rgb_in_out, const tone_mapping_params_t *params,
+static void _agx_tone_mapping(dt_aligned_pixel_t rgb_in_out,
+                              const tone_mapping_params_t *params,
                               const dt_colormatrix_t rendering_to_xyz_transposed)
 {
   // record current chromaticity angle
