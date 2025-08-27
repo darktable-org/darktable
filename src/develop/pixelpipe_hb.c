@@ -3020,7 +3020,7 @@ gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
 
   float zx = (x + 0.5f * width) / scale, zy = (y + 0.5f * height) / scale;
   dt_dev_zoom_pos_t pts = { zx, zy, zx + 1.f, zy, zx, zy + 1.f };
-  dt_dev_distort_backtransform_plus(dev, pipe, 0.0f, DT_DEV_TRANSFORM_DIR_GEOMETRY, pts, 3);
+  dt_dev_distort_backtransform_plus(dev, pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, pts, 3);
 
   // get a snapshot of mask list
   if(pipe->forms) g_list_free_full(pipe->forms, (void (*)(void *))dt_masks_free_form);

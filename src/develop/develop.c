@@ -2595,13 +2595,13 @@ static char *_transform_type(const dt_dev_transform_direction_t transf_direction
 {
   switch(transf_direction)
   {
-    case DT_DEV_TRANSFORM_DIR_ALL:        return "all included";
-    case DT_DEV_TRANSFORM_DIR_FORW_INCL:  return "forward inclusive";
-    case DT_DEV_TRANSFORM_DIR_FORW_EXCL:  return "forward exclusive";
-    case DT_DEV_TRANSFORM_DIR_BACK_INCL:  return "backward inclusive";
-    case DT_DEV_TRANSFORM_DIR_BACK_EXCL:  return "backward exclusive";
-    case DT_DEV_TRANSFORM_DIR_GEOMETRY:   return "all except nogeometry";
-    default:                              return "no transform";
+    case DT_DEV_TRANSFORM_DIR_ALL:          return "all included";
+    case DT_DEV_TRANSFORM_DIR_FORW_INCL:    return "forward inclusive";
+    case DT_DEV_TRANSFORM_DIR_FORW_EXCL:    return "forward exclusive";
+    case DT_DEV_TRANSFORM_DIR_BACK_INCL:    return "backward inclusive";
+    case DT_DEV_TRANSFORM_DIR_BACK_EXCL:    return "backward exclusive";
+    case DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY: return "all except geometry";
+    default:                                return "no transform";
   }
 }
 
@@ -2632,8 +2632,8 @@ static gboolean _dev_distort_transform_locked(dt_develop_t *dev,
        && transform
        && piece->data
        && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_GEOMETRY
-               && !(module->operation_tags() & IOP_TAG_NOGEOMETRY))
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY
+               && !(module->operation_tags() & IOP_TAG_GEOMETRY))
            || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
                && module->iop_order >= iop_order)
            || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
@@ -2684,7 +2684,7 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
   dt_pthread_mutex_lock(&dev->history_mutex);
 
   float pts[2] = { port->zoom_x, port->zoom_y };
-  _dev_distort_transform_locked(darktable.develop, port->pipe, FALSE, 0.0f, DT_DEV_TRANSFORM_DIR_GEOMETRY, pts, 1);
+  _dev_distort_transform_locked(darktable.develop, port->pipe, FALSE, 0.0f, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, pts, 1);
 
   const float old_pts0 = pts[0];
   const float old_pts1 = pts[1];
@@ -2830,7 +2830,7 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
     || (zoom == DT_ZOOM_MOVE && (x || y));
   if(has_moved)
   {
-    _dev_distort_transform_locked(dev, port->pipe, TRUE, 0.0f, DT_DEV_TRANSFORM_DIR_GEOMETRY, pts, 1);
+    _dev_distort_transform_locked(dev, port->pipe, TRUE, 0.0f, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, pts, 1);
     port->zoom_x = pts[0];
     port->zoom_y = pts[1];
   }
@@ -2915,7 +2915,7 @@ void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
   {
     float pts[2] = { port->zoom_x, port->zoom_y };
     dt_dev_distort_transform_plus(darktable.develop, port->pipe,
-                                  0.0f, DT_DEV_TRANSFORM_DIR_GEOMETRY, pts, 1);
+                                  0.0f, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, pts, 1);
     *x = pts[0] / port->pipe->processed_width - 0.5f;
     *y = pts[1] / port->pipe->processed_height - 0.5f;
   }
