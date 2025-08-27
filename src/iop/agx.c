@@ -188,7 +188,7 @@ typedef struct dt_iop_agx_gui_data_t
   GtkWidget *primaries_preset_apply_button;
 } dt_iop_agx_gui_data_t;
 
-typedef struct curve_and_look_params_t
+typedef struct tone_mapping_params_t
 {
   float min_ev;
   float max_ev;
@@ -233,6 +233,8 @@ typedef struct curve_and_look_params_t
 
 typedef struct primaries_params_t
 {
+  dt_iop_agx_base_primaries_t base_primaries;
+
   float inset[3];
   float rotation[3];
 
@@ -245,10 +247,7 @@ typedef struct primaries_params_t
 typedef struct dt_iop_agx_data_t
 {
   tone_mapping_params_t tone_mapping_params;
-  dt_colormatrix_t pipe_to_base_transposed;
-  dt_colormatrix_t base_to_rendering_transposed;
-  dt_colormatrix_t rendering_to_pipe_transposed;
-  dt_iop_order_iccprofile_info_t rendering_profile;
+  primaries_params_t primaries_params;
 } dt_iop_agx_data_t;
 
 // Primaries preset deduplication: hashtable key type, hash and equality functions
@@ -1013,6 +1012,8 @@ static primaries_params_t _get_primaries_params(const dt_iop_agx_params_t *p)
 {
   primaries_params_t primaries_params;
 
+  primaries_params.base_primaries = p->base_primaries;
+
   primaries_params.inset[0] = p->red_inset;
   primaries_params.inset[1] = p->green_inset;
   primaries_params.inset[2] = p->blue_inset;
@@ -1188,7 +1189,7 @@ static void _apply_auto_pivot_x(dt_iop_module_t *self, const dt_iop_order_iccpro
   --darktable.gui->reset;
 }
 
-static void _create_matrices(const dt_iop_agx_params_t *p,
+static void _create_matrices(const primaries_params_t *params,
                              const dt_iop_order_iccprofile_info_t *pipe_work_profile,
                              const dt_iop_order_iccprofile_info_t *base_profile,
                              // outputs
@@ -1197,8 +1198,6 @@ static void _create_matrices(const dt_iop_agx_params_t *p,
                              dt_colormatrix_t base_to_rendering_transposed,
                              dt_colormatrix_t rendering_to_pipe_transposed)
 {
-  const primaries_params_t params = _get_primaries_params(p);
-
   // Make adjusted primaries for generating the inset matrix
   //
   // References:
@@ -1227,7 +1226,7 @@ static void _create_matrices(const dt_iop_agx_params_t *p,
   // Rotated, scaled primaries are calculated based on the base profile.
   float inset_and_rotated_primaries[3][2];
   for(size_t i = 0; i < 3; i++)
-    dt_rotate_and_scale_primary(base_profile, 1.f - params.inset[i], params.rotation[i], i,
+    dt_rotate_and_scale_primary(base_profile, 1.f - params->inset[i], params->rotation[i], i,
                                 inset_and_rotated_primaries[i]);
 
   // The matrix to convert from the inset/rotated to XYZ. When applying to the RGB values that are actually
@@ -1249,8 +1248,8 @@ static void _create_matrices(const dt_iop_agx_params_t *p,
   float outset_and_unrotated_primaries[3][2];
   for(size_t i = 0; i < 3; i++)
   {
-    const float scaling = 1.f - params.master_outset_ratio * params.outset[i];
-    dt_rotate_and_scale_primary(base_profile, scaling, params.master_unrotation_ratio * params.unrotation[i], i,
+    const float scaling = 1.f - params->master_outset_ratio * params->outset[i];
+    dt_rotate_and_scale_primary(base_profile, scaling, params->master_unrotation_ratio * params->unrotation[i], i,
                                 outset_and_unrotated_primaries[i]);
   }
 
@@ -1289,11 +1288,36 @@ void process(dt_iop_module_t *self,
   {
     return;
   }
-
-  const dt_iop_agx_data_t *processing_params = piece->data;
+  const dt_iop_order_iccprofile_info_t *const pipe_work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const dt_iop_agx_data_t *d = piece->data;
   const float *const in = ivoid;
   float *const out = ovoid;
   const size_t n_pixels = (size_t)roi_in->width * roi_in->height;
+
+  // Get profiles and create matrices
+  const dt_iop_order_iccprofile_info_t *const base_profile =
+      _agx_get_base_profile(self->dev, pipe_work_profile, d->primaries_params.base_primaries);
+
+  if(!base_profile)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[agx commit_params] Failed to obtain a valid base profile. Module will not run correctly.");
+    return;
+  }
+
+  dt_colormatrix_t pipe_to_base_transposed;
+  dt_colormatrix_t base_to_rendering_transposed;
+  dt_colormatrix_t rendering_to_pipe_transposed;
+  dt_iop_order_iccprofile_info_t rendering_profile;
+
+  _create_matrices(&d->primaries_params, pipe_work_profile, base_profile,
+                   rendering_profile.matrix_in_transposed,
+                   pipe_to_base_transposed, base_to_rendering_transposed,
+                   rendering_to_pipe_transposed);
+
+  dt_colormatrix_transpose(rendering_profile.matrix_in,
+                           rendering_profile.matrix_in_transposed);
+  rendering_profile.nonlinearlut = FALSE; // no LUT for this linear transform
 
   DT_OMP_FOR()
   for(size_t k = 0; k < 4 * n_pixels; k += 4)
@@ -1303,19 +1327,19 @@ void process(dt_iop_module_t *self,
 
     // Convert from pipe working space to base space
     dt_aligned_pixel_t base_rgb = { 0.f };
-    dt_apply_transposed_color_matrix(pix_in, processing_params->pipe_to_base_transposed, base_rgb);
+    dt_apply_transposed_color_matrix(pix_in, pipe_to_base_transposed, base_rgb);
 
     _compress_into_gamut(base_rgb);
 
     dt_aligned_pixel_t rendering_rgb = { 0.f };
-    dt_apply_transposed_color_matrix(base_rgb, processing_params->base_to_rendering_transposed, rendering_rgb);
+    dt_apply_transposed_color_matrix(base_rgb, base_to_rendering_transposed, rendering_rgb);
 
     // Apply the tone mapping curve and look adjustments
-    _agx_tone_mapping(rendering_rgb, &processing_params->tone_mapping_params,
-                      processing_params->rendering_profile.matrix_in_transposed);
+    _agx_tone_mapping(rendering_rgb, &d->tone_mapping_params,
+                      rendering_profile.matrix_in_transposed);
 
     // Convert from internal rendering space back to pipe working space
-    dt_apply_transposed_color_matrix(rendering_rgb, processing_params->rendering_to_pipe_transposed, pix_out);
+    dt_apply_transposed_color_matrix(rendering_rgb, rendering_to_pipe_transposed, pix_out);
 
     // Copy over the alpha channel
     pix_out[3] = pix_in[3];
@@ -2322,7 +2346,7 @@ void init_presets(dt_iop_module_so_t *self)
   if(auto_apply_agx)
   {
     dt_gui_presets_update_format(BUILTIN_PRESET("blender-like|base"), self->op, self->version(),
-                                 FOR_RAW | FOR_MATRIX);
+                                 FOR_RAW | FOR_MATRIX | FOR_HDR);
     dt_gui_presets_update_autoapply(BUILTIN_PRESET("blender-like|base"), self->op, self->version(), TRUE);
   }
 
@@ -2400,25 +2424,5 @@ void commit_params(dt_iop_module_t *self,
 
   // Calculate curve parameters once
   processing_params->tone_mapping_params = _calculate_tone_mapping_params(p);
-
-  // Get profiles and create matrices
-  const dt_iop_order_iccprofile_info_t *const pipe_work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
-  const dt_iop_order_iccprofile_info_t *const base_profile =
-      _agx_get_base_profile(self->dev, pipe_work_profile, p->base_primaries);
-
-  if(!base_profile)
-  {
-    dt_print(DT_DEBUG_ALWAYS,
-             "[agx commit_params] Failed to obtain a valid base profile. Module will not run correctly.");
-    return;
-  }
-
-  _create_matrices(p, pipe_work_profile, base_profile,
-                   processing_params->rendering_profile.matrix_in_transposed,
-                   processing_params->pipe_to_base_transposed, processing_params->base_to_rendering_transposed,
-                   processing_params->rendering_to_pipe_transposed);
-
-  dt_colormatrix_transpose(processing_params->rendering_profile.matrix_in,
-                           processing_params->rendering_profile.matrix_in_transposed);
-  processing_params->rendering_profile.nonlinearlut = FALSE; // no LUT for this linear transform
+  processing_params->primaries_params = _get_primaries_params(p);
 }
