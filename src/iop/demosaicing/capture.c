@@ -112,11 +112,11 @@ static unsigned char *_cs_precalc_gauss_idx(dt_iop_module_t *self,
 }
 
 #define RAWEPS 0.005f
+#define lowerLimit 0.01f
+#define upperLimit 0.9f
 static float _calcRadiusBayer(const float *in,
                               const int width,
                               const int height,
-                              const float lowerLimit,
-                              const float upperLimit,
                               const uint32_t filters)
 {
   const unsigned int fc[2] = {FC(0, 0, filters), FC(1, 0, filters)};
@@ -182,8 +182,6 @@ static float _calcRadiusBayer(const float *in,
 static float _calcRadiusXtrans(const float *in,
                                const int width,
                                const int height,
-                               const float lowerLimit,
-                               const float upperLimit,
                                const uint8_t(*const xtrans)[6])
 {
   int startx, starty;
@@ -311,7 +309,67 @@ static float _calcRadiusXtrans(const float *in,
   }
   return sqrtf(1.0f / logf(maxRatio));
 }
+
+static float _calc_auto_radius(float *const in,
+                               const int width,
+                               const int height,
+                               const uint32_t filters,
+                               const uint8_t(*const xtrans)[6],
+                               const dt_iop_buffer_dsc_t *dsc)
+{
+  // calculating the radius should be done on sensor data so we need this extra step
+  const gboolean wbon = dsc->temperature.enabled;
+  const dt_aligned_pixel_t coeff = {wbon ? 1.0f / MAX(1.0f, dsc->temperature.coeffs[0]) : 1.0f,
+                                    wbon ? 1.0f / MAX(1.0f, dsc->temperature.coeffs[1]) : 1.0f,
+                                    wbon ? 1.0f / MAX(1.0f, dsc->temperature.coeffs[2]) : 1.0f, 1.0f };
+
+  if(width < 500 || height < 500)
+  {
+    dt_print(DT_DEBUG_PIPE, "capture sharpen calculating radius failed due to small input area %dx%d", width, height);
+    return 0.1f;
+  }
+
+  float *input = wbon ? dt_iop_image_alloc(width, height, 1) : in;
+  if(wbon)
+  {
+    if(filters == 9u)
+    {
+      DT_OMP_FOR(collapse(2))
+      for(int row = 0; row < height; row++)
+      {
+        for(int col = 0; col < width; col++)
+        {
+          const size_t k = (size_t)row * width + col;
+          input[k] = in[k] * coeff[FCNxtrans(row, col, xtrans)];
+        }
+      }
+    }
+    else
+    {
+      DT_OMP_FOR(collapse(2))
+      for(int row = 0; row < height; row++)
+      {
+        for(int col = 0; col < width; col++)
+        {
+          const size_t k = (size_t)row * width + col;
+          input[k] = in[k] * coeff[FC(row, col, filters)];
+        }
+      }
+    }
+  }
+
+  const float radius = filters != 9u
+              ? _calcRadiusBayer(input, width, height, filters)
+              : _calcRadiusXtrans(input, width, height, xtrans);
+
+  if(in != input) dt_free_align(input);
+  return radius;
+}
+
+
 #undef RAWEPS
+#undef lowerLimit
+#undef upperLimit
 
 DT_OMP_DECLARE_SIMD(aligned(in, out, blend, kernels:64))
 static inline void _blur_mul(const float *const in,
@@ -570,10 +628,8 @@ void _capture_sharpen(dt_iop_module_t *self,
   float radius = old_radius;
   if(autoradius || radius < 0.01f)
   {
-    radius = filters != 9u
-              ? _calcRadiusBayer(in, width, height, 0.01f, 1.0f, filters)
-              : _calcRadiusXtrans(in, width, height, 0.01f, 1.0f, xtrans);
-    const gboolean valid = radius > 0.1f && radius < 1.0f;
+    radius = _calc_auto_radius(in, width, height, filters, xtrans, dsc);
+    const gboolean valid = radius > 0.1f && radius < 1.5f;
 
     dt_print_pipe(DT_DEBUG_PIPE, filters != 9u ? "bayer autoradius" : "xtrans autoradius",
       pipe, self, DT_DEVICE_CPU, NULL, NULL, "autoradius=%.2f", radius);
@@ -734,10 +790,8 @@ int _capture_sharpen_cl(dt_iop_module_t *self,
     {
       if(dt_opencl_copy_device_to_host(devid, in, dev_in, width, height, sizeof(float)) == CL_SUCCESS)
       {
-        radius = filters != 9u
-                ? _calcRadiusBayer(in, width, height, 0.01f, 1.0f, filters)
-                : _calcRadiusXtrans(in, width, height, 0.01f, 1.0f, xtrans);
-        const gboolean valid = radius > 0.1f && radius < 1.0f;
+        radius = _calc_auto_radius(in, width, height, filters, xtrans, dsc);
+        const gboolean valid = radius > 0.1f && radius < 1.5f;
         dt_print_pipe(DT_DEBUG_PIPE, filters != 9u ? "bayer autoradius" : "xtrans autoradius",
             pipe, self, devid, NULL, NULL, "autoradius=%.2f", radius);
 
