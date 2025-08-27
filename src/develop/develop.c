@@ -2633,7 +2633,7 @@ static gboolean _dev_distort_transform_locked(dt_develop_t *dev,
        && piece->data
        && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
            || (transf_direction == DT_DEV_TRANSFORM_DIR_GEOMETRY
-               && !(module->operation_tags() & IOP_TAG_NOGEOMETRY))
+               && !(module->operation_tags() & IOP_TAG_GEOMETRY))
            || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
                && module->iop_order >= iop_order)
            || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL

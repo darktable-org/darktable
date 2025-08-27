@@ -310,7 +310,7 @@ int flags()
 
 int operation_tags()
 {
-   return IOP_TAG_DISTORT | IOP_TAG_NOGEOMETRY;
+   return IOP_TAG_DISTORT | IOP_TAG_GEOMETRY;
 }
 
 int operation_tags_filter()
