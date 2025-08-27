@@ -1714,7 +1714,7 @@ void dt_view_paint_surface(cairo_t *cr,
   float pts[] = { buf_zoom_x, buf_zoom_y,
                   dev->preview_pipe->backbuf_zoom_x, dev->preview_pipe->backbuf_zoom_y,
                   port->zoom_x, port->zoom_y };
-  dt_dev_distort_transform_plus(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 3);
+  dt_dev_distort_transform_plus(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_GEOMETRY, pts, 3);
 
   const float offset_x  = pts[0] / processed_width  - 0.5f;
   const float offset_y  = pts[1] / processed_height - 0.5f;
