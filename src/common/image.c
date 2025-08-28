@@ -143,22 +143,22 @@ gboolean dt_image_is_ldr(const dt_image_t *img)
 {
   const char *c = img->filename + strlen(img->filename);
   while(*c != '.' && c > img->filename) c--;
-  if((img->flags & DT_IMAGE_LDR) || !strcasecmp(c, ".jpg") || !strcasecmp(c, ".webp")
-     || !strcasecmp(c, ".ppm"))
-    return TRUE;
-  else
-    return FALSE;
+
+  return ((img->flags & DT_IMAGE_LDR)
+            || !strcasecmp(c, ".jpg")
+            || !strcasecmp(c, ".webp")
+            || !strcasecmp(c, ".ppm"));
 }
 
 gboolean dt_image_is_hdr(const dt_image_t *img)
 {
   const char *c = img->filename + strlen(img->filename);
   while(*c != '.' && c > img->filename) c--;
-  if((img->flags & DT_IMAGE_HDR) || !strcasecmp(c, ".exr") || !strcasecmp(c, ".hdr")
-     || !strcasecmp(c, ".pfm"))
-    return TRUE;
-  else
-    return FALSE;
+
+  return ((img->flags & DT_IMAGE_HDR)
+            || !strcasecmp(c, ".exr")
+            || !strcasecmp(c, ".hdr")
+            || !strcasecmp(c, ".pfm"));
 }
 
 // NULL terminated list of supported non-RAW extensions
@@ -196,7 +196,7 @@ static void _image_set_monochrome_flag(const dt_imgid_t imgid,
     const int mask_bw = dt_image_monochrome_flags(img);
     dt_image_cache_read_release(img);
 
-    if((!monochrome) && (mask_bw & DT_IMAGE_MONOCHROME_PREVIEW))
+    if(!monochrome && (mask_bw & DT_IMAGE_MONOCHROME_PREVIEW))
     {
       // wanting it to be color found preview
       img = dt_image_cache_get(imgid, 'w');
@@ -245,13 +245,13 @@ static void _pop_undo_execute(const dt_imgid_t imgid,
 
 gboolean dt_image_is_matrix_correction_supported(const dt_image_t *img)
 {
-  return ((img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW ))
-          && !(img->flags & DT_IMAGE_MONOCHROME)) ? TRUE : FALSE;
+  return (img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW ))
+          && !(img->flags & DT_IMAGE_MONOCHROME);
 }
 
 gboolean dt_image_is_rawprepare_supported(const dt_image_t *img)
 {
-  return (img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW)) ? TRUE : FALSE;
+  return img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW) ? TRUE : FALSE;
 }
 
 gboolean dt_image_use_monochrome_workflow(const dt_image_t *img)
@@ -1538,18 +1538,18 @@ void dt_image_remove(const dt_imgid_t imgid)
 
 gboolean dt_image_altered(const dt_imgid_t imgid)
 {
-  dt_history_hash_t status = dt_history_hash_get_status(imgid);
+  const dt_history_hash_t status = dt_history_hash_get_status(imgid);
   return status & DT_HISTORY_HASH_CURRENT;
 }
 
 gboolean dt_image_basic(const dt_imgid_t imgid)
 {
-  dt_history_hash_t status = dt_history_hash_get_status(imgid);
+  const dt_history_hash_t status = dt_history_hash_get_status(imgid);
   return status & DT_HISTORY_HASH_BASIC;
 }
 
 #ifndef _WIN32
-static int _valid_glob_match(const char *const name, size_t offset)
+static gboolean _valid_glob_match(const char *const name, size_t offset)
 {
   // verify that the name matched by glob() is a valid sidecar name by
   // checking whether we have an underscore followed by a sequence of
@@ -2768,9 +2768,7 @@ gboolean dt_image_local_copy_reset(const dt_imgid_t imgid)
   dt_image_t *imgr = dt_image_cache_get(imgid, 'r');
 
   const gboolean local_copy_exists =
-    imgr && ((imgr->flags & DT_IMAGE_LOCAL_COPY) == DT_IMAGE_LOCAL_COPY)
-    ? TRUE
-    : FALSE;
+    imgr && ((imgr->flags & DT_IMAGE_LOCAL_COPY) == DT_IMAGE_LOCAL_COPY);
 
   dt_image_cache_read_release(imgr);
 
@@ -3146,7 +3144,7 @@ char *dt_image_get_text_path(const dt_imgid_t imgid)
   return dt_image_get_text_path_from_path(image_path);
 }
 
-float dt_image_get_exposure_bias(const struct dt_image_t *image_storage)
+float dt_image_get_exposure_bias(const dt_image_t *image_storage)
 {
   // just check that pointers exist and are initialized
   if((image_storage) && (image_storage->exif_exposure_bias))
@@ -3163,7 +3161,7 @@ float dt_image_get_exposure_bias(const struct dt_image_t *image_storage)
     return 0.0f;
 }
 
-char *dt_image_camera_missing_sample_message(const struct dt_image_t *img,
+char *dt_image_camera_missing_sample_message(const dt_image_t *img,
                                              const gboolean logmsg)
 {
   const char *T1 = _("<b>WARNING</b>: camera is missing samples!");
@@ -3173,9 +3171,9 @@ char *dt_image_camera_missing_sample_message(const struct dt_image_t *img,
                              img->camera_maker, img->camera_model);
   const char *T4 = _("or the <b>RAW won't be readable</b> in next version.");
 
-  char *NL     = logmsg ? "\n\n" : "\n";
-  char *PREFIX = logmsg ? "<big>" : "";
-  char *SUFFIX = logmsg ? "</big>" : "";
+  const char *NL     = logmsg ? "\n\n" : "\n";
+  const char *PREFIX = logmsg ? "<big>" : "";
+  const char *SUFFIX = logmsg ? "</big>" : "";
 
   char *msg = g_strconcat(PREFIX, T1, NL, T2, NL, T3, NL, T4, SUFFIX, NULL);
 
@@ -3191,7 +3189,7 @@ char *dt_image_camera_missing_sample_message(const struct dt_image_t *img,
   return msg;
 }
 
-void dt_image_check_camera_missing_sample(const struct dt_image_t *img)
+void dt_image_check_camera_missing_sample(const dt_image_t *img)
 {
   if(img->camera_missing_sample)
   {
