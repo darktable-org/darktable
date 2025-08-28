@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2627,6 +2627,8 @@ static void _export_button_clicked(GtkButton *button, dt_lib_module_t *self)
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
         _("select file to export to"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SAVE,
         _("_export"), _("_cancel"));
+
+  gtk_file_chooser_set_create_folders(GTK_FILE_CHOOSER(filechooser), TRUE);
 
   gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(filechooser), TRUE);
   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), last_dirname);
