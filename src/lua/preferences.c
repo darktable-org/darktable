@@ -829,11 +829,10 @@ GtkGrid* init_tab_lua(GtkWidget *dialog, GtkWidget *stack)
   gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_row_homogeneous(GTK_GRID(grid), TRUE);
   gtk_widget_set_valign(grid, GTK_ALIGN_START);
-  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   viewport = gtk_viewport_new(NULL, NULL);
   gtk_viewport_set_shadow_type(GTK_VIEWPORT(viewport), GTK_SHADOW_NONE); // doesn't seem to work from gtkrc
-  gtk_container_add(GTK_CONTAINER(scroll), viewport);
+  GtkWidget *scroll = dt_gui_scroll_wrap(viewport);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   gtk_container_add(GTK_CONTAINER(viewport), grid);
   gtk_stack_add_titled(GTK_STACK(stack), scroll, _("Lua options"), _("Lua options"));
 

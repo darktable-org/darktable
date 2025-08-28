@@ -558,26 +558,13 @@ static void _gui_styles_dialog_run(gboolean edit,
   dt_osx_disallow_fullscreen(GTK_WIDGET(dialog));
 #endif
 
-  GtkContainer *content_area =
-    GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
-
-  // label box
-  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-
-  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
+  // box in scrollwindow containing the two possible trees
+  GtkBox *sbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  GtkWidget *scroll = dt_gui_scroll_wrap(GTK_WIDGET(sbox));
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
                                  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scroll),
                                              DT_PIXEL_APPLY_DPI(450));
-//  only available in 3.22, and not making the expected job anyway
-//  gtk_scrolled_window_set_max_content_height(GTK_SCROLLED_WINDOW(scroll), DT_PIXEL_APPLY_DPI(700));
-//  gtk_scrolled_window_set_propagate_natural_height(GTK_SCROLLED_WINDOW(scroll), TRUE);
-
-  // box in scrollwindow containing the two possible trees
-  GtkBox *sbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-
-  gtk_box_pack_start(GTK_BOX(content_area), GTK_WIDGET(box), TRUE, TRUE, 0);
-  gtk_container_add(GTK_CONTAINER(scroll), GTK_WIDGET(sbox));
 
   sd->name = gtk_entry_new();
   gtk_entry_set_placeholder_text(GTK_ENTRY(sd->name), _("name"));
@@ -607,9 +594,7 @@ static void _gui_styles_dialog_run(gboolean edit,
     }
   }
 
-  gtk_box_pack_start(box, sd->name, FALSE, TRUE, 0);
-  gtk_box_pack_start(box, sd->description, FALSE, TRUE, 0);
-  gtk_box_pack_start(box, GTK_WIDGET(scroll), TRUE, TRUE, 0);
+  dt_gui_dialog_add(dialog, sd->name, sd->description, scroll);
 
   /* create the list of items */
   sd->items = GTK_TREE_VIEW(gtk_tree_view_new());
@@ -863,13 +848,13 @@ static void _gui_styles_dialog_run(gboolean edit,
   }
 
   if(has_item)
-    gtk_box_pack_start(sbox, GTK_WIDGET(sd->items), TRUE, TRUE, 0);
+    dt_gui_box_add(sbox, sd->items);
 
   if(has_new_item)
-    gtk_box_pack_start(sbox, GTK_WIDGET(sd->items_new), TRUE, TRUE, 0);
+    dt_gui_box_add(sbox, sd->items_new);
 
   if(edit)
-    gtk_box_pack_start(GTK_BOX(content_area), GTK_WIDGET(sd->duplicate), FALSE, TRUE, 0);
+    dt_gui_dialog_add(dialog, sd->duplicate);
 
   g_object_unref(liststore);
   g_object_unref(liststore_new);
