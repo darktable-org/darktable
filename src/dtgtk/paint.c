@@ -33,8 +33,20 @@
                   cairo_get_matrix(cr, &matrix);                                             \
                   cairo_set_line_width(cr, (line_scaling * 1.618) / hypot(matrix.xx, matrix.yy)); }
 
-#define FINISH { cairo_identity_matrix(cr); \
-                 cairo_restore(cr); }
+#define FINISH cairo_restore(cr);
+
+static inline void _rotate(cairo_t *cr, gint flags)
+{
+  if(flags & (CPF_DIRECTION_LEFT | CPF_DIRECTION_UP | CPF_DIRECTION_DOWN))
+  {
+    double L = (flags & CPF_DIRECTION_LEFT) ? 1.0 : 0.0;
+    double U = (flags & CPF_DIRECTION_UP)   ? 1.0 : 0.0;
+    double D = (flags & CPF_DIRECTION_DOWN) ? 1.0 : 0.0;
+    cairo_matrix_t matrix;
+    cairo_matrix_init(&matrix, -L, D - U, U - D, L, L + D, U);
+    cairo_transform(cr, &matrix);
+  }
+}
 
 static void _rounded_rectangle(cairo_t *cr)  // create rounded rectangle to use in other icons
 {
@@ -84,21 +96,7 @@ void dtgtk_cairo_paint_presets(cairo_t *cr, const gint x, const gint y, const gi
 
 static void _draw_triangle(cairo_t *cr, const gint flags)  // create triangle for both following icons
 {
-  /* initialize rotation and flip matrices */
-  cairo_matrix_t hflip_matrix;
-  cairo_matrix_init(&hflip_matrix, -1, 0, 0, 1, 1, 0);
-
-  const double C = flags & CPF_DIRECTION_DOWN ? cos(M_PI_2) : cos(-M_PI_2);
-  const double S = flags & CPF_DIRECTION_DOWN ? sin(M_PI_2) : sin(-M_PI_2);
-  cairo_matrix_t rotation_matrix;
-  cairo_matrix_init(&rotation_matrix, C, S, -S, C, 0.5 - C * 0.5 + S * 0.5, 0.5 - S * 0.5 - C * 0.5);
-
-  /* scale and transform*/
-  if(flags & CPF_DIRECTION_UP || flags & CPF_DIRECTION_DOWN)
-    cairo_transform(cr, &rotation_matrix);
-  else if(flags & CPF_DIRECTION_LEFT) // Flip x transformation
-    cairo_transform(cr, &hflip_matrix);
-
+  _rotate(cr, flags);
   cairo_move_to(cr, 0.05, 0.5);
   cairo_line_to(cr, 0.05, 0.1);
   cairo_line_to(cr, 0.45, 0.5);
@@ -132,19 +130,7 @@ void dtgtk_cairo_paint_arrow(cairo_t *cr, const gint x, const gint y, const gint
 {
   PREAMBLE(1, 1, 0, 0)
 
-  cairo_matrix_t hflip_matrix;
-  cairo_matrix_init(&hflip_matrix, -1, 0, 0, 1, 1, 0);
-
-  const double C = flags & CPF_DIRECTION_UP ? cos(M_PI_2) : cos(-M_PI_2);
-  const double S = flags & CPF_DIRECTION_UP ? sin(M_PI_2) : sin(-M_PI_2);
-  cairo_matrix_t rotation_matrix;
-  cairo_matrix_init(&rotation_matrix, C, S, -S, C, 0.5 - C * 0.5 + S * 0.5, 0.5 - S * 0.5 - C * 0.5);
-
-  if(flags & CPF_DIRECTION_UP || flags & CPF_DIRECTION_DOWN)
-    cairo_transform(cr, &rotation_matrix);
-  else if(flags & CPF_DIRECTION_RIGHT) // Flip x transformation
-    cairo_transform(cr, &hflip_matrix);
-
+  _rotate(cr, flags);
   cairo_move_to(cr, 0.2, 0.1);
   cairo_line_to(cr, 0.9, 0.5);
   cairo_line_to(cr, 0.2, 0.9);
@@ -156,22 +142,7 @@ void dtgtk_cairo_paint_arrow(cairo_t *cr, const gint x, const gint y, const gint
 void dtgtk_cairo_paint_solid_arrow(cairo_t *cr, const gint x, const int y, const gint w, const gint h, const gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
-
-  /* initialize rotation and flip matrices */
-  cairo_matrix_t hflip_matrix;
-  cairo_matrix_init(&hflip_matrix, -1, 0, 0, 1, 1, 0);
-
-  const double C = flags & CPF_DIRECTION_DOWN ? cos(M_PI_2) : cos(-M_PI_2);
-  const double S = flags & CPF_DIRECTION_DOWN ? sin(M_PI_2) : sin(-M_PI_2);
-  cairo_matrix_t rotation_matrix;
-  cairo_matrix_init(&rotation_matrix, C, S, -S, C, 0.5 - C * 0.5 + S * 0.5, 0.5 - S * 0.5 - C * 0.5);
-
-  /* scale and transform*/
-  if(flags & CPF_DIRECTION_UP || flags & CPF_DIRECTION_DOWN)
-    cairo_transform(cr, &rotation_matrix);
-  else if(flags & CPF_DIRECTION_LEFT) // Flip x transformation
-    cairo_transform(cr, &hflip_matrix);
-
+  _rotate(cr, flags);
   cairo_move_to(cr, 0.2, 0.1);
   cairo_line_to(cr, 0.9, 0.5);
   cairo_line_to(cr, 0.2, 0.9);
@@ -188,14 +159,7 @@ void dtgtk_cairo_paint_line_arrow(cairo_t *cr, const gint x, const int y, const 
   cairo_line_to(cr, 0.9, 0.5);
   cairo_stroke(cr);
 
-  /* initialize flip matrices */
-  cairo_matrix_t hflip_matrix;
-  cairo_matrix_init(&hflip_matrix, -1, 0, 0, 1, 1, 0);
-
-  /* scale and transform*/
-  if(flags & CPF_DIRECTION_LEFT) // Flip x transformation
-    cairo_transform(cr, &hflip_matrix);
-
+  _rotate(cr, flags);
   cairo_move_to(cr, 0.4, 0.1);
   cairo_line_to(cr, 0.0, 0.5);
   cairo_line_to(cr, 0.4, 0.9);
@@ -246,12 +210,7 @@ void dtgtk_cairo_paint_flip(cairo_t *cr, const gint x, const gint y, const gint 
 {
   PREAMBLE(1, 1, 0, 0)
 
-  const double C = cos(-1.570796327), S = sin(-1.570796327);
-  cairo_matrix_t rotation_matrix;
-  cairo_matrix_init(&rotation_matrix, C, S, -S, C, 0.5 - C * 0.5 + S * 0.5, 0.5 - S * 0.5 - C * 0.5);
-
-  if((flags & CPF_DIRECTION_UP)) // Rotate -90 degrees
-    cairo_transform(cr, &rotation_matrix);
+  _rotate(cr, flags);
 
   cairo_move_to(cr, 0.05, 0.4);
   cairo_line_to(cr, 0.05, 0);
