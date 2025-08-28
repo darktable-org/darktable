@@ -305,7 +305,7 @@ gboolean distort_transform(dt_iop_module_t *self,
   const float crop_left = piece->buf_in.width * d->cx;
 
   // nothing to be done if parameters are set to neutral values (no top/left border)
-  if(crop_top == 0 && crop_left == 0) return TRUE;
+  if(crop_top <= 0.0f && crop_left <= 0.0f) return TRUE;
 
   float *const pts = DT_IS_ALIGNED(points);
 
@@ -330,7 +330,7 @@ gboolean distort_backtransform(dt_iop_module_t *self,
   const float crop_left = piece->buf_in.width * d->cx;
 
   // nothing to be done if parameters are set to neutral values (no top/left border)
-  if(crop_top == 0 && crop_left == 0) return TRUE;
+  if(crop_top <= 0.0f && crop_left <= 0.0f) return TRUE;
 
   float *const pts = DT_IS_ALIGNED(points);
 
@@ -405,27 +405,30 @@ void modify_roi_out(dt_iop_module_t *self,
   roi_out->x = px;
   roi_out->y = py;
 
-  int align_w = roi_out->width >= roi_out->height ? d->ratio_d : d->ratio_n;
-  int align_h = roi_out->width >= roi_out->height ? d->ratio_n : d->ratio_d;
-  const gboolean aligning = d->aligned && _reduce_aligners(&align_w, &align_h);
-  const int dw = aligning ? (roi_out->width  % align_w) : 0;
-  const int dh = aligning ? (roi_out->height % align_h) : 0;
-  roi_out->x += dw / 2;
-  roi_out->y += dh / 2;
-  roi_out->width -= dw;
-  roi_out->height -= dh;
-  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE,
-    "crop aspects", piece->pipe, self, DT_DEVICE_NONE, roi_in, NULL,
-    " %s%s%sAspect=%.3f. odx: %.1f ody: %.1f --> width: %.1f height: %.1f aligners=%d %d corr=%d %d",
-    d->aspect < 0.0f ? "toggled " : "",
-    keep_aspect ? "fixed " : "",
-    landscape ? "landscape " : "portrait ",
-    aspect, odx, ody, width, height,
-    align_w, align_h, dw, dh);
-
+  // For exporting pipes we want ratios to be precise to the pixel
+  if(piece->pipe->type & (DT_DEV_PIXELPIPE_EXPORT | DT_DEV_PIXELPIPE_THUMBNAIL))
+  {
+    int align_w = roi_out->width >= roi_out->height ? d->ratio_d : d->ratio_n;
+    int align_h = roi_out->width >= roi_out->height ? d->ratio_n : d->ratio_d;
+    const gboolean aligning = d->aligned && _reduce_aligners(&align_w, &align_h);
+    const int dw = aligning ? (roi_out->width  % align_w) : 0;
+    const int dh = aligning ? (roi_out->height % align_h) : 0;
+    roi_out->x += dw / 2;
+    roi_out->y += dh / 2;
+    roi_out->width -= dw;
+    roi_out->height -= dh;
+    dt_print_pipe(DT_DEBUG_PIPE,
+      "crop aspects", piece->pipe, self, DT_DEVICE_NONE, roi_in, NULL,
+      "%s%s%s Aspect=%.3f orig=%.0fx%.0f --> %.0fx%.0f, align=%.2d/%.2d corr=%.2d/%.2d",
+      d->aspect < 0.0f ? "toggled " : "",
+      keep_aspect ? "fixed " : "",
+      landscape ? "landscape" : "portrait",
+      aspect, odx, ody, width, height,
+      align_w, align_h, dw, dh);
+  }
   // sanity check.
-  if(roi_out->width < 5) roi_out->width = 5;
-  if(roi_out->height < 5) roi_out->height = 5;
+  roi_out->width = MAX(4, roi_out->width);
+  roi_out->height = MAX(4, roi_out->height);
 }
 
 void modify_roi_in(dt_iop_module_t *self,
@@ -442,8 +445,8 @@ void modify_roi_in(dt_iop_module_t *self,
   roi_in->x += iw * d->cx;
   roi_in->y += ih * d->cy;
 
-  roi_in->x = CLAMP(roi_in->x, 0, (int)floorf(iw));
-  roi_in->y = CLAMP(roi_in->y, 0, (int)floorf(ih));
+  roi_in->x = CLAMP(roi_in->x, 0, (int)floorf(iw) -1);
+  roi_in->y = CLAMP(roi_in->y, 0, (int)floorf(ih) -1);
 }
 
 void process(dt_iop_module_t *self,
