@@ -15635,7 +15635,7 @@ msgstr "%d/%d ignorée (existe déjà)"
 msgid "%d/%d exported to Piwigo webalbum"
 msgid_plural "%d/%d exported to Piwigo webalbum"
 msgstr[0] "%d/%d est exportée vers Piwigo"
-msgstr[1] "%d/%d sont exportées vers piwigo"
+msgstr[1] "%d/%d sont exportées vers Piwigo"
 
 #: ../src/iop/ashift.c:113
 msgid "rotate and perspective"
