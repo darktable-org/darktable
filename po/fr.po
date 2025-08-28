@@ -6004,19 +6004,19 @@ msgstr "Heure de capture"
 
 #: ../src/common/collection.c:606 ../src/libs/filtering.c:53
 msgid "import time"
-msgstr "Date d’importation"
+msgstr "Heure d’importation"
 
 #: ../src/common/collection.c:608 ../src/libs/filtering.c:54
 msgid "modification time"
-msgstr "Date de modification"
+msgstr "Heure de modification"
 
 #: ../src/common/collection.c:610 ../src/libs/filtering.c:55
 msgid "export time"
-msgstr "Date d’export"
+msgstr "Heure d’export"
 
 #: ../src/common/collection.c:612 ../src/libs/filtering.c:56
 msgid "print time"
-msgstr "Date d’impression"
+msgstr "Heure d’impression"
 
 #: ../src/common/collection.c:614 ../src/libs/collect.c:3772
 #: ../src/libs/filtering.c:2215 ../src/libs/filtering.c:2235
