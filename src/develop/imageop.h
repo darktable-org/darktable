@@ -73,6 +73,7 @@ typedef enum dt_iop_tags_t
   IOP_TAG_DISTORT = 1 << 0,
   IOP_TAG_DECORATION = 1 << 1,
   IOP_TAG_CROPPING = 1 << 2,
+  IOP_TAG_GEOMETRY = 1 << 3,
 
   // might be some other filters togglable by user?
   // IOP_TAG_SLOW       = 1<<3,
