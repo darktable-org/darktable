@@ -260,6 +260,7 @@ src/iop/defringe.c
 src/iop/demosaic.c
 src/iop/demosaicing/amaze.cc
 src/iop/demosaicing/basics.c
+src/iop/demosaicing/capture.c
 src/iop/demosaicing/passthrough.c
 src/iop/demosaicing/ppg.c
 src/iop/demosaicing/vng.c

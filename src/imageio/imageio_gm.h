@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2020 darktable developers.
+    Copyright (C) 2012-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,19 +21,12 @@
 #include "common/image.h"
 #include "common/mipmap_cache.h"
 
-#ifdef HAVE_GRAPHICSMAGICK
-dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf);
-#else
-inline dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename,
-                                              dt_mipmap_buffer_t *buf)
-{
-  return DT_IMAGEIO_FILE_NOT_FOUND;
-}
-#endif
+dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img,
+                                       const char *filename,
+                                       dt_mipmap_buffer_t *buf);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

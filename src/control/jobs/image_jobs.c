@@ -70,11 +70,9 @@ typedef struct dt_image_import_t
 
 static int32_t _image_import_job_run(dt_job_t *job)
 {
-  char message[512] = { 0 };
   dt_image_import_t *params = dt_control_job_get_params(job);
 
-  snprintf(message, sizeof(message), _("importing image %s"), params->filename);
-  dt_control_job_set_progress_message(job, message);
+  dt_control_job_set_progress_message(job, _("importing image %s"), params->filename);
 
   const dt_imgid_t id = dt_image_import(params->film_id, params->filename, TRUE, TRUE);
   if(dt_is_valid_imgid(id))

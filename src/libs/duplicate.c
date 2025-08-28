@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2015-2024 darktable developers.
+    Copyright (C) 2015-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -152,7 +152,7 @@ static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
   }
 
   // and we remove the image
-  dt_control_delete_image(imgid);
+  dt_control_delete_duplicate(imgid);
   dt_collection_update_query(darktable.collection,
                              DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                              g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
@@ -327,6 +327,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     GtkWidget *lb = gtk_label_new (g_strdup(chl));
     gtk_widget_set_hexpand(lb, TRUE);
     bt = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
+    gtk_widget_set_tooltip_text(bt, _("delete this duplicate"));
     //    gtk_widget_set_halign(bt, GTK_ALIGN_END);
     g_object_set_data(G_OBJECT(bt), "imgid", GINT_TO_POINTER(imgid));
     g_signal_connect(G_OBJECT(bt), "clicked", G_CALLBACK(_lib_duplicate_delete), self);

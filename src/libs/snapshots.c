@@ -79,6 +79,7 @@ typedef struct dt_lib_snapshots_t
   gboolean dragging, vertical, inverted, panning, sidebyside;
   double vp_width, vp_height, vp_xpointer, vp_ypointer, vp_xrotate, vp_yrotate;
   gboolean on_going;
+  gboolean rotsym_lightup;
 
   GtkWidget *take_button, *sidebyside_button;
 } dt_lib_snapshots_t;
@@ -176,6 +177,35 @@ static gboolean _snap_expose_again(gpointer user_data)
   d->snap_requested = TRUE;
   dt_control_queue_redraw_center();
   return FALSE;
+}
+
+/* check if (x,y) closer to rotation sym than area_size. Set the size of area s
+   and the center of the sym (rx, ry). Return TRUE if (x,y) in sym area. */
+static inline gboolean _get_rotation_area(dt_lib_module_t *self,
+                                          const int32_t x,
+                                          const int32_t y,
+                                          double *s,
+                                          gint *rx,
+                                          gint *ry)
+{
+  dt_lib_snapshots_t *d = self->data;
+
+  const double _s = fmin(24, d->vp_width * HANDLE_SIZE);
+  const gint _rx = (d->vertical
+                    ? d->vp_width * d->vp_xpointer
+                    : d->vp_width * 0.5) - (_s * 0.5);
+  const gint _ry = (d->vertical
+                    ? d->vp_height * 0.5
+                    : d->vp_height * d->vp_ypointer) - (_s * 0.5);
+
+  if(s)  *s = _s;
+  if(rx) *rx = _rx;
+  if(ry) *ry = _ry;
+
+  const int area_size = 40;
+
+  // rotation symbol is light-up or light-off when moving close.
+  return (abs(x - _rx) < area_size) && (abs(y - _ry) < area_size);
 }
 
 /* expose snapshot over center viewport */
@@ -336,15 +366,13 @@ void gui_post_expose(dt_lib_module_t *self,
     /* if mouse over control lets draw center rotate control, hide if split is dragged */
     if(!d->dragging && !d->sidebyside)
     {
-      const double s = fmin(24, width * HANDLE_SIZE);
-      const gint rx = (d->vertical ? width * d->vp_xpointer : width * 0.5) - (s * 0.5);
-      const gint ry = (d->vertical ? height * 0.5 : height * d->vp_ypointer) - (s * 0.5);
+      double s = 0.0;
+      gint rx = 0;
+      gint ry = 0;
 
-      const gboolean display_rotation =
-        (abs(pointerx - rx) < 40)
-        && (abs(pointery - ry) < 40);
+      d->rotsym_lightup = _get_rotation_area(self, pointerx, pointery, &s, &rx, &ry);
 
-      dt_draw_set_color_overlay(cri, TRUE, display_rotation ? 1.0 : 0.3);
+      dt_draw_set_color_overlay(cri, TRUE, d->rotsym_lightup ? 1.0 : 0.3);
 
       cairo_set_line_width(cri, 0.5);
       dtgtk_cairo_paint_refresh(cri, rx, ry, s, s, 0, NULL);
@@ -470,7 +498,14 @@ int mouse_moved(dt_lib_module_t *self,
       d->vp_xpointer = xp;
       d->vp_ypointer = yp;
     }
-    dt_control_queue_redraw_center();
+
+    // Here to ensure the rotation symbol is light-up or light-off
+    // when moving close.
+    const gboolean display_rotation = _get_rotation_area(self, x, y, NULL, NULL, NULL);
+
+    if(d->dragging || display_rotation != d->rotsym_lightup)
+      dt_control_queue_redraw_center();
+
     return 1;
   }
 
@@ -561,7 +596,7 @@ static void _init_snapshot_entry(dt_lib_module_t *self,
   gtk_widget_set_halign(s->name, GTK_ALIGN_START);
 
   s->entry = gtk_entry_new();
-  gtk_widget_set_halign(s->entry, GTK_ALIGN_START);
+  gtk_widget_set_halign(s->entry, GTK_ALIGN_FILL);
   g_signal_connect(G_OBJECT(s->entry), "activate",
                    G_CALLBACK(_entry_activated_callback), self);
 
@@ -759,6 +794,7 @@ void gui_init(dt_lib_module_t *self)
   d->vp_yrotate = 0.0;
   d->vertical = TRUE;
   d->on_going = FALSE;
+  d->rotsym_lightup = FALSE;
   d->panning = FALSE;
   d->selected = -1;
   d->snap_requested = FALSE;
@@ -882,7 +918,9 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget,
       if(strlen(history_item->multi_name) > 0
          && history_item->multi_name[0] != ' ')
       {
-        s->label = g_strdup(history_item->multi_name);
+        s->label = history_item->multi_name_hand_edited
+          ? g_strdup(history_item->multi_name)
+          : dt_util_localize_segmented_name(history_item->multi_name, TRUE);
       }
     }
     else

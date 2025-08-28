@@ -3232,15 +3232,25 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
 
     const int display_order[] = {2,3,0,1,4,5,6,7,8};
 
+    sqlite3_prepare_v2(
+        db->handle,
+        "INSERT INTO data.meta_data (key, tagname, name, internal, visible, private, display_order) "
+        "VALUES (?1, ?2, ?3, ?4, ?5, 0, ?6)",
+        -1, &stmt, NULL);
+
     for (int i = 0; i < sizeof(metadata_fields) / sizeof(metadata_fields[0]); i++)
     {
-      gchar *query = g_strdup_printf("INSERT INTO data.meta_data VALUES(%d, '%s', '%s', %d, %d, 0, %d)",
-                                     i, metadata_fields[i][0], metadata_fields[i][1], (i == 7) ? 1 : 0,
-                                     metadata_fields[i][2] ? dt_conf_get_int(metadata_fields[i][2]) & 1 ? 0 : 1 : 0,
-                                     display_order[i]);
-      TRY_EXEC(query, "can't insert meta_data_key record");
-      g_free(query);
+      sqlite3_bind_int(stmt, 1, i);
+      sqlite3_bind_text(stmt, 2, metadata_fields[i][0], -1, SQLITE_TRANSIENT);
+      sqlite3_bind_text(stmt, 3, metadata_fields[i][1], -1, SQLITE_TRANSIENT);
+      sqlite3_bind_int(stmt, 4, (i == 7)? 1 : 0);
+      sqlite3_bind_int(stmt, 5, metadata_fields[i][2] ? dt_conf_get_int(metadata_fields[i][2]) & 1 ? 0 : 1 : 0);
+      sqlite3_bind_int(stmt, 6, display_order[i]);
+      TRY_STEP(stmt, SQLITE_DONE, "can't insert meta_data_key record");
+      sqlite3_reset(stmt);
+      sqlite3_clear_bindings(stmt);
     }
+    sqlite3_finalize(stmt);
 
     new_version = 13;
   }

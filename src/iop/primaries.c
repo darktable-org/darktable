@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2023 darktable developers.
+    Copyright (C) 2023-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,10 +17,9 @@
 */
 #include "bauhaus/bauhaus.h"
 #include "common/custom_primaries.h"
+#include "common/math.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
-#include "gui/color_picker_proxy.h"
-#include "gui/gtk.h"
 #include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
@@ -36,8 +35,6 @@
 // https://github.com/sobotka/SB2383-Configuration-Generation
 
 DT_MODULE_INTROSPECTION(1, dt_iop_primaries_params_t)
-
-static const float RAD_TO_DEG = 180.f / M_PI_F;
 
 typedef struct dt_iop_primaries_params_t
 {
@@ -128,7 +125,7 @@ void process(dt_iop_module_t *self,
              const dt_iop_roi_t *const roi_in,
              const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_primaries_params_t *params = piece->data;
+  const dt_iop_primaries_params_t *params = piece->data;
 
   if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self,
                                         piece->colors, ivoid, ovoid, roi_in,
@@ -159,8 +156,8 @@ int process_cl(dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_in,
                const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_primaries_params_t *params = piece->data;
-  dt_iop_primaries_global_data_t *gd = self->global_data;
+  const dt_iop_primaries_params_t *params = piece->data;
+  const dt_iop_primaries_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -172,14 +169,14 @@ int process_cl(dt_iop_module_t *self,
   _calculate_adjustment_matrix(params, pipe_work_profile, transposed_matrix);
   transpose_3xSSE(transposed_matrix, matrix);
 
-  cl_mem dev_matrix = dt_opencl_copy_host_to_device_constant(devid, sizeof(matrix), matrix);
+  const cl_mem dev_matrix = dt_opencl_copy_host_to_device_constant(devid, sizeof(matrix), matrix);
   if(dev_matrix == NULL)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_primaries] couldn't allocate memory!");
     return DT_OPENCL_DEFAULT_ERROR;
   }
 
-  cl_int err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_primaries,
+  const cl_int err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_primaries,
                                                 width, height, CLARG(dev_in),
                                                 CLARG(dev_out), CLARG(width), CLARG(height),
                                                 CLARG(dev_matrix));
@@ -360,8 +357,8 @@ static GtkWidget *_setup_hue_slider(dt_iop_module_t *self,
   GtkWidget *slider = dt_bauhaus_slider_from_params(self, param_name);
   dt_bauhaus_slider_set_format(slider, "°");
   dt_bauhaus_slider_set_digits(slider, 1);
-  dt_bauhaus_slider_set_factor(slider, RAD_TO_DEG);
-  dt_bauhaus_slider_set_soft_range(slider, -20.f / RAD_TO_DEG, 20.f / RAD_TO_DEG);
+  dt_bauhaus_slider_set_factor(slider, RAD_2_DEG);
+  dt_bauhaus_slider_set_soft_range(slider, deg2radf(-20.f), deg2radf(20.f));
   gtk_widget_set_tooltip_text(slider, tooltip);
   return slider;
 }
@@ -394,7 +391,7 @@ void gui_init(dt_iop_module_t *self)
   g->achromatic_tint_hue = dt_bauhaus_slider_from_params(self, "achromatic_tint_hue");
   dt_bauhaus_slider_set_format(g->achromatic_tint_hue, "°");
   dt_bauhaus_slider_set_digits(g->achromatic_tint_hue, 1);
-  dt_bauhaus_slider_set_factor(g->achromatic_tint_hue, RAD_TO_DEG);
+  dt_bauhaus_slider_set_factor(g->achromatic_tint_hue, RAD_2_DEG);
   gtk_widget_set_tooltip_text(g->achromatic_tint_hue, _("tint hue"));
 
   g->achromatic_tint_purity = dt_bauhaus_slider_from_params(self, "achromatic_tint_purity");
@@ -422,7 +419,7 @@ void init_global(dt_iop_module_so_t *self)
 
 void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_primaries_global_data_t *gd = self->data;
+  const dt_iop_primaries_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_primaries);
   free(self->data);
   self->data = NULL;

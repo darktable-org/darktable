@@ -87,8 +87,20 @@ static int _group_events_button_pressed(dt_iop_module_t *module,
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if(!sel) return 0;
     if(sel->functions)
+    {
+      // did we asked for feather only?
+      if(dt_modifier_is(state, GDK_SHIFT_MASK) ^ gui->select_only_border)
+      {
+        // then make sure we try to select the feather point
+        gui->select_only_border = dt_modifier_is(state, GDK_SHIFT_MASK);
+        sel->functions->mouse_moved(module, pzx, pzy, pressure,
+                                    which, dt_dev_get_zoom_scale_full(), sel, fpt->parentid,
+                                    gui, gui->group_edited);
+      }
+
       return sel->functions->button_pressed(module, pzx, pzy, pressure, which, type, state, sel,
                                            fpt->parentid, gui, gui->group_edited);
+    }
   }
   return 0;
 }
@@ -180,6 +192,7 @@ static int _group_events_mouse_moved(dt_iop_module_t *module,
   gui->seg_selected = -1;
   gui->point_border_selected = -1;
   gui->group_edited = gui->group_selected = -1;
+  gui->select_only_border = dt_modifier_is(which, GDK_SHIFT_MASK);
 
   dt_masks_form_t *sel = NULL;
   dt_masks_point_group_t *sel_fpt = NULL;

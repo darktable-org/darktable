@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2016 Ulrich Pegelow.
+    Copyright (C) 2016-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,8 +30,13 @@ fcol(const int row, const int col, const unsigned int filters, global const unsi
 }
 
 kernel void
-vng_border_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height, const int border,
-                       const int r_x, const int r_y, const unsigned int filters, global const unsigned char (*const xtrans)[6])
+vng_border_interpolate(read_only image2d_t in,
+                       write_only image2d_t out,
+                       const int width,
+                       const int height,
+                       const int border,
+                       const unsigned int filters,
+                       global const unsigned char (*const xtrans)[6])
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -52,15 +57,14 @@ vng_border_interpolate(read_only image2d_t in, write_only image2d_t out, const i
     {
       if(j >= 0 && i >= 0 && j < height && i < width)
       {
-        int f = fcol(j + r_y, i + r_x, filters, xtrans);
+        int f = fcol(j, i, filters, xtrans);
         sum[f] += read_imagef(in, sampleri, (int2)(i, j)).x;
         count[f]++;
       }
     }
 
-  float i = read_imagef(in, sampleri, (int2)(x, y)).x;
-
-  int f = fcol(y + r_y, x + r_x, filters, xtrans);
+  const float i = read_imagef(in, sampleri, (int2)(x, y)).x;
+  const int f = fcol(y, x, filters, xtrans);
 
   for(int c = 0; c < colors; c++)
   {
@@ -151,7 +155,7 @@ vng_lin_interpolate(read_only image2d_t in, write_only image2d_t out, const int 
 
 kernel void
 vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                const int rin_x, const int rin_y, const unsigned int filters,
+                const unsigned int filters,
                 global const unsigned char (*const xtrans)[6], global const int (*const ips),
                 global const int (*const code)[16], local float *buffer)
 {
@@ -203,7 +207,7 @@ vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
   int g;
 
   // get byte code
-  global const int *ip = ips + code[(y + rin_y) % prow][(x + rin_x) % pcol];
+  global const int *ip = ips + code[y % prow][x % pcol];
 
   // calculate gradients
   while((g = ip[0]) != INT_MAX)
@@ -248,7 +252,7 @@ vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
 
   float thold = gmin + (gmax * 0.5f);
   float sum[4] = { 0.0f };
-  int color = fcol(y + rin_y, x + rin_x, filters, xtrans);
+  const int color = fcol(y, x, filters, xtrans);
   int num = 0;
 
   // average the neighbors
@@ -315,7 +319,7 @@ vng_green_equilibrate(read_only image2d_t in, write_only image2d_t out, const in
 
 kernel void
 clip_and_zoom_demosaic_third_size_xtrans(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                                         const int r_x, const int r_y, const int rin_wd, const int rin_ht, const float r_scale,
+                                         const int rin_wd, const int rin_ht, const float r_scale,
                                          global const unsigned char (*const xtrans)[6])
 {
   const int x = get_global_id(0);
@@ -350,7 +354,7 @@ clip_and_zoom_demosaic_third_size_xtrans(read_only image2d_t in, write_only imag
     {
       for(int j = 0; j < 3; j++)
         for(int i = 0; i < 3; i++)
-          col[FCxtrans(yy + j + r_y, xx + i + r_x, xtrans)] += read_imagef(in, sampleri, (int2)(xx + i, yy + j)).x;
+          col[FCxtrans(yy + j, xx + i, xtrans)] += read_imagef(in, sampleri, (int2)(xx + i, yy + j)).x;
       num++;
     }
 

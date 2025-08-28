@@ -177,12 +177,12 @@ typedef struct dt_iop_vector_2d_t
 
 // determine the distance between the segment [(xa,ya)(xb,yb)] and the point (xc,yc)
 static float _dist_seg(
-  	float xa,
-        float ya,
-        float xb,
-        float yb,
-        float xc,
-        float yc)
+  	const float xa,
+        const float ya,
+        const float xb,
+        const float yb,
+        const float xc,
+        const float yc)
 {
   if(xa == xb && ya == yb) return (xc - xa) * (xc - xa) + (yc - ya) * (yc - ya);
 
@@ -205,10 +205,10 @@ static float _dist_seg(
 
 static int _set_grad_from_points(
 	dt_iop_module_t *self,
-        float xa,
-        float ya,
-        float xb,
-        float yb,
+        const float xa,
+        const float ya,
+        const float xb,
+        const float yb,
         float *rotation,
         float *offset)
 {
@@ -219,7 +219,7 @@ static int _set_grad_from_points(
       = { xa * wd, ya * ht,
           xb * wd, yb * ht };
   dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, pts, 2);
-  dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
+  const dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
   pts[0] /= (float)piece->buf_out.width;
   pts[2] /= (float)piece->buf_out.width;
   pts[1] /= (float)piece->buf_out.height;
@@ -227,15 +227,15 @@ static int _set_grad_from_points(
 
   // we first need to find the rotation angle
   // weird dichotomic solution : we may use something more cool ...
-  float v1 = -M_PI;
-  float v2 = M_PI;
+  float v1 = -M_PI_F;
+  float v2 = M_PI_F;
   float sinv, cosv, r1, r2, v, r;
 
   sinv = sinf(v1), cosv = cosf(v1);
   r1 = pts[1] * cosv - pts[0] * sinv + pts[2] * sinv - pts[3] * cosv;
 
   // we search v2 so r2 as not the same sign as r1
-  const float pas = M_PI / 16.0;
+  const float pas = M_PI_F / 16.f;
 
   do
   {
@@ -243,9 +243,9 @@ static int _set_grad_from_points(
     sinv = sinf(v2), cosv = cosf(v2);
     r2 = pts[1] * cosv - pts[0] * sinv + pts[2] * sinv - pts[3] * cosv;
     if(r1 * r2 < 0) break;
-  } while(v2 <= M_PI);
+  } while(v2 <= M_PI_F);
 
-  if(v2 == (float)M_PI) return 9;
+  if(v2 == M_PI_F) return 9;
 
   // set precision for the iterative check
   const float eps = .0001f;
@@ -274,17 +274,17 @@ static int _set_grad_from_points(
   // be careful to the gnd direction
 
   const float diff_x = pts[2] - pts[0];
-  const float MPI2 = (M_PI / 2.0f);
+  const float MPI2 = M_PI_F / 2.0f;
 
   if(diff_x > eps)
   {
-    if(v >=  MPI2) v -= M_PI;
-    if(v <  -MPI2) v += M_PI;
+    if(v >=  MPI2) v -= M_PI_F;
+    if(v <  -MPI2) v += M_PI_F;
   }
   else if(diff_x < -eps)
   {
-    if(v <  MPI2 && v >= 0) v -= M_PI;
-    if(v > -MPI2 && v < 0)  v += M_PI;
+    if(v <  MPI2 && v >= 0) v -= M_PI_F;
+    if(v > -MPI2 && v < 0)  v += M_PI_F;
   }
   else // let's pretend that we are at PI/2
   {
@@ -293,7 +293,7 @@ static int _set_grad_from_points(
     else               v = MPI2;
   }
 
-  *rotation = -v * 180.0f / M_PI;
+  *rotation = rad2degf(-v);
 
   // and now we go for the offset (more easy)
   sinv = sinf(v);
@@ -311,17 +311,17 @@ static int _set_points_from_grad(
         float *ya,
         float *xb,
         float *yb,
-        float rotation,
-        float offset)
+        const float rotation,
+        const float offset)
 {
   // we get the extremities of the line
-  const float v = (-rotation / 180) * M_PI;
+  const float v = deg2radf(-rotation);
   const float sinv = sinf(v);
   dt_boundingbox_t pts;
 
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
   if(!piece) return 0;
-  float wp = piece->buf_out.width, hp = piece->buf_out.height;
+  const float wp = piece->buf_out.width, hp = piece->buf_out.height;
 
   // if sinv=0 then this is just the offset
 
@@ -444,7 +444,7 @@ static int _set_points_from_grad(
   return 1;
 }
 
-static inline void _update_saturation_slider_end_color(GtkWidget *slider, float hue)
+static inline void _update_saturation_slider_end_color(GtkWidget *slider, const float hue)
 {
   dt_aligned_pixel_t rgb;
   hsl2rgb(rgb, hue, 1.0, 0.5);
@@ -454,7 +454,7 @@ static inline void _update_saturation_slider_end_color(GtkWidget *slider, float 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker,
                         dt_dev_pixelpipe_t *pipe)
 {
-  dt_iop_graduatednd_gui_data_t *g = self->gui_data;
+  const dt_iop_graduatednd_gui_data_t *g = self->gui_data;
   dt_iop_graduatednd_params_t *p = self->params;
 
   // convert picker RGB 2 HSL
@@ -493,7 +493,7 @@ void gui_post_expose(dt_iop_module_t *self,
                      const float zoom_scale)
 {
   dt_iop_graduatednd_gui_data_t *g = self->gui_data;
-  dt_iop_graduatednd_params_t *p = self->params;
+  const dt_iop_graduatednd_params_t *p = self->params;
 
   // we get the extremities of the line
   if(g->define == 0)
@@ -713,8 +713,8 @@ int scrolled(
         int up,
         uint32_t state)
 {
-  dt_iop_graduatednd_gui_data_t *g = self->gui_data;
-  dt_iop_graduatednd_params_t *p = self->params;
+  const dt_iop_graduatednd_gui_data_t *g = self->gui_data;
+  const dt_iop_graduatednd_params_t *p = self->params;
   if(dt_modifier_is(state, GDK_CONTROL_MASK))
   {
     float dens;
@@ -795,7 +795,7 @@ void process(dt_iop_module_t *self,
   const float hh = ih / 2.0f;
   const float hw_inv = 1.0f / hw;
   const float hh_inv = 1.0f / hh;
-  const float v = (-data->rotation / 180) * M_PI;
+  const float v = deg2radf(-data->rotation);
   const float sinv = sinf(v);
   const float cosv = cosf(v);
   const float cosv_hh_inv = cosv * hh_inv;
@@ -932,7 +932,7 @@ int process_cl(dt_iop_module_t *self,
                const dt_iop_roi_t *const roi_out)
 {
   dt_iop_graduatednd_data_t *data = piece->data;
-  dt_iop_graduatednd_global_data_t *gd = self->global_data;
+  const dt_iop_graduatednd_global_data_t *gd = self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -946,7 +946,7 @@ int process_cl(dt_iop_module_t *self,
   const float hh = ih / 2.0f;
   const float hw_inv = 1.0f / hw;
   const float hh_inv = 1.0f / hh;
-  const float v = (-data->rotation / 180) * M_PI;
+  const float v = deg2radf(-data->rotation);
   const float sinv = sinf(v);
   const float cosv = cosf(v);
   const float filter_radie = sqrtf((hh * hh) + (hw * hw)) / hh;
@@ -968,7 +968,7 @@ int process_cl(dt_iop_module_t *self,
   const float length_inc_x = sinv * hw_inv * filter_hardness;
 
 
-  int kernel = density > 0 ? gd->kernel_graduatedndp : gd->kernel_graduatedndm;
+  const int kernel = density > 0 ? gd->kernel_graduatedndp : gd->kernel_graduatedndm;
 
   return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
     CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARRAY(4, data->color), CLARG(density),
@@ -987,7 +987,7 @@ void init_global(dt_iop_module_so_t *self)
 
 void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_graduatednd_global_data_t *gd = self->data;
+  const dt_iop_graduatednd_global_data_t *gd = self->data;
   dt_opencl_free_kernel(gd->kernel_graduatedndp);
   dt_opencl_free_kernel(gd->kernel_graduatedndm);
   free(self->data);
@@ -996,7 +996,7 @@ void cleanup_global(dt_iop_module_so_t *self)
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_graduatednd_params_t *p = self->params;
+  const dt_iop_graduatednd_params_t *p = self->params;
   dt_iop_graduatednd_gui_data_t *g = self->gui_data;
   if(w == g->rotation)
   {
@@ -1014,7 +1014,7 @@ void commit_params(dt_iop_module_t *self,
                    dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)p1;
+  const dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)p1;
   dt_iop_graduatednd_data_t *d = piece->data;
 
   d->density = p->density;
@@ -1049,7 +1049,7 @@ void cleanup_pipe(dt_iop_module_t *self,
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_graduatednd_gui_data_t *g = self->gui_data;
-  dt_iop_graduatednd_params_t *p = self->params;
+  const dt_iop_graduatednd_params_t *p = self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
 

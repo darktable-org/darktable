@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2024 darktable developers.
+    Copyright (C) 2009-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -358,7 +358,7 @@ float dt_dev_get_preview_downsampling();
 void dt_dev_process_image_job(dt_develop_t *dev,
                               dt_dev_viewport_t *port,
                               struct dt_dev_pixelpipe_t *pipe,
-                              dt_signal_t signal,
+                              const dt_signal_t signal,
                               const int devid);
 // launch jobs above
 void dt_dev_process_image(dt_develop_t *dev);
@@ -396,8 +396,8 @@ void dt_dev_add_masks_history_item(dt_develop_t *dev,
                                    struct dt_iop_module_t *_module,
                                    const gboolean enable);
 void dt_dev_reload_history_items(dt_develop_t *dev);
-void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt);
-void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt);
+void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt);
+void dt_dev_pop_history_items(dt_develop_t *dev, const int32_t cnt);
 void dt_dev_write_history_ext(dt_develop_t *dev, const dt_imgid_t imgid);
 void dt_dev_write_history(dt_develop_t *dev);
 void dt_dev_read_history_ext(dt_develop_t *dev,
@@ -431,15 +431,15 @@ gboolean dt_dev_get_zoom_bounds(dt_dev_viewport_t *port,
                                 float *boxhh);
 void dt_dev_zoom_move(dt_dev_viewport_t *port,
                       dt_dev_zoom_t zoom,
-                      float scale,
-                      int closeup,
-                      float x,
-                      float y,
-                      gboolean constrain);
+                      const float scale,
+                      const int closeup,
+                      const float x,
+                      const float y,
+                      const gboolean constrain);
 float dt_dev_get_zoom_scale(dt_dev_viewport_t *port,
-                            dt_dev_zoom_t zoom,
+                            const dt_dev_zoom_t zoom,
                             const int closeup_factor,
-                            const int mode);
+                            const gboolean preview);
 float dt_dev_get_zoom_scale_full(void);
 float dt_dev_get_zoomed_in(void);
 void dt_dev_get_pointer_zoom_pos(dt_dev_viewport_t *port,

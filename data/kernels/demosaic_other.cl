@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2015 LebedevRI.
+    Copyright (C) 2015-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ passthrough_monochrome (__read_only image2d_t in, __write_only image2d_t out, co
 }
 
 __kernel void
-passthrough_color (__read_only image2d_t in, __write_only image2d_t out, const int width, const int height, const int rx, const int ry,
+passthrough_color (__read_only image2d_t in, __write_only image2d_t out, const int width, const int height,
                    const unsigned int filters, global const unsigned char (*const xtrans)[6])
 {
   const int x = get_global_id(0);
@@ -47,7 +47,7 @@ passthrough_color (__read_only image2d_t in, __write_only image2d_t out, const i
   if(x >= width || y >= height) return;
 
   const float ival = read_imagef(in, sampleri, (int2)(x, y)).x;
-  const int c = (filters == 9u) ? FCxtrans(y + ry, x + rx, xtrans) : FC(y + ry, x + rx, filters);
+  const int c = (filters == 9u) ? FCxtrans(y, x, xtrans) : FC(y, x, filters);
 
   float4 oval = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
   if(c == 0)       oval.x = ival;
@@ -62,8 +62,13 @@ passthrough_color (__read_only image2d_t in, __write_only image2d_t out, const i
  * and writes it to out in float4 format.
  */
 __kernel void
-clip_and_zoom_demosaic_passthrough_monochrome(__read_only image2d_t in, __write_only image2d_t out, const int width, const int height,
-    const int r_x, const int r_y, const int rin_wd, const int rin_ht, const float r_scale, const unsigned int filters)
+clip_and_zoom_demosaic_passthrough_monochrome(__read_only image2d_t in,
+                                              __write_only image2d_t out,
+                                              const int width,
+                                              const int height,
+                                              const int rin_wd,
+                                              const int rin_ht,
+                                              const float r_scale)
 {
   // global id is pixel in output image (float4)
   const int x = get_global_id(0);
@@ -79,8 +84,8 @@ clip_and_zoom_demosaic_passthrough_monochrome(__read_only image2d_t in, __write_
   // how many pixels can be sampled inside that area
   const int samples = round(px_footprint);
 
-  const float2 f = (float2)((x + r_x) * px_footprint, (y + r_y) * px_footprint);
-  int2 p = (int2)((int)f.x, (int)f.y);
+  const float2 f = (float2)(x * px_footprint, y * px_footprint);
+  const int2 p = (int2)((int)f.x, (int)f.y);
   const float2 d = (float2)(f.x - p.x, f.y - p.y);
 
   for(int j=0;j<=samples+1;j++) for(int i=0;i<=samples+1;i++)
@@ -88,10 +93,10 @@ clip_and_zoom_demosaic_passthrough_monochrome(__read_only image2d_t in, __write_
     const int xx = p.x + i;
     const int yy = p.y + j;
 
-    float xfilter = (i == 0) ? 1.0f - d.x : ((i == samples+1) ? d.x : 1.0f);
-    float yfilter = (j == 0) ? 1.0f - d.y : ((j == samples+1) ? d.y : 1.0f);
+    const float xfilter = (i == 0) ? 1.0f - d.x : ((i == samples+1) ? d.x : 1.0f);
+    const float yfilter = (j == 0) ? 1.0f - d.y : ((j == samples+1) ? d.y : 1.0f);
 
-    float px = read_imagef(in, sampleri, (int2)(xx, yy)).x;
+    const float px = read_imagef(in, sampleri, (int2)(xx, yy)).x;
     color += yfilter*xfilter*(float4)(px, px, px, 0.0f);
     weight += yfilter*xfilter;
   }

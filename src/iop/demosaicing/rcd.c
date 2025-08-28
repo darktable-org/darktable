@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2024 darktable developers.
+    Copyright (C) 2010-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -62,7 +62,7 @@
 
 #ifdef __GNUC__
   #pragma GCC push_options
-  #pragma GCC optimize ("fast-math", "fp-contract=fast", "finite-math-only", "no-math-errno")
+  #pragma GCC optimize ("fp-contract=fast", "finite-math-only", "no-math-errno")
 #endif
 
 #define RCD_BORDER 9          // avoid tile-overlap errors
@@ -263,6 +263,41 @@ static void rcd_ppg_border(float *const out,
       for_each_channel(k)
         buf[k] = color[k];
       buf += 4;
+    }
+  }
+}
+
+DT_OMP_DECLARE_SIMD(aligned(in, out : 64))
+static void demosaic_box3(dt_dev_pixelpipe_iop_t *piece,
+                            float *const restrict out,
+                            const float *const restrict in,
+                            const dt_iop_roi_t *const roi,
+                            const uint32_t filters,
+                            const uint8_t(*const xtrans)[6])
+{
+  const int width = roi->width;
+  const int height = roi->height;
+  DT_OMP_FOR()
+  for(int row = 0; row < height; row++)
+  {
+    for(int col = 0; col < width; col++)
+    {
+      dt_aligned_pixel_t sum = { 0.0f, 0.0f, 0.0f, 0.0f };
+      dt_aligned_pixel_t cnt = { 0.0f, 0.0f, 0.0f, 0.0f };
+      for(int y = row-1; y < row+2; y++)
+      {
+        for(int x = col-1; x < col+2; x++)
+        {
+          if(x >= 0 && y >= 0 && x < width && y < height)
+          {
+            const int color = (filters == 9u) ? FCNxtrans(y, x, xtrans) : FC(y, x, filters);
+            sum[color] += MAX(0.0f, in[(size_t)width*y +x]);
+            cnt[color] += 1.0f;
+          }
+        }
+      }
+      for_each_channel(c)
+        out[((size_t)row * width + col)*4 + c] = sum[c] / MAX(1.0f, cnt[c]);
     }
   }
 }
@@ -561,7 +596,9 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
                              dt_dev_pixelpipe_iop_t *piece,
                              cl_mem dev_in,
                              cl_mem dev_out,
-                             const dt_iop_roi_t *const roi_in)
+                             const int width,
+                             const int height,
+                             const uint32_t filters)
 {
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
 
@@ -579,125 +616,123 @@ static cl_int process_rcd_cl(dt_iop_module_t *self,
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
-    const int width = roi_in->width;
-    const int height = roi_in->height;
 
-    dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
-    if(dev_tmp == NULL) goto error;
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
+  if(dev_tmp == NULL) goto error;
 
-    int myborder = 3;
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_border_interpolate, width, height,
-        CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters), CLARG(myborder));
-    if(err != CL_SUCCESS) goto error;
+  int myborder = 3;
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_border_interpolate, width, height,
+        CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(filters), CLARG(myborder));
+  if(err != CL_SUCCESS) goto error;
 
-    {
-      dt_opencl_local_buffer_t locopt
+  {
+    dt_opencl_local_buffer_t locopt
         = (dt_opencl_local_buffer_t){ .xoffset = 2*3, .xfactor = 1, .yoffset = 2*3, .yfactor = 1,
                                       .cellsize = sizeof(float) * 1, .overhead = 0,
                                       .sizex = 64, .sizey = 64 };
 
-      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_border_green, &locopt))
-      {
-        err = CL_INVALID_WORK_DIMENSION;
-        goto error;
-      }
-      myborder = 32;
-      size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
-      size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-      dt_opencl_set_kernel_args(devid, gd->kernel_rcd_border_green, 0, CLARG(dev_in), CLARG(dev_tmp),
-        CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters), CLLOCAL(sizeof(float) * (locopt.sizex + 2*3) * (locopt.sizey + 2*3)),
-        CLARG(myborder));
-      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_rcd_border_green, sizes, local);
-      if(err != CL_SUCCESS) goto error;
-    }
-
+    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_border_green, &locopt))
     {
-      dt_opencl_local_buffer_t locopt
+      err = CL_INVALID_WORK_DIMENSION;
+      goto error;
+    }
+    myborder = 32;
+    size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
+    size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
+    dt_opencl_set_kernel_args(devid, gd->kernel_rcd_border_green, 0, CLARG(dev_in), CLARG(dev_tmp),
+        CLARG(width), CLARG(height), CLARG(filters), CLLOCAL(sizeof(float) * (locopt.sizex + 2*3) * (locopt.sizey + 2*3)),
+        CLARG(myborder));
+    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_rcd_border_green, sizes, local);
+    if(err != CL_SUCCESS) goto error;
+  }
+
+  {
+    dt_opencl_local_buffer_t locopt
         = (dt_opencl_local_buffer_t){ .xoffset = 2*1, .xfactor = 1, .yoffset = 2*1, .yfactor = 1,
                                       .cellsize = 4 * sizeof(float), .overhead = 0,
                                       .sizex = 64, .sizey = 64 };
 
-      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_border_redblue, &locopt))
-      {
-        err = CL_INVALID_WORK_DIMENSION;
-        goto error;
-      }
-      myborder = 16;
-      size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
-      size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-      dt_opencl_set_kernel_args(devid, gd->kernel_rcd_border_redblue, 0, CLARG(dev_tmp), CLARG(dev_out),
-        CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2)),
-        CLARG(myborder));
-      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_rcd_border_redblue, sizes, local);
-      if(err != CL_SUCCESS) goto error;
-    }
-    dt_opencl_release_mem_object(dev_tmp);
-    dev_tmp = NULL;
-
-    const size_t bsize = sizeof(float) * width * height;
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-    cfa = dt_opencl_alloc_device_buffer(devid, bsize);
-    VH_dir = dt_opencl_alloc_device_buffer(devid, bsize);
-    PQ_dir = dt_opencl_alloc_device_buffer(devid, bsize);
-    VP_diff = dt_opencl_alloc_device_buffer(devid, bsize);
-    HQ_diff = dt_opencl_alloc_device_buffer(devid, bsize);
-    rgb0 = dt_opencl_alloc_device_buffer(devid, bsize);
-    rgb1 = dt_opencl_alloc_device_buffer(devid, bsize);
-    rgb2 = dt_opencl_alloc_device_buffer(devid, bsize);
-    if(cfa == NULL || VH_dir == NULL || PQ_dir == NULL || VP_diff == NULL || HQ_diff == NULL || rgb0 == NULL || rgb1 == NULL || rgb2 == NULL)
+    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_border_redblue, &locopt))
+    {
+      err = CL_INVALID_WORK_DIMENSION;
       goto error;
+    }
+    myborder = 16;
+    size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
+    size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
+    dt_opencl_set_kernel_args(devid, gd->kernel_rcd_border_redblue, 0, CLARG(dev_tmp), CLARG(dev_out),
+      CLARG(width), CLARG(height), CLARG(filters), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2)),
+      CLARG(myborder));
+    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_rcd_border_redblue, sizes, local);
+    if(err != CL_SUCCESS) goto error;
+  }
+  dt_opencl_release_mem_object(dev_tmp);
+  dev_tmp = NULL;
 
-    // populate data
-    float scaler = 1.0f / dt_iop_get_processed_maximum(piece);
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_populate, width, height,
+  const size_t bsize = sizeof(float) * width * height;
+  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  cfa = dt_opencl_alloc_device_buffer(devid, bsize);
+  VH_dir = dt_opencl_alloc_device_buffer(devid, bsize);
+  PQ_dir = dt_opencl_alloc_device_buffer(devid, bsize);
+  VP_diff = dt_opencl_alloc_device_buffer(devid, bsize);
+  HQ_diff = dt_opencl_alloc_device_buffer(devid, bsize);
+  rgb0 = dt_opencl_alloc_device_buffer(devid, bsize);
+  rgb1 = dt_opencl_alloc_device_buffer(devid, bsize);
+  rgb2 = dt_opencl_alloc_device_buffer(devid, bsize);
+  if(cfa == NULL || VH_dir == NULL || PQ_dir == NULL || VP_diff == NULL || HQ_diff == NULL || rgb0 == NULL || rgb1 == NULL || rgb2 == NULL)
+    goto error;
+
+  // populate data
+  float scaler = 1.0f / dt_iop_get_processed_maximum(piece);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_populate, width, height,
         CLARG(dev_in), CLARG(cfa), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height),
-        CLARG(piece->pipe->dsc.filters), CLARG(scaler));
-    if(err != CL_SUCCESS) goto error;
+        CLARG(filters), CLARG(scaler));
+  if(err != CL_SUCCESS) goto error;
 
-    // Step 1.1: Calculate a squared vertical and horizontal high pass filter on color differences
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_1_1, width, height,
+  // Step 1.1: Calculate a squared vertical and horizontal high pass filter on color differences
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_1_1, width, height,
         CLARG(cfa), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height));
-    if(err != CL_SUCCESS) goto error;
+  if(err != CL_SUCCESS) goto error;
 
-    // Step 1.2: Calculate vertical and horizontal local discrimination
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_1_2, width, height,
+  // Step 1.2: Calculate vertical and horizontal local discrimination
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_1_2, width, height,
         CLARG(VH_dir), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height));
-    if(err != CL_SUCCESS) goto error;
+  if(err != CL_SUCCESS) goto error;
 
-    // Step 2.1: Low pass filter incorporating green, red and blue local samples from the raw data
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_2_1, width / 2, height,
-        CLARG(PQ_dir), CLARG(cfa), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters));
-    if(err != CL_SUCCESS) goto error;
+  // Step 2.1: Low pass filter incorporating green, red and blue local samples from the raw data
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_2_1, width / 2, height,
+        CLARG(PQ_dir), CLARG(cfa), CLARG(width), CLARG(height), CLARG(filters));
+  if(err != CL_SUCCESS) goto error;
 
-    // Step 3.1: Populate the green channel at blue and red CFA positions
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_3_1, width / 2, height,
-      CLARG(PQ_dir), CLARG(cfa), CLARG(rgb1), CLARG(VH_dir), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters));
-    if(err != CL_SUCCESS) goto error;
+  // Step 3.1: Populate the green channel at blue and red CFA positions
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_3_1, width / 2, height,
+      CLARG(PQ_dir), CLARG(cfa), CLARG(rgb1), CLARG(VH_dir), CLARG(width), CLARG(height), CLARG(filters));
+  if(err != CL_SUCCESS) goto error;
 
     // Step 4.1: Calculate a squared P/Q diagonals high pass filter on color differences
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_4_1, width / 2, height,
-      CLARG(cfa), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters));
-    if(err != CL_SUCCESS) goto error;
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_4_1, width / 2, height,
+      CLARG(cfa), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height), CLARG(filters));
+  if(err != CL_SUCCESS) goto error;
 
     // Step 4.2: Calculate P/Q diagonal local discrimination
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_4_2, width / 2, height,
-        CLARG(PQ_dir), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters));
-    if(err != CL_SUCCESS) goto error;
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_4_2, width / 2, height,
+        CLARG(PQ_dir), CLARG(VP_diff), CLARG(HQ_diff), CLARG(width), CLARG(height), CLARG(filters));
+  if(err != CL_SUCCESS) goto error;
 
-    // Step 4.3: Populate the red and blue channels at blue and red CFA positions
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_5_1, width / 2, height,
-        CLARG(PQ_dir), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters));
-    if(err != CL_SUCCESS) goto error;
+  // Step 4.3: Populate the red and blue channels at blue and red CFA positions
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_5_1, width / 2, height,
+        CLARG(PQ_dir), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height), CLARG(filters));
+  if(err != CL_SUCCESS) goto error;
 
-    // Step 5.2: Populate the red and blue channels at green CFA positions
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_5_2, width / 2, height,
-        CLARG(VH_dir), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height), CLARG(piece->pipe->dsc.filters));
-    if(err != CL_SUCCESS) goto error;
+  // Step 5.2: Populate the red and blue channels at green CFA positions
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_step_5_2, width / 2, height,
+        CLARG(VH_dir), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height), CLARG(filters));
+  if(err != CL_SUCCESS) goto error;
 
-    scaler = dt_iop_get_processed_maximum(piece);
-    // write output
-    myborder = RCD_MARGIN;
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_write_output, width, height,
+  scaler = dt_iop_get_processed_maximum(piece);
+  // write output
+  myborder = RCD_MARGIN;
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rcd_write_output, width, height,
         CLARG(dev_out), CLARG(rgb0), CLARG(rgb1), CLARG(rgb2), CLARG(width), CLARG(height), CLARG(scaler), CLARG(myborder));
 
 error:
