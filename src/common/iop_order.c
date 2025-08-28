@@ -83,6 +83,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { { 2.0f }, "invert", 0},
   { { 3.0f }, "temperature", 0},
   { { 3.1f }, "rasterfile", 0},
+  { { 3.5f }, "rastermaps", 0},
   { { 4.0f }, "highlights", 0},
   { { 5.0f }, "cacorrect", 0},
   { { 6.0f }, "hotpixels", 0},
@@ -179,6 +180,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { { 2.0 }, "invert", 0},
   { { 3.0f }, "temperature", 0},
   { { 3.1f }, "rasterfile", 0},
+  { { 3.5f }, "rastermaps", 0},
   { { 4.0f }, "highlights", 0},
   { { 5.0f }, "cacorrect", 0},
   { { 6.0f }, "hotpixels", 0},
@@ -296,6 +298,7 @@ const dt_iop_order_entry_t v50_order[] = {
   { { 2.0 }, "invert", 0},
   { { 3.0f }, "temperature", 0},
   { { 3.1f }, "rasterfile", 0},
+  { { 3.5f }, "rastermaps", 0},
   { { 4.0f }, "highlights", 0},
   { { 5.0f }, "cacorrect", 0},
   { { 6.0f }, "hotpixels", 0},
@@ -415,6 +418,7 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 2.0 }, "invert", 0 },
   { { 3.0f }, "temperature", 0 },
   { { 3.1f }, "rasterfile", 0},
+  { { 3.5f }, "rastermaps", 0},
   { { 4.0f }, "highlights", 0 },
   { { 5.0f }, "cacorrect", 0 },
   { { 6.0f }, "hotpixels", 0 },
@@ -535,6 +539,7 @@ const dt_iop_order_entry_t v50_jpg_order[] = {
   { { 2.0 }, "invert", 0 },
   { { 3.0f }, "temperature", 0 },
   { { 3.1f }, "rasterfile", 0},
+  { { 3.5f }, "rastermaps", 0},
   { { 4.0f }, "highlights", 0 },
   { { 5.0f }, "cacorrect", 0 },
   { { 6.0f }, "hotpixels", 0 },
@@ -1179,6 +1184,7 @@ GList *dt_ioppr_get_iop_order_list(const dt_imgid_t imgid,
           _insert_before(iop_order_list, "filmicrgb", "sigmoid");
           _insert_before(iop_order_list, "colorbalancergb", "colorequal");
           _insert_before(iop_order_list, "highlights", "rasterfile");
+          _insert_before(iop_order_list, "rastermaps", "highlights");
         }
       }
       else if(version >= DT_IOP_ORDER_LEGACY
