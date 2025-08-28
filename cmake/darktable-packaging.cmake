@@ -45,48 +45,51 @@ endif(UNIX)
 
 # Set package peoperties for Windows
 if(WIN32)
-  # CPack currently sets this to "win64" regardless of architecture
-  if (CMAKE_SYSTEM_PROCESSOR MATCHES "ARM64")
+  if(CMAKE_SYSTEM_PROCESSOR MATCHES "ARM64")
+    # CPack currently sets this to "win64" regardless of architecture
     set(CPACK_SYSTEM_NAME woa64)
+	# Native NSIS is currently unavailable, just create an archive
+    set(CPACK_GENERATOR "ZIP")
+  else()
+    set(CPACK_GENERATOR "NSIS")
+    set(CPACK_PACKAGE_EXECUTABLES "darktable" "darktable")
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_PROJECT_NAME}")
+    # There is a bug in NSIS that does not handle full unix paths properly. Make
+    # sure there is at least one set of four (4) backlasshes.
+    #SET(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/data/pixmaps/256x256/darktable.png")
+    SET(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/data/pixmaps/dt_logo_128x128.ico")
+    SET(CPACK_NSIS_MUI_UNIICON "${CMAKE_CURRENT_SOURCE_DIR}/data/pixmaps/dt_logo_128x128.ico")
+    SET(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\${CMAKE_PROJECT_NAME}.exe")
+    SET(CPACK_NSIS_DISPLAY_NAME "darktable")
+    SET(CPACK_NSIS_HELP_LINK "https://www.darktable.org/install/")
+    SET(CPACK_NSIS_URL_INFO_ABOUT "https://www.darktable.org/")
+    SET(CPACK_NSIS_MODIFY_PATH OFF)
+    SET(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+
+    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+
+    # register dt in the Windows registry. this is needed for GIMP to find dt.
+    SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
+        WriteRegStr HKLM 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\darktable.exe' '' '$INSTDIR\\\\bin\\\\darktable.exe'
+        WriteRegStr HKLM 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\darktable-cli.exe' '' '$INSTDIR\\\\bin\\\\darktable-cli.exe'
+        WriteRegStr HKLM 'SOFTWARE\\\\Classes\\\\Applications\\\\darktable.exe\\\\shell\\\\open\\\\command' '' '\\\"$INSTDIR\\\\bin\\\\darktable.exe\\\" \\\"%1\\\"'
+    ")
+    SET(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "
+        DeleteRegKey HKLM 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\darktable.exe'
+        DeleteRegKey HKLM 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\darktable-cli.exe'
+        DeleteRegKey HKLM 'SOFTWARE\\\\Classes\\\\Applications\\\\darktable.exe'
+    ")
+
+    # also associate dt with all the supported image file types
+    foreach(EXTENSION ${DT_SUPPORTED_EXTENSIONS})
+      SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "${CPACK_NSIS_EXTRA_INSTALL_COMMANDS}
+        WriteRegStr HKLM 'SOFTWARE\\\\Classes\\\\.${EXTENSION}\\\\OpenWithList\\\\darktable.exe' '' ''
+      ")
+      SET(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "${CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS}
+        DeleteRegKey HKLM 'SOFTWARE\\\\Classes\\\\.${EXTENSION}\\\\OpenWithList\\\\darktable.exe'
+      ")
+    endforeach(EXTENSION)
   endif()
-  set(CPACK_GENERATOR "NSIS")
-  set(CPACK_PACKAGE_EXECUTABLES "darktable" "darktable")
-  set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_PROJECT_NAME}")
-  # There is a bug in NSIS that does not handle full unix paths properly. Make
-  # sure there is at least one set of four (4) backlasshes.
-  #SET(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/data/pixmaps/256x256/darktable.png")
-  SET(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/data/pixmaps/dt_logo_128x128.ico")
-  SET(CPACK_NSIS_MUI_UNIICON "${CMAKE_CURRENT_SOURCE_DIR}/data/pixmaps/dt_logo_128x128.ico")
-  SET(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\${CMAKE_PROJECT_NAME}.exe")
-  SET(CPACK_NSIS_DISPLAY_NAME "darktable")
-  SET(CPACK_NSIS_HELP_LINK "https://www.darktable.org/install/")
-  SET(CPACK_NSIS_URL_INFO_ABOUT "https://www.darktable.org/")
-  SET(CPACK_NSIS_MODIFY_PATH OFF)
-  SET(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
-
-  set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
- 
-  # register dt in the Windows registry. this is needed for GIMP to find dt.
-  SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
-      WriteRegStr HKLM 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\darktable.exe' '' '$INSTDIR\\\\bin\\\\darktable.exe'
-      WriteRegStr HKLM 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\darktable-cli.exe' '' '$INSTDIR\\\\bin\\\\darktable-cli.exe'
-      WriteRegStr HKLM 'SOFTWARE\\\\Classes\\\\Applications\\\\darktable.exe\\\\shell\\\\open\\\\command' '' '\\\"$INSTDIR\\\\bin\\\\darktable.exe\\\" \\\"%1\\\"'
-   ")
-  SET(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "
-      DeleteRegKey HKLM 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\darktable.exe'
-      DeleteRegKey HKLM 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\darktable-cli.exe'
-      DeleteRegKey HKLM 'SOFTWARE\\\\Classes\\\\Applications\\\\darktable.exe'
-  ")
-
-  # also associate dt with all the supported image file types
-  foreach(EXTENSION ${DT_SUPPORTED_EXTENSIONS})
-    SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "${CPACK_NSIS_EXTRA_INSTALL_COMMANDS}
-      WriteRegStr HKLM 'SOFTWARE\\\\Classes\\\\.${EXTENSION}\\\\OpenWithList\\\\darktable.exe' '' ''
-    ")
-    SET(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "${CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS}
-      DeleteRegKey HKLM 'SOFTWARE\\\\Classes\\\\.${EXTENSION}\\\\OpenWithList\\\\darktable.exe'
-    ")
-  endforeach(EXTENSION)
 endif(WIN32)
 
 include(CPack)
