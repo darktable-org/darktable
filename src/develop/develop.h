@@ -559,6 +559,13 @@ gboolean dt_dev_distort_backtransform_plus
    float *points,
    const size_t points_count);
 
+/** apply all geometry transforms to the specified points; fall back to applying distort_transform
+ * for modules without a geometry_transform function */
+gboolean dt_dev_geometry_transform(dt_develop_t *dev,
+                                   struct dt_dev_pixelpipe_t *pipe, // struct not declared until later
+                                   float *points,
+                                   const size_t points_count);
+
 /** get the iop_pixelpipe instance corresponding to the iop in the given pipe */
 struct dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev,
                                                            struct dt_dev_pixelpipe_t *pipe,
