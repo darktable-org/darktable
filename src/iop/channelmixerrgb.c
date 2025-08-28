@@ -49,6 +49,7 @@
 #include "common/illuminants.h"
 #include "common/imagebuf.h"
 #include "common/iop_profile.h"
+#include "common/dttypes.h"
 #include "develop/imageop_math.h"
 #include "develop/openmp_maths.h"
 #include "gui/accelerators.h"
@@ -3398,7 +3399,7 @@ static void _convert_GUI_colors(const dt_iop_channelmixer_rgb_params_t *p,
 
       // normalize with hue-preserving method (sort-of) to prevent
       // gamut-clipping in sRGB
-      const float max_RGB = fmaxf(fmaxf(RGB[0], RGB[1]), RGB[2]);
+      const float max_RGB = max3f(RGB);
       for_three_channels(c)
         RGB[c] = fmaxf(RGB[c] / max_RGB, 0.f);
     }

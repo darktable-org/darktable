@@ -27,7 +27,9 @@
 //#define NO_COLORMATRIX_NAN
 
 #include <float.h>
+#include <gmodule.h>
 #include <math.h>
+#include <stdint.h>
 
 // When included by a C++ file, restrict qualifiers are not allowed
 #ifdef __cplusplus
@@ -255,6 +257,51 @@ static inline int dt_is_valid_colormatrix(float matrix)
 #endif
 
 #endif /* NO_COLORMATRIX_NAN */
+
+static inline uint32_t max3ui(const uint32_t* array)
+{
+  return MAX(MAX(array[0], array[1]), array[2]);
+}
+
+static inline float max3f(const float* array)
+{
+  return fmaxf(fmaxf(array[0], array[1]), array[2]);
+}
+
+static inline float min3f(const float* array)
+{
+  return fminf(fminf(array[0], array[1]), array[2]);
+}
+
+static inline float max4f(const float* array)
+{
+  return fmaxf(fmaxf(fmaxf(array[0], array[1]), array[2]), array[3]);
+}
+
+static inline float min4f(const float* array)
+{
+  return fminf(fminf(fminf(array[0], array[1]), array[2]), array[3]);
+}
+
+static inline double max3(const double* array)
+{
+  return fmax(fmax(array[0], array[1]), array[2]);
+}
+
+static inline double min3(const double* array)
+{
+  return fmin(fmin(array[0], array[1]), array[2]);
+}
+
+static inline double max4(const double* array)
+{
+  return fmax(fmax(fmax(array[0], array[1]), array[2]), array[3]);
+}
+
+static inline double min4(const double* array)
+{
+  return fmin(fmin(fmin(array[0], array[1]), array[2]), array[3]);
+}
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
