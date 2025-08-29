@@ -115,7 +115,7 @@ typedef struct dt_iop_demosaic_params_t
   dt_iop_demosaic_lmmse_t lmmse_refine;         // $DEFAULT: DT_LMMSE_REFINE_1 $DESCRIPTION: "LMMSE refine"
   float dual_thrs;                              // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.2 $DESCRIPTION: "dual threshold"
   float cs_radius;                              // $MIN: 0.0 $MAX: 1.5 $DEFAULT: 0.0 $DESCRIPTION: "radius"
-  float cs_thrs;                                // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.40 $DESCRIPTION: "edge sensitivity"
+  float cs_thrs;                                // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.40 $DESCRIPTION: "contrast sensitivity"
   float cs_boost;                               // $MIN: 0.0 $MAX: 1.5 $DEFAULT: 0.0 $DESCRIPTION: "corner boost"
   int cs_iter;                                  // $MIN: 0 $MAX: 25 $DEFAULT: 0 $DESCRIPTION: "sharpen"
   float cs_center;                              // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "sharp center"
@@ -382,7 +382,7 @@ int legacy_params(dt_iop_module_t *self,
     dt_iop_demosaic_params_v5_t *n = malloc(sizeof(dt_iop_demosaic_params_v5_t));
     memcpy(n, o, sizeof *o);
     n->cs_radius = 0.0f;
-    n->cs_thrs = 0.4f;
+    n->cs_thrs = _get_variance_threshold(self);
     n->cs_boost = 0.0f;
     n->cs_iter = 0;
     n->cs_center = 0.0f;
@@ -1254,6 +1254,8 @@ void reload_defaults(dt_iop_module_t *self)
     d->demosaicing_method = self->dev->image_storage.flags & DT_IMAGE_4BAYER
                             ? DT_IOP_DEMOSAIC_VNG4
                             : DT_IOP_DEMOSAIC_RCD;
+
+  d->cs_thrs = _get_variance_threshold(self);
 
   self->hide_enable_button = TRUE;
 

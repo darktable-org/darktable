@@ -44,6 +44,25 @@
 #define CAPTURE_YMIN 0.001f
 #define CAPTURE_CFACLIP 0.9f
 
+static float _get_variance_threshold(const dt_iop_module_t *self)
+{
+  /*
+    The original threshold default of 0.4 is good for 12bit raws having a fair amout of sensor noise.
+    For >= 14bit raws or low ISO images this resulted in CS happening only at edges, we can
+    and should reduce the threshold in such cases for better results with default settings.
+
+    Unfortunately there is no further information about expected sensor noise so being
+    conservative here.
+
+  */
+  float threshold = 0.4f;
+  const dt_image_t *img = &self->dev->image_storage;
+  if(img->raw_white_point > 4096) threshold -= 0.07f;
+  if(img->exif_iso < 400)         threshold -= 0.03f;
+  if(img->exif_iso <= 100)        threshold -= 0.03f;
+  return threshold;
+}
+
 static inline void _calc_9x9_gauss_coeffs(float *coeffs, const float sigma)
 {
   float kernel[9][9];
