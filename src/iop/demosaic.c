@@ -517,6 +517,8 @@ void tiling_callback(dt_iop_module_t *self,
     else
       tiling->factor += smooth;
 
+    tiling->factor_cl = 3.0f;
+
     tiling->overlap = overlap;
   }
   else if(demosaicing_method == DT_IOP_DEMOSAIC_RCD)
@@ -531,7 +533,7 @@ void tiling_callback(dt_iop_module_t *self,
 
     tiling->overhead = is_opencl ? 0 : sizeof(float) * DT_RCD_TILESIZE * DT_RCD_TILESIZE * 8 * dt_get_num_threads();
     tiling->overlap = 10;
-    tiling->factor_cl = tiling->factor + 3.0f;
+    tiling->factor_cl = 3.0f;
   }
   else if(demosaicing_method == DT_IOP_DEMOSAIC_LMMSE)
   {
@@ -557,6 +559,7 @@ void tiling_callback(dt_iop_module_t *self,
     else
       tiling->factor += smooth;
 
+    tiling->factor_cl = 3.0f;
     tiling->overlap = 6;
   }
 
@@ -663,6 +666,9 @@ void process(dt_iop_module_t *self,
   const float procmax = dt_iop_get_processed_maximum(piece);
   const float procmin = dt_iop_get_processed_minimum(piece);
   const int exif_iso = img->exif_iso;
+
+  if(do_capture)
+    _capture_radius(self, piece, in, width, height, xtrans, filters);
 
   if(!direct)
     out = dt_iop_image_alloc(width, height, 4);
@@ -915,6 +921,9 @@ int process_cl(dt_iop_module_t *self,
   const gboolean passthru = demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME
                          || demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR;
   const gboolean do_capture = !passthru && !run_fast && !show_dual && d->cs_iter;
+
+  if(do_capture)
+    _capture_radius_cl(self, piece, dev_in, iwidth, iheight, xtrans, filters);
 
   cl_mem in_image = dev_in;
   if(is_bayer && d->green_eq != DT_IOP_GREEN_EQ_NO && no_masking)
