@@ -940,46 +940,101 @@ int process_cl(dt_iop_module_t *self,
   }
 
   cl_mem out_image = direct ? dev_out : dt_opencl_alloc_device(devid, iwidth, iheight, sizeof(float) * 4);
-  cl_mem high_image = dual ? dt_opencl_alloc_device(devid, iwidth, iheight, sizeof(float) * 4) : out_image;
 
-  if(!out_image) goto finish;
+  // we calculate possible rows per tile using floats per line
+  int avail_rows = dt_opencl_get_device_available(devid) / sizeof(float) / iwidth;
 
-  if(demosaic_mask)
-    err = demosaic_box3_cl(self, piece, in_image, high_image, dev_xtrans, iwidth, iheight, filters);
-  else if(passthru || demosaicing_method == DT_IOP_DEMOSAIC_PPG)
-    err = process_default_cl(self, piece, in_image, high_image, dev_xtrans, iwidth, iheight, demosaicing_method, filters);
-  else if(base_demosaicing_method == DT_IOP_DEMOSAIC_RCD)
-    err = process_rcd_cl(self, piece, in_image, high_image, iwidth, iheight, filters);
-  else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || demosaicing_method == DT_IOP_DEMOSAIC_VNG)
-    err = process_vng_cl(self, piece, in_image, high_image, dev_xtrans, xtrans, iwidth, iheight, filters, FALSE);
-  else if(base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN || base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3)
-    err = process_markesteijn_cl(self, piece, in_image, high_image, dev_xtrans, xtrans, iwidth, iheight, filters);
-  else
-    err = DT_OPENCL_PROCESS_CL;
+  // these require additional non-tiled image buffers
+  if(!direct) avail_rows -= iheight * 4;
+  if(in_image != dev_in) avail_rows -= iheight;
 
-  if(err != CL_SUCCESS) goto finish;
+  // roughly estimate extra requirements
+  if(dual || do_capture) avail_rows -= 2 * iheight;
 
+  int per_row = is_xtrans ? 8 : 4;
+  if(base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) per_row *= 2;
 
-  if(do_capture)
+  // ensure a tile height of multiples of 6
+  const int valid_rows = 6 * (MAX(120, avail_rows / per_row) / 6);
+
+  const int overlap = do_capture ? 24 : is_xtrans ? 18 : 10;
+  const int num_tiles = (iheight + valid_rows - 1) / valid_rows;
+  const gboolean tiling = num_tiles > 1;
+  const int mt_height = valid_rows + 2*overlap;
+
+  cl_mem t_in = tiling ? dt_opencl_alloc_device(devid, iwidth, mt_height, sizeof(float)) : in_image;
+  cl_mem t_out = tiling ? dt_opencl_alloc_device(devid, iwidth, mt_height, sizeof(float) * 4) : out_image;
+  cl_mem t_high = dual ? dt_opencl_alloc_device(devid, iwidth, mt_height, sizeof(float) * 4) : t_out;
+  cl_mem t_low = dual ? dt_opencl_alloc_device(devid, iwidth, mt_height, sizeof(float) * 4) : NULL;
+
+  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  if(!out_image || !t_in || !t_out || !t_high)
+    goto finish;
+
+  for(int tile = 0; tile < num_tiles; tile++)
   {
-    err = _capture_sharpen_cl(self, piece, dev_in, high_image, dev_xtrans, iwidth, iheight, roi_in->x, roi_in->y, show_capture, show_sigma, xtrans, filters);
-    if(err != CL_SUCCESS) goto finish;
-  }
+    const int top_overlap = tile == 0 ? 0 : overlap;
+    const int bottom_overlap = (tile == num_tiles -1) ? 0 : overlap;
+    const int group = tile * valid_rows;
+    const int first_row = group - top_overlap;
+    const int last_row = MIN(group + valid_rows + bottom_overlap, iheight);
+    const int t_height = tiling ? last_row - first_row : iheight;
 
-  if(dual)
-  {
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-    cl_mem low_image = dt_opencl_alloc_device(devid, iwidth, iheight, sizeof(float) * 4);
-    if(low_image)
+    dt_print(DT_DEBUG_PIPE,
+              "%sdemosaic CL: tile=%.3d/%.3d, group=%.5d first=%.5d last=%.5d rows=%.4d, avail_rows=%.5d per_row=%d",
+               tiling ? "tiled " : "",
+               tile, num_tiles, group, first_row, last_row, t_height, avail_rows, per_row);
+    if(t_height > 0)
     {
-      err = process_vng_cl(self, piece, in_image, low_image, dev_xtrans, xtrans, iwidth, iheight, filters, TRUE);
-      if(err == CL_SUCCESS)
-        err = color_smoothing_cl(self, piece, low_image, low_image, iwidth, iheight, DT_DEMOSAIC_SMOOTH_2);
-      if(err == CL_SUCCESS)
-        err = dual_demosaic_cl(self, piece, high_image, low_image, out_image, iwidth, iheight, show_dual);
-      dt_opencl_release_mem_object(low_image);
+      if(tiling)
+      {
+        size_t insrc[]  = { 0, first_row, 0 };
+        size_t tdest[]  = { 0, 0, 0 };
+        size_t iarea[]  = { iwidth, t_height, 1 };
+        err = dt_opencl_enqueue_copy_image(devid, in_image, t_in, insrc, tdest, iarea);
+        if(err != CL_SUCCESS) goto finish;
+      }
+
+      if(demosaic_mask)
+        err = demosaic_box3_cl(self, piece, t_in, t_high, dev_xtrans, iwidth, t_height, filters);
+      else if(passthru || demosaicing_method == DT_IOP_DEMOSAIC_PPG)
+        err = process_default_cl(self, piece, t_in, t_high, dev_xtrans, iwidth, t_height, demosaicing_method, filters);
+      else if(base_demosaicing_method == DT_IOP_DEMOSAIC_RCD)
+        err = process_rcd_cl(self, piece, t_in, t_high, iwidth, t_height, filters);
+      else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || demosaicing_method == DT_IOP_DEMOSAIC_VNG)
+        err = process_vng_cl(self, piece, t_in, t_high, dev_xtrans, xtrans, iwidth, t_height, filters, FALSE);
+      else if(base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN || base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3)
+        err = process_markesteijn_cl(self, piece, t_in, t_high, dev_xtrans, xtrans, iwidth, t_height, filters);
+      else
+        err = DT_OPENCL_PROCESS_CL;
+
+      if(err != CL_SUCCESS) goto finish;
+
+      if(do_capture)
+      {
+        err = _capture_sharpen_cl(self, piece, t_in, t_high, dev_xtrans, iwidth, t_height, roi_in->x, roi_in->y, show_capture, show_sigma, xtrans, filters);
+        if(err != CL_SUCCESS) goto finish;
+      }
+
+      if(dual && t_low)
+      {
+        err = process_vng_cl(self, piece, t_in, t_low, dev_xtrans, xtrans, iwidth, t_height, filters, TRUE);
+        if(err == CL_SUCCESS)
+          err = color_smoothing_cl(self, piece, t_low, t_low, iwidth, t_height, DT_DEMOSAIC_SMOOTH_2);
+        if(err == CL_SUCCESS)
+          err = dual_demosaic_cl(self, piece, t_high, t_low, t_out, iwidth, t_height, show_dual);
+      }
+      if(err != CL_SUCCESS) goto finish;
+
+      if(tiling)
+      {
+        size_t tsrc[]   = { 0, top_overlap, 0 };
+        size_t odest[]  = { 0, group, 0 };
+        size_t oarea[]  = { iwidth, t_height - top_overlap - bottom_overlap, 1 };
+        err = dt_opencl_enqueue_copy_image(devid, t_out, out_image, tsrc, odest, oarea);
+        if(err != CL_SUCCESS) goto finish;
+      }
     }
-    if(err != CL_SUCCESS) goto finish;
   }
 
   if(in_image != dev_in)  // release early for less cl memory load
@@ -1005,9 +1060,13 @@ int process_cl(dt_iop_module_t *self,
 
 finish:
   dt_opencl_release_mem_object(dev_xtrans);
+
   if(in_image != dev_in) dt_opencl_release_mem_object(in_image);
   if(out_image != dev_out) dt_opencl_release_mem_object(out_image);
-  if(high_image != out_image) dt_opencl_release_mem_object(high_image);
+  dt_opencl_release_mem_object(t_low);
+  if(t_in != in_image) dt_opencl_release_mem_object(t_in);
+  if(t_out != out_image) dt_opencl_release_mem_object(t_out);
+  if(t_high != t_out) dt_opencl_release_mem_object(t_high);
 
   return err;
 }
