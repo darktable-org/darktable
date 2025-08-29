@@ -183,7 +183,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       int c;
       if(filters == 9u)
       {
-        c = FCxtrans(j_raw, i_raw, NULL, xtrans);
+        c = FCNxtrans(j_raw, i_raw, xtrans);
       }
       else // if(filters)
       {
