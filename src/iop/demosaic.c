@@ -65,8 +65,8 @@ typedef enum dt_iop_demosaic_method_t
   DT_IOP_DEMOSAIC_VNG4 = 2,  // $DESCRIPTION: "VNG4"
   DT_IOP_DEMOSAIC_RCD = 5,   // $DESCRIPTION: "RCD"
   DT_IOP_DEMOSAIC_LMMSE = 6, // $DESCRIPTION: "LMMSE"
-  DT_IOP_DEMOSAIC_RCD_VNG = DT_DEMOSAIC_DUAL | DT_IOP_DEMOSAIC_RCD, // $DESCRIPTION: "RCD (dual)"
-  DT_IOP_DEMOSAIC_AMAZE_VNG = DT_DEMOSAIC_DUAL | DT_IOP_DEMOSAIC_AMAZE, // $DESCRIPTION: "AMaZE (dual)""
+  DT_IOP_DEMOSAIC_RCD_DUAL = DT_DEMOSAIC_DUAL | DT_IOP_DEMOSAIC_RCD, // $DESCRIPTION: "RCD (dual)"
+  DT_IOP_DEMOSAIC_AMAZE_DUAL = DT_DEMOSAIC_DUAL | DT_IOP_DEMOSAIC_AMAZE, // $DESCRIPTION: "AMaZE (dual)""
   DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME = 3, // $DESCRIPTION: "passthrough (monochrome)"
   DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR = 4, // $DESCRIPTION: "photosite color (debug)"
   // methods for x-trans images
@@ -74,7 +74,7 @@ typedef enum dt_iop_demosaic_method_t
   DT_IOP_DEMOSAIC_MARKESTEIJN = DT_DEMOSAIC_XTRANS | 1,   // $DESCRIPTION: "Markesteijn 1-pass"
   DT_IOP_DEMOSAIC_MARKESTEIJN_3 = DT_DEMOSAIC_XTRANS | 2, // $DESCRIPTION: "Markesteijn 3-pass"
   DT_IOP_DEMOSAIC_FDC = DT_DEMOSAIC_XTRANS | 4,           // $DESCRIPTION: "frequency domain chroma"
-  DT_IOP_DEMOSAIC_MARKEST3_VNG = DT_DEMOSAIC_DUAL | DT_IOP_DEMOSAIC_MARKESTEIJN_3, // $DESCRIPTION: "Markesteijn 3-pass (dual)"
+  DT_IOP_DEMOSAIC_MARKEST3_DUAL = DT_DEMOSAIC_DUAL | DT_IOP_DEMOSAIC_MARKESTEIJN_3, // $DESCRIPTION: "Markesteijn 3-pass (dual)"
   DT_IOP_DEMOSAIC_PASSTHR_MONOX = DT_DEMOSAIC_XTRANS | 3, // $DESCRIPTION: "passthrough (monochrome)"
   DT_IOP_DEMOSAIC_PASSTHR_COLORX = DT_DEMOSAIC_XTRANS | 5, // $DESCRIPTION: "photosite color (debug)"
 } dt_iop_demosaic_method_t;
@@ -1119,25 +1119,25 @@ void commit_params(dt_iop_module_t *self,
   // magic function to have CS iterations with fine granularity for values <= 11 and then rising up to 50
   d->cs_iter = p->cs_iter + (int)(0.000065f * powf((float)p->cs_iter, 4.0f));
   const gboolean xmethod = use_method & DT_DEMOSAIC_XTRANS;
+  const gboolean is_dual = use_method & DT_DEMOSAIC_DUAL;
   const gboolean bayer4  = self->dev->image_storage.flags & DT_IMAGE_4BAYER;
   const gboolean bayer   = self->dev->image_storage.buf_dsc.filters != 9u && !bayer4;
   const gboolean xtrans  = self->dev->image_storage.buf_dsc.filters == 9u;
-
-  if(bayer && xmethod)
-    use_method = DT_IOP_DEMOSAIC_RCD;
-  if(xtrans && !xmethod)
-    use_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
-  // we don't have to fully check for available bayer4 modes here as process() takes care of this
-  if(bayer4)
-    use_method &= ~DT_DEMOSAIC_DUAL;
-
-  if(use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME || use_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX)
-    use_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
-  if(use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR || use_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX)
-    use_method = DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR;
-
   const gboolean passing = use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME
                         || use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR;
+
+  // if there is a xtrans/bayer mismatch due to presets/historycopy we still want to keep dual mode
+  if(bayer && xmethod)
+    use_method = is_dual ? DT_IOP_DEMOSAIC_RCD_DUAL : DT_IOP_DEMOSAIC_RCD;
+  if(xtrans && !xmethod)
+    use_method = is_dual ? DT_IOP_DEMOSAIC_MARKEST3_DUAL : DT_IOP_DEMOSAIC_MARKESTEIJN;
+  if(bayer4 && !passing)
+    use_method = DT_IOP_DEMOSAIC_VNG4;
+
+  if(use_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX)
+    use_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
+  if(use_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX)
+    use_method = DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR;
 
   if(use_method != DT_IOP_DEMOSAIC_PPG)
     d->median_thrs = 0.0f;
@@ -1155,53 +1155,23 @@ void commit_params(dt_iop_module_t *self,
   }
   d->demosaicing_method = use_method;
 
-  // OpenCL only supported by some of the demosaicing methods
+  // as some demosaicers don't have OpenCL implementations
   switch(d->demosaicing_method)
   {
-    case DT_IOP_DEMOSAIC_PPG:
-      piece->process_cl_ready = TRUE;
-      break;
     case DT_IOP_DEMOSAIC_AMAZE:
       piece->process_cl_ready = FALSE;
-      break;
-    case DT_IOP_DEMOSAIC_VNG4:
-      piece->process_cl_ready = TRUE;
-      break;
-    case DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME:
-      piece->process_cl_ready = TRUE;
-      break;
-    case DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR:
-      piece->process_cl_ready = TRUE;
-      break;
-    case DT_IOP_DEMOSAIC_RCD:
-      piece->process_cl_ready = TRUE;
       break;
     case DT_IOP_DEMOSAIC_LMMSE:
       piece->process_cl_ready = FALSE;
       break;
-    case DT_IOP_DEMOSAIC_RCD_VNG:
-      piece->process_cl_ready = TRUE;
-      break;
-    case DT_IOP_DEMOSAIC_AMAZE_VNG:
+    case DT_IOP_DEMOSAIC_AMAZE_DUAL:
       piece->process_cl_ready = FALSE;
-      break;
-    case DT_IOP_DEMOSAIC_MARKEST3_VNG:
-      piece->process_cl_ready = TRUE;
-      break;
-    case DT_IOP_DEMOSAIC_VNG:
-      piece->process_cl_ready = TRUE;
-      break;
-    case DT_IOP_DEMOSAIC_MARKESTEIJN:
-      piece->process_cl_ready = TRUE;
-      break;
-    case DT_IOP_DEMOSAIC_MARKESTEIJN_3:
-      piece->process_cl_ready = TRUE;
       break;
     case DT_IOP_DEMOSAIC_FDC:
       piece->process_cl_ready = FALSE;
       break;
     default:
-      piece->process_cl_ready = FALSE;
+      piece->process_cl_ready = TRUE;
   }
 
   // green-equilibrate over full image excludes tiling
@@ -1245,21 +1215,22 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_demosaic_params_t *d = self->default_params;
+  const dt_image_t *img = &self->dev->image_storage;
 
-  if(dt_image_is_monochrome(&self->dev->image_storage))
+  if(dt_image_is_monochrome(img))
     d->demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
-  else if(self->dev->image_storage.buf_dsc.filters == 9u)
+  else if(img->buf_dsc.filters == 9u)
     d->demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
+  else if(img->flags & DT_IMAGE_4BAYER)
+    d->demosaicing_method = DT_IOP_DEMOSAIC_VNG4;
   else
-    d->demosaicing_method = self->dev->image_storage.flags & DT_IMAGE_4BAYER
-                            ? DT_IOP_DEMOSAIC_VNG4
-                            : DT_IOP_DEMOSAIC_RCD;
+    d->demosaicing_method = DT_IOP_DEMOSAIC_RCD;
 
   d->cs_thrs = _get_variance_threshold(self);
 
   self->hide_enable_button = TRUE;
 
-  self->default_enabled = dt_image_is_raw(&self->dev->image_storage);
+  self->default_enabled = dt_image_is_raw(img);
   if(self->widget)
     gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
 }
@@ -1269,23 +1240,25 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
   dt_iop_demosaic_params_t *p = self->params;
 
-  const gboolean bayer4 = self->dev->image_storage.flags & DT_IMAGE_4BAYER;
-  const gboolean bayer  = self->dev->image_storage.buf_dsc.filters != 9u && !bayer4;
-  const gboolean xtrans = self->dev->image_storage.buf_dsc.filters == 9u;
+  const dt_image_t *oimg = &self->dev->image_storage;
+  const gboolean bayer4 = oimg->flags & DT_IMAGE_4BAYER;
+  const gboolean bayer  = oimg->buf_dsc.filters != 9u && !bayer4;
+  const gboolean xtrans = oimg->buf_dsc.filters == 9u;
 
   dt_iop_demosaic_method_t use_method = p->demosaicing_method;
   const gboolean xmethod = use_method & DT_DEMOSAIC_XTRANS;
+  const gboolean is_dual = use_method & DT_DEMOSAIC_DUAL;
 
   if(bayer && xmethod)
-    use_method = DT_IOP_DEMOSAIC_RCD;
+    use_method = is_dual ? DT_IOP_DEMOSAIC_RCD_DUAL : DT_IOP_DEMOSAIC_RCD;
   if(xtrans && !xmethod)
-    use_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
+    use_method = is_dual ? DT_IOP_DEMOSAIC_MARKEST3_DUAL : DT_IOP_DEMOSAIC_MARKESTEIJN;
 
   const gboolean bayerpassing =
       use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME
    || use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR;
 
-  if(bayer4 && !(bayerpassing || (use_method == DT_IOP_DEMOSAIC_VNG4)))
+  if(bayer4 && !bayerpassing)
     use_method = DT_IOP_DEMOSAIC_VNG4;
 
   const gboolean isppg = use_method == DT_IOP_DEMOSAIC_PPG;
@@ -1324,19 +1297,19 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->dual_thrs, isdual);
   gtk_widget_set_visible(g->lmmse_refine, islmmse);
 
-  dt_image_t *img = dt_image_cache_get(self->dev->image_storage.id, 'w');
-  int mono_changed = img->flags & DT_IMAGE_MONOCHROME_BAYER;
-  if(p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME
-       || p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX)
-    img->flags |= DT_IMAGE_MONOCHROME_BAYER;
-  else
-    img->flags &= ~DT_IMAGE_MONOCHROME_BAYER;
-  const int mask_bw = dt_image_monochrome_flags(img);
-  mono_changed ^= img->flags & DT_IMAGE_MONOCHROME_BAYER;
-  dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
-
-  if(mono_changed)
+  const gboolean monomode = use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME
+                        ||  use_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX;
+  const gboolean was_monomode = oimg->flags & DT_IMAGE_MONOCHROME_BAYER;
+  if((w == g->demosaic_method_bayer || w == g->demosaic_method_xtrans) && monomode != was_monomode)
   {
+    dt_image_t *img = dt_image_cache_get(self->dev->image_storage.id, 'w');
+    if(monomode)
+      img->flags |= DT_IMAGE_MONOCHROME_BAYER;
+    else
+      img->flags &= ~DT_IMAGE_MONOCHROME_BAYER;
+
+    const int mask_bw = dt_image_monochrome_flags(img);
+    dt_image_cache_write_release(img, DT_IMAGE_CACHE_RELAXED);
     dt_imageio_update_monochrome_workflow_tag(self->dev->image_storage.id, mask_bw);
     dt_dev_reload_image(self->dev, self->dev->image_storage.id);
   }
