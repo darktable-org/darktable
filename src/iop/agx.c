@@ -2153,42 +2153,6 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
   return primaries_box;
 }
 
-static void _notebook_page_changed(GtkNotebook *notebook, GtkWidget *page, const guint page_num, dt_iop_module_t *self)
-{
-  dt_iop_agx_gui_data_t *g = self->gui_data;
-
-  // 'settings' or 'curve' page only
-  if(page_num == 0 || page_num == 1)
-  {
-    // the GtkBox container for the tab
-    GtkWidget *vbox = page;
-
-    GtkWidget *current_parent = gtk_widget_get_parent(g->curve_basic_controls_box);
-
-    if(current_parent != vbox)
-    {
-      // prevent the widget from being destroyed when removed from its parent
-      g_object_ref(g->curve_basic_controls_box);
-
-      if(current_parent)
-      {
-        gtk_container_remove(GTK_CONTAINER(current_parent), g->curve_basic_controls_box);
-      }
-
-      // pack to new parent
-      gtk_box_pack_start(GTK_BOX(vbox), g->curve_basic_controls_box, FALSE, FALSE, 0);
-
-      // on the 'curve' page, move to top
-      if(page_num == 1)
-      {
-        gtk_box_reorder_child(GTK_BOX(vbox), g->curve_basic_controls_box, 0);
-      }
-
-      g_object_unref(g->curve_basic_controls_box);
-    }
-  }
-}
-
 static void _create_primaries_page(dt_iop_module_t *self, const dt_iop_agx_gui_data_t *g)
 {
   GtkWidget *parent = self->widget;
@@ -2221,30 +2185,24 @@ void gui_init(dt_iop_module_t *self)
   {
     GtkWidget *settings_page = dt_ui_notebook_page(g->notebook, N_("settings"), _("main look and curve settings"));
     self->widget = settings_page;
-    _add_look_box(self, g);
     _add_exposure_box(self, g);
-    // we'll trigger a 'reparenting' to get the basic curve params here
+    _add_look_box(self, g);
 
     GtkWidget *curve_page = dt_ui_notebook_page(g->notebook, N_("curve"), _("detailed curve settings"));
     self->widget = curve_page;
+    gtk_box_pack_start(GTK_BOX(curve_page), g->curve_basic_controls_box, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(curve_page), g->curve_graph_box, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(curve_page), g->curve_advanced_controls_box, FALSE, FALSE, 0);
-
-    // reparent on tab switch
-    g_signal_connect(g->notebook, "switch-page", G_CALLBACK(_notebook_page_changed), self);
-
-    // initial 'reparenting' to the settings page
-    _notebook_page_changed(g->notebook, gtk_notebook_get_nth_page(g->notebook, 0), 0, self);
   }
   else
   {
     GtkWidget *settings_page = dt_ui_notebook_page(g->notebook, N_("settings"), _("main look and curve settings"));
     self->widget = settings_page;
-    _add_look_box(self, g);
     _add_exposure_box(self, g);
     gtk_box_pack_start(GTK_BOX(settings_page), g->curve_basic_controls_box, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(settings_page), g->curve_graph_box, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(settings_page), g->curve_advanced_controls_box, FALSE, FALSE, 0);
+    _add_look_box(self, g);
   }
 
   _create_primaries_page(self, g);
