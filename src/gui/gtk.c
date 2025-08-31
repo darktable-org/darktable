@@ -1280,7 +1280,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   _osx_add_view_menu_item(view_menu, C_("menu", "Darkroom"), "darkroom");
 
   GtkWidget *sep = gtk_separator_menu_item_new();
-  gtk_menu_shell_append(GTK_MENU_SHELL (view_menu), sep);
+  gtk_menu_shell_append(GTK_MENU_SHELL(view_menu), sep);
   gtk_widget_show(sep);
 
   _osx_add_view_menu_item(view_menu, C_("menu", "Slideshow"), "slideshow");
@@ -1292,7 +1292,15 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   _osx_add_view_menu_item(view_menu, C_("menu", "Tethering"), "tethering");
 #endif
 
-  gtk_menu_item_set_submenu(GTK_MENU_ITEM (view_root_menu), view_menu);
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(view_root_menu), view_menu);
+
+  // Window menu
+  GtkWidget *window_root_menu = gtk_menu_item_new_with_label(C_("menu", "Window"));
+  gtk_widget_show(window_root_menu);
+
+  GtkWidget *window_menu = gtk_menu_new();
+  gtk_widget_show(window_menu);
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(window_root_menu), window_menu);
 
   // Help menu
   GtkWidget *help_root_menu = gtk_menu_item_new_with_label(C_("menu", "Help"));
@@ -1300,24 +1308,25 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   GtkWidget *help_menu = gtk_menu_new();
   GtkWidget *help_manual = gtk_menu_item_new_with_label(C_("menu", "darktable Manual"));
-  gtk_menu_shell_append(GTK_MENU_SHELL (help_menu), help_manual);
+  gtk_menu_shell_append(GTK_MENU_SHELL(help_menu), help_manual);
   gtk_widget_show(help_manual);
   dt_gui_add_help_link(help_manual, "document_root");
   g_signal_connect(G_OBJECT(help_manual), "activate",
                    G_CALLBACK(dt_gui_show_help), help_manual);
 
   GtkWidget *help_home = gtk_menu_item_new_with_label(C_("menu", "darktable Homepage"));
-  gtk_menu_shell_append(GTK_MENU_SHELL (help_menu), help_home);
+  gtk_menu_shell_append(GTK_MENU_SHELL(help_menu), help_home);
   gtk_widget_show(help_home);
   g_signal_connect(G_OBJECT(help_home), "activate",
                    G_CALLBACK(_open_url), "https://www.darktable.org");
 
-  gtk_menu_item_set_submenu(GTK_MENU_ITEM (help_root_menu), help_menu);
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(help_root_menu), help_menu);
 
   // build the menu bar
   GtkWidget *menu_bar = gtk_menu_bar_new();
   gtk_widget_show(menu_bar);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), view_root_menu);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), window_root_menu);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), help_root_menu);
 
   gtkosx_application_set_menu_bar(OSXApp, GTK_MENU_SHELL(menu_bar));
@@ -1335,6 +1344,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
                    G_CALLBACK(dt_gui_preferences_show), NULL);
   gtkosx_application_insert_app_menu_item(OSXApp, mi_prefs, 1);
 
+  gtkosx_application_set_window_menu(OSXApp, GTK_MENU_ITEM(window_root_menu));
   gtkosx_application_set_help_menu(OSXApp, GTK_MENU_ITEM(help_root_menu));
 
   g_signal_connect(G_OBJECT(OSXApp), "NSApplicationBlockTermination",
