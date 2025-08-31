@@ -93,7 +93,7 @@ void (dt_gui_presets_add_generic)(const char *name,
                                 const int32_t version,
                                 const void *params,
                                 const int32_t params_size,
-                                const int32_t enabled,
+                                const gboolean enabled,
                                 const dt_develop_blend_colorspace_t blend_cst)
 {
   dt_develop_blend_params_t default_blendop_params;
@@ -111,7 +111,7 @@ void dt_gui_presets_add_with_blendop(const char *name,
                                      const void *params,
                                      const int32_t params_size,
                                      const void *blend_params,
-                                     const int32_t enabled)
+                                     const gboolean enabled)
 {
   sqlite3_stmt *stmt;
 

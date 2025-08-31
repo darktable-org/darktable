@@ -288,7 +288,7 @@ void init_presets(dt_iop_module_so_t *self)
                                  .deflicker_percentile = 50.0f,
                                  .deflicker_target_level = -4.0f,
                                  .compensate_exposure_bias = FALSE},
-     sizeof(dt_iop_exposure_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+     sizeof(dt_iop_exposure_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   const gboolean is_scene_referred = dt_is_scene_referred();
 
@@ -300,7 +300,7 @@ void init_presets(dt_iop_module_so_t *self)
     dt_gui_presets_add_generic
       (_("scene-referred default"), self->op, self->version(),
        NULL, 0,
-       1, DEVELOP_BLEND_CS_RGB_SCENE);
+       TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
     dt_gui_presets_update_format(BUILTIN_PRESET("scene-referred default"), self->op,
                                  self->version(), FOR_RAW);

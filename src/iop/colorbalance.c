@@ -288,7 +288,7 @@ static void add_preset(dt_iop_module_so_t *self, const char *name,
   if(p && bp)
   {
     gchar *prefixed_name = g_strdup_printf(BUILTIN_PREFIX "%s", name);
-    dt_gui_presets_add_with_blendop(prefixed_name, self->op, version, p, len, bp, 1);
+    dt_gui_presets_add_with_blendop(prefixed_name, self->op, version, p, len, bp, TRUE);
     g_free(prefixed_name);
   }
   free(bp);
