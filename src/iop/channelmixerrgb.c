@@ -395,7 +395,7 @@ void init_presets(dt_iop_module_so_t *self)
     dt_gui_presets_add_generic
       (_("scene-referred default"), self->op, self->version(),
        NULL, 0,
-       1, DEVELOP_BLEND_CS_RGB_SCENE);
+       TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
     dt_gui_presets_update_format(BUILTIN_PRESET("scene-referred default"), self->op,
                                  self->version(), FOR_MATRIX);
@@ -458,7 +458,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[2] = 0.f;
 
   dt_gui_presets_add_generic(_("monochrome | luminance-based"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // film emulations
 
@@ -493,7 +493,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[2] = 0.48737156f;
 
   dt_gui_presets_add_generic(_("monochrome | ILFORD HP5+"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // ILFORD Delta 100
   // https://www.ilfordphoto.com/amfile/file/download/file/3/product/681/
@@ -502,7 +502,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[2] = 0.50081619f;
 
   dt_gui_presets_add_generic(_("monochrome | ILFORD DELTA 100"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // ILFORD Delta 400 and 3200 - they have the same curve
   // https://www.ilfordphoto.com/amfile/file/download/file/1915/product/685/
@@ -512,7 +512,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[2] = 0.52009729f;
 
   dt_gui_presets_add_generic(_("monochrome | ILFORD DELTA 400 - 3200"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // ILFORD FP4+
   // https://www.ilfordphoto.com/amfile/file/download/file/1919/product/690/
@@ -521,7 +521,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[2] = 0.53701643f;
 
   dt_gui_presets_add_generic(_("monochrome | ILFORD FP4+"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // Fuji Acros 100
   // https://dacnard.wordpress.com/2013/02/15/the-real-shades-of-gray-bw-film-is-a-matter-of-heart-pt-1/
@@ -530,7 +530,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[2] = 0.353f;
 
   dt_gui_presets_add_generic(_("monochrome | Fuji Acros 100"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // Kodak ?
   // can't find spectral sensitivity curves and the illuminant under which they are produced,
@@ -547,7 +547,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.normalize_grey = FALSE;
   p.clip = FALSE;
   dt_gui_presets_add_generic(_("basic channel mixer"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // swap G-B
   p.red[0] = 1.f;
@@ -560,7 +560,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.blue[1] = 1.f;
   p.blue[2] = 0.f;
   dt_gui_presets_add_generic(_("channel swap | swap G and B"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // swap G-R
   p.red[0] = 0.f;
@@ -573,7 +573,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.blue[1] = 0.f;
   p.blue[2] = 1.f;
   dt_gui_presets_add_generic(_("channel swap | swap G and R"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // swap R-B
   p.red[0] = 0.f;
@@ -586,7 +586,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.blue[1] = 0.f;
   p.blue[2] = 0.f;
   dt_gui_presets_add_generic(_("channel swap | swap R and B"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
 static gboolean _area_mapping_active(const dt_iop_channelmixer_rgb_gui_data_t *g)
@@ -4572,7 +4572,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->chroma_spot), "value-changed",
                    G_CALLBACK(_spot_settings_changed_callback), self);
 
-  dt_gui_box_add(g->csspot.container, 
+  dt_gui_box_add(g->csspot.container,
                  g->spot_mode, g->use_mixing,
                  dt_gui_hbox(
                  dt_gui_vbox(dt_ui_section_label_new(C_("section", "input")),
