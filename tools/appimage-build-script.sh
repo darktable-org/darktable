@@ -54,6 +54,15 @@ cp -a /var/lib/lensfun-updates/* ../AppDir/usr/share/lensfun
 mkdir -p ../AppDir/usr/lib/libgphoto2
 cp -a /usr/lib/x86_64-linux-gnu/libgphoto2/* ../AppDir/usr/lib/libgphoto2
 
+# Include networking related GIO modules. We also have to set the GIO_EXTRA_MODULES
+# environment variable in AppRun.wrapped accordingly when starting AppImage
+# for the GLib's GIO subsystem to use these modules from our bundle.
+# Although these modules should also be on the host system, it seems that there
+# may be incompatibility issues with different versions of glib in the bundle and
+# on the host system, see https://github.com/darktable-org/darktable/issues/19266
+mkdir -p ../AppDir/usr/lib/gio
+cp -a /usr/lib/x86_64-linux-gnu/gio/* ../AppDir/usr/lib/gio
+
 # Since linuxdeploy is itself an AppImage, we don't rely on it being installed
 # on the build system, but download it every time we run this script. If that
 # doesn't suit you (for example, you want to build an AppImage without an
