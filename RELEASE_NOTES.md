@@ -61,6 +61,9 @@ changes (where available).
   lighttable instead of simply freezing the UI until the darkroom has
   finished opening.
 
+- Added the standard "Window" menu to the application menu bar on
+  macOS.
+
 ## Performance Improvements
 
 - Tune performance for the Lut3D module (5% to 20% speed-up).
