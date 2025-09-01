@@ -1689,20 +1689,30 @@ void dt_view_audio_stop(dt_view_manager_t *vm)
   vm->audio.audio_player_id = -1;
 }
 
-static void _match_rotation(cairo_t *cr, dt_dev_zoom_pos_t d, double dx, double dy,
-                                                              double cx, double cy)
+static void _match_rotation(cairo_t *cr,
+                            dt_dev_zoom_pos_t d,
+                            double dx,
+                            double dy,
+                            const double cx,
+                            const double cy)
 {
-  const double xx = d[2] - d[0], yx = d[3] - d[1], xy = d[4] - d[0], yy = d[5] - d[1];
+  const double xx = d[2] - d[0];
+  const double yx = d[3] - d[1];
+  const double xy = d[4] - d[0];
+  const double yy = d[5] - d[1];
 
   if(fabs(xx * yy - xy * yx) < 1e-10)
     return;
 
-  const double sx = hypot(xx, yx), sy = hypot(xy, yy);
+  const double sx = hypot(xx, yx);
+  const double sy = hypot(xy, yy);
   cairo_matrix_t matrix;
   cairo_matrix_init(&matrix, xx / sx, yx / sx, xy / sy, yy / sy, 0, 0);
   cairo_transform(cr, &matrix);
 
-  dx += 0.5 * cx; dy += 0.5 * cy;
+  dx += 0.5 * cx;
+  dy += 0.5 * cy;
+
   cairo_matrix_invert(&matrix);
   cairo_matrix_transform_point(&matrix, &dx, &dy);
   cairo_translate(cr, dx - 0.5 * cx, dy - 0.5 * cy);
