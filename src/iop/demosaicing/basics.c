@@ -26,39 +26,40 @@
 DT_OMP_DECLARE_SIMD(aligned(in, out))
 static void pre_median_b(float *out,
                          const float *const in,
-                         const dt_iop_roi_t *const roi,
+                         const int width,
+                         const int height,
                          const uint32_t filters,
                          const int num_passes,
                          const float threshold)
 {
-  dt_iop_image_copy_by_size(out, in, roi->width, roi->height, 1);
+  dt_iop_image_copy_by_size(out, in, width, height, 1);
 
   // now green:
   const int lim[5] = { 0, 1, 2, 1, 0 };
   for(int pass = 0; pass < num_passes; pass++)
   {
     DT_OMP_FOR()
-    for(int row = 3; row < roi->height - 3; row++)
+    for(int row = 3; row < height - 3; row++)
     {
       float med[9];
       int col = 3;
       if(FC(row, col, filters) != 1 && FC(row, col, filters) != 3) col++;
-      float *pixo = out + (size_t)roi->width * row + col;
-      const float *pixi = in + (size_t)roi->width * row + col;
-      for(; col < roi->width - 3; col += 2)
+      float *pixo = out + (size_t)width * row + col;
+      const float *pixi = in + (size_t)width * row + col;
+      for(; col < width - 3; col += 2)
       {
         int cnt = 0;
         for(int k = 0, i = 0; i < 5; i++)
         {
           for(int j = -lim[i]; j <= lim[i]; j += 2)
           {
-            if(fabsf(pixi[roi->width * (i - 2) + j] - pixi[0]) < threshold)
+            if(fabsf(pixi[width * (i - 2) + j] - pixi[0]) < threshold)
             {
-              med[k++] = pixi[roi->width * (i - 2) + j];
+              med[k++] = pixi[width * (i - 2) + j];
               cnt++;
             }
             else
-              med[k++] = 64.0f + pixi[roi->width * (i - 2) + j];
+              med[k++] = 64.0f + pixi[width * (i - 2) + j];
           }
         }
         for(int i = 0; i < 8; i++)
@@ -75,12 +76,13 @@ static void pre_median_b(float *out,
 
 static void pre_median(float *out,
                        const float *const in,
-                       const dt_iop_roi_t *const roi,
+                       const int width,
+                       const int height,
                        const uint32_t filters,
                        const int num_passes,
                        const float threshold)
 {
-  pre_median_b(out, in, roi, filters, num_passes, threshold);
+  pre_median_b(out, in, width, height, filters, num_passes, threshold);
 }
 
 #define SWAPmed(I, J)                                                                                        \
