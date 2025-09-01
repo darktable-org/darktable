@@ -247,8 +247,7 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->cache_obsolete = FALSE;
   pipe->backbuf = NULL;
   pipe->backbuf_scale = 0.0f;
-  pipe->backbuf_zoom_x = 0.0f;
-  pipe->backbuf_zoom_y = 0.0f;
+  memset(pipe->backbuf_zoom_pos, 0, sizeof(dt_dev_zoom_pos_t));
   pipe->output_imgid = NO_IMGID;
 
   memset(&pipe->scharr, 0, sizeof(dt_dev_detail_mask_t));
@@ -3018,8 +3017,10 @@ gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
   dt_iop_roi_t roi = (dt_iop_roi_t){ x, y, width, height, scale };
   pipe->final_width = width;
   pipe->final_height = height;
-  float pts[2] = { (x + 0.5f * width) / scale, (y + 0.5f * height) / scale };
-  dt_dev_distort_backtransform_plus(dev, pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
+
+  float zx = (x + 0.5f * width) / scale, zy = (y + 0.5f * height) / scale;
+  dt_dev_zoom_pos_t pts = { zx, zy, zx + 1.f, zy, zx, zy + 1.f };
+  dt_dev_distort_backtransform_plus(dev, pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 3);
 
   // get a snapshot of mask list
   if(pipe->forms) g_list_free_full(pipe->forms, (void (*)(void *))dt_masks_free_form);
@@ -3166,8 +3167,7 @@ restart:
     {
       memcpy(pipe->backbuf, buf, sizeof(uint8_t) * 4 * width * height);
       pipe->backbuf_scale = scale;
-      pipe->backbuf_zoom_x = pts[0] * pipe->iscale;
-      pipe->backbuf_zoom_y = pts[1] * pipe->iscale;
+      for(int i = 0; i < 6; i++) pipe->backbuf_zoom_pos[i] = pts[i] * pipe->iscale;
       pipe->output_imgid = pipe->image.id;
     }
   }

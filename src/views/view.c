@@ -1689,6 +1689,25 @@ void dt_view_audio_stop(dt_view_manager_t *vm)
   vm->audio.audio_player_id = -1;
 }
 
+static void _match_rotation(cairo_t *cr, dt_dev_zoom_pos_t d, double dx, double dy,
+                                                              double cx, double cy)
+{
+  const double xx = d[2] - d[0], yx = d[3] - d[1], xy = d[4] - d[0], yy = d[5] - d[1];
+
+  if(fabs(xx * yy - xy * yx) < 1e-10)
+    return;
+
+  const double sx = hypot(xx, yx), sy = hypot(xy, yy);
+  cairo_matrix_t matrix;
+  cairo_matrix_init(&matrix, xx / sx, yx / sx, xy / sy, yy / sy, 0, 0);
+  cairo_transform(cr, &matrix);
+
+  dx += 0.5 * cx; dy += 0.5 * cy;
+  cairo_matrix_invert(&matrix);
+  cairo_matrix_transform_point(&matrix, &dx, &dy);
+  cairo_translate(cr, dx - 0.5 * cx, dy - 0.5 * cy);
+}
+
 void dt_view_paint_surface(cairo_t *cr,
                            const size_t width,
                            const size_t height,
@@ -1698,27 +1717,27 @@ void dt_view_paint_surface(cairo_t *cr,
                            float buf_scale,
                            int buf_width,
                            int buf_height,
-                           float buf_zoom_x,
-                           float buf_zoom_y)
+                           dt_dev_zoom_pos_t buf_zoom_pos)
 {
   dt_develop_t *dev = darktable.develop;
+  dt_dev_pixelpipe_t *pp = dev->preview_pipe;
 
   int processed_width, processed_height;
   dt_dev_get_processed_size(port, &processed_width, &processed_height);
   if(!processed_width || !processed_height)
     return;
 
-  float pts[] = { buf_zoom_x, buf_zoom_y,
-                  dev->preview_pipe->backbuf_zoom_x, dev->preview_pipe->backbuf_zoom_y,
-                  port->zoom_x, port->zoom_y };
-  dt_dev_distort_transform_plus(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 3);
-
+  float pts[14];
+  memcpy(pts, buf_zoom_pos, sizeof(dt_dev_zoom_pos_t));
+  memcpy(pts + 6, pp->backbuf_zoom_pos, sizeof(dt_dev_zoom_pos_t));
+  pts[12] = port->zoom_x; pts[13] = port->zoom_y;
+  dt_dev_distort_transform_plus(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 7);
   const float offset_x  = pts[0] / processed_width  - 0.5f;
   const float offset_y  = pts[1] / processed_height - 0.5f;
-  const float preview_x = pts[2] / processed_width  - 0.5f;
-  const float preview_y = pts[3] / processed_height - 0.5f;
-  const float zoom_x    = pts[4] / processed_width  - 0.5f;
-  const float zoom_y    = pts[5] / processed_height - 0.5f;
+  const float preview_x = pts[6] / processed_width  - 0.5f;
+  const float preview_y = pts[7] / processed_height - 0.5f;
+  const float zoom_x    = pts[12]/ processed_width  - 0.5f;
+  const float zoom_y    = pts[13]/ processed_height - 0.5f;
 
   const dt_dev_zoom_t zoom = port->zoom;
   const int closeup = port->closeup;
@@ -1753,8 +1772,7 @@ void dt_view_paint_surface(cairo_t *cr,
   cairo_paint(cr);
 
   cairo_translate(cr, 0.5 * width, 0.5 * height);
-
-  dt_pthread_mutex_lock(&dev->preview_pipe->backbuf_mutex);
+  dt_pthread_mutex_lock(&pp->backbuf_mutex);
 
   const int maxw = MIN(port->width, backbuf_scale * processed_width * (1<<closeup) / ppd);
   const int maxh = MIN(port->height, backbuf_scale * processed_height * (1<<closeup) / ppd);
@@ -1773,14 +1791,11 @@ void dt_view_paint_surface(cairo_t *cr,
 
   cairo_rectangle(cr, -0.5 * maxw, -0.5 * maxh, maxw, maxh);
   cairo_clip(cr);
-
-  cairo_scale(cr, zoom_scale, zoom_scale);
-
   const double back_scale = (buf_scale == 0 ? 1.0 : backbuf_scale / buf_scale) * (1<<closeup) / ppd;
   const double trans_x = (offset_x - zoom_x) * processed_width * buf_scale - 0.5 * buf_width;
   const double trans_y = (offset_y - zoom_y) * processed_height * buf_scale - 0.5 * buf_height;
 
-  if(dev->preview_pipe->output_imgid == dev->image_storage.id
+  if(pp->output_imgid == dev->image_storage.id
      && (port->pipe->output_imgid != dev->image_storage.id
          || fabsf(backbuf_scale / buf_scale - 1.0f) > .09f
          || floor(maxw / 2 / back_scale) - 1 > MIN(- trans_x, trans_x + buf_width)
@@ -1792,34 +1807,35 @@ void dt_view_paint_surface(cairo_t *cr,
       port->pipe->status = DT_DEV_PIXELPIPE_DIRTY;
 
     // draw preview
-    const float wd = processed_width * dev->preview_pipe->processed_width / MAX(1, dev->full.pipe->processed_width);
-    const float ht = processed_height * dev->preview_pipe->processed_width / MAX(1, dev->full.pipe->processed_width);
+    const float wd = processed_width * pp->processed_width / MAX(1, dev->full.pipe->processed_width);
+    const float ht = processed_height * pp->processed_width / MAX(1, dev->full.pipe->processed_width);
 
-    cairo_surface_t *preview = dt_view_create_surface(dev->preview_pipe->backbuf,
-                                                      dev->preview_pipe->backbuf_width,
-                                                      dev->preview_pipe->backbuf_height);
-    cairo_set_source_surface(cr, preview, (preview_x - zoom_x) * wd - 0.5 * dev->preview_pipe->backbuf_width,
-                                          (preview_y - zoom_y) * ht - 0.5 * dev->preview_pipe->backbuf_height);
+    cairo_save(cr);
+    cairo_scale(cr, zoom_scale, zoom_scale);
+    _match_rotation(cr, pts + 6, (preview_x - zoom_x) * wd, (preview_y - zoom_y) * ht, 0, 0);
+    cairo_surface_t *preview = dt_view_create_surface(pp->backbuf, pp->backbuf_width, pp->backbuf_height);
+    cairo_set_source_surface(cr, preview, -0.5 * pp->backbuf_width, -0.5 * pp->backbuf_height);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
     cairo_paint(cr);
+    cairo_surface_destroy(preview);
+    cairo_restore(cr);
 
     dt_print_pipe(DT_DEBUG_EXPOSE,
         "  painting",
-         dev->preview_pipe, NULL, DT_DEVICE_NONE, NULL, NULL,
+         pp, NULL, DT_DEVICE_NONE, NULL, NULL,
          "size %4lux%-4lu processed %4.0fx%-4.0f "
          "buf %4dx%-4d scale=%.3f "
          "zoom (x=%6.2f y=%6.2f) -> offset (x=%+.3f y=%+.3f)",
          width, height, wd, ht,
-         dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height, zoom_scale,
-         dev->preview_pipe->backbuf_zoom_x, dev->preview_pipe->backbuf_zoom_y,
+         pp->backbuf_width, pp->backbuf_height, zoom_scale,
+         pp->backbuf_zoom_pos[0], pp->backbuf_zoom_pos[1],
          preview_x, preview_y);
-    cairo_surface_destroy(preview);
   }
 
-  dt_pthread_mutex_unlock(&dev->preview_pipe->backbuf_mutex);
+  dt_pthread_mutex_unlock(&pp->backbuf_mutex);
 
   if(port->pipe->output_imgid == dev->image_storage.id
-     || dev->preview_pipe->output_imgid != dev->image_storage.id)
+     || pp->output_imgid != dev->image_storage.id)
   {
     dt_print_pipe(DT_DEBUG_EXPOSE,
         "  painting",
@@ -1829,10 +1845,11 @@ void dt_view_paint_surface(cairo_t *cr,
          "zoom (x=%6.2f y=%6.2f) -> offset (x=%+.3f y=%+.3f)",
          width, height, processed_width, processed_height,
          buf_width, buf_height, buf_scale,
-         buf_zoom_x, buf_zoom_y,
+         buf_zoom_pos[0], buf_zoom_pos[1],
          offset_x, offset_y);
-    cairo_scale(cr, back_scale / zoom_scale, back_scale / zoom_scale);
-    cairo_translate(cr, trans_x, trans_y);
+
+    cairo_scale(cr, back_scale, back_scale);
+    _match_rotation(cr, pts, trans_x, trans_y, buf_width, buf_height);
     cairo_surface_t *surface = dt_view_create_surface(buf, buf_width, buf_height);
     cairo_set_source_surface(cr, surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
