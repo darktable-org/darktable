@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2024 darktable developers.
+    Copyright (C) 2011-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -274,7 +274,8 @@ static void _filter_non_printable(char *string, size_t length)
   }
 }
 
-static dt_lib_metadata_info_t *_get_metadata_per_index(const int index, dt_lib_module_t *self)
+static dt_lib_metadata_info_t *_get_metadata_per_index(const int index,
+                                                       dt_lib_module_t *self)
 {
   dt_lib_metadata_view_t *d = self->data;
   for(GList *meta = d->metadata; meta; meta = g_list_next(meta))
@@ -286,7 +287,9 @@ static dt_lib_metadata_info_t *_get_metadata_per_index(const int index, dt_lib_m
   return NULL;
 }
 
-static void _metadata_update_markup(const gint32 i, const char *const format, dt_lib_module_t *self)
+static void _metadata_update_markup(const gint32 i,
+                                    const char *const format,
+                                    dt_lib_module_t *self)
 {
   dt_lib_metadata_info_t *m = _get_metadata_per_index(i, self);
   dt_lib_metadata_view_t *d = self->data;
@@ -298,7 +301,9 @@ static void _metadata_update_markup(const gint32 i, const char *const format, dt
 }
 
 /* helper function for updating a metadata value */
-static void _metadata_update_value(const int i, const char *value, dt_lib_module_t *self)
+static void _metadata_update_value(const int i,
+                                   const char *value,
+                                   dt_lib_module_t *self)
 {
   dt_lib_metadata_view_t *d = self->data;
   gboolean validated = g_utf8_validate(value, -1, NULL);
@@ -315,7 +320,9 @@ static void _metadata_update_value(const int i, const char *value, dt_lib_module
   }
 }
 
-static void _metadata_update_tooltip(const int i, const char *tooltip, dt_lib_module_t *self)
+static void _metadata_update_tooltip(const int i,
+                                     const char *tooltip,
+                                     dt_lib_module_t *self)
 {
   dt_lib_metadata_info_t *m = _get_metadata_per_index(i, self);
   if(m)
@@ -325,7 +332,9 @@ static void _metadata_update_tooltip(const int i, const char *tooltip, dt_lib_mo
   }
 }
 
-static void _metadata_update_timestamp(const int i, const GTimeSpan gts, dt_lib_module_t *self)
+static void _metadata_update_timestamp(const int i,
+                                       const GTimeSpan gts,
+                                       dt_lib_module_t *self)
 {
   char datetime[200];
   const gboolean valid = gts ? dt_datetime_gtimespan_to_local(datetime, sizeof(datetime), gts, FALSE, TRUE) : FALSE;
@@ -346,7 +355,10 @@ static gint _lib_metadata_sort_index(gconstpointer a, gconstpointer b)
   return ma->index - mb->index;
 }
 
-static void _metadata_get_flags(const dt_image_t *const img, char *const text, char *const tooltip, const size_t tooltip_size)
+static void _metadata_get_flags(const dt_image_t *const img,
+                                char *const text,
+                                char *const tooltip,
+                                const size_t tooltip_size)
 {
 #define EMPTY_FIELD '.'
 #define FALSE_FIELD '.'
@@ -698,7 +710,10 @@ void gui_update(dt_lib_module_t *self)
       {
         char tooltip_filmroll[300] = {0};
         dt_image_film_roll(img, text, sizeof(text));
-        snprintf(tooltip_filmroll, sizeof(tooltip_filmroll), _("double-click to jump to film roll\n%s"), text);
+        snprintf(tooltip_filmroll,
+                 sizeof(tooltip_filmroll),
+                 _("double-click to jump to film roll\n%s"),
+                 text);
         _metadata_update_tooltip(md_internal_filmroll, tooltip_filmroll, self);
         _metadata_update_value(md_internal_filmroll, text, self);
       }
@@ -731,7 +746,9 @@ void gui_update(dt_lib_module_t *self)
       break;
 
       case md_internal_local_copy:
-        (void)g_strlcpy(text, (img->flags & DT_IMAGE_LOCAL_COPY) ? _("yes") : _("no"), sizeof(text));
+        (void)g_strlcpy(text,
+                        (img->flags & DT_IMAGE_LOCAL_COPY) ? _("yes") : _("no"),
+                        sizeof(text));
         _metadata_update_value(md_internal_local_copy, text, self);
         break;
 
@@ -773,7 +790,10 @@ void gui_update(dt_lib_module_t *self)
         break;
 
       case md_exif_aperture:
-        (void)g_snprintf(text, sizeof(text), "f/%.1f", (double)img->exif_aperture);
+        (void)g_snprintf(text,
+                         sizeof(text),
+                         "f/%.1f",
+                         (double)img->exif_aperture);
         _metadata_update_value(md_exif_aperture, text, self);
         break;
 
@@ -789,7 +809,10 @@ void gui_update(dt_lib_module_t *self)
         g_strlcpy(text, NODATA_STRING, sizeof(text));
         if(img->exif_exposure_bias != DT_EXIF_TAG_UNINITIALIZED)
         {
-          (void)g_snprintf(text, sizeof(text), _("%+.2f EV"), (double)img->exif_exposure_bias);
+          (void)g_snprintf(text,
+                           sizeof(text),
+                           _("%+.2f EV"),
+                           (double)img->exif_exposure_bias);
         }
         _metadata_update_value(md_exif_exposure_bias, text, self);
         break;
@@ -811,7 +834,10 @@ void gui_update(dt_lib_module_t *self)
         break;
 
       case md_exif_focal_length:
-        (void)g_snprintf(text, sizeof(text), _("%.1f mm"), (double)img->exif_focal_length);
+        (void)g_snprintf(text,
+                         sizeof(text),
+                         _("%.1f mm"),
+                         (double)img->exif_focal_length);
         _metadata_update_value(md_exif_focal_length, text, self);
         break;
 
@@ -823,12 +849,17 @@ void gui_update(dt_lib_module_t *self)
         }
         if(img->exif_crop != 1.0f)
         {
-          (void)g_snprintf(text, sizeof(text), _("%.1f mm"),
+          (void)g_snprintf(text,
+                           sizeof(text),
+                           _("%.1f mm"),
                            (double)img->exif_crop * img->exif_focal_length);
         }
         else
         {
-          (void)g_snprintf(text, sizeof(text), _("%.1f mm"), (double)img->exif_focal_length);
+          (void)g_snprintf(text,
+                           sizeof(text),
+                           _("%.1f mm"),
+                           (double)img->exif_focal_length);
         }
         _metadata_update_value(md_exif_focal_length_ff, text, self);
         break;
@@ -836,7 +867,10 @@ void gui_update(dt_lib_module_t *self)
       case md_exif_crop_factor:
         if(img->exif_crop)
         {
-          (void)g_snprintf(text, sizeof(text), _("%.1f"), (double)img->exif_crop);
+          (void)g_snprintf(text,
+                           sizeof(text),
+                           _("%.1f"),
+                           (double)img->exif_crop);
           _metadata_update_value(md_exif_crop_factor, text, self);
         }
         else
@@ -847,16 +881,28 @@ void gui_update(dt_lib_module_t *self)
 
       case md_exif_focus_distance:
         (void)g_strlcpy(text, NODATA_STRING, sizeof(text));
-        // Actually we want to check for 0xFFFFFFFF (this value in the SubjectDistance tag means "infinity").
-        // But we store this tag as a float and there is a concern that the equality check may not be 100% reliable.
-        // See discussion at https://github.com/darktable-org/darktable/pull/12398
+        // Actually we want to check for 0xFFFFFFFF (this value in the
+        // SubjectDistance tag means "infinity"). But we store this
+        // tag as a float and there is a concern that the equality
+        // check may not be 100% reliable. See discussion at
+        // https://github.com/darktable-org/darktable/pull/12398
         if(img->exif_focus_distance >= (float)0xFFFFFF00)
         {
           (void)g_snprintf(text, sizeof(text), _("infinity"));
         }
-        else if(!(dt_isnan(img->exif_focus_distance) || (fpclassify(img->exif_focus_distance) == FP_ZERO) ))
+        // Interpret the value as a distance only if it is a valid number
+        // and not zero
+        else if(!
+                (
+                dt_isnan(img->exif_focus_distance)
+                || (fpclassify(img->exif_focus_distance) == FP_ZERO)
+                )
+               )
         {
-          (void)g_snprintf(text, sizeof(text), _("%.2f m"), (double)img->exif_focus_distance);
+          (void)g_snprintf(text,
+                           sizeof(text),
+                           _("%.2f m"),
+                           (double)img->exif_focus_distance);
         }
         _metadata_update_value(md_exif_focus_distance, text, self);
         break;
@@ -935,7 +981,11 @@ void gui_update(dt_lib_module_t *self)
           else
           {
             const gchar NS = img->geoloc.latitude < 0 ? 'S' : 'N';
-            (void)g_snprintf(text, sizeof(text), "%c %09.6f", NS, fabs(img->geoloc.latitude));
+            (void)g_snprintf(text,
+                             sizeof(text),
+                             "%c %09.6f",
+                             NS,
+                             fabs(img->geoloc.latitude));
             _metadata_update_value(md_geotagging_lat, text, self);
           }
         }
@@ -957,7 +1007,11 @@ void gui_update(dt_lib_module_t *self)
           else
           {
             const gchar EW = img->geoloc.longitude < 0 ? 'W' : 'E';
-            (void)g_snprintf(text, sizeof(text), "%c %010.6f", EW, fabs(img->geoloc.longitude));
+            (void)g_snprintf(text,
+                             sizeof(text),
+                             "%c %010.6f",
+                             EW,
+                             fabs(img->geoloc.longitude));
             _metadata_update_value(md_geotagging_lon, text, self);
           }
         }
@@ -978,7 +1032,11 @@ void gui_update(dt_lib_module_t *self)
           }
           else
           {
-            (void)g_snprintf(text, sizeof(text), "%.2f %s", img->geoloc.elevation, _("m"));
+            (void)g_snprintf(text,
+                             sizeof(text),
+                             "%.2f %s",
+                             img->geoloc.elevation,
+                             _("m"));
             _metadata_update_value(md_geotagging_ele, text, self);
           }
         }
@@ -1018,12 +1076,15 @@ void gui_update(dt_lib_module_t *self)
                 catend[0] = '\0';
                 char *catstart = g_strrstr(category, "|");
                 catstart = catstart ? catstart + 1 : category;
-                dt_util_str_cat(&categoriesstring, categoriesstring ? "\n%s: %s " : "%s: %s ",
-                                                   catstart, ((dt_tag_t *)taglist->data)->leave);
+                dt_util_str_cat(&categoriesstring,
+                                categoriesstring ? "\n%s: %s " : "%s: %s ",
+                                catstart,
+                                ((dt_tag_t *)taglist->data)->leave);
               }
               else
-                dt_util_str_cat(&categoriesstring, categoriesstring ? "\n%s" : "%s",
-                                                   ((dt_tag_t *)taglist->data)->leave);
+                dt_util_str_cat(&categoriesstring,
+                                categoriesstring ? "\n%s" : "%s",
+                                ((dt_tag_t *)taglist->data)->leave);
               g_free(category);
             }
           }
@@ -1102,7 +1163,8 @@ void gui_update(dt_lib_module_t *self)
 
 /* reset */
 fill_minuses:
-  for(int k = 0; k < md_xmp_metadata + d->metadata_count; k++) _metadata_update_value(k, NODATA_STRING, self);
+  for(int k = 0; k < md_xmp_metadata + d->metadata_count; k++)
+    _metadata_update_value(k, NODATA_STRING, self);
 #ifdef USE_LUA
   dt_lua_async_call_alien(lua_update_metadata,
                           0,NULL,NULL,
@@ -1139,7 +1201,9 @@ static void _jump_to()
   }
 }
 
-static gboolean _filmroll_clicked(GtkWidget *widget, GdkEventButton *event, gpointer null)
+static gboolean _filmroll_clicked(GtkWidget *widget,
+                                  GdkEventButton *event,
+                                  gpointer null)
 {
   if(event->type != GDK_2BUTTON_PRESS) return FALSE;
   _jump_to();
@@ -1213,7 +1277,9 @@ static void _lib_metadata_refill_grid(dt_lib_module_t *self)
   }
 }
 
-static void _add_grid_row(dt_lib_metadata_info_t *m, int row, dt_lib_module_t *self)
+static void _add_grid_row(dt_lib_metadata_info_t *m,
+                          int row,
+                          dt_lib_module_t *self)
 {
   dt_lib_metadata_view_t *d = self->data;
 
@@ -1256,7 +1322,9 @@ static void _free_metadata_queue(dt_lib_metadata_info_t *m)
   g_free(m);
 }
 
-static void _metadata_changed(gpointer instance, int type, dt_lib_module_t *self)
+static void _metadata_changed(gpointer instance,
+                              int type,
+                              dt_lib_module_t *self)
 {
   dt_lib_metadata_view_t *d = self->data;
 
@@ -1269,7 +1337,7 @@ static void _metadata_changed(gpointer instance, int type, dt_lib_module_t *self
   GList *new_metadata_keys = NULL;
 
   dt_pthread_mutex_lock(&darktable.metadata_threadsafe);
-  
+
   for(GList *iter = dt_metadata_get_list(); iter; iter = iter->next)
   {
     const dt_metadata_t *metadata = (dt_metadata_t *)iter->data;
@@ -1297,7 +1365,8 @@ static void _metadata_changed(gpointer instance, int type, dt_lib_module_t *self
 
       if(!found)
         // new metadata, store the new key
-        new_metadata_keys = g_list_prepend(new_metadata_keys, GINT_TO_POINTER(metadata->key));
+        new_metadata_keys = g_list_prepend(new_metadata_keys,
+                                           GINT_TO_POINTER(metadata->key));
     }
   }
 
@@ -1405,7 +1474,9 @@ static void _save_preferences(dt_lib_module_t *self)
   g_free(pref);
 }
 
-static void _select_toggled_callback(GtkCellRendererToggle *cell_renderer, gchar *path_str, gpointer user_data)
+static void _select_toggled_callback(GtkCellRendererToggle *cell_renderer,
+                                     gchar *path_str,
+                                     gpointer user_data)
 {
   GtkListStore *store = (GtkListStore *)user_data;
   GtkTreeIter iter;
@@ -1419,7 +1490,10 @@ static void _select_toggled_callback(GtkCellRendererToggle *cell_renderer, gchar
   gtk_tree_path_free(path);
 }
 
-static void _drag_data_inserted(GtkTreeModel *tree_model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data)
+static void _drag_data_inserted(GtkTreeModel *tree_model,
+                                GtkTreePath *path,
+                                GtkTreeIter *iter,
+                                gpointer user_data)
 {
   _dndactive = TRUE;
 }
@@ -1442,7 +1516,8 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   gtk_widget_set_size_request(w, -1, DT_PIXEL_APPLY_DPI(600));
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
   gtk_scrolled_window_set_overlay_scrolling(GTK_SCROLLED_WINDOW(w), FALSE);
-  gtk_box_pack_start(GTK_BOX(area), w, TRUE, TRUE, 0);
+
+  dt_gui_box_add(area, w);
 
   GtkListStore *store = gtk_list_store_new(DT_METADATA_PREF_NUM_COLS,
                                            G_TYPE_INT, G_TYPE_STRING, G_TYPE_BOOLEAN);
@@ -1486,7 +1561,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   gtk_tree_view_set_reorderable(GTK_TREE_VIEW(view), TRUE);
   g_signal_connect(G_OBJECT(model), "row-inserted", G_CALLBACK(_drag_data_inserted), NULL);
 
-  gtk_container_add(GTK_CONTAINER(w), view);
+  dt_gui_box_add(w, view);
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
