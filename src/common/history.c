@@ -206,6 +206,7 @@ gboolean dt_history_load_and_apply(const dt_imgid_t imgid,
        "dt_history_load_and_apply");
     dt_mipmap_cache_remove(imgid);
     dt_image_update_final_size(imgid);
+    dt_image_cache_set_change_timestamp(imgid);
   }
   dt_unlock_image(imgid);
   // signal that the mipmap need to be updated
