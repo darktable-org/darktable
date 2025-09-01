@@ -471,7 +471,7 @@ static void _view_paint_surface(cairo_t *cr,
                         port, window,
                         p->backbuf, p->backbuf_scale,
                         p->backbuf_width, p->backbuf_height,
-                        p->backbuf_zoom_x, p->backbuf_zoom_y);
+                        p->backbuf_zoom_pos);
 
   dt_pthread_mutex_unlock(&p->backbuf_mutex);
 }

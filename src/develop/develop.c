@@ -3513,8 +3513,7 @@ void dt_dev_image(const dt_imgid_t imgid,
                   float *scale,
                   size_t *buf_width,
                   size_t *buf_height,
-                  float *zoom_x,
-                  float *zoom_y,
+                  dt_dev_zoom_pos_t zoom_pos,
                   const int snapshot_id,
                   GList *module_filter_out,
                   const int devid,
@@ -3538,7 +3537,7 @@ void dt_dev_image(const dt_imgid_t imgid,
   dev.full = darktable.develop->full;
   dev.full.pipe = pipe;
 
-  if(!zoom_x && !zoom_y)
+  if(zoom_pos)
   {
     dev.full.zoom      = DT_ZOOM_FIT;
     dev.full.width     = width;
@@ -3563,8 +3562,8 @@ void dt_dev_image(const dt_imgid_t imgid,
   if(buf_width) *buf_width = pipe->backbuf_width;
   if(buf_height) *buf_height = pipe->backbuf_height;
   if(scale) *scale = pipe->backbuf_scale;
-  if(zoom_x) *zoom_x = pipe->backbuf_zoom_x;
-  if(zoom_y) *zoom_y = pipe->backbuf_zoom_y;
+
+  if(zoom_pos) memcpy(zoom_pos, pipe->backbuf_zoom_pos, sizeof(dt_dev_zoom_pos_t));
 
   dt_dev_cleanup(&dev);
 }

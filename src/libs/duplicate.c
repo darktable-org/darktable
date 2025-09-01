@@ -46,8 +46,7 @@ typedef struct dt_lib_duplicate_t
   float scale;
   size_t buf_width;
   size_t buf_height;
-  float zoom_x;
-  float zoom_y;
+  dt_dev_zoom_pos_t zoom_pos;
 
   dt_view_context_t view_ctx;
   int preview_id;
@@ -224,17 +223,15 @@ void gui_post_expose(dt_lib_module_t *self,
 
     dt_dev_image(d->imgid, width, height, -1,
                  &d->buf, &d->scale,
-                 &d->buf_width, &d->buf_height,
-                 &d->zoom_x, &d->zoom_y, -1, NULL, DT_DEVICE_NONE, FALSE);
+                 &d->buf_width, &d->buf_height, d->zoom_pos,
+                 -1, NULL, DT_DEVICE_NONE, FALSE);
 
     d->preview_id = d->imgid;
   }
 
   if(d->buf)
     dt_view_paint_surface(cri, width, height, &darktable.develop->full, DT_WINDOW_MAIN,
-                          d->buf, d->scale,
-                          d->buf_width, d->buf_height,
-                          d->zoom_x, d->zoom_y);
+                          d->buf, d->scale, d->buf_width, d->buf_height, d->zoom_pos);
 }
 
 static void _thumb_remove(gpointer user_data)

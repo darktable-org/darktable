@@ -280,6 +280,7 @@ struct dt_l10n_t;
 
 typedef float dt_boundingbox_t[4];  //(x,y) of upperleft, then (x,y) of lowerright
 typedef float dt_pickerbox_t[8];
+typedef float dt_dev_zoom_pos_t[6];
 
 typedef enum dt_debug_thread_t
 {

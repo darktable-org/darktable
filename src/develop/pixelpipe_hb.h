@@ -143,7 +143,7 @@ typedef struct dt_dev_pixelpipe_t
   size_t backbuf_size;
   int backbuf_width, backbuf_height;
   float backbuf_scale;
-  float backbuf_zoom_x, backbuf_zoom_y;
+  dt_dev_zoom_pos_t backbuf_zoom_pos;
   dt_hash_t backbuf_hash;
   dt_pthread_mutex_t mutex, backbuf_mutex, busy_mutex;
   int final_width, final_height;

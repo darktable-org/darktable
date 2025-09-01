@@ -666,8 +666,7 @@ void dt_view_paint_surface(cairo_t *cr,
                            float buf_scale,
                            int buf_width,
                            int buf_height,
-                           float buf_zoom_x,
-                           float buf_zoom_y);
+                           dt_dev_zoom_pos_t buf_zoom_pos);
 
 typedef dt_hash_t dt_view_context_t;
 
