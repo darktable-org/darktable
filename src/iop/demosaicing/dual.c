@@ -54,7 +54,7 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece,
   }
   else
   {
-    float *vng_image = dt_alloc_align_float(msize * 4);
+    float *vng_image = dt_iop_image_alloc(roi->width, roi->height, 4);
     if(vng_image)
     {
       vng_interpolate(vng_image, raw_data, roi, filters, xtrans, TRUE);

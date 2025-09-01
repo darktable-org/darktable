@@ -252,11 +252,12 @@ static gboolean _demosaic_full(const dt_dev_pixelpipe_iop_t *const piece,
 }
 
 // Implemented in demosaicing/amaze.cc
-void amaze_demosaic(dt_dev_pixelpipe_iop_t *piece,
-                    const float *const in,
+void amaze_demosaic(const float *const in,
                     float *out,
-                    const dt_iop_roi_t *const roi_in,
-                    const uint32_t filters);
+                    const int width,
+                    const int height,
+                    const uint32_t filters,
+                    const float procmin);
 
 #include "iop/demosaicing/basics.c"
 #include "iop/demosaicing/vng.c"
@@ -592,8 +593,7 @@ void process(dt_iop_module_t *self,
     }
   }
 
-  const uint8_t(*const xtrans)[6] = xtrans_new; // (const uint8_t(*const)[6])pipe->dsc.xtrans;
-
+  const uint8_t(*const xtrans)[6] = xtrans_new;
   const dt_iop_demosaic_data_t *d = piece->data;
   const dt_iop_demosaic_gui_data_t *g = self->gui_data;
   const uint32_t filters = dt_rawspeed_crop_dcraw_filters(pipe->dsc.filters, roi_in->x, roi_in->y);
@@ -659,13 +659,17 @@ void process(dt_iop_module_t *self,
                          || demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR;
   const gboolean do_capture = !passthru &&  !is_4bayer && !show_dual && !run_fast && d->cs_iter;
 
+  const float procmax = dt_iop_get_processed_maximum(piece);
+  const float procmin = dt_iop_get_processed_minimum(piece);
+  const int exif_iso = img->exif_iso;
+
   if(!direct)
-    out = dt_alloc_align_float((size_t)4 * width * height);
+    out = dt_iop_image_alloc(width, height, 4);
 
   if(is_bayer && d->green_eq != DT_IOP_GREEN_EQ_NO && no_masking)
   {
-    const float threshold = 0.0001f * img->exif_iso;
-    in = dt_alloc_align_float((size_t)height * width);
+    const float threshold = 0.0001f * exif_iso;
+    in = dt_iop_image_alloc(width, height, 1);
     float *aux = NULL;
 
     switch(d->green_eq)
@@ -677,7 +681,7 @@ void process(dt_iop_module_t *self,
         green_equilibration_lavg(in, (float *)i, width, height, filters, threshold);
         break;
       case DT_IOP_GREEN_EQ_BOTH:
-        aux = dt_alloc_align_float((size_t)height * width);
+        aux = dt_iop_image_alloc(width, height, 1);
         green_equilibration_favg(aux, (float *)i, width, height, filters);
         green_equilibration_lavg(in, aux, width, height, filters, threshold);
         dt_free_align(aux);
@@ -688,18 +692,18 @@ void process(dt_iop_module_t *self,
   }
 
   if(demosaic_mask)
-    demosaic_box3(piece, out, in, roi_in, filters, xtrans);
+    demosaic_box3(out, in, width, height, filters, xtrans);
   else if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
-    passthrough_monochrome(out, in, roi_in);
+    passthrough_monochrome(out, in, width, height);
   else if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR)
-    passthrough_color(out, in, roi_in, filters, xtrans);
+    passthrough_color(out, in, width, height, filters, xtrans);
   else if(is_xtrans)
   {
     const int passes = base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3 ? 3 : 1;
     if(demosaicing_method == DT_IOP_DEMOSAIC_FDC)
-      xtrans_fdc_interpolate(self, out, in, roi_in, xtrans);
+      xtrans_fdc_interpolate(out, in, width, height, xtrans, exif_iso);
     else if(base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN || base_demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3)
-      xtrans_markesteijn_interpolate(out, in, roi_in, xtrans, passes);
+      xtrans_markesteijn_interpolate(out, in, width, height, xtrans, passes);
     else
       vng_interpolate(out, in, roi_in, filters, xtrans, FALSE);
   }
@@ -715,13 +719,13 @@ void process(dt_iop_module_t *self,
       }
     }
     else if(base_demosaicing_method == DT_IOP_DEMOSAIC_RCD)
-      rcd_demosaic(piece, out, in, roi_in, filters);
+      rcd_demosaic(out, in, width, height, filters, procmax);
     else if(demosaicing_method == DT_IOP_DEMOSAIC_LMMSE)
-      lmmse_demosaic(piece, out, in, roi_in, filters, d->lmmse_refine);
+      lmmse_demosaic(out, in, width, height, filters, d->lmmse_refine, procmax);
     else if(base_demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
-      demosaic_ppg(out, in, roi_in, filters, d->median_thrs);
+      demosaic_ppg(out, in, width, height, filters, d->median_thrs);
     else
-      amaze_demosaic(piece, in, out, roi_in, filters);
+      amaze_demosaic(in, out, width, height, filters, procmin);
   }
 
   if(pipe->want_detail_mask)

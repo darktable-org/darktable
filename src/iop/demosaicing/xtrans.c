@@ -41,7 +41,8 @@ static inline const short *_hexmap(const int row,
 */
 static void xtrans_markesteijn_interpolate(float *out,
                                            const float *const in,
-                                           const dt_iop_roi_t *const roi_in,
+                                           const int width,
+                                           const int height,
                                            const uint8_t (*const xtrans)[6],
                                            const int passes)
 {
@@ -54,9 +55,6 @@ static void xtrans_markesteijn_interpolate(float *out,
   // sgrow/sgcol is the offset in the sensor matrix of the solitary
   // green pixels (initialized here only to avoid compiler warning)
   unsigned short sgrow = 0, sgcol = 0;
-
-  const int width = roi_in->width;
-  const int height = roi_in->height;
   const unsigned ndir = 4 << (passes > 1);
 
   const size_t buffer_size = (size_t)TS * TS * (ndir * 4 + 3) * sizeof(float);
@@ -136,12 +134,12 @@ static void xtrans_markesteijn_interpolate(float *out,
           if((col >= 0) && (row >= 0) && (col < width) && (row < height))
           {
             const int f = FCNxtrans(row, col, xtrans);
-            for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[roi_in->width * row + col] : 0.f;
+            for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[width * row + col] : 0.f;
           }
           else
           {
             // mirror a border pixel if beyond image edge
-            const int c = FCxtrans(row, col, NULL, xtrans);
+            const int c = FCNxtrans(row, col, xtrans);
             for(int cc = 0; cc < 3; cc++)
             {
               if(cc != c)
@@ -151,7 +149,7 @@ static void xtrans_markesteijn_interpolate(float *out,
 #define TRANSLATE(n, size) ((n >= size) ? (2 * size - n - 2) : abs(n))
                 const int cy = TRANSLATE(row, height), cx = TRANSLATE(col, width);
                 if(c == FCNxtrans(cy, cx, xtrans))
-                  pix[c] = in[roi_in->width * cy + cx];
+                  pix[c] = in[width * cy + cx];
                 else
                 {
                   // interpolate if mirror pixel is a different color
@@ -164,7 +162,7 @@ static void xtrans_markesteijn_interpolate(float *out,
                       const int ff = FCNxtrans(yy, xx, xtrans);
                       if(ff == c)
                       {
-                        sum += in[roi_in->width * yy + xx];
+                        sum += in[width * yy + xx];
                         count++;
                       }
                     }
@@ -199,7 +197,7 @@ static void xtrans_markesteijn_interpolate(float *out,
           // if in row of horizontal red & blue pairs (or processing
           // vertical red & blue pairs near image bottom), reset min/max
           // between each pair
-          if(FCxtrans(row, col, NULL, xtrans) == 1)
+          if(FCNxtrans(row, col, xtrans) == 1)
           {
             min = FLT_MAX, max = 0.0f;
             continue;
@@ -300,7 +298,7 @@ static void xtrans_markesteijn_interpolate(float *out,
           for(int col = (left - sgcol + pad_rb_g + 2) / 3 * 3 + sgcol; col < mcol - pad_rb_g; col += 3)
           {
             float(*rfx)[3] = &rgb[0][row - top][col - left];
-            int h = FCxtrans(row, col + 1, NULL, xtrans);
+            int h = FCNxtrans(row, col + 1, xtrans);
             float diff[6] = { 0.0f };
             // interplated color: first index is red/blue, second is
             // pass, is double actual result
@@ -514,11 +512,12 @@ static void xtrans_markesteijn_interpolate(float *out,
 #undef TS
 
 #define TS 122
-static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
-                                   float *out,
+static void xtrans_fdc_interpolate(float *out,
                                    const float *const in,
-                                   const dt_iop_roi_t *const roi_in,
-                                   const uint8_t (*const xtrans)[6])
+                                   const int width,
+                                   const int height,
+                                   const uint8_t (*const xtrans)[6],
+                                   const int iso)
 {
   static const short orth[12] = { 1, 0, 0, 1, -1, 0, 0, -1, 1, 0, 0, 1 },
                      patt[2][16] = { { 0, 1, 0, -1, 2, 0, -1, 0, 1, 1, 1, -1, 0, 0, 0, 0 },
@@ -532,8 +531,6 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
   // green pixels (initialized here only to avoid compiler warning)
   unsigned short sgrow = 0, sgcol = 0;
 
-  const int width = roi_in->width;
-  const int height = roi_in->height;
   static const int ndir = 4;
 
   static const float complex Minv[3][8] = {
@@ -1123,7 +1120,6 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
   // depending on the iso, use either a hybrid approach for chroma, or pure fdc
   float hybrid_fdc[2] = { 1.0f, 0.0f };
   const int xover_iso = dt_conf_get_int("plugins/darkroom/demosaic/fdc_xover_iso");
-  int iso = self->dev->image_storage.exif_iso;
   if(iso > xover_iso)
   {
     hybrid_fdc[0] = 0.0f;
@@ -1176,13 +1172,13 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
           if((col >= 0) && (row >= 0) && (col < width) && (row < height))
           {
             const int f = FCNxtrans(row, col, xtrans);
-            for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[roi_in->width * row + col] : 0.f;
-            *(i_src + TS * (row - top) + (col - left)) = in[roi_in->width * row + col];
+            for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[width * row + col] : 0.f;
+            *(i_src + TS * (row - top) + (col - left)) = in[width * row + col];
           }
           else
           {
             // mirror a border pixel if beyond image edge
-            const int c = FCxtrans(row, col, NULL, xtrans);
+            const int c = FCNxtrans(row, col, xtrans);
             for(int cc = 0; cc < 3; cc++)
               if(cc != c)
                 pix[cc] = 0.0f;
@@ -1192,8 +1188,8 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
                 const int cy = TRANSLATE(row, height), cx = TRANSLATE(col, width);
                 if(c == FCNxtrans(cy, cx, xtrans))
                 {
-                  pix[c] = in[roi_in->width * cy + cx];
-                  *(i_src + TS * (row - top) + (col - left)) = in[roi_in->width * cy + cx];
+                  pix[c] = in[width * cy + cx];
+                  *(i_src + TS * (row - top) + (col - left)) = in[width * cy + cx];
                 }
                 else
                 {
@@ -1207,7 +1203,7 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
                       const int ff = FCNxtrans(yy, xx, xtrans);
                       if(ff == c)
                       {
-                        sum += in[roi_in->width * yy + xx];
+                        sum += in[width * yy + xx];
                         count++;
                       }
                     }
@@ -1680,8 +1676,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
       for(int col = 0; col < 3; col++)
         for(int ng = 0, d = 0; d < 10; d += 2)
         {
-          const int g = FCxtrans(row, col, NULL, xtrans) == 1;
-          if(FCxtrans(row + orth[d] + 6, col + orth[d + 2] + 6, NULL, xtrans) == 1)
+          const int g = FCNxtrans(row, col, xtrans) == 1;
+          if(FCNxtrans(row + orth[d] + 6, col + orth[d + 2] + 6, xtrans) == 1)
             ng = 0;
           else
             ng++;

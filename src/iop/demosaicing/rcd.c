@@ -268,15 +268,13 @@ static void rcd_ppg_border(float *const out,
 }
 
 DT_OMP_DECLARE_SIMD(aligned(in, out : 64))
-static void demosaic_box3(dt_dev_pixelpipe_iop_t *piece,
-                            float *const restrict out,
-                            const float *const restrict in,
-                            const dt_iop_roi_t *const roi,
-                            const uint32_t filters,
-                            const uint8_t(*const xtrans)[6])
+static void demosaic_box3(float *const restrict out,
+                          const float *const restrict in,
+                          const int width,
+                          const int height,
+                          const uint32_t filters,
+                          const uint8_t(*const xtrans)[6])
 {
-  const int width = roi->width;
-  const int height = roi->height;
   DT_OMP_FOR()
   for(int row = 0; row < height; row++)
   {
@@ -303,15 +301,13 @@ static void demosaic_box3(dt_dev_pixelpipe_iop_t *piece,
 }
 
 DT_OMP_DECLARE_SIMD(aligned(in, out : 64))
-static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece,
-                         float *const restrict out,
+static void rcd_demosaic(float *const restrict out,
                          const float *const restrict in,
-                         const dt_iop_roi_t *const roi_in,
-                         const uint32_t filters)
+                         const int width,
+                         const int height,
+                         const uint32_t filters,
+                         const float scaler)
 {
-  const int width = roi_in->width;
-  const int height = roi_in->height;
-
   if(width < 2*RCD_BORDER || height < 2*RCD_BORDER)
   {
     rcd_ppg_border(out, in, width, height, filters, RCD_BORDER);
@@ -320,7 +316,6 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece,
 
   rcd_ppg_border(out, in, width, height, filters, RCD_MARGIN);
 
-  const float scaler = dt_iop_get_processed_maximum(piece);
   const float revscaler = 1.0f / scaler;
 
   const int num_vertical = 1 + (height - 2 * RCD_BORDER -1) / RCD_TILEVALID;
