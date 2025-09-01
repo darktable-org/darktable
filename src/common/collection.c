@@ -41,6 +41,11 @@
 #endif
 
 
+#ifdef USE_LUA
+#include "lua/call.h"
+#include "lua/events.h"
+#endif
+
 #define SELECT_QUERY "SELECT DISTINCT * FROM %s"
 #define LIMIT_QUERY "LIMIT ?1, ?2"
 
@@ -2689,6 +2694,12 @@ void dt_collection_update_query(const dt_collection_t *collection,
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_COLLECTION_CHANGED,
                             query_change, changed_property,
                             list, next);
+#ifdef USE_LUA
+    dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+        0, NULL, NULL,
+        LUA_ASYNC_TYPENAME, "const char*", "collection-changed",
+        LUA_ASYNC_DONE);
+#endif
   }
 }
 
