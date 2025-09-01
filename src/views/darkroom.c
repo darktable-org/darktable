@@ -167,11 +167,6 @@ void init(dt_view_t *self)
   dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, my_type, "display_image");
-
-  lua_pushcfunction(L, dt_lua_event_multiinstance_register);
-  lua_pushcfunction(L, dt_lua_event_multiinstance_destroy);
-  lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
-  dt_lua_event_add(L, "darkroom-image-loaded");
 #endif
 }
 

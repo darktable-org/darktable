@@ -541,7 +541,72 @@ static int lua_destroy_event(lua_State *L)
   return 0;
 }
 
+static int lua_query_event(lua_State *L)
+{
+  // 1 is the index name
+  // 2 is event name
+  const char *evt_name = luaL_checkstring(L, 2);
 
+  // get the event list
+  lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_event_list");
+
+  // get the table for this event and check to make sure it exists
+  lua_getfield(L, -1, evt_name);
+  if(lua_isnil(L, -1))
+  {
+    // event table not found, so it's a nonexistent event
+    lua_pop(L, 2);
+    lua_pushboolean(L, false);
+  }
+  else
+  {
+    // add the index table to the stack
+    lua_getfield(L, 4, "index");
+
+    if(strcmp(luaL_checkstring(L, 2), "shortcut") == 0) // shortcut event
+    {
+      // lookup the value (tooltip) for the key (index name)
+      lua_getfield(L, 5, luaL_checkstring(L, 1));
+
+      // check to make sure the key was found
+      if(lua_isnoneornil(L, -1))
+      {
+        // not found, return false
+        lua_pop(L, 5);
+        lua_pushboolean(L, false);
+      }
+      else
+      {
+        // found, return true
+        lua_pop(L, 6);
+        lua_pushboolean(L, true);
+      }
+    }
+    else  // multi instance event
+    { 
+      // loop through the index table trying for a match on index name
+      for(int i = 1; i <= luaL_len(L, 5); i++)
+      {
+        lua_rawgeti(L, 5, i);
+        if(strcmp(luaL_checkstring(L, -1), luaL_checkstring(L, 1)) == 0)
+        {
+          // found the index name
+          lua_pop(L, 6);
+          lua_pushboolean(L, true);
+          break;
+        }
+      }
+    }
+    if(lua_gettop(L) > 1)
+    {
+      // didn't find the event
+      lua_pop(L, 5);
+      lua_pushboolean(L, false);
+    }
+  }
+
+  return 1;
+}
 
 int dt_lua_init_early_events(lua_State *L)
 {
@@ -555,6 +620,9 @@ int dt_lua_init_early_events(lua_State *L)
   lua_settable(L, -3);
   lua_pushstring(L, "destroy_event");
   lua_pushcfunction(L, &lua_destroy_event);
+  lua_settable(L, -3);
+  lua_pushstring(L, "query_event");
+  lua_pushcfunction(L, &lua_query_event);
   lua_settable(L, -3);
   lua_pop(L, 1);
   return 0;
@@ -653,6 +721,11 @@ int dt_lua_init_events(lua_State *L)
   lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
   dt_lua_event_add(L,"selection-changed");
 
+  lua_pushcfunction(L, dt_lua_event_multiinstance_register);
+  lua_pushcfunction(L, dt_lua_event_multiinstance_destroy);
+  lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
+  dt_lua_event_add(L, "darkroom-image-loaded");
+  
   lua_pushcfunction(L, dt_lua_event_multiinstance_register);
   lua_pushcfunction(L, dt_lua_event_multiinstance_destroy);
   lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
