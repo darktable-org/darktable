@@ -45,6 +45,11 @@ endif(UNIX)
 
 # Set package peoperties for Windows
 if(WIN32)
+  configure_file(
+    ${CMAKE_SOURCE_DIR}/packaging/windows/darktable.iss.in
+    ${CMAKE_BINARY_DIR}/darktable.iss
+  )
+
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "ARM64")
     # CPack currently sets this to "win64" regardless of architecture
     set(CPACK_SYSTEM_NAME woa64)
