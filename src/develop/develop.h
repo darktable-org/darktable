@@ -84,7 +84,8 @@ typedef enum dt_dev_transform_direction_t
   DT_DEV_TRANSFORM_DIR_FORW_INCL = 1,
   DT_DEV_TRANSFORM_DIR_FORW_EXCL = 2,
   DT_DEV_TRANSFORM_DIR_BACK_INCL = 3,
-  DT_DEV_TRANSFORM_DIR_BACK_EXCL = 4
+  DT_DEV_TRANSFORM_DIR_BACK_EXCL = 4,
+  DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY = 5,
 } dt_dev_transform_direction_t;
 
 typedef enum dt_clipping_preview_mode_t
