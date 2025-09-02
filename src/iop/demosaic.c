@@ -382,7 +382,7 @@ int legacy_params(dt_iop_module_t *self,
     dt_iop_demosaic_params_v5_t *n = malloc(sizeof(dt_iop_demosaic_params_v5_t));
     memcpy(n, o, sizeof *o);
     n->cs_radius = 0.0f;
-    n->cs_thrs = _get_variance_threshold(self);
+    n->cs_thrs = 0.4f;
     n->cs_boost = 0.0f;
     n->cs_iter = 0;
     n->cs_center = 0.0f;
