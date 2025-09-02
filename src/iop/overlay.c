@@ -82,7 +82,7 @@ typedef struct dt_iop_overlay_params_t
   dt_iop_overlay_base_scale_t scale_base; // $DEFAULT: DT_SCALE_MAINMENU_IMAGE $DESCRIPTION: "scale on"
   dt_iop_overlay_img_scale_t scale_img; // $DEFAULT: DT_SCALE_IMG_LARGER $DESCRIPTION: "scale marker to"
   dt_iop_overlay_svg_scale_t scale_svg; // $DEFAULT: DT_SCALE_SVG_WIDTH $DESCRIPTION: "scale marker reference"
-  dt_imgid_t imgid; // overlay image id
+  dt_imgid_t imgid; // overlay image id $DESCRIPTION: "image id"
   char filename[1024]; // full overlay's filename
   // keep parameter struct to avoid a version bump
   size_t dummy0;
