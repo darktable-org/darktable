@@ -2600,79 +2600,22 @@ static char *_transform_type(const dt_dev_transform_direction_t transf_direction
     case DT_DEV_TRANSFORM_DIR_FORW_EXCL:  return "forward exclusive";
     case DT_DEV_TRANSFORM_DIR_BACK_INCL:  return "backward inclusive";
     case DT_DEV_TRANSFORM_DIR_BACK_EXCL:  return "backward exclusive";
+    case DT_DEV_TRANSFORM_DIR_GEOMETRY:   return "all except nogeometry";
     default:                              return "no transform";
   }
 }
 
 // running with the history locked
-static gboolean _dev_distort_backtransform_locked(dt_develop_t *dev,
-                                                  dt_dev_pixelpipe_t *pipe,
-                                                  const double iop_order,
-                                                  const dt_dev_transform_direction_t transf_direction,
-                                                  float *points,
-                                                  const size_t points_count)
-{
-  const gboolean log = (darktable.unmuted & (DT_DEBUG_CONTROL|DT_DEBUG_VERBOSE)) == (DT_DEBUG_CONTROL|DT_DEBUG_VERBOSE);
-  GList *modules = g_list_last(pipe->iop);
-  GList *pieces = g_list_last(pipe->nodes);
-  while(modules)
-  {
-    if(!pieces)
-    {
-      return FALSE;
-    }
-    dt_iop_module_t *module = modules->data;
-    dt_dev_pixelpipe_iop_t *piece = pieces->data;
-    if(piece->enabled
-       && module->distort_backtransform
-       && piece->data
-       && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
-               && module->iop_order >= iop_order)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
-               && module->iop_order > iop_order)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL
-               && module->iop_order <= iop_order)
-           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL
-               && module->iop_order < iop_order))
-       && !(dt_iop_module_is_skipped(dev, module)
-            && (pipe->type & DT_DEV_PIXELPIPE_BASIC)))
-    {
-      if(log)
-      {
-        char vbuf[1024] = { 0 };
-        float old[16];
-        const int tested = MIN(8, (int)points_count);
-        memcpy(old, points, 2*sizeof(float) * tested);
-        module->distort_backtransform(module, piece, points, points_count);
-        for(int p = 0; p < tested; p++)
-        {
-          const int done = strlen(vbuf);
-          snprintf(vbuf + done, sizeof(vbuf) - done,
-              "  [P%d] %.1f %.1f -> %.1f %.1f", p, old[2*p], old[2*p+1], points[2*p], points[2*p+1]);
-        }
-        dt_print_pipe(DT_DEBUG_ALWAYS, "distort_backtransform", pipe, module, DT_DEVICE_NONE, NULL, NULL,
-          "%s, order=%d, %d points:%s", _transform_type(transf_direction), (int)iop_order, (int)points_count, vbuf);
-      }
-      else
-        module->distort_backtransform(module, piece, points, points_count);
-    }
-    modules = g_list_previous(modules);
-    pieces = g_list_previous(pieces);
-  }
-  return TRUE;
-}
-
-// running with the history locked
 static gboolean _dev_distort_transform_locked(dt_develop_t *dev,
                                               dt_dev_pixelpipe_t *pipe,
+                                              const gboolean back,
                                               const double iop_order,
                                               const dt_dev_transform_direction_t transf_direction,
                                               float *points,
                                               const size_t points_count)
 {
-  GList *modules = pipe->iop;
-  GList *pieces = pipe->nodes;
+  GList *modules = back ? g_list_last(pipe->iop) : g_list_first(pipe->iop);
+  GList *pieces = back ? g_list_last(pipe->nodes) : g_list_first(pipe->nodes);
   const gboolean log = (darktable.unmuted & (DT_DEBUG_CONTROL|DT_DEBUG_VERBOSE)) == (DT_DEBUG_CONTROL|DT_DEBUG_VERBOSE);
   while(modules)
   {
@@ -2682,10 +2625,15 @@ static gboolean _dev_distort_transform_locked(dt_develop_t *dev,
     }
     dt_iop_module_t *module = modules->data;
     dt_dev_pixelpipe_iop_t *piece = pieces->data;
+    gboolean (*transform)(dt_iop_module_t*, dt_dev_pixelpipe_iop_t*, float*, size_t) =
+      back ? module->distort_backtransform : module->distort_transform;
+
     if(piece->enabled
-       && module->distort_transform
+       && transform
        && piece->data
        && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_GEOMETRY
+               && !(module->operation_tags() & IOP_TAG_NOGEOMETRY))
            || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL
                && module->iop_order >= iop_order)
            || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
@@ -2703,7 +2651,7 @@ static gboolean _dev_distort_transform_locked(dt_develop_t *dev,
         float old[16];
         const int tested = MIN(8, (int)points_count);
         memcpy(old, points, 2*sizeof(float) * tested);
-        module->distort_transform(module, piece, points, points_count);
+        transform(module, piece, points, points_count);
         for(int p = 0; p < tested; p++)
         {
           const int done = strlen(vbuf);
@@ -2711,13 +2659,13 @@ static gboolean _dev_distort_transform_locked(dt_develop_t *dev,
               "  [P%d] %.1f %.1f -> %.1f %.1f", p, old[2*p], old[2*p+1], points[2*p], points[2*p+1]);
         }
         dt_print_pipe(DT_DEBUG_ALWAYS, "distort_transform", pipe, module, DT_DEVICE_NONE, NULL, NULL,
-          "%s, order=%d, %d points%s", _transform_type(transf_direction), (int)iop_order, (int)points_count, vbuf);
+          "%s %s, order=%d, %d points:%s", (back ? "back" : "forward"), _transform_type(transf_direction), (int)iop_order, (int)points_count, vbuf);
       }
       else
-        module->distort_transform(module, piece, points, points_count);
+        transform(module, piece, points, points_count);
     }
-    modules = g_list_next(modules);
-    pieces = g_list_next(pieces);
+    modules = back ? g_list_previous(modules) : g_list_next(modules);
+    pieces = back ? g_list_previous(pieces) : g_list_next(pieces);
   }
   return TRUE;
 }
@@ -2736,7 +2684,7 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
   dt_pthread_mutex_lock(&dev->history_mutex);
 
   float pts[2] = { port->zoom_x, port->zoom_y };
-  _dev_distort_transform_locked(darktable.develop, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
+  _dev_distort_transform_locked(darktable.develop, port->pipe, FALSE, 0.0f, DT_DEV_TRANSFORM_DIR_GEOMETRY, pts, 1);
 
   const float old_pts0 = pts[0];
   const float old_pts1 = pts[1];
@@ -2882,7 +2830,7 @@ void dt_dev_zoom_move(dt_dev_viewport_t *port,
     || (zoom == DT_ZOOM_MOVE && (x || y));
   if(has_moved)
   {
-    _dev_distort_backtransform_locked(dev, port->pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
+    _dev_distort_transform_locked(dev, port->pipe, TRUE, 0.0f, DT_DEV_TRANSFORM_DIR_GEOMETRY, pts, 1);
     port->zoom_x = pts[0];
     port->zoom_y = pts[1];
   }
@@ -2967,7 +2915,7 @@ void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
   {
     float pts[2] = { port->zoom_x, port->zoom_y };
     dt_dev_distort_transform_plus(darktable.develop, port->pipe,
-                                  0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
+                                  0.0f, DT_DEV_TRANSFORM_DIR_GEOMETRY, pts, 1);
     *x = pts[0] / port->pipe->processed_width - 0.5f;
     *y = pts[1] / port->pipe->processed_height - 0.5f;
   }
@@ -3285,10 +3233,10 @@ gboolean dt_dev_distort_transform_plus(dt_develop_t *dev,
                                        const size_t points_count)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
-  _dev_distort_transform_locked(dev, pipe, iop_order, transf_direction,
-                                points, points_count);
+  const gboolean success = _dev_distort_transform_locked(dev, pipe, FALSE, iop_order,
+                                                         transf_direction, points, points_count);
   dt_pthread_mutex_unlock(&dev->history_mutex);
-  return TRUE;
+  return success;
 }
 
 
@@ -3300,8 +3248,8 @@ gboolean dt_dev_distort_backtransform_plus(dt_develop_t *dev,
                                            const size_t points_count)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
-  const gboolean success = _dev_distort_backtransform_locked(dev, pipe, iop_order,
-                                                            transf_direction, points, points_count);
+  const gboolean success = _dev_distort_transform_locked(dev, pipe, TRUE, iop_order,
+                                                         transf_direction, points, points_count);
   dt_pthread_mutex_unlock(&dev->history_mutex);
   return success;
 }
