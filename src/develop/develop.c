@@ -3537,7 +3537,7 @@ void dt_dev_image(const dt_imgid_t imgid,
   dev.full = darktable.develop->full;
   dev.full.pipe = pipe;
 
-  if(zoom_pos)
+  if(!zoom_pos)
   {
     dev.full.zoom      = DT_ZOOM_FIT;
     dev.full.width     = width;
