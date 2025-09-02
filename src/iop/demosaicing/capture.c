@@ -56,10 +56,10 @@ static float _get_variance_threshold(const dt_iop_module_t *self)
 
   */
   float threshold = 0.4f;
-  const dt_image_t *img = &self->dev->image_storage;
-  if(img->raw_white_point > 4096) threshold -= 0.07f;
-  if(img->exif_iso < 400)         threshold -= 0.03f;
-  if(img->exif_iso <= 100)        threshold -= 0.03f;
+  const dt_image_t *img = self->dev ? &self->dev->image_storage : NULL;
+  if(img && img->raw_white_point > 4096) threshold -= 0.07f;
+  if(img && img->exif_iso < 400)         threshold -= 0.03f;
+  if(img && img->exif_iso <= 100)        threshold -= 0.03f;
   return threshold;
 }
 
