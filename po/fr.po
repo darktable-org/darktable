@@ -6915,7 +6915,7 @@ msgstr "Nom de version"
 #: ../src/common/database.c:3229 ../src/libs/live_view.c:319
 #: ../src/libs/metadata_view.c:134
 msgid "image id"
-msgstr "Numéro"
+msgstr "Numéro image"
 
 #: ../src/common/database.c:3230
 msgid "preserved filename"
