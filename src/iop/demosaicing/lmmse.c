@@ -302,8 +302,8 @@ static void lmmse_demosaic(float *const restrict out,
             p8 -= vdiff[ w3];
             p9 -= vdiff[ w4];
             vn = 1e-7f + sqrf(p1) + sqrf(p2) + sqrf(p3) + sqrf(p4) + sqrf(p5) + sqrf(p6) + sqrf(p7) + sqrf(p8) + sqrf(p9);
-            float xv = (vdiff[0] * vx + vlp[0] * vn) / (vx + vn);
-            float vv = vx * vn / (vx + vn);
+            const float xv = (vdiff[0] * vx + vlp[0] * vn) / (vx + vn);
+            const float vv = vx * vn / (vx + vn);
             // interpolated G-R(B)
             interp[0] = (xh * vv + xv * vh) / (vh + vv);
           }
