@@ -20,14 +20,13 @@
 
 static void lin_interpolate(float *out,
                             const float *const in,
-                            const dt_iop_roi_t *const roi,
+                            const int width,
+                            const int height,
                             const uint32_t filters,
                             const uint8_t (*const xtrans)[6])
 {
   const int colors = (filters == 9) ? 3 : 4;
-  const int width = roi->width;
-  const int height = roi->height;
-// border interpolate
+  // border interpolate
   DT_OMP_FOR()
   for(int row = 0; row < height; row++)
     for(int col = 0; col < width; col++)
@@ -146,7 +145,8 @@ static inline void _ensure_abovezero(float *to, float *from, const int floats)
 
 static void vng_interpolate(float *out,
                             const float *const in,
-                            const dt_iop_roi_t *const roi,
+                            const int width,
+                            const int height,
                             const uint32_t filters,
                             const uint8_t (*const xtrans)[6],
                             const gboolean only_vng_linear)
@@ -174,8 +174,6 @@ static void vng_interpolate(float *out,
   // ring buffer pointing to three most recent rows processed (brow[3]
   // is only used for rotating the buffer
   float(*brow[4])[4];
-  const int width = roi->width;
-  const int height = roi->height;
   const int prow = (filters == 9) ? 6 : 8;
   const int pcol = (filters == 9) ? 6 : 2;
   const int colors = (filters == 9) ? 3 : 4;
@@ -189,7 +187,7 @@ static void vng_interpolate(float *out,
   else
     filters4 = filters | 0x0c0c0c0cu;
 
-  lin_interpolate(out, in, roi, filters4, xtrans);
+  lin_interpolate(out, in, width, height, filters4, xtrans);
 
   // if only linear interpolation is requested we can stop it here
   if(only_vng_linear) return;

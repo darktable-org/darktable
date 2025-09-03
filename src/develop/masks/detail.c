@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2024 darktable developers.
+    Copyright (C) 2013-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -104,19 +104,30 @@
   hanno@schwalm-bremen.de 21/04/29
 */
 
-gboolean dt_masks_calc_scharr_mask(dt_dev_detail_mask_t *details,
-                                   float *const restrict src,
-                                   const dt_aligned_pixel_t wb)
+float *dt_masks_calc_scharr_mask(dt_dev_pixelpipe_t *pipe,
+                                 float *const restrict src,
+                                 const int width,
+                                 const int height,
+                                 const gboolean rawmode)
 {
-  const int width = details->roi.width;
-  const int height = details->roi.height;
-  float *mask = details->data;
+  float *mask = dt_iop_image_alloc(width, height, 1);
+  float *tmp = dt_iop_image_alloc(width, height, 1);
 
   const size_t msize = (size_t)width * height;
-  float *tmp = dt_alloc_align_float(msize);
-  if(!tmp) return TRUE;
+  if(!tmp || !mask)
+  {
+    dt_free_align(tmp);
+    dt_free_align(mask);
+    return NULL;
+  }
 
-  DT_OMP_FOR_SIMD(aligned(tmp, src : 64))
+  const gboolean wboff = !pipe->dsc.temperature.enabled || !rawmode;
+  const dt_aligned_pixel_t wb = { wboff ? 1.0f : pipe->dsc.temperature.coeffs[0],
+                                  wboff ? 1.0f : pipe->dsc.temperature.coeffs[1],
+                                  wboff ? 1.0f : pipe->dsc.temperature.coeffs[2] };
+
+
+  DT_OMP_FOR_SIMD(aligned(tmp : 64))
   for(size_t idx =0; idx < msize; idx++)
   {
     const float val = fmaxf(0.0f, src[4 * idx] / wb[0])
@@ -136,19 +147,36 @@ gboolean dt_masks_calc_scharr_mask(dt_dev_detail_mask_t *details,
       const size_t idx = (size_t)irow * width + icol;
 
       const float gradient_magnitude = scharr_gradient(&tmp[idx], width);
-      mask[(size_t)row * width + col] = fminf(1.0f, fmaxf(0.0f, gradient_magnitude / 16.0f));
+      mask[row * width + col] = CLIP(gradient_magnitude / 16.0f);
     }
   }
   dt_free_align(tmp);
-  return FALSE;
+  return mask;
 }
 
-static inline float _calcBlendFactor(float val, float ithreshold)
+static inline float _calcBlendFactor(const float val, const float ithreshold)
 {
     // sigmoid function
     // result is in ]0;1] range
     // inflexion point is at (x, y) (threshold, 0.5)
     return 1.0f / (1.0f + dt_fast_expf(16.0f - ithreshold * val));
+}
+
+void dt_masks_calc_detail_blend(float *const restrict src,
+                                float *out,
+                                const size_t msize,
+                                const float threshold,
+                                const gboolean detail)
+{
+  if(!src || !out) return;
+
+  const float ithreshold = 16.0f / MAX(1e-7, threshold);
+  DT_OMP_FOR_SIMD(aligned(src, out : 64))
+  for(size_t idx = 0; idx < msize; idx++)
+  {
+    const float blend = CLIP(_calcBlendFactor(src[idx], ithreshold));
+    out[idx] = detail ? blend : 1.0f - blend;
+  }
 }
 
 float *dt_masks_calc_detail_mask(dt_dev_pixelpipe_iop_t *piece,
@@ -171,17 +199,8 @@ float *dt_masks_calc_detail_mask(dt_dev_pixelpipe_iop_t *piece,
     return NULL;
   }
 
-  const float ithreshold = 16.0f / (fmaxf(1e-7, threshold));
-  float *src = details->data;
-  DT_OMP_FOR_SIMD(aligned(src, tmp : 64))
-  for(size_t idx = 0; idx < msize; idx++)
-  {
-    const float blend = CLIP(_calcBlendFactor(src[idx], ithreshold));
-    tmp[idx] = detail ? blend : 1.0f - blend;
-  }
-  // for very small images the blurring should be slightly less to have an effect at all
-  const float sigma = (MIN(details->roi.width, details->roi.height) < 500) ? 1.5f : 2.0f;
-  dt_gaussian_fast_blur(tmp, mask, details->roi.width, details->roi.height, sigma, 0.0f, 1.0f, 1);
+  dt_masks_calc_detail_blend(details->data, tmp, msize, threshold, detail);
+  dt_gaussian_fast_blur(tmp, mask, details->roi.width, details->roi.height, 2.0f, 0.0f, 1.0f, 1);
   dt_free_align(tmp);
   return mask;
 }

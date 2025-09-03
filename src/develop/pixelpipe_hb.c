@@ -3440,44 +3440,31 @@ void dt_dev_clear_scharr_mask(dt_dev_pixelpipe_t *pipe)
 }
 
 gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
-                                  float *const rgb,
+                                  float *const restrict src,
                                   const dt_iop_roi_t *const roi,
                                   const gboolean rawmode)
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
   dt_dev_clear_scharr_mask(p);
-  if(piece->pipe->tiling)
-    goto error;
+  if(p->tiling) goto error;
 
-  float *mask = dt_iop_image_alloc(roi->width, roi->height, 1);
+  float *mask = dt_masks_calc_scharr_mask(p, src, roi->width, roi->height, rawmode);
   if(!mask) goto error;
 
   p->scharr.data = mask;
   memcpy(&p->scharr.roi, roi, sizeof(dt_iop_roi_t));
-
-  const gboolean wboff = !p->dsc.temperature.enabled || !rawmode;
-  const dt_aligned_pixel_t wb = { wboff ? 1.0f : p->dsc.temperature.coeffs[0],
-                                  wboff ? 1.0f : p->dsc.temperature.coeffs[1],
-                                  wboff ? 1.0f : p->dsc.temperature.coeffs[2] };
-  if(dt_masks_calc_scharr_mask(&p->scharr, rgb, wb))
-    goto error;
 
   p->scharr.hash = dt_hash(DT_INITHASH, &p->scharr.roi, sizeof(dt_iop_roi_t));
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "write scharr mask CPU",
                 p, NULL, DT_DEVICE_CPU, NULL, NULL, "(%ix%i)",
                 roi->width, roi->height);
-
-  if(darktable.dump_pfm_module && (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT))
-    dt_dump_pfm("scharr_cpu", mask, roi->width, roi->height, sizeof(float), "detail");
-
   return FALSE;
 
  error:
   dt_print_pipe(DT_DEBUG_ALWAYS,
                 "couldn't write scharr mask CPU",
                 p, NULL, DT_DEVICE_CPU, NULL, NULL);
-  dt_dev_clear_scharr_mask(p);
   return TRUE;
 }
 
@@ -3537,9 +3524,6 @@ int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "write scharr mask CL",
                 p, NULL, devid, NULL, NULL, "(%ix%i)",
                 width, height);
-
-  if(darktable.dump_pfm_module && (p->type & DT_DEV_PIXELPIPE_EXPORT))
-    dt_dump_pfm("scharr_cl", mask, width, height, sizeof(float), "detail");
 
   error:
   if(err != CL_SUCCESS)
