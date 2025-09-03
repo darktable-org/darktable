@@ -52,6 +52,13 @@ if(WIN32)
     set(ARCH_STRING "woa64")
   endif()
 
+  # add darktable association with all supported image file types for Inno Setup
+  foreach(EXTENSION ${DT_SUPPORTED_EXTENSIONS})
+    SET(CMAKE_ADD_DARKTABLE_TO_OPENWITHLIST "${CMAKE_ADD_DARKTABLE_TO_OPENWITHLIST}
+      Root:HKA; Subkey: \"Software\\Classes\\.${EXTENSION}\\OpenWithList\\darktable.exe\"; Flags: uninsdeletekey
+    ")
+  endforeach(EXTENSION)
+
   configure_file(
     ${CMAKE_SOURCE_DIR}/packaging/windows/darktable.iss.in
     ${CMAKE_BINARY_DIR}/darktable.iss
