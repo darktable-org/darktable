@@ -2206,8 +2206,9 @@ gboolean _move_extra_file(const gchar *oldFilePath, const gchar *newFolder, cons
   g_strlcat(newFilePath, oldExtension, sizeof(newFilePath));
   GFile *oldFile = g_file_new_for_path(oldFilePath);
   GFile *newFile = g_file_new_for_path(newFilePath);
-  gboolean moveSuccess = g_file_move(oldFile, newFile, 0, NULL, NULL, NULL, NULL);
+  const gboolean moveSuccess = g_file_move(oldFile, newFile, 0, NULL, NULL, NULL, NULL);
   g_free(oldFilename);
+  g_free(oldExtension);
   g_object_unref(oldFile);
   g_object_unref(newFile);      
   return moveSuccess;    
