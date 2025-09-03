@@ -77,12 +77,13 @@ changes (where available).
 - Hierarchical presets are now supported for utility modules as well
   as processing modules.
 
-- Fixed some issues with the hierarchical styles handling in the
-  styles module.
+- Dual demosaicing now works also in tiling mode for possibly better
+  OpenCL performance and smaller CPU memory pressure.
 
 ## Bug Fixes
 
-- ???
+- Fixed some issues with the hierarchical styles handling in the
+  styles module.
 
 ## Lua
 
