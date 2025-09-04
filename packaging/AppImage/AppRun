@@ -16,6 +16,8 @@ source "$HERE"/apprun-hooks/"linuxdeploy-plugin-gtk.sh"
 
 export CAMLIBS=$HERE/usr/lib/libgphoto2/`ls -1 --group-directories-first $HERE/usr/lib/libgphoto2|head -1`
 
+export IOLIBS=$HERE/usr/lib/libgphoto2_port/`ls -1 --group-directories-first $HERE/usr/lib/libgphoto2_port|head -1`
+
 export GIO_EXTRA_MODULES=$HERE/usr/lib/gio/modules
 
 if [[ ! -z $APPIMAGE ]] ; then

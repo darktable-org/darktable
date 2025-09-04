@@ -54,6 +54,12 @@ cp -a /var/lib/lensfun-updates/* ../AppDir/usr/share/lensfun
 mkdir -p ../AppDir/usr/lib/libgphoto2
 cp -a /usr/lib/x86_64-linux-gnu/libgphoto2/* ../AppDir/usr/lib/libgphoto2
 
+# Include gphoto2 port libraries. We also have to set the IOLIBS
+# environment variable in AppRun.wrapped accordingly when starting
+# AppImage so that libgphoto2 can find these drivers.
+mkdir -p ../AppDir/usr/lib/libgphoto2_port
+cp -a /usr/lib/x86_64-linux-gnu/libgphoto2_port/* ../AppDir/usr/lib/libgphoto2_port
+
 # Include networking related GIO modules. We also have to set the GIO_EXTRA_MODULES
 # environment variable in AppRun.wrapped accordingly when starting AppImage
 # for the GLib's GIO subsystem to use these modules from our bundle.
