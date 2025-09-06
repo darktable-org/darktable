@@ -85,6 +85,9 @@ changes (where available).
 - Fixed some issues with the hierarchical styles handling in the
   styles module.
 
+- Fixed moving additional extra audio or text sidecar files when
+  an image is moved.
+
 ## Lua
 
 ### API Version
