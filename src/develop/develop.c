@@ -601,11 +601,10 @@ float dt_dev_get_zoom_scale(dt_dev_viewport_t *port,
 
   if(!zoom_scale) zoom_scale = 1.0f;
 
-  if(preview && darktable.develop->preview_pipe->processed_width)
-    zoom_scale *= (float)darktable.develop->full.pipe->processed_width
-                  / darktable.develop->preview_pipe->processed_width;
+  if(preview)
+    zoom_scale *= darktable.develop->preview_pipe->iscale;
 
-  return zoom_scale ? zoom_scale : 1.0f;
+  return zoom_scale;
 }
 
 float dt_dev_get_zoom_scale_full(void)
@@ -2871,12 +2870,12 @@ void dt_dev_get_pointer_zoom_pos(dt_dev_viewport_t *port,
   dt_dev_get_viewport_params(port, &zoom, &closeup, &zoom2_x, &zoom2_y);
   dt_dev_get_processed_size(port, &procw, &proch);
   const float scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, FALSE);
-  const double tb = port->border_size;
+  const float tb = (float)port->border_size;
   // offset from center now (current zoom_{x,y} points there)
-  const float mouse_off_x = px - tb - .5 * port->width;
-  const float mouse_off_y = py - tb - .5 * port->height;
-  zoom2_x += mouse_off_x / (procw * scale);
-  zoom2_y += mouse_off_y / (proch * scale);
+  const float mouse_off_x = px - tb - .5f * port->width;
+  const float mouse_off_y = py - tb - .5f * port->height;
+  zoom2_x += mouse_off_x / ((float)procw * scale);
+  zoom2_y += mouse_off_y / ((float)proch * scale);
   *zoom_x = zoom2_x + 0.5f;
   *zoom_y = zoom2_y + 0.5f;
   *zoom_scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, TRUE);
@@ -2897,12 +2896,12 @@ void dt_dev_get_pointer_zoom_pos_from_bounds(dt_dev_viewport_t *port,
   dt_dev_get_viewport_params(port, &zoom, &closeup, NULL, NULL);
   dt_dev_get_processed_size(port, &procw, &proch);
   const float scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, FALSE);
-  const double tb = port->border_size;
+  const float tb = (float)port->border_size;
   // offset from center now (current zoom_{x,y} points there)
-  const float mouse_off_x = px - tb - .5 * port->width;
-  const float mouse_off_y = py - tb - .5 * port->height;
-  zoom2_x += mouse_off_x / (procw * scale);
-  zoom2_y += mouse_off_y / (proch * scale);
+  const float mouse_off_x = px - tb - .5f * port->width;
+  const float mouse_off_y = py - tb - .5f * port->height;
+  zoom2_x += mouse_off_x / ((float)procw * scale);
+  zoom2_y += mouse_off_y / ((float)proch * scale);
   *zoom_x = zoom2_x + 0.5f;
   *zoom_y = zoom2_y + 0.5f;
   *zoom_scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, TRUE);
@@ -2924,8 +2923,8 @@ void dt_dev_get_viewport_params(dt_dev_viewport_t *port,
     float pts[2] = { port->zoom_x, port->zoom_y };
     dt_dev_distort_transform_plus(darktable.develop, port->pipe,
                                   0.0f, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, pts, 1);
-    *x = pts[0] / port->pipe->processed_width - 0.5f;
-    *y = pts[1] / port->pipe->processed_height - 0.5f;
+    *x = pts[0] / (float)port->pipe->processed_width - 0.5f;
+    *y = pts[1] / (float)port->pipe->processed_height - 0.5f;
   }
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
 }
