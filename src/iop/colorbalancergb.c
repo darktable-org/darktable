@@ -19,6 +19,7 @@
 // our includes go first:
 #include "bauhaus/bauhaus.h"
 #include "common/exif.h"
+#include "common/dttypes.h"
 #include "common/chromatic_adaptation.h"
 #include "common/darktable_ucs_22_helpers.h"
 #include "common/gamut_mapping.h"
@@ -1349,7 +1350,7 @@ static void _YchToRGB(dt_aligned_pixel_t *RGB_out, const float chroma, const flo
   XYZ_D65_to_D50(XYZ_D65, XYZ_D50);
   dt_apply_transposed_color_matrix(XYZ_D50, output_profile->matrix_out_transposed, RGB_linear);
   // normalize to the brightest value available at this hue and chroma
-  const float max_RGB = fmaxf(fmaxf(RGB_linear[0], RGB_linear[1]), RGB_linear[2]);
+  const float max_RGB = max3f(RGB_linear);
   for_each_channel(c) RGB_linear[c] = MAX(RGB_linear[c] / max_RGB, 0.f);
   // Apply nonlinear LUT if necessary
   if(output_profile->nonlinearlut)

@@ -30,6 +30,7 @@
 #include "common/bspline.h"
 #include "common/gamut_mapping.h"
 #include "common/image.h"
+#include "common/dttypes.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -867,7 +868,7 @@ static inline float get_pixel_norm(const dt_aligned_pixel_t pixel, const dt_iop_
   switch(variant)
   {
     case(DT_FILMIC_METHOD_MAX_RGB):
-      return fmaxf(fmaxf(pixel[0], pixel[1]), pixel[2]);
+      return max3f(pixel);
 
     case(DT_FILMIC_METHOD_LUMINANCE):
       return (work_profile)
@@ -1603,7 +1604,7 @@ static inline void filmic_chroma_v2_v3(const float *const restrict in,
       pix_out[c] = ratios[c] * norm;
 
     // Gamut mapping
-    const float max_pix = MAX(MAX(pix_out[0], pix_out[1]), pix_out[2]);
+    const float max_pix = max3f(pix_out);
     const int penalize = (max_pix > 1.0f);
 
     // Penalize the ratios by the amount of clipping
