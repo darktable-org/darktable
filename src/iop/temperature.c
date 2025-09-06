@@ -862,8 +862,8 @@ static void _color_finetuning_slider(dt_iop_module_t *self)
         max_tune[ch] = neutral[ch] * wb_max->channels[ch];
       }
 
-      const float maxsRGBmin_tune = fmaxf(fmaxf(min_tune[0], min_tune[1]), min_tune[2]);
-      const float maxsRGBmax_tune = fmaxf(fmaxf(max_tune[0], max_tune[1]), max_tune[2]);
+      const float maxsRGBmin_tune = max3(min_tune);
+      const float maxsRGBmax_tune = max3(max_tune);
 
       for(int ch=0; ch<3; ch++)
       {
@@ -1086,8 +1086,8 @@ static void _color_temptint_sliders(dt_iop_module_t *self)
          cur_white[1]*coeffs_tint[1],
          cur_white[2]*coeffs_tint[2]};
 
-      const float maxsRGB_K = fmaxf(fmaxf(sRGB_K[0], sRGB_K[1]), sRGB_K[2]);
-      const float maxsRGB_tint = fmaxf(fmaxf(sRGB_tint[0], sRGB_tint[1]),sRGB_tint[2]);
+      const float maxsRGB_K = max3f(sRGB_K);
+      const float maxsRGB_tint = max3f(sRGB_tint);
 
       if(maxsRGB_K > 1.f)
       {
@@ -1128,8 +1128,8 @@ static void _color_temptint_sliders(dt_iop_module_t *self)
       dt_XYZ_to_Rec709_D65(XYZ_temp, sRGB_temp);
       dt_XYZ_to_Rec709_D65(XYZ_tint, sRGB_tint);
 
-      const float maxsRGB_temp = fmaxf(fmaxf(sRGB_temp[0], sRGB_temp[1]), sRGB_temp[2]);
-      const float maxsRGB_tint = fmaxf(fmaxf(sRGB_tint[0], sRGB_tint[1]), sRGB_tint[2]);
+      const float maxsRGB_temp = max3f(sRGB_temp);
+      const float maxsRGB_tint = max3f(sRGB_tint);
 
       if(maxsRGB_temp > 1.f)
       {

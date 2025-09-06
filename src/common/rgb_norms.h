@@ -17,6 +17,7 @@
  */
 
 #include "common/iop_profile.h"
+#include "common/dttypes.h"
 
  typedef enum dt_iop_rgb_norms_t
  {
@@ -44,7 +45,7 @@ static inline float dt_rgb_norm(const float *in, const int norm, const dt_iop_or
   }
   else if (norm == DT_RGB_NORM_MAX)
   {
-    return fmaxf(in[0], fmaxf(in[1], in[2]));
+    return max3f(in);
   }
   else if (norm == DT_RGB_NORM_AVERAGE)
   {
