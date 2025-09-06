@@ -3575,7 +3575,7 @@ void dt_opencl_check_tuning(const int devid)
 
   if(level < 0)
   {
-    cl->dev[devid].used_available = res->refresource[4*(-level-1) + 3] * 1024lu * 1024lu;
+    cl->dev[devid].used_available = res->refresource[4*(-level-1) + 3] * DT_MEGA;
   }
   else
   {

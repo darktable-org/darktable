@@ -930,7 +930,7 @@ static inline void dt_unreachable_codepath_with_caller(const char *description,
  *          created with previous DT_MAX_PATH_FOR_PARAMS.
  */
 #define DT_MAX_PATH_FOR_PARAMS 4096
-
+#define DT_MEGA 1048576lu
 /*
  * Helper functions for transition to gnome style xgettext translation context marking
  *
