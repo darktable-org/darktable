@@ -229,6 +229,8 @@ typedef struct tone_mapping_params_t
   float look_power;
   float look_saturation;
   float look_original_hue_mix_ratio;
+  gboolean look_tuned;
+  gboolean restore_hue;
 } tone_mapping_params_t;
 
 typedef struct primaries_params_t
@@ -889,6 +891,8 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_par
   tone_mapping_params.look_saturation = p->look_saturation;
   tone_mapping_params.look_power = p->look_power;
   tone_mapping_params.look_original_hue_mix_ratio = p->look_original_hue_mix_ratio;
+  tone_mapping_params.look_tuned = p -> look_slope != 1.f || p->look_power != 1.f || p -> look_offset != 0.f || p -> look_saturation != 1.f;
+  tone_mapping_params.restore_hue = p->look_original_hue_mix_ratio != 0.f;
 
   // log mapping
   _set_log_mapping_params(p, &tone_mapping_params);
@@ -1045,7 +1049,8 @@ static void _agx_tone_mapping(dt_aligned_pixel_t rgb_in_out,
 {
   // record current chromaticity angle
   dt_aligned_pixel_t hsv_pixel = { 0.f };
-  dt_RGB_2_HSV(rgb_in_out, hsv_pixel);
+  if (params->restore_hue)
+    dt_RGB_2_HSV(rgb_in_out, hsv_pixel);
   const float h_before = hsv_pixel[0];
 
   dt_aligned_pixel_t transformed_pixel = { 0.f };
@@ -1056,7 +1061,8 @@ static void _agx_tone_mapping(dt_aligned_pixel_t rgb_in_out,
     transformed_pixel[k] = _apply_curve(log_value, params);
   }
 
-  _agx_look(transformed_pixel, params, rendering_to_xyz_transposed);
+  if (params->look_tuned)
+    _agx_look(transformed_pixel, params, rendering_to_xyz_transposed);
 
   // Linearize
   for_three_channels(k, aligned(transformed_pixel : 16))
@@ -1065,15 +1071,25 @@ static void _agx_tone_mapping(dt_aligned_pixel_t rgb_in_out,
   }
 
   // get post-curve chroma angle
-  dt_RGB_2_HSV(transformed_pixel, hsv_pixel);
+  if (params->restore_hue)
+  {
+    dt_RGB_2_HSV(transformed_pixel, hsv_pixel);
 
-  float h_after = hsv_pixel[0];
+    float h_after = hsv_pixel[0];
 
-  // Mix hue back if requested
-  h_after = _lerp_hue(h_before, h_after, params->look_original_hue_mix_ratio);
+    // Mix hue back if requested
+    h_after = _lerp_hue(h_before, h_after, params->look_original_hue_mix_ratio);
 
-  hsv_pixel[0] = h_after;
-  dt_HSV_2_RGB(hsv_pixel, rgb_in_out);
+    hsv_pixel[0] = h_after;
+    dt_HSV_2_RGB(hsv_pixel, rgb_in_out);
+  }
+  else
+  {
+    for_three_channels(k, aligned(transformed_pixel, rgb_in_out : 16))
+    {
+      rgb_in_out[k] = transformed_pixel[k];
+    }
+  }
 }
 
 static void _apply_auto_black_exposure(const dt_iop_module_t *self)
@@ -1320,6 +1336,8 @@ void process(dt_iop_module_t *self,
                            rendering_profile.matrix_in_transposed);
   rendering_profile.nonlinearlut = FALSE; // no LUT for this linear transform
 
+  const gboolean base_working_same_profile = pipe_work_profile == base_profile;
+
   DT_OMP_FOR_SIMD()
   for(size_t k = 0; k < 4 * n_pixels; k += 4)
   {
@@ -1328,7 +1346,14 @@ void process(dt_iop_module_t *self,
 
     // Convert from pipe working space to base space
     dt_aligned_pixel_t base_rgb = { 0.f };
-    dt_apply_transposed_color_matrix(pix_in, pipe_to_base_transposed, base_rgb);
+    if (base_working_same_profile)
+    {
+      memcpy(base_rgb, pix_in, sizeof(dt_aligned_pixel_t));
+    }
+    else
+    {
+      dt_apply_transposed_color_matrix(pix_in, pipe_to_base_transposed, base_rgb);
+    }
 
     _compress_into_gamut(base_rgb);
 
