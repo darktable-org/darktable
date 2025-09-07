@@ -1099,8 +1099,7 @@ static void _apply_auto_black_exposure(const dt_iop_module_t *self)
   const dt_iop_agx_gui_data_t *g = self->gui_data;
 
   const float black_norm = _min(self->picked_color_min);
-  p->range_black_relative_exposure = CLAMPF(log2f(fmaxf(_epsilon, black_norm) / 0.18f), -20.f, -0.1f)
-                                               * (1.f + p->dynamic_range_scaling);
+  p->range_black_relative_exposure = CLAMPF(log2f(fmaxf(_epsilon, black_norm) / 0.18f) * (1.f + p->dynamic_range_scaling), -20.f, -0.1f);
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->black_exposure_picker, p->range_black_relative_exposure);
@@ -1116,8 +1115,7 @@ static void _apply_auto_white_exposure(const dt_iop_module_t *self)
   const dt_iop_agx_gui_data_t *g = self->gui_data;
 
   const float white_norm = _max(self->picked_color_max);
-  p->range_white_relative_exposure = CLAMPF(log2f(fmaxf(_epsilon, white_norm) / 0.18f), 0.1f, 20.f)
-                                               * (1.f + p->dynamic_range_scaling);
+  p->range_white_relative_exposure = CLAMPF(log2f(fmaxf(_epsilon, white_norm) / 0.18f) * (1.f + p->dynamic_range_scaling), 0.1f, 20.f);
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->white_exposure_picker, p->range_white_relative_exposure);
@@ -1132,13 +1130,11 @@ static void _apply_auto_tune_exposure(const dt_iop_module_t *self)
 
   // Black point
   const float black_norm = _min(self->picked_color_min);
-  p->range_black_relative_exposure = CLAMPF(log2f(fmaxf(_epsilon, black_norm) / 0.18f), -20.f, -0.1f)
-                                               * (1.f + p->dynamic_range_scaling);
+  p->range_black_relative_exposure = CLAMPF(log2f(fmaxf(_epsilon, black_norm) / 0.18f) * (1.f + p->dynamic_range_scaling), -20.f, -0.1f);
 
   // White point
   const float white_norm = _max(self->picked_color_max);
-  p->range_white_relative_exposure = CLAMPF(log2f(fmaxf(_epsilon, white_norm) / 0.18f), 0.1f, 20.f)
-                                               * (1.f + p->dynamic_range_scaling);
+  p->range_white_relative_exposure = CLAMPF(log2f(fmaxf(_epsilon, white_norm) / 0.18f) * (1.f + p->dynamic_range_scaling), 0.1f, 20.f);
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->black_exposure_picker, p->range_black_relative_exposure);
