@@ -611,7 +611,7 @@ static inline float _line(const float x, const float slope, const float intercep
  * powf(projected_rise, -power) base = 1 / powf(actual_rise, power) - powf(projected_rise, -power) base =
  * powf(actual_rise, -power) - powf(projected_rise, -power)
  */
-static float _scale(const float limit_x,
+ static inline float _scale(const float limit_x,
                     const float limit_y,
                     const float transition_x,
                     const float transition_y,
@@ -671,7 +671,7 @@ static inline float _fallback_shoulder(const float x, const tone_mapping_params_
                           * powf(1.f - x, params->shoulder_fallback_power));
 }
 
-static float _apply_curve(const float x, const tone_mapping_params_t *params)
+static inline float _apply_curve(const float x, const tone_mapping_params_t *params)
 {
   float result = 0.f;
 
@@ -707,7 +707,7 @@ static inline float _lerp_hue(const float original_hue, const float processed_hu
 
   // interpolate: mix = 0 -> processed_hue; mix = 1 -> original_hue
   // multiply-add: (1 - mix) * shortest_distance_on_hue_circle + original_hue
-  const float mixed_hue = fmaf(1.0f - mix, shortest_distance_on_hue_circle, original_hue);
+  const float mixed_hue = DT_FMA(1.0f - mix, shortest_distance_on_hue_circle, original_hue);
 
   // wrap to [0, 1)
   return mixed_hue - floorf(mixed_hue);
@@ -718,11 +718,12 @@ static inline float _apply_slope_offset(const float x, const float slope, const 
   // https://www.desmos.com/calculator/8a26bc7eb8
   const float m = slope / (1.f + offset);
   const float b = offset * m;
-  return m * x + b;
+  // m * x + b
+  return DT_FMA(m, x, b);
 }
 
 DT_OMP_DECLARE_SIMD(aligned(pixel_in_out : 16))
-static void _agx_look(dt_aligned_pixel_t pixel_in_out,
+static inline void _agx_look(dt_aligned_pixel_t pixel_in_out,
                       const tone_mapping_params_t *params,
                       const dt_colormatrix_t rendering_to_xyz_transposed)
 {
@@ -1319,7 +1320,7 @@ void process(dt_iop_module_t *self,
                            rendering_profile.matrix_in_transposed);
   rendering_profile.nonlinearlut = FALSE; // no LUT for this linear transform
 
-  DT_OMP_FOR()
+  DT_OMP_FOR_SIMD()
   for(size_t k = 0; k < 4 * n_pixels; k += 4)
   {
     const float *const restrict pix_in = in + k;
