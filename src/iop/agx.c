@@ -558,18 +558,6 @@ static const dt_iop_order_iccprofile_info_t *_agx_get_base_profile(dt_develop_t 
   return selected_profile_info;
 }
 
-DT_OMP_DECLARE_SIMD(aligned(pixel : 16))
-static inline float _max(const dt_aligned_pixel_t pixel)
-{
-  return fmaxf(fmaxf(pixel[0], pixel[1]), pixel[2]);
-}
-
-DT_OMP_DECLARE_SIMD(aligned(pixel : 16))
-static inline float _min(const dt_aligned_pixel_t pixel)
-{
-  return fminf(fminf(pixel[0], pixel[1]), pixel[2]);
-}
-
 static inline float _luminance_from_matrix(const dt_aligned_pixel_t pixel,
                                            const dt_colormatrix_t rgb_to_xyz_transposed)
 {
@@ -783,7 +771,7 @@ static inline void _compress_into_gamut(dt_aligned_pixel_t pixel_in_out)
 
   const float input_y = pixel_in_out[0] * luminance_coeffs[0] + pixel_in_out[1] * luminance_coeffs[1]
                         + pixel_in_out[2] * luminance_coeffs[2];
-  const float max_rgb = _max(pixel_in_out);
+  const float max_rgb = max3f(pixel_in_out);
 
   // Calculate luminance of the opponent color, and use it to compensate for negative luminance values
   dt_aligned_pixel_t opponent_rgb = { 0.f };
@@ -794,12 +782,12 @@ static inline void _compress_into_gamut(dt_aligned_pixel_t pixel_in_out)
 
   const float opponent_y = opponent_rgb[0] * luminance_coeffs[0] + opponent_rgb[1] * luminance_coeffs[1]
                           + opponent_rgb[2] * luminance_coeffs[2];
-  const float max_opponent = _max(opponent_rgb);
+  const float max_opponent = max3f(opponent_rgb);
 
   const float y_compensate_negative = max_opponent - opponent_y + input_y;
 
   // Offset the input tristimulus such that there are no negatives
-  const float min_rgb = _min(pixel_in_out);
+  const float min_rgb = min3f(pixel_in_out);
   const float offset = fmaxf(-min_rgb, 0.f);
   dt_aligned_pixel_t rgb_offset = { 0.f };
   for_each_channel(c, aligned(rgb_offset, pixel_in_out))
@@ -807,7 +795,7 @@ static inline void _compress_into_gamut(dt_aligned_pixel_t pixel_in_out)
     rgb_offset[c] = pixel_in_out[c] + offset;
   }
 
-  const float max_of_rgb_offset = _max(rgb_offset);
+  const float max_of_rgb_offset = max3f(rgb_offset);
 
   // Calculate luminance of the opponent color, and use it to compensate for negative luminance values
   dt_aligned_pixel_t opponent_rgb_offset = { 0.f };
@@ -816,7 +804,7 @@ static inline void _compress_into_gamut(dt_aligned_pixel_t pixel_in_out)
     opponent_rgb_offset[c] = max_of_rgb_offset - rgb_offset[c];
   }
 
-  const float max_inverse_rgb_offset = _max(opponent_rgb_offset);
+  const float max_inverse_rgb_offset = max3f(opponent_rgb_offset);
   const float y_inverse_rgb_offset = opponent_rgb_offset[0] * luminance_coeffs[0]
                                      + opponent_rgb_offset[1] * luminance_coeffs[1]
                                      + opponent_rgb_offset[2] * luminance_coeffs[2];
@@ -1098,7 +1086,7 @@ static void _apply_auto_black_exposure(const dt_iop_module_t *self)
   dt_iop_agx_params_t *p = self->params;
   const dt_iop_agx_gui_data_t *g = self->gui_data;
 
-  const float black_norm = _min(self->picked_color_min);
+  const float black_norm = min3f(self->picked_color_min);
   p->range_black_relative_exposure = CLAMPF(log2f(fmaxf(_epsilon, black_norm) / 0.18f) * (1.f + p->dynamic_range_scaling), -20.f, -0.1f);
 
   ++darktable.gui->reset;
@@ -1114,7 +1102,7 @@ static void _apply_auto_white_exposure(const dt_iop_module_t *self)
   dt_iop_agx_params_t *p = self->params;
   const dt_iop_agx_gui_data_t *g = self->gui_data;
 
-  const float white_norm = _max(self->picked_color_max);
+  const float white_norm = max3f(self->picked_color_max);
   p->range_white_relative_exposure = CLAMPF(log2f(fmaxf(_epsilon, white_norm) / 0.18f) * (1.f + p->dynamic_range_scaling), 0.1f, 20.f);
 
   ++darktable.gui->reset;
@@ -1129,11 +1117,11 @@ static void _apply_auto_tune_exposure(const dt_iop_module_t *self)
   const dt_iop_agx_gui_data_t *g = self->gui_data;
 
   // Black point
-  const float black_norm = _min(self->picked_color_min);
+  const float black_norm = min3f(self->picked_color_min);
   p->range_black_relative_exposure = CLAMPF(log2f(fmaxf(_epsilon, black_norm) / 0.18f) * (1.f + p->dynamic_range_scaling), -20.f, -0.1f);
 
   // White point
-  const float white_norm = _max(self->picked_color_max);
+  const float white_norm = max3f(self->picked_color_max);
   p->range_white_relative_exposure = CLAMPF(log2f(fmaxf(_epsilon, white_norm) / 0.18f) * (1.f + p->dynamic_range_scaling), 0.1f, 20.f);
 
   ++darktable.gui->reset;
