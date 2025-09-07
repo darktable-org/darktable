@@ -1765,7 +1765,6 @@ static int32_t _control_export_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   dt_control_export_t *settings = params->data;
-  GList *t = params->index;
   dt_imageio_module_format_t *mformat = dt_imageio_get_format_by_index(settings->format_index);
   g_assert(mformat);
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage_by_index(settings->storage_index);
@@ -1780,7 +1779,7 @@ static int32_t _control_export_job_run(dt_job_t *job)
   if(mstorage->initialize_store)
   {
     if(mstorage->initialize_store(mstorage, sdata, &mformat, &fdata,
-                                  &t, settings->high_quality, settings->upscale))
+                                  &params->index, settings->high_quality, settings->upscale))
     {
       // bail out, something went wrong
       goto end;
@@ -1805,7 +1804,7 @@ static int32_t _control_export_job_run(dt_job_t *job)
   else
     h = sh < fh ? sh : fh;
 
-  const guint total = g_list_length(t);
+  const guint total = g_list_length(params->index);
   if(total > 0)
     dt_control_log(ngettext("exporting %d image..", "exporting %d images..", total), total);
   else
@@ -1857,6 +1856,7 @@ static int32_t _control_export_job_run(dt_job_t *job)
     metadata.list = g_list_remove(metadata.list, metadata.list->data);
   }
 
+  GList *t = params->index;
   double prev_time = 0;
 
   while(t && !_job_cancelled(job))
