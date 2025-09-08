@@ -1751,7 +1751,8 @@ void dt_iop_load_modules_so(void)
     ("/plugins", sizeof(dt_iop_module_so_t),
      dt_iop_load_module_so, _init_module_so, NULL);
 
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE, _iop_preferences_changed, darktable.iop);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE,
+                            _iop_preferences_changed, darktable.iop);
 
   // set up memory.darktable_iop_names table
   _iop_set_darktable_iop_table();
