@@ -269,6 +269,9 @@ void dt_collection_shift_image_positions(const unsigned int length,
                                          const int64_t image_position,
                                          const int32_t tagid);
 
+/* returns TRUE if the current collection uses property has part of the query */
+gboolean dt_collection_has_property(const dt_collection_properties_t property);
+
 /* move images with drag and drop */
 void dt_collection_move_before(const dt_imgid_t image_id, GList * selected_images);
 
