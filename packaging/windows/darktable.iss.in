@@ -50,7 +50,7 @@ SolidCompression=yes
 WizardStyle=modern
 
 [Tasks]
-; Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
 ; Source: "bin\{#MyAppExeName}"; DestDir: "{app}\bin"; Flags: ignoreversion
@@ -65,7 +65,7 @@ ${CMAKE_ADD_DARKTABLE_TO_OPENWITHLIST}
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
-; Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\bin\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
