@@ -8,9 +8,10 @@
 #define MyAppCliExeName "darktable-cli.exe"
 
 [Setup]
-; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
-; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{D6A9DE72-A18F-4051-85A9-D8DF95F71D80}
+; The value of AppId uniquely identifies the application. We also realize that
+; some users install more than one darktable version (e.g. stable and nightly
+; snapshot), so having the app name plus version as the AppId makes sense.
+AppId={#MyAppName}{#MyAppVersion}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppCopyright={#MyAppCopyright}
