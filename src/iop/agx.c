@@ -820,6 +820,14 @@ static inline void _compress_into_gamut(dt_aligned_pixel_t pixel_in_out)
   }
 }
 
+static inline float _calculate_pivot_y_at_gamma(const dt_iop_agx_params_t * p, const float gamma)
+{
+  return powf(CLAMPF(p->curve_pivot_y_linear_output,
+              p->curve_target_display_black_ratio,
+              p->curve_target_display_white_ratio),
+             1.f / gamma);
+}
+
 static void _adjust_pivot(const dt_iop_agx_params_t *p, tone_mapping_params_t *tone_mapping_params)
 {
   const float mid_gray_in_log_range = fabsf(tone_mapping_params->min_ev / tone_mapping_params->range_in_ev);
@@ -854,11 +862,7 @@ static void _adjust_pivot(const dt_iop_agx_params_t *p, tone_mapping_params_t *t
     tone_mapping_params->curve_gamma = p->curve_gamma;
   }
 
-  tone_mapping_params->pivot_y =
-        powf(CLAMPF(p->curve_pivot_y_linear_output,
-                         p->curve_target_display_black_ratio,
-                    p->curve_target_display_white_ratio),
-             1.f / tone_mapping_params->curve_gamma);
+  tone_mapping_params->pivot_y = _calculate_pivot_y_at_gamma(p, tone_mapping_params->curve_gamma);
 }
 
 static void _set_log_mapping_params(const dt_iop_agx_params_t *p,
@@ -894,6 +898,8 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_par
   const float gamma = tone_mapping_params.curve_gamma;
   const float pivot_y = tone_mapping_params.pivot_y;
 
+  const float pivot_y_at_default_gamma = _calculate_pivot_y_at_gamma(p, _default_gamma);
+
   // We want to maintain the contrast after linearisation, so we need to apply
   // the chain rule (f(g(x)' = f'(g(x)) * g'(x))
   // to find the derivative of linearisation(curve(x)) = curve(x)^gamma.
@@ -901,12 +907,12 @@ static tone_mapping_params_t _calculate_tone_mapping_params(const dt_iop_agx_par
   // also, curve(pivot_x) = pivot_y, so we need the derivative of the
   // power function at that point: f'(pivot_y).
   // We want to find gamma_compensated_slope to keep the overall derivative constant:
-  // gamma_compensated_slope * [gamma * pivot_y^(current_gamma-1)] =
-  // range_adjusted_slope * [_default_gamma * pivot_y^(_default_gamma-1)],
+  // gamma_compensated_slope * [gamma * pivot_y_at_current_gamma^(current_gamma-1)] =
+  // range_adjusted_slope * [_default_gamma * pivot_y_at_default_gamma^(_default_gamma-1)],
   // and thus gamma_compensated_slope = range_adjusted_slope *
   //              [_default_gamma * pivot_y^(_default_gamma-1)] / [gamma * pivot_y^(current_gamma-1)]
   const float derivative_at_current_gamma = gamma * powf(fmaxf(_epsilon, pivot_y), gamma - 1.0f);
-  const float derivative_at_default_gamma = _default_gamma * powf(fmaxf(_epsilon, pivot_y), _default_gamma - 1.0f);
+  const float derivative_at_default_gamma = _default_gamma * powf(fmaxf(_epsilon, pivot_y_at_default_gamma), _default_gamma - 1.0f);
   const float compensation_factor = derivative_at_current_gamma / derivative_at_default_gamma;
 
   tone_mapping_params.slope = range_adjusted_slope / compensation_factor;
