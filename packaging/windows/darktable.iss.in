@@ -62,6 +62,9 @@ Source: "share\*"; DestDir: "{app}\share"; Flags: ignoreversion recursesubdirs c
 [Registry]
 ${CMAKE_ADD_DARKTABLE_TO_OPENWITHLIST}
 
+Root: HKA; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{#MyAppExeName}"; ValueType: string; ValueData: "{app}\bin\{#MyAppExeName}"; Flags: uninsdeletekey
+Root: HKA; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{#MyAppCliExeName}"; ValueType: string; ValueData: "{app}\bin\{#MyAppCliExeName}"; Flags: uninsdeletekey
+
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
