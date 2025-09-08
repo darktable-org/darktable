@@ -1761,16 +1761,25 @@ static void _add_look_sliders(dt_iop_module_t *self, GtkWidget *parent_widget)
 
 static void _add_look_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
 {
+  const gboolean look_always_visible = dt_conf_get_bool("plugins/darkroom/agx/look_always_visible");
   GtkWidget *parent = self->widget;
 
   GtkWidget *look_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   self->widget = look_box;
-  dt_gui_new_collapsible_section(&g->look_section, "plugins/darkroom/agx/expand_look_params", _("look"),
-                                 GTK_BOX(look_box), DT_ACTION(self));
-  _add_look_sliders(self, GTK_WIDGET(g->look_section.container));
+
+  if(look_always_visible)
+  {
+    dt_gui_box_add(self->widget, dt_ui_section_label_new(_("look")));
+    _add_look_sliders(self, look_box);
+  }
+  else
+  {
+    dt_gui_new_collapsible_section(&g->look_section, "plugins/darkroom/agx/expand_look_params", _("look"),
+                                   GTK_BOX(look_box), DT_ACTION(self));
+    _add_look_sliders(self, GTK_WIDGET(g->look_section.container));
+  }
 
   self->widget = parent;
-
   gtk_box_pack_start(GTK_BOX(parent), look_box, FALSE, FALSE, 0);
 }
 

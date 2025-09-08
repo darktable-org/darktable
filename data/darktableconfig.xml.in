@@ -3867,6 +3867,13 @@
     <longdescription>if enabled, the settings tab will have fewer controls and will occupy less vertical space</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/agx/look_always_visible</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to keep look controls always visible</shortdescription>
+    <longdescription>if enabled, the look controls won't be placed in a collapsible section</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/agx/expand_curve_graph</name>
     <type>bool</type>
     <default>false</default>
