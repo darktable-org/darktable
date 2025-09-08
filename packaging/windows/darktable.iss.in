@@ -8,9 +8,10 @@
 #define MyAppCliExeName "darktable-cli.exe"
 
 [Setup]
-; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
-; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{D6A9DE72-A18F-4051-85A9-D8DF95F71D80}
+; The value of AppId uniquely identifies the application. We also realize that
+; some users install more than one darktable version (e.g. stable and nightly
+; snapshot), so having the app name plus version as the AppId makes sense.
+AppId={#MyAppName}{#MyAppVersion}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppCopyright={#MyAppCopyright}
@@ -49,7 +50,7 @@ SolidCompression=yes
 WizardStyle=modern
 
 [Tasks]
-; Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
 ; Source: "bin\{#MyAppExeName}"; DestDir: "{app}\bin"; Flags: ignoreversion
@@ -61,10 +62,13 @@ Source: "share\*"; DestDir: "{app}\share"; Flags: ignoreversion recursesubdirs c
 [Registry]
 ${CMAKE_ADD_DARKTABLE_TO_OPENWITHLIST}
 
+Root: HKA; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{#MyAppExeName}"; ValueType: string; ValueData: "{app}\bin\{#MyAppExeName}"; Flags: uninsdeletekey
+Root: HKA; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{#MyAppCliExeName}"; ValueType: string; ValueData: "{app}\bin\{#MyAppCliExeName}"; Flags: uninsdeletekey
+
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
-; Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\bin\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
