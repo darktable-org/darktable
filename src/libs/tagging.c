@@ -1534,7 +1534,6 @@ static void _pop_menu_dictionary_delete_tag(GtkWidget *menuitem, dt_lib_module_t
                                                     _("_cancel"), GTK_RESPONSE_NONE,
                                                     _("_delete"), GTK_RESPONSE_YES, NULL);
     gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_NONE);
-    gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
 
     text = g_strdup_printf(_("selected: %s"), tagname);
     GtkWidget *label1 = gtk_label_new(text);
@@ -1618,7 +1617,6 @@ static void _pop_menu_dictionary_delete_node(GtkWidget *menuitem, dt_lib_module_
                                                   _("_cancel"), GTK_RESPONSE_NONE,
                                                   _("_delete"), GTK_RESPONSE_YES, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_NONE);
-  gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
 
   text = g_strdup_printf(_("selected: %s"), tagname);
   GtkWidget *label1 = gtk_label_new(text);
@@ -1702,7 +1700,6 @@ static void _pop_menu_dictionary_create_tag(GtkWidget *menuitem, dt_lib_module_t
                                                   _("_cancel"), GTK_RESPONSE_NONE,
                                                   _("_save"), GTK_RESPONSE_YES, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_YES);
-  gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
 
   GtkWidget *entry = gtk_entry_new();
   gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
@@ -1821,7 +1818,6 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
                                                   _("_cancel"), GTK_RESPONSE_NONE,
                                                   _("_save"), GTK_RESPONSE_YES, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_YES);
-  gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
 
   text = g_strdup_printf(_("selected: %s"), tagname);
   GtkWidget *label1 = gtk_label_new(text);
@@ -2089,7 +2085,6 @@ static void _pop_menu_dictionary_change_path(GtkWidget *menuitem, dt_lib_module_
                                                   _("_cancel"), GTK_RESPONSE_NONE,
                                                   _("_save"), GTK_RESPONSE_YES, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_YES);
-  gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
 
   text = g_strdup_printf(_("selected: %s"), tagname);
   GtkWidget *label1 = gtk_label_new(text);
