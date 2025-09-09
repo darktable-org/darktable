@@ -60,6 +60,11 @@ Source: "share\*"; DestDir: "{app}\share"; Flags: ignoreversion recursesubdirs c
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]
+; To open a file from the "Open with" menu, Windows needs to know the exact command to execute
+Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\shell\open\command"; \
+  ValueType: string; Flags: uninsdeletevalue; \
+  ValueData: """{app}\bin\{#MyAppExeName}"" ""%1"""
+
 ${CMAKE_ADD_DARKTABLE_TO_OPENWITHLIST}
 
 Root: HKA; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{#MyAppExeName}"; ValueType: string; ValueData: "{app}\bin\{#MyAppExeName}"; Flags: uninsdeletekey
