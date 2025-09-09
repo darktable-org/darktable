@@ -80,11 +80,9 @@ static float linear_contrast(const float pixel, const float fulcrum, const float
 
 DT_OMP_DECLARE_SIMD(aligned(image, luminance:64) uniform(image, luminance))
 __DT_CLONE_TARGETS__
-static void pixel_rgb_mean(const float *const restrict image,
+static float pixel_rgb_mean(const float *const restrict image,
                            float *const restrict luminance,
-                           const size_t k,
-                           const float exposure_boost,
-                           const float fulcrum, const float contrast_boost)
+                           const size_t k)
 {
   // mean(RGB) is the intensity
 
@@ -94,67 +92,67 @@ static void pixel_rgb_mean(const float *const restrict image,
   for(int c = 0; c < 3; ++c)
     lum += image[k + c];
 
-  luminance[k / 4] = linear_contrast(exposure_boost * lum / 3.0f, fulcrum, contrast_boost);
+  return lum / 3.0f;
+
+  //luminance[k / 4] = linear_contrast(exposure_boost * lum / 3.0f, fulcrum, contrast_boost);
 }
 
 
 DT_OMP_DECLARE_SIMD(aligned(image, luminance:64) uniform(image, luminance))
 __DT_CLONE_TARGETS__
-static void pixel_rgb_value(const float *const restrict image,
+static float pixel_rgb_value(const float *const restrict image,
                             float *const restrict luminance,
-                            const size_t k,
-                            const float exposure_boost,
-                            const float fulcrum, const float contrast_boost)
+                            const size_t k)
 {
   // max(RGB) is equivalent to HSV value
 
-  const float lum = exposure_boost * MAX(MAX(image[k], image[k + 1]), image[k + 2]);
-  luminance[k / 4] = linear_contrast(lum, fulcrum, contrast_boost);
+  const float lum = MAX(MAX(image[k], image[k + 1]), image[k + 2]);
+  return lum;
+
+  //luminance[k / 4] = linear_contrast(lum, fulcrum, contrast_boost);
 }
 
 
 DT_OMP_DECLARE_SIMD(aligned(image, luminance:64) uniform(image, luminance))
 __DT_CLONE_TARGETS__
-static void pixel_rgb_lightness(const float *const restrict image,
+static float pixel_rgb_lightness(const float *const restrict image,
                                 float *const restrict luminance,
-                                const size_t k,
-                                const float exposure_boost,
-                                const float fulcrum, const float contrast_boost)
+                                const size_t k)
 {
   // (max(RGB) + min(RGB)) / 2 is equivalent to HSL lightness
 
   const float max_rgb = MAX(MAX(image[k], image[k + 1]), image[k + 2]);
   const float min_rgb = MIN(MIN(image[k], image[k + 1]), image[k + 2]);
-  luminance[k / 4] = linear_contrast(exposure_boost * (max_rgb + min_rgb) / 2.0f, fulcrum, contrast_boost);
+  return (max_rgb + min_rgb) / 2.0f;
+
+  //luminance[k / 4] = linear_contrast(exposure_boost * (max_rgb + min_rgb) / 2.0f, fulcrum, contrast_boost);
 }
 
 DT_OMP_DECLARE_SIMD(aligned(image, luminance:64) uniform(image, luminance))
 __DT_CLONE_TARGETS__
-static void pixel_rgb_norm_1(const float *const restrict image,
+static float pixel_rgb_norm_1(const float *const restrict image,
                              float *const restrict luminance,
-                             const size_t k,
-                             const float exposure_boost,
-                             const float fulcrum, const float contrast_boost)
+                             const size_t k)
 {
   // vector norm L1
 
   float lum = 0.0f;
 
-    DT_OMP_SIMD(reduction(+:lum) aligned(image:64))
-    for(int c = 0; c < 3; ++c)
-      lum += fabsf(image[k + c]);
+  DT_OMP_SIMD(reduction(+:lum) aligned(image:64))
+  for(int c = 0; c < 3; ++c)
+    lum += fabsf(image[k + c]);
 
-  luminance[k / 4] = linear_contrast(exposure_boost * lum, fulcrum, contrast_boost);
+  return lum;
+
+  // luminance[k / 4] = linear_contrast(exposure_boost * lum, fulcrum, contrast_boost);
 }
 
 
 DT_OMP_DECLARE_SIMD(aligned(image, luminance:64) uniform(image, luminance))
 __DT_CLONE_TARGETS__
-static void pixel_rgb_norm_2(const float *const restrict image,
+static float pixel_rgb_norm_2(const float *const restrict image,
                              float *const restrict luminance,
-                             const size_t k,
-                             const float exposure_boost,
-                             const float fulcrum, const float contrast_boost)
+                             const size_t k)
 {
   // vector norm L2 : euclidean norm
 
@@ -164,17 +162,17 @@ static void pixel_rgb_norm_2(const float *const restrict image,
   for(int c = 0; c < 3; ++c)
     result += image[k + c] * image[k + c];
 
-  luminance[k / 4] = linear_contrast(exposure_boost * sqrtf(result), fulcrum, contrast_boost);
+  return sqrtf(result);
+
+  // luminance[k / 4] = linear_contrast(exposure_boost * sqrtf(result), fulcrum, contrast_boost);
 }
 
 
 DT_OMP_DECLARE_SIMD(aligned(image, luminance:64) uniform(image, luminance))
 __DT_CLONE_TARGETS__
-static void pixel_rgb_norm_power(const float *const restrict image,
+static float pixel_rgb_norm_power(const float *const restrict image,
                                  float *const restrict luminance,
-                                 const size_t k,
-                                 const float exposure_boost,
-                                 const float fulcrum, const float contrast_boost)
+                                 const size_t k)
 {
   // weird norm sort of perceptual. This is black magic really, but it looks good.
 
@@ -191,16 +189,16 @@ static void pixel_rgb_norm_power(const float *const restrict image,
     denominator += RGB_square;
   }
 
-  luminance[k / 4] = linear_contrast(exposure_boost * numerator / denominator, fulcrum, contrast_boost);
+  return numerator / denominator;
+
+  // luminance[k / 4] = linear_contrast(exposure_boost * numerator / denominator, fulcrum, contrast_boost);
 }
 
 DT_OMP_DECLARE_SIMD(aligned(image, luminance:64) uniform(image, luminance))
 __DT_CLONE_TARGETS__
-static void pixel_rgb_geomean(const float *const restrict image,
+static float pixel_rgb_geomean(const float *const restrict image,
                               float *const restrict luminance,
-                              const size_t k,
-                              const float exposure_boost,
-                              const float fulcrum, const float contrast_boost)
+                              const size_t k)
 {
   // geometric_mean(RGB). Kind of interesting for saturated colours (maps them to shadows)
 
@@ -212,19 +210,35 @@ static void pixel_rgb_geomean(const float *const restrict image,
     lum *= fabsf(image[k + c]);
   }
 
-  luminance[k / 4] = linear_contrast(exposure_boost * powf(lum, 1.0f / 3.0f), fulcrum, contrast_boost);
+  return powf(lum, 1.0f / 3.0f);
+
+  // luminance[k / 4] = linear_contrast(exposure_boost * powf(lum, 1.0f / 3.0f), fulcrum, contrast_boost);
 }
 
 DT_OMP_DECLARE_SIMD(aligned(image, luminance:64) uniform(image, luminance))
 __DT_CLONE_TARGETS__
-static void pixel_rgb_r709w(const float *const restrict image,
+static float pixel_rgb_r709w(const float *const restrict image,
+                            float *const restrict luminance,
+                            const size_t k)
+{
+  const float lum = 0.2126 * image[k] + 0.7152 * image[k + 1] + 0.0722 * image[k + 2];
+  return lum;
+  // luminance[k / 4] = linear_contrast(lum, fulcrum, contrast_boost);
+}
+
+
+DT_OMP_DECLARE_SIMD(aligned(image, luminance:64) uniform(image, luminance))
+__DT_CLONE_TARGETS__
+static float pixel_rgb_custom(const float *const restrict image,
                             float *const restrict luminance,
                             const size_t k,
-                            const float exposure_boost,
-                            const float fulcrum, const float contrast_boost)
+                            const float r_weight,
+                            const float g_weight,
+                            const float b_weight)
 {
-  const float lum = exposure_boost * (0.2126 * image[k] + 0.7152 * image[k + 1] + 0.0722 * image[k + 2]);
-  luminance[k / 4] = linear_contrast(lum, fulcrum, contrast_boost);
+  const float lum = MAX(MIN_FLOAT, r_weight * image[k] + g_weight * image[k + 1] + b_weight * image[k + 2]);
+  return lum;
+  // luminance[k / 4] = linear_contrast(lum, fulcrum, contrast_boost);
 }
 
 
@@ -235,11 +249,16 @@ static void pixel_rgb_r709w(const float *const restrict image,
   #define LOOP(fn)                                                        \
     {                                                                     \
       _Pragma ("omp parallel for simd default(none) schedule(static)      \
-      dt_omp_firstprivate(num_elem, in, out, exposure_boost, fulcrum, contrast_boost)\
+      dt_omp_firstprivate(num_elem, in, out, exposure_boost, fulcrum, contrast_boost, r_weight, g_weight, b_weight)\
+      reduction(min:min_lum) reduction(max:max_lum)                       \
       aligned(in, out:64)" )                                              \
       for(size_t k = 0; k < num_elem; k += 4)                             \
       {                                                                   \
-        fn(in, out, k, exposure_boost, fulcrum, contrast_boost);          \
+        const float lum = COMPUTE_LUM(fn);                                \
+        const float lum_boosted = linear_contrast(exposure_boost * lum, fulcrum, contrast_boost); \
+        min_lum = MIN(min_lum, lum_boosted);                              \
+        max_lum = MAX(max_lum, lum_boosted);                              \
+        out[k / 4] = lum_boosted;                                         \
       }                                                                   \
       break;                                                              \
     }
@@ -248,7 +267,11 @@ static void pixel_rgb_r709w(const float *const restrict image,
     {                                                                     \
       for(size_t k = 0; k < num_elem; k += 4)                             \
       {                                                                   \
-        fn(in, out, k, exposure_boost, fulcrum, contrast_boost);          \
+        const float lum = COMPUTE_LUM(fn);                                \
+        const float lum_boosted = linear_contrast(exposure_boost * lum, fulcrum, contrast_boost); \
+        min_lum = MIN(min_lum, lum_boosted);                              \
+        max_lum = MAX(max_lum, lum_boosted);                              \
+        out[k / 4] = lum_boosted;                                         \
       }                                                                   \
       break;                                                              \
     }
@@ -263,11 +286,23 @@ static inline void luminance_mask(const float *const restrict in,
                                   const dt_iop_luminance_mask_method_t method,
                                   const float exposure_boost,
                                   const float fulcrum,
-                                  const float contrast_boost)
+                                  const float contrast_boost,
+                                  const float r_weight,
+                                  const float g_weight,
+                                  const float b_weight,
+                                  float *image_min_ev,
+                                  float *image_max_ev)
 {
   const size_t num_elem = width * height * 4;
+  float min_lum = INFINITY;
+  float max_lum = -INFINITY;
+
+  printf("luminance_mask: method=%d, exposure_boost=%f, fulcrum=%f, contrast_boost=%f, r_weight=%f, g_weight=%f, b_weight=%f\n",
+         method, exposure_boost, fulcrum, contrast_boost, r_weight, g_weight, b_weight);
+
   switch(method)
   {
+    #define COMPUTE_LUM(fn) fn(in, out, k)
     case DT_TONEEQ_MEAN:
       LOOP(pixel_rgb_mean);
 
@@ -292,10 +327,20 @@ static inline void luminance_mask(const float *const restrict in,
     case DT_TONEEQ_REC709W:
       LOOP(pixel_rgb_r709w);
 
+    #undef COMPUTE_LUM
+    #define COMPUTE_LUM(fn) fn(in, out, k, r_weight, g_weight, b_weight)
+    case DT_TONEEQ_CUSTOM:
+      LOOP(pixel_rgb_custom);
+
     default:
       break;
   }
+
+  *image_min_ev = log2f(min_lum);
+  *image_max_ev = log2f(max_lum);
 }
+
+
 
 
 // __DT_CLONE_TARGETS__
@@ -306,15 +351,12 @@ static inline void luminance_mask(const float *const restrict in,
 //                                   const dt_iop_luminance_mask_method_t method,
 //                                   const float exposure_boost,
 //                                   const float fulcrum,
-//                                   const float contrast_boost)
+//                                   const float contrast_boost
+//                                   const float r_weight,
+//                                   const float g_weight,
+//                                   const float b_weight)
 // {
-//   // TODO MF:
-//   // - 3 steps:
-//   //   - convert to greyscale
-//   //     - custom variant to mix RGB
-//   //   - calculate the histogram
-//   //   - apply a LUT instead of linear contrast
-//   //   - turn linear_contrast into a lut
+
 //   const size_t num_elem = width * height * 4;
 //   switch(method)
 //   {
