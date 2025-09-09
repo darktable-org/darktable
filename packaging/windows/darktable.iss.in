@@ -37,13 +37,15 @@ DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 LicenseFile=share\doc\darktable\LICENSE
 
-; Uncomment the following line to run in non administrative install mode (install for current user only).
-;PrivilegesRequired=lowest
+; Uncomment the following line to run in non administrative install mode
+; (install for current user only).
+; PrivilegesRequired=lowest
 
 PrivilegesRequiredOverridesAllowed=dialog
 OutputBaseFilename=darktable-{#MyAppVersion}-${ARCH_STRING}
 
-; When this directive is set, the compiler will create a manifest file detailing information about the files compiled into Setup. The file will be created in the output directory unless a path is included.
+; When this directive is set, the compiler will create a manifest file
+; detailing information about the files compiled into Setup.
 OutputManifestFile=darktable-manifest.txt
 
 SolidCompression=yes
@@ -54,11 +56,9 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; Flags: unchecked
 
 [Files]
-; Source: "bin\{#MyAppExeName}"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "bin\*"; DestDir: "{app}\bin"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "share\*"; DestDir: "{app}\share"; Flags: ignoreversion recursesubdirs createallsubdirs
-; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]
 ; To open a file from the "Open with" menu, Windows needs to know the exact command to execute
@@ -68,8 +68,15 @@ Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\shell\open\com
 
 ${CMAKE_ADD_DARKTABLE_TO_OPENWITHLIST}
 
-Root: HKA; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{#MyAppExeName}"; ValueType: string; ValueData: "{app}\bin\{#MyAppExeName}"; Flags: uninsdeletekey
-Root: HKA; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{#MyAppCliExeName}"; ValueType: string; ValueData: "{app}\bin\{#MyAppCliExeName}"; Flags: uninsdeletekey
+Root: HKA; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{#MyAppExeName}"; \
+  ValueType: string; \
+  ValueData: "{app}\bin\{#MyAppExeName}"; \
+  Flags: uninsdeletekey
+
+Root: HKA; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{#MyAppCliExeName}"; \
+  ValueType: string; \
+  ValueData: "{app}\bin\{#MyAppCliExeName}"; \
+  Flags: uninsdeletekey
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"
@@ -79,4 +86,6 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; \
   Filename: "{app}\bin\{#MyAppName}"; WorkingDir: "{app}"; Tasks: quicklaunchicon
 
 [Run]
-Filename: "{app}\bin\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\bin\{#MyAppExeName}"; \
+  Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; \
+  Flags: nowait postinstall skipifsilent
