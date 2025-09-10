@@ -105,13 +105,11 @@ int dual_demosaic_cl(const dt_iop_module_t *self,
   const float contrastf = _slider2contrast(data->dual_thrs);
 
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-  cl_mem mask = NULL;
-  cl_mem tmp = NULL;
   const size_t bsize = sizeof(float) * width * height;
 
-  tmp = dt_opencl_alloc_device_buffer(devid, bsize);
-  mask = dt_opencl_alloc_device_buffer(devid, bsize);
-  if(mask == NULL || tmp == NULL) goto finish;
+  cl_mem tmp = dt_opencl_alloc_device_buffer(devid, bsize);
+  cl_mem mask = dt_opencl_alloc_device_buffer(devid, bsize);
+  if(!mask || !tmp) goto finish;
 
   const gboolean wboff = !p->dsc.temperature.enabled;
   const dt_aligned_pixel_t wb =
@@ -140,6 +138,10 @@ int dual_demosaic_cl(const dt_iop_module_t *self,
       CLARG(high_image), CLARG(low_image), CLARG(out), CLARG(width), CLARG(height), CLARG(tmp), CLARG(dual_mask));
 
   finish:
+
+  if(err != CL_SUCCESS)
+    dt_print_pipe(DT_DEBUG_ALWAYS, "dual demosaic", p, self, devid, NULL, NULL, "Error: %s", cl_errstr(err));
+
   dt_opencl_release_mem_object(mask);
   dt_opencl_release_mem_object(tmp);
   return err;

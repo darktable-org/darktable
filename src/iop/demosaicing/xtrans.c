@@ -2080,7 +2080,8 @@ error:
   dt_opencl_release_mem_object(dev_allhex);
   dt_opencl_release_mem_object(dev_aux);
   if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] markesteijn problem '%s'", cl_errstr(err));
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] markesteijn%s problem '%s'",
+      passes == 3 ? "_3" : "", cl_errstr(err));
   return err;
 }
 

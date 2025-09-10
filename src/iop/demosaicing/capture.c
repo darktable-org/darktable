@@ -608,7 +608,7 @@ static void _modify_blend(float *blend,
   }
 }
 
-static void _capture_radius(dt_iop_module_t *self,
+static void _calc_capradius(dt_iop_module_t *self,
                             dt_dev_pixelpipe_iop_t *const piece,
                             float *const in,
                             const int width,
@@ -618,13 +618,6 @@ static void _capture_radius(dt_iop_module_t *self,
 {
   dt_iop_demosaic_data_t *d = piece->data;
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
-  const gboolean requested = (g && g->autoradius) || d->cs_radius < 0.01f;
-  if(!requested)
-  {
-    if(g) g->autoradius = FALSE;
-    return;
-  }
-
   dt_dev_pixelpipe_t *pipe = piece->pipe;
   const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
   const dt_iop_buffer_dsc_t *dsc = &pipe->dsc;
@@ -644,6 +637,25 @@ static void _capture_radius(dt_iop_module_t *self,
     dt_control_log(_("calculated capture radius"));
     if(g) g->autoradius = TRUE;
   }
+}
+
+static void _capture_radius(dt_iop_module_t *self,
+                            dt_dev_pixelpipe_iop_t *const piece,
+                            float *const in,
+                            const int width,
+                            const int height,
+                            const uint8_t (*const xtrans)[6],
+                            const uint32_t filters)
+{
+  dt_iop_demosaic_data_t *d = piece->data;
+  dt_iop_demosaic_gui_data_t *g = self->gui_data;
+  const gboolean requested = (g && g->autoradius) || d->cs_radius < 0.01f;
+  if(!requested)
+  {
+    if(g) g->autoradius = FALSE;
+    return;
+  }
+  _calc_capradius(self, piece, in, width, height, xtrans, filters);
 }
 
 static void _capture_sharpen(dt_iop_module_t *self,
@@ -681,10 +693,10 @@ static void _capture_sharpen(dt_iop_module_t *self,
   unsigned char *gauss_idx = NULL;
   gboolean error = TRUE;
 
-  float *luminance = dt_alloc_align_float(pixels);
-  float *tmp2 = dt_alloc_align_float(pixels);
-  float *tmp1 = dt_alloc_align_float(pixels);
-  float *blendmask = dt_alloc_align_float(pixels);
+  float *luminance = dt_iop_image_alloc(width, height, 1);
+  float *tmp2 = dt_iop_image_alloc(width, height, 1);
+  float *tmp1 = dt_iop_image_alloc(width, height, 1);
+  float *blendmask = dt_iop_image_alloc(width, height, 1);
   if(!luminance || !tmp2 || !tmp1 || !blendmask)
     goto finalize;
 
@@ -768,7 +780,7 @@ static void _capture_sharpen(dt_iop_module_t *self,
 
 #if HAVE_OPENCL
 
-static int _capture_radius_cl(dt_iop_module_t *self,
+static void _capture_radius_cl(dt_iop_module_t *self,
                               dt_dev_pixelpipe_iop_t *const piece,
                               const cl_mem dev_in,
                               const int width,
@@ -782,39 +794,27 @@ static int _capture_radius_cl(dt_iop_module_t *self,
   if(!requested)
   {
     if(g) g->autoradius = FALSE;
-    return CL_SUCCESS;
+    return;
   }
 
   dt_dev_pixelpipe_t *pipe = piece->pipe;
-  const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
   const int devid = pipe->devid;
   float *in = dt_iop_image_alloc(width, height, 1);
-  if(!in) return CL_MEM_OBJECT_ALLOCATION_FAILURE;
-
-  cl_int err = dt_opencl_copy_device_to_host(devid, in, dev_in, width, height, sizeof(float));
-  if(err == CL_SUCCESS)
+  if(!in)
   {
-    const dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
-    const float radius = _calc_auto_radius(in, width, height, filters, xtrans, dsc);
-    const gboolean valid = radius > 0.1f && radius < 1.5f;
-    d->cs_radius = valid ? radius : 0.5f;
-
     dt_print_pipe(DT_DEBUG_PIPE, filters != 9u ? "bayer autoradius" : "xtrans autoradius",
-            pipe, self, devid, NULL, NULL, "autoradius=%.2f %svalid",
-            d->cs_radius,
-            valid ? "" : "in");
-
-    if(fullpipe)
-    {
-      dt_iop_demosaic_params_t *p = self->params;
-      p->cs_radius = d->cs_radius;
-      dt_control_log(_("calculated capture radius"));
-      if(g) g->autoradius = TRUE;
-    }
+            pipe, self, devid, NULL, NULL, "calculation failed");
+    return;
   }
 
+  const cl_int err = dt_opencl_copy_device_to_host(devid, in, dev_in, width, height, sizeof(float));
+  if(err == CL_SUCCESS)
+    _calc_capradius(self, piece, in, width, height, xtrans, filters);
+  else
+    dt_print_pipe(DT_DEBUG_PIPE, filters != 9u ? "bayer autoradius" : "xtrans autoradius",
+            pipe, self, devid, NULL, NULL, "calculation failed");
+
   dt_free_align(in);
-  return err;
 }
 
 static int _capture_sharpen_cl(dt_iop_module_t *self,
