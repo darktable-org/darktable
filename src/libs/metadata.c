@@ -717,8 +717,7 @@ static void _add_selected_metadata(gchar *tagname, dt_lib_metadata_t *d)
   GtkTreeIter iter;
   if(!_find_metadata_iter_per_text(GTK_TREE_MODEL(d->liststore), NULL, DT_METADATA_PREF_COL_TAGNAME, tagname))
   {
-    gtk_list_store_append(d->liststore, &iter);
-    gtk_list_store_set(d->liststore, &iter,
+    gtk_list_store_insert_with_values(d->liststore, &iter, -1,
                        DT_METADATA_PREF_COL_KEY, -1,  // -1 indicates a new entry
                        DT_METADATA_PREF_COL_TAGNAME, tagname,
                        DT_METADATA_PREF_COL_NAME, dt_metadata_get_tag_subkey(tagname),
@@ -866,8 +865,7 @@ static void _menuitem_preferences(GtkMenuItem *menuitem,
     dt_metadata_t *metadata = (dt_metadata_t *)metadata_iter->data;
     if(!metadata->internal)
     {
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter,
+      gtk_list_store_insert_with_values(store, NULL, -1,
                          DT_METADATA_PREF_COL_KEY, metadata->key,
                          DT_METADATA_PREF_COL_TAGNAME, metadata->tagname,
                          DT_METADATA_PREF_COL_NAME, metadata->name,

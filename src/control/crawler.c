@@ -429,12 +429,8 @@ static void _log_synchronization(dt_control_crawler_gui_t *gui,
   gchar *message = g_markup_printf_escaped(pattern, filepath ? filepath : "");
 
   // add a new line in the log TreeView
-  GtkTreeIter iter_log;
   GtkTreeModel *model_log = gtk_tree_view_get_model(GTK_TREE_VIEW(gui->log));
-  gtk_list_store_append(GTK_LIST_STORE(model_log), &iter_log);
-  gtk_list_store_set(GTK_LIST_STORE(model_log), &iter_log,
-                     0, message,
-                     -1);
+  gtk_list_store_insert_with_values(GTK_LIST_STORE(model_log), NULL, -1, 0, message, -1);
 
   g_free(message);
 }
@@ -726,7 +722,6 @@ void dt_control_crawler_show_image_list(GList *images)
 
   for(GList *list_iter = images; list_iter; list_iter = g_list_next(list_iter))
   {
-    GtkTreeIter iter;
     dt_control_crawler_result_t *item = list_iter->data;
     char timestamp_db[64], timestamp_xmp[64];
     struct tm tm_stamp;
@@ -738,9 +733,7 @@ void dt_control_crawler_show_image_list(GList *images)
     const time_t time_delta = llabs(item->timestamp_db - item->timestamp_xmp);
     gchar *timestamp_delta = str_time_delta(time_delta);
 
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set
-      (store, &iter,
+    gtk_list_store_insert_with_values(store, NULL, -1,
        DT_CONTROL_CRAWLER_COL_ID, item->id,
        DT_CONTROL_CRAWLER_COL_IMAGE_PATH, item->image_path,
        DT_CONTROL_CRAWLER_COL_XMP_PATH, item->xmp_path,

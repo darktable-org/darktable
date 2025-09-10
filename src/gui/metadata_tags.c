@@ -125,8 +125,6 @@ GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent, gpointer metadata_activate
 
   for(GList *tag = taglist; tag; tag = g_list_next(tag))
   {
-    GtkTreeIter iter;
-    gtk_list_store_append(liststore, &iter);
     const char *tagname = tag->data;
     char *type = g_strstr_len(tagname, -1, ",");
     if(type)
@@ -135,8 +133,7 @@ GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent, gpointer metadata_activate
       type++;
     }
 
-    gtk_list_store_set(liststore,
-                       &iter,
+    gtk_list_store_insert_with_values(liststore, NULL, -1,
                        DT_METADATA_TAGS_COL_XMP, tagname,
                        DT_METADATA_TAGS_COL_TYPE, type,
                        DT_METADATA_TAGS_COL_VISIBLE, TRUE,
