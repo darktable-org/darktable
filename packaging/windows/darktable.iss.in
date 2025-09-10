@@ -78,6 +78,18 @@ Root: HKA; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{#MyAppC
   ValueData: "{app}\bin\{#MyAppCliExeName}"; \
   Flags: uninsdeletekey
 
+Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; \
+  ValueType: string; \
+  ValueName: "CAMLIBS"; \
+  ValueData: "{app}\lib\libgphoto2\${CPACK_NSIS_GPHOTO2_VERSION}"; \
+  Flags: uninsdeletevalue
+
+Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; \
+  ValueType: string; \
+  ValueName: "IOLIBS"; \
+  ValueData: "{app}\lib\libgphoto2_port\${CPACK_NSIS_GPHOTO2_PORT_VERSION}"; \
+  Flags: uninsdeletevalue
+
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
