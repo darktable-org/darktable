@@ -581,6 +581,9 @@ void dt_gui_simulate_button_event(GtkWidget *widget,
 // Setup auto-commit on focus loss for editable renderers
 void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer, GtkCellEditable **active_editable);
 
+// restore dialog size from config file
+void dt_gui_dialog_restore_size(GtkDialog *dialog, const char *conf);
+
 G_END_DECLS
 
 // clang-format off

@@ -226,6 +226,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
       _("_ok"),          GTK_RESPONSE_OK,
       NULL));
   dt_gui_dialog_add_help(dialog, "copy_history");
+  dt_gui_dialog_restore_size(dialog, "copy_history");
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(GTK_WIDGET(dialog));

@@ -93,6 +93,7 @@ GtkWidget *dt_metadata_tags_dialog(GtkWidget *parent, gpointer metadata_activate
                                                   _("_done"), GTK_RESPONSE_NONE, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_NONE);
   gtk_window_set_default_size(GTK_WINDOW(dialog), DT_PIXEL_APPLY_DPI(500), DT_PIXEL_APPLY_DPI(300));
+  gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
 
   // keep a reference to the "add" button to toggle its sensitivity
   add_button = gtk_dialog_get_widget_for_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
