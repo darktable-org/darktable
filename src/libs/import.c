@@ -410,9 +410,7 @@ static guint _import_from_camera_set_file_list(dt_lib_module_t *self)
       dt_datetime_unix_to_exif(dtid, sizeof(dtid), &datetime);
       const gboolean already_imported = dt_metadata_already_imported(basename, dtid);
       g_free(basename);
-      GtkTreeIter iter;
-      gtk_list_store_append(d->from.store, &iter);
-      gtk_list_store_set(d->from.store, &iter,
+      gtk_list_store_insert_with_values(d->from.store, NULL, -1,
                          DT_IMPORT_UI_EXISTS, already_imported ? "✔" : " ",
                          DT_IMPORT_UI_FILENAME, file->filename,
                          DT_IMPORT_FILENAME, file->filename,
@@ -886,9 +884,7 @@ static void _import_add_file_callback(GObject *direnum,
           GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
           gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
 
-          GtkTreeIter iter;
-          gtk_list_store_append(d->from.store, &iter);
-          gtk_list_store_set(d->from.store, &iter,
+          gtk_list_store_insert_with_values(d->from.store, NULL, -1,
                              DT_IMPORT_UI_EXISTS, already_imported ? "✔" : " ",
                              DT_IMPORT_UI_FILENAME, &fullname[offset],
                              DT_IMPORT_FILENAME, fullname,
@@ -1124,15 +1120,6 @@ static void _expander_create(dt_gui_collapsible_section_t *cs,
      DT_ACTION(self));
 }
 
-static void _resize_dialog(GtkWidget *widget,
-                           dt_lib_module_t* self)
-{
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  dt_conf_set_int("ui_last/import_dialog_width", allocation.width);
-  dt_conf_set_int("ui_last/import_dialog_height", allocation.height);
-}
-
 static gboolean _find_iter_folder(GtkTreeModel *model,
                                   GtkTreeIter *iter,
                                   const char *folder)
@@ -1187,13 +1174,13 @@ static void _get_folders_list(GtkTreeStore *store,
   if(!parent)
   {
     gchar *basename = g_path_get_basename(folder);
-    gtk_tree_store_append(store, &parent2, NULL);
-    gtk_tree_store_set(store, &parent2, DT_FOLDER_NAME, basename,
-                                     DT_FOLDER_PATH, folder,
-                                     DT_FOLDER_EXPANDED, FALSE, -1);
+    gtk_tree_store_insert_with_values(store, &parent2, NULL, -1,
+                                      DT_FOLDER_NAME, basename,
+                                      DT_FOLDER_PATH, folder,
+                                      DT_FOLDER_EXPANDED, FALSE, -1);
     // fake child
-    gtk_tree_store_append(store, &iter, &parent2);
-    gtk_tree_store_set(store, &iter, DT_FOLDER_EXPANDED, FALSE, -1);
+    gtk_tree_store_insert_with_values(store, &iter, &parent2, -1,
+                                      DT_FOLDER_EXPANDED, FALSE, -1);
     g_free(basename);
   }
   else
@@ -2076,12 +2063,8 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(d->from.dialog);
 #endif
-  gtk_window_set_default_size(GTK_WINDOW(d->from.dialog),
-                              dt_conf_get_int("ui_last/import_dialog_width"),
-                              dt_conf_get_int("ui_last/import_dialog_height"));
+  dt_gui_dialog_restore_size(GTK_DIALOG(d->from.dialog), "import");
   gtk_window_set_transient_for(GTK_WINDOW(d->from.dialog), GTK_WINDOW(win));
-  g_signal_connect(d->from.dialog, "check-resize",
-                   G_CALLBACK(_resize_dialog), self);
   g_signal_connect(d->from.dialog, "key-press-event",
                    G_CALLBACK(dt_handle_dialog_enter), self);
 

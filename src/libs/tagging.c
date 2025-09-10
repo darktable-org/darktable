@@ -451,8 +451,7 @@ static void _init_treeview(dt_lib_module_t *self, const int which)
             dt_util_str_cat(&pth, "%s|", *token);
             gchar *pth2 = g_strdup(pth);
             pth2[strlen(pth2) - 1] = '\0';
-            gtk_tree_store_insert(GTK_TREE_STORE(store), &iter, common_length > 0 ? &parent : NULL, -1);
-            gtk_tree_store_set(GTK_TREE_STORE(store), &iter,
+            gtk_tree_store_insert_with_values(GTK_TREE_STORE(store), &iter, common_length > 0 ? &parent : NULL, -1,
                               DT_LIB_TAGGING_COL_TAG, *token,
                               DT_LIB_TAGGING_COL_ID, (token == &tokens[tokens_length-1]) ?
                                                      ((dt_tag_t *)taglist->data)->id : 0,
@@ -498,8 +497,7 @@ static void _init_treeview(dt_lib_module_t *self, const int which)
       for(GList *tag = tags; tag; tag = g_list_next(tag))
       {
         const char *subtag = g_strrstr(((dt_tag_t *)tag->data)->tag, "|");
-        gtk_list_store_append(GTK_LIST_STORE(store), &iter);
-        gtk_list_store_set(GTK_LIST_STORE(store), &iter,
+        gtk_list_store_insert_with_values(GTK_LIST_STORE(store), NULL, -1,
                           DT_LIB_TAGGING_COL_TAG, !subtag ? ((dt_tag_t *)tag->data)->tag : subtag + 1,
                           DT_LIB_TAGGING_COL_ID, ((dt_tag_t *)tag->data)->id,
                           DT_LIB_TAGGING_COL_PATH, ((dt_tag_t *)tag->data)->tag,
@@ -1534,7 +1532,6 @@ static void _pop_menu_dictionary_delete_tag(GtkWidget *menuitem, dt_lib_module_t
                                                     _("_cancel"), GTK_RESPONSE_NONE,
                                                     _("_delete"), GTK_RESPONSE_YES, NULL);
     gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_NONE);
-    gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
 
     text = g_strdup_printf(_("selected: %s"), tagname);
     GtkWidget *label1 = gtk_label_new(text);
@@ -1618,7 +1615,6 @@ static void _pop_menu_dictionary_delete_node(GtkWidget *menuitem, dt_lib_module_
                                                   _("_cancel"), GTK_RESPONSE_NONE,
                                                   _("_delete"), GTK_RESPONSE_YES, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_NONE);
-  gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
 
   text = g_strdup_printf(_("selected: %s"), tagname);
   GtkWidget *label1 = gtk_label_new(text);
@@ -1702,7 +1698,6 @@ static void _pop_menu_dictionary_create_tag(GtkWidget *menuitem, dt_lib_module_t
                                                   _("_cancel"), GTK_RESPONSE_NONE,
                                                   _("_save"), GTK_RESPONSE_YES, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_YES);
-  gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
 
   GtkWidget *entry = gtk_entry_new();
   gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
@@ -1821,7 +1816,6 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
                                                   _("_cancel"), GTK_RESPONSE_NONE,
                                                   _("_save"), GTK_RESPONSE_YES, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_YES);
-  gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
 
   text = g_strdup_printf(_("selected: %s"), tagname);
   GtkWidget *label1 = gtk_label_new(text);
@@ -2089,7 +2083,6 @@ static void _pop_menu_dictionary_change_path(GtkWidget *menuitem, dt_lib_module_
                                                   _("_cancel"), GTK_RESPONSE_NONE,
                                                   _("_save"), GTK_RESPONSE_YES, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_YES);
-  gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
 
   text = g_strdup_printf(_("selected: %s"), tagname);
   GtkWidget *label1 = gtk_label_new(text);

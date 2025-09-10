@@ -966,6 +966,8 @@ static inline const gchar *NQ_(const gchar *String)
   return context_end ? context_end + 1 : String;
 }
 
+#define dt_buf_printf(buf, fmt, ...) (snprintf((buf), sizeof(buf), (fmt) __VA_OPT__(,) __VA_ARGS__), (buf))
+
 static inline gboolean dt_gimpmode(void)
 {
   return darktable.gimp.mode ? TRUE : FALSE;

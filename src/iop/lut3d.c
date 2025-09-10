@@ -1229,9 +1229,8 @@ void _lut3d_add_lutname_to_list(void *gv, const char *const lutname)
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)gv;
   GtkTreeModel *modelf = gtk_tree_view_get_model((GtkTreeView *)g->lutname);
   GtkTreeModel *model = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(modelf));
-  GtkTreeIter iter;
-  gtk_list_store_append((GtkListStore *)model, &iter);
-  gtk_list_store_set((GtkListStore *)model, &iter, DT_LUT3D_COL_NAME, lutname, DT_LUT3D_COL_VISIBLE, TRUE, -1);
+  gtk_list_store_insert_with_values((GtkListStore *)model, NULL, -1,
+                                     DT_LUT3D_COL_NAME, lutname, DT_LUT3D_COL_VISIBLE, TRUE, -1);
 }
 
 void _lut3d_clear_lutname_list(void *gv)

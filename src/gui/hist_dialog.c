@@ -226,6 +226,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
       _("_ok"),          GTK_RESPONSE_OK,
       NULL));
   dt_gui_dialog_add_help(dialog, "copy_history");
+  dt_gui_dialog_restore_size(dialog, "copy_history");
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(GTK_WIDGET(dialog));
@@ -306,8 +307,6 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
   GList *items = dt_history_get_items(imgid, FALSE, TRUE, TRUE);
   if(items)
   {
-    GtkTreeIter iter;
-
     for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
     {
       const dt_history_item_t *item = items_iter->data;
@@ -315,9 +314,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
 
       if(!(flags & IOP_FLAGS_HIDDEN))
       {
-        gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
-        gtk_list_store_set
-          (GTK_LIST_STORE(liststore), &iter,
+        gtk_list_store_insert_with_values(liststore, NULL, -1,
            DT_HIST_ITEMS_COL_ENABLED, iscopy ? FALSE : _gui_is_set(d->selops, item->num),
            DT_HIST_ITEMS_COL_AUTOINIT, FALSE,
            DT_HIST_ITEMS_COL_ISACTIVE, item->enabled ? is_active_pb : is_inactive_pb,
@@ -335,8 +332,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
       const dt_iop_order_t order = dt_ioppr_get_iop_order_version(imgid);
       char *label = g_strdup_printf("%s (%s)", _("module order"),
                                     dt_iop_order_string(order));
-      gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
+      gtk_list_store_insert_with_values(liststore, NULL, -1,
                          DT_HIST_ITEMS_COL_ENABLED, d->copy_iop_order,
                          DT_HIST_ITEMS_COL_ISACTIVE, is_active_pb,
                          DT_HIST_ITEMS_COL_NAME, label,
@@ -371,6 +367,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
 
   g_object_unref(is_active_pb);
   g_object_unref(is_inactive_pb);
+  g_object_unref(mask);
   return res;
 }
 
