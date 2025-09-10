@@ -961,6 +961,48 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>ui_last/copy_history_dialog_width</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/copy_history_dialog_height</name>
+    <type>int</type>
+    <default>450</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/styles_dialog_width</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/styles_dialog_height</name>
+    <type>int</type>
+    <default>500</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/metadata_dialog_width</name>
+    <type>int</type>
+    <default>500</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/metadata_dialog_height</name>
+    <type>int</type>
+    <default>400</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>ui_last/session_expander_import</name>
     <type>bool</type>
     <default>false</default>

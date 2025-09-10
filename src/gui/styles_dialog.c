@@ -553,6 +553,7 @@ static void _gui_styles_dialog_run(gboolean edit,
                                   _("_save"), GTK_RESPONSE_ACCEPT, NULL));
   dt_gui_dialog_add_help(dialog, "styles");
   gtk_dialog_set_default_response(dialog, GTK_RESPONSE_ACCEPT);
+  dt_gui_dialog_restore_size(dialog, "styles");
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(GTK_WIDGET(dialog));
@@ -563,8 +564,6 @@ static void _gui_styles_dialog_run(gboolean edit,
   GtkWidget *scroll = dt_gui_scroll_wrap(GTK_WIDGET(sbox));
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
                                  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scroll),
-                                             DT_PIXEL_APPLY_DPI(450));
 
   sd->name = gtk_entry_new();
   gtk_entry_set_placeholder_text(GTK_ENTRY(sd->name), _("name"));

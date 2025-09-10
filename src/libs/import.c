@@ -1120,15 +1120,6 @@ static void _expander_create(dt_gui_collapsible_section_t *cs,
      DT_ACTION(self));
 }
 
-static void _resize_dialog(GtkWidget *widget,
-                           dt_lib_module_t* self)
-{
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  dt_conf_set_int("ui_last/import_dialog_width", allocation.width);
-  dt_conf_set_int("ui_last/import_dialog_height", allocation.height);
-}
-
 static gboolean _find_iter_folder(GtkTreeModel *model,
                                   GtkTreeIter *iter,
                                   const char *folder)
@@ -2072,12 +2063,8 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(d->from.dialog);
 #endif
-  gtk_window_set_default_size(GTK_WINDOW(d->from.dialog),
-                              dt_conf_get_int("ui_last/import_dialog_width"),
-                              dt_conf_get_int("ui_last/import_dialog_height"));
+  dt_gui_dialog_restore_size(GTK_DIALOG(d->from.dialog), "import");
   gtk_window_set_transient_for(GTK_WINDOW(d->from.dialog), GTK_WINDOW(win));
-  g_signal_connect(d->from.dialog, "check-resize",
-                   G_CALLBACK(_resize_dialog), self);
   g_signal_connect(d->from.dialog, "key-press-event",
                    G_CALLBACK(dt_handle_dialog_enter), self);
 
