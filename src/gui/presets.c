@@ -1461,15 +1461,14 @@ static void _menuitem_manage_quick_presets(GtkMenuItem *menuitem,
   for(const GList *modules = m2; modules; modules = g_list_next(modules))
   {
     dt_iop_module_so_t *iop = modules->data;
-    GtkTreeIter toplevel, child;
+    GtkTreeIter toplevel;
 
     /* check if module is visible in current layout */
     if(dt_dev_modulegroups_is_visible(darktable.develop, iop->op))
     {
       // create top entry
-      gtk_tree_store_append(treestore, &toplevel, NULL);
       gchar *iopname = g_markup_escape_text(iop->name(), -1);
-      gtk_tree_store_set(treestore, &toplevel, 0, iopname, 1, FALSE, 2, FALSE, -1);
+      gtk_tree_store_insert_with_values(treestore, &toplevel, NULL, -1, 0, iopname, 1, FALSE, 2, FALSE, -1);
       g_free(iopname);
 
       /* query presets for module */
@@ -1493,9 +1492,9 @@ static void _menuitem_manage_quick_presets(GtkMenuItem *menuitem,
         gchar *txt = g_strdup_printf("ꬹ%s|%sꬹ", iop->op, name);
         const gboolean inlist = (config && strstr(config, txt));
         g_free(txt);
-        gtk_tree_store_append(treestore, &child, &toplevel);
-        gtk_tree_store_set(treestore, &child, 0, presetname, 1,
-                           inlist, 2, TRUE, 3, iop->op, 4, name, -1);
+        gtk_tree_store_insert_with_values(treestore, NULL, &toplevel, -1,
+                                          0, presetname, 1, inlist, 2, TRUE,
+                                          3, iop->op, 4, name, -1);
         g_free(presetname);
       }
 

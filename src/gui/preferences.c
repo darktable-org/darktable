@@ -555,14 +555,6 @@ static void init_tab_general(GtkWidget *dialog,
 ///////////// end of gui and theme language selection
 
 
-static void _resize_dialog(GtkWidget *widget)
-{
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  dt_conf_set_int("ui_last/preferences_dialog_width", allocation.width);
-  dt_conf_set_int("ui_last/preferences_dialog_height", allocation.height);
-}
-
 void dt_gui_preferences_show()
 {
   GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
@@ -570,16 +562,11 @@ void dt_gui_preferences_show()
     gtk_dialog_new_with_buttons(_("darktable preferences"), win,
                                 GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
                                 NULL, NULL);
+  dt_gui_dialog_restore_size(GTK_DIALOG(_preferences_dialog), "preferences");
 
-  gtk_window_set_default_size(GTK_WINDOW(_preferences_dialog),
-                              dt_conf_get_int("ui_last/preferences_dialog_width"),
-                              dt_conf_get_int("ui_last/preferences_dialog_height"));
-  g_signal_connect(G_OBJECT(_preferences_dialog), "check-resize",
-                   G_CALLBACK(_resize_dialog), NULL);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(_preferences_dialog);
 #endif
-  gtk_window_set_position(GTK_WINDOW(_preferences_dialog), GTK_WIN_POS_CENTER_ON_PARENT);
   gtk_widget_set_name(_preferences_dialog, "preferences-notebook");
 
   //grab the content area of the dialog

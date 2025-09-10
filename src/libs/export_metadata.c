@@ -75,9 +75,7 @@ static void _add_selected_metadata(gchar *tagname, dt_lib_export_metadata_t *d)
   GtkTreeIter iter;
   if(!_find_metadata_iter_per_text(GTK_TREE_MODEL(d->liststore), NULL, DT_LIB_EXPORT_METADATA_COL_XMP, tagname))
   {
-    gtk_list_store_append(d->liststore, &iter);
-    gtk_list_store_set(d->liststore,
-                       &iter,
+    gtk_list_store_insert_with_values(d->liststore, &iter, -1,
                        DT_LIB_EXPORT_METADATA_COL_XMP, tagname,
                        DT_LIB_EXPORT_METADATA_COL_FORMULA, "",
                        -1);
@@ -253,13 +251,12 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
     {
       for(GList *tags = list; tags; tags = g_list_next(tags))
       {
-        GtkTreeIter iter;
         const char *tagname = (char *)tags->data;
         tags = g_list_next(tags);
         if(!tags) break;
         const char *formula = (char *)tags->data;
-        gtk_list_store_append(d->liststore, &iter);
-        gtk_list_store_set(d->liststore, &iter, DT_LIB_EXPORT_METADATA_COL_XMP, tagname,
+        gtk_list_store_insert_with_values(d->liststore, NULL, -1,
+          DT_LIB_EXPORT_METADATA_COL_XMP, tagname,
           DT_LIB_EXPORT_METADATA_COL_FORMULA, formula, -1);
       }
     }

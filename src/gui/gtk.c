@@ -4529,6 +4529,35 @@ void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer, GtkCellEditable **ac
   g_signal_connect(renderer, "editing-started", G_CALLBACK(_commit_on_focus_loss_callback), (gpointer)active_editable);
 }
 
+static void _resize_dialog(GtkWidget *widget, GdkEvent *event, const char *conf)
+{
+  char buf[256];
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  gtk_window_get_position(GTK_WINDOW(widget), &allocation.x, &allocation.y);
+  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_width", conf), allocation.width);
+  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_height", conf), allocation.height);
+  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_x", conf), allocation.x);
+  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_y", conf), allocation.y);
+}
+
+void dt_gui_dialog_restore_size(GtkDialog *dialog, const char *conf)
+{
+  char buf[256];
+  int width = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_width", conf));
+  int height = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_height", conf));
+  double factor = dt_conf_is_default(buf) ? darktable.gui->dpi_factor : 1.0;
+  gtk_window_resize(GTK_WINDOW(dialog), factor * width, factor * height);
+
+  int x = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_x", conf));
+  int y = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_y", conf));
+  if(x && y)
+    gtk_window_move(GTK_WINDOW(dialog), x, y);
+  else
+    gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
+  g_signal_connect(dialog, "configure-event", G_CALLBACK(_resize_dialog), (gpointer)conf);
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

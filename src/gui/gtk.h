@@ -546,7 +546,7 @@ void dt_gui_cursor_clear_busy();
 void dt_gui_process_events();
 
 GtkWidget *(dt_gui_box_add)(const char *file, const int line, const char *function, GtkBox *box, gpointer list[]);
-#define dt_gui_box_add(box, ...) dt_gui_box_add(__FILE__, __LINE__, __FUNCTION__, GTK_BOX(box), (gpointer[]){ __VA_ARGS__, (gpointer)-1 })
+#define dt_gui_box_add(box, ...) dt_gui_box_add(__FILE__, __LINE__, __FUNCTION__, GTK_BOX(box), (gpointer[]){ __VA_ARGS__ __VA_OPT__(,) (gpointer)-1 })
 #define dt_gui_hbox(...) dt_gui_box_add(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0), __VA_ARGS__)
 #define dt_gui_vbox(...) dt_gui_box_add(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0), __VA_ARGS__)
 #define dt_gui_dialog_add(dialog, ...) dt_gui_box_add(gtk_dialog_get_content_area(GTK_DIALOG(dialog)), __VA_ARGS__)
@@ -580,6 +580,9 @@ void dt_gui_simulate_button_event(GtkWidget *widget,
 
 // Setup auto-commit on focus loss for editable renderers
 void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer, GtkCellEditable **active_editable);
+
+// restore dialog size from config file
+void dt_gui_dialog_restore_size(GtkDialog *dialog, const char *conf);
 
 G_END_DECLS
 
