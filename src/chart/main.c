@@ -1437,8 +1437,6 @@ static void get_Lab_from_box(box_t *box, float *Lab)
 
 static void init_table(dt_lut_t *self)
 {
-  GtkTreeIter iter;
-
   gtk_list_store_clear(GTK_LIST_STORE(self->model));
 
   if(!self->chart) return;
@@ -1447,8 +1445,8 @@ static void init_table(dt_lut_t *self)
   patch_names = g_list_sort(patch_names, (GCompareFunc)g_strcmp0);
   for(GList *name = patch_names; name; name = g_list_next(name))
   {
-    gtk_list_store_append(GTK_LIST_STORE(self->model), &iter);
-    gtk_list_store_set(GTK_LIST_STORE(self->model), &iter, COLUMN_NAME, (char *)name->data, -1);
+    gtk_list_store_insert_with_values(GTK_LIST_STORE(self->model), NULL, -1,
+                                      COLUMN_NAME, (char *)name->data, -1);
   }
   g_list_free(patch_names);
 

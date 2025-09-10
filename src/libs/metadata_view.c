@@ -1446,8 +1446,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   for(GList *meta = d->metadata; meta; meta = g_list_next(meta))
   {
     dt_lib_metadata_info_t *m = meta->data;
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter,
+    gtk_list_store_insert_with_values(store, NULL, -1,
                        DT_METADATA_PREF_COL_INDEX, m->index,
                        DT_METADATA_PREF_COL_NAME_L, _(m->name),
                        DT_METADATA_PREF_COL_VISIBLE, m->visible,

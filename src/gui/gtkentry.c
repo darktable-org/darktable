@@ -249,13 +249,10 @@ static void _init_completion_model()
                                          G_TYPE_INT,
                                          G_TYPE_STRING,
                                          G_TYPE_STRING);
-  GtkTreeIter iter;
-
   /* Populate the completion database. */
   for(const dt_gtkentry_completion_spec *l = _default_path_compl_list; l && l->varname; l++)
   {
-    gtk_list_store_append(_completion_model, &iter);
-    gtk_list_store_set(_completion_model, &iter,
+    gtk_list_store_insert_with_values(_completion_model, NULL, -1,
                        COMPL_ID, -1,  // -1 = internal
                        COMPL_VARNAME, l->varname,
                        COMPL_DESCRIPTION, _(l->description),
@@ -289,12 +286,9 @@ void dt_gtkentry_setup_variables_completion(GtkEntry *entry)
 
 void dt_gtkentry_variables_add_metadata(dt_metadata_t *metadata)
 {
-  GtkTreeIter iter;
-
   gchar *varname = g_strdup(metadata->tagname);
   gchar *description = g_strdup_printf("$(%s) - %s", varname, _("from metadata"));
-  gtk_list_store_append(_completion_model, &iter);
-  gtk_list_store_set(_completion_model, &iter,
+  gtk_list_store_insert_with_values(_completion_model, NULL, -1,
                       COMPL_ID, metadata->key,
                       COMPL_VARNAME, varname,
                       COMPL_DESCRIPTION, description,

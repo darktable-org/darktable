@@ -1854,7 +1854,6 @@ static void _list_view(dt_lib_collect_rule_t *dr)
     const gboolean sort_descending = dt_conf_get_bool("plugins/collect/descending");
 
     sqlite3_stmt *stmt;
-    GtkTreeIter iter;
     g_object_unref(d->listfilter);
     g_object_ref(model);
     gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), NULL);
@@ -2268,7 +2267,6 @@ static void _list_view(dt_lib_collect_rule_t *dr)
 
         if(folder == NULL) continue; // safeguard against degenerated db entries
 
-        gtk_list_store_append(GTK_LIST_STORE(model), &iter);
         int status = 0;
 
         if(property == DT_COLLECTION_PROP_FILMROLL)
@@ -2331,7 +2329,7 @@ static void _list_view(dt_lib_collect_rule_t *dr)
 
         gchar *escaped_text = g_markup_escape_text(text, -1);
 
-        gtk_list_store_set(GTK_LIST_STORE(model), &iter,
+        gtk_list_store_insert_with_values(GTK_LIST_STORE(model), NULL, -1,
                            DT_LIB_COLLECT_COL_TEXT, folder,
                            DT_LIB_COLLECT_COL_ID, sqlite3_column_int(stmt, 1),
                            DT_LIB_COLLECT_COL_TOOLTIP, escaped_text,

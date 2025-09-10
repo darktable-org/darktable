@@ -1363,8 +1363,7 @@ static void _fill_batch_export_list(dt_lib_module_t *self)
     gboolean active = dt_conf_get_bool(setting);
     g_free(setting);
 
-    gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-    gtk_list_store_set(GTK_LIST_STORE(model), &iter,
+    gtk_list_store_insert_with_values(GTK_LIST_STORE(model), NULL, -1,
                         DT_EXPORT_BATCH_COL_ACTIVE, active,
                         DT_EXPORT_BATCH_COL_NAME, name,
                         -1);

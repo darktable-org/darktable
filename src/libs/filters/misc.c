@@ -75,7 +75,6 @@ void _misc_tree_update(_widgets_misc_t *misc)
 
   char query[1024] = { 0 };
 
-  GtkTreeIter iter;
   GtkTreeModel *name_model = gtk_tree_view_get_model(GTK_TREE_VIEW(misc->name_tree));
   gtk_list_store_clear(GTK_LIST_STORE(name_model));
 
@@ -190,8 +189,7 @@ void _misc_tree_update(_widgets_misc_t *misc)
     else
     {
       gchar *value_path = g_strdup_printf("\"%s\"", name);
-      gtk_list_store_append(GTK_LIST_STORE(name_model), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(name_model), &iter,
+      gtk_list_store_insert_with_values(GTK_LIST_STORE(name_model), NULL, -1,
                          TREE_COL_TEXT, name,
                          TREE_COL_TOOLTIP, name,
                          TREE_COL_PATH, value_path,
@@ -204,8 +202,7 @@ void _misc_tree_update(_widgets_misc_t *misc)
   // we add the unset entry if any
   if(unset > 0)
   {
-    gtk_list_store_append(GTK_LIST_STORE(name_model), &iter);
-    gtk_list_store_set(GTK_LIST_STORE(name_model), &iter,
+    gtk_list_store_insert_with_values(GTK_LIST_STORE(name_model), NULL, -1,
                        TREE_COL_TEXT, _("unnamed"),
                        TREE_COL_TOOLTIP, tooltip,
                        TREE_COL_PATH, _("unnamed"),

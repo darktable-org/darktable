@@ -737,11 +737,9 @@ static void _gui_styles_dialog_run(gboolean edit,
     dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_showmask);
 
   /* fill list with history items */
-  GtkTreeIter iter;
   if(edit)
   {
-    gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
-    gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
+    gtk_list_store_insert_with_values(liststore, NULL, -1,
                        DT_STYLE_ITEMS_COL_ENABLED,  dt_styles_has_module_order(name),
                        DT_STYLE_ITEMS_COL_ISACTIVE, is_active_pb,
                        DT_STYLE_ITEMS_COL_NAME,     _("module order"),
@@ -758,8 +756,7 @@ static void _gui_styles_dialog_run(gboolean edit,
 
         if(item->num != -1 && item->selimg_num != -1) // defined in style and image
         {
-          gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
-          gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
+          gtk_list_store_insert_with_values(liststore, NULL, -1,
                              DT_STYLE_ITEMS_COL_ENABLED,    TRUE,
                              DT_STYLE_ITEMS_COL_AUTOINIT,   FALSE,
                              DT_STYLE_ITEMS_COL_UPDATE,     FALSE,
@@ -774,8 +771,7 @@ static void _gui_styles_dialog_run(gboolean edit,
         else if(item->num != -1
                 || item->selimg_num != -1) // defined in one or the other, let a way to select it or not
         {
-          gtk_list_store_append(GTK_LIST_STORE(liststore_new), &iter);
-          gtk_list_store_set(GTK_LIST_STORE(liststore_new), &iter,
+          gtk_list_store_insert_with_values(liststore_new, NULL, -1,
                              DT_STYLE_ITEMS_COL_ENABLED,    item->num != -1 ? TRUE : FALSE,
                              DT_STYLE_ITEMS_COL_AUTOINIT,   FALSE,
                              DT_STYLE_ITEMS_COL_ISACTIVE,   item->enabled ? is_active_pb : is_inactive_pb,
@@ -794,8 +790,7 @@ static void _gui_styles_dialog_run(gboolean edit,
   {
     const dt_iop_order_t order = dt_ioppr_get_iop_order_version(imgid);
     char *label = g_strdup_printf("%s (%s)", _("module order"), dt_iop_order_string(order));
-    gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
-    gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
+    gtk_list_store_insert_with_values(liststore, NULL, -1,
                        DT_STYLE_ITEMS_COL_ENABLED,  TRUE,
                        DT_STYLE_ITEMS_COL_ISACTIVE, is_active_pb,
                        DT_STYLE_ITEMS_COL_NAME,     label,
@@ -825,9 +820,7 @@ static void _gui_styles_dialog_run(gboolean edit,
           }
         }
 
-        gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
-        gtk_list_store_set
-          (GTK_LIST_STORE(liststore), &iter,
+        gtk_list_store_insert_with_values(liststore, NULL, -1,
            DT_STYLE_ITEMS_COL_ENABLED,  enabled,
            DT_STYLE_ITEMS_COL_AUTOINIT, FALSE,
            DT_STYLE_ITEMS_COL_ISACTIVE, item->enabled ? is_active_pb : is_inactive_pb,
