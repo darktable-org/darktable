@@ -1751,10 +1751,19 @@ void dt_iop_load_modules_so(void)
     ("/plugins", sizeof(dt_iop_module_so_t),
      dt_iop_load_module_so, _init_module_so, NULL);
 
-  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE, _iop_preferences_changed, darktable.iop);
+  DT_CONTROL_SIGNAL_CONNECT(DT_SIGNAL_PREFERENCES_CHANGE,
+                            _iop_preferences_changed, darktable.iop);
 
   // set up memory.darktable_iop_names table
   _iop_set_darktable_iop_table();
+
+  // after loading the iop table we want to refresh the collection if it uses
+  // the module name as part of the query as we have just setup the iop name
+  // table.
+
+  if(dt_collection_has_property(DT_COLLECTION_PROP_MODULE))
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY,
+                               DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
 gboolean dt_iop_load_module(dt_iop_module_t *module,
