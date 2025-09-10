@@ -621,10 +621,13 @@ static int demosaic_box3_cl(dt_iop_module_t *self,
                             const uint32_t filters)
 {
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
-  return dt_opencl_enqueue_kernel_2d_args(piece->pipe->devid, gd->kernel_demosaic_box3, width, height,
-          CLARG(dev_in), CLARG(dev_out),
-          CLARG(width), CLARG(height),
-          CLARG(filters), CLARG(dev_xtrans));
+  const cl_int err = dt_opencl_enqueue_kernel_2d_args(piece->pipe->devid, gd->kernel_demosaic_box3, width, height,
+                      CLARG(dev_in), CLARG(dev_out),
+                      CLARG(width), CLARG(height),
+                      CLARG(filters), CLARG(dev_xtrans));
+  if(err != CL_SUCCESS)
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] box3 problem '%s'", cl_errstr(err));
+  return err;
 }
 
 #endif
