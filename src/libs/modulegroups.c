@@ -1539,6 +1539,8 @@ void init_presets(dt_lib_module_t *self)
     dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (filmic)");
   const gboolean wf_sigmoid =
     dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (sigmoid)");
+  const gboolean wf_agx =
+    dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (agx)");
   const gboolean wf_none =
     dt_conf_is_equal("plugins/darkroom/workflow", "none");
 
@@ -1567,6 +1569,7 @@ void init_presets(dt_lib_module_t *self)
   AM("toneequal");
 
   SMG(C_("modulegroup", "tone"), "tone");
+  AM("agx");
   AM("bilat");
   AM("filmicrgb");
   AM("levels");
@@ -1734,6 +1737,8 @@ void init_presets(dt_lib_module_t *self)
     AM("filmicrgb");
   if(wf_sigmoid || wf_none)
     AM("sigmoid");
+  if(wf_agx || wf_none)
+    AM("agx");
   AM("toneequal");
   AM("crop");
   AM("ashift");
@@ -1831,6 +1836,8 @@ static gchar *_presets_get_minimal(dt_lib_module_t *self)
                                               "scene-referred (filmic)");
   const gboolean wf_sigmoid = dt_conf_is_equal("plugins/darkroom/workflow",
                                                "scene-referred (sigmoid)");
+  const gboolean wf_agx = dt_conf_is_equal("plugins/darkroom/workflow",
+                                               "scene-referred (agx)");
 
   // all modules
   gchar *tx = NULL;
@@ -1844,8 +1851,10 @@ static gchar *_presets_get_minimal(dt_lib_module_t *self)
   {
     if(wf_filmic)
       AM("filmicrgb");
-    else
+    else if(wf_sigmoid) 
       AM("sigmoid");
+    else if(wf_agx)
+      AM("agx");
   }
   else
     AM("basecurve");
