@@ -2,6 +2,7 @@ build/bin/conf_gen.h
 build/bin/preferences_gen.h
 build/bin/styles_string.h
 build/bin/tools/darktable_authors.h
+build/lib/darktable/plugins/introspection_agx.c
 build/lib/darktable/plugins/introspection_ashift.c
 build/lib/darktable/plugins/introspection_atrous.c
 build/lib/darktable/plugins/introspection_basecurve.c
@@ -224,6 +225,7 @@ src/imageio/storage/email.c
 src/imageio/storage/gallery.c
 src/imageio/storage/latex.c
 src/imageio/storage/piwigo.c
+src/iop/agx.c
 src/iop/ashift.c
 src/iop/atrous.c
 src/iop/basecurve.c
