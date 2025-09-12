@@ -1435,9 +1435,9 @@ void process(dt_iop_module_t *self,
 
     // Convert from pipe working space to base space
     dt_aligned_pixel_t base_rgb = { 0.f };
-    if (base_working_same_profile)
+    if(base_working_same_profile)
     {
-      memcpy(base_rgb, pix_in, sizeof(dt_aligned_pixel_t));
+      copy_pixel(base_rgb, pix_in);
     }
     else
     {
@@ -2516,6 +2516,9 @@ void init_presets(dt_iop_module_so_t *self)
                              self->op, self->version(), &p,
                              sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
+  ///////////////////////
+  // Blender-like presets
+
   // AgX primaries settings from Eary_Chow
   // https://discuss.pixls.us/t/blender-agx-in-darktable-proof-of-concept/48697/1018
   p.auto_gamma = FALSE; // uses a pre-configured gamma
@@ -2546,27 +2549,51 @@ void init_presets(dt_iop_module_so_t *self)
   p.look_original_hue_mix_ratio = 0.f;
   p.base_primaries = DT_AGX_REC2020;
 
-  const char *workflow = dt_conf_get_string_const("plugins/darkroom/workflow");
-  const gboolean auto_apply_agx = strcmp(workflow, "scene-referred (agx)") == 0;
+  dt_gui_presets_add_generic(_("blender-like|base"),
+                             self->op, self->version(), &p, sizeof(p),
+                             TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
-  dt_gui_presets_add_generic(_("blender-like|base"), self->op, self->version(), &p, sizeof(p),
-                             1, DEVELOP_BLEND_CS_RGB_SCENE);
-  if(auto_apply_agx)
-  {
-    dt_gui_presets_update_format(BUILTIN_PRESET("blender-like|base"), self->op, self->version(),
-                                 FOR_RAW | FOR_MATRIX | FOR_HDR);
-    dt_gui_presets_update_autoapply(BUILTIN_PRESET("blender-like|base"),
-                                    self->op, self->version(), TRUE);
-  }
 
   // Punchy preset
   p.look_power = 1.35f;
   p.look_offset = 0.f;
   p.look_saturation = 1.4f;
-  dt_gui_presets_add_generic(_("blender-like|punchy"), self->op, self->version(), &p,
-                             sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("blender-like|punchy"),
+                             self->op, self->version(), &p, sizeof(p),
+                             TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
+
+  /////////////////////////
+  // Scene-refrerred preset
+
+  const char *workflow = dt_conf_get_string_const("plugins/darkroom/workflow");
+  const gboolean auto_apply_agx = strcmp(workflow, "scene-referred (agx)") == 0;
+
+  if(auto_apply_agx)
+  {
+    // The scene-referred default preset
+    p.curve_contrast_around_pivot = 2.8f;
+    p.curve_toe_power = 1.55f;
+    p.curve_shoulder_power = 1.55f;
+    p.look_power = 1.f;
+    p.look_offset = 0.f;
+    p.look_saturation = 1.f;
+
+    dt_gui_presets_add_generic(_("scene-referred default"),
+                               self->op, self->version(), &p, sizeof(p),
+                               TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
+
+    dt_gui_presets_update_format(BUILTIN_PRESET("scene-referred default"),
+                                 self->op, self->version(),
+                                 FOR_RAW | FOR_MATRIX | FOR_HDR);
+    dt_gui_presets_update_autoapply(BUILTIN_PRESET("scene-referred default"),
+                                    self->op, self->version(), TRUE);
+  }
+
+  /////////////////
+  // Smooth presets
 
   _set_neutral_params(&p);
+
   // Sigmoid 'smooth' primaries settings
   p.red_inset = 0.1f;
   p.green_inset = 0.1f;
@@ -2585,15 +2612,15 @@ void init_presets(dt_iop_module_so_t *self)
   p.master_unrotation_ratio = 1.f;
   p.base_primaries = DT_AGX_WORK_PROFILE;
 
-  dt_gui_presets_add_generic(_("smooth|base"), self->op, self->version(), &p, sizeof(p), 1,
-                             DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("smooth|base"), self->op, self->version(), &p, sizeof(p),
+                             TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // 'Punchy' look
   p.look_power = 1.35f;
   p.look_offset = 0.f;
   p.look_saturation = 1.4f;
-  dt_gui_presets_add_generic(_("smooth|punchy"), self->op, self->version(), &p, sizeof(p), 1,
-                             DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("smooth|punchy"), self->op, self->version(), &p, sizeof(p),
+                             TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
 // Callback for color pickers
