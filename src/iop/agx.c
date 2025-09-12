@@ -1437,7 +1437,7 @@ void process(dt_iop_module_t *self,
     dt_aligned_pixel_t base_rgb = { 0.f };
     if(base_working_same_profile)
     {
-      memcpy(base_rgb, pix_in, sizeof(dt_aligned_pixel_t));
+      copy_pixel(base_rgb, pix_in);
     }
     else
     {
