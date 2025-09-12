@@ -1435,7 +1435,7 @@ void process(dt_iop_module_t *self,
 
     // Convert from pipe working space to base space
     dt_aligned_pixel_t base_rgb = { 0.f };
-    if (base_working_same_profile)
+    if(base_working_same_profile)
     {
       memcpy(base_rgb, pix_in, sizeof(dt_aligned_pixel_t));
     }
@@ -2567,6 +2567,7 @@ void init_presets(dt_iop_module_so_t *self)
                              sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   _set_neutral_params(&p);
+
   // Sigmoid 'smooth' primaries settings
   p.red_inset = 0.1f;
   p.green_inset = 0.1f;
@@ -2585,15 +2586,15 @@ void init_presets(dt_iop_module_so_t *self)
   p.master_unrotation_ratio = 1.f;
   p.base_primaries = DT_AGX_WORK_PROFILE;
 
-  dt_gui_presets_add_generic(_("smooth|base"), self->op, self->version(), &p, sizeof(p), 1,
-                             DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("smooth|base"), self->op, self->version(), &p, sizeof(p),
+                             TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // 'Punchy' look
   p.look_power = 1.35f;
   p.look_offset = 0.f;
   p.look_saturation = 1.4f;
-  dt_gui_presets_add_generic(_("smooth|punchy"), self->op, self->version(), &p, sizeof(p), 1,
-                             DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("smooth|punchy"), self->op, self->version(), &p, sizeof(p),
+                             TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
 // Callback for color pickers
