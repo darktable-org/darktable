@@ -52,7 +52,21 @@ changes (where available).
 - A new section Capture Sharpening is added into the demosaic
   module. The capture sharpening tries to recover details lost due to
   in-camera blurring, which can be caused by diffraction, the
-  anti-aliasing filter or other sources of gaussian-type blur.
+  anti-aliasing filter or other sources of Gaussian-type blur.
+
+- Added a new tone mapper implementation based on Blender's AgX
+  display transform. The new module's color output is similar to that
+  of Sigmoid, but the provided set of controls is more extensive. It
+  allows for setting exposure white and black points explicitly,
+  similar to Filmic RGB. The implementation includes a user-adjustable
+  pivot point for the tone curve, with the default set at 18%
+  mid-gray. Contrast around this pivot is adjustable. Controls are
+  provided to create a section of constant contrast, and independent
+  sliders are available to control the contrast in shadows and
+  highlights (the "toe" and "shoulder" of the curve). The resulting
+  output is characterized by a gradual color desaturation in
+  highlights, similar to film, and a natural-looking color
+  representation in mid-tones and highlights.
 
 ## UI/UX Improvements
 
