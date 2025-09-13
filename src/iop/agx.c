@@ -2503,6 +2503,51 @@ static void _set_neutral_params(dt_iop_agx_params_t *p)
   p->base_primaries = DT_AGX_REC2020;
 }
 
+void _set_blenderlike_params(dt_iop_agx_params_t *p)
+{
+  _set_neutral_params(p);
+
+  // AgX primaries settings that produce the same matrices under D50
+  // as those used in the Blender OCIO config.
+  // https://github.com/EaryChow/AgX_LUT_Gen/blob/main/AgXBaseRec2020.py
+  p->red_inset = 0.29462451f;
+  p->green_inset = 0.25861925f;
+  p->blue_inset = 0.14641371f;
+  p->red_rotation = 0.03540329f;
+  p->green_rotation = -0.02108586f;
+  p->blue_rotation = -0.06305724f;
+
+  p->master_outset_ratio = 1.f;
+  p->master_unrotation_ratio = 1.f;
+
+  p->red_outset = 0.290776401758f;
+  p->green_outset = 0.263155400753f;
+  p->blue_outset = 0.045810721815f;
+  p->red_unrotation = 0.f;
+  p->green_unrotation = 0.f;
+  p->blue_unrotation = 0.f;
+
+  // In Blender, a related param is set to 40%, but is actually used as 1 - param,
+  // so 60% would give almost identical results; however, Eary_Chow suggested
+  // that we leave this as 0, based on feedback he had received
+  p->look_original_hue_mix_ratio = 0.f;
+  p->base_primaries = DT_AGX_REC2020;
+}
+
+void _set_scene_referred_default_params(dt_iop_agx_params_t *p)
+{
+  _set_blenderlike_params(p);
+
+  p->auto_gamma = TRUE;
+
+  p->curve_contrast_around_pivot = 2.8f;
+  p->curve_toe_power = 1.55f;
+  p->curve_shoulder_power = 1.55f;
+  p->look_power = 1.f;
+  p->look_offset = 0.f;
+  p->look_saturation = 1.f;
+}
+
 void init_presets(dt_iop_module_so_t *self)
 {
   // auto-applied scene-referred default
@@ -2521,33 +2566,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   // AgX primaries settings from Eary_Chow
   // https://discuss.pixls.us/t/blender-agx-in-darktable-proof-of-concept/48697/1018
-  p.auto_gamma = FALSE; // uses a pre-configured gamma
-
-  // AgX primaries settings that produce the same matrices under D50
-  // as those used in the Blender OCIO config.
-  // https://github.com/EaryChow/AgX_LUT_Gen/blob/main/AgXBaseRec2020.py
-  p.red_inset = 0.29462451f;
-  p.green_inset = 0.25861925f;
-  p.blue_inset = 0.14641371f;
-  p.red_rotation = 0.03540329f;
-  p.green_rotation = -0.02108586f;
-  p.blue_rotation = -0.06305724f;
-
-  p.master_outset_ratio = 1.f;
-  p.master_unrotation_ratio = 1.f;
-
-  p.red_outset = 0.290776401758f;
-  p.green_outset = 0.263155400753f;
-  p.blue_outset = 0.045810721815f;
-  p.red_unrotation = 0.f;
-  p.green_unrotation = 0.f;
-  p.blue_unrotation = 0.f;
-
-  // In Blender, a related param is set to 40%, but is actually used as 1 - param,
-  // so 60% would give almost identical results; however, Eary_Chow suggested
-  // that we leave this as 0, based on feedback he had received
-  p.look_original_hue_mix_ratio = 0.f;
-  p.base_primaries = DT_AGX_REC2020;
+  _set_blenderlike_params(&p);
 
   dt_gui_presets_add_generic(_("blender-like|base"),
                              self->op, self->version(), &p, sizeof(p),
@@ -2563,7 +2582,7 @@ void init_presets(dt_iop_module_so_t *self)
                              TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   /////////////////////////
-  // Scene-refrerred preset
+  // Scene-referred preset
 
   const char *workflow = dt_conf_get_string_const("plugins/darkroom/workflow");
   const gboolean auto_apply_agx = strcmp(workflow, "scene-referred (agx)") == 0;
@@ -2571,12 +2590,7 @@ void init_presets(dt_iop_module_so_t *self)
   if(auto_apply_agx)
   {
     // The scene-referred default preset
-    p.curve_contrast_around_pivot = 2.8f;
-    p.curve_toe_power = 1.55f;
-    p.curve_shoulder_power = 1.55f;
-    p.look_power = 1.f;
-    p.look_offset = 0.f;
-    p.look_saturation = 1.f;
+    _set_scene_referred_default_params(&p);
 
     dt_gui_presets_add_generic(_("scene-referred default"),
                                self->op, self->version(), &p, sizeof(p),
@@ -2664,6 +2678,18 @@ void commit_params(dt_iop_module_t *self,
   processing_params->tone_mapping_params = _calculate_tone_mapping_params(p);
   processing_params->primaries_params = _get_primaries_params(p);
 }
+
+void reload_defaults(dt_iop_module_t *self)
+{
+  dt_iop_agx_params_t *const d = self->default_params;
+  _set_scene_referred_default_params(d);
+}
+
+void gui_reset(dt_iop_module_t *self)
+{
+  dt_iop_color_picker_reset(self, TRUE);
+}
+
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
