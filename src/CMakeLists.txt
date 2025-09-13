@@ -316,8 +316,8 @@ if(USE_CAMERA_SUPPORT)
     # CPack ignores variables you define in your CMakeLists.txt file,
     # and only variables ${CPACK_*} are correctly used.
     # so this needs to be saved by adding another variable with a name beginning with CPACK
-    set(CPACK_NSIS_GPHOTO2_VERSION ${Gphoto2_VERSION_STRING} CACHE STRING "Gphoto2 version string")
-    set(CPACK_NSIS_GPHOTO2_PORT_VERSION ${Gphoto2_PORT_VERSION_STRING} CACHE STRING "Gphoto2 port version string")
+    set(CPACK_GPHOTO2_VERSION ${Gphoto2_VERSION_STRING} CACHE STRING "Gphoto2 version string")
+    set(CPACK_GPHOTO2_PORT_VERSION ${Gphoto2_PORT_VERSION_STRING} CACHE STRING "Gphoto2 port version string")
   endif()
 endif(USE_CAMERA_SUPPORT)
 

@@ -45,31 +45,13 @@ endif(UNIX)
 
 # Set package peoperties for Windows
 if(WIN32)
-  # we want an arch string to distinguish installer artifact filenames
-  if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64)|(AMD64|amd64)|(X86|x86)|(^i.86$)")
-    set(ARCH_STRING "win64")
-  else()
-    set(ARCH_STRING "woa64")
-  endif()
-
-  # add darktable association with all supported image file types for Inno Setup
-  foreach(EXTENSION ${DT_SUPPORTED_EXTENSIONS})
-    SET(CMAKE_ADD_DARKTABLE_TO_OPENWITHLIST "${CMAKE_ADD_DARKTABLE_TO_OPENWITHLIST}
-      Root:HKA; Subkey: \"Software\\Classes\\.${EXTENSION}\\OpenWithList\\darktable.exe\"; Flags: uninsdeletekey
-    ")
-  endforeach(EXTENSION)
-
-  configure_file(
-    ${CMAKE_SOURCE_DIR}/packaging/windows/darktable.iss.in
-    ${CMAKE_BINARY_DIR}/darktable.iss
-  )
-
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "ARM64")
     # CPack currently sets this to "win64" regardless of architecture
     set(CPACK_SYSTEM_NAME woa64)
-	# Native NSIS is currently unavailable, just create an archive
+    # Native NSIS is currently unavailable, just create an archive
     set(CPACK_GENERATOR "ZIP")
   else()
+    set(CPACK_SYSTEM_NAME win64)
     set(CPACK_GENERATOR "NSIS")
     set(CPACK_PACKAGE_EXECUTABLES "darktable" "darktable")
     set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_PROJECT_NAME}")
@@ -109,6 +91,19 @@ if(WIN32)
       ")
     endforeach(EXTENSION)
   endif()
+
+  # add darktable association with all supported image file types for Inno Setup
+  foreach(EXTENSION ${DT_SUPPORTED_EXTENSIONS})
+    SET(CMAKE_ADD_DARKTABLE_TO_OPENWITHLIST "${CMAKE_ADD_DARKTABLE_TO_OPENWITHLIST}
+      Root:HKA; Subkey: \"Software\\Classes\\.${EXTENSION}\\OpenWithList\\darktable.exe\"; Flags: uninsdeletekey
+    ")
+  endforeach(EXTENSION)
+
+  configure_file(
+    ${CMAKE_SOURCE_DIR}/packaging/windows/darktable.iss.in
+    ${CMAKE_BINARY_DIR}/darktable.iss
+    @ONLY
+  )
 endif(WIN32)
 
 include(CPack)
