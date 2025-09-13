@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-12 20:26-0300\n"
-"PO-Revision-Date: 2025-09-12 20:25-0300\n"
+"POT-Creation-Date: 2025-09-13 09:06-0300\n"
+"PO-Revision-Date: 2025-09-13 09:05-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -721,10 +721,9 @@ msgid "scene-referred (filmic)"
 msgstr "relativo à cena (fílmico)"
 
 #: ../build/bin/conf_gen.h:3450
-#, fuzzy
 msgctxt "preferences"
 msgid "scene-referred (agx)"
-msgstr "relativo à cena (sigmóide)"
+msgstr "relativo à cena (agx)"
 
 #: ../build/bin/conf_gen.h:3451
 msgctxt "preferences"
@@ -15698,9 +15697,8 @@ msgstr[0] "%d/%d exportada para álbum Piwigo"
 msgstr[1] "%d/%d exportadas para álbum Piwigo"
 
 #: ../src/iop/agx.c:44
-#, fuzzy
 msgid "agx"
-msgstr "etiqueta"
+msgstr "agx"
 
 #: ../src/iop/agx.c:49 ../src/iop/sigmoid.c:197
 msgid "tone mapping|view transform|display transform"
@@ -15711,6 +15709,8 @@ msgid ""
 "applies a tone mapping curve.\n"
 "inspired by Blender's AgX tone mapper"
 msgstr ""
+"aplica uma curva de mapeamento de tons.\n"
+"inspirado no mapeamento de tons AgX do Blender"
 
 #: ../src/iop/agx.c:57 ../src/iop/atrous.c:133 ../src/iop/bilateral.cc:103
 #: ../src/iop/colorequal.c:215 ../src/iop/diffuse.c:139
@@ -15780,9 +15780,8 @@ msgid "darken or brighten the pivot (output)"
 msgstr ""
 
 #: ../src/iop/agx.c:1817
-#, fuzzy
 msgid "slope of the linear section"
-msgstr "modo: intersecção"
+msgstr "inclinação da seção linear"
 
 #: ../src/iop/agx.c:1840
 #, fuzzy
@@ -15833,9 +15832,8 @@ msgid "tone mapping curve"
 msgstr "curva de mapeamento de tons"
 
 #: ../src/iop/agx.c:1952 ../src/iop/agx.c:1955
-#, fuzzy
 msgid "advanced curve parameters"
-msgstr "parâmetros avançados"
+msgstr "parâmetros avançados da curva"
 
 #: ../src/iop/agx.c:1967
 msgid ""
@@ -15913,9 +15911,8 @@ msgstr ""
 "e de branco"
 
 #: ../src/iop/agx.c:2089
-#, fuzzy
 msgid "select a preset..."
-msgstr "colar seletivamente..."
+msgstr "selecione uma predefinição..."
 
 #: ../src/iop/agx.c:2237 ../src/iop/agx.c:2397 ../src/iop/sigmoid.c:924
 #: ../src/iop/sigmoid.c:928
@@ -16042,27 +16039,24 @@ msgid "main look and curve settings"
 msgstr "configurações de pré-visualização de máscara"
 
 #: ../src/iop/agx.c:2432
-#, fuzzy
 msgid "detailed curve settings"
-msgstr "exporta com configuração atual (ctrl-e)"
+msgstr "configurações detalhadas da curva"
 
 #: ../src/iop/agx.c:2515
-#, fuzzy
 msgid "unmodified base primaries"
-msgstr "primárias base"
+msgstr "primárias base não modificadas"
 
 #: ../src/iop/agx.c:2552
 msgid "blender-like|base"
-msgstr ""
+msgstr "como-blender|base"
 
 #: ../src/iop/agx.c:2561
 msgid "blender-like|punchy"
 msgstr ""
 
 #: ../src/iop/agx.c:2615
-#, fuzzy
 msgid "smooth|base"
-msgstr "suave"
+msgstr "suave|base"
 
 #: ../src/iop/agx.c:2622
 #, fuzzy
@@ -19720,7 +19714,7 @@ msgstr "não foi possível alocar buffer para interpolação cromática"
 
 #: ../src/iop/demosaic.c:754
 msgid "can't equilibrate greens"
-msgstr ""
+msgstr "não é possível equilibrar os verdes"
 
 #: ../src/iop/demosaic.c:1401
 #, c-format
