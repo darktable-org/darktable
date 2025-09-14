@@ -41,7 +41,7 @@ static void lin_interpolate(float *out,
           if(y >= 0 && x >= 0 && y < height && x < width)
           {
             const int f = fcol(y, x, filters, xtrans);
-            sum[f] += in[y * width + x];
+            sum[f] += fmaxf(0.0f, in[y * width + x]);
             count[f]++;
           }
       const int f = fcol(row, col, filters, xtrans);
@@ -51,7 +51,7 @@ static void lin_interpolate(float *out,
       for(int c = 0; c < colors; c++)
       {
         if(c != f && count[c] != 0)
-          out[4 * (row * width + col) + c] = fmaxf(0.0f, sum[c] / count[c]);
+          out[4 * (row * width + col) + c] = sum[c] / count[c];
         else
           out[4 * (row * width + col) + c] = fmaxf(0.0f, in[row * width + col]);
       }
@@ -111,7 +111,7 @@ static void lin_interpolate(float *out,
       int *ip = &(lookup[row % size][col % size][0]);
       // for each adjoining pixel not of this pixel's color, sum up its weighted values
       for(int i = *ip++; i--; ip += 3)
-        sum[ip[2]] += buf_in[ip[0]] * ip[1];
+        sum[ip[2]] += fmaxf(0.0f, buf_in[ip[0]]) * ip[1];
       // for each interpolated color, load it into the pixel
       for(int i = colors; --i; ip += 2)
         buf[*ip] = sum[ip[0]] / ip[1];
