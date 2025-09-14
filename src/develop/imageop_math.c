@@ -699,7 +699,7 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out,
         num = ((maxi - px) / 2 + 1 - dx) * ((maxj - py) / 2 + 1 - dy);
       }
 
-      const float pix = (num) ? col / num : 0.0f;
+      const float pix = (num) ? fmaxf(0.0f, col) / num : 0.0f;
       outc[0] = pix;
       outc[1] = pix;
       outc[2] = pix;
@@ -877,9 +877,9 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out,
         num = ((maxi - px) / 2 + 1 - dx) * ((maxj - py) / 2 + 1 - dy);
       }
 
-      outc[0] = col[0] / num;
-      outc[1] = (col[1] / num) / 2.0f;
-      outc[2] = col[2] / num;
+      outc[0] = fmaxf(0.0f, col[0]) / num;
+      outc[1] = fmaxf(0.0f, col[1]) / num / 2.0f;
+      outc[2] = fmaxf(0.0f, col[2]) / num;
       outc[3] = 0.0f;
       outc += 4;
     }
@@ -932,9 +932,9 @@ void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out,
         }
 
       // X-Trans RGB weighting averages to 2:5:2 for each 3x3 cell
-      outc[0] = col[0] / (num * 2);
-      outc[1] = col[1] / (num * 5);
-      outc[2] = col[2] / (num * 2);
+      outc[0] = fmaxf(0.0f, col[0]) / (num * 2);
+      outc[1] = fmaxf(0.0f, col[1]) / (num * 5);
+      outc[2] = fmaxf(0.0f, col[2]) / (num * 2);
     }
   }
 }
