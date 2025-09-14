@@ -41,7 +41,7 @@ static void lin_interpolate(float *out,
           if(y >= 0 && x >= 0 && y < height && x < width)
           {
             const int f = fcol(y, x, filters, xtrans);
-            sum[f] += in[y * width + x];
+            sum[f] += fmaxf(0.0f, in[y * width + x]);
             count[f]++;
           }
       const int f = fcol(row, col, filters, xtrans);
@@ -51,7 +51,7 @@ static void lin_interpolate(float *out,
       for(int c = 0; c < colors; c++)
       {
         if(c != f && count[c] != 0)
-          out[4 * (row * width + col) + c] = fmaxf(0.0f, sum[c] / count[c]);
+          out[4 * (row * width + col) + c] = sum[c] / count[c];
         else
           out[4 * (row * width + col) + c] = fmaxf(0.0f, in[row * width + col]);
       }
@@ -111,7 +111,7 @@ static void lin_interpolate(float *out,
       int *ip = &(lookup[row % size][col % size][0]);
       // for each adjoining pixel not of this pixel's color, sum up its weighted values
       for(int i = *ip++; i--; ip += 3)
-        sum[ip[2]] += buf_in[ip[0]] * ip[1];
+        sum[ip[2]] += fmaxf(0.0f, buf_in[ip[0]]) * ip[1];
       // for each interpolated color, load it into the pixel
       for(int i = colors; --i; ip += 2)
         buf[*ip] = sum[ip[0]] / ip[1];
@@ -470,101 +470,91 @@ static cl_int process_vng_cl(const dt_iop_module_t *self,
       }
 
 
-    dev_lookup = dt_opencl_copy_host_to_device_constant(devid, lookup_size, lookup);
-    if(dev_lookup == NULL) goto finish;
+  dev_lookup = dt_opencl_copy_host_to_device_constant(devid, lookup_size, lookup);
+  if(dev_lookup == NULL) goto finish;
 
-    dev_code = dt_opencl_copy_host_to_device_constant(devid, sizeof(code), code);
-    if(dev_code == NULL) goto finish;
+  dev_code = dt_opencl_copy_host_to_device_constant(devid, sizeof(code), code);
+  if(dev_code == NULL) goto finish;
 
-    dev_ips = dt_opencl_copy_host_to_device_constant(devid, ips_size, ips);
-    if(dev_ips == NULL) goto finish;
+  dev_ips = dt_opencl_copy_host_to_device_constant(devid, ips_size, ips);
+  if(dev_ips == NULL) goto finish;
 
-    // need to reserve scaled auxiliary buffer or use dev_out
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  // need to reserve scaled auxiliary buffer or use dev_out
+  err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
-    dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
-    if(dev_tmp == NULL) goto finish;
-
-    // manage borders for linear interpolation part
-    int border = 1;
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
-        CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(border),
+  // manage borders for linear interpolation part
+  int border = 1;
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
+        CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(border),
         CLARG(filters4), CLARG(dev_xtrans));
-    if(err != CL_SUCCESS) goto finish;
+  if(err != CL_SUCCESS) goto finish;
 
-    {
-      // do linear interpolation
-      dt_opencl_local_buffer_t locopt
+  {
+    // do linear interpolation
+    dt_opencl_local_buffer_t locopt
         = (dt_opencl_local_buffer_t){ .xoffset = 2*1, .xfactor = 1, .yoffset = 2*1, .yfactor = 1,
                                       .cellsize = 1 * sizeof(float), .overhead = 0,
                                       .sizex = 1 << 8, .sizey = 1 << 8 };
 
-      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_vng_lin_interpolate, &locopt))
-      {
-        err = CL_INVALID_WORK_DIMENSION;
-        goto finish;
-      }
-
-      size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
-      size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-      dt_opencl_set_kernel_args(devid, gd->kernel_vng_lin_interpolate, 0,
-        CLARG(dev_in), CLARG(dev_tmp),
+    if(!dt_opencl_local_buffer_opt(devid, gd->kernel_vng_lin_interpolate, &locopt))
+    {
+      err = CL_INVALID_WORK_DIMENSION;
+      goto finish;
+    }
+    size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
+    size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
+    dt_opencl_set_kernel_args(devid, gd->kernel_vng_lin_interpolate, 0,
+        CLARG(dev_in), CLARG(dev_out),
         CLARG(width), CLARG(height), CLARG(filters4), CLARG(dev_lookup), CLLOCAL(sizeof(float) * (locopt.sizex + 2) * (locopt.sizey + 2)));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_lin_interpolate, sizes, local);
       if(err != CL_SUCCESS) goto finish;
-    }
+  }
 
 
-    if(only_vng_linear)
-    {
-      // leave it at linear interpolation and skip VNG
-      size_t origin[] = { 0, 0, 0 };
-      size_t region[] = { width, height, 1 };
-      err = dt_opencl_enqueue_copy_image(devid, dev_tmp, dev_out, origin, origin, region);
-      goto finish;
-    }
-    else
-    {
-      // do full VNG interpolation
-      dt_opencl_local_buffer_t locopt
-        = (dt_opencl_local_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
+  if(only_vng_linear)
+    goto finish;
+
+  // do full VNG interpolation
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
+  if(dev_tmp == NULL) goto finish;
+
+  dt_opencl_local_buffer_t locopt
+      = (dt_opencl_local_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
                                       .cellsize = 4 * sizeof(float), .overhead = 0,
                                       .sizex = 1 << 8, .sizey = 1 << 8 };
 
-      if(!dt_opencl_local_buffer_opt(devid, gd->kernel_vng_interpolate, &locopt))
-      {
-        err = CL_INVALID_WORK_DIMENSION;
-        goto finish;
-      }
-
-      size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
-      size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-      dt_opencl_set_kernel_args(devid, gd->kernel_vng_interpolate, 0,
-        CLARG(dev_tmp), CLARG(dev_out),
+  if(!dt_opencl_local_buffer_opt(devid, gd->kernel_vng_interpolate, &locopt))
+  {
+    err = CL_INVALID_WORK_DIMENSION;
+    goto finish;
+  }
+  size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
+  size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
+  dt_opencl_set_kernel_args(devid, gd->kernel_vng_interpolate, 0,
+        CLARG(dev_out), CLARG(dev_tmp),
         CLARG(width), CLARG(height), CLARG(filters4),
         CLARG(dev_xtrans), CLARG(dev_ips), CLARG(dev_code), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 4) * (locopt.sizey + 4)));
-      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_interpolate, sizes, local);
-      if(err != CL_SUCCESS) goto finish;
-    }
+  err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_interpolate, sizes, local);
+  if(err != CL_SUCCESS) goto finish;
 
-    // manage borders
-    border = 2;
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
-        CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(border),
+  // manage borders
+  border = 2;
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_border_interpolate, width, height,
+        CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(border),
         CLARG(filters4), CLARG(dev_xtrans));
-    if(err != CL_SUCCESS) goto finish;
+  if(err != CL_SUCCESS) goto finish;
 
-    if(filters4 != 9)
-    {
-      // for Bayer sensors mix the two green channels
-      size_t origin[] = { 0, 0, 0 };
-      size_t region[] = { width, height, 1 };
-      err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
-      if(err != CL_SUCCESS) goto finish;
-
-      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_green_equilibrate, width, height,
-        CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height));
-    }
+  if(filters4 != 9)
+  {
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vng_green_equilibrate, width, height,
+      CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height));
+  }
+  else
+  {
+    size_t origin[] = { 0, 0, 0 };
+    size_t region[] = { width, height, 1 };
+    err = dt_opencl_enqueue_copy_image(devid, dev_tmp, dev_out, origin, origin, region);
+  }
 
 finish:
   dt_opencl_release_mem_object(dev_tmp);

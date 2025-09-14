@@ -57,8 +57,8 @@ vng_border_interpolate(read_only image2d_t in,
     {
       if(j >= 0 && i >= 0 && j < height && i < width)
       {
-        int f = fcol(j, i, filters, xtrans);
-        sum[f] += read_imagef(in, sampleri, (int2)(i, j)).x;
+        const int f = fcol(j, i, filters, xtrans);
+        sum[f] += fmax(0.0f, read_imagef(in, sampleri, (int2)(i, j)).x);
         count[f]++;
       }
     }
@@ -69,7 +69,7 @@ vng_border_interpolate(read_only image2d_t in,
   for(int c = 0; c < colors; c++)
   {
     if(c != f && count[c] != 0)
-      o[c] = fmax(sum[c] / count[c], 0.0f);
+      o[c] = sum[c] / count[c];
     else
       o[c] = fmax(i, 0.0f);
   }
@@ -112,7 +112,7 @@ vng_lin_interpolate(read_only image2d_t in, write_only image2d_t out, const int 
     if(bufidx >= maxbuf) continue;
     const int xx = xul + bufidx % stride;
     const int yy = yul + bufidx / stride;
-    buffer[bufidx] = read_imagef(in, sampleri, (int2)(xx, yy)).x;
+    buffer[bufidx] = fmax(0.0f, read_imagef(in, sampleri, (int2)(xx, yy)).x);
   }
 
   // center buffer around current x,y-Pixel
@@ -145,10 +145,10 @@ vng_lin_interpolate(read_only image2d_t in, write_only image2d_t out, const int 
   // for each interpolated color, load it into the pixel
   for(int i = 0; i < colors - 1; i++, ip += 2)
   {
-    o[ip[0]] = fmax(0.0f, sum[ip[0]] / ip[1]);
+    o[ip[0]] = sum[ip[0]] / ip[1];
   }
 
-  o[ip[0]] = fmax(0.0f, buffer[0]);
+  o[ip[0]] = buffer[0];
 
   write_imagef(out, (int2)(x, y), (float4)(o[0], o[1], o[2], o[3]));
 }
