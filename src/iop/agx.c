@@ -2681,8 +2681,11 @@ void commit_params(dt_iop_module_t *self,
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_agx_params_t *const d = self->default_params;
-  _set_scene_referred_default_params(d);
+  if(dt_is_scene_referred())
+  {
+    dt_iop_agx_params_t *const d = self->default_params;
+    _set_scene_referred_default_params(d);
+  }
 }
 
 void gui_reset(dt_iop_module_t *self)
