@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-13 09:06-0300\n"
-"PO-Revision-Date: 2025-09-14 12:54-0300\n"
+"POT-Creation-Date: 2025-09-14 17:16-0300\n"
+"PO-Revision-Date: 2025-09-14 17:16-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -2791,7 +2791,7 @@ msgstr "contraste ao redor do pivô"
 #: ../build/lib/darktable/plugins/introspection_agx.c:308
 #: ../build/lib/darktable/plugins/introspection_agx.c:533
 msgid "toe start"
-msgstr "início do pé"
+msgstr "início da base"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:314
 #: ../build/lib/darktable/plugins/introspection_agx.c:537
@@ -2800,14 +2800,13 @@ msgstr "início do ombro"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:320
 #: ../build/lib/darktable/plugins/introspection_agx.c:541
-#, fuzzy
 msgid "toe power"
-msgstr "potência"
+msgstr "intensidade da base"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:326
 #: ../build/lib/darktable/plugins/introspection_agx.c:545
 msgid "shoulder power"
-msgstr ""
+msgstr "intensidade do ombro"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:332
 #: ../build/lib/darktable/plugins/introspection_agx.c:549
@@ -2890,13 +2889,12 @@ msgstr "rotação do azul"
 #: ../build/lib/darktable/plugins/introspection_agx.c:404
 #: ../build/lib/darktable/plugins/introspection_agx.c:597
 msgid "master purity boost"
-msgstr ""
+msgstr "incremento mestre de pureza"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:410
 #: ../build/lib/darktable/plugins/introspection_agx.c:601
-#, fuzzy
 msgid "master rotation reversal"
-msgstr "a rotação da sobreposição"
+msgstr "arotação reversa mestre"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:416
 #: ../build/lib/darktable/plugins/introspection_agx.c:605
@@ -2905,9 +2903,8 @@ msgstr "reforçar pureza do vermelho"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:422
 #: ../build/lib/darktable/plugins/introspection_agx.c:609
-#, fuzzy
 msgid "red reverse rotation"
-msgstr "redefinir rotação"
+msgstr "rotação reversa do vermelho"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:428
 #: ../build/lib/darktable/plugins/introspection_agx.c:613
@@ -2916,9 +2913,8 @@ msgstr "reforçar pureza do verde"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:434
 #: ../build/lib/darktable/plugins/introspection_agx.c:617
-#, fuzzy
 msgid "green reverse rotation"
-msgstr "rotação do verde"
+msgstr "rotação reversa do verde"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:440
 #: ../build/lib/darktable/plugins/introspection_agx.c:621
@@ -2927,9 +2923,8 @@ msgstr "reforçar pureza do azul"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:446
 #: ../build/lib/darktable/plugins/introspection_agx.c:625
-#, fuzzy
 msgid "blue reverse rotation"
-msgstr "rotação do azul"
+msgstr "rotação reversa do azul"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:639
 #: ../src/common/colorspaces.c:1421 ../src/common/colorspaces.c:1769
@@ -14688,7 +14683,7 @@ msgstr "nenhuma predefinição"
 msgid "display-referred default"
 msgstr "padrão relativo à exibição"
 
-#: ../src/gui/presets.c:1196 ../src/iop/agx.c:2581
+#: ../src/gui/presets.c:1196 ../src/iop/agx.c:2595
 #: ../src/iop/channelmixerrgb.c:397 ../src/iop/exposure.c:301
 #: ../src/iop/filmicrgb.c:3209 ../src/iop/sigmoid.c:237
 msgid "scene-referred default"
@@ -15830,7 +15825,7 @@ msgid ""
 "length to keep curve linear below pivot.\n"
 "may crush shadows"
 msgstr ""
-"comprimento da curva a ser mantido linear sob o pivô.\n"
+"comprimento da curva a ser mantido linear abaixo do pivô.\n"
 "pode cortar sombras"
 
 #: ../src/iop/agx.c:1976
@@ -15842,6 +15837,8 @@ msgid ""
 "length to keep curve linear above pivot.\n"
 "may clip highlights"
 msgstr ""
+"comprimento da curva a ser mantido linear aima do o pivô.\n"
+"pode cortar realces"
 
 #: ../src/iop/agx.c:1994
 msgid "max output brightness"
@@ -15855,6 +15852,11 @@ msgid ""
 "affects overall contrast, you may have to counteract it with the contrast "
 "slider, or with toe / shoulder controls."
 msgstr ""
+"tenta conseguir que a curva sempre fique em forma de S,\n"
+"dado que o contraste é alto o suficiente, de forma que os\n"
+"controles de base e ombro permanecam eficazes.\n"
+"afeta o contraste global, mas você pode ter que compensar com o deslizador "
+"de contraste, ou com controles de base/ombro"
 
 #: ../src/iop/agx.c:2011
 msgid ""
@@ -15863,6 +15865,10 @@ msgid ""
 "affects overall contrast, you may have to counteract it with the contrast "
 "slider, or with toe / shoulder controls."
 msgstr ""
+"desloca a representação (mas não o brilho de saída) do pivô\n"
+"pelo eixo y da curva.\n"
+"afeta o contraste global, mas você pode ter que compensar com o deslizador "
+"de contraste, ou com controles de base/ombro."
 
 #: ../src/iop/agx.c:2027
 msgctxt "section"
@@ -15917,23 +15923,27 @@ msgid ""
 "especially with bright, saturated lights (e.g. LEDs).\n"
 "mainly intended to be used for experimenting."
 msgstr ""
+"desabilita adjuste de pureza e rotações apenas aplicando a curva.\n"
+"note que esses ajustes estão no coração do AgX,\n"
+"sem eles os resultados quase sempre ficarão piores,\n"
+"especialmente com luzes com muito brilho e saturadas (p. ex. LEDs).\n"
+"a intenção é principalmente ser uma ferramenta para experimentação."
 
 #: ../src/iop/agx.c:2258
 msgid "load primaries settings from a preset"
-msgstr ""
+msgstr "carregar as primárias de uma predefinição"
 
 #: ../src/iop/agx.c:2264
 msgid "apply primaries settings from the selected preset"
 msgstr "aplica as primárias das predefinições selecionadas"
 
 #: ../src/iop/agx.c:2271
-#, fuzzy
 msgid ""
 "color space primaries to use as the base for below adjustments.\n"
 "'export profile' uses the profile set in 'output color profile'."
 msgstr ""
-"primárias para usar como base para os ajustes abaixo\n"
-"'perfil de trabalho' usa o perfil definido em 'perfil de cor de entrada'"
+"primárias do espaço de cores para usar como base para os ajustes abaixo\n"
+"'perfil de exportação' usa o perfil definido em 'perfil de cor de saída'"
 
 #: ../src/iop/agx.c:2274
 msgctxt "section"
@@ -15970,19 +15980,16 @@ msgid "after tone mapping"
 msgstr "depois do mapeamento de tons"
 
 #: ../src/iop/agx.c:2313
-#, fuzzy
 msgid "overall purity boost"
-msgstr "recuperar a pureza"
+msgstr "incremento geral de pureza"
 
 #: ../src/iop/agx.c:2319
-#, fuzzy
 msgid "overall unrotation ratio"
-msgstr "proporção automática"
+msgstr "razão de des-rotação global"
 
 #: ../src/iop/agx.c:2322
-#, fuzzy
 msgid "boost the purity of the red primary"
-msgstr "atenuar a pureza do vermelho primário"
+msgstr "incrementar a pureza do vermelho primário"
 
 #: ../src/iop/agx.c:2324
 msgid "unrotate the red primary"
@@ -16025,23 +16032,23 @@ msgstr "parâmetros principais do visual e da curva"
 msgid "detailed curve settings"
 msgstr "configurações detalhadas da curva"
 
-#: ../src/iop/agx.c:2515
+#: ../src/iop/agx.c:2560
 msgid "unmodified base primaries"
 msgstr "primárias base não modificadas"
 
-#: ../src/iop/agx.c:2552
+#: ../src/iop/agx.c:2571
 msgid "blender-like|base"
 msgstr "como-blender|base"
 
-#: ../src/iop/agx.c:2561
+#: ../src/iop/agx.c:2580
 msgid "blender-like|punchy"
 msgstr "como-blender|reforçado"
 
-#: ../src/iop/agx.c:2615
+#: ../src/iop/agx.c:2629
 msgid "smooth|base"
 msgstr "suave|base"
 
-#: ../src/iop/agx.c:2622
+#: ../src/iop/agx.c:2636
 msgid "smooth|punchy"
 msgstr "suavização|reforçado"
 
