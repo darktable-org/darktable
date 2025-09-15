@@ -1324,6 +1324,22 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       }
     }
 
+    // Compute exposure bias applied by HDR/highlight-preservation/HLG-tone modes
+    img->exif_highlight_preservation = 0.0f;
+    if(FIND_EXIF_TAG("Exif.Nikon3.ColorSpace"))
+    {
+      if(pos->toLong() == 4)  // HLG tone mode
+	img->exif_highlight_preservation = 2.0f;
+    }
+    else if(FIND_EXIF_TAG("Exif.Fujifilm.DevelopmentDynamicRange"))
+    {
+      int dr = pos->toLong();
+      if(dr == 200)
+	img->exif_highlight_preservation = 1.0f;
+      else if(dr == 400)
+	img->exif_highlight_preservation = 2.0f;
+    }
+
     // Read focal length
     if((pos = Exiv2::focalLength(exifData)) != exifData.end() && pos->size())
     {
