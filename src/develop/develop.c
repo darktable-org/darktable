@@ -1490,7 +1490,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   dt_image_t *image = dt_image_cache_get(imgid, 'w');
   if(!(image->flags & DT_IMAGE_AUTO_PRESETS_APPLIED)) run = TRUE;
 
-  const gboolean is_raw = dt_image_is_raw(image);
+  const gboolean is_raw = dt_image_is_rawprepare_supported(image);
   const gboolean is_modern_chroma = dt_is_scene_referred();
 
   // flag was already set? only apply presets once in the lifetime of
@@ -1569,7 +1569,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   //  set filters
 
   int iformat = 0;
-  if(dt_image_is_raw(image))
+  if(is_raw)
     iformat |= FOR_RAW;
   else
     iformat |= FOR_LDR;
