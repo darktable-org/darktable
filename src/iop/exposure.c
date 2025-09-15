@@ -685,7 +685,7 @@ void gui_update(dt_iop_module_t *self)
      PANGO_ELLIPSIZE_MIDDLE);
   g_free(label);
 
-  float hlbias = _get_highlight_bias(self);
+  const float hlbias = _get_highlight_bias(self);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->compensate_hilite_preserv),
                                p->compensate_hilite_pres);
   /* xgettext:no-c-format */
