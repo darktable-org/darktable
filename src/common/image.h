@@ -262,6 +262,7 @@ typedef struct dt_image_t
   float exif_focal_length;
   float exif_focus_distance;
   float exif_crop;
+  float exif_highlight_preservation;
   int32_t exif_flash_tagvalue;
   char exif_maker[64];
   char exif_model[64];
