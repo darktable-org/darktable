@@ -2034,7 +2034,7 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
   dt_bauhaus_slider_set_soft_range(g->white_exposure_picker, 1.f, 20.f);
   dt_bauhaus_slider_set_format(g->white_exposure_picker, _(" EV"));
   gtk_widget_set_tooltip_text(g->white_exposure_picker,
-                              _("relative exposure above mid-grey (white point)"));
+                              _("relative exposure above mid-gray (white point)"));
 
   g->black_exposure_picker =
       dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
@@ -2042,7 +2042,7 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
   dt_bauhaus_slider_set_soft_range(g->black_exposure_picker, -20.f, -1.f);
   dt_bauhaus_slider_set_format(g->black_exposure_picker, _(" EV"));
   gtk_widget_set_tooltip_text(g->black_exposure_picker,
-                              _("relative exposure below mid-grey (black point)"));
+                              _("relative exposure below mid-gray (black point)"));
 
   g->security_factor = dt_bauhaus_slider_from_params(section, "dynamic_range_scaling");
   dt_bauhaus_slider_set_soft_max(g->security_factor, 0.5f);
