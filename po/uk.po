@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-09-11 17:27+0200\n"
-"PO-Revision-Date: 2025-09-12 23:41+0300\n"
+"PO-Revision-Date: 2025-09-16 05:56+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -2783,10 +2783,8 @@ msgstr "Зсув вхідного сигналу точки опори"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:296
 #: ../build/lib/darktable/plugins/introspection_agx.c:525
-#, fuzzy
-#| msgid "inconsistent output"
 msgid "pivot target output"
-msgstr "inconsistent output"
+msgstr "Цільовий вихід опорної точки"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:302
 #: ../build/lib/darktable/plugins/introspection_agx.c:529
@@ -2795,32 +2793,23 @@ msgstr "Контраст навколо точки опори"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:308
 #: ../build/lib/darktable/plugins/introspection_agx.c:533
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "move start"
 msgid "toe start"
-msgstr "переміщення: на початок"
+msgstr "Початок нижньої частини кривої"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:314
 #: ../build/lib/darktable/plugins/introspection_agx.c:537
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "move start"
 msgid "shoulder start"
-msgstr "переміщення: на початок"
+msgstr "Початок верхньої частини кривої"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:320
 #: ../build/lib/darktable/plugins/introspection_agx.c:541
-#, fuzzy
-#| msgid "power"
 msgid "toe power"
-msgstr "Показник степеня"
+msgstr "Показник степеню нижньої частини кривої"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:326
 #: ../build/lib/darktable/plugins/introspection_agx.c:545
-#, fuzzy
 msgid "shoulder power"
-msgstr "Показник степеню \"плеча\""
+msgstr "Показник степеню верхньої частини кривої"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:332
 #: ../build/lib/darktable/plugins/introspection_agx.c:549
@@ -2909,52 +2898,38 @@ msgstr "Головне підвищення чистоти"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:410
 #: ../build/lib/darktable/plugins/introspection_agx.c:601
-#, fuzzy
-#| msgid "the rotation of the overlay"
 msgid "master rotation reversal"
-msgstr "Обертання накладення"
+msgstr "Основний реверс обертання"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:416
 #: ../build/lib/darktable/plugins/introspection_agx.c:605
-#, fuzzy
-#| msgid "red purity"
 msgid "red purity boost"
-msgstr "Чистота червоного"
+msgstr "Підсилення чистоти червоного"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:422
 #: ../build/lib/darktable/plugins/introspection_agx.c:609
-#, fuzzy
-#| msgid "reset rotation"
 msgid "red reverse rotation"
-msgstr "Скинути обертання"
+msgstr "Зворотне обертання червоного"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:428
 #: ../build/lib/darktable/plugins/introspection_agx.c:613
-#, fuzzy
-#| msgid "green purity"
 msgid "green purity boost"
-msgstr "Чистота зеленого"
+msgstr "Підсилення чистоти зеленого"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:434
 #: ../build/lib/darktable/plugins/introspection_agx.c:617
-#, fuzzy
-#| msgid "green rotation"
 msgid "green reverse rotation"
-msgstr "Обертання зеленого"
+msgstr "Зворотне обертання зеленого"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:440
 #: ../build/lib/darktable/plugins/introspection_agx.c:621
-#, fuzzy
-#| msgid "blue purity"
 msgid "blue purity boost"
-msgstr "Чистота синього"
+msgstr "Підсилення чистоти синього"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:446
 #: ../build/lib/darktable/plugins/introspection_agx.c:625
-#, fuzzy
-#| msgid "blue rotation"
 msgid "blue reverse rotation"
-msgstr "Обертання синього"
+msgstr "Зворотне обертання синього"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:639
 #: ../src/common/colorspaces.c:1421 ../src/common/colorspaces.c:1769
@@ -4120,10 +4095,8 @@ msgstr "Поріг контрасту для подвійної демозаїк
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:162
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:251
-#, fuzzy
-#| msgid "tags case sensitivity"
 msgid "contrast sensitivity"
-msgstr "Чутливість до регістру в тегах"
+msgstr "Чутливість до контрасту"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:168
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:255
@@ -13845,7 +13818,7 @@ msgstr "Камера"
 #: ../src/gui/gtk.c:1295
 msgctxt "menu"
 msgid "Window"
-msgstr ""
+msgstr "Вікно"
 
 #. Help menu
 #: ../src/gui/gtk.c:1303
@@ -15934,10 +15907,8 @@ msgstr ""
 "Може обрізати найсвітліші ділянки"
 
 #: ../src/iop/agx.c:1994
-#, fuzzy
-#| msgid "output brightness"
 msgid "max output brightness"
-msgstr "Вихідна яскравість"
+msgstr "Максимальна вихідна яскравість"
 
 #: ../src/iop/agx.c:2000
 msgid ""
@@ -15960,19 +15931,20 @@ msgid ""
 "affects overall contrast, you may have to counteract it with the contrast "
 "slider, or with toe / shoulder controls."
 msgstr ""
+"Зміщує представлення (але не вихідну яскравість) поворотної точки\n"
+"вздовж осі Y кривої.\n"
+"Впливає на загальний контраст, можливо, вам доведеться протидіяти\n"
+"цьому за допомогою повзунка контрасту або за допомогою елементів\n"
+"керування нижньою/верхньою частинами кривої."
 
 #: ../src/iop/agx.c:2027
-#, fuzzy
-#| msgid "minimum exposure time"
 msgctxt "section"
 msgid "input exposure range"
-msgstr "Мінімальний час експозиції"
+msgstr "Вхідний діапазон експозиції"
 
 #: ../src/iop/agx.c:2029
-#, fuzzy
-#| msgid "minimum exposure time"
 msgid "input exposure range"
-msgstr "Мінімальний час експозиції"
+msgstr "Вхідний діапазон експозиції"
 
 #: ../src/iop/agx.c:2037
 msgid "relative exposure above mid-grey (white point)"
@@ -16026,23 +15998,20 @@ msgstr ""
 
 #: ../src/iop/agx.c:2258
 msgid "load primaries settings from a preset"
-msgstr ""
+msgstr "Завантажити налаштування основних кольорів з пресету"
 
 #: ../src/iop/agx.c:2264
 msgid "apply primaries settings from the selected preset"
 msgstr "Застосувати налаштування основних кольорів з вибраного пресету"
 
 #: ../src/iop/agx.c:2271
-#, fuzzy
-#| msgid ""
-#| "primaries to use as the base for below adjustments\n"
-#| "'working profile' uses the profile set in 'input color profile'"
 msgid ""
 "color space primaries to use as the base for below adjustments.\n"
 "'export profile' uses the profile set in 'output color profile'."
 msgstr ""
-"Основні кольори для використання як основи для наведених нижче коригувань\n"
-"'Робочий профіль' використовує профіль, встановлений у модулі 'Вхідний "
+"Основні кольори колірного простору для використання як основи для наведених "
+"нижче коригувань\n"
+"'Профіль експорту' використовує профіль, встановлений у модулі 'Вихідний "
 "колірний профіль'"
 
 #: ../src/iop/agx.c:2274
@@ -16080,58 +16049,40 @@ msgid "after tone mapping"
 msgstr "Після тонального відображення"
 
 #: ../src/iop/agx.c:2313
-#, fuzzy
-#| msgid "recover purity"
 msgid "overall purity boost"
-msgstr "Відновити чистоту"
+msgstr "Загальне підсилення чистоти"
 
 #: ../src/iop/agx.c:2319
-#, fuzzy
-#| msgid "automatic ratio"
 msgid "overall unrotation ratio"
-msgstr "Автоматичне співвідношення"
+msgstr "Загальний коефіцієнт зворотного обертання"
 
 #: ../src/iop/agx.c:2322
-#, fuzzy
-#| msgid "attenuate the purity of the red primary"
 msgid "boost the purity of the red primary"
-msgstr "Послабити чистоту основного червоного"
+msgstr "Підсилити чистоту основного червоного"
 
 #: ../src/iop/agx.c:2324
-#, fuzzy
-#| msgid "rotate the red primary"
 msgid "unrotate the red primary"
-msgstr "Обертати основний червоний"
+msgstr "Обертати назад основний червоний"
 
 #: ../src/iop/agx.c:2326
-#, fuzzy
-#| msgid "attenuate the purity of the green primary"
 msgid "boost the purity of the green primary"
-msgstr "Послабити чистоту основного зеленого"
+msgstr "Підсилити чистоту основного зеленого"
 
 #: ../src/iop/agx.c:2328
-#, fuzzy
-#| msgid "rotate the green primary"
 msgid "unrotate the green primary"
-msgstr "Обертати основний зелений"
+msgstr "Обертати назад основний зелений"
 
 #: ../src/iop/agx.c:2330
-#, fuzzy
-#| msgid "attenuate the purity of the blue primary"
 msgid "boost the purity of the blue primary"
-msgstr "Послабити чистоту основного синього"
+msgstr "Підсилити чистоту основного синього"
 
 #: ../src/iop/agx.c:2332
-#, fuzzy
-#| msgid "rotate the blue primary"
 msgid "unrotate the blue primary"
-msgstr "Обертати основний синій"
+msgstr "Обертати назад основний синій"
 
 #: ../src/iop/agx.c:2397
-#, fuzzy
-#| msgid "color saturation adjustment"
 msgid "color primaries adjustments"
-msgstr "Регулювання насиченості"
+msgstr "Коригування основних кольорів"
 
 #. relabel to settings to remove confusion between module presets
 #. and white balance settings
@@ -16143,17 +16094,12 @@ msgid "settings"
 msgstr "Налаштування"
 
 #: ../src/iop/agx.c:2424 ../src/iop/agx.c:2447
-#, fuzzy
-#| msgctxt "section"
-#| msgid "mask preview settings"
 msgid "main look and curve settings"
-msgstr "Параметри попереднього перегляду маски"
+msgstr "Основні налаштування вигляду та кривої"
 
 #: ../src/iop/agx.c:2432
-#, fuzzy
-#| msgid "export with current settings"
 msgid "detailed curve settings"
-msgstr "Експортувати з поточними налаштуваннями"
+msgstr "Детальні налаштування кривої"
 
 #: ../src/iop/agx.c:2515
 msgid "unmodified base primaries"
@@ -28687,13 +28633,7 @@ msgid "selected: %s"
 msgstr "Вибрано: %s "
 
 #: ../src/libs/tagging.c:1540
-#, fuzzy, c-format
-#| msgid ""
-#| "do you really want to delete the tag `%s'?\n"
-#| "%d image is assigned this tag!"
-#| msgid_plural ""
-#| "do you really want to delete the tag `%s'?\n"
-#| "%d images are assigned this tag!"
+#, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
 "<u>%d</u> image is assigned this tag!"
@@ -28701,14 +28641,14 @@ msgid_plural ""
 "do you really want to delete the tag `%s'?\n"
 "<u>%d</u> images are assigned this tag!"
 msgstr[0] ""
-"Ви дійсно хочете видалити тег `%s'?\n"
-"Цей тег присвоєно %d зображенню!"
+"Ви дійсно хочете видалити тег '%s'?\n"
+"Цей тег присвоєно <u>%d</u> зображенню!"
 msgstr[1] ""
-"Ви дійсно хочете видалити тег `%s'?\n"
-"Цей тег присвоєно %d зображенням!"
+"Ви дійсно хочете видалити тег '%s'?\n"
+"Цей тег присвоєно <u>%d</u> зображенням!"
 msgstr[2] ""
-"Ви дійсно хочете видалити тег `%s'?\n"
-"Цей тег присвоєно %d зображенням!"
+"Ви дійсно хочете видалити тег '%s'?\n"
+"Цей тег присвоєно <u>%d</u> зображенням!"
 
 #: ../src/libs/tagging.c:1574
 #, c-format
