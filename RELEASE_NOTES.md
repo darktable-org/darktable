@@ -94,6 +94,9 @@ changes (where available).
 - Dual demosaicing now works also in tiling mode for possibly better
   OpenCL performance and smaller CPU memory pressure.
 
+- Added automatic compensation of camera's hidden underexposure for
+  Nikon HLG tone mode and Fujifilm DR200/DR400 modes.
+
 ## Bug Fixes
 
 - Fixed some issues with the hierarchical styles handling in the
