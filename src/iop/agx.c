@@ -2538,8 +2538,6 @@ void _set_scene_referred_default_params(dt_iop_agx_params_t *p)
 {
   _set_blenderlike_params(p);
 
-  p->auto_gamma = TRUE;
-
   p->curve_contrast_around_pivot = 2.8f;
   p->curve_toe_power = 1.55f;
   p->curve_shoulder_power = 1.55f;
