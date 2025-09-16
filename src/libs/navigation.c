@@ -178,8 +178,10 @@ void gui_init(dt_lib_module_t *self)
                      GDK_KEY_N, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
   /* connect a redraw callback to control draw all and preview pipe finish signals */
-  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _lib_navigation_control_redraw_callback);
-  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_CONTROL_NAVIGATION_REDRAW, _lib_navigation_control_redraw_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                           _lib_navigation_control_redraw_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_CONTROL_NAVIGATION_REDRAW,
+                           _lib_navigation_control_redraw_callback);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->zoom, darktable.view_manager->proxy.darkroom.view,
                                NULL, N_("zoom"), _("image zoom level"),
@@ -251,9 +253,9 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
     const float scale = fminf(width / (float)wd, height / (float)ht);
 
     const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
-    cairo_surface_t *surface
-        = cairo_image_surface_create_for_data(dev->preview_pipe->backbuf,
-                                              CAIRO_FORMAT_RGB24, wd, ht, stride);
+    cairo_surface_t *surface =
+      cairo_image_surface_create_for_data(dev->preview_pipe->backbuf,
+                                          CAIRO_FORMAT_RGB24, wd, ht, stride);
     cairo_translate(cr, width / 2.0, height / 2.0f);
     cairo_scale(cr, scale, scale);
     cairo_translate(cr, -.5f * wd, -.5f * ht);
@@ -353,7 +355,6 @@ static void _zoom_changed(GtkWidget *widget, gpointer user_data)
   if(val == -1 && 1 != sscanf(dt_bauhaus_combobox_get_text(widget), "%d", &val))
     return;
 
-  // dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_develop_t *dev = darktable.develop;
   if(!dev) return;
 
