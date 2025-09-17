@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-11 17:27+0200\n"
-"PO-Revision-Date: 2025-09-11 15:48+0200\n"
+"POT-Creation-Date: 2025-09-17 17:33+0200\n"
+"PO-Revision-Date: 2025-09-17 17:36+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.2.2\n"
+"X-Generator: Poedit 3.7\n"
 
 #: ../build/bin/conf_gen.h:90
 msgctxt "preferences"
@@ -1659,7 +1659,7 @@ msgid ""
 "resources for performance."
 msgstr ""
 "Définit le niveau de ressources que Darktable peut prendre sur le système.\n"
-" • Défaut – prend ~ 50 % des ressources ce qui permet à Darktable d’être "
+" • Défaut – prend ~ 50% des ressources ce qui permet à Darktable d’être "
 "performant\n"
 " • Faibles – à utiliser si des applications prenant une part importante des "
 "ressources sont utilisées\n"
@@ -2409,7 +2409,7 @@ msgid ""
 "show only recent tags (faster)"
 msgstr ""
 "Niveau de confiance pour inclure un tag dans la liste des suggestions, 0 : "
-"tous les mots-clés associés, 99 : mots-clés correspondants à 99 %, 100 : "
+"tous les mots-clés associés, 99 : mots-clés correspondants à 99%, 100 : "
 "aucun mot-clé correspondant, seuls les mots-clés récents (plus rapide)."
 
 #: ../build/bin/preferences_gen.h:8578
@@ -4022,7 +4022,7 @@ msgstr "Mode"
 #: ../src/develop/blend_gui.c:2344 ../src/iop/channelmixer.c:611
 #: ../src/iop/channelmixerrgb.c:4556 ../src/iop/colorchecker.c:1567
 #: ../src/iop/colorize.c:353 ../src/iop/colorzones.c:2623
-#: ../src/iop/exposure.c:1224
+#: ../src/iop/exposure.c:1312
 msgid "lightness"
 msgstr "Clarté"
 
@@ -4971,7 +4971,7 @@ msgstr "Corrections"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:118
 #: ../src/develop/blend_gui.c:3553 ../src/iop/bilat.c:438
 #: ../src/iop/colorbalance.c:1853 ../src/iop/denoiseprofile.c:3751
-#: ../src/iop/exposure.c:1142 ../src/iop/levels.c:693
+#: ../src/iop/exposure.c:1230 ../src/iop/levels.c:693
 #: ../src/iop/profile_gamma.c:654 ../src/libs/copy_history.c:370
 #: ../src/libs/export.c:1627 ../src/libs/image.c:644
 #: ../src/libs/print_settings.c:2934 ../src/libs/styles.c:872
@@ -5487,8 +5487,8 @@ msgstr "GainMap intégré"
 #: ../build/lib/darktable/plugins/introspection_relight.c:43
 #: ../build/lib/darktable/plugins/introspection_relight.c:98
 #: ../src/common/collection.c:631 ../src/gui/preferences.c:950
-#: ../src/gui/presets.c:690 ../src/iop/basicadj.c:624 ../src/iop/exposure.c:118
-#: ../src/iop/exposure.c:1101 ../src/libs/metadata_view.c:151
+#: ../src/gui/presets.c:690 ../src/iop/basicadj.c:624 ../src/iop/exposure.c:120
+#: ../src/iop/exposure.c:1189 ../src/libs/metadata_view.c:151
 msgid "exposure"
 msgstr "Exposition"
 
@@ -5839,70 +5839,70 @@ msgstr "Montre des images sur la carte"
 msgid "Print your images"
 msgstr "Imprimer les images"
 
-#: ../src/bauhaus/bauhaus.c:884 ../src/bauhaus/bauhaus.c:3864
+#: ../src/bauhaus/bauhaus.c:902 ../src/bauhaus/bauhaus.c:3894
 #: ../src/iop/colorequal.c:3051
 msgid "sliders"
 msgstr "Réglettes"
 
-#: ../src/bauhaus/bauhaus.c:886 ../src/bauhaus/bauhaus.c:3869
+#: ../src/bauhaus/bauhaus.c:904 ../src/bauhaus/bauhaus.c:3899
 msgid "dropdowns"
 msgstr "Menus déroulants"
 
-#: ../src/bauhaus/bauhaus.c:888 ../src/bauhaus/bauhaus.c:3874
+#: ../src/bauhaus/bauhaus.c:906 ../src/bauhaus/bauhaus.c:3904
 msgid "buttons"
 msgstr "Boutons"
 
-#: ../src/bauhaus/bauhaus.c:3531
+#: ../src/bauhaus/bauhaus.c:3561
 msgid "button on"
 msgstr "Bouton actif"
 
-#: ../src/bauhaus/bauhaus.c:3531
+#: ../src/bauhaus/bauhaus.c:3561
 msgid "button off"
 msgstr "Bouton inactif"
 
-#: ../src/bauhaus/bauhaus.c:3532
+#: ../src/bauhaus/bauhaus.c:3562
 msgid "button pressed"
 msgstr "Bouton appuyé"
 
-#: ../src/bauhaus/bauhaus.c:3769
+#: ../src/bauhaus/bauhaus.c:3799
 msgid "not that many sliders"
 msgstr "Pas tant de réglettes"
 
-#: ../src/bauhaus/bauhaus.c:3783
+#: ../src/bauhaus/bauhaus.c:3813
 msgid "not that many dropdowns"
 msgstr "Pas tant de menus déroulants"
 
-#: ../src/bauhaus/bauhaus.c:3802
+#: ../src/bauhaus/bauhaus.c:3832
 msgid "not that many buttons"
 msgstr "Pas tant de boutons"
 
-#: ../src/bauhaus/bauhaus.c:3807 ../src/gui/accelerators.c:391
+#: ../src/bauhaus/bauhaus.c:3837 ../src/gui/accelerators.c:391
 msgid "value"
 msgstr "Valeur"
 
-#: ../src/bauhaus/bauhaus.c:3808 ../src/bauhaus/bauhaus.c:3814
+#: ../src/bauhaus/bauhaus.c:3838 ../src/bauhaus/bauhaus.c:3844
 #: ../src/gui/accelerators.c:370
 msgid "button"
 msgstr "Bouton"
 
-#: ../src/bauhaus/bauhaus.c:3809
+#: ../src/bauhaus/bauhaus.c:3839
 msgid "force"
 msgstr "Force"
 
-#: ../src/bauhaus/bauhaus.c:3810 ../src/libs/navigation.c:185
-#: ../src/libs/navigation.c:197
+#: ../src/bauhaus/bauhaus.c:3840 ../src/libs/navigation.c:244
+#: ../src/libs/navigation.c:261
 msgid "zoom"
 msgstr "Zoom"
 
-#: ../src/bauhaus/bauhaus.c:3813 ../src/libs/select.c:40
+#: ../src/bauhaus/bauhaus.c:3843 ../src/libs/select.c:40
 msgid "selection"
 msgstr "Sélection"
 
-#: ../src/bauhaus/bauhaus.c:3853
+#: ../src/bauhaus/bauhaus.c:3883
 msgid "slider"
 msgstr "Réglette"
 
-#: ../src/bauhaus/bauhaus.c:3858
+#: ../src/bauhaus/bauhaus.c:3888
 msgid "dropdown"
 msgstr "Menu déroulant"
 
@@ -7383,12 +7383,12 @@ msgstr ""
 "Le filtre guidé indépendant de l’exposition a échoué lors de l’allocation de "
 "mémoire, vérifier les préférences de la RAM"
 
-#: ../src/common/exif.cc:5872
+#: ../src/common/exif.cc:5888
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "Impossible de lire le fichier XMP « %s » : « %s »"
 
-#: ../src/common/exif.cc:5931
+#: ../src/common/exif.cc:5947
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "Impossible d’écrire le fichier XMP « %s » : « %s »"
@@ -9475,7 +9475,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:2688 ../src/develop/blend_gui.c:3580
 #: ../src/iop/agx.c:2035 ../src/iop/agx.c:2043 ../src/iop/basicadj.c:626
 #: ../src/iop/colorbalancergb.c:2000 ../src/iop/colorequal.c:3133
-#: ../src/iop/exposure.c:1104 ../src/iop/exposure.c:1120
+#: ../src/iop/exposure.c:1192 ../src/iop/exposure.c:1208
 #: ../src/iop/filmic.c:1486 ../src/iop/filmic.c:1499 ../src/iop/filmic.c:1541
 #: ../src/iop/filmicrgb.c:4400 ../src/iop/filmicrgb.c:4411
 #: ../src/iop/filmicrgb.c:4444 ../src/iop/filmicrgb.c:4454
@@ -9748,8 +9748,8 @@ msgstr "Rayon du raffinement"
 
 #: ../src/develop/blend_gui.c:3628 ../src/develop/blend_gui.c:3637
 #: ../src/iop/colorbalancergb.c:2022 ../src/iop/colorequal.c:3148
-#: ../src/iop/colorequal.c:3175 ../src/iop/demosaic.c:1552
-#: ../src/iop/demosaic.c:1571 ../src/iop/diffuse.c:1782
+#: ../src/iop/colorequal.c:3175 ../src/iop/demosaic.c:1678
+#: ../src/iop/demosaic.c:1697 ../src/iop/diffuse.c:1782
 #: ../src/iop/diffuse.c:1792 ../src/iop/retouch.c:2718
 msgid " px"
 msgstr " px"
@@ -10612,8 +10612,8 @@ msgstr "Images groupées"
 
 #: ../src/dtgtk/thumbnail.c:859 ../src/dtgtk/thumbnail.c:1654
 #: ../src/iop/ashift.c:6041 ../src/iop/ashift.c:6128 ../src/iop/ashift.c:6130
-#: ../src/iop/ashift.c:6132 ../src/libs/navigation.c:110
-#: ../src/libs/navigation.c:188
+#: ../src/iop/ashift.c:6132 ../src/libs/navigation.c:112
+#: ../src/libs/navigation.c:247
 msgid "fit"
 msgstr "Ajusté"
 
@@ -14783,9 +14783,9 @@ msgstr "Pas de préréglage"
 msgid "display-referred default"
 msgstr "Relatif à l’affichage"
 
-#: ../src/gui/presets.c:1196 ../src/iop/channelmixerrgb.c:397
-#: ../src/iop/exposure.c:301 ../src/iop/filmicrgb.c:3209
-#: ../src/iop/sigmoid.c:237
+#: ../src/gui/presets.c:1196 ../src/iop/agx.c:2593
+#: ../src/iop/channelmixerrgb.c:397 ../src/iop/exposure.c:333
+#: ../src/iop/filmicrgb.c:3209 ../src/iop/sigmoid.c:237
 msgid "scene-referred default"
 msgstr "Défaut pour « relatif à la scène »"
 
@@ -15197,9 +15197,9 @@ msgid ""
 "100 = lossless"
 msgstr ""
 "La qualité de l’image exportée :\n"
-" • 0 → 29 % – avec beaucoup de pertes\n"
-" • 30 → 99 % – comparable à la qualité JPEG\n"
-" • 100 % – sans perte"
+" • 0 → 29% – avec beaucoup de pertes\n"
+" • 30 → 99% – comparable à la qualité JPEG\n"
+" • 100% – sans perte"
 
 #: ../src/imageio/format/jxl.c:615
 msgid "encoding color profile"
@@ -15808,7 +15808,7 @@ msgstr ""
 
 #: ../src/iop/agx.c:57 ../src/iop/atrous.c:133 ../src/iop/bilateral.cc:103
 #: ../src/iop/colorequal.c:215 ../src/iop/diffuse.c:139
-#: ../src/iop/enlargecanvas.c:80 ../src/iop/exposure.c:127
+#: ../src/iop/enlargecanvas.c:80 ../src/iop/exposure.c:129
 #: ../src/iop/filmicrgb.c:350 ../src/iop/graduatednd.c:143
 #: ../src/iop/negadoctor.c:142 ../src/iop/overlay.c:155
 #: ../src/iop/rgbcurve.c:142 ../src/iop/rgblevels.c:121 ../src/iop/shadhi.c:141
@@ -15824,11 +15824,11 @@ msgstr "Correctif et créatif"
 #: ../src/iop/clipping.c:357 ../src/iop/clipping.c:359
 #: ../src/iop/colorbalancergb.c:182 ../src/iop/colorequal.c:216
 #: ../src/iop/colorin.c:131 ../src/iop/crop.c:135 ../src/iop/crop.c:137
-#: ../src/iop/demosaic.c:318 ../src/iop/denoiseprofile.c:777
+#: ../src/iop/demosaic.c:319 ../src/iop/denoiseprofile.c:777
 #: ../src/iop/denoiseprofile.c:779 ../src/iop/diffuse.c:140
 #: ../src/iop/diffuse.c:142 ../src/iop/enlargecanvas.c:81
-#: ../src/iop/enlargecanvas.c:83 ../src/iop/exposure.c:128
-#: ../src/iop/exposure.c:130 ../src/iop/flip.c:109 ../src/iop/flip.c:110
+#: ../src/iop/enlargecanvas.c:83 ../src/iop/exposure.c:130
+#: ../src/iop/exposure.c:132 ../src/iop/flip.c:109 ../src/iop/flip.c:110
 #: ../src/iop/hazeremoval.c:111 ../src/iop/hazeremoval.c:113
 #: ../src/iop/lens.cc:263 ../src/iop/lens.cc:265 ../src/iop/liquify.c:295
 #: ../src/iop/liquify.c:297 ../src/iop/overlay.c:156 ../src/iop/overlay.c:158
@@ -16141,23 +16141,23 @@ msgstr "Paramètres principaux du look et de la courbe"
 msgid "detailed curve settings"
 msgstr "Paramètres détaillés de la courbe"
 
-#: ../src/iop/agx.c:2515
+#: ../src/iop/agx.c:2558
 msgid "unmodified base primaries"
 msgstr "Primaires de base non modifiées"
 
-#: ../src/iop/agx.c:2552
+#: ../src/iop/agx.c:2569
 msgid "blender-like|base"
 msgstr "Blender-like|Base"
 
-#: ../src/iop/agx.c:2566
+#: ../src/iop/agx.c:2578
 msgid "blender-like|punchy"
 msgstr "Blender-like|Renforcé"
 
-#: ../src/iop/agx.c:2588
+#: ../src/iop/agx.c:2627
 msgid "smooth|base"
 msgstr "Doux|Base"
 
-#: ../src/iop/agx.c:2595
+#: ../src/iop/agx.c:2634
 msgid "smooth|punchy"
 msgstr "Doux|Renforcé"
 
@@ -16773,7 +16773,7 @@ msgstr ""
 "car si mal ajusté les couleurs très sombres hors gamut seront tronquées\n"
 "en poussant les valeurs RVB négativement."
 
-#: ../src/iop/basicadj.c:627 ../src/iop/exposure.c:1102
+#: ../src/iop/basicadj.c:627 ../src/iop/exposure.c:1190
 msgid "adjust the exposure correction"
 msgstr "Ajuste la correction d’exposition"
 
@@ -16922,7 +16922,7 @@ msgstr ""
 #: ../src/iop/bilateral.cc:105 ../src/iop/blurs.c:90
 #: ../src/iop/channelmixer.c:138 ../src/iop/denoiseprofile.c:778
 #: ../src/iop/diffuse.c:141 ../src/iop/enlargecanvas.c:82
-#: ../src/iop/exposure.c:129 ../src/iop/overlay.c:157 ../src/iop/primaries.c:75
+#: ../src/iop/exposure.c:131 ../src/iop/overlay.c:157 ../src/iop/primaries.c:75
 #: ../src/iop/scalepixels.c:87 ../src/iop/soften.c:102
 #: ../src/iop/splittoning.c:104 ../src/iop/velvia.c:99
 msgid "linear, RGB"
@@ -17270,7 +17270,7 @@ msgstr ""
 
 #: ../src/iop/cacorrect.c:82 ../src/iop/cacorrect.c:84
 #: ../src/iop/cacorrectrgb.c:167 ../src/iop/cacorrectrgb.c:169
-#: ../src/iop/demosaic.c:316 ../src/iop/highlights.c:177
+#: ../src/iop/demosaic.c:317 ../src/iop/highlights.c:177
 #: ../src/iop/highlights.c:179 ../src/iop/hotpixels.c:74
 #: ../src/iop/hotpixels.c:76 ../src/iop/rawdenoise.c:141
 #: ../src/iop/rawdenoise.c:143 ../src/iop/rasterfile.c:101
@@ -17281,7 +17281,7 @@ msgid "linear, raw, scene-referred"
 msgstr "Relatif à la scène, linéaire, RAW"
 
 #: ../src/iop/cacorrect.c:83 ../src/iop/cacorrectrgb.c:168
-#: ../src/iop/demosaic.c:317 ../src/iop/invert.c:134
+#: ../src/iop/demosaic.c:318 ../src/iop/invert.c:134
 #: ../src/iop/rawdenoise.c:142 ../src/iop/rasterfile.c:102
 #: ../src/iop/rawprepare.c:172 ../src/iop/temperature.c:251
 msgid "linear, raw"
@@ -17924,7 +17924,7 @@ msgstr ""
 msgid "mapping"
 msgstr "Mappage"
 
-#: ../src/iop/channelmixerrgb.c:4514 ../src/iop/exposure.c:1173
+#: ../src/iop/channelmixerrgb.c:4514 ../src/iop/exposure.c:1261
 msgid "area mode"
 msgstr "Mode de la zone"
 
@@ -17941,11 +17941,11 @@ msgstr ""
 "CAT,\n"
 "et peut être utilisée pour échantillonner la cible"
 
-#: ../src/iop/channelmixerrgb.c:4520 ../src/iop/exposure.c:1179
+#: ../src/iop/channelmixerrgb.c:4520 ../src/iop/exposure.c:1267
 msgid "correction"
 msgstr "Correction"
 
-#: ../src/iop/channelmixerrgb.c:4521 ../src/iop/exposure.c:1180
+#: ../src/iop/channelmixerrgb.c:4521 ../src/iop/exposure.c:1268
 msgid "measure"
 msgstr "Mesure"
 
@@ -17961,7 +17961,7 @@ msgstr ""
 "Calcule la cible en utilisant le mixage des canaux en cours.\n"
 "Si désactivé seul le CAT est considéré."
 
-#: ../src/iop/channelmixerrgb.c:4540 ../src/iop/exposure.c:1195
+#: ../src/iop/channelmixerrgb.c:4540 ../src/iop/exposure.c:1283
 msgid "the input color that should be mapped to the target"
 msgstr "La couleur d’entrée à mapper sur la cible"
 
@@ -17975,7 +17975,7 @@ msgstr ""
 "h : \tN/A\n"
 "c : \tN/A"
 
-#: ../src/iop/channelmixerrgb.c:4547 ../src/iop/exposure.c:1203
+#: ../src/iop/channelmixerrgb.c:4547 ../src/iop/exposure.c:1291
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
 msgstr "Ces coordonnés LCh sont calculés depuis les coordonnés CIE Lab 1976"
 
@@ -17983,12 +17983,12 @@ msgstr "Ces coordonnés LCh sont calculés depuis les coordonnés CIE Lab 1976"
 msgid "the desired target color after mapping"
 msgstr "La cible recherchée après le mappage de l’exposition"
 
-#: ../src/iop/channelmixerrgb.c:4579 ../src/iop/exposure.c:1187
+#: ../src/iop/channelmixerrgb.c:4579 ../src/iop/exposure.c:1275
 msgctxt "section"
 msgid "input"
 msgstr "Entrée"
 
-#: ../src/iop/channelmixerrgb.c:4582 ../src/iop/exposure.c:1210
+#: ../src/iop/channelmixerrgb.c:4582 ../src/iop/exposure.c:1298
 msgctxt "section"
 msgid "target"
 msgstr "Cible"
@@ -19343,7 +19343,7 @@ msgstr ""
 "Convertit n’importe quelle entrée RVB en RVB de référence pour le pipeline\n"
 "en utilisant les profils de couleur pour redéfinir les valeurs RVB."
 
-#: ../src/iop/colorin.c:128 ../src/iop/colorout.c:86 ../src/iop/demosaic.c:315
+#: ../src/iop/colorin.c:128 ../src/iop/colorout.c:86 ../src/iop/demosaic.c:316
 #: ../src/iop/rawprepare.c:170
 msgid "mandatory"
 msgstr "Obligatoire"
@@ -19615,7 +19615,7 @@ msgstr "Priorité à des couleurs de remplacement spécifiques"
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "Teinte à laquelle on donne priorité sur les autres"
 
-#: ../src/iop/colorreconstruction.c:1254 ../src/iop/demosaic.c:1585
+#: ../src/iop/colorreconstruction.c:1254 ../src/iop/demosaic.c:1711
 #: ../src/iop/highlights.c:1359
 msgid "not applicable"
 msgstr "Non applicable"
@@ -19834,22 +19834,31 @@ msgstr ""
 "Seuil pour la détection de la frange, valeurs plus grandes pour moins de "
 "suppression de la frange"
 
-#: ../src/iop/demosaic.c:309
+#: ../src/iop/demosaic.c:310
 msgid "demosaic"
 msgstr "Dématriçage"
 
-#: ../src/iop/demosaic.c:314
+#: ../src/iop/demosaic.c:315
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
 "Reconstruit des pixels RVB complets\n"
 "à partir de la lecture d’un capteur à grille de filtres colorés."
 
-#: ../src/iop/demosaic.c:1275
+#: ../src/iop/demosaic.c:717 ../src/iop/demosaic.c:764
+#, fuzzy
+msgid "can't allocate demosaic buffer"
+msgstr "[Double dématriçage] Impossible d’allouer un buffer interne"
+
+#: ../src/iop/demosaic.c:754
+msgid "can't equilibrate greens"
+msgstr ""
+
+#: ../src/iop/demosaic.c:1401
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "Matrice de couleurs « %s » non trouvée pour une image de Bayer"
 
-#: ../src/iop/demosaic.c:1508
+#: ../src/iop/demosaic.c:1634
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -19864,7 +19873,7 @@ msgstr ""
 "Un double dématriçage accroît le temps de traitement par fusionnant un "
 "variant VNG en seconde passe."
 
-#: ../src/iop/demosaic.c:1512
+#: ../src/iop/demosaic.c:1638
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -19876,11 +19885,11 @@ msgstr ""
 "Un double dématriçage accroît le temps de traitement par fusionnant un "
 "variant VNG en seconde passe."
 
-#: ../src/iop/demosaic.c:1518
+#: ../src/iop/demosaic.c:1644
 msgid "Bayer4 sensor demosaicing methods."
 msgstr "Méthode de dématriçage pour les capteurs de Bayer."
 
-#: ../src/iop/demosaic.c:1522
+#: ../src/iop/demosaic.c:1648
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -19890,11 +19899,11 @@ msgstr ""
 " • « 0.0 » pour favoriser les hautes fréquences (détails).\n"
 " • « 1.0 » pour favoriser les basses fréquences (aplats)."
 
-#: ../src/iop/demosaic.c:1525
+#: ../src/iop/demosaic.c:1651
 msgid "toggle mask visualization"
 msgstr "Bascule la visualisation du masque"
 
-#: ../src/iop/demosaic.c:1529
+#: ../src/iop/demosaic.c:1655
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -19903,7 +19912,7 @@ msgstr ""
 "Seuil pour une passe médiane supplémentaire.\n"
 "Indiquer « 0.0 » pour désactiver, « 1.0 » pour ignorer les bords."
 
-#: ../src/iop/demosaic.c:1532
+#: ../src/iop/demosaic.c:1658
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -19912,19 +19921,19 @@ msgstr ""
 "Le pas « Médian » fait la moyenne de la sortie, le pas « Raffinement »\n"
 "ajoute un nouveau calcul des canaux rouges et bleus."
 
-#: ../src/iop/demosaic.c:1535
+#: ../src/iop/demosaic.c:1661
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "Nombre de passes pour le lissage de couleur après le dématriçage"
 
-#: ../src/iop/demosaic.c:1538
+#: ../src/iop/demosaic.c:1664
 msgid "green channels matching method"
 msgstr "Méthode de calcul des verts"
 
-#: ../src/iop/demosaic.c:1541
+#: ../src/iop/demosaic.c:1667
 msgid "capture sharpen"
 msgstr "Netteté de capture"
 
-#: ../src/iop/demosaic.c:1542
+#: ../src/iop/demosaic.c:1668
 msgid ""
 "capture sharpen tries to recover details lost due to in-camera blurring\n"
 "which can be caused by diffraction, the anti-aliasing filter or other\n"
@@ -19936,13 +19945,13 @@ msgstr ""
 "filtre\n"
 "antialiasing et d'autres sources de flou du type gaussien."
 
-#: ../src/iop/demosaic.c:1548
+#: ../src/iop/demosaic.c:1674
 msgid "enable capture sharpening and set effect strength based on iterations"
 msgstr ""
 "Active l'amélioration de la netteté de capture et définit la force basée sur "
 "le nombre d'itération"
 
-#: ../src/iop/demosaic.c:1553
+#: ../src/iop/demosaic.c:1679
 msgid ""
 "capture sharpen radius should reflect the overall gaussian type blur\n"
 "of the camera sensor, possibly the anti-aliasing filter and the lens.\n"
@@ -19955,7 +19964,7 @@ msgstr ""
 "Trop augmenter cela apportera rapidement des artefacts comme des halos\n"
 "d'autant plus lorsque utilisé avec une augmentation de la netteté forte."
 
-#: ../src/iop/demosaic.c:1559
+#: ../src/iop/demosaic.c:1685
 msgid ""
 "calculate the capture sharpen radius from sensor data.\n"
 "this should be done in zoomed out darkroom"
@@ -19963,7 +19972,7 @@ msgstr ""
 "Calculer le rayon de l'ajustement de netteté depuis les données du capteur.\n"
 "A faire en zoomant dans la chambre noire."
 
-#: ../src/iop/demosaic.c:1564
+#: ../src/iop/demosaic.c:1690
 msgid ""
 "restrict capture sharpening to areas with high local contrast,\n"
 "increase to exclude flat areas in very dark or noisy images,\n"
@@ -19974,11 +19983,11 @@ msgstr ""
 "du bruit,\n"
 "Réduire pour les images bien exposées et dont le bruit est bas."
 
-#: ../src/iop/demosaic.c:1567
+#: ../src/iop/demosaic.c:1693
 msgid "visualize sharpened areas"
 msgstr "Visualiser les zones dont la netteté est ajustée"
 
-#: ../src/iop/demosaic.c:1572
+#: ../src/iop/demosaic.c:1698
 msgid ""
 "further increase sharpen radius at image corners,\n"
 "the sharp center of the image will not be affected"
@@ -19986,19 +19995,19 @@ msgstr ""
 "Augmente le rayon d'accentuation des angles de l'image,\n"
 "le centre de l'image n'est pas affecté."
 
-#: ../src/iop/demosaic.c:1574
+#: ../src/iop/demosaic.c:1700
 msgid "visualize the overall radius"
 msgstr "Visualiser le rayon global"
 
-#: ../src/iop/demosaic.c:1579
+#: ../src/iop/demosaic.c:1705
 msgid "adjust to the sharp image center"
 msgstr "Ajuste l'accentuation du centre de l'image"
 
-#: ../src/iop/demosaic.c:1586
+#: ../src/iop/demosaic.c:1712
 msgid "demosaicing is only used for color raw images"
 msgstr "« Dématriçage » est uniquement utilisé pour les images RAW"
 
-#: ../src/iop/demosaicing/capture.c:644 ../src/iop/demosaicing/capture.c:811
+#: ../src/iop/demosaicing/capture.c:637
 msgid "calculated capture radius"
 msgstr "Rayon « capture » calculé"
 
@@ -20686,7 +20695,7 @@ msgstr ""
 "il apparaît afin que vous le désactiviez\n"
 "et utilisiez le nouvel « Égaliseur de contraste »."
 
-#: ../src/iop/exposure.c:125
+#: ../src/iop/exposure.c:127
 msgid ""
 "redo the exposure of the shot as if you were still in-camera\n"
 "using a color-safe brightening similar to increasing ISO setting"
@@ -20695,33 +20704,38 @@ msgstr ""
 "en utilisant un éclaircissement sans danger pour les couleurs.\n"
 "Semblable à une augmentation d’ISO."
 
-#: ../src/iop/exposure.c:283
+#: ../src/iop/exposure.c:314
 msgid "magic lantern defaults"
 msgstr "Défauts de magic lantern"
 
-#: ../src/iop/exposure.c:352 ../src/iop/rawoverexposed.c:133
+#: ../src/iop/exposure.c:385 ../src/iop/rawoverexposed.c:133
 #: ../src/iop/rawoverexposed.c:244
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
 msgstr "Échec de l’allocation de mémoire pour l’image « %s »"
 
-#: ../src/iop/exposure.c:621
+#: ../src/iop/exposure.c:680
 #, no-c-format
 msgid "compensate camera exposure (%+.1f EV)"
 msgstr "Compenser l’exposition du boîtier (%+.1f IL)"
 
+#: ../src/iop/exposure.c:692
+#, fuzzy, no-c-format
+msgid "higlight preservation mode (%.1f EV)"
+msgstr "Méthode de reconstruction des hautes lumières"
+
 #. Write report in GUI
-#: ../src/iop/exposure.c:799
+#: ../src/iop/exposure.c:870
 #, c-format
 msgid "L : \t%.1f %%"
 msgstr "L : \t%.1f %%"
 
-#: ../src/iop/exposure.c:931 ../src/libs/history.c:957
+#: ../src/iop/exposure.c:1010 ../src/libs/history.c:957
 #, c-format
 msgid "%.2f EV"
 msgstr "%.2f IL"
 
-#: ../src/iop/exposure.c:1097
+#: ../src/iop/exposure.c:1176
 msgid ""
 "automatically remove the camera exposure bias\n"
 "this is useful if you exposed the image to the right."
@@ -20729,33 +20743,42 @@ msgstr ""
 "Supprime la compensation d’exposition du boîtier automatiquement,\n"
 "utile lors d’une exposition à droite de l’image."
 
-#: ../src/iop/exposure.c:1106
+#: ../src/iop/exposure.c:1182
+msgid ""
+"remove the camera's hidden exposure bias in\n"
+"HDR / highlight preservation / dynamic range / HLG tone mode.\n"
+"\n"
+"when enabled, tone mapping (e.g. sigmoid) is required to\n"
+"avoid blown-out highlights."
+msgstr ""
+
+#: ../src/iop/exposure.c:1194
 msgid "set the exposure adjustment using the selected area"
 msgstr "Fixer l'ajustement de l'exposition en utilisant la zone sélectionnée"
 
-#: ../src/iop/exposure.c:1117
+#: ../src/iop/exposure.c:1205
 #, no-c-format
 msgid "where in the histogram to meter for deflicking. E.g. 50% is median"
 msgstr ""
-"Où mesurer dans l’histogramme pour le deflicking, par exemple 50 % est la "
+"Où mesurer dans l’histogramme pour le deflicking, par exemple 50% est la "
 "valeur médiane"
 
-#: ../src/iop/exposure.c:1123
+#: ../src/iop/exposure.c:1211
 msgid ""
 "where to place the exposure level for processed pics, EV below overexposure."
 msgstr ""
 "Où placer le niveau d’exposition de l’image développée, IL en dessous de la "
 "surexposition"
 
-#: ../src/iop/exposure.c:1127
+#: ../src/iop/exposure.c:1215
 msgid "computed EC: "
 msgstr "CE calculée : "
 
-#: ../src/iop/exposure.c:1130
+#: ../src/iop/exposure.c:1218
 msgid "what exposure correction has actually been used"
 msgstr "La correction d’exposition réellement utilisée"
 
-#: ../src/iop/exposure.c:1149
+#: ../src/iop/exposure.c:1237
 msgid ""
 "adjust the black level to unclip negative RGB values.\n"
 "you should never use it to add more density in blacks!\n"
@@ -20768,11 +20791,11 @@ msgstr ""
 "tronquées\n"
 "en poussant les valeurs RVB négativement."
 
-#: ../src/iop/exposure.c:1159
+#: ../src/iop/exposure.c:1247
 msgid "area exposure mapping"
 msgstr "Mappage zone d’exposition"
 
-#: ../src/iop/exposure.c:1165
+#: ../src/iop/exposure.c:1253
 msgid ""
 "define a target brightness, in terms of exposure,\n"
 "for a selected region of the image (the control sample),\n"
@@ -20788,7 +20811,7 @@ msgstr ""
 "soit une surface immobile et éclairée de manière constante sur une série "
 "d’images."
 
-#: ../src/iop/exposure.c:1174
+#: ../src/iop/exposure.c:1262
 msgid ""
 "\"correction\" automatically adjust exposure\n"
 "such that the input lightness is mapped to the target.\n"
@@ -20800,11 +20823,11 @@ msgstr ""
 " • Mesure – montre simplement comment une couleur d’entrée est mappée\n"
 "par la compensation d’exposition, et peut être utilisé pour définir la cible."
 
-#: ../src/iop/exposure.c:1200
+#: ../src/iop/exposure.c:1288
 msgid "L : \tN/A"
 msgstr "L : \tN/A"
 
-#: ../src/iop/exposure.c:1218
+#: ../src/iop/exposure.c:1306
 msgid "the desired target exposure after mapping"
 msgstr "La cible recherchée après le mappage de l’exposition"
 
@@ -20960,7 +20983,7 @@ msgid ""
 "if the chrominance preservation is enabled."
 msgstr ""
 "Désature globalement en entrée.\n"
-"La valeur doit être en dessous de 100 %\n"
+"La valeur doit être en dessous de 100%\n"
 "si la conservation de la chrominance est activée."
 
 #: ../src/iop/filmic.c:1573
@@ -21025,7 +21048,7 @@ msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
 msgstr ""
-"Luminance du noir pur de sortie, devrait être à 0 %\n"
+"Luminance du noir pur de sortie, devrait être à 0%\n"
 "sauf pour obtenir des tons fades."
 
 #: ../src/iop/filmic.c:1632 ../src/iop/filmicrgb.c:4556
@@ -21041,7 +21064,7 @@ msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
 msgstr ""
-"Luminance du blanc pur de sortie, devrait être à 100 %\n"
+"Luminance du blanc pur de sortie, devrait être à 100%\n"
 "sauf pour obtenir des tons fades."
 
 #: ../src/iop/filmic.c:1647
@@ -21114,7 +21137,7 @@ msgstr "Mappage de plage dynamique"
 #: ../src/iop/filmicrgb.c:3817
 #, c-format
 msgid "(%.0f %%)"
-msgstr "(%.0f %%)"
+msgstr "(%.0f%%)"
 
 #: ../src/iop/filmicrgb.c:3833
 #, no-c-format
@@ -21262,7 +21285,7 @@ msgstr ""
 "Décider de la meilleure stratégie de reconstruction, entre la colorisation "
 "avec\n"
 "un gradient doux et la récupération des détails de texture.\n"
-"0 % est une moyenne équilibrée des deux. Augmenter si au moins un canal RVB\n"
+"0% est une moyenne équilibrée des deux. Augmenter si au moins un canal RVB\n"
 "n’est pas tronqué, diminuer si tous les canaux RVB sont tronqués sur une "
 "large zone."
 
@@ -21279,7 +21302,7 @@ msgstr ""
 "Décider de la meilleure stratégie de reconstruction, entre des hautes "
 "lumières\n"
 "rayonnantes comme sur les pellicules et la récupération des fins détails.\n"
-"0 % est une moyenne équilibrée des deux. Augmenter pour plus de détails,\n"
+"0% est une moyenne équilibrée des deux. Augmenter pour plus de détails,\n"
 "diminuer pour plus de flou."
 
 #: ../src/iop/filmicrgb.c:4497
@@ -21294,7 +21317,7 @@ msgid ""
 msgstr ""
 "Décider de la meilleure stratégie de reconstruction, entre la récupération\n"
 "des hautes lumières monochromatiques et celle des hautes lumières colorées.\n"
-"0 % est une moyenne équilibrée des deux. Augmenter pour avoir plus de "
+"0% est une moyenne équilibrée des deux. Augmenter pour avoir plus de "
 "couleurs,\n"
 "diminuer pour éviter les hautes lumières magentas ou hors gamut."
 
@@ -21601,8 +21624,8 @@ msgid ""
 "0% = soft, 100% = hard"
 msgstr ""
 "Dureté du dégradé.\n"
-" • 0 % – doux\n"
-" • 100 % – dur"
+" • 0% – doux\n"
+" • 100% – dur"
 
 #: ../src/iop/graduatednd.c:1075
 msgid "rotation of filter -180 to 180 degrees"
@@ -28183,20 +28206,25 @@ msgid ""
 msgstr ""
 "Préréglage interne en lecture seule, le dupliquer pour faire des changements"
 
-#: ../src/libs/navigation.c:74
+#: ../src/libs/navigation.c:76
 msgid "navigation"
 msgstr "Navigation"
 
-#: ../src/libs/navigation.c:111 ../src/libs/navigation.c:189
+#: ../src/libs/navigation.c:113 ../src/libs/navigation.c:248
 msgctxt "navigationbox"
 msgid "fill"
 msgstr "Rempli"
 
-#: ../src/libs/navigation.c:114 ../src/libs/navigation.c:187
+#: ../src/libs/navigation.c:116 ../src/libs/navigation.c:246
 msgid "small"
 msgstr "Petit"
 
-#: ../src/libs/navigation.c:154
+#: ../src/libs/navigation.c:117
+#, c-format
+msgid "%.0f%%"
+msgstr "%.0f%%"
+
+#: ../src/libs/navigation.c:211
 msgid ""
 "navigation\n"
 "click or drag to position zoomed area in center view"
@@ -28204,37 +28232,37 @@ msgstr ""
 "Navigation\n"
 "Cliquer ou déplacer pour positionner la zone dans la vue centrale."
 
-#: ../src/libs/navigation.c:176
+#: ../src/libs/navigation.c:233
 msgid "hide navigation thumbnail"
 msgstr "Basculer la miniature de navigation"
 
-#: ../src/libs/navigation.c:185
+#: ../src/libs/navigation.c:244
 msgid "image zoom level"
 msgstr "Niveau de zoom de l’image"
 
-#: ../src/libs/navigation.c:190
+#: ../src/libs/navigation.c:249
 msgid "50%"
-msgstr "50 %"
+msgstr "50%"
 
-#: ../src/libs/navigation.c:191
+#: ../src/libs/navigation.c:250
 msgid "100%"
-msgstr "100 %"
+msgstr "100%"
 
-#: ../src/libs/navigation.c:192
+#: ../src/libs/navigation.c:251
 msgid "200%"
-msgstr "200 %"
+msgstr "200%"
 
-#: ../src/libs/navigation.c:193
+#: ../src/libs/navigation.c:252
 msgid "400%"
-msgstr "400 %"
+msgstr "400%"
 
-#: ../src/libs/navigation.c:194
+#: ../src/libs/navigation.c:253
 msgid "800%"
-msgstr "800 %"
+msgstr "800%"
 
-#: ../src/libs/navigation.c:195
+#: ../src/libs/navigation.c:254
 msgid "1600%"
-msgstr "1600 %"
+msgstr "1600%"
 
 #: ../src/libs/print_settings.c:48
 msgid "print settings"
@@ -29974,7 +30002,7 @@ msgid ""
 "100% is peak medium luminance."
 msgstr ""
 "Seuil de troncature du point blanc.\n"
-"100 % est la luminance moyenne de crête."
+"100% est la luminance moyenne de crête."
 
 #: ../src/views/darkroom.c:2684
 msgid "softproof"
@@ -30170,7 +30198,7 @@ msgstr "Zoom sans limites dans l’image"
 
 #: ../src/views/darkroom.c:3716
 msgid "zoom to 100% 200% and back"
-msgstr "Zoom à 100 % et 200 % en cyclant"
+msgstr "Zoom à 100% et 200% en cyclant"
 
 #: ../src/views/darkroom.c:3718 ../src/views/lighttable.c:957
 msgid "pan a zoomed image"
@@ -30212,7 +30240,7 @@ msgstr "Passer à l’image suivante/précédente"
 #: ../src/views/lighttable.c:956 ../src/views/lighttable.c:987
 #, no-c-format
 msgid "zoom to 100% and back"
-msgstr "Zoom à 100 % et retour vers ajusté"
+msgstr "Zoom à 100% et retour vers ajusté"
 
 #: ../src/views/lighttable.c:961 ../src/views/lighttable.c:980
 msgid "scroll the collection"
@@ -30257,7 +30285,7 @@ msgstr "Déplacer l’image"
 #: ../src/views/lighttable.c:990
 #, no-c-format
 msgid "zoom current image to 100% and back"
-msgstr "Zoom sur l’image actuelle à 100 % et retour vers ajusté"
+msgstr "Zoom sur l’image actuelle à 100% et retour vers ajusté"
 
 #: ../src/views/lighttable.c:994
 msgid "zoom the main view"
@@ -30298,7 +30326,7 @@ msgstr "Sélectionne une image unique"
 #. zoom for full culling & preview
 #: ../src/views/lighttable.c:1350
 msgid "preview zoom 100%"
-msgstr "Zoom image 100 %"
+msgstr "Zoom image 100%"
 
 #: ../src/views/lighttable.c:1351
 msgid "preview zoom fit"
@@ -31351,9 +31379,6 @@ msgstr "Actions de la souris"
 #~ msgid "black & white film"
 #~ msgstr "Film noir & blanc"
 
-#~ msgid "[dual demosaic] can't allocate internal buffers"
-#~ msgstr "[Double dématriçage] Impossible d’allouer un buffer interne"
-
 #~ msgid "[lmmse_demosaic] too small area"
 #~ msgstr "[Dématriçage LMMSE] Zone trop petite"
 
@@ -31927,7 +31952,7 @@ msgstr "Actions de la souris"
 #~ msgid "preview is only possible for zoom lower than 200%%"
 #~ msgstr ""
 #~ "La prévisualisation est possible uniquement pour des niveaux de zoom "
-#~ "inférieurs à 200 %"
+#~ "inférieurs à 200%"
 
 #~ msgid "v3.0"
 #~ msgstr "V3.0"
