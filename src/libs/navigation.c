@@ -166,7 +166,9 @@ int _entry_select(GtkWidget *w,
 
   if(delta > 0)
   {
-    if(val < 100)
+    if(val < 50)
+      ret = 3; // 50
+    else if(val < 100)
       ret = 4; // 100
     else if(val < 200)
       ret = 5; // 200
