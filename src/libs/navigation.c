@@ -29,6 +29,8 @@
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 
+#include <ctype.h>
+
 DT_MODULE(1)
 
 #define DT_NAVIGATION_INSET 5
@@ -113,6 +115,7 @@ static void _lib_navigation_control_redraw_callback(gpointer instance,
                     == dt_dev_get_zoom_scale(port, DT_ZOOM_FREE, 1.0, FALSE)
                          ? g_strdup(_("small"))
                          : g_strdup_printf("%.0f%%", cur_scale * 100 * darktable.gui->ppd);
+
   ++darktable.gui->reset;
   if(!dt_bauhaus_combobox_set_from_text(d->zoom, zoomline))
   {
@@ -138,6 +141,60 @@ static void _lib_navigation_collapse_callback(dt_action_t *action)
 }
 
 static void _zoom_changed(GtkWidget *widget, gpointer user_data);
+
+int _entry_select(GtkWidget *w,
+                  const char *text,
+                  const int delta,
+                  struct dt_iop_module_t **module)
+{
+  const int text_len = strlen(text);
+  int val = -1;
+  int index = 0;
+
+  // move to first digit to ensure we skip a possible % as prefix
+  for(int k=0; k<text_len; k++)
+  {
+    if(isdigit(text[k]))
+    {
+      index = k;
+      break;
+    }
+  }
+  sscanf(&text[index], "%d", &val);
+
+  int ret = -1;
+
+  if(delta > 0)
+  {
+    if(val < 100)
+      ret = 4; // 100
+    else if(val < 200)
+      ret = 5; // 200
+    else if(val < 400)
+      ret = 6; // 400
+    else if(val < 800)
+      ret = 7; // 800
+    else if(val < 1600)
+      ret = 8; // 1600
+  }
+  else
+  {
+    if(val < 50)
+      ret = 2; //  fit
+    else if(val < 100)
+      ret = 3; //  50
+    else if(val < 200)
+      ret = 4; // 100
+    else if(val < 400)
+      ret = 5; // 200
+    else if(val < 800)
+      ret = 6; // 400
+    else if(val < 1600)
+      ret = 7; // 800
+  }
+
+  return ret;
+}
 
 void gui_init(dt_lib_module_t *self)
 {
@@ -178,8 +235,10 @@ void gui_init(dt_lib_module_t *self)
                      GDK_KEY_N, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
   /* connect a redraw callback to control draw all and preview pipe finish signals */
-  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _lib_navigation_control_redraw_callback);
-  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_CONTROL_NAVIGATION_REDRAW, _lib_navigation_control_redraw_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                           _lib_navigation_control_redraw_callback);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_CONTROL_NAVIGATION_REDRAW,
+                           _lib_navigation_control_redraw_callback);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->zoom, darktable.view_manager->proxy.darkroom.view,
                                NULL, N_("zoom"), _("image zoom level"),
@@ -193,6 +252,11 @@ void gui_init(dt_lib_module_t *self)
                                N_("400%"),
                                N_("800%"),
                                N_("1600%"));
+
+  // default zoom is fit, used if the entry_select_fct cannot get the proper zoom
+  // (should not happen in normal behavior)
+  dt_bauhaus_combobox_set_default(d->zoom, 1);
+  dt_bauhaus_combobox_add_entry_select_fct(d->zoom, _entry_select);
 
   ac = dt_action_section(&darktable.view_manager->proxy.darkroom.view->actions, N_("zoom"));
   dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_COMBO_SEPARATOR + 2,
@@ -251,9 +315,9 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget,
     const float scale = fminf(width / (float)wd, height / (float)ht);
 
     const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
-    cairo_surface_t *surface
-        = cairo_image_surface_create_for_data(dev->preview_pipe->backbuf,
-                                              CAIRO_FORMAT_RGB24, wd, ht, stride);
+    cairo_surface_t *surface =
+      cairo_image_surface_create_for_data(dev->preview_pipe->backbuf,
+                                          CAIRO_FORMAT_RGB24, wd, ht, stride);
     cairo_translate(cr, width / 2.0, height / 2.0f);
     cairo_scale(cr, scale, scale);
     cairo_translate(cr, -.5f * wd, -.5f * ht);
@@ -353,7 +417,6 @@ static void _zoom_changed(GtkWidget *widget, gpointer user_data)
   if(val == -1 && 1 != sscanf(dt_bauhaus_combobox_get_text(widget), "%d", &val))
     return;
 
-  // dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_develop_t *dev = darktable.develop;
   if(!dev) return;
 
