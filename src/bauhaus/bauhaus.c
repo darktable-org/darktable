@@ -1500,8 +1500,7 @@ static dt_bauhaus_combobox_data_t *_combobox_data(GtkWidget *widget)
 }
 
 void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget,
-                                          void (*fct)(GtkWidget *w,
-                                                      struct dt_iop_module_t **module))
+                                          dt_bauhaus_combobox_populate_fct fct)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type == DT_BAUHAUS_COMBOBOX)
@@ -1509,10 +1508,7 @@ void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget,
 }
 
 void dt_bauhaus_combobox_add_entry_select_fct(GtkWidget *widget,
-                                              int (*fct)(GtkWidget *w,
-                                                         const char *entry,
-                                                         const int delta,
-                                                         struct dt_iop_module_t **module))
+                                              dt_bauhaus_combobox_entry_select_fct fct)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type == DT_BAUHAUS_COMBOBOX)
