@@ -112,6 +112,7 @@ typedef struct dt_bauhaus_combobox_data_t
   GPtrArray *entries;
   gboolean mute_scrolling;   // if set, prevents to issue "data-changed"
   void (*populate)(GtkWidget *w, struct dt_iop_module_t **module); // function to populate the combo list on the fly
+  int (*entry_select)(GtkWidget *w, const char *entry, const int delta, struct dt_iop_module_t **module); // function to select an entry based on context
 } dt_bauhaus_combobox_data_t;
 
 typedef union dt_bauhaus_data_t
@@ -453,6 +454,12 @@ int dt_bauhaus_combobox_get_default(GtkWidget *widget);
 void dt_bauhaus_combobox_add_populate_fct
   (GtkWidget *widget,
    void (*fct)(GtkWidget *w, struct dt_iop_module_t **module));
+void dt_bauhaus_combobox_add_entry_select_fct
+  (GtkWidget *widget,
+   int (*fct)(GtkWidget *w,
+              const char *entry,
+              const int delta,
+              struct dt_iop_module_t **module));
 void dt_bauhaus_combobox_add_list(GtkWidget *widget,
                                   dt_action_t *action,
                                   const char **texts);
