@@ -78,6 +78,13 @@ changes (where available).
 - Added the standard "Window" menu to the application menu bar on
   macOS.
 
+- In the navigation windows, the zoom is now better behaving. After a
+  free zoom over the darkroom, using the scroll over the zoom level
+  indicator of the navigation window, the selected zoom will be the
+  closest match (above or below depending on the scroll
+  direction). This is better as previous behavior where the zoom level
+  was always set to "small".
+
 ## Performance Improvements
 
 - Tune performance for the Lut3D module (5% to 20% speed-up).
