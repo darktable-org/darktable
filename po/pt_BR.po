@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-14 17:16-0300\n"
-"PO-Revision-Date: 2025-09-14 17:16-0300\n"
+"POT-Creation-Date: 2025-09-17 14:02-0300\n"
+"PO-Revision-Date: 2025-09-17 14:01-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -3151,8 +3151,8 @@ msgstr "potência básica"
 
 #: ../build/lib/darktable/plugins/introspection_basicadj.c:92
 #: ../build/lib/darktable/plugins/introspection_basicadj.c:195
-#: ../build/lib/darktable/plugins/introspection_exposure.c:67
-#: ../build/lib/darktable/plugins/introspection_exposure.c:138
+#: ../build/lib/darktable/plugins/introspection_exposure.c:72
+#: ../build/lib/darktable/plugins/introspection_exposure.c:149
 msgid "black level correction"
 msgstr "correção do nível de preto"
 
@@ -4005,7 +4005,7 @@ msgstr "modo de processamento"
 #: ../src/develop/blend_gui.c:2344 ../src/iop/channelmixer.c:611
 #: ../src/iop/channelmixerrgb.c:4556 ../src/iop/colorchecker.c:1567
 #: ../src/iop/colorize.c:353 ../src/iop/colorzones.c:2623
-#: ../src/iop/exposure.c:1224
+#: ../src/iop/exposure.c:1312
 msgid "lightness"
 msgstr "luminosidade"
 
@@ -4480,27 +4480,32 @@ msgstr "preto"
 msgid "white"
 msgstr "branco"
 
-#: ../build/lib/darktable/plugins/introspection_exposure.c:79
-#: ../build/lib/darktable/plugins/introspection_exposure.c:146
+#: ../build/lib/darktable/plugins/introspection_exposure.c:84
+#: ../build/lib/darktable/plugins/introspection_exposure.c:157
 msgid "percentile"
 msgstr "percentil"
 
-#: ../build/lib/darktable/plugins/introspection_exposure.c:85
-#: ../build/lib/darktable/plugins/introspection_exposure.c:150
+#: ../build/lib/darktable/plugins/introspection_exposure.c:90
+#: ../build/lib/darktable/plugins/introspection_exposure.c:161
 msgid "target level"
 msgstr "nível alvo"
 
-#: ../build/lib/darktable/plugins/introspection_exposure.c:91
-#: ../build/lib/darktable/plugins/introspection_exposure.c:154
+#: ../build/lib/darktable/plugins/introspection_exposure.c:96
+#: ../build/lib/darktable/plugins/introspection_exposure.c:165
 msgid "compensate exposure bias"
 msgstr "compensar viés de exposição"
 
-#: ../build/lib/darktable/plugins/introspection_exposure.c:168
+#: ../build/lib/darktable/plugins/introspection_exposure.c:102
+#: ../build/lib/darktable/plugins/introspection_exposure.c:169
+msgid "compensate highlight preservation"
+msgstr "compensar preservação de realces"
+
+#: ../build/lib/darktable/plugins/introspection_exposure.c:183
 #: ../build/lib/darktable/plugins/introspection_levels.c:160
 msgid "manual"
 msgstr "manual"
 
-#: ../build/lib/darktable/plugins/introspection_exposure.c:169
+#: ../build/lib/darktable/plugins/introspection_exposure.c:184
 #: ../build/lib/darktable/plugins/introspection_levels.c:161
 msgid "automatic"
 msgstr "automático"
@@ -4952,7 +4957,7 @@ msgstr "correções"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:118
 #: ../src/develop/blend_gui.c:3553 ../src/iop/bilat.c:438
 #: ../src/iop/colorbalance.c:1853 ../src/iop/denoiseprofile.c:3751
-#: ../src/iop/exposure.c:1142 ../src/iop/levels.c:693
+#: ../src/iop/exposure.c:1230 ../src/iop/levels.c:693
 #: ../src/iop/profile_gamma.c:654 ../src/libs/copy_history.c:370
 #: ../src/libs/export.c:1627 ../src/libs/image.c:644
 #: ../src/libs/print_settings.c:2934 ../src/libs/styles.c:872
@@ -5467,8 +5472,8 @@ msgstr "GainMap embutido"
 #: ../build/lib/darktable/plugins/introspection_relight.c:43
 #: ../build/lib/darktable/plugins/introspection_relight.c:98
 #: ../src/common/collection.c:631 ../src/gui/preferences.c:950
-#: ../src/gui/presets.c:690 ../src/iop/basicadj.c:624 ../src/iop/exposure.c:118
-#: ../src/iop/exposure.c:1101 ../src/libs/metadata_view.c:151
+#: ../src/gui/presets.c:690 ../src/iop/basicadj.c:624 ../src/iop/exposure.c:120
+#: ../src/iop/exposure.c:1189 ../src/libs/metadata_view.c:151
 msgid "exposure"
 msgstr "exposição"
 
@@ -7348,12 +7353,12 @@ msgstr ""
 "o filtro guiado independente de exposição não conseguiu alocar memória, "
 "verifique sua configuração de RAM"
 
-#: ../src/common/exif.cc:5872
+#: ../src/common/exif.cc:5888
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "não foi possível abrir o arquivo XMP '%s': '%s'"
 
-#: ../src/common/exif.cc:5931
+#: ../src/common/exif.cc:5947
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "não foi possível escrever o arquivo XMP '%s': '%s'"
@@ -9416,7 +9421,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:2688 ../src/develop/blend_gui.c:3580
 #: ../src/iop/agx.c:2035 ../src/iop/agx.c:2043 ../src/iop/basicadj.c:626
 #: ../src/iop/colorbalancergb.c:2000 ../src/iop/colorequal.c:3133
-#: ../src/iop/exposure.c:1104 ../src/iop/exposure.c:1120
+#: ../src/iop/exposure.c:1192 ../src/iop/exposure.c:1208
 #: ../src/iop/filmic.c:1486 ../src/iop/filmic.c:1499 ../src/iop/filmic.c:1541
 #: ../src/iop/filmicrgb.c:4400 ../src/iop/filmicrgb.c:4411
 #: ../src/iop/filmicrgb.c:4444 ../src/iop/filmicrgb.c:4454
@@ -14683,8 +14688,8 @@ msgstr "nenhuma predefinição"
 msgid "display-referred default"
 msgstr "padrão relativo à exibição"
 
-#: ../src/gui/presets.c:1196 ../src/iop/agx.c:2595
-#: ../src/iop/channelmixerrgb.c:397 ../src/iop/exposure.c:301
+#: ../src/gui/presets.c:1196 ../src/iop/agx.c:2593
+#: ../src/iop/channelmixerrgb.c:397 ../src/iop/exposure.c:333
 #: ../src/iop/filmicrgb.c:3209 ../src/iop/sigmoid.c:237
 msgid "scene-referred default"
 msgstr "padrão relativo à cena"
@@ -15701,7 +15706,7 @@ msgstr ""
 
 #: ../src/iop/agx.c:57 ../src/iop/atrous.c:133 ../src/iop/bilateral.cc:103
 #: ../src/iop/colorequal.c:215 ../src/iop/diffuse.c:139
-#: ../src/iop/enlargecanvas.c:80 ../src/iop/exposure.c:127
+#: ../src/iop/enlargecanvas.c:80 ../src/iop/exposure.c:129
 #: ../src/iop/filmicrgb.c:350 ../src/iop/graduatednd.c:143
 #: ../src/iop/negadoctor.c:142 ../src/iop/overlay.c:155
 #: ../src/iop/rgbcurve.c:142 ../src/iop/rgblevels.c:121 ../src/iop/shadhi.c:141
@@ -15720,8 +15725,8 @@ msgstr "corretivo e criativo"
 #: ../src/iop/demosaic.c:319 ../src/iop/denoiseprofile.c:777
 #: ../src/iop/denoiseprofile.c:779 ../src/iop/diffuse.c:140
 #: ../src/iop/diffuse.c:142 ../src/iop/enlargecanvas.c:81
-#: ../src/iop/enlargecanvas.c:83 ../src/iop/exposure.c:128
-#: ../src/iop/exposure.c:130 ../src/iop/flip.c:109 ../src/iop/flip.c:110
+#: ../src/iop/enlargecanvas.c:83 ../src/iop/exposure.c:130
+#: ../src/iop/exposure.c:132 ../src/iop/flip.c:109 ../src/iop/flip.c:110
 #: ../src/iop/hazeremoval.c:111 ../src/iop/hazeremoval.c:113
 #: ../src/iop/lens.cc:263 ../src/iop/lens.cc:265 ../src/iop/liquify.c:295
 #: ../src/iop/liquify.c:297 ../src/iop/overlay.c:156 ../src/iop/overlay.c:158
@@ -15880,11 +15885,11 @@ msgid "input exposure range"
 msgstr "extensão da exposição de entrada"
 
 #: ../src/iop/agx.c:2037
-msgid "relative exposure above mid-grey (white point)"
+msgid "relative exposure above mid-gray (white point)"
 msgstr "exposição relativa acima de meio-cinza (ponto de branco)"
 
 #: ../src/iop/agx.c:2045
-msgid "relative exposure below mid-grey (black point)"
+msgid "relative exposure below mid-gray (black point)"
 msgstr "exposição relativa acima de meio-cinza (ponto de preto)"
 
 #: ../src/iop/agx.c:2053 ../src/iop/filmicrgb.c:4421
@@ -16032,23 +16037,23 @@ msgstr "parâmetros principais do visual e da curva"
 msgid "detailed curve settings"
 msgstr "configurações detalhadas da curva"
 
-#: ../src/iop/agx.c:2560
+#: ../src/iop/agx.c:2558
 msgid "unmodified base primaries"
 msgstr "primárias base não modificadas"
 
-#: ../src/iop/agx.c:2571
+#: ../src/iop/agx.c:2569
 msgid "blender-like|base"
 msgstr "como-blender|base"
 
-#: ../src/iop/agx.c:2580
+#: ../src/iop/agx.c:2578
 msgid "blender-like|punchy"
 msgstr "como-blender|reforçado"
 
-#: ../src/iop/agx.c:2629
+#: ../src/iop/agx.c:2627
 msgid "smooth|base"
 msgstr "suave|base"
 
-#: ../src/iop/agx.c:2636
+#: ../src/iop/agx.c:2634
 msgid "smooth|punchy"
 msgstr "suavização|reforçado"
 
@@ -16658,7 +16663,7 @@ msgstr ""
 "se mal ajustado, forçará os valores das cores que estão próximas\n"
 "do preto para fora do gama tornando valores RGB negativos"
 
-#: ../src/iop/basicadj.c:627 ../src/iop/exposure.c:1102
+#: ../src/iop/basicadj.c:627 ../src/iop/exposure.c:1190
 msgid "adjust the exposure correction"
 msgstr "ajusta a correção de exposição"
 
@@ -16804,7 +16809,7 @@ msgstr "aplica desfoque de superfície para remover ruído ou suavizar texturas"
 #: ../src/iop/bilateral.cc:105 ../src/iop/blurs.c:90
 #: ../src/iop/channelmixer.c:138 ../src/iop/denoiseprofile.c:778
 #: ../src/iop/diffuse.c:141 ../src/iop/enlargecanvas.c:82
-#: ../src/iop/exposure.c:129 ../src/iop/overlay.c:157 ../src/iop/primaries.c:75
+#: ../src/iop/exposure.c:131 ../src/iop/overlay.c:157 ../src/iop/primaries.c:75
 #: ../src/iop/scalepixels.c:87 ../src/iop/soften.c:102
 #: ../src/iop/splittoning.c:104 ../src/iop/velvia.c:99
 msgid "linear, RGB"
@@ -17802,7 +17807,7 @@ msgstr ""
 msgid "mapping"
 msgstr "mapeamento"
 
-#: ../src/iop/channelmixerrgb.c:4514 ../src/iop/exposure.c:1173
+#: ../src/iop/channelmixerrgb.c:4514 ../src/iop/exposure.c:1261
 msgid "area mode"
 msgstr "mode de área"
 
@@ -17818,11 +17823,11 @@ msgstr ""
 "\"medida\" simplesmente mostra como uma cor de entrada é mapeada pelo CAT\n"
 "e pode ser usada para amostrar um alvo."
 
-#: ../src/iop/channelmixerrgb.c:4520 ../src/iop/exposure.c:1179
+#: ../src/iop/channelmixerrgb.c:4520 ../src/iop/exposure.c:1267
 msgid "correction"
 msgstr "correção"
 
-#: ../src/iop/channelmixerrgb.c:4521 ../src/iop/exposure.c:1180
+#: ../src/iop/channelmixerrgb.c:4521 ../src/iop/exposure.c:1268
 msgid "measure"
 msgstr "medição"
 
@@ -17838,7 +17843,7 @@ msgstr ""
 "calcular o alvo levando em conta a mistura de canais.\n"
 "se desabilitado, somente o CAT é considerado."
 
-#: ../src/iop/channelmixerrgb.c:4540 ../src/iop/exposure.c:1195
+#: ../src/iop/channelmixerrgb.c:4540 ../src/iop/exposure.c:1283
 msgid "the input color that should be mapped to the target"
 msgstr "a cor de entrada que deveria ser mapeada no alvo"
 
@@ -17852,7 +17857,7 @@ msgstr ""
 "h: \tN/A\n"
 "c: \tN/A"
 
-#: ../src/iop/channelmixerrgb.c:4547 ../src/iop/exposure.c:1203
+#: ../src/iop/channelmixerrgb.c:4547 ../src/iop/exposure.c:1291
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
 msgstr ""
 "estas coordeanaas LCh são computadas a partir de coordenadas CIE Lab 1976"
@@ -17861,12 +17866,12 @@ msgstr ""
 msgid "the desired target color after mapping"
 msgstr "a cor alvo desejada após o mapeamento"
 
-#: ../src/iop/channelmixerrgb.c:4579 ../src/iop/exposure.c:1187
+#: ../src/iop/channelmixerrgb.c:4579 ../src/iop/exposure.c:1275
 msgctxt "section"
 msgid "input"
 msgstr "entrada"
 
-#: ../src/iop/channelmixerrgb.c:4582 ../src/iop/exposure.c:1210
+#: ../src/iop/channelmixerrgb.c:4582 ../src/iop/exposure.c:1298
 msgctxt "section"
 msgid "target"
 msgstr "alvo"
@@ -20541,7 +20546,7 @@ msgstr ""
 "e está aqui apenas para que você o desative\n"
 "e use o novo equalizador."
 
-#: ../src/iop/exposure.c:125
+#: ../src/iop/exposure.c:127
 msgid ""
 "redo the exposure of the shot as if you were still in-camera\n"
 "using a color-safe brightening similar to increasing ISO setting"
@@ -20549,33 +20554,38 @@ msgstr ""
 "refaz a exposição da foto como se você ainda estivesse com a câmera\n"
 "usando uma iluminação segura para cores semelhante ao aumento do ISO"
 
-#: ../src/iop/exposure.c:283
+#: ../src/iop/exposure.c:314
 msgid "magic lantern defaults"
 msgstr "padrões para lanterna mágica"
 
-#: ../src/iop/exposure.c:352 ../src/iop/rawoverexposed.c:133
+#: ../src/iop/exposure.c:385 ../src/iop/rawoverexposed.c:133
 #: ../src/iop/rawoverexposed.c:244
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
 msgstr "falha em obter buffer raw da imagem `%s'"
 
-#: ../src/iop/exposure.c:621
+#: ../src/iop/exposure.c:680
 #, no-c-format
 msgid "compensate camera exposure (%+.1f EV)"
 msgstr "compensar exposição da câmera (%+.1f EV)"
 
+#: ../src/iop/exposure.c:692
+#, no-c-format
+msgid "higlight preservation mode (%.1f EV)"
+msgstr "modo de preservação de realce (%.1f EV)"
+
 #. Write report in GUI
-#: ../src/iop/exposure.c:799
+#: ../src/iop/exposure.c:870
 #, c-format
 msgid "L : \t%.1f %%"
 msgstr "L : \t%.1f %%"
 
-#: ../src/iop/exposure.c:931 ../src/libs/history.c:957
+#: ../src/iop/exposure.c:1010 ../src/libs/history.c:957
 #, c-format
 msgid "%.2f EV"
 msgstr "%.2f EV"
 
-#: ../src/iop/exposure.c:1097
+#: ../src/iop/exposure.c:1176
 msgid ""
 "automatically remove the camera exposure bias\n"
 "this is useful if you exposed the image to the right."
@@ -20583,31 +20593,45 @@ msgstr ""
 "automaticamente remove o viés de exposição da câmera\n"
 "isto é útil se você expôs a imagem à direita."
 
-#: ../src/iop/exposure.c:1106
+#: ../src/iop/exposure.c:1182
+msgid ""
+"remove the camera's hidden exposure bias in\n"
+"HDR / highlight preservation / dynamic range / HLG tone mode.\n"
+"\n"
+"when enabled, tone mapping (e.g. sigmoid) is required to\n"
+"avoid blown-out highlights."
+msgstr ""
+"remover o viés oculto de exposição da camera em\n"
+"HDR / preservação de realces / alcance dinâmico / modo de tom HLG.\n"
+"\n"
+"quando habilitado, o mapeamento de tons (por exemplo sigmóide) é\n"
+"necessário para evitar realces estourados."
+
+#: ../src/iop/exposure.c:1194
 msgid "set the exposure adjustment using the selected area"
 msgstr "definir o ajuste de exposição usando a área selecionada"
 
-#: ../src/iop/exposure.c:1117
+#: ../src/iop/exposure.c:1205
 #, no-c-format
 msgid "where in the histogram to meter for deflicking. E.g. 50% is median"
 msgstr "onde no histograma medir para deflicking. Por exemplo, 50% é a mediana"
 
-#: ../src/iop/exposure.c:1123
+#: ../src/iop/exposure.c:1211
 msgid ""
 "where to place the exposure level for processed pics, EV below overexposure."
 msgstr ""
 "onde por o nível de exposição para fotos processadas, EV abaixo de "
 "sobrexposição."
 
-#: ../src/iop/exposure.c:1127
+#: ../src/iop/exposure.c:1215
 msgid "computed EC: "
 msgstr "EC calculado: "
 
-#: ../src/iop/exposure.c:1130
+#: ../src/iop/exposure.c:1218
 msgid "what exposure correction has actually been used"
 msgstr "quais correções de exposição foram utilizadas"
 
-#: ../src/iop/exposure.c:1149
+#: ../src/iop/exposure.c:1237
 msgid ""
 "adjust the black level to unclip negative RGB values.\n"
 "you should never use it to add more density in blacks!\n"
@@ -20619,11 +20643,11 @@ msgstr ""
 "se mal ajustado, forçará os valores das cores que estão próximas\n"
 "do preto para fora do gama tornando valores RGB negativos."
 
-#: ../src/iop/exposure.c:1159
+#: ../src/iop/exposure.c:1247
 msgid "area exposure mapping"
 msgstr "mapeamento de exposição por área"
 
-#: ../src/iop/exposure.c:1165
+#: ../src/iop/exposure.c:1253
 msgid ""
 "define a target brightness, in terms of exposure,\n"
 "for a selected region of the image (the control sample),\n"
@@ -20639,7 +20663,7 @@ msgstr ""
 "uma parte crítica de seu objeto ou uma superfície que permameça estática\n"
 "(nos mesmos locais) e consistentemente iluminada em sua série de imagens."
 
-#: ../src/iop/exposure.c:1174
+#: ../src/iop/exposure.c:1262
 msgid ""
 "\"correction\" automatically adjust exposure\n"
 "such that the input lightness is mapped to the target.\n"
@@ -20651,11 +20675,11 @@ msgstr ""
 "\"medida\" simplesmente mostra como uma cor de entrada é mapeada\n"
 "pela compensação de exposição e pode ser usada para definir um alvo."
 
-#: ../src/iop/exposure.c:1200
+#: ../src/iop/exposure.c:1288
 msgid "L : \tN/A"
 msgstr "L : \tN/A"
 
-#: ../src/iop/exposure.c:1218
+#: ../src/iop/exposure.c:1306
 msgid "the desired target exposure after mapping"
 msgstr "a cor alvo desejada após o mapeamento"
 
