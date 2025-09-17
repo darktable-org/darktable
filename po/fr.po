@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-17 17:33+0200\n"
-"PO-Revision-Date: 2025-09-17 17:36+0200\n"
+"POT-Creation-Date: 2025-09-17 21:44+0200\n"
+"PO-Revision-Date: 2025-09-17 21:49+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -3168,8 +3168,8 @@ msgstr "Puissance de base"
 
 #: ../build/lib/darktable/plugins/introspection_basicadj.c:92
 #: ../build/lib/darktable/plugins/introspection_basicadj.c:195
-#: ../build/lib/darktable/plugins/introspection_exposure.c:67
-#: ../build/lib/darktable/plugins/introspection_exposure.c:138
+#: ../build/lib/darktable/plugins/introspection_exposure.c:72
+#: ../build/lib/darktable/plugins/introspection_exposure.c:149
 msgid "black level correction"
 msgstr "Correction du niveau du noir"
 
@@ -4499,27 +4499,32 @@ msgstr "Noir"
 msgid "white"
 msgstr "Blanc"
 
-#: ../build/lib/darktable/plugins/introspection_exposure.c:79
-#: ../build/lib/darktable/plugins/introspection_exposure.c:146
+#: ../build/lib/darktable/plugins/introspection_exposure.c:84
+#: ../build/lib/darktable/plugins/introspection_exposure.c:157
 msgid "percentile"
 msgstr "Centile"
 
-#: ../build/lib/darktable/plugins/introspection_exposure.c:85
-#: ../build/lib/darktable/plugins/introspection_exposure.c:150
+#: ../build/lib/darktable/plugins/introspection_exposure.c:90
+#: ../build/lib/darktable/plugins/introspection_exposure.c:161
 msgid "target level"
 msgstr "Valeur cible"
 
-#: ../build/lib/darktable/plugins/introspection_exposure.c:91
-#: ../build/lib/darktable/plugins/introspection_exposure.c:154
+#: ../build/lib/darktable/plugins/introspection_exposure.c:96
+#: ../build/lib/darktable/plugins/introspection_exposure.c:165
 msgid "compensate exposure bias"
 msgstr "Compensation du biais d’exposition"
 
-#: ../build/lib/darktable/plugins/introspection_exposure.c:168
+#: ../build/lib/darktable/plugins/introspection_exposure.c:102
+#: ../build/lib/darktable/plugins/introspection_exposure.c:169
+msgid "compensate highlight preservation"
+msgstr "Compenser la préservation des hautes lumières"
+
+#: ../build/lib/darktable/plugins/introspection_exposure.c:183
 #: ../build/lib/darktable/plugins/introspection_levels.c:160
 msgid "manual"
 msgstr "Manuel"
 
-#: ../build/lib/darktable/plugins/introspection_exposure.c:169
+#: ../build/lib/darktable/plugins/introspection_exposure.c:184
 #: ../build/lib/darktable/plugins/introspection_levels.c:161
 msgid "automatic"
 msgstr "Automatique"
@@ -5889,8 +5894,8 @@ msgstr "Bouton"
 msgid "force"
 msgstr "Force"
 
-#: ../src/bauhaus/bauhaus.c:3840 ../src/libs/navigation.c:244
-#: ../src/libs/navigation.c:261
+#: ../src/bauhaus/bauhaus.c:3840 ../src/libs/navigation.c:246
+#: ../src/libs/navigation.c:263
 msgid "zoom"
 msgstr "Zoom"
 
@@ -10613,7 +10618,7 @@ msgstr "Images groupées"
 #: ../src/dtgtk/thumbnail.c:859 ../src/dtgtk/thumbnail.c:1654
 #: ../src/iop/ashift.c:6041 ../src/iop/ashift.c:6128 ../src/iop/ashift.c:6130
 #: ../src/iop/ashift.c:6132 ../src/libs/navigation.c:112
-#: ../src/libs/navigation.c:247
+#: ../src/libs/navigation.c:249
 msgid "fit"
 msgstr "Ajusté"
 
@@ -15987,11 +15992,11 @@ msgid "input exposure range"
 msgstr "Étendu de l'exposition en entrée"
 
 #: ../src/iop/agx.c:2037
-msgid "relative exposure above mid-grey (white point)"
+msgid "relative exposure above mid-gray (white point)"
 msgstr "Exposition relative au dessus du gris moyen (point blanc)"
 
 #: ../src/iop/agx.c:2045
-msgid "relative exposure below mid-grey (black point)"
+msgid "relative exposure below mid-gray (black point)"
 msgstr "Exposition relative sous le gris moyen (point noir)"
 
 #: ../src/iop/agx.c:2053 ../src/iop/filmicrgb.c:4421
@@ -19845,13 +19850,12 @@ msgstr ""
 "à partir de la lecture d’un capteur à grille de filtres colorés."
 
 #: ../src/iop/demosaic.c:717 ../src/iop/demosaic.c:764
-#, fuzzy
 msgid "can't allocate demosaic buffer"
-msgstr "[Double dématriçage] Impossible d’allouer un buffer interne"
+msgstr "Impossible d'allouer la mémoire pour le dématriçage"
 
 #: ../src/iop/demosaic.c:754
 msgid "can't equilibrate greens"
-msgstr ""
+msgstr "Impossible d'équilibrer les verts"
 
 #: ../src/iop/demosaic.c:1401
 #, c-format
@@ -20720,9 +20724,9 @@ msgid "compensate camera exposure (%+.1f EV)"
 msgstr "Compenser l’exposition du boîtier (%+.1f IL)"
 
 #: ../src/iop/exposure.c:692
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "higlight preservation mode (%.1f EV)"
-msgstr "Méthode de reconstruction des hautes lumières"
+msgstr "Méthode de préservation des hautes lumières (%.1f EV)"
 
 #. Write report in GUI
 #: ../src/iop/exposure.c:870
@@ -20751,6 +20755,11 @@ msgid ""
 "when enabled, tone mapping (e.g. sigmoid) is required to\n"
 "avoid blown-out highlights."
 msgstr ""
+"Compense le biais caché d'exposition pour les modes\n"
+"HDR / préservation des hautes lumières / étendue dynamique / ton HLG.\n"
+"\n"
+"Lorsque activé, le mappage de tonalité (e.g. Sigmoïde) doit\n"
+"éviter les hautes lumières tronquées."
 
 #: ../src/iop/exposure.c:1194
 msgid "set the exposure adjustment using the selected area"
@@ -28210,21 +28219,16 @@ msgstr ""
 msgid "navigation"
 msgstr "Navigation"
 
-#: ../src/libs/navigation.c:113 ../src/libs/navigation.c:248
+#: ../src/libs/navigation.c:113 ../src/libs/navigation.c:250
 msgctxt "navigationbox"
 msgid "fill"
 msgstr "Rempli"
 
-#: ../src/libs/navigation.c:116 ../src/libs/navigation.c:246
+#: ../src/libs/navigation.c:116 ../src/libs/navigation.c:248
 msgid "small"
 msgstr "Petit"
 
-#: ../src/libs/navigation.c:117
-#, c-format
-msgid "%.0f%%"
-msgstr "%.0f%%"
-
-#: ../src/libs/navigation.c:211
+#: ../src/libs/navigation.c:213
 msgid ""
 "navigation\n"
 "click or drag to position zoomed area in center view"
@@ -28232,35 +28236,35 @@ msgstr ""
 "Navigation\n"
 "Cliquer ou déplacer pour positionner la zone dans la vue centrale."
 
-#: ../src/libs/navigation.c:233
+#: ../src/libs/navigation.c:235
 msgid "hide navigation thumbnail"
 msgstr "Basculer la miniature de navigation"
 
-#: ../src/libs/navigation.c:244
+#: ../src/libs/navigation.c:246
 msgid "image zoom level"
 msgstr "Niveau de zoom de l’image"
 
-#: ../src/libs/navigation.c:249
+#: ../src/libs/navigation.c:251
 msgid "50%"
 msgstr "50%"
 
-#: ../src/libs/navigation.c:250
+#: ../src/libs/navigation.c:252
 msgid "100%"
 msgstr "100%"
 
-#: ../src/libs/navigation.c:251
+#: ../src/libs/navigation.c:253
 msgid "200%"
 msgstr "200%"
 
-#: ../src/libs/navigation.c:252
+#: ../src/libs/navigation.c:254
 msgid "400%"
 msgstr "400%"
 
-#: ../src/libs/navigation.c:253
+#: ../src/libs/navigation.c:255
 msgid "800%"
 msgstr "800%"
 
-#: ../src/libs/navigation.c:254
+#: ../src/libs/navigation.c:256
 msgid "1600%"
 msgstr "1600%"
 
@@ -30503,6 +30507,10 @@ msgstr "Créer une fenêtre flottante persistante"
 #: ../src/views/view.c:1569
 msgid "mouse actions"
 msgstr "Actions de la souris"
+
+#, c-format
+#~ msgid "%.0f%%"
+#~ msgstr "%.0f%%"
 
 #~ msgid "calculated radius"
 #~ msgstr "Rayon calculé"
