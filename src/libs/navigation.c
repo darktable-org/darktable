@@ -147,51 +147,16 @@ int _entry_select(GtkWidget *w,
                   const int delta,
                   struct dt_iop_module_t **module)
 {
-  const int text_len = strlen(text);
-  int val = -1;
-  int index = 0;
+  dt_dev_viewport_t *port = &darktable.develop->full;
 
-  // move to first digit to ensure we skip a possible % as prefix
-  for(int k=0; k<text_len; k++)
-  {
-    if(isdigit(text[k]))
-    {
-      index = k;
-      break;
-    }
-  }
-  sscanf(&text[index], "%d", &val);
+  dt_dev_zoom_t zoom;
+  int closeup;
+  dt_dev_get_viewport_params(port, &zoom, &closeup, NULL, NULL);
+  const float cur_scale = dt_dev_get_zoom_scale(port, zoom, 1<<closeup, FALSE) * 100 * darktable.gui->ppd;
 
-  int ret = -1;
+  int ret = delta > 0 ? 3 : 2;
 
-  if(delta > 0)
-  {
-    if(val < 100)
-      ret = 4; // 100
-    else if(val < 200)
-      ret = 5; // 200
-    else if(val < 400)
-      ret = 6; // 400
-    else if(val < 800)
-      ret = 7; // 800
-    else if(val < 1600)
-      ret = 8; // 1600
-  }
-  else
-  {
-    if(val < 50)
-      ret = 2; //  fit
-    else if(val < 100)
-      ret = 3; //  50
-    else if(val < 200)
-      ret = 4; // 100
-    else if(val < 400)
-      ret = 5; // 200
-    else if(val < 800)
-      ret = 6; // 400
-    else if(val < 1600)
-      ret = 7; // 800
-  }
+  for(float limit = 50; cur_scale > limit && ret < 8; limit *= 2, ret++);
 
   return ret;
 }
