@@ -112,6 +112,10 @@ changes (where available).
 - Fixed moving additional extra audio or text sidecar files when
   an image is moved.
 
+- Fixed module based collection restoring. Leaving darktable with a
+  module based collection was after restart displaying an empty
+  lighttable.
+
 ## Lua
 
 ### API Version
