@@ -78,13 +78,13 @@ Root: HKA; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{#MyAppC
   ValueData: "{app}\bin\{#MyAppCliExeName}"; \
   Flags: uninsdeletekey
 
-Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; \
+Root: HKA; Subkey: "{code:EnvironmentKey}"; \
   ValueType: string; \
   ValueName: "CAMLIBS"; \
   ValueData: "{app}\lib\libgphoto2\${CPACK_NSIS_GPHOTO2_VERSION}"; \
   Flags: uninsdeletevalue
 
-Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; \
+Root: HKA; Subkey: "{code:EnvironmentKey}"; \
   ValueType: string; \
   ValueName: "IOLIBS"; \
   ValueData: "{app}\lib\libgphoto2_port\${CPACK_NSIS_GPHOTO2_PORT_VERSION}"; \
@@ -101,3 +101,12 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; \
 Filename: "{app}\bin\{#MyAppExeName}"; \
   Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; \
   Flags: nowait postinstall skipifsilent
+
+[Code]
+function EnvironmentKey(Param: String): String;
+begin
+  if IsAdminInstallMode then
+    Result := 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
+  else
+    Result := 'Environment'
+end;
