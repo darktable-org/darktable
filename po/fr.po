@@ -2906,12 +2906,12 @@ msgstr "Rotation du bleu"
 #: ../build/lib/darktable/plugins/introspection_agx.c:404
 #: ../build/lib/darktable/plugins/introspection_agx.c:597
 msgid "master purity boost"
-msgstr "Maître boost de pureté"
+msgstr "Boost de pureté maître"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:410
 #: ../build/lib/darktable/plugins/introspection_agx.c:601
 msgid "master rotation reversal"
-msgstr "Maître inversement de rotation"
+msgstr "Inversement de rotation maître"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:416
 #: ../build/lib/darktable/plugins/introspection_agx.c:605
