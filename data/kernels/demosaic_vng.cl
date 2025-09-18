@@ -18,17 +18,6 @@
 
 #include "common.h"
 
-int
-fcol(const int row, const int col, const unsigned int filters, global const unsigned char (*const xtrans)[6])
-{
-  if(filters == 9)
-    // There are a few cases in VNG demosaic in which row or col is -1
-    // or -2. The +6 ensures a non-negative array index.
-    return FCxtrans(row + 6, col + 6, xtrans);
-  else
-    return FC(row, col, filters);
-}
-
 kernel void
 vng_border_interpolate(read_only image2d_t in,
                        write_only image2d_t out,
