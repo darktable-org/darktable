@@ -17,7 +17,7 @@ more information.
 Before you spend a lot of time working on a new feature, it's always best to
 discuss your proposed changes with us first. The best place to do that is in
 our dev support [matrix channel](https://matrix.to/#/#darktable-dev:matrix.org), 
-or just create a Github Issue(Make sure to check back to answer follow up questions).
+or just create a Github Issue (Make sure to check back to answer follow up questions).
 This will dramatically improve your chances of having your code merged, especially if we think you'll
 hang around to maintain it.
 
