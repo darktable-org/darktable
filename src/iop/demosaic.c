@@ -1483,13 +1483,26 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_sensitive(g->cs_center, do_capture && p->cs_boost);
   gtk_widget_set_sensitive(g->cs_iter, capture_support);
 
-  // we might have a wrong method dur to xtrans/bayer - mode mismatch
-  if(bayer)
-    dt_bauhaus_combobox_set_from_value(g->demosaic_method_bayer, use_method);
-  else if(xtrans)
-    dt_bauhaus_combobox_set_from_value(g->demosaic_method_xtrans, use_method);
-  else
-    dt_bauhaus_combobox_set_from_value(g->demosaic_method_bayerfour, use_method);
+  // we might have a wrong method due to xtrans/bayer - mode mismatch
+  const gboolean method_mismatch = use_method != p->demosaicing_method;
+  if(method_mismatch)
+  {
+    if(bayer)
+      dt_bauhaus_combobox_set_from_value(g->demosaic_method_bayer, use_method);
+    else if(xtrans)
+      dt_bauhaus_combobox_set_from_value(g->demosaic_method_xtrans, use_method);
+    else
+      dt_bauhaus_combobox_set_from_value(g->demosaic_method_bayerfour, use_method);
+
+    /*  If auto-applied from a preset/style from a different sensor type it's demosaicer
+        method was added to the current sensor specific demosaicer combobox.
+        As we know the bad method here, we can remove it from the combobox by testing for it's position.
+    */
+    GtkWidget *demosaicers =  bayer  ? g->demosaic_method_bayer :
+                              xtrans ? g->demosaic_method_xtrans : g->demosaic_method_bayerfour;
+    const int pos = dt_bauhaus_combobox_get_from_value(demosaicers, p->demosaicing_method);
+    if(pos >= 0) dt_bauhaus_combobox_remove_at(demosaicers, pos);
+  }
 
   p->demosaicing_method = use_method;
 
