@@ -1102,8 +1102,7 @@ int process_cl(dt_iop_module_t *self,
         if(err != CL_SUCCESS) goto finish;
       }
     }
-    dt_opencl_finish_sync_pipe(devid, pipe->type);
-   }
+  }
 
   if(greens)  // release early for less cl memory load
   {
