@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-17 21:44+0200\n"
-"PO-Revision-Date: 2025-09-18 00:28+0300\n"
+"POT-Creation-Date: 2025-09-18 17:55+0200\n"
+"PO-Revision-Date: 2025-09-18 19:30+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -22134,7 +22134,7 @@ msgid "show applied optical vignette correction mask"
 msgstr "Показати застосовану маску корекції оптичного віньєтування"
 
 #: ../src/iop/lens.cc:4618
-msgid "radius of uncorrected centre"
+msgid "radius of uncorrected center"
 msgstr "Радіус невиправленого центру"
 
 #: ../src/iop/lens.cc:4624
