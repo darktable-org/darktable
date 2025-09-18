@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-17 21:44+0200\n"
-"PO-Revision-Date: 2025-09-17 21:49+0200\n"
+"POT-Creation-Date: 2025-09-18 17:55+0200\n"
+"PO-Revision-Date: 2025-09-18 17:57+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -22194,8 +22194,8 @@ msgid "show applied optical vignette correction mask"
 msgstr "Montre le masque de correction de la vignette optique appliquée"
 
 #: ../src/iop/lens.cc:4618
-msgid "radius of uncorrected centre"
-msgstr "Rayon de la zone non corrigée"
+msgid "radius of uncorrected center"
+msgstr "Rayon du centre non corrigé"
 
 #: ../src/iop/lens.cc:4624
 msgid "steepness of the correction effect outside of radius"
