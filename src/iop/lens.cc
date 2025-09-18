@@ -4615,7 +4615,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->v_radius = dt_bauhaus_slider_from_params(sect, "v_radius");
   gtk_widget_set_tooltip_text(g->v_radius,
-      _("radius of uncorrected centre"));
+      _("radius of uncorrected center"));
   dt_bauhaus_slider_set_format(g->v_radius, "%");
   dt_bauhaus_slider_set_digits(g->v_radius, 1);
 
