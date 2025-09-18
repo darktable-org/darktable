@@ -679,7 +679,13 @@ void gui_reset(dt_lib_module_t *self)
                           dt_confgen_get_int(CONFIG_PREFIX "dimensions_type", DT_DEFAULT));
   _size_update_display(d);
 
-  // Set storage
+  // first reset the selected storage and format modules
+  dt_imageio_module_format_t *mformat = dt_imageio_get_format();
+  if(mformat) mformat->gui_reset(mformat);
+  dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
+  if(mstorage) mstorage->gui_reset(mstorage);
+
+  // Set default storage
   const int storage_index =
     dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name
                                     (dt_confgen_get(CONFIG_PREFIX "storage_name",
@@ -740,11 +746,6 @@ void gui_reset(dt_lib_module_t *self)
   // export metadata presets
   g_free(d->metadata_export);
   d->metadata_export = dt_lib_export_metadata_get_conf();
-
-  dt_imageio_module_format_t *mformat = dt_imageio_get_format();
-  if(mformat) mformat->gui_reset(mformat);
-  dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
-  if(mstorage) mstorage->gui_reset(mstorage);
 
   dt_lib_gui_queue_update(self);
 }
