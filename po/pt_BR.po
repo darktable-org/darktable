@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-17 14:02-0300\n"
-"PO-Revision-Date: 2025-09-17 14:01-0300\n"
+"POT-Creation-Date: 2025-09-20 08:24-0300\n"
+"PO-Revision-Date: 2025-09-20 08:17-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -3085,7 +3085,7 @@ msgstr "preservar cores"
 #: ../src/iop/clipping.c:1922 ../src/iop/clipping.c:2104
 #: ../src/iop/clipping.c:2119 ../src/iop/retouch.c:499
 #: ../src/libs/collect.c:2160 ../src/libs/colorpicker.c:52
-#: ../src/libs/export.c:1147 ../src/libs/filters/module_order.c:158
+#: ../src/libs/export.c:1149 ../src/libs/filters/module_order.c:158
 #: ../src/libs/histogram.c:111 ../src/libs/live_view.c:311
 #: ../src/libs/print_settings.c:1169
 msgid "none"
@@ -3329,7 +3329,7 @@ msgid "landscape"
 msgstr "paisagem"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:356
-#: ../src/iop/relight.c:266 ../src/libs/export.c:1498
+#: ../src/iop/relight.c:266 ../src/libs/export.c:1500
 #: ../src/libs/metadata_view.c:163 ../src/libs/print_settings.c:2615
 msgid "width"
 msgstr "largura"
@@ -3337,7 +3337,7 @@ msgstr "largura"
 #: ../build/lib/darktable/plugins/introspection_borders.c:357
 #: ../build/lib/darktable/plugins/introspection_overlay.c:306
 #: ../build/lib/darktable/plugins/introspection_watermark.c:326
-#: ../src/libs/export.c:1504 ../src/libs/metadata_view.c:164
+#: ../src/libs/export.c:1506 ../src/libs/metadata_view.c:164
 #: ../src/libs/print_settings.c:2619
 msgid "height"
 msgstr "altura"
@@ -4610,13 +4610,13 @@ msgstr "tipo de ruído"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:356
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:519
-#: ../src/iop/agx.c:1823
+#: ../src/iop/agx.c:1824
 msgid "contrast in shadows"
 msgstr "contraste nas sombras"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:362
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:523
-#: ../src/iop/agx.c:1829
+#: ../src/iop/agx.c:1830
 msgid "contrast in highlights"
 msgstr "contraste nos realces"
 
@@ -4640,8 +4640,8 @@ msgstr "habilitar reconstrução de realces"
 #: ../src/common/variables.c:197 ../src/common/variables.c:821
 #: ../src/develop/imageop_gui.c:209 ../src/imageio/format/avif.c:861
 #: ../src/imageio/format/pdf.c:653 ../src/imageio/format/pdf.c:672
-#: ../src/imageio/format/tiff.c:921 ../src/libs/export.c:1560
-#: ../src/libs/export.c:1568 ../src/libs/export.c:1576
+#: ../src/imageio/format/tiff.c:921 ../src/libs/export.c:1562
+#: ../src/libs/export.c:1570 ../src/libs/export.c:1578
 #: ../src/libs/metadata_view.c:734
 msgid "no"
 msgstr "não"
@@ -4959,7 +4959,7 @@ msgstr "correções"
 #: ../src/iop/colorbalance.c:1853 ../src/iop/denoiseprofile.c:3751
 #: ../src/iop/exposure.c:1230 ../src/iop/levels.c:693
 #: ../src/iop/profile_gamma.c:654 ../src/libs/copy_history.c:370
-#: ../src/libs/export.c:1627 ../src/libs/image.c:644
+#: ../src/libs/export.c:1629 ../src/libs/image.c:644
 #: ../src/libs/print_settings.c:2934 ../src/libs/styles.c:872
 #: ../src/views/darkroom.c:2560
 msgid "mode"
@@ -5824,70 +5824,70 @@ msgstr "Mostrar imagens em um mapa"
 msgid "Print your images"
 msgstr "Imprimir suas imagens"
 
-#: ../src/bauhaus/bauhaus.c:884 ../src/bauhaus/bauhaus.c:3864
+#: ../src/bauhaus/bauhaus.c:902 ../src/bauhaus/bauhaus.c:3890
 #: ../src/iop/colorequal.c:3051
 msgid "sliders"
 msgstr "controles deslizantes"
 
-#: ../src/bauhaus/bauhaus.c:886 ../src/bauhaus/bauhaus.c:3869
+#: ../src/bauhaus/bauhaus.c:904 ../src/bauhaus/bauhaus.c:3895
 msgid "dropdowns"
 msgstr "menus flutuantes"
 
-#: ../src/bauhaus/bauhaus.c:888 ../src/bauhaus/bauhaus.c:3874
+#: ../src/bauhaus/bauhaus.c:906 ../src/bauhaus/bauhaus.c:3900
 msgid "buttons"
 msgstr "botões"
 
-#: ../src/bauhaus/bauhaus.c:3531
+#: ../src/bauhaus/bauhaus.c:3557
 msgid "button on"
 msgstr "botão ligado"
 
-#: ../src/bauhaus/bauhaus.c:3531
+#: ../src/bauhaus/bauhaus.c:3557
 msgid "button off"
 msgstr "botão desligado"
 
-#: ../src/bauhaus/bauhaus.c:3532
+#: ../src/bauhaus/bauhaus.c:3558
 msgid "button pressed"
 msgstr "botão pressionado"
 
-#: ../src/bauhaus/bauhaus.c:3769
+#: ../src/bauhaus/bauhaus.c:3795
 msgid "not that many sliders"
 msgstr "nem tantos controles deslizantes"
 
-#: ../src/bauhaus/bauhaus.c:3783
+#: ../src/bauhaus/bauhaus.c:3809
 msgid "not that many dropdowns"
 msgstr "nem tantos menus flutuantes"
 
-#: ../src/bauhaus/bauhaus.c:3802
+#: ../src/bauhaus/bauhaus.c:3828
 msgid "not that many buttons"
 msgstr "nem tantos botões"
 
-#: ../src/bauhaus/bauhaus.c:3807 ../src/gui/accelerators.c:391
+#: ../src/bauhaus/bauhaus.c:3833 ../src/gui/accelerators.c:391
 msgid "value"
 msgstr "valor"
 
-#: ../src/bauhaus/bauhaus.c:3808 ../src/bauhaus/bauhaus.c:3814
+#: ../src/bauhaus/bauhaus.c:3834 ../src/bauhaus/bauhaus.c:3840
 #: ../src/gui/accelerators.c:370
 msgid "button"
 msgstr "botão"
 
-#: ../src/bauhaus/bauhaus.c:3809
+#: ../src/bauhaus/bauhaus.c:3835
 msgid "force"
 msgstr "força"
 
-#: ../src/bauhaus/bauhaus.c:3810 ../src/libs/navigation.c:185
-#: ../src/libs/navigation.c:197
+#: ../src/bauhaus/bauhaus.c:3836 ../src/libs/navigation.c:246
+#: ../src/libs/navigation.c:263
 msgid "zoom"
 msgstr "zoom"
 
-#: ../src/bauhaus/bauhaus.c:3813 ../src/libs/select.c:40
+#: ../src/bauhaus/bauhaus.c:3839 ../src/libs/select.c:40
 msgid "selection"
 msgstr "seleção"
 
-#: ../src/bauhaus/bauhaus.c:3853
+#: ../src/bauhaus/bauhaus.c:3879
 msgid "slider"
 msgstr "controle deslizante"
 
-#: ../src/bauhaus/bauhaus.c:3858
+#: ../src/bauhaus/bauhaus.c:3884
 msgid "dropdown"
 msgstr "menu flutuante"
 
@@ -7353,12 +7353,12 @@ msgstr ""
 "o filtro guiado independente de exposição não conseguiu alocar memória, "
 "verifique sua configuração de RAM"
 
-#: ../src/common/exif.cc:5888
+#: ../src/common/exif.cc:6001
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "não foi possível abrir o arquivo XMP '%s': '%s'"
 
-#: ../src/common/exif.cc:5947
+#: ../src/common/exif.cc:6060
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "não foi possível escrever o arquivo XMP '%s': '%s'"
@@ -7738,7 +7738,7 @@ msgstr "construindo programa OpenCL %s para %s"
 msgid "mm"
 msgstr "mm"
 
-#: ../src/common/pdf.h:89 ../src/libs/export.c:665 ../src/libs/export.c:1516
+#: ../src/common/pdf.h:89 ../src/libs/export.c:662 ../src/libs/export.c:1518
 #: ../src/libs/print_settings.c:84
 msgid "cm"
 msgstr "cm"
@@ -7914,8 +7914,8 @@ msgstr "sem informação"
 #: ../src/common/variables.c:197 ../src/common/variables.c:819
 #: ../src/develop/imageop_gui.c:210 ../src/imageio/format/avif.c:861
 #: ../src/imageio/format/pdf.c:653 ../src/imageio/format/pdf.c:672
-#: ../src/imageio/format/tiff.c:921 ../src/libs/export.c:1560
-#: ../src/libs/export.c:1568 ../src/libs/export.c:1576
+#: ../src/imageio/format/tiff.c:921 ../src/libs/export.c:1562
+#: ../src/libs/export.c:1570 ../src/libs/export.c:1578
 #: ../src/libs/metadata_view.c:734
 msgid "yes"
 msgstr "sim"
@@ -10549,8 +10549,8 @@ msgstr "imagens agrupadas"
 
 #: ../src/dtgtk/thumbnail.c:859 ../src/dtgtk/thumbnail.c:1654
 #: ../src/iop/ashift.c:6041 ../src/iop/ashift.c:6128 ../src/iop/ashift.c:6130
-#: ../src/iop/ashift.c:6132 ../src/libs/navigation.c:110
-#: ../src/libs/navigation.c:188
+#: ../src/iop/ashift.c:6132 ../src/libs/navigation.c:112
+#: ../src/libs/navigation.c:249
 msgid "fit"
 msgstr "ajustar"
 
@@ -15212,8 +15212,8 @@ msgstr ""
 "exemplos: 10 mm, 1 inch"
 
 #. dpi
-#: ../src/imageio/format/pdf.c:638 ../src/libs/export.c:1493
-#: ../src/libs/export.c:1521
+#: ../src/imageio/format/pdf.c:638 ../src/libs/export.c:1495
+#: ../src/libs/export.c:1523
 msgid "dpi"
 msgstr "dpi"
 
@@ -15402,7 +15402,7 @@ msgstr ""
 "as cores para `%s' poderiam ser representadas erroneamente,\n"
 "e as edições podem não ser compatíveis com versões futuras."
 
-#: ../src/imageio/storage/disk.c:75 ../src/libs/export.c:1264
+#: ../src/imageio/storage/disk.c:75 ../src/libs/export.c:1266
 msgid "file on disk"
 msgstr "arquivo no disco"
 
@@ -15758,58 +15758,53 @@ msgstr "não-linear, RGB"
 msgid "linear, RGB, display-referred"
 msgstr "linear, RGB, relativo à exibição"
 
-#: ../src/iop/agx.c:1792
-msgid "basic curve parameters"
-msgstr "parâmetros básicos da curva"
-
-#: ../src/iop/agx.c:1802
+#: ../src/iop/agx.c:1803
 msgid "shift the pivot input towards black(-) or white(+)"
 msgstr "deslocar o pivô de entrada para preto (-) ou branco (+)"
 
-#: ../src/iop/agx.c:1811
+#: ../src/iop/agx.c:1812
 msgid "darken or brighten the pivot (output)"
 msgstr "escurecer ou clarear o pivô de saída"
 
-#: ../src/iop/agx.c:1817
+#: ../src/iop/agx.c:1818
 msgid "slope of the linear section"
 msgstr "inclinação da seção linear"
 
-#: ../src/iop/agx.c:1840
+#: ../src/iop/agx.c:1837
 msgctxt "section"
 msgid "basic curve parameters"
 msgstr "parâmetros básicos da curva"
 
-#. Page LOOK
-#: ../src/iop/agx.c:1854 ../src/iop/agx.c:1900 ../src/iop/agx.c:1906
-#: ../src/iop/filmicrgb.c:4505
-msgid "look"
-msgstr "aparência"
-
-#: ../src/iop/agx.c:1861
+#: ../src/iop/agx.c:1859
 msgid "decrease or increase contrast and brightness"
 msgstr "aumentar ou diminuir contraste e brilho"
 
-#: ../src/iop/agx.c:1866
+#: ../src/iop/agx.c:1864
 msgid "deepen or lift shadows"
 msgstr "aprofundar ou tirar profundidade de sombras"
 
-#: ../src/iop/agx.c:1870
+#: ../src/iop/agx.c:1868
 msgid "increase or decrease brightness"
 msgstr "aumentar ou diminuir brilho"
 
-#: ../src/iop/agx.c:1877
+#: ../src/iop/agx.c:1875
 msgid "decrease or increase saturation"
 msgstr "aumentar ou diminuir saturação"
 
-#: ../src/iop/agx.c:1884
+#: ../src/iop/agx.c:1882
 msgid "increase to bring hues closer to the original"
 msgstr "aumente para trazer as matizes mais próximas do original"
 
-#: ../src/iop/agx.c:1924
+#: ../src/iop/agx.c:1896
+msgctxt "section"
+msgid "look"
+msgstr "aparência"
+
+#: ../src/iop/agx.c:1923
 msgid "show curve"
 msgstr "mostrar a curva"
 
-#: ../src/iop/agx.c:1929 ../src/iop/atrous.c:1808
+#: ../src/iop/agx.c:1928 ../src/iop/atrous.c:1808
 #: ../src/iop/colorbalancergb.c:1974 ../src/iop/colorequal.c:3016
 #: ../src/iop/colorzones.c:2706 ../src/iop/denoiseprofile.c:3700
 #: ../src/iop/filmicrgb.c:4367 ../src/iop/lowlight.c:809
@@ -15817,11 +15812,12 @@ msgstr "mostrar a curva"
 msgid "graph"
 msgstr "gráfico"
 
-#: ../src/iop/agx.c:1932
+#: ../src/iop/agx.c:1931
 msgid "tone mapping curve"
 msgstr "curva de mapeamento de tons"
 
-#: ../src/iop/agx.c:1952 ../src/iop/agx.c:1955
+#: ../src/iop/agx.c:1949
+msgctxt "section"
 msgid "advanced curve parameters"
 msgstr "parâmetros avançados da curva"
 
@@ -15877,10 +15873,6 @@ msgstr ""
 
 #: ../src/iop/agx.c:2027
 msgctxt "section"
-msgid "input exposure range"
-msgstr "extensão da exposição de entrada"
-
-#: ../src/iop/agx.c:2029
 msgid "input exposure range"
 msgstr "extensão da exposição de entrada"
 
@@ -16438,7 +16430,7 @@ msgstr "mais fino"
 msgid "finest"
 msgstr "o mais fino"
 
-#: ../src/iop/atrous.c:1702 ../src/libs/export.c:1514 ../src/libs/export.c:1530
+#: ../src/iop/atrous.c:1702 ../src/libs/export.c:1516 ../src/libs/export.c:1532
 msgid "x"
 msgstr "x"
 
@@ -19392,26 +19384,26 @@ msgstr "intenção de saída"
 msgid "rendering intent"
 msgstr "intenção de renderização"
 
-#: ../src/iop/colorout.c:842 ../src/libs/export.c:1618
+#: ../src/iop/colorout.c:842 ../src/libs/export.c:1620
 #: ../src/libs/print_settings.c:2553 ../src/libs/print_settings.c:2902
 #: ../src/views/darkroom.c:2722 ../src/views/lighttable.c:1249
 msgid "perceptual"
 msgstr "perceptual"
 
-#: ../src/iop/colorout.c:843 ../src/libs/export.c:1619
+#: ../src/iop/colorout.c:843 ../src/libs/export.c:1621
 #: ../src/libs/print_settings.c:2554 ../src/libs/print_settings.c:2903
 #: ../src/views/darkroom.c:2723 ../src/views/lighttable.c:1250
 msgid "relative colorimetric"
 msgstr "colorimétrico relativo"
 
-#: ../src/iop/colorout.c:844 ../src/libs/export.c:1620
+#: ../src/iop/colorout.c:844 ../src/libs/export.c:1622
 #: ../src/libs/print_settings.c:2555 ../src/libs/print_settings.c:2904
 #: ../src/views/darkroom.c:2724 ../src/views/lighttable.c:1251
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturação"
 
-#: ../src/iop/colorout.c:845 ../src/libs/export.c:1621
+#: ../src/iop/colorout.c:845 ../src/libs/export.c:1623
 #: ../src/libs/print_settings.c:2556 ../src/libs/print_settings.c:2905
 #: ../src/views/darkroom.c:2725 ../src/views/lighttable.c:1252
 msgid "absolute colorimetric"
@@ -19927,7 +19919,7 @@ msgstr "variância de verde: "
 msgid "variance blue: "
 msgstr "variância de azul: "
 
-#: ../src/iop/denoiseprofile.c:3744 ../src/libs/export.c:1581
+#: ../src/iop/denoiseprofile.c:3744 ../src/libs/export.c:1583
 #: ../src/libs/print_settings.c:2496 ../src/libs/print_settings.c:2852
 msgid "profile"
 msgstr "perfil"
@@ -20571,7 +20563,7 @@ msgstr "compensar exposição da câmera (%+.1f EV)"
 
 #: ../src/iop/exposure.c:692
 #, no-c-format
-msgid "higlight preservation mode (%.1f EV)"
+msgid "highlight preservation mode (%.1f EV)"
 msgstr "modo de preservação de realce (%.1f EV)"
 
 #. Write report in GUI
@@ -20598,8 +20590,8 @@ msgid ""
 "remove the camera's hidden exposure bias in\n"
 "HDR / highlight preservation / dynamic range / HLG tone mode.\n"
 "\n"
-"when enabled, tone mapping (e.g. sigmoid) is required to\n"
-"avoid blown-out highlights."
+"when enabled on an image with nonzero bias, tone mapping\n"
+"(e.g. sigmoid) is required to avoid blown-out highlights."
 msgstr ""
 "remover o viés oculto de exposição da camera em\n"
 "HDR / preservação de realces / alcance dinâmico / modo de tom HLG.\n"
@@ -20849,7 +20841,7 @@ msgstr ""
 "diminua se sombras e/ou realces estão saturados demais."
 
 #. Add export intent combo
-#: ../src/iop/filmic.c:1583 ../src/libs/export.c:1599
+#: ../src/iop/filmic.c:1583 ../src/libs/export.c:1601
 #: ../src/libs/print_settings.c:2551 ../src/libs/print_settings.c:2898
 #: ../src/views/darkroom.c:2730 ../src/views/lighttable.c:1255
 msgid "intent"
@@ -21171,6 +21163,11 @@ msgstr ""
 "0% é uma mistura dos dois.\n"
 "aumente se quiser mais cor.\n"
 "diminua se perceber realces magenta ou fora da gama."
+
+#. Page LOOK
+#: ../src/iop/filmicrgb.c:4505
+msgid "look"
+msgstr "aparência"
 
 #: ../src/iop/filmicrgb.c:4515
 msgid ""
@@ -21903,7 +21900,7 @@ msgstr "encontrar lentes"
 
 #. scale
 #: ../src/iop/lens.cc:4470 ../src/iop/overlay.c:1122 ../src/iop/vignette.c:1043
-#: ../src/iop/watermark.c:1382 ../src/libs/export.c:1539
+#: ../src/iop/watermark.c:1382 ../src/libs/export.c:1541
 msgid "scale"
 msgstr "escala"
 
@@ -22018,7 +22015,7 @@ msgid "show applied optical vignette correction mask"
 msgstr "mostrar máscara aplicada de correção vinheta óptica"
 
 #: ../src/iop/lens.cc:4618
-msgid "radius of uncorrected centre"
+msgid "radius of uncorrected center"
 msgstr "raio do centro não corrigido"
 
 #: ../src/iop/lens.cc:4624
@@ -24989,7 +24986,7 @@ msgstr "detalhes da captura da foto"
 msgid "collections settings"
 msgstr "preferências de coleções"
 
-#: ../src/libs/collect.c:3410 ../src/libs/export.c:1409
+#: ../src/libs/collect.c:3410 ../src/libs/export.c:1411
 #: ../src/libs/metadata.c:1121 ../src/libs/metadata_view.c:1543
 #: ../src/libs/recentcollect.c:297 ../src/libs/tagging.c:3546
 msgid "preferences..."
@@ -25240,11 +25237,11 @@ msgstr "cria uma duplicata da imagem sem nenhum processamento"
 msgid "create a duplicate of the image with same history stack"
 msgstr "cria uma duplicata da imagem com o mesmo histórico"
 
-#: ../src/libs/export.c:173
+#: ../src/libs/export.c:170
 msgid "export"
 msgstr "exportar"
 
-#: ../src/libs/export.c:178
+#: ../src/libs/export.c:175
 msgid ""
 "create new files for the\n"
 "currently selected images\n"
@@ -25254,34 +25251,34 @@ msgstr ""
 "imagens atualmente selecionadas\n"
 "que aplicam suas edições"
 
-#: ../src/libs/export.c:339
+#: ../src/libs/export.c:336
 msgid "invalid format for export selected"
 msgstr "formato inválido selecionado para exportação"
 
-#: ../src/libs/export.c:344
+#: ../src/libs/export.c:341
 msgid "invalid storage for export selected"
 msgstr "armazenamento inválido selecionado para exportação"
 
-#: ../src/libs/export.c:355
+#: ../src/libs/export.c:352
 msgid "export to disk"
 msgstr "exportar para o disco"
 
-#: ../src/libs/export.c:449
+#: ../src/libs/export.c:446
 #, c-format
 msgid "could not login to storage `%s'!"
 msgstr "não foi possível logar no armazenamento `%s'!"
 
-#: ../src/libs/export.c:618
+#: ../src/libs/export.c:615
 #, c-format
 msgid "which is equal to %s × %s px"
 msgstr "que é igual a %s x %s px"
 
-#: ../src/libs/export.c:665
+#: ../src/libs/export.c:662
 msgctxt "unit"
 msgid "in"
 msgstr "in"
 
-#: ../src/libs/export.c:1153
+#: ../src/libs/export.c:1155
 #, c-format
 msgid ""
 "style to be applied on export:\n"
@@ -25290,20 +25287,20 @@ msgstr ""
 "estilo a ser aplicado ao exportar:\n"
 "<b>%s</b>"
 
-#: ../src/libs/export.c:1206 ../src/libs/print_settings.c:1228
+#: ../src/libs/export.c:1208 ../src/libs/print_settings.c:1228
 #: ../src/views/darkroom.c:1485
 msgid "no styles have been created yet"
 msgstr "nenhum estilo foi criado ainda"
 
-#: ../src/libs/export.c:1424
+#: ../src/libs/export.c:1426
 msgid "target storage"
 msgstr "armazenar em"
 
-#: ../src/libs/export.c:1448
+#: ../src/libs/export.c:1450
 msgid "file format"
 msgstr "formato do arquivo"
 
-#: ../src/libs/export.c:1450
+#: ../src/libs/export.c:1452
 msgid ""
 "images will be exported according to the format specified here\n"
 "\n"
@@ -25323,35 +25320,35 @@ msgstr ""
 "usuário selecione <b>todos</b> os botões de metadados nas preferências de "
 "exportação"
 
-#: ../src/libs/export.c:1471
+#: ../src/libs/export.c:1473
 msgid "set size"
 msgstr "definir tamanho"
 
-#: ../src/libs/export.c:1472
+#: ../src/libs/export.c:1474
 msgid "choose a method for setting the output size"
 msgstr "seleciona um método para determinar o tamanho da saída"
 
-#: ../src/libs/export.c:1475
+#: ../src/libs/export.c:1477
 msgid "in pixels (for file)"
 msgstr "em pixels (para arquivo)"
 
-#: ../src/libs/export.c:1476
+#: ../src/libs/export.c:1478
 msgid "in cm (for print)"
 msgstr "em cm (para impressão)"
 
-#: ../src/libs/export.c:1477
+#: ../src/libs/export.c:1479
 msgid "in inch (for print)"
 msgstr "em polegadas (para impressão)"
 
-#: ../src/libs/export.c:1478
+#: ../src/libs/export.c:1480
 msgid "by scale (for file)"
 msgstr "por escala (para arquivo)"
 
-#: ../src/libs/export.c:1481
+#: ../src/libs/export.c:1483
 msgid "print width"
 msgstr "largura para impressão"
 
-#: ../src/libs/export.c:1483 ../src/libs/export.c:1500
+#: ../src/libs/export.c:1485 ../src/libs/export.c:1502
 msgid ""
 "maximum output width limit.\n"
 "click middle mouse button to reset to 0."
@@ -25359,11 +25356,11 @@ msgstr ""
 "limite máximo para largura da saída.\n"
 "clique com o botão do meio para redefinir como 0."
 
-#: ../src/libs/export.c:1487
+#: ../src/libs/export.c:1489
 msgid "print height"
 msgstr "altura para impressão"
 
-#: ../src/libs/export.c:1489 ../src/libs/export.c:1506
+#: ../src/libs/export.c:1491 ../src/libs/export.c:1508
 msgid ""
 "maximum output height limit.\n"
 "click middle mouse button to reset to 0."
@@ -25371,19 +25368,19 @@ msgstr ""
 "limite máximo para altura da saída.\n"
 "clique com o botão do meio para redefinir como 0."
 
-#: ../src/libs/export.c:1495
+#: ../src/libs/export.c:1497
 msgid "resolution in dot per inch"
 msgstr "resolução em pontos por polegada"
 
-#: ../src/libs/export.c:1519
+#: ../src/libs/export.c:1521
 msgid "@"
 msgstr "@"
 
-#: ../src/libs/export.c:1533 ../src/libs/tools/global_toolbox.c:214
+#: ../src/libs/export.c:1535 ../src/libs/tools/global_toolbox.c:214
 msgid "px"
 msgstr "px"
 
-#: ../src/libs/export.c:1541
+#: ../src/libs/export.c:1543
 msgid ""
 "it can be an integer, decimal number or simple fraction.\n"
 "zero or empty values are equal to 1.\n"
@@ -25393,38 +25390,38 @@ msgstr ""
 "zero ou vazio são iguais a 1.\n"
 "clique com o botão do meio para redefinir em 1."
 
-#: ../src/libs/export.c:1556
+#: ../src/libs/export.c:1558
 msgid "allow upscaling"
 msgstr "permitir aumento da escala"
 
-#: ../src/libs/export.c:1564
+#: ../src/libs/export.c:1566
 msgid "high quality resampling"
 msgstr "reamostragem de alta qualidade"
 
-#: ../src/libs/export.c:1565
+#: ../src/libs/export.c:1567
 msgid "do high quality resampling during export"
 msgstr "fazer reamostragem de alta qualidade durante exportação"
 
-#: ../src/libs/export.c:1572
+#: ../src/libs/export.c:1574
 msgid "store masks"
 msgstr "armazenar máscaras"
 
-#: ../src/libs/export.c:1573
+#: ../src/libs/export.c:1575
 msgid "store masks as layers in exported images. only works for some formats."
 msgstr ""
 "armazena máscaras como camadas nas imagens exportadas.\n"
 "só funciona com alguns formatos."
 
-#: ../src/libs/export.c:1582 ../src/libs/export.c:1617
+#: ../src/libs/export.c:1584 ../src/libs/export.c:1619
 #: ../src/libs/print_settings.c:2855 ../src/libs/print_settings.c:2901
 msgid "image settings"
 msgstr "configurações da imagem"
 
-#: ../src/libs/export.c:1592 ../src/libs/print_settings.c:2889
+#: ../src/libs/export.c:1594 ../src/libs/print_settings.c:2889
 msgid "output ICC profiles"
 msgstr "perfil ICC de saída"
 
-#: ../src/libs/export.c:1600
+#: ../src/libs/export.c:1602
 msgid ""
 "• perceptual: smoothly moves out-of-gamut colors into gamut, preserving "
 "gradations,\n"
@@ -25462,65 +25459,65 @@ msgstr ""
 "verificar cores.\n"
 "(não serve para fotografia)."
 
-#: ../src/libs/export.c:1628 ../src/libs/print_settings.c:2935
+#: ../src/libs/export.c:1630 ../src/libs/print_settings.c:2935
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr ""
 "se os itens de estilo são adicionados ao final do histórico ou se substituem "
 "o histórico"
 
-#: ../src/libs/export.c:1631 ../src/libs/print_settings.c:2937
+#: ../src/libs/export.c:1633 ../src/libs/print_settings.c:2937
 msgid "replace history"
 msgstr "substituir histórico"
 
-#: ../src/libs/export.c:1631 ../src/libs/print_settings.c:2937
+#: ../src/libs/export.c:1633 ../src/libs/print_settings.c:2937
 msgid "append history"
 msgstr "adicionar ao final do histórico"
 
-#: ../src/libs/export.c:1638
+#: ../src/libs/export.c:1640
 msgid "select style to be applied on export"
 msgstr "selecione estilo a ser aplicado ao exportar"
 
-#: ../src/libs/export.c:1641
+#: ../src/libs/export.c:1643
 msgid "temporary style to use while exporting"
 msgstr "estilo temporário a ser usado ao exportar"
 
-#: ../src/libs/export.c:1642 ../src/libs/print_settings.c:2918
+#: ../src/libs/export.c:1644 ../src/libs/print_settings.c:2918
 msgid "style"
 msgstr "estilo"
 
-#: ../src/libs/export.c:1662
+#: ../src/libs/export.c:1664
 msgctxt "actionbutton"
 msgid "start export"
 msgstr "iniciar exportação"
 
-#: ../src/libs/export.c:1668
+#: ../src/libs/export.c:1670
 msgctxt "section"
 msgid "storage options"
 msgstr "opções de armazenamento"
 
-#: ../src/libs/export.c:1670
+#: ../src/libs/export.c:1672
 msgctxt "section"
 msgid "format options"
 msgstr "opções de formato"
 
-#: ../src/libs/export.c:1672
+#: ../src/libs/export.c:1674
 msgctxt "section"
 msgid "global options"
 msgstr "opções globais"
 
-#: ../src/libs/export.c:1682
+#: ../src/libs/export.c:1684
 msgid "multi-preset export"
 msgstr "exportar múltiplas predefinições"
 
-#: ../src/libs/export.c:1685
+#: ../src/libs/export.c:1687
 msgid "export the selected images with multiple presets"
 msgstr "exporta os estilos selecionados com múltiplas predefinições"
 
-#. multi-preset export button
-#: ../src/libs/export.c:1710
-msgid "start export"
-msgstr "iniciar exportação"
+#: ../src/libs/export.c:1713
+msgctxt "actionbutton"
+msgid "start batch export"
+msgstr "iniciar exportação em lote"
 
 #: ../src/libs/export_metadata.c:164
 msgid "edit metadata exportation"
@@ -27942,20 +27939,20 @@ msgstr ""
 "esta é uma predefinição nativa somente de leitura. duplique se quiser fazer "
 "mudanças"
 
-#: ../src/libs/navigation.c:74
+#: ../src/libs/navigation.c:76
 msgid "navigation"
 msgstr "navegação"
 
-#: ../src/libs/navigation.c:111 ../src/libs/navigation.c:189
+#: ../src/libs/navigation.c:113 ../src/libs/navigation.c:250
 msgctxt "navigationbox"
 msgid "fill"
 msgstr "preenchimento"
 
-#: ../src/libs/navigation.c:114 ../src/libs/navigation.c:187
+#: ../src/libs/navigation.c:116 ../src/libs/navigation.c:248
 msgid "small"
 msgstr "pequeno"
 
-#: ../src/libs/navigation.c:154
+#: ../src/libs/navigation.c:213
 msgid ""
 "navigation\n"
 "click or drag to position zoomed area in center view"
@@ -27963,35 +27960,35 @@ msgstr ""
 "navegação\n"
 "clique ou arraste para posicionar a área em zoom na visão central"
 
-#: ../src/libs/navigation.c:176
+#: ../src/libs/navigation.c:235
 msgid "hide navigation thumbnail"
 msgstr "esconde miniatura de navegação"
 
-#: ../src/libs/navigation.c:185
+#: ../src/libs/navigation.c:246
 msgid "image zoom level"
 msgstr "nível de zoom da imagem"
 
-#: ../src/libs/navigation.c:190
+#: ../src/libs/navigation.c:251
 msgid "50%"
 msgstr "50%"
 
-#: ../src/libs/navigation.c:191
+#: ../src/libs/navigation.c:252
 msgid "100%"
 msgstr "100%"
 
-#: ../src/libs/navigation.c:192
+#: ../src/libs/navigation.c:253
 msgid "200%"
 msgstr "200%"
 
-#: ../src/libs/navigation.c:193
+#: ../src/libs/navigation.c:254
 msgid "400%"
 msgstr "400%"
 
-#: ../src/libs/navigation.c:194
+#: ../src/libs/navigation.c:255
 msgid "800%"
 msgstr "800%"
 
-#: ../src/libs/navigation.c:195
+#: ../src/libs/navigation.c:256
 msgid "1600%"
 msgstr "1600%"
 
@@ -30229,6 +30226,15 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 #: ../src/views/view.c:1569
 msgid "mouse actions"
 msgstr "ações com mouse"
+
+#~ msgid "basic curve parameters"
+#~ msgstr "parâmetros básicos da curva"
+
+#~ msgid "input exposure range"
+#~ msgstr "extensão da exposição de entrada"
+
+#~ msgid "start export"
+#~ msgstr "iniciar exportação"
 
 #~ msgid "calculated radius"
 #~ msgstr "raio calculado"
