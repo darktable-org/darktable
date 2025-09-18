@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-17 21:44+0200\n"
+"POT-Creation-Date: 2025-09-18 17:55+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20334,7 +20334,7 @@ msgid "show applied optical vignette correction mask"
 msgstr ""
 
 #: ../src/iop/lens.cc:4618
-msgid "radius of uncorrected centre"
+msgid "radius of uncorrected center"
 msgstr ""
 
 #: ../src/iop/lens.cc:4624
