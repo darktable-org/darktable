@@ -3038,7 +3038,7 @@ void dt_bauhaus_slider_set(GtkWidget *widget,
 
   // this is the public interface function, translate by bounds and call set_normalized
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
-  if(w->type != DT_BAUHAUS_SLIDER)
+  if(!w || w->type != DT_BAUHAUS_SLIDER)
     return;
 
   dt_bauhaus_slider_data_t *d = &w->data.slider;
