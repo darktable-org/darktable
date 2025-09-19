@@ -153,6 +153,8 @@ typedef struct dt_iop_basic_curve_controls_t
   GtkWidget *curve_contrast_around_pivot;
   GtkWidget *curve_toe_power;
   GtkWidget *curve_shoulder_power;
+  GtkWidget *toe_warning_icon;
+  GtkWidget *shoulder_warning_icon;
 } dt_iop_basic_curve_controls_t;
 
 typedef struct dt_iop_agx_gui_data_t
@@ -1648,26 +1650,59 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
   // end vertical EV guide lines
 
   // the curve
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
+  const float line_width = DT_PIXEL_APPLY_DPI(2.);
+  cairo_set_line_width(cr, line_width);
   set_color(cr, darktable.bauhaus->graph_fg);
 
   const int steps = 200;
-  for(int k = 0; k <= steps; k++)
+
+  // draw the main curve
+  cairo_move_to(cr, 0, _apply_curve(0, &tone_mapping_params) * graph_height);
+  for(int k = 1; k <= steps; k++)
   {
-    const float x_norm = (float)k / steps; // Input to the curve [0, 1]
+    const float x_norm = (float)k / steps;
     const float y_norm = _apply_curve(x_norm, &tone_mapping_params);
-
-    // map [0,1] to graph pixel coords
-    const float x_graph = x_norm * graph_width;
-    const float y_graph = y_norm * graph_height;
-
-    if(k == 0) cairo_move_to(cr, x_graph, y_graph);
-    else cairo_line_to(cr, x_graph, y_graph);
+    cairo_line_to(cr, x_norm * graph_width, y_norm * graph_height);
   }
   cairo_stroke(cr);
 
+  // overdraw warning sections in yellow if needed
+  if(tone_mapping_params.need_convex_toe)
+  {
+    cairo_set_source_rgb(cr, 1.0, 1.0, 0.0);
+    const int toe_end_step = ceilf(tone_mapping_params.toe_transition_x * steps);
+    cairo_move_to(cr, 0, _apply_curve(0, &tone_mapping_params) * graph_height);
+    for(int k = 1; k <= toe_end_step; k++)
+    {
+      const float x_norm = (float)k / steps;
+      const float y_norm = _apply_curve(x_norm, &tone_mapping_params);
+      cairo_line_to(cr, x_norm * graph_width, y_norm * graph_height);
+    }
+    cairo_stroke(cr);
+  }
+
+  if(tone_mapping_params.need_concave_shoulder)
+  {
+    cairo_set_source_rgb(cr, 1.0, 1.0, 0.0);
+    const int shoulder_start_step = floorf(tone_mapping_params.shoulder_transition_x * steps);
+    float x_norm = (float)shoulder_start_step / steps;
+    float y_norm = _apply_curve(x_norm, &tone_mapping_params);
+    cairo_move_to(cr, x_norm * graph_width, y_norm * graph_height);
+    for(int k = shoulder_start_step + 1; k <= steps; k++)
+    {
+      x_norm = (float)k / steps;
+      y_norm = _apply_curve(x_norm, &tone_mapping_params);
+      cairo_line_to(cr, x_norm * graph_width, y_norm * graph_height);
+    }
+    cairo_stroke(cr);
+  }
+
   // draw the toe start, shoulder start, pivot
   cairo_save(cr);
+  // restore line width and color for points
+  cairo_set_line_width(cr, line_width);
+  set_color(cr, darktable.bauhaus->graph_fg);
+
   cairo_rectangle(cr, -DT_PIXEL_APPLY_DPI(4.), -DT_PIXEL_APPLY_DPI(4.),
                   graph_width + 2. * DT_PIXEL_APPLY_DPI(4.),
                   graph_height + 2. * DT_PIXEL_APPLY_DPI(4.));
@@ -1732,6 +1767,22 @@ void cleanup_pipe(dt_iop_module_t *self,
   piece->data = NULL;
 }
 
+static void _update_curve_warnings(dt_iop_module_t *self)
+{
+  const dt_iop_agx_gui_data_t *g = self->gui_data;
+  const dt_iop_agx_params_t *p = self->params;
+
+  if(!g) return;
+
+  const tone_mapping_params_t params = _calculate_tone_mapping_params(p);
+
+  if (g->basic_curve_controls.toe_warning_icon)
+    gtk_widget_set_visible(g->basic_curve_controls.toe_warning_icon, params.need_convex_toe);
+  if (g->basic_curve_controls.shoulder_warning_icon)
+    gtk_widget_set_visible(g->basic_curve_controls.shoulder_warning_icon,
+                         params.need_concave_shoulder);
+}
+
 static void _update_primaries_checkbox_and_sliders(const dt_iop_module_t *self)
 {
   const dt_iop_agx_gui_data_t *g = self->gui_data;
@@ -1765,6 +1816,7 @@ void gui_changed(dt_iop_module_t *self,
   }
 
   _update_primaries_checkbox_and_sliders(self);
+  _update_curve_warnings(self);
 
   // Test which widget was changed.
   // If allowing w == NULL, this can be called from gui_update, so that
@@ -1817,17 +1869,41 @@ static void _add_basic_curve_controls(dt_iop_module_t *self,
   dt_bauhaus_slider_set_soft_range(slider, 0.1f, 5.f);
   gtk_widget_set_tooltip_text(slider, _("slope of the linear section"));
 
+  GtkWidget *parent_vbox = self->widget;
+
   // curve_toe_power
+  GtkWidget *toe_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
+  self->widget = toe_hbox;
   slider = dt_bauhaus_slider_from_params(section, "curve_toe_power");
   controls->curve_toe_power = slider;
+  gtk_widget_set_hexpand(slider, TRUE);
+  self->widget = parent_vbox;
+  dt_gui_box_add(self->widget, toe_hbox);
+
   dt_bauhaus_slider_set_soft_range(slider, 1.f, 5.f);
   gtk_widget_set_tooltip_text(slider, _("contrast in shadows"));
+  controls->toe_warning_icon =
+      gtk_image_new_from_icon_name("dialog-warning-symbolic", GTK_ICON_SIZE_SMALL_TOOLBAR);
+  gtk_widget_set_tooltip_text(controls->toe_warning_icon, _("toe inverted"));
+  gtk_widget_set_no_show_all(controls->toe_warning_icon, TRUE);
+  gtk_box_pack_start(GTK_BOX(toe_hbox), controls->toe_warning_icon, FALSE, FALSE, 0);
 
   // curve_shoulder_power
+  GtkWidget *shoulder_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
+  self->widget = shoulder_hbox;
   slider = dt_bauhaus_slider_from_params(section, "curve_shoulder_power");
   controls->curve_shoulder_power = slider;
+  gtk_widget_set_hexpand(slider, TRUE);
+  self->widget = parent_vbox;
+  dt_gui_box_add(self->widget, shoulder_hbox);
+
   dt_bauhaus_slider_set_soft_range(slider, 1.f, 5.f);
   gtk_widget_set_tooltip_text(slider, _("contrast in highlights"));
+  controls->shoulder_warning_icon =
+      gtk_image_new_from_icon_name("dialog-warning-symbolic", GTK_ICON_SIZE_SMALL_TOOLBAR);
+  gtk_widget_set_tooltip_text(controls->shoulder_warning_icon, _("shoulder inverted"));
+  gtk_widget_set_no_show_all(controls->shoulder_warning_icon, TRUE);
+  gtk_box_pack_start(GTK_BOX(shoulder_hbox), controls->shoulder_warning_icon, FALSE, FALSE, 0);
 }
 
 static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
@@ -2205,6 +2281,7 @@ void gui_update(dt_iop_module_t *self)
                                p->disable_primaries_adjustments);
 
   _update_primaries_checkbox_and_sliders(self);
+  _update_curve_warnings(self);
 
   // Ensure the graph is drawn initially
   if(g && g->graph_drawing_area)
