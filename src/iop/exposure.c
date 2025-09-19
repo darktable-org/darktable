@@ -1182,8 +1182,8 @@ void gui_init(dt_iop_module_t *self)
                               _("remove the camera's hidden exposure bias in\n"
                                 "HDR / highlight preservation / dynamic range / HLG tone mode.\n"
                                 "\n"
-                                "when enabled, tone mapping (e.g. sigmoid) is required to\n"
-                                "avoid blown-out highlights."));
+                                "when enabled on an image with nonzero bias, tone mapping\n"
+                                "(e.g. sigmoid) is required to avoid blown-out highlights."));
 
   g->exposure = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                                     dt_bauhaus_slider_from_params(self, N_("exposure")));
