@@ -102,7 +102,9 @@ changes (where available).
   OpenCL performance and smaller CPU memory pressure.
 
 - Added automatic compensation of camera's hidden underexposure for
-  Nikon HLG tone mode and Fujifilm DR200/DR400 modes.
+  Canon Lighting Optimizer mode, Nikon Active D-Lighting and HLG tone
+  modes, Olympus Gradation mode, Pentax Dynamic Range Expansion mode,
+  and Fujifilm DR200/DR400 modes.
 
 ## Bug Fixes
 
@@ -112,9 +114,8 @@ changes (where available).
 - Fixed moving additional extra audio or text sidecar files when
   an image is moved.
 
-- Fixed module based collection restoring. Leaving darktable with a
-  module based collection was after restart displaying an empty
-  lighttable.
+- Fixed module based collection restoring. After quitting darktable with a
+  module based collection, the lighttable was empty after restarting it.
 
 ## Lua
 
