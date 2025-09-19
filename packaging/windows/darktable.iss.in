@@ -1,6 +1,6 @@
 
 #define MyAppName "darktable"
-#define MyAppVersion "${PROJECT_VERSION}"
+#define MyAppVersion "@PROJECT_VERSION@"
 #define MyAppCopyright "Copyright © 2009-2025 darktable developers"
 #define MyAppPublisher "darktable team"
 #define MyAppURL "https://darktable.org/"
@@ -42,7 +42,7 @@ LicenseFile=share\doc\darktable\LICENSE
 ; PrivilegesRequired=lowest
 
 PrivilegesRequiredOverridesAllowed=dialog
-OutputBaseFilename=darktable-{#MyAppVersion}-${ARCH_STRING}
+OutputBaseFilename=darktable-{#MyAppVersion}-@CPACK_SYSTEM_NAME@
 
 ; When this directive is set, the compiler will create a manifest file
 ; detailing information about the files compiled into Setup.
@@ -68,7 +68,7 @@ Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\shell\open\com
   ValueType: string; Flags: uninsdeletevalue; \
   ValueData: """{app}\bin\{#MyAppExeName}"" ""%1"""
 
-${CMAKE_ADD_DARKTABLE_TO_OPENWITHLIST}
+@CMAKE_ADD_DARKTABLE_TO_OPENWITHLIST@
 
 Root: HKA; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{#MyAppExeName}"; \
   ValueType: string; \
@@ -83,13 +83,13 @@ Root: HKA; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{#MyAppC
 Root: HKA; Subkey: "{code:EnvironmentKey}"; \
   ValueType: string; \
   ValueName: "CAMLIBS"; \
-  ValueData: "{app}\lib\libgphoto2\${CPACK_NSIS_GPHOTO2_VERSION}"; \
+  ValueData: "{app}\lib\libgphoto2\@CPACK_GPHOTO2_VERSION@"; \
   Flags: uninsdeletevalue
 
 Root: HKA; Subkey: "{code:EnvironmentKey}"; \
   ValueType: string; \
   ValueName: "IOLIBS"; \
-  ValueData: "{app}\lib\libgphoto2_port\${CPACK_NSIS_GPHOTO2_PORT_VERSION}"; \
+  ValueData: "{app}\lib\libgphoto2_port\@CPACK_GPHOTO2_PORT_VERSION@"; \
   Flags: uninsdeletevalue
 
 [Icons]
