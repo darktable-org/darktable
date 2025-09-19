@@ -689,7 +689,7 @@ void gui_update(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->compensate_hilite_preserv),
                                p->compensate_hilite_pres);
   /* xgettext:no-c-format */
-  label = g_strdup_printf(_("higlight preservation mode (%.1f EV)"), hlbias);
+  label = g_strdup_printf(_("highlight preservation mode (%.1f EV)"), hlbias);
   gtk_button_set_label(GTK_BUTTON(g->compensate_hilite_preserv), label);
   gtk_label_set_ellipsize
     (GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->compensate_hilite_preserv))),
