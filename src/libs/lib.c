@@ -568,9 +568,11 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo,
 
     if(darktable.gui->last_preset && found)
     {
+      char *local_last_name = dt_util_localize_segmented_name(darktable.gui->last_preset, TRUE);
       char *markup = g_markup_printf_escaped("%s <b>%s</b>",
                                              _("update preset"),
-                                             darktable.gui->last_preset);
+                                             local_last_name);
+      g_free(local_last_name);
       mi = gtk_menu_item_new_with_label("");
       gtk_widget_set_sensitive(mi, minfo->params_size > 0);
       gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
