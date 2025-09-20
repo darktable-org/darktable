@@ -676,7 +676,6 @@ void gui_update(dt_iop_module_t *self)
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->compensate_exposure_bias),
                                p->compensate_exposure_bias);
-  /* xgettext:no-c-format */
   gchar *label = g_strdup_printf(_("compensate camera exposure (%+.1f EV)"),
                                  _get_exposure_bias(self));
   gtk_button_set_label(GTK_BUTTON(g->compensate_exposure_bias), label);

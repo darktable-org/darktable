@@ -591,7 +591,7 @@ static void _action_distinct_label(gchar **label, dt_action_t *action, gchar *in
     return;
 
   gchar *instance_label = action->type == DT_ACTION_TYPE_IOP && *instance
-                        ? g_strdup_printf("%s %s", action->label, instance)
+                        ? g_strdup_printf("%s • %s", action->label, instance)
                         : g_strdup(action->label);
 
   if(*label)
@@ -5067,7 +5067,10 @@ void dt_action_widget_toast(dt_action_t *action,
         dt_iop_module_t *module = (dt_iop_module_t *)action;
 
         action = DT_ACTION(module->so);
-        instance_name = module->multi_name;
+        if(*module->multi_name)
+          instance_name = module->multi_name_hand_edited
+                        ? g_strdup(module->multi_name)
+                        : dt_util_localize_segmented_name(module->multi_name, TRUE);
 
         for(GSList *w = module->widget_list; w; w = w->next)
         {
@@ -5086,6 +5089,8 @@ void dt_action_widget_toast(dt_action_t *action,
       }
 
       _action_distinct_label(&label, action, instance_name);
+      if(*instance_name) g_free(instance_name);
+
       dt_toast_log("%s : %s", label, text);
       g_free(label);
     }
