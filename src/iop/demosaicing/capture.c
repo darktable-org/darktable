@@ -183,12 +183,12 @@ static float _calcRadiusBayer(const float *in,
             { // check for influence by clipped green in neighborhood
               if(MAX(MAX(cfa[-width-1], cfa[-width+1]), val1p1) >= upperLimit)
                 continue;
-             }
+            }
             else
             { // check for influence by clipped green in neighborhood
               if(MAX(MAX(MAX(val00, cfa[2]), cfa[2*width]), cfa[2*width+2]) >= upperLimit)
                 continue;
-             }
+            }
             maxRatio = maxVal1 / minVal;
           }
         }
