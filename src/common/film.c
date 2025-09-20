@@ -348,18 +348,11 @@ static gboolean ask_and_delete(gpointer user_data)
                        ngettext("delete empty directory?",
                                 "delete empty directories?", n_empty_dirs));
 
-  GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-
-  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
-  gtk_widget_set_vexpand(scroll, TRUE);
-
   GtkListStore *store = gtk_list_store_new(1, G_TYPE_STRING);
 
   for(GList *list_iter = empty_dirs; list_iter; list_iter = g_list_next(list_iter))
   {
-    GtkTreeIter iter;
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, list_iter->data, -1);
+    gtk_list_store_insert_with_values(store, NULL, -1, 0, list_iter->data, -1);
   }
 
   GtkWidget *tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
@@ -369,11 +362,11 @@ static gboolean ask_and_delete(gpointer user_data)
                                                                        "text", 0, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
-  gtk_container_add(GTK_CONTAINER(scroll), tree);
+  GtkWidget *scroll = dt_gui_scroll_wrap(tree);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scroll), DT_PIXEL_APPLY_DPI(25));
 
-  gtk_container_add(GTK_CONTAINER(content_area), scroll);
+  dt_gui_dialog_add(GTK_DIALOG(dialog), scroll);
 
   gtk_widget_show_all(dialog); // needed for the content area!
 

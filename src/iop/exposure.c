@@ -44,7 +44,7 @@
 #define exposure2white(x) exp2f(-(x))
 #define white2exposure(x) -dt_log2f(fmaxf(1e-20f, x))
 
-DT_MODULE_INTROSPECTION(6, dt_iop_exposure_params_t)
+DT_MODULE_INTROSPECTION(7, dt_iop_exposure_params_t)
 
 typedef enum dt_iop_exposure_mode_t
 {
@@ -71,6 +71,7 @@ typedef struct dt_iop_exposure_params_t
   float deflicker_percentile;       // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "percentile"
   float deflicker_target_level;     // $MIN: -18.0 $MAX: 18.0 $DEFAULT: -4.0 $DESCRIPTION: "target level"
   gboolean compensate_exposure_bias;// $DEFAULT: FALSE $DESCRIPTION: "compensate exposure bias"
+  gboolean compensate_hilite_pres;  // $DEFAULT: TRUE $DESCRIPTION: "compensate highlight preservation"
 } dt_iop_exposure_params_t;
 
 typedef struct dt_iop_exposure_gui_data_t
@@ -85,6 +86,7 @@ typedef struct dt_iop_exposure_gui_data_t
   dt_dev_histogram_stats_t deflicker_histogram_stats;
   GtkLabel *deflicker_used_EC;
   GtkWidget *compensate_exposure_bias;
+  GtkWidget *compensate_hilite_preserv;
   float deflicker_computed_exposure;
 
   GtkWidget *spot_mode;
@@ -167,6 +169,17 @@ int legacy_params(dt_iop_module_t *self,
     float deflicker_target_level;
     gboolean compensate_exposure_bias;
   } dt_iop_exposure_params_v6_t;
+
+  typedef struct dt_iop_exposure_params_v7_t
+  {
+    dt_iop_exposure_mode_t mode;
+    float black;
+    float exposure;
+    float deflicker_percentile;
+    float deflicker_target_level;
+    gboolean compensate_exposure_bias;
+    gboolean compensate_hilite_pres;
+  } dt_iop_exposure_params_v7_t;
 
   if(old_version == 2)
   {
@@ -272,6 +285,24 @@ int legacy_params(dt_iop_module_t *self,
     *new_version = 6;
     return 0;
   }
+  if(old_version == 6)
+  {
+    const dt_iop_exposure_params_v6_t *o = (dt_iop_exposure_params_v6_t *)old_params;
+    dt_iop_exposure_params_v7_t *n = malloc(sizeof(dt_iop_exposure_params_v7_t));
+
+    n->mode = o->mode;
+    n->black = o->black;
+    n->exposure = o->exposure;
+    n->deflicker_percentile = o->deflicker_percentile;
+    n->deflicker_target_level = o->deflicker_target_level;
+    n->compensate_exposure_bias = o->compensate_exposure_bias;
+    n->compensate_hilite_pres = FALSE;	// module did not compensate h.p. before version 7
+
+    *new_params = n;
+    *new_params_size = sizeof(dt_iop_exposure_params_v7_t);
+    *new_version = 7;
+    return 0;
+  }
   return 1;
 }
 
@@ -287,8 +318,9 @@ void init_presets(dt_iop_module_so_t *self)
                                  .exposure = 0.0f,
                                  .deflicker_percentile = 50.0f,
                                  .deflicker_target_level = -4.0f,
-                                 .compensate_exposure_bias = FALSE},
-     sizeof(dt_iop_exposure_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                                 .compensate_exposure_bias = FALSE,
+                                 .compensate_hilite_pres = FALSE },
+     sizeof(dt_iop_exposure_params_t), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   const gboolean is_scene_referred = dt_is_scene_referred();
 
@@ -300,7 +332,7 @@ void init_presets(dt_iop_module_so_t *self)
     dt_gui_presets_add_generic
       (_("scene-referred default"), self->op, self->version(),
        NULL, 0,
-       1, DEVELOP_BLEND_CS_RGB_SCENE);
+       TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
     dt_gui_presets_update_format(BUILTIN_PRESET("scene-referred default"), self->op,
                                  self->version(), FOR_RAW);
@@ -333,6 +365,7 @@ void reload_defaults(dt_iop_module_t *self)
     d->black = 0.0f;
     d->compensate_exposure_bias = FALSE;
   }
+  d->compensate_hilite_pres = TRUE;
 }
 
 static void _deflicker_prepare_histogram(dt_iop_module_t *self,
@@ -545,6 +578,26 @@ static float _get_exposure_bias(const dt_iop_module_t *self)
     return 0.0f;
 }
 
+static float _get_highlight_bias(const dt_iop_module_t *self)
+{
+  float bias = 0.0f;
+
+  // Nikon: Exif.Nikon3.Colorspace==4  --> +2 EV
+  // Fuji:  Exif.Fujifilm.DevelopmentDynamicRange
+  //             100 --> no comp
+  //             200 --> +1 EV
+  //             400 --> +2 EV
+
+  if(self->dev && self->dev->image_storage.exif_highlight_preservation > 0.0f)
+    bias = self->dev->image_storage.exif_highlight_preservation;
+
+  // sanity checks, don't trust exif tags too much
+  if(bias != DT_EXIF_TAG_UNINITIALIZED)
+    return CLAMP(bias, -1.0f, 4.0f);
+  else
+    return 0.0f;
+}
+
 
 void commit_params(dt_iop_module_t *self,
                    dt_iop_params_t *p1,
@@ -564,6 +617,12 @@ void commit_params(dt_iop_module_t *self,
   if(p->compensate_exposure_bias)
     d->params.exposure -= _get_exposure_bias(self);
 
+  // If highlight preservation compensation has been required, add it on top of
+  // the previous compensation values
+//  d->params.compensate_hilite_pres = p->compensate_hilite_pres;
+  if(p->compensate_hilite_pres)
+    d->params.exposure += _get_highlight_bias(self);
+
   d->deflicker = 0;
 
   if(p->mode == EXPOSURE_MODE_DEFLICKER
@@ -579,7 +638,7 @@ void init_pipe(dt_iop_module_t *self,
                dt_dev_pixelpipe_t *pipe,
                dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(sizeof(dt_iop_exposure_data_t));
+  piece->data = calloc(1,sizeof(dt_iop_exposure_data_t));
 }
 
 void cleanup_pipe(dt_iop_module_t *self,
@@ -626,6 +685,18 @@ void gui_update(dt_iop_module_t *self)
      PANGO_ELLIPSIZE_MIDDLE);
   g_free(label);
 
+  const float hlbias = _get_highlight_bias(self);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->compensate_hilite_preserv),
+                               p->compensate_hilite_pres);
+  /* xgettext:no-c-format */
+  label = g_strdup_printf(_("highlight preservation mode (%.1f EV)"), hlbias);
+  gtk_button_set_label(GTK_BUTTON(g->compensate_hilite_preserv), label);
+  gtk_label_set_ellipsize
+    (GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->compensate_hilite_preserv))),
+     PANGO_ELLIPSIZE_MIDDLE);
+  g_free(label);
+  gtk_widget_set_sensitive(GTK_WIDGET(g->compensate_hilite_preserv), hlbias > 0.0f);
+  
   g->spot_RGB[0] = 0.f;
   g->spot_RGB[1] = 0.f;
   g->spot_RGB[2] = 0.f;
@@ -669,7 +740,7 @@ void gui_update(dt_iop_module_t *self)
 void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // from programs.conf: basic.cl
-  dt_iop_exposure_global_data_t *gd = malloc(sizeof(dt_iop_exposure_global_data_t));
+  dt_iop_exposure_global_data_t *gd = calloc(1,sizeof(dt_iop_exposure_global_data_t));
   self->data = gd;
   gd->kernel_exposure = dt_opencl_create_kernel(program, "exposure");
 }
@@ -813,6 +884,10 @@ static void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
     if(p->compensate_exposure_bias)
       expo -= _get_exposure_bias(self);
 
+    // If the highlight preservation mode is on, we need to add it to the user param
+    if(p->compensate_hilite_pres)
+      expo += _get_highlight_bias(self);
+
     const float white = exposure2white(-expo);
 
     // apply the exposure compensation
@@ -854,6 +929,10 @@ static void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
     // If the exposure bias compensation is on, we need to subtract it from the user param
     if(p->compensate_exposure_bias)
       expo -= _get_exposure_bias(self);
+
+    // If the highlight preservation mode is on, we need to add it to the user param
+    if(p->compensate_hilite_pres)
+      expo += _get_highlight_bias(self);
 
     white = exposure2white(-expo);
     _exposure_set_white(self, white);
@@ -1096,6 +1175,15 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->compensate_exposure_bias,
                               _("automatically remove the camera exposure bias\n"
                                 "this is useful if you exposed the image to the right."));
+
+  g->compensate_hilite_preserv = dt_bauhaus_toggle_from_params
+    (self, "compensate_hilite_pres");
+  gtk_widget_set_tooltip_text(g->compensate_hilite_preserv,
+                              _("remove the camera's hidden exposure bias in\n"
+                                "HDR / highlight preservation / dynamic range / HLG tone mode.\n"
+                                "\n"
+                                "when enabled on an image with nonzero bias, tone mapping\n"
+                                "(e.g. sigmoid) is required to avoid blown-out highlights."));
 
   g->exposure = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                                     dt_bauhaus_slider_from_params(self, N_("exposure")));

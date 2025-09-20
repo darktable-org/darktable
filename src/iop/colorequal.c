@@ -1041,8 +1041,8 @@ void process(dt_iop_module_t *self,
     dt_D65_XYZ_to_xyY(XYZ_D65, xyY);
 
     // calc saturation from input data
-    const float dmin = fminf(pix_in[0], fminf(pix_in[1], pix_in[2]));
-    const float dmax = fmaxf(pix_in[0], fmaxf(pix_in[1], pix_in[2]));
+    const float dmin = min3f(pix_in);
+    const float dmax = max3f(pix_in);
     const float delta = dmax - dmin;
     saturation[k] = (dmax > NORM_MIN && delta > NORM_MIN) ? delta / dmax : 0.0f;
 
@@ -2131,7 +2131,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   dt_gui_presets_add_generic(_("bleach bypass"), self->op,
                              self->version(), &p1, sizeof(p1),
-                             1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // Kodachrome 64 like
   dt_iop_colorequal_params_t p2 =
@@ -2175,7 +2175,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   dt_gui_presets_add_generic(_("Kodachrome 64 like"), self->op,
                              self->version(), &p2, sizeof(p2),
-                             1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // Kodak Portra 400
   dt_iop_colorequal_params_t p3 =
@@ -2219,7 +2219,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   dt_gui_presets_add_generic(_("Kodak Portra 400 like"), self->op,
                              self->version(), &p3, sizeof(p3),
-                             1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // Teal & Orange
   dt_iop_colorequal_params_t p4 =
@@ -2263,7 +2263,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   dt_gui_presets_add_generic(_("teal & orange"), self->op,
                              self->version(), &p4, sizeof(p4),
-                             1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
 void gui_focus(dt_iop_module_t *self, gboolean in)

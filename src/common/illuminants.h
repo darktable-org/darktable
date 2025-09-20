@@ -20,6 +20,7 @@
 
 #include "common/chromatic_adaptation.h"
 #include "common/image.h"
+#include "common/dttypes.h"
 
 /* Standard CIE illuminants */
 typedef enum dt_illuminant_t
@@ -197,7 +198,7 @@ static inline void illuminant_xy_to_RGB(const float x, const float y, dt_aligned
   dt_XYZ_to_Rec709_D50(XYZ, RGB);
 
   // Handle gamut clipping
-  const float max_RGB = fmaxf(fmaxf(RGB[0], RGB[1]), RGB[2]);
+  const float max_RGB = max3f(RGB);
   for(int c = 0; c < 3; c++) RGB[c] = fmaxf(RGB[c] / max_RGB, 0.f);
 }
 

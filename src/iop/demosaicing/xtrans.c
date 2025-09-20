@@ -41,7 +41,8 @@ static inline const short *_hexmap(const int row,
 */
 static void xtrans_markesteijn_interpolate(float *out,
                                            const float *const in,
-                                           const dt_iop_roi_t *const roi_in,
+                                           const int width,
+                                           const int height,
                                            const uint8_t (*const xtrans)[6],
                                            const int passes)
 {
@@ -54,9 +55,6 @@ static void xtrans_markesteijn_interpolate(float *out,
   // sgrow/sgcol is the offset in the sensor matrix of the solitary
   // green pixels (initialized here only to avoid compiler warning)
   unsigned short sgrow = 0, sgcol = 0;
-
-  const int width = roi_in->width;
-  const int height = roi_in->height;
   const unsigned ndir = 4 << (passes > 1);
 
   const size_t buffer_size = (size_t)TS * TS * (ndir * 4 + 3) * sizeof(float);
@@ -136,12 +134,12 @@ static void xtrans_markesteijn_interpolate(float *out,
           if((col >= 0) && (row >= 0) && (col < width) && (row < height))
           {
             const int f = FCNxtrans(row, col, xtrans);
-            for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[roi_in->width * row + col] : 0.f;
+            for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[width * row + col] : 0.f;
           }
           else
           {
             // mirror a border pixel if beyond image edge
-            const int c = FCxtrans(row, col, NULL, xtrans);
+            const int c = FCNxtrans(row, col, xtrans);
             for(int cc = 0; cc < 3; cc++)
             {
               if(cc != c)
@@ -151,7 +149,7 @@ static void xtrans_markesteijn_interpolate(float *out,
 #define TRANSLATE(n, size) ((n >= size) ? (2 * size - n - 2) : abs(n))
                 const int cy = TRANSLATE(row, height), cx = TRANSLATE(col, width);
                 if(c == FCNxtrans(cy, cx, xtrans))
-                  pix[c] = in[roi_in->width * cy + cx];
+                  pix[c] = in[width * cy + cx];
                 else
                 {
                   // interpolate if mirror pixel is a different color
@@ -164,7 +162,7 @@ static void xtrans_markesteijn_interpolate(float *out,
                       const int ff = FCNxtrans(yy, xx, xtrans);
                       if(ff == c)
                       {
-                        sum += in[roi_in->width * yy + xx];
+                        sum += in[width * yy + xx];
                         count++;
                       }
                     }
@@ -199,7 +197,7 @@ static void xtrans_markesteijn_interpolate(float *out,
           // if in row of horizontal red & blue pairs (or processing
           // vertical red & blue pairs near image bottom), reset min/max
           // between each pair
-          if(FCxtrans(row, col, NULL, xtrans) == 1)
+          if(FCNxtrans(row, col, xtrans) == 1)
           {
             min = FLT_MAX, max = 0.0f;
             continue;
@@ -300,7 +298,7 @@ static void xtrans_markesteijn_interpolate(float *out,
           for(int col = (left - sgcol + pad_rb_g + 2) / 3 * 3 + sgcol; col < mcol - pad_rb_g; col += 3)
           {
             float(*rfx)[3] = &rgb[0][row - top][col - left];
-            int h = FCxtrans(row, col + 1, NULL, xtrans);
+            int h = FCNxtrans(row, col + 1, xtrans);
             float diff[6] = { 0.0f };
             // interplated color: first index is red/blue, second is
             // pass, is double actual result
@@ -514,11 +512,12 @@ static void xtrans_markesteijn_interpolate(float *out,
 #undef TS
 
 #define TS 122
-static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
-                                   float *out,
+static void xtrans_fdc_interpolate(float *out,
                                    const float *const in,
-                                   const dt_iop_roi_t *const roi_in,
-                                   const uint8_t (*const xtrans)[6])
+                                   const int width,
+                                   const int height,
+                                   const uint8_t (*const xtrans)[6],
+                                   const int iso)
 {
   static const short orth[12] = { 1, 0, 0, 1, -1, 0, 0, -1, 1, 0, 0, 1 },
                      patt[2][16] = { { 0, 1, 0, -1, 2, 0, -1, 0, 1, 1, 1, -1, 0, 0, 0, 0 },
@@ -532,8 +531,6 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
   // green pixels (initialized here only to avoid compiler warning)
   unsigned short sgrow = 0, sgcol = 0;
 
-  const int width = roi_in->width;
-  const int height = roi_in->height;
   static const int ndir = 4;
 
   static const float complex Minv[3][8] = {
@@ -1123,7 +1120,6 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
   // depending on the iso, use either a hybrid approach for chroma, or pure fdc
   float hybrid_fdc[2] = { 1.0f, 0.0f };
   const int xover_iso = dt_conf_get_int("plugins/darkroom/demosaic/fdc_xover_iso");
-  int iso = self->dev->image_storage.exif_iso;
   if(iso > xover_iso)
   {
     hybrid_fdc[0] = 0.0f;
@@ -1176,13 +1172,13 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
           if((col >= 0) && (row >= 0) && (col < width) && (row < height))
           {
             const int f = FCNxtrans(row, col, xtrans);
-            for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[roi_in->width * row + col] : 0.f;
-            *(i_src + TS * (row - top) + (col - left)) = in[roi_in->width * row + col];
+            for(int c = 0; c < 3; c++) pix[c] = (c == f) ? in[width * row + col] : 0.f;
+            *(i_src + TS * (row - top) + (col - left)) = in[width * row + col];
           }
           else
           {
             // mirror a border pixel if beyond image edge
-            const int c = FCxtrans(row, col, NULL, xtrans);
+            const int c = FCNxtrans(row, col, xtrans);
             for(int cc = 0; cc < 3; cc++)
               if(cc != c)
                 pix[cc] = 0.0f;
@@ -1192,8 +1188,8 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
                 const int cy = TRANSLATE(row, height), cx = TRANSLATE(col, width);
                 if(c == FCNxtrans(cy, cx, xtrans))
                 {
-                  pix[c] = in[roi_in->width * cy + cx];
-                  *(i_src + TS * (row - top) + (col - left)) = in[roi_in->width * cy + cx];
+                  pix[c] = in[width * cy + cx];
+                  *(i_src + TS * (row - top) + (col - left)) = in[width * cy + cx];
                 }
                 else
                 {
@@ -1207,7 +1203,7 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
                       const int ff = FCNxtrans(yy, xx, xtrans);
                       if(ff == c)
                       {
-                        sum += in[roi_in->width * yy + xx];
+                        sum += in[width * yy + xx];
                         count++;
                       }
                     }
@@ -1288,7 +1284,7 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
         for(int col = left + pad_g_interp; col < mcol - pad_g_interp; col++)
         {
           float color[8];
-          int f = FCNxtrans(row, col, xtrans);
+          const int f = FCNxtrans(row, col, xtrans);
           if(f == 1) continue;
           float (*const pix)[3] = &rgb[0][row - top][col - left];
           const short *const hex = _hexmap(row, col, allhex);
@@ -1340,7 +1336,7 @@ static void xtrans_fdc_interpolate(const dt_iop_module_t *self,
       for(int row = top + pad_rb_br; row < mrow - pad_rb_br; row++)
         for(int col = left + pad_rb_br; col < mcol - pad_rb_br; col++)
         {
-          int f = 2 - FCNxtrans(row, col, xtrans);
+          const int f = 2 - FCNxtrans(row, col, xtrans);
           if(f == 1) continue;
           float(*rfx)[3] = &rgb[0][row - top][col - left];
           int c = (row - sgrow) % 3 ? TS : 1;
@@ -1639,13 +1635,12 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
                                      cl_mem dev_xtrans,
                                      const uint8_t(*const xtrans)[6],
                                      const int width,
-                                     const int height,
-                                     const uint32_t filters)
+                                     const int height)
 {
   const dt_iop_demosaic_data_t *data = piece->data;
   const dt_iop_demosaic_global_data_t *gd = self->global_data;
 
-  process_vng_cl(self, piece, dev_in, dev_out, dev_xtrans, xtrans, width, height, filters, FALSE);
+  process_vng_cl(self, piece, dev_in, dev_out, dev_xtrans, xtrans, width, height, 9u, FALSE);
   const int devid = piece->pipe->devid;
 
   cl_mem dev_tmptmp = NULL;
@@ -1680,8 +1675,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
       for(int col = 0; col < 3; col++)
         for(int ng = 0, d = 0; d < 10; d += 2)
         {
-          const int g = FCxtrans(row, col, NULL, xtrans) == 1;
-          if(FCxtrans(row + orth[d] + 6, col + orth[d + 2] + 6, NULL, xtrans) == 1)
+          const int g = FCNxtrans(row, col, xtrans) == 1;
+          if(FCNxtrans(row + orth[d] + 6, col + orth[d + 2] + 6, xtrans) == 1)
             ng = 0;
           else
             ng++;
@@ -1745,8 +1740,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
     }
 
     {
-      size_t sizes[3] = { ROUNDUP(width, locopt_g1_g3.sizex), ROUNDUP(height, locopt_g1_g3.sizey), 1 };
-      size_t local[3] = { locopt_g1_g3.sizex, locopt_g1_g3.sizey, 1 };
+      const size_t sizes[3] = { ROUNDUP(width, locopt_g1_g3.sizex), ROUNDUP(height, locopt_g1_g3.sizey), 1 };
+      const size_t local[3] = { locopt_g1_g3.sizex, locopt_g1_g3.sizey, 1 };
       dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_green_minmax, 0,
         CLARG(dev_rgb[0]), CLARG(dev_gminmax),
         CLARG(width), CLARG(height), CLARG(pad_g1_g3), CLARRAY(2, sgreen),
@@ -1769,8 +1764,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
     }
 
     {
-      size_t sizes[3] = { ROUNDUP(width, locopt_g_interp.sizex), ROUNDUP(height, locopt_g_interp.sizey), 1 };
-      size_t local[3] = { locopt_g_interp.sizex, locopt_g_interp.sizey, 1 };
+      const size_t sizes[3] = { ROUNDUP(width, locopt_g_interp.sizex), ROUNDUP(height, locopt_g_interp.sizey), 1 };
+      const size_t local[3] = { locopt_g_interp.sizex, locopt_g_interp.sizey, 1 };
       dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_interpolate_green, 0,
         CLARG(dev_rgb[0]), CLARG(dev_rgb[1]), CLARG(dev_rgb[2]), CLARG(dev_rgb[3]),
         CLARG(dev_gminmax), CLARG(width), CLARG(height),
@@ -1828,8 +1823,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
         const char dir[2] = { i, i ^ 1 };
 
         // we use dev_aux to transport intermediate results from one loop run to the next
-        size_t sizes[3] = { ROUNDUP(width, locopt_rb_g.sizex), ROUNDUP(height, locopt_rb_g.sizey), 1 };
-        size_t local[3] = { locopt_rb_g.sizex, locopt_rb_g.sizey, 1 };
+        const size_t sizes[3] = { ROUNDUP(width, locopt_rb_g.sizex), ROUNDUP(height, locopt_rb_g.sizey), 1 };
+        const size_t local[3] = { locopt_rb_g.sizex, locopt_rb_g.sizey, 1 };
         dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_solitary_green, 0,
           CLARG(dev_trgb[0]), CLARG(dev_aux), CLARG(width), CLARG(height), CLARG(pad_rb_g),
           CLARG(d), CLARRAY(2, dir), CLARG(h), CLARRAY(2, sgreen), CLARG(dev_xtrans), CLLOCAL(sizeof(float) * 4 * (locopt_rb_g.sizex + 2*2) * (locopt_rb_g.sizey + 2*2)));
@@ -1854,8 +1849,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
 
       for(int d = 0; d < 4; d++)
       {
-        size_t sizes[3] = { ROUNDUP(width, locopt_rb_br.sizex), ROUNDUP(height, locopt_rb_br.sizey), 1 };
-        size_t local[3] = { locopt_rb_br.sizex, locopt_rb_br.sizey, 1 };
+        const size_t sizes[3] = { ROUNDUP(width, locopt_rb_br.sizex), ROUNDUP(height, locopt_rb_br.sizey), 1 };
+        const size_t local[3] = { locopt_rb_br.sizex, locopt_rb_br.sizey, 1 };
         dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_red_and_blue, 0,
           CLARG(dev_rgb[d]), CLARG(width), CLARG(height), CLARG(pad_rb_br), CLARG(d), CLARRAY(2, sgreen),
           CLARG(dev_xtrans), CLLOCAL(sizeof(float) * 4 * (locopt_rb_br.sizex + 2*3) * (locopt_rb_br.sizey + 2*3)));
@@ -1878,8 +1873,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
 
       for(int d = 0, n = 0; d < ndir; d += 2, n++)
       {
-        size_t sizes[3] = { ROUNDUP(width, locopt_g22.sizex), ROUNDUP(height, locopt_g22.sizey), 1 };
-        size_t local[3] = { locopt_g22.sizex, locopt_g22.sizey, 1 };
+        const size_t sizes[3] = { ROUNDUP(width, locopt_g22.sizex), ROUNDUP(height, locopt_g22.sizey), 1 };
+        const size_t local[3] = { locopt_g22.sizex, locopt_g22.sizey, 1 };
         dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 0,
           CLARG(dev_rgb[n]), CLARG(width), CLARG(height), CLARG(pad_g22), CLARG(d), CLARRAY(2, sgreen),
           CLARG(dev_xtrans), CLARG(dev_allhex), CLLOCAL(sizeof(float) * 4 * (locopt_g22.sizex + 2*2) * (locopt_g22.sizey + 2*2)));
@@ -1926,8 +1921,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
 
 
       // differentiate in all directions
-      size_t sizes_diff[3] = { ROUNDUP(width, locopt_diff.sizex), ROUNDUP(height, locopt_diff.sizey), 1 };
-      size_t local_diff[3] = { locopt_diff.sizex, locopt_diff.sizey, 1 };
+      const size_t sizes_diff[3] = { ROUNDUP(width, locopt_diff.sizex), ROUNDUP(height, locopt_diff.sizey), 1 };
+      const size_t local_diff[3] = { locopt_diff.sizex, locopt_diff.sizey, 1 };
       dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_differentiate, 0,
         CLARG(dev_aux), CLARG(dev_drv[d]),
         CLARG(width), CLARG(height), CLARG(pad_yuv), CLARG(d), CLLOCAL(sizeof(float) * 4 * (locopt_diff.sizex + 2*1) * (locopt_diff.sizey + 2*1)));
@@ -1970,8 +1965,8 @@ static cl_int process_markesteijn_cl(const dt_iop_module_t *self,
 
     for(int d = 0; d < ndir; d++)
     {
-      size_t sizes[3] = { ROUNDUP(width, locopt_homo.sizex),ROUNDUP(height, locopt_homo.sizey), 1 };
-      size_t local[3] = { locopt_homo.sizex, locopt_homo.sizey, 1 };
+      const size_t sizes[3] = { ROUNDUP(width, locopt_homo.sizex),ROUNDUP(height, locopt_homo.sizey), 1 };
+      const size_t local[3] = { locopt_homo.sizex, locopt_homo.sizey, 1 };
       dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_homo_set, 0,
         CLARG(dev_drv[d]), CLARG(dev_aux),
         CLARG(dev_homo[d]), CLARG(width), CLARG(height), CLARG(pad_homo), CLLOCAL(sizeof(float) * (locopt_homo.sizex + 2*1) * (locopt_homo.sizey + 2*1)));
@@ -2085,7 +2080,8 @@ error:
   dt_opencl_release_mem_object(dev_allhex);
   dt_opencl_release_mem_object(dev_aux);
   if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] markesteijn problem '%s'", cl_errstr(err));
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] markesteijn%s problem '%s'",
+      passes == 3 ? "_3" : "", cl_errstr(err));
   return err;
 }
 

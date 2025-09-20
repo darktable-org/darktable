@@ -280,6 +280,7 @@ struct dt_l10n_t;
 
 typedef float dt_boundingbox_t[4];  //(x,y) of upperleft, then (x,y) of lowerright
 typedef float dt_pickerbox_t[8];
+typedef float dt_dev_zoom_pos_t[6];
 
 typedef enum dt_debug_thread_t
 {
@@ -964,6 +965,8 @@ static inline const gchar *NQ_(const gchar *String)
   const gchar *context_end = strchr(String, '|');
   return context_end ? context_end + 1 : String;
 }
+
+#define dt_buf_printf(buf, fmt, ...) (snprintf((buf), sizeof(buf), (fmt) __VA_OPT__(,) __VA_ARGS__), (buf))
 
 static inline gboolean dt_gimpmode(void)
 {

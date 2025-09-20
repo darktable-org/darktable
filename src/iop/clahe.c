@@ -15,11 +15,13 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/math.h"
 #include "control/control.h"
+#include "common/dttypes.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "dtgtk/resetlabel.h"
@@ -83,15 +85,19 @@ dt_iop_colorspace_type_t default_colorspace(dt_iop_module_t *self,
   return IOP_CS_RGB;
 }
 
-void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   dt_iop_rlce_data_t *data = piece->data;
   const int ch = piece->colors;
 
   // PASS1: Get a luminance map of image...
   float *luminance = malloc(sizeof(float) * ((size_t)roi_out->width * roi_out->height));
-// double lsmax=0.0,lsmin=1.0;
+
   DT_OMP_FOR()
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -99,9 +105,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     float *lm = luminance + (size_t)j * roi_out->width;
     for(int i = 0; i < roi_out->width; i++)
     {
-      double pmax = CLIP(fmax(in[0], fmax(in[1], in[2]))); // Max value in RGB set
-      double pmin = CLIP(fmin(in[0], fmin(in[1], in[2]))); // Min value in RGB set
-      *lm = (pmax + pmin) / 2.0;                           // Pixel luminocity
+      const float pmax = CLIP(max3f(in)); // Max value in RGB set
+      const float pmin = CLIP(min3f(in)); // Min value in RGB set
+      *lm = (pmax + pmin) / 2.f;    // Pixel luminosity
       in += ch;
       lm++;
     }
@@ -122,12 +128,12 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   DT_OMP_FOR()
   for(int j = 0; j < roi_out->height; j++)
   {
-    int yMin = fmax(0, j - rad);
-    int yMax = fmin(roi_in->height, j + rad + 1);
-    int h = yMax - yMin;
+    const int yMin = fmax(0, j - rad);
+    const int yMax = fmin(roi_in->height, j + rad + 1);
+    const int h = yMax - yMin;
 
-    int xMin0 = fmax(0, 0 - rad);
-    int xMax0 = fmin(roi_in->width - 1, rad);
+    const int xMin0 = fmax(0, 0 - rad);
+    const int xMax0 = fmin(roi_in->width - 1, rad);
 
     int hist[BINS + 1];
     int clippedhist[BINS + 1];
@@ -149,27 +155,29 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
       int v = ROUND_POSISTIVE(luminance[(size_t)j * roi_in->width + i] * (float)BINS);
 
-      int xMin = fmax(0, i - rad);
-      int xMax = i + rad + 1;
-      int w = fmin(roi_in->width, xMax) - xMin;
-      int n = h * w;
+      const int xMin = fmax(0, i - rad);
+      const int xMax = i + rad + 1;
+      const int w = fmin(roi_in->width, xMax) - xMin;
+      const int n = h * w;
 
-      int limit = (int)(slope * n / BINS + 0.5f);
+      const int limit = (int)(slope * n / BINS + 0.5f);
 
       /* remove left behind values from histogram */
       if(xMin > 0)
       {
-        int xMin1 = xMin - 1;
+        const int xMin1 = xMin - 1;
         for(int yi = yMin; yi < yMax; ++yi)
-          --hist[ROUND_POSISTIVE(luminance[(size_t)yi * roi_in->width + xMin1] * (float)BINS)];
+          --hist[ROUND_POSISTIVE
+                 (luminance[(size_t)yi * roi_in->width + xMin1] * (float)BINS)];
       }
 
       /* add newly included values to histogram */
       if(xMax <= roi_in->width)
       {
-        int xMax1 = xMax - 1;
+        const int xMax1 = xMax - 1;
         for(int yi = yMin; yi < yMax; ++yi)
-          ++hist[ROUND_POSISTIVE(luminance[(size_t)yi * roi_in->width + xMax1] * (float)BINS)];
+          ++hist[ROUND_POSISTIVE
+                 (luminance[(size_t)yi * roi_in->width + xMax1] * (float)BINS)];
       }
 
       /* clip histogram and redistribute clipped entries */
@@ -181,7 +189,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
         ce = 0;
         for(int b = 0; b <= BINS; b++)
         {
-          int d = clippedhist[b] - limit;
+          const int d = clippedhist[b] - limit;
           if(d > 0)
           {
             ce += d;
@@ -189,13 +197,13 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
           }
         }
 
-        int d = (ce / (float)(BINS + 1));
-        int m = ce % (BINS + 1);
+        const int d = (ce / (float)(BINS + 1));
+        const int m = ce % (BINS + 1);
         for(int b = 0; b <= BINS; b++) clippedhist[b] += d;
 
         if(m != 0)
         {
-          int s = BINS / (float)m;
+          const int s = BINS / (float)m;
           for(int b = 0; b <= BINS; b += s) ++clippedhist[b];
         }
       } while(ce != ceb);
@@ -206,12 +214,14 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
         if(clippedhist[b] != 0) hMin = b;
 
       int cdf = 0;
-      for(int b = hMin; b <= v; b++) cdf += clippedhist[b];
+      for(int b = hMin; b <= v; b++)
+        cdf += clippedhist[b];
 
       int cdfMax = cdf;
-      for(int b = v + 1; b <= BINS; b++) cdfMax += clippedhist[b];
+      for(int b = v + 1; b <= BINS; b++)
+        cdfMax += clippedhist[b];
 
-      int cdfMin = clippedhist[hMin];
+      const int cdfMin = clippedhist[hMin];
 
       *ld = (cdf - cdfMin) / (float)(cdfMax - cdfMin);
 
@@ -241,7 +251,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 #undef BINS
 }
 
-static void radius_callback(GtkWidget *slider, dt_iop_module_t *self)
+static void radius_callback(GtkWidget *slider,
+                            dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_rlce_params_t *p = self->params;
@@ -249,7 +260,8 @@ static void radius_callback(GtkWidget *slider, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void slope_callback(GtkWidget *slider, dt_iop_module_t *self)
+static void slope_callback(GtkWidget *slider,
+                           dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_rlce_params_t *p = self->params;
@@ -259,7 +271,9 @@ static void slope_callback(GtkWidget *slider, dt_iop_module_t *self)
 
 
 
-void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self,
+                   dt_iop_params_t *p1,
+                   dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)p1;
@@ -269,12 +283,16 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->slope = p->slope;
 }
 
-void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self,
+               dt_dev_pixelpipe_t *pipe,
+               dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_rlce_data_t));
 }
 
-void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_t *pipe,
+                  dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
@@ -305,8 +323,10 @@ void gui_init(dt_iop_module_t *self)
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
-  g->vbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  g->vbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  g->vbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL,
+                                 DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  g->vbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL,
+                                 DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 0);
 
@@ -324,8 +344,10 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->scale1), _("size of features to preserve"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->scale2), _("strength of the effect"));
 
-  g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(radius_callback), self);
-  g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(slope_callback), self);
+  g_signal_connect(G_OBJECT(g->scale1), "value-changed",
+                   G_CALLBACK(radius_callback), self);
+  g_signal_connect(G_OBJECT(g->scale2), "value-changed",
+                   G_CALLBACK(slope_callback), self);
 }
 
 // clang-format off
@@ -333,4 +355,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

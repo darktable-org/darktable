@@ -25,14 +25,12 @@
 #include "common/file_location.h"
 #include "common/l10n.h"
 #include "common/image.h"
-#include "common/image_cache.h"
 #include "common/gimp.h"
 #include "gui/guides.h"
 #include "gui/splash.h"
 #include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "dtgtk/button.h"
 #include "dtgtk/drawingarea.h"
 #include "dtgtk/expander.h"
 #include "dtgtk/sidepanel.h"
@@ -43,7 +41,6 @@
 #include "common/styles.h"
 #include "control/conf.h"
 #include "control/control.h"
-#include "control/jobs.h"
 #include "control/signal.h"
 #include "gui/presets.h"
 #include "views/view.h"
@@ -1280,7 +1277,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   _osx_add_view_menu_item(view_menu, C_("menu", "Darkroom"), "darkroom");
 
   GtkWidget *sep = gtk_separator_menu_item_new();
-  gtk_menu_shell_append(GTK_MENU_SHELL (view_menu), sep);
+  gtk_menu_shell_append(GTK_MENU_SHELL(view_menu), sep);
   gtk_widget_show(sep);
 
   _osx_add_view_menu_item(view_menu, C_("menu", "Slideshow"), "slideshow");
@@ -1292,7 +1289,15 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   _osx_add_view_menu_item(view_menu, C_("menu", "Tethering"), "tethering");
 #endif
 
-  gtk_menu_item_set_submenu(GTK_MENU_ITEM (view_root_menu), view_menu);
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(view_root_menu), view_menu);
+
+  // Window menu
+  GtkWidget *window_root_menu = gtk_menu_item_new_with_label(C_("menu", "Window"));
+  gtk_widget_show(window_root_menu);
+
+  GtkWidget *window_menu = gtk_menu_new();
+  gtk_widget_show(window_menu);
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(window_root_menu), window_menu);
 
   // Help menu
   GtkWidget *help_root_menu = gtk_menu_item_new_with_label(C_("menu", "Help"));
@@ -1300,24 +1305,25 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   GtkWidget *help_menu = gtk_menu_new();
   GtkWidget *help_manual = gtk_menu_item_new_with_label(C_("menu", "darktable Manual"));
-  gtk_menu_shell_append(GTK_MENU_SHELL (help_menu), help_manual);
+  gtk_menu_shell_append(GTK_MENU_SHELL(help_menu), help_manual);
   gtk_widget_show(help_manual);
   dt_gui_add_help_link(help_manual, "document_root");
   g_signal_connect(G_OBJECT(help_manual), "activate",
                    G_CALLBACK(dt_gui_show_help), help_manual);
 
   GtkWidget *help_home = gtk_menu_item_new_with_label(C_("menu", "darktable Homepage"));
-  gtk_menu_shell_append(GTK_MENU_SHELL (help_menu), help_home);
+  gtk_menu_shell_append(GTK_MENU_SHELL(help_menu), help_home);
   gtk_widget_show(help_home);
   g_signal_connect(G_OBJECT(help_home), "activate",
                    G_CALLBACK(_open_url), "https://www.darktable.org");
 
-  gtk_menu_item_set_submenu(GTK_MENU_ITEM (help_root_menu), help_menu);
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(help_root_menu), help_menu);
 
   // build the menu bar
   GtkWidget *menu_bar = gtk_menu_bar_new();
   gtk_widget_show(menu_bar);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), view_root_menu);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), window_root_menu);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), help_root_menu);
 
   gtkosx_application_set_menu_bar(OSXApp, GTK_MENU_SHELL(menu_bar));
@@ -1335,6 +1341,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
                    G_CALLBACK(dt_gui_preferences_show), NULL);
   gtkosx_application_insert_app_menu_item(OSXApp, mi_prefs, 1);
 
+  gtkosx_application_set_window_menu(OSXApp, GTK_MENU_ITEM(window_root_menu));
   gtkosx_application_set_help_menu(OSXApp, GTK_MENU_ITEM(help_root_menu));
 
   g_signal_connect(G_OBJECT(OSXApp), "NSApplicationBlockTermination",
@@ -4095,7 +4102,7 @@ GtkWidget *dt_ui_resize_wrap(GtkWidget *w,
   }
   else
   {
-    GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+    GtkWidget *sw = dt_gui_scroll_wrap(w);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
                                    GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
     gtk_scrolled_window_set_min_content_height
@@ -4104,7 +4111,6 @@ GtkWidget *dt_ui_resize_wrap(GtkWidget *w,
                      G_CALLBACK(_resize_wrap_scroll), config_str);
     g_signal_connect(G_OBJECT(w), "draw",
                      G_CALLBACK(_resize_wrap_draw), config_str);
-    gtk_container_add(GTK_CONTAINER(sw), w);
     gtk_widget_set_margin_bottom(sw, DT_RESIZE_HANDLE_SIZE);
     w = gtk_event_box_new();
     gtk_container_add(GTK_CONTAINER(w), sw);
@@ -4411,7 +4417,9 @@ void dt_gui_cursor_set_busy()
     // since the main reason for calling this function is that we won't be running the Gtk main
     // loop for a while, ensure that the mouse cursor gets updated
     dt_gui_process_events();
-    gtk_grab_add(darktable.control->progress_system.proxy.module->widget);
+    GtkWidget *progress_widget = darktable.control->progress_system.proxy.module->widget;
+    gtk_widget_realize(progress_widget);
+    gtk_grab_add(progress_widget);
   }
 }
 
@@ -4482,6 +4490,7 @@ void dt_gui_simulate_button_event(GtkWidget *widget,
 
 GtkWidget *(dt_gui_box_add)(const char *file, const int line, const char *function, GtkBox *box, gpointer list[])
 {
+  if(!GTK_IS_BOX(box)) dt_print(DT_DEBUG_ALWAYS, "%s:%d %s: trying to add widgets to non-box container using dt_gui_box_add", file, line, function);
   int i = 1;
   for(; *list != (gpointer)-1; list++, i++)
   {
@@ -4518,6 +4527,35 @@ static void _commit_on_focus_loss_callback(GtkCellRenderer *renderer,
 void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer, GtkCellEditable **active_editable)
 {
   g_signal_connect(renderer, "editing-started", G_CALLBACK(_commit_on_focus_loss_callback), (gpointer)active_editable);
+}
+
+static void _resize_dialog(GtkWidget *widget, GdkEvent *event, const char *conf)
+{
+  char buf[256];
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  gtk_window_get_position(GTK_WINDOW(widget), &allocation.x, &allocation.y);
+  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_width", conf), allocation.width);
+  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_height", conf), allocation.height);
+  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_x", conf), allocation.x);
+  dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_y", conf), allocation.y);
+}
+
+void dt_gui_dialog_restore_size(GtkDialog *dialog, const char *conf)
+{
+  char buf[256];
+  int width = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_width", conf));
+  int height = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_height", conf));
+  double factor = dt_conf_is_default(buf) ? darktable.gui->dpi_factor : 1.0;
+  gtk_window_resize(GTK_WINDOW(dialog), factor * width, factor * height);
+
+  int x = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_x", conf));
+  int y = dt_conf_get_int(dt_buf_printf(buf, "ui_last/%s_dialog_y", conf));
+  if(x && y)
+    gtk_window_move(GTK_WINDOW(dialog), x, y);
+  else
+    gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
+  g_signal_connect(dialog, "configure-event", G_CALLBACK(_resize_dialog), (gpointer)conf);
 }
 
 // clang-format off

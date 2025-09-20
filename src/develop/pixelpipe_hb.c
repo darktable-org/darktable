@@ -247,8 +247,7 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe,
   pipe->cache_obsolete = FALSE;
   pipe->backbuf = NULL;
   pipe->backbuf_scale = 0.0f;
-  pipe->backbuf_zoom_x = 0.0f;
-  pipe->backbuf_zoom_y = 0.0f;
+  memset(pipe->backbuf_zoom_pos, 0, sizeof(dt_dev_zoom_pos_t));
   pipe->output_imgid = NO_IMGID;
 
   memset(&pipe->scharr, 0, sizeof(dt_dev_detail_mask_t));
@@ -3018,8 +3017,10 @@ gboolean dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe,
   dt_iop_roi_t roi = (dt_iop_roi_t){ x, y, width, height, scale };
   pipe->final_width = width;
   pipe->final_height = height;
-  float pts[2] = { (x + 0.5f * width) / scale, (y + 0.5f * height) / scale };
-  dt_dev_distort_backtransform_plus(dev, pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, pts, 1);
+
+  float zx = (x + 0.5f * width) / scale, zy = (y + 0.5f * height) / scale;
+  dt_dev_zoom_pos_t pts = { zx, zy, zx + 1000.f, zy, zx, zy + 1000.f };
+  dt_dev_distort_backtransform_plus(dev, pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY, pts, 3);
 
   // get a snapshot of mask list
   if(pipe->forms) g_list_free_full(pipe->forms, (void (*)(void *))dt_masks_free_form);
@@ -3166,8 +3167,7 @@ restart:
     {
       memcpy(pipe->backbuf, buf, sizeof(uint8_t) * 4 * width * height);
       pipe->backbuf_scale = scale;
-      pipe->backbuf_zoom_x = pts[0] * pipe->iscale;
-      pipe->backbuf_zoom_y = pts[1] * pipe->iscale;
+      for(int i = 0; i < 6; i++) pipe->backbuf_zoom_pos[i] = pts[i] * pipe->iscale;
       pipe->output_imgid = pipe->image.id;
     }
   }
@@ -3440,44 +3440,31 @@ void dt_dev_clear_scharr_mask(dt_dev_pixelpipe_t *pipe)
 }
 
 gboolean dt_dev_write_scharr_mask(dt_dev_pixelpipe_iop_t *piece,
-                                  float *const rgb,
+                                  float *const restrict src,
                                   const dt_iop_roi_t *const roi,
                                   const gboolean rawmode)
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
   dt_dev_clear_scharr_mask(p);
-  if(piece->pipe->tiling)
-    goto error;
+  if(p->tiling) goto error;
 
-  float *mask = dt_iop_image_alloc(roi->width, roi->height, 1);
+  float *mask = dt_masks_calc_scharr_mask(p, src, roi->width, roi->height, rawmode);
   if(!mask) goto error;
 
   p->scharr.data = mask;
   memcpy(&p->scharr.roi, roi, sizeof(dt_iop_roi_t));
-
-  const gboolean wboff = !p->dsc.temperature.enabled || !rawmode;
-  const dt_aligned_pixel_t wb = { wboff ? 1.0f : p->dsc.temperature.coeffs[0],
-                                  wboff ? 1.0f : p->dsc.temperature.coeffs[1],
-                                  wboff ? 1.0f : p->dsc.temperature.coeffs[2] };
-  if(dt_masks_calc_scharr_mask(&p->scharr, rgb, wb))
-    goto error;
 
   p->scharr.hash = dt_hash(DT_INITHASH, &p->scharr.roi, sizeof(dt_iop_roi_t));
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "write scharr mask CPU",
                 p, NULL, DT_DEVICE_CPU, NULL, NULL, "(%ix%i)",
                 roi->width, roi->height);
-
-  if(darktable.dump_pfm_module && (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT))
-    dt_dump_pfm("scharr_cpu", mask, roi->width, roi->height, sizeof(float), "detail");
-
   return FALSE;
 
  error:
   dt_print_pipe(DT_DEBUG_ALWAYS,
                 "couldn't write scharr mask CPU",
                 p, NULL, DT_DEVICE_CPU, NULL, NULL);
-  dt_dev_clear_scharr_mask(p);
   return TRUE;
 }
 
@@ -3537,9 +3524,6 @@ int dt_dev_write_scharr_mask_cl(dt_dev_pixelpipe_iop_t *piece,
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "write scharr mask CL",
                 p, NULL, devid, NULL, NULL, "(%ix%i)",
                 width, height);
-
-  if(darktable.dump_pfm_module && (p->type & DT_DEV_PIXELPIPE_EXPORT))
-    dt_dump_pfm("scharr_cl", mask, width, height, sizeof(float), "detail");
 
   error:
   if(err != CL_SUCCESS)
@@ -3634,6 +3618,11 @@ float *dt_dev_distort_detail_mask(dt_dev_pixelpipe_iop_t *piece,
     resmask = NULL;
   }
 
+  if(src && src == resmask)
+  {
+    resmask = dt_iop_image_alloc(pipe->scharr.roi.width, pipe->scharr.roi.height, 1);
+    dt_iop_image_copy(resmask, src, pipe->scharr.roi.width * pipe->scharr.roi.height);
+  }
   return resmask;
 }
 

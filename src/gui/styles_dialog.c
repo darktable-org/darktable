@@ -553,31 +553,17 @@ static void _gui_styles_dialog_run(gboolean edit,
                                   _("_save"), GTK_RESPONSE_ACCEPT, NULL));
   dt_gui_dialog_add_help(dialog, "styles");
   gtk_dialog_set_default_response(dialog, GTK_RESPONSE_ACCEPT);
+  dt_gui_dialog_restore_size(dialog, "styles");
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(GTK_WIDGET(dialog));
 #endif
 
-  GtkContainer *content_area =
-    GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
-
-  // label box
-  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-
-  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
-                                 GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scroll),
-                                             DT_PIXEL_APPLY_DPI(450));
-//  only available in 3.22, and not making the expected job anyway
-//  gtk_scrolled_window_set_max_content_height(GTK_SCROLLED_WINDOW(scroll), DT_PIXEL_APPLY_DPI(700));
-//  gtk_scrolled_window_set_propagate_natural_height(GTK_SCROLLED_WINDOW(scroll), TRUE);
-
   // box in scrollwindow containing the two possible trees
   GtkBox *sbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-
-  gtk_box_pack_start(GTK_BOX(content_area), GTK_WIDGET(box), TRUE, TRUE, 0);
-  gtk_container_add(GTK_CONTAINER(scroll), GTK_WIDGET(sbox));
+  GtkWidget *scroll = dt_gui_scroll_wrap(GTK_WIDGET(sbox));
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
+                                 GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
   sd->name = gtk_entry_new();
   gtk_entry_set_placeholder_text(GTK_ENTRY(sd->name), _("name"));
@@ -607,9 +593,7 @@ static void _gui_styles_dialog_run(gboolean edit,
     }
   }
 
-  gtk_box_pack_start(box, sd->name, FALSE, TRUE, 0);
-  gtk_box_pack_start(box, sd->description, FALSE, TRUE, 0);
-  gtk_box_pack_start(box, GTK_WIDGET(scroll), TRUE, TRUE, 0);
+  dt_gui_dialog_add(dialog, sd->name, sd->description, scroll);
 
   /* create the list of items */
   sd->items = GTK_TREE_VIEW(gtk_tree_view_new());
@@ -752,11 +736,9 @@ static void _gui_styles_dialog_run(gboolean edit,
     dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_showmask);
 
   /* fill list with history items */
-  GtkTreeIter iter;
   if(edit)
   {
-    gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
-    gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
+    gtk_list_store_insert_with_values(liststore, NULL, -1,
                        DT_STYLE_ITEMS_COL_ENABLED,  dt_styles_has_module_order(name),
                        DT_STYLE_ITEMS_COL_ISACTIVE, is_active_pb,
                        DT_STYLE_ITEMS_COL_NAME,     _("module order"),
@@ -773,8 +755,7 @@ static void _gui_styles_dialog_run(gboolean edit,
 
         if(item->num != -1 && item->selimg_num != -1) // defined in style and image
         {
-          gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
-          gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
+          gtk_list_store_insert_with_values(liststore, NULL, -1,
                              DT_STYLE_ITEMS_COL_ENABLED,    TRUE,
                              DT_STYLE_ITEMS_COL_AUTOINIT,   FALSE,
                              DT_STYLE_ITEMS_COL_UPDATE,     FALSE,
@@ -789,8 +770,7 @@ static void _gui_styles_dialog_run(gboolean edit,
         else if(item->num != -1
                 || item->selimg_num != -1) // defined in one or the other, let a way to select it or not
         {
-          gtk_list_store_append(GTK_LIST_STORE(liststore_new), &iter);
-          gtk_list_store_set(GTK_LIST_STORE(liststore_new), &iter,
+          gtk_list_store_insert_with_values(liststore_new, NULL, -1,
                              DT_STYLE_ITEMS_COL_ENABLED,    item->num != -1 ? TRUE : FALSE,
                              DT_STYLE_ITEMS_COL_AUTOINIT,   FALSE,
                              DT_STYLE_ITEMS_COL_ISACTIVE,   item->enabled ? is_active_pb : is_inactive_pb,
@@ -809,8 +789,7 @@ static void _gui_styles_dialog_run(gboolean edit,
   {
     const dt_iop_order_t order = dt_ioppr_get_iop_order_version(imgid);
     char *label = g_strdup_printf("%s (%s)", _("module order"), dt_iop_order_string(order));
-    gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
-    gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
+    gtk_list_store_insert_with_values(liststore, NULL, -1,
                        DT_STYLE_ITEMS_COL_ENABLED,  TRUE,
                        DT_STYLE_ITEMS_COL_ISACTIVE, is_active_pb,
                        DT_STYLE_ITEMS_COL_NAME,     label,
@@ -840,9 +819,7 @@ static void _gui_styles_dialog_run(gboolean edit,
           }
         }
 
-        gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
-        gtk_list_store_set
-          (GTK_LIST_STORE(liststore), &iter,
+        gtk_list_store_insert_with_values(liststore, NULL, -1,
            DT_STYLE_ITEMS_COL_ENABLED,  enabled,
            DT_STYLE_ITEMS_COL_AUTOINIT, FALSE,
            DT_STYLE_ITEMS_COL_ISACTIVE, item->enabled ? is_active_pb : is_inactive_pb,
@@ -863,13 +840,13 @@ static void _gui_styles_dialog_run(gboolean edit,
   }
 
   if(has_item)
-    gtk_box_pack_start(sbox, GTK_WIDGET(sd->items), TRUE, TRUE, 0);
+    dt_gui_box_add(sbox, sd->items);
 
   if(has_new_item)
-    gtk_box_pack_start(sbox, GTK_WIDGET(sd->items_new), TRUE, TRUE, 0);
+    dt_gui_box_add(sbox, sd->items_new);
 
   if(edit)
-    gtk_box_pack_start(GTK_BOX(content_area), GTK_WIDGET(sd->duplicate), FALSE, TRUE, 0);
+    dt_gui_dialog_add(dialog, sd->duplicate);
 
   g_object_unref(liststore);
   g_object_unref(liststore_new);

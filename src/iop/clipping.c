@@ -848,14 +848,14 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
       corn_out_y[c] = o[1];
     }
 
-    float new_x = fminf(fminf(fminf(corn_out_x[0], corn_out_x[1]), corn_out_x[2]), corn_out_x[3]);
+    float new_x = min4f(corn_out_x);
     if(new_x + roi_in->width < 0) new_x = -roi_in->width;
-    float new_y = fminf(fminf(fminf(corn_out_y[0], corn_out_y[1]), corn_out_y[2]), corn_out_y[3]);
+    float new_y = min4f(corn_out_y);
     if(new_y + roi_in->height < 0) new_y = -roi_in->height;
 
-    float new_sc_x = fmaxf(fmaxf(fmaxf(corn_out_x[0], corn_out_x[1]), corn_out_x[2]), corn_out_x[3]);
+    float new_sc_x = max4f(corn_out_x);
     if(new_sc_x > 2.0f * roi_in->width) new_sc_x = 2.0f * roi_in->width;
-    float new_sc_y = fmaxf(fmaxf(fmaxf(corn_out_y[0], corn_out_y[1]), corn_out_y[2]), corn_out_y[3]);
+    float new_sc_y = max4f(corn_out_y);
     if(new_sc_y > 2.0f * roi_in->height) new_sc_y = 2.0f * roi_in->height;
 
     // be careful, we don't want too small area here !

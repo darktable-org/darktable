@@ -60,7 +60,7 @@ Requirements
 * NetBSD
 * OpenBSD
 * Windows 8.1 with [UCRT](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c) and later
-* macOS 13.5 and later
+* Apple Silicon Macs running macOS 14 and later
 
 *Big-endian platforms are not supported.*
 

@@ -36,12 +36,6 @@ hexidx4(const char2 hex, const int stride)
   return mul24(mad24(hex.y, stride, hex.x), 4);
 }
 
-float
-sqr(const float x)
-{
-  return x * x;
-}
-
 // copy image from image object to buffer.
 kernel void
 markesteijn_initial_copy(read_only image2d_t in, global float *rgb, const int width, const int height,
@@ -333,8 +327,8 @@ markesteijn_solitary_green(global float *rgb, global float *aux, const int width
     const int off = i << c;
     const float g = 2.0f * buff[1] - (buff + off)[1] - (buff - off)[1];
     color[h] = g + (buff + off)[h] + (buff - off)[h];
-    diff += (d > 1) ? sqr((buff + off)[1] - (buff - off)[1] - (buff + off)[h] + (buff - off)[h])
-                      + sqr(g)
+    diff += (d > 1) ? fsquare((buff + off)[1] - (buff - off)[1] - (buff + off)[h] + (buff - off)[h])
+                      + fsquare(g)
                     : 0.0f;
   }
 
@@ -641,9 +635,9 @@ markesteijn_differentiate(global float *yuv, global float *drv, const int width,
   const char2 p = dir[d & 3];
   const int off = 4 * mad24(p.y, stride, p.x);
 
-  drv[0] = sqr(2.0f * (buff)[0] - (buff + off)[0] - (buff - off)[0])
-           + sqr(2.0f * (buff)[1] - (buff + off)[1] - (buff - off)[1])
-           + sqr(2.0f * (buff)[2] - (buff + off)[2] - (buff - off)[2]);
+  drv[0] = fsquare(2.0f * (buff)[0] - (buff + off)[0] - (buff - off)[0])
+           + fsquare(2.0f * (buff)[1] - (buff + off)[1] - (buff - off)[1])
+           + fsquare(2.0f * (buff)[2] - (buff + off)[2] - (buff - off)[2]);
 }
 
 

@@ -961,6 +961,48 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>ui_last/copy_history_dialog_width</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/copy_history_dialog_height</name>
+    <type>int</type>
+    <default>450</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/styles_dialog_width</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/styles_dialog_height</name>
+    <type>int</type>
+    <default>500</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/metadata_dialog_width</name>
+    <type>int</type>
+    <default>500</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/metadata_dialog_height</name>
+    <type>int</type>
+    <default>400</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>ui_last/session_expander_import</name>
     <type>bool</type>
     <default>false</default>
@@ -3520,6 +3562,7 @@
       <enum>
         <option>scene-referred (sigmoid)</option>
         <option>scene-referred (filmic)</option>
+        <option>scene-referred (agx)</option>
         <option>display-referred (legacy)</option>
         <option>none</option>
       </enum>
@@ -3857,6 +3900,41 @@
     <default>0</default>
     <shortdescription>active tab in tone equaliser module</shortdescription>
     <longdescription>which of simple, advanced or masking tabs will show at startup</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/agx/enable_curve_tab</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to enable the curve tab</shortdescription>
+    <longdescription>if enabled, the settings tab will have fewer controls and will occupy less vertical space</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/agx/look_always_visible</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to keep look controls always visible</shortdescription>
+    <longdescription>if enabled, the look controls won't be placed in a collapsible section</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/agx/expand_curve_graph</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to expand the curve graph</shortdescription>
+    <longdescription>this is just to store whether to show the curve graph or not</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/agx/curve_graph_height</name>
+    <type min="100" max="300">int</type>
+    <default>200</default>
+    <shortdescription>height of agx graph in per cent</shortdescription>
+    <longdescription>height of agx graph in per cent</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/agx/expand_curve_advanced</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to show advanced curve parameters</shortdescription>
+    <longdescription>this is just to store whether to show advanced curve parameters or not</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/collect/windowheight</name>

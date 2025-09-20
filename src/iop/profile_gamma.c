@@ -133,31 +133,31 @@ void init_presets(dt_iop_module_so_t *self)
   p.dynamic_range = 16.0f;
   p.shadows_range = -12.0f;
   dt_gui_presets_add_generic(_("16 EV dynamic range (generic)"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // 14 EV preset
   p.dynamic_range = 14.0f;
   p.shadows_range = -10.50f;
   dt_gui_presets_add_generic(_("14 EV dynamic range (generic)"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // 12 EV preset
   p.dynamic_range = 12.0f;
   p.shadows_range = -9.0f;
   dt_gui_presets_add_generic(_("12 EV dynamic range (generic)"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // 10 EV preset
   p.dynamic_range = 10.0f;
   p.shadows_range = -7.50f;
   dt_gui_presets_add_generic(_("10 EV dynamic range (generic)"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // 08 EV preset
   p.dynamic_range = 8.0f;
   p.shadows_range = -6.0f;
   dt_gui_presets_add_generic(_("08 EV dynamic range (generic)"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_DISPLAY);
 }
 
 
@@ -330,7 +330,7 @@ static void apply_auto_grey(dt_iop_module_t *self)
   dt_iop_profilegamma_params_t *p = self->params;
   dt_iop_profilegamma_gui_data_t *g = self->gui_data;
 
-  float grey = fmax(fmax(self->picked_color[0], self->picked_color[1]), self->picked_color[2]);
+  float grey = max3f(self->picked_color);
   p->grey_point = 100.f * grey;
 
   ++darktable.gui->reset;
@@ -349,7 +349,7 @@ static void apply_auto_black(dt_iop_module_t *self)
   float noise = powf(2.0f, -16.0f);
 
   // Black
-  float black = fmax(fmax(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
+  float black = max3f(self->picked_color_min);
   float EVmin = Log2Thres(black / (p->grey_point / 100.0f), noise);
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
@@ -374,7 +374,7 @@ static void apply_auto_dynamic_range(dt_iop_module_t *self)
   float EVmin = p->shadows_range;
 
   // White
-  float white = fmax(fmax(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]);
+  float white = max3f(self->picked_color_max);
   float EVmax = Log2Thres(white / (p->grey_point / 100.0f), noise);
   EVmax *= (1.0f + p->security_factor / 100.0f);
 
@@ -395,16 +395,16 @@ static void apply_autotune(dt_iop_module_t *self)
   float noise = powf(2.0f, -16.0f);
 
   // Grey
-  float grey = fmax(fmax(self->picked_color[0], self->picked_color[1]), self->picked_color[2]);
+  float grey = max3f(self->picked_color);
   p->grey_point = 100.f * grey;
 
   // Black
-  float black = fmax(fmax(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
+  float black = max3f(self->picked_color_min);
   float EVmin = Log2Thres(black / (p->grey_point / 100.0f), noise);
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
   // White
-  float white = fmax(fmax(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2]);
+  float white = max3f(self->picked_color_max);
   float EVmax = Log2Thres(white / (p->grey_point / 100.0f), noise);
   EVmax *= (1.0f + p->security_factor / 100.0f);
 

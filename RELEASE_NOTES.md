@@ -52,7 +52,21 @@ changes (where available).
 - A new section Capture Sharpening is added into the demosaic
   module. The capture sharpening tries to recover details lost due to
   in-camera blurring, which can be caused by diffraction, the
-  anti-aliasing filter or other sources of gaussian-type blur.
+  anti-aliasing filter or other sources of Gaussian-type blur.
+
+- Added a new tone mapper implementation based on Blender's AgX
+  display transform. The new module's color output is similar to that
+  of Sigmoid, but the provided set of controls is more extensive. It
+  allows for setting exposure white and black points explicitly,
+  similar to Filmic RGB. The implementation includes a user-adjustable
+  pivot point for the tone curve, with the default set at 18%
+  mid-gray. Contrast around this pivot is adjustable. Controls are
+  provided to create a section of constant contrast, and independent
+  sliders are available to control the contrast in shadows and
+  highlights (the "toe" and "shoulder" of the curve). The resulting
+  output is characterized by a gradual color desaturation in
+  highlights, similar to film, and a natural-looking color
+  representation in mid-tones and highlights.
 
 ## UI/UX Improvements
 
@@ -60,6 +74,16 @@ changes (where available).
   feedback when, for example, double-clicking an image in the
   lighttable instead of simply freezing the UI until the darkroom has
   finished opening.
+
+- Added the standard "Window" menu to the application menu bar on
+  macOS.
+
+- In the navigation windows, the zoom is now better behaving. After a
+  free zoom over the darkroom, using the scroll over the zoom level
+  indicator of the navigation window, the selected zoom will be the
+  closest match (above or below depending on the scroll
+  direction). This is better as previous behavior where the zoom level
+  was always set to "small".
 
 ## Performance Improvements
 
@@ -74,12 +98,27 @@ changes (where available).
 - Hierarchical presets are now supported for utility modules as well
   as processing modules.
 
-- Fixed some issues with the hierarchical styles handling in the
-  styles module.
+- Dual demosaicing now works also in tiling mode for possibly better
+  OpenCL performance and smaller CPU memory pressure.
+
+- Added automatic compensation of camera's hidden underexposure for
+  Canon Lighting Optimizer mode, Nikon Active D-Lighting and HLG tone
+  modes, Olympus Gradation mode, Pentax Dynamic Range Expansion mode,
+  and Fujifilm DR200/DR400 modes.
 
 ## Bug Fixes
 
-- ???
+- Fixed some issues with the hierarchical styles handling in the
+  styles module.
+
+- Fixed moving additional extra audio or text sidecar files when
+  an image is moved.
+
+- Fixed module based collection restoring. After quitting darktable with a
+  module based collection, the lighttable was empty after restarting it.
+
+- Fixed some reset issues of the export module. The format and storage
+  sections were not reset properly.
 
 ## Lua
 
@@ -113,7 +152,7 @@ changes (where available).
   metadata fields unless the user selects all of the checkboxes in the
   export module's preference options.
 
-- Starting with release 4.8, macOS versions older than 13.5 are not
+- Starting with release 5.4, macOS versions older than 14.0 are not
   supported.
 
 ## Changed Dependencies

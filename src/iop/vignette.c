@@ -1008,7 +1008,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.dithering = 0;
   p.unbound = TRUE;
   dt_gui_presets_add_generic(_("lomo"), self->op,
-                             self->version(), &p, sizeof(p), 1,
+                             self->version(), &p, sizeof(p), TRUE,
                              DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_database_release_transaction(darktable.db);
 }

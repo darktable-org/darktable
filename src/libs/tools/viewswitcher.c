@@ -103,7 +103,6 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->dropdown = NULL;
-  GtkTreeIter tree_iter;
   GtkListStore *model = NULL;
 
   for(GList *view_iter = darktable.view_manager->views; view_iter; view_iter = g_list_next(view_iter))
@@ -145,15 +144,13 @@ void gui_init(dt_lib_module_t *self)
         gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(d->dropdown), renderer, "markup", TEXT_COLUMN,
                                         "sensitive", SENSITIVE_COLUMN, NULL);
 
-        gtk_list_store_append(model, &tree_iter);
-        gtk_list_store_set(model, &tree_iter, TEXT_COLUMN, _("other"), VIEW_COLUMN, NULL, SENSITIVE_COLUMN, 0, -1);
+        gtk_list_store_insert_with_values(model, NULL, -1, TEXT_COLUMN, _("other"), VIEW_COLUMN, NULL, SENSITIVE_COLUMN, 0, -1);
 
         gtk_box_pack_start(GTK_BOX(self->widget), d->dropdown, FALSE, FALSE, 0);
         g_signal_connect(G_OBJECT(d->dropdown), "changed", G_CALLBACK(_dropdown_changed), d);
       }
 
-      gtk_list_store_append(model, &tree_iter);
-      gtk_list_store_set(model, &tree_iter, TEXT_COLUMN, view->name(view), VIEW_COLUMN, view, SENSITIVE_COLUMN, 1, -1);
+      gtk_list_store_insert_with_values(model, NULL, -1, TEXT_COLUMN, view->name(view), VIEW_COLUMN, view, SENSITIVE_COLUMN, 1, -1);
     }
   }
 

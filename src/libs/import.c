@@ -410,9 +410,7 @@ static guint _import_from_camera_set_file_list(dt_lib_module_t *self)
       dt_datetime_unix_to_exif(dtid, sizeof(dtid), &datetime);
       const gboolean already_imported = dt_metadata_already_imported(basename, dtid);
       g_free(basename);
-      GtkTreeIter iter;
-      gtk_list_store_append(d->from.store, &iter);
-      gtk_list_store_set(d->from.store, &iter,
+      gtk_list_store_insert_with_values(d->from.store, NULL, -1,
                          DT_IMPORT_UI_EXISTS, already_imported ? "✔" : " ",
                          DT_IMPORT_UI_FILENAME, file->filename,
                          DT_IMPORT_FILENAME, file->filename,
@@ -886,9 +884,7 @@ static void _import_add_file_callback(GObject *direnum,
           GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
           gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
 
-          GtkTreeIter iter;
-          gtk_list_store_append(d->from.store, &iter);
-          gtk_list_store_set(d->from.store, &iter,
+          gtk_list_store_insert_with_values(d->from.store, NULL, -1,
                              DT_IMPORT_UI_EXISTS, already_imported ? "✔" : " ",
                              DT_IMPORT_UI_FILENAME, &fullname[offset],
                              DT_IMPORT_FILENAME, fullname,
@@ -1124,15 +1120,6 @@ static void _expander_create(dt_gui_collapsible_section_t *cs,
      DT_ACTION(self));
 }
 
-static void _resize_dialog(GtkWidget *widget,
-                           dt_lib_module_t* self)
-{
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  dt_conf_set_int("ui_last/import_dialog_width", allocation.width);
-  dt_conf_set_int("ui_last/import_dialog_height", allocation.height);
-}
-
 static gboolean _find_iter_folder(GtkTreeModel *model,
                                   GtkTreeIter *iter,
                                   const char *folder)
@@ -1187,13 +1174,13 @@ static void _get_folders_list(GtkTreeStore *store,
   if(!parent)
   {
     gchar *basename = g_path_get_basename(folder);
-    gtk_tree_store_append(store, &parent2, NULL);
-    gtk_tree_store_set(store, &parent2, DT_FOLDER_NAME, basename,
-                                     DT_FOLDER_PATH, folder,
-                                     DT_FOLDER_EXPANDED, FALSE, -1);
+    gtk_tree_store_insert_with_values(store, &parent2, NULL, -1,
+                                      DT_FOLDER_NAME, basename,
+                                      DT_FOLDER_PATH, folder,
+                                      DT_FOLDER_EXPANDED, FALSE, -1);
     // fake child
-    gtk_tree_store_append(store, &iter, &parent2);
-    gtk_tree_store_set(store, &iter, DT_FOLDER_EXPANDED, FALSE, -1);
+    gtk_tree_store_insert_with_values(store, &iter, &parent2, -1,
+                                      DT_FOLDER_EXPANDED, FALSE, -1);
     g_free(basename);
   }
   else
@@ -1491,15 +1478,12 @@ static void _set_places_list(GtkWidget *places_paned,
 
   gtk_box_pack_start(GTK_BOX(places_top_box), places_header, FALSE, FALSE, 0);
 
-  GtkWidget *placesWindow = gtk_scrolled_window_new(NULL, NULL);
+  GtkWidget *placesWindow = dt_gui_scroll_wrap(d->placesView);
   gtk_widget_set_tooltip_text(placesWindow,
                               _("you can add custom places using the plus icon"));
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(placesWindow),
-                                 GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(d->placesView),FALSE);
   gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->placesView), DT_PLACES_PATH);
-  gtk_container_add(GTK_CONTAINER(placesWindow), GTK_WIDGET(d->placesView));
 
   GtkTreeViewColumn* placesColumn =
     gtk_tree_view_column_new_with_attributes("", gtk_cell_renderer_text_new(),
@@ -1519,11 +1503,10 @@ static void _set_folders_list(GtkWidget *places_paned, dt_lib_module_t* self)
   dt_lib_import_t *d = self->data;
   GtkTreeStore *store = gtk_tree_store_new(DT_FOLDER_NUM_COLS, G_TYPE_STRING,
                                            G_TYPE_STRING, G_TYPE_BOOLEAN);
-  GtkWidget *w = gtk_scrolled_window_new(NULL, NULL);
+  d->from.folderview = GTK_TREE_VIEW(gtk_tree_view_new());
+  GtkWidget *w = dt_gui_scroll_wrap(GTK_WIDGET(d->from.folderview));
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_AUTOMATIC,
                                  GTK_POLICY_ALWAYS);
-  d->from.folderview = GTK_TREE_VIEW(gtk_tree_view_new());
-  gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->from.folderview));
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->from.folderview),
                               _("select a folder to see the content"));
 
@@ -1891,11 +1874,10 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
                                         dtgtk_cairo_paint_eye);
 
   // Create the treview with list model data store
-  d->from.w = gtk_scrolled_window_new(NULL, NULL);
+  d->from.treeview = GTK_TREE_VIEW(gtk_tree_view_new());
+  d->from.w = dt_gui_scroll_wrap(GTK_WIDGET(d->from.treeview));
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(d->from.w), GTK_POLICY_NEVER,
                                  GTK_POLICY_ALWAYS);
-  d->from.treeview = GTK_TREE_VIEW(gtk_tree_view_new());
-  gtk_container_add(GTK_CONTAINER(d->from.w), GTK_WIDGET(d->from.treeview));
 
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   GtkTreeViewColumn *column =
@@ -2081,13 +2063,8 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(d->from.dialog);
 #endif
-  gtk_window_set_default_size(GTK_WINDOW(d->from.dialog),
-                              dt_conf_get_int("ui_last/import_dialog_width"),
-                              dt_conf_get_int("ui_last/import_dialog_height"));
+  dt_gui_dialog_restore_size(GTK_DIALOG(d->from.dialog), "import");
   gtk_window_set_transient_for(GTK_WINDOW(d->from.dialog), GTK_WINDOW(win));
-  GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(d->from.dialog));
-  g_signal_connect(d->from.dialog, "check-resize",
-                   G_CALLBACK(_resize_dialog), self);
   g_signal_connect(d->from.dialog, "key-press-event",
                    G_CALLBACK(dt_handle_dialog_enter), self);
 
@@ -2118,7 +2095,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   // right pane
   GtkWidget *rbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
   gtk_paned_pack2(GTK_PANED(paned), rbox, TRUE, FALSE);
-  gtk_box_pack_start(GTK_BOX(content), paned, TRUE, TRUE, 0);
+  dt_gui_dialog_add(GTK_DIALOG(d->from.dialog), paned);
 
   guint line = 0;
   guint col = 0;

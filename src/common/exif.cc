@@ -20,6 +20,7 @@
 #define __STDC_FORMAT_MACROS
 
 #include <errno.h>
+#include <exiv2/types.hpp>
 #include <glib.h>
 #include <sqlite3.h>
 #include <sys/stat.h>
@@ -1129,6 +1130,133 @@ static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData,
   return img->exif_correction_type != CORRECTION_TYPE_NONE;
 }
 
+static void _check_highlight_preservation(Exiv2::ExifData &exifData,
+                                          dt_image_t *img)
+{
+    // Compute exposure bias applied by HDR/highlight-preservation/Dynamic Range Expansion/HLG-tone modes
+    img->exif_highlight_preservation = 0.0f;
+
+    Exiv2::ExifData::const_iterator pos;
+    if(FIND_EXIF_TAG("Exif.Canon.LightingOpt"))  // Active Lighting Optimization
+    {
+       // tag consists of an array of long values
+       // [0] total number of bytes in tag, i.e 4*array_length
+       // [1] ??, probably a boolean
+       // [2] state - 0=standard, 1=low, 2=strong, 3=off
+       const long state = pos->toLong(2);
+       if(state == 0)
+	  img->exif_highlight_preservation = 0.50f;	// estimated strength for Standard
+       else if(state == 1)
+	  img->exif_highlight_preservation = 0.33f;	// estimated strength for Low
+       else if(state == 2)
+	  img->exif_highlight_preservation = 0.66f;	// estimated strength for Strong
+    }
+    else if(FIND_EXIF_TAG("Exif.Fujifilm.DevelopmentDynamicRange")  // manual mode DR100/DR200/DR400
+       || FIND_EXIF_TAG("Exif.Fujifilm.AutoDynamicRange"))	    // auto mode
+    {
+      int dr = pos->toLong();
+      if(dr == 200)
+	img->exif_highlight_preservation = 1.0f;
+      else if(dr == 400)
+	img->exif_highlight_preservation = 2.0f;
+    }
+    else if(FIND_EXIF_TAG("Exif.Nikon3.ColorSpace"))
+    {
+      if(pos->toLong() == 4)  // HLG tone mode
+	img->exif_highlight_preservation = 2.0f;
+    }
+    else if(FIND_EXIF_TAG("Exif.Nikon3.ActiveDLighting"))
+    {
+      switch(pos->toLong())
+      {
+      case 0: // off
+      case 1: // low - experiments showed no exposure change, so presumably implemented with just tone curve
+      default:
+	 break;
+      case 3: // normal
+	 img->exif_highlight_preservation = 0.33f;
+	 break;
+      case 5: // high
+	 img->exif_highlight_preservation = 0.66f;
+	 break;
+      case 7: // extra high
+	 img->exif_highlight_preservation = 1.00f;
+	 break;
+      case 8: // extra high1
+	 img->exif_highlight_preservation = 1.10f;// guess as to strength
+	 break;
+      case 9: // extra high2
+	 img->exif_highlight_preservation = 1.20f;// guess as to strength
+	 break;
+      case 10: // extra high3
+	 img->exif_highlight_preservation = 1.30f;// guess as to strength
+	 break;
+      case 11: // extra high4
+	 img->exif_highlight_preservation = 1.33f;// guess as to strength
+	 break;
+      case 65535: // auto
+	 // no idea how to compute actual strength; maybe in some other tag?  For now, do nothing
+	 break;
+      }
+    }
+    else if(FIND_EXIF_TAG("Exif.OlympusCs.Gradation")
+       ||FIND_EXIF_TAG("Exif.OlympusRd2.Gradation"))
+    {
+      // first three values specify one of the possible settings: Normal(Off), Auto, Low Key, High Key
+      // fourth specifies 0=user-selected or 1=auto-override
+      const long state1 = pos->toLong(0);
+      const long state2 = pos->toLong(1);
+      const long state3 = pos->toLong(2);
+      const long state4 = pos->toLong(3);
+      if(state4 == 1) // Auto mode is reported to apply a -0.3EV exposure compensation
+	 img->exif_highlight_preservation = 0.33f;
+      else if(state1 == -1 && state2 == -1 && state3 == 1) // low key, reported -1.0EV exposure compensation
+	 img->exif_highlight_preservation = 0.66f;	   // but 0.66 is a better match to JPEG
+//// we currently don't compensate for deliberate over-exposure ////
+//      else if(state1 == 1 && state2 == -1 && state3 == 1) // high key, reported +1.0EV exposure compensation
+//	 img->exif_highlight_preservation = -1.00f;
+    }
+    else if(FIND_EXIF_TAG("Exif.Pentax.DynamicRangeExpansion"))
+    {
+      // if set to On, the camera underexposed by one stop
+#if EXIV2_TEST_VERSION(0, 28, 0)
+      Exiv2::DataBuf buf = pos->dataArea();
+      const int value0 = *buf.c_data(0);    // 0=off, 1=on
+      //const int value1 = *buf.c_data(1);    // 0=0, 1=enabled, 2=auto
+      //  alternative:
+      //const int value0 = buf.read_uint8(0);    // 0=off, 1=on
+      //const int value1 = buf.read_uint8(1);    // 0=0, 1=enabled, 2=auto
+#else
+      // the DataBuf accessor functions listed in the exiv2 v0.28 API docs are not present in v0.27, so we
+      // have to use an ugly workaround
+      std::string str = pos->toString();
+      const char *cstr = str.c_str();
+      const int value0 = cstr ? (*cstr == '1') : 0;   // 0=off, 1=on
+      //const int value1 = cstr ? cstr[2]-'0' : 0;    // 0=0, 1=enabled, 2=auto
+#endif
+      if(value0 == 1)
+	 img->exif_highlight_preservation = 1.0f;
+    }
+    else if(FIND_EXIF_TAG("Exif.Sony1.DynamicRangeOptimizer"))  // only used by A100 among RPU samples
+    {
+      if(FIND_EXIF_TAG("Exif.Sony1Cs.DynamicRangeOptimizerLevel"))
+      {
+        // this tag, if present, gives the precise level of DRO applied, particularly when the main tag reports Auto
+        //TODO
+      }
+      //TODO
+    }
+    else if(FIND_EXIF_TAG("Exif.Sony2.DynamicRangeOptimizer"))
+    {
+      if(FIND_EXIF_TAG("Exif.Sony2Cs.DynamicRangeOptimizerLevel"))
+      {
+        // this tag, if present, gives the precise level of DRO applied, particularly when the main tag reports Auto
+        //TODO
+      }
+      //TODO
+    }
+}
+
 void dt_exif_img_check_additional_tags(dt_image_t *img,
                                        const char *filename)
 {
@@ -1144,6 +1272,7 @@ void dt_exif_img_check_additional_tags(dt_image_t *img,
       _check_dng_opcodes(exifData, img);
       _check_lens_correction_data(exifData, img);
       _check_linear_response_limit(exifData, img);
+      _check_highlight_preservation(exifData, img);
     }
     return;
   }

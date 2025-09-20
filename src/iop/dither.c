@@ -173,7 +173,7 @@ void init_presets(dt_iop_module_so_t *self)
       = (dt_iop_dither_params_t){ DITHER_FSAUTO, 0, { 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f }, -200.0f } };
   // add the preset.
   dt_gui_presets_add_generic(_("dither"), self->op,
-                             self->version(), &tmp, sizeof(dt_iop_dither_params_t), 1,
+                             self->version(), &tmp, sizeof(dt_iop_dither_params_t), TRUE,
                              DEVELOP_BLEND_CS_NONE);
   // make it auto-apply for all images:
   // dt_gui_presets_update_autoapply(BUILTIN_PRESET("dither"), self->op, self->version(), 1);

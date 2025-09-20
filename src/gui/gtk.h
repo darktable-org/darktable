@@ -546,9 +546,10 @@ void dt_gui_cursor_clear_busy();
 void dt_gui_process_events();
 
 GtkWidget *(dt_gui_box_add)(const char *file, const int line, const char *function, GtkBox *box, gpointer list[]);
-#define dt_gui_box_add(box, ...) dt_gui_box_add(__FILE__, __LINE__, __FUNCTION__, GTK_BOX(box), (gpointer[]){ __VA_ARGS__, (gpointer)-1 })
+#define dt_gui_box_add(box, ...) dt_gui_box_add(__FILE__, __LINE__, __FUNCTION__, GTK_BOX(box), (gpointer[]){ __VA_ARGS__ __VA_OPT__(,) (gpointer)-1 })
 #define dt_gui_hbox(...) dt_gui_box_add(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0), __VA_ARGS__)
 #define dt_gui_vbox(...) dt_gui_box_add(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0), __VA_ARGS__)
+#define dt_gui_dialog_add(dialog, ...) dt_gui_box_add(gtk_dialog_get_content_area(GTK_DIALOG(dialog)), __VA_ARGS__)
 #define dt_gui_expand(widget) dt_gui_expand(GTK_WIDGET(widget))
 #define dt_gui_align_right(widget) dt_gui_align_right(GTK_WIDGET(widget))
 
@@ -564,6 +565,14 @@ static inline GtkWidget *(dt_gui_align_right)(GtkWidget *widget)
   return dt_gui_expand(widget);
 }
 
+static inline GtkWidget *dt_gui_scroll_wrap(GtkWidget *widget)
+{
+  GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+  gtk_widget_set_vexpand(scrolled_window, TRUE);
+  gtk_container_add(GTK_CONTAINER(scrolled_window), widget);
+  return scrolled_window;
+}
+
 // Simulate a mouse button event (button is 1, 2, 3 - mouse button) sent to a Widget
 void dt_gui_simulate_button_event(GtkWidget *widget,
                                   const GdkEventType eventtype,
@@ -571,6 +580,9 @@ void dt_gui_simulate_button_event(GtkWidget *widget,
 
 // Setup auto-commit on focus loss for editable renderers
 void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer, GtkCellEditable **active_editable);
+
+// restore dialog size from config file
+void dt_gui_dialog_restore_size(GtkDialog *dialog, const char *conf);
 
 G_END_DECLS
 

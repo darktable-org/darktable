@@ -1,0 +1,114 @@
+
+#define MyAppName "darktable"
+#define MyAppVersion "${PROJECT_VERSION}"
+#define MyAppCopyright "Copyright © 2009-2025 darktable developers"
+#define MyAppPublisher "darktable team"
+#define MyAppURL "https://darktable.org/"
+#define MyAppExeName "darktable.exe"
+#define MyAppCliExeName "darktable-cli.exe"
+
+[Setup]
+; The value of AppId uniquely identifies the application. We also realize that
+; some users install more than one darktable version (e.g. stable and nightly
+; snapshot), so having the app name plus version as the AppId makes sense.
+AppId={#MyAppName}{#MyAppVersion}
+AppName={#MyAppName}
+AppVersion={#MyAppVersion}
+AppCopyright={#MyAppCopyright}
+AppPublisher={#MyAppPublisher}
+AppPublisherURL={#MyAppURL}
+AppSupportURL={#MyAppURL}
+AppUpdatesURL={#MyAppURL}
+DefaultDirName={autopf}\{#MyAppName}
+UninstallDisplayIcon={app}\bin\{#MyAppExeName}
+
+; "ArchitecturesAllowed=x64compatible" specifies that Setup cannot run
+; on anything but x64 and Windows 11 on Arm.
+ArchitecturesAllowed=x64compatible
+
+; "ArchitecturesInstallIn64BitMode=x64compatible" requests that the
+; install be done in "64-bit mode" on x64 or Windows 11 on Arm,
+; meaning it should use the native 64-bit Program Files directory and
+; the 64-bit view of the registry.
+ArchitecturesInstallIn64BitMode=x64compatible
+
+ChangesAssociations=yes
+DefaultGroupName={#MyAppName}
+AllowNoIcons=yes
+LicenseFile=share\doc\darktable\LICENSE
+
+; Uncomment the following line to run in non administrative install mode
+; (install for current user only).
+; PrivilegesRequired=lowest
+
+PrivilegesRequiredOverridesAllowed=dialog
+OutputBaseFilename=darktable-{#MyAppVersion}-${ARCH_STRING}
+
+; When this directive is set, the compiler will create a manifest file
+; detailing information about the files compiled into Setup.
+OutputManifestFile=darktable-manifest.txt
+
+SolidCompression=yes
+WizardStyle=modern
+
+[Tasks]
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+
+; We don't offer Quick Launch for Windows 11 (initial build number 10.0.22000) where it's not supported
+Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; OnlyBelowVersion: 10.0.22000
+
+[Files]
+Source: "bin\*"; DestDir: "{app}\bin"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "share\*"; DestDir: "{app}\share"; Flags: ignoreversion recursesubdirs createallsubdirs
+
+[Registry]
+; To open a file from the "Open with" menu, Windows needs to know the exact command to execute
+Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\shell\open\command"; \
+  ValueType: string; Flags: uninsdeletevalue; \
+  ValueData: """{app}\bin\{#MyAppExeName}"" ""%1"""
+
+${CMAKE_ADD_DARKTABLE_TO_OPENWITHLIST}
+
+Root: HKA; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{#MyAppExeName}"; \
+  ValueType: string; \
+  ValueData: "{app}\bin\{#MyAppExeName}"; \
+  Flags: uninsdeletekey
+
+Root: HKA; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{#MyAppCliExeName}"; \
+  ValueType: string; \
+  ValueData: "{app}\bin\{#MyAppCliExeName}"; \
+  Flags: uninsdeletekey
+
+Root: HKA; Subkey: "{code:EnvironmentKey}"; \
+  ValueType: string; \
+  ValueName: "CAMLIBS"; \
+  ValueData: "{app}\lib\libgphoto2\${CPACK_NSIS_GPHOTO2_VERSION}"; \
+  Flags: uninsdeletevalue
+
+Root: HKA; Subkey: "{code:EnvironmentKey}"; \
+  ValueType: string; \
+  ValueName: "IOLIBS"; \
+  ValueData: "{app}\lib\libgphoto2_port\${CPACK_NSIS_GPHOTO2_PORT_VERSION}"; \
+  Flags: uninsdeletevalue
+
+[Icons]
+Name: "{group}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"
+Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; \
+  Filename: "{app}\bin\{#MyAppName}"; WorkingDir: "{app}"; Tasks: quicklaunchicon
+
+[Run]
+Filename: "{app}\bin\{#MyAppExeName}"; \
+  Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; \
+  Flags: nowait postinstall skipifsilent
+
+[Code]
+function EnvironmentKey(Param: String): String;
+begin
+  if IsAdminInstallMode then
+    Result := 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
+  else
+    Result := 'Environment'
+end;

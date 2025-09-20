@@ -2552,20 +2552,17 @@ static void _restore_clicked(GtkButton *button, gpointer user_data)
      NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_REJECT);
 
-  GtkContainer *content_area =
-    GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG (dialog)));
   GtkWidget *label = gtk_label_new(_("restore shortcuts from one of these states:\n"
                                      "  - default\n"
                                      "  - as at startup\n"
                                      "  - as when opening this dialog\n"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_container_add(content_area, label);
   GtkWidget *clear = gtk_check_button_new_with_label
     (_("clear all newer shortcuts\n"
        "(instead of just restoring changed ones)"));
-  gtk_container_add(content_area, clear);
+  dt_gui_dialog_add(GTK_DIALOG(dialog), label, clear);
 
-  gtk_widget_show_all(GTK_WIDGET(content_area));
+  gtk_widget_show_all(dialog);
 
   const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
   const gboolean wipe = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(clear));
@@ -2635,12 +2632,9 @@ static void _export_clicked(GtkButton *button, gpointer user_data)
      NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_REJECT);
 
-  GtkContainer *content_area =
-    GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG (dialog)));
   GtkWidget *label = gtk_label_new(_("export all shortcuts to a file\n"
                                      "or just for one selected device\n"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_container_add(content_area, label);
 
   GtkWidget *combo_dev = gtk_combo_box_text_new();
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_dev), _("all"));
@@ -2648,25 +2642,18 @@ static void _export_clicked(GtkButton *button, gpointer user_data)
   for(GSList *driver = darktable.control->input_drivers; driver; driver = driver->next)
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_dev),
                                    ((dt_input_driver_definition_t *)driver->data)->name);
-  gtk_container_add(content_area, combo_dev);
-
-  GtkWidget *device_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   GtkWidget *combo_id = gtk_combo_box_text_new();
   for(gchar num[] = "0"; *num <= '9'; (*num)++)
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_id), num);
-  gtk_container_add(GTK_CONTAINER(device_box), combo_id);
-  gtk_container_add(GTK_CONTAINER(device_box), dt_ui_label_new(_("device id")));
-
-  gtk_container_add(content_area, device_box);
-
   GtkWidget *count = gtk_label_new("");
-  gtk_container_add(content_area, count);
-
   g_signal_connect(combo_dev, "changed", G_CALLBACK(_import_export_dev_changed), combo_id);
   g_signal_connect(combo_id, "changed", G_CALLBACK(_export_id_changed), count);
 
-  gtk_widget_show_all(GTK_WIDGET(content_area));
+  dt_gui_dialog_add(GTK_DIALOG(dialog), label, combo_dev,
+                                        dt_gui_hbox(combo_id, dt_ui_label_new(_("device id"))),
+                                        count);
+  gtk_widget_show_all(dialog);
 
   gtk_combo_box_set_active(GTK_COMBO_BOX(combo_dev), 0);
 
@@ -2717,12 +2704,9 @@ static void _import_clicked(GtkButton *button, gpointer user_data)
      NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_REJECT);
 
-  GtkContainer *content_area =
-    GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG (dialog)));
   GtkWidget *label = gtk_label_new(_("import all shortcuts from a file\n"
                                      "or just for one selected device\n"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_container_add(content_area, label);
 
   GtkWidget *combo_dev = gtk_combo_box_text_new();
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_dev), _("all"));
@@ -2730,7 +2714,6 @@ static void _import_clicked(GtkButton *button, gpointer user_data)
   for(GSList *driver = darktable.control->input_drivers; driver; driver = driver->next)
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_dev),
                                    ((dt_input_driver_definition_t *)driver->data)->name);
-  gtk_container_add(content_area, combo_dev);
 
   GtkWidget *device_grid = gtk_grid_new();
 
@@ -2746,16 +2729,15 @@ static void _import_clicked(GtkButton *button, gpointer user_data)
   gtk_grid_attach(GTK_GRID(device_grid), combo_to_id, 0, 1, 1, 1);
   gtk_grid_attach(GTK_GRID(device_grid), dt_ui_label_new(_("id when loaded")), 1, 1, 1, 1);
 
-  gtk_container_add(content_area, device_grid);
 
   GtkWidget *clear = gtk_check_button_new_with_label(_("clear device first"));
-  gtk_container_add(content_area, clear);
 
   g_signal_connect(combo_dev, "changed", G_CALLBACK(_import_export_dev_changed),
                    combo_from_id);
   g_signal_connect(combo_from_id, "changed", G_CALLBACK(_import_id_changed), combo_to_id);
 
-  gtk_widget_show_all(GTK_WIDGET(content_area));
+  dt_gui_dialog_add(GTK_DIALOG(dialog), label, combo_dev, device_grid, clear);
+  gtk_widget_show_all(dialog);
 
   gtk_combo_box_set_active(GTK_COMBO_BOX(combo_dev), 0);
 
@@ -2929,11 +2911,8 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   _add_prefs_column(shortcuts_view, renderer, _("instance"), SHORTCUT_VIEW_INSTANCE);
 
   // Adding the shortcuts treeview to its containers
-  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
+  GtkWidget *scroll = dt_gui_scroll_wrap(GTK_WIDGET(shortcuts_view));
   gtk_widget_set_size_request(scroll, -1, 100);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
-                                 GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_container_add(GTK_CONTAINER(scroll), GTK_WIDGET(shortcuts_view));
   gtk_paned_pack2(GTK_PANED(container), scroll, TRUE, FALSE);
 
   // Creating the action selection treeview
@@ -3010,11 +2989,8 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_tree_view_append_column(GTK_TREE_VIEW(actions_view), column);
 
   // Adding the action treeview to its containers
-  scroll = gtk_scrolled_window_new(NULL, NULL);
+  scroll = dt_gui_scroll_wrap(GTK_WIDGET(actions_view));
   gtk_widget_set_size_request(scroll, -1, 100);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
-                                 GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_container_add(GTK_CONTAINER(scroll), GTK_WIDGET(actions_view));
   gtk_paned_pack1(GTK_PANED(container), scroll, TRUE, FALSE);
 
   if(found_iter.user_data)
@@ -3821,7 +3797,7 @@ static float _process_action(dt_action_t *action,
     if(owner->type == DT_ACTION_TYPE_LIB)
     {
       const dt_lib_module_t *lib = (dt_lib_module_t *)owner;
-      dt_lib_presets_apply(action->label, lib->plugin_name, lib->version());
+      dt_lib_presets_apply(action->id, lib->plugin_name, lib->version());
     }
     else if(owner->type == DT_ACTION_TYPE_IOP)
     {
@@ -4743,14 +4719,14 @@ dt_action_t *dt_action_locate(dt_action_t *owner,
     if(owner == &darktable.control->actions_lua)
       create = TRUE;
 
-    const gboolean needs_translation =
-      !owner
-      || owner->type != DT_ACTION_TYPE_SECTION
-      || (g_ascii_strcasecmp(owner->id, "styles")
-          && g_ascii_strcasecmp(owner->id, "preset"));
+    const gboolean style_or_preset =
+      owner
+      && owner->type == DT_ACTION_TYPE_SECTION
+      && (!strcmp(owner->id, "styles")
+       || !strcmp(owner->id, "preset"));
 
     if(!clean_path)
-      clean_path = g_strdup(needs_translation ? NQ_(*path) : *path);
+      clean_path = g_strdup(style_or_preset ? *path : NQ_(*path));
 
     if(!action)
     {
@@ -4764,9 +4740,9 @@ dt_action_t *dt_action_locate(dt_action_t *owner,
 
       dt_action_t *new_action = calloc(1, sizeof(dt_action_t));
       new_action->id = clean_path;
-      new_action->label = needs_translation
+      new_action->label = style_or_preset
                         ? dt_util_localize_segmented_name(*path, TRUE)
-                        : g_strdup(*path);
+                        : g_strdup(Q_(*path));
       new_action->type = DT_ACTION_TYPE_SECTION;
 
       dt_action_insert_sorted(owner, new_action);

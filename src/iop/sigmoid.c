@@ -20,6 +20,7 @@
 #include "common/custom_primaries.h"
 #include "common/math.h"
 #include "common/matrices.h"
+#include "common/dttypes.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "develop/openmp_maths.h"
@@ -234,7 +235,7 @@ void init_presets(dt_iop_module_so_t *self)
   if(auto_apply_sigmoid)
   {
     dt_gui_presets_add_generic(_("scene-referred default"),
-                               self->op, self->version(), NULL, 0, 1,
+                               self->op, self->version(), NULL, 0, TRUE,
                                DEVELOP_BLEND_CS_RGB_SCENE);
 
     dt_gui_presets_update_format(BUILTIN_PRESET("scene-referred default"),
@@ -255,21 +256,21 @@ void init_presets(dt_iop_module_so_t *self)
   p.contrast_skewness = 0.65f;
   p.hue_preservation = 100.0f;
   dt_gui_presets_add_generic(_("neutral gray"), self->op,
-                             self->version(), &p, sizeof(p), 1,
+                             self->version(), &p, sizeof(p), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.middle_grey_contrast = 1.6f;
   p.contrast_skewness = -0.2f;
   p.hue_preservation = 0.0f;
   dt_gui_presets_add_generic(_("ACES 100-nit like"), self->op,
-                             self->version(), &p, sizeof(p), 1,
+                             self->version(), &p, sizeof(p), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.middle_grey_contrast = 1.0f;
   p.contrast_skewness = 0.0f;
   p.color_processing = DT_SIGMOID_METHOD_RGB_RATIO;
   dt_gui_presets_add_generic(_("Reinhard"), self->op,
-                             self->version(), &p, sizeof(p), 1,
+                             self->version(), &p, sizeof(p), TRUE,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   // smooth - a preset that utilizes the primaries feature
@@ -291,7 +292,7 @@ void init_presets(dt_iop_module_so_t *self)
   // maintain a consistent behavior
   p.base_primaries = DT_SIGMOID_REC2020;
   dt_gui_presets_add_generic(_("smooth"), self->op, self->version(),
-                             &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+                             &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
 // Declared here as it is used in the commit params function
@@ -494,7 +495,7 @@ DT_OMP_DECLARE_SIMD()
 static inline void _desaturate_negative_values(const dt_aligned_pixel_t pix_in, dt_aligned_pixel_t pix_out)
 {
   const float pixel_average = fmaxf((pix_in[0] + pix_in[1] + pix_in[2]) / 3.0f, 0.0f);
-  const float min_value = fminf(fminf(pix_in[0], pix_in[1]), pix_in[2]);
+  const float min_value = min3f(pix_in);
   const float saturation_factor = min_value < 0.0f ? -pixel_average / (min_value - pixel_average) : 1.0f;
   for_each_channel(c, aligned(pix_in, pix_out))
   {

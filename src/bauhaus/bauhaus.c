@@ -116,8 +116,26 @@ static void _combobox_next_sensitive(dt_bauhaus_widget_t *w,
 
   delta *= dt_accel_get_speed_multiplier(GTK_WIDGET(w), state);
   int new_pos = d->active;
+
   const int step = delta > 0 ? 1 : -1;
-  int cur = new_pos + step;
+  int cur = -1;
+
+  // currently this combo is edited, set to default value if defined
+  if(new_pos == -1 && d->entry_select != NULL)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(w->module);
+    cur = d->entry_select(GTK_WIDGET(w), d->text, delta, &module);
+  }
+
+  // still not set? use default pos
+  if(cur == -1)
+  {
+    if(new_pos == -1 && d->defpos != -1)
+      cur = d->defpos;
+    else
+      cur = new_pos + step;
+  }
+
   gchar *keys = g_utf8_casefold(darktable.bauhaus->keys, darktable.bauhaus->keys_cnt);
 
   while(delta && cur >= 0 && cur < d->entries->len)
@@ -1462,6 +1480,7 @@ GtkWidget *dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,
   d->entries_ellipsis = PANGO_ELLIPSIZE_END;
   d->mute_scrolling = FALSE;
   d->populate = NULL;
+  d->entry_select = NULL;
   d->text = NULL;
 
   gtk_widget_set_name(GTK_WIDGET(w), "bauhaus-combobox");
@@ -1481,12 +1500,19 @@ static dt_bauhaus_combobox_data_t *_combobox_data(GtkWidget *widget)
 }
 
 void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget,
-                                          void (*fct)(GtkWidget *w,
-                                                      struct dt_iop_module_t **module))
+                                          dt_bauhaus_combobox_populate_fct fct)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type == DT_BAUHAUS_COMBOBOX)
     w->data.combobox.populate = fct;
+}
+
+void dt_bauhaus_combobox_add_entry_select_fct(GtkWidget *widget,
+                                              dt_bauhaus_combobox_entry_select_fct fct)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type == DT_BAUHAUS_COMBOBOX)
+    w->data.combobox.entry_select = fct;
 }
 
 void dt_bauhaus_combobox_add_list(GtkWidget *widget,
@@ -3012,7 +3038,7 @@ void dt_bauhaus_slider_set(GtkWidget *widget,
 
   // this is the public interface function, translate by bounds and call set_normalized
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
-  if(w->type != DT_BAUHAUS_SLIDER)
+  if(!w || w->type != DT_BAUHAUS_SLIDER)
     return;
 
   dt_bauhaus_slider_data_t *d = &w->data.slider;

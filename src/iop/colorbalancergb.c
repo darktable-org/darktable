@@ -19,6 +19,7 @@
 // our includes go first:
 #include "bauhaus/bauhaus.h"
 #include "common/exif.h"
+#include "common/dttypes.h"
 #include "common/chromatic_adaptation.h"
 #include "common/darktable_ucs_22_helpers.h"
 #include "common/gamut_mapping.h"
@@ -520,7 +521,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.saturation_midtones = 0.05f;
   p.saturation_highlights = -0.05f;
 
-  dt_gui_presets_add_generic(_("basic colorfulness | legacy"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("basic colorfulness | legacy"), self->op, self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.saturation_formula = DT_COLORBALANCE_SATURATION_DTUCS;
   p.chroma_global = 0.f;
@@ -529,19 +530,19 @@ void init_presets(dt_iop_module_so_t *self)
   p.saturation_shadows = 0.30f;
   p.saturation_midtones = 0.f;
   p.saturation_highlights = -0.5f;
-  dt_gui_presets_add_generic(_("basic colorfulness | natural skin"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("basic colorfulness | natural skin"), self->op, self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.saturation_global = 0.2f;
   p.saturation_shadows = 0.5f;
   p.saturation_midtones = 0.f;
   p.saturation_highlights = -0.25f;
-  dt_gui_presets_add_generic(_("basic colorfulness | vibrant colors"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("basic colorfulness | vibrant colors"), self->op, self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.saturation_global = 0.2f;
   p.saturation_shadows = 0.25f;
   p.saturation_midtones = 0.f;
   p.saturation_highlights = -0.25f;
-  dt_gui_presets_add_generic(_("basic colorfulness | standard"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("basic colorfulness | standard"), self->op, self->version(), &p, sizeof(p), TRUE, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
 
@@ -1349,7 +1350,7 @@ static void _YchToRGB(dt_aligned_pixel_t *RGB_out, const float chroma, const flo
   XYZ_D65_to_D50(XYZ_D65, XYZ_D50);
   dt_apply_transposed_color_matrix(XYZ_D50, output_profile->matrix_out_transposed, RGB_linear);
   // normalize to the brightest value available at this hue and chroma
-  const float max_RGB = fmaxf(fmaxf(RGB_linear[0], RGB_linear[1]), RGB_linear[2]);
+  const float max_RGB = max3f(RGB_linear);
   for_each_channel(c) RGB_linear[c] = MAX(RGB_linear[c] / max_RGB, 0.f);
   // Apply nonlinear LUT if necessary
   if(output_profile->nonlinearlut)

@@ -1539,6 +1539,8 @@ void init_presets(dt_lib_module_t *self)
     dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (filmic)");
   const gboolean wf_sigmoid =
     dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (sigmoid)");
+  const gboolean wf_agx =
+    dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (agx)");
   const gboolean wf_none =
     dt_conf_is_equal("plugins/darkroom/workflow", "none");
 
@@ -1567,6 +1569,7 @@ void init_presets(dt_lib_module_t *self)
   AM("toneequal");
 
   SMG(C_("modulegroup", "tone"), "tone");
+  AM("agx");
   AM("bilat");
   AM("filmicrgb");
   AM("levels");
@@ -1734,6 +1737,8 @@ void init_presets(dt_lib_module_t *self)
     AM("filmicrgb");
   if(wf_sigmoid || wf_none)
     AM("sigmoid");
+  if(wf_agx || wf_none)
+    AM("agx");
   AM("toneequal");
   AM("crop");
   AM("ashift");
@@ -1831,6 +1836,8 @@ static gchar *_presets_get_minimal(dt_lib_module_t *self)
                                               "scene-referred (filmic)");
   const gboolean wf_sigmoid = dt_conf_is_equal("plugins/darkroom/workflow",
                                                "scene-referred (sigmoid)");
+  const gboolean wf_agx = dt_conf_is_equal("plugins/darkroom/workflow",
+                                               "scene-referred (agx)");
 
   // all modules
   gchar *tx = NULL;
@@ -1844,8 +1851,10 @@ static gchar *_presets_get_minimal(dt_lib_module_t *self)
   {
     if(wf_filmic)
       AM("filmicrgb");
-    else
+    else if(wf_sigmoid) 
       AM("sigmoid");
+    else if(wf_agx)
+      AM("agx");
   }
   else
     AM("basecurve");
@@ -3315,7 +3324,7 @@ static GtkWidget *_manage_editor_group_init_basics_box(dt_lib_module_t *self)
 
   // chosen widgets
   GtkWidget *vb3 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+  GtkWidget *sw = dt_gui_scroll_wrap(vb3);
   d->edit_basics_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
                                  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
@@ -3337,7 +3346,6 @@ static GtkWidget *_manage_editor_group_init_basics_box(dt_lib_module_t *self)
     gtk_box_pack_start(GTK_BOX(vb2), hb4, FALSE, FALSE, 0);
   }
 
-  gtk_container_add(GTK_CONTAINER(sw), vb3);
   gtk_box_pack_start(GTK_BOX(vb2), sw, TRUE, TRUE, 0);
 
   return vb2;
@@ -3397,7 +3405,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self,
 
   // chosen modules
   GtkWidget *vb3 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+  GtkWidget *sw = dt_gui_scroll_wrap(vb3);
   gr->iop_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
                                  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
@@ -3443,7 +3451,6 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self,
     gtk_box_pack_start(GTK_BOX(vb2), hb4, FALSE, FALSE, 0);
   }
 
-  gtk_container_add(GTK_CONTAINER(sw), vb3);
   gtk_box_pack_start(GTK_BOX(vb2), sw, TRUE, TRUE, 0);
 
   return vb2;
@@ -3633,9 +3640,6 @@ static void _manage_editor_preset_action(GtkWidget *btn,
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
-  GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-  gtk_box_pack_start(GTK_BOX(content_area),
-                     gtk_label_new(_("new preset name:")), FALSE, TRUE, 0);
   GtkWidget *lb = gtk_label_new(_("a preset with this name already exists!"));
   GtkWidget *tb = gtk_entry_new();
   gtk_entry_set_activates_default(GTK_ENTRY(tb), TRUE);
@@ -3645,9 +3649,8 @@ static void _manage_editor_preset_action(GtkWidget *btn,
   gpointer verify_params[] = {dialog, names, lb};
   g_signal_connect(G_OBJECT(tb), "changed",
                    G_CALLBACK(_manage_editor_preset_name_verify), verify_params);
-  gtk_box_pack_start(GTK_BOX(content_area), tb, FALSE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(content_area), lb, FALSE, TRUE, 0);
-  gtk_widget_show_all(content_area);
+  dt_gui_dialog_add(GTK_DIALOG(dialog), gtk_label_new(_("new preset name:")), tb, lb);
+  gtk_widget_show_all(dialog);
   gtk_entry_set_text(GTK_ENTRY(tb), new_name);
   res = gtk_dialog_run(GTK_DIALOG(dialog));
 
@@ -3948,15 +3951,6 @@ static void _manage_editor_destroy(GtkWidget *widget,
   d->edit_preset = NULL;
 }
 
-static void _manage_editor_resize_dialog(GtkWidget *widget,
-                                         dt_lib_module_t *self)
-{
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  dt_conf_set_int("ui_last/modulegroups_dialog_width", allocation.width);
-  dt_conf_set_int("ui_last/modulegroups_dialog_height", allocation.height);
-}
-
 static void _manage_show_window(dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = self->data;
@@ -3969,14 +3963,9 @@ static void _manage_show_window(dt_lib_module_t *self)
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(d->dialog);
 #endif
-  gtk_window_set_default_size(GTK_WINDOW(d->dialog),
-                              dt_conf_get_int("ui_last/modulegroups_dialog_width"),
-                              dt_conf_get_int("ui_last/modulegroups_dialog_height"));
+  dt_gui_dialog_restore_size(GTK_DIALOG(d->dialog), "modulegroups");
   gtk_widget_set_name(d->dialog, "modulegroups-manager");
   gtk_window_set_title(GTK_WINDOW(d->dialog), _("manage module layouts"));
-  g_signal_connect(d->dialog, "check-resize",
-                   G_CALLBACK(_manage_editor_resize_dialog), self);
-
   // remove the small border
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(d->dialog));
   gtk_container_set_border_width(GTK_CONTAINER(content), 0);
@@ -4105,8 +4094,7 @@ static void _manage_show_window(dt_lib_module_t *self)
   const char *preset = dt_conf_get_string_const("plugins/darkroom/modulegroups_preset");
   _manage_editor_load(preset, self);
 
-  gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(d->dialog))),
-                    vb_main);
+  dt_gui_dialog_add(GTK_DIALOG(d->dialog), vb_main);
 
   g_signal_connect(d->dialog, "destroy", G_CALLBACK(_manage_editor_destroy), self);
   gtk_window_set_resizable(GTK_WINDOW(d->dialog), TRUE);

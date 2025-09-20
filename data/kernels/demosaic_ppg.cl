@@ -534,7 +534,7 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in,
     color += yfilter*xfilter*(float4)(p1, (p2+p3)*0.5f, p4, 0.0f);
     weight += yfilter*xfilter;
   }
-  color = (weight > 0.0f) ? color/weight : (float4)0.0f;
+  color = (weight > 0.0f) ? fmax(0.0f, color)/weight : (float4)0.0f;
   write_imagef (out, (int2)(x, y), color);
 }
 

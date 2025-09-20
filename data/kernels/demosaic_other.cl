@@ -96,7 +96,7 @@ clip_and_zoom_demosaic_passthrough_monochrome(__read_only image2d_t in,
     const float xfilter = (i == 0) ? 1.0f - d.x : ((i == samples+1) ? d.x : 1.0f);
     const float yfilter = (j == 0) ? 1.0f - d.y : ((j == samples+1) ? d.y : 1.0f);
 
-    const float px = read_imagef(in, sampleri, (int2)(xx, yy)).x;
+    const float px = fmax(0.0f, read_imagef(in, sampleri, (int2)(xx, yy)).x);
     color += yfilter*xfilter*(float4)(px, px, px, 0.0f);
     weight += yfilter*xfilter;
   }

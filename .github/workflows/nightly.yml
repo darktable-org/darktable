@@ -112,7 +112,7 @@ jobs:
             libxfixes-dev
       - name: Build and install a more recent version of exiv2
         run: |
-          git clone --branch v0.28.5 --depth 1 https://github.com/Exiv2/exiv2 src-exiv2
+          git clone --branch v0.28.7 --depth 1 https://github.com/Exiv2/exiv2 src-exiv2
           cd src-exiv2
           cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
@@ -288,7 +288,6 @@ jobs:
       fail-fast: true
       matrix:
         build:
-          - { os: macos-13, xcode: 15.2, deployment: 13.5 } # LLVM16, x86_64
           - { os: macos-14, xcode: 16.2, deployment: 14.0 } # LLVM16, arm64
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
@@ -387,7 +386,7 @@ jobs:
 
             The Windows package requires Windows with UCRT (Universal C Runtime), which is shipped with Windows 10+. Darktable should also work on Windows 8.1 [on condition that you install this runtime yourself](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c).
 
-            The macOS `*-x86_64.dmg` package requires at least macOS 13.5 (Ventura), the `*-arm64.dmg` package requires at least macOS 14.0 (Sonoma).
+            The macOS package `*-arm64.dmg` requires at least macOS 14.0 (Sonoma).
 
             __Please help us improve Darktable by reporting any issues you encounter!__ :wink:
           files: |

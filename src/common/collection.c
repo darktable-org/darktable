@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2024 darktable developers.
+    Copyright (C) 2024-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,6 +40,11 @@
 #include "win/strptime.h"
 #endif
 
+
+#ifdef USE_LUA
+#include "lua/call.h"
+#include "lua/events.h"
+#endif
 
 #define SELECT_QUERY "SELECT DISTINCT * FROM %s"
 #define LIMIT_QUERY "LIMIT ?1, ?2"
@@ -2639,7 +2644,6 @@ void dt_collection_update_query(const dt_collection_t *collection,
     g_free(text);
   }
 
-
   /* set the extended where and the use of it in the query */
   dt_collection_set_extended_where(collection, query_parts);
   g_strfreev(query_parts);
@@ -2689,7 +2693,31 @@ void dt_collection_update_query(const dt_collection_t *collection,
     DT_CONTROL_SIGNAL_RAISE(DT_SIGNAL_COLLECTION_CHANGED,
                             query_change, changed_property,
                             list, next);
+#ifdef USE_LUA
+    dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+        0, NULL, NULL,
+        LUA_ASYNC_TYPENAME, "const char*", "collection-changed",
+        LUA_ASYNC_DONE);
+#endif
   }
+}
+
+gboolean dt_collection_has_property(const dt_collection_properties_t property)
+{
+  const int _n_r = dt_conf_get_int("plugins/lighttable/collect/num_rules");
+  const int num_rules = CLAMP(_n_r, 1, 10);
+  char confname[200];
+
+  for(int i = 0; i < num_rules; i++)
+  {
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", i);
+    const int prop = dt_conf_get_int(confname);
+
+    if(prop == property)
+      return TRUE;
+  }
+
+  return FALSE;
 }
 
 gboolean dt_collection_hint_message_internal(void *message)

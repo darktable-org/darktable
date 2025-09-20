@@ -84,7 +84,8 @@ typedef enum dt_dev_transform_direction_t
   DT_DEV_TRANSFORM_DIR_FORW_INCL = 1,
   DT_DEV_TRANSFORM_DIR_FORW_EXCL = 2,
   DT_DEV_TRANSFORM_DIR_BACK_INCL = 3,
-  DT_DEV_TRANSFORM_DIR_BACK_EXCL = 4
+  DT_DEV_TRANSFORM_DIR_BACK_EXCL = 4,
+  DT_DEV_TRANSFORM_DIR_ALL_GEOMETRY = 5,
 } dt_dev_transform_direction_t;
 
 typedef enum dt_clipping_preview_mode_t
@@ -609,8 +610,7 @@ void dt_dev_image(const dt_imgid_t imgid,
                   float *scale,
                   size_t *buf_width,
                   size_t *buf_height,
-                  float *zoom_x,
-                  float *zoom_y,
+                  dt_dev_zoom_pos_t zoom_pos,
                   const int32_t snapshot_id,
                   GList *module_filter_out,
                   const int devid,
