@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-20 12:55+0200\n"
+"POT-Creation-Date: 2025-09-20 14:13+0200\n"
 "PO-Revision-Date: 2025-09-20 12:56+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
@@ -18,7 +18,7 @@ msgctxt "preferences"
 msgid "first instance"
 msgstr "Première instance"
 
-# "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l’image n'est pas physiquement dupliquée
+# "duplicate" traduit par "cloner" avec une bulle d’explication utilisant le terme de "copie virtuelle", dans le sens que l’image n’est pas physiquement dupliquée
 #: ../build/bin/conf_gen.h:91 ../build/bin/preferences_gen.h:8077
 msgctxt "preferences"
 msgid "last instance"
@@ -233,7 +233,7 @@ msgstr "Notation initiale"
 
 #: ../build/bin/conf_gen.h:1090
 msgid "initial star rating for all images when importing a filmroll"
-msgstr "Étoile(s) attribuée(s) lors de l’importation d'une pellicule"
+msgstr "Étoile(s) attribuée(s) lors de l’importation d’une pellicule"
 
 #: ../build/bin/conf_gen.h:1096
 msgid "ignore EXIF rating"
@@ -1202,9 +1202,9 @@ msgid ""
 "disabled, the lighttable scrolls full rows of thumbnails, as befits a scroll "
 "wheel."
 msgstr ""
-"Si activé, le défilement de la table lumineuse s'effectuera d'un nombre de "
+"Si activé, le défilement de la table lumineuse s’effectuera d’un nombre de "
 "pixels donné, comme attendu avec un pavé tactile.\n"
-"Si désactivé, le défilement de la table lumineuse s'effectuera d'une ligne "
+"Si désactivé, le défilement de la table lumineuse s’effectuera d’une ligne "
 "de miniature entière, comme attendu avec la molette de la souris."
 
 #: ../build/bin/preferences_gen.h:4976
@@ -1217,7 +1217,7 @@ msgid ""
 "up to the selected size are generated while user is inactive in lighttable."
 msgstr ""
 "Si « Utiliser le disque pour le cache des miniatures » est activée alors les "
-"miniatures jusqu'à la taille sélectionnée sont générées lors d'inactivité "
+"miniatures jusqu’à la taille sélectionnée sont générées lors d’inactivité "
 "sur la table lumineuse."
 
 #: ../build/bin/preferences_gen.h:5011
@@ -1297,8 +1297,8 @@ msgid ""
 "and 100%, and the 'ctrl' key can be used to control the zoom level."
 msgstr ""
 "Si sélectionné, un clic-milieu de la souris fera passer le zoom de 100% à "
-"200% puis de retour sur le zoom ajusté à l'écran.\n"
-"Si désactivé, le zoom passera du zoom ajusté à 100% et l'utilisation de Ctrl "
+"200% puis de retour sur le zoom ajusté à l’écran.\n"
+"Si désactivé, le zoom passera du zoom ajusté à 100% et l’utilisation de Ctrl "
 "est nécessaire pour avoir le plein contrôle du niveau de zoom."
 
 #: ../build/bin/preferences_gen.h:5262
@@ -1416,7 +1416,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5695
 msgid "swap the utility and processing modules panels"
-msgstr "Intervertir les panneaux des modules de traitement et d'utilitaires"
+msgstr "Intervertir les panneaux des modules de traitement et d’utilitaires"
 
 #: ../build/bin/preferences_gen.h:5708
 msgid "move the list of processing modules to the left of the screen"
@@ -1664,7 +1664,7 @@ msgstr ""
 " • Faibles – à utiliser si des applications prenant une part importante des "
 "ressources sont utilisées\n"
 "simultanément, ou pour des applications OpenCL/GL comme des jeux ou Hugin\n"
-" • Importantes – la meilleure option si d'autres applications ne sont pas "
+" • Importantes – la meilleure option si d’autres applications ne sont pas "
 "utilisées en même temps que Darktable, ce qui lui alloue\n"
 "une part importante des ressources pour la performance."
 
@@ -1802,7 +1802,7 @@ msgid ""
 "work or there is none provided."
 msgstr ""
 "Microsoft OpenCLOn12, à utiliser seulement si le pilote constructeur ne "
-"fonctionne pas où si aucun pilote n'est fourni."
+"fonctionne pas où si aucun pilote n’est fourni."
 
 #: ../build/bin/preferences_gen.h:6670
 msgid "other platforms"
@@ -1814,7 +1814,7 @@ msgid ""
 "driver is available"
 msgstr ""
 "Si défini, toutes les plateformes non spécifiées sont acceptées. À activer "
-"seulement si aucun pilote constructeur n'est disponible."
+"seulement si aucun pilote constructeur n’est disponible."
 
 #: ../build/bin/preferences_gen.h:6710
 msgid "security"
@@ -2033,7 +2033,7 @@ msgstr ""
 " • Jamais : toutes les informations sur le développement sont enregistrées "
 "uniquement dans la base de données\n"
 " • À l’importation – immédiatement après l’importation de l’image\n"
-" • Après édition – après toute modification de l’image ou l'ajout de mots-"
+" • Après édition – après toute modification de l’image ou l’ajout de mots-"
 "clés"
 
 #: ../build/bin/preferences_gen.h:7374
@@ -2060,7 +2060,7 @@ msgid ""
 "seconds); set to zero to disable auto-saving. auto-saving might be disabled "
 "on slow drives."
 msgstr ""
-"Sauvegarder périodiquement l'historique pendant le développement (intervalle "
+"Sauvegarder périodiquement l’historique pendant le développement (intervalle "
 "en seconde), si positionné à zéro la sauvegarde automatique est désactivée. "
 "La sauvegarde automatique peut être désactivé pour les disques lents."
 
@@ -2253,11 +2253,11 @@ msgid ""
 "note: blending shortcuts always apply to the focused instance"
 msgstr ""
 "Lorsque plusieurs instances d’un module sont présentes, le raccourci est "
-"appliqué à l'instance qui a le focus.\n"
-"Si aucune n'a le focus, les préférences ci-dessous contrôlent les règles qui "
-"seront appliquées (dans l'ordre) pour\n"
+"appliqué à l’instance qui a le focus.\n"
+"Si aucune n’a le focus, les préférences ci-dessous contrôlent les règles qui "
+"seront appliquées (dans l’ordre) pour\n"
 "décider quelle instance du module recevra le raccourci clavier.\n"
-"Note : les raccourcis de fusion sont toujours appliqués à l'instance qui a "
+"Note : les raccourcis de fusion sont toujours appliqués à l’instance qui a "
 "le focus."
 
 #: ../build/bin/preferences_gen.h:7964
@@ -2524,7 +2524,7 @@ msgid ""
 "affected areas to just the eyes if necessary."
 msgstr ""
 "Désature et assombri les pupilles rouges des photos au flash. Ajouter un "
-"masque dessiné pour limiter l'effet juste aux yeux si nécessaire."
+"masque dessiné pour limiter l’effet juste aux yeux si nécessaire."
 
 #: ../build/bin/styles_string.h:19
 msgid "effects"
@@ -2554,7 +2554,7 @@ msgid ""
 "color equalizer"
 msgstr ""
 "Ajuster finement la couleur sélectionnée en ajustant la réglette « Placement "
-"des nœuds » de l'égaliseur de couleurs"
+"des nœuds » de l’égaliseur de couleurs"
 
 #: ../build/bin/styles_string.h:25
 msgid "fog"
@@ -2604,7 +2604,7 @@ msgstr "Magenta"
 #: ../build/bin/styles_string.h:29
 msgid "make a photo taken in daylight look like it was taken in twilight"
 msgstr ""
-"Transforme une image prise de jour pour qu'elle ressemble à une image prise "
+"Transforme une image prise de jour pour qu’elle ressemble à une image prise "
 "au crépuscule"
 
 #: ../build/bin/styles_string.h:30
@@ -2612,7 +2612,7 @@ msgid ""
 "make a photo taken in full daylight look like it was taken at night.  "
 "emulates the cinematic technique of the same name."
 msgstr ""
-"Transforme une image prise de jour pour qu'elle ressemble à une image prise "
+"Transforme une image prise de jour pour qu’elle ressemble à une image prise "
 "de nuit. Émule la technique du cinéma du même nom."
 
 #: ../build/bin/styles_string.h:31
@@ -2678,7 +2678,7 @@ msgstr "Netteté des détails fins"
 msgid "shift greens to yellow and yellows to orange to simulate fall foliage"
 msgstr ""
 "Décale les verts vers les jaunes et les jaunes vers les oranges pour simuler "
-"le feuillage d'automne"
+"le feuillage d’automne"
 
 #: ../build/bin/styles_string.h:40
 msgid "spot color"
@@ -2813,7 +2813,7 @@ msgstr "Début du pied"
 #: ../build/lib/darktable/plugins/introspection_agx.c:314
 #: ../build/lib/darktable/plugins/introspection_agx.c:537
 msgid "shoulder start"
-msgstr "Début de l'épaule"
+msgstr "Début de l’épaule"
 
 #: ../build/lib/darktable/plugins/introspection_agx.c:320
 #: ../build/lib/darktable/plugins/introspection_agx.c:541
@@ -3917,12 +3917,12 @@ msgstr "Niveau du blanc"
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:242
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:463
 msgid "hue analysis radius"
-msgstr "Rayon de l'analyse de teinte"
+msgstr "Rayon de l’analyse de teinte"
 
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:248
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:467
 msgid "effect radius"
-msgstr "Rayon de l'effet"
+msgstr "Rayon de l’effet"
 
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:254
 #: ../build/lib/darktable/plugins/introspection_colorequal.c:471
@@ -5028,7 +5028,7 @@ msgstr "Ajustement fin de l’échelle"
 #: ../build/lib/darktable/plugins/introspection_lens.cc:322
 #: ../build/lib/darktable/plugins/introspection_lens.cc:489
 msgid "image scale"
-msgstr "Échelle de l'image"
+msgstr "Échelle de l’image"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:346
 #: ../build/lib/darktable/plugins/introspection_lens.cc:505
@@ -5319,7 +5319,7 @@ msgstr "Options avancées"
 #: ../build/lib/darktable/plugins/introspection_overlay.c:311
 #: ../build/lib/darktable/plugins/introspection_watermark.c:331
 msgid "image width"
-msgstr "Largeur de l'image"
+msgstr "Largeur de l’image"
 
 #: ../build/lib/darktable/plugins/introspection_overlay.c:312
 #: ../build/lib/darktable/plugins/introspection_watermark.c:332
@@ -5329,12 +5329,12 @@ msgstr "Hauteur de l’image"
 #: ../build/lib/darktable/plugins/introspection_overlay.c:313
 #: ../build/lib/darktable/plugins/introspection_watermark.c:333
 msgid "larger image border"
-msgstr "Grand côté de l'image"
+msgstr "Grand côté de l’image"
 
 #: ../build/lib/darktable/plugins/introspection_overlay.c:314
 #: ../build/lib/darktable/plugins/introspection_watermark.c:334
 msgid "smaller image border"
-msgstr "Petit côté de l'image"
+msgstr "Petit côté de l’image"
 
 #: ../build/lib/darktable/plugins/introspection_overlay.c:318
 #: ../build/lib/darktable/plugins/introspection_watermark.c:338
@@ -5741,12 +5741,12 @@ msgstr "Vibrance"
 #: ../build/lib/darktable/plugins/introspection_vignette.c:92
 #: ../build/lib/darktable/plugins/introspection_vignette.c:201
 msgid "fall-off start"
-msgstr "Début d'atténuation"
+msgstr "Début d’atténuation"
 
 #: ../build/lib/darktable/plugins/introspection_vignette.c:98
 #: ../build/lib/darktable/plugins/introspection_vignette.c:205
 msgid "fall-off radius"
-msgstr "Rayon d'atténuation"
+msgstr "Rayon d’atténuation"
 
 #: ../build/lib/darktable/plugins/introspection_vignette.c:116
 #: ../build/lib/darktable/plugins/introspection_vignette.c:217
@@ -6802,7 +6802,7 @@ msgid ""
 "\n"
 "please fix this and then run darktable again"
 msgstr ""
-"Vous n'avez pas accès en écriture à au moins l'un des répertoires "
+"Vous n’avez pas accès en écriture à au moins l’un des répertoires "
 "utilisateur :\n"
 "\n"
 "%s\n"
@@ -6879,7 +6879,7 @@ msgstr "Initialise le contrôle du boîtier"
 
 #: ../src/common/darktable.c:1792
 msgid "initializing GUI"
-msgstr "Initialise l'interface graphique"
+msgstr "Initialise l’interface graphique"
 
 #: ../src/common/darktable.c:1816
 msgid "loading processing modules"
@@ -7074,7 +7074,7 @@ msgstr "Nom de version"
 msgid "preserved filename"
 msgstr "Nom de fichier préservé"
 
-# dialogue très modifié et ajout d'un 1er message
+# dialogue très modifié et ajout d’un 1er message
 #: ../src/common/database.c:3830
 #, c-format
 msgid ""
@@ -7124,7 +7124,7 @@ msgstr ""
 "      soit la fermer avant de redémarrer Darktable (le processus <b>%d</b> a "
 "créé les verrous). \n"
 "\n"
-"2 - Si vous avez quitter Darktable ces dernières minutes, il se peut qu'il "
+"2 - Si vous avez quitter Darktable ces dernières minutes, il se peut qu’il "
 "soit encore en fonctionnement en arrière plan \n"
 "     pour exporter des images, mettre à jour des fichier XMP ou faire une "
 "maintenance de la base de données. \n"
@@ -7133,7 +7133,7 @@ msgstr ""
 "3 - Si vous n’êtes pas certain de pouvoir interagir correctement avec les "
 "processus de l’OS, \n"
 "      il serait plus sûr de relancer la session de l’utilisateur ou de "
-"redémarrer l'ordinateur dans quelques instants (quelques minutes). \n"
+"redémarrer l’ordinateur dans quelques instants (quelques minutes). \n"
 "      Ceci fermera tous les programmes en cours et pourrait fermer la base "
 "de données correctement. \n"
 "\n"
@@ -7304,7 +7304,7 @@ msgid ""
 "\n"
 "please fix this and then run darktable again"
 msgstr ""
-"Vous n'avez pas accès en écriture à au moins l'une des bases de données :\n"
+"Vous n’avez pas accès en écriture à au moins l’une des bases de données :\n"
 "\n"
 "<span style='italic'>%s</span>\n"
 "<span style='italic'>%s</span>\n"
@@ -7379,7 +7379,7 @@ msgstr ""
 "La base de données semble corrompue.\n"
 "« %s%s »"
 
-# Il n'y a plus de préférences de la RAM
+# Il n’y a plus de préférences de la RAM
 #: ../src/common/eigf.h:260
 msgid ""
 "fast exposure independent guided filter failed to allocate memory, check "
@@ -7651,7 +7651,7 @@ msgid ""
 "session settings"
 msgstr ""
 "Impossible de trouver un nom de fichier unique pour la session, merci de "
-"vérifier les paramètres de session d'importation"
+"vérifier les paramètres de session d’importation"
 
 #: ../src/common/import_session.c:389
 msgid "requested session path not available. device not mounted?"
@@ -7689,7 +7689,7 @@ msgid ""
 msgstr ""
 "Darktable charge les %s depuis\n"
 "<b>%s</b>\n"
-"ou, si ce répertoire n'existe pas, depuis\n"
+"ou, si ce répertoire n’existe pas, depuis\n"
 "<b>%s</b>"
 
 #: ../src/common/mipmap_cache.c:1327 ../src/imageio/imageio.c:1056
@@ -7700,7 +7700,7 @@ msgstr "Image « %s » non disponible"
 #: ../src/common/mipmap_cache.c:1330 ../src/imageio/imageio.c:1064
 #, c-format
 msgid "unable to load image `%s'!"
-msgstr "Impossible de charger l'image « %s » !"
+msgstr "Impossible de charger l’image « %s » !"
 
 #: ../src/common/mipmap_cache.c:1332 ../src/imageio/imageio.c:1067
 #, c-format
@@ -7733,7 +7733,7 @@ msgstr ""
 "Détection de la plateforme impossible. Quelques causes possibles :\n"
 " • OpenCL ICD (ocl-icd) manquant,\n"
 " • Périphériques bloqués après une erreur OpenCL survenue précédemment,\n"
-" • Problème de gestion de l'alimentation,\n"
+" • Problème de gestion de l’alimentation,\n"
 " • Pilotes bugués,\n"
 " • Aucun pilote OpenCL installé.\n"
 " • Plusieurs pilotes installés par carte\n"
@@ -7761,14 +7761,14 @@ msgid ""
 "%s\n"
 "disabling OpenCL for now"
 msgstr ""
-"Problème d'initialisation OpenCL :\n"
+"Problème d’initialisation OpenCL :\n"
 "%s\n"
 "OpenCL désactivé maintenant"
 
 #: ../src/common/opencl.c:1484
 msgid "OpenCL scheduling profile set to default, setup has changed"
 msgstr ""
-"Profil de planification d’OpenCL par défaut positionné, l'environnement a "
+"Profil de planification d’OpenCL par défaut positionné, l’environnement a "
 "changé"
 
 #: ../src/common/opencl.c:2335
@@ -7951,7 +7951,7 @@ msgstr "M"
 
 #: ../src/common/variables.c:191
 msgid "no info"
-msgstr "Pas d'information"
+msgstr "Pas d’information"
 
 #: ../src/common/variables.c:197 ../src/common/variables.c:819
 #: ../src/develop/imageop_gui.c:210 ../src/imageio/format/avif.c:861
@@ -8161,7 +8161,7 @@ msgstr "Afficher la fenêtre des raccourcis"
 #: ../src/control/control.c:313
 msgid "darktable will be locked until background work has been done"
 msgstr ""
-"Darktable sera bloqué jusqu'à ce que toutes les tâches de fond soient "
+"Darktable sera bloqué jusqu’à ce que toutes les tâches de fond soient "
 "terminées"
 
 #: ../src/control/control.c:417
@@ -8391,7 +8391,7 @@ msgstr[1] " Écrire les %zu fichiers XMP"
 
 #: ../src/control/jobs/control_jobs.c:496
 msgid "unable to allocate memory for HDR merge"
-msgstr "Impossible d'allouer la mémoire pour la fusion HDR"
+msgstr "Impossible d’allouer la mémoire pour la fusion HDR"
 
 #: ../src/control/jobs/control_jobs.c:505
 msgid "exposure bracketing only works on raw images."
@@ -8592,23 +8592,23 @@ msgstr[1] "Mise à jour des informations de %d images"
 #, c-format
 msgid "pasting history to %d image"
 msgid_plural "pasting history to %d images"
-msgstr[0] "Appliquer l'historique à %d image"
-msgstr[1] "Appliquer l'historique à %d images"
+msgstr[0] "Appliquer l’historique à %d image"
+msgstr[1] "Appliquer l’historique à %d images"
 
 #: ../src/control/jobs/control_jobs.c:1600
 msgid "skipped pasting history into image being edited"
-msgstr "Application de l'historique pour l'image éditée ignorée"
+msgstr "Application de l’historique pour l’image éditée ignorée"
 
 #: ../src/control/jobs/control_jobs.c:1637
 #, c-format
 msgid "compressing history for %d image"
 msgid_plural "compressing history for %d images"
-msgstr[0] "Compresser l'historique de %d image"
-msgstr[1] "Compresser l'historique de %d images"
+msgstr[0] "Compresser l’historique de %d image"
+msgstr[1] "Compresser l’historique de %d images"
 
 #: ../src/control/jobs/control_jobs.c:1652
 msgid "skipped compressing history for image being edited"
-msgstr "Compression de l'historique pour l'image éditée ignorée"
+msgstr "Compression de l’historique pour l’image éditée ignorée"
 
 #: ../src/control/jobs/control_jobs.c:1663
 #, c-format
@@ -8621,12 +8621,12 @@ msgstr[1] "Pas de compression de l’historique de %d images"
 #, c-format
 msgid "discarding history for %d image"
 msgid_plural "discarding history for %d images"
-msgstr[0] "Supprimer l'historique de %d image"
-msgstr[1] "Supprimer l'historique de %d images"
+msgstr[0] "Supprimer l’historique de %d image"
+msgstr[1] "Supprimer l’historique de %d images"
 
 #: ../src/control/jobs/control_jobs.c:1688
 msgid "skipped discarding history for image being edited"
-msgstr "Suppression de l'historique pour l'image éditée ignorée"
+msgstr "Suppression de l’historique pour l’image éditée ignorée"
 
 #: ../src/control/jobs/control_jobs.c:1715
 #, c-format
@@ -8750,7 +8750,7 @@ msgid ""
 "image file on disk)?"
 msgstr ""
 "Voulez-vous vraiment supprimer le clone\n"
-"(sans supprimer l'image source du disque)?"
+"(sans supprimer l’image source du disque) ?"
 
 #: ../src/control/jobs/control_jobs.c:2132
 msgid "move images"
@@ -9455,7 +9455,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2607
 msgid "set range"
-msgstr "Définit l'étendu"
+msgstr "Définit l’étendu"
 
 #: ../src/develop/blend_gui.c:2610
 msgid "invert all channel's polarities"
@@ -9805,8 +9805,8 @@ msgid ""
 "autosaving history has been disabled for this image because of a very large "
 "history or a slow drive being used"
 msgstr ""
-"La sauvegarde automatique a été désactivé pour cette image à cause d'un "
-"historique long ou d'un disque lent utilisé"
+"La sauvegarde automatique a été désactivé pour cette image à cause d’un "
+"historique long ou d’un disque lent utilisé"
 
 #: ../src/develop/develop.c:2267
 #, c-format
@@ -9823,7 +9823,7 @@ msgstr ""
 msgid "new instance"
 msgstr "Nouvelle instance"
 
-# "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l’image n'est pas physiquement dupliquée
+# "duplicate" traduit par "cloner" avec une bulle d’explication utilisant le terme de "copie virtuelle", dans le sens que l’image n’est pas physiquement dupliquée
 #: ../src/develop/imageop.c:1009
 msgid "duplicate instance"
 msgstr "Cloner l’instance"
@@ -9864,7 +9864,7 @@ msgstr "« %s » est désactivé"
 #: ../src/develop/imageop.c:2178
 #, c-format
 msgid "'%s' has an introspection error"
-msgstr "« %s » a une erreur d'introspection"
+msgstr "« %s » a une erreur d’introspection"
 
 #: ../src/develop/imageop.c:2804
 msgid "unknown mask"
@@ -9950,7 +9950,7 @@ msgstr "Afficher"
 msgid "new"
 msgstr "Nouveau"
 
-# "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l’image n'est pas physiquement dupliquée
+# "duplicate" traduit par "cloner" avec une bulle d’explication utilisant le terme de "copie virtuelle", dans le sens que l’image n’est pas physiquement dupliquée
 #: ../src/develop/imageop.c:4047 ../src/libs/duplicate.c:411
 #: ../src/libs/image.c:541 ../src/libs/modulegroups.c:3992
 msgid "duplicate"
@@ -10361,7 +10361,7 @@ msgstr ""
 
 #: ../src/develop/pixelpipe_hb.c:1736
 msgid "fatal input misalignment, please report on GitHub\n"
-msgstr "Erreur d'alignement en entrée, merci de reporter sur GitHub\n"
+msgstr "Erreur d’alignement en entrée, merci de reporter sur GitHub\n"
 
 #: ../src/develop/pixelpipe_hb.c:3111
 msgid ""
@@ -10374,14 +10374,14 @@ msgid ""
 "  - some drivers don't support needed number of events,\n"
 "  - too small headroom settings while using 'use all device memory'."
 msgstr ""
-"Erreur rencontré dans l'OpenCL; désactivé pour cette session ! Quelques "
+"Erreur rencontré dans l’OpenCL; désactivé pour cette session ! Quelques "
 "causes possibles :\n"
 " • Pas assez de ressources OpenCL à cause des préférences choisies. Tester "
 "avec les valeurs par défaut,\n"
-" • Pilote bugué sur certains périphériques. Exécuter Darktable avec l'option "
-"« -d opencl » pour plus d'information,\n"
-" • Certains pilotes ne supportent pas le nombre d'événements nécessaires,\n"
-" • Le « headroom » est trop petit lorsque l'option « Utiliser toute la "
+" • Pilote bugué sur certains périphériques. Exécuter Darktable avec l’option "
+"« -d opencl » pour plus d’information,\n"
+" • Certains pilotes ne supportent pas le nombre d’événements nécessaires,\n"
+" • Le « headroom » est trop petit lorsque l’option « Utiliser toute la "
 "mémoire du périphérique » est positionnée."
 
 #: ../src/develop/pixelpipe_hb.c:3303
@@ -10632,7 +10632,7 @@ msgstr "Il n’y a pas d’images dans cette collection"
 
 #: ../src/dtgtk/thumbtable.c:1259
 msgid "need help?"
-msgstr "Besoin d'aide ?"
+msgstr "Besoin d’aide ?"
 
 #: ../src/dtgtk/thumbtable.c:1260
 msgid "if you have not imported any images yet"
@@ -10641,7 +10641,7 @@ msgstr "S’il n’y a pas encore d’images importées"
 #: ../src/dtgtk/thumbtable.c:1261
 msgid "click on <b>?</b> then an on-screen item to open manual page"
 msgstr ""
-"Cliquer sur <b>?</b> et ensuite sur un élément de l'interface pour ouvrir la "
+"Cliquer sur <b>?</b> et ensuite sur un élément de l’interface pour ouvrir la "
 "page du manuel"
 
 # suite le la phrase précédente ? minuscule initiale ?
@@ -10673,11 +10673,11 @@ msgstr "Personnaliser Darktable"
 
 #: ../src/dtgtk/thumbtable.c:1268
 msgid "click on the gear icon for global preferences"
-msgstr "Cliquer sur l'icône « roue-crantée » pour les préférences globales"
+msgstr "Cliquer sur l’icône « roue-crantée » pour les préférences globales"
 
 #: ../src/dtgtk/thumbtable.c:1270
 msgid "click on the keyboard icon to define shortcuts"
-msgstr "Cliquer sur l'icône clavier pour définir un raccourci"
+msgstr "Cliquer sur l’icône clavier pour définir un raccourci"
 
 #: ../src/dtgtk/thumbtable.c:1272
 msgid "try the 'no-click' workflow"
@@ -11138,7 +11138,7 @@ msgstr ""
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:881
 #: ../src/gui/gtkentry.c:47
 msgid "$(WIDTH.SENSOR) - image sensor width"
-msgstr "$(WIDTH.SENSOR) - Largeur de l'image du capteur"
+msgstr "$(WIDTH.SENSOR) - Largeur de l’image du capteur"
 
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:882
 #: ../src/gui/gtkentry.c:52
@@ -11344,7 +11344,7 @@ msgstr "$(EXIF.WHITEBALANCE) - Balance des blancs EXIF"
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:927
 #: ../src/gui/gtkentry.c:92
 msgid "$(EXIF.METERING) - EXIF exposure metering mode"
-msgstr "$(EXIF.METERING) - Mode de mesure d'exposition EXIF"
+msgstr "$(EXIF.METERING) - Mode de mesure d’exposition EXIF"
 
 #. not implemented
 #: ../src/external/lua-scripts/lib/dtutils/string.lua:928
@@ -11762,7 +11762,7 @@ msgstr "Supprimer les mots-clés longs"
 
 #: ../src/external/lua-scripts/official/delete_long_tags.lua:48
 msgid "delete all tags longer than a set length"
-msgstr "Supprimer tous les mots-clés plus long qu'une limite donnée"
+msgstr "Supprimer tous les mots-clés plus long qu’une limite donnée"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -11855,7 +11855,7 @@ msgstr "Enfuse"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:56
 msgid "exposure blend images"
-msgstr "Fusion d'exposition d'images"
+msgstr "Fusion d’exposition d’images"
 
 #. name
 #. expandable
@@ -11879,7 +11879,7 @@ msgid ""
 "center also known as mean of gaussian weighting function (0 <= mean <= 1); "
 "default: 0.5"
 msgstr ""
-"Centre, aussi connu comme moyenne d'une fonctionne de pondération gaussienne "
+"Centre, aussi connu comme moyenne d’une fonctionne de pondération gaussienne "
 "(0 <= moyenne <= 1); défaut 0.5"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:147
@@ -11891,7 +11891,7 @@ msgid ""
 "optimum exposure value, usually the maximum of the weighting function (0 <= "
 "optimum <=1); default 0.5"
 msgstr ""
-"Valeur d'exposition optimale, généralement le maximum d'une fonction de "
+"Valeur d’exposition optimale, généralement le maximum d’une fonction de "
 "pondération (0 <= optimum <= 1); défaut 0.5"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:157
@@ -11900,7 +11900,7 @@ msgstr "Bits"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:158
 msgid "the number of bits per channel of the output image"
-msgstr "Le nombre de bit par canal de l'image exportée"
+msgstr "Le nombre de bit par canal de l’image exportée"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:166
 msgid "blend colorspace"
@@ -11908,7 +11908,7 @@ msgstr "Espace de couleur de fusion"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:167
 msgid "force blending in selected colorspace"
-msgstr "Forcer la fusion dans l'espace couleur sélectionné"
+msgstr "Forcer la fusion dans l’espace couleur sélectionné"
 
 #: ../src/external/lua-scripts/official/enfuse.lua:174
 msgid "run enfuse"
@@ -11916,7 +11916,7 @@ msgstr "Exécuter « enfuse » "
 
 #: ../src/external/lua-scripts/official/enfuse.lua:174
 msgid "enfuse not installed"
-msgstr "L'outil « enfuse » n'est pas installé"
+msgstr "L’outil « enfuse » n’est pas installé"
 
 #. remember exposure_mu
 #. TODO: find a way to save it whenever the value changes
@@ -11925,7 +11925,7 @@ msgstr "L'outil « enfuse » n'est pas installé"
 #: ../src/external/lua-scripts/official/enfuse.lua:192
 #, lua-format
 msgid "error writing to '%s'"
-msgstr "Erreur lors de l'écriture de « %s »"
+msgstr "Erreur lors de l’écriture de « %s »"
 
 #. add all filenames to the response file
 #. only use ldr files as enfuse can't open raws
@@ -11956,14 +11956,14 @@ msgstr "%d image(s) ignorée(s)"
 #. TODO: find something nicer
 #: ../src/external/lua-scripts/official/enfuse.lua:258
 msgid "enfuse failed, see terminal output for details"
-msgstr "L'outil « enfuse » a échoué, voir le terminal pour les détails"
+msgstr "L’outil « enfuse » a échoué, voir le terminal pour les détails"
 
 #. remove the response file
 #. import resulting tiff
 #. tell the user that everything worked
 #: ../src/external/lua-scripts/official/enfuse.lua:270
 msgid "enfuse was successful, resulting image has been imported"
-msgstr "Exécution de « enfuse » avec succès, l'image résultante a été importée"
+msgstr "Exécution de « enfuse » avec succès, l’image résultante a été importée"
 
 #. normally printing to stdout is bad, but we allow enfuse to show its output, so adding one extra line is ok
 #: ../src/external/lua-scripts/official/enfuse.lua:272
@@ -11976,7 +11976,7 @@ msgstr ""
 #: ../src/external/lua-scripts/official/enfuse.lua:306
 msgid "could not find enfuse executable, not loading enfuse exporter..."
 msgstr ""
-"Impossible de trouver l'exécutable « enfuse », le module d'export n'est pas "
+"Impossible de trouver l’exécutable « enfuse », le module d’export n’est pas "
 "chargé"
 
 #. vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
@@ -12038,7 +12038,7 @@ msgid ""
 "image. also enable the txt overlay setting in the gui tab"
 msgstr ""
 "Les fichiers txt créés sont affichés lorsque la table lumineuse est zoomée "
-"avec une seule image. Vous devez aussi activer l'affichage des "
+"avec une seule image. Vous devez aussi activer l’affichage des "
 "superpositions txt dans les préférences GUI."
 
 #: ../src/external/lua-scripts/official/generate_image_txt.lua:75
@@ -12106,7 +12106,7 @@ msgstr "Affichage le chemin de l’image dans l’interface"
 
 #: ../src/external/lua-scripts/official/image_path_in_ui.lua:48
 msgid "print the image path in the UI"
-msgstr "Affichage le chemin de l'image dans l'interface"
+msgstr "Affichage le chemin de l’image dans l’interface"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -12155,7 +12155,7 @@ msgstr "Gestionnaire des filtres d’importation"
 
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:45
 msgid "manage import filters"
-msgstr "Gère les filtres d'importation"
+msgstr "Gère les filtres d’importation"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -12166,17 +12166,17 @@ msgstr "Gère les filtres d'importation"
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:60
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:66
 msgid "import filter"
-msgstr "Filtre d'importation"
+msgstr "Filtre d’importation"
 
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:60
 msgid "the name of the filter used for importing images"
-msgstr "Le nom du filtre utilisé pour l'importation d'images"
+msgstr "Le nom du filtre utilisé pour l’importation d’images"
 
 #: ../src/external/lua-scripts/official/import_filter_manager.lua:68
 msgid "import filters are applied after completion of the import dialog"
 msgstr ""
-"Les filtres d'importation sont appliqués après la fermeture de la fenêtre "
-"d'importation"
+"Les filtres d’importation sont appliqués après la fermeture de la fenêtre "
+"d’importation"
 
 #. the first entry in the list is hard coded to "" so it's possible to have no filter
 #. this is just a wrapper which calls the active import filter
@@ -12219,7 +12219,7 @@ msgstr "Filtres d’importation"
 
 #: ../src/external/lua-scripts/official/import_filters.lua:43
 msgid "import filtering"
-msgstr "Filtrer l'importation"
+msgstr "Filtrer l’importation"
 
 #. function to destory the script
 #. set to hide for libs since we can't destroy them commpletely yet
@@ -12356,7 +12356,7 @@ msgstr "Lecteur PDF"
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:66
 msgid "can be an absolute pathname or the tool may be in the PATH"
 msgstr ""
-"Peut-être un chemin absolu or l'outil peut être dans le chemin de recherche "
+"Peut-être un chemin absolu or l’outil peut être dans le chemin de recherche "
 "(PATH)"
 
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:74
@@ -12386,13 +12386,13 @@ msgstr "Exporter une miniature en PDF"
 #. convert to PDF
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:179
 msgid "problem running pdflatex"
-msgstr "Problème lors de l'exécution de « pdflatex »"
+msgstr "Problème lors de l’exécution de « pdflatex »"
 
 #. this one is probably usefull to the user
 #. open the PDF
 #: ../src/external/lua-scripts/official/selection_to_pdf.lua:189
 msgid "problem running pdf viewer"
-msgstr "Problème lors de l'exécution de l'afficheur PDF"
+msgstr "Problème lors de l’exécution de l’afficheur PDF"
 
 #. this one is probably usefull to the user
 #. finally do some clean-up
@@ -12466,7 +12466,7 @@ msgstr "Exécutables"
 #. check if we have something to manage and exit if not
 #: ../src/external/lua-scripts/tools/executable_manager.lua:157
 msgid "no executable paths found, exiting..."
-msgstr "Pas de chemin d'exécutable trouvé, termine..."
+msgstr "Pas de chemin d’exécutable trouvé, termine..."
 
 #. build a table of the path preferences
 #. preferences are stored with forward slashes
@@ -12476,7 +12476,7 @@ msgstr "Sélectionner une exécutable"
 
 #: ../src/external/lua-scripts/tools/executable_manager.lua:173
 msgid "search path for executable"
-msgstr "Chemin de recherche pour l'exécutable"
+msgstr "Chemin de recherche pour l’exécutable"
 
 #. create a stack widget to hold the executable path widgets
 #. create a combobox to for indexing into the stack of widgets
@@ -12731,8 +12731,8 @@ msgstr "Pas de documentation disponible"
 msgid ""
 "ERROR: git not found.  Install or specify the location of the git executable."
 msgstr ""
-"ERREUR : La commande « git » n'est pas trouvée. Merci d'installer pour de "
-"spécifier la chemin d'installation de l'exécutable « git »."
+"ERREUR : La commande « git » n’est pas trouvée. Merci d’installer pour de "
+"spécifier la chemin d’installation de l’exécutable « git »."
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:765
 msgid "lua scripts successfully updated"
@@ -12781,7 +12781,7 @@ msgstr "Scripts"
 #: ../src/external/lua-scripts/tools/script_manager.lua:1263
 msgid "lua API version reset, please restart darktable"
 msgstr ""
-"Réinitialisation de la version de l'API Lua, merci de redémarrer Darktable"
+"Réinitialisation de la version de l’API Lua, merci de redémarrer Darktable"
 
 #. do nothing, we are fine
 #. we are on a dev API version, so checkout the dev
@@ -12805,7 +12805,7 @@ msgstr "Scripts à mettre à jour"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1337
 msgid "select the scripts installation to update"
-msgstr "Sélectionner l'installation des scripts à mettre à jour"
+msgstr "Sélectionner l’installation des scripts à mettre à jour"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1346
 #: ../src/external/lua-scripts/tools/script_manager.lua:1408
@@ -12820,7 +12820,7 @@ msgstr "Mise à jour des scripts Lua depuis le dépôt"
 #: ../src/external/lua-scripts/tools/script_manager.lua:1358
 msgid ""
 "enter the URL of the git repository containing the scripts you wish to add"
-msgstr "Enter l'URL du dépôt Git contenant les scripts que vous voulez ajouter"
+msgstr "Enter l’URL du dépôt Git contenant les scripts que vous voulez ajouter"
 
 #: ../src/external/lua-scripts/tools/script_manager.lua:1363
 msgid "name of new folder"
@@ -13015,7 +13015,7 @@ msgstr "Dans la vue active"
 
 #: ../src/gui/accelerators.c:68
 msgid "in other views"
-msgstr "Dans d'autres vues"
+msgstr "Dans d’autres vues"
 
 #: ../src/gui/accelerators.c:69
 msgid "fallbacks"
@@ -13207,7 +13207,7 @@ msgstr "Action « combobox » non trouvée"
 msgid "(keypad)"
 msgstr "(Pavé numérique)"
 
-# "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l’image n'est pas physiquement dupliquée
+# "duplicate" traduit par "cloner" avec une bulle d’explication utilisant le terme de "copie virtuelle", dans le sens que l’image n’est pas physiquement dupliquée
 #: ../src/gui/accelerators.c:673
 msgid "tablet button"
 msgstr "Bouton de la tablette"
@@ -13270,12 +13270,12 @@ msgstr "Clic"
 msgid "first instance"
 msgstr "Première instance"
 
-# "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l’image n'est pas physiquement dupliquée
+# "duplicate" traduit par "cloner" avec une bulle d’explication utilisant le terme de "copie virtuelle", dans le sens que l’image n’est pas physiquement dupliquée
 #: ../src/gui/accelerators.c:798
 msgid "last instance"
 msgstr "Dernière instance"
 
-# "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l’image n'est pas physiquement dupliquée
+# "duplicate" traduit par "cloner" avec une bulle d’explication utilisant le terme de "copie virtuelle", dans le sens que l’image n’est pas physiquement dupliquée
 #: ../src/gui/accelerators.c:800
 msgid "relative instance"
 msgstr "Instance relative"
@@ -13352,7 +13352,7 @@ msgstr ""
 "\n"
 "Double cliquer pour définir un nouveau raccourci"
 
-# bulle d'aide de l'histogramme, et aussi très souvent dans les modules
+# bulle d’aide de l’histogramme, et aussi très souvent dans les modules
 # => pas de " • " initial
 #: ../src/gui/accelerators.c:1104
 msgid "shift+alt+scroll to change height"
@@ -13366,8 +13366,8 @@ msgstr ""
 "Appuyer des touches avec un clic et une combinaison de molette\n"
 "ou de déplacement pour créer un raccourci."
 
-# 1re ligne de la liste dans la bulle d'aide de l'icône de définition
-# des raccourcis lorsqu'activée
+# 1re ligne de la liste dans la bulle d’aide de l’icône de définition
+# des raccourcis lorsqu’activée
 #: ../src/gui/accelerators.c:1125
 msgid "click to open shortcut configuration"
 msgstr " • Cliquer pour ouvrir le panneau de configuration des raccourcis"
@@ -13380,14 +13380,14 @@ msgstr "Ctrl+clic pour ajouter au panneau d’accès rapide\n"
 msgid "ctrl+click to remove from quick access panel\n"
 msgstr "Ctrl+clic pour supprimer du panneau d’accès rapide\n"
 
-# 2e ligne de la liste dans la bulle d'aide de l'icône de définition
+# 2e ligne de la liste dans la bulle d’aide de l’icône de définition
 # des raccourcis lorsqu'activée
 #: ../src/gui/accelerators.c:1128
 msgid "scroll to change default speed"
 msgstr " • Molette pour changer la vitesse"
 
-# 3e ligne de la liste dans la bulle d'aide de l'icône de définition
-# des raccourcis lorsqu'activée
+# 3e ligne de la liste dans la bulle d’aide de l’icône de définition
+# des raccourcis lorsqu’activée
 #: ../src/gui/accelerators.c:1129
 msgid "right-click to exit mapping mode"
 msgstr " • Clic-droit pour quitter le mode enregistrement"
@@ -13477,7 +13477,7 @@ msgstr "Préféré"
 msgid "second"
 msgstr "Second"
 
-# "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l’image n'est pas physiquement dupliquée
+# "duplicate" traduit par "cloner" avec une bulle d’explication utilisant le terme de "copie virtuelle", dans le sens que l’image n’est pas physiquement dupliquée
 #: ../src/gui/accelerators.c:1626
 msgid "last but one"
 msgstr "Pénultième"
@@ -13694,7 +13694,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:3028
 msgid "open help page for shortcuts"
-msgstr "Ouvre la page d'aide pour les raccourcis"
+msgstr "Ouvre la page d’aide pour les raccourcis"
 
 # lorsque l’action n’engendre pas de suppression physique, on emploie le terme "enlever"
 #: ../src/gui/accelerators.c:3033
@@ -13750,7 +13750,7 @@ msgstr ""
 "Plusieurs raccourcis peuvent être assignés à la même action. Cela est "
 "particulièrement utile si il a plusieurs <i>éléments</i>, comme les boutons "
 "des modules ou les pipette de sélection de couleur attachées aux réglettes, "
-"avec les <i>replis</i> activés il est possible d'utiliser les mêmes "
+"avec les <i>replis</i> activés il est possible d’utiliser les mêmes "
 "raccourcis simples et de changer leur <i>élément</i> ou <i>effet</i> en "
 "ajoutant des Clics souris.\n"
 "\n"
@@ -13819,7 +13819,7 @@ msgstr "Page ouverte dans le navigateur"
 
 #: ../src/gui/gtk.c:1136
 msgid "error while opening URL in web browser"
-msgstr "Erreur lors de l’ouverture d'une page dans le navigateur"
+msgstr "Erreur lors de l’ouverture d’une page dans le navigateur"
 
 #. View menu
 #: ../src/gui/gtk.c:1272
@@ -13877,7 +13877,7 @@ msgstr "Manuel Darktable"
 #: ../src/gui/gtk.c:1314
 msgctxt "menu"
 msgid "darktable Homepage"
-msgstr "Page d'accueil de Darktable"
+msgstr "Page d’accueil de Darktable"
 
 #: ../src/gui/gtk.c:1339
 msgctxt "menu"
@@ -13982,7 +13982,7 @@ msgid ""
 "\n"
 "do you want to collapse all panels now?"
 msgstr ""
-"C'est la première fois que le raccourci (TAB par défaut) pour replier\n"
+"C’est la première fois que le raccourci (TAB par défaut) pour replier\n"
 "tous les panneaux sur les cotés et le haut et bas est utilisé.\n"
 "En utilisant ce raccourci la prochaine fois tous les panneaux seront "
 "restaurés.\n"
@@ -14044,7 +14044,7 @@ msgstr "Ne pas montrer plus de %d lignes"
 
 #: ../src/gui/gtkentry.c:44
 msgid "$(JOBCODE) - job code for import"
-msgstr "$(JOBCODE) - Numéro de tâche pour l'importation"
+msgstr "$(JOBCODE) - Numéro de tâche pour l’importation"
 
 #: ../src/gui/gtkentry.c:46
 msgid "$(WIDTH.MAX) - maximum image export width"
@@ -14072,7 +14072,7 @@ msgstr "$(EXIF.HOUR.AMPM) - Heure EXIF au format de 12 heures"
 
 #: ../src/gui/gtkentry.c:82
 msgid "$(EXIF.EXPOSURE.PROGRAM) - EXIF exposure program"
-msgstr "$(EXIF.EXPOSURE.PROGRAM) - Programme d'exposition EXIF"
+msgstr "$(EXIF.EXPOSURE.PROGRAM) - Programme d’exposition EXIF"
 
 #: ../src/gui/gtkentry.c:94
 msgid "$(EXIF.FLASH.ICON) - icon indicating whether flash was used"
@@ -14121,7 +14121,7 @@ msgstr "$(IMAGE.ID) - Numéro d’image"
 #: ../src/gui/gtkentry.c:110
 msgid "$(IMAGE.ID.NEXT) - next image ID to be assigned on import"
 msgstr ""
-"$(IMAGE.ID.NEXT) - Numéro d'image suivante qui sera assigné à l'importation"
+"$(IMAGE.ID.NEXT) - Numéro d’image suivante qui sera assigné à l’importation"
 
 #: ../src/gui/gtkentry.c:116
 msgid "$(OPENCL.ACTIVATED) - whether OpenCL is activated"
@@ -14476,7 +14476,7 @@ msgstr ""
 
 #: ../src/gui/preferences.c:517
 msgid "open help page for CSS tweaks"
-msgstr "Ouvre la page d'aide pour les ajustements CSS"
+msgstr "Ouvre la page d’aide pour les ajustements CSS"
 
 #. load default text with some pointers
 #: ../src/gui/preferences.c:539
@@ -14864,11 +14864,11 @@ msgstr "Arrêt de Darktable"
 
 #: ../src/gui/splash.c:330
 msgid "darktable is now shutting down"
-msgstr "Darktable va maintenant s'arrêter"
+msgstr "Darktable va maintenant s’arrêter"
 
 #: ../src/gui/splash.c:332
 msgid "please wait while background jobs finish"
-msgstr "Merci d'attendre que les actions d'arrière plan terminent"
+msgstr "Merci d’attendre que les actions d’arrière plan terminent"
 
 #: ../src/gui/styles_dialog.c:229 ../src/libs/styles.c:498
 #: ../src/libs/styles.c:651
@@ -14901,7 +14901,7 @@ msgstr "Le style « %s » a été sauvegardé"
 msgid "edit style"
 msgstr "Modifier le style"
 
-# "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l’image n'est pas physiquement dupliquée
+# "duplicate" traduit par "cloner" avec une bulle d’explication utilisant le terme de "copie virtuelle", dans le sens que l’image n’est pas physiquement dupliquée
 #: ../src/gui/styles_dialog.c:537
 msgid "duplicate style"
 msgstr "Cloner le style"
@@ -15112,7 +15112,7 @@ msgstr "DWAB"
 
 #: ../src/imageio/format/j2k.c:448
 msgid "unable to attach output profile to JP2"
-msgstr "Impossible d'attacher le profile de sortie à un JP2"
+msgstr "Impossible d’attacher le profile de sortie à un JP2"
 
 #: ../src/imageio/format/j2k.c:677
 msgid "JPEG 2000 (12-bit)"
@@ -15151,7 +15151,7 @@ msgid ""
 "4:2:2 - color sampling rate halved horizontally\n"
 "4:2:0 - color sampling rate halved horizontally and vertically"
 msgstr ""
-"Sous-échantillonnage de la chrominance pour l'encodeur JPEG.\n"
+"Sous-échantillonnage de la chrominance pour l’encodeur JPEG.\n"
 " • Auto : Le sous-échantillonnage est déterminé par la valeur de la qualité\n"
 " • 4:4:4 : Pas de sous-échantillonnage\n"
 " • 4:4:O : Échantillonnage couleur réduit de moité verticalement\n"
@@ -15600,7 +15600,7 @@ msgstr "Envoyer par e-mail"
 #. Unlikely in normal Windows installations, but let's notify the user if it happens
 #: ../src/imageio/storage/email.c:264
 msgid "could not open mapi32.dll"
-msgstr "Impossible d'ouvrir « mapi32.dll »"
+msgstr "Impossible d’ouvrir « mapi32.dll »"
 
 #. Even more unlikely
 #: ../src/imageio/storage/email.c:274
@@ -15755,7 +15755,7 @@ msgid ""
 "type '$(' to activate the completion and see the list of variables"
 msgstr ""
 "Entrer le modif des noms de fichier pour les images exportées.\n"
-"Laisser vide pour utiliser le nom de fichier de l'image.\n"
+"Laisser vide pour utiliser le nom de fichier de l’image.\n"
 "Les variables supportent les substitutions comme le shell bash.\n"
 "Taper « $( » pour activer la complétion et voir la liste des variables."
 
@@ -15900,7 +15900,7 @@ msgstr "Augmente ou diminue la saturation"
 
 #: ../src/iop/agx.c:1882
 msgid "increase to bring hues closer to the original"
-msgstr "Augmenter pour conserver les teintes proches de l'original"
+msgstr "Augmenter pour conserver les teintes proches de l’original"
 
 #: ../src/iop/agx.c:1896
 msgctxt "section"
@@ -15963,7 +15963,7 @@ msgstr ""
 "Essayez de conserver la courbe en forme de S,\n"
 "Étant donné que le contraste est suffisamment élevé, \n"
 "donc les contrôles du pied et épaule restent efficaces.\n"
-"Modifie le contraste, vous pouvez contrer l'effet avec le réglage du "
+"Modifie le contraste, vous pouvez contrer l’effet avec le réglage du "
 "contraste ou avec les contrôles du pied / épaule."
 
 #: ../src/iop/agx.c:2011
@@ -15974,14 +15974,14 @@ msgid ""
 "slider, or with toe / shoulder controls."
 msgstr ""
 "Décale la représentation (mais pas la luminosité en sortie) du pivot\n"
-"le long de l'axe des Y de la courbe.\n"
-"Modifie le contraste, vous pouvez contrer l'effet avec le réglage du "
+"le long de l’axe des Y de la courbe.\n"
+"Modifie le contraste, vous pouvez contrer l’effet avec le réglage du "
 "contraste ou avec les contrôles du pied / épaule."
 
 #: ../src/iop/agx.c:2027
 msgctxt "section"
 msgid "input exposure range"
-msgstr "Étendu de l'exposition en entrée"
+msgstr "Étendu de l’exposition en entrée"
 
 #: ../src/iop/agx.c:2037
 msgid "relative exposure above mid-gray (white point)"
@@ -16007,7 +16007,7 @@ msgstr "Niveaux automatiques"
 #: ../src/iop/agx.c:2060
 msgid "pick image area to automatically set black and white exposure"
 msgstr ""
-"Sélectionne une zone de l'image pour ajuster automatiquement l'exposition "
+"Sélectionne une zone de l’image pour ajuster automatiquement l’exposition "
 "des blancs et des noirs"
 
 #: ../src/iop/agx.c:2089
@@ -16048,7 +16048,7 @@ msgid ""
 "'export profile' uses the profile set in 'output color profile'."
 msgstr ""
 "Couleurs primaires à utiliser comme base des ajustements ci-dessous\n"
-"« Profil d'export » utilise le profil positionné dans le module « Profil de "
+"« Profil d’export » utilise le profil positionné dans le module « Profil de "
 "couleur de sortie »"
 
 #: ../src/iop/agx.c:2274
@@ -17719,12 +17719,12 @@ msgid ""
 "enable this module and either set it to reference\n"
 "or disable chromatic adaptation in color calibration."
 msgstr ""
-"Ce module ne fourni pas un point de référence d'illuminant valide "
+"Ce module ne fourni pas un point de référence d’illuminant valide "
 "entraînant\n"
-"des problèmes dans l'adaptation chromatique de « Calibration des "
+"des problèmes dans l’adaptation chromatique de « Calibration des "
 "couleurs ».\n"
 "Activer ce module et le définir comme référence\n"
-"ou désactiver l'adaptation chromatique de « Calibration des couleurs »."
+"ou désactiver l’adaptation chromatique de « Calibration des couleurs »."
 
 #: ../src/iop/channelmixerrgb.c:2093
 msgid ""
@@ -17734,9 +17734,9 @@ msgid ""
 "or disable chromatic adaptation here."
 msgstr ""
 "Le module « Balance des blancs » ne fourni pas une référence neutre\n"
-"d'illuminant entraînant des problèmes d’adaptation chromatique ici.\n"
+"d’illuminant entraînant des problèmes d’adaptation chromatique ici.\n"
 "Activer le module « Balance des blancs » et soit le définir comme référence\n"
-"ou désactiver l'adaptation chromatique ici."
+"ou désactiver l’adaptation chromatique ici."
 
 #: ../src/iop/channelmixerrgb.c:2185
 msgid "auto-detection of white balance completed"
@@ -18887,7 +18887,7 @@ msgstr "Chroma de l’exposant de couleur dans les tons moyens"
 msgid "masks"
 msgstr "Masques"
 
-# "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l’image n'est pas physiquement dupliquée
+# "duplicate" traduit par "cloner" avec une bulle d’explication utilisant le terme de "copie virtuelle", dans le sens que l’image n’est pas physiquement dupliquée
 #: ../src/iop/colorbalancergb.c:1962
 msgid "isolate luminances"
 msgstr "Isoler les luminances"
@@ -19223,7 +19223,7 @@ msgid ""
 "alt+scroll to change page"
 msgstr ""
 "Double-clic pour re-initialiser la courbe\n"
-"Clic-milieu pour basculer l'affichage des réglettes\n"
+"Clic-milieu pour basculer l’affichage des réglettes\n"
 "Alt+molette pour change de page"
 
 #: ../src/iop/colorequal.c:3043
@@ -19240,7 +19240,7 @@ msgstr ""
 
 #: ../src/iop/colorequal.c:3066
 msgid "change hue hue-wise"
-msgstr "Change la teinte d'une couleur"
+msgstr "Change la teinte d’une couleur"
 
 #: ../src/iop/colorequal.c:3084
 msgid "change saturation hue-wise"
@@ -19268,7 +19268,7 @@ msgstr "Change pour une courbe de teinte plus dure ou plus douce"
 #: ../src/iop/colorequal.c:3144
 msgid "restrict effect by using a guided filter based on hue and saturation"
 msgstr ""
-"Restreint l'effet en utilisant un filtre guidé basé sur la teinte et la "
+"Restreint l’effet en utilisant un filtre guidé basé sur la teinte et la "
 "saturation"
 
 #: ../src/iop/colorequal.c:3150
@@ -19276,7 +19276,7 @@ msgid ""
 "set radius of the guided filter chroma analysis (hue).\n"
 "increase if there is large local variance of hue or strong chroma noise."
 msgstr ""
-"Le rayon de l'analyse du chroma du filtre guidé (teinte).\n"
+"Le rayon de l’analyse du chroma du filtre guidé (teinte).\n"
 "Augmenter si il y a des variations locales importantes de teinte ou du bruit "
 "chromatique fort."
 
@@ -19843,11 +19843,11 @@ msgstr ""
 
 #: ../src/iop/demosaic.c:717 ../src/iop/demosaic.c:764
 msgid "can't allocate demosaic buffer"
-msgstr "Impossible d'allouer la mémoire pour le dématriçage"
+msgstr "Impossible d’allouer la mémoire pour le dématriçage"
 
 #: ../src/iop/demosaic.c:754
 msgid "can't equilibrate greens"
-msgstr "Impossible d'équilibrer les verts"
+msgstr "Impossible d’équilibrer les verts"
 
 #: ../src/iop/demosaic.c:1401
 #, c-format
@@ -19939,13 +19939,13 @@ msgstr ""
 "perdus\n"
 "à cause du flou de capture du boîtier qui peut venir de la diffraction, du "
 "filtre\n"
-"antialiasing et d'autres sources de flou du type gaussien."
+"antialiasing et d’autres sources de flou du type gaussien."
 
 #: ../src/iop/demosaic.c:1674
 msgid "enable capture sharpening and set effect strength based on iterations"
 msgstr ""
-"Active l'amélioration de la netteté de capture et définit la force basée sur "
-"le nombre d'itération"
+"Active l’amélioration de la netteté de capture et définit la force basée sur "
+"le nombre d’itération"
 
 #: ../src/iop/demosaic.c:1679
 msgid ""
@@ -19956,16 +19956,16 @@ msgid ""
 msgstr ""
 "Le rayon d’ajustement de la netteté devrait refléter le type de flou "
 "gaussien du capteur,\n"
-"du filtre anti-antialiasing si présent et de l'objectif.\n"
+"du filtre anti-antialiasing si présent et de l’objectif.\n"
 "Trop augmenter cela apportera rapidement des artefacts comme des halos\n"
-"d'autant plus lorsque utilisé avec une augmentation de la netteté forte."
+"d’autant plus lorsque utilisé avec une augmentation de la netteté forte."
 
 #: ../src/iop/demosaic.c:1685
 msgid ""
 "calculate the capture sharpen radius from sensor data.\n"
 "this should be done in zoomed out darkroom"
 msgstr ""
-"Calculer le rayon de l'ajustement de netteté depuis les données du capteur.\n"
+"Calculer le rayon de l’ajustement de netteté depuis les données du capteur.\n"
 "A faire en zoomant dans la chambre noire."
 
 #: ../src/iop/demosaic.c:1690
@@ -19988,8 +19988,8 @@ msgid ""
 "further increase sharpen radius at image corners,\n"
 "the sharp center of the image will not be affected"
 msgstr ""
-"Augmente le rayon d'accentuation des angles de l'image,\n"
-"le centre de l'image n'est pas affecté."
+"Augmente le rayon d’accentuation des angles de l’image,\n"
+"le centre de l’image n’est pas affecté."
 
 #: ../src/iop/demosaic.c:1700
 msgid "visualize the overall radius"
@@ -19997,7 +19997,7 @@ msgstr "Visualiser le rayon global"
 
 #: ../src/iop/demosaic.c:1705
 msgid "adjust to the sharp image center"
-msgstr "Ajuste l'accentuation du centre de l'image"
+msgstr "Ajuste l’accentuation du centre de l’image"
 
 #: ../src/iop/demosaic.c:1712
 msgid "demosaicing is only used for color raw images"
@@ -20111,7 +20111,7 @@ msgstr ""
 "qui adoucissait insuffisamment lorsque la taille des patchs était "
 "augmentée.\n"
 "En activant cette option le traitement est changé, une fois activé\n"
-"il ne sera plus possible de revenir à l'ancien algorithme."
+"il ne sera plus possible de revenir à l’ancien algorithme."
 
 #: ../src/iop/denoiseprofile.c:3794
 msgid "profile used for variance stabilization"
@@ -20641,7 +20641,7 @@ msgid ""
 "image width"
 msgstr ""
 "De combien agrandir le canevas vers la gauche en pourcentage de la largeur "
-"de l'image originale"
+"de l’image originale"
 
 #: ../src/iop/enlargecanvas.c:425
 msgid ""
@@ -20649,7 +20649,7 @@ msgid ""
 "image width"
 msgstr ""
 "De combien agrandir le canevas vers la droite en pourcentage de la largeur "
-"de l'image originale"
+"de l’image originale"
 
 #: ../src/iop/enlargecanvas.c:431
 msgid ""
@@ -20657,7 +20657,7 @@ msgid ""
 "image height"
 msgstr ""
 "De combien agrandir le canevas vers le haut en pourcentage de la hauteur de "
-"l'image originale"
+"l’image originale"
 
 #: ../src/iop/enlargecanvas.c:437
 msgid ""
@@ -20665,7 +20665,7 @@ msgid ""
 "image height"
 msgstr ""
 "De combien agrandir le canevas vers la bas en pourcentage de la hauteur de "
-"l'image originale"
+"l’image originale"
 
 #: ../src/iop/enlargecanvas.c:441
 msgid "select the color of the enlarged canvas"
@@ -20747,7 +20747,7 @@ msgid ""
 "when enabled on an image with nonzero bias, tone mapping\n"
 "(e.g. sigmoid) is required to avoid blown-out highlights."
 msgstr ""
-"Compense le biais caché d'exposition pour les modes\n"
+"Compense le biais caché d’exposition pour les modes\n"
 "HDR / préservation des hautes lumières / étendue dynamique / ton HLG.\n"
 "\n"
 "Lorsque activé, le mappage de tonalité (e.g. Sigmoïde) doit\n"
@@ -20755,7 +20755,7 @@ msgstr ""
 
 #: ../src/iop/exposure.c:1194
 msgid "set the exposure adjustment using the selected area"
-msgstr "Fixer l'ajustement de l'exposition en utilisant la zone sélectionnée"
+msgstr "Fixer l’ajustement de l’exposition en utilisant la zone sélectionnée"
 
 #: ../src/iop/exposure.c:1205
 #, no-c-format
@@ -21484,7 +21484,7 @@ msgid ""
 "negative values bleach highlights at constant hue and luminance.\n"
 "zero is an equal mix of both strategies."
 msgstr ""
-"Les valeurs positives conservent la saturation sur toute l'étendue.\n"
+"Les valeurs positives conservent la saturation sur toute l’étendue.\n"
 "Les valeurs négatives blanchissent les hautes lumières à teinte et luminance "
 "constante.\n"
 "Zéro est un mélange égal des deux stratégies."
@@ -21838,7 +21838,7 @@ msgstr ""
 
 #: ../src/iop/highlights.c:1340
 msgid "show the effect that is added to already reconstructed data."
-msgstr "Montre l'effet qui est ajouté aux données déjà reconstruites."
+msgstr "Montre l’effet qui est ajouté aux données déjà reconstruites."
 
 #: ../src/iop/highlights.c:1343
 msgid ""
@@ -22086,7 +22086,7 @@ msgstr "Échelle automatique"
 #: ../src/iop/lens.cc:4474
 msgid "automatic scale to available image size due to Lensfun data"
 msgstr ""
-"Échelle automatique en fonction de la taille de l'image après l'application "
+"Échelle automatique en fonction de la taille de l’image après l’application "
 "des données Lensfun"
 
 #: ../src/iop/lens.cc:4479
@@ -22111,9 +22111,9 @@ msgid ""
 "once enabled, you won't be able to\n"
 "return back to old algorithm."
 msgstr ""
-"Vous utilisez une ancienne version de l'algorithme.\n"
+"Vous utilisez une ancienne version de l’algorithme.\n"
 "Lorsque activé il ne sera plus possible de revenir à\n"
-"l'ancien algorithme."
+"l’ancien algorithme."
 
 #: ../src/iop/lens.cc:4517
 msgid "fine-tuning"
@@ -22133,19 +22133,19 @@ msgstr "Ajuste la correction de vignette"
 
 #: ../src/iop/lens.cc:4542
 msgid "tune the TCA red correction"
-msgstr "Ajuste la correction du rouge de l'AC"
+msgstr "Ajuste la correction du rouge de l’AC"
 
 #: ../src/iop/lens.cc:4547
 msgid "tune the TCA blue correction"
-msgstr "Ajuste la correction du bleu de l'AC"
+msgstr "Ajuste la correction du bleu de l’AC"
 
 #: ../src/iop/lens.cc:4551
 msgid "image scaling"
-msgstr "Mise l'échelle de l'image"
+msgstr "Mise l’échelle de l’image"
 
 #: ../src/iop/lens.cc:4553
 msgid "automatic scale to available image size"
-msgstr "Échelle automatique en fonction de la taille de l'image possible"
+msgstr "Échelle automatique en fonction de la taille de l’image possible"
 
 #: ../src/iop/lens.cc:4564
 msgid ""
@@ -22156,7 +22156,7 @@ msgstr ""
 "Sélectionner le mode de correction basé sur :\n"
 " • Les données et algorithmes proposés par le projet Lensfun\n"
 " • Les données embarquées proposées par le vendeur ou le logiciel de "
-"l'appareil photo"
+"l’appareil photo"
 
 #: ../src/iop/lens.cc:4571
 msgid "which corrections to apply"
@@ -22625,7 +22625,7 @@ msgstr "Hald CLUT (PNG) ou 3D LUT (Cube ou 3DL)"
 #: ../src/iop/lut3d.c:1616
 msgid "select file outside LUT root folder is not allowed"
 msgstr ""
-"La sélection d’un fichier en dehors du répertoire des LUTs n'est pas possible"
+"La sélection d’un fichier en dehors du répertoire des LUTs n’est pas possible"
 
 #: ../src/iop/lut3d.c:1686
 msgid ""
@@ -23014,7 +23014,7 @@ msgstr ""
 #: ../src/iop/overlay.c:333
 #, c-format
 msgid "image %d does not exist"
-msgstr "L'image %d n'existe pas"
+msgstr "L’image %d n’existe pas"
 
 #. TRANSLATORS: This text must be very narrow, check in the GUI that it is not truncated
 #: ../src/iop/overlay.c:797
@@ -23035,8 +23035,8 @@ msgid ""
 "cannot use image %d as an overlay as it is using the current image as an "
 "overlay, directly or indirectly"
 msgstr ""
-"Impossible d'utiliser l'image « %d » comme superposition car elle utilise "
-"l'image courante comme superposition directement ou indirectement"
+"Impossible d’utiliser l’image « %d » comme superposition car elle utilise "
+"l’image courante comme superposition directement ou indirectement"
 
 #: ../src/iop/overlay.c:1115 ../src/iop/watermark.c:1375
 msgctxt "section"
@@ -23055,25 +23055,25 @@ msgid ""
 "• advanced options: choose overlay and image dimensions independently"
 msgstr ""
 "Définit comment la taille de la superposition est calculée :\n"
-" • Image – Ajuste la superposition sur l'image complète\n"
+" • Image – Ajuste la superposition sur l’image complète\n"
 " • Grand coté – Ajuste le plus grand coté de la superposition sur le plus "
-"grand coté de l'image\n"
+"grand coté de l’image\n"
 " • Petit coté – Ajuste le plus grand coté de la superposition sur le plus "
-"petit coté de l'image\n"
+"petit coté de l’image\n"
 " • Hauteur – Ajuste la hauteur de la superposition sur la hauteur de "
-"l'image,\n"
-" • Options avancées – Permet de choisir les dimensions de l'image et de la "
+"l’image,\n"
+" • Options avancées – Permet de choisir les dimensions de l’image et de la "
 "superposition indépendamment"
 
 #: ../src/iop/overlay.c:1141
 msgid "reference image dimension against which to scale the overlay"
 msgstr ""
-"La dimension de référence de l'image à partir de laquelle mettre la "
-"superposition à l'échelle"
+"La dimension de référence de l’image à partir de laquelle mettre la "
+"superposition à l’échelle"
 
 #: ../src/iop/overlay.c:1145
 msgid "overlay dimension to scale"
-msgstr "dimension de la superposition à mettre à l'échelle"
+msgstr "dimension de la superposition à mettre à l’échelle"
 
 #: ../src/iop/overlay.c:1149 ../src/iop/watermark.c:1405
 #: ../src/libs/print_settings.c:2753
@@ -23248,7 +23248,7 @@ msgstr "Sélectionner un masque raster"
 #: ../src/iop/rasterfile.c:295
 msgid "selected file not within raster masks root folder"
 msgstr ""
-"Le fichier sélectionné n'est pas dans le répertoire racine des masques "
+"Le fichier sélectionné n’est pas dans le répertoire racine des masques "
 "rasters"
 
 #: ../src/iop/rasterfile.c:591
@@ -23744,14 +23744,14 @@ msgid ""
 "useful for certain sensor types\n"
 "and anamorphic desqueeze"
 msgstr ""
-"Module pour positionner le ratio d'aspect des pixels.\n"
+"Module pour positionner le ratio d’aspect des pixels.\n"
 "\n"
 "Utile pour certains capteurs \n"
 "et les déformations anamorphiques."
 
 #: ../src/iop/scalepixels.c:259
 msgid "adjust pixel aspect ratio"
-msgstr "Ajuste le ratio d'aspect des pixels"
+msgstr "Ajuste le ratio d’aspect des pixels"
 
 #: ../src/iop/shadhi.c:117
 msgid "shadows and highlights"
@@ -23898,13 +23898,13 @@ msgid ""
 msgstr ""
 "Couleurs primaires à utiliser comme base des ajustements ci-dessous\n"
 "« Profil de travail » utilise le profil positionné dans le module « Profil "
-"de couleur d'entrée »"
+"de couleur d’entrée »"
 
 #: ../src/iop/sigmoid.c:963
 msgid "recover some of the original purity after the inset"
-msgstr "Recouvre un peu de la pureté originelle après l'atténuation"
+msgstr "Recouvre un peu de la pureté originelle après l’atténuation"
 
-# "duplicate" traduit par "cloner" avec une bulle d’explication utilisant le terme de "copie virtuelle", dans le sens que l'image n’est pas physiquement dupliquée
+# "duplicate" traduit par "cloner" avec une bulle d’explication utilisant le terme de "copie virtuelle", dans le sens que l’image n’est pas physiquement dupliquée
 #: ../src/iop/sigmoid.c:967
 msgid "display luminance"
 msgstr "Luminance de l’affichage"
@@ -24606,12 +24606,12 @@ msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes."
 msgstr ""
-"À utiliser pour déplacer l'exposition moyenne du masque à travers les "
+"À utiliser pour déplacer l’exposition moyenne du masque à travers les "
 "canaux.\n"
 "Pour un meilleur contrôle de la correction d’exposition avec les nœuds "
 "disponibles."
 
-# bulle d'aide de l'histogramme, item de liste mais pas de " • " initial
+# bulle d’aide de l’histogramme, item de liste mais pas de " • " initial
 #: ../src/iop/toneequal.c:3466
 msgid "auto-adjust the average exposure"
 msgstr "Ajuster automatiquement l’exposition moyenne"
@@ -24852,24 +24852,24 @@ msgid ""
 "• advanced options: choose watermark and image dimensions independently"
 msgstr ""
 "Définit comment la taille du filigrane est calculée :\n"
-" • Image – Ajuste le filigrane sur l'image complète\n"
+" • Image – Ajuste le filigrane sur l’image complète\n"
 " • Grand coté – Ajuste le plus grand coté du filigrane sur le plus grand "
-"coté de l'image\n"
+"coté de l’image\n"
 " • Petit coté – Ajuste le plus grand coté du filigrane sur le plus petit "
-"coté de l'image\n"
-" • Hauteur – Ajuste la hauteur du filigrane sur la hauteur de l'image,\n"
-" • Options avancées – Permet de choisir les dimensions de l'image et du "
+"coté de l’image\n"
+" • Hauteur – Ajuste la hauteur du filigrane sur la hauteur de l’image,\n"
+" • Options avancées – Permet de choisir les dimensions de l’image et du "
 "filigrane indépendamment"
 
 #: ../src/iop/watermark.c:1397
 msgid "reference image dimension against which to scale the watermark"
 msgstr ""
-"la dimension de référence de l'image à partir de laquelle mettre le "
-"filigrane à l'échelle"
+"la dimension de référence de l’image à partir de laquelle mettre le "
+"filigrane à l’échelle"
 
 #: ../src/iop/watermark.c:1401
 msgid "watermark dimension to scale"
-msgstr "dimension du filigrane à mettre à l'échelle"
+msgstr "dimension du filigrane à mettre à l’échelle"
 
 #. Let's add some tooltips and hook up some signals...
 #: ../src/iop/watermark.c:1426
@@ -25348,7 +25348,7 @@ msgid ""
 "stacks (edit histories) of the\n"
 "currently selected images"
 msgstr ""
-"Effectuer des actions sur les piles d'historique\n"
+"Effectuer des actions sur les piles d’historique\n"
 "(historiques de développement)\n"
 "de toutes les images sélectionnées"
 
@@ -25460,7 +25460,7 @@ msgid ""
 "edits of the current image"
 msgstr ""
 "Créer / Renommer / Supprimer les développements\n"
-"multiples de l'image courante."
+"multiples de l’image courante."
 
 #: ../src/libs/duplicate.c:327
 msgid "delete this duplicate"
@@ -25490,11 +25490,11 @@ msgstr ""
 
 #: ../src/libs/export.c:336
 msgid "invalid format for export selected"
-msgstr "Format invalide pour l'export sélectionné"
+msgstr "Format invalide pour l’export sélectionné"
 
 #: ../src/libs/export.c:341
 msgid "invalid storage for export selected"
-msgstr "Stockage invalide pour l'export sélectionné"
+msgstr "Stockage invalide pour l’export sélectionné"
 
 #: ../src/libs/export.c:352
 msgid "export to disk"
@@ -25521,7 +25521,7 @@ msgid ""
 "style to be applied on export:\n"
 "<b>%s</b>"
 msgstr ""
-"Style à appliquer lors de l'export :\n"
+"Style à appliquer lors de l’export :\n"
 "<b>%s</b>"
 
 #: ../src/libs/export.c:1208 ../src/libs/print_settings.c:1228
@@ -25548,15 +25548,15 @@ msgid ""
 "unless the user selects <b>all</b> of the metadata checkboxes in\n"
 "the export module preferences"
 msgstr ""
-"L'image sera exporté en utilisant le format spécifié ici.\n"
+"L’image sera exporté en utilisant le format spécifié ici.\n"
 "\n"
-"Lors d'un export AVIF, EXR, JPEG XL, ou XCF sélectionner des\n"
-"métadonnées spécifiques n'est pas possible actuellement.\n"
+"Lors d’un export AVIF, EXR, JPEG XL, ou XCF sélectionner des\n"
+"métadonnées spécifiques n’est pas possible actuellement.\n"
 "\n"
 "Pour ces formats, aucune métadonnées se sera incluses sauf\n"
 "si <b>toutes</b> les cases à cocher de métadonnées sont sélectionnées dans "
 "les préférences du\n"
-"module d'export."
+"module d’export."
 
 #: ../src/libs/export.c:1473
 msgid "set size"
@@ -25717,7 +25717,7 @@ msgstr "Ajouter à l’historique"
 
 #: ../src/libs/export.c:1640
 msgid "select style to be applied on export"
-msgstr "Sélectionner le style à appliquer à l'export"
+msgstr "Sélectionner le style à appliquer à l’export"
 
 #: ../src/libs/export.c:1643
 msgid "temporary style to use while exporting"
@@ -25730,7 +25730,7 @@ msgstr "Style"
 #: ../src/libs/export.c:1664
 msgctxt "actionbutton"
 msgid "start export"
-msgstr "Lancer l'export"
+msgstr "Lancer l’export"
 
 #: ../src/libs/export.c:1670
 msgctxt "section"
@@ -25758,7 +25758,7 @@ msgstr "Exporter les images sélectionnées avec de multiples préréglages"
 #: ../src/libs/export.c:1713
 msgctxt "actionbutton"
 msgid "start batch export"
-msgstr "Lancer l'export multiple"
+msgstr "Lancer l’export par lot"
 
 #: ../src/libs/export_metadata.c:164
 msgid "edit metadata exportation"
@@ -25933,8 +25933,8 @@ msgid ""
 "filters can be pinned to the top toolbar, where\n"
 "they will also be visible in the darkroom"
 msgstr ""
-"Affiner l'ensemble des images à afficher ou éditer.\n"
-"Les filtres peuvent être épinglés dans la bar d'outil,\n"
+"Affiner l’ensemble des images à afficher ou éditer.\n"
+"Les filtres peuvent être épinglés dans la bar d’outil,\n"
 "ou ils seront visibles dans la chambre noire."
 
 #: ../src/libs/filtering.c:305
@@ -25957,7 +25957,7 @@ msgstr "Prises dans les dernières 24 h"
 msgid "taken: last 30 days"
 msgstr "Prises dans les 30 derniers jours"
 
-# commence par ' • ' car fait partie d'une liste
+# commence par ' • ' car fait partie d’une liste
 #: ../src/libs/filtering.c:731
 msgid "click or click&#38;drag to select one or multiple values"
 msgstr " • Clic ou clic+déplacer pour sélectionner une ou plusieurs valeurs"
@@ -26551,7 +26551,7 @@ msgid ""
 "unsupported profile selected for histogram, it will be replaced with linear "
 "Rec2020"
 msgstr ""
-"Profil d'histogramme sélectionné non supporté, remplacé par linéaire Rec2020"
+"Profil d’histogramme sélectionné non supporté, remplacé par linéaire Rec2020"
 
 #: ../src/libs/histogram.c:1662
 msgid "use buttons at top of graph to change type"
@@ -26581,17 +26581,17 @@ msgstr "Maj+molette pour changer la largeur"
 msgid "alt+scroll to cycle"
 msgstr "Alt+molette pour parcourir"
 
-# bulle d'aide de l'histogramme, item de liste mais pas de " • " initial
+# bulle d’aide de l’histogramme, item de liste mais pas de " • " initial
 #: ../src/libs/histogram.c:1687
 msgid "drag to change black point"
 msgstr "Glisser pour changer le point noir"
 
-# bulle d'aide de l'histogramme, item de liste mais pas de " • " initial
+# bulle d’aide de l’histogramme, item de liste mais pas de " • " initial
 #: ../src/libs/histogram.c:1688 ../src/libs/histogram.c:1695
 msgid "double-click resets"
 msgstr "Double clic pour réinitialiser"
 
-# bulle d'aide de l'histogramme, item de liste mais pas de " • " initial
+# bulle d’aide de l’histogramme, item de liste mais pas de " • " initial
 #: ../src/libs/histogram.c:1694
 msgid "drag to change exposure"
 msgstr "Glisser pour changer l’exposition"
@@ -26677,11 +26677,11 @@ msgid ""
 msgstr ""
 "Affiche la séquence des modifications\n"
 " • Cliquer sur une entrée pour retourner temporairement\n"
-"    à cette étape d'édition.\n"
+"    à cette étape d’édition.\n"
 "    (Attention: toute modification sera faite depuis cette étape,\n"
 "     les changements au delà seront perdus).\n"
 "• Maj+clic pour donner le focus à ce module sans changer\n"
-"   l’état d'édition."
+"   l’état d’édition."
 
 #: ../src/libs/history.c:140
 msgid "compress history stack"
@@ -26950,7 +26950,7 @@ msgid ""
 "warning: resets star ratings unless you select\n"
 "'ignore EXIF rating' in the 'import' module"
 msgstr ""
-"Met à jour toutes les informations de l'image pour correspondre à celles du "
+"Met à jour toutes les informations de l’image pour correspondre à celles du "
 "fichier\n"
 "Attention : Remise à défaut des étoiles sauf si « Ignorer la notation EXIF » "
 "dans\n"
@@ -27024,7 +27024,7 @@ msgstr "Restaurer tous les emplacements par défaut qui ont été supprimés"
 
 #: ../src/libs/import.c:1468
 msgid "remove the selected custom place"
-msgstr "Supprimer l'emplacement personnalisé sélectionné"
+msgstr "Supprimer l’emplacement personnalisé sélectionné"
 
 #: ../src/libs/import.c:1475
 msgid "add a custom place"
@@ -27094,7 +27094,7 @@ msgstr "Format de surcharge date/heure invalide"
 
 #: ../src/libs/import.c:2352
 msgid "import base directory"
-msgstr "Répertoire de base d'importation"
+msgstr "Répertoire de base d’importation"
 
 #: ../src/libs/import.c:2353
 msgid ""
@@ -27106,7 +27106,7 @@ msgid ""
 "check and possibly correct the 'base directory naming pattern'"
 msgstr ""
 "Avant de copier des images dans le répertoire de base de Darktable assurez "
-"vous qu'il est défini selon vos préférences.\n"
+"vous qu’il est défini selon vos préférences.\n"
 "De plus amples informations peuvent être trouvée dans le manuel de "
 "Darktable.\n"
 "\n"
@@ -27562,7 +27562,7 @@ msgstr "Visible"
 
 #: ../src/libs/metadata.c:907
 msgid "drag and drop one row at a time until you get the desired order"
-msgstr "Déplacer & déposer une ligne à la fois jusqu’à obtenir l'ordre désiré"
+msgstr "Déplacer & déposer une ligne à la fois jusqu’à obtenir l’ordre désiré"
 
 #: ../src/libs/metadata.c:915
 msgid ""
@@ -28043,7 +28043,7 @@ msgid ""
 "quick access panel\n"
 "right-click tab icon to add/remove widgets"
 msgstr ""
-"Panneau d'accès rapide.\n"
+"Panneau d’accès rapide.\n"
 "« Clic-droit » sur les icônes des onglets pour ajouter/supprimer des widgets."
 
 #: ../src/libs/modulegroups.c:2887
@@ -28327,7 +28327,7 @@ msgid ""
 "style to be applied on print:\n"
 "<b>%s</b>"
 msgstr ""
-"Style à appliquer lors de l'impression :\n"
+"Style à appliquer lors de l’impression :\n"
 "<b>%s</b>"
 
 #: ../src/libs/print_settings.c:2474
@@ -28511,7 +28511,7 @@ msgstr "Paramètres d’impression"
 
 #: ../src/libs/print_settings.c:2915
 msgid "select style to be applied on printing"
-msgstr "Sélectionner le style à appliquer à l'impression"
+msgstr "Sélectionner le style à appliquer à l’impression"
 
 #: ../src/libs/print_settings.c:2917
 msgid "temporary style to use while printing"
@@ -28621,7 +28621,7 @@ msgstr "S"
 
 #: ../src/libs/snapshots.c:604
 msgid "restore snapshot into current history"
-msgstr "Restaurer l'instantané dans l'historique courant"
+msgstr "Restaurer l’instantané dans l’historique courant"
 
 #: ../src/libs/snapshots.c:719
 msgid "snapshots for removed image have been deleted"
@@ -28652,7 +28652,7 @@ msgstr ""
 msgid ""
 "place the snapshot side-by-side / above-below the current image instead of "
 "overlaying"
-msgstr "Place l'instantané à côté de l'image courante au lieu de le superposer"
+msgstr "Place l’instantané à côté de l’image courante au lieu de le superposer"
 
 #: ../src/libs/snapshots.c:875
 msgid "toggle last snapshot"
@@ -29142,7 +29142,7 @@ msgstr "Effacer les labels couleur des images sélectionnées"
 
 #: ../src/libs/tools/colorlabels.c:241
 msgid "enter a description of how you use this color label"
-msgstr "Entrer une description sur l'utilisation de ce label de couleur"
+msgstr "Entrer une description sur l’utilisation de ce label de couleur"
 
 #: ../src/libs/tools/filmstrip.c:45
 msgid "filmstrip"
@@ -29429,7 +29429,7 @@ msgid ""
 "\n"
 "right-click to exit mapping mode"
 msgstr ""
-"Définir les raccourcis pour les contrôles sur l'écran.\n"
+"Définir les raccourcis pour les contrôles sur l’écran.\n"
 " • « Ctrl+clic » pour désactiver la confirmation d’écrasement,\n"
 "\n"
 "Après activation :\n"
@@ -29442,7 +29442,7 @@ msgstr ""
 " • « Clic » sur un contrôle, module ou une zone écran pour ouvrir le\n"
 "   dialogue pour plus de configuration.\n"
 "\n"
-"« Clic-droit » pour quitter le mode d'enregistrement du raccourci"
+"« Clic-droit » pour quitter le mode d’enregistrement du raccourci"
 
 #: ../src/libs/tools/global_toolbox.c:513
 msgid "show global preferences"
@@ -29634,12 +29634,12 @@ msgid ""
 "files\n"
 "can be accessed in the same locations as when you imported this image."
 msgstr ""
-"Le fichier « %s » n'est pas disponible, retour sur la table lumineuse "
+"Le fichier « %s » n’est pas disponible, retour sur la table lumineuse "
 "maintenant.\n"
 "\n"
 "Si enregistré sur un disque externe, vérifier que le disque est connecté et "
 "que les\n"
-"fichiers peuvent être accédés depuis le même emplacement que lorsque qu'ils "
+"fichiers peuvent être accédés depuis le même emplacement que lorsque qu’ils "
 "ont été importés."
 
 #: ../src/views/darkroom.c:572
@@ -29652,14 +29652,14 @@ msgstr ""
 "Le fichier « %s » semble être corrompu, retour sur la table lumineuse "
 "maintenant.\n"
 "\n"
-"Merci de vérifier qu'il a été correctement et complètement copié depuis le "
+"Merci de vérifier qu’il a été correctement et complètement copié depuis le "
 "boîtier."
 
 #: ../src/views/darkroom.c:578
 #, c-format
 msgid "file `%s' is not in any recognized format, switching to lighttable now."
 msgstr ""
-"Le fichier « %s » n'a pas un format connu, retour sur la table lumineuse "
+"Le fichier « %s » n’a pas un format connu, retour sur la table lumineuse "
 "maintenant."
 
 #: ../src/views/darkroom.c:583
@@ -29667,7 +29667,7 @@ msgstr ""
 msgid ""
 "file `%s' is from an unsupported camera model, switching to lighttable now."
 msgstr ""
-"Le fichier « %s » provient d'un modèle de boîtier non supporté, retour sur "
+"Le fichier « %s » provient d’un modèle de boîtier non supporté, retour sur "
 "la table lumineuse maintenant."
 
 #: ../src/views/darkroom.c:588
@@ -29684,7 +29684,7 @@ msgstr ""
 "Le fichier « %s » utilise une caractéristique non supporté, retour sur la "
 "table lumineuse maintenant.\n"
 "\n"
-"Merci de vérifier que le format de l'image ainsi que le mode de compression "
+"Merci de vérifier que le format de l’image ainsi que le mode de compression "
 "sélectionné dans\n"
 "le boîtier est supporté (voir https://www.darktable.org/resources/camera-"
 "support/\n"
@@ -29700,7 +29700,7 @@ msgstr ""
 "Erreur lors de la lecture du fichier « %s », retour sur la table lumineuse "
 "maintenant.\n"
 "\n"
-"Merci de vérifier que le fichier n'a pas été tronqué."
+"Merci de vérifier que le fichier n’a pas été tronqué."
 
 #: ../src/views/darkroom.c:602
 #, c-format
@@ -29853,7 +29853,7 @@ msgid ""
 "as it does while exporting"
 msgstr ""
 "Bascule le traitement haute qualité.\n"
-"Si activé Darktable développe l'image comme lors de l'export."
+"Si activé Darktable développe l’image comme lors de l’export."
 
 #: ../src/views/darkroom.c:2542
 msgid ""
@@ -30032,7 +30032,7 @@ msgstr ""
 msgid "profiles"
 msgstr "Profils"
 
-# "Rendu" plutôt que "Prévisualiser l’intention", càd idem que l'écran primaire
+# "Rendu" plutôt que "Prévisualiser l’intention", càd idem que l’écran primaire
 #: ../src/views/darkroom.c:2737 ../src/views/lighttable.c:1257
 msgid "preview intent"
 msgstr "Rendu"
@@ -30059,7 +30059,7 @@ msgstr "Évaluation des couleurs pour la seconde fenêtre"
 
 #: ../src/views/darkroom.c:2819 ../src/views/lighttable.c:1298
 msgid "display ICC profiles"
-msgstr "profils ICC d'affichage"
+msgstr "profils ICC d’affichage"
 
 #: ../src/views/darkroom.c:2823 ../src/views/lighttable.c:1302
 msgid "preview display ICC profiles"
@@ -30067,7 +30067,7 @@ msgstr "profils ICC de prévisualisation"
 
 #: ../src/views/darkroom.c:2827
 msgid "softproof ICC profiles"
-msgstr "profiles ICC d'épreuvage"
+msgstr "profiles ICC d’épreuvage"
 
 #: ../src/views/darkroom.c:2832
 msgid "histogram and color picker ICC profiles"
@@ -30509,10 +30509,10 @@ msgstr "Actions de la souris"
 #~ msgstr "Paramètres basique de la courbe"
 
 #~ msgid "input exposure range"
-#~ msgstr "Étendu de l'exposition en entrée"
+#~ msgstr "Étendu de l’exposition en entrée"
 
 #~ msgid "start export"
-#~ msgstr "Lancer l'export"
+#~ msgstr "Lancer l’export"
 
 #, c-format
 #~ msgid "%.0f%%"
@@ -30557,7 +30557,7 @@ msgstr "Actions de la souris"
 #~ msgstr "Importer un masque raster"
 
 #~ msgid "combine with elements from a processed image"
-#~ msgstr "Combiner avec des éléments d'une image développée"
+#~ msgstr "Combiner avec des éléments d’une image développée"
 
 #, c-format
 #~ msgid "detected OtherIlluminant in `%s`, please report via darktable github"
@@ -30632,7 +30632,7 @@ msgstr "Actions de la souris"
 #~ msgstr "Markesteijn 3 passes + VNG"
 
 #~ msgid "not a B&W image, will not export as grayscale"
-#~ msgstr "L'image n'est pas N&B, ne sera pas exportée en échelle de gris"
+#~ msgstr "L’image n’est pas N&B, ne sera pas exportée en échelle de gris"
 
 #~ msgid "prefer performance over quality"
 #~ msgstr "Favoriser la performance par rapport à la qualité"
@@ -30660,7 +30660,7 @@ msgstr "Actions de la souris"
 #~ msgstr "Contributeurs"
 
 #~ msgid "encoding speed"
-#~ msgstr "Vitesse d'encodage"
+#~ msgstr "Vitesse d’encodage"
 
 #~ msgid "trades off quality and file size for quicker encoding time"
 #~ msgstr ""
@@ -30818,7 +30818,7 @@ msgstr "Actions de la souris"
 #~ "%s"
 
 #~ msgid "failed to import images from camera."
-#~ msgstr "Erreur lors de l'importation d'images depuis l'appareil photo."
+#~ msgstr "Erreur lors de l’importation d’images depuis l’appareil photo."
 
 #~ msgid "toggle to visualize the mask"
 #~ msgstr "Basculer pour visualiser le masque"
@@ -30831,7 +30831,7 @@ msgstr "Actions de la souris"
 #~ "<b>Ajouter un nœud</b> : Ctrl+clic"
 
 #~ msgid "blurring radius of chroma prefilter analysis"
-#~ msgstr "Rayon du flou pour le pre-filtre d'analyse du chroma"
+#~ msgstr "Rayon du flou pour le pre-filtre d’analyse du chroma"
 
 #~ msgid "image overlay"
 #~ msgstr "Superposer une image"
@@ -30863,13 +30863,13 @@ msgstr "Actions de la souris"
 #~ msgstr "(IA) détecter depuis les bords de l’image…"
 
 #~ msgid "overlay image id"
-#~ msgstr "Numéro de l'image superposée"
+#~ msgstr "Numéro de l’image superposée"
 
 #~ msgid "full overlay's filename"
 #~ msgstr "Nom de fichier complet de la superposition"
 
 #~ msgid "no image"
-#~ msgstr "Pas d'image"
+#~ msgstr "Pas d’image"
 
 #~ msgid "NULL pointer"
 #~ msgstr "Pointeur NULL"
@@ -30878,10 +30878,10 @@ msgstr "Actions de la souris"
 #~ msgstr "_Entendu"
 
 #~ msgid "analysis feathering"
-#~ msgstr "Adoucissement de l'analyse"
+#~ msgstr "Adoucissement de l’analyse"
 
 #~ msgid "effect feathering"
-#~ msgstr "Adoucissement de l'effet"
+#~ msgstr "Adoucissement de l’effet"
 
 #~ msgid "$(SEQUENCE) - sequence number"
 #~ msgstr "$(SEQUENCE) - Nombre séquentiel"
@@ -30926,7 +30926,7 @@ msgstr "Actions de la souris"
 #~ msgstr "Mode ponctuel"
 
 #~ msgid "save history while developing"
-#~ msgstr "Sauvegarder l'historique lors du développement"
+#~ msgstr "Sauvegarder l’historique lors du développement"
 
 #~ msgid "longest"
 #~ msgstr "Plus grand"
@@ -31206,7 +31206,7 @@ msgstr "Actions de la souris"
 #~ msgstr "ProPhoto RVB linéaire"
 
 #~ msgid "reference to which the marker should be scaled to"
-#~ msgstr "La référence à utiliser pour l'échelle du filigrane"
+#~ msgstr "La référence à utiliser pour l’échelle du filigrane"
 
 #~ msgid "length of the marker which is used as scaling reference"
 #~ msgstr "La dimension du filigrane utilisée comme échelle de référence"
@@ -32488,7 +32488,7 @@ msgstr "Actions de la souris"
 #~ msgid "create HDR"
 #~ msgstr "Créer HDR"
 
-# "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l’image n'est pas physiquement dupliquée
+# "duplicate" traduit par "cloner" avec une bulle d’explication utilisant le terme de "copie virtuelle", dans le sens que l’image n’est pas physiquement dupliquée
 #~ msgctxt "accel"
 #~ msgid "duplicate"
 #~ msgstr "Cloner"
