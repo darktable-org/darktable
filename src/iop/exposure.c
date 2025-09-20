@@ -1165,8 +1165,7 @@ void gui_init(dt_iop_module_t *self)
   g->mode_stack = GTK_STACK(gtk_stack_new());
   gtk_stack_set_homogeneous(GTK_STACK(g->mode_stack),FALSE);
 
-  GtkWidget *vbox_manual = self->widget =
-    gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  GtkWidget *vbox_manual = self->widget = dt_gui_vbox();
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_manual, "manual");
 
   g->compensate_exposure_bias = dt_bauhaus_toggle_from_params
@@ -1192,8 +1191,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->exposure, -3.0, 4.0);
   dt_bauhaus_widget_set_quad_tooltip(g->exposure, _("set the exposure adjustment using the selected area"));
 
-  GtkWidget *vbox_deflicker = self->widget =
-    gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  GtkWidget *vbox_deflicker = self->widget = dt_gui_vbox();
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_deflicker, "deflicker");
 
   g->deflicker_percentile = dt_bauhaus_slider_from_params(self, "deflicker_percentile");
@@ -1209,26 +1207,23 @@ void gui_init(dt_iop_module_t *self)
     (g->deflicker_target_level,
      _("where to place the exposure level for processed pics, EV below overexposure."));
 
-  GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  gtk_box_pack_start(GTK_BOX(hbox1),
-                     GTK_WIDGET(dt_ui_label_new(_("computed EC: "))), FALSE, FALSE, 0);
   g->deflicker_used_EC = GTK_LABEL(dt_ui_label_new("")); // This gets filled in by process
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->deflicker_used_EC),
                               _("what exposure correction has actually been used"));
-  gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->deflicker_used_EC), FALSE, FALSE, 0);
 
   dt_iop_gui_enter_critical_section(self);
   g->deflicker_computed_exposure = EXPOSURE_CORRECTION_UNDEFINED;
   dt_iop_gui_leave_critical_section(self);
 
-  gtk_box_pack_start(GTK_BOX(vbox_deflicker), GTK_WIDGET(hbox1), FALSE, FALSE, 0);
+  dt_gui_box_add(vbox_deflicker, dt_gui_hbox(dt_ui_label_new(_("computed EC: ")),
+                                             g->deflicker_used_EC));
 
   // Start building top level widget
-  self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+  self->widget = dt_gui_vbox();
 
   g->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->mode_stack), TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, g->mode_stack);
 
   g->black = dt_bauhaus_slider_from_params(self, "black");
   gtk_widget_set_tooltip_text
@@ -1265,16 +1260,9 @@ void gui_init(dt_iop_module_t *self)
      0, _spot_settings_changed_callback, self,
      N_("correction"),
      N_("measure"));
-  gtk_box_pack_start(GTK_BOX(g->cs.container), GTK_WIDGET(g->spot_mode), TRUE, TRUE, 0);
-
-  GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,
-                                 DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
-  GtkWidget *vvbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
-  gtk_box_pack_start(GTK_BOX(vvbox), dt_ui_section_label_new(C_("section", "input")),
-                     FALSE, FALSE, 0);
 
   g->origin_spot = GTK_WIDGET(gtk_drawing_area_new());
+  gtk_widget_set_vexpand(g->origin_spot, TRUE);
   gtk_widget_set_size_request(g->origin_spot,
                               2 * DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width),
                               DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
@@ -1282,22 +1270,13 @@ void gui_init(dt_iop_module_t *self)
                               _("the input color that should be mapped to the target"));
 
   g_signal_connect(G_OBJECT(g->origin_spot), "draw", G_CALLBACK(_origin_color_draw), self);
-  gtk_box_pack_start(GTK_BOX(vvbox), g->origin_spot, TRUE, TRUE, 0);
 
   g->Lch_origin = gtk_label_new(_("L : \tN/A"));
   gtk_widget_set_tooltip_text
     (GTK_WIDGET(g->Lch_origin),
      _("these LCh coordinates are computed from CIE Lab 1976 coordinates"));
-  gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->Lch_origin), FALSE, FALSE, 0);
-
-  gtk_box_pack_start(GTK_BOX(hhbox), GTK_WIDGET(vvbox), FALSE, FALSE, DT_BAUHAUS_SPACE);
-
-  vvbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
-  gtk_box_pack_start(GTK_BOX(vvbox), dt_ui_section_label_new(C_("section", "target")),
-                     FALSE, TRUE, 0);
-
   g->target_spot = GTK_WIDGET(gtk_drawing_area_new());
+  gtk_widget_set_vexpand(g->target_spot, TRUE);
   gtk_widget_set_size_request(g->target_spot,
                               2 * DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width),
                               DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
@@ -1305,18 +1284,20 @@ void gui_init(dt_iop_module_t *self)
                               _("the desired target exposure after mapping"));
 
   g_signal_connect(G_OBJECT(g->target_spot), "draw", G_CALLBACK(_target_color_draw), self);
-  gtk_box_pack_start(GTK_BOX(vvbox), g->target_spot, TRUE, TRUE, 0);
 
   g->lightness_spot = dt_bauhaus_slider_new_with_range(self, 0., 100., 0, 50.f, 1);
   dt_bauhaus_widget_set_label(g->lightness_spot, NULL, N_("lightness"));
   dt_bauhaus_slider_set_format(g->lightness_spot, "%");
-  gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->lightness_spot), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->lightness_spot), "value-changed",
                    G_CALLBACK(_spot_settings_changed_callback), self);
 
-  gtk_box_pack_start(GTK_BOX(hhbox), GTK_WIDGET(vvbox), TRUE, TRUE, DT_BAUHAUS_SPACE);
-
-  gtk_box_pack_start(GTK_BOX(g->cs.container), GTK_WIDGET(hhbox), FALSE, FALSE, 0);
+  dt_gui_box_add(g->cs.container,
+                 g->spot_mode,
+                 dt_gui_hbox( dt_gui_vbox(dt_ui_section_label_new(C_("section", "input")),
+                                          g->origin_spot, g->Lch_origin),
+                              gtk_label_new("   "), dt_gui_expand( // spacer
+                              dt_gui_vbox(dt_ui_section_label_new(C_("section", "target")),
+                                          g->target_spot, g->lightness_spot))));
 
   /* register hooks with current dev so that  histogram
      can interact with this module.

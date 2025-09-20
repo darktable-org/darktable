@@ -3614,21 +3614,15 @@ void gui_init(dt_iop_module_t *self)
   g->last_hit = NOWHERE;
   g->node_index = 0;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_tooltip_text
-    (hbox,
-     _("use a tool to add warps\n<b>remove a warp</b>: right-click"));
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
-
   GtkWidget *label = dt_ui_label_new(_("warps|nodes count:"));
-  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
   g->label = GTK_LABEL(dt_ui_label_new("-"));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->label), FALSE, TRUE, 0);
+  GtkWidget *count = dt_gui_hbox(label, g->label);
+  gtk_widget_set_tooltip_text
+    (count,
+     _("use a tool to add warps\n<b>remove a warp</b>: right-click"));
 
-  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
+  GtkWidget *hbox = dt_gui_hbox();
+  self->widget = dt_gui_vbox(count, hbox);
 
   g->btn_node_tool = GTK_TOGGLE_BUTTON(dt_iop_togglebutton_new
                                        (self, NULL, N_("edit, add and delete nodes"), NULL,

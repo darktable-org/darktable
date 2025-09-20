@@ -611,8 +611,6 @@ void gui_init(dt_iop_module_t *self)
 
   change_image(self);
 
-  self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
-
   g->sl_black_point = dt_bauhaus_slider_from_params(self, "black_point");
   dt_bauhaus_slider_set_soft_range(g->sl_black_point, -0.1, 0.1);
   dt_bauhaus_slider_set_digits(g->sl_black_point, 4);
@@ -653,11 +651,8 @@ void gui_init(dt_iop_module_t *self)
   g->sl_vibrance = dt_bauhaus_slider_from_params(self, N_("vibrance"));
   gtk_widget_set_tooltip_text(g->sl_vibrance, _("vibrance adjustment"));
 
-  GtkWidget *autolevels_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
-
   g->bt_auto_levels = dt_action_button_new(NULL, N_("auto"), _auto_levels_callback, self, _("apply auto exposure based on the entire image"), 0, 0);
   gtk_widget_set_size_request(g->bt_auto_levels, -1, DT_PIXEL_APPLY_DPI(24));
-  gtk_box_pack_start(GTK_BOX(autolevels_box), g->bt_auto_levels, TRUE, TRUE, 0);
 
   g->bt_select_region = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, 0, NULL);
   dt_gui_add_class(g->bt_select_region, "dt_transparent_background");
@@ -666,9 +661,8 @@ void gui_init(dt_iop_module_t *self)
                                 "click and drag to draw the area\n"
                                 "right-click to cancel"));
   g_signal_connect(G_OBJECT(g->bt_select_region), "toggled", G_CALLBACK(_select_region_toggled_callback), self);
-  gtk_box_pack_start(GTK_BOX(autolevels_box), g->bt_select_region, TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), autolevels_box, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, dt_gui_expand(g->bt_auto_levels), dt_gui_expand(g->bt_select_region));
 
   g->sl_clip = dt_bauhaus_slider_from_params(self, N_("clip"));
   dt_bauhaus_slider_set_digits(g->sl_clip, 3);

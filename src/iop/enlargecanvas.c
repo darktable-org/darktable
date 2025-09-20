@@ -411,8 +411,6 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_enlargecanvas_gui_data_t *g = IOP_GUI_ALLOC(enlargecanvas);
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   g->percent_left = dt_bauhaus_slider_from_params(self, "percent_left");
   dt_bauhaus_slider_set_format(g->percent_left, "%");
   gtk_widget_set_tooltip_text(g->percent_left,

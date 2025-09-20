@@ -896,7 +896,6 @@ void gui_update(dt_iop_module_t *self)
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_sigmoid_gui_data_t *g = IOP_GUI_ALLOC(sigmoid);
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   // Look controls
   GtkWidget *slider = dt_bauhaus_slider_from_params(self, "middle_grey_contrast");

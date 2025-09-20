@@ -51,6 +51,7 @@ static void dtgtk_side_panel_class_init(GtkDarktableSidePanelClass *class)
 static void dtgtk_side_panel_init(GtkDarktableSidePanel *panel)
 {
   gtk_widget_set_vexpand(GTK_WIDGET(panel), TRUE);
+  gtk_widget_set_hexpand(GTK_WIDGET(panel), FALSE);
 }
 
 // public functions

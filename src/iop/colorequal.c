@@ -3059,7 +3059,7 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_module_t *sect = NULL;
 #define GROUP_SLIDERS(num, page, tooltip)                  \
   dt_ui_notebook_page(g->notebook, page, tooltip);         \
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0); \
+  self->widget = dt_gui_vbox();                            \
   gtk_stack_add_named(g->stack, self->widget, num);        \
   sect = DT_IOP_SECTION_FOR_PARAMS(self, page);
 
@@ -3117,7 +3117,7 @@ void gui_init(dt_iop_module_t *self)
   g->bright_sliders[7] = g->bright_magenta =
     dt_bauhaus_slider_from_params(sect, "bright_magenta");
 
-  GtkWidget *options = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  GtkWidget *options = dt_gui_vbox();
   gtk_stack_add_named(g->stack, options, "3");
   dt_gui_new_collapsible_section
     (&g->cs,

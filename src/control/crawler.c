@@ -806,35 +806,19 @@ void dt_control_crawler_show_image_list(GList *images)
   gtk_widget_set_size_request(dialog, -1, DT_PIXEL_APPLY_DPI(400));
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(win));
 
-  GtkWidget *content_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_dialog_add(GTK_DIALOG(dialog), content_box);
 
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(content_box), box, FALSE, FALSE, 0);
   GtkWidget *select_all = gtk_button_new_with_label(_("select all"));
   GtkWidget *select_none = gtk_button_new_with_label(_("select none"));
   GtkWidget *select_invert = gtk_button_new_with_label(_("invert selection"));
-  gtk_box_pack_start(GTK_BOX(box), select_all, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box), select_none, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box), select_invert, FALSE, FALSE, 0);
   g_signal_connect(select_all, "clicked", G_CALLBACK(_select_all_callback), gui);
   g_signal_connect(select_none, "clicked", G_CALLBACK(_select_none_callback), gui);
   g_signal_connect(select_invert, "clicked", G_CALLBACK(_select_invert_callback), gui);
 
-  gtk_box_pack_start(GTK_BOX(content_box), scroll, TRUE, TRUE, 0);
-
-  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(content_box), box, FALSE, FALSE, 1);
   GtkWidget *label = gtk_label_new_with_mnemonic(_("on the selection:"));
   GtkWidget *reload_button = gtk_button_new_with_label(_("keep the XMP edit"));
   GtkWidget *overwrite_button = gtk_button_new_with_label(_("keep the database edit"));
   GtkWidget *newest_button = gtk_button_new_with_label(_("keep the newest edit"));
   GtkWidget *oldest_button = gtk_button_new_with_label(_("keep the oldest edit"));
-  gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box), reload_button, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box), overwrite_button, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box), newest_button, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box), oldest_button, FALSE, FALSE, 0);
   g_signal_connect(reload_button, "clicked", G_CALLBACK(_reload_button_clicked), gui);
   g_signal_connect(overwrite_button, "clicked", G_CALLBACK(_overwrite_button_clicked), gui);
   g_signal_connect(newest_button, "clicked", G_CALLBACK(_newest_button_clicked), gui);
@@ -842,14 +826,9 @@ void dt_control_crawler_show_image_list(GList *images)
 
   /* Feedback spinner in case synch happens over network and stales */
   gui->spinner = gtk_spinner_new();
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(gui->spinner), FALSE, FALSE, 0);
 
   /* Log report */
   gui->log = gtk_tree_view_new();
-  scroll = dt_gui_scroll_wrap(gui->log);
-  gtk_box_pack_start(GTK_BOX(content_box), scroll, TRUE, TRUE, 0);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
-                                 GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
   gtk_tree_view_insert_column_with_attributes
     (GTK_TREE_VIEW(gui->log), -1,
@@ -861,6 +840,11 @@ void dt_control_crawler_show_image_list(GList *images)
   gtk_tree_view_set_model(GTK_TREE_VIEW(gui->log), model_log);
   g_object_unref(model_log);
 
+  dt_gui_dialog_add(GTK_DIALOG(dialog),
+    dt_gui_hbox(select_all, select_none, select_invert),
+    scroll,
+    dt_gui_hbox(label, reload_button, overwrite_button, newest_button, oldest_button, gui->spinner),
+    dt_gui_scroll_wrap(gui->log));
   gtk_widget_show_all(dialog);
 
   g_signal_connect(dialog, "response",

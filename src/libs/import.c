@@ -2415,18 +2415,14 @@ void gui_init(dt_lib_module_t *self)
   /* initialize ui widgets */
   dt_lib_import_t *d = g_malloc0(sizeof(dt_lib_import_t));
   self->data = (void *)d;
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   // add import buttons
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-
   GtkWidget *widget = dt_action_button_new(self, N_("add to library..."),
                                            _lib_import_from_callback, self,
                                            _("add existing images to the library"), 0, 0);
   d->import_inplace = GTK_BUTTON(widget);
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
-  gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 
   widget = dt_action_button_new
     (self, N_("copy & import..."),
@@ -2437,14 +2433,13 @@ void gui_init(dt_lib_module_t *self)
   d->import_copy = GTK_BUTTON(widget);
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
-  gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
-
+  self->widget = dt_gui_vbox(dt_gui_hbox(d->import_inplace, d->import_copy));
+  
 #ifdef HAVE_GPHOTO2
   /* add devices container for cameras */
-  d->devices = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->devices), FALSE, FALSE, 0);
+  d->devices = GTK_BOX(dt_gui_vbox());
+  dt_gui_box_add(self->widget, d->devices);
 
   _lib_import_ui_devices_update(self);
 
@@ -2465,7 +2460,7 @@ void gui_init(dt_lib_module_t *self)
   d->apply_metadata = dt_gui_preferences_bool(grid, "ui_last/import_apply_metadata", 0,
                                               line++, FALSE);
   d->metadata.apply_metadata = d->apply_metadata;
-  gtk_box_pack_start(GTK_BOX(d->cs.container), GTK_WIDGET(grid), FALSE, FALSE, 0);
+  dt_gui_box_add(d->cs.container, grid);
   d->metadata.box = GTK_WIDGET(d->cs.container);
   dt_import_metadata_init(&d->metadata);
 
@@ -2473,7 +2468,7 @@ void gui_init(dt_lib_module_t *self)
   /* initialize the lua area and make sure it survives its parent's destruction*/
   d->extra_lua_widgets = gtk_box_new(GTK_ORIENTATION_VERTICAL,5);
   g_object_ref_sink(d->extra_lua_widgets);
-  gtk_box_pack_start(GTK_BOX(d->cs.container), d->extra_lua_widgets, FALSE, FALSE, 0);
+  dt_gui_box_add(d->cs.container, d->extra_lua_widgets);
   gtk_container_foreach(GTK_CONTAINER(d->extra_lua_widgets), reset_child, NULL);
 #endif
 
