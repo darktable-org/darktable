@@ -117,6 +117,9 @@ changes (where available).
 - Fixed module based collection restoring. After quitting darktable with a
   module based collection, the lighttable was empty after restarting it.
 
+- Fixed some reset issues of the export module. The format and storage
+  sections were not reset properly.
+
 ## Lua
 
 ### API Version
