@@ -42,11 +42,14 @@ LicenseFile=share\doc\darktable\LICENSE
 ; PrivilegesRequired=lowest
 
 PrivilegesRequiredOverridesAllowed=dialog
-OutputBaseFilename=darktable-{#MyAppVersion}-${ARCH_STRING}
+
+; Make this name different while we build nightly with both this and the NSIS installer
+OutputBaseFilename=darktable-{#MyAppVersion}-${ARCH_STRING}-innosetup-experimental
 
 ; When this directive is set, the compiler will create a manifest file
 ; detailing information about the files compiled into Setup.
-OutputManifestFile=darktable-manifest.txt
+; May be useful for debugging, not needed for production builds.
+; OutputManifestFile=darktable-manifest.txt
 
 SolidCompression=yes
 WizardStyle=modern
