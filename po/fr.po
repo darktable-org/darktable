@@ -6780,7 +6780,7 @@ msgstr "Erreur de chargement du dossier « %s »"
 #: ../src/common/darktable.c:463
 #, c-format
 msgid "file `%s' has unsupported format!"
-msgstr "Le fichier « %s » a un format non supporté !"
+msgstr "Le fichier « %s » a un format non supporté !"
 
 #: ../src/common/darktable.c:465
 #, c-format
@@ -7144,7 +7144,7 @@ msgstr ""
 "les fichiers verrous \n"
 "      <i>data.db.lock</i> et <i>library.db.lock</i>. \n"
 "\n"
-"      <b><u>Attention !</u> ne pas supprimer ces fichiers verrous si une "
+"      <b><u>Attention !</u> ne pas supprimer ces fichiers verrous si une "
 "instance de Darktable est en cours \n"
 "      d’exécution, sinon le risque existe de sérieuses incohérences dans la "
 "base de données.</b> \n"
@@ -7700,7 +7700,7 @@ msgstr "Image « %s » non disponible"
 #: ../src/common/mipmap_cache.c:1330 ../src/imageio/imageio.c:1064
 #, c-format
 msgid "unable to load image `%s'!"
-msgstr "Impossible de charger l’image « %s » !"
+msgstr "Impossible de charger l’image « %s » !"
 
 #: ../src/common/mipmap_cache.c:1332 ../src/imageio/imageio.c:1067
 #, c-format
@@ -7909,7 +7909,7 @@ msgstr "Aucune image sélectionnée."
 #: ../src/common/styles.c:738
 #, c-format
 msgid "module `%s' version mismatch: %d != %d"
-msgstr "Module « %s », version non cohérente : %d != %d"
+msgstr "Module « %s », version non cohérente : %d != %d"
 
 #: ../src/common/styles.c:1030
 #, c-format
@@ -8750,7 +8750,7 @@ msgid ""
 "image file on disk)?"
 msgstr ""
 "Voulez-vous vraiment supprimer le clone\n"
-"(sans supprimer l’image source du disque) ?"
+"(sans supprimer l’image source du disque) ?"
 
 #: ../src/control/jobs/control_jobs.c:2132
 msgid "move images"
@@ -8832,7 +8832,7 @@ msgstr "Pas de style sélectionné."
 
 #: ../src/control/jobs/control_jobs.c:2363
 msgid "no images selected!"
-msgstr "Aucune image sélectionnée !"
+msgstr "Aucune image sélectionnée !"
 
 #: ../src/control/jobs/control_jobs.c:2373
 msgid "apply style(s)"
@@ -9811,7 +9811,7 @@ msgstr ""
 #: ../src/develop/develop.c:2267
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
-msgstr "%s : Module « %s » version non cohérente : %d != %d"
+msgstr "%s : Module « %s » version non cohérente : %d != %d"
 
 #: ../src/develop/develop.c:3135
 msgid "duplicate module, can't move new instance after the base one\n"
@@ -10217,7 +10217,7 @@ msgstr "Copie de « %s »"
 #: ../src/develop/masks/masks.c:984
 #, c-format
 msgid "%s: mask version mismatch: %d != %d"
-msgstr "%s : Version non cohérente du masque : %d != %d"
+msgstr "%s : Version non cohérente du masque : %d != %d"
 
 #: ../src/develop/masks/masks.c:1244 ../src/develop/masks/masks.c:1894
 #, c-format
@@ -10374,7 +10374,7 @@ msgid ""
 "  - some drivers don't support needed number of events,\n"
 "  - too small headroom settings while using 'use all device memory'."
 msgstr ""
-"Erreur rencontré dans l’OpenCL; désactivé pour cette session ! Quelques "
+"Erreur rencontré dans l’OpenCL; désactivé pour cette session ! Quelques "
 "causes possibles :\n"
 " • Pas assez de ressources OpenCL à cause des préférences choisies. Tester "
 "avec les valeurs par défaut,\n"
@@ -10632,7 +10632,7 @@ msgstr "Il n’y a pas d’images dans cette collection"
 
 #: ../src/dtgtk/thumbtable.c:1259
 msgid "need help?"
-msgstr "Besoin d’aide ?"
+msgstr "Besoin d’aide ?"
 
 #: ../src/dtgtk/thumbtable.c:1260
 msgid "if you have not imported any images yet"
@@ -13987,7 +13987,7 @@ msgstr ""
 "En utilisant ce raccourci la prochaine fois tous les panneaux seront "
 "restaurés.\n"
 "\n"
-"Voulez-vous replier tous les panneaux maintenant ?"
+"Voulez-vous replier tous les panneaux maintenant ?"
 
 #: ../src/gui/gtk.c:2380
 msgid "restore defaults"
@@ -14382,7 +14382,7 @@ msgid ""
 "you will not be able to restore your current panel layout and module "
 "selection."
 msgstr ""
-"Ètes-vous certain ?\n"
+"Ètes-vous certain ?\n"
 "\n"
 "Vous ne pourrez pas restaurer la disposition des panneaux ni la sélection "
 "des modules."
@@ -15382,7 +15382,7 @@ msgstr ""
 " • Non compressée – rapide mais taille importante\n"
 " • Deflate – taille réduite mais plus lent"
 
-# deflate traduit par compression, bof ?
+# deflate traduit par compression, bof ?
 #: ../src/imageio/format/pdf.c:699 ../src/imageio/format/tiff.c:901
 msgid "deflate"
 msgstr "Deflate"
@@ -16994,7 +16994,7 @@ msgid ""
 "<b>caution</b>: doubling the radius quadruples the run-time!"
 msgstr ""
 "Taille du flou en pixel\n"
-"<b>Attention</b> : doubler le rayon quadruple le temps de traitement !"
+"<b>Attention</b> : doubler le rayon quadruple le temps de traitement !"
 
 #: ../src/iop/blurs.c:795
 msgid "shifts towards a star shape as value approaches blades-1"
@@ -17253,7 +17253,7 @@ msgstr "Sélectionne la couleur du cadre"
 msgid "pick frame line color from image"
 msgstr "Choisir la couleur du cadre interne dans l’image"
 
-#. make sure you put all your translatable strings into _() !
+#. make sure you put all your translatable strings into _() !
 #: ../src/iop/cacorrect.c:75
 msgid "raw chromatic aberrations"
 msgstr "Aberrations chromatiques RAW"
@@ -22972,13 +22972,13 @@ msgstr "Force du flou pour les couleurs"
 msgid "overexposed"
 msgstr "Sur-exposition"
 
-# quel est le module surexposition ?
+# quel est le module surexposition ?
 #: ../src/iop/overexposed.c:120 ../src/iop/overexposed.c:329
 msgid "module overexposed failed in buffer allocation"
 msgstr ""
 "Le module sur-exposition a échoué lors de l’allocation de la mémoire tampon"
 
-# quel est le module surexposition ?
+# quel est le module surexposition ?
 #: ../src/iop/overexposed.c:146 ../src/iop/overexposed.c:339
 msgid "module overexposed failed in color conversion"
 msgstr "Le module sur-exposition a échoué dans la conversion des couleurs"
@@ -25369,8 +25369,8 @@ msgstr "Supprimer l’historique des images ?"
 #, c-format
 msgid "do you really want to clear history of %d selected image?"
 msgid_plural "do you really want to clear history of %d selected images?"
-msgstr[0] "Supprimer l’historique de %d image sélectionnée ?"
-msgstr[1] "Supprimer l’historique des %d images sélectionnées ?"
+msgstr[0] "Supprimer l’historique de %d image sélectionnée ?"
+msgstr[1] "Supprimer l’historique des %d images sélectionnées ?"
 
 #: ../src/libs/copy_history.c:335
 msgid "selective copy..."
@@ -26428,7 +26428,7 @@ msgstr ""
 "sélectionner une zone.\n"
 "Touche Entrée pour confirmer, ainsi l’astérisque * sera supprimée."
 
-# "un ficher" ou "le fichier" ?
+# "un ficher" ou "le fichier" ?
 #. gpx
 #: ../src/libs/geotagging.c:1860
 msgid "apply GPX track file..."
@@ -28828,7 +28828,7 @@ msgstr "Mot-clé « %s » supprimé"
 
 #: ../src/libs/tagging.c:1613
 msgid "delete node?"
-msgstr "Effacer le nœud ?"
+msgstr "Effacer le nœud ?"
 
 #: ../src/libs/tagging.c:1623
 #, c-format
@@ -30392,7 +30392,7 @@ msgstr "Impression"
 
 #: ../src/views/print.c:307
 msgid "no printers found!"
-msgstr "Aucune imprimante trouvée !"
+msgstr "Aucune imprimante trouvée !"
 
 #: ../src/views/slideshow.c:359
 msgid "end of images"
@@ -31079,35 +31079,35 @@ msgstr "Actions de la souris"
 #~ msgid "write grayscale"
 #~ msgstr "Échelle de gris"
 
-# Capitalisation ?
+# Capitalisation ?
 #~ msgid "tiff"
 #~ msgstr "Tiff"
 
-# Capitalisation ?
+# Capitalisation ?
 #~ msgid "png"
 #~ msgstr "Png"
 
-# Capitalisation ?
+# Capitalisation ?
 #~ msgid "j2k"
 #~ msgstr "J2k"
 
-# Capitalisation ?
+# Capitalisation ?
 #~ msgid "jpeg"
 #~ msgstr "Jpeg"
 
-# Capitalisation ?
+# Capitalisation ?
 #~ msgid "exr"
 #~ msgstr "Exr"
 
-# Capitalisation ?
+# Capitalisation ?
 #~ msgid "rgbe"
 #~ msgstr "Rgbe"
 
-# Capitalisation ?
+# Capitalisation ?
 #~ msgid "pfm"
 #~ msgstr "Pfm"
 
-# Capitalisation ?
+# Capitalisation ?
 #~ msgid "netpnm"
 #~ msgstr "Netpnm"
 
@@ -31835,7 +31835,7 @@ msgstr "Actions de la souris"
 #~ " soit comme au démarrage\n"
 #~ " soit comme lors de l’ouverture du dialogue de configuration\n"
 
-#~ msgid "no image selected !"
+#~ msgid "no image selected !"
 #~ msgstr "Aucune image sélectionnée !"
 
 #~ msgid "no embedded metadata and lensfun disabled"
@@ -33594,7 +33594,7 @@ msgstr "Actions de la souris"
 #~ msgstr "_Enregistrer…"
 
 #~ msgid "do you want to access https://darktable.org/usermanual/?"
-#~ msgstr "Accéder à « https://darktable.org/usermanual/ » ?"
+#~ msgstr "Accéder à « https://darktable.org/usermanual/ » ?"
 
 #, no-c-format
 #~ msgid "type your query, use `%' as wildcard"
@@ -36370,7 +36370,7 @@ msgstr "Actions de la souris"
 #~ "otherwise, you are GUARANTEED to experience issues which cannot be "
 #~ "fixed.\n"
 #~ msgstr ""
-#~ "Attention !\n"
+#~ "Attention !\n"
 #~ "Une version 32 bits de Darktable est utilisée.\n"
 #~ "Cette version est très limitée en termes de mémoire disponible, ce qui "
 #~ "entraîne de nombreux problèmes et crashs qui ne peuvent être corrigés.\n"
