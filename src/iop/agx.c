@@ -1786,10 +1786,11 @@ void gui_changed(dt_iop_module_t *self,
 }
 
 static void _add_basic_curve_controls(dt_iop_module_t *self,
-                                      dt_iop_basic_curve_controls_t *controls)
+                                      dt_iop_basic_curve_controls_t *controls,
+                                      gchar *section_name)
 {
   GtkWidget *slider = NULL;
-  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, N_("basic curve parameters"));
+  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, section_name);
 
   // curve_pivot_x_shift with picker
   slider = dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
@@ -1833,25 +1834,22 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
                                                    dt_iop_agx_gui_data_t *g)
 {
   GtkWidget *parent = self->widget;
+  gchar *section_name = NC_("section", "basic curve parameters");
+  GtkWidget *box = self->widget = dt_gui_vbox(dt_ui_section_label_new(Q_(section_name)));
 
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  self->widget = box;
-
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "basic curve parameters")));
-
-  _add_basic_curve_controls(self, &g->basic_curve_controls);
+  _add_basic_curve_controls(self, &g->basic_curve_controls, section_name);
 
   self->widget = parent;
 
   return box;
 }
 
-static void _add_look_sliders(dt_iop_module_t *self, GtkWidget *parent_widget)
+static void _add_look_sliders(dt_iop_module_t *self, GtkWidget *parent_widget, gchar *section_name)
 {
   GtkWidget *original_self_widget = self->widget;
   self->widget = parent_widget;
 
-  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, N_("look"));
+  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, section_name);
 
   // Reuse the slider variable for all sliders instead of creating new ones in each scope
   GtkWidget *slider = NULL;
@@ -1895,17 +1893,18 @@ static void _add_look_box(dt_iop_module_t *self,
   GtkWidget *look_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   self->widget = look_box;
 
+  gchar *section_name = NC_("section", "look");
   if(look_always_visible)
   {
-    dt_gui_box_add(self->widget, dt_ui_section_label_new(_("look")));
-    _add_look_sliders(self, look_box);
+    dt_gui_box_add(look_box, dt_ui_section_label_new(Q_(section_name)));
+    _add_look_sliders(self, look_box, section_name);
   }
   else
   {
     dt_gui_new_collapsible_section(&g->look_section,
-                                   "plugins/darkroom/agx/expand_look_params", _("look"),
+                                   "plugins/darkroom/agx/expand_look_params", Q_(section_name),
                                    GTK_BOX(look_box), DT_ACTION(self));
-    _add_look_sliders(self, GTK_WIDGET(g->look_section.container));
+    _add_look_sliders(self, GTK_WIDGET(g->look_section.container), section_name);
   }
 
   self->widget = parent;
@@ -1947,12 +1946,13 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
   GtkWidget *advanced_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   self->widget = advanced_box;
 
+  gchar *section_name = NC_("section", "advanced curve parameters");
   dt_gui_new_collapsible_section(&g->advanced_section,
                                  "plugins/darkroom/agx/expand_curve_advanced",
-                                 _("advanced curve parameters"),
+                                 Q_(section_name),
                                  GTK_BOX(advanced_box), DT_ACTION(self));
   self->widget = GTK_WIDGET(g->advanced_section.container);
-  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, N_("advanced curve parameters"));
+  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, section_name);
 
   // Reuse the slider variable for all sliders
   GtkWidget *slider = NULL;
@@ -2024,9 +2024,9 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  gchar const *section_name = C_("section", "input exposure range");
+  gchar *section_name = NC_("section", "input exposure range");
   dt_gui_box_add(self->widget, dt_ui_section_label_new(section_name));
-  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, N_("input exposure range"));
+  dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, section_name);
 
   g->white_exposure_picker =
       dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,

@@ -3797,7 +3797,7 @@ static float _process_action(dt_action_t *action,
     if(owner->type == DT_ACTION_TYPE_LIB)
     {
       const dt_lib_module_t *lib = (dt_lib_module_t *)owner;
-      dt_lib_presets_apply(action->label, lib->plugin_name, lib->version());
+      dt_lib_presets_apply(action->id, lib->plugin_name, lib->version());
     }
     else if(owner->type == DT_ACTION_TYPE_IOP)
     {
@@ -4719,14 +4719,14 @@ dt_action_t *dt_action_locate(dt_action_t *owner,
     if(owner == &darktable.control->actions_lua)
       create = TRUE;
 
-    const gboolean needs_translation =
-      !owner
-      || owner->type != DT_ACTION_TYPE_SECTION
-      || (g_ascii_strcasecmp(owner->id, "styles")
-          && g_ascii_strcasecmp(owner->id, "preset"));
+    const gboolean style_or_preset =
+      owner
+      && owner->type == DT_ACTION_TYPE_SECTION
+      && (!strcmp(owner->id, "styles")
+       || !strcmp(owner->id, "preset"));
 
     if(!clean_path)
-      clean_path = g_strdup(needs_translation ? NQ_(*path) : *path);
+      clean_path = g_strdup(style_or_preset ? *path : NQ_(*path));
 
     if(!action)
     {
@@ -4740,9 +4740,9 @@ dt_action_t *dt_action_locate(dt_action_t *owner,
 
       dt_action_t *new_action = calloc(1, sizeof(dt_action_t));
       new_action->id = clean_path;
-      new_action->label = needs_translation
+      new_action->label = style_or_preset
                         ? dt_util_localize_segmented_name(*path, TRUE)
-                        : g_strdup(*path);
+                        : g_strdup(Q_(*path));
       new_action->type = DT_ACTION_TYPE_SECTION;
 
       dt_action_insert_sorted(owner, new_action);

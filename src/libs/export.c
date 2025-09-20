@@ -1707,9 +1707,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_column_add_attribute(column, renderer, "text", DT_EXPORT_BATCH_COL_NAME);
 
   // multi-preset export button
-  d->batch_export_button = GTK_BUTTON(gtk_button_new_with_label(_("start export")));
-  g_signal_connect(G_OBJECT(d->batch_export_button), "clicked",
-                   G_CALLBACK(_batch_export_button_clicked), self);
+  d->batch_export_button = GTK_BUTTON(dt_action_button_new
+                                      (self, NC_("actionbutton", "start batch export"),
+                                       _batch_export_button_clicked, self,
+                                       NULL, 0, 0));
 
   d->batch_treeview = view;
   _fill_batch_export_list(self);
