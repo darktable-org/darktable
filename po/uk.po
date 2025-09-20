@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-18 17:55+0200\n"
-"PO-Revision-Date: 2025-09-18 19:30+0300\n"
+"POT-Creation-Date: 2025-09-20 12:55+0200\n"
+"PO-Revision-Date: 2025-09-20 19:01+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -3090,7 +3090,7 @@ msgstr "Метод збереження кольорів"
 #: ../src/iop/clipping.c:1922 ../src/iop/clipping.c:2104
 #: ../src/iop/clipping.c:2119 ../src/iop/retouch.c:499
 #: ../src/libs/collect.c:2160 ../src/libs/colorpicker.c:52
-#: ../src/libs/export.c:1147 ../src/libs/filters/module_order.c:158
+#: ../src/libs/export.c:1149 ../src/libs/filters/module_order.c:158
 #: ../src/libs/histogram.c:111 ../src/libs/live_view.c:311
 #: ../src/libs/print_settings.c:1169
 msgid "none"
@@ -3334,7 +3334,7 @@ msgid "landscape"
 msgstr "Ландшафт"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:356
-#: ../src/iop/relight.c:266 ../src/libs/export.c:1498
+#: ../src/iop/relight.c:266 ../src/libs/export.c:1500
 #: ../src/libs/metadata_view.c:163 ../src/libs/print_settings.c:2615
 msgid "width"
 msgstr "Ширина"
@@ -3342,7 +3342,7 @@ msgstr "Ширина"
 #: ../build/lib/darktable/plugins/introspection_borders.c:357
 #: ../build/lib/darktable/plugins/introspection_overlay.c:306
 #: ../build/lib/darktable/plugins/introspection_watermark.c:326
-#: ../src/libs/export.c:1504 ../src/libs/metadata_view.c:164
+#: ../src/libs/export.c:1506 ../src/libs/metadata_view.c:164
 #: ../src/libs/print_settings.c:2619
 msgid "height"
 msgstr "Висота"
@@ -4615,13 +4615,13 @@ msgstr "Тип шуму"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:356
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:519
-#: ../src/iop/agx.c:1823
+#: ../src/iop/agx.c:1824
 msgid "contrast in shadows"
 msgstr "Контраст у тінях"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:362
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:523
-#: ../src/iop/agx.c:1829
+#: ../src/iop/agx.c:1830
 msgid "contrast in highlights"
 msgstr "Контраст у світлих тонах"
 
@@ -4645,8 +4645,8 @@ msgstr "Увімкнути реконструкцію переекспонова
 #: ../src/common/variables.c:197 ../src/common/variables.c:821
 #: ../src/develop/imageop_gui.c:209 ../src/imageio/format/avif.c:861
 #: ../src/imageio/format/pdf.c:653 ../src/imageio/format/pdf.c:672
-#: ../src/imageio/format/tiff.c:921 ../src/libs/export.c:1560
-#: ../src/libs/export.c:1568 ../src/libs/export.c:1576
+#: ../src/imageio/format/tiff.c:921 ../src/libs/export.c:1562
+#: ../src/libs/export.c:1570 ../src/libs/export.c:1578
 #: ../src/libs/metadata_view.c:734
 msgid "no"
 msgstr "Ні"
@@ -4964,7 +4964,7 @@ msgstr "Корекції"
 #: ../src/iop/colorbalance.c:1853 ../src/iop/denoiseprofile.c:3751
 #: ../src/iop/exposure.c:1230 ../src/iop/levels.c:693
 #: ../src/iop/profile_gamma.c:654 ../src/libs/copy_history.c:370
-#: ../src/libs/export.c:1627 ../src/libs/image.c:644
+#: ../src/libs/export.c:1629 ../src/libs/image.c:644
 #: ../src/libs/print_settings.c:2934 ../src/libs/styles.c:872
 #: ../src/views/darkroom.c:2560
 msgid "mode"
@@ -5829,70 +5829,70 @@ msgstr "Показ зображень на мапі"
 msgid "Print your images"
 msgstr "Друк зображень"
 
-#: ../src/bauhaus/bauhaus.c:902 ../src/bauhaus/bauhaus.c:3894
+#: ../src/bauhaus/bauhaus.c:902 ../src/bauhaus/bauhaus.c:3890
 #: ../src/iop/colorequal.c:3051
 msgid "sliders"
 msgstr "повзунки"
 
-#: ../src/bauhaus/bauhaus.c:904 ../src/bauhaus/bauhaus.c:3899
+#: ../src/bauhaus/bauhaus.c:904 ../src/bauhaus/bauhaus.c:3895
 msgid "dropdowns"
 msgstr "спадні меню"
 
-#: ../src/bauhaus/bauhaus.c:906 ../src/bauhaus/bauhaus.c:3904
+#: ../src/bauhaus/bauhaus.c:906 ../src/bauhaus/bauhaus.c:3900
 msgid "buttons"
 msgstr "кнопки"
 
-#: ../src/bauhaus/bauhaus.c:3561
+#: ../src/bauhaus/bauhaus.c:3557
 msgid "button on"
 msgstr "кнопка on"
 
-#: ../src/bauhaus/bauhaus.c:3561
+#: ../src/bauhaus/bauhaus.c:3557
 msgid "button off"
 msgstr "кнопка off"
 
-#: ../src/bauhaus/bauhaus.c:3562
+#: ../src/bauhaus/bauhaus.c:3558
 msgid "button pressed"
 msgstr "кнопку натиснуто"
 
-#: ../src/bauhaus/bauhaus.c:3799
+#: ../src/bauhaus/bauhaus.c:3795
 msgid "not that many sliders"
 msgstr "немає стільки повзунків"
 
-#: ../src/bauhaus/bauhaus.c:3813
+#: ../src/bauhaus/bauhaus.c:3809
 msgid "not that many dropdowns"
 msgstr "немає стільки спадних меню"
 
-#: ../src/bauhaus/bauhaus.c:3832
+#: ../src/bauhaus/bauhaus.c:3828
 msgid "not that many buttons"
 msgstr "немає стільки кнопок"
 
-#: ../src/bauhaus/bauhaus.c:3837 ../src/gui/accelerators.c:391
+#: ../src/bauhaus/bauhaus.c:3833 ../src/gui/accelerators.c:391
 msgid "value"
 msgstr "Значення"
 
-#: ../src/bauhaus/bauhaus.c:3838 ../src/bauhaus/bauhaus.c:3844
+#: ../src/bauhaus/bauhaus.c:3834 ../src/bauhaus/bauhaus.c:3840
 #: ../src/gui/accelerators.c:370
 msgid "button"
 msgstr "Кнопка"
 
-#: ../src/bauhaus/bauhaus.c:3839
+#: ../src/bauhaus/bauhaus.c:3835
 msgid "force"
 msgstr "Необмежено"
 
-#: ../src/bauhaus/bauhaus.c:3840 ../src/libs/navigation.c:246
+#: ../src/bauhaus/bauhaus.c:3836 ../src/libs/navigation.c:246
 #: ../src/libs/navigation.c:263
 msgid "zoom"
 msgstr "Масштаб"
 
-#: ../src/bauhaus/bauhaus.c:3843 ../src/libs/select.c:40
+#: ../src/bauhaus/bauhaus.c:3839 ../src/libs/select.c:40
 msgid "selection"
 msgstr "Вибір"
 
-#: ../src/bauhaus/bauhaus.c:3883
+#: ../src/bauhaus/bauhaus.c:3879
 msgid "slider"
 msgstr "Повзунок"
 
-#: ../src/bauhaus/bauhaus.c:3888
+#: ../src/bauhaus/bauhaus.c:3884
 msgid "dropdown"
 msgstr "Спадне меню"
 
@@ -7359,12 +7359,12 @@ msgstr ""
 "Швидкий незалежний від експозиції керований фільтр не зміг виділити пам'ять, "
 "перевірте налаштування оперативної пам'яті"
 
-#: ../src/common/exif.cc:5888
+#: ../src/common/exif.cc:6001
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "Не вдається прочитати файл XMP '%s': '%s'"
 
-#: ../src/common/exif.cc:5947
+#: ../src/common/exif.cc:6060
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "Не вдається записати в файл XMP '%s': '%s'"
@@ -7746,7 +7746,7 @@ msgstr "Компіляція програми OpenCL %s для %s"
 msgid "mm"
 msgstr "мм"
 
-#: ../src/common/pdf.h:89 ../src/libs/export.c:665 ../src/libs/export.c:1516
+#: ../src/common/pdf.h:89 ../src/libs/export.c:662 ../src/libs/export.c:1518
 #: ../src/libs/print_settings.c:84
 msgid "cm"
 msgstr "см"
@@ -7925,8 +7925,8 @@ msgstr "Немає інформації"
 #: ../src/common/variables.c:197 ../src/common/variables.c:819
 #: ../src/develop/imageop_gui.c:210 ../src/imageio/format/avif.c:861
 #: ../src/imageio/format/pdf.c:653 ../src/imageio/format/pdf.c:672
-#: ../src/imageio/format/tiff.c:921 ../src/libs/export.c:1560
-#: ../src/libs/export.c:1568 ../src/libs/export.c:1576
+#: ../src/imageio/format/tiff.c:921 ../src/libs/export.c:1562
+#: ../src/libs/export.c:1570 ../src/libs/export.c:1578
 #: ../src/libs/metadata_view.c:734
 msgid "yes"
 msgstr "Так"
@@ -15275,8 +15275,8 @@ msgstr ""
 "Приклади: 10 mm, 1 inch"
 
 #. dpi
-#: ../src/imageio/format/pdf.c:638 ../src/libs/export.c:1493
-#: ../src/libs/export.c:1521
+#: ../src/imageio/format/pdf.c:638 ../src/libs/export.c:1495
+#: ../src/libs/export.c:1523
 msgid "dpi"
 msgstr "DPI"
 
@@ -15465,7 +15465,7 @@ msgstr ""
 "Кольори для '%s' можуть бути представлені неправильно,\n"
 "а редагування можуть бути несумісними з майбутніми версіями."
 
-#: ../src/imageio/storage/disk.c:75 ../src/libs/export.c:1264
+#: ../src/imageio/storage/disk.c:75 ../src/libs/export.c:1266
 msgid "file on disk"
 msgstr "Файл на диску"
 
@@ -15824,58 +15824,53 @@ msgstr "нелінійна, RGB"
 msgid "linear, RGB, display-referred"
 msgstr "лінійний простір, RGB, на основі відображення"
 
-#: ../src/iop/agx.c:1792
-msgid "basic curve parameters"
-msgstr "Основні параметри кривої"
-
-#: ../src/iop/agx.c:1802
+#: ../src/iop/agx.c:1803
 msgid "shift the pivot input towards black(-) or white(+)"
 msgstr "Змістити вхідний сигнал точи опори в бік чорного (-) або білого (+)"
 
-#: ../src/iop/agx.c:1811
+#: ../src/iop/agx.c:1812
 msgid "darken or brighten the pivot (output)"
 msgstr "Затемнити або освітлити опорну точку (вихід)"
 
-#: ../src/iop/agx.c:1817
+#: ../src/iop/agx.c:1818
 msgid "slope of the linear section"
 msgstr "Нахил лінійної ділянки"
 
-#: ../src/iop/agx.c:1840
+#: ../src/iop/agx.c:1837
 msgctxt "section"
 msgid "basic curve parameters"
 msgstr "Основні параметри кривої"
 
-#. Page LOOK
-#: ../src/iop/agx.c:1854 ../src/iop/agx.c:1900 ../src/iop/agx.c:1906
-#: ../src/iop/filmicrgb.c:4505
-msgid "look"
-msgstr "Крива"
-
-#: ../src/iop/agx.c:1861
+#: ../src/iop/agx.c:1859
 msgid "decrease or increase contrast and brightness"
 msgstr "Зменшити або збільшити контрастність і яскравість"
 
-#: ../src/iop/agx.c:1866
+#: ../src/iop/agx.c:1864
 msgid "deepen or lift shadows"
 msgstr "Поглибити або підняти тіні"
 
-#: ../src/iop/agx.c:1870
+#: ../src/iop/agx.c:1868
 msgid "increase or decrease brightness"
 msgstr "Збільшити або зменшити яскравість"
 
-#: ../src/iop/agx.c:1877
+#: ../src/iop/agx.c:1875
 msgid "decrease or increase saturation"
 msgstr "Зменшити або збільшити насиченість"
 
-#: ../src/iop/agx.c:1884
+#: ../src/iop/agx.c:1882
 msgid "increase to bring hues closer to the original"
 msgstr "Збільшити, щоб наблизити відтінки до оригіналу"
 
-#: ../src/iop/agx.c:1924
+#: ../src/iop/agx.c:1896
+msgctxt "section"
+msgid "look"
+msgstr "Крива"
+
+#: ../src/iop/agx.c:1923
 msgid "show curve"
 msgstr "Показати криву"
 
-#: ../src/iop/agx.c:1929 ../src/iop/atrous.c:1808
+#: ../src/iop/agx.c:1928 ../src/iop/atrous.c:1808
 #: ../src/iop/colorbalancergb.c:1974 ../src/iop/colorequal.c:3016
 #: ../src/iop/colorzones.c:2706 ../src/iop/denoiseprofile.c:3700
 #: ../src/iop/filmicrgb.c:4367 ../src/iop/lowlight.c:809
@@ -15883,11 +15878,12 @@ msgstr "Показати криву"
 msgid "graph"
 msgstr "Діаграма"
 
-#: ../src/iop/agx.c:1932
+#: ../src/iop/agx.c:1931
 msgid "tone mapping curve"
 msgstr "Крива тонального відображення"
 
-#: ../src/iop/agx.c:1952 ../src/iop/agx.c:1955
+#: ../src/iop/agx.c:1949
+msgctxt "section"
 msgid "advanced curve parameters"
 msgstr "Додаткові параметри кривої"
 
@@ -15944,10 +15940,6 @@ msgstr ""
 
 #: ../src/iop/agx.c:2027
 msgctxt "section"
-msgid "input exposure range"
-msgstr "Вхідний діапазон експозиції"
-
-#: ../src/iop/agx.c:2029
 msgid "input exposure range"
 msgstr "Вхідний діапазон експозиції"
 
@@ -16508,7 +16500,7 @@ msgstr "Дрібніші деталі"
 msgid "finest"
 msgstr "Найдрібніші деталі"
 
-#: ../src/iop/atrous.c:1702 ../src/libs/export.c:1514 ../src/libs/export.c:1530
+#: ../src/iop/atrous.c:1702 ../src/libs/export.c:1516 ../src/libs/export.c:1532
 msgid "x"
 msgstr "x"
 
@@ -19487,26 +19479,26 @@ msgstr "Вихідний метод"
 msgid "rendering intent"
 msgstr "Метод візуалізації"
 
-#: ../src/iop/colorout.c:842 ../src/libs/export.c:1618
+#: ../src/iop/colorout.c:842 ../src/libs/export.c:1620
 #: ../src/libs/print_settings.c:2553 ../src/libs/print_settings.c:2902
 #: ../src/views/darkroom.c:2722 ../src/views/lighttable.c:1249
 msgid "perceptual"
 msgstr "Перцепційний"
 
-#: ../src/iop/colorout.c:843 ../src/libs/export.c:1619
+#: ../src/iop/colorout.c:843 ../src/libs/export.c:1621
 #: ../src/libs/print_settings.c:2554 ../src/libs/print_settings.c:2903
 #: ../src/views/darkroom.c:2723 ../src/views/lighttable.c:1250
 msgid "relative colorimetric"
 msgstr "Відносний колориметричний"
 
-#: ../src/iop/colorout.c:844 ../src/libs/export.c:1620
+#: ../src/iop/colorout.c:844 ../src/libs/export.c:1622
 #: ../src/libs/print_settings.c:2555 ../src/libs/print_settings.c:2904
 #: ../src/views/darkroom.c:2724 ../src/views/lighttable.c:1251
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Насиченість"
 
-#: ../src/iop/colorout.c:845 ../src/libs/export.c:1621
+#: ../src/iop/colorout.c:845 ../src/libs/export.c:1623
 #: ../src/libs/print_settings.c:2556 ../src/libs/print_settings.c:2905
 #: ../src/views/darkroom.c:2725 ../src/views/lighttable.c:1252
 msgid "absolute colorimetric"
@@ -20030,7 +20022,7 @@ msgstr "Дисперсія зеленого: "
 msgid "variance blue: "
 msgstr "Дисперсія синього: "
 
-#: ../src/iop/denoiseprofile.c:3744 ../src/libs/export.c:1581
+#: ../src/iop/denoiseprofile.c:3744 ../src/libs/export.c:1583
 #: ../src/libs/print_settings.c:2496 ../src/libs/print_settings.c:2852
 msgid "profile"
 msgstr "Профіль"
@@ -20667,7 +20659,7 @@ msgstr "Компенсувати експозицію камери (%+.1f EV)"
 
 #: ../src/iop/exposure.c:692
 #, no-c-format
-msgid "higlight preservation mode (%.1f EV)"
+msgid "highlight preservation mode (%.1f EV)"
 msgstr "Режим збереження світлих ділянок (%.1f EV)"
 
 #. Write report in GUI
@@ -20694,14 +20686,14 @@ msgid ""
 "remove the camera's hidden exposure bias in\n"
 "HDR / highlight preservation / dynamic range / HLG tone mode.\n"
 "\n"
-"when enabled, tone mapping (e.g. sigmoid) is required to\n"
-"avoid blown-out highlights."
+"when enabled on an image with nonzero bias, tone mapping\n"
+"(e.g. sigmoid) is required to avoid blown-out highlights."
 msgstr ""
 "Видаляти приховане зміщення експозиції камери в режимах\n"
 "HDR / збереження світлих ділянок / динамічного діапазону / тону HLG.\n"
 "\n"
-"Якщо ввімкнено, потрібне тонове відображення (наприклад, Sigmoid),\n"
-"щоб уникнути пересвітлених ділянок."
+"Якщо ввімкнено на зображенні з ненульовим зміщенням, потрібне тонове\n"
+"відображення (наприклад, Sigmoid), щоб уникнути пересвітлених ділянок."
 
 #: ../src/iop/exposure.c:1194
 msgid "set the exposure adjustment using the selected area"
@@ -20952,7 +20944,7 @@ msgstr ""
 "Зменште, якщо тіні та/або світлі тони перенасичені."
 
 #. Add export intent combo
-#: ../src/iop/filmic.c:1583 ../src/libs/export.c:1599
+#: ../src/iop/filmic.c:1583 ../src/libs/export.c:1601
 #: ../src/libs/print_settings.c:2551 ../src/libs/print_settings.c:2898
 #: ../src/views/darkroom.c:2730 ../src/views/lighttable.c:1255
 msgid "intent"
@@ -21277,6 +21269,11 @@ msgstr ""
 "Збільште, якщо хочете більше кольору.\n"
 "Зменште, якщо бачите мадженту або кольори поза охопленням у переекспонованих "
 "ділянках."
+
+#. Page LOOK
+#: ../src/iop/filmicrgb.c:4505
+msgid "look"
+msgstr "Крива"
 
 #: ../src/iop/filmicrgb.c:4515
 msgid ""
@@ -22019,7 +22016,7 @@ msgstr "Знайти об'єктив"
 
 #. scale
 #: ../src/iop/lens.cc:4470 ../src/iop/overlay.c:1122 ../src/iop/vignette.c:1043
-#: ../src/iop/watermark.c:1382 ../src/libs/export.c:1539
+#: ../src/iop/watermark.c:1382 ../src/libs/export.c:1541
 msgid "scale"
 msgstr "Масштаб"
 
@@ -25115,7 +25112,7 @@ msgstr "Деталі зйомки"
 msgid "collections settings"
 msgstr "Налаштування колекцій зображень"
 
-#: ../src/libs/collect.c:3410 ../src/libs/export.c:1409
+#: ../src/libs/collect.c:3410 ../src/libs/export.c:1411
 #: ../src/libs/metadata.c:1121 ../src/libs/metadata_view.c:1543
 #: ../src/libs/recentcollect.c:297 ../src/libs/tagging.c:3546
 msgid "preferences..."
@@ -25365,11 +25362,11 @@ msgstr "Створити дублікат зображення без жодно
 msgid "create a duplicate of the image with same history stack"
 msgstr "Створити дублікат зображення з тією ж історією змін"
 
-#: ../src/libs/export.c:173
+#: ../src/libs/export.c:170
 msgid "export"
 msgstr "Експорт"
 
-#: ../src/libs/export.c:178
+#: ../src/libs/export.c:175
 msgid ""
 "create new files for the\n"
 "currently selected images\n"
@@ -25379,34 +25376,34 @@ msgstr ""
 "на даний момент зображень із\n"
 "застосуванням ваших редагувань"
 
-#: ../src/libs/export.c:339
+#: ../src/libs/export.c:336
 msgid "invalid format for export selected"
 msgstr "Вибрано недійсний формат для експорту"
 
-#: ../src/libs/export.c:344
+#: ../src/libs/export.c:341
 msgid "invalid storage for export selected"
 msgstr "Вибрано недійсний тип збереження для експорту"
 
-#: ../src/libs/export.c:355
+#: ../src/libs/export.c:352
 msgid "export to disk"
 msgstr "Експорт на диск"
 
-#: ../src/libs/export.c:449
+#: ../src/libs/export.c:446
 #, c-format
 msgid "could not login to storage `%s'!"
 msgstr "Не вдалося ввійти до сховища '%s'!"
 
-#: ../src/libs/export.c:618
+#: ../src/libs/export.c:615
 #, c-format
 msgid "which is equal to %s × %s px"
 msgstr "що еквівалентно %s × %s px"
 
-#: ../src/libs/export.c:665
+#: ../src/libs/export.c:662
 msgctxt "unit"
 msgid "in"
 msgstr "дюйм"
 
-#: ../src/libs/export.c:1153
+#: ../src/libs/export.c:1155
 #, c-format
 msgid ""
 "style to be applied on export:\n"
@@ -25415,20 +25412,20 @@ msgstr ""
 "Стиль, який буде застосовано під час експорту:\n"
 "<b>%s</b>"
 
-#: ../src/libs/export.c:1206 ../src/libs/print_settings.c:1228
+#: ../src/libs/export.c:1208 ../src/libs/print_settings.c:1228
 #: ../src/views/darkroom.c:1485
 msgid "no styles have been created yet"
 msgstr "Ще не створено стилів"
 
-#: ../src/libs/export.c:1424
+#: ../src/libs/export.c:1426
 msgid "target storage"
 msgstr "Ціль"
 
-#: ../src/libs/export.c:1448
+#: ../src/libs/export.c:1450
 msgid "file format"
 msgstr "Формат"
 
-#: ../src/libs/export.c:1450
+#: ../src/libs/export.c:1452
 msgid ""
 "images will be exported according to the format specified here\n"
 "\n"
@@ -25448,35 +25445,35 @@ msgstr ""
 "якщо користувач не встановить прапорці <b>всіх</b> метаданих\n"
 "у локальних вподобаннях модуля експорту"
 
-#: ../src/libs/export.c:1471
+#: ../src/libs/export.c:1473
 msgid "set size"
 msgstr "Установити розмір"
 
-#: ../src/libs/export.c:1472
+#: ../src/libs/export.c:1474
 msgid "choose a method for setting the output size"
 msgstr "Вибрати метод установлення вихідного розміру"
 
-#: ../src/libs/export.c:1475
+#: ../src/libs/export.c:1477
 msgid "in pixels (for file)"
 msgstr "у пікселях (для файлу)"
 
-#: ../src/libs/export.c:1476
+#: ../src/libs/export.c:1478
 msgid "in cm (for print)"
 msgstr "в сантиметрах (для друку)"
 
-#: ../src/libs/export.c:1477
+#: ../src/libs/export.c:1479
 msgid "in inch (for print)"
 msgstr "в дюймах (для друку)"
 
-#: ../src/libs/export.c:1478
+#: ../src/libs/export.c:1480
 msgid "by scale (for file)"
 msgstr "за масштабом (для файлу)"
 
-#: ../src/libs/export.c:1481
+#: ../src/libs/export.c:1483
 msgid "print width"
 msgstr "Ширина друку"
 
-#: ../src/libs/export.c:1483 ../src/libs/export.c:1500
+#: ../src/libs/export.c:1485 ../src/libs/export.c:1502
 msgid ""
 "maximum output width limit.\n"
 "click middle mouse button to reset to 0."
@@ -25484,11 +25481,11 @@ msgstr ""
 "Максимальна вихідна ширина.\n"
 "Натисніть середню кнопку миші, щоб скинути значення в 0."
 
-#: ../src/libs/export.c:1487
+#: ../src/libs/export.c:1489
 msgid "print height"
 msgstr "Висота друку"
 
-#: ../src/libs/export.c:1489 ../src/libs/export.c:1506
+#: ../src/libs/export.c:1491 ../src/libs/export.c:1508
 msgid ""
 "maximum output height limit.\n"
 "click middle mouse button to reset to 0."
@@ -25496,19 +25493,19 @@ msgstr ""
 "Максимальна вихідна висота.\n"
 "Натисніть середню кнопку миші, щоб скинути значення в 0."
 
-#: ../src/libs/export.c:1495
+#: ../src/libs/export.c:1497
 msgid "resolution in dot per inch"
 msgstr "Роздільність в точках на дюйм (dpi)"
 
-#: ../src/libs/export.c:1519
+#: ../src/libs/export.c:1521
 msgid "@"
 msgstr "@"
 
-#: ../src/libs/export.c:1533 ../src/libs/tools/global_toolbox.c:214
+#: ../src/libs/export.c:1535 ../src/libs/tools/global_toolbox.c:214
 msgid "px"
 msgstr "px"
 
-#: ../src/libs/export.c:1541
+#: ../src/libs/export.c:1543
 msgid ""
 "it can be an integer, decimal number or simple fraction.\n"
 "zero or empty values are equal to 1.\n"
@@ -25518,38 +25515,38 @@ msgstr ""
 "Нульові або порожні значення еквівалентні 1.\n"
 "Натисніть середню кнопку миші, щоб скинути значення в 1."
 
-#: ../src/libs/export.c:1556
+#: ../src/libs/export.c:1558
 msgid "allow upscaling"
 msgstr "Дозволити збільшення"
 
-#: ../src/libs/export.c:1564
+#: ../src/libs/export.c:1566
 msgid "high quality resampling"
 msgstr "Високоякісна передискретизація"
 
-#: ../src/libs/export.c:1565
+#: ../src/libs/export.c:1567
 msgid "do high quality resampling during export"
 msgstr "Робити якісну передискретизацію під час експорту"
 
-#: ../src/libs/export.c:1572
+#: ../src/libs/export.c:1574
 msgid "store masks"
 msgstr "Зберігати маски"
 
-#: ../src/libs/export.c:1573
+#: ../src/libs/export.c:1575
 msgid "store masks as layers in exported images. only works for some formats."
 msgstr ""
 "Зберігати маски як шари в експортованих зображеннях. Працює лише для деяких "
 "форматів."
 
-#: ../src/libs/export.c:1582 ../src/libs/export.c:1617
+#: ../src/libs/export.c:1584 ../src/libs/export.c:1619
 #: ../src/libs/print_settings.c:2855 ../src/libs/print_settings.c:2901
 msgid "image settings"
 msgstr "Налаштування зображення"
 
-#: ../src/libs/export.c:1592 ../src/libs/print_settings.c:2889
+#: ../src/libs/export.c:1594 ../src/libs/print_settings.c:2889
 msgid "output ICC profiles"
 msgstr "вихідні ICC профілі"
 
-#: ../src/libs/export.c:1600
+#: ../src/libs/export.c:1602
 msgid ""
 "• perceptual: smoothly moves out-of-gamut colors into gamut, preserving "
 "gradations,\n"
@@ -25587,62 +25584,65 @@ msgstr ""
 "кольоропробах.\n"
 "(не підходить для фотографії)."
 
-#: ../src/libs/export.c:1628 ../src/libs/print_settings.c:2935
+#: ../src/libs/export.c:1630 ../src/libs/print_settings.c:2935
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr "Чи елементи стилю додаються до історії чи замінюють історію"
 
-#: ../src/libs/export.c:1631 ../src/libs/print_settings.c:2937
+#: ../src/libs/export.c:1633 ../src/libs/print_settings.c:2937
 msgid "replace history"
 msgstr "Замінити історію"
 
-#: ../src/libs/export.c:1631 ../src/libs/print_settings.c:2937
+#: ../src/libs/export.c:1633 ../src/libs/print_settings.c:2937
 msgid "append history"
 msgstr "Додати історію"
 
-#: ../src/libs/export.c:1638
+#: ../src/libs/export.c:1640
 msgid "select style to be applied on export"
 msgstr "Вибрати стиль, який буде застосовано під час експорту"
 
-#: ../src/libs/export.c:1641
+#: ../src/libs/export.c:1643
 msgid "temporary style to use while exporting"
 msgstr "Тимчасовий стиль для використання під час експорту"
 
-#: ../src/libs/export.c:1642 ../src/libs/print_settings.c:2918
+#: ../src/libs/export.c:1644 ../src/libs/print_settings.c:2918
 msgid "style"
 msgstr "Стиль"
 
-#: ../src/libs/export.c:1662
+#: ../src/libs/export.c:1664
 msgctxt "actionbutton"
 msgid "start export"
 msgstr "Запустити експорт"
 
-#: ../src/libs/export.c:1668
+#: ../src/libs/export.c:1670
 msgctxt "section"
 msgid "storage options"
 msgstr "Опції збереження"
 
-#: ../src/libs/export.c:1670
+#: ../src/libs/export.c:1672
 msgctxt "section"
 msgid "format options"
 msgstr "Опції формату"
 
-#: ../src/libs/export.c:1672
+#: ../src/libs/export.c:1674
 msgctxt "section"
 msgid "global options"
 msgstr "Глобальні опції"
 
-#: ../src/libs/export.c:1682
+#: ../src/libs/export.c:1684
 msgid "multi-preset export"
 msgstr "Експорт з кількома пресетами"
 
-#: ../src/libs/export.c:1685
+#: ../src/libs/export.c:1687
 msgid "export the selected images with multiple presets"
 msgstr "Експортувати вибрані зображення з кількома пресетами"
 
-#. multi-preset export button
-#: ../src/libs/export.c:1710
-msgid "start export"
+#: ../src/libs/export.c:1713
+#, fuzzy
+#| msgctxt "actionbutton"
+#| msgid "start export"
+msgctxt "actionbutton"
+msgid "start batch export"
 msgstr "Запустити експорт"
 
 #: ../src/libs/export_metadata.c:164
@@ -30368,6 +30368,15 @@ msgstr ""
 #: ../src/views/view.c:1569
 msgid "mouse actions"
 msgstr "Дії за допомогою миші"
+
+#~ msgid "basic curve parameters"
+#~ msgstr "Основні параметри кривої"
+
+#~ msgid "input exposure range"
+#~ msgstr "Вхідний діапазон експозиції"
+
+#~ msgid "start export"
+#~ msgstr "Запустити експорт"
 
 #~ msgid "calculated radius"
 #~ msgstr "Обчислено радіус збільшення різкості знімка"
