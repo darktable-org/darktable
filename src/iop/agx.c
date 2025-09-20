@@ -1884,7 +1884,13 @@ static void _add_basic_curve_controls(dt_iop_module_t *self,
   gtk_widget_set_tooltip_text(slider, _("contrast in shadows"));
   controls->toe_warning_icon =
       gtk_image_new_from_icon_name("dialog-warning-symbolic", GTK_ICON_SIZE_SMALL_TOOLBAR);
-  gtk_widget_set_tooltip_text(controls->toe_warning_icon, _("toe inverted"));
+  gtk_widget_set_tooltip_text(controls->toe_warning_icon,
+                              _("the curve has lost its 'S' shape, toe power cannot be applied\n"
+                                "target black cannot be reached with selected contrast and pivot position\n"
+                                "increase contrast, move the pivot lower (reduce pivot target output or\n"
+                                "curve y gamma), or increase the distance between the pivot and the left edge\n"
+                                "(increase pivot shift, decrease relative black exposure (set a larger\n"
+                                "negative number) or increase relative white exposure)"));
   gtk_widget_set_no_show_all(controls->toe_warning_icon, TRUE);
   gtk_box_pack_start(GTK_BOX(toe_hbox), controls->toe_warning_icon, FALSE, FALSE, 0);
 
@@ -1901,7 +1907,14 @@ static void _add_basic_curve_controls(dt_iop_module_t *self,
   gtk_widget_set_tooltip_text(slider, _("contrast in highlights"));
   controls->shoulder_warning_icon =
       gtk_image_new_from_icon_name("dialog-warning-symbolic", GTK_ICON_SIZE_SMALL_TOOLBAR);
-  gtk_widget_set_tooltip_text(controls->shoulder_warning_icon, _("shoulder inverted"));
+  gtk_widget_set_tooltip_text(controls->shoulder_warning_icon,
+                              _("the curve has lost its 'S' shape, shoulder power cannot be applied\n"
+                                "target white cannot be reached with selected contrast and pivot position\n"
+                                "increase contrast, move the pivot higher (increase pivot target output\n"
+                                "or curve y gamma), or increase the distance between the pivot and the right\n"
+                                "edge (decrease pivot shift, increase relative white exposure or decrease\n"
+                                "relative black exposure (set a smaller negative number))"));
+
   gtk_widget_set_no_show_all(controls->shoulder_warning_icon, TRUE);
   gtk_box_pack_start(GTK_BOX(shoulder_hbox), controls->shoulder_warning_icon, FALSE, FALSE, 0);
 }
