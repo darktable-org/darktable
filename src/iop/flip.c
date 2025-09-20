@@ -598,11 +598,9 @@ void gui_init(dt_iop_module_t *self)
   self->gui_data = NULL;
   dt_iop_flip_params_t *p = self->params;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-
   GtkWidget *label = dtgtk_reset_label_new(_("transform"),
                                            self, &p->orientation, sizeof(int32_t));
-  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
+  self->widget = dt_gui_hbox(label);
 
   dt_iop_button_new(self, N_("rotate 90 degrees CCW"),
                     G_CALLBACK(rotate_ccw), FALSE, GDK_KEY_bracketleft, 0,

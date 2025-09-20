@@ -800,14 +800,12 @@ void gui_init(dt_iop_module_t *self)
   g->x_move = -1;
   g->mouse_radius = 1.0 / DT_IOP_LOWLIGHT_BANDS;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   g->area = GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL,
                                                0,
                                                "plugins/darkroom/lowlight/graphheight"));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), FALSE, FALSE, 0);
+  self->widget = dt_gui_vbox(g->area);
 
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(lowlight_draw), self);
   g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(lowlight_button_press), self);

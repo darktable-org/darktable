@@ -1227,7 +1227,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
     g_free(description);
 
     if(vbox)
-      gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
+      dt_gui_box_add(vbox, label);
     else
       vbox = label;
   }
@@ -3011,44 +3011,38 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   g_signal_connect(G_OBJECT(container), "notify::position",
                    G_CALLBACK(_resize_shortcuts_view), container);
 
-  GtkWidget *button_bar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0), *button = NULL;
-  gtk_widget_set_name(button_bar, "shortcut-controls");
-  gtk_box_pack_start(GTK_BOX(button_bar), search_actions, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(button_bar), search_shortcuts, FALSE, FALSE, 0);
-
-  button = gtk_check_button_new_with_label(_("enable fallbacks"));
-  gtk_widget_set_tooltip_text(button, _("enables default meanings for additional buttons, modifiers or moves\n"
-                                        "when used in combination with a base shortcut"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),
+  GtkWidget *btn_fallbacks = gtk_check_button_new_with_label(_("enable fallbacks"));
+  gtk_widget_set_tooltip_text(btn_fallbacks, _("enables default meanings for additional buttons, modifiers or moves\n"
+                                               "when used in combination with a base shortcut"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn_fallbacks),
                                darktable.control->enable_fallbacks);
-  g_signal_connect(button, "toggled", G_CALLBACK(_fallbacks_toggled), shortcuts_view);
-  gtk_box_pack_start(GTK_BOX(button_bar), button, TRUE, FALSE, 0);
+  g_signal_connect(btn_fallbacks, "toggled", G_CALLBACK(_fallbacks_toggled), shortcuts_view);
 
-  button = gtk_button_new_with_label(_("?"));
-  gtk_widget_set_tooltip_text(button, _("open help page for shortcuts"));
-  dt_gui_add_help_link(button, "shortcuts");
-  g_signal_connect(button, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
-  gtk_box_pack_start(GTK_BOX(button_bar), button, FALSE, FALSE, 0);
+  GtkWidget *btn_help = gtk_button_new_with_label(_("?"));
+  gtk_widget_set_tooltip_text(btn_help, _("open help page for shortcuts"));
+  dt_gui_add_help_link(btn_help, "shortcuts");
+  g_signal_connect(btn_help, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
 
-  button = gtk_button_new_with_label(_("restore..."));
-  gtk_widget_set_tooltip_text(button, _("restore default shortcuts or previous state"));
-  g_signal_connect(button, "clicked", G_CALLBACK(_restore_clicked), NULL);
-  gtk_box_pack_end(GTK_BOX(button_bar), button, FALSE, FALSE, 0);
+  GtkWidget *btn_restore = gtk_button_new_with_label(_("restore..."));
+  gtk_widget_set_tooltip_text(btn_restore, _("restore default shortcuts or previous state"));
+  g_signal_connect(btn_restore, "clicked", G_CALLBACK(_restore_clicked), NULL);
 
-  button = gtk_button_new_with_label(_("import..."));
-  gtk_widget_set_tooltip_text(button, _("fully or partially import shortcuts from file"));
-  g_signal_connect(button, "clicked", G_CALLBACK(_import_clicked), NULL);
-  gtk_box_pack_end(GTK_BOX(button_bar), button, FALSE, FALSE, 0);
+  GtkWidget *btn_import = gtk_button_new_with_label(_("import..."));
+  gtk_widget_set_tooltip_text(btn_import, _("fully or partially import shortcuts from file"));
+  g_signal_connect(btn_import, "clicked", G_CALLBACK(_import_clicked), NULL);
 
-  button = gtk_button_new_with_label(_("export..."));
-  gtk_widget_set_tooltip_text(button, _("fully or partially export shortcuts to file"));
-  g_signal_connect(button, "clicked", G_CALLBACK(_export_clicked), NULL);
-  gtk_box_pack_end(GTK_BOX(button_bar), button, FALSE, FALSE, 0);
+  GtkWidget *btn_export = gtk_button_new_with_label(_("export..."));
+  gtk_widget_set_tooltip_text(btn_export, _("fully or partially export shortcuts to file"));
+  g_signal_connect(btn_export, "clicked", G_CALLBACK(_export_clicked), NULL);
 
-  GtkWidget *top_level = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *button_bar = dt_gui_hbox(search_actions, search_shortcuts, btn_fallbacks,
+                                      dt_gui_align_right(btn_help), btn_export, btn_import, btn_restore);
+  gtk_widget_set_name(button_bar, "shortcut-controls");
+
+  GtkWidget *top_level = dt_gui_vbox();
   if(!dt_conf_get_bool("accel/hide_notice"))
   {
-    button = gtk_button_new_with_label(
+    GtkWidget *button = gtk_button_new_with_label(
       _("the recommended way to assign shortcuts to visual elements is the <b>visual shortcut mapping</b> mode.\n"
         "this is switched on by toggling the <i>\"keyboard\"</i> button next to preferences in the top panel. "
         "in this mode, clicking on a widget or area will open this dialog with the appropriate selection for advanced configuration.\n\n"
@@ -3063,10 +3057,9 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
     gtk_label_set_line_wrap(label, TRUE);
     gtk_label_set_xalign(label, 0);
     g_signal_connect(button, "clicked", G_CALLBACK(_notice_clicked), NULL);
-    gtk_box_pack_start(GTK_BOX(top_level), button, FALSE, FALSE, 0);
+    dt_gui_box_add(top_level, button);
   }
-  gtk_box_pack_start(GTK_BOX(top_level), container, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(top_level), button_bar, FALSE, FALSE, 0);
+  dt_gui_box_add(top_level, container, button_bar);
 
   return top_level;
 }

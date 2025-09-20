@@ -602,7 +602,7 @@ void gui_init(dt_iop_module_t *self)
 
   /**** GAMMA MODE ***/
 
-  GtkWidget *vbox_gamma = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+  GtkWidget *vbox_gamma = self->widget = dt_gui_vbox();
 
   g->linear = dt_bauhaus_slider_from_params(self, N_("linear"));
   dt_bauhaus_slider_set_digits(g->linear, 4);
@@ -616,7 +616,7 @@ void gui_init(dt_iop_module_t *self)
 
   /**** LOG MODE ****/
 
-  GtkWidget *vbox_log = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+  GtkWidget *vbox_log = self->widget = dt_gui_vbox();
 
   g->grey_point
       = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "grey_point"));
@@ -635,7 +635,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->dynamic_range, _(" EV"));
   gtk_widget_set_tooltip_text(g->dynamic_range, _("number of stops between pure black and pure white\nthis is a reading a light meter would give you on the scene"));
 
-  gtk_box_pack_start(GTK_BOX(vbox_log), dt_ui_section_label_new(C_("section", "optimize automatically")), FALSE, FALSE, 0);
+  dt_gui_box_add(vbox_log, dt_ui_section_label_new(C_("section", "optimize automatically")));
 
   g->security_factor = dt_bauhaus_slider_from_params(self, "security_factor");
   dt_bauhaus_slider_set_format(g->security_factor, "%");
@@ -644,17 +644,17 @@ void gui_init(dt_iop_module_t *self)
   g->auto_button = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_combobox_new(self));
   dt_bauhaus_widget_set_label(g->auto_button, NULL, N_("auto tune levels"));
   gtk_widget_set_tooltip_text(g->auto_button, _("make an optimization with some guessing"));
-  gtk_box_pack_start(GTK_BOX(vbox_log), g->auto_button, TRUE, TRUE, 0);
+  dt_gui_box_add(vbox_log, g->auto_button);
 
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_log, "log");
 
   // start building top level widget
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  self->widget = dt_gui_vbox();
 
   g->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
   gtk_widget_set_tooltip_text(g->mode, _("tone mapping method"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), g->mode_stack, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, g->mode_stack);
 }
 
 

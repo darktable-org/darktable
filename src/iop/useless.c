@@ -647,7 +647,7 @@ void gui_init(dt_iop_module_t *self)
   // If the first widget is created using a _from_params call,
   // self->widget does not have to be explicitly initialised, as a new
   // vertical box will be created automatically.
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  self->widget = dt_gui_vbox();
 
   // Linking a slider to an integer will make it take only whole
   // numbers (step=1).  The new slider is added to self->widget
@@ -687,7 +687,7 @@ void gui_init(dt_iop_module_t *self)
   // "value-changed" signal.
   g->extra = dt_bauhaus_slider_new_with_range(self, -0.5, 0.5, 0, 0, 2);
   dt_bauhaus_widget_set_label(g->extra, NULL, N_("extra"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->extra), TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, g->extra);
   g_signal_connect(G_OBJECT(g->extra), "value-changed", G_CALLBACK(extra_callback), self);
 }
 

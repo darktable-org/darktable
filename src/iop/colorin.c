@@ -2055,15 +2055,13 @@ void gui_init(dt_iop_module_t *self)
 
   g->image_profiles = NULL;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   g->profile_combobox = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->profile_combobox, NULL, N_("input profile"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->profile_combobox, TRUE, TRUE, 0);
 
   g->work_combobox = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->work_combobox, NULL, N_("working profile"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->work_combobox, TRUE, TRUE, 0);
+
+  self->widget = dt_gui_vbox(g->profile_combobox, g->work_combobox);
 
   dt_bauhaus_combobox_set(g->profile_combobox, 0);
   // We do not set the tooltip for the input profile widget because

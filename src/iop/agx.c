@@ -1840,7 +1840,6 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
   _add_basic_curve_controls(self, &g->basic_curve_controls, section_name);
 
   self->widget = parent;
-
   return box;
 }
 
@@ -1888,10 +1887,8 @@ static void _add_look_box(dt_iop_module_t *self,
                           dt_iop_agx_gui_data_t *g)
 {
   const gboolean look_always_visible = dt_conf_get_bool("plugins/darkroom/agx/look_always_visible");
-  GtkWidget *parent = self->widget;
 
-  GtkWidget *look_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  self->widget = look_box;
+  GtkWidget *look_box = dt_gui_vbox();
 
   gchar *section_name = NC_("section", "look");
   if(look_always_visible)
@@ -1907,21 +1904,16 @@ static void _add_look_box(dt_iop_module_t *self,
     _add_look_sliders(self, GTK_WIDGET(g->look_section.container), section_name);
   }
 
-  self->widget = parent;
-  gtk_box_pack_start(GTK_BOX(parent), look_box, FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, look_box);
 }
 
 static GtkWidget* _create_curve_graph_box(dt_iop_module_t *self,
                                           dt_iop_agx_gui_data_t *g)
 {
-  GtkWidget *parent = self->widget;
-
-  GtkWidget *graph_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  self->widget = graph_box;
+  GtkWidget *graph_box = dt_gui_vbox();
 
   dt_gui_new_collapsible_section(&g->graph_section, "plugins/darkroom/agx/expand_curve_graph",
                                  _("show curve"), GTK_BOX(graph_box), DT_ACTION(self));
-  GtkWidget *graph_container = GTK_WIDGET(g->graph_section.container);
   g->graph_drawing_area =
       GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/agx/curve_graph_height"));
   g_object_set_data(G_OBJECT(g->graph_drawing_area), "iop-instance", self);
@@ -1931,9 +1923,7 @@ static GtkWidget* _create_curve_graph_box(dt_iop_module_t *self,
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->graph_drawing_area), _("tone mapping curve"));
 
   // Pack drawing area at the top
-  gtk_box_pack_start(GTK_BOX(graph_container), GTK_WIDGET(g->graph_drawing_area), TRUE, TRUE, 0);
-
-  self->widget = parent;
+  dt_gui_box_add(g->graph_section.container, g->graph_drawing_area);
 
   return graph_box;
 }
@@ -1943,8 +1933,7 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
 {
   GtkWidget *parent = self->widget;
 
-  GtkWidget *advanced_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  self->widget = advanced_box;
+  GtkWidget *advanced_box = dt_gui_vbox();
 
   gchar *section_name = NC_("section", "advanced curve parameters");
   dt_gui_new_collapsible_section(&g->advanced_section,
@@ -2022,10 +2011,8 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
 {
   GtkWidget *parent = self->widget;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   gchar *section_name = NC_("section", "input exposure range");
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(section_name));
+  self->widget = dt_gui_vbox(dt_ui_section_label_new(Q_(section_name)));
   dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, section_name);
 
   g->white_exposure_picker =
@@ -2058,10 +2045,9 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
   dt_bauhaus_widget_set_label(g->range_exposure_picker, section_name, N_("auto tune levels"));
   gtk_widget_set_tooltip_text(g->range_exposure_picker,
                               _("pick image area to automatically set black and white exposure"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->range_exposure_picker, FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, g->range_exposure_picker);
 
-  gtk_box_pack_start(GTK_BOX(parent), self->widget, FALSE, FALSE, 0);
-
+  dt_gui_box_add(parent, self->widget);
   self->widget = parent;
 }
 
@@ -2232,8 +2218,7 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
   dt_iop_agx_gui_data_t *g = self->gui_data;
   GtkWidget *main_box = self->widget;
 
-  GtkWidget *primaries_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  self->widget = primaries_box;
+  GtkWidget *primaries_box = self->widget = dt_gui_vbox();
   dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, N_("primaries"));
 
   g->disable_primaries_adjustments =
@@ -2247,16 +2232,12 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
        "especially with bright, saturated lights (e.g. LEDs).\n"
        "mainly intended to be used for experimenting."));
 
-  g->primaries_controls_vbox = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  gtk_box_pack_start(GTK_BOX(primaries_box), self->widget, FALSE, FALSE, 0);
-
-  GtkWidget *preset_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
-  gtk_box_pack_start(GTK_BOX(g->primaries_controls_vbox), preset_hbox, FALSE, FALSE, 0);
+  g->primaries_controls_vbox = self->widget = dt_gui_vbox();
+  dt_gui_box_add(primaries_box, g->primaries_controls_vbox);
 
   g->primaries_preset_combo = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->primaries_preset_combo),
                               _("load primaries settings from a preset"));
-  gtk_box_pack_start(GTK_BOX(preset_hbox), GTK_WIDGET(g->primaries_preset_combo), TRUE, TRUE, 0);
 
   _populate_primaries_presets_combobox(self);
   g->primaries_preset_apply_button = gtk_button_new_with_label(_("apply"));
@@ -2264,7 +2245,9 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
                               _("apply primaries settings from the selected preset"));
   g_signal_connect(g->primaries_preset_apply_button, "clicked",
                    G_CALLBACK(_apply_primaries_from_preset_callback), self);
-  gtk_box_pack_start(GTK_BOX(preset_hbox), g->primaries_preset_apply_button, FALSE, FALSE, 0);
+
+  dt_gui_box_add(g->primaries_controls_vbox, dt_gui_hbox(dt_gui_expand(g->primaries_preset_combo),
+                                             g->primaries_preset_apply_button));
 
   GtkWidget *base_primaries_combo = dt_bauhaus_combobox_from_params(section, "base_primaries");
   gtk_widget_set_tooltip_text(base_primaries_combo,
@@ -2361,7 +2344,7 @@ static void _notebook_page_changed(GtkNotebook *notebook,
       }
 
       // pack to new parent
-      gtk_box_pack_start(GTK_BOX(vbox), g->curve_basic_controls_box, FALSE, FALSE, 0);
+      dt_gui_box_add(vbox, g->curve_basic_controls_box);
 
       // On the 'settings' page, move to second last position (before look box)
       if(page_num == 0)
@@ -2391,27 +2374,22 @@ static void _notebook_page_changed(GtkNotebook *notebook,
 static void _create_primaries_page(dt_iop_module_t *self,
                                    const dt_iop_agx_gui_data_t *g)
 {
-  GtkWidget *parent = self->widget;
-
   GtkWidget *page_primaries =
     dt_ui_notebook_page(g->notebook, N_("primaries"), _("color primaries adjustments"));
   GtkWidget *primaries_box = _add_primaries_box(self);
-  gtk_box_pack_start(GTK_BOX(page_primaries), primaries_box, FALSE, FALSE, 0);
-
-  self->widget = parent;
+  dt_gui_box_add(page_primaries, primaries_box);
 }
 
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_agx_gui_data_t *g = IOP_GUI_ALLOC(agx);
-  GtkWidget *main_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  self->widget = main_vbox;
+  GtkWidget *main_vbox = self->widget = dt_gui_vbox();
 
   static dt_action_def_t notebook_def = {};
   g->notebook = dt_ui_notebook_new(&notebook_def);
   GtkWidget *notebook_widget = GTK_WIDGET(g->notebook);
   dt_action_define_iop(self, NULL, N_("page"), notebook_widget, &notebook_def);
-  gtk_box_pack_start(GTK_BOX(main_vbox), notebook_widget, TRUE, TRUE, 0);
+  dt_gui_box_add(main_vbox, notebook_widget);
 
   g->curve_basic_controls_box = _create_basic_curve_controls_box(self, g);
   g->curve_graph_box = _create_curve_graph_box(self, g);
@@ -2431,8 +2409,8 @@ void gui_init(dt_iop_module_t *self)
                                                 N_("curve"),
                                                 _("detailed curve settings"));
     self->widget = curve_page;
-    gtk_box_pack_start(GTK_BOX(curve_page), g->curve_graph_box, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(curve_page), g->curve_advanced_controls_box, FALSE, FALSE, 0);
+    dt_gui_box_add(curve_page, g->curve_graph_box,
+                               g->curve_advanced_controls_box);
 
     // reparent on tab switch
     g_signal_connect(g->notebook, "switch-page", G_CALLBACK(_notebook_page_changed), self);
@@ -2447,9 +2425,9 @@ void gui_init(dt_iop_module_t *self)
                                                    _("main look and curve settings"));
     self->widget = settings_page;
     _add_exposure_box(self, g);
-    gtk_box_pack_start(GTK_BOX(settings_page), g->curve_basic_controls_box, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(settings_page), g->curve_graph_box, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(settings_page), g->curve_advanced_controls_box, FALSE, FALSE, 0);
+    dt_gui_box_add(settings_page, g->curve_basic_controls_box,
+                                  g->curve_graph_box,
+                                  g->curve_advanced_controls_box);
     _add_look_box(self, g);
   }
 

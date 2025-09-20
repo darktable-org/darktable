@@ -554,10 +554,8 @@ void gui_init(dt_iop_module_t *self)
 
   g->dragging = 0;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_height(0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
+  self->widget = dt_gui_vbox(g->area);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("drag and scroll mouse wheel to adjust the virtual color filter"));
   dt_action_define_iop(self, NULL, N_("grid"), GTK_WIDGET(g->area), NULL);
 
