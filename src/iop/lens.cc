@@ -4072,7 +4072,7 @@ static void _lens_set(dt_iop_module_t *self,
   }
   g_signal_connect(G_OBJECT(w), "value-changed",
                    G_CALLBACK(_lens_comboentry_focal_update), self);
-  gtk_box_pack_start(GTK_BOX(g->lens_param_box), w, TRUE, TRUE, 0);
+  dt_gui_box_add(g->lens_param_box, dt_gui_expand(w));
   dt_bauhaus_combobox_set_editable(w, 1);
   g->cbe[0] = w;
 
@@ -4102,7 +4102,7 @@ static void _lens_set(dt_iop_module_t *self,
   }
   g_signal_connect(G_OBJECT(w), "value-changed",
                    G_CALLBACK(_lens_comboentry_aperture_update), self);
-  gtk_box_pack_start(GTK_BOX(g->lens_param_box), w, TRUE, TRUE, 0);
+  dt_gui_box_add(g->lens_param_box, dt_gui_expand(w));
   dt_bauhaus_combobox_set_editable(w, 1);
   g->cbe[1] = w;
 
@@ -4123,7 +4123,7 @@ static void _lens_set(dt_iop_module_t *self,
   }
   g_signal_connect(G_OBJECT(w), "value-changed",
                    G_CALLBACK(_lens_comboentry_distance_update), self);
-  gtk_box_pack_start(GTK_BOX(g->lens_param_box), w, TRUE, TRUE, 0);
+  dt_gui_box_add(g->lens_param_box, dt_gui_expand(w));
   dt_bauhaus_combobox_set_editable(w, 1);
   g->cbe[2] = w;
 
@@ -4405,44 +4405,40 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_gui_leave_critical_section(self);
 
   /* Lensfun widget */
-  // _from_params methods assign widgets to self->widget, so
-  // temporarily set self->widget to our widget
-  GtkWidget *box_lf = self->widget =
-    gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   // camera selector
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   g->camera_model = dt_iop_button_new(self, N_("camera model"),
                                       G_CALLBACK(_camera_menusearch_clicked),
                                       FALSE, 0, (GdkModifierType)0,
-                                      NULL, 0, hbox);
+                                      NULL, 0, NULL);
   g->find_camera_button = dt_iop_button_new
     (self, N_("find camera"),
      G_CALLBACK(_camera_autosearch_clicked),
      FALSE, 0, (GdkModifierType)0,
      dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_DOWN, NULL);
   dt_gui_add_class(g->find_camera_button, "dt_big_btn_canvas");
-  gtk_box_pack_start(GTK_BOX(hbox), g->find_camera_button, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box_lf), hbox, TRUE, TRUE, 0);
 
   // lens selector
-  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   g->lens_model = dt_iop_button_new(self, N_("lens model"),
                                     G_CALLBACK(_lens_menusearch_clicked),
                                     FALSE, 0, (GdkModifierType)0,
-                                    NULL, 0, hbox);
+                                    NULL, 0, NULL);
   g->find_lens_button = dt_iop_button_new
     (self, N_("find lens"),
      G_CALLBACK(_lens_autosearch_clicked),
      FALSE, 0, (GdkModifierType)0,
      dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_DOWN, NULL);
   dt_gui_add_class(g->find_lens_button, "dt_big_btn_canvas");
-  gtk_box_pack_start(GTK_BOX(hbox), g->find_lens_button, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box_lf), hbox, TRUE, TRUE, 0);
 
   // lens properties
-  g->lens_param_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(box_lf), g->lens_param_box, TRUE, TRUE, 0);
+  g->lens_param_box = dt_gui_hbox();
+
+  // _from_params methods assign widgets to self->widget, so
+  // temporarily set self->widget to our widget
+  GtkWidget *box_lf = self->widget = dt_gui_vbox(
+    dt_gui_hbox(dt_gui_expand(g->camera_model), g->find_camera_button),
+    dt_gui_hbox(dt_gui_expand(g->lens_model), g->find_lens_button),
+    g->lens_param_box);
 
 #if 0
   // if unambiguous info is there, use it.
@@ -4492,13 +4488,9 @@ void gui_init(dt_iop_module_t *self)
                               _("transversal chromatic aberration blue"));
 
   /* empty correction mode widget */
-  GtkWidget *only_vig = self->widget =
-    gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  GtkWidget *only_vig = dt_gui_vbox();
 
   /* embedded metadata widgets */
-  GtkWidget *box_md = self->widget =
-    gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   g->use_latest_md_algo =
     gtk_check_button_new_with_label(_("use latest algorithm"));
   gtk_widget_set_tooltip_text
@@ -4506,7 +4498,7 @@ void gui_init(dt_iop_module_t *self)
      _("you're using an old version of the algorithm.\n"
        "once enabled, you won't be able to\n"
        "return back to old algorithm."));
-  gtk_box_pack_start(GTK_BOX(box_md), g->use_latest_md_algo, TRUE, TRUE, 0);
+  GtkWidget *box_md = self->widget = dt_gui_vbox(g->use_latest_md_algo);
   g_signal_connect(G_OBJECT(g->use_latest_md_algo), "toggled",
                    G_CALLBACK(_use_latest_md_algo_callback), self);
 
@@ -4553,8 +4545,7 @@ void gui_init(dt_iop_module_t *self)
                              _("automatic scale to available image size"));
 
   // main widget
-  GtkWidget *main_box = self->widget =
-    gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  GtkWidget *main_box = self->widget = dt_gui_vbox();
   gtk_widget_set_name(self->widget, "lens-module");
 
   // selector for correction method
@@ -4573,20 +4564,17 @@ void gui_init(dt_iop_module_t *self)
   // message box to inform user what corrections have been done. this
   // is useful as depending on Lensfun's profile only some of the lens
   // flaws can be corrected
-  g->hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   GtkWidget *label = gtk_label_new(_("corrections done: "));
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
   gtk_widget_set_tooltip_text(label,
                               _("which corrections have actually been done"));
-  gtk_box_pack_start(GTK_BOX(g->hbox1), label, FALSE, FALSE, 0);
   g->message = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
   gtk_label_set_ellipsize(GTK_LABEL(g->message), PANGO_ELLIPSIZE_MIDDLE);
-  gtk_box_pack_start(GTK_BOX(g->hbox1), GTK_WIDGET(g->message), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->hbox1), TRUE, TRUE, 0);
+  g->hbox1 = GTK_BOX(dt_gui_hbox(label, g->message));
 
   g->methods = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(g->methods), FALSE);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->methods, TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, g->hbox1, g->methods);
 
   gtk_stack_add_named(GTK_STACK(g->methods), box_lf, "lensfun");
   gtk_stack_add_named(GTK_STACK(g->methods), box_md, "metadata");

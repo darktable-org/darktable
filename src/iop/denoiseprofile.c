@@ -3648,7 +3648,7 @@ void gui_init(dt_iop_module_t *self)
   g->channel = 0;
 
   // First build sub-level boxes
-  g->box_nlm = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  g->box_nlm = self->widget = dt_gui_vbox();
 
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
   dt_bauhaus_slider_set_soft_range(g->radius, 0.0, 8.0);
@@ -3660,7 +3660,7 @@ void gui_init(dt_iop_module_t *self)
   g->central_pixel_weight = dt_bauhaus_slider_from_params(self, "central_pixel_weight");
   dt_bauhaus_slider_set_soft_max(g->central_pixel_weight, 1.0f);
 
-  g->box_wavelets = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  g->box_wavelets = self->widget = dt_gui_vbox();
 
   g->wavelet_color_mode = dt_bauhaus_combobox_from_params(self, "wavelet_color_mode");
 

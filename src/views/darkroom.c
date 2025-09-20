@@ -2155,7 +2155,7 @@ static void _brush_opacity_down_callback(dt_action_t *action)
 static void _overlay_cycle_callback(dt_action_t *action)
 {
   const int currentval = dt_conf_get_int("darkroom/ui/overlay_color");
-  const int nextval = (currentval + 1) % 6; // colors can go from 0 to 5
+  const int nextval = (currentval + 1) % DT_DEV_OVERLAY_LAST; // colors can go from 0 to DT_DEV_OVERLAY_LAST-1
   dt_conf_set_int("darkroom/ui/overlay_color", nextval);
   dt_guides_set_overlay_colors();
   dt_control_queue_redraw_center();

@@ -283,8 +283,7 @@ GtkWidget *dtgtk_expander_new(GtkWidget *header, GtkWidget *body)
   gtk_revealer_set_reveal_child(GTK_REVEALER(expander->frame), TRUE);
   gtk_container_add(GTK_CONTAINER(expander->frame), frame);
 
-  gtk_box_pack_start(GTK_BOX(expander), expander->header_evb, TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(expander), expander->frame, TRUE, FALSE, 0);
+  dt_gui_box_add(expander, expander->header_evb, expander->frame);
 
   g_signal_connect(expander->header_evb, "drag-begin", G_CALLBACK(_expander_drag_begin), NULL);
   g_signal_connect(expander->header_evb, "drag-end", G_CALLBACK(_expander_drag_end), NULL);

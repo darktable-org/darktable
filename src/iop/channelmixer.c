@@ -601,8 +601,6 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_channelmixer_gui_data_t *g = IOP_GUI_ALLOC(channelmixer);
   const dt_iop_channelmixer_params_t *const p = self->default_params;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   /* output */
   g->output_channel = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->output_channel, NULL, N_("destination"));
@@ -634,12 +632,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->scale_blue, NULL, N_("blue"));
   g_signal_connect(G_OBJECT(g->scale_blue), "value-changed", G_CALLBACK(blue_callback), self);
 
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->output_channel), TRUE, TRUE, 0);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale_red), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale_green), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale_blue), TRUE, TRUE, 0);
+  self->widget = dt_gui_vbox(g->output_channel, g->scale_red, g->scale_green, g->scale_blue);
 }
 
 void init_presets(dt_iop_module_so_t *self)

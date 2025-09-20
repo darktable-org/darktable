@@ -1128,8 +1128,6 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_metadata_t *d = calloc(1, sizeof(dt_lib_metadata_t));
   self->data = (void *)d;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
   d->metadata_texts = g_hash_table_new(NULL, NULL);
   d->metadata_counts = g_hash_table_new(NULL, NULL);
   d->metadata_to_delete = NULL;
@@ -1138,15 +1136,14 @@ void gui_init(dt_lib_module_t *self)
   d->grid = grid;
   gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(0));
   gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(10));
-  gtk_container_add(GTK_CONTAINER(self->widget), grid);
-  _fill_grid(self);
 
   d->apply_button = dt_action_button_new(self, N_("apply"), _apply_button_clicked, self,
                                          _("write metadata for selected images"), 0, 0);
   d->cancel_button = dt_action_button_new(self, N_("cancel"), _cancel_button_clicked, self,
                                          _("ignore changed metadata"), 0, 0);
   d->button_box = dt_gui_hbox(d->apply_button, d->cancel_button);
-  gtk_container_add(GTK_CONTAINER(self->widget), d->button_box);
+  self->widget = dt_gui_vbox(grid, d->button_box);
+  _fill_grid(self);
 
   /* lets signup for mouse over image change signals */
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _image_selection_changed_callback);

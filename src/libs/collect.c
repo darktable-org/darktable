@@ -3649,10 +3649,9 @@ GtkWidget *gui_tool_box(dt_lib_module_t *self)
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_collect_t *d = calloc(1, sizeof(dt_lib_collect_t));
+  dt_lib_collect_t *d = self->data = calloc(1, sizeof(dt_lib_collect_t));
 
-  self->data = (void *)d;
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  self->widget = dt_gui_vbox();
   dt_gui_add_class(self->widget, "dt_spacing_sw");
 
   d->active_rule = 0;
@@ -3660,52 +3659,39 @@ void gui_init(dt_lib_module_t *self)
   d->params = (dt_lib_collect_params_t *)malloc(sizeof(dt_lib_collect_params_t));
   view_set_click(NULL, self);
 
-  GtkBox *box = NULL;
-  GtkWidget *w = NULL;
-
   gboolean has_iop_name_rule = FALSE;
   for(int i = 0; i < MAX_RULES; i++)
   {
     d->rule[i].num = i;
     d->rule[i].typing = FALSE;
 
-    box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-    d->rule[i].hbox = GTK_WIDGET(box);
-    gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
-    gtk_widget_set_name(GTK_WIDGET(box), "lib-dtbutton");
-
-    d->rule[i].combo = dt_bauhaus_combobox_new(NULL);
-    dt_bauhaus_combobox_set_selected_text_align(d->rule[i].combo,
-                                                DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-    _populate_collect_combo(d->rule[i].combo);
-    dt_bauhaus_combobox_mute_scrolling(d->rule[i].combo);
-    if(_combo_get_active_collection(d->rule[i].combo) == DT_COLLECTION_PROP_MODULE)
+    GtkWidget *w = NULL;
+    d->rule[i].combo = w = dt_bauhaus_combobox_new(NULL);
+    dt_bauhaus_combobox_set_selected_text_align(w, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+    _populate_collect_combo(w);
+    dt_bauhaus_combobox_mute_scrolling(w);
+    if(_combo_get_active_collection(w) == DT_COLLECTION_PROP_MODULE)
       has_iop_name_rule = TRUE;
-
-    g_signal_connect(G_OBJECT(d->rule[i].combo), "value-changed",
+    g_signal_connect(G_OBJECT(w), "value-changed",
                      G_CALLBACK(combo_changed), d->rule + i);
-    gtk_box_pack_start(box, d->rule[i].combo, FALSE, TRUE, 0);
 
-    w = dt_ui_entry_new(10);
-    d->rule[i].text = w;
-    gtk_widget_add_events(w, GDK_FOCUS_CHANGE_MASK);
+    d->rule[i].text = w = dt_ui_entry_new(10);
+    gtk_widget_add_events(w, GDK_FOCUS_CHANGE_MASK | GDK_KEY_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "focus-in-event",
                      G_CALLBACK(entry_focus_in_callback), d->rule + i);
-
-    /* xgettext:no-c-format */
-    gtk_widget_add_events(w, GDK_KEY_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(entry_changed), d->rule + i);
     g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(entry_activated), d->rule + i);
-    gtk_box_pack_start(box, w, TRUE, TRUE, 0);
     gtk_entry_set_width_chars(GTK_ENTRY(w), 5);
 
-    w = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
+    d->rule[i].button = w = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
     dt_gui_add_class(GTK_WIDGET(w), "dt_big_btn_canvas");
-    d->rule[i].button = w;
     gtk_widget_set_events(w, GDK_BUTTON_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "button-press-event",
                      G_CALLBACK(popup_button_callback), d->rule + i);
-    gtk_box_pack_start(box, w, FALSE, FALSE, 0);
+
+    d->rule[i].hbox = dt_gui_hbox(d->rule[i].combo, dt_gui_expand(d->rule[i].text), d->rule[i].button);
+    gtk_widget_set_name(d->rule[i].hbox, "lib-dtbutton");
+    dt_gui_box_add(self->widget, d->rule[i].hbox);
   }
 
   GtkTreeView *view = GTK_TREE_VIEW(gtk_tree_view_new());
@@ -3746,25 +3732,21 @@ void gui_init(dt_lib_module_t *self)
                                            DT_LIB_COLLECT_COL_VISIBLE);
   g_object_unref(treemodel);
 
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_resize_wrap(GTK_WIDGET(view), 200,
-                                       "plugins/lighttable/collect/windowheight"), TRUE,
-                     TRUE, 0);
-
   // the bottom buttons for the rules
-  d->history_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_set_homogeneous(GTK_BOX(d->history_box), TRUE);
-  gtk_box_pack_start(GTK_BOX(self->widget), d->history_box, TRUE, TRUE, 0);
-  // dummy widget just to ensure alignment of history button  with those in filtering lib
-  gtk_box_pack_start(GTK_BOX(d->history_box), gtk_drawing_area_new(), TRUE, TRUE, 0);
   GtkWidget *btn = dt_action_button_new(self,
                                         N_("history"),
                                         G_CALLBACK(_history_show), self,
                                         _("revert to a previous set of rules"),
                                         GDK_KEY_k, GDK_CONTROL_MASK);
-  gtk_box_pack_start(GTK_BOX(d->history_box), btn, TRUE, TRUE, 0);
+  // dummy widget just to ensure alignment of history button with those in filtering lib
+  d->history_box = dt_gui_hbox(dt_gui_expand(gtk_drawing_area_new()), btn);
+  gtk_box_set_homogeneous(GTK_BOX(d->history_box), TRUE);
   gtk_widget_show_all(d->history_box);
   gtk_widget_set_no_show_all(d->history_box, TRUE);
+
+  dt_gui_box_add(self->widget, dt_ui_resize_wrap(GTK_WIDGET(view), 200,
+                                                 "plugins/lighttable/collect/windowheight"),
+                               d->history_box);
 
   /* setup proxy */
   darktable.view_manager->proxy.module_collect.module = self;

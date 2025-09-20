@@ -4435,10 +4435,7 @@ void gui_init(dt_iop_module_t *self)
        "• XYZ is a simple scaling in XYZ space. It is not recommended in general.\n"
        "• none disables any adaptation and uses pipeline working RGB."));
 
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-
   g->approx_cct = dt_ui_label_new("CCT:");
-  gtk_box_pack_start(GTK_BOX(hbox), g->approx_cct, FALSE, FALSE, 0);
 
   g->illum_color = GTK_WIDGET(gtk_drawing_area_new());
   gtk_widget_set_size_request
@@ -4451,14 +4448,13 @@ void gui_init(dt_iop_module_t *self)
 
   g_signal_connect(G_OBJECT(g->illum_color), "draw",
                    G_CALLBACK(_illuminant_color_draw), self);
-  gtk_box_pack_start(GTK_BOX(hbox), g->illum_color, TRUE, TRUE, 0);
 
-  g->color_picker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, hbox);
+  g->color_picker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
   dt_action_define_iop(self, NULL, N_("picker"), g->color_picker, &dt_action_def_toggle);
   gtk_widget_set_tooltip_text(g->color_picker,
                               _("set white balance to detected from area"));
 
-  dt_gui_box_add(self->widget, hbox);
+  dt_gui_box_add(self->widget, dt_gui_hbox(g->approx_cct, dt_gui_expand(g->illum_color), g->color_picker));
 
   g->illuminant = dt_bauhaus_combobox_from_params(self, N_("illuminant"));
 

@@ -81,7 +81,6 @@ typedef struct dt_iop_dither_params_t
 typedef struct dt_iop_dither_gui_data_t
 {
   GtkWidget *dither_type;
-  GtkWidget *random;
   GtkWidget *radius;
   GtkWidget *range;
   GtkWidget *range_label;
@@ -684,34 +683,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   if(w == g->dither_type)
   {
-    gtk_widget_set_visible(g->random, p->dither_type == DITHER_RANDOM);
+    gtk_widget_set_visible(g->damping, p->dither_type == DITHER_RANDOM);
   }
 }
-
-#if 0
-static void
-_radius_callback (GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_dither_params_t *p = self->params;
-  p->random.radius = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-#endif
-
-#if 0
-static void
-_range_callback (GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_dither_params_t *p = self->params;
-  p->random.range[0] = dtgtk_gradient_slider_multivalue_get_value(DTGTK_GRADIENT_SLIDER(slider), 0);
-  p->random.range[1] = dtgtk_gradient_slider_multivalue_get_value(DTGTK_GRADIENT_SLIDER(slider), 1);
-  p->random.range[2] = dtgtk_gradient_slider_multivalue_get_value(DTGTK_GRADIENT_SLIDER(slider), 2);
-  p->random.range[3] = dtgtk_gradient_slider_multivalue_get_value(DTGTK_GRADIENT_SLIDER(slider), 3);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-#endif
 
 void commit_params(
         dt_iop_module_t *self,
@@ -753,60 +727,19 @@ void gui_update(dt_iop_module_t *self)
   dtgtk_gradient_slider_multivalue_set_value(DTGTK_GRADIENT_SLIDER(g->range), p->random.range[3], 3);
 #endif
 
-  gtk_widget_set_visible(g->random, p->dither_type == DITHER_RANDOM);
+  gtk_widget_set_visible(g->damping, p->dither_type == DITHER_RANDOM);
 }
 
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_dither_gui_data_t *g = IOP_GUI_ALLOC(dither);
 
-  g->random = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
-#if 0
-  g->radius = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 0.1, p->random.radius, 2);
-  gtk_widget_set_tooltip_text(g->radius, _("radius for blurring step"));
-  dt_bauhaus_widget_set_label(g->radius, NULL, N_("radius"));
-
-  g->range = dtgtk_gradient_slider_multivalue_new(4);
-  dtgtk_gradient_slider_multivalue_set_marker(DTGTK_GRADIENT_SLIDER(g->range), GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 0);
-  dtgtk_gradient_slider_multivalue_set_marker(DTGTK_GRADIENT_SLIDER(g->range), GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG, 1);
-  dtgtk_gradient_slider_multivalue_set_marker(DTGTK_GRADIENT_SLIDER(g->range), GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG, 2);
-  dtgtk_gradient_slider_multivalue_set_marker(DTGTK_GRADIENT_SLIDER(g->range), GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 3);
-  dtgtk_gradient_slider_multivalue_set_value(DTGTK_GRADIENT_SLIDER(g->range), p->random.range[0], 0);
-  dtgtk_gradient_slider_multivalue_set_value(DTGTK_GRADIENT_SLIDER(g->range), p->random.range[1], 1);
-  dtgtk_gradient_slider_multivalue_set_value(DTGTK_GRADIENT_SLIDER(g->range), p->random.range[2], 2);
-  dtgtk_gradient_slider_multivalue_set_value(DTGTK_GRADIENT_SLIDER(g->range), p->random.range[3], 3);
-  gtk_widget_set_tooltip_text(g->range, _("the gradient range where to apply random dither"));
-  g->range_label = gtk_label_new(_("gradient range"));
-
-  GtkWidget *rlabel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
-  gtk_box_pack_start(GTK_BOX(rlabel), GTK_WIDGET(g->range_label), FALSE, FALSE, 0);
-#endif
-
   g->damping = dt_bauhaus_slider_from_params(self, "random.damping");
-
   gtk_widget_set_tooltip_text(g->damping, _("damping level of random dither"));
   dt_bauhaus_slider_set_digits(g->damping, 3);
   dt_bauhaus_slider_set_format(g->damping, " dB");
 
-#if 0
-  gtk_box_pack_start(GTK_BOX(g->random), g->radius, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->random), rlabel, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->random), g->range, TRUE, TRUE, 0);
-#endif
-
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   g->dither_type = dt_bauhaus_combobox_from_params(self, "dither_type");
-
-  gtk_box_pack_start(GTK_BOX(self->widget), g->random, TRUE, TRUE, 0);
-
-#if 0
-  g_signal_connect (G_OBJECT (g->radius), "value-changed",
-                    G_CALLBACK (_radius_callback), self);
-  g_signal_connect (G_OBJECT (g->range), "value-changed",
-                    G_CALLBACK (_range_callback), self);
-#endif
 }
 
 // clang-format off

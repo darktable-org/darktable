@@ -46,8 +46,6 @@ typedef struct dt_iop_rlce_params_t
 
 typedef struct dt_iop_rlce_gui_data_t
 {
-  GtkBox *vbox1, *vbox2;
-  GtkWidget *label1, *label2;
   GtkWidget *scale1, *scale2; // radie pixels, slope
 } dt_iop_rlce_gui_data_t;
 
@@ -321,26 +319,10 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_rlce_gui_data_t *g = IOP_GUI_ALLOC(rlce);
   dt_iop_rlce_params_t *p = self->default_params;
 
-  self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-
-  g->vbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL,
-                                 DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  g->vbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL,
-                                 DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 0);
-
-  g->label1 = dtgtk_reset_label_new(_("radius"), self, &p->radius, sizeof(float));
-  gtk_box_pack_start(GTK_BOX(g->vbox1), g->label1, TRUE, TRUE, 0);
-  g->label2 = dtgtk_reset_label_new(_("amount"), self, &p->slope, sizeof(float));
-  gtk_box_pack_start(GTK_BOX(g->vbox1), g->label2, TRUE, TRUE, 0);
-
   g->scale1 = dt_bauhaus_slider_new_with_range(NULL, 0.0, 256.0, 0, p->radius, 0);
   g->scale2 = dt_bauhaus_slider_new_with_range(NULL, 1.0, 3.0, 0, p->slope, 2);
-  // dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
-
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_label(g->scale1, NULL, _("radius"));
+  dt_bauhaus_widget_set_label(g->scale2, NULL, _("amount"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->scale1), _("size of features to preserve"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->scale2), _("strength of the effect"));
 
@@ -348,6 +330,8 @@ void gui_init(dt_iop_module_t *self)
                    G_CALLBACK(radius_callback), self);
   g_signal_connect(G_OBJECT(g->scale2), "value-changed",
                    G_CALLBACK(slope_callback), self);
+
+  self->widget = dt_gui_vbox(g->scale1, g->scale2);
 }
 
 // clang-format off

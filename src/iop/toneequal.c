@@ -3343,16 +3343,15 @@ void gui_init(dt_iop_module_t *self)
   self->widget = dt_ui_notebook_page(g->notebook, N_("advanced"), NULL);
 
   g->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  GtkWidget *wrapper = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0); // for CSS size
-  gtk_box_pack_start(GTK_BOX(wrapper), GTK_WIDGET(g->area), TRUE, TRUE, 0);
+  GtkWidget *wrapper = dt_gui_vbox(g->area);
   g_object_set_data(G_OBJECT(wrapper), "iop-instance", self);
   gtk_widget_set_name(GTK_WIDGET(wrapper), "toneeqgraph");
   dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(wrapper), NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(wrapper), TRUE, TRUE, 0);
   gtk_widget_add_events(GTK_WIDGET(g->area),
                         GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask
                         | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                         | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+  gtk_widget_set_vexpand(GTK_WIDGET(g->area), TRUE);
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(area_draw), self);
   g_signal_connect(G_OBJECT(g->area), "button-press-event",
@@ -3378,9 +3377,9 @@ void gui_init(dt_iop_module_t *self)
        "but the curve might become oscillatory in some settings.\n"
        "negative values will avoid oscillations and behave more robustly\n"
        "but may produce brutal tone transitions and damage local contrast."));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->smoothing, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->smoothing), "value-changed",
                    G_CALLBACK(smoothing_callback), self);
+  dt_gui_box_add(self->widget, wrapper, g->smoothing);
 
   // Masking options
 
@@ -3431,13 +3430,9 @@ void gui_init(dt_iop_module_t *self)
        "lower values give smoother gradients and better smoothing\n"
        "but may lead to inaccurate edges taping and halos"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_section_label_new(C_("section", "mask post-processing")),
-                     FALSE, FALSE, 0);
-
   g->bar = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_widget_set_size_request(GTK_WIDGET(g->bar), -1, 4);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->bar), TRUE, TRUE, 0);
+  gtk_widget_set_vexpand(GTK_WIDGET(g->bar), TRUE);
   gtk_widget_set_can_focus(GTK_WIDGET(g->bar), TRUE);
   g_signal_connect(G_OBJECT(g->bar), "draw",
                    G_CALLBACK(_toneequalizer_bar_draw), self);
@@ -3446,6 +3441,7 @@ void gui_init(dt_iop_module_t *self)
      _("mask histogram span between the first and last deciles.\n"
        "the central line shows the average. orange bars appear at extrema"
        " if clipping occurs."));
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "mask post-processing")), g->bar);
 
   g->quantization = dt_bauhaus_slider_from_params(self, "quantization");
   dt_bauhaus_slider_set_format(g->quantization, _(" EV"));
@@ -3478,28 +3474,24 @@ void gui_init(dt_iop_module_t *self)
                              _("auto-adjust the contrast"));
 
   // start building top level widget
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
   const int active_page = dt_conf_get_int("plugins/darkroom/toneequal/gui_page");
   gtk_widget_show(gtk_notebook_get_nth_page(g->notebook, active_page));
   gtk_notebook_set_current_page(g->notebook, active_page);
 
   g_signal_connect(G_OBJECT(g->notebook), "button-press-event",
                    G_CALLBACK(notebook_button_press), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
 
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(hbox),
-                     dt_ui_label_new(_("display exposure mask")), TRUE, TRUE, 0);
   g->show_luminance_mask = dt_iop_togglebutton_new
     (self, NULL,
      N_("display exposure mask"), NULL, G_CALLBACK(show_luminance_mask_callback),
-     FALSE, 0, 0, dtgtk_cairo_paint_showmask, hbox);
+     FALSE, 0, 0, dtgtk_cairo_paint_showmask, NULL);
   dt_gui_add_class(g->show_luminance_mask, "dt_transparent_background");
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->show_luminance_mask),
                                dtgtk_cairo_paint_showmask, 0, NULL);
   dt_gui_add_class(g->show_luminance_mask, "dt_bauhaus_alignment");
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
+  self->widget = dt_gui_vbox(g->notebook,
+                             dt_gui_hbox(dt_gui_expand(dt_ui_label_new(_("display exposure mask"))), 
+                                         g->show_luminance_mask));
 
   // Force UI redraws when pipe starts/finishes computing and switch cursors
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _develop_preview_pipe_finished_callback);

@@ -62,7 +62,8 @@ typedef enum dt_dev_overlay_colors_t
   DT_DEV_OVERLAY_GREEN = 2,
   DT_DEV_OVERLAY_YELLOW = 3,
   DT_DEV_OVERLAY_CYAN = 4,
-  DT_DEV_OVERLAY_MAGENTA = 5
+  DT_DEV_OVERLAY_MAGENTA = 5,
+  DT_DEV_OVERLAY_LAST
 } dt_dev_overlay_colors_t;
 
 typedef enum dt_dev_rawoverexposed_mode_t {

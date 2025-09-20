@@ -4491,13 +4491,14 @@ void dt_gui_simulate_button_event(GtkWidget *widget,
 GtkWidget *(dt_gui_box_add)(const char *file, const int line, const char *function, GtkBox *box, gpointer list[])
 {
   if(!GTK_IS_BOX(box)) dt_print(DT_DEBUG_ALWAYS, "%s:%d %s: trying to add widgets to non-box container using dt_gui_box_add", file, line, function);
-  int i = 1;
-  for(; *list != (gpointer)-1; list++, i++)
+  for(int i = 1; *list != (gpointer)-1; list++, i++)
   {
-    if(GTK_IS_WIDGET(*list))
-      gtk_container_add(GTK_CONTAINER(box), GTK_WIDGET(*list));
-    else
+    if(!GTK_IS_WIDGET(*list))
       dt_print(DT_DEBUG_ALWAYS, "%s:%d %s: trying to add invalid widget to box (#%d)", file, line, function, i);
+    else if(gtk_widget_get_parent(*list))
+      dt_print(DT_DEBUG_ALWAYS, "%s:%d %s: trying to add widget that already has a parent to box (#%d)", file, line, function, i);
+    else
+      gtk_container_add(GTK_CONTAINER(box), GTK_WIDGET(*list));
   }
 
   return GTK_WIDGET(box);

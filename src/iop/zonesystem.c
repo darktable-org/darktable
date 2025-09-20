@@ -429,8 +429,6 @@ void gui_init(dt_iop_module_t *self)
   g->preview_width = g->preview_height = 0;
   g->mouse_over_output_zones = FALSE;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_GUI_IOP_MODULE_CONTROL_SPACING);
-
   g->preview = dtgtk_drawing_area_new_with_height(0);
   g_signal_connect(G_OBJECT(g->preview), "size-allocate", G_CALLBACK(size_allocate_callback), self);
   g_signal_connect(G_OBJECT(g->preview), "draw", G_CALLBACK(dt_iop_zonesystem_preview_draw), self);
@@ -458,12 +456,10 @@ void gui_init(dt_iop_module_t *self)
                                               | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
   gtk_widget_set_size_request(g->zones, -1, DT_PIXEL_APPLY_DPI(40));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), g->preview, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->zones, TRUE, TRUE, 0);
+  self->widget = dt_gui_vbox(g->preview, g->zones);
 
   /* add signal handler for preview pipe finish to redraw the preview */
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, _iop_zonesystem_redraw_preview_callback);
-
 
   g->image = NULL;
   g->image_buffer = NULL;

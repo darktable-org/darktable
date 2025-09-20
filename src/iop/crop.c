@@ -1147,8 +1147,6 @@ void gui_init(dt_iop_module_t *self)
   g->ctrl_hold = FALSE;
   g->preview_ready = FALSE;
 
-  GtkWidget *box_enabled = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   dt_iop_crop_aspect_t aspects[] = {
     { _("freehand"), 0, 0 },
     { _("original image"), 1, 0 },
@@ -1280,7 +1278,8 @@ void gui_init(dt_iop_module_t *self)
        "to enter custom aspect ratio open the combobox and type ratio in x:y"
        " or decimal format"));
   dt_bauhaus_widget_set_quad(g->aspect_presets, self, dtgtk_cairo_paint_aspectflip, FALSE, _event_aspect_flip, NULL);
-  gtk_box_pack_start(GTK_BOX(box_enabled), g->aspect_presets, TRUE, TRUE, 0);
+
+  GtkWidget *box_enabled = dt_gui_vbox(g->aspect_presets);
 
   // we put margins values under an expander
   dt_gui_new_collapsible_section

@@ -603,7 +603,6 @@ static void _current_show_popup(GtkDarktableRangeSelect *range)
   gtk_popover_set_modal(GTK_POPOVER(range->cur_window), FALSE);
   gtk_popover_set_position(GTK_POPOVER(range->cur_window), GTK_POS_BOTTOM);
 
-  GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   // the label for the current value / selection
   range->cur_label = gtk_label_new("");
   dt_gui_add_class(range->cur_label, "dt_transparent_background");
@@ -613,14 +612,12 @@ static void _current_show_popup(GtkDarktableRangeSelect *range)
   gtk_label_set_attributes(GTK_LABEL(range->cur_label), attrlist);
   pango_attr_list_unref(attrlist);
   _current_set_text(range, 0);
-  gtk_box_pack_start(GTK_BOX(vb), range->cur_label, FALSE, TRUE, 0);
 
   // the label for the static infos
   GtkWidget *lb = gtk_label_new("");
   gtk_label_set_xalign(GTK_LABEL(lb), 0.0);
   if(range->cur_help) gtk_label_set_markup(GTK_LABEL(lb), range->cur_help);
-  gtk_box_pack_start(GTK_BOX(vb), lb, FALSE, TRUE, 0);
-  gtk_container_add(GTK_CONTAINER(range->cur_window), vb);
+  gtk_container_add(GTK_CONTAINER(range->cur_window), dt_gui_vbox(range->cur_label, lb));
   gtk_widget_show_all(range->cur_window);
 }
 
@@ -936,31 +933,20 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   _range_date_popup *pop = g_malloc0(sizeof(_range_date_popup));
   range->date_popup = pop;
   pop->popup = gtk_popover_new(range->band);
-  GtkWidget *vbox0 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_widget_set_name(vbox0, "dt-range-date-popup");
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_set_homogeneous(GTK_BOX(hbox), TRUE);
-  gtk_box_pack_start(GTK_BOX(vbox0), hbox, FALSE, TRUE, 0);
-  gtk_container_add(GTK_CONTAINER(pop->popup), vbox0);
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), vbox, FALSE, TRUE, 0);
 
   // the type of date selection
   pop->type = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(pop->type, NULL, _("date type"));
   g_signal_connect(G_OBJECT(pop->type), "value-changed", G_CALLBACK(_popup_date_type_changed), range);
-  gtk_box_pack_start(GTK_BOX(vbox), pop->type, FALSE, TRUE, 0);
 
   // the label to explain the reference date for relative values
   pop->relative_label = gtk_label_new("");
   gtk_label_set_line_wrap(GTK_LABEL(pop->relative_label), TRUE);
   gtk_widget_set_no_show_all(pop->relative_label, TRUE);
-  gtk_box_pack_start(GTK_BOX(vbox), pop->relative_label, FALSE, TRUE, 0);
 
   // the date section
-  GtkWidget *lb = gtk_label_new(_("date"));
-  dt_gui_add_class(lb, "dt_section_label");
-  gtk_box_pack_start(GTK_BOX(vbox), lb, FALSE, TRUE, 0);
+  GtkWidget *lb_date = gtk_label_new(_("date"));
+  dt_gui_add_class(lb_date, "dt_section_label");
 
   // the calendar
   pop->calendar = gtk_calendar_new();
@@ -970,13 +956,11 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   g_signal_connect(G_OBJECT(pop->calendar), "day_selected", G_CALLBACK(_popup_date_changed), range);
   g_signal_connect(G_OBJECT(pop->calendar), "day_selected-double-click",
                    G_CALLBACK(_popup_date_day_selected_2click), range);
-  gtk_box_pack_start(GTK_BOX(vbox), pop->calendar, FALSE, TRUE, 0);
 
   // the relative date box
   pop->relative_date_box = gtk_grid_new();
   gtk_grid_set_column_homogeneous(GTK_GRID(pop->relative_date_box), TRUE);
-  gtk_box_pack_start(GTK_BOX(vbox), pop->relative_date_box, FALSE, TRUE, 0);
-  lb = gtk_label_new(_("years: "));
+  GtkWidget *lb = gtk_label_new(_("years: "));
   gtk_label_set_xalign(GTK_LABEL(lb), 1.0);
   gtk_grid_attach(GTK_GRID(pop->relative_date_box), lb, 0, 0, 1, 1);
   pop->years = gtk_entry_new();
@@ -1004,27 +988,18 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   gtk_widget_set_no_show_all(pop->relative_date_box, TRUE);
 
   // the time section
-  lb = gtk_label_new(_("time"));
-  dt_gui_add_class(lb, "dt_section_label");
-  gtk_box_pack_start(GTK_BOX(vbox), lb, FALSE, TRUE, 0);
+  GtkWidget *lb_time = gtk_label_new(_("time"));
+  dt_gui_add_class(lb_time, "dt_section_label");
 
-  GtkWidget *hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_halign(hbox2, GTK_ALIGN_CENTER);
-  gtk_box_pack_start(GTK_BOX(vbox), hbox2, FALSE, FALSE, 0);
   pop->hours = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(pop->hours), 2);
   g_signal_connect(G_OBJECT(pop->hours), "changed", G_CALLBACK(_popup_date_changed), range);
-  gtk_box_pack_start(GTK_BOX(hbox2), pop->hours, FALSE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox2), gtk_label_new(" : "), FALSE, TRUE, 0);
   pop->minutes = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(pop->minutes), 2);
   g_signal_connect(G_OBJECT(pop->minutes), "changed", G_CALLBACK(_popup_date_changed), range);
-  gtk_box_pack_start(GTK_BOX(hbox2), pop->minutes, FALSE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox2), gtk_label_new(" : "), FALSE, TRUE, 0);
   pop->seconds = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(pop->seconds), 2);
   g_signal_connect(G_OBJECT(pop->seconds), "changed", G_CALLBACK(_popup_date_changed), range);
-  gtk_box_pack_start(GTK_BOX(hbox2), pop->seconds, FALSE, TRUE, 0);
 
   // the treeview
   GtkTreeModel *model = GTK_TREE_MODEL(gtk_tree_store_new(DATETIME_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT,
@@ -1044,25 +1019,30 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   gtk_tree_view_column_set_cell_data_func(col, renderer, _date_tree_count_func, NULL, NULL);
   gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(pop->treeview), DATETIME_COL_TOOLTIP);
 
-  GtkWidget *sw = dt_gui_scroll_wrap(pop->treeview);
-  gtk_box_pack_start(GTK_BOX(hbox), sw, FALSE, TRUE, 0);
-
   // the select line
-  hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(vbox0), hbox2, FALSE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox2), gtk_label_new(_("current date: ")), FALSE, TRUE, 0);
   pop->selection = gtk_entry_new();
-  gtk_entry_set_alignment(GTK_ENTRY(pop->selection), 0.5);
-  gtk_box_pack_start(GTK_BOX(hbox2), pop->selection, TRUE, TRUE, 0);
+  gtk_entry_set_alignment(GTK_ENTRY(dt_gui_expand(pop->selection)), 0.5);
   pop->now_btn = gtk_button_new_with_label(_("now"));
   gtk_widget_set_no_show_all(pop->now_btn, TRUE);
   gtk_widget_set_tooltip_text(pop->now_btn, _("set the value to always match current datetime"));
   g_signal_connect(G_OBJECT(pop->now_btn), "clicked", G_CALLBACK(_popup_date_now_clicked), range);
-  gtk_box_pack_start(GTK_BOX(hbox2), pop->now_btn, FALSE, TRUE, 0);
   pop->ok_btn = gtk_button_new_with_label(_("apply"));
   gtk_widget_set_tooltip_text(pop->ok_btn, _("set the range bound with this value"));
   g_signal_connect(G_OBJECT(pop->ok_btn), "clicked", G_CALLBACK(_popup_date_ok_clicked), range);
-  gtk_box_pack_start(GTK_BOX(hbox2), pop->ok_btn, FALSE, TRUE, 0);
+
+  GtkWidget *time = dt_gui_hbox(pop->hours, gtk_label_new(" : "), pop->minutes, gtk_label_new(" : "), pop->seconds);
+  gtk_widget_set_halign(time, GTK_ALIGN_CENTER);
+  GtkWidget *calendar_and_tree = dt_gui_hbox(dt_gui_vbox(
+    pop->type, pop->relative_label, lb_date, pop->calendar, pop->relative_date_box, lb_time, time),
+    dt_gui_scroll_wrap(pop->treeview));
+  gtk_box_set_homogeneous(GTK_BOX(calendar_and_tree), TRUE);
+  GtkWidget *vbox = dt_gui_vbox(
+    calendar_and_tree,
+    dt_gui_hbox(gtk_label_new(_("current date: ")), pop->selection, pop->now_btn, pop->ok_btn));
+
+  gtk_widget_set_name(vbox, "dt-range-date-popup");
+
+  gtk_container_add(GTK_CONTAINER(pop->popup), vbox);
 }
 
 static void _popup_item_activate(GtkWidget *w, gpointer user_data)
@@ -1683,9 +1663,6 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
   range->current_bounds = dtgtk_range_select_get_bounds_pretty;
   range->allow_resize = TRUE;
 
-  // the boxes widgets
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
   // the graph band
   range->band = gtk_drawing_area_new();
   gtk_widget_set_events(range->band, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
@@ -1698,31 +1675,30 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
   g_signal_connect(G_OBJECT(range->band), "style-updated", G_CALLBACK(_dt_pref_changed), range);
   gtk_widget_set_name(GTK_WIDGET(range->band), "dt-range-band");
   gtk_widget_set_can_default(range->band, TRUE);
-  gtk_box_pack_start(GTK_BOX(vbox), range->band, TRUE, TRUE, 0);
 
   // always hidden widgets used to retrieve drawing colors
   range->band_graph = gtk_drawing_area_new();
   gtk_widget_set_name(GTK_WIDGET(range->band_graph), "dt-range-band-graph");
   gtk_widget_set_no_show_all(range->band_graph, TRUE);
-  gtk_box_pack_start(GTK_BOX(vbox), range->band_graph, FALSE, FALSE, 0);
   range->band_selection = gtk_drawing_area_new();
   gtk_widget_set_name(GTK_WIDGET(range->band_selection), "dt-range-band-selection");
   gtk_widget_set_no_show_all(range->band_selection, TRUE);
-  gtk_box_pack_start(GTK_BOX(vbox), range->band_selection, FALSE, FALSE, 0);
   range->band_icons = gtk_drawing_area_new();
   gtk_widget_set_name(GTK_WIDGET(range->band_icons), "dt-range-band-icons");
   gtk_widget_set_no_show_all(range->band_icons, TRUE);
-  gtk_box_pack_start(GTK_BOX(vbox), range->band_icons, FALSE, FALSE, 0);
   range->band_cursor = gtk_drawing_area_new();
   gtk_widget_set_name(GTK_WIDGET(range->band_cursor), "dt-range-band-cursor");
   gtk_widget_set_no_show_all(range->band_cursor, TRUE);
-  gtk_box_pack_start(GTK_BOX(vbox), range->band_cursor, FALSE, FALSE, 0);
+
+  // the boxes widgets
+  GtkWidget *vbox = dt_gui_vbox(range->band,
+                                range->band_graph,
+                                range->band_selection,
+                                range->band_icons,
+                                range->band_cursor);
 
   if(range->show_entries)
   {
-    GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
-
     // the entries
     range->entry_min = dt_ui_entry_new(0);
     gtk_widget_set_can_default(range->entry_min, TRUE);
@@ -1730,7 +1706,6 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
     g_signal_connect(G_OBJECT(range->entry_min), "activate", G_CALLBACK(_event_entry_activated), range);
     g_signal_connect(G_OBJECT(range->entry_min), "focus-out-event", G_CALLBACK(_event_entry_focus_out), range);
     g_signal_connect(G_OBJECT(range->entry_min), "button-press-event", G_CALLBACK(_event_entry_press), range);
-    gtk_box_pack_start(GTK_BOX(hbox), range->entry_min, TRUE, TRUE, 0);
 
     range->entry_max = dt_ui_entry_new(0);
     gtk_widget_set_can_default(range->entry_max, TRUE);
@@ -1739,7 +1714,8 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
     g_signal_connect(G_OBJECT(range->entry_max), "activate", G_CALLBACK(_event_entry_activated), range);
     g_signal_connect(G_OBJECT(range->entry_max), "focus-out-event", G_CALLBACK(_event_entry_focus_out), range);
     g_signal_connect(G_OBJECT(range->entry_max), "button-press-event", G_CALLBACK(_event_entry_press), range);
-    gtk_box_pack_end(GTK_BOX(hbox), range->entry_max, TRUE, TRUE, 0);
+
+    dt_gui_box_add(vbox, dt_gui_hbox(dt_gui_expand(range->entry_min), dt_gui_expand(range->entry_max)));
   }
 
   gtk_container_add(GTK_CONTAINER(range), vbox);

@@ -834,8 +834,6 @@ void gui_init(dt_iop_module_t *self)
 
   dt_iop_colorout_gui_data_t *g = IOP_GUI_ALLOC(colorout);
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->output_intent, self, NULL, N_("output intent"),
                                _("rendering intent"),
                                0, intent_changed, self,
@@ -843,7 +841,6 @@ void gui_init(dt_iop_module_t *self)
                                N_("relative colorimetric"),
                                NC_("rendering intent", "saturation"),
                                N_("absolute colorimetric"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->output_intent, TRUE, TRUE, 0);
 
   if(!force_lcms2)
   {
@@ -853,7 +850,6 @@ void gui_init(dt_iop_module_t *self)
 
   g->output_profile = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->output_profile, NULL, N_("export profile"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->output_profile, TRUE, TRUE, 0);
   for(GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
   {
     dt_colorspaces_color_profile_t *prof = l->data;
@@ -863,6 +859,8 @@ void gui_init(dt_iop_module_t *self)
   char *tooltip = dt_ioppr_get_location_tooltip("out", _("export ICC profiles"));
   gtk_widget_set_tooltip_markup(g->output_profile, tooltip);
   g_free(tooltip);
+
+  self->widget = dt_gui_vbox(g->output_intent, g->output_profile);
 
   g_signal_connect(G_OBJECT(g->output_profile), "value-changed",
                    G_CALLBACK(output_profile_changed), (gpointer)self);

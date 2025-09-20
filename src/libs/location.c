@@ -138,19 +138,15 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_location_t *lib = self->data;
   if(!lib) return;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
   /* add search box */
   lib->search = GTK_ENTRY(dt_ui_entry_new(0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->search), FALSE, FALSE, 0);
-
   g_signal_connect(G_OBJECT(lib->search), "activate",
                    G_CALLBACK(_lib_location_entry_activated),
                    (gpointer)self);
 
   /* add result vbox */
-  lib->result = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->result), TRUE, FALSE, 0);
+  lib->result = dt_gui_vbox();
+  self->widget = dt_gui_vbox(lib->search,lib->result);
 }
 
 void gui_cleanup(dt_lib_module_t *self)

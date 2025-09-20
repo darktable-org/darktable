@@ -622,9 +622,6 @@ static void _add_sample(GtkButton *widget,
   g_signal_connect(G_OBJECT(sample->container), "leave-notify-event",
                    G_CALLBACK(_sample_leave_callback), sample);
 
-  GtkWidget *container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_container_add(GTK_CONTAINER(sample->container), container);
-
   sample->color_patch = gtk_drawing_area_new();
   gtk_widget_add_events(sample->color_patch, GDK_BUTTON_PRESS_MASK);
   gtk_widget_set_tooltip_text
@@ -637,10 +634,8 @@ static void _add_sample(GtkButton *widget,
   g_signal_connect(G_OBJECT(sample->color_patch), "draw",
                    G_CALLBACK(_sample_draw_callback), sample);
 
-  GtkWidget *color_patch_wrapper = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  GtkWidget *color_patch_wrapper = dt_gui_hbox(dt_gui_expand(sample->color_patch));
   gtk_widget_set_name(color_patch_wrapper, "live-sample");
-  gtk_box_pack_start(GTK_BOX(color_patch_wrapper), sample->color_patch, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(container), color_patch_wrapper, TRUE, TRUE, 0);
 
   sample->output_label = gtk_label_new("");
   dt_gui_add_class(sample->output_label, "dt_monospace");
@@ -651,15 +646,16 @@ static void _add_sample(GtkButton *widget,
                    G_CALLBACK(_sample_tooltip_callback), sample);
   g_signal_connect(G_OBJECT(sample->output_label), "size-allocate",
                    G_CALLBACK(_label_size_allocate_callback), sample);
-  gtk_box_pack_start(GTK_BOX(container), sample->output_label, TRUE, TRUE, 0);
 
   GtkWidget *delete_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_remove, 0, NULL);
   g_signal_connect(G_OBJECT(delete_button), "clicked",
                    G_CALLBACK(_remove_sample_cb), sample);
-  gtk_box_pack_start(GTK_BOX(container), delete_button, FALSE, FALSE, 0);
 
-  gtk_box_pack_start(GTK_BOX(data->samples_container),
-                     sample->container, FALSE, FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(sample->container),
+                    dt_gui_hbox(color_patch_wrapper,
+                                dt_gui_expand(sample->output_label),
+                                delete_button));
+  dt_gui_box_add(data->samples_container, sample->container);
   gtk_widget_show_all(sample->container);
 
   darktable.lib->proxy.colorpicker.live_samples
@@ -700,9 +696,7 @@ static void _restrict_histogram_changed(GtkToggleButton *button,
 void gui_init(dt_lib_module_t *self)
 {
   // Initializing self data structure
-  dt_lib_colorpicker_t *data = calloc(1, sizeof(dt_lib_colorpicker_t));
-
-  self->data = (void *)data;
+  dt_lib_colorpicker_t *data = self->data = calloc(1, sizeof(dt_lib_colorpicker_t));
 
   // _update_samples_output() will update the RGB values
   data->primary_sample.swatch.alpha = 1.0;
@@ -732,13 +726,7 @@ void gui_init(dt_lib_module_t *self)
     if(g_strcmp0(str, *names) == 0)
       data->statistic = i;
 
-  // Setting up the GUI
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_class(self->widget, "picker-module");
-
   // The color patch
-  GtkWidget *color_patch_wrapper = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(GTK_WIDGET(color_patch_wrapper), "color-picker-area");
   GtkWidget *color_patch = gtk_drawing_area_new();
   data->large_color_patch = color_patch;
   gtk_widget_set_tooltip_text(color_patch, _("click to (un)hide large color patch"));
@@ -754,15 +742,13 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_sample_enter_callback), &data->primary_sample);
   g_signal_connect(G_OBJECT(color_patch), "leave-notify-event",
                    G_CALLBACK(_sample_leave_callback), &data->primary_sample);
-  gtk_box_pack_start(GTK_BOX(color_patch_wrapper), color_patch, TRUE, TRUE, 0);
+  GtkWidget *color_patch_wrapper = dt_gui_hbox(dt_gui_expand(color_patch));
+  gtk_widget_set_name(GTK_WIDGET(color_patch_wrapper), "color-picker-area");
   gtk_widget_show(color_patch);
   gtk_widget_set_no_show_all(color_patch_wrapper,
                              dt_conf_get_bool("ui_last/colorpicker_large") == FALSE);
-  gtk_box_pack_start(GTK_BOX(self->widget), color_patch_wrapper, FALSE, FALSE, 0);
 
   // The picker button, mode and statistic combo boxes
-  GtkWidget *picker_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-
   data->statistic_selector =
     dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("statistic"),
                                  _("select which statistic to show"),
@@ -771,7 +757,6 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_set_entries_ellipsis(data->statistic_selector, PANGO_ELLIPSIZE_NONE);
   dt_bauhaus_widget_set_label(data->statistic_selector, NULL, NULL);
   gtk_widget_set_valign(data->statistic_selector, GTK_ALIGN_CENTER);
-  gtk_box_pack_start(GTK_BOX(picker_row), data->statistic_selector, TRUE, TRUE, 0);
 
   data->color_mode_selector =
     dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("color mode"),
@@ -781,7 +766,8 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_set_entries_ellipsis(data->color_mode_selector, PANGO_ELLIPSIZE_NONE);
   dt_bauhaus_widget_set_label(data->color_mode_selector, NULL, NULL);
   gtk_widget_set_valign(data->color_mode_selector, GTK_ALIGN_CENTER);
-  gtk_box_pack_start(GTK_BOX(picker_row), data->color_mode_selector, TRUE, TRUE, 0);
+  GtkWidget *picker_row = dt_gui_hbox(dt_gui_expand(data->statistic_selector),
+                                      dt_gui_expand(data->color_mode_selector));
 
   data->picker_button = dt_color_picker_new(NULL, DT_COLOR_PICKER_POINT_AREA, picker_row);
   gtk_widget_set_tooltip_text
@@ -793,8 +779,6 @@ void gui_init(dt_lib_module_t *self)
   dt_action_define(DT_ACTION(self), NULL, N_("pick color"),
                    data->picker_button, &dt_action_def_toggle);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), picker_row, TRUE, TRUE, 0);
-
   // The small sample, label and add button
   GtkWidget *sample_row_events = gtk_event_box_new();
   gtk_widget_add_events(sample_row_events, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
@@ -802,10 +786,6 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_sample_enter_callback), &data->primary_sample);
   g_signal_connect(G_OBJECT(sample_row_events), "leave-notify-event",
                    G_CALLBACK(_sample_leave_callback), &data->primary_sample);
-  gtk_box_pack_start(GTK_BOX(self->widget), sample_row_events, TRUE, TRUE, 0);
-
-  GtkWidget *sample_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_container_add(GTK_CONTAINER(sample_row_events), sample_row);
 
   data->primary_sample.color_patch = color_patch = gtk_drawing_area_new();
   gtk_widget_set_tooltip_text(color_patch, _("click to (un)hide large color patch"));
@@ -815,10 +795,8 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(color_patch), "draw",
                    G_CALLBACK(_sample_draw_callback), &data->primary_sample);
 
-  color_patch_wrapper = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(color_patch_wrapper, "live-sample");
-  gtk_box_pack_start(GTK_BOX(color_patch_wrapper), color_patch, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(sample_row), color_patch_wrapper, TRUE, TRUE, 0);
+  GtkWidget *sample_patch_wrapper = dt_gui_hbox(dt_gui_expand(color_patch));
+  gtk_widget_set_name(sample_patch_wrapper, "live-sample");
 
   GtkWidget *label = data->primary_sample.output_label = gtk_label_new("");
   gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_CENTER);
@@ -830,27 +808,20 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_sample_tooltip_callback), &data->primary_sample);
   g_signal_connect(G_OBJECT(label), "size-allocate",
                    G_CALLBACK(_label_size_allocate_callback), &data->primary_sample);
-  gtk_box_pack_start(GTK_BOX(sample_row), label, TRUE, TRUE, 0);
 
   data->add_sample_button = dtgtk_button_new(dtgtk_cairo_paint_square_plus, 0, NULL);
-
   gtk_widget_set_sensitive(data->add_sample_button, FALSE);
   g_signal_connect(G_OBJECT(data->add_sample_button), "clicked",
                    G_CALLBACK(_add_sample), self);
   dt_action_define(DT_ACTION(self), NULL, N_("add sample"),
                    data->add_sample_button, &dt_action_def_button);
-  gtk_box_pack_end(GTK_BOX(sample_row), data->add_sample_button, FALSE, FALSE, 0);
 
-  // Adding the live samples section
-  label = dt_ui_section_label_new(C_("section", "live samples"));
-  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
+  gtk_container_add(GTK_CONTAINER(sample_row_events),
+                    dt_gui_hbox(sample_patch_wrapper,
+                                dt_gui_expand(label),
+                                data->add_sample_button));
 
-
-  data->samples_container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_resize_wrap(data->samples_container, 1,
-                                       "plugins/darkroom/colorpicker/windowheight"),
-                     TRUE, TRUE, 0);
+  data->samples_container = dt_gui_vbox();
 
   data->display_samples_check_box =
     gtk_check_button_new_with_label(_("display samples on image/vectorscope"));
@@ -863,7 +834,6 @@ void gui_init(dt_lib_module_t *self)
                                dt_conf_get_bool("ui_last/colorpicker_display_samples"));
   g_signal_connect(G_OBJECT(data->display_samples_check_box), "toggled",
                    G_CALLBACK(_display_samples_changed), NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), data->display_samples_check_box, TRUE, TRUE, 0);
 
   GtkWidget *restrict_button =
     gtk_check_button_new_with_label(_("restrict scope to selection"));
@@ -877,7 +847,17 @@ void gui_init(dt_lib_module_t *self)
   darktable.lib->proxy.colorpicker.restrict_histogram = restrict_histogram;
   g_signal_connect(G_OBJECT(restrict_button), "toggled",
                    G_CALLBACK(_restrict_histogram_changed), NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), restrict_button, TRUE, TRUE, 0);
+
+  // Setting up the GUI
+  self->widget = dt_gui_vbox(color_patch_wrapper,
+                             picker_row,
+                             sample_row_events,
+                             dt_ui_section_label_new(C_("section", "live samples")),
+                             dt_ui_resize_wrap(data->samples_container, 1,
+                                               "plugins/darkroom/colorpicker/windowheight"),
+                             data->display_samples_check_box,
+                             restrict_button);
+  dt_gui_add_class(self->widget, "picker-module");
 }
 
 void gui_cleanup(dt_lib_module_t *self)

@@ -2088,8 +2088,6 @@ void gui_init(dt_iop_module_t *self)
   const gboolean feedback = g->colored_sliders ? FALSE : TRUE;
   g->button_bar_visible = dt_conf_get_bool("plugins/darkroom/temperature/button_bar");
 
-  GtkBox *box_enabled = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
-
   g->btn_asshot = dt_iop_togglebutton_new(self, N_("settings"), N_("as shot"), NULL,
                                           G_CALLBACK(_btn_toggled), FALSE, 0, 0,
                                           dtgtk_cairo_paint_camera, NULL);
@@ -2133,28 +2131,24 @@ void gui_init(dt_iop_module_t *self)
      _("set white balance to as shot and later correct to camera reference point,\nin most cases it should be D65"));
 
   // put buttons at top. fill later.
-  g->buttonbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  g->buttonbar = dt_gui_hbox(dt_gui_expand(g->btn_asshot),
+                             dt_gui_expand(g->colorpicker),
+                             dt_gui_expand(g->btn_user),
+                             dt_gui_expand(g->btn_d65),
+                             dt_gui_expand(g->btn_d65_late));
   dt_gui_add_class(g->buttonbar, "dt_iop_toggle");
-  gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_d65_late, TRUE, TRUE, 0);
-  gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_d65, TRUE, TRUE, 0);
-  gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_user, TRUE, TRUE, 0);
-  gtk_box_pack_end(GTK_BOX(g->buttonbar), g->colorpicker, TRUE, TRUE, 0);
-  gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_asshot, TRUE, TRUE, 0);
-  gtk_box_pack_start(box_enabled, g->buttonbar, TRUE, TRUE, 0);
 
   g->presets = dt_bauhaus_combobox_new(self);
   // relabel to settings to remove confusion between module presets
   // and white balance settings
   dt_bauhaus_widget_set_label(g->presets, N_("settings"), N_("settings"));
   gtk_widget_set_tooltip_text(g->presets, _("choose white balance setting"));
-  gtk_box_pack_start(box_enabled, g->presets, TRUE, TRUE, 0);
 
   g->finetune = dt_bauhaus_slider_new_with_range_and_feedback
     (self, -9.0, 9.0, 0, 0.0, 0, feedback);
   dt_bauhaus_widget_set_label(g->finetune, NULL, N_("finetune"));
   dt_bauhaus_slider_set_format(g->finetune, " mired");
   gtk_widget_set_tooltip_text(g->finetune, _("fine tune camera's white balance setting"));
-  gtk_box_pack_start(box_enabled, g->finetune, TRUE, TRUE, 0);
 
   g->mod_temp = -FLT_MAX;
   for_four_channels(k)
@@ -2168,8 +2162,6 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(temp_label_box), "button-release-event",
                    G_CALLBACK(temp_label_click), self);
 
-  gtk_box_pack_start(box_enabled, temp_label_box, TRUE, TRUE, 0);
-
   //Match UI order: temp first, then tint (like every other app ever)
   g->scale_k = dt_bauhaus_slider_new_with_range_and_feedback
     (self, DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE,
@@ -2177,7 +2169,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->scale_k, " K");
   dt_bauhaus_widget_set_label(g->scale_k, NULL, N_("temperature"));
   gtk_widget_set_tooltip_text(g->scale_k, _("color temperature (in Kelvin)"));
-  gtk_box_pack_start(box_enabled, g->scale_k, TRUE, TRUE, 0);
 
   g->scale_tint = dt_bauhaus_slider_new_with_range_and_feedback
     (self, DT_IOP_LOWEST_TINT, DT_IOP_HIGHEST_TINT,
@@ -2186,8 +2177,13 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text
     (g->scale_tint,
      _("color tint of the image, from magenta (value < 1) to green (value > 1)"));
-  gtk_box_pack_start(box_enabled, g->scale_tint, TRUE, TRUE, 0);
 
+  GtkWidget *box_enabled = dt_gui_vbox(g->buttonbar,
+                                       g->presets,
+                                       g->finetune,
+                                       temp_label_box,
+                                       g->scale_k,
+                                       g->scale_tint);
   dt_gui_new_collapsible_section
     (&g->cs,
      "plugins/darkroom/temperature/expand_coefficients",

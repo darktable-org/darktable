@@ -1298,8 +1298,6 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_watermark_gui_data_t *g = IOP_GUI_ALLOC(watermark);
   dt_iop_watermark_params_t *p = self->params;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_row_spacing(grid, DT_BAUHAUS_SPACE);
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
@@ -1366,13 +1364,13 @@ void gui_init(dt_iop_module_t *self)
   gtk_grid_attach_next_to(grid, g->colorpick, label, GTK_POS_RIGHT, 1, 1);
   gtk_grid_attach_next_to(grid, g->color_picker_button, g->colorpick, GTK_POS_RIGHT, 1, 1);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(grid), TRUE, TRUE, 0);
+  self->widget = dt_gui_vbox(grid);
 
   // Add opacity/scale sliders to table
   g->opacity = dt_bauhaus_slider_from_params(self, N_("opacity"));
   dt_bauhaus_slider_set_format(g->opacity, "%");
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "placement")), TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "placement")));
 
   // rotate
   g->rotate = dt_bauhaus_slider_from_params(self, "rotate");
@@ -1414,7 +1412,7 @@ void gui_init(dt_iop_module_t *self)
     g_signal_connect(G_OBJECT(g->align[i]), "toggled", G_CALLBACK(_alignment_callback), self);
   }
 
-  gtk_box_pack_start(GTK_BOX(self->widget), bat, FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, bat);
 
   // x/y offset
   g->x_offset = dt_bauhaus_slider_from_params(self, "xoffset");

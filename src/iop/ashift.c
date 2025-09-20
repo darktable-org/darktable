@@ -5991,7 +5991,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->shear, -SHEAR_RANGE, SHEAR_RANGE);
 
   g->mode = dt_bauhaus_combobox_from_params(self, "mode");
-  self->widget = g->specifics = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
+  self->widget = g->specifics = dt_gui_vbox();
 
   g->f_length = dt_bauhaus_slider_from_params(self, "f_length");
   dt_bauhaus_slider_set_soft_range(g->f_length, 10.0f, 1000.0f);
@@ -6014,7 +6015,7 @@ void gui_init(dt_iop_module_t *self)
   g->aspect = dt_bauhaus_slider_from_params(self, "aspect");
   dt_bauhaus_slider_set_curve(g->aspect, log2_curve);
 
-  gtk_box_pack_start(GTK_BOX(g->cs.container), g->specifics, TRUE, TRUE, 0);
+  dt_gui_box_add(g->cs.container, g->specifics);
 
   self->widget = main_box;
 
