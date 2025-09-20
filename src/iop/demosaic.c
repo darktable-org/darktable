@@ -80,7 +80,7 @@ typedef enum dt_iop_demosaic_method_t
   DT_IOP_DEMOSAIC_PASSTHR_COLORX = DT_DEMOSAIC_XTRANS | 5, // $DESCRIPTION: "photosite color (debug)"
 } dt_iop_demosaic_method_t;
 
-static const char *_method_str(int method)
+static const char *_method_str(const int method)
 {
   switch(method)
   {
@@ -675,7 +675,7 @@ void process(dt_iop_module_t *self,
   const gboolean passthru = method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME
                          || method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR;
   const gboolean do_capture = !passthru &&  !is_4bayer && !show_dual && !run_fast && d->cs_iter;
-  const gboolean greens = is_bayer && d->green_eq != DT_IOP_GREEN_EQ_NO && no_masking;
+  const gboolean greens = is_bayer && d->green_eq != DT_IOP_GREEN_EQ_NO && no_masking && !run_fast;
 
   const float procmax = dt_iop_get_processed_maximum(piece);
   const float procmin = dt_iop_get_processed_minimum(piece);
@@ -836,7 +836,7 @@ void process(dt_iop_module_t *self,
   if(pipe->want_detail_mask)
     dt_dev_write_scharr_mask(piece, out, roi_in, TRUE);
 
-  if(d->color_smoothing != DT_DEMOSAIC_SMOOTH_OFF && no_masking)
+  if(d->color_smoothing != DT_DEMOSAIC_SMOOTH_OFF && no_masking && !run_fast)
     color_smoothing(out, width, height, d->color_smoothing);
 
   if(!direct)
@@ -962,7 +962,7 @@ int process_cl(dt_iop_module_t *self,
   const gboolean passthru = method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME
                          || method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR;
   const gboolean do_capture = !passthru && !run_fast && !show_dual && d->cs_iter;
-  const gboolean greens = is_bayer && d->green_eq != DT_IOP_GREEN_EQ_NO && no_masking;
+  const gboolean greens = is_bayer && d->green_eq != DT_IOP_GREEN_EQ_NO && no_masking && !run_fast;
 
   if(do_capture)
     _capture_radius_cl(self, piece, dev_in, iwidth, iheight, xtrans, filters);
@@ -1102,8 +1102,7 @@ int process_cl(dt_iop_module_t *self,
         if(err != CL_SUCCESS) goto finish;
       }
     }
-    dt_opencl_finish_sync_pipe(devid, pipe->type);
-   }
+  }
 
   if(greens)  // release early for less cl memory load
   {
@@ -1133,7 +1132,7 @@ int process_cl(dt_iop_module_t *self,
     if(err != CL_SUCCESS) goto finish;
   }
 
-  if(d->color_smoothing != DT_DEMOSAIC_SMOOTH_OFF && no_masking)
+  if(d->color_smoothing != DT_DEMOSAIC_SMOOTH_OFF && no_masking && !run_fast)
   {
     err = color_smoothing_cl(self, piece, out_image, out_image, iwidth, iheight, d->color_smoothing);
     if(err != CL_SUCCESS) goto finish;
@@ -1483,13 +1482,26 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_sensitive(g->cs_center, do_capture && p->cs_boost);
   gtk_widget_set_sensitive(g->cs_iter, capture_support);
 
-  // we might have a wrong method dur to xtrans/bayer - mode mismatch
-  if(bayer)
-    dt_bauhaus_combobox_set_from_value(g->demosaic_method_bayer, use_method);
-  else if(xtrans)
-    dt_bauhaus_combobox_set_from_value(g->demosaic_method_xtrans, use_method);
-  else
-    dt_bauhaus_combobox_set_from_value(g->demosaic_method_bayerfour, use_method);
+  // we might have a wrong method due to xtrans/bayer - mode mismatch
+  const gboolean method_mismatch = use_method != p->demosaicing_method;
+  if(method_mismatch)
+  {
+    if(bayer)
+      dt_bauhaus_combobox_set_from_value(g->demosaic_method_bayer, use_method);
+    else if(xtrans)
+      dt_bauhaus_combobox_set_from_value(g->demosaic_method_xtrans, use_method);
+    else
+      dt_bauhaus_combobox_set_from_value(g->demosaic_method_bayerfour, use_method);
+
+    /*  If auto-applied from a preset/style from a different sensor type it's demosaicer
+        method was added to the current sensor specific demosaicer combobox.
+        As we know the bad method here, we can remove it from the combobox by testing for it's position.
+    */
+    GtkWidget *demosaicers =  bayer  ? g->demosaic_method_bayer :
+                              xtrans ? g->demosaic_method_xtrans : g->demosaic_method_bayerfour;
+    const int pos = dt_bauhaus_combobox_get_from_value(demosaicers, p->demosaicing_method);
+    if(pos >= 0) dt_bauhaus_combobox_remove_at(demosaicers, pos);
+  }
 
   p->demosaicing_method = use_method;
 
@@ -1540,7 +1552,7 @@ void gui_update(dt_iop_module_t *self)
   g->autoradius = FALSE;
 }
 
-static void _dual_quad_callback(GtkWidget *quad, dt_iop_module_t *self)
+static void _dual_thrs_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
@@ -1555,7 +1567,7 @@ static void _dual_quad_callback(GtkWidget *quad, dt_iop_module_t *self)
   dt_dev_reprocess_center(self->dev);
 }
 
-static void _cs_quad_callback(GtkWidget *quad, dt_iop_module_t *self)
+static void _cs_thrs_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
@@ -1583,7 +1595,7 @@ static void _cs_boost_callback(GtkWidget *quad, dt_iop_module_t *self)
   dt_dev_reprocess_center(self->dev);
 }
 
-static void _cs_autoradius_callback(GtkWidget *quad, dt_iop_module_t *self)
+static void _cs_radius_callback(GtkWidget *quad, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
@@ -1591,7 +1603,7 @@ static void _cs_autoradius_callback(GtkWidget *quad, dt_iop_module_t *self)
   dt_dev_reprocess_center(self->dev);
 }
 
-static void _check_autoradius(gpointer instance, dt_iop_module_t *self)
+static void _ui_pipe_done(gpointer instance, dt_iop_module_t *self)
 {
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
   if(g && g->autoradius)
@@ -1603,7 +1615,7 @@ static void _check_autoradius(gpointer instance, dt_iop_module_t *self)
   }
 }
 
-void gui_focus(dt_iop_module_t *self, gboolean in)
+void gui_focus(dt_iop_module_t *self, const gboolean in)
 {
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
   if(!in)
@@ -1647,7 +1659,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->dual_thrs, 2);
   gtk_widget_set_tooltip_text(g->dual_thrs, _("contrast threshold for dual demosaic.\nset to 0.0 for high frequency content\n"
                                                 "set to 1.0 for flat content"));
-  dt_bauhaus_widget_set_quad(g->dual_thrs, self, dtgtk_cairo_paint_showmask, TRUE, _dual_quad_callback,
+  dt_bauhaus_widget_set_quad(g->dual_thrs, self, dtgtk_cairo_paint_showmask, TRUE, _dual_thrs_callback,
                              _("toggle mask visualization"));
 
   g->median_thrs = dt_bauhaus_slider_from_params(self, "median_thrs");
@@ -1680,8 +1692,7 @@ void gui_init(dt_iop_module_t *self)
                                               "of the camera sensor, possibly the anti-aliasing filter and the lens.\n"
                                               "increasing this too far will soon lead to artifacts like halos and\n"
                                               "ringing especially when used with a large 'sharpen' setting"));
-  dt_bauhaus_slider_set_hard_min(g->cs_radius, 0.01f);
-  dt_bauhaus_widget_set_quad(g->cs_radius, self, dtgtk_cairo_paint_reset, FALSE, _cs_autoradius_callback,
+  dt_bauhaus_widget_set_quad(g->cs_radius, self, dtgtk_cairo_paint_reset, FALSE, _cs_radius_callback,
     _("calculate the capture sharpen radius from sensor data.\n"
       "this should be done in zoomed out darkroom"));
   g->autoradius = FALSE;
@@ -1690,7 +1701,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->cs_thrs, _("restrict capture sharpening to areas with high local contrast,\n"
                                             "increase to exclude flat areas in very dark or noisy images,\n"
                                             "decrease for well exposed and low noise images"));
-  dt_bauhaus_widget_set_quad(g->cs_thrs, self, dtgtk_cairo_paint_showmask, TRUE, _cs_quad_callback, _("visualize sharpened areas"));
+  dt_bauhaus_widget_set_quad(g->cs_thrs, self, dtgtk_cairo_paint_showmask, TRUE, _cs_thrs_callback, _("visualize sharpened areas"));
 
   g->cs_boost = dt_bauhaus_slider_from_params(self, "cs_boost");
   dt_bauhaus_slider_set_digits(g->cs_boost, 2);
@@ -1713,7 +1724,7 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_stack_add_named(GTK_STACK(self->widget), label_non_raw, "non_raw");
   gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "raw");
-  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _check_autoradius);
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _ui_pipe_done);
 }
 
 // clang-format off

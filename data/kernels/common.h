@@ -73,7 +73,18 @@ FC(const int row, const int col, const unsigned int filters)
 static inline int
 FCxtrans(const int row, const int col, global const unsigned char (*const xtrans)[6])
 {
-  return xtrans[row % 6][col % 6];
+  // There used to be a few cases in xtrans demosaicers in which row or col was negative.
+  // The +600 ensures a non-negative array index as in CPU code
+  return xtrans[(row + 600) % 6][(col + 600) % 6];
+}
+
+int
+fcol(const int row, const int col, const unsigned int filters, global const unsigned char (*const xtrans)[6])
+{
+  if(filters == 9)
+    return FCxtrans(row, col, xtrans);
+  else
+    return FC(row, col, filters);
 }
 
 
