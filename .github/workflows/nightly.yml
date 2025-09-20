@@ -264,7 +264,15 @@ jobs:
           cmake -E make_directory "${BUILD_DIR}"
           cmake -E make_directory "${INSTALL_PREFIX}"
           $(cygpath ${SRC_DIR})/.ci/ci-script.sh
-      - name: Package
+      - name: Create Inno Setup installer
+        shell: pwsh
+        run: |
+          choco upgrade innosetup
+          cd ${{ env.INSTALL_PREFIX }}
+          cp ${{ env.BUILD_DIR }}/darktable.iss ./
+          iscc "darktable.iss"
+          mv Output/*.exe ${{ env.BUILD_DIR }}/
+      - name: Create NSIS installer
         run: |
           cd "${BUILD_DIR}"
           cmake --build "${BUILD_DIR}" --target package
@@ -276,7 +284,7 @@ jobs:
       - name: Package upload
         uses: actions/upload-artifact@v4
         with:
-          path: ${{ env.BUILD_DIR }}/darktable-${{ env.VERSION }}-${{ env.SYSTEM }}.exe
+          path: ${{ env.BUILD_DIR }}/*.exe
           name: artifact-windows-${{ runner.arch }}
           retention-days: 2
 
