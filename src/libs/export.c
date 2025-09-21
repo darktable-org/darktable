@@ -734,9 +734,7 @@ void gui_reset(dt_lib_module_t *self)
   g_free(iccfilename);
 
   // set style to 'none'
-  g_free(d->style_name);
-  d->style_name = g_strdup("");
-  _update_style_label(d, d->style_name);
+  _update_style_label(d, "");
 
   // reset style mode
   dt_bauhaus_combobox_set(d->style_mode,
