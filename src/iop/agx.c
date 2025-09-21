@@ -188,7 +188,6 @@ typedef struct dt_iop_agx_gui_data_t
 
   GtkWidget *disable_primaries_adjustments;
   GtkWidget *primaries_controls_vbox;
-  GtkWidget *primaries_reset_button;
 } dt_iop_agx_gui_data_t;
 
 typedef struct tone_mapping_params_t
@@ -2183,66 +2182,42 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
   self->widget = parent;
 }
 
-static void _show_primaries_preset_popup_callback(GtkButton *button, dt_iop_module_t *self)
+static void _apply_primaries_from_menu_cb(GtkMenuItem *menuitem, dt_iop_module_t *self)
 {
-  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("configurations"), GTK_WINDOW(win),
-                                                  GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-                                                  _("cancel"), GTK_RESPONSE_CANCEL,
-                                                  _("set"), GTK_RESPONSE_ACCEPT,
-                                                  NULL);
-  gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_MOUSE);
-  // set a default width so the text fits
-  gtk_window_set_default_size(GTK_WINDOW(dialog), DT_PIXEL_APPLY_DPI(300), -1);
- 
-  GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-  GtkWidget *vbox = dt_gui_vbox();
-  gtk_container_add(GTK_CONTAINER(content_area), vbox);
+  const char *preset_id = gtk_widget_get_name(GTK_WIDGET(menuitem));
+  dt_iop_agx_params_t *p = self->params;
 
-  GtkWidget *rb = NULL;
-  rb = gtk_radio_button_new_with_label(NULL, _("blender-like"));
-  gtk_widget_set_name(rb, "blender");
-  gtk_box_pack_start(GTK_BOX(vbox), rb, FALSE, FALSE, 0);
-  rb = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb), _("smooth"));
-  gtk_widget_set_name(rb, "smooth");
-  gtk_box_pack_start(GTK_BOX(vbox), rb, FALSE, FALSE, 0);
-  rb = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb), _("unmodified"));
-  gtk_widget_set_name(rb, "unmodified");
-  gtk_box_pack_start(GTK_BOX(vbox), rb, FALSE, FALSE, 0);
+  if(strcmp(preset_id, "blender") == 0) _set_blenderlike_primaries(p);
+  else if(strcmp(preset_id, "smooth") == 0) _set_smooth_primaries(p);
+  else if(strcmp(preset_id, "unmodified") == 0) _set_unmodified_primaries(p);
 
-  gtk_widget_show_all(vbox);
-
-  const gint response = gtk_dialog_run(GTK_DIALOG(dialog));
-
-  if(response == GTK_RESPONSE_ACCEPT)
-  {
-    dt_iop_agx_params_t *p = self->params;
-    GList *radio_buttons = gtk_container_get_children(GTK_CONTAINER(vbox));
-    const char *preset_id = NULL;
-
-    for(GList *iter = radio_buttons; iter != NULL; iter = g_list_next(iter))
-    {
-      if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(iter->data)))
-      {
-        preset_id = gtk_widget_get_name(GTK_WIDGET(iter->data));
-        break;
-      }
-    }
-
-    if(preset_id)
-    {
-      if(strcmp(preset_id, "blender") == 0) _set_blenderlike_primaries(p);
-      else if(strcmp(preset_id, "smooth") == 0) _set_smooth_primaries(p);
-      else if(strcmp(preset_id, "unmodified") == 0) _set_unmodified_primaries(p);
-    }
-
-    g_list_free(radio_buttons);
-    dt_iop_gui_update(self);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-  }
-
-  gtk_widget_destroy(dialog);
+  dt_iop_gui_update(self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
+
+static void _primaries_popupmenu_callback(GtkWidget *button, dt_iop_module_t *self)
+{
+  GtkWidget *menu = gtk_menu_new();
+
+  GtkWidget *blender_item = gtk_menu_item_new_with_mnemonic(_("blender-like"));
+  gtk_widget_set_name(blender_item, "blender");
+  g_signal_connect(blender_item, "activate", G_CALLBACK(_apply_primaries_from_menu_cb), self);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), blender_item);
+
+  GtkWidget *smooth_item = gtk_menu_item_new_with_mnemonic(_("smooth"));
+  gtk_widget_set_name(smooth_item, "smooth");
+  g_signal_connect(smooth_item, "activate", G_CALLBACK(_apply_primaries_from_menu_cb), self);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), smooth_item);
+
+  GtkWidget *unmodified_item = gtk_menu_item_new_with_mnemonic(_("unmodified"));
+  gtk_widget_set_name(unmodified_item, "unmodified");
+  g_signal_connect(unmodified_item, "activate", G_CALLBACK(_apply_primaries_from_menu_cb), self);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), unmodified_item);
+
+  gtk_widget_show_all(menu);
+  dt_gui_menu_popup(GTK_MENU(menu), button, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST);
+}
+
 // GUI update (called when module UI is shown/refreshed)
 void gui_update(dt_iop_module_t *self)
 {
@@ -2296,13 +2271,14 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
   g->primaries_controls_vbox = self->widget = dt_gui_vbox();
   dt_gui_box_add(primaries_box, g->primaries_controls_vbox);
 
-  g->primaries_reset_button = gtk_button_new_with_label(_("reset primaries..."));
-  gtk_widget_set_tooltip_text(g->primaries_reset_button,
-                              _("set a particular set of primaries,\n"
-                                "without overwriting module parameters."));
-  g_signal_connect(g->primaries_reset_button, "clicked",
-                   G_CALLBACK(_show_primaries_preset_popup_callback), self);
-  dt_gui_box_add(g->primaries_controls_vbox, g->primaries_reset_button);
+  GtkWidget *primaries_hbox = dt_gui_hbox();
+  GtkWidget *primaries_label = gtk_label_new(_("reset primaries"));
+  GtkWidget *primaries_button = dtgtk_button_new(dtgtk_cairo_paint_styles, 0, NULL);
+  gtk_widget_set_tooltip_text(primaries_button, _("reset primaries to a predefined configuration"));
+  g_signal_connect(primaries_button, "clicked", G_CALLBACK(_primaries_popupmenu_callback), self);
+
+  gtk_box_pack_start(GTK_BOX(primaries_hbox), primaries_label, FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(primaries_hbox), primaries_button, FALSE, FALSE, 0);  dt_gui_box_add(g->primaries_controls_vbox, primaries_hbox);
 
   GtkWidget *base_primaries_combo = dt_bauhaus_combobox_from_params(section, "base_primaries");
   gtk_widget_set_tooltip_text(base_primaries_combo,
