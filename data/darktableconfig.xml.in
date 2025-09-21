@@ -3937,6 +3937,13 @@
     <longdescription>this is just to store whether to show advanced curve parameters or not</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/agx/enable_curve_warnings</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>whether to show curve warnings</shortdescription>
+    <longdescription>this is just to store whether to show curve warnings</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/collect/windowheight</name>
     <type>int</type>
     <default>500</default>
