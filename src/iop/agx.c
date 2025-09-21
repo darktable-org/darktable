@@ -1669,7 +1669,7 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
   // overdraw warning sections in yellow if needed
   if(tone_mapping_params.need_convex_toe)
   {
-    cairo_set_source_rgb(cr, 1.0, 1.0, 0.0);
+    cairo_set_source_rgb(cr, 0.75, .5, 0.);
     const int toe_end_step = ceilf(tone_mapping_params.toe_transition_x * steps);
     cairo_move_to(cr, 0, _apply_curve(0, &tone_mapping_params) * graph_height);
     for(int k = 1; k <= toe_end_step; k++)
@@ -1683,7 +1683,7 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
 
   if(tone_mapping_params.need_concave_shoulder)
   {
-    cairo_set_source_rgb(cr, 1.0, 1.0, 0.0);
+    cairo_set_source_rgb(cr, 0.75, .5, 0.);
     const int shoulder_start_step = floorf(tone_mapping_params.shoulder_transition_x * steps);
     float x_norm = (float)shoulder_start_step / steps;
     float y_norm = _apply_curve(x_norm, &tone_mapping_params);
@@ -1774,13 +1774,15 @@ static void _update_curve_warnings(dt_iop_module_t *self)
 
   if(!g) return;
 
+  const gboolean warnings_enabled = dt_conf_get_bool("plugins/darkroom/agx/enable_curve_warnings");
   const tone_mapping_params_t params = _calculate_tone_mapping_params(p);
 
   if (g->basic_curve_controls.toe_warning_icon)
-    gtk_widget_set_visible(g->basic_curve_controls.toe_warning_icon, params.need_convex_toe);
+    gtk_widget_set_visible(g->basic_curve_controls.toe_warning_icon,
+                           params.need_convex_toe && warnings_enabled);
   if (g->basic_curve_controls.shoulder_warning_icon)
     gtk_widget_set_visible(g->basic_curve_controls.shoulder_warning_icon,
-                         params.need_concave_shoulder);
+                           params.need_concave_shoulder && warnings_enabled);
 }
 
 static void _update_primaries_checkbox_and_sliders(const dt_iop_module_t *self)
@@ -1885,12 +1887,13 @@ static void _add_basic_curve_controls(dt_iop_module_t *self,
   controls->toe_warning_icon =
       gtk_image_new_from_icon_name("dialog-warning-symbolic", GTK_ICON_SIZE_SMALL_TOOLBAR);
   gtk_widget_set_tooltip_text(controls->toe_warning_icon,
-                              _("the curve has lost its 'S' shape, toe power cannot be applied\n"
-                                "target black cannot be reached with selected contrast and pivot position\n"
-                                "increase contrast, move the pivot lower (reduce pivot target output or\n"
+                              _("the curve has lost its 'S' shape, toe power cannot be applied.\n"
+                                "target black cannot be reached with the selected contrast and pivot position.\n"
+                                "increase contrast, move the pivot lower (reduce the pivot target output or\n"
                                 "curve y gamma), or increase the distance between the pivot and the left edge\n"
-                                "(increase pivot shift, decrease relative black exposure (set a larger\n"
-                                "negative number) or increase relative white exposure)"));
+                                "(increase the pivot shift, move the black point farther from the pivot by raising\n"
+                                "the relative black exposure or move the white point closer to the pivot\n"
+                                "by decreasing relative white exposure)."));
   gtk_widget_set_no_show_all(controls->toe_warning_icon, TRUE);
   gtk_box_pack_start(GTK_BOX(toe_hbox), controls->toe_warning_icon, FALSE, FALSE, 0);
 
@@ -1908,12 +1911,13 @@ static void _add_basic_curve_controls(dt_iop_module_t *self,
   controls->shoulder_warning_icon =
       gtk_image_new_from_icon_name("dialog-warning-symbolic", GTK_ICON_SIZE_SMALL_TOOLBAR);
   gtk_widget_set_tooltip_text(controls->shoulder_warning_icon,
-                              _("the curve has lost its 'S' shape, shoulder power cannot be applied\n"
-                                "target white cannot be reached with selected contrast and pivot position\n"
+                              _("the curve has lost its 'S' shape, shoulder power cannot be applied.\n"
+                                "target white cannot be reached with the selected contrast and pivot position.\n"
                                 "increase contrast, move the pivot higher (increase pivot target output\n"
                                 "or curve y gamma), or increase the distance between the pivot and the right\n"
-                                "edge (decrease pivot shift, increase relative white exposure or decrease\n"
-                                "relative black exposure (set a smaller negative number))"));
+                                "edge (decrease the pivot shift, move the white point farther from the pivot by\n"
+                                "increasing relative white exposure or move the black point closer to the pivot\n"
+                                "by lowering relative black exposure."));
 
   gtk_widget_set_no_show_all(controls->shoulder_warning_icon, TRUE);
   gtk_box_pack_start(GTK_BOX(shoulder_hbox), controls->shoulder_warning_icon, FALSE, FALSE, 0);
