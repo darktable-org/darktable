@@ -2186,13 +2186,15 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
 static void _show_primaries_preset_popup_callback(GtkButton *button, dt_iop_module_t *self)
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("Load primaries preset"), GTK_WINDOW(win),
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("configurations"), GTK_WINDOW(win),
                                                   GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-                                                  _("Cancel"), GTK_RESPONSE_CANCEL,
-                                                  _("Load"), GTK_RESPONSE_ACCEPT,
+                                                  _("cancel"), GTK_RESPONSE_CANCEL,
+                                                  _("set"), GTK_RESPONSE_ACCEPT,
                                                   NULL);
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_MOUSE);
-
+  // set a default width so the text fits
+  gtk_window_set_default_size(GTK_WINDOW(dialog), DT_PIXEL_APPLY_DPI(300), -1);
+ 
   GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
   GtkWidget *vbox = dt_gui_vbox();
   gtk_container_add(GTK_CONTAINER(content_area), vbox);
