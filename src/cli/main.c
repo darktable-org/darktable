@@ -591,6 +591,23 @@ int main(int argc, char *arg[])
         continue;
       }
     }
+    else
+    {
+      dt_film_t film;
+      dt_filmid_t filmid = NO_FILMID;
+
+      gchar *directory = g_path_get_dirname(input);
+      filmid = dt_film_new(&film, directory);
+      const dt_imgid_t id = dt_image_import(filmid, input, TRUE, TRUE);
+      g_free(directory);
+      if(!dt_is_valid_imgid(id))
+      {
+        fprintf(stderr, _("error: can't open file %s"), input);
+        fprintf(stderr, "\n");
+        continue;
+      }
+      id_list = g_list_append(id_list, GINT_TO_POINTER(id));
+    }
   }
 
   //we no longer need inputs
