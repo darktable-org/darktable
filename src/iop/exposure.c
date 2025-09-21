@@ -694,8 +694,8 @@ void gui_update(dt_iop_module_t *self)
     (GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->compensate_hilite_preserv))),
      PANGO_ELLIPSIZE_MIDDLE);
   g_free(label);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->compensate_hilite_preserv), hlbias > 0.0f);
-  
+  gtk_widget_set_visible(GTK_WIDGET(g->compensate_hilite_preserv), hlbias > 0.0f);
+
   g->spot_RGB[0] = 0.f;
   g->spot_RGB[1] = 0.f;
   g->spot_RGB[2] = 0.f;
