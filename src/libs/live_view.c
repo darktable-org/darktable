@@ -426,7 +426,9 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
                      int32_t pointery)
 {
   dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
+  if (!cam) return;
   dt_lib_live_view_t *lib = self->data;
+  if (!lib) return;
 
   if(cam->is_live_viewing == FALSE || cam->live_view_zoom == TRUE) return;
 
