@@ -33,7 +33,7 @@ static void dtgtk_side_panel_get_preferred_width(GtkWidget *widget,
                                                  gint *minimum_size,
                                                  gint *natural_size)
 {
-  GTK_WIDGET_CLASSx(dtgtk_side_panel_parent_class)->get_preferred_width
+  GTK_WIDGET_CLASS(dtgtk_side_panel_parent_class)->get_preferred_width
     (widget, minimum_size, natural_size);
 
   const int width =
