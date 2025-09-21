@@ -1777,7 +1777,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->cs_thrs, _("restrict capture sharpening to areas with high local contrast,\n"
                                             "increase to exclude flat areas in very dark or noisy images,\n"
                                             "decrease for well exposed and low noise images.\n\n"
-                                            "Note: a threshold set to zero will be rest to defaults the next run. use for presets"));
+                                            "Note: a threshold set to zero will be reset to defaults the next run. use for presets"));
   dt_bauhaus_widget_set_quad(g->cs_thrs, self, dtgtk_cairo_paint_showmask, TRUE, _cs_thrs_callback, _("visualize sharpened areas"));
 
   g->cs_boost = dt_bauhaus_slider_from_params(self, "cs_boost");
