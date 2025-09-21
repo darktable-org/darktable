@@ -393,6 +393,12 @@ public:
   image->readMetadata();                                      \
 }
 
+#define write_metadata_threadsafe(image)                      \
+{                                                             \
+  Lock lock;                                                  \
+  image->writeMetadata();                                     \
+}
+
 static void _exif_import_tags(dt_image_t *img, Exiv2::XmpData::iterator &pos);
 
 static void _read_xmp_timestamps(Exiv2::XmpData &xmpData,
@@ -2621,7 +2627,7 @@ int dt_exif_write_blob(uint8_t *blob,
     }
 
     imgExifData.sortByTag();
-    image->writeMetadata();
+    write_metadata_threadsafe(image);
   }
   catch(const Exiv2::AnyError &e)
   {
@@ -5924,7 +5930,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
 
     try
     {
-      img->writeMetadata();
+      write_metadata_threadsafe(img);
     }
     catch(const Exiv2::AnyError &e)
     {
@@ -5936,7 +5942,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
         _remove_xmp_keys(xmpData, "Xmp.darktable.iop_order");
         try
         {
-          img->writeMetadata();
+          write_metadata_threadsafe(img);
         }
         catch(const Exiv2::AnyError &e2)
         {
