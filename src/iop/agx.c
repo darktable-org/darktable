@@ -1955,7 +1955,7 @@ static void _add_basic_curve_controls(dt_iop_module_t *self,
                                 "or curve y gamma), or increase the distance between the pivot and the right\n"
                                 "edge (decrease the pivot shift, move the white point farther from the pivot by\n"
                                 "increasing relative white exposure or move the black point closer to the pivot\n"
-                                "by lowering relative black exposure."));
+                                "by lowering relative black exposure)."));
 
   gtk_widget_set_no_show_all(controls->shoulder_warning_icon, TRUE);
   gtk_box_pack_start(GTK_BOX(shoulder_hbox), controls->shoulder_warning_icon, FALSE, FALSE, 0);
