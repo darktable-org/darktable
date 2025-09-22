@@ -1190,6 +1190,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->exposure, _(" EV"));
   dt_bauhaus_slider_set_soft_range(g->exposure, -3.0, 4.0);
   dt_bauhaus_widget_set_quad_tooltip(g->exposure, _("set the exposure adjustment using the selected area"));
+  dt_shortcut_register(dt_action_widget(g->exposure), 0, 0, GDK_KEY_e, 0);
 
   GtkWidget *vbox_deflicker = self->widget = dt_gui_vbox();
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_deflicker, "deflicker");

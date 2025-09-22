@@ -1580,8 +1580,6 @@ void dt_bauhaus_combobox_add_full(GtkWidget *widget,
                                   gpointer data, void (free_func)(void *data),
                                   const gboolean sensitive)
 {
-  if(darktable.control->accel_initialising) return;
-
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;

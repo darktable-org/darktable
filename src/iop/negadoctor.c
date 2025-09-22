@@ -983,7 +983,6 @@ void gui_init(dt_iop_module_t *self)
                                           "to adjust the global contrast while avoiding clipping shadows."));
 
   g->gamma = dt_bauhaus_slider_from_params(self, "gamma");
-  dt_bauhaus_widget_set_label(g->gamma, NULL, N_("paper grade (gamma)"));
   gtk_widget_set_tooltip_text(g->gamma, _("select the grade of the virtual paper, which is actually\n"
                                           "equivalent to applying a gamma. it compensates the film D max\n"
                                           "and recovers the contrast. use a high grade for high D max."));
