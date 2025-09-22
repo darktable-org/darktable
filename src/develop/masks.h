@@ -1139,9 +1139,9 @@ static inline float dt_masks_sensitive_dist(const float zoom_scale)
 }
 
 static inline void dt_masks_get_image_size(float *width,
-                                          float *height,
-                                          float *iwidth,
-                                          float *iheight)
+                                           float *height,
+                                           float *iwidth,
+                                           float *iheight)
 {
   dt_dev_pixelpipe_t *preview = darktable.develop->preview_pipe;
   if(width  ) *width   = preview->backbuf_width;
