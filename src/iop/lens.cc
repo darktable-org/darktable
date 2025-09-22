@@ -4072,7 +4072,7 @@ static void _lens_set(dt_iop_module_t *self,
   }
   g_signal_connect(G_OBJECT(w), "value-changed",
                    G_CALLBACK(_lens_comboentry_focal_update), self);
-  dt_gui_box_add(g->lens_param_box, dt_gui_expand(w));
+  gtk_box_pack_start(GTK_BOX(g->lens_param_box), w, TRUE, TRUE, 0);
   dt_bauhaus_combobox_set_editable(w, 1);
   g->cbe[0] = w;
 
@@ -4102,7 +4102,7 @@ static void _lens_set(dt_iop_module_t *self,
   }
   g_signal_connect(G_OBJECT(w), "value-changed",
                    G_CALLBACK(_lens_comboentry_aperture_update), self);
-  dt_gui_box_add(g->lens_param_box, dt_gui_expand(w));
+  gtk_box_pack_start(GTK_BOX(g->lens_param_box), w, TRUE, TRUE, 0);
   dt_bauhaus_combobox_set_editable(w, 1);
   g->cbe[1] = w;
 
@@ -4123,7 +4123,7 @@ static void _lens_set(dt_iop_module_t *self,
   }
   g_signal_connect(G_OBJECT(w), "value-changed",
                    G_CALLBACK(_lens_comboentry_distance_update), self);
-  dt_gui_box_add(g->lens_param_box, dt_gui_expand(w));
+  gtk_box_pack_start(GTK_BOX(g->lens_param_box), w, TRUE, TRUE, 0);
   dt_bauhaus_combobox_set_editable(w, 1);
   g->cbe[2] = w;
 
