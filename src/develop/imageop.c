@@ -1685,7 +1685,6 @@ static void _init_module_so(void *m)
     if(module->gui_init
        && !dt_iop_load_module_by_so(module_instance, module, NULL))
     {
-      darktable.control->accel_initialising = TRUE;
       dt_iop_gui_init(module_instance);
 
       static gboolean blending_accels_initialized = FALSE;
@@ -1708,8 +1707,6 @@ static void _init_module_so(void *m)
 
       dt_iop_gui_cleanup_module(module_instance);
       dt_iop_cleanup_module(module_instance);
-
-      darktable.control->accel_initialising = FALSE;
     }
 
     free(module_instance);
