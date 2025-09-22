@@ -37,7 +37,7 @@
 #include <pango/pangocairo.h>
 #include <stdlib.h>
 
-DT_MODULE_INTROSPECTION(4, dt_iop_agx_params_t)
+DT_MODULE_INTROSPECTION(5, dt_iop_agx_params_t)
 
 const char *name()
 {
@@ -137,6 +137,7 @@ typedef struct dt_iop_agx_params_t
   float blue_rotation;    // $MIN: -0.5236f $MAX: 0.5236f  $DEFAULT: 0.f $DESCRIPTION: "blue rotation"
 
   float master_outset_ratio;     // $MIN:  0.f  $MAX: 2.f $DEFAULT: 1.f $DESCRIPTION: "master purity boost"
+  gboolean completely_reverse_primaries; // $DEFAULT: 0 $DESCRIPTION: "revert all"
   float master_unrotation_ratio; // $MIN:  0.f  $MAX: 2.f $DEFAULT: 1.f $DESCRIPTION: "master rotation reversal"
   float red_outset;              // $MIN:  0.f  $MAX: 2.f $DEFAULT: 0.f $DESCRIPTION: "red purity boost"
   float red_unrotation;          // $MIN: -0.5236f $MAX: 0.5236f  $DEFAULT: 0.f $DESCRIPTION: "red reverse rotation"
@@ -188,6 +189,8 @@ typedef struct dt_iop_agx_gui_data_t
 
   GtkWidget *disable_primaries_adjustments;
   GtkWidget *primaries_controls_vbox;
+  GtkWidget *completely_reverse_primaries;
+  GtkWidget *after_primaries_controls_vbox;
 } dt_iop_agx_gui_data_t;
 
 typedef struct tone_mapping_params_t
@@ -249,6 +252,7 @@ typedef struct primaries_params_t
 
   float master_outset_ratio;
   float master_unrotation_ratio;
+
   float outset[3];
   float unrotation[3];
 } primaries_params_t;
@@ -439,6 +443,32 @@ int legacy_params(dt_iop_module_t *self,
 
     return 0; // success
   }
+  if(old_version == 4)
+  {
+    dt_iop_agx_params_t *np = calloc(1, sizeof(dt_iop_agx_params_t));
+    const dt_iop_agx_params_v2_3_4_t *op = old_params;
+
+    // v5 adds 'completely_reverse_primaries' after 'master_outset_ratio'.
+    // Copy data in two parts around the new field.
+
+    // Fields before 'completely_reverse_primaries'.
+    const size_t part1_size = offsetof(dt_iop_agx_params_t, completely_reverse_primaries);
+    memcpy(np, op, part1_size);
+
+    // The new param.
+    np->completely_reverse_primaries = FALSE;
+
+    // Fields after 'completely_reverse_primaries'.
+    const void *old_part2_start = &op->master_unrotation_ratio;
+    void *new_part2_start = &np->master_unrotation_ratio;
+    const size_t part2_size = sizeof(dt_iop_agx_params_v2_3_4_t) - offsetof(dt_iop_agx_params_v2_3_4_t, master_unrotation_ratio);
+    memcpy(new_part2_start, old_part2_start, part2_size);
+
+    *new_params = np;
+    *new_params_size = sizeof(dt_iop_agx_params_t);
+    *new_version = 5;
+    return 0; // success
+  }
 
   return 1; // no other conversion possible
 }
@@ -463,6 +493,7 @@ _get_base_profile_type_from_enum(const dt_iop_agx_base_primaries_t base_primarie
 static void _set_blenderlike_primaries(dt_iop_agx_params_t *p)
 {
   p->disable_primaries_adjustments = FALSE;
+  p->completely_reverse_primaries = FALSE;
   p->base_primaries = DT_AGX_REC2020;
 
   // AgX primaries settings that produce the same matrices under D50
@@ -489,6 +520,7 @@ static void _set_blenderlike_primaries(dt_iop_agx_params_t *p)
 static void _set_unmodified_primaries(dt_iop_agx_params_t *p)
 {
   p->disable_primaries_adjustments = FALSE;
+  p->completely_reverse_primaries = FALSE;
   p->base_primaries = DT_AGX_REC2020;
 
   p->red_inset = 0.f;
@@ -511,6 +543,9 @@ static void _set_unmodified_primaries(dt_iop_agx_params_t *p)
 
 static void _set_smooth_primaries(dt_iop_agx_params_t *p)
 {
+  p->disable_primaries_adjustments = FALSE;
+  p->completely_reverse_primaries = FALSE;
+
   // Sigmoid 'smooth' primaries settings
   p->base_primaries = DT_AGX_WORK_PROFILE;
 
@@ -523,7 +558,6 @@ static void _set_smooth_primaries(dt_iop_agx_params_t *p)
   p->red_outset = 0.1f;
   p->green_outset = 0.1f;
   p->blue_outset = 0.15f;
-
 
   // sigmoid: "Don't restore purity - try to avoid posterization."
   p->master_outset_ratio = 0.f;
@@ -1123,21 +1157,26 @@ static primaries_params_t _get_primaries_params(const dt_iop_agx_params_t *p)
   primaries_params.rotation[2] = p->blue_rotation;
   primaries_params.master_outset_ratio = p->master_outset_ratio;
   primaries_params.master_unrotation_ratio = p->master_unrotation_ratio;
-  primaries_params.outset[0] = p->red_outset;
-  primaries_params.outset[1] = p->green_outset;
-  primaries_params.outset[2] = p->blue_outset;
-  primaries_params.unrotation[0] = p->red_unrotation;
-  primaries_params.unrotation[1] = p->green_unrotation;
-  primaries_params.unrotation[2] = p->blue_unrotation;
 
   if(p->disable_primaries_adjustments)
   {
     for(int i = 0; i < 3; i++)
       primaries_params.inset[i] =
-        primaries_params.rotation[i] =
-        primaries_params.outset[i] = primaries_params.unrotation[i] = 0.f;
+        primaries_params.rotation[i] = primaries_params.outset[i] = primaries_params.unrotation[i] = 0.f;
   }
-
+  else if(p->completely_reverse_primaries)
+  {
+    for(int i = 0; i < 3; i++)
+    {
+      primaries_params.outset[i] = primaries_params.inset[i];
+      primaries_params.unrotation[i] = primaries_params.rotation[i];
+    }
+  }
+  else
+  {
+    primaries_params.outset[0] = p->red_outset; primaries_params.outset[1] = p->green_outset; primaries_params.outset[2] = p->blue_outset;
+    primaries_params.unrotation[0] = p->red_unrotation; primaries_params.unrotation[1] = p->green_unrotation; primaries_params.unrotation[2] = p->blue_unrotation;
+  }
   return primaries_params;
 }
 
@@ -1823,6 +1862,17 @@ static void _update_curve_warnings(dt_iop_module_t *self)
                            params.need_concave_shoulder && warnings_enabled);
 }
 
+static void _update_after_primaries_visibility(const dt_iop_module_t *self)
+{
+  const dt_iop_agx_gui_data_t *g = self->gui_data;
+  const dt_iop_agx_params_t *p = self->params;
+
+  if(g && g->after_primaries_controls_vbox)
+  {
+    gtk_widget_set_visible(g->after_primaries_controls_vbox, !p->completely_reverse_primaries);
+  }
+}
+
 static void _update_primaries_checkbox_and_sliders(const dt_iop_module_t *self)
 {
   const dt_iop_agx_gui_data_t *g = self->gui_data;
@@ -1831,6 +1881,8 @@ static void _update_primaries_checkbox_and_sliders(const dt_iop_module_t *self)
   if(g && g->primaries_controls_vbox)
   {
     gtk_widget_set_visible(g->primaries_controls_vbox, !p->disable_primaries_adjustments);
+    if(g->completely_reverse_primaries)
+      gtk_widget_set_sensitive(g->completely_reverse_primaries, !p->disable_primaries_adjustments);
   }
 }
 
@@ -1857,6 +1909,7 @@ void gui_changed(dt_iop_module_t *self,
 
   _update_primaries_checkbox_and_sliders(self);
   _update_curve_warnings(self);
+  _update_after_primaries_visibility(self);
 
   // Test which widget was changed.
   // If allowing w == NULL, this can be called from gui_update, so that
@@ -2234,13 +2287,18 @@ void gui_update(dt_iop_module_t *self)
       _adjust_pivot(self->params, &tone_mapping_params);
       dt_bauhaus_slider_set(g->curve_gamma, tone_mapping_params.curve_gamma);
     }
+
+    gtk_widget_set_visible(g->completely_reverse_primaries, p->completely_reverse_primaries);
   }
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->disable_primaries_adjustments),
                                p->disable_primaries_adjustments);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->completely_reverse_primaries),
+                               p->completely_reverse_primaries);
 
   _update_primaries_checkbox_and_sliders(self);
   _update_curve_warnings(self);
+  _update_after_primaries_visibility(self);
 
   // Ensure the graph is drawn initially
   if(g && g->graph_drawing_area)
@@ -2319,6 +2377,14 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
                     _("rotate the blue primary"));
 
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "after tone mapping")));
+
+  g->completely_reverse_primaries = dt_bauhaus_toggle_from_params(section, "completely_reverse_primaries");
+  gtk_widget_set_tooltip_text(g->completely_reverse_primaries, _("completely restore purity and undo all rotations"));
+  gtk_widget_set_no_show_all(g->completely_reverse_primaries, TRUE);
+
+  GtkWidget *vbox_to_add_to = self->widget;
+  g->after_primaries_controls_vbox = self->widget = dt_gui_vbox();
+  dt_gui_box_add(vbox_to_add_to, g->after_primaries_controls_vbox);
 
   slider = dt_bauhaus_slider_from_params(section, "master_outset_ratio");
   dt_bauhaus_slider_set_format(slider, "%");
