@@ -220,7 +220,8 @@ static gboolean _reduce_aligners(int *ialign_w, int *ialign_h)
 
 static void _commit_box(dt_iop_module_t *self,
                         dt_iop_crop_gui_data_t *g,
-                        dt_iop_crop_params_t *p)
+                        dt_iop_crop_params_t *p,
+                        const gboolean enforce_history)
 {
   if(darktable.gui->reset) return;
   if(self->dev->preview_pipe->status != DT_DEV_PIXELPIPE_VALID) return;
@@ -286,7 +287,8 @@ static void _commit_box(dt_iop_module_t *self,
       p->cw = CLAMPF(points[2] / (float)piece->buf_out.width,   0.1f, 1.0f);
       p->ch = CLAMPF(points[3] / (float)piece->buf_out.height,  0.1f, 1.0f);
 
-      if(!feqf(p->cx, old[0], eps)
+      if(enforce_history
+        || !feqf(p->cx, old[0], eps)
         || !feqf(p->cy, old[1], eps)
         || !feqf(p->cw, old[2], eps)
         || !feqf(p->ch, old[3], eps))
@@ -572,7 +574,7 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
       // so we temporary put back gui_module to crop and revert once finished
       dt_iop_module_t *old_gui = self->dev->gui_module;
       self->dev->gui_module = self;
-      _commit_box(self, g, p);
+      _commit_box(self, g, p, FALSE);
       self->dev->gui_module = old_gui;
       g->clip_max_pipe_hash = DT_INVALID_HASH;
     }
@@ -767,7 +769,7 @@ void reload_defaults(dt_iop_module_t *self)
   dp->cw = img->usercrop[3];
   dp->ch = img->usercrop[2];
   dp->ratio_n = dp->ratio_d = -1;
-  dp->aligned = TRUE;
+  dp->aligned = FALSE;
 }
 
 static void _float_to_fract(const char *num, int *n, int *d)
@@ -950,7 +952,7 @@ static void _event_aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *sel
   }
 
   --darktable.gui->reset;
-  _commit_box(self, g, p);
+  _commit_box(self, g, p, TRUE);
 }
 
 static void _update_sliders_and_limit(dt_iop_crop_gui_data_t *g)
@@ -999,8 +1001,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   _update_sliders_and_limit(g);
 
   --darktable.gui->reset;
-
-  _commit_box(self, g, p);
+  _commit_box(self, g, p, TRUE);
 }
 
 void gui_reset(dt_iop_module_t *self)
@@ -1079,7 +1080,7 @@ static void _event_aspect_flip(GtkWidget *button, dt_iop_module_t *self)
   _event_key_swap(self);
   dt_iop_crop_gui_data_t *g = self->gui_data;
   dt_iop_crop_params_t *p = self->params;
-  _commit_box(self, g, p);
+  _commit_box(self, g, p, TRUE);
 }
 
 static gint _aspect_ratio_cmp(const dt_iop_crop_aspect_t *a,
@@ -1732,7 +1733,7 @@ int button_released(dt_iop_module_t *self,
   dt_control_change_cursor(GDK_LEFT_PTR);
 
   // we save the crop into the params now so params are kept in synch with gui settings
-  _commit_box(self, g, p);
+  _commit_box(self, g, p, FALSE);
   return 1;
 }
 
