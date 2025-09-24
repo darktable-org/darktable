@@ -120,6 +120,9 @@ changes (where available).
 - Fixed some reset issues of the export module. The format and storage
   sections were not reset properly.
 
+- Fixed corruption of sidecars during large imports of images with XMP
+  sidecars.
+
 ## Lua
 
 ### API Version
