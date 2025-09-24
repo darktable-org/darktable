@@ -365,7 +365,9 @@ void reload_defaults(dt_iop_module_t *self)
     d->black = 0.0f;
     d->compensate_exposure_bias = FALSE;
   }
-  d->compensate_hilite_pres = TRUE;
+  // the new default is to compensate for highlight preservation mode,
+  // but ONLY if we're the first instance (to avoid multiple application)
+  d->compensate_hilite_pres = dt_iop_is_first_instance(self->dev->iop, self);
 }
 
 static void _deflicker_prepare_histogram(dt_iop_module_t *self,
