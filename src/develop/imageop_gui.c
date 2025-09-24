@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
+#include "common/curve_tools.h"
 
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -323,7 +324,6 @@ GtkWidget *dt_iop_button_new(dt_iop_module_t *self, const gchar *label,
   g_signal_connect(G_OBJECT(button), "clicked", callback, (gpointer)self);
 
   dt_action_t *ac = dt_action_define_iop(self, NULL, label, button, &dt_action_def_button);
-  if(darktable.control->accel_initialising)
     dt_shortcut_register(ac, 0, 0, accel_key, mods);
 
   if(GTK_IS_BOX(box)) gtk_box_pack_start(GTK_BOX(box), button, TRUE, TRUE, 0);
@@ -335,6 +335,20 @@ gboolean dt_mask_scroll_increases(int up)
 {
   const gboolean mask_down = dt_conf_get_bool("masks_scroll_down_increases");
   return up ? !mask_down : mask_down;
+}
+
+GtkWidget *dt_bauhaus_combobox_new_interpolation(dt_iop_module_t *self)
+{
+  static const dt_introspection_type_enum_tuple_t interpolation_names[]
+    = { { N_("cubic spline"), CUBIC_SPLINE },
+        { N_("centripetal spline"), CATMULL_ROM },
+        { N_("monotonic spline"), MONOTONE_HERMITE },
+        { } };
+  GtkWidget *w = dt_bauhaus_combobox_new(self);
+  dt_action_t *ac = dt_bauhaus_widget_set_label(w, NULL, N_("interpolation method"));
+  dt_bauhaus_combobox_add_introspection(w, ac, interpolation_names, 0, -1);
+
+  return w;
 }
 
 // clang-format off

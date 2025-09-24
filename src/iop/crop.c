@@ -1324,6 +1324,8 @@ void gui_init(dt_iop_module_t *self)
 
   darktable.develop->cropping.flip_handler = self;
   darktable.develop->cropping.flip_callback = _crop_handle_flip;
+
+  dt_shortcut_register(DT_ACTION(self->so), 0, 0, GDK_KEY_c, 0);
 }
 
 static void _aspect_free(gpointer data)

@@ -53,6 +53,8 @@ GtkWidget *dt_iop_button_new(dt_iop_module_t *self, const gchar *label,
 /* returns up or !up depending on the masks_updown preference */
 gboolean dt_mask_scroll_increases(int up);
 
+GtkWidget *dt_bauhaus_combobox_new_interpolation(dt_iop_module_t *self);
+
 G_END_DECLS
 
 // clang-format off
