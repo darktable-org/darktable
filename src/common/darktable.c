@@ -1869,6 +1869,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   {
     dt_ctl_switch_mode_to("lighttable");
 
+    // all the default shortcuts have been registered
+    darktable.control->accel_initialised = TRUE;
+
     // Save the default shortcuts
     dt_shortcuts_save(".defaults", FALSE);
 

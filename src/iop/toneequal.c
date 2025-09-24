@@ -183,7 +183,7 @@ typedef struct dt_iop_toneequalizer_params_t
   float quantization; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.0 $DESCRIPTION: "mask quantization"
   float contrast_boost; // $MIN: -16.0 $MAX: 16.0 $DEFAULT: 0.0 $DESCRIPTION: "mask contrast compensation"
   float exposure_boost; // $MIN: -16.0 $MAX: 16.0 $DEFAULT: 0.0 $DESCRIPTION: "mask exposure compensation"
-  dt_iop_toneequalizer_filter_t details; // $DEFAULT: DT_TONEEQ_EIGF
+  dt_iop_toneequalizer_filter_t details; // $DEFAULT: DT_TONEEQ_EIGF $DESCRIPTION: "preserve details"
   dt_iop_luminance_mask_method_t method; // $DEFAULT: DT_TONEEQ_NORM_2 $DESCRIPTION: "luminance estimator"
   int iterations; // $MIN: 1 $MAX: 20 $DEFAULT: 1 $DESCRIPTION: "filter diffusion"
 } dt_iop_toneequalizer_params_t;
@@ -3392,7 +3392,6 @@ void gui_init(dt_iop_module_t *self)
        "higher contrast between areas to dodge and areas to burn"));
 
   g->details = dt_bauhaus_combobox_from_params(self, N_("details"));
-  dt_bauhaus_widget_set_label(g->details, NULL, N_("preserve details"));
   gtk_widget_set_tooltip_text
     (g->details,
      _("'no' affects global and local contrast (safe if you only add contrast)\n"

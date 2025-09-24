@@ -119,6 +119,7 @@ static dt_shortcut_t _sc = { 0 };  //  shortcut under construction
 static guint _previous_move = DT_SHORTCUT_MOVE_NONE;
 static dt_action_t *_selected_action = NULL;
 static dt_shortcut_t *_selected_shortcut = NULL;
+static GQuark _action_quark = 0;
 
 #define ELEMENT_IS(type, shortcut, elements) ((elements) && (elements)[(shortcut)->element].effects == dt_action_effect_##type)
 
@@ -479,7 +480,7 @@ static const gchar *_action_find_effect_combo(dt_action_t *ac,
 
 dt_action_t *dt_action_widget(GtkWidget *widget)
 {
-  return g_hash_table_lookup(darktable.control->widgets, widget);
+  return widget ? g_object_get_qdata(G_OBJECT(widget), _action_quark) : NULL;
 }
 
 static gboolean _is_kp_key(guint keycode)
@@ -4670,17 +4671,6 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
   return TRUE;
 }
 
-static void _remove_widget_from_hashtable(GtkWidget *widget, gpointer user_data)
-{
-  dt_action_t *action = dt_action_widget(widget);
-  if(action)
-  {
-    if(action->target == widget) action->target = NULL;
-
-    g_hash_table_remove(darktable.control->widgets, widget);
-  }
-}
-
 void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action)
 {
   new_action->owner = owner;
@@ -4822,16 +4812,22 @@ dt_action_t *dt_action_define(dt_action_t *owner,
     {
       ac->target = widget;
     }
-    else if(!darktable.control->accel_initialising && widget)
+    else if(widget)
     {
-      if(label && action_def && !ac->target) ac->target = widget;
-      g_hash_table_insert(darktable.control->widgets, widget, ac);
+      if(!_action_quark)
+        _action_quark = g_quark_from_static_string("dt_action");
+
+      if(!g_object_get_qdata(G_OBJECT(widget), _action_quark))
+      {
+        g_object_set_qdata(G_OBJECT(widget), _action_quark, ac);
+
+        if(label && action_def && !ac->target)
+          g_set_weak_pointer(&ac->target, widget);
+      }
 
       gtk_widget_set_has_tooltip(widget, TRUE);
       g_signal_connect(G_OBJECT(widget), "leave-notify-event",
                        G_CALLBACK(_reset_element_on_leave), NULL);
-      g_signal_connect(G_OBJECT(widget), "destroy",
-                       G_CALLBACK(_remove_widget_from_hashtable), NULL);
     }
   }
 
@@ -4918,7 +4914,7 @@ void dt_shortcut_register(dt_action_t *owner,
                           guint accel_key,
                           GdkModifierType mods)
 {
-  if(accel_key != 0)
+  if(accel_key != 0 && !darktable.control->accel_initialised)
   {
     GdkKeymap *keymap = gdk_keymap_get_for_display(gdk_display_get_default());
 
@@ -5144,7 +5140,7 @@ void dt_accel_connect_instance_iop(dt_iop_module_t *module)
     const dt_action_target_t *const referral = w->data;
     dt_action_t *const ac = referral->action;
     if(focused || (ac->owner != blend && ac->owner->owner != blend))
-      ac->target = referral->target;
+      g_set_weak_pointer(&ac->target, referral->target);
   }
 }
 
@@ -5172,9 +5168,7 @@ GtkWidget *dt_action_button_new(dt_lib_module_t *self,
   {
     dt_action_t *ac = dt_action_define(DT_ACTION(self), NULL, label,
                                        button, &dt_action_def_button);
-    if(accel_key && (self->actions.type != DT_ACTION_TYPE_IOP_INSTANCE
-                     || darktable.control->accel_initialising))
-      dt_shortcut_register(ac, 0, 0, accel_key, mods);
+    dt_shortcut_register(ac, 0, 0, accel_key, mods);
     g_object_set_data(G_OBJECT(button), "module", self);
   }
 
