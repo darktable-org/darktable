@@ -1,3 +1,7 @@
+v;scroll=iop/colorbalancergb/global vibrance
+v;horizontal=iop/colorbalancergb/global chroma
+y;scroll=iop/colorbalancergb/global brilliance
+y;horizontal=iop/colorbalancergb/global saturation
 F9;scroll=iop/primaries/red purity
 F9;horizontal=iop/primaries/red hue
 F10;scroll=iop/primaries/green purity
