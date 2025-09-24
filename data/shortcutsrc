@@ -36,3 +36,7 @@ F7;vertical=iop/colorequal/brightness/lavender
 F8;scroll=iop/colorequal/saturation/magenta
 F8;horizontal=iop/colorequal/hue/magenta
 F8;vertical=iop/colorequal/brightness/magenta
+x;scroll=iop/agx/basic curve parameters/contrast around the pivot
+x;horizontal=iop/agx/input exposure range/white relative exposure
+x;vertical=iop/agx/input exposure range/black relative exposure
+x;double=iop/agx/input exposure range/auto tune levels;button
