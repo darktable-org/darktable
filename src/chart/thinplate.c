@@ -48,8 +48,10 @@ static inline float __attribute__((__unused__)) fasterlog(const float x)
 // thinplate spline kernel \phi(r)
 static inline double thinplate_kernel(const double *x, const double *y)
 {
-  const double r
-      = sqrt((x[0] - y[0]) * (x[0] - y[0]) + (x[1] - y[1]) * (x[1] - y[1]) + (x[2] - y[2]) * (x[2] - y[2]));
+  const double r =
+      sqrt((x[0] - y[0]) * (x[0] - y[0])
+           + (x[1] - y[1]) * (x[1] - y[1])
+           + (x[2] - y[2]) * (x[2] - y[2]));
   return r * r * logf(MAX(1e-8f, r));
   // even when using both here and in the iop the approximate version,
   // it still doesn't work so well. need to be a bit more precise it seems.
@@ -79,7 +81,9 @@ static inline double compute_error(
     const double localerr = dt_colorspaces_deltaE_2000(Lab0, Lab1);
     err += localerr;
 #else
-    const double localerr = sqrt(residual_L[i] * residual_L[i] + residual_a[i] * residual_a[i] + residual_b[i] * residual_b[i]);
+    const double localerr = sqrt(residual_L[i] * residual_L[i]
+                                 + residual_a[i] * residual_a[i]
+                                 + residual_b[i] * residual_b[i]);
     err += localerr/wd;
 #endif
     merr = MAX(merr, localerr);
@@ -445,4 +449,3 @@ float thinplate_color_pos(const float L, const float a, const float b)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

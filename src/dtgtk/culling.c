@@ -1391,10 +1391,12 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     return TRUE;
   }
 
-  // initialize horizontal and vertical spacing distance between thumbnails with lowest value possible. Will be scaled up later.
+  // initialize horizontal and vertical spacing distance between
+  // thumbnails with lowest value possible. Will be scaled up later.
   const int spacing = 1;
 
-  // reinit size and positions of each thumbnail, remember size from biggest thumbnail, calculate average thumbnail ratio
+  // reinit size and positions of each thumbnail, remember size from
+  // biggest thumbnail, calculate average thumbnail ratio
   int max_thumb_height = 0;
 
   for(GList *l = table->list; l; l = g_list_next(l))

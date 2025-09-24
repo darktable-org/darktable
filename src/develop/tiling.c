@@ -158,8 +158,14 @@ static double _nm_fitness(double x[], void *rest[])
 #define BETA 0.5    /* contraction coefficient */
 #define GAMMA 2.0   /* expansion coefficient */
 
-static int _simplex(double (*objfunc)(double[], void *[]), double start[], int n, double EPSILON,
-                    double scale, int maxiter, void (*constrain)(double[], int n), void *rest[])
+static int _simplex(double (*objfunc)(double[], void *[]),
+                    const double start[],
+                    const int n,
+                    const double EPSILON,
+                    const double scale,
+                    const int maxiter,
+                    void (*constrain)(double[], int n),
+                    void *rest[])
 {
 
   int vs; /* vertex with smallest value */
