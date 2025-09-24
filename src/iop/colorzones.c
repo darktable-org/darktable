@@ -2727,16 +2727,7 @@ void gui_init(dt_iop_module_t *self)
                    G_CALLBACK(_bottom_area_button_press_callback),
                    self);
 
-  /* From src/common/curve_tools.h :
-    #define CUBIC_SPLINE 0
-    #define CATMULL_ROM 1
-    #define MONOTONE_HERMITE 2
-  */
-  g->interpolator = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->interpolator, NULL, N_("interpolation method"));
-  dt_bauhaus_combobox_add(g->interpolator, _("cubic spline"));
-  dt_bauhaus_combobox_add(g->interpolator, _("centripetal spline"));
-  dt_bauhaus_combobox_add(g->interpolator, _("monotonic spline"));
+  g->interpolator = dt_bauhaus_combobox_new_interpolation(self);
   dt_gui_box_add(self->widget, g->interpolator);
   gtk_widget_set_tooltip_text(g->interpolator,
       _("change this method if you see oscillations or cusps in the curve\n"
