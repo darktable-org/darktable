@@ -137,7 +137,7 @@ typedef struct dt_iop_agx_params_t
   float blue_rotation;    // $MIN: -0.5236f $MAX: 0.5236f  $DEFAULT: 0.f $DESCRIPTION: "blue rotation"
 
   float master_outset_ratio;     // $MIN:  0.f  $MAX: 2.f $DEFAULT: 1.f $DESCRIPTION: "master purity boost"
-  gboolean completely_reverse_primaries; // $DEFAULT: 0 $DESCRIPTION: "revert all"
+  gboolean completely_reverse_primaries; // $DEFAULT: 0 $DESCRIPTION: "reverse all"
   float master_unrotation_ratio; // $MIN:  0.f  $MAX: 2.f $DEFAULT: 1.f $DESCRIPTION: "master rotation reversal"
   float red_outset;              // $MIN:  0.f  $MAX: 2.f $DEFAULT: 0.f $DESCRIPTION: "red purity boost"
   float red_unrotation;          // $MIN: -0.5236f $MAX: 0.5236f  $DEFAULT: 0.f $DESCRIPTION: "red reverse rotation"
@@ -191,6 +191,7 @@ typedef struct dt_iop_agx_gui_data_t
   GtkWidget *primaries_controls_vbox;
   GtkWidget *completely_reverse_primaries;
   GtkWidget *after_primaries_controls_vbox;
+  GtkWidget *set_post_tonemapping_primaries_from_pre_button;
 } dt_iop_agx_gui_data_t;
 
 typedef struct tone_mapping_params_t
@@ -1869,7 +1870,14 @@ static void _update_after_primaries_visibility(const dt_iop_module_t *self)
 
   if(g && g->after_primaries_controls_vbox)
   {
-    gtk_widget_set_visible(g->after_primaries_controls_vbox, !p->completely_reverse_primaries);
+    const gboolean independent_post_primaries = !p->completely_reverse_primaries;
+    gtk_widget_set_visible(g->after_primaries_controls_vbox, independent_post_primaries);
+    gtk_widget_set_sensitive(g->after_primaries_controls_vbox, independent_post_primaries);
+    if(g->set_post_tonemapping_primaries_from_pre_button)
+    {
+      gtk_widget_set_visible(g->set_post_tonemapping_primaries_from_pre_button, independent_post_primaries);
+      gtk_widget_set_sensitive(g->set_post_tonemapping_primaries_from_pre_button, independent_post_primaries);
+    }
   }
 }
 
@@ -2271,6 +2279,24 @@ static void _primaries_popupmenu_callback(GtkWidget *button, dt_iop_module_t *se
   dt_gui_menu_popup(GTK_MENU(menu), button, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST);
 }
 
+static void _set_post_tonemapping_primaries_from_pre_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  dt_iop_agx_params_t *p = self->params;
+
+  p->master_outset_ratio = 1.0f;
+  p->master_unrotation_ratio = 1.0f;
+
+  p->red_outset = p->red_inset;
+  p->green_outset = p->green_inset;
+  p->blue_outset = p->blue_inset;
+
+  p->red_unrotation = p->red_rotation;
+  p->green_unrotation = p->green_rotation;
+  p->blue_unrotation = p->blue_rotation;
+
+  dt_iop_gui_update(self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
 // GUI update (called when module UI is shown/refreshed)
 void gui_update(dt_iop_module_t *self)
 {
@@ -2287,8 +2313,6 @@ void gui_update(dt_iop_module_t *self)
       _adjust_pivot(self->params, &tone_mapping_params);
       dt_bauhaus_slider_set(g->curve_gamma, tone_mapping_params.curve_gamma);
     }
-
-    gtk_widget_set_visible(g->completely_reverse_primaries, p->completely_reverse_primaries);
   }
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->disable_primaries_adjustments),
@@ -2378,11 +2402,23 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
 
   dt_gui_box_add(self->widget, dt_ui_section_label_new(C_("section", "after tone mapping")));
 
-  g->completely_reverse_primaries = dt_bauhaus_toggle_from_params(section, "completely_reverse_primaries");
-  gtk_widget_set_tooltip_text(g->completely_reverse_primaries, _("completely restore purity and undo all rotations"));
-  gtk_widget_set_no_show_all(g->completely_reverse_primaries, TRUE);
+  GtkWidget *parent_vbox = self->widget;
 
-  GtkWidget *vbox_to_add_to = self->widget;
+  GtkWidget *reversal_hbox = dt_gui_hbox();
+  dt_gui_box_add(parent_vbox, reversal_hbox);
+
+  self->widget = reversal_hbox;
+  g->completely_reverse_primaries = dt_bauhaus_toggle_from_params(section, "completely_reverse_primaries");
+  self->widget = parent_vbox;
+
+  gtk_widget_set_tooltip_text(g->completely_reverse_primaries, _("completely restore purity and undo all rotations"));
+
+  g->set_post_tonemapping_primaries_from_pre_button = gtk_button_new_with_label(_("set from above"));
+  gtk_widget_set_tooltip_text(g->set_post_tonemapping_primaries_from_pre_button, _("set parameters to completely reverse primaries modifications, but allow subsequent editing"));
+  g_signal_connect(g->set_post_tonemapping_primaries_from_pre_button, "clicked", G_CALLBACK(_set_post_tonemapping_primaries_from_pre_callback), self);
+  gtk_box_pack_end(GTK_BOX(reversal_hbox), g->set_post_tonemapping_primaries_from_pre_button, FALSE, FALSE, 5);
+
+  GtkWidget *vbox_to_add_to = parent_vbox;
   g->after_primaries_controls_vbox = self->widget = dt_gui_vbox();
   dt_gui_box_add(vbox_to_add_to, g->after_primaries_controls_vbox);
 
