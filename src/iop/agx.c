@@ -1870,7 +1870,7 @@ static void _update_after_primaries_visibility(const dt_iop_module_t *self)
 
   if(g && g->after_primaries_controls_vbox)
   {
-    const gboolean independent_post_primaries = !p->completely_reverse_primaries;
+    const gboolean independent_post_primaries = !p->completely_reverse_primaries && !p->disable_primaries_adjustments;
     gtk_widget_set_visible(g->after_primaries_controls_vbox, independent_post_primaries);
     gtk_widget_set_sensitive(g->after_primaries_controls_vbox, independent_post_primaries);
     if(g->set_post_tonemapping_primaries_from_pre_button)
@@ -1888,7 +1888,9 @@ static void _update_primaries_checkbox_and_sliders(const dt_iop_module_t *self)
 
   if(g && g->primaries_controls_vbox)
   {
-    gtk_widget_set_visible(g->primaries_controls_vbox, !p->disable_primaries_adjustments);
+    const gboolean primaries_enabled = !p->disable_primaries_adjustments;
+    gtk_widget_set_visible(g->primaries_controls_vbox, primaries_enabled);
+    gtk_widget_set_sensitive(g->primaries_controls_vbox, primaries_enabled);
     if(g->completely_reverse_primaries)
       gtk_widget_set_sensitive(g->completely_reverse_primaries, !p->disable_primaries_adjustments);
   }
