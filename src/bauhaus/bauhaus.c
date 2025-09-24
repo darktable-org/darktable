@@ -1522,6 +1522,10 @@ void dt_bauhaus_combobox_add_list(GtkWidget *widget,
   if(action)
     g_hash_table_insert(darktable.bauhaus->combo_list, action, texts);
 
+  if(!darktable.control->accel_initialised
+     && DT_BAUHAUS_WIDGET(widget)->module->type == DT_ACTION_TYPE_IOP_INSTANCE)
+    return;
+
   while(texts && *texts)
     dt_bauhaus_combobox_add(widget, Q_(*(texts++)));
 }
@@ -1537,6 +1541,10 @@ gboolean dt_bauhaus_combobox_add_introspection
 
   if(action)
     g_hash_table_insert(darktable.bauhaus->combo_introspection, action, (gpointer)list);
+
+  if(!darktable.control->accel_initialised
+     && DT_BAUHAUS_WIDGET(widget)->module->type == DT_ACTION_TYPE_IOP_INSTANCE)
+    return FALSE;
 
   while(item->name && item->value != start) item++;
   for(; item->name; item++)
@@ -1581,6 +1589,7 @@ void dt_bauhaus_combobox_add_full(GtkWidget *widget,
                                   const gboolean sensitive)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   if(!data && d->entries->len > 0 && !_combobox_entry(d, 0)->data)
