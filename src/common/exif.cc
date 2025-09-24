@@ -393,6 +393,12 @@ public:
   image->readMetadata();                                      \
 }
 
+#define write_metadata_threadsafe(image)                      \
+{                                                             \
+  Lock lock;                                                  \
+  image->writeMetadata();                                     \
+}
+
 static void _exif_import_tags(dt_image_t *img, Exiv2::XmpData::iterator &pos);
 
 static void _read_xmp_timestamps(Exiv2::XmpData &xmpData,
@@ -2621,7 +2627,7 @@ int dt_exif_write_blob(uint8_t *blob,
     }
 
     imgExifData.sortByTag();
-    image->writeMetadata();
+    write_metadata_threadsafe(image);
   }
   catch(const Exiv2::AnyError &e)
   {
@@ -5314,6 +5320,7 @@ char *dt_exif_xmp_read_string(const dt_imgid_t imgid)
 {
   try
   {
+    Lock lock;
     char input_filename[PATH_MAX] = { 0 };
     dt_image_full_path(imgid, input_filename, sizeof(input_filename), NULL);
 
@@ -5708,6 +5715,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
     g_strlcat(input_filename, ".xmp", sizeof(input_filename));
     if(g_file_test(input_filename, G_FILE_TEST_EXISTS))
     {
+      Lock lock;
       Exiv2::XmpData sidecarXmpData;
       std::string xmpPacket;
 
@@ -5924,7 +5932,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
 
     try
     {
-      img->writeMetadata();
+      write_metadata_threadsafe(img);
     }
     catch(const Exiv2::AnyError &e)
     {
@@ -5936,7 +5944,7 @@ gboolean dt_exif_xmp_attach_export(const dt_imgid_t imgid,
         _remove_xmp_keys(xmpData, "Xmp.darktable.iop_order");
         try
         {
-          img->writeMetadata();
+          write_metadata_threadsafe(img);
         }
         catch(const Exiv2::AnyError &e2)
         {
@@ -5976,6 +5984,7 @@ gboolean dt_exif_xmp_write(const dt_imgid_t imgid,
 
   try
   {
+    Lock lock;
     Exiv2::XmpData xmpData;
     std::string xmpPacket;
     char *checksum_old = NULL;
