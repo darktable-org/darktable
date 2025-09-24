@@ -1,3 +1,5 @@
+e;scroll=iop/exposure/exposure
+r;scroll=iop/ashift/rotation
 v;scroll=iop/colorbalancergb/global vibrance
 v;horizontal=iop/colorbalancergb/global chroma
 y;scroll=iop/colorbalancergb/global brilliance
