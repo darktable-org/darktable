@@ -1,0 +1,8 @@
+F9;scroll=iop/primaries/red purity
+F9;horizontal=iop/primaries/red hue
+F10;scroll=iop/primaries/green purity
+F10;horizontal=iop/primaries/green hue
+F11;scroll=iop/primaries/blue purity
+F11;horizontal=iop/primaries/blue hue
+F12;scroll=iop/primaries/tint purity
+F12;horizontal=iop/primaries/tint hue
