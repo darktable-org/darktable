@@ -1872,6 +1872,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // all the default shortcuts have been registered
     darktable.control->accel_initialised = TRUE;
 
+    // load additional default shortcuts from share directory
+    gchar *shortcuts_file = g_build_filename(sharedir, "darktable/shortcutsrc", NULL);
+    dt_shortcuts_load(shortcuts_file, FALSE);
+    g_free(shortcuts_file);
+
     // Save the default shortcuts
     dt_shortcuts_save(".defaults", FALSE);
 

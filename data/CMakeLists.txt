@@ -128,6 +128,11 @@ install(FILES ${WATERMARKS} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/w
 FILE(COPY gdb_commands DESTINATION "${DARKTABLE_DATADIR}")
 install(FILES gdb_commands DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
 
+# Install default shortcutsrc
+#
+FILE(COPY shortcutsrc DESTINATION "${DARKTABLE_DATADIR}")
+install(FILES shortcutsrc DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
+
 #
 # Install noiseprofiles
 #
