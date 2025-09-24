@@ -218,7 +218,7 @@ void _set_ctrl_angle(const float x_ref,
 
   if(!move_p2) // move p1
   {
-    const float length1 = sqrt((x1a - x_refa) * (x1a - x_refa) + (*y1 - y_ref) * (*y1 - y_ref));
+    const float length1 = sqrtf((x1a - x_refa) * (x1a - x_refa) + (*y1 - y_ref) * (*y1 - y_ref));
     const float angle2 = angle_2d(x2a, *y2, x_refa, y_ref);
     const float angle1 = angle2 - angle;
 
@@ -227,7 +227,7 @@ void _set_ctrl_angle(const float x_ref,
   }
   else // move p2
 {
-    const float length2 = sqrt((x2a - x_refa) * (x2a - x_refa) + (*y2 - y_ref) * (*y2 - y_ref));
+    const float length2 = sqrtf((x2a - x_refa) * (x2a - x_refa) + (*y2 - y_ref) * (*y2 - y_ref));
     const float angle1 = angle_2d(x1a, *y1, x_refa, y_ref);
     const float angle2 = angle1 + angle;
 
@@ -262,8 +262,8 @@ float _get_ctrl_scale(const float x_ref,
   const float x2a = x2 * aspect_ratio;
   const float x_refa = x_ref * aspect_ratio;
 
-  const float length1 = sqrt((x1a - x_refa) * (x1a - x_refa) + (y1 - y_ref) * (y1 - y_ref));
-  const float length2 = sqrt((x2a - x_refa) * (x2a - x_refa) + (y2 - y_ref) * (y2 - y_ref));
+  const float length1 = sqrtf((x1a - x_refa) * (x1a - x_refa) + (y1 - y_ref) * (y1 - y_ref));
+  const float length2 = sqrtf((x2a - x_refa) * (x2a - x_refa) + (y2 - y_ref) * (y2 - y_ref));
   return length1 / length2;
 }
 
@@ -299,7 +299,7 @@ void _set_ctrl_scale(const float x_ref,
 
   if(!move_p2) // move p1
   {
-    const float length2 = sqrt((x2a - x_refa) * (x2a - x_refa) + (*y2 - y_ref) * (*y2 - y_ref));
+    const float length2 = sqrtf((x2a - x_refa) * (x2a - x_refa) + (*y2 - y_ref) * (*y2 - y_ref));
     const float angle1 = angle_2d(x1a, *y1, x_refa, y_ref);
     const float length1 = length2 * scale;
 
@@ -308,7 +308,7 @@ void _set_ctrl_scale(const float x_ref,
   }
   else // move p2
   {
-    const float length1 = sqrt((x1a - x_refa) * (x1a - x_refa) + (*y1 - y_ref) * (*y1 - y_ref));
+    const float length1 = sqrtf((x1a - x_refa) * (x1a - x_refa) + (*y1 - y_ref) * (*y1 - y_ref));
     const float angle2 = angle_2d(x2a, *y2, x_refa, y_ref);
     const float length2 = length1 / scale;
 
@@ -3563,8 +3563,8 @@ static void _path_falloff_roi(float *buffer,
                               const int bh)
 {
   // segment length
-  const int l = sqrt((p1[0] - p0[0]) * (p1[0] - p0[0])
-                     + (p1[1] - p0[1]) * (p1[1] - p0[1])) + 1;
+  const int l = sqrtf((p1[0] - p0[0]) * (p1[0] - p0[0])
+                      + (p1[1] - p0[1]) * (p1[1] - p0[1])) + 1;
 
   const float lx = p1[0] - p0[0];
   const float ly = p1[1] - p0[1];
