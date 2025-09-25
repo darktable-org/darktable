@@ -547,15 +547,49 @@ int main(int argc, char *arg[])
 
     if(g_file_test(input, G_FILE_TEST_IS_DIR))
     {
-      const dt_filmid_t filmid = dt_film_import(input);
-      if(!filmid)
+      //const dt_filmid_t filmid = dt_film_import(input);
+      dt_film_t film;
+      dt_filmid_t filmid = dt_film_new(&film, input);
+      //if(!filmid)
+      if(!dt_is_valid_filmid(filmid))
       {
-        // one of inputs was a failure, no prob
         fprintf(stderr, _("error: can't open folder %s"), input);
         fprintf(stderr, "\n");
         continue;
       }
-      id_list = g_list_concat(id_list, dt_film_get_image_ids(filmid));
+      // Based on dt_pathlist_import_create in control/jobs/film_jobs.c
+      GDir *cdir = g_dir_open(input, 0, NULL);
+      if(cdir)
+      {
+        const gchar *fname;
+        while((fname = g_dir_read_name(cdir)) != NULL)
+        {
+          if(fname[0] == '.') continue;  // skip hidden files
+          gchar *fullname = g_build_filename(input, fname, NULL);
+          if(!g_file_test(fullname, G_FILE_TEST_IS_DIR) && dt_supported_image(fname))
+          {
+            // Import each supported image file directly
+            const dt_imgid_t imgid = dt_image_import(filmid, fullname, TRUE, TRUE);
+            if(dt_is_valid_imgid(imgid))
+            {
+              id_list = g_list_append(id_list, GINT_TO_POINTER(imgid));
+            }
+            else
+            {
+              fprintf(stderr, _("error: can't import file %s"), fullname);
+              fprintf(stderr, "\n");
+            }
+          }
+          g_free(fullname);
+        }
+        g_dir_close(cdir);
+      }
+      else
+      {
+        fprintf(stderr, _("error: can't read directory %s"), input);
+        fprintf(stderr, "\n");
+        continue;
+      }
     }
     else
     {
