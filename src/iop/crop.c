@@ -281,6 +281,7 @@ static void _commit_box(dt_iop_module_t *self,
             exact ? "exact" : "as is",
             aspect, p->ratio_n, p->ratio_d, align_w, align_h, dw, dh, width, height, points[2] - points[0], points[3] - points[1]);
       }
+
       // use possibly aspect corrected data and verify that the crop area stays in the image area
       p->cx = CLAMPF(points[0] / (float)piece->buf_out.width,   0.0f, 0.9f);
       p->cy = CLAMPF(points[1] / (float)piece->buf_out.height,  0.0f, 0.9f);
@@ -288,11 +289,11 @@ static void _commit_box(dt_iop_module_t *self,
       p->ch = CLAMPF(points[3] / (float)piece->buf_out.height,  0.1f, 1.0f);
 
       if(enforce_history
-        || !feqf(p->cx, old[0], eps)
-        || !feqf(p->cy, old[1], eps)
-        || !feqf(p->cw, old[2], eps)
-        || !feqf(p->ch, old[3], eps))
-          dt_dev_add_history_item(darktable.develop, self, TRUE);
+         || !feqf(p->cx, old[0], eps)
+         || !feqf(p->cy, old[1], eps)
+         || !feqf(p->cw, old[2], eps)
+         || !feqf(p->ch, old[3], eps))
+        dt_dev_add_history_item(darktable.develop, self, TRUE);
     }
   }
 }
@@ -905,11 +906,7 @@ static void _event_aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *sel
   // now we save all that if it has changed
   if(d != abs(p->ratio_d) || n != p->ratio_n)
   {
-    if(p->ratio_d >= 0)
-      p->ratio_d = d;
-    else
-      p->ratio_d = -d;
-
+    p->ratio_d = abs(d);
     p->ratio_n = n;
     p->aligned = p->ratio_d != 0 && p->ratio_n != 0;
 
