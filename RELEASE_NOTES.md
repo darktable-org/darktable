@@ -129,17 +129,28 @@ changes (where available).
 - Make sure we always fill the complete main darkroom canvas while
   zooming at large scales.
 
+- Make sure image changed_timestamp is updated when a sidecar file
+  is applied.
+
 ## Lua
 
 ### API Version
 
-- API version is now 9.5.0
+- API version is now 9.6.0
 
 ### New Features
 
-- ???
+- Added darktable.query_event() to check if an event is registered.
+
+- Added collection-changed event that fires when the collection changes.
+
+- Added darktable.configuration.share_dir and darktable.configuration.data_dir
+  to expose the darktable data and share directories.
 
 ### Bug Fixes
+
+- Check added to ensure view has changed before processing GUI events
+  preventing hang on start.
 
 ### Add action support for Lua
 
