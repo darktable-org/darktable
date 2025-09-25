@@ -298,6 +298,8 @@ GtkWidget *dt_iop_togglebutton_new(dt_iop_module_t *self, const char *section, c
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), FALSE);
   if(GTK_IS_BOX(box)) gtk_box_pack_end(GTK_BOX(box), w, FALSE, FALSE, 0);
+  // GTK4 gtk_box_insert_child_after after finding first non-button from end
+  //      gtk_widget_get_last_child / gtk_widget_get_prev_sibling
 
   dt_action_define_iop(self, section, label, w, &dt_action_def_toggle);
 

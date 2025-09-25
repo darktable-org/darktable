@@ -2534,48 +2534,45 @@ void dt_iop_gui_update_expanded(dt_iop_module_t *module)
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(module->expander), expanded);
 }
 
-static gboolean _iop_plugin_body_button_press(GtkWidget *w,
-                                              GdkEventButton *e,
-                                              gpointer user_data)
+static void _iop_plugin_body_button_press(GtkGestureSingle *gesture,
+                                          int n_press,
+                                          double x,
+                                          double y,
+                                          dt_iop_module_t *module)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-  if(e->button == GDK_BUTTON_PRIMARY)
-  {
+  guint button = gtk_gesture_single_get_current_button(gesture);
+  if(button == GDK_BUTTON_PRIMARY)
     dt_iop_request_focus(module);
-    return TRUE;
-  }
-  else if(e->button == GDK_BUTTON_SECONDARY)
-  {
+  else if(button == GDK_BUTTON_SECONDARY)
     _presets_popup_callback(NULL, NULL, module);
 
-    return TRUE;
-  }
-  return FALSE;
+  dt_gui_claim(gesture);
 }
 
-static gboolean _iop_plugin_header_button_release(GtkWidget *w,
-                                                  GdkEventButton *e,
-                                                  gpointer user_data)
+static void _iop_plugin_header_button_press(GtkGestureSingle *gesture,
+                                            int n_press,
+                                            double x,
+                                            double y,
+                                            dt_iop_module_t *module)
 {
-  if(e->type == GDK_2BUTTON_PRESS || e->type == GDK_3BUTTON_PRESS) return TRUE;
-  if(GTK_IS_BUTTON(gtk_get_event_widget((GdkEvent*)e))) return FALSE;
+  if(n_press > 1) return;
 
-  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-
-  if(e->button == GDK_BUTTON_PRIMARY)
+  guint button = gtk_gesture_single_get_current_button(gesture);
+  if(button == GDK_BUTTON_PRIMARY)
   {
-    if(dt_modifier_is(e->state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
+    if(dt_modifier_eq(gesture, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
       ; // do nothing (for easier dragging)
-    else if(dt_modifier_is(e->state, GDK_CONTROL_MASK))
+    else if(dt_modifier_eq(gesture, GDK_CONTROL_MASK))
     {
       dt_iop_gui_rename_module(module);
-      return TRUE;
+      dt_gui_claim(gesture);
+      return;
     }
     else
     {
       const gboolean collapse_others =
         !dt_conf_get_bool("darkroom/ui/single_module")
-        != (!dt_modifier_is(e->state, GDK_SHIFT_MASK));
+        != (!dt_modifier_eq(gesture, GDK_SHIFT_MASK));
 
       dt_iop_gui_set_expanded(module, !module->expanded, collapse_others);
 
@@ -2585,16 +2582,17 @@ static gboolean _iop_plugin_header_button_release(GtkWidget *w,
       //used to take focus away from module search text input box when module selected
       gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 
-      return TRUE;
+      dt_gui_claim(gesture);
+      return;
     }
   }
-  else if(e->button == GDK_BUTTON_SECONDARY)
+  else if(button == GDK_BUTTON_SECONDARY)
   {
     _presets_popup_callback(NULL, NULL, module);
 
-    return TRUE;
+    dt_gui_claim(gesture);
+    return;
   }
-  return FALSE;
 }
 
 static void _header_size_callback(GtkWidget *widget,
@@ -3127,8 +3125,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   module->header = header;
 
   /* setup the header box */
-  g_signal_connect(G_OBJECT(header_evb), "button-release-event",
-                   G_CALLBACK(_iop_plugin_header_button_release), module);
+  dt_gui_connect_click_all(header_evb, _iop_plugin_header_button_press, NULL, module);
   gtk_widget_add_events(header_evb, GDK_POINTER_MOTION_MASK);
   g_signal_connect(G_OBJECT(header_evb), "enter-notify-event",
                    G_CALLBACK(_header_motion_notify_show_callback), module);
@@ -3136,8 +3133,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
                    G_CALLBACK(_header_motion_notify_hide_callback), module);
 
   /* connect mouse button callbacks for focus and presets */
-  g_signal_connect(G_OBJECT(body_evb), "button-press-event",
-                   G_CALLBACK(_iop_plugin_body_button_press), module);
+  dt_gui_connect_click_all(body_evb, _iop_plugin_body_button_press, NULL, module);
   gtk_widget_add_events(body_evb, GDK_POINTER_MOTION_MASK);
   g_signal_connect(G_OBJECT(body_evb), "enter-notify-event",
                    G_CALLBACK(_header_motion_notify_show_callback), module);

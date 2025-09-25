@@ -4183,9 +4183,13 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mo
   return FALSE;
 }
 
-static gboolean area_button_press(GtkWidget *widget, const GdkEventButton *event, dt_iop_module_t *self)
+static void _filmicrgb_button_press(GtkGestureSingle *gesture,
+                                    int n_press,
+                                    double x,
+                                    double y,
+                                    dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return TRUE;
+  if(darktable.gui->reset) return;
 
   dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
 
@@ -4193,8 +4197,8 @@ static gboolean area_button_press(GtkWidget *widget, const GdkEventButton *event
 
   if(g->active_button != DT_FILMIC_GUI_BUTTON_LAST)
   {
-
-    if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
+    guint button = gtk_gesture_single_get_current_button(gesture);
+    if(button == GDK_BUTTON_PRIMARY && n_press == 2)
     {
       // double click resets view
       if(g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)
@@ -4202,14 +4206,9 @@ static gboolean area_button_press(GtkWidget *widget, const GdkEventButton *event
         g->gui_mode = DT_FILMIC_GUI_LOOK;
         gtk_widget_queue_draw(GTK_WIDGET(g->area));
         dt_conf_set_int("plugins/darkroom/filmicrgb/graph_view", g->gui_mode);
-        return TRUE;
-      }
-      else
-      {
-        return FALSE;
       }
     }
-    else if(event->button == GDK_BUTTON_PRIMARY)
+    else if(button == GDK_BUTTON_PRIMARY)
     {
       // simple left click cycles through modes in positive direction
       if(g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)
@@ -4222,24 +4221,17 @@ static gboolean area_button_press(GtkWidget *widget, const GdkEventButton *event
 
         gtk_widget_queue_draw(GTK_WIDGET(g->area));
         dt_conf_set_int("plugins/darkroom/filmicrgb/graph_view", g->gui_mode);
-        return TRUE;
       }
       else if(g->active_button == DT_FILMIC_GUI_BUTTON_LABELS)
       {
         g->gui_show_labels = !g->gui_show_labels;
         gtk_widget_queue_draw(GTK_WIDGET(g->area));
         dt_conf_set_int("plugins/darkroom/filmicrgb/graph_show_labels", g->gui_show_labels);
-        return TRUE;
-      }
-      else
-      {
-        // we should never get there since (g->active_button != DT_FILMIC_GUI_BUTTON_LAST)
-        // and any other case has been processed above.
-        return FALSE;
       }
     }
-    else if(event->button == GDK_BUTTON_SECONDARY)
+    else if(button == GDK_BUTTON_SECONDARY)
     {
+      dt_gui_claim(gesture);
       // simple right click cycles through modes in negative direction
       if(g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)
       {
@@ -4250,44 +4242,44 @@ static gboolean area_button_press(GtkWidget *widget, const GdkEventButton *event
 
         gtk_widget_queue_draw(GTK_WIDGET(g->area));
         dt_conf_set_int("plugins/darkroom/filmicrgb/graph_view", g->gui_mode);
-        return TRUE;
       }
       else if(g->active_button == DT_FILMIC_GUI_BUTTON_LABELS)
       {
         g->gui_show_labels = !g->gui_show_labels;
         gtk_widget_queue_draw(GTK_WIDGET(g->area));
         dt_conf_set_int("plugins/darkroom/filmicrgb/graph_show_labels", g->gui_show_labels);
-        return TRUE;
-      }
-      else
-      {
-        return FALSE;
       }
     }
   }
-
-  return FALSE;
 }
 
-static gboolean area_enter_leave_notify(GtkWidget *widget, const GdkEventCrossing *event, const dt_iop_module_t *self)
+static void _filmicrgb_leave(GtkEventControllerMotion *controller,
+                             dt_iop_module_t *self)
 {
   dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
-  g->gui_hover = event->type == GDK_ENTER_NOTIFY;
+  g->gui_hover = controller == NULL;
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
-  return FALSE;
 }
 
-static gboolean area_motion_notify(GtkWidget *widget, const GdkEventMotion *event, const dt_iop_module_t *self)
+static void _filmicrgb_enter(GtkEventControllerMotion *controller,
+                             double x,
+                             double y,
+                             dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return 1;
+  _filmicrgb_leave(NULL, self);
+}
+
+static void _filmicrgb_motion(GtkEventControllerMotion *controller,
+                              double x,
+                              double y,
+                              dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
 
   dt_iop_filmicrgb_gui_data_t *g = self->gui_data;
-  if(!g->gui_sizes_inited) return FALSE;
+  if(!g->gui_sizes_inited) return;
 
   // get in-widget coordinates
-  const float y = event->y;
-  const float x = event->x;
-
   if(x > 0. && x < g->allocation.width && y > 0. && y < g->allocation.height) g->gui_hover = TRUE;
 
   const gint save_active_button = g->active_button;
@@ -4340,13 +4332,11 @@ static gboolean area_motion_notify(GtkWidget *widget, const GdkEventMotion *even
     }
 
     if(save_active_button != g->active_button) gtk_widget_queue_draw(GTK_WIDGET(g->area));
-    return TRUE;
   }
   else
   {
     g->active_button = DT_FILMIC_GUI_BUTTON_LAST;
     if(save_active_button != g->active_button) (GTK_WIDGET(g->area));
-    return FALSE;
   }
 }
 
@@ -4368,10 +4358,8 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(area_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(area_enter_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "enter-notify-event", G_CALLBACK(area_enter_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(area_motion_notify), self);
+  dt_gui_connect_click_all(g->area, _filmicrgb_button_press, NULL, self);
+  dt_gui_connect_motion(g->area, _filmicrgb_motion, _filmicrgb_enter, _filmicrgb_leave, self);
 
   // Init GTK notebook
   static struct dt_action_def_t notebook_def = { };

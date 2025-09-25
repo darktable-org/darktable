@@ -745,16 +745,15 @@ static gboolean _area_key_press_callback(GtkWidget *widget,
 
 #undef RGBCURVE_DEFAULT_STEP
 
-static gboolean _area_leave_notify_callback(GtkWidget *widget,
-                                            GdkEventCrossing *event,
-                                            dt_iop_module_t *self)
+static void _rgbcurve_leave(GtkEventControllerMotion *controller,
+                            dt_iop_module_t *self)
 {
   dt_iop_rgbcurve_gui_data_t *g = self->gui_data;
+  GdkEventCrossing *event = (GdkEventCrossing *)gtk_get_current_event();
   if(!(event->state & GDK_BUTTON1_MASK))
     g->selected = -1;
 
-  gtk_widget_queue_draw(widget);
-  return FALSE;
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 static gboolean _area_draw_callback(GtkWidget *widget,
@@ -1165,28 +1164,29 @@ finally:
   return TRUE;
 }
 
-static gboolean _area_motion_notify_callback(GtkWidget *widget,
-                                             GdkEventMotion *event,
-                                             dt_iop_module_t *self)
+static void _rgbcurve_motion(GtkEventControllerMotion *controller,
+                             double x,
+                             double y,
+                             dt_iop_module_t *self)
 {
   dt_iop_rgbcurve_gui_data_t *g = self->gui_data;
   dt_iop_rgbcurve_params_t *p = self->params;
 
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(GTK_WIDGET(g->area), &allocation);
+  const int height = allocation.height - 2 * inset;
+  const int width = allocation.width - 2 * inset;
+  GdkEventMotion *event = (GdkEventMotion *)gtk_get_current_event();
 
   // drag the draw area
   if(darktable.develop->darkroom_skip_mouse_events)
   {
-    GtkAllocation allocation;
-    gtk_widget_get_allocation(widget, &allocation);
-    const int height = allocation.height - 2 * inset;
-    const int width = allocation.width - 2 * inset;
-
     const float mx = g->mouse_x;
     const float my = g->mouse_y;
 
-    g->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
-    g->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+    g->mouse_x = CLAMP(x - inset, 0, width) / (float)width;
+    g->mouse_y = 1.0 - CLAMP(y - inset, 0, height) / (float)height;
 
     if(event->state & GDK_BUTTON1_MASK)
     {
@@ -1198,7 +1198,7 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
 
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
     }
-    return TRUE;
+    return;
   }
 
   const int ch = g->channel;
@@ -1210,15 +1210,11 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
      && g->channel != DT_IOP_RGBCURVE_R)
     goto finally;
 
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  const int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
-
   const double old_m_x = g->mouse_x;
   const double old_m_y = g->mouse_y;
 
-  g->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
-  g->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+  g->mouse_x = CLAMP(x - inset, 0, width) / (float)width;
+  g->mouse_y = 1.0 - CLAMP(y - inset, 0, height) / (float)height;
 
   const float mx = g->mouse_x;
   const float my = g->mouse_y;
@@ -1249,14 +1245,15 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
                                          g->zoom_factor, g->offset_y);
 
       dt_iop_color_picker_reset(self, TRUE);
-      return _move_point_internal(self, widget, dx, dy, event->state);
+      _move_point_internal(self, GTK_WIDGET(g->area), dx, dy, event->state);
+      return;
     }
     else if(nodes < DT_IOP_RGBCURVE_MAXNODES && g->selected >= -1)
     {
       dt_iop_color_picker_reset(self, TRUE);
       // no vertex was close, create a new one!
       g->selected = _add_node(curve_nodes, &p->curve_num_nodes[ch], linx, liny);
-      dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
+      dt_dev_add_history_item_target(darktable.develop, self, TRUE, g->area + ch);
     }
   }
   else
@@ -1283,43 +1280,45 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget,
     g->selected = nearest;
   }
 finally:
-  if(g->selected >= 0) gtk_widget_grab_focus(widget);
-  gtk_widget_queue_draw(widget);
-  return TRUE;
+  if(g->selected >= 0) gtk_widget_grab_focus(GTK_WIDGET(g->area));
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-static gboolean _area_button_press_callback(GtkWidget *widget,
-                                            GdkEventButton *event,
-                                            dt_iop_module_t *self)
+static void _rgbcurve_button_press(GtkGestureSingle *gesture,
+                                   int n_press,
+                                   double x,
+                                   double y,
+                                   dt_iop_module_t *self)
 {
   dt_iop_rgbcurve_params_t *p = self->params;
   const dt_iop_rgbcurve_params_t *const d = self->default_params;
   dt_iop_rgbcurve_gui_data_t *g = self->gui_data;
 
-  if(darktable.develop->darkroom_skip_mouse_events)
-    return TRUE;
+  if(darktable.develop->darkroom_skip_mouse_events) return;
 
   const int ch = g->channel;
   const int autoscale = p->curve_autoscale;
   const int nodes = p->curve_num_nodes[ch];
   dt_iop_rgbcurve_node_t *curve_nodes = p->curve_nodes[ch];
 
-  if(event->button == GDK_BUTTON_PRIMARY)
+  guint button = gtk_gesture_single_get_current_button(gesture);
+  if(button == GDK_BUTTON_PRIMARY)
   {
-    if(event->type == GDK_BUTTON_PRESS
-       && dt_modifier_is(event->state, GDK_CONTROL_MASK)
+    dt_gui_claim(gesture);
+    if(n_press == 1
+       && dt_modifier_eq(gesture, GDK_CONTROL_MASK)
        && nodes < DT_IOP_RGBCURVE_MAXNODES && g->selected == -1)
     {
       // if we are not on a node -> add a new node at the current x of
       // the pointer and y of the curve at that x
       const int inset = DT_GUI_CURVE_EDITOR_INSET;
       GtkAllocation allocation;
-      gtk_widget_get_allocation(widget, &allocation);
+      gtk_widget_get_allocation(GTK_WIDGET(g->area), &allocation);
       const int width = allocation.width - 2 * inset;
       const int height = allocation.height - 2 * inset;
 
-      g->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
-      g->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+      g->mouse_x = CLAMP(x - inset, 0, width) / (float)width;
+      g->mouse_y = 1.0 - CLAMP(y - inset, 0, height) / (float)height;
 
       const float mx = g->mouse_x;
       const float linx = _mouse_to_curve(mx, g->zoom_factor, g->offset_x);
@@ -1342,34 +1341,32 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
       }
       if(selected == -1) selected = nodes;
 
-        // evaluate the curve at the current x position
-        const float y = dt_draw_curve_calc_value(g->minmax_curve[ch], linx);
+      // evaluate the curve at the current x position
+      const float calc_y = dt_draw_curve_calc_value(g->minmax_curve[ch], linx);
 
-        if(y >= 0.0f && y <= 1.0f) // never add something outside the
-                                   // viewport, you couldn't change it
-                                   // afterwards
+      if(calc_y >= 0.0f && calc_y <= 1.0f) // never add something outside the
+                                           // viewport, you couldn't change it
+                                           // afterwards
+      {
+        // create a new node
+        selected = _add_node(curve_nodes, &p->curve_num_nodes[ch], linx, calc_y);
+
+        // maybe set the new one as being selected
+        const float min = .04f * .04f; // comparing against square
+        for(int k = 0; k < nodes; k++)
         {
-          // create a new node
-          selected = _add_node(curve_nodes, &p->curve_num_nodes[ch], linx, y);
-
-          // maybe set the new one as being selected
-          const float min = .04f * .04f; // comparing against square
-          for(int k = 0; k < nodes; k++)
-          {
-            const float other_y =
-              _curve_to_mouse(curve_nodes[k].y, g->zoom_factor, g->offset_y);
-            const float dist = (y - other_y) * (y - other_y);
-            if(dist < min) g->selected = selected;
-          }
-
-          dt_iop_color_picker_reset(self, TRUE);
-          dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
-          gtk_widget_queue_draw(GTK_WIDGET(g->area));
+          const float other_y =
+            _curve_to_mouse(curve_nodes[k].y, g->zoom_factor, g->offset_y);
+          const float dist = (calc_y - other_y) * (calc_y - other_y);
+          if(dist < min) g->selected = selected;
         }
 
-      return TRUE;
+        dt_iop_color_picker_reset(self, TRUE);
+        dt_dev_add_history_item_target(darktable.develop, self, TRUE, g->area + ch);
+        gtk_widget_queue_draw(GTK_WIDGET(g->area));
+      }
     }
-    else if(event->type == GDK_2BUTTON_PRESS)
+    else if(n_press == 2)
     {
       // reset current curve
       // if autoscale is on: allow only reset of L curve
@@ -1385,7 +1382,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
         g->selected = -2; // avoid motion notify re-inserting immediately.
         dt_bauhaus_combobox_set(g->interpolator, p->curve_type[DT_IOP_RGBCURVE_R]);
         dt_iop_color_picker_reset(self, TRUE);
-        dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
+        dt_dev_add_history_item_target(darktable.develop, self, TRUE, g->area + ch);
         gtk_widget_queue_draw(GTK_WIDGET(g->area));
       }
       else
@@ -1396,23 +1393,23 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
           g->selected = -2; // avoid motion notify re-inserting immediately.
           dt_bauhaus_combobox_set(g->autoscale, 1);
           dt_iop_color_picker_reset(self, TRUE);
-          dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
+          dt_dev_add_history_item_target(darktable.develop, self, TRUE, g->area + ch);
           gtk_widget_queue_draw(GTK_WIDGET(g->area));
         }
       }
-      return TRUE;
     }
   }
-  else if(event->button == GDK_BUTTON_SECONDARY && g->selected >= 0)
+  else if(button == GDK_BUTTON_SECONDARY && g->selected >= 0)
   {
+    dt_gui_claim(gesture);
     if(g->selected == 0 || g->selected == nodes - 1)
     {
       const float reset_value = g->selected == 0 ? 0.f : 1.f;
       curve_nodes[g->selected].y = curve_nodes[g->selected].x = reset_value;
       dt_iop_color_picker_reset(self, TRUE);
-      dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
+      dt_dev_add_history_item_target(darktable.develop, self, TRUE, g->area + ch);
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
-      return TRUE;
+      return;
     }
 
     for(int k = g->selected; k < nodes - 1; k++)
@@ -1424,11 +1421,9 @@ static gboolean _area_button_press_callback(GtkWidget *widget,
     g->selected = -2; // avoid re-insertion of that point immediately after this
     p->curve_num_nodes[ch]--;
     dt_iop_color_picker_reset(self, TRUE);
-    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, g->area + ch);
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
-    return TRUE;
   }
-  return FALSE;
 }
 
 void gui_reset(dt_iop_module_t *self)
@@ -1527,19 +1522,12 @@ void gui_init(dt_iop_module_t *self)
   // gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double click
   // to reset curve"));
 
-  gtk_widget_add_events(GTK_WIDGET(g->area),
-                        GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask
-                        | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                        | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+  gtk_widget_add_events(GTK_WIDGET(g->area), darktable.gui->scroll_mask);
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   g_signal_connect(G_OBJECT(g->area), "draw",
                    G_CALLBACK(_area_draw_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event",
-                   G_CALLBACK(_area_button_press_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event",
-                   G_CALLBACK(_area_motion_notify_callback), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event",
-                   G_CALLBACK(_area_leave_notify_callback), self);
+  dt_gui_connect_click_all(g->area, _rgbcurve_button_press, NULL, self);
+  dt_gui_connect_motion(g->area, _rgbcurve_motion, NULL, _rgbcurve_leave, self);
   g_signal_connect(G_OBJECT(g->area), "scroll-event",
                    G_CALLBACK(_area_scrolled_callback), self);
   g_signal_connect(G_OBJECT(g->area), "key-press-event",

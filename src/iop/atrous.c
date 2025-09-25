@@ -1079,17 +1079,23 @@ void gui_update(dt_iop_module_t *self)
 
 // gui stuff:
 
-static gboolean area_enter_leave_notify(GtkWidget *widget,
-                                        GdkEventCrossing *event,
-                                        dt_iop_module_t *self)
+static void _atrous_leave(GtkEventControllerMotion *controller,
+                          dt_iop_module_t *self)
 {
   dt_iop_atrous_gui_data_t *g = self->gui_data;
-  g->in_curve = event->type == GDK_ENTER_NOTIFY;
+  g->in_curve = controller == NULL;
   if(!g->dragging)
     g->x_move = -1;
 
-  gtk_widget_queue_draw(widget);
-  return FALSE;
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
+}
+
+static void _atrous_enter(GtkEventControllerMotion *controller,
+                          double x,
+                          double y,
+                          dt_iop_module_t *self)
+{
+  _atrous_leave(NULL, self);
 }
 
 // fills in new parameters based on mouse position (in 0,1)
@@ -1426,19 +1432,21 @@ static gboolean area_draw(GtkWidget *widget,
   return FALSE;
 }
 
-static gboolean area_motion_notify(GtkWidget *widget,
-                                   GdkEventMotion *event,
-                                   dt_iop_module_t *self)
+static void _atrous_motion(GtkEventControllerMotion *controller,
+                           double x,
+                           double y,
+                           dt_iop_module_t *self)
 {
   dt_iop_atrous_gui_data_t *g = self->gui_data;
   dt_iop_atrous_params_t *p = self->params;
+
   const int inset = INSET;
   GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
+  gtk_widget_get_allocation(GTK_WIDGET(g->area), &allocation);
   const int height = allocation.height - 2 * inset - DT_RESIZE_HANDLE_SIZE;
   const int width = allocation.width - 2 * inset;
-  if(!g->dragging) g->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
-  g->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+  if(!g->dragging) g->mouse_x = CLAMP(x - inset, 0, width) / (float)width;
+  g->mouse_y = 1.0 - CLAMP(y - inset, 0, height) / (float)height;
 
   darktable.control->element = 0;
 
@@ -1452,7 +1460,7 @@ static gboolean area_motion_notify(GtkWidget *widget,
     *p = g->drag_params;
     if(g->x_move >= 0)
     {
-      const float mx = CLAMP(event->x - inset, 0, width) / (float)width;
+      const float mx = CLAMP(x - inset, 0, width) / (float)width;
       if(g->x_move > 0 && g->x_move < BANDS - 1)
       {
         const float minx = p->x[g->channel][g->x_move - 1] + 0.001f;
@@ -1464,10 +1472,9 @@ static gboolean area_motion_notify(GtkWidget *widget,
     {
       get_params(p, g->channel2, g->mouse_x, g->mouse_y + g->mouse_pick, g->mouse_radius);
     }
-    gtk_widget_queue_draw(widget);
-    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + g->channel);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, g->area + g->channel);
   }
-  else if(event->y > height)
+  else if(y > height)
   {
     // move x-positions
     g->x_move = 0;
@@ -1482,8 +1489,6 @@ static gboolean area_motion_notify(GtkWidget *widget,
       }
     }
     darktable.control->element = g->x_move + 1;
-
-    gtk_widget_queue_draw(widget);
   }
   else
   {
@@ -1504,61 +1509,57 @@ static gboolean area_motion_notify(GtkWidget *widget,
     }
     // don't move x-positions:
     g->x_move = -1;
-    gtk_widget_queue_draw(widget);
   }
-  return TRUE;
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-static gboolean area_button_press(GtkWidget *widget,
-                                  GdkEventButton *event,
-                                  dt_iop_module_t *self)
+static void _atrous_button_press(GtkGesture *gesture,
+                                 int n_press,
+                                 double x,
+                                 double y,
+                                 dt_iop_module_t *self)
 {
-  if(event->button == GDK_BUTTON_PRIMARY && event->type == GDK_2BUTTON_PRESS)
+  dt_iop_atrous_gui_data_t *g = self->gui_data;
+  if(n_press == 2)
   {
     // reset current curve
     dt_iop_atrous_params_t *p = self->params;
     const dt_iop_atrous_params_t *const d = self->default_params;
-    dt_iop_atrous_gui_data_t *g = self->gui_data;
     reset_mix(self);
     for(int k = 0; k < BANDS; k++)
     {
       p->x[g->channel2][k] = d->x[g->channel2][k];
       p->y[g->channel2][k] = d->y[g->channel2][k];
     }
-    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + g->channel2);
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, g->area + g->channel2);
   }
-  else if(event->button == GDK_BUTTON_PRIMARY)
+  else
   {
     // set active point
-    dt_iop_atrous_gui_data_t *g = self->gui_data;
     reset_mix(self);
     const int inset = INSET;
     GtkAllocation allocation;
-    gtk_widget_get_allocation(widget, &allocation);
+    gtk_widget_get_allocation(GTK_WIDGET(g->area), &allocation);
     const int height = allocation.height - 2 * inset - DT_RESIZE_HANDLE_SIZE;
     const int width = allocation.width - 2 * inset;
     g->mouse_pick
         = dt_draw_curve_calc_value(g->minmax_curve,
-                                   CLAMP(event->x - inset, 0, width) / (float)width);
-    g->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+                                   CLAMP(x - inset, 0, width) / (float)width);
+    g->mouse_pick -= 1.0 - CLAMP(y - inset, 0, height) / (float)height;
     g->dragging = 1;
-    return TRUE;
+    dt_gui_claim(gesture);
   }
-  return FALSE;
 }
 
-static gboolean area_button_release(GtkWidget *widget,
-                                    GdkEventButton *event,
-                                    dt_iop_module_t *self)
+static void _atrous_button_release(GtkGesture *gesture,
+                                       int n_press,
+                                       double x,
+                                       double y,
+                                       dt_iop_module_t *self)
 {
-  if(event->button == GDK_BUTTON_PRIMARY)
-  {
-    dt_iop_atrous_gui_data_t *g = self->gui_data;
-    g->dragging = 0;
-    reset_mix(self);
-    return TRUE;
-  }
-  return FALSE;
+  dt_iop_atrous_gui_data_t *g = self->gui_data;
+  g->dragging = 0;
+  reset_mix(self);
 }
 
 static gboolean area_scrolled(GtkWidget *widget,
@@ -1808,16 +1809,8 @@ void gui_init(dt_iop_module_t *self)
   dt_action_define_iop(self, NULL, N_("graph"),
                        GTK_WIDGET(g->area), &_action_def_equalizer);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(area_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event",
-                   G_CALLBACK(area_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "button-release-event",
-                   G_CALLBACK(area_button_release), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event",
-                   G_CALLBACK(area_motion_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event",
-                   G_CALLBACK(area_enter_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "enter-notify-event",
-                   G_CALLBACK(area_enter_leave_notify), self);
+  dt_gui_connect_click(g->area, _atrous_button_press, _atrous_button_release, self);
+  dt_gui_connect_motion(g->area, _atrous_motion, _atrous_enter, _atrous_leave, self);
   g_signal_connect(G_OBJECT(g->area), "scroll-event",
                    G_CALLBACK(area_scrolled), self);
 
