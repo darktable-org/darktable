@@ -123,6 +123,12 @@ changes (where available).
 - Fixed corruption of sidecars during large imports of images with XMP
   sidecars.
 
+- Fixed a bug where changing the image scaling in the export module
+  influences the result of a running export job.
+
+- Make sure we always fill the complete main darkroom canvas while
+  zooming at large scales.
+
 ## Lua
 
 ### API Version
@@ -134,12 +140,6 @@ changes (where available).
 - ???
 
 ### Bug Fixes
-
-- Fixed a bug where changing the image scaling in the export module
-  influences the result of a running export job.
-
-- Make sure we always fill the complete main darkroom canvas while
-  zooming at large scales.
 
 ### Add action support for Lua
 
