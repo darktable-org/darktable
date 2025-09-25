@@ -911,7 +911,7 @@ static void _event_aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *sel
       p->ratio_d = -d;
 
     p->ratio_n = n;
-    p->aligned = p->ratio_d != 0 || p->ratio_n != 0;
+    p->aligned = p->ratio_d != 0 && p->ratio_n != 0;
 
     dt_conf_set_int("plugins/darkroom/crop/ratio_d", abs(p->ratio_d));
     dt_conf_set_int("plugins/darkroom/crop/ratio_n", abs(p->ratio_n));
