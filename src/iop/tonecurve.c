@@ -50,15 +50,17 @@ DT_MODULE_INTROSPECTION(5, dt_iop_tonecurve_params_t)
 static gboolean dt_iop_tonecurve_draw(GtkWidget *widget,
                                       cairo_t *crf,
                                       dt_iop_module_t *self);
-static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget,
-                                               GdkEventMotion *event,
-                                               dt_iop_module_t *self);
-static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
-                                              GdkEventButton *event,
-                                              dt_iop_module_t *self);
-static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget,
-                                              GdkEventCrossing *event,
-                                              dt_iop_module_t *self);
+static void _tonecurve_button_press(GtkGestureSingle *gesture,
+                                    int n_press,
+                                    double x,
+                                    double y,
+                                    dt_iop_module_t *self);
+static void _tonecurve_motion(GtkEventControllerMotion *controller,
+                              double x,
+                              double y,
+                              dt_iop_module_t *self);
+static void _tonecurve_leave(GtkEventControllerMotion *controller,
+                             dt_iop_module_t *self);
 static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget,
                                            GdkEventKey *event,
                                            dt_iop_module_t *self);
@@ -1290,17 +1292,11 @@ void gui_init(dt_iop_module_t *self)
   // FIXME: that tooltip goes in the way of the numbers when you hover a node to get a reading
   //gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double click to reset curve"));
 
-  gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask
-                                           | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                           | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+  gtk_widget_add_events(GTK_WIDGET(g->area), darktable.gui->scroll_mask);
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
-  g_signal_connect(G_OBJECT(g->area), "button-press-event",
-                   G_CALLBACK(dt_iop_tonecurve_button_press), self);
-  g_signal_connect(G_OBJECT(g->area), "motion-notify-event",
-                   G_CALLBACK(dt_iop_tonecurve_motion_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event",
-                   G_CALLBACK(dt_iop_tonecurve_leave_notify), self);
+  dt_gui_connect_click_all(g->area, _tonecurve_button_press, NULL, self);
+  dt_gui_connect_motion(g->area, _tonecurve_motion, NULL, _tonecurve_leave, self);
   g_signal_connect(G_OBJECT(g->area), "scroll-event",
                    G_CALLBACK(_scrolled), self);
   g_signal_connect(G_OBJECT(g->area), "key-press-event",
@@ -1343,15 +1339,14 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_draw_curve_destroy(g->minmax_curve[ch_b]);
 }
 
-static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget,
-                                              GdkEventCrossing *event,
-                                              dt_iop_module_t *self)
+static void _tonecurve_leave(GtkEventControllerMotion *controller,
+                             dt_iop_module_t *self)
 {
   dt_iop_tonecurve_gui_data_t *g = self->gui_data;
+  GdkEventMotion *event = (GdkEventMotion *)gtk_get_current_event();
   if(!(event->state & GDK_BUTTON1_MASK))
     g->selected = -1;
-  gtk_widget_queue_draw(widget);
-  return FALSE;
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 static void picker_scale(const float *in, float *out)
@@ -1751,12 +1746,14 @@ static inline int _add_node(dt_iop_tonecurve_node_t *tonecurve,
   return selected;
 }
 
-static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget,
-                                               GdkEventMotion *event,
-                                               dt_iop_module_t *self)
+static void _tonecurve_motion(GtkEventControllerMotion *controller,
+                              double x,
+                              double y,
+                              dt_iop_module_t *self)
 {
   dt_iop_tonecurve_gui_data_t *g = self->gui_data;
   dt_iop_tonecurve_params_t *p = self->params;
+  GtkWidget *widget = GTK_WIDGET(g->area);
 
   int ch = g->channel;
   int nodes = p->tonecurve_nodes[ch];
@@ -1772,14 +1769,15 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget,
   int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
   double old_m_x = g->mouse_x;
   double old_m_y = g->mouse_y;
-  g->mouse_x = event->x - inset;
-  g->mouse_y = event->y - inset;
+  g->mouse_x = x - inset;
+  g->mouse_y = y - inset;
 
   const float mx = CLAMP(g->mouse_x, 0, width) / width;
   const float my = 1.0f - CLAMP(g->mouse_y, 0, height) / height;
   const float linx = to_lin(mx, g->loglogscale, ch, g->semilog, 0),
               liny = to_lin(my, g->loglogscale, ch, g->semilog, 1);
 
+  GdkEventMotion *event = (GdkEventMotion *)gtk_get_current_event();
   if(event->state & GDK_BUTTON1_MASK)
   {
     // got a vertex selected:
@@ -1794,7 +1792,8 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget,
                        - to_lin(old_m_x / width - translate_mouse_x, g->loglogscale, ch, g->semilog, 0);
       const float dy = to_lin(1 - g->mouse_y / height - translate_mouse_y, g->loglogscale, ch, g->semilog, 1)
                        - to_lin(1 - old_m_y / height - translate_mouse_y, g->loglogscale, ch, g->semilog, 1);
-      return _move_point_internal(self, widget, dx, dy, event->state);
+      _move_point_internal(self, widget, dx, dy, event->state);
+      return;
     }
     else if(nodes < DT_IOP_TONECURVE_MAXNODES && g->selected >= -1)
     {
@@ -1825,12 +1824,13 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget,
 finally:
   if(g->selected >= 0) gtk_widget_grab_focus(widget);
   gtk_widget_queue_draw(widget);
-  return TRUE;
 }
 
-static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
-                                              GdkEventButton *event,
-                                              dt_iop_module_t *self)
+static void _tonecurve_button_press(GtkGestureSingle *gesture,
+                                    int n_press,
+                                    double x,
+                                    double y,
+                                    dt_iop_module_t *self)
 {
   dt_iop_tonecurve_params_t *p = self->params;
   const dt_iop_tonecurve_params_t *const d = self->default_params;
@@ -1841,10 +1841,12 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
   int nodes = p->tonecurve_nodes[ch];
   dt_iop_tonecurve_node_t *tonecurve = p->tonecurve[ch];
 
-  if(event->button == GDK_BUTTON_PRIMARY)
+  guint button = gtk_gesture_single_get_current_button(gesture);
+  if(button == GDK_BUTTON_PRIMARY)
   {
-    if(event->type == GDK_BUTTON_PRESS
-       && dt_modifier_is(event->state, GDK_CONTROL_MASK)
+    dt_gui_claim(gesture);
+    if(n_press == 1
+       && dt_modifier_eq(event->state, GDK_CONTROL_MASK)
        && nodes < DT_IOP_TONECURVE_MAXNODES
        && g->selected == -1)
     {
@@ -1852,10 +1854,10 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
       // the pointer and y of the curve at that x
       const int inset = DT_GUI_CURVE_EDITOR_INSET;
       GtkAllocation allocation;
-      gtk_widget_get_allocation(widget, &allocation);
+      gtk_widget_get_allocation(GTK_WIDGET(g->area), &allocation);
       int width = allocation.width - 2 * inset;
-      g->mouse_x = event->x - inset;
-      g->mouse_y = event->y - inset;
+      g->mouse_x = x - inset;
+      g->mouse_y = y - inset;
 
       const float mx = CLAMP(g->mouse_x, 0, width) / (float)width;
       const float linx = to_lin(mx, g->loglogscale, ch, g->semilog, 0);
@@ -1882,12 +1884,12 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
            (selected < nodes && tonecurve[selected].x - linx <= 0.025)))
       {
         // evaluate the curve at the current x position
-        const float y = dt_draw_curve_calc_value(g->minmax_curve[ch], linx);
+        const float calc_y = dt_draw_curve_calc_value(g->minmax_curve[ch], linx);
 
-        if(y >= 0.0 && y <= 1.0) // never add something outside the viewport, you couldn't change it afterwards
+        if(calc_y >= 0.0 && calc_y <= 1.0) // never add something outside the viewport, you couldn't change it afterwards
         {
           // create a new node
-          selected = _add_node(tonecurve, &p->tonecurve_nodes[ch], linx, y);
+          selected = _add_node(tonecurve, &p->tonecurve_nodes[ch], linx, calc_y);
 
           // maybe set the new one as being selected
           float min = .04f;
@@ -1895,17 +1897,16 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
           for(int k = 0; k < nodes; k++)
           {
             float other_y = to_log(tonecurve[k].y, g->loglogscale, ch, g->semilog, 1);
-            float dist = (y - other_y) * (y - other_y);
+            float dist = (calc_y - other_y) * (calc_y - other_y);
             if(dist < min) g->selected = selected;
           }
 
-          dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
+          dt_dev_add_history_item_target(darktable.develop, self, TRUE, g->area + ch);
           gtk_widget_queue_draw(GTK_WIDGET(g->area));
         }
       }
-      return TRUE;
     }
-    else if(event->type == GDK_2BUTTON_PRESS)
+    else if(n_press == 2)
     {
       // reset current curve
       // if autoscale_ab is on: allow only reset of L curve
@@ -1920,7 +1921,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
         }
         g->selected = -2; // avoid motion notify re-inserting immediately.
         dt_bauhaus_combobox_set(g->interpolator, p->tonecurve_type[ch_L]);
-        dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
+        dt_dev_add_history_item_target(darktable.develop, self, TRUE, g->area + ch);
         gtk_widget_queue_draw(GTK_WIDGET(g->area));
       }
       else
@@ -1930,22 +1931,22 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
           p->tonecurve_autoscale_ab = DT_S_SCALE_MANUAL;
           g->selected = -2; // avoid motion notify re-inserting immediately.
           dt_bauhaus_combobox_set(g->autoscale_ab, 1);
-          dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
+          dt_dev_add_history_item_target(darktable.develop, self, TRUE, g->area + ch);
           gtk_widget_queue_draw(GTK_WIDGET(g->area));
         }
       }
-      return TRUE;
     }
   }
-  else if(event->button == GDK_BUTTON_SECONDARY && g->selected >= 0)
+  else if(button == GDK_BUTTON_SECONDARY && g->selected >= 0)
   {
+    dt_gui_claim(gesture);
     if(g->selected == 0 || g->selected == nodes - 1)
     {
       float reset_value = g->selected == 0 ? 0 : 1;
       tonecurve[g->selected].y = tonecurve[g->selected].x = reset_value;
       gtk_widget_queue_draw(GTK_WIDGET(g->area));
-      dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
-      return TRUE;
+      dt_dev_add_history_item_target(darktable.develop, self, TRUE, g->area + ch);
+      return;
     }
 
     for(int k = g->selected; k < nodes - 1; k++)
@@ -1957,10 +1958,8 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget,
     g->selected = -2; // avoid re-insertion of that point immediately after this
     p->tonecurve_nodes[ch]--;
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
-    dt_dev_add_history_item_target(darktable.develop, self, TRUE, widget + ch);
-    return TRUE;
+    dt_dev_add_history_item_target(darktable.develop, self, TRUE, g->area + ch);
   }
-  return FALSE;
 }
 
 // clang-format off
