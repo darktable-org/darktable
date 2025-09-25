@@ -21,6 +21,7 @@
 #include "common/debug.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
+#include "dtgtk/drawingarea.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/accelerators.h"

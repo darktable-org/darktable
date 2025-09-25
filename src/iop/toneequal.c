@@ -3036,7 +3036,7 @@ static void _toneequal_enter(GtkEventControllerMotion *controller,
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-static void _toneequal_button_press(GtkGesture *gesture,
+static void _toneequal_button_press(GtkGestureSingle *gesture,
                                     int n_press,
                                     double x,
                                     double y,
@@ -3142,14 +3142,14 @@ static void _toneequal_motion(GtkEventControllerMotion *controller,
 }
 
 
-static gboolean _toneequal_button_release(GtkGestureSingle *gesture,
+static void _toneequal_button_release(GtkGestureSingle *gesture,
                                           int n_press,
                                           double x,
                                           double y,
                                           dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return TRUE;
-  if(!self->enabled) return FALSE;
+  if(darktable.gui->reset) return;
+  if(!self->enabled) return;
 
   dt_iop_toneequalizer_gui_data_t *g = self->gui_data;
 
@@ -3171,10 +3171,9 @@ static gboolean _toneequal_button_release(GtkGestureSingle *gesture,
       dt_iop_gui_enter_critical_section(self);
       g->area_dragging = FALSE;
       dt_iop_gui_leave_critical_section(self);
-      return TRUE;
+      return;
     }
   }
-  return FALSE;
 }
 
 static gboolean area_scroll(GtkWidget *widget,

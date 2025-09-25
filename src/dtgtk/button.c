@@ -27,10 +27,15 @@ static void dtgtk_button_init(GtkDarktableButton *button)
 {
 }
 
-static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
+static void _button_snapshot(GtkWidget* widget,
+                             GtkSnapshot* snapshot)
 {
-  g_return_val_if_fail(widget != NULL, FALSE);
-  g_return_val_if_fail(DTGTK_IS_BUTTON(widget), FALSE);
+  g_return_if_fail(widget != NULL);
+  g_return_if_fail(DTGTK_IS_BUTTON(widget));
+
+  graphene_rect_t bounds;
+  graphene_rect_init(&bounds, 0, 0, gtk_widget_get_width(widget), gtk_widget_get_height(widget));
+  cairo_t* cr = gtk_snapshot_append_cairo(snapshot, &bounds);
 
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
 
@@ -100,14 +105,17 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
       DTGTK_BUTTON(widget)->icon(cr, startx, starty, cwidth, cheight, flags, icon_data);
   }
 
-  return FALSE;
+  cairo_destroy(cr);
 }
+
+static guint _button_press_signal = 0;
 
 static void dtgtk_button_class_init(GtkDarktableButtonClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
+  widget_class->snapshot = _button_snapshot;
 
-  widget_class->draw = _button_draw;
+  dt_add_legacy_signals(widget_class);
 }
 
 // Public functions

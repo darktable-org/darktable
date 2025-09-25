@@ -19,6 +19,7 @@
 #include "bauhaus/bauhaus.h"
 #include "control/control.h"
 #include "gui/gtk.h"
+#include "dtgtk/drawingarea.h"
 
 #include <string.h>
 #include <locale.h>
@@ -27,7 +28,7 @@
 #define BAR_WIDTH 4
 
 // define GTypes
-G_DEFINE_TYPE(GtkDarktableRangeSelect, dtgtk_range_select, GTK_TYPE_EVENT_BOX);
+G_DEFINE_TYPE(GtkDarktableRangeSelect, dtgtk_range_select, GTK_TYPE_BOX);
 
 typedef struct _range_date_popup
 {
@@ -171,13 +172,13 @@ static void _range_select_destroy(GtkWidget *widget)
     g_free(range->cur_help);
   range->cur_help = NULL;
 
-  GTK_WIDGET_CLASS(dtgtk_range_select_parent_class)->destroy(widget);
+  // GTK_WIDGET_CLASS(dtgtk_range_select_parent_class)->destroy(widget);
 }
 
 static void dtgtk_range_select_class_init(GtkDarktableRangeSelectClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
-  widget_class->destroy = _range_select_destroy;
+  // widget_class->destroy = _range_select_destroy;
 
   _signals[VALUE_CHANGED] = g_signal_new("value-changed", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST, 0, NULL,
                                          NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);

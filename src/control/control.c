@@ -257,11 +257,33 @@ void dt_control_allow_change_cursor()
 
 void dt_control_change_cursor(dt_cursor_t curs)
 {
-  GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
+  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   if(!darktable.control->lock_cursor_shape && window)
   {
-    GdkCursor *cursor = gdk_cursor_new_for_display(gdk_window_get_display(window), curs);
-    gdk_window_set_cursor(window, cursor);
+    GdkCursor *cursor = gdk_cursor_new_from_name(gdk_window_get_display(window),
+         curs == GDK_X_CURSOR              ? "crosshair" :
+         curs == GDK_BOTTOM_LEFT_CORNER    ? "sw-resize" :
+         curs == GDK_BOTTOM_RIGHT_CORNER   ? "se-resize" :
+         curs == GDK_BOTTOM_SIDE           ? "s-resize"  :
+         curs == GDK_CROSS                 ? "crosshair" :
+         curs == GDK_CROSSHAIR             ? "crosshair" :
+         curs == GDK_FLEUR                 ? "move"      :
+         curs == GDK_HAND1                 ? "pointer"   :
+         curs == GDK_LEFT_PTR              ? "default"   :
+         curs == GDK_LEFT_SIDE             ? "w-resize"  :
+         curs == GDK_PLUS                  ? "cell"      :
+         curs == GDK_QUESTION_ARROW        ? "help"      :
+         curs == GDK_RIGHT_SIDE            ? "e-resize"  :
+         curs == GDK_SB_H_DOUBLE_ARROW     ? "ew-resize" :
+         curs == GDK_SB_V_DOUBLE_ARROW     ? "ns-resize" :
+         curs == GDK_TOP_LEFT_CORNER       ? "nw-resize" :
+         curs == GDK_TOP_RIGHT_CORNER      ? "ne-resize" :
+         curs == GDK_TOP_SIDE              ? "n-resize"  :
+         curs == GDK_WATCH                 ? "wait"      :
+         curs == GDK_PIRATE                ? NULL : // no direct equivalent
+         curs == GDK_BLANK_CURSOR          ? NULL : // invisible
+                                             "default");
+    gtk_widget_set_cursor(window, cursor);
     g_object_unref(cursor);
   }
 }
@@ -285,7 +307,7 @@ void dt_control_change_cursor(dt_cursor_t curs)
 
 gboolean dt_control_running()
 {
-  return dt_atomic_get_int(&darktable.control->running) == DT_CONTROL_STATE_RUNNING;
+  return darktable.control && dt_atomic_get_int(&darktable.control->running) == DT_CONTROL_STATE_RUNNING;
 }
 
 void dt_control_quit()
@@ -393,11 +415,12 @@ void dt_control_cleanup(const gboolean withgui)
 // ================================================================================
 
 gboolean dt_control_configure(GtkWidget *da,
-                              GdkEventConfigure *event,
+                              gint width,
+                              gint height,
                               gpointer user_data)
 {
   // re-configure all components:
-  dt_view_manager_configure(darktable.view_manager, event->width, event->height);
+  dt_view_manager_configure(darktable.view_manager, width, height);
   return TRUE;
 }
 

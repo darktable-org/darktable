@@ -211,7 +211,7 @@ static void save_usercss(GtkTextBuffer *buffer)
 
   // write to file
   GError *error = NULL;
-  if(!g_file_set_contents(usercsspath, usercsscontent, -1, &error))
+  if(!g_file_set_contents(usercsspath, usercsscontent, -1, &error) && error)
   {
     dt_print(DT_DEBUG_ALWAYS, "%s: error saving css to %s: %s",
              G_STRFUNC, usercsspath, error->message);
@@ -594,7 +594,7 @@ void dt_gui_preferences_show()
   GtkGrid* lua_grid = init_tab_lua(_preferences_dialog, stack);
 #endif
 
-  gtk_widget_show_all(_preferences_dialog);
+  gtk_widget_show(_preferences_dialog);
 
   //open in the appropriate tab if currently in darkroom or lighttable view
   const gchar *current_view = dt_view_manager_name(darktable.view_manager);

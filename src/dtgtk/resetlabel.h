@@ -24,11 +24,11 @@
 G_BEGIN_DECLS
 
 #define DTGTK_TYPE_RESET_LABEL dtgtk_reset_label_get_type()
-G_DECLARE_FINAL_TYPE(GtkDarktableResetLabel, dtgtk_reset_label, DTGTK, RESET_LABEL, GtkEventBox)
+G_DECLARE_FINAL_TYPE(GtkDarktableResetLabel, dtgtk_reset_label, DTGTK, RESET_LABEL, GtkBox)
 
 struct _GtkDarktableResetLabel
 {
-  GtkEventBox widget;
+  GtkBox widget;
   GtkLabel *lb;
   dt_iop_module_t *module;
   int offset; // offset in params to reset

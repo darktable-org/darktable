@@ -32,6 +32,7 @@
 #include "common/selection.h"
 #include "common/variables.h"
 #include "control/control.h"
+#include "dtgtk/drawingarea.h"
 #include "dtgtk/button.h"
 #include "dtgtk/thumbnail_btn.h"
 #include "gui/drag_and_drop.h"
@@ -1334,7 +1335,7 @@ static gboolean _event_star_leave(GtkWidget *widget,
 }
 
 static void _event_main_leave(GtkEventControllerMotion *controller,
-                              gpointer user_data)
+                              dt_thumbnail_t *thumb)
 {
   GdkEventCrossing *event = (GdkEventCrossing *)gtk_get_current_event();
   // if we leave for ancestor, that means we leave for blank thumbtable area

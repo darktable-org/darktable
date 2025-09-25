@@ -1513,7 +1513,7 @@ static void _atrous_motion(GtkEventControllerMotion *controller,
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-static void _atrous_button_press(GtkGesture *gesture,
+static void _atrous_button_press(GtkGestureSingle *gesture,
                                  int n_press,
                                  double x,
                                  double y,
@@ -1551,11 +1551,11 @@ static void _atrous_button_press(GtkGesture *gesture,
   }
 }
 
-static void _atrous_button_release(GtkGesture *gesture,
-                                       int n_press,
-                                       double x,
-                                       double y,
-                                       dt_iop_module_t *self)
+static void _atrous_button_release(GtkGestureSingle *gesture,
+                                   int n_press,
+                                   double x,
+                                   double y,
+                                   dt_iop_module_t *self)
 {
   dt_iop_atrous_gui_data_t *g = self->gui_data;
   g->dragging = 0;

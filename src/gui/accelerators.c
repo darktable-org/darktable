@@ -1016,9 +1016,9 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
                                       GtkTooltip *tooltip,
                                       GtkWidget *vbox)
 {
-  GtkWindow *top = GTK_WINDOW(gtk_widget_get_toplevel(widget));
+  GtkWindow *top = GTK_WINDOW(gtk_widget_get_root(widget));
   if(!gtk_window_is_active(top)
-     && gtk_window_get_window_type(top) != GTK_WINDOW_POPUP)
+ )//GTK4 && gtk_window_get_window_type(top) != GTK_WINDOW_POPUP)
     return FALSE;
 
   if(dt_key_modifier_state() & (GDK_BUTTON1_MASK|GDK_BUTTON2_MASK|GDK_BUTTON3_MASK
@@ -1237,6 +1237,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
 
   gtk_widget_show_all(vbox);
   gtk_tooltip_set_custom(tooltip, vbox);
+  if(0) // GTK4
   g_signal_connect(G_OBJECT(vbox), "size-allocate", G_CALLBACK(_tooltip_reposition), widget);
 
   return TRUE;
@@ -1496,6 +1497,7 @@ static gboolean _insert_shortcut(dt_shortcut_t *shortcut,
                 shortcut->speed = s->speed = roundf(s->speed * e->speed * 1000.) / 1000.;
               if(fabsf(s->speed) >= .001 && fabsf(s->speed) <= 1000.)
               {
+                if(0) // GTK4
                 _remove_shortcut(existing);
                 if(s->speed != 1.0)
                 {
@@ -2537,7 +2539,7 @@ static void _restore_clicked(GtkButton *button, gpointer user_data)
 {
   enum
   {
-    _DEFAULTS = 1,
+    _DEFAULTS,
     _STARTUP,
     _EDITS,
   };
@@ -4826,6 +4828,7 @@ dt_action_t *dt_action_define(dt_action_t *owner,
       }
 
       gtk_widget_set_has_tooltip(widget, TRUE);
+      if(0) // GTK4
       g_signal_connect(G_OBJECT(widget), "leave-notify-event",
                        G_CALLBACK(_reset_element_on_leave), NULL);
     }
@@ -4916,17 +4919,15 @@ void dt_shortcut_register(dt_action_t *owner,
 {
   if(accel_key != 0 && !darktable.control->accel_initialised)
   {
-    GdkKeymap *keymap = gdk_keymap_get_for_display(gdk_display_get_default());
-
     GdkKeymapKey *keys;
     gint n_keys, i = 0;
 
-    if(!gdk_keymap_get_entries_for_keyval(keymap, accel_key, &keys, &n_keys)) return;
+    if(!gdk_display_map_keyval(gdk_display_get_default(), accel_key, &keys, &n_keys)) return; // GTK4
 
     for(int j = 0; j < n_keys; j++)
     {
-      gdk_keymap_translate_keyboard_state(keymap, keys[j].keycode, 0, 0,
-                                          &keys[j].keycode, NULL, NULL, NULL);
+      gdk_display_translate_key(gdk_display_get_default(), keys[j].keycode, 0, 0,
+                                                          &keys[j].keycode, NULL, NULL, NULL);
 
       if(_is_kp_key(keys[j].keycode))
         keys[j].group = 10;
@@ -4938,9 +4939,9 @@ void dt_shortcut_register(dt_action_t *owner,
     }
 
     if(keys[i].level & 1) mods |= GDK_SHIFT_MASK;
-    if(keys[i].level & 2) mods |= GDK_MOD5_MASK;
+    if(keys[i].level & 2) mods |= GDK_ALT_MASK; // GTK4
 
-    mods = _mods_fix_primary(mods);
+    // mods = _mods_fix_primary(mods); // GTK4
 
     dt_shortcut_t s = { .key_device = DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE,
                         .key = keys[i].keycode,

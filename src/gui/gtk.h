@@ -387,6 +387,7 @@ void dt_ellipsize_combo(GtkComboBox *cbox);
 
 static inline void dt_ui_section_label_set(GtkWidget *label)
 {
+  gtk_widget_set_hexpand(label, TRUE); // GTK4
   gtk_widget_set_halign(label, GTK_ALIGN_FILL); // make it span the whole available width
   gtk_label_set_xalign (GTK_LABEL(label), 0.5f);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END); // ellipsize labels
@@ -533,12 +534,16 @@ void dt_gui_hide_collapsible_section(const dt_gui_collapsible_section_t *cs);
 gboolean dt_gui_long_click(const guint second,
                            const guint first);
 
+#define ASSERT_FUNC_TYPE(func, expected_type) (void)(1 ? (func) : (expected_type)0)
+
 GtkGestureSingle *(dt_gui_connect_click)(GtkWidget *widget,
                                          GCallback pressed,
                                          GCallback released,
                                          gpointer data);
-#define dt_gui_connect_click(widget, pressed, released, data) \
-  dt_gui_connect_click(GTK_WIDGET(widget), G_CALLBACK(pressed), G_CALLBACK(released), (data))
+#define dt_gui_connect_click(widget, pressed, released, data) ( \
+  ASSERT_FUNC_TYPE(pressed, void(*)(GtkGestureSingle *, int, double, double, __typeof__(data))), \
+  ASSERT_FUNC_TYPE(released, void(*)(GtkGestureSingle *, int, double, double, __typeof__(data))), \
+  (dt_gui_connect_click)(GTK_WIDGET(widget), G_CALLBACK(pressed), G_CALLBACK(released), (data)))
 #define dt_gui_connect_click_all(widget, pressed, released, data) \
   gtk_gesture_single_set_button(dt_gui_connect_click(widget, pressed, released, data), 0)
 
@@ -550,8 +555,11 @@ GtkEventController *(dt_gui_connect_motion)(GtkWidget *widget,
                                             GCallback enter,
                                             GCallback leave,
                                             gpointer data);
-#define dt_gui_connect_motion(widget, motion, enter, leave, data) \
-  dt_gui_connect_motion(GTK_WIDGET(widget), G_CALLBACK(motion), G_CALLBACK(enter), G_CALLBACK(leave), (data))
+#define dt_gui_connect_motion(widget, motion, enter, leave, data) ( \
+  ASSERT_FUNC_TYPE(motion, void(*)(GtkEventControllerMotion *, double, double, __typeof__(data))), \
+  ASSERT_FUNC_TYPE(enter, void(*)(GtkEventControllerMotion *, double, double, __typeof__(data))), \
+  ASSERT_FUNC_TYPE(leave, void(*)(GtkEventControllerMotion *, __typeof__(data))), \
+  dt_gui_connect_motion(GTK_WIDGET(widget), G_CALLBACK(motion), G_CALLBACK(enter), G_CALLBACK(leave), (data)))
 
 // GTK4 gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
 #define dt_modifier_eq(controller, mask)\

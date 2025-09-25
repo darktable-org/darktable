@@ -33,8 +33,8 @@ static void dtgtk_side_panel_get_preferred_width(GtkWidget *widget,
                                                  gint *minimum_size,
                                                  gint *natural_size)
 {
-  GTK_WIDGET_CLASS(dtgtk_side_panel_parent_class)->get_preferred_width
-    (widget, minimum_size, natural_size);
+  // GTK_WIDGET_CLASS(dtgtk_side_panel_parent_class)->get_preferred_width
+  //   (widget, minimum_size, natural_size);
 
   const int width =
     dt_ui_panel_get_size(darktable.gui->ui,
@@ -47,10 +47,10 @@ static void dtgtk_side_panel_get_preferred_width(GtkWidget *widget,
 
 static void dtgtk_side_panel_class_init(GtkDarktableSidePanelClass *class)
 {
-  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(class);
+  // GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(class);
 
-  widget_class->get_request_mode = dtgtk_side_panel_get_request_mode;
-  widget_class->get_preferred_width = dtgtk_side_panel_get_preferred_width;
+  // widget_class->get_request_mode = dtgtk_side_panel_get_request_mode;
+  // widget_class->get_preferred_width = dtgtk_side_panel_get_preferred_width;
 }
 
 static void dtgtk_side_panel_init(GtkDarktableSidePanel *panel)

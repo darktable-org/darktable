@@ -23,23 +23,30 @@
 
 G_DEFINE_TYPE(GtkDarktableToggleButton, dtgtk_togglebutton, GTK_TYPE_TOGGLE_BUTTON);
 
-static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr);
+static void _togglebutton_snapshot(GtkWidget *widget, GtkSnapshot* snapshot);
 
 static void dtgtk_togglebutton_class_init(GtkDarktableToggleButtonClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
 
-  widget_class->draw = _togglebutton_draw;
+  widget_class->snapshot = _togglebutton_snapshot;
+
+  dt_add_legacy_signals(widget_class);
 }
 
 static void dtgtk_togglebutton_init(GtkDarktableToggleButton *slider)
 {
 }
 
-static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
+static void _togglebutton_snapshot(GtkWidget* widget,
+                                   GtkSnapshot* snapshot)
 {
-  g_return_val_if_fail(widget != NULL, FALSE);
-  g_return_val_if_fail(DTGTK_IS_TOGGLEBUTTON(widget), FALSE);
+  g_return_if_fail(widget != NULL);
+  g_return_if_fail(DTGTK_IS_TOGGLEBUTTON(widget));
+
+  graphene_rect_t bounds;
+  graphene_rect_init(&bounds, 0, 0, gtk_widget_get_width(widget), gtk_widget_get_height(widget));
+  cairo_t* cr = gtk_snapshot_append_cairo(snapshot, &bounds);
 
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
 
@@ -126,7 +133,7 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
       DTGTK_TOGGLEBUTTON(widget)->icon(cr, startx, starty, cwidth, cheight, flags, icon_data);
   }
 
-  return FALSE;
+  cairo_destroy(cr);
 }
 
 // Public functions
