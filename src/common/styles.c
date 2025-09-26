@@ -1470,7 +1470,14 @@ static void dt_styles_style_text_handler(GMarkupParseContext *context,
 
   if(g_ascii_strcasecmp(elt, "name") == 0)
   {
-    g_string_append_len(style->info->name, text, text_len);
+    if (text_len == 0)
+    {
+      g_string_append(style->info->name, _("imported-style"));
+    }
+    else
+    {
+      g_string_append_len(style->info->name, text, text_len);
+    }
   }
   else if(g_ascii_strcasecmp(elt, "description") == 0)
   {
@@ -1781,6 +1788,16 @@ gchar *dt_get_style_name(const char *filename)
   if(!bname){
     dt_print(DT_DEBUG_CONTROL,
              "[styles] file %s is a malformed style file", filename);
+  }
+  else
+  {
+    if(strlen(bname) == 0)
+    {
+      dt_print(DT_DEBUG_CONTROL,
+             "[styles] file %s is a malformed style file (with an empty name)", filename);
+      g_free(bname);
+      bname = g_strdup(_("imported-style"));
+    }
   }
   return bname;
 }
