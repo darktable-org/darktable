@@ -120,7 +120,7 @@ typedef struct dt_iop_agx_params_t
   // s_p
   float curve_shoulder_power;             // $MIN: 0.f $MAX: 10.f $DEFAULT: 1.5f $DESCRIPTION: "shoulder power"
   float curve_gamma;                      // $MIN: 0.01f $MAX: 100.f $DEFAULT: 2.2f $DESCRIPTION: "curve y gamma"
-  gboolean auto_gamma;                    // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.f $DESCRIPTION: "keep the pivot on the identity line"
+  gboolean auto_gamma;                    // $MIN: 0.f $MAX: 1.f $DEFAULT: 0.f $DESCRIPTION: "keep the pivot on the diagonal"
   // t_ly
   float curve_target_display_black_ratio; // $MIN: 0.f $MAX: 0.15f $DEFAULT: 0.f $DESCRIPTION: "target black"
   // s_ly
@@ -1598,7 +1598,7 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(0.5));
   cairo_stroke(cr);
 
-  // identity line (y=x)
+  // diagonal (y=x)
   cairo_save(cr);
   cairo_set_source_rgba(cr,
                         darktable.bauhaus->graph_border.red,
