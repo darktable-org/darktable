@@ -1243,8 +1243,6 @@ static void _apply_auto_black_exposure(const dt_iop_module_t *self)
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->black_exposure_picker, p->range_black_relative_exposure);
   --darktable.gui->reset;
-
-  gtk_widget_queue_draw(GTK_WIDGET(g->graph_drawing_area));
 }
 
 static void _apply_auto_white_exposure(const dt_iop_module_t *self)
@@ -2726,6 +2724,7 @@ void color_picker_apply(dt_iop_module_t *self,
     --darktable.gui->reset;
   }
   gtk_widget_queue_draw(GTK_WIDGET(g->graph_drawing_area));
+  _update_curve_warnings(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
