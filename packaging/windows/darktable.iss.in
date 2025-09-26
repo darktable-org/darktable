@@ -14,6 +14,12 @@
 AppId={#MyAppName}{#MyAppVersion}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
+
+; By default AppVername (and UninstallDisplayName) contains the word "version"
+; between the app name and the version number. We don't want it, the presence
+; of this word doesn't improve anything, it's just not needed.
+AppVerName={#MyAppName} {#MyAppVersion}
+
 AppCopyright={#MyAppCopyright}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
