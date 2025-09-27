@@ -2850,6 +2850,126 @@ void gui_reset(dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
 }
 
+#ifdef HAVE_OPENCL
+
+typedef struct dt_iop_agx_global_data_t
+{
+  int kernel_agx;
+} dt_iop_agx_global_data_t;
+
+void init_global(dt_iop_module_so_t *self)
+{
+  const int program = 39; // agx.cl, from programs.conf
+  dt_iop_agx_global_data_t *gd = malloc(sizeof(dt_iop_agx_global_data_t));
+  self->data = gd;
+  gd->kernel_agx = dt_opencl_create_kernel(program, "kernel_agx");
+}
+
+void cleanup_global(dt_iop_module_so_t *self)
+{
+  dt_iop_agx_global_data_t *gd = self->data;
+  if (gd)
+  {
+    dt_opencl_free_kernel(gd->kernel_agx);
+    free(self->data);
+    self->data = NULL;
+  }
+}
+
+int process_cl(dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
+{
+  if(!dt_iop_have_required_input_format(4, self, piece->colors, (void*)dev_in, (void*)dev_out, roi_in, roi_out))
+  {
+    return CL_INVALID_IMAGE_FORMAT_DESCRIPTOR;
+  }
+
+  const dt_iop_agx_global_data_t *gd = self->global_data;
+  const dt_iop_agx_data_t *d = piece->data;
+  cl_int err = CL_SUCCESS;
+
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  // Get profiles and create matrices
+  const dt_iop_order_iccprofile_info_t *const pipe_work_profile =
+    dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const dt_iop_order_iccprofile_info_t *const base_profile =
+    _agx_get_base_profile(self->dev, pipe_work_profile, d->primaries_params.base_primaries);
+
+  if(!base_profile)
+  {
+    dt_print(DT_DEBUG_ALWAYS,
+             "[agx process_cl] Failed to obtain a valid base profile. Module will not run correctly.");
+    return CL_INVALID_CONTEXT;
+  }
+
+  dt_colormatrix_t pipe_to_base;
+  dt_colormatrix_t base_to_rendering;
+  dt_colormatrix_t rendering_to_pipe;
+  dt_colormatrix_t rendering_to_xyz;
+
+  dt_colormatrix_t pipe_to_base_transposed;
+  dt_colormatrix_t base_to_rendering_transposed;
+  dt_colormatrix_t rendering_to_pipe_transposed;
+  dt_colormatrix_t rendering_to_xyz_transposed;
+
+  _create_matrices(&d->primaries_params,
+                   pipe_work_profile,
+                   base_profile,
+                   rendering_to_xyz_transposed,
+                   pipe_to_base_transposed,
+                   base_to_rendering_transposed,
+                   rendering_to_pipe_transposed);
+
+  dt_colormatrix_transpose(pipe_to_base, pipe_to_base_transposed);
+  dt_colormatrix_transpose(base_to_rendering, base_to_rendering_transposed);
+  dt_colormatrix_transpose(rendering_to_pipe, rendering_to_pipe_transposed);
+  dt_colormatrix_transpose(rendering_to_xyz, rendering_to_xyz_transposed);
+
+  const cl_mem dev_pipe_to_base =
+    dt_opencl_copy_host_to_device_constant(devid, sizeof(pipe_to_base), pipe_to_base);
+  const cl_mem dev_base_to_rendering =
+    dt_opencl_copy_host_to_device_constant(devid, sizeof(base_to_rendering), base_to_rendering);
+  const cl_mem dev_rendering_to_pipe =
+    dt_opencl_copy_host_to_device_constant(devid, sizeof(rendering_to_pipe), rendering_to_pipe);
+  const cl_mem dev_rendering_to_xyz =
+    dt_opencl_copy_host_to_device_constant(devid, sizeof(rendering_to_xyz), rendering_to_xyz);
+
+  if(!dev_pipe_to_base || !dev_base_to_rendering || !dev_rendering_to_pipe || !dev_rendering_to_xyz)
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    goto cleanup;
+  }
+
+  const int base_working_same_profile = pipe_work_profile == base_profile;
+
+  err = dt_opencl_enqueue_kernel_2d_args(
+    devid, gd->kernel_agx, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
+    CLARG(d->tone_mapping_params),
+    CLARG(dev_pipe_to_base),
+    CLARG(dev_base_to_rendering),
+    CLARG(dev_rendering_to_pipe),
+    CLARG(dev_rendering_to_xyz),
+    CLARG(base_working_same_profile)
+  );
+
+cleanup:
+  dt_opencl_release_mem_object(dev_pipe_to_base);
+  dt_opencl_release_mem_object(dev_base_to_rendering);
+  dt_opencl_release_mem_object(dev_rendering_to_pipe);
+  dt_opencl_release_mem_object(dev_rendering_to_xyz);
+
+  return err;
+}
+#endif // HAVE_OPENCL
+
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
