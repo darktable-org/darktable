@@ -1963,7 +1963,7 @@ static void _add_basic_curve_controls(dt_iop_module_t *self,
   slider = dt_bauhaus_slider_from_params(section, "curve_contrast_around_pivot");
   controls->curve_contrast_around_pivot = slider;
   dt_bauhaus_slider_set_soft_range(slider, 0.1f, 5.f);
-  gtk_widget_set_tooltip_text(slider, _("slope of the linear section"));
+  gtk_widget_set_tooltip_text(slider, _("slope of the linear section around the pivot"));
 
   GtkWidget *parent_vbox = self->widget;
 
@@ -2407,7 +2407,9 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->completely_reverse_primaries, _("completely restore purity and undo all rotations"));
 
   g->set_post_curve_primaries_from_pre_button = gtk_button_new_with_label(_("set from above"));
-  gtk_widget_set_tooltip_text(g->set_post_curve_primaries_from_pre_button, _("set parameters to completely reverse primaries modifications, but allow subsequent editing"));
+  gtk_widget_set_tooltip_text(g->set_post_curve_primaries_from_pre_button,
+                              _("set parameters to completely reverse primaries modifications,\n"
+                                  "but allow subsequent editing"));
   g_signal_connect(g->set_post_curve_primaries_from_pre_button, "clicked", G_CALLBACK(_set_post_curve_primaries_from_pre_callback), self);
   gtk_box_pack_end(GTK_BOX(reversal_hbox), g->set_post_curve_primaries_from_pre_button, FALSE, FALSE, 5);
 
