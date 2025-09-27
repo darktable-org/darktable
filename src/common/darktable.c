@@ -1869,32 +1869,37 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   {
     dt_ctl_switch_mode_to("lighttable");
 
+    if(dt_conf_get_bool("accel/load_localized_defaults"))
+    {
+      // load additional default shortcuts from share directory
+      const char *langcode = g_getenv("LANGUAGE");
+      gboolean loaded = FALSE;
+      if(langcode && *langcode)
+      {
+        fprintf(stderr,"%s",langcode);
+        gchar *localized_file = g_strdup_printf("darktable/shortcutsrc.%s", langcode);
+        gchar *shortcuts_file = g_build_filename(sharedir, localized_file, NULL);
+        if(g_file_test(shortcuts_file, G_FILE_TEST_EXISTS))
+        {
+          dt_print(DT_DEBUG_PARAMS,"[dt_init] load localized shortcuts from %s", shortcuts_file);
+          dt_shortcuts_load(shortcuts_file, FALSE);
+          loaded = TRUE;
+        }
+        g_free(shortcuts_file);
+      }
+      if(!loaded)
+      {
+        gchar *shortcuts_file = g_build_filename(sharedir, "darktable/shortcutsrc", NULL);
+        dt_print(DT_DEBUG_PARAMS,"[dt_init] load default shortcuts from %s", shortcuts_file);
+        dt_shortcuts_load(shortcuts_file, FALSE);
+        g_free(shortcuts_file);
+      }
+      // we only need to load defaults once, since they will persist
+      dt_conf_set_bool("accel/load_localized_defaults", FALSE);
+    }
+
     // all the default shortcuts have been registered
     darktable.control->accel_initialised = TRUE;
-
-    // load additional default shortcuts from share directory
-    const char *langcode = g_getenv("LANGUAGE");
-    gboolean loaded = FALSE;
-    if(langcode && *langcode)
-    {
-      fprintf(stderr,"%s",langcode);
-      gchar *localized_file = g_strdup_printf("darktable/shortcutsrc.%s", langcode);
-      gchar *shortcuts_file = g_build_filename(sharedir, localized_file, NULL);
-      if(g_file_test(shortcuts_file, G_FILE_TEST_EXISTS))
-      {
-        dt_print(DT_DEBUG_PARAMS,"[dt_init] load localized shortcuts from %s", shortcuts_file);
-        dt_shortcuts_load(shortcuts_file, FALSE);
-        loaded = TRUE;
-      }
-      g_free(shortcuts_file);
-    }
-    if(!loaded)
-    {
-      gchar *shortcuts_file = g_build_filename(sharedir, "darktable/shortcutsrc", NULL);
-      dt_print(DT_DEBUG_PARAMS,"[dt_init] load default shortcuts from %s", shortcuts_file);
-      dt_shortcuts_load(shortcuts_file, FALSE);
-      g_free(shortcuts_file);
-    }
 
     // Save the default shortcuts
     dt_shortcuts_save(".defaults", FALSE);

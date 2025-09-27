@@ -1438,6 +1438,7 @@ static gboolean _insert_shortcut(dt_shortcut_t *shortcut,
 
   dt_shortcut_t *s = calloc(sizeof(dt_shortcut_t), 1);
   *s = *shortcut;
+  s->is_default = !darktable.control->accel_initialised;
   const dt_view_type_flags_t real_views = s->views = _find_views(s->action);
 
   const dt_view_type_flags_t view = dt_view_get_current();
