@@ -190,8 +190,8 @@ typedef struct dt_iop_agx_gui_data_t
   GtkWidget *disable_primaries_adjustments;
   GtkWidget *primaries_controls_vbox;
   GtkWidget *completely_reverse_primaries;
-  GtkWidget *after_primaries_controls_vbox;
-  GtkWidget *set_post_tonemapping_primaries_from_pre_button;
+  GtkWidget *post_curve_primaries_controls_vbox;
+  GtkWidget *set_post_curve_primaries_from_pre_button;
 } dt_iop_agx_gui_data_t;
 
 typedef struct tone_mapping_params_t
@@ -1861,20 +1861,19 @@ static void _update_curve_warnings(dt_iop_module_t *self)
                            params.need_concave_shoulder && warnings_enabled);
 }
 
-static void _update_after_primaries_visibility(const dt_iop_module_t *self)
+static void _update_post_curve_primaries_visibility(const dt_iop_module_t *self)
 {
   const dt_iop_agx_gui_data_t *g = self->gui_data;
   const dt_iop_agx_params_t *p = self->params;
 
-  if(g && g->after_primaries_controls_vbox)
+  if(g && g->post_curve_primaries_controls_vbox)
   {
-    const gboolean independent_post_primaries = !p->completely_reverse_primaries && !p->disable_primaries_adjustments;
-    gtk_widget_set_visible(g->after_primaries_controls_vbox, independent_post_primaries);
-    gtk_widget_set_sensitive(g->after_primaries_controls_vbox, independent_post_primaries);
-    if(g->set_post_tonemapping_primaries_from_pre_button)
+    const gboolean post_curve_primaries_available = !p->completely_reverse_primaries && !p->disable_primaries_adjustments;
+    gtk_widget_set_visible(g->post_curve_primaries_controls_vbox, post_curve_primaries_available);
+    gtk_widget_set_sensitive(g->post_curve_primaries_controls_vbox, post_curve_primaries_available);
+    if(g->set_post_curve_primaries_from_pre_button)
     {
-      gtk_widget_set_visible(g->set_post_tonemapping_primaries_from_pre_button, independent_post_primaries);
-      gtk_widget_set_sensitive(g->set_post_tonemapping_primaries_from_pre_button, independent_post_primaries);
+      gtk_widget_set_sensitive(g->set_post_curve_primaries_from_pre_button, post_curve_primaries_available);
     }
   }
 }
@@ -1917,11 +1916,7 @@ void gui_changed(dt_iop_module_t *self,
 
   _update_primaries_checkbox_and_sliders(self);
   _update_curve_warnings(self);
-  _update_after_primaries_visibility(self);
-
-  // Test which widget was changed.
-  // If allowing w == NULL, this can be called from gui_update, so that
-  // gui configuration adjustments only need to be dealt with once, here.
+  _update_post_curve_primaries_visibility(self);
 
   // Trigger redraw when any parameter changes
   if(g && g->graph_drawing_area)
@@ -2278,7 +2273,7 @@ static void _primaries_popupmenu_callback(GtkWidget *button, dt_iop_module_t *se
   dt_gui_menu_popup(GTK_MENU(menu), button, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST);
 }
 
-static void _set_post_tonemapping_primaries_from_pre_callback(GtkWidget *widget, dt_iop_module_t *self)
+static void _set_post_curve_primaries_from_pre_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   dt_iop_agx_params_t *p = self->params;
 
@@ -2321,7 +2316,7 @@ void gui_update(dt_iop_module_t *self)
 
   _update_primaries_checkbox_and_sliders(self);
   _update_curve_warnings(self);
-  _update_after_primaries_visibility(self);
+  _update_post_curve_primaries_visibility(self);
 
   // Ensure the graph is drawn initially
   if(g && g->graph_drawing_area)
@@ -2411,14 +2406,14 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
 
   gtk_widget_set_tooltip_text(g->completely_reverse_primaries, _("completely restore purity and undo all rotations"));
 
-  g->set_post_tonemapping_primaries_from_pre_button = gtk_button_new_with_label(_("set from above"));
-  gtk_widget_set_tooltip_text(g->set_post_tonemapping_primaries_from_pre_button, _("set parameters to completely reverse primaries modifications, but allow subsequent editing"));
-  g_signal_connect(g->set_post_tonemapping_primaries_from_pre_button, "clicked", G_CALLBACK(_set_post_tonemapping_primaries_from_pre_callback), self);
-  gtk_box_pack_end(GTK_BOX(reversal_hbox), g->set_post_tonemapping_primaries_from_pre_button, FALSE, FALSE, 5);
+  g->set_post_curve_primaries_from_pre_button = gtk_button_new_with_label(_("set from above"));
+  gtk_widget_set_tooltip_text(g->set_post_curve_primaries_from_pre_button, _("set parameters to completely reverse primaries modifications, but allow subsequent editing"));
+  g_signal_connect(g->set_post_curve_primaries_from_pre_button, "clicked", G_CALLBACK(_set_post_curve_primaries_from_pre_callback), self);
+  gtk_box_pack_end(GTK_BOX(reversal_hbox), g->set_post_curve_primaries_from_pre_button, FALSE, FALSE, 5);
 
   GtkWidget *vbox_to_add_to = parent_vbox;
-  g->after_primaries_controls_vbox = self->widget = dt_gui_vbox();
-  dt_gui_box_add(vbox_to_add_to, g->after_primaries_controls_vbox);
+  g->post_curve_primaries_controls_vbox = self->widget = dt_gui_vbox();
+  dt_gui_box_add(vbox_to_add_to, g->post_curve_primaries_controls_vbox);
 
   slider = dt_bauhaus_slider_from_params(self, "master_outset_ratio");
   dt_bauhaus_slider_set_format(slider, "%");
