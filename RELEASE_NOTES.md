@@ -155,8 +155,8 @@ changes (where available).
   metadata fields unless the user selects all of the checkboxes in the
   export module's preference options.
 
-- Starting with release 5.4, macOS versions older than 14.0 are not
-  supported.
+- Starting with release 5.4, Intel Macs and macOS versions older than 14.0
+  are no longer supported.
 
 ## Changed Dependencies
 
