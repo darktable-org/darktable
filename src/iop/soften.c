@@ -39,8 +39,6 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-#define MAX_RADIUS 32
-
 DT_MODULE_INTROSPECTION(1, dt_iop_soften_params_t)
 
 typedef struct dt_iop_soften_params_t
