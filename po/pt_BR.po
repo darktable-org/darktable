@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-24 13:46-0300\n"
-"PO-Revision-Date: 2025-09-24 13:46-0300\n"
+"POT-Creation-Date: 2025-09-27 21:46-0300\n"
+"PO-Revision-Date: 2025-09-27 21:45-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -2736,7 +2736,7 @@ msgstr "potência"
 #: ../src/iop/colorbalance.c:1953 ../src/iop/colorbalancergb.c:1827
 #: ../src/iop/colorchecker.c:1602 ../src/iop/colorcontrast.c:79
 #: ../src/iop/colorcorrection.c:260 ../src/iop/colorequal.c:3084
-#: ../src/iop/colorize.c:347 ../src/iop/lowpass.c:578 ../src/iop/soften.c:356
+#: ../src/iop/colorize.c:347 ../src/iop/lowpass.c:578 ../src/iop/soften.c:387
 #: ../src/iop/velvia.c:73 ../src/iop/vibrance.c:69 ../src/iop/vignette.c:1046
 msgid "saturation"
 msgstr "saturação"
@@ -5485,7 +5485,7 @@ msgstr "modo de preenchimento"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:644 ../src/iop/channelmixerrgb.c:4619
 #: ../src/iop/colisa.c:278 ../src/iop/colorequal.c:3102
-#: ../src/iop/lowpass.c:577 ../src/iop/soften.c:360 ../src/iop/vignette.c:1045
+#: ../src/iop/lowpass.c:577 ../src/iop/soften.c:391 ../src/iop/vignette.c:1045
 #: ../src/libs/history.c:967
 msgid "brightness"
 msgstr "brilho"
@@ -6011,44 +6011,53 @@ msgstr ""
 msgid "output file already exists, it will get renamed"
 msgstr "arquivo de saída já existente, ele será renomeado"
 
-#. one of inputs was a failure, no prob
-#: ../src/cli/main.c:554
+#: ../src/cli/main.c:556
 #, c-format
 msgid "error: can't open folder %s"
 msgstr "erro: não foi possível abrir a pasta %s"
 
-#: ../src/cli/main.c:571
+#: ../src/cli/main.c:579
+#, c-format
+msgid "error: can't import file %s"
+msgstr "erro: não foi possível importar o arquivo %s"
+
+#: ../src/cli/main.c:589
+#, c-format
+msgid "error: can't read directory %s"
+msgstr "erro: não foi possível ler a pasta %s"
+
+#: ../src/cli/main.c:605
 #, c-format
 msgid "error: can't open file %s"
 msgstr "erro: não foi possível abrir o arquivo %s"
 
-#: ../src/cli/main.c:588
+#: ../src/cli/main.c:622
 #, c-format
 msgid "no images to export, aborting\n"
 msgstr "nenhuma imagem para exportar, cancelando\n"
 
-#: ../src/cli/main.c:605
+#: ../src/cli/main.c:639
 #, c-format
 msgid "error: can't open XMP file %s"
 msgstr "erro: não foi possível abrir o arquivo XMP %s"
 
-#: ../src/cli/main.c:626
+#: ../src/cli/main.c:660
 msgid "empty history stack"
 msgstr "esvazia histórico de ações"
 
 #. too long ext, no point in wasting time
-#: ../src/cli/main.c:638
+#: ../src/cli/main.c:672
 #, c-format
 msgid "too long output file extension: %s\n"
 msgstr "extensão de arquivo muito longa: %s\n"
 
 #. no ext or empty ext, no point in wasting time
-#: ../src/cli/main.c:646
+#: ../src/cli/main.c:680
 #, c-format
 msgid "no output file extension given\n"
 msgstr "nenhuma extensão de arquivo foi dada\n"
 
-#: ../src/cli/main.c:691
+#: ../src/cli/main.c:725
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
@@ -6056,17 +6065,17 @@ msgstr ""
 "não foi possível encontrar o módulo de armazenamento em disco. por favor, "
 "verifique sua instalação, algo parece defeituoso."
 
-#: ../src/cli/main.c:701
+#: ../src/cli/main.c:735
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr ""
 "falha ao obter parâmetros do módulo de armazenamento, abortando exportação..."
 
-#: ../src/cli/main.c:717
+#: ../src/cli/main.c:751
 #, c-format
 msgid "unknown extension '.%s'"
 msgstr "extensão desconhecida '.%s'"
 
-#: ../src/cli/main.c:727
+#: ../src/cli/main.c:761
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
 "falha ao obter parâmetros do módulo de formato, abortando exportação..."
@@ -9431,7 +9440,7 @@ msgstr ""
 #: ../src/iop/filmicrgb.c:4444 ../src/iop/filmicrgb.c:4454
 #: ../src/iop/graduatednd.c:1065 ../src/iop/negadoctor.c:1004
 #: ../src/iop/profile_gamma.c:629 ../src/iop/profile_gamma.c:635
-#: ../src/iop/relight.c:249 ../src/iop/soften.c:361 ../src/iop/toneequal.c:3305
+#: ../src/iop/relight.c:249 ../src/iop/soften.c:392 ../src/iop/toneequal.c:3305
 #: ../src/iop/toneequal.c:3308 ../src/iop/toneequal.c:3311
 #: ../src/iop/toneequal.c:3314 ../src/iop/toneequal.c:3317
 #: ../src/iop/toneequal.c:3320 ../src/iop/toneequal.c:3323
@@ -15776,8 +15785,8 @@ msgstr "não-linear, RGB"
 #: ../src/iop/channelmixer.c:139 ../src/iop/lut3d.c:139
 #: ../src/iop/negadoctor.c:143 ../src/iop/profile_gamma.c:100
 #: ../src/iop/rgbcurve.c:143 ../src/iop/rgbcurve.c:145
-#: ../src/iop/rgblevels.c:122 ../src/iop/sigmoid.c:207 ../src/iop/soften.c:101
-#: ../src/iop/soften.c:103
+#: ../src/iop/rgblevels.c:122 ../src/iop/sigmoid.c:207 ../src/iop/soften.c:102
+#: ../src/iop/soften.c:104
 msgid "linear, RGB, display-referred"
 msgstr "linear, RGB, relativo à exibição"
 
@@ -16706,7 +16715,7 @@ msgstr "aplicar ajustes usuais à imagem"
 #: ../src/iop/colorize.c:95 ../src/iop/colormapping.c:152
 #: ../src/iop/colorzones.c:142 ../src/iop/grain.c:391 ../src/iop/highpass.c:75
 #: ../src/iop/levels.c:137 ../src/iop/liquify.c:294 ../src/iop/lowlight.c:89
-#: ../src/iop/lowpass.c:103 ../src/iop/monochrome.c:99 ../src/iop/soften.c:100
+#: ../src/iop/lowpass.c:103 ../src/iop/monochrome.c:99 ../src/iop/soften.c:101
 #: ../src/iop/splittoning.c:102 ../src/iop/velvia.c:97 ../src/iop/vibrance.c:94
 #: ../src/iop/vignette.c:117 ../src/iop/watermark.c:415
 msgid "creative"
@@ -16875,7 +16884,7 @@ msgstr "aplica desfoque de superfície para remover ruído ou suavizar texturas"
 #: ../src/iop/channelmixer.c:138 ../src/iop/denoiseprofile.c:778
 #: ../src/iop/diffuse.c:141 ../src/iop/enlargecanvas.c:82
 #: ../src/iop/exposure.c:131 ../src/iop/overlay.c:157 ../src/iop/primaries.c:75
-#: ../src/iop/scalepixels.c:87 ../src/iop/soften.c:102
+#: ../src/iop/scalepixels.c:87 ../src/iop/soften.c:103
 #: ../src/iop/splittoning.c:104 ../src/iop/velvia.c:99
 msgid "linear, RGB"
 msgstr "linear, RGB"
@@ -16914,7 +16923,7 @@ msgstr "quanto desfoque azul"
 msgid "apply Orton effect for a dreamy ethereal look"
 msgstr "aplica o efeito Orton para um visual etéreo onírico"
 
-#: ../src/iop/bloom.c:414 ../src/iop/soften.c:352 ../src/libs/camera.c:591
+#: ../src/iop/bloom.c:414 ../src/iop/soften.c:383 ../src/libs/camera.c:591
 #: ../src/libs/masks.c:107
 msgid "size"
 msgstr "tamanho"
@@ -17022,7 +17031,7 @@ msgstr "que dimensão usar para o cálculo do tamanho"
 msgid "size of the border in percent of the chosen basis"
 msgstr "tamanho da borda em percentagem da base escolhida"
 
-#: ../src/iop/borders.c:933 ../src/iop/clipping.c:2229 ../src/iop/crop.c:1263
+#: ../src/iop/borders.c:933 ../src/iop/clipping.c:2229 ../src/iop/crop.c:1260
 msgid "aspect"
 msgstr "proporção"
 
@@ -17062,7 +17071,7 @@ msgstr "5:3"
 msgid "US Legal 8.5x14"
 msgstr "US Legal 8.5x14"
 
-#: ../src/iop/borders.c:945 ../src/iop/clipping.c:2142 ../src/iop/crop.c:1165
+#: ../src/iop/borders.c:945 ../src/iop/clipping.c:2142 ../src/iop/crop.c:1162
 msgid "golden cut"
 msgstr "proporção áurea"
 
@@ -17098,7 +17107,7 @@ msgstr "14:11"
 msgid "5:4 (8x10)"
 msgstr "5:4 (8x10)"
 
-#: ../src/iop/borders.c:955 ../src/iop/clipping.c:2132 ../src/iop/crop.c:1154
+#: ../src/iop/borders.c:955 ../src/iop/clipping.c:2132 ../src/iop/crop.c:1151
 #: ../src/libs/filtering.c:310 ../src/libs/filters/ratio.c:124
 #: ../src/libs/histogram.c:120
 msgid "square"
@@ -18164,16 +18173,16 @@ msgstr "reenquadrar|perspectiva|distorção de perspectiva|distorção"
 msgid "change the framing and correct the perspective"
 msgstr "muda o enquadramento e corrige a perspectiva"
 
-#: ../src/iop/clipping.c:1416 ../src/iop/clipping.c:2131 ../src/iop/crop.c:610
-#: ../src/iop/crop.c:1153
+#: ../src/iop/clipping.c:1416 ../src/iop/clipping.c:2131 ../src/iop/crop.c:611
+#: ../src/iop/crop.c:1150
 msgid "original image"
 msgstr "imagem original"
 
-#: ../src/iop/clipping.c:1720 ../src/iop/crop.c:835
+#: ../src/iop/clipping.c:1720 ../src/iop/crop.c:836
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "formato da proporção inválido. deveria ser \"número:número\""
 
-#: ../src/iop/clipping.c:1736 ../src/iop/crop.c:851
+#: ../src/iop/clipping.c:1736 ../src/iop/crop.c:852
 msgid "invalid ratio format. it should be a positive number"
 msgstr "formato da proporção inválido. deveria ser um número positivo"
 
@@ -18214,51 +18223,51 @@ msgstr "distorção de perspectiva"
 msgid "set perspective correction for your image"
 msgstr "define a correção de perspectiva para sua imagem"
 
-#: ../src/iop/clipping.c:2130 ../src/iop/crop.c:1152
+#: ../src/iop/clipping.c:2130 ../src/iop/crop.c:1149
 msgid "freehand"
 msgstr "mão livre"
 
-#: ../src/iop/clipping.c:2133 ../src/iop/crop.c:1155
+#: ../src/iop/clipping.c:2133 ../src/iop/crop.c:1152
 msgid "10:8 in print"
 msgstr "10:8 em impressão"
 
-#: ../src/iop/clipping.c:2134 ../src/iop/crop.c:1156
+#: ../src/iop/clipping.c:2134 ../src/iop/crop.c:1153
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4x5, 8x10"
 
-#: ../src/iop/clipping.c:2135 ../src/iop/crop.c:1157
+#: ../src/iop/clipping.c:2135 ../src/iop/crop.c:1154
 msgid "11x14"
 msgstr "11x14"
 
-#: ../src/iop/clipping.c:2136 ../src/iop/crop.c:1159
+#: ../src/iop/clipping.c:2136 ../src/iop/crop.c:1156
 msgid "8.5x11, letter"
 msgstr "8.5x11, carta"
 
-#: ../src/iop/clipping.c:2137 ../src/iop/crop.c:1160
+#: ../src/iop/clipping.c:2137 ../src/iop/crop.c:1157
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:2138 ../src/iop/crop.c:1161
+#: ../src/iop/clipping.c:2138 ../src/iop/crop.c:1158
 msgid "5x7"
 msgstr "5x7"
 
-#: ../src/iop/clipping.c:2139 ../src/iop/crop.c:1162
+#: ../src/iop/clipping.c:2139 ../src/iop/crop.c:1159
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:2140 ../src/iop/crop.c:1163
+#: ../src/iop/clipping.c:2140 ../src/iop/crop.c:1160
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4x6, 35mm"
 
-#: ../src/iop/clipping.c:2141 ../src/iop/crop.c:1164
+#: ../src/iop/clipping.c:2141 ../src/iop/crop.c:1161
 msgid "16:10, 8x5"
 msgstr "16:10, 8x5"
 
-#: ../src/iop/clipping.c:2143 ../src/iop/crop.c:1166
+#: ../src/iop/clipping.c:2143 ../src/iop/crop.c:1163
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:2144 ../src/iop/crop.c:1167
+#: ../src/iop/clipping.c:2144 ../src/iop/crop.c:1164
 msgid "widescreen"
 msgstr "widescreen"
 
@@ -18270,25 +18279,25 @@ msgstr "2:1, univisium"
 msgid "cinemascope"
 msgstr "cinemascópio"
 
-#: ../src/iop/clipping.c:2147 ../src/iop/crop.c:1170
+#: ../src/iop/clipping.c:2147 ../src/iop/crop.c:1167
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:2148 ../src/iop/crop.c:1171
+#: ../src/iop/clipping.c:2148 ../src/iop/crop.c:1168
 msgid "anamorphic"
 msgstr "anamórfico"
 
-#: ../src/iop/clipping.c:2149 ../src/iop/crop.c:1173
+#: ../src/iop/clipping.c:2149 ../src/iop/crop.c:1170
 msgid "3:1, panorama"
 msgstr "3:1, panorâmica"
 
-#: ../src/iop/clipping.c:2181 ../src/iop/clipping.c:2193 ../src/iop/crop.c:1209
-#: ../src/iop/crop.c:1226
+#: ../src/iop/clipping.c:2181 ../src/iop/clipping.c:2193 ../src/iop/crop.c:1206
+#: ../src/iop/crop.c:1223
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr "formato da proporção inválido para `%s'. deveria ser \"número:número\""
 
-#: ../src/iop/clipping.c:2240 ../src/iop/crop.c:1277
+#: ../src/iop/clipping.c:2240 ../src/iop/crop.c:1274
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square\n"
@@ -18300,23 +18309,23 @@ msgstr ""
 "para entrar uma proporção personalizada, abra o o menu\n"
 "suspenso e digite a proporção como x:y ou em formato decimal"
 
-#: ../src/iop/clipping.c:2247 ../src/iop/crop.c:1289
+#: ../src/iop/clipping.c:2247 ../src/iop/crop.c:1286
 msgid "margins"
 msgstr "margens"
 
-#: ../src/iop/clipping.c:2252 ../src/iop/crop.c:1299
+#: ../src/iop/clipping.c:2252 ../src/iop/crop.c:1296
 msgid "the left margin cannot overlap with the right margin"
 msgstr "a margem esquerda não pode sobrepor a margem direita"
 
-#: ../src/iop/clipping.c:2259 ../src/iop/crop.c:1307
+#: ../src/iop/clipping.c:2259 ../src/iop/crop.c:1304
 msgid "the right margin cannot overlap with the left margin"
 msgstr "a margem direita não pode sobrepor a margem esquerda"
 
-#: ../src/iop/clipping.c:2264 ../src/iop/crop.c:1313
+#: ../src/iop/clipping.c:2264 ../src/iop/crop.c:1310
 msgid "the top margin cannot overlap with the bottom margin"
 msgstr "a margem superior não pode sobrepor a margem inferior"
 
-#: ../src/iop/clipping.c:2271 ../src/iop/crop.c:1321
+#: ../src/iop/clipping.c:2271 ../src/iop/crop.c:1318
 msgid "the bottom margin cannot overlap with the top margin"
 msgstr "a margem inferior não pode sobrepor a margem superior"
 
@@ -18359,12 +18368,12 @@ msgstr ""
 "horizontalmente</b>: ctrl+arrastar\n"
 "<b>endireitar</b>: arrastar com botão direito, <b>finalizar</b>: clique-duplo"
 
-#: ../src/iop/clipping.c:3335 ../src/iop/crop.c:1821
+#: ../src/iop/clipping.c:3335 ../src/iop/crop.c:1818
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[%s em bordas] cortar"
 
-#: ../src/iop/clipping.c:3337 ../src/iop/crop.c:1823
+#: ../src/iop/clipping.c:3337 ../src/iop/crop.c:1820
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[%s em bordas] cortar mantendo aspecto"
@@ -19668,28 +19677,28 @@ msgstr "reenquadramento|distorção"
 msgid "change the framing"
 msgstr "muda o enquadramento"
 
-#: ../src/iop/crop.c:1158
+#: ../src/iop/crop.c:1155
 msgid "45x35, portrait"
 msgstr "45x35, retrato"
 
-#: ../src/iop/crop.c:1168
+#: ../src/iop/crop.c:1165
 msgid "2:1, Univisium"
 msgstr "2:1, Univisium"
 
-#: ../src/iop/crop.c:1169
+#: ../src/iop/crop.c:1166
 msgid "CinemaScope"
 msgstr "CinemaScope"
 
-#: ../src/iop/crop.c:1172
+#: ../src/iop/crop.c:1169
 msgid "65:24, XPan"
 msgstr "65:24, XPan"
 
-#: ../src/iop/crop.c:1704
+#: ../src/iop/crop.c:1701
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
 "<b>mudar tamanho</b>: arrastar, <b>manter proporção</b>: shift+arrastar"
 
-#: ../src/iop/crop.c:1711
+#: ../src/iop/crop.c:1708
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag"
@@ -23777,27 +23786,27 @@ msgstr ""
 "pode ser usado criativamente para um visual apagado ou estourando brancos "
 "antes."
 
-#: ../src/iop/soften.c:77
+#: ../src/iop/soften.c:78
 msgid "soften"
 msgstr "suavização"
 
-#: ../src/iop/soften.c:99
+#: ../src/iop/soften.c:100
 msgid "create a softened image using the Orton effect"
 msgstr "cria uma imagem suavizada usando o efeito Orton."
 
-#: ../src/iop/soften.c:354
+#: ../src/iop/soften.c:385
 msgid "the size of blur"
 msgstr "o tamanho do desfoque"
 
-#: ../src/iop/soften.c:358
+#: ../src/iop/soften.c:389
 msgid "the saturation of blur"
 msgstr "a saturação do desfoque"
 
-#: ../src/iop/soften.c:362
+#: ../src/iop/soften.c:393
 msgid "the brightness of blur"
 msgstr "o brilho do desfoque"
 
-#: ../src/iop/soften.c:366
+#: ../src/iop/soften.c:397
 msgid "the mix of effect"
 msgstr "a mistura do efeito"
 
