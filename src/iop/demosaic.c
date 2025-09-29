@@ -1673,19 +1673,32 @@ static void _ui_pipe_done(gpointer instance, dt_iop_module_t *self)
   const gboolean new_radius = g->new_radius > 0.0f;
   const gboolean new_thrs = g->new_thrs > 0.0f;
   if(new_radius)
-  {
-    dt_bauhaus_slider_set_val(g->cs_radius, g->new_radius);
-    g->new_radius = 0.0f;
-  }
+     dt_bauhaus_slider_set_val(g->cs_radius, g->new_radius);
+
   if(new_thrs)
-  {
     dt_bauhaus_slider_set_val(g->cs_thrs, g->new_thrs);
-    g->new_thrs = 0.0f;
-  }
+
   --darktable.gui->reset;
 
   if(new_radius || new_thrs)
+  {
+    dt_print(DT_DEBUG_PIPE, "demosaic UI pipe sets radius=%.3f thrs=%.3f",
+      g->new_radius, g->new_thrs);
+    g->new_radius = g->new_thrs = 0.0f;
+
     dt_dev_add_history_item(darktable.develop, self, TRUE);
+  }
+}
+
+static void _preset_applied_callback(gpointer instance, dt_iop_module_t *self)
+{
+  const dt_iop_demosaic_params_t *p = self->params;
+  if(p->cs_enabled && (p->cs_radius <= 0.0f || p->cs_thrs <= 0.0f))
+  {
+    dt_print(DT_DEBUG_PIPE, "demosaic auto preset applied, radius=%.3f thrs=%.3f",
+      p->cs_radius, p->cs_thrs);
+    dt_dev_reprocess_center(self->dev);
+  }
 }
 
 void gui_focus(dt_iop_module_t *self, const gboolean in)
@@ -1803,6 +1816,8 @@ void gui_init(dt_iop_module_t *self)
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, _ui_pipe_done);
   g->new_radius = 0.0f;
   g->new_thrs = 0.0f;
+
+  DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_PRESET_APPLIED, _preset_applied_callback);
 }
 
 // clang-format off
