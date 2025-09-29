@@ -123,23 +123,34 @@ changes (where available).
 - Fixed corruption of sidecars during large imports of images with XMP
   sidecars.
 
-## Lua
-
-### API Version
-
-- API version is now 9.5.0
-
-### New Features
-
-- ???
-
-### Bug Fixes
-
 - Fixed a bug where changing the image scaling in the export module
   influences the result of a running export job.
 
 - Make sure we always fill the complete main darkroom canvas while
   zooming at large scales.
+
+- Make sure image changed_timestamp is updated when a sidecar file
+  is applied.
+
+## Lua
+
+### API Version
+
+- API version is now 9.6.0
+
+### New Features
+
+- Added darktable.query_event() to check if an event is registered.
+
+- Added collection-changed event that fires when the collection changes.
+
+- Added darktable.configuration.share_dir and darktable.configuration.data_dir
+  to expose the darktable data and share directories.
+
+### Bug Fixes
+
+- Check added to ensure view has changed before processing GUI events
+  preventing hang on start.
 
 ### Add action support for Lua
 
