@@ -4530,7 +4530,7 @@ void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer, GtkCellEditable **ac
   g_signal_connect(renderer, "editing-started", G_CALLBACK(_commit_on_focus_loss_callback), (gpointer)active_editable);
 }
 
-static void _resize_dialog(GtkWidget *widget, GdkEvent *event, const char *conf)
+static gboolean _resize_dialog(GtkWidget *widget, GdkEvent *event, const char *conf)
 {
   char buf[256];
   GtkAllocation allocation;
@@ -4540,6 +4540,7 @@ static void _resize_dialog(GtkWidget *widget, GdkEvent *event, const char *conf)
   dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_height", conf), allocation.height);
   dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_x", conf), allocation.x);
   dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_y", conf), allocation.y);
+  return FALSE;
 }
 
 void dt_gui_dialog_restore_size(GtkDialog *dialog, const char *conf)
