@@ -3564,6 +3564,13 @@
     <shortdescription>look for updated XMP files on startup</shortdescription>
     <longdescription>check file modification times of all XMP files on startup to check if any got updated in the meantime</longdescription>
   </dtconfig>
+  <dtconfig prefs="storage" section="XMP">
+    <name>xmp_full_scan_next_time</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>scan all XMP files for changes on next startup</shortdescription>
+    <longdescription/>
+  </dtconfig>
   <dtconfig>
     <name>colorlabel/red</name>
     <type>string</type>
