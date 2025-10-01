@@ -110,7 +110,6 @@ typedef struct dt_iop_tonecurve_gui_data_t
   dt_draw_curve_t *minmax_curve[3]; // curves for gui to draw
   int minmax_curve_nodes[3];
   int minmax_curve_type[3];
-  GtkBox *hbox;
   GtkDrawingArea *area;
   GtkSizeGroup *sizegroup;
   GtkWidget *autoscale_ab;
@@ -1263,7 +1262,6 @@ void gui_init(dt_iop_module_t *self)
                         "not displayed. chroma values (a and b) of each pixel are "
                         "then adjusted based on L curve data. auto XYZ is similar "
                         "but applies the saturation changes in XYZ space."));
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   static dt_action_def_t notebook_def = { };
   g->channel_tabs = dt_ui_notebook_new(&notebook_def);
@@ -1273,23 +1271,21 @@ void gui_init(dt_iop_module_t *self)
   dt_ui_notebook_page(g->channel_tabs, N_("a"), _("tonecurve for a channel"));
   dt_ui_notebook_page(g->channel_tabs, N_("b"), _("tonecurve for b channel"));
   g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->channel_tabs), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), gtk_grid_new(), TRUE, TRUE, 0);
 
   g->colorpicker = dt_color_picker_new(self,
                                        DT_COLOR_PICKER_POINT_AREA | DT_COLOR_PICKER_IO,
-                                       hbox);
+                                       NULL);
   gtk_widget_set_tooltip_text
     (g->colorpicker,
      _("pick GUI color from image\nctrl+click or right-click to select an area"));
   dt_action_define_iop(self, NULL, N_("pick color"), g->colorpicker, &dt_action_def_toggle);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, dt_gui_hbox(dt_gui_expand(g->channel_tabs), 
+                                           dt_gui_align_right(g->colorpicker)));
 
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_height(0));
   g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("curve"), GTK_WIDGET(g->area), NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
 
   // FIXME: that tooltip goes in the way of the numbers when you hover a node to get a reading
   //gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double click to reset curve"));
@@ -1310,17 +1306,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "key-press-event",
                    G_CALLBACK(dt_iop_tonecurve_key_press), self);
 
-  /* From src/common/curve_tools.h :
-    #define CUBIC_SPLINE 0
-    #define CATMULL_ROM 1
-    #define MONOTONE_HERMITE 2
-  */
-  g->interpolator = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->interpolator, NULL, N_("interpolation method"));
-  dt_bauhaus_combobox_add(g->interpolator, _("cubic spline"));
-  dt_bauhaus_combobox_add(g->interpolator, _("centripetal spline"));
-  dt_bauhaus_combobox_add(g->interpolator, _("monotonic spline"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->interpolator , TRUE, TRUE, 0);
+  g->interpolator = dt_bauhaus_combobox_new_interpolation(self);
   gtk_widget_set_tooltip_text
     (g->interpolator,
      _("change this method if you see oscillations or cusps in the curve\n"
@@ -1330,13 +1316,15 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->interpolator), "value-changed",
                    G_CALLBACK(interpolator_callback), self);
 
+  dt_gui_box_add(self->widget, g->area, g->interpolator);
+
   g->preserve_colors = dt_bauhaus_combobox_from_params(self, "preserve_colors");
   gtk_widget_set_tooltip_text(g->preserve_colors,
                               _("method to preserve colors when applying contrast"));
 
   g->logbase = dt_bauhaus_slider_new_with_range(self, 0.0f, 40.0f, 0, 0.0f, 2);
   dt_bauhaus_widget_set_label(g->logbase, NULL, N_("scale for graph"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->logbase , TRUE, TRUE, 0);
+  dt_gui_box_add(self->widget, g->logbase);
   g_signal_connect(G_OBJECT(g->logbase), "value-changed",
                    G_CALLBACK(logbase_callback), self);
 

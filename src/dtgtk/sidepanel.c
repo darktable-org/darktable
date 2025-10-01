@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2015-2021 darktable developers.
+    Copyright (C) 2015-2025 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,12 +29,17 @@ static GtkSizeRequestMode dtgtk_side_panel_get_request_mode(GtkWidget *widget)
   return GTK_SIZE_REQUEST_CONSTANT_SIZE;
 }
 
-static void dtgtk_side_panel_get_preferred_width(GtkWidget *widget, gint *minimum_size, gint *natural_size)
+static void dtgtk_side_panel_get_preferred_width(GtkWidget *widget,
+                                                 gint *minimum_size,
+                                                 gint *natural_size)
 {
-  GTK_WIDGET_CLASS(dtgtk_side_panel_parent_class)->get_preferred_width(widget, minimum_size, natural_size);
+  GTK_WIDGET_CLASS(dtgtk_side_panel_parent_class)->get_preferred_width
+    (widget, minimum_size, natural_size);
 
-  const int width = dt_ui_panel_get_size(darktable.gui->ui, strcmp(gtk_widget_get_name(widget), "right")
-                                                          ? DT_UI_PANEL_LEFT : DT_UI_PANEL_RIGHT);
+  const int width =
+    dt_ui_panel_get_size(darktable.gui->ui,
+                         strcmp(gtk_widget_get_name(widget), "right")
+                         ? DT_UI_PANEL_LEFT : DT_UI_PANEL_RIGHT);
 
   if(width > 10)
     *natural_size = MAX(*minimum_size, width);
@@ -51,12 +56,15 @@ static void dtgtk_side_panel_class_init(GtkDarktableSidePanelClass *class)
 static void dtgtk_side_panel_init(GtkDarktableSidePanel *panel)
 {
   gtk_widget_set_vexpand(GTK_WIDGET(panel), TRUE);
+  gtk_widget_set_hexpand(GTK_WIDGET(panel), FALSE);
 }
 
 // public functions
 GtkWidget *dtgtk_side_panel_new()
 {
-  return g_object_new(dtgtk_side_panel_get_type(), "orientation", GTK_ORIENTATION_VERTICAL, NULL);
+  return g_object_new(dtgtk_side_panel_get_type(),
+                      "orientation",
+                      GTK_ORIENTATION_VERTICAL, NULL);
 }
 
 // clang-format off
@@ -64,4 +72,3 @@ GtkWidget *dtgtk_side_panel_new()
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -4491,13 +4491,14 @@ void dt_gui_simulate_button_event(GtkWidget *widget,
 GtkWidget *(dt_gui_box_add)(const char *file, const int line, const char *function, GtkBox *box, gpointer list[])
 {
   if(!GTK_IS_BOX(box)) dt_print(DT_DEBUG_ALWAYS, "%s:%d %s: trying to add widgets to non-box container using dt_gui_box_add", file, line, function);
-  int i = 1;
-  for(; *list != (gpointer)-1; list++, i++)
+  for(int i = 1; *list != (gpointer)-1; list++, i++)
   {
-    if(GTK_IS_WIDGET(*list))
-      gtk_container_add(GTK_CONTAINER(box), GTK_WIDGET(*list));
-    else
+    if(!GTK_IS_WIDGET(*list))
       dt_print(DT_DEBUG_ALWAYS, "%s:%d %s: trying to add invalid widget to box (#%d)", file, line, function, i);
+    else if(gtk_widget_get_parent(*list))
+      dt_print(DT_DEBUG_ALWAYS, "%s:%d %s: trying to add widget that already has a parent to box (#%d)", file, line, function, i);
+    else
+      gtk_container_add(GTK_CONTAINER(box), GTK_WIDGET(*list));
   }
 
   return GTK_WIDGET(box);
@@ -4529,7 +4530,7 @@ void dt_gui_commit_on_focus_loss(GtkCellRenderer *renderer, GtkCellEditable **ac
   g_signal_connect(renderer, "editing-started", G_CALLBACK(_commit_on_focus_loss_callback), (gpointer)active_editable);
 }
 
-static void _resize_dialog(GtkWidget *widget, GdkEvent *event, const char *conf)
+static gboolean _resize_dialog(GtkWidget *widget, GdkEvent *event, const char *conf)
 {
   char buf[256];
   GtkAllocation allocation;
@@ -4539,6 +4540,7 @@ static void _resize_dialog(GtkWidget *widget, GdkEvent *event, const char *conf)
   dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_height", conf), allocation.height);
   dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_x", conf), allocation.x);
   dt_conf_set_int(dt_buf_printf(buf, "ui_last/%s_dialog_y", conf), allocation.y);
+  return FALSE;
 }
 
 void dt_gui_dialog_restore_size(GtkDialog *dialog, const char *conf)

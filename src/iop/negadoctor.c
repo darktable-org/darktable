@@ -840,22 +840,17 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *page1 = self->widget = dt_ui_notebook_page(g->notebook, N_("film properties"), NULL);
 
   // Dmin
-
-  gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(C_("section", "color of the film base")), FALSE, FALSE, 0);
-
-  GtkWidget *row1 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-
   g->Dmin_picker = gtk_color_button_new();
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->Dmin_picker), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->Dmin_picker), _("select color of film material from a swatch"));
-  gtk_box_pack_start(GTK_BOX(row1), GTK_WIDGET(g->Dmin_picker), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->Dmin_picker), "color-set", G_CALLBACK(Dmin_picker_callback), self);
 
-  g->Dmin_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, row1);
+  g->Dmin_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
   gtk_widget_set_tooltip_text(g->Dmin_sampler , _("pick color of film material from image"));
   dt_action_define_iop(self, N_("pickers"), N_("film material"), g->Dmin_sampler, &dt_action_def_toggle);
 
-  gtk_box_pack_start(GTK_BOX(page1), GTK_WIDGET(row1), FALSE, FALSE, 0);
+  dt_gui_box_add(page1, dt_ui_section_label_new(C_("section", "color of the film base")),
+                        dt_gui_hbox(dt_gui_expand(g->Dmin_picker), g->Dmin_sampler));
 
   g->Dmin_R = dt_bauhaus_slider_from_params(self, "Dmin[0]");
   dt_bauhaus_slider_set_digits(g->Dmin_R, 4);
@@ -888,8 +883,7 @@ void gui_init(dt_iop_module_t *self)
                                            "and the scanner white balance."));
 
   // D max and scanner bias
-
-  gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(C_("section", "dynamic range of the film")), FALSE, FALSE, 0);
+  dt_gui_box_add(page1, dt_ui_section_label_new(C_("section", "dynamic range of the film")));
 
   g->D_max = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "D_max"));
   dt_bauhaus_slider_set_format(g->D_max, " dB");
@@ -897,7 +891,7 @@ void gui_init(dt_iop_module_t *self)
                                           "this value depends on the film specifications, the developing process,\n"
                                           "the dynamic range of the scene and the scanner exposure settings."));
 
-  gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(C_("section", "scanner exposure settings")), FALSE, FALSE, 0);
+  dt_gui_box_add(page1, dt_ui_section_label_new(C_("section", "scanner exposure settings")));
 
   g->offset = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "offset"));
   dt_bauhaus_slider_set_format(g->offset, " dB");
@@ -908,21 +902,17 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *page2 = self->widget = dt_ui_notebook_page(g->notebook, N_("corrections"), NULL);
 
   // WB shadows
-  gtk_box_pack_start(GTK_BOX(page2), dt_ui_section_label_new(C_("section", "shadows color cast")), FALSE, FALSE, 0);
-
-  GtkWidget *row3 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-
   g->WB_low_picker = gtk_color_button_new();
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->WB_low_picker), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->WB_low_picker), _("select color of shadows from a swatch"));
-  gtk_box_pack_start(GTK_BOX(row3), GTK_WIDGET(g->WB_low_picker), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->WB_low_picker), "color-set", G_CALLBACK(WB_low_picker_callback), self);
 
-  g->WB_low_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, row3);
+  g->WB_low_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
   gtk_widget_set_tooltip_text(g->WB_low_sampler, _("pick shadows color from image"));
   dt_action_define_iop(self, N_("pickers"), N_("shadows"), g->WB_low_sampler, &dt_action_def_toggle);
 
-  gtk_box_pack_start(GTK_BOX(page2), GTK_WIDGET(row3), FALSE, FALSE, 0);
+  dt_gui_box_add(page2, dt_ui_section_label_new(C_("section", "shadows color cast")),
+                        dt_gui_hbox(dt_gui_expand(g->WB_low_picker), g->WB_low_sampler));
 
   g->wb_low_R = dt_bauhaus_slider_from_params(self, "wb_low[0]");
   dt_bauhaus_widget_set_label(g->wb_low_R, NULL, N_("shadows red offset"));
@@ -946,21 +936,17 @@ void gui_init(dt_iop_module_t *self)
                                              "recovering the global white balance in difficult cases."));
 
   // WB highlights
-  gtk_box_pack_start(GTK_BOX(page2), dt_ui_section_label_new(C_("section", "highlights white balance")), FALSE, FALSE, 0);
-
-  GtkWidget *row2 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-
   g->WB_high_picker = gtk_color_button_new();
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->WB_high_picker), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->WB_high_picker), _("select color of illuminant from a swatch"));
-  gtk_box_pack_start(GTK_BOX(row2), GTK_WIDGET(g->WB_high_picker), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->WB_high_picker), "color-set", G_CALLBACK(WB_high_picker_callback), self);
 
-  g->WB_high_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, row2);
+  g->WB_high_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
   gtk_widget_set_tooltip_text(g->WB_high_sampler , _("pick illuminant color from image"));
   dt_action_define_iop(self, N_("pickers"), N_("illuminant"), g->WB_high_sampler, &dt_action_def_toggle);
 
-  gtk_box_pack_start(GTK_BOX(page2), GTK_WIDGET(row2), FALSE, FALSE, 0);
+  dt_gui_box_add(page2, dt_ui_section_label_new(C_("section", "highlights white balance")),
+                        dt_gui_hbox(dt_gui_expand(g->WB_high_picker), g->WB_high_sampler));
 
   g->wb_high_R = dt_bauhaus_slider_from_params(self, "wb_high[0]");
   dt_bauhaus_widget_set_label(g->wb_high_R, NULL, N_("illuminant red gain"));
@@ -987,7 +973,7 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *page3 = self->widget = dt_ui_notebook_page(g->notebook, N_("print properties"), NULL);
 
   // print corrections
-  gtk_box_pack_start(GTK_BOX(page3), dt_ui_section_label_new(C_("section", "virtual paper properties")), FALSE, FALSE, 0);
+  dt_gui_box_add(page3, dt_ui_section_label_new(C_("section", "virtual paper properties")));
 
   g->black = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "black"));
   dt_bauhaus_slider_set_digits(g->black, 4);
@@ -997,7 +983,6 @@ void gui_init(dt_iop_module_t *self)
                                           "to adjust the global contrast while avoiding clipping shadows."));
 
   g->gamma = dt_bauhaus_slider_from_params(self, "gamma");
-  dt_bauhaus_widget_set_label(g->gamma, NULL, N_("paper grade (gamma)"));
   gtk_widget_set_tooltip_text(g->gamma, _("select the grade of the virtual paper, which is actually\n"
                                           "equivalent to applying a gamma. it compensates the film D max\n"
                                           "and recovers the contrast. use a high grade for high D max."));
@@ -1010,7 +995,7 @@ void gui_init(dt_iop_module_t *self)
                                               "to avoid clipping while pushing the exposure for mid-tones.\n"
                                               "this somewhat reproduces the behavior of matte paper."));
 
-  gtk_box_pack_start(GTK_BOX(page3), dt_ui_section_label_new(C_("section", "virtual print emulation")), FALSE, FALSE, 0);
+  dt_gui_box_add(page3, dt_ui_section_label_new(C_("section", "virtual print emulation")));
 
   g->exposure = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "exposure"));
   dt_bauhaus_slider_set_hard_min(g->exposure, -1.0);
@@ -1021,13 +1006,13 @@ void gui_init(dt_iop_module_t *self)
                                              "the global contrast and avoid clipping highlights."));
 
   // start building top level widget
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  self->widget = dt_gui_vbox();
 
   // Film emulsion
   g->film_stock = dt_bauhaus_combobox_from_params(self, "film_stock");
   gtk_widget_set_tooltip_text(g->film_stock, _("toggle on or off the color controls"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, g->notebook);
 }
 
 

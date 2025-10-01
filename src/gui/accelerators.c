@@ -119,6 +119,7 @@ static dt_shortcut_t _sc = { 0 };  //  shortcut under construction
 static guint _previous_move = DT_SHORTCUT_MOVE_NONE;
 static dt_action_t *_selected_action = NULL;
 static dt_shortcut_t *_selected_shortcut = NULL;
+static GQuark _action_quark = 0;
 
 #define ELEMENT_IS(type, shortcut, elements) ((elements) && (elements)[(shortcut)->element].effects == dt_action_effect_##type)
 
@@ -479,7 +480,7 @@ static const gchar *_action_find_effect_combo(dt_action_t *ac,
 
 dt_action_t *dt_action_widget(GtkWidget *widget)
 {
-  return g_hash_table_lookup(darktable.control->widgets, widget);
+  return widget ? g_object_get_qdata(G_OBJECT(widget), _action_quark) : NULL;
 }
 
 static gboolean _is_kp_key(guint keycode)
@@ -591,7 +592,7 @@ static void _action_distinct_label(gchar **label, dt_action_t *action, gchar *in
     return;
 
   gchar *instance_label = action->type == DT_ACTION_TYPE_IOP && *instance
-                        ? g_strdup_printf("%s %s", action->label, instance)
+                        ? g_strdup_printf("%s • %s", action->label, instance)
                         : g_strdup(action->label);
 
   if(*label)
@@ -1227,7 +1228,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget,
     g_free(description);
 
     if(vbox)
-      gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
+      dt_gui_box_add(vbox, label);
     else
       vbox = label;
   }
@@ -3011,44 +3012,38 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   g_signal_connect(G_OBJECT(container), "notify::position",
                    G_CALLBACK(_resize_shortcuts_view), container);
 
-  GtkWidget *button_bar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0), *button = NULL;
-  gtk_widget_set_name(button_bar, "shortcut-controls");
-  gtk_box_pack_start(GTK_BOX(button_bar), search_actions, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(button_bar), search_shortcuts, FALSE, FALSE, 0);
-
-  button = gtk_check_button_new_with_label(_("enable fallbacks"));
-  gtk_widget_set_tooltip_text(button, _("enables default meanings for additional buttons, modifiers or moves\n"
-                                        "when used in combination with a base shortcut"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),
+  GtkWidget *btn_fallbacks = gtk_check_button_new_with_label(_("enable fallbacks"));
+  gtk_widget_set_tooltip_text(btn_fallbacks, _("enables default meanings for additional buttons, modifiers or moves\n"
+                                               "when used in combination with a base shortcut"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn_fallbacks),
                                darktable.control->enable_fallbacks);
-  g_signal_connect(button, "toggled", G_CALLBACK(_fallbacks_toggled), shortcuts_view);
-  gtk_box_pack_start(GTK_BOX(button_bar), button, TRUE, FALSE, 0);
+  g_signal_connect(btn_fallbacks, "toggled", G_CALLBACK(_fallbacks_toggled), shortcuts_view);
 
-  button = gtk_button_new_with_label(_("?"));
-  gtk_widget_set_tooltip_text(button, _("open help page for shortcuts"));
-  dt_gui_add_help_link(button, "shortcuts");
-  g_signal_connect(button, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
-  gtk_box_pack_start(GTK_BOX(button_bar), button, FALSE, FALSE, 0);
+  GtkWidget *btn_help = gtk_button_new_with_label(_("?"));
+  gtk_widget_set_tooltip_text(btn_help, _("open help page for shortcuts"));
+  dt_gui_add_help_link(btn_help, "shortcuts");
+  g_signal_connect(btn_help, "clicked", G_CALLBACK(dt_gui_show_help), NULL);
 
-  button = gtk_button_new_with_label(_("restore..."));
-  gtk_widget_set_tooltip_text(button, _("restore default shortcuts or previous state"));
-  g_signal_connect(button, "clicked", G_CALLBACK(_restore_clicked), NULL);
-  gtk_box_pack_end(GTK_BOX(button_bar), button, FALSE, FALSE, 0);
+  GtkWidget *btn_restore = gtk_button_new_with_label(_("restore..."));
+  gtk_widget_set_tooltip_text(btn_restore, _("restore default shortcuts or previous state"));
+  g_signal_connect(btn_restore, "clicked", G_CALLBACK(_restore_clicked), NULL);
 
-  button = gtk_button_new_with_label(_("import..."));
-  gtk_widget_set_tooltip_text(button, _("fully or partially import shortcuts from file"));
-  g_signal_connect(button, "clicked", G_CALLBACK(_import_clicked), NULL);
-  gtk_box_pack_end(GTK_BOX(button_bar), button, FALSE, FALSE, 0);
+  GtkWidget *btn_import = gtk_button_new_with_label(_("import..."));
+  gtk_widget_set_tooltip_text(btn_import, _("fully or partially import shortcuts from file"));
+  g_signal_connect(btn_import, "clicked", G_CALLBACK(_import_clicked), NULL);
 
-  button = gtk_button_new_with_label(_("export..."));
-  gtk_widget_set_tooltip_text(button, _("fully or partially export shortcuts to file"));
-  g_signal_connect(button, "clicked", G_CALLBACK(_export_clicked), NULL);
-  gtk_box_pack_end(GTK_BOX(button_bar), button, FALSE, FALSE, 0);
+  GtkWidget *btn_export = gtk_button_new_with_label(_("export..."));
+  gtk_widget_set_tooltip_text(btn_export, _("fully or partially export shortcuts to file"));
+  g_signal_connect(btn_export, "clicked", G_CALLBACK(_export_clicked), NULL);
 
-  GtkWidget *top_level = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *button_bar = dt_gui_hbox(search_actions, search_shortcuts, btn_fallbacks,
+                                      dt_gui_align_right(btn_help), btn_export, btn_import, btn_restore);
+  gtk_widget_set_name(button_bar, "shortcut-controls");
+
+  GtkWidget *top_level = dt_gui_vbox();
   if(!dt_conf_get_bool("accel/hide_notice"))
   {
-    button = gtk_button_new_with_label(
+    GtkWidget *button = gtk_button_new_with_label(
       _("the recommended way to assign shortcuts to visual elements is the <b>visual shortcut mapping</b> mode.\n"
         "this is switched on by toggling the <i>\"keyboard\"</i> button next to preferences in the top panel. "
         "in this mode, clicking on a widget or area will open this dialog with the appropriate selection for advanced configuration.\n\n"
@@ -3063,10 +3058,9 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
     gtk_label_set_line_wrap(label, TRUE);
     gtk_label_set_xalign(label, 0);
     g_signal_connect(button, "clicked", G_CALLBACK(_notice_clicked), NULL);
-    gtk_box_pack_start(GTK_BOX(top_level), button, FALSE, FALSE, 0);
+    dt_gui_box_add(top_level, button);
   }
-  gtk_box_pack_start(GTK_BOX(top_level), container, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(top_level), button_bar, FALSE, FALSE, 0);
+  dt_gui_box_add(top_level, container, button_bar);
 
   return top_level;
 }
@@ -4677,17 +4671,6 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w,
   return TRUE;
 }
 
-static void _remove_widget_from_hashtable(GtkWidget *widget, gpointer user_data)
-{
-  dt_action_t *action = dt_action_widget(widget);
-  if(action)
-  {
-    if(action->target == widget) action->target = NULL;
-
-    g_hash_table_remove(darktable.control->widgets, widget);
-  }
-}
-
 void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action)
 {
   new_action->owner = owner;
@@ -4829,16 +4812,22 @@ dt_action_t *dt_action_define(dt_action_t *owner,
     {
       ac->target = widget;
     }
-    else if(!darktable.control->accel_initialising && widget)
+    else if(widget)
     {
-      if(label && action_def && !ac->target) ac->target = widget;
-      g_hash_table_insert(darktable.control->widgets, widget, ac);
+      if(!_action_quark)
+        _action_quark = g_quark_from_static_string("dt_action");
+
+      if(!g_object_get_qdata(G_OBJECT(widget), _action_quark))
+      {
+        g_object_set_qdata(G_OBJECT(widget), _action_quark, ac);
+
+        if(label && action_def && !ac->target)
+          g_set_weak_pointer(&ac->target, widget);
+      }
 
       gtk_widget_set_has_tooltip(widget, TRUE);
       g_signal_connect(G_OBJECT(widget), "leave-notify-event",
                        G_CALLBACK(_reset_element_on_leave), NULL);
-      g_signal_connect(G_OBJECT(widget), "destroy",
-                       G_CALLBACK(_remove_widget_from_hashtable), NULL);
     }
   }
 
@@ -4925,7 +4914,7 @@ void dt_shortcut_register(dt_action_t *owner,
                           guint accel_key,
                           GdkModifierType mods)
 {
-  if(accel_key != 0)
+  if(accel_key != 0 && !darktable.control->accel_initialised)
   {
     GdkKeymap *keymap = gdk_keymap_get_for_display(gdk_display_get_default());
 
@@ -5067,7 +5056,10 @@ void dt_action_widget_toast(dt_action_t *action,
         dt_iop_module_t *module = (dt_iop_module_t *)action;
 
         action = DT_ACTION(module->so);
-        instance_name = module->multi_name;
+        if(*module->multi_name)
+          instance_name = module->multi_name_hand_edited
+                        ? g_strdup(module->multi_name)
+                        : dt_util_localize_segmented_name(module->multi_name, TRUE);
 
         for(GSList *w = module->widget_list; w; w = w->next)
         {
@@ -5086,6 +5078,8 @@ void dt_action_widget_toast(dt_action_t *action,
       }
 
       _action_distinct_label(&label, action, instance_name);
+      if(*instance_name) g_free(instance_name);
+
       dt_toast_log("%s : %s", label, text);
       g_free(label);
     }
@@ -5146,7 +5140,7 @@ void dt_accel_connect_instance_iop(dt_iop_module_t *module)
     const dt_action_target_t *const referral = w->data;
     dt_action_t *const ac = referral->action;
     if(focused || (ac->owner != blend && ac->owner->owner != blend))
-      ac->target = referral->target;
+      g_set_weak_pointer(&ac->target, referral->target);
   }
 }
 
@@ -5174,9 +5168,7 @@ GtkWidget *dt_action_button_new(dt_lib_module_t *self,
   {
     dt_action_t *ac = dt_action_define(DT_ACTION(self), NULL, label,
                                        button, &dt_action_def_button);
-    if(accel_key && (self->actions.type != DT_ACTION_TYPE_IOP_INSTANCE
-                     || darktable.control->accel_initialising))
-      dt_shortcut_register(ac, 0, 0, accel_key, mods);
+    dt_shortcut_register(ac, 0, 0, accel_key, mods);
     g_object_set_data(G_OBJECT(button), "module", self);
   }
 

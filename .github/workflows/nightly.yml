@@ -264,7 +264,15 @@ jobs:
           cmake -E make_directory "${BUILD_DIR}"
           cmake -E make_directory "${INSTALL_PREFIX}"
           $(cygpath ${SRC_DIR})/.ci/ci-script.sh
-      - name: Package
+      - name: Create Inno Setup installer
+        shell: pwsh
+        run: |
+          choco upgrade innosetup
+          cd ${{ env.INSTALL_PREFIX }}
+          cp ${{ env.BUILD_DIR }}/darktable.iss ./
+          iscc "darktable.iss"
+          mv Output/*.exe ${{ env.BUILD_DIR }}/
+      - name: Create NSIS installer
         run: |
           cd "${BUILD_DIR}"
           cmake --build "${BUILD_DIR}" --target package
@@ -276,7 +284,7 @@ jobs:
       - name: Package upload
         uses: actions/upload-artifact@v4
         with:
-          path: ${{ env.BUILD_DIR }}/darktable-${{ env.VERSION }}-${{ env.SYSTEM }}.exe
+          path: ${{ env.BUILD_DIR }}/*.exe
           name: artifact-windows-${{ runner.arch }}
           retention-days: 2
 
@@ -385,6 +393,8 @@ jobs:
             The `*.AppImage.zsync` file is not intended to be downloaded and used locally. Just ignore it. This file contains technical information required by AppImage auto-updaters such as [AppImageUpdate](https://appimage.github.io/AppImageUpdate/).
 
             The Windows package requires Windows with UCRT (Universal C Runtime), which is shipped with Windows 10+. Darktable should also work on Windows 8.1 [on condition that you install this runtime yourself](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c).
+
+            __If you are on Windows and using nightly for development testing, we encourage you to try the Inno Setup installer build. It is planned that after a while, it will replace the one with the NSIS installer.__
 
             The macOS package `*-arm64.dmg` requires at least macOS 14.0 (Sonoma).
 

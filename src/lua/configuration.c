@@ -109,6 +109,16 @@ int dt_lua_init_configuration(lua_State *L)
   lua_pushstring(L, tmp_path);
   lua_settable(L, -3);
 
+  lua_pushstring(L, "share_dir");
+  dt_loc_get_sharedir(tmp_path, sizeof(tmp_path));
+  lua_pushstring(L, tmp_path);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "data_dir");
+  dt_loc_get_datadir(tmp_path, sizeof(tmp_path));
+  lua_pushstring(L, tmp_path);
+  lua_settable(L, -3);
+
   lua_pushstring(L, "version");
   lua_pushstring(L, darktable_package_version);
   lua_settable(L, -3);

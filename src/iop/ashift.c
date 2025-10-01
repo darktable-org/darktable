@@ -5963,6 +5963,10 @@ void gui_init(dt_iop_module_t *self)
   g->rotation = dt_bauhaus_slider_from_params(self, N_("rotation"));
   dt_bauhaus_slider_set_format(g->rotation, "°");
   dt_bauhaus_slider_set_soft_range(g->rotation, -ROTATION_RANGE, ROTATION_RANGE);
+  dt_action_t *ac = dt_action_widget(g->rotation);
+  dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_UP, GDK_KEY_bracketleft, GDK_MOD1_MASK);
+  dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_DOWN, GDK_KEY_bracketright, GDK_MOD1_MASK);
+  dt_shortcut_register(ac, 0, 0, GDK_KEY_r, GDK_MOD1_MASK);
 
   g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
   g_signal_connect(G_OBJECT(g->cropmode), "value-changed",
@@ -5991,7 +5995,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->shear, -SHEAR_RANGE, SHEAR_RANGE);
 
   g->mode = dt_bauhaus_combobox_from_params(self, "mode");
-  self->widget = g->specifics = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
+  self->widget = g->specifics = dt_gui_vbox();
 
   g->f_length = dt_bauhaus_slider_from_params(self, "f_length");
   dt_bauhaus_slider_set_soft_range(g->f_length, 10.0f, 1000.0f);
@@ -6014,7 +6019,7 @@ void gui_init(dt_iop_module_t *self)
   g->aspect = dt_bauhaus_slider_from_params(self, "aspect");
   dt_bauhaus_slider_set_curve(g->aspect, log2_curve);
 
-  gtk_box_pack_start(GTK_BOX(g->cs.container), g->specifics, TRUE, TRUE, 0);
+  dt_gui_box_add(g->cs.container, g->specifics);
 
   self->widget = main_box;
 

@@ -514,10 +514,8 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->preferences_button), "clicked", G_CALLBACK(_lib_preferences_button_clicked),
                    NULL);
 
-#ifdef __APPLE__
-  // Register CMD+, for preferences on macOS
+  // Register CMD+, for preferences (this is standard on macOS)
   dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_ACTIVATE, GDK_KEY_comma, GDK_CONTROL_MASK);
-#endif
 
   self->widget = dt_gui_hbox(d->grouping_button, d->overlays_button,
                              d->help_button, d->keymap_button, d->preferences_button);

@@ -250,7 +250,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->exposure, _("the fill-light in EV"));
 
   /* lightnessslider */
-  GtkBox *sliderbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 #define NEUTRAL_GRAY 0.5
   static const GdkRGBA _gradient_L[]
       = { { 0, 0, 0, 1.0 }, { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } };
@@ -258,10 +257,9 @@ void gui_init(dt_iop_module_t *self)
   g->center = DTGTK_GRADIENT_SLIDER(dtgtk_gradient_slider_new_with_color_and_name(_gradient_L[0], _gradient_L[1], "gslider-relight"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->center), _("select the center of fill-light\nctrl+click to select an area"));
   g_signal_connect(G_OBJECT(g->center), "value-changed", G_CALLBACK(center_callback), self);
-  gtk_box_pack_start(sliderbox, GTK_WIDGET(g->center), TRUE, TRUE, 0);
-  g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA, GTK_WIDGET(sliderbox));
+  g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA, NULL);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->colorpicker), _("toggle tool for picking median lightness in image"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sliderbox), TRUE, FALSE, 0);
+  dt_gui_box_add(self->widget, dt_gui_hbox(dt_gui_expand(g->center), g->colorpicker));
 
   g->width = dt_bauhaus_slider_from_params(self, N_("width"));
   gtk_widget_set_tooltip_text(g->width, _("width of fill-light area defined in zones"));

@@ -153,6 +153,8 @@ typedef struct dt_iop_basic_curve_controls_t
   GtkWidget *curve_contrast_around_pivot;
   GtkWidget *curve_toe_power;
   GtkWidget *curve_shoulder_power;
+  GtkWidget *toe_warning_icon;
+  GtkWidget *shoulder_warning_icon;
 } dt_iop_basic_curve_controls_t;
 
 typedef struct dt_iop_agx_gui_data_t
@@ -186,8 +188,6 @@ typedef struct dt_iop_agx_gui_data_t
 
   GtkWidget *disable_primaries_adjustments;
   GtkWidget *primaries_controls_vbox;
-  GtkComboBoxText *primaries_preset_combo;
-  GtkWidget *primaries_preset_apply_button;
 } dt_iop_agx_gui_data_t;
 
 typedef struct tone_mapping_params_t
@@ -258,38 +258,6 @@ typedef struct dt_iop_agx_data_t
   tone_mapping_params_t tone_mapping_params;
   primaries_params_t primaries_params;
 } dt_iop_agx_data_t;
-
-// Primaries preset deduplication: hashtable key type, hash and equality functions
-typedef struct
-{
-  dt_iop_agx_base_primaries_t base_primaries;
-  gboolean disable_primaries_adjustments;
-  float red_inset;
-  float red_rotation;
-  float green_inset;
-  float green_rotation;
-  float blue_inset;
-  float blue_rotation;
-  float master_outset_ratio;
-  float master_unrotation_ratio;
-  float red_outset;
-  float red_unrotation;
-  float green_outset;
-  float green_unrotation;
-  float blue_outset;
-  float blue_unrotation;
-} _agx_primaries_key;
-
-// djb2 hash
-static inline guint _agx_primaries_hash(const gconstpointer p)
-{
-  return dt_hash(5381, p, sizeof(_agx_primaries_key));
-}
-
-static inline gboolean _agx_primaries_equal(const gconstpointer a, const gconstpointer b)
-{
-  return memcmp(a, b, sizeof(_agx_primaries_key)) == 0;
-}
 
 int legacy_params(dt_iop_module_t *self,
                   const void *const old_params,
@@ -490,6 +458,81 @@ _get_base_profile_type_from_enum(const dt_iop_agx_base_primaries_t base_primarie
     default:
       return DT_COLORSPACE_LIN_REC2020; // Default/fallback
   }
+}
+
+static void _set_blenderlike_primaries(dt_iop_agx_params_t *p)
+{
+  p->disable_primaries_adjustments = FALSE;
+  p->base_primaries = DT_AGX_REC2020;
+
+  // AgX primaries settings that produce the same matrices under D50
+  // as those used in the Blender OCIO config.
+  // https://github.com/EaryChow/AgX_LUT_Gen/blob/main/AgXBaseRec2020.py
+  p->red_inset = 0.29462451f;
+  p->green_inset = 0.25861925f;
+  p->blue_inset = 0.14641371f;
+  p->red_rotation = 0.03540329f;
+  p->green_rotation = -0.02108586f;
+  p->blue_rotation = -0.06305724f;
+
+  p->master_outset_ratio = 1.f;
+  p->master_unrotation_ratio = 1.f;
+
+  p->red_outset = 0.290776401758f;
+  p->green_outset = 0.263155400753f;
+  p->blue_outset = 0.045810721815f;
+  p->red_unrotation = 0.f;
+  p->green_unrotation = 0.f;
+  p->blue_unrotation = 0.f;
+}
+
+static void _set_unmodified_primaries(dt_iop_agx_params_t *p)
+{
+  p->disable_primaries_adjustments = FALSE;
+  p->base_primaries = DT_AGX_REC2020;
+
+  p->red_inset = 0.f;
+  p->red_rotation = 0.f;
+  p->green_inset = 0.f;
+  p->green_rotation = 0.f;
+  p->blue_inset = 0.f;
+  p->blue_rotation = 0.f;
+
+  p->master_outset_ratio = 1.f;
+  p->master_unrotation_ratio = 1.f;
+
+  p->red_outset = 0.f;
+  p->red_unrotation = 0.f;
+  p->green_outset = 0.f;
+  p->green_unrotation = 0.f;
+  p->blue_outset = 0.f;
+  p->blue_unrotation = 0.f;
+}
+
+static void _set_smooth_primaries(dt_iop_agx_params_t *p)
+{
+  // Sigmoid 'smooth' primaries settings
+  p->base_primaries = DT_AGX_WORK_PROFILE;
+
+  p->red_inset = 0.1f;
+  p->green_inset = 0.1f;
+  p->blue_inset = 0.15f;
+  p->red_rotation = deg2radf(2.f);
+  p->green_rotation = deg2radf(-1.f);
+  p->blue_rotation = deg2radf(-3.f);
+  p->red_outset = 0.1f;
+  p->green_outset = 0.1f;
+  p->blue_outset = 0.15f;
+
+
+  // sigmoid: "Don't restore purity - try to avoid posterization."
+  p->master_outset_ratio = 0.f;
+
+  // sigmoid always reverses rotations
+  p->master_unrotation_ratio = 1.f;
+  p->red_unrotation = p->red_rotation;
+  p->green_unrotation = p->green_rotation;
+  p->blue_unrotation = p->blue_rotation;
 }
 
 // user-selected base profile
@@ -1140,10 +1183,7 @@ static void _agx_tone_mapping(dt_aligned_pixel_t rgb_in_out,
   }
   else
   {
-    for_three_channels(k, aligned(transformed_pixel, rgb_in_out : 16))
-    {
-      rgb_in_out[k] = transformed_pixel[k];
-    }
+    copy_pixel(rgb_in_out, transformed_pixel);
   }
 }
 
@@ -1648,26 +1688,59 @@ static gboolean _agx_draw_curve(GtkWidget *widget,
   // end vertical EV guide lines
 
   // the curve
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
+  const float line_width = DT_PIXEL_APPLY_DPI(2.);
+  cairo_set_line_width(cr, line_width);
   set_color(cr, darktable.bauhaus->graph_fg);
 
   const int steps = 200;
-  for(int k = 0; k <= steps; k++)
+
+  // draw the main curve
+  cairo_move_to(cr, 0, _apply_curve(0, &tone_mapping_params) * graph_height);
+  for(int k = 1; k <= steps; k++)
   {
-    const float x_norm = (float)k / steps; // Input to the curve [0, 1]
+    const float x_norm = (float)k / steps;
     const float y_norm = _apply_curve(x_norm, &tone_mapping_params);
-
-    // map [0,1] to graph pixel coords
-    const float x_graph = x_norm * graph_width;
-    const float y_graph = y_norm * graph_height;
-
-    if(k == 0) cairo_move_to(cr, x_graph, y_graph);
-    else cairo_line_to(cr, x_graph, y_graph);
+    cairo_line_to(cr, x_norm * graph_width, y_norm * graph_height);
   }
   cairo_stroke(cr);
 
+  // overdraw warning sections in yellow if needed
+  if(tone_mapping_params.need_convex_toe)
+  {
+    cairo_set_source_rgb(cr, 0.75, .5, 0.);
+    const int toe_end_step = ceilf(tone_mapping_params.toe_transition_x * steps);
+    cairo_move_to(cr, 0, _apply_curve(0, &tone_mapping_params) * graph_height);
+    for(int k = 1; k <= toe_end_step; k++)
+    {
+      const float x_norm = (float)k / steps;
+      const float y_norm = _apply_curve(x_norm, &tone_mapping_params);
+      cairo_line_to(cr, x_norm * graph_width, y_norm * graph_height);
+    }
+    cairo_stroke(cr);
+  }
+
+  if(tone_mapping_params.need_concave_shoulder)
+  {
+    cairo_set_source_rgb(cr, 0.75, .5, 0.);
+    const int shoulder_start_step = floorf(tone_mapping_params.shoulder_transition_x * steps);
+    float x_norm = (float)shoulder_start_step / steps;
+    float y_norm = _apply_curve(x_norm, &tone_mapping_params);
+    cairo_move_to(cr, x_norm * graph_width, y_norm * graph_height);
+    for(int k = shoulder_start_step + 1; k <= steps; k++)
+    {
+      x_norm = (float)k / steps;
+      y_norm = _apply_curve(x_norm, &tone_mapping_params);
+      cairo_line_to(cr, x_norm * graph_width, y_norm * graph_height);
+    }
+    cairo_stroke(cr);
+  }
+
   // draw the toe start, shoulder start, pivot
   cairo_save(cr);
+  // restore line width and color for points
+  cairo_set_line_width(cr, line_width);
+  set_color(cr, darktable.bauhaus->graph_fg);
+
   cairo_rectangle(cr, -DT_PIXEL_APPLY_DPI(4.), -DT_PIXEL_APPLY_DPI(4.),
                   graph_width + 2. * DT_PIXEL_APPLY_DPI(4.),
                   graph_height + 2. * DT_PIXEL_APPLY_DPI(4.));
@@ -1732,6 +1805,24 @@ void cleanup_pipe(dt_iop_module_t *self,
   piece->data = NULL;
 }
 
+static void _update_curve_warnings(dt_iop_module_t *self)
+{
+  const dt_iop_agx_gui_data_t *g = self->gui_data;
+  const dt_iop_agx_params_t *p = self->params;
+
+  if(!g) return;
+
+  const gboolean warnings_enabled = dt_conf_get_bool("plugins/darkroom/agx/enable_curve_warnings");
+  const tone_mapping_params_t params = _calculate_tone_mapping_params(p);
+
+  if (g->basic_curve_controls.toe_warning_icon)
+    gtk_widget_set_visible(g->basic_curve_controls.toe_warning_icon,
+                           params.need_convex_toe && warnings_enabled);
+  if (g->basic_curve_controls.shoulder_warning_icon)
+    gtk_widget_set_visible(g->basic_curve_controls.shoulder_warning_icon,
+                           params.need_concave_shoulder && warnings_enabled);
+}
+
 static void _update_primaries_checkbox_and_sliders(const dt_iop_module_t *self)
 {
   const dt_iop_agx_gui_data_t *g = self->gui_data;
@@ -1765,6 +1856,7 @@ void gui_changed(dt_iop_module_t *self,
   }
 
   _update_primaries_checkbox_and_sliders(self);
+  _update_curve_warnings(self);
 
   // Test which widget was changed.
   // If allowing w == NULL, this can be called from gui_update, so that
@@ -1817,17 +1909,56 @@ static void _add_basic_curve_controls(dt_iop_module_t *self,
   dt_bauhaus_slider_set_soft_range(slider, 0.1f, 5.f);
   gtk_widget_set_tooltip_text(slider, _("slope of the linear section"));
 
+  GtkWidget *parent_vbox = self->widget;
+
   // curve_toe_power
+  GtkWidget *toe_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
+  self->widget = toe_hbox;
   slider = dt_bauhaus_slider_from_params(section, "curve_toe_power");
   controls->curve_toe_power = slider;
+  gtk_widget_set_hexpand(slider, TRUE);
+  self->widget = parent_vbox;
+  dt_gui_box_add(self->widget, toe_hbox);
+
   dt_bauhaus_slider_set_soft_range(slider, 1.f, 5.f);
   gtk_widget_set_tooltip_text(slider, _("contrast in shadows"));
+  controls->toe_warning_icon =
+      gtk_image_new_from_icon_name("dialog-warning-symbolic", GTK_ICON_SIZE_SMALL_TOOLBAR);
+  gtk_widget_set_tooltip_text(controls->toe_warning_icon,
+                              _("the curve has lost its 'S' shape, toe power cannot be applied.\n"
+                                "target black cannot be reached with the selected contrast and pivot position.\n"
+                                "increase contrast, move the pivot lower (reduce the pivot target output or\n"
+                                "curve y gamma), or increase the distance between the pivot and the left edge\n"
+                                "(increase the pivot shift, move the black point farther from the pivot by raising\n"
+                                "the relative black exposure or move the white point closer to the pivot\n"
+                                "by decreasing relative white exposure)."));
+  gtk_widget_set_no_show_all(controls->toe_warning_icon, TRUE);
+  gtk_box_pack_start(GTK_BOX(toe_hbox), controls->toe_warning_icon, FALSE, FALSE, 0);
 
   // curve_shoulder_power
+  GtkWidget *shoulder_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
+  self->widget = shoulder_hbox;
   slider = dt_bauhaus_slider_from_params(section, "curve_shoulder_power");
   controls->curve_shoulder_power = slider;
+  gtk_widget_set_hexpand(slider, TRUE);
+  self->widget = parent_vbox;
+  dt_gui_box_add(self->widget, shoulder_hbox);
+
   dt_bauhaus_slider_set_soft_range(slider, 1.f, 5.f);
   gtk_widget_set_tooltip_text(slider, _("contrast in highlights"));
+  controls->shoulder_warning_icon =
+      gtk_image_new_from_icon_name("dialog-warning-symbolic", GTK_ICON_SIZE_SMALL_TOOLBAR);
+  gtk_widget_set_tooltip_text(controls->shoulder_warning_icon,
+                              _("the curve has lost its 'S' shape, shoulder power cannot be applied.\n"
+                                "target white cannot be reached with the selected contrast and pivot position.\n"
+                                "increase contrast, move the pivot higher (increase pivot target output\n"
+                                "or curve y gamma), or increase the distance between the pivot and the right\n"
+                                "edge (decrease the pivot shift, move the white point farther from the pivot by\n"
+                                "increasing relative white exposure or move the black point closer to the pivot\n"
+                                "by lowering relative black exposure)."));
+
+  gtk_widget_set_no_show_all(controls->shoulder_warning_icon, TRUE);
+  gtk_box_pack_start(GTK_BOX(shoulder_hbox), controls->shoulder_warning_icon, FALSE, FALSE, 0);
 }
 
 static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
@@ -1840,7 +1971,6 @@ static GtkWidget* _create_basic_curve_controls_box(dt_iop_module_t *self,
   _add_basic_curve_controls(self, &g->basic_curve_controls, section_name);
 
   self->widget = parent;
-
   return box;
 }
 
@@ -1888,10 +2018,8 @@ static void _add_look_box(dt_iop_module_t *self,
                           dt_iop_agx_gui_data_t *g)
 {
   const gboolean look_always_visible = dt_conf_get_bool("plugins/darkroom/agx/look_always_visible");
-  GtkWidget *parent = self->widget;
 
-  GtkWidget *look_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  self->widget = look_box;
+  GtkWidget *look_box = dt_gui_vbox();
 
   gchar *section_name = NC_("section", "look");
   if(look_always_visible)
@@ -1907,21 +2035,16 @@ static void _add_look_box(dt_iop_module_t *self,
     _add_look_sliders(self, GTK_WIDGET(g->look_section.container), section_name);
   }
 
-  self->widget = parent;
-  gtk_box_pack_start(GTK_BOX(parent), look_box, FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, look_box);
 }
 
 static GtkWidget* _create_curve_graph_box(dt_iop_module_t *self,
                                           dt_iop_agx_gui_data_t *g)
 {
-  GtkWidget *parent = self->widget;
-
-  GtkWidget *graph_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  self->widget = graph_box;
+  GtkWidget *graph_box = dt_gui_vbox();
 
   dt_gui_new_collapsible_section(&g->graph_section, "plugins/darkroom/agx/expand_curve_graph",
                                  _("show curve"), GTK_BOX(graph_box), DT_ACTION(self));
-  GtkWidget *graph_container = GTK_WIDGET(g->graph_section.container);
   g->graph_drawing_area =
       GTK_DRAWING_AREA(dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/agx/curve_graph_height"));
   g_object_set_data(G_OBJECT(g->graph_drawing_area), "iop-instance", self);
@@ -1931,9 +2054,7 @@ static GtkWidget* _create_curve_graph_box(dt_iop_module_t *self,
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->graph_drawing_area), _("tone mapping curve"));
 
   // Pack drawing area at the top
-  gtk_box_pack_start(GTK_BOX(graph_container), GTK_WIDGET(g->graph_drawing_area), TRUE, TRUE, 0);
-
-  self->widget = parent;
+  dt_gui_box_add(g->graph_section.container, g->graph_drawing_area);
 
   return graph_box;
 }
@@ -1943,8 +2064,7 @@ static GtkWidget* _create_advanced_box(dt_iop_module_t *self,
 {
   GtkWidget *parent = self->widget;
 
-  GtkWidget *advanced_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  self->widget = advanced_box;
+  GtkWidget *advanced_box = dt_gui_vbox();
 
   gchar *section_name = NC_("section", "advanced curve parameters");
   dt_gui_new_collapsible_section(&g->advanced_section,
@@ -2022,10 +2142,8 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
 {
   GtkWidget *parent = self->widget;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   gchar *section_name = NC_("section", "input exposure range");
-  dt_gui_box_add(self->widget, dt_ui_section_label_new(section_name));
+  self->widget = dt_gui_vbox(dt_ui_section_label_new(Q_(section_name)));
   dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, section_name);
 
   g->white_exposure_picker =
@@ -2058,143 +2176,46 @@ static void _add_exposure_box(dt_iop_module_t *self, dt_iop_agx_gui_data_t *g)
   dt_bauhaus_widget_set_label(g->range_exposure_picker, section_name, N_("auto tune levels"));
   gtk_widget_set_tooltip_text(g->range_exposure_picker,
                               _("pick image area to automatically set black and white exposure"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->range_exposure_picker, FALSE, FALSE, 0);
+  dt_gui_box_add(self->widget, g->range_exposure_picker);
 
-  gtk_box_pack_start(GTK_BOX(parent), self->widget, FALSE, FALSE, 0);
-
+  dt_gui_box_add(parent, self->widget);
   self->widget = parent;
 }
 
-static void _populate_primaries_presets_combobox(const dt_iop_module_t *self)
+static void _apply_primaries_from_menu_cb(GtkMenuItem *menuitem, dt_iop_module_t *self)
 {
-  const dt_iop_agx_gui_data_t *g = self->gui_data;
-  gtk_combo_box_text_remove_all(GTK_COMBO_BOX_TEXT(g->primaries_preset_combo));
-
-  // Use a hash table to track unique primaries configurations.
-  GHashTable *seen_presets = g_hash_table_new_full(_agx_primaries_hash,
-                                                   _agx_primaries_equal, g_free, NULL);
-
-  sqlite3_stmt *stmt;
-  // Fetch name and parameters, filtering by current module version to
-  // ensure struct compatibility.
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name, op_params"
-                              " FROM data.presets"
-                              " WHERE operation = ?1 AND op_version = ?2"
-                              " ORDER BY writeprotect DESC, LOWER(name), rowid",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->op, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
-
-  gtk_combo_box_text_append(g->primaries_preset_combo, NULL, _("select a preset..."));
-
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    const char *preset_name = (const char *)sqlite3_column_text(stmt, 0);
-    const int op_params_size = sqlite3_column_bytes(stmt, 1);
-    if(op_params_size != sizeof(dt_iop_agx_params_t))
-    {
-      dt_print(DT_DEBUG_ALWAYS, "invalid params size %u for preset %s", op_params_size, preset_name);
-      continue;
-    }
-
-    const dt_iop_agx_params_t *preset_params = sqlite3_column_blob(stmt, 1);
-    _agx_primaries_key *key = g_new0(_agx_primaries_key, 1);
-
-    key->base_primaries = preset_params->base_primaries;
-    key->disable_primaries_adjustments = preset_params->disable_primaries_adjustments;
-    key->red_inset = preset_params->red_inset;
-    key->red_rotation = preset_params->red_rotation;
-    key->green_inset = preset_params->green_inset;
-    key->green_rotation = preset_params->green_rotation;
-    key->blue_inset = preset_params->blue_inset;
-    key->blue_rotation = preset_params->blue_rotation;
-    key->master_outset_ratio = preset_params->master_outset_ratio;
-    key->master_unrotation_ratio = preset_params->master_unrotation_ratio;
-    key->red_outset = preset_params->red_outset;
-    key->red_unrotation = preset_params->red_unrotation;
-    key->green_outset = preset_params->green_outset;
-    key->green_unrotation = preset_params->green_unrotation;
-    key->blue_outset = preset_params->blue_outset;
-    key->blue_unrotation = preset_params->blue_unrotation;
-
-    if(!g_hash_table_contains(seen_presets, key))
-    {
-      g_hash_table_insert(seen_presets, key, (gpointer)1);
-
-      gchar *local_name = dt_util_localize_segmented_name(preset_name, TRUE);
-      gtk_combo_box_text_append(g->primaries_preset_combo, preset_name, local_name);
-      g_free(local_name); // 'name', OTOH, is managed by sqlite
-    }
-    else
-    {
-      // duplicate, discard
-      g_free(key);
-    }
-  }
-
-  sqlite3_finalize(stmt);
-  g_hash_table_destroy(seen_presets);
-
-  gtk_combo_box_set_active(GTK_COMBO_BOX(g->primaries_preset_combo), 0);
-}
-
-static void _apply_primaries_from_preset_callback(GtkButton *button,
-                                                  dt_iop_module_t *self)
-{
-  const dt_iop_agx_gui_data_t *g = self->gui_data;
+  const char *preset_id = gtk_widget_get_name(GTK_WIDGET(menuitem));
   dt_iop_agx_params_t *p = self->params;
 
-  const gchar *preset_name = gtk_combo_box_get_active_id(GTK_COMBO_BOX(g->primaries_preset_combo));
+  if(strcmp(preset_id, "blender") == 0) _set_blenderlike_primaries(p);
+  else if(strcmp(preset_id, "smooth") == 0) _set_smooth_primaries(p);
+  else if(strcmp(preset_id, "unmodified") == 0) _set_unmodified_primaries(p);
 
-  if(preset_name && gtk_combo_box_get_active(GTK_COMBO_BOX(g->primaries_preset_combo)))
-  {
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT op_params"
-                                " FROM data.presets"
-                                " WHERE operation = ?1 AND name = ?2 AND op_version = ?3",
-                                -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->op, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, preset_name, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, self->version());
+  dt_iop_gui_update(self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
 
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      const int op_params_size = sqlite3_column_bytes(stmt, 0);
-      if(op_params_size == sizeof(dt_iop_agx_params_t))
-      {
-        const dt_iop_agx_params_t *preset_params = sqlite3_column_blob(stmt, 0);
+static void _primaries_popupmenu_callback(GtkWidget *button, dt_iop_module_t *self)
+{
+  GtkWidget *menu = gtk_menu_new();
 
-        // Copy only the primaries settings
-        p->base_primaries = preset_params->base_primaries;
-        p->disable_primaries_adjustments = preset_params->disable_primaries_adjustments;
-        p->red_inset = preset_params->red_inset;
-        p->red_rotation = preset_params->red_rotation;
-        p->green_inset = preset_params->green_inset;
-        p->green_rotation = preset_params->green_rotation;
-        p->blue_inset = preset_params->blue_inset;
-        p->blue_rotation = preset_params->blue_rotation;
-        p->master_outset_ratio = preset_params->master_outset_ratio;
-        p->master_unrotation_ratio = preset_params->master_unrotation_ratio;
-        p->red_outset = preset_params->red_outset;
-        p->red_unrotation = preset_params->red_unrotation;
-        p->green_outset = preset_params->green_outset;
-        p->green_unrotation = preset_params->green_unrotation;
-        p->blue_outset = preset_params->blue_outset;
-        p->blue_unrotation = preset_params->blue_unrotation;
+  GtkWidget *blender_item = gtk_menu_item_new_with_mnemonic(_("blender-like"));
+  gtk_widget_set_name(blender_item, "blender");
+  g_signal_connect(blender_item, "activate", G_CALLBACK(_apply_primaries_from_menu_cb), self);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), blender_item);
 
-        // Update UI and commit changes
-        dt_iop_gui_update(self);
-        dt_dev_add_history_item(darktable.develop, self, TRUE);
-      }
-    }
+  GtkWidget *smooth_item = gtk_menu_item_new_with_mnemonic(_("smooth"));
+  gtk_widget_set_name(smooth_item, "smooth");
+  g_signal_connect(smooth_item, "activate", G_CALLBACK(_apply_primaries_from_menu_cb), self);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), smooth_item);
 
-    sqlite3_finalize(stmt);
-  }
+  GtkWidget *unmodified_item = gtk_menu_item_new_with_mnemonic(_("unmodified"));
+  gtk_widget_set_name(unmodified_item, "unmodified");
+  g_signal_connect(unmodified_item, "activate", G_CALLBACK(_apply_primaries_from_menu_cb), self);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), unmodified_item);
 
-  // refresh the list and set selection prompt
-  _populate_primaries_presets_combobox(self);
+  gtk_widget_show_all(menu);
+  dt_gui_menu_popup(GTK_MENU(menu), button, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST);
 }
 
 // GUI update (called when module UI is shown/refreshed)
@@ -2219,6 +2240,7 @@ void gui_update(dt_iop_module_t *self)
                                p->disable_primaries_adjustments);
 
   _update_primaries_checkbox_and_sliders(self);
+  _update_curve_warnings(self);
 
   // Ensure the graph is drawn initially
   if(g && g->graph_drawing_area)
@@ -2232,8 +2254,7 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
   dt_iop_agx_gui_data_t *g = self->gui_data;
   GtkWidget *main_box = self->widget;
 
-  GtkWidget *primaries_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  self->widget = primaries_box;
+  GtkWidget *primaries_box = self->widget = dt_gui_vbox();
   dt_iop_module_t *section = DT_IOP_SECTION_FOR_PARAMS(self, N_("primaries"));
 
   g->disable_primaries_adjustments =
@@ -2247,24 +2268,17 @@ static GtkWidget *_add_primaries_box(dt_iop_module_t *self)
        "especially with bright, saturated lights (e.g. LEDs).\n"
        "mainly intended to be used for experimenting."));
 
-  g->primaries_controls_vbox = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  gtk_box_pack_start(GTK_BOX(primaries_box), self->widget, FALSE, FALSE, 0);
+  g->primaries_controls_vbox = self->widget = dt_gui_vbox();
+  dt_gui_box_add(primaries_box, g->primaries_controls_vbox);
 
-  GtkWidget *preset_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
-  gtk_box_pack_start(GTK_BOX(g->primaries_controls_vbox), preset_hbox, FALSE, FALSE, 0);
+  GtkWidget *primaries_hbox = dt_gui_hbox();
+  GtkWidget *primaries_label = gtk_label_new(_("reset primaries"));
+  GtkWidget *primaries_button = dtgtk_button_new(dtgtk_cairo_paint_styles, 0, NULL);
+  gtk_widget_set_tooltip_text(primaries_button, _("reset primaries to a predefined configuration"));
+  g_signal_connect(primaries_button, "clicked", G_CALLBACK(_primaries_popupmenu_callback), self);
 
-  g->primaries_preset_combo = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->primaries_preset_combo),
-                              _("load primaries settings from a preset"));
-  gtk_box_pack_start(GTK_BOX(preset_hbox), GTK_WIDGET(g->primaries_preset_combo), TRUE, TRUE, 0);
-
-  _populate_primaries_presets_combobox(self);
-  g->primaries_preset_apply_button = gtk_button_new_with_label(_("apply"));
-  gtk_widget_set_tooltip_text(g->primaries_preset_apply_button,
-                              _("apply primaries settings from the selected preset"));
-  g_signal_connect(g->primaries_preset_apply_button, "clicked",
-                   G_CALLBACK(_apply_primaries_from_preset_callback), self);
-  gtk_box_pack_start(GTK_BOX(preset_hbox), g->primaries_preset_apply_button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(primaries_hbox), primaries_label, FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(primaries_hbox), primaries_button, FALSE, FALSE, 0);  dt_gui_box_add(g->primaries_controls_vbox, primaries_hbox);
 
   GtkWidget *base_primaries_combo = dt_bauhaus_combobox_from_params(section, "base_primaries");
   gtk_widget_set_tooltip_text(base_primaries_combo,
@@ -2361,7 +2375,7 @@ static void _notebook_page_changed(GtkNotebook *notebook,
       }
 
       // pack to new parent
-      gtk_box_pack_start(GTK_BOX(vbox), g->curve_basic_controls_box, FALSE, FALSE, 0);
+      dt_gui_box_add(vbox, g->curve_basic_controls_box);
 
       // On the 'settings' page, move to second last position (before look box)
       if(page_num == 0)
@@ -2391,27 +2405,22 @@ static void _notebook_page_changed(GtkNotebook *notebook,
 static void _create_primaries_page(dt_iop_module_t *self,
                                    const dt_iop_agx_gui_data_t *g)
 {
-  GtkWidget *parent = self->widget;
-
   GtkWidget *page_primaries =
     dt_ui_notebook_page(g->notebook, N_("primaries"), _("color primaries adjustments"));
   GtkWidget *primaries_box = _add_primaries_box(self);
-  gtk_box_pack_start(GTK_BOX(page_primaries), primaries_box, FALSE, FALSE, 0);
-
-  self->widget = parent;
+  dt_gui_box_add(page_primaries, primaries_box);
 }
 
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_agx_gui_data_t *g = IOP_GUI_ALLOC(agx);
-  GtkWidget *main_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  self->widget = main_vbox;
+  GtkWidget *main_vbox = self->widget = dt_gui_vbox();
 
   static dt_action_def_t notebook_def = {};
   g->notebook = dt_ui_notebook_new(&notebook_def);
   GtkWidget *notebook_widget = GTK_WIDGET(g->notebook);
   dt_action_define_iop(self, NULL, N_("page"), notebook_widget, &notebook_def);
-  gtk_box_pack_start(GTK_BOX(main_vbox), notebook_widget, TRUE, TRUE, 0);
+  dt_gui_box_add(main_vbox, notebook_widget);
 
   g->curve_basic_controls_box = _create_basic_curve_controls_box(self, g);
   g->curve_graph_box = _create_curve_graph_box(self, g);
@@ -2431,8 +2440,8 @@ void gui_init(dt_iop_module_t *self)
                                                 N_("curve"),
                                                 _("detailed curve settings"));
     self->widget = curve_page;
-    gtk_box_pack_start(GTK_BOX(curve_page), g->curve_graph_box, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(curve_page), g->curve_advanced_controls_box, FALSE, FALSE, 0);
+    dt_gui_box_add(curve_page, g->curve_graph_box,
+                               g->curve_advanced_controls_box);
 
     // reparent on tab switch
     g_signal_connect(g->notebook, "switch-page", G_CALLBACK(_notebook_page_changed), self);
@@ -2447,9 +2456,9 @@ void gui_init(dt_iop_module_t *self)
                                                    _("main look and curve settings"));
     self->widget = settings_page;
     _add_exposure_box(self, g);
-    gtk_box_pack_start(GTK_BOX(settings_page), g->curve_basic_controls_box, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(settings_page), g->curve_graph_box, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(settings_page), g->curve_advanced_controls_box, FALSE, FALSE, 0);
+    dt_gui_box_add(settings_page, g->curve_basic_controls_box,
+                                  g->curve_graph_box,
+                                  g->curve_advanced_controls_box);
     _add_look_box(self, g);
   }
 
@@ -2459,91 +2468,61 @@ void gui_init(dt_iop_module_t *self)
   gui_update(self);
 }
 
-static void _set_neutral_params(dt_iop_agx_params_t *p)
+static void _set_shared_params(dt_iop_agx_params_t *p)
 {
   p->look_slope = 1.f;
   p->look_power = 1.f;
   p->look_offset = 0.f;
   p->look_saturation = 1.f;
+  // In Blender, a related param is set to 40%, but is actually used as 1 - param,
+  // so 60% would give almost identical results; however, Eary_Chow suggested
+  // that we leave this as 0, based on feedback he had received
   p->look_original_hue_mix_ratio = 0.f;
 
   p->range_black_relative_exposure = -10.f;
   p->range_white_relative_exposure = 6.5f;
   p->dynamic_range_scaling = 0.1f;
 
-  p->curve_contrast_around_pivot = 2.4f;
+  p->curve_contrast_around_pivot = 2.8f;
   p->curve_linear_ratio_below_pivot = 0.f;
   p->curve_linear_ratio_above_pivot = 0.f;
-  p->curve_toe_power = 1.5f;
-  p->curve_shoulder_power = 1.5f;
+  p->curve_toe_power = 1.55f;
+  p->curve_shoulder_power = 1.55f;
   p->curve_target_display_black_ratio = 0.f;
   p->curve_target_display_white_ratio = 1.f;
   p->auto_gamma = FALSE;
   p->curve_gamma = _default_gamma;
   p->curve_pivot_x_shift_ratio = 0.f;
   p->curve_pivot_y_linear_output = 0.18f;
-
-  p->disable_primaries_adjustments = FALSE;
-  p->red_inset = 0.f;
-  p->red_rotation = 0.f;
-  p->green_inset = 0.f;
-  p->green_rotation = 0.f;
-  p->blue_inset = 0.f;
-  p->blue_rotation = 0.f;
-
-  p->master_outset_ratio = 1.f;
-  p->master_unrotation_ratio = 1.f;
-  p->red_outset = 0.f;
-  p->red_unrotation = 0.f;
-  p->green_outset = 0.f;
-  p->green_unrotation = 0.f;
-  p->blue_outset = 0.f;
-  p->blue_unrotation = 0.f;
-
-  p->base_primaries = DT_AGX_REC2020;
 }
 
-void _set_blenderlike_params(dt_iop_agx_params_t *p)
+static void _set_neutral_params(dt_iop_agx_params_t *p)
 {
-  _set_neutral_params(p);
-
-  // AgX primaries settings that produce the same matrices under D50
-  // as those used in the Blender OCIO config.
-  // https://github.com/EaryChow/AgX_LUT_Gen/blob/main/AgXBaseRec2020.py
-  p->red_inset = 0.29462451f;
-  p->green_inset = 0.25861925f;
-  p->blue_inset = 0.14641371f;
-  p->red_rotation = 0.03540329f;
-  p->green_rotation = -0.02108586f;
-  p->blue_rotation = -0.06305724f;
-
-  p->master_outset_ratio = 1.f;
-  p->master_unrotation_ratio = 1.f;
-
-  p->red_outset = 0.290776401758f;
-  p->green_outset = 0.263155400753f;
-  p->blue_outset = 0.045810721815f;
-  p->red_unrotation = 0.f;
-  p->green_unrotation = 0.f;
-  p->blue_unrotation = 0.f;
-
-  // In Blender, a related param is set to 40%, but is actually used as 1 - param,
-  // so 60% would give almost identical results; however, Eary_Chow suggested
-  // that we leave this as 0, based on feedback he had received
-  p->look_original_hue_mix_ratio = 0.f;
-  p->base_primaries = DT_AGX_REC2020;
+  _set_shared_params(p);
+  _set_unmodified_primaries(p);
 }
 
-void _set_scene_referred_default_params(dt_iop_agx_params_t *p)
+void _set_smooth_params(dt_iop_agx_params_t *p)
 {
-  _set_blenderlike_params(p);
+  _set_shared_params(p);
+  _set_smooth_primaries(p);
+}
 
-  p->curve_contrast_around_pivot = 2.8f;
-  p->curve_toe_power = 1.55f;
-  p->curve_shoulder_power = 1.55f;
-  p->look_power = 1.f;
-  p->look_offset = 0.f;
-  p->look_saturation = 1.f;
+static void _set_blenderlike_params(dt_iop_agx_params_t *p)
+{
+  _set_shared_params(p);
+  _set_blenderlike_primaries(p);
+
+  // restore the original Blender settings
+  p->curve_contrast_around_pivot = 2.4f;
+  p->curve_shoulder_power = 1.5f;
+  p->curve_toe_power = 1.5f;
+}
+
+static void _set_scene_referred_default_params(dt_iop_agx_params_t *p)
+{
+  _set_shared_params(p);
+  _set_blenderlike_primaries(p);
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -2604,25 +2583,7 @@ void init_presets(dt_iop_module_so_t *self)
   /////////////////
   // Smooth presets
 
-  _set_neutral_params(&p);
-
-  // Sigmoid 'smooth' primaries settings
-  p.red_inset = 0.1f;
-  p.green_inset = 0.1f;
-  p.blue_inset = 0.15f;
-  p.red_rotation = deg2radf(2.f);
-  p.green_rotation = deg2radf(-1.f);
-  p.blue_rotation = deg2radf(-3.f);
-  p.red_outset = 0.1f;
-  p.green_outset = 0.1f;
-  p.blue_outset = 0.15f;
-  p.red_unrotation = deg2radf(2.f);
-  p.green_unrotation = deg2radf(-1.f);
-  p.blue_unrotation = deg2radf(-3.f);
-  // Don't restore purity - try to avoid posterization.
-  p.master_outset_ratio = 0.f;
-  p.master_unrotation_ratio = 1.f;
-  p.base_primaries = DT_AGX_WORK_PROFILE;
+  _set_smooth_params(&p);
 
   dt_gui_presets_add_generic(_("smooth|base"), self->op, self->version(), &p, sizeof(p),
                              TRUE, DEVELOP_BLEND_CS_RGB_SCENE);

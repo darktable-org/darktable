@@ -14,6 +14,12 @@
 AppId={#MyAppName}{#MyAppVersion}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
+
+; By default AppVername (and UninstallDisplayName) contains the word "version"
+; between the app name and the version number. We don't want it, the presence
+; of this word doesn't improve anything, it's just not needed.
+AppVerName={#MyAppName} {#MyAppVersion}
+
 AppCopyright={#MyAppCopyright}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
@@ -42,11 +48,14 @@ LicenseFile=share\doc\darktable\LICENSE
 ; PrivilegesRequired=lowest
 
 PrivilegesRequiredOverridesAllowed=dialog
-OutputBaseFilename=darktable-{#MyAppVersion}-${ARCH_STRING}
+
+; Make this name different while we build nightly with both this and the NSIS installer
+OutputBaseFilename=darktable-{#MyAppVersion}-${ARCH_STRING}-innosetup-experimental
 
 ; When this directive is set, the compiler will create a manifest file
 ; detailing information about the files compiled into Setup.
-OutputManifestFile=darktable-manifest.txt
+; May be useful for debugging, not needed for production builds.
+; OutputManifestFile=darktable-manifest.txt
 
 SolidCompression=yes
 WizardStyle=modern

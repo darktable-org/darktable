@@ -491,9 +491,12 @@ GList *dt_gpx_get_trkpts(const dt_gpx_t *gpx, const guint segid)
  * Geodesic interpolation functions
  * ------------------------------------------------------------------------*/
 
-void dt_gpx_geodesic_distance(const double lat1, const double lon1,
-                              const double lat2, const double lon2,
-                              double *d, double *delta)
+void dt_gpx_geodesic_distance(const double lat1,
+                              const double lon1,
+                              const double lat2,
+                              const double lon2,
+                              double *d,
+                              double *delta)
 {
   const double lat_rad_1 = deg2rad(lat1);
   const double lat_rad_2 = deg2rad(lat2);
@@ -569,4 +572,3 @@ void dt_gpx_geodesic_intermediate_point(const double lat1, const double lon1,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

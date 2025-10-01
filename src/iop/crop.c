@@ -220,7 +220,8 @@ static gboolean _reduce_aligners(int *ialign_w, int *ialign_h)
 
 static void _commit_box(dt_iop_module_t *self,
                         dt_iop_crop_gui_data_t *g,
-                        dt_iop_crop_params_t *p)
+                        dt_iop_crop_params_t *p,
+                        const gboolean enforce_history)
 {
   if(darktable.gui->reset) return;
   if(self->dev->preview_pipe->status != DT_DEV_PIXELPIPE_VALID) return;
@@ -280,17 +281,19 @@ static void _commit_box(dt_iop_module_t *self,
             exact ? "exact" : "as is",
             aspect, p->ratio_n, p->ratio_d, align_w, align_h, dw, dh, width, height, points[2] - points[0], points[3] - points[1]);
       }
+
       // use possibly aspect corrected data and verify that the crop area stays in the image area
       p->cx = CLAMPF(points[0] / (float)piece->buf_out.width,   0.0f, 0.9f);
       p->cy = CLAMPF(points[1] / (float)piece->buf_out.height,  0.0f, 0.9f);
       p->cw = CLAMPF(points[2] / (float)piece->buf_out.width,   0.1f, 1.0f);
       p->ch = CLAMPF(points[3] / (float)piece->buf_out.height,  0.1f, 1.0f);
 
-      if(!feqf(p->cx, old[0], eps)
-        || !feqf(p->cy, old[1], eps)
-        || !feqf(p->cw, old[2], eps)
-        || !feqf(p->ch, old[3], eps))
-          dt_dev_add_history_item(darktable.develop, self, TRUE);
+      if(enforce_history
+         || !feqf(p->cx, old[0], eps)
+         || !feqf(p->cy, old[1], eps)
+         || !feqf(p->cw, old[2], eps)
+         || !feqf(p->ch, old[3], eps))
+        dt_dev_add_history_item(darktable.develop, self, TRUE);
     }
   }
 }
@@ -572,7 +575,7 @@ void gui_focus(dt_iop_module_t *self, gboolean in)
       // so we temporary put back gui_module to crop and revert once finished
       dt_iop_module_t *old_gui = self->dev->gui_module;
       self->dev->gui_module = self;
-      _commit_box(self, g, p);
+      _commit_box(self, g, p, FALSE);
       self->dev->gui_module = old_gui;
       g->clip_max_pipe_hash = DT_INVALID_HASH;
     }
@@ -767,7 +770,7 @@ void reload_defaults(dt_iop_module_t *self)
   dp->cw = img->usercrop[3];
   dp->ch = img->usercrop[2];
   dp->ratio_n = dp->ratio_d = -1;
-  dp->aligned = TRUE;
+  dp->aligned = FALSE;
 }
 
 static void _float_to_fract(const char *num, int *n, int *d)
@@ -903,13 +906,9 @@ static void _event_aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *sel
   // now we save all that if it has changed
   if(d != abs(p->ratio_d) || n != p->ratio_n)
   {
-    if(p->ratio_d >= 0)
-      p->ratio_d = d;
-    else
-      p->ratio_d = -d;
-
+    p->ratio_d = abs(d);
     p->ratio_n = n;
-    p->aligned = p->ratio_d != 0 || p->ratio_n != 0;
+    p->aligned = p->ratio_d != 0 && p->ratio_n != 0;
 
     dt_conf_set_int("plugins/darkroom/crop/ratio_d", abs(p->ratio_d));
     dt_conf_set_int("plugins/darkroom/crop/ratio_n", abs(p->ratio_n));
@@ -950,7 +949,7 @@ static void _event_aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *sel
   }
 
   --darktable.gui->reset;
-  _commit_box(self, g, p);
+  _commit_box(self, g, p, TRUE);
 }
 
 static void _update_sliders_and_limit(dt_iop_crop_gui_data_t *g)
@@ -999,8 +998,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   _update_sliders_and_limit(g);
 
   --darktable.gui->reset;
-
-  _commit_box(self, g, p);
+  _commit_box(self, g, p, TRUE);
 }
 
 void gui_reset(dt_iop_module_t *self)
@@ -1079,7 +1077,7 @@ static void _event_aspect_flip(GtkWidget *button, dt_iop_module_t *self)
   _event_key_swap(self);
   dt_iop_crop_gui_data_t *g = self->gui_data;
   dt_iop_crop_params_t *p = self->params;
-  _commit_box(self, g, p);
+  _commit_box(self, g, p, TRUE);
 }
 
 static gint _aspect_ratio_cmp(const dt_iop_crop_aspect_t *a,
@@ -1146,8 +1144,6 @@ void gui_init(dt_iop_module_t *self)
   g->shift_hold = FALSE;
   g->ctrl_hold = FALSE;
   g->preview_ready = FALSE;
-
-  GtkWidget *box_enabled = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   dt_iop_crop_aspect_t aspects[] = {
     { _("freehand"), 0, 0 },
@@ -1280,7 +1276,8 @@ void gui_init(dt_iop_module_t *self)
        "to enter custom aspect ratio open the combobox and type ratio in x:y"
        " or decimal format"));
   dt_bauhaus_widget_set_quad(g->aspect_presets, self, dtgtk_cairo_paint_aspectflip, FALSE, _event_aspect_flip, NULL);
-  gtk_box_pack_start(GTK_BOX(box_enabled), g->aspect_presets, TRUE, TRUE, 0);
+
+  GtkWidget *box_enabled = dt_gui_vbox(g->aspect_presets);
 
   // we put margins values under an expander
   dt_gui_new_collapsible_section
@@ -1324,6 +1321,8 @@ void gui_init(dt_iop_module_t *self)
 
   darktable.develop->cropping.flip_handler = self;
   darktable.develop->cropping.flip_callback = _crop_handle_flip;
+
+  dt_shortcut_register(DT_ACTION(self->so), 0, 0, GDK_KEY_c, 0);
 }
 
 static void _aspect_free(gpointer data)
@@ -1733,7 +1732,7 @@ int button_released(dt_iop_module_t *self,
   dt_control_change_cursor(GDK_LEFT_PTR);
 
   // we save the crop into the params now so params are kept in synch with gui settings
-  _commit_box(self, g, p);
+  _commit_box(self, g, p, FALSE);
   return 1;
 }
 

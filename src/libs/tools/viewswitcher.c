@@ -185,7 +185,7 @@ static void _lib_viewswitcher_view_cannot_change_callback(gpointer instance, dt_
   g_signal_handlers_block_by_func(d->dropdown, _dropdown_changed, d);
   gtk_combo_box_set_active(GTK_COMBO_BOX(d->dropdown), 0);
   gtk_widget_set_state_flags(d->dropdown, GTK_STATE_FLAG_SELECTED, FALSE);
-  g_hash_table_remove(darktable.control->widgets, d->dropdown);
+  g_object_set_data(G_OBJECT(d->dropdown), "dt_action", NULL);
   g_signal_handlers_unblock_by_func(d->dropdown, _dropdown_changed, d);
 }
 
@@ -215,7 +215,7 @@ static void _lib_viewswitcher_view_changed_callback(gpointer instance, dt_view_t
   {
     gtk_combo_box_set_active(GTK_COMBO_BOX(d->dropdown), 0);
     gtk_widget_set_state_flags(d->dropdown, GTK_STATE_FLAG_NORMAL, TRUE);
-    g_hash_table_remove(darktable.control->widgets, d->dropdown);
+    g_object_set_data(G_OBJECT(d->dropdown), "dt_action", NULL);
   }
   else
   {

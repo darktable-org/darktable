@@ -26,8 +26,6 @@
 
 G_BEGIN_DECLS
 
-#define DT_GUI_IOP_MODULE_CONTROL_SPACING 0
-
 #define DT_GUI_THUMBSIZE_REDUCE 0.7f
 
 /* helper macro that applies the DPI transformation to fixed pixel values. input should be defaulting to 96
@@ -545,10 +543,23 @@ void dt_gui_cursor_clear_busy();
 // (i.e. the current function will do a lot of work before returning)
 void dt_gui_process_events();
 
+#ifdef __cplusplus
+extern "C++"
+{
+template<typename... Widgets>
+inline GtkWidget *dt_gui_box_add(gpointer box, Widgets*... w)
+{
+  // fold expression: expands to gtk_container_add(box, a), gtk_container_add(box, b), ...
+  (gtk_container_add(GTK_CONTAINER(box), GTK_WIDGET(w)), ...);
+  return GTK_WIDGET(box);
+}
+}
+#else
 GtkWidget *(dt_gui_box_add)(const char *file, const int line, const char *function, GtkBox *box, gpointer list[]);
 #define dt_gui_box_add(box, ...) dt_gui_box_add(__FILE__, __LINE__, __FUNCTION__, GTK_BOX(box), (gpointer[]){ __VA_ARGS__ __VA_OPT__(,) (gpointer)-1 })
-#define dt_gui_hbox(...) dt_gui_box_add(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0), __VA_ARGS__)
-#define dt_gui_vbox(...) dt_gui_box_add(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0), __VA_ARGS__)
+#endif
+#define dt_gui_hbox(...) dt_gui_box_add(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0) __VA_OPT__(,) __VA_ARGS__)
+#define dt_gui_vbox(...) dt_gui_box_add(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0) __VA_OPT__(,) __VA_ARGS__)
 #define dt_gui_dialog_add(dialog, ...) dt_gui_box_add(gtk_dialog_get_content_area(GTK_DIALOG(dialog)), __VA_ARGS__)
 #define dt_gui_expand(widget) dt_gui_expand(GTK_WIDGET(widget))
 #define dt_gui_align_right(widget) dt_gui_align_right(GTK_WIDGET(widget))

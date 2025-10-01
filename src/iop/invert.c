@@ -40,7 +40,6 @@ typedef struct dt_iop_invert_gui_data_t
 {
   GtkWidget *colorpicker;
   GtkDarktableResetLabel *label;
-  GtkBox *pickerbuttons;
   GtkWidget *picker;
   double RGB_to_CAM[4][3];
   double CAM_to_RGB[3][4];
@@ -487,12 +486,7 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_invert_gui_data_t *g = IOP_GUI_ALLOC(invert);
   dt_iop_invert_params_t *p = self->params;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   g->label = DTGTK_RESET_LABEL(dtgtk_reset_label_new("", self, &p->color, sizeof(float) * 4));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->label), TRUE, TRUE, 0);
-
-  g->pickerbuttons = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->pickerbuttons), TRUE, TRUE, 0);
 
   GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
   g->colorpicker = gtk_color_button_new_with_rgba(&color);
@@ -500,9 +494,10 @@ void gui_init(dt_iop_module_t *self)
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpicker), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpicker), _("select color of film material"));
   g_signal_connect(G_OBJECT(g->colorpicker), "color-set", G_CALLBACK(colorpicker_callback), self);
-  gtk_box_pack_start(GTK_BOX(g->pickerbuttons), GTK_WIDGET(g->colorpicker), TRUE, TRUE, 0);
 
-  g->picker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, GTK_WIDGET(g->pickerbuttons));
+  g->picker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
+
+  self->widget = dt_gui_hbox(dt_gui_expand(g->label), dt_gui_expand(g->colorpicker), g->picker);
 }
 
 // clang-format off

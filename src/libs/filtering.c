@@ -2181,7 +2181,6 @@ void gui_init(dt_lib_module_t *self)
   d->nb_rules = 0;
   d->params = (dt_lib_filtering_params_t *)g_malloc0(sizeof(dt_lib_filtering_params_t));
 
-  darktable.control->accel_initialising = TRUE;
   const int nb = sizeof(filters) / sizeof(_filter_t);
   for(int i = 0; i < nb; i++)
   {
@@ -2193,7 +2192,6 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_destroy(temp_rule.w_special_box);
     g_free(temp_rule.w_specific);
   }
-  darktable.control->accel_initialising = FALSE;
 
   for(int i = 0; i < DT_COLLECTION_MAX_RULES; i++)
   {

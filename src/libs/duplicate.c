@@ -336,7 +336,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
 
     gtk_widget_show_all(hb);
 
-    gtk_box_pack_start(GTK_BOX(d->duplicate_box), hb, FALSE, FALSE, 0);
+    dt_gui_box_add(d->duplicate_box, hb);
     d->thumbs = g_list_append(d->thumbs, thumb);
     count++;
   }
@@ -387,39 +387,26 @@ static void _lib_duplicate_preview_updated_callback(gpointer instance,
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_duplicate_t *d = g_malloc0(sizeof(dt_lib_duplicate_t));
-  self->data = (void *)d;
+  dt_lib_duplicate_t *d = self->data = g_malloc0(sizeof(dt_lib_duplicate_t));
 
   d->imgid = NO_IMGID;
   d->buf = NULL;
   d->view_ctx = 0;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  d->duplicate_box = dt_gui_vbox();
+  self->widget = dt_gui_vbox
+                   (dt_ui_resize_wrap(d->duplicate_box, 1,
+                                      "plugins/darkroom/duplicate/windowheight"),
+                    dt_gui_hbox
+                      (dt_action_button_new
+                         (NULL, N_("duplicate"), _lib_duplicate_duplicate_clicked_callback, self,
+                          _("create a duplicate of the image with same history stack"), 0, 0),
+                       dt_action_button_new
+                         (NULL, N_("original"),
+                          _lib_duplicate_new_clicked_callback, self,
+                          _("create a 'virgin' duplicate of the image without any development"), 0, 0)));
   dt_gui_add_class(self->widget, "dt_duplicate_ui");
   dt_act_on_set_class(self->widget);
-
-  d->duplicate_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
-  GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *bt = dt_action_button_new
-    (NULL, N_("original"),
-     _lib_duplicate_new_clicked_callback, self,
-     _("create a 'virgin' duplicate of the image without any development"), 0, 0);
-
-  gtk_box_pack_end(GTK_BOX(hb), bt, TRUE, TRUE, 0);
-  bt = dt_action_button_new
-    (NULL, N_("duplicate"), _lib_duplicate_duplicate_clicked_callback, self,
-     _("create a duplicate of the image with same history stack"), 0, 0);
-
-  gtk_box_pack_end(GTK_BOX(hb), bt, TRUE, TRUE, 0);
-
-  /* add duplicate list and buttonbox to widget */
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_resize_wrap
-                       (d->duplicate_box, 1,
-                        "plugins/darkroom/duplicate/windowheight"), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), hb, TRUE, TRUE, 0);
-
   gtk_widget_show_all(self->widget);
 
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _lib_duplicate_init_callback);
