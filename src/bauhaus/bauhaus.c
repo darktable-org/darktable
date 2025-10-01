@@ -1523,6 +1523,7 @@ void dt_bauhaus_combobox_add_list(GtkWidget *widget,
     g_hash_table_insert(darktable.bauhaus->combo_list, action, texts);
 
   if(!darktable.control->accel_initialised
+     && DT_BAUHAUS_WIDGET(widget)->module
      && DT_BAUHAUS_WIDGET(widget)->module->type == DT_ACTION_TYPE_IOP_INSTANCE)
     return;
 
@@ -1543,6 +1544,7 @@ gboolean dt_bauhaus_combobox_add_introspection
     g_hash_table_insert(darktable.bauhaus->combo_introspection, action, (gpointer)list);
 
   if(!darktable.control->accel_initialised
+     && DT_BAUHAUS_WIDGET(widget)->module
      && DT_BAUHAUS_WIDGET(widget)->module->type == DT_ACTION_TYPE_IOP_INSTANCE)
     return FALSE;
 
