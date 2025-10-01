@@ -350,12 +350,6 @@ static float _calc_auto_radius(float *const in,
                                     wbon ? 1.0f / MAX(1.0f, dsc->temperature.coeffs[1]) : 1.0f,
                                     wbon ? 1.0f / MAX(1.0f, dsc->temperature.coeffs[2]) : 1.0f, 1.0f };
 
-  if(width < 500 || height < 500)
-  {
-    dt_print(DT_DEBUG_PIPE, "capture sharpen calculating radius failed due to small input area %dx%d", width, height);
-    return 0.1f;
-  }
-
   float *input = wbon ? dt_iop_image_alloc(width, height, 1) : in;
   if(wbon)
   {
@@ -624,27 +618,38 @@ static void _capture_radius(dt_iop_module_t *self,
                             const uint8_t (*const xtrans)[6],
                             const uint32_t filters)
 {
+  dt_iop_demosaic_params_t *p = self->params;
+  const dt_image_t *img = &self->dev->image_storage;
+  const gboolean enough = ((float)width / (float)img->p_width) > 0.6f
+                      &&  ((float)height / (float)img->p_height) > 0.6f;
+
   dt_iop_demosaic_data_t *d = piece->data;
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
-  dt_dev_pixelpipe_t *pipe = piece->pipe;
+  const dt_dev_pixelpipe_t *pipe = piece->pipe;
   const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
   const dt_iop_buffer_dsc_t *dsc = &pipe->dsc;
-  const float radius = _calc_auto_radius(in, width, height, filters, xtrans, dsc);
+  const float radius = 0.01f * (int)(enough ? 100.0f * _calc_auto_radius(in, width, height, filters, xtrans, dsc) : 10);
   const gboolean valid = radius > 0.1f && radius < 1.5f;
+  const gboolean same_radius = feqf(p->cs_radius, radius, CAPTURE_GAUSS_FRACTION);
 
   dt_print_pipe(DT_DEBUG_PIPE, filters != 9u ? "bayer autoradius" : "xtrans autoradius",
-      pipe, self, DT_DEVICE_NONE, NULL, NULL, "radius=%.2f %svalid",
-      radius, valid ? "" : "not ");
+      pipe, self, DT_DEVICE_NONE, NULL, NULL,
+      "%sradius=%.2f from %s is %svalid",
+      same_radius ? "unchanged" : "", radius, enough ? "enough" : "small", valid ? "" : "not ");
 
-  if(fullpipe && valid)
+  if(fullpipe)
   {
-    dt_iop_demosaic_params_t *p = self->params;
-    p->cs_radius = radius;
-    if(g)
+    if(valid && !same_radius)
     {
-      g->new_radius = radius;
-      g->autoradius = TRUE;
+      p->cs_radius = radius;
+      if(g)
+      {
+        g->new_radius = radius;
+        g->autoradius = TRUE;
+      }
     }
+    if(!enough)
+      dt_control_log(_("can't calculate a reliable capture radius as you are zoomed in too much"));
   }
   d->cs_radius = valid ? radius : 0.5f;
 }
@@ -654,16 +659,17 @@ static void _capture_noise(dt_iop_module_t *self,
 {
   dt_iop_demosaic_data_t *d = piece->data;
   dt_iop_demosaic_gui_data_t *g = self->gui_data;
-  dt_dev_pixelpipe_t *pipe = piece->pipe;
+  dt_iop_demosaic_params_t *p = self->params;
+  const dt_dev_pixelpipe_t *pipe = piece->pipe;
   const gboolean fullpipe = pipe->type & DT_DEV_PIXELPIPE_FULL;
-  const float thrs = _get_variance_threshold(self);
+  const float thrs = 0.01f * (int)(100.0f * _get_variance_threshold(self));
+  const gboolean same_thrs = feqf(p->cs_thrs, thrs, 0.01f);
 
   dt_print_pipe(DT_DEBUG_PIPE, "capture threshold",
       pipe, self, DT_DEVICE_NONE, NULL, NULL, "threshold=%.2f", thrs);
 
-  if(fullpipe)
+  if(fullpipe && !same_thrs)
   {
-    dt_iop_demosaic_params_t *p = self->params;
     p->cs_thrs = thrs;
     if(g)
     {
@@ -677,14 +683,15 @@ static void _capture_noise(dt_iop_module_t *self,
 static inline gboolean _noise_requested(dt_iop_module_t *self,
                                         dt_dev_pixelpipe_iop_t *const piece)
 {
-  dt_iop_demosaic_gui_data_t *g = self->gui_data;
+  const dt_iop_demosaic_gui_data_t *g = self->gui_data;
   const dt_iop_demosaic_data_t *d = piece->data;
   const gboolean invalid_thrs = d->cs_thrs <= 0.0f;
+  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
 
   // do we require a calculation of the noise threshold?
 
   // if running in gui the first fullpipe for this image and there is an invalid threshold
-  if(g && !g->autothrs && invalid_thrs) return TRUE;
+  if(g && fullpipe && !g->autothrs && invalid_thrs) return TRUE;
 
   // if with no gui and we have an invalid thrshold
   if(!g && invalid_thrs) return TRUE;
@@ -695,9 +702,10 @@ static inline gboolean _noise_requested(dt_iop_module_t *self,
 static inline gboolean _radius_requested(dt_iop_module_t *self,
                                          dt_dev_pixelpipe_iop_t *const piece)
 {
-  dt_iop_demosaic_gui_data_t *g = self->gui_data;
+  const dt_iop_demosaic_gui_data_t *g = self->gui_data;
   const dt_iop_demosaic_data_t *d = piece->data;
-  const gboolean invalid_thrs = d->cs_radius <= 0.0f;
+  const gboolean invalid_radius = d->cs_radius <= 0.0f;
+  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
 
   // do we require a calculation of the capture radius?
 
@@ -705,10 +713,10 @@ static inline gboolean _radius_requested(dt_iop_module_t *self,
   if(g && (g->new_radius < 0.0f)) return TRUE;
 
   // if running in gui the first fullpipe for this image and there is an invalid radius
-  if(g && !g->autoradius && invalid_thrs) return TRUE;
+  if(g && fullpipe && !g->autoradius && invalid_radius) return TRUE;
 
-  // if with no gui and we have a radius <= 0
-  if(!g && invalid_thrs) return TRUE;
+  // if with no gui and we have an invalid radius
+  if(!g && invalid_radius) return TRUE;
 
   return FALSE;
 }
@@ -843,7 +851,7 @@ static void _capture_radius_cl(dt_iop_module_t *self,
                               const uint8_t (*const xtrans)[6],
                               const uint32_t filters)
 {
-  dt_dev_pixelpipe_t *pipe = piece->pipe;
+  const dt_dev_pixelpipe_t *pipe = piece->pipe;
   cl_int err = DT_OPENCL_SYSMEM_ALLOCATION;
   float *in = dt_iop_image_alloc(width, height, 1);
   if(!in) goto finish;
